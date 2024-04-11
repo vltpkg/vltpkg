@@ -1,0 +1,50 @@
+{
+  "name": "@vltpkg/tar",
+  "description": "An extremely limited and very fast tar extractor",
+  "version": "0.0.0-0",
+  "scripts": {
+    "prepare": "tshy"
+  },
+  "devDependencies": {
+    "@types/node": "^20.12.7",
+    "@types/tar": "^6.1.11",
+    "tshy": "^1.13.1"
+  },
+  "dependencies": {
+    "rimraf": "^5.0.5",
+    "tar": "^7.0.0"
+  },
+  "tshy": {
+    "exports": {
+      "./package.json": "./package.json",
+      ".": "./src/index.ts"
+    }
+  },
+  "exports": {
+    "./package.json": "./package.json",
+    ".": {
+      "import": {
+        "types": "./dist/esm/index.d.ts",
+        "default": "./dist/esm/index.js"
+      },
+      "require": {
+        "types": "./dist/commonjs/index.d.ts",
+        "default": "./dist/commonjs/index.js"
+      }
+    }
+  },
+  "main": "./dist/commonjs/index.js",
+  "types": "./dist/commonjs/index.d.ts",
+  "type": "module",
+  "prettier": {
+    "semi": false,
+    "printWidth": 70,
+    "tabWidth": 2,
+    "useTabs": false,
+    "singleQuote": true,
+    "jsxSingleQuote": false,
+    "bracketSameLine": true,
+    "arrowParens": "avoid",
+    "endOfLine": "lf"
+  }
+}
