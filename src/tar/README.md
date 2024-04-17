@@ -77,7 +77,7 @@ or some such.) All ctime/mtime/atime/birthtime values will just
 be left as the current time.
 
 It does not do any of the binary linking or other stuff that a
-package manager will need to do. It *just* does the unpack, as
+package manager will need to do. It _just_ does the unpack, as
 ruthlessly fast as possible, and that's all.
 
 Synchronous IO is used because that's faster and requires less
