@@ -1,4 +1,5 @@
 import { lstatSync, readFileSync } from 'fs'
+import mutateFS from 'mutate-fs'
 import { resolve } from 'path'
 import t, { Test } from 'tap'
 import { Pax } from 'tar'
@@ -118,6 +119,11 @@ t.test('unpack into a dir', t => {
     check(t)
   })
 
+  t.test('buffer, folder does not exist yet', t => {
+    unpack(tarball, t.testdirName)
+    check(t)
+  })
+
   t.test('gzipped', t => {
     unpack(gzipped, t.testdir())
     check(t)
@@ -131,6 +137,14 @@ t.test('unpack into a dir', t => {
   t.test('ArrayBuffer', t => {
     unpack(new Uint8Array(tarball).buffer, t.testdir())
     check(t)
+  })
+
+  t.test('errors do not leave garbage lying around', t => {
+    const dir = t.testdir({ still: 'here' })
+    t.teardown(mutateFS.fail('write', new Error('poop')))
+    t.throws(() => unpack(tarball, dir), new Error('poop'))
+    t.equal(readFileSync(dir + '/still', 'utf8'), 'here')
+    t.end()
   })
 
   t.end()

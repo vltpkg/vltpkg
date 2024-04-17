@@ -19,7 +19,10 @@ const onMessage = ({
   tarData?: Buffer
   target?: string
 }) => {
-  if (!(tarData instanceof ArrayBuffer) || typeof target !== 'string') {
+  if (
+    !(tarData instanceof ArrayBuffer) ||
+    typeof target !== 'string'
+  ) {
     return pp.postMessage({ id, error: 'invalid arguments' })
   }
   unpack(Buffer.from(tarData), target)

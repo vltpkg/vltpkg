@@ -1,4 +1,4 @@
-import { Header, HeaderData } from "tar"
+import { Header, HeaderData } from 'tar'
 export const makeTar = (chunks: (string | Buffer | HeaderData)[]) => {
   let dataLen = 0
   return Buffer.concat(
@@ -13,9 +13,9 @@ export const makeTar = (chunks: (string | Buffer | HeaderData)[]) => {
         return chunk
       }
       const size = Math.max(
-        typeof chunk === 'string'
-          ? 512 * Math.ceil(chunk.length / 512)
-          : 512,
+        typeof chunk === 'string' ?
+          512 * Math.ceil(chunk.length / 512)
+        : 512,
       )
       dataLen += size
       const buf = Buffer.alloc(size)
