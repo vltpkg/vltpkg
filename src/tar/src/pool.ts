@@ -56,23 +56,35 @@ export class Pool {
     const ur = this.pending.get(id)
     /* c8 ignore next */
     if (!ur) return
-    if (isResponseOK(m)) ur.resolve()
-    /* c8 ignore start - nearly impossible in normal circumstances */
-    else
+    if (isResponseOK(m)) {
+      ur.resolve()
+      /* c8 ignore start - nearly impossible in normal circumstances */
+    } else {
       ur.reject(new Error(m.error || 'failed without error message'))
+    }
     /* c8 ignore stop */
     const next = this.queue.shift()
-    if (!next) w.terminate()
+    if (!next) {
+      this.workers.delete(w)
+      w.terminate()
+    }
     else this.#request(w, next)
   }
 
   // send a request to a worker
   #request(w: Worker, req: UnpackRequest) {
     const { tarData: raw, target, id } = req
-    const tarData = raw.buffer.slice(
-      raw.byteOffset,
-      raw.byteOffset + raw.length,
-    )
+    const tarData =
+      (
+        raw.byteOffset === 0 &&
+        raw.byteLength === raw.buffer.byteLength
+      ) ?
+        raw.buffer
+      : raw.buffer.slice(
+          raw.byteOffset,
+          raw.byteOffset + raw.byteLength,
+        )
+
     w.postMessage(
       {
         tarData,
