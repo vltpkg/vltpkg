@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       tshy:
-        specifier: ^1.13.0
-        version: 1.13.0
+        specifier: ^1.14.0
+        version: 1.14.0
     devDependencies:
       typedoc:
         specifier: ^0.25.13
@@ -21,6 +21,31 @@ importers:
       lru-cache:
         specifier: ^10.2.0
         version: 10.2.0
+    devDependencies:
+      '@types/node':
+        specifier: ^20.12.7
+        version: 20.12.7
+      prettier:
+        specifier: ^3.2.5
+        version: 3.2.5
+      tap:
+        specifier: ^18.7.2
+        version: 18.7.2(@types/node@20.12.7)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(typescript@5.2.2)
+      tshy:
+        specifier: ^1.14.0
+        version: 1.14.0
+      typedoc:
+        specifier: ^0.25.13
+        version: 0.25.13(typescript@5.2.2)
+
+  src/registry-client:
+    dependencies:
+      '@vltpkg/cache':
+        specifier: workspace:*
+        version: link:../cache
+      undici:
+        specifier: ^6.13.0
+        version: 6.13.0
     devDependencies:
       '@types/node':
         specifier: ^20.12.7
@@ -1237,11 +1262,6 @@ packages:
     resolution: {integrity: sha512-iGbM7X2slv9ORDVj2y2FFUq3cP/ypbtu2nQ8S38ufjL0glBABvmR9pTdsib1XtS2LUhhLMbelaBUaf/s5J3dSw==}
     engines: {node: '>= 8'}
 
-  tshy@1.13.0:
-    resolution: {integrity: sha512-o+Huw5SehCw/9qFv4T33I59AMUA0kSvscppTRJJkGvUUntFyUF7yjr8atbY2ttzI++l6ziZA0FZ6MIkc31T9ig==}
-    engines: {node: 16 >=16.17 || 18 >=18.15.0 || >=20.6.1}
-    hasBin: true
-
   tshy@1.14.0:
     resolution: {integrity: sha512-YiUujgi4Jb+t2I48LwSRzHkBpniH9WjjktNozn+nlsGmVemKSjDNY7EwBRPvPCr5zAC/3ITAYWH9Z7kUinGSrw==}
     engines: {node: 16 >=16.17 || 18 >=18.15.0 || >=20.6.1}
@@ -1270,11 +1290,6 @@ packages:
     engines: {node: '>=14.17'}
     hasBin: true
 
-  typescript@5.3.3:
-    resolution: {integrity: sha512-pXWcraxM0uxAS+tN0AG/BF2TyqmHO014Z070UsJ+pFvYuRSq8KH8DmWpnbXe0pEPDHXZV3FcAbJkijJ5oNEnWw==}
-    engines: {node: '>=14.17'}
-    hasBin: true
-
   typescript@5.4.5:
     resolution: {integrity: sha512-vcI4UpRgg81oIRUFwR0WSIHKt11nJ7SAVlYNIu+QpqeyXP+gpQJy/Z4+F0aGxSE4MqwjyXvW/TzgkLAx2AGHwQ==}
     engines: {node: '>=14.17'}
@@ -1282,6 +1297,10 @@ packages:
 
   undici-types@5.26.5:
     resolution: {integrity: sha512-JlCMO+ehdEIKqlFxk6IfVoAUVmgz7cU7zD/h9XZ0qzeosSHmUJVOzSQvvYSYWXkFXC+IfLKSIffhv0sVZup6pA==}
+
+  undici@6.13.0:
+    resolution: {integrity: sha512-Q2rtqmZWrbP8nePMq7mOJIN98M0fYvSgV89vwl/BQRT4mDOeY2GXZngfGpcBBhtky3woM7G24wZV3Q304Bv6cw==}
+    engines: {node: '>=18.0'}
 
   unique-filename@3.0.0:
     resolution: {integrity: sha512-afXhuC55wkAmZ0P18QsVE6kp8JaxrEokN2HGIoIVv2ijHQd419H0+6EigAFcIzXeMIkcIkNBpB3L/DXB3cTS/g==}
@@ -2763,19 +2782,6 @@ snapshots:
 
   trivial-deferred@2.0.0: {}
 
-  tshy@1.13.0:
-    dependencies:
-      chalk: 5.3.0
-      chokidar: 3.6.0
-      foreground-child: 3.1.1
-      mkdirp: 3.0.1
-      polite-json: 4.0.1
-      resolve-import: 1.4.5
-      rimraf: 5.0.5
-      sync-content: 1.0.2
-      typescript: 5.3.3
-      walk-up-path: 3.0.1
-
   tshy@1.14.0:
     dependencies:
       chalk: 5.3.0
@@ -2820,11 +2826,11 @@ snapshots:
 
   typescript@5.2.2: {}
 
-  typescript@5.3.3: {}
-
   typescript@5.4.5: {}
 
   undici-types@5.26.5: {}
+
+  undici@6.13.0: {}
 
   unique-filename@3.0.0:
     dependencies:

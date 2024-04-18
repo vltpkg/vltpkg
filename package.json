@@ -2,11 +2,10 @@
 	"scripts": {
 		"test": "pnpm -r test",
 		"snap": "pnpm -r run snap",
-		"prepare": "pnpm -r run prepare",
 		"typedoc": "typedoc"
 	},
 	"dependencies": {
-		"tshy": "^1.13.0"
+		"tshy": "^1.14.0"
 	},
 	"devDependencies": {
 		"typedoc": "^0.25.13"
