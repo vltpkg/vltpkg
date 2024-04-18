@@ -1,5 +1,4 @@
 import { readdirSync } from 'fs'
-import {LRUCache} from 'lru-cache'
 import t from 'tap'
 import { Cache } from '../dist/esm/index.js'
 

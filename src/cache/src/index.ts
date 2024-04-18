@@ -7,23 +7,23 @@ import { basename, dirname } from 'path'
 
 export type CacheOptions = {
   [k in keyof LRUCache.Options<
-    string | Buffer,
+    string,
     Buffer,
     undefined
-  >]?: LRUCache.Options<string | Buffer, Buffer, undefined>[k]
+  >]?: LRUCache.Options<string, Buffer, undefined>[k]
 } & {
   fetchMethod?: undefined
   path: string
 }
 
-const hash = (s: string | Buffer) =>
+const hash = (s: string) =>
   createHash('sha-512').update(s).digest('hex')
 
 const path = (h: string) =>
   `${h.substring(0, 2)}/${h.substring(2, 4)}/${h}`
 
 export class Cache extends LRUCache<
-  string | Buffer,
+  string,
   Buffer,
   undefined
 > {
@@ -48,7 +48,7 @@ export class Cache extends LRUCache<
       path,
       fetchMethod: _,
       sizeCalculation = options.maxSize || options.maxEntrySize ?
-        (v: Buffer, k: string | Buffer) => v.length + k.length
+        (v: Buffer, k: string) => v.length + k.length
       : undefined,
       ...lruOpts
     } = options
@@ -70,10 +70,10 @@ export class Cache extends LRUCache<
   }
 
   set(
-    key: Buffer | string,
+    key: string,
     val: Buffer,
     options: LRUCache.SetOptions<
-      Buffer | string,
+      string,
       Buffer,
       undefined
     > = ({} = {}),
@@ -101,7 +101,7 @@ export class Cache extends LRUCache<
     })
   }
 
-  path(key: Buffer | string) {
+  path(key: string) {
     return resolve(this.#path, path(hash(key)))
   }
 
@@ -110,8 +110,8 @@ export class Cache extends LRUCache<
    * in memory.
    */
   fetchSync(
-    key: Buffer | string,
-    opts?: LRUCache.FetchOptions<string | Buffer, Buffer, undefined>,
+    key: string,
+    opts?: LRUCache.FetchOptions<string, Buffer, undefined>,
   ) {
     const v = this.get(key)
     if (v) return v
@@ -123,7 +123,7 @@ export class Cache extends LRUCache<
     } catch {}
   }
 
-  async #diskWrite(key: Buffer | string, val: Buffer) {
+  async #diskWrite(key: string, val: Buffer) {
     const path = this.path(key)
     const dir = dirname(path)
     await mkdir(dir, { recursive: true })
@@ -134,9 +134,9 @@ export class Cache extends LRUCache<
   }
 
   async #diskRead(
-    k: string | Buffer,
+    k: string,
     v: Buffer | undefined,
-    opts: LRUCache.FetcherOptions<string | Buffer, Buffer, undefined>,
+    opts: LRUCache.FetcherOptions<string, Buffer, undefined>,
   ) {
     return readFile(this.path(k), opts).catch(() => v)
   }

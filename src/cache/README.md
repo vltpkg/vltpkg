@@ -4,6 +4,11 @@ The filesystem cache for `@vlt/registry-client`, but also, a
 general-purpose filesystem-backed
 [LRUCache](http://npm.im/lru-cache).
 
+This is very minimal on features, because it has a very narrow
+use case, but if you want to have a persistently fs-backed LRU
+memory cache of Buffers using strings as keys, then this is the
+thing to use.
+
 ## USAGE
 
 ```js
@@ -35,13 +40,12 @@ const valueUsingSyncFileSystemOps = cache.fetchSync(someKey)
 // set operations are atomically written to the fs cache in the
 // background but are available immediately because they are
 // added to the memory cache first
-cache.set('some-key', 'some-value')
+cache.set('some-key', Buffer.from('some-value'))
 ```
 
 Note:
 
-- The key type _must_ be a string or Buffer. It gets `sha-512`
-  hashed to determine the file on disk, and that hash is used as
-  the underlying key in the memory cache.
-- The value must be either a string or Buffer, so that it can be
-  written to a file.
+- The key type _must_ be a string. It gets `sha-512` hashed to
+  determine the file on disk.
+- The value must be a Buffer, so that it can be written to a
+  file and read from it without having to convert anything.
