@@ -1,0 +1,34 @@
+{
+  "entryPoints": ["src/*"],
+  "name": "vlt.sh",
+  "navigationLinks": {
+    "GitHub": "https://github.com/vltpkg/vltpkg",
+    "vlt.sh": "https://vlt.sh/"
+  },
+  "entryPointStrategy": "packages",
+  "includeVersion": true,
+  "readme": "./README.md",
+  "customCss": "./typedoc.css",
+  "darkHighlightTheme": "dark-plus",
+  "visibilityFilters": {
+    "protected": false,
+    "private": false,
+    "inherited": true,
+    "external": false
+  },
+  "compilerOptions": {
+    "jsx": "react",
+    "declaration": true,
+    "declarationMap": true,
+    "inlineSources": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "moduleResolution": "nodenext",
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "sourceMap": true,
+    "strict": true,
+    "target": "es2022",
+    "module": "nodenext"
+  }
+}
