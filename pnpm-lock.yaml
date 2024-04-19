@@ -43,6 +43,9 @@ importers:
       '@vltpkg/cache':
         specifier: workspace:*
         version: link:../cache
+      cache-control-parser:
+        specifier: ^2.0.5
+        version: 2.0.5
       undici:
         specifier: ^6.13.0
         version: 6.13.0
@@ -463,6 +466,9 @@ packages:
   cacache@18.0.2:
     resolution: {integrity: sha512-r3NU8h/P+4lVUHfeRw1dtgQYar3DZMm4/cm2bZgOvrFC/su7budSOeqh52VJIC4U4iG1WWwV6vRW0znqBvxNuw==}
     engines: {node: ^16.14.0 || >=18.0.0}
+
+  cache-control-parser@2.0.5:
+    resolution: {integrity: sha512-4oMIg6G2cQcNdlGDaAqZQxFclkL80HImlZhrJNZCbOeHS3vLQcNYeBpxf5jO9yJHnVee8I8URtRPpC7f2Lh+Og==}
 
   chalk@5.3.0:
     resolution: {integrity: sha512-dLitG79d+GV1Nb/VYcCDFivJeK1hiukt9QjRNVOsUtTy1rR1YJsmpGGTZ3qJos+uw7WmWF4wUwBd9jxjocFC2w==}
@@ -1924,6 +1930,8 @@ snapshots:
       ssri: 10.0.5
       tar: 6.2.1
       unique-filename: 3.0.0
+
+  cache-control-parser@2.0.5: {}
 
   chalk@5.3.0: {}
 
