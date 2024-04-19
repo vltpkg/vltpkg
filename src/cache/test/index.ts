@@ -16,6 +16,8 @@ t.test('basic cache operation', async t => {
   t.same(readdirSync(t.testdirName + '/4a/3e'), [
     '4a3ed8147e37876adc8f76328e5abcc1b470e6acfc18efea0135f983604953a5' +
       '8e183c1a6086e91ba3e821d926f5fdeb37761c7ca0328a963f5e92870675b728',
+    '4a3ed8147e37876adc8f76328e5abcc1b470e6acfc18efea0135f983604953a5' +
+      '8e183c1a6086e91ba3e821d926f5fdeb37761c7ca0328a963f5e92870675b728.key',
   ])
 
   const reader = new Cache({

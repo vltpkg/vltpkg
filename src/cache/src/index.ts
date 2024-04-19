@@ -22,11 +22,7 @@ const hash = (s: string) =>
 const path = (h: string) =>
   `${h.substring(0, 2)}/${h.substring(2, 4)}/${h}`
 
-export class Cache extends LRUCache<
-  string,
-  Buffer,
-  undefined
-> {
+export class Cache extends LRUCache<string, Buffer, undefined> {
   #path: string;
   [Symbol.toStringTag]: string = '@vltpkg/cache.Cache'
   #random: string = randomBytes(6).toString('hex')
@@ -72,11 +68,8 @@ export class Cache extends LRUCache<
   set(
     key: string,
     val: Buffer,
-    options: LRUCache.SetOptions<
-      string,
-      Buffer,
-      undefined
-    > = ({} = {}),
+    options: LRUCache.SetOptions<string, Buffer, undefined> = ({} =
+      {}),
   ) {
     super.set(key, val, options)
     // best effort, already have it in memory
@@ -128,9 +121,15 @@ export class Cache extends LRUCache<
     const dir = dirname(path)
     await mkdir(dir, { recursive: true })
     const base = basename(path)
+    const keyFile = base + '.key'
     const tmp = dir + '.' + base + '.' + this.#random
-    await writeFile(tmp, val)
-    await rename(tmp, path)
+    const keyTmp = dir + '.' + keyFile + '.' + this.#random
+    await Promise.all([
+      writeFile(tmp, val).then(() => rename(tmp, path)),
+      writeFile(keyTmp, key).then(() =>
+        rename(keyTmp, path + '.key'),
+      ),
+    ])
   }
 
   async #diskRead(
