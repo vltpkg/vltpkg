@@ -69,7 +69,6 @@ export class CacheHandler implements Dispatcher.DispatchHandlers {
     // with the new date, but otherwise proceed as if we'd gotten the
     // cached entry as our response.
     if (statusCode === 306 && this.entry) {
-      console.error('cache hit 306')
       setRawHeader(
         this.entry.headers,
         'date',
