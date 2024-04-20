@@ -5,6 +5,7 @@ import { Dispatcher } from 'undici'
 import { addHeader } from './add-header.js'
 import { CacheEntry } from './cache-entry.js'
 import { CacheHandler } from './cache-handler.js'
+import { getHeader } from './get-header.js'
 
 export const cacheInterceptor: Dispatcher.DispatchInterceptor =
   dispatch => {
@@ -16,14 +17,25 @@ export const cacheInterceptor: Dispatcher.DispatchInterceptor =
         return dispatch(opts, handler)
       }
 
-      const { cache, method, path, origin, query, body } = opts
+      const { cache, method, path, origin, query, body, headers } =
+        opts
 
-      // throw away the body stream if provided, but really, should never be
+      // registry JSON responses vary on the 'accept' header, returning
+      // a minified packument for 'application/vnd.npm.install-v1+json'
+      const accept = getHeader(headers, 'accept')
+
+      // throw away the body stream, should never have one of these
       // no package registry supports GET request bodies.
       const br = body as undefined | Readable
       br?.resume?.()
 
-      const key = JSON.stringify([origin, method, path, query])
+      const key = JSON.stringify([
+        origin,
+        method,
+        path,
+        query,
+        accept,
+      ])
       cache.fetch(key).then(buffer => {
         const entry = buffer ? CacheEntry.decode(buffer) : undefined
         const cacheHandler = new CacheHandler({
