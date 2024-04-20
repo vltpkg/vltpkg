@@ -17,7 +17,7 @@ export const cacheInterceptor: Dispatcher.DispatchInterceptor =
         return dispatch(opts, handler)
       }
 
-      const { cache, method, path, origin, query, body, headers } =
+      const { cache, method, path, origin, body, headers } =
         opts
 
       // registry JSON responses vary on the 'accept' header, returning
@@ -33,7 +33,6 @@ export const cacheInterceptor: Dispatcher.DispatchInterceptor =
         origin,
         method,
         path,
-        query,
         accept,
       ])
       cache.fetch(key).then(buffer => {
