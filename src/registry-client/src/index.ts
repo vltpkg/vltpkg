@@ -33,7 +33,7 @@ export class RegistryClient {
     } = { method: 'GET' },
   ) {
     if (typeof url === 'string') url = new URL(url)
-    options.path = url.pathname + url.search
+    options.path = url.pathname.replace(/\/+$/, '') + url.search
     options.origin = url.origin
     const pool =
       this.pools.get(options.origin) ??
