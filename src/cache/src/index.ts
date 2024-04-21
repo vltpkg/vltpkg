@@ -1,9 +1,16 @@
 import { createHash, randomBytes } from 'crypto'
-import { readFileSync } from 'fs'
-import { mkdir, readFile, rename, writeFile } from 'fs/promises'
+import { readdirSync, readFileSync } from 'fs'
+import {
+  mkdir,
+  readdir,
+  readFile,
+  rename,
+  writeFile,
+} from 'fs/promises'
 import { LRUCache } from 'lru-cache'
 import { resolve } from 'node:path'
 import { basename, dirname } from 'path'
+import { rimraf } from 'rimraf'
 
 export type CacheOptions = {
   [k in keyof LRUCache.Options<
@@ -26,7 +33,7 @@ export class Cache extends LRUCache<string, Buffer, undefined> {
   #path: string;
   [Symbol.toStringTag]: string = '@vltpkg/cache.Cache'
   #random: string = randomBytes(6).toString('hex')
-  #pending: Set<Promise<void>> = new Set()
+  #pending: Set<Promise<void | boolean>> = new Set()
 
   get pending() {
     return [...this.#pending]
@@ -63,6 +70,80 @@ export class Cache extends LRUCache<string, Buffer, undefined> {
       noDeleteOnStaleGet: true,
     })
     this.#path = options.path
+  }
+
+  /**
+   * Walk over all the items cached to disk.
+   * Useful for cleanup, pruning, etc.
+   *
+   * Implementation for `for await` to walk over entries.
+   */
+  async *walk() {
+    for (const a of await readdir(this.#path)) {
+      for (const b of await readdir(resolve(this.#path, a))) {
+        for (const f of await readdir(resolve(this.#path, a, b))) {
+          if (f.endsWith('.key')) {
+            yield await Promise.all([
+              readFile(resolve(this.#path, a, b, f), 'utf8'),
+              readFile(
+                resolve(
+                  this.#path,
+                  a,
+                  b,
+                  f.substring(0, f.length - '.key'.length),
+                ),
+              ),
+            ]) as [string, Buffer]
+          }
+        }
+      }
+    }
+  }
+  [Symbol.asyncIterator](): AsyncGenerator<[string, Buffer], void, void> {
+    return this.walk()
+  }
+
+  /**
+   * Synchronous form of Cache.walk()
+   */
+  *walkSync() {
+    for (const a of readdirSync(this.#path)) {
+      for (const b of readdirSync(resolve(this.#path, a))) {
+        for (const f of readdirSync(resolve(this.#path, a, b))) {
+          if (f.endsWith('.key')) {
+            yield [
+              readFileSync(resolve(this.#path, a, b, f), 'utf8'),
+              readFileSync(
+                resolve(
+                  this.#path,
+                  a,
+                  b,
+                  f.substring(0, f.length - '.key'.length),
+                ),
+              ),
+            ] as [string, Buffer]
+          }
+        }
+      }
+    }
+  }
+  [Symbol.iterator]() {
+    return this.walkSync()
+  }
+
+  /**
+   * Pass `true` as second argument to delete not just from the in-memory
+   * cache, but the disk backing as well.
+   */
+  delete(key: string, fromDisk: boolean = false): boolean {
+    const ret = super.delete(key)
+    if (fromDisk) {
+      const p: Promise<boolean> = this.#diskDelete(key).then(() =>
+        this.#pending.delete(p),
+      )
+      this.#pending.add(p)
+    }
+    return ret
   }
 
   set(
@@ -114,6 +195,27 @@ export class Cache extends LRUCache<string, Buffer, undefined> {
       return v
       /* c8 ignore next */
     } catch {}
+  }
+
+  /**
+   * This deletes the parent dir if the entry has no siblings,
+   * and the grandparent dir if the parent has no siblings.
+   */
+  async #diskDelete(key: string): Promise<boolean> {
+    const file = this.path(key)
+    const base = basename(file)
+    const keyFile = file + '.key'
+    const parent = dirname(file)
+    const pBase = basename(parent)
+    const gramps = dirname(parent)
+    const sibs = (await readdir(parent)).filter(
+      f => f !== base && f !== base + '.key',
+    )
+    if (!sibs.length) {
+      const uncles = (await readdir(gramps)).filter(f => f !== pBase)
+      return !uncles.length ? await rimraf(gramps) : await rimraf(parent)
+    }
+    return await rimraf([file, keyFile])
   }
 
   async #diskWrite(key: string, val: Buffer) {
