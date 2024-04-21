@@ -10,7 +10,8 @@
     "typedoc": "^0.25.13"
   },
   "dependencies": {
-    "lru-cache": "^10.2.0"
+    "lru-cache": "^10.2.0",
+    "rimraf": "^5.0.5"
   },
   "scripts": {
     "preversion": "npm test",

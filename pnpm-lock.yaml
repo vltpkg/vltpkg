@@ -21,6 +21,9 @@ importers:
       lru-cache:
         specifier: ^10.2.0
         version: 10.2.0
+      rimraf:
+        specifier: ^5.0.5
+        version: 5.0.5
     devDependencies:
       '@types/node':
         specifier: ^20.12.7
