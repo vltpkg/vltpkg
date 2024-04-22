@@ -19,8 +19,24 @@ export type CacheOptions = {
     undefined
   >]?: LRUCache.Options<string, Buffer, undefined>[k]
 } & {
+  /**
+   * fetchMethod may not be provided, because this cache forces its own
+   * read-from-disk as the fetchMethod
+   */
   fetchMethod?: undefined
+  /**
+   * folder where items should be stored to disk
+   */
   path: string
+  /**
+   * called whenever an item is written to disk.
+   */
+  onDiskWrite?: (path: string, key: string, data: Buffer) => any
+  /**
+   * called whenever an item is deleted with `cache.delete(key, true)`
+   * Deletes of the in-memory data do not trigger this method.
+   */
+  onDiskDelete?: (path: string, key: string, deleted: boolean) => any
 }
 
 const hash = (s: string) =>
@@ -34,20 +50,28 @@ export class Cache extends LRUCache<string, Buffer, undefined> {
   [Symbol.toStringTag]: string = '@vltpkg/cache.Cache'
   #random: string = randomBytes(6).toString('hex')
   #pending: Set<Promise<void | boolean>> = new Set()
+  onDiskWrite?: CacheOptions['onDiskWrite']
+  onDiskDelete?: CacheOptions['onDiskDelete']
 
+  /**
+   * A list of the actions currently happening in the background
+   */
   get pending() {
     return [...this.#pending]
   }
 
-  static get defaultTTL() {
-    return 1000 * 60 * 15
-  }
+  /**
+   * By default, cache up to 1000 items in memory.
+   * Disk cache is unbounded.
+   */
   static get defaultMax() {
     return 1000
   }
 
   constructor(options: CacheOptions) {
     const {
+      onDiskWrite,
+      onDiskDelete,
       path,
       fetchMethod: _,
       sizeCalculation = options.maxSize || options.maxEntrySize ?
@@ -57,9 +81,6 @@ export class Cache extends LRUCache<string, Buffer, undefined> {
     } = options
 
     super({
-      // time to cache in memory
-      // disk-cache is permanent
-      ttl: Cache.defaultTTL,
       max: Cache.defaultMax,
       ...lruOpts,
       sizeCalculation,
@@ -69,11 +90,13 @@ export class Cache extends LRUCache<string, Buffer, undefined> {
       allowStale: true,
       noDeleteOnStaleGet: true,
     })
-    this.#path = options.path
+    this.onDiskWrite = onDiskWrite
+    this.onDiskDelete = onDiskDelete
+    this.#path = path
   }
 
   /**
-   * Walk over all the items cached to disk.
+   * Walk over all the items cached to disk (not just in memory).
    * Useful for cleanup, pruning, etc.
    *
    * Implementation for `for await` to walk over entries.
@@ -83,7 +106,7 @@ export class Cache extends LRUCache<string, Buffer, undefined> {
       for (const b of await readdir(resolve(this.#path, a))) {
         for (const f of await readdir(resolve(this.#path, a, b))) {
           if (f.endsWith('.key')) {
-            yield await Promise.all([
+            yield (await Promise.all([
               readFile(resolve(this.#path, a, b, f), 'utf8'),
               readFile(
                 resolve(
@@ -93,13 +116,17 @@ export class Cache extends LRUCache<string, Buffer, undefined> {
                   f.substring(0, f.length - '.key'.length),
                 ),
               ),
-            ]) as [string, Buffer]
+            ])) as [string, Buffer]
           }
         }
       }
     }
   }
-  [Symbol.asyncIterator](): AsyncGenerator<[string, Buffer], void, void> {
+  [Symbol.asyncIterator](): AsyncGenerator<
+    [string, Buffer],
+    void,
+    void
+  > {
     return this.walk()
   }
 
@@ -131,6 +158,19 @@ export class Cache extends LRUCache<string, Buffer, undefined> {
     return this.walkSync()
   }
 
+  #unpend<F extends (...a: any[]) => any>(
+    p: Promise<any>,
+    fn: F | undefined,
+    ...args: Parameters<F>
+  ) {
+    this.#pending.delete(p)
+    if (fn) fn(...args)
+  }
+
+  #pend(p: Promise<any>) {
+    this.#pending.add(p)
+  }
+
   /**
    * Pass `true` as second argument to delete not just from the in-memory
    * cache, but the disk backing as well.
@@ -138,29 +178,36 @@ export class Cache extends LRUCache<string, Buffer, undefined> {
   delete(key: string, fromDisk: boolean = false): boolean {
     const ret = super.delete(key)
     if (fromDisk) {
-      const p: Promise<boolean> = this.#diskDelete(key).then(() =>
-        this.#pending.delete(p),
+      const path = this.path(key)
+      const p: Promise<void> = this.#diskDelete(path).then(deleted =>
+        this.#unpend(p, this.onDiskDelete, path, key, deleted),
       )
-      this.#pending.add(p)
+      this.#pend(p)
     }
     return ret
   }
 
+  /**
+   * Sets an item in the memory cache (like `LRUCache.set`), and schedules
+   * a background operation to write it to disk.
+   *
+   * Use the {@link CacheOptions#onDiskWrite} method to know exactly when
+   * this happens, or `await cache.promise()` to defer until all pending
+   * actions are completed.
+   */
   set(
     key: string,
     val: Buffer,
-    options: LRUCache.SetOptions<string, Buffer, undefined> = ({} =
-      {}),
+    options?: LRUCache.SetOptions<string, Buffer, undefined>,
   ) {
     super.set(key, val, options)
     // best effort, already have it in memory
+    const path = this.path(key)
     /* c8 ignore next */
-    const p: Promise<void> = this.#diskWrite(key, val)
+    const p: Promise<void> = this.#diskWrite(path, key, val)
       .catch(() => {})
-      .then(() => {
-        this.#pending.delete(p)
-      })
-    this.#pending.add(p)
+      .then(() => this.#unpend(p, this.onDiskWrite, path, key, val))
+    this.#pend(p)
     return this
   }
 
@@ -175,6 +222,9 @@ export class Cache extends LRUCache<string, Buffer, undefined> {
     })
   }
 
+  /**
+   * given a key, figure out the path on disk where it lives
+   */
   path(key: string) {
     return resolve(this.#path, path(hash(key)))
   }
@@ -201,25 +251,26 @@ export class Cache extends LRUCache<string, Buffer, undefined> {
    * This deletes the parent dir if the entry has no siblings,
    * and the grandparent dir if the parent has no siblings.
    */
-  async #diskDelete(key: string): Promise<boolean> {
-    const file = this.path(key)
-    const base = basename(file)
-    const keyFile = file + '.key'
-    const parent = dirname(file)
+  async #diskDelete(path: string): Promise<boolean> {
+    const base = basename(path)
+    const keyFile = path + '.key'
+    const parent = dirname(path)
     const pBase = basename(parent)
     const gramps = dirname(parent)
     const sibs = (await readdir(parent)).filter(
       f => f !== base && f !== base + '.key',
     )
+    let ret: boolean
     if (!sibs.length) {
       const uncles = (await readdir(gramps)).filter(f => f !== pBase)
-      return !uncles.length ? await rimraf(gramps) : await rimraf(parent)
+      ret = await (!uncles.length ? rimraf(gramps) : rimraf(parent))
+    } else {
+      ret = await rimraf([path, keyFile])
     }
-    return await rimraf([file, keyFile])
+    return ret
   }
 
-  async #diskWrite(key: string, val: Buffer) {
-    const path = this.path(key)
+  async #diskWrite(path: string, key: string, val: Buffer) {
     const dir = dirname(path)
     await mkdir(dir, { recursive: true })
     const base = basename(path)
