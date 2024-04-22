@@ -4,13 +4,28 @@ import t from 'tap'
 import { Cache } from '../dist/esm/index.js'
 
 t.test('basic cache operation', async t => {
+  let odwCalled = false
   const c = new Cache({
     path: t.testdir(),
+    onDiskWrite(path, key, data) {
+      odwCalled = true
+      t.equal(
+        path,
+        resolve(
+          t.testdirName,
+          '4a/3e/' +
+            '4a3ed8147e37876adc8f76328e5abcc1b470e6acfc18efea0135f983604953a5' +
+            '8e183c1a6086e91ba3e821d926f5fdeb37761c7ca0328a963f5e92870675b728',
+        ),
+      )
+      t.equal(key, 'xyz')
+      t.same(data, Buffer.from('hello, world'))
+    },
   })
   t.equal(c.max, Cache.defaultMax)
-  t.equal(c.ttl, Cache.defaultTTL)
   c.set('xyz', Buffer.from('hello, world'))
   await c.promise()
+  t.equal(odwCalled, true)
   t.same([...c.keys()], ['xyz'])
   t.same(readdirSync(t.testdirName), ['4a'])
   t.same(readdirSync(t.testdirName + '/4a'), ['3e'])
@@ -57,11 +72,25 @@ t.test('basic cache operation', async t => {
 })
 
 t.test('delete from disk', async t => {
+  let oddCalled = false
   const c = new Cache({
     path: t.testdir(),
+    onDiskDelete(path, key, deleted) {
+      oddCalled = true
+      t.equal(
+        path,
+        resolve(
+          t.testdirName,
+          '4a/3e/' +
+            '4a3ed8147e37876adc8f76328e5abcc1b470e6acfc18efea0135f983604953a5' +
+            '8e183c1a6086e91ba3e821d926f5fdeb37761c7ca0328a963f5e92870675b728',
+        ),
+      )
+      t.equal(key, 'xyz')
+      t.equal(deleted, true)
+    },
   })
   t.equal(c.max, Cache.defaultMax)
-  t.equal(c.ttl, Cache.defaultTTL)
   c.set('xyz', Buffer.from('hello, world'))
   await c.promise()
   t.same([...c.keys()], ['xyz'])
@@ -76,6 +105,7 @@ t.test('delete from disk', async t => {
   c.delete('xyz')
   t.strictSame([...c.keys()], [])
   await c.promise()
+  t.equal(oddCalled, false, 'does not call diskDelete by default')
   t.same(readdirSync(t.testdirName), ['4a'])
   t.same(readdirSync(t.testdirName + '/4a'), ['3e'])
   t.same(readdirSync(t.testdirName + '/4a/3e'), [
@@ -86,6 +116,7 @@ t.test('delete from disk', async t => {
   ])
   c.delete('xyz', true)
   await c.promise()
+  t.equal(oddCalled, true, 'diskDelete has now been called')
   t.strictSame(readdirSync(t.testdirName), [])
 })
 
@@ -94,7 +125,6 @@ t.test('delete from disk, no vacuuming if uncles', async t => {
     path: t.testdir(),
   })
   t.equal(c.max, Cache.defaultMax)
-  t.equal(c.ttl, Cache.defaultTTL)
   c.set('xyz', Buffer.from('hello, world'))
   await c.promise()
   t.same([...c.keys()], ['xyz'])
@@ -129,7 +159,6 @@ t.test('delete from disk, no vacuuming if siblings', async t => {
     path: t.testdir(),
   })
   t.equal(c.max, Cache.defaultMax)
-  t.equal(c.ttl, Cache.defaultTTL)
   c.set('xyz', Buffer.from('hello, world'))
   await c.promise()
   t.same([...c.keys()], ['xyz'])
@@ -165,7 +194,6 @@ t.test('walk over cached items', async t => {
     path: t.testdir(),
   })
   t.equal(c.max, Cache.defaultMax)
-  t.equal(c.ttl, Cache.defaultTTL)
   c.set('xyz', Buffer.from('hello, world'))
   await c.promise()
   const a = new Cache({ path: t.testdirName })
@@ -179,5 +207,5 @@ t.test('walk over cached items', async t => {
     entriesSync.push(kv)
   }
   t.same(a, s)
-  t.same(a, [['xyz', Buffer.from('hello, world') ]])
+  t.same(a, [['xyz', Buffer.from('hello, world')]])
 })
