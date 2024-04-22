@@ -102,12 +102,12 @@ export class CacheHandler implements Dispatcher.DispatchHandlers {
   }
 
   /** Invoked when an error has occurred. */
-  onError?(err: Error): void {
+  onError(err: Error): void {
     this.handler.onError?.(err)
   }
 
   /** Invoked when response payload data is received. */
-  onData?(chunk: Buffer): boolean {
+  onData(chunk: Buffer): boolean {
     this.entry?.addBody(chunk)
     return !!this.handler.onData?.(chunk)
   }

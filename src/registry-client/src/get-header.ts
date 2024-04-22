@@ -22,8 +22,7 @@ export const getHeader = (
       ][]) {
         if (k.toLowerCase() === key) return v
       }
-      return undefined
-    } else {
+    } else if (headers.length % 2 === 0) {
       // [k, v, k2, v2, ...]
       for (let i = 0; i < headers.length; i += 2) {
         if (headers[i]?.toLowerCase() === key) return headers[i + 1]
@@ -35,7 +34,6 @@ export const getHeader = (
     for (const [k, v] of headers) {
       if (k.toLowerCase() === key) return v
     }
-    return undefined
   } else {
     for (const [k, v] of Object.entries(headers)) {
       if (k.toLowerCase() === key) return v

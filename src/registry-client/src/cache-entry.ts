@@ -76,7 +76,7 @@ export class CacheEntry {
     // some registries do text/json, some do application/json,
     // some do application/vnd.npm.install-v1+json
     // If it's NOT json, it's an immutable tarball
-    if (!/\bjson\b/.test(ct)) return true
+    if (ct !== '' && !/\bjson\b/.test(ct)) return true
 
     // see if the max-age has not yet been crossed
     const ma = cc['max-age'] || cc['s-maxage']
@@ -130,7 +130,7 @@ export class CacheEntry {
     // if it says it's json, assume json
     if (ct) return /\bjson\b/.test(ct)
     // all registry json starts with {, and no tarball ever can.
-    return this.#body[0]?.[0] === '{'.charCodeAt(0)
+    return this.text().startsWith('{')
   }
 
   /**
@@ -182,8 +182,8 @@ export class CacheEntry {
     let headLength = sb.byteLength + 4
     for (const h of this.#headers) {
       const hlBuf = Buffer.allocUnsafe(4)
-      const hl = h.byteLength
-      headLength += hl + 4
+      const hl = h.byteLength + 4
+      headLength += hl
       hlBuf.set(
         [
           (hl >> 24) & 0xff,

@@ -17,8 +17,7 @@ export const cacheInterceptor: Dispatcher.DispatchInterceptor =
         return dispatch(opts, handler)
       }
 
-      const { cache, method, path, origin, body, headers } =
-        opts
+      const { cache, method, path, origin, body, headers } = opts
 
       // registry JSON responses vary on the 'accept' header, returning
       // a minified packument for 'application/vnd.npm.install-v1+json'
@@ -27,14 +26,9 @@ export const cacheInterceptor: Dispatcher.DispatchInterceptor =
       // throw away the body stream, should never have one of these
       // no package registry supports GET request bodies.
       const br = body as undefined | Readable
-      br?.resume?.()
+      if (typeof br?.resume === 'function') br.resume()
 
-      const key = JSON.stringify([
-        origin,
-        method,
-        path,
-        accept,
-      ])
+      const key = JSON.stringify([origin, method, path, accept])
       cache.fetch(key).then(buffer => {
         const entry = buffer ? CacheEntry.decode(buffer) : undefined
         const cacheHandler = new CacheHandler({
@@ -54,22 +48,15 @@ export const cacheInterceptor: Dispatcher.DispatchInterceptor =
           // if it was a tarball, always return cached entry.
           const ac = new AbortController()
           const { signal } = ac
-          let _resume: undefined | (() => void) = undefined
-          const resume = () => {
-            _resume?.()
-            _resume = undefined
-          }
-          const abort = () => {
-            ac.abort()
-            resume()
-          }
+          const { abort } = ac
           handler.onConnect?.(abort)
           signal.throwIfAborted()
           /* c8 ignore next */
           handler.onHeaders?.(
             entry.statusCode,
             entry.headers,
-            resume,
+            () => {},
+            /* c8 ignore next */
             STATUS_CODES[entry.statusCode] ?? 'Unknown Status Code',
           )
           handler.onData?.(entry.buffer())
