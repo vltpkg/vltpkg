@@ -26,6 +26,9 @@
     "format": "prettier --write . --log-level warn --ignore-path ../../.prettierignore --cache",
     "typedoc": "typedoc"
   },
+  "tap": {
+    "coverage-map": "./map.js"
+  },
   "prettier": {
     "experimentalTernaries": true,
     "semi": false,

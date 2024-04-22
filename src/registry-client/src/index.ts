@@ -22,7 +22,13 @@ export class RegistryClient {
   constructor({
     cache = resolve(homedir(), '.config/vlt/cache'),
   }: RegistryClientOptions) {
-    this.cache = new Cache({ path: cache })
+    this.cache = new Cache({
+      path: cache
+      // TODO: add an onDiskWrite callback here to add the path
+      // to a list of filenames to be passed to vlt-cache-unzip
+      // at the end, and register the handler for kicking off that
+      // process if it's not already.
+    })
   }
 
   async request(
@@ -46,7 +52,7 @@ export class RegistryClient {
     options.headers = addHeader(
       options.headers,
       'accept-encoding',
-      'gzip;q=1.0, *;q=0.5',
+      'gzip;q=1.0, identity;q=0.5',
     )
     return await new Promise<CacheEntry>((res, rej) => {
       let entry: CacheEntry
