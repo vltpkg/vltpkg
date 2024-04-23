@@ -1,5 +1,5 @@
 import { Cache } from '@vltpkg/cache'
-import {Readable} from 'stream'
+import { Readable } from 'stream'
 import t from 'tap'
 import { Dispatcher } from 'undici'
 import { CacheEntry } from '../dist/commonjs/cache-entry.js'
@@ -175,7 +175,10 @@ t.test('GET request from cache, date and etag', async t => {
   const headers = { accept }
 
   const key = JSON.stringify([origin, method, path, accept])
-  const entry = new CacheEntry(200, toRawHeaders({ 'last-modified': date, etag }))
+  const entry = new CacheEntry(
+    200,
+    toRawHeaders({ 'last-modified': date, etag }),
+  )
   entry.addBody(Buffer.from('{"some":"json"}'))
   cache.set(key, entry.encode())
   await cache.promise()
@@ -210,11 +213,11 @@ t.test('GET request from cache, valid cache entry', async t => {
   let calls = 0
   const handler: Dispatcher.DispatchHandlers = {
     onConnect(abort) {
-      calls ++
+      calls++
       t.match(abort, Function)
     },
     onHeaders(statusCode, headers, resume, statusText) {
-      calls ++
+      calls++
       t.equal(statusCode, 200)
       t.strictSame(headers, entry.headers)
       t.match(resume, Function)
@@ -222,12 +225,12 @@ t.test('GET request from cache, valid cache entry', async t => {
       return true
     },
     onData(chunk) {
-      calls ++
+      calls++
       t.strictSame(chunk, Buffer.from('{"some":"json"}'))
       return true
     },
     onComplete() {
-      calls ++
+      calls++
       t.equal(calls, 4)
       t.end()
     },
@@ -253,7 +256,7 @@ t.test('GET request from cache, valid cache entry', async t => {
 
   let bodyResumed = false
   const body = {
-    resume: () => bodyResumed = true
+    resume: () => (bodyResumed = true),
   } as unknown as Readable
   const opts: Dispatcher.DispatchOptions & { cache: Cache } = {
     cache,

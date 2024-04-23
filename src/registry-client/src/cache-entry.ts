@@ -23,11 +23,6 @@ import ccp from 'cache-control-parser'
 import { gunzipSync } from 'zlib'
 import { getRawHeader } from './get-raw-header.js'
 
-const unzip = (buffer: Buffer): Buffer =>
-  buffer[0] === 0x1f && buffer[1] === 0x8b ?
-    gunzipSync(buffer)
-  : buffer
-
 const readSize = (buf: Buffer, offset: number) => {
   const a = buf[offset]
   const b = buf[offset + 1]
@@ -125,19 +120,40 @@ export class CacheEntry {
     return this.isJSON ? this.json() : this.buffer()
   }
 
+  #isJSON?: boolean
   get isJSON(): boolean {
+    if (this.#isJSON !== undefined) return this.#isJSON
     const ct = this.getHeader('content-type')?.toString()
     // if it says it's json, assume json
     if (ct) return /\bjson\b/.test(ct)
+    const text = this.text()
+    if (!text) return false
     // all registry json starts with {, and no tarball ever can.
-    return this.text().startsWith('{')
+    return (this.#isJSON = text.startsWith('{'))
+  }
+
+  #isGzip?: boolean
+  get isGzip(): boolean {
+    if (this.#isGzip !== undefined) return this.#isGzip
+    const ce = this.getHeader('content-encoding')?.toString()
+    if (ce && !/\bgzip\b/.test(ce)) return (this.#isGzip = false)
+    const buf = this.buffer()
+    if (buf.length < 2) return false
+    return (this.#isGzip = buf[0] === 0x1f && buf[1] === 0x8b)
   }
 
   /**
    * Return the body of the entry as utf8 text
+   * Automatically unzips if the content is gzip encoded
    */
   text() {
-    return unzip(this.buffer()).toString()
+    if (this.isGzip) {
+      // we know that if we know it's gzip, that the body has been
+      // flattened to a single buffer, so save the extra call.
+      this.#body = [gunzipSync(this.#body[0] as Buffer)]
+      this.#isGzip = false
+    }
+    return this.buffer().toString()
   }
 
   /**

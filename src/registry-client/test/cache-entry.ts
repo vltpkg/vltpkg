@@ -10,23 +10,30 @@ const toRawHeaders = (h: Record<string, string>): Buffer[] => {
   return r
 }
 
-const ce = new CacheEntry(200, toRawHeaders({
-  key: 'value',
-  x : 'y'
-}))
+const ce = new CacheEntry(
+  200,
+  toRawHeaders({
+    key: 'value',
+    x: 'y',
+  }),
+)
 
 t.equal(ce.statusCode, 200)
 t.equal(ce.getHeader('x')?.toString(), 'y')
 t.equal(ce.getHeader('key')?.toString(), 'value')
+t.equal(ce.isGzip, false, 'not gzip without content')
 const z = gzipSync(Buffer.from('{"hello":"world"}'))
 ce.addBody(z.subarray(0, z.length / 2))
 ce.addBody(z.subarray(z.length / 2))
 
 const enc = ce.encode()
+t.strictSame(ce.buffer(), z)
+t.equal(ce.isGzip, true, 'has gzipped body')
 t.equal(ce.text(), '{"hello":"world"}')
+t.equal(ce.isGzip, false, 'unzipped to read json')
 t.strictSame(ce.json(), { hello: 'world' })
 t.strictSame(ce.body, { hello: 'world' })
-t.strictSame(ce.buffer(), z)
+t.strictSame(ce.buffer(), Buffer.from('{"hello":"world"}'))
 t.strictSame(ce.headers, [
   Buffer.from('key'),
   Buffer.from('value'),
@@ -38,20 +45,44 @@ t.strictSame(CacheEntry.decode(enc), ce)
 t.strictSame(CacheEntry.decode(enc).encode(), enc)
 
 t.equal(ce.isJSON, true)
-t.equal(new CacheEntry(200, [ Buffer.from('content-tyPe'), Buffer.from('application/json')]).isJSON, true)
-t.equal(new CacheEntry(200, [ Buffer.from('CONTENT-TYPE'), Buffer.from('application/vnd.npm.install-v1+json')]).isJSON, true)
+t.equal(
+  new CacheEntry(200, [
+    Buffer.from('content-tyPe'),
+    Buffer.from('application/json'),
+  ]).isJSON,
+  true,
+)
+t.equal(
+  new CacheEntry(200, [
+    Buffer.from('CONTENT-TYPE'),
+    Buffer.from('application/vnd.npm.install-v1+json'),
+  ]).isJSON,
+  true,
+)
+t.equal(
+  new CacheEntry(200, [
+    Buffer.from('content-encoding'),
+    Buffer.from('identity'),
+  ]).isGzip,
+  false,
+)
 
 const headLen = enc.readUint32BE()
-t.equal(headLen,
+t.equal(
+  headLen,
   // header length number
   4 +
-  // status code
-  '200'.length +
-  // headers
-  4 + 'key'.length +
-  4 + 'value'.length +
-  4 + 'x'.length +
-  4 + 'y'.length
+    // status code
+    '200'.length +
+    // headers
+    4 +
+    'key'.length +
+    4 +
+    'value'.length +
+    4 +
+    'x'.length +
+    4 +
+    'y'.length,
 )
 
 t.strictSame(enc.subarray(headLen), z)
@@ -77,35 +108,78 @@ t.strictSame(unzipped.body, { json: 'wut' })
 t.equal(unzipped.valid, false)
 t.equal(unzipped.isJSON, true)
 
-
 // test if it's a valid cache entry
-t.equal(new CacheEntry(200, toRawHeaders({
-  date: new Date('2020-01-20').toUTCString(),
-  'cache-control': 'immutable',
-})).valid, true)
+t.equal(
+  new CacheEntry(
+    200,
+    toRawHeaders({
+      date: new Date('2020-01-20').toUTCString(),
+      'cache-control': 'immutable',
+    }),
+  ).valid,
+  true,
+)
 
-t.equal(new CacheEntry(200, toRawHeaders({
-  date: new Date('2020-01-20').toUTCString(),
-  'content-type': 'application/octet-stream',
-  // ignored, it's an octet-stream, that means immutable tarball
-  'cache-control': 'max-age=300',
-})).valid, true)
+t.equal(
+  new CacheEntry(
+    200,
+    toRawHeaders({
+      date: new Date('2020-01-20').toUTCString(),
+      'content-type': 'application/octet-stream',
+      // ignored, it's an octet-stream, that means immutable tarball
+      'cache-control': 'max-age=300',
+    }),
+  ).valid,
+  true,
+)
 
-t.equal(new CacheEntry(200, toRawHeaders({
-  date: new Date().toUTCString(),
-  'content-type': 'application/json',
-  'cache-control': 'max-age=300',
-})).valid, true)
+t.equal(
+  new CacheEntry(
+    200,
+    toRawHeaders({
+      date: new Date().toUTCString(),
+      'content-type': 'application/json',
+      'cache-control': 'max-age=300',
+    }),
+  ).valid,
+  true,
+)
 
 // these need to be revalidated
-t.equal(new CacheEntry(200, toRawHeaders({
-  date: new Date('2020-01-20').toUTCString(),
-  'content-type': 'application/json',
-  'cache-control': 'max-age=300',
-})).valid, false)
+t.equal(
+  new CacheEntry(
+    200,
+    toRawHeaders({
+      date: new Date('2020-01-20').toUTCString(),
+      'content-type': 'application/json',
+      'cache-control': 'max-age=300',
+    }),
+  ).valid,
+  false,
+)
 
 // lacks Date header, so we can't know what the max-age refers to
-t.equal(new CacheEntry(200, toRawHeaders({
-  'content-type': 'application/json',
-  'cache-control': 'max-age=300',
-})).valid, false)
+t.equal(
+  new CacheEntry(
+    200,
+    toRawHeaders({
+      'content-type': 'application/json',
+      'cache-control': 'max-age=300',
+    }),
+  ).valid,
+  false,
+)
+
+t.test('isGzip', t => {
+  const c = new CacheEntry(
+    200,
+    toRawHeaders({
+      'content-type': 'application/octet-stream',
+      'content-encoding': 'gzip',
+    }),
+  )
+  const zipped = gzipSync(Buffer.from('hello, world'))
+  c.addBody(zipped)
+  t.equal(c.isGzip, true)
+  t.end()
+})
