@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@vltpkg/cache": "workspace:*",
+    "@vltpkg/cache-unzip": "workspace:*",
     "cache-control-parser": "^2.0.5",
     "undici": "^6.13.0"
   },
@@ -42,6 +43,9 @@
     "endOfLine": "lf"
   },
   "tshy": {
+    "dialects": [
+      "esm"
+    ],
     "exports": {
       ".": "./src/index.ts",
       "./cache-entry": "./src/cache-entry.ts",
@@ -54,35 +58,21 @@
       "import": {
         "types": "./dist/esm/index.d.ts",
         "default": "./dist/esm/index.js"
-      },
-      "require": {
-        "types": "./dist/commonjs/index.d.ts",
-        "default": "./dist/commonjs/index.js"
       }
     },
     "./cache-entry": {
       "import": {
         "types": "./dist/esm/cache-entry.d.ts",
         "default": "./dist/esm/cache-entry.js"
-      },
-      "require": {
-        "types": "./dist/commonjs/cache-entry.d.ts",
-        "default": "./dist/commonjs/cache-entry.js"
       }
     },
     "./cache-interceptor": {
       "import": {
         "types": "./dist/esm/cache-interceptor.d.ts",
         "default": "./dist/esm/cache-interceptor.js"
-      },
-      "require": {
-        "types": "./dist/commonjs/cache-interceptor.d.ts",
-        "default": "./dist/commonjs/cache-interceptor.js"
       }
     },
     "./package.json": "./package.json"
   },
-  "main": "./dist/commonjs/index.js",
-  "types": "./dist/commonjs/index.d.ts",
   "type": "module"
 }

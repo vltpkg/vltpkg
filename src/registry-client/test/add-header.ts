@@ -1,5 +1,5 @@
 import t from 'tap'
-import { addHeader } from '../dist/esm/add-header.js'
+import { addHeader } from '../src/add-header.js'
 
 const k = 'key'
 const v = 'value'

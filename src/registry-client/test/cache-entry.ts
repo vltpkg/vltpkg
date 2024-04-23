@@ -183,3 +183,25 @@ t.test('isGzip', t => {
   t.equal(c.isGzip, true)
   t.end()
 })
+
+t.test('decoding a partial buffer should not blow up', t => {
+  const totesEmpty = CacheEntry.decode(Buffer.alloc(0))
+  t.match(totesEmpty, {
+    statusCode: 0,
+    headers: [],
+    body: Buffer.alloc(0)
+  })
+  const headTooShort = CacheEntry.decode(Buffer.from([
+    100,
+    100,
+    100,
+    100,
+    ...(Buffer.from('hello, world'))
+  ]))
+  t.match(headTooShort, {
+    statusCode: 0,
+    headers: [],
+    body: Buffer.alloc(0),
+  })
+  t.end()
+})
