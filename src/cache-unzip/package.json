@@ -1,0 +1,61 @@
+{
+  "name": "@vltpkg/cache-unzip",
+  "description": "Daemon that manages the @vltpkg/cache disk store",
+  "version": "0.0.0-0",
+  "bin": {
+    "vlt-cache-unzip": "./dist/esm/unzip.js"
+  },
+  "devDependencies": {
+    "@types/node": "^20.12.7",
+    "prettier": "^3.2.5",
+    "tap": "^18.7.2",
+    "tshy": "^1.14.0",
+    "typedoc": "^0.25.13"
+  },
+  "dependencies": {
+    "@vltpkg/cache": "workspace:*"
+  },
+  "scripts": {
+    "preversion": "npm test",
+    "postversion": "npm publish",
+    "prepublishOnly": "git push origin --follow-tags",
+    "prepare": "tshy",
+    "pretest": "npm run prepare",
+    "presnap": "npm run prepare",
+    "test": "tap",
+    "snap": "tap",
+    "format": "prettier --write . --log-level warn --ignore-path ../../.prettierignore --cache",
+    "typedoc": "typedoc"
+  },
+  "prettier": {
+    "experimentalTernaries": true,
+    "semi": false,
+    "printWidth": 70,
+    "tabWidth": 2,
+    "useTabs": false,
+    "singleQuote": true,
+    "jsxSingleQuote": false,
+    "bracketSameLine": true,
+    "arrowParens": "avoid",
+    "endOfLine": "lf"
+  },
+  "tshy": {
+    "dialects": [
+      "esm"
+    ],
+    "exports": {
+      "./package.json": "./package.json",
+      ".": "./src/index.ts"
+    }
+  },
+  "exports": {
+    "./package.json": "./package.json",
+    ".": {
+      "import": {
+        "types": "./dist/esm/index.d.ts",
+        "default": "./dist/esm/index.js"
+      }
+    }
+  },
+  "type": "module"
+}
