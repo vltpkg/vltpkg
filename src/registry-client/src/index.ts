@@ -23,7 +23,7 @@ export class RegistryClient {
     cache = resolve(homedir(), '.config/vlt/cache'),
   }: RegistryClientOptions) {
     this.cache = new Cache({
-      path: cache
+      path: cache,
       // TODO: add an onDiskWrite callback here to add the path
       // to a list of filenames to be passed to vlt-cache-unzip
       // at the end, and register the handler for kicking off that
@@ -57,17 +57,17 @@ export class RegistryClient {
     return await new Promise<CacheEntry>((res, rej) => {
       let entry: CacheEntry
       pool.dispatch(options as Dispatcher.DispatchOptions, {
-        onHeaders(sc, h, resume) {
+        onHeaders: (sc, h, resume) => {
           entry = new CacheEntry(sc, h)
           resume()
           return true
         },
-        onData(chunk) {
+        onData: chunk => {
           entry.addBody(chunk)
           return true
         },
         onError: rej,
-        onComplete() {
+        onComplete: () => {
           res(entry)
           return true
         },

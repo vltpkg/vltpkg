@@ -1,4 +1,4 @@
-import {createServer} from 'http'
+import { createServer } from 'http'
 import t from 'tap'
 import { RegistryClient } from '../src/index.js'
 
@@ -22,7 +22,10 @@ const registry = createServer((req, res) => {
     }
   }
 
-  t.equal(req.headers['accept-encoding'], 'gzip;q=1.0, identity;q=0.5')
+  t.equal(
+    req.headers['accept-encoding'],
+    'gzip;q=1.0, identity;q=0.5',
+  )
 
   res.setHeader('etag', etag)
   res.setHeader('last-modified', date.toUTCString())
@@ -32,7 +35,9 @@ const registry = createServer((req, res) => {
 })
 
 t.teardown(() => registry.close())
-t.before(async () => await new Promise<void>(r => registry.listen(PORT, r)))
+t.before(
+  async () => await new Promise<void>(r => registry.listen(PORT, r)),
+)
 
 t.test('make a request', async t => {
   const rc = new RegistryClient({ cache: t.testdir() })

@@ -21,12 +21,12 @@ If the request has a cached response:
   served from cache without a network request if it's less than
   `<n>` seconds old.
 - Otherwise, a network request to the registry will be made
-    - if an `etag` is present in the cached response, it will be
-      used as the `if-none-match` header.
-    - If a `last-modified` header is in the response, that will
-      be used as the `if-modified-since` request header.
-    - If there is no `last-modified` header, then use the `mtime`
-      of the cache file as the `if-modified-since` header.
+  - if an `etag` is present in the cached response, it will be
+    used as the `if-none-match` header.
+  - If a `last-modified` header is in the response, that will
+    be used as the `if-modified-since` request header.
+  - If there is no `last-modified` header, then use the `mtime`
+    of the cache file as the `if-modified-since` header.
 
 This is the extent of the cache control logic. It is not a
 full-featured spec-compliant caching HTTP client, because that is
