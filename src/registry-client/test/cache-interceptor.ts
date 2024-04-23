@@ -2,7 +2,7 @@ import { Cache } from '@vltpkg/cache'
 import { Readable } from 'stream'
 import t from 'tap'
 import { Dispatcher } from 'undici'
-import { CacheEntry } from '../dist/commonjs/cache-entry.js'
+import { CacheEntry } from '../src/cache-entry.js'
 import { cacheInterceptor } from '../src/cache-interceptor.js'
 
 const accept = 'application/vnd.npm.install-v1+json;q=1, *;q=0.5'

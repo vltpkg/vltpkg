@@ -1,4 +1,5 @@
 import { Cache } from '@vltpkg/cache'
+import { register } from '@vltpkg/cache-unzip'
 import { homedir } from 'os'
 import { resolve } from 'path'
 import { Client, Dispatcher, Pool } from 'undici'
@@ -26,10 +27,9 @@ export class RegistryClient {
   }: RegistryClientOptions) {
     this.cache = new Cache({
       path: cache,
-      // TODO: add an onDiskWrite callback here to add the path
-      // to a list of filenames to be passed to vlt-cache-unzip
-      // at the end, and register the handler for kicking off that
-      // process if it's not already.
+      onDiskWrite(_path, key, data) {
+        if (CacheEntry.decode(data).isGzip) register(cache, key)
+      },
     })
   }
 

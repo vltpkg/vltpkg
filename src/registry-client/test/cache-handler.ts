@@ -1,7 +1,7 @@
 import { Cache } from '@vltpkg/cache'
 import t from 'tap'
 import { Dispatcher } from 'undici'
-import { CacheEntry } from '../dist/commonjs/cache-entry.js'
+import { CacheEntry } from '../src/cache-entry.js'
 import { CacheHandler } from '../src/cache-handler.js'
 
 const toRawHeaders = (h: Record<string, string>): Buffer[] => {

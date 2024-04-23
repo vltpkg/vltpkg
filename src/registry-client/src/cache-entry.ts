@@ -143,16 +143,27 @@ export class CacheEntry {
   }
 
   /**
-   * Return the body of the entry as utf8 text
-   * Automatically unzips if the content is gzip encoded
+   * Un-gzip encode the body.
+   * Returns true if it was previously gzip (so something was done), otherwise
+   * returns false.
    */
-  text() {
+  unzip() {
     if (this.isGzip) {
       // we know that if we know it's gzip, that the body has been
       // flattened to a single buffer, so save the extra call.
       this.#body = [gunzipSync(this.#body[0] as Buffer)]
       this.#isGzip = false
+      return true
     }
+    return false
+  }
+
+  /**
+   * Return the body of the entry as utf8 text
+   * Automatically unzips if the content is gzip encoded
+   */
+  text() {
+    this.unzip()
     return this.buffer().toString()
   }
 
@@ -169,13 +180,19 @@ export class CacheEntry {
    * the cached response.
    */
   static decode(buffer: Buffer): CacheEntry {
+    if (buffer.length < 4) {
+      return new CacheEntry(0, [])
+    }
     const headSize = readSize(buffer, 0)
+    if (buffer.length < headSize) {
+      return new CacheEntry(0, [])
+    }
     const statusCode = Number(buffer.subarray(4, 7).toString())
     const headersBuffer = buffer.subarray(7, headSize)
     // walk through the headers array, building up the rawHeaders Buffer[]
     const headers: Buffer[] = []
     let i = 0
-    while (i < headersBuffer.length) {
+    while (i < headersBuffer.length - 4) {
       const size = readSize(headersBuffer, i)
       headers.push(headersBuffer.subarray(i + 4, i + size))
       i += size
