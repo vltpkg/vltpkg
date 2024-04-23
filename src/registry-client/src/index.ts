@@ -6,6 +6,8 @@ import { addHeader } from './add-header.js'
 import { CacheEntry } from './cache-entry.js'
 import { cacheInterceptor } from './cache-interceptor.js'
 
+export { CacheEntry, cacheInterceptor }
+
 export type RegistryClientOptions = {
   /**
    * Path on disk where the cache should be stored
