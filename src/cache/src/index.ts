@@ -40,7 +40,7 @@ export type CacheOptions = {
 }
 
 const hash = (s: string) =>
-  createHash('sha-512').update(s).digest('hex')
+  createHash('sha512').update(s).digest('hex')
 
 const path = (h: string) =>
   `${h.substring(0, 2)}/${h.substring(2, 4)}/${h}`
@@ -84,7 +84,11 @@ export class Cache extends LRUCache<string, Buffer, undefined> {
       max: Cache.defaultMax,
       ...lruOpts,
       sizeCalculation,
-      fetchMethod: async (k, v, opts) => this.#diskRead(k, v, opts),
+      fetchMethod: async (k, v, opts) => {
+        // do not write back to disk, since we just got it from there.
+        Object.assign(opts.options, { noDiskWrite: true })
+        return this.#diskRead(k, v)
+      },
       allowStaleOnFetchRejection: true,
       allowStaleOnFetchAbort: true,
       allowStale: true,
@@ -188,26 +192,37 @@ export class Cache extends LRUCache<string, Buffer, undefined> {
   }
 
   /**
-   * Sets an item in the memory cache (like `LRUCache.set`), and schedules
-   * a background operation to write it to disk.
+   * Sets an item in the memory cache (like `LRUCache.set`), and schedules a
+   * background operation to write it to disk.
    *
-   * Use the {@link CacheOptions#onDiskWrite} method to know exactly when
-   * this happens, or `await cache.promise()` to defer until all pending
-   * actions are completed.
+   * Use the {@link CacheOptions#onDiskWrite} method to know exactly when this
+   * happens, or `await cache.promise()` to defer until all pending actions are
+   * completed.
+   *
+   * The `noDiskWrite` option can be set to prevent it from writing back to the
+   * disk cache. This is almost never relevant for consumers, and is used
+   * internally to prevent the write at the end of `fetch()` from excessively
+   * writing over a file we just read from.
    */
   set(
     key: string,
     val: Buffer,
-    options?: LRUCache.SetOptions<string, Buffer, undefined>,
+    options?: LRUCache.SetOptions<string, Buffer, undefined> & {
+      noDiskWrite?: boolean
+    },
   ) {
     super.set(key, val, options)
-    // best effort, already have it in memory
-    const path = this.path(key)
-    /* c8 ignore next */
-    const p: Promise<void> = this.#diskWrite(path, key, val)
-      .catch(() => {})
-      .then(() => this.#unpend(p, this.onDiskWrite, path, key, val))
-    this.#pend(p)
+    // set/delete also used internally by LRUCache to manage async fetches
+    // only write when we're putting an actual value into the cache
+    if (Buffer.isBuffer(val) && !options?.noDiskWrite) {
+      // best effort, already have it in memory
+      const path = this.path(key)
+      const p: Promise<void> = this.#diskWrite(path, key, val)
+        /* c8 ignore next */
+        .catch(() => {})
+        .then(() => this.#unpend(p, this.onDiskWrite, path, key, val))
+      this.#pend(p)
+    }
     return this
   }
 
@@ -241,7 +256,8 @@ export class Cache extends LRUCache<string, Buffer, undefined> {
     if (v) return v
     try {
       const v = readFileSync(this.path(key))
-      this.set(key, v, opts)
+      // suppress the disk write, because we just read it from disk
+      this.set(key, v, { ...opts, noDiskWrite: true })
       return v
       /* c8 ignore next */
     } catch {}
@@ -275,8 +291,8 @@ export class Cache extends LRUCache<string, Buffer, undefined> {
     await mkdir(dir, { recursive: true })
     const base = basename(path)
     const keyFile = base + '.key'
-    const tmp = dir + '.' + base + '.' + this.#random
-    const keyTmp = dir + '.' + keyFile + '.' + this.#random
+    const tmp = dir + '/.' + base + '.' + this.#random
+    const keyTmp = dir + '/.' + keyFile + '.' + this.#random
     await Promise.all([
       writeFile(tmp, val).then(() => rename(tmp, path)),
       writeFile(keyTmp, key).then(() =>
@@ -285,11 +301,7 @@ export class Cache extends LRUCache<string, Buffer, undefined> {
     ])
   }
 
-  async #diskRead(
-    k: string,
-    v: Buffer | undefined,
-    opts: LRUCache.FetcherOptions<string, Buffer, undefined>,
-  ) {
-    return readFile(this.path(k), opts).catch(() => v)
+  async #diskRead(k: string, v: Buffer | undefined) {
+    return readFile(this.path(k)).catch(() => v)
   }
 }
