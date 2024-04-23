@@ -41,11 +41,36 @@ importers:
         specifier: ^0.25.13
         version: 0.25.13(typescript@5.2.2)
 
+  src/cache-unzip:
+    dependencies:
+      '@vltpkg/cache':
+        specifier: workspace:*
+        version: link:../cache
+    devDependencies:
+      '@types/node':
+        specifier: ^20.12.7
+        version: 20.12.7
+      prettier:
+        specifier: ^3.2.5
+        version: 3.2.5
+      tap:
+        specifier: ^18.7.2
+        version: 18.7.2(@types/node@20.12.7)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(typescript@5.2.2)
+      tshy:
+        specifier: ^1.14.0
+        version: 1.14.0
+      typedoc:
+        specifier: ^0.25.13
+        version: 0.25.13(typescript@5.2.2)
+
   src/registry-client:
     dependencies:
       '@vltpkg/cache':
         specifier: workspace:*
         version: link:../cache
+      '@vltpkg/cache-unzip':
+        specifier: workspace:*
+        version: link:../cache-unzip
       cache-control-parser:
         specifier: ^2.0.5
         version: 2.0.5
