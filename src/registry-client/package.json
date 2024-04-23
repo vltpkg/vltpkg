@@ -43,12 +43,13 @@
   },
   "tshy": {
     "exports": {
-      "./package.json": "./package.json",
-      ".": "./src/index.ts"
+      ".": "./src/index.ts",
+      "./cache-entry": "./src/cache-entry.ts",
+      "./cache-interceptor": "./src/cache-interceptor.ts",
+      "./package.json": "./package.json"
     }
   },
   "exports": {
-    "./package.json": "./package.json",
     ".": {
       "import": {
         "types": "./dist/esm/index.d.ts",
@@ -58,7 +59,28 @@
         "types": "./dist/commonjs/index.d.ts",
         "default": "./dist/commonjs/index.js"
       }
-    }
+    },
+    "./cache-entry": {
+      "import": {
+        "types": "./dist/esm/cache-entry.d.ts",
+        "default": "./dist/esm/cache-entry.js"
+      },
+      "require": {
+        "types": "./dist/commonjs/cache-entry.d.ts",
+        "default": "./dist/commonjs/cache-entry.js"
+      }
+    },
+    "./cache-interceptor": {
+      "import": {
+        "types": "./dist/esm/cache-interceptor.d.ts",
+        "default": "./dist/esm/cache-interceptor.js"
+      },
+      "require": {
+        "types": "./dist/commonjs/cache-interceptor.d.ts",
+        "default": "./dist/commonjs/cache-interceptor.js"
+      }
+    },
+    "./package.json": "./package.json"
   },
   "main": "./dist/commonjs/index.js",
   "types": "./dist/commonjs/index.d.ts",
