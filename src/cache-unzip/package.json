@@ -40,6 +40,7 @@
     "endOfLine": "lf"
   },
   "tshy": {
+    "selfLink": false,
     "dialects": [
       "esm"
     ],
