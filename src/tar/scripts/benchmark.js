@@ -25,18 +25,6 @@ const reset = () => {
 }
 
 reset()
-console.error(`extracting ${artifacts.length} artifacts with pacote`)
-console.time('pacote extract')
-const pacotePromises = []
-for (const a of artifacts) {
-  const tgz = resolve(artifactDir, a)
-  const target = resolve(targetDir, a.replace(/\.tgz$/, ''))
-  pacotePromises.push(pacote.extract(tgz, target))
-}
-await Promise.all(pacotePromises)
-console.timeEnd('pacote extract')
-
-reset()
 console.error(
   `extracting ${artifacts.length} artifacts with @vltpkg/tar`,
 )
@@ -50,5 +38,17 @@ for (const a of artifacts) {
 }
 await Promise.all(vltPromises)
 console.timeEnd('@vltpkg/tar extract')
+
+reset()
+console.error(`extracting ${artifacts.length} artifacts with pacote`)
+console.time('pacote extract')
+const pacotePromises = []
+for (const a of artifacts) {
+  const tgz = resolve(artifactDir, a)
+  const target = resolve(targetDir, a.replace(/\.tgz$/, ''))
+  pacotePromises.push(pacote.extract(tgz, target))
+}
+await Promise.all(pacotePromises)
+console.timeEnd('pacote extract')
 
 reset()
