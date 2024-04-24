@@ -3,7 +3,11 @@
   "description": "An extremely limited and very fast tar extractor",
   "version": "0.0.0-0",
   "tap": {
-    "coverage-map": "./map.js"
+    "coverage-map": "./map.js",
+    "exclude": [
+      "scripts/**",
+      "test/fixtures/**"
+    ]
   },
   "scripts": {
     "preversion": "npm test",

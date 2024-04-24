@@ -5,12 +5,16 @@ import { rimrafSync } from 'rimraf'
 import { Header, HeaderData } from 'tar/header'
 import { Pax } from 'tar/pax'
 import { unzipSync } from 'zlib'
+import { findTarDir } from './find-tar-dir.js'
 
 const tmpSuffix = randomBytes(6).toString('hex')
-
-const checkFs = (h: Header): h is Header & { path: string } => {
+const checkFs = (
+  h: Header,
+  tarDir: string | undefined,
+): h is Header & { path: string } => {
   /* c8 ignore start - impossible */
   if (!h.path) return false
+  if (!tarDir) return false
   /* c8 ignore stop */
   h.path = h.path.replace(/[\\\/]+/g, '/')
   const parsed = parse(h.path)
@@ -18,8 +22,8 @@ const checkFs = (h: Header): h is Header & { path: string } => {
   const p = h.path.replace(/\\/, '/')
   // any .. at the beginning, end, or middle = no good
   if (/(\/|)^\.\.(\/|$)/.test(p)) return false
-  // packages should always be in a 'package' folder in the archive
-  if (!p.startsWith('package/')) return false
+  // packages should always be in a 'package' tarDir in the archive
+  if (!p.startsWith(tarDir)) return false
   return true
 }
 
@@ -83,6 +87,7 @@ export const unpack = (
 
   let succeeded = false
   try {
+    let tarDir: string | undefined = undefined
     let offset = 0
     let h: Header
     let ex: HeaderData | undefined = undefined
@@ -100,17 +105,26 @@ export const unpack = (
       // skip invalid headers
       if (!h.cksumValid) continue
       offset += 512 * Math.ceil(size / 512)
+
+      // TODO: tarDir might not be named "package/"
+      // find the first tarDir in the first entry, and use that.
       switch (h.type) {
         case 'File':
-          if (!checkFs(h)) continue
+          if (!tarDir) tarDir = findTarDir(h.path, tarDir)
+          /* c8 ignore next */
+          if (!tarDir) continue
+          if (!checkFs(h, tarDir)) continue
           writeFile(
-            resolve(tmp, h.path.substring('package/'.length)),
+            resolve(tmp, h.path.substring(tarDir.length)),
             body,
           )
           break
         case 'Directory':
-          if (!checkFs(h)) continue
-          mkdir(resolve(tmp, h.path.substring('package/'.length)))
+          /* c8 ignore next 2 */
+          if (!tarDir) tarDir = findTarDir(h.path, tarDir)
+          if (!tarDir) continue
+          if (!checkFs(h, tarDir)) continue
+          mkdir(resolve(tmp, h.path.substring(tarDir.length)))
           break
         case 'GlobalExtendedHeader':
           gex = Pax.parse(body.toString(), gex, true)
