@@ -1,13 +1,14 @@
 {
-	"scripts": {
-		"test": "pnpm -r test",
-		"snap": "pnpm -r run snap",
-		"typedoc": "typedoc"
-	},
-	"dependencies": {
-		"tshy": "^1.14.0"
-	},
-	"devDependencies": {
-		"typedoc": "^0.25.13"
-	}
+  "scripts": {
+    "test": "pnpm -r test",
+    "snap": "pnpm -r run snap",
+    "typedoc": "typedoc"
+  },
+  "type": "module",
+  "dependencies": {
+    "tshy": "^1.14.0"
+  },
+  "devDependencies": {
+    "typedoc": "^0.25.13"
+  }
 }

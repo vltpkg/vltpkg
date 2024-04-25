@@ -28,7 +28,7 @@
     "typedoc": "typedoc"
   },
   "tap": {
-    "coverage-map": "./map.js"
+    "coverage-map": "../../coverage-map.js"
   },
   "prettier": {
     "experimentalTernaries": true,
