@@ -20,6 +20,7 @@
 // of the file.
 
 import ccp from 'cache-control-parser'
+import { createHash } from 'crypto'
 import { gunzipSync } from 'zlib'
 import { getRawHeader } from './get-raw-header.js'
 
@@ -49,8 +50,15 @@ export class CacheEntry {
   #headers: Buffer[]
   #body: Buffer[] = []
   #bodyLength: number = 0
+  #integrity?: string
+  #integrityActual?: string
 
-  constructor(statusCode: number, headers: Buffer[]) {
+  constructor(
+    statusCode: number,
+    headers: Buffer[],
+    integrity?: string,
+  ) {
+    this.#integrity = integrity
     this.#statusCode = statusCode
     this.#headers = headers
   }
@@ -91,6 +99,29 @@ export class CacheEntry {
   }
   get headers() {
     return this.#headers
+  }
+
+  /**
+   * check that the sri integrity string that was provided to the ctor
+   * matches the body that we actually received. This should only be called
+   * AFTER the entire body has been completely downloaded.
+   *
+   * Note that this will *usually* not be true if the value is coming out of
+   * the cache, because the cache entries are un-gzipped in place. It should
+   * *only* be called for artifacts that come from an actual http response.
+   */
+  checkIntegrity(): boolean {
+    if (!this.#integrity) return false
+    return this.integrityActual === this.#integrity
+  }
+  get integrityActual(): string {
+    if (this.#integrityActual) return this.#integrityActual
+    const hash = createHash('sha512')
+    for (const buf of this.#body) hash.update(buf)
+    return (this.#integrityActual = `sha512-${hash.digest('base64')}`)
+  }
+  get integrity() {
+    return this.#integrity
   }
 
   /**

@@ -18,6 +18,19 @@ export type RegistryClientOptions = {
   cache?: string
 }
 
+export type RegistryClientRequestOptions = Omit<
+  Dispatcher.DispatchOptions,
+  'path'
+> & {
+  /**
+   * Provide an SRI string to verify integrity of the item being fetched.
+   *
+   * This is only relevant when it must make a request to the registry. Once in
+   * the local disk cache, items are assumed to be trustworthy.
+   */
+  integrity?: string
+}
+
 export class RegistryClient {
   pools: Map<string, Pool> = new Map()
   cache: Cache
@@ -35,13 +48,13 @@ export class RegistryClient {
 
   async request(
     url: string | URL,
-    options: Omit<Dispatcher.DispatchOptions, 'path'> & {
-      path?: string
-      cache?: Cache
-    } = { method: 'GET' },
+    options: RegistryClientRequestOptions = { method: 'GET' },
   ) {
     if (typeof url === 'string') url = new URL(url)
-    options.path = url.pathname.replace(/\/+$/, '') + url.search
+    Object.assign(options, {
+      path: url.pathname.replace(/\/+$/, '') + url.search,
+      cache: this.cache,
+    })
     options.origin = url.origin
     const pool =
       this.pools.get(options.origin) ??
@@ -50,7 +63,6 @@ export class RegistryClient {
           new Client(origin, opts).compose(cacheInterceptor),
       })
     this.pools.set(options.origin, pool)
-    options.cache = this.cache
     options.headers = addHeader(
       options.headers,
       'accept-encoding',
@@ -60,7 +72,7 @@ export class RegistryClient {
       let entry: CacheEntry
       pool.dispatch(options as Dispatcher.DispatchOptions, {
         onHeaders: (sc, h, resume) => {
-          entry = new CacheEntry(sc, h)
+          entry = new CacheEntry(sc, h, options.integrity)
           resume()
           return true
         },

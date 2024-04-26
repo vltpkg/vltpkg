@@ -281,5 +281,27 @@ t.test('GET request from cache, valid cache entry', async t => {
       return true
     })
     d(opts, handler)
+    t.throws(() =>
+      d(
+        { ...opts, integrity: 'not valid, no sha512- prefix' },
+        handler,
+      ),
+    )
+    t.throws(() =>
+      d(
+        { ...opts, integrity: 'sha512-also not valid, too short' },
+        handler,
+      ),
+    )
+    t.throws(() =>
+      d(
+        {
+          ...opts,
+          integrity:
+            'sha512-does not end with == XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX',
+        },
+        handler,
+      ),
+    )
   })
 })
