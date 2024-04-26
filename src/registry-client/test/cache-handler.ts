@@ -1,4 +1,5 @@
 import { Cache } from '@vltpkg/cache'
+import { createHash } from 'crypto'
 import t from 'tap'
 import { Dispatcher } from 'undici'
 import { CacheEntry } from '../src/cache-entry.js'
@@ -64,7 +65,7 @@ const dummyHandler: Dispatcher.DispatchHandlers = {
 
 t.beforeEach(reset)
 
-t.test('handler behavior, nothing cached yet', t => {
+t.test('handler behavior, nothing cached yet', async t => {
   const cache = new Cache({ path: t.testdir() })
 
   const ch = new CacheHandler({
@@ -128,5 +129,108 @@ t.test('handler behavior, nothing cached yet', t => {
     ),
   )
 
-  t.end()
+  await cache.promise()
+})
+
+t.test('handler with integrity', async t => {
+  const cache = new Cache({ path: t.testdir() })
+
+  const ch = new CacheHandler({
+    key: 'hello',
+    handler: dummyHandler,
+    cache,
+    entry: undefined,
+  })
+
+  ch.integrity = `sha512-${createHash('sha512')
+    .update(Buffer.from('hello, world'))
+    .digest('base64')}`
+
+  t.equal(ch.key, 'hello')
+  t.equal(ch.handler, dummyHandler)
+  t.equal(ch.entry, undefined)
+
+  ch.onConnect(() => {})
+  t.equal(tracker.onConnect, true)
+
+  ch.onError(new Error('arf'))
+  t.equal(tracker.onError, true)
+
+  const resume = () => {}
+  ch.onHeaders(
+    200,
+    toRawHeaders({
+      some: 'headers',
+    }),
+    resume,
+    'okie dokely',
+  )
+  t.equal(ch.resume, resume)
+  t.equal(tracker.onHeaders, true)
+  t.same(
+    ch.entry,
+    new CacheEntry(
+      200,
+      toRawHeaders({
+        some: 'headers',
+      }),
+    ),
+  )
+  t.equal(ch.cacheable, true)
+
+  ch.onData(Buffer.from('hello, world'))
+
+  ch.onBodySent(69, 420)
+  t.equal(tracker.onBodySent, true)
+
+  await cache.promise()
+})
+
+t.test('handler with bad integrity', async t => {
+  const cache = new Cache({ path: t.testdir() })
+
+  const ch = new CacheHandler({
+    key: 'hello',
+    handler: dummyHandler,
+    cache,
+    entry: undefined,
+  })
+
+  ch.integrity = `sha512-${createHash('sha512')
+    .update(Buffer.from('goodbye'))
+    .digest('base64')}`
+
+  t.equal(ch.key, 'hello')
+  t.equal(ch.handler, dummyHandler)
+  t.equal(ch.entry, undefined)
+
+  ch.onConnect(() => {})
+  t.equal(tracker.onConnect, true)
+
+  const resume = () => {}
+  ch.onHeaders(
+    200,
+    toRawHeaders({
+      some: 'headers',
+    }),
+    resume,
+    'okie dokely',
+  )
+  t.equal(ch.resume, resume)
+  t.equal(tracker.onHeaders, true)
+  t.same(
+    ch.entry,
+    new CacheEntry(
+      200,
+      toRawHeaders({
+        some: 'headers',
+      }),
+    ),
+  )
+  t.equal(ch.cacheable, true)
+
+  ch.onData(Buffer.from('hello, world'))
+  ch.onComplete(null)
+  t.equal(tracker.onError, true)
+  await cache.promise()
 })

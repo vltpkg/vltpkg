@@ -1,3 +1,4 @@
+import { createHash } from 'crypto'
 import t from 'tap'
 import { gzipSync } from 'zlib'
 import { CacheEntry } from '../src/cache-entry.js'
@@ -10,21 +11,28 @@ const toRawHeaders = (h: Record<string, string>): Buffer[] => {
   return r
 }
 
+const z = gzipSync(Buffer.from('{"hello":"world"}'))
 const ce = new CacheEntry(
   200,
   toRawHeaders({
     key: 'value',
     x: 'y',
   }),
+  `sha512-${createHash('sha512').update(z).digest('base64')}`,
 )
 
 t.equal(ce.statusCode, 200)
 t.equal(ce.getHeader('x')?.toString(), 'y')
 t.equal(ce.getHeader('key')?.toString(), 'value')
 t.equal(ce.isGzip, false, 'not gzip without content')
-const z = gzipSync(Buffer.from('{"hello":"world"}'))
 ce.addBody(z.subarray(0, z.length / 2))
 ce.addBody(z.subarray(z.length / 2))
+t.equal(ce.checkIntegrity(), true)
+t.equal(
+  ce.integrity,
+  `sha512-${createHash('sha512').update(z).digest('base64')}`,
+)
+t.equal(ce.integrity, ce.integrityActual)
 
 const enc = ce.encode()
 t.strictSame(ce.buffer(), z)
@@ -125,6 +133,18 @@ t.equal(
     200,
     toRawHeaders({
       date: new Date('2020-01-20').toUTCString(),
+      'cache-control': 'immutable',
+    }),
+  ).checkIntegrity(),
+  false,
+  'no integrity to check, so it must be false',
+)
+
+t.equal(
+  new CacheEntry(
+    200,
+    toRawHeaders({
+      date: new Date('2020-01-20').toUTCString(),
       'content-type': 'application/octet-stream',
       // ignored, it's an octet-stream, that means immutable tarball
       'cache-control': 'max-age=300',
@@ -189,15 +209,11 @@ t.test('decoding a partial buffer should not blow up', t => {
   t.match(totesEmpty, {
     statusCode: 0,
     headers: [],
-    body: Buffer.alloc(0)
+    body: Buffer.alloc(0),
   })
-  const headTooShort = CacheEntry.decode(Buffer.from([
-    100,
-    100,
-    100,
-    100,
-    ...(Buffer.from('hello, world'))
-  ]))
+  const headTooShort = CacheEntry.decode(
+    Buffer.from([100, 100, 100, 100, ...Buffer.from('hello, world')]),
+  )
   t.match(headTooShort, {
     statusCode: 0,
     headers: [],

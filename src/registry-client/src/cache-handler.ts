@@ -14,6 +14,8 @@ export type CacheHandlerOptions = {
   cache: Cache
   /** the old cache entry, if one exists */
   entry?: CacheEntry
+  /** expected SRI string integrity */
+  integrity?: string
 }
 
 /**
@@ -36,6 +38,7 @@ export class CacheHandler implements Dispatcher.DispatchHandlers {
   cacheable?: boolean = undefined
   resume?: () => void
   entry?: CacheEntry
+  integrity?: string
 
   constructor({ key, handler, cache, entry }: CacheHandlerOptions) {
     this.key = key
@@ -90,7 +93,7 @@ export class CacheHandler implements Dispatcher.DispatchHandlers {
 
     this.cacheable = isCacheable(statusCode)
     if (this.cacheable && !this.entry) {
-      this.entry = new CacheEntry(statusCode, headers)
+      this.entry = new CacheEntry(statusCode, headers, this.integrity)
     }
 
     return !!this.handler.onHeaders?.(
@@ -117,8 +120,21 @@ export class CacheHandler implements Dispatcher.DispatchHandlers {
    * request has completed.
    */
   onComplete(trailers: string[] | null): void {
-    const entry = this.entry?.encode()
-    if (entry) this.cache.set(this.key, entry)
+    const entry = this.entry
+    const buf = entry?.encode()
+    if (this.integrity && entry && !entry.checkIntegrity()) {
+      return this.onError(
+        Object.assign(
+          new Error('invalid response: integrity error'),
+          {
+            key: this.key,
+            expected: this.integrity,
+            actual: entry.integrityActual,
+          },
+        ),
+      )
+    }
+    if (buf) this.cache.set(this.key, buf)
     return this.handler.onComplete?.(trailers)
   }
 
