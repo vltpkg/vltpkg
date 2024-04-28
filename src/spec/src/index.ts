@@ -54,7 +54,7 @@ export class Spec {
   }
 
   /** the type of spec that this is, ultimately */
-  type: 'git' | 'file' | 'remote' | 'registry'
+  type: 'git' | 'file' | 'remote' | 'registry' | 'workspace'
 
   /** the full named specifier passed to the constructor */
   spec: string
@@ -82,6 +82,12 @@ export class Spec {
   gitCommittish?: string
   /** github, gitlab, bitbucket, gist, etc. */
   namedGitHost?: string
+
+  /**
+   * the specifier when using `workspace:` specs
+   * This can be either a semver range, `*`, `~`, or `^`
+   */
+  workspaceSpec?: string
 
   /**
    * In specs like `foo@npm:bar@1`, this is the 'npm' part. Other
@@ -157,6 +163,16 @@ export class Spec {
     }
     this.name = spec.substring(0, at)
     this.bareSpec = spec.substring(at + 1)
+
+    if (this.bareSpec.startsWith('workspace:')) {
+      this.type = 'workspace'
+      const ws = this.bareSpec.substring('workspace:'.length)
+      if (ws !== '*' && ws !== '~' && ws !== '^' && !semver.validRange(ws)) {
+        throw this.#error(
+          'workspace: spec must be one of *, !, or ^, or a valid semver range'
+        )
+      }
+    }
 
     if (
       this.bareSpec.startsWith('git+ssh://') ||
