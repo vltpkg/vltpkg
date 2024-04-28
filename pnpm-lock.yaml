@@ -116,6 +116,34 @@ importers:
         specifier: ^0.25.13
         version: 0.25.13(typescript@5.2.2)
 
+  src/spec:
+    dependencies:
+      semver:
+        specifier: ^7.6.0
+        version: 7.6.0
+    devDependencies:
+      '@types/node':
+        specifier: ^20.12.7
+        version: 20.12.7
+      '@types/semver':
+        specifier: ^7.5.8
+        version: 7.5.8
+      npm-package-arg:
+        specifier: ^11.0.2
+        version: 11.0.2
+      prettier:
+        specifier: ^3.2.5
+        version: 3.2.5
+      tap:
+        specifier: ^18.7.2
+        version: 18.7.2(@types/node@20.12.7)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(typescript@5.2.2)
+      tshy:
+        specifier: ^1.14.0
+        version: 1.14.0
+      typedoc:
+        specifier: ^0.25.13
+        version: 0.25.13(typescript@5.2.2)
+
   src/tar:
     dependencies:
       rimraf:
@@ -425,6 +453,9 @@ packages:
 
   '@types/node@20.12.7':
     resolution: {integrity: sha512-wq0cICSkRLVaf3UGLMGItu/PtdY7oaXaI/RVU+xliKVOtRna3PRY57ZDfztpDL0n11vfymMUnXv8QwYCO7L1wg==}
+
+  '@types/semver@7.5.8':
+    resolution: {integrity: sha512-I8EUhyrgfLrcTkzV3TSsGyl1tSuPrEDzr0yd5m90UgNxQkyDXULk3b6MlQqTCpZpNtWe1K0hzclnZkTcLBe2UQ==}
 
   '@types/tar@6.1.11':
     resolution: {integrity: sha512-ThA1WD8aDdVU4VLuyq5NEqriwXErF5gEIJeyT6gHBWU7JtSmW2a5qjNv3/vR82O20mW+1vhmeZJfBQPT3HCugg==}
@@ -1882,6 +1913,8 @@ snapshots:
   '@types/node@20.12.7':
     dependencies:
       undici-types: 5.26.5
+
+  '@types/semver@7.5.8': {}
 
   '@types/tar@6.1.11':
     dependencies:
