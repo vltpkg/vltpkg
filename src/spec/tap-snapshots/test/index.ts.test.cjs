@@ -336,8 +336,8 @@ Object {
   "spec": "foo@npm:bar@",
   "name": "foo",
   "bareSpec": "npm:bar@",
-  "registry": "https://registry.npmjs.org/",
   "namedRegistry": "npm",
+  "registry": "https://registry.npmjs.org/",
   "subspec": Object {
     "type": "registry",
     "spec": "bar@",
@@ -1352,22 +1352,22 @@ Object {
   "spec": "x@npm:foo@npm:bar@npm:baz@1",
   "name": "x",
   "bareSpec": "npm:foo@npm:bar@npm:baz@1",
-  "registry": "https://registry.npmjs.org/",
   "namedRegistry": "npm",
+  "registry": "https://registry.npmjs.org/",
   "subspec": Object {
     "type": "registry",
     "spec": "foo@npm:bar@npm:baz@1",
     "name": "foo",
     "bareSpec": "npm:bar@npm:baz@1",
-    "registry": "https://registry.npmjs.org/",
     "namedRegistry": "npm",
+    "registry": "https://registry.npmjs.org/",
     "subspec": Object {
       "type": "registry",
       "spec": "bar@npm:baz@1",
       "name": "bar",
       "bareSpec": "npm:baz@1",
-      "registry": "https://registry.npmjs.org/",
       "namedRegistry": "npm",
+      "registry": "https://registry.npmjs.org/",
       "subspec": Object {
         "type": "registry",
         "spec": "baz@1",
@@ -1392,15 +1392,15 @@ Object {
   "spec": "x@npm:y@npm:z@github:a/x#branch",
   "name": "x",
   "bareSpec": "npm:y@npm:z@github:a/x#branch",
-  "registry": "https://registry.npmjs.org/",
   "namedRegistry": "npm",
+  "registry": "https://registry.npmjs.org/",
   "subspec": Object {
     "type": "registry",
     "spec": "y@npm:z@github:a/x#branch",
     "name": "y",
     "bareSpec": "npm:z@github:a/x#branch",
-    "registry": "https://registry.npmjs.org/",
     "namedRegistry": "npm",
+    "registry": "https://registry.npmjs.org/",
     "subspec": Object {
       "type": "git",
       "spec": "z@github:a/x#branch",
@@ -1583,4 +1583,68 @@ Object {
 
 exports[`test/index.ts > TAP > basic parsing tests > x@user/foo#semver:^1.2.3 > toString 1`] = `
 [object @vltpkg/spec.Spec {x@github:user/foo#semver:^1.2.3}]
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > x@workspace:* > inspect 1`] = `
+Object {
+  "type": "registry",
+  "spec": "x@workspace:*",
+  "name": "x",
+  "bareSpec": "workspace:*",
+  "registry": "https://registry.npmjs.org/",
+  "registrySpec": "workspace:*",
+  "distTag": "workspace:*",
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > x@workspace:* > toString 1`] = `
+[object @vltpkg/spec.Spec {x@workspace:*}]
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > x@workspace:^ > inspect 1`] = `
+Object {
+  "type": "registry",
+  "spec": "x@workspace:^",
+  "name": "x",
+  "bareSpec": "workspace:^",
+  "registry": "https://registry.npmjs.org/",
+  "registrySpec": "workspace:^",
+  "distTag": "workspace:^",
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > x@workspace:^ > toString 1`] = `
+[object @vltpkg/spec.Spec {x@workspace:^}]
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > x@workspace:~ > inspect 1`] = `
+Object {
+  "type": "registry",
+  "spec": "x@workspace:~",
+  "name": "x",
+  "bareSpec": "workspace:~",
+  "registry": "https://registry.npmjs.org/",
+  "registrySpec": "workspace:~",
+  "distTag": "workspace:~",
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > x@workspace:~ > toString 1`] = `
+[object @vltpkg/spec.Spec {x@workspace:~}]
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > x@workspace:1.x > inspect 1`] = `
+Object {
+  "type": "registry",
+  "spec": "x@workspace:1.x",
+  "name": "x",
+  "bareSpec": "workspace:1.x",
+  "registry": "https://registry.npmjs.org/",
+  "registrySpec": "workspace:1.x",
+  "distTag": "workspace:1.x",
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > x@workspace:1.x > toString 1`] = `
+[object @vltpkg/spec.Spec {x@workspace:1.x}]
 `

@@ -24,8 +24,22 @@ loaded as `import('foo')`.
 
 ## Types of Specifiers
 
-The following specifier types are supported, and parsed in this
-priority order:
+The following specifier types are supported:
+
+- `workspace:...` - Provide a semver range, or one of `~`, `*`,
+  or `^` to match against a dependency that exists in a workspace
+  project of a monorepo. The package name *must* exist as a
+  workspace project in the monorepo. If a semver range is
+  provided, then it must match the referenced workspace package
+  version. Otherwise:
+
+    - `*` - Fill in whatever version is in the workspace, without
+      any prefix. So, if `./packages/foo` depends on
+      `bar@workspace*`, and `bar` is version `1.2.3`, then `foo`
+      will be published with `{ "dependencies": { "bar": "1.2.3" }}`
+    - `~` or `^` - Publish with the version found in the
+      monorepo, prefixed by the character. So in the example
+      above, it'd be `bar@~1.2.3` or `bar@^1.2.3`, respectively.
 
 - `semver range` - A valid semver range (including the empty
   string or a single semver version). This is resolved against
