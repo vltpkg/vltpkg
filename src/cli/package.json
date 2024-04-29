@@ -1,0 +1,11 @@
+{
+  "name": "@vltpkg/cli",
+  "version": "0.0.0-0",
+  "bin": "index.js",
+  "type": "module",
+  "dependencies": {
+    "@vltpkg/graph": "workspace:*",
+    "@vltpkg/registry-client": "workspace:*",
+    "@vltpkg/tar": "workspace:*"
+  }
+}

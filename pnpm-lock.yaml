@@ -63,6 +63,18 @@ importers:
         specifier: ^0.25.13
         version: 0.25.13(typescript@5.2.2)
 
+  src/cli:
+    dependencies:
+      '@vltpkg/graph':
+        specifier: workspace:*
+        version: link:../graph
+      '@vltpkg/registry-client':
+        specifier: workspace:*
+        version: link:../registry-client
+      '@vltpkg/tar':
+        specifier: workspace:*
+        version: link:../tar
+
   src/graph:
     dependencies:
       '@vltpkg/registry-client':
