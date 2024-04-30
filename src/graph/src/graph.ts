@@ -37,7 +37,7 @@ export class Graph {
    * A list of dangling edges from the root node, representing
    * missing direct dependencies of a given install.
    */
-  missingDirectDependencies: Set<Edge> = new Set()
+  missingDependencies: Set<Edge> = new Set()
 
   /**
    * Keeps a reference of connected edges in order to avoid duplicating edges.
@@ -76,8 +76,8 @@ export class Graph {
     }
 
     const edgeOut = from.addEdgeOut(type, name, spec, to)
-    if (!to && from.isRoot) {
-      this.missingDirectDependencies.add(edgeOut)
+    if (!to) {
+      this.missingDependencies.add(edgeOut)
     }
 
     this.#seenEdges.add(edgeId)

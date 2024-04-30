@@ -40,7 +40,7 @@ t.test('Graph', async t => {
   )
   graph.newEdge('prod', 'missing', '*', graph.root)
   t.strictSame(
-    graph.missingDirectDependencies.size,
+    graph.missingDependencies.size,
     1,
     'should add edge to list of missing dependencies',
   )
