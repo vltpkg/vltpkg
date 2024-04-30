@@ -1,3 +1,4 @@
+import { Spec } from '@vltpkg/spec'
 import {
   DependencyTypeLong,
   PackageInventory,
@@ -60,12 +61,12 @@ export class Graph {
   newEdge(
     type: DependencyTypeLong,
     name: string,
-    spec: string,
+    spec: Spec,
     from: Node,
     to?: Node,
   ) {
     const toRef = to ? `:${to.id}` : ''
-    const edgeId = `${type}:${name}@${spec}:${from.id}${toRef}`
+    const edgeId = `${type}:${name}@${spec.bareSpec}:${from.id}${toRef}`
     if (this.#seenEdges.has(edgeId)) {
       return
     }
@@ -100,12 +101,17 @@ export class Graph {
     fromNode: Node,
     depType: DependencyTypeLong,
     name: string,
-    spec: string,
+    specRaw: Spec | string,
     metadata?: PackageMetadata,
     location?: string,
   ) {
+    const spec =
+      typeof specRaw === 'string' ?
+        Spec.parse(`${name}@${specRaw}`)
+      : specRaw
     // if no package metadata is available, then create an edge that
     // has no reference to any other node, representing a missing dependency
+
     if (!metadata) {
       this.newEdge(depType, name, spec, fromNode)
       return

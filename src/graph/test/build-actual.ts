@@ -111,14 +111,14 @@ t.test('build a graph with missing direct dependencies', async t => {
     1,
     'should have only root package in inventory',
   )
-  t.strictSame(
+  t.match(
     [...graph.missingDirectDependencies].map(e => ({
       name: e.name,
       spec: e.spec,
     })),
     [
-      { name: 'foo', spec: '^1.0.0' },
-      { name: 'bar', spec: '^1.0.0' },
+      { name: 'foo', spec: { name: 'foo', bareSpec: '^1.0.0' } },
+      { name: 'bar', spec: { name: 'bar', bareSpec: '^1.0.0' } },
     ],
     'should have a set of missing direct dependencies',
   )

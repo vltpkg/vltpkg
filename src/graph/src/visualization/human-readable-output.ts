@@ -34,7 +34,7 @@ function parseNode(seenNodes: Set<number>, graph: Graph, node: Node) {
 
 function parseEdge(seenNodes: Set<number>, graph: Graph, edge: Edge) {
   ;(edge as any)[inspect.custom] = () => {
-    const missingNode: string = `[missing package]: <${edge.name}@${edge.spec}>`
+    const missingNode: string = `[missing package]: <${edge.name}@${edge.spec.bareSpec}>`
     const toLabel: string =
       edge.to ?
         inspect(parseNode(seenNodes, graph, edge.to), {
