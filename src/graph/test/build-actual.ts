@@ -112,7 +112,7 @@ t.test('build a graph with missing direct dependencies', async t => {
     'should have only root package in inventory',
   )
   t.match(
-    [...graph.missingDirectDependencies].map(e => ({
+    [...graph.missingDependencies].map(e => ({
       name: e.name,
       spec: e.spec,
     })),

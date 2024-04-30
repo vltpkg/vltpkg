@@ -11,6 +11,6 @@ Graph [@vltpkg/graph.Graph] {
   nodes: [Set],
   pkgNodes: [Map],
   root: [Node [@vltpkg/graph.Node]],
-  missingDirectDependencies: Set(0) {}
+  missingDependencies: Set(0) {}
 }
 `

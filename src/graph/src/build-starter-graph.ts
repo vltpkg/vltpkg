@@ -31,7 +31,7 @@ export const buildStarterGraph = async ({
 
   buildActual(graph, graph.root, resolve(dir, 'node_modules'))
 
-  const missing: Set<Edge> = graph.missingDirectDependencies
+  const missing: Set<Edge> = graph.missingDependencies
   const specs: Spec[] = []
   for (const e of missing) {
     specs.push(e.spec)
