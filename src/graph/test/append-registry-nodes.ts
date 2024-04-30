@@ -1,5 +1,6 @@
 import { resolve } from 'node:path'
 import t from 'tap'
+import { Spec } from '@vltpkg/spec'
 import { Graph } from '../src/graph.js'
 
 t.test('append a new node to a graph from a registry', async t => {
@@ -53,7 +54,7 @@ t.test('append a new node to a graph from a registry', async t => {
   await appendRegistryNodes(
     graph,
     graph.root,
-    [['foo', '^1.0.0']],
+    [Spec.parse('foo@^1.0.0')],
     'dependencies',
   )
   t.strictSame(
@@ -70,12 +71,12 @@ t.test('append a new node to a graph from a registry', async t => {
   await appendRegistryNodes(
     graph,
     graph.root,
-    [['bar']],
+    [Spec.parse('bar')],
     'dependencies',
   )
   t.strictSame(
-    graph.root.edgesOut.get('bar').spec,
-    'latest',
+    graph.root.edgesOut.get('bar').spec.semver,
+    '',
     'should add a direct dependency on latest bar',
   )
 
@@ -83,21 +84,10 @@ t.test('append a new node to a graph from a registry', async t => {
     appendRegistryNodes(
       graph,
       graph.root,
-      [['borked']],
+      [Spec.parse('borked')],
       'dependencies',
     ),
     /Failed to retrieve package metadata/,
     'should throw an error if finding broken manifests',
-  )
-
-  await t.rejects(
-    appendRegistryNodes(
-      graph,
-      graph.root,
-      [[undefined, '^1.0.0']],
-      'dependencies',
-    ),
-    /Trying to add a package but no name was found/,
-    'should throw an error if using addSpec with no name',
   )
 })
