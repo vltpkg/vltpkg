@@ -68,6 +68,9 @@ importers:
       '@vltpkg/registry-client':
         specifier: workspace:*
         version: link:../registry-client
+      '@vltpkg/spec':
+        specifier: workspace:*
+        version: link:../spec
     devDependencies:
       '@types/node':
         specifier: ^20.12.7

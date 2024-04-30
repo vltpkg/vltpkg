@@ -23,7 +23,7 @@ function parseEdge(seenNodes: Set<number>, graph: Graph, edge: Edge) {
   if (!edge.to) {
     return (
       edgeResult +
-      `missing-${missingCount++}(Missing package: ${edge.name}@${edge.spec})\n`
+      `missing-${missingCount++}(Missing package: ${edge.name}@${edge.spec.bareSpec})\n`
     )
   }
 

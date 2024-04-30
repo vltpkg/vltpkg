@@ -10,7 +10,8 @@
     "typedoc": "^0.25.13"
   },
   "dependencies": {
-    "@vltpkg/registry-client": "workspace:*"
+    "@vltpkg/registry-client": "workspace:*",
+    "@vltpkg/spec": "workspace:*"
   },
   "scripts": {
     "preversion": "npm test",

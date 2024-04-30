@@ -1,3 +1,4 @@
+import { Spec } from '@vltpkg/spec'
 import { DependencyTypeLong } from './pkgs.js'
 import { Node } from './node.js'
 
@@ -27,14 +28,14 @@ export class Edge {
   name: string
 
   /**
-   * The defined spec value for `to` as defined in the dependent metadata.
+   * The defined spec value for `to` as parsed from the dependent metadata.
    */
-  spec: string
+  spec: Spec
 
   constructor(
     type: DependencyTypeLong,
     name: string,
-    spec: string,
+    spec: Spec,
     from: Node,
     to?: Node,
   ) {

@@ -1,5 +1,6 @@
 import { URL } from 'node:url'
 import { CacheEntry, RegistryClient } from '@vltpkg/registry-client'
+import { Spec } from '@vltpkg/spec'
 import { Graph } from './graph.js'
 import { Node } from './node.js'
 import {
@@ -13,30 +14,24 @@ const hostname = 'https://registry.npmjs.com'
 export const appendRegistryNodes = async (
   graph: Graph,
   fromNode: Node,
-  addSpecs: string[][],
+  addSpecs: Spec[],
   depType: DependencyTypeLong,
 ) => {
   const registryClient = new RegistryClient({})
 
-  const reqs: Promise<[CacheEntry, string, string]>[] = []
-  for (let [name, spec] of addSpecs) {
-    if (!name) {
-      throw new Error('Trying to add a package but no name was found')
-    }
-    if (!spec) {
-      spec = 'latest'
-    }
+  const reqs: Promise<[CacheEntry, Spec]>[] = []
+  for (let spec of addSpecs) {
     // TODO: only fetching latest version of manifests for now
     reqs.push(
       registryClient
-        .request(`${hostname}/${name}/latest`)
-        .then(response => [response, name, spec]),
+        .request(`${hostname}/${spec.name}/latest`)
+        .then(response => [response, spec]),
     )
   }
-  const res: [CacheEntry, string, string][] = await Promise.all(reqs)
+  const res: [CacheEntry, Spec][] = await Promise.all(reqs)
 
   const nextDeps: Set<Node> = new Set()
-  for (const [response, name, spec] of res) {
+  for (const [response, spec] of res) {
     if (response) {
       if (!isPackageMetadata(response.body)) {
         throw new Error('Failed to retrieve package metadata')
@@ -45,7 +40,7 @@ export const appendRegistryNodes = async (
       const node = graph.placePackage(
         fromNode,
         depType,
-        name,
+        spec.name,
         spec,
         mani,
       )
@@ -64,7 +59,9 @@ export const appendRegistryNodes = async (
         const depRecord: Record<string, string> | undefined =
           next.pkg[nextDepType]
         if (depRecord) {
-          const addSpecs: string[][] = Object.entries(depRecord)
+          const addSpecs: Spec[] = Object.entries(depRecord).map(
+            ([key, name]) => Spec.parse(`${key}@${name}`),
+          )
           appendChildNodes.push(
             appendRegistryNodes(graph, next, addSpecs, nextDepType),
           )

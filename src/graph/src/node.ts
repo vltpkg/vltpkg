@@ -1,3 +1,4 @@
+import { Spec } from '@vltpkg/spec'
 import { DependencyTypeLong, Package } from './pkgs.js'
 import { Edge } from './edge.js'
 
@@ -45,10 +46,10 @@ export class Node {
   addEdgeIn(
     type: DependencyTypeLong,
     name: string,
-    spec: string,
+    spec: Spec,
     node: Node,
   ) {
-    this.edgesIn.add(new Edge(type, spec, name, this, node))
+    this.edgesIn.add(new Edge(type, name, spec, this, node))
   }
 
   /**
@@ -57,7 +58,7 @@ export class Node {
   addEdgeOut(
     type: DependencyTypeLong,
     name: string,
-    spec: string,
+    spec: Spec,
     node?: Node,
   ) {
     const edge = new Edge(type, name, spec, this, node)

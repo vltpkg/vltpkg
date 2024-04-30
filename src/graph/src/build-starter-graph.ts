@@ -1,4 +1,5 @@
 import { resolve } from 'node:path'
+import { Spec } from '@vltpkg/spec'
 import { Graph } from './graph.js'
 import { Node } from './node.js'
 import { Edge } from './edge.js'
@@ -31,7 +32,10 @@ export const buildStarterGraph = async ({
   buildActual(graph, graph.root, resolve(dir, 'node_modules'))
 
   const missing: Set<Edge> = graph.missingDirectDependencies
-  const specs: string[][] = [...missing].map(e => [e.name, e.spec])
+  const specs: Spec[] = []
+  for (const e of missing) {
+    specs.push(e.spec)
+  }
   missing.clear()
 
   await appendRegistryNodes(graph, graph.root, specs, 'dependencies')
