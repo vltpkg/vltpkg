@@ -2,15 +2,64 @@
   "name": "@vltpkg/semver",
   "version": "0.0.0-0",
   "description": "The semantic version parser used by vlt",
-  "main": "index.js",
-  "type": "module",
   "scripts": {
     "bun": "hyperfine --warmup 3 'bun ./benchmarks/bun.js' 'bun ./benchmarks/npm.js' 'bun ./benchmarks/this.js'",
     "node": "hyperfine --warmup 3 'node ./benchmarks/npm.js' 'node ./benchmarks/this.js'",
-    "test": "tap"
+    "benchmark": "./test/fixtures/vs-node-semver.ts",
+    "preversion": "npm test",
+    "postversion": "npm publish",
+    "prepublishOnly": "git push origin --follow-tags",
+    "prepare": "tshy",
+    "pretest": "npm run prepare",
+    "presnap": "npm run prepare",
+    "test": "tap",
+    "snap": "tap",
+    "format": "prettier --write . --log-level warn --ignore-path ../../.prettierignore --cache",
+    "typedoc": "typedoc"
   },
   "devDependencies": {
+    "@types/bun": "^1.1.1",
+    "@types/node": "^20.12.8",
+    "@types/semver": "^7.5.8",
+    "prettier": "^3.2.5",
     "semver": "^7.6.0",
-    "tap": "^16.0.0"
-  }
+    "tap": "^18.7.2",
+    "tshy": "^1.14.0",
+    "typedoc": "^0.25.13"
+  },
+  "tap": {
+    "coverage-map": "../../coverage-map.js"
+  },
+  "prettier": {
+    "experimentalTernaries": true,
+    "semi": false,
+    "printWidth": 70,
+    "tabWidth": 2,
+    "useTabs": false,
+    "singleQuote": true,
+    "jsxSingleQuote": false,
+    "bracketSameLine": true,
+    "arrowParens": "avoid",
+    "endOfLine": "lf"
+  },
+  "tshy": {
+    "selfLink": false,
+    "dialects": [
+      "esm"
+    ],
+    "exports": {
+      "./package.json": "./package.json",
+      ".": "./src/index.ts"
+    }
+  },
+  "exports": {
+    "./package.json": "./package.json",
+    ".": {
+      "import": {
+        "types": "./dist/esm/index.d.ts",
+        "default": "./dist/esm/index.js"
+      }
+    }
+  },
+  "type": "module"
 }
