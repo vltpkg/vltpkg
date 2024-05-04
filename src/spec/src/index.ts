@@ -1,4 +1,4 @@
-import semver from 'semver'
+import { validRange } from '@vltpkg/semver'
 
 export type SpecOptions = {
   [k in keyof SpecOptionsFilled]?: SpecOptionsFilled[k]
@@ -167,9 +167,9 @@ export class Spec {
     if (this.bareSpec.startsWith('workspace:')) {
       this.type = 'workspace'
       const ws = this.bareSpec.substring('workspace:'.length)
-      if (ws !== '*' && ws !== '~' && ws !== '^' && !semver.validRange(ws)) {
+      if (ws !== '*' && ws !== '~' && ws !== '^' && !validRange(ws)) {
         throw this.#error(
-          'workspace: spec must be one of *, !, or ^, or a valid semver range'
+          'workspace: spec must be one of *, !, or ^, or a valid semver range',
         )
       }
     }
@@ -270,7 +270,7 @@ export class Spec {
 
     // at this point, must be either semver range or dist-tag
     this.type = 'registry'
-    if (semver.validRange(this.bareSpec)) {
+    if (validRange(this.bareSpec)) {
       this.semver = this.bareSpec
     } else {
       this.distTag = this.bareSpec

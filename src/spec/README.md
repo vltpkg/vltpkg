@@ -28,28 +28,28 @@ The following specifier types are supported:
 
 - `workspace:...` - Provide a semver range, or one of `~`, `*`,
   or `^` to match against a dependency that exists in a workspace
-  project of a monorepo. The package name *must* exist as a
+  project of a monorepo. The package name _must_ exist as a
   workspace project in the monorepo. If a semver range is
   provided, then it must match the referenced workspace package
   version. Otherwise:
 
-    - `*` - Fill in whatever version is in the workspace, without
-      any prefix. So, if `./packages/foo` depends on
-      `bar@workspace*`, and `bar` is version `1.2.3`, then `foo`
-      will be published with `{ "dependencies": { "bar": "1.2.3" }}`
-    - `~` or `^` - Publish with the version found in the
-      monorepo, prefixed by the character. So in the example
-      above, it'd be `bar@~1.2.3` or `bar@^1.2.3`, respectively.
+  - `*` - Fill in whatever version is in the workspace, without
+    any prefix. So, if `./packages/foo` depends on
+    `bar@workspace*`, and `bar` is version `1.2.3`, then `foo`
+    will be published with `{ "dependencies": { "bar": "1.2.3" }}`
+  - `~` or `^` - Publish with the version found in the
+    monorepo, prefixed by the character. So in the example
+    above, it'd be `bar@~1.2.3` or `bar@^1.2.3`, respectively.
 
 - `semver range` - A valid semver range (including the empty
   string or a single semver version). This is resolved against
   the default registry. If the spec is a valid semver range, then
   no further parsing is done.
 
-- `git+ssh://<url>[git selector]` or `git+https://<url>[git
-selector]` - A `git+ssh` or `git+https` url will be checked out
-  by git. If no 'git selector' is provided, then it will attempt
-  to install from the default version. The git selector can be:
+- `git+ssh://<url>[selector]` or `git+https://<url>[selector]` -
+  A `git+ssh` or `git+https` url will be checked out by git. If
+  no 'git selector' is provided, then it will attempt to install
+  from the default version. The git selector can be:
 
   - `#committish` Any valid `committish` value will be checked
     out. So, shasum, branch, tag, etc., would all work.
@@ -129,35 +129,34 @@ const fooFromAcmeReg = Spec.parse(
 
 ## Properties
 
-* type - the type of spec that this is. One of `'registry'`,
+- type - the type of spec that this is. One of `'registry'`,
   `'git'`, `'file'`, or `'remote'`.
-* spec - the full named specifier passed to the constructor
-* options - options passed to the constructor, plus defaults
-* name - the name portion, so `foo` in `foo@1.x`
-* bareSpec - just the part AFTER the name, so `1.x` in `foo@1.x`
-* when `type` === `'git'`:
-    * gitRemote - git remote url
-    * gitSelector - the `::`-separated set of `key:value` fields
-    * gitSelectorParsed - the `gitSelector` parsed into a Record
-      object
-    * gitCommittish - the commit sha, branch, or tag
-    * namedGitHost - `github`, `gitlab`, `bitbucket`, etc.
-    * remoteURL - when using a named git host with an archive url
-      template, and a committish is provided, this is the url to
-      download a tarball archive
-* when `type` === `'registry'`:
-    * registry - the registry to look up data from
-    * namedRegistry - in the case of alias specs, the named
-      registry
-    * registrySpec - the semver range or dist-tag
-    * semver - the semver range, if a valid
-    * distTag - the registrySpec when it is not a semver range
-    * subspec - the parsed spec to to be resolved against the
-      registry in question, if the spec is a named registry like
-      `npm:x@2.x` or an explicit registry url like
-      `registry:https://registry.npmjs.org#x@2.x`.
-* when `type` === `'file'`:
-    * file - the path on disk to find the package
-* when `type` === `'remote'`:
-    * remoteURL - the url to the remote archive
-
+- spec - the full named specifier passed to the constructor
+- options - options passed to the constructor, plus defaults
+- name - the name portion, so `foo` in `foo@1.x`
+- bareSpec - just the part AFTER the name, so `1.x` in `foo@1.x`
+- when `type` === `'git'`:
+  - gitRemote - git remote url
+  - gitSelector - the `::`-separated set of `key:value` fields
+  - gitSelectorParsed - the `gitSelector` parsed into a Record
+    object
+  - gitCommittish - the commit sha, branch, or tag
+  - namedGitHost - `github`, `gitlab`, `bitbucket`, etc.
+  - remoteURL - when using a named git host with an archive url
+    template, and a committish is provided, this is the url to
+    download a tarball archive
+- when `type` === `'registry'`:
+  - registry - the registry to look up data from
+  - namedRegistry - in the case of alias specs, the named
+    registry
+  - registrySpec - the semver range or dist-tag
+  - semver - the semver range, if a valid
+  - distTag - the registrySpec when it is not a semver range
+  - subspec - the parsed spec to to be resolved against the
+    registry in question, if the spec is a named registry like
+    `npm:x@2.x` or an explicit registry url like
+    `registry:https://registry.npmjs.org#x@2.x`.
+- when `type` === `'file'`:
+  - file - the path on disk to find the package
+- when `type` === `'remote'`:
+  - remoteURL - the url to the remote archive

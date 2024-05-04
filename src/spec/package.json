@@ -4,7 +4,6 @@
   "version": "0.0.0-0",
   "devDependencies": {
     "@types/node": "^20.12.7",
-    "@types/semver": "^7.5.8",
     "npm-package-arg": "^11.0.2",
     "prettier": "^3.2.5",
     "tap": "^18.7.2",
@@ -12,7 +11,7 @@
     "typedoc": "^0.25.13"
   },
   "dependencies": {
-    "semver": "^7.6.0"
+    "@vltpkg/semver": "workspace:*"
   },
   "scripts": {
     "preversion": "npm test",
