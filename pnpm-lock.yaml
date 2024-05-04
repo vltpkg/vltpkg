@@ -148,16 +148,13 @@ importers:
 
   src/spec:
     dependencies:
-      semver:
-        specifier: ^7.6.0
-        version: 7.6.0
+      '@vltpkg/semver':
+        specifier: workspace:*
+        version: link:../semver
     devDependencies:
       '@types/node':
         specifier: ^20.12.7
         version: 20.12.8
-      '@types/semver':
-        specifier: ^7.5.8
-        version: 7.5.8
       npm-package-arg:
         specifier: ^11.0.2
         version: 11.0.2
