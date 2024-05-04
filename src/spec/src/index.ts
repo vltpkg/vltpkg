@@ -1,4 +1,4 @@
-import { validRange } from '@vltpkg/semver'
+import { parseRange, type Range } from '@vltpkg/semver'
 
 export type SpecOptions = {
   [k in keyof SpecOptionsFilled]?: SpecOptionsFilled[k]
@@ -104,6 +104,9 @@ export class Spec {
   /** spec to resolve against available versions */
   semver?: string
 
+  /** parsed semver range specifier */
+  range?: Range
+
   /** a dist-tag like 'latest' */
   distTag?: string
 
@@ -167,10 +170,15 @@ export class Spec {
     if (this.bareSpec.startsWith('workspace:')) {
       this.type = 'workspace'
       const ws = this.bareSpec.substring('workspace:'.length)
-      if (ws !== '*' && ws !== '~' && ws !== '^' && !validRange(ws)) {
+      const range = parseRange(ws)
+      if (ws !== '*' && ws !== '~' && ws !== '^' && !range) {
         throw this.#error(
           'workspace: spec must be one of *, !, or ^, or a valid semver range',
         )
+      }
+      if (range) {
+        this.semver = ws.trim()
+        this.range = range
       }
     }
 
@@ -270,8 +278,10 @@ export class Spec {
 
     // at this point, must be either semver range or dist-tag
     this.type = 'registry'
-    if (validRange(this.bareSpec)) {
-      this.semver = this.bareSpec
+    const range = parseRange(this.bareSpec)
+    if (range) {
+      this.semver = this.bareSpec.trim()
+      this.range = range
     } else {
       this.distTag = this.bareSpec
     }
@@ -281,13 +291,16 @@ export class Spec {
 
   #parseHostedGit(name: string, template: string) {
     if (this.bareSpec.startsWith(`${name}:`)) {
-      const split = this.bareSpec
-        .substring(name.length + 1)
-        .split('/')
+      const h = this.bareSpec.indexOf('#')
+      const bare =
+        h === -1 ? this.bareSpec : this.bareSpec.substring(0, h)
+      const hash = h === -1 ? '' : this.bareSpec.substring(h)
+      const split = bare.substring(name.length + 1).split('/')
       let t = template
       for (let i = 0; i < split.length; i++) {
         t = t.split(`$${i + 1}`).join(split[i])
       }
+      t += hash
       this.namedGitHost = name
       this.#parseGitSelector(t)
       if (this.gitCommittish && !this.gitSelectorParsed?.path) {
@@ -297,7 +310,7 @@ export class Spec {
           let t = archiveHost
           t = t.split('$committish').join(this.gitCommittish)
           for (let i = 0; i < split.length; i++) {
-            t = t.split(`$${i}`).join(split[i])
+            t = t.split(`$${i + 1}`).join(split[i])
           }
           this.remoteURL = t
         }
@@ -358,10 +371,17 @@ export class Spec {
       if (c === -1) continue
       const k = kv.substring(0, c)
       const v = kv.substring(c + 1)
-      if (k === 'semver' && this.gitCommittish) {
-        throw this.#error(
-          'Cannot specify a semver range and committish value',
-        )
+      if (k === 'semver') {
+        if (this.gitCommittish) {
+          throw this.#error(
+            'Cannot specify a semver range and committish value',
+          )
+        }
+        const range = parseRange(v)
+        if (!range) {
+          throw this.#error(`Invalid git tag semver range: ${v}`)
+        }
+        this.range = range
       }
       if (k === 'semver' || k === 'path') {
         this.gitSelectorParsed[k] = v

@@ -14,6 +14,7 @@ Object {
   "registry": "https://registry.npmjs.org/",
   "registrySpec": "",
   "semver": "",
+  "range": "SemVer Range '*'",
 }
 `
 
@@ -30,6 +31,7 @@ Object {
   "registry": "https://registry.npmjs.org/",
   "registrySpec": "*",
   "semver": "*",
+  "range": "SemVer Range '*'",
 }
 `
 
@@ -118,6 +120,7 @@ Object {
   "registry": "https://registry.npmjs.org/",
   "registrySpec": "",
   "semver": "",
+  "range": "SemVer Range '*'",
 }
 `
 
@@ -134,6 +137,7 @@ Object {
   "registry": "https://registry.npmjs.org/",
   "registrySpec": "",
   "semver": "",
+  "range": "SemVer Range '*'",
 }
 `
 
@@ -149,7 +153,8 @@ Object {
   "bareSpec": " 1.2 ",
   "registry": "https://registry.npmjs.org/",
   "registrySpec": " 1.2 ",
-  "semver": " 1.2 ",
+  "semver": "1.2",
+  "range": "SemVer Range '>=1.2.0 <1.3.0-0'",
 }
 `
 
@@ -165,7 +170,8 @@ Object {
   "bareSpec": " 1.2.3 ",
   "registry": "https://registry.npmjs.org/",
   "registrySpec": " 1.2.3 ",
-  "semver": " 1.2.3 ",
+  "semver": "1.2.3",
+  "range": "SemVer Range '1.2.3'",
 }
 `
 
@@ -177,7 +183,8 @@ Object {
   "bareSpec": " 1.2.3",
   "registry": "https://registry.npmjs.org/",
   "registrySpec": " 1.2.3",
-  "semver": " 1.2.3",
+  "semver": "1.2.3",
+  "range": "SemVer Range '1.2.3'",
 }
 `
 
@@ -198,6 +205,7 @@ Object {
   "registry": "https://registry.npmjs.org/",
   "registrySpec": "=v1.2.3",
   "semver": "=v1.2.3",
+  "range": "SemVer Range '1.2.3'",
 }
 `
 
@@ -214,6 +222,7 @@ Object {
   "registry": "https://registry.npmjs.org/",
   "registrySpec": "~1.2",
   "semver": "~1.2",
+  "range": "SemVer Range '>=1.2.0 <1.3.0-0'",
 }
 `
 
@@ -230,6 +239,7 @@ Object {
   "registry": "https://registry.npmjs.org/",
   "registrySpec": "1.2",
   "semver": "1.2",
+  "range": "SemVer Range '>=1.2.0 <1.3.0-0'",
 }
 `
 
@@ -246,6 +256,7 @@ Object {
   "registry": "https://registry.npmjs.org/",
   "registrySpec": "1.2.3",
   "semver": "1.2.3",
+  "range": "SemVer Range '1.2.3'",
 }
 `
 
@@ -257,7 +268,8 @@ Object {
   "bareSpec": "1.2.3 ",
   "registry": "https://registry.npmjs.org/",
   "registrySpec": "1.2.3 ",
-  "semver": "1.2.3 ",
+  "semver": "1.2.3",
+  "range": "SemVer Range '1.2.3'",
 }
 `
 
@@ -346,6 +358,7 @@ Object {
     "registry": "https://registry.npmjs.org/",
     "registrySpec": "",
     "semver": "",
+    "range": "SemVer Range '*'",
   },
 }
 `
@@ -426,12 +439,12 @@ Object {
   "spec": "x@bitbucket:user..blerg--/..foo-js# . . . . . some . tags / / /",
   "name": "x",
   "bareSpec": "bitbucket:user..blerg--/..foo-js# . . . . . some . tags / / /",
-  "gitRemote": "git+ssh://git@bitbucket.org:user..blerg--/..foo-js",
-  "gitSelector": " . . . . . some . tags .git",
+  "gitRemote": "git+ssh://git@bitbucket.org:user..blerg--/..foo-js.git",
+  "gitSelector": " . . . . . some . tags / / /",
   "gitSelectorParsed": Object {},
-  "gitCommittish": " . . . . . some . tags .git",
+  "gitCommittish": " . . . . . some . tags / / /",
   "namedGitHost": "bitbucket",
-  "remoteURL": "https://bitbucket.org/..foo-js# . . . . . some . tags / /get/ . . . . . some . tags .git.tar.gz",
+  "remoteURL": "https://bitbucket.org/user..blerg--/..foo-js/get/ . . . . . some . tags / / /.tar.gz",
 }
 `
 
@@ -460,12 +473,12 @@ Object {
   "spec": "x@bitbucket:user/foo-js#bar/baz",
   "name": "x",
   "bareSpec": "bitbucket:user/foo-js#bar/baz",
-  "gitRemote": "git+ssh://git@bitbucket.org:user/foo-js",
-  "gitSelector": "bar.git",
+  "gitRemote": "git+ssh://git@bitbucket.org:user/foo-js.git",
+  "gitSelector": "bar/baz",
   "gitSelectorParsed": Object {},
-  "gitCommittish": "bar.git",
+  "gitCommittish": "bar/baz",
   "namedGitHost": "bitbucket",
-  "remoteURL": "https://bitbucket.org/foo-js#bar/baz/get/bar.git.tar.gz",
+  "remoteURL": "https://bitbucket.org/user/foo-js/get/bar/baz.tar.gz",
 }
 `
 
@@ -479,12 +492,12 @@ Object {
   "spec": "x@bitbucket:user/foo-js#bar/baz/bin",
   "name": "x",
   "bareSpec": "bitbucket:user/foo-js#bar/baz/bin",
-  "gitRemote": "git+ssh://git@bitbucket.org:user/foo-js",
-  "gitSelector": "bar.git",
+  "gitRemote": "git+ssh://git@bitbucket.org:user/foo-js.git",
+  "gitSelector": "bar/baz/bin",
   "gitSelectorParsed": Object {},
-  "gitCommittish": "bar.git",
+  "gitCommittish": "bar/baz/bin",
   "namedGitHost": "bitbucket",
-  "remoteURL": "https://bitbucket.org/foo-js#bar/baz/get/bar.git.tar.gz",
+  "remoteURL": "https://bitbucket.org/user/foo-js/get/bar/baz/bin.tar.gz",
 }
 `
 
@@ -904,6 +917,7 @@ Object {
   "gitSelectorParsed": Object {
     "semver": "^1.2.3",
   },
+  "range": "SemVer Range '>=1.2.3 <2.0.0-0'",
 }
 `
 
@@ -939,6 +953,7 @@ Object {
   "gitSelectorParsed": Object {
     "semver": "^1.2.3",
   },
+  "range": "SemVer Range '>=1.2.3 <2.0.0-0'",
 }
 `
 
@@ -1005,6 +1020,7 @@ Object {
   "gitSelectorParsed": Object {
     "semver": "^1.2.3",
   },
+  "range": "SemVer Range '>=1.2.3 <2.0.0-0'",
 }
 `
 
@@ -1054,6 +1070,7 @@ Object {
   "gitSelectorParsed": Object {
     "semver": "^1.2.3",
   },
+  "range": "SemVer Range '>=1.2.3 <2.0.0-0'",
 }
 `
 
@@ -1195,12 +1212,12 @@ Object {
   "spec": "x@gitlab:user..blerg--/..foo-js# . . . . . some . tags / / /",
   "name": "x",
   "bareSpec": "gitlab:user..blerg--/..foo-js# . . . . . some . tags / / /",
-  "gitRemote": "git+ssh://git@gitlab.com:user..blerg--/..foo-js",
-  "gitSelector": " . . . . . some . tags .git",
+  "gitRemote": "git+ssh://git@gitlab.com:user..blerg--/..foo-js.git",
+  "gitSelector": " . . . . . some . tags / / /",
   "gitSelectorParsed": Object {},
-  "gitCommittish": " . . . . . some . tags .git",
+  "gitCommittish": " . . . . . some . tags / / /",
   "namedGitHost": "gitlab",
-  "remoteURL": "https://gitlab.com/..foo-js# . . . . . some . tags / /repository/archive.tar.gz?ref= . . . . . some . tags .git",
+  "remoteURL": "https://gitlab.com/user..blerg--/..foo-js/repository/archive.tar.gz?ref= . . . . . some . tags / / /",
 }
 `
 
@@ -1229,12 +1246,12 @@ Object {
   "spec": "x@gitlab:user/foo-js#bar/baz",
   "name": "x",
   "bareSpec": "gitlab:user/foo-js#bar/baz",
-  "gitRemote": "git+ssh://git@gitlab.com:user/foo-js",
-  "gitSelector": "bar.git",
+  "gitRemote": "git+ssh://git@gitlab.com:user/foo-js.git",
+  "gitSelector": "bar/baz",
   "gitSelectorParsed": Object {},
-  "gitCommittish": "bar.git",
+  "gitCommittish": "bar/baz",
   "namedGitHost": "gitlab",
-  "remoteURL": "https://gitlab.com/foo-js#bar/baz/repository/archive.tar.gz?ref=bar.git",
+  "remoteURL": "https://gitlab.com/user/foo-js/repository/archive.tar.gz?ref=bar/baz",
 }
 `
 
@@ -1248,12 +1265,12 @@ Object {
   "spec": "x@gitlab:user/foo-js#bar/baz/bin",
   "name": "x",
   "bareSpec": "gitlab:user/foo-js#bar/baz/bin",
-  "gitRemote": "git+ssh://git@gitlab.com:user/foo-js",
-  "gitSelector": "bar.git",
+  "gitRemote": "git+ssh://git@gitlab.com:user/foo-js.git",
+  "gitSelector": "bar/baz/bin",
   "gitSelectorParsed": Object {},
-  "gitCommittish": "bar.git",
+  "gitCommittish": "bar/baz/bin",
   "namedGitHost": "gitlab",
-  "remoteURL": "https://gitlab.com/foo-js#bar/baz/repository/archive.tar.gz?ref=bar.git",
+  "remoteURL": "https://gitlab.com/user/foo-js/repository/archive.tar.gz?ref=bar/baz/bin",
 }
 `
 
@@ -1376,6 +1393,7 @@ Object {
         "registry": "https://registry.npmjs.org/",
         "registrySpec": "1",
         "semver": "1",
+        "range": "SemVer Range '>=1.0.0 <2.0.0-0'",
       },
     },
   },
@@ -1406,12 +1424,12 @@ Object {
       "spec": "z@github:a/x#branch",
       "name": "z",
       "bareSpec": "github:a/x#branch",
-      "gitRemote": "git+ssh://git@github.com:a/x",
-      "gitSelector": "branch.git",
+      "gitRemote": "git+ssh://git@github.com:a/x.git",
+      "gitSelector": "branch",
       "gitSelectorParsed": Object {},
-      "gitCommittish": "branch.git",
+      "gitCommittish": "branch",
       "namedGitHost": "github",
-      "remoteURL": "https://codeload.github.com/x#branch/$2/tar.gz/branch.git",
+      "remoteURL": "https://codeload.github.com/a/x/tar.gz/branch",
     },
   },
 }
@@ -1516,10 +1534,10 @@ Object {
   "spec": "x@github:user/foo#1234::path:dist",
   "name": "x",
   "bareSpec": "github:user/foo#1234::path:dist",
-  "gitRemote": "git+ssh://git@github.com:user/foo",
-  "gitSelector": "1234::path:dist.git",
+  "gitRemote": "git+ssh://git@github.com:user/foo.git",
+  "gitSelector": "1234::path:dist",
   "gitSelectorParsed": Object {
-    "path": "dist.git",
+    "path": "dist",
   },
   "gitCommittish": "1234",
   "namedGitHost": "github",
@@ -1536,8 +1554,8 @@ Object {
   "spec": "x@github:user/foo#notimplemented:value",
   "name": "x",
   "bareSpec": "github:user/foo#notimplemented:value",
-  "gitRemote": "git+ssh://git@github.com:user/foo",
-  "gitSelector": "notimplemented:value.git",
+  "gitRemote": "git+ssh://git@github.com:user/foo.git",
+  "gitSelector": "notimplemented:value",
   "gitSelectorParsed": Object {},
   "namedGitHost": "github",
 }
@@ -1553,10 +1571,10 @@ Object {
   "spec": "x@github:user/foo#path:dist",
   "name": "x",
   "bareSpec": "github:user/foo#path:dist",
-  "gitRemote": "git+ssh://git@github.com:user/foo",
-  "gitSelector": "path:dist.git",
+  "gitRemote": "git+ssh://git@github.com:user/foo.git",
+  "gitSelector": "path:dist",
   "gitSelectorParsed": Object {
-    "path": "dist.git",
+    "path": "dist",
   },
   "namedGitHost": "github",
 }
@@ -1572,12 +1590,13 @@ Object {
   "spec": "x@github:user/foo#semver:^1.2.3",
   "name": "x",
   "bareSpec": "github:user/foo#semver:^1.2.3",
-  "gitRemote": "git+ssh://git@github.com:user/foo",
-  "gitSelector": "semver:^1.2.3.git",
+  "gitRemote": "git+ssh://git@github.com:user/foo.git",
+  "gitSelector": "semver:^1.2.3",
   "gitSelectorParsed": Object {
-    "semver": "^1.2.3.git",
+    "semver": "^1.2.3",
   },
   "namedGitHost": "github",
+  "range": "SemVer Range '>=1.2.3 <2.0.0-0'",
 }
 `
 
@@ -1593,6 +1612,8 @@ Object {
   "bareSpec": "workspace:*",
   "registry": "https://registry.npmjs.org/",
   "registrySpec": "workspace:*",
+  "semver": "*",
+  "range": "SemVer Range '*'",
   "distTag": "workspace:*",
 }
 `
@@ -1641,6 +1662,8 @@ Object {
   "bareSpec": "workspace:1.x",
   "registry": "https://registry.npmjs.org/",
   "registrySpec": "workspace:1.x",
+  "semver": "1.x",
+  "range": "SemVer Range '>=1.0.0 <2.0.0-0'",
   "distTag": "workspace:1.x",
 }
 `

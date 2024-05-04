@@ -1,7 +1,17 @@
+import { Range } from '@vltpkg/semver'
 import t from 'tap'
 import { kCustomInspect, Spec } from '../src/index.js'
 
 t.compareOptions = { sort: false }
+const formatSnapshot = (obj: any): any =>
+  !!obj && obj instanceof Range ? `SemVer Range '${obj}'`
+  : Array.isArray(obj) ? obj.map(o => formatSnapshot(o))
+  : typeof obj === 'object' ?
+    Object.fromEntries(
+      Object.entries(obj).map(([k, v]) => [k, formatSnapshot(v)]),
+    )
+  : obj
+t.formatSnapshot = formatSnapshot
 
 t.test('basic parsing tests', t => {
   const versions = [
@@ -119,3 +129,4 @@ t.test('basic parsing tests', t => {
 t.throws(() => Spec.parse('x@github:a/b#dead::semver:1.x'))
 t.throws(() => Spec.parse('x@registry:https://a.com'))
 t.throws(() => Spec.parse('x@workspace:wat'))
+t.throws(() => Spec.parse('x@github:a/b#semver:invalid'))
