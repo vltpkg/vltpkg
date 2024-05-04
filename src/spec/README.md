@@ -145,12 +145,15 @@ const fooFromAcmeReg = Spec.parse(
   - remoteURL - when using a named git host with an archive url
     template, and a committish is provided, this is the url to
     download a tarball archive
+  - semver - the semver range, if provided in the gitSelector
+  - range - the parsed semver range, if valid
 - when `type` === `'registry'`:
   - registry - the registry to look up data from
   - namedRegistry - in the case of alias specs, the named
     registry
   - registrySpec - the semver range or dist-tag
-  - semver - the semver range, if a valid
+  - semver - the semver range, if valid
+  - range - the parsed semver range, if valid
   - distTag - the registrySpec when it is not a semver range
   - subspec - the parsed spec to to be resolved against the
     registry in question, if the spec is a named registry like
