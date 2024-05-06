@@ -220,6 +220,28 @@ importers:
         specifier: ^1.14.0
         version: 1.14.0
 
+  src/which:
+    dependencies:
+      isexe:
+        specifier: ^3.1.1
+        version: 3.1.1
+    devDependencies:
+      '@types/node':
+        specifier: ^20.12.7
+        version: 20.12.8
+      prettier:
+        specifier: ^3.2.5
+        version: 3.2.5
+      tap:
+        specifier: ^18.7.3
+        version: 18.7.3(@types/node@20.12.8)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.2.2)
+      tshy:
+        specifier: ^1.14.0
+        version: 1.14.0
+      typedoc:
+        specifier: ^0.25.13
+        version: 0.25.13(typescript@5.2.2)
+
 packages:
 
   '@alcalzone/ansi-tokenize@0.1.3':
