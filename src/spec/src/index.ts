@@ -307,13 +307,6 @@ export class Spec {
     return false
   }
 
-  /**
-   * Returns a string representation of the specifier
-   */
-  //toString(): string {
-  //  return this.spec
-  //}
-
   [kCustomInspect](): Record<string, any> {
     return Object.fromEntries(
       Object.entries(this)
