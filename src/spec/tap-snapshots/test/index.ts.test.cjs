@@ -793,14 +793,11 @@ exports[`test/index.ts > TAP > basic parsing tests > x@file:path/to/foo.tar.gz >
 
 exports[`test/index.ts > TAP > basic parsing tests > x@git://github.com/user/foo > inspect 1`] = `
 Object {
-  "type": "registry",
+  "type": "git",
   "spec": "x@git://github.com/user/foo",
   "name": "x",
   "bareSpec": "git://github.com/user/foo",
-  "registry": "https://registry.npmjs.org/",
-  "registrySpec": "git://github.com/user/foo",
-  "distTag": "git://github.com/user/foo",
-  "file": "git://github.com/user/foo",
+  "gitRemote": "git://github.com/user/foo",
 }
 `
 
@@ -810,14 +807,11 @@ exports[`test/index.ts > TAP > basic parsing tests > x@git://github.com/user/foo
 
 exports[`test/index.ts > TAP > basic parsing tests > x@git://notgithub.com/user/foo > inspect 1`] = `
 Object {
-  "type": "registry",
+  "type": "git",
   "spec": "x@git://notgithub.com/user/foo",
   "name": "x",
   "bareSpec": "git://notgithub.com/user/foo",
-  "registry": "https://registry.npmjs.org/",
-  "registrySpec": "git://notgithub.com/user/foo",
-  "distTag": "git://notgithub.com/user/foo",
-  "file": "git://notgithub.com/user/foo",
+  "gitRemote": "git://notgithub.com/user/foo",
 }
 `
 
