@@ -183,7 +183,9 @@ export class Spec {
     }
 
     if (
+      this.bareSpec.startsWith('git://') ||
       this.bareSpec.startsWith('git+ssh://') ||
+      this.bareSpec.startsWith('git+http://') ||
       this.bareSpec.startsWith('git+https://') ||
       // legacy affordance
       this.bareSpec.startsWith('git@github.com')
