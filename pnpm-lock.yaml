@@ -131,6 +131,27 @@ importers:
         specifier: ^0.25.13
         version: 0.25.13(typescript@5.2.2)
 
+  src/promise-spawn:
+    devDependencies:
+      '@types/node':
+        specifier: ^20.12.7
+        version: 20.12.8
+      prettier:
+        specifier: ^3.2.5
+        version: 3.2.5
+      spawk:
+        specifier: ^1.8.1
+        version: 1.8.2
+      tap:
+        specifier: ^18.7.3
+        version: 18.7.3(@types/node@20.12.8)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.2.2)
+      tshy:
+        specifier: ^1.14.0
+        version: 1.14.0
+      typedoc:
+        specifier: ^0.25.13
+        version: 0.25.13(typescript@5.2.2)
+
   src/registry-client:
     dependencies:
       '@vltpkg/cache':
@@ -1362,6 +1383,10 @@ packages:
   socks@2.8.3:
     resolution: {integrity: sha512-l5x7VUUWbjVFbafGLxPWkYsHIhEvmF85tbIeFZWc8ZPtoMyybuEhL7Jye/ooC4/d48FgOjSJXgsF/AJPYCW8Zw==}
     engines: {node: '>= 10.0.0', npm: '>= 3.0.0'}
+
+  spawk@1.8.2:
+    resolution: {integrity: sha512-3Dl+ekoMHRvXo+Xc3EUSnjySawnc9SpkaBuA3kU2wYiuSEAIYB4b5cGjvmq5olexBsO/fCLZUKHjSMQlzSU4Ww==}
+    engines: {node: '>=12.0.0'}
 
   spdx-correct@3.2.0:
     resolution: {integrity: sha512-kN9dJbvnySHULIluDHy32WHRUu3Og7B9sbY7tsFLctQkIqnMh3hErYgdMjTYuqmcXX+lK5T1lnUt3G7zNswmZA==}
@@ -2852,6 +2877,8 @@ snapshots:
     dependencies:
       ip-address: 9.0.5
       smart-buffer: 4.2.0
+
+  spawk@1.8.2: {}
 
   spdx-correct@3.2.0:
     dependencies:
