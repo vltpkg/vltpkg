@@ -149,9 +149,12 @@ export class Comparator {
 
   /** the canonical strict simplified parsed form of this constructor */
   toString() {
-    return this.isNone ? '<0.0.0-0' : (
-        this.tuples.map(c => (isAny(c) ? '*' : c.join(''))).join(' ')
-      )
+    return (
+      this.isNone ? '<0.0.0-0'
+      : this.isAny ? '*'
+      /* c8 ignore next */
+      : this.tuples.map(c => (isAny(c) ? '*' : c.join(''))).join(' ')
+    )
   }
 
   constructor(comp: string, includePrerelease: boolean = false) {
@@ -214,6 +217,13 @@ export class Comparator {
       }
     }
     this.tokens = comps
+    this.isAny = true
+    for (const c of this.tuples) {
+      if (Array.isArray(c) || !c.isAny) {
+        this.isAny = false
+        break
+      }
+    }
   }
 
   // inclusive min
