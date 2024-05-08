@@ -107,7 +107,7 @@ const versionOk = (
 
 export const pickManifest = (
   packument: Packument,
-  wanted: string | Range,
+  wanted: string | Range | Spec,
   opts: PickManifestOptions = {},
 ): Manifest | undefined => {
   const {
@@ -128,17 +128,27 @@ export const pickManifest = (
   } = packument
 
   const time = before && verTimes ? +new Date(before) : Infinity
-  const spec = Spec.parse(`${name}@${wanted}`)
-  let { range } = spec
-
-  if (!range && !spec.distTag) {
-    throw new Error(
-      'Only dist-tag or semver range specs are supported',
-    )
+  let range: Range | undefined = undefined
+  let spec: Spec | undefined = undefined
+  if (typeof wanted === 'object') {
+    if (wanted instanceof Spec) {
+      range = wanted.range
+      spec = wanted
+    } else {
+      range = wanted
+    }
+  } else {
+    spec = Spec.parse(`${name}@${wanted}`)
+    range = spec.range
   }
 
-  // if there is an explicit dist tag, we must get that version.
-  if (spec.distTag && !range) {
+  if (!range) {
+    if (!spec?.distTag) {
+      throw new Error(
+        'Only dist-tag or semver range specs are supported',
+      )
+    }
+    // if there is an explicit dist tag, we must get that version.
     const ver = distTags[spec.distTag]
     if (!ver) return undefined
     // if the version in the dist-tags is before the before date, then
@@ -151,17 +161,14 @@ export const pickManifest = (
     }
   }
 
-  /* c8 ignore next - for TS's benefit */
-  if (!range) return undefined
-
   if (range.isAny) range = new Range('*', true)
 
   // if the range is *, then we prefer the 'latest' if available
   // but skip this if it should be avoided, in that case we have
   // to try a little harder.
   const defaultVer = distTags[defaultTag]
-    const defTagVersion =
-      (!!defaultVer && Version.parse(defaultVer)) || undefined
+  const defTagVersion =
+    (!!defaultVer && Version.parse(defaultVer)) || undefined
   if (
     defaultVer &&
     !!range &&
@@ -224,15 +231,13 @@ export const pickManifest = (
         found = mc
         foundIsDefTag = !!defTagVersion?.equals(mc.version)
       }
-    }
-    else if (mc.deprecated !== found.deprecated) {
+    } else if (mc.deprecated !== found.deprecated) {
       if (!mc.deprecated) {
         found = mc
         /* c8 ignore next */
         foundIsDefTag = !!defTagVersion?.equals(mc.version)
       }
-    }
-    else if (found.prerelease !== mc.prerelease) {
+    } else if (found.prerelease !== mc.prerelease) {
       if (!mc.prerelease) {
         found = mc
         /* c8 ignore next */

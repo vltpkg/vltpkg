@@ -1,3 +1,5 @@
+import { Range } from '@vltpkg/semver'
+import { Spec } from '@vltpkg/spec'
 import t from 'tap'
 import { Packument, pickManifest } from '../src/index.js'
 
@@ -11,6 +13,42 @@ t.test('basic carat range selection', t => {
     },
   } as unknown as Packument
   const manifest = pickManifest(metadata, '^1.0.0')
+  t.equal(
+    manifest?.version,
+    '1.0.2',
+    'picked the right manifest using ^',
+  )
+  t.end()
+})
+
+t.test('caret range object selection', t => {
+  const metadata = {
+    versions: {
+      '1.0.0': { version: '1.0.0' },
+      '1.0.1': { version: '1.0.1' },
+      '1.0.2': { version: '1.0.2' },
+      '2.0.0': { version: '2.0.0' },
+    },
+  } as unknown as Packument
+  const manifest = pickManifest(metadata, new Range('^1.0.0'))
+  t.equal(
+    manifest?.version,
+    '1.0.2',
+    'picked the right manifest using ^',
+  )
+  t.end()
+})
+
+t.test('caret spec object selection', t => {
+  const metadata = {
+    versions: {
+      '1.0.0': { version: '1.0.0' },
+      '1.0.1': { version: '1.0.1' },
+      '1.0.2': { version: '1.0.2' },
+      '2.0.0': { version: '2.0.0' },
+    },
+  } as unknown as Packument
+  const manifest = pickManifest(metadata, Spec.parse('foo@^1.0.0'))
   t.equal(
     manifest?.version,
     '1.0.2',
@@ -292,21 +330,32 @@ t.test('matches deprecated versions if we have to', t => {
   t.end()
 })
 
-t.test('prefer non-deprecated versions if all platform mismatch', t => {
-  const metadata = {
-    versions: {
-      '1.0.0': { version: '1.0.0' },
-      '1.0.1': { version: '1.0.1' },
-      '1.1.2': { version: '1.1.0', deprecated: 'yes', os: 'android' },
-      '1.1.0': { version: '1.1.0', os: 'android' },
-      '1.1.999': { version: '1.1.999', deprecated: 'yes', os: 'android' },
-      '2.0.0': { version: '2.0.0' },
-    },
-  } as unknown as Packument
-  const manifest = pickManifest(metadata, '^1.1', { os: 'darwin' })
-  t.equal(manifest?.version, '1.1.0', 'picked the right manifest')
-  t.end()
-})
+t.test(
+  'prefer non-deprecated versions if all platform mismatch',
+  t => {
+    const metadata = {
+      versions: {
+        '1.0.0': { version: '1.0.0' },
+        '1.0.1': { version: '1.0.1' },
+        '1.1.2': {
+          version: '1.1.0',
+          deprecated: 'yes',
+          os: 'android',
+        },
+        '1.1.0': { version: '1.1.0', os: 'android' },
+        '1.1.999': {
+          version: '1.1.999',
+          deprecated: 'yes',
+          os: 'android',
+        },
+        '2.0.0': { version: '2.0.0' },
+      },
+    } as unknown as Packument
+    const manifest = pickManifest(metadata, '^1.1', { os: 'darwin' })
+    t.equal(manifest?.version, '1.1.0', 'picked the right manifest')
+    t.end()
+  },
+)
 
 t.test('prefer valid platform matches if all deprecated', t => {
   const metadata = {
@@ -316,7 +365,11 @@ t.test('prefer valid platform matches if all deprecated', t => {
       '1.0.1': { version: '1.0.1' },
       '1.1.2': { version: '1.1.0', deprecated: 'yes', os: 'android' },
       '1.1.0': { version: '1.1.0', deprecated: 'yes', os: ['any'] },
-      '1.1.999': { version: '1.1.999', deprecated: 'yes', os: 'android' },
+      '1.1.999': {
+        version: '1.1.999',
+        deprecated: 'yes',
+        os: 'android',
+      },
       '2.0.0': { version: '2.0.0' },
     },
   } as unknown as Packument
@@ -336,26 +389,38 @@ t.test('prefer non-prerelease versions', t => {
     },
   } as unknown as Packument
   const manifest = pickManifest(metadata, '*')
-  t.equal(manifest?.version, '2.0.0', 'picked the non-prerelease manifest')
+  t.equal(
+    manifest?.version,
+    '2.0.0',
+    'picked the non-prerelease manifest',
+  )
   t.end()
 })
 
-t.test('prefer non-prerelease versions when prerelease comes first', t => {
-  const metadata = {
-    versions: {
-      '1.0.0': { version: '1.0.0' },
-      '2.0.999-pre': { version: '2.0.999-pre' },
-      '1.0.1': { version: '1.0.1' },
-      '1.1.0': { version: '1.1.0' },
-      '2.0.0': { version: '2.0.0' },
-    },
-  } as unknown as Packument
-  const manifest = pickManifest(metadata, '>=2.0.0 || >=2.0.999-alpha')
-  t.equal(manifest?.version, '2.0.0', 'picked the non-prerelease manifest')
-  t.end()
-})
-
-
+t.test(
+  'prefer non-prerelease versions when prerelease comes first',
+  t => {
+    const metadata = {
+      versions: {
+        '1.0.0': { version: '1.0.0' },
+        '2.0.999-pre': { version: '2.0.999-pre' },
+        '1.0.1': { version: '1.0.1' },
+        '1.1.0': { version: '1.1.0' },
+        '2.0.0': { version: '2.0.0' },
+      },
+    } as unknown as Packument
+    const manifest = pickManifest(
+      metadata,
+      '>=2.0.0 || >=2.0.999-alpha',
+    )
+    t.equal(
+      manifest?.version,
+      '2.0.0',
+      'picked the non-prerelease manifest',
+    )
+    t.end()
+  },
+)
 
 t.test(
   'will use deprecated version if no other suitable match',
