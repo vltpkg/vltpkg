@@ -12,6 +12,11 @@ export class Range {
   /** raw string used to create this Range */
   raw: string
 
+  /** true if the range is `*` */
+  isAny: boolean
+
+  /** true if the range cannot match anything */
+
   /**
    * set of {@link Comparator} objects representing the `||`-separated sections
    * of the range. If at least one of these matches, then the version is a
@@ -28,6 +33,7 @@ export class Range {
     fastSplit(range, '||', -1, part =>
       this.set.push(new Comparator(part, this.includePrerelease)),
     )
+    this.isAny = this.set.some(c => c.isAny)
   }
 
   /**
