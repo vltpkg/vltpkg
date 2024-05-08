@@ -63,6 +63,55 @@ importers:
         specifier: ^0.25.13
         version: 0.25.13(typescript@5.2.2)
 
+  src/git:
+    dependencies:
+      '@types/promise-retry':
+        specifier: ^1.1.6
+        version: 1.1.6
+      '@vltpkg/git-scp-url':
+        specifier: workspace:*
+        version: link:../git-scp-url
+      '@vltpkg/pick-manifest':
+        specifier: workspace:*
+        version: link:../pick-manifest
+      '@vltpkg/promise-spawn':
+        specifier: workspace:*
+        version: link:../promise-spawn
+      '@vltpkg/semver':
+        specifier: workspace:*
+        version: link:../semver
+      '@vltpkg/which':
+        specifier: workspace:*
+        version: link:../which
+      lru-cache:
+        specifier: ^10.2.2
+        version: 10.2.2
+      promise-retry:
+        specifier: ^2.0.1
+        version: 2.0.1
+    devDependencies:
+      '@types/node':
+        specifier: ^20.12.7
+        version: 20.12.8
+      '@types/retry':
+        specifier: ^0.12.5
+        version: 0.12.5
+      '@vltpkg/spec':
+        specifier: workspace:*
+        version: link:../spec
+      prettier:
+        specifier: ^3.2.5
+        version: 3.2.5
+      tap:
+        specifier: ^18.7.3
+        version: 18.7.3(@types/node@20.12.8)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.2.2)
+      tshy:
+        specifier: ^1.14.0
+        version: 1.14.0
+      typedoc:
+        specifier: ^0.25.13
+        version: 0.25.13(typescript@5.2.2)
+
   src/git-scp-url:
     devDependencies:
       '@types/node':
@@ -572,6 +621,12 @@ packages:
 
   '@types/node@20.12.8':
     resolution: {integrity: sha512-NU0rJLJnshZWdE/097cdCBbyW1h4hEg0xpovcoAQYHl8dnEyp/NAOiE45pvc+Bd1Dt+2r94v2eGFpQJ4R7g+2w==}
+
+  '@types/promise-retry@1.1.6':
+    resolution: {integrity: sha512-EC1+OMXV0PZb0pf+cmyxc43MEP2CDumZe4AfuxWboxxEixztIebknpJPZAX5XlodGF1OY+C1E/RAeNGzxf+bJA==}
+
+  '@types/retry@0.12.5':
+    resolution: {integrity: sha512-3xSjTp3v03X/lSQLkczaN9UIEwJMoMCA1+Nb5HfbJEQWogdeQIyVtTvxPXDQjZ5zws8rFQfVfRdz03ARihPJgw==}
 
   '@types/semver@7.5.8':
     resolution: {integrity: sha512-I8EUhyrgfLrcTkzV3TSsGyl1tSuPrEDzr0yd5m90UgNxQkyDXULk3b6MlQqTCpZpNtWe1K0hzclnZkTcLBe2UQ==}
@@ -2050,6 +2105,12 @@ snapshots:
   '@types/node@20.12.8':
     dependencies:
       undici-types: 5.26.5
+
+  '@types/promise-retry@1.1.6':
+    dependencies:
+      '@types/retry': 0.12.5
+
+  '@types/retry@0.12.5': {}
 
   '@types/semver@7.5.8': {}
 
