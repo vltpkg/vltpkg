@@ -11,7 +11,7 @@ export type SpecOptionsFilled = {
    * the registry we don't bother listing
    * default https://registry.npmjs.org
    */
-  defaultRegistry?: string
+  defaultRegistry: string
   /** the registry where a spec should be resolved against */
   registry: string
   /** shorthand prefix names for known registries */
