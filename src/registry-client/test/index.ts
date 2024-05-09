@@ -27,6 +27,11 @@ const registry = createServer((req, res) => {
     req.headers['accept-encoding'],
     'gzip;q=1.0, identity;q=0.5',
   )
+  t.match(
+    req.headers['user-agent'],
+    '@vltpkg/registry-client',
+    'got a user-agent header',
+  )
 
   res.setHeader('etag', etag)
   res.setHeader('last-modified', date.toUTCString())
