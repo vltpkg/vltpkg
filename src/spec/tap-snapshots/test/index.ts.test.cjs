@@ -611,7 +611,7 @@ Object {
   "spec": "x@file://.",
   "name": "x",
   "bareSpec": "file://.",
-  "file": "//.",
+  "file": ".",
 }
 `
 
@@ -625,7 +625,7 @@ Object {
   "spec": "x@file://../path/to/foo",
   "name": "x",
   "bareSpec": "file://../path/to/foo",
-  "file": "//../path/to/foo",
+  "file": "../path/to/foo",
 }
 `
 
@@ -639,7 +639,7 @@ Object {
   "spec": "x@file://./path/to/foo",
   "name": "x",
   "bareSpec": "file://./path/to/foo",
-  "file": "//./path/to/foo",
+  "file": "./path/to/foo",
 }
 `
 
@@ -653,7 +653,7 @@ Object {
   "spec": "x@file:////path/to/foo",
   "name": "x",
   "bareSpec": "file:////path/to/foo",
-  "file": "////path/to/foo",
+  "file": "//path/to/foo",
 }
 `
 
@@ -667,7 +667,7 @@ Object {
   "spec": "x@file:///path/to/foo",
   "name": "x",
   "bareSpec": "file:///path/to/foo",
-  "file": "///path/to/foo",
+  "file": "/path/to/foo",
 }
 `
 
@@ -681,7 +681,7 @@ Object {
   "spec": "x@file://path/to/foo",
   "name": "x",
   "bareSpec": "file://path/to/foo",
-  "file": "//path/to/foo",
+  "file": "path/to/foo",
 }
 `
 
@@ -851,14 +851,14 @@ exports[`test/index.ts > TAP > basic parsing tests > x@git@npm:not-git > toStrin
 
 exports[`test/index.ts > TAP > basic parsing tests > x@git+file://path/to/repo#1.2.3 > inspect 1`] = `
 Object {
-  "type": "registry",
+  "type": "git",
   "spec": "x@git+file://path/to/repo#1.2.3",
   "name": "x",
   "bareSpec": "git+file://path/to/repo#1.2.3",
-  "registry": "https://registry.npmjs.org/",
-  "registrySpec": "git+file://path/to/repo#1.2.3",
-  "distTag": "git+file://path/to/repo#1.2.3",
-  "file": "git+file://path/to/repo#1.2.3",
+  "gitRemote": "git+file://path/to/repo",
+  "gitSelector": "1.2.3",
+  "gitSelectorParsed": Object {},
+  "gitCommittish": "1.2.3",
 }
 `
 

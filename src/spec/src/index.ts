@@ -169,7 +169,7 @@ export class Spec {
 
     if (this.bareSpec.startsWith('workspace:')) {
       this.type = 'workspace'
-      const ws = this.bareSpec.substring('workspace:'.length)
+      const ws = this.bareSpec.substring('workspace:'.length).trim()
       const range = parseRange(ws)
       if (ws !== '*' && ws !== '~' && ws !== '^' && !range) {
         throw this.#error(
@@ -177,7 +177,7 @@ export class Spec {
         )
       }
       if (range) {
-        this.semver = ws.trim()
+        this.semver = ws
         this.range = range
       }
     }
@@ -187,6 +187,7 @@ export class Spec {
       this.bareSpec.startsWith('git+ssh://') ||
       this.bareSpec.startsWith('git+http://') ||
       this.bareSpec.startsWith('git+https://') ||
+      this.bareSpec.startsWith('git+file://') ||
       // legacy affordance
       this.bareSpec.startsWith('git@github.com')
     ) {
@@ -199,6 +200,7 @@ export class Spec {
       return
     }
 
+    // spooky
     const ghosts = Object.entries(this.options.gitHosts)
     for (const [name, template] of ghosts) {
       if (this.#parseHostedGit(name, template)) {
@@ -262,7 +264,7 @@ export class Spec {
 
     // explicit file: url
     if (this.bareSpec.startsWith('file://')) {
-      this.file = this.bareSpec.substring('file:'.length)
+      this.file = this.bareSpec.substring('file://'.length)
       this.type = 'file'
       return
     }
