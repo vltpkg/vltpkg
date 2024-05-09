@@ -155,6 +155,46 @@ importers:
         specifier: ^0.25.13
         version: 0.25.13(typescript@5.2.2)
 
+  src/package-info:
+    dependencies:
+      '@vltpkg/git':
+        specifier: workspace:*
+        version: link:../git
+      '@vltpkg/pick-manifest':
+        specifier: workspace:*
+        version: link:../pick-manifest
+      '@vltpkg/registry-client':
+        specifier: workspace:*
+        version: link:../registry-client
+      '@vltpkg/spec':
+        specifier: workspace:*
+        version: link:../spec
+      '@vltpkg/tar':
+        specifier: workspace:*
+        version: link:../tar
+      tar:
+        specifier: ^7.1.0
+        version: 7.1.0
+    devDependencies:
+      '@types/node':
+        specifier: ^20.12.7
+        version: 20.12.8
+      pacote:
+        specifier: ^18.0.6
+        version: 18.0.6
+      prettier:
+        specifier: ^3.2.5
+        version: 3.2.5
+      tap:
+        specifier: ^18.7.2
+        version: 18.7.3(@types/node@20.12.8)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.2.2)
+      tshy:
+        specifier: ^1.14.0
+        version: 1.14.0
+      typedoc:
+        specifier: ^0.25.13
+        version: 0.25.13(typescript@5.2.2)
+
   src/pick-manifest:
     dependencies:
       '@vltpkg/semver':
@@ -167,6 +207,12 @@ importers:
       '@types/node':
         specifier: ^20.12.7
         version: 20.12.8
+      npm-pick-manifest:
+        specifier: ^9.0.1
+        version: 9.0.1
+      pacote:
+        specifier: ^18.0.6
+        version: 18.0.6
       prettier:
         specifier: ^3.2.5
         version: 3.2.5
@@ -1232,8 +1278,8 @@ packages:
     resolution: {integrity: sha512-shYrPFIS/JLP4oQmAwDyk5HcyysKW8/JLTEA32S0Z5TzvpaeeX2yMFfoK1fjEBnCBvVyIB/Jj/GBFdm0wsgzbA==}
     engines: {node: ^14.17.0 || ^16.13.0 || >=18.0.0}
 
-  npm-pick-manifest@9.0.0:
-    resolution: {integrity: sha512-VfvRSs/b6n9ol4Qb+bDwNGUXutpy76x6MARw/XssevE0TnctIKcmklJZM5Z7nqs5z5aW+0S63pgCNbpkUNNXBg==}
+  npm-pick-manifest@9.0.1:
+    resolution: {integrity: sha512-Udm1f0l2nXb3wxDpKjfohwgdFUSV50UVwzEIpDXVsbDMXVIEF81a/i0UhuQbhrPMMmdiq3+YMFLFIRVLs3hxQw==}
     engines: {node: ^16.14.0 || >=18.0.0}
 
   npm-registry-fetch@16.2.1:
@@ -1781,7 +1827,7 @@ snapshots:
     dependencies:
       '@npmcli/promise-spawn': 7.0.1
       lru-cache: 10.2.2
-      npm-pick-manifest: 9.0.0
+      npm-pick-manifest: 9.0.1
       proc-log: 4.2.0
       promise-inflight: 1.0.1
       promise-retry: 2.0.1
@@ -2247,7 +2293,7 @@ snapshots:
       fs-minipass: 3.0.3
       glob: 10.3.12
       lru-cache: 10.2.2
-      minipass: 7.0.4
+      minipass: 7.1.1
       minipass-collect: 2.0.1
       minipass-flush: 1.0.5
       minipass-pipeline: 1.2.4
@@ -2377,7 +2423,7 @@ snapshots:
 
   fs-minipass@3.0.3:
     dependencies:
-      minipass: 7.0.4
+      minipass: 7.1.1
 
   fs.realpath@1.0.0: {}
 
@@ -2632,7 +2678,7 @@ snapshots:
 
   minipass-fetch@3.0.4:
     dependencies:
-      minipass: 7.0.4
+      minipass: 7.1.1
       minipass-sized: 1.0.3
       minizlib: 2.1.2
     optionalDependencies:
@@ -2738,7 +2784,7 @@ snapshots:
     dependencies:
       ignore-walk: 6.0.4
 
-  npm-pick-manifest@9.0.0:
+  npm-pick-manifest@9.0.1:
     dependencies:
       npm-install-checks: 6.3.0
       npm-normalize-package-bin: 3.0.1
@@ -2762,7 +2808,7 @@ snapshots:
     dependencies:
       '@npmcli/redact': 2.0.0
       make-fetch-happen: 13.0.1
-      minipass: 7.0.4
+      minipass: 7.1.1
       minipass-fetch: 3.0.4
       minipass-json-stream: 1.0.1
       minizlib: 2.1.2
@@ -2804,7 +2850,7 @@ snapshots:
       minipass: 7.0.4
       npm-package-arg: 11.0.2
       npm-packlist: 8.0.2
-      npm-pick-manifest: 9.0.0
+      npm-pick-manifest: 9.0.1
       npm-registry-fetch: 16.2.1
       proc-log: 4.2.0
       promise-retry: 2.0.1
@@ -2826,10 +2872,10 @@ snapshots:
       '@npmcli/run-script': 8.1.0
       cacache: 18.0.2
       fs-minipass: 3.0.3
-      minipass: 7.0.4
+      minipass: 7.1.1
       npm-package-arg: 11.0.2
       npm-packlist: 8.0.2
-      npm-pick-manifest: 9.0.0
+      npm-pick-manifest: 9.0.1
       npm-registry-fetch: 17.0.1
       proc-log: 4.2.0
       promise-retry: 2.0.1
@@ -3032,7 +3078,7 @@ snapshots:
 
   ssri@10.0.5:
     dependencies:
-      minipass: 7.0.4
+      minipass: 7.1.1
 
   stack-utils@2.0.6:
     dependencies:
