@@ -23,7 +23,7 @@ const names = readFileSync(
   .split(/\n/)
   .sort(() => Math.random() - 0.5)
 
-const tarDir = resolve(__dirname, 'artifacts')
+const tarDir = resolve(__dirname, 'fixtures/artifacts')
 
 console.log('downloading artifacts...')
 const cols = process.stdout.columns
