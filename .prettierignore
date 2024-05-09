@@ -3,6 +3,7 @@
 /node_modules
 /tap-snapshots
 
+/src/*/scripts/fixtures
 /src/*/.tap
 /src/*/.tshy
 /src/*/dist

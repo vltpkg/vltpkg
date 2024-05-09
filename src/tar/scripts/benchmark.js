@@ -8,8 +8,8 @@ import { Pool } from '../dist/esm/pool.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
-const artifactDir = resolve(__dirname, 'artifacts')
-const targetDir = resolve(__dirname, 'extract')
+const artifactDir = resolve(__dirname, 'fixtures/artifacts')
+const targetDir = resolve(__dirname, 'fixtures/extract')
 
 const artifacts = readdirSync(artifactDir)
   .sort(() => Math.random() - 0.5)
