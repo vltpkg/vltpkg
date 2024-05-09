@@ -130,3 +130,10 @@ t.throws(() => Spec.parse('x@github:a/b#dead::semver:1.x'))
 t.throws(() => Spec.parse('x@registry:https://a.com'))
 t.throws(() => Spec.parse('x@workspace:wat'))
 t.throws(() => Spec.parse('x@github:a/b#semver:invalid'))
+
+t.test('get final subspec in chain', async t => {
+  const subby = Spec.parse('x@npm:y@npm:z@latest')
+  const final = subby.final
+  t.not(subby, final, 'final is not the alias spec')
+  t.equal(final, final.final, 'final is its own finality')
+})
