@@ -124,6 +124,11 @@ export class Spec {
   /** in `bar@npm:foo@1.x`, this is the spec for `foo@1.x` */
   subspec?: Spec
 
+  /** return the final entry in the chain of subspecs */
+  get final(): Spec {
+    return this.subspec ? this.subspec.final : this
+  }
+
   get [Symbol.toStringTag]() {
     return `@vltpkg/spec.Spec {${this.spec}}`
   }
