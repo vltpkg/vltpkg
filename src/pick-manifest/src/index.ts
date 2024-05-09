@@ -9,6 +9,9 @@ export type JSONField =
   | JSONField[]
   | { [k: string]: JSONField }
 
+export type Integrity = `sha512-${string}`
+export type KeyID = `SHA256:${string}`
+
 export type Manifest = Record<string, JSONField> & {
   name: string
   version: string
@@ -16,6 +19,17 @@ export type Manifest = Record<string, JSONField> & {
   engines?: Record<string, string>
   os?: string | string[]
   arch?: string | string[]
+  dist?: {
+    integrity?: Integrity
+    shasum?: string
+    tarball?: string
+    fileCount?: number
+    unpackedSize?: number
+    signatures?: {
+      keyid: KeyID
+      sig: string
+    }[]
+  }
 }
 
 export type Packument = {
