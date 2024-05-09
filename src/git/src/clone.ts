@@ -5,12 +5,12 @@
 // at the specified ref, and resolves with the git sha.
 
 import { gitScpURL } from '@vltpkg/git-scp-url'
-import { pickManifest } from '@vltpkg/pick-manifest'
 import { mkdir, stat } from 'fs/promises'
 import { basename, resolve } from 'path'
 import { GitOptions } from './index.js'
 import { isWindows } from './is-windows.js'
 import { RevDoc, RevDocEntry } from './lines-to-revs.js'
+import { resolveRef } from './resolve.js'
 import { revs as getRevs } from './revs.js'
 import { spawn } from './spawn.js'
 
@@ -42,7 +42,7 @@ export const clone = async (
     repo,
     revs,
     ref,
-    resolveRef(revs, ref, opts),
+    revs && resolveRef(revs, ref, opts),
     target || defaultTarget(repo, opts.cwd),
     opts,
   )
@@ -79,36 +79,6 @@ const clone_ = (
     return branch(repo, revDoc, target, opts)
   }
   return other(repo, revDoc, target, opts)
-}
-
-const resolveRef = (
-  revs: RevDoc | undefined,
-  ref: string,
-  opts: GitOptions,
-): RevDocEntry | undefined => {
-  const { spec } = opts
-  ref = spec?.gitCommittish || ref
-  /* c8 ignore start - will fail anyway, can't pull */
-  if (!revs) {
-    return undefined
-  }
-  /* c8 ignore stop */
-  if (spec?.range) {
-    return pickManifest(revs, spec.range, opts) as RevDocEntry
-  }
-  if (!ref) {
-    return revs.refs.HEAD
-  }
-  if (revs.refs[ref]) {
-    return revs.refs[ref]
-  }
-  /* c8 ignore start - typically found above, but just in case */
-  const sha = revs.shas[ref]?.[0]
-  if (sha) {
-    return revs.refs[sha]
-  }
-  /* c8 ignore stop */
-  return undefined
 }
 
 // pull request or some other kind of advertised ref
