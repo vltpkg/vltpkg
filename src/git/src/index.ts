@@ -10,6 +10,7 @@ export * from './is-clean.js'
 export * from './is.js'
 export * from './revs.js'
 export * from './spawn.js'
+export * from './resolve.js'
 
 /**
  * This extends all options that can be passed to spawn() or pickManifest.
