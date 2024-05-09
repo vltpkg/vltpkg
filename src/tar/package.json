@@ -25,14 +25,14 @@
     "@types/node": "^20.12.7",
     "@types/tar": "^6.1.11",
     "mutate-fs": "^2.1.1",
-    "pacote": "^17.0.7",
+    "pacote": "^18.0.6",
     "prettier": "^3.2.5",
     "tap": "^18.7.3",
     "tshy": "^1.14.0"
   },
   "dependencies": {
     "rimraf": "^5.0.5",
-    "tar": "^7.0.1"
+    "tar": "^7.1.0"
   },
   "tshy": {
     "dialects": [
