@@ -71,7 +71,7 @@ export class CacheHandler implements Dispatcher.DispatchHandlers {
     // this means that we re-validated the cache. update the entry
     // with the new date, but otherwise proceed as if we'd gotten the
     // cached entry as our response.
-    if (statusCode === 306 && this.entry) {
+    if (statusCode === 304 && this.entry) {
       setRawHeader(
         this.entry.headers,
         'date',

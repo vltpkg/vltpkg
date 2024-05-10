@@ -1,5 +1,6 @@
 import { createHash } from 'crypto'
 import t from 'tap'
+import { inspect } from 'util'
 import { gzipSync } from 'zlib'
 import { CacheEntry } from '../src/cache-entry.js'
 
@@ -19,6 +20,11 @@ const ce = new CacheEntry(
     x: 'y',
   }),
   `sha512-${createHash('sha512').update(z).digest('base64')}`,
+)
+
+t.matchSnapshot(
+  inspect(ce, { colors: true, depth: Infinity }),
+  'inspect value',
 )
 
 t.equal(ce.statusCode, 200)

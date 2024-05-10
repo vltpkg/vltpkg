@@ -118,7 +118,7 @@ t.test('handler behavior, nothing cached yet', async t => {
     cache,
     entry: ch.entry,
   })
-  cached.onHeaders(306, [], resume, 'ok')
+  cached.onHeaders(304, [], resume, 'ok')
   t.match(
     cached.entry?.getHeader('date')?.toString(),
     new RegExp(
