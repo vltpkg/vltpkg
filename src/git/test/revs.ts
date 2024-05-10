@@ -1,9 +1,11 @@
 import fs from 'fs'
 import t from 'tap'
+import {pathToFileURL} from 'url'
 import { revs } from '../src/revs.js'
 import { spawn } from '../src/spawn.js'
 
 const repo = t.testdir()
+const repoUrl = pathToFileURL(repo)
 const git = (...cmd: string[]) => spawn(cmd, { cwd: repo })
 let mainBranch = 'main'
 const fixMainBranch = (err: Error & { status: number }) => {
@@ -57,7 +59,7 @@ t.test('setup', () =>
 )
 
 t.test('point latest at HEAD', t =>
-  revs(repo).then(r =>
+  revs(String(repoUrl)).then(r =>
     t.same(r?.['dist-tags'], {
       HEAD: '69.42.0',
       latest: '69.42.0',
