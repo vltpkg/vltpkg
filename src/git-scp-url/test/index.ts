@@ -16,7 +16,11 @@ const urls = [
 // URL fields are non-enumerable getters
 t.compareOptions = { includeGetters: true }
 
-t.plan(urls.length)
+t.plan(urls.length * 2)
+const results: (URL | undefined)[] = []
 for (const u of urls) {
-  t.matchSnapshot(gitScpURL(u), u)
+  const r = gitScpURL(u)
+  results.push(r)
+  t.matchSnapshot(r, u)
+  t.strictSame(gitScpURL(u), r, 'memoized test')
 }
