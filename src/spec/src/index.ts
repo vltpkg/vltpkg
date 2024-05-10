@@ -8,11 +8,6 @@ export type SpecOptions = {
 export const kCustomInspect = Symbol.for('nodejs.util.inspect.custom')
 
 export type SpecOptionsFilled = {
-  /**
-   * the registry we don't bother listing
-   * default https://registry.npmjs.org
-   */
-  defaultRegistry: string
   /** the registry where a spec should be resolved against */
   registry: string
   /** shorthand prefix names for known registries */
@@ -28,7 +23,7 @@ export type GitSelectorParsed = {
   semver?: string
 }
 
-export const defaultRegistry = 'https://registry.npmjs.org/'
+const defaultRegistry = 'https://registry.npmjs.org/'
 
 export const defaultRegistries = {
   npm: 'https://registry.npmjs.org/',
@@ -180,7 +175,6 @@ export class Spec {
     this.spec = spec
     this.options = {
       registry: defaultRegistry,
-      defaultRegistry,
       ...options,
       gitHosts:
         options.gitHosts ?
@@ -391,7 +385,6 @@ export class Spec {
       ...this.options,
       // we don't need to say what registry it is again
       registry: url,
-      defaultRegistry: url,
     })
   }
 
