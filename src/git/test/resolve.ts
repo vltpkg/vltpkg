@@ -6,6 +6,7 @@ import { resolve, resolveRef } from '../src/resolve.js'
 import { revs } from '../src/revs.js'
 import { spawn } from '../src/spawn.js'
 
+t.cleanSnapshot = s => s.replace(/"[0-9a-f]{40}"/g, '"{SHA}"')
 const repo = t.testdir()
 const git = (...cmd: string[]) => spawn(cmd, { cwd: repo })
 let mainBranch = 'main'

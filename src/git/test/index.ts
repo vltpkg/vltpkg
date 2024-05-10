@@ -12,4 +12,6 @@ t.matchOnly(git, Object.assign(Object.create(null), {
   revs: Function,
   spawn: Function,
   shallowHosts: Set,
+  resolve: Function,
+  resolveRef: Function,
 }))

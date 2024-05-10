@@ -10,7 +10,7 @@ Object {
   "name": "",
   "rawRef": "HEAD",
   "ref": "HEAD",
-  "sha": "c88e1e8650b1f978421a3f4521a63754493eb4ea",
+  "sha": "{SHA}",
   "type": "head",
   "version": "",
 }
@@ -21,7 +21,7 @@ Object {
   "name": "",
   "rawRef": "refs/tags/quux",
   "ref": "quux",
-  "sha": "d7dec47ae6db094a447cfadb09f7fb31a47f78e1",
+  "sha": "{SHA}",
   "type": "tag",
   "version": "",
 }
@@ -32,8 +32,8 @@ Object {
   "name": "",
   "rawRef": "refs/tags/version-1.2.3",
   "ref": "version-1.2.3",
-  "sha": "790b40b4478ca0a9cf3bdaa9263b8d620d61a63b",
+  "sha": "{SHA}",
   "type": "tag",
-  "version": "",
+  "version": "1.2.3",
 }
 `

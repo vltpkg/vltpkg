@@ -1,8 +1,10 @@
+import { gitScpURL } from '@vltpkg/git-scp-url'
 import {
   SpawnResultStderrString,
   SpawnResultStdoutString,
 } from '@vltpkg/promise-spawn'
 import { LRUCache } from 'lru-cache'
+import { fileURLToPath } from 'url'
 import { GitOptions } from './index.js'
 import { linesToRevs, RevDoc } from './lines-to-revs.js'
 import { spawn } from './spawn.js'
@@ -27,8 +29,12 @@ const revsCache = new LRUCache<string, RevDoc, GitOptions>({
 })
 
 export const revs = async (repo: string, opts: GitOptions = {}) => {
+  repo = String(gitScpURL(repo) || repo).replace(/^git\+/, '')
+  if (repo.startsWith('file://')) repo = fileURLToPath(repo)
   if (opts.noGitRevCache) {
-    const result = await fetchMethod(repo, undefined, { context: opts })
+    const result = await fetchMethod(repo, undefined, {
+      context: opts,
+    })
     if (result) revsCache.set(repo, result)
     return result
   }

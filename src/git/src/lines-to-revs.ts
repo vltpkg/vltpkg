@@ -1,4 +1,4 @@
-import {Manifest, Packument} from '@vltpkg/pick-manifest'
+import { Manifest, Packument } from '@vltpkg/pick-manifest'
 import { parse } from '@vltpkg/semver'
 
 export type RefType = 'head' | 'branch' | 'tag' | 'pull' | 'other'
@@ -51,7 +51,14 @@ export const linesToRevs = (lines: string[]): RevDoc =>
   )
 
 const finish = (revs: RevDoc): RevDoc =>
-  distTags(shaList(peelTags(revs)))
+  distTags(versions(shaList(peelTags(revs))))
+
+const versions = (revs: RevDoc): RevDoc => {
+  for (const [version, entry] of Object.entries(revs.versions)) {
+    entry.version = version
+  }
+  return revs
+}
 
 // We can check out shallow clones on specific SHAs if we have a ref
 const shaList = (revs: RevDoc): RevDoc => {
@@ -186,8 +193,10 @@ const linesToRevsReducer = (revs: RevDoc, line: string) => {
         null
       : doc.ref.match(/v?(\d+\.\d+\.\d+(?:[-+].+)?)$/)
     if (match) {
-      /* c8 ignore next */
-      if (!match?.[1]) throw new Error(`invalid semver tag: ${doc.ref}`)
+      /* c8 ignore start */
+      if (!match?.[1])
+        throw new Error(`invalid semver tag: ${doc.ref}`)
+      /* c8 ignore stop */
       const v = parse(match[1])
       if (v) revs.versions[String(v)] = doc
     }
