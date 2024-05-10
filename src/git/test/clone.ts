@@ -3,6 +3,7 @@ import { ChildProcess, spawn } from 'child_process'
 import fs from 'fs'
 import { join, resolve } from 'path'
 import t, { Test } from 'tap'
+import { pathToFileURL } from 'url'
 import { clone } from '../src/clone.js'
 import { revs } from '../src/revs.js'
 import { spawn as spawnGit } from '../src/spawn.js'
@@ -22,6 +23,7 @@ const me = t.testdir({
 const remote = `git://localhost:${port}/repo`
 const submodsRemote = `git://localhost:${port}/submodule-repo`
 const repo = resolve(me, 'repo')
+const repoUrl = String(pathToFileURL(repo))
 
 let repoSha = ''
 let submodsRepoSha = ''
@@ -191,11 +193,16 @@ t.test('check every out', t => {
               const spec =
                 ref === undefined ? undefined : (
                   Spec.parse(
-                    'name@' + remote + (ref ? `#${ref}` : ''),
+                    'name@git+' + repoUrl + (ref ? `#${ref}` : ''),
                   )
                 )
               const opts = { fakePlatform, gitShallow, spec }
-              const sha = await clone(remote, ref, target, opts)
+              const sha = await clone(
+                `git+${repoUrl}`,
+                ref,
+                target,
+                opts,
+              )
               t.match(sha, hashre, `got a sha for ref=${ref}`)
             }),
           )
