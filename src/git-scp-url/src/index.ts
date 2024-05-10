@@ -7,6 +7,8 @@ const knownProtocols = new Set([
   'ssh:',
 ])
 
+const memo = new Map<string, URL>()
+
 // git+ssh:github.com:user/repo => git+ssh://github.com:user/repo
 // git@github.com:user/repo => git+ssh://user@github.com:user/repo
 const correctProtocol = (arg: string) => {
@@ -76,12 +78,21 @@ const correctUrl = (url: string): string => {
 }
 
 export const gitScpURL = (url: string) => {
+  const memoized = memo.get(url)
+  if (memoized) return memoized
   try {
     const result = new URL(url)
-    if (result.hostname) return result
+    if (result.hostname) {
+      memo.set(url, result)
+      return result
+    }
   } catch {}
   try {
-    return new URL(correctUrl(correctProtocol(url)))
+    const result = new URL(correctUrl(correctProtocol(url)))
+    if (result.hostname) {
+      memo.set(url, result)
+      return result
+    }
   } catch {}
   return undefined
 }
