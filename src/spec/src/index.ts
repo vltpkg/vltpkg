@@ -1,4 +1,5 @@
 import { parseRange, type Range } from '@vltpkg/semver'
+import { inspect } from 'util'
 
 export type SpecOptions = {
   [k in keyof SpecOptionsFilled]?: SpecOptionsFilled[k]
@@ -49,8 +50,30 @@ export const defaultGitHostArchives = {
 }
 
 export class Spec {
-  static parse(spec: string, options: SpecOptions = {}) {
-    return new Spec(spec, options)
+  /**
+   * Create a Spec object from a full spec, name+bareSpec, or Spec object
+   *
+   * Note: If a Spec object is provided, it is returned as-is, without
+   * investigating whether the options match.
+   */
+  static parse(
+    name: string,
+    bareSpec: string,
+    options?: SpecOptions,
+  ): Spec
+  static parse(spec: string, options?: SpecOptions): Spec
+  static parse(spec: Spec, options?: SpecOptions): Spec
+  static parse(
+    spec: string | Spec,
+    bareOrOptions?: SpecOptions | string,
+    options?: SpecOptions,
+  ) {
+    return (
+      typeof spec === 'object' ? spec
+      : typeof bareOrOptions === 'string' ?
+        Spec.parse(`${spec}@${bareOrOptions}`, options)
+      : new Spec(spec, bareOrOptions)
+    )
   }
 
   /** the type of spec that this is, ultimately */
@@ -124,13 +147,33 @@ export class Spec {
   /** in `bar@npm:foo@1.x`, this is the spec for `foo@1.x` */
   subspec?: Spec
 
-  /** return the final entry in the chain of subspecs */
+  // memoized Spec.final value
+  #final?: Spec
+  // memoized toString value
+  #toString?: string
+
+  /**
+   * Return the final entry in the chain of subspecs
+   * When deciding which thing to actually fetch, spec.final is the thing
+   * to look at.
+   */
   get final(): Spec {
-    return this.subspec ? this.subspec.final : this
+    if (this.#final) return this.#final
+    return (this.#final = this.subspec ? this.subspec.final : this)
   }
 
-  get [Symbol.toStringTag]() {
-    return `@vltpkg/spec.Spec {${this.spec}}`
+  /**
+   * Normally, the string value of a Spec is just the string passed in to
+   * be parsed. However, in the case of a chain of subspecs, like
+   * `foo@npm:bar@npm:baz@npm:quux@latest`, this simplifies out the middle
+   * parts of the chain, returning just `foo@npm:quux@latest`
+   */
+  toString() {
+    if (this.#toString !== undefined) return this.#toString
+    let sub: Spec = this
+    // we want the SECOND from the last in the chain
+    while (sub.subspec && sub.subspec.subspec) sub = sub.subspec
+    return (this.#toString = this.name + '@' + sub.bareSpec)
   }
 
   constructor(spec: string, options: SpecOptions = {}) {
@@ -185,6 +228,7 @@ export class Spec {
         this.semver = ws
         this.range = range
       }
+      return
     }
 
     if (
@@ -329,17 +373,16 @@ export class Spec {
     return false
   }
 
-  [kCustomInspect](): Record<string, any> {
-    return Object.fromEntries(
-      Object.entries(this)
-        .filter(([k, v]) => {
+  [kCustomInspect](...args: any[]): string {
+    const str = inspect(
+      Object.fromEntries(
+        Object.entries(this).filter(([k, v]) => {
           return k !== 'options' && v !== undefined
-        })
-        .map(([k, v]) => [
-          k,
-          k === 'subspec' ? this.subspec?.[kCustomInspect]() : v,
-        ]),
+        }),
+      ),
+      ...args,
     )
+    return `@vltpkg/spec.Spec ${str}`
   }
 
   #parseRegistrySpec(s: string, url: string) {
