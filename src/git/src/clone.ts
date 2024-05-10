@@ -7,6 +7,7 @@
 import { gitScpURL } from '@vltpkg/git-scp-url'
 import { mkdir, stat } from 'fs/promises'
 import { basename, resolve } from 'path'
+import { fileURLToPath } from 'url'
 import { GitOptions } from './index.js'
 import { isWindows } from './is-windows.js'
 import { RevDoc, RevDocEntry } from './lines-to-revs.js'
@@ -37,7 +38,8 @@ export const clone = async (
   target: string | undefined = undefined,
   opts: GitOptions = {},
 ) => {
-  repo = String(gitScpURL(repo) || repo)
+  repo = String(gitScpURL(repo) || repo).replace(/^git\+/, '')
+  if (repo.startsWith('file://')) repo = fileURLToPath(repo)
   const revs = await getRevs(repo, opts)
   return await clone_(
     repo,
