@@ -131,9 +131,26 @@ t.throws(() => Spec.parse('x@registry:https://a.com'))
 t.throws(() => Spec.parse('x@workspace:wat'))
 t.throws(() => Spec.parse('x@github:a/b#semver:invalid'))
 
-t.test('get final subspec in chain', async t => {
+t.test('get final subspec in chain', t => {
   const subby = Spec.parse('x@npm:y@npm:z@latest')
   const final = subby.final
   t.not(subby, final, 'final is not the alias spec')
   t.equal(final, final.final, 'final is its own finality')
+  t.end()
+})
+
+t.test('parse argument options', t => {
+  const nameAndBare = Spec.parse('foo', 'latest')
+  const full = Spec.parse('foo@latest')
+  t.matchOnly(full, nameAndBare)
+  t.equal(full, Spec.parse(full, { registry: 'https://vlt.sh' }))
+  t.end()
+})
+
+t.test('simplify in the toString result', t => {
+  const spec = Spec.parse('x@npm:y@npm:z@npm:a@npm:b@latest')
+  t.equal(spec.toString(), 'x@npm:b@latest')
+  // test the memoization
+  t.equal(spec.toString(), 'x@npm:b@latest')
+  t.end()
 })
