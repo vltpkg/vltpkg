@@ -21,6 +21,7 @@
 
 import ccp from 'cache-control-parser'
 import { createHash } from 'crypto'
+import { inspect } from 'util'
 import { gunzipSync } from 'zlib'
 import { getRawHeader } from './get-raw-header.js'
 
@@ -45,6 +46,8 @@ const readSize = (buf: Buffer, offset: number) => {
   return (a << 24) | (b << 16) | (c << 8) | d
 }
 
+const kCustomInspect = Symbol.for('nodejs.util.inspect.custom')
+
 export class CacheEntry {
   #statusCode: number
   #headers: Buffer[]
@@ -61,6 +64,28 @@ export class CacheEntry {
     this.#integrity = integrity
     this.#statusCode = statusCode
     this.#headers = headers
+  }
+
+  get #headersAsObject(): [string, string][] {
+    const ret: [string,string][] = []
+    for (let i = 0; i < this.#headers.length - 1; i++) {
+      const key = String(this.#headers[i])
+      const val = String(this.#headers[i + 1])
+      ret.push([key, val])
+    }
+    return ret
+  }
+
+  [kCustomInspect](...args: any[]): string {
+    const str = inspect(
+      {
+        statusCode: this.statusCode,
+        headers: this.#headersAsObject,
+        text: this.text(),
+      },
+      ...args,
+    )
+    return `@vltpkg/registry-client.CacheEntry ${str}`
   }
 
   /**
