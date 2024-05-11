@@ -38,7 +38,8 @@ for (const n of names) {
   try {
     writeFileSync(
       tmp,
-      JSON.stringify(await pacote.packument(`${n}@latest`)))
+      JSON.stringify(await pacote.packument(`${n}@latest`)),
+    )
     renameSync(tmp, pakuFile)
   } catch (er) {
     console.error(n + ': ' + er.message)

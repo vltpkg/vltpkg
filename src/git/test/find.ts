@@ -1,8 +1,8 @@
-import t, {Test} from 'tap'
+import t, { Test } from 'tap'
 import { join, parse } from 'path'
 import { tmpdir } from 'os'
 import { find, FindOpts } from '../src/find.js'
-import {GitOptions} from '../src/index.js'
+import { GitOptions } from '../src/index.js'
 
 t.test('find the git dir many folders up', t => {
   const root = t.testdir({
@@ -17,7 +17,10 @@ t.test('stop before root dir', t => {
     '.git': { index: 'hello' },
     a: { b: { c: { d: { e: {} } } } },
   })
-  return t.resolveMatch(find({ cwd: join(root, 'a/b/c/d/e'), root: join(root, 'a') }), null)
+  return t.resolveMatch(
+    find({ cwd: join(root, 'a/b/c/d/e'), root: join(root, 'a') }),
+    null,
+  )
 })
 
 t.test('stop at root dir', t => {
@@ -25,7 +28,10 @@ t.test('stop at root dir', t => {
     '.git': { index: 'hello' },
     a: { b: { c: { d: { e: {} } } } },
   })
-  return t.resolveMatch(find({ cwd: join(root, 'a/b/c/d/e'), root }), root)
+  return t.resolveMatch(
+    find({ cwd: join(root, 'a/b/c/d/e'), root }),
+    root,
+  )
 })
 
 t.test('find the git dir at current level', t => {
@@ -51,23 +57,34 @@ t.test('mock is', async t => {
   const cwd = tmpdir()
   const { root } = parse(cwd)
 
-  const mockFind = async (t: Test, opts?: GitOptions ) => {
-    const seen: (string | undefined)[]= []
+  const mockFind = async (t: Test, opts?: GitOptions) => {
+    const seen: (string | undefined)[] = []
     const { find: mocked } = await t.mockImport('../src/find.js', {
       '../src/is.js': {
         is: async (o: GitOptions) => {
-        seen.push(o.cwd)
-        return false
-      }},
+          seen.push(o.cwd)
+          return false
+        },
+      },
     })
     const res = await mocked({ cwd, ...opts })
     t.strictSame(res, undefined)
-    t.strictSame(seen, [...new Set(seen)], 'no directory checked more than once')
+    t.strictSame(
+      seen,
+      [...new Set(seen)],
+      'no directory checked more than once',
+    )
     t.equal(seen[seen.length - 1], root, 'last dir is root')
   }
 
-  const cases:(FindOpts|undefined)[] = [undefined, { root }, { root: '1' }]
+  const cases: (FindOpts | undefined)[] = [
+    undefined,
+    { root },
+    { root: '1' },
+  ]
   for (const tCase of cases) {
-    await t.test(`root: ${JSON.stringify(tCase)}`, t => mockFind(t, tCase))
+    await t.test(`root: ${JSON.stringify(tCase)}`, t =>
+      mockFind(t, tCase),
+    )
   }
 })

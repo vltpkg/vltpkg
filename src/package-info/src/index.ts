@@ -5,6 +5,7 @@
 
 // TODO: handle workspace specs.
 
+import { error, ErrorCauseObject } from '@vltpkg/error-cause'
 import { clone, resolve as gitResolve, revs } from '@vltpkg/git'
 import {
   Integrity,
@@ -137,7 +138,12 @@ export class PackageInfoClient {
         const { gitRemote, gitCommittish, remoteURL } = f
         if (!remoteURL) {
           /* c8 ignore start - Impossible, would throw on the resolve */
-          if (!gitRemote) throw this.#resolveError(spec, options)
+          if (!gitRemote)
+            throw this.#resolveError(
+              spec,
+              options,
+              'no remote on git: specifier',
+            )
           /* c8 ignore stop */
           await clone(gitRemote, gitCommittish, target, { spec })
           await rm(target + '/.git', { recursive: true })
@@ -147,22 +153,50 @@ export class PackageInfoClient {
       }
       case 'registry':
       case 'remote': {
-        await this.tarPool.unpack(
-          (
-            await this.registryClient.request(r.resolved, {
-              integrity: r.integrity,
-            })
-          ).buffer(),
-          target,
+        const response = await this.registryClient.request(
+          r.resolved,
+          {
+            integrity: r.integrity,
+          },
         )
+        if (response.statusCode !== 200) {
+          throw this.#resolveError(
+            spec,
+            options,
+            'failed to fetch tarball',
+            {
+              url: r.resolved,
+              response,
+            },
+          )
+        }
+        try {
+          await this.tarPool.unpack(response.buffer(), target)
+        } catch (er) {
+          throw this.#resolveError(
+            spec,
+            options,
+            'tar unpack failed',
+            { cause: er as Error },
+          )
+        }
         return r
       }
       case 'file':
       case 'workspace': {
-        await this.tarPool.unpack(
-          await this.tarball(spec, options),
-          target,
-        )
+        try {
+          await this.tarPool.unpack(
+            await this.tarball(spec, options),
+            target,
+          )
+        } catch (er) {
+          throw this.#resolveError(
+            spec,
+            options,
+            'tar unpack failed',
+            { cause: er as Error },
+          )
+        }
         return r
       }
     }
@@ -178,20 +212,43 @@ export class PackageInfoClient {
     switch (f.type) {
       case 'registry': {
         const { dist } = await this.manifest(spec, options)
-        if (!dist) throw this.#resolveError(spec, options)
+        if (!dist)
+          throw this.#resolveError(
+            spec,
+            options,
+            'no dist object found in manifest',
+          )
         //TODO: handle signatures as well as integrity
         const { tarball, integrity } = dist
-        if (!tarball) throw this.#resolveError(spec, options)
-        const res = await this.registryClient.request(tarball, {
+        if (!tarball)
+          throw this.#resolveError(
+            spec,
+            options,
+            'no tarball found in manifest.dist',
+          )
+        const response = await this.registryClient.request(tarball, {
           integrity,
         })
-        return res.buffer()
+        if (response.statusCode !== 200) {
+          throw this.#resolveError(
+            spec,
+            options,
+            'failed to fetch tarball',
+            { response, url: tarball },
+          )
+        }
+        return response.buffer()
       }
       case 'git': {
         const { remoteURL, gitRemote, gitCommittish } = f
         const s: Spec = spec
         if (!remoteURL) {
-          if (!gitRemote) throw this.#resolveError(spec, options)
+          if (!gitRemote)
+            throw this.#resolveError(
+              spec,
+              options,
+              'no remote on git: specifier',
+            )
           return await this.#tmpdir(async dir => {
             await clone(gitRemote, gitCommittish, dir + '/package', {
               spec: s,
@@ -208,12 +265,21 @@ export class PackageInfoClient {
         if (!remoteURL) {
           throw this.#resolveError(spec, options)
         }
-        return (await this.registryClient.request(remoteURL)).buffer()
+        const response = await this.registryClient.request(remoteURL)
+        if (response.statusCode !== 200) {
+          throw this.#resolveError(
+            spec,
+            options,
+            'failed to fetch URL',
+            { response, url: remoteURL },
+          )
+        }
+        return response.buffer()
       }
       case 'file': {
         const { file } = f
         if (file === undefined)
-          throw Object.assign(new Error('no file path'), { spec })
+          throw this.#resolveError(spec, options, 'no file path')
         const { from = this.#cwd } = options
         const path = pathResolve(from, file)
         const st = await stat(path)
@@ -227,7 +293,10 @@ export class PackageInfoClient {
         return readFile(path)
       }
       case 'workspace': {
-        throw new Error('todo: workspace tarball')
+        throw error('not supported', {
+          spec,
+          todo: 'workspace tarball',
+        })
       }
     }
   }
@@ -254,7 +323,7 @@ export class PackageInfoClient {
         if (!remoteURL) {
           const s = spec
           if (!gitRemote)
-            throw Object.assign(new Error('no git remote'), { spec })
+            throw this.#resolveError(spec, options, 'no git remote')
           return await this.#tmpdir(async dir => {
             await clone(gitRemote, gitCommittish, dir, { spec: s })
             const json = await readFile(dir + '/package.json', 'utf8')
@@ -266,11 +335,34 @@ export class PackageInfoClient {
       case 'remote': {
         const { remoteURL } = f
         if (!remoteURL)
-          throw Object.assign(new Error('no remote URL'), { spec })
+          throw this.#resolveError(
+            spec,
+            options,
+            'no remoteURL on remote specifier',
+          )
+        const s = spec
         return await this.#tmpdir(async dir => {
-          const res = await this.registryClient.request(remoteURL)
-          const buf = res.buffer()
-          await this.tarPool.unpack(buf, dir)
+          const response =
+            await this.registryClient.request(remoteURL)
+          if (response.statusCode !== 200) {
+            throw this.#resolveError(
+              s,
+              options,
+              'failed to fetch URL',
+              { response, url: remoteURL },
+            )
+          }
+          const buf = response.buffer()
+          try {
+            await this.tarPool.unpack(buf, dir)
+          } catch (er) {
+            throw this.#resolveError(
+              s,
+              options,
+              'tar unpack failed',
+              { cause: er as Error },
+            )
+          }
           const json = await readFile(dir + '/package.json', 'utf8')
           return JSON.parse(json) as Manifest
         })
@@ -278,21 +370,34 @@ export class PackageInfoClient {
       case 'file': {
         const { file } = f
         if (file === undefined)
-          throw Object.assign(new Error('no file path'), { spec })
+          throw this.#resolveError(spec, options, 'no file path')
         const path = pathResolve(from, file)
         const st = await stat(path)
         if (st.isDirectory()) {
           const json = await readFile(path + '/package.json', 'utf8')
           return JSON.parse(json) as Manifest
         }
+        const s = spec
         return await this.#tmpdir(async dir => {
-          await this.tarPool.unpack(await readFile(path), dir)
+          try {
+            await this.tarPool.unpack(await readFile(path), dir)
+          } catch (er) {
+            throw this.#resolveError(
+              s,
+              options,
+              'tar unpack failed',
+              { cause: er as Error },
+            )
+          }
           const json = await readFile(dir + '/package.json', 'utf8')
           return JSON.parse(json) as Manifest
         })
       }
       case 'workspace': {
-        throw new Error('todo: workspace manifest')
+        throw error('not supported', {
+          spec,
+          todo: 'workspace manifest',
+        })
       }
     }
   }
@@ -309,8 +414,10 @@ export class PackageInfoClient {
       case 'git': {
         const { gitRemote } = f
         if (!gitRemote) {
-          throw new Error(
-            `git remote could not be determined: ${spec}`,
+          throw this.#resolveError(
+            spec,
+            options,
+            'git remote could not be determined',
           )
         }
         const revDoc = await revs(gitRemote, this.options)
@@ -336,10 +443,21 @@ export class PackageInfoClient {
         const { registry, name } = f
         const pakuURL = new URL(name, registry)
         const accept = options.fullMetadata ? fullDoc : corgiDoc
-        const res = await this.registryClient.request(pakuURL, {
+        const response = await this.registryClient.request(pakuURL, {
           headers: { accept },
         })
-        return res.json()
+        if (response.statusCode !== 200) {
+          throw this.#resolveError(
+            spec,
+            options,
+            'failed to fetch packument',
+            {
+              url: pakuURL,
+              response,
+            },
+          )
+        }
+        return response.json()
       }
     }
   }
@@ -358,7 +476,10 @@ export class PackageInfoClient {
       case 'file': {
         const { file } = f
         if (!file)
-          throw new Error(`no path on file: specifier: ${spec}`)
+          error('no path on file: specifier', {
+            spec,
+            code: 'ERESOLVE',
+          })
         const { from = this.#cwd } = options
         const resolved = pathResolve(from, spec.file as string)
         const r = { resolved, spec }
@@ -369,7 +490,11 @@ export class PackageInfoClient {
       case 'remote': {
         const { remoteURL } = f
         if (!remoteURL)
-          throw new Error(`no URL in remote specifier: ${spec}`)
+          throw this.#resolveError(
+            spec,
+            options,
+            'no URL in remote specifier',
+          )
         const r = { resolved: remoteURL, spec }
         this.#resolutions.set(memoKey, r)
         return r
@@ -380,7 +505,10 @@ export class PackageInfoClient {
         // spec.semver/range are set if it's a valid range
         // but if it's like 'workspace:^' then use whatever version
         // is found in the actual workspace at any given point.
-        throw new Error('TODO: workspace resolve')
+        throw error('not supported', {
+          spec,
+          todo: 'workspace resolve',
+        })
       }
 
       case 'registry': {
@@ -410,7 +538,11 @@ export class PackageInfoClient {
           return r
         }
         if (!gitRemote) {
-          throw new Error(`no remote on git specifier: ${spec}`)
+          throw this.#resolveError(
+            spec,
+            options,
+            'no remote on git specifier',
+          )
         }
         const rev = await gitResolve(gitRemote, spec.gitCommittish, {
           spec,
@@ -460,14 +592,18 @@ export class PackageInfoClient {
 
   // error resolving
   #resolveError(
-    spec: Spec,
+    spec?: Spec,
     options: PackageInfoClientRequestOptions = {},
+    message: string = 'Could not resolve',
+    extra: ErrorCauseObject = {},
   ) {
     const { from = this.#cwd } = options
-    const er = Object.assign(
-      new Error(`Could not resolve: '${spec.name}@${spec.bareSpec}'`),
-      { spec, from, code: 'ERESOLVE' },
-    )
+    const er = error(message, {
+      code: 'ERESOLVE',
+      spec,
+      from,
+      ...extra,
+    })
     Error.captureStackTrace(er, this.#resolveError)
     return er
   }

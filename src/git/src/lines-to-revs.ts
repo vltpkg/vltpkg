@@ -1,5 +1,6 @@
 import { Manifest, Packument } from '@vltpkg/pick-manifest'
 import { parse } from '@vltpkg/semver'
+import { error } from '@vltpkg/error-cause'
 
 export type RefType = 'head' | 'branch' | 'tag' | 'pull' | 'other'
 
@@ -195,7 +196,7 @@ const linesToRevsReducer = (revs: RevDoc, line: string) => {
     if (match) {
       /* c8 ignore start */
       if (!match?.[1])
-        throw new Error(`invalid semver tag: ${doc.ref}`)
+        throw error(`invalid semver tag`, { found: doc.ref })
       /* c8 ignore stop */
       const v = parse(match[1])
       if (v) revs.versions[String(v)] = doc

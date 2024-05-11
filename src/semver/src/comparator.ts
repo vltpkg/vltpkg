@@ -1,5 +1,6 @@
 // TODO: it might be faster to not have Version objects in the
 // comparator tuples, and instead just keep the parsed number arrays?
+import { syntaxError } from '@vltpkg/error-cause'
 import { fastSplit } from './fast-split.js'
 import { Version } from './version.js'
 
@@ -26,11 +27,12 @@ export type OVTuple = [SimpleOperator, Version]
 
 const preJunk = new Set('=v \t')
 
-const invalidComp = (c: string, message: string): TypeError => {
-  const er = new TypeError(`invalid comparator: '${c}' ${message}`)
-  Error.captureStackTrace(er, Comparator)
-  return er
-}
+const invalidComp = (c: string, message: string): SyntaxError =>
+  syntaxError(
+    `invalid comparator: '${c}' ${message}`,
+    { found: c },
+    Comparator,
+  )
 
 const assertNumber = (value: string, c: string, field: string) => {
   const n = Number(value)
@@ -152,8 +154,8 @@ export class Comparator {
     return (
       this.isNone ? '<0.0.0-0'
       : this.isAny ? '*'
-      /* c8 ignore next */
-      : this.tuples.map(c => (isAny(c) ? '*' : c.join(''))).join(' ')
+      : /* c8 ignore next */
+        this.tuples.map(c => (isAny(c) ? '*' : c.join(''))).join(' ')
     )
   }
 

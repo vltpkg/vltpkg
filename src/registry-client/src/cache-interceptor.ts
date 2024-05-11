@@ -1,4 +1,5 @@
 import { Cache } from '@vltpkg/cache'
+import { error } from '@vltpkg/error-cause'
 import { STATUS_CODES } from 'http'
 import { Readable } from 'stream'
 import { Dispatcher } from 'undici'
@@ -33,8 +34,11 @@ export const cacheInterceptor = (
       opts
 
     if (!validIntegrity(integrity)) {
-      throw new Error(
-        `invalid integrity SRI, must be base64 sha512 string: ${integrity}`,
+      throw error(
+        'invalid integrity SRI, must be base64 sha512 string',
+        {
+          found: integrity,
+        },
       )
     }
 

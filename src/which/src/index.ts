@@ -12,6 +12,7 @@ const isWindows = process.platform === 'win32'
 const rSlash = sep === '/' ? /\// : /[\\/]/
 const rRel = new RegExp(`^\\.${rSlash.source}`)
 
+// Simulate a NodeJS.ErrnoException
 const getNotFoundError = (cmd: string) =>
   Object.assign(new Error(`not found: ${cmd}`), { code: 'ENOENT' })
 

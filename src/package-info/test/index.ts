@@ -41,9 +41,9 @@ const dir = t.testdir({
   pkg: {
     'package.json': JSON.stringify({
       name: 'abbrev',
-      version: '2.0.0'
-    })
-  }
+      version: '2.0.0',
+    }),
+  },
 })
 const cache = `${dir}/cache`
 const repo = `${dir}/repo`
@@ -93,6 +93,22 @@ const server = createServer((req, res) => {
       res.setHeader('content-length', json.length)
       return res.end(json)
     }
+    case '/missing': {
+      const json = JSON.stringify({
+        'dist-tags': { latest: '1.2.3' },
+        versions: {
+          '1.2.3': {
+            name: 'no-tgz',
+            version: '1.2.3',
+            dist: {
+              tarball: `${defaultRegistry}missing.tgz`,
+            },
+          },
+        },
+      })
+      res.setHeader('content-length', json.length)
+      return res.end(json)
+    }
     case '/abbrev': {
       if (req.headers['if-none-match'] === etag) {
         res.statusCode = 304
@@ -114,11 +130,14 @@ const server = createServer((req, res) => {
     }
     default: {
       res.statusCode = 404
-      console.error('not found', req.url)
+      t.comment('not found', req.url)
+      notFoundURLs.push(String(req.url))
       return res.end(JSON.stringify({ error: 'not found' }))
     }
   }
 })
+
+const notFoundURLs: string[] = []
 
 const defaultRegistry = `http://localhost:${PORT}/`
 const options = {
@@ -187,7 +206,8 @@ t.test('create git repo', { bail: true }, async () => {
   await git('commit', '-m', 'add package.json')
   await git('add', 'rando-ref')
   await git('commit', '-m', 'so rando')
-  randoSha = (await git('show', '--no-patch', '--pretty=%H', 'HEAD')).stdout
+  randoSha = (await git('show', '--no-patch', '--pretty=%H', 'HEAD'))
+    .stdout
   await git('update-ref', 'refs/rando/file', 'HEAD')
   await write('other-file', 'file some other bits')
   await git('add', 'other-file')
@@ -459,16 +479,27 @@ t.test('resolve', async t => {
     },
   )
   t.matchOnly(
-    await resolve(`x@git+${pathToFileURL(repo)}#${randoSha.substring(0, 5)}`, options),
+    await resolve(
+      `x@git+${pathToFileURL(repo)}#${randoSha.substring(0, 5)}`,
+      options,
+    ),
     {
       resolved: `git+${pathToFileURL(repo)}#${randoSha}`,
       spec: Spec,
-    }
+    },
   )
-  t.matchOnly(await resolve('x@fakey:abbrev-2.0.0.tgz', {
-    gitHosts: { fakey: `git+${pathToFileURL(repo)}#committish` },
-    gitHostArchives: { fakey: `${defaultRegistry}abbrev/-/abbrev-2.0.0.tgz` },
-  }), { resolved: `${defaultRegistry}abbrev/-/abbrev-2.0.0.tgz`, spec: Spec })
+  t.matchOnly(
+    await resolve('x@fakey:abbrev-2.0.0.tgz', {
+      gitHosts: { fakey: `git+${pathToFileURL(repo)}#committish` },
+      gitHostArchives: {
+        fakey: `${defaultRegistry}abbrev/-/abbrev-2.0.0.tgz`,
+      },
+    }),
+    {
+      resolved: `${defaultRegistry}abbrev/-/abbrev-2.0.0.tgz`,
+      spec: Spec,
+    },
+  )
 })
 
 t.test('tarball', async t => {
@@ -493,10 +524,7 @@ t.test('tarball', async t => {
     Buffer.from([0x1f, 0x8b]),
   )
   t.strictSame(
-    (await tarball(`x@${pkgDir}`, options)).subarray(
-      0,
-      2,
-    ),
+    (await tarball(`x@${pkgDir}`, options)).subarray(0, 2),
     Buffer.from([0x1f, 0x8b]),
   )
 })
@@ -518,7 +546,7 @@ t.test('extract', async t => {
 
   t.match(
     await extract(`abbrev@${tgzFile}`, dir + '/file', options),
-    { resolved: fileURLToPath( tgzFile) },
+    { resolved: fileURLToPath(tgzFile) },
   )
 
   t.match(
@@ -540,6 +568,40 @@ t.test('extract', async t => {
   }
 })
 
+t.test('extraction failures', async t => {
+  const dir = t.testdir()
+  const { extract, manifest } = await t.mockImport(
+    '../src/index.js',
+    {
+      '@vltpkg/tar': {
+        Pool: class Pool {
+          async unpack() {
+            throw new Error('no tar for you')
+          }
+        },
+      },
+    },
+  )
+  t.rejects(extract('abbrev@2', dir + '/registry', options))
+
+  t.rejects(
+    extract(
+      `abbrev@${defaultRegistry}abbrev/-/abbrev-2.0.0.tgz`,
+      dir + '/remote',
+      options,
+    ),
+  )
+  t.rejects(
+    manifest(
+      `abbrev@${defaultRegistry}abbrev/-/abbrev-2.0.0.tgz`,
+      options,
+    ),
+  )
+  t.rejects(manifest(`abbrev@${tgzFile}`))
+
+  t.rejects(extract(`abbrev@${tgzFile}`, dir + '/file', options))
+})
+
 t.test('manifest must provide actual dist results', async t => {
   t.rejects(resolve('deleted@latest', options))
   t.rejects(resolve('no-tgz@latest', options))
@@ -550,73 +612,138 @@ t.test('manifest must provide actual dist results', async t => {
 })
 
 t.test('git spec must have gitRemote', async t => {
-  t.rejects(resolve({
-    toString: () => 'x',
-    final: { type: 'git' },
-  } as Spec), {
-    message: 'no remote on git specifier: x',
-  })
-  t.rejects(manifest({
-    toString: () => 'x',
-    final: { type: 'git' },
-  } as Spec), {
-    message: 'no git remote',
-  })
-  t.rejects(packument({
-    toString: () => 'x',
-    final: { type: 'git' },
-  } as Spec), {
-    message: 'git remote could not be determined: x',
-  })
-  t.rejects(tarball({
-    toString: () => 'x',
-    final: { type: 'git' },
-  } as Spec))
-  t.rejects(extract({
-    toString: () => 'x',
-    final: { type: 'git' },
-  } as Spec, t.testdir()))
+  t.rejects(
+    resolve({
+      toString: () => 'x',
+      final: { type: 'git' },
+    } as Spec),
+    {
+      message: 'no remote on git specifier',
+      cause: { code: 'ERESOLVE' },
+    },
+  )
+  t.rejects(
+    manifest({
+      toString: () => 'x',
+      final: { type: 'git' },
+    } as Spec),
+    {
+      message: 'no git remote',
+      cause: { code: 'ERESOLVE' },
+    },
+  )
+  t.rejects(
+    packument({
+      toString: () => 'x',
+      final: { type: 'git' },
+    } as Spec),
+    {
+      message: 'git remote could not be determined',
+      cause: { code: 'ERESOLVE' },
+    },
+  )
+  t.rejects(
+    tarball({
+      toString: () => 'x',
+      final: { type: 'git' },
+    } as Spec),
+  )
+  t.rejects(
+    extract(
+      {
+        toString: () => 'x',
+        final: { type: 'git' },
+      } as Spec,
+      t.testdir(),
+    ),
+  )
 })
-t.test('fails on version that is not present', async t => 
-  t.rejects(resolve('abbrev@999', options)))
+t.test('fails on version that is not present', async t =>
+  t.rejects(resolve('abbrev@999', options)),
+)
 
 t.test('remote spec must have remoteURL', async t => {
-  t.rejects(resolve({
-    toString: () => 'x',
-    final: { type: 'remote' },
-  } as Spec, options))
-  t.rejects(packument({
-    toString: () => 'x',
-    final: { type: 'remote' },
-  } as Spec, options))
-  t.rejects(manifest({
-    toString: () => 'x',
-    final: { type: 'remote' },
-  } as Spec, options))
-  t.rejects(tarball({
-    toString: () => 'x',
-    final: { type: 'remote' },
-  } as Spec, options))
+  t.rejects(
+    resolve(
+      {
+        toString: () => 'x',
+        final: { type: 'remote' },
+      } as Spec,
+      options,
+    ),
+  )
+  t.rejects(
+    packument(
+      {
+        toString: () => 'x',
+        final: { type: 'remote' },
+      } as Spec,
+      options,
+    ),
+  )
+  t.rejects(
+    manifest(
+      {
+        toString: () => 'x',
+        final: { type: 'remote' },
+      } as Spec,
+      options,
+    ),
+  )
+  t.rejects(
+    tarball(
+      {
+        toString: () => 'x',
+        final: { type: 'remote' },
+      } as Spec,
+      options,
+    ),
+  )
   t.rejects(packument(`x@git+${pkgDir}`, options))
 })
 
 t.test('file spec must have file', async t => {
-  t.rejects(resolve({
-    toString: () => 'x',
-    final: { type: 'file' },
-  } as Spec))
-  t.rejects(packument({
-    toString: () => 'x',
-    final: { type: 'file' },
-  } as Spec))
-  t.rejects(manifest({
-    toString: () => 'x',
-    final: { type: 'file' },
-  } as Spec))
-  t.rejects(tarball({
-    toString: () => 'x',
-    final: { type: 'file' },
-  } as Spec))
+  t.rejects(
+    resolve({
+      toString: () => 'x',
+      final: { type: 'file' },
+    } as Spec),
+  )
+  t.rejects(
+    packument({
+      toString: () => 'x',
+      final: { type: 'file' },
+    } as Spec),
+  )
+  t.rejects(
+    manifest({
+      toString: () => 'x',
+      final: { type: 'file' },
+    } as Spec),
+  )
+  t.rejects(
+    tarball({
+      toString: () => 'x',
+      final: { type: 'file' },
+    } as Spec),
+  )
+})
+
+t.test('fails on non-200 response', async t => {
+  const d = t.testdir()
+  t.rejects(packument('lodash', options))
+  t.rejects(manifest('lodash', options))
+  t.rejects(tarball('lodash', options))
+  t.rejects(resolve('lodash', options))
+  t.rejects(tarball('missing', options))
+  t.rejects(extract('missing', d, options))
+
+  t.rejects(packument(`lodash@${defaultRegistry}lodash.tgz`, options))
+  t.rejects(manifest(`lodash@${defaultRegistry}lodash.tgz`, options))
+  t.rejects(tarball(`lodash@${defaultRegistry}lodash.tgz`, options))
+  t.rejects(
+    extract(`lodash@${defaultRegistry}lodash.tgz`, d, options),
+  )
 })
 
 t.test('stubbed workspace spec handling', async t => {
@@ -624,4 +751,9 @@ t.test('stubbed workspace spec handling', async t => {
   t.rejects(resolve('x@workspace:*'))
   t.rejects(manifest('x@workspace:*'))
   t.rejects(extract('x@workspace:*', t.testdir()))
+})
+
+t.test('verify we got the expected missing urls', t => {
+  t.matchSnapshot(notFoundURLs.sort((a, b) => a.localeCompare(b)))
+  t.end()
 })

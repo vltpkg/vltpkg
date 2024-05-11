@@ -1,5 +1,6 @@
 import { Range } from './range.js'
 import { IncrementType, Version } from './version.js'
+import { syntaxError } from '@vltpkg/error-cause'
 
 export * from './comparator.js'
 export * from './range.js'
@@ -384,11 +385,11 @@ export const compare = (
 ) => {
   const a = parse(versionA)
   if (!a) {
-    throw new TypeError('invalid version: ' + versionA)
+    throw syntaxError('invalid version', { found: versionA })
   }
   const b = parse(versionB)
   if (!b) {
-    throw new TypeError('invalid version: ' + versionB)
+    throw syntaxError('invalid version', { found: versionB })
   }
   return a.compare(b)
 }

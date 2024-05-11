@@ -14,6 +14,7 @@
     "typecheck": true
   },
   "dependencies": {
+    "@vltpkg/error-cause": "workspace:*",
     "@vltpkg/registry-client": "workspace:*",
     "@vltpkg/semver": "workspace:*",
     "@vltpkg/spec": "workspace:*"

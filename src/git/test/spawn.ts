@@ -1,12 +1,12 @@
 import fs from 'fs'
 import { resolve } from 'path'
 import t from 'tap'
-import * as errors from '../src/errors.js'
 import { spawn } from '../src/spawn.js'
+import { error } from '@vltpkg/error-cause'
 
 t.rejects(spawn(['status'], { git: false }), {
   message: 'No git binary found in $PATH',
-  code: 'ENOGIT',
+  cause: { code: 'ENOGIT' },
 })
 
 const slash = (s: string) => s.replace(/\\/g, '/')
@@ -28,11 +28,14 @@ t.test('argument test for allowReplace', async t => {
   // test/clone.js, since it covers the use case that is relevant
   // for our purposes.  This just tests that the argument is added
   // by default.
-  const { spawn: mockedSpawn } = await t.mockImport('../src/spawn.js', {
-    '@vltpkg/promise-spawn': {
-      promiseSpawn: async (_: string, args: string[]) => args,
+  const { spawn: mockedSpawn } = await t.mockImport(
+    '../src/spawn.js',
+    {
+      '@vltpkg/promise-spawn': {
+        promiseSpawn: async (_: string, args: string[]) => args,
+      },
     },
-  })
+  )
   const result = await mockedSpawn(['a', 'b', 'c'])
   t.same(
     result,
@@ -67,14 +70,13 @@ process.exit(1)
       fetchRetryMintimeout: 1,
     },
   }
-  const er = Object.assign(new errors.GitConnectionError(), {
+  const er = error('A git connection error occurred', {
     cmd: process.execPath,
     args: [te],
     status: 1,
     signal: null,
     stdout: '',
     stderr: gitMessage,
-    message: 'A git connection error occurred',
   })
   for (const [n, ro] of Object.entries(retryOptions)) {
     t.test(n, async t => {
@@ -104,14 +106,13 @@ console.error("${gitMessage.trim()}")
 process.exit(1)
   `,
   )
-  const er = Object.assign(new errors.GitPathspecError(), {
+  const er = error('The git reference could not be found', {
     cmd: process.execPath,
     args: [te],
     status: 1,
     signal: null,
     stdout: '',
     stderr: gitMessage,
-    message: 'The git reference could not be found',
   })
   t.rejects(
     spawn([te], {
@@ -135,14 +136,13 @@ console.error("${gitMessage.trim()}")
 process.exit(1)
   `,
   )
-  const er = Object.assign(new errors.GitUnknownError(), {
+  const er = error('An unknown git error occurred', {
     cmd: process.execPath,
     args: [te],
     status: 1,
     signal: null,
     stdout: '',
     stderr: gitMessage,
-    message: 'An unknown git error occurred',
   })
   t.rejects(
     spawn([te], {

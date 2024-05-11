@@ -13,7 +13,8 @@
     "typedoc": "^0.25.13"
   },
   "dependencies": {
-    "@vltpkg/cache": "workspace:*"
+    "@vltpkg/cache": "workspace:*",
+    "@vltpkg/error-cause": "workspace:*"
   },
   "scripts": {
     "preversion": "npm test",

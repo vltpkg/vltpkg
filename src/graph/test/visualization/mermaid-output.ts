@@ -54,10 +54,15 @@ t.test('human-readable-output', async t => {
     'dependencies',
     Spec.parse('missing', '^1.0.0'),
   )
-  graph.placePackage(baz, 'dependencies', Spec.parse('foo', '^1.0.0'), {
-    name: 'foo',
-    version: '1.0.0',
-  })
+  graph.placePackage(
+    baz,
+    'dependencies',
+    Spec.parse('foo', '^1.0.0'),
+    {
+      name: 'foo',
+      version: '1.0.0',
+    },
+  )
   t.matchSnapshot(
     mermaidOutput(graph),
     'should print human readable output',

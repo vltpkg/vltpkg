@@ -1,3 +1,4 @@
+import { error } from '@vltpkg/error-cause'
 import { parse, Range, satisfies, Version } from '@vltpkg/semver'
 import { Spec } from '@vltpkg/spec'
 
@@ -158,8 +159,9 @@ export const pickManifest = (
 
   if (!range) {
     if (!spec?.distTag) {
-      throw new Error(
+      throw error(
         'Only dist-tag or semver range specs are supported',
+        { spec },
       )
     }
     // if there is an explicit dist tag, we must get that version.

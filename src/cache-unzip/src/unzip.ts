@@ -1,5 +1,6 @@
 import { Cache } from '@vltpkg/cache'
 import { gunzipSync } from 'zlib'
+import { error } from '@vltpkg/error-cause'
 
 process.title = 'vlt-cache-unzip'
 
@@ -24,7 +25,10 @@ const readSize = (buf: Buffer, offset: number) => {
     c === undefined ||
     d === undefined
   ) {
-    throw new Error('Invalid buffer, not long enough to readSize')
+    throw error('Invalid buffer, not long enough to readSize', {
+      found: buf,
+      offset,
+    })
   }
   /* c8 ignore stop */
 

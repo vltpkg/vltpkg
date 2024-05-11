@@ -1,3 +1,4 @@
+import { error } from '@vltpkg/error-cause'
 import {
   ChildProcess,
   IOType,
@@ -234,11 +235,12 @@ export class SpawnPromise<
       const stderr: Buffer[] = []
       const reject = (er: Error) =>
         rej(
-          Object.assign(er, {
+          error('command failed', {
             cmd,
             args,
             ...stdioResult(stdout, stderr, opts),
             ...extra,
+            cause: er,
           }),
         )
       proc.on('error', reject)
@@ -263,7 +265,7 @@ export class SpawnPromise<
           ...extra,
         } as SpawnResultByOptions<O> & T
         if ((status || signal) && !opts.acceptFail)
-          rej(Object.assign(new Error('command failed'), result))
+          rej(error('command failed', result))
         else res(result)
       })
     })

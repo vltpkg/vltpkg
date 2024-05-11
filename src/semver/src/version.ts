@@ -1,3 +1,4 @@
+import { syntaxError, typeError } from '@vltpkg/error-cause'
 import { fastSplit } from './fast-split.js'
 import { type Range } from './range.js'
 
@@ -30,9 +31,15 @@ const re = {
   full: /^[ v=]*(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-([0-9a-zA-Z_.-]+))?(?:\+([0-9a-zA-Z_.-]+))?$/,
 } as const
 
-const invalidVersion = (v: string, message: string): TypeError => {
-  const er = new TypeError(`invalid version: '${v}' ${message}`)
-  Error.captureStackTrace(er, Version)
+const invalidVersion = (
+  version: string,
+  message: string,
+): SyntaxError => {
+  const er = syntaxError(
+    `invalid version: ${message}`,
+    { version },
+    Version,
+  )
   return er
 }
 
@@ -357,7 +364,24 @@ export class Version {
         break
 
       default:
-        throw new TypeError('Invalid increment identifier')
+        throw typeError(
+          'Invalid increment identifier',
+          {
+            version: this,
+            found: part,
+            validOptions: [
+              'major',
+              'minor',
+              'patch',
+              'premajor',
+              'preminor',
+              'prepatch',
+              'prerelease',
+              'pre',
+            ],
+          },
+          this.inc,
+        )
     }
 
     this.raw = this.toString()

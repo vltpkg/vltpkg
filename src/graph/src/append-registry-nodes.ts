@@ -1,3 +1,4 @@
+import { error } from '@vltpkg/error-cause'
 import { CacheEntry, RegistryClient } from '@vltpkg/registry-client'
 import { Spec } from '@vltpkg/spec'
 import { Graph } from './graph.js'
@@ -30,7 +31,10 @@ export const appendRegistryNodes = async (
   for (const [response, spec] of res) {
     if (response) {
       if (!isPackageMetadata(response.body)) {
-        throw new Error('Failed to retrieve package metadata')
+        throw error('Failed to retrieve package metadata', {
+          spec,
+          response,
+        })
       }
       const mani = response.body
       const node = graph.placePackage(

@@ -20,12 +20,18 @@ t.test('create git repo', async () => {
 })
 
 t.test('fail if spawned process fails', async t => {
-  const { isClean } = await t.mockImport(
-    '../src/is-clean.js',
-    { '../src/spawn.js': {
-      spawn: async () => ({ status: 1, hello: 'world' })
-    }})
-  await t.rejects(isClean(), { message: 'failed', hello: 'world' })
+  const { isClean } = await t.mockImport('../src/is-clean.js', {
+    '../src/spawn.js': {
+      spawn: async () => ({ status: 1, hello: 'world' }),
+    },
+  })
+  await t.rejects(isClean(), {
+    message: 'git isClean check failed',
+    cause: {
+      status: 1,
+      hello: 'world',
+    },
+  })
 })
 
 t.test('dir is clean, just one unknown file', t =>

@@ -4,7 +4,6 @@ import type { SpawnOptions } from 'child_process'
 import type { WrapOptions } from 'retry'
 
 export * from './clone.js'
-export * from './errors.js'
 export * from './find.js'
 export * from './is-clean.js'
 export * from './is.js'

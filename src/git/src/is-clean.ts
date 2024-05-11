@@ -1,3 +1,4 @@
+import { error } from '@vltpkg/error-cause'
 import { spawn } from './spawn.js'
 
 export const isClean = async (opts = {}) => {
@@ -6,7 +7,7 @@ export const isClean = async (opts = {}) => {
     opts,
   )
   if (result.status || result.signal) {
-    throw Object.assign(new Error('git isClean check failed'), result)
+    throw error('git isClean check failed', result)
   }
   for (const line of result.stdout.split(/\r?\n+/)) {
     if (line.trim()) return false

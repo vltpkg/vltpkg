@@ -19,6 +19,7 @@
 // From there, the body can be of any indeterminate length, and is the rest
 // of the file.
 
+import { error } from '@vltpkg/error-cause'
 import ccp from 'cache-control-parser'
 import { createHash } from 'crypto'
 import { inspect } from 'util'
@@ -39,7 +40,9 @@ const readSize = (buf: Buffer, offset: number) => {
     c === undefined ||
     d === undefined
   ) {
-    throw new Error('Invalid buffer, not long enough to readSize')
+    throw error('Invalid buffer, not long enough to readSize', {
+      found: buf.length,
+    })
   }
   /* c8 ignore stop */
 
@@ -67,7 +70,7 @@ export class CacheEntry {
   }
 
   get #headersAsObject(): [string, string][] {
-    const ret: [string,string][] = []
+    const ret: [string, string][] = []
     for (let i = 0; i < this.#headers.length - 1; i++) {
       const key = String(this.#headers[i])
       const val = String(this.#headers[i + 1])
