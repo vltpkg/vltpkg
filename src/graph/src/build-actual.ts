@@ -1,3 +1,4 @@
+import { error } from '@vltpkg/error-cause'
 import { Spec } from '@vltpkg/spec'
 import { resolve } from 'node:path'
 import { Graph } from './graph.js'
@@ -22,11 +23,14 @@ const readOrigin = (dir: string): string => {
   }
   const remainder = decodeURIComponent(encodedHostname)
   const [, origin] =
-    Object.entries(registries).find(([key, value]) =>
+    Object.entries(registries).find(([key]) =>
       remainder.startsWith(key),
     ) || []
   if (!origin) {
-    throw new Error(`Registry ${remainder} was not found in configs`)
+    throw error(`Registry was not found in configs`, {
+      found: remainder,
+      validOptions: Object.keys(registries),
+    })
   }
   return origin
 }

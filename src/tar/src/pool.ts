@@ -1,3 +1,4 @@
+import { error } from '@vltpkg/error-cause'
 import os from 'os'
 import { Worker } from 'worker_threads'
 import { UnpackRequest } from './unpack-request.js'
@@ -60,15 +61,18 @@ export class Pool {
       ur.resolve()
       /* c8 ignore start - nearly impossible in normal circumstances */
     } else {
-      ur.reject(new Error(m.error || 'failed without error message'))
+      ur.reject(
+        error(m.error || 'failed without error message', {
+          found: m,
+        }),
+      )
     }
     /* c8 ignore stop */
     const next = this.queue.shift()
     if (!next) {
       this.workers.delete(w)
       w.terminate()
-    }
-    else this.#request(w, next)
+    } else this.#request(w, next)
   }
 
   // send a request to a worker

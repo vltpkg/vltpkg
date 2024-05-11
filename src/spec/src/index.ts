@@ -1,3 +1,4 @@
+import { error, typeError } from '@vltpkg/error-cause'
 import { parseRange, type Range } from '@vltpkg/semver'
 import { inspect } from 'util'
 
@@ -63,10 +64,9 @@ export class Spec {
     bareOrOptions?: SpecOptions | string,
     options?: SpecOptions,
   ) {
-    return (
-      typeof spec === 'object' ? spec
-      : new Spec(spec, bareOrOptions, options)
-    )
+    return typeof spec === 'object' ? spec : (
+        new Spec(spec, bareOrOptions, options)
+      )
   }
 
   /** the type of spec that this is, ultimately */
@@ -407,9 +407,7 @@ export class Spec {
   }
 
   #error(message: string) {
-    return Object.assign(new Error(message), {
-      spec: this.spec,
-    })
+    return error(message, { spec: this.spec }, this.#error)
   }
 
   #parseGitSelector(s: string) {
@@ -423,7 +421,13 @@ export class Spec {
     const split = this.gitSelector.split('::')
     const first = split[0]
     /* c8 ignore start - for TS's benefit */
-    if (typeof first !== 'string') throw new Error('impossible')
+    if (typeof first !== 'string') {
+      throw typeError('impossible', {
+        found: first,
+        wanted: String,
+      })
+    }
+    /* c8 ignore stop */
     if (!first.includes(':')) {
       this.gitCommittish = first
       split.shift()
@@ -431,6 +435,7 @@ export class Spec {
     this.gitSelectorParsed = {}
     for (const kv of split) {
       const c = kv.indexOf(':')
+      /* c8 ignore next */
       if (c === -1) continue
       const k = kv.substring(0, c)
       const v = kv.substring(c + 1)

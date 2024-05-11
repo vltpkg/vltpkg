@@ -1,3 +1,4 @@
+import { error } from '@vltpkg/error-cause'
 import { whichSync } from '@vltpkg/which'
 import { type GitOptions } from './index.js'
 
@@ -7,17 +8,25 @@ export const which = (opts: GitOptions = {}) => {
   if (opts.git) {
     return opts.git
   }
+  let whichError: Error | undefined = undefined
   if (opts.git !== false) {
     if (!gitPath) {
       try {
         gitPath = whichSync('git')
-      } catch {}
+      } catch (er) {
+        whichError = er as Error
+      }
     }
   }
   if (!gitPath || opts.git === false) {
-    return Object.assign(new Error('No git binary found in $PATH'), {
-      code: 'ENOGIT',
-    })
+    return error(
+      'No git binary found in $PATH',
+      {
+        code: 'ENOGIT',
+        cause: whichError,
+      },
+      which,
+    )
   }
   return gitPath
 }

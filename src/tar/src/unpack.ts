@@ -1,3 +1,4 @@
+import { error } from '@vltpkg/error-cause'
 import { randomBytes } from 'crypto'
 import { existsSync, mkdirSync, renameSync, writeFileSync } from 'fs'
 import { basename, dirname, parse, resolve } from 'path'
@@ -55,7 +56,10 @@ export const unpack = (
   if (isGzip) {
     /* c8 ignore start */
     if (didGzipAlready) {
-      throw new Error('gunzipped but still gzipped??!')
+      throw error('still gzipped after unzipping', {
+        found: isGzip,
+        wanted: false,
+      })
     }
     /* c8 ignore stop */
     return unpack(unzipSync(buffer), target, true)
@@ -63,18 +67,22 @@ export const unpack = (
 
   // another real quick gutcheck before we get started
   if (buffer.length % 512 !== 0) {
-    throw new Error('Invalid tarball: length not divisible by 512')
+    throw error('Invalid tarball: length not divisible by 512', {
+      found: buffer.length,
+    })
   }
   if (buffer.length < 1024) {
-    throw new Error(
+    throw error(
       'Invalid tarball: not terminated by 1024 null bytes',
+      { found: buffer.length },
     )
   }
   // make sure the last kb is all zeros
   for (let i = buffer.length - 1024; i < buffer.length; i++) {
     if (buffer[i] !== 0) {
-      throw new Error(
+      throw error(
         'Invalid tarball: not terminated by 1024 null bytes',
+        { found: buffer.subarray(i, i + 10) },
       )
     }
   }

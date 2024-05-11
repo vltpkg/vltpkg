@@ -28,7 +28,8 @@ const runTest = async (
     t.test(`${t.name} - ${platform}`, async t => {
       // pass in undefined if there are no opts to test default argß
       const opt = Object.keys(_opt).length ? { ..._opt } : undefined
-      if (!isWindows) t.intercept(process, 'platform', { value: platform })
+      if (!isWindows)
+        t.intercept(process, 'platform', { value: platform })
       const { which, whichSync } = await t.mockImport(
         '../src/index.js',
         {

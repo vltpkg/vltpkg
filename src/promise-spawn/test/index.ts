@@ -252,18 +252,22 @@ t.test('exposes process', async t => {
   if (process.platform === 'win32') {
     await t.rejects(p, {
       message: 'command failed',
-      status: 1,
-      signal: null,
-      stdout: '',
-      stderr: '',
+      cause: {
+        status: 1,
+        signal: null,
+        stdout: '',
+        stderr: '',
+      },
     })
   } else {
     await t.rejects(
       p,
       Object.assign(new Error('command failed'), {
-        signal: 'SIGKILL',
-        stdout: '',
-        stderr: '',
+        cause: {
+          signal: 'SIGKILL',
+          stdout: '',
+          stderr: '',
+        },
       }),
     )
   }
@@ -278,9 +282,14 @@ t.test('rejects when spawn errors', async t => {
     .spawnError(new Error('command not found'))
 
   await t.rejects(promiseSpawn('notfound', []), {
-    message: 'command not found',
-    stdout: '',
-    stderr: '',
+    message: 'command failed',
+    cause: {
+      stdout: '',
+      stderr: '',
+      cmd: 'notfound',
+      args: [],
+      cause: new Error('command not found'),
+    },
   })
 
   t.ok(proc.called)
@@ -295,10 +304,13 @@ t.test('spawn error includes extra', async t => {
   await t.rejects(
     promiseSpawn('notfound', [], {}, { extra: 'property' }),
     {
-      message: 'command not found',
-      stdout: '',
-      stderr: '',
-      extra: 'property',
+      message: 'command failed',
+      cause: {
+        stdout: '',
+        stderr: '',
+        extra: 'property',
+        cause: new Error('command not found'),
+      },
     },
   )
 
@@ -314,9 +326,12 @@ t.test('spawn error respects stdioString', async t => {
   await t.rejects(
     promiseSpawn('notfound', [], { stdioString: false }),
     {
-      message: 'command not found',
-      stdout: Buffer.from(''),
-      stderr: Buffer.from(''),
+      message: 'command failed',
+      cause: {
+        stdout: Buffer.from(''),
+        stderr: Buffer.from(''),
+        cause: new Error('command not found'),
+      },
     },
   )
 
@@ -332,9 +347,12 @@ t.test('spawn error respects stdio as inherit', async t => {
   await t.rejects(
     promiseSpawn('notfound', [], { stdio: 'inherit' }),
     {
-      message: 'command not found',
-      stdout: null,
-      stderr: null,
+      message: 'command failed',
+      cause: {
+        stdout: null,
+        stderr: null,
+        cause: new Error('command not found'),
+      },
     },
   )
 
@@ -349,32 +367,39 @@ t.test('rejects when command fails', async t => {
 
   await t.rejects(promiseSpawn('fail', []), {
     message: 'command failed',
-    status: 1,
-    stdout: '',
-    stderr: 'Error!',
+    cause: {
+      status: 1,
+      stdout: '',
+      stderr: 'Error!',
+    },
   })
 
   t.ok(proc.called)
 })
 
-t.test('does not rejects when command fails if acceptFail', async t => {
-  const proc = spawk
-    .spawn('fail', [], {})
-    .stderr(Buffer.from('Error!\n'))
-    .exit(1)
+t.test(
+  'does not rejects when command fails if acceptFail',
+  async t => {
+    const proc = spawk
+      .spawn('fail', [], {})
+      .stderr(Buffer.from('Error!\n'))
+      .exit(1)
 
-  t.strictSame(await promiseSpawn('fail', [], { acceptFail: true }), {
-  cmd: 'fail',
-  args: [],
-  status: 1,
-  signal: null,
-  stdout: '',
-  stderr: 'Error!'
-}
+    t.strictSame(
+      await promiseSpawn('fail', [], { acceptFail: true }),
+      {
+        cmd: 'fail',
+        args: [],
+        status: 1,
+        signal: null,
+        stdout: '',
+        stderr: 'Error!',
+      },
+    )
+
+    t.ok(proc.called)
+  },
 )
-
-  t.ok(proc.called)
-})
 
 t.test('failed command returns extra', async t => {
   const proc = spawk
@@ -386,10 +411,12 @@ t.test('failed command returns extra', async t => {
     promiseSpawn('fail', [], {}, { extra: 'property' }),
     {
       message: 'command failed',
-      status: 1,
-      stdout: '',
-      stderr: 'Error!',
-      extra: 'property',
+      cause: {
+        status: 1,
+        stdout: '',
+        stderr: 'Error!',
+        extra: 'property',
+      },
     },
   )
 
@@ -404,9 +431,11 @@ t.test('failed command respects stdioString', async t => {
 
   await t.rejects(promiseSpawn('fail', [], { stdioString: false }), {
     message: 'command failed',
-    status: 1,
-    stdout: Buffer.from(''),
-    stderr: Buffer.from('Error!\n'),
+    cause: {
+      status: 1,
+      stdout: Buffer.from(''),
+      stderr: Buffer.from('Error!\n'),
+    },
   })
 
   t.ok(proc.called)
@@ -420,9 +449,11 @@ t.test('failed command respects stdio as inherit', async t => {
 
   await t.rejects(promiseSpawn('fail', [], { stdio: 'inherit' }), {
     message: 'command failed',
-    status: 1,
-    stdout: null,
-    stderr: null,
+    cause: {
+      status: 1,
+      stdout: null,
+      stderr: null,
+    },
   })
 
   t.ok(proc.called)
@@ -436,17 +467,22 @@ t.test('rejects when signal kills child', async t => {
   if (process.platform === 'win32') {
     await t.rejects(p, {
       message: 'command failed',
-      status: 1,
-      signal: null,
-      stdout: '',
-      stderr: '',
+      cause: {
+        status: 1,
+        signal: null,
+        stdout: '',
+        stderr: '',
+      },
     })
   } else {
     await t.rejects(p, {
-      code: null,
-      signal: 'SIGFAKE',
-      stdout: '',
-      stderr: '',
+      message: 'command failed',
+      cause: {
+        code: null,
+        signal: 'SIGFAKE',
+        stdout: '',
+        stderr: '',
+      },
     })
   }
 
@@ -461,19 +497,24 @@ t.test('signal death includes extra', async t => {
   if (process.platform === 'win32') {
     await t.rejects(p, {
       message: 'command failed',
-      status: 1,
-      signal: null,
-      stdout: '',
-      stderr: '',
-      extra: 'property',
+      cause: {
+        status: 1,
+        signal: null,
+        stdout: '',
+        stderr: '',
+        extra: 'property',
+      },
     })
   } else {
     await t.rejects(p, {
-      code: null,
-      signal: 'SIGFAKE',
-      stdout: '',
-      stderr: '',
-      extra: 'property',
+      message: 'command failed',
+      cause: {
+        code: null,
+        signal: 'SIGFAKE',
+        stdout: '',
+        stderr: '',
+        extra: 'property',
+      },
     })
   }
 
@@ -488,17 +529,22 @@ t.test('signal death respects stdioString', async t => {
   if (process.platform === 'win32') {
     await t.rejects(p, {
       message: 'command failed',
-      status: 1,
-      signal: null,
-      stdout: Buffer.from(''),
-      stderr: Buffer.from(''),
+      cause: {
+        status: 1,
+        signal: null,
+        stdout: Buffer.from(''),
+        stderr: Buffer.from(''),
+      },
     })
   } else {
     await t.rejects(p, {
-      code: null,
-      signal: 'SIGFAKE',
-      stdout: Buffer.from(''),
-      stderr: Buffer.from(''),
+      message: 'command failed',
+      cause: {
+        code: null,
+        signal: 'SIGFAKE',
+        stdout: Buffer.from(''),
+        stderr: Buffer.from(''),
+      },
     })
   }
 
@@ -515,17 +561,22 @@ t.test('signal death respects stdio as inherit', async t => {
   if (process.platform === 'win32') {
     await t.rejects(p, {
       message: 'command failed',
-      status: 1,
-      signal: null,
-      stdout: null,
-      stderr: null,
+      cause: {
+        status: 1,
+        signal: null,
+        stdout: null,
+        stderr: null,
+      },
     })
   } else {
     await t.rejects(p, {
-      code: null,
-      signal: 'SIGFAKE',
-      stdout: null,
-      stderr: null,
+      message: 'command failed',
+      cause: {
+        code: null,
+        signal: 'SIGFAKE',
+        stdout: null,
+        stderr: null,
+      },
     })
   }
 
@@ -542,11 +593,14 @@ t.test('rejects when stdout errors', async t => {
 
   await t.rejects(
     p,
-    Object.assign(new Error('stdout err'), {
-      cmd: 'stdout-err',
-      args: [],
-      stdout: '',
-      stderr: '',
+    Object.assign(new Error('command failed'), {
+      cause: {
+        cmd: 'stdout-err',
+        args: [],
+        stdout: '',
+        stderr: '',
+        cause: new Error('stdout err'),
+      },
     }),
   )
 
@@ -561,13 +615,18 @@ t.test('rejects when stderr errors', async t => {
     p.process.stderr.emit('error', new Error('stderr err')),
   )
 
-  await t.rejects(p, {
-    message: 'stderr err',
-    cmd: 'stderr-err',
-    args: [],
-    stdout: '',
-    stderr: '',
-  })
+  await t.rejects(
+    p,
+    Object.assign(new Error('command failed'), {
+      cause: {
+        cmd: 'stderr-err',
+        args: [],
+        stdout: '',
+        stderr: '',
+        cause: new Error('stderr err'),
+      },
+    }),
+  )
 
   t.ok(proc.called)
 })

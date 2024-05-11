@@ -15,7 +15,7 @@ if (mungePath) {
 
 const er = {
   message: 'No git binary found in $PATH',
-  code: 'ENOGIT',
+  cause: { code: 'ENOGIT' },
 }
 
 t.equal(whichGit({ git: 'foo' }), 'foo')

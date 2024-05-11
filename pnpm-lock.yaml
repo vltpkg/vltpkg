@@ -49,6 +49,27 @@ importers:
       '@vltpkg/cache':
         specifier: workspace:*
         version: link:../cache
+      '@vltpkg/error-cause':
+        specifier: workspace:*
+        version: link:../error-cause
+    devDependencies:
+      '@types/node':
+        specifier: ^20.12.7
+        version: 20.12.11
+      prettier:
+        specifier: ^3.2.5
+        version: 3.2.5
+      tap:
+        specifier: ^18.7.3
+        version: 18.7.3(@types/node@20.12.11)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.2.2)
+      tshy:
+        specifier: ^1.14.0
+        version: 1.14.0
+      typedoc:
+        specifier: ^0.25.13
+        version: 0.25.13(typescript@5.2.2)
+
+  src/error-cause:
     devDependencies:
       '@types/node':
         specifier: ^20.12.7
@@ -71,6 +92,9 @@ importers:
       '@types/promise-retry':
         specifier: ^1.1.6
         version: 1.1.6
+      '@vltpkg/error-cause':
+        specifier: workspace:*
+        version: link:../error-cause
       '@vltpkg/git-scp-url':
         specifier: workspace:*
         version: link:../git-scp-url
@@ -135,6 +159,9 @@ importers:
 
   src/graph:
     dependencies:
+      '@vltpkg/error-cause':
+        specifier: workspace:*
+        version: link:../error-cause
       '@vltpkg/registry-client':
         specifier: workspace:*
         version: link:../registry-client
@@ -163,6 +190,9 @@ importers:
 
   src/package-info:
     dependencies:
+      '@vltpkg/error-cause':
+        specifier: workspace:*
+        version: link:../error-cause
       '@vltpkg/git':
         specifier: workspace:*
         version: link:../git
@@ -203,6 +233,9 @@ importers:
 
   src/pick-manifest:
     dependencies:
+      '@vltpkg/error-cause':
+        specifier: workspace:*
+        version: link:../error-cause
       '@vltpkg/semver':
         specifier: workspace:*
         version: link:../semver
@@ -233,6 +266,10 @@ importers:
         version: 0.25.13(typescript@5.2.2)
 
   src/promise-spawn:
+    dependencies:
+      '@vltpkg/error-cause':
+        specifier: workspace:*
+        version: link:../error-cause
     devDependencies:
       '@types/node':
         specifier: ^20.12.7
@@ -261,6 +298,9 @@ importers:
       '@vltpkg/cache-unzip':
         specifier: workspace:*
         version: link:../cache-unzip
+      '@vltpkg/error-cause':
+        specifier: workspace:*
+        version: link:../error-cause
       cache-control-parser:
         specifier: ^2.0.5
         version: 2.0.5
@@ -285,6 +325,10 @@ importers:
         version: 0.25.13(typescript@5.2.2)
 
   src/semver:
+    dependencies:
+      '@vltpkg/error-cause':
+        specifier: workspace:*
+        version: link:../error-cause
     devDependencies:
       '@types/bun':
         specifier: ^1.1.1
@@ -313,6 +357,9 @@ importers:
 
   src/spec:
     dependencies:
+      '@vltpkg/error-cause':
+        specifier: workspace:*
+        version: link:../error-cause
       '@vltpkg/semver':
         specifier: workspace:*
         version: link:../semver
@@ -338,6 +385,9 @@ importers:
 
   src/tar:
     dependencies:
+      '@vltpkg/error-cause':
+        specifier: workspace:*
+        version: link:../error-cause
       rimraf:
         specifier: ^5.0.5
         version: 5.0.6

@@ -14,14 +14,21 @@ Fork of `@npmcli/git`.
 import { clone, spawn } from '@vltpkg/git'
 
 // clone a repo
-const sha = await clone('git://foo/bar.git', 'some-branch', 'some-path', opts)
-const result = await spawn(['checkout', 'some-branch'], {cwd: 'bar'})
+const sha = await clone(
+  'git://foo/bar.git',
+  'some-branch',
+  'some-path',
+  opts,
+)
+const result = await spawn(['checkout', 'some-branch'], {
+  cwd: 'bar',
+})
 await spawn(['you get the idea'])
 ```
 
 ## API
 
-Most methods take an options object.  Options are described below.
+Most methods take an options object. Options are described below.
 
 ### `spawn(args, opts = {})`
 
@@ -47,8 +54,8 @@ repository.
 
 In lieu of a specific `ref`, you may also pass in a `spec` option, which is
 a [`npm-package-arg`](http://npm.im/npm-package-arg) object for a `git`
-package dependency reference.  In this way, you can select SemVer tags
-within a range, or any git committish value.  For example:
+package dependency reference. In this way, you can select SemVer tags
+within a range, or any git committish value. For example:
 
 ```js
 import { Spec } from '@vltpkg/spec'
@@ -59,13 +66,13 @@ clone('git@github.com:npm/git.git', '', null, {
 ```
 
 This will automatically do a shallow `--depth=1` clone on any hosts that
-are known to support it.  To force a shallow or deep clone, you can set the
+are known to support it. To force a shallow or deep clone, you can set the
 `gitShallow` option to `true` or `false` respectively.
 
 ### `revs(repo, opts = {})` -> `Promise<rev doc Object>`
 
 Fetch a representation of all of the named references in a given
-repository.  The resulting doc is intentionally somewhat
+repository. The resulting doc is intentionally somewhat
 packument-like, so that git semver ranges can be applied using
 the same
 [`@vltpkg/pick-manifest`](http://npm.im/@vltpkg/pick-manifest)
@@ -120,7 +127,7 @@ which is not an airtight indicator, but usually pretty reliable.
 ### `git.find(opts)` -> `Promise<string | undefined>`
 
 Given a path, walk up the file system tree until a git repo
-working directory is found.  Since this calls `stat` a bunch of
+working directory is found. Since this calls `stat` a bunch of
 times, it's probably best to only call it if you're reasonably
 sure you're likely to be in a git project somewhere. Pass in
 `opts.root` to stop checking at that directory.
@@ -142,13 +149,13 @@ directory or some other error occurs.
   - `factor`: Defaults to `opts.fetchRetryFactor` or 10
   - `maxTimeout`: Defaults to `opts.fetchRetryMaxtimeout` or 60000
   - `minTimeout`: Defaults to `opts.fetchRetryMintimeout` or 1000
-- `git` Path to the `git` binary to use.  Will look up the first `git` in
+- `git` Path to the `git` binary to use. Will look up the first `git` in
   the `PATH` if not specified.
 - `spec` The [`@vltpkg/spec`](http://npm.im/@vltpkg/spec)
   specifier object for the thing being fetched (if relevant).
-- `fakePlatform` set to a fake value of `process.platform` to use.  (Just
+- `fakePlatform` set to a fake value of `process.platform` to use. (Just
   for testing `win32` behavior on Unix, and vice versa.)
-- `cwd` The current working dir for the git command.  Particularly for
+- `cwd` The current working dir for the git command. Particularly for
   `find` and `is` and `isClean`, it's good to know that this defaults to
   `process.cwd()`, as one might expect.
 - Any other options that can be passed to

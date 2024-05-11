@@ -1,4 +1,4 @@
-import { linesToRevs } from "../src/lines-to-revs.js"
+import { linesToRevs } from '../src/lines-to-revs.js'
 
 const first = [
   'be3270e5fdf0bcc8b0e93bac3f5543703367d9aa\tHEAD',
@@ -99,7 +99,14 @@ t.test('point latest at HEAD', t => {
 t.test('check the revs', t => {
   const r = linesToRevs(second)
   t.match(r, expect)
-  Object.keys(r.shas).forEach(sha => r.shas[sha]?.forEach(ref =>
-    t.equal(r.refs[ref]?.sha, sha, `shas list is consistent ${ref}`)))
+  Object.keys(r.shas).forEach(sha =>
+    r.shas[sha]?.forEach(ref =>
+      t.equal(
+        r.refs[ref]?.sha,
+        sha,
+        `shas list is consistent ${ref}`,
+      ),
+    ),
+  )
   t.end()
 })

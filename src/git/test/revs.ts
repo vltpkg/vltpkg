@@ -1,6 +1,6 @@
 import fs from 'fs'
 import t from 'tap'
-import {pathToFileURL} from 'url'
+import { pathToFileURL } from 'url'
 import { revs } from '../src/revs.js'
 import { spawn } from '../src/spawn.js'
 

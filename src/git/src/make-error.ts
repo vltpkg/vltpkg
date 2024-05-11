@@ -2,11 +2,8 @@ import {
   SpawnResultStderr,
   SpawnResultString,
 } from '@vltpkg/promise-spawn'
-import {
-  GitConnectionError,
-  GitPathspecError,
-  GitUnknownError,
-} from './errors.js'
+
+import { error } from '@vltpkg/error-cause'
 
 const connectionErrorRe = new RegExp(
   [
@@ -26,10 +23,16 @@ const missingPathspecRe =
 
 export const makeError = (
   result: SpawnResultString & SpawnResultStderr,
-) =>
-  Object.assign(
-    connectionErrorRe.test(result.stderr) ? new GitConnectionError()
-    : missingPathspecRe.test(result.stderr) ? new GitPathspecError()
-    : new GitUnknownError(),
-    result,
-  )
+): Error & { shouldRetry: (n: number) => boolean } =>
+  connectionErrorRe.test(result.stderr) ?
+    Object.assign(error('A git connection error occurred', result), {
+      shouldRetry: (n: number) => n < 3,
+    })
+  : Object.assign(
+      missingPathspecRe.test(result.stderr) ?
+        error('The git reference could not be found', result)
+      : error('An unknown git error occurred', result),
+      {
+        shouldRetry: () => false,
+      },
+    )

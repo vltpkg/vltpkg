@@ -11,6 +11,7 @@
     "typedoc": "^0.25.13"
   },
   "dependencies": {
+    "@vltpkg/error-cause": "workspace:*",
     "@vltpkg/git": "workspace:*",
     "@vltpkg/pick-manifest": "workspace:*",
     "@vltpkg/registry-client": "workspace:*",

@@ -11,6 +11,7 @@
     "typedoc": "^0.25.13"
   },
   "dependencies": {
+    "@vltpkg/error-cause": "workspace:*",
     "@vltpkg/semver": "workspace:*"
   },
   "scripts": {

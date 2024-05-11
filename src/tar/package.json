@@ -31,6 +31,7 @@
     "tshy": "^1.14.0"
   },
   "dependencies": {
+    "@vltpkg/error-cause": "workspace:*",
     "rimraf": "^5.0.5",
     "tar": "^7.1.0"
   },

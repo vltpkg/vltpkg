@@ -141,9 +141,7 @@ console.error('extract (cold)')
 console.time('vlt')
 const vltExtract = []
 for (const name of pkgNames.slice(0, extractCount)) {
-  vltExtract.push(
-    p.extract(name, extractDir + '/' + name),
-  )
+  vltExtract.push(p.extract(name, extractDir + '/' + name))
 }
 await Promise.all(vltExtract)
 console.timeEnd('vlt')
@@ -180,7 +178,7 @@ for (const name of pkgNames.slice(0, extractCount)) {
   pacoteExtractW.push(
     pacote
       .extract(name, extractDir + '/' + name, { cache: cacache })
-    .catch(e => console.error(name, e))
+      .catch(e => console.error(name, e)),
   )
 }
 await Promise.all(pacoteExtractW)
