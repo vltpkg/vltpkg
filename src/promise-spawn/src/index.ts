@@ -256,6 +256,7 @@ export class SpawnPromise<
         const result = {
           cmd,
           args,
+          /* c8 ignore next 2 - because windows */
           status: status ?? null,
           signal: signal ?? null,
           ...stdioResult(stdout, stderr, opts),
