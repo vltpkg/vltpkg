@@ -5,9 +5,9 @@ const isWindows = process.platform === 'win32'
 
 // used to check for slashed in commands passed in. always checks for the posix
 // separator on all platforms, and checks for the current separator when not on
-// a posix platform. don't use the isWindows check for this since that is mocked
-// in tests but we still need the code to actually work when called. that is also
-// why it is ignored from coverage.
+// a posix platform. don't use the isWindows check for this since that is
+// mocked in tests but we still need the code to actually work when called.
+// that is also why it is ignored from coverage.
 /* c8 ignore next */
 const rSlash = sep === '/' ? /\// : /[\\/]/
 const rRel = new RegExp(`^\\.${rSlash.source}`)
@@ -30,6 +30,7 @@ const getPathInfo = (
       ['']
     : [
         // windows always checks the cwd first
+        /* c8 ignore next - platform-specific */
         ...(isWindows ? [process.cwd()] : []),
         ...(optPath || /* c8 ignore next - very unusual */ '').split(
           optDelimiter,
@@ -47,10 +48,12 @@ const getPathInfo = (
       pathExt.unshift('')
     }
     return { pathEnv, pathExt, pathExtExe }
+    /* c8 ignore start - not reachable on windows */
   }
 
   return { pathEnv, pathExt: [''] }
 }
+/* c8 ignore stop */
 
 const getPathPart = (raw: string, cmd: string) => {
   const pathPart = /^".*"$/.test(raw) ? raw.slice(1, -1) : raw

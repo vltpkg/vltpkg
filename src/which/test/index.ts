@@ -1,13 +1,19 @@
 import fs from 'fs'
-import { basename, delimiter, join, relative, sep } from 'path'
+import pathModule, {
+  basename,
+  delimiter,
+  join,
+  relative,
+  sep,
+} from 'path'
 import t, { Test } from 'tap'
 import { type WhichOptions } from '../src/index.js'
 
-import { win32 as isexeWin, posix as isexePosix } from 'isexe'
-
-t.saveFixture = true
+import { posix as isexePosix, win32 as isexeWin } from 'isexe'
 
 const isWindows = process.platform === 'win32'
+
+t.saveFixture = isWindows
 
 const runTest = async (
   t: Test,
@@ -20,14 +26,14 @@ const runTest = async (
 ) => {
   for (const platform of platforms) {
     t.test(`${t.name} - ${platform}`, async t => {
-      t.intercept(process, 'platform', { value: platform })
-
       // pass in undefined if there are no opts to test default argß
       const opt = Object.keys(_opt).length ? { ..._opt } : undefined
-
+      if (!isWindows) t.intercept(process, 'platform', { value: platform })
       const { which, whichSync } = await t.mockImport(
         '../src/index.js',
-        { isexe: isexePosix },
+        {
+          isexe: isWindows ? isexeWin : isexePosix,
+        },
       )
       const er = expect as { code: string }
       if (er?.code) {
@@ -53,6 +59,59 @@ t.test('does not find missed', async t => {
   })
 })
 
+t.test('windows style', async t => {
+  const path = t.testdir({
+    'foo.sh': 'shell script',
+    'foo.cmd': 'batch script',
+    'foo.txt': 'bare file',
+  })
+  t.intercept(process, 'platform', { value: 'win32' })
+  const { which, whichSync } = await t.mockImport('../src/index.js', {
+    isexe: isexeWin,
+    path: { ...pathModule, delimiter: pathModule.win32.delimiter },
+  })
+  t.match(await which('foo', { path, pathExt: '.CMD' }), /foo\.cmd$/i)
+  t.match(await which('foo', { path, pathExt: '.SH' }), /foo\.sh$/i)
+  t.match(
+    await which('foo', { path, pathExt: '.CMD;.SH' }),
+    /foo\.cmd$/i,
+  )
+  t.match(
+    await which('foo', { path, pathExt: '.SH;.CMD' }),
+    /foo\.sh$/i,
+  )
+  t.rejects(which('foo', { path, pathExt: '.EXE' }))
+
+  t.match(
+    await which('foo', {
+      path,
+      pathExt: '.SH;.CMD',
+      all: true,
+    }),
+    new Set([/foo\.sh/i, /foo\.cmd$/i]),
+  )
+
+  t.match(whichSync('foo', { path, pathExt: '.CMD' }), /foo\.cmd$/i)
+  t.match(whichSync('foo', { path, pathExt: '.SH' }), /foo\.sh$/i)
+  t.match(
+    whichSync('foo', { path, pathExt: '.CMD;.SH' }),
+    /foo\.cmd$/i,
+  )
+  t.match(
+    whichSync('foo', { path, pathExt: '.SH;.CMD' }),
+    /foo\.sh$/i,
+  )
+  t.throws(() => whichSync('foo', { path, pathExt: '.EXE' }))
+  t.match(
+    whichSync('foo', {
+      path,
+      pathExt: '.SH;.CMD',
+      all: true,
+    }),
+    new Set([/foo\.sh$/i, /foo\.cmd$/i]),
+  )
+})
+
 t.test('does not find non-executable', async t => {
   const dir = t.testdir({ 'foo.sh': 'echo foo\n' })
   const foo = join(dir, 'foo.sh')
@@ -72,7 +131,7 @@ t.test('find when executable', async t => {
   fs.chmodSync(foo, 0o755)
 
   // windows needs to explicitly look for .sh files by default
-  const opts = isWindows ? { pathExt: '.sh' } : {}
+  const opts = isWindows ? { pathExt: '.SH' } : {}
 
   t.test('absolute', async t => {
     await runTest(t, foo, foo, opts)
