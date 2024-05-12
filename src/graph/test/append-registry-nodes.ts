@@ -22,11 +22,11 @@ t.test('append a new node to a graph from a registry', async t => {
       RegistryClient: class {
         async request(url) {
           switch (url) {
-            case 'https://registry.npmjs.com/foo/latest':
+            case 'https://registry.npmjs.org/foo/latest':
               return { body: fooManifest }
-            case 'https://registry.npmjs.com/bar/latest':
+            case 'https://registry.npmjs.org/bar/latest':
               return { body: barManifest }
-            case 'https://registry.npmjs.com/borked/latest':
+            case 'https://registry.npmjs.org/borked/latest':
               return { body: null }
             default:
               return null
@@ -63,7 +63,7 @@ t.test('append a new node to a graph from a registry', async t => {
     'should have a direct dependency on foo',
   )
   t.strictSame(
-    graph.packages.get('bar@1.0.0').name,
+    graph.packages.get('npm:bar@1.0.0').name,
     'bar',
     'should have added to inventory transitive dependencies',
   )

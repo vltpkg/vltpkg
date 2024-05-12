@@ -1,3 +1,5 @@
 export * from './build-starter-graph.js'
 export * from './graph.js'
 export * from './pkgs.js'
+export * from './visualization/human-readable-output.js'
+export * from './visualization/mermaid-output.js'
