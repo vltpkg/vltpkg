@@ -33,7 +33,7 @@ jobs:
           node-version: ${{ matrix.node-version }}
 
       - name: Install dependencies
-        run: npx --yes pnpm i
+        run: "npx --yes pnpm i"
 
       - name: Run Tests
-        run: npx --yes pnpm test
+        run: "npx --yes pnpm -r test"
