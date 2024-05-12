@@ -17,6 +17,7 @@
     "@vltpkg/error-cause": "workspace:*"
   },
   "scripts": {
+    "preinstall": "node scripts/make-unzip-bin.js",
     "preversion": "npm test",
     "postversion": "npm publish",
     "prepublishOnly": "git push origin --follow-tags",
