@@ -44,11 +44,18 @@ export class Graph {
    */
   #seenEdges: Set<string> = new Set()
 
-  constructor(rootPackageJson: PackageMetadata) {
+  constructor(
+    rootPackageJson: PackageMetadata,
+    packages?: PackageInventory,
+    location?: string,
+  ) {
     this.nodes = new Set()
     this.pkgNodes = new Map()
-    this.packages = new PackageInventory()
-    const pkg = this.packages.registerPackage(rootPackageJson)
+    this.packages = packages || new PackageInventory()
+    const pkg = this.packages.registerPackage(
+      rootPackageJson,
+      location,
+    )
     this.root = this.newNode(pkg)
     this.root.isRoot = true
   }
@@ -104,14 +111,15 @@ export class Graph {
     specRaw: Spec | string,
     metadata?: PackageMetadata,
     location?: string,
+    origin?: string,
   ) {
     const spec =
       typeof specRaw === 'string' ?
         Spec.parse(`${name}@${specRaw}`)
       : specRaw
+
     // if no package metadata is available, then create an edge that
     // has no reference to any other node, representing a missing dependency
-
     if (!metadata) {
       this.newEdge(depType, name, spec, fromNode)
       return
@@ -119,8 +127,8 @@ export class Graph {
 
     const pkg =
       location ?
-        this.packages.registerPackage(metadata, { location })
-      : this.packages.registerPending(metadata)
+        this.packages.registerPackage(metadata, location, origin)
+      : this.packages.registerPending(metadata, origin)
 
     // if a node for this package is already represented by a node
     // in the graph, then just creates a new edge to that node
