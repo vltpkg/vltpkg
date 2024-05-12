@@ -1,5 +1,8 @@
 /src/*/.tap
 /src/*/dist
+!/src/cache-unzip/dist
+/src/cache-unzip/dist/esm/*
+!/src/cache-unzip/dist/esm/unzip.js
 /src/*/node_modules
 /src/*/docs
 /node_modules
