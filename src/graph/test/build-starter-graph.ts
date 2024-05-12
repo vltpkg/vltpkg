@@ -51,3 +51,35 @@ t.test('build starter graph with missing dep', async t => {
     dir,
   })
 })
+
+t.test('build starter graph add spec', async t => {
+  const dir = t.testdir({
+    'package.json': JSON.stringify({
+      name: 'my-project',
+      version: '1.0.0',
+    }),
+  })
+  const { buildStarterGraph } = await t.mockImport<
+    typeof import('../src/build-starter-graph.js')
+  >('../src/build-starter-graph.js', {
+    '../src/append-registry-nodes.js': {
+      appendRegistryNodes: async (
+        graph,
+        fromNode,
+        specs,
+        depType,
+      ) => {
+        const [item] = specs
+        t.strictSame(
+          { name: 'foo', spec: 'foo@latest' },
+          { name: item.name, spec: item.spec },
+          'should have missing dependency listed',
+        )
+      },
+    },
+  })
+  const graph = await buildStarterGraph({
+    addSpecs: ['foo@latest'],
+    dir,
+  })
+})

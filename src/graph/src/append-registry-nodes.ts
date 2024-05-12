@@ -9,7 +9,8 @@ import {
   Package,
 } from './pkgs.js'
 
-const hostname = 'https://registry.npmjs.com'
+const origin = 'npm:'
+const hostname = 'https://registry.npmjs.org'
 
 export const appendRegistryNodes = async (
   graph: Graph,
@@ -43,6 +44,8 @@ export const appendRegistryNodes = async (
         spec.name,
         spec,
         mani,
+        undefined,
+        origin,
       )
       if (node) {
         nextDeps.add(node)

@@ -7,13 +7,25 @@ export type DependencyTypeLong =
   | 'optionalDependencies'
 export type DependencyTypeShort = 'prod' | 'dev' | 'peer' | 'optional'
 
-const dependencyTypes: Map<DependencyTypeLong, DependencyTypeShort> =
-  new Map([
-    ['dependencies', 'prod'],
-    ['devDependencies', 'dev'],
-    ['peerDependencies', 'peer'],
-    ['optionalDependencies', 'optional'],
-  ])
+export const dependencyTypes: Map<
+  DependencyTypeLong,
+  DependencyTypeShort
+> = new Map([
+  ['dependencies', 'prod'],
+  ['devDependencies', 'dev'],
+  ['peerDependencies', 'peer'],
+  ['optionalDependencies', 'optional'],
+])
+
+export const reverseDependencyTypes: Map<
+  DependencyTypeShort,
+  DependencyTypeLong
+> = new Map([
+  ['prod', 'dependencies'],
+  ['dev', 'devDependencies'],
+  ['peer', 'peerDependencies'],
+  ['optional', 'optionalDependencies'],
+])
 
 export interface PackageMetadataDist {
   tarball: string
@@ -31,11 +43,6 @@ export type PackageMetadata = {
   optionalDependencies?: Record<string, string>
 }
 
-interface PackageOptions {
-  location?: string
-  origin?: string
-}
-
 export const isPackageMetadata = (pkg: any): pkg is PackageMetadata =>
   !!pkg && typeof pkg === 'object' && typeof pkg.name === 'string'
 
@@ -51,14 +58,50 @@ export class Package {
   /**
    * Tracks the registry a given package was initially installed from.
    */
-  #origin: string = ''
+  origin: string = ''
 
-  constructor(metadata: PackageMetadata, options?: PackageOptions) {
+  constructor(
+    metadata: PackageMetadata,
+    location?: string,
+    origin?: string,
+  ) {
     this.#metadata = metadata
-    if (options?.location) {
-      this.location = options?.location
+    this.location = location || ''
+    this.origin = origin || ''
+  }
+
+  updateMetadata(metadata: PackageMetadata) {
+    const {
+      dependencies,
+      devDependencies,
+      optionalDependencies,
+      peerDependencies,
+    } = metadata
+    if (dependencies && !this.#metadata.dependencies) {
+      this.#metadata.dependencies = dependencies
     }
-    this.#origin = options?.origin || ''
+    if (devDependencies && !this.#metadata.devDependencies) {
+      this.#metadata.devDependencies = devDependencies
+    }
+    if (
+      optionalDependencies &&
+      !this.#metadata.optionalDependencies
+    ) {
+      this.#metadata.optionalDependencies = optionalDependencies
+    }
+    if (peerDependencies && !this.#metadata.peerDependencies) {
+      this.#metadata.peerDependencies = peerDependencies
+    }
+    if (metadata.dist) {
+      const { integrity, shasum, tarball } = metadata.dist
+      if ((integrity || shasum) && tarball && !this.#metadata.dist) {
+        this.#metadata.dist = {
+          integrity,
+          shasum,
+          tarball,
+        }
+      }
+    }
   }
 
   /**
@@ -82,7 +125,7 @@ export class Package {
    * An unique id that identifies this package.
    */
   get id(): string {
-    return getId(this.#origin, this.name, this.version)
+    return getId(this.origin, this.name, this.version)
   }
 
   get dependencies(): Record<string, string> | undefined {
@@ -139,15 +182,21 @@ export class PackageInventory extends Map {
    */
   registerPackage(
     metadata: PackageMetadata,
-    options?: PackageOptions,
+    location?: string,
+    origin?: string,
   ) {
-    const id = getId(options?.origin, metadata.name, metadata.version)
+    const id = getId(origin, metadata.name, metadata.version)
     const cachedPkg = this.get(id)
     if (cachedPkg) {
+      cachedPkg.location = location || cachedPkg.location
+      cachedPkg.updateMetadata(metadata, location, origin)
+      if (this.pending.has(cachedPkg) && cachedPkg.location) {
+        this.pending.delete(cachedPkg)
+      }
       return cachedPkg
     }
 
-    const pkg = new Package(metadata, options)
+    const pkg = new Package(metadata, location, origin)
     this.set(pkg.id, pkg)
     return pkg
   }
@@ -156,11 +205,8 @@ export class PackageInventory extends Map {
    * Register a new package to the inventory and append it to the list
    * of packages pending artifacts.
    */
-  registerPending(
-    metadata: PackageMetadata,
-    options?: PackageOptions,
-  ) {
-    const pkg = this.registerPackage(metadata, options)
+  registerPending(metadata: PackageMetadata, origin?: string) {
+    const pkg = this.registerPackage(metadata, undefined, origin)
     this.pending.add(pkg)
     return pkg
   }

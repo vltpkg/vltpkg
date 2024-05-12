@@ -27,9 +27,8 @@ t.test('Package', async t => {
       name: 'bar',
       version: '1.0.0',
     },
-    {
-      origin: 'vlt:',
-    },
+    undefined,
+    'vlt:',
   )
   t.strictSame(
     prefixedPkg.id,
@@ -72,7 +71,7 @@ t.test('Package', async t => {
   )
   const locationOnly = new Package(
     { version: '1.0.0' },
-    { location: './node_modules/foo' },
+    './node_modules/foo',
   )
   t.strictSame(
     locationOnly.name,
@@ -90,6 +89,63 @@ t.test('Package', async t => {
     noversion.version,
     '',
     'empty version if no version was defined',
+  )
+  const noDepsMetadata = new Package({
+    name: 'ipsum',
+    version: '1.0.0',
+  })
+  noDepsMetadata.updateMetadata({
+    dependencies: { a: '^1.0.0' },
+    devDependencies: { b: '^1.0.0' },
+    optionalDependencies: { c: '^1.0.0' },
+    peerDependencies: { d: '^1.0.0' },
+    dist: {
+      integrity:
+        'sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ==',
+      tarball: 'https://registry.npmjs.org/ipsum/-/ipsum-1.0.0.tgz',
+    },
+  })
+  t.strictSame(
+    noDepsMetadata.dependencies,
+    { a: '^1.0.0' },
+    'should have added dependencies',
+  )
+  t.strictSame(
+    noDepsMetadata.devDependencies,
+    { b: '^1.0.0' },
+    'should have added devDependencies',
+  )
+  t.strictSame(
+    noDepsMetadata.optionalDependencies,
+    { c: '^1.0.0' },
+    'should have added optionalDependencies',
+  )
+  t.strictSame(
+    noDepsMetadata.peerDependencies,
+    { d: '^1.0.0' },
+    'should have added peerDependencies',
+  )
+  t.strictSame(
+    noDepsMetadata.tarball,
+    'https://registry.npmjs.org/ipsum/-/ipsum-1.0.0.tgz',
+    'should have added tarball',
+  )
+  t.strictSame(
+    noDepsMetadata.integrity,
+    'sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ==',
+    'should have added integrity',
+  )
+  const needsUpdate = new Package({ name: 'dolor', version: '1.0.0' })
+  needsUpdate.updateMetadata({
+    dist: {
+      shasum: 'cf59829b8b4f03f89dda2771cb7f3653828c89bf',
+      tarball: 'https://registry.npmjs.org/dolor/-/dolor-1.0.0.tgz',
+    },
+  })
+  t.strictSame(
+    needsUpdate.shasum,
+    'cf59829b8b4f03f89dda2771cb7f3653828c89bf',
+    'should have added shasum',
   )
 })
 
@@ -181,5 +237,22 @@ t.test('PackageInventory', async t => {
     pending.shasum,
     'cf59829b8b4f03f89dda2771cb7f3653828c89bf',
     'should retrieve the shasum value',
+  )
+  t.strictSame(
+    inventory.pending.size,
+    1,
+    'should have added package to pending packages list',
+  )
+  const samePendingModule = inventory.registerPackage(
+    {
+      name: 'abbrev',
+      version: '2.0.0',
+    },
+    'path/to/module',
+  )
+  t.strictSame(
+    inventory.pending.size,
+    0,
+    'should remote package from list of pending package list if its location is added later',
   )
 })
