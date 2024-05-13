@@ -8,6 +8,7 @@ import { fileURLToPath } from 'url'
 import { addHeader } from './add-header.js'
 import { CacheEntry } from './cache-entry.js'
 import { cacheInterceptor } from './cache-interceptor.js'
+import { isRedirect, redirect } from './redirect.js'
 
 export { CacheEntry, cacheInterceptor }
 
@@ -25,6 +26,14 @@ export type RegistryClientRequestOptions = Omit<
   'path' | 'method'
 > & {
   /**
+   * `path` should not be set when using the RegistryClient.
+   * It will be overwritten with the path on the URL being requested.
+   * This only here for compliance with the DispatchOptions base type.
+   * @deprecated
+   */
+  path?: string
+
+  /**
    * Method is optional, defaults to 'GET'
    */
   method?: Dispatcher.DispatchOptions['method']
@@ -35,6 +44,20 @@ export type RegistryClientRequestOptions = Omit<
    * the local disk cache, items are assumed to be trustworthy.
    */
   integrity?: string
+  /**
+   * Follow up to 10 redirections by default. Set this to 0 to just return
+   * the 3xx response. If the max redirections are expired, and we still get
+   * a redirection response, then fail the request. Redirection cycles are
+   * always treated as an error.
+   */
+  maxRedirections?: number
+  /**
+   * the number of redirections that have already been seen. This is used
+   * internally, and should always start at 0.
+   *
+   * @internal
+   */
+  redirections?: Set<string>
 }
 
 /* c8 ignore start - platform specific */
@@ -79,13 +102,20 @@ export class RegistryClient {
   async request(
     url: string | URL,
     options: RegistryClientRequestOptions = {},
-  ) {
-    if (typeof url === 'string') url = new URL(url)
+  ): Promise<CacheEntry> {
+    const u = typeof url === 'string' ? new URL(url) : url
+    const {
+      maxRedirections = 10,
+      redirections = new Set(),
+    } = options
+    redirections.add(String(url))
     Object.assign(options, {
-      path: url.pathname.replace(/\/+$/, '') + url.search,
+      path: u.pathname.replace(/\/+$/, '') + u.search,
       cache: this.cache,
+      maxRedirections,
+      redirections,
     })
-    options.origin = url.origin
+    options.origin = u.origin
     const pool =
       this.pools.get(options.origin) ??
       new Pool(options.origin, {
@@ -117,6 +147,25 @@ export class RegistryClient {
         },
         onError: rej,
         onComplete: () => {
+          if (isRedirect(entry)) {
+            try {
+              const [nextURL, nextOptions] = redirect(
+                options,
+                entry,
+                u,
+              )
+              if (nextOptions && nextURL) {
+                res(this.request(nextURL, nextOptions))
+                return true
+              } else {
+                res(entry)
+                return true
+              }
+            } catch (er) {
+              rej(er)
+              return true
+            }
+          }
           res(entry)
           return true
         },

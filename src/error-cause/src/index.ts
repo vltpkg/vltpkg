@@ -68,6 +68,8 @@ export interface ErrorCauseObject {
     versions: Record<string, Manifest>
     time?: Record<string, string>
   }
+  max?: any
+  min?: any
 }
 
 export type Manifest = {
