@@ -1,0 +1,5 @@
+{
+  "name": "CodespaceRunner",
+  "dockerFile": "Dockerfile",
+  "postStartCommand": "/home/vscode/actions-runner/start.sh"
+}
