@@ -1,7 +1,7 @@
+import { Spec } from '@vltpkg/spec'
 import { resolve } from 'node:path'
 import { Graph } from './graph.js'
 import { Node } from './node.js'
-import { Package } from './pkgs.js'
 import { readPackageJson } from './read-package-json.js'
 import { realpath } from './realpath.js'
 
@@ -50,20 +50,20 @@ export const buildActual = (
       (depType === 'devDependencies' && fromNode.isRoot)
 
     if (deps && followRootDevDepsOnly) {
-      for (const [name, spec] of Object.entries(deps)) {
+      for (const [name, rawSpec] of Object.entries(deps)) {
+        const spec = Spec.parse(name, rawSpec)
         let dir, packageJson
         try {
           dir = realpath(resolve(basepath, name))
           packageJson = readPackageJson(dir)
         } catch (err) {
-          graph.placePackage(fromNode, depType, name, spec)
+          graph.placePackage(fromNode, depType, spec)
           continue
         }
 
         const node = graph.placePackage(
           fromNode,
           depType,
-          name,
           spec,
           packageJson,
           dir,

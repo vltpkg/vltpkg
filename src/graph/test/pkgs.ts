@@ -1,5 +1,9 @@
 import t from 'tap'
-import { PackageInventory, Package } from '../src/pkgs.js'
+import {
+  isPackageMetadata,
+  Package,
+  PackageInventory,
+} from '../src/pkgs.js'
 
 t.test('Package', async t => {
   const pkg = new Package({
@@ -147,14 +151,30 @@ t.test('Package', async t => {
     'cf59829b8b4f03f89dda2771cb7f3653828c89bf',
     'should have added shasum',
   )
+
+  const pdm = new Package({
+    name: 'pdm',
+    version: '1.2.3',
+    peerDependencies: {
+      foo: '*',
+    },
+    peerDependenciesMeta: {
+      foo: { optional: true },
+    },
+  })
+  t.strictSame(pdm.peerDependencies, { foo: '*' })
+  t.strictSame(pdm.peerDependenciesMeta, { foo: { optional: true } })
 })
 
 t.test('PackageInventory', async t => {
   const inventory = new PackageInventory()
-  const pkg = inventory.registerPackage({
-    name: 'foo',
-    version: '1.0.0',
-  })
+  const pkg = inventory.registerPackage(
+    {
+      name: 'foo',
+      version: '1.0.0',
+    },
+    'npm:',
+  )
   t.strictSame(inventory.size, 1, 'should have other Map properties')
 
   const repeatPkg = inventory.registerPackage({
@@ -243,7 +263,7 @@ t.test('PackageInventory', async t => {
     1,
     'should have added package to pending packages list',
   )
-  const samePendingModule = inventory.registerPackage(
+  inventory.registerPackage(
     {
       name: 'abbrev',
       version: '2.0.0',
@@ -256,3 +276,8 @@ t.test('PackageInventory', async t => {
     'should remote package from list of pending package list if its location is added later',
   )
 })
+
+t.equal(isPackageMetadata({ name: 'x' }), true)
+t.equal(isPackageMetadata({ nope: 'x' }), false)
+t.equal(isPackageMetadata(false), false)
+t.equal(isPackageMetadata(true), false)

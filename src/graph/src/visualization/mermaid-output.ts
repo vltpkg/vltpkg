@@ -1,6 +1,6 @@
+import { Edge } from '../edge.js'
 import { Graph } from '../graph.js'
 import { Node } from '../node.js'
-import { Edge } from '../edge.js'
 
 let missingCount = 0
 

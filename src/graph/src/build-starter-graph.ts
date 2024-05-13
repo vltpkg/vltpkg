@@ -1,15 +1,14 @@
-import { resolve } from 'node:path'
 import { Spec } from '@vltpkg/spec'
-import { Graph } from './graph.js'
-import { Node } from './node.js'
-import { Edge } from './edge.js'
-import { PackageInventory } from './pkgs.js'
+import { resolve } from 'node:path'
 import { appendRegistryNodes } from './append-registry-nodes.js'
 import { buildActual } from './build-actual.js'
+import { Edge } from './edge.js'
+import { Graph } from './graph.js'
+import { PackageInventory } from './pkgs.js'
 import { readPackageJson } from './read-package-json.js'
 
 export type BuildStarterGraphOptions = {
-  addSpecs: string[]
+  addSpecs?: string[]
   dir: string
   packageInventory: PackageInventory
 }

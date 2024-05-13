@@ -1,12 +1,12 @@
 import { Spec } from '@vltpkg/spec'
+import { Edge } from './edge.js'
+import { Node } from './node.js'
 import {
   DependencyTypeLong,
-  PackageInventory,
   Package,
+  PackageInventory,
   PackageMetadata,
 } from './pkgs.js'
-import { Node } from './node.js'
-import { Edge } from './edge.js'
 
 export class Graph {
   get [Symbol.toStringTag]() {
@@ -67,22 +67,21 @@ export class Graph {
    */
   newEdge(
     type: DependencyTypeLong,
-    name: string,
     spec: Spec,
     from: Node,
     to?: Node,
   ) {
     const toRef = to ? `:${to.id}` : ''
-    const edgeId = `${type}:${name}@${spec.bareSpec}:${from.id}${toRef}`
+    const edgeId = `${type}:${spec}:${from.id}${toRef}`
     if (this.#seenEdges.has(edgeId)) {
       return
     }
 
     if (to) {
-      to.addEdgeIn(type, name, spec, from)
+      to.addEdgeIn(type, spec, from)
     }
 
-    const edgeOut = from.addEdgeOut(type, name, spec, to)
+    const edgeOut = from.addEdgeOut(type, spec, to)
     if (!to) {
       this.missingDependencies.add(edgeOut)
     }
@@ -107,21 +106,15 @@ export class Graph {
   placePackage(
     fromNode: Node,
     depType: DependencyTypeLong,
-    name: string,
-    specRaw: Spec | string,
+    spec: Spec,
     metadata?: PackageMetadata,
     location?: string,
     origin?: string,
   ) {
-    const spec =
-      typeof specRaw === 'string' ?
-        Spec.parse(`${name}@${specRaw}`)
-      : specRaw
-
     // if no package metadata is available, then create an edge that
     // has no reference to any other node, representing a missing dependency
     if (!metadata) {
-      this.newEdge(depType, name, spec, fromNode)
+      this.newEdge(depType, spec, fromNode)
       return
     }
 
@@ -134,13 +127,13 @@ export class Graph {
     // in the graph, then just creates a new edge to that node
     const fromGraph = this.pkgNodes.get(pkg.id)
     if (fromGraph) {
-      this.newEdge(depType, name, spec, fromNode, fromGraph)
+      this.newEdge(depType, spec, fromNode, fromGraph)
       return fromGraph
     }
 
     // creates a new node and the edges to its parent
     const toNode = this.newNode(pkg)
-    this.newEdge(depType, name, spec, fromNode, toNode)
+    this.newEdge(depType, spec, fromNode, toNode)
     return toNode
   }
 }
