@@ -24,7 +24,7 @@ const ce = new CacheEntry(
 
 t.matchSnapshot(
   inspect(ce, { colors: true, depth: Infinity }),
-  'inspect value',
+  'inspect value (should include color codes for displayed object)',
 )
 
 t.equal(ce.statusCode, 200)

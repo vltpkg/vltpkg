@@ -53,7 +53,7 @@ t.before(
   async () => await new Promise<void>(r => registry.listen(PORT, r)),
 )
 
-t.test('make a request', async t => {
+t.test('make a request', { saveFixture: true }, async t => {
   const rc = new RegistryClient({ cache: t.testdir() })
   const [result, result2] = await Promise.all([
     rc.request(`http://localhost:${PORT}/abbrev`),
