@@ -329,6 +329,8 @@ todo: 'nested workspace support' }`.
 - `wanted` - A desired value that was not found, or a regular
   expression or other pattern describing it.
 - `found` - The actual value, which was not wanted.
+- `max` - A maximum value, which was exceeded.
+- `min` - A minimum value, which was not met.
 - `response` - An HTTP response or
   `@vltpkg/registry-client.CacheEntry`
 - `url` - A string or URL object
