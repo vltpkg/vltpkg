@@ -77,21 +77,10 @@ export class Package {
       optionalDependencies,
       peerDependencies,
     } = metadata
-    if (dependencies && !this.#metadata.dependencies) {
-      this.#metadata.dependencies = dependencies
-    }
-    if (devDependencies && !this.#metadata.devDependencies) {
-      this.#metadata.devDependencies = devDependencies
-    }
-    if (
-      optionalDependencies &&
-      !this.#metadata.optionalDependencies
-    ) {
-      this.#metadata.optionalDependencies = optionalDependencies
-    }
-    if (peerDependencies && !this.#metadata.peerDependencies) {
-      this.#metadata.peerDependencies = peerDependencies
-    }
+    this.#metadata.dependencies ||= dependencies;
+    this.#metadata.devDependencies ||= devDependencies;
+    this.#metadata.optionalDependencies ||= optionalDependencies;
+    this.#metadata.peerDependencies ||= peerDependencies;
     if (metadata.dist) {
       const { integrity, shasum, tarball } = metadata.dist
       if ((integrity || shasum) && tarball && !this.#metadata.dist) {
