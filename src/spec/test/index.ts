@@ -135,6 +135,8 @@ t.test('get final subspec in chain', t => {
   const subby = Spec.parse('x@npm:y@npm:z@latest')
   const final = subby.final
   t.not(subby, final, 'final is not the alias spec')
+  t.not(subby.subspec, final, 'final is not the first alias value')
+  t.equal(subby.subspec?.subspec, final, 'final is 2 levels deep')
   t.equal(final, final.final, 'final is its own finality')
   t.end()
 })
