@@ -4,6 +4,13 @@ import t from 'tap'
 import { Graph } from '../src/graph.js'
 import { Package } from '../src/pkgs.js'
 
+const kCustomInspect = Symbol.for('nodejs.util.inspect.custom')
+Object.assign(Spec.prototype, {
+  [kCustomInspect]() {
+    return `Spec {${this}}`
+  },
+})
+
 t.test('Graph', async t => {
   const rootPackageJson = {
     name: 'my-project',
@@ -119,5 +126,5 @@ t.test('using placePackage', async t => {
       version: '1.0.0',
     },
   )
-  t.matchSnapshot(graph, 'the graph')
+  t.matchSnapshot(inspect(graph, { depth: 2 }), 'the graph')
 })

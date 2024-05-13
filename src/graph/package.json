@@ -5,12 +5,17 @@
   "devDependencies": {
     "@types/node": "^20.12.7",
     "prettier": "^3.2.5",
-    "tap": "^18.7.3",
+    "tap": "^18.8.0",
     "tshy": "^1.14.0",
     "typedoc": "^0.25.13"
   },
+  "tap": {
+    "coverage-map": "../../coverage-map.js",
+    "typecheck": true
+  },
   "dependencies": {
     "@vltpkg/registry-client": "workspace:*",
+    "@vltpkg/semver": "workspace:*",
     "@vltpkg/spec": "workspace:*"
   },
   "scripts": {
