@@ -6,8 +6,6 @@ import { Node } from '../node.js'
 
 let missingCount = 0
 
-const readableId = (id: DepID) => String(hydrate(id).bareSpec)
-
 function parseNode(seenNodes: Set<DepID>, graph: Graph, node: Node) {
   if (seenNodes.has(node.id)) {
     return ''
@@ -16,12 +14,12 @@ function parseNode(seenNodes: Set<DepID>, graph: Graph, node: Node) {
   const edges: string = [...node.edgesOut.values()]
     .map(e => parseEdge(seenNodes, graph, e))
     .join('\n')
-  return `${encodeURIComponent(readableId(node.id))}(${readableId(node.id)})${edges.length ? '\n' : ''}${edges}`
+  return `${encodeURIComponent(node.id)}(${node.id})${edges.length ? '\n' : ''}${edges}`
 }
 
 function parseEdge(seenNodes: Set<DepID>, graph: Graph, edge: Edge) {
   const edgeResult =
-    `${encodeURIComponent(readableId(edge.from.id))}(${readableId(edge.from.id)})` +
+    `${encodeURIComponent(edge.from.id)}(${edge.from.id})` +
     ` -->|${dependencyTypes.get(edge.type)}| `
 
   if (!edge.to) {
@@ -33,7 +31,7 @@ function parseEdge(seenNodes: Set<DepID>, graph: Graph, edge: Edge) {
 
   return (
     edgeResult +
-    `${encodeURIComponent(readableId(edge.to.id))}(${readableId(edge.to.id)})\n` +
+    `${encodeURIComponent(edge.to.id)}(${edge.to.id})\n` +
     parseNode(seenNodes, graph, edge.to)
   )
 }

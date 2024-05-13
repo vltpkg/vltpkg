@@ -60,7 +60,7 @@ export class Edge {
   get peerOptional(): boolean {
     return (
       this.peer &&
-      this.from.manifest.peerDependenciesMeta?.[this.spec.name]
+      this.from.manifest?.peerDependenciesMeta?.[this.spec.name]
         ?.optional === true
     )
   }
@@ -72,8 +72,8 @@ export class Edge {
   get valid(): boolean {
     if (!this.to) return this.optional
     if (this.spec.type === 'registry') {
-      if (this.to.manifest.version && this.spec.range) {
-        return satisfies(this.to.manifest.version, this.spec.range)
+      if (this.to?.manifest?.version && this.spec.range) {
+        return satisfies(this.to?.manifest?.version, this.spec.range)
       }
       return true
       /* c8 ignore start */

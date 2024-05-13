@@ -1,4 +1,3 @@
-import { pathToFileURL } from 'node:url'
 import { getId, DepID } from '@vltpkg/dep-id'
 import { PackageInfoClient } from '@vltpkg/package-info'
 import { Spec } from '@vltpkg/spec'
@@ -6,11 +5,11 @@ import { Edge } from './edge.js'
 import { Node } from './node.js'
 import { DependencyTypeLong } from './dependencies.js'
 import { ManifestMinified } from '@vltpkg/types'
+import { ConfigFileData } from '@vltpkg/config'
 
-type ManifestInventory = Map<DepID, ManifestMinified>
+export type ManifestInventory = Map<DepID, ManifestMinified>
 
 export interface GraphOptions {
-  location: string
   mainManifest: ManifestMinified
   packageInfo?: PackageInfoClient
   manifests?: ManifestInventory
@@ -21,6 +20,8 @@ export class Graph {
     return '@vltpkg/graph.Graph'
   }
 
+  #config: ConfigFileData
+
   /**
    * A {@link PackageInfoClient} instance used to request packages info.
    */
@@ -30,6 +31,11 @@ export class Graph {
    * An inventory with all manifests related to an install.
    */
   manifests: ManifestInventory
+
+  /**
+   * A set of all edges in this graph.
+   */
+  edges: Set<Edge> = new Set()
 
   /**
    * Map registered package ids to the node that represent them in the graph.
@@ -52,23 +58,22 @@ export class Graph {
    */
   missingDependencies: Set<Edge> = new Set()
 
-  constructor({
-    location,
-    mainManifest,
-    packageInfo,
-    manifests,
-  }: GraphOptions) {
+  constructor(
+    { mainManifest, packageInfo, manifests }: GraphOptions,
+    config: ConfigFileData,
+  ) {
+    this.#config = config
     this.packageInfo = packageInfo ?? new PackageInfoClient()
     this.manifests = manifests ?? (new Map() as ManifestInventory)
 
-    const mainImporterLocation = String(pathToFileURL(location))
+    const mainImporterLocation = '.'
     const mainImporterSpec = Spec.parse(
-      mainManifest.name || mainImporterLocation,
+      mainManifest.name || '(root)',
       mainImporterLocation,
     )
     const mainImporter = this.newNode(
-      mainManifest,
       undefined,
+      mainManifest,
       mainImporterSpec,
     )
     mainImporter.setImporterLocation(mainImporterLocation)
@@ -89,6 +94,7 @@ export class Graph {
     to?: Node,
   ) {
     const edgeOut = from.addEdgesTo(type, spec, to)
+    this.edges.add(edgeOut)
     if (!to) {
       this.missingDependencies.add(edgeOut)
     }
@@ -97,15 +103,22 @@ export class Graph {
   /**
    * Create a new node in the graph.
    */
-  newNode(manifest: ManifestMinified, id?: DepID, spec?: Spec) {
-    const node = new Node(manifest, id, spec)
+  newNode(id?: DepID, manifest?: ManifestMinified, spec?: Spec) {
+    const node = new Node(this.#config, id, manifest, spec)
     this.nodes.set(node.id, node)
+    if (manifest) {
+      this.manifests.set(node.id, manifest)
+    }
     return node
   }
 
   /**
    * Place a new package into the graph representation, creating the new
-   * edges and possibly new nodes required for it.
+   * edges and possibly new nodes that are to be expected when traversing
+   * the graph in a top-down direction, e.g: from importers to leafs.
+   *
+   * For different uses that are not a direct top-down traversal of the graph
+   * consider using `newNode()` and `newEdge()` instead.
    */
   placePackage(
     fromNode: Node,
@@ -131,8 +144,8 @@ export class Graph {
     }
 
     // creates a new node and edges to its parent
-    const toNode = this.newNode(manifest, depId)
-    this.manifests.set(depId, manifest)
+    const toNode = this.newNode(depId, manifest)
+    toNode.setResolvedFromId()
     this.newEdge(depType, spec, fromNode, toNode)
     return toNode
   }

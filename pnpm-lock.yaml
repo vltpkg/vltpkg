@@ -255,6 +255,9 @@ importers:
 
   src/graph:
     dependencies:
+      '@vltpkg/config':
+        specifier: workspace:*
+        version: link:../config
       '@vltpkg/dep-id':
         specifier: workspace:*
         version: link:../dep-id

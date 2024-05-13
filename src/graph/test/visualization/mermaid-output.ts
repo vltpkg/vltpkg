@@ -1,29 +1,31 @@
-import { dirname, resolve } from 'node:path'
-import { fileURLToPath, pathToFileURL } from 'node:url'
 import t from 'tap'
+import { ConfigFileData } from '@vltpkg/config'
 import { Spec } from '@vltpkg/spec'
 import { Graph } from '../../src/graph.js'
 import { mermaidOutput } from '../../src/visualization/mermaid-output.js'
 
-const __dirname = dirname(fileURLToPath(import.meta.url))
-const encodedCwd = encodeURIComponent(
-  String(pathToFileURL(resolve(__dirname, '../../..'))),
-).substring(13)
-t.cleanSnapshot = s => s.replaceAll(encodedCwd, '')
+const configData = {
+  registry: 'https://registry.npmjs.org',
+  registries: {
+    npm: 'https://registry.npmjs.org',
+  },
+} as ConfigFileData
 
 t.test('human-readable-output', async t => {
-  const graph = new Graph({
-    location: './my-project',
-    mainManifest: {
-      name: 'my-project',
-      version: '1.0.0',
-      dependencies: {
-        foo: '^1.0.0',
-        bar: '^1.0.0',
-        missing: '^1.0.0',
+  const graph = new Graph(
+    {
+      mainManifest: {
+        name: 'my-project',
+        version: '1.0.0',
+        dependencies: {
+          foo: '^1.0.0',
+          bar: '^1.0.0',
+          missing: '^1.0.0',
+        },
       },
     },
-  })
+    configData,
+  )
   const foo = graph.placePackage(
     graph.mainImporter,
     'dependencies',

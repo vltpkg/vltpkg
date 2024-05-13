@@ -1,11 +1,17 @@
-import { dirname, resolve } from 'node:path'
 import { inspect } from 'node:util'
-import { fileURLToPath, pathToFileURL } from 'node:url'
 import t from 'tap'
+import { ConfigFileData } from '@vltpkg/config'
 import { Spec } from '@vltpkg/spec'
 import { PackageInfoClient } from '@vltpkg/package-info'
 import { Graph } from '../src/graph.js'
 import { appendNodes } from '../src/append-nodes.js'
+
+const configData = {
+  registry: 'https://registry.npmjs.org',
+  registries: {
+    npm: 'https://registry.npmjs.org',
+  },
+} as ConfigFileData
 
 const kCustomInspect = Symbol.for('nodejs.util.inspect.custom')
 Object.assign(Spec.prototype, {
@@ -14,14 +20,7 @@ Object.assign(Spec.prototype, {
   },
 })
 
-const __dirname = dirname(fileURLToPath(import.meta.url))
-const encodedCwd = encodeURIComponent(
-  String(pathToFileURL(resolve(__dirname, '../../..'))),
-).substring(13)
-t.cleanSnapshot = s => s.replaceAll(encodedCwd, '')
-
 t.test('append a new node to a graph from a registry', async t => {
-  const dir = t.testdirName
   const fooManifest = {
     name: 'foo',
     version: '1.0.0',
@@ -40,10 +39,12 @@ t.test('append a new node to a graph from a registry', async t => {
       foo: '^1.0.0',
     },
   }
-  const graph = new Graph({
-    location: dir,
-    mainManifest,
-  })
+  const graph = new Graph(
+    {
+      mainManifest,
+    },
+    configData,
+  )
   graph.packageInfo = {
     async manifest(spec: Spec) {
       switch (spec.name) {
@@ -68,10 +69,11 @@ t.test('append a new node to a graph from a registry', async t => {
     graph.mainImporter,
     [Spec.parse('foo@^1.0.0')],
     'dependencies',
+    configData,
   )
   t.strictSame(
     [...graph.mainImporter.edgesOut.values()].map(
-      e => e.to?.manifest.name,
+      e => e.to?.manifest?.name,
     ),
     ['foo'],
     'should have a direct dependency on foo',
@@ -91,6 +93,7 @@ t.test('append a new node to a graph from a registry', async t => {
     graph.mainImporter,
     [Spec.parse('bar')],
     'dependencies',
+    configData,
   )
   t.strictSame(
     graph.mainImporter.edgesOut.get('bar')?.spec.semver,
@@ -104,6 +107,7 @@ t.test('append a new node to a graph from a registry', async t => {
       graph.mainImporter,
       [Spec.parse('borked')],
       'dependencies',
+      configData,
     ),
     /ERR/,
     'should not intercept errors on fetching / parsing manifest',
@@ -111,7 +115,6 @@ t.test('append a new node to a graph from a registry', async t => {
 })
 
 t.test('append different type of dependencies', async t => {
-  const dir = t.testdirName
   const fooManifest = {
     name: 'foo',
     version: '1.0.0',
@@ -133,10 +136,12 @@ t.test('append different type of dependencies', async t => {
       bar: '^1.0.0',
     },
   }
-  const graph = new Graph({
-    location: dir,
-    mainManifest,
-  })
+  const graph = new Graph(
+    {
+      mainManifest,
+    },
+    configData,
+  )
   graph.packageInfo = {
     async manifest(spec: Spec) {
       switch (spec.name) {
@@ -154,6 +159,7 @@ t.test('append different type of dependencies', async t => {
     graph.mainImporter,
     [Spec.parse('foo', '^1.0.0')],
     'devDependencies',
+    configData,
   )
 
   await appendNodes(
@@ -161,6 +167,7 @@ t.test('append different type of dependencies', async t => {
     graph.mainImporter,
     [Spec.parse('bar', '^1.0.0')],
     'optionalDependencies',
+    configData,
   )
 
   await appendNodes(
@@ -168,6 +175,7 @@ t.test('append different type of dependencies', async t => {
     graph.mainImporter,
     [Spec.parse('missing', '^1.0.0')],
     'dependencies',
+    configData,
   )
   t.matchSnapshot(
     inspect(graph, { depth: 3 }),

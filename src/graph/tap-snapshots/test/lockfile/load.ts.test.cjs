@@ -5,7 +5,7 @@
  * Make sure to inspect the output below.  Do not ignore changes!
  */
 'use strict'
-exports[`test/visualization/human-readable-output.ts > TAP > human-readable-output > should print human readable output 1`] = `
+exports[`test/lockfile/load.ts > TAP > load > must match snapshot 1`] = `
 Node {
   id: 'file;.',
   location: '.',
@@ -13,25 +13,17 @@ Node {
     Edge -prod-> to: Node {
       id: 'registry;;foo@1.0.0',
       location: './node_modules/.vlt/registry;;foo@1.0.0/node_modules/foo',
-      resolved: 'https://registry.npmjs.org/foo/-/foo-1.0.0.tgz'
+      integrity: 'sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ=='
     },
     Edge -prod-> to: Node {
       id: 'registry;;bar@1.0.0',
       location: './node_modules/.vlt/registry;;bar@1.0.0/node_modules/bar',
-      resolved: 'https://registry.npmjs.org/bar/-/bar-1.0.0.tgz',
+      resolved: 'https://registry.example.com/bar/-/bar-1.0.0.tgz',
+      integrity: 'sha512-6/deadbeef==',
       edgesOut: [
         Edge -prod-> to: Node {
           id: 'registry;;baz@1.0.0',
-          location: './node_modules/.vlt/registry;;baz@1.0.0/node_modules/baz',
-          resolved: 'https://registry.vlt.sh/baz',
-          integrity: 'sha512-deadbeef',
-          edgesOut: [
-            Edge -prod-> to: Node {
-              id: 'registry;;foo@1.0.0',
-              location: './node_modules/.vlt/registry;;foo@1.0.0/node_modules/foo',
-              resolved: 'https://registry.npmjs.org/foo/-/foo-1.0.0.tgz'
-            }
-          ]
+          location: './node_modules/.vlt/registry;;baz@1.0.0/node_modules/baz'
         }
       ]
     },

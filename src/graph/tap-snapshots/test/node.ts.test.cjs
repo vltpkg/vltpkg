@@ -11,6 +11,8 @@ Node [@vltpkg/graph.Node] {
   edgesOut: Map(0) {},
   id: 'file;%2F%2F%2Fpath%2Fto%2Froot',
   importer: true,
-  manifest: [Object]
+  integrity: undefined,
+  manifest: [Object],
+  resolved: undefined
 }
 `

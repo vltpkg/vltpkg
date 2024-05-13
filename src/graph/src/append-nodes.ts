@@ -1,4 +1,5 @@
-import { Spec } from '@vltpkg/spec'
+import { ConfigFileData } from '@vltpkg/config'
+import { Spec, SpecOptions } from '@vltpkg/spec'
 import { Graph } from './graph.js'
 import { Node } from './node.js'
 import {
@@ -20,6 +21,7 @@ export const appendNodes = async (
   fromNode: Node,
   addSpecs: Spec[],
   depType: DependencyTypeLong,
+  config: ConfigFileData,
 ) => {
   const { packageInfo } = graph
 
@@ -41,10 +43,11 @@ export const appendNodes = async (
 
         if (depRecord && shouldInstallDepType(node, nextDepType)) {
           const addSpecs: Spec[] = Object.entries(depRecord).map(
-            ([name, bareSpec]) => Spec.parse(name, bareSpec),
+            ([name, bareSpec]) =>
+              Spec.parse(name, bareSpec, config as SpecOptions),
           )
           nestedAppends.push(
-            appendNodes(graph, node, addSpecs, nextDepType),
+            appendNodes(graph, node, addSpecs, nextDepType, config),
           )
         }
       }
