@@ -9,7 +9,7 @@ exports[`test/append-nodes.ts > TAP > append different type of dependencies > sh
 Graph [@vltpkg/graph.Graph] {
   packageInfo: { manifest: [AsyncFunction: manifest] },
   manifests: Map(3) {
-    'file;%2F%2F%2Fsrc%2Fgraph%2F.tap%2Ffixtures%2Ftest-append-nodes.ts-append-different-type-of-dependencies' => {
+    'file;.' => {
       name: 'my-project',
       version: '1.0.0',
       devDependencies: { foo: '^1.0.0' },
@@ -22,36 +22,102 @@ Graph [@vltpkg/graph.Graph] {
     },
     'registry;;bar@1.0.0' => { name: 'bar', version: '1.0.0' }
   },
+  edges: Set(3) {
+    Edge [@vltpkg/graph.Edge] {
+      from: Node [@vltpkg/graph.Node] {
+        edgesIn: Set(0) {},
+        edgesOut: [Map],
+        id: 'file;.',
+        importer: true,
+        integrity: undefined,
+        manifest: [Object],
+        resolved: undefined
+      },
+      to: Node [@vltpkg/graph.Node] {
+        edgesIn: [Set],
+        edgesOut: Map(0) {},
+        id: 'registry;;foo@1.0.0',
+        importer: false,
+        integrity: undefined,
+        manifest: [Object],
+        resolved: 'https://registry.npmjs.org/foo/-/foo-1.0.0.tgz'
+      },
+      type: 'devDependencies',
+      spec: Spec {foo@^1.0.0}
+    },
+    Edge [@vltpkg/graph.Edge] {
+      from: Node [@vltpkg/graph.Node] {
+        edgesIn: Set(0) {},
+        edgesOut: [Map],
+        id: 'file;.',
+        importer: true,
+        integrity: undefined,
+        manifest: [Object],
+        resolved: undefined
+      },
+      to: Node [@vltpkg/graph.Node] {
+        edgesIn: [Set],
+        edgesOut: Map(0) {},
+        id: 'registry;;bar@1.0.0',
+        importer: false,
+        integrity: undefined,
+        manifest: [Object],
+        resolved: 'https://registry.npmjs.org/bar/-/bar-1.0.0.tgz'
+      },
+      type: 'optionalDependencies',
+      spec: Spec {bar@^1.0.0}
+    },
+    Edge [@vltpkg/graph.Edge] {
+      from: Node [@vltpkg/graph.Node] {
+        edgesIn: Set(0) {},
+        edgesOut: [Map],
+        id: 'file;.',
+        importer: true,
+        integrity: undefined,
+        manifest: [Object],
+        resolved: undefined
+      },
+      to: undefined,
+      type: 'dependencies',
+      spec: Spec {missing@^1.0.0}
+    }
+  },
   nodes: Map(3) {
-    'file;%2F%2F%2Fsrc%2Fgraph%2F.tap%2Ffixtures%2Ftest-append-nodes.ts-append-different-type-of-dependencies' => Node [@vltpkg/graph.Node] {
+    'file;.' => Node [@vltpkg/graph.Node] {
       edgesIn: Set(0) {},
       edgesOut: Map(3) {
         'foo' => [Edge [@vltpkg/graph.Edge]],
         'bar' => [Edge [@vltpkg/graph.Edge]],
         'missing' => [Edge [@vltpkg/graph.Edge]]
       },
-      id: 'file;%2F%2F%2Fsrc%2Fgraph%2F.tap%2Ffixtures%2Ftest-append-nodes.ts-append-different-type-of-dependencies',
+      id: 'file;.',
       importer: true,
+      integrity: undefined,
       manifest: {
         name: 'my-project',
         version: '1.0.0',
         devDependencies: [Object],
         optionalDependencies: [Object]
-      }
+      },
+      resolved: undefined
     },
     'registry;;foo@1.0.0' => Node [@vltpkg/graph.Node] {
       edgesIn: Set(1) { [Edge [@vltpkg/graph.Edge]] },
       edgesOut: Map(0) {},
       id: 'registry;;foo@1.0.0',
       importer: false,
-      manifest: { name: 'foo', version: '1.0.0', devDependencies: [Object] }
+      integrity: undefined,
+      manifest: { name: 'foo', version: '1.0.0', devDependencies: [Object] },
+      resolved: 'https://registry.npmjs.org/foo/-/foo-1.0.0.tgz'
     },
     'registry;;bar@1.0.0' => Node [@vltpkg/graph.Node] {
       edgesIn: Set(1) { [Edge [@vltpkg/graph.Edge]] },
       edgesOut: Map(0) {},
       id: 'registry;;bar@1.0.0',
       importer: false,
-      manifest: { name: 'bar', version: '1.0.0' }
+      integrity: undefined,
+      manifest: { name: 'bar', version: '1.0.0' },
+      resolved: 'https://registry.npmjs.org/bar/-/bar-1.0.0.tgz'
     }
   },
   importers: Set(1) {
@@ -62,14 +128,16 @@ Graph [@vltpkg/graph.Graph] {
         'bar' => [Edge [@vltpkg/graph.Edge]],
         'missing' => [Edge [@vltpkg/graph.Edge]]
       },
-      id: 'file;%2F%2F%2Fsrc%2Fgraph%2F.tap%2Ffixtures%2Ftest-append-nodes.ts-append-different-type-of-dependencies',
+      id: 'file;.',
       importer: true,
+      integrity: undefined,
       manifest: {
         name: 'my-project',
         version: '1.0.0',
         devDependencies: [Object],
         optionalDependencies: [Object]
-      }
+      },
+      resolved: undefined
     }
   },
   mainImporter: <ref *1> Node [@vltpkg/graph.Node] {
@@ -94,23 +162,27 @@ Graph [@vltpkg/graph.Graph] {
         spec: Spec {missing@^1.0.0}
       }
     },
-    id: 'file;%2F%2F%2Fsrc%2Fgraph%2F.tap%2Ffixtures%2Ftest-append-nodes.ts-append-different-type-of-dependencies',
+    id: 'file;.',
     importer: true,
+    integrity: undefined,
     manifest: {
       name: 'my-project',
       version: '1.0.0',
       devDependencies: { foo: '^1.0.0' },
       optionalDependencies: { bar: '^1.0.0' }
-    }
+    },
+    resolved: undefined
   },
   missingDependencies: Set(1) {
     Edge [@vltpkg/graph.Edge] {
       from: <ref *1> Node [@vltpkg/graph.Node] {
         edgesIn: Set(0) {},
         edgesOut: [Map],
-        id: 'file;%2F%2F%2Fsrc%2Fgraph%2F.tap%2Ffixtures%2Ftest-append-nodes.ts-append-different-type-of-dependencies',
+        id: 'file;.',
         importer: true,
-        manifest: [Object]
+        integrity: undefined,
+        manifest: [Object],
+        resolved: undefined
       },
       to: undefined,
       type: 'dependencies',

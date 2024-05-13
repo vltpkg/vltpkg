@@ -1,16 +1,17 @@
-import { resolve } from 'node:path'
-import { getId, DepID } from '@vltpkg/dep-id'
+import { getId, DepID, hydrate } from '@vltpkg/dep-id'
 import { typeError } from '@vltpkg/error-cause'
-import { Spec } from '@vltpkg/spec'
-import { ManifestMinified } from '@vltpkg/types'
+import { Spec, SpecOptions } from '@vltpkg/spec'
+import { Integrity, ManifestMinified } from '@vltpkg/types'
 import { DependencyTypeLong } from './dependencies.js'
 import { Edge } from './edge.js'
+import { ConfigFileData } from '@vltpkg/config'
 
 export class Node {
   get [Symbol.toStringTag]() {
     return '@vltpkg/graph.Node'
   }
 
+  #config: ConfigFileData
   #location?: string
 
   /**
@@ -35,9 +36,19 @@ export class Node {
   importer: boolean = false
 
   /**
+   * The manifest integrity value.
+   */
+  integrity?: Integrity
+
+  /**
    * The manifest this node represents in the graph.
    */
-  manifest: ManifestMinified
+  manifest?: ManifestMinified
+
+  /**
+   * An address {@link PackageInfoClient} may use to extract this package.
+   */
+  resolved?: string
 
   /**
    * The file system location for this node.
@@ -46,19 +57,28 @@ export class Node {
     if (this.#location) {
       return this.#location
     }
-    this.#location = resolve(
-      `node_modules/.vlt/${this.id}/node_modules/${this.manifest.name || this.id}`,
+    const spec = hydrate(
+      this.id,
+      undefined,
+      this.#config as SpecOptions,
     )
+    this.#location = `./node_modules/.vlt/${this.id}/node_modules/${this.manifest?.name || spec.name}`
     return this.#location
   }
 
-  constructor(manifest: ManifestMinified, id?: DepID, spec?: Spec) {
+  constructor(
+    config: ConfigFileData,
+    id?: DepID,
+    manifest?: ManifestMinified,
+    spec?: Spec,
+  ) {
+    this.#config = config
     if (id) {
       this.id = id
     } else {
-      if (!spec) {
+      if (!manifest || !spec) {
         throw typeError(
-          'A new Node needs either a spec or an id parameter',
+          'A new Node needs either a manifest & spec or an id parameter',
           {
             manifest,
           },
@@ -75,6 +95,36 @@ export class Node {
   setImporterLocation(location: string) {
     this.#location = location
     this.importer = true
+  }
+
+  /**
+   * Sets the appropriate resolve / integrity value for this node.
+   * Note that other places might also set these values, like for
+   * example the lockfile that might have already have this info.
+   */
+  setResolvedFromId() {
+    const depIdInfo = hydrate(
+      this.id,
+      undefined,
+      this.#config as SpecOptions,
+    )
+    switch (depIdInfo.type) {
+      case 'file':
+        this.resolved = depIdInfo.file
+        return
+      case 'git':
+        this.resolved = depIdInfo.gitRemote
+        return
+      case 'registry':
+        this.resolved =
+          this.manifest?.dist?.tarball ||
+          depIdInfo.conventionalRegistryTarball
+        this.integrity = this.manifest?.dist?.integrity
+        return
+      case 'remote':
+        this.resolved = depIdInfo.remoteURL
+        return
+    }
   }
 
   /**

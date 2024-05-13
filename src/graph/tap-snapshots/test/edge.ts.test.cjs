@@ -21,7 +21,9 @@ Edge [@vltpkg/graph.Edge] {
     edgesOut: Map(0) {},
     id: 'registry;;child@1.0.0',
     importer: false,
-    manifest: [Object]
+    integrity: undefined,
+    manifest: [Object],
+    resolved: undefined
   },
   to: undefined,
   type: 'dependencies',

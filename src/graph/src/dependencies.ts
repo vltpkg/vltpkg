@@ -23,3 +23,14 @@ export const dependencyTypes: Map<
   ['peerDependencies', 'peer'],
   ['optionalDependencies', 'optional'],
 ])
+
+/**
+ * Maps between short form names to the corresponding long form name.
+ */
+export const longTypes: Map<DependencyTypeShort, DependencyTypeLong> =
+  new Map([
+    ['prod', 'dependencies'],
+    ['dev', 'devDependencies'],
+    ['peer', 'peerDependencies'],
+    ['optional', 'optionalDependencies'],
+  ])

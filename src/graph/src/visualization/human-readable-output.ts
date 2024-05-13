@@ -1,4 +1,3 @@
-import { relative } from 'node:path'
 import { inspect } from 'node:util'
 import { DepID } from '@vltpkg/dep-id'
 import { dependencyTypes } from '../dependencies.js'
@@ -14,6 +13,8 @@ function parseNode(seenNodes: Set<DepID>, graph: Graph, node: Node) {
         {
           id: node.id,
           location: node.location,
+          ...(node.resolved ? { resolved: node.resolved } : null),
+          ...(node.integrity ? { integrity: node.integrity } : null),
           ...((
             node.edgesOut &&
             node.edgesOut.size &&

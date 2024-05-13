@@ -1,7 +1,6 @@
-import { dirname, resolve } from 'node:path'
-import { fileURLToPath, pathToFileURL } from 'node:url'
 import { inspect } from 'node:util'
 import t from 'tap'
+import { ConfigFileData } from '@vltpkg/config'
 import { Spec } from '@vltpkg/spec'
 import { hydrate } from '@vltpkg/dep-id'
 import { Graph } from '../src/graph.js'
@@ -13,24 +12,26 @@ Object.assign(Spec.prototype, {
   },
 })
 
-const __dirname = dirname(fileURLToPath(import.meta.url))
-const encodedCwd = encodeURIComponent(
-  String(pathToFileURL(resolve(__dirname, '../..'))),
-).substring(13)
-t.cleanSnapshot = s => s.replaceAll(encodedCwd, '')
+const configData = {
+  registry: 'https://registry.npmjs.org',
+  registries: {
+    npm: 'https://registry.npmjs.org',
+  },
+} as ConfigFileData
 
 t.test('Graph', async t => {
-  const location = t.testdirName
   const mainManifest = {
     name: 'my-project',
     version: '1.0.0',
   }
-  const graph = new Graph({
-    location,
-    mainManifest,
-  })
+  const graph = new Graph(
+    {
+      mainManifest,
+    },
+    configData,
+  )
   t.strictSame(
-    graph.mainImporter.manifest.name,
+    graph.mainImporter.manifest?.name,
     'my-project',
     'should have created a root folder with expected properties',
   )
@@ -39,11 +40,11 @@ t.test('Graph', async t => {
     'should print with special tag name',
   )
   const newNode = graph.newNode(
+    undefined,
     {
       name: 'foo',
       version: '1.0.0',
     },
-    undefined,
     Spec.parse('foo@^1.0.0'),
   )
   t.strictSame(
@@ -86,7 +87,6 @@ t.test('Graph', async t => {
 })
 
 t.test('using placePackage', async t => {
-  const location = t.testdirName
   const mainManifest = {
     name: 'my-project',
     version: '1.0.0',
@@ -96,10 +96,12 @@ t.test('using placePackage', async t => {
       missing: '^1.0.0',
     },
   }
-  const graph = new Graph({
-    location,
-    mainManifest,
-  })
+  const graph = new Graph(
+    {
+      mainManifest,
+    },
+    configData,
+  )
   const foo = graph.placePackage(
     graph.mainImporter,
     'dependencies',
@@ -154,14 +156,15 @@ t.test('using placePackage', async t => {
 })
 
 t.test('main manifest missing name', async t => {
-  const location = t.testdirName
   const mainManifest = {
     version: '1.0.0',
   }
-  const graph = new Graph({
-    location,
-    mainManifest,
-  })
+  const graph = new Graph(
+    {
+      mainManifest,
+    },
+    configData,
+  )
   const hydrateId = hydrate(graph.mainImporter.id)
   t.strictSame(
     hydrateId.type,
@@ -170,7 +173,7 @@ t.test('main manifest missing name', async t => {
   )
   t.strictSame(
     hydrateId.bareSpec,
-    String(pathToFileURL(location)),
-    'should have the encoded location as part of its id',
+    'file:.',
+    'should have the relative path reference',
   )
 })

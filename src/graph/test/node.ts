@@ -1,8 +1,16 @@
-import { getId } from '@vltpkg/dep-id'
 import { inspect } from 'node:util'
 import t from 'tap'
+import { ConfigFileData } from '@vltpkg/config'
+import { getId } from '@vltpkg/dep-id'
 import { Spec } from '@vltpkg/spec'
 import { Node } from '../src/node.js'
+
+const configData = {
+  registry: 'https://registry.npmjs.org',
+  registries: {
+    npm: 'https://registry.npmjs.org',
+  },
+} as ConfigFileData
 
 t.test('Node', async t => {
   // Create an importer node that behaves like the root project node
@@ -11,8 +19,8 @@ t.test('Node', async t => {
     version: '1.0.0',
   }
   const rootSpec = Spec.parse('root', 'file:///path/to/root')
-  const root = new Node(rootMani, undefined, rootSpec)
-  root.setImporterLocation('/path/to/root')
+  const root = new Node(configData, undefined, rootMani, rootSpec)
+  root.setImporterLocation('./path/to/importer')
   t.strictSame(
     root.edgesIn.size,
     0,
@@ -25,7 +33,7 @@ t.test('Node', async t => {
   )
   t.strictSame(
     root.location,
-    '/path/to/root',
+    './path/to/importer',
     'should return the expected location value for importers',
   )
   t.matchSnapshot(
@@ -38,13 +46,10 @@ t.test('Node', async t => {
     version: '1.0.0',
   }
   const fooSpec = Spec.parse('foo@1.0.0')
-  const foo = new Node(fooMani, undefined, fooSpec)
-  t.ok(
-    foo.location
-      .replace(/\\/g, '/')
-      .endsWith(
-        'node_modules/.vlt/registry;;foo@1.0.0/node_modules/foo',
-      ),
+  const foo = new Node(configData, undefined, fooMani, fooSpec)
+  t.strictSame(
+    foo.location,
+    './node_modules/.vlt/registry;;foo@1.0.0/node_modules/foo',
     'should return the expected location value',
   )
   const barMani = {
@@ -53,7 +58,7 @@ t.test('Node', async t => {
   }
   const barSpec = Spec.parse('bar@1.0.0')
   const barId = getId(barSpec, barMani)
-  const bar = new Node(barMani, barId)
+  const bar = new Node(configData, barId, barMani)
 
   root.addEdgesTo('dependencies', new Spec('foo', '^1.0.0'), foo)
   root.addEdgesTo('dependencies', new Spec('bar', '^1.0.0'), bar)
@@ -81,22 +86,80 @@ t.test('Node', async t => {
   )
 
   t.throws(
-    () => new Node({ name: 'ipsum', version: '1.0.0' }),
-    /A new Node needs either a spec or an id parameter/,
+    () =>
+      new Node(configData, undefined, {
+        name: 'ipsum',
+        version: '1.0.0',
+      }),
+    /A new Node needs either a manifest & spec or an id parameter/,
     'should throw a type error',
+  )
+
+  const barNoMani = new Node(configData, 'registry;;bar@1.0.0')
+  t.strictSame(
+    barNoMani.location,
+    './node_modules/.vlt/registry;;bar@1.0.0/node_modules/bar',
+    'should infer location url from id',
   )
 
   const unnamedMani = {
     version: '0.0.0',
   }
   const unnamedSpec = Spec.parse('', '0.0.0')
-  const unnamed = new Node(unnamedMani, undefined, unnamedSpec)
-  t.ok(
-    unnamed.location
-      .replace(/\\/g, '/')
-      .endsWith(
-        'node_modules/.vlt/registry;;@0.0.0/node_modules/registry;;@0.0.0',
-      ),
+  const unnamed = new Node(
+    configData,
+    undefined,
+    unnamedMani,
+    unnamedSpec,
+  )
+  t.strictSame(
+    unnamed.location,
+    './node_modules/.vlt/registry;;@0.0.0/node_modules/@0.0.0',
     'should have a location for unnamed manifests',
+  )
+
+  // different resolved values inferred from id
+  const file = new Node(configData, 'file;.%2Fmy-package')
+  file.setResolvedFromId()
+  t.strictSame(
+    file.resolved,
+    './my-package',
+    'should set expected resolved value for a file id type',
+  )
+  const git = new Node(configData, 'git;github%3Avltpkg%2Ffoo;')
+  git.setResolvedFromId()
+  t.strictSame(
+    git.resolved,
+    'git+ssh://git@github.com:vltpkg/foo.git',
+    'should set expected resolved value for a git id type',
+  )
+  const reg = new Node(configData, 'registry;;foo@1.0.0', {
+    dist: {
+      tarball: '<path-to-tarball>',
+      integrity: 'sha512-deadbeef',
+    },
+  })
+  reg.setResolvedFromId()
+  t.strictSame(
+    reg.resolved,
+    '<path-to-tarball>',
+    'should set expected resolved value for a registry id type',
+  )
+  const regNoManifest = new Node(configData, 'registry;;foo@1.0.0')
+  regNoManifest.setResolvedFromId()
+  t.strictSame(
+    regNoManifest.resolved,
+    'https://registry.npmjs.org/foo/-/foo-1.0.0.tgz',
+    'should set expected conventional registry value if no manifest',
+  )
+  const remote = new Node(
+    configData,
+    'remote;https%3A%2F%2Fx.com%2Fx.tgz',
+  )
+  remote.setResolvedFromId()
+  t.strictSame(
+    remote.resolved,
+    'https://x.com/x.tgz',
+    'should set expected resolved value for a remote id type',
   )
 })

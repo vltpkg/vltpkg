@@ -1,8 +1,16 @@
 import { inspect } from 'node:util'
 import t from 'tap'
+import { ConfigFileData } from '@vltpkg/config'
 import { Spec } from '@vltpkg/spec'
 import { Edge } from '../src/edge.js'
 import { Node } from '../src/node.js'
+
+const configData = {
+  registry: 'https://registry.npmjs.org',
+  registries: {
+    npm: 'https://registry.npmjs.org',
+  },
+} as ConfigFileData
 
 const kCustomInspect = Symbol.for('nodejs.util.inspect.custom')
 Object.assign(Spec.prototype, {
@@ -17,13 +25,13 @@ t.test('Edge', async t => {
     version: '1.0.0',
   }
   const rootSpec = Spec.parse('root@1.0.0')
-  const root = new Node(rootMani, undefined, rootSpec)
+  const root = new Node(configData, undefined, rootMani, rootSpec)
   const childMani = {
     name: 'child',
     version: '1.0.0',
   }
   const childSpec = Spec.parse('child@1.0.0')
-  const child = new Node(childMani, undefined, childSpec)
+  const child = new Node(configData, undefined, childMani, childSpec)
 
   const edge = new Edge(
     'dependencies',
@@ -73,7 +81,7 @@ t.test('Edge', async t => {
     peerDependenciesMeta: { foo: { optional: true } },
   }
   const pdmSpec = Spec.parse('pdm@1.2.3')
-  const pdm = new Node(pdmMani, undefined, pdmSpec)
+  const pdm = new Node(configData, undefined, pdmMani, pdmSpec)
   const pdmEdge = new Edge(
     'peerDependencies',
     Spec.parse('foo@*'),
