@@ -33,7 +33,7 @@ jobs:
       - name: Use Nodejs ${{ matrix.node-version }}
         uses: actions/setup-node@v3
         with:
-          node-version: 18.x
+          node-version: 22.x
       - name: Install dependencies
         run: npx --yes pnpm i
       - name: Generate typedocs
