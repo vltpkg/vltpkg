@@ -5,7 +5,7 @@
  * Make sure to inspect the output below.  Do not ignore changes!
  */
 'use strict'
-exports[`test/cache-entry.ts > TAP > inspect value 1`] = `
+exports[`test/cache-entry.ts > TAP > inspect value (should include color codes for displayed object) 1`] = `
 @vltpkg/registry-client.CacheEntry {
   statusCode: [33m200[39m,
   headers: [ [ [32m'key'[39m, [32m'value'[39m ], [ [32m'value'[39m, [32m'x'[39m ], [ [32m'x'[39m, [32m'y'[39m ] ],
