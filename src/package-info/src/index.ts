@@ -105,13 +105,15 @@ export class PackageInfoClient {
   #resolutions = new Map<string, Resolution>()
 
   get registryClient() {
-    if (this.#registryClient) return this.#registryClient
-    return (this.#registryClient = new RegistryClient(this.options))
+    if (!this.#registryClient) {
+      this.#registryClient = new RegistryClient(this.options)
+    }
+    return this.#registryClient
   }
 
   get tarPool() {
-    if (this.#tarPool) return this.#tarPool
-    return (this.#tarPool = new Pool())
+    if (!this.#tarPool) this.#tarPool = new Pool()
+    return this.#tarPool
   }
 
   constructor(options: PackageInfoClientOptions = {}) {
