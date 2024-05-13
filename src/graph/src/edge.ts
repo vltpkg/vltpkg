@@ -1,3 +1,4 @@
+import { satisfies } from '@vltpkg/semver'
 import { Spec } from '@vltpkg/spec'
 import { Node } from './node.js'
 import { DependencyTypeLong } from './pkgs.js'
@@ -67,4 +68,18 @@ export class Edge {
   get optional(): boolean {
     return this.peerOptional || this.type === 'optionalDependencies'
   }
+
+  get valid(): boolean {
+    if (!this.to) return this.optional
+    if (this.spec.type === 'registry') {
+      if (this.spec.range) {
+        return satisfies(this.to.pkg.version, this.spec.range)
+      }
+      return true
+      /* c8 ignore start */
+    }
+    // TODO: git deps, file deps, remote deps, workspace deps
+    return false
+  }
+  /* c8 ignore stop */
 }

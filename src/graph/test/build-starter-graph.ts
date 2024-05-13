@@ -1,9 +1,12 @@
 import { Spec } from '@vltpkg/spec'
 import t from 'tap'
-import { buildStarterGraph } from '../src/build-starter-graph.js'
+import {
+  buildStarterGraph,
+  BuildStarterGraphOptions,
+} from '../src/build-starter-graph.js'
 import { Graph } from '../src/graph.js'
-import { DependencyTypeShort } from '../src/pkgs.js'
 import { Node } from '../src/node.js'
+import { DependencyTypeShort, PackageInventory } from '../src/pkgs.js'
 
 t.test('build empty starter graph', async t => {
   const dir = t.testdir({
@@ -15,7 +18,8 @@ t.test('build empty starter graph', async t => {
   const graph = await buildStarterGraph({
     dir,
     addSpecs: [],
-  })
+    packageInventory: new PackageInventory(),
+  } as BuildStarterGraphOptions)
   t.strictSame(
     graph.root.pkg.name,
     'my-project',
@@ -56,7 +60,8 @@ t.test('build starter graph with missing dep', async t => {
   await buildStarterGraph({
     dir,
     addSpecs: [],
-  })
+    packageInventory: new PackageInventory(),
+  } as BuildStarterGraphOptions)
 })
 
 t.test('build starter graph add spec', async t => {
@@ -71,10 +76,10 @@ t.test('build starter graph add spec', async t => {
   >('../src/build-starter-graph.js', {
     '../src/append-registry-nodes.js': {
       appendRegistryNodes: async (
-        graph,
-        fromNode,
-        specs,
-        depType,
+        _graph: any,
+        _fromNode: any,
+        specs: any,
+        _depType: any,
       ) => {
         const [item] = specs
         t.strictSame(
@@ -85,8 +90,9 @@ t.test('build starter graph add spec', async t => {
       },
     },
   })
-  const graph = await buildStarterGraph({
+  await buildStarterGraph({
     addSpecs: ['foo@latest'],
     dir,
+    packageInventory: new PackageInventory(),
   })
 })

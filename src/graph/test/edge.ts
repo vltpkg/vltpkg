@@ -5,6 +5,13 @@ import { Edge } from '../src/edge.js'
 import { Node } from '../src/node.js'
 import { Package } from '../src/pkgs.js'
 
+const kCustomInspect = Symbol.for('nodejs.util.inspect.custom')
+Object.assign(Spec.prototype, {
+  [kCustomInspect]() {
+    return `Spec {${this}}`
+  },
+})
+
 t.test('Edge', async t => {
   const root = new Node(0, {
     name: 'root',
@@ -21,6 +28,7 @@ t.test('Edge', async t => {
     root,
     child,
   )
+  t.equal(edge.valid, true)
   t.equal(edge.name, 'child')
   t.equal(edge.dev, false)
   t.equal(edge.optional, false)
@@ -32,17 +40,20 @@ t.test('Edge', async t => {
     child,
   )
   t.equal(validDistTag.dev, true)
-  new Edge(
+  t.equal(validDistTag.valid, true)
+  const invalid = new Edge(
     'dependencies',
     Spec.parse('child', '^9.0.0'),
     root,
     child,
   )
+  t.equal(invalid.valid, false)
   const dangling = new Edge(
     'dependencies',
     Spec.parse('missing', 'latest'),
     child,
   )
+  t.equal(dangling.valid, false)
   t.matchSnapshot(inspect(dangling, { depth: 1 }))
   const optional = new Edge(
     'optionalDependencies',
@@ -50,6 +61,7 @@ t.test('Edge', async t => {
     child,
   )
   t.equal(optional.optional, true)
+  t.equal(optional.valid, true)
 
   const pdm = new Node(2, {
     name: 'pdm',
@@ -63,4 +75,5 @@ t.test('Edge', async t => {
     pdm,
   )
   t.equal(pdmEdge.peerOptional, true)
+  t.equal(pdmEdge.valid, true, 'optional is valid even if missing')
 })
