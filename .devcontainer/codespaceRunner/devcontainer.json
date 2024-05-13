@@ -1,5 +1,12 @@
 {
   "name": "CodespaceRunner",
   "dockerFile": "Dockerfile",
-  "postStartCommand": "/home/vscode/actions-runner/start.sh"
+  "remoteUser": "vscode",
+  "postStartCommand": "/home/vscode/actions-runner/start.sh",
+  "build": {
+    "args": {
+      "UPGRADE_PACKAGES": "true",
+      "RUNNER_VERSION": "2.316.1"
+    }
+  }
 }
