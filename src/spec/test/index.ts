@@ -141,6 +141,14 @@ t.test('get final subspec in chain', t => {
   t.end()
 })
 
+t.test('simplify in the toString result', t => {
+  const spec = Spec.parse('x@npm:y@npm:z@npm:a@npm:b@latest')
+  t.equal(spec.toString(), 'x@npm:b@latest')
+  // test the memoization
+  t.equal(spec.toString(), 'x@npm:b@latest')
+  t.end()
+})
+
 t.test('parse argument options', t => {
   const nameAndBare = Spec.parse('foo', 'latest')
   const full = Spec.parse('foo@latest')
@@ -149,10 +157,9 @@ t.test('parse argument options', t => {
   t.end()
 })
 
-t.test('simplify in the toString result', t => {
-  const spec = Spec.parse('x@npm:y@npm:z@npm:a@npm:b@latest')
-  t.equal(spec.toString(), 'x@npm:b@latest')
-  // test the memoization
-  t.equal(spec.toString(), 'x@npm:b@latest')
+t.test('constructor argument options', t => {
+  const nameAndBare = new Spec('foo', 'latest')
+  const full = new Spec('foo@latest')
+  t.matchOnly(full, nameAndBare)
   t.end()
 })

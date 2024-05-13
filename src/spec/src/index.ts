@@ -65,9 +65,7 @@ export class Spec {
   ) {
     return (
       typeof spec === 'object' ? spec
-      : typeof bareOrOptions === 'string' ?
-        Spec.parse(`${spec}@${bareOrOptions}`, options)
-      : new Spec(spec, bareOrOptions)
+      : new Spec(spec, bareOrOptions, options)
     )
   }
 
@@ -171,8 +169,22 @@ export class Spec {
     return (this.#toString = this.name + '@' + sub.bareSpec)
   }
 
-  constructor(spec: string, options: SpecOptions = {}) {
-    this.spec = spec
+  constructor(name: string, bareSpec: string, options?: SpecOptions)
+  constructor(spec: string, options?: SpecOptions)
+  constructor(
+    spec: string | Spec,
+    bareOrOptions?: SpecOptions | string,
+    options?: SpecOptions,
+  )
+  constructor(
+    spec: string,
+    bareOrOptions?: SpecOptions | string,
+    options: SpecOptions = {},
+  ) {
+    if (bareOrOptions && typeof bareOrOptions === 'object') {
+      options = bareOrOptions
+      bareOrOptions = undefined
+    }
     this.options = {
       registry: defaultRegistry,
       ...options,
@@ -199,15 +211,22 @@ export class Spec {
         : defaultGitHostArchives,
     }
 
-    let at = spec.indexOf('@', spec.startsWith('@') ? 1 : 0)
-    if (at === -1) {
-      // assume that an unadorned spec is just a name at the default
-      // registry
-      at = spec.length
-      spec += '@'
+    if (typeof bareOrOptions === 'string') {
+      this.name = spec
+      this.bareSpec = bareOrOptions
+      this.spec = `${this.name}@${bareOrOptions}`
+    } else {
+      this.spec = spec
+      let at = spec.indexOf('@', spec.startsWith('@') ? 1 : 0)
+      if (at === -1) {
+        // assume that an unadorned spec is just a name at the default
+        // registry
+        at = spec.length
+        spec += '@'
+      }
+      this.name = spec.substring(0, at)
+      this.bareSpec = spec.substring(at + 1)
     }
-    this.name = spec.substring(0, at)
-    this.bareSpec = spec.substring(at + 1)
 
     if (this.bareSpec.startsWith('workspace:')) {
       this.type = 'workspace'
@@ -383,7 +402,6 @@ export class Spec {
     this.registry = url
     this.subspec = Spec.parse(s, {
       ...this.options,
-      // we don't need to say what registry it is again
       registry: url,
     })
   }
