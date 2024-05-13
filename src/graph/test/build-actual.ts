@@ -1,8 +1,8 @@
 import { resolve } from 'node:path'
 import { inspect } from 'node:util'
 import t from 'tap'
-import { Graph } from '../src/graph.js'
 import { buildActual } from '../src/build-actual.js'
+import { Graph } from '../src/graph.js'
 import { humanReadableOutput } from '../src/visualization/human-readable-output.js'
 
 t.test(
@@ -67,9 +67,19 @@ t.test(
       },
     })
     const graph = new Graph(rootPkg)
-    await buildActual(graph, graph.root, resolve(dir, 'node_modules'))
+    buildActual(graph, graph.root, resolve(dir, 'node_modules'))
     t.matchSnapshot(
       inspect(humanReadableOutput(graph), { depth: Infinity }),
+    )
+    t.strictSame(
+      graph.packages.size,
+      4,
+      'should have expected number of packages',
+    )
+    t.strictSame(
+      [...graph.root.edgesOut.values()].map(e => e.to?.pkg.name),
+      ['foo', 'bar'],
+      'should have root edges to its direct dependency nodes',
     )
   },
 )
@@ -87,7 +97,7 @@ t.test('build a graph with missing direct dependencies', async t => {
     'package.json': JSON.stringify(rootPkg),
   })
   const graph = new Graph(rootPkg)
-  await buildActual(graph, graph.root, resolve(dir, 'node_modules'))
+  buildActual(graph, graph.root, resolve(dir, 'node_modules'))
   t.strictSame(
     graph.packages.size,
     1,
@@ -136,7 +146,7 @@ t.test('non registry dependency', async t => {
     },
   })
   const graph = new Graph(rootPkg)
-  await buildActual(graph, graph.root, resolve(dir, 'node_modules'))
+  buildActual(graph, graph.root, resolve(dir, 'node_modules'))
   t.strictSame(
     graph.packages.get('foo@0.0.0').origin,
     '',
@@ -174,7 +184,7 @@ t.test('unconfigured registry found', async t => {
     },
   })
   const graph = new Graph(rootPkg)
-  await t.rejects(
+  t.throws(
     () =>
       buildActual(graph, graph.root, resolve(dir, 'node_modules')),
     /Registry http:\/\/example.com\/.* was not found in configs/,

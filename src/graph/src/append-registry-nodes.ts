@@ -1,13 +1,8 @@
-import { URL } from 'node:url'
 import { CacheEntry, RegistryClient } from '@vltpkg/registry-client'
 import { Spec } from '@vltpkg/spec'
 import { Graph } from './graph.js'
 import { Node } from './node.js'
-import {
-  DependencyTypeLong,
-  isPackageMetadata,
-  Package,
-} from './pkgs.js'
+import { DependencyTypeLong, isPackageMetadata } from './pkgs.js'
 
 const origin = 'npm:'
 const hostname = 'https://registry.npmjs.org'
@@ -41,7 +36,6 @@ export const appendRegistryNodes = async (
       const node = graph.placePackage(
         fromNode,
         depType,
-        spec.name,
         spec,
         mani,
         undefined,

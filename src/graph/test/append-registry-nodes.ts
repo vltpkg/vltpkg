@@ -1,6 +1,5 @@
-import { resolve } from 'node:path'
-import t from 'tap'
 import { Spec } from '@vltpkg/spec'
+import t from 'tap'
 import { Graph } from '../src/graph.js'
 
 t.test('append a new node to a graph from a registry', async t => {
@@ -20,7 +19,7 @@ t.test('append a new node to a graph from a registry', async t => {
   >('../src/append-registry-nodes.js', {
     '@vltpkg/registry-client': {
       RegistryClient: class {
-        async request(url) {
+        async request(url: string) {
           switch (url) {
             case 'https://registry.npmjs.org/foo/latest':
               return { body: fooManifest }
@@ -42,7 +41,7 @@ t.test('append a new node to a graph from a registry', async t => {
       foo: '^1.0.0',
     },
   }
-  const dir = t.testdir({
+  t.testdir({
     'package.json': JSON.stringify(rootPkg),
   })
   const graph = new Graph(rootPkg)
@@ -58,7 +57,7 @@ t.test('append a new node to a graph from a registry', async t => {
     'dependencies',
   )
   t.strictSame(
-    [...graph.root.edgesOut.values()].map(e => e.to.pkg.name),
+    [...graph.root.edgesOut.values()].map(e => e.to?.pkg.name),
     ['foo'],
     'should have a direct dependency on foo',
   )
@@ -75,7 +74,7 @@ t.test('append a new node to a graph from a registry', async t => {
     'dependencies',
   )
   t.strictSame(
-    graph.root.edgesOut.get('bar').spec.semver,
+    graph.root.edgesOut.get('bar')?.spec.semver,
     '',
     'should add a direct dependency on latest bar',
   )

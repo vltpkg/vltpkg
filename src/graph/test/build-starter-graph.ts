@@ -1,5 +1,9 @@
+import { Spec } from '@vltpkg/spec'
 import t from 'tap'
 import { buildStarterGraph } from '../src/build-starter-graph.js'
+import { Graph } from '../src/graph.js'
+import { DependencyTypeShort } from '../src/pkgs.js'
+import { Node } from '../src/node.js'
 
 t.test('build empty starter graph', async t => {
   const dir = t.testdir({
@@ -10,6 +14,7 @@ t.test('build empty starter graph', async t => {
   })
   const graph = await buildStarterGraph({
     dir,
+    addSpecs: [],
   })
   t.strictSame(
     graph.root.pkg.name,
@@ -33,12 +38,13 @@ t.test('build starter graph with missing dep', async t => {
   >('../src/build-starter-graph.js', {
     '../src/append-registry-nodes.js': {
       appendRegistryNodes: async (
-        graph,
-        fromNode,
-        specs,
-        depType,
+        _graph: Graph,
+        _fromNode: Node,
+        addSpecs: Spec[],
+        _depType: DependencyTypeShort,
       ) => {
-        const [item] = specs
+        const [item] = addSpecs
+        if (!item) throw new Error('no item provided in specs')
         t.strictSame(
           { name: 'foo', spec: 'foo@^1.0.0' },
           { name: item.name, spec: item.spec },
@@ -47,8 +53,9 @@ t.test('build starter graph with missing dep', async t => {
       },
     },
   })
-  const graph = await buildStarterGraph({
+  await buildStarterGraph({
     dir,
+    addSpecs: [],
   })
 })
 

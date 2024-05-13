@@ -1,11 +1,14 @@
-import { inspect } from 'node:util'
-
 export type DependencyTypeLong =
   | 'dependencies'
   | 'devDependencies'
   | 'peerDependencies'
   | 'optionalDependencies'
-export type DependencyTypeShort = 'prod' | 'dev' | 'peer' | 'optional'
+export type DependencyTypeShort =
+  | 'prod'
+  | 'dev'
+  | 'peer'
+  | 'optional'
+  | 'peerOptional'
 
 export const dependencyTypes: Map<
   DependencyTypeLong,
@@ -40,6 +43,7 @@ export type PackageMetadata = {
   dependencies?: Record<string, string>
   devDependencies?: Record<string, string>
   peerDependencies?: Record<string, string>
+  peerDependenciesMeta?: Record<string, { optional: boolean }>
   optionalDependencies?: Record<string, string>
 }
 
@@ -131,6 +135,12 @@ export class Package {
 
   get peerDependencies(): Record<string, string> | undefined {
     return this.#metadata.peerDependencies
+  }
+
+  get peerDependenciesMeta():
+    | Record<string, { optional: boolean }>
+    | undefined {
+    return this.#metadata.peerDependenciesMeta
   }
 
   get tarball(): string | undefined {

@@ -1,3 +1,4 @@
+import { Spec } from '@vltpkg/spec'
 import { inspect } from 'node:util'
 import t from 'tap'
 import { Graph } from '../../src/graph.js'
@@ -16,19 +17,18 @@ t.test('human-readable-output', async t => {
   const foo = graph.placePackage(
     graph.root,
     'dependencies',
-    'foo',
-    '^1.0.0',
+    Spec.parse('foo', '^1.0.0'),
     {
       name: 'foo',
       version: '1.0.0',
     },
     './node_modules/foo',
   )
+  t.ok(foo)
   const bar = graph.placePackage(
     graph.root,
     'dependencies',
-    'bar',
-    '^1.0.0',
+    Spec.parse('bar', '^1.0.0'),
     {
       name: 'bar',
       version: '1.0.0',
@@ -37,11 +37,11 @@ t.test('human-readable-output', async t => {
       },
     },
   )
+  if (!bar) throw new Error('failed to place bar')
   const baz = graph.placePackage(
     bar,
     'dependencies',
-    'baz',
-    '^1.0.0',
+    Spec.parse('baz', '^1.0.0'),
     {
       name: 'baz',
       version: '1.0.0',
@@ -50,8 +50,13 @@ t.test('human-readable-output', async t => {
       },
     },
   )
-  graph.placePackage(graph.root, 'dependencies', 'missing', '^1.0.0')
-  graph.placePackage(baz, 'dependencies', 'foo', '^1.0.0', {
+  if (!baz) throw new Error('failed to place baz')
+  graph.placePackage(
+    graph.root,
+    'dependencies',
+    Spec.parse('missing', '^1.0.0'),
+  )
+  graph.placePackage(baz, 'dependencies', Spec.parse('foo', '^1.0.0'), {
     name: 'foo',
     version: '1.0.0',
   })
