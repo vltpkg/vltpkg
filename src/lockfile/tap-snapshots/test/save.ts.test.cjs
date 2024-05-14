@@ -7,7 +7,7 @@
 'use strict'
 exports[`test/save.ts > TAP > save > must match snapshot 1`] = `
 {
-  "hosts": {
+  "registries": {
     "npm:": "https://registry.npmjs.org"
   },
   "store": [

@@ -7,7 +7,7 @@ import { load } from '../src/load.js'
 t.test('load', async t => {
   const dir = t.testdir({
     'vltlock.json': JSON.stringify({
-      hosts: {
+      registries: {
         'npm:': 'https://registry.npmjs.org',
       },
       store: [
@@ -39,7 +39,7 @@ t.test('load', async t => {
 t.test('custom origin', async t => {
   const dir = t.testdir({
     'vltlock.json': JSON.stringify({
-      hosts: {
+      registries: {
         'npm:': 'https://registry.npmjs.org',
         'my-host:': 'https://example.com',
       },
@@ -63,7 +63,7 @@ t.test('custom origin', async t => {
 t.test('unknown dep type', async t => {
   const dir = t.testdir({
     'vltlock.json': JSON.stringify({
-      hosts: {
+      registries: {
         'npm:': 'https://registry.npmjs.org',
         'my-host:': 'https://example.com',
       },
@@ -86,7 +86,7 @@ t.test('unknown dep type', async t => {
 t.test('missing root pkg', async t => {
   const dir = t.testdir({
     'vltlock.json': JSON.stringify({
-      hosts: {
+      registries: {
         'npm:': 'https://registry.npmjs.org',
       },
       store: [],

@@ -43,9 +43,9 @@ export const load = ({
     return { id, integrity }
   })
 
-  const hosts = new Map(Object.entries(json.hosts))
+  const registries = new Map(Object.entries(json.registries))
   const findOrigin = (name: string) => {
-    for (const host of hosts.keys()) {
+    for (const host of registries.keys()) {
       if (name.startsWith(host)) {
         return host
       }
@@ -100,7 +100,7 @@ export const load = ({
         type,
       } = Spec.parse(originlessId)
       const hostname =
-        (origin && hosts.get(origin)) || 'https://registry.npmjs.org'
+        (origin && registries.get(origin)) || 'https://registry.npmjs.org'
       const dist =
         type === 'registry' && !!node.pkg.integrity ?
           {

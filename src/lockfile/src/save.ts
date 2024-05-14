@@ -15,7 +15,7 @@ export const save = ({ graph, dir }: SaveOptions) => {
   const packagesContent = [...graph.packages.values()]
   const content = JSON.stringify(
     {
-      hosts: {
+      registries: {
         'npm:': 'https://registry.npmjs.org',
       },
       store: formatStore(packagesContent),
