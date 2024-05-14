@@ -7,8 +7,8 @@ const formatStore = (packages: Package[]) =>
   packages.map(pkg => `${pkg.id}; ${pkg.integrity || ''}`)
 
 export interface SaveOptions {
-  dir: string;
-  graph: Graph;
+  dir: string
+  graph: Graph
 }
 
 export const save = ({ graph, dir }: SaveOptions) => {

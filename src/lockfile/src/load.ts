@@ -55,8 +55,7 @@ export const load = ({
   const pre: LockfileNode[] = []
   const post: LockfileNode[] = []
   json.tree.forEach((item: string, index: number) => {
-    const [spec='', type, postOrder, pkgId] =
-      item.split('; ')
+    const [spec = '', type, postOrder, pkgId] = item.split('; ')
     const node: LockfileNode = {
       spec,
       type: type as DependencyTypeShort,
@@ -133,7 +132,9 @@ export const load = ({
 
     const parent: LockfileNode = findParent(node)
     const fromNode: Node | undefined =
-      parent.pkg?.id ? graph.pkgNodes.get(parent.pkg.id) : /* c8 ignore next */ undefined
+      parent.pkg?.id ?
+        graph.pkgNodes.get(parent.pkg.id)
+      : /* c8 ignore next */ undefined
 
     /* c8 ignore next 3 */
     if (!fromNode) {
