@@ -15,7 +15,6 @@ export interface Item {
   preOrderIndex: number
   postOrderIndex?: number
   pkg?: number
-  name?: string
   spec?: string
   type?: DependencyTypeLong
 }
@@ -32,7 +31,6 @@ export const createStorageTree = (
       ref: node.isRoot ? 'root' : 'node',
       children: [],
       preOrderIndex: index++,
-      name: node.pkg.name,
       pkg: packages.indexOf(graph.packages.get(node.pkg.id)),
     }
     seenNodes.add(node)
@@ -43,7 +41,7 @@ export const createStorageTree = (
   }
 
   const parseEdge = (edge: Edge): Item => {
-    const { name, spec, type } = edge
+    const { spec, type } = edge
     let ref: ItemRef = 'edge'
     let toRes, pkg
     let preOrderIndex = 0
@@ -65,7 +63,6 @@ export const createStorageTree = (
       children: [],
       preOrderIndex,
       pkg,
-      name,
       spec: spec.spec,
       type,
       ...toRes,
@@ -96,12 +93,11 @@ export const createStorageTree = (
       const ref = item.ref[0]
       const preOrder = item.preOrderIndex
       const postOrder = item.postOrderIndex
-      const name = item.name
       const spec = item.spec || ''
       const type =
         item.type ? graph.packages.dependencyTypes.get(item.type) : ''
       const pkg = item.pkg ?? ''
-      const formattedResult = `${name}; ${spec}; ${type}; ${postOrder}; ${pkg}`
+      const formattedResult = `${spec}; ${type}; ${postOrder}; ${pkg}`
 
       res[preOrder] = formattedResult
       for (const child of item.children) {
