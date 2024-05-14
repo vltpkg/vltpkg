@@ -15,8 +15,8 @@ exports[`test/save.ts > TAP > save > must match snapshot 1`] = `
     "foo@1.0.0; "
   ],
   "tree": [
-    "my-project; ; ; 0; 1; 0",
-    "foo; foo@^1.0.0; prod; 1; 0; 1"
+    "my-project; ; ; 1; 0",
+    "foo; foo@^1.0.0; prod; 0; 1"
   ]
 }
 `

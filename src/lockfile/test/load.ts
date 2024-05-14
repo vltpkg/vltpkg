@@ -17,12 +17,12 @@ t.test('load', async t => {
         'baz@1.0.0; ',
       ],
       tree: [
-        'my-project; ; ; 0; 5; 0',
-        'foo; foo@^1.0.0; prod; 1; 0; 1',
-        'bar; bar@^1.0.0; prod; 2; 3; 2',
-        'baz; baz@^1.0.0; prod; 3; 2; 3',
-        'foo; foo@^1.0.0; prod; 4; 1; 1',
-        'missing; missing@^1.0.0; prod; 5; 4; ',
+        'my-project; ; ; 5; 0',
+        'foo; foo@^1.0.0; prod; 0; 1',
+        'bar; bar@^1.0.0; prod; 3; 2',
+        'baz; baz@^1.0.0; prod; 2; 3',
+        'foo; foo@^1.0.0; prod; 1; 1',
+        'missing; missing@^1.0.0; prod; 4; ',
       ],
     }),
   })
@@ -48,8 +48,8 @@ t.test('custom origin', async t => {
         'my-host:@scope/foo@1.0.0; sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ==',
       ],
       tree: [
-        'my-project; ; ; 0; 1; 0',
-        'foo; foo@my-host:@scope/foo@^1.0.0; prod; 1; 0; 1',
+        'my-project; ; ; 1; 0',
+        'foo; foo@my-host:@scope/foo@^1.0.0; prod; 0; 1',
       ],
     }),
   })
@@ -72,8 +72,8 @@ t.test('unknown dep type', async t => {
       },
       store: ['my-project@1.0.0; ', 'foo@1.0.0'],
       tree: [
-        'my-project; ; ; 0; 1; 0',
-        'foo; foo@^1.0.0; unknown; 1; 0; 1',
+        'my-project; ; ; 1; 0',
+        'foo; foo@^1.0.0; unknown; 0; 1',
       ],
     }),
   })
@@ -97,8 +97,8 @@ t.test('missing root pkg', async t => {
       },
       store: [],
       tree: [
-        'my-project; ; ; 0; 1; 0',
-        'foo; foo@^1.0.0; prod; 1; 0; 1',
+        'my-project; ; ; 1; 0',
+        'foo; foo@^1.0.0; prod; 0; 1',
       ],
     }),
   })

@@ -101,9 +101,9 @@ export const createStorageTree = (
       const type =
         item.type ? graph.packages.dependencyTypes.get(item.type) : ''
       const pkg = item.pkg ?? ''
-      const formattedResult = `${name}; ${spec}; ${type}; ${preOrder}; ${postOrder}; ${pkg}`
+      const formattedResult = `${name}; ${spec}; ${type}; ${postOrder}; ${pkg}`
 
-      res.push(formattedResult)
+      res[preOrder] = formattedResult
       for (const child of item.children) {
         visit(child)
       }

@@ -21,7 +21,6 @@ interface LockfilePkg {
 interface LockfileNode {
   name: string
   spec: string
-  preOrder: number
   postOrder: number
   type: DependencyTypeShort
   pkg?: LockfilePkg
@@ -56,20 +55,19 @@ export const load = ({
 
   const pre: LockfileNode[] = []
   const post: LockfileNode[] = []
-  for (const item of json.tree) {
-    const [name, spec, type, preOrder, postOrder, pkgId] =
+  json.tree.forEach((item: string, index: number) => {
+    const [name='', spec='', type, postOrder, pkgId] =
       item.split('; ')
     const node: LockfileNode = {
       name,
       spec,
-      type,
-      preOrder,
-      postOrder,
-      pkg: pkgs[pkgId],
+      type: type as DependencyTypeShort,
+      postOrder: Number(postOrder),
+      pkg: pkgId ? pkgs[Number(pkgId)] : undefined,
     }
-    pre[preOrder] = node
-    post[postOrder] = node
-  }
+    pre[index] = node
+    post[Number(postOrder)] = node
+  })
 
   let graph
   const seenPre: LockfileNode[] = []
