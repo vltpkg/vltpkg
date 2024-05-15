@@ -4,8 +4,14 @@ import { Graph, Package } from '@vltpkg/graph'
 import { createStorageTree } from './create-storage-tree.js'
 
 const formatStore = (packages: Iterable<Package>) => {
+  const [root, ...restPackages] = [...packages]
+  const orderedPackages = restPackages.sort((a, b) =>
+    a.id.localeCompare(b.id, 'en'))
+  if (root) {
+    orderedPackages.unshift(root)
+  }
   const res: Record<string, string> = {}
-  for (const pkg of packages) {
+  for (const pkg of orderedPackages) {
     let value = ''
     if (pkg.integrity) {
       value = pkg.integrity
