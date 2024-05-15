@@ -98,6 +98,8 @@ export class Spec {
   gitCommittish?: string
   /** github, gitlab, bitbucket, gist, etc. */
   namedGitHost?: string
+  /** the path that's parsed when we have a named git host */
+  namedGitHostPath?: string
 
   /**
    * the specifier when using `workspace:` specs
@@ -166,6 +168,7 @@ export class Spec {
     let sub: Spec = this
     // we want the SECOND from the last in the chain
     while (sub.subspec?.subspec) sub = sub.subspec
+    if (sub.subspec && sub.subspec.type !== 'registry') sub = sub.subspec
     return (this.#toString = this.name + '@' + sub.bareSpec)
   }
 
@@ -237,6 +240,7 @@ export class Spec {
           'workspace: spec must be one of *, !, or ^, or a valid semver range',
         )
       }
+      this.workspaceSpec = ws
       if (range) {
         this.semver = ws
         this.range = range
@@ -277,9 +281,17 @@ export class Spec {
       if (h === -1) {
         throw this.#error('registry: must include name/version')
       }
-      const url = reg.substring(0, h)
-      const regSpec = reg.substring(h + 1)
       this.type = 'registry'
+      let url = reg.substring(0, h)
+      if (!url.endsWith('/')) url += '/'
+      const regSpec = reg.substring(h + 1)
+      for (let [name, u] of Object.entries(this.options.registries)) {
+        if (!u.endsWith('/')) {
+          u += '/'
+          this.options.registries[name] = u
+        }
+        if (u === url) this.namedRegistry = name
+      }
       this.#parseRegistrySpec(regSpec, url)
       return
     }
@@ -363,13 +375,15 @@ export class Spec {
       const bare =
         h === -1 ? this.bareSpec : this.bareSpec.substring(0, h)
       const hash = h === -1 ? '' : this.bareSpec.substring(h)
-      const split = bare.substring(name.length + 1).split('/')
+      const hostPath = bare.substring(name.length + 1)
+      const split = hostPath.split('/')
       let t = template
       for (let i = 0; i < split.length; i++) {
         t = t.split(`$${i + 1}`).join(split[i])
       }
       t += hash
       this.namedGitHost = name
+      this.namedGitHostPath = hostPath
       this.#parseGitSelector(t)
       if (this.gitCommittish && !this.gitSelectorParsed?.path) {
         const archiveHost = this.options.gitHostArchives[name]

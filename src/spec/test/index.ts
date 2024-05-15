@@ -163,3 +163,25 @@ t.test('constructor argument options', t => {
   t.matchOnly(full, nameAndBare)
   t.end()
 })
+
+t.test('reverse-lookup registry: specifiers if named', t => {
+  // verify that it works regardless of slashiness
+  const specs = [
+    'x@registry:http://vlt.sh#x@latest',
+    'x@registry:http://vlt.sh/#x@latest',
+  ]
+  const urls = ['http://vlt.sh', 'http://vlt.sh/']
+  const found: Spec[] = []
+  for (const s of specs) {
+    for (const vlt of urls) {
+      found.push(Spec.parse(s, { registries: { vlt } }))
+    }
+  }
+  for (const spec of found) {
+    t.equal(spec.namedRegistry, 'vlt')
+    t.equal(spec.registry, 'http://vlt.sh/')
+    t.equal(spec.options.registries.vlt, 'http://vlt.sh/')
+  }
+  t.matchSnapshot(found.map(s => String(s)))
+  t.end()
+})
