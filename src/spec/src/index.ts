@@ -165,7 +165,7 @@ export class Spec {
     if (this.#toString !== undefined) return this.#toString
     let sub: Spec = this
     // we want the SECOND from the last in the chain
-    while (sub.subspec && sub.subspec.subspec) sub = sub.subspec
+    while (sub.subspec?.subspec) sub = sub.subspec
     return (this.#toString = this.name + '@' + sub.bareSpec)
   }
 
@@ -288,13 +288,15 @@ export class Spec {
     for (const [host, url] of regs) {
       const h = `${host}:`
       if (this.bareSpec.startsWith(h)) {
-        this.namedRegistry = host
         this.registry = url
         this.type = 'registry'
-        this.#parseRegistrySpec(
+        const sub = this.#parseRegistrySpec(
           this.bareSpec.substring(h.length),
           url,
         )
+        if (sub.type === 'registry') {
+          sub.namedRegistry = host
+        }
         return
       }
     }
@@ -404,6 +406,7 @@ export class Spec {
       ...this.options,
       registry: url,
     })
+    return this.subspec
   }
 
   #error(message: string) {
