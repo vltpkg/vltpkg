@@ -165,9 +165,6 @@ importers:
       '@vltpkg/package-info':
         specifier: workspace:*
         version: link:../package-info
-      '@vltpkg/pick-manifest':
-        specifier: workspace:*
-        version: link:../pick-manifest
       '@vltpkg/registry-client':
         specifier: workspace:*
         version: link:../registry-client
@@ -177,6 +174,9 @@ importers:
       '@vltpkg/spec':
         specifier: workspace:*
         version: link:../spec
+      '@vltpkg/types':
+        specifier: workspace:*
+        version: link:../types
     devDependencies:
       '@types/node':
         specifier: ^20.12.7
@@ -422,6 +422,28 @@ importers:
       tshy:
         specifier: ^1.14.0
         version: 1.14.0
+
+  src/types:
+    dependencies:
+      '@vltpkg/error-cause':
+        specifier: workspace:*
+        version: link:../error-cause
+    devDependencies:
+      '@types/node':
+        specifier: ^20.12.7
+        version: 20.12.11
+      prettier:
+        specifier: ^3.2.5
+        version: 3.2.5
+      tap:
+        specifier: ^18.7.3
+        version: 18.8.0(@types/node@20.12.11)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.2.2)
+      tshy:
+        specifier: ^1.14.0
+        version: 1.14.0
+      typedoc:
+        specifier: ^0.25.13
+        version: 0.25.13(typescript@5.2.2)
 
   src/which:
     dependencies:
