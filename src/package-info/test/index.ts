@@ -1,5 +1,5 @@
 import { spawn as spawnGit } from '@vltpkg/git'
-import { Manifest } from '@vltpkg/pick-manifest'
+import { Manifest } from '@vltpkg/types'
 import { Spec } from '@vltpkg/spec'
 import { readFileSync } from 'node:fs'
 import { writeFile } from 'node:fs/promises'
@@ -244,6 +244,7 @@ t.test('packument', async t => {
   t.matchOnly(
     await packument('x@git+' + pathToFileURL(repo), options),
     {
+      name: '',
       versions: {
         '69.42.0': {
           name: '',
@@ -756,4 +757,10 @@ t.test('stubbed workspace spec handling', async t => {
 t.test('verify we got the expected missing urls', t => {
   t.matchSnapshot(notFoundURLs.sort((a, b) => a.localeCompare(b)))
   t.end()
+})
+
+t.test('fake packument with manifest lacking name/version', async t => {
+  const dir = t.testdir({ 'package.json': '{}' })
+  const spec = `x@${pathToFileURL(dir)}`
+  t.matchSnapshot(await packument(spec))
 })
