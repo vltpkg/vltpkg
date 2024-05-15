@@ -1,6 +1,5 @@
 import { Graph } from '@vltpkg/graph'
 import { Spec } from '@vltpkg/spec'
-import { inspect } from 'util'
 import t from 'tap'
 import { createStorageTree } from '../src/create-storage-tree.js'
 
@@ -14,7 +13,7 @@ t.test('createStorageTree', async t => {
       missing: '^1.0.0',
     },
   })
-  const foo = graph.placePackage(
+  graph.placePackage(
     graph.root,
     'dependencies',
     Spec.parse('foo@^1.0.0'),
@@ -57,7 +56,5 @@ t.test('createStorageTree', async t => {
     name: 'foo',
     version: '1.0.0',
   })
-  t.matchSnapshot(
-    createStorageTree(graph, [...graph.packages.values()]),
-  )
+  t.matchSnapshot(createStorageTree(graph))
 })

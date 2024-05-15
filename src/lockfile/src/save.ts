@@ -3,8 +3,19 @@ import { resolve } from 'node:path'
 import { Graph, Package } from '@vltpkg/graph'
 import { createStorageTree } from './create-storage-tree.js'
 
-const formatStore = (packages: Package[]) =>
-  packages.map(pkg => `${pkg.id}; ${pkg.integrity || ''}`)
+const formatStore = (packages: Iterable<Package>) => {
+  const res: Record<string, string> = {}
+  for (const pkg of packages) {
+    let value = ''
+    if (pkg.integrity) {
+      value = pkg.integrity
+    } else if (pkg.shasum) {
+      value = `; ${pkg.shasum}`
+    }
+    res[pkg.id] = `${value}`
+  }
+  return res
+}
 
 export interface SaveOptions {
   dir: string
@@ -12,17 +23,16 @@ export interface SaveOptions {
 }
 
 export const save = ({ graph, dir }: SaveOptions) => {
-  const packagesContent = [...graph.packages.values()]
   const content = JSON.stringify(
     {
       registries: {
         'npm:': 'https://registry.npmjs.org',
       },
-      store: formatStore(packagesContent),
-      tree: createStorageTree(graph, packagesContent),
+      store: formatStore(graph.packages.values()),
+      ...createStorageTree(graph),
     },
     null,
     2,
   )
-  writeFileSync(resolve(dir, 'vltlock.json'), content)
+  writeFileSync(resolve(dir, 'vlt-lock.json'), content)
 }

@@ -20,17 +20,28 @@ exports[`test/load.ts > TAP > load > must match snapshot 1`] = `
 Node {
   pkg: <my-project@1.0.0> .tap/fixtures/test-load.ts-load,
   edgesOut: [
-    Edge -prod-> to: Node { pkg: <foo@1.0.0> },
+    Edge -prod-> to: Node { pkg: <foo@1.0.0> https://registry.npmjs.org/foo/-/foo-1.0.0.tgz },
     Edge -prod-> to: Node {
       pkg: <bar@1.0.0>,
       edgesOut: [
         Edge -prod-> to: Node {
           pkg: <baz@1.0.0>,
-          edgesOut: [ Edge -prod-> to: Node { pkg: <foo@1.0.0> } ]
+          edgesOut: [
+            Edge -prod-> to: Node { pkg: <foo@1.0.0> https://registry.npmjs.org/foo/-/foo-1.0.0.tgz }
+          ]
         }
       ]
     },
     Edge -prod-> to: [missing package]: <missing@^1.0.0>
+  ]
+}
+`
+
+exports[`test/load.ts > TAP > load dist using shasum > must match snapshot 1`] = `
+Node {
+  pkg: <my-project@1.0.0> .tap/fixtures/test-load.ts-load-dist-using-shasum,
+  edgesOut: [
+    Edge -prod-> to: Node { pkg: <foo@1.0.0> https://registry.npmjs.org/foo/-/foo-1.0.0.tgz }
   ]
 }
 `

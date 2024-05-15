@@ -6,12 +6,15 @@
  */
 'use strict'
 exports[`test/create-storage-tree.ts > TAP > createStorageTree > must match snapshot 1`] = `
-Array [
-  "; ; 5; 0",
-  "foo@^1.0.0; prod; 0; 1",
-  "bar@^1.0.0; prod; 3; 2",
-  "baz@^1.0.0; prod; 2; 3",
-  "foo@^1.0.0; prod; 1; 1",
-  "missing@^1.0.0; prod; 4; ",
-]
+Object {
+  "tree": Array [
+    "; ; my-project@1.0.0",
+    "foo@^1.0.0; prod; foo@1.0.0",
+    "bar@^1.0.0; prod; bar@1.0.0",
+    "baz@^1.0.0; prod; baz@1.0.0",
+    "foo@^1.0.0; prod; foo@1.0.0",
+    "missing@^1.0.0; prod; ",
+  ],
+  "treeId": "BQADAgEE",
+}
 `

@@ -1,37 +1,27 @@
 import { error } from '@vltpkg/error-cause'
-import {
-  DependencyTypeLong,
-  Edge,
-  Graph,
-  Node,
-  Package,
-} from '@vltpkg/graph'
+import { DependencyTypeLong, Edge, Graph, Node } from '@vltpkg/graph'
 
 export type ItemRef = 'root' | 'node' | 'edge' | 'symbolic'
 
 export interface Item {
   children: Item[]
-  ref: ItemRef
   preOrderIndex: number
   postOrderIndex?: number
-  pkg?: number
+  pkg?: string
   spec?: string
   type?: DependencyTypeLong
 }
 
-export const createStorageTree = (
-  graph: Graph,
-  packages: Package[],
-) => {
+export const createStorageTree = (graph: Graph) => {
   const seenNodes = new Set()
+  const postOrderIndexes: number[] = []
   let index = 0
 
   const parseNode = (node: Node): Item => {
     const res: Item = {
-      ref: node.isRoot ? 'root' : 'node',
       children: [],
       preOrderIndex: index++,
-      pkg: packages.indexOf(graph.packages.get(node.pkg.id)),
+      pkg: node.pkg.id,
     }
     seenNodes.add(node)
     for (const edge of node.edgesOut.values()) {
@@ -42,15 +32,13 @@ export const createStorageTree = (
 
   const parseEdge = (edge: Edge): Item => {
     const { spec, type } = edge
-    let ref: ItemRef = 'edge'
     let toRes, pkg
     let preOrderIndex = 0
 
     if (edge.to) {
       if (seenNodes.has(edge.to)) {
-        ref = 'symbolic'
         preOrderIndex = index++
-        pkg = packages.indexOf(graph.packages.get(edge.to.pkg.id))
+        pkg = edge.to.pkg.id
       } else {
         toRes = parseNode(edge.to)
       }
@@ -59,7 +47,6 @@ export const createStorageTree = (
     }
 
     return {
-      ref,
       children: [],
       preOrderIndex,
       pkg,
@@ -90,16 +77,16 @@ export const createStorageTree = (
           { found: item, spec: item.spec },
         )
       }
-      const ref = item.ref[0]
       const preOrder = item.preOrderIndex
       const postOrder = item.postOrderIndex
       const spec = item.spec || ''
       const type =
         item.type ? graph.packages.dependencyTypes.get(item.type) : ''
       const pkg = item.pkg ?? ''
-      const formattedResult = `${spec}; ${type}; ${postOrder}; ${pkg}`
+      const formattedResult = `${spec}; ${type}; ${pkg}`
 
       res[preOrder] = formattedResult
+      postOrderIndexes[preOrder] = postOrder
       for (const child of item.children) {
         visit(child)
       }
@@ -110,5 +97,8 @@ export const createStorageTree = (
 
   const root = parseNode(graph.root)
   postOrderIndexing(root)
-  return flattenTree(root)
+  return {
+    tree: flattenTree(root),
+    treeId: Buffer.from(postOrderIndexes).toString('base64'),
+  }
 }

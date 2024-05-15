@@ -3,11 +3,9 @@ import { resolve } from 'node:path'
 import { error } from '@vltpkg/error-cause'
 import {
   reverseDependencyTypes,
-  DependencyTypeLong,
   DependencyTypeShort,
   Graph,
   Node,
-  Package,
   PackageInventory,
   PackageMetadata,
 } from '@vltpkg/graph'
@@ -15,12 +13,12 @@ import { Spec } from '@vltpkg/spec'
 
 interface LockfilePkg {
   id: string
-  integrity: string
+  integrity?: string
+  shasum?: string
 }
 
 interface LockfileNode {
   spec: string
-  postOrder: number
   type: DependencyTypeShort
   pkg?: LockfilePkg
 }
@@ -34,14 +32,29 @@ export const load = ({
   dir,
   packageInventory,
 }: LoadOptions): Graph => {
-  const file = readFileSync(resolve(dir, 'vltlock.json'), {
+  const file = readFileSync(resolve(dir, 'vlt-lock.json'), {
     encoding: 'utf8',
   })
   const json = JSON.parse(file)
-  const pkgs: LockfilePkg[] = json.store.map((i: string) => {
-    const [id, integrity] = i.split('; ')
-    return { id, integrity }
-  })
+  const pkgs: Map<string, LockfilePkg> = new Map()
+  const store: [string, unknown][] = Object.entries(json.store)
+  for (const [id, value] of store) {
+    let integrity
+    let shasum
+    if (typeof value === 'string') {
+      const [i, s] = value.split('; ')
+      if (i) {
+        integrity = i
+      } else if (s) {
+        shasum = s
+      }
+    } else {
+      throw error('Unexpected value found at lockfile store', {
+        found: value,
+      })
+    }
+    pkgs.set(id, { id, integrity, shasum })
+  }
 
   const registries = new Map(Object.entries(json.registries))
   const findOrigin = (name: string) => {
@@ -54,16 +67,28 @@ export const load = ({
 
   const pre: LockfileNode[] = []
   const post: LockfileNode[] = []
+  const postOrderIndexes: number[] = Array.from(
+    Buffer.from(json.treeId, 'base64'),
+  )
+
   json.tree.forEach((item: string, index: number) => {
-    const [spec = '', type, postOrder, pkgId] = item.split('; ')
+    const [spec = '', type, pkgId] = item.split('; ')
     const node: LockfileNode = {
       spec,
       type: type as DependencyTypeShort,
-      postOrder: Number(postOrder),
-      pkg: pkgId ? pkgs[Number(pkgId)] : undefined,
+      pkg: pkgId ? pkgs.get(pkgId) : undefined,
     }
     pre[index] = node
-    post[Number(postOrder)] = node
+
+    // Reads post order index from the treeId and assigns the correct
+    // index position in the post order array reference
+    const postOrderIndex: number | undefined = postOrderIndexes[index]
+    if (postOrderIndex == null) {
+      throw error('Could not read index from tree id', {
+        found: postOrderIndex,
+      })
+    }
+    post[postOrderIndex] = node
   })
 
   let graph
@@ -100,11 +125,17 @@ export const load = ({
         type,
       } = Spec.parse(originlessId)
       const hostname =
-        (origin && registries.get(origin)) || 'https://registry.npmjs.org'
+        (origin && registries.get(origin)) ||
+        'https://registry.npmjs.org'
       const dist =
         type === 'registry' && !!node.pkg.integrity ?
           {
             integrity: node.pkg.integrity,
+            tarball: `${hostname}/${name}/-/${unscoped(name)}-${version}.tgz`,
+          }
+        : type === 'registry' && !!node.pkg.shasum ?
+          {
+            shasum: node.pkg.shasum,
             tarball: `${hostname}/${name}/-/${unscoped(name)}-${version}.tgz`,
           }
         : undefined
