@@ -1,4 +1,4 @@
-export * from './build-starter-graph.js'
+export * from './build-graph.js'
 export * from './edge.js'
 export * from './graph.js'
 export * from './node.js'

@@ -7,6 +7,7 @@
 'use strict'
 exports[`test/graph.ts > TAP > Graph > should print with special tag name 1`] = `
 Graph [@vltpkg/graph.Graph] {
+  packageInfo: [PackageInfoClient],
   packages: [PackageInventory [Map]],
   nodes: [Set],
   pkgNodes: [Map],
@@ -17,6 +18,7 @@ Graph [@vltpkg/graph.Graph] {
 
 exports[`test/graph.ts > TAP > using placePackage > the graph 1`] = `
 Graph [@vltpkg/graph.Graph] {
+  packageInfo: PackageInfoClient { options: {} },
   packages: PackageInventory(4) [Map] {
     'my-project@1.0.0' => Package { location: '', origin: '' },
     'foo@1.0.0' => Package { location: './node_modules/foo', origin: '' },

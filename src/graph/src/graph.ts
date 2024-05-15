@@ -7,11 +7,14 @@ import {
   PackageInventory,
   PackageMetadata,
 } from './pkgs.js'
+import { PackageInfoClient } from '@vltpkg/package-info'
 
 export class Graph {
   get [Symbol.toStringTag]() {
     return '@vltpkg/graph.Graph'
   }
+
+  packageInfo: PackageInfoClient
 
   /**
    * An inventory with all packages related to an install.
@@ -48,10 +51,12 @@ export class Graph {
     rootPackageJson: PackageMetadata,
     packages?: PackageInventory,
     location?: string,
+    packageInfo?: PackageInfoClient,
   ) {
+    this.packageInfo = packageInfo ?? new PackageInfoClient()
     this.nodes = new Set()
     this.pkgNodes = new Map()
-    this.packages = packages || new PackageInventory()
+    this.packages = packages ?? new PackageInventory()
     const pkg = this.packages.registerPackage(
       rootPackageJson,
       location,
@@ -103,6 +108,7 @@ export class Graph {
    * Place a new package into the graph representation, creating the new
    * edges and possibly new nodes required for it.
    */
+  // TODO: get origin from spec?
   placePackage(
     fromNode: Node,
     depType: DependencyTypeLong,

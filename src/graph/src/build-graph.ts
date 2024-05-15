@@ -1,6 +1,6 @@
 import { Spec } from '@vltpkg/spec'
 import { resolve } from 'node:path'
-import { appendRegistryNodes } from './append-registry-nodes.js'
+import { appendNodes } from './append-nodes.js'
 import { buildActual } from './build-actual.js'
 import { Edge } from './edge.js'
 import { Graph } from './graph.js'
@@ -23,7 +23,7 @@ export type BuildStarterGraphOptions = {
  * `packages.pending` that can then be used to retrieve artifacts for
  * reifying later.
  */
-export const buildStarterGraph = async ({
+export const buildGraph = async ({
   addSpecs = [],
   dir,
   packageInventory,
@@ -43,7 +43,7 @@ export const buildStarterGraph = async ({
   }
   missing.clear()
 
-  await appendRegistryNodes(graph, graph.root, specs, 'dependencies')
+  await appendNodes(graph, graph.root, specs, 'dependencies')
 
   return graph
 }

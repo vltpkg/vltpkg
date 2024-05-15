@@ -16,8 +16,10 @@
   "dependencies": {
     "@vltpkg/error-cause": "workspace:*",
     "@vltpkg/registry-client": "workspace:*",
+    "@vltpkg/package-info": "workspace:*",
     "@vltpkg/semver": "workspace:*",
-    "@vltpkg/spec": "workspace:*"
+    "@vltpkg/spec": "workspace:*",
+    "@vltpkg/pick-manifest": "workspace:*"
   },
   "scripts": {
     "preversion": "npm test",

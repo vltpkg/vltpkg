@@ -1,9 +1,9 @@
 import { Spec } from '@vltpkg/spec'
 import t from 'tap'
 import {
-  buildStarterGraph,
+  buildGraph,
   BuildStarterGraphOptions,
-} from '../src/build-starter-graph.js'
+} from '../src/build-graph.js'
 import { Graph } from '../src/graph.js'
 import { Node } from '../src/node.js'
 import { DependencyTypeShort, PackageInventory } from '../src/pkgs.js'
@@ -15,7 +15,7 @@ t.test('build empty starter graph', async t => {
       version: '1.0.0',
     }),
   })
-  const graph = await buildStarterGraph({
+  const graph = await buildGraph({
     dir,
     addSpecs: [],
     packageInventory: new PackageInventory(),
@@ -37,11 +37,11 @@ t.test('build starter graph with missing dep', async t => {
       },
     }),
   })
-  const { buildStarterGraph } = await t.mockImport<
-    typeof import('../src/build-starter-graph.js')
-  >('../src/build-starter-graph.js', {
-    '../src/append-registry-nodes.js': {
-      appendRegistryNodes: async (
+  const { buildGraph } = await t.mockImport<
+    typeof import('../src/build-graph.js')
+  >('../src/build-graph.js', {
+    '../src/append-nodes.js': {
+      appendNodes: async (
         _graph: Graph,
         _fromNode: Node,
         addSpecs: Spec[],
@@ -57,7 +57,7 @@ t.test('build starter graph with missing dep', async t => {
       },
     },
   })
-  await buildStarterGraph({
+  await buildGraph({
     dir,
     addSpecs: [],
     packageInventory: new PackageInventory(),
@@ -71,11 +71,11 @@ t.test('build starter graph add spec', async t => {
       version: '1.0.0',
     }),
   })
-  const { buildStarterGraph } = await t.mockImport<
-    typeof import('../src/build-starter-graph.js')
-  >('../src/build-starter-graph.js', {
-    '../src/append-registry-nodes.js': {
-      appendRegistryNodes: async (
+  const { buildGraph } = await t.mockImport<
+    typeof import('../src/build-graph.js')
+  >('../src/build-graph.js', {
+    '../src/append-nodes.js': {
+      appendNodes: async (
         _graph: any,
         _fromNode: any,
         specs: any,
@@ -90,7 +90,7 @@ t.test('build starter graph add spec', async t => {
       },
     },
   })
-  await buildStarterGraph({
+  await buildGraph({
     addSpecs: ['foo@latest'],
     dir,
     packageInventory: new PackageInventory(),
