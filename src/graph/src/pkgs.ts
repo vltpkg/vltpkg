@@ -156,6 +156,10 @@ export class Package {
   }
 }
 
+// TODO: this should be a standalone module,
+// getId(spec: Spec, manifest: Manifest): string
+// return value should be suitable for use as a folder name in nm/.vlt
+// open question about where to put git selector/committish
 function getId(
   origin: string = '',
   name: string = '',
@@ -164,7 +168,7 @@ function getId(
   return `${origin}${name}@${version}`
 }
 
-export class PackageInventory extends Map {
+export class PackageInventory extends Map<string, Package> {
   /**
    * Reference to the supported dependency types.
    */
@@ -179,6 +183,8 @@ export class PackageInventory extends Map {
   /**
    * Registers a new package to the inventory.
    */
+  // TODO: this should take a spec, not an origin, which is registry-specific
+  // then calculate the ID from that
   registerPackage(
     metadata: PackageMetadata,
     location?: string,
@@ -188,7 +194,7 @@ export class PackageInventory extends Map {
     const cachedPkg = this.get(id)
     if (cachedPkg) {
       cachedPkg.location = location || cachedPkg.location
-      cachedPkg.updateMetadata(metadata, location, origin)
+      cachedPkg.updateMetadata(metadata)
       if (this.pending.has(cachedPkg) && cachedPkg.location) {
         this.pending.delete(cachedPkg)
       }

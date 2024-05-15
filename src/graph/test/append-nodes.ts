@@ -1,6 +1,8 @@
-import { Spec } from '@vltpkg/spec'
 import t from 'tap'
+import { Spec } from '@vltpkg/spec'
+import { PackageInfoClient } from '@vltpkg/package-info'
 import { Graph } from '../src/graph.js'
+import { appendNodes } from '../src/append-nodes.js'
 
 t.test('append a new node to a graph from a registry', async t => {
   const fooManifest = {
@@ -14,26 +16,6 @@ t.test('append a new node to a graph from a registry', async t => {
     name: 'bar',
     version: '1.0.0',
   }
-  const { appendRegistryNodes } = await t.mockImport<
-    typeof import('../src/append-registry-nodes.js')
-  >('../src/append-registry-nodes.js', {
-    '@vltpkg/registry-client': {
-      RegistryClient: class {
-        async request(url: string) {
-          switch (url) {
-            case 'https://registry.npmjs.org/foo/latest':
-              return { body: fooManifest }
-            case 'https://registry.npmjs.org/bar/latest':
-              return { body: barManifest }
-            case 'https://registry.npmjs.org/borked/latest':
-              return { body: null }
-            default:
-              return null
-          }
-        }
-      },
-    },
-  })
   const rootPkg = {
     name: 'my-project',
     version: '1.0.0',
@@ -45,12 +27,26 @@ t.test('append a new node to a graph from a registry', async t => {
     'package.json': JSON.stringify(rootPkg),
   })
   const graph = new Graph(rootPkg)
+  graph.packageInfo = {
+    async manifest(spec: Spec) {
+      switch (spec.name) {
+        case 'bar':
+          return barManifest
+        case 'foo':
+          return fooManifest
+        case 'borked':
+          throw new Error('ERR')
+        default:
+          return null
+      }
+    },
+  } as PackageInfoClient
   t.strictSame(
     graph.root.edgesOut.size,
     0,
     'has no direct dependency yet',
   )
-  await appendRegistryNodes(
+  await appendNodes(
     graph,
     graph.root,
     [Spec.parse('foo@^1.0.0')],
@@ -61,13 +57,17 @@ t.test('append a new node to a graph from a registry', async t => {
     ['foo'],
     'should have a direct dependency on foo',
   )
+  const barPkg = graph.packages.get('npm:bar@1.0.0')
+  if (!barPkg) {
+    throw new Error('Package could not be retrieved')
+  }
   t.strictSame(
-    graph.packages.get('npm:bar@1.0.0').name,
+    barPkg.name,
     'bar',
     'should have added to inventory transitive dependencies',
   )
 
-  await appendRegistryNodes(
+  await appendNodes(
     graph,
     graph.root,
     [Spec.parse('bar')],
@@ -80,13 +80,13 @@ t.test('append a new node to a graph from a registry', async t => {
   )
 
   await t.rejects(
-    appendRegistryNodes(
+    appendNodes(
       graph,
       graph.root,
       [Spec.parse('borked')],
       'dependencies',
     ),
-    /Failed to retrieve package metadata/,
-    'should throw an error if finding broken manifests',
+    /ERR/,
+    'should not intercept errors on fetching / parsing manifest',
   )
 })

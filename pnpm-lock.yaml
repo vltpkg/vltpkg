@@ -162,6 +162,12 @@ importers:
       '@vltpkg/error-cause':
         specifier: workspace:*
         version: link:../error-cause
+      '@vltpkg/package-info':
+        specifier: workspace:*
+        version: link:../package-info
+      '@vltpkg/pick-manifest':
+        specifier: workspace:*
+        version: link:../pick-manifest
       '@vltpkg/registry-client':
         specifier: workspace:*
         version: link:../registry-client

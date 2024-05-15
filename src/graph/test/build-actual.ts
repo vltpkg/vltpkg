@@ -147,8 +147,12 @@ t.test('non registry dependency', async t => {
   })
   const graph = new Graph(rootPkg)
   buildActual(graph, graph.root, resolve(dir, 'node_modules'))
+  const fooPkg = graph.packages.get('foo@0.0.0')
+  if (!fooPkg) {
+    throw new Error('Could not find package foo')
+  }
   t.strictSame(
-    graph.packages.get('foo@0.0.0').origin,
+    fooPkg.origin,
     '',
     'should have package in inventory with a blank origin',
   )
@@ -187,7 +191,7 @@ t.test('unconfigured registry found', async t => {
   t.throws(
     () =>
       buildActual(graph, graph.root, resolve(dir, 'node_modules')),
-    /Registry http:\/\/example.com\/.* was not found in configs/,
+    /Registry was not found in configs/,
     'should throw on finding unconfigured registry',
   )
 })
