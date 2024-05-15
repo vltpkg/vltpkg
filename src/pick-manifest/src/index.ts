@@ -1,44 +1,14 @@
 import { error } from '@vltpkg/error-cause'
 import { parse, Range, satisfies, Version } from '@vltpkg/semver'
 import { Spec } from '@vltpkg/spec'
+import {
+  Manifest,
+  ManifestMinified,
+  Packument,
+  PackumentMinified,
+} from '@vltpkg/types'
 
 const parsedNodeVersion = Version.parse(process.version)
-
-export type JSONField =
-  | string
-  | number
-  | JSONField[]
-  | { [k: string]: JSONField }
-
-export type Integrity = `sha512-${string}`
-export type KeyID = `SHA256:${string}`
-
-export type Manifest = Record<string, JSONField> & {
-  name: string
-  version: string
-  deprecated?: string
-  engines?: Record<string, string>
-  os?: string | string[]
-  arch?: string | string[]
-  dist?: {
-    integrity?: Integrity
-    shasum?: string
-    tarball?: string
-    fileCount?: number
-    unpackedSize?: number
-    signatures?: {
-      keyid: KeyID
-      sig: string
-    }[]
-  }
-}
-
-export type Packument = {
-  name: string
-  'dist-tags': Record<string, string>
-  versions: Record<string, Manifest>
-  time?: Record<string, string>
-}
 
 export type PickManifestOptions = {
   defaultTag?: string
@@ -48,20 +18,29 @@ export type PickManifestOptions = {
   arch?: NodeJS.Architecture
 }
 
+export type PickManifestOptionsBefore = PickManifestOptions & {
+  before: NonNullable<PickManifestOptions['before']>
+}
+export type PickManifestOptionsNoBefore = PickManifestOptions & {
+  before?: undefined
+}
+
 const isBefore = (
-  verTimes?: Record<string, string>,
-  version?: string,
+  version: string,
   before?: number,
+  verTimes?: Record<string, string>,
 ): boolean => {
   if (!verTimes || !version || !before) return true
   const time = version && verTimes[version]
   return !!time && Date.parse(time) <= before
 }
 
-const checkList = (value: string, list: string | string[]) => {
+const checkList = (value: string, list: unknown) => {
   if (typeof list === 'string') {
     list = [list]
   }
+  // invalid list is equivalent to 'any'
+  if (!Array.isArray(list)) return true
   if (list.length === 1 && list[0] === 'any') {
     return true
   }
@@ -85,25 +64,25 @@ const checkList = (value: string, list: string | string[]) => {
 }
 
 const platformCheck = (
-  mani: Manifest,
+  mani: Manifest | ManifestMinified,
   nodeVersion: Version,
   wantOs: NodeJS.Process['platform'],
   wantArch: NodeJS.Process['arch'],
 ): boolean => {
-  const { engines, os, arch } = mani
+  const { engines, os, cpu } = mani
   if (engines) {
     const { node } = engines
     if (node && !satisfies(nodeVersion, node, true)) {
       return false
     }
   }
-  if (wantOs && os && !checkList(wantOs, os)) return false
-  if (wantArch && arch && !checkList(wantArch, arch)) return false
+  if (wantOs && !checkList(wantOs, os)) return false
+  if (wantArch && !checkList(wantArch, cpu)) return false
   return true
 }
 
 const versionOk = (
-  packument: Packument,
+  packument: Packument | PackumentMinified,
   version: string,
   nodeVersion: Version,
   os: NodeJS.Process['platform'],
@@ -113,18 +92,39 @@ const versionOk = (
   const mani = packument.versions[version]
   /* c8 ignore next */
   if (!mani) return false
-  const { time } = packument
+  const { time } = packument as Packument
   return (
-    isBefore(time, version, before) &&
+    (isBefore(version, before, time)) &&
     platformCheck(mani, nodeVersion, os, arch)
   )
 }
 
-export const pickManifest = (
+/**
+ * Choose the most appropriate manifest from a packument.
+ *
+ * If `before` is set in the options, then the packument MUST
+ * be a full non-minified Packument object. Otherwise, a minified packument
+ * is fine.
+ */
+export function pickManifest<O>(
   packument: Packument,
   wanted: string | Range | Spec,
+  opts: PickManifestOptionsBefore,
+): Manifest | undefined
+export function pickManifest<O>(
+  packument: PackumentMinified,
+  wanted: string | Range | Spec,
+  opts: PickManifestOptionsNoBefore,
+): ManifestMinified | undefined
+export function pickManifest(
+  packument: Packument | PackumentMinified,
+  wanted: string | Range | Spec
+): ManifestMinified | undefined
+export function pickManifest(
+  packument: Packument | PackumentMinified,
+  wanted: string | Range | Spec,
   opts: PickManifestOptions = {},
-): Manifest | undefined => {
+): ManifestMinified | Manifest | undefined {
   const {
     defaultTag = 'latest',
     before,
@@ -135,12 +135,13 @@ export const pickManifest = (
   const nv =
     !nodeVersion ? parsedNodeVersion : Version.parse(nodeVersion)
 
+  // cast since 'time' might not be present on minified packuments
   const {
     name,
     time: verTimes,
     versions = {},
     'dist-tags': distTags = {},
-  } = packument
+  } = packument as Packument
 
   const time = before && verTimes ? +new Date(before) : Infinity
   let range: Range | undefined = undefined
@@ -170,10 +171,11 @@ export const pickManifest = (
     // if the version in the dist-tags is before the before date, then
     // we use that.  Otherwise, we get the highest precedence version
     // prior to the dist-tag.
-    if (versionOk(packument, ver, nv, os, arch, time)) {
-      return versions[ver]
+    const mani = versions[ver]
+    if (mani && versionOk(packument, ver, nv, os, arch, time)) {
+      return mani
     } else {
-      return pickManifest(packument, `<=${ver}`, opts)
+      range = new Range(`<=${ver}`)
     }
   }
 
@@ -206,13 +208,13 @@ export const pickManifest = (
     deprecated: boolean
     platform: boolean
     prerelease: boolean
-    mani: Manifest
+    mani: ManifestMinified
   }
   let found: ManiCheck | undefined = undefined
   let foundIsDefTag: boolean = false
 
   for (const [ver, mani] of entries) {
-    if (!isBefore(verTimes, ver, time)) {
+    if (time && verTimes && !isBefore(ver, time, verTimes)) {
       continue
     }
     const version = parse(ver)

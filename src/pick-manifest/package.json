@@ -14,7 +14,8 @@
   "dependencies": {
     "@vltpkg/error-cause": "workspace:*",
     "@vltpkg/semver": "workspace:*",
-    "@vltpkg/spec": "workspace:*"
+    "@vltpkg/spec": "workspace:*",
+    "@vltpkg/types": "workspace:*"
   },
   "scripts": {
     "preversion": "npm test",

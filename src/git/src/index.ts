@@ -1,4 +1,4 @@
-import type { PickManifestOptions } from '@vltpkg/pick-manifest'
+import type { PickManifestOptionsNoBefore } from '@vltpkg/pick-manifest'
 import type { Spec } from '@vltpkg/spec'
 import type { SpawnOptions } from 'child_process'
 import type { WrapOptions } from 'retry'
@@ -7,16 +7,16 @@ export * from './clone.js'
 export * from './find.js'
 export * from './is-clean.js'
 export * from './is.js'
+export * from './resolve.js'
 export * from './revs.js'
 export * from './spawn.js'
-export * from './resolve.js'
 
 /**
  * This extends all options that can be passed to spawn() or pickManifest.
  */
 export interface GitOptions
   extends SpawnOptions,
-    PickManifestOptions {
+    PickManifestOptionsNoBefore {
   /** the path to git binary, or 'false' to prevent all git operations */
   git?: string | false
   /** the current working directory to perform git operations in */

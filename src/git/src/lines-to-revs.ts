@@ -1,4 +1,4 @@
-import { Manifest, Packument } from '@vltpkg/pick-manifest'
+import { ManifestMinified, PackumentMinified } from '@vltpkg/types'
 import { parse } from '@vltpkg/semver'
 import { error } from '@vltpkg/error-cause'
 
@@ -7,8 +7,7 @@ export type RefType = 'head' | 'branch' | 'tag' | 'pull' | 'other'
 /**
  * A representation of a given remote ref in a {@link RevDoc} object.
  */
-export type RevDocEntry = Manifest & {
-  name: string
+export type RevDocEntry = ManifestMinified & {
   version: string
   /** sha this references */
   sha: string
@@ -23,7 +22,7 @@ export type RevDocEntry = Manifest & {
 /**
  * An object kind of resembling a packument, but about a git repo.
  */
-export type RevDoc = Packument & {
+export type RevDoc = PackumentMinified & {
   /** all semver-looking tags go in this record */
   versions: Record<string, RevDocEntry>
   /**
@@ -44,11 +43,12 @@ export type RevDoc = Packument & {
 export const linesToRevs = (lines: string[]): RevDoc =>
   finish(
     lines.reduce(linesToRevsReducer, {
+      name: '',
       versions: {},
       'dist-tags': {},
       refs: {},
       shas: {},
-    } as RevDoc),
+    }),
   )
 
 const finish = (revs: RevDoc): RevDoc =>

@@ -25,6 +25,7 @@
     "@types/node": "^20.12.7",
     "@types/retry": "^0.12.5",
     "@vltpkg/spec": "workspace:*",
+    "@vltpkg/types": "workspace:*",
     "prettier": "^3.2.5",
     "tap": "^18.8.0",
     "tshy": "^1.14.0",

@@ -126,6 +126,9 @@ importers:
       '@vltpkg/spec':
         specifier: workspace:*
         version: link:../spec
+      '@vltpkg/types':
+        specifier: workspace:*
+        version: link:../types
       prettier:
         specifier: ^3.2.5
         version: 3.2.5
@@ -214,6 +217,9 @@ importers:
       '@vltpkg/tar':
         specifier: workspace:*
         version: link:../tar
+      '@vltpkg/types':
+        specifier: workspace:*
+        version: link:../types
       tar:
         specifier: ^7.1.0
         version: 7.1.0
@@ -248,6 +254,9 @@ importers:
       '@vltpkg/spec':
         specifier: workspace:*
         version: link:../spec
+      '@vltpkg/types':
+        specifier: workspace:*
+        version: link:../types
     devDependencies:
       '@types/node':
         specifier: ^20.12.7

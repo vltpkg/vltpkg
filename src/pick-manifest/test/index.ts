@@ -1,7 +1,8 @@
 import { Range } from '@vltpkg/semver'
 import { Spec } from '@vltpkg/spec'
 import t from 'tap'
-import { Packument, pickManifest } from '../src/index.js'
+import { Packument } from '@vltpkg/types'
+import { pickManifest } from '../src/index.js'
 
 t.test('basic carat range selection', t => {
   const metadata = {
@@ -371,10 +372,13 @@ t.test('prefer valid platform matches if all deprecated', t => {
         os: 'android',
       },
       '2.0.0': { version: '2.0.0' },
+      '2.0.1': { version: '2.0.1', os: ['nope'] },
     },
   } as unknown as Packument
   const manifest = pickManifest(metadata, '^1.1', { os: 'darwin' })
   t.equal(manifest?.version, '1.1.0', 'picked the right manifest')
+  const manifest2 = pickManifest(metadata, '2', { os: 'darwin' })
+  t.equal(manifest2?.version, '2.0.0', 'picked the right manifest')
   t.end()
 })
 
@@ -587,37 +591,37 @@ t.test('prefers versions that satisfy the os/arch requirement', t => {
       '1.0.0': {
         version: '1.0.0',
         os: ['linux', '!freebsd'],
-        arch: ['arm64'],
+        cpu: ['arm64'],
       },
       '1.1.0': {
         version: '1.1.0',
         os: ['linux', '!freebsd'],
-        arch: ['x64', 'arm64'],
+        cpu: ['x64', 'arm64'],
       },
       '1.2.0': {
         version: '1.2.0',
         os: ['linux', '!freebsd'],
-        arch: ['arm64'],
+        cpu: ['arm64'],
       },
       '1.3.0': {
         version: '1.3.0',
         os: ['linux', '!freebsd'],
-        arch: ['x64', 'arm64'],
+        cpu: ['x64', 'arm64'],
       },
       '1.4.0': {
         version: '1.4.0',
         os: ['linux', 'freebsd'],
-        arch: ['arm64', 'mips'],
+        cpu: ['arm64', 'mips'],
       },
       '1.5.0': {
         version: '1.5.0',
         os: ['linux', '!freebsd'],
-        arch: ['x64', 'arm64'],
+        cpu: ['x64', 'arm64'],
       },
       '1.5.1': {
         version: '1.5.1',
         os: ['linux', 'freebsd'],
-        arch: ['x64', 'arm64'],
+        cpu: ['x64', 'arm64'],
       },
     },
   } as unknown as Packument

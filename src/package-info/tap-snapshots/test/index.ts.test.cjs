@@ -5,6 +5,18 @@
  * Make sure to inspect the output below.  Do not ignore changes!
  */
 'use strict'
+exports[`test/index.ts > TAP > fake packument with manifest lacking name/version > must match snapshot 1`] = `
+Object {
+  "dist-tags": Object {
+    "latest": "",
+  },
+  "name": "",
+  "versions": Object {
+    "": Object {},
+  },
+}
+`
+
 exports[`test/index.ts > TAP > manifest > must match snapshot 1`] = `
 Object {
   "author": "GitHub Inc.",

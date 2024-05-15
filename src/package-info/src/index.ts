@@ -1,18 +1,12 @@
-// TODO: the errors raised here are abjectly terrible. Improve them.
-// They should indicate not just the spec that couldn't be resolved,
-// but what specifically the problem was with it. Eg, a manifest lacking
-// a 'dist' entry, should say that's the problem.
-
 // TODO: handle workspace specs.
 
 import { error, ErrorCauseObject } from '@vltpkg/error-cause'
 import { clone, resolve as gitResolve, revs } from '@vltpkg/git'
 import {
-  Integrity,
-  Manifest,
-  Packument,
   pickManifest,
   PickManifestOptions,
+  PickManifestOptionsBefore,
+  PickManifestOptionsNoBefore,
 } from '@vltpkg/pick-manifest'
 import {
   RegistryClient,
@@ -20,6 +14,15 @@ import {
 } from '@vltpkg/registry-client'
 import { Spec, type SpecOptions } from '@vltpkg/spec'
 import { Pool } from '@vltpkg/tar'
+import {
+  asManifest,
+  asPackumentMinified,
+  Integrity,
+  Manifest,
+  ManifestMinified,
+  Packument,
+  PackumentMinified,
+} from '@vltpkg/types'
 import { randomBytes } from 'crypto'
 import { readFile, rm, stat } from 'fs/promises'
 import { homedir } from 'os'
@@ -35,15 +38,44 @@ export type Resolution = {
 
 export interface PackageInfoClientOptions
   extends RegistryClientOptions,
-    SpecOptions,
-    PickManifestOptions {
+    SpecOptions {
   cwd?: string
 }
 
-export interface PackageInfoClientRequestOptions {
+export interface PackageInfoClientRequestOptions
+  extends PickManifestOptions {
   from?: string
   fullMetadata?: boolean
 }
+
+// if fullMetadata is set, or we have a 'before' query, will be full data
+export type PackageInfoClientRequestOptionsFull =
+  PackageInfoClientRequestOptions &
+    (
+      | {
+          fullMetadata: true
+        }
+      | PickManifestOptionsBefore
+    )
+
+export type PackageInfoClientRequestOptionsMin =
+  PackageInfoClientRequestOptions & {
+    fullMetadata?: false
+  } & PickManifestOptionsNoBefore
+
+export type PackumentByOptions<
+  T extends PackageInfoClientRequestOptions,
+> =
+  T extends PackageInfoClientRequestOptionsMin ? PackumentMinified
+  : T extends PackageInfoClientRequestOptionsFull ? Packument
+  : Packument | PackumentMinified
+
+export type ManifestByOptions<
+  T extends PackageInfoClientRequestOptions,
+> =
+  T extends PackageInfoClientRequestOptionsMin ? ManifestMinified
+  : T extends PackageInfoClientRequestOptionsFull ? Manifest
+  : Manifest | ManifestMinified
 
 // pull minified packuments if possible
 const corgiDoc =
@@ -58,24 +90,60 @@ const client = (
 ) => {
   const { from: _, fullMetadata: __, ...opts } = o
   const key = JSON.stringify(
-    Object.entries(opts).sort(([a], [b]) => a.localeCompare(b)),
+    Object.entries(opts).sort(([a], [b]) => a.localeCompare(b, 'en')),
   )
   const c = clients.get(key) ?? new PackageInfoClient(opts)
   clients.set(key, c)
   return c
 }
 
-export const packument = async (
+export async function packument(
   spec: string | Spec,
   options: PackageInfoClientOptions &
-    PackageInfoClientRequestOptions = {},
-): Promise<Packument> => client(options).packument(spec, options)
+    PackageInfoClientRequestOptionsMin,
+): Promise<PackumentMinified>
+export async function packument(
+  spec: string | Spec,
+  options: PackageInfoClientOptions &
+    PackageInfoClientRequestOptionsFull,
+): Promise<Packument>
+export async function packument(
+  spec: string | Spec,
+): Promise<PackumentMinified>
+export async function packument<
+  O extends PackageInfoClientOptions &
+    PackageInfoClientRequestOptions = PackageInfoClientOptions &
+    PackageInfoClientRequestOptions,
+>(
+  spec: string | Spec,
+  options: O = {} as O,
+): Promise<PackumentByOptions<O>> {
+  return client(options).packument<O>(spec, options)
+}
 
-export const manifest = async (
+export async function manifest(
   spec: string | Spec,
   options: PackageInfoClientOptions &
-    PackageInfoClientRequestOptions = {},
-): Promise<Manifest> => client(options).manifest(spec, options)
+    PackageInfoClientRequestOptionsMin,
+): Promise<ManifestMinified>
+export async function manifest(
+  spec: string | Spec,
+  options: PackageInfoClientOptions &
+    PackageInfoClientRequestOptionsFull,
+): Promise<Manifest>
+export async function manifest(
+  spec: string | Spec,
+): Promise<ManifestMinified>
+export async function manifest<
+  O extends PackageInfoClientOptions &
+    PackageInfoClientRequestOptions = PackageInfoClientOptions &
+    PackageInfoClientRequestOptions,
+>(
+  spec: string | Spec,
+  options: O = {} as O,
+): Promise<ManifestByOptions<O>> {
+  return client(options).manifest<O>(spec, options)
+}
 
 export const resolve = async (
   spec: string | Spec,
@@ -301,10 +369,15 @@ export class PackageInfoClient {
     }
   }
 
+  async manifest(spec: string | Spec): Promise<ManifestMinified>
+  async manifest<
+    O extends
+      PackageInfoClientRequestOptions = PackageInfoClientRequestOptions,
+  >(spec: string | Spec, options: O): Promise<ManifestByOptions<O>>
   async manifest(
     spec: string | Spec,
     options: PackageInfoClientRequestOptions = {},
-  ): Promise<Manifest> {
+  ) {
     const { from = this.#cwd } = options
     if (typeof spec === 'string')
       spec = Spec.parse(spec, this.options)
@@ -327,7 +400,7 @@ export class PackageInfoClient {
           return await this.#tmpdir(async dir => {
             await clone(gitRemote, gitCommittish, dir, { spec: s })
             const json = await readFile(dir + '/package.json', 'utf8')
-            return JSON.parse(json) as Manifest
+            return asManifest(JSON.parse(json))
           })
         }
         // fallthrough to remote
@@ -364,7 +437,7 @@ export class PackageInfoClient {
             )
           }
           const json = await readFile(dir + '/package.json', 'utf8')
-          return JSON.parse(json) as Manifest
+          return asManifest(JSON.parse(json))
         })
       }
       case 'file': {
@@ -375,7 +448,7 @@ export class PackageInfoClient {
         const st = await stat(path)
         if (st.isDirectory()) {
           const json = await readFile(path + '/package.json', 'utf8')
-          return JSON.parse(json) as Manifest
+          return asManifest(JSON.parse(json))
         }
         const s = spec
         return await this.#tmpdir(async dir => {
@@ -390,7 +463,7 @@ export class PackageInfoClient {
             )
           }
           const json = await readFile(dir + '/package.json', 'utf8')
-          return JSON.parse(json) as Manifest
+          return asManifest(JSON.parse(json))
         })
       }
       case 'workspace': {
@@ -402,10 +475,15 @@ export class PackageInfoClient {
     }
   }
 
+  async packument(spec: string | Spec): Promise<PackumentMinified>
+  async packument<
+    O extends
+      PackageInfoClientRequestOptions = PackageInfoClientRequestOptions,
+  >(spec: string | Spec, options: O): Promise<PackumentByOptions<O>>
   async packument(
     spec: string | Spec,
     options: PackageInfoClientRequestOptions = {},
-  ): Promise<Packument> {
+  ) {
     if (typeof spec === 'string')
       spec = Spec.parse(spec, this.options)
     const f = spec.final
@@ -422,7 +500,7 @@ export class PackageInfoClient {
         }
         const revDoc = await revs(gitRemote, this.options)
         if (!revDoc) throw this.#resolveError(spec, options)
-        return revDoc as Packument
+        return asPackumentMinified(revDoc)
       }
       // these are all faked packuments
       case 'file':
@@ -430,12 +508,12 @@ export class PackageInfoClient {
       case 'remote': {
         const manifest = await this.manifest(f, options)
         return {
-          name: spec.name,
+          name: manifest.name ?? '',
           'dist-tags': {
-            latest: manifest.version,
+            latest: manifest.version ?? '',
           },
           versions: {
-            [manifest.version]: manifest,
+            [manifest.version ?? '']: manifest,
           },
         }
       }

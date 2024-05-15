@@ -17,6 +17,7 @@
     "@vltpkg/registry-client": "workspace:*",
     "@vltpkg/spec": "workspace:*",
     "@vltpkg/tar": "workspace:*",
+    "@vltpkg/types": "workspace:*",
     "tar": "^7.1.0"
   },
   "scripts": {

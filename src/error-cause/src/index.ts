@@ -61,18 +61,18 @@ export interface ErrorCauseObject {
         includePrerelease: boolean
         [k: string | symbol | number]: any
       }
-  manifest?: Manifest
+  manifest?: DuckTypeManifest
   packument?: {
     name: string
     'dist-tags': Record<string, string>
-    versions: Record<string, Manifest>
+    versions: Record<string, DuckTypeManifest>
     time?: Record<string, string>
   }
   max?: any
   min?: any
 }
 
-export type Manifest = {
+export type DuckTypeManifest = Record<string, any> & {
   name: string
   version: string
   deprecated?: string
@@ -90,7 +90,6 @@ export type Manifest = {
       sig: string
     }[]
   }
-  [k: string | symbol | number]: any
 }
 
 export type ErrorCause = Error | ErrorCauseObject
