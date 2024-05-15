@@ -185,3 +185,8 @@ t.test('reverse-lookup registry: specifiers if named', t => {
   t.matchSnapshot(found.map(s => String(s)))
   t.end()
 })
+
+t.test('named git host must have something after the name', t => {
+  t.throws(() => Spec.parse('x', 'github:'))
+  t.end()
+})

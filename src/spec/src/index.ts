@@ -376,6 +376,11 @@ export class Spec {
         h === -1 ? this.bareSpec : this.bareSpec.substring(0, h)
       const hash = h === -1 ? '' : this.bareSpec.substring(h)
       const hostPath = bare.substring(name.length + 1)
+      if (!hostPath) {
+        throw error('invalid named git host specifier', {
+          spec: this
+        })
+      }
       const split = hostPath.split('/')
       let t = template
       for (let i = 0; i < split.length; i++) {
