@@ -348,7 +348,8 @@ exports[`test/index.ts > TAP > basic parsing tests > foo@bar/foo > inspect 1`] =
   name: 'foo',
   bareSpec: 'github:bar/foo',
   gitRemote: 'git+ssh://git@github.com:bar/foo.git',
-  namedGitHost: 'github'
+  namedGitHost: 'github',
+  namedGitHostPath: 'bar/foo'
 }
 `
 
@@ -363,7 +364,8 @@ exports[`test/index.ts > TAP > basic parsing tests > foo@bitbucket:user/foo-js >
   name: 'foo',
   bareSpec: 'bitbucket:user/foo-js',
   gitRemote: 'git+ssh://git@bitbucket.org:user/foo-js.git',
-  namedGitHost: 'bitbucket'
+  namedGitHost: 'bitbucket',
+  namedGitHostPath: 'user/foo-js'
 }
 `
 
@@ -378,7 +380,8 @@ exports[`test/index.ts > TAP > basic parsing tests > foo@gitlab:user/foo-js > in
   name: 'foo',
   bareSpec: 'gitlab:user/foo-js',
   gitRemote: 'git+ssh://git@gitlab.com:user/foo-js.git',
-  namedGitHost: 'gitlab'
+  namedGitHost: 'gitlab',
+  namedGitHostPath: 'user/foo-js'
 }
 `
 
@@ -455,7 +458,8 @@ exports[`test/index.ts > TAP > basic parsing tests > foo@user/foo-js > inspect 1
   name: 'foo',
   bareSpec: 'github:user/foo-js',
   gitRemote: 'git+ssh://git@github.com:user/foo-js.git',
-  namedGitHost: 'github'
+  namedGitHost: 'github',
+  namedGitHostPath: 'user/foo-js'
 }
 `
 
@@ -525,6 +529,7 @@ exports[`test/index.ts > TAP > basic parsing tests > x@bitbucket:user..blerg--/.
   gitSelectorParsed: {},
   gitCommittish: ' . . . . . some . tags / / /',
   namedGitHost: 'bitbucket',
+  namedGitHostPath: 'user..blerg--/..foo-js',
   remoteURL: 'https://bitbucket.org/user..blerg--/..foo-js/get/ . . . . . some . tags / / /.tar.gz'
 }
 `
@@ -540,7 +545,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@bitbucket:user/foo-js > i
   name: 'x',
   bareSpec: 'bitbucket:user/foo-js',
   gitRemote: 'git+ssh://git@bitbucket.org:user/foo-js.git',
-  namedGitHost: 'bitbucket'
+  namedGitHost: 'bitbucket',
+  namedGitHostPath: 'user/foo-js'
 }
 `
 
@@ -559,6 +565,7 @@ exports[`test/index.ts > TAP > basic parsing tests > x@bitbucket:user/foo-js#bar
   gitSelectorParsed: {},
   gitCommittish: 'bar/baz',
   namedGitHost: 'bitbucket',
+  namedGitHostPath: 'user/foo-js',
   remoteURL: 'https://bitbucket.org/user/foo-js/get/bar/baz.tar.gz'
 }
 `
@@ -578,6 +585,7 @@ exports[`test/index.ts > TAP > basic parsing tests > x@bitbucket:user/foo-js#bar
   gitSelectorParsed: {},
   gitCommittish: 'bar/baz/bin',
   namedGitHost: 'bitbucket',
+  namedGitHostPath: 'user/foo-js',
   remoteURL: 'https://bitbucket.org/user/foo-js/get/bar/baz/bin.tar.gz'
 }
 `
@@ -593,7 +601,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@f fo o al/ a d s ;f > ins
   name: 'x',
   bareSpec: 'github:f fo o al/ a d s ;f',
   gitRemote: 'git+ssh://git@github.com:f fo o al/ a d s ;f.git',
-  namedGitHost: 'github'
+  namedGitHost: 'github',
+  namedGitHostPath: 'f fo o al/ a d s ;f'
 }
 `
 
@@ -1285,7 +1294,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@github:user/foo-js > insp
   name: 'x',
   bareSpec: 'github:user/foo-js',
   gitRemote: 'git+ssh://git@github.com:user/foo-js.git',
-  namedGitHost: 'github'
+  namedGitHost: 'github',
+  namedGitHostPath: 'user/foo-js'
 }
 `
 
@@ -1304,6 +1314,7 @@ exports[`test/index.ts > TAP > basic parsing tests > x@gitlab:user..blerg--/..fo
   gitSelectorParsed: {},
   gitCommittish: ' . . . . . some . tags / / /',
   namedGitHost: 'gitlab',
+  namedGitHostPath: 'user..blerg--/..foo-js',
   remoteURL: 'https://gitlab.com/user..blerg--/..foo-js/repository/archive.tar.gz?ref= . . . . . some . tags / / /'
 }
 `
@@ -1319,7 +1330,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@gitlab:user/foo-js > insp
   name: 'x',
   bareSpec: 'gitlab:user/foo-js',
   gitRemote: 'git+ssh://git@gitlab.com:user/foo-js.git',
-  namedGitHost: 'gitlab'
+  namedGitHost: 'gitlab',
+  namedGitHostPath: 'user/foo-js'
 }
 `
 
@@ -1338,6 +1350,7 @@ exports[`test/index.ts > TAP > basic parsing tests > x@gitlab:user/foo-js#bar/ba
   gitSelectorParsed: {},
   gitCommittish: 'bar/baz',
   namedGitHost: 'gitlab',
+  namedGitHostPath: 'user/foo-js',
   remoteURL: 'https://gitlab.com/user/foo-js/repository/archive.tar.gz?ref=bar/baz'
 }
 `
@@ -1357,6 +1370,7 @@ exports[`test/index.ts > TAP > basic parsing tests > x@gitlab:user/foo-js#bar/ba
   gitSelectorParsed: {},
   gitCommittish: 'bar/baz/bin',
   namedGitHost: 'gitlab',
+  namedGitHostPath: 'user/foo-js',
   remoteURL: 'https://gitlab.com/user/foo-js/repository/archive.tar.gz?ref=bar/baz/bin'
 }
 `
@@ -1442,7 +1456,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@not-git@hostname.com:some
   name: 'x',
   bareSpec: 'github:not-git@hostname.com:some/repo',
   gitRemote: 'git+ssh://git@github.com:not-git@hostname.com:some/repo.git',
-  namedGitHost: 'github'
+  namedGitHost: 'github',
+  namedGitHostPath: 'not-git@hostname.com:some/repo'
 }
 `
 
@@ -1552,6 +1567,7 @@ exports[`test/index.ts > TAP > basic parsing tests > x@npm:y@npm:z@github:a/x#br
       gitSelectorParsed: {},
       gitCommittish: [32m'branch'[39m,
       namedGitHost: [32m'github'[39m,
+      namedGitHostPath: [32m'a/x'[39m,
       remoteURL: [32m'https://codeload.github.com/a/x/tar.gz/branch'[39m
     }
   }
@@ -1559,7 +1575,7 @@ exports[`test/index.ts > TAP > basic parsing tests > x@npm:y@npm:z@github:a/x#br
 `
 
 exports[`test/index.ts > TAP > basic parsing tests > x@npm:y@npm:z@github:a/x#branch > toString 1`] = `
-x@npm:z@github:a/x#branch
+x@github:a/x#branch
 `
 
 exports[`test/index.ts > TAP > basic parsing tests > x@registry:https://example.com/npm#@org/pkg@latest > inspect 1`] = `
@@ -1568,13 +1584,13 @@ exports[`test/index.ts > TAP > basic parsing tests > x@registry:https://example.
   spec: 'x@registry:https://example.com/npm#@org/pkg@latest',
   name: 'x',
   bareSpec: 'registry:https://example.com/npm#@org/pkg@latest',
-  registry: 'https://example.com/npm',
+  registry: 'https://example.com/npm/',
   subspec: @vltpkg/spec.Spec {
     type: [32m'registry'[39m,
     spec: [32m'@org/pkg@latest'[39m,
     name: [32m'@org/pkg'[39m,
     bareSpec: [32m'latest'[39m,
-    registry: [32m'https://example.com/npm'[39m,
+    registry: [32m'https://example.com/npm/'[39m,
     registrySpec: [32m'latest'[39m,
     distTag: [32m'latest'[39m
   }
@@ -1609,7 +1625,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@user/foo-js > inspect 1`]
   name: 'x',
   bareSpec: 'github:user/foo-js',
   gitRemote: 'git+ssh://git@github.com:user/foo-js.git',
-  namedGitHost: 'github'
+  namedGitHost: 'github',
+  namedGitHostPath: 'user/foo-js'
 }
 `
 
@@ -1661,7 +1678,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@user/foo#1234::path:dist 
   gitSelector: '1234::path:dist',
   gitSelectorParsed: { path: 'dist' },
   gitCommittish: '1234',
-  namedGitHost: 'github'
+  namedGitHost: 'github',
+  namedGitHostPath: 'user/foo'
 }
 `
 
@@ -1678,7 +1696,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@user/foo#notimplemented:v
   gitRemote: 'git+ssh://git@github.com:user/foo.git',
   gitSelector: 'notimplemented:value',
   gitSelectorParsed: {},
-  namedGitHost: 'github'
+  namedGitHost: 'github',
+  namedGitHostPath: 'user/foo'
 }
 `
 
@@ -1695,7 +1714,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@user/foo#path:dist > insp
   gitRemote: 'git+ssh://git@github.com:user/foo.git',
   gitSelector: 'path:dist',
   gitSelectorParsed: { path: 'dist' },
-  namedGitHost: 'github'
+  namedGitHost: 'github',
+  namedGitHostPath: 'user/foo'
 }
 `
 
@@ -1713,6 +1733,7 @@ exports[`test/index.ts > TAP > basic parsing tests > x@user/foo#semver:^1.2.3 > 
   gitSelector: 'semver:^1.2.3',
   gitSelectorParsed: { semver: '^1.2.3' },
   namedGitHost: 'github',
+  namedGitHostPath: 'user/foo',
   range: Range {
     raw: '^1.2.3',
     isAny: false,
@@ -1732,6 +1753,7 @@ exports[`test/index.ts > TAP > basic parsing tests > x@workspace:* > inspect 1`]
   spec: 'x@workspace:*',
   name: 'x',
   bareSpec: 'workspace:*',
+  workspaceSpec: '*',
   semver: '*',
   range: Range {
     raw: '*',
@@ -1751,7 +1773,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@workspace:^ > inspect 1`]
   type: 'workspace',
   spec: 'x@workspace:^',
   name: 'x',
-  bareSpec: 'workspace:^'
+  bareSpec: 'workspace:^',
+  workspaceSpec: '^'
 }
 `
 
@@ -1764,7 +1787,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@workspace:~ > inspect 1`]
   type: 'workspace',
   spec: 'x@workspace:~',
   name: 'x',
-  bareSpec: 'workspace:~'
+  bareSpec: 'workspace:~',
+  workspaceSpec: '~'
 }
 `
 
@@ -1778,6 +1802,7 @@ exports[`test/index.ts > TAP > basic parsing tests > x@workspace:1.x > inspect 1
   spec: 'x@workspace:1.x',
   name: 'x',
   bareSpec: 'workspace:1.x',
+  workspaceSpec: '1.x',
   semver: '1.x',
   range: Range {
     raw: '1.x',
@@ -1790,4 +1815,13 @@ exports[`test/index.ts > TAP > basic parsing tests > x@workspace:1.x > inspect 1
 
 exports[`test/index.ts > TAP > basic parsing tests > x@workspace:1.x > toString 1`] = `
 x@workspace:1.x
+`
+
+exports[`test/index.ts > TAP > reverse-lookup registry: specifiers if named > must match snapshot 1`] = `
+Array [
+  "x@registry:http://vlt.sh#x@latest",
+  "x@registry:http://vlt.sh#x@latest",
+  "x@registry:http://vlt.sh/#x@latest",
+  "x@registry:http://vlt.sh/#x@latest",
+]
 `
