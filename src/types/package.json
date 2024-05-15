@@ -1,25 +1,16 @@
 {
-  "name": "@vltpkg/graph",
-  "description": "A library that helps understanding & expressing what happens on an install",
+  "name": "@vltpkg/types",
+  "description": "definitions for some of vlt's core types",
   "version": "0.0.0-0",
   "devDependencies": {
     "@types/node": "^20.12.7",
     "prettier": "^3.2.5",
-    "tap": "^18.8.0",
+    "tap": "^18.7.3",
     "tshy": "^1.14.0",
     "typedoc": "^0.25.13"
   },
-  "tap": {
-    "coverage-map": "../../coverage-map.js",
-    "typecheck": true
-  },
   "dependencies": {
-    "@vltpkg/error-cause": "workspace:*",
-    "@vltpkg/package-info": "workspace:*",
-    "@vltpkg/registry-client": "workspace:*",
-    "@vltpkg/semver": "workspace:*",
-    "@vltpkg/spec": "workspace:*",
-    "@vltpkg/types": "workspace:*"
+    "@vltpkg/error-cause": "workspace:*"
   },
   "scripts": {
     "preversion": "npm test",
@@ -32,6 +23,10 @@
     "snap": "tap",
     "format": "prettier --write . --log-level warn --ignore-path ../../.prettierignore --cache",
     "typedoc": "typedoc"
+  },
+  "tap": {
+    "typecheck": true,
+    "coverage-map": "../../coverage-map.js"
   },
   "prettier": {
     "experimentalTernaries": true,
@@ -46,6 +41,7 @@
     "endOfLine": "lf"
   },
   "tshy": {
+    "selfLink": false,
     "dialects": [
       "esm"
     ],

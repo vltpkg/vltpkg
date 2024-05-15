@@ -1,5 +1,5 @@
-import { Manifest } from '@vltpkg/pick-manifest'
 import { Spec } from '@vltpkg/spec'
+import { Manifest, ManifestMinified } from '@vltpkg/types'
 import { Graph } from './graph.js'
 import { Node } from './node.js'
 import { DependencyTypeLong, PackageMetadata } from './pkgs.js'
@@ -16,11 +16,12 @@ export const appendNodes = async (
 ) => {
   const { packages, packageInfo } = graph
 
-  const reqs: Promise<[Manifest, Spec]>[] = []
+  const reqs: Promise<[Manifest | ManifestMinified, Spec]>[] = []
   for (let spec of addSpecs) {
     reqs.push(packageInfo.manifest(spec).then(mani => [mani, spec]))
   }
-  const res: [Manifest, Spec][] = await Promise.all(reqs)
+  const res: [Manifest | ManifestMinified, Spec][] =
+    await Promise.all(reqs)
 
   const nextDeps: Set<Node> = new Set()
   for (const [mani, spec] of res) {
