@@ -408,13 +408,13 @@ exports[`test/index.ts > TAP > basic parsing tests > foo@npm:bar@ > inspect 1`] 
   spec: 'foo@npm:bar@',
   name: 'foo',
   bareSpec: 'npm:bar@',
-  namedRegistry: 'npm',
   registry: 'https://registry.npmjs.org/',
   subspec: @vltpkg/spec.Spec {
     type: [32m'registry'[39m,
     spec: [32m'bar@'[39m,
     name: [32m'bar'[39m,
     bareSpec: [32m''[39m,
+    namedRegistry: [32m'npm'[39m,
     registry: [32m'https://registry.npmjs.org/'[39m,
     registrySpec: [32m''[39m,
     semver: [32m''[39m,
@@ -1456,7 +1456,6 @@ exports[`test/index.ts > TAP > basic parsing tests > x@npm:foo@npm:bar@npm:baz@1
   spec: 'x@npm:foo@npm:bar@npm:baz@1',
   name: 'x',
   bareSpec: 'npm:foo@npm:bar@npm:baz@1',
-  namedRegistry: 'npm',
   registry: 'https://registry.npmjs.org/',
   subspec: @vltpkg/spec.Spec {
     type: [32m'registry'[39m,
@@ -1477,6 +1476,7 @@ exports[`test/index.ts > TAP > basic parsing tests > x@npm:foo@npm:bar@npm:baz@1
         spec: [32m'baz@1'[39m,
         name: [32m'baz'[39m,
         bareSpec: [32m'1'[39m,
+        namedRegistry: [32m'npm'[39m,
         registry: [32m'https://registry.npmjs.org/'[39m,
         registrySpec: [32m'1'[39m,
         semver: [32m'1'[39m,
@@ -1534,7 +1534,6 @@ exports[`test/index.ts > TAP > basic parsing tests > x@npm:y@npm:z@github:a/x#br
   spec: 'x@npm:y@npm:z@github:a/x#branch',
   name: 'x',
   bareSpec: 'npm:y@npm:z@github:a/x#branch',
-  namedRegistry: 'npm',
   registry: 'https://registry.npmjs.org/',
   subspec: @vltpkg/spec.Spec {
     type: [32m'registry'[39m,
