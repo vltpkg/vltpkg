@@ -15,6 +15,7 @@
     "@vltpkg/error-cause": "workspace:*",
     "@vltpkg/types": "workspace:*",
     "cache-control-parser": "^2.0.5",
+    "package-json-from-dist": "^1.0.0",
     "undici": "^6.13.0"
   },
   "scripts": {

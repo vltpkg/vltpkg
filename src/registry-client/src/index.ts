@@ -1,11 +1,10 @@
 import { Cache } from '@vltpkg/cache'
 import { register } from '@vltpkg/cache-unzip'
 import { Integrity } from '@vltpkg/types'
-import { readFile } from 'fs/promises'
 import { homedir } from 'os'
-import { basename, dirname, resolve } from 'path'
+import { loadPackageJson } from 'package-json-from-dist'
+import { resolve } from 'path'
 import { Client, Dispatcher, Pool } from 'undici'
-import { fileURLToPath } from 'url'
 import { addHeader } from './add-header.js'
 import { CacheEntry } from './cache-entry.js'
 import { cacheInterceptor } from './cache-interceptor.js'
@@ -63,29 +62,30 @@ export type RegistryClientRequestOptions = Omit<
   redirections?: Set<string>
 }
 
-/* c8 ignore start - platform specific */
-const __filename = fileURLToPath(import.meta.url)
-const dir = dirname(dirname(__filename))
-const pj =
-  basename(dir) === 'dist' ?
-    resolve(dir, '../package.json')
-  : resolve(dir, 'package.json')
-const { version } = JSON.parse(await readFile(pj, 'utf8')) as {
-  version: string
-}
-//@ts-ignore
-const bun = (await import('bun').catch(() => {}))?.default
-  ?.version as string | undefined
-//@ts-ignore
-const deno = (typeof Deno === 'undefined' ? undefined : Deno)?.deno
-  ?.version as string | undefined
-//@ts-ignore
-const node = (typeof process === 'undefined' ? undefined : process)
-  ?.version as string | undefined
-const userAgent = `@vltpkg/registry-client@${version}${
-  node ? ` node@${node}` : ''
-}${bun ? ` bun@${bun}` : ''}${deno ? ` deno@${deno}` : ''}`
-/* c8 ignore stop */
+const { version } = loadPackageJson(
+  import.meta.url,
+  '../package.json',
+)
+const navUA = globalThis.navigator?.userAgent
+const bun =
+  navUA ??
+  //@ts-ignore
+  ((await import('bun').catch(() => {}))?.default?.version as
+    | string
+    | undefined)
+const deno =
+  //@ts-ignore
+  navUA ?? (globalThis.Deno?.deno?.version as string | undefined)
+const node =
+  //@ts-ignore
+  navUA ?? (globalThis.process?.version as string | undefined)
+const nua =
+  navUA ??
+  (bun ? `Bun/${bun}`
+  : deno ? `Deno/${deno}`
+  : node ? `Node.js/${node}`
+  : '(unknown platform)')
+export const userAgent = `@vltpkg/registry-client/${version} ${nua}`
 
 export class RegistryClient {
   pools: Map<string, Pool> = new Map()
