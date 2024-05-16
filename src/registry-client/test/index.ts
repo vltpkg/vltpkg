@@ -222,3 +222,65 @@ t.test('follow redirects', { saveFixture: true }, async t => {
     }
   })
 })
+
+t.test('user-agent', t => {
+  t.test('with navigator.userAgent', async t => {
+    t.intercept(globalThis, 'navigator', {
+      value: { userAgent: 'navUA' },
+    })
+    const { userAgent } = await t.mockImport('../src/index.js')
+    t.match(
+      userAgent,
+      /^@vltpkg\/registry-client\/[^ ]+ navUA$/,
+      'navigator.userAgent present',
+    )
+  })
+
+  t.test('no navigator.userAgent', t => {
+    t.intercept(globalThis, 'navigator', { value: null })
+
+    t.test('bun', async t => {
+      const { userAgent } = await t.mockImport('../src/index.js', {
+        bun: { default: { version: 'bunver' }}
+      })
+      t.match(userAgent,
+        /^@vltpkg\/registry-client\/[^ ]+ Bun\/bunver$/
+      )
+    })
+
+    t.test('bun', async t => {
+      //@ts-ignore
+      t.intercept(globalThis, 'Deno', { value: {
+        deno: { version: 'denover' },
+      }})
+      const { userAgent } = await t.mockImport('../src/index.js')
+      t.match(userAgent,
+        /^@vltpkg\/registry-client\/[^ ]+ Deno\/denover$/
+      )
+    })
+
+    t.test('node', async t => {
+      //@ts-ignore
+      t.intercept(process, 'version', { value:
+        'nodever',
+      })
+      const { userAgent } = await t.mockImport('../src/index.js')
+      t.match(userAgent,
+        /^@vltpkg\/registry-client\/[^ ]+ Node.js\/nodever$/
+      )
+    })
+
+    t.test('nothing we know about', async t => {
+      //@ts-ignore
+      t.intercept(process, 'version', { value: ''})
+      const { userAgent } = await t.mockImport('../src/index.js')
+      t.match(userAgent,
+        /^@vltpkg\/registry-client\/[^ ]+ \(unknown platform\)$/
+      )
+    })
+
+    t.end()
+  })
+
+  t.end()
+})
