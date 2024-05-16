@@ -1,4 +1,4 @@
-import { readdirSync, writeFileSync } from 'fs'
+import { readdirSync } from 'fs'
 import { resolve } from 'path'
 import t from 'tap'
 import { Cache } from '../dist/esm/index.js'
@@ -13,8 +13,7 @@ t.test('basic cache operation', async t => {
         path,
         resolve(
           t.testdirName,
-          '4a/3e/' +
-            '4a3ed8147e37876adc8f76328e5abcc1b470e6acfc18efea0135f983604953a5' +
+          '4a3ed8147e37876adc8f76328e5abcc1b470e6acfc18efea0135f983604953a5' +
             '8e183c1a6086e91ba3e821d926f5fdeb37761c7ca0328a963f5e92870675b728',
         ),
       )
@@ -27,9 +26,7 @@ t.test('basic cache operation', async t => {
   await c.promise()
   t.equal(odwCalled, true)
   t.same([...c.keys()], ['xyz'])
-  t.same(readdirSync(t.testdirName), ['4a'])
-  t.same(readdirSync(t.testdirName + '/4a'), ['3e'])
-  t.same(readdirSync(t.testdirName + '/4a/3e'), [
+  t.same(readdirSync(t.testdirName), [
     '4a3ed8147e37876adc8f76328e5abcc1b470e6acfc18efea0135f983604953a5' +
       '8e183c1a6086e91ba3e821d926f5fdeb37761c7ca0328a963f5e92870675b728',
     '4a3ed8147e37876adc8f76328e5abcc1b470e6acfc18efea0135f983604953a5' +
@@ -81,8 +78,7 @@ t.test('delete from disk', async t => {
         path,
         resolve(
           t.testdirName,
-          '4a/3e/' +
-            '4a3ed8147e37876adc8f76328e5abcc1b470e6acfc18efea0135f983604953a5' +
+          '4a3ed8147e37876adc8f76328e5abcc1b470e6acfc18efea0135f983604953a5' +
             '8e183c1a6086e91ba3e821d926f5fdeb37761c7ca0328a963f5e92870675b728',
         ),
       )
@@ -94,9 +90,7 @@ t.test('delete from disk', async t => {
   c.set('xyz', Buffer.from('hello, world'))
   await c.promise()
   t.same([...c.keys()], ['xyz'])
-  t.same(readdirSync(t.testdirName), ['4a'])
-  t.same(readdirSync(t.testdirName + '/4a'), ['3e'])
-  t.same(readdirSync(t.testdirName + '/4a/3e'), [
+  t.same(readdirSync(t.testdirName), [
     '4a3ed8147e37876adc8f76328e5abcc1b470e6acfc18efea0135f983604953a5' +
       '8e183c1a6086e91ba3e821d926f5fdeb37761c7ca0328a963f5e92870675b728',
     '4a3ed8147e37876adc8f76328e5abcc1b470e6acfc18efea0135f983604953a5' +
@@ -106,9 +100,7 @@ t.test('delete from disk', async t => {
   t.strictSame([...c.keys()], [])
   await c.promise()
   t.equal(oddCalled, false, 'does not call diskDelete by default')
-  t.same(readdirSync(t.testdirName), ['4a'])
-  t.same(readdirSync(t.testdirName + '/4a'), ['3e'])
-  t.same(readdirSync(t.testdirName + '/4a/3e'), [
+  t.same(readdirSync(t.testdirName), [
     '4a3ed8147e37876adc8f76328e5abcc1b470e6acfc18efea0135f983604953a5' +
       '8e183c1a6086e91ba3e821d926f5fdeb37761c7ca0328a963f5e92870675b728',
     '4a3ed8147e37876adc8f76328e5abcc1b470e6acfc18efea0135f983604953a5' +
@@ -118,75 +110,6 @@ t.test('delete from disk', async t => {
   await c.promise()
   t.equal(oddCalled, true, 'diskDelete has now been called')
   t.strictSame(readdirSync(t.testdirName), [])
-})
-
-t.test('delete from disk, no vacuuming if uncles', async t => {
-  const c = new Cache({
-    path: t.testdir(),
-  })
-  t.equal(c.max, Cache.defaultMax)
-  c.set('xyz', Buffer.from('hello, world'))
-  await c.promise()
-  t.same([...c.keys()], ['xyz'])
-  t.same(readdirSync(t.testdirName), ['4a'])
-  t.same(readdirSync(t.testdirName + '/4a'), ['3e'])
-  t.same(readdirSync(t.testdirName + '/4a/3e'), [
-    '4a3ed8147e37876adc8f76328e5abcc1b470e6acfc18efea0135f983604953a5' +
-      '8e183c1a6086e91ba3e821d926f5fdeb37761c7ca0328a963f5e92870675b728',
-    '4a3ed8147e37876adc8f76328e5abcc1b470e6acfc18efea0135f983604953a5' +
-      '8e183c1a6086e91ba3e821d926f5fdeb37761c7ca0328a963f5e92870675b728.key',
-  ])
-  c.delete('xyz')
-  t.strictSame([...c.keys()], [])
-  await c.promise()
-  t.same(readdirSync(t.testdirName), ['4a'])
-  t.same(readdirSync(t.testdirName + '/4a'), ['3e'])
-  t.same(readdirSync(t.testdirName + '/4a/3e'), [
-    '4a3ed8147e37876adc8f76328e5abcc1b470e6acfc18efea0135f983604953a5' +
-      '8e183c1a6086e91ba3e821d926f5fdeb37761c7ca0328a963f5e92870675b728',
-    '4a3ed8147e37876adc8f76328e5abcc1b470e6acfc18efea0135f983604953a5' +
-      '8e183c1a6086e91ba3e821d926f5fdeb37761c7ca0328a963f5e92870675b728.key',
-  ])
-  writeFileSync(resolve(t.testdirName, '4a/uncle'), '')
-  c.delete('xyz', true)
-  await c.promise()
-  t.same(readdirSync(t.testdirName), ['4a'])
-  t.same(readdirSync(t.testdirName + '/4a'), ['uncle'])
-})
-
-t.test('delete from disk, no vacuuming if siblings', async t => {
-  const c = new Cache({
-    path: t.testdir(),
-  })
-  t.equal(c.max, Cache.defaultMax)
-  c.set('xyz', Buffer.from('hello, world'))
-  await c.promise()
-  t.same([...c.keys()], ['xyz'])
-  t.same(readdirSync(t.testdirName), ['4a'])
-  t.same(readdirSync(t.testdirName + '/4a'), ['3e'])
-  t.same(readdirSync(t.testdirName + '/4a/3e'), [
-    '4a3ed8147e37876adc8f76328e5abcc1b470e6acfc18efea0135f983604953a5' +
-      '8e183c1a6086e91ba3e821d926f5fdeb37761c7ca0328a963f5e92870675b728',
-    '4a3ed8147e37876adc8f76328e5abcc1b470e6acfc18efea0135f983604953a5' +
-      '8e183c1a6086e91ba3e821d926f5fdeb37761c7ca0328a963f5e92870675b728.key',
-  ])
-  c.delete('xyz')
-  t.strictSame([...c.keys()], [])
-  await c.promise()
-  t.same(readdirSync(t.testdirName), ['4a'])
-  t.same(readdirSync(t.testdirName + '/4a'), ['3e'])
-  t.same(readdirSync(t.testdirName + '/4a/3e'), [
-    '4a3ed8147e37876adc8f76328e5abcc1b470e6acfc18efea0135f983604953a5' +
-      '8e183c1a6086e91ba3e821d926f5fdeb37761c7ca0328a963f5e92870675b728',
-    '4a3ed8147e37876adc8f76328e5abcc1b470e6acfc18efea0135f983604953a5' +
-      '8e183c1a6086e91ba3e821d926f5fdeb37761c7ca0328a963f5e92870675b728.key',
-  ])
-  writeFileSync(resolve(t.testdirName, '4a/3e/sibling'), '')
-  c.delete('xyz', true)
-  await c.promise()
-  t.same(readdirSync(t.testdirName), ['4a'])
-  t.same(readdirSync(t.testdirName + '/4a'), ['3e'])
-  t.same(readdirSync(t.testdirName + '/4a/3e'), ['sibling'])
 })
 
 t.test('walk over cached items', async t => {
