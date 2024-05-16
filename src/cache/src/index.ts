@@ -1,6 +1,9 @@
+import { error } from '@vltpkg/error-cause'
+import { Integrity } from '@vltpkg/types'
 import { createHash, randomBytes } from 'crypto'
 import { Dirent, opendirSync, readFileSync } from 'fs'
 import {
+  link,
   mkdir,
   opendir,
   readFile,
@@ -12,12 +15,18 @@ import { resolve } from 'node:path'
 import { basename, dirname } from 'path'
 import { rimraf } from 'rimraf'
 
+export type CacheFetchContext =
+  | undefined
+  | {
+      integrity?: Integrity
+    }
+
 export type CacheOptions = {
   [k in keyof LRUCache.Options<
     string,
     Buffer,
-    undefined
-  >]?: LRUCache.Options<string, Buffer, undefined>[k]
+    CacheFetchContext
+  >]?: LRUCache.Options<string, Buffer, CacheFetchContext>[k]
 } & {
   /**
    * fetchMethod may not be provided, because this cache forces its own
@@ -42,7 +51,11 @@ export type CacheOptions = {
 const hash = (s: string) =>
   createHash('sha512').update(s).digest('hex')
 
-export class Cache extends LRUCache<string, Buffer, undefined> {
+export class Cache extends LRUCache<
+  string,
+  Buffer,
+  CacheFetchContext
+> {
   #path: string;
   [Symbol.toStringTag]: string = '@vltpkg/cache.Cache'
   #random: string = randomBytes(6).toString('hex')
@@ -83,8 +96,10 @@ export class Cache extends LRUCache<string, Buffer, undefined> {
       sizeCalculation,
       fetchMethod: async (k, v, opts) => {
         // do not write back to disk, since we just got it from there.
-        Object.assign(opts.options, { noDiskWrite: true })
-        return this.#diskRead(k, v)
+        Object.assign(opts.options, {
+          noDiskWrite: true,
+        })
+        return this.#diskRead(k, v, opts.context?.integrity)
       },
       allowStaleOnFetchRejection: true,
       allowStaleOnFetchAbort: true,
@@ -201,18 +216,30 @@ export class Cache extends LRUCache<string, Buffer, undefined> {
   set(
     key: string,
     val: Buffer,
-    options?: LRUCache.SetOptions<string, Buffer, undefined> & {
+    options?: LRUCache.SetOptions<
+      string,
+      Buffer,
+      CacheFetchContext
+    > & {
       /** set to `true` to prevent writes to disk cache */
       noDiskWrite?: boolean
+      /** sha512 integrity string */
+      integrity?: Integrity
     },
   ) {
     super.set(key, val, options)
+    const { noDiskWrite, integrity } = options ?? {}
     // set/delete also used internally by LRUCache to manage async fetches
     // only write when we're putting an actual value into the cache
-    if (Buffer.isBuffer(val) && !options?.noDiskWrite) {
+    if (Buffer.isBuffer(val) && !noDiskWrite) {
       // best effort, already have it in memory
       const path = this.path(key)
-      const p: Promise<void> = this.#diskWrite(path, key, val)
+      const p: Promise<void> = this.#diskWrite(
+        path,
+        key,
+        val,
+        integrity,
+      )
         /* c8 ignore next */
         .catch(() => {})
         .then(() => this.#unpend(p, this.onDiskWrite, path, key, val))
@@ -238,6 +265,23 @@ export class Cache extends LRUCache<string, Buffer, undefined> {
   path(key: string) {
     return resolve(this.#path, hash(key))
   }
+  /**
+   * given an SRI sha512 integrity string, get the path on disk that
+   * is hard-linked to the value.
+   */
+  integrityPath(integrity?: Integrity) {
+    if (!integrity) return undefined
+    const m = integrity.match(/^sha512-([a-zA-Z0-9/+]{86}==)$/)
+    const hash = m?.[1]
+    if (!hash) {
+      throw error('invalid integrity value', {
+        found: integrity,
+        wanted: /^sha512-([a-zA-Z0-9/+]{86}==)$/,
+      })
+    }
+    const base = Buffer.from(hash, 'base64').toString('hex')
+    return resolve(this.#path, base)
+  }
 
   /**
    * Read synchronously from the fs cache storage if not already
@@ -245,18 +289,29 @@ export class Cache extends LRUCache<string, Buffer, undefined> {
    */
   fetchSync(
     key: string,
-    opts?: LRUCache.FetchOptions<string, Buffer, undefined>,
+    opts?: LRUCache.FetchOptions<string, Buffer, CacheFetchContext>,
   ) {
     const v = this.get(key)
     if (v) return v
+    const intFile = this.#maybeIntegrityPath(opts?.context?.integrity)
+    if (intFile) {
+      try {
+        const v = readFileSync(intFile)
+        this.set(key, v, { ...opts, noDiskWrite: true })
+        return v
+        /* c8 ignore start */
+      } catch {}
+    }
+    /* c8 ignore stop */
     try {
       const v = readFileSync(this.path(key))
       // suppress the disk write, because we just read it from disk
       this.set(key, v, { ...opts, noDiskWrite: true })
       return v
-      /* c8 ignore next */
+      /* c8 ignore start */
     } catch {}
   }
+  /* c8 ignore stop */
 
   /**
    * Delete path and path + '.key'
@@ -265,22 +320,61 @@ export class Cache extends LRUCache<string, Buffer, undefined> {
     return rimraf([path, path + '.key'])
   }
 
-  async #diskWrite(path: string, key: string, val: Buffer) {
+  #maybeIntegrityPath(i?: Integrity) {
+    try {
+      return this.integrityPath(i)
+    } catch {}
+  }
+  async #diskWrite(
+    path: string,
+    key: string,
+    val: Buffer,
+    integrity?: Integrity,
+  ) {
     const dir = dirname(path)
     await mkdir(dir, { recursive: true })
+    const intFile = this.#maybeIntegrityPath(integrity)
     const base = basename(path)
     const keyFile = base + '.key'
     const tmp = dir + '/.' + base + '.' + this.#random
     const keyTmp = dir + '/.' + keyFile + '.' + this.#random
-    await Promise.all([
-      writeFile(tmp, val).then(() => rename(tmp, path)),
+    const writeData =
+      intFile ?
+        // try to just link into the temp location, rather than write
+        // may fail with ENOENT or EEXIST, in which case, write normally
+        link(intFile, tmp).catch(() => writeFile(tmp, val))
+        // don't have it by integrity, write the new entry
+      : writeFile(tmp, val)
+
+    let p: Promise<any> = Promise.all([
+      writeData.then(() => rename(tmp, path)),
       writeFile(keyTmp, key).then(() =>
         rename(keyTmp, path + '.key'),
       ),
     ])
+    if (intFile) {
+      p = p.then(() => link(path, intFile))
+    }
+    return p
   }
 
-  async #diskRead(k: string, v: Buffer | undefined) {
-    return readFile(this.path(k)).catch(() => v)
+  async #diskRead(
+    k: string,
+    v: Buffer | undefined,
+    integrity?: Integrity,
+  ) {
+    const intFile = this.#maybeIntegrityPath(integrity)
+    const file = this.path(k)
+    const p =
+      intFile ?
+        readFile(intFile).catch(async () => {
+          // if we get the value, but not integrity, link to the
+          // integrity file so we get it next time.
+          const value = await readFile(file)
+          await link(file, intFile)
+          return value
+        })
+      : readFile(file)
+    return p.catch(() => v)
   }
 }

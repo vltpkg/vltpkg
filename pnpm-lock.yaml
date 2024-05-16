@@ -21,6 +21,12 @@ importers:
 
   src/cache:
     dependencies:
+      '@vltpkg/error-cause':
+        specifier: workspace:*
+        version: link:../error-cause
+      '@vltpkg/types':
+        specifier: workspace:*
+        version: link:../types
       lru-cache:
         specifier: ^10.2.0
         version: 10.2.2

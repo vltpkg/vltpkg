@@ -47,7 +47,8 @@ gzipped response anyway.
 If the response is `content-type: application/octet-stream` and
 starts with the gzip header, then we return the raw body as we
 received it, but as a best-effort background job, unzip it and
-update the cache entry to be an unzipped response body.
+update the cache entry to be an unzipped response body. This is
+done in the `@vltpkg/cache-unzip` worker.
 
 So,
 
@@ -59,3 +60,63 @@ So,
 
 Thus, the `content-length` response header will _usually_ not
 match the actual byte length of the response body.
+
+## Integrity Options
+
+An `integrity` option may be specified in a
+`fetchOptions.context` object, or in the options provided to
+`cache.set()`.  For example:
+
+```js
+const integrity = `sha512-${base64hash}`
+// Sets the key, and links to a file based on the integrity
+// value. Any future fetches for the same integrity will yield
+// this value.
+cache.set(key, value, { integrity })
+
+// Load an entry with this integrity value, if present in the
+// on-disk cache, and when writing back to the disk, link to the
+// appropriate integrity file as well.
+const value = await cache.fetch(key, { context: { integrity } })
+```
+
+If the integrity provided is obviously not a valid sha512
+`Integrity` string, then it is ignored.
+
+Integrity values are not calculated or verified. The caller must do this
+check, if desired.
+
+Note that the integrity provided to `cache.fetch()` or `cache.set()`
+does _not_ typically match the calculated integrity of the object
+being cached. Typically, the integrity is related to the body of
+the response that a `@vltpkg/registry-client.CacheEntry` object
+represents.
+
+## USAGE
+
+```js
+import { Cache } from '@vltpkg/cache'
+
+// set in the memory cache, and return immediately. in the
+// background, write the entry to disk.
+cache.set(someKey, someBuffer)
+
+// if you need to wait for all pending writes to finish pending,
+// you can do that like this
+await cache.promise()
+
+// get an item from the memory cache if possible, falling back to
+// loading by integrity/key from the disk. Integrity is optional.
+const value = await cache.fetch(someKey, { context: { integrity }})
+
+// get from the memory cache *only*, do not read from the disk
+const value = cache.get(someKey)
+
+// Synchronous form of cache.fetch()
+const value = cache.fetchSync(someKey, { context: { integrity }})
+
+// sync and async iteration is supported
+// walks over all items on disk
+for await (const item of cache) { ... }
+for (const item of cache) { ... }
+```
