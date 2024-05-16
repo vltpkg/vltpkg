@@ -1,8 +1,8 @@
 import { createHash, randomBytes } from 'crypto'
-import { readdirSync, readFileSync } from 'fs'
+import { Dirent, opendirSync, readFileSync } from 'fs'
 import {
   mkdir,
-  readdir,
+  opendir,
   readFile,
   rename,
   writeFile,
@@ -41,9 +41,6 @@ export type CacheOptions = {
 
 const hash = (s: string) =>
   createHash('sha512').update(s).digest('hex')
-
-const path = (h: string) =>
-  `${h.substring(0, 2)}/${h.substring(2, 4)}/${h}`
 
 export class Cache extends LRUCache<string, Buffer, undefined> {
   #path: string;
@@ -106,26 +103,24 @@ export class Cache extends LRUCache<string, Buffer, undefined> {
    * Implementation for `for await` to walk over entries.
    */
   async *walk() {
-    for (const a of await readdir(this.#path)) {
-      for (const b of await readdir(resolve(this.#path, a))) {
-        for (const f of await readdir(resolve(this.#path, a, b))) {
-          if (f.endsWith('.key')) {
-            yield (await Promise.all([
-              readFile(resolve(this.#path, a, b, f), 'utf8'),
-              readFile(
-                resolve(
-                  this.#path,
-                  a,
-                  b,
-                  f.substring(0, f.length - '.key'.length),
-                ),
-              ),
-            ])) as [string, Buffer]
-          }
-        }
+    const dir = await opendir(this.#path, { bufferSize: 1024 })
+    for await (const entry of dir) {
+      const f = resolve(this.#path, entry.name)
+      if (f.endsWith('.key')) {
+        const entry: [string, Buffer] = await Promise.all([
+          readFile(resolve(this.#path, f), 'utf8'),
+          readFile(
+            resolve(
+              this.#path,
+              f.substring(0, f.length - '.key'.length),
+            ),
+          ),
+        ])
+        yield entry
       }
     }
   }
+
   [Symbol.asyncIterator](): AsyncGenerator<
     [string, Buffer],
     void,
@@ -138,27 +133,26 @@ export class Cache extends LRUCache<string, Buffer, undefined> {
    * Synchronous form of Cache.walk()
    */
   *walkSync() {
-    for (const a of readdirSync(this.#path)) {
-      for (const b of readdirSync(resolve(this.#path, a))) {
-        for (const f of readdirSync(resolve(this.#path, a, b))) {
-          if (f.endsWith('.key')) {
-            yield [
-              readFileSync(resolve(this.#path, a, b, f), 'utf8'),
-              readFileSync(
-                resolve(
-                  this.#path,
-                  a,
-                  b,
-                  f.substring(0, f.length - '.key'.length),
-                ),
-              ),
-            ] as [string, Buffer]
-          }
-        }
+    const dir = opendirSync(this.#path, { bufferSize: 1024 })
+    let entry: Dirent | null = null
+    while (null !== (entry = dir.readSync())) {
+      const f = resolve(this.#path, entry.name)
+      if (f.endsWith('.key')) {
+        const entry: [string, Buffer] = [
+          readFileSync(resolve(this.#path, f), 'utf8'),
+          readFileSync(
+            resolve(
+              this.#path,
+              f.substring(0, f.length - '.key'.length),
+            ),
+          ),
+        ]
+        yield entry
       }
     }
+    dir.closeSync()
   }
-  [Symbol.iterator]() {
+  [Symbol.iterator](): Generator<[string, Buffer], void, unknown> {
     return this.walkSync()
   }
 
@@ -208,6 +202,7 @@ export class Cache extends LRUCache<string, Buffer, undefined> {
     key: string,
     val: Buffer,
     options?: LRUCache.SetOptions<string, Buffer, undefined> & {
+      /** set to `true` to prevent writes to disk cache */
       noDiskWrite?: boolean
     },
   ) {
@@ -241,7 +236,7 @@ export class Cache extends LRUCache<string, Buffer, undefined> {
    * given a key, figure out the path on disk where it lives
    */
   path(key: string) {
-    return resolve(this.#path, path(hash(key)))
+    return resolve(this.#path, hash(key))
   }
 
   /**
@@ -264,26 +259,10 @@ export class Cache extends LRUCache<string, Buffer, undefined> {
   }
 
   /**
-   * This deletes the parent dir if the entry has no siblings,
-   * and the grandparent dir if the parent has no siblings.
+   * Delete path and path + '.key'
    */
   async #diskDelete(path: string): Promise<boolean> {
-    const base = basename(path)
-    const keyFile = path + '.key'
-    const parent = dirname(path)
-    const pBase = basename(parent)
-    const gramps = dirname(parent)
-    const sibs = (await readdir(parent)).filter(
-      f => f !== base && f !== base + '.key',
-    )
-    let ret: boolean
-    if (!sibs.length) {
-      const uncles = (await readdir(gramps)).filter(f => f !== pBase)
-      ret = await (!uncles.length ? rimraf(gramps) : rimraf(parent))
-    } else {
-      ret = await rimraf([path, keyFile])
-    }
-    return ret
+    return rimraf([path, path + '.key'])
   }
 
   async #diskWrite(path: string, key: string, val: Buffer) {
