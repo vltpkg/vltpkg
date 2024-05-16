@@ -9,13 +9,41 @@ import type { IncomingMessage } from 'http'
  * internal types directly would create a workspace dependency cycle.
  */
 export interface ErrorCauseObject {
+  /**
+   * The `cause` field within a `cause` object should
+   * always be an `Error` object that was previously thrown. Note
+   * that the `cause` on an Error itself might _also_ be a
+   * previously thrown error, if no additional information could be
+   * usefully added beyond improving the message.
+   */
   cause?: ErrorCause
+
+  /** the name of something */
   name?: string
+
+  /** byte offset in a Buffer or file */
   offset?: number
+
+  /**
+   * This should only be a string code that we set. See {@link Codes} for
+   * the supported options. Lower-level system codes like `ENOENT` should
+   * remain on the errors that generated them.
+   */
   code?: Codes
+
+  /** target of a file system operation */
   path?: string
+
+  /**
+   * file path origin of a resolution that failed, for example in the case
+   * of `file://` specifiers.
+   */
   from?: string
+
+  /** path on disk that is being written, linked, or extracted to */
   target?: string
+
+  /** Spec object/string relevant to an operation that failed */
   spec?:
     | string
     | {
@@ -23,16 +51,47 @@ export interface ErrorCauseObject {
         spec: string
         [k: string | symbol | number]: any
       }
+
+  /** exit code of a process, or HTTP response status code */
   status?: number | null
-  cmd?: string
-  args?: string[]
-  stdout?: null | string | Buffer
-  stderr?: null | string | Buffer
+
+  /** null or a signal that a process received */
   signal?: null | NodeJS.Signals
+
+  /** the current working directory of a process */
+  cmd?: string
+
+  /** the arguments passed to a process */
+  args?: string[]
+
+  /** standard output from a process */
+  stdout?: null | string | Buffer
+
+  /** standard error from a process */
+  stderr?: null | string | Buffer
+
+  /**
+   * Array of valid options when something is not a valid option.
+   * (For use in `did you mean X?` output.)
+   */
   validOptions?: Array<any>
+
+  /**
+   * message indicating what bit of work this might be a part of, what feature
+   * needs to be implemented, etc. Eg, `{ todo: 'nested workspace support' }`.
+   */
   todo?: string
+
+  /**
+   * A desired value that was not found, or a regular expression or other
+   * pattern describing it.
+   */
   wanted?: any
+
+  /** actual value, which was not wanted */
   found?: any
+
+  /** HTTP message, fetch.Response, or `@vltpkg/registry-client.CacheEntry` */
   response?:
     | Response
     | IncomingMessage
@@ -42,8 +101,14 @@ export interface ErrorCauseObject {
         text: () => string
         [k: string | symbol | number]: any
       }
+
+  /** string or URL object */
   url?: string | URL
+
+  /** git repository remote or path */
   repository?: string
+
+  /** string or `@vltpkg/semver.Version` object */
   version?:
     | string
     | {
@@ -53,6 +118,8 @@ export interface ErrorCauseObject {
         patch: number
         [k: string | symbol | number]: any
       }
+
+  /** string or `@vltpkg/semver.Range` object */
   range?:
     | string
     | {
@@ -61,14 +128,22 @@ export interface ErrorCauseObject {
         includePrerelease: boolean
         [k: string | symbol | number]: any
       }
+
+  /** a package manifest, either from `package.json` or a registry */
   manifest?: DuckTypeManifest
+
+  /** registry top-level package document */
   packument?: {
     name: string
     'dist-tags': Record<string, string>
     versions: Record<string, DuckTypeManifest>
     time?: Record<string, string>
   }
+
+  /** maximum value, which was exceeded */
   max?: any
+
+  /** minimum value, which was not met */
   min?: any
 }
 
