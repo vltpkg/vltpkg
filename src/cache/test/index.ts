@@ -1,3 +1,4 @@
+import { createHash } from 'crypto'
 import { readdirSync } from 'fs'
 import { resolve } from 'path'
 import t from 'tap'
@@ -131,4 +132,53 @@ t.test('walk over cached items', async t => {
   }
   t.same(a, s)
   t.same(a, [['xyz', Buffer.from('hello, world')]])
+})
+
+t.test('integrity', async t => {
+  const c = new Cache({ path: t.testdir() })
+  const value = Buffer.from('hello, world')
+  const integrity = `sha512-${createHash('sha512')
+    .update(value)
+    .digest('base64')}` as const
+  c.set('key', value, { integrity })
+  await c.promise()
+
+  const sameInt = await c.fetch('otherkey', {
+    context: { integrity },
+  })
+  t.strictSame(sameInt, value)
+  const sameSync = c.fetchSync('yolo', { context: { integrity } })
+  t.strictSame(sameSync, value)
+
+  // if we fetch with integrity, and the key exists
+  // but not the integrity, then link integrity.
+  c.set('apple', Buffer.from('red'))
+  await c.promise()
+  const red = Buffer.from('red')
+  const redInt = `sha512-${createHash('sha512')
+    .update(red)
+    .digest('base64')}` as const
+
+  const d = new Cache({ path: t.testdirName })
+  t.strictSame(
+    await d.fetch('apple', { context: { integrity: redInt } }),
+    red,
+  )
+  t.strictSame(
+    await d.fetch('red things', { context: { integrity: redInt } }),
+    red,
+  )
+
+  const b = Buffer.from('b')
+  //@ts-expect-error
+  d.set('a', b, { integrity: 'yolo' })
+  //@ts-expect-error
+  t.throws(() => d.integrityPath('yolo'))
+  await d.promise()
+  const e = new Cache({ path: t.testdirName })
+  // it should have written the file, but the integrity didn't get written
+  //@ts-expect-error
+  t.strictSame(await e.fetch('a', { context: { integrity: 'yolo' }}), b)
+  //@ts-expect-error
+  t.equal(await e.fetch('x', { context: { integrity: 'yolo' }}), undefined)
 })

@@ -29,6 +29,12 @@ const cache = new Cache({
 // from the file system
 const someCachedValue = await cache.fetch(someKey)
 
+// fetch by integrity, if available:
+const integrity = 'sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ=='
+const valueByInt = await cache.fetch('blah', {
+  context: { integrity }
+})
+
 // synchronous cache read, will only return a value if present in
 // the memory cache. Does *not* fall back to the fs store.
 const valueFromMemoryCache = cache.get(someKey)
@@ -41,11 +47,20 @@ const valueUsingSyncFileSystemOps = cache.fetchSync(someKey)
 // background but are available immediately because they are
 // added to the memory cache first
 cache.set('some-key', Buffer.from('some-value'))
+
+// set with integrity creates a hard-linked file at the content
+// address, so that anyone fetching the same content by any other
+// key will get the same result.
+cache.set(someKey, someValue, { integrity })
+await cache.promise() // once it's done writing...
+// returns identical bits as someValue, because on-disk cache
+// hard links to a file based on the integrity value.
+const otherValue = await cache.fetch(otherKey, { context: { integrity } })
 ```
 
 Note:
 
-- The key type _must_ be a string. It gets `sha-512` hashed to
+- The key type _must_ be a string. It gets `sha512` hashed to
   determine the file on disk.
 - The value must be a Buffer, so that it can be written to a
   file and read from it without having to convert anything.
