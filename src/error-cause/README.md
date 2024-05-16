@@ -339,6 +339,7 @@ todo: 'nested workspace support' }`.
 - `range` - string or `@vltpkg/semver.Range`
 - `manifest` - `@vltpkg/pick-manifest.Manifest`
 - `packument` - `@vltpkg/pick-manifest.Packument`
+- `cwd` - The current working directory of a process that failed
 
 ## Error Types
 
