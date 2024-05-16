@@ -1,5 +1,6 @@
 import { Cache } from '@vltpkg/cache'
 import { error } from '@vltpkg/error-cause'
+import { Integrity } from '@vltpkg/types'
 import { STATUS_CODES } from 'http'
 import { Readable } from 'stream'
 import { Dispatcher } from 'undici'
@@ -8,7 +9,7 @@ import { CacheEntry } from './cache-entry.js'
 import { CacheHandler } from './cache-handler.js'
 import { getHeader } from './get-header.js'
 
-const validIntegrity = (integrity?: string): boolean =>
+const validIntegrity = (integrity?: string): integrity is Integrity =>
   integrity === undefined ||
   (integrity.startsWith('sha512-') &&
     integrity.length === 95 &&
@@ -16,7 +17,7 @@ const validIntegrity = (integrity?: string): boolean =>
 
 export type CacheInterceptorOptions = Dispatcher.DispatchOptions & {
   cache: Cache
-  integrity?: string
+  integrity?: Integrity
 }
 
 export const cacheInterceptor = (
@@ -52,13 +53,14 @@ export const cacheInterceptor = (
     if (typeof br?.resume === 'function') br.resume()
 
     const key = JSON.stringify([origin, method, path, accept])
-    cache.fetch(key).then(buffer => {
+    cache.fetch(key, { context: { integrity } }).then(buffer => {
       const entry = buffer ? CacheEntry.decode(buffer) : undefined
       const cacheHandler = new CacheHandler({
         key,
         handler,
         cache,
         entry,
+        integrity,
       })
 
       if (!buffer || !entry) {

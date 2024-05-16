@@ -283,6 +283,7 @@ t.test('GET request from cache, valid cache entry', async t => {
     d(opts, handler)
     t.throws(() =>
       d(
+        //@ts-expect-error
         { ...opts, integrity: 'not valid, no sha512- prefix' },
         handler,
       ),

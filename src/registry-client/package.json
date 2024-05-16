@@ -13,6 +13,7 @@
     "@vltpkg/cache": "workspace:*",
     "@vltpkg/cache-unzip": "workspace:*",
     "@vltpkg/error-cause": "workspace:*",
+    "@vltpkg/types": "workspace:*",
     "cache-control-parser": "^2.0.5",
     "undici": "^6.13.0"
   },
@@ -29,6 +30,7 @@
     "typedoc": "typedoc"
   },
   "tap": {
+    "typecheck": true,
     "coverage-map": "../../coverage-map.js"
   },
   "prettier": {

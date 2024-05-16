@@ -20,6 +20,7 @@
 // of the file.
 
 import { error } from '@vltpkg/error-cause'
+import { Integrity } from '@vltpkg/types'
 import ccp from 'cache-control-parser'
 import { createHash } from 'crypto'
 import { inspect } from 'util'
@@ -56,13 +57,13 @@ export class CacheEntry {
   #headers: Buffer[]
   #body: Buffer[] = []
   #bodyLength: number = 0
-  #integrity?: string
-  #integrityActual?: string
+  #integrity?: Integrity
+  #integrityActual?: Integrity
 
   constructor(
     statusCode: number,
     headers: Buffer[],
-    integrity?: string,
+    integrity?: Integrity,
   ) {
     this.#integrity = integrity
     this.#statusCode = statusCode
@@ -145,11 +146,12 @@ export class CacheEntry {
     if (!this.#integrity) return false
     return this.integrityActual === this.#integrity
   }
-  get integrityActual(): string {
+  get integrityActual(): Integrity {
     if (this.#integrityActual) return this.#integrityActual
     const hash = createHash('sha512')
     for (const buf of this.#body) hash.update(buf)
-    return (this.#integrityActual = `sha512-${hash.digest('base64')}`)
+    this.#integrityActual = `sha512-${hash.digest('base64')}`
+    return this.#integrityActual
   }
   get integrity() {
     return this.#integrity
