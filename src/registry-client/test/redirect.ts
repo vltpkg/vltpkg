@@ -14,18 +14,16 @@ t.test('isRedirect', t => {
       new CacheEntry(
         301,
         [Buffer.from('location'), Buffer.from('somewhere')],
-        '',
       ),
     ),
     true,
   )
-  t.equal(isRedirect(new CacheEntry(308, [], '')), false)
+  t.equal(isRedirect(new CacheEntry(308, [])), false)
   t.equal(
     isRedirect(
       new CacheEntry(
         200,
         [Buffer.from('location'), Buffer.from('somewhere')],
-        '',
       ),
     ),
     false,
@@ -133,7 +131,7 @@ t.test('redirect', t => {
       ]) as RedirectResponse,
       new URL('https://example.com/c'),
     ),
-    '303, strip body and make it a GET'
+    '303, strip body and make it a GET',
   )
 
   t.matchSnapshot(
@@ -149,7 +147,7 @@ t.test('redirect', t => {
       ]) as RedirectResponse,
       new URL('https://example.com/c'),
     ),
-    'no redirections, just return []'
+    'no redirections, just return []',
   )
 
   t.end()

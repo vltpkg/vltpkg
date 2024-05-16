@@ -1,5 +1,6 @@
 import { Cache } from '@vltpkg/cache'
 import { register } from '@vltpkg/cache-unzip'
+import { Integrity } from '@vltpkg/types'
 import { readFile } from 'fs/promises'
 import { homedir } from 'os'
 import { basename, dirname, resolve } from 'path'
@@ -43,7 +44,8 @@ export type RegistryClientRequestOptions = Omit<
    * This is only relevant when it must make a request to the registry. Once in
    * the local disk cache, items are assumed to be trustworthy.
    */
-  integrity?: string
+  integrity?: Integrity
+
   /**
    * Follow up to 10 redirections by default. Set this to 0 to just return
    * the 3xx response. If the max redirections are expired, and we still get
@@ -51,6 +53,7 @@ export type RegistryClientRequestOptions = Omit<
    * always treated as an error.
    */
   maxRedirections?: number
+
   /**
    * the number of redirections that have already been seen. This is used
    * internally, and should always start at 0.
@@ -104,10 +107,7 @@ export class RegistryClient {
     options: RegistryClientRequestOptions = {},
   ): Promise<CacheEntry> {
     const u = typeof url === 'string' ? new URL(url) : url
-    const {
-      maxRedirections = 10,
-      redirections = new Set(),
-    } = options
+    const { maxRedirections = 10, redirections = new Set() } = options
     redirections.add(String(url))
     Object.assign(options, {
       path: u.pathname.replace(/\/+$/, '') + u.search,

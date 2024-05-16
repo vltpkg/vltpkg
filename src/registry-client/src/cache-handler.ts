@@ -1,5 +1,6 @@
 import { Cache } from '@vltpkg/cache'
 import { error } from '@vltpkg/error-cause'
+import { Integrity } from '@vltpkg/types'
 import { Dispatcher } from 'undici'
 import { CacheEntry } from './cache-entry.js'
 import { getRawHeader } from './get-raw-header.js'
@@ -16,7 +17,7 @@ export type CacheHandlerOptions = {
   /** the old cache entry, if one exists */
   entry?: CacheEntry
   /** expected SRI string integrity */
-  integrity?: string
+  integrity?: Integrity
 }
 
 /**
@@ -39,13 +40,20 @@ export class CacheHandler implements Dispatcher.DispatchHandlers {
   cacheable?: boolean = undefined
   resume?: () => void
   entry?: CacheEntry
-  integrity?: string
+  integrity?: Integrity
 
-  constructor({ key, handler, cache, entry }: CacheHandlerOptions) {
+  constructor({
+    key,
+    handler,
+    cache,
+    entry,
+    integrity,
+  }: CacheHandlerOptions) {
     this.key = key
     this.handler = handler
     this.cache = cache
     this.entry = entry
+    this.integrity = integrity
   }
 
   /**

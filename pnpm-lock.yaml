@@ -350,6 +350,9 @@ importers:
       '@vltpkg/error-cause':
         specifier: workspace:*
         version: link:../error-cause
+      '@vltpkg/types':
+        specifier: workspace:*
+        version: link:../types
       cache-control-parser:
         specifier: ^2.0.5
         version: 2.0.5
