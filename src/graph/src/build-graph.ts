@@ -1,3 +1,4 @@
+import { PackageJson } from '@vltpkg/package-json'
 import { Spec } from '@vltpkg/spec'
 import { resolve } from 'node:path'
 import { appendNodes } from './append-nodes.js'
@@ -5,7 +6,6 @@ import { buildActual } from './build-actual.js'
 import { Edge } from './edge.js'
 import { Graph } from './graph.js'
 import { PackageInventory } from './pkgs.js'
-import { readPackageJson } from './read-package-json.js'
 
 export type BuildStarterGraphOptions = {
   addSpecs?: string[]
@@ -28,10 +28,11 @@ export const buildGraph = async ({
   dir,
   packageInventory,
 }: BuildStarterGraphOptions): Promise<Graph> => {
-  const rootPackageJson = readPackageJson(dir)
+  const packageJson = new PackageJson()
+  const rootPackageJson = packageJson.read(dir)
   const graph = new Graph(rootPackageJson, packageInventory)
 
-  buildActual(graph, graph.root, resolve(dir, 'node_modules'))
+  buildActual(graph, graph.root, resolve(dir, 'node_modules'), packageJson)
 
   const missing: Set<Edge> = graph.missingDependencies
   const specs: Spec[] = []

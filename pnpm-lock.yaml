@@ -202,6 +202,9 @@ importers:
       '@vltpkg/package-info':
         specifier: workspace:*
         version: link:../package-info
+      '@vltpkg/package-json':
+        specifier: workspace:*
+        version: link:../package-json
       '@vltpkg/registry-client':
         specifier: workspace:*
         version: link:../registry-client
@@ -264,6 +267,34 @@ importers:
       pacote:
         specifier: ^18.0.6
         version: 18.0.6
+      prettier:
+        specifier: ^3.2.5
+        version: 3.2.5
+      tap:
+        specifier: ^18.8.0
+        version: 18.8.0(@types/node@20.12.11)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.2.2)
+      tshy:
+        specifier: ^1.14.0
+        version: 1.14.0
+      typedoc:
+        specifier: ^0.25.13
+        version: 0.25.13(typescript@5.2.2)
+
+  src/package-json:
+    dependencies:
+      '@vltpkg/error-cause':
+        specifier: workspace:*
+        version: link:../error-cause
+      '@vltpkg/types':
+        specifier: workspace:*
+        version: link:../types
+      polite-json:
+        specifier: ^4.0.1
+        version: 4.0.1
+    devDependencies:
+      '@types/node':
+        specifier: ^20.12.7
+        version: 20.12.11
       prettier:
         specifier: ^3.2.5
         version: 3.2.5
