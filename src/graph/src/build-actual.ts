@@ -1,9 +1,9 @@
 import { error } from '@vltpkg/error-cause'
+import { PackageJson } from '@vltpkg/package-json'
 import { Spec } from '@vltpkg/spec'
 import { resolve } from 'node:path'
 import { Graph } from './graph.js'
 import { Node } from './node.js'
-import { readPackageJson } from './read-package-json.js'
 import { realpath } from './realpath.js'
 
 // TODO: this should come from the Graph constructor
@@ -44,6 +44,7 @@ export const buildActual = (
   graph: Graph,
   fromNode: Node,
   basepath: string,
+  packageJson: PackageJson,
 ) => {
   const nextDeps: Set<Node> = new Set()
   for (const depType of graph.packages.dependencyTypes.keys()) {
@@ -56,10 +57,10 @@ export const buildActual = (
     if (deps && followRootDevDepsOnly) {
       for (const [name, rawSpec] of Object.entries(deps)) {
         const spec = Spec.parse(name, rawSpec)
-        let dir, packageJson
+        let dir, pkg
         try {
           dir = realpath(resolve(basepath, name))
-          packageJson = readPackageJson(dir)
+          pkg = packageJson.read(dir)
         } catch (err) {
           graph.placePackage(fromNode, depType, spec)
           continue
@@ -69,7 +70,7 @@ export const buildActual = (
           fromNode,
           depType,
           spec,
-          packageJson,
+          pkg,
           dir,
           readOrigin(dir),
         )
@@ -82,6 +83,6 @@ export const buildActual = (
 
   for (const next of nextDeps) {
     const basepath = resolve(next.pkg.location, 'node_modules')
-    buildActual(graph, next, basepath)
+    buildActual(graph, next, basepath, packageJson)
   }
 }

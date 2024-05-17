@@ -1,6 +1,6 @@
 {
-  "name": "@vltpkg/graph",
-  "description": "A library that helps understanding & expressing what happens on an install",
+  "name": "@vltpkg/package-json",
+  "description": "Manage reading package.json files",
   "version": "0.0.0-0",
   "devDependencies": {
     "@types/node": "^20.12.7",
@@ -9,18 +9,10 @@
     "tshy": "^1.14.0",
     "typedoc": "^0.25.13"
   },
-  "tap": {
-    "coverage-map": "../../coverage-map.js",
-    "typecheck": true
-  },
   "dependencies": {
     "@vltpkg/error-cause": "workspace:*",
-    "@vltpkg/package-info": "workspace:*",
-    "@vltpkg/package-json": "workspace:*",
-    "@vltpkg/registry-client": "workspace:*",
-    "@vltpkg/semver": "workspace:*",
-    "@vltpkg/spec": "workspace:*",
-    "@vltpkg/types": "workspace:*"
+    "@vltpkg/types": "workspace:*",
+    "polite-json": "^4.0.1"
   },
   "scripts": {
     "preversion": "npm test",
@@ -34,8 +26,23 @@
     "format": "prettier --write . --log-level warn --ignore-path ../../.prettierignore --cache",
     "typedoc": "typedoc"
   },
-  "prettier": "../../.prettierrc.json",
+  "tap": {
+    "coverage-map": "../../coverage-map.js"
+  },
+  "prettier": {
+    "experimentalTernaries": true,
+    "semi": false,
+    "printWidth": 70,
+    "tabWidth": 2,
+    "useTabs": false,
+    "singleQuote": true,
+    "jsxSingleQuote": false,
+    "bracketSameLine": true,
+    "arrowParens": "avoid",
+    "endOfLine": "lf"
+  },
   "tshy": {
+    "selfLink": false,
     "dialects": [
       "esm"
     ],
