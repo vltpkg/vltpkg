@@ -1,5 +1,6 @@
 import { error } from '@vltpkg/error-cause'
 import { Integrity } from '@vltpkg/types'
+import { XDG } from '@vltpkg/xdg'
 import { createHash, randomBytes } from 'crypto'
 import { Dirent, opendirSync, readFileSync } from 'fs'
 import {
@@ -82,7 +83,7 @@ export class Cache extends LRUCache<
     const {
       onDiskWrite,
       onDiskDelete,
-      path,
+      path = new XDG('vlt').cache(),
       fetchMethod: _,
       sizeCalculation = options.maxSize || options.maxEntrySize ?
         (v: Buffer, k: string) => v.length + k.length

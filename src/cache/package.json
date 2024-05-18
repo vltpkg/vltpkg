@@ -15,6 +15,7 @@
   "dependencies": {
     "@vltpkg/error-cause": "workspace:*",
     "@vltpkg/types": "workspace:*",
+    "@vltpkg/xdg": "workspace:*",
     "lru-cache": "^10.2.0",
     "rimraf": "^5.0.5"
   },

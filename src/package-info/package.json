@@ -20,6 +20,7 @@
     "@vltpkg/spec": "workspace:*",
     "@vltpkg/tar": "workspace:*",
     "@vltpkg/types": "workspace:*",
+    "@vltpkg/xdg": "workspace:*",
     "tar": "^7.1.0"
   },
   "devDependencies": {
