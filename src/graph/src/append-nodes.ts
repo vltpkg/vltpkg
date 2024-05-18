@@ -2,7 +2,7 @@ import { Spec } from '@vltpkg/spec'
 import { Manifest, ManifestMinified } from '@vltpkg/types'
 import { Graph } from './graph.js'
 import { Node } from './node.js'
-import { DependencyTypeLong, PackageMetadata } from './pkgs.js'
+import { DependencyTypeLong } from './pkgs.js'
 
 // TODO: This should come from configs and should just point to the same
 // default `registry` value that is send to: Spec.parse(value, { registry })
@@ -31,7 +31,7 @@ export const appendNodes = async (
       spec,
       // TODO: Replacing with proper manifest type from @vltpkg/types
       // should fix the need for type cast here
-      mani as PackageMetadata,
+      mani,
       undefined,
       origin,
     )

@@ -186,11 +186,11 @@ export type ManifestMinified = {
   /** production dependencies, name:specifier */
   dependencies?: Record<string, string>
   /** development dependencies, name:specifier */
-  devDendencies?: Record<string, string>
+  devDependencies?: Record<string, string>
   /** optional dependencies, name:specifier */
-  optionalDendencies?: Record<string, string>
+  optionalDependencies?: Record<string, string>
   /** peer dependencies, name:specifier */
-  peerDendencies?: Record<string, string>
+  peerDependencies?: Record<string, string>
   /** peer dependencies marked as optional */
   peerDependenciesMeta?: Record<string, PeerDependenciesMetaValue>
   /** dependency ranges that are acceptable, but not forced */

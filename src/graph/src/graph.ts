@@ -5,9 +5,9 @@ import {
   DependencyTypeLong,
   Package,
   PackageInventory,
-  PackageMetadata,
 } from './pkgs.js'
 import { PackageInfoClient } from '@vltpkg/package-info'
+import { Manifest, ManifestMinified } from '@vltpkg/types'
 
 export class Graph {
   get [Symbol.toStringTag]() {
@@ -48,7 +48,7 @@ export class Graph {
   #seenEdges: Set<string> = new Set()
 
   constructor(
-    rootPackageJson: PackageMetadata,
+    rootPackageJson: Manifest | ManifestMinified,
     packages?: PackageInventory,
     location?: string,
     packageInfo?: PackageInfoClient,
@@ -113,7 +113,7 @@ export class Graph {
     fromNode: Node,
     depType: DependencyTypeLong,
     spec: Spec,
-    metadata?: PackageMetadata,
+    metadata?: Manifest | ManifestMinified,
     location?: string,
     origin?: string,
   ) {
