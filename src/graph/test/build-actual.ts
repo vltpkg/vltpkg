@@ -68,7 +68,12 @@ t.test(
       },
     })
     const graph = new Graph(rootPkg)
-    buildActual(graph, graph.root, resolve(dir, 'node_modules'), new PackageJson())
+    buildActual(
+      graph,
+      graph.root,
+      resolve(dir, 'node_modules'),
+      new PackageJson(),
+    )
     t.matchSnapshot(
       inspect(humanReadableOutput(graph), { depth: Infinity }),
     )
@@ -98,7 +103,12 @@ t.test('build a graph with missing direct dependencies', async t => {
     'package.json': JSON.stringify(rootPkg),
   })
   const graph = new Graph(rootPkg)
-  buildActual(graph, graph.root, resolve(dir, 'node_modules'), new PackageJson())
+  buildActual(
+    graph,
+    graph.root,
+    resolve(dir, 'node_modules'),
+    new PackageJson(),
+  )
   t.strictSame(
     graph.packages.size,
     1,
@@ -147,7 +157,12 @@ t.test('non registry dependency', async t => {
     },
   })
   const graph = new Graph(rootPkg)
-  buildActual(graph, graph.root, resolve(dir, 'node_modules'), new PackageJson())
+  buildActual(
+    graph,
+    graph.root,
+    resolve(dir, 'node_modules'),
+    new PackageJson(),
+  )
   const fooPkg = graph.packages.get('foo@0.0.0')
   if (!fooPkg) {
     throw new Error('Could not find package foo')
@@ -191,7 +206,12 @@ t.test('unconfigured registry found', async t => {
   const graph = new Graph(rootPkg)
   t.throws(
     () =>
-      buildActual(graph, graph.root, resolve(dir, 'node_modules'), new PackageJson()),
+      buildActual(
+        graph,
+        graph.root,
+        resolve(dir, 'node_modules'),
+        new PackageJson(),
+      ),
     /Registry was not found in configs/,
     'should throw on finding unconfigured registry',
   )

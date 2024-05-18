@@ -1,3 +1,5 @@
+import { Manifest, ManifestMinified } from '@vltpkg/types'
+
 export type DependencyTypeLong =
   | 'dependencies'
   | 'devDependencies'
@@ -30,26 +32,6 @@ export const reverseDependencyTypes: Map<
   ['optional', 'optionalDependencies'],
 ])
 
-export interface PackageMetadataDist {
-  tarball: string
-  integrity?: string
-  shasum?: string
-}
-
-export type PackageMetadata = {
-  name?: string
-  version?: string
-  dist?: PackageMetadataDist
-  dependencies?: Record<string, string>
-  devDependencies?: Record<string, string>
-  peerDependencies?: Record<string, string>
-  peerDependenciesMeta?: Record<string, { optional: boolean }>
-  optionalDependencies?: Record<string, string>
-}
-
-export const isPackageMetadata = (pkg: any): pkg is PackageMetadata =>
-  !!pkg && typeof pkg === 'object' && typeof pkg.name === 'string'
-
 export class Package {
   /**
    * Where to find this package in the local file system.
@@ -58,14 +40,14 @@ export class Package {
   /**
    * The package metadata, read from either a manifest file or package.json.
    */
-  #metadata: PackageMetadata
+  #metadata: Manifest | ManifestMinified
   /**
    * Tracks the registry a given package was initially installed from.
    */
   origin: string = ''
 
   constructor(
-    metadata: PackageMetadata,
+    metadata: Manifest | ManifestMinified,
     location?: string,
     origin?: string,
   ) {
@@ -74,7 +56,7 @@ export class Package {
     this.origin = origin || ''
   }
 
-  updateMetadata(metadata: PackageMetadata) {
+  updateMetadata(metadata: Manifest | ManifestMinified) {
     const {
       dependencies,
       devDependencies,
@@ -125,21 +107,19 @@ export class Package {
     return this.#metadata.dependencies
   }
 
-  get devDependencies(): Record<string, string> | undefined {
+  get devDependencies() {
     return this.#metadata.devDependencies
   }
 
-  get optionalDependencies(): Record<string, string> | undefined {
+  get optionalDependencies() {
     return this.#metadata.optionalDependencies
   }
 
-  get peerDependencies(): Record<string, string> | undefined {
+  get peerDependencies() {
     return this.#metadata.peerDependencies
   }
 
-  get peerDependenciesMeta():
-    | Record<string, { optional: boolean }>
-    | undefined {
+  get peerDependenciesMeta() {
     return this.#metadata.peerDependenciesMeta
   }
 
@@ -186,7 +166,7 @@ export class PackageInventory extends Map<string, Package> {
   // TODO: this should take a spec, not an origin, which is registry-specific
   // then calculate the ID from that
   registerPackage(
-    metadata: PackageMetadata,
+    metadata: Manifest | ManifestMinified,
     location?: string,
     origin?: string,
   ) {
@@ -210,7 +190,10 @@ export class PackageInventory extends Map<string, Package> {
    * Register a new package to the inventory and append it to the list
    * of packages pending artifacts.
    */
-  registerPending(metadata: PackageMetadata, origin?: string) {
+  registerPending(
+    metadata: Manifest | ManifestMinified,
+    origin?: string,
+  ) {
     const pkg = this.registerPackage(metadata, undefined, origin)
     this.pending.add(pkg)
     return pkg

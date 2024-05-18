@@ -32,7 +32,12 @@ export const buildGraph = async ({
   const rootPackageJson = packageJson.read(dir)
   const graph = new Graph(rootPackageJson, packageInventory)
 
-  buildActual(graph, graph.root, resolve(dir, 'node_modules'), packageJson)
+  buildActual(
+    graph,
+    graph.root,
+    resolve(dir, 'node_modules'),
+    packageJson,
+  )
 
   const missing: Set<Edge> = graph.missingDependencies
   const specs: Spec[] = []
