@@ -23,11 +23,13 @@ import {
   Packument,
   PackumentMinified,
 } from '@vltpkg/types'
+import { XDG } from '@vltpkg/xdg'
 import { randomBytes } from 'crypto'
 import { readFile, rm, stat } from 'fs/promises'
-import { homedir } from 'os'
 import { basename, dirname, resolve as pathResolve } from 'path'
 import { create as tarC } from 'tar'
+
+const xdg = new XDG('vlt')
 
 export type Resolution = {
   resolved: string
@@ -39,6 +41,7 @@ export type Resolution = {
 export interface PackageInfoClientOptions
   extends RegistryClientOptions,
     SpecOptions {
+  /** cwd to resolve `file://` specifiers against. Defaults to process.cwd() */
   cwd?: string
 }
 
@@ -172,7 +175,6 @@ export const extract = async (
 export class PackageInfoClient {
   #registryClient?: RegistryClient
   #cwd: string
-  #cache: string
   #tarPool?: Pool
   options: PackageInfoClientOptions
   #resolutions = new Map<string, Resolution>()
@@ -192,8 +194,6 @@ export class PackageInfoClient {
   constructor(options: PackageInfoClientOptions = {}) {
     this.options = options
     this.#cwd = options.cwd || process.cwd()
-    this.#cache =
-      options.cache ?? pathResolve(homedir(), '.config/vlt/cache')
   }
 
   async extract(
@@ -672,11 +672,8 @@ export class PackageInfoClient {
   }
 
   async #tmpdir<T>(fn: (dir: string) => Promise<T>): Promise<T> {
-    const dir = pathResolve(
-      this.#cache,
-      'package-info',
-      randomBytes(6).toString('hex'),
-    )
+    const p = `package-info/${randomBytes(6).toString('hex')}`
+    const dir = xdg.runtime(p)
     try {
       return await fn(dir)
     } finally {

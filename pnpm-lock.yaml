@@ -59,6 +59,9 @@ importers:
       '@vltpkg/types':
         specifier: workspace:*
         version: link:../types
+      '@vltpkg/xdg':
+        specifier: workspace:*
+        version: link:../xdg
       lru-cache:
         specifier: ^10.2.0
         version: 10.2.2
@@ -289,6 +292,9 @@ importers:
       '@vltpkg/types':
         specifier: workspace:*
         version: link:../types
+      '@vltpkg/xdg':
+        specifier: workspace:*
+        version: link:../xdg
       tar:
         specifier: ^7.1.0
         version: 7.1.0
@@ -416,6 +422,9 @@ importers:
       '@vltpkg/types':
         specifier: workspace:*
         version: link:../types
+      '@vltpkg/xdg':
+        specifier: workspace:*
+        version: link:../xdg
       cache-control-parser:
         specifier: ^2.0.5
         version: 2.0.6

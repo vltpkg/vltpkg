@@ -1,9 +1,8 @@
 import { Cache } from '@vltpkg/cache'
 import { register } from '@vltpkg/cache-unzip'
 import { Integrity } from '@vltpkg/types'
-import { homedir } from 'os'
+import { XDG } from '@vltpkg/xdg'
 import { loadPackageJson } from 'package-json-from-dist'
-import { resolve } from 'path'
 import { Client, Dispatcher, Pool } from 'undici'
 import { addHeader } from './add-header.js'
 import { CacheEntry } from './cache-entry.js'
@@ -87,12 +86,14 @@ const nua =
   : '(unknown platform)')
 export const userAgent = `@vltpkg/registry-client/${version} ${nua}`
 
+const xdg = new XDG('vlt')
+
 export class RegistryClient {
   pools: Map<string, Pool> = new Map()
   cache: Cache
 
   constructor({
-    cache = resolve(homedir(), '.config/vlt/cache'),
+    cache = xdg.cache('registry-client'),
   }: RegistryClientOptions) {
     this.cache = new Cache({
       path: cache,

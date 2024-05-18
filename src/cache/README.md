@@ -30,9 +30,10 @@ const cache = new Cache({
 const someCachedValue = await cache.fetch(someKey)
 
 // fetch by integrity, if available:
-const integrity = 'sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ=='
+const integrity =
+  'sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ=='
 const valueByInt = await cache.fetch('blah', {
-  context: { integrity }
+  context: { integrity },
 })
 
 // synchronous cache read, will only return a value if present in
@@ -55,7 +56,9 @@ cache.set(someKey, someValue, { integrity })
 await cache.promise() // once it's done writing...
 // returns identical bits as someValue, because on-disk cache
 // hard links to a file based on the integrity value.
-const otherValue = await cache.fetch(otherKey, { context: { integrity } })
+const otherValue = await cache.fetch(otherKey, {
+  context: { integrity },
+})
 ```
 
 Note:
