@@ -1,11 +1,38 @@
 {
   "name": "@vltpkg/git",
-  "version": "5.0.7",
-  "files": [
-    "dist"
-  ],
   "description": "a util for spawning git from npm CLI contexts",
-  "license": "ISC",
+  "version": "5.0.7",
+  "tshy": {
+    "dialects": [
+      "esm"
+    ],
+    "exports": {
+      "./package.json": "./package.json",
+      ".": "./src/index.ts"
+    },
+    "selfLink": false
+  },
+  "dependencies": {
+    "@types/promise-retry": "^1.1.6",
+    "@vltpkg/error-cause": "workspace:*",
+    "@vltpkg/git-scp-url": "workspace:*",
+    "@vltpkg/pick-manifest": "workspace:*",
+    "@vltpkg/promise-spawn": "workspace:*",
+    "@vltpkg/spec": "workspace:*",
+    "@vltpkg/semver": "workspace:*",
+    "@vltpkg/which": "workspace:*",
+    "lru-cache": "^10.2.2",
+    "promise-retry": "^2.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.12.12",
+    "@types/retry": "^0.12.5",
+    "@vltpkg/types": "workspace:*",
+    "prettier": "^3.2.5",
+    "tap": "^19.0.0",
+    "tshy": "^1.14.0",
+    "typedoc": "^0.25.13"
+  },
   "scripts": {
     "preversion": "npm test",
     "postversion": "npm publish",
@@ -21,37 +48,8 @@
   "tap": {
     "coverage-map": "../../coverage-map.js"
   },
-  "devDependencies": {
-    "@types/node": "^20.12.7",
-    "@types/retry": "^0.12.5",
-    "@vltpkg/spec": "workspace:*",
-    "@vltpkg/types": "workspace:*",
-    "prettier": "^3.2.5",
-    "tap": "^18.8.0",
-    "tshy": "^1.14.0",
-    "typedoc": "^0.25.13"
-  },
-  "dependencies": {
-    "@types/promise-retry": "^1.1.6",
-    "@vltpkg/error-cause": "workspace:*",
-    "@vltpkg/git-scp-url": "workspace:*",
-    "@vltpkg/pick-manifest": "workspace:*",
-    "@vltpkg/promise-spawn": "workspace:*",
-    "@vltpkg/semver": "workspace:*",
-    "@vltpkg/which": "workspace:*",
-    "lru-cache": "^10.2.2",
-    "promise-retry": "^2.0.1"
-  },
   "prettier": "../../.prettierrc.json",
-  "tshy": {
-    "dialects": [
-      "esm"
-    ],
-    "exports": {
-      "./package.json": "./package.json",
-      ".": "./src/index.ts"
-    }
-  },
+  "type": "module",
   "exports": {
     "./package.json": "./package.json",
     ".": {
@@ -61,5 +59,8 @@
       }
     }
   },
-  "type": "module"
+  "files": [
+    "dist"
+  ],
+  "license": "ISC"
 }

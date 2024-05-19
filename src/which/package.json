@@ -2,15 +2,22 @@
   "name": "@vltpkg/which",
   "description": "Find the first executable in the path (TS port of 'which')",
   "version": "0.0.0-0",
-  "devDependencies": {
-    "@types/node": "^20.12.7",
-    "prettier": "^3.2.5",
-    "tap": "^18.8.0",
-    "tshy": "^1.14.0",
-    "typedoc": "^0.25.13"
+  "tshy": {
+    "selfLink": false,
+    "exports": {
+      "./package.json": "./package.json",
+      ".": "./src/index.ts"
+    }
   },
   "dependencies": {
     "isexe": "^3.1.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.12.12",
+    "prettier": "^3.2.5",
+    "tap": "^19.0.0",
+    "tshy": "^1.14.0",
+    "typedoc": "^0.25.13"
   },
   "scripts": {
     "preversion": "npm test",
@@ -28,13 +35,9 @@
     "coverage-map": "../../coverage-map.js"
   },
   "prettier": "../../.prettierrc.json",
-  "tshy": {
-    "selfLink": false,
-    "exports": {
-      "./package.json": "./package.json",
-      ".": "./src/index.ts"
-    }
-  },
+  "main": "./dist/commonjs/index.js",
+  "types": "./dist/commonjs/index.d.ts",
+  "type": "module",
   "exports": {
     "./package.json": "./package.json",
     ".": {
@@ -47,8 +50,5 @@
         "default": "./dist/commonjs/index.js"
       }
     }
-  },
-  "type": "module",
-  "main": "./dist/commonjs/index.js",
-  "types": "./dist/commonjs/index.d.ts"
+  }
 }

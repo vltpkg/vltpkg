@@ -5,60 +5,15 @@ export type JSONField =
   | string
   | number
   | null
+  | boolean
   | JSONField[]
   | { [k: string]: JSONField }
 
 /** sha512 SRI string */
 export type Integrity = `sha512-${string}`
 
-const integrityRE = /^sha512-[a-zA-Z0-9/+]{86}==$/
-export const isIntegrity = (i: unknown): i is Integrity =>
-  typeof i === 'string' && integrityRE.test(i)
-
-export const asIntegrity = (i: unknown): Integrity => {
-  if (!isIntegrity(i)) {
-    throw error(
-      'invalid integrity',
-      {
-        found: i,
-        wanted: integrityRE,
-      },
-      asIntegrity,
-    )
-  }
-  return i
-}
-
-export const assertIntegrity: (
-  i: unknown,
-) => asserts i is Integrity = i => {
-  asIntegrity(i)
-}
-
 /** SHA256 key identifier */
 export type KeyID = `SHA256:${string}`
-
-const keyIDRE = /^SHA256:[a-zA-Z0-9/+]{43}$/
-export const isKeyID = (k: unknown): k is KeyID =>
-  typeof k === 'string' && keyIDRE.test(k)
-
-export const asKeyID = (k: unknown): KeyID => {
-  if (!isKeyID(k)) {
-    throw error(
-      'invalid key ID',
-      {
-        found: k,
-        wanted: keyIDRE,
-      },
-      asKeyID,
-    )
-  }
-  return k
-}
-
-export const assertKeyID: (k: unknown) => asserts k is KeyID = k => {
-  asKeyID(k)
-}
 
 /** The Manifest['dist'] field present in registry manifests */
 export type Dist = {
@@ -88,7 +43,7 @@ export type ConditionalValue =
   | ConditionalValue[]
 
 export type ExportsSubpaths = {
-  [path: string]: ConditionalValue
+  [path in '.' | `./${string}`]?: ConditionalValue
 }
 
 export type Exports =
@@ -99,84 +54,16 @@ export type Imports = {
   [path: `#${string}`]: ConditionalValue
 }
 
+export type FundingEntry = string | { url: string }
 export type Funding =
-  | string
-  | { url: string }
-  | string[]
-  | { url: string }[]
-
-const maybeRecordStringString = (
-  o: unknown,
-): o is undefined | Record<string, string> =>
-  o === undefined || isRecordStringString(o)
-
-const isRecordStringString = (
-  o: unknown,
-): o is Record<string, string> =>
-  isRecordStringT<string>(o, s => typeof s === 'string')
-
-const isRecordStringT = <T>(
-  o: unknown,
-  check: (o: unknown) => boolean,
-): o is Record<string, T> =>
-  !!o &&
-  typeof o === 'object' &&
-  Object.entries(o).every(
-    ([k, v]) => typeof k === 'string' && check(v),
-  )
-
-const isRecordStringManifest = (
-  o: unknown,
-): o is Record<string, Manifest> =>
-  isRecordStringT<Manifest>(o, v => isManifest(v))
-
-const maybePeerDependenciesMetaSet = (
-  o: unknown,
-): o is undefined | Record<string, PeerDependenciesMetaValue> =>
-  o === undefined ||
-  isRecordStringT<PeerDependenciesMetaValue>(o, v =>
-    isPeerDependenciesMetaValue(v),
-  )
-
-const maybeBoolean = (o: unknown): o is boolean =>
-  o === undefined || typeof o === 'boolean'
-
-const isPeerDependenciesMetaValue = (
-  o: any,
-): o is PeerDependenciesMetaValue =>
-  !!o && typeof o === 'object' && maybeBoolean(o.optional)
-
-const maybeString = (a: unknown): a is undefined | string =>
-  a === undefined || typeof a === 'string'
-
-const maybeDist = (a: any): a is Manifest['dist'] =>
-  a === undefined ||
-  (!!a && typeof a === 'object' && maybeString(a.tarball))
-
-export const isManifest = (m: any): m is Manifest =>
-  !!m &&
-  typeof m === 'object' &&
-  !Array.isArray(m) &&
-  maybeString(m.name) &&
-  maybeString(m.version) &&
-  maybeRecordStringString(m.dependencies) &&
-  maybeRecordStringString(m.devDependencies) &&
-  maybeRecordStringString(m.optionalDependencies) &&
-  maybeRecordStringString(m.peerDependencies) &&
-  maybeRecordStringString(m.acceptDependencies) &&
-  maybePeerDependenciesMetaSet(m.peerDependenciesMeta) &&
-  maybeDist(m.dist)
+  | FundingEntry
+  | FundingEntry[]
 
 export type ManifestRegistry = Manifest & {
   name: string
   version: string
   dist: Dist
 }
-
-export const isManifestRegistry = (
-  m: unknown,
-): m is ManifestRegistry =>
-  isManifest(m) && !!m.dist && !!m.name && !!m.version
 
 export type ManifestMinified = {
   /** The name of the package. optional because {} is a valid package.json */
@@ -280,6 +167,119 @@ export type Packument = Record<string, JSONField> &
     time?: Record<string, string>
     readme?: string
   }
+
+const integrityRE = /^sha512-[a-zA-Z0-9/+]{86}==$/
+export const isIntegrity = (i: unknown): i is Integrity =>
+  typeof i === 'string' && integrityRE.test(i)
+
+export const asIntegrity = (i: unknown): Integrity => {
+  if (!isIntegrity(i)) {
+    throw error(
+      'invalid integrity',
+      {
+        found: i,
+        wanted: integrityRE,
+      },
+      asIntegrity,
+    )
+  }
+  return i
+}
+
+export const assertIntegrity: (
+  i: unknown,
+) => asserts i is Integrity = i => {
+  asIntegrity(i)
+}
+
+const keyIDRE = /^SHA256:[a-zA-Z0-9/+]{43}$/
+export const isKeyID = (k: unknown): k is KeyID =>
+  typeof k === 'string' && keyIDRE.test(k)
+
+export const asKeyID = (k: unknown): KeyID => {
+  if (!isKeyID(k)) {
+    throw error(
+      'invalid key ID',
+      {
+        found: k,
+        wanted: keyIDRE,
+      },
+      asKeyID,
+    )
+  }
+  return k
+}
+
+export const assertKeyID: (k: unknown) => asserts k is KeyID = k => {
+  asKeyID(k)
+}
+
+const maybeRecordStringString = (
+  o: unknown,
+): o is undefined | Record<string, string> =>
+  o === undefined || isRecordStringString(o)
+
+const isRecordStringString = (
+  o: unknown,
+): o is Record<string, string> =>
+  isRecordStringT<string>(o, s => typeof s === 'string')
+
+const isRecordStringT = <T>(
+  o: unknown,
+  check: (o: unknown) => boolean,
+): o is Record<string, T> =>
+  !!o &&
+  typeof o === 'object' &&
+  Object.entries(o).every(
+    ([k, v]) => typeof k === 'string' && check(v),
+  )
+
+const isRecordStringManifest = (
+  o: unknown,
+): o is Record<string, Manifest> =>
+  isRecordStringT<Manifest>(o, v => isManifest(v))
+
+const maybePeerDependenciesMetaSet = (
+  o: unknown,
+): o is undefined | Record<string, PeerDependenciesMetaValue> =>
+  o === undefined ||
+  isRecordStringT<PeerDependenciesMetaValue>(o, v =>
+    isPeerDependenciesMetaValue(v),
+  )
+
+const maybeBoolean = (o: unknown): o is boolean =>
+  o === undefined || typeof o === 'boolean'
+
+const isPeerDependenciesMetaValue = (
+  o: any,
+): o is PeerDependenciesMetaValue =>
+  !!o && typeof o === 'object' && maybeBoolean(o.optional)
+
+const maybeString = (a: unknown): a is undefined | string =>
+  a === undefined || typeof a === 'string'
+
+const maybeDist = (a: any): a is Manifest['dist'] =>
+  a === undefined ||
+  (!!a && typeof a === 'object' && maybeString(a.tarball))
+
+export const isManifest = (m: any): m is Manifest =>
+  !!m &&
+  typeof m === 'object' &&
+  !Array.isArray(m) &&
+  maybeString(m.name) &&
+  maybeString(m.version) &&
+  maybeRecordStringString(m.dependencies) &&
+  maybeRecordStringString(m.devDependencies) &&
+  maybeRecordStringString(m.optionalDependencies) &&
+  maybeRecordStringString(m.peerDependencies) &&
+  maybeRecordStringString(m.acceptDependencies) &&
+  maybePeerDependenciesMetaSet(m.peerDependenciesMeta) &&
+  maybeDist(m.dist)
+
+export const isManifestRegistry = (
+  m: unknown,
+): m is ManifestRegistry =>
+  isManifest(m) && !!m.dist && !!m.name && !!m.version
 
 export const asManifest = (
   m: unknown,

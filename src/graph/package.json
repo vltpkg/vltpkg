@@ -2,17 +2,6 @@
   "name": "@vltpkg/graph",
   "description": "A library that helps understanding & expressing what happens on an install",
   "version": "0.0.0-0",
-  "devDependencies": {
-    "@types/node": "^20.12.7",
-    "prettier": "^3.2.5",
-    "tap": "^18.8.0",
-    "tshy": "^1.14.0",
-    "typedoc": "^0.25.13"
-  },
-  "tap": {
-    "coverage-map": "../../coverage-map.js",
-    "typecheck": true
-  },
   "dependencies": {
     "@vltpkg/error-cause": "workspace:*",
     "@vltpkg/package-info": "workspace:*",
@@ -21,6 +10,13 @@
     "@vltpkg/semver": "workspace:*",
     "@vltpkg/spec": "workspace:*",
     "@vltpkg/types": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^20.12.12",
+    "prettier": "^3.2.5",
+    "tap": "^19.0.0",
+    "tshy": "^1.14.0",
+    "typedoc": "^0.25.13"
   },
   "scripts": {
     "preversion": "npm test",
@@ -34,16 +30,11 @@
     "format": "prettier --write . --log-level warn --ignore-path ../../.prettierignore --cache",
     "typedoc": "typedoc"
   },
-  "prettier": "../../.prettierrc.json",
-  "tshy": {
-    "dialects": [
-      "esm"
-    ],
-    "exports": {
-      "./package.json": "./package.json",
-      ".": "./src/index.ts"
-    }
+  "tap": {
+    "extends": "../../tap-config.yaml"
   },
+  "prettier": "../../.prettierrc.json",
+  "type": "module",
   "exports": {
     "./package.json": "./package.json",
     ".": {
@@ -52,6 +43,5 @@
         "default": "./dist/esm/index.js"
       }
     }
-  },
-  "type": "module"
+  }
 }
