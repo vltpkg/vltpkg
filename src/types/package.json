@@ -28,18 +28,7 @@
     "typecheck": true,
     "coverage-map": "../../coverage-map.js"
   },
-  "prettier": {
-    "experimentalTernaries": true,
-    "semi": false,
-    "printWidth": 70,
-    "tabWidth": 2,
-    "useTabs": false,
-    "singleQuote": true,
-    "jsxSingleQuote": false,
-    "bracketSameLine": true,
-    "arrowParens": "avoid",
-    "endOfLine": "lf"
-  },
+  "prettier": "../../.prettierrc.json",
   "tshy": {
     "selfLink": false,
     "dialects": [
