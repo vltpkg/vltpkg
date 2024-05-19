@@ -110,6 +110,27 @@ importers:
         specifier: ^0.25.13
         version: 0.25.13(typescript@5.4.5)
 
+  src/config:
+    dependencies:
+      '@vltpkg/error-cause':
+        specifier: workspace:*
+        version: link:../error-cause
+      '@vltpkg/xdg':
+        specifier: workspace:*
+        version: link:../xdg
+      chalk:
+        specifier: ^5.3.0
+        version: 5.3.0
+      jackspeak:
+        specifier: ^3.0.0
+        version: 3.1.2
+      polite-json:
+        specifier: ^5.0.0
+        version: 5.0.0
+      walk-up-path:
+        specifier: ^3.0.1
+        version: 3.0.1
+
   src/dep-id:
     dependencies:
       '@vltpkg/error-cause':
@@ -588,20 +609,20 @@ importers:
   src/xdg:
     devDependencies:
       '@types/node':
-        specifier: ^20.12.7
-        version: 20.12.11
+        specifier: ^20.12.12
+        version: 20.12.12
       prettier:
         specifier: ^3.2.5
         version: 3.2.5
       tap:
-        specifier: ^18.8.0
-        version: 18.8.0(@types/node@20.12.11)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.2.2)
+        specifier: ^19.0.0
+        version: 19.0.0(@types/node@20.12.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.4.5)
       tshy:
         specifier: ^1.14.0
         version: 1.14.0
       typedoc:
         specifier: ^0.25.13
-        version: 0.25.13(typescript@5.2.2)
+        version: 0.25.13(typescript@5.4.5)
 
 packages:
 
@@ -1553,6 +1574,10 @@ packages:
 
   polite-json@4.0.1:
     resolution: {integrity: sha512-8LI5ZeCPBEb4uBbcYKNVwk4jgqNx1yHReWoW4H4uUihWlSqZsUDfSITrRhjliuPgxsNPFhNSudGO2Zu4cbWinQ==}
+    engines: {node: ^14.17.0 || ^16.13.0 || >=18.0.0}
+
+  polite-json@5.0.0:
+    resolution: {integrity: sha512-OLS/0XeUAcE8a2fdwemNja+udKgXNnY6yKVIXqAD2zVRx1KvY6Ato/rZ2vdzbxqYwPW0u6SCNC/bAMPNzpzxbw==}
     engines: {node: ^14.17.0 || ^16.13.0 || >=18.0.0}
 
   prettier@3.2.5:
@@ -3076,6 +3101,8 @@ snapshots:
   pirates@4.0.6: {}
 
   polite-json@4.0.1: {}
+
+  polite-json@5.0.0: {}
 
   prettier@3.2.5: {}
 
