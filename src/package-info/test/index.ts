@@ -491,8 +491,8 @@ t.test('resolve', async t => {
   )
   t.matchOnly(
     await resolve('x@fakey:abbrev-2.0.0.tgz', {
-      gitHosts: { fakey: `git+${pathToFileURL(repo)}#committish` },
-      gitHostArchives: {
+      'git-hosts': { fakey: `git+${pathToFileURL(repo)}#committish` },
+      'git-host-archives': {
         fakey: `${defaultRegistry}abbrev/-/abbrev-2.0.0.tgz`,
       },
     }),
@@ -759,8 +759,11 @@ t.test('verify we got the expected missing urls', t => {
   t.end()
 })
 
-t.test('fake packument with manifest lacking name/version', async t => {
-  const dir = t.testdir({ 'package.json': '{}' })
-  const spec = `x@${pathToFileURL(dir)}`
-  t.matchSnapshot(await packument(spec))
-})
+t.test(
+  'fake packument with manifest lacking name/version',
+  async t => {
+    const dir = t.testdir({ 'package.json': '{}' })
+    const spec = `x@${pathToFileURL(dir)}`
+    t.matchSnapshot(await packument(spec))
+  },
+)

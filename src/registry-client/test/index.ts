@@ -241,41 +241,45 @@ t.test('user-agent', t => {
 
     t.test('bun', async t => {
       const { userAgent } = await t.mockImport('../src/index.js', {
-        bun: { default: { version: 'bunver' }}
+        bun: { default: { version: 'bunver' } },
       })
-      t.match(userAgent,
-        /^@vltpkg\/registry-client\/[^ ]+ Bun\/bunver$/
+      t.match(
+        userAgent,
+        /^@vltpkg\/registry-client\/[^ ]+ Bun\/bunver$/,
       )
     })
 
     t.test('bun', async t => {
       //@ts-ignore
-      t.intercept(globalThis, 'Deno', { value: {
-        deno: { version: 'denover' },
-      }})
+      t.intercept(globalThis, 'Deno', {
+        value: {
+          deno: { version: 'denover' },
+        },
+      })
       const { userAgent } = await t.mockImport('../src/index.js')
-      t.match(userAgent,
-        /^@vltpkg\/registry-client\/[^ ]+ Deno\/denover$/
+      t.match(
+        userAgent,
+        /^@vltpkg\/registry-client\/[^ ]+ Deno\/denover$/,
       )
     })
 
     t.test('node', async t => {
       //@ts-ignore
-      t.intercept(process, 'version', { value:
-        'nodever',
-      })
+      t.intercept(process, 'version', { value: 'nodever' })
       const { userAgent } = await t.mockImport('../src/index.js')
-      t.match(userAgent,
-        /^@vltpkg\/registry-client\/[^ ]+ Node.js\/nodever$/
+      t.match(
+        userAgent,
+        /^@vltpkg\/registry-client\/[^ ]+ Node.js\/nodever$/,
       )
     })
 
     t.test('nothing we know about', async t => {
       //@ts-ignore
-      t.intercept(process, 'version', { value: ''})
+      t.intercept(process, 'version', { value: '' })
       const { userAgent } = await t.mockImport('../src/index.js')
-      t.match(userAgent,
-        /^@vltpkg\/registry-client\/[^ ]+ \(unknown platform\)$/
+      t.match(
+        userAgent,
+        /^@vltpkg\/registry-client\/[^ ]+ \(unknown platform\)$/,
       )
     })
 

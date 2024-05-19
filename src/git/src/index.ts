@@ -28,23 +28,21 @@ export interface GitOptions
    * undefined, then shallow cloning will only be performed on hosts known to
    * support it.
    */
-  gitShallow?: boolean
-  /** Options for `promiseRetry` */
-  retry?: WrapOptions
+  'git-shallow'?: boolean
   /** Only relevant if `retry` is unset. Value for retry.retries, default 2 */
-  fetchRetries?: WrapOptions['retries']
+  'fetch-retries'?: WrapOptions['retries']
   /** Only relevant if `retry` is unset. Value for retry.factor, default 10 */
-  fetchRetryFactor?: WrapOptions['factor']
+  'fetch-retry-factor'?: WrapOptions['factor']
   /**
    * Only relevant if `retry` is unset. Value for retry.maxTimeout, default
    * 60_000
    */
-  fetchRetryMaxtimeout?: WrapOptions['maxTimeout']
+  'fetch-retry-maxtimeout'?: WrapOptions['maxTimeout']
   /**
    * Only relevant if `retry` is unset. Value for retry.minTimeout, default
    * 1_000
    */
-  fetchRetryMintimeout?: WrapOptions['minTimeout']
+  'fetch-retry-mintimeout'?: WrapOptions['minTimeout']
   /**
    * Used to test platform-specific behavior.
    * @internal

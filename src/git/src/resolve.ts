@@ -34,7 +34,9 @@ export const resolveRef = (
   const { spec } = opts
   ref = spec?.gitCommittish || ref
   if (spec?.range) {
-    return pickManifest(revDoc, spec.range, opts) as RevDocEntry | undefined
+    return pickManifest(revDoc, spec.range, opts) as
+      | RevDocEntry
+      | undefined
   }
   if (!ref) {
     return revDoc.refs.HEAD

@@ -12,8 +12,8 @@ import XDG from '@vltpkg/xdg'
 // instantiate with the name of your thing.
 const xdg = new XDG('vlt')
 
-const cachePath = xdg.cache('some-path')  // ~/.cache/vlt/some-path
+const cachePath = xdg.cache('some-path') // ~/.cache/vlt/some-path
 const configFile = xdg.config('vlt.json') // ~/.config/vlt/vlt.json
-const dataFolder = xdg.data('blah')       // ~/.local/share/vlt/blah
-const someState = xdg.state('foobar')     // ~/.local/state/vlt/fooobar
+const dataFolder = xdg.data('blah') // ~/.local/share/vlt/blah
+const someState = xdg.state('foobar') // ~/.local/state/vlt/fooobar
 ```

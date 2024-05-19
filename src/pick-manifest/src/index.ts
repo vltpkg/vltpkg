@@ -11,9 +11,9 @@ import {
 const parsedNodeVersion = Version.parse(process.version)
 
 export type PickManifestOptions = {
-  defaultTag?: string
+  tag?: string
   before?: Date | string | number
-  nodeVersion?: string
+  'node-version'?: string
   os?: NodeJS.Platform
   arch?: NodeJS.Architecture
 }
@@ -134,9 +134,9 @@ export function pickManifest(
   opts: PickManifestOptions = {},
 ): ManifestMinified | Manifest | undefined {
   const {
-    defaultTag = 'latest',
+    tag = 'latest',
     before,
-    nodeVersion,
+    'node-version': nodeVersion,
     os = process.platform,
     arch = process.arch,
   } = opts
@@ -192,7 +192,7 @@ export function pickManifest(
   // if the range is *, then we prefer the 'latest' if available
   // but skip this if it should be avoided, in that case we have
   // to try a little harder.
-  const defaultVer = distTags[defaultTag]
+  const defaultVer = distTags[tag]
   const defTagVersion =
     (!!defaultVer && Version.parse(defaultVer)) || undefined
   if (
