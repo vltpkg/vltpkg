@@ -84,24 +84,24 @@ export class XDG {
     cache: XDG_CACHE_HOME,
     data: XDG_DATA_HOME,
     state: XDG_STATE_HOME,
-    runtime: XDG_RUNTIME_DIR
+    runtime: XDG_RUNTIME_DIR,
   }
   constructor(name: string) {
     this.name = name
   }
-  config (p: string = '') {
+  config(p: string = '') {
     return resolve(this.base.config, this.name, p)
   }
-  cache (p: string = '') {
+  cache(p: string = '') {
     return resolve(this.base.cache, this.name, p)
   }
-  data (p: string = '') {
+  data(p: string = '') {
     return resolve(this.base.data, this.name, p)
   }
-  state (p: string = '') {
+  state(p: string = '') {
     return resolve(this.base.state, this.name, p)
   }
-  runtime (p: string = '') {
+  runtime(p: string = '') {
     return resolve(this.base.runtime, this.name, p)
   }
 }

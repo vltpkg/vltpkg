@@ -1,8 +1,9 @@
+import { error } from '@vltpkg/error-cause'
 import fs from 'fs'
 import { resolve } from 'path'
 import t from 'tap'
+import { GitOptions } from '../src/index.js'
 import { spawn } from '../src/spawn.js'
-import { error } from '@vltpkg/error-cause'
 
 t.rejects(spawn(['status'], { git: false }), {
   message: 'No git binary found in $PATH',
@@ -44,7 +45,7 @@ t.test('argument test for allowReplace', async t => {
   )
 })
 
-t.test('retries', t => {
+t.test('retries', async t => {
   const gitMessage = 'Connection timed out'
   const te = resolve(repo, 'transient-error.js')
   fs.writeFileSync(
@@ -54,21 +55,11 @@ console.error('${gitMessage.trim()}')
 process.exit(1)
   `,
   )
-  const retryOptions = {
-    'one retry object': {
-      retry: {
-        retries: 2,
-        factor: 1,
-        maxTimeout: 1000,
-        minTimeout: 1,
-      },
-    },
-    'namespaced fetchRetry* configs': {
-      fetchRetries: 2,
-      fetchRetryFactor: 1,
-      fetchRetryMaxtimeout: 1000,
-      fetchRetryMintimeout: 1,
-    },
+  const retryOptions: GitOptions = {
+    'fetch-retries': 2,
+    'fetch-retry-factor': 1,
+    'fetch-retry-maxtimeout': 1000,
+    'fetch-retry-mintimeout': 1,
   }
   const er = error('A git connection error occurred', {
     cmd: process.execPath,
@@ -78,20 +69,16 @@ process.exit(1)
     stdout: '',
     stderr: gitMessage,
   })
-  for (const [n, ro] of Object.entries(retryOptions)) {
-    t.test(n, async t => {
-      await t.rejects(
-        spawn([te], {
-          cwd: repo,
-          git: process.execPath,
-          ...ro,
-          //@ts-ignore
-          allowReplace: true,
-        }),
-        er,
-      )
-    })
-  }
+  await t.rejects(
+    spawn([te], {
+      cwd: repo,
+      git: process.execPath,
+      ...retryOptions,
+      //@ts-ignore
+      allowReplace: true,
+    }),
+    er,
+  )
   t.end()
 })
 

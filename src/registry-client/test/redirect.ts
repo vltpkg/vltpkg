@@ -11,20 +11,20 @@ t.compareOptions = { includeGetters: true }
 t.test('isRedirect', t => {
   t.equal(
     isRedirect(
-      new CacheEntry(
-        301,
-        [Buffer.from('location'), Buffer.from('somewhere')],
-      ),
+      new CacheEntry(301, [
+        Buffer.from('location'),
+        Buffer.from('somewhere'),
+      ]),
     ),
     true,
   )
   t.equal(isRedirect(new CacheEntry(308, [])), false)
   t.equal(
     isRedirect(
-      new CacheEntry(
-        200,
-        [Buffer.from('location'), Buffer.from('somewhere')],
-      ),
+      new CacheEntry(200, [
+        Buffer.from('location'),
+        Buffer.from('somewhere'),
+      ]),
     ),
     false,
   )

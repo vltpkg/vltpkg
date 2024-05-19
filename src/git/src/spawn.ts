@@ -4,6 +4,7 @@ import {
   SpawnResultStdoutString,
 } from '@vltpkg/promise-spawn'
 import promiseRetry from 'promise-retry'
+import { WrapOptions } from 'retry'
 import { GitOptions } from './index.js'
 import { makeError } from './make-error.js'
 import { opts as makeOpts } from './opts.js'
@@ -29,14 +30,11 @@ export const spawn = async (
     : ['--no-replace-objects', ...gitArgs]
   /* c8 ignore stop */
 
-  let retryOpts = opts.retry
-  if (retryOpts === null || retryOpts === undefined) {
-    retryOpts = {
-      retries: opts.fetchRetries || 2,
-      factor: opts.fetchRetryFactor || 10,
-      maxTimeout: opts.fetchRetryMaxtimeout || 60000,
-      minTimeout: opts.fetchRetryMintimeout || 1000,
-    }
+  const retryOpts: WrapOptions = {
+    retries: opts['fetch-retries'] || 3,
+    factor: opts['fetch-retry-factor'] || 2,
+    maxTimeout: opts['fetch-retry-maxtimeout'] || 60000,
+    minTimeout: opts['fetch-retry-mintimeout'] || 1000,
   }
   return promiseRetry(async (retryFn, num) => {
     const result = await promiseSpawn(gitPath, args, makeOpts(opts))

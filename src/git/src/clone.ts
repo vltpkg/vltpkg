@@ -52,8 +52,8 @@ export const clone = async (
 }
 
 const maybeShallow = (repo: string, opts: GitOptions) => {
-  if (opts.gitShallow === false || opts.gitShallow) {
-    return opts.gitShallow
+  if (opts['git-shallow'] === false || opts['git-shallow']) {
+    return opts['git-shallow']
   }
   const host = gitScpURL(repo)?.host ?? ''
   return shallowHosts.has(host)

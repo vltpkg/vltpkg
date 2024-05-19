@@ -65,7 +65,7 @@ match the actual byte length of the response body.
 
 An `integrity` option may be specified in a
 `fetchOptions.context` object, or in the options provided to
-`cache.set()`.  For example:
+`cache.set()`. For example:
 
 ```js
 const integrity = `sha512-${base64hash}`

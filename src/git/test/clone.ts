@@ -5,6 +5,7 @@ import { join, resolve } from 'path'
 import t, { Test } from 'tap'
 import { pathToFileURL } from 'url'
 import { clone } from '../src/clone.js'
+import { GitOptions } from '../src/index.js'
 import { revs } from '../src/revs.js'
 import { spawn as spawnGit } from '../src/spawn.js'
 
@@ -196,7 +197,11 @@ t.test('check every out', t => {
                     'name@git+' + repoUrl + (ref ? `#${ref}` : ''),
                   )
                 )
-              const opts = { fakePlatform, gitShallow, spec }
+              const opts: GitOptions = {
+                fakePlatform,
+                'git-shallow': gitShallow,
+                spec,
+              }
               const sha = await clone(
                 `git+${repoUrl}`,
                 ref,
@@ -236,7 +241,12 @@ t.test('again, with a submodule', async t => {
                     'name@' + remote + (ref ? `#${ref}` : ''),
                   )
                 )
-              const opts = { fakePlatform, gitShallow, cwd, spec }
+              const opts: GitOptions = {
+                fakePlatform,
+                'git-shallow': gitShallow,
+                cwd,
+                spec,
+              }
               const sha = await clone(
                 submodsRemote,
                 ref,

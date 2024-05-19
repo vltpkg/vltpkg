@@ -16,9 +16,9 @@ export type SpecOptionsFilled = {
   /** shorthand prefix names for known registries */
   registries: Record<string, string>
   /** shorthand prefix names for known git hosts */
-  gitHosts: Record<string, string>
-  /** tarball hosting services for hosts listed in gitHosts */
-  gitHostArchives: Record<string, string>
+  'git-hosts': Record<string, string>
+  /** tarball hosting services for hosts listed in git-hosts */
+  'git-host-archives': Record<string, string>
 }
 
 export type GitSelectorParsed = {
@@ -194,11 +194,12 @@ export class Spec {
     this.options = {
       registry: defaultRegistry,
       ...options,
-      gitHosts:
-        options.gitHosts ?
+      'git-hosts':
+        options['git-hosts']?
           {
             ...defaultGitHosts,
-            ...options.gitHosts,
+            ...options['git-hosts'
+  ],
           }
         : defaultGitHosts,
       registries:
@@ -208,11 +209,11 @@ export class Spec {
             ...options.registries,
           }
         : defaultRegistries,
-      gitHostArchives:
-        options.gitHostArchives ?
+      'git-host-archives':
+        options['git-host-archives'] ?
           {
             ...defaultGitHostArchives,
-            ...options.gitHostArchives,
+            ...options['git-host-archives'],
           }
         : defaultGitHostArchives,
     }
@@ -270,7 +271,7 @@ export class Spec {
     }
 
     // spooky
-    const ghosts = Object.entries(this.options.gitHosts)
+    const ghosts = Object.entries(this.options['git-hosts'])
     for (const [name, template] of ghosts) {
       if (this.#parseHostedGit(name, template)) {
         this.type = 'git'
@@ -341,7 +342,7 @@ export class Spec {
     if (
       !this.bareSpec.startsWith('./') &&
       !this.bareSpec.startsWith('../') &&
-      this.options.gitHosts.github
+      this.options['git-hosts'].github
     ) {
       const hash = this.bareSpec.indexOf('#')
       const up =
@@ -349,7 +350,7 @@ export class Spec {
       if (up.split('/').length === 2) {
         this.bareSpec = `github:${this.bareSpec}`
         this.spec = `${this.name}@${this.bareSpec}`
-        this.#parseHostedGit('github', this.options.gitHosts.github)
+        this.#parseHostedGit('github', this.options['git-hosts'].github)
         this.type = 'git'
         return
       }
@@ -405,7 +406,7 @@ export class Spec {
       this.namedGitHostPath = hostPath
       this.#parseGitSelector(t)
       if (this.gitCommittish && !this.gitSelectorParsed?.path) {
-        const archiveHost = this.options.gitHostArchives[name]
+        const archiveHost = this.options['git-host-archives'][name]
         if (archiveHost) {
           this.type = 'remote'
           let t = archiveHost

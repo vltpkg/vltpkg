@@ -240,12 +240,12 @@ t.test('if `defaultTag` matches a given range, use it', t => {
     },
   } as unknown as Packument
   t.equal(
-    pickManifest(metadata, '^1.0.0', { defaultTag: 'foo' })?.version,
+    pickManifest(metadata, '^1.0.0', { tag: 'foo' })?.version,
     '1.0.1',
     'picked the version for foo',
   )
   t.equal(
-    pickManifest(metadata, '^2.0.0', { defaultTag: 'foo' })?.version,
+    pickManifest(metadata, '^2.0.0', { tag: 'foo' })?.version,
     '2.0.0',
     'no match, no foo',
   )
@@ -271,7 +271,7 @@ t.test('* ranges use `defaultTag` if no versions match', t => {
     },
   } as unknown as Packument
   t.equal(
-    pickManifest(metadata, '*', { defaultTag: 'beta' })?.version,
+    pickManifest(metadata, '*', { tag: 'beta' })?.version,
     '2.0.0-beta.0',
     'used defaultTag for all-prerelease splat.',
   )
@@ -281,7 +281,7 @@ t.test('* ranges use `defaultTag` if no versions match', t => {
     'defaulted to `latest` when wanted is *',
   )
   t.equal(
-    pickManifest(metadata, '', { defaultTag: 'beta' })?.version,
+    pickManifest(metadata, '', { tag: 'beta' })?.version,
     '2.0.0-beta.0',
     'used defaultTag for all-prerelease ""',
   )
@@ -583,32 +583,32 @@ t.test('prefers versions that satisfy the engines requirement', t => {
   } as unknown as Packument
 
   t.equal(
-    pickManifest(pack, '1.x', { nodeVersion: '14.0.0' })?.version,
+    pickManifest(pack, '1.x', { 'node-version': '14.0.0' })?.version,
     '1.5.0',
     'prefer default dist-tag version, if possible',
   )
   t.equal(
-    pickManifest(pack, '1.x', { nodeVersion: '12.0.0' })?.version,
+    pickManifest(pack, '1.x', { 'node-version': '12.0.0' })?.version,
     '1.4.0',
   )
   t.equal(
-    pickManifest(pack, '1.x', { nodeVersion: '10.0.0' })?.version,
+    pickManifest(pack, '1.x', { 'node-version': '10.0.0' })?.version,
     '1.3.0',
   )
   t.equal(
-    pickManifest(pack, '1.x', { nodeVersion: '8.0.0' })?.version,
+    pickManifest(pack, '1.x', { 'node-version': '8.0.0' })?.version,
     '1.2.0',
   )
   t.equal(
-    pickManifest(pack, '1.x', { nodeVersion: '6.0.0' })?.version,
+    pickManifest(pack, '1.x', { 'node-version': '6.0.0' })?.version,
     '1.1.0',
   )
   t.equal(
-    pickManifest(pack, '1.x', { nodeVersion: '4.0.0' })?.version,
+    pickManifest(pack, '1.x', { 'node-version': '4.0.0' })?.version,
     '1.0.0',
   )
   t.equal(
-    pickManifest(pack, '1.x', { nodeVersion: '1.2.3' })?.version,
+    pickManifest(pack, '1.x', { 'node-version': '1.2.3' })?.version,
     '1.5.0',
     'if no engine-match exists, just use whatever',
   )
