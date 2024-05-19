@@ -177,13 +177,13 @@ t.test('integrity', async t => {
   await d.promise()
   const e = new Cache({ path: t.testdirName })
   // it should have written the file, but the integrity didn't get written
-  //@ts-expect-error
   t.strictSame(
+    //@ts-expect-error
     await e.fetch('a', { context: { integrity: 'yolo' } }),
     b,
   )
-  //@ts-expect-error
   t.equal(
+    //@ts-expect-error
     await e.fetch('x', { context: { integrity: 'yolo' } }),
     undefined,
   )
