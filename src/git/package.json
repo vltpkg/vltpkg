@@ -42,18 +42,7 @@
     "lru-cache": "^10.2.2",
     "promise-retry": "^2.0.1"
   },
-  "prettier": {
-    "experimentalTernaries": true,
-    "semi": false,
-    "printWidth": 70,
-    "tabWidth": 2,
-    "useTabs": false,
-    "singleQuote": true,
-    "jsxSingleQuote": false,
-    "bracketSameLine": true,
-    "arrowParens": "avoid",
-    "endOfLine": "lf"
-  },
+  "prettier": "../../.prettierrc.json",
   "tshy": {
     "dialects": [
       "esm"
