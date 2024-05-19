@@ -2,12 +2,32 @@
   "name": "@vltpkg/tar",
   "description": "An extremely limited and very fast tar extractor",
   "version": "0.0.0-0",
-  "tap": {
-    "coverage-map": "../../coverage-map.js",
-    "exclude": [
-      "scripts/**",
-      "test/fixtures/**"
-    ]
+  "tshy": {
+    "dialects": [
+      "esm"
+    ],
+    "exports": {
+      "./package.json": "./package.json",
+      ".": "./src/index.ts",
+      "./unpack": "./src/unpack.ts",
+      "./unpack-request": "./src/unpack-request.ts",
+      "./pool": "./src/pool.ts"
+    },
+    "selfLink": false
+  },
+  "dependencies": {
+    "@vltpkg/error-cause": "workspace:*",
+    "rimraf": "^5.0.5",
+    "tar": "^7.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.12.12",
+    "@types/tar": "^6.1.13",
+    "mutate-fs": "^2.1.1",
+    "pacote": "^18.0.6",
+    "prettier": "^3.2.5",
+    "tap": "^19.0.0",
+    "tshy": "^1.14.0"
   },
   "scripts": {
     "preversion": "npm test",
@@ -21,32 +41,11 @@
     "format": "prettier --write . --log-level warn --ignore-path ../../.prettierignore --cache",
     "typedoc": "typedoc"
   },
-  "devDependencies": {
-    "@types/node": "^20.12.7",
-    "@types/tar": "^6.1.11",
-    "mutate-fs": "^2.1.1",
-    "pacote": "^18.0.6",
-    "prettier": "^3.2.5",
-    "tap": "^18.8.0",
-    "tshy": "^1.14.0"
+  "tap": {
+    "extends": "../../tap-config.yaml"
   },
-  "dependencies": {
-    "@vltpkg/error-cause": "workspace:*",
-    "rimraf": "^5.0.5",
-    "tar": "^7.1.0"
-  },
-  "tshy": {
-    "dialects": [
-      "esm"
-    ],
-    "exports": {
-      "./package.json": "./package.json",
-      ".": "./src/index.ts",
-      "./unpack": "./src/unpack.ts",
-      "./unpack-request": "./src/unpack-request.ts",
-      "./pool": "./src/pool.ts"
-    }
-  },
+  "prettier": "../../.prettierrc.json",
+  "type": "module",
   "exports": {
     "./package.json": "./package.json",
     ".": {
@@ -73,7 +72,5 @@
         "default": "./dist/esm/pool.js"
       }
     }
-  },
-  "prettier": "../../.prettierrc.json",
-  "type": "module"
+  }
 }

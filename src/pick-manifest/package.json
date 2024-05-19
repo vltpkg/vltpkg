@@ -2,20 +2,30 @@
   "name": "@vltpkg/pick-manifest",
   "description": "Choose a manifest from a packument",
   "version": "0.0.0-0",
-  "devDependencies": {
-    "@types/node": "^20.12.7",
-    "npm-pick-manifest": "^9.0.1",
-    "pacote": "^18.0.6",
-    "prettier": "^3.2.5",
-    "tap": "^18.8.0",
-    "tshy": "^1.14.0",
-    "typedoc": "^0.25.13"
+  "tshy": {
+    "selfLink": false,
+    "dialects": [
+      "esm"
+    ],
+    "exports": {
+      "./package.json": "./package.json",
+      ".": "./src/index.ts"
+    }
   },
   "dependencies": {
     "@vltpkg/error-cause": "workspace:*",
     "@vltpkg/semver": "workspace:*",
     "@vltpkg/spec": "workspace:*",
     "@vltpkg/types": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^20.12.12",
+    "npm-pick-manifest": "^9.0.1",
+    "pacote": "^18.0.6",
+    "prettier": "^3.2.5",
+    "tap": "^19.0.0",
+    "tshy": "^1.14.0",
+    "typedoc": "^0.25.13"
   },
   "scripts": {
     "preversion": "npm test",
@@ -33,16 +43,7 @@
     "coverage-map": "../../coverage-map.js"
   },
   "prettier": "../../.prettierrc.json",
-  "tshy": {
-    "selfLink": false,
-    "dialects": [
-      "esm"
-    ],
-    "exports": {
-      "./package.json": "./package.json",
-      ".": "./src/index.ts"
-    }
-  },
+  "type": "module",
   "exports": {
     "./package.json": "./package.json",
     ".": {
@@ -51,6 +52,5 @@
         "default": "./dist/esm/index.js"
       }
     }
-  },
-  "type": "module"
+  }
 }

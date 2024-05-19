@@ -1,15 +1,28 @@
 {
+  "name": "@vltpkg/vltpkg",
+  "version": "0.0.0-0",
+  "private": true,
   "scripts": {
+    "devPreinstall": "node scripts/consistent-dev-deps.js",
     "test": "pnpm -r test -- -Rsilent",
     "snap": "pnpm run -r snap -Rsilent",
     "typedoc": "typedoc"
   },
   "type": "module",
-  "dependencies": {
-    "tshy": "^1.14.0"
-  },
   "devDependencies": {
-    "@types/node": "^20.12.11",
+    "@types/node": "^20.12.12",
+    "@types/retry": "^0.12.5",
+    "@types/semver": "^7.5.8",
+    "@types/tar": "^6.1.13",
+    "mutate-fs": "^2.1.1",
+    "npm-package-arg": "^11.0.2",
+    "npm-pick-manifest": "^9.0.1",
+    "pacote": "^18.0.6",
+    "prettier": "^3.2.5",
+    "semver": "^7.6.2",
+    "spawk": "^1.8.2",
+    "tap": "^18.8.0",
+    "tshy": "^1.14.0",
     "typedoc": "^0.25.13"
   }
 }

@@ -13,6 +13,11 @@ import {
   assertManifestRegistry,
   assertPackument,
   assertPackumentMinified,
+  Bugs,
+  ConditionalValueObject,
+  Dist,
+  ExportsSubpaths,
+  Imports,
   Integrity,
   isIntegrity,
   isKeyID,
@@ -20,10 +25,16 @@ import {
   isManifestRegistry,
   isPackument,
   isPackumentMinified,
+  JSONField,
   KeyID,
   Manifest,
+  ManifestRegistry,
   Packument,
+  PackumentBase,
   PackumentMinified,
+  PeerDependenciesMetaValue,
+  Person,
+  Repository,
 } from '../src/index.js'
 
 import t from 'tap'
@@ -145,5 +156,158 @@ t.test('integrity', t => {
   // now it's ok
   const iAsserted: Integrity = intOK
   iAsserted
+  t.end()
+})
+
+t.test('type checks', t => {
+  //@ts-expect-error
+  let b: Bugs = { hello: 'world' }
+  b
+  b = { url: 'string' }
+  b = { email: 'string' }
+  //@ts-expect-error
+  b = 123
+  //@ts-expect-error
+  let c: ConditionalValue = { default: true }
+  c
+  c = { default: 'string' }
+  c = null
+  //@ts-expect-error
+  let cv: ConditionalValueObject = 'string'
+  cv
+  //@ts-expect-error
+  cv = null
+  cv = { default: { require: 'string' } }
+  //@ts-expect-error
+  let d: Dist = { nope: 'not ok' }
+  d
+  d = { tarball: 'url' }
+  //@ts-expect-error
+  d = { tarball: 'url', integrity: 'rando blaregosasedf' }
+  d = { tarball: 'url', integrity: 'sha512-this is fine' }
+  //@ts-expect-error
+  let e: Exports = null
+  e
+  e = { require: { default: 'string' } }
+  //@ts-expect-error
+  let es: ExportsSubpaths = null
+  es
+  //@ts-expect-error
+  es = { 'invalid path': 'foo' }
+  es = { '.': { default: 'foo' } }
+  es = { './foo': null }
+  es = { './foo': null, '.': { default: 'foo' } }
+  es = {}
+
+  //@ts-expect-error
+  let f: Funding = true
+  f
+  f = { url: 'string' }
+  f = 'string'
+  f = ['string', 'string']
+  f = ['string', { url: 'string' }]
+
+  //@ts-expect-error
+  let imp: Imports = null
+  imp
+  //@ts-expect-error
+  imp = { './invalid': 'subpath' }
+  imp = { '#valid': 'subpath' }
+
+  //@ts-expect-error
+  let ig: Integrity = 'hello'
+  ig
+  //@ts-expect-error
+  ig = true
+  //@ts-expect-error
+  ig = { Integrity: 'sha512-asdf' }
+  ig = 'sha512-asdf'
+
+  //@ts-expect-error
+  let jf: JSONField = /x/
+  jf
+  //@ts-expect-error
+  jf = () => {}
+  jf = { hello: [{ world: null }] }
+  jf = null
+  jf = true
+  jf = 123
+
+  //@ts-expect-error
+  let k: KeyID = 'heblo'
+  k
+  k = 'SHA256:asdf'
+  //@ts-expect-error
+  k = true
+
+  let m: Manifest = {}
+  m
+  //@ts-expect-error
+  m = { name: true, dependencies: /x/ }
+
+  //@ts-expect-error
+  let mm: ManifestMinified = { tap: { typecheck: true } }
+  mm
+  mm = {}
+  mm = { name: 's', version: 'v' }
+
+  //@ts-expect-error
+  let rm: ManifestRegistry = {}
+  rm
+  rm = { name: 'string', version: 'string', dist: { tarball: 'url' } }
+  rm = {
+    name: 'string',
+    version: 'string',
+    //@ts-expect-error
+    dist: { tarball: 'url', integrity: 'hello' },
+  }
+  let dist = { foo:'x' }
+  //@ts-expect-error
+  rm.dist = dist
+
+  let p: Packument = {
+    name: 'x',
+    'dist-tags': {},
+    versions: {},
+  }
+  //@ts-expect-error
+  p.versions['1.2.3'] = { name: true }
+  p.foo = 'baz'
+  let pb: PackumentBase = p
+  p.foo = 'bar'
+  //@ts-expect-error
+  pb.foo
+  let pm: PackumentMinified = p
+  //@ts-expect-error
+  pm.foo = 'bar'
+  pm.versions['1.2.3'] = m
+  //@ts-expect-error
+  pm.versions['1.2.3'].foo = 'bar'
+
+  let pd: Exclude<Manifest['peerDependenciesMeta'], undefined> = {}
+  //@ts-expect-error
+  pd.foo = true
+  let pdm: PeerDependenciesMetaValue = { optional: false }
+  //@ts-expect-error
+  pdm.optional = 'foo'
+  //@ts-expect-error
+  pdm.foo = 'bar'
+
+  let pr: Person = { name: 'x' }
+  pr
+  //@ts-expect-error
+  pr = { name: true }
+  pr = 'Hello'
+  pr = { name: '', email: '', url: '' }
+
+  let r: Repository = { type: 'git', url: 'github' }
+  r
+  r = 'git+ssh://git@github.com:a/b'
+  //@ts-expect-error
+  r = { url: 'github' }
+  //@ts-expect-error
+  r = { type: 'git' }
+
+  t.pass('all typechecks passed')
   t.end()
 })

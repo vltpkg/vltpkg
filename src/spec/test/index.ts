@@ -2,7 +2,7 @@ import { Range } from '@vltpkg/semver'
 import * as os from 'node:os'
 import { posix, win32 } from 'node:path'
 import t from 'tap'
-import { kCustomInspect } from '../src/index.js'
+import { kCustomInspect, type Spec as SpecType } from '../src/index.js'
 
 const { Spec } = await t.mockImport<typeof import('../src/index.js')>(
   '../src/index.js',
@@ -190,7 +190,7 @@ t.test('reverse-lookup registry: specifiers if named', t => {
     'x@registry:http://vlt.sh/#x@latest',
   ]
   const urls = ['http://vlt.sh', 'http://vlt.sh/']
-  const found: Spec[] = []
+  const found: SpecType[] = []
   for (const s of specs) {
     for (const vlt of urls) {
       found.push(Spec.parse(s, { registries: { vlt } }))

@@ -2,12 +2,17 @@
   "name": "@vltpkg/registry-client",
   "description": "Fetch package artifacts and metadata from registries",
   "version": "0.0.0-0",
-  "devDependencies": {
-    "@types/node": "^20.12.7",
-    "prettier": "^3.2.5",
-    "tap": "^18.8.0",
-    "tshy": "^1.14.0",
-    "typedoc": "^0.25.13"
+  "tshy": {
+    "selfLink": false,
+    "dialects": [
+      "esm"
+    ],
+    "exports": {
+      ".": "./src/index.ts",
+      "./cache-entry": "./src/cache-entry.ts",
+      "./cache-interceptor": "./src/cache-interceptor.ts",
+      "./package.json": "./package.json"
+    }
   },
   "dependencies": {
     "@vltpkg/cache": "workspace:*",
@@ -17,6 +22,13 @@
     "cache-control-parser": "^2.0.5",
     "package-json-from-dist": "^1.0.0",
     "undici": "^6.13.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.12.12",
+    "prettier": "^3.2.5",
+    "tap": "^19.0.0",
+    "tshy": "^1.14.0",
+    "typedoc": "^0.25.13"
   },
   "scripts": {
     "preversion": "npm test",
@@ -35,18 +47,7 @@
     "coverage-map": "../../coverage-map.js"
   },
   "prettier": "../../.prettierrc.json",
-  "tshy": {
-    "selfLink": false,
-    "dialects": [
-      "esm"
-    ],
-    "exports": {
-      ".": "./src/index.ts",
-      "./cache-entry": "./src/cache-entry.ts",
-      "./cache-interceptor": "./src/cache-interceptor.ts",
-      "./package.json": "./package.json"
-    }
-  },
+  "type": "module",
   "exports": {
     ".": {
       "import": {
@@ -67,6 +68,5 @@
       }
     },
     "./package.json": "./package.json"
-  },
-  "type": "module"
+  }
 }

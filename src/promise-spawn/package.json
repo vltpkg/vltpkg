@@ -2,14 +2,24 @@
   "name": "@vltpkg/promise-spawn",
   "description": "Spawn a process and return a promise that resolves when it finishes",
   "version": "0.0.0-0",
+  "tshy": {
+    "selfLink": false,
+    "dialects": [
+      "esm"
+    ],
+    "exports": {
+      "./package.json": "./package.json",
+      ".": "./src/index.ts"
+    }
+  },
   "dependencies": {
     "@vltpkg/error-cause": "workspace:*"
   },
   "devDependencies": {
-    "@types/node": "^20.12.7",
+    "@types/node": "^20.12.12",
     "prettier": "^3.2.5",
-    "spawk": "^1.8.1",
-    "tap": "^18.8.0",
+    "spawk": "^1.8.2",
+    "tap": "^19.0.0",
     "tshy": "^1.14.0",
     "typedoc": "^0.25.13"
   },
@@ -30,16 +40,7 @@
     "coverage-map": "../../coverage-map.js"
   },
   "prettier": "../../.prettierrc.json",
-  "tshy": {
-    "selfLink": false,
-    "dialects": [
-      "esm"
-    ],
-    "exports": {
-      "./package.json": "./package.json",
-      ".": "./src/index.ts"
-    }
-  },
+  "type": "module",
   "exports": {
     "./package.json": "./package.json",
     ".": {
@@ -48,6 +49,5 @@
         "default": "./dist/esm/index.js"
       }
     }
-  },
-  "type": "module"
+  }
 }

@@ -1,7 +1,29 @@
 {
   "name": "@vltpkg/semver",
-  "version": "0.0.0-0",
   "description": "The semantic version parser used by vlt",
+  "version": "0.0.0-0",
+  "tshy": {
+    "selfLink": false,
+    "dialects": [
+      "esm"
+    ],
+    "exports": {
+      "./package.json": "./package.json",
+      ".": "./src/index.ts"
+    }
+  },
+  "dependencies": {
+    "@vltpkg/error-cause": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^20.12.12",
+    "@types/semver": "^7.5.8",
+    "prettier": "^3.2.5",
+    "semver": "^7.6.2",
+    "tap": "^19.0.0",
+    "tshy": "^1.14.0",
+    "typedoc": "^0.25.13"
+  },
   "scripts": {
     "bun": "hyperfine --warmup 3 'bun ./benchmarks/bun.js' 'bun ./benchmarks/npm.js' 'bun ./benchmarks/this.js'",
     "node": "hyperfine --warmup 3 'node ./benchmarks/npm.js' 'node ./benchmarks/this.js'",
@@ -17,33 +39,11 @@
     "format": "prettier --write . --log-level warn --ignore-path ../../.prettierignore --cache",
     "typedoc": "typedoc"
   },
-  "dependencies": {
-    "@vltpkg/error-cause": "workspace:*"
-  },
-  "devDependencies": {
-    "@types/bun": "^1.1.1",
-    "@types/node": "^20.12.8",
-    "@types/semver": "^7.5.8",
-    "prettier": "^3.2.5",
-    "semver": "^7.6.0",
-    "tap": "^18.8.0",
-    "tshy": "^1.14.0",
-    "typedoc": "^0.25.13"
-  },
   "tap": {
     "coverage-map": "../../coverage-map.js"
   },
   "prettier": "../../.prettierrc.json",
-  "tshy": {
-    "selfLink": false,
-    "dialects": [
-      "esm"
-    ],
-    "exports": {
-      "./package.json": "./package.json",
-      ".": "./src/index.ts"
-    }
-  },
+  "type": "module",
   "exports": {
     "./package.json": "./package.json",
     ".": {
@@ -52,6 +52,5 @@
         "default": "./dist/esm/index.js"
       }
     }
-  },
-  "type": "module"
+  }
 }
