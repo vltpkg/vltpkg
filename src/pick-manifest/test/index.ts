@@ -6,8 +6,8 @@ import { pickManifest } from '../src/index.js'
 
 // don't need to run, just for typechecking
 const typechecks = () => {
-  const paku = {} as unknown as Packument
-  const pakuMin = {} as unknown as PackumentMinified
+  let paku = {} as unknown as Packument
+  let pakuMin = {} as unknown as PackumentMinified
   const optBefore = { before: 1 }
   const optNoBefore = {}
   let mani: Manifest | undefined
@@ -20,8 +20,20 @@ const typechecks = () => {
   const x = pickManifest(pakuMin, 'x', optNoBefore)
   //@ts-expect-error
   x.foo = 'bar'
+
+  // because minified is a subset, they can be assigned to each other
+  // but, it'll prevent you from accessing arbitrary values on the
+  // minified type.
+  maniMin = mani
+  mani = maniMin
+  paku = pakuMin
+  pakuMin = paku
+  const pm: PackumentMinified = paku
+  const mm: ManifestMinified = mani ?? {}
   //@ts-expect-error
-  pickManifest(pakuMin, 'x', optBefore)
+  pm.foo = 'bar'
+  //@ts-expect-error
+  mm.true = false
 }
 typechecks
 

@@ -73,14 +73,14 @@ importers:
         specifier: ^3.2.5
         version: 3.2.5
       tap:
-        specifier: ^19.0.0
-        version: 19.0.0(@types/node@20.12.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.4.5)
+        specifier: ^18.8.0
+        version: 18.8.0(@types/node@20.12.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.2.2)
       tshy:
         specifier: ^1.14.0
         version: 1.14.0
       typedoc:
         specifier: ^0.25.13
-        version: 0.25.13(typescript@5.4.5)
+        version: 0.25.13(typescript@5.2.2)
 
   src/cache-unzip:
     dependencies:
@@ -98,14 +98,14 @@ importers:
         specifier: ^3.2.5
         version: 3.2.5
       tap:
-        specifier: ^19.0.0
-        version: 19.0.0(@types/node@20.12.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.4.5)
+        specifier: ^18.8.0
+        version: 18.8.0(@types/node@20.12.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.2.2)
       tshy:
         specifier: ^1.14.0
         version: 1.14.0
       typedoc:
         specifier: ^0.25.13
-        version: 0.25.13(typescript@5.4.5)
+        version: 0.25.13(typescript@5.2.2)
 
   src/dep-id:
     dependencies:
@@ -126,14 +126,14 @@ importers:
         specifier: ^3.2.5
         version: 3.2.5
       tap:
-        specifier: ^19.0.0
-        version: 19.0.0(@types/node@20.12.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.4.5)
+        specifier: ^18.8.0
+        version: 18.8.0(@types/node@20.12.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.2.2)
       tshy:
         specifier: ^1.14.0
         version: 1.14.0
       typedoc:
         specifier: ^0.25.13
-        version: 0.25.13(typescript@5.4.5)
+        version: 0.25.13(typescript@5.2.2)
 
   src/error-cause:
     devDependencies:
@@ -144,14 +144,14 @@ importers:
         specifier: ^3.2.5
         version: 3.2.5
       tap:
-        specifier: ^19.0.0
-        version: 19.0.0(@types/node@20.12.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.4.5)
+        specifier: ^18.8.0
+        version: 18.8.0(@types/node@20.12.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.2.2)
       tshy:
         specifier: ^1.14.0
         version: 1.14.0
       typedoc:
         specifier: ^0.25.13
-        version: 0.25.13(typescript@5.4.5)
+        version: 0.25.13(typescript@5.2.2)
 
   src/git:
     dependencies:
@@ -199,14 +199,14 @@ importers:
         specifier: ^3.2.5
         version: 3.2.5
       tap:
-        specifier: ^19.0.0
-        version: 19.0.0(@types/node@20.12.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.4.5)
+        specifier: ^18.8.0
+        version: 18.8.0(@types/node@20.12.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.2.2)
       tshy:
         specifier: ^1.14.0
         version: 1.14.0
       typedoc:
         specifier: ^0.25.13
-        version: 0.25.13(typescript@5.4.5)
+        version: 0.25.13(typescript@5.2.2)
 
   src/git-scp-url:
     devDependencies:
@@ -217,14 +217,14 @@ importers:
         specifier: ^3.2.5
         version: 3.2.5
       tap:
-        specifier: ^19.0.0
-        version: 19.0.0(@types/node@20.12.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.4.5)
+        specifier: ^18.8.0
+        version: 18.8.0(@types/node@20.12.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.2.2)
       tshy:
         specifier: ^1.14.0
         version: 1.14.0
       typedoc:
         specifier: ^0.25.13
-        version: 0.25.13(typescript@5.4.5)
+        version: 0.25.13(typescript@5.2.2)
 
   src/graph:
     dependencies:
@@ -257,14 +257,14 @@ importers:
         specifier: ^3.2.5
         version: 3.2.5
       tap:
-        specifier: ^19.0.0
-        version: 19.0.0(@types/node@20.12.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.4.5)
+        specifier: ^18.8.0
+        version: 18.8.0(@types/node@20.12.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.2.2)
       tshy:
         specifier: ^1.14.0
         version: 1.14.0
       typedoc:
         specifier: ^0.25.13
-        version: 0.25.13(typescript@5.4.5)
+        version: 0.25.13(typescript@5.2.2)
 
   src/package-info:
     dependencies:
@@ -303,14 +303,14 @@ importers:
         specifier: ^3.2.5
         version: 3.2.5
       tap:
-        specifier: ^19.0.0
-        version: 19.0.0(@types/node@20.12.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.4.5)
+        specifier: ^18.8.0
+        version: 18.8.0(@types/node@20.12.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.2.2)
       tshy:
         specifier: ^1.14.0
         version: 1.14.0
       typedoc:
         specifier: ^0.25.13
-        version: 0.25.13(typescript@5.4.5)
+        version: 0.25.13(typescript@5.2.2)
 
   src/package-json:
     dependencies:
@@ -325,7 +325,7 @@ importers:
         version: 4.0.1
     devDependencies:
       '@types/node':
-        specifier: ^20.12.7
+        specifier: ^20.12.12
         version: 20.12.12
       prettier:
         specifier: ^3.2.5
@@ -368,14 +368,14 @@ importers:
         specifier: ^3.2.5
         version: 3.2.5
       tap:
-        specifier: ^19.0.0
-        version: 19.0.0(@types/node@20.12.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.4.5)
+        specifier: ^18.8.0
+        version: 18.8.0(@types/node@20.12.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.2.2)
       tshy:
         specifier: ^1.14.0
         version: 1.14.0
       typedoc:
         specifier: ^0.25.13
-        version: 0.25.13(typescript@5.4.5)
+        version: 0.25.13(typescript@5.2.2)
 
   src/promise-spawn:
     dependencies:
@@ -393,14 +393,14 @@ importers:
         specifier: ^1.8.2
         version: 1.8.2
       tap:
-        specifier: ^19.0.0
-        version: 19.0.0(@types/node@20.12.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.4.5)
+        specifier: ^18.8.0
+        version: 18.8.0(@types/node@20.12.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.2.2)
       tshy:
         specifier: ^1.14.0
         version: 1.14.0
       typedoc:
         specifier: ^0.25.13
-        version: 0.25.13(typescript@5.4.5)
+        version: 0.25.13(typescript@5.2.2)
 
   src/registry-client:
     dependencies:
@@ -433,14 +433,14 @@ importers:
         specifier: ^3.2.5
         version: 3.2.5
       tap:
-        specifier: ^19.0.0
-        version: 19.0.0(@types/node@20.12.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.4.5)
+        specifier: ^18.8.0
+        version: 18.8.0(@types/node@20.12.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.2.2)
       tshy:
         specifier: ^1.14.0
         version: 1.14.0
       typedoc:
         specifier: ^0.25.13
-        version: 0.25.13(typescript@5.4.5)
+        version: 0.25.13(typescript@5.2.2)
 
   src/semver:
     dependencies:
@@ -461,14 +461,14 @@ importers:
         specifier: ^7.6.2
         version: 7.6.2
       tap:
-        specifier: ^19.0.0
-        version: 19.0.0(@types/node@20.12.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.4.5)
+        specifier: ^18.8.0
+        version: 18.8.0(@types/node@20.12.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.2.2)
       tshy:
         specifier: ^1.14.0
         version: 1.14.0
       typedoc:
         specifier: ^0.25.13
-        version: 0.25.13(typescript@5.4.5)
+        version: 0.25.13(typescript@5.2.2)
 
   src/spec:
     dependencies:
@@ -489,14 +489,14 @@ importers:
         specifier: ^3.2.5
         version: 3.2.5
       tap:
-        specifier: ^19.0.0
-        version: 19.0.0(@types/node@20.12.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.4.5)
+        specifier: ^18.8.0
+        version: 18.8.0(@types/node@20.12.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.2.2)
       tshy:
         specifier: ^1.14.0
         version: 1.14.0
       typedoc:
         specifier: ^0.25.13
-        version: 0.25.13(typescript@5.4.5)
+        version: 0.25.13(typescript@5.2.2)
 
   src/tar:
     dependencies:
@@ -526,8 +526,8 @@ importers:
         specifier: ^3.2.5
         version: 3.2.5
       tap:
-        specifier: ^19.0.0
-        version: 19.0.0(@types/node@20.12.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.4.5)
+        specifier: ^18.8.0
+        version: 18.8.0(@types/node@20.12.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.2.2)
       tshy:
         specifier: ^1.14.0
         version: 1.14.0
@@ -545,14 +545,14 @@ importers:
         specifier: ^3.2.5
         version: 3.2.5
       tap:
-        specifier: ^19.0.0
-        version: 19.0.0(@types/node@20.12.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.4.5)
+        specifier: ^18.8.0
+        version: 18.8.0(@types/node@20.12.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.2.2)
       tshy:
         specifier: ^1.14.0
         version: 1.14.0
       typedoc:
         specifier: ^0.25.13
-        version: 0.25.13(typescript@5.4.5)
+        version: 0.25.13(typescript@5.2.2)
 
   src/which:
     dependencies:
@@ -567,14 +567,14 @@ importers:
         specifier: ^3.2.5
         version: 3.2.5
       tap:
-        specifier: ^19.0.0
-        version: 19.0.0(@types/node@20.12.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.4.5)
+        specifier: ^18.8.0
+        version: 18.8.0(@types/node@20.12.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.2.2)
       tshy:
         specifier: ^1.14.0
         version: 1.14.0
       typedoc:
         specifier: ^0.25.13
-        version: 0.25.13(typescript@5.4.5)
+        version: 0.25.13(typescript@5.2.2)
 
 packages:
 
@@ -1133,6 +1133,11 @@ packages:
     engines: {node: '>=16 || 14 >=14.18'}
     hasBin: true
 
+  glob@10.3.16:
+    resolution: {integrity: sha512-JDKXl1DiuuHJ6fVS2FXjownaavciiHNUU4mOvV/B793RLh05vZL1rcPnCSaOgv1hDT6RDlY7AB7ZUvFYAtPgAw==}
+    engines: {node: '>=16 || 14 >=14.18'}
+    hasBin: true
+
   glob@7.2.3:
     resolution: {integrity: sha512-nFR0zLpU2YCaRxwoCJvL6UvCH2JFyFVIvwTLsIf21AuHlMskA1hhTdk+LlYJtOlYt9v6dvszD2BGRqBL+iQK9Q==}
 
@@ -1276,6 +1281,10 @@ packages:
 
   jackspeak@2.3.6:
     resolution: {integrity: sha512-N3yCS/NegsOBokc8GAdM8UcmfsKiSS8cipheD/nivzr700H+nsMOxJjQnvwOcRYVuFkdH0wGUvW2WbXGmrZGbQ==}
+    engines: {node: '>=14'}
+
+  jackspeak@3.1.2:
+    resolution: {integrity: sha512-kWmLKn2tRtfYMF/BakihVVRzBKOxz4gJMiL2Rj91WnAB5TPZumSH99R/Yf1qE1u4uRimvCSJfm6hnxohXeEXjQ==}
     engines: {node: '>=14'}
 
   js-tokens@4.0.0:
@@ -2303,7 +2312,7 @@ snapshots:
       '@tapjs/stdin': 1.1.22(@tapjs/core@1.5.4(@types/node@20.12.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
       '@tapjs/typescript': 1.4.4(@tapjs/core@1.5.4(@types/node@20.12.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@types/node@20.12.12)(typescript@5.2.2)
       '@tapjs/worker': 1.1.22(@tapjs/core@1.5.4(@types/node@20.12.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
-      glob: 10.3.15
+      glob: 10.3.16
       jackspeak: 2.3.6
       mkdirp: 3.0.1
       resolve-import: 1.4.5
@@ -2602,6 +2611,14 @@ snapshots:
       minipass: 7.1.1
       path-scurry: 1.11.1
 
+  glob@10.3.16:
+    dependencies:
+      foreground-child: 3.1.1
+      jackspeak: 3.1.2
+      minimatch: 9.0.4
+      minipass: 7.1.1
+      path-scurry: 1.11.1
+
   glob@7.2.3:
     dependencies:
       fs.realpath: 1.0.0
@@ -2756,6 +2773,12 @@ snapshots:
       istanbul-lib-report: 3.0.1
 
   jackspeak@2.3.6:
+    dependencies:
+      '@isaacs/cliui': 8.0.2
+    optionalDependencies:
+      '@pkgjs/parseargs': 0.11.0
+
+  jackspeak@3.1.2:
     dependencies:
       '@isaacs/cliui': 8.0.2
     optionalDependencies:
@@ -3111,7 +3134,7 @@ snapshots:
 
   read-package-json@7.0.1:
     dependencies:
-      glob: 10.3.15
+      glob: 10.3.16
       json-parse-even-better-errors: 3.0.2
       normalize-package-data: 6.0.1
       npm-normalize-package-bin: 3.0.1
@@ -3124,7 +3147,7 @@ snapshots:
 
   resolve-import@1.4.5:
     dependencies:
-      glob: 10.3.16
+      glob: 10.3.15
       walk-up-path: 3.0.1
 
   restore-cursor@4.0.0:
