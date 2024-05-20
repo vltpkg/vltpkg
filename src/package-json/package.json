@@ -2,17 +2,27 @@
   "name": "@vltpkg/package-json",
   "description": "Manage reading package.json files",
   "version": "0.0.0-0",
-  "devDependencies": {
-    "@types/node": "^20.12.7",
-    "prettier": "^3.2.5",
-    "tap": "^18.8.0",
-    "tshy": "^1.14.0",
-    "typedoc": "^0.25.13"
+  "tshy": {
+    "selfLink": false,
+    "dialects": [
+      "esm"
+    ],
+    "exports": {
+      "./package.json": "./package.json",
+      ".": "./src/index.ts"
+    }
   },
   "dependencies": {
     "@vltpkg/error-cause": "workspace:*",
     "@vltpkg/types": "workspace:*",
     "polite-json": "^4.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.12.12",
+    "prettier": "^3.2.5",
+    "tap": "^18.8.0",
+    "tshy": "^1.14.0",
+    "typedoc": "^0.25.13"
   },
   "scripts": {
     "preversion": "npm test",
@@ -41,16 +51,7 @@
     "arrowParens": "avoid",
     "endOfLine": "lf"
   },
-  "tshy": {
-    "selfLink": false,
-    "dialects": [
-      "esm"
-    ],
-    "exports": {
-      "./package.json": "./package.json",
-      ".": "./src/index.ts"
-    }
-  },
+  "type": "module",
   "exports": {
     "./package.json": "./package.json",
     ".": {
@@ -59,6 +60,5 @@
         "default": "./dist/esm/index.js"
       }
     }
-  },
-  "type": "module"
+  }
 }

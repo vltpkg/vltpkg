@@ -20,7 +20,7 @@
     "@types/semver": "^7.5.8",
     "prettier": "^3.2.5",
     "semver": "^7.6.2",
-    "tap": "^19.0.0",
+    "tap": "^18.8.0",
     "tshy": "^1.14.0",
     "typedoc": "^0.25.13"
   },
@@ -40,7 +40,7 @@
     "typedoc": "typedoc"
   },
   "tap": {
-    "coverage-map": "../../coverage-map.js"
+    "extends": "../../tap-config.yaml"
   },
   "prettier": "../../.prettierrc.json",
   "type": "module",
