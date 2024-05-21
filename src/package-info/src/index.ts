@@ -697,8 +697,7 @@ export class PackageInfoClient {
       spec,
       from,
       ...extra,
-    })
-    Error.captureStackTrace(er, this.#resolveError)
+    }, this.#resolveError)
     return er
   }
 }
