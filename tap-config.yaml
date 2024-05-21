@@ -1,12 +1,6 @@
 # vim: set filetype=yaml :
 
-# NB: breaking change coming in tap 19
-# Annoyingly, tap v18 resolves coverage-map, before, and after configs relative
-# to the project root, even if defined in a config file in another location.
-# Tap 19 will change this, resolving all path settings relative to the config
-# file where they are defined.
-# When upgrading to tap 19, this should change to `./coverage-map.js`
-coverage-map: '../../coverage-map.js'
+coverage-map: './coverage-map.js'
 typecheck: true
 
 # globs are always relative to the project root regardless.
