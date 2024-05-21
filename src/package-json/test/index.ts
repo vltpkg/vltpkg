@@ -40,7 +40,7 @@ t.test('fails on malformed package.json file', async t => {
   t.throws(
     () => pj.read(dir),
     {
-      message: 'Invalid package.json file',
+      message: 'Could not read package.json file',
       cause: {
         path: dir,
         cause: { name: 'JSONParseError' },
