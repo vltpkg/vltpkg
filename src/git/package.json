@@ -29,7 +29,7 @@
     "@types/retry": "^0.12.5",
     "@vltpkg/types": "workspace:*",
     "prettier": "^3.2.5",
-    "tap": "^18.8.0",
+    "tap": "^19.0.0",
     "tshy": "^1.14.0",
     "typedoc": "^0.25.13"
   },
