@@ -114,7 +114,6 @@ export class CacheEntry {
     // default to 5m if maxage is not set, as some registries
     // do not set a cache control header at all.
     const ma = cc['max-age'] || cc['s-maxage'] || 300
-    // any cache 10s or less old, accept no matter what
     if (ma && dh) {
       return Date.parse(dh) + ma * 1000 > Date.now()
     }
