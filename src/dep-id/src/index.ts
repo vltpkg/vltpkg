@@ -15,14 +15,14 @@ import { Manifest } from '@vltpkg/types'
  *   url to a registry. If empty, it is the default registry.
  *   Examples:
  *   - `registry;;some-package@2.0.1`
- *   - `registry;npm:whatever@1.2.3'
+ *   - `registry;npm;whatever@1.2.3'
  *   - `registry;http%3A%2F%2Fvlt.sh%2F;x@1.2.3`
  * - `git`: `'git;<git remote>;<git selector>`. For example:
  *   - `git;github:user/project;branchname`
  *   - `git;git%2Bssh%3A%2F%2Fuser%40host%3Aproject.git;semver:1.x`
- * - `workspace`: `'workspace:<name>:<specifier>`. For example:
- *   - `workspace:mything:*`
- *   - `workspace:library:1.x`
+ * - `workspace`: `'workspace;<name>;<specifier>`. For example:
+ *   - `workspace;mything:*`
+ *   - `workspace;library:1.x`
  * - `remote`: `'remote;<url>'`
  * - `file`: `'file;<path>`
  */
