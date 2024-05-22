@@ -1,7 +1,8 @@
 import { error, typeError } from '@vltpkg/error-cause'
 import { parseRange, type Range } from '@vltpkg/semver'
-import { fileURLToPath } from 'url'
-import { inspect } from 'util'
+import { homedir } from 'node:os'
+import { resolve, win32 as winPath } from 'node:path'
+import { inspect } from 'node:util'
 
 export type SpecOptions = {
   [k in keyof SpecOptionsFilled]?: SpecOptionsFilled[k]
@@ -324,6 +325,16 @@ export class Spec {
       return
     }
 
+    // explicit file: url
+    if (this.bareSpec.startsWith('file:')) {
+      this.type = 'file'
+      const [path, uri] = normalizeFile(this.bareSpec, this)
+      this.file = path
+      this.bareSpec = uri.replace(/\/+$/, '')
+      this.spec = `${this.name}@${this.bareSpec}`
+      return
+    }
+
     // legacy! once upon a time, `user/project` was a shorthand for pulling
     // packages from github, instead of the more verbose and explicit
     // `github:user/project`.
@@ -333,7 +344,8 @@ export class Spec {
       this.options.gitHosts.github
     ) {
       const hash = this.bareSpec.indexOf('#')
-      const up = hash === -1 ? this.bareSpec : this.bareSpec.substring(0, hash)
+      const up =
+        hash === -1 ? this.bareSpec : this.bareSpec.substring(0, hash)
       if (up.split('/').length === 2) {
         this.bareSpec = `github:${this.bareSpec}`
         this.spec = `${this.name}@${this.bareSpec}`
@@ -343,32 +355,6 @@ export class Spec {
       }
     }
 
-    // explicit file: url
-    if (this.bareSpec.startsWith('file:')) {
-      const s = this.bareSpec.charAt('file:'.length)
-      // relative. not RFC-compliant `file:` URI, but very common
-      if (s !== '/') {
-        this.file = this.bareSpec.substring('file:'.length)
-      } else {
-        try {
-          this.file = fileURLToPath(this.bareSpec)
-        } catch (er) {
-          if (this.bareSpec.startsWith('file://')) {
-            this.file = this.bareSpec.substring('file://'.length)
-            /* c8 ignore start - platform specific */
-          } else {
-            throw error('invalid file: specifier', {
-              spec: this,
-              cause: er as Error,
-            })
-          }
-          /* c8 ignore stop - platform specific */
-        }
-      }
-      this.type = 'file'
-      return
-    }
-
     // if it contains a / and isn't picked up in the github shorthand,
     // then convert to file: specifier
     if (
@@ -376,8 +362,11 @@ export class Spec {
       this.bareSpec === '.' ||
       this.bareSpec === '..'
     ) {
-      this.file = this.bareSpec
       this.type = 'file'
+      const [file, uri] = normalizeFile(`file:${this.bareSpec}`, this)
+      this.bareSpec = uri
+      this.spec = `${this.name}@${this.bareSpec}`
+      this.file = file
       return
     }
 
@@ -503,4 +492,121 @@ export class Spec {
       }
     }
   }
+}
+
+// normalize our kinda-sorta spec compliant `file:` specifiers
+//
+// For historical reasons, we need to support a lot of non-spec-compliant
+// behaviors, but this massages the result into a *slightly* less offensive
+// shape.
+//
+// The result will be either a fully compliant `file://` with an absolute path,
+// or a `file:` with a relative path starting with `~`, `./`, or `../`.
+const normalizeFile = (
+  bareSpec: string,
+  spec: Spec,
+): [path: string, uri: string] => {
+  const slashes = bareSpec.substring('file:'.length, 'file://'.length)
+  const pref = `file:${slashes === '//' ? slashes : ''}`
+  const rest = bareSpec.substring(pref.length)
+
+  // default to '/' because eol == '/' for parsing purposes
+  const [a = '', b = '/', c = '/', d = '/'] = rest.split('', 4)
+
+  if (!a) {
+    // file:// => file:.
+    // file: => file:.
+    return ['.', 'file:.']
+  }
+
+  if (
+    (a === '/' && b === '~' && c !== '/') ||
+    (a === '~' && b !== '/')
+  ) {
+    throw error(
+      `invalid file: specifier. '~username' not supported`,
+      { spec },
+    )
+  }
+
+  if (a === '~') {
+    // file://~ => file:~
+    // file://~/x => file:~/x
+    return [resolve(homedir(), rest.substring(2)), `file:${rest}`]
+  }
+
+  if (a === '/' && b === '~') {
+    // file:///~ => file:~
+    // file:/~/x => file:~/x
+    return [
+      resolve(homedir(), rest.substring(3)),
+      `file:${rest.substring(1)}`,
+    ]
+  }
+
+  if (
+    a === '/' &&
+    b === '.' &&
+    (c === '/' || (c === '.' && d === '/'))
+  ) {
+    // file:/./x => file:./x
+    // file:///./x => file:./x
+    // file:/../x => file:../x
+    // file://../x => file:../x
+    return [rest.substring(1), `file:${rest.substring(1)}`]
+  }
+
+  if (a === '.' && (b === '/' || (b === '.' && c === '/'))) {
+    // file://. => file:.
+    // file://./x => file:./x
+    // file://../x => file:../x
+    return [rest, `file:${rest}`]
+  }
+
+  if (slashes === '//') {
+    // must be valid URI, since we ruled out relative and homedir above
+
+    // not relative, but note that file://host/share is
+    // windows-specific and does not work on darwin, so disallow it.
+    try {
+      const parsed = new URL(bareSpec)
+      if (parsed.host) {
+        if (parsed.host !== 'localhost') {
+          throw error(
+            `invalid file:// specifier. host must be empty or 'localhost'`,
+            {
+              spec,
+              found: parsed.host,
+              validOptions: ['', 'localhost'],
+            },
+          )
+        }
+      }
+      // normalize blank authority
+      // file://X:/foo => file:///X:/foo
+      // file://localhost/x => file:///x
+      // interpret a `file:///D:/x` as `D:/x` though
+      return [
+        parsed.pathname.replace(/^\/([a-zA-Z]:\/)/, '$1'),
+        `file://${parsed.pathname}`,
+      ]
+    } catch (er) {
+      // invalid URI for other reasons, eg file://x\u0000y/z
+      throw error('invalid file:// specifier', {
+        spec,
+        cause: er as Error,
+      })
+    }
+  }
+
+  // no //, no authority, be ungovernable
+
+  if (winPath.isAbsolute(rest)) {
+    // file:/absolute => file:///absolute
+    // file:/D:/foo => file:///D:/foo
+    return [rest, `file://${rest}`]
+  }
+
+  // file:x => file:./x
+  return [`./${rest}`, `file:./${rest}`]
 }

@@ -35,16 +35,58 @@ Array [
 ]
 `
 
-exports[`test/index.ts > TAP > valid specs > x@file://x.tgz > hydrated 1`] = `
-x@file://{CWD}/x.tgz
+exports[`test/index.ts > TAP > valid specs > x@file:./x.tgz > hydrated 1`] = `
+x@file:./x.tgz
 `
 
-exports[`test/index.ts > TAP > valid specs > x@file://x.tgz > must match snapshot 1`] = `
+exports[`test/index.ts > TAP > valid specs > x@file:./x.tgz > must match snapshot 1`] = `
 Array [
-  "file;x.tgz",
+  "file;.%2Fx.tgz",
   Array [
     "file",
-    "x.tgz",
+    "./x.tgz",
+  ],
+]
+`
+
+exports[`test/index.ts > TAP > valid specs > x@file:///x.tgz > hydrated 1`] = `
+x@file:///x.tgz
+`
+
+exports[`test/index.ts > TAP > valid specs > x@file:///x.tgz > must match snapshot 1`] = `
+Array [
+  "file;%2F%2F%2Fx.tgz",
+  Array [
+    "file",
+    "///x.tgz",
+  ],
+]
+`
+
+exports[`test/index.ts > TAP > valid specs > x@file:~/x.tgz > hydrated 1`] = `
+x@file:~/x.tgz
+`
+
+exports[`test/index.ts > TAP > valid specs > x@file:~/x.tgz > must match snapshot 1`] = `
+Array [
+  "file;~%2Fx.tgz",
+  Array [
+    "file",
+    "~/x.tgz",
+  ],
+]
+`
+
+exports[`test/index.ts > TAP > valid specs > x@file:x.tgz > hydrated 1`] = `
+x@file:./x.tgz
+`
+
+exports[`test/index.ts > TAP > valid specs > x@file:x.tgz > must match snapshot 1`] = `
+Array [
+  "file;.%2Fx.tgz",
+  Array [
+    "file",
+    "./x.tgz",
   ],
 ]
 `

@@ -1,7 +1,6 @@
 import { error } from '@vltpkg/error-cause'
 import { Spec, SpecOptions } from '@vltpkg/spec'
 import { Manifest } from '@vltpkg/types'
-import { pathToFileURL } from 'url'
 
 /**
  * Dependency IDs are a URI-encoded set of strings, separated
@@ -125,7 +124,7 @@ export const hydrateTuple = (
           found: tuple,
         })
       }
-      return Spec.parse(name, pathToFileURL(first).href, options)
+      return Spec.parse(name, `file:${first}`, options)
     }
     case 'registry': {
       if (typeof first !== 'string') {
@@ -178,9 +177,13 @@ export const hydrateTuple = (
 
 // Strip out the default registry, there's no need to store that
 const omitDefReg = (s?: string): string =>
-  !s ||
-  s === 'https://registry.npmjs.org' ||
-  s === 'https://registry.npmjs.org/' ? '' : s
+  (
+    !s ||
+    s === 'https://registry.npmjs.org' ||
+    s === 'https://registry.npmjs.org/'
+  ) ?
+    ''
+  : s
 
 /**
  * Get the {@link DepIDTuple} for a given {@link Spec} and {@link Manifest}.
@@ -231,7 +234,7 @@ export const getTuple = (spec: Spec, mani: Manifest): DepIDTuple => {
     case 'file': {
       const { file } = f
       if (!file) throw error('no path on file specifier', { spec })
-      return [f.type, file]
+      return [f.type, f.bareSpec.substring('file:'.length)]
     }
     case 'workspace': {
       const { workspaceSpec } = f

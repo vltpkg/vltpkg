@@ -27,7 +27,10 @@ t.test('valid specs', t => {
     'x@github:a/b',
     'x@github:a/b#branch',
     'x@github:a/b#semver:1',
-    'x@file://x.tgz',
+    'x@file:x.tgz',
+    'x@file:./x.tgz',
+    'x@file:///x.tgz',
+    'x@file:~/x.tgz',
     'x@https://x.com/x.tgz',
     'x@workspace:*',
   ]
