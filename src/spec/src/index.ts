@@ -1,5 +1,6 @@
 import { error, typeError } from '@vltpkg/error-cause'
 import { parseRange, type Range } from '@vltpkg/semver'
+import { fileURLToPath } from 'url'
 import { inspect } from 'util'
 
 export type SpecOptions = {
@@ -168,7 +169,8 @@ export class Spec {
     let sub: Spec = this
     // we want the SECOND from the last in the chain
     while (sub.subspec?.subspec) sub = sub.subspec
-    if (sub.subspec && sub.subspec.type !== 'registry') sub = sub.subspec
+    if (sub.subspec && sub.subspec.type !== 'registry')
+      sub = sub.subspec
     return (this.#toString = this.name + '@' + sub.bareSpec)
   }
 
@@ -328,19 +330,41 @@ export class Spec {
     if (
       !this.bareSpec.startsWith('./') &&
       !this.bareSpec.startsWith('../') &&
-      this.bareSpec.split('/').length === 2 &&
       this.options.gitHosts.github
     ) {
-      this.bareSpec = `github:${this.bareSpec}`
-      this.spec = `${this.name}@${this.bareSpec}`
-      this.#parseHostedGit('github', this.options.gitHosts.github)
-      this.type = 'git'
-      return
+      const hash = this.bareSpec.indexOf('#')
+      const up = hash === -1 ? this.bareSpec : this.bareSpec.substring(0, hash)
+      if (up.split('/').length === 2) {
+        this.bareSpec = `github:${this.bareSpec}`
+        this.spec = `${this.name}@${this.bareSpec}`
+        this.#parseHostedGit('github', this.options.gitHosts.github)
+        this.type = 'git'
+        return
+      }
     }
 
     // explicit file: url
-    if (this.bareSpec.startsWith('file://')) {
-      this.file = this.bareSpec.substring('file://'.length)
+    if (this.bareSpec.startsWith('file:')) {
+      const s = this.bareSpec.charAt('file:'.length)
+      // relative. not RFC-compliant `file:` URI, but very common
+      if (s !== '/') {
+        this.file = this.bareSpec.substring('file:'.length)
+      } else {
+        try {
+          this.file = fileURLToPath(this.bareSpec)
+        } catch (er) {
+          if (this.bareSpec.startsWith('file://')) {
+            this.file = this.bareSpec.substring('file://'.length)
+            /* c8 ignore start - platform specific */
+          } else {
+            throw error('invalid file: specifier', {
+              spec: this,
+              cause: er as Error,
+            })
+          }
+          /* c8 ignore stop - platform specific */
+        }
+      }
       this.type = 'file'
       return
     }
@@ -354,6 +378,7 @@ export class Spec {
     ) {
       this.file = this.bareSpec
       this.type = 'file'
+      return
     }
 
     // at this point, must be either semver range or dist-tag
@@ -378,7 +403,7 @@ export class Spec {
       const hostPath = bare.substring(name.length + 1)
       if (!hostPath) {
         throw error('invalid named git host specifier', {
-          spec: this
+          spec: this,
         })
       }
       const split = hostPath.split('/')

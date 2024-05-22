@@ -469,13 +469,10 @@ foo@github:user/foo-js
 
 exports[`test/index.ts > TAP > basic parsing tests > x@/path/to/foo > inspect 1`] = `
 @vltpkg/spec.Spec {
-  type: 'registry',
+  type: 'file',
   spec: 'x@/path/to/foo',
   name: 'x',
   bareSpec: '/path/to/foo',
-  registry: 'https://registry.npmjs.org/',
-  registrySpec: '/path/to/foo',
-  distTag: '/path/to/foo',
   file: '/path/to/foo'
 }
 `
@@ -486,13 +483,10 @@ x@/path/to/foo
 
 exports[`test/index.ts > TAP > basic parsing tests > x@/path/to/foo.tar > inspect 1`] = `
 @vltpkg/spec.Spec {
-  type: 'registry',
+  type: 'file',
   spec: 'x@/path/to/foo.tar',
   name: 'x',
   bareSpec: '/path/to/foo.tar',
-  registry: 'https://registry.npmjs.org/',
-  registrySpec: '/path/to/foo.tar',
-  distTag: '/path/to/foo.tar',
   file: '/path/to/foo.tar'
 }
 `
@@ -503,13 +497,10 @@ x@/path/to/foo.tar
 
 exports[`test/index.ts > TAP > basic parsing tests > x@/path/to/foo.tgz > inspect 1`] = `
 @vltpkg/spec.Spec {
-  type: 'registry',
+  type: 'file',
   spec: 'x@/path/to/foo.tgz',
   name: 'x',
   bareSpec: '/path/to/foo.tgz',
-  registry: 'https://registry.npmjs.org/',
-  registrySpec: '/path/to/foo.tgz',
-  distTag: '/path/to/foo.tgz',
   file: '/path/to/foo.tgz'
 }
 `
@@ -612,14 +603,11 @@ x@github:f fo o al/ a d s ;f
 
 exports[`test/index.ts > TAP > basic parsing tests > x@file:../path/to/foo > inspect 1`] = `
 @vltpkg/spec.Spec {
-  type: 'registry',
+  type: 'file',
   spec: 'x@file:../path/to/foo',
   name: 'x',
   bareSpec: 'file:../path/to/foo',
-  registry: 'https://registry.npmjs.org/',
-  registrySpec: 'file:../path/to/foo',
-  distTag: 'file:../path/to/foo',
-  file: 'file:../path/to/foo'
+  file: '../path/to/foo'
 }
 `
 
@@ -629,14 +617,11 @@ x@file:../path/to/foo
 
 exports[`test/index.ts > TAP > basic parsing tests > x@file:./path/to/foo > inspect 1`] = `
 @vltpkg/spec.Spec {
-  type: 'registry',
+  type: 'file',
   spec: 'x@file:./path/to/foo',
   name: 'x',
   bareSpec: 'file:./path/to/foo',
-  registry: 'https://registry.npmjs.org/',
-  registrySpec: 'file:./path/to/foo',
-  distTag: 'file:./path/to/foo',
-  file: 'file:./path/to/foo'
+  file: './path/to/foo'
 }
 `
 
@@ -646,14 +631,11 @@ x@file:./path/to/foo
 
 exports[`test/index.ts > TAP > basic parsing tests > x@file:/../path/to/foo > inspect 1`] = `
 @vltpkg/spec.Spec {
-  type: 'registry',
+  type: 'file',
   spec: 'x@file:/../path/to/foo',
   name: 'x',
   bareSpec: 'file:/../path/to/foo',
-  registry: 'https://registry.npmjs.org/',
-  registrySpec: 'file:/../path/to/foo',
-  distTag: 'file:/../path/to/foo',
-  file: 'file:/../path/to/foo'
+  file: '/path/to/foo'
 }
 `
 
@@ -663,14 +645,11 @@ x@file:/../path/to/foo
 
 exports[`test/index.ts > TAP > basic parsing tests > x@file:/./path/to/foo > inspect 1`] = `
 @vltpkg/spec.Spec {
-  type: 'registry',
+  type: 'file',
   spec: 'x@file:/./path/to/foo',
   name: 'x',
   bareSpec: 'file:/./path/to/foo',
-  registry: 'https://registry.npmjs.org/',
-  registrySpec: 'file:/./path/to/foo',
-  distTag: 'file:/./path/to/foo',
-  file: 'file:/./path/to/foo'
+  file: '/path/to/foo'
 }
 `
 
@@ -680,14 +659,11 @@ x@file:/./path/to/foo
 
 exports[`test/index.ts > TAP > basic parsing tests > x@file:/.path/to/foo > inspect 1`] = `
 @vltpkg/spec.Spec {
-  type: 'registry',
+  type: 'file',
   spec: 'x@file:/.path/to/foo',
   name: 'x',
   bareSpec: 'file:/.path/to/foo',
-  registry: 'https://registry.npmjs.org/',
-  registrySpec: 'file:/.path/to/foo',
-  distTag: 'file:/.path/to/foo',
-  file: 'file:/.path/to/foo'
+  file: '/.path/to/foo'
 }
 `
 
@@ -781,14 +757,11 @@ x@file://path/to/foo
 
 exports[`test/index.ts > TAP > basic parsing tests > x@file:/~/path/to/foo > inspect 1`] = `
 @vltpkg/spec.Spec {
-  type: 'registry',
+  type: 'file',
   spec: 'x@file:/~/path/to/foo',
   name: 'x',
   bareSpec: 'file:/~/path/to/foo',
-  registry: 'https://registry.npmjs.org/',
-  registrySpec: 'file:/~/path/to/foo',
-  distTag: 'file:/~/path/to/foo',
-  file: 'file:/~/path/to/foo'
+  file: '/~/path/to/foo'
 }
 `
 
@@ -798,14 +771,11 @@ x@file:/~/path/to/foo
 
 exports[`test/index.ts > TAP > basic parsing tests > x@file:/~path/to/foo > inspect 1`] = `
 @vltpkg/spec.Spec {
-  type: 'registry',
+  type: 'file',
   spec: 'x@file:/~path/to/foo',
   name: 'x',
   bareSpec: 'file:/~path/to/foo',
-  registry: 'https://registry.npmjs.org/',
-  registrySpec: 'file:/~path/to/foo',
-  distTag: 'file:/~path/to/foo',
-  file: 'file:/~path/to/foo'
+  file: '/~path/to/foo'
 }
 `
 
@@ -815,14 +785,11 @@ x@file:/~path/to/foo
 
 exports[`test/index.ts > TAP > basic parsing tests > x@file:/path/to/foo > inspect 1`] = `
 @vltpkg/spec.Spec {
-  type: 'registry',
+  type: 'file',
   spec: 'x@file:/path/to/foo',
   name: 'x',
   bareSpec: 'file:/path/to/foo',
-  registry: 'https://registry.npmjs.org/',
-  registrySpec: 'file:/path/to/foo',
-  distTag: 'file:/path/to/foo',
-  file: 'file:/path/to/foo'
+  file: '/path/to/foo'
 }
 `
 
@@ -832,14 +799,11 @@ x@file:/path/to/foo
 
 exports[`test/index.ts > TAP > basic parsing tests > x@file:~/path/to/foo > inspect 1`] = `
 @vltpkg/spec.Spec {
-  type: 'registry',
+  type: 'file',
   spec: 'x@file:~/path/to/foo',
   name: 'x',
   bareSpec: 'file:~/path/to/foo',
-  registry: 'https://registry.npmjs.org/',
-  registrySpec: 'file:~/path/to/foo',
-  distTag: 'file:~/path/to/foo',
-  file: 'file:~/path/to/foo'
+  file: '~/path/to/foo'
 }
 `
 
@@ -849,14 +813,11 @@ x@file:~/path/to/foo
 
 exports[`test/index.ts > TAP > basic parsing tests > x@file:path/to/foo > inspect 1`] = `
 @vltpkg/spec.Spec {
-  type: 'registry',
+  type: 'file',
   spec: 'x@file:path/to/foo',
   name: 'x',
   bareSpec: 'file:path/to/foo',
-  registry: 'https://registry.npmjs.org/',
-  registrySpec: 'file:path/to/foo',
-  distTag: 'file:path/to/foo',
-  file: 'file:path/to/foo'
+  file: 'path/to/foo'
 }
 `
 
@@ -866,14 +827,11 @@ x@file:path/to/foo
 
 exports[`test/index.ts > TAP > basic parsing tests > x@file:path/to/foo.tar.gz > inspect 1`] = `
 @vltpkg/spec.Spec {
-  type: 'registry',
+  type: 'file',
   spec: 'x@file:path/to/foo.tar.gz',
   name: 'x',
   bareSpec: 'file:path/to/foo.tar.gz',
-  registry: 'https://registry.npmjs.org/',
-  registrySpec: 'file:path/to/foo.tar.gz',
-  distTag: 'file:path/to/foo.tar.gz',
-  file: 'file:path/to/foo.tar.gz'
+  file: 'path/to/foo.tar.gz'
 }
 `
 
@@ -1603,19 +1561,22 @@ x@registry:https://example.com/npm#@org/pkg@latest
 
 exports[`test/index.ts > TAP > basic parsing tests > x@user..blerg--/..foo-js# . . . . . some . tags / / / > inspect 1`] = `
 @vltpkg/spec.Spec {
-  type: 'registry',
-  spec: 'x@user..blerg--/..foo-js# . . . . . some . tags / / /',
+  type: 'git',
+  spec: 'x@github:user..blerg--/..foo-js# . . . . . some . tags / / /',
   name: 'x',
-  bareSpec: 'user..blerg--/..foo-js# . . . . . some . tags / / /',
-  registry: 'https://registry.npmjs.org/',
-  registrySpec: 'user..blerg--/..foo-js# . . . . . some . tags / / /',
-  distTag: 'user..blerg--/..foo-js# . . . . . some . tags / / /',
-  file: 'user..blerg--/..foo-js# . . . . . some . tags / / /'
+  bareSpec: 'github:user..blerg--/..foo-js# . . . . . some . tags / / /',
+  gitRemote: 'git+ssh://git@github.com:user..blerg--/..foo-js.git',
+  gitSelector: ' . . . . . some . tags / / /',
+  gitSelectorParsed: {},
+  gitCommittish: ' . . . . . some . tags / / /',
+  namedGitHost: 'github',
+  namedGitHostPath: 'user..blerg--/..foo-js',
+  remoteURL: 'https://codeload.github.com/user..blerg--/..foo-js/tar.gz/ . . . . . some . tags / / /'
 }
 `
 
 exports[`test/index.ts > TAP > basic parsing tests > x@user..blerg--/..foo-js# . . . . . some . tags / / / > toString 1`] = `
-x@user..blerg--/..foo-js# . . . . . some . tags / / /
+x@github:user..blerg--/..foo-js# . . . . . some . tags / / /
 `
 
 exports[`test/index.ts > TAP > basic parsing tests > x@user/foo-js > inspect 1`] = `
@@ -1636,36 +1597,42 @@ x@github:user/foo-js
 
 exports[`test/index.ts > TAP > basic parsing tests > x@user/foo-js#bar/baz > inspect 1`] = `
 @vltpkg/spec.Spec {
-  type: 'registry',
-  spec: 'x@user/foo-js#bar/baz',
+  type: 'git',
+  spec: 'x@github:user/foo-js#bar/baz',
   name: 'x',
-  bareSpec: 'user/foo-js#bar/baz',
-  registry: 'https://registry.npmjs.org/',
-  registrySpec: 'user/foo-js#bar/baz',
-  distTag: 'user/foo-js#bar/baz',
-  file: 'user/foo-js#bar/baz'
+  bareSpec: 'github:user/foo-js#bar/baz',
+  gitRemote: 'git+ssh://git@github.com:user/foo-js.git',
+  gitSelector: 'bar/baz',
+  gitSelectorParsed: {},
+  gitCommittish: 'bar/baz',
+  namedGitHost: 'github',
+  namedGitHostPath: 'user/foo-js',
+  remoteURL: 'https://codeload.github.com/user/foo-js/tar.gz/bar/baz'
 }
 `
 
 exports[`test/index.ts > TAP > basic parsing tests > x@user/foo-js#bar/baz > toString 1`] = `
-x@user/foo-js#bar/baz
+x@github:user/foo-js#bar/baz
 `
 
 exports[`test/index.ts > TAP > basic parsing tests > x@user/foo-js#bar/baz/bin > inspect 1`] = `
 @vltpkg/spec.Spec {
-  type: 'registry',
-  spec: 'x@user/foo-js#bar/baz/bin',
+  type: 'git',
+  spec: 'x@github:user/foo-js#bar/baz/bin',
   name: 'x',
-  bareSpec: 'user/foo-js#bar/baz/bin',
-  registry: 'https://registry.npmjs.org/',
-  registrySpec: 'user/foo-js#bar/baz/bin',
-  distTag: 'user/foo-js#bar/baz/bin',
-  file: 'user/foo-js#bar/baz/bin'
+  bareSpec: 'github:user/foo-js#bar/baz/bin',
+  gitRemote: 'git+ssh://git@github.com:user/foo-js.git',
+  gitSelector: 'bar/baz/bin',
+  gitSelectorParsed: {},
+  gitCommittish: 'bar/baz/bin',
+  namedGitHost: 'github',
+  namedGitHostPath: 'user/foo-js',
+  remoteURL: 'https://codeload.github.com/user/foo-js/tar.gz/bar/baz/bin'
 }
 `
 
 exports[`test/index.ts > TAP > basic parsing tests > x@user/foo-js#bar/baz/bin > toString 1`] = `
-x@user/foo-js#bar/baz/bin
+x@github:user/foo-js#bar/baz/bin
 `
 
 exports[`test/index.ts > TAP > basic parsing tests > x@user/foo#1234::path:dist > inspect 1`] = `
