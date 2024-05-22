@@ -109,7 +109,7 @@ const versionOk = (
 export function pickManifest<O>(
   packument: Packument,
   wanted: string | Range | Spec,
-  opts: PickManifestOptionsBefore,
+  opts: PickManifestOptions,
 ): Manifest | undefined
 export function pickManifest<O>(
   packument: PackumentMinified,
@@ -117,9 +117,17 @@ export function pickManifest<O>(
   opts: PickManifestOptionsNoBefore,
 ): ManifestMinified | undefined
 export function pickManifest(
-  packument: Packument | PackumentMinified,
+  packument: Packument,
+  wanted: string | Range | Spec
+): Manifest | undefined
+export function pickManifest(
+  packument: PackumentMinified,
   wanted: string | Range | Spec
 ): ManifestMinified | undefined
+export function pickManifest(
+  packument: Packument | PackumentMinified,
+  wanted: string | Range | Spec
+): Manifest | ManifestMinified | undefined
 export function pickManifest(
   packument: Packument | PackumentMinified,
   wanted: string | Range | Spec,

@@ -45,6 +45,10 @@ export interface PackageInfoClientOptions
 export interface PackageInfoClientRequestOptions
   extends PickManifestOptions {
   from?: string
+  /**
+   * If `before` is set, then `fullMetadata` will be fetched, even if not
+   * enabled here.
+   */
   fullMetadata?: boolean
 }
 
@@ -382,12 +386,24 @@ export class PackageInfoClient {
     if (typeof spec === 'string')
       spec = Spec.parse(spec, this.options)
     const f = spec.final
+
     switch (f.type) {
       case 'registry': {
-        const mani = pickManifest(
-          await this.packument(f, options),
-          spec,
-        )
+        const { from: _, before, fullMetadata: fm, ...opts } = options
+        const fullMetadata = !!fm || !!before
+        const mani =
+          fullMetadata ?
+            pickManifest(
+              await this.packument(f, {
+                before,
+                fullMetadata,
+                ...opts,
+              }),
+              spec,
+              options,
+            )
+          : pickManifest(await this.packument(f, opts), spec, opts)
+
         if (!mani) throw this.#resolveError(spec, options)
         return mani
       }

@@ -1,8 +1,29 @@
 import { Range } from '@vltpkg/semver'
 import { Spec } from '@vltpkg/spec'
 import t from 'tap'
-import { Packument } from '@vltpkg/types'
+import { Manifest, ManifestMinified, Packument, PackumentMinified } from '@vltpkg/types'
 import { pickManifest } from '../src/index.js'
+
+// don't need to run, just for typechecking
+const typechecks = () => {
+  const paku = {} as unknown as Packument
+  const pakuMin = {} as unknown as PackumentMinified
+  const optBefore = { before: 1 }
+  const optNoBefore = {}
+  let mani: Manifest | undefined
+  let maniMin: ManifestMinified | undefined
+  mani = pickManifest(paku, 'x', optBefore)
+  maniMin = pickManifest(paku, 'x', optBefore)
+  //@ts-expect-error
+  if (maniMin) maniMin.foo = 'bar'
+  if (mani) mani.foo = 'bar'
+  const x = pickManifest(pakuMin, 'x', optNoBefore)
+  //@ts-expect-error
+  x.foo = 'bar'
+  //@ts-expect-error
+  pickManifest(pakuMin, 'x', optBefore)
+}
+typechecks
 
 t.test('basic carat range selection', t => {
   const metadata = {
