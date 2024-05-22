@@ -81,6 +81,7 @@ export interface PromiseSpawnOptionsNoStdout
         stderr?: Exclude<StdioOptions, IOType>[number],
       ]
 }
+/* c8 ignore start - weird windows coverage bug */
 export interface PromiseSpawnOptionsStderr
   extends PromiseSpawnOptions {
   stdio?:
@@ -91,6 +92,7 @@ export interface PromiseSpawnOptionsStderr
         stderr?: IOTypePipe,
       ]
 }
+/* c8 ignore stop */
 export interface PromiseSpawnOptionsStderrString
   extends PromiseSpawnOptionsStderr {
   stdioString?: true
