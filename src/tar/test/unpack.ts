@@ -1,4 +1,5 @@
 import { lstatSync, readFileSync } from 'fs'
+//@ts-ignore
 import mutateFS from 'mutate-fs'
 import { resolve } from 'path'
 import t, { Test } from 'tap'
@@ -110,7 +111,9 @@ t.test('unpack into a dir', t => {
     t.throws(() => lstatSync(d + '/some/e'))
     const dir = lstatSync(d + '/some/empty/dir')
     t.equal(dir.isDirectory(), true)
-    t.equal(dir.mode & 0o700, 0o700, 'dir is mode 0o7xx')
+    if (process.platform !== 'win32') {
+      t.equal(dir.mode & 0o700, 0o700, 'dir is mode 0o7xx')
+    }
     t.end()
   }
 
