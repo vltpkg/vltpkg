@@ -1,6 +1,5 @@
 import t from 'tap'
 import {
-  isPackageMetadata,
   Package,
   PackageInventory,
 } from '../src/pkgs.js'
@@ -276,8 +275,3 @@ t.test('PackageInventory', async t => {
     'should remote package from list of pending package list if its location is added later',
   )
 })
-
-t.equal(isPackageMetadata({ name: 'x' }), true)
-t.equal(isPackageMetadata({ nope: 'x' }), false)
-t.equal(isPackageMetadata(false), false)
-t.equal(isPackageMetadata(true), false)
