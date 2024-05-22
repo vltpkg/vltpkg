@@ -6,6 +6,8 @@ import { buildActual } from '../src/build-actual.js'
 import { Graph } from '../src/graph.js'
 import { humanReadableOutput } from '../src/visualization/human-readable-output.js'
 
+t.cleanSnapshot = s => s.replace(/\\+/g, '/')
+
 t.test(
   'build a graph representing what is actually in the fs',
   async t => {
