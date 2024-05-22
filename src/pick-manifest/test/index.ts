@@ -180,7 +180,7 @@ t.test('errors if a non-registry spec is provided', t => {
   )
   t.throws(
     () => {
-      pickManifest(metadata, 'file://foo.tar.gz')
+      pickManifest(metadata, 'file:foo.tar.gz')
     },
     { message: 'Only dist-tag or semver range specs are supported' },
   )

@@ -1,10 +1,22 @@
 import { Range } from '@vltpkg/semver'
+import * as os from 'node:os'
+import { posix, win32 } from 'node:path'
 import t from 'tap'
-import { kCustomInspect, Spec } from '../src/index.js'
+import { kCustomInspect } from '../src/index.js'
+
+const { Spec } = await t.mockImport<typeof import('../src/index.js')>(
+  '../src/index.js',
+  {
+    'node:path': { ...posix, posix, win32 },
+    'node:os': { ...os, homedir: () => '/mock/home' },
+  },
+)
+// import { kCustomInspect, Spec } from '../src/index.js'
 
 t.compareOptions = { sort: false }
 const formatSnapshot = (obj: any): any =>
-  !!obj && obj instanceof Range ? `SemVer Range '${obj}'`
+  !obj ? obj
+  : obj instanceof Range ? `SemVer Range '${obj}'`
   : Array.isArray(obj) ? obj.map(o => formatSnapshot(o))
   : typeof obj === 'object' ?
     Object.fromEntries(
@@ -50,6 +62,8 @@ t.test('basic parsing tests', t => {
     '@foo/bar@git+ssh://notgithub.com/user/foo',
     'x@git@npm:not-git',
     'x@not-git@hostname.com:some/repo',
+    'x@./foo',
+    'x@foo/bar/baz',
     'x@/path/to/foo',
     'x@/path/to/foo.tar',
     'x@/path/to/foo.tgz',
@@ -57,7 +71,8 @@ t.test('basic parsing tests', t => {
     'x@file:path/to/foo.tar.gz',
     'x@file:~/path/to/foo',
     'x@file:/~/path/to/foo',
-    'x@file:/~path/to/foo',
+    'x@file://~/path/to/foo',
+    'x@file:///~/path/to/foo',
     'x@file:/.path/to/foo',
     'x@file:./path/to/foo',
     'x@file:/./path/to/foo',
@@ -67,9 +82,13 @@ t.test('basic parsing tests', t => {
     'x@file://../path/to/foo',
     'x@file:///path/to/foo',
     'x@file:/path/to/foo',
-    'x@file://path/to/foo',
     'x@file:////path/to/foo',
+    'x@file:',
+    'x@file:/.',
+    'x@file://',
     'x@file://.',
+    'x@file:/..',
+    'x@file://..',
     'x@http://insecure.com/foo.tgz',
     'x@https://server.com/foo.tgz',
     'foo@latest',
@@ -120,7 +139,7 @@ t.test('basic parsing tests', t => {
     t.test(v, t => {
       const s = Spec.parse(v)
       t.matchSnapshot(s[kCustomInspect](), 'inspect')
-      t.matchSnapshot(s.toString(), 'toString')
+      t.matchSnapshot(String(s), 'toString')
       t.end()
     })
   }
@@ -188,5 +207,26 @@ t.test('reverse-lookup registry: specifiers if named', t => {
 
 t.test('named git host must have something after the name', t => {
   t.throws(() => Spec.parse('x', 'github:'))
+  t.end()
+})
+
+t.test('invalid file: URIs', t => {
+  const nogood = [
+    'file://x\0y/',
+    // npm incorrectly treats this as `file:///host/share`
+    // `file://host/share` is `/share` on the server `host`, not
+    // `/host/share` on `localhost`. Do not allow.
+    'file://host/share',
+    'file://~user/home',
+    'file:/~user/home',
+    'file:~user/home',
+  ]
+  for (const s of nogood) {
+    t.throws(() => {
+      const spec = Spec.parse('x', s)
+      t.equal(spec, undefined, 'should not parse properly')
+    }, `${s} should throw`)
+  }
+
   t.end()
 })

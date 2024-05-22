@@ -467,46 +467,60 @@ exports[`test/index.ts > TAP > basic parsing tests > foo@user/foo-js > toString 
 foo@github:user/foo-js
 `
 
+exports[`test/index.ts > TAP > basic parsing tests > x@./foo > inspect 1`] = `
+@vltpkg/spec.Spec {
+  type: 'file',
+  spec: 'x@file:./foo',
+  name: 'x',
+  bareSpec: 'file:./foo',
+  file: './foo'
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > x@./foo > toString 1`] = `
+x@file:./foo
+`
+
 exports[`test/index.ts > TAP > basic parsing tests > x@/path/to/foo > inspect 1`] = `
 @vltpkg/spec.Spec {
   type: 'file',
-  spec: 'x@/path/to/foo',
+  spec: 'x@file:///path/to/foo',
   name: 'x',
-  bareSpec: '/path/to/foo',
+  bareSpec: 'file:///path/to/foo',
   file: '/path/to/foo'
 }
 `
 
 exports[`test/index.ts > TAP > basic parsing tests > x@/path/to/foo > toString 1`] = `
-x@/path/to/foo
+x@file:///path/to/foo
 `
 
 exports[`test/index.ts > TAP > basic parsing tests > x@/path/to/foo.tar > inspect 1`] = `
 @vltpkg/spec.Spec {
   type: 'file',
-  spec: 'x@/path/to/foo.tar',
+  spec: 'x@file:///path/to/foo.tar',
   name: 'x',
-  bareSpec: '/path/to/foo.tar',
+  bareSpec: 'file:///path/to/foo.tar',
   file: '/path/to/foo.tar'
 }
 `
 
 exports[`test/index.ts > TAP > basic parsing tests > x@/path/to/foo.tar > toString 1`] = `
-x@/path/to/foo.tar
+x@file:///path/to/foo.tar
 `
 
 exports[`test/index.ts > TAP > basic parsing tests > x@/path/to/foo.tgz > inspect 1`] = `
 @vltpkg/spec.Spec {
   type: 'file',
-  spec: 'x@/path/to/foo.tgz',
+  spec: 'x@file:///path/to/foo.tgz',
   name: 'x',
-  bareSpec: '/path/to/foo.tgz',
+  bareSpec: 'file:///path/to/foo.tgz',
   file: '/path/to/foo.tgz'
 }
 `
 
 exports[`test/index.ts > TAP > basic parsing tests > x@/path/to/foo.tgz > toString 1`] = `
-x@/path/to/foo.tgz
+x@file:///path/to/foo.tgz
 `
 
 exports[`test/index.ts > TAP > basic parsing tests > x@bitbucket:user..blerg--/..foo-js# . . . . . some . tags / / / > inspect 1`] = `
@@ -601,6 +615,20 @@ exports[`test/index.ts > TAP > basic parsing tests > x@f fo o al/ a d s ;f > toS
 x@github:f fo o al/ a d s ;f
 `
 
+exports[`test/index.ts > TAP > basic parsing tests > x@file: > inspect 1`] = `
+@vltpkg/spec.Spec {
+  type: 'file',
+  spec: 'x@file:.',
+  name: 'x',
+  bareSpec: 'file:.',
+  file: '.'
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > x@file: > toString 1`] = `
+x@file:.
+`
+
 exports[`test/index.ts > TAP > basic parsing tests > x@file:../path/to/foo > inspect 1`] = `
 @vltpkg/spec.Spec {
   type: 'file',
@@ -629,88 +657,144 @@ exports[`test/index.ts > TAP > basic parsing tests > x@file:./path/to/foo > toSt
 x@file:./path/to/foo
 `
 
+exports[`test/index.ts > TAP > basic parsing tests > x@file:/. > inspect 1`] = `
+@vltpkg/spec.Spec {
+  type: 'file',
+  spec: 'x@file:.',
+  name: 'x',
+  bareSpec: 'file:.',
+  file: '.'
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > x@file:/. > toString 1`] = `
+x@file:.
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > x@file:/.. > inspect 1`] = `
+@vltpkg/spec.Spec {
+  type: 'file',
+  spec: 'x@file:..',
+  name: 'x',
+  bareSpec: 'file:..',
+  file: '..'
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > x@file:/.. > toString 1`] = `
+x@file:..
+`
+
 exports[`test/index.ts > TAP > basic parsing tests > x@file:/../path/to/foo > inspect 1`] = `
 @vltpkg/spec.Spec {
   type: 'file',
-  spec: 'x@file:/../path/to/foo',
+  spec: 'x@file:../path/to/foo',
   name: 'x',
-  bareSpec: 'file:/../path/to/foo',
-  file: '/path/to/foo'
+  bareSpec: 'file:../path/to/foo',
+  file: '../path/to/foo'
 }
 `
 
 exports[`test/index.ts > TAP > basic parsing tests > x@file:/../path/to/foo > toString 1`] = `
-x@file:/../path/to/foo
+x@file:../path/to/foo
 `
 
 exports[`test/index.ts > TAP > basic parsing tests > x@file:/./path/to/foo > inspect 1`] = `
 @vltpkg/spec.Spec {
   type: 'file',
-  spec: 'x@file:/./path/to/foo',
+  spec: 'x@file:./path/to/foo',
   name: 'x',
-  bareSpec: 'file:/./path/to/foo',
-  file: '/path/to/foo'
+  bareSpec: 'file:./path/to/foo',
+  file: './path/to/foo'
 }
 `
 
 exports[`test/index.ts > TAP > basic parsing tests > x@file:/./path/to/foo > toString 1`] = `
-x@file:/./path/to/foo
+x@file:./path/to/foo
 `
 
 exports[`test/index.ts > TAP > basic parsing tests > x@file:/.path/to/foo > inspect 1`] = `
 @vltpkg/spec.Spec {
   type: 'file',
-  spec: 'x@file:/.path/to/foo',
+  spec: 'x@file:///.path/to/foo',
   name: 'x',
-  bareSpec: 'file:/.path/to/foo',
+  bareSpec: 'file:///.path/to/foo',
   file: '/.path/to/foo'
 }
 `
 
 exports[`test/index.ts > TAP > basic parsing tests > x@file:/.path/to/foo > toString 1`] = `
-x@file:/.path/to/foo
+x@file:///.path/to/foo
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > x@file:// > inspect 1`] = `
+@vltpkg/spec.Spec {
+  type: 'file',
+  spec: 'x@file:.',
+  name: 'x',
+  bareSpec: 'file:.',
+  file: '.'
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > x@file:// > toString 1`] = `
+x@file:.
 `
 
 exports[`test/index.ts > TAP > basic parsing tests > x@file://. > inspect 1`] = `
 @vltpkg/spec.Spec {
   type: 'file',
-  spec: 'x@file://.',
+  spec: 'x@file:.',
   name: 'x',
-  bareSpec: 'file://.',
+  bareSpec: 'file:.',
   file: '.'
 }
 `
 
 exports[`test/index.ts > TAP > basic parsing tests > x@file://. > toString 1`] = `
-x@file://.
+x@file:.
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > x@file://.. > inspect 1`] = `
+@vltpkg/spec.Spec {
+  type: 'file',
+  spec: 'x@file:..',
+  name: 'x',
+  bareSpec: 'file:..',
+  file: '..'
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > x@file://.. > toString 1`] = `
+x@file:..
 `
 
 exports[`test/index.ts > TAP > basic parsing tests > x@file://../path/to/foo > inspect 1`] = `
 @vltpkg/spec.Spec {
   type: 'file',
-  spec: 'x@file://../path/to/foo',
+  spec: 'x@file:../path/to/foo',
   name: 'x',
-  bareSpec: 'file://../path/to/foo',
+  bareSpec: 'file:../path/to/foo',
   file: '../path/to/foo'
 }
 `
 
 exports[`test/index.ts > TAP > basic parsing tests > x@file://../path/to/foo > toString 1`] = `
-x@file://../path/to/foo
+x@file:../path/to/foo
 `
 
 exports[`test/index.ts > TAP > basic parsing tests > x@file://./path/to/foo > inspect 1`] = `
 @vltpkg/spec.Spec {
   type: 'file',
-  spec: 'x@file://./path/to/foo',
+  spec: 'x@file:./path/to/foo',
   name: 'x',
-  bareSpec: 'file://./path/to/foo',
+  bareSpec: 'file:./path/to/foo',
   file: './path/to/foo'
 }
 `
 
 exports[`test/index.ts > TAP > basic parsing tests > x@file://./path/to/foo > toString 1`] = `
-x@file://./path/to/foo
+x@file:./path/to/foo
 `
 
 exports[`test/index.ts > TAP > basic parsing tests > x@file:////path/to/foo > inspect 1`] = `
@@ -727,6 +811,20 @@ exports[`test/index.ts > TAP > basic parsing tests > x@file:////path/to/foo > to
 x@file:////path/to/foo
 `
 
+exports[`test/index.ts > TAP > basic parsing tests > x@file:///~/path/to/foo > inspect 1`] = `
+@vltpkg/spec.Spec {
+  type: 'file',
+  spec: 'x@file:~/path/to/foo',
+  name: 'x',
+  bareSpec: 'file:~/path/to/foo',
+  file: '/mock/home/path/to/foo'
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > x@file:///~/path/to/foo > toString 1`] = `
+x@file:~/path/to/foo
+`
+
 exports[`test/index.ts > TAP > basic parsing tests > x@file:///path/to/foo > inspect 1`] = `
 @vltpkg/spec.Spec {
   type: 'file',
@@ -741,60 +839,46 @@ exports[`test/index.ts > TAP > basic parsing tests > x@file:///path/to/foo > toS
 x@file:///path/to/foo
 `
 
-exports[`test/index.ts > TAP > basic parsing tests > x@file://path/to/foo > inspect 1`] = `
+exports[`test/index.ts > TAP > basic parsing tests > x@file://~/path/to/foo > inspect 1`] = `
 @vltpkg/spec.Spec {
   type: 'file',
-  spec: 'x@file://path/to/foo',
+  spec: 'x@file:~/path/to/foo',
   name: 'x',
-  bareSpec: 'file://path/to/foo',
-  file: 'path/to/foo'
+  bareSpec: 'file:~/path/to/foo',
+  file: '/mock/home/path/to/foo'
 }
 `
 
-exports[`test/index.ts > TAP > basic parsing tests > x@file://path/to/foo > toString 1`] = `
-x@file://path/to/foo
+exports[`test/index.ts > TAP > basic parsing tests > x@file://~/path/to/foo > toString 1`] = `
+x@file:~/path/to/foo
 `
 
 exports[`test/index.ts > TAP > basic parsing tests > x@file:/~/path/to/foo > inspect 1`] = `
 @vltpkg/spec.Spec {
   type: 'file',
-  spec: 'x@file:/~/path/to/foo',
+  spec: 'x@file:~/path/to/foo',
   name: 'x',
-  bareSpec: 'file:/~/path/to/foo',
-  file: '/~/path/to/foo'
+  bareSpec: 'file:~/path/to/foo',
+  file: '/mock/home/path/to/foo'
 }
 `
 
 exports[`test/index.ts > TAP > basic parsing tests > x@file:/~/path/to/foo > toString 1`] = `
-x@file:/~/path/to/foo
-`
-
-exports[`test/index.ts > TAP > basic parsing tests > x@file:/~path/to/foo > inspect 1`] = `
-@vltpkg/spec.Spec {
-  type: 'file',
-  spec: 'x@file:/~path/to/foo',
-  name: 'x',
-  bareSpec: 'file:/~path/to/foo',
-  file: '/~path/to/foo'
-}
-`
-
-exports[`test/index.ts > TAP > basic parsing tests > x@file:/~path/to/foo > toString 1`] = `
-x@file:/~path/to/foo
+x@file:~/path/to/foo
 `
 
 exports[`test/index.ts > TAP > basic parsing tests > x@file:/path/to/foo > inspect 1`] = `
 @vltpkg/spec.Spec {
   type: 'file',
-  spec: 'x@file:/path/to/foo',
+  spec: 'x@file:///path/to/foo',
   name: 'x',
-  bareSpec: 'file:/path/to/foo',
+  bareSpec: 'file:///path/to/foo',
   file: '/path/to/foo'
 }
 `
 
 exports[`test/index.ts > TAP > basic parsing tests > x@file:/path/to/foo > toString 1`] = `
-x@file:/path/to/foo
+x@file:///path/to/foo
 `
 
 exports[`test/index.ts > TAP > basic parsing tests > x@file:~/path/to/foo > inspect 1`] = `
@@ -803,7 +887,7 @@ exports[`test/index.ts > TAP > basic parsing tests > x@file:~/path/to/foo > insp
   spec: 'x@file:~/path/to/foo',
   name: 'x',
   bareSpec: 'file:~/path/to/foo',
-  file: '~/path/to/foo'
+  file: '/mock/home/path/to/foo'
 }
 `
 
@@ -814,29 +898,43 @@ x@file:~/path/to/foo
 exports[`test/index.ts > TAP > basic parsing tests > x@file:path/to/foo > inspect 1`] = `
 @vltpkg/spec.Spec {
   type: 'file',
-  spec: 'x@file:path/to/foo',
+  spec: 'x@file:./path/to/foo',
   name: 'x',
-  bareSpec: 'file:path/to/foo',
-  file: 'path/to/foo'
+  bareSpec: 'file:./path/to/foo',
+  file: './path/to/foo'
 }
 `
 
 exports[`test/index.ts > TAP > basic parsing tests > x@file:path/to/foo > toString 1`] = `
-x@file:path/to/foo
+x@file:./path/to/foo
 `
 
 exports[`test/index.ts > TAP > basic parsing tests > x@file:path/to/foo.tar.gz > inspect 1`] = `
 @vltpkg/spec.Spec {
   type: 'file',
-  spec: 'x@file:path/to/foo.tar.gz',
+  spec: 'x@file:./path/to/foo.tar.gz',
   name: 'x',
-  bareSpec: 'file:path/to/foo.tar.gz',
-  file: 'path/to/foo.tar.gz'
+  bareSpec: 'file:./path/to/foo.tar.gz',
+  file: './path/to/foo.tar.gz'
 }
 `
 
 exports[`test/index.ts > TAP > basic parsing tests > x@file:path/to/foo.tar.gz > toString 1`] = `
-x@file:path/to/foo.tar.gz
+x@file:./path/to/foo.tar.gz
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > x@foo/bar/baz > inspect 1`] = `
+@vltpkg/spec.Spec {
+  type: 'file',
+  spec: 'x@file:./foo/bar/baz',
+  name: 'x',
+  bareSpec: 'file:./foo/bar/baz',
+  file: './foo/bar/baz'
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > x@foo/bar/baz > toString 1`] = `
+x@file:./foo/bar/baz
 `
 
 exports[`test/index.ts > TAP > basic parsing tests > x@git://github.com/user/foo > inspect 1`] = `
