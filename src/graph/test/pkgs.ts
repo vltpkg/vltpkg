@@ -1,8 +1,5 @@
 import t from 'tap'
-import {
-  Package,
-  PackageInventory,
-} from '../src/pkgs.js'
+import { Package, PackageInventory } from '../src/pkgs.js'
 
 t.test('Package', async t => {
   const pkg = new Package({

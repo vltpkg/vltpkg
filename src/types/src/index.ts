@@ -55,9 +55,7 @@ export type Imports = {
 }
 
 export type FundingEntry = string | { url: string }
-export type Funding =
-  | FundingEntry
-  | FundingEntry[]
+export type Funding = FundingEntry | FundingEntry[]
 
 export type ManifestRegistry = Manifest & {
   name: string

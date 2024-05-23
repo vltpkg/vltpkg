@@ -261,7 +261,7 @@ t.test('type checks', t => {
     //@ts-expect-error
     dist: { tarball: 'url', integrity: 'hello' },
   }
-  let dist = { foo:'x' }
+  let dist = { foo: 'x' }
   //@ts-expect-error
   rm.dist = dist
 

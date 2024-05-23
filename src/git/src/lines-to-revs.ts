@@ -1,4 +1,7 @@
-import type { ManifestMinified, PackumentMinified } from '@vltpkg/types'
+import type {
+  ManifestMinified,
+  PackumentMinified,
+} from '@vltpkg/types'
 import { parse } from '@vltpkg/semver'
 import { error } from '@vltpkg/error-cause'
 

@@ -94,7 +94,7 @@ const versionOk = (
   if (!mani) return false
   const { time } = packument as Packument
   return (
-    (isBefore(version, before, time)) &&
+    isBefore(version, before, time) &&
     platformCheck(mani, nodeVersion, os, arch)
   )
 }
@@ -118,15 +118,15 @@ export function pickManifest<O>(
 ): ManifestMinified | undefined
 export function pickManifest(
   packument: Packument,
-  wanted: string | Range | Spec
+  wanted: string | Range | Spec,
 ): Manifest | undefined
 export function pickManifest(
   packument: PackumentMinified,
-  wanted: string | Range | Spec
+  wanted: string | Range | Spec,
 ): ManifestMinified | undefined
 export function pickManifest(
   packument: Packument | PackumentMinified,
-  wanted: string | Range | Spec
+  wanted: string | Range | Spec,
 ): Manifest | ManifestMinified | undefined
 export function pickManifest(
   packument: Packument | PackumentMinified,

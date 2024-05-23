@@ -195,11 +195,10 @@ export class Spec {
       registry: defaultRegistry,
       ...options,
       'git-hosts':
-        options['git-hosts']?
+        options['git-hosts'] ?
           {
             ...defaultGitHosts,
-            ...options['git-hosts'
-  ],
+            ...options['git-hosts'],
           }
         : defaultGitHosts,
       registries:
@@ -350,7 +349,10 @@ export class Spec {
       if (up.split('/').length === 2) {
         this.bareSpec = `github:${this.bareSpec}`
         this.spec = `${this.name}@${this.bareSpec}`
-        this.#parseHostedGit('github', this.options['git-hosts'].github)
+        this.#parseHostedGit(
+          'github',
+          this.options['git-hosts'].github,
+        )
         this.type = 'git'
         return
       }

@@ -689,12 +689,16 @@ export class PackageInfoClient {
     extra: ErrorCauseObject = {},
   ) {
     const { from = this.#cwd } = options
-    const er = error(message, {
-      code: 'ERESOLVE',
-      spec,
-      from,
-      ...extra,
-    }, this.#resolveError)
+    const er = error(
+      message,
+      {
+        code: 'ERESOLVE',
+        spec,
+        from,
+        ...extra,
+      },
+      this.#resolveError,
+    )
     return er
   }
 }
