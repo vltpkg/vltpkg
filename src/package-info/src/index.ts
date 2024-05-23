@@ -16,7 +16,6 @@ import {
 import { Spec, type SpecOptions } from '@vltpkg/spec'
 import { Pool } from '@vltpkg/tar'
 import {
-  asManifest,
   asPackumentMinified,
   Integrity,
   Manifest,
@@ -27,7 +26,7 @@ import {
 import { Monorepo } from '@vltpkg/workspaces'
 import { XDG } from '@vltpkg/xdg'
 import { randomBytes } from 'crypto'
-import { readFile, rm, stat, symlink } from 'fs/promises'
+import { readFile, rename, rm, stat, symlink } from 'fs/promises'
 import {
   basename,
   dirname,
@@ -243,7 +242,12 @@ export class PackageInfoClient {
     const { from = this.#cwd } = options
     switch (f.type) {
       case 'git': {
-        const { gitRemote, gitCommittish, remoteURL } = f
+        const {
+          gitRemote,
+          gitCommittish,
+          remoteURL,
+          gitSelectorParsed,
+        } = f
         if (!remoteURL) {
           /* c8 ignore start - Impossible, would throw on the resolve */
           if (!gitRemote)
@@ -253,8 +257,23 @@ export class PackageInfoClient {
               'no remote on git: specifier',
             )
           /* c8 ignore stop */
-          await clone(gitRemote, gitCommittish, target, { spec })
-          await rm(target + '/.git', { recursive: true })
+          const { path } = gitSelectorParsed ?? {}
+          if (path !== undefined) {
+            // use obvious name because it's in node_modules
+            const tmp = pathResolve(
+              dirname(target),
+              `.TEMP.${basename(target)}-${randomBytes(6).toString('hex')}`,
+            )
+            await clone(gitRemote, gitCommittish, tmp, { spec })
+            const src = pathResolve(tmp, path)
+            await rename(src, target)
+            // intentionally not awaited
+            rm(tmp, { recursive: true, force: true })
+          } else {
+            await clone(gitRemote, gitCommittish, target, { spec })
+            // intentionally not awaited
+            rm(target + '/.git', { recursive: true })
+          }
           return r
         }
         // fallthrough if a remote tarball url present
@@ -396,21 +415,39 @@ export class PackageInfoClient {
         return response.buffer()
       }
       case 'git': {
-        const { remoteURL, gitRemote, gitCommittish } = f
+        const {
+          remoteURL,
+          gitRemote,
+          gitCommittish,
+          gitSelectorParsed,
+        } = f
         const s: Spec = spec
         if (!remoteURL) {
-          if (!gitRemote)
+          if (!gitRemote) {
             throw this.#resolveError(
               spec,
               options,
               'no remote on git: specifier',
             )
+          }
+          const { path } = gitSelectorParsed ?? {}
           return await this.#tmpdir(async dir => {
             await clone(gitRemote, gitCommittish, dir + '/package', {
               spec: s,
             })
-            // TODO: Pack properly, ignore stuff, bundleDeps, etc
-            return tarC({ cwd: dir, gzip: true }, [
+            let cwd = dir
+            if (path !== undefined) {
+              const src = pathResolve(dir, 'package', path)
+              cwd = dirname(src)
+              const pkg = pathResolve(cwd, 'package')
+              if (src !== pkg) {
+                const rand = randomBytes(6).toString('hex')
+                // faster than deleting
+                await rename(pkg, pkg + rand).catch(() => {})
+                await rename(src, pkg)
+              }
+            }
+            return tarC({ cwd, gzip: true }, [
               'package',
             ]).concat() as Promise<Buffer>
           })
@@ -497,27 +534,35 @@ export class PackageInfoClient {
         return mani
       }
       case 'git': {
-        const { gitRemote, gitCommittish, remoteURL } = f
+        const {
+          gitRemote,
+          gitCommittish,
+          remoteURL,
+          gitSelectorParsed,
+        } = f
         if (!remoteURL) {
           const s = spec
           if (!gitRemote)
             throw this.#resolveError(spec, options, 'no git remote')
           return await this.#tmpdir(async dir => {
             await clone(gitRemote, gitCommittish, dir, { spec: s })
-            const json = await readFile(dir + '/package.json', 'utf8')
-            return asManifest(JSON.parse(json))
+            const { path } = gitSelectorParsed ?? {}
+            const pkgDir =
+              path !== undefined ? pathResolve(dir, path) : dir
+            return this.packageJson.read(pkgDir)
           })
         }
         // fallthrough to remote
       }
       case 'remote': {
         const { remoteURL } = f
-        if (!remoteURL)
+        if (!remoteURL) {
           throw this.#resolveError(
             spec,
             options,
             'no remoteURL on remote specifier',
           )
+        }
         const s = spec
         return await this.#tmpdir(async dir => {
           const response =
@@ -541,8 +586,7 @@ export class PackageInfoClient {
               { cause: er as Error },
             )
           }
-          const json = await readFile(dir + '/package.json', 'utf8')
-          return asManifest(JSON.parse(json))
+          return this.packageJson.read(dir)
         })
       }
       case 'file': {
@@ -552,8 +596,7 @@ export class PackageInfoClient {
         const path = pathResolve(from, file)
         const st = await stat(path)
         if (st.isDirectory()) {
-          const json = await readFile(path + '/package.json', 'utf8')
-          return asManifest(JSON.parse(json))
+          return this.packageJson.read(path)
         }
         const s = spec
         return await this.#tmpdir(async dir => {
@@ -567,8 +610,7 @@ export class PackageInfoClient {
               { cause: er as Error },
             )
           }
-          const json = await readFile(dir + '/package.json', 'utf8')
-          return asManifest(JSON.parse(json))
+          return this.packageJson.read(dir)
         })
       }
       case 'workspace': {
@@ -656,7 +698,11 @@ export class PackageInfoClient {
       case 'file': {
         const { file } = f
         if (!file) {
-          throw this.#resolveError(spec, options, 'no path on file: specifier')
+          throw this.#resolveError(
+            spec,
+            options,
+            'no path on file: specifier',
+          )
         }
         const { from = this.#cwd } = options
         const resolved = pathResolve(from, spec.file as string)
@@ -705,8 +751,8 @@ export class PackageInfoClient {
       }
 
       case 'git': {
-        const { gitRemote, remoteURL } = f
-        if (remoteURL) {
+        const { gitRemote, remoteURL, gitSelectorParsed } = f
+        if (remoteURL && gitSelectorParsed?.path === undefined) {
           // known git host with a tarball download endpoint
           const r = { resolved: remoteURL, spec }
           this.#resolutions.set(memoKey, r)
@@ -726,6 +772,12 @@ export class PackageInfoClient {
           const r = {
             resolved: `${gitRemote}#${rev.sha}`,
             spec,
+          }
+          if (gitSelectorParsed) {
+            r.resolved += Object.entries(gitSelectorParsed)
+              .filter(([_, v]) => v !== undefined)
+              .map(([k, v]) => `::${k}:${v}`)
+              .join('')
           }
           this.#resolutions.set(memoKey, r)
           return r
@@ -758,6 +810,7 @@ export class PackageInfoClient {
     try {
       return await fn(dir)
     } finally {
+      // intentionally do not await
       rm(dir, { recursive: true, force: true })
     }
   }

@@ -1,7 +1,8 @@
 import { spawn as spawnGit } from '@vltpkg/git'
 import { Spec } from '@vltpkg/spec'
+import { Pool } from '@vltpkg/tar'
 import { Manifest } from '@vltpkg/types'
-import {Workspace} from '@vltpkg/workspaces'
+import { Workspace } from '@vltpkg/workspaces'
 import { lstatSync, readFileSync, readlinkSync } from 'node:fs'
 import { writeFile } from 'node:fs/promises'
 import { createServer } from 'node:http'
@@ -177,8 +178,8 @@ t.test('create git repo', { bail: true }, async () => {
   const git = (...cmd: string[]) => spawnGit(cmd, { cwd: repo })
   const write = (f: string, c: string) => writeFile(`${repo}/${f}`, c)
   await git('init', '-b', 'main')
-  await git('config', 'user.name', 'pacotedev')
-  await git('config', 'user.email', 'i+pacotedev@izs.me')
+  await git('config', 'user.name', 'vltdev')
+  await git('config', 'user.email', 'vltdev@vlt.sh')
   await git('config', 'tag.gpgSign', 'false')
   await git('config', 'commit.gpgSign', 'false')
   await git('config', 'tag.forceSignAnnotated', 'false')
@@ -221,8 +222,6 @@ t.test('create git repo', { bail: true }, async () => {
   await git('add', 'gleep')
   await git('commit', '-m', 'gleep glorp')
   await git('tag', '-am', 'head version', '69.42.0')
-  const { stdout } = await git('rev-parse', 'HEAD^')
-  return stdout
 })
 
 t.test('packument', async t => {
@@ -430,6 +429,8 @@ t.test('manifest', async t => {
     {
       name: 'abbrev',
       version: '2.0.0',
+      [Symbol.for('newline')]: '',
+      [Symbol.for('indent')]: '',
     },
   )
 })
@@ -800,17 +801,17 @@ t.test('workspace specs', async t => {
     pathResolve(dir, 'p/a'),
   )
   t.equal(lstatSync(dir + '/x').isSymbolicLink(), true)
-  t.equal(readFileSync(dir + '/x/package.json', 'utf8'), '{"name":"a"}')
+  t.equal(
+    readFileSync(dir + '/x/package.json', 'utf8'),
+    '{"name":"a"}',
+  )
 })
 
 t.test('workspace group option', async t => {
   const dir = t.testdir({
     'vlt-workspaces.json': JSON.stringify({
       a: 'p/a*',
-      b: [
-        'p/b',
-        'p/bb',
-      ],
+      b: ['p/b', 'p/bb'],
       ab: 'p/?',
       aabb: ['p/??'],
       all: 'p/*',
@@ -852,3 +853,85 @@ t.test(
     t.matchSnapshot(await packument(spec))
   },
 )
+
+t.test('path git selector', async t => {
+  const pkg = {
+    name: 'xyz',
+    version: '1.2.3',
+    [Symbol.for('indent')]: '',
+    [Symbol.for('newline')]: '',
+  }
+  const pj = JSON.stringify(pkg)
+  const dir = t.testdir({
+    repo: {
+      packages: {
+        xyz: {},
+      },
+    },
+    target: {},
+  })
+
+  const repo = pathResolve(dir, 'repo')
+  const badSpec = `xyz@git+${pathToFileURL(repo)}`
+  const spec = `${badSpec}#path:packages/xyz`
+
+  let headSha: string | undefined = undefined
+  t.test('create repo', async () => {
+    const git = (...cmd: string[]) => spawnGit(cmd, { cwd: repo })
+    const write = (f: string, c: string) =>
+      writeFile(`${repo}/${f}`, c)
+    await git('init', '-b', 'main')
+    await git('config', 'user.name', 'vltdev')
+    await git('config', 'user.email', 'vltdev@vlt.sh')
+    await git('config', 'tag.gpgSign', 'false')
+    await git('config', 'commit.gpgSign', 'false')
+    await git('config', 'tag.forceSignAnnotated', 'false')
+    await write('packages/xyz/package.json', pj)
+    await git('add', 'packages/xyz/package.json')
+    await git('commit', '-m', 'xyz@1.2.3')
+    await git('tag', '-a', 'xyz@1.2.3', '-m', 'xyz@1.2.3')
+    const { stdout } = await git('rev-parse', 'HEAD')
+    headSha = stdout
+  })
+
+  t.test('resolve', async t => {
+    const r = await resolve(spec, options)
+    t.equal(
+      r.resolved,
+      `git+${pathToFileURL(repo)}#${headSha}::path:packages/xyz`,
+    )
+    t.end()
+  })
+
+  t.test('manifest', async t => {
+    const m = await manifest(spec, options)
+    t.strictSame(m, pkg)
+    t.rejects(() => manifest(badSpec, options))
+  })
+
+  t.test('tarball', async t => {
+    const target = t.testdir()
+    const pool = new Pool()
+    const tarData = await tarball(spec, options)
+    await pool.unpack(tarData, target)
+    const found = JSON.parse(
+      readFileSync(target + '/package.json', 'utf8'),
+    )
+    t.strictSame({
+      ...found,
+      [Symbol.for('newline')]: '',
+      [Symbol.for('indent')]: '',
+    }, pkg)
+  })
+
+  t.test('extract', async t => {
+    const target = t.testdir()
+    await extract(spec, target, options)
+    const found = JSON.parse(
+      readFileSync(target + '/package.json', 'utf8'),
+    )
+    found[Symbol.for('newline')] = pkg[Symbol.for('newline')]
+    found[Symbol.for('indent')] = pkg[Symbol.for('indent')]
+    t.strictSame(found, pkg)
+  })
+})

@@ -12,7 +12,10 @@ Object {
   },
   "name": "",
   "versions": Object {
-    "": Object {},
+    "": Object {
+      [Symbol.for(indent)]: "  ",
+      [Symbol.for(newline)]: "\\n",
+    },
   },
 }
 `
@@ -49,6 +52,8 @@ Object {
     "template-oss-apply": "template-oss-apply --force",
     "test": "tap",
   },
+  [Symbol.for(indent)]: "  ",
+  [Symbol.for(newline)]: "\\n",
   "tap": Object {
     "nyc-arg": Array [
       "--exclude",
@@ -95,6 +100,8 @@ Object {
     "template-oss-apply": "template-oss-apply --force",
     "test": "tap",
   },
+  [Symbol.for(indent)]: "  ",
+  [Symbol.for(newline)]: "\\n",
   "tap": Object {
     "nyc-arg": Array [
       "--exclude",
@@ -112,6 +119,8 @@ Object {
 exports[`test/index.ts > TAP > manifest > must match snapshot 3`] = `
 Object {
   "name": "abbrev",
+  [Symbol.for(indent)]: "",
+  [Symbol.for(newline)]: "",
   "version": "2.0.0",
 }
 `
@@ -154,6 +163,8 @@ Object {
         "template-oss-apply": "template-oss-apply --force",
         "test": "tap",
       },
+      [Symbol.for(indent)]: "  ",
+      [Symbol.for(newline)]: "\\n",
       "tap": Object {
         "nyc-arg": Array [
           "--exclude",
@@ -208,6 +219,8 @@ Object {
         "template-oss-apply": "template-oss-apply --force",
         "test": "tap",
       },
+      [Symbol.for(indent)]: "  ",
+      [Symbol.for(newline)]: "\\n",
       "tap": Object {
         "nyc-arg": Array [
           "--exclude",
