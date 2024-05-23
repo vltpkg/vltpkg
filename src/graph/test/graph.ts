@@ -1,8 +1,10 @@
-import { Spec } from '@vltpkg/spec'
+import { dirname, resolve } from 'node:path'
+import { fileURLToPath, pathToFileURL } from 'node:url'
 import { inspect } from 'node:util'
 import t from 'tap'
+import { Spec } from '@vltpkg/spec'
+import { hydrate } from '@vltpkg/dep-id'
 import { Graph } from '../src/graph.js'
-import { Package } from '../src/pkgs.js'
 
 const kCustomInspect = Symbol.for('nodejs.util.inspect.custom')
 Object.assign(Spec.prototype, {
@@ -11,14 +13,24 @@ Object.assign(Spec.prototype, {
   },
 })
 
+const __dirname = dirname(fileURLToPath(import.meta.url))
+const encodedCwd = encodeURIComponent(
+  String(pathToFileURL(resolve(__dirname, '../..'))),
+).substring(13)
+t.cleanSnapshot = s => s.replaceAll(encodedCwd, '')
+
 t.test('Graph', async t => {
-  const rootPackageJson = {
+  const location = t.testdirName
+  const mainManifest = {
     name: 'my-project',
     version: '1.0.0',
   }
-  const graph = new Graph(rootPackageJson)
+  const graph = new Graph({
+    location,
+    mainManifest,
+  })
   t.strictSame(
-    graph.root.pkg.name,
+    graph.mainImporter.manifest.name,
     'my-project',
     'should have created a root folder with expected properties',
   )
@@ -26,10 +38,14 @@ t.test('Graph', async t => {
     inspect(graph, { depth: 0 }),
     'should print with special tag name',
   )
-  const newNode = graph.newNode({
-    name: 'foo',
-    version: '1.0.0',
-  } as Package)
+  const newNode = graph.newNode(
+    {
+      name: 'foo',
+      version: '1.0.0',
+    },
+    undefined,
+    Spec.parse('foo@^1.0.0'),
+  )
   t.strictSame(
     graph.nodes.size,
     2,
@@ -38,26 +54,30 @@ t.test('Graph', async t => {
   graph.newEdge(
     'dependencies',
     Spec.parse('foo', '^1.0.0'),
-    graph.root,
+    graph.mainImporter,
     newNode,
   )
   t.strictSame(
-    graph.root.edgesOut.size,
+    graph.mainImporter.edgesOut.size,
     1,
     'should add edge to the list of edgesOut in its origin node',
   )
   graph.newEdge(
     'dependencies',
     Spec.parse('foo@^1.0.0'),
-    graph.root,
+    graph.mainImporter,
     newNode,
   )
   t.strictSame(
-    graph.root.edgesOut.size,
+    graph.mainImporter.edgesOut.size,
     1,
     'should not allow for adding new edges between same nodes',
   )
-  graph.newEdge('dependencies', Spec.parse('missing@*'), graph.root)
+  graph.newEdge(
+    'dependencies',
+    Spec.parse('missing@*'),
+    graph.mainImporter,
+  )
   t.strictSame(
     graph.missingDependencies.size,
     1,
@@ -66,7 +86,8 @@ t.test('Graph', async t => {
 })
 
 t.test('using placePackage', async t => {
-  const graph = new Graph({
+  const location = t.testdirName
+  const mainManifest = {
     name: 'my-project',
     version: '1.0.0',
     dependencies: {
@@ -74,20 +95,23 @@ t.test('using placePackage', async t => {
       bar: '^1.0.0',
       missing: '^1.0.0',
     },
+  }
+  const graph = new Graph({
+    location,
+    mainManifest,
   })
   const foo = graph.placePackage(
-    graph.root,
+    graph.mainImporter,
     'dependencies',
     Spec.parse('foo', '^1.0.0'),
     {
       name: 'foo',
       version: '1.0.0',
     },
-    './node_modules/foo',
   )
   t.ok(foo)
   const bar = graph.placePackage(
-    graph.root,
+    graph.mainImporter,
     'dependencies',
     Spec.parse('bar', '^1.0.0'),
     {
@@ -113,7 +137,7 @@ t.test('using placePackage', async t => {
   )
   if (!baz) throw new Error('failed to place baz')
   graph.placePackage(
-    graph.root,
+    graph.mainImporter,
     'dependencies',
     Spec.parse('missing', '^1.0.0'),
   )
@@ -127,4 +151,26 @@ t.test('using placePackage', async t => {
     },
   )
   t.matchSnapshot(inspect(graph, { depth: 2 }), 'the graph')
+})
+
+t.test('main manifest missing name', async t => {
+  const location = t.testdirName
+  const mainManifest = {
+    version: '1.0.0',
+  }
+  const graph = new Graph({
+    location,
+    mainManifest,
+  })
+  const hydrateId = hydrate(graph.mainImporter.id)
+  t.strictSame(
+    hydrateId.type,
+    'file',
+    'should use file type reference id',
+  )
+  t.strictSame(
+    hydrateId.bareSpec,
+    String(pathToFileURL(location)),
+    'should have the encoded location as part of its id',
+  )
 })

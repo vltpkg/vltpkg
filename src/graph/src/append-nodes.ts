@@ -1,12 +1,19 @@
 import { Spec } from '@vltpkg/spec'
-import { Manifest, ManifestMinified } from '@vltpkg/types'
 import { Graph } from './graph.js'
 import { Node } from './node.js'
-import { DependencyTypeLong } from './pkgs.js'
+import {
+  dependencyTypes,
+  DependencyTypeLong,
+} from './dependencies.js'
 
-// TODO: This should come from configs and should just point to the same
-// default `registry` value that is send to: Spec.parse(value, { registry })
-const origin = 'npm:'
+// TODO: peer deps
+const shouldInstallDepType = (
+  node: Node,
+  depType: DependencyTypeLong,
+) =>
+  depType === 'dependencies' ||
+  depType === 'optionalDependencies' ||
+  (depType === 'devDependencies' && node.importer)
 
 export const appendNodes = async (
   graph: Graph,
@@ -14,50 +21,34 @@ export const appendNodes = async (
   addSpecs: Spec[],
   depType: DependencyTypeLong,
 ) => {
-  const { packages, packageInfo } = graph
+  const { packageInfo } = graph
 
-  const reqs: Promise<[Manifest | ManifestMinified, Spec]>[] = []
-  for (let spec of addSpecs) {
-    reqs.push(packageInfo.manifest(spec).then(mani => [mani, spec]))
-  }
-  const res: [Manifest | ManifestMinified, Spec][] =
-    await Promise.all(reqs)
+  // TODO: create one queue and promise all at the end
+  await Promise.all(
+    addSpecs.map(async spec => {
+      // TODO: check existing satisfying nodes currently in the graph
+      // before hitting packageInfo.manifest
+      const mani = await packageInfo.manifest(spec)
+      const node = graph.placePackage(fromNode, depType, spec, mani)
 
-  const nextDeps: Set<Node> = new Set()
-  for (const [mani, spec] of res) {
-    const node = graph.placePackage(
-      fromNode,
-      depType,
-      spec,
-      // TODO: Replacing with proper manifest type from @vltpkg/types
-      // should fix the need for type cast here
-      mani,
-      undefined,
-      origin,
-    )
-    if (node) {
-      nextDeps.add(node)
-    }
-  }
+      if (!node) return
 
-  const appendChildNodes = []
-  // loop through new nodes and their deps, recursively appending new nodes
-  for (const nextDepType of packages.dependencyTypes.keys()) {
-    // TODO: only supporting prod deps here for now
-    if (nextDepType === 'dependencies') {
-      for (const next of nextDeps) {
+      const nestedAppends: Promise<void>[] = []
+
+      for (const nextDepType of dependencyTypes.keys()) {
         const depRecord: Record<string, string> | undefined =
-          next.pkg[nextDepType]
-        if (depRecord) {
+          mani[nextDepType]
+
+        if (depRecord && shouldInstallDepType(node, nextDepType)) {
           const addSpecs: Spec[] = Object.entries(depRecord).map(
-            ([key, name]) => Spec.parse(`${key}@${name}`),
+            ([name, bareSpec]) => Spec.parse(name, bareSpec),
           )
-          appendChildNodes.push(
-            appendNodes(graph, next, addSpecs, nextDepType),
+          nestedAppends.push(
+            appendNodes(graph, node, addSpecs, nextDepType),
           )
         }
       }
-    }
-  }
-  await Promise.all(appendChildNodes)
+      await Promise.all(nestedAppends)
+    }),
+  )
 }

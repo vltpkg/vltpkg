@@ -1,34 +1,43 @@
-import { Spec } from '@vltpkg/spec'
+import { dirname, resolve } from 'node:path'
+import { fileURLToPath, pathToFileURL } from 'node:url'
 import { inspect } from 'node:util'
 import t from 'tap'
+import { Spec } from '@vltpkg/spec'
 import { Graph } from '../../src/graph.js'
 import { humanReadableOutput } from '../../src/visualization/human-readable-output.js'
 
-t.cleanSnapshot = s => s.replace(/\\+/g, '/')
+const __dirname = dirname(fileURLToPath(import.meta.url))
+const encodedCwd = encodeURIComponent(
+  String(pathToFileURL(resolve(__dirname, '../../..'))),
+).substring(13)
+t.cleanSnapshot = s =>
+  s.replaceAll(encodedCwd, '').replace(/\\+/g, '/')
 
 t.test('human-readable-output', async t => {
   const graph = new Graph({
-    name: 'my-project',
-    version: '1.0.0',
-    dependencies: {
-      foo: '^1.0.0',
-      bar: '^1.0.0',
-      missing: '^1.0.0',
+    location: './my-project',
+    mainManifest: {
+      name: 'my-project',
+      version: '1.0.0',
+      dependencies: {
+        foo: '^1.0.0',
+        bar: '^1.0.0',
+        missing: '^1.0.0',
+      },
     },
   })
   const foo = graph.placePackage(
-    graph.root,
+    graph.mainImporter,
     'dependencies',
     Spec.parse('foo', '^1.0.0'),
     {
       name: 'foo',
       version: '1.0.0',
     },
-    './node_modules/foo',
   )
   t.ok(foo)
   const bar = graph.placePackage(
-    graph.root,
+    graph.mainImporter,
     'dependencies',
     Spec.parse('bar', '^1.0.0'),
     {
@@ -54,7 +63,7 @@ t.test('human-readable-output', async t => {
   )
   if (!baz) throw new Error('failed to place baz')
   graph.placePackage(
-    graph.root,
+    graph.mainImporter,
     'dependencies',
     Spec.parse('missing', '^1.0.0'),
   )

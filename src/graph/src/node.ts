@@ -1,11 +1,17 @@
+import { resolve } from 'node:path'
+import { getId, DepID } from '@vltpkg/dep-id'
+import { typeError } from '@vltpkg/error-cause'
 import { Spec } from '@vltpkg/spec'
+import { ManifestMinified } from '@vltpkg/types'
+import { DependencyTypeLong } from './dependencies.js'
 import { Edge } from './edge.js'
-import { DependencyTypeLong, Package } from './pkgs.js'
 
 export class Node {
   get [Symbol.toStringTag]() {
     return '@vltpkg/graph.Node'
   }
+
+  #location?: string
 
   /**
    * List of edges coming into this node.
@@ -19,38 +25,64 @@ export class Node {
   edgesOut: Map<string, Edge> = new Map()
 
   /**
-   * A unique id to represent this node in the graph.
+   * A reference to the {@link @DepID} this node represents in the graph.
    */
-  id: number
+  id: DepID
 
   /**
-   * True if this is the root node of the graph.
+   * True if this node is an importer node.
    */
-  isRoot: boolean = false
+  importer: boolean = false
 
   /**
-   * The pkg property holds a reference to the package this node represents
-   * in a given graph structure.
+   * The manifest this node represents in the graph.
    */
-  pkg: Package
+  manifest: ManifestMinified
 
-  constructor(id: number, pkg: Package) {
-    this.id = id
-    this.pkg = pkg
+  /**
+   * The file system location for this node.
+   */
+  get location(): string {
+    if (this.#location) {
+      return this.#location
+    }
+    this.#location = resolve(
+      `node_modules/.vlt/${this.id}/node_modules/${this.manifest.name || this.id}`,
+    )
+    return this.#location
+  }
+
+  constructor(manifest: ManifestMinified, id?: DepID, spec?: Spec) {
+    if (id) {
+      this.id = id
+    } else {
+      if (!spec) {
+        throw typeError(
+          'A new Node needs either a spec or an id parameter',
+          {
+            manifest,
+          },
+        )
+      }
+      this.id = getId(spec, manifest)
+    }
+    this.manifest = manifest
   }
 
   /**
-   * Add an edge from this node connecting it to a dependent.
+   * Sets the node as an importer along with its location.
    */
-  addEdgeIn(type: DependencyTypeLong, spec: Spec, node: Node) {
-    this.edgesIn.add(new Edge(type, spec, this, node))
+  setImporterLocation(location: string) {
+    this.#location = location
+    this.importer = true
   }
 
   /**
    * Add an edge from this node connecting it to a direct dependency.
    */
-  addEdgeOut(type: DependencyTypeLong, spec: Spec, node?: Node) {
+  addEdgesTo(type: DependencyTypeLong, spec: Spec, node?: Node) {
     const edge = new Edge(type, spec, this, node)
+    node?.edgesIn.add(edge)
     this.edgesOut.set(spec.name, edge)
     return edge
   }

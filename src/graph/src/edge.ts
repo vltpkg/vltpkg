@@ -1,7 +1,7 @@
 import { satisfies } from '@vltpkg/semver'
 import { Spec } from '@vltpkg/spec'
 import { Node } from './node.js'
-import { DependencyTypeLong } from './pkgs.js'
+import { DependencyTypeLong } from './dependencies.js'
 
 export class Edge {
   get [Symbol.toStringTag]() {
@@ -60,7 +60,7 @@ export class Edge {
   get peerOptional(): boolean {
     return (
       this.peer &&
-      this.from.pkg.peerDependenciesMeta?.[this.spec.name]
+      this.from.manifest.peerDependenciesMeta?.[this.spec.name]
         ?.optional === true
     )
   }
@@ -72,8 +72,8 @@ export class Edge {
   get valid(): boolean {
     if (!this.to) return this.optional
     if (this.spec.type === 'registry') {
-      if (this.spec.range) {
-        return satisfies(this.to.pkg.version, this.spec.range)
+      if (this.to.manifest.version && this.spec.range) {
+        return satisfies(this.to.manifest.version, this.spec.range)
       }
       return true
       /* c8 ignore start */

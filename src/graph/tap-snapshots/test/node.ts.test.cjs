@@ -9,8 +9,8 @@ exports[`test/node.ts > TAP > Node > should print with special tag name 1`] = `
 Node [@vltpkg/graph.Node] {
   edgesIn: Set(0) {},
   edgesOut: Map(0) {},
-  id: 0,
-  isRoot: true,
-  pkg: [Object]
+  id: 'file;%2F%2F%2Fpath%2Fto%2Froot',
+  importer: true,
+  manifest: [Object]
 }
 `

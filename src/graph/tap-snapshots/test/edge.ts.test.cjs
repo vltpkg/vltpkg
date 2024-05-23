@@ -19,9 +19,9 @@ Edge [@vltpkg/graph.Edge] {
   from: Node [@vltpkg/graph.Node] {
     edgesIn: Set(0) {},
     edgesOut: Map(0) {},
-    id: 1,
-    isRoot: false,
-    pkg: [Object]
+    id: 'registry;;child@1.0.0',
+    importer: false,
+    manifest: [Object]
   },
   to: undefined,
   type: 'dependencies',

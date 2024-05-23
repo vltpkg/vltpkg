@@ -7,15 +7,26 @@
 'use strict'
 exports[`test/visualization/human-readable-output.ts > TAP > human-readable-output > should print human readable output 1`] = `
 Node {
-  pkg: <my-project@1.0.0>,
+  id: 'file;%2F%2F%2Fgraph%2Fmy-project',
+  location: 'file://{CWD}/my-project',
   edgesOut: [
-    Edge -prod-> to: Node { pkg: <foo@1.0.0> node_modules/foo },
     Edge -prod-> to: Node {
-      pkg: <bar@1.0.0>,
+      id: 'registry;;foo@1.0.0',
+      location: '{CWD}/node_modules/.vlt/registry;;foo@1.0.0/node_modules/foo'
+    },
+    Edge -prod-> to: Node {
+      id: 'registry;;bar@1.0.0',
+      location: '{CWD}/node_modules/.vlt/registry;;bar@1.0.0/node_modules/bar',
       edgesOut: [
         Edge -prod-> to: Node {
-          pkg: <baz@1.0.0> https://registry.vlt.sh/baz,
-          edgesOut: [ Edge -prod-> to: Node { pkg: <foo@1.0.0> node_modules/foo } ]
+          id: 'registry;;baz@1.0.0',
+          location: '{CWD}/node_modules/.vlt/registry;;baz@1.0.0/node_modules/baz',
+          edgesOut: [
+            Edge -prod-> to: Node {
+              id: 'registry;;foo@1.0.0',
+              location: '{CWD}/node_modules/.vlt/registry;;foo@1.0.0/node_modules/foo'
+            }
+          ]
         }
       ]
     },
