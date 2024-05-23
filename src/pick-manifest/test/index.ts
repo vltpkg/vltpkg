@@ -1,7 +1,12 @@
 import { Range } from '@vltpkg/semver'
 import { Spec } from '@vltpkg/spec'
 import t from 'tap'
-import { Manifest, ManifestMinified, Packument, PackumentMinified } from '@vltpkg/types'
+import {
+  Manifest,
+  ManifestMinified,
+  Packument,
+  PackumentMinified,
+} from '@vltpkg/types'
 import { pickManifest } from '../src/index.js'
 
 // don't need to run, just for typechecking
