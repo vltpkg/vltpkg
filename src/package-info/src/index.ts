@@ -26,7 +26,7 @@ import {
 import { Monorepo } from '@vltpkg/workspaces'
 import { XDG } from '@vltpkg/xdg'
 import { randomBytes } from 'crypto'
-import { readFile, rename, rm, stat, symlink } from 'fs/promises'
+import { readFile, rm, stat, symlink } from 'fs/promises'
 import {
   basename,
   dirname,
@@ -34,6 +34,7 @@ import {
   resolve as pathResolve,
 } from 'path'
 import { create as tarC } from 'tar'
+import { rename } from './rename.js'
 
 const xdg = new XDG('vlt')
 
