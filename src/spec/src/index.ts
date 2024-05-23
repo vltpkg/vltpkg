@@ -5,7 +5,12 @@ import {
 } from '@vltpkg/error-cause'
 import { parseRange, type Range } from '@vltpkg/semver'
 import { homedir } from 'node:os'
-import { resolve, win32 as winPath } from 'node:path'
+import {
+  isAbsolute,
+  join,
+  resolve,
+  win32 as winPath,
+} from 'node:path'
 import { inspect } from 'node:util'
 
 export type SpecOptions = {
@@ -99,7 +104,7 @@ export class Spec {
    * the parsed '::'-separated key/value pairs:
    * `semver:<range>` and `path:<subpath>`
    */
-  gitSelectorParsed?: Record<string, string>
+  gitSelectorParsed?: GitSelectorParsed
   /** the commit value we will check out */
   gitCommittish?: string
   /** github, gitlab, bitbucket, gist, etc. */
@@ -548,7 +553,19 @@ export class Spec {
         this.range = range
       }
       if (k === 'semver' || k === 'path') {
-        this.gitSelectorParsed[k] = v
+        if (k === 'path') {
+          if (isAbsolute(v) || /(^|\/|\\)\.\.($|\\|\/)/.test(v)) {
+            throw error('Invalid path in git selector', {
+              spec: this,
+            })
+          }
+          // normalize
+          this.gitSelectorParsed.path = join('/', v)
+            .substring(1)
+            .replace(/\\/g, '/')
+        } else {
+          this.gitSelectorParsed[k] = v
+        }
       }
     }
   }

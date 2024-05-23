@@ -319,3 +319,21 @@ t.test('try to guess the conventional tarball URL', t => {
   }
   t.end()
 })
+
+t.test('git path selector must be relative', async t => {
+  const nogood = [
+    'git+ssh://user@host/repo#main::path:/x',
+    'git+ssh://user@host/repo#main::path:../x',
+    'git+ssh://user@host/repo#main::path:x/../x',
+    'git+ssh://user@host/repo#main::path:x/..',
+    'git+ssh://user@host/repo#main::path:..\\x',
+    'git+ssh://user@host/repo#main::path:x\\..\\x',
+    'git+ssh://user@host/repo#main::path:x\\..',
+  ]
+  for (const bad of nogood) {
+    t.throws(() => Spec.parse(bad), {
+      message: 'Invalid path in git selector',
+      cause: { spec: Spec },
+    }, bad)
+  }
+})
