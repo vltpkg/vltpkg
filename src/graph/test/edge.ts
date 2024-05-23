@@ -1,9 +1,8 @@
-import { Spec } from '@vltpkg/spec'
 import { inspect } from 'node:util'
 import t from 'tap'
+import { Spec } from '@vltpkg/spec'
 import { Edge } from '../src/edge.js'
 import { Node } from '../src/node.js'
-import { Package } from '../src/pkgs.js'
 
 const kCustomInspect = Symbol.for('nodejs.util.inspect.custom')
 Object.assign(Spec.prototype, {
@@ -13,14 +12,18 @@ Object.assign(Spec.prototype, {
 })
 
 t.test('Edge', async t => {
-  const root = new Node(0, {
+  const rootMani = {
     name: 'root',
     version: '1.0.0',
-  } as Package)
-  const child = new Node(1, {
+  }
+  const rootSpec = Spec.parse('root@1.0.0')
+  const root = new Node(rootMani, undefined, rootSpec)
+  const childMani = {
     name: 'child',
     version: '1.0.0',
-  } as Package)
+  }
+  const childSpec = Spec.parse('child@1.0.0')
+  const child = new Node(childMani, undefined, childSpec)
 
   const edge = new Edge(
     'dependencies',
@@ -63,12 +66,14 @@ t.test('Edge', async t => {
   t.equal(optional.optional, true)
   t.equal(optional.valid, true)
 
-  const pdm = new Node(2, {
+  const pdmMani = {
     name: 'pdm',
     version: '1.2.3',
     peerDependencies: { foo: '*' },
     peerDependenciesMeta: { foo: { optional: true } },
-  } as unknown as Package)
+  }
+  const pdmSpec = Spec.parse('pdm@1.2.3')
+  const pdm = new Node(pdmMani, undefined, pdmSpec)
   const pdmEdge = new Edge(
     'peerDependencies',
     Spec.parse('foo@*'),

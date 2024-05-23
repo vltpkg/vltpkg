@@ -1,10 +1,14 @@
+import { DepID, hydrate } from '@vltpkg/dep-id'
+import { dependencyTypes } from '../dependencies.js'
 import { Edge } from '../edge.js'
 import { Graph } from '../graph.js'
 import { Node } from '../node.js'
 
 let missingCount = 0
 
-function parseNode(seenNodes: Set<number>, graph: Graph, node: Node) {
+const readableId = (id: DepID) => String(hydrate(id).bareSpec)
+
+function parseNode(seenNodes: Set<DepID>, graph: Graph, node: Node) {
   if (seenNodes.has(node.id)) {
     return ''
   }
@@ -12,13 +16,13 @@ function parseNode(seenNodes: Set<number>, graph: Graph, node: Node) {
   const edges: string = [...node.edgesOut.values()]
     .map(e => parseEdge(seenNodes, graph, e))
     .join('\n')
-  return `${node.id}(${node.pkg.id})${edges.length ? '\n' : ''}${edges}`
+  return `${encodeURIComponent(readableId(node.id))}(${readableId(node.id)})${edges.length ? '\n' : ''}${edges}`
 }
 
-function parseEdge(seenNodes: Set<number>, graph: Graph, edge: Edge) {
+function parseEdge(seenNodes: Set<DepID>, graph: Graph, edge: Edge) {
   const edgeResult =
-    String(edge.from.id) +
-    ` -->|${graph.packages.dependencyTypes.get(edge.type)}| `
+    `${encodeURIComponent(readableId(edge.from.id))}(${readableId(edge.from.id)})` +
+    ` -->|${dependencyTypes.get(edge.type)}| `
 
   if (!edge.to) {
     return (
@@ -29,12 +33,14 @@ function parseEdge(seenNodes: Set<number>, graph: Graph, edge: Edge) {
 
   return (
     edgeResult +
-    `${String(edge.to.id)}(${edge.to.pkg.id})\n` +
+    `${encodeURIComponent(readableId(edge.to.id))}(${readableId(edge.to.id)})\n` +
     parseNode(seenNodes, graph, edge.to)
   )
 }
 
 export function mermaidOutput(graph: Graph) {
-  const seenNodes: Set<number> = new Set()
-  return 'flowchart TD\n' + parseNode(seenNodes, graph, graph.root)
+  const seenNodes: Set<DepID> = new Set()
+  return (
+    'flowchart TD\n' + parseNode(seenNodes, graph, graph.mainImporter)
+  )
 }

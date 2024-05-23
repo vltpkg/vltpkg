@@ -148,8 +148,8 @@ export interface ErrorCauseObject {
 }
 
 export type DuckTypeManifest = Record<string, any> & {
-  name: string
-  version: string
+  name?: string
+  version?: string
   deprecated?: string
   engines?: Record<string, string>
   os?: string | string[]
