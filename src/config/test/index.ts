@@ -233,10 +233,10 @@ t.test('enable/disable color output', async t => {
   const mockXDG = {
     XDG: class XDG {
       config() {
-        return dir + '/xdg/vlt.json'
+        return resolve(dir, 'xdg/vlt.json')
       }
       cache() {
-        dir + '/default/cache'
+        return resolve(dir, 'default/cache')
       }
     },
   }
@@ -499,10 +499,10 @@ t.test('do not walk past xdg config dir', async t => {
   const mockXDG = {
     XDG: class XDG {
       config() {
-        return dir + '/vlt.json'
+        return resolve(dir, 'vlt.json')
       }
       cache() {
-        dir + '/default/cache'
+        return resolve(dir, 'default/cache')
       }
     },
   }
