@@ -8,3 +8,4 @@
 /node_modules
 /docs
 .DS_Store
+/pnpm-exec-summary.json
