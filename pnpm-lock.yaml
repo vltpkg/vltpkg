@@ -615,6 +615,52 @@ importers:
         specifier: ^0.25.13
         version: 0.25.13(typescript@5.4.5)
 
+  src/workspaces:
+    dependencies:
+      '@vltpkg/error-cause':
+        specifier: workspace:*
+        version: link:../error-cause
+      '@vltpkg/package-json':
+        specifier: workspace:*
+        version: link:../package-json
+      '@vltpkg/types':
+        specifier: workspace:*
+        version: link:../types
+      glob:
+        specifier: ^10.4.1
+        version: 10.4.1
+      graph-run:
+        specifier: ^1.0.2
+        version: 1.0.2
+      minimatch:
+        specifier: ^9.0.4
+        version: 9.0.4
+      path-scurry:
+        specifier: ^1.11.1
+        version: 1.11.1
+      polite-json:
+        specifier: ^5.0.0
+        version: 5.0.0
+      walk-up-path:
+        specifier: ^3.0.1
+        version: 3.0.1
+    devDependencies:
+      '@types/node':
+        specifier: ^20.12.12
+        version: 20.12.12
+      prettier:
+        specifier: ^3.2.5
+        version: 3.2.5
+      tap:
+        specifier: ^19.0.0
+        version: 19.0.0(@types/node@20.12.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.4.5)
+      tshy:
+        specifier: ^1.14.0
+        version: 1.14.0
+      typedoc:
+        specifier: ^0.25.13
+        version: 0.25.13(typescript@5.4.5)
+
   src/xdg:
     devDependencies:
       '@types/node':
@@ -1185,8 +1231,13 @@ packages:
     resolution: {integrity: sha512-AOIgSQCepiJYwP3ARnGx+5VnTu2HBYdzbGP45eLw1vr3zB3vZLeyed1sC9hnbcOc9/SrMyM5RPQrkGz4aS9Zow==}
     engines: {node: '>= 6'}
 
-  glob@10.3.16:
-    resolution: {integrity: sha512-JDKXl1DiuuHJ6fVS2FXjownaavciiHNUU4mOvV/B793RLh05vZL1rcPnCSaOgv1hDT6RDlY7AB7ZUvFYAtPgAw==}
+  glob@10.4.0:
+    resolution: {integrity: sha512-+K6CicMIL11UEbC3gH/MVxgGG4gJDMu9tPD+nH+d6W3+y2fYuDSbpa2b+EGyvCGvSN/PT/7daJTH25NknJkcIQ==}
+    engines: {node: '>=16 || 14 >=14.18'}
+    hasBin: true
+
+  glob@10.4.1:
+    resolution: {integrity: sha512-2jelhlq3E4ho74ZyVLN03oKdAZVUa6UDZzFLVH1H7dnoax+y9qyaq8zBkfDIggjniU19z0wU18y16jMB2eyVIw==}
     engines: {node: '>=16 || 14 >=14.18'}
     hasBin: true
 
@@ -1195,6 +1246,9 @@ packages:
 
   graceful-fs@4.2.11:
     resolution: {integrity: sha512-RbJ5/jmFcNNCcDV5o9eTnBLJ/HszWV0P73bc+Ff4nS/rJj+YaS6IGyiOL0VoBYX+l1Wrl3k63h/KrH+nhJ0XvQ==}
+
+  graph-run@1.0.2:
+    resolution: {integrity: sha512-q3HYpDgZvdkI1qnLEiov/6BXBjujOnzNw3N9fjOilYCtTmeKSzOrjA2F9i4uCI0jyAI6AKaLw+XZZ9bg85kJhw==}
 
   has-flag@4.0.0:
     resolution: {integrity: sha512-EykJT/Q1KjTWctppgIAgfSO0tKVuZUjhgMr17kqTumMl6Afv3EISleU7qZUzoXDFTAHTDC4NOoG/ZxU3EvlMPQ==}
@@ -1434,6 +1488,10 @@ packages:
 
   minipass@7.1.1:
     resolution: {integrity: sha512-UZ7eQ+h8ywIRAW1hIEl2AqdwzJucU/Kp59+8kkZeSvafXhZjul247BvIJjEVFVeON6d7lM46XX1HXCduKAS8VA==}
+    engines: {node: '>=16 || 14 >=14.17'}
+
+  minipass@7.1.2:
+    resolution: {integrity: sha512-qOOzS1cBTWYF4BH8fVePDBOO9iptMnGUEZwNc/cMWnTV2nVLZ7VoNWEPHkYczZA0pdoA7dl6e7FL659nX9S2aw==}
     engines: {node: '>=16 || 14 >=14.17'}
 
   minizlib@2.1.2:
@@ -2076,7 +2134,7 @@ snapshots:
   '@npmcli/package-json@5.1.0':
     dependencies:
       '@npmcli/git': 5.0.7
-      glob: 10.3.16
+      glob: 10.4.0
       hosted-git-info: 7.0.2
       json-parse-even-better-errors: 3.0.2
       normalize-package-data: 6.0.1
@@ -2294,7 +2352,7 @@ snapshots:
       chalk: 5.3.0
       chokidar: 3.6.0
       foreground-child: 3.1.1
-      glob: 10.3.16
+      glob: 10.4.1
       minipass: 7.1.1
       mkdirp: 3.0.1
       opener: 1.5.2
@@ -2360,7 +2418,7 @@ snapshots:
       '@tapjs/stdin': 2.0.0(@tapjs/core@2.0.0(@types/node@20.12.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
       '@tapjs/typescript': 1.4.5(@tapjs/core@2.0.0(@types/node@20.12.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@types/node@20.12.12)(typescript@5.4.5)
       '@tapjs/worker': 2.0.0(@tapjs/core@2.0.0(@types/node@20.12.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
-      glob: 10.3.16
+      glob: 10.4.0
       jackspeak: 3.1.2
       mkdirp: 3.0.1
       resolve-import: 1.4.5
@@ -2503,7 +2561,7 @@ snapshots:
     dependencies:
       '@npmcli/fs': 3.1.1
       fs-minipass: 3.0.3
-      glob: 10.3.16
+      glob: 10.4.0
       lru-cache: 10.2.2
       minipass: 7.1.1
       minipass-collect: 2.0.1
@@ -2652,12 +2710,20 @@ snapshots:
     dependencies:
       is-glob: 4.0.3
 
-  glob@10.3.16:
+  glob@10.4.0:
     dependencies:
       foreground-child: 3.1.1
       jackspeak: 3.1.2
       minimatch: 9.0.4
-      minipass: 7.1.1
+      minipass: 7.1.2
+      path-scurry: 1.11.1
+
+  glob@10.4.1:
+    dependencies:
+      foreground-child: 3.1.1
+      jackspeak: 3.1.2
+      minimatch: 9.0.4
+      minipass: 7.1.2
       path-scurry: 1.11.1
 
   glob@7.2.3:
@@ -2670,6 +2736,8 @@ snapshots:
       path-is-absolute: 1.0.1
 
   graceful-fs@4.2.11: {}
+
+  graph-run@1.0.2: {}
 
   has-flag@4.0.0: {}
 
@@ -2917,6 +2985,8 @@ snapshots:
 
   minipass@7.1.1: {}
 
+  minipass@7.1.2: {}
+
   minizlib@2.1.2:
     dependencies:
       minipass: 3.3.6
@@ -2943,7 +3013,7 @@ snapshots:
     dependencies:
       env-paths: 2.2.1
       exponential-backoff: 3.1.1
-      glob: 10.3.16
+      glob: 10.4.0
       graceful-fs: 4.2.11
       make-fetch-happen: 13.0.1
       nopt: 7.2.1
@@ -3103,7 +3173,7 @@ snapshots:
   path-scurry@1.11.1:
     dependencies:
       lru-cache: 10.2.2
-      minipass: 7.1.1
+      minipass: 7.1.2
 
   picomatch@2.3.1: {}
 
@@ -3171,7 +3241,7 @@ snapshots:
 
   read-package-json@7.0.1:
     dependencies:
-      glob: 10.3.16
+      glob: 10.4.1
       json-parse-even-better-errors: 3.0.2
       normalize-package-data: 6.0.1
       npm-normalize-package-bin: 3.0.1
@@ -3184,7 +3254,7 @@ snapshots:
 
   resolve-import@1.4.5:
     dependencies:
-      glob: 10.3.16
+      glob: 10.4.1
       walk-up-path: 3.0.1
 
   restore-cursor@4.0.0:
@@ -3200,7 +3270,7 @@ snapshots:
 
   rimraf@5.0.7:
     dependencies:
-      glob: 10.3.16
+      glob: 10.4.0
 
   safer-buffer@2.1.2:
     optional: true
@@ -3320,7 +3390,7 @@ snapshots:
 
   sync-content@1.0.2:
     dependencies:
-      glob: 10.3.16
+      glob: 10.4.1
       mkdirp: 3.0.1
       path-scurry: 1.11.1
       rimraf: 5.0.7
