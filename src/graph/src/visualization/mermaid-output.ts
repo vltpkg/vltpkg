@@ -6,7 +6,10 @@ import { Node } from '../node.js'
 
 let missingCount = 0
 
-const readableId = (id: DepID) => String(hydrate(id).bareSpec)
+const readableId = (id: DepID) => {
+  const spec = hydrate(id)
+  return String(spec.type === 'registry' ? spec : spec.bareSpec)
+}
 
 function parseNode(seenNodes: Set<DepID>, graph: Graph, node: Node) {
   if (seenNodes.has(node.id)) {

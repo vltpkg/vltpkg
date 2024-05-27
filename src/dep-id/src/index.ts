@@ -139,7 +139,9 @@ export const hydrateTuple = (
       }
       if (!first) {
         // just a normal name@version on the default registry
-        return Spec.parse(name, second)
+        return name === 'unknown' ?
+            Spec.parse(second)
+          : Spec.parse(name, second)
       }
       if (!/^https?:\/\//.test(first)) {
         const reg = options.registries?.[first]
@@ -149,9 +151,13 @@ export const hydrateTuple = (
             found: tuple,
           })
         }
-        return Spec.parse(name, `${first}:${second}`, options)
+        return name === 'unknown' ?
+            Spec.parse(`${first}:${second}`, options)
+          : Spec.parse(name, `${first}:${second}`, options)
       }
-      return Spec.parse(name, `registry:${first}#${second}`, options)
+      return name === 'unknown' ?
+          Spec.parse(`registry:${first}#${second}`, options)
+        : Spec.parse(name, `registry:${first}#${second}`, options)
     }
     case 'git': {
       if (!first) {

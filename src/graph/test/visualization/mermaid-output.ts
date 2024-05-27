@@ -11,7 +11,7 @@ const encodedCwd = encodeURIComponent(
 ).substring(13)
 t.cleanSnapshot = s => s.replaceAll(encodedCwd, '')
 
-t.test('human-readable-output', async t => {
+t.test('mermaid-output', async t => {
   const graph = new Graph({
     location: './my-project',
     mainManifest: {
@@ -76,6 +76,6 @@ t.test('human-readable-output', async t => {
   )
   t.matchSnapshot(
     mermaidOutput(graph),
-    'should print human readable output',
+    'should print mermaid output',
   )
 })
