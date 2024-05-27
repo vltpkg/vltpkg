@@ -1,3 +1,4 @@
+import {ErrorCause, ErrorCauseObject} from '@vltpkg/error-cause'
 import t from 'tap'
 import { PackageJson } from '../src/index.js'
 
@@ -19,6 +20,17 @@ t.test('successfully reads a valid package.jsonf file', async t => {
 t.test('fails on missing package.json file', async t => {
   const dir = t.testdirName
   const pj = new PackageJson()
+  try {
+    pj.read(dir)
+    t.fail('expected to throw')
+  } catch (er) {
+    try {
+      pj.read(dir)
+      t.fail('expected to throw')
+    } catch (er2) {
+      t.equal((er as Error).cause, (er2 as Error).cause, 'error was cached')
+    }
+  }
   t.throws(
     () => pj.read(dir),
     {
