@@ -1,7 +1,7 @@
 import { spawn as spawnGit } from '@vltpkg/git'
-import { Manifest } from '@vltpkg/types'
 import { Spec } from '@vltpkg/spec'
-import { readFileSync } from 'node:fs'
+import { Manifest } from '@vltpkg/types'
+import { readFileSync, readlinkSync } from 'node:fs'
 import { writeFile } from 'node:fs/promises'
 import { createServer } from 'node:http'
 import { dirname, resolve as pathResolve } from 'node:path'
@@ -535,6 +535,19 @@ t.test('extract', async t => {
   t.match(await extract('abbrev@2', dir + '/registry', options), {
     resolved: `${defaultRegistry}abbrev/-/abbrev-2.0.0.tgz`,
   })
+
+  t.match(await extract(`abbrev@${pkgDir}`, dir + '/dir', options), {
+    resolved: fileURLToPath(pkgDir),
+  })
+  t.equal(
+    pathResolve(dir, readlinkSync(dir + '/dir')),
+    fileURLToPath(pkgDir),
+  )
+
+  await t.rejects(
+    extract(`abbrev@workspace:*`, dir + '/ws', options),
+    { message: 'not supported' },
+  )
 
   t.match(
     await extract(
