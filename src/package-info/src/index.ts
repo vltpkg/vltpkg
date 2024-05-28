@@ -25,8 +25,13 @@ import {
 } from '@vltpkg/types'
 import { XDG } from '@vltpkg/xdg'
 import { randomBytes } from 'crypto'
-import { readFile, rm, stat } from 'fs/promises'
-import { basename, dirname, resolve as pathResolve } from 'path'
+import { readFile, rm, stat, symlink } from 'fs/promises'
+import {
+  basename,
+  dirname,
+  relative,
+  resolve as pathResolve,
+} from 'path'
 import { create as tarC } from 'tar'
 
 const xdg = new XDG('vlt')
@@ -205,6 +210,7 @@ export class PackageInfoClient {
       spec = Spec.parse(spec, this.options)
     const f = spec.final
     const r = await this.resolve(spec, options)
+    const { from = this.#cwd } = options
     switch (f.type) {
       case 'git': {
         const { gitRemote, gitCommittish, remoteURL } = f
@@ -254,23 +260,51 @@ export class PackageInfoClient {
         }
         return r
       }
-      case 'file':
-      case 'workspace': {
-        try {
-          await this.tarPool.unpack(
-            await this.tarball(spec, options),
-            target,
-          )
-        } catch (er) {
+      case 'file': {
+        // if it's a directory, then "extract" means "symlink"
+        const { file } = f
+        /* c8 ignore start - asserted in resolve() */
+        if (file === undefined)
+          throw this.#resolveError(spec, options, 'no file path')
+        /* c8 ignore stop */
+        const path = pathResolve(from, file)
+        const st = await stat(path)
+        if (st.isFile()) {
+          try {
+            await this.tarPool.unpack(
+              await this.tarball(spec, options),
+              target,
+            )
+          } catch (er) {
+            throw this.#resolveError(
+              spec,
+              options,
+              'tar unpack failed',
+              { cause: er as Error },
+            )
+          }
+        } else if (st.isDirectory()) {
+          const rel = relative(dirname(target), path)
+          await symlink(rel, target, 'dir')
+          /* c8 ignore start */
+        } else {
           throw this.#resolveError(
             spec,
             options,
-            'tar unpack failed',
-            { cause: er as Error },
+            'file: specifier does not resolve to directory or tarball',
           )
         }
+        /* c8 ignore stop */
         return r
       }
+      /* c8 ignore start */
+      case 'workspace': {
+        throw error('not supported', {
+          spec,
+          todo: 'workspace extraction',
+        })
+      }
+      /* c8 ignore stop */
     }
   }
 
@@ -569,11 +603,12 @@ export class PackageInfoClient {
     switch (f.type) {
       case 'file': {
         const { file } = f
-        if (!file)
-          error('no path on file: specifier', {
+        if (!file) {
+          throw error('no path on file: specifier', {
             spec,
             code: 'ERESOLVE',
           })
+        }
         const { from = this.#cwd } = options
         const resolved = pathResolve(from, spec.file as string)
         const r = { resolved, spec }
