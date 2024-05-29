@@ -239,3 +239,83 @@ t.test('invalid file: URIs', t => {
 
   t.end()
 })
+
+t.test('try to guess the conventional tarball URL', t => {
+  const guesses: [spec: string, path?: string, r?: boolean][] = [
+    ['x@1.2.3', '/x/-/x-1.2.3.tgz'],
+    ['x@=1.2.3', '/x/-/x-1.2.3.tgz'],
+    ['x@npm:y@2.4.5', '/y/-/y-2.4.5.tgz'],
+    ['x@npm:y@=2.4.5', '/y/-/y-2.4.5.tgz'],
+    ['x@npm:y@v2.4.5', '/y/-/y-2.4.5.tgz'],
+    ['x@vlt:z@6.5.4', '/z/-/z-6.5.4.tgz', true],
+    ['@scope/pkg@1.2.3', '/@scope/pkg/-/pkg-1.2.3.tgz'],
+    ['@scope/pkg@npm:x@1.2.3', '/x/-/x-1.2.3.tgz'],
+    ['@scope/pkg@vlt:x@1.2.3', '/x/-/x-1.2.3.tgz', true],
+
+    [
+      'x@registry:https://registry.npmjs.org#x@1.2.3',
+      '/x/-/x-1.2.3.tgz',
+    ],
+    [
+      'x@registry:https://registry.npmjs.org#x@=1.2.3',
+      '/x/-/x-1.2.3.tgz',
+    ],
+    [
+      'x@registry:https://registry.npmjs.org#x@npm:y@2.4.5',
+      '/y/-/y-2.4.5.tgz',
+    ],
+    [
+      'x@registry:https://registry.npmjs.org#x@npm:y@=2.4.5',
+      '/y/-/y-2.4.5.tgz',
+    ],
+    [
+      'x@registry:https://registry.npmjs.org#x@npm:y@v2.4.5',
+      '/y/-/y-2.4.5.tgz',
+    ],
+    [
+      'x@registry:https://registry.npmjs.org#x@vlt:z@6.5.4',
+      '/z/-/z-6.5.4.tgz',
+      true,
+    ],
+    [
+      'x@registry:https://registry.npmjs.org#@scope/pkg@1.2.3',
+      '/@scope/pkg/-/pkg-1.2.3.tgz',
+    ],
+    [
+      'x@registry:https://registry.npmjs.org#@scope/pkg@npm:x@1.2.3',
+      '/x/-/x-1.2.3.tgz',
+    ],
+    [
+      'x@registry:https://registry.npmjs.org#@scope/pkg@vlt:x@1.2.3',
+      '/x/-/x-1.2.3.tgz',
+      true,
+    ],
+
+    // not guessable
+    ['x@1.x'],
+    ['x@>1.2.3'],
+    ['x@npm:y@3.4'],
+    ['x@npm:z@latest'],
+  ]
+  const options = {
+    registries: {
+      vlt: 'https://registry.vlt.sh',
+    },
+  }
+  for (const [spec, path, r] of guesses) {
+    const s = Spec.parse(spec, options)
+    if (path === undefined) {
+      t.equal(
+        s.conventionalRegistryTarball,
+        undefined,
+        'should not try to guess',
+      )
+    } else {
+      const host =
+        r ? 'https://registry.vlt.sh' : 'https://registry.npmjs.org'
+      const expect = String(new URL(path, host))
+      t.equal(s.conventionalRegistryTarball, expect)
+    }
+  }
+  t.end()
+})
