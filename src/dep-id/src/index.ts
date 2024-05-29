@@ -27,8 +27,8 @@ import { Manifest } from '@vltpkg/types'
  * - `file`: `'file;<path>`
  */
 export type DepID =
-  | `${'registry' | 'git' | 'workspace'};${string};${string}`
-  | `${'remote' | 'file'};${string}`
+  | `${'registry' | 'git'};${string};${string}`
+  | `${'remote' | 'file' | 'workspace'};${string}`
 
 /**
  * A {@link DepID}, split apart and URI-decoded
@@ -38,7 +38,7 @@ export type DepIDTuple =
   | [type: 'git', gitRemote: string, gitSelector: string]
   | [type: 'file', path: string]
   | [type: 'remote', url: string]
-  | [type: 'workspace', name: string, workspaceSpec: string]
+  | [type: 'workspace', workspace: string]
 
 /**
  * turn a {@link DepIDTuple} into a {@link DepID}
@@ -49,7 +49,6 @@ export const joinDepIDTuple = (list: DepIDTuple): DepID => {
   switch (type) {
     case 'git':
     case 'registry':
-    case 'workspace':
       return `${type};${f};${encode(second)}`
     default:
       return `${type};${f}`
@@ -69,13 +68,13 @@ export const splitDepID = (id: string): DepIDTuple => {
   switch (type) {
     case 'git':
     case 'registry':
-    case 'workspace':
       if (second === undefined) {
         throw error(`invalid ${type} id`, { found: id })
       }
       return [type, f, decodeURIComponent(second)]
     case 'file':
     case 'remote':
+    case 'workspace':
       return [type, f]
     default: {
       throw error('invalid DepID type', {
@@ -97,7 +96,7 @@ export const splitDepID = (id: string): DepIDTuple => {
  */
 export const hydrate = (
   id: DepID,
-  name = 'unknown',
+  name?: string,
   options: SpecOptions = {},
 ): Spec => hydrateTuple(splitDepID(id), name, options)
 
@@ -106,7 +105,7 @@ export const hydrate = (
  */
 export const hydrateTuple = (
   tuple: DepIDTuple,
-  name = 'unknown',
+  name?: string,
   options: SpecOptions = {},
 ) => {
   const [type, first, second] = tuple
@@ -116,7 +115,7 @@ export const hydrateTuple = (
         throw error('no remoteURL found on remote id', {
           found: tuple,
         })
-      return Spec.parse(name, first)
+      return Spec.parse(name ?? '(unknown)', first)
     }
     case 'file': {
       if (!first) {
@@ -124,7 +123,7 @@ export const hydrateTuple = (
           found: tuple,
         })
       }
-      return Spec.parse(name, `file:${first}`, options)
+      return Spec.parse(name ?? '(unknown)', `file:${first}`, options)
     }
     case 'registry': {
       if (typeof first !== 'string') {
@@ -139,7 +138,12 @@ export const hydrateTuple = (
       }
       if (!first) {
         // just a normal name@version on the default registry
-        return Spec.parse(name, second)
+        const s = Spec.parse(second)
+        if (name && s.name !== name) {
+          return Spec.parse(`${name}@npm:${second}`)
+        } else {
+          return s
+        }
       }
       if (!/^https?:\/\//.test(first)) {
         const reg = options.registries?.[first]
@@ -149,9 +153,20 @@ export const hydrateTuple = (
             found: tuple,
           })
         }
-        return Spec.parse(name, `${first}:${second}`, options)
+        return Spec.parse(
+          name ?? '(unknown)',
+          `${first}:${second}`,
+          options,
+        )
       }
-      return Spec.parse(name, `registry:${first}#${second}`, options)
+      const s = Spec.parse(
+        name ?? '(unknown)',
+        `registry:${first}#${second}`,
+        options,
+      )
+      return name && s.final.name !== name ?
+          Spec.parse(s.final.name + '@' + s.bareSpec)
+        : s
     }
     case 'git': {
       if (!first) {
@@ -164,13 +179,19 @@ export const hydrateTuple = (
           found: tuple,
         })
       }
-      return Spec.parse(name, first + '#' + second, options)
+      return Spec.parse(
+        name ?? '(unknown)',
+        first + '#' + second,
+        options,
+      )
     }
     case 'workspace': {
-      if (second === undefined) {
-        throw error('no name on workspace id', { found: tuple })
+      if (!first) {
+        throw error('no name/path on workspace id', { found: tuple })
       }
-      return Spec.parse(second, `workspace:${first}`, options)
+      return name && name !== first ?
+          Spec.parse(name, `workspace:${first}@*`, options)
+        : Spec.parse(first, `workspace:*`, options)
     }
   }
 }
@@ -237,11 +258,15 @@ export const getTuple = (spec: Spec, mani: Manifest): DepIDTuple => {
       return [f.type, f.bareSpec.substring('file:'.length)]
     }
     case 'workspace': {
-      const { workspaceSpec } = f
-      if (workspaceSpec === undefined) {
+      // TODO: workspace specs will also be able to contain
+      // a name or path, like
+      // workspace:package/foo@*
+      // workspace:foo@*
+      const { workspaceSpec, workspace } = f
+      if (workspaceSpec === undefined || workspace === undefined) {
         throw error('invalid workspace: specifier', { spec })
       }
-      return [f.type, f.name, workspaceSpec]
+      return [f.type, workspace]
     }
   }
 }
