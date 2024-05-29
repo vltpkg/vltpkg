@@ -6,7 +6,6 @@ import { Spec, SpecOptions } from '@vltpkg/spec'
 import { Integrity, ManifestMinified } from '@vltpkg/types'
 import { DependencyTypeShort, longTypes } from '../dependencies.js'
 import { Graph, ManifestInventory } from '../graph.js'
-import { ConfigFileData } from '@vltpkg/config'
 
 type LockfileNode = [Integrity | null, string?]
 type LockfileEdge = [DepID, DependencyTypeShort, string, DepID?]
@@ -37,7 +36,7 @@ const loadNodes = ({ graph, nodesInfo }: LoadNodesOptions) => {
 
 const loadEdges = (
   { graph, edgesInfo }: LoadEdgesOptions,
-  config: ConfigFileData,
+  registries: Record<string, string>,
 ) => {
   for (const [fromId, shortType, spec, toId] of edgesInfo) {
     const type = longTypes.get(shortType)
@@ -56,17 +55,14 @@ const loadEdges = (
     }
     graph.newEdge(
       type,
-      Spec.parse(spec, config as SpecOptions),
+      Spec.parse(spec, { registries } as SpecOptions),
       from,
       to,
     )
   }
 }
 
-export const load = (
-  { dir, mainManifest }: LoadOptions,
-  config: ConfigFileData,
-): Graph => {
+export const load = ({ dir, mainManifest }: LoadOptions): Graph => {
   const file = readFileSync(resolve(dir, 'vlt-lock.json'), {
     encoding: 'utf8',
   })
@@ -85,11 +81,11 @@ export const load = (
     {
       mainManifest,
     },
-    config,
+    { registries: json.registries },
   )
 
   loadNodes({ graph, nodesInfo })
-  loadEdges({ graph, edgesInfo }, config)
+  loadEdges({ graph, edgesInfo }, json.registries)
 
   return graph
 }
