@@ -2,6 +2,7 @@ import { Spec } from '@vltpkg/spec'
 import { Manifest } from '@vltpkg/types'
 import t from 'tap'
 import {
+  DepID,
   getId,
   getTuple,
   hydrate,
@@ -15,6 +16,7 @@ t.test('valid specs', t => {
   const specs = [
     'x@1.2.3',
     'x@1',
+    'y@1.2.3',
     'y@npm:x@1.2.3',
     'y@npm:x@1',
     'y@npm:x@github:a/b#branch',
@@ -33,6 +35,10 @@ t.test('valid specs', t => {
     'x@file:~/x.tgz',
     'x@https://x.com/x.tgz',
     'x@workspace:*',
+    'x@workspace:y@*',
+    'x@workspace:~',
+    'x@workspace:1.x',
+    'x@workspace:y@1.x',
   ]
 
   for (const s of specs) {
@@ -47,6 +53,12 @@ t.test('valid specs', t => {
       const ht = hydrateTuple(tuple, 'x')
       t.strictSame(h, ht, 'same in both hydrations')
       t.matchSnapshot(String(h), 'hydrated')
+      const hunknown = hydrate(id)
+      t.matchSnapshot(String(hunknown), 'hydrated with name unknown')
+      const hasdf = hydrate(id, 'asdf')
+      t.matchSnapshot(String(hasdf), 'hydrated with name asdf')
+      const hy = hydrate(id, 'y')
+      t.matchSnapshot(String(hy), 'hydrated with name y')
       t.end()
     })
   }
@@ -73,9 +85,10 @@ t.test('getId when manifest empty, fields just blank', t => {
 
 t.test('invalid values', t => {
   //@ts-expect-error
-  t.throws(() => hydrateTuple(['workspace', 'x']))
+  t.throws(() => hydrateTuple(['workspace']))
   //@ts-expect-error
-  t.throws(() => hydrate('workspace;x'))
+  t.throws(() => hydrate('workspace'))
+  t.throws(() => hydrate('workspace;'))
   t.throws(() =>
     getId({ final: { type: 'workspace' } } as Spec, mani),
   )
