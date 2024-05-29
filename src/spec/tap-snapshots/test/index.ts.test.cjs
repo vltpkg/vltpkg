@@ -195,6 +195,7 @@ exports[`test/index.ts > TAP > basic parsing tests > foo@ 1.2.3 > inspect 1`] = 
   bareSpec: ' 1.2.3 ',
   registry: 'https://registry.npmjs.org/',
   registrySpec: ' 1.2.3 ',
+  conventionalRegistryTarball: 'https://registry.npmjs.org/foo/-/foo-1.2.3.tgz',
   semver: '1.2.3',
   range: Range {
     raw: ' 1.2.3 ',
@@ -213,6 +214,7 @@ exports[`test/index.ts > TAP > basic parsing tests > foo@ 1.2.3 > inspect 2`] = 
   bareSpec: ' 1.2.3',
   registry: 'https://registry.npmjs.org/',
   registrySpec: ' 1.2.3',
+  conventionalRegistryTarball: 'https://registry.npmjs.org/foo/-/foo-1.2.3.tgz',
   semver: '1.2.3',
   range: Range {
     raw: ' 1.2.3',
@@ -239,6 +241,7 @@ exports[`test/index.ts > TAP > basic parsing tests > foo@=v1.2.3 > inspect 1`] =
   bareSpec: '=v1.2.3',
   registry: 'https://registry.npmjs.org/',
   registrySpec: '=v1.2.3',
+  conventionalRegistryTarball: 'https://registry.npmjs.org/foo/-/foo-1.2.3.tgz',
   semver: '=v1.2.3',
   range: Range {
     raw: '=v1.2.3',
@@ -305,6 +308,7 @@ exports[`test/index.ts > TAP > basic parsing tests > foo@1.2.3 > inspect 1`] = `
   bareSpec: '1.2.3',
   registry: 'https://registry.npmjs.org/',
   registrySpec: '1.2.3',
+  conventionalRegistryTarball: 'https://registry.npmjs.org/foo/-/foo-1.2.3.tgz',
   semver: '1.2.3',
   range: Range {
     raw: '1.2.3',
@@ -323,6 +327,7 @@ exports[`test/index.ts > TAP > basic parsing tests > foo@1.2.3 > inspect 2`] = `
   bareSpec: '1.2.3 ',
   registry: 'https://registry.npmjs.org/',
   registrySpec: '1.2.3 ',
+  conventionalRegistryTarball: 'https://registry.npmjs.org/foo/-/foo-1.2.3.tgz',
   semver: '1.2.3',
   range: Range {
     raw: '1.2.3 ',

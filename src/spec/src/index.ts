@@ -133,6 +133,14 @@ export class Spec {
   /** semver range or dist-tag for resolving against a packument */
   registrySpec?: string
 
+  /**
+   * conventional location of the tarball on the registry, if it can be
+   * guessed. This is only attempted if the spec is a registry type, with a
+   * single version comparator. This can be used to elide resolved urls that
+   * are repetitive and predictable.
+   */
+  conventionalRegistryTarball?: string
+
   /** spec to resolve against available versions */
   semver?: string
 
@@ -316,6 +324,7 @@ export class Spec {
         if (u === url) this.namedRegistry = name
       }
       this.#parseRegistrySpec(regSpec, url)
+      this.#guessRegistryTarball()
       return
     }
 
@@ -332,6 +341,7 @@ export class Spec {
         if (sub.type === 'registry') {
           sub.namedRegistry = host
         }
+        this.#guessRegistryTarball()
         return
       }
     }
@@ -404,6 +414,7 @@ export class Spec {
     }
     this.registrySpec = this.bareSpec
     this.registry = this.options.registry
+    this.#guessRegistryTarball()
   }
 
   #parseHostedGit(name: string, template: string) {
@@ -454,6 +465,32 @@ export class Spec {
       ...args,
     )
     return `@vltpkg/spec.Spec ${str}`
+  }
+
+  #guessRegistryTarball() {
+    const { name, registry, range } = this.final
+    if (!registry || !range || range.set.length !== 1) return
+
+    // only try to guess if it's a single comparator for a single version
+    const cmp = range.set[0]
+    if (
+      !cmp ||
+      !Array.isArray(cmp.tuples) ||
+      cmp.tuples.length !== 1 ||
+      !Array.isArray(cmp.tuples[0]) ||
+      cmp.tuples[0][0] !== ''
+    ) {
+      return
+    }
+
+    this.conventionalRegistryTarball = String(
+      new URL(
+        `/${name}/-/${name.replace(/^@[^\/]+\//, '')}-${
+          cmp.tuples[0][1]
+        }.tgz`,
+        registry,
+      ),
+    )
   }
 
   #parseRegistrySpec(s: string, url: string) {
