@@ -1812,6 +1812,28 @@ exports[`test/index.ts > TAP > basic parsing tests > x@user/foo#semver:^1.2.3 > 
 x@github:user/foo#semver:^1.2.3
 `
 
+exports[`test/index.ts > TAP > basic parsing tests > x@workspace: > inspect 1`] = `
+@vltpkg/spec.Spec {
+  type: 'workspace',
+  spec: 'x@workspace:',
+  name: 'x',
+  bareSpec: 'workspace:',
+  workspaceSpec: '',
+  workspace: 'x',
+  semver: '',
+  range: Range {
+    raw: '',
+    isAny: true,
+    set: [ [Comparator] ],
+    includePrerelease: false
+  }
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > x@workspace: > toString 1`] = `
+x@workspace:
+`
+
 exports[`test/index.ts > TAP > basic parsing tests > x@workspace:* > inspect 1`] = `
 @vltpkg/spec.Spec {
   type: 'workspace',
@@ -1819,13 +1841,7 @@ exports[`test/index.ts > TAP > basic parsing tests > x@workspace:* > inspect 1`]
   name: 'x',
   bareSpec: 'workspace:*',
   workspaceSpec: '*',
-  semver: '*',
-  range: Range {
-    raw: '*',
-    isAny: true,
-    set: [ [Comparator] ],
-    includePrerelease: false
-  }
+  workspace: 'x'
 }
 `
 
@@ -1839,7 +1855,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@workspace:^ > inspect 1`]
   spec: 'x@workspace:^',
   name: 'x',
   bareSpec: 'workspace:^',
-  workspaceSpec: '^'
+  workspaceSpec: '^',
+  workspace: 'x'
 }
 `
 
@@ -1853,7 +1870,8 @@ exports[`test/index.ts > TAP > basic parsing tests > x@workspace:~ > inspect 1`]
   spec: 'x@workspace:~',
   name: 'x',
   bareSpec: 'workspace:~',
-  workspaceSpec: '~'
+  workspaceSpec: '~',
+  workspace: 'x'
 }
 `
 
@@ -1868,6 +1886,7 @@ exports[`test/index.ts > TAP > basic parsing tests > x@workspace:1.x > inspect 1
   name: 'x',
   bareSpec: 'workspace:1.x',
   workspaceSpec: '1.x',
+  workspace: 'x',
   semver: '1.x',
   range: Range {
     raw: '1.x',
@@ -1880,6 +1899,88 @@ exports[`test/index.ts > TAP > basic parsing tests > x@workspace:1.x > inspect 1
 
 exports[`test/index.ts > TAP > basic parsing tests > x@workspace:1.x > toString 1`] = `
 x@workspace:1.x
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > x@workspace:y@ > inspect 1`] = `
+@vltpkg/spec.Spec {
+  type: 'workspace',
+  spec: 'x@workspace:y@',
+  name: 'x',
+  bareSpec: 'workspace:y@',
+  workspaceSpec: '*',
+  workspace: 'y'
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > x@workspace:y@ > toString 1`] = `
+x@workspace:y@
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > x@workspace:y@* > inspect 1`] = `
+@vltpkg/spec.Spec {
+  type: 'workspace',
+  spec: 'x@workspace:y@*',
+  name: 'x',
+  bareSpec: 'workspace:y@*',
+  workspaceSpec: '*',
+  workspace: 'y'
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > x@workspace:y@* > toString 1`] = `
+x@workspace:y@*
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > x@workspace:y@^ > inspect 1`] = `
+@vltpkg/spec.Spec {
+  type: 'workspace',
+  spec: 'x@workspace:y@^',
+  name: 'x',
+  bareSpec: 'workspace:y@^',
+  workspaceSpec: '^',
+  workspace: 'y'
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > x@workspace:y@^ > toString 1`] = `
+x@workspace:y@^
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > x@workspace:y@~ > inspect 1`] = `
+@vltpkg/spec.Spec {
+  type: 'workspace',
+  spec: 'x@workspace:y@~',
+  name: 'x',
+  bareSpec: 'workspace:y@~',
+  workspaceSpec: '~',
+  workspace: 'y'
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > x@workspace:y@~ > toString 1`] = `
+x@workspace:y@~
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > x@workspace:y@1.x > inspect 1`] = `
+@vltpkg/spec.Spec {
+  type: 'workspace',
+  spec: 'x@workspace:y@1.x',
+  name: 'x',
+  bareSpec: 'workspace:y@1.x',
+  workspaceSpec: '1.x',
+  workspace: 'y',
+  semver: '1.x',
+  range: Range {
+    raw: '1.x',
+    isAny: false,
+    set: [ [Comparator] ],
+    includePrerelease: false
+  }
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > x@workspace:y@1.x > toString 1`] = `
+x@workspace:y@1.x
 `
 
 exports[`test/index.ts > TAP > reverse-lookup registry: specifiers if named > must match snapshot 1`] = `

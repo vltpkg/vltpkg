@@ -1,4 +1,8 @@
-import { error, typeError } from '@vltpkg/error-cause'
+import {
+  error,
+  ErrorCauseObject,
+  typeError,
+} from '@vltpkg/error-cause'
 import { parseRange, type Range } from '@vltpkg/semver'
 import { homedir } from 'node:os'
 import { resolve, win32 as winPath } from 'node:path'
@@ -105,9 +109,17 @@ export class Spec {
 
   /**
    * the specifier when using `workspace:` specs
-   * This can be either a semver range, `*`, `~`, or `^`
+   * This can be either a semver range, `*`, `~`, or `^`,
+   * if the name is not modified. Or, it can include a workspace
+   * package name or path, like `workspace:packages/foo@*` or
+   * `workspace:@scope/foo@*`.
    */
   workspaceSpec?: string
+
+  /**
+   * the package name or path of the workspace being referenced
+   */
+  workspace?: string
 
   /**
    * In specs like `foo@npm:bar@1`, this is the 'npm' part. Other
@@ -237,15 +249,23 @@ export class Spec {
     if (this.bareSpec.startsWith('workspace:')) {
       this.type = 'workspace'
       const ws = this.bareSpec.substring('workspace:'.length).trim()
-      const range = parseRange(ws)
-      if (ws !== '*' && ws !== '~' && ws !== '^' && !range) {
+      const w = ws.indexOf('@')
+      this.workspace = w === -1 ? this.name : ws.substring(0, 1)
+      // workspace: is the same as workspace:*
+      const wss = w === -1 ? ws : ws.substring(w + 1) || '*'
+      const range = wss === '*' ? undefined : parseRange(wss)
+      if (wss !== '*' && wss !== '~' && wss !== '^' && !range) {
         throw this.#error(
           'workspace: spec must be one of *, !, or ^, or a valid semver range',
+          {
+            found: wss,
+            wanted: `'*'|'~'|'^'|SemverRange`,
+          },
         )
       }
-      this.workspaceSpec = ws
+      this.workspaceSpec = wss
       if (range) {
-        this.semver = ws
+        this.semver = wss
         this.range = range
       }
       return
@@ -445,8 +465,8 @@ export class Spec {
     return this.subspec
   }
 
-  #error(message: string) {
-    return error(message, { spec: this.spec }, this.#error)
+  #error(message: string, extra: ErrorCauseObject = {}) {
+    return error(message, { spec: this.spec, ...extra }, this.#error)
   }
 
   #parseGitSelector(s: string) {
