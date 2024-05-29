@@ -131,10 +131,16 @@ t.test('basic parsing tests', t => {
     'x@npm:y@npm:z@github:a/x#branch',
     'x@registry:https://example.com/npm#@org/pkg@latest',
     'x@npm:foo@npm:bar@npm:baz@1',
+    'x@workspace:',
     'x@workspace:*',
     'x@workspace:~',
     'x@workspace:^',
     'x@workspace:1.x',
+    'x@workspace:y@',
+    'x@workspace:y@*',
+    'x@workspace:y@~',
+    'x@workspace:y@^',
+    'x@workspace:y@1.x',
   ]
 
   t.plan(versions.length)
