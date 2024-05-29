@@ -1,16 +1,7 @@
 import { inspect } from 'util'
 import t from 'tap'
-import { ConfigFileData } from '@vltpkg/config'
 import { load } from '../../src/lockfile/load.js'
 import { humanReadableOutput } from '../../src/visualization/human-readable-output.js'
-
-const configData = {
-  registry: 'https://registry.npmjs.org',
-  registries: {
-    npm: 'https://registry.npmjs.org',
-    custom: 'http://example.com',
-  },
-} as ConfigFileData
 
 const mainManifest = {
   name: 'my-project',
@@ -49,13 +40,10 @@ t.test('load', async t => {
     }),
   })
 
-  const graph = load(
-    {
-      dir,
-      mainManifest,
-    },
-    configData,
-  )
+  const graph = load({
+    dir,
+    mainManifest,
+  })
   t.matchSnapshot(
     inspect(humanReadableOutput(graph), { depth: Infinity }),
   )
@@ -81,13 +69,10 @@ t.test('unknown dep type', async t => {
 
   t.throws(
     () =>
-      load(
-        {
-          dir,
-          mainManifest,
-        },
-        configData,
-      ),
+      load({
+        dir,
+        mainManifest,
+      }),
     /Found unsupported dependency type in lockfile/,
     'should throw a dependency type not found',
   )
@@ -108,13 +93,10 @@ t.test('missing root pkg', async t => {
 
   t.throws(
     () =>
-      load(
-        {
-          dir,
-          mainManifest,
-        },
-        configData,
-      ),
+      load({
+        dir,
+        mainManifest,
+      }),
     /Missing nodes from lockfile/,
     'should throw a missing root package metadata error',
   )
@@ -138,13 +120,10 @@ t.test('missing root pkg', async t => {
 
   t.throws(
     () =>
-      load(
-        {
-          dir,
-          mainManifest,
-        },
-        configData,
-      ),
+      load({
+        dir,
+        mainManifest,
+      }),
     /Edge info missing its `from` node/,
     'should throw a missing from edge property',
   )
