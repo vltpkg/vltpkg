@@ -1,15 +1,18 @@
 import { spawn as spawnGit } from '@vltpkg/git'
 import { Spec } from '@vltpkg/spec'
 import { Manifest } from '@vltpkg/types'
-import { readFileSync, readlinkSync } from 'node:fs'
+import {Workspace} from '@vltpkg/workspaces'
+import { lstatSync, readFileSync, readlinkSync } from 'node:fs'
 import { writeFile } from 'node:fs/promises'
 import { createServer } from 'node:http'
 import { dirname, resolve as pathResolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import t from 'tap'
+import { x as tarX } from 'tar'
 import {
   extract,
   manifest,
+  PackageInfoClient,
   packument,
   resolve,
   tarball,
@@ -546,7 +549,7 @@ t.test('extract', async t => {
 
   await t.rejects(
     extract(`abbrev@workspace:*`, dir + '/ws', options),
-    { message: 'not supported' },
+    { message: 'Not in a monorepo, cannot resolve workspace spec' },
   )
 
   t.match(
@@ -760,11 +763,80 @@ t.test('fails on non-200 response', async t => {
   )
 })
 
-t.test('stubbed workspace spec handling', async t => {
-  t.rejects(tarball('x@workspace:*'))
-  t.rejects(resolve('x@workspace:*'))
-  t.rejects(manifest('x@workspace:*'))
-  t.rejects(extract('x@workspace:*', t.testdir()))
+t.test('workspace specs', async t => {
+  const dir = t.testdir({
+    'vlt-workspaces.json': JSON.stringify('p/*'),
+    p: {
+      a: { 'package.json': '{"name":"a"}' },
+      b: { 'package.json': '{"name":"b"}' },
+    },
+    tarx: {},
+  })
+  const opts = {
+    ...options,
+    cwd: dir,
+  }
+  t.equal(
+    (await resolve('b@workspace:*', opts)).resolved,
+    pathResolve(dir, 'p/b'),
+  )
+  const tb = await tarball('a@workspace:*', opts)
+  const tx = tarX({
+    sync: true,
+    cwd: dir + '/tarx',
+    strip: 1,
+  })
+  tx.end(tb)
+  t.equal(
+    readFileSync(dir + '/tarx/package.json', 'utf8'),
+    '{"name":"a"}',
+  )
+
+  t.match(await manifest('a@workspace:b@*', opts), {
+    name: 'b',
+  })
+  t.equal(
+    (await extract('b@workspace:a@*', dir + '/x', opts)).resolved,
+    pathResolve(dir, 'p/a'),
+  )
+  t.equal(lstatSync(dir + '/x').isSymbolicLink(), true)
+  t.equal(readFileSync(dir + '/x/package.json', 'utf8'), '{"name":"a"}')
+})
+
+t.test('workspace group option', async t => {
+  const dir = t.testdir({
+    'vlt-workspaces.json': JSON.stringify({
+      a: 'p/a*',
+      b: [
+        'p/b',
+        'p/bb',
+      ],
+      ab: 'p/?',
+      aabb: ['p/??'],
+      all: 'p/*',
+    }),
+    p: {
+      a: { 'package.json': '{"name":"a"}' },
+      b: { 'package.json': '{"name":"b"}' },
+      aa: { 'package.json': '{"name":"aa"}' },
+      bb: { 'package.json': '{"name":"bb"}' },
+    },
+  })
+  const opts = {
+    ...options,
+    cwd: dir,
+    // only load the ones that are 1 char
+    workspace: ['p/[a-z]'],
+    // even though the `'b'` group includes 'bb'
+    'workspace-group': ['ab', 'b'],
+  }
+  const pi = new PackageInfoClient(opts)
+  t.match(pi.monorepo?.get('a'), Workspace)
+  t.match(pi.monorepo?.get('b'), Workspace)
+  t.equal(pi.monorepo?.get('bb'), undefined)
+  t.equal(pi.monorepo?.get('aa'), undefined)
+  await t.rejects(pi.resolve('aa@workspace:*'))
+  t.end()
 })
 
 t.test('verify we got the expected missing urls', t => {

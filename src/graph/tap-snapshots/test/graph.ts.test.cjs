@@ -19,7 +19,11 @@ Graph [@vltpkg/graph.Graph] {
 
 exports[`test/graph.ts > TAP > using placePackage > the graph 1`] = `
 Graph [@vltpkg/graph.Graph] {
-  packageInfo: PackageInfoClient { options: {} },
+  packageInfo: PackageInfoClient {
+    options: {},
+    packageJson: PackageJson { cache: Map(0) {}, errCache: Map(0) {} },
+    monorepo: undefined
+  },
   manifests: Map(4) {
     'file;.' => { name: 'my-project', version: '1.0.0', dependencies: [Object] },
     'registry;;foo@1.0.0' => { name: 'foo', version: '1.0.0' },
