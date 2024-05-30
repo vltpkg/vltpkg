@@ -15,13 +15,15 @@
   "dependencies": {
     "@vltpkg/error-cause": "workspace:*",
     "@vltpkg/git": "workspace:*",
+    "@vltpkg/package-json": "workspace:*",
     "@vltpkg/pick-manifest": "workspace:*",
     "@vltpkg/registry-client": "workspace:*",
     "@vltpkg/spec": "workspace:*",
     "@vltpkg/tar": "workspace:*",
     "@vltpkg/types": "workspace:*",
+    "@vltpkg/workspaces": "workspace:*",
     "@vltpkg/xdg": "workspace:*",
-    "tar": "^7.1.0"
+    "tar": "^7.2.0"
   },
   "devDependencies": {
     "@types/node": "^20.12.12",

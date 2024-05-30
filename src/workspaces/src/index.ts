@@ -282,8 +282,9 @@ export class Monorepo {
   #loadWS(path: string, group?: string): Workspace {
     const loaded = this.#workspaces.get(path)
     if (loaded) return loaded
-    const manifest = this.packageJson.read(resolve(this.cwd, path))
-    const ws = new Workspace(path, manifest)
+    const fullpath = resolve(this.cwd, path)
+    const manifest = this.packageJson.read(fullpath)
+    const ws = new Workspace(path, manifest, fullpath)
     if (group) ws.groups.push(group)
     this.#workspaces.set(ws.path, ws)
     this.#workspaces.set(ws.name, ws)
@@ -564,12 +565,14 @@ export class Monorepo {
  */
 export class Workspace {
   path: string
+  fullpath: string
   manifest: Manifest
   groups: string[] = []
   name: string
 
-  constructor(path: string, manifest: Manifest) {
+  constructor(path: string, manifest: Manifest, fullpath: string) {
     this.path = path
+    this.fullpath = fullpath
     this.manifest = manifest
     this.name = manifest.name ?? path
   }

@@ -2,6 +2,7 @@
 
 import { error, ErrorCauseObject } from '@vltpkg/error-cause'
 import { clone, resolve as gitResolve, revs } from '@vltpkg/git'
+import { PackageJson } from '@vltpkg/package-json'
 import {
   pickManifest,
   PickManifestOptions,
@@ -23,6 +24,7 @@ import {
   Packument,
   PackumentMinified,
 } from '@vltpkg/types'
+import { Monorepo } from '@vltpkg/workspaces'
 import { XDG } from '@vltpkg/xdg'
 import { randomBytes } from 'crypto'
 import { readFile, rm, stat, symlink } from 'fs/promises'
@@ -48,6 +50,14 @@ export interface PackageInfoClientOptions
     SpecOptions {
   /** cwd to resolve `file://` specifiers against. Defaults to process.cwd() */
   cwd?: string
+  /** PackageJson object */
+  packageJson?: PackageJson
+
+  /** workspace groups to load */
+  'workspace-group'?: string[]
+
+  /** workspace paths to load */
+  workspace?: string[]
 }
 
 export interface PackageInfoClientRequestOptions
@@ -100,7 +110,14 @@ const clients = new Map<string, PackageInfoClient>()
 const client = (
   o: PackageInfoClientOptions & PackageInfoClientRequestOptions = {},
 ) => {
-  const { from: _, fullMetadata: __, ...opts } = o
+  const {
+    from: _from,
+    fullMetadata: _fullMetadata,
+    packageJson: _packageJson,
+    workspace: _workspace,
+    'workspace-group': _workspaceGroup,
+    ...opts
+  } = o
   const key = JSON.stringify(
     Object.entries(opts).sort(([a], [b]) => a.localeCompare(b, 'en')),
   )
@@ -183,6 +200,8 @@ export class PackageInfoClient {
   #tarPool?: Pool
   options: PackageInfoClientOptions
   #resolutions = new Map<string, Resolution>()
+  packageJson: PackageJson
+  monorepo?: Monorepo
 
   get registryClient() {
     if (!this.#registryClient) {
@@ -199,6 +218,17 @@ export class PackageInfoClient {
   constructor(options: PackageInfoClientOptions = {}) {
     this.options = options
     this.#cwd = options.cwd || process.cwd()
+    this.packageJson = options.packageJson ?? new PackageJson()
+    const wsLoad = {
+      ...(options.workspace?.length && { paths: options.workspace }),
+      ...(options['workspace-group']?.length && {
+        groups: options['workspace-group'],
+      }),
+    }
+    this.monorepo = Monorepo.maybeLoad(this.#cwd, {
+      load: wsLoad,
+      packageJson: this.packageJson,
+    })
   }
 
   async extract(
@@ -297,15 +327,35 @@ export class PackageInfoClient {
         /* c8 ignore stop */
         return r
       }
-      /* c8 ignore start */
       case 'workspace': {
-        throw error('not supported', {
-          spec,
-          todo: 'workspace extraction',
-        })
+        const ws = this.#getWS(spec, options)
+        const rel = relative(dirname(target), ws.fullpath)
+        await symlink(rel, target, 'dir')
+        return r
       }
-      /* c8 ignore stop */
     }
+  }
+
+  #getWS(spec: Spec, options: PackageInfoClientRequestOptions) {
+    const { workspace } = spec
+    /* c8 ignore start - asserted in resolve() */
+    if (workspace === undefined)
+      throw this.#resolveError(spec, options, 'no workspace ID')
+    /* c8 ignore stop */
+    if (!this.monorepo) {
+      throw this.#resolveError(
+        spec,
+        options,
+        'Not in a monorepo, cannot resolve workspace spec',
+      )
+    }
+    const ws = this.monorepo.get(workspace)
+    if (!ws) {
+      throw this.#resolveError(spec, options, 'workspace not found', {
+        wanted: workspace,
+      })
+    }
+    return ws
   }
 
   async tarball(
@@ -359,6 +409,7 @@ export class PackageInfoClient {
             await clone(gitRemote, gitCommittish, dir + '/package', {
               spec: s,
             })
+            // TODO: Pack properly, ignore stuff, bundleDeps, etc
             return tarC({ cwd: dir, gzip: true }, [
               'package',
             ]).concat() as Promise<Buffer>
@@ -392,6 +443,7 @@ export class PackageInfoClient {
         if (st.isDirectory()) {
           const p = dirname(path)
           const b = basename(path)
+          // TODO: Pack properly, ignore stuff, bundleDeps, etc
           return tarC({ cwd: p, gzip: true }, [
             b,
           ]).concat() as Promise<Buffer>
@@ -399,10 +451,13 @@ export class PackageInfoClient {
         return readFile(path)
       }
       case 'workspace': {
-        throw error('not supported', {
-          spec,
-          todo: 'workspace tarball',
-        })
+        // TODO: Pack properly, ignore stuff, bundleDeps, etc
+        const ws = this.#getWS(spec, options)
+        const p = dirname(ws.fullpath)
+        const b = basename(ws.fullpath)
+        return tarC({ cwd: p, gzip: true }, [
+          b,
+        ]).concat() as Promise<Buffer>
       }
     }
   }
@@ -517,10 +572,7 @@ export class PackageInfoClient {
         })
       }
       case 'workspace': {
-        throw error('not supported', {
-          spec,
-          todo: 'workspace manifest',
-        })
+        return this.#getWS(spec, options).manifest
       }
     }
   }
@@ -604,10 +656,7 @@ export class PackageInfoClient {
       case 'file': {
         const { file } = f
         if (!file) {
-          throw error('no path on file: specifier', {
-            spec,
-            code: 'ERESOLVE',
-          })
+          throw this.#resolveError(spec, options, 'no path on file: specifier')
         }
         const { from = this.#cwd } = options
         const resolved = pathResolve(from, spec.file as string)
@@ -630,14 +679,11 @@ export class PackageInfoClient {
       }
 
       case 'workspace': {
-        // spec.name is the name of the workspace
-        // spec.semver/range are set if it's a valid range
-        // but if it's like 'workspace:^' then use whatever version
-        // is found in the actual workspace at any given point.
-        throw error('not supported', {
+        const ws = this.#getWS(spec, options)
+        return {
+          resolved: ws.fullpath,
           spec,
-          todo: 'workspace resolve',
-        })
+        }
       }
 
       case 'registry': {
