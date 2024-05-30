@@ -1,6 +1,7 @@
 export * from './edge.js'
 export * from './graph.js'
 export * from './node.js'
+export * from './lockfile/types.js'
 export * from './visualization/human-readable-output.js'
 export * from './visualization/mermaid-output.js'
 

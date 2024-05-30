@@ -95,3 +95,29 @@ t.test('edge missing type', async t => {
     'should throw if finds an edge with missing type',
   )
 })
+
+t.test('missing registries', async t => {
+  const mainManifest = {
+    name: 'my-project',
+    version: '1.0.0',
+    dependencies: {
+      baz: 'custom:^1.0.0',
+      foo: '^1.0.0',
+    },
+  }
+  const borkedConfigData = {
+    registry: 'http://example.com',
+    registries: undefined,
+  }
+  const dir = t.testdir()
+  const graph = new Graph(
+    {
+      mainManifest,
+    },
+    borkedConfigData,
+  )
+  save({ graph, dir }, borkedConfigData)
+  t.matchSnapshot(
+    readFileSync(resolve(dir, 'vlt-lock.json'), { encoding: 'utf8' }),
+  )
+})
