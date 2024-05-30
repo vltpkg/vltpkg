@@ -5,6 +5,16 @@
  * Make sure to inspect the output below.  Do not ignore changes!
  */
 'use strict'
+exports[`test/lockfile/save.ts > TAP > missing registries > must match snapshot 1`] = `
+{
+  "registries": {},
+  "nodes": {
+    "file;.": [null]
+  },
+  "edges": []
+}
+`
+
 exports[`test/lockfile/save.ts > TAP > save > must match snapshot 1`] = `
 {
   "registries": {

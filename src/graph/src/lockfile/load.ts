@@ -1,14 +1,17 @@
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
+import { ConfigFileData } from '@vltpkg/config'
 import { DepID } from '@vltpkg/dep-id'
 import { error } from '@vltpkg/error-cause'
 import { Spec, SpecOptions } from '@vltpkg/spec'
-import { Integrity, ManifestMinified } from '@vltpkg/types'
-import { DependencyTypeShort, longTypes } from '../dependencies.js'
-import { Graph, ManifestInventory } from '../graph.js'
-
-type LockfileNode = [Integrity | null, string?]
-type LockfileEdge = [DepID, DependencyTypeShort, string, DepID?]
+import { ManifestMinified } from '@vltpkg/types'
+import { longTypes } from '../dependencies.js'
+import { Graph } from '../graph.js'
+import {
+  LockfileData,
+  LockfileDataNode,
+  LockfileDataEdge,
+} from './types.js'
 
 export interface LoadOptions {
   dir: string
@@ -17,12 +20,12 @@ export interface LoadOptions {
 
 interface LoadEdgesOptions {
   graph: Graph
-  edgesInfo: LockfileEdge[]
+  edgesInfo: LockfileDataEdge[]
 }
 
 interface LoadNodesOptions {
   graph: Graph
-  nodesInfo: [DepID, LockfileNode][]
+  nodesInfo: [DepID, LockfileDataNode][]
 }
 
 const loadNodes = ({ graph, nodesInfo }: LoadNodesOptions) => {
@@ -36,7 +39,7 @@ const loadNodes = ({ graph, nodesInfo }: LoadNodesOptions) => {
 
 const loadEdges = (
   { graph, edgesInfo }: LoadEdgesOptions,
-  registries: Record<string, string>,
+  options: SpecOptions,
 ) => {
   for (const [fromId, shortType, spec, toId] of edgesInfo) {
     const type = longTypes.get(shortType)
@@ -53,39 +56,37 @@ const loadEdges = (
         found: edgesInfo,
       })
     }
-    graph.newEdge(
-      type,
-      Spec.parse(spec, { registries } as SpecOptions),
-      from,
-      to,
-    )
+    graph.newEdge(type, Spec.parse(spec, options), from, to)
   }
 }
 
-export const load = ({ dir, mainManifest }: LoadOptions): Graph => {
+export const load = (
+  { dir, mainManifest }: LoadOptions,
+  config: ConfigFileData,
+): Graph => {
   const file = readFileSync(resolve(dir, 'vlt-lock.json'), {
     encoding: 'utf8',
   })
-  const json = JSON.parse(file)
-  const store: [DepID, LockfileNode][] = Object.entries(
-    json.nodes,
-  ) as [DepID, LockfileNode][]
-  const edgesInfo = json.edges as LockfileEdge[]
+  const lockfileData = JSON.parse(file) as LockfileData
+  const store = Object.entries(lockfileData.nodes) as [
+    DepID,
+    LockfileDataNode,
+  ][]
+  const edgesInfo = lockfileData.edges
   const [mainImporterInfo, ...nodesInfo] = store
   if (!mainImporterInfo) {
     throw error('Missing nodes from lockfile', {
       found: store,
     })
   }
-  const graph = new Graph(
-    {
-      mainManifest,
-    },
-    { registries: json.registries },
-  )
+  const mergedOptions = {
+    ...config,
+    registries: lockfileData.registries,
+  } as SpecOptions
+  const graph = new Graph({ mainManifest }, mergedOptions)
 
   loadNodes({ graph, nodesInfo })
-  loadEdges({ graph, edgesInfo }, json.registries)
+  loadEdges({ graph, edgesInfo }, mergedOptions)
 
   return graph
 }

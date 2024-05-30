@@ -3,17 +3,15 @@ import { resolve } from 'node:path'
 import { ConfigFileData } from '@vltpkg/config'
 import { DepID } from '@vltpkg/dep-id'
 import { error } from '@vltpkg/error-cause'
-import { Integrity } from '@vltpkg/types'
-import {
-  dependencyTypes,
-  DependencyTypeShort,
-} from '../dependencies.js'
+import { dependencyTypes } from '../dependencies.js'
 import { Edge } from '../edge.js'
 import { Graph } from '../graph.js'
 import { Node } from '../node.js'
-
-type LockfileNode = [Integrity | undefined, string?]
-type LockfileEdge = [DepID, DependencyTypeShort, string, DepID?]
+import {
+  LockfileData,
+  LockfileDataNode,
+  LockfileDataEdge,
+} from './types.js'
 
 export interface SaveOptions {
   dir: string
@@ -33,12 +31,12 @@ const formatNodes = (nodes: Iterable<Node>, registry?: string) => {
     orderedNodes.unshift(mainImporter)
   }
 
-  const res: Record<DepID, LockfileNode> = {}
+  const res: Record<DepID, LockfileDataNode> = {}
   for (const node of orderedNodes) {
     const customRegistry =
       node.resolved && registry && !node.resolved.startsWith(registry)
     const resolved = customRegistry ? node.resolved : undefined
-    const lockfileNode: LockfileNode = [node.integrity, resolved]
+    const lockfileNode: LockfileDataNode = [node.integrity, resolved]
     // reduce array size in order to omit trailing `null` item for each entry
     if (!resolved) {
       lockfileNode.length = 1
@@ -48,7 +46,7 @@ const formatNodes = (nodes: Iterable<Node>, registry?: string) => {
   return res
 }
 
-const formatEdges = (edges: Set<Edge>): LockfileEdge[] =>
+const formatEdges = (edges: Set<Edge>): LockfileDataEdge[] =>
   [...edges].map(edge => {
     const type = dependencyTypes.get(edge.type)
     if (!type) {
@@ -59,16 +57,22 @@ const formatEdges = (edges: Set<Edge>): LockfileEdge[] =>
     return [edge.from.id, type, String(edge.spec), edge.to?.id]
   })
 
+const isRegistries = (
+  registries: unknown,
+): registries is Record<string, string> =>
+  !(!registries || typeof registries === 'string')
+
 export const save = (
   { graph, dir }: SaveOptions,
   { registry, registries }: ConfigFileData,
 ) => {
+  const lockfileData: LockfileData = {
+    registries: isRegistries(registries) ? registries : {},
+    nodes: formatNodes(graph.nodes.values(), registry),
+    edges: formatEdges(graph.edges),
+  }
   const content = JSON.stringify(
-    {
-      registries,
-      nodes: formatNodes(graph.nodes.values(), registry),
-      edges: formatEdges(graph.edges),
-    },
+    lockfileData,
     null,
     2,
     // renders each node / edge as a single line entry
