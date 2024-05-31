@@ -197,3 +197,18 @@ export const definition = jack({
       default: 1000,
     },
   })
+
+  .optList({
+    workspace: {
+      short: 'w',
+      description: `Set to limit the spaces being worked on when working on
+                    workspaces.
+
+                    Can be paths or glob patterns.`,
+    },
+    'workspace-group': {
+      short: 'g',
+      description: `Specify named workspace group names to load and operate on
+                    when doing recursive operations on workspaces.`,
+    },
+  })
