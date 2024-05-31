@@ -1,5 +1,3 @@
-// TODO: handle workspace specs.
-
 import { error, ErrorCauseObject } from '@vltpkg/error-cause'
 import { clone, resolve as gitResolve, revs } from '@vltpkg/git'
 import { PackageJson } from '@vltpkg/package-json'
