@@ -70,6 +70,7 @@ Graph [@vltpkg/graph.Graph] {
       importer: true,
       integrity: undefined,
       manifest: [Object],
+      name: 'my-project',
       resolved: undefined
     },
     'registry;;foo@1.0.0' => Node [@vltpkg/graph.Node] {
@@ -79,6 +80,7 @@ Graph [@vltpkg/graph.Graph] {
       importer: false,
       integrity: undefined,
       manifest: [Object],
+      name: 'foo',
       resolved: 'https://registry.npmjs.org/foo/-/foo-1.0.0.tgz'
     },
     'registry;;bar@1.0.0' => Node [@vltpkg/graph.Node] {
@@ -88,6 +90,7 @@ Graph [@vltpkg/graph.Graph] {
       importer: false,
       integrity: undefined,
       manifest: [Object],
+      name: 'bar',
       resolved: 'https://registry.npmjs.org/bar/-/bar-1.0.0.tgz'
     },
     'registry;;baz@1.0.0' => Node [@vltpkg/graph.Node] {
@@ -97,6 +100,7 @@ Graph [@vltpkg/graph.Graph] {
       importer: false,
       integrity: undefined,
       manifest: [Object],
+      name: 'baz',
       resolved: 'https://registry.vlt.sh/baz'
     }
   },
@@ -108,6 +112,7 @@ Graph [@vltpkg/graph.Graph] {
       importer: true,
       integrity: undefined,
       manifest: [Object],
+      name: 'my-project',
       resolved: undefined
     }
   },
@@ -122,6 +127,7 @@ Graph [@vltpkg/graph.Graph] {
     importer: true,
     integrity: undefined,
     manifest: { name: 'my-project', version: '1.0.0', dependencies: [Object] },
+    name: 'my-project',
     resolved: undefined
   },
   missingDependencies: Set(1) {

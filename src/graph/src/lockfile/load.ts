@@ -30,8 +30,8 @@ interface LoadNodesOptions {
 
 const loadNodes = ({ graph, nodesInfo }: LoadNodesOptions) => {
   for (const [id, lockfileNode] of nodesInfo) {
-    const [integrity, resolved] = lockfileNode
-    const node = graph.newNode(id)
+    const [name, integrity, resolved] = lockfileNode
+    const node = graph.newNode(id, undefined, undefined, name)
     node.integrity = integrity || undefined
     node.resolved = resolved
   }

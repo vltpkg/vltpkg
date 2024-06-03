@@ -95,7 +95,13 @@ t.test('Node', async t => {
     'should throw a type error',
   )
 
-  const barNoMani = new Node(configData, 'registry;;bar@1.0.0')
+  const barNoMani = new Node(
+    configData,
+    'registry;;bar@1.0.0',
+    undefined,
+    undefined,
+    'bar',
+  )
   t.strictSame(
     barNoMani.location,
     './node_modules/.vlt/registry;;bar@1.0.0/node_modules/bar',
@@ -114,23 +120,23 @@ t.test('Node', async t => {
   )
   t.strictSame(
     unnamed.location,
-    './node_modules/.vlt/registry;;@0.0.0/node_modules/@0.0.0',
+    './node_modules/.vlt/registry;;@0.0.0/node_modules/registry;;@0.0.0',
     'should have a location for unnamed manifests',
   )
 
   // different resolved values inferred from id
   const file = new Node(configData, 'file;.%2Fmy-package')
-  file.setResolvedFromId()
+  file.setResolved()
   t.strictSame(
     file.resolved,
     './my-package',
     'should set expected resolved value for a file id type',
   )
   const git = new Node(configData, 'git;github%3Avltpkg%2Ffoo;')
-  git.setResolvedFromId()
+  git.setResolved()
   t.strictSame(
     git.resolved,
-    'git+ssh://git@github.com:vltpkg/foo.git',
+    'github:vltpkg/foo',
     'should set expected resolved value for a git id type',
   )
   const reg = new Node(configData, 'registry;;foo@1.0.0', {
@@ -139,14 +145,14 @@ t.test('Node', async t => {
       integrity: 'sha512-deadbeef',
     },
   })
-  reg.setResolvedFromId()
+  reg.setResolved()
   t.strictSame(
     reg.resolved,
     '<path-to-tarball>',
     'should set expected resolved value for a registry id type',
   )
   const regNoManifest = new Node(configData, 'registry;;foo@1.0.0')
-  regNoManifest.setResolvedFromId()
+  regNoManifest.setResolved()
   t.strictSame(
     regNoManifest.resolved,
     'https://registry.npmjs.org/foo/-/foo-1.0.0.tgz',
@@ -156,7 +162,7 @@ t.test('Node', async t => {
     configData,
     'remote;https%3A%2F%2Fx.com%2Fx.tgz',
   )
-  remote.setResolvedFromId()
+  remote.setResolved()
   t.strictSame(
     remote.resolved,
     'https://x.com/x.tgz',

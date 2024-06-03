@@ -23,6 +23,7 @@ Edge [@vltpkg/graph.Edge] {
     importer: false,
     integrity: undefined,
     manifest: [Object],
+    name: 'child',
     resolved: undefined
   },
   to: undefined,

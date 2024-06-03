@@ -13,6 +13,7 @@ Node [@vltpkg/graph.Node] {
   importer: true,
   integrity: undefined,
   manifest: [Object],
+  name: 'root',
   resolved: undefined
 }
 `

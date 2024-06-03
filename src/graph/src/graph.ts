@@ -103,8 +103,13 @@ export class Graph {
   /**
    * Create a new node in the graph.
    */
-  newNode(id?: DepID, manifest?: ManifestMinified, spec?: Spec) {
-    const node = new Node(this.#config, id, manifest, spec)
+  newNode(
+    id?: DepID,
+    manifest?: ManifestMinified,
+    spec?: Spec,
+    name?: string,
+  ) {
+    const node = new Node(this.#config, id, manifest, spec, name)
     this.nodes.set(node.id, node)
     if (manifest) {
       this.manifests.set(node.id, manifest)
@@ -145,7 +150,7 @@ export class Graph {
 
     // creates a new node and edges to its parent
     const toNode = this.newNode(depId, manifest)
-    toNode.setResolvedFromId()
+    toNode.setResolved()
     this.newEdge(depType, spec, fromNode, toNode)
     return toNode
   }

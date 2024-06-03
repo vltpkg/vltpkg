@@ -1,4 +1,10 @@
-import { getId, DepID, hydrate } from '@vltpkg/dep-id'
+import {
+  getId,
+  DepID,
+  splitDepID,
+  DepIDTuple,
+  hydrateTuple,
+} from '@vltpkg/dep-id'
 import { typeError } from '@vltpkg/error-cause'
 import { Spec, SpecOptions } from '@vltpkg/spec'
 import { Integrity, ManifestMinified } from '@vltpkg/types'
@@ -46,6 +52,14 @@ export class Node {
   manifest?: ManifestMinified
 
   /**
+   * The name of the package represented by this node, this is usually
+   * equivalent to `manifest.name` but in a few ways it may differ such as
+   * nodes loaded from a lockfile that lacks a loaded manifest.
+   * This field should be used to retrieve package names instead.
+   */
+  name?: string
+
+  /**
    * An address {@link PackageInfoClient} may use to extract this package.
    */
   resolved?: string
@@ -57,12 +71,7 @@ export class Node {
     if (this.#location) {
       return this.#location
     }
-    const spec = hydrate(
-      this.id,
-      undefined,
-      this.#config as SpecOptions,
-    )
-    this.#location = `./node_modules/.vlt/${this.id}/node_modules/${this.manifest?.name || spec.name}`
+    this.#location = `./node_modules/.vlt/${this.id}/node_modules/${this.name || this.id}`
     return this.#location
   }
 
@@ -71,6 +80,7 @@ export class Node {
     id?: DepID,
     manifest?: ManifestMinified,
     spec?: Spec,
+    name?: string,
   ) {
     this.#config = config
     if (id) {
@@ -87,6 +97,18 @@ export class Node {
       this.id = getId(spec, manifest)
     }
     this.manifest = manifest
+    this.name = name || this.manifest?.name
+  }
+
+  #registryNodeResolved(tuple: DepIDTuple) {
+    const spec = hydrateTuple(
+      tuple,
+      this.name,
+      this.#config as SpecOptions,
+    )
+    this.resolved =
+      this.manifest?.dist?.tarball || spec.conventionalRegistryTarball
+    this.integrity ??= this.manifest?.dist?.integrity
   }
 
   /**
@@ -102,28 +124,21 @@ export class Node {
    * Note that other places might also set these values, like for
    * example the lockfile that might have already have this info.
    */
-  setResolvedFromId() {
-    const depIdInfo = hydrate(
-      this.id,
-      undefined,
-      this.#config as SpecOptions,
-    )
-    switch (depIdInfo.type) {
+  setResolved() {
+    // file | remote | workspace type of ids all points to a URI that
+    // can be used as the `resolved` value, so we split the dep id
+    // for these cases.
+    const tuple = splitDepID(this.id)
+    const [type, resolved] = tuple
+    switch (type) {
       case 'file':
-        this.resolved = depIdInfo.file
-        return
+      case 'remote':
+      case 'workspace':
       case 'git':
-        this.resolved = depIdInfo.gitRemote
+        this.resolved = resolved
         return
       case 'registry':
-        this.resolved =
-          this.manifest?.dist?.tarball ||
-          depIdInfo.conventionalRegistryTarball
-        this.integrity = this.manifest?.dist?.integrity
-        return
-      case 'remote':
-        this.resolved = depIdInfo.remoteURL
-        return
+        return this.#registryNodeResolved(tuple)
     }
   }
 

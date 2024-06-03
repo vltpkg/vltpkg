@@ -36,10 +36,9 @@ const formatNodes = (nodes: Iterable<Node>, registry?: string) => {
     const customRegistry =
       node.resolved && registry && !node.resolved.startsWith(registry)
     const resolved = customRegistry ? node.resolved : undefined
-    const lockfileNode: LockfileDataNode = [node.integrity, resolved]
-    // reduce array size in order to omit trailing `null` item for each entry
-    if (!resolved) {
-      lockfileNode.length = 1
+    const lockfileNode: LockfileDataNode = [node.name, node.integrity]
+    if (resolved) {
+      lockfileNode.push(resolved)
     }
     res[node.id] = lockfileNode
   }
