@@ -19,7 +19,8 @@ export type LockfileData = {
  * Lockfile representation of a node from the install graph.
  */
 export type LockfileDataNode = [
-  integrity: Integrity | null | undefined,
+  name?: string,
+  integrity?: Integrity,
   resolved?: string,
 ]
 

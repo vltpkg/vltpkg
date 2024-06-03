@@ -31,6 +31,7 @@ Graph [@vltpkg/graph.Graph] {
         importer: true,
         integrity: undefined,
         manifest: [Object],
+        name: 'my-project',
         resolved: undefined
       },
       to: Node [@vltpkg/graph.Node] {
@@ -40,6 +41,7 @@ Graph [@vltpkg/graph.Graph] {
         importer: false,
         integrity: undefined,
         manifest: [Object],
+        name: 'foo',
         resolved: 'https://registry.npmjs.org/foo/-/foo-1.0.0.tgz'
       },
       type: 'devDependencies',
@@ -53,6 +55,7 @@ Graph [@vltpkg/graph.Graph] {
         importer: true,
         integrity: undefined,
         manifest: [Object],
+        name: 'my-project',
         resolved: undefined
       },
       to: Node [@vltpkg/graph.Node] {
@@ -62,6 +65,7 @@ Graph [@vltpkg/graph.Graph] {
         importer: false,
         integrity: undefined,
         manifest: [Object],
+        name: 'bar',
         resolved: 'https://registry.npmjs.org/bar/-/bar-1.0.0.tgz'
       },
       type: 'optionalDependencies',
@@ -75,6 +79,7 @@ Graph [@vltpkg/graph.Graph] {
         importer: true,
         integrity: undefined,
         manifest: [Object],
+        name: 'my-project',
         resolved: undefined
       },
       to: undefined,
@@ -99,6 +104,7 @@ Graph [@vltpkg/graph.Graph] {
         devDependencies: [Object],
         optionalDependencies: [Object]
       },
+      name: 'my-project',
       resolved: undefined
     },
     'registry;;foo@1.0.0' => Node [@vltpkg/graph.Node] {
@@ -108,6 +114,7 @@ Graph [@vltpkg/graph.Graph] {
       importer: false,
       integrity: undefined,
       manifest: { name: 'foo', version: '1.0.0', devDependencies: [Object] },
+      name: 'foo',
       resolved: 'https://registry.npmjs.org/foo/-/foo-1.0.0.tgz'
     },
     'registry;;bar@1.0.0' => Node [@vltpkg/graph.Node] {
@@ -117,6 +124,7 @@ Graph [@vltpkg/graph.Graph] {
       importer: false,
       integrity: undefined,
       manifest: { name: 'bar', version: '1.0.0' },
+      name: 'bar',
       resolved: 'https://registry.npmjs.org/bar/-/bar-1.0.0.tgz'
     }
   },
@@ -137,6 +145,7 @@ Graph [@vltpkg/graph.Graph] {
         devDependencies: [Object],
         optionalDependencies: [Object]
       },
+      name: 'my-project',
       resolved: undefined
     }
   },
@@ -171,6 +180,7 @@ Graph [@vltpkg/graph.Graph] {
       devDependencies: { foo: '^1.0.0' },
       optionalDependencies: { bar: '^1.0.0' }
     },
+    name: 'my-project',
     resolved: undefined
   },
   missingDependencies: Set(1) {
@@ -182,6 +192,7 @@ Graph [@vltpkg/graph.Graph] {
         importer: true,
         integrity: undefined,
         manifest: [Object],
+        name: 'my-project',
         resolved: undefined
       },
       to: undefined,

@@ -25,15 +25,17 @@ t.test('load', async t => {
         custom: 'https://registry.example.com',
       },
       nodes: {
-        'file;.': [],
+        'file;.': ['my-project'],
         'registry;;foo@1.0.0': [
+          'foo',
           'sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ==',
         ],
         'registry;;bar@1.0.0': [
+          'bar',
           'sha512-6/deadbeef==',
           'https://registry.example.com/bar/-/bar-1.0.0.tgz',
         ],
-        'registry;;baz@1.0.0': [null],
+        'registry;;baz@1.0.0': ['baz', null],
       },
       edges: [
         ['file;.', 'prod', 'foo@^1.0.0', 'registry;;foo@1.0.0'],
@@ -68,8 +70,9 @@ t.test('unknown dep type', async t => {
         npm: 'https://registry.npmjs.org',
       },
       nodes: {
-        'file;.': [],
+        'file;.': ['my-project'],
         'registry;;foo@1.0.0': [
+          'foo',
           'sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ==',
         ],
       },
@@ -127,8 +130,9 @@ t.test('missing root pkg', async t => {
         npm: 'https://registry.npmjs.org',
       },
       nodes: {
-        'file;.': [],
+        'file;.': ['my-project'],
         'registry;;foo@1.0.0': [
+          'foo',
           'sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ==',
         ],
       },
