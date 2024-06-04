@@ -20,7 +20,9 @@
     "@vltpkg/registry-client": "workspace:*",
     "@vltpkg/semver": "workspace:*",
     "@vltpkg/spec": "workspace:*",
-    "@vltpkg/types": "workspace:*"
+    "@vltpkg/types": "workspace:*",
+    "@vltpkg/workspaces": "workspace:*",
+    "path-scurry": "^1.11.1"
   },
   "devDependencies": {
     "@types/node": "^20.12.12",

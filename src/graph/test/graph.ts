@@ -1,6 +1,7 @@
 import { inspect } from 'node:util'
 import t from 'tap'
 import { Spec, SpecOptions } from '@vltpkg/spec'
+import { Monorepo } from '@vltpkg/workspaces'
 import { hydrate } from '@vltpkg/dep-id'
 import { Graph } from '../src/graph.js'
 
@@ -174,5 +175,44 @@ t.test('main manifest missing name', async t => {
     hydrateId.bareSpec,
     'file:.',
     'should have the relative path reference',
+  )
+})
+
+t.test('workspaces', async t => {
+  const mainManifest = {
+    name: 'my-project',
+    version: '1.0.0',
+  }
+  const dir = t.testdir({
+    'package.json': JSON.stringify(mainManifest),
+    'vlt-workspaces.json': JSON.stringify({
+      packages: ['./packages/*'],
+    }),
+    packages: {
+      a: {
+        'package.json': JSON.stringify({
+          name: 'a',
+          version: '1.0.0',
+        }),
+      },
+      b: {
+        'package.json': JSON.stringify({
+          name: 'b',
+          version: '1.0.0',
+        }),
+      },
+    },
+  })
+  const monorepo = Monorepo.maybeLoad(dir)
+  const graph = new Graph(
+    {
+      mainManifest,
+      monorepo,
+    },
+    configData,
+  )
+  t.matchSnapshot(
+    graph.importers,
+    'should have root and workspaces as importers',
   )
 })

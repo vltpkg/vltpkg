@@ -1,17 +1,27 @@
-import { DepID, getId } from '@vltpkg/dep-id'
-import { PackageInfoClient } from '@vltpkg/package-info'
+import { error } from '@vltpkg/error-cause'
+import { getId, DepID, joinDepIDTuple } from '@vltpkg/dep-id'
 import { Spec, SpecOptions } from '@vltpkg/spec'
-import { ManifestMinified } from '@vltpkg/types'
-import { DependencyTypeLong } from './dependencies.js'
+import { Monorepo } from '@vltpkg/workspaces'
 import { Edge } from './edge.js'
 import { Node } from './node.js'
+import { DependencyTypeLong } from './dependencies.js'
+import { ManifestMinified } from '@vltpkg/types'
 
 export type ManifestInventory = Map<DepID, ManifestMinified>
 
 export interface GraphOptions {
+  /**
+   * The main importer manifest info.
+   */
   mainManifest: ManifestMinified
-  packageInfo?: PackageInfoClient
+  /**
+   * An inventory of seen manifests.
+   */
   manifests?: ManifestInventory
+  /**
+   * A {@link Monorepo} object, for managing workspaces
+   */
+  monorepo?: Monorepo
 }
 
 export class Graph {
@@ -22,9 +32,9 @@ export class Graph {
   #config: SpecOptions
 
   /**
-   * A {@link PackageInfoClient} instance used to request packages info.
+   * A {@link Monorepo} instance, used for managing workspaces.
    */
-  packageInfo: PackageInfoClient
+  #monorepo?: Monorepo
 
   /**
    * An inventory with all manifests related to an install.
@@ -52,19 +62,24 @@ export class Graph {
   mainImporter: Node
 
   /**
+   * A set of extraneous dependencies found when building the graph.
+   */
+  extraneousDependencies: Set<Edge> = new Set()
+
+  /**
    * A list of dangling edges from the root node, representing
    * missing direct dependencies of a given install.
    */
   missingDependencies: Set<Edge> = new Set()
 
   constructor(
-    { mainManifest, packageInfo, manifests }: GraphOptions,
+    { mainManifest, manifests, monorepo }: GraphOptions,
     config: SpecOptions,
   ) {
     this.#config = config
-    this.packageInfo = packageInfo ?? new PackageInfoClient()
     this.manifests = manifests ?? (new Map() as ManifestInventory)
 
+    // add the project root node
     const mainImporterLocation = '.'
     const mainImporterSpec = Spec.parse(
       mainManifest.name || '(root)',
@@ -79,6 +94,26 @@ export class Graph {
     this.mainImporter = mainImporter
     this.importers.add(mainImporter)
     this.manifests.set(mainImporter.id, mainManifest)
+
+    // uses the monorepo instance in order to retrieve info on
+    // workspaces and create importer nodes for each of them
+    this.#monorepo = monorepo
+    if (this.#monorepo) {
+      for (const ws of this.#monorepo) {
+        const wsId = joinDepIDTuple(['workspace', ws.name])
+        const wsNode = this.newNode(
+          wsId,
+          ws.manifest,
+          undefined,
+          ws.name,
+        )
+        wsNode.setImporterLocation(`./${ws.path}`)
+        if (wsNode.manifest) {
+          this.manifests.set(wsNode.id, wsNode.manifest)
+        }
+        this.importers.add(wsNode)
+      }
+    }
   }
 
   /**
@@ -97,6 +132,7 @@ export class Graph {
     if (!to) {
       this.missingDependencies.add(edgeOut)
     }
+    return edgeOut
   }
 
   /**
@@ -129,15 +165,25 @@ export class Graph {
     depType: DependencyTypeLong,
     spec: Spec,
     manifest?: ManifestMinified,
+    id?: DepID,
   ) {
     // if no manifest is available, then create an edge that has no
     // reference to any other node, representing a missing dependency
-    if (!manifest) {
+    if (!manifest && !id) {
       this.newEdge(depType, spec, fromNode)
       return
     }
 
-    const depId = getId(spec, manifest)
+    const depId = id || (manifest && getId(spec, manifest))
+
+    /* c8 ignore start - should not be possible */
+    if (!depId) {
+      throw error('Could not find dep id when placing package', {
+        spec,
+        manifest,
+      })
+    }
+    /* c8 ignore stop */
 
     // if a node for this package is already represented by a node
     // in the graph, then just creates a new edge to that node
@@ -149,7 +195,6 @@ export class Graph {
 
     // creates a new node and edges to its parent
     const toNode = this.newNode(depId, manifest)
-    toNode.setResolved()
     this.newEdge(depType, spec, fromNode, toNode)
     return toNode
   }

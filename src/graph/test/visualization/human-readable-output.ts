@@ -1,12 +1,13 @@
-import { inspect } from 'node:util'
 import t from 'tap'
 import { Spec, SpecOptions } from '@vltpkg/spec'
+import { Monorepo } from '@vltpkg/workspaces'
 import { Graph } from '../../src/graph.js'
 import { humanReadableOutput } from '../../src/visualization/human-readable-output.js'
 
 const configData = {
   registry: 'https://registry.npmjs.org',
   registries: {
+    custom: 'http://example.com',
     npm: 'https://registry.npmjs.org',
   },
 } satisfies SpecOptions
@@ -44,7 +45,7 @@ t.test('human-readable-output', async t => {
       name: 'bar',
       version: '1.0.0',
       dependencies: {
-        baz: '^1.0.0',
+        baz: 'custom:baz@^1.0.0',
       },
     },
   )
@@ -52,17 +53,18 @@ t.test('human-readable-output', async t => {
   const baz = graph.placePackage(
     bar,
     'dependencies',
-    Spec.parse('baz', '^1.0.0'),
+    Spec.parse('baz', 'custom:bar@^1.0.0', configData as SpecOptions),
     {
       name: 'baz',
       version: '1.0.0',
       dist: {
-        tarball: 'https://registry.vlt.sh/baz',
+        tarball: 'http://example.com/baz',
         integrity: 'sha512-deadbeef',
       },
     },
   )
   if (!baz) throw new Error('failed to place baz')
+  baz.setResolved()
   graph.placePackage(
     graph.mainImporter,
     'dependencies',
@@ -77,8 +79,66 @@ t.test('human-readable-output', async t => {
       version: '1.0.0',
     },
   )
+  const extraneous = graph.placePackage(
+    bar,
+    'dependencies',
+    Spec.parse(
+      'extraneous',
+      'extraneous@^1.0.0',
+      configData as SpecOptions,
+    ),
+    {
+      name: 'extraneous',
+      version: '1.0.0',
+    },
+  )
+  if (!extraneous) throw new Error('failed to place extraneous')
+  const [edge] = extraneous.edgesIn
+  if (!edge) {
+    throw new Error('failed to find extraneous edge')
+  }
+  graph.extraneousDependencies.add(edge)
   t.matchSnapshot(
-    inspect(humanReadableOutput(graph)),
+    humanReadableOutput(graph),
     'should print human readable output',
+  )
+})
+
+t.test('workspaces', async t => {
+  const mainManifest = {
+    name: 'my-project',
+    version: '1.0.0',
+  }
+  const dir = t.testdir({
+    'package.json': JSON.stringify(mainManifest),
+    'vlt-workspaces.json': JSON.stringify({
+      packages: ['./packages/*'],
+    }),
+    packages: {
+      a: {
+        'package.json': JSON.stringify({
+          name: 'a',
+          version: '1.0.0',
+        }),
+      },
+      b: {
+        'package.json': JSON.stringify({
+          name: 'b',
+          version: '1.0.0',
+        }),
+      },
+    },
+  })
+  const monorepo = Monorepo.load(dir)
+  const graph = new Graph(
+    {
+      mainManifest,
+      monorepo,
+    },
+    configData,
+  )
+  t.matchSnapshot(
+    humanReadableOutput(graph),
+    'should print human readable workspaces output',
   )
 })

@@ -7,23 +7,18 @@
 'use strict'
 exports[`test/graph.ts > TAP > Graph > should print with special tag name 1`] = `
 Graph [@vltpkg/graph.Graph] {
-  packageInfo: [PackageInfoClient],
   manifests: [Map],
   edges: Set(0) {},
   nodes: [Map],
   importers: [Set],
   mainImporter: [Node [@vltpkg/graph.Node]],
+  extraneousDependencies: Set(0) {},
   missingDependencies: Set(0) {}
 }
 `
 
 exports[`test/graph.ts > TAP > using placePackage > the graph 1`] = `
 Graph [@vltpkg/graph.Graph] {
-  packageInfo: PackageInfoClient {
-    options: {},
-    packageJson: PackageJson { cache: Map(0) {}, errCache: Map(0) {} },
-    monorepo: undefined
-  },
   manifests: Map(4) {
     'file;.' => { name: 'my-project', version: '1.0.0', dependencies: [Object] },
     'registry;;foo@1.0.0' => { name: 'foo', version: '1.0.0' },
@@ -81,7 +76,7 @@ Graph [@vltpkg/graph.Graph] {
       integrity: undefined,
       manifest: [Object],
       name: 'foo',
-      resolved: 'https://registry.npmjs.org/foo/-/foo-1.0.0.tgz'
+      resolved: undefined
     },
     'registry;;bar@1.0.0' => Node [@vltpkg/graph.Node] {
       edgesIn: [Set],
@@ -91,7 +86,7 @@ Graph [@vltpkg/graph.Graph] {
       integrity: undefined,
       manifest: [Object],
       name: 'bar',
-      resolved: 'https://registry.npmjs.org/bar/-/bar-1.0.0.tgz'
+      resolved: undefined
     },
     'registry;;baz@1.0.0' => Node [@vltpkg/graph.Node] {
       edgesIn: [Set],
@@ -101,7 +96,7 @@ Graph [@vltpkg/graph.Graph] {
       integrity: undefined,
       manifest: [Object],
       name: 'baz',
-      resolved: 'https://registry.vlt.sh/baz'
+      resolved: undefined
     }
   },
   importers: Set(1) {
@@ -130,6 +125,7 @@ Graph [@vltpkg/graph.Graph] {
     name: 'my-project',
     resolved: undefined
   },
+  extraneousDependencies: Set(0) {},
   missingDependencies: Set(1) {
     Edge [@vltpkg/graph.Edge] {
       from: [Node [@vltpkg/graph.Node]],
@@ -138,5 +134,53 @@ Graph [@vltpkg/graph.Graph] {
       spec: Spec {missing@^1.0.0}
     }
   }
+}
+`
+
+exports[`test/graph.ts > TAP > workspaces > should have root and workspaces as importers 1`] = `
+Set {
+  Node {
+    "edgesIn": Set {},
+    "edgesOut": Map {},
+    "id": "file;.",
+    "importer": true,
+    "integrity": undefined,
+    "manifest": Object {
+      "name": "my-project",
+      "version": "1.0.0",
+    },
+    "name": "my-project",
+    "resolved": undefined,
+  },
+  Node {
+    "edgesIn": Set {},
+    "edgesOut": Map {},
+    "id": "workspace;b",
+    "importer": true,
+    "integrity": undefined,
+    "manifest": Object {
+      "name": "b",
+      [Symbol.for(indent)]: "",
+      [Symbol.for(newline)]: "",
+      "version": "1.0.0",
+    },
+    "name": "b",
+    "resolved": undefined,
+  },
+  Node {
+    "edgesIn": Set {},
+    "edgesOut": Map {},
+    "id": "workspace;a",
+    "importer": true,
+    "integrity": undefined,
+    "manifest": Object {
+      "name": "a",
+      [Symbol.for(indent)]: "",
+      [Symbol.for(newline)]: "",
+      "version": "1.0.0",
+    },
+    "name": "a",
+    "resolved": undefined,
+  },
 }
 `

@@ -1,3 +1,4 @@
+import { PackageInfoClient } from '@vltpkg/package-info'
 import { Spec, SpecOptions } from '@vltpkg/spec'
 import {
   DependencyTypeLong,
@@ -16,14 +17,13 @@ const shouldInstallDepType = (
   (depType === 'devDependencies' && node.importer)
 
 export const appendNodes = async (
+  packageInfo: PackageInfoClient,
   graph: Graph,
   fromNode: Node,
   addSpecs: Spec[],
   depType: DependencyTypeLong,
   config: SpecOptions,
 ) => {
-  const { packageInfo } = graph
-
   // TODO: create one queue and promise all at the end
   await Promise.all(
     addSpecs.map(async spec => {
@@ -34,6 +34,7 @@ export const appendNodes = async (
 
       if (!node) return
 
+      node.setResolved()
       const nestedAppends: Promise<void>[] = []
 
       for (const nextDepType of dependencyTypes.keys()) {
@@ -46,7 +47,14 @@ export const appendNodes = async (
               Spec.parse(name, bareSpec, config as SpecOptions),
           )
           nestedAppends.push(
-            appendNodes(graph, node, addSpecs, nextDepType, config),
+            appendNodes(
+              packageInfo,
+              graph,
+              node,
+              addSpecs,
+              nextDepType,
+              config,
+            ),
           )
         }
       }

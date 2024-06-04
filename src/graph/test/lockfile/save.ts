@@ -46,22 +46,27 @@ t.test('save', async t => {
   if (!foo) {
     throw new Error('Missing expected package')
   }
-  graph.placePackage(foo, 'dependencies', Spec.parse('bar@^1.0.0'), {
-    name: 'bar',
-    version: '1.0.0',
-  })
-  graph.placePackage(
-    graph.mainImporter,
-    'dependencies',
-    Spec.parse('baz@custom:baz@^1.0.0', configData as SpecOptions),
-    {
-      name: 'baz',
+  foo.setResolved()
+  graph
+    .placePackage(foo, 'dependencies', Spec.parse('bar@^1.0.0'), {
+      name: 'bar',
       version: '1.0.0',
-      dist: {
-        tarball: 'http://example.com/baz.tgz',
+    })
+    ?.setResolved()
+  graph
+    .placePackage(
+      graph.mainImporter,
+      'dependencies',
+      Spec.parse('baz@custom:baz@^1.0.0', configData as SpecOptions),
+      {
+        name: 'baz',
+        version: '1.0.0',
+        dist: {
+          tarball: 'http://example.com/baz.tgz',
+        },
       },
-    },
-  )
+    )
+    ?.setResolved()
   save({ graph, dir }, configData)
   t.matchSnapshot(
     readFileSync(resolve(dir, 'vlt-lock.json'), { encoding: 'utf8' }),
