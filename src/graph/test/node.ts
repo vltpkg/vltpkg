@@ -51,6 +51,12 @@ t.test('Node', async t => {
     './node_modules/.vlt/registry;;foo@1.0.0/node_modules/foo',
     'should return the expected location value',
   )
+  foo.location = './arbitrary'
+  t.strictSame(
+    foo.location,
+    './arbitrary',
+    'should be able to set arbitrary locations',
+  )
   const barMani = {
     name: 'bar',
     version: '1.0.0',

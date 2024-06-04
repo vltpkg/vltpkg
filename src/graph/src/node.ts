@@ -74,6 +74,10 @@ export class Node {
     return this.#location
   }
 
+  set location(location: string) {
+    this.#location = location
+  }
+
   constructor(
     config: SpecOptions,
     id?: DepID,

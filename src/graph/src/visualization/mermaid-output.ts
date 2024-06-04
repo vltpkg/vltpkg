@@ -1,4 +1,4 @@
-import { DepID, hydrate } from '@vltpkg/dep-id'
+import { DepID } from '@vltpkg/dep-id'
 import { dependencyTypes } from '../dependencies.js'
 import { Edge } from '../edge.js'
 import { Graph } from '../graph.js'
@@ -38,7 +38,9 @@ function parseEdge(seenNodes: Set<DepID>, graph: Graph, edge: Edge) {
 
 export function mermaidOutput(graph: Graph) {
   const seenNodes: Set<DepID> = new Set()
+  const importers = [...graph.importers]
   return (
-    'flowchart TD\n' + parseNode(seenNodes, graph, graph.mainImporter)
+    'flowchart TD\n' +
+    importers.map(i => parseNode(seenNodes, graph, i)).join('\n')
   )
 }

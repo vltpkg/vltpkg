@@ -1,4 +1,3 @@
-import { inspect } from 'util'
 import t from 'tap'
 import { load } from '../../src/lockfile/load.js'
 import { humanReadableOutput } from '../../src/visualization/human-readable-output.js'
@@ -58,9 +57,7 @@ t.test('load', async t => {
     },
     configData,
   )
-  t.matchSnapshot(
-    inspect(humanReadableOutput(graph), { depth: Infinity }),
-  )
+  t.matchSnapshot(humanReadableOutput(graph))
 })
 
 t.test('unknown dep type', async t => {
