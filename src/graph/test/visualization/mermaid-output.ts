@@ -1,5 +1,6 @@
 import t from 'tap'
 import { Spec, SpecOptions } from '@vltpkg/spec'
+import { Monorepo } from '@vltpkg/workspaces'
 import { Graph } from '../../src/graph.js'
 import { mermaidOutput } from '../../src/visualization/mermaid-output.js'
 
@@ -77,6 +78,45 @@ t.test('human-readable-output', async t => {
   )
   t.matchSnapshot(
     mermaidOutput(graph),
-    'should print human readable output',
+    'should print mermaid output',
+  )
+})
+
+t.test('workspaces', async t => {
+  const mainManifest = {
+    name: 'my-project',
+    version: '1.0.0',
+  }
+  const dir = t.testdir({
+    'package.json': JSON.stringify(mainManifest),
+    'vlt-workspaces.json': JSON.stringify({
+      packages: ['./packages/*'],
+    }),
+    packages: {
+      a: {
+        'package.json': JSON.stringify({
+          name: 'a',
+          version: '1.0.0',
+        }),
+      },
+      b: {
+        'package.json': JSON.stringify({
+          name: 'b',
+          version: '1.0.0',
+        }),
+      },
+    },
+  })
+  const monorepo = Monorepo.load(dir)
+  const graph = new Graph(
+    {
+      mainManifest,
+      monorepo,
+    },
+    configData,
+  )
+  t.matchSnapshot(
+    mermaidOutput(graph),
+    'should print workspaces mermaid output',
   )
 })

@@ -37,19 +37,26 @@ function parseNode(seenNodes: Set<DepID>, graph: Graph, node: Node) {
 
 function parseEdge(seenNodes: Set<DepID>, graph: Graph, edge: Edge) {
   ;(edge as any)[inspect.custom] = () => {
+    const extraneousNode: string = `[extraneous package]: <${edge.name}>`
     const missingNode: string = `[missing package]: <${edge.name}@${edge.spec.bareSpec}>`
     const toLabel: string =
       edge.to ?
-        inspect(parseNode(seenNodes, graph, edge.to), {
-          depth: Infinity,
-        })
+        graph.extraneousDependencies.has(edge) ?
+          extraneousNode
+        : inspect(parseNode(seenNodes, graph, edge.to), {
+            depth: Infinity,
+          })
       : missingNode
-    return `Edge -${dependencyTypes.get(edge.type)}-> to: ${toLabel}`
+    return `Edge spec(${edge.spec}) -${dependencyTypes.get(edge.type)}-> to: ${toLabel}`
   }
   return edge
 }
 
 export function humanReadableOutput(graph: Graph) {
   const seenNodes: Set<DepID> = new Set()
-  return parseNode(seenNodes, graph, graph.mainImporter)
+  const importers = [...graph.importers]
+  return inspect(
+    importers.map(i => parseNode(seenNodes, graph, i)),
+    { depth: Infinity },
+  )
 }

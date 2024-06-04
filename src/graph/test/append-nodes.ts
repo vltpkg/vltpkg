@@ -44,7 +44,7 @@ t.test('append a new node to a graph from a registry', async t => {
     },
     configData,
   )
-  graph.packageInfo = {
+  const packageInfo = {
     async manifest(spec: Spec) {
       switch (spec.name) {
         case 'bar':
@@ -64,6 +64,7 @@ t.test('append a new node to a graph from a registry', async t => {
     'has no direct dependency yet',
   )
   await appendNodes(
+    packageInfo,
     graph,
     graph.mainImporter,
     [Spec.parse('foo@^1.0.0')],
@@ -88,6 +89,7 @@ t.test('append a new node to a graph from a registry', async t => {
   )
 
   await appendNodes(
+    packageInfo,
     graph,
     graph.mainImporter,
     [Spec.parse('bar')],
@@ -102,6 +104,7 @@ t.test('append a new node to a graph from a registry', async t => {
 
   await t.rejects(
     appendNodes(
+      packageInfo,
       graph,
       graph.mainImporter,
       [Spec.parse('borked')],
@@ -141,7 +144,7 @@ t.test('append different type of dependencies', async t => {
     },
     configData,
   )
-  graph.packageInfo = {
+  const packageInfo = {
     async manifest(spec: Spec) {
       switch (spec.name) {
         case 'bar':
@@ -154,6 +157,7 @@ t.test('append different type of dependencies', async t => {
     },
   } as PackageInfoClient
   await appendNodes(
+    packageInfo,
     graph,
     graph.mainImporter,
     [Spec.parse('foo', '^1.0.0')],
@@ -162,6 +166,7 @@ t.test('append different type of dependencies', async t => {
   )
 
   await appendNodes(
+    packageInfo,
     graph,
     graph.mainImporter,
     [Spec.parse('bar', '^1.0.0')],
@@ -170,6 +175,7 @@ t.test('append different type of dependencies', async t => {
   )
 
   await appendNodes(
+    packageInfo,
     graph,
     graph.mainImporter,
     [Spec.parse('missing', '^1.0.0')],

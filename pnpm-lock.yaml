@@ -262,6 +262,12 @@ importers:
       '@vltpkg/types':
         specifier: workspace:*
         version: link:../types
+      '@vltpkg/workspaces':
+        specifier: workspace:*
+        version: link:../workspaces
+      path-scurry:
+        specifier: ^1.11.1
+        version: 1.11.1
     devDependencies:
       '@types/node':
         specifier: ^20.12.12

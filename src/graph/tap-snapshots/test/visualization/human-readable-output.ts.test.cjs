@@ -6,36 +6,44 @@
  */
 'use strict'
 exports[`test/visualization/human-readable-output.ts > TAP > human-readable-output > should print human readable output 1`] = `
-Node {
-  id: 'file;.',
-  location: '.',
-  edgesOut: [
-    Edge -prod-> to: Node {
-      id: 'registry;;foo@1.0.0',
-      location: './node_modules/.vlt/registry;;foo@1.0.0/node_modules/foo',
-      resolved: 'https://registry.npmjs.org/foo/-/foo-1.0.0.tgz'
-    },
-    Edge -prod-> to: Node {
-      id: 'registry;;bar@1.0.0',
-      location: './node_modules/.vlt/registry;;bar@1.0.0/node_modules/bar',
-      resolved: 'https://registry.npmjs.org/bar/-/bar-1.0.0.tgz',
-      edgesOut: [
-        Edge -prod-> to: Node {
-          id: 'registry;;baz@1.0.0',
-          location: './node_modules/.vlt/registry;;baz@1.0.0/node_modules/baz',
-          resolved: 'https://registry.vlt.sh/baz',
-          integrity: 'sha512-deadbeef',
-          edgesOut: [
-            Edge -prod-> to: Node {
-              id: 'registry;;foo@1.0.0',
-              location: './node_modules/.vlt/registry;;foo@1.0.0/node_modules/foo',
-              resolved: 'https://registry.npmjs.org/foo/-/foo-1.0.0.tgz'
-            }
-          ]
-        }
-      ]
-    },
-    Edge -prod-> to: [missing package]: <missing@^1.0.0>
-  ]
-}
+[
+  Node {
+    id: 'file;.',
+    location: '.',
+    edgesOut: [
+      Edge spec(foo@^1.0.0) -prod-> to: Node {
+        id: 'registry;;foo@1.0.0',
+        location: './node_modules/.vlt/registry;;foo@1.0.0/node_modules/foo'
+      },
+      Edge spec(bar@^1.0.0) -prod-> to: Node {
+        id: 'registry;;bar@1.0.0',
+        location: './node_modules/.vlt/registry;;bar@1.0.0/node_modules/bar',
+        edgesOut: [
+          Edge spec(baz@custom:bar@^1.0.0) -prod-> to: Node {
+            id: 'registry;custom;baz@1.0.0',
+            location: './node_modules/.vlt/registry;custom;baz@1.0.0/node_modules/baz',
+            resolved: 'http://example.com/baz',
+            integrity: 'sha512-deadbeef',
+            edgesOut: [
+              Edge spec(foo@^1.0.0) -prod-> to: Node {
+                id: 'registry;;foo@1.0.0',
+                location: './node_modules/.vlt/registry;;foo@1.0.0/node_modules/foo'
+              }
+            ]
+          },
+          Edge spec(extraneous@extraneous@^1.0.0) -prod-> to: [extraneous package]: <extraneous>
+        ]
+      },
+      Edge spec(missing@^1.0.0) -prod-> to: [missing package]: <missing@^1.0.0>
+    ]
+  }
+]
+`
+
+exports[`test/visualization/human-readable-output.ts > TAP > workspaces > should print human readable workspaces output 1`] = `
+[
+  Node { id: 'file;.', location: '.' },
+  Node { id: 'workspace;b', location: './packages/b' },
+  Node { id: 'workspace;a', location: './packages/a' }
+]
 `

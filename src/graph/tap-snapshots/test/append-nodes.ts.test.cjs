@@ -7,7 +7,6 @@
 'use strict'
 exports[`test/append-nodes.ts > TAP > append different type of dependencies > should install different type of deps on different conditions 1`] = `
 Graph [@vltpkg/graph.Graph] {
-  packageInfo: { manifest: [AsyncFunction: manifest] },
   manifests: Map(3) {
     'file;.' => {
       name: 'my-project',
@@ -183,6 +182,7 @@ Graph [@vltpkg/graph.Graph] {
     name: 'my-project',
     resolved: undefined
   },
+  extraneousDependencies: Set(0) {},
   missingDependencies: Set(1) {
     Edge [@vltpkg/graph.Edge] {
       from: <ref *1> Node [@vltpkg/graph.Node] {
