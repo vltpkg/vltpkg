@@ -1,5 +1,6 @@
 /src/*/.tap
 /src/*/dist
+/src/*/.tshy-build
 !/src/cache-unzip/dist
 /src/cache-unzip/dist/esm/*
 !/src/cache-unzip/dist/esm/unzip.js
