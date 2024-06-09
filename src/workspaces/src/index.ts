@@ -287,6 +287,7 @@ export class Monorepo {
     const ws = new Workspace(path, manifest, fullpath)
     if (group) ws.groups.push(group)
     this.#workspaces.set(ws.path, ws)
+    this.#workspaces.set(ws.fullpath, ws)
     this.#workspaces.set(ws.name, ws)
     for (const name of ws.groups) {
       const group = this.#groups.get(name) ?? new Set()
@@ -463,8 +464,11 @@ export class Monorepo {
    * Get all the keys (package names and paths) for loaded workspaces.
    * Union of {@link Monorepo#names} and {@link Monorepo#paths}
    */
-  keys() {
-    return this.#workspaces.keys()
+  *keys() {
+    for (const ws of this.#workspaces.values()) {
+      yield ws.path
+      if (ws.name !== ws.path) yield ws.name
+    }
   }
 
   /**
