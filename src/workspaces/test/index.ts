@@ -101,6 +101,11 @@ t.test('load some workspaces', t => {
       message: 'No workspaces loaded',
     },
   )
+  for (const ws of m.values()) {
+    t.equal(m.get(ws.fullpath), ws)
+    t.equal(m.get(ws.path), ws)
+    t.equal(m.get(ws.name), ws)
+  }
   t.resolveMatch(
     m.run(ws => ws.name),
     new Map([
