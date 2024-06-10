@@ -125,8 +125,8 @@ importers:
         specifier: ^5.3.0
         version: 5.3.0
       jackspeak:
-        specifier: ^3.0.0
-        version: 3.1.2
+        specifier: ^3.4.0
+        version: 3.4.0
       polite-json:
         specifier: ^5.0.0
         version: 5.0.0
@@ -1393,8 +1393,8 @@ packages:
     resolution: {integrity: sha512-BewmUXImeuRk2YY0PVbxgKAysvhRPUQE0h5QRM++nVWyubKGV0l8qQ5op8+B2DOmwSe63Jivj0BjkPQVf8fP5g==}
     engines: {node: '>=8'}
 
-  jackspeak@3.1.2:
-    resolution: {integrity: sha512-kWmLKn2tRtfYMF/BakihVVRzBKOxz4gJMiL2Rj91WnAB5TPZumSH99R/Yf1qE1u4uRimvCSJfm6hnxohXeEXjQ==}
+  jackspeak@3.4.0:
+    resolution: {integrity: sha512-JVYhQnN59LVPFCEcVa2C3CrEKYacvjRfqIQl+h8oi91aLYQVWRYbxjPcv1bUiUy/kLmQaANrYfNMCO3kuEDHfw==}
     engines: {node: '>=14'}
 
   js-tokens@4.0.0:
@@ -2253,7 +2253,7 @@ snapshots:
       '@tapjs/core': 2.1.6(@types/node@20.12.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@tapjs/test': 2.2.4(@tapjs/core@2.1.6(@types/node@20.12.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@types/node@20.12.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       chalk: 5.3.0
-      jackspeak: 3.1.2
+      jackspeak: 3.4.0
       polite-json: 4.0.1
       tap-yaml: 2.2.2
       walk-up-path: 3.0.1
@@ -2428,7 +2428,7 @@ snapshots:
       '@tapjs/typescript': 1.4.13(@tapjs/core@2.1.6(@types/node@20.12.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@types/node@20.12.12)(typescript@5.4.5)
       '@tapjs/worker': 2.0.8(@tapjs/core@2.1.6(@types/node@20.12.12)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
       glob: 10.4.1
-      jackspeak: 3.1.2
+      jackspeak: 3.4.0
       mkdirp: 3.0.1
       package-json-from-dist: 1.0.0
       resolve-import: 1.4.5
@@ -2717,7 +2717,7 @@ snapshots:
   glob@10.4.0:
     dependencies:
       foreground-child: 3.1.1
-      jackspeak: 3.1.2
+      jackspeak: 3.4.0
       minimatch: 9.0.4
       minipass: 7.1.2
       path-scurry: 1.11.1
@@ -2725,7 +2725,7 @@ snapshots:
   glob@10.4.1:
     dependencies:
       foreground-child: 3.1.1
-      jackspeak: 3.1.2
+      jackspeak: 3.4.0
       minimatch: 9.0.4
       minipass: 7.1.2
       path-scurry: 1.11.1
@@ -2885,7 +2885,7 @@ snapshots:
       html-escaper: 2.0.2
       istanbul-lib-report: 3.0.1
 
-  jackspeak@3.1.2:
+  jackspeak@3.4.0:
     dependencies:
       '@isaacs/cliui': 8.0.2
     optionalDependencies:

@@ -24,6 +24,7 @@
 
 import { error } from '@vltpkg/error-cause'
 import { XDG } from '@vltpkg/xdg'
+import { readFileSync, rmSync, writeFileSync } from 'fs'
 import { lstat, mkdir, readFile, writeFile } from 'fs/promises'
 import { Jack, OptionsResults, Unwrap } from 'jackspeak'
 import { homedir } from 'os'
@@ -35,46 +36,19 @@ import {
   stringify as jsonStringify,
 } from 'polite-json'
 import { walkUp } from 'walk-up-path'
-import { definition, recordFields } from './definition.js'
+import {
+  Commands,
+  commands,
+  definition,
+  isRecordField,
+  recordFields,
+} from './definition.js'
+import { merge } from './merge.js'
+export { recordFields, isRecordField }
+export { definition, commands, Commands }
 
-export { recordFields }
-export type { definition }
-
-// deep merge 2 objects
-// scalars are overwritten, objects are folded in together
-// if nothing to be added, then return the base object.
-const merge = <T extends Record<string, any>>(base: T, add: T): T =>
-  Object.fromEntries(
-    Object.entries(base)
-      .map(([k, v]) => [
-        k,
-        add[k] === undefined ? v
-        : (
-          !!v &&
-          typeof v === 'object' &&
-          !!add[k] &&
-          typeof add[k] === 'object'
-        ) ?
-          merge(v, add[k])
-        : add[k],
-      ])
-      .concat(
-        Object.entries(add).map(([k, v]) => [
-          k,
-          (
-            !!v &&
-            !!base[k] &&
-            typeof v === 'object' &&
-            typeof base[k] === 'object'
-          ) ?
-            merge(base[k], v)
-          : v,
-        ]),
-      ),
-  ) as T
-
-// if the pairs do not reduce cleanly due to a non-pair being found,
-// return the set of strings unchanged.
+// turn a set of pairs into a Record object.
+// if a kv pair doesn't have a = character, set to `''`
 const reducePairs = <T extends string[]>(
   pairs: T,
 ): T | Record<string, string> => {
@@ -91,11 +65,11 @@ const reducePairs = <T extends string[]>(
   return record
 }
 
-const isRecordField = (k: string, v: unknown): v is string[] =>
+const isRecordFieldValue = (k: string, v: unknown): v is string[] =>
   Array.isArray(v) &&
   recordFields.includes(k as (typeof recordFields)[number])
 
-const pairsToRecords = (obj: ConfigFileData): ConfigData => {
+export const pairsToRecords = (obj: ConfigFileData): ConfigData => {
   return Object.fromEntries(
     Object.entries(obj).map(([k, v]) => [
       k,
@@ -106,13 +80,13 @@ const pairsToRecords = (obj: ConfigFileData): ConfigData => {
             pairsToRecords(v as ConfigFileData),
           ]),
         )
-      : isRecordField(k, v) ? reducePairs(v)
+      : isRecordFieldValue(k, v) ? reducePairs(v)
       : v,
     ]),
   )
 }
 
-const recordsToPairs = (
+export const recordsToPairs = (
   obj: Record<string | symbol, any>,
 ): Record<string | symbol, any> => {
   return Object.fromEntries(
@@ -120,7 +94,13 @@ const recordsToPairs = (
       k,
       k === 'command' && v && typeof v === 'object' ?
         recordsToPairs(v)
-      : !v || typeof v !== 'object' || Array.isArray(v) ? v
+      : (
+        !v ||
+        typeof v !== 'object' ||
+        Array.isArray(v) ||
+        !isRecordField(k)
+      ) ?
+        v
       : Object.entries(v).map(([k, v]) => `${k}=${v}`),
     ]),
   )
@@ -185,10 +165,19 @@ export class Config {
     [kNewline]: string
   } = { [kIndent]: '  ', [kNewline]: '\n' }
 
+  configFiles: Record<string, ConfigFileData> = {}
+
   /**
    * Parsed values in effect
    */
   values?: OptionsResults<ConfigDefinitions>
+
+  /**
+   * Command-specific config values
+   */
+  commandValues: {
+    [cmd in Commands[keyof Commands]]?: ConfigData
+  } = {}
 
   /**
    * A flattened object of the parsed configuration
@@ -217,17 +206,22 @@ export class Config {
   cwd: string
 
   /**
-   * Which command name to use for overriding with command-specific values
+   * Record<alias, canonical name> to dereference command aliases.
    */
-  command?: string
+  commands: Commands
+
+  /**
+   * Which command name to use for overriding with command-specific values,
+   * determined from the argv when parse() is called.
+   */
+  command?: Commands[keyof Commands]
 
   constructor(
     jack: Jack<ConfigDefinitions> = definition,
     cwd = process.cwd(),
-    command?: string,
   ) {
     this.cwd = cwd
-    this.command = command
+    this.commands = commands
     this.jack = jack
   }
 
@@ -238,16 +232,38 @@ export class Config {
     values: OptionsResults<ConfigDefinitions>
     positionals: string[]
   } {
-    const v = this.values
-    const p = this.positionals
-    if (v && p) {
+    if (this.values && this.positionals) {
       return this as this & {
         values: OptionsResults<ConfigDefinitions>
         positionals: string[]
       }
     }
-    const { values, positionals } = this.jack.parse(args)
-    return Object.assign(this, { values, positionals })
+    this.jack.loadEnvDefaults()
+    const p = this.jack.parseRaw(args)
+    const fallback = p.values[
+      'fallback-command'
+    ] as Commands[keyof Commands]
+    const argv0 = p.positionals[0]
+    const cmd = this.commands[argv0 as keyof Commands]
+    if (cmd) {
+      this.command = cmd
+    }
+    const cmdSpecific = this.commandValues[this.command || fallback]
+    if (cmdSpecific) {
+      this.jack.setConfigValues(recordsToPairs(cmdSpecific))
+    }
+
+    // ok, applied cmd-specific defaults, do rest of the parse
+    this.jack.applyDefaults(p)
+    this.jack.writeEnv(p)
+
+    if (cmd) p.positionals.shift()
+    else {
+      this.command = p.values[
+        'fallback-command'
+      ] as Commands[keyof Commands]
+    }
+    return Object.assign(this, p)
   }
 
   /**
@@ -291,54 +307,39 @@ export class Config {
   get<K extends keyof OptionsResults<ConfigDefinitions>>(
     k: K,
   ): OptionsResults<ConfigDefinitions>[K] {
+    /* c8 ignore next -- impossible but TS doesn't know that */
     return (this.values ?? this.parse().values)[k]
   }
 
   /**
-   * Write the config values to the project config file.
+   * Write the config values to the user or project config file.
    */
-  async writeProjectConfig(values: ConfigFileData) {
-    await writeFile(
-      resolve(this.cwd, 'vlt.json'),
-      jsonStringify(
-        Object.assign(pairsToRecords(values), this.stringifyOptions),
-      ),
-    )
-  }
-
-  /**
-   * Write the config values to the user config file.
-   */
-  async writeUserConfig(values: ConfigFileData) {
-    const f = xdg.config('vlt.json')
+  async writeConfigFile(
+    which: 'user' | 'project',
+    values: ConfigFileData,
+  ) {
+    const f = this.getFilename(which)
     await mkdir(dirname(f), { recursive: true })
-    await writeFile(
-      f,
-      jsonStringify(
-        Object.assign(pairsToRecords(values), this.stringifyOptions),
-      ),
+    const vals = Object.assign(
+      pairsToRecords(values),
+      this.stringifyOptions,
     )
+    await writeFile(f, jsonStringify(vals))
+    this.configFiles[f] = vals
     return values
   }
 
   /**
    * Fold in the provided fields with the existing properties
-   * in the project config file.
+   * in the config file.
    */
-  async addProjectConfig(values: ConfigData) {
-    const f = resolve(this.cwd, 'vlt.json')
-    return this.writeProjectConfig(
-      merge((await this.#maybeLoadConfigFile(f)) ?? {}, values),
-    )
-  }
-
-  /**
-   * Fold in the provided fields with the existing properties
-   * in the project config file.
-   */
-  async addUserConfig(values: ConfigData) {
-    const f = xdg.config('vlt.json')
-    return this.writeUserConfig(
+  async addConfigToFile(
+    which: 'user' | 'project',
+    values: ConfigFileData,
+  ) {
+    const f = this.getFilename(which)
+    return this.writeConfigFile(
+      which,
       merge((await this.#maybeLoadConfigFile(f)) ?? {}, values),
     )
   }
@@ -346,10 +347,41 @@ export class Config {
   /**
    * if the file exists, parse and load it. returns object if data was
    * loaded, or undefined if not.
-   * */
+   */
   async #maybeLoadConfigFile(
     file: string,
-  ): Promise<ConfigData | undefined> {
+  ): Promise<ConfigFileData | undefined> {
+    const result = await this.#readConfigFile(file)
+
+    if (result) {
+      try {
+        const { command, ...values } = recordsToPairs(result)
+        if (command) {
+          for (const [c, opts] of Object.entries(command)) {
+            const cmd = commands[c as keyof Commands]
+            if (cmd) {
+              this.commandValues[cmd] = merge(
+                this.commandValues[cmd] ?? {},
+                opts as ConfigData,
+              )
+            }
+          }
+        }
+        this.jack.setConfigValues(values, file)
+        return result
+      } catch (er) {
+        throw error('failed to load config values from file', {
+          path: file,
+          cause: er as Error,
+        })
+      }
+    }
+  }
+
+  async #readConfigFile(
+    file: string,
+  ): Promise<ConfigFileData | undefined> {
+    if (this.configFiles[file]) return this.configFiles[file]
     const data = await readFile(file, 'utf8').catch(() => {})
     if (!data) return undefined
     let result: any
@@ -365,26 +397,125 @@ export class Config {
         cause: er as Error,
       })
     }
-    if (result && typeof result === 'object') {
-      if (this.command && result.command?.[this.command]) {
-        result = merge(result, result.command[this.command])
+    this.configFiles[file] = result
+    return result
+  }
+
+  getFilename(which: 'user' | 'project' = 'project'): string {
+    return which === 'user' ?
+        xdg.config('vlt.json')
+      : resolve(this.cwd, 'vlt.json')
+  }
+
+  async deleteConfigKeys(
+    which: 'user' | 'project',
+    fields: string[],
+  ) {
+    const file = this.getFilename(which)
+    const data = await this.#maybeLoadConfigFile(file)
+    if (!data) {
+      rmSync(file, { force: true })
+      return false
+    }
+    let didSomething = false
+    for (const f of fields) {
+      const [key, ...sk] = f.split('.') as [
+        h: string,
+        ...rest: string[],
+      ]
+      const subs = sk.join('.')
+      const k = key as keyof ConfigDefinitions
+      const v = data[k]
+      if (v === undefined) continue
+      if (subs && v && typeof v === 'object') {
+        if (Array.isArray(v)) {
+          const i = v.findIndex(subvalue =>
+            subvalue.startsWith(`${subs}=`),
+          )
+          if (i !== -1) {
+            v.splice(i, 1)
+            if (v.length === 0) delete data[k]
+            didSomething = true
+          }
+        } else {
+          if (v[subs] !== undefined) {
+            delete v[subs]
+            if (Object.keys(v).length === 0) delete data[k]
+            didSomething = true
+          }
+        }
+      } else {
+        if (v !== undefined) {
+          didSomething = true
+          delete data[k]
+        }
       }
     }
+    const d = jsonStringify(data)
+    if (d.trim() === '{}') {
+      rmSync(file, { force: true })
+    } else {
+      writeFileSync(file, jsonStringify(data))
+    }
+    return didSomething
+  }
+
+  /**
+   * Edit the user or project configuration file.
+   *
+   * If the file isn't present, then it starts with `{}` so the user has
+   * something to work with.
+   *
+   * If the result is not valid, or no config settings are contained in the
+   * file after editing, then it's restored to what it was before, which might
+   * mean deleting the file.
+   */
+  async editConfigFile(
+    which: 'user' | 'project',
+    edit: (file: string) => void | Promise<void>,
+  ) {
+    const file = this.getFilename(which)
+    const backup = this.configFiles[file]
+    if (!backup) {
+      writeFileSync(file, '{\n\n}\n')
+    }
+    await edit(file)
+    let valid = false
     try {
-      const { command, ...values } = recordsToPairs(result)
-      this.jack.setConfigValues(values)
-      return result
-    } catch (er) {
-      throw error('failed to load config values from file', {
-        path: file,
-        cause: er as Error,
-      })
+      const res = jsonParse(readFileSync(file, 'utf8'))
+      if (!res || typeof res !== 'object' || Array.isArray(res)) {
+        throw error('Invalid configuration, expected object', {
+          path: file,
+          found: res,
+        })
+      }
+      if (Object.keys(res).length === 0) {
+        // nothing there, remove file
+        delete this.configFiles[file]
+        rmSync(file, { force: true })
+      } else {
+        this.jack.setConfigValues(recordsToPairs(res))
+        this.configFiles[file] = res as ConfigFileData
+      }
+      valid = true
+    } finally {
+      if (!valid) {
+        if (backup) {
+          writeFileSync(file, jsonStringify(backup))
+        } else {
+          rmSync(file, { force: true })
+        }
+      }
     }
   }
 
   /**
    * Find the local config file and load both it and the user-level config in
    * the XDG config home.
+   *
+   * Note: if working in a workspaces monorepo, then the vlt.json file MUST
+   * be in the same folder as the vlt-workspaces.json file, because we stop
+   * looking when we find either one.
    */
   async loadConfigFile(): Promise<this> {
     const userConfig = xdg.config('vlt.json')
@@ -476,19 +607,19 @@ export class Config {
    */
   static async load(
     cwd = process.cwd(),
-    command?: string,
+    argv = process.argv,
     /**
      * only used in tests, resets the memoization
      * @internal
      */
     reload: boolean = false,
   ): Promise<LoadedConfig> {
-    if (this.#loaded && !reload) return this.#loaded
-    const a = new Config(definition, cwd, command)
+    if (this.#loaded && !reload) return this.#loaded as LoadedConfig
+    const a = new Config(definition, cwd)
     const b = await a.loadConfigFile()
-    const c = await b.loadColor()
-    this.#loaded = c
-    return this.#loaded
+    const c = await b.parse(argv).loadColor()
+    this.#loaded = c as LoadedConfig
+    return this.#loaded as LoadedConfig
   }
 }
 
