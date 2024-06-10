@@ -5,6 +5,193 @@
  * Make sure to inspect the output below.  Do not ignore changes!
  */
 'use strict'
+exports[`test/index.ts > TAP > valid specs > @scoped/x@1.2.3 > hydrated with name asdf 1`] = `
+asdf@npm:@scoped/x@1.2.3
+`
+
+exports[`test/index.ts > TAP > valid specs > @scoped/x@1.2.3 > hydrated with name unknown 1`] = `
+@scoped/x@1.2.3
+`
+
+exports[`test/index.ts > TAP > valid specs > @scoped/x@1.2.3 > hydrated with name y 1`] = `
+y@npm:@scoped/x@1.2.3
+`
+
+exports[`test/index.ts > TAP > valid specs > @scoped/x@1.2.3 > hydrated with scoped name 1`] = `
+@scoped/x@1.2.3
+`
+
+exports[`test/index.ts > TAP > valid specs > @scoped/x@1.2.3 > must match snapshot 1`] = `
+Array [
+  "registry;;@scoped%2Fx@1.2.3",
+  Array [
+    "registry",
+    "",
+    "@scoped/x@1.2.3",
+  ],
+]
+`
+
+exports[`test/index.ts > TAP > valid specs > @scoped/x@github:a/b > hydrated with name asdf 1`] = `
+asdf@github:a/b#
+`
+
+exports[`test/index.ts > TAP > valid specs > @scoped/x@github:a/b > hydrated with name unknown 1`] = `
+(unknown)@github:a/b#
+`
+
+exports[`test/index.ts > TAP > valid specs > @scoped/x@github:a/b > hydrated with name y 1`] = `
+y@github:a/b#
+`
+
+exports[`test/index.ts > TAP > valid specs > @scoped/x@github:a/b > hydrated with scoped name 1`] = `
+@scoped/x@github:a/b#
+`
+
+exports[`test/index.ts > TAP > valid specs > @scoped/x@github:a/b > must match snapshot 1`] = `
+Array [
+  "git;github%3Aa%2Fb;",
+  Array [
+    "git",
+    "github:a/b",
+    "",
+  ],
+]
+`
+
+exports[`test/index.ts > TAP > valid specs > @scoped/x@npm:@scoped/x@1.2.3 > hydrated with name asdf 1`] = `
+asdf@npm:@scoped/x@1.2.3
+`
+
+exports[`test/index.ts > TAP > valid specs > @scoped/x@npm:@scoped/x@1.2.3 > hydrated with name unknown 1`] = `
+(unknown)@npm:@scoped/x@1.2.3
+`
+
+exports[`test/index.ts > TAP > valid specs > @scoped/x@npm:@scoped/x@1.2.3 > hydrated with name y 1`] = `
+y@npm:@scoped/x@1.2.3
+`
+
+exports[`test/index.ts > TAP > valid specs > @scoped/x@npm:@scoped/x@1.2.3 > hydrated with scoped name 1`] = `
+@scoped/x@npm:@scoped/x@1.2.3
+`
+
+exports[`test/index.ts > TAP > valid specs > @scoped/x@npm:@scoped/x@1.2.3 > must match snapshot 1`] = `
+Array [
+  "registry;npm;@scoped%2Fx@1.2.3",
+  Array [
+    "registry",
+    "npm",
+    "@scoped/x@1.2.3",
+  ],
+]
+`
+
+exports[`test/index.ts > TAP > valid specs > @scoped/x@npm:1.2.3 > hydrated with name asdf 1`] = `
+asdf@npm:@scoped/x@1.2.3
+`
+
+exports[`test/index.ts > TAP > valid specs > @scoped/x@npm:1.2.3 > hydrated with name unknown 1`] = `
+(unknown)@npm:@scoped/x@1.2.3
+`
+
+exports[`test/index.ts > TAP > valid specs > @scoped/x@npm:1.2.3 > hydrated with name y 1`] = `
+y@npm:@scoped/x@1.2.3
+`
+
+exports[`test/index.ts > TAP > valid specs > @scoped/x@npm:1.2.3 > hydrated with scoped name 1`] = `
+@scoped/x@npm:@scoped/x@1.2.3
+`
+
+exports[`test/index.ts > TAP > valid specs > @scoped/x@npm:1.2.3 > must match snapshot 1`] = `
+Array [
+  "registry;npm;@scoped%2Fx@1.2.3",
+  Array [
+    "registry",
+    "npm",
+    "@scoped/x@1.2.3",
+  ],
+]
+`
+
+exports[`test/index.ts > TAP > valid specs > @scoped/x@workspace:@scoped/x@* > hydrated with name asdf 1`] = `
+asdf@workspace:@scoped/x@*
+`
+
+exports[`test/index.ts > TAP > valid specs > @scoped/x@workspace:@scoped/x@* > hydrated with name unknown 1`] = `
+@scoped/x@workspace:*
+`
+
+exports[`test/index.ts > TAP > valid specs > @scoped/x@workspace:@scoped/x@* > hydrated with name y 1`] = `
+y@workspace:@scoped/x@*
+`
+
+exports[`test/index.ts > TAP > valid specs > @scoped/x@workspace:@scoped/x@* > hydrated with scoped name 1`] = `
+@scoped/x@workspace:*
+`
+
+exports[`test/index.ts > TAP > valid specs > @scoped/x@workspace:@scoped/x@* > must match snapshot 1`] = `
+Array [
+  "workspace;@scoped%2Fx",
+  Array [
+    "workspace",
+    "@scoped/x",
+  ],
+]
+`
+
+exports[`test/index.ts > TAP > valid specs > @scoped/x@workspace:* > hydrated with name asdf 1`] = `
+asdf@workspace:@scoped/x@*
+`
+
+exports[`test/index.ts > TAP > valid specs > @scoped/x@workspace:* > hydrated with name unknown 1`] = `
+@scoped/x@workspace:*
+`
+
+exports[`test/index.ts > TAP > valid specs > @scoped/x@workspace:* > hydrated with name y 1`] = `
+y@workspace:@scoped/x@*
+`
+
+exports[`test/index.ts > TAP > valid specs > @scoped/x@workspace:* > hydrated with scoped name 1`] = `
+@scoped/x@workspace:*
+`
+
+exports[`test/index.ts > TAP > valid specs > @scoped/x@workspace:* > must match snapshot 1`] = `
+Array [
+  "workspace;@scoped%2Fx",
+  Array [
+    "workspace",
+    "@scoped/x",
+  ],
+]
+`
+
+exports[`test/index.ts > TAP > valid specs > @scoped/y@npm:@scoped/x@1.2.3 > hydrated with name asdf 1`] = `
+asdf@npm:@scoped/x@1.2.3
+`
+
+exports[`test/index.ts > TAP > valid specs > @scoped/y@npm:@scoped/x@1.2.3 > hydrated with name unknown 1`] = `
+(unknown)@npm:@scoped/x@1.2.3
+`
+
+exports[`test/index.ts > TAP > valid specs > @scoped/y@npm:@scoped/x@1.2.3 > hydrated with name y 1`] = `
+y@npm:@scoped/x@1.2.3
+`
+
+exports[`test/index.ts > TAP > valid specs > @scoped/y@npm:@scoped/x@1.2.3 > hydrated with scoped name 1`] = `
+@scoped/x@npm:@scoped/x@1.2.3
+`
+
+exports[`test/index.ts > TAP > valid specs > @scoped/y@npm:@scoped/x@1.2.3 > must match snapshot 1`] = `
+Array [
+  "registry;npm;@scoped%2Fx@1.2.3",
+  Array [
+    "registry",
+    "npm",
+    "@scoped/x@1.2.3",
+  ],
+]
+`
+
 exports[`test/index.ts > TAP > valid specs > x@1 > hydrated 1`] = `
 x@1.2.3
 `
@@ -430,53 +617,53 @@ Array [
 `
 
 exports[`test/index.ts > TAP > valid specs > x@workspace:y@* > hydrated 1`] = `
-x@workspace:y@*
+x@workspace:*
 `
 
 exports[`test/index.ts > TAP > valid specs > x@workspace:y@* > hydrated with name asdf 1`] = `
-asdf@workspace:y@*
+asdf@workspace:x@*
 `
 
 exports[`test/index.ts > TAP > valid specs > x@workspace:y@* > hydrated with name unknown 1`] = `
-y@workspace:*
+x@workspace:*
 `
 
 exports[`test/index.ts > TAP > valid specs > x@workspace:y@* > hydrated with name y 1`] = `
-y@workspace:*
+y@workspace:x@*
 `
 
 exports[`test/index.ts > TAP > valid specs > x@workspace:y@* > must match snapshot 1`] = `
 Array [
-  "workspace;y",
+  "workspace;x",
   Array [
     "workspace",
-    "y",
+    "x",
   ],
 ]
 `
 
 exports[`test/index.ts > TAP > valid specs > x@workspace:y@1.x > hydrated 1`] = `
-x@workspace:y@*
+x@workspace:*
 `
 
 exports[`test/index.ts > TAP > valid specs > x@workspace:y@1.x > hydrated with name asdf 1`] = `
-asdf@workspace:y@*
+asdf@workspace:x@*
 `
 
 exports[`test/index.ts > TAP > valid specs > x@workspace:y@1.x > hydrated with name unknown 1`] = `
-y@workspace:*
+x@workspace:*
 `
 
 exports[`test/index.ts > TAP > valid specs > x@workspace:y@1.x > hydrated with name y 1`] = `
-y@workspace:*
+y@workspace:x@*
 `
 
 exports[`test/index.ts > TAP > valid specs > x@workspace:y@1.x > must match snapshot 1`] = `
 Array [
-  "workspace;y",
+  "workspace;x",
   Array [
     "workspace",
-    "y",
+    "x",
   ],
 ]
 `
@@ -504,6 +691,33 @@ Array [
     "registry",
     "",
     "x@1.2.3",
+  ],
+]
+`
+
+exports[`test/index.ts > TAP > valid specs > y@npm:@scoped/x@1.2.3 > hydrated with name asdf 1`] = `
+asdf@npm:@scoped/x@1.2.3
+`
+
+exports[`test/index.ts > TAP > valid specs > y@npm:@scoped/x@1.2.3 > hydrated with name unknown 1`] = `
+(unknown)@npm:@scoped/x@1.2.3
+`
+
+exports[`test/index.ts > TAP > valid specs > y@npm:@scoped/x@1.2.3 > hydrated with name y 1`] = `
+y@npm:@scoped/x@1.2.3
+`
+
+exports[`test/index.ts > TAP > valid specs > y@npm:@scoped/x@1.2.3 > hydrated with scoped name 1`] = `
+@scoped/x@npm:@scoped/x@1.2.3
+`
+
+exports[`test/index.ts > TAP > valid specs > y@npm:@scoped/x@1.2.3 > must match snapshot 1`] = `
+Array [
+  "registry;npm;@scoped%2Fx@1.2.3",
+  Array [
+    "registry",
+    "npm",
+    "@scoped/x@1.2.3",
   ],
 ]
 `
