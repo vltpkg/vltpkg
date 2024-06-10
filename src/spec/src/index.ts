@@ -297,14 +297,34 @@ export class Spec {
     if (this.bareSpec.startsWith('workspace:')) {
       this.type = 'workspace'
       const ws = this.bareSpec.substring('workspace:'.length).trim()
-      const w = ws.indexOf('@')
-      this.workspace = w === -1 ? this.name : ws.substring(0, 1)
+      const w = ws.lastIndexOf('@')
+      if (w === -1) {
+        this.workspace = this.name
+      } else {
+        const wsName = ws.substring(0, w)
+        if (
+          !wsName ||
+          wsName === '*' ||
+          wsName === '~' ||
+          wsName === '^' ||
+          (wsName.startsWith('@') ?
+            wsName.split('/').length !== 2 ||
+            wsName.substring(1).includes('@')
+          : wsName.includes('@'))
+        ) {
+          throw this.#error(
+            'workspace: name must be a path or valid package name',
+            { found: wsName },
+          )
+        }
+        this.workspace = wsName
+      }
       // workspace: is the same as workspace:*
       const wss = w === -1 ? ws : ws.substring(w + 1) || '*'
       const range = wss === '*' ? undefined : parseRange(wss)
       if (wss !== '*' && wss !== '~' && wss !== '^' && !range) {
         throw this.#error(
-          'workspace: spec must be one of *, !, or ^, or a valid semver range',
+          'workspace: spec must be one of *, ~, or ^, or a valid semver range',
           {
             found: wss,
             wanted: `'*'|'~'|'^'|SemverRange`,
