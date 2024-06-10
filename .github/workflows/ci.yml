@@ -36,4 +36,8 @@ jobs:
         run: "npx --yes pnpm i"
 
       - name: Run Tests
-        run: "npx --yes pnpm test"
+        run: "npx --yes pnpm --silent --no-bail --report-summary -r test -- -Rsilent"
+
+      - name: Show Test Results
+        if: failure()
+        run: "node scripts/report-test-failures.js"
