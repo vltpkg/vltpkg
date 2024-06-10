@@ -1,4 +1,4 @@
-import { LoadedConfig } from '@vltpkg/config'
+import { LoadedConfig } from '../config/index.js'
 
 export const usage = `vlt exec [command]
 Runs the command with all installed bins in the $PATH

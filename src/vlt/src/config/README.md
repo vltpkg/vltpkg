@@ -1,11 +1,11 @@
-# `@vltpkg/config`
+# `vlt/config`
 
 Configuration management for vlt.
 
 ## USAGE
 
 ```js
-import { Config } from '@vltpkg/config'
+import { Config } from 'vlt/config'
 import chalk from 'chalk'
 
 const config = await Config.load()
@@ -51,7 +51,7 @@ the environment, or options specified on the command line.
 
 ## Configuration Definitions and Patterns
 
-All configuration options are defined in `./src/definition.ts`.
+All configuration options are defined in `./definition.ts`.
 See [jackspeak docs](http://npm.im/jackspeak) for a full
 description of the format.
 
@@ -102,7 +102,7 @@ called with `config.options` as an options argument.
 Example:
 
 ```js
-import { Config } from '@vltpkg/config'
+import { Config } from 'vlt/config'
 import { PackageInfo } from '@vltpkg/package-info'
 
 const config = await Config.load()

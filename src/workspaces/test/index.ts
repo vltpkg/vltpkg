@@ -191,7 +191,7 @@ export const isOdd = (n) => !isEven(n)
   })
 
   const m = new Monorepo(dir, {
-    load: { groups: 'utils', paths: './{utils,app}/**' }
+    load: { groups: 'utils', paths: './{utils,app}/**' },
   })
   const seen: string[] = []
   let sawMissingDep = false
@@ -242,14 +242,15 @@ export const isOdd = (n) => !isEven(n)
   // useful in cases where we need to build internal deps first
   const n = new Monorepo(dir, {
     load: {
-    paths: [
-      'utils/is-odd',
-      'app/bar/thisisignored',
-      '.',
-      'app/bar/**',
-    ],
-    groups: ['utils'],
-  }})
+      paths: [
+        'utils/is-odd',
+        'app/bar/thisisignored',
+        '.',
+        'app/bar/**',
+      ],
+      groups: ['utils'],
+    },
+  })
   t.equal(n.get('utils/is-even'), undefined)
   t.equal(n.get('app/bar/thisisignored'), undefined)
   t.equal(n.get(''), undefined)

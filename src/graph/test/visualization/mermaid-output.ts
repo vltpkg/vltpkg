@@ -1,6 +1,5 @@
 import t from 'tap'
-import { ConfigFileData } from '@vltpkg/config'
-import { Spec } from '@vltpkg/spec'
+import { Spec, SpecOptions } from '@vltpkg/spec'
 import { Graph } from '../../src/graph.js'
 import { mermaidOutput } from '../../src/visualization/mermaid-output.js'
 
@@ -9,7 +8,7 @@ const configData = {
   registries: {
     npm: 'https://registry.npmjs.org',
   },
-} as ConfigFileData
+} satisfies SpecOptions
 
 t.test('human-readable-output', async t => {
   const graph = new Graph(

@@ -80,7 +80,6 @@ export const definition = jack({
     return false
   },
 })
-
   .heading('vlt - A New Home for JavaScript')
   .description(
     `Here goes a short description of the vlt command line client.
@@ -214,7 +213,8 @@ export const definition = jack({
                     Prefixes can be used as a package alias. For example:
 
                     \`\`\`
-                    vlt --registries loc=http://reg.local install foo@loc:foo@1.x
+                    vlt --registries loc=https://registry.local \\
+                      install foo@loc:foo@1.x
                     \`\`\`
 
                     By default, the public npm registry is registered to the
@@ -351,10 +351,7 @@ export const definition = jack({
       description: `The command to run when the first argument doesn't
                     match any known commands.
 
-                    For pnpm-style behavior, set this to 'run-exec'. e.g:
-                    \`\`\`
-                    vlt config set fallback-command=run-exec
-                    \`\`\``,
+                    For pnpm-style behavior, set this to 'run-exec'.`,
       default: 'help',
       validOptions: [...new Set(Object.values(commands))],
     },
@@ -366,8 +363,8 @@ export const definition = jack({
       description: `When running \`vlt install-exec\`, this allows you to
                     explicitly set the package to search for bins. If not
                     provided, then vlt will interpret the first argument as
-                    the package, and attempt to run the default executable.`
-    }
+                    the package, and attempt to run the default executable.`,
+    },
   })
 
   .flag({

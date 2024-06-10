@@ -1,11 +1,10 @@
-import { ConfigFileData } from '@vltpkg/config'
 import { Spec, SpecOptions } from '@vltpkg/spec'
+import {
+  DependencyTypeLong,
+  dependencyTypes,
+} from './dependencies.js'
 import { Graph } from './graph.js'
 import { Node } from './node.js'
-import {
-  dependencyTypes,
-  DependencyTypeLong,
-} from './dependencies.js'
 
 // TODO: peer deps
 const shouldInstallDepType = (
@@ -21,7 +20,7 @@ export const appendNodes = async (
   fromNode: Node,
   addSpecs: Spec[],
   depType: DependencyTypeLong,
-  config: ConfigFileData,
+  config: SpecOptions,
 ) => {
   const { packageInfo } = graph
 

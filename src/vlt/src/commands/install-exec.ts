@@ -1,4 +1,4 @@
-import { LoadedConfig } from '@vltpkg/config'
+import { LoadedConfig } from '../config/index.js'
 
 export const usage = `vlt install-exec [--package=<pkg>] [command...]
 Run a command defined by a package, installing it if necessary`

@@ -1,4 +1,4 @@
-import {ErrorCause, ErrorCauseObject} from '@vltpkg/error-cause'
+import { ErrorCause, ErrorCauseObject } from '@vltpkg/error-cause'
 import t from 'tap'
 import { PackageJson } from '../src/index.js'
 
@@ -28,7 +28,11 @@ t.test('fails on missing package.json file', async t => {
       pj.read(dir)
       t.fail('expected to throw')
     } catch (er2) {
-      t.equal((er as Error).cause, (er2 as Error).cause, 'error was cached')
+      t.equal(
+        (er as Error).cause,
+        (er2 as Error).cause,
+        'error was cached',
+      )
     }
   }
   t.throws(

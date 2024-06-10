@@ -1,36 +1,41 @@
 import t from 'tap'
 import * as FSP from 'node:fs/promises'
-import {PathLike, RmOptions} from 'node:fs'
+import { PathLike, RmOptions } from 'node:fs'
 const { rename: fsRename } = FSP
 
 t.test('posix', async t => {
   t.intercept(process, 'platform', { value: 'posix' })
-  const { rename } = await t.mockImport<typeof import('../src/rename.js')>('../src/rename.js')
+  const { rename } = await t.mockImport<
+    typeof import('../src/rename.js')
+  >('../src/rename.js')
   t.equal(rename, fsRename, 'use node rename on posix')
 })
 
 t.test('win32, retry works', async t => {
   t.intercept(process, 'platform', { value: 'win32' })
   let calledRm = false
-  const { rename } = await t.mockImport<typeof import('../src/rename.js')>('../src/rename.js', {
+  const { rename } = await t.mockImport<
+    typeof import('../src/rename.js')
+  >('../src/rename.js', {
     'node:fs/promises': t.createMock(FSP, {
       rm: async (target: PathLike, options?: RmOptions) => {
         calledRm = true
         return FSP.rm(target, options)
       },
       rename: async (oldPath: PathLike, newPath: PathLike) => {
-        if (!calledRm) throw Object.assign(new Error('x'), { code: 'EPERM' })
+        if (!calledRm)
+          throw Object.assign(new Error('x'), { code: 'EPERM' })
         return FSP.rename(oldPath, newPath)
-      }
-    })
+      },
+    }),
   })
   t.not(rename, fsRename, 'use custom rename on windows')
   const dir = t.testdir({
     oldPath: {
-      file: 'hello'
+      file: 'hello',
     },
     newPath: {
-      otherFile: 'goodbye'
+      otherFile: 'goodbye',
     },
   })
 
@@ -42,7 +47,9 @@ t.test('win32, retry works', async t => {
 t.test('win32, retry fails', async t => {
   t.intercept(process, 'platform', { value: 'win32' })
   let calledRm = 0
-  const { rename } = await t.mockImport<typeof import('../src/rename.js')>('../src/rename.js', {
+  const { rename } = await t.mockImport<
+    typeof import('../src/rename.js')
+  >('../src/rename.js', {
     'node:fs/promises': t.createMock(FSP, {
       rm: async (target: PathLike, options?: RmOptions) => {
         calledRm++
@@ -50,20 +57,22 @@ t.test('win32, retry fails', async t => {
       },
       rename: async () => {
         throw Object.assign(new Error('x'), { code: 'EPERM' })
-      }
-    })
+      },
+    }),
   })
   t.not(rename, fsRename, 'use custom rename on windows')
   const dir = t.testdir({
     oldPath: {
-      file: 'hello'
+      file: 'hello',
     },
     newPath: {
-      otherFile: 'goodbye'
+      otherFile: 'goodbye',
     },
   })
 
-  await t.rejects( rename(`${dir}/oldPath`, `${dir}/newPath`), { code: 'EPERM' })
+  await t.rejects(rename(`${dir}/oldPath`, `${dir}/newPath`), {
+    code: 'EPERM',
+  })
 
   t.equal(calledRm, 3, 'tried 3 times, then gave up')
 })

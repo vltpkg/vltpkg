@@ -1,7 +1,9 @@
-import { Config, LoadedConfig } from '@vltpkg/config'
 import { error } from '@vltpkg/error-cause'
 import { Monorepo } from '@vltpkg/workspaces'
-import {relative} from 'path'
+import { relative } from 'path'
+import { Config, LoadedConfig } from './config/index.js'
+
+export * from './config/index.js'
 
 // Infer the workspace by being in that directory.
 const vlt = await Config.load(process.cwd(), process.argv)

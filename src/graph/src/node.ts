@@ -1,23 +1,22 @@
 import {
-  getId,
   DepID,
-  splitDepID,
   DepIDTuple,
+  getId,
   hydrateTuple,
+  splitDepID,
 } from '@vltpkg/dep-id'
 import { typeError } from '@vltpkg/error-cause'
 import { Spec, SpecOptions } from '@vltpkg/spec'
 import { Integrity, ManifestMinified } from '@vltpkg/types'
 import { DependencyTypeLong } from './dependencies.js'
 import { Edge } from './edge.js'
-import { ConfigFileData } from '@vltpkg/config'
 
 export class Node {
   get [Symbol.toStringTag]() {
     return '@vltpkg/graph.Node'
   }
 
-  #config: ConfigFileData
+  #config: SpecOptions
   #location?: string
 
   /**
@@ -76,7 +75,7 @@ export class Node {
   }
 
   constructor(
-    config: ConfigFileData,
+    config: SpecOptions,
     id?: DepID,
     manifest?: ManifestMinified,
     spec?: Spec,

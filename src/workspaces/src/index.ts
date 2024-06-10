@@ -542,7 +542,10 @@ export class Monorepo {
    * Returns undefined if the cwd is not a monorepo workspaces
    * root, otherwise returns the loaded Monorepo.
    */
-  static maybeLoad(cwd: string, options: MonorepoOptions = { load: {} }) {
+  static maybeLoad(
+    cwd: string,
+    options: MonorepoOptions = { load: {} },
+  ) {
     try {
       if (!statSync(resolve(cwd, 'vlt-workspaces.json')).isFile()) {
         return

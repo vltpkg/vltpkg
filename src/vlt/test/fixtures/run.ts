@@ -21,13 +21,13 @@ export const run = async (
   const logs: any[] = []
   t.capture(console, 'log', (...msg: any[]) => logs.push(msg))
   const config =
-    await t.mockImport<typeof import('@vltpkg/config')>(
-      '@vltpkg/config',
+    await t.mockImport<typeof import('../../src/config/index.js')>(
+      '../../src/config/index.js',
     )
   let er: unknown
   try {
     await t.mockImport(`../../src/${bin}`, {
-      '@vltpkg/config': config,
+      '../../src/config/index.js': config,
       ...mocks,
     })
   } catch (e) {

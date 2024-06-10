@@ -1,7 +1,6 @@
 import { inspect } from 'node:util'
 import t from 'tap'
-import { ConfigFileData } from '@vltpkg/config'
-import { Spec } from '@vltpkg/spec'
+import { Spec, SpecOptions } from '@vltpkg/spec'
 import { hydrate } from '@vltpkg/dep-id'
 import { Graph } from '../src/graph.js'
 
@@ -17,7 +16,7 @@ const configData = {
   registries: {
     npm: 'https://registry.npmjs.org',
   },
-} as ConfigFileData
+} satisfies SpecOptions
 
 t.test('Graph', async t => {
   const mainManifest = {

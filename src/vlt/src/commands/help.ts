@@ -1,4 +1,4 @@
-import { Config, LoadedConfig } from '@vltpkg/config'
+import { Config, LoadedConfig } from '../config/index.js'
 
 export const usage = (await Config.load()).jack.usage()
 

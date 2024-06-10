@@ -1,5 +1,5 @@
 // just a stub for now
-import { LoadedConfig } from '@vltpkg/config'
+import { LoadedConfig } from '../../src/config/index.js'
 import t from 'tap'
 
 const { usage, command } = await t.mockImport<
