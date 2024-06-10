@@ -20,7 +20,7 @@
   "devDependencies": {
     "@types/node": "^20.12.12",
     "prettier": "^3.2.5",
-    "tap": "^19.0.0",
+    "tap": "^19.2.5",
     "tshy": "^1.15.1",
     "typedoc": "^0.25.13"
   },
