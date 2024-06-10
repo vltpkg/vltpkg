@@ -121,6 +121,21 @@ exports[`test/index.ts > TAP > basic parsing tests > @foo/bar@git+ssh://notgithu
 @foo/bar@git+ssh://notgithub.com/user/foo
 `
 
+exports[`test/index.ts > TAP > basic parsing tests > @x/y@workspace:@a/b@ > inspect 1`] = `
+@vltpkg/spec.Spec {
+  type: 'workspace',
+  spec: '@x/y@workspace:@a/b@',
+  name: '@x/y',
+  bareSpec: 'workspace:@a/b@',
+  workspaceSpec: '*',
+  workspace: '@a/b'
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > @x/y@workspace:@a/b@ > toString 1`] = `
+@x/y@workspace:@a/b@
+`
+
 exports[`test/index.ts > TAP > basic parsing tests > foo > inspect 1`] = `
 @vltpkg/spec.Spec {
   type: 'registry',
@@ -1883,6 +1898,21 @@ exports[`test/index.ts > TAP > basic parsing tests > x@workspace: > inspect 1`] 
 
 exports[`test/index.ts > TAP > basic parsing tests > x@workspace: > toString 1`] = `
 x@workspace:
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > x@workspace:@a/b@ > inspect 1`] = `
+@vltpkg/spec.Spec {
+  type: 'workspace',
+  spec: 'x@workspace:@a/b@',
+  name: 'x',
+  bareSpec: 'workspace:@a/b@',
+  workspaceSpec: '*',
+  workspace: '@a/b'
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > x@workspace:@a/b@ > toString 1`] = `
+x@workspace:@a/b@
 `
 
 exports[`test/index.ts > TAP > basic parsing tests > x@workspace:* > inspect 1`] = `

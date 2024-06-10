@@ -141,8 +141,10 @@ t.test('basic parsing tests', t => {
     'x@workspace:y@~',
     'x@workspace:y@^',
     'x@workspace:y@1.x',
+    'x@workspace:@a/b@',
+    '@x/y@workspace:@a/b@',
     'x@https://github.com/user/project',
-    'foo@https://bitbucket.org/user/project/a/s/d/f/#semver:1.x::path:src/foo'
+    'foo@https://bitbucket.org/user/project/a/s/d/f/#semver:1.x::path:src/foo',
   ]
 
   t.plan(specs.length)
@@ -160,6 +162,30 @@ t.throws(() => Spec.parse('x@github:a/b#dead::semver:1.x'))
 t.throws(() => Spec.parse('x@registry:https://a.com'))
 t.throws(() => Spec.parse('x@workspace:wat'))
 t.throws(() => Spec.parse('x@github:a/b#semver:invalid'))
+
+t.test('invalid workspace specs', t => {
+  const badSpecs = [
+    'x@workspace:@',
+    'x@workspace:@*',
+    'x@workspace:@~',
+    'x@workspace:@^',
+    'x@workspace:*@',
+    'x@workspace:~@',
+    'x@workspace:^@',
+    'x@workspace:@1.x',
+    'x@workspace:@y',
+    'x@workspace:@y@*',
+    'x@workspace:@y@~',
+    'x@workspace:@y@^',
+    'x@workspace:@y@1.x',
+    'x@workspace:@a/b',
+    '@x/y@workspace:@a/b',
+  ]
+  for (const s of badSpecs) {
+    t.throws(() => Spec.parse(s), s)
+  }
+  t.end()
+})
 
 t.test('get final subspec in chain', t => {
   const subby = Spec.parse('x@npm:y@npm:z@latest')
