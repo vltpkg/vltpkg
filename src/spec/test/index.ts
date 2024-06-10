@@ -29,7 +29,7 @@ const formatSnapshot = (obj: any): any =>
 t.formatSnapshot = formatSnapshot
 
 t.test('basic parsing tests', t => {
-  const versions = [
+  const specs = [
     'foo',
     'foo@1.2',
     'foo@~1.2',
@@ -141,10 +141,12 @@ t.test('basic parsing tests', t => {
     'x@workspace:y@~',
     'x@workspace:y@^',
     'x@workspace:y@1.x',
+    'x@https://github.com/user/project',
+    'foo@https://bitbucket.org/user/project/a/s/d/f/#semver:1.x::path:src/foo'
   ]
 
-  t.plan(versions.length)
-  for (const v of versions) {
+  t.plan(specs.length)
+  for (const v of specs) {
     t.test(v, t => {
       const s = Spec.parse(v)
       t.matchSnapshot(s[kCustomInspect](), 'inspect')

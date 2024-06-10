@@ -394,6 +394,30 @@ exports[`test/index.ts > TAP > basic parsing tests > foo@gitlab:user/foo-js > to
 foo@gitlab:user/foo-js
 `
 
+exports[`test/index.ts > TAP > basic parsing tests > foo@https://bitbucket.org/user/project/a/s/d/f/#semver:1.x::path:src/foo > inspect 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: 'foo@bitbucket:user/project#semver:1.x::path:src/foo',
+  name: 'foo',
+  bareSpec: 'bitbucket:user/project#semver:1.x::path:src/foo',
+  gitRemote: 'git+ssh://git@bitbucket.org:user/project.git',
+  gitSelector: 'semver:1.x::path:src/foo',
+  gitSelectorParsed: { semver: '1.x', path: 'src/foo' },
+  namedGitHost: 'bitbucket',
+  namedGitHostPath: 'user/project',
+  range: Range {
+    raw: '1.x',
+    isAny: false,
+    set: [ [Comparator] ],
+    includePrerelease: false
+  }
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > foo@https://bitbucket.org/user/project/a/s/d/f/#semver:1.x::path:src/foo > toString 1`] = `
+foo@bitbucket:user/project#semver:1.x::path:src/foo
+`
+
 exports[`test/index.ts > TAP > basic parsing tests > foo@latest > inspect 1`] = `
 @vltpkg/spec.Spec {
   type: 'registry',
@@ -1456,44 +1480,66 @@ x@http://insecure.com/foo.tgz
 
 exports[`test/index.ts > TAP > basic parsing tests > x@https://bitbucket.org/user/foo.git > inspect 1`] = `
 @vltpkg/spec.Spec {
-  type: 'remote',
-  spec: 'x@https://bitbucket.org/user/foo.git',
+  type: 'git',
+  spec: 'x@bitbucket:user/foo',
   name: 'x',
-  bareSpec: 'https://bitbucket.org/user/foo.git',
-  remoteURL: 'https://bitbucket.org/user/foo.git'
+  bareSpec: 'bitbucket:user/foo',
+  gitRemote: 'git+ssh://git@bitbucket.org:user/foo.git',
+  namedGitHost: 'bitbucket',
+  namedGitHostPath: 'user/foo'
 }
 `
 
 exports[`test/index.ts > TAP > basic parsing tests > x@https://bitbucket.org/user/foo.git > toString 1`] = `
-x@https://bitbucket.org/user/foo.git
+x@bitbucket:user/foo
 `
 
 exports[`test/index.ts > TAP > basic parsing tests > x@https://github.com/user/foo.git > inspect 1`] = `
 @vltpkg/spec.Spec {
-  type: 'remote',
-  spec: 'x@https://github.com/user/foo.git',
+  type: 'git',
+  spec: 'x@github:user/foo',
   name: 'x',
-  bareSpec: 'https://github.com/user/foo.git',
-  remoteURL: 'https://github.com/user/foo.git'
+  bareSpec: 'github:user/foo',
+  gitRemote: 'git+ssh://git@github.com:user/foo.git',
+  namedGitHost: 'github',
+  namedGitHostPath: 'user/foo'
 }
 `
 
 exports[`test/index.ts > TAP > basic parsing tests > x@https://github.com/user/foo.git > toString 1`] = `
-x@https://github.com/user/foo.git
+x@github:user/foo
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > x@https://github.com/user/project > inspect 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: 'x@github:user/project',
+  name: 'x',
+  bareSpec: 'github:user/project',
+  gitRemote: 'git+ssh://git@github.com:user/project.git',
+  namedGitHost: 'github',
+  namedGitHostPath: 'user/project'
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > x@https://github.com/user/project > toString 1`] = `
+x@github:user/project
 `
 
 exports[`test/index.ts > TAP > basic parsing tests > x@https://gitlab.com/user/foo.git > inspect 1`] = `
 @vltpkg/spec.Spec {
-  type: 'remote',
-  spec: 'x@https://gitlab.com/user/foo.git',
+  type: 'git',
+  spec: 'x@gitlab:user/foo',
   name: 'x',
-  bareSpec: 'https://gitlab.com/user/foo.git',
-  remoteURL: 'https://gitlab.com/user/foo.git'
+  bareSpec: 'gitlab:user/foo',
+  gitRemote: 'git+ssh://git@gitlab.com:user/foo.git',
+  namedGitHost: 'gitlab',
+  namedGitHostPath: 'user/foo'
 }
 `
 
 exports[`test/index.ts > TAP > basic parsing tests > x@https://gitlab.com/user/foo.git > toString 1`] = `
-x@https://gitlab.com/user/foo.git
+x@gitlab:user/foo
 `
 
 exports[`test/index.ts > TAP > basic parsing tests > x@https://server.com/foo.tgz > inspect 1`] = `
