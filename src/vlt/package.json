@@ -1,0 +1,59 @@
+{
+  "name": "vlt",
+  "description": "A very fast JavaScript package manager",
+  "version": "0.0.0-0",
+  "tshy": {
+    "selfLink": false,
+    "dialects": [
+      "esm"
+    ],
+    "exports": {
+      "./package.json": "./package.json",
+      ".": "./src/index.ts"
+    }
+  },
+  "bin": {
+    "vlt": "./dist/esm/index.js",
+    "vlr": "./dist/esm/vlr.js",
+    "vlx": "./dist/esm/vlx.js",
+    "vlrx": "./dist/esm/vlrx.js",
+    "vlix": "./dist/esm/vlix.js"
+  },
+  "dependencies": {
+    "@vltpkg/config": "workspace:*",
+    "@vltpkg/error-cause": "workspace:*",
+    "@vltpkg/graph": "workspace:*",
+    "@vltpkg/types": "workspace:*",
+    "@vltpkg/workspaces": "workspace:*",
+    "open-editor": "^4.1.1",
+    "polite-json": "^5.0.0"
+  },
+  "scripts": {
+    "preinstall": "node scripts/make-vlt-bin.js",
+    "preversion": "npm test",
+    "postversion": "npm publish",
+    "prepublishOnly": "git push origin --follow-tags",
+    "prepare": "tshy",
+    "pretest": "npm run prepare",
+    "presnap": "npm run prepare",
+    "test": "tap",
+    "snap": "tap",
+    "format": "prettier --write . --log-level warn --ignore-path ../../.prettierignore --cache",
+    "typedoc": "typedoc"
+  },
+  "tap": {
+    "coverage-map": "../../coverage-map.js"
+  },
+  "prettier": "../../.prettierrc.json",
+  "type": "module",
+  "exports": {
+    "./package.json": "./package.json",
+    ".": {
+      "import": {
+        "source": "./src/index.ts",
+        "types": "./dist/esm/index.d.ts",
+        "default": "./dist/esm/index.js"
+      }
+    }
+  }
+}
