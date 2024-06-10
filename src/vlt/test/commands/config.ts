@@ -1,6 +1,6 @@
 import t, { Test } from 'tap'
 
-import { definition, LoadedConfig } from '@vltpkg/config'
+import { definition, LoadedConfig } from '../../src/config/index.js'
 
 let edited: string | undefined = undefined
 const mockOpenEditor = (paths: string[], options: any) => {

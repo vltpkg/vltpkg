@@ -1,7 +1,10 @@
 // deep merge 2 objects
 // scalars are overwritten, objects are folded in together
 // if nothing to be added, then return the base object.
-export const merge = <T extends Record<string, any>>(base: T, add: T): T =>
+export const merge = <T extends Record<string, any>>(
+  base: T,
+  add: T,
+): T =>
   Object.fromEntries(
     Object.entries(base)
       .map(([k, v]) => [
@@ -24,4 +27,3 @@ export const merge = <T extends Record<string, any>>(base: T, add: T): T =>
         Object.entries(add).filter(([k]) => base[k] === undefined),
       ),
   ) as T
-

@@ -5,7 +5,6 @@ import { Spec, SpecOptions } from '@vltpkg/spec'
 import { DependencyTypeLong } from '../../src/dependencies.js'
 import { Graph } from '../../src/graph.js'
 import { save } from '../../src/lockfile/save.js'
-import { ConfigFileData } from '@vltpkg/config'
 
 const configData = {
   registry: 'https://registry.npmjs.org',
@@ -13,7 +12,7 @@ const configData = {
     npm: 'https://registry.npmjs.org',
     custom: 'http://example.com',
   },
-} as ConfigFileData
+} satisfies SpecOptions
 
 t.test('save', async t => {
   const mainManifest = {

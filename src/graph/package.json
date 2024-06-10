@@ -13,7 +13,6 @@
     }
   },
   "dependencies": {
-    "@vltpkg/config": "workspace:*",
     "@vltpkg/dep-id": "workspace:*",
     "@vltpkg/error-cause": "workspace:*",
     "@vltpkg/package-info": "workspace:*",

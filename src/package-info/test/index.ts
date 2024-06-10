@@ -917,11 +917,14 @@ t.test('path git selector', async t => {
     const found = JSON.parse(
       readFileSync(target + '/package.json', 'utf8'),
     )
-    t.strictSame({
-      ...found,
-      [Symbol.for('newline')]: '',
-      [Symbol.for('indent')]: '',
-    }, pkg)
+    t.strictSame(
+      {
+        ...found,
+        [Symbol.for('newline')]: '',
+        [Symbol.for('indent')]: '',
+      },
+      pkg,
+    )
   })
 
   t.test('extract', async t => {

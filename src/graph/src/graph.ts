@@ -1,11 +1,10 @@
-import { getId, DepID } from '@vltpkg/dep-id'
+import { DepID, getId } from '@vltpkg/dep-id'
 import { PackageInfoClient } from '@vltpkg/package-info'
-import { Spec } from '@vltpkg/spec'
+import { Spec, SpecOptions } from '@vltpkg/spec'
+import { ManifestMinified } from '@vltpkg/types'
+import { DependencyTypeLong } from './dependencies.js'
 import { Edge } from './edge.js'
 import { Node } from './node.js'
-import { DependencyTypeLong } from './dependencies.js'
-import { ManifestMinified } from '@vltpkg/types'
-import { ConfigFileData } from '@vltpkg/config'
 
 export type ManifestInventory = Map<DepID, ManifestMinified>
 
@@ -20,7 +19,7 @@ export class Graph {
     return '@vltpkg/graph.Graph'
   }
 
-  #config: ConfigFileData
+  #config: SpecOptions
 
   /**
    * A {@link PackageInfoClient} instance used to request packages info.
@@ -60,7 +59,7 @@ export class Graph {
 
   constructor(
     { mainManifest, packageInfo, manifests }: GraphOptions,
-    config: ConfigFileData,
+    config: SpecOptions,
   ) {
     this.#config = config
     this.packageInfo = packageInfo ?? new PackageInfoClient()

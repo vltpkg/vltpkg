@@ -1,6 +1,5 @@
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
-import { ConfigFileData } from '@vltpkg/config'
 import { DepID } from '@vltpkg/dep-id'
 import { error } from '@vltpkg/error-cause'
 import { Spec, SpecOptions } from '@vltpkg/spec'
@@ -62,7 +61,7 @@ const loadEdges = (
 
 export const load = (
   { dir, mainManifest }: LoadOptions,
-  config: ConfigFileData,
+  config: SpecOptions,
 ): Graph => {
   const file = readFileSync(resolve(dir, 'vlt-lock.json'), {
     encoding: 'utf8',

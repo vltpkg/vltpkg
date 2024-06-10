@@ -37,7 +37,7 @@ import {
 } from 'polite-json'
 import { walkUp } from 'walk-up-path'
 import {
-  Commands,
+  type Commands,
   commands,
   definition,
   isRecordField,
@@ -151,7 +151,7 @@ export type OptListKeys<O> = Exclude<
 /**
  * Class that handles configuration for vlt.
  *
- * Call {@link @vltpkg/config!index.Config.load} to get one of these.
+ * Call {@link Config.load} to get one of these.
  */
 export class Config {
   /**
@@ -603,7 +603,7 @@ export class Config {
 
   /**
    * Load the configuration and return a Promise to a
-   * {@link @vltpkg/config!index.Config} object
+   * {@link Config} object
    */
   static async load(
     cwd = process.cwd(),
@@ -624,7 +624,7 @@ export class Config {
 }
 
 /**
- * A fully loaded {@link @vltpkg/config!index.Config} object
+ * A fully loaded {@link Config} object
  */
 export type LoadedConfig = Config & {
   get(k: 'color'): boolean

@@ -28,7 +28,7 @@ export const rename =
           retries > 0 &&
           (er as NodeJS.ErrnoException)?.code === 'EPERM'
         ) {
-          retries --
+          retries--
           await rm(newPath, { recursive: true, force: true })
           return fsRename(oldPath, newPath).then(() => {}, retry)
         } else {

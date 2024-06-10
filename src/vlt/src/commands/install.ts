@@ -1,4 +1,4 @@
-import { LoadedConfig } from '@vltpkg/config'
+import { LoadedConfig } from '../config/index.js'
 
 export const usage = `vlt install [package ...]
 Install the specified package, updating dependencies appropriately`

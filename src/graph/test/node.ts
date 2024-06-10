@@ -1,8 +1,7 @@
 import { inspect } from 'node:util'
 import t from 'tap'
-import { ConfigFileData } from '@vltpkg/config'
 import { getId } from '@vltpkg/dep-id'
-import { Spec } from '@vltpkg/spec'
+import { Spec, SpecOptions } from '@vltpkg/spec'
 import { Node } from '../src/node.js'
 
 const configData = {
@@ -10,7 +9,7 @@ const configData = {
   registries: {
     npm: 'https://registry.npmjs.org',
   },
-} as ConfigFileData
+} satisfies SpecOptions
 
 t.test('Node', async t => {
   // Create an importer node that behaves like the root project node

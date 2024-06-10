@@ -5,7 +5,7 @@ import {
   LoadedConfig,
   pairsToRecords,
   recordsToPairs,
-} from '@vltpkg/config'
+} from '../config/index.js'
 import { error } from '@vltpkg/error-cause'
 import openEditor from 'open-editor'
 

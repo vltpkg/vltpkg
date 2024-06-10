@@ -1,6 +1,6 @@
 // just a stub for now
-import { LoadedConfig } from '@vltpkg/config'
 import t from 'tap'
+import { LoadedConfig } from '../../src/config/index.js'
 
 const { usage, command } = await t.mockImport<
   typeof import('../../src/commands/install.js')

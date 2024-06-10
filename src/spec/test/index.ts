@@ -331,9 +331,13 @@ t.test('git path selector must be relative', async t => {
     'git+ssh://user@host/repo#main::path:x\\..',
   ]
   for (const bad of nogood) {
-    t.throws(() => Spec.parse(bad), {
-      message: 'Invalid path in git selector',
-      cause: { spec: Spec },
-    }, bad)
+    t.throws(
+      () => Spec.parse(bad),
+      {
+        message: 'Invalid path in git selector',
+        cause: { spec: Spec },
+      },
+      bad,
+    )
   }
 })

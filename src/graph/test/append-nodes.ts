@@ -1,7 +1,6 @@
 import { inspect } from 'node:util'
 import t from 'tap'
-import { ConfigFileData } from '@vltpkg/config'
-import { Spec } from '@vltpkg/spec'
+import { Spec, SpecOptions } from '@vltpkg/spec'
 import { PackageInfoClient } from '@vltpkg/package-info'
 import { Graph } from '../src/graph.js'
 import { appendNodes } from '../src/append-nodes.js'
@@ -11,7 +10,7 @@ const configData = {
   registries: {
     npm: 'https://registry.npmjs.org',
   },
-} as ConfigFileData
+} satisfies SpecOptions
 
 const kCustomInspect = Symbol.for('nodejs.util.inspect.custom')
 Object.assign(Spec.prototype, {

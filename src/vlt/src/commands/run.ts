@@ -1,4 +1,4 @@
-import { LoadedConfig } from '@vltpkg/config'
+import { LoadedConfig } from '../config/index.js'
 
 export const usage = `vlt run <script> [args ...]
 Run the named script from package.json`

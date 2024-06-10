@@ -1,6 +1,5 @@
 import { writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
-import { ConfigFileData } from '@vltpkg/config'
 import { DepID } from '@vltpkg/dep-id'
 import { error } from '@vltpkg/error-cause'
 import { dependencyTypes } from '../dependencies.js'
@@ -12,6 +11,7 @@ import {
   LockfileDataNode,
   LockfileDataEdge,
 } from './types.js'
+import { SpecOptions } from '@vltpkg/spec'
 
 export interface SaveOptions {
   dir: string
@@ -63,7 +63,7 @@ const isRegistries = (
 
 export const save = (
   { graph, dir }: SaveOptions,
-  { registry, registries }: ConfigFileData,
+  { registry, registries }: SpecOptions,
 ) => {
   const lockfileData: LockfileData = {
     registries: isRegistries(registries) ? registries : {},

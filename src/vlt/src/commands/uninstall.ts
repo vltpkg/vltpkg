@@ -1,4 +1,4 @@
-import { LoadedConfig } from '@vltpkg/config'
+import { LoadedConfig } from '../config/index.js'
 
 export const usage = `vlt uninstall [package ...]
 Remove the named packages from the dependency graph`

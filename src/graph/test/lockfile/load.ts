@@ -1,8 +1,8 @@
 import { inspect } from 'util'
 import t from 'tap'
-import { ConfigFileData } from '@vltpkg/config'
 import { load } from '../../src/lockfile/load.js'
 import { humanReadableOutput } from '../../src/visualization/human-readable-output.js'
+import { SpecOptions } from '@vltpkg/spec'
 
 const configData = {
   registry: 'https://registry.npmjs.org',
@@ -10,7 +10,7 @@ const configData = {
     npm: 'https://registry.npmjs.org',
     custom: 'http://example.com',
   },
-} as ConfigFileData
+} satisfies SpecOptions
 
 const mainManifest = {
   name: 'my-project',
