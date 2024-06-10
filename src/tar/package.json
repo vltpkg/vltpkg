@@ -27,7 +27,7 @@
     "pacote": "^18.0.6",
     "prettier": "^3.2.5",
     "tap": "^19.0.0",
-    "tshy": "^1.14.0"
+    "tshy": "^1.15.1"
   },
   "scripts": {
     "preversion": "npm test",
@@ -50,24 +50,28 @@
     "./package.json": "./package.json",
     ".": {
       "import": {
+        "source": "./src/index.ts",
         "types": "./dist/esm/index.d.ts",
         "default": "./dist/esm/index.js"
       }
     },
     "./unpack": {
       "import": {
+        "source": "./src/unpack.ts",
         "types": "./dist/esm/unpack.d.ts",
         "default": "./dist/esm/unpack.js"
       }
     },
     "./unpack-request": {
       "import": {
+        "source": "./src/unpack-request.ts",
         "types": "./dist/esm/unpack-request.d.ts",
         "default": "./dist/esm/unpack-request.js"
       }
     },
     "./pool": {
       "import": {
+        "source": "./src/pool.ts",
         "types": "./dist/esm/pool.d.ts",
         "default": "./dist/esm/pool.js"
       }
