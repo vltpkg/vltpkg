@@ -1,4 +1,10 @@
-import { readFileSync, rmSync, unlinkSync, writeFileSync } from 'fs'
+import {
+  readFileSync,
+  rmSync,
+  statSync,
+  unlinkSync,
+  writeFileSync,
+} from 'fs'
 import * as OS from 'os'
 import { resolve } from 'path'
 import t from 'tap'
@@ -22,9 +28,7 @@ t.test('read and write a project config', async t => {
   const dir = t.testdir({
     'vlt.json':
       JSON.stringify(
-        {
-          registry: 'https://registry.vlt.sh/',
-        },
+        { registry: 'https://registry.vlt.sh/' },
         null,
         '\t',
       ) + '\n',
@@ -35,7 +39,7 @@ t.test('read and write a project config', async t => {
   t.equal(conf.parse(), conf, 'parsing a second time is no-op')
   t.equal(conf.get('registry'), 'https://registry.vlt.sh/')
   t.equal(conf.cwd, dir)
-  await conf.addProjectConfig({ cache: dir + '/cache' })
+  await conf.addConfigToFile('project', { cache: dir + '/cache' })
   clearEnv()
   const c2 = await Config.load(dir + '/a/b', undefined, true)
   t.equal(c2.get('cache'), dir + '/cache')
@@ -45,11 +49,12 @@ t.test('read and write a project config', async t => {
     'preserved indentation',
   )
   unlinkSync(dir + '/vlt.json')
-  await conf.addProjectConfig({ cache: 'hello' })
+  await conf.addConfigToFile('project', { cache: 'hello' })
   t.strictSame(
     JSON.parse(readFileSync(dir + '/vlt.json', 'utf8')),
     {
       cache: 'hello',
+      registry: 'https://registry.vlt.sh/',
     },
     'wrote without merging if not already data present',
   )
@@ -60,9 +65,7 @@ t.test('read and write a user config', async t => {
     xdg: {
       'vlt.json':
         JSON.stringify(
-          {
-            registry: 'https://registry.vlt.sh/',
-          },
+          { registry: 'https://registry.vlt.sh/' },
           null,
           '\t',
         ) + '\n',
@@ -88,7 +91,7 @@ t.test('read and write a user config', async t => {
   const conf = await Config.load(dir + '/a/b')
   t.equal(conf.get('registry'), 'https://registry.vlt.sh/')
   t.equal(conf.cwd, dir)
-  await conf.addUserConfig({ cache: dir + '/cache' })
+  await conf.addConfigToFile('user', { cache: dir + '/cache' })
   clearEnv()
   const c2 = await Config.load(dir + '/a/b', undefined, true)
   t.equal(c2.get('cache'), dir + '/cache')
@@ -98,10 +101,11 @@ t.test('read and write a user config', async t => {
     'preserved indentation',
   )
   unlinkSync(dir + '/xdg/vlt.json')
-  await conf.addUserConfig({ cache: 'hello' })
+  await conf.addConfigToFile('user', { cache: 'hello' })
   t.strictSame(
     JSON.parse(readFileSync(dir + '/xdg/vlt.json', 'utf8')),
     {
+      registry: 'https://registry.vlt.sh/',
       cache: 'hello',
     },
     'wrote without merging if not already data present',
@@ -181,7 +185,7 @@ t.test(
       },
       'invalid kv pair omitted',
     )
-    await conf.writeProjectConfig({
+    await conf.writeConfigFile('project', {
       'git-hosts': ['asdfasdf', 'github=https://github'],
     })
     t.strictSame(
@@ -207,7 +211,7 @@ t.test(
     })
     t.equal(conf.options, opts, 'memoized')
 
-    await conf.writeProjectConfig({
+    await conf.writeConfigFile('project', {
       'git-hosts': [
         'asdfasdf=https://example.com',
         'github=https://github',
@@ -367,7 +371,7 @@ t.test('command-specific configs', async t => {
   const dir = t.testdir({
     'vlt.json': JSON.stringify({
       command: {
-        publish: {
+        install: {
           color: true,
         },
       },
@@ -375,12 +379,12 @@ t.test('command-specific configs', async t => {
     }),
     '.git': '',
   })
-  const c = await Config.load(dir, undefined, true)
-  t.equal(c.command, undefined)
+  const c = await Config.load(dir, [], true)
+  t.equal(c.command, 'help')
   t.equal(c.get('color'), false)
   clearEnv()
-  const p = await Config.load(dir, 'publish', true)
-  t.equal(p.command, 'publish')
+  const p = await Config.load(dir, ['i'], true)
+  t.equal(p.command, 'install')
   t.equal(p.get('color'), true)
 })
 
@@ -403,7 +407,7 @@ t.test('kv string[] stored as Record<string, string>', async t => {
     npm: 'https://registry.npmjs.org',
     vlt: 'https://vlt.sh',
   })
-  await c.writeProjectConfig({
+  await c.writeConfigFile('project', {
     registries: {
       example: 'https://example.com',
     },
@@ -414,7 +418,7 @@ t.test('kv string[] stored as Record<string, string>', async t => {
       registries: { example: 'https://example.com' },
     }),
   )
-  await c.writeProjectConfig({
+  await c.writeConfigFile('project', {
     registries: ['example=https://another.example.com'],
   })
   t.equal(
@@ -424,15 +428,15 @@ t.test('kv string[] stored as Record<string, string>', async t => {
     }),
   )
 
-  await c.writeProjectConfig({
+  await c.writeConfigFile('project', {
     registries: {
       example: 'https://another.example.com',
       bar: 'https://registry.bar',
     },
     command: {
-      update: {
+      install: {
         registries: [
-          'example=https://update.example.com',
+          'example=https://install.example.com',
           'foo=https://registry.foo',
         ],
         'git-hosts': {
@@ -450,9 +454,9 @@ t.test('kv string[] stored as Record<string, string>', async t => {
         bar: 'https://registry.bar',
       },
       command: {
-        update: {
+        install: {
           registries: {
-            example: 'https://update.example.com',
+            example: 'https://install.example.com',
             foo: 'https://registry.foo',
           },
           'git-hosts': {
@@ -464,10 +468,9 @@ t.test('kv string[] stored as Record<string, string>', async t => {
   )
 
   clearEnv()
-  const d = await Config.load(dir, 'update', true)
+  const d = await Config.load(dir, ['install'], true)
   t.strictSame(d.getRecord('registries'), {
-    example: 'https://update.example.com',
-    bar: 'https://registry.bar',
+    example: 'https://install.example.com',
     foo: 'https://registry.foo',
   })
 })
@@ -513,4 +516,125 @@ t.test('do not walk past xdg config dir', async t => {
   })
   const c = await Config.load(dir + '/a/b')
   t.equal(c.cwd, resolve(dir, 'a/b'))
+})
+
+t.test('delete config values from file', async t => {
+  const dir = t.testdir({
+    'vlt.json': JSON.stringify({
+      cache: './deleteme',
+      color: true,
+    }),
+  })
+  const f = resolve(dir, 'vlt.json')
+  const conf = await Config.load(dir, [], true)
+  await conf.deleteConfigKeys('project', ['cache', 'registry'])
+  t.equal(
+    readFileSync(f, 'utf8'),
+    JSON.stringify({
+      color: true,
+    }),
+  )
+  await conf.deleteConfigKeys('project', ['color'])
+  t.throws(() => statSync(f))
+  delete conf.configFiles[f]
+  await conf.deleteConfigKeys('project', [])
+  t.throws(() => statSync(f))
+  await conf.addConfigToFile('project', {
+    registries: {
+      npm: 'https://registry.npmjs.org/',
+      acme: 'https://registry.acme.internal/',
+      foo: 'https://example.com',
+    },
+  })
+  await conf.deleteConfigKeys('project', ['registries.foo'])
+  t.strictSame(JSON.parse(readFileSync(f, 'utf8')), {
+    registries: {
+      npm: 'https://registry.npmjs.org/',
+      acme: 'https://registry.acme.internal/',
+    },
+  })
+  await conf.deleteConfigKeys('project', [
+    'registries.npm',
+    'registries.acme',
+  ])
+  t.throws(() => statSync(f))
+  await conf.writeConfigFile('project', {
+    registries: [
+      'foo=https://example.com',
+      'npm=https://registry.npmjs.org/',
+      'acme=https://registry.acme.internal/',
+    ],
+  })
+  conf.configFiles[f] = {
+    registries: [
+      'foo=https://example.com',
+      'npm=https://registry.npmjs.org/',
+      'acme=https://registry.acme.internal/',
+    ],
+  }
+  await conf.deleteConfigKeys('project', ['registries.foo'])
+  t.strictSame(JSON.parse(readFileSync(f, 'utf8')), {
+    registries: [
+      'npm=https://registry.npmjs.org/',
+      'acme=https://registry.acme.internal/',
+    ],
+  })
+  await conf.deleteConfigKeys('project', [
+    'registries.npm',
+    'registries.acme',
+  ])
+  t.throws(() => statSync(f))
+})
+
+t.test('edit config file', async t => {
+  const dir = t.testdir({
+    '.git': {},
+  })
+  const f = resolve(dir, 'vlt.json')
+  let editCalled = false
+  const conf = await Config.load(dir, [], true)
+  await conf.editConfigFile('project', filename => {
+    editCalled = true
+    t.equal(filename, f)
+    t.equal(readFileSync(f, 'utf8'), '{\n\n}\n')
+    writeFileSync(
+      f,
+      JSON.stringify({
+        registry: 'my happy regas try',
+      }),
+    )
+  })
+  t.equal(editCalled, true)
+
+  await conf.editConfigFile('project', filename => {
+    t.equal(filename, f)
+    t.equal(
+      readFileSync(f, 'utf8'),
+      JSON.stringify({
+        registry: 'my happy regas try',
+      }),
+    )
+    writeFileSync(f, JSON.stringify({}))
+  })
+  t.throws(() => statSync(f), 'no configs, deleted file')
+
+  await t.rejects(
+    conf.editConfigFile('project', filename => {
+      writeFileSync(filename, '"just a string"')
+    }),
+    'Invalid configuration, expected object',
+  )
+
+  await conf.writeConfigFile('project', { color: true })
+  await t.rejects(
+    conf.editConfigFile('project', filename => {
+      writeFileSync(filename, '"just a string"')
+    }),
+    'Invalid configuration, expected object',
+  )
+  t.strictSame(
+    JSON.parse(readFileSync(f, 'utf8')),
+    { color: true },
+    'preserved original config when edit failed',
+  )
 })
