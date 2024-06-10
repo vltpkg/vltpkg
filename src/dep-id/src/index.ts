@@ -40,6 +40,21 @@ export type DepIDTuple =
   | [type: 'remote', url: string]
   | [type: 'workspace', workspace: string]
 
+export const isDepID = (str: unknown): str is DepID =>
+  typeof str === 'string' &&
+  /^((registry|git);[^;]*;[^;]*$|(file|remote|workspace);[^;]*)$/.test(
+    str,
+  )
+
+export const asDepID = (str: string): DepID => {
+  if (!isDepID(str)) {
+    throw error('Expected dep id', {
+      found: str,
+    })
+  }
+  return str
+}
+
 /**
  * turn a {@link DepIDTuple} into a {@link DepID}
  */
@@ -57,7 +72,7 @@ export const joinDepIDTuple = (list: DepIDTuple): DepID => {
 
 // allow @, but otherwise, escape everything urls do
 const encode = (s: string): string =>
-  encodeURIComponent(s).replace('%40', '@')
+  encodeURIComponent(s).replaceAll('%40', '@')
 
 /**
  * turn a {@link DepID} into a {@link DepIDTuple}
@@ -258,15 +273,11 @@ export const getTuple = (spec: Spec, mani: Manifest): DepIDTuple => {
       return [f.type, f.bareSpec.substring('file:'.length)]
     }
     case 'workspace': {
-      // TODO: workspace specs will also be able to contain
-      // a name or path, like
-      // workspace:package/foo@*
-      // workspace:foo@*
       const { workspaceSpec, workspace } = f
       if (workspaceSpec === undefined || workspace === undefined) {
         throw error('invalid workspace: specifier', { spec })
       }
-      return [f.type, workspace]
+      return [f.type, mani.name ?? f.name]
     }
   }
 }

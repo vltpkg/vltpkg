@@ -2,9 +2,11 @@ import { Spec } from '@vltpkg/spec'
 import { Manifest } from '@vltpkg/types'
 import t from 'tap'
 import {
+  asDepID,
   DepID,
   getId,
   getTuple,
+  isDepID,
   hydrate,
   hydrateTuple,
   joinDepIDTuple,
@@ -62,6 +64,42 @@ t.test('valid specs', t => {
       t.end()
     })
   }
+
+  const scopedMani: Manifest = { name: '@scoped/x', version: '1.2.3' }
+  const scopedSpecs = [
+    '@scoped/x@1.2.3',
+    '@scoped/x@npm:@scoped/x@1.2.3',
+    'y@npm:@scoped/x@1.2.3',
+    '@scoped/y@npm:@scoped/x@1.2.3',
+    '@scoped/x@github:a/b',
+    '@scoped/x@workspace:*',
+    '@scoped/x@workspace:@scoped/x@*',
+  ]
+  for (const s of scopedSpecs) {
+    t.test(s, t => {
+      const spec = Spec.parse(s)
+      const tuple = getTuple(spec, scopedMani)
+      const id = getId(spec, scopedMani)
+      t.matchSnapshot([id, tuple])
+      t.equal(joinDepIDTuple(tuple), id)
+      t.strictSame(splitDepID(id), tuple)
+      const hscoped = hydrate(id, '@scoped/x')
+      t.matchSnapshot(String(hscoped), 'hydrated with scoped name')
+      const hunknown = hydrate(id)
+      t.matchSnapshot(String(hunknown), 'hydrated with name unknown')
+      const hasdf = hydrate(id, 'asdf')
+      t.matchSnapshot(String(hasdf), 'hydrated with name asdf')
+      const hy = hydrate(id, 'y')
+      t.matchSnapshot(String(hy), 'hydrated with name y')
+      t.end()
+    })
+  }
+
+  t.strictSame(
+    getId(Spec.parse('x@workspace:*'), {}),
+    'workspace;x',
+    'workspace id with missing manifest',
+  )
   t.end()
 })
 
@@ -136,5 +174,34 @@ t.test('invalid values', t => {
   t.throws(() => hydrate('file;', 'x'))
   t.throws(() => hydrate('remote;', 'x'))
   t.throws(() => splitDepID('xyz;a;b;c'))
+  t.end()
+})
+
+const validDepIDs = [
+  'registry;;foo@1.0.0',
+  'git;github%3Aa%2Fb;branch',
+  'remote;https%3A%2F%2Fx.com%2Fx.tgz',
+  'file;.%2Fx.tgz',
+  'workspace;a',
+]
+const invalidDepIDs = ['', 'git', 'abobrinha', 'https://example.com']
+t.test('asDepID', t => {
+  const typeCheckDepID = (id: DepID) => id
+  for (const id of validDepIDs) {
+    t.ok(typeCheckDepID(asDepID(id)), id)
+  }
+  for (const id of invalidDepIDs) {
+    t.throws(() => asDepID(id), id)
+  }
+  t.end()
+})
+
+t.test('isDepID', t => {
+  for (const id of validDepIDs) {
+    t.ok(isDepID(id), id)
+  }
+  for (const id of invalidDepIDs) {
+    t.notOk(isDepID(id), id)
+  }
   t.end()
 })
