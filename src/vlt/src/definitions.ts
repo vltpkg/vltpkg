@@ -44,6 +44,7 @@ export const recordFields = [
   'git-hosts',
   'registries',
   'git-host-archives',
+  'git-host-websites',
 ] as const
 
 export type RecordField = (typeof recordFields)[number]

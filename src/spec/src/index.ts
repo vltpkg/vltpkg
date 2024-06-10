@@ -56,6 +56,21 @@ export const defaultGitHostArchives = {
     'https://gitlab.com/$1/$2/repository/archive.tar.gz?ref=$committish',
 }
 
+/**
+ * These are just for legacy support of urls that are supported by npm
+ * and observed in the wild.
+ *
+ * Not configurable, because no more will be added. If you wish to define
+ * custom git hosts, use it with the `'git-hosts'` and `'git-host-archives'`
+ * options.
+ */
+export const gitHostWebsites = {
+  github: 'https://github.com/',
+  bitbucket: 'https://bitbucket.org/',
+  gist: 'https://gist.github.com/',
+  gitlab: 'https://gitlab.com/',
+}
+
 export class Spec {
   /**
    * Create a Spec object from a full spec, name+bareSpec, or Spec object
@@ -257,6 +272,26 @@ export class Spec {
       }
       this.name = spec.substring(0, at)
       this.bareSpec = spec.substring(at + 1)
+    }
+
+    // legacy affordance: allow project urls like
+    // 'https://github.com/user/project#commitish' because npm suports it and
+    // this pattern is observed in the wild.
+    if (this.bareSpec.startsWith('https://')) {
+      for (const [name, origin] of Object.entries(gitHostWebsites)) {
+        if (this.bareSpec.startsWith(origin)) {
+          const parsed = new URL(this.bareSpec)
+          const [user, project] = parsed.pathname.replace(/\.git$/, '')
+            .replace(/\/+/g, ' ')
+            .trim()
+            .split(' ')
+          if (user && project) {
+            this.bareSpec = `${name}:${user}/${project}${parsed.hash}`
+            this.spec = `${this.name}@${this.bareSpec}`
+            break
+          }
+        }
+      }
     }
 
     if (this.bareSpec.startsWith('workspace:')) {
