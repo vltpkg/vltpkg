@@ -1,3 +1,4 @@
+import { DepID, joinDepIDTuple } from '@vltpkg/dep-id'
 import { error } from '@vltpkg/error-cause'
 import { PackageJson } from '@vltpkg/package-json'
 import { Manifest } from '@vltpkg/types'
@@ -571,6 +572,7 @@ export class Monorepo {
  * Class representing a single Workspace in a {@link Monorepo}
  */
 export class Workspace {
+  id: DepID
   path: string
   fullpath: string
   manifest: Manifest
@@ -578,6 +580,7 @@ export class Workspace {
   name: string
 
   constructor(path: string, manifest: Manifest, fullpath: string) {
+    this.id = joinDepIDTuple(['workspace', path])
     this.path = path
     this.fullpath = fullpath
     this.manifest = manifest
