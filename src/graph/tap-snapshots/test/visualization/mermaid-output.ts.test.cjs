@@ -23,6 +23,6 @@ file%3B.(file;.) -->|prod| missing-0(Missing package: missing@^1.0.0)
 exports[`test/visualization/mermaid-output.ts > TAP > workspaces > should print workspaces mermaid output 1`] = `
 flowchart TD
 file%3B.(file;.)
-workspace%3Bb(workspace;b)
-workspace%3Ba(workspace;a)
+workspace%3Bpackages%252Fb(workspace;packages%2Fb)
+workspace%3Bpackages%252Fa(workspace;packages%2Fa)
 `

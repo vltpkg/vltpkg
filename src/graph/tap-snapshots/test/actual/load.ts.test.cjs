@@ -48,9 +48,12 @@ exports[`test/actual/load.ts > TAP > load actual > should load an actual graph c
       Edge spec(missing@^1.0.0) -prod-> to: [missing package]: <missing@^1.0.0>
     ]
   },
-  Node { id: 'workspace;workspace-b', location: './packages/workspace-b' },
   Node {
-    id: 'workspace;workspace-a',
+    id: 'workspace;packages%2Fworkspace-b',
+    location: './packages/workspace-b'
+  },
+  Node {
+    id: 'workspace;packages%2Fworkspace-a',
     location: './packages/workspace-a',
     edgesOut: [
       Edge spec(workspace-b@workspace:*) -dev-> to: Node { id: 'workspace;workspace-b', location: './packages/workspace-b' },
@@ -113,9 +116,12 @@ exports[`test/actual/load.ts > TAP > load actual > should load an actual graph w
       Edge spec(missing@^1.0.0) -prod-> to: [missing package]: <missing@^1.0.0>
     ]
   },
-  Node { id: 'workspace;workspace-b', location: './packages/workspace-b' },
   Node {
-    id: 'workspace;workspace-a',
+    id: 'workspace;packages%2Fworkspace-b',
+    location: './packages/workspace-b'
+  },
+  Node {
+    id: 'workspace;packages%2Fworkspace-a',
     location: './packages/workspace-a',
     edgesOut: [
       Edge spec(workspace-b@workspace:*) -dev-> to: Node { id: 'workspace;workspace-b', location: './packages/workspace-b' },
