@@ -1,5 +1,5 @@
 import { error } from '@vltpkg/error-cause'
-import { getId, DepID, joinDepIDTuple } from '@vltpkg/dep-id'
+import { getId, DepID } from '@vltpkg/dep-id'
 import { Spec, SpecOptions } from '@vltpkg/spec'
 import { Monorepo } from '@vltpkg/workspaces'
 import { Edge } from './edge.js'
@@ -100,9 +100,8 @@ export class Graph {
     this.#monorepo = monorepo
     if (this.#monorepo) {
       for (const ws of this.#monorepo) {
-        const wsId = joinDepIDTuple(['workspace', ws.name])
         const wsNode = this.newNode(
-          wsId,
+          ws.id,
           ws.manifest,
           undefined,
           ws.name,

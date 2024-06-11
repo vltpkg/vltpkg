@@ -43,7 +43,7 @@ exports[`test/visualization/human-readable-output.ts > TAP > human-readable-outp
 exports[`test/visualization/human-readable-output.ts > TAP > workspaces > should print human readable workspaces output 1`] = `
 [
   Node { id: 'file;.', location: '.' },
-  Node { id: 'workspace;b', location: './packages/b' },
-  Node { id: 'workspace;a', location: './packages/a' }
+  Node { id: 'workspace;packages%2Fb', location: './packages/b' },
+  Node { id: 'workspace;packages%2Fa', location: './packages/a' }
 ]
 `

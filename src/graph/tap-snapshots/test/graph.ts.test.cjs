@@ -155,7 +155,7 @@ Set {
   Node {
     "edgesIn": Set {},
     "edgesOut": Map {},
-    "id": "workspace;b",
+    "id": "workspace;packages%2Fb",
     "importer": true,
     "integrity": undefined,
     "manifest": Object {
@@ -170,7 +170,7 @@ Set {
   Node {
     "edgesIn": Set {},
     "edgesOut": Map {},
-    "id": "workspace;a",
+    "id": "workspace;packages%2Fa",
     "importer": true,
     "integrity": undefined,
     "manifest": Object {
