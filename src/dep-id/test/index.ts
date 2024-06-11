@@ -13,7 +13,7 @@ import {
   splitDepID,
 } from '../src/index.js'
 
-const mani: Manifest = { name: 'x', version: '1.2.3' }
+const mani: Manifest = { name: 'manifest-name', version: '1.2.3' }
 t.test('valid specs', t => {
   const specs = [
     'x@1.2.3',
@@ -65,7 +65,7 @@ t.test('valid specs', t => {
     })
   }
 
-  const scopedMani: Manifest = { name: '@scoped/x', version: '1.2.3' }
+  const scopedMani: Manifest = { name: '@scoped/manifest-name', version: '1.2.3' }
   const scopedSpecs = [
     '@scoped/x@1.2.3',
     '@scoped/x@npm:@scoped/x@1.2.3',
