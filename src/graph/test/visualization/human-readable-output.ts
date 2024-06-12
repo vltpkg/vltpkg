@@ -142,3 +142,53 @@ t.test('workspaces', async t => {
     'should print human readable workspaces output',
   )
 })
+
+t.test('cycle', async t => {
+  const graph = new Graph(
+    {
+      mainManifest: {
+        name: 'my-project',
+        version: '1.0.0',
+        dependencies: {
+          a: '^1.0.0',
+        },
+      },
+    },
+    configData,
+  )
+  const a = graph.placePackage(
+    graph.mainImporter,
+    'dependencies',
+    Spec.parse('a', '^1.0.0'),
+    {
+      name: 'a',
+      version: '1.0.0',
+    },
+  )
+  if (!a) {
+    throw new Error('missing package a')
+  }
+  const b = graph.placePackage(
+    a,
+    'dependencies',
+    Spec.parse('b', '^1.0.0'),
+    {
+      name: 'b',
+      version: '1.0.0',
+      dependencies: {
+        a: '^1.0.0',
+      },
+    },
+  )
+  if (!b) {
+    throw new Error('missing package b')
+  }
+  graph.placePackage(b, 'dependencies', Spec.parse('a', '^1.0.0'), {
+    name: 'a',
+    version: '1.0.0',
+  })
+  t.matchSnapshot(
+    humanReadableOutput(graph),
+    'should print cycle human readable output',
+  )
+})

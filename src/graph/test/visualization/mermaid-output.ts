@@ -76,10 +76,7 @@ t.test('human-readable-output', async t => {
       version: '1.0.0',
     },
   )
-  t.matchSnapshot(
-    mermaidOutput(graph),
-    'should print mermaid output',
-  )
+  t.matchSnapshot(mermaidOutput(graph), 'should print mermaid output')
 })
 
 t.test('workspaces', async t => {

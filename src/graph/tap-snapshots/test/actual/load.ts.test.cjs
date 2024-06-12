@@ -5,6 +5,50 @@
  * Make sure to inspect the output below.  Do not ignore changes!
  */
 'use strict'
+exports[`test/actual/load.ts > TAP > cycle > should load an actual graph with cycle containing missing deps info 1`] = `
+[
+  Node {
+    id: 'file;.',
+    location: '.',
+    edgesOut: [
+      Edge spec(a@^1.0.0) -prod-> to: Node {
+        id: 'registry;;a@1.0.0',
+        location: './node_modules/.vlt/registry;;a@1.0.0/node_modules/a',
+        edgesOut: [
+          Edge spec(b@^1.0.0) -prod-> to: Node {
+            id: 'registry;;b@1.0.0',
+            location: './node_modules/.vlt/registry;;b@1.0.0/node_modules/b',
+            edgesOut: [ Edge spec(a@^1.0.0) -prod-> to: Node { ref: 'registry;;a@1.0.0' } ]
+          }
+        ]
+      }
+    ]
+  }
+]
+`
+
+exports[`test/actual/load.ts > TAP > cycle > should load an actual graph with cycle without any manifest info 1`] = `
+[
+  Node {
+    id: 'file;.',
+    location: '.',
+    edgesOut: [
+      Edge spec(a@1.0.0) -prod-> to: Node {
+        id: 'registry;;a@1.0.0',
+        location: './node_modules/.vlt/registry;;a@1.0.0/node_modules/a',
+        edgesOut: [
+          Edge spec(b@1.0.0) -prod-> to: Node {
+            id: 'registry;;b@1.0.0',
+            location: './node_modules/.vlt/registry;;b@1.0.0/node_modules/b',
+            edgesOut: [ Edge spec(a@1.0.0) -prod-> to: Node { ref: 'registry;;a@1.0.0' } ]
+          }
+        ]
+      }
+    ]
+  }
+]
+`
+
 exports[`test/actual/load.ts > TAP > load actual > should load an actual graph containing missing deps info 1`] = `
 [
   Node {
