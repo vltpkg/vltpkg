@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import t from 'tap'
 import { Spec, SpecOptions } from '@vltpkg/spec'
+import { Monorepo } from '@vltpkg/workspaces'
 import { DependencyTypeLong } from '../../src/dependencies.js'
 import { Graph } from '../../src/graph.js'
 import { save } from '../../src/lockfile/save.js'
@@ -67,7 +68,7 @@ t.test('save', async t => {
       },
     )
     ?.setResolved()
-  save({ graph, dir }, configData)
+  save({ ...configData, graph, dir })
   t.matchSnapshot(
     readFileSync(resolve(dir, 'vlt-lock.json'), { encoding: 'utf8' }),
   )
@@ -94,7 +95,7 @@ t.test('edge missing type', async t => {
     graph.mainImporter,
   )
   t.throws(
-    () => save({ graph, dir }, configData),
+    () => save({ ...configData, graph, dir }),
     /Found edge with a missing type/,
     'should throw if finds an edge with missing type',
   )
@@ -120,8 +121,67 @@ t.test('missing registries', async t => {
     },
     borkedConfigData,
   )
-  save({ graph, dir }, borkedConfigData)
+  save({ ...borkedConfigData, graph, dir })
   t.matchSnapshot(
     readFileSync(resolve(dir, 'vlt-lock.json'), { encoding: 'utf8' }),
+  )
+})
+
+t.test('workspaces', async t => {
+  const mainManifest = {
+    name: 'my-project',
+    version: '1.0.0',
+  }
+  const dir = t.testdir({
+    'package.json': JSON.stringify(mainManifest),
+    'vlt-workspaces.json': JSON.stringify({
+      packages: ['./packages/*'],
+    }),
+    packages: {
+      a: {
+        'package.json': JSON.stringify({
+          name: 'a',
+          version: '1.0.0',
+        }),
+      },
+      b: {
+        'package.json': JSON.stringify({
+          name: 'b',
+          version: '1.0.0',
+          dependencies: {
+            c: '^1.0.0',
+          },
+        }),
+      },
+    },
+  })
+  const monorepo = Monorepo.load(dir)
+  const graph = new Graph(
+    {
+      mainManifest,
+      monorepo,
+    },
+    configData,
+  )
+  const b = graph.nodes.get('workspace;packages%2Fb')
+  if (!b) {
+    throw new Error('Missing workspace b')
+  }
+  graph
+    .placePackage(b, 'dependencies', Spec.parse('c@^1.0.0'), {
+      name: 'c',
+      version: '1.0.0',
+      dist: {
+        integrity:
+          'sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ==',
+      },
+    })
+    ?.setResolved()
+
+  save({ ...configData, graph, dir })
+
+  t.matchSnapshot(
+    readFileSync(resolve(dir, 'vlt-lock.json'), { encoding: 'utf8' }),
+    'should save lockfile with workspaces nodes',
   )
 })

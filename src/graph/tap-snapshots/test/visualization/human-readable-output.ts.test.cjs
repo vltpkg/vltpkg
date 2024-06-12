@@ -10,6 +10,7 @@ exports[`test/visualization/human-readable-output.ts > TAP > cycle > should prin
   Node {
     id: 'file;.',
     location: '.',
+    importer: true,
     edgesOut: [
       Edge spec(a@^1.0.0) -prod-> to: Node {
         id: 'registry;;a@1.0.0',
@@ -32,6 +33,7 @@ exports[`test/visualization/human-readable-output.ts > TAP > human-readable-outp
   Node {
     id: 'file;.',
     location: '.',
+    importer: true,
     edgesOut: [
       Edge spec(foo@^1.0.0) -prod-> to: Node {
         id: 'registry;;foo@1.0.0',
@@ -64,8 +66,16 @@ exports[`test/visualization/human-readable-output.ts > TAP > human-readable-outp
 
 exports[`test/visualization/human-readable-output.ts > TAP > workspaces > should print human readable workspaces output 1`] = `
 [
-  Node { id: 'file;.', location: '.' },
-  Node { id: 'workspace;packages%2Fb', location: './packages/b' },
-  Node { id: 'workspace;packages%2Fa', location: './packages/a' }
+  Node { id: 'file;.', location: '.', importer: true },
+  Node {
+    id: 'workspace;packages%2Fb',
+    location: './packages/b',
+    importer: true
+  },
+  Node {
+    id: 'workspace;packages%2Fa',
+    location: './packages/a',
+    importer: true
+  }
 ]
 `

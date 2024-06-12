@@ -10,6 +10,7 @@ exports[`test/actual/load.ts > TAP > cycle > should load an actual graph with cy
   Node {
     id: 'file;.',
     location: '.',
+    importer: true,
     edgesOut: [
       Edge spec(a@^1.0.0) -prod-> to: Node {
         id: 'registry;;a@1.0.0',
@@ -32,6 +33,7 @@ exports[`test/actual/load.ts > TAP > cycle > should load an actual graph with cy
   Node {
     id: 'file;.',
     location: '.',
+    importer: true,
     edgesOut: [
       Edge spec(a@1.0.0) -prod-> to: Node {
         id: 'registry;;a@1.0.0',
@@ -54,6 +56,7 @@ exports[`test/actual/load.ts > TAP > load actual > should load an actual graph c
   Node {
     id: 'file;.',
     location: '.',
+    importer: true,
     edgesOut: [
       Edge spec(link@file:./linked) -prod-> to: Node { id: 'file;.%2Flinked', location: './linked' },
       Edge spec(foo@^1.0.0) -prod-> to: Node {
@@ -94,11 +97,13 @@ exports[`test/actual/load.ts > TAP > load actual > should load an actual graph c
   },
   Node {
     id: 'workspace;packages%2Fworkspace-b',
-    location: './packages/workspace-b'
+    location: './packages/workspace-b',
+    importer: true
   },
   Node {
     id: 'workspace;packages%2Fworkspace-a',
     location: './packages/workspace-a',
+    importer: true,
     edgesOut: [
       Edge spec(workspace-b@workspace:*) -dev-> to: Node { id: 'workspace;workspace-b', location: './packages/workspace-b' },
       Edge spec(ipsum@^1.0.0) -dev-> to: Node {
@@ -119,6 +124,7 @@ exports[`test/actual/load.ts > TAP > load actual > should load an actual graph w
   Node {
     id: 'file;.',
     location: '.',
+    importer: true,
     edgesOut: [
       Edge spec(link@file:./linked) -prod-> to: Node { id: 'file;.%2Flinked', location: './linked' },
       Edge spec(foo@1.0.0) -prod-> to: Node {
@@ -162,11 +168,13 @@ exports[`test/actual/load.ts > TAP > load actual > should load an actual graph w
   },
   Node {
     id: 'workspace;packages%2Fworkspace-b',
-    location: './packages/workspace-b'
+    location: './packages/workspace-b',
+    importer: true
   },
   Node {
     id: 'workspace;packages%2Fworkspace-a',
     location: './packages/workspace-a',
+    importer: true,
     edgesOut: [
       Edge spec(workspace-b@workspace:*) -dev-> to: Node { id: 'workspace;workspace-b', location: './packages/workspace-b' },
       Edge spec(ipsum@1.0.0) -prod-> to: Node {
