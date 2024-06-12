@@ -1,7 +1,7 @@
 import t from 'tap'
 import { load } from '../../src/lockfile/load.js'
-import { humanReadableOutput } from '../../src/visualization/human-readable-output.js'
 import { SpecOptions } from '@vltpkg/spec'
+import { humanReadableOutput } from '../../src/visualization/human-readable-output.js'
 
 const configData = {
   registry: 'https://registry.npmjs.org',
@@ -50,13 +50,66 @@ t.test('load', async t => {
     }),
   })
 
-  const graph = load(
-    {
-      dir,
-      mainManifest,
+  const graph = load({
+    ...configData,
+    dir,
+    mainManifest,
+  })
+  t.matchSnapshot(humanReadableOutput(graph))
+})
+
+t.test('workspaces', async t => {
+  const dir = t.testdir({
+    'vlt-lock.json': JSON.stringify({
+      registries: {
+        npm: 'https://registry.npmjs.org',
+        custom: 'http://example.com',
+      },
+      nodes: {
+        'file;.': ['my-project'],
+        'registry;;c@1.0.0': [
+          'c',
+          'sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ==',
+        ],
+        'workspace;packages%2Fa': ['a'],
+        'workspace;packages%2Fb': ['b'],
+      },
+      edges: [
+        [
+          'workspace;packages%2Fb',
+          'prod',
+          'c@^1.0.0',
+          'registry;;c@1.0.0',
+        ],
+      ],
+    }),
+    'vlt-workspaces.json': JSON.stringify({
+      packages: ['./packages/*'],
+    }),
+    packages: {
+      a: {
+        'package.json': JSON.stringify({
+          name: 'a',
+          version: '1.0.0',
+        }),
+      },
+      b: {
+        'package.json': JSON.stringify({
+          name: 'b',
+          version: '1.0.0',
+          dependencies: {
+            c: '^1.0.0',
+          },
+        }),
+      },
     },
-    configData,
-  )
+  })
+
+  const graph = load({
+    ...configData,
+    dir,
+    mainManifest,
+  })
   t.matchSnapshot(humanReadableOutput(graph))
 })
 
@@ -81,13 +134,11 @@ t.test('unknown dep type', async t => {
 
   t.throws(
     () =>
-      load(
-        {
-          dir,
-          mainManifest,
-        },
-        configData,
-      ),
+      load({
+        ...configData,
+        dir,
+        mainManifest,
+      }),
     /Found unsupported dependency type in lockfile/,
     'should throw a dependency type not found',
   )
@@ -108,13 +159,11 @@ t.test('missing root pkg', async t => {
 
   t.throws(
     () =>
-      load(
-        {
-          dir,
-          mainManifest,
-        },
-        configData,
-      ),
+      load({
+        ...configData,
+        dir,
+        mainManifest,
+      }),
     /Missing nodes from lockfile/,
     'should throw a missing root package metadata error',
   )
@@ -139,13 +188,11 @@ t.test('missing root pkg', async t => {
 
   t.throws(
     () =>
-      load(
-        {
-          dir,
-          mainManifest,
-        },
-        configData,
-      ),
+      load({
+        ...configData,
+        dir,
+        mainManifest,
+      }),
     /Edge info missing its `from` node/,
     'should throw a missing from edge property',
   )

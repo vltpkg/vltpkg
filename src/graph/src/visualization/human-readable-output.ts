@@ -14,6 +14,7 @@ function parseNode(seenNodes: Set<Node>, graph: Graph, node: Node) {
         : {
             id: node.id,
             location: node.location,
+            ...(node.importer ? { importer: true } : null),
             ...(node.resolved ? { resolved: node.resolved } : null),
             ...(node.integrity ?
               { integrity: node.integrity }
