@@ -286,7 +286,7 @@ t.test('rejects when spawn errors', async t => {
     cause: {
       stdout: '',
       stderr: '',
-      cmd: 'notfound',
+      command: 'notfound',
       args: [],
       cause: new Error('command not found'),
     },
@@ -388,8 +388,9 @@ t.test(
     t.strictSame(
       await promiseSpawn('fail', [], { acceptFail: true }),
       {
-        cmd: 'fail',
+        command: 'fail',
         args: [],
+        cwd: process.cwd(),
         status: 1,
         signal: null,
         stdout: '',
@@ -595,7 +596,7 @@ t.test('rejects when stdout errors', async t => {
     p,
     Object.assign(new Error('command failed'), {
       cause: {
-        cmd: 'stdout-err',
+        command: 'stdout-err',
         args: [],
         stdout: '',
         stderr: '',
@@ -619,7 +620,7 @@ t.test('rejects when stderr errors', async t => {
     p,
     Object.assign(new Error('command failed'), {
       cause: {
-        cmd: 'stderr-err',
+        command: 'stderr-err',
         args: [],
         stdout: '',
         stderr: '',

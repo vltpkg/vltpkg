@@ -62,7 +62,7 @@ process.exit(1)
     'fetch-retry-mintimeout': 1,
   }
   const er = error('A git connection error occurred', {
-    cmd: process.execPath,
+    command: process.execPath,
     args: [te],
     status: 1,
     signal: null,
@@ -94,7 +94,7 @@ process.exit(1)
   `,
   )
   const er = error('The git reference could not be found', {
-    cmd: process.execPath,
+    command: process.execPath,
     args: [te],
     status: 1,
     signal: null,
@@ -124,7 +124,7 @@ process.exit(1)
   `,
   )
   const er = error('An unknown git error occurred', {
-    cmd: process.execPath,
+    command: process.execPath,
     args: [te],
     status: 1,
     signal: null,

@@ -6,7 +6,8 @@ const makeError = (message: string) =>
   _makeError({
     stderr: message,
     stdout: '',
-    cmd: '',
+    cwd: '',
+    command: '',
     args: [],
     status: 0,
     signal: null,
