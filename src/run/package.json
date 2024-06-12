@@ -1,0 +1,56 @@
+{
+  "name": "@vltpkg/run",
+  "description": "Run package.json scripts and execute commands",
+  "version": "0.0.0-0",
+  "tshy": {
+    "selfLink": false,
+    "dialects": [
+      "esm"
+    ],
+    "exports": {
+      "./package.json": "./package.json",
+      ".": "./src/index.ts"
+    }
+  },
+  "dependencies": {
+    "@vltpkg/error-cause": "workspace:*",
+    "@vltpkg/package-json": "workspace:*",
+    "@vltpkg/promise-spawn": "workspace:*",
+    "foreground-child": "^3.2.0",
+    "walk-up-path": "^3.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.12.12",
+    "prettier": "^3.2.5",
+    "tap": "^19.0.0",
+    "tshy": "^1.14.0",
+    "typedoc": "^0.25.13"
+  },
+  "scripts": {
+    "preversion": "npm test",
+    "postversion": "npm publish",
+    "prepublishOnly": "git push origin --follow-tags",
+    "prepare": "tshy",
+    "pretest": "npm run prepare",
+    "presnap": "npm run prepare",
+    "test": "tap",
+    "snap": "tap",
+    "format": "prettier --write . --log-level warn --ignore-path ../../.prettierignore --cache",
+    "typedoc": "typedoc"
+  },
+  "tap": {
+    "extends": "../../tap-config.yaml"
+  },
+  "prettier": "../../.prettierrc.json",
+  "type": "module",
+  "exports": {
+    "./package.json": "./package.json",
+    ".": {
+      "import": {
+        "source": "./src/index.ts",
+        "types": "./dist/esm/index.d.ts",
+        "default": "./dist/esm/index.js"
+      }
+    }
+  }
+}
