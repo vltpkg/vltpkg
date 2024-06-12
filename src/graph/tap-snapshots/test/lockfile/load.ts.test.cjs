@@ -10,6 +10,7 @@ exports[`test/lockfile/load.ts > TAP > load > must match snapshot 1`] = `
   Node {
     id: 'file;.',
     location: '.',
+    importer: true,
     edgesOut: [
       Edge spec(foo@^1.0.0) -prod-> to: Node {
         id: 'registry;;foo@1.0.0',
@@ -30,6 +31,29 @@ exports[`test/lockfile/load.ts > TAP > load > must match snapshot 1`] = `
       },
       Edge spec(missing@^1.0.0) -prod-> to: [missing package]: <missing@^1.0.0>
     ]
+  }
+]
+`
+
+exports[`test/lockfile/load.ts > TAP > workspaces > must match snapshot 1`] = `
+[
+  Node { id: 'file;.', location: '.', importer: true },
+  Node {
+    id: 'workspace;packages%2Fb',
+    location: './packages/b',
+    importer: true,
+    edgesOut: [
+      Edge spec(c@^1.0.0) -prod-> to: Node {
+        id: 'registry;;c@1.0.0',
+        location: './node_modules/.vlt/registry;;c@1.0.0/node_modules/c',
+        integrity: 'sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ=='
+      }
+    ]
+  },
+  Node {
+    id: 'workspace;packages%2Fa',
+    location: './packages/a',
+    importer: true
   }
 ]
 `
