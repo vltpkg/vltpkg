@@ -5,6 +5,28 @@
  * Make sure to inspect the output below.  Do not ignore changes!
  */
 'use strict'
+exports[`test/visualization/human-readable-output.ts > TAP > cycle > should print cycle human readable output 1`] = `
+[
+  Node {
+    id: 'file;.',
+    location: '.',
+    edgesOut: [
+      Edge spec(a@^1.0.0) -prod-> to: Node {
+        id: 'registry;;a@1.0.0',
+        location: './node_modules/.vlt/registry;;a@1.0.0/node_modules/a',
+        edgesOut: [
+          Edge spec(b@^1.0.0) -prod-> to: Node {
+            id: 'registry;;b@1.0.0',
+            location: './node_modules/.vlt/registry;;b@1.0.0/node_modules/b',
+            edgesOut: [ Edge spec(a@^1.0.0) -prod-> to: Node { ref: 'registry;;a@1.0.0' } ]
+          }
+        ]
+      }
+    ]
+  }
+]
+`
+
 exports[`test/visualization/human-readable-output.ts > TAP > human-readable-output > should print human readable output 1`] = `
 [
   Node {
