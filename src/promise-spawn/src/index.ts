@@ -133,8 +133,9 @@ function stdioResult<O extends PromiseSpawnOptions>(
 }
 
 export interface SpawnResult {
-  cmd: string
+  command: string
   args: string[]
+  cwd: string
   status: number | null
   signal: NodeJS.Signals | null
   stdout: Buffer | string | null
@@ -225,21 +226,22 @@ export class SpawnPromise<
   }
 
   constructor(
-    cmd: string,
+    command: string,
     args: string[],
     opts: O,
     extra: T = {} as T,
   ) {
     let proc!: ChildProcessByOptions<O>
     super((res, rej) => {
-      proc = spawn(cmd, args, opts) as ChildProcessByOptions<O>
+      proc = spawn(command, args, opts) as ChildProcessByOptions<O>
       const stdout: Buffer[] = []
       const stderr: Buffer[] = []
       const reject = (er: Error) =>
         rej(
           error('command failed', {
-            cmd,
+            command,
             args,
+            cwd: opts.cwd ?? process.cwd(),
             ...stdioResult(stdout, stderr, opts),
             ...extra,
             cause: er,
@@ -258,8 +260,9 @@ export class SpawnPromise<
       }
       proc.on('close', (status, signal) => {
         const result = {
-          cmd,
+          command,
           args,
+          cwd: opts.cwd ?? process.cwd(),
           /* c8 ignore next 2 - because windows */
           status: status ?? null,
           signal: signal ?? null,
@@ -284,6 +287,6 @@ export function promiseSpawn<
   O extends PromiseSpawnOptions = PromiseSpawnOptionsStderrString &
     PromiseSpawnOptionsStdoutString,
   E extends {} = {},
->(cmd: string, args: string[], opts = {} as O, extra = {} as E) {
-  return new SpawnPromise<O, E>(cmd, args, opts, extra)
+>(command: string, args: string[], opts = {} as O, extra = {} as E) {
+  return new SpawnPromise<O, E>(command, args, opts, extra)
 }

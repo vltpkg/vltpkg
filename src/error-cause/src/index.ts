@@ -59,7 +59,10 @@ export interface ErrorCauseObject {
   signal?: null | NodeJS.Signals
 
   /** the current working directory of a process */
-  cmd?: string
+  cwd?: string
+
+  /** a command being run in a child process */
+  command?: string
 
   /** the arguments passed to a process */
   args?: string[]
