@@ -25,12 +25,10 @@ t.test('save', async t => {
     },
   }
   const dir = t.testdir()
-  const graph = new Graph(
-    {
-      mainManifest,
-    },
-    configData,
-  )
+  const graph = new Graph({
+    ...configData,
+    mainManifest,
+  })
   const foo = graph.placePackage(
     graph.mainImporter,
     'dependencies',
@@ -83,12 +81,10 @@ t.test('edge missing type', async t => {
     },
   }
   const dir = t.testdir()
-  const graph = new Graph(
-    {
-      mainManifest,
-    },
-    configData,
-  )
+  const graph = new Graph({
+    ...configData,
+    mainManifest,
+  })
   graph.newEdge(
     '' as DependencyTypeLong,
     Spec.parse('missing', '^1.0.0'),
@@ -115,12 +111,10 @@ t.test('missing registries', async t => {
     registries: undefined,
   }
   const dir = t.testdir()
-  const graph = new Graph(
-    {
-      mainManifest,
-    },
-    borkedConfigData,
-  )
+  const graph = new Graph({
+    ...borkedConfigData,
+    mainManifest,
+  })
   save({ ...borkedConfigData, graph, dir })
   t.matchSnapshot(
     readFileSync(resolve(dir, 'vlt-lock.json'), { encoding: 'utf8' }),
@@ -156,13 +150,11 @@ t.test('workspaces', async t => {
     },
   })
   const monorepo = Monorepo.load(dir)
-  const graph = new Graph(
-    {
-      mainManifest,
-      monorepo,
-    },
-    configData,
-  )
+  const graph = new Graph({
+    ...configData,
+    mainManifest,
+    monorepo,
+  })
   const b = graph.nodes.get('workspace;packages%2Fb')
   if (!b) {
     throw new Error('Missing workspace b')

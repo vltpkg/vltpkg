@@ -1,8 +1,8 @@
 import { inspect } from 'node:util'
 import t from 'tap'
+import { hydrate } from '@vltpkg/dep-id'
 import { Spec, SpecOptions } from '@vltpkg/spec'
 import { Monorepo } from '@vltpkg/workspaces'
-import { hydrate } from '@vltpkg/dep-id'
 import { Graph } from '../src/graph.js'
 
 const kCustomInspect = Symbol.for('nodejs.util.inspect.custom')
@@ -24,12 +24,10 @@ t.test('Graph', async t => {
     name: 'my-project',
     version: '1.0.0',
   }
-  const graph = new Graph(
-    {
-      mainManifest,
-    },
-    configData,
-  )
+  const graph = new Graph({
+    ...configData,
+    mainManifest,
+  })
   t.strictSame(
     graph.mainImporter.manifest?.name,
     'my-project',
@@ -96,12 +94,10 @@ t.test('using placePackage', async t => {
       missing: '^1.0.0',
     },
   }
-  const graph = new Graph(
-    {
-      mainManifest,
-    },
-    configData,
-  )
+  const graph = new Graph({
+    ...configData,
+    mainManifest,
+  })
   const foo = graph.placePackage(
     graph.mainImporter,
     'dependencies',
@@ -159,12 +155,10 @@ t.test('main manifest missing name', async t => {
   const mainManifest = {
     version: '1.0.0',
   }
-  const graph = new Graph(
-    {
-      mainManifest,
-    },
-    configData,
-  )
+  const graph = new Graph({
+    ...configData,
+    mainManifest,
+  })
   const hydrateId = hydrate(graph.mainImporter.id)
   t.strictSame(
     hydrateId.type,
@@ -204,13 +198,11 @@ t.test('workspaces', async t => {
     },
   })
   const monorepo = Monorepo.maybeLoad(dir)
-  const graph = new Graph(
-    {
-      mainManifest,
-      monorepo,
-    },
-    configData,
-  )
+  const graph = new Graph({
+    ...configData,
+    mainManifest,
+    monorepo,
+  })
   t.matchSnapshot(
     graph.importers,
     'should have root and workspaces as importers',

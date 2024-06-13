@@ -109,7 +109,11 @@ export const load = (options: LoadOptions): Graph => {
     ...options,
     registries: lockfileData.registries,
   } as SpecOptions
-  const graph = new Graph({ mainManifest, monorepo }, mergedOptions)
+  const graph = new Graph({
+    ...mergedOptions,
+    mainManifest,
+    monorepo,
+  })
 
   loadNodes({ graph, nodesInfo })
   loadEdges({ graph, edgesInfo }, mergedOptions)

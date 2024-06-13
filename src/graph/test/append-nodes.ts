@@ -38,12 +38,10 @@ t.test('append a new node to a graph from a registry', async t => {
       foo: '^1.0.0',
     },
   }
-  const graph = new Graph(
-    {
-      mainManifest,
-    },
-    configData,
-  )
+  const graph = new Graph({
+    ...configData,
+    mainManifest,
+  })
   const packageInfo = {
     async manifest(spec: Spec) {
       switch (spec.name) {
@@ -138,12 +136,10 @@ t.test('append different type of dependencies', async t => {
       bar: '^1.0.0',
     },
   }
-  const graph = new Graph(
-    {
-      mainManifest,
-    },
-    configData,
-  )
+  const graph = new Graph({
+    ...configData,
+    mainManifest,
+  })
   const packageInfo = {
     async manifest(spec: Spec) {
       switch (spec.name) {
