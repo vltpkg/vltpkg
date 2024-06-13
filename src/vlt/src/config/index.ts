@@ -203,7 +203,7 @@ export class Config {
    * Never walks up as far as `$HOME`. So for example, if a project is in
    * `~/projects/xyz`, then the highest dir it will check is `~/projects`
    */
-  cwd: string
+  projectRoot: string
 
   /**
    * Record<alias, canonical name> to dereference command aliases.
@@ -218,9 +218,9 @@ export class Config {
 
   constructor(
     jack: Jack<ConfigDefinitions> = definition,
-    cwd = process.cwd(),
+    projectRoot = process.cwd(),
   ) {
-    this.cwd = cwd
+    this.projectRoot = projectRoot
     this.commands = commands
     this.jack = jack
   }
@@ -404,7 +404,7 @@ export class Config {
   getFilename(which: 'user' | 'project' = 'project'): string {
     return which === 'user' ?
         xdg.config('vlt.json')
-      : resolve(this.cwd, 'vlt.json')
+      : resolve(this.projectRoot, 'vlt.json')
   }
 
   async deleteConfigKeys(
@@ -527,13 +527,13 @@ export class Config {
     // file is found higher up in the search.
     let foundLikelyRoot: boolean = false
     const likelies = ['package.json', 'node_modules']
-    for (const dir of walkUp(this.cwd)) {
+    for (const dir of walkUp(this.projectRoot)) {
       // don't look in ~
       if (dir === home) break
       const projectConfig = resolve(dir, 'vlt.json')
       if (projectConfig === userConfig) break
       if (await this.#maybeLoadConfigFile(resolve(dir, 'vlt.json'))) {
-        this.cwd = dir
+        this.projectRoot = dir
         break
       }
       if (
@@ -543,14 +543,14 @@ export class Config {
           .find(x => x)
       ) {
         foundLikelyRoot = true
-        this.cwd = dir
+        this.projectRoot = dir
       }
       if (
         (
           await Promise.all(stops.map(s => exists(resolve(dir, s))))
         ).find(x => x)
       ) {
-        this.cwd = dir
+        this.projectRoot = dir
         break
       }
     }
@@ -606,7 +606,7 @@ export class Config {
    * {@link Config} object
    */
   static async load(
-    cwd = process.cwd(),
+    projectRoot = process.cwd(),
     argv = process.argv,
     /**
      * only used in tests, resets the memoization
@@ -615,7 +615,7 @@ export class Config {
     reload: boolean = false,
   ): Promise<LoadedConfig> {
     if (this.#loaded && !reload) return this.#loaded as LoadedConfig
-    const a = new Config(definition, cwd)
+    const a = new Config(definition, projectRoot)
     const b = await a.loadConfigFile()
     const c = await b.parse(argv).loadColor()
     this.#loaded = c as LoadedConfig
@@ -628,7 +628,6 @@ export class Config {
  */
 export type LoadedConfig = Config & {
   get(k: 'color'): boolean
-  cwd: string
   values: OptionsResults<ConfigDefinitions>
   positionals: string[]
 }

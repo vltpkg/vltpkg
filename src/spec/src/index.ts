@@ -281,7 +281,8 @@ export class Spec {
       for (const [name, origin] of Object.entries(gitHostWebsites)) {
         if (this.bareSpec.startsWith(origin)) {
           const parsed = new URL(this.bareSpec)
-          const [user, project] = parsed.pathname.replace(/\.git$/, '')
+          const [user, project] = parsed.pathname
+            .replace(/\.git$/, '')
             .replace(/\/+/g, ' ')
             .trim()
             .split(' ')

@@ -10,10 +10,12 @@ t.matchSnapshot(commands, 'commands')
 const defObj = definition.toJSON()
 // strip out all the defaults, because that's platform-specific
 t.matchSnapshot(
-  Object.fromEntries(Object.entries(defObj).map(([k, v]) => {
-    const { default: _def, ...def } = v
-    return [k, def]
-  })),
+  Object.fromEntries(
+    Object.entries(defObj).map(([k, v]) => {
+      const { default: _def, ...def } = v
+      return [k, def]
+    }),
+  ),
   'definition',
 )
 

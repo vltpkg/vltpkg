@@ -277,13 +277,13 @@ t.test('missing/invalid vlt-workspaces.json file', t => {
     }),
   })
   const m = new Monorepo(dir)
-  t.equal(Monorepo.maybeLoad(m.cwd), undefined)
+  t.equal(Monorepo.maybeLoad(m.projectRoot), undefined)
   t.throws(() => m.load(), {
     message: 'Not in a monorepo, no vlt-workspaces.json found',
   })
 
   mkdirSync(dir + '/vlt-workspaces.json')
-  t.equal(Monorepo.maybeLoad(m.cwd), undefined)
+  t.equal(Monorepo.maybeLoad(m.projectRoot), undefined)
   t.throws(() => m.load(), {
     message: 'Not in a monorepo, no vlt-workspaces.json found',
   })
@@ -291,7 +291,7 @@ t.test('missing/invalid vlt-workspaces.json file', t => {
   rmdirSync(dir + '/vlt-workspaces.json')
 
   writeFileSync(dir + '/vlt-workspaces.json', 'hello, world')
-  t.throws(() => Monorepo.maybeLoad(m.cwd), {
+  t.throws(() => Monorepo.maybeLoad(m.projectRoot), {
     message: 'Invalid vlt-workspaces.json file',
   })
   t.throws(() => m.load(), {
@@ -303,7 +303,7 @@ t.test('missing/invalid vlt-workspaces.json file', t => {
       hello: { world: true },
     }),
   )
-  t.throws(() => Monorepo.maybeLoad(m.cwd), {
+  t.throws(() => Monorepo.maybeLoad(m.projectRoot), {
     message: 'Invalid workspace definition',
     cause: {
       path: dir,

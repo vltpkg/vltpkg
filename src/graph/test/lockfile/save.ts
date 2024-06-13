@@ -1,8 +1,8 @@
+import { Spec, SpecOptions } from '@vltpkg/spec'
+import { Monorepo } from '@vltpkg/workspaces'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import t from 'tap'
-import { Spec, SpecOptions } from '@vltpkg/spec'
-import { Monorepo } from '@vltpkg/workspaces'
 import { DependencyTypeLong } from '../../src/dependencies.js'
 import { Graph } from '../../src/graph.js'
 import { save } from '../../src/lockfile/save.js'
@@ -24,7 +24,7 @@ t.test('save', async t => {
       foo: '^1.0.0',
     },
   }
-  const dir = t.testdir()
+  const projectRoot = t.testdir()
   const graph = new Graph({
     ...configData,
     mainManifest,
@@ -66,9 +66,11 @@ t.test('save', async t => {
       },
     )
     ?.setResolved()
-  save({ ...configData, graph, dir })
+  save({ ...configData, graph, projectRoot })
   t.matchSnapshot(
-    readFileSync(resolve(dir, 'vlt-lock.json'), { encoding: 'utf8' }),
+    readFileSync(resolve(projectRoot, 'vlt-lock.json'), {
+      encoding: 'utf8',
+    }),
   )
 })
 
@@ -80,7 +82,7 @@ t.test('edge missing type', async t => {
       missing: '^1.0.0',
     },
   }
-  const dir = t.testdir()
+  const projectRoot = t.testdir()
   const graph = new Graph({
     ...configData,
     mainManifest,
@@ -91,7 +93,7 @@ t.test('edge missing type', async t => {
     graph.mainImporter,
   )
   t.throws(
-    () => save({ ...configData, graph, dir }),
+    () => save({ ...configData, graph, projectRoot }),
     /Found edge with a missing type/,
     'should throw if finds an edge with missing type',
   )
@@ -110,14 +112,16 @@ t.test('missing registries', async t => {
     registry: 'http://example.com',
     registries: undefined,
   }
-  const dir = t.testdir()
+  const projectRoot = t.testdir()
   const graph = new Graph({
     ...borkedConfigData,
     mainManifest,
   })
-  save({ ...borkedConfigData, graph, dir })
+  save({ ...borkedConfigData, graph, projectRoot })
   t.matchSnapshot(
-    readFileSync(resolve(dir, 'vlt-lock.json'), { encoding: 'utf8' }),
+    readFileSync(resolve(projectRoot, 'vlt-lock.json'), {
+      encoding: 'utf8',
+    }),
   )
 })
 
@@ -126,7 +130,7 @@ t.test('workspaces', async t => {
     name: 'my-project',
     version: '1.0.0',
   }
-  const dir = t.testdir({
+  const projectRoot = t.testdir({
     'package.json': JSON.stringify(mainManifest),
     'vlt-workspaces.json': JSON.stringify({
       packages: ['./packages/*'],
@@ -149,7 +153,7 @@ t.test('workspaces', async t => {
       },
     },
   })
-  const monorepo = Monorepo.load(dir)
+  const monorepo = Monorepo.load(projectRoot)
   const graph = new Graph({
     ...configData,
     mainManifest,
@@ -170,10 +174,12 @@ t.test('workspaces', async t => {
     })
     ?.setResolved()
 
-  save({ ...configData, graph, dir })
+  save({ ...configData, graph, projectRoot })
 
   t.matchSnapshot(
-    readFileSync(resolve(dir, 'vlt-lock.json'), { encoding: 'utf8' }),
+    readFileSync(resolve(projectRoot, 'vlt-lock.json'), {
+      encoding: 'utf8',
+    }),
     'should save lockfile with workspaces nodes',
   )
 })

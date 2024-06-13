@@ -38,7 +38,7 @@ t.test('read and write a project config', async t => {
   t.equal(conf, await Config.load(dir + '/a/b'), 'load is memoized')
   t.equal(conf.parse(), conf, 'parsing a second time is no-op')
   t.equal(conf.get('registry'), 'https://registry.vlt.sh/')
-  t.equal(conf.cwd, dir)
+  t.equal(conf.projectRoot, dir)
   await conf.addConfigToFile('project', { cache: dir + '/cache' })
   clearEnv()
   const c2 = await Config.load(dir + '/a/b', undefined, true)
@@ -90,7 +90,7 @@ t.test('read and write a user config', async t => {
   })
   const conf = await Config.load(dir + '/a/b')
   t.equal(conf.get('registry'), 'https://registry.vlt.sh/')
-  t.equal(conf.cwd, dir)
+  t.equal(conf.projectRoot, dir)
   await conf.addConfigToFile('user', { cache: dir + '/cache' })
   clearEnv()
   const c2 = await Config.load(dir + '/a/b', undefined, true)
@@ -505,7 +505,7 @@ t.test('do not walk to home dir', async t => {
     },
   })
   const c = await Config.load(dir + '/a/b')
-  t.equal(c.cwd, resolve(dir, 'a/b'))
+  t.equal(c.projectRoot, resolve(dir, 'a/b'))
 })
 
 t.test('do not walk past xdg config dir', async t => {
@@ -530,7 +530,7 @@ t.test('do not walk past xdg config dir', async t => {
     '@vltpkg/xdg': mockXDG,
   })
   const c = await Config.load(dir + '/a/b')
-  t.equal(c.cwd, resolve(dir, 'a/b'))
+  t.equal(c.projectRoot, resolve(dir, 'a/b'))
 })
 
 t.test('delete config values from file', async t => {

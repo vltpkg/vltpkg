@@ -19,7 +19,7 @@ export type LoadOptions = SpecOptions & {
   /**
    * The project root dirname.
    */
-  dir: string
+  projectRoot: string
   /**
    * The project root manifest.
    */
@@ -85,8 +85,8 @@ const loadEdges = (
 }
 
 export const load = (options: LoadOptions): Graph => {
-  const { dir, mainManifest, scurry } = options
-  const file = readFileSync(resolve(dir, 'vlt-lock.json'), {
+  const { projectRoot, mainManifest, scurry } = options
+  const file = readFileSync(resolve(projectRoot, 'vlt-lock.json'), {
     encoding: 'utf8',
   })
   const lockfileData = JSON.parse(file) as LockfileData
@@ -104,7 +104,7 @@ export const load = (options: LoadOptions): Graph => {
   const packageJson = options.packageJson ?? new PackageJson()
   const monorepo =
     options.monorepo ??
-    Monorepo.maybeLoad(options.dir, { packageJson, scurry })
+    Monorepo.maybeLoad(options.projectRoot, { packageJson, scurry })
   const mergedOptions = {
     ...options,
     registries: lockfileData.registries,

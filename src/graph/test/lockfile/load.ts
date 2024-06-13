@@ -1,6 +1,6 @@
+import { SpecOptions } from '@vltpkg/spec'
 import t from 'tap'
 import { load } from '../../src/lockfile/load.js'
-import { SpecOptions } from '@vltpkg/spec'
 import { humanReadableOutput } from '../../src/visualization/human-readable-output.js'
 
 const configData = {
@@ -17,7 +17,7 @@ const mainManifest = {
 }
 
 t.test('load', async t => {
-  const dir = t.testdir({
+  const projectRoot = t.testdir({
     'vlt-lock.json': JSON.stringify({
       registries: {
         npm: 'https://registry.npmjs.org',
@@ -52,14 +52,14 @@ t.test('load', async t => {
 
   const graph = load({
     ...configData,
-    dir,
+    projectRoot,
     mainManifest,
   })
   t.matchSnapshot(humanReadableOutput(graph))
 })
 
 t.test('workspaces', async t => {
-  const dir = t.testdir({
+  const projectRoot = t.testdir({
     'vlt-lock.json': JSON.stringify({
       registries: {
         npm: 'https://registry.npmjs.org',
@@ -107,14 +107,14 @@ t.test('workspaces', async t => {
 
   const graph = load({
     ...configData,
-    dir,
+    projectRoot,
     mainManifest,
   })
   t.matchSnapshot(humanReadableOutput(graph))
 })
 
 t.test('unknown dep type', async t => {
-  const dir = t.testdir({
+  const projectRoot = t.testdir({
     'vlt-lock.json': JSON.stringify({
       registries: {
         npm: 'https://registry.npmjs.org',
@@ -136,7 +136,7 @@ t.test('unknown dep type', async t => {
     () =>
       load({
         ...configData,
-        dir,
+        projectRoot,
         mainManifest,
       }),
     /Found unsupported dependency type in lockfile/,
@@ -145,7 +145,7 @@ t.test('unknown dep type', async t => {
 })
 
 t.test('missing root pkg', async t => {
-  const dir = t.testdir({
+  const projectRoot = t.testdir({
     'vlt-lock.json': JSON.stringify({
       registries: {
         npm: 'https://registry.npmjs.org',
@@ -161,7 +161,7 @@ t.test('missing root pkg', async t => {
     () =>
       load({
         ...configData,
-        dir,
+        projectRoot,
         mainManifest,
       }),
     /Missing nodes from lockfile/,
@@ -170,7 +170,7 @@ t.test('missing root pkg', async t => {
 })
 
 t.test('missing root pkg', async t => {
-  const dir = t.testdir({
+  const projectRoot = t.testdir({
     'vlt-lock.json': JSON.stringify({
       registries: {
         npm: 'https://registry.npmjs.org',
@@ -190,7 +190,7 @@ t.test('missing root pkg', async t => {
     () =>
       load({
         ...configData,
-        dir,
+        projectRoot,
         mainManifest,
       }),
     /Edge info missing its `from` node/,

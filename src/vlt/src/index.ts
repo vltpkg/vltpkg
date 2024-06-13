@@ -8,12 +8,15 @@ export * from './config/index.js'
 // Infer the workspace by being in that directory.
 const vlt = await Config.load(process.cwd(), process.argv)
 if (vlt.get('workspace') === undefined) {
-  const cwd = process.cwd()
-  const rel = relative(vlt.cwd, process.cwd()).replace(/\\/g, '/')
-  const m = Monorepo.maybeLoad(vlt.cwd, {
+  const projectRoot = process.cwd()
+  const rel = relative(vlt.projectRoot, process.cwd()).replace(
+    /\\/g,
+    '/',
+  )
+  const m = Monorepo.maybeLoad(vlt.projectRoot, {
     load: { paths: rel },
   })
-  const ws = m?.get(cwd)
+  const ws = m?.get(projectRoot)
   if (ws) vlt.values.workspace = [ws.path]
 }
 
