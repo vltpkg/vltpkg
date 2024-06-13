@@ -1,23 +1,23 @@
-import { writeFileSync } from 'node:fs'
-import { resolve } from 'node:path'
 import { DepID } from '@vltpkg/dep-id'
 import { error } from '@vltpkg/error-cause'
 import { SpecOptions } from '@vltpkg/spec'
+import { writeFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import { dependencyTypes } from '../dependencies.js'
 import { Edge } from '../edge.js'
 import { Graph } from '../graph.js'
 import { Node } from '../node.js'
 import {
   LockfileData,
-  LockfileDataNode,
   LockfileDataEdge,
+  LockfileDataNode,
 } from './types.js'
 
 export type SaveOptions = SpecOptions & {
   /**
    * The project root dirname.
    */
-  dir: string
+  projectRoot: string
   /**
    * The graph to be stored in the lockfile.
    */
@@ -74,7 +74,7 @@ const isRegistries = (
   !(!registries || typeof registries === 'string')
 
 export const save = (options: SaveOptions) => {
-  const { graph, dir, registry, registries } = options
+  const { graph, projectRoot, registry, registries } = options
   const lockfileData: LockfileData = {
     registries: isRegistries(registries) ? registries : {},
     nodes: formatNodes(graph.nodes.values(), registry),
@@ -84,5 +84,5 @@ export const save = (options: SaveOptions) => {
     // renders each node / edge as a single line entry
     .replaceAll('\n      ', '')
     .replaceAll('\n    ]', ']')
-  writeFileSync(resolve(dir, 'vlt-lock.json'), content)
+  writeFileSync(resolve(projectRoot, 'vlt-lock.json'), content)
 }

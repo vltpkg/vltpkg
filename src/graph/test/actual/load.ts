@@ -1,5 +1,5 @@
-import t from 'tap'
 import { SpecOptions } from '@vltpkg/spec'
+import t from 'tap'
 import { load } from '../../src/actual/load.js'
 import { humanReadableOutput } from '../../src/visualization/human-readable-output.js'
 
@@ -12,7 +12,7 @@ const configData = {
 } satisfies SpecOptions
 
 t.test('load actual', async t => {
-  const dir = t.testdir({
+  const projectRoot = t.testdir({
     'package.json': JSON.stringify({
       name: 'my-project',
       version: '1.0.0',
@@ -212,7 +212,11 @@ t.test('load actual', async t => {
     }),
   })
 
-  const fullGraph = load({ dir, loadManifests: true, ...configData })
+  const fullGraph = load({
+    projectRoot,
+    loadManifests: true,
+    ...configData,
+  })
 
   t.strictSame(
     fullGraph.missingDependencies.size,
@@ -233,7 +237,7 @@ t.test('load actual', async t => {
 
   t.matchSnapshot(
     humanReadableOutput(
-      load({ dir, loadManifests: false, ...configData }),
+      load({ projectRoot, loadManifests: false, ...configData }),
     ),
     'should load an actual graph without any manifest info',
   )
@@ -244,7 +248,7 @@ t.test('cycle', async t => {
   // +- a
   //    +- b
   //       +- a
-  const dir = t.testdir({
+  const projectRoot = t.testdir({
     'package.json': JSON.stringify({
       name: 'my-project',
       version: '1.0.0',
@@ -297,13 +301,13 @@ t.test('cycle', async t => {
   })
   t.matchSnapshot(
     humanReadableOutput(
-      load({ dir, loadManifests: true, ...configData }),
+      load({ projectRoot, loadManifests: true, ...configData }),
     ),
     'should load an actual graph with cycle containing missing deps info',
   )
   t.matchSnapshot(
     humanReadableOutput(
-      load({ dir, loadManifests: false, ...configData }),
+      load({ projectRoot, loadManifests: false, ...configData }),
     ),
     'should load an actual graph with cycle without any manifest info',
   )

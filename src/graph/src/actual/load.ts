@@ -14,7 +14,7 @@ export type LoadOptions = SpecOptions & {
   /**
    * The project root dirname.
    */
-  dir: string
+  projectRoot: string
   /**
    * An inventory of seen manifests.
    */
@@ -278,11 +278,11 @@ const parseDir = (
  */
 export const load = (options: LoadOptions): Graph => {
   const packageJson = options.packageJson ?? new PackageJson()
-  const mainManifest = packageJson.read(options.dir)
-  const scurry = options.scurry ?? new PathScurry(options.dir)
+  const mainManifest = packageJson.read(options.projectRoot)
+  const scurry = options.scurry ?? new PathScurry(options.projectRoot)
   const monorepo =
     options.monorepo ??
-    Monorepo.maybeLoad(options.dir, { packageJson, scurry })
+    Monorepo.maybeLoad(options.projectRoot, { packageJson, scurry })
   const graph = new Graph({ ...options, mainManifest, monorepo })
   const depsFound = new Map<Node, Path>()
 

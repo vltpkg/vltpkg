@@ -46,8 +46,8 @@ export type Resolution = {
 export interface PackageInfoClientOptions
   extends RegistryClientOptions,
     SpecOptions {
-  /** cwd to resolve `file://` specifiers against. Defaults to process.cwd() */
-  cwd?: string
+  /** root of the project. Defaults to process.cwd() */
+  projectRoot?: string
   /** PackageJson object */
   packageJson?: PackageJson
 
@@ -60,6 +60,7 @@ export interface PackageInfoClientOptions
 
 export interface PackageInfoClientRequestOptions
   extends PickManifestOptions {
+  /** dir to resolve `file://` specifiers against. Defaults to projectRoot. */
   from?: string
   /**
    * If `before` is set, then `fullMetadata` will be fetched, even if not
@@ -194,7 +195,7 @@ export const extract = async (
 
 export class PackageInfoClient {
   #registryClient?: RegistryClient
-  #cwd: string
+  #projectRoot: string
   #tarPool?: Pool
   options: PackageInfoClientOptions
   #resolutions = new Map<string, Resolution>()
@@ -215,7 +216,7 @@ export class PackageInfoClient {
 
   constructor(options: PackageInfoClientOptions = {}) {
     this.options = options
-    this.#cwd = options.cwd || process.cwd()
+    this.#projectRoot = options.projectRoot || process.cwd()
     this.packageJson = options.packageJson ?? new PackageJson()
     const wsLoad = {
       ...(options.workspace?.length && { paths: options.workspace }),
@@ -223,7 +224,7 @@ export class PackageInfoClient {
         groups: options['workspace-group'],
       }),
     }
-    this.monorepo = Monorepo.maybeLoad(this.#cwd, {
+    this.monorepo = Monorepo.maybeLoad(this.#projectRoot, {
       load: wsLoad,
       packageJson: this.packageJson,
     })
@@ -238,7 +239,7 @@ export class PackageInfoClient {
       spec = Spec.parse(spec, this.options)
     const f = spec.final
     const r = await this.resolve(spec, options)
-    const { from = this.#cwd } = options
+    const { from = this.#projectRoot } = options
     switch (f.type) {
       case 'git': {
         const {
@@ -473,7 +474,7 @@ export class PackageInfoClient {
         const { file } = f
         if (file === undefined)
           throw this.#resolveError(spec, options, 'no file path')
-        const { from = this.#cwd } = options
+        const { from = this.#projectRoot } = options
         const path = pathResolve(from, file)
         const st = await stat(path)
         if (st.isDirectory()) {
@@ -507,7 +508,7 @@ export class PackageInfoClient {
     spec: string | Spec,
     options: PackageInfoClientRequestOptions = {},
   ) {
-    const { from = this.#cwd } = options
+    const { from = this.#projectRoot } = options
     if (typeof spec === 'string')
       spec = Spec.parse(spec, this.options)
     const f = spec.final
@@ -641,7 +642,9 @@ export class PackageInfoClient {
             'git remote could not be determined',
           )
         }
-        const revDoc = await revs(gitRemote, this.options)
+        const revDoc = await revs(gitRemote, {
+          cwd: this.options.projectRoot,
+        })
         if (!revDoc) throw this.#resolveError(spec, options)
         return asPackumentMinified(revDoc)
       }
@@ -703,7 +706,7 @@ export class PackageInfoClient {
             'no path on file: specifier',
           )
         }
-        const { from = this.#cwd } = options
+        const { from = this.#projectRoot } = options
         const resolved = pathResolve(from, spec.file as string)
         const r = { resolved, spec }
         this.#resolutions.set(memoKey, r)
@@ -821,7 +824,7 @@ export class PackageInfoClient {
     message: string = 'Could not resolve',
     extra: ErrorCauseObject = {},
   ) {
-    const { from = this.#cwd } = options
+    const { from = this.#projectRoot } = options
     const er = error(
       message,
       {

@@ -144,7 +144,7 @@ export interface MonorepoOptions {
  */
 export class Monorepo {
   /** The project root where vlt-workspaces.json is found */
-  cwd: string
+  projectRoot: string
   /** Scurry object to cache all filesystem calls (mostly globs) */
   scurry: PathScurry
 
@@ -161,9 +161,9 @@ export class Monorepo {
     return [...this.#workspaces.values()].length
   }
 
-  constructor(cwd: string, options: MonorepoOptions = {}) {
-    this.cwd = resolve(cwd)
-    this.scurry = options.scurry ?? new PathScurry(cwd)
+  constructor(projectRoot: string, options: MonorepoOptions = {}) {
+    this.projectRoot = resolve(projectRoot)
+    this.scurry = options.scurry ?? new PathScurry(projectRoot)
     this.packageJson = options.packageJson ?? new PackageJson()
     if (options.load) this.load(options.load)
   }
@@ -179,13 +179,13 @@ export class Monorepo {
    */
   get config(): WorkspaceConfigObject {
     if (this.#config) return this.#config
-    const file = resolve(this.cwd, 'vlt-workspaces.json')
+    const file = resolve(this.projectRoot, 'vlt-workspaces.json')
     let confData: string
     try {
       confData = readFileSync(file, 'utf8')
     } catch (er) {
       throw error('Not in a monorepo, no vlt-workspaces.json found', {
-        path: this.cwd,
+        path: this.projectRoot,
         cause: er as Error,
       })
     }
@@ -194,7 +194,7 @@ export class Monorepo {
       parsed = parse(confData)
     } catch (er) {
       throw error('Invalid vlt-workspaces.json file', {
-        path: this.cwd,
+        path: this.projectRoot,
         cause: er as Error,
       })
     }
@@ -283,7 +283,7 @@ export class Monorepo {
   #loadWS(path: string, group?: string): Workspace {
     const loaded = this.#workspaces.get(path)
     if (loaded) return loaded
-    const fullpath = resolve(this.cwd, path)
+    const fullpath = resolve(this.projectRoot, path)
     const manifest = this.packageJson.read(fullpath)
     const ws = new Workspace(path, manifest, fullpath)
     if (group) ws.groups.push(group)
@@ -303,7 +303,7 @@ export class Monorepo {
   #globOptions(matches: Set<string>): GlobOptionsWithFileTypesFalse {
     // if the entry or any of its parent dirs are already matched,
     // then we should not explore further down that directory tree.
-    // if we hit the cwd (or a root) then stop searching.
+    // if we hit the projectRoot then stop searching.
     const inMatches = (p?: Path): boolean => {
       return (
         !!p?.relativePosix() &&
@@ -312,8 +312,8 @@ export class Monorepo {
     }
 
     return {
-      root: this.cwd,
-      cwd: this.cwd,
+      root: this.projectRoot,
+      cwd: this.projectRoot,
       posix: true,
       scurry: this.scurry,
       withFileTypes: false,
@@ -540,31 +540,38 @@ export class Monorepo {
 
   /**
    * Convenience method to instantiate and load in one call.
-   * Returns undefined if the cwd is not a monorepo workspaces
+   * Returns undefined if the project is not a monorepo workspaces
    * root, otherwise returns the loaded Monorepo.
    */
   static maybeLoad(
-    cwd: string,
+    projectRoot: string,
     options: MonorepoOptions = { load: {} },
   ) {
     try {
-      if (!statSync(resolve(cwd, 'vlt-workspaces.json')).isFile()) {
+      if (
+        !statSync(
+          resolve(projectRoot, 'vlt-workspaces.json'),
+        ).isFile()
+      ) {
         return
       }
     } catch {
       return
     }
     const { load = {} } = options
-    return new Monorepo(cwd, { ...options, load })
+    return new Monorepo(projectRoot, { ...options, load })
   }
 
   /**
    * Convenience method to instantiate and load in one call.
    * Throws if called on a directory that is not a workspaces root.
    */
-  static load(cwd: string, options: MonorepoOptions = { load: {} }) {
+  static load(
+    projectRoot: string,
+    options: MonorepoOptions = { load: {} },
+  ) {
     const { load = {} } = options
-    return new Monorepo(cwd, { ...options, load })
+    return new Monorepo(projectRoot, { ...options, load })
   }
 }
 

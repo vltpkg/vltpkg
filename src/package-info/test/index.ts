@@ -775,7 +775,7 @@ t.test('workspace specs', async t => {
   })
   const opts = {
     ...options,
-    cwd: dir,
+    projectRoot: dir,
   }
   t.equal(
     (await resolve('b@workspace:*', opts)).resolved,
@@ -825,7 +825,7 @@ t.test('workspace group option', async t => {
   })
   const opts = {
     ...options,
-    cwd: dir,
+    projectRoot: dir,
     // only load the ones that are 1 char
     workspace: ['p/[a-z]'],
     // even though the `'b'` group includes 'bb'

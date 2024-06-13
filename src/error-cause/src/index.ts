@@ -58,6 +58,9 @@ export interface ErrorCauseObject {
   /** null or a signal that a process received */
   signal?: null | NodeJS.Signals
 
+  /** the root of a project */
+  projectRoot?: string
+
   /** the current working directory of a process */
   cwd?: string
 
