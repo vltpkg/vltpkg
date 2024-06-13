@@ -28,7 +28,6 @@
     "@vltpkg/xdg": "workspace:*",
     "chalk": "^5.3.0",
     "jackspeak": "^3.4.0",
-    "open-editor": "^4.1.1",
     "polite-json": "^5.0.0",
     "walk-up-path": "^3.0.1"
   },
