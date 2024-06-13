@@ -12,20 +12,18 @@ const configData = {
 } satisfies SpecOptions
 
 t.test('human-readable-output', async t => {
-  const graph = new Graph(
-    {
-      mainManifest: {
-        name: 'my-project',
-        version: '1.0.0',
-        dependencies: {
-          foo: '^1.0.0',
-          bar: '^1.0.0',
-          missing: '^1.0.0',
-        },
+  const graph = new Graph({
+    ...configData,
+    mainManifest: {
+      name: 'my-project',
+      version: '1.0.0',
+      dependencies: {
+        foo: '^1.0.0',
+        bar: '^1.0.0',
+        missing: '^1.0.0',
       },
     },
-    configData,
-  )
+  })
   const foo = graph.placePackage(
     graph.mainImporter,
     'dependencies',
@@ -105,13 +103,11 @@ t.test('workspaces', async t => {
     },
   })
   const monorepo = Monorepo.load(dir)
-  const graph = new Graph(
-    {
-      mainManifest,
-      monorepo,
-    },
-    configData,
-  )
+  const graph = new Graph({
+    ...configData,
+    mainManifest,
+    monorepo,
+  })
   t.matchSnapshot(
     mermaidOutput(graph),
     'should print workspaces mermaid output',

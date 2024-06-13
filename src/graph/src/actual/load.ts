@@ -283,10 +283,7 @@ export const load = (options: LoadOptions): Graph => {
   const monorepo =
     options.monorepo ??
     Monorepo.maybeLoad(options.dir, { packageJson, scurry })
-  const graph = new Graph(
-    { mainManifest, manifests: options.manifests, monorepo },
-    options,
-  )
+  const graph = new Graph({ ...options, mainManifest, monorepo })
   const depsFound = new Map<Node, Path>()
 
   // starts the list of initial folders to parse using the importer nodes

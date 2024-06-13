@@ -1,15 +1,15 @@
-import { error } from '@vltpkg/error-cause'
 import { getId, DepID } from '@vltpkg/dep-id'
+import { error } from '@vltpkg/error-cause'
 import { Spec, SpecOptions } from '@vltpkg/spec'
+import { ManifestMinified } from '@vltpkg/types'
 import { Monorepo } from '@vltpkg/workspaces'
 import { Edge } from './edge.js'
 import { Node } from './node.js'
 import { DependencyTypeLong } from './dependencies.js'
-import { ManifestMinified } from '@vltpkg/types'
 
 export type ManifestInventory = Map<DepID, ManifestMinified>
 
-export interface GraphOptions {
+export type GraphOptions = SpecOptions & {
   /**
    * The main importer manifest info.
    */
@@ -72,11 +72,9 @@ export class Graph {
    */
   missingDependencies: Set<Edge> = new Set()
 
-  constructor(
-    { mainManifest, manifests, monorepo }: GraphOptions,
-    config: SpecOptions,
-  ) {
-    this.#config = config
+  constructor(options: GraphOptions) {
+    const { mainManifest, manifests, monorepo } = options
+    this.#config = options
     this.manifests = manifests ?? (new Map() as ManifestInventory)
 
     // add the project root node
