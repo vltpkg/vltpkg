@@ -345,6 +345,24 @@ export const definition = jack({
       default: 'project',
     },
 
+    editor: {
+      hint: 'program',
+      description: `The blocking editor to use for \`vlt config edit\` and
+                    any other cases where a file should be opened for
+                    editing.
+
+                    Defaults to the \`EDITOR\` or \`VISUAL\` env if set, or
+                    \`notepad.exe\` on Windows, or \`vi\` elsewhere.
+
+      `,
+      default:
+        process.env.EDITOR ||
+        process.env.VISUAL ||
+        (process.platform === 'win32' ?
+          `${process.env.SYSTEMROOT}\\notepad.exe`
+        : 'vi'),
+    },
+
     'fallback-command': {
       hint: 'command',
       description: `The command to run when the first argument doesn't

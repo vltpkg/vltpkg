@@ -2,11 +2,18 @@ import t, { Test } from 'tap'
 
 import { definition, LoadedConfig } from '../../src/config/index.js'
 
+import * as CP from 'node:child_process'
+import { SpawnOptions } from 'node:child_process'
 let edited: string | undefined = undefined
-const mockOpenEditor = (paths: string[], options: any) => {
-  t.matchOnly(paths, [String])
-  t.strictSame(options, { wait: true })
-  edited = paths[0]
+const mockSpawnSync = (
+  cmd: string,
+  args: string[],
+  options: SpawnOptions,
+) => {
+  t.matchOnly(args, [String])
+  t.strictSame(options, { stdio: 'inherit' })
+  t.equal(cmd, 'EDITOR')
+  edited = args[0]
 }
 
 class MockConfig {
@@ -57,7 +64,7 @@ const run = async (
   const cmd = await t.mockImport<
     typeof import('../../src/commands/config.js')
   >('../../src/commands/config.js', {
-    'open-editor': mockOpenEditor,
+    child_process: t.createMock(CP, { spawnSync: mockSpawnSync }),
   })
   return {
     result: await cmd.command(conf as unknown as LoadedConfig),
@@ -176,7 +183,7 @@ t.test('get', async t => {
 t.test('edit', async t => {
   for (const which of ['user', 'project']) {
     t.test(which, async t => {
-      await run(t, ['edit'], { config: which })
+      await run(t, ['edit'], { config: which, editor: 'EDITOR' })
       t.equal(edited, which)
     })
   }

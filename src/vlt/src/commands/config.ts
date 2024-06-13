@@ -1,3 +1,5 @@
+import { error } from '@vltpkg/error-cause'
+import { spawnSync } from 'child_process'
 import {
   ConfigDefinitions,
   definition,
@@ -6,8 +8,6 @@ import {
   pairsToRecords,
   recordsToPairs,
 } from '../config/index.js'
-import { error } from '@vltpkg/error-cause'
-import openEditor from 'open-editor'
 
 // TODO: need a proper error/logging handler thing
 // replace all these string throws and direct console.log/error
@@ -117,9 +117,17 @@ const get = (conf: LoadedConfig) => {
 }
 
 const edit = async (conf: LoadedConfig) => {
+  const editor = conf.get('editor')
+  /* c8 ignore start - there's a default, it can't be blank */
+  if (!editor) {
+    throw error('no editor set in config')
+  }
+  /* c8 ignore stop */
   await conf.editConfigFile(
     conf.get('config') as 'user' | 'project',
-    async file => await openEditor([file], { wait: true }),
+    async file => {
+      spawnSync(editor, [file], { stdio: 'inherit' })
+    },
   )
 }
 
