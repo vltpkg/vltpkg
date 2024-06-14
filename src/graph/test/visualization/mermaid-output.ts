@@ -26,7 +26,7 @@ t.test('human-readable-output', async t => {
   })
   const foo = graph.placePackage(
     graph.mainImporter,
-    'dependencies',
+    'prod',
     Spec.parse('foo', '^1.0.0'),
     {
       name: 'foo',
@@ -36,7 +36,7 @@ t.test('human-readable-output', async t => {
   t.ok(foo)
   const bar = graph.placePackage(
     graph.mainImporter,
-    'dependencies',
+    'prod',
     Spec.parse('bar', '^1.0.0'),
     {
       name: 'bar',
@@ -49,7 +49,7 @@ t.test('human-readable-output', async t => {
   if (!bar) throw new Error('failed to place bar')
   const baz = graph.placePackage(
     bar,
-    'dependencies',
+    'prod',
     Spec.parse('baz', '^1.0.0'),
     {
       name: 'baz',
@@ -62,18 +62,13 @@ t.test('human-readable-output', async t => {
   if (!baz) throw new Error('failed to place baz')
   graph.placePackage(
     graph.mainImporter,
-    'dependencies',
+    'prod',
     Spec.parse('missing', '^1.0.0'),
   )
-  graph.placePackage(
-    baz,
-    'dependencies',
-    Spec.parse('foo', '^1.0.0'),
-    {
-      name: 'foo',
-      version: '1.0.0',
-    },
-  )
+  graph.placePackage(baz, 'prod', Spec.parse('foo', '^1.0.0'), {
+    name: 'foo',
+    version: '1.0.0',
+  })
   t.matchSnapshot(mermaidOutput(graph), 'should print mermaid output')
 })
 

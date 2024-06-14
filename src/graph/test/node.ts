@@ -65,8 +65,8 @@ t.test('Node', async t => {
   const barId = getId(barSpec, barMani)
   const bar = new Node(configData, barId, barMani)
 
-  root.addEdgesTo('dependencies', new Spec('foo', '^1.0.0'), foo)
-  root.addEdgesTo('dependencies', new Spec('bar', '^1.0.0'), bar)
+  root.addEdgesTo('prod', new Spec('foo', '^1.0.0'), foo)
+  root.addEdgesTo('prod', new Spec('bar', '^1.0.0'), bar)
 
   t.strictSame(
     root.edgesOut.size,

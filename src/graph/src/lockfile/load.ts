@@ -7,7 +7,10 @@ import { Spec, SpecOptions } from '@vltpkg/spec'
 import { ManifestMinified } from '@vltpkg/types'
 import { Monorepo } from '@vltpkg/workspaces'
 import { PathScurry } from 'path-scurry'
-import { longTypes } from '../dependencies.js'
+import {
+  longDependencyTypes,
+  shortDependencyTypes,
+} from '../dependencies.js'
 import { Graph } from '../graph.js'
 import {
   LockfileData,
@@ -65,12 +68,10 @@ const loadEdges = (
   { graph, edgesInfo }: LoadEdgesOptions,
   options: SpecOptions,
 ) => {
-  for (const [fromId, shortType, spec, toId] of edgesInfo) {
-    const type = longTypes.get(shortType)
-    if (!type) {
+  for (const [fromId, type, spec, toId] of edgesInfo) {
+    if (!type || !shortDependencyTypes.has(type)) {
       throw error('Found unsupported dependency type in lockfile', {
-        found: shortType,
-        validOptions: Object.keys(longTypes),
+        validOptions: [...longDependencyTypes],
       })
     }
     const from = graph.nodes.get(fromId)

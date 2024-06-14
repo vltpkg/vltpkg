@@ -1,5 +1,4 @@
 import { DepID } from '@vltpkg/dep-id'
-import { dependencyTypes } from '../dependencies.js'
 import { Edge } from '../edge.js'
 import { Graph } from '../graph.js'
 import { Node } from '../node.js'
@@ -20,7 +19,7 @@ function parseNode(seenNodes: Set<DepID>, graph: Graph, node: Node) {
 function parseEdge(seenNodes: Set<DepID>, graph: Graph, edge: Edge) {
   const edgeResult =
     `${encodeURIComponent(edge.from.id)}(${edge.from.id})` +
-    ` -->|${dependencyTypes.get(edge.type)}| `
+    ` -->|${edge.type}| `
 
   if (!edge.to) {
     return (

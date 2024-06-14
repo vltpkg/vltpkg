@@ -5,7 +5,7 @@ import { ManifestMinified } from '@vltpkg/types'
 import { Monorepo } from '@vltpkg/workspaces'
 import { Edge } from './edge.js'
 import { Node } from './node.js'
-import { DependencyTypeLong } from './dependencies.js'
+import { DependencyTypeShort } from './dependencies.js'
 
 export type ManifestInventory = Map<DepID, ManifestMinified>
 
@@ -119,7 +119,7 @@ export class Graph {
    * pointing to nothing will be created to represent that missing dependency.
    */
   newEdge(
-    type: DependencyTypeLong,
+    type: DependencyTypeShort,
     spec: Spec,
     from: Node,
     to?: Node,
@@ -159,7 +159,7 @@ export class Graph {
    */
   placePackage(
     fromNode: Node,
-    depType: DependencyTypeLong,
+    depType: DependencyTypeShort,
     spec: Spec,
     manifest?: ManifestMinified,
     id?: DepID,

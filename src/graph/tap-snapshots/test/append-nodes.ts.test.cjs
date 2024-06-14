@@ -43,7 +43,7 @@ Graph [@vltpkg/graph.Graph] {
         name: 'foo',
         resolved: 'https://registry.npmjs.org/foo/-/foo-1.0.0.tgz'
       },
-      type: 'devDependencies',
+      type: 'dev',
       spec: Spec {foo@^1.0.0}
     },
     Edge [@vltpkg/graph.Edge] {
@@ -67,7 +67,7 @@ Graph [@vltpkg/graph.Graph] {
         name: 'bar',
         resolved: 'https://registry.npmjs.org/bar/-/bar-1.0.0.tgz'
       },
-      type: 'optionalDependencies',
+      type: 'optional',
       spec: Spec {bar@^1.0.0}
     },
     Edge [@vltpkg/graph.Edge] {
@@ -82,7 +82,7 @@ Graph [@vltpkg/graph.Graph] {
         resolved: undefined
       },
       to: undefined,
-      type: 'dependencies',
+      type: 'prod',
       spec: Spec {missing@^1.0.0}
     }
   },
@@ -154,19 +154,19 @@ Graph [@vltpkg/graph.Graph] {
       'foo' => Edge [@vltpkg/graph.Edge] {
         from: [Circular *1],
         to: [Node [@vltpkg/graph.Node]],
-        type: 'devDependencies',
+        type: 'dev',
         spec: Spec {foo@^1.0.0}
       },
       'bar' => Edge [@vltpkg/graph.Edge] {
         from: [Circular *1],
         to: [Node [@vltpkg/graph.Node]],
-        type: 'optionalDependencies',
+        type: 'optional',
         spec: Spec {bar@^1.0.0}
       },
       'missing' => Edge [@vltpkg/graph.Edge] {
         from: [Circular *1],
         to: undefined,
-        type: 'dependencies',
+        type: 'prod',
         spec: Spec {missing@^1.0.0}
       }
     },
@@ -196,7 +196,7 @@ Graph [@vltpkg/graph.Graph] {
         resolved: undefined
       },
       to: undefined,
-      type: 'dependencies',
+      type: 'prod',
       spec: Spec {missing@^1.0.0}
     }
   }

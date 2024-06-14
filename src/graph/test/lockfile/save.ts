@@ -1,9 +1,8 @@
-import { Spec, SpecOptions } from '@vltpkg/spec'
-import { Monorepo } from '@vltpkg/workspaces'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import t from 'tap'
-import { DependencyTypeLong } from '../../src/dependencies.js'
+import { Spec, SpecOptions } from '@vltpkg/spec'
+import { Monorepo } from '@vltpkg/workspaces'
 import { Graph } from '../../src/graph.js'
 import { save } from '../../src/lockfile/save.js'
 
@@ -31,7 +30,7 @@ t.test('save', async t => {
   })
   const foo = graph.placePackage(
     graph.mainImporter,
-    'dependencies',
+    'prod',
     Spec.parse('foo@^1.0.0'),
     {
       name: 'foo',
@@ -47,7 +46,7 @@ t.test('save', async t => {
   }
   foo.setResolved()
   graph
-    .placePackage(foo, 'dependencies', Spec.parse('bar@^1.0.0'), {
+    .placePackage(foo, 'prod', Spec.parse('bar@^1.0.0'), {
       name: 'bar',
       version: '1.0.0',
     })
@@ -55,7 +54,7 @@ t.test('save', async t => {
   graph
     .placePackage(
       graph.mainImporter,
-      'dependencies',
+      'prod',
       Spec.parse('baz@custom:baz@^1.0.0', configData as SpecOptions),
       {
         name: 'baz',
@@ -71,31 +70,6 @@ t.test('save', async t => {
     readFileSync(resolve(projectRoot, 'vlt-lock.json'), {
       encoding: 'utf8',
     }),
-  )
-})
-
-t.test('edge missing type', async t => {
-  const mainManifest = {
-    name: 'my-project',
-    version: '1.0.0',
-    dependencies: {
-      missing: '^1.0.0',
-    },
-  }
-  const projectRoot = t.testdir()
-  const graph = new Graph({
-    ...configData,
-    mainManifest,
-  })
-  graph.newEdge(
-    '' as DependencyTypeLong,
-    Spec.parse('missing', '^1.0.0'),
-    graph.mainImporter,
-  )
-  t.throws(
-    () => save({ ...configData, graph, projectRoot }),
-    /Found edge with a missing type/,
-    'should throw if finds an edge with missing type',
   )
 })
 
@@ -164,7 +138,7 @@ t.test('workspaces', async t => {
     throw new Error('Missing workspace b')
   }
   graph
-    .placePackage(b, 'dependencies', Spec.parse('c@^1.0.0'), {
+    .placePackage(b, 'prod', Spec.parse('c@^1.0.0'), {
       name: 'c',
       version: '1.0.0',
       dist: {

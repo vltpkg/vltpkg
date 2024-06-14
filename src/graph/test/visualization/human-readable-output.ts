@@ -27,7 +27,7 @@ t.test('human-readable-output', async t => {
   })
   const foo = graph.placePackage(
     graph.mainImporter,
-    'dependencies',
+    'prod',
     Spec.parse('foo', '^1.0.0'),
     {
       name: 'foo',
@@ -37,7 +37,7 @@ t.test('human-readable-output', async t => {
   t.ok(foo)
   const bar = graph.placePackage(
     graph.mainImporter,
-    'dependencies',
+    'prod',
     Spec.parse('bar', '^1.0.0'),
     {
       name: 'bar',
@@ -50,7 +50,7 @@ t.test('human-readable-output', async t => {
   if (!bar) throw new Error('failed to place bar')
   const baz = graph.placePackage(
     bar,
-    'dependencies',
+    'prod',
     Spec.parse('baz', 'custom:bar@^1.0.0', configData as SpecOptions),
     {
       name: 'baz',
@@ -65,21 +65,16 @@ t.test('human-readable-output', async t => {
   baz.setResolved()
   graph.placePackage(
     graph.mainImporter,
-    'dependencies',
+    'prod',
     Spec.parse('missing', '^1.0.0'),
   )
-  graph.placePackage(
-    baz,
-    'dependencies',
-    Spec.parse('foo', '^1.0.0'),
-    {
-      name: 'foo',
-      version: '1.0.0',
-    },
-  )
+  graph.placePackage(baz, 'prod', Spec.parse('foo', '^1.0.0'), {
+    name: 'foo',
+    version: '1.0.0',
+  })
   const extraneous = graph.placePackage(
     bar,
-    'dependencies',
+    'prod',
     Spec.parse(
       'extraneous',
       'extraneous@^1.0.0',
@@ -152,7 +147,7 @@ t.test('cycle', async t => {
   })
   const a = graph.placePackage(
     graph.mainImporter,
-    'dependencies',
+    'prod',
     Spec.parse('a', '^1.0.0'),
     {
       name: 'a',
@@ -162,22 +157,17 @@ t.test('cycle', async t => {
   if (!a) {
     throw new Error('missing package a')
   }
-  const b = graph.placePackage(
-    a,
-    'dependencies',
-    Spec.parse('b', '^1.0.0'),
-    {
-      name: 'b',
-      version: '1.0.0',
-      dependencies: {
-        a: '^1.0.0',
-      },
+  const b = graph.placePackage(a, 'prod', Spec.parse('b', '^1.0.0'), {
+    name: 'b',
+    version: '1.0.0',
+    dependencies: {
+      a: '^1.0.0',
     },
-  )
+  })
   if (!b) {
     throw new Error('missing package b')
   }
-  graph.placePackage(b, 'dependencies', Spec.parse('a', '^1.0.0'), {
+  graph.placePackage(b, 'prod', Spec.parse('a', '^1.0.0'), {
     name: 'a',
     version: '1.0.0',
   })
