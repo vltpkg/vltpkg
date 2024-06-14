@@ -1,14 +1,66 @@
+import { error } from '@vltpkg/error-cause'
+import { Spec } from '@vltpkg/spec'
+import { ManifestMinified } from '@vltpkg/types'
+
+/**
+ * Name of the package.json keys used to define different types of dependencies.
+ */
 export type DependencyTypeLong =
   | 'dependencies'
   | 'devDependencies'
   | 'peerDependencies'
   | 'optionalDependencies'
+
+/**
+ * Unique keys that define different types of dependencies relationship.
+ */
 export type DependencyTypeShort =
   | 'prod'
   | 'dev'
   | 'peer'
   | 'optional'
   | 'peerOptional'
+
+/**
+ * Dependency entries info as defined in a package.json file.
+ */
+export interface RawDependency {
+  name: string
+  bareSpec: string
+  type: DependencyTypeLong
+}
+
+/**
+ * Parsed dependency entries info.
+ */
+export interface Dependency {
+  /**
+   * The parsed {@link Spec} object describing the dependency requirements.
+   */
+  spec: Spec
+  /**
+   * The {@link DependencyTypeShort}, describing the type of dependency.
+   */
+  type: DependencyTypeShort
+}
+
+/**
+ * A set of the possible long dependency type names,
+ * as used in `package.json` files.
+ */
+export const longDependencyTypes: Set<DependencyTypeLong> = new Set([
+  'dependencies',
+  'devDependencies',
+  'peerDependencies',
+  'optionalDependencies',
+])
+
+/**
+ * A set of the short type keys used to represent dependency relationships.
+ */
+export const shortDependencyTypes: Set<DependencyTypeShort> = new Set(
+  ['prod', 'dev', 'peer', 'optional', 'peerOptional'],
+)
 
 /**
  * Maps between long form names usually used in `package.json` files
@@ -25,12 +77,28 @@ export const dependencyTypes: Map<
 ])
 
 /**
- * Maps between short form names to the corresponding long form name.
+ * Get the {@link DependencyTypeShort} from a {@link DependencyTypeLong}.
  */
-export const longTypes: Map<DependencyTypeShort, DependencyTypeLong> =
-  new Map([
-    ['prod', 'dependencies'],
-    ['dev', 'devDependencies'],
-    ['peer', 'peerDependencies'],
-    ['optional', 'optionalDependencies'],
-  ])
+export const shorten = (
+  typeLong: DependencyTypeLong,
+  name?: string,
+  manifest?: ManifestMinified,
+): DependencyTypeShort => {
+  const shortName = dependencyTypes.get(typeLong)
+  if (!shortName) {
+    throw error('Invalid dependency type name', {
+      found: typeLong,
+      validOptions: [...longDependencyTypes],
+    })
+  }
+  if (shortName !== 'peer') {
+    return shortName
+  }
+  if (
+    name &&
+    manifest?.peerDependenciesMeta?.[name]?.optional === true
+  ) {
+    return 'peerOptional'
+  }
+  return 'peer'
+}

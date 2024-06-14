@@ -3,12 +3,10 @@ import { PackageJson } from '@vltpkg/package-json'
 import { Spec, SpecOptions } from '@vltpkg/spec'
 import { Monorepo } from '@vltpkg/workspaces'
 import { Path, PathScurry } from 'path-scurry'
+import { RawDependency, shorten } from '../dependencies.js'
 import { Graph, ManifestInventory } from '../graph.js'
 import { Node } from '../node.js'
-import {
-  DependencyTypeLong,
-  dependencyTypes,
-} from '../dependencies.js'
+import { longDependencyTypes } from '../dependencies.js'
 
 export type LoadOptions = SpecOptions & {
   /**
@@ -40,11 +38,6 @@ export type LoadOptions = SpecOptions & {
    * no information on missing and extraneous dependencies.
    */
   loadManifests?: boolean
-}
-
-export interface DependencyEntry {
-  depType: DependencyTypeLong
-  bareSpec: string
 }
 
 export interface ReadEntry {
@@ -94,14 +87,13 @@ const findName = (entry: Path): string =>
  * on and consulted when parsing the directory contents of the current node.
  */
 const getDeps = (node: Node) => {
-  const dependencies = new Map<string, DependencyEntry>()
-  const types = dependencyTypes.keys()
-  for (const depType of types) {
+  const dependencies = new Map<string, RawDependency>()
+  for (const depType of longDependencyTypes) {
     const obj: Record<string, string> | undefined =
       node.manifest?.[depType]
     if (obj) {
       for (const [name, bareSpec] of Object.entries(obj)) {
-        dependencies.set(name, { depType, bareSpec })
+        dependencies.set(name, { name, type: depType, bareSpec })
       }
     }
   }
@@ -200,7 +192,7 @@ const parseDir = (
         // would have to be parsed from a manifest
         node = graph.placePackage(
           fromNode,
-          'dependencies', // defaults to prod deps
+          'prod', // defaults to prod deps
           h, // uses spec from hydrated id
           {
             name,
@@ -226,9 +218,10 @@ const parseDir = (
       const mani = packageJson.read(realpath.fullpath())
       // declares fallback default values for both depType and bareSpec
       // in order to support loadManifests=false fallback for link nodes
-      const depType = deps?.depType || 'dependencies'
+      const type = deps?.type || 'dependencies'
       const bareSpec = deps?.bareSpec || '*'
 
+      const depType = shorten(type, alias, fromNode.manifest)
       const spec = Spec.parse(alias, bareSpec, options)
       node = graph.placePackage(fromNode, depType, spec, mani)
     }
@@ -262,9 +255,9 @@ const parseDir = (
 
   // any remaining dependencies that have not been found
   // when reading the directory should be marked as missing
-  for (const [name, dep] of dependencies.entries()) {
+  for (const { name, type, bareSpec } of dependencies.values()) {
     if (!seenDeps.has(name)) {
-      const { depType, bareSpec } = dep
+      const depType = shorten(type, name, fromNode.manifest)
       const spec = Spec.parse(name, bareSpec, options)
       graph.placePackage(fromNode, depType, spec)
     }

@@ -29,31 +29,31 @@ Graph [@vltpkg/graph.Graph] {
     Edge [@vltpkg/graph.Edge] {
       from: [Node [@vltpkg/graph.Node]],
       to: [Node [@vltpkg/graph.Node]],
-      type: 'dependencies',
+      type: 'prod',
       spec: Spec {foo@^1.0.0}
     },
     Edge [@vltpkg/graph.Edge] {
       from: [Node [@vltpkg/graph.Node]],
       to: [Node [@vltpkg/graph.Node]],
-      type: 'dependencies',
+      type: 'prod',
       spec: Spec {bar@^1.0.0}
     },
     Edge [@vltpkg/graph.Edge] {
       from: [Node [@vltpkg/graph.Node]],
       to: [Node [@vltpkg/graph.Node]],
-      type: 'dependencies',
+      type: 'prod',
       spec: Spec {baz@^1.0.0}
     },
     Edge [@vltpkg/graph.Edge] {
       from: [Node [@vltpkg/graph.Node]],
       to: undefined,
-      type: 'dependencies',
+      type: 'prod',
       spec: Spec {missing@^1.0.0}
     },
     Edge [@vltpkg/graph.Edge] {
       from: [Node [@vltpkg/graph.Node]],
       to: [Node [@vltpkg/graph.Node]],
-      type: 'dependencies',
+      type: 'prod',
       spec: Spec {foo@^1.0.0}
     }
   },
@@ -130,7 +130,7 @@ Graph [@vltpkg/graph.Graph] {
     Edge [@vltpkg/graph.Edge] {
       from: [Node [@vltpkg/graph.Node]],
       to: undefined,
-      type: 'dependencies',
+      type: 'prod',
       spec: Spec {missing@^1.0.0}
     }
   }

@@ -1,7 +1,6 @@
-import { satisfies } from '@vltpkg/semver'
 import { Spec } from '@vltpkg/spec'
 import { Node } from './node.js'
-import { DependencyTypeLong } from './dependencies.js'
+import { DependencyTypeShort } from './dependencies.js'
 
 export class Edge {
   get [Symbol.toStringTag]() {
@@ -21,7 +20,7 @@ export class Edge {
   /**
    * What type of dependency relationship `from` and `to` nodes have.
    */
-  type: DependencyTypeLong
+  type: DependencyTypeShort
 
   /**
    * The defined spec value for `to` as parsed from the dependent metadata.
@@ -29,7 +28,7 @@ export class Edge {
   spec: Spec
 
   constructor(
-    type: DependencyTypeLong,
+    type: DependencyTypeShort,
     spec: Spec,
     from: Node,
     to?: Node,
@@ -47,39 +46,22 @@ export class Edge {
     return this.spec.name
   }
 
-  get peer(): boolean {
-    return this.type === 'peerDependencies'
-  }
-
+  /**
+   * This edge was defined as part of a `devDependencies` in `package.json`
+   */
   get dev(): boolean {
-    return this.type === 'devDependencies'
-  }
-
-  // TODO: devOptional
-
-  get peerOptional(): boolean {
-    return (
-      this.peer &&
-      this.from.manifest?.peerDependenciesMeta?.[this.spec.name]
-        ?.optional === true
-    )
+    return this.type === 'dev'
   }
 
   get optional(): boolean {
-    return this.peerOptional || this.type === 'optionalDependencies'
+    return this.type === 'peerOptional' || this.type === 'optional'
   }
 
-  get valid(): boolean {
-    if (!this.to) return this.optional
-    if (this.spec.type === 'registry') {
-      if (this.to?.manifest?.version && this.spec.range) {
-        return satisfies(this.to?.manifest?.version, this.spec.range)
-      }
-      return true
-      /* c8 ignore start */
-    }
-    // TODO: git deps, file deps, remote deps, workspace deps
-    return false
+  get peer(): boolean {
+    return this.type === 'peer' || this.type === 'peerOptional'
   }
-  /* c8 ignore stop */
+
+  get peerOptional(): boolean {
+    return this.type === 'peerOptional'
+  }
 }

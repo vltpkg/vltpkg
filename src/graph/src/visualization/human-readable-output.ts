@@ -1,5 +1,4 @@
 import { inspect } from 'node:util'
-import { dependencyTypes } from '../dependencies.js'
 import { Graph } from '../graph.js'
 import { Node } from '../node.js'
 import { Edge } from '../edge.js'
@@ -47,7 +46,7 @@ function parseEdge(seenNodes: Set<Node>, graph: Graph, edge: Edge) {
             depth: Infinity,
           })
       : missingNode
-    return `Edge spec(${edge.spec}) -${dependencyTypes.get(edge.type)}-> to: ${toLabel}`
+    return `Edge spec(${edge.spec}) -${edge.type}-> to: ${toLabel}`
   }
   return edge
 }

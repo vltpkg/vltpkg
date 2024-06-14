@@ -9,7 +9,7 @@ exports[`test/edge.ts > TAP > Edge > must match snapshot 1`] = `
 Edge [@vltpkg/graph.Edge] {
   from: [Node [@vltpkg/graph.Node]],
   to: [Node [@vltpkg/graph.Node]],
-  type: 'dependencies',
+  type: 'prod',
   spec: Spec {child@^1.0.0}
 }
 `
@@ -27,7 +27,7 @@ Edge [@vltpkg/graph.Edge] {
     resolved: undefined
   },
   to: undefined,
-  type: 'dependencies',
+  type: 'prod',
   spec: Spec {missing@latest}
 }
 `

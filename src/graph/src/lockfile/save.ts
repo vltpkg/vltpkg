@@ -1,9 +1,7 @@
 import { DepID } from '@vltpkg/dep-id'
-import { error } from '@vltpkg/error-cause'
 import { SpecOptions } from '@vltpkg/spec'
 import { writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
-import { dependencyTypes } from '../dependencies.js'
 import { Edge } from '../edge.js'
 import { Graph } from '../graph.js'
 import { Node } from '../node.js'
@@ -58,15 +56,12 @@ const formatNodes = (nodes: Iterable<Node>, registry?: string) => {
 }
 
 const formatEdges = (edges: Set<Edge>): LockfileDataEdge[] =>
-  [...edges].map(edge => {
-    const type = dependencyTypes.get(edge.type)
-    if (!type) {
-      throw error('Found edge with a missing type', {
-        spec: edge.spec,
-      })
-    }
-    return [edge.from.id, type, String(edge.spec), edge.to?.id]
-  })
+  [...edges].map(edge => [
+    edge.from.id,
+    edge.type,
+    String(edge.spec),
+    edge.to?.id,
+  ])
 
 const isRegistries = (
   registries: unknown,

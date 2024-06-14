@@ -65,8 +65,12 @@ t.test('append a new node to a graph from a registry', async t => {
     packageInfo,
     graph,
     graph.mainImporter,
-    [Spec.parse('foo@^1.0.0')],
-    'dependencies',
+    [
+      {
+        spec: Spec.parse('foo@^1.0.0'),
+        type: 'prod',
+      },
+    ],
     configData,
   )
   t.strictSame(
@@ -90,8 +94,12 @@ t.test('append a new node to a graph from a registry', async t => {
     packageInfo,
     graph,
     graph.mainImporter,
-    [Spec.parse('bar')],
-    'dependencies',
+    [
+      {
+        spec: Spec.parse('bar'),
+        type: 'prod',
+      },
+    ],
     configData,
   )
   t.strictSame(
@@ -105,8 +113,12 @@ t.test('append a new node to a graph from a registry', async t => {
       packageInfo,
       graph,
       graph.mainImporter,
-      [Spec.parse('borked')],
-      'dependencies',
+      [
+        {
+          spec: Spec.parse('borked'),
+          type: 'prod',
+        },
+      ],
       configData,
     ),
     /ERR/,
@@ -156,8 +168,12 @@ t.test('append different type of dependencies', async t => {
     packageInfo,
     graph,
     graph.mainImporter,
-    [Spec.parse('foo', '^1.0.0')],
-    'devDependencies',
+    [
+      {
+        spec: Spec.parse('foo', '^1.0.0'),
+        type: 'dev',
+      },
+    ],
     configData,
   )
 
@@ -165,8 +181,12 @@ t.test('append different type of dependencies', async t => {
     packageInfo,
     graph,
     graph.mainImporter,
-    [Spec.parse('bar', '^1.0.0')],
-    'optionalDependencies',
+    [
+      {
+        spec: Spec.parse('bar', '^1.0.0'),
+        type: 'optional',
+      },
+    ],
     configData,
   )
 
@@ -174,8 +194,12 @@ t.test('append different type of dependencies', async t => {
     packageInfo,
     graph,
     graph.mainImporter,
-    [Spec.parse('missing', '^1.0.0')],
-    'dependencies',
+    [
+      {
+        spec: Spec.parse('missing', '^1.0.0'),
+        type: 'prod',
+      },
+    ],
     configData,
   )
   t.matchSnapshot(

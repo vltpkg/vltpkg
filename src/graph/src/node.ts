@@ -8,7 +8,7 @@ import {
 import { typeError } from '@vltpkg/error-cause'
 import { Spec, SpecOptions } from '@vltpkg/spec'
 import { Integrity, ManifestMinified } from '@vltpkg/types'
-import { DependencyTypeLong } from './dependencies.js'
+import { DependencyTypeShort } from './dependencies.js'
 import { Edge } from './edge.js'
 
 export class Node {
@@ -148,7 +148,7 @@ export class Node {
   /**
    * Add an edge from this node connecting it to a direct dependency.
    */
-  addEdgesTo(type: DependencyTypeLong, spec: Spec, node?: Node) {
+  addEdgesTo(type: DependencyTypeShort, spec: Spec, node?: Node) {
     const edge = new Edge(type, spec, this, node)
     node?.edgesIn.add(edge)
     this.edgesOut.set(spec.name, edge)

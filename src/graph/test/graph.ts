@@ -51,7 +51,7 @@ t.test('Graph', async t => {
     'should create and add the new node to the graph',
   )
   graph.newEdge(
-    'dependencies',
+    'prod',
     Spec.parse('foo', '^1.0.0'),
     graph.mainImporter,
     newNode,
@@ -62,7 +62,7 @@ t.test('Graph', async t => {
     'should add edge to the list of edgesOut in its origin node',
   )
   graph.newEdge(
-    'dependencies',
+    'prod',
     Spec.parse('foo@^1.0.0'),
     graph.mainImporter,
     newNode,
@@ -72,11 +72,7 @@ t.test('Graph', async t => {
     1,
     'should not allow for adding new edges between same nodes',
   )
-  graph.newEdge(
-    'dependencies',
-    Spec.parse('missing@*'),
-    graph.mainImporter,
-  )
+  graph.newEdge('prod', Spec.parse('missing@*'), graph.mainImporter)
   t.strictSame(
     graph.missingDependencies.size,
     1,
@@ -100,7 +96,7 @@ t.test('using placePackage', async t => {
   })
   const foo = graph.placePackage(
     graph.mainImporter,
-    'dependencies',
+    'prod',
     Spec.parse('foo', '^1.0.0'),
     {
       name: 'foo',
@@ -110,7 +106,7 @@ t.test('using placePackage', async t => {
   t.ok(foo)
   const bar = graph.placePackage(
     graph.mainImporter,
-    'dependencies',
+    'prod',
     Spec.parse('bar', '^1.0.0'),
     {
       name: 'bar',
@@ -123,7 +119,7 @@ t.test('using placePackage', async t => {
   if (!bar) throw new Error('failed to place bar')
   const baz = graph.placePackage(
     bar,
-    'dependencies',
+    'prod',
     Spec.parse('baz', '^1.0.0'),
     {
       name: 'baz',
@@ -136,18 +132,13 @@ t.test('using placePackage', async t => {
   if (!baz) throw new Error('failed to place baz')
   graph.placePackage(
     graph.mainImporter,
-    'dependencies',
+    'prod',
     Spec.parse('missing', '^1.0.0'),
   )
-  graph.placePackage(
-    baz,
-    'dependencies',
-    Spec.parse('foo', '^1.0.0'),
-    {
-      name: 'foo',
-      version: '1.0.0',
-    },
-  )
+  graph.placePackage(baz, 'prod', Spec.parse('foo', '^1.0.0'), {
+    name: 'foo',
+    version: '1.0.0',
+  })
   t.matchSnapshot(inspect(graph, { depth: 2 }), 'the graph')
 })
 
