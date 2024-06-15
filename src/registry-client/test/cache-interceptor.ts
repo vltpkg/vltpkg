@@ -219,7 +219,13 @@ t.test('GET request from cache, valid cache entry', async t => {
     onHeaders(statusCode, headers, resume, statusText) {
       calls++
       t.equal(statusCode, 200)
-      t.strictSame(headers, entry.headers)
+      t.strictSame(
+        headers,
+        entry.headers.concat([
+          Buffer.from('content-length'),
+          Buffer.from(String(entry.buffer().byteLength)),
+        ]),
+      )
       t.match(resume, Function)
       t.ok(statusText, 'OK')
       return true
