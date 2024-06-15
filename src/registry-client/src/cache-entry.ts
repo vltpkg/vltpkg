@@ -20,12 +20,13 @@
 // of the file.
 
 import { error } from '@vltpkg/error-cause'
-import { Integrity } from '@vltpkg/types'
+import { Integrity, JSONField } from '@vltpkg/types'
 import ccp from 'cache-control-parser'
 import { createHash } from 'crypto'
 import { inspect } from 'util'
 import { gunzipSync } from 'zlib'
-import { getRawHeader } from './get-raw-header.js'
+import { getRawHeader, setRawHeader } from './raw-header.js'
+import { deserialize, serialize, serializedHeader } from './serdes.js'
 
 const readSize = (buf: Buffer, offset: number) => {
   const a = buf[offset]
@@ -59,6 +60,7 @@ export class CacheEntry {
   #bodyLength: number = 0
   #integrity?: Integrity
   #integrityActual?: Integrity
+  #json?: Record<string, JSONField>
 
   constructor(
     statusCode: number,
@@ -72,7 +74,7 @@ export class CacheEntry {
 
   get #headersAsObject(): [string, string][] {
     const ret: [string, string][] = []
-    for (let i = 0; i < this.#headers.length - 1; i++) {
+    for (let i = 0; i < this.#headers.length - 1; i += 2) {
       const key = String(this.#headers[i])
       const val = String(this.#headers[i + 1])
       ret.push([key, val])
@@ -164,17 +166,22 @@ export class CacheEntry {
   }
 
   /**
+   * Set a header to a specific value
+   */
+  setHeader(h: string, value: string | Buffer) {
+    this.#headers = setRawHeader(this.#headers, h, value)
+  }
+
+  /**
    * Return the body of the entry as a Buffer
    */
   buffer(): Buffer {
     const b = this.#body[0]
     if (!b) return Buffer.allocUnsafe(0)
     if (this.#body.length === 1) return b
-    this.#body = [Buffer.concat(this.#body, this.#bodyLength)]
-    const c = this.#body[0]
-    /* c8 ignore next */
-    if (!c) return Buffer.allocUnsafe(0)
-    return c
+    const cat = Buffer.concat(this.#body, this.#bodyLength)
+    this.#body = [cat]
+    return cat
   }
 
   // return the buffer if it's a tarball, or the parsed
@@ -186,13 +193,18 @@ export class CacheEntry {
   #isJSON?: boolean
   get isJSON(): boolean {
     if (this.#isJSON !== undefined) return this.#isJSON
+    const ser = serializedHeader && this.getHeader(serializedHeader)
+    if (ser) return (this.#isJSON = true)
     const ct = this.getHeader('content-type')?.toString()
     // if it says it's json, assume json
     if (ct) return /\bjson\b/.test(ct)
     const text = this.text()
+    // don't cache, because we might just not have it yet.
     if (!text) return false
     // all registry json starts with {, and no tarball ever can.
-    return (this.#isJSON = text.startsWith('{'))
+    this.#isJSON = text.startsWith('{')
+    if (this.#isJSON) this.setHeader('content-type', 'text/json')
+    return this.#isJSON
   }
 
   #isGzip?: boolean
@@ -202,7 +214,14 @@ export class CacheEntry {
     if (ce && !/\bgzip\b/.test(ce)) return (this.#isGzip = false)
     const buf = this.buffer()
     if (buf.length < 2) return false
-    return (this.#isGzip = buf[0] === 0x1f && buf[1] === 0x8b)
+    this.#isGzip = buf[0] === 0x1f && buf[1] === 0x8b
+    if (this.#isGzip) {
+      this.setHeader('content-encoding', 'gzip')
+    } else {
+      this.setHeader('content-encoding', 'identity')
+      this.setHeader('content-length', String(this.#bodyLength))
+    }
+    return this.#isGzip
   }
 
   /**
@@ -214,7 +233,11 @@ export class CacheEntry {
     if (this.isGzip) {
       // we know that if we know it's gzip, that the body has been
       // flattened to a single buffer, so save the extra call.
-      this.#body = [gunzipSync(this.#body[0] as Buffer)]
+      const b = gunzipSync(this.#body[0] as Buffer)
+      this.setHeader('content-encoding', 'identity')
+      this.#body = [b]
+      this.#bodyLength = b.byteLength
+      this.setHeader('content-length', String(this.#bodyLength))
       this.#isGzip = false
       return true
     }
@@ -233,8 +256,15 @@ export class CacheEntry {
   /**
    * Parse the entry body as JSON and return the result
    */
-  json() {
-    return JSON.parse(this.text())
+  json(): Record<string, JSONField> {
+    if (this.#json !== undefined) return this.#json
+    const ser = serializedHeader && this.getHeader(serializedHeader)
+    if (ser) {
+      return (this.#json = deserialize(ser))
+    }
+    const obj = JSON.parse(this.text())
+    if (serializedHeader) this.setHeader(serializedHeader, serialize(obj))
+    return obj
   }
 
   /**
@@ -264,6 +294,7 @@ export class CacheEntry {
     const body = buffer.subarray(headSize)
     c.#body = [body]
     c.#bodyLength = body.byteLength
+    c.setHeader('content-length', String(c.#bodyLength))
     return c
   }
 
@@ -271,8 +302,10 @@ export class CacheEntry {
    * Encode the entry as a single Buffer for writing to the cache
    */
   // TODO: should this maybe not concat, and just return Buffer[]?
-  // Then we can writev it to the cache file that way, no need to copy.
+  // Then we can writev it to the cache file and save the memory copy
   encode(): Buffer {
+    // store json results as a serialized object.
+    if (this.isJSON) this.json()
     const sb = Buffer.from(String(this.#statusCode))
     const chunks: Buffer[] = [sb]
     let headLength = sb.byteLength + 4

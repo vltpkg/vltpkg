@@ -3,7 +3,7 @@ import { error } from '@vltpkg/error-cause'
 import { Integrity } from '@vltpkg/types'
 import { Dispatcher } from 'undici'
 import { CacheEntry } from './cache-entry.js'
-import { getRawHeader } from './get-raw-header.js'
+import { getRawHeader } from './raw-header.js'
 import { isCacheable } from './is-cacheable.js'
 import { setRawHeader } from './set-raw-header.js'
 

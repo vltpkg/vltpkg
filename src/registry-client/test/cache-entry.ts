@@ -1,8 +1,10 @@
 import { createHash } from 'crypto'
 import t from 'tap'
 import { inspect } from 'util'
+import { serialize } from 'v8'
 import { gzipSync } from 'zlib'
 import { CacheEntry } from '../src/cache-entry.js'
+import { serializedHeader } from '../src/serdes.js'
 
 const toRawHeaders = (h: Record<string, string>): Buffer[] => {
   const r: Buffer[] = []
@@ -39,24 +41,43 @@ t.equal(
   `sha512-${createHash('sha512').update(z).digest('base64')}`,
 )
 t.equal(ce.integrity, ce.integrityActual)
-
-const enc = ce.encode()
 t.strictSame(ce.buffer(), z)
 t.equal(ce.isGzip, true, 'has gzipped body')
+
+const enc = ce.encode()
+// encoding turned it into a serialized object
+t.strictSame(ce.buffer(), Buffer.from(JSON.stringify(ce.json())))
+t.equal(ce.isGzip, false, 'no longer gzipped after encode')
+
 t.equal(ce.text(), '{"hello":"world"}')
 t.equal(ce.isGzip, false, 'unzipped to read json')
 t.strictSame(ce.json(), { hello: 'world' })
 t.strictSame(ce.body, { hello: 'world' })
-t.strictSame(ce.buffer(), Buffer.from('{"hello":"world"}'))
+t.strictSame(
+  ce.buffer(),
+  Buffer.from(JSON.stringify({ hello: 'world' })),
+)
+if (typeof serializedHeader !== 'string') {
+  throw new Error('did not get serializedHeader')
+}
 t.strictSame(ce.headers, [
   Buffer.from('key'),
   Buffer.from('value'),
   Buffer.from('x'),
   Buffer.from('y'),
+  Buffer.from('content-encoding'),
+  Buffer.from('identity'),
+  Buffer.from('content-length'),
+  Buffer.from(String(ce.buffer().byteLength)),
+  Buffer.from('content-type'),
+  Buffer.from('text/json'),
+  Buffer.from(serializedHeader),
+  serialize(ce.json()),
 ])
 
 t.strictSame(CacheEntry.decode(enc), ce)
 t.strictSame(CacheEntry.decode(enc).encode(), enc)
+t.strictSame(CacheEntry.decode(enc).json(), ce.json())
 
 t.equal(ce.isJSON, true)
 t.equal(
@@ -96,10 +117,26 @@ t.equal(
     4 +
     'x'.length +
     4 +
-    'y'.length,
+    'y'.length +
+    4 +
+    'content-encoding'.length +
+    4 +
+    'identity'.length +
+    4 +
+    'content-type'.length +
+    4 +
+    'text/json'.length +
+    4 +
+    'content-length'.length +
+    4 +
+    String(ce.buffer().byteLength).length +
+    4 +
+    serializedHeader.length +
+    4 +
+    serialize(ce.json()).byteLength,
 )
 
-t.strictSame(enc.subarray(headLen), z)
+t.strictSame(enc.subarray(headLen), ce.buffer())
 
 // read from a cached encoded buffer
 const d = CacheEntry.decode(enc)

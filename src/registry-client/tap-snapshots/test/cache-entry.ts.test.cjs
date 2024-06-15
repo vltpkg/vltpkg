@@ -8,7 +8,7 @@
 exports[`test/cache-entry.ts > TAP > inspect value (should include color codes for displayed object) 1`] = `
 @vltpkg/registry-client.CacheEntry {
   statusCode: [33m200[39m,
-  headers: [ [ [32m'key'[39m, [32m'value'[39m ], [ [32m'value'[39m, [32m'x'[39m ], [ [32m'x'[39m, [32m'y'[39m ] ],
+  headers: [ [ [32m'key'[39m, [32m'value'[39m ], [ [32m'x'[39m, [32m'y'[39m ] ],
   text: [32m''[39m
 }
 `
