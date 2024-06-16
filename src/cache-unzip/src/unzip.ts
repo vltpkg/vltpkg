@@ -1,6 +1,6 @@
 import { Cache } from '@vltpkg/cache'
-import { gunzipSync } from 'zlib'
 import { error } from '@vltpkg/error-cause'
+import { gunzipSync } from 'zlib'
 
 process.title = 'vlt-cache-unzip'
 
@@ -42,17 +42,87 @@ await Promise.all(
     /* c8 ignore next - should never happen */
     if (!buffer || buffer.length < 4) return
     didSomething = true
-    const headSize = readSize(buffer, 0)
-    const body = buffer.subarray(headSize)
+    const headSizeOriginal = readSize(buffer, 0)
+    const body = buffer.subarray(headSizeOriginal)
     if (body[0] === 0x1f && body[1] === 0x8b) {
       const unz = gunzipSync(body)
-      cache.set(
-        key,
-        Buffer.concat(
-          [buffer.subarray(0, headSize), unz],
-          headSize + unz.length,
-        ),
+      const headersBuffer = buffer.subarray(7, headSizeOriginal)
+      const headers: Buffer[] = []
+      let i = 0
+      let sawEncoding = false
+      let isEncoding = false
+      let isContentLength = false
+      while (i < headersBuffer.length - 4) {
+        const size = readSize(headersBuffer, i)
+        const h = headersBuffer.subarray(i + 4, i + size)
+        if (isEncoding) {
+          isEncoding = false
+          headers.push(Buffer.from('identity'))
+        } else if (isContentLength) {
+          isContentLength = false
+          i += size
+          continue
+        } else {
+          if (i % 2 === 0) {
+            // it's a key
+            if (h.toString().toLowerCase() === 'content-length') {
+              isContentLength = true
+              i += size
+              continue
+            }
+            if (
+              !sawEncoding &&
+              h.toString().toLowerCase() === 'content-encoding'
+            ) {
+              sawEncoding = true
+              isEncoding = true
+            }
+          }
+          headers.push(h)
+        }
+        i += size
+      }
+      if (!sawEncoding) {
+        headers.push(
+          Buffer.from('content-encoding'),
+          Buffer.from('identity'),
+        )
+      }
+      headers.push(
+        Buffer.from('content-length'),
+        Buffer.from(String(unz.byteLength)),
       )
+      const sb = buffer.subarray(4, 7)
+      const chunks: Buffer[] = [sb]
+      let headLength = sb.byteLength + 4
+      for (const h of headers) {
+        const hlBuf = Buffer.allocUnsafe(4)
+        const hl = h.byteLength + 4
+        headLength += hl
+        hlBuf.set(
+          [
+            (hl >> 24) & 0xff,
+            (hl >> 16) & 0xff,
+            (hl >> 8) & 0xff,
+            hl & 0xff,
+          ],
+          0,
+        )
+        chunks.push(hlBuf, h)
+      }
+      const hlBuf = Buffer.allocUnsafe(4)
+      hlBuf.set(
+        [
+          (headLength >> 24) & 0xff,
+          (headLength >> 16) & 0xff,
+          (headLength >> 8) & 0xff,
+          headLength & 0xff,
+        ],
+        0,
+      )
+      chunks.unshift(hlBuf)
+      chunks.push(unz)
+      cache.set(key, Buffer.concat(chunks, headLength + unz.length))
     }
   }),
 )
