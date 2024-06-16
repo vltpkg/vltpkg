@@ -44,6 +44,20 @@ export interface Dependency {
   type: DependencyTypeShort
 }
 
+export const isDependency = (obj: any): obj is Dependency =>
+  // TODO: it would be nice to have a @vltpkg/spec.isSpec method
+  obj?.spec &&
+  obj?.spec?.type &&
+  obj?.type &&
+  shortDependencyTypes.has(obj?.type)
+
+export const asDependency = (obj: any): Dependency => {
+  if (!isDependency(obj)) {
+    throw error('Invalid dependency', { found: obj })
+  }
+  return obj
+}
+
 /**
  * A set of the possible long dependency type names,
  * as used in `package.json` files.
