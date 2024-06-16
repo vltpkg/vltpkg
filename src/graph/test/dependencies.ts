@@ -1,10 +1,13 @@
 import t from 'tap'
 import {
   DependencyTypeLong,
+  asDependency,
   dependencyTypes,
+  isDependency,
   longDependencyTypes,
   shorten,
 } from '../src/dependencies.js'
+import { Spec } from '@vltpkg/spec'
 
 t.test('dependencyTypes', async t => {
   t.strictSame(
@@ -53,5 +56,52 @@ t.test('shorten', async t => {
     () => shorten('unknown' as DependencyTypeLong),
     /Invalid dependency type name/,
     'should throw if trying to retrieve from an unkown type',
+  )
+})
+
+t.test('isDependency', async t => {
+  const spec = Spec.parse('foo', '^1.0.0')
+  t.ok(
+    isDependency({
+      spec,
+      type: 'prod',
+    }),
+    'should be ok if object is a valid dependency shaped obj',
+  )
+  t.notOk(
+    isDependency({
+      spec,
+      type: 'unkown',
+    }),
+    'should not be ok if object does not have a valid obj',
+  )
+  t.notOk(
+    isDependency({}),
+    'should not be ok if object is missing expected properties',
+  )
+})
+
+t.test('asDependency', async t => {
+  const spec = Spec.parse('foo', '^1.0.0')
+  t.ok(
+    asDependency({
+      spec,
+      type: 'prod',
+    }),
+    'should return typed object if a valid dependency shaped obj is found',
+  )
+  t.throws(
+    () =>
+      asDependency({
+        spec,
+        type: 'unkown',
+      }),
+    /Invalid dependency/,
+    'should throw if object does not have a valid obj',
+  )
+  t.throws(
+    () => asDependency({}),
+    /Invalid dependency/,
+    'should throw if object is missing expected properties',
   )
 })

@@ -2,8 +2,8 @@ import { inspect } from 'node:util'
 import t from 'tap'
 import { Spec, SpecOptions } from '@vltpkg/spec'
 import { PackageInfoClient } from '@vltpkg/package-info'
-import { Graph } from '../src/graph.js'
-import { appendNodes } from '../src/append-nodes.js'
+import { Graph } from '../../src/graph.js'
+import { appendNodes } from '../../src/ideal/append-nodes.js'
 
 const configData = {
   registry: 'https://registry.npmjs.org',
@@ -190,17 +190,21 @@ t.test('append different type of dependencies', async t => {
     configData,
   )
 
-  await appendNodes(
-    packageInfo,
-    graph,
-    graph.mainImporter,
-    [
-      {
-        spec: Spec.parse('missing', '^1.0.0'),
-        type: 'prod',
-      },
-    ],
-    configData,
+  t.rejects(
+    appendNodes(
+      packageInfo,
+      graph,
+      graph.mainImporter,
+      [
+        {
+          spec: Spec.parse('missing', '^1.0.0'),
+          type: 'prod',
+        },
+      ],
+      configData,
+    ),
+    /Failed to place a node for manifest/,
+    'should throw if failes to create a node for a given manifest',
   )
   t.matchSnapshot(
     inspect(graph, { depth: 3 }),

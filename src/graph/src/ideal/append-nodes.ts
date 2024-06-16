@@ -5,9 +5,10 @@ import {
   DependencyTypeLong,
   longDependencyTypes,
   shorten,
-} from './dependencies.js'
-import { Graph } from './graph.js'
-import { Node } from './node.js'
+} from '../dependencies.js'
+import { Graph } from '../graph.js'
+import { Node } from '../node.js'
+import { error } from '@vltpkg/error-cause'
 
 // TODO: peer deps
 const shouldInstallDepType = (
@@ -33,7 +34,11 @@ export const appendNodes = async (
       const mani = await packageInfo.manifest(spec)
       const node = graph.placePackage(fromNode, type, spec, mani)
 
-      if (!node) return
+      if (!node) {
+        throw error('Failed to place a node for manifest', {
+          manifest: mani,
+        })
+      }
 
       node.setResolved()
       const nestedAppends: Promise<void>[] = []
