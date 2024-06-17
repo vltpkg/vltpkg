@@ -158,7 +158,7 @@ export class Monorepo {
    * Number of {@link Workspace} objects loaded in this Monorepo
    */
   get size(): number {
-    return [...this.#workspaces.values()].length
+    return [...this.values()].length
   }
 
   constructor(projectRoot: string, options: MonorepoOptions = {}) {
@@ -207,7 +207,7 @@ export class Monorepo {
    * topological dependency order as possible.
    */
   *[Symbol.iterator](): Generator<Workspace, void, void> {
-    const [ws] = [...this.#workspaces.values()]
+    const [ws] = [...this.values()]
     if (!ws) return
     // leverage the fact that graphRun returns results in
     // as close to topological order as possible.
@@ -225,7 +225,7 @@ export class Monorepo {
     void,
     void
   > {
-    const [ws] = [...this.#workspaces.values()]
+    const [ws] = [...this.values()]
     if (!ws) return
     for (const workspace of (await this.run(() => {})).keys()) {
       yield workspace
@@ -281,14 +281,16 @@ export class Monorepo {
   // Either load a workspace from disk, or from our internal set,
   // and assign it to the named group
   #loadWS(path: string, group?: string): Workspace {
-    const loaded = this.#workspaces.get(path)
-    if (loaded) return loaded
     const fullpath = resolve(this.projectRoot, path)
-    const manifest = this.packageJson.read(fullpath)
-    const ws = new Workspace(path, manifest, fullpath)
+    const loaded = this.#workspaces.get(fullpath)
+    if (loaded) return loaded
+    const fromCache = workspaceCache.get(fullpath)
+    const manifest =
+      fromCache?.manifest ?? this.packageJson.read(fullpath)
+    const ws = fromCache ?? new Workspace(path, manifest, fullpath)
     if (group) ws.groups.push(group)
-    this.#workspaces.set(ws.path, ws)
     this.#workspaces.set(ws.fullpath, ws)
+    this.#workspaces.set(ws.path, ws)
     this.#workspaces.set(ws.name, ws)
     for (const name of ws.groups) {
       const group = this.#groups.get(name) ?? new Set()
@@ -434,7 +436,7 @@ export class Monorepo {
   }
 
   /**
-   * get the list of all loaded workspace names
+   * get the list of all loaded workspace names used as keys
    */
   *names() {
     for (const [key, ws] of this.#workspaces) {
@@ -443,7 +445,7 @@ export class Monorepo {
   }
 
   /**
-   * get the list of all loaded workspace names
+   * get the list of all loaded workspace paths used as keys
    */
   *paths() {
     for (const [key, ws] of this.#workspaces) {
@@ -457,8 +459,13 @@ export class Monorepo {
    * explore the graph to yield results in topological dependency order,
    * and should be used instead when order doesn't matter.
    */
-  values() {
-    return this.#workspaces.values()
+  *values() {
+    const seen = new Set<string>()
+    for (const ws of this.#workspaces.values()) {
+      if (seen.has(ws.fullpath)) continue
+      seen.add(ws.fullpath)
+      yield ws
+    }
   }
 
   /**
@@ -466,7 +473,7 @@ export class Monorepo {
    * Union of {@link Monorepo#names} and {@link Monorepo#paths}
    */
   *keys() {
-    for (const ws of this.#workspaces.values()) {
+    for (const ws of this.values()) {
       yield ws.path
       if (ws.name !== ws.path) yield ws.name
     }
@@ -575,6 +582,8 @@ export class Monorepo {
   }
 }
 
+export const workspaceCache = new Map<string, Workspace>()
+
 /**
  * Class representing a single Workspace in a {@link Monorepo}
  */
@@ -588,6 +597,7 @@ export class Workspace {
 
   constructor(path: string, manifest: Manifest, fullpath: string) {
     this.id = joinDepIDTuple(['workspace', path])
+    workspaceCache.set(fullpath, this)
     this.path = path
     this.fullpath = fullpath
     this.manifest = manifest
