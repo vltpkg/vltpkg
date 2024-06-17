@@ -44,6 +44,9 @@ t.test('load some workspaces', t => {
     },
   })
   const m = Monorepo.load(dir)
+  t.equal(m.size, 3)
+  t.equal(m.get('foo'), m.get('src/foo'))
+  t.equal(m.get('@company/bar'), m.get('src/bar'))
   //console.error([...m.keys()])
   t.strictSame(
     new Set([...m.keys()]),
