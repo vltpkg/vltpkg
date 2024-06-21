@@ -83,7 +83,7 @@ export class Graph {
       mainManifest.name || '(root)',
       mainImporterLocation,
     )
-    const mainImporter = this.newNode(
+    const mainImporter = this.addNode(
       undefined,
       mainManifest,
       mainImporterSpec,
@@ -98,7 +98,7 @@ export class Graph {
     this.#monorepo = monorepo
     if (this.#monorepo) {
       for (const ws of this.#monorepo) {
-        const wsNode = this.newNode(
+        const wsNode = this.addNode(
           ws.id,
           ws.manifest,
           undefined,
@@ -118,7 +118,7 @@ export class Graph {
    * in case the destination node does not exists, then a dangling edge,
    * pointing to nothing will be created to represent that missing dependency.
    */
-  newEdge(
+  addEdge(
     type: DependencyTypeShort,
     spec: Spec,
     from: Node,
@@ -135,7 +135,7 @@ export class Graph {
   /**
    * Create a new node in the graph.
    */
-  newNode(
+  addNode(
     id?: DepID,
     manifest?: ManifestMinified,
     spec?: Spec,
@@ -155,7 +155,7 @@ export class Graph {
    * the graph in a top-down direction, e.g: from importers to leafs.
    *
    * For different uses that are not a direct top-down traversal of the graph
-   * consider using `newNode()` and `newEdge()` instead.
+   * consider using `addNode()` and `addEdge()` instead.
    */
   placePackage(
     fromNode: Node,
@@ -167,7 +167,7 @@ export class Graph {
     // if no manifest is available, then create an edge that has no
     // reference to any other node, representing a missing dependency
     if (!manifest && !id) {
-      this.newEdge(depType, spec, fromNode)
+      this.addEdge(depType, spec, fromNode)
       return
     }
 
@@ -186,13 +186,13 @@ export class Graph {
     // in the graph, then just creates a new edge to that node
     const toFoundNode = this.nodes.get(depId)
     if (toFoundNode) {
-      this.newEdge(depType, spec, fromNode, toFoundNode)
+      this.addEdge(depType, spec, fromNode, toFoundNode)
       return toFoundNode
     }
 
     // creates a new node and edges to its parent
-    const toNode = this.newNode(depId, manifest)
-    this.newEdge(depType, spec, fromNode, toNode)
+    const toNode = this.addNode(depId, manifest)
+    this.addEdge(depType, spec, fromNode, toNode)
     return toNode
   }
 }
