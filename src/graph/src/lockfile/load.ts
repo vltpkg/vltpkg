@@ -58,7 +58,7 @@ const loadNodes = ({ graph, nodesInfo }: LoadNodesOptions) => {
     if (graph.nodes.has(id)) return
 
     const [name, integrity, resolved] = lockfileNode
-    const node = graph.newNode(id, undefined, undefined, name)
+    const node = graph.addNode(id, undefined, undefined, name)
     node.integrity = integrity || undefined
     node.resolved = resolved
   }
@@ -81,7 +81,7 @@ const loadEdges = (
         found: edgesInfo,
       })
     }
-    graph.newEdge(type, Spec.parse(spec, options), from, to)
+    graph.addEdge(type, Spec.parse(spec, options), from, to)
   }
 }
 
