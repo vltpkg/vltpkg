@@ -37,7 +37,7 @@ t.test('Graph', async t => {
     inspect(graph, { depth: 0 }),
     'should print with special tag name',
   )
-  const newNode = graph.newNode(
+  const newNode = graph.addNode(
     undefined,
     {
       name: 'foo',
@@ -50,7 +50,7 @@ t.test('Graph', async t => {
     2,
     'should create and add the new node to the graph',
   )
-  graph.newEdge(
+  graph.addEdge(
     'prod',
     Spec.parse('foo', '^1.0.0'),
     graph.mainImporter,
@@ -61,7 +61,7 @@ t.test('Graph', async t => {
     1,
     'should add edge to the list of edgesOut in its origin node',
   )
-  graph.newEdge(
+  graph.addEdge(
     'prod',
     Spec.parse('foo@^1.0.0'),
     graph.mainImporter,
@@ -72,7 +72,7 @@ t.test('Graph', async t => {
     1,
     'should not allow for adding new edges between same nodes',
   )
-  graph.newEdge('prod', Spec.parse('missing@*'), graph.mainImporter)
+  graph.addEdge('prod', Spec.parse('missing@*'), graph.mainImporter)
   t.strictSame(
     graph.missingDependencies.size,
     1,
