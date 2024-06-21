@@ -17,6 +17,109 @@ Graph [@vltpkg/graph.Graph] {
 }
 `
 
+exports[`test/graph.ts > TAP > using placePackage > should have removed baz from the graph 1`] = `
+Graph [@vltpkg/graph.Graph] {
+  manifests: Map(3) {
+    'file;.' => { name: 'my-project', version: '1.0.0', dependencies: [Object] },
+    'registry;;foo@1.0.0' => { name: 'foo', version: '1.0.0' },
+    'registry;;bar@1.0.0' => { name: 'bar', version: '1.0.0', dependencies: [Object] }
+  },
+  edges: Set(4) {
+    Edge [@vltpkg/graph.Edge] {
+      from: [Node [@vltpkg/graph.Node]],
+      to: [Node [@vltpkg/graph.Node]],
+      type: 'prod',
+      spec: Spec {foo@^1.0.0}
+    },
+    Edge [@vltpkg/graph.Edge] {
+      from: [Node [@vltpkg/graph.Node]],
+      to: [Node [@vltpkg/graph.Node]],
+      type: 'prod',
+      spec: Spec {bar@^1.0.0}
+    },
+    Edge [@vltpkg/graph.Edge] {
+      from: [Node [@vltpkg/graph.Node]],
+      to: undefined,
+      type: 'prod',
+      spec: Spec {missing@^1.0.0}
+    },
+    Edge [@vltpkg/graph.Edge] {
+      from: [Node [@vltpkg/graph.Node]],
+      to: [Node [@vltpkg/graph.Node]],
+      type: 'prod',
+      spec: Spec {foo@^1.0.0}
+    }
+  },
+  nodes: Map(3) {
+    'file;.' => Node [@vltpkg/graph.Node] {
+      edgesIn: Set(0) {},
+      edgesOut: [Map],
+      id: 'file;.',
+      importer: true,
+      integrity: undefined,
+      manifest: [Object],
+      name: 'my-project',
+      resolved: undefined
+    },
+    'registry;;foo@1.0.0' => Node [@vltpkg/graph.Node] {
+      edgesIn: [Set],
+      edgesOut: Map(0) {},
+      id: 'registry;;foo@1.0.0',
+      importer: false,
+      integrity: undefined,
+      manifest: [Object],
+      name: 'foo',
+      resolved: undefined
+    },
+    'registry;;bar@1.0.0' => Node [@vltpkg/graph.Node] {
+      edgesIn: [Set],
+      edgesOut: Map(0) {},
+      id: 'registry;;bar@1.0.0',
+      importer: false,
+      integrity: undefined,
+      manifest: [Object],
+      name: 'bar',
+      resolved: undefined
+    }
+  },
+  importers: Set(1) {
+    Node [@vltpkg/graph.Node] {
+      edgesIn: Set(0) {},
+      edgesOut: [Map],
+      id: 'file;.',
+      importer: true,
+      integrity: undefined,
+      manifest: [Object],
+      name: 'my-project',
+      resolved: undefined
+    }
+  },
+  mainImporter: Node [@vltpkg/graph.Node] {
+    edgesIn: Set(0) {},
+    edgesOut: Map(3) {
+      'foo' => [Edge [@vltpkg/graph.Edge]],
+      'bar' => [Edge [@vltpkg/graph.Edge]],
+      'missing' => [Edge [@vltpkg/graph.Edge]]
+    },
+    id: 'file;.',
+    importer: true,
+    integrity: undefined,
+    manifest: { name: 'my-project', version: '1.0.0', dependencies: [Object] },
+    name: 'my-project',
+    resolved: undefined
+  },
+  extraneousDependencies: Set(0) {},
+  missingDependencies: Set(1) {
+    Edge [@vltpkg/graph.Edge] {
+      from: [Node [@vltpkg/graph.Node]],
+      to: undefined,
+      type: 'prod',
+      spec: Spec {missing@^1.0.0}
+    }
+  }
+}
+`
+
 exports[`test/graph.ts > TAP > using placePackage > the graph 1`] = `
 Graph [@vltpkg/graph.Graph] {
   manifests: Map(4) {
