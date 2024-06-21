@@ -195,4 +195,28 @@ export class Graph {
     this.addEdge(depType, spec, fromNode, toNode)
     return toNode
   }
+
+  /**
+   * Removes an edge from the graph.
+   */
+  removeEdge(edge: Edge) {
+    const from = edge.from
+    if (from) {
+      from.edgesOut.delete(edge.name)
+    }
+    const to = edge.to
+    if (to) {
+      to.edgesIn.delete(edge)
+    }
+    this.edges.delete(edge)
+    this.missingDependencies.delete(edge)
+  }
+
+  /**
+   * Removes a node from the graph.
+   */
+  removeNode(node: Node) {
+    this.nodes.delete(node.id)
+    this.manifests.delete(node.id)
+  }
 }

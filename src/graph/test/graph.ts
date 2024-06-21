@@ -140,6 +140,11 @@ t.test('using placePackage', async t => {
     version: '1.0.0',
   })
   t.matchSnapshot(inspect(graph, { depth: 2 }), 'the graph')
+  const [edge] = baz.edgesIn
+  if (!edge) throw new Error('failed to retrieve baz')
+  graph.removeEdge(edge)
+  graph.removeNode(baz)
+  t.matchSnapshot(inspect(graph, { depth: 2 }), 'should have removed baz from the graph')
 })
 
 t.test('main manifest missing name', async t => {
