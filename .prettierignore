@@ -1,11 +1,20 @@
 /.github
+/scripts/fixtures
 /.tap
+/.tshy
+/.tshy-build
+/dist
+/docs
+/example
 /node_modules
 /tap-snapshots
+/test/**/fixture
+/test/**/fixtures
 
 /src/*/scripts/fixtures
 /src/*/.tap
 /src/*/.tshy
+/src/*/.tshy-build
 /src/*/dist
 /src/*/docs
 /src/*/example
