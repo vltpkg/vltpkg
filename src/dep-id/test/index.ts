@@ -65,7 +65,10 @@ t.test('valid specs', t => {
     })
   }
 
-  const scopedMani: Manifest = { name: '@scoped/manifest-name', version: '1.2.3' }
+  const scopedMani: Manifest = {
+    name: '@scoped/manifest-name',
+    version: '1.2.3',
+  }
   const scopedSpecs = [
     '@scoped/x@1.2.3',
     '@scoped/x@npm:@scoped/x@1.2.3',
