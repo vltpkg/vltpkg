@@ -1,11 +1,469 @@
-// just a stub for now
+import { resolve } from 'path'
 import t from 'tap'
-import { LoadedConfig } from '../../src/config/index.js'
 
-const { usage, command } = await t.mockImport<
-  typeof import('../../src/commands/run.js')
->('../../src/commands/run.js')
+import { command, usage } from '../../src/commands/run.js'
 t.type(usage, 'string')
-t.capture(console, 'log')
-t.capture(console, 'error')
-command({ positionals: [] } as unknown as LoadedConfig)
+
+const pass = 'node -e "process.exit(0)"'
+const fail = 'node -e "process.exit(1)"'
+
+// fresh process.env on every test
+const cleanEnv = Object.fromEntries(
+  Object.entries(process.env).filter(([k]) => !/^VLT_/i.test(k)),
+)
+// not sure why this is required, but Windows tests fail without it.
+cleanEnv.PATH = process.env.PATH
+t.beforeEach(t =>
+  t.intercept(process, 'env', { value: { ...cleanEnv } }),
+)
+
+t.test('run script in a project', async t => {
+  const dir = t.testdir({
+    'package.json': JSON.stringify({
+      scripts: {
+        hello: pass,
+      },
+    }),
+    'vlt.json': JSON.stringify({}),
+    '.git': {},
+  })
+  t.chdir(dir)
+  const { Config } = await t.mockImport<
+    typeof import('../../src/config/index.js')
+  >('../../src/config/index.js')
+  const conf = await Config.load(t.testdirName, ['hello'])
+  conf.projectRoot = dir
+  const logs = t.capture(console, 'log').args
+  const errs = t.capture(console, 'error').args
+  const result = await command(conf)
+  t.strictSame(result, {
+    command: pass,
+    args: [],
+    cwd: dir,
+    stdout: null,
+    stderr: null,
+    status: 0,
+    signal: null,
+    pre: undefined,
+  })
+  t.strictSame(logs(), [[result]])
+  t.strictSame(errs(), [])
+})
+
+t.test('run script in a single workspace', async t => {
+  const dir = t.testdir({
+    'vlt-workspaces.json': JSON.stringify('src/ws'),
+    src: {
+      ws: {
+        'package.json': JSON.stringify({
+          scripts: {
+            hello: pass,
+          },
+        }),
+      },
+    },
+    'vlt.json': JSON.stringify({}),
+    '.git': {},
+  })
+  t.chdir(dir + '/src/ws')
+  const { Config } = await t.mockImport<
+    typeof import('../../src/config/index.js')
+  >('../../src/config/index.js')
+  const conf = await Config.load(t.testdirName, ['hello'])
+  conf.values.workspace = ['src/ws']
+  conf.projectRoot = dir
+  const logs = t.capture(console, 'log').args
+  const errs = t.capture(console, 'error').args
+  const result = await command(conf)
+  t.strictSame(result, {
+    command: pass,
+    args: [],
+    cwd: resolve(dir, 'src/ws'),
+    stdout: null,
+    stderr: null,
+    status: 0,
+    signal: null,
+    pre: undefined,
+  })
+  t.strictSame(logs(), [[result]])
+  t.strictSame(errs(), [])
+})
+
+t.test('run script across several workspaces', async t => {
+  const dir = t.testdir({
+    'vlt-workspaces.json': JSON.stringify('src/*'),
+    src: {
+      a: {
+        'package.json': JSON.stringify({
+          scripts: {
+            hello: pass,
+          },
+        }),
+      },
+      b: {
+        'package.json': JSON.stringify({
+          scripts: {
+            hello: pass,
+          },
+        }),
+      },
+    },
+    'vlt.json': JSON.stringify({}),
+    '.git': {},
+  })
+  t.chdir(dir)
+  const { Config } = await t.mockImport<
+    typeof import('../../src/config/index.js')
+  >('../../src/config/index.js')
+  const conf = await Config.load(t.testdirName, ['hello'])
+  conf.values.workspace = ['src/a', 'src/b']
+  conf.projectRoot = dir
+  const logs = t.capture(console, 'log').args
+  const errs = t.capture(console, 'error').args
+  const result = await command(conf)
+  t.strictSame(result, {
+    'src/a': {
+      command: pass,
+      args: [],
+      cwd: resolve(dir, 'src/a'),
+      status: 0,
+      signal: null,
+      stdout: '',
+      stderr: '',
+      pre: undefined,
+    },
+    'src/b': {
+      command: pass,
+      args: [],
+      cwd: resolve(dir, 'src/b'),
+      status: 0,
+      signal: null,
+      stdout: '',
+      stderr: '',
+      pre: undefined,
+    },
+  })
+  t.strictSame(
+    new Set(logs()),
+    new Set([
+      ['src/a', 'ok'],
+      ['src/b', 'ok'],
+    ]),
+  )
+  t.strictSame(
+    new Set(errs()),
+    new Set([['src/b hello'], ['src/a hello']]),
+  )
+})
+
+t.test('run script across no workspaces', async t => {
+  const dir = t.testdir({
+    'vlt-workspaces.json': JSON.stringify('src/*'),
+    src: {
+      a: {
+        'package.json': JSON.stringify({
+          scripts: {
+            hello: pass,
+          },
+        }),
+      },
+      b: {
+        'package.json': JSON.stringify({
+          scripts: {
+            hello: pass,
+          },
+        }),
+      },
+    },
+    'vlt.json': JSON.stringify({}),
+    '.git': {},
+  })
+  t.chdir(dir)
+  const { Config } = await t.mockImport<
+    typeof import('../../src/config/index.js')
+  >('../../src/config/index.js')
+  const conf = await Config.load(t.testdirName, ['hello'])
+  conf.values.workspace = ['src/c']
+  conf.projectRoot = dir
+  const logs = t.capture(console, 'log').args
+  const errs = t.capture(console, 'error').args
+  await t.rejects(command(conf), {
+    message: 'no matching workspaces found',
+    cause: {
+      validOptions: new Set(['src/a', 'src/b']),
+    },
+  })
+  t.strictSame(logs(), [])
+  t.strictSame(errs(), [])
+})
+
+t.test('one ws fails, with bail', async t => {
+  const { exitCode } = process
+  const dir = t.testdir({
+    'vlt-workspaces.json': JSON.stringify('src/*'),
+    src: {
+      a: {
+        'package.json': JSON.stringify({
+          scripts: {
+            hello: fail,
+          },
+        }),
+      },
+      b: {
+        'package.json': JSON.stringify({
+          scripts: {
+            hello: pass,
+          },
+        }),
+      },
+    },
+    'vlt.json': JSON.stringify({
+      recursive: true,
+      bail: true,
+    }),
+    '.git': {},
+  })
+  t.chdir(dir)
+  const { Config } = await t.mockImport<
+    typeof import('../../src/config/index.js')
+  >('../../src/config/index.js')
+  const conf = await Config.load(t.testdirName, ['hello'])
+  conf.values['workspace-group'] = ['packages']
+  conf.projectRoot = dir
+  const logs = t.capture(console, 'log').args
+  const errs = t.capture(console, 'error').args
+  // had a set in there somewhere
+
+  await t.rejects(command(conf), {
+    message: 'failed graph traversal',
+    cause: {
+      node: {
+        id: 'workspace;src%2Fa',
+        path: 'src/a',
+        fullpath: resolve(dir, 'src/a'),
+        manifest: {
+          scripts: {
+            hello: fail,
+          },
+        },
+        groups: ['packages'],
+        name: 'src/a',
+      },
+      path: [],
+      cause: {
+        message: 'command failed',
+        cause: {
+          command: 'node -e "process.exit(1)"',
+          args: [],
+          cwd: resolve(dir, 'src/a'),
+          status: 1,
+          signal: null,
+          stdout: '',
+          stderr: '',
+        },
+      },
+    },
+  })
+
+  t.match(
+    new Set(logs()),
+    new Set([
+      [
+        'src/a failure',
+        {
+          status: 1,
+        },
+      ],
+    ]),
+  )
+  t.strictSame(
+    new Set(errs()),
+    new Set([['src/b hello'], ['src/a hello']]),
+  )
+  t.equal(process.exitCode, exitCode || 1)
+  process.exitCode = exitCode
+})
+
+t.test('one ws fails, without bail', async t => {
+  const { exitCode } = process
+  const dir = t.testdir({
+    'vlt-workspaces.json': JSON.stringify('src/*'),
+    src: {
+      a: {
+        'package.json': JSON.stringify({
+          scripts: {
+            hello: fail,
+          },
+        }),
+      },
+      b: {
+        'package.json': JSON.stringify({
+          scripts: {
+            hello: pass,
+          },
+        }),
+      },
+    },
+    '.git': {},
+  })
+  t.chdir(dir)
+  const { Config } = await t.mockImport<
+    typeof import('../../src/config/index.js')
+  >('../../src/config/index.js')
+  const conf = await Config.load(t.testdirName, ['hello'])
+  conf.values.bail = false
+  conf.values.recursive = true
+  conf.projectRoot = dir
+  const logs = t.capture(console, 'log').args
+  const errs = t.capture(console, 'error').args
+  // had a set in there somewhere
+
+  const result = await command(conf)
+
+  t.strictSame(result, {
+    'src/b': {
+      command: pass,
+      args: [],
+      cwd: resolve(dir, 'src/b'),
+      status: 0,
+      signal: null,
+      stdout: '',
+      stderr: '',
+      pre: undefined,
+    },
+    'src/a': {
+      command: fail,
+      args: [],
+      cwd: resolve(dir, 'src/a'),
+      status: 1,
+      signal: null,
+      stdout: '',
+      stderr: '',
+      pre: undefined,
+    },
+  })
+
+  t.match(
+    new Set(logs()),
+    new Set([
+      [
+        'src/a failure',
+        {
+          status: 1,
+        },
+      ],
+    ]),
+  )
+  t.strictSame(
+    new Set(errs()),
+    new Set([['src/b hello'], ['src/a hello']]),
+  )
+  t.equal(process.exitCode, exitCode || 1)
+  process.exitCode = exitCode
+})
+
+t.test('show scripts if no event specified', async t => {
+  const dir = t.testdir({
+    'package.json': JSON.stringify({
+      scripts: {
+        hello: pass,
+      },
+    }),
+    'vlt.json': JSON.stringify({}),
+    '.git': {},
+  })
+  t.chdir(dir)
+  const { Config } = await t.mockImport<
+    typeof import('../../src/config/index.js')
+  >('../../src/config/index.js')
+  const conf = await Config.load(t.testdirName, [])
+  conf.projectRoot = dir
+  conf.values.recursive = false
+  conf.values.workspace = undefined
+  conf.values['workspace-group'] = undefined
+  const logs = t.capture(console, 'log').args
+  const errs = t.capture(console, 'error').args
+  const result = await command(conf)
+  t.equal(result, undefined)
+  t.strictSame(logs(), [
+    ['Scripts available:', { hello: 'node -e "process.exit(0)"' }],
+  ])
+  t.strictSame(errs(), [])
+})
+
+t.test('show scripts if no event specified, single ws', async t => {
+  const dir = t.testdir({
+    'vlt-workspaces.json': JSON.stringify('src/ws'),
+    src: {
+      ws: {
+        'package.json': JSON.stringify({
+          scripts: {
+            hello: pass,
+          },
+        }),
+      },
+    },
+    'vlt.json': JSON.stringify({}),
+    '.git': {},
+  })
+  t.chdir(dir + '/src/ws')
+  const { Config } = await t.mockImport<
+    typeof import('../../src/config/index.js')
+  >('../../src/config/index.js')
+  const conf = await Config.load(t.testdirName, [])
+  conf.projectRoot = dir
+  conf.values.workspace = ['src/ws']
+  conf.projectRoot = dir
+  const logs = t.capture(console, 'log').args
+  const errs = t.capture(console, 'error').args
+  const result = await command(conf)
+  t.equal(result, undefined)
+  t.strictSame(logs(), [
+    ['Scripts available:', { hello: 'node -e "process.exit(0)"' }],
+  ])
+  t.strictSame(errs(), [])
+})
+
+t.test('show scripts across several workspaces', async t => {
+  const dir = t.testdir({
+    'vlt-workspaces.json': JSON.stringify('src/*'),
+    src: {
+      a: {
+        'package.json': JSON.stringify({
+          scripts: {
+            hello: pass,
+          },
+        }),
+      },
+      b: {
+        'package.json': JSON.stringify({
+          scripts: {
+            hello: pass,
+          },
+        }),
+      },
+    },
+    'vlt.json': JSON.stringify({}),
+    '.git': {},
+  })
+  t.chdir(dir)
+  const { Config } = await t.mockImport<
+    typeof import('../../src/config/index.js')
+  >('../../src/config/index.js')
+  const conf = await Config.load(t.testdirName, [])
+  conf.values.workspace = ['src/a', 'src/b']
+  conf.projectRoot = dir
+  const logs = t.capture(console, 'log').args
+  const errs = t.capture(console, 'error').args
+  const result = await command(conf)
+  t.strictSame(result, undefined)
+  t.strictSame(
+    new Set(logs()),
+    new Set([
+      ['Scripts available:'],
+      ['src/b', { hello: 'node -e "process.exit(0)"' }],
+      ['src/a', { hello: 'node -e "process.exit(0)"' }],
+    ]),
+  )
+  t.strictSame(errs(), [])
+})

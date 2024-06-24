@@ -9,7 +9,11 @@ import * as OS from 'os'
 import { resolve } from 'path'
 import t from 'tap'
 
-import { Config } from '../../src/config/index.js'
+process.env.XDG_CONFIG_HOME = t.testdir()
+
+const { Config } = await t.mockImport<
+  typeof import('../../src/config/index.js')
+>('../../src/config/index.js')
 
 const clearEnv = () => {
   for (const k of Object.keys(process.env)) {
@@ -22,7 +26,7 @@ const clearEnv = () => {
     }
   }
 }
-t.afterEach(() => clearEnv())
+t.beforeEach(() => clearEnv())
 
 t.test('read and write a project config', async t => {
   const dir = t.testdir({
