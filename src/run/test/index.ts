@@ -429,3 +429,367 @@ t.test('exec', async t => {
     ])
   })
 })
+
+t.test('runExec (exec)', async t => {
+  const projectRoot = t.testdir({
+    'package.json': JSON.stringify({
+      name: 'root',
+    }),
+    node_modules: { '.bin': {} },
+    src: {
+      abc: {
+        'package.json': JSON.stringify({
+          name: 'abc',
+        }),
+        node_modules: { '.bin': {} },
+      },
+    },
+  })
+  const cwd = resolve(projectRoot, 'src/abc')
+
+  t.test('bg', async t => {
+    const result = await promiseSpawn(
+      process.execPath,
+      [fixture, 'parent', 'runExec', cwd, projectRoot],
+      { env: {} },
+    )
+    t.hasStrict(result, { status: 0, signal: null })
+    t.strictSame(JSON.parse(result.stdout), {
+      command: node,
+      args: [fixture, 'child', 'runExec', cwd, projectRoot],
+      cwd,
+      status: 0,
+      signal: null,
+      stdout: {
+        fn: 'runExec',
+        args: [cwd, projectRoot],
+        cwd,
+        projectRoot,
+        env: {},
+        path: ['src/abc/node_modules/.bin', 'node_modules/.bin'],
+      },
+      stderr: '',
+    })
+  })
+
+  t.test('bg with args', async t => {
+    const result = await promiseSpawn(
+      process.execPath,
+      [
+        fixture,
+        'parent',
+        'runExec',
+        cwd,
+        projectRoot,
+        process.execPath,
+        'a',
+        'b',
+        'c',
+      ],
+      { env: {} },
+    )
+    t.hasStrict(result, { status: 0, signal: null })
+    t.strictSame(JSON.parse(result.stdout), {
+      command: node,
+      args: [
+        fixture,
+        'child',
+        'runExec',
+        cwd,
+        projectRoot,
+        'a',
+        'b',
+        'c',
+      ],
+      cwd,
+      status: 0,
+      signal: null,
+      stdout: {
+        fn: 'runExec',
+        args: [cwd, projectRoot, 'a', 'b', 'c'],
+        cwd,
+        projectRoot,
+        env: {},
+        path: ['src/abc/node_modules/.bin', 'node_modules/.bin'],
+      },
+      stderr: '',
+    })
+  })
+
+  t.test('fg', async t => {
+    const result = await promiseSpawn(
+      process.execPath,
+      [fixture, 'parent', 'runExecFG', cwd, projectRoot],
+      { env: {} },
+    )
+    t.strictSame(JSON.parse(result.stdout), [
+      {
+        fn: 'runExecFG',
+        args: [cwd, projectRoot],
+        cwd,
+        projectRoot,
+        env: {},
+        path: ['src/abc/node_modules/.bin', 'node_modules/.bin'],
+      },
+      {
+        command: node,
+        args: [fixture, 'child', 'runExecFG', cwd, projectRoot],
+        cwd,
+        stdout: null,
+        stderr: null,
+        status: 0,
+        signal: null,
+      },
+    ])
+  })
+
+  t.test('fg with args', async t => {
+    const result = await promiseSpawn(
+      process.execPath,
+      [
+        fixture,
+        'parent',
+        'runExecFG',
+        cwd,
+        projectRoot,
+        process.execPath,
+        'a',
+        'b',
+        'c',
+      ],
+      { env: {} },
+    )
+    t.strictSame(JSON.parse(result.stdout), [
+      {
+        fn: 'runExecFG',
+        args: [cwd, projectRoot, 'a', 'b', 'c'],
+        cwd,
+        projectRoot,
+        env: {},
+        path: ['src/abc/node_modules/.bin', 'node_modules/.bin'],
+      },
+      {
+        command: node,
+        args: [
+          fixture,
+          'child',
+          'runExecFG',
+          cwd,
+          projectRoot,
+          'a',
+          'b',
+          'c',
+        ],
+        cwd,
+        stdout: null,
+        stderr: null,
+        status: 0,
+        signal: null,
+      },
+    ])
+  })
+})
+
+t.test('runExec (run)', async t => {
+  const projectRoot = t.testdir({
+    node_modules: { '.bin': {} },
+    src: {
+      abc: {
+        'package.json': JSON.stringify({
+          name: 'abc',
+          scripts: { 'node-package-json-script': node },
+        }),
+        node_modules: { '.bin': {} },
+      },
+    },
+  })
+  const cwd = resolve(projectRoot, 'src/abc')
+
+  t.test('bg', async t => {
+    const result = await promiseSpawn(
+      process.execPath,
+      [
+        fixture,
+        'parent',
+        'runExec',
+        cwd,
+        projectRoot,
+        'node-package-json-script',
+      ],
+      {
+        env: {
+          npm_package_json: resolve(cwd, 'package.json'),
+          npm_lifecycle_event: 'node-package-json-script',
+          npm_lifecycle_script: node,
+        },
+      },
+    )
+    t.hasStrict(result, { status: 0, signal: null })
+    t.strictSame(JSON.parse(result.stdout), {
+      command: node,
+      args: [fixture, 'child', 'runExec', cwd, projectRoot],
+      cwd,
+      status: 0,
+      signal: null,
+      stdout: {
+        fn: 'runExec',
+        args: [cwd, projectRoot],
+        cwd,
+        projectRoot,
+        env: {
+          npm_package_json: resolve(cwd, 'package.json'),
+          npm_lifecycle_event: 'node-package-json-script',
+          npm_lifecycle_script: node,
+        },
+        path: ['src/abc/node_modules/.bin', 'node_modules/.bin'],
+      },
+      stderr: '',
+    })
+  })
+
+  t.test('bg with args', async t => {
+    const result = await promiseSpawn(
+      process.execPath,
+      [
+        fixture,
+        'parent',
+        'runExec',
+        cwd,
+        projectRoot,
+        'node-package-json-script',
+        'a',
+        'b',
+        'c',
+      ],
+      { env: {} },
+    )
+    t.hasStrict(result, { status: 0, signal: null })
+    t.strictSame(JSON.parse(result.stdout), {
+      command: node,
+      args: [
+        fixture,
+        'child',
+        'runExec',
+        cwd,
+        projectRoot,
+        'a',
+        'b',
+        'c',
+      ],
+      cwd,
+      status: 0,
+      signal: null,
+      stdout: {
+        fn: 'runExec',
+        args: [cwd, projectRoot, 'a', 'b', 'c'],
+        cwd,
+        projectRoot,
+        env: {
+          npm_package_json: resolve(cwd, 'package.json'),
+          npm_lifecycle_event: 'node-package-json-script',
+          npm_lifecycle_script: node,
+        },
+        path: ['src/abc/node_modules/.bin', 'node_modules/.bin'],
+      },
+      stderr: '',
+    })
+  })
+
+  t.test('fg', async t => {
+    const result = await promiseSpawn(
+      process.execPath,
+      [
+        fixture,
+        'parent',
+        'runExecFG',
+        cwd,
+        projectRoot,
+        'node-package-json-script',
+      ],
+      { env: {} },
+    )
+    t.strictSame(JSON.parse(result.stdout), [
+      {
+        fn: 'runExecFG',
+        args: [cwd, projectRoot],
+        cwd,
+        projectRoot,
+        env: {
+          npm_package_json: resolve(cwd, 'package.json'),
+          npm_lifecycle_event: 'node-package-json-script',
+          npm_lifecycle_script: node,
+        },
+        path: ['src/abc/node_modules/.bin', 'node_modules/.bin'],
+      },
+      {
+        command: node,
+        args: [fixture, 'child', 'runExecFG', cwd, projectRoot],
+        cwd,
+        stdout: null,
+        stderr: null,
+        status: 0,
+        signal: null,
+      },
+    ])
+  })
+
+  t.test('fg with args', async t => {
+    const result = await promiseSpawn(
+      process.execPath,
+      [
+        fixture,
+        'parent',
+        'runExecFG',
+        cwd,
+        projectRoot,
+        'node-package-json-script',
+        'a',
+        'b',
+        'c',
+      ],
+      {
+        env: {
+          npm_package_json: resolve(cwd, 'package.json'),
+
+          npm_lifecycle_event: 'node-package-json-script',
+
+          npm_lifecycle_script: node,
+        },
+      },
+    )
+    t.strictSame(JSON.parse(result.stdout), [
+      {
+        fn: 'runExecFG',
+        args: [cwd, projectRoot, 'a', 'b', 'c'],
+        cwd,
+        projectRoot,
+        env: {
+          npm_package_json: resolve(cwd, 'package.json'),
+
+          npm_lifecycle_event: 'node-package-json-script',
+
+          npm_lifecycle_script: node,
+        },
+        path: ['src/abc/node_modules/.bin', 'node_modules/.bin'],
+      },
+      {
+        command: node,
+        args: [
+          fixture,
+          'child',
+          'runExecFG',
+          cwd,
+          projectRoot,
+          'a',
+          'b',
+          'c',
+        ],
+        cwd,
+        stdout: null,
+        stderr: null,
+        status: 0,
+        signal: null,
+      },
+    ])
+  })
+})

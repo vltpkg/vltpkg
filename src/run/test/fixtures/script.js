@@ -2,7 +2,7 @@
 // event and args only relevant for run/runFG
 import { delimiter, isAbsolute, relative } from 'path';
 import { fileURLToPath } from 'url';
-import { exec, execFG, run, runFG } from '../../dist/esm/index.js';
+import { exec, execFG, run, runExec, runExecFG, runFG, } from '../../dist/esm/index.js';
 const __filename = fileURLToPath(import.meta.url);
 const node = / /.test(process.execPath) ?
     '"' + process.execPath + '"'
@@ -21,6 +21,10 @@ const main = (args) => {
 };
 const parent = (args) => {
     switch (args[0]) {
+        case 'runExec':
+            return runExecParent(args.slice(1));
+        case 'runExecFG':
+            return runExecFGParent(args.slice(1));
         case 'exec':
             return execParent(args.slice(1));
         case 'execFG':
@@ -30,7 +34,7 @@ const parent = (args) => {
         case 'runFG':
             return runFGParent(args.slice(1));
         default:
-            throw new Error('second arg must be exec, run, execFG, or runFG');
+            throw new Error('second arg must be exec, run, runExec, execFG, runFG, or runExecFG');
     }
 };
 const getDirs = (args) => {
@@ -40,10 +44,51 @@ const getDirs = (args) => {
     }
     return [cwd, projectRoot];
 };
+const runExecParent = async (args) => {
+    const [cwd, projectRoot] = getDirs(args);
+    const arg0 = args[2] ?? node;
+    const result = await runExec({
+        arg0,
+        args: [
+            __filename,
+            'child',
+            'runExec',
+            cwd,
+            projectRoot,
+            ...args.slice(3),
+        ],
+        cwd,
+        projectRoot,
+    });
+    console.log(JSON.stringify({
+        ...result,
+        stdout: JSON.parse(result.stdout),
+    }));
+};
+const runExecFGParent = async (args) => {
+    const [cwd, projectRoot] = getDirs(args);
+    const arg0 = args[2] ?? node;
+    // manually make it a JSON array, since the child shares stdout
+    console.log('[');
+    const result = await runExecFG({
+        arg0,
+        args: [
+            __filename,
+            'child',
+            'runExecFG',
+            cwd,
+            projectRoot,
+            ...args.slice(3),
+        ],
+        cwd,
+        projectRoot,
+    });
+    console.log(',' + JSON.stringify(result) + ']');
+};
 const execParent = async (args) => {
     const [cwd, projectRoot] = getDirs(args);
     const result = await exec({
-        command: node,
+        arg0: node,
         args: [
             __filename,
             'child',
@@ -65,7 +110,7 @@ const execFGParent = async (args) => {
     // manually make it a JSON array, since the child shares stdout
     console.log('[');
     const result = await execFG({
-        command: node,
+        arg0: node,
         args: [
             __filename,
             'child',
@@ -81,38 +126,38 @@ const execFGParent = async (args) => {
 };
 const runParent = async (args) => {
     const [cwd, projectRoot] = getDirs(args);
-    const event = args[2];
-    if (!event)
+    const arg0 = args[2];
+    if (!arg0)
         throw new Error('must supply event on argv');
     const result = await run({
-        event,
+        arg0,
         args: args.slice(3),
         cwd,
         projectRoot,
-        acceptFail: /fail/.test(event),
-        ignoreMissing: /ignoremissing/.test(event),
+        acceptFail: /fail/.test(arg0),
+        ignoreMissing: /ignoremissing/.test(arg0),
     });
     console.log(JSON.stringify({
         ...result,
-        stdout: /ignoremissing/.test(event) ? '' : JSON.parse(result.stdout),
+        stdout: /ignoremissing/.test(arg0) ? '' : JSON.parse(result.stdout),
     }));
 };
 const runFGParent = async (args) => {
     const [cwd, projectRoot] = getDirs(args);
-    const event = args[2];
-    if (!event)
+    const arg0 = args[2];
+    if (!arg0)
         throw new Error('must supply event on argv');
     // manually make it a JSON array, since the child shares stdout
     console.log('[');
     const result = await runFG({
-        event,
+        arg0,
         args: args.slice(3),
         cwd,
         projectRoot,
-        acceptFail: /fail/.test(event),
-        ignoreMissing: /ignoremissing/.test(event),
+        acceptFail: /fail/.test(arg0),
+        ignoreMissing: /ignoremissing/.test(arg0),
     });
-    if (/ignoremissing/.test(event))
+    if (/ignoremissing/.test(arg0))
         console.log('{}');
     console.log(',' + JSON.stringify(result) + ']');
 };
@@ -126,8 +171,12 @@ const child = async (args) => {
             return runChild(args.slice(1));
         case 'runFG':
             return runFGChild(args.slice(1));
+        case 'runExec':
+            return runExecChild(args.slice(1));
+        case 'runExecFG':
+            return runExecFGChild(args.slice(1));
         default:
-            throw new Error('second arg must be exec, run, execFG, or runFG');
+            throw new Error('second arg must be exec, run, runExec, execFG, runFG, or runExecFG');
     }
 };
 const childMethod = async (fn, args) => {
@@ -148,4 +197,6 @@ const execChild = async (args) => childMethod('exec', args);
 const execFGChild = async (args) => childMethod('execFG', args);
 const runChild = async (args) => childMethod('run', args);
 const runFGChild = async (args) => childMethod('runFG', args);
+const runExecChild = async (args) => childMethod('runExec', args);
+const runExecFGChild = async (args) => childMethod('runExecFG', args);
 main(process.argv.slice(2));
