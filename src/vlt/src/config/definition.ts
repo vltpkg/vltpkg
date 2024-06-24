@@ -327,12 +327,41 @@ export const definition = jack({
       description: `Set to limit the spaces being worked on when working on
                     workspaces.
 
-                    Can be paths or glob patterns.`,
+                    Can be paths or glob patterns matching paths.
+
+                    Specifying workspaces by package.json name is not
+                    supported.`,
     },
     'workspace-group': {
       short: 'g',
       description: `Specify named workspace group names to load and operate on
                     when doing recursive operations on workspaces.`,
+    },
+  })
+
+  .flag({
+    recursive: {
+      short: 'r',
+      description: `Run an operation across multiple workspaces.
+
+                    No effect when used in non-monorepo projects.
+
+                    Implied by setting --workspace or --workspace-group. If
+                    not set, then the action is run on the project root.`,
+    },
+
+    bail: {
+      short: 'b',
+      description: `When running scripts across multiple workspaces, stop
+                    on the first failure.`,
+      default: true,
+    },
+
+    'no-bail': {
+      short: 'B',
+      description: `When running scripts across multiple workspaces, continue
+                    on failure, running the script for all workspaces.`,
+      default: true,
     },
   })
 
@@ -352,15 +381,26 @@ export const definition = jack({
                     editing.
 
                     Defaults to the \`EDITOR\` or \`VISUAL\` env if set, or
-                    \`notepad.exe\` on Windows, or \`vi\` elsewhere.
-
-      `,
+                    \`notepad.exe\` on Windows, or \`vi\` elsewhere.`,
       default:
         process.env.EDITOR ||
         process.env.VISUAL ||
         (process.platform === 'win32' ?
           `${process.env.SYSTEMROOT}\\notepad.exe`
         : 'vi'),
+    },
+
+    'script-shell': {
+      hint: 'program',
+      description: `The shell to use when executing \`package.json#scripts\`
+                    (either as lifecycle scripts or explicitly with
+                    \`vlt run\`) and \`vlt exec\`.
+
+                    If not set, defaults to \`/bin/sh\` on POSIX systems,
+                    and \`cmd.exe\` on Windows.
+
+                    When no argument is provided to \`vlt exec\`, the \`SHELL\`
+                    environment variable takes precedence if set.`,
     },
 
     'fallback-command': {

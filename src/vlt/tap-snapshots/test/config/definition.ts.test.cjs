@@ -36,6 +36,11 @@ Object {
     "description": "CPU architecture to use as the selector when choosing packages based on their \`cpu\` value.",
     "type": "string",
   },
+  "bail": Object {
+    "description": "When running scripts across multiple workspaces, stop on the first failure.",
+    "short": "b",
+    "type": "boolean",
+  },
   "before": Object {
     "description": "Do not install any packages published after this date",
     "hint": "date",
@@ -151,6 +156,11 @@ Object {
     "short": "h",
     "type": "boolean",
   },
+  "no-bail": Object {
+    "description": "When running scripts across multiple workspaces, continue on failure, running the script for all workspaces.",
+    "short": "B",
+    "type": "boolean",
+  },
   "no-color": Object {
     "description": "Do not use colors (Default for non-TTY)",
     "short": "C",
@@ -169,6 +179,17 @@ Object {
     "description": "When running \`vlt install-exec\`, this allows you to explicitly set the package to search for bins. If not provided, then vlt will interpret the first argument as the package, and attempt to run the default executable.",
     "hint": "p",
     "type": "string",
+  },
+  "recursive": Object {
+    "description": String(
+      Run an operation across multiple workspaces.
+      
+      No effect when used in non-monorepo projects.
+      
+      Implied by setting --workspace or --workspace-group. If not set, then the action is run on the project root.
+    ),
+    "short": "r",
+    "type": "boolean",
   },
   "registries": Object {
     "description": String(
@@ -197,6 +218,17 @@ Object {
     "hint": "url",
     "type": "string",
   },
+  "script-shell": Object {
+    "description": String(
+      The shell to use when executing \`package.json#scripts\` (either as lifecycle scripts or explicitly with \`vlt run\`) and \`vlt exec\`.
+      
+      If not set, defaults to \`/bin/sh\` on POSIX systems, and \`cmd.exe\` on Windows.
+      
+      When no argument is provided to \`vlt exec\`, the \`SHELL\` environment variable takes precedence if set.
+    ),
+    "hint": "program",
+    "type": "string",
+  },
   "tag": Object {
     "description": "Default \`dist-tag\` to install",
     "type": "string",
@@ -205,7 +237,9 @@ Object {
     "description": String(
       Set to limit the spaces being worked on when working on workspaces.
       
-      Can be paths or glob patterns.
+      Can be paths or glob patterns matching paths.
+      
+      Specifying workspaces by package.json name is not supported.
     ),
     "hint": "ws",
     "multiple": true,
