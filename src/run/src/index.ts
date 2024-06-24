@@ -3,10 +3,8 @@ import { PackageJson } from '@vltpkg/package-json'
 import {
   promiseSpawn,
   PromiseSpawnOptions,
-  type SpawnResultNoStderr,
-  type SpawnResultNoStdout,
-  type SpawnResultStderrString,
-  type SpawnResultStdoutString,
+  type SpawnResultNoStdio,
+  type SpawnResultStdioStrings,
 } from '@vltpkg/promise-spawn'
 import { foregroundChild } from 'foreground-child'
 import { proxySignals } from 'foreground-child/proxy-signals'
@@ -80,7 +78,7 @@ export interface SharedOptions extends PromiseSpawnOptions {
    * the shell to run the script in. If not set, then the default
    * platform-specific shell will be used.
    */
-  'script-shell'?: string
+  'script-shell'?: string | boolean
 }
 
 /**
@@ -88,7 +86,7 @@ export interface SharedOptions extends PromiseSpawnOptions {
  */
 export interface RunOptions extends SharedOptions {
   /** the name of the thing in package.json#scripts */
-  event: string
+  arg0: string
   /**
    * pass in a @vltpkg/package-json.PackageJson instance, and
    * it'll be used for reading the package.json file. Optional,
@@ -108,35 +106,72 @@ export interface RunOptions extends SharedOptions {
  */
 export interface ExecOptions extends SharedOptions {
   /** the command to execute */
-  command: string
+  arg0: string
+}
+
+/**
+ * Options for runExec() and runExecFG()
+ */
+export interface RunExecOptions extends SharedOptions {
+  /**
+   * Either the command to be executed, or the event to be run
+   */
+  arg0: string
+  /**
+   * pass in a @vltpkg/package-json.PackageJson instance, and
+   * it'll be used for reading the package.json file. Optional,
+   * may improve performance somewhat.
+   */
+  packageJson?: PackageJson
 }
 
 /**
  * Run a package.json#scripts event in the background
  */
-export const run = async (options: RunOptions) =>
+export const run = async (options: RunOptions): Promise<RunResult> =>
   runImpl(options, exec, '')
 
 /**
  * Run a package.json#scripts event in the foreground
  */
-export const runFG = async (options: RunOptions) =>
-  runImpl(options, execFG, null)
+export const runFG = async (
+  options: RunOptions,
+): Promise<RunFGResult> => runImpl(options, execFG, null)
+
+/** Return type of {@link run} */
+export type RunResult = SpawnResultStdioStrings & {
+  pre?: SpawnResultStdioStrings
+  post?: SpawnResultStdioStrings
+}
+
+/** Return type of {@link runFG} */
+export type RunFGResult = SpawnResultNoStdio & {
+  pre?: SpawnResultNoStdio
+  post?: SpawnResultNoStdio
+}
+
+/**
+ * Return type of {@link run} or {@link runFG}, as determined by their base
+ * type
+ *
+ * @internal
+ */
+export type RunImplResult<
+  R extends SpawnResultNoStdio | SpawnResultStdioStrings,
+> = R & { pre?: R; post?: R }
 
 /**
  * Internal implementation of run() and runFG(), since they're mostly identical
  */
 const runImpl = async <
-  R extends
-    | (SpawnResultNoStderr & SpawnResultNoStdout)
-    | (SpawnResultStderrString & SpawnResultStdoutString),
+  R extends SpawnResultNoStdio | SpawnResultStdioStrings,
 >(
   options: RunOptions,
   execImpl: (options: ExecOptions) => Promise<R>,
   empty: R['stdout'],
-): Promise<R & { pre?: R; post?: R }> => {
+): Promise<RunImplResult<R>> => {
   const {
-    event,
+    arg0,
     packageJson = new PackageJson(),
     ignoreMissing = false,
     ...execArgs
@@ -144,10 +179,10 @@ const runImpl = async <
   const pjPath = resolve(options.cwd, 'package.json')
   const pj = packageJson.read(options.cwd)
   const { scripts } = pj
-  const command = scripts?.[event]
+  const command = scripts?.[arg0]
   if (!command) {
     if (ignoreMissing) {
-      return Promise.resolve({
+      return {
         command: '',
         /* c8 ignore next */
         args: execArgs.args ?? [],
@@ -158,40 +193,42 @@ const runImpl = async <
         stderr: empty,
         // `as` to workaround "could be instantiated with arbitrary type".
         // it's private and used in 2 places, we know that it isn't.
-      } as R)
+      } as R
     }
     throw error('Script not defined in package.json', {
-      name: event,
+      name: arg0,
       cwd: options.cwd,
       args: options.args,
       path: pjPath,
+      manifest: pj,
     })
   }
 
-  const precommand = scripts[`pre${event}`]
+  const precommand = scripts[`pre${arg0}`]
   const pre =
     precommand ?
       await execImpl({
-        command: precommand,
+        arg0: precommand,
         ...execArgs,
+        args: [],
         env: {
           ...execArgs.env,
           npm_package_json: pjPath,
-          npm_lifecycle_event: `pre${event}`,
-          npm_lifecycle_script: command,
+          npm_lifecycle_event: `pre${arg0}`,
+          npm_lifecycle_script: precommand,
         },
       })
     : undefined
   if (pre && (pre.status || pre.signal)) {
-    return pre
+    return pre as RunImplResult<R>
   }
-  const result: R & { pre?: R; post?: R } = await execImpl({
-    command,
+  const result: RunImplResult<R> = await execImpl({
+    arg0: command,
     ...execArgs,
     env: {
       ...execArgs.env,
       npm_package_json: pjPath,
-      npm_lifecycle_event: event,
+      npm_lifecycle_event: arg0,
       npm_lifecycle_script: command,
     },
   })
@@ -200,20 +237,21 @@ const runImpl = async <
     return result
   }
 
-  const postcommand = scripts[`post${event}`]
+  const postcommand = scripts[`post${arg0}`]
   if (!postcommand) return result
 
   const post = await execImpl({
-    command: postcommand,
+    arg0: postcommand,
     ...execArgs,
+    args: [],
     env: {
       ...execArgs.env,
       npm_package_json: pjPath,
-      npm_lifecycle_event: `post${event}`,
-      npm_lifecycle_script: command,
+      npm_lifecycle_event: `post${arg0}`,
+      npm_lifecycle_script: postcommand,
     },
   })
-  console.error('GOT POST', post)
+
   if (post.status || post.signal) {
     const { status, signal } = post
     return Object.assign(result, { post, status, signal })
@@ -225,18 +263,21 @@ const runImpl = async <
 /**
  * Execute an arbitrary command in the background
  */
-export const exec = async (options: ExecOptions) => {
+export const exec = async (
+  options: ExecOptions,
+): Promise<SpawnResultStdioStrings> => {
   const {
-    command,
+    arg0,
     args = [],
     cwd,
     env = {},
     projectRoot,
     'script-shell': shell = true,
+    ...spawnOptions
   } = options
 
-  const p = promiseSpawn(command, args, {
-    ...options,
+  const p = promiseSpawn(arg0, args, {
+    ...spawnOptions,
     shell,
     stdio: 'pipe',
     stdioString: true,
@@ -247,7 +288,6 @@ export const exec = async (options: ExecOptions) => {
     }),
     windowsHide: true,
   })
-  p.process.stdout
   proxySignals(p.process)
   return await p
 }
@@ -255,43 +295,79 @@ export const exec = async (options: ExecOptions) => {
 /**
  * Execute an arbitrary command in the foreground
  */
-export const execFG = async (options: ExecOptions) => {
+export const execFG = async (
+  options: ExecOptions,
+): Promise<SpawnResultNoStdio> => {
   const {
-    command,
+    arg0,
     args = [],
     cwd,
     projectRoot,
     env = {},
     'script-shell': shell = true,
+    ...spawnOptions
   } = options
 
-  return new Promise<SpawnResultNoStderr & SpawnResultNoStdout>(
-    res => {
-      foregroundChild(
-        command,
-        args,
-        {
-          ...options,
-          shell,
+  return new Promise<SpawnResultNoStdio>(res => {
+    foregroundChild(
+      arg0,
+      args,
+      {
+        ...spawnOptions,
+        shell,
+        cwd,
+        env: addPaths(projectRoot, cwd, {
+          ...process.env,
+          ...env,
+        }),
+      },
+      (status, signal) => {
+        res({
+          command: arg0,
+          args,
           cwd,
-          env: addPaths(projectRoot, cwd, {
-            ...process.env,
-            ...env,
-          }),
-        },
-        (status, signal) => {
-          res({
-            command,
-            args,
-            cwd,
-            stdout: null,
-            stderr: null,
-            status,
-            signal,
-          })
-          return false
-        },
-      )
-    },
-  )
+          stdout: null,
+          stderr: null,
+          status,
+          signal,
+        })
+        return false
+      },
+    )
+  })
 }
+
+const runExecImpl = async <
+  R extends SpawnResultNoStdio | SpawnResultStdioStrings,
+>(
+  options: RunExecOptions,
+  runImpl: (options: RunOptions) => Promise<RunImplResult<R>>,
+  execImpl: (options: ExecOptions) => Promise<R>,
+): Promise<RunImplResult<R> | R> => {
+  const { arg0, packageJson = new PackageJson(), ...args } = options
+  const pj = packageJson.read(options.cwd)
+  const { scripts } = pj
+  const command = scripts?.[arg0]
+  if (command) {
+    return runImpl({ ...args, packageJson, arg0 })
+  } else {
+    return execImpl({ ...args, arg0 })
+  }
+}
+
+/**
+ * If the arg0 is a defined package.json script, then run(), otherwise exec()
+ */
+export const runExec = async (
+  options: RunExecOptions,
+): Promise<SpawnResultStdioStrings | RunResult> =>
+  runExecImpl<SpawnResultStdioStrings>(options, run, exec)
+
+/**
+ * If the arg0 is a defined package.json script, then runFG(), otherwise
+ * execFG()
+ */
+export const runExecFG = async (
+  options: RunExecOptions,
+): Promise<SpawnResultNoStdio | RunFGResult> =>
+  runExecImpl<SpawnResultNoStdio>(options, runFG, execFG)
