@@ -174,6 +174,19 @@ export interface SpawnResultNoStderr extends SpawnResult {
   stderr: null
 }
 
+export interface SpawnResultNoStdio extends SpawnResult {
+  stderr: null
+  stdout: null
+}
+export interface SpawnResultStdioStrings extends SpawnResult {
+  stdout: string
+  stderr: string
+}
+export interface SpawnResultStdioBuffers extends SpawnResult {
+  stdout: Buffer
+  stderr: Buffer
+}
+
 export type SpawnResultByOptions<T extends PromiseSpawnOptions> =
   SpawnResult & {
     stdout: T extends PromiseSpawnOptionsNoStdout ? null
