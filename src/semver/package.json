@@ -20,9 +20,9 @@
     "@types/semver": "^7.5.8",
     "prettier": "^3.2.5",
     "semver": "^7.6.2",
-    "tap": "^19.2.5",
-    "tshy": "^1.15.1",
-    "typedoc": "^0.25.13"
+    "tap": "^20.0.1",
+    "tshy": "^1.16.1",
+    "typedoc": "^0.26.2"
   },
   "scripts": {
     "bun": "hyperfine --warmup 3 'bun ./benchmarks/bun.js' 'bun ./benchmarks/npm.js' 'bun ./benchmarks/this.js'",
