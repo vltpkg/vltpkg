@@ -23,9 +23,9 @@
     "npm-pick-manifest": "^9.0.1",
     "pacote": "^18.0.6",
     "prettier": "^3.2.5",
-    "tap": "^19.2.5",
-    "tshy": "^1.15.1",
-    "typedoc": "^0.25.13"
+    "tap": "^20.0.1",
+    "tshy": "^1.16.1",
+    "typedoc": "^0.26.2"
   },
   "scripts": {
     "preversion": "npm test",

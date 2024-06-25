@@ -26,8 +26,8 @@
     "mutate-fs": "^2.1.1",
     "pacote": "^18.0.6",
     "prettier": "^3.2.5",
-    "tap": "^19.2.5",
-    "tshy": "^1.15.1"
+    "tap": "^20.0.1",
+    "tshy": "^1.16.1"
   },
   "scripts": {
     "preversion": "npm test",
