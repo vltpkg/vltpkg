@@ -10,7 +10,7 @@
   },
   "type": "module",
   "devDependencies": {
-    "@types/node": "^20.12.12",
+    "@types/node": "^20.14.8",
     "@types/retry": "^0.12.5",
     "@types/semver": "^7.5.8",
     "@types/tar": "^6.1.13",
@@ -19,7 +19,7 @@
     "npm-package-arg": "^11.0.2",
     "npm-pick-manifest": "^9.0.1",
     "pacote": "^18.0.6",
-    "prettier": "^3.2.5",
+    "prettier": "^3.3.2",
     "semver": "^7.6.2",
     "spawk": "^1.8.2",
     "tap": "^20.0.1",

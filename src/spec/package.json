@@ -17,9 +17,9 @@
     "@vltpkg/semver": "workspace:*"
   },
   "devDependencies": {
-    "@types/node": "^20.12.12",
+    "@types/node": "^20.14.8",
     "npm-package-arg": "^11.0.2",
-    "prettier": "^3.2.5",
+    "prettier": "^3.3.2",
     "tap": "^20.0.1",
     "tshy": "^1.16.1",
     "typedoc": "^0.26.2"
