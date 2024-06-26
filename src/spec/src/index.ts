@@ -19,6 +19,8 @@ export type SpecOptions = {
 
 export const kCustomInspect = Symbol.for('nodejs.util.inspect.custom')
 
+export type Scope = `@${string}`
+
 export type SpecOptionsFilled = {
   /** the registry where a spec should be resolved against */
   registry: string
@@ -28,6 +30,8 @@ export type SpecOptionsFilled = {
   'git-hosts': Record<string, string>
   /** tarball hosting services for hosts listed in git-hosts */
   'git-host-archives': Record<string, string>
+  /** registries mapped to a `@scope` */
+  'scope-registries': Record<Scope, string>
 }
 
 export type GitSelectorParsed = {
@@ -106,6 +110,15 @@ export class Spec {
 
   /** the name portion, so `foo` in `foo@1.x` */
   name: string
+
+  /** the name's scope, so `@acme` in `@acme/foo@1.x` */
+  scope?: Scope
+
+  /**
+   * if the name is scoped, and there's a registry associated with the scope,
+   * then this is that registry
+   */
+  scopeRegistry?: string
 
   /** just the part AFTER the name, so `1.x` in `foo@1.x` */
   bareSpec: string
@@ -231,10 +244,10 @@ export class Spec {
       options = bareOrOptions
       bareOrOptions = undefined
     }
-    const registry = options.registry ?? defaultRegistry
     this.options = {
       ...options,
-      registry,
+      registry: options.registry ?? defaultRegistry,
+      'scope-registries': options['scope-registries'] ?? {},
       'git-hosts':
         options['git-hosts'] ?
           {
@@ -260,11 +273,13 @@ export class Spec {
 
     if (typeof bareOrOptions === 'string') {
       this.name = spec
+      this.#parseScope(spec)
       this.bareSpec = bareOrOptions
       this.spec = `${this.name}@${bareOrOptions}`
     } else {
       this.spec = spec
-      let at = spec.indexOf('@', spec.startsWith('@') ? 1 : 0)
+      const hasScope = spec.startsWith('@')
+      let at = spec.indexOf('@', hasScope ? 1 : 0)
       if (at === -1) {
         // assume that an unadorned spec is just a name at the default
         // registry
@@ -272,6 +287,7 @@ export class Spec {
         spec += '@'
       }
       this.name = spec.substring(0, at)
+      if (hasScope) this.#parseScope(this.name)
       this.bareSpec = spec.substring(at + 1)
     }
 
@@ -411,15 +427,12 @@ export class Spec {
     for (const [host, url] of regs) {
       const h = `${host}:`
       if (this.bareSpec.startsWith(h)) {
-        this.registry = url
         this.type = 'registry'
-        const sub = this.#parseRegistrySpec(
+        this.namedRegistry = host
+        this.#parseRegistrySpec(
           this.bareSpec.substring(h.length),
           url,
-        )
-        if (sub.type === 'registry') {
-          sub.namedRegistry = host
-        }
+        ).namedRegistry ??= host
         this.#guessRegistryTarball()
         return
       }
@@ -492,8 +505,21 @@ export class Spec {
       this.distTag = this.bareSpec
     }
     this.registrySpec = this.bareSpec
-    this.registry = this.options.registry
+    const { 'scope-registries': scopeRegs, registry } = this.options
+    const scopeReg = this.scope && scopeRegs[this.scope]
+    this.registry = scopeReg ?? registry
     this.#guessRegistryTarball()
+  }
+
+  #parseScope(name: string) {
+    if (!name.startsWith('@')) return
+    const s = name.indexOf('/')
+    if (s > 1 && s < name.length - 1) {
+      const scope = name.substring(0, s) as Scope
+      this.registry = this.scopeRegistry =
+        this.options['scope-registries'][scope]
+      this.scope = scope
+    }
   }
 
   #parseHostedGit(name: string, template: string) {
@@ -573,6 +599,7 @@ export class Spec {
   }
 
   #parseRegistrySpec(s: string, url: string) {
+    // note: this takes priority over the scoped registry, if set
     this.registry = url
     this.subspec = Spec.parse(s, {
       ...this.options,

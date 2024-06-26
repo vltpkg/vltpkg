@@ -5,11 +5,68 @@
  * Make sure to inspect the output below.  Do not ignore changes!
  */
 'use strict'
+exports[`test/index.ts > TAP > basic parsing tests > @a/b@npm:@y/z@1.2.3 > inspect 1`] = `
+@vltpkg/spec.Spec {
+  type: 'registry',
+  spec: '@a/b@npm:@y/z@1.2.3',
+  name: '@a/b',
+  scope: '@a',
+  bareSpec: 'npm:@y/z@1.2.3',
+  namedRegistry: 'npm',
+  registry: 'https://registry.npmjs.org/',
+  conventionalRegistryTarball: 'https://registry.npmjs.org/@y/z/-/z-1.2.3.tgz',
+  subspec: @vltpkg/spec.Spec {
+    type: [32m'registry'[39m,
+    spec: [32m'@y/z@1.2.3'[39m,
+    name: [32m'@y/z'[39m,
+    scope: [32m'@y'[39m,
+    bareSpec: [32m'1.2.3'[39m,
+    namedRegistry: [32m'npm'[39m,
+    registry: [32m'https://registry.npmjs.org/'[39m,
+    registrySpec: [32m'1.2.3'[39m,
+    conventionalRegistryTarball: [32m'https://registry.npmjs.org/@y/z/-/z-1.2.3.tgz'[39m,
+    semver: [32m'1.2.3'[39m,
+    range: Range {
+      raw: [32m'1.2.3'[39m,
+      isAny: [33mfalse[39m,
+      set: [
+        Comparator {
+          includePrerelease: [33mfalse[39m,
+          raw: [32m'1.2.3'[39m,
+          tokens: [ [32m'1.2.3'[39m ],
+          tuples: [
+            [
+              [32m''[39m,
+              Version {
+                raw: [32m'1.2.3'[39m,
+                major: [33m1[39m,
+                minor: [33m2[39m,
+                patch: [33m3[39m,
+                prerelease: [90mundefined[39m,
+                build: [90mundefined[39m
+              }
+            ]
+          ],
+          isNone: [33mfalse[39m,
+          isAny: [33mfalse[39m
+        }
+      ],
+      includePrerelease: [33mfalse[39m
+    }
+  }
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > @a/b@npm:@y/z@1.2.3 > toString 1`] = `
+@a/b@npm:@y/z@1.2.3
+`
+
 exports[`test/index.ts > TAP > basic parsing tests > @foo/bar@ > inspect 1`] = `
 @vltpkg/spec.Spec {
   type: 'registry',
   spec: '@foo/bar@',
   name: '@foo/bar',
+  scope: '@foo',
   bareSpec: '',
   registry: 'https://registry.npmjs.org/',
   registrySpec: '',
@@ -32,6 +89,7 @@ exports[`test/index.ts > TAP > basic parsing tests > @foo/bar@* > inspect 1`] = 
   type: 'registry',
   spec: '@foo/bar@*',
   name: '@foo/bar',
+  scope: '@foo',
   bareSpec: '*',
   registry: 'https://registry.npmjs.org/',
   registrySpec: '*',
@@ -54,6 +112,7 @@ exports[`test/index.ts > TAP > basic parsing tests > @foo/bar@baz > inspect 1`] 
   type: 'registry',
   spec: '@foo/bar@baz',
   name: '@foo/bar',
+  scope: '@foo',
   bareSpec: 'baz',
   registry: 'https://registry.npmjs.org/',
   registrySpec: 'baz',
@@ -70,6 +129,7 @@ exports[`test/index.ts > TAP > basic parsing tests > @foo/bar@git+ssh://bitbucke
   type: 'git',
   spec: '@foo/bar@git+ssh://bitbucket.org/user/foo',
   name: '@foo/bar',
+  scope: '@foo',
   bareSpec: 'git+ssh://bitbucket.org/user/foo',
   gitRemote: 'git+ssh://bitbucket.org/user/foo'
 }
@@ -84,6 +144,7 @@ exports[`test/index.ts > TAP > basic parsing tests > @foo/bar@git+ssh://github.c
   type: 'git',
   spec: '@foo/bar@git+ssh://github.com/user/foo',
   name: '@foo/bar',
+  scope: '@foo',
   bareSpec: 'git+ssh://github.com/user/foo',
   gitRemote: 'git+ssh://github.com/user/foo'
 }
@@ -98,6 +159,7 @@ exports[`test/index.ts > TAP > basic parsing tests > @foo/bar@git+ssh://gitlab.c
   type: 'git',
   spec: '@foo/bar@git+ssh://gitlab.com/user/foo',
   name: '@foo/bar',
+  scope: '@foo',
   bareSpec: 'git+ssh://gitlab.com/user/foo',
   gitRemote: 'git+ssh://gitlab.com/user/foo'
 }
@@ -112,6 +174,7 @@ exports[`test/index.ts > TAP > basic parsing tests > @foo/bar@git+ssh://notgithu
   type: 'git',
   spec: '@foo/bar@git+ssh://notgithub.com/user/foo',
   name: '@foo/bar',
+  scope: '@foo',
   bareSpec: 'git+ssh://notgithub.com/user/foo',
   gitRemote: 'git+ssh://notgithub.com/user/foo'
 }
@@ -126,6 +189,7 @@ exports[`test/index.ts > TAP > basic parsing tests > @x/y@workspace:@a/b@ > insp
   type: 'workspace',
   spec: '@x/y@workspace:@a/b@',
   name: '@x/y',
+  scope: '@x',
   bareSpec: 'workspace:@a/b@',
   workspaceSpec: '*',
   workspace: '@a/b'
@@ -455,6 +519,7 @@ exports[`test/index.ts > TAP > basic parsing tests > foo@npm:bar@ > inspect 1`] 
   spec: 'foo@npm:bar@',
   name: 'foo',
   bareSpec: 'npm:bar@',
+  namedRegistry: 'npm',
   registry: 'https://registry.npmjs.org/',
   subspec: @vltpkg/spec.Spec {
     type: [32m'registry'[39m,
@@ -1600,6 +1665,7 @@ exports[`test/index.ts > TAP > basic parsing tests > x@npm:foo@npm:bar@npm:baz@1
   spec: 'x@npm:foo@npm:bar@npm:baz@1',
   name: 'x',
   bareSpec: 'npm:foo@npm:bar@npm:baz@1',
+  namedRegistry: 'npm',
   registry: 'https://registry.npmjs.org/',
   subspec: @vltpkg/spec.Spec {
     type: [32m'registry'[39m,
@@ -1678,6 +1744,7 @@ exports[`test/index.ts > TAP > basic parsing tests > x@npm:y@npm:z@github:a/x#br
   spec: 'x@npm:y@npm:z@github:a/x#branch',
   name: 'x',
   bareSpec: 'npm:y@npm:z@github:a/x#branch',
+  namedRegistry: 'npm',
   registry: 'https://registry.npmjs.org/',
   subspec: @vltpkg/spec.Spec {
     type: [32m'registry'[39m,
@@ -1697,6 +1764,7 @@ exports[`test/index.ts > TAP > basic parsing tests > x@npm:y@npm:z@github:a/x#br
       gitCommittish: [32m'branch'[39m,
       namedGitHost: [32m'github'[39m,
       namedGitHostPath: [32m'a/x'[39m,
+      namedRegistry: [32m'npm'[39m,
       remoteURL: [32m'https://codeload.github.com/a/x/tar.gz/branch'[39m
     }
   }
@@ -1718,6 +1786,7 @@ exports[`test/index.ts > TAP > basic parsing tests > x@registry:https://example.
     type: [32m'registry'[39m,
     spec: [32m'@org/pkg@latest'[39m,
     name: [32m'@org/pkg'[39m,
+    scope: [32m'@org'[39m,
     bareSpec: [32m'latest'[39m,
     registry: [32m'https://example.com/npm/'[39m,
     registrySpec: [32m'latest'[39m,
@@ -2069,6 +2138,198 @@ exports[`test/index.ts > TAP > basic parsing tests > x@workspace:y@1.x > inspect
 
 exports[`test/index.ts > TAP > basic parsing tests > x@workspace:y@1.x > toString 1`] = `
 x@workspace:y@1.x
+`
+
+exports[`test/index.ts > TAP > mixing scopes and names > scopes: @a 1`] = `
+@vltpkg/spec.Spec {
+  type: 'registry',
+  spec: '@a/b@x:@y/z@i:@j/k@1.2.3',
+  name: '@a/b',
+  scope: '@a',
+  scopeRegistry: 'https://a.com/',
+  bareSpec: 'x:@y/z@i:@j/k@1.2.3',
+  namedRegistry: 'x',
+  registry: 'https://x.com/',
+  conventionalRegistryTarball: 'https://i.com/@j/k/-/k-1.2.3.tgz',
+  subspec: @vltpkg/spec.Spec {
+    type: [32m'registry'[39m,
+    spec: [32m'@y/z@i:@j/k@1.2.3'[39m,
+    name: [32m'@y/z'[39m,
+    scope: [32m'@y'[39m,
+    bareSpec: [32m'i:@j/k@1.2.3'[39m,
+    namedRegistry: [32m'i'[39m,
+    registry: [32m'https://i.com/'[39m,
+    conventionalRegistryTarball: [32m'https://i.com/@j/k/-/k-1.2.3.tgz'[39m,
+    subspec: @vltpkg/spec.Spec {
+      type: [32m'registry'[39m,
+      spec: [32m'@j/k@1.2.3'[39m,
+      name: [32m'@j/k'[39m,
+      scope: [32m'@j'[39m,
+      bareSpec: [32m'1.2.3'[39m,
+      namedRegistry: [32m'i'[39m,
+      registry: [32m'https://i.com/'[39m,
+      registrySpec: [32m'1.2.3'[39m,
+      conventionalRegistryTarball: [32m'https://i.com/@j/k/-/k-1.2.3.tgz'[39m,
+      semver: [32m'1.2.3'[39m,
+      range: Range {
+        raw: [32m'1.2.3'[39m,
+        isAny: [33mfalse[39m,
+        set: [
+          Comparator {
+            includePrerelease: [33mfalse[39m,
+            raw: [32m'1.2.3'[39m,
+            tokens: [ [32m'1.2.3'[39m ],
+            tuples: [
+              [
+                [32m''[39m,
+                Version {
+                  raw: [32m'1.2.3'[39m,
+                  major: [33m1[39m,
+                  minor: [33m2[39m,
+                  patch: [33m3[39m,
+                  prerelease: [90mundefined[39m,
+                  build: [90mundefined[39m
+                }
+              ]
+            ],
+            isNone: [33mfalse[39m,
+            isAny: [33mfalse[39m
+          }
+        ],
+        includePrerelease: [33mfalse[39m
+      }
+    }
+  }
+}
+`
+
+exports[`test/index.ts > TAP > mixing scopes and names > scopes: @a, @y 1`] = `
+@vltpkg/spec.Spec {
+  type: 'registry',
+  spec: '@a/b@x:@y/z@i:@j/k@1.2.3',
+  name: '@a/b',
+  scope: '@a',
+  scopeRegistry: 'https://a.com/',
+  bareSpec: 'x:@y/z@i:@j/k@1.2.3',
+  namedRegistry: 'x',
+  registry: 'https://x.com/',
+  conventionalRegistryTarball: 'https://i.com/@j/k/-/k-1.2.3.tgz',
+  subspec: @vltpkg/spec.Spec {
+    type: [32m'registry'[39m,
+    spec: [32m'@y/z@i:@j/k@1.2.3'[39m,
+    name: [32m'@y/z'[39m,
+    scope: [32m'@y'[39m,
+    scopeRegistry: [32m'https://y.com/'[39m,
+    bareSpec: [32m'i:@j/k@1.2.3'[39m,
+    namedRegistry: [32m'i'[39m,
+    registry: [32m'https://i.com/'[39m,
+    conventionalRegistryTarball: [32m'https://i.com/@j/k/-/k-1.2.3.tgz'[39m,
+    subspec: @vltpkg/spec.Spec {
+      type: [32m'registry'[39m,
+      spec: [32m'@j/k@1.2.3'[39m,
+      name: [32m'@j/k'[39m,
+      scope: [32m'@j'[39m,
+      bareSpec: [32m'1.2.3'[39m,
+      namedRegistry: [32m'i'[39m,
+      registry: [32m'https://i.com/'[39m,
+      registrySpec: [32m'1.2.3'[39m,
+      conventionalRegistryTarball: [32m'https://i.com/@j/k/-/k-1.2.3.tgz'[39m,
+      semver: [32m'1.2.3'[39m,
+      range: Range {
+        raw: [32m'1.2.3'[39m,
+        isAny: [33mfalse[39m,
+        set: [
+          Comparator {
+            includePrerelease: [33mfalse[39m,
+            raw: [32m'1.2.3'[39m,
+            tokens: [ [32m'1.2.3'[39m ],
+            tuples: [
+              [
+                [32m''[39m,
+                Version {
+                  raw: [32m'1.2.3'[39m,
+                  major: [33m1[39m,
+                  minor: [33m2[39m,
+                  patch: [33m3[39m,
+                  prerelease: [90mundefined[39m,
+                  build: [90mundefined[39m
+                }
+              ]
+            ],
+            isNone: [33mfalse[39m,
+            isAny: [33mfalse[39m
+          }
+        ],
+        includePrerelease: [33mfalse[39m
+      }
+    }
+  }
+}
+`
+
+exports[`test/index.ts > TAP > mixing scopes and names > scopes: @a, @y, @j 1`] = `
+@vltpkg/spec.Spec {
+  type: 'registry',
+  spec: '@a/b@x:@y/z@i:@j/k@1.2.3',
+  name: '@a/b',
+  scope: '@a',
+  scopeRegistry: 'https://a.com/',
+  bareSpec: 'x:@y/z@i:@j/k@1.2.3',
+  namedRegistry: 'x',
+  registry: 'https://x.com/',
+  conventionalRegistryTarball: 'https://j.com/@j/k/-/k-1.2.3.tgz',
+  subspec: @vltpkg/spec.Spec {
+    type: [32m'registry'[39m,
+    spec: [32m'@y/z@i:@j/k@1.2.3'[39m,
+    name: [32m'@y/z'[39m,
+    scope: [32m'@y'[39m,
+    scopeRegistry: [32m'https://y.com/'[39m,
+    bareSpec: [32m'i:@j/k@1.2.3'[39m,
+    namedRegistry: [32m'i'[39m,
+    registry: [32m'https://i.com/'[39m,
+    conventionalRegistryTarball: [32m'https://j.com/@j/k/-/k-1.2.3.tgz'[39m,
+    subspec: @vltpkg/spec.Spec {
+      type: [32m'registry'[39m,
+      spec: [32m'@j/k@1.2.3'[39m,
+      name: [32m'@j/k'[39m,
+      scope: [32m'@j'[39m,
+      scopeRegistry: [32m'https://j.com/'[39m,
+      bareSpec: [32m'1.2.3'[39m,
+      namedRegistry: [32m'i'[39m,
+      registry: [32m'https://j.com/'[39m,
+      registrySpec: [32m'1.2.3'[39m,
+      conventionalRegistryTarball: [32m'https://j.com/@j/k/-/k-1.2.3.tgz'[39m,
+      semver: [32m'1.2.3'[39m,
+      range: Range {
+        raw: [32m'1.2.3'[39m,
+        isAny: [33mfalse[39m,
+        set: [
+          Comparator {
+            includePrerelease: [33mfalse[39m,
+            raw: [32m'1.2.3'[39m,
+            tokens: [ [32m'1.2.3'[39m ],
+            tuples: [
+              [
+                [32m''[39m,
+                Version {
+                  raw: [32m'1.2.3'[39m,
+                  major: [33m1[39m,
+                  minor: [33m2[39m,
+                  patch: [33m3[39m,
+                  prerelease: [90mundefined[39m,
+                  build: [90mundefined[39m
+                }
+              ]
+            ],
+            isNone: [33mfalse[39m,
+            isAny: [33mfalse[39m
+          }
+        ],
+        includePrerelease: [33mfalse[39m
+      }
+    }
+  }
+}
 `
 
 exports[`test/index.ts > TAP > reverse-lookup registry: specifiers if named > must match snapshot 1`] = `

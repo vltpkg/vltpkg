@@ -44,6 +44,7 @@ export const recordFields = [
   'git-hosts',
   'registries',
   'git-host-archives',
+  'scope-registries',
 ] as const
 
 export type RecordField = (typeof recordFields)[number]
@@ -220,6 +221,33 @@ export const definition = jack({
                     \`npm:\` prefix. It is not recommended to change this
                     mapping in most cases.
                     `,
+    },
+
+    'scope-registries': {
+      hint: '@scope=url',
+      description: `Map package name scopes to registry URLs.
+
+                    For example,
+                    \`--scope-registries @acme=https://registry.acme/\`
+                    would tell vlt to fetch any packages named
+                    \`@acme/...\` from the \`https://registry.acme/\`
+                    registry.
+
+                    Note: this way of specifying registries is more ambiguous,
+                    compared with using the \`--registries\` field and explicit
+                    prefixes, because instead of failing when the configuration
+                    is absent, it will instead attempt to fetch from the
+                    default registry.
+
+                    By comparison, using
+                    \`--registries acme=https://registry.acme/\` and then
+                    specifying dependencies such as \`"foo": "acme:foo@1.x"\`
+                    means that regardless of the name, the package will be
+                    fetched from the explicitly named registry, or fail if
+                    no registry is defined with that name.
+
+                    However, custom registry aliases are not supported by other
+                    package managers.`,
     },
 
     'git-hosts': {
