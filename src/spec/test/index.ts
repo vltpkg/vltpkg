@@ -4,6 +4,8 @@ import { posix, win32 } from 'node:path'
 import t from 'tap'
 import {
   kCustomInspect,
+  Scope,
+  SpecOptions,
   type Spec as SpecType,
 } from '../src/index.js'
 
@@ -146,6 +148,7 @@ t.test('basic parsing tests', t => {
     '@x/y@workspace:@a/b@',
     'x@https://github.com/user/project',
     'foo@https://bitbucket.org/user/project/a/s/d/f/#semver:1.x::path:src/foo',
+    '@a/b@npm:@y/z@1.2.3',
   ]
 
   t.plan(specs.length)
@@ -157,6 +160,35 @@ t.test('basic parsing tests', t => {
       t.end()
     })
   }
+})
+
+t.test('mixing scopes and names', t => {
+  const spec = '@a/b@x:@y/z@i:@j/k@1.2.3'
+  const scopeRegs: [Scope, string][] = [
+    ['@a', 'https://a.com/'],
+    ['@y', 'https://y.com/'],
+    ['@j', 'https://j.com/'],
+  ]
+
+  const scopeRegistries: Record<Scope, string> = {}
+
+  const options: SpecOptions = {
+    registries: {
+      x: 'https://x.com/',
+      i: 'https://i.com/',
+    },
+    'scope-registries': scopeRegistries,
+  }
+
+  for (const [scope, reg] of scopeRegs) {
+    scopeRegistries[scope] = reg
+    t.matchSnapshot(
+      Spec.parse(spec, options)[kCustomInspect](),
+      `scopes: ${Object.keys(scopeRegistries).join(', ')}`,
+    )
+  }
+
+  t.end()
 })
 
 t.throws(() => Spec.parse('x@github:a/b#dead::semver:1.x'))
