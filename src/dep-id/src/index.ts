@@ -147,7 +147,7 @@ export const hydrateTuple = (
     }
     case 'file': {
       if (!first) {
-        throw error('no remoteURL found on remote id', {
+        throw error('no file path found on remote id', {
           found: tuple,
         })
       }
