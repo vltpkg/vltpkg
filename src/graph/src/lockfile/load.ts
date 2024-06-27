@@ -1,11 +1,11 @@
-import { readFileSync } from 'node:fs'
-import { resolve } from 'node:path'
 import { DepID, splitDepID } from '@vltpkg/dep-id'
 import { error } from '@vltpkg/error-cause'
 import { PackageJson } from '@vltpkg/package-json'
 import { Spec, SpecOptions } from '@vltpkg/spec'
 import { ManifestMinified } from '@vltpkg/types'
 import { Monorepo } from '@vltpkg/workspaces'
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import { PathScurry } from 'path-scurry'
 import {
   longDependencyTypes,
@@ -14,8 +14,8 @@ import {
 import { Graph } from '../graph.js'
 import {
   LockfileData,
-  LockfileDataNode,
   LockfileDataEdge,
+  LockfileDataNode,
 } from './types.js'
 
 export type LoadOptions = SpecOptions & {
@@ -65,11 +65,12 @@ const loadNodes = ({ graph, nodesInfo }: LoadNodesOptions) => {
       id,
       undefined,
       undefined,
-      name,
+      /* c8 ignore next */
+      name ?? undefined,
       version,
     )
-    node.integrity = integrity || undefined
-    node.resolved = resolved
+    node.integrity = integrity ?? undefined
+    node.resolved = resolved ?? undefined
     if (location) node.location = location
   }
 }
@@ -96,11 +97,19 @@ const loadEdges = (
 }
 
 export const load = (options: LoadOptions): Graph => {
-  const { projectRoot, mainManifest, scurry } = options
+  const { projectRoot } = options
   const file = readFileSync(resolve(projectRoot, 'vlt-lock.json'), {
     encoding: 'utf8',
   })
   const lockfileData = JSON.parse(file) as LockfileData
+  return loadObject(options, lockfileData)
+}
+
+export const loadObject = (
+  options: LoadOptions,
+  lockfileData: LockfileData,
+) => {
+  const { mainManifest, scurry } = options
   const store = Object.entries(lockfileData.nodes) as [
     DepID,
     LockfileDataNode,
@@ -119,12 +128,11 @@ export const load = (options: LoadOptions): Graph => {
   const mergedOptions = {
     ...options,
     registries: lockfileData.registries,
-  } as SpecOptions
+  }
   const graph = new Graph({
     ...mergedOptions,
     mainManifest,
     monorepo,
-    projectRoot,
   })
 
   loadNodes({ graph, nodesInfo })

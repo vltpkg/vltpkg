@@ -1,6 +1,7 @@
 import { DepID } from '@vltpkg/dep-id'
-import { DependencyTypeShort } from '../dependencies.js'
 import { Integrity } from '@vltpkg/types'
+import { DependencyTypeShort } from '../dependencies.js'
+import type { Graph } from '../graph.js'
 
 /**
  * This is the main type definition for the contents of the
@@ -19,10 +20,10 @@ export type LockfileData = {
  * Lockfile representation of a node from the install graph.
  */
 export type LockfileDataNode = [
-  name?: string,
-  integrity?: Integrity,
-  resolved?: string,
-  location?: string,
+  name?: string | null,
+  integrity?: Integrity | null,
+  resolved?: string | null,
+  location?: string | null,
 ]
 
 /**
