@@ -146,6 +146,10 @@ export class Node {
     this.integrity ??= this.manifest?.dist?.integrity
   }
 
+  equals (other: Node) {
+    return this.id === other.id && this.location === other.location
+  }
+
   /**
    * Sets the node as an importer along with its location.
    */
