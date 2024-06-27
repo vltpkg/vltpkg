@@ -100,6 +100,20 @@ t.test('Node', async t => {
   bar.setDefaultLocation()
   t.equal(bar.location, defaultBarLoc)
 
+  const otherBar = new Node(
+    {
+      ...options,
+      projectRoot: t.testdirName,
+    },
+    barId,
+    barMani,
+  )
+  t.equal(bar.equals(otherBar), true)
+  t.equal(otherBar.equals(bar), true)
+  otherBar.location = './other/location'
+  t.equal(bar.equals(otherBar), false)
+  t.equal(otherBar.equals(bar), false)
+
   root.addEdgesTo('prod', new Spec('foo', '^1.0.0'), foo)
   root.addEdgesTo('prod', new Spec('bar', '^1.0.0'), bar)
 
