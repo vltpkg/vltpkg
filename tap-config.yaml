@@ -5,5 +5,5 @@ typecheck: true
 
 # globs are always relative to the project root regardless.
 exclude:
-  - "scripts/**"
-  - "test/fixtures/**"
+  - 'scripts/**'
+  - 'test/fixtures/**'

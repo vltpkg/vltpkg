@@ -8,14 +8,14 @@ jobs:
       matrix:
         node-version: [20.x]
         platform:
-        - os: ubuntu-latest
-          shell: bash
-        - os: macos-latest
-          shell: bash
-        - os: windows-latest
-          shell: bash
-        - os: windows-latest
-          shell: powershell
+          - os: ubuntu-latest
+            shell: bash
+          - os: macos-latest
+            shell: bash
+          - os: windows-latest
+            shell: bash
+          - os: windows-latest
+            shell: powershell
       fail-fast: false
 
     runs-on: ${{ matrix.platform.os }}
@@ -33,7 +33,7 @@ jobs:
           node-version: ${{ matrix.node-version }}
 
       - name: Install dependencies
-        run: "npx --yes pnpm i"
+        run: 'npx --yes pnpm i'
 
       - name: Run Tests
-        run: "npx --yes pnpm --no-bail --report-summary -r test"
+        run: 'npx --yes pnpm --no-bail --report-summary -r test'

@@ -18,8 +18,8 @@
     "@vltpkg/git-scp-url": "workspace:*",
     "@vltpkg/pick-manifest": "workspace:*",
     "@vltpkg/promise-spawn": "workspace:*",
-    "@vltpkg/spec": "workspace:*",
     "@vltpkg/semver": "workspace:*",
+    "@vltpkg/spec": "workspace:*",
     "@vltpkg/which": "workspace:*",
     "lru-cache": "^10.2.2",
     "promise-retry": "^2.0.1"

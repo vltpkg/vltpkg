@@ -6,7 +6,8 @@
     "devPreinstall": "node scripts/consistent-dev-deps.js",
     "test": "pnpm --silent --no-bail --report-summary -r test -- -Rsilent || node scripts/report-test-failures.js",
     "snap": "pnpm --silent --no-bail --report-summary run -r snap -Rsilent || node scripts/report-test-failures.js",
-    "typedoc": "typedoc"
+    "typedoc": "typedoc",
+    "format": "prettier --write . --log-level warn --ignore-path ./.prettierignore --cache"
   },
   "type": "module",
   "devDependencies": {
@@ -28,5 +29,6 @@
   },
   "dependencies": {
     "vlt": "workspace:0.0.0-0"
-  }
+  },
+  "prettier": "./.prettierrc.json"
 }

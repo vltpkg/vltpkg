@@ -56,7 +56,7 @@
     "typedoc": "typedoc"
   },
   "tap": {
-    "coverage-map": "../../coverage-map.js"
+    "extends": "../../tap-config.yaml"
   },
   "prettier": "../../.prettierrc.json",
   "type": "module",
