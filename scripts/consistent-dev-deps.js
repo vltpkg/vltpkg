@@ -55,13 +55,16 @@ for (const w of readdirSync(wsdir)) {
         continue
       }
       if (rootPJ.devDependencies[k] === undefined) {
-        throw new Error('external devDep must be declared on top level', {
-          cause: {
-            path: pf,
-            found: k,
-            spec: `${k}@${devDependencies[k]}`,
+        throw new Error(
+          'external devDep must be declared on top level',
+          {
+            cause: {
+              path: pf,
+              found: k,
+              spec: `${k}@${devDependencies[k]}`,
+            },
           },
-        })
+        )
       }
       devDependencies[k] = rootPJ.devDependencies[k]
     }
