@@ -1,6 +1,7 @@
 import { Range } from '@vltpkg/semver'
 import * as os from 'node:os'
 import { posix, win32 } from 'node:path'
+import { inspect } from 'node:util'
 import t from 'tap'
 import {
   kCustomInspect,
@@ -32,6 +33,9 @@ const formatSnapshot = (obj: any): any =>
 t.formatSnapshot = formatSnapshot
 
 t.test('basic parsing tests', t => {
+  // make sure we're in non-TTY mode, in case this test is run directly
+  t.intercept(process.stdout, 'isTTY', { value: false })
+  t.intercept(process.stderr, 'isTTY', { value: false })
   const specs = [
     'foo',
     'foo@1.2',
@@ -155,7 +159,12 @@ t.test('basic parsing tests', t => {
   for (const v of specs) {
     t.test(v, t => {
       const s = Spec.parse(v)
-      t.matchSnapshot(s[kCustomInspect](), 'inspect')
+      t.matchSnapshot(inspect(s), 'inspect default')
+      t.matchSnapshot(
+        inspect(s, { colors: true }),
+        'inspect with color',
+      )
+      t.matchSnapshot(inspect(s, { depth: Infinity }), 'inspect deep')
       t.matchSnapshot(String(s), 'toString')
       t.end()
     })
