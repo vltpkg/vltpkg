@@ -5,7 +5,7 @@
  * Make sure to inspect the output below.  Do not ignore changes!
  */
 'use strict'
-exports[`test/index.ts > TAP > basic parsing tests > @a/b@npm:@y/z@1.2.3 > inspect 1`] = `
+exports[`test/index.ts > TAP > basic parsing tests > @a/b@npm:@y/z@1.2.3 > inspect deep 1`] = `
 @vltpkg/spec.Spec {
   type: 'registry',
   spec: '@a/b@npm:@y/z@1.2.3',
@@ -15,6 +15,89 @@ exports[`test/index.ts > TAP > basic parsing tests > @a/b@npm:@y/z@1.2.3 > inspe
   namedRegistry: 'npm',
   registry: 'https://registry.npmjs.org/',
   conventionalRegistryTarball: 'https://registry.npmjs.org/@y/z/-/z-1.2.3.tgz',
+  subspec: @vltpkg/spec.Spec {
+    type: 'registry',
+    spec: '@y/z@1.2.3',
+    name: '@y/z',
+    scope: '@y',
+    bareSpec: '1.2.3',
+    namedRegistry: 'npm',
+    registry: 'https://registry.npmjs.org/',
+    registrySpec: '1.2.3',
+    conventionalRegistryTarball: 'https://registry.npmjs.org/@y/z/-/z-1.2.3.tgz',
+    semver: '1.2.3',
+    range: Range {
+      raw: '1.2.3',
+      isAny: false,
+      set: [
+        Comparator {
+          includePrerelease: false,
+          raw: '1.2.3',
+          tokens: [ '1.2.3' ],
+          tuples: [
+            [
+              '',
+              Version {
+                raw: '1.2.3',
+                major: 1,
+                minor: 2,
+                patch: 3,
+                prerelease: undefined,
+                build: undefined
+              }
+            ]
+          ],
+          isNone: false,
+          isAny: false
+        }
+      ],
+      includePrerelease: false
+    }
+  }
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > @a/b@npm:@y/z@1.2.3 > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'registry',
+  spec: '@a/b@npm:@y/z@1.2.3',
+  name: '@a/b',
+  scope: '@a',
+  bareSpec: 'npm:@y/z@1.2.3',
+  namedRegistry: 'npm',
+  registry: 'https://registry.npmjs.org/',
+  conventionalRegistryTarball: 'https://registry.npmjs.org/@y/z/-/z-1.2.3.tgz',
+  subspec: @vltpkg/spec.Spec {
+    type: 'registry',
+    spec: '@y/z@1.2.3',
+    name: '@y/z',
+    scope: '@y',
+    bareSpec: '1.2.3',
+    namedRegistry: 'npm',
+    registry: 'https://registry.npmjs.org/',
+    registrySpec: '1.2.3',
+    conventionalRegistryTarball: 'https://registry.npmjs.org/@y/z/-/z-1.2.3.tgz',
+    semver: '1.2.3',
+    range: Range {
+      raw: '1.2.3',
+      isAny: false,
+      set: [ [Comparator] ],
+      includePrerelease: false
+    }
+  }
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > @a/b@npm:@y/z@1.2.3 > inspect with color 1`] = `
+@vltpkg/spec.Spec {
+  type: [32m'registry'[39m,
+  spec: [32m'@a/b@npm:@y/z@1.2.3'[39m,
+  name: [32m'@a/b'[39m,
+  scope: [32m'@a'[39m,
+  bareSpec: [32m'npm:@y/z@1.2.3'[39m,
+  namedRegistry: [32m'npm'[39m,
+  registry: [32m'https://registry.npmjs.org/'[39m,
+  conventionalRegistryTarball: [32m'https://registry.npmjs.org/@y/z/-/z-1.2.3.tgz'[39m,
   subspec: @vltpkg/spec.Spec {
     type: [32m'registry'[39m,
     spec: [32m'@y/z@1.2.3'[39m,
@@ -29,28 +112,7 @@ exports[`test/index.ts > TAP > basic parsing tests > @a/b@npm:@y/z@1.2.3 > inspe
     range: Range {
       raw: [32m'1.2.3'[39m,
       isAny: [33mfalse[39m,
-      set: [
-        Comparator {
-          includePrerelease: [33mfalse[39m,
-          raw: [32m'1.2.3'[39m,
-          tokens: [ [32m'1.2.3'[39m ],
-          tuples: [
-            [
-              [32m''[39m,
-              Version {
-                raw: [32m'1.2.3'[39m,
-                major: [33m1[39m,
-                minor: [33m2[39m,
-                patch: [33m3[39m,
-                prerelease: [90mundefined[39m,
-                build: [90mundefined[39m
-              }
-            ]
-          ],
-          isNone: [33mfalse[39m,
-          isAny: [33mfalse[39m
-        }
-      ],
+      set: [ [36m[Comparator][39m ],
       includePrerelease: [33mfalse[39m
     }
   }
@@ -61,7 +123,42 @@ exports[`test/index.ts > TAP > basic parsing tests > @a/b@npm:@y/z@1.2.3 > toStr
 @a/b@npm:@y/z@1.2.3
 `
 
-exports[`test/index.ts > TAP > basic parsing tests > @foo/bar@ > inspect 1`] = `
+exports[`test/index.ts > TAP > basic parsing tests > @foo/bar@ > inspect deep 1`] = `
+@vltpkg/spec.Spec {
+  type: 'registry',
+  spec: '@foo/bar@',
+  name: '@foo/bar',
+  scope: '@foo',
+  bareSpec: '',
+  registry: 'https://registry.npmjs.org/',
+  registrySpec: '',
+  semver: '',
+  range: Range {
+    raw: '',
+    isAny: true,
+    set: [
+      Comparator {
+        includePrerelease: false,
+        raw: '',
+        tokens: [],
+        tuples: [
+          {
+            isAny: true,
+            toString: [Function: toString],
+            includePrerelease: false,
+            test: [Function: test]
+          }
+        ],
+        isNone: false,
+        isAny: true
+      }
+    ],
+    includePrerelease: false
+  }
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > @foo/bar@ > inspect default 1`] = `
 @vltpkg/spec.Spec {
   type: 'registry',
   spec: '@foo/bar@',
@@ -80,11 +177,65 @@ exports[`test/index.ts > TAP > basic parsing tests > @foo/bar@ > inspect 1`] = `
 }
 `
 
+exports[`test/index.ts > TAP > basic parsing tests > @foo/bar@ > inspect with color 1`] = `
+@vltpkg/spec.Spec {
+  type: [32m'registry'[39m,
+  spec: [32m'@foo/bar@'[39m,
+  name: [32m'@foo/bar'[39m,
+  scope: [32m'@foo'[39m,
+  bareSpec: [32m''[39m,
+  registry: [32m'https://registry.npmjs.org/'[39m,
+  registrySpec: [32m''[39m,
+  semver: [32m''[39m,
+  range: Range {
+    raw: [32m''[39m,
+    isAny: [33mtrue[39m,
+    set: [ [36m[Comparator][39m ],
+    includePrerelease: [33mfalse[39m
+  }
+}
+`
+
 exports[`test/index.ts > TAP > basic parsing tests > @foo/bar@ > toString 1`] = `
 @foo/bar@
 `
 
-exports[`test/index.ts > TAP > basic parsing tests > @foo/bar@* > inspect 1`] = `
+exports[`test/index.ts > TAP > basic parsing tests > @foo/bar@* > inspect deep 1`] = `
+@vltpkg/spec.Spec {
+  type: 'registry',
+  spec: '@foo/bar@*',
+  name: '@foo/bar',
+  scope: '@foo',
+  bareSpec: '*',
+  registry: 'https://registry.npmjs.org/',
+  registrySpec: '*',
+  semver: '*',
+  range: Range {
+    raw: '*',
+    isAny: true,
+    set: [
+      Comparator {
+        includePrerelease: false,
+        raw: '*',
+        tokens: [ '*' ],
+        tuples: [
+          {
+            isAny: true,
+            toString: [Function: toString],
+            includePrerelease: false,
+            test: [Function: test]
+          }
+        ],
+        isNone: false,
+        isAny: true
+      }
+    ],
+    includePrerelease: false
+  }
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > @foo/bar@* > inspect default 1`] = `
 @vltpkg/spec.Spec {
   type: 'registry',
   spec: '@foo/bar@*',
@@ -103,11 +254,30 @@ exports[`test/index.ts > TAP > basic parsing tests > @foo/bar@* > inspect 1`] = 
 }
 `
 
+exports[`test/index.ts > TAP > basic parsing tests > @foo/bar@* > inspect with color 1`] = `
+@vltpkg/spec.Spec {
+  type: [32m'registry'[39m,
+  spec: [32m'@foo/bar@*'[39m,
+  name: [32m'@foo/bar'[39m,
+  scope: [32m'@foo'[39m,
+  bareSpec: [32m'*'[39m,
+  registry: [32m'https://registry.npmjs.org/'[39m,
+  registrySpec: [32m'*'[39m,
+  semver: [32m'*'[39m,
+  range: Range {
+    raw: [32m'*'[39m,
+    isAny: [33mtrue[39m,
+    set: [ [36m[Comparator][39m ],
+    includePrerelease: [33mfalse[39m
+  }
+}
+`
+
 exports[`test/index.ts > TAP > basic parsing tests > @foo/bar@* > toString 1`] = `
 @foo/bar@*
 `
 
-exports[`test/index.ts > TAP > basic parsing tests > @foo/bar@baz > inspect 1`] = `
+exports[`test/index.ts > TAP > basic parsing tests > @foo/bar@baz > inspect deep 1`] = `
 @vltpkg/spec.Spec {
   type: 'registry',
   spec: '@foo/bar@baz',
@@ -120,11 +290,37 @@ exports[`test/index.ts > TAP > basic parsing tests > @foo/bar@baz > inspect 1`] 
 }
 `
 
+exports[`test/index.ts > TAP > basic parsing tests > @foo/bar@baz > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'registry',
+  spec: '@foo/bar@baz',
+  name: '@foo/bar',
+  scope: '@foo',
+  bareSpec: 'baz',
+  registry: 'https://registry.npmjs.org/',
+  registrySpec: 'baz',
+  distTag: 'baz'
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > @foo/bar@baz > inspect with color 1`] = `
+@vltpkg/spec.Spec {
+  type: [32m'registry'[39m,
+  spec: [32m'@foo/bar@baz'[39m,
+  name: [32m'@foo/bar'[39m,
+  scope: [32m'@foo'[39m,
+  bareSpec: [32m'baz'[39m,
+  registry: [32m'https://registry.npmjs.org/'[39m,
+  registrySpec: [32m'baz'[39m,
+  distTag: [32m'baz'[39m
+}
+`
+
 exports[`test/index.ts > TAP > basic parsing tests > @foo/bar@baz > toString 1`] = `
 @foo/bar@baz
 `
 
-exports[`test/index.ts > TAP > basic parsing tests > @foo/bar@git+ssh://bitbucket.org/user/foo > inspect 1`] = `
+exports[`test/index.ts > TAP > basic parsing tests > @foo/bar@git+ssh://bitbucket.org/user/foo > inspect deep 1`] = `
 @vltpkg/spec.Spec {
   type: 'git',
   spec: '@foo/bar@git+ssh://bitbucket.org/user/foo',
@@ -135,11 +331,33 @@ exports[`test/index.ts > TAP > basic parsing tests > @foo/bar@git+ssh://bitbucke
 }
 `
 
+exports[`test/index.ts > TAP > basic parsing tests > @foo/bar@git+ssh://bitbucket.org/user/foo > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: '@foo/bar@git+ssh://bitbucket.org/user/foo',
+  name: '@foo/bar',
+  scope: '@foo',
+  bareSpec: 'git+ssh://bitbucket.org/user/foo',
+  gitRemote: 'git+ssh://bitbucket.org/user/foo'
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > @foo/bar@git+ssh://bitbucket.org/user/foo > inspect with color 1`] = `
+@vltpkg/spec.Spec {
+  type: [32m'git'[39m,
+  spec: [32m'@foo/bar@git+ssh://bitbucket.org/user/foo'[39m,
+  name: [32m'@foo/bar'[39m,
+  scope: [32m'@foo'[39m,
+  bareSpec: [32m'git+ssh://bitbucket.org/user/foo'[39m,
+  gitRemote: [32m'git+ssh://bitbucket.org/user/foo'[39m
+}
+`
+
 exports[`test/index.ts > TAP > basic parsing tests > @foo/bar@git+ssh://bitbucket.org/user/foo > toString 1`] = `
 @foo/bar@git+ssh://bitbucket.org/user/foo
 `
 
-exports[`test/index.ts > TAP > basic parsing tests > @foo/bar@git+ssh://github.com/user/foo > inspect 1`] = `
+exports[`test/index.ts > TAP > basic parsing tests > @foo/bar@git+ssh://github.com/user/foo > inspect deep 1`] = `
 @vltpkg/spec.Spec {
   type: 'git',
   spec: '@foo/bar@git+ssh://github.com/user/foo',
@@ -150,11 +368,33 @@ exports[`test/index.ts > TAP > basic parsing tests > @foo/bar@git+ssh://github.c
 }
 `
 
+exports[`test/index.ts > TAP > basic parsing tests > @foo/bar@git+ssh://github.com/user/foo > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: '@foo/bar@git+ssh://github.com/user/foo',
+  name: '@foo/bar',
+  scope: '@foo',
+  bareSpec: 'git+ssh://github.com/user/foo',
+  gitRemote: 'git+ssh://github.com/user/foo'
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > @foo/bar@git+ssh://github.com/user/foo > inspect with color 1`] = `
+@vltpkg/spec.Spec {
+  type: [32m'git'[39m,
+  spec: [32m'@foo/bar@git+ssh://github.com/user/foo'[39m,
+  name: [32m'@foo/bar'[39m,
+  scope: [32m'@foo'[39m,
+  bareSpec: [32m'git+ssh://github.com/user/foo'[39m,
+  gitRemote: [32m'git+ssh://github.com/user/foo'[39m
+}
+`
+
 exports[`test/index.ts > TAP > basic parsing tests > @foo/bar@git+ssh://github.com/user/foo > toString 1`] = `
 @foo/bar@git+ssh://github.com/user/foo
 `
 
-exports[`test/index.ts > TAP > basic parsing tests > @foo/bar@git+ssh://gitlab.com/user/foo > inspect 1`] = `
+exports[`test/index.ts > TAP > basic parsing tests > @foo/bar@git+ssh://gitlab.com/user/foo > inspect deep 1`] = `
 @vltpkg/spec.Spec {
   type: 'git',
   spec: '@foo/bar@git+ssh://gitlab.com/user/foo',
@@ -165,11 +405,33 @@ exports[`test/index.ts > TAP > basic parsing tests > @foo/bar@git+ssh://gitlab.c
 }
 `
 
+exports[`test/index.ts > TAP > basic parsing tests > @foo/bar@git+ssh://gitlab.com/user/foo > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: '@foo/bar@git+ssh://gitlab.com/user/foo',
+  name: '@foo/bar',
+  scope: '@foo',
+  bareSpec: 'git+ssh://gitlab.com/user/foo',
+  gitRemote: 'git+ssh://gitlab.com/user/foo'
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > @foo/bar@git+ssh://gitlab.com/user/foo > inspect with color 1`] = `
+@vltpkg/spec.Spec {
+  type: [32m'git'[39m,
+  spec: [32m'@foo/bar@git+ssh://gitlab.com/user/foo'[39m,
+  name: [32m'@foo/bar'[39m,
+  scope: [32m'@foo'[39m,
+  bareSpec: [32m'git+ssh://gitlab.com/user/foo'[39m,
+  gitRemote: [32m'git+ssh://gitlab.com/user/foo'[39m
+}
+`
+
 exports[`test/index.ts > TAP > basic parsing tests > @foo/bar@git+ssh://gitlab.com/user/foo > toString 1`] = `
 @foo/bar@git+ssh://gitlab.com/user/foo
 `
 
-exports[`test/index.ts > TAP > basic parsing tests > @foo/bar@git+ssh://notgithub.com/user/foo > inspect 1`] = `
+exports[`test/index.ts > TAP > basic parsing tests > @foo/bar@git+ssh://notgithub.com/user/foo > inspect deep 1`] = `
 @vltpkg/spec.Spec {
   type: 'git',
   spec: '@foo/bar@git+ssh://notgithub.com/user/foo',
@@ -180,11 +442,33 @@ exports[`test/index.ts > TAP > basic parsing tests > @foo/bar@git+ssh://notgithu
 }
 `
 
+exports[`test/index.ts > TAP > basic parsing tests > @foo/bar@git+ssh://notgithub.com/user/foo > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: '@foo/bar@git+ssh://notgithub.com/user/foo',
+  name: '@foo/bar',
+  scope: '@foo',
+  bareSpec: 'git+ssh://notgithub.com/user/foo',
+  gitRemote: 'git+ssh://notgithub.com/user/foo'
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > @foo/bar@git+ssh://notgithub.com/user/foo > inspect with color 1`] = `
+@vltpkg/spec.Spec {
+  type: [32m'git'[39m,
+  spec: [32m'@foo/bar@git+ssh://notgithub.com/user/foo'[39m,
+  name: [32m'@foo/bar'[39m,
+  scope: [32m'@foo'[39m,
+  bareSpec: [32m'git+ssh://notgithub.com/user/foo'[39m,
+  gitRemote: [32m'git+ssh://notgithub.com/user/foo'[39m
+}
+`
+
 exports[`test/index.ts > TAP > basic parsing tests > @foo/bar@git+ssh://notgithub.com/user/foo > toString 1`] = `
 @foo/bar@git+ssh://notgithub.com/user/foo
 `
 
-exports[`test/index.ts > TAP > basic parsing tests > @x/y@workspace:@a/b@ > inspect 1`] = `
+exports[`test/index.ts > TAP > basic parsing tests > @x/y@workspace:@a/b@ > inspect deep 1`] = `
 @vltpkg/spec.Spec {
   type: 'workspace',
   spec: '@x/y@workspace:@a/b@',
@@ -196,11 +480,69 @@ exports[`test/index.ts > TAP > basic parsing tests > @x/y@workspace:@a/b@ > insp
 }
 `
 
+exports[`test/index.ts > TAP > basic parsing tests > @x/y@workspace:@a/b@ > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'workspace',
+  spec: '@x/y@workspace:@a/b@',
+  name: '@x/y',
+  scope: '@x',
+  bareSpec: 'workspace:@a/b@',
+  workspaceSpec: '*',
+  workspace: '@a/b'
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > @x/y@workspace:@a/b@ > inspect with color 1`] = `
+@vltpkg/spec.Spec {
+  type: [32m'workspace'[39m,
+  spec: [32m'@x/y@workspace:@a/b@'[39m,
+  name: [32m'@x/y'[39m,
+  scope: [32m'@x'[39m,
+  bareSpec: [32m'workspace:@a/b@'[39m,
+  workspaceSpec: [32m'*'[39m,
+  workspace: [32m'@a/b'[39m
+}
+`
+
 exports[`test/index.ts > TAP > basic parsing tests > @x/y@workspace:@a/b@ > toString 1`] = `
 @x/y@workspace:@a/b@
 `
 
-exports[`test/index.ts > TAP > basic parsing tests > foo > inspect 1`] = `
+exports[`test/index.ts > TAP > basic parsing tests > foo > inspect deep 1`] = `
+@vltpkg/spec.Spec {
+  type: 'registry',
+  spec: 'foo',
+  name: 'foo',
+  bareSpec: '',
+  registry: 'https://registry.npmjs.org/',
+  registrySpec: '',
+  semver: '',
+  range: Range {
+    raw: '',
+    isAny: true,
+    set: [
+      Comparator {
+        includePrerelease: false,
+        raw: '',
+        tokens: [],
+        tuples: [
+          {
+            isAny: true,
+            toString: [Function: toString],
+            includePrerelease: false,
+            test: [Function: test]
+          }
+        ],
+        isNone: false,
+        isAny: true
+      }
+    ],
+    includePrerelease: false
+  }
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > foo > inspect default 1`] = `
 @vltpkg/spec.Spec {
   type: 'registry',
   spec: 'foo',
@@ -218,11 +560,63 @@ exports[`test/index.ts > TAP > basic parsing tests > foo > inspect 1`] = `
 }
 `
 
+exports[`test/index.ts > TAP > basic parsing tests > foo > inspect with color 1`] = `
+@vltpkg/spec.Spec {
+  type: [32m'registry'[39m,
+  spec: [32m'foo'[39m,
+  name: [32m'foo'[39m,
+  bareSpec: [32m''[39m,
+  registry: [32m'https://registry.npmjs.org/'[39m,
+  registrySpec: [32m''[39m,
+  semver: [32m''[39m,
+  range: Range {
+    raw: [32m''[39m,
+    isAny: [33mtrue[39m,
+    set: [ [36m[Comparator][39m ],
+    includePrerelease: [33mfalse[39m
+  }
+}
+`
+
 exports[`test/index.ts > TAP > basic parsing tests > foo > toString 1`] = `
 foo@
 `
 
-exports[`test/index.ts > TAP > basic parsing tests > foo@ > inspect 1`] = `
+exports[`test/index.ts > TAP > basic parsing tests > foo@ > inspect deep 1`] = `
+@vltpkg/spec.Spec {
+  type: 'registry',
+  spec: 'foo@',
+  name: 'foo',
+  bareSpec: '',
+  registry: 'https://registry.npmjs.org/',
+  registrySpec: '',
+  semver: '',
+  range: Range {
+    raw: '',
+    isAny: true,
+    set: [
+      Comparator {
+        includePrerelease: false,
+        raw: '',
+        tokens: [],
+        tuples: [
+          {
+            isAny: true,
+            toString: [Function: toString],
+            includePrerelease: false,
+            test: [Function: test]
+          }
+        ],
+        isNone: false,
+        isAny: true
+      }
+    ],
+    includePrerelease: false
+  }
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > foo@ > inspect default 1`] = `
 @vltpkg/spec.Spec {
   type: 'registry',
   spec: 'foo@',
@@ -240,11 +634,79 @@ exports[`test/index.ts > TAP > basic parsing tests > foo@ > inspect 1`] = `
 }
 `
 
+exports[`test/index.ts > TAP > basic parsing tests > foo@ > inspect with color 1`] = `
+@vltpkg/spec.Spec {
+  type: [32m'registry'[39m,
+  spec: [32m'foo@'[39m,
+  name: [32m'foo'[39m,
+  bareSpec: [32m''[39m,
+  registry: [32m'https://registry.npmjs.org/'[39m,
+  registrySpec: [32m''[39m,
+  semver: [32m''[39m,
+  range: Range {
+    raw: [32m''[39m,
+    isAny: [33mtrue[39m,
+    set: [ [36m[Comparator][39m ],
+    includePrerelease: [33mfalse[39m
+  }
+}
+`
+
 exports[`test/index.ts > TAP > basic parsing tests > foo@ > toString 1`] = `
 foo@
 `
 
-exports[`test/index.ts > TAP > basic parsing tests > foo@ 1.2 > inspect 1`] = `
+exports[`test/index.ts > TAP > basic parsing tests > foo@ 1.2 > inspect deep 1`] = `
+@vltpkg/spec.Spec {
+  type: 'registry',
+  spec: 'foo@ 1.2 ',
+  name: 'foo',
+  bareSpec: ' 1.2 ',
+  registry: 'https://registry.npmjs.org/',
+  registrySpec: ' 1.2 ',
+  semver: '1.2',
+  range: Range {
+    raw: ' 1.2 ',
+    isAny: false,
+    set: [
+      Comparator {
+        includePrerelease: false,
+        raw: '1.2',
+        tokens: [ '1.2' ],
+        tuples: [
+          [
+            '>=',
+            Version {
+              raw: '1.2',
+              major: 1,
+              minor: 2,
+              patch: 0,
+              prerelease: undefined,
+              build: undefined
+            }
+          ],
+          [
+            '<',
+            Version {
+              raw: '1.2',
+              major: 1,
+              minor: 3,
+              patch: 0,
+              prerelease: [ 0 ],
+              build: undefined
+            }
+          ]
+        ],
+        isNone: false,
+        isAny: false
+      }
+    ],
+    includePrerelease: false
+  }
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > foo@ 1.2 > inspect default 1`] = `
 @vltpkg/spec.Spec {
   type: 'registry',
   spec: 'foo@ 1.2 ',
@@ -262,11 +724,109 @@ exports[`test/index.ts > TAP > basic parsing tests > foo@ 1.2 > inspect 1`] = `
 }
 `
 
+exports[`test/index.ts > TAP > basic parsing tests > foo@ 1.2 > inspect with color 1`] = `
+@vltpkg/spec.Spec {
+  type: [32m'registry'[39m,
+  spec: [32m'foo@ 1.2 '[39m,
+  name: [32m'foo'[39m,
+  bareSpec: [32m' 1.2 '[39m,
+  registry: [32m'https://registry.npmjs.org/'[39m,
+  registrySpec: [32m' 1.2 '[39m,
+  semver: [32m'1.2'[39m,
+  range: Range {
+    raw: [32m' 1.2 '[39m,
+    isAny: [33mfalse[39m,
+    set: [ [36m[Comparator][39m ],
+    includePrerelease: [33mfalse[39m
+  }
+}
+`
+
 exports[`test/index.ts > TAP > basic parsing tests > foo@ 1.2 > toString 1`] = `
 foo@ 1.2 
 `
 
-exports[`test/index.ts > TAP > basic parsing tests > foo@ 1.2.3 > inspect 1`] = `
+exports[`test/index.ts > TAP > basic parsing tests > foo@ 1.2.3 > inspect deep 1`] = `
+@vltpkg/spec.Spec {
+  type: 'registry',
+  spec: 'foo@ 1.2.3 ',
+  name: 'foo',
+  bareSpec: ' 1.2.3 ',
+  registry: 'https://registry.npmjs.org/',
+  registrySpec: ' 1.2.3 ',
+  conventionalRegistryTarball: 'https://registry.npmjs.org/foo/-/foo-1.2.3.tgz',
+  semver: '1.2.3',
+  range: Range {
+    raw: ' 1.2.3 ',
+    isAny: false,
+    set: [
+      Comparator {
+        includePrerelease: false,
+        raw: '1.2.3',
+        tokens: [ '1.2.3' ],
+        tuples: [
+          [
+            '',
+            Version {
+              raw: '1.2.3',
+              major: 1,
+              minor: 2,
+              patch: 3,
+              prerelease: undefined,
+              build: undefined
+            }
+          ]
+        ],
+        isNone: false,
+        isAny: false
+      }
+    ],
+    includePrerelease: false
+  }
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > foo@ 1.2.3 > inspect deep 2`] = `
+@vltpkg/spec.Spec {
+  type: 'registry',
+  spec: 'foo@ 1.2.3',
+  name: 'foo',
+  bareSpec: ' 1.2.3',
+  registry: 'https://registry.npmjs.org/',
+  registrySpec: ' 1.2.3',
+  conventionalRegistryTarball: 'https://registry.npmjs.org/foo/-/foo-1.2.3.tgz',
+  semver: '1.2.3',
+  range: Range {
+    raw: ' 1.2.3',
+    isAny: false,
+    set: [
+      Comparator {
+        includePrerelease: false,
+        raw: '1.2.3',
+        tokens: [ '1.2.3' ],
+        tuples: [
+          [
+            '',
+            Version {
+              raw: '1.2.3',
+              major: 1,
+              minor: 2,
+              patch: 3,
+              prerelease: undefined,
+              build: undefined
+            }
+          ]
+        ],
+        isNone: false,
+        isAny: false
+      }
+    ],
+    includePrerelease: false
+  }
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > foo@ 1.2.3 > inspect default 1`] = `
 @vltpkg/spec.Spec {
   type: 'registry',
   spec: 'foo@ 1.2.3 ',
@@ -285,7 +845,7 @@ exports[`test/index.ts > TAP > basic parsing tests > foo@ 1.2.3 > inspect 1`] = 
 }
 `
 
-exports[`test/index.ts > TAP > basic parsing tests > foo@ 1.2.3 > inspect 2`] = `
+exports[`test/index.ts > TAP > basic parsing tests > foo@ 1.2.3 > inspect default 2`] = `
 @vltpkg/spec.Spec {
   type: 'registry',
   spec: 'foo@ 1.2.3',
@@ -304,6 +864,44 @@ exports[`test/index.ts > TAP > basic parsing tests > foo@ 1.2.3 > inspect 2`] = 
 }
 `
 
+exports[`test/index.ts > TAP > basic parsing tests > foo@ 1.2.3 > inspect with color 1`] = `
+@vltpkg/spec.Spec {
+  type: [32m'registry'[39m,
+  spec: [32m'foo@ 1.2.3 '[39m,
+  name: [32m'foo'[39m,
+  bareSpec: [32m' 1.2.3 '[39m,
+  registry: [32m'https://registry.npmjs.org/'[39m,
+  registrySpec: [32m' 1.2.3 '[39m,
+  conventionalRegistryTarball: [32m'https://registry.npmjs.org/foo/-/foo-1.2.3.tgz'[39m,
+  semver: [32m'1.2.3'[39m,
+  range: Range {
+    raw: [32m' 1.2.3 '[39m,
+    isAny: [33mfalse[39m,
+    set: [ [36m[Comparator][39m ],
+    includePrerelease: [33mfalse[39m
+  }
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > foo@ 1.2.3 > inspect with color 2`] = `
+@vltpkg/spec.Spec {
+  type: [32m'registry'[39m,
+  spec: [32m'foo@ 1.2.3'[39m,
+  name: [32m'foo'[39m,
+  bareSpec: [32m' 1.2.3'[39m,
+  registry: [32m'https://registry.npmjs.org/'[39m,
+  registrySpec: [32m' 1.2.3'[39m,
+  conventionalRegistryTarball: [32m'https://registry.npmjs.org/foo/-/foo-1.2.3.tgz'[39m,
+  semver: [32m'1.2.3'[39m,
+  range: Range {
+    raw: [32m' 1.2.3'[39m,
+    isAny: [33mfalse[39m,
+    set: [ [36m[Comparator][39m ],
+    includePrerelease: [33mfalse[39m
+  }
+}
+`
+
 exports[`test/index.ts > TAP > basic parsing tests > foo@ 1.2.3 > toString 1`] = `
 foo@ 1.2.3 
 `
@@ -312,7 +910,47 @@ exports[`test/index.ts > TAP > basic parsing tests > foo@ 1.2.3 > toString 2`] =
 foo@ 1.2.3
 `
 
-exports[`test/index.ts > TAP > basic parsing tests > foo@=v1.2.3 > inspect 1`] = `
+exports[`test/index.ts > TAP > basic parsing tests > foo@=v1.2.3 > inspect deep 1`] = `
+@vltpkg/spec.Spec {
+  type: 'registry',
+  spec: 'foo@=v1.2.3',
+  name: 'foo',
+  bareSpec: '=v1.2.3',
+  registry: 'https://registry.npmjs.org/',
+  registrySpec: '=v1.2.3',
+  conventionalRegistryTarball: 'https://registry.npmjs.org/foo/-/foo-1.2.3.tgz',
+  semver: '=v1.2.3',
+  range: Range {
+    raw: '=v1.2.3',
+    isAny: false,
+    set: [
+      Comparator {
+        includePrerelease: false,
+        raw: '=v1.2.3',
+        tokens: [ '=v1.2.3' ],
+        tuples: [
+          [
+            '',
+            Version {
+              raw: '=v1.2.3',
+              major: 1,
+              minor: 2,
+              patch: 3,
+              prerelease: undefined,
+              build: undefined
+            }
+          ]
+        ],
+        isNone: false,
+        isAny: false
+      }
+    ],
+    includePrerelease: false
+  }
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > foo@=v1.2.3 > inspect default 1`] = `
 @vltpkg/spec.Spec {
   type: 'registry',
   spec: 'foo@=v1.2.3',
@@ -331,11 +969,80 @@ exports[`test/index.ts > TAP > basic parsing tests > foo@=v1.2.3 > inspect 1`] =
 }
 `
 
+exports[`test/index.ts > TAP > basic parsing tests > foo@=v1.2.3 > inspect with color 1`] = `
+@vltpkg/spec.Spec {
+  type: [32m'registry'[39m,
+  spec: [32m'foo@=v1.2.3'[39m,
+  name: [32m'foo'[39m,
+  bareSpec: [32m'=v1.2.3'[39m,
+  registry: [32m'https://registry.npmjs.org/'[39m,
+  registrySpec: [32m'=v1.2.3'[39m,
+  conventionalRegistryTarball: [32m'https://registry.npmjs.org/foo/-/foo-1.2.3.tgz'[39m,
+  semver: [32m'=v1.2.3'[39m,
+  range: Range {
+    raw: [32m'=v1.2.3'[39m,
+    isAny: [33mfalse[39m,
+    set: [ [36m[Comparator][39m ],
+    includePrerelease: [33mfalse[39m
+  }
+}
+`
+
 exports[`test/index.ts > TAP > basic parsing tests > foo@=v1.2.3 > toString 1`] = `
 foo@=v1.2.3
 `
 
-exports[`test/index.ts > TAP > basic parsing tests > foo@~1.2 > inspect 1`] = `
+exports[`test/index.ts > TAP > basic parsing tests > foo@~1.2 > inspect deep 1`] = `
+@vltpkg/spec.Spec {
+  type: 'registry',
+  spec: 'foo@~1.2',
+  name: 'foo',
+  bareSpec: '~1.2',
+  registry: 'https://registry.npmjs.org/',
+  registrySpec: '~1.2',
+  semver: '~1.2',
+  range: Range {
+    raw: '~1.2',
+    isAny: false,
+    set: [
+      Comparator {
+        includePrerelease: false,
+        raw: '~1.2',
+        tokens: [ '~1.2' ],
+        tuples: [
+          [
+            '>=',
+            Version {
+              raw: '1.2',
+              major: 1,
+              minor: 2,
+              patch: 0,
+              prerelease: undefined,
+              build: undefined
+            }
+          ],
+          [
+            '<',
+            Version {
+              raw: '1.2',
+              major: 1,
+              minor: 3,
+              patch: 0,
+              prerelease: [ 0 ],
+              build: undefined
+            }
+          ]
+        ],
+        isNone: false,
+        isAny: false
+      }
+    ],
+    includePrerelease: false
+  }
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > foo@~1.2 > inspect default 1`] = `
 @vltpkg/spec.Spec {
   type: 'registry',
   spec: 'foo@~1.2',
@@ -353,11 +1060,79 @@ exports[`test/index.ts > TAP > basic parsing tests > foo@~1.2 > inspect 1`] = `
 }
 `
 
+exports[`test/index.ts > TAP > basic parsing tests > foo@~1.2 > inspect with color 1`] = `
+@vltpkg/spec.Spec {
+  type: [32m'registry'[39m,
+  spec: [32m'foo@~1.2'[39m,
+  name: [32m'foo'[39m,
+  bareSpec: [32m'~1.2'[39m,
+  registry: [32m'https://registry.npmjs.org/'[39m,
+  registrySpec: [32m'~1.2'[39m,
+  semver: [32m'~1.2'[39m,
+  range: Range {
+    raw: [32m'~1.2'[39m,
+    isAny: [33mfalse[39m,
+    set: [ [36m[Comparator][39m ],
+    includePrerelease: [33mfalse[39m
+  }
+}
+`
+
 exports[`test/index.ts > TAP > basic parsing tests > foo@~1.2 > toString 1`] = `
 foo@~1.2
 `
 
-exports[`test/index.ts > TAP > basic parsing tests > foo@1.2 > inspect 1`] = `
+exports[`test/index.ts > TAP > basic parsing tests > foo@1.2 > inspect deep 1`] = `
+@vltpkg/spec.Spec {
+  type: 'registry',
+  spec: 'foo@1.2',
+  name: 'foo',
+  bareSpec: '1.2',
+  registry: 'https://registry.npmjs.org/',
+  registrySpec: '1.2',
+  semver: '1.2',
+  range: Range {
+    raw: '1.2',
+    isAny: false,
+    set: [
+      Comparator {
+        includePrerelease: false,
+        raw: '1.2',
+        tokens: [ '1.2' ],
+        tuples: [
+          [
+            '>=',
+            Version {
+              raw: '1.2',
+              major: 1,
+              minor: 2,
+              patch: 0,
+              prerelease: undefined,
+              build: undefined
+            }
+          ],
+          [
+            '<',
+            Version {
+              raw: '1.2',
+              major: 1,
+              minor: 3,
+              patch: 0,
+              prerelease: [ 0 ],
+              build: undefined
+            }
+          ]
+        ],
+        isNone: false,
+        isAny: false
+      }
+    ],
+    includePrerelease: false
+  }
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > foo@1.2 > inspect default 1`] = `
 @vltpkg/spec.Spec {
   type: 'registry',
   spec: 'foo@1.2',
@@ -375,11 +1150,109 @@ exports[`test/index.ts > TAP > basic parsing tests > foo@1.2 > inspect 1`] = `
 }
 `
 
+exports[`test/index.ts > TAP > basic parsing tests > foo@1.2 > inspect with color 1`] = `
+@vltpkg/spec.Spec {
+  type: [32m'registry'[39m,
+  spec: [32m'foo@1.2'[39m,
+  name: [32m'foo'[39m,
+  bareSpec: [32m'1.2'[39m,
+  registry: [32m'https://registry.npmjs.org/'[39m,
+  registrySpec: [32m'1.2'[39m,
+  semver: [32m'1.2'[39m,
+  range: Range {
+    raw: [32m'1.2'[39m,
+    isAny: [33mfalse[39m,
+    set: [ [36m[Comparator][39m ],
+    includePrerelease: [33mfalse[39m
+  }
+}
+`
+
 exports[`test/index.ts > TAP > basic parsing tests > foo@1.2 > toString 1`] = `
 foo@1.2
 `
 
-exports[`test/index.ts > TAP > basic parsing tests > foo@1.2.3 > inspect 1`] = `
+exports[`test/index.ts > TAP > basic parsing tests > foo@1.2.3 > inspect deep 1`] = `
+@vltpkg/spec.Spec {
+  type: 'registry',
+  spec: 'foo@1.2.3',
+  name: 'foo',
+  bareSpec: '1.2.3',
+  registry: 'https://registry.npmjs.org/',
+  registrySpec: '1.2.3',
+  conventionalRegistryTarball: 'https://registry.npmjs.org/foo/-/foo-1.2.3.tgz',
+  semver: '1.2.3',
+  range: Range {
+    raw: '1.2.3',
+    isAny: false,
+    set: [
+      Comparator {
+        includePrerelease: false,
+        raw: '1.2.3',
+        tokens: [ '1.2.3' ],
+        tuples: [
+          [
+            '',
+            Version {
+              raw: '1.2.3',
+              major: 1,
+              minor: 2,
+              patch: 3,
+              prerelease: undefined,
+              build: undefined
+            }
+          ]
+        ],
+        isNone: false,
+        isAny: false
+      }
+    ],
+    includePrerelease: false
+  }
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > foo@1.2.3 > inspect deep 2`] = `
+@vltpkg/spec.Spec {
+  type: 'registry',
+  spec: 'foo@1.2.3 ',
+  name: 'foo',
+  bareSpec: '1.2.3 ',
+  registry: 'https://registry.npmjs.org/',
+  registrySpec: '1.2.3 ',
+  conventionalRegistryTarball: 'https://registry.npmjs.org/foo/-/foo-1.2.3.tgz',
+  semver: '1.2.3',
+  range: Range {
+    raw: '1.2.3 ',
+    isAny: false,
+    set: [
+      Comparator {
+        includePrerelease: false,
+        raw: '1.2.3',
+        tokens: [ '1.2.3' ],
+        tuples: [
+          [
+            '',
+            Version {
+              raw: '1.2.3',
+              major: 1,
+              minor: 2,
+              patch: 3,
+              prerelease: undefined,
+              build: undefined
+            }
+          ]
+        ],
+        isNone: false,
+        isAny: false
+      }
+    ],
+    includePrerelease: false
+  }
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > foo@1.2.3 > inspect default 1`] = `
 @vltpkg/spec.Spec {
   type: 'registry',
   spec: 'foo@1.2.3',
@@ -398,7 +1271,7 @@ exports[`test/index.ts > TAP > basic parsing tests > foo@1.2.3 > inspect 1`] = `
 }
 `
 
-exports[`test/index.ts > TAP > basic parsing tests > foo@1.2.3 > inspect 2`] = `
+exports[`test/index.ts > TAP > basic parsing tests > foo@1.2.3 > inspect default 2`] = `
 @vltpkg/spec.Spec {
   type: 'registry',
   spec: 'foo@1.2.3 ',
@@ -417,6 +1290,44 @@ exports[`test/index.ts > TAP > basic parsing tests > foo@1.2.3 > inspect 2`] = `
 }
 `
 
+exports[`test/index.ts > TAP > basic parsing tests > foo@1.2.3 > inspect with color 1`] = `
+@vltpkg/spec.Spec {
+  type: [32m'registry'[39m,
+  spec: [32m'foo@1.2.3'[39m,
+  name: [32m'foo'[39m,
+  bareSpec: [32m'1.2.3'[39m,
+  registry: [32m'https://registry.npmjs.org/'[39m,
+  registrySpec: [32m'1.2.3'[39m,
+  conventionalRegistryTarball: [32m'https://registry.npmjs.org/foo/-/foo-1.2.3.tgz'[39m,
+  semver: [32m'1.2.3'[39m,
+  range: Range {
+    raw: [32m'1.2.3'[39m,
+    isAny: [33mfalse[39m,
+    set: [ [36m[Comparator][39m ],
+    includePrerelease: [33mfalse[39m
+  }
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > foo@1.2.3 > inspect with color 2`] = `
+@vltpkg/spec.Spec {
+  type: [32m'registry'[39m,
+  spec: [32m'foo@1.2.3 '[39m,
+  name: [32m'foo'[39m,
+  bareSpec: [32m'1.2.3 '[39m,
+  registry: [32m'https://registry.npmjs.org/'[39m,
+  registrySpec: [32m'1.2.3 '[39m,
+  conventionalRegistryTarball: [32m'https://registry.npmjs.org/foo/-/foo-1.2.3.tgz'[39m,
+  semver: [32m'1.2.3'[39m,
+  range: Range {
+    raw: [32m'1.2.3 '[39m,
+    isAny: [33mfalse[39m,
+    set: [ [36m[Comparator][39m ],
+    includePrerelease: [33mfalse[39m
+  }
+}
+`
+
 exports[`test/index.ts > TAP > basic parsing tests > foo@1.2.3 > toString 1`] = `
 foo@1.2.3
 `
@@ -425,7 +1336,7 @@ exports[`test/index.ts > TAP > basic parsing tests > foo@1.2.3 > toString 2`] = 
 foo@1.2.3 
 `
 
-exports[`test/index.ts > TAP > basic parsing tests > foo@bar/foo > inspect 1`] = `
+exports[`test/index.ts > TAP > basic parsing tests > foo@bar/foo > inspect deep 1`] = `
 @vltpkg/spec.Spec {
   type: 'git',
   spec: 'foo@github:bar/foo',
@@ -437,11 +1348,35 @@ exports[`test/index.ts > TAP > basic parsing tests > foo@bar/foo > inspect 1`] =
 }
 `
 
+exports[`test/index.ts > TAP > basic parsing tests > foo@bar/foo > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: 'foo@github:bar/foo',
+  name: 'foo',
+  bareSpec: 'github:bar/foo',
+  gitRemote: 'git+ssh://git@github.com:bar/foo.git',
+  namedGitHost: 'github',
+  namedGitHostPath: 'bar/foo'
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > foo@bar/foo > inspect with color 1`] = `
+@vltpkg/spec.Spec {
+  type: [32m'git'[39m,
+  spec: [32m'foo@github:bar/foo'[39m,
+  name: [32m'foo'[39m,
+  bareSpec: [32m'github:bar/foo'[39m,
+  gitRemote: [32m'git+ssh://git@github.com:bar/foo.git'[39m,
+  namedGitHost: [32m'github'[39m,
+  namedGitHostPath: [32m'bar/foo'[39m
+}
+`
+
 exports[`test/index.ts > TAP > basic parsing tests > foo@bar/foo > toString 1`] = `
 foo@github:bar/foo
 `
 
-exports[`test/index.ts > TAP > basic parsing tests > foo@bitbucket:user/foo-js > inspect 1`] = `
+exports[`test/index.ts > TAP > basic parsing tests > foo@bitbucket:user/foo-js > inspect deep 1`] = `
 @vltpkg/spec.Spec {
   type: 'git',
   spec: 'foo@bitbucket:user/foo-js',
@@ -453,11 +1388,35 @@ exports[`test/index.ts > TAP > basic parsing tests > foo@bitbucket:user/foo-js >
 }
 `
 
+exports[`test/index.ts > TAP > basic parsing tests > foo@bitbucket:user/foo-js > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: 'foo@bitbucket:user/foo-js',
+  name: 'foo',
+  bareSpec: 'bitbucket:user/foo-js',
+  gitRemote: 'git+ssh://git@bitbucket.org:user/foo-js.git',
+  namedGitHost: 'bitbucket',
+  namedGitHostPath: 'user/foo-js'
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > foo@bitbucket:user/foo-js > inspect with color 1`] = `
+@vltpkg/spec.Spec {
+  type: [32m'git'[39m,
+  spec: [32m'foo@bitbucket:user/foo-js'[39m,
+  name: [32m'foo'[39m,
+  bareSpec: [32m'bitbucket:user/foo-js'[39m,
+  gitRemote: [32m'git+ssh://git@bitbucket.org:user/foo-js.git'[39m,
+  namedGitHost: [32m'bitbucket'[39m,
+  namedGitHostPath: [32m'user/foo-js'[39m
+}
+`
+
 exports[`test/index.ts > TAP > basic parsing tests > foo@bitbucket:user/foo-js > toString 1`] = `
 foo@bitbucket:user/foo-js
 `
 
-exports[`test/index.ts > TAP > basic parsing tests > foo@gitlab:user/foo-js > inspect 1`] = `
+exports[`test/index.ts > TAP > basic parsing tests > foo@gitlab:user/foo-js > inspect deep 1`] = `
 @vltpkg/spec.Spec {
   type: 'git',
   spec: 'foo@gitlab:user/foo-js',
@@ -469,11 +1428,87 @@ exports[`test/index.ts > TAP > basic parsing tests > foo@gitlab:user/foo-js > in
 }
 `
 
+exports[`test/index.ts > TAP > basic parsing tests > foo@gitlab:user/foo-js > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: 'foo@gitlab:user/foo-js',
+  name: 'foo',
+  bareSpec: 'gitlab:user/foo-js',
+  gitRemote: 'git+ssh://git@gitlab.com:user/foo-js.git',
+  namedGitHost: 'gitlab',
+  namedGitHostPath: 'user/foo-js'
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > foo@gitlab:user/foo-js > inspect with color 1`] = `
+@vltpkg/spec.Spec {
+  type: [32m'git'[39m,
+  spec: [32m'foo@gitlab:user/foo-js'[39m,
+  name: [32m'foo'[39m,
+  bareSpec: [32m'gitlab:user/foo-js'[39m,
+  gitRemote: [32m'git+ssh://git@gitlab.com:user/foo-js.git'[39m,
+  namedGitHost: [32m'gitlab'[39m,
+  namedGitHostPath: [32m'user/foo-js'[39m
+}
+`
+
 exports[`test/index.ts > TAP > basic parsing tests > foo@gitlab:user/foo-js > toString 1`] = `
 foo@gitlab:user/foo-js
 `
 
-exports[`test/index.ts > TAP > basic parsing tests > foo@https://bitbucket.org/user/project/a/s/d/f/#semver:1.x::path:src/foo > inspect 1`] = `
+exports[`test/index.ts > TAP > basic parsing tests > foo@https://bitbucket.org/user/project/a/s/d/f/#semver:1.x::path:src/foo > inspect deep 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: 'foo@bitbucket:user/project#semver:1.x::path:src/foo',
+  name: 'foo',
+  bareSpec: 'bitbucket:user/project#semver:1.x::path:src/foo',
+  gitRemote: 'git+ssh://git@bitbucket.org:user/project.git',
+  gitSelector: 'semver:1.x::path:src/foo',
+  gitSelectorParsed: { semver: '1.x', path: 'src/foo' },
+  namedGitHost: 'bitbucket',
+  namedGitHostPath: 'user/project',
+  range: Range {
+    raw: '1.x',
+    isAny: false,
+    set: [
+      Comparator {
+        includePrerelease: false,
+        raw: '1.x',
+        tokens: [ '1.x' ],
+        tuples: [
+          [
+            '>=',
+            Version {
+              raw: '1.x',
+              major: 1,
+              minor: 0,
+              patch: 0,
+              prerelease: undefined,
+              build: undefined
+            }
+          ],
+          [
+            '<',
+            Version {
+              raw: '1.x',
+              major: 2,
+              minor: 0,
+              patch: 0,
+              prerelease: [ 0 ],
+              build: undefined
+            }
+          ]
+        ],
+        isNone: false,
+        isAny: false
+      }
+    ],
+    includePrerelease: false
+  }
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > foo@https://bitbucket.org/user/project/a/s/d/f/#semver:1.x::path:src/foo > inspect default 1`] = `
 @vltpkg/spec.Spec {
   type: 'git',
   spec: 'foo@bitbucket:user/project#semver:1.x::path:src/foo',
@@ -493,11 +1528,31 @@ exports[`test/index.ts > TAP > basic parsing tests > foo@https://bitbucket.org/u
 }
 `
 
+exports[`test/index.ts > TAP > basic parsing tests > foo@https://bitbucket.org/user/project/a/s/d/f/#semver:1.x::path:src/foo > inspect with color 1`] = `
+@vltpkg/spec.Spec {
+  type: [32m'git'[39m,
+  spec: [32m'foo@bitbucket:user/project#semver:1.x::path:src/foo'[39m,
+  name: [32m'foo'[39m,
+  bareSpec: [32m'bitbucket:user/project#semver:1.x::path:src/foo'[39m,
+  gitRemote: [32m'git+ssh://git@bitbucket.org:user/project.git'[39m,
+  gitSelector: [32m'semver:1.x::path:src/foo'[39m,
+  gitSelectorParsed: { semver: [32m'1.x'[39m, path: [32m'src/foo'[39m },
+  namedGitHost: [32m'bitbucket'[39m,
+  namedGitHostPath: [32m'user/project'[39m,
+  range: Range {
+    raw: [32m'1.x'[39m,
+    isAny: [33mfalse[39m,
+    set: [ [36m[Comparator][39m ],
+    includePrerelease: [33mfalse[39m
+  }
+}
+`
+
 exports[`test/index.ts > TAP > basic parsing tests > foo@https://bitbucket.org/user/project/a/s/d/f/#semver:1.x::path:src/foo > toString 1`] = `
 foo@bitbucket:user/project#semver:1.x::path:src/foo
 `
 
-exports[`test/index.ts > TAP > basic parsing tests > foo@latest > inspect 1`] = `
+exports[`test/index.ts > TAP > basic parsing tests > foo@latest > inspect deep 1`] = `
 @vltpkg/spec.Spec {
   type: 'registry',
   spec: 'foo@latest',
@@ -509,11 +1564,35 @@ exports[`test/index.ts > TAP > basic parsing tests > foo@latest > inspect 1`] = 
 }
 `
 
+exports[`test/index.ts > TAP > basic parsing tests > foo@latest > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'registry',
+  spec: 'foo@latest',
+  name: 'foo',
+  bareSpec: 'latest',
+  registry: 'https://registry.npmjs.org/',
+  registrySpec: 'latest',
+  distTag: 'latest'
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > foo@latest > inspect with color 1`] = `
+@vltpkg/spec.Spec {
+  type: [32m'registry'[39m,
+  spec: [32m'foo@latest'[39m,
+  name: [32m'foo'[39m,
+  bareSpec: [32m'latest'[39m,
+  registry: [32m'https://registry.npmjs.org/'[39m,
+  registrySpec: [32m'latest'[39m,
+  distTag: [32m'latest'[39m
+}
+`
+
 exports[`test/index.ts > TAP > basic parsing tests > foo@latest > toString 1`] = `
 foo@latest
 `
 
-exports[`test/index.ts > TAP > basic parsing tests > foo@npm:bar@ > inspect 1`] = `
+exports[`test/index.ts > TAP > basic parsing tests > foo@npm:bar@ > inspect deep 1`] = `
 @vltpkg/spec.Spec {
   type: 'registry',
   spec: 'foo@npm:bar@',
@@ -521,6 +1600,76 @@ exports[`test/index.ts > TAP > basic parsing tests > foo@npm:bar@ > inspect 1`] 
   bareSpec: 'npm:bar@',
   namedRegistry: 'npm',
   registry: 'https://registry.npmjs.org/',
+  subspec: @vltpkg/spec.Spec {
+    type: 'registry',
+    spec: 'bar@',
+    name: 'bar',
+    bareSpec: '',
+    namedRegistry: 'npm',
+    registry: 'https://registry.npmjs.org/',
+    registrySpec: '',
+    semver: '',
+    range: Range {
+      raw: '',
+      isAny: true,
+      set: [
+        Comparator {
+          includePrerelease: false,
+          raw: '',
+          tokens: [],
+          tuples: [
+            {
+              isAny: true,
+              toString: [Function: toString],
+              includePrerelease: false,
+              test: [Function: test]
+            }
+          ],
+          isNone: false,
+          isAny: true
+        }
+      ],
+      includePrerelease: false
+    }
+  }
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > foo@npm:bar@ > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'registry',
+  spec: 'foo@npm:bar@',
+  name: 'foo',
+  bareSpec: 'npm:bar@',
+  namedRegistry: 'npm',
+  registry: 'https://registry.npmjs.org/',
+  subspec: @vltpkg/spec.Spec {
+    type: 'registry',
+    spec: 'bar@',
+    name: 'bar',
+    bareSpec: '',
+    namedRegistry: 'npm',
+    registry: 'https://registry.npmjs.org/',
+    registrySpec: '',
+    semver: '',
+    range: Range {
+      raw: '',
+      isAny: true,
+      set: [ [Comparator] ],
+      includePrerelease: false
+    }
+  }
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > foo@npm:bar@ > inspect with color 1`] = `
+@vltpkg/spec.Spec {
+  type: [32m'registry'[39m,
+  spec: [32m'foo@npm:bar@'[39m,
+  name: [32m'foo'[39m,
+  bareSpec: [32m'npm:bar@'[39m,
+  namedRegistry: [32m'npm'[39m,
+  registry: [32m'https://registry.npmjs.org/'[39m,
   subspec: @vltpkg/spec.Spec {
     type: [32m'registry'[39m,
     spec: [32m'bar@'[39m,
@@ -533,23 +1682,7 @@ exports[`test/index.ts > TAP > basic parsing tests > foo@npm:bar@ > inspect 1`] 
     range: Range {
       raw: [32m''[39m,
       isAny: [33mtrue[39m,
-      set: [
-        Comparator {
-          includePrerelease: [33mfalse[39m,
-          raw: [32m''[39m,
-          tokens: [],
-          tuples: [
-            {
-              isAny: [33mtrue[39m,
-              toString: [36m[Function: toString][39m,
-              includePrerelease: [33mfalse[39m,
-              test: [36m[Function: test][39m
-            }
-          ],
-          isNone: [33mfalse[39m,
-          isAny: [33mtrue[39m
-        }
-      ],
+      set: [ [36m[Comparator][39m ],
       includePrerelease: [33mfalse[39m
     }
   }
@@ -560,7 +1693,7 @@ exports[`test/index.ts > TAP > basic parsing tests > foo@npm:bar@ > toString 1`]
 foo@npm:bar@
 `
 
-exports[`test/index.ts > TAP > basic parsing tests > foo@user/foo-js > inspect 1`] = `
+exports[`test/index.ts > TAP > basic parsing tests > foo@user/foo-js > inspect deep 1`] = `
 @vltpkg/spec.Spec {
   type: 'git',
   spec: 'foo@github:user/foo-js',
@@ -572,11 +1705,35 @@ exports[`test/index.ts > TAP > basic parsing tests > foo@user/foo-js > inspect 1
 }
 `
 
+exports[`test/index.ts > TAP > basic parsing tests > foo@user/foo-js > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: 'foo@github:user/foo-js',
+  name: 'foo',
+  bareSpec: 'github:user/foo-js',
+  gitRemote: 'git+ssh://git@github.com:user/foo-js.git',
+  namedGitHost: 'github',
+  namedGitHostPath: 'user/foo-js'
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > foo@user/foo-js > inspect with color 1`] = `
+@vltpkg/spec.Spec {
+  type: [32m'git'[39m,
+  spec: [32m'foo@github:user/foo-js'[39m,
+  name: [32m'foo'[39m,
+  bareSpec: [32m'github:user/foo-js'[39m,
+  gitRemote: [32m'git+ssh://git@github.com:user/foo-js.git'[39m,
+  namedGitHost: [32m'github'[39m,
+  namedGitHostPath: [32m'user/foo-js'[39m
+}
+`
+
 exports[`test/index.ts > TAP > basic parsing tests > foo@user/foo-js > toString 1`] = `
 foo@github:user/foo-js
 `
 
-exports[`test/index.ts > TAP > basic parsing tests > x@./foo > inspect 1`] = `
+exports[`test/index.ts > TAP > basic parsing tests > x@./foo > inspect deep 1`] = `
 @vltpkg/spec.Spec {
   type: 'file',
   spec: 'x@file:./foo',
@@ -586,11 +1743,31 @@ exports[`test/index.ts > TAP > basic parsing tests > x@./foo > inspect 1`] = `
 }
 `
 
+exports[`test/index.ts > TAP > basic parsing tests > x@./foo > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'file',
+  spec: 'x@file:./foo',
+  name: 'x',
+  bareSpec: 'file:./foo',
+  file: './foo'
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > x@./foo > inspect with color 1`] = `
+@vltpkg/spec.Spec {
+  type: [32m'file'[39m,
+  spec: [32m'x@file:./foo'[39m,
+  name: [32m'x'[39m,
+  bareSpec: [32m'file:./foo'[39m,
+  file: [32m'./foo'[39m
+}
+`
+
 exports[`test/index.ts > TAP > basic parsing tests > x@./foo > toString 1`] = `
 x@file:./foo
 `
 
-exports[`test/index.ts > TAP > basic parsing tests > x@/path/to/foo > inspect 1`] = `
+exports[`test/index.ts > TAP > basic parsing tests > x@/path/to/foo > inspect deep 1`] = `
 @vltpkg/spec.Spec {
   type: 'file',
   spec: 'x@file:///path/to/foo',
@@ -600,11 +1777,31 @@ exports[`test/index.ts > TAP > basic parsing tests > x@/path/to/foo > inspect 1`
 }
 `
 
+exports[`test/index.ts > TAP > basic parsing tests > x@/path/to/foo > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'file',
+  spec: 'x@file:///path/to/foo',
+  name: 'x',
+  bareSpec: 'file:///path/to/foo',
+  file: '/path/to/foo'
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > x@/path/to/foo > inspect with color 1`] = `
+@vltpkg/spec.Spec {
+  type: [32m'file'[39m,
+  spec: [32m'x@file:///path/to/foo'[39m,
+  name: [32m'x'[39m,
+  bareSpec: [32m'file:///path/to/foo'[39m,
+  file: [32m'/path/to/foo'[39m
+}
+`
+
 exports[`test/index.ts > TAP > basic parsing tests > x@/path/to/foo > toString 1`] = `
 x@file:///path/to/foo
 `
 
-exports[`test/index.ts > TAP > basic parsing tests > x@/path/to/foo.tar > inspect 1`] = `
+exports[`test/index.ts > TAP > basic parsing tests > x@/path/to/foo.tar > inspect deep 1`] = `
 @vltpkg/spec.Spec {
   type: 'file',
   spec: 'x@file:///path/to/foo.tar',
@@ -614,11 +1811,31 @@ exports[`test/index.ts > TAP > basic parsing tests > x@/path/to/foo.tar > inspec
 }
 `
 
+exports[`test/index.ts > TAP > basic parsing tests > x@/path/to/foo.tar > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'file',
+  spec: 'x@file:///path/to/foo.tar',
+  name: 'x',
+  bareSpec: 'file:///path/to/foo.tar',
+  file: '/path/to/foo.tar'
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > x@/path/to/foo.tar > inspect with color 1`] = `
+@vltpkg/spec.Spec {
+  type: [32m'file'[39m,
+  spec: [32m'x@file:///path/to/foo.tar'[39m,
+  name: [32m'x'[39m,
+  bareSpec: [32m'file:///path/to/foo.tar'[39m,
+  file: [32m'/path/to/foo.tar'[39m
+}
+`
+
 exports[`test/index.ts > TAP > basic parsing tests > x@/path/to/foo.tar > toString 1`] = `
 x@file:///path/to/foo.tar
 `
 
-exports[`test/index.ts > TAP > basic parsing tests > x@/path/to/foo.tgz > inspect 1`] = `
+exports[`test/index.ts > TAP > basic parsing tests > x@/path/to/foo.tgz > inspect deep 1`] = `
 @vltpkg/spec.Spec {
   type: 'file',
   spec: 'x@file:///path/to/foo.tgz',
@@ -628,11 +1845,31 @@ exports[`test/index.ts > TAP > basic parsing tests > x@/path/to/foo.tgz > inspec
 }
 `
 
+exports[`test/index.ts > TAP > basic parsing tests > x@/path/to/foo.tgz > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'file',
+  spec: 'x@file:///path/to/foo.tgz',
+  name: 'x',
+  bareSpec: 'file:///path/to/foo.tgz',
+  file: '/path/to/foo.tgz'
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > x@/path/to/foo.tgz > inspect with color 1`] = `
+@vltpkg/spec.Spec {
+  type: [32m'file'[39m,
+  spec: [32m'x@file:///path/to/foo.tgz'[39m,
+  name: [32m'x'[39m,
+  bareSpec: [32m'file:///path/to/foo.tgz'[39m,
+  file: [32m'/path/to/foo.tgz'[39m
+}
+`
+
 exports[`test/index.ts > TAP > basic parsing tests > x@/path/to/foo.tgz > toString 1`] = `
 x@file:///path/to/foo.tgz
 `
 
-exports[`test/index.ts > TAP > basic parsing tests > x@bitbucket:user..blerg--/..foo-js# . . . . . some . tags / / / > inspect 1`] = `
+exports[`test/index.ts > TAP > basic parsing tests > x@bitbucket:user..blerg--/..foo-js# . . . . . some . tags / / / > inspect deep 1`] = `
 @vltpkg/spec.Spec {
   type: 'git',
   spec: 'x@bitbucket:user..blerg--/..foo-js# . . . . . some . tags / / /',
@@ -648,11 +1885,43 @@ exports[`test/index.ts > TAP > basic parsing tests > x@bitbucket:user..blerg--/.
 }
 `
 
+exports[`test/index.ts > TAP > basic parsing tests > x@bitbucket:user..blerg--/..foo-js# . . . . . some . tags / / / > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: 'x@bitbucket:user..blerg--/..foo-js# . . . . . some . tags / / /',
+  name: 'x',
+  bareSpec: 'bitbucket:user..blerg--/..foo-js# . . . . . some . tags / / /',
+  gitRemote: 'git+ssh://git@bitbucket.org:user..blerg--/..foo-js.git',
+  gitSelector: ' . . . . . some . tags / / /',
+  gitSelectorParsed: {},
+  gitCommittish: ' . . . . . some . tags / / /',
+  namedGitHost: 'bitbucket',
+  namedGitHostPath: 'user..blerg--/..foo-js',
+  remoteURL: 'https://bitbucket.org/user..blerg--/..foo-js/get/ . . . . . some . tags / / /.tar.gz'
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > x@bitbucket:user..blerg--/..foo-js# . . . . . some . tags / / / > inspect with color 1`] = `
+@vltpkg/spec.Spec {
+  type: [32m'git'[39m,
+  spec: [32m'x@bitbucket:user..blerg--/..foo-js# . . . . . some . tags / / /'[39m,
+  name: [32m'x'[39m,
+  bareSpec: [32m'bitbucket:user..blerg--/..foo-js# . . . . . some . tags / / /'[39m,
+  gitRemote: [32m'git+ssh://git@bitbucket.org:user..blerg--/..foo-js.git'[39m,
+  gitSelector: [32m' . . . . . some . tags / / /'[39m,
+  gitSelectorParsed: {},
+  gitCommittish: [32m' . . . . . some . tags / / /'[39m,
+  namedGitHost: [32m'bitbucket'[39m,
+  namedGitHostPath: [32m'user..blerg--/..foo-js'[39m,
+  remoteURL: [32m'https://bitbucket.org/user..blerg--/..foo-js/get/ . . . . . some . tags / / /.tar.gz'[39m
+}
+`
+
 exports[`test/index.ts > TAP > basic parsing tests > x@bitbucket:user..blerg--/..foo-js# . . . . . some . tags / / / > toString 1`] = `
 x@bitbucket:user..blerg--/..foo-js# . . . . . some . tags / / /
 `
 
-exports[`test/index.ts > TAP > basic parsing tests > x@bitbucket:user/foo-js > inspect 1`] = `
+exports[`test/index.ts > TAP > basic parsing tests > x@bitbucket:user/foo-js > inspect deep 1`] = `
 @vltpkg/spec.Spec {
   type: 'git',
   spec: 'x@bitbucket:user/foo-js',
@@ -664,11 +1933,35 @@ exports[`test/index.ts > TAP > basic parsing tests > x@bitbucket:user/foo-js > i
 }
 `
 
+exports[`test/index.ts > TAP > basic parsing tests > x@bitbucket:user/foo-js > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: 'x@bitbucket:user/foo-js',
+  name: 'x',
+  bareSpec: 'bitbucket:user/foo-js',
+  gitRemote: 'git+ssh://git@bitbucket.org:user/foo-js.git',
+  namedGitHost: 'bitbucket',
+  namedGitHostPath: 'user/foo-js'
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > x@bitbucket:user/foo-js > inspect with color 1`] = `
+@vltpkg/spec.Spec {
+  type: [32m'git'[39m,
+  spec: [32m'x@bitbucket:user/foo-js'[39m,
+  name: [32m'x'[39m,
+  bareSpec: [32m'bitbucket:user/foo-js'[39m,
+  gitRemote: [32m'git+ssh://git@bitbucket.org:user/foo-js.git'[39m,
+  namedGitHost: [32m'bitbucket'[39m,
+  namedGitHostPath: [32m'user/foo-js'[39m
+}
+`
+
 exports[`test/index.ts > TAP > basic parsing tests > x@bitbucket:user/foo-js > toString 1`] = `
 x@bitbucket:user/foo-js
 `
 
-exports[`test/index.ts > TAP > basic parsing tests > x@bitbucket:user/foo-js#bar/baz > inspect 1`] = `
+exports[`test/index.ts > TAP > basic parsing tests > x@bitbucket:user/foo-js#bar/baz > inspect deep 1`] = `
 @vltpkg/spec.Spec {
   type: 'git',
   spec: 'x@bitbucket:user/foo-js#bar/baz',
@@ -684,11 +1977,43 @@ exports[`test/index.ts > TAP > basic parsing tests > x@bitbucket:user/foo-js#bar
 }
 `
 
+exports[`test/index.ts > TAP > basic parsing tests > x@bitbucket:user/foo-js#bar/baz > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: 'x@bitbucket:user/foo-js#bar/baz',
+  name: 'x',
+  bareSpec: 'bitbucket:user/foo-js#bar/baz',
+  gitRemote: 'git+ssh://git@bitbucket.org:user/foo-js.git',
+  gitSelector: 'bar/baz',
+  gitSelectorParsed: {},
+  gitCommittish: 'bar/baz',
+  namedGitHost: 'bitbucket',
+  namedGitHostPath: 'user/foo-js',
+  remoteURL: 'https://bitbucket.org/user/foo-js/get/bar/baz.tar.gz'
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > x@bitbucket:user/foo-js#bar/baz > inspect with color 1`] = `
+@vltpkg/spec.Spec {
+  type: [32m'git'[39m,
+  spec: [32m'x@bitbucket:user/foo-js#bar/baz'[39m,
+  name: [32m'x'[39m,
+  bareSpec: [32m'bitbucket:user/foo-js#bar/baz'[39m,
+  gitRemote: [32m'git+ssh://git@bitbucket.org:user/foo-js.git'[39m,
+  gitSelector: [32m'bar/baz'[39m,
+  gitSelectorParsed: {},
+  gitCommittish: [32m'bar/baz'[39m,
+  namedGitHost: [32m'bitbucket'[39m,
+  namedGitHostPath: [32m'user/foo-js'[39m,
+  remoteURL: [32m'https://bitbucket.org/user/foo-js/get/bar/baz.tar.gz'[39m
+}
+`
+
 exports[`test/index.ts > TAP > basic parsing tests > x@bitbucket:user/foo-js#bar/baz > toString 1`] = `
 x@bitbucket:user/foo-js#bar/baz
 `
 
-exports[`test/index.ts > TAP > basic parsing tests > x@bitbucket:user/foo-js#bar/baz/bin > inspect 1`] = `
+exports[`test/index.ts > TAP > basic parsing tests > x@bitbucket:user/foo-js#bar/baz/bin > inspect deep 1`] = `
 @vltpkg/spec.Spec {
   type: 'git',
   spec: 'x@bitbucket:user/foo-js#bar/baz/bin',
@@ -704,11 +2029,43 @@ exports[`test/index.ts > TAP > basic parsing tests > x@bitbucket:user/foo-js#bar
 }
 `
 
+exports[`test/index.ts > TAP > basic parsing tests > x@bitbucket:user/foo-js#bar/baz/bin > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: 'x@bitbucket:user/foo-js#bar/baz/bin',
+  name: 'x',
+  bareSpec: 'bitbucket:user/foo-js#bar/baz/bin',
+  gitRemote: 'git+ssh://git@bitbucket.org:user/foo-js.git',
+  gitSelector: 'bar/baz/bin',
+  gitSelectorParsed: {},
+  gitCommittish: 'bar/baz/bin',
+  namedGitHost: 'bitbucket',
+  namedGitHostPath: 'user/foo-js',
+  remoteURL: 'https://bitbucket.org/user/foo-js/get/bar/baz/bin.tar.gz'
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > x@bitbucket:user/foo-js#bar/baz/bin > inspect with color 1`] = `
+@vltpkg/spec.Spec {
+  type: [32m'git'[39m,
+  spec: [32m'x@bitbucket:user/foo-js#bar/baz/bin'[39m,
+  name: [32m'x'[39m,
+  bareSpec: [32m'bitbucket:user/foo-js#bar/baz/bin'[39m,
+  gitRemote: [32m'git+ssh://git@bitbucket.org:user/foo-js.git'[39m,
+  gitSelector: [32m'bar/baz/bin'[39m,
+  gitSelectorParsed: {},
+  gitCommittish: [32m'bar/baz/bin'[39m,
+  namedGitHost: [32m'bitbucket'[39m,
+  namedGitHostPath: [32m'user/foo-js'[39m,
+  remoteURL: [32m'https://bitbucket.org/user/foo-js/get/bar/baz/bin.tar.gz'[39m
+}
+`
+
 exports[`test/index.ts > TAP > basic parsing tests > x@bitbucket:user/foo-js#bar/baz/bin > toString 1`] = `
 x@bitbucket:user/foo-js#bar/baz/bin
 `
 
-exports[`test/index.ts > TAP > basic parsing tests > x@f fo o al/ a d s ;f > inspect 1`] = `
+exports[`test/index.ts > TAP > basic parsing tests > x@f fo o al/ a d s ;f > inspect deep 1`] = `
 @vltpkg/spec.Spec {
   type: 'git',
   spec: 'x@github:f fo o al/ a d s ;f',
@@ -720,11 +2077,35 @@ exports[`test/index.ts > TAP > basic parsing tests > x@f fo o al/ a d s ;f > ins
 }
 `
 
+exports[`test/index.ts > TAP > basic parsing tests > x@f fo o al/ a d s ;f > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: 'x@github:f fo o al/ a d s ;f',
+  name: 'x',
+  bareSpec: 'github:f fo o al/ a d s ;f',
+  gitRemote: 'git+ssh://git@github.com:f fo o al/ a d s ;f.git',
+  namedGitHost: 'github',
+  namedGitHostPath: 'f fo o al/ a d s ;f'
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > x@f fo o al/ a d s ;f > inspect with color 1`] = `
+@vltpkg/spec.Spec {
+  type: [32m'git'[39m,
+  spec: [32m'x@github:f fo o al/ a d s ;f'[39m,
+  name: [32m'x'[39m,
+  bareSpec: [32m'github:f fo o al/ a d s ;f'[39m,
+  gitRemote: [32m'git+ssh://git@github.com:f fo o al/ a d s ;f.git'[39m,
+  namedGitHost: [32m'github'[39m,
+  namedGitHostPath: [32m'f fo o al/ a d s ;f'[39m
+}
+`
+
 exports[`test/index.ts > TAP > basic parsing tests > x@f fo o al/ a d s ;f > toString 1`] = `
 x@github:f fo o al/ a d s ;f
 `
 
-exports[`test/index.ts > TAP > basic parsing tests > x@file: > inspect 1`] = `
+exports[`test/index.ts > TAP > basic parsing tests > x@file: > inspect deep 1`] = `
 @vltpkg/spec.Spec {
   type: 'file',
   spec: 'x@file:.',
@@ -734,11 +2115,31 @@ exports[`test/index.ts > TAP > basic parsing tests > x@file: > inspect 1`] = `
 }
 `
 
+exports[`test/index.ts > TAP > basic parsing tests > x@file: > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'file',
+  spec: 'x@file:.',
+  name: 'x',
+  bareSpec: 'file:.',
+  file: '.'
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > x@file: > inspect with color 1`] = `
+@vltpkg/spec.Spec {
+  type: [32m'file'[39m,
+  spec: [32m'x@file:.'[39m,
+  name: [32m'x'[39m,
+  bareSpec: [32m'file:.'[39m,
+  file: [32m'.'[39m
+}
+`
+
 exports[`test/index.ts > TAP > basic parsing tests > x@file: > toString 1`] = `
 x@file:.
 `
 
-exports[`test/index.ts > TAP > basic parsing tests > x@file:../path/to/foo > inspect 1`] = `
+exports[`test/index.ts > TAP > basic parsing tests > x@file:../path/to/foo > inspect deep 1`] = `
 @vltpkg/spec.Spec {
   type: 'file',
   spec: 'x@file:../path/to/foo',
@@ -748,11 +2149,31 @@ exports[`test/index.ts > TAP > basic parsing tests > x@file:../path/to/foo > ins
 }
 `
 
+exports[`test/index.ts > TAP > basic parsing tests > x@file:../path/to/foo > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'file',
+  spec: 'x@file:../path/to/foo',
+  name: 'x',
+  bareSpec: 'file:../path/to/foo',
+  file: '../path/to/foo'
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > x@file:../path/to/foo > inspect with color 1`] = `
+@vltpkg/spec.Spec {
+  type: [32m'file'[39m,
+  spec: [32m'x@file:../path/to/foo'[39m,
+  name: [32m'x'[39m,
+  bareSpec: [32m'file:../path/to/foo'[39m,
+  file: [32m'../path/to/foo'[39m
+}
+`
+
 exports[`test/index.ts > TAP > basic parsing tests > x@file:../path/to/foo > toString 1`] = `
 x@file:../path/to/foo
 `
 
-exports[`test/index.ts > TAP > basic parsing tests > x@file:./path/to/foo > inspect 1`] = `
+exports[`test/index.ts > TAP > basic parsing tests > x@file:./path/to/foo > inspect deep 1`] = `
 @vltpkg/spec.Spec {
   type: 'file',
   spec: 'x@file:./path/to/foo',
@@ -762,11 +2183,31 @@ exports[`test/index.ts > TAP > basic parsing tests > x@file:./path/to/foo > insp
 }
 `
 
+exports[`test/index.ts > TAP > basic parsing tests > x@file:./path/to/foo > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'file',
+  spec: 'x@file:./path/to/foo',
+  name: 'x',
+  bareSpec: 'file:./path/to/foo',
+  file: './path/to/foo'
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > x@file:./path/to/foo > inspect with color 1`] = `
+@vltpkg/spec.Spec {
+  type: [32m'file'[39m,
+  spec: [32m'x@file:./path/to/foo'[39m,
+  name: [32m'x'[39m,
+  bareSpec: [32m'file:./path/to/foo'[39m,
+  file: [32m'./path/to/foo'[39m
+}
+`
+
 exports[`test/index.ts > TAP > basic parsing tests > x@file:./path/to/foo > toString 1`] = `
 x@file:./path/to/foo
 `
 
-exports[`test/index.ts > TAP > basic parsing tests > x@file:/. > inspect 1`] = `
+exports[`test/index.ts > TAP > basic parsing tests > x@file:/. > inspect deep 1`] = `
 @vltpkg/spec.Spec {
   type: 'file',
   spec: 'x@file:.',
@@ -776,11 +2217,31 @@ exports[`test/index.ts > TAP > basic parsing tests > x@file:/. > inspect 1`] = `
 }
 `
 
+exports[`test/index.ts > TAP > basic parsing tests > x@file:/. > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'file',
+  spec: 'x@file:.',
+  name: 'x',
+  bareSpec: 'file:.',
+  file: '.'
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > x@file:/. > inspect with color 1`] = `
+@vltpkg/spec.Spec {
+  type: [32m'file'[39m,
+  spec: [32m'x@file:.'[39m,
+  name: [32m'x'[39m,
+  bareSpec: [32m'file:.'[39m,
+  file: [32m'.'[39m
+}
+`
+
 exports[`test/index.ts > TAP > basic parsing tests > x@file:/. > toString 1`] = `
 x@file:.
 `
 
-exports[`test/index.ts > TAP > basic parsing tests > x@file:/.. > inspect 1`] = `
+exports[`test/index.ts > TAP > basic parsing tests > x@file:/.. > inspect deep 1`] = `
 @vltpkg/spec.Spec {
   type: 'file',
   spec: 'x@file:..',
@@ -790,11 +2251,31 @@ exports[`test/index.ts > TAP > basic parsing tests > x@file:/.. > inspect 1`] = 
 }
 `
 
+exports[`test/index.ts > TAP > basic parsing tests > x@file:/.. > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'file',
+  spec: 'x@file:..',
+  name: 'x',
+  bareSpec: 'file:..',
+  file: '..'
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > x@file:/.. > inspect with color 1`] = `
+@vltpkg/spec.Spec {
+  type: [32m'file'[39m,
+  spec: [32m'x@file:..'[39m,
+  name: [32m'x'[39m,
+  bareSpec: [32m'file:..'[39m,
+  file: [32m'..'[39m
+}
+`
+
 exports[`test/index.ts > TAP > basic parsing tests > x@file:/.. > toString 1`] = `
 x@file:..
 `
 
-exports[`test/index.ts > TAP > basic parsing tests > x@file:/../path/to/foo > inspect 1`] = `
+exports[`test/index.ts > TAP > basic parsing tests > x@file:/../path/to/foo > inspect deep 1`] = `
 @vltpkg/spec.Spec {
   type: 'file',
   spec: 'x@file:../path/to/foo',
@@ -804,11 +2285,31 @@ exports[`test/index.ts > TAP > basic parsing tests > x@file:/../path/to/foo > in
 }
 `
 
+exports[`test/index.ts > TAP > basic parsing tests > x@file:/../path/to/foo > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'file',
+  spec: 'x@file:../path/to/foo',
+  name: 'x',
+  bareSpec: 'file:../path/to/foo',
+  file: '../path/to/foo'
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > x@file:/../path/to/foo > inspect with color 1`] = `
+@vltpkg/spec.Spec {
+  type: [32m'file'[39m,
+  spec: [32m'x@file:../path/to/foo'[39m,
+  name: [32m'x'[39m,
+  bareSpec: [32m'file:../path/to/foo'[39m,
+  file: [32m'../path/to/foo'[39m
+}
+`
+
 exports[`test/index.ts > TAP > basic parsing tests > x@file:/../path/to/foo > toString 1`] = `
 x@file:../path/to/foo
 `
 
-exports[`test/index.ts > TAP > basic parsing tests > x@file:/./path/to/foo > inspect 1`] = `
+exports[`test/index.ts > TAP > basic parsing tests > x@file:/./path/to/foo > inspect deep 1`] = `
 @vltpkg/spec.Spec {
   type: 'file',
   spec: 'x@file:./path/to/foo',
@@ -818,11 +2319,31 @@ exports[`test/index.ts > TAP > basic parsing tests > x@file:/./path/to/foo > ins
 }
 `
 
+exports[`test/index.ts > TAP > basic parsing tests > x@file:/./path/to/foo > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'file',
+  spec: 'x@file:./path/to/foo',
+  name: 'x',
+  bareSpec: 'file:./path/to/foo',
+  file: './path/to/foo'
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > x@file:/./path/to/foo > inspect with color 1`] = `
+@vltpkg/spec.Spec {
+  type: [32m'file'[39m,
+  spec: [32m'x@file:./path/to/foo'[39m,
+  name: [32m'x'[39m,
+  bareSpec: [32m'file:./path/to/foo'[39m,
+  file: [32m'./path/to/foo'[39m
+}
+`
+
 exports[`test/index.ts > TAP > basic parsing tests > x@file:/./path/to/foo > toString 1`] = `
 x@file:./path/to/foo
 `
 
-exports[`test/index.ts > TAP > basic parsing tests > x@file:/.path/to/foo > inspect 1`] = `
+exports[`test/index.ts > TAP > basic parsing tests > x@file:/.path/to/foo > inspect deep 1`] = `
 @vltpkg/spec.Spec {
   type: 'file',
   spec: 'x@file:///.path/to/foo',
@@ -832,17 +2353,57 @@ exports[`test/index.ts > TAP > basic parsing tests > x@file:/.path/to/foo > insp
 }
 `
 
+exports[`test/index.ts > TAP > basic parsing tests > x@file:/.path/to/foo > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'file',
+  spec: 'x@file:///.path/to/foo',
+  name: 'x',
+  bareSpec: 'file:///.path/to/foo',
+  file: '/.path/to/foo'
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > x@file:/.path/to/foo > inspect with color 1`] = `
+@vltpkg/spec.Spec {
+  type: [32m'file'[39m,
+  spec: [32m'x@file:///.path/to/foo'[39m,
+  name: [32m'x'[39m,
+  bareSpec: [32m'file:///.path/to/foo'[39m,
+  file: [32m'/.path/to/foo'[39m
+}
+`
+
 exports[`test/index.ts > TAP > basic parsing tests > x@file:/.path/to/foo > toString 1`] = `
 x@file:///.path/to/foo
 `
 
-exports[`test/index.ts > TAP > basic parsing tests > x@file:// > inspect 1`] = `
+exports[`test/index.ts > TAP > basic parsing tests > x@file:// > inspect deep 1`] = `
 @vltpkg/spec.Spec {
   type: 'file',
   spec: 'x@file:.',
   name: 'x',
   bareSpec: 'file:.',
   file: '.'
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > x@file:// > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'file',
+  spec: 'x@file:.',
+  name: 'x',
+  bareSpec: 'file:.',
+  file: '.'
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > x@file:// > inspect with color 1`] = `
+@vltpkg/spec.Spec {
+  type: [32m'file'[39m,
+  spec: [32m'x@file:.'[39m,
+  name: [32m'x'[39m,
+  bareSpec: [32m'file:.'[39m,
+  file: [32m'.'[39m
 }
 `
 
@@ -850,7 +2411,7 @@ exports[`test/index.ts > TAP > basic parsing tests > x@file:// > toString 1`] = 
 x@file:.
 `
 
-exports[`test/index.ts > TAP > basic parsing tests > x@file://. > inspect 1`] = `
+exports[`test/index.ts > TAP > basic parsing tests > x@file://. > inspect deep 1`] = `
 @vltpkg/spec.Spec {
   type: 'file',
   spec: 'x@file:.',
@@ -860,11 +2421,31 @@ exports[`test/index.ts > TAP > basic parsing tests > x@file://. > inspect 1`] = 
 }
 `
 
+exports[`test/index.ts > TAP > basic parsing tests > x@file://. > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'file',
+  spec: 'x@file:.',
+  name: 'x',
+  bareSpec: 'file:.',
+  file: '.'
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > x@file://. > inspect with color 1`] = `
+@vltpkg/spec.Spec {
+  type: [32m'file'[39m,
+  spec: [32m'x@file:.'[39m,
+  name: [32m'x'[39m,
+  bareSpec: [32m'file:.'[39m,
+  file: [32m'.'[39m
+}
+`
+
 exports[`test/index.ts > TAP > basic parsing tests > x@file://. > toString 1`] = `
 x@file:.
 `
 
-exports[`test/index.ts > TAP > basic parsing tests > x@file://.. > inspect 1`] = `
+exports[`test/index.ts > TAP > basic parsing tests > x@file://.. > inspect deep 1`] = `
 @vltpkg/spec.Spec {
   type: 'file',
   spec: 'x@file:..',
@@ -874,11 +2455,31 @@ exports[`test/index.ts > TAP > basic parsing tests > x@file://.. > inspect 1`] =
 }
 `
 
+exports[`test/index.ts > TAP > basic parsing tests > x@file://.. > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'file',
+  spec: 'x@file:..',
+  name: 'x',
+  bareSpec: 'file:..',
+  file: '..'
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > x@file://.. > inspect with color 1`] = `
+@vltpkg/spec.Spec {
+  type: [32m'file'[39m,
+  spec: [32m'x@file:..'[39m,
+  name: [32m'x'[39m,
+  bareSpec: [32m'file:..'[39m,
+  file: [32m'..'[39m
+}
+`
+
 exports[`test/index.ts > TAP > basic parsing tests > x@file://.. > toString 1`] = `
 x@file:..
 `
 
-exports[`test/index.ts > TAP > basic parsing tests > x@file://../path/to/foo > inspect 1`] = `
+exports[`test/index.ts > TAP > basic parsing tests > x@file://../path/to/foo > inspect deep 1`] = `
 @vltpkg/spec.Spec {
   type: 'file',
   spec: 'x@file:../path/to/foo',
@@ -888,11 +2489,31 @@ exports[`test/index.ts > TAP > basic parsing tests > x@file://../path/to/foo > i
 }
 `
 
+exports[`test/index.ts > TAP > basic parsing tests > x@file://../path/to/foo > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'file',
+  spec: 'x@file:../path/to/foo',
+  name: 'x',
+  bareSpec: 'file:../path/to/foo',
+  file: '../path/to/foo'
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > x@file://../path/to/foo > inspect with color 1`] = `
+@vltpkg/spec.Spec {
+  type: [32m'file'[39m,
+  spec: [32m'x@file:../path/to/foo'[39m,
+  name: [32m'x'[39m,
+  bareSpec: [32m'file:../path/to/foo'[39m,
+  file: [32m'../path/to/foo'[39m
+}
+`
+
 exports[`test/index.ts > TAP > basic parsing tests > x@file://../path/to/foo > toString 1`] = `
 x@file:../path/to/foo
 `
 
-exports[`test/index.ts > TAP > basic parsing tests > x@file://./path/to/foo > inspect 1`] = `
+exports[`test/index.ts > TAP > basic parsing tests > x@file://./path/to/foo > inspect deep 1`] = `
 @vltpkg/spec.Spec {
   type: 'file',
   spec: 'x@file:./path/to/foo',
@@ -902,11 +2523,31 @@ exports[`test/index.ts > TAP > basic parsing tests > x@file://./path/to/foo > in
 }
 `
 
+exports[`test/index.ts > TAP > basic parsing tests > x@file://./path/to/foo > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'file',
+  spec: 'x@file:./path/to/foo',
+  name: 'x',
+  bareSpec: 'file:./path/to/foo',
+  file: './path/to/foo'
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > x@file://./path/to/foo > inspect with color 1`] = `
+@vltpkg/spec.Spec {
+  type: [32m'file'[39m,
+  spec: [32m'x@file:./path/to/foo'[39m,
+  name: [32m'x'[39m,
+  bareSpec: [32m'file:./path/to/foo'[39m,
+  file: [32m'./path/to/foo'[39m
+}
+`
+
 exports[`test/index.ts > TAP > basic parsing tests > x@file://./path/to/foo > toString 1`] = `
 x@file:./path/to/foo
 `
 
-exports[`test/index.ts > TAP > basic parsing tests > x@file:////path/to/foo > inspect 1`] = `
+exports[`test/index.ts > TAP > basic parsing tests > x@file:////path/to/foo > inspect deep 1`] = `
 @vltpkg/spec.Spec {
   type: 'file',
   spec: 'x@file:////path/to/foo',
@@ -916,17 +2557,57 @@ exports[`test/index.ts > TAP > basic parsing tests > x@file:////path/to/foo > in
 }
 `
 
+exports[`test/index.ts > TAP > basic parsing tests > x@file:////path/to/foo > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'file',
+  spec: 'x@file:////path/to/foo',
+  name: 'x',
+  bareSpec: 'file:////path/to/foo',
+  file: '//path/to/foo'
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > x@file:////path/to/foo > inspect with color 1`] = `
+@vltpkg/spec.Spec {
+  type: [32m'file'[39m,
+  spec: [32m'x@file:////path/to/foo'[39m,
+  name: [32m'x'[39m,
+  bareSpec: [32m'file:////path/to/foo'[39m,
+  file: [32m'//path/to/foo'[39m
+}
+`
+
 exports[`test/index.ts > TAP > basic parsing tests > x@file:////path/to/foo > toString 1`] = `
 x@file:////path/to/foo
 `
 
-exports[`test/index.ts > TAP > basic parsing tests > x@file:///~/path/to/foo > inspect 1`] = `
+exports[`test/index.ts > TAP > basic parsing tests > x@file:///~/path/to/foo > inspect deep 1`] = `
 @vltpkg/spec.Spec {
   type: 'file',
   spec: 'x@file:~/path/to/foo',
   name: 'x',
   bareSpec: 'file:~/path/to/foo',
   file: '/mock/home/path/to/foo'
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > x@file:///~/path/to/foo > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'file',
+  spec: 'x@file:~/path/to/foo',
+  name: 'x',
+  bareSpec: 'file:~/path/to/foo',
+  file: '/mock/home/path/to/foo'
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > x@file:///~/path/to/foo > inspect with color 1`] = `
+@vltpkg/spec.Spec {
+  type: [32m'file'[39m,
+  spec: [32m'x@file:~/path/to/foo'[39m,
+  name: [32m'x'[39m,
+  bareSpec: [32m'file:~/path/to/foo'[39m,
+  file: [32m'/mock/home/path/to/foo'[39m
 }
 `
 
@@ -934,13 +2615,33 @@ exports[`test/index.ts > TAP > basic parsing tests > x@file:///~/path/to/foo > t
 x@file:~/path/to/foo
 `
 
-exports[`test/index.ts > TAP > basic parsing tests > x@file:///path/to/foo > inspect 1`] = `
+exports[`test/index.ts > TAP > basic parsing tests > x@file:///path/to/foo > inspect deep 1`] = `
 @vltpkg/spec.Spec {
   type: 'file',
   spec: 'x@file:///path/to/foo',
   name: 'x',
   bareSpec: 'file:///path/to/foo',
   file: '/path/to/foo'
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > x@file:///path/to/foo > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'file',
+  spec: 'x@file:///path/to/foo',
+  name: 'x',
+  bareSpec: 'file:///path/to/foo',
+  file: '/path/to/foo'
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > x@file:///path/to/foo > inspect with color 1`] = `
+@vltpkg/spec.Spec {
+  type: [32m'file'[39m,
+  spec: [32m'x@file:///path/to/foo'[39m,
+  name: [32m'x'[39m,
+  bareSpec: [32m'file:///path/to/foo'[39m,
+  file: [32m'/path/to/foo'[39m
 }
 `
 
@@ -948,13 +2649,33 @@ exports[`test/index.ts > TAP > basic parsing tests > x@file:///path/to/foo > toS
 x@file:///path/to/foo
 `
 
-exports[`test/index.ts > TAP > basic parsing tests > x@file://~/path/to/foo > inspect 1`] = `
+exports[`test/index.ts > TAP > basic parsing tests > x@file://~/path/to/foo > inspect deep 1`] = `
 @vltpkg/spec.Spec {
   type: 'file',
   spec: 'x@file:~/path/to/foo',
   name: 'x',
   bareSpec: 'file:~/path/to/foo',
   file: '/mock/home/path/to/foo'
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > x@file://~/path/to/foo > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'file',
+  spec: 'x@file:~/path/to/foo',
+  name: 'x',
+  bareSpec: 'file:~/path/to/foo',
+  file: '/mock/home/path/to/foo'
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > x@file://~/path/to/foo > inspect with color 1`] = `
+@vltpkg/spec.Spec {
+  type: [32m'file'[39m,
+  spec: [32m'x@file:~/path/to/foo'[39m,
+  name: [32m'x'[39m,
+  bareSpec: [32m'file:~/path/to/foo'[39m,
+  file: [32m'/mock/home/path/to/foo'[39m
 }
 `
 
@@ -962,7 +2683,7 @@ exports[`test/index.ts > TAP > basic parsing tests > x@file://~/path/to/foo > to
 x@file:~/path/to/foo
 `
 
-exports[`test/index.ts > TAP > basic parsing tests > x@file:/~/path/to/foo > inspect 1`] = `
+exports[`test/index.ts > TAP > basic parsing tests > x@file:/~/path/to/foo > inspect deep 1`] = `
 @vltpkg/spec.Spec {
   type: 'file',
   spec: 'x@file:~/path/to/foo',
@@ -972,11 +2693,31 @@ exports[`test/index.ts > TAP > basic parsing tests > x@file:/~/path/to/foo > ins
 }
 `
 
+exports[`test/index.ts > TAP > basic parsing tests > x@file:/~/path/to/foo > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'file',
+  spec: 'x@file:~/path/to/foo',
+  name: 'x',
+  bareSpec: 'file:~/path/to/foo',
+  file: '/mock/home/path/to/foo'
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > x@file:/~/path/to/foo > inspect with color 1`] = `
+@vltpkg/spec.Spec {
+  type: [32m'file'[39m,
+  spec: [32m'x@file:~/path/to/foo'[39m,
+  name: [32m'x'[39m,
+  bareSpec: [32m'file:~/path/to/foo'[39m,
+  file: [32m'/mock/home/path/to/foo'[39m
+}
+`
+
 exports[`test/index.ts > TAP > basic parsing tests > x@file:/~/path/to/foo > toString 1`] = `
 x@file:~/path/to/foo
 `
 
-exports[`test/index.ts > TAP > basic parsing tests > x@file:/path/to/foo > inspect 1`] = `
+exports[`test/index.ts > TAP > basic parsing tests > x@file:/path/to/foo > inspect deep 1`] = `
 @vltpkg/spec.Spec {
   type: 'file',
   spec: 'x@file:///path/to/foo',
@@ -986,11 +2727,31 @@ exports[`test/index.ts > TAP > basic parsing tests > x@file:/path/to/foo > inspe
 }
 `
 
+exports[`test/index.ts > TAP > basic parsing tests > x@file:/path/to/foo > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'file',
+  spec: 'x@file:///path/to/foo',
+  name: 'x',
+  bareSpec: 'file:///path/to/foo',
+  file: '/path/to/foo'
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > x@file:/path/to/foo > inspect with color 1`] = `
+@vltpkg/spec.Spec {
+  type: [32m'file'[39m,
+  spec: [32m'x@file:///path/to/foo'[39m,
+  name: [32m'x'[39m,
+  bareSpec: [32m'file:///path/to/foo'[39m,
+  file: [32m'/path/to/foo'[39m
+}
+`
+
 exports[`test/index.ts > TAP > basic parsing tests > x@file:/path/to/foo > toString 1`] = `
 x@file:///path/to/foo
 `
 
-exports[`test/index.ts > TAP > basic parsing tests > x@file:~/path/to/foo > inspect 1`] = `
+exports[`test/index.ts > TAP > basic parsing tests > x@file:~/path/to/foo > inspect deep 1`] = `
 @vltpkg/spec.Spec {
   type: 'file',
   spec: 'x@file:~/path/to/foo',
@@ -1000,11 +2761,31 @@ exports[`test/index.ts > TAP > basic parsing tests > x@file:~/path/to/foo > insp
 }
 `
 
+exports[`test/index.ts > TAP > basic parsing tests > x@file:~/path/to/foo > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'file',
+  spec: 'x@file:~/path/to/foo',
+  name: 'x',
+  bareSpec: 'file:~/path/to/foo',
+  file: '/mock/home/path/to/foo'
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > x@file:~/path/to/foo > inspect with color 1`] = `
+@vltpkg/spec.Spec {
+  type: [32m'file'[39m,
+  spec: [32m'x@file:~/path/to/foo'[39m,
+  name: [32m'x'[39m,
+  bareSpec: [32m'file:~/path/to/foo'[39m,
+  file: [32m'/mock/home/path/to/foo'[39m
+}
+`
+
 exports[`test/index.ts > TAP > basic parsing tests > x@file:~/path/to/foo > toString 1`] = `
 x@file:~/path/to/foo
 `
 
-exports[`test/index.ts > TAP > basic parsing tests > x@file:path/to/foo > inspect 1`] = `
+exports[`test/index.ts > TAP > basic parsing tests > x@file:path/to/foo > inspect deep 1`] = `
 @vltpkg/spec.Spec {
   type: 'file',
   spec: 'x@file:./path/to/foo',
@@ -1014,11 +2795,31 @@ exports[`test/index.ts > TAP > basic parsing tests > x@file:path/to/foo > inspec
 }
 `
 
+exports[`test/index.ts > TAP > basic parsing tests > x@file:path/to/foo > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'file',
+  spec: 'x@file:./path/to/foo',
+  name: 'x',
+  bareSpec: 'file:./path/to/foo',
+  file: './path/to/foo'
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > x@file:path/to/foo > inspect with color 1`] = `
+@vltpkg/spec.Spec {
+  type: [32m'file'[39m,
+  spec: [32m'x@file:./path/to/foo'[39m,
+  name: [32m'x'[39m,
+  bareSpec: [32m'file:./path/to/foo'[39m,
+  file: [32m'./path/to/foo'[39m
+}
+`
+
 exports[`test/index.ts > TAP > basic parsing tests > x@file:path/to/foo > toString 1`] = `
 x@file:./path/to/foo
 `
 
-exports[`test/index.ts > TAP > basic parsing tests > x@file:path/to/foo.tar.gz > inspect 1`] = `
+exports[`test/index.ts > TAP > basic parsing tests > x@file:path/to/foo.tar.gz > inspect deep 1`] = `
 @vltpkg/spec.Spec {
   type: 'file',
   spec: 'x@file:./path/to/foo.tar.gz',
@@ -1028,11 +2829,31 @@ exports[`test/index.ts > TAP > basic parsing tests > x@file:path/to/foo.tar.gz >
 }
 `
 
+exports[`test/index.ts > TAP > basic parsing tests > x@file:path/to/foo.tar.gz > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'file',
+  spec: 'x@file:./path/to/foo.tar.gz',
+  name: 'x',
+  bareSpec: 'file:./path/to/foo.tar.gz',
+  file: './path/to/foo.tar.gz'
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > x@file:path/to/foo.tar.gz > inspect with color 1`] = `
+@vltpkg/spec.Spec {
+  type: [32m'file'[39m,
+  spec: [32m'x@file:./path/to/foo.tar.gz'[39m,
+  name: [32m'x'[39m,
+  bareSpec: [32m'file:./path/to/foo.tar.gz'[39m,
+  file: [32m'./path/to/foo.tar.gz'[39m
+}
+`
+
 exports[`test/index.ts > TAP > basic parsing tests > x@file:path/to/foo.tar.gz > toString 1`] = `
 x@file:./path/to/foo.tar.gz
 `
 
-exports[`test/index.ts > TAP > basic parsing tests > x@foo/bar/baz > inspect 1`] = `
+exports[`test/index.ts > TAP > basic parsing tests > x@foo/bar/baz > inspect deep 1`] = `
 @vltpkg/spec.Spec {
   type: 'file',
   spec: 'x@file:./foo/bar/baz',
@@ -1042,11 +2863,31 @@ exports[`test/index.ts > TAP > basic parsing tests > x@foo/bar/baz > inspect 1`]
 }
 `
 
+exports[`test/index.ts > TAP > basic parsing tests > x@foo/bar/baz > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'file',
+  spec: 'x@file:./foo/bar/baz',
+  name: 'x',
+  bareSpec: 'file:./foo/bar/baz',
+  file: './foo/bar/baz'
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > x@foo/bar/baz > inspect with color 1`] = `
+@vltpkg/spec.Spec {
+  type: [32m'file'[39m,
+  spec: [32m'x@file:./foo/bar/baz'[39m,
+  name: [32m'x'[39m,
+  bareSpec: [32m'file:./foo/bar/baz'[39m,
+  file: [32m'./foo/bar/baz'[39m
+}
+`
+
 exports[`test/index.ts > TAP > basic parsing tests > x@foo/bar/baz > toString 1`] = `
 x@file:./foo/bar/baz
 `
 
-exports[`test/index.ts > TAP > basic parsing tests > x@git://github.com/user/foo > inspect 1`] = `
+exports[`test/index.ts > TAP > basic parsing tests > x@git://github.com/user/foo > inspect deep 1`] = `
 @vltpkg/spec.Spec {
   type: 'git',
   spec: 'x@git://github.com/user/foo',
@@ -1056,11 +2897,31 @@ exports[`test/index.ts > TAP > basic parsing tests > x@git://github.com/user/foo
 }
 `
 
+exports[`test/index.ts > TAP > basic parsing tests > x@git://github.com/user/foo > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: 'x@git://github.com/user/foo',
+  name: 'x',
+  bareSpec: 'git://github.com/user/foo',
+  gitRemote: 'git://github.com/user/foo'
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > x@git://github.com/user/foo > inspect with color 1`] = `
+@vltpkg/spec.Spec {
+  type: [32m'git'[39m,
+  spec: [32m'x@git://github.com/user/foo'[39m,
+  name: [32m'x'[39m,
+  bareSpec: [32m'git://github.com/user/foo'[39m,
+  gitRemote: [32m'git://github.com/user/foo'[39m
+}
+`
+
 exports[`test/index.ts > TAP > basic parsing tests > x@git://github.com/user/foo > toString 1`] = `
 x@git://github.com/user/foo
 `
 
-exports[`test/index.ts > TAP > basic parsing tests > x@git://notgithub.com/user/foo > inspect 1`] = `
+exports[`test/index.ts > TAP > basic parsing tests > x@git://notgithub.com/user/foo > inspect deep 1`] = `
 @vltpkg/spec.Spec {
   type: 'git',
   spec: 'x@git://notgithub.com/user/foo',
@@ -1070,11 +2931,31 @@ exports[`test/index.ts > TAP > basic parsing tests > x@git://notgithub.com/user/
 }
 `
 
+exports[`test/index.ts > TAP > basic parsing tests > x@git://notgithub.com/user/foo > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: 'x@git://notgithub.com/user/foo',
+  name: 'x',
+  bareSpec: 'git://notgithub.com/user/foo',
+  gitRemote: 'git://notgithub.com/user/foo'
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > x@git://notgithub.com/user/foo > inspect with color 1`] = `
+@vltpkg/spec.Spec {
+  type: [32m'git'[39m,
+  spec: [32m'x@git://notgithub.com/user/foo'[39m,
+  name: [32m'x'[39m,
+  bareSpec: [32m'git://notgithub.com/user/foo'[39m,
+  gitRemote: [32m'git://notgithub.com/user/foo'[39m
+}
+`
+
 exports[`test/index.ts > TAP > basic parsing tests > x@git://notgithub.com/user/foo > toString 1`] = `
 x@git://notgithub.com/user/foo
 `
 
-exports[`test/index.ts > TAP > basic parsing tests > x@git@github.com:12345/foo > inspect 1`] = `
+exports[`test/index.ts > TAP > basic parsing tests > x@git@github.com:12345/foo > inspect deep 1`] = `
 @vltpkg/spec.Spec {
   type: 'git',
   spec: 'x@github:12345/foo',
@@ -1086,11 +2967,35 @@ exports[`test/index.ts > TAP > basic parsing tests > x@git@github.com:12345/foo 
 }
 `
 
+exports[`test/index.ts > TAP > basic parsing tests > x@git@github.com:12345/foo > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: 'x@github:12345/foo',
+  name: 'x',
+  bareSpec: 'github:12345/foo',
+  gitRemote: 'git+ssh://git@github.com:12345/foo.git',
+  namedGitHost: 'github',
+  namedGitHostPath: '12345/foo'
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > x@git@github.com:12345/foo > inspect with color 1`] = `
+@vltpkg/spec.Spec {
+  type: [32m'git'[39m,
+  spec: [32m'x@github:12345/foo'[39m,
+  name: [32m'x'[39m,
+  bareSpec: [32m'github:12345/foo'[39m,
+  gitRemote: [32m'git+ssh://git@github.com:12345/foo.git'[39m,
+  namedGitHost: [32m'github'[39m,
+  namedGitHostPath: [32m'12345/foo'[39m
+}
+`
+
 exports[`test/index.ts > TAP > basic parsing tests > x@git@github.com:12345/foo > toString 1`] = `
 x@github:12345/foo
 `
 
-exports[`test/index.ts > TAP > basic parsing tests > x@git@npm:not-git > inspect 1`] = `
+exports[`test/index.ts > TAP > basic parsing tests > x@git@npm:not-git > inspect deep 1`] = `
 @vltpkg/spec.Spec {
   type: 'registry',
   spec: 'x@git@npm:not-git',
@@ -1102,11 +3007,35 @@ exports[`test/index.ts > TAP > basic parsing tests > x@git@npm:not-git > inspect
 }
 `
 
+exports[`test/index.ts > TAP > basic parsing tests > x@git@npm:not-git > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'registry',
+  spec: 'x@git@npm:not-git',
+  name: 'x',
+  bareSpec: 'git@npm:not-git',
+  registry: 'https://registry.npmjs.org/',
+  registrySpec: 'git@npm:not-git',
+  distTag: 'git@npm:not-git'
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > x@git@npm:not-git > inspect with color 1`] = `
+@vltpkg/spec.Spec {
+  type: [32m'registry'[39m,
+  spec: [32m'x@git@npm:not-git'[39m,
+  name: [32m'x'[39m,
+  bareSpec: [32m'git@npm:not-git'[39m,
+  registry: [32m'https://registry.npmjs.org/'[39m,
+  registrySpec: [32m'git@npm:not-git'[39m,
+  distTag: [32m'git@npm:not-git'[39m
+}
+`
+
 exports[`test/index.ts > TAP > basic parsing tests > x@git@npm:not-git > toString 1`] = `
 x@git@npm:not-git
 `
 
-exports[`test/index.ts > TAP > basic parsing tests > x@git+file://path/to/repo#1.2.3 > inspect 1`] = `
+exports[`test/index.ts > TAP > basic parsing tests > x@git+file://path/to/repo#1.2.3 > inspect deep 1`] = `
 @vltpkg/spec.Spec {
   type: 'git',
   spec: 'x@git+file://path/to/repo#1.2.3',
@@ -1119,11 +3048,37 @@ exports[`test/index.ts > TAP > basic parsing tests > x@git+file://path/to/repo#1
 }
 `
 
+exports[`test/index.ts > TAP > basic parsing tests > x@git+file://path/to/repo#1.2.3 > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: 'x@git+file://path/to/repo#1.2.3',
+  name: 'x',
+  bareSpec: 'git+file://path/to/repo#1.2.3',
+  gitRemote: 'git+file://path/to/repo',
+  gitSelector: '1.2.3',
+  gitSelectorParsed: {},
+  gitCommittish: '1.2.3'
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > x@git+file://path/to/repo#1.2.3 > inspect with color 1`] = `
+@vltpkg/spec.Spec {
+  type: [32m'git'[39m,
+  spec: [32m'x@git+file://path/to/repo#1.2.3'[39m,
+  name: [32m'x'[39m,
+  bareSpec: [32m'git+file://path/to/repo#1.2.3'[39m,
+  gitRemote: [32m'git+file://path/to/repo'[39m,
+  gitSelector: [32m'1.2.3'[39m,
+  gitSelectorParsed: {},
+  gitCommittish: [32m'1.2.3'[39m
+}
+`
+
 exports[`test/index.ts > TAP > basic parsing tests > x@git+file://path/to/repo#1.2.3 > toString 1`] = `
 x@git+file://path/to/repo#1.2.3
 `
 
-exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://git@bitbucket.org/user/foo#1.2.3 > inspect 1`] = `
+exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://git@bitbucket.org/user/foo#1.2.3 > inspect deep 1`] = `
 @vltpkg/spec.Spec {
   type: 'git',
   spec: 'x@git+ssh://git@bitbucket.org/user/foo#1.2.3',
@@ -1136,11 +3091,37 @@ exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://git@bitbucket.o
 }
 `
 
+exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://git@bitbucket.org/user/foo#1.2.3 > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: 'x@git+ssh://git@bitbucket.org/user/foo#1.2.3',
+  name: 'x',
+  bareSpec: 'git+ssh://git@bitbucket.org/user/foo#1.2.3',
+  gitRemote: 'git+ssh://git@bitbucket.org/user/foo',
+  gitSelector: '1.2.3',
+  gitSelectorParsed: {},
+  gitCommittish: '1.2.3'
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://git@bitbucket.org/user/foo#1.2.3 > inspect with color 1`] = `
+@vltpkg/spec.Spec {
+  type: [32m'git'[39m,
+  spec: [32m'x@git+ssh://git@bitbucket.org/user/foo#1.2.3'[39m,
+  name: [32m'x'[39m,
+  bareSpec: [32m'git+ssh://git@bitbucket.org/user/foo#1.2.3'[39m,
+  gitRemote: [32m'git+ssh://git@bitbucket.org/user/foo'[39m,
+  gitSelector: [32m'1.2.3'[39m,
+  gitSelectorParsed: {},
+  gitCommittish: [32m'1.2.3'[39m
+}
+`
+
 exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://git@bitbucket.org/user/foo#1.2.3 > toString 1`] = `
 x@git+ssh://git@bitbucket.org/user/foo#1.2.3
 `
 
-exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://git@github.com:user/foo#1.2.3 > inspect 1`] = `
+exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://git@github.com:user/foo#1.2.3 > inspect deep 1`] = `
 @vltpkg/spec.Spec {
   type: 'git',
   spec: 'x@github:user/foo#1.2.3',
@@ -1156,11 +3137,95 @@ exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://git@github.com:
 }
 `
 
+exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://git@github.com:user/foo#1.2.3 > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: 'x@github:user/foo#1.2.3',
+  name: 'x',
+  bareSpec: 'github:user/foo#1.2.3',
+  gitRemote: 'git+ssh://git@github.com:user/foo.git',
+  gitSelector: '1.2.3',
+  gitSelectorParsed: {},
+  gitCommittish: '1.2.3',
+  namedGitHost: 'github',
+  namedGitHostPath: 'user/foo',
+  remoteURL: 'https://codeload.github.com/user/foo/tar.gz/1.2.3'
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://git@github.com:user/foo#1.2.3 > inspect with color 1`] = `
+@vltpkg/spec.Spec {
+  type: [32m'git'[39m,
+  spec: [32m'x@github:user/foo#1.2.3'[39m,
+  name: [32m'x'[39m,
+  bareSpec: [32m'github:user/foo#1.2.3'[39m,
+  gitRemote: [32m'git+ssh://git@github.com:user/foo.git'[39m,
+  gitSelector: [32m'1.2.3'[39m,
+  gitSelectorParsed: {},
+  gitCommittish: [32m'1.2.3'[39m,
+  namedGitHost: [32m'github'[39m,
+  namedGitHostPath: [32m'user/foo'[39m,
+  remoteURL: [32m'https://codeload.github.com/user/foo/tar.gz/1.2.3'[39m
+}
+`
+
 exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://git@github.com:user/foo#1.2.3 > toString 1`] = `
 x@github:user/foo#1.2.3
 `
 
-exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://git@github.com:user/foo#semver:^1.2.3 > inspect 1`] = `
+exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://git@github.com:user/foo#semver:^1.2.3 > inspect deep 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: 'x@github:user/foo#semver:^1.2.3',
+  name: 'x',
+  bareSpec: 'github:user/foo#semver:^1.2.3',
+  gitRemote: 'git+ssh://git@github.com:user/foo.git',
+  gitSelector: 'semver:^1.2.3',
+  gitSelectorParsed: { semver: '^1.2.3' },
+  namedGitHost: 'github',
+  namedGitHostPath: 'user/foo',
+  range: Range {
+    raw: '^1.2.3',
+    isAny: false,
+    set: [
+      Comparator {
+        includePrerelease: false,
+        raw: '^1.2.3',
+        tokens: [ '^1.2.3' ],
+        tuples: [
+          [
+            '>=',
+            Version {
+              raw: '1.2.3',
+              major: 1,
+              minor: 2,
+              patch: 3,
+              prerelease: undefined,
+              build: undefined
+            }
+          ],
+          [
+            '<',
+            Version {
+              raw: '1.2.3',
+              major: 2,
+              minor: 0,
+              patch: 0,
+              prerelease: [ 0 ],
+              build: undefined
+            }
+          ]
+        ],
+        isNone: false,
+        isAny: false
+      }
+    ],
+    includePrerelease: false
+  }
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://git@github.com:user/foo#semver:^1.2.3 > inspect default 1`] = `
 @vltpkg/spec.Spec {
   type: 'git',
   spec: 'x@github:user/foo#semver:^1.2.3',
@@ -1180,11 +3245,31 @@ exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://git@github.com:
 }
 `
 
+exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://git@github.com:user/foo#semver:^1.2.3 > inspect with color 1`] = `
+@vltpkg/spec.Spec {
+  type: [32m'git'[39m,
+  spec: [32m'x@github:user/foo#semver:^1.2.3'[39m,
+  name: [32m'x'[39m,
+  bareSpec: [32m'github:user/foo#semver:^1.2.3'[39m,
+  gitRemote: [32m'git+ssh://git@github.com:user/foo.git'[39m,
+  gitSelector: [32m'semver:^1.2.3'[39m,
+  gitSelectorParsed: { semver: [32m'^1.2.3'[39m },
+  namedGitHost: [32m'github'[39m,
+  namedGitHostPath: [32m'user/foo'[39m,
+  range: Range {
+    raw: [32m'^1.2.3'[39m,
+    isAny: [33mfalse[39m,
+    set: [ [36m[Comparator][39m ],
+    includePrerelease: [33mfalse[39m
+  }
+}
+`
+
 exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://git@github.com:user/foo#semver:^1.2.3 > toString 1`] = `
 x@github:user/foo#semver:^1.2.3
 `
 
-exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://git@github.com/user/foo#1.2.3 > inspect 1`] = `
+exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://git@github.com/user/foo#1.2.3 > inspect deep 1`] = `
 @vltpkg/spec.Spec {
   type: 'git',
   spec: 'x@git+ssh://git@github.com/user/foo#1.2.3',
@@ -1197,11 +3282,87 @@ exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://git@github.com/
 }
 `
 
+exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://git@github.com/user/foo#1.2.3 > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: 'x@git+ssh://git@github.com/user/foo#1.2.3',
+  name: 'x',
+  bareSpec: 'git+ssh://git@github.com/user/foo#1.2.3',
+  gitRemote: 'git+ssh://git@github.com/user/foo',
+  gitSelector: '1.2.3',
+  gitSelectorParsed: {},
+  gitCommittish: '1.2.3'
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://git@github.com/user/foo#1.2.3 > inspect with color 1`] = `
+@vltpkg/spec.Spec {
+  type: [32m'git'[39m,
+  spec: [32m'x@git+ssh://git@github.com/user/foo#1.2.3'[39m,
+  name: [32m'x'[39m,
+  bareSpec: [32m'git+ssh://git@github.com/user/foo#1.2.3'[39m,
+  gitRemote: [32m'git+ssh://git@github.com/user/foo'[39m,
+  gitSelector: [32m'1.2.3'[39m,
+  gitSelectorParsed: {},
+  gitCommittish: [32m'1.2.3'[39m
+}
+`
+
 exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://git@github.com/user/foo#1.2.3 > toString 1`] = `
 x@git+ssh://git@github.com/user/foo#1.2.3
 `
 
-exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://git@github.com/user/foo#semver:^1.2.3 > inspect 1`] = `
+exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://git@github.com/user/foo#semver:^1.2.3 > inspect deep 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: 'x@git+ssh://git@github.com/user/foo#semver:^1.2.3',
+  name: 'x',
+  bareSpec: 'git+ssh://git@github.com/user/foo#semver:^1.2.3',
+  gitRemote: 'git+ssh://git@github.com/user/foo',
+  gitSelector: 'semver:^1.2.3',
+  gitSelectorParsed: { semver: '^1.2.3' },
+  range: Range {
+    raw: '^1.2.3',
+    isAny: false,
+    set: [
+      Comparator {
+        includePrerelease: false,
+        raw: '^1.2.3',
+        tokens: [ '^1.2.3' ],
+        tuples: [
+          [
+            '>=',
+            Version {
+              raw: '1.2.3',
+              major: 1,
+              minor: 2,
+              patch: 3,
+              prerelease: undefined,
+              build: undefined
+            }
+          ],
+          [
+            '<',
+            Version {
+              raw: '1.2.3',
+              major: 2,
+              minor: 0,
+              patch: 0,
+              prerelease: [ 0 ],
+              build: undefined
+            }
+          ]
+        ],
+        isNone: false,
+        isAny: false
+      }
+    ],
+    includePrerelease: false
+  }
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://git@github.com/user/foo#semver:^1.2.3 > inspect default 1`] = `
 @vltpkg/spec.Spec {
   type: 'git',
   spec: 'x@git+ssh://git@github.com/user/foo#semver:^1.2.3',
@@ -1219,11 +3380,29 @@ exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://git@github.com/
 }
 `
 
+exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://git@github.com/user/foo#semver:^1.2.3 > inspect with color 1`] = `
+@vltpkg/spec.Spec {
+  type: [32m'git'[39m,
+  spec: [32m'x@git+ssh://git@github.com/user/foo#semver:^1.2.3'[39m,
+  name: [32m'x'[39m,
+  bareSpec: [32m'git+ssh://git@github.com/user/foo#semver:^1.2.3'[39m,
+  gitRemote: [32m'git+ssh://git@github.com/user/foo'[39m,
+  gitSelector: [32m'semver:^1.2.3'[39m,
+  gitSelectorParsed: { semver: [32m'^1.2.3'[39m },
+  range: Range {
+    raw: [32m'^1.2.3'[39m,
+    isAny: [33mfalse[39m,
+    set: [ [36m[Comparator][39m ],
+    includePrerelease: [33mfalse[39m
+  }
+}
+`
+
 exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://git@github.com/user/foo#semver:^1.2.3 > toString 1`] = `
 x@git+ssh://git@github.com/user/foo#semver:^1.2.3
 `
 
-exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://git@gitlab.com/user/foo#1.2.3 > inspect 1`] = `
+exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://git@gitlab.com/user/foo#1.2.3 > inspect deep 1`] = `
 @vltpkg/spec.Spec {
   type: 'git',
   spec: 'x@git+ssh://git@gitlab.com/user/foo#1.2.3',
@@ -1236,11 +3415,37 @@ exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://git@gitlab.com/
 }
 `
 
+exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://git@gitlab.com/user/foo#1.2.3 > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: 'x@git+ssh://git@gitlab.com/user/foo#1.2.3',
+  name: 'x',
+  bareSpec: 'git+ssh://git@gitlab.com/user/foo#1.2.3',
+  gitRemote: 'git+ssh://git@gitlab.com/user/foo',
+  gitSelector: '1.2.3',
+  gitSelectorParsed: {},
+  gitCommittish: '1.2.3'
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://git@gitlab.com/user/foo#1.2.3 > inspect with color 1`] = `
+@vltpkg/spec.Spec {
+  type: [32m'git'[39m,
+  spec: [32m'x@git+ssh://git@gitlab.com/user/foo#1.2.3'[39m,
+  name: [32m'x'[39m,
+  bareSpec: [32m'git+ssh://git@gitlab.com/user/foo#1.2.3'[39m,
+  gitRemote: [32m'git+ssh://git@gitlab.com/user/foo'[39m,
+  gitSelector: [32m'1.2.3'[39m,
+  gitSelectorParsed: {},
+  gitCommittish: [32m'1.2.3'[39m
+}
+`
+
 exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://git@gitlab.com/user/foo#1.2.3 > toString 1`] = `
 x@git+ssh://git@gitlab.com/user/foo#1.2.3
 `
 
-exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://git@notgithub.com:user/foo > inspect 1`] = `
+exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://git@notgithub.com:user/foo > inspect deep 1`] = `
 @vltpkg/spec.Spec {
   type: 'git',
   spec: 'x@git+ssh://git@notgithub.com:user/foo',
@@ -1250,11 +3455,31 @@ exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://git@notgithub.c
 }
 `
 
+exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://git@notgithub.com:user/foo > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: 'x@git+ssh://git@notgithub.com:user/foo',
+  name: 'x',
+  bareSpec: 'git+ssh://git@notgithub.com:user/foo',
+  gitRemote: 'git+ssh://git@notgithub.com:user/foo'
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://git@notgithub.com:user/foo > inspect with color 1`] = `
+@vltpkg/spec.Spec {
+  type: [32m'git'[39m,
+  spec: [32m'x@git+ssh://git@notgithub.com:user/foo'[39m,
+  name: [32m'x'[39m,
+  bareSpec: [32m'git+ssh://git@notgithub.com:user/foo'[39m,
+  gitRemote: [32m'git+ssh://git@notgithub.com:user/foo'[39m
+}
+`
+
 exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://git@notgithub.com:user/foo > toString 1`] = `
 x@git+ssh://git@notgithub.com:user/foo
 `
 
-exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://git@notgithub.com:user/foo#1.2.3 > inspect 1`] = `
+exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://git@notgithub.com:user/foo#1.2.3 > inspect deep 1`] = `
 @vltpkg/spec.Spec {
   type: 'git',
   spec: 'x@git+ssh://git@notgithub.com:user/foo#1.2.3',
@@ -1267,11 +3492,87 @@ exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://git@notgithub.c
 }
 `
 
+exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://git@notgithub.com:user/foo#1.2.3 > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: 'x@git+ssh://git@notgithub.com:user/foo#1.2.3',
+  name: 'x',
+  bareSpec: 'git+ssh://git@notgithub.com:user/foo#1.2.3',
+  gitRemote: 'git+ssh://git@notgithub.com:user/foo',
+  gitSelector: '1.2.3',
+  gitSelectorParsed: {},
+  gitCommittish: '1.2.3'
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://git@notgithub.com:user/foo#1.2.3 > inspect with color 1`] = `
+@vltpkg/spec.Spec {
+  type: [32m'git'[39m,
+  spec: [32m'x@git+ssh://git@notgithub.com:user/foo#1.2.3'[39m,
+  name: [32m'x'[39m,
+  bareSpec: [32m'git+ssh://git@notgithub.com:user/foo#1.2.3'[39m,
+  gitRemote: [32m'git+ssh://git@notgithub.com:user/foo'[39m,
+  gitSelector: [32m'1.2.3'[39m,
+  gitSelectorParsed: {},
+  gitCommittish: [32m'1.2.3'[39m
+}
+`
+
 exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://git@notgithub.com:user/foo#1.2.3 > toString 1`] = `
 x@git+ssh://git@notgithub.com:user/foo#1.2.3
 `
 
-exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://git@notgithub.com:user/foo#semver:^1.2.3 > inspect 1`] = `
+exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://git@notgithub.com:user/foo#semver:^1.2.3 > inspect deep 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: 'x@git+ssh://git@notgithub.com:user/foo#semver:^1.2.3',
+  name: 'x',
+  bareSpec: 'git+ssh://git@notgithub.com:user/foo#semver:^1.2.3',
+  gitRemote: 'git+ssh://git@notgithub.com:user/foo',
+  gitSelector: 'semver:^1.2.3',
+  gitSelectorParsed: { semver: '^1.2.3' },
+  range: Range {
+    raw: '^1.2.3',
+    isAny: false,
+    set: [
+      Comparator {
+        includePrerelease: false,
+        raw: '^1.2.3',
+        tokens: [ '^1.2.3' ],
+        tuples: [
+          [
+            '>=',
+            Version {
+              raw: '1.2.3',
+              major: 1,
+              minor: 2,
+              patch: 3,
+              prerelease: undefined,
+              build: undefined
+            }
+          ],
+          [
+            '<',
+            Version {
+              raw: '1.2.3',
+              major: 2,
+              minor: 0,
+              patch: 0,
+              prerelease: [ 0 ],
+              build: undefined
+            }
+          ]
+        ],
+        isNone: false,
+        isAny: false
+      }
+    ],
+    includePrerelease: false
+  }
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://git@notgithub.com:user/foo#semver:^1.2.3 > inspect default 1`] = `
 @vltpkg/spec.Spec {
   type: 'git',
   spec: 'x@git+ssh://git@notgithub.com:user/foo#semver:^1.2.3',
@@ -1289,11 +3590,29 @@ exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://git@notgithub.c
 }
 `
 
+exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://git@notgithub.com:user/foo#semver:^1.2.3 > inspect with color 1`] = `
+@vltpkg/spec.Spec {
+  type: [32m'git'[39m,
+  spec: [32m'x@git+ssh://git@notgithub.com:user/foo#semver:^1.2.3'[39m,
+  name: [32m'x'[39m,
+  bareSpec: [32m'git+ssh://git@notgithub.com:user/foo#semver:^1.2.3'[39m,
+  gitRemote: [32m'git+ssh://git@notgithub.com:user/foo'[39m,
+  gitSelector: [32m'semver:^1.2.3'[39m,
+  gitSelectorParsed: { semver: [32m'^1.2.3'[39m },
+  range: Range {
+    raw: [32m'^1.2.3'[39m,
+    isAny: [33mfalse[39m,
+    set: [ [36m[Comparator][39m ],
+    includePrerelease: [33mfalse[39m
+  }
+}
+`
+
 exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://git@notgithub.com:user/foo#semver:^1.2.3 > toString 1`] = `
 x@git+ssh://git@notgithub.com:user/foo#semver:^1.2.3
 `
 
-exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://git@notgithub.com/user/foo > inspect 1`] = `
+exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://git@notgithub.com/user/foo > inspect deep 1`] = `
 @vltpkg/spec.Spec {
   type: 'git',
   spec: 'x@git+ssh://git@notgithub.com/user/foo',
@@ -1303,11 +3622,31 @@ exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://git@notgithub.c
 }
 `
 
+exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://git@notgithub.com/user/foo > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: 'x@git+ssh://git@notgithub.com/user/foo',
+  name: 'x',
+  bareSpec: 'git+ssh://git@notgithub.com/user/foo',
+  gitRemote: 'git+ssh://git@notgithub.com/user/foo'
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://git@notgithub.com/user/foo > inspect with color 1`] = `
+@vltpkg/spec.Spec {
+  type: [32m'git'[39m,
+  spec: [32m'x@git+ssh://git@notgithub.com/user/foo'[39m,
+  name: [32m'x'[39m,
+  bareSpec: [32m'git+ssh://git@notgithub.com/user/foo'[39m,
+  gitRemote: [32m'git+ssh://git@notgithub.com/user/foo'[39m
+}
+`
+
 exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://git@notgithub.com/user/foo > toString 1`] = `
 x@git+ssh://git@notgithub.com/user/foo
 `
 
-exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://git@notgithub.com/user/foo#1.2.3 > inspect 1`] = `
+exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://git@notgithub.com/user/foo#1.2.3 > inspect deep 1`] = `
 @vltpkg/spec.Spec {
   type: 'git',
   spec: 'x@git+ssh://git@notgithub.com/user/foo#1.2.3',
@@ -1320,11 +3659,87 @@ exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://git@notgithub.c
 }
 `
 
+exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://git@notgithub.com/user/foo#1.2.3 > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: 'x@git+ssh://git@notgithub.com/user/foo#1.2.3',
+  name: 'x',
+  bareSpec: 'git+ssh://git@notgithub.com/user/foo#1.2.3',
+  gitRemote: 'git+ssh://git@notgithub.com/user/foo',
+  gitSelector: '1.2.3',
+  gitSelectorParsed: {},
+  gitCommittish: '1.2.3'
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://git@notgithub.com/user/foo#1.2.3 > inspect with color 1`] = `
+@vltpkg/spec.Spec {
+  type: [32m'git'[39m,
+  spec: [32m'x@git+ssh://git@notgithub.com/user/foo#1.2.3'[39m,
+  name: [32m'x'[39m,
+  bareSpec: [32m'git+ssh://git@notgithub.com/user/foo#1.2.3'[39m,
+  gitRemote: [32m'git+ssh://git@notgithub.com/user/foo'[39m,
+  gitSelector: [32m'1.2.3'[39m,
+  gitSelectorParsed: {},
+  gitCommittish: [32m'1.2.3'[39m
+}
+`
+
 exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://git@notgithub.com/user/foo#1.2.3 > toString 1`] = `
 x@git+ssh://git@notgithub.com/user/foo#1.2.3
 `
 
-exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://git@notgithub.com/user/foo#semver:^1.2.3 > inspect 1`] = `
+exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://git@notgithub.com/user/foo#semver:^1.2.3 > inspect deep 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: 'x@git+ssh://git@notgithub.com/user/foo#semver:^1.2.3',
+  name: 'x',
+  bareSpec: 'git+ssh://git@notgithub.com/user/foo#semver:^1.2.3',
+  gitRemote: 'git+ssh://git@notgithub.com/user/foo',
+  gitSelector: 'semver:^1.2.3',
+  gitSelectorParsed: { semver: '^1.2.3' },
+  range: Range {
+    raw: '^1.2.3',
+    isAny: false,
+    set: [
+      Comparator {
+        includePrerelease: false,
+        raw: '^1.2.3',
+        tokens: [ '^1.2.3' ],
+        tuples: [
+          [
+            '>=',
+            Version {
+              raw: '1.2.3',
+              major: 1,
+              minor: 2,
+              patch: 3,
+              prerelease: undefined,
+              build: undefined
+            }
+          ],
+          [
+            '<',
+            Version {
+              raw: '1.2.3',
+              major: 2,
+              minor: 0,
+              patch: 0,
+              prerelease: [ 0 ],
+              build: undefined
+            }
+          ]
+        ],
+        isNone: false,
+        isAny: false
+      }
+    ],
+    includePrerelease: false
+  }
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://git@notgithub.com/user/foo#semver:^1.2.3 > inspect default 1`] = `
 @vltpkg/spec.Spec {
   type: 'git',
   spec: 'x@git+ssh://git@notgithub.com/user/foo#semver:^1.2.3',
@@ -1342,11 +3757,29 @@ exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://git@notgithub.c
 }
 `
 
+exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://git@notgithub.com/user/foo#semver:^1.2.3 > inspect with color 1`] = `
+@vltpkg/spec.Spec {
+  type: [32m'git'[39m,
+  spec: [32m'x@git+ssh://git@notgithub.com/user/foo#semver:^1.2.3'[39m,
+  name: [32m'x'[39m,
+  bareSpec: [32m'git+ssh://git@notgithub.com/user/foo#semver:^1.2.3'[39m,
+  gitRemote: [32m'git+ssh://git@notgithub.com/user/foo'[39m,
+  gitSelector: [32m'semver:^1.2.3'[39m,
+  gitSelectorParsed: { semver: [32m'^1.2.3'[39m },
+  range: Range {
+    raw: [32m'^1.2.3'[39m,
+    isAny: [33mfalse[39m,
+    set: [ [36m[Comparator][39m ],
+    includePrerelease: [33mfalse[39m
+  }
+}
+`
+
 exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://git@notgithub.com/user/foo#semver:^1.2.3 > toString 1`] = `
 x@git+ssh://git@notgithub.com/user/foo#semver:^1.2.3
 `
 
-exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://mydomain.com:1234/hey > inspect 1`] = `
+exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://mydomain.com:1234/hey > inspect deep 1`] = `
 @vltpkg/spec.Spec {
   type: 'git',
   spec: 'x@git+ssh://mydomain.com:1234/hey',
@@ -1356,11 +3789,31 @@ exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://mydomain.com:12
 }
 `
 
+exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://mydomain.com:1234/hey > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: 'x@git+ssh://mydomain.com:1234/hey',
+  name: 'x',
+  bareSpec: 'git+ssh://mydomain.com:1234/hey',
+  gitRemote: 'git+ssh://mydomain.com:1234/hey'
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://mydomain.com:1234/hey > inspect with color 1`] = `
+@vltpkg/spec.Spec {
+  type: [32m'git'[39m,
+  spec: [32m'x@git+ssh://mydomain.com:1234/hey'[39m,
+  name: [32m'x'[39m,
+  bareSpec: [32m'git+ssh://mydomain.com:1234/hey'[39m,
+  gitRemote: [32m'git+ssh://mydomain.com:1234/hey'[39m
+}
+`
+
 exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://mydomain.com:1234/hey > toString 1`] = `
 x@git+ssh://mydomain.com:1234/hey
 `
 
-exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://mydomain.com:1234/hey#1.2.3 > inspect 1`] = `
+exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://mydomain.com:1234/hey#1.2.3 > inspect deep 1`] = `
 @vltpkg/spec.Spec {
   type: 'git',
   spec: 'x@git+ssh://mydomain.com:1234/hey#1.2.3',
@@ -1373,11 +3826,37 @@ exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://mydomain.com:12
 }
 `
 
+exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://mydomain.com:1234/hey#1.2.3 > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: 'x@git+ssh://mydomain.com:1234/hey#1.2.3',
+  name: 'x',
+  bareSpec: 'git+ssh://mydomain.com:1234/hey#1.2.3',
+  gitRemote: 'git+ssh://mydomain.com:1234/hey',
+  gitSelector: '1.2.3',
+  gitSelectorParsed: {},
+  gitCommittish: '1.2.3'
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://mydomain.com:1234/hey#1.2.3 > inspect with color 1`] = `
+@vltpkg/spec.Spec {
+  type: [32m'git'[39m,
+  spec: [32m'x@git+ssh://mydomain.com:1234/hey#1.2.3'[39m,
+  name: [32m'x'[39m,
+  bareSpec: [32m'git+ssh://mydomain.com:1234/hey#1.2.3'[39m,
+  gitRemote: [32m'git+ssh://mydomain.com:1234/hey'[39m,
+  gitSelector: [32m'1.2.3'[39m,
+  gitSelectorParsed: {},
+  gitCommittish: [32m'1.2.3'[39m
+}
+`
+
 exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://mydomain.com:1234/hey#1.2.3 > toString 1`] = `
 x@git+ssh://mydomain.com:1234/hey#1.2.3
 `
 
-exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://mydomain.com:1234#1.2.3 > inspect 1`] = `
+exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://mydomain.com:1234#1.2.3 > inspect deep 1`] = `
 @vltpkg/spec.Spec {
   type: 'git',
   spec: 'x@git+ssh://mydomain.com:1234#1.2.3',
@@ -1390,11 +3869,37 @@ exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://mydomain.com:12
 }
 `
 
+exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://mydomain.com:1234#1.2.3 > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: 'x@git+ssh://mydomain.com:1234#1.2.3',
+  name: 'x',
+  bareSpec: 'git+ssh://mydomain.com:1234#1.2.3',
+  gitRemote: 'git+ssh://mydomain.com:1234',
+  gitSelector: '1.2.3',
+  gitSelectorParsed: {},
+  gitCommittish: '1.2.3'
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://mydomain.com:1234#1.2.3 > inspect with color 1`] = `
+@vltpkg/spec.Spec {
+  type: [32m'git'[39m,
+  spec: [32m'x@git+ssh://mydomain.com:1234#1.2.3'[39m,
+  name: [32m'x'[39m,
+  bareSpec: [32m'git+ssh://mydomain.com:1234#1.2.3'[39m,
+  gitRemote: [32m'git+ssh://mydomain.com:1234'[39m,
+  gitSelector: [32m'1.2.3'[39m,
+  gitSelectorParsed: {},
+  gitCommittish: [32m'1.2.3'[39m
+}
+`
+
 exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://mydomain.com:1234#1.2.3 > toString 1`] = `
 x@git+ssh://mydomain.com:1234#1.2.3
 `
 
-exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://mydomain.com:foo > inspect 1`] = `
+exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://mydomain.com:foo > inspect deep 1`] = `
 @vltpkg/spec.Spec {
   type: 'git',
   spec: 'x@git+ssh://mydomain.com:foo',
@@ -1404,11 +3909,31 @@ exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://mydomain.com:fo
 }
 `
 
+exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://mydomain.com:foo > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: 'x@git+ssh://mydomain.com:foo',
+  name: 'x',
+  bareSpec: 'git+ssh://mydomain.com:foo',
+  gitRemote: 'git+ssh://mydomain.com:foo'
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://mydomain.com:foo > inspect with color 1`] = `
+@vltpkg/spec.Spec {
+  type: [32m'git'[39m,
+  spec: [32m'x@git+ssh://mydomain.com:foo'[39m,
+  name: [32m'x'[39m,
+  bareSpec: [32m'git+ssh://mydomain.com:foo'[39m,
+  gitRemote: [32m'git+ssh://mydomain.com:foo'[39m
+}
+`
+
 exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://mydomain.com:foo > toString 1`] = `
 x@git+ssh://mydomain.com:foo
 `
 
-exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://mydomain.com:foo/bar#1.2.3 > inspect 1`] = `
+exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://mydomain.com:foo/bar#1.2.3 > inspect deep 1`] = `
 @vltpkg/spec.Spec {
   type: 'git',
   spec: 'x@git+ssh://mydomain.com:foo/bar#1.2.3',
@@ -1421,11 +3946,37 @@ exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://mydomain.com:fo
 }
 `
 
+exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://mydomain.com:foo/bar#1.2.3 > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: 'x@git+ssh://mydomain.com:foo/bar#1.2.3',
+  name: 'x',
+  bareSpec: 'git+ssh://mydomain.com:foo/bar#1.2.3',
+  gitRemote: 'git+ssh://mydomain.com:foo/bar',
+  gitSelector: '1.2.3',
+  gitSelectorParsed: {},
+  gitCommittish: '1.2.3'
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://mydomain.com:foo/bar#1.2.3 > inspect with color 1`] = `
+@vltpkg/spec.Spec {
+  type: [32m'git'[39m,
+  spec: [32m'x@git+ssh://mydomain.com:foo/bar#1.2.3'[39m,
+  name: [32m'x'[39m,
+  bareSpec: [32m'git+ssh://mydomain.com:foo/bar#1.2.3'[39m,
+  gitRemote: [32m'git+ssh://mydomain.com:foo/bar'[39m,
+  gitSelector: [32m'1.2.3'[39m,
+  gitSelectorParsed: {},
+  gitCommittish: [32m'1.2.3'[39m
+}
+`
+
 exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://mydomain.com:foo/bar#1.2.3 > toString 1`] = `
 x@git+ssh://mydomain.com:foo/bar#1.2.3
 `
 
-exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://mydomain.com:foo#1.2.3 > inspect 1`] = `
+exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://mydomain.com:foo#1.2.3 > inspect deep 1`] = `
 @vltpkg/spec.Spec {
   type: 'git',
   spec: 'x@git+ssh://mydomain.com:foo#1.2.3',
@@ -1438,11 +3989,37 @@ exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://mydomain.com:fo
 }
 `
 
+exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://mydomain.com:foo#1.2.3 > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: 'x@git+ssh://mydomain.com:foo#1.2.3',
+  name: 'x',
+  bareSpec: 'git+ssh://mydomain.com:foo#1.2.3',
+  gitRemote: 'git+ssh://mydomain.com:foo',
+  gitSelector: '1.2.3',
+  gitSelectorParsed: {},
+  gitCommittish: '1.2.3'
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://mydomain.com:foo#1.2.3 > inspect with color 1`] = `
+@vltpkg/spec.Spec {
+  type: [32m'git'[39m,
+  spec: [32m'x@git+ssh://mydomain.com:foo#1.2.3'[39m,
+  name: [32m'x'[39m,
+  bareSpec: [32m'git+ssh://mydomain.com:foo#1.2.3'[39m,
+  gitRemote: [32m'git+ssh://mydomain.com:foo'[39m,
+  gitSelector: [32m'1.2.3'[39m,
+  gitSelectorParsed: {},
+  gitCommittish: [32m'1.2.3'[39m
+}
+`
+
 exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://mydomain.com:foo#1.2.3 > toString 1`] = `
 x@git+ssh://mydomain.com:foo#1.2.3
 `
 
-exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://username:password@mydomain.com:1234/hey#1.2.3 > inspect 1`] = `
+exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://username:password@mydomain.com:1234/hey#1.2.3 > inspect deep 1`] = `
 @vltpkg/spec.Spec {
   type: 'git',
   spec: 'x@git+ssh://username:password@mydomain.com:1234/hey#1.2.3',
@@ -1455,11 +4032,37 @@ exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://username:passwo
 }
 `
 
+exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://username:password@mydomain.com:1234/hey#1.2.3 > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: 'x@git+ssh://username:password@mydomain.com:1234/hey#1.2.3',
+  name: 'x',
+  bareSpec: 'git+ssh://username:password@mydomain.com:1234/hey#1.2.3',
+  gitRemote: 'git+ssh://username:password@mydomain.com:1234/hey',
+  gitSelector: '1.2.3',
+  gitSelectorParsed: {},
+  gitCommittish: '1.2.3'
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://username:password@mydomain.com:1234/hey#1.2.3 > inspect with color 1`] = `
+@vltpkg/spec.Spec {
+  type: [32m'git'[39m,
+  spec: [32m'x@git+ssh://username:password@mydomain.com:1234/hey#1.2.3'[39m,
+  name: [32m'x'[39m,
+  bareSpec: [32m'git+ssh://username:password@mydomain.com:1234/hey#1.2.3'[39m,
+  gitRemote: [32m'git+ssh://username:password@mydomain.com:1234/hey'[39m,
+  gitSelector: [32m'1.2.3'[39m,
+  gitSelectorParsed: {},
+  gitCommittish: [32m'1.2.3'[39m
+}
+`
+
 exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://username:password@mydomain.com:1234/hey#1.2.3 > toString 1`] = `
 x@git+ssh://username:password@mydomain.com:1234/hey#1.2.3
 `
 
-exports[`test/index.ts > TAP > basic parsing tests > x@github:user/foo-js > inspect 1`] = `
+exports[`test/index.ts > TAP > basic parsing tests > x@github:user/foo-js > inspect deep 1`] = `
 @vltpkg/spec.Spec {
   type: 'git',
   spec: 'x@github:user/foo-js',
@@ -1471,11 +4074,35 @@ exports[`test/index.ts > TAP > basic parsing tests > x@github:user/foo-js > insp
 }
 `
 
+exports[`test/index.ts > TAP > basic parsing tests > x@github:user/foo-js > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: 'x@github:user/foo-js',
+  name: 'x',
+  bareSpec: 'github:user/foo-js',
+  gitRemote: 'git+ssh://git@github.com:user/foo-js.git',
+  namedGitHost: 'github',
+  namedGitHostPath: 'user/foo-js'
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > x@github:user/foo-js > inspect with color 1`] = `
+@vltpkg/spec.Spec {
+  type: [32m'git'[39m,
+  spec: [32m'x@github:user/foo-js'[39m,
+  name: [32m'x'[39m,
+  bareSpec: [32m'github:user/foo-js'[39m,
+  gitRemote: [32m'git+ssh://git@github.com:user/foo-js.git'[39m,
+  namedGitHost: [32m'github'[39m,
+  namedGitHostPath: [32m'user/foo-js'[39m
+}
+`
+
 exports[`test/index.ts > TAP > basic parsing tests > x@github:user/foo-js > toString 1`] = `
 x@github:user/foo-js
 `
 
-exports[`test/index.ts > TAP > basic parsing tests > x@gitlab:user..blerg--/..foo-js# . . . . . some . tags / / / > inspect 1`] = `
+exports[`test/index.ts > TAP > basic parsing tests > x@gitlab:user..blerg--/..foo-js# . . . . . some . tags / / / > inspect deep 1`] = `
 @vltpkg/spec.Spec {
   type: 'git',
   spec: 'x@gitlab:user..blerg--/..foo-js# . . . . . some . tags / / /',
@@ -1491,11 +4118,43 @@ exports[`test/index.ts > TAP > basic parsing tests > x@gitlab:user..blerg--/..fo
 }
 `
 
+exports[`test/index.ts > TAP > basic parsing tests > x@gitlab:user..blerg--/..foo-js# . . . . . some . tags / / / > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: 'x@gitlab:user..blerg--/..foo-js# . . . . . some . tags / / /',
+  name: 'x',
+  bareSpec: 'gitlab:user..blerg--/..foo-js# . . . . . some . tags / / /',
+  gitRemote: 'git+ssh://git@gitlab.com:user..blerg--/..foo-js.git',
+  gitSelector: ' . . . . . some . tags / / /',
+  gitSelectorParsed: {},
+  gitCommittish: ' . . . . . some . tags / / /',
+  namedGitHost: 'gitlab',
+  namedGitHostPath: 'user..blerg--/..foo-js',
+  remoteURL: 'https://gitlab.com/user..blerg--/..foo-js/repository/archive.tar.gz?ref= . . . . . some . tags / / /'
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > x@gitlab:user..blerg--/..foo-js# . . . . . some . tags / / / > inspect with color 1`] = `
+@vltpkg/spec.Spec {
+  type: [32m'git'[39m,
+  spec: [32m'x@gitlab:user..blerg--/..foo-js# . . . . . some . tags / / /'[39m,
+  name: [32m'x'[39m,
+  bareSpec: [32m'gitlab:user..blerg--/..foo-js# . . . . . some . tags / / /'[39m,
+  gitRemote: [32m'git+ssh://git@gitlab.com:user..blerg--/..foo-js.git'[39m,
+  gitSelector: [32m' . . . . . some . tags / / /'[39m,
+  gitSelectorParsed: {},
+  gitCommittish: [32m' . . . . . some . tags / / /'[39m,
+  namedGitHost: [32m'gitlab'[39m,
+  namedGitHostPath: [32m'user..blerg--/..foo-js'[39m,
+  remoteURL: [32m'https://gitlab.com/user..blerg--/..foo-js/repository/archive.tar.gz?ref= . . . . . some . tags / / /'[39m
+}
+`
+
 exports[`test/index.ts > TAP > basic parsing tests > x@gitlab:user..blerg--/..foo-js# . . . . . some . tags / / / > toString 1`] = `
 x@gitlab:user..blerg--/..foo-js# . . . . . some . tags / / /
 `
 
-exports[`test/index.ts > TAP > basic parsing tests > x@gitlab:user/foo-js > inspect 1`] = `
+exports[`test/index.ts > TAP > basic parsing tests > x@gitlab:user/foo-js > inspect deep 1`] = `
 @vltpkg/spec.Spec {
   type: 'git',
   spec: 'x@gitlab:user/foo-js',
@@ -1507,11 +4166,35 @@ exports[`test/index.ts > TAP > basic parsing tests > x@gitlab:user/foo-js > insp
 }
 `
 
+exports[`test/index.ts > TAP > basic parsing tests > x@gitlab:user/foo-js > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: 'x@gitlab:user/foo-js',
+  name: 'x',
+  bareSpec: 'gitlab:user/foo-js',
+  gitRemote: 'git+ssh://git@gitlab.com:user/foo-js.git',
+  namedGitHost: 'gitlab',
+  namedGitHostPath: 'user/foo-js'
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > x@gitlab:user/foo-js > inspect with color 1`] = `
+@vltpkg/spec.Spec {
+  type: [32m'git'[39m,
+  spec: [32m'x@gitlab:user/foo-js'[39m,
+  name: [32m'x'[39m,
+  bareSpec: [32m'gitlab:user/foo-js'[39m,
+  gitRemote: [32m'git+ssh://git@gitlab.com:user/foo-js.git'[39m,
+  namedGitHost: [32m'gitlab'[39m,
+  namedGitHostPath: [32m'user/foo-js'[39m
+}
+`
+
 exports[`test/index.ts > TAP > basic parsing tests > x@gitlab:user/foo-js > toString 1`] = `
 x@gitlab:user/foo-js
 `
 
-exports[`test/index.ts > TAP > basic parsing tests > x@gitlab:user/foo-js#bar/baz > inspect 1`] = `
+exports[`test/index.ts > TAP > basic parsing tests > x@gitlab:user/foo-js#bar/baz > inspect deep 1`] = `
 @vltpkg/spec.Spec {
   type: 'git',
   spec: 'x@gitlab:user/foo-js#bar/baz',
@@ -1527,11 +4210,43 @@ exports[`test/index.ts > TAP > basic parsing tests > x@gitlab:user/foo-js#bar/ba
 }
 `
 
+exports[`test/index.ts > TAP > basic parsing tests > x@gitlab:user/foo-js#bar/baz > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: 'x@gitlab:user/foo-js#bar/baz',
+  name: 'x',
+  bareSpec: 'gitlab:user/foo-js#bar/baz',
+  gitRemote: 'git+ssh://git@gitlab.com:user/foo-js.git',
+  gitSelector: 'bar/baz',
+  gitSelectorParsed: {},
+  gitCommittish: 'bar/baz',
+  namedGitHost: 'gitlab',
+  namedGitHostPath: 'user/foo-js',
+  remoteURL: 'https://gitlab.com/user/foo-js/repository/archive.tar.gz?ref=bar/baz'
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > x@gitlab:user/foo-js#bar/baz > inspect with color 1`] = `
+@vltpkg/spec.Spec {
+  type: [32m'git'[39m,
+  spec: [32m'x@gitlab:user/foo-js#bar/baz'[39m,
+  name: [32m'x'[39m,
+  bareSpec: [32m'gitlab:user/foo-js#bar/baz'[39m,
+  gitRemote: [32m'git+ssh://git@gitlab.com:user/foo-js.git'[39m,
+  gitSelector: [32m'bar/baz'[39m,
+  gitSelectorParsed: {},
+  gitCommittish: [32m'bar/baz'[39m,
+  namedGitHost: [32m'gitlab'[39m,
+  namedGitHostPath: [32m'user/foo-js'[39m,
+  remoteURL: [32m'https://gitlab.com/user/foo-js/repository/archive.tar.gz?ref=bar/baz'[39m
+}
+`
+
 exports[`test/index.ts > TAP > basic parsing tests > x@gitlab:user/foo-js#bar/baz > toString 1`] = `
 x@gitlab:user/foo-js#bar/baz
 `
 
-exports[`test/index.ts > TAP > basic parsing tests > x@gitlab:user/foo-js#bar/baz/bin > inspect 1`] = `
+exports[`test/index.ts > TAP > basic parsing tests > x@gitlab:user/foo-js#bar/baz/bin > inspect deep 1`] = `
 @vltpkg/spec.Spec {
   type: 'git',
   spec: 'x@gitlab:user/foo-js#bar/baz/bin',
@@ -1547,11 +4262,43 @@ exports[`test/index.ts > TAP > basic parsing tests > x@gitlab:user/foo-js#bar/ba
 }
 `
 
+exports[`test/index.ts > TAP > basic parsing tests > x@gitlab:user/foo-js#bar/baz/bin > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: 'x@gitlab:user/foo-js#bar/baz/bin',
+  name: 'x',
+  bareSpec: 'gitlab:user/foo-js#bar/baz/bin',
+  gitRemote: 'git+ssh://git@gitlab.com:user/foo-js.git',
+  gitSelector: 'bar/baz/bin',
+  gitSelectorParsed: {},
+  gitCommittish: 'bar/baz/bin',
+  namedGitHost: 'gitlab',
+  namedGitHostPath: 'user/foo-js',
+  remoteURL: 'https://gitlab.com/user/foo-js/repository/archive.tar.gz?ref=bar/baz/bin'
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > x@gitlab:user/foo-js#bar/baz/bin > inspect with color 1`] = `
+@vltpkg/spec.Spec {
+  type: [32m'git'[39m,
+  spec: [32m'x@gitlab:user/foo-js#bar/baz/bin'[39m,
+  name: [32m'x'[39m,
+  bareSpec: [32m'gitlab:user/foo-js#bar/baz/bin'[39m,
+  gitRemote: [32m'git+ssh://git@gitlab.com:user/foo-js.git'[39m,
+  gitSelector: [32m'bar/baz/bin'[39m,
+  gitSelectorParsed: {},
+  gitCommittish: [32m'bar/baz/bin'[39m,
+  namedGitHost: [32m'gitlab'[39m,
+  namedGitHostPath: [32m'user/foo-js'[39m,
+  remoteURL: [32m'https://gitlab.com/user/foo-js/repository/archive.tar.gz?ref=bar/baz/bin'[39m
+}
+`
+
 exports[`test/index.ts > TAP > basic parsing tests > x@gitlab:user/foo-js#bar/baz/bin > toString 1`] = `
 x@gitlab:user/foo-js#bar/baz/bin
 `
 
-exports[`test/index.ts > TAP > basic parsing tests > x@http://insecure.com/foo.tgz > inspect 1`] = `
+exports[`test/index.ts > TAP > basic parsing tests > x@http://insecure.com/foo.tgz > inspect deep 1`] = `
 @vltpkg/spec.Spec {
   type: 'remote',
   spec: 'x@http://insecure.com/foo.tgz',
@@ -1561,11 +4308,31 @@ exports[`test/index.ts > TAP > basic parsing tests > x@http://insecure.com/foo.t
 }
 `
 
+exports[`test/index.ts > TAP > basic parsing tests > x@http://insecure.com/foo.tgz > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'remote',
+  spec: 'x@http://insecure.com/foo.tgz',
+  name: 'x',
+  bareSpec: 'http://insecure.com/foo.tgz',
+  remoteURL: 'http://insecure.com/foo.tgz'
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > x@http://insecure.com/foo.tgz > inspect with color 1`] = `
+@vltpkg/spec.Spec {
+  type: [32m'remote'[39m,
+  spec: [32m'x@http://insecure.com/foo.tgz'[39m,
+  name: [32m'x'[39m,
+  bareSpec: [32m'http://insecure.com/foo.tgz'[39m,
+  remoteURL: [32m'http://insecure.com/foo.tgz'[39m
+}
+`
+
 exports[`test/index.ts > TAP > basic parsing tests > x@http://insecure.com/foo.tgz > toString 1`] = `
 x@http://insecure.com/foo.tgz
 `
 
-exports[`test/index.ts > TAP > basic parsing tests > x@https://bitbucket.org/user/foo.git > inspect 1`] = `
+exports[`test/index.ts > TAP > basic parsing tests > x@https://bitbucket.org/user/foo.git > inspect deep 1`] = `
 @vltpkg/spec.Spec {
   type: 'git',
   spec: 'x@bitbucket:user/foo',
@@ -1577,11 +4344,35 @@ exports[`test/index.ts > TAP > basic parsing tests > x@https://bitbucket.org/use
 }
 `
 
+exports[`test/index.ts > TAP > basic parsing tests > x@https://bitbucket.org/user/foo.git > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: 'x@bitbucket:user/foo',
+  name: 'x',
+  bareSpec: 'bitbucket:user/foo',
+  gitRemote: 'git+ssh://git@bitbucket.org:user/foo.git',
+  namedGitHost: 'bitbucket',
+  namedGitHostPath: 'user/foo'
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > x@https://bitbucket.org/user/foo.git > inspect with color 1`] = `
+@vltpkg/spec.Spec {
+  type: [32m'git'[39m,
+  spec: [32m'x@bitbucket:user/foo'[39m,
+  name: [32m'x'[39m,
+  bareSpec: [32m'bitbucket:user/foo'[39m,
+  gitRemote: [32m'git+ssh://git@bitbucket.org:user/foo.git'[39m,
+  namedGitHost: [32m'bitbucket'[39m,
+  namedGitHostPath: [32m'user/foo'[39m
+}
+`
+
 exports[`test/index.ts > TAP > basic parsing tests > x@https://bitbucket.org/user/foo.git > toString 1`] = `
 x@bitbucket:user/foo
 `
 
-exports[`test/index.ts > TAP > basic parsing tests > x@https://github.com/user/foo.git > inspect 1`] = `
+exports[`test/index.ts > TAP > basic parsing tests > x@https://github.com/user/foo.git > inspect deep 1`] = `
 @vltpkg/spec.Spec {
   type: 'git',
   spec: 'x@github:user/foo',
@@ -1593,11 +4384,35 @@ exports[`test/index.ts > TAP > basic parsing tests > x@https://github.com/user/f
 }
 `
 
+exports[`test/index.ts > TAP > basic parsing tests > x@https://github.com/user/foo.git > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: 'x@github:user/foo',
+  name: 'x',
+  bareSpec: 'github:user/foo',
+  gitRemote: 'git+ssh://git@github.com:user/foo.git',
+  namedGitHost: 'github',
+  namedGitHostPath: 'user/foo'
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > x@https://github.com/user/foo.git > inspect with color 1`] = `
+@vltpkg/spec.Spec {
+  type: [32m'git'[39m,
+  spec: [32m'x@github:user/foo'[39m,
+  name: [32m'x'[39m,
+  bareSpec: [32m'github:user/foo'[39m,
+  gitRemote: [32m'git+ssh://git@github.com:user/foo.git'[39m,
+  namedGitHost: [32m'github'[39m,
+  namedGitHostPath: [32m'user/foo'[39m
+}
+`
+
 exports[`test/index.ts > TAP > basic parsing tests > x@https://github.com/user/foo.git > toString 1`] = `
 x@github:user/foo
 `
 
-exports[`test/index.ts > TAP > basic parsing tests > x@https://github.com/user/project > inspect 1`] = `
+exports[`test/index.ts > TAP > basic parsing tests > x@https://github.com/user/project > inspect deep 1`] = `
 @vltpkg/spec.Spec {
   type: 'git',
   spec: 'x@github:user/project',
@@ -1609,11 +4424,35 @@ exports[`test/index.ts > TAP > basic parsing tests > x@https://github.com/user/p
 }
 `
 
+exports[`test/index.ts > TAP > basic parsing tests > x@https://github.com/user/project > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: 'x@github:user/project',
+  name: 'x',
+  bareSpec: 'github:user/project',
+  gitRemote: 'git+ssh://git@github.com:user/project.git',
+  namedGitHost: 'github',
+  namedGitHostPath: 'user/project'
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > x@https://github.com/user/project > inspect with color 1`] = `
+@vltpkg/spec.Spec {
+  type: [32m'git'[39m,
+  spec: [32m'x@github:user/project'[39m,
+  name: [32m'x'[39m,
+  bareSpec: [32m'github:user/project'[39m,
+  gitRemote: [32m'git+ssh://git@github.com:user/project.git'[39m,
+  namedGitHost: [32m'github'[39m,
+  namedGitHostPath: [32m'user/project'[39m
+}
+`
+
 exports[`test/index.ts > TAP > basic parsing tests > x@https://github.com/user/project > toString 1`] = `
 x@github:user/project
 `
 
-exports[`test/index.ts > TAP > basic parsing tests > x@https://gitlab.com/user/foo.git > inspect 1`] = `
+exports[`test/index.ts > TAP > basic parsing tests > x@https://gitlab.com/user/foo.git > inspect deep 1`] = `
 @vltpkg/spec.Spec {
   type: 'git',
   spec: 'x@gitlab:user/foo',
@@ -1625,11 +4464,35 @@ exports[`test/index.ts > TAP > basic parsing tests > x@https://gitlab.com/user/f
 }
 `
 
+exports[`test/index.ts > TAP > basic parsing tests > x@https://gitlab.com/user/foo.git > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: 'x@gitlab:user/foo',
+  name: 'x',
+  bareSpec: 'gitlab:user/foo',
+  gitRemote: 'git+ssh://git@gitlab.com:user/foo.git',
+  namedGitHost: 'gitlab',
+  namedGitHostPath: 'user/foo'
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > x@https://gitlab.com/user/foo.git > inspect with color 1`] = `
+@vltpkg/spec.Spec {
+  type: [32m'git'[39m,
+  spec: [32m'x@gitlab:user/foo'[39m,
+  name: [32m'x'[39m,
+  bareSpec: [32m'gitlab:user/foo'[39m,
+  gitRemote: [32m'git+ssh://git@gitlab.com:user/foo.git'[39m,
+  namedGitHost: [32m'gitlab'[39m,
+  namedGitHostPath: [32m'user/foo'[39m
+}
+`
+
 exports[`test/index.ts > TAP > basic parsing tests > x@https://gitlab.com/user/foo.git > toString 1`] = `
 x@gitlab:user/foo
 `
 
-exports[`test/index.ts > TAP > basic parsing tests > x@https://server.com/foo.tgz > inspect 1`] = `
+exports[`test/index.ts > TAP > basic parsing tests > x@https://server.com/foo.tgz > inspect deep 1`] = `
 @vltpkg/spec.Spec {
   type: 'remote',
   spec: 'x@https://server.com/foo.tgz',
@@ -1639,11 +4502,31 @@ exports[`test/index.ts > TAP > basic parsing tests > x@https://server.com/foo.tg
 }
 `
 
+exports[`test/index.ts > TAP > basic parsing tests > x@https://server.com/foo.tgz > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'remote',
+  spec: 'x@https://server.com/foo.tgz',
+  name: 'x',
+  bareSpec: 'https://server.com/foo.tgz',
+  remoteURL: 'https://server.com/foo.tgz'
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > x@https://server.com/foo.tgz > inspect with color 1`] = `
+@vltpkg/spec.Spec {
+  type: [32m'remote'[39m,
+  spec: [32m'x@https://server.com/foo.tgz'[39m,
+  name: [32m'x'[39m,
+  bareSpec: [32m'https://server.com/foo.tgz'[39m,
+  remoteURL: [32m'https://server.com/foo.tgz'[39m
+}
+`
+
 exports[`test/index.ts > TAP > basic parsing tests > x@https://server.com/foo.tgz > toString 1`] = `
 x@https://server.com/foo.tgz
 `
 
-exports[`test/index.ts > TAP > basic parsing tests > x@not-git@hostname.com:some/repo > inspect 1`] = `
+exports[`test/index.ts > TAP > basic parsing tests > x@not-git@hostname.com:some/repo > inspect deep 1`] = `
 @vltpkg/spec.Spec {
   type: 'git',
   spec: 'x@github:not-git@hostname.com:some/repo',
@@ -1655,11 +4538,35 @@ exports[`test/index.ts > TAP > basic parsing tests > x@not-git@hostname.com:some
 }
 `
 
+exports[`test/index.ts > TAP > basic parsing tests > x@not-git@hostname.com:some/repo > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: 'x@github:not-git@hostname.com:some/repo',
+  name: 'x',
+  bareSpec: 'github:not-git@hostname.com:some/repo',
+  gitRemote: 'git+ssh://git@github.com:not-git@hostname.com:some/repo.git',
+  namedGitHost: 'github',
+  namedGitHostPath: 'not-git@hostname.com:some/repo'
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > x@not-git@hostname.com:some/repo > inspect with color 1`] = `
+@vltpkg/spec.Spec {
+  type: [32m'git'[39m,
+  spec: [32m'x@github:not-git@hostname.com:some/repo'[39m,
+  name: [32m'x'[39m,
+  bareSpec: [32m'github:not-git@hostname.com:some/repo'[39m,
+  gitRemote: [32m'git+ssh://git@github.com:not-git@hostname.com:some/repo.git'[39m,
+  namedGitHost: [32m'github'[39m,
+  namedGitHostPath: [32m'not-git@hostname.com:some/repo'[39m
+}
+`
+
 exports[`test/index.ts > TAP > basic parsing tests > x@not-git@hostname.com:some/repo > toString 1`] = `
 x@github:not-git@hostname.com:some/repo
 `
 
-exports[`test/index.ts > TAP > basic parsing tests > x@npm:foo@npm:bar@npm:baz@1 > inspect 1`] = `
+exports[`test/index.ts > TAP > basic parsing tests > x@npm:foo@npm:bar@npm:baz@1 > inspect deep 1`] = `
 @vltpkg/spec.Spec {
   type: 'registry',
   spec: 'x@npm:foo@npm:bar@npm:baz@1',
@@ -1667,6 +4574,124 @@ exports[`test/index.ts > TAP > basic parsing tests > x@npm:foo@npm:bar@npm:baz@1
   bareSpec: 'npm:foo@npm:bar@npm:baz@1',
   namedRegistry: 'npm',
   registry: 'https://registry.npmjs.org/',
+  subspec: @vltpkg/spec.Spec {
+    type: 'registry',
+    spec: 'foo@npm:bar@npm:baz@1',
+    name: 'foo',
+    bareSpec: 'npm:bar@npm:baz@1',
+    namedRegistry: 'npm',
+    registry: 'https://registry.npmjs.org/',
+    subspec: @vltpkg/spec.Spec {
+      type: 'registry',
+      spec: 'bar@npm:baz@1',
+      name: 'bar',
+      bareSpec: 'npm:baz@1',
+      namedRegistry: 'npm',
+      registry: 'https://registry.npmjs.org/',
+      subspec: @vltpkg/spec.Spec {
+        type: 'registry',
+        spec: 'baz@1',
+        name: 'baz',
+        bareSpec: '1',
+        namedRegistry: 'npm',
+        registry: 'https://registry.npmjs.org/',
+        registrySpec: '1',
+        semver: '1',
+        range: Range {
+          raw: '1',
+          isAny: false,
+          set: [
+            Comparator {
+              includePrerelease: false,
+              raw: '1',
+              tokens: [ '1' ],
+              tuples: [
+                [
+                  '>=',
+                  Version {
+                    raw: '1',
+                    major: 1,
+                    minor: 0,
+                    patch: 0,
+                    prerelease: undefined,
+                    build: undefined
+                  }
+                ],
+                [
+                  '<',
+                  Version {
+                    raw: '1',
+                    major: 2,
+                    minor: 0,
+                    patch: 0,
+                    prerelease: [ 0 ],
+                    build: undefined
+                  }
+                ]
+              ],
+              isNone: false,
+              isAny: false
+            }
+          ],
+          includePrerelease: false
+        }
+      }
+    }
+  }
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > x@npm:foo@npm:bar@npm:baz@1 > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'registry',
+  spec: 'x@npm:foo@npm:bar@npm:baz@1',
+  name: 'x',
+  bareSpec: 'npm:foo@npm:bar@npm:baz@1',
+  namedRegistry: 'npm',
+  registry: 'https://registry.npmjs.org/',
+  subspec: @vltpkg/spec.Spec {
+    type: 'registry',
+    spec: 'foo@npm:bar@npm:baz@1',
+    name: 'foo',
+    bareSpec: 'npm:bar@npm:baz@1',
+    namedRegistry: 'npm',
+    registry: 'https://registry.npmjs.org/',
+    subspec: @vltpkg/spec.Spec {
+      type: 'registry',
+      spec: 'bar@npm:baz@1',
+      name: 'bar',
+      bareSpec: 'npm:baz@1',
+      namedRegistry: 'npm',
+      registry: 'https://registry.npmjs.org/',
+      subspec: @vltpkg/spec.Spec {
+        type: 'registry',
+        spec: 'baz@1',
+        name: 'baz',
+        bareSpec: '1',
+        namedRegistry: 'npm',
+        registry: 'https://registry.npmjs.org/',
+        registrySpec: '1',
+        semver: '1',
+        range: Range {
+          raw: '1',
+          isAny: false,
+          set: [ [Comparator] ],
+          includePrerelease: false
+        }
+      }
+    }
+  }
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > x@npm:foo@npm:bar@npm:baz@1 > inspect with color 1`] = `
+@vltpkg/spec.Spec {
+  type: [32m'registry'[39m,
+  spec: [32m'x@npm:foo@npm:bar@npm:baz@1'[39m,
+  name: [32m'x'[39m,
+  bareSpec: [32m'npm:foo@npm:bar@npm:baz@1'[39m,
+  namedRegistry: [32m'npm'[39m,
+  registry: [32m'https://registry.npmjs.org/'[39m,
   subspec: @vltpkg/spec.Spec {
     type: [32m'registry'[39m,
     spec: [32m'foo@npm:bar@npm:baz@1'[39m,
@@ -1693,39 +4718,7 @@ exports[`test/index.ts > TAP > basic parsing tests > x@npm:foo@npm:bar@npm:baz@1
         range: Range {
           raw: [32m'1'[39m,
           isAny: [33mfalse[39m,
-          set: [
-            Comparator {
-              includePrerelease: [33mfalse[39m,
-              raw: [32m'1'[39m,
-              tokens: [ [32m'1'[39m ],
-              tuples: [
-                [
-                  [32m'>='[39m,
-                  Version {
-                    raw: [32m'1'[39m,
-                    major: [33m1[39m,
-                    minor: [33m0[39m,
-                    patch: [33m0[39m,
-                    prerelease: [90mundefined[39m,
-                    build: [90mundefined[39m
-                  }
-                ],
-                [
-                  [32m'<'[39m,
-                  Version {
-                    raw: [32m'1'[39m,
-                    major: [33m2[39m,
-                    minor: [33m0[39m,
-                    patch: [33m0[39m,
-                    prerelease: [ [33m0[39m ],
-                    build: [90mundefined[39m
-                  }
-                ]
-              ],
-              isNone: [33mfalse[39m,
-              isAny: [33mfalse[39m
-            }
-          ],
+          set: [ [36m[Comparator][39m ],
           includePrerelease: [33mfalse[39m
         }
       }
@@ -1738,7 +4731,7 @@ exports[`test/index.ts > TAP > basic parsing tests > x@npm:foo@npm:bar@npm:baz@1
 x@npm:baz@1
 `
 
-exports[`test/index.ts > TAP > basic parsing tests > x@npm:y@npm:z@github:a/x#branch > inspect 1`] = `
+exports[`test/index.ts > TAP > basic parsing tests > x@npm:y@npm:z@github:a/x#branch > inspect deep 1`] = `
 @vltpkg/spec.Spec {
   type: 'registry',
   spec: 'x@npm:y@npm:z@github:a/x#branch',
@@ -1746,6 +4739,72 @@ exports[`test/index.ts > TAP > basic parsing tests > x@npm:y@npm:z@github:a/x#br
   bareSpec: 'npm:y@npm:z@github:a/x#branch',
   namedRegistry: 'npm',
   registry: 'https://registry.npmjs.org/',
+  subspec: @vltpkg/spec.Spec {
+    type: 'registry',
+    spec: 'y@npm:z@github:a/x#branch',
+    name: 'y',
+    bareSpec: 'npm:z@github:a/x#branch',
+    namedRegistry: 'npm',
+    registry: 'https://registry.npmjs.org/',
+    subspec: @vltpkg/spec.Spec {
+      type: 'git',
+      spec: 'z@github:a/x#branch',
+      name: 'z',
+      bareSpec: 'github:a/x#branch',
+      gitRemote: 'git+ssh://git@github.com:a/x.git',
+      gitSelector: 'branch',
+      gitSelectorParsed: {},
+      gitCommittish: 'branch',
+      namedGitHost: 'github',
+      namedGitHostPath: 'a/x',
+      namedRegistry: 'npm',
+      remoteURL: 'https://codeload.github.com/a/x/tar.gz/branch'
+    }
+  }
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > x@npm:y@npm:z@github:a/x#branch > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'registry',
+  spec: 'x@npm:y@npm:z@github:a/x#branch',
+  name: 'x',
+  bareSpec: 'npm:y@npm:z@github:a/x#branch',
+  namedRegistry: 'npm',
+  registry: 'https://registry.npmjs.org/',
+  subspec: @vltpkg/spec.Spec {
+    type: 'registry',
+    spec: 'y@npm:z@github:a/x#branch',
+    name: 'y',
+    bareSpec: 'npm:z@github:a/x#branch',
+    namedRegistry: 'npm',
+    registry: 'https://registry.npmjs.org/',
+    subspec: @vltpkg/spec.Spec {
+      type: 'git',
+      spec: 'z@github:a/x#branch',
+      name: 'z',
+      bareSpec: 'github:a/x#branch',
+      gitRemote: 'git+ssh://git@github.com:a/x.git',
+      gitSelector: 'branch',
+      gitSelectorParsed: {},
+      gitCommittish: 'branch',
+      namedGitHost: 'github',
+      namedGitHostPath: 'a/x',
+      namedRegistry: 'npm',
+      remoteURL: 'https://codeload.github.com/a/x/tar.gz/branch'
+    }
+  }
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > x@npm:y@npm:z@github:a/x#branch > inspect with color 1`] = `
+@vltpkg/spec.Spec {
+  type: [32m'registry'[39m,
+  spec: [32m'x@npm:y@npm:z@github:a/x#branch'[39m,
+  name: [32m'x'[39m,
+  bareSpec: [32m'npm:y@npm:z@github:a/x#branch'[39m,
+  namedRegistry: [32m'npm'[39m,
+  registry: [32m'https://registry.npmjs.org/'[39m,
   subspec: @vltpkg/spec.Spec {
     type: [32m'registry'[39m,
     spec: [32m'y@npm:z@github:a/x#branch'[39m,
@@ -1775,13 +4834,53 @@ exports[`test/index.ts > TAP > basic parsing tests > x@npm:y@npm:z@github:a/x#br
 x@github:a/x#branch
 `
 
-exports[`test/index.ts > TAP > basic parsing tests > x@registry:https://example.com/npm#@org/pkg@latest > inspect 1`] = `
+exports[`test/index.ts > TAP > basic parsing tests > x@registry:https://example.com/npm#@org/pkg@latest > inspect deep 1`] = `
 @vltpkg/spec.Spec {
   type: 'registry',
   spec: 'x@registry:https://example.com/npm#@org/pkg@latest',
   name: 'x',
   bareSpec: 'registry:https://example.com/npm#@org/pkg@latest',
   registry: 'https://example.com/npm/',
+  subspec: @vltpkg/spec.Spec {
+    type: 'registry',
+    spec: '@org/pkg@latest',
+    name: '@org/pkg',
+    scope: '@org',
+    bareSpec: 'latest',
+    registry: 'https://example.com/npm/',
+    registrySpec: 'latest',
+    distTag: 'latest'
+  }
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > x@registry:https://example.com/npm#@org/pkg@latest > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'registry',
+  spec: 'x@registry:https://example.com/npm#@org/pkg@latest',
+  name: 'x',
+  bareSpec: 'registry:https://example.com/npm#@org/pkg@latest',
+  registry: 'https://example.com/npm/',
+  subspec: @vltpkg/spec.Spec {
+    type: 'registry',
+    spec: '@org/pkg@latest',
+    name: '@org/pkg',
+    scope: '@org',
+    bareSpec: 'latest',
+    registry: 'https://example.com/npm/',
+    registrySpec: 'latest',
+    distTag: 'latest'
+  }
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > x@registry:https://example.com/npm#@org/pkg@latest > inspect with color 1`] = `
+@vltpkg/spec.Spec {
+  type: [32m'registry'[39m,
+  spec: [32m'x@registry:https://example.com/npm#@org/pkg@latest'[39m,
+  name: [32m'x'[39m,
+  bareSpec: [32m'registry:https://example.com/npm#@org/pkg@latest'[39m,
+  registry: [32m'https://example.com/npm/'[39m,
   subspec: @vltpkg/spec.Spec {
     type: [32m'registry'[39m,
     spec: [32m'@org/pkg@latest'[39m,
@@ -1799,7 +4898,7 @@ exports[`test/index.ts > TAP > basic parsing tests > x@registry:https://example.
 x@registry:https://example.com/npm#@org/pkg@latest
 `
 
-exports[`test/index.ts > TAP > basic parsing tests > x@user..blerg--/..foo-js# . . . . . some . tags / / / > inspect 1`] = `
+exports[`test/index.ts > TAP > basic parsing tests > x@user..blerg--/..foo-js# . . . . . some . tags / / / > inspect deep 1`] = `
 @vltpkg/spec.Spec {
   type: 'git',
   spec: 'x@github:user..blerg--/..foo-js# . . . . . some . tags / / /',
@@ -1815,11 +4914,43 @@ exports[`test/index.ts > TAP > basic parsing tests > x@user..blerg--/..foo-js# .
 }
 `
 
+exports[`test/index.ts > TAP > basic parsing tests > x@user..blerg--/..foo-js# . . . . . some . tags / / / > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: 'x@github:user..blerg--/..foo-js# . . . . . some . tags / / /',
+  name: 'x',
+  bareSpec: 'github:user..blerg--/..foo-js# . . . . . some . tags / / /',
+  gitRemote: 'git+ssh://git@github.com:user..blerg--/..foo-js.git',
+  gitSelector: ' . . . . . some . tags / / /',
+  gitSelectorParsed: {},
+  gitCommittish: ' . . . . . some . tags / / /',
+  namedGitHost: 'github',
+  namedGitHostPath: 'user..blerg--/..foo-js',
+  remoteURL: 'https://codeload.github.com/user..blerg--/..foo-js/tar.gz/ . . . . . some . tags / / /'
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > x@user..blerg--/..foo-js# . . . . . some . tags / / / > inspect with color 1`] = `
+@vltpkg/spec.Spec {
+  type: [32m'git'[39m,
+  spec: [32m'x@github:user..blerg--/..foo-js# . . . . . some . tags / / /'[39m,
+  name: [32m'x'[39m,
+  bareSpec: [32m'github:user..blerg--/..foo-js# . . . . . some . tags / / /'[39m,
+  gitRemote: [32m'git+ssh://git@github.com:user..blerg--/..foo-js.git'[39m,
+  gitSelector: [32m' . . . . . some . tags / / /'[39m,
+  gitSelectorParsed: {},
+  gitCommittish: [32m' . . . . . some . tags / / /'[39m,
+  namedGitHost: [32m'github'[39m,
+  namedGitHostPath: [32m'user..blerg--/..foo-js'[39m,
+  remoteURL: [32m'https://codeload.github.com/user..blerg--/..foo-js/tar.gz/ . . . . . some . tags / / /'[39m
+}
+`
+
 exports[`test/index.ts > TAP > basic parsing tests > x@user..blerg--/..foo-js# . . . . . some . tags / / / > toString 1`] = `
 x@github:user..blerg--/..foo-js# . . . . . some . tags / / /
 `
 
-exports[`test/index.ts > TAP > basic parsing tests > x@user/foo-js > inspect 1`] = `
+exports[`test/index.ts > TAP > basic parsing tests > x@user/foo-js > inspect deep 1`] = `
 @vltpkg/spec.Spec {
   type: 'git',
   spec: 'x@github:user/foo-js',
@@ -1831,11 +4962,35 @@ exports[`test/index.ts > TAP > basic parsing tests > x@user/foo-js > inspect 1`]
 }
 `
 
+exports[`test/index.ts > TAP > basic parsing tests > x@user/foo-js > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: 'x@github:user/foo-js',
+  name: 'x',
+  bareSpec: 'github:user/foo-js',
+  gitRemote: 'git+ssh://git@github.com:user/foo-js.git',
+  namedGitHost: 'github',
+  namedGitHostPath: 'user/foo-js'
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > x@user/foo-js > inspect with color 1`] = `
+@vltpkg/spec.Spec {
+  type: [32m'git'[39m,
+  spec: [32m'x@github:user/foo-js'[39m,
+  name: [32m'x'[39m,
+  bareSpec: [32m'github:user/foo-js'[39m,
+  gitRemote: [32m'git+ssh://git@github.com:user/foo-js.git'[39m,
+  namedGitHost: [32m'github'[39m,
+  namedGitHostPath: [32m'user/foo-js'[39m
+}
+`
+
 exports[`test/index.ts > TAP > basic parsing tests > x@user/foo-js > toString 1`] = `
 x@github:user/foo-js
 `
 
-exports[`test/index.ts > TAP > basic parsing tests > x@user/foo-js#bar/baz > inspect 1`] = `
+exports[`test/index.ts > TAP > basic parsing tests > x@user/foo-js#bar/baz > inspect deep 1`] = `
 @vltpkg/spec.Spec {
   type: 'git',
   spec: 'x@github:user/foo-js#bar/baz',
@@ -1851,11 +5006,43 @@ exports[`test/index.ts > TAP > basic parsing tests > x@user/foo-js#bar/baz > ins
 }
 `
 
+exports[`test/index.ts > TAP > basic parsing tests > x@user/foo-js#bar/baz > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: 'x@github:user/foo-js#bar/baz',
+  name: 'x',
+  bareSpec: 'github:user/foo-js#bar/baz',
+  gitRemote: 'git+ssh://git@github.com:user/foo-js.git',
+  gitSelector: 'bar/baz',
+  gitSelectorParsed: {},
+  gitCommittish: 'bar/baz',
+  namedGitHost: 'github',
+  namedGitHostPath: 'user/foo-js',
+  remoteURL: 'https://codeload.github.com/user/foo-js/tar.gz/bar/baz'
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > x@user/foo-js#bar/baz > inspect with color 1`] = `
+@vltpkg/spec.Spec {
+  type: [32m'git'[39m,
+  spec: [32m'x@github:user/foo-js#bar/baz'[39m,
+  name: [32m'x'[39m,
+  bareSpec: [32m'github:user/foo-js#bar/baz'[39m,
+  gitRemote: [32m'git+ssh://git@github.com:user/foo-js.git'[39m,
+  gitSelector: [32m'bar/baz'[39m,
+  gitSelectorParsed: {},
+  gitCommittish: [32m'bar/baz'[39m,
+  namedGitHost: [32m'github'[39m,
+  namedGitHostPath: [32m'user/foo-js'[39m,
+  remoteURL: [32m'https://codeload.github.com/user/foo-js/tar.gz/bar/baz'[39m
+}
+`
+
 exports[`test/index.ts > TAP > basic parsing tests > x@user/foo-js#bar/baz > toString 1`] = `
 x@github:user/foo-js#bar/baz
 `
 
-exports[`test/index.ts > TAP > basic parsing tests > x@user/foo-js#bar/baz/bin > inspect 1`] = `
+exports[`test/index.ts > TAP > basic parsing tests > x@user/foo-js#bar/baz/bin > inspect deep 1`] = `
 @vltpkg/spec.Spec {
   type: 'git',
   spec: 'x@github:user/foo-js#bar/baz/bin',
@@ -1871,11 +5058,43 @@ exports[`test/index.ts > TAP > basic parsing tests > x@user/foo-js#bar/baz/bin >
 }
 `
 
+exports[`test/index.ts > TAP > basic parsing tests > x@user/foo-js#bar/baz/bin > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: 'x@github:user/foo-js#bar/baz/bin',
+  name: 'x',
+  bareSpec: 'github:user/foo-js#bar/baz/bin',
+  gitRemote: 'git+ssh://git@github.com:user/foo-js.git',
+  gitSelector: 'bar/baz/bin',
+  gitSelectorParsed: {},
+  gitCommittish: 'bar/baz/bin',
+  namedGitHost: 'github',
+  namedGitHostPath: 'user/foo-js',
+  remoteURL: 'https://codeload.github.com/user/foo-js/tar.gz/bar/baz/bin'
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > x@user/foo-js#bar/baz/bin > inspect with color 1`] = `
+@vltpkg/spec.Spec {
+  type: [32m'git'[39m,
+  spec: [32m'x@github:user/foo-js#bar/baz/bin'[39m,
+  name: [32m'x'[39m,
+  bareSpec: [32m'github:user/foo-js#bar/baz/bin'[39m,
+  gitRemote: [32m'git+ssh://git@github.com:user/foo-js.git'[39m,
+  gitSelector: [32m'bar/baz/bin'[39m,
+  gitSelectorParsed: {},
+  gitCommittish: [32m'bar/baz/bin'[39m,
+  namedGitHost: [32m'github'[39m,
+  namedGitHostPath: [32m'user/foo-js'[39m,
+  remoteURL: [32m'https://codeload.github.com/user/foo-js/tar.gz/bar/baz/bin'[39m
+}
+`
+
 exports[`test/index.ts > TAP > basic parsing tests > x@user/foo-js#bar/baz/bin > toString 1`] = `
 x@github:user/foo-js#bar/baz/bin
 `
 
-exports[`test/index.ts > TAP > basic parsing tests > x@user/foo#1234::path:dist > inspect 1`] = `
+exports[`test/index.ts > TAP > basic parsing tests > x@user/foo#1234::path:dist > inspect deep 1`] = `
 @vltpkg/spec.Spec {
   type: 'git',
   spec: 'x@github:user/foo#1234::path:dist',
@@ -1890,11 +5109,41 @@ exports[`test/index.ts > TAP > basic parsing tests > x@user/foo#1234::path:dist 
 }
 `
 
+exports[`test/index.ts > TAP > basic parsing tests > x@user/foo#1234::path:dist > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: 'x@github:user/foo#1234::path:dist',
+  name: 'x',
+  bareSpec: 'github:user/foo#1234::path:dist',
+  gitRemote: 'git+ssh://git@github.com:user/foo.git',
+  gitSelector: '1234::path:dist',
+  gitSelectorParsed: { path: 'dist' },
+  gitCommittish: '1234',
+  namedGitHost: 'github',
+  namedGitHostPath: 'user/foo'
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > x@user/foo#1234::path:dist > inspect with color 1`] = `
+@vltpkg/spec.Spec {
+  type: [32m'git'[39m,
+  spec: [32m'x@github:user/foo#1234::path:dist'[39m,
+  name: [32m'x'[39m,
+  bareSpec: [32m'github:user/foo#1234::path:dist'[39m,
+  gitRemote: [32m'git+ssh://git@github.com:user/foo.git'[39m,
+  gitSelector: [32m'1234::path:dist'[39m,
+  gitSelectorParsed: { path: [32m'dist'[39m },
+  gitCommittish: [32m'1234'[39m,
+  namedGitHost: [32m'github'[39m,
+  namedGitHostPath: [32m'user/foo'[39m
+}
+`
+
 exports[`test/index.ts > TAP > basic parsing tests > x@user/foo#1234::path:dist > toString 1`] = `
 x@github:user/foo#1234::path:dist
 `
 
-exports[`test/index.ts > TAP > basic parsing tests > x@user/foo#notimplemented:value > inspect 1`] = `
+exports[`test/index.ts > TAP > basic parsing tests > x@user/foo#notimplemented:value > inspect deep 1`] = `
 @vltpkg/spec.Spec {
   type: 'git',
   spec: 'x@github:user/foo#notimplemented:value',
@@ -1908,11 +5157,39 @@ exports[`test/index.ts > TAP > basic parsing tests > x@user/foo#notimplemented:v
 }
 `
 
+exports[`test/index.ts > TAP > basic parsing tests > x@user/foo#notimplemented:value > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: 'x@github:user/foo#notimplemented:value',
+  name: 'x',
+  bareSpec: 'github:user/foo#notimplemented:value',
+  gitRemote: 'git+ssh://git@github.com:user/foo.git',
+  gitSelector: 'notimplemented:value',
+  gitSelectorParsed: {},
+  namedGitHost: 'github',
+  namedGitHostPath: 'user/foo'
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > x@user/foo#notimplemented:value > inspect with color 1`] = `
+@vltpkg/spec.Spec {
+  type: [32m'git'[39m,
+  spec: [32m'x@github:user/foo#notimplemented:value'[39m,
+  name: [32m'x'[39m,
+  bareSpec: [32m'github:user/foo#notimplemented:value'[39m,
+  gitRemote: [32m'git+ssh://git@github.com:user/foo.git'[39m,
+  gitSelector: [32m'notimplemented:value'[39m,
+  gitSelectorParsed: {},
+  namedGitHost: [32m'github'[39m,
+  namedGitHostPath: [32m'user/foo'[39m
+}
+`
+
 exports[`test/index.ts > TAP > basic parsing tests > x@user/foo#notimplemented:value > toString 1`] = `
 x@github:user/foo#notimplemented:value
 `
 
-exports[`test/index.ts > TAP > basic parsing tests > x@user/foo#path:dist > inspect 1`] = `
+exports[`test/index.ts > TAP > basic parsing tests > x@user/foo#path:dist > inspect deep 1`] = `
 @vltpkg/spec.Spec {
   type: 'git',
   spec: 'x@github:user/foo#path:dist',
@@ -1926,11 +5203,91 @@ exports[`test/index.ts > TAP > basic parsing tests > x@user/foo#path:dist > insp
 }
 `
 
+exports[`test/index.ts > TAP > basic parsing tests > x@user/foo#path:dist > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: 'x@github:user/foo#path:dist',
+  name: 'x',
+  bareSpec: 'github:user/foo#path:dist',
+  gitRemote: 'git+ssh://git@github.com:user/foo.git',
+  gitSelector: 'path:dist',
+  gitSelectorParsed: { path: 'dist' },
+  namedGitHost: 'github',
+  namedGitHostPath: 'user/foo'
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > x@user/foo#path:dist > inspect with color 1`] = `
+@vltpkg/spec.Spec {
+  type: [32m'git'[39m,
+  spec: [32m'x@github:user/foo#path:dist'[39m,
+  name: [32m'x'[39m,
+  bareSpec: [32m'github:user/foo#path:dist'[39m,
+  gitRemote: [32m'git+ssh://git@github.com:user/foo.git'[39m,
+  gitSelector: [32m'path:dist'[39m,
+  gitSelectorParsed: { path: [32m'dist'[39m },
+  namedGitHost: [32m'github'[39m,
+  namedGitHostPath: [32m'user/foo'[39m
+}
+`
+
 exports[`test/index.ts > TAP > basic parsing tests > x@user/foo#path:dist > toString 1`] = `
 x@github:user/foo#path:dist
 `
 
-exports[`test/index.ts > TAP > basic parsing tests > x@user/foo#semver:^1.2.3 > inspect 1`] = `
+exports[`test/index.ts > TAP > basic parsing tests > x@user/foo#semver:^1.2.3 > inspect deep 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: 'x@github:user/foo#semver:^1.2.3',
+  name: 'x',
+  bareSpec: 'github:user/foo#semver:^1.2.3',
+  gitRemote: 'git+ssh://git@github.com:user/foo.git',
+  gitSelector: 'semver:^1.2.3',
+  gitSelectorParsed: { semver: '^1.2.3' },
+  namedGitHost: 'github',
+  namedGitHostPath: 'user/foo',
+  range: Range {
+    raw: '^1.2.3',
+    isAny: false,
+    set: [
+      Comparator {
+        includePrerelease: false,
+        raw: '^1.2.3',
+        tokens: [ '^1.2.3' ],
+        tuples: [
+          [
+            '>=',
+            Version {
+              raw: '1.2.3',
+              major: 1,
+              minor: 2,
+              patch: 3,
+              prerelease: undefined,
+              build: undefined
+            }
+          ],
+          [
+            '<',
+            Version {
+              raw: '1.2.3',
+              major: 2,
+              minor: 0,
+              patch: 0,
+              prerelease: [ 0 ],
+              build: undefined
+            }
+          ]
+        ],
+        isNone: false,
+        isAny: false
+      }
+    ],
+    includePrerelease: false
+  }
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > x@user/foo#semver:^1.2.3 > inspect default 1`] = `
 @vltpkg/spec.Spec {
   type: 'git',
   spec: 'x@github:user/foo#semver:^1.2.3',
@@ -1950,11 +5307,65 @@ exports[`test/index.ts > TAP > basic parsing tests > x@user/foo#semver:^1.2.3 > 
 }
 `
 
+exports[`test/index.ts > TAP > basic parsing tests > x@user/foo#semver:^1.2.3 > inspect with color 1`] = `
+@vltpkg/spec.Spec {
+  type: [32m'git'[39m,
+  spec: [32m'x@github:user/foo#semver:^1.2.3'[39m,
+  name: [32m'x'[39m,
+  bareSpec: [32m'github:user/foo#semver:^1.2.3'[39m,
+  gitRemote: [32m'git+ssh://git@github.com:user/foo.git'[39m,
+  gitSelector: [32m'semver:^1.2.3'[39m,
+  gitSelectorParsed: { semver: [32m'^1.2.3'[39m },
+  namedGitHost: [32m'github'[39m,
+  namedGitHostPath: [32m'user/foo'[39m,
+  range: Range {
+    raw: [32m'^1.2.3'[39m,
+    isAny: [33mfalse[39m,
+    set: [ [36m[Comparator][39m ],
+    includePrerelease: [33mfalse[39m
+  }
+}
+`
+
 exports[`test/index.ts > TAP > basic parsing tests > x@user/foo#semver:^1.2.3 > toString 1`] = `
 x@github:user/foo#semver:^1.2.3
 `
 
-exports[`test/index.ts > TAP > basic parsing tests > x@workspace: > inspect 1`] = `
+exports[`test/index.ts > TAP > basic parsing tests > x@workspace: > inspect deep 1`] = `
+@vltpkg/spec.Spec {
+  type: 'workspace',
+  spec: 'x@workspace:',
+  name: 'x',
+  bareSpec: 'workspace:',
+  workspaceSpec: '',
+  workspace: 'x',
+  semver: '',
+  range: Range {
+    raw: '',
+    isAny: true,
+    set: [
+      Comparator {
+        includePrerelease: false,
+        raw: '',
+        tokens: [],
+        tuples: [
+          {
+            isAny: true,
+            toString: [Function: toString],
+            includePrerelease: false,
+            test: [Function: test]
+          }
+        ],
+        isNone: false,
+        isAny: true
+      }
+    ],
+    includePrerelease: false
+  }
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > x@workspace: > inspect default 1`] = `
 @vltpkg/spec.Spec {
   type: 'workspace',
   spec: 'x@workspace:',
@@ -1972,11 +5383,29 @@ exports[`test/index.ts > TAP > basic parsing tests > x@workspace: > inspect 1`] 
 }
 `
 
+exports[`test/index.ts > TAP > basic parsing tests > x@workspace: > inspect with color 1`] = `
+@vltpkg/spec.Spec {
+  type: [32m'workspace'[39m,
+  spec: [32m'x@workspace:'[39m,
+  name: [32m'x'[39m,
+  bareSpec: [32m'workspace:'[39m,
+  workspaceSpec: [32m''[39m,
+  workspace: [32m'x'[39m,
+  semver: [32m''[39m,
+  range: Range {
+    raw: [32m''[39m,
+    isAny: [33mtrue[39m,
+    set: [ [36m[Comparator][39m ],
+    includePrerelease: [33mfalse[39m
+  }
+}
+`
+
 exports[`test/index.ts > TAP > basic parsing tests > x@workspace: > toString 1`] = `
 x@workspace:
 `
 
-exports[`test/index.ts > TAP > basic parsing tests > x@workspace:@a/b@ > inspect 1`] = `
+exports[`test/index.ts > TAP > basic parsing tests > x@workspace:@a/b@ > inspect deep 1`] = `
 @vltpkg/spec.Spec {
   type: 'workspace',
   spec: 'x@workspace:@a/b@',
@@ -1987,11 +5416,33 @@ exports[`test/index.ts > TAP > basic parsing tests > x@workspace:@a/b@ > inspect
 }
 `
 
+exports[`test/index.ts > TAP > basic parsing tests > x@workspace:@a/b@ > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'workspace',
+  spec: 'x@workspace:@a/b@',
+  name: 'x',
+  bareSpec: 'workspace:@a/b@',
+  workspaceSpec: '*',
+  workspace: '@a/b'
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > x@workspace:@a/b@ > inspect with color 1`] = `
+@vltpkg/spec.Spec {
+  type: [32m'workspace'[39m,
+  spec: [32m'x@workspace:@a/b@'[39m,
+  name: [32m'x'[39m,
+  bareSpec: [32m'workspace:@a/b@'[39m,
+  workspaceSpec: [32m'*'[39m,
+  workspace: [32m'@a/b'[39m
+}
+`
+
 exports[`test/index.ts > TAP > basic parsing tests > x@workspace:@a/b@ > toString 1`] = `
 x@workspace:@a/b@
 `
 
-exports[`test/index.ts > TAP > basic parsing tests > x@workspace:* > inspect 1`] = `
+exports[`test/index.ts > TAP > basic parsing tests > x@workspace:* > inspect deep 1`] = `
 @vltpkg/spec.Spec {
   type: 'workspace',
   spec: 'x@workspace:*',
@@ -2002,11 +5453,33 @@ exports[`test/index.ts > TAP > basic parsing tests > x@workspace:* > inspect 1`]
 }
 `
 
+exports[`test/index.ts > TAP > basic parsing tests > x@workspace:* > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'workspace',
+  spec: 'x@workspace:*',
+  name: 'x',
+  bareSpec: 'workspace:*',
+  workspaceSpec: '*',
+  workspace: 'x'
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > x@workspace:* > inspect with color 1`] = `
+@vltpkg/spec.Spec {
+  type: [32m'workspace'[39m,
+  spec: [32m'x@workspace:*'[39m,
+  name: [32m'x'[39m,
+  bareSpec: [32m'workspace:*'[39m,
+  workspaceSpec: [32m'*'[39m,
+  workspace: [32m'x'[39m
+}
+`
+
 exports[`test/index.ts > TAP > basic parsing tests > x@workspace:* > toString 1`] = `
 x@workspace:*
 `
 
-exports[`test/index.ts > TAP > basic parsing tests > x@workspace:^ > inspect 1`] = `
+exports[`test/index.ts > TAP > basic parsing tests > x@workspace:^ > inspect deep 1`] = `
 @vltpkg/spec.Spec {
   type: 'workspace',
   spec: 'x@workspace:^',
@@ -2017,11 +5490,33 @@ exports[`test/index.ts > TAP > basic parsing tests > x@workspace:^ > inspect 1`]
 }
 `
 
+exports[`test/index.ts > TAP > basic parsing tests > x@workspace:^ > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'workspace',
+  spec: 'x@workspace:^',
+  name: 'x',
+  bareSpec: 'workspace:^',
+  workspaceSpec: '^',
+  workspace: 'x'
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > x@workspace:^ > inspect with color 1`] = `
+@vltpkg/spec.Spec {
+  type: [32m'workspace'[39m,
+  spec: [32m'x@workspace:^'[39m,
+  name: [32m'x'[39m,
+  bareSpec: [32m'workspace:^'[39m,
+  workspaceSpec: [32m'^'[39m,
+  workspace: [32m'x'[39m
+}
+`
+
 exports[`test/index.ts > TAP > basic parsing tests > x@workspace:^ > toString 1`] = `
 x@workspace:^
 `
 
-exports[`test/index.ts > TAP > basic parsing tests > x@workspace:~ > inspect 1`] = `
+exports[`test/index.ts > TAP > basic parsing tests > x@workspace:~ > inspect deep 1`] = `
 @vltpkg/spec.Spec {
   type: 'workspace',
   spec: 'x@workspace:~',
@@ -2032,11 +5527,83 @@ exports[`test/index.ts > TAP > basic parsing tests > x@workspace:~ > inspect 1`]
 }
 `
 
+exports[`test/index.ts > TAP > basic parsing tests > x@workspace:~ > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'workspace',
+  spec: 'x@workspace:~',
+  name: 'x',
+  bareSpec: 'workspace:~',
+  workspaceSpec: '~',
+  workspace: 'x'
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > x@workspace:~ > inspect with color 1`] = `
+@vltpkg/spec.Spec {
+  type: [32m'workspace'[39m,
+  spec: [32m'x@workspace:~'[39m,
+  name: [32m'x'[39m,
+  bareSpec: [32m'workspace:~'[39m,
+  workspaceSpec: [32m'~'[39m,
+  workspace: [32m'x'[39m
+}
+`
+
 exports[`test/index.ts > TAP > basic parsing tests > x@workspace:~ > toString 1`] = `
 x@workspace:~
 `
 
-exports[`test/index.ts > TAP > basic parsing tests > x@workspace:1.x > inspect 1`] = `
+exports[`test/index.ts > TAP > basic parsing tests > x@workspace:1.x > inspect deep 1`] = `
+@vltpkg/spec.Spec {
+  type: 'workspace',
+  spec: 'x@workspace:1.x',
+  name: 'x',
+  bareSpec: 'workspace:1.x',
+  workspaceSpec: '1.x',
+  workspace: 'x',
+  semver: '1.x',
+  range: Range {
+    raw: '1.x',
+    isAny: false,
+    set: [
+      Comparator {
+        includePrerelease: false,
+        raw: '1.x',
+        tokens: [ '1.x' ],
+        tuples: [
+          [
+            '>=',
+            Version {
+              raw: '1.x',
+              major: 1,
+              minor: 0,
+              patch: 0,
+              prerelease: undefined,
+              build: undefined
+            }
+          ],
+          [
+            '<',
+            Version {
+              raw: '1.x',
+              major: 2,
+              minor: 0,
+              patch: 0,
+              prerelease: [ 0 ],
+              build: undefined
+            }
+          ]
+        ],
+        isNone: false,
+        isAny: false
+      }
+    ],
+    includePrerelease: false
+  }
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > x@workspace:1.x > inspect default 1`] = `
 @vltpkg/spec.Spec {
   type: 'workspace',
   spec: 'x@workspace:1.x',
@@ -2054,11 +5621,29 @@ exports[`test/index.ts > TAP > basic parsing tests > x@workspace:1.x > inspect 1
 }
 `
 
+exports[`test/index.ts > TAP > basic parsing tests > x@workspace:1.x > inspect with color 1`] = `
+@vltpkg/spec.Spec {
+  type: [32m'workspace'[39m,
+  spec: [32m'x@workspace:1.x'[39m,
+  name: [32m'x'[39m,
+  bareSpec: [32m'workspace:1.x'[39m,
+  workspaceSpec: [32m'1.x'[39m,
+  workspace: [32m'x'[39m,
+  semver: [32m'1.x'[39m,
+  range: Range {
+    raw: [32m'1.x'[39m,
+    isAny: [33mfalse[39m,
+    set: [ [36m[Comparator][39m ],
+    includePrerelease: [33mfalse[39m
+  }
+}
+`
+
 exports[`test/index.ts > TAP > basic parsing tests > x@workspace:1.x > toString 1`] = `
 x@workspace:1.x
 `
 
-exports[`test/index.ts > TAP > basic parsing tests > x@workspace:y@ > inspect 1`] = `
+exports[`test/index.ts > TAP > basic parsing tests > x@workspace:y@ > inspect deep 1`] = `
 @vltpkg/spec.Spec {
   type: 'workspace',
   spec: 'x@workspace:y@',
@@ -2069,11 +5654,33 @@ exports[`test/index.ts > TAP > basic parsing tests > x@workspace:y@ > inspect 1`
 }
 `
 
+exports[`test/index.ts > TAP > basic parsing tests > x@workspace:y@ > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'workspace',
+  spec: 'x@workspace:y@',
+  name: 'x',
+  bareSpec: 'workspace:y@',
+  workspaceSpec: '*',
+  workspace: 'y'
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > x@workspace:y@ > inspect with color 1`] = `
+@vltpkg/spec.Spec {
+  type: [32m'workspace'[39m,
+  spec: [32m'x@workspace:y@'[39m,
+  name: [32m'x'[39m,
+  bareSpec: [32m'workspace:y@'[39m,
+  workspaceSpec: [32m'*'[39m,
+  workspace: [32m'y'[39m
+}
+`
+
 exports[`test/index.ts > TAP > basic parsing tests > x@workspace:y@ > toString 1`] = `
 x@workspace:y@
 `
 
-exports[`test/index.ts > TAP > basic parsing tests > x@workspace:y@* > inspect 1`] = `
+exports[`test/index.ts > TAP > basic parsing tests > x@workspace:y@* > inspect deep 1`] = `
 @vltpkg/spec.Spec {
   type: 'workspace',
   spec: 'x@workspace:y@*',
@@ -2084,11 +5691,33 @@ exports[`test/index.ts > TAP > basic parsing tests > x@workspace:y@* > inspect 1
 }
 `
 
+exports[`test/index.ts > TAP > basic parsing tests > x@workspace:y@* > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'workspace',
+  spec: 'x@workspace:y@*',
+  name: 'x',
+  bareSpec: 'workspace:y@*',
+  workspaceSpec: '*',
+  workspace: 'y'
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > x@workspace:y@* > inspect with color 1`] = `
+@vltpkg/spec.Spec {
+  type: [32m'workspace'[39m,
+  spec: [32m'x@workspace:y@*'[39m,
+  name: [32m'x'[39m,
+  bareSpec: [32m'workspace:y@*'[39m,
+  workspaceSpec: [32m'*'[39m,
+  workspace: [32m'y'[39m
+}
+`
+
 exports[`test/index.ts > TAP > basic parsing tests > x@workspace:y@* > toString 1`] = `
 x@workspace:y@*
 `
 
-exports[`test/index.ts > TAP > basic parsing tests > x@workspace:y@^ > inspect 1`] = `
+exports[`test/index.ts > TAP > basic parsing tests > x@workspace:y@^ > inspect deep 1`] = `
 @vltpkg/spec.Spec {
   type: 'workspace',
   spec: 'x@workspace:y@^',
@@ -2099,11 +5728,33 @@ exports[`test/index.ts > TAP > basic parsing tests > x@workspace:y@^ > inspect 1
 }
 `
 
+exports[`test/index.ts > TAP > basic parsing tests > x@workspace:y@^ > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'workspace',
+  spec: 'x@workspace:y@^',
+  name: 'x',
+  bareSpec: 'workspace:y@^',
+  workspaceSpec: '^',
+  workspace: 'y'
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > x@workspace:y@^ > inspect with color 1`] = `
+@vltpkg/spec.Spec {
+  type: [32m'workspace'[39m,
+  spec: [32m'x@workspace:y@^'[39m,
+  name: [32m'x'[39m,
+  bareSpec: [32m'workspace:y@^'[39m,
+  workspaceSpec: [32m'^'[39m,
+  workspace: [32m'y'[39m
+}
+`
+
 exports[`test/index.ts > TAP > basic parsing tests > x@workspace:y@^ > toString 1`] = `
 x@workspace:y@^
 `
 
-exports[`test/index.ts > TAP > basic parsing tests > x@workspace:y@~ > inspect 1`] = `
+exports[`test/index.ts > TAP > basic parsing tests > x@workspace:y@~ > inspect deep 1`] = `
 @vltpkg/spec.Spec {
   type: 'workspace',
   spec: 'x@workspace:y@~',
@@ -2114,11 +5765,83 @@ exports[`test/index.ts > TAP > basic parsing tests > x@workspace:y@~ > inspect 1
 }
 `
 
+exports[`test/index.ts > TAP > basic parsing tests > x@workspace:y@~ > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'workspace',
+  spec: 'x@workspace:y@~',
+  name: 'x',
+  bareSpec: 'workspace:y@~',
+  workspaceSpec: '~',
+  workspace: 'y'
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > x@workspace:y@~ > inspect with color 1`] = `
+@vltpkg/spec.Spec {
+  type: [32m'workspace'[39m,
+  spec: [32m'x@workspace:y@~'[39m,
+  name: [32m'x'[39m,
+  bareSpec: [32m'workspace:y@~'[39m,
+  workspaceSpec: [32m'~'[39m,
+  workspace: [32m'y'[39m
+}
+`
+
 exports[`test/index.ts > TAP > basic parsing tests > x@workspace:y@~ > toString 1`] = `
 x@workspace:y@~
 `
 
-exports[`test/index.ts > TAP > basic parsing tests > x@workspace:y@1.x > inspect 1`] = `
+exports[`test/index.ts > TAP > basic parsing tests > x@workspace:y@1.x > inspect deep 1`] = `
+@vltpkg/spec.Spec {
+  type: 'workspace',
+  spec: 'x@workspace:y@1.x',
+  name: 'x',
+  bareSpec: 'workspace:y@1.x',
+  workspaceSpec: '1.x',
+  workspace: 'y',
+  semver: '1.x',
+  range: Range {
+    raw: '1.x',
+    isAny: false,
+    set: [
+      Comparator {
+        includePrerelease: false,
+        raw: '1.x',
+        tokens: [ '1.x' ],
+        tuples: [
+          [
+            '>=',
+            Version {
+              raw: '1.x',
+              major: 1,
+              minor: 0,
+              patch: 0,
+              prerelease: undefined,
+              build: undefined
+            }
+          ],
+          [
+            '<',
+            Version {
+              raw: '1.x',
+              major: 2,
+              minor: 0,
+              patch: 0,
+              prerelease: [ 0 ],
+              build: undefined
+            }
+          ]
+        ],
+        isNone: false,
+        isAny: false
+      }
+    ],
+    includePrerelease: false
+  }
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > x@workspace:y@1.x > inspect default 1`] = `
 @vltpkg/spec.Spec {
   type: 'workspace',
   spec: 'x@workspace:y@1.x',
@@ -2132,6 +5855,24 @@ exports[`test/index.ts > TAP > basic parsing tests > x@workspace:y@1.x > inspect
     isAny: false,
     set: [ [Comparator] ],
     includePrerelease: false
+  }
+}
+`
+
+exports[`test/index.ts > TAP > basic parsing tests > x@workspace:y@1.x > inspect with color 1`] = `
+@vltpkg/spec.Spec {
+  type: [32m'workspace'[39m,
+  spec: [32m'x@workspace:y@1.x'[39m,
+  name: [32m'x'[39m,
+  bareSpec: [32m'workspace:y@1.x'[39m,
+  workspaceSpec: [32m'1.x'[39m,
+  workspace: [32m'y'[39m,
+  semver: [32m'1.x'[39m,
+  range: Range {
+    raw: [32m'1.x'[39m,
+    isAny: [33mfalse[39m,
+    set: [ [36m[Comparator][39m ],
+    includePrerelease: [33mfalse[39m
   }
 }
 `
@@ -2152,51 +5893,30 @@ exports[`test/index.ts > TAP > mixing scopes and names > scopes: @a 1`] = `
   registry: 'https://x.com/',
   conventionalRegistryTarball: 'https://i.com/@j/k/-/k-1.2.3.tgz',
   subspec: @vltpkg/spec.Spec {
-    type: [32m'registry'[39m,
-    spec: [32m'@y/z@i:@j/k@1.2.3'[39m,
-    name: [32m'@y/z'[39m,
-    scope: [32m'@y'[39m,
-    bareSpec: [32m'i:@j/k@1.2.3'[39m,
-    namedRegistry: [32m'i'[39m,
-    registry: [32m'https://i.com/'[39m,
-    conventionalRegistryTarball: [32m'https://i.com/@j/k/-/k-1.2.3.tgz'[39m,
+    type: 'registry',
+    spec: '@y/z@i:@j/k@1.2.3',
+    name: '@y/z',
+    scope: '@y',
+    bareSpec: 'i:@j/k@1.2.3',
+    namedRegistry: 'i',
+    registry: 'https://i.com/',
+    conventionalRegistryTarball: 'https://i.com/@j/k/-/k-1.2.3.tgz',
     subspec: @vltpkg/spec.Spec {
-      type: [32m'registry'[39m,
-      spec: [32m'@j/k@1.2.3'[39m,
-      name: [32m'@j/k'[39m,
-      scope: [32m'@j'[39m,
-      bareSpec: [32m'1.2.3'[39m,
-      namedRegistry: [32m'i'[39m,
-      registry: [32m'https://i.com/'[39m,
-      registrySpec: [32m'1.2.3'[39m,
-      conventionalRegistryTarball: [32m'https://i.com/@j/k/-/k-1.2.3.tgz'[39m,
-      semver: [32m'1.2.3'[39m,
+      type: 'registry',
+      spec: '@j/k@1.2.3',
+      name: '@j/k',
+      scope: '@j',
+      bareSpec: '1.2.3',
+      namedRegistry: 'i',
+      registry: 'https://i.com/',
+      registrySpec: '1.2.3',
+      conventionalRegistryTarball: 'https://i.com/@j/k/-/k-1.2.3.tgz',
+      semver: '1.2.3',
       range: Range {
-        raw: [32m'1.2.3'[39m,
-        isAny: [33mfalse[39m,
-        set: [
-          Comparator {
-            includePrerelease: [33mfalse[39m,
-            raw: [32m'1.2.3'[39m,
-            tokens: [ [32m'1.2.3'[39m ],
-            tuples: [
-              [
-                [32m''[39m,
-                Version {
-                  raw: [32m'1.2.3'[39m,
-                  major: [33m1[39m,
-                  minor: [33m2[39m,
-                  patch: [33m3[39m,
-                  prerelease: [90mundefined[39m,
-                  build: [90mundefined[39m
-                }
-              ]
-            ],
-            isNone: [33mfalse[39m,
-            isAny: [33mfalse[39m
-          }
-        ],
-        includePrerelease: [33mfalse[39m
+        raw: '1.2.3',
+        isAny: false,
+        set: [ [Comparator] ],
+        includePrerelease: false
       }
     }
   }
@@ -2215,52 +5935,31 @@ exports[`test/index.ts > TAP > mixing scopes and names > scopes: @a, @y 1`] = `
   registry: 'https://x.com/',
   conventionalRegistryTarball: 'https://i.com/@j/k/-/k-1.2.3.tgz',
   subspec: @vltpkg/spec.Spec {
-    type: [32m'registry'[39m,
-    spec: [32m'@y/z@i:@j/k@1.2.3'[39m,
-    name: [32m'@y/z'[39m,
-    scope: [32m'@y'[39m,
-    scopeRegistry: [32m'https://y.com/'[39m,
-    bareSpec: [32m'i:@j/k@1.2.3'[39m,
-    namedRegistry: [32m'i'[39m,
-    registry: [32m'https://i.com/'[39m,
-    conventionalRegistryTarball: [32m'https://i.com/@j/k/-/k-1.2.3.tgz'[39m,
+    type: 'registry',
+    spec: '@y/z@i:@j/k@1.2.3',
+    name: '@y/z',
+    scope: '@y',
+    scopeRegistry: 'https://y.com/',
+    bareSpec: 'i:@j/k@1.2.3',
+    namedRegistry: 'i',
+    registry: 'https://i.com/',
+    conventionalRegistryTarball: 'https://i.com/@j/k/-/k-1.2.3.tgz',
     subspec: @vltpkg/spec.Spec {
-      type: [32m'registry'[39m,
-      spec: [32m'@j/k@1.2.3'[39m,
-      name: [32m'@j/k'[39m,
-      scope: [32m'@j'[39m,
-      bareSpec: [32m'1.2.3'[39m,
-      namedRegistry: [32m'i'[39m,
-      registry: [32m'https://i.com/'[39m,
-      registrySpec: [32m'1.2.3'[39m,
-      conventionalRegistryTarball: [32m'https://i.com/@j/k/-/k-1.2.3.tgz'[39m,
-      semver: [32m'1.2.3'[39m,
+      type: 'registry',
+      spec: '@j/k@1.2.3',
+      name: '@j/k',
+      scope: '@j',
+      bareSpec: '1.2.3',
+      namedRegistry: 'i',
+      registry: 'https://i.com/',
+      registrySpec: '1.2.3',
+      conventionalRegistryTarball: 'https://i.com/@j/k/-/k-1.2.3.tgz',
+      semver: '1.2.3',
       range: Range {
-        raw: [32m'1.2.3'[39m,
-        isAny: [33mfalse[39m,
-        set: [
-          Comparator {
-            includePrerelease: [33mfalse[39m,
-            raw: [32m'1.2.3'[39m,
-            tokens: [ [32m'1.2.3'[39m ],
-            tuples: [
-              [
-                [32m''[39m,
-                Version {
-                  raw: [32m'1.2.3'[39m,
-                  major: [33m1[39m,
-                  minor: [33m2[39m,
-                  patch: [33m3[39m,
-                  prerelease: [90mundefined[39m,
-                  build: [90mundefined[39m
-                }
-              ]
-            ],
-            isNone: [33mfalse[39m,
-            isAny: [33mfalse[39m
-          }
-        ],
-        includePrerelease: [33mfalse[39m
+        raw: '1.2.3',
+        isAny: false,
+        set: [ [Comparator] ],
+        includePrerelease: false
       }
     }
   }
@@ -2279,53 +5978,32 @@ exports[`test/index.ts > TAP > mixing scopes and names > scopes: @a, @y, @j 1`] 
   registry: 'https://x.com/',
   conventionalRegistryTarball: 'https://j.com/@j/k/-/k-1.2.3.tgz',
   subspec: @vltpkg/spec.Spec {
-    type: [32m'registry'[39m,
-    spec: [32m'@y/z@i:@j/k@1.2.3'[39m,
-    name: [32m'@y/z'[39m,
-    scope: [32m'@y'[39m,
-    scopeRegistry: [32m'https://y.com/'[39m,
-    bareSpec: [32m'i:@j/k@1.2.3'[39m,
-    namedRegistry: [32m'i'[39m,
-    registry: [32m'https://i.com/'[39m,
-    conventionalRegistryTarball: [32m'https://j.com/@j/k/-/k-1.2.3.tgz'[39m,
+    type: 'registry',
+    spec: '@y/z@i:@j/k@1.2.3',
+    name: '@y/z',
+    scope: '@y',
+    scopeRegistry: 'https://y.com/',
+    bareSpec: 'i:@j/k@1.2.3',
+    namedRegistry: 'i',
+    registry: 'https://i.com/',
+    conventionalRegistryTarball: 'https://j.com/@j/k/-/k-1.2.3.tgz',
     subspec: @vltpkg/spec.Spec {
-      type: [32m'registry'[39m,
-      spec: [32m'@j/k@1.2.3'[39m,
-      name: [32m'@j/k'[39m,
-      scope: [32m'@j'[39m,
-      scopeRegistry: [32m'https://j.com/'[39m,
-      bareSpec: [32m'1.2.3'[39m,
-      namedRegistry: [32m'i'[39m,
-      registry: [32m'https://j.com/'[39m,
-      registrySpec: [32m'1.2.3'[39m,
-      conventionalRegistryTarball: [32m'https://j.com/@j/k/-/k-1.2.3.tgz'[39m,
-      semver: [32m'1.2.3'[39m,
+      type: 'registry',
+      spec: '@j/k@1.2.3',
+      name: '@j/k',
+      scope: '@j',
+      scopeRegistry: 'https://j.com/',
+      bareSpec: '1.2.3',
+      namedRegistry: 'i',
+      registry: 'https://j.com/',
+      registrySpec: '1.2.3',
+      conventionalRegistryTarball: 'https://j.com/@j/k/-/k-1.2.3.tgz',
+      semver: '1.2.3',
       range: Range {
-        raw: [32m'1.2.3'[39m,
-        isAny: [33mfalse[39m,
-        set: [
-          Comparator {
-            includePrerelease: [33mfalse[39m,
-            raw: [32m'1.2.3'[39m,
-            tokens: [ [32m'1.2.3'[39m ],
-            tuples: [
-              [
-                [32m''[39m,
-                Version {
-                  raw: [32m'1.2.3'[39m,
-                  major: [33m1[39m,
-                  minor: [33m2[39m,
-                  patch: [33m3[39m,
-                  prerelease: [90mundefined[39m,
-                  build: [90mundefined[39m
-                }
-              ]
-            ],
-            isNone: [33mfalse[39m,
-            isAny: [33mfalse[39m
-          }
-        ],
-        includePrerelease: [33mfalse[39m
+        raw: '1.2.3',
+        isAny: false,
+        set: [ [Comparator] ],
+        includePrerelease: false
       }
     }
   }
