@@ -11,7 +11,7 @@ import {
   resolve,
   win32 as winPath,
 } from 'node:path'
-import { inspect } from 'node:util'
+import { inspect, InspectOptions } from 'node:util'
 
 export type SpecOptions = {
   [k in keyof SpecOptionsFilled]?: SpecOptionsFilled[k]
@@ -560,14 +560,14 @@ export class Spec {
     return false
   }
 
-  [kCustomInspect](...args: any[]): string {
+  [kCustomInspect](_depth?: number, options?: InspectOptions): string {
     const str = inspect(
       Object.fromEntries(
         Object.entries(this).filter(([k, v]) => {
           return k !== 'options' && v !== undefined
         }),
       ),
-      ...args,
+      options,
     )
     return `@vltpkg/spec.Spec ${str}`
   }
