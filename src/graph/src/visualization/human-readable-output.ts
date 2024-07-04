@@ -25,7 +25,7 @@ function parseNode(seenNodes: Set<Node>, graph: Graph, node: Node) {
                   return parseEdge(seenNodes, graph, i)
                 }),
               }
-            : null),
+            : (seenNodes.add(node), null)),
           },
         { depth: Infinity },
       )

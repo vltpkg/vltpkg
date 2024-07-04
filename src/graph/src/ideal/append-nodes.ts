@@ -1,3 +1,4 @@
+import { join } from 'node:path/posix'
 import { PackageInfoClient } from '@vltpkg/package-info'
 import { Spec, SpecOptions } from '@vltpkg/spec'
 import {
@@ -9,15 +10,49 @@ import {
 import { Graph } from '../graph.js'
 import { Node } from '../node.js'
 import { error } from '@vltpkg/error-cause'
+import { DepID, joinDepIDTuple } from '@vltpkg/dep-id'
+
+interface FileTypeInfo {
+  id: DepID
+  path: string
+}
 
 // TODO: peer deps
 const shouldInstallDepType = (
   node: Node,
   depType: DependencyTypeLong,
 ) =>
+  // TODO: install dev deps for git & file (symlinks) type spec
+  // manifest -> scripts.prepare
   depType === 'dependencies' ||
   depType === 'optionalDependencies' ||
   (depType === 'devDependencies' && node.importer)
+
+/**
+ * Retrieve the {@link DepID} and location for a `file:` type {@link Node}.
+ */
+const getFileTypeInfo = (
+  spec: Spec,
+  fromNode: Node,
+): FileTypeInfo | undefined => {
+  if (spec.type !== 'file') return
+
+  const f = spec.final
+  if (!f.file) {
+    throw error('no path on file specifier', { spec })
+  }
+
+  // Given that both linked folders and local tarballs (both defined with
+  // usage of the `file:` spec prefix) location needs to be relative to their
+  // parents, build the expected path and use it for both location and id
+  const path = join(fromNode.location, f.file)
+  const id = joinDepIDTuple(['file', path])
+
+  return {
+    path,
+    id,
+  }
+}
 
 export const appendNodes = async (
   packageInfo: PackageInfoClient,
@@ -32,7 +67,14 @@ export const appendNodes = async (
       // TODO: check existing satisfying nodes currently in the graph
       // before hitting packageInfo.manifest
       const mani = await packageInfo.manifest(spec)
-      const node = graph.placePackage(fromNode, type, spec, mani)
+      const fileTypeInfo = getFileTypeInfo(spec, fromNode)
+      const node = graph.placePackage(
+        fromNode,
+        type,
+        spec,
+        mani,
+        fileTypeInfo?.id,
+      )
 
       if (!node) {
         throw error('Failed to place a node for manifest', {
@@ -40,6 +82,9 @@ export const appendNodes = async (
         })
       }
 
+      if (fileTypeInfo?.path) {
+        node.location = fileTypeInfo.path
+      }
       node.setResolved()
       const nestedAppends: Promise<void>[] = []
 
