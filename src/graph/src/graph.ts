@@ -84,7 +84,7 @@ export class Graph {
       mainImporterLocation,
     )
     const mainImporter = this.addNode(
-      undefined,
+      'file;.',
       mainManifest,
       mainImporterSpec,
     )
@@ -95,6 +95,8 @@ export class Graph {
 
     // uses the monorepo instance in order to retrieve info on
     // workspaces and create importer nodes for each of them
+    // TODO: make the monorepo property public so that it's easier to reuse
+    // it when copying stuff from a graph to another
     this.#monorepo = monorepo
     if (this.#monorepo) {
       for (const ws of this.#monorepo) {
@@ -140,8 +142,16 @@ export class Graph {
     manifest?: ManifestMinified,
     spec?: Spec,
     name?: string,
+    version?: string,
   ) {
-    const node = new Node(this.#config, id, manifest, spec, name)
+    const node = new Node(
+      this.#config,
+      id,
+      manifest,
+      spec,
+      name,
+      version,
+    )
     this.nodes.set(node.id, node)
     if (manifest) {
       this.manifests.set(node.id, manifest)

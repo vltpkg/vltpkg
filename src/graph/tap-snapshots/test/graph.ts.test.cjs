@@ -59,6 +59,7 @@ Graph [@vltpkg/graph.Graph] {
       integrity: undefined,
       manifest: [Object],
       name: 'my-project',
+      version: '1.0.0',
       resolved: undefined
     },
     'registry;;foo@1.0.0' => Node [@vltpkg/graph.Node] {
@@ -69,6 +70,7 @@ Graph [@vltpkg/graph.Graph] {
       integrity: undefined,
       manifest: [Object],
       name: 'foo',
+      version: '1.0.0',
       resolved: undefined
     },
     'registry;;bar@1.0.0' => Node [@vltpkg/graph.Node] {
@@ -79,6 +81,7 @@ Graph [@vltpkg/graph.Graph] {
       integrity: undefined,
       manifest: [Object],
       name: 'bar',
+      version: '1.0.0',
       resolved: undefined
     }
   },
@@ -91,6 +94,7 @@ Graph [@vltpkg/graph.Graph] {
       integrity: undefined,
       manifest: [Object],
       name: 'my-project',
+      version: '1.0.0',
       resolved: undefined
     }
   },
@@ -106,6 +110,7 @@ Graph [@vltpkg/graph.Graph] {
     integrity: undefined,
     manifest: { name: 'my-project', version: '1.0.0', dependencies: [Object] },
     name: 'my-project',
+    version: '1.0.0',
     resolved: undefined
   },
   extraneousDependencies: Set(0) {},
@@ -169,6 +174,7 @@ Graph [@vltpkg/graph.Graph] {
       integrity: undefined,
       manifest: [Object],
       name: 'my-project',
+      version: '1.0.0',
       resolved: undefined
     },
     'registry;;foo@1.0.0' => Node [@vltpkg/graph.Node] {
@@ -179,6 +185,7 @@ Graph [@vltpkg/graph.Graph] {
       integrity: undefined,
       manifest: [Object],
       name: 'foo',
+      version: '1.0.0',
       resolved: undefined
     },
     'registry;;bar@1.0.0' => Node [@vltpkg/graph.Node] {
@@ -189,6 +196,7 @@ Graph [@vltpkg/graph.Graph] {
       integrity: undefined,
       manifest: [Object],
       name: 'bar',
+      version: '1.0.0',
       resolved: undefined
     },
     'registry;;baz@1.0.0' => Node [@vltpkg/graph.Node] {
@@ -199,6 +207,7 @@ Graph [@vltpkg/graph.Graph] {
       integrity: undefined,
       manifest: [Object],
       name: 'baz',
+      version: '1.0.0',
       resolved: undefined
     }
   },
@@ -211,6 +220,7 @@ Graph [@vltpkg/graph.Graph] {
       integrity: undefined,
       manifest: [Object],
       name: 'my-project',
+      version: '1.0.0',
       resolved: undefined
     }
   },
@@ -226,6 +236,7 @@ Graph [@vltpkg/graph.Graph] {
     integrity: undefined,
     manifest: { name: 'my-project', version: '1.0.0', dependencies: [Object] },
     name: 'my-project',
+    version: '1.0.0',
     resolved: undefined
   },
   extraneousDependencies: Set(0) {},
@@ -254,6 +265,7 @@ Set {
     },
     "name": "my-project",
     "resolved": undefined,
+    "version": "1.0.0",
   },
   Node {
     "edgesIn": Set {},
@@ -269,6 +281,7 @@ Set {
     },
     "name": "b",
     "resolved": undefined,
+    "version": "1.0.0",
   },
   Node {
     "edgesIn": Set {},
@@ -284,6 +297,7 @@ Set {
     },
     "name": "a",
     "resolved": undefined,
+    "version": "1.0.0",
   },
 }
 `

@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
-import { DepID } from '@vltpkg/dep-id'
+import { DepID, splitDepID } from '@vltpkg/dep-id'
 import { error } from '@vltpkg/error-cause'
 import { PackageJson } from '@vltpkg/package-json'
 import { Spec, SpecOptions } from '@vltpkg/spec'
@@ -58,7 +58,16 @@ const loadNodes = ({ graph, nodesInfo }: LoadNodesOptions) => {
     if (graph.nodes.has(id)) return
 
     const [name, integrity, resolved] = lockfileNode
-    const node = graph.addNode(id, undefined, undefined, name)
+    const [type, , spec] = splitDepID(id)
+    const version =
+      type === 'registry' ? Spec.parse(spec).bareSpec : undefined
+    const node = graph.addNode(
+      id,
+      undefined,
+      undefined,
+      name,
+      version,
+    )
     node.integrity = integrity || undefined
     node.resolved = resolved
   }

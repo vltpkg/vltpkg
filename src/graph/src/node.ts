@@ -59,6 +59,14 @@ export class Node {
   name?: string
 
   /**
+   * The version of the package represented by this node, this is usually
+   * equivalent to `manifest.version` but in a few ways it may differ such as
+   * nodes loaded from a lockfile that lacks a loaded manifest.
+   * This field should be used to retrieve package versions instead.
+   */
+  version?: string
+
+  /**
    * An address {@link PackageInfoClient} may use to extract this package.
    */
   resolved?: string
@@ -84,6 +92,7 @@ export class Node {
     manifest?: ManifestMinified,
     spec?: Spec,
     name?: string,
+    version?: string,
   ) {
     this.#config = config
     if (id) {
@@ -101,6 +110,7 @@ export class Node {
     }
     this.manifest = manifest
     this.name = name || this.manifest?.name
+    this.version = version || this.manifest?.version
   }
 
   #registryNodeResolved(tuple: DepIDTuple) {
