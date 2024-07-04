@@ -1,4 +1,9 @@
-import { DepID, asDepID, hydrate } from '@vltpkg/dep-id'
+import {
+  DepID,
+  asDepID,
+  hydrate,
+  joinDepIDTuple,
+} from '@vltpkg/dep-id'
 import { PackageJson } from '@vltpkg/package-json'
 import { Spec, SpecOptions } from '@vltpkg/spec'
 import { Monorepo } from '@vltpkg/workspaces'
@@ -44,6 +49,19 @@ export interface ReadEntry {
   alias: string
   name: string
   realpath: Path
+}
+
+const getPathBasedId = (
+  spec: Spec,
+  path: string,
+): DepID | undefined => {
+  const isPathBasedType = (
+    type: string,
+  ): type is 'file' | 'workspace' =>
+    new Set(['file', 'workspace']).has(type)
+  return isPathBasedType(spec.type) ?
+      joinDepIDTuple([spec.type, path])
+    : undefined
 }
 
 /**
@@ -223,7 +241,14 @@ const parseDir = (
 
       const depType = shorten(type, alias, fromNode.manifest)
       const spec = Spec.parse(alias, bareSpec, options)
-      node = graph.placePackage(fromNode, depType, spec, mani)
+      const maybeId = getPathBasedId(spec, realpath.relativePosix())
+      node = graph.placePackage(
+        fromNode,
+        depType,
+        spec,
+        mani,
+        maybeId,
+      )
     }
 
     if (node) {

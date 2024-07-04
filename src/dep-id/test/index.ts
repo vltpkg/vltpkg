@@ -31,16 +31,7 @@ t.test('valid specs', t => {
     'x@github:a/b',
     'x@github:a/b#branch',
     'x@github:a/b#semver:1',
-    'x@file:x.tgz',
-    'x@file:./x.tgz',
-    'x@file:///x.tgz',
-    'x@file:~/x.tgz',
     'x@https://x.com/x.tgz',
-    'x@workspace:*',
-    'x@workspace:y@*',
-    'x@workspace:~',
-    'x@workspace:1.x',
-    'x@workspace:y@1.x',
   ]
 
   for (const s of specs) {
@@ -75,8 +66,6 @@ t.test('valid specs', t => {
     'y@npm:@scoped/x@1.2.3',
     '@scoped/y@npm:@scoped/x@1.2.3',
     '@scoped/x@github:a/b',
-    '@scoped/x@workspace:*',
-    '@scoped/x@workspace:@scoped/x@*',
   ]
   for (const s of scopedSpecs) {
     t.test(s, t => {
@@ -98,11 +87,32 @@ t.test('valid specs', t => {
     })
   }
 
-  t.strictSame(
-    getId(Spec.parse('x@workspace:*'), {}),
-    'workspace;x',
-    'workspace id with missing manifest',
-  )
+  t.end()
+})
+
+t.test('hydrate only', t => {
+  const hydrateOnlyDepIDs: DepID[] = [
+    'file;x.tgz',
+    'file;./x.tgz',
+    'file;///x.tgz',
+    'file;~/x.tgz',
+    'workspace;./a',
+    'workspace;a',
+  ]
+  for (const id of hydrateOnlyDepIDs) {
+    t.test(id, t => {
+      const hscoped = hydrate(id, '@scoped/x')
+      t.matchSnapshot(String(hscoped), 'hydrated with scoped name')
+      const hunknown = hydrate(id)
+      t.matchSnapshot(String(hunknown), 'hydrated with name unknown')
+      const hasdf = hydrate(id, 'asdf')
+      t.matchSnapshot(String(hasdf), 'hydrated with name asdf')
+      const hy = hydrate(id, 'y')
+      t.matchSnapshot(String(hy), 'hydrated with name y')
+      t.end()
+    })
+  }
+
   t.end()
 })
 

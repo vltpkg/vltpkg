@@ -267,18 +267,9 @@ export const getTuple = (spec: Spec, mani: Manifest): DepIDTuple => {
         throw error('no URL on remote specifier', { spec })
       return [f.type, remoteURL]
     }
-    case 'file': {
-      const { file } = f
-      if (!file) throw error('no path on file specifier', { spec })
-      return [f.type, f.bareSpec.substring('file:'.length)]
-    }
-    case 'workspace': {
-      const { workspaceSpec, workspace } = f
-      if (workspaceSpec === undefined || workspace === undefined) {
-        throw error('invalid workspace: specifier', { spec })
-      }
-      return [f.type, mani.name ?? f.name]
-    }
+    case 'file':
+    case 'workspace':
+      throw error('Path-based dep ids are not supported', { spec })
   }
 }
 

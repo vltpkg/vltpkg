@@ -58,7 +58,7 @@ exports[`test/actual/load.ts > TAP > load actual > should load an actual graph c
     location: '.',
     importer: true,
     edgesOut: [
-      Edge spec(link@file:./linked) -prod-> to: Node { id: 'file;.%2Flinked', location: './linked' },
+      Edge spec(link@file:./linked) -prod-> to: Node { id: 'file;linked', location: './linked' },
       Edge spec(foo@^1.0.0) -prod-> to: Node {
         id: 'registry;;foo@1.0.0',
         location: './node_modules/.vlt/registry;;foo@1.0.0/node_modules/foo'
@@ -105,15 +105,12 @@ exports[`test/actual/load.ts > TAP > load actual > should load an actual graph c
     location: './packages/workspace-a',
     importer: true,
     edgesOut: [
-      Edge spec(workspace-b@workspace:*) -dev-> to: Node { id: 'workspace;workspace-b', location: './packages/workspace-b' },
+      Edge spec(workspace-b@workspace:*) -dev-> to: Node { ref: 'workspace;packages%2Fworkspace-b' },
       Edge spec(ipsum@^1.0.0) -dev-> to: Node {
         id: 'registry;;ipsum@1.0.0',
         location: './node_modules/.vlt/registry;;ipsum@1.0.0/node_modules/ipsum'
       },
-      Edge spec(foo@^1.0.0) -dev-> to: Node {
-        id: 'registry;;foo@1.0.0',
-        location: './node_modules/.vlt/registry;;foo@1.0.0/node_modules/foo'
-      }
+      Edge spec(foo@^1.0.0) -dev-> to: Node { ref: 'registry;;foo@1.0.0' }
     ]
   }
 ]
@@ -126,7 +123,7 @@ exports[`test/actual/load.ts > TAP > load actual > should load an actual graph w
     location: '.',
     importer: true,
     edgesOut: [
-      Edge spec(link@file:./linked) -prod-> to: Node { id: 'file;.%2Flinked', location: './linked' },
+      Edge spec(link@file:./linked) -prod-> to: Node { id: 'file;linked', location: './linked' },
       Edge spec(foo@1.0.0) -prod-> to: Node {
         id: 'registry;;foo@1.0.0',
         location: './node_modules/.vlt/registry;;foo@1.0.0/node_modules/foo'
@@ -176,15 +173,12 @@ exports[`test/actual/load.ts > TAP > load actual > should load an actual graph w
     location: './packages/workspace-a',
     importer: true,
     edgesOut: [
-      Edge spec(workspace-b@workspace:*) -dev-> to: Node { id: 'workspace;workspace-b', location: './packages/workspace-b' },
+      Edge spec(workspace-b@workspace:*) -dev-> to: Node { ref: 'workspace;packages%2Fworkspace-b' },
       Edge spec(ipsum@1.0.0) -prod-> to: Node {
         id: 'registry;;ipsum@1.0.0',
         location: './node_modules/.vlt/registry;;ipsum@1.0.0/node_modules/ipsum'
       },
-      Edge spec(foo@1.0.0) -prod-> to: Node {
-        id: 'registry;;foo@1.0.0',
-        location: './node_modules/.vlt/registry;;foo@1.0.0/node_modules/foo'
-      }
+      Edge spec(foo@1.0.0) -prod-> to: Node { ref: 'registry;;foo@1.0.0' }
     ]
   }
 ]
