@@ -31,6 +31,7 @@ Graph [@vltpkg/graph.Graph] {
         integrity: undefined,
         manifest: [Object],
         name: 'my-project',
+        version: '1.0.0',
         resolved: undefined
       },
       to: Node [@vltpkg/graph.Node] {
@@ -41,6 +42,7 @@ Graph [@vltpkg/graph.Graph] {
         integrity: undefined,
         manifest: [Object],
         name: 'foo',
+        version: '1.0.0',
         resolved: 'https://registry.npmjs.org/foo/-/foo-1.0.0.tgz'
       },
       type: 'dev',
@@ -55,6 +57,7 @@ Graph [@vltpkg/graph.Graph] {
         integrity: undefined,
         manifest: [Object],
         name: 'my-project',
+        version: '1.0.0',
         resolved: undefined
       },
       to: Node [@vltpkg/graph.Node] {
@@ -65,6 +68,7 @@ Graph [@vltpkg/graph.Graph] {
         integrity: undefined,
         manifest: [Object],
         name: 'bar',
+        version: '1.0.0',
         resolved: 'https://registry.npmjs.org/bar/-/bar-1.0.0.tgz'
       },
       type: 'optional',
@@ -88,6 +92,7 @@ Graph [@vltpkg/graph.Graph] {
         optionalDependencies: [Object]
       },
       name: 'my-project',
+      version: '1.0.0',
       resolved: undefined
     },
     'registry;;foo@1.0.0' => Node [@vltpkg/graph.Node] {
@@ -98,6 +103,7 @@ Graph [@vltpkg/graph.Graph] {
       integrity: undefined,
       manifest: { name: 'foo', version: '1.0.0', devDependencies: [Object] },
       name: 'foo',
+      version: '1.0.0',
       resolved: 'https://registry.npmjs.org/foo/-/foo-1.0.0.tgz'
     },
     'registry;;bar@1.0.0' => Node [@vltpkg/graph.Node] {
@@ -108,6 +114,7 @@ Graph [@vltpkg/graph.Graph] {
       integrity: undefined,
       manifest: { name: 'bar', version: '1.0.0' },
       name: 'bar',
+      version: '1.0.0',
       resolved: 'https://registry.npmjs.org/bar/-/bar-1.0.0.tgz'
     }
   },
@@ -128,6 +135,7 @@ Graph [@vltpkg/graph.Graph] {
         optionalDependencies: [Object]
       },
       name: 'my-project',
+      version: '1.0.0',
       resolved: undefined
     }
   },
@@ -157,6 +165,7 @@ Graph [@vltpkg/graph.Graph] {
       optionalDependencies: { bar: '^1.0.0' }
     },
     name: 'my-project',
+    version: '1.0.0',
     resolved: undefined
   },
   extraneousDependencies: Set(0) {},

@@ -25,6 +25,7 @@ t.test('load', async t => {
       },
       nodes: {
         'file;.': ['my-project'],
+        'file;linked': ['linked'],
         'registry;;foo@1.0.0': [
           'foo',
           'sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ==',
@@ -37,6 +38,7 @@ t.test('load', async t => {
         'registry;;baz@1.0.0': ['baz', null],
       },
       edges: [
+        ['file;.', 'prod', 'linked@file:./linked', 'file;linked'],
         ['file;.', 'prod', 'foo@^1.0.0', 'registry;;foo@1.0.0'],
         ['file;.', 'prod', 'bar@^1.0.0', 'registry;;bar@1.0.0'],
         ['file;.', 'prod', 'missing@^1.0.0'],

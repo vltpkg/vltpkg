@@ -24,6 +24,7 @@ Edge [@vltpkg/graph.Edge] {
     integrity: undefined,
     manifest: [Object],
     name: 'child',
+    version: '1.0.0',
     resolved: undefined
   },
   to: undefined,
