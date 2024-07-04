@@ -49,10 +49,7 @@ exports[`test/visualization/human-readable-output.ts > TAP > human-readable-outp
             resolved: 'http://example.com/baz',
             integrity: 'sha512-deadbeef',
             edgesOut: [
-              Edge spec(foo@^1.0.0) -prod-> to: Node {
-                id: 'registry;;foo@1.0.0',
-                location: './node_modules/.vlt/registry;;foo@1.0.0/node_modules/foo'
-              }
+              Edge spec(foo@^1.0.0) -prod-> to: Node { ref: 'registry;;foo@1.0.0' }
             ]
           },
           Edge spec(extraneous@extraneous@^1.0.0) -prod-> to: [extraneous package]: <extraneous>

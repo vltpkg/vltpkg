@@ -5,6 +5,102 @@
  * Make sure to inspect the output below.  Do not ignore changes!
  */
 'use strict'
+exports[`test/index.ts > TAP > hydrate only > file;./x.tgz > hydrated with name asdf 1`] = `
+asdf@file:./x.tgz
+`
+
+exports[`test/index.ts > TAP > hydrate only > file;./x.tgz > hydrated with name unknown 1`] = `
+(unknown)@file:./x.tgz
+`
+
+exports[`test/index.ts > TAP > hydrate only > file;./x.tgz > hydrated with name y 1`] = `
+y@file:./x.tgz
+`
+
+exports[`test/index.ts > TAP > hydrate only > file;./x.tgz > hydrated with scoped name 1`] = `
+@scoped/x@file:./x.tgz
+`
+
+exports[`test/index.ts > TAP > hydrate only > file;///x.tgz > hydrated with name asdf 1`] = `
+asdf@file:///x.tgz
+`
+
+exports[`test/index.ts > TAP > hydrate only > file;///x.tgz > hydrated with name unknown 1`] = `
+(unknown)@file:///x.tgz
+`
+
+exports[`test/index.ts > TAP > hydrate only > file;///x.tgz > hydrated with name y 1`] = `
+y@file:///x.tgz
+`
+
+exports[`test/index.ts > TAP > hydrate only > file;///x.tgz > hydrated with scoped name 1`] = `
+@scoped/x@file:///x.tgz
+`
+
+exports[`test/index.ts > TAP > hydrate only > file;~/x.tgz > hydrated with name asdf 1`] = `
+asdf@file:~/x.tgz
+`
+
+exports[`test/index.ts > TAP > hydrate only > file;~/x.tgz > hydrated with name unknown 1`] = `
+(unknown)@file:~/x.tgz
+`
+
+exports[`test/index.ts > TAP > hydrate only > file;~/x.tgz > hydrated with name y 1`] = `
+y@file:~/x.tgz
+`
+
+exports[`test/index.ts > TAP > hydrate only > file;~/x.tgz > hydrated with scoped name 1`] = `
+@scoped/x@file:~/x.tgz
+`
+
+exports[`test/index.ts > TAP > hydrate only > file;x.tgz > hydrated with name asdf 1`] = `
+asdf@file:./x.tgz
+`
+
+exports[`test/index.ts > TAP > hydrate only > file;x.tgz > hydrated with name unknown 1`] = `
+(unknown)@file:./x.tgz
+`
+
+exports[`test/index.ts > TAP > hydrate only > file;x.tgz > hydrated with name y 1`] = `
+y@file:./x.tgz
+`
+
+exports[`test/index.ts > TAP > hydrate only > file;x.tgz > hydrated with scoped name 1`] = `
+@scoped/x@file:./x.tgz
+`
+
+exports[`test/index.ts > TAP > hydrate only > workspace;./a > hydrated with name asdf 1`] = `
+asdf@workspace:./a@*
+`
+
+exports[`test/index.ts > TAP > hydrate only > workspace;./a > hydrated with name unknown 1`] = `
+./a@workspace:*
+`
+
+exports[`test/index.ts > TAP > hydrate only > workspace;./a > hydrated with name y 1`] = `
+y@workspace:./a@*
+`
+
+exports[`test/index.ts > TAP > hydrate only > workspace;./a > hydrated with scoped name 1`] = `
+@scoped/x@workspace:./a@*
+`
+
+exports[`test/index.ts > TAP > hydrate only > workspace;a > hydrated with name asdf 1`] = `
+asdf@workspace:a@*
+`
+
+exports[`test/index.ts > TAP > hydrate only > workspace;a > hydrated with name unknown 1`] = `
+a@workspace:*
+`
+
+exports[`test/index.ts > TAP > hydrate only > workspace;a > hydrated with name y 1`] = `
+y@workspace:a@*
+`
+
+exports[`test/index.ts > TAP > hydrate only > workspace;a > hydrated with scoped name 1`] = `
+@scoped/x@workspace:a@*
+`
+
 exports[`test/index.ts > TAP > valid specs > @scoped/x@1.2.3 > hydrated with name asdf 1`] = `
 asdf@npm:@scoped/manifest-name@1.2.3
 `
@@ -86,58 +182,6 @@ Array [
 ]
 `
 
-exports[`test/index.ts > TAP > valid specs > @scoped/x@workspace:@scoped/x@* > hydrated with name asdf 1`] = `
-asdf@workspace:@scoped/manifest-name@*
-`
-
-exports[`test/index.ts > TAP > valid specs > @scoped/x@workspace:@scoped/x@* > hydrated with name unknown 1`] = `
-@scoped/manifest-name@workspace:*
-`
-
-exports[`test/index.ts > TAP > valid specs > @scoped/x@workspace:@scoped/x@* > hydrated with name y 1`] = `
-y@workspace:@scoped/manifest-name@*
-`
-
-exports[`test/index.ts > TAP > valid specs > @scoped/x@workspace:@scoped/x@* > hydrated with scoped name 1`] = `
-@scoped/x@workspace:@scoped/manifest-name@*
-`
-
-exports[`test/index.ts > TAP > valid specs > @scoped/x@workspace:@scoped/x@* > must match snapshot 1`] = `
-Array [
-  "workspace;@scoped%2Fmanifest-name",
-  Array [
-    "workspace",
-    "@scoped/manifest-name",
-  ],
-]
-`
-
-exports[`test/index.ts > TAP > valid specs > @scoped/x@workspace:* > hydrated with name asdf 1`] = `
-asdf@workspace:@scoped/manifest-name@*
-`
-
-exports[`test/index.ts > TAP > valid specs > @scoped/x@workspace:* > hydrated with name unknown 1`] = `
-@scoped/manifest-name@workspace:*
-`
-
-exports[`test/index.ts > TAP > valid specs > @scoped/x@workspace:* > hydrated with name y 1`] = `
-y@workspace:@scoped/manifest-name@*
-`
-
-exports[`test/index.ts > TAP > valid specs > @scoped/x@workspace:* > hydrated with scoped name 1`] = `
-@scoped/x@workspace:@scoped/manifest-name@*
-`
-
-exports[`test/index.ts > TAP > valid specs > @scoped/x@workspace:* > must match snapshot 1`] = `
-Array [
-  "workspace;@scoped%2Fmanifest-name",
-  Array [
-    "workspace",
-    "@scoped/manifest-name",
-  ],
-]
-`
-
 exports[`test/index.ts > TAP > valid specs > @scoped/y@npm:@scoped/x@1.2.3 > hydrated with name asdf 1`] = `
 asdf@npm:@scoped/manifest-name@1.2.3
 `
@@ -215,110 +259,6 @@ Array [
     "registry",
     "",
     "manifest-name@1.2.3",
-  ],
-]
-`
-
-exports[`test/index.ts > TAP > valid specs > x@file:./x.tgz > hydrated 1`] = `
-x@file:./x.tgz
-`
-
-exports[`test/index.ts > TAP > valid specs > x@file:./x.tgz > hydrated with name asdf 1`] = `
-asdf@file:./x.tgz
-`
-
-exports[`test/index.ts > TAP > valid specs > x@file:./x.tgz > hydrated with name unknown 1`] = `
-(unknown)@file:./x.tgz
-`
-
-exports[`test/index.ts > TAP > valid specs > x@file:./x.tgz > hydrated with name y 1`] = `
-y@file:./x.tgz
-`
-
-exports[`test/index.ts > TAP > valid specs > x@file:./x.tgz > must match snapshot 1`] = `
-Array [
-  "file;.%2Fx.tgz",
-  Array [
-    "file",
-    "./x.tgz",
-  ],
-]
-`
-
-exports[`test/index.ts > TAP > valid specs > x@file:///x.tgz > hydrated 1`] = `
-x@file:///x.tgz
-`
-
-exports[`test/index.ts > TAP > valid specs > x@file:///x.tgz > hydrated with name asdf 1`] = `
-asdf@file:///x.tgz
-`
-
-exports[`test/index.ts > TAP > valid specs > x@file:///x.tgz > hydrated with name unknown 1`] = `
-(unknown)@file:///x.tgz
-`
-
-exports[`test/index.ts > TAP > valid specs > x@file:///x.tgz > hydrated with name y 1`] = `
-y@file:///x.tgz
-`
-
-exports[`test/index.ts > TAP > valid specs > x@file:///x.tgz > must match snapshot 1`] = `
-Array [
-  "file;%2F%2F%2Fx.tgz",
-  Array [
-    "file",
-    "///x.tgz",
-  ],
-]
-`
-
-exports[`test/index.ts > TAP > valid specs > x@file:~/x.tgz > hydrated 1`] = `
-x@file:~/x.tgz
-`
-
-exports[`test/index.ts > TAP > valid specs > x@file:~/x.tgz > hydrated with name asdf 1`] = `
-asdf@file:~/x.tgz
-`
-
-exports[`test/index.ts > TAP > valid specs > x@file:~/x.tgz > hydrated with name unknown 1`] = `
-(unknown)@file:~/x.tgz
-`
-
-exports[`test/index.ts > TAP > valid specs > x@file:~/x.tgz > hydrated with name y 1`] = `
-y@file:~/x.tgz
-`
-
-exports[`test/index.ts > TAP > valid specs > x@file:~/x.tgz > must match snapshot 1`] = `
-Array [
-  "file;~%2Fx.tgz",
-  Array [
-    "file",
-    "~/x.tgz",
-  ],
-]
-`
-
-exports[`test/index.ts > TAP > valid specs > x@file:x.tgz > hydrated 1`] = `
-x@file:./x.tgz
-`
-
-exports[`test/index.ts > TAP > valid specs > x@file:x.tgz > hydrated with name asdf 1`] = `
-asdf@file:./x.tgz
-`
-
-exports[`test/index.ts > TAP > valid specs > x@file:x.tgz > hydrated with name unknown 1`] = `
-(unknown)@file:./x.tgz
-`
-
-exports[`test/index.ts > TAP > valid specs > x@file:x.tgz > hydrated with name y 1`] = `
-y@file:./x.tgz
-`
-
-exports[`test/index.ts > TAP > valid specs > x@file:x.tgz > must match snapshot 1`] = `
-Array [
-  "file;.%2Fx.tgz",
-  Array [
-    "file",
-    "./x.tgz",
   ],
 ]
 `
@@ -507,136 +447,6 @@ Array [
   Array [
     "remote",
     "https://x.com/x.tgz",
-  ],
-]
-`
-
-exports[`test/index.ts > TAP > valid specs > x@workspace:* > hydrated 1`] = `
-x@workspace:manifest-name@*
-`
-
-exports[`test/index.ts > TAP > valid specs > x@workspace:* > hydrated with name asdf 1`] = `
-asdf@workspace:manifest-name@*
-`
-
-exports[`test/index.ts > TAP > valid specs > x@workspace:* > hydrated with name unknown 1`] = `
-manifest-name@workspace:*
-`
-
-exports[`test/index.ts > TAP > valid specs > x@workspace:* > hydrated with name y 1`] = `
-y@workspace:manifest-name@*
-`
-
-exports[`test/index.ts > TAP > valid specs > x@workspace:* > must match snapshot 1`] = `
-Array [
-  "workspace;manifest-name",
-  Array [
-    "workspace",
-    "manifest-name",
-  ],
-]
-`
-
-exports[`test/index.ts > TAP > valid specs > x@workspace:~ > hydrated 1`] = `
-x@workspace:manifest-name@*
-`
-
-exports[`test/index.ts > TAP > valid specs > x@workspace:~ > hydrated with name asdf 1`] = `
-asdf@workspace:manifest-name@*
-`
-
-exports[`test/index.ts > TAP > valid specs > x@workspace:~ > hydrated with name unknown 1`] = `
-manifest-name@workspace:*
-`
-
-exports[`test/index.ts > TAP > valid specs > x@workspace:~ > hydrated with name y 1`] = `
-y@workspace:manifest-name@*
-`
-
-exports[`test/index.ts > TAP > valid specs > x@workspace:~ > must match snapshot 1`] = `
-Array [
-  "workspace;manifest-name",
-  Array [
-    "workspace",
-    "manifest-name",
-  ],
-]
-`
-
-exports[`test/index.ts > TAP > valid specs > x@workspace:1.x > hydrated 1`] = `
-x@workspace:manifest-name@*
-`
-
-exports[`test/index.ts > TAP > valid specs > x@workspace:1.x > hydrated with name asdf 1`] = `
-asdf@workspace:manifest-name@*
-`
-
-exports[`test/index.ts > TAP > valid specs > x@workspace:1.x > hydrated with name unknown 1`] = `
-manifest-name@workspace:*
-`
-
-exports[`test/index.ts > TAP > valid specs > x@workspace:1.x > hydrated with name y 1`] = `
-y@workspace:manifest-name@*
-`
-
-exports[`test/index.ts > TAP > valid specs > x@workspace:1.x > must match snapshot 1`] = `
-Array [
-  "workspace;manifest-name",
-  Array [
-    "workspace",
-    "manifest-name",
-  ],
-]
-`
-
-exports[`test/index.ts > TAP > valid specs > x@workspace:y@* > hydrated 1`] = `
-x@workspace:manifest-name@*
-`
-
-exports[`test/index.ts > TAP > valid specs > x@workspace:y@* > hydrated with name asdf 1`] = `
-asdf@workspace:manifest-name@*
-`
-
-exports[`test/index.ts > TAP > valid specs > x@workspace:y@* > hydrated with name unknown 1`] = `
-manifest-name@workspace:*
-`
-
-exports[`test/index.ts > TAP > valid specs > x@workspace:y@* > hydrated with name y 1`] = `
-y@workspace:manifest-name@*
-`
-
-exports[`test/index.ts > TAP > valid specs > x@workspace:y@* > must match snapshot 1`] = `
-Array [
-  "workspace;manifest-name",
-  Array [
-    "workspace",
-    "manifest-name",
-  ],
-]
-`
-
-exports[`test/index.ts > TAP > valid specs > x@workspace:y@1.x > hydrated 1`] = `
-x@workspace:manifest-name@*
-`
-
-exports[`test/index.ts > TAP > valid specs > x@workspace:y@1.x > hydrated with name asdf 1`] = `
-asdf@workspace:manifest-name@*
-`
-
-exports[`test/index.ts > TAP > valid specs > x@workspace:y@1.x > hydrated with name unknown 1`] = `
-manifest-name@workspace:*
-`
-
-exports[`test/index.ts > TAP > valid specs > x@workspace:y@1.x > hydrated with name y 1`] = `
-y@workspace:manifest-name@*
-`
-
-exports[`test/index.ts > TAP > valid specs > x@workspace:y@1.x > must match snapshot 1`] = `
-Array [
-  "workspace;manifest-name",
-  Array [
-    "workspace",
-    "manifest-name",
   ],
 ]
 `
