@@ -12,6 +12,10 @@ exports[`test/lockfile/load.ts > TAP > load > must match snapshot 1`] = `
     location: '.',
     importer: true,
     edgesOut: [
+      Edge spec(linked@file:./linked) -prod-> to: Node {
+        id: 'file;linked',
+        location: './node_modules/.vlt/file;linked/node_modules/linked'
+      },
       Edge spec(foo@^1.0.0) -prod-> to: Node {
         id: 'registry;;foo@1.0.0',
         location: './node_modules/.vlt/registry;;foo@1.0.0/node_modules/foo',

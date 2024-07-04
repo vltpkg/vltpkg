@@ -1,6 +1,6 @@
 import { inspect } from 'node:util'
 import t from 'tap'
-import { getId } from '@vltpkg/dep-id'
+import { asDepID, getId } from '@vltpkg/dep-id'
 import { Spec, SpecOptions } from '@vltpkg/spec'
 import { Node } from '../src/node.js'
 
@@ -17,8 +17,7 @@ t.test('Node', async t => {
     name: 'root',
     version: '1.0.0',
   }
-  const rootSpec = Spec.parse('root', 'file:///path/to/root')
-  const root = new Node(configData, undefined, rootMani, rootSpec)
+  const root = new Node(configData, asDepID('file;.'), rootMani)
   root.setImporterLocation('./path/to/importer')
   t.strictSame(
     root.edgesIn.size,
@@ -130,13 +129,16 @@ t.test('Node', async t => {
   )
 
   // different resolved values inferred from id
-  const file = new Node(configData, 'file;.%2Fmy-package')
+
+  // file type node with no parent
+  const file = new Node(configData, asDepID('file;my-package'))
   file.setResolved()
   t.strictSame(
     file.resolved,
-    './my-package',
+    'my-package',
     'should set expected resolved value for a file id type',
   )
+
   const git = new Node(configData, 'git;github%3Avltpkg%2Ffoo;')
   git.setResolved()
   t.strictSame(
