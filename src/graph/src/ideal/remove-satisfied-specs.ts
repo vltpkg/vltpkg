@@ -1,5 +1,5 @@
 import { error } from '@vltpkg/error-cause'
-import { satisfies } from '@vltpkg/semver'
+import { edgeValid } from '../edge-valid.js'
 import { BaseBuildIdealOptions } from './types.js'
 
 /**
@@ -22,11 +22,9 @@ export const removeSatisfiedSpecs = ({
       if (!edge) {
         continue
       }
-      const satisfied =
-        edge.to?.manifest?.version &&
-        dependency.spec.range &&
-        satisfies(edge.to?.manifest?.version, dependency.spec.range)
-      if (satisfied) {
+      // If the current graph edge is already valid, then we remove that
+      // dependency item from the list of items to be added to the graph
+      if (edge.to && edgeValid(edge, dependency)) {
         dependencies.delete(name)
       }
     }
