@@ -18,8 +18,7 @@ t.test('empty graph and nothing to add', async t => {
   const graph = new Graph({ mainManifest: {} })
   const add = new Map()
   const specs = getImporterSpecs({ add, graph })
-  t.strictSame(specs.size, 1, 'should have only a root node ref')
-  t.strictSame(specs.get('file;.')?.size, 0, 'should have no results')
+  t.strictSame(specs.size, 0, 'should have no items to add')
 })
 
 t.test('empty graph with workspaces and nothing to add', async t => {
@@ -47,10 +46,7 @@ t.test('empty graph with workspaces and nothing to add', async t => {
   const graph = load({ projectRoot })
   const add = new Map()
   const specs = getImporterSpecs({ add, graph })
-  t.matchSnapshot(
-    specs,
-    'should have root and workspaces nodes with nothing to add',
-  )
+  t.matchSnapshot(specs, 'should have no items to add')
 })
 
 t.test('empty graph and something to add', async t => {

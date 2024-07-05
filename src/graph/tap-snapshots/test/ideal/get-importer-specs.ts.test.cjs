@@ -14,12 +14,8 @@ Map(1) {
 }
 `
 
-exports[`test/ideal/get-importer-specs.ts > TAP > empty graph with workspaces and nothing to add > should have root and workspaces nodes with nothing to add 1`] = `
-Map {
-  "file;." => Map {},
-  "workspace;packages%2Fb" => Map {},
-  "workspace;packages%2Fa" => Map {},
-}
+exports[`test/ideal/get-importer-specs.ts > TAP > empty graph with workspaces and nothing to add > should have no items to add 1`] = `
+Map {}
 `
 
 exports[`test/ideal/get-importer-specs.ts > TAP > graph specs and new things to add > should have root specs along with the added ones 1`] = `

@@ -19,10 +19,8 @@ exports[`test/ideal/remove-satisfied-specs.ts > TAP > graph with an actual node 
 Map {}
 `
 
-exports[`test/ideal/remove-satisfied-specs.ts > TAP > graph with an actual node > registry tag > should return the registry tag item 1`] = `
-Map(1) {
-  'file;.' => Map(1) { 'foo' => { spec: Spec {foo@latest}, type: 'prod' } }
-}
+exports[`test/ideal/remove-satisfied-specs.ts > TAP > graph with an actual node > registry tag > should not return registry tag item if something already satisfies it 1`] = `
+Map(0) {}
 `
 
 exports[`test/ideal/remove-satisfied-specs.ts > TAP > graph with an actual node > update existing spec > should return the update item 1`] = `
