@@ -131,7 +131,7 @@ t.test('graph with an actual node', async t => {
     removeSatisfiedSpecs({ add, graph })
     t.matchSnapshot(
       inspect(add, { depth: Infinity }),
-      'should return the registry tag item',
+      'should not return registry tag item if something already satisfies it',
     )
   })
 

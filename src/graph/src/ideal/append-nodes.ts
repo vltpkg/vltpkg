@@ -37,10 +37,12 @@ const getFileTypeInfo = (
 ): FileTypeInfo | undefined => {
   if (spec.type !== 'file') return
 
+  /* c8 ignore start - should be impossible */
   const f = spec.final
   if (!f.file) {
     throw error('no path on file specifier', { spec })
   }
+  /* c8 ignore stop */
 
   // Given that both linked folders and local tarballs (both defined with
   // usage of the `file:` spec prefix) location needs to be relative to their

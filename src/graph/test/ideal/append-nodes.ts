@@ -4,6 +4,7 @@ import { Spec, SpecOptions } from '@vltpkg/spec'
 import { PackageInfoClient } from '@vltpkg/package-info'
 import { Graph } from '../../src/graph.js'
 import { appendNodes } from '../../src/ideal/append-nodes.js'
+import { humanReadableOutput } from '../../src/visualization/human-readable-output.js'
 
 const configData = {
   registry: 'https://registry.npmjs.org',
@@ -209,5 +210,86 @@ t.test('append different type of dependencies', async t => {
   t.matchSnapshot(
     inspect(graph, { depth: 3 }),
     'should install different type of deps on different conditions',
+  )
+})
+
+t.test('append file type of nodes', async t => {
+  const fooManifest = {
+    name: 'foo',
+    version: '1.0.0',
+    dependencies: {
+      bar: 'file:./bar',
+      baz: 'file:./baz.tgz',
+    },
+  }
+  const barManifest = {
+    name: 'bar',
+    version: '1.0.0',
+  }
+  const bazManifest = {
+    name: 'baz',
+    version: '1.0.0',
+  }
+  const linkedManifest = {
+    name: 'linked',
+    version: '1.0.0',
+  }
+  const mainManifest = {
+    name: 'my-project',
+    version: '1.0.0',
+    dependencies: {
+      foo: '^1.0.0',
+      linked: '^1.0.0',
+    },
+  }
+  const graph = new Graph({
+    ...configData,
+    mainManifest,
+  })
+  const packageInfo = {
+    async manifest(spec: Spec) {
+      switch (spec.name) {
+        case 'bar':
+          return barManifest
+        case 'baz':
+          return bazManifest
+        case 'foo':
+          return fooManifest
+        case 'linked':
+          return linkedManifest
+        case 'borked':
+          throw new Error('ERR')
+        default:
+          return null
+      }
+    },
+  } as PackageInfoClient
+  await appendNodes(
+    packageInfo,
+    graph,
+    graph.mainImporter,
+    [
+      {
+        spec: Spec.parse('linked@file:./linked'),
+        type: 'prod',
+      },
+    ],
+    configData,
+  )
+  await appendNodes(
+    packageInfo,
+    graph,
+    graph.mainImporter,
+    [
+      {
+        spec: Spec.parse('foo@^1.0.0'),
+        type: 'prod',
+      },
+    ],
+    configData,
+  )
+  t.matchSnapshot(
+    humanReadableOutput(graph),
+    'should have a graph with file type dependencies',
   )
 })

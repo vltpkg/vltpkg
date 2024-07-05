@@ -172,3 +172,33 @@ Graph [@vltpkg/graph.Graph] {
   missingDependencies: Set(0) {}
 }
 `
+
+exports[`test/ideal/append-nodes.ts > TAP > append file type of nodes > should have a graph with file type dependencies 1`] = `
+[
+  Node {
+    id: 'file;.',
+    location: '.',
+    importer: true,
+    edgesOut: [
+      Edge spec(linked@file:./linked) -prod-> to: Node { id: 'file;linked', location: 'linked', resolved: 'linked' },
+      Edge spec(foo@^1.0.0) -prod-> to: Node {
+        id: 'registry;;foo@1.0.0',
+        location: './node_modules/.vlt/registry;;foo@1.0.0/node_modules/foo',
+        resolved: 'https://registry.npmjs.org/foo/-/foo-1.0.0.tgz',
+        edgesOut: [
+          Edge spec(bar@file:./bar) -prod-> to: Node {
+            id: 'file;node_modules%2F.vlt%2Fregistry%3B%3Bfoo@1.0.0%2Fnode_modules%2Ffoo%2Fbar',
+            location: 'node_modules/.vlt/registry;;foo@1.0.0/node_modules/foo/bar',
+            resolved: 'node_modules/.vlt/registry;;foo@1.0.0/node_modules/foo/bar'
+          },
+          Edge spec(baz@file:./baz.tgz) -prod-> to: Node {
+            id: 'file;node_modules%2F.vlt%2Fregistry%3B%3Bfoo@1.0.0%2Fnode_modules%2Ffoo%2Fbaz.tgz',
+            location: 'node_modules/.vlt/registry;;foo@1.0.0/node_modules/foo/baz.tgz',
+            resolved: 'node_modules/.vlt/registry;;foo@1.0.0/node_modules/foo/baz.tgz'
+          }
+        ]
+      }
+    ]
+  }
+]
+`

@@ -4,9 +4,10 @@ import { Graph } from '../graph.js'
 
 export type BaseBuildIdealOptions = {
   /**
-   * A `Map` of `Set`s of {@link Spec}s to be added to the resulting ideal
-   * {@link Graph}. The map keys to the {@link DepID} of the importer node
-   * in which the new node defined by {@link Spec} should be added to.
+   * A `Map` in which keys are {@link DepID} linking to another `Map` in which
+   * keys are the dependency names and values are {@link Dependency}. This
+   * structure represents dependencies that need to be added to the importer
+   * represented by {@link DepID}.
    */
   add: Map<DepID, Map<string, Dependency>>
   /**

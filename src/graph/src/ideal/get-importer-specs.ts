@@ -2,6 +2,7 @@ import { DepID } from '@vltpkg/dep-id'
 import { error } from '@vltpkg/error-cause'
 import { Graph } from '../graph.js'
 import { Dependency } from '../dependencies.js'
+import { removeSatisfiedSpecs } from './remove-satisfied-specs.js'
 import { BaseBuildIdealOptions } from './types.js'
 
 /**
@@ -16,7 +17,7 @@ export const getImporterSpecs = ({
 }: BaseBuildIdealOptions) => {
   const res = new Map<DepID, Map<string, Dependency>>()
 
-  // traverse the list of importers
+  // traverse the list of importers in the starting graph
   for (const importer of graph.importers) {
     // uses a Map keying to the spec.name in order to easily make sure there's
     // only a single dependency entry for a given dependency for each importer
@@ -40,6 +41,9 @@ export const getImporterSpecs = ({
       deps.set(name, dep)
     }
   }
+
+  // removes already satisfied dependencies from the dependencies list
+  removeSatisfiedSpecs({ add: res, graph })
 
   return res
 }
