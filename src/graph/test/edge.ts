@@ -38,6 +38,7 @@ t.test('Edge', async t => {
     root,
     child,
   )
+  t.ok(edge.valid(), 'valid edge')
   t.equal(edge.name, 'child')
   t.equal(edge.dev, false)
   t.equal(edge.optional, false)
@@ -47,6 +48,7 @@ t.test('Edge', async t => {
     Spec.parse('missing', 'latest'),
     child,
   )
+  t.notOk(dangling.valid(), 'invalid edge')
   t.matchSnapshot(inspect(dangling, { depth: 1 }))
   const optional = new Edge(
     'optional',

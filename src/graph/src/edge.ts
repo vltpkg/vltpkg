@@ -1,4 +1,5 @@
 import { Spec } from '@vltpkg/spec'
+import { edgeValid } from './edge-valid.js'
 import { Node } from './node.js'
 import { DependencyTypeShort } from './dependencies.js'
 
@@ -63,5 +64,9 @@ export class Edge {
 
   get peerOptional(): boolean {
     return this.type === 'peerOptional'
+  }
+
+  valid(): boolean {
+    return edgeValid(this)
   }
 }
