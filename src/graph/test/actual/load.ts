@@ -312,3 +312,27 @@ t.test('cycle', async t => {
     'should load an actual graph with cycle without any manifest info',
   )
 })
+
+t.test('uninstalled dependencies', async t => {
+  const projectRoot = t.testdir({
+    'package.json': JSON.stringify({
+      name: 'my-project',
+      version: '1.0.0',
+      dependencies: {
+        a: '^1.0.0',
+      },
+    }),
+  })
+  t.matchSnapshot(
+    humanReadableOutput(
+      load({ projectRoot, loadManifests: true, ...configData }),
+    ),
+    'should load an actual graph with missing deps with manifest info',
+  )
+  t.matchSnapshot(
+    humanReadableOutput(
+      load({ projectRoot, loadManifests: false, ...configData }),
+    ),
+    'should load an actual graph with missing deps with no manifest info',
+  )
+})

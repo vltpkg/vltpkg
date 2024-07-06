@@ -6,10 +6,11 @@ import {
 } from '@vltpkg/dep-id'
 import { PackageJson } from '@vltpkg/package-json'
 import { Spec, SpecOptions } from '@vltpkg/spec'
+import { ManifestMinified } from '@vltpkg/types'
 import { Monorepo } from '@vltpkg/workspaces'
 import { Path, PathScurry } from 'path-scurry'
 import { RawDependency, shorten } from '../dependencies.js'
-import { Graph, ManifestInventory } from '../graph.js'
+import { Graph } from '../graph.js'
 import { Node } from '../node.js'
 import { longDependencyTypes } from '../dependencies.js'
 
@@ -19,9 +20,9 @@ export type LoadOptions = SpecOptions & {
    */
   projectRoot: string
   /**
-   * An inventory of seen manifests.
+   * The project root manifest.
    */
-  manifests?: ManifestInventory
+  mainManifest?: ManifestMinified
   /**
    * A {@link Monorepo} object, for managing workspaces
    */
@@ -296,7 +297,8 @@ const parseDir = (
  */
 export const load = (options: LoadOptions): Graph => {
   const packageJson = options.packageJson ?? new PackageJson()
-  const mainManifest = packageJson.read(options.projectRoot)
+  const mainManifest =
+    options.mainManifest ?? packageJson.read(options.projectRoot)
   const scurry = options.scurry ?? new PathScurry(options.projectRoot)
   const monorepo =
     options.monorepo ??

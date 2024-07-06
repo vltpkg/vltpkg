@@ -183,3 +183,25 @@ exports[`test/actual/load.ts > TAP > load actual > should load an actual graph w
   }
 ]
 `
+
+exports[`test/actual/load.ts > TAP > uninstalled dependencies > should load an actual graph with missing deps with manifest info 1`] = `
+[
+  Node {
+    id: 'file;.',
+    location: '.',
+    importer: true,
+    edgesOut: [ Edge spec(a@^1.0.0) -prod-> to: [missing package]: <a@^1.0.0> ]
+  }
+]
+`
+
+exports[`test/actual/load.ts > TAP > uninstalled dependencies > should load an actual graph with missing deps with no manifest info 1`] = `
+[
+  Node {
+    id: 'file;.',
+    location: '.',
+    importer: true,
+    edgesOut: [ Edge spec(a@^1.0.0) -prod-> to: [missing package]: <a@^1.0.0> ]
+  }
+]
+`
