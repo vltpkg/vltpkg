@@ -15,3 +15,7 @@ export const lockfile = { load: lockfileLoad, save }
 import type { LoadOptions as ActualLoadOptions } from './actual/load.js'
 import type { LoadOptions as LockfileLoadOptions } from './lockfile/load.js'
 export type { ActualLoadOptions, LockfileLoadOptions }
+
+import { BuildIdealOptions, build } from './ideal/build.js'
+export type { BuildIdealOptions }
+export const buildIdeal = build

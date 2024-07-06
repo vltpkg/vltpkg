@@ -1,6 +1,12 @@
 import { error } from '@vltpkg/error-cause'
 import { edgeValid } from '../edge-valid.js'
-import { BaseBuildIdealOptions } from './types.js'
+import {
+  BuildIdealAddOptions,
+  BuildIdealFromGraphOptions,
+} from './types.js'
+
+export type RemoveSatisfiedSpecsOptions = BuildIdealAddOptions &
+  BuildIdealFromGraphOptions
 
 /**
  * Traverse the objects defined in `add` and removes any references to specs
@@ -9,7 +15,7 @@ import { BaseBuildIdealOptions } from './types.js'
 export const removeSatisfiedSpecs = ({
   add,
   graph,
-}: BaseBuildIdealOptions) => {
+}: RemoveSatisfiedSpecsOptions) => {
   for (const [depID, dependencies] of add.entries()) {
     const importer = graph.nodes.get(depID)
     if (!importer) {

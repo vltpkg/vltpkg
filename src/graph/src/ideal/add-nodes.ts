@@ -1,11 +1,18 @@
 import { error } from '@vltpkg/error-cause'
-import { PackageInfoClient } from '@vltpkg/package-info'
 import { SpecOptions } from '@vltpkg/spec'
 import { appendNodes } from './append-nodes.js'
-import { BaseBuildIdealOptions } from './types.js'
+import {
+  BuildIdealFromGraphOptions,
+  BuildIdealAddOptions,
+} from './types.js'
+import { PackageInfoClient } from '@vltpkg/package-info'
 
 export type AddNodesOptions = SpecOptions &
-  BaseBuildIdealOptions & {
+  BuildIdealFromGraphOptions &
+  BuildIdealAddOptions & {
+    /**
+     * A {@link PackageInfoClient} instance to read manifest info from.
+     */
     packageInfo: PackageInfoClient
   }
 

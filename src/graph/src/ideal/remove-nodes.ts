@@ -1,15 +1,11 @@
-import { DepID } from '@vltpkg/dep-id'
-import { BaseBuildIdealOptions } from './types.js'
+import {
+  BuildIdealFromGraphOptions,
+  BuildIdealRemoveOptions,
+} from './types.js'
 import { error } from '@vltpkg/error-cause'
 
-export type RemoveNodesOptions = BaseBuildIdealOptions & {
-  /**
-   * A `Map` object representing nodes to be removed from the ideal graph.
-   * Each {@link DepID} key represents an importer node and the `Set` of
-   * dependency names to be removed from its dependency list.
-   */
-  remove: Map<DepID, Set<string>>
-}
+export type RemoveNodesOptions = BuildIdealFromGraphOptions &
+  BuildIdealRemoveOptions
 
 /**
  * Remove nodes from the current `graph`.

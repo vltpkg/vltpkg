@@ -3,7 +3,13 @@ import { error } from '@vltpkg/error-cause'
 import { Graph } from '../graph.js'
 import { Dependency } from '../dependencies.js'
 import { removeSatisfiedSpecs } from './remove-satisfied-specs.js'
-import { BaseBuildIdealOptions } from './types.js'
+import {
+  BuildIdealAddOptions,
+  BuildIdealFromGraphOptions,
+} from './types.js'
+
+export type GetImporterSpecsOptions = BuildIdealAddOptions &
+  BuildIdealFromGraphOptions
 
 /**
  * Given a {@link Graph} and a list of {@link Dependency}, merges the
@@ -14,7 +20,7 @@ import { BaseBuildIdealOptions } from './types.js'
 export const getImporterSpecs = ({
   add,
   graph,
-}: BaseBuildIdealOptions) => {
+}: GetImporterSpecsOptions) => {
   const res = new Map<DepID, Map<string, Dependency>>()
 
   // traverse the list of importers in the starting graph

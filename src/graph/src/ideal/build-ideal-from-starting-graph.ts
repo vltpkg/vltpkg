@@ -3,7 +3,8 @@ import { getImporterSpecs } from './get-importer-specs.js'
 import { AddNodesOptions, addNodes } from './add-nodes.js'
 import { RemoveNodesOptions, removeNodes } from './remove-nodes.js'
 
-export type BuildIdealOptions = AddNodesOptions & RemoveNodesOptions
+export type BuildIdealFromStartingGraphOptions = AddNodesOptions &
+  RemoveNodesOptions
 
 /**
  * Builds an ideal {@link Graph} representing the dependencies that
@@ -13,7 +14,7 @@ export type BuildIdealOptions = AddNodesOptions & RemoveNodesOptions
  * listed in the `add` and `remove` properties.
  */
 export const buildIdealFromStartingGraph = async (
-  options: BuildIdealOptions,
+  options: BuildIdealFromStartingGraphOptions,
 ): Promise<Graph> => {
   // Gets a map of dependencies that are keyed to its importer node ids,
   // merging values already found in the graph with user specified values.
