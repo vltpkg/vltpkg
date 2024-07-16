@@ -361,7 +361,6 @@ export const definition = jack({
       short: 'B',
       description: `When running scripts across multiple workspaces, continue
                     on failure, running the script for all workspaces.`,
-      default: true,
     },
   })
 
