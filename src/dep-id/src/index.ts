@@ -14,9 +14,9 @@ import { Manifest } from '@vltpkg/types'
  *   The `<registry>` portion can be a known named registry name, or a
  *   url to a registry. If empty, it is the default registry.
  *   Examples:
- *   - `registry;;some-package@2.0.1`
- *   - `registry;npm;whatever@1.2.3'
- *   - `registry;http%3A%2F%2Fvlt.sh%2F;x@1.2.3`
+ *   - `;;some-package@2.0.1`
+ *   - `;npm;whatever@1.2.3'
+ *   - `;http%3A%2F%2Fvlt.sh%2F;x@1.2.3`
  * - `git`: `'git;<git remote>;<git selector>`. For example:
  *   - `git;github:user/project;branchname`
  *   - `git;git%2Bssh%3A%2F%2Fuser%40host%3Aproject.git;semver:1.x`
@@ -27,7 +27,7 @@ import { Manifest } from '@vltpkg/types'
  * - `file`: `'file;<path>`
  */
 export type DepID =
-  | `${'registry' | 'git'};${string};${string}`
+  | `${'' | 'git'};${string};${string}`
   | `${'remote' | 'file' | 'workspace'};${string}`
 
 /**
@@ -42,9 +42,7 @@ export type DepIDTuple =
 
 export const isDepID = (str: unknown): str is DepID =>
   typeof str === 'string' &&
-  /^((registry|git);[^;]*;[^;]*$|(file|remote|workspace);[^;]*)$/.test(
-    str,
-  )
+  /^((git)?;[^;]*;[^;]*$|(file|remote|workspace);[^;]*)$/.test(str)
 
 export const asDepID = (str: string): DepID => {
   if (!isDepID(str)) {
@@ -62,8 +60,9 @@ export const joinDepIDTuple = (list: DepIDTuple): DepID => {
   const [type, first, second] = list
   const f = encode(first)
   switch (type) {
-    case 'git':
     case 'registry':
+      return `;${f};${encode(second)}`
+    case 'git':
       return `${type};${f};${encode(second)}`
     default:
       return `${type};${f}`
@@ -82,11 +81,11 @@ export const splitDepID = (id: string): DepIDTuple => {
   const f = decodeURIComponent(first)
   switch (type) {
     case 'git':
-    case 'registry':
+    case '':
       if (second === undefined) {
         throw error(`invalid ${type} id`, { found: id })
       }
-      return [type, f, decodeURIComponent(second)]
+      return [type || 'registry', f, decodeURIComponent(second)]
     case 'file':
     case 'remote':
     case 'workspace':
@@ -94,13 +93,7 @@ export const splitDepID = (id: string): DepIDTuple => {
     default: {
       throw error('invalid DepID type', {
         found: type,
-        validOptions: [
-          'git',
-          'file',
-          'workspace',
-          'remote',
-          'registry',
-        ],
+        validOptions: ['git', 'file', 'workspace', 'remote', ''],
       })
     }
   }

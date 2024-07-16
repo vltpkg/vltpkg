@@ -119,7 +119,7 @@ t.test('hydrate only', t => {
 t.test('named registry', t => {
   const options = { registries: { vlt: 'http://vlt.sh' } }
   t.equal(
-    String(hydrate('registry;vlt;x@1.2.3', 'x', options)),
+    String(hydrate(';vlt;x@1.2.3', 'x', options)),
     'x@vlt:x@1.2.3',
   )
   t.end()
@@ -176,10 +176,10 @@ t.test('invalid values', t => {
     getTuple({ final: { type: 'remote' } } as Spec, mani),
   )
   t.throws(() => getTuple({ final: { type: 'file' } } as Spec, mani))
-  t.throws(() => hydrate('registry;xyz;x@1.2.1', 'x'))
-  t.throws(() => hydrate('registry;;', 'x'))
+  t.throws(() => hydrate(';xyz;x@1.2.1', 'x'))
+  t.throws(() => hydrate(';;', 'x'))
   //@ts-expect-error
-  t.throws(() => hydrate('registry;', 'x'))
+  t.throws(() => hydrate(';', 'x'))
   //@ts-expect-error
   t.throws(() => hydrateTuple(['registry'], 'x'))
   //@ts-expect-error
@@ -191,7 +191,7 @@ t.test('invalid values', t => {
 })
 
 const validDepIDs = [
-  'registry;;foo@1.0.0',
+  ';;foo@1.0.0',
   'git;github%3Aa%2Fb;branch',
   'remote;https%3A%2F%2Fx.com%2Fx.tgz',
   'file;.%2Fx.tgz',
