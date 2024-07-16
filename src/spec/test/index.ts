@@ -14,7 +14,8 @@ const { Spec } = await t.mockImport<typeof import('../src/index.js')>(
     'node:os': { ...os, homedir: () => '/mock/home' },
   },
 )
-// import { kCustomInspect, Spec } from '../src/index.js'
+
+t.strictSame(Spec.parseGitSelector(''), [{}])
 
 t.compareOptions = { sort: false }
 const formatSnapshot = (obj: any): any =>
