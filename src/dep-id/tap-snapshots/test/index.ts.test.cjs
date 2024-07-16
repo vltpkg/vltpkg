@@ -119,7 +119,7 @@ exports[`test/index.ts > TAP > valid specs > @scoped/x@1.2.3 > hydrated with sco
 
 exports[`test/index.ts > TAP > valid specs > @scoped/x@1.2.3 > must match snapshot 1`] = `
 Array [
-  "registry;;@scoped%2Fmanifest-name@1.2.3",
+  ";;@scoped%2Fmanifest-name@1.2.3",
   Array [
     "registry",
     "",
@@ -173,7 +173,7 @@ exports[`test/index.ts > TAP > valid specs > @scoped/x@npm:@scoped/x@1.2.3 > hyd
 
 exports[`test/index.ts > TAP > valid specs > @scoped/x@npm:@scoped/x@1.2.3 > must match snapshot 1`] = `
 Array [
-  "registry;npm;@scoped%2Fmanifest-name@1.2.3",
+  ";npm;@scoped%2Fmanifest-name@1.2.3",
   Array [
     "registry",
     "npm",
@@ -200,7 +200,7 @@ exports[`test/index.ts > TAP > valid specs > @scoped/y@npm:@scoped/x@1.2.3 > hyd
 
 exports[`test/index.ts > TAP > valid specs > @scoped/y@npm:@scoped/x@1.2.3 > must match snapshot 1`] = `
 Array [
-  "registry;npm;@scoped%2Fmanifest-name@1.2.3",
+  ";npm;@scoped%2Fmanifest-name@1.2.3",
   Array [
     "registry",
     "npm",
@@ -227,7 +227,7 @@ y@npm:manifest-name@1.2.3
 
 exports[`test/index.ts > TAP > valid specs > x@1 > must match snapshot 1`] = `
 Array [
-  "registry;;manifest-name@1.2.3",
+  ";;manifest-name@1.2.3",
   Array [
     "registry",
     "",
@@ -254,7 +254,7 @@ y@npm:manifest-name@1.2.3
 
 exports[`test/index.ts > TAP > valid specs > x@1.2.3 > must match snapshot 1`] = `
 Array [
-  "registry;;manifest-name@1.2.3",
+  ";;manifest-name@1.2.3",
   Array [
     "registry",
     "",
@@ -469,7 +469,7 @@ y@npm:manifest-name@1.2.3
 
 exports[`test/index.ts > TAP > valid specs > y@1.2.3 > must match snapshot 1`] = `
 Array [
-  "registry;;manifest-name@1.2.3",
+  ";;manifest-name@1.2.3",
   Array [
     "registry",
     "",
@@ -496,7 +496,7 @@ exports[`test/index.ts > TAP > valid specs > y@npm:@scoped/x@1.2.3 > hydrated wi
 
 exports[`test/index.ts > TAP > valid specs > y@npm:@scoped/x@1.2.3 > must match snapshot 1`] = `
 Array [
-  "registry;npm;@scoped%2Fmanifest-name@1.2.3",
+  ";npm;@scoped%2Fmanifest-name@1.2.3",
   Array [
     "registry",
     "npm",
@@ -523,7 +523,7 @@ y@npm:manifest-name@1.2.3
 
 exports[`test/index.ts > TAP > valid specs > y@npm:x@1 > must match snapshot 1`] = `
 Array [
-  "registry;npm;manifest-name@1.2.3",
+  ";npm;manifest-name@1.2.3",
   Array [
     "registry",
     "npm",
@@ -550,7 +550,7 @@ y@npm:manifest-name@1.2.3
 
 exports[`test/index.ts > TAP > valid specs > y@npm:x@1.2.3 > must match snapshot 1`] = `
 Array [
-  "registry;npm;manifest-name@1.2.3",
+  ";npm;manifest-name@1.2.3",
   Array [
     "registry",
     "npm",
@@ -604,7 +604,7 @@ y@npm:manifest-name@1.2.3
 
 exports[`test/index.ts > TAP > valid specs > y@registry:https://registry.npmjs.org/#x@1 > must match snapshot 1`] = `
 Array [
-  "registry;;manifest-name@1.2.3",
+  ";;manifest-name@1.2.3",
   Array [
     "registry",
     "",
@@ -631,7 +631,7 @@ y@npm:manifest-name@1.2.3
 
 exports[`test/index.ts > TAP > valid specs > y@registry:https://registry.npmjs.org#x@1 > must match snapshot 1`] = `
 Array [
-  "registry;;manifest-name@1.2.3",
+  ";;manifest-name@1.2.3",
   Array [
     "registry",
     "",
@@ -658,7 +658,7 @@ manifest-name@registry:https://x.com/#manifest-name@1.2.3
 
 exports[`test/index.ts > TAP > valid specs > y@registry:https://x.com#x@1 > must match snapshot 1`] = `
 Array [
-  "registry;https%3A%2F%2Fx.com%2F;manifest-name@1.2.3",
+  ";https%3A%2F%2Fx.com%2F;manifest-name@1.2.3",
   Array [
     "registry",
     "https://x.com/",
