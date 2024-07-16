@@ -253,6 +253,9 @@ importers:
       '@vltpkg/registry-client':
         specifier: workspace:*
         version: link:../registry-client
+      '@vltpkg/satisfies':
+        specifier: workspace:*
+        version: link:../satisfies
       '@vltpkg/semver':
         specifier: workspace:*
         version: link:../semver
@@ -490,6 +493,40 @@ importers:
       walk-up-path:
         specifier: ^3.0.1
         version: 3.0.1
+    devDependencies:
+      '@types/node':
+        specifier: ^20.14.8
+        version: 20.14.8
+      prettier:
+        specifier: ^3.3.2
+        version: 3.3.2
+      tap:
+        specifier: ^20.0.1
+        version: 20.0.1(@types/node@20.14.8)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.2)
+      tshy:
+        specifier: ^1.16.1
+        version: 1.16.1
+      typedoc:
+        specifier: ^0.26.2
+        version: 0.26.2(typescript@5.5.2)
+
+  src/satisfies:
+    dependencies:
+      '@vltpkg/dep-id':
+        specifier: workspace:*
+        version: link:../dep-id
+      '@vltpkg/error-cause':
+        specifier: workspace:*
+        version: link:../error-cause
+      '@vltpkg/semver':
+        specifier: workspace:*
+        version: link:../semver
+      '@vltpkg/spec':
+        specifier: workspace:*
+        version: link:../spec
+      '@vltpkg/workspaces':
+        specifier: workspace:*
+        version: link:../workspaces
     devDependencies:
       '@types/node':
         specifier: ^20.14.8
