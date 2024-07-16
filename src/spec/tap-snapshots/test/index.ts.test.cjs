@@ -1012,15 +1012,17 @@ x@git://notgithub.com/user/foo
 exports[`test/index.ts > TAP > basic parsing tests > x@git@github.com:12345/foo > inspect 1`] = `
 @vltpkg/spec.Spec {
   type: 'git',
-  spec: 'x@git+ssh://git@github.com:12345/foo',
+  spec: 'x@github:12345/foo',
   name: 'x',
-  bareSpec: 'git+ssh://git@github.com:12345/foo',
-  gitRemote: 'git+ssh://git@github.com:12345/foo'
+  bareSpec: 'github:12345/foo',
+  gitRemote: 'git+ssh://git@github.com:12345/foo.git',
+  namedGitHost: 'github',
+  namedGitHostPath: '12345/foo'
 }
 `
 
 exports[`test/index.ts > TAP > basic parsing tests > x@git@github.com:12345/foo > toString 1`] = `
-x@git+ssh://git@github.com:12345/foo
+x@github:12345/foo
 `
 
 exports[`test/index.ts > TAP > basic parsing tests > x@git@npm:not-git > inspect 1`] = `
@@ -1076,29 +1078,34 @@ x@git+ssh://git@bitbucket.org/user/foo#1.2.3
 exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://git@github.com:user/foo#1.2.3 > inspect 1`] = `
 @vltpkg/spec.Spec {
   type: 'git',
-  spec: 'x@git+ssh://git@github.com:user/foo#1.2.3',
+  spec: 'x@github:user/foo#1.2.3',
   name: 'x',
-  bareSpec: 'git+ssh://git@github.com:user/foo#1.2.3',
-  gitRemote: 'git+ssh://git@github.com:user/foo',
+  bareSpec: 'github:user/foo#1.2.3',
+  gitRemote: 'git+ssh://git@github.com:user/foo.git',
   gitSelector: '1.2.3',
   gitSelectorParsed: {},
-  gitCommittish: '1.2.3'
+  gitCommittish: '1.2.3',
+  namedGitHost: 'github',
+  namedGitHostPath: 'user/foo',
+  remoteURL: 'https://codeload.github.com/user/foo/tar.gz/1.2.3'
 }
 `
 
 exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://git@github.com:user/foo#1.2.3 > toString 1`] = `
-x@git+ssh://git@github.com:user/foo#1.2.3
+x@github:user/foo#1.2.3
 `
 
 exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://git@github.com:user/foo#semver:^1.2.3 > inspect 1`] = `
 @vltpkg/spec.Spec {
   type: 'git',
-  spec: 'x@git+ssh://git@github.com:user/foo#semver:^1.2.3',
+  spec: 'x@github:user/foo#semver:^1.2.3',
   name: 'x',
-  bareSpec: 'git+ssh://git@github.com:user/foo#semver:^1.2.3',
-  gitRemote: 'git+ssh://git@github.com:user/foo',
+  bareSpec: 'github:user/foo#semver:^1.2.3',
+  gitRemote: 'git+ssh://git@github.com:user/foo.git',
   gitSelector: 'semver:^1.2.3',
   gitSelectorParsed: { semver: '^1.2.3' },
+  namedGitHost: 'github',
+  namedGitHostPath: 'user/foo',
   range: Range {
     raw: '^1.2.3',
     isAny: false,
@@ -1109,7 +1116,7 @@ exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://git@github.com:
 `
 
 exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://git@github.com:user/foo#semver:^1.2.3 > toString 1`] = `
-x@git+ssh://git@github.com:user/foo#semver:^1.2.3
+x@github:user/foo#semver:^1.2.3
 `
 
 exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://git@github.com/user/foo#1.2.3 > inspect 1`] = `

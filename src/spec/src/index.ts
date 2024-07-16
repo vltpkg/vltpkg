@@ -45,7 +45,7 @@ export const defaultGitHosts = {
   github: 'git+ssh://git@github.com:$1/$2.git',
   bitbucket: 'git+ssh://git@bitbucket.org:$1/$2.git',
   gitlab: 'git+ssh://git@gitlab.com:$1/$2.git',
-  gist: 'git+ssh://git@gist.github.coml/$1.git',
+  gist: 'git+ssh://git@gist.github.com/$1.git',
 }
 
 export const defaultGitHostArchives = {
@@ -354,6 +354,23 @@ export class Spec {
         this.spec = `${this.name}@${this.bareSpec}`
       }
       this.type = 'git'
+      // see if it's one of the known named hosts, and if so, prefer
+      // the shorter syntax.
+      for (const [name, host] of Object.entries(
+        this.options['git-hosts'],
+      )) {
+        const s = host.indexOf('$')
+        if (s > 0 && this.bareSpec.startsWith(host.substring(0, s))) {
+          const p = this.bareSpec
+            .substring(s)
+            .replace(/\.git(#.*)?$/, '$1')
+          this.bareSpec = `${name}:${p}`
+          this.spec = `${this.name}@${this.bareSpec}`
+          this.#parseHostedGit(name, host)
+          this.type = 'git'
+          return
+        }
+      }
       this.#parseGitSelector(this.bareSpec)
       return
     }
@@ -575,8 +592,30 @@ export class Spec {
     }
     this.gitRemote = s.substring(0, h)
     this.gitSelector = s.substring(h + 1)
-    const split = this.gitSelector.split('::')
+    const [selectorParsed, committish, range] = Spec.parseGitSelector(
+      this.gitSelector,
+      this,
+    )
+    this.range = range
+    this.gitCommittish = committish
+    this.gitSelectorParsed = selectorParsed
+  }
+
+  /**
+   * Should only ever be called with the bit that comes AFTER the #
+   * in the git remote url.
+   */
+  static parseGitSelector(
+    selector: string,
+    spec?: Spec,
+  ): [parsed: GitSelectorParsed, committish?: string, range?: Range] {
+    if (!selector) return [{}]
+    const split = selector.split('::')
     const first = split[0]
+    let committish: string | undefined = undefined
+    let range: Range | undefined = undefined
+    const parsed: GitSelectorParsed = {}
+
     /* c8 ignore start - for TS's benefit */
     if (typeof first !== 'string') {
       throw typeError('impossible', {
@@ -586,10 +625,9 @@ export class Spec {
     }
     /* c8 ignore stop */
     if (!first.includes(':')) {
-      this.gitCommittish = first
+      committish = first
       split.shift()
     }
-    this.gitSelectorParsed = {}
     for (const kv of split) {
       const c = kv.indexOf(':')
       /* c8 ignore next */
@@ -597,33 +635,30 @@ export class Spec {
       const k = kv.substring(0, c)
       const v = kv.substring(c + 1)
       if (k === 'semver') {
-        if (this.gitCommittish) {
-          throw this.#error(
+        if (committish) {
+          throw error(
             'Cannot specify a semver range and committish value',
+            { spec },
           )
         }
-        const range = parseRange(v)
+        range = parseRange(v)
         if (!range) {
-          throw this.#error(`Invalid git tag semver range: ${v}`)
+          throw error(`Invalid git tag semver range: ${v}`, { spec })
         }
-        this.range = range
       }
       if (k === 'semver' || k === 'path') {
         if (k === 'path') {
           if (isAbsolute(v) || /(^|\/|\\)\.\.($|\\|\/)/.test(v)) {
-            throw error('Invalid path in git selector', {
-              spec: this,
-            })
+            throw error('Invalid path in git selector', { spec })
           }
           // normalize
-          this.gitSelectorParsed.path = join('/', v)
-            .substring(1)
-            .replace(/\\/g, '/')
+          parsed.path = join('/', v).substring(1).replace(/\\/g, '/')
         } else {
-          this.gitSelectorParsed[k] = v
+          parsed[k] = v
         }
       }
     }
+    return [parsed, committish, range]
   }
 }
 
