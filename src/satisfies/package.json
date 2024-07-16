@@ -1,0 +1,56 @@
+{
+  "name": "@vltpkg/satisfies",
+  "description": "method for determining if a DepID satisfies a Spec",
+  "version": "0.0.0-0",
+  "tshy": {
+    "selfLink": false,
+    "dialects": [
+      "esm"
+    ],
+    "exports": {
+      "./package.json": "./package.json",
+      ".": "./src/index.ts"
+    }
+  },
+  "dependencies": {
+    "@vltpkg/error-cause": "workspace:*",
+    "@vltpkg/dep-id": "workspace:*",
+    "@vltpkg/semver": "workspace:*",
+    "@vltpkg/spec": "workspace:*",
+    "@vltpkg/workspaces": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.8",
+    "prettier": "^3.3.2",
+    "tap": "^20.0.1",
+    "tshy": "^1.16.1",
+    "typedoc": "^0.26.2"
+  },
+  "scripts": {
+    "preversion": "npm test",
+    "postversion": "npm publish",
+    "prepublishOnly": "git push origin --follow-tags",
+    "prepare": "tshy",
+    "pretest": "npm run prepare",
+    "presnap": "npm run prepare",
+    "test": "tap",
+    "snap": "tap",
+    "format": "prettier --write . --log-level warn --ignore-path ../../.prettierignore --cache",
+    "typedoc": "typedoc"
+  },
+  "tap": {
+    "extends": "../../tap-config.yaml"
+  },
+  "prettier": "../../.prettierrc.json",
+  "type": "module",
+  "exports": {
+    "./package.json": "./package.json",
+    ".": {
+      "import": {
+        "source": "./src/index.ts",
+        "types": "./dist/esm/index.d.ts",
+        "default": "./dist/esm/index.js"
+      }
+    }
+  }
+}
