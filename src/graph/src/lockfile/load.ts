@@ -57,7 +57,7 @@ const loadNodes = ({ graph, nodesInfo }: LoadNodesOptions) => {
     // graph and it should not create new nodes if an existing one is there
     if (graph.nodes.has(id)) return
 
-    const [name, integrity, resolved] = lockfileNode
+    const [name, integrity, resolved, location] = lockfileNode
     const [type, , spec] = splitDepID(id)
     const version =
       type === 'registry' ? Spec.parse(spec).bareSpec : undefined
@@ -70,6 +70,7 @@ const loadNodes = ({ graph, nodesInfo }: LoadNodesOptions) => {
     )
     node.integrity = integrity || undefined
     node.resolved = resolved
+    if (location) node.location = location
   }
 }
 
@@ -123,6 +124,7 @@ export const load = (options: LoadOptions): Graph => {
     ...mergedOptions,
     mainManifest,
     monorepo,
+    projectRoot,
   })
 
   loadNodes({ graph, nodesInfo })

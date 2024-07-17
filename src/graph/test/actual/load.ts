@@ -36,7 +36,7 @@ t.test('load actual', async t => {
     },
     node_modules: {
       '.vlt': {
-        'registry;;@scoped%2Fa@1.0.0': {
+        ';;@scoped%2Fa@1.0.0': {
           node_modules: {
             '@scoped': {
               a: {
@@ -48,7 +48,7 @@ t.test('load actual', async t => {
             },
           },
         },
-        'registry;;@scoped%2Fb@1.0.0': {
+        ';;@scoped%2Fb@1.0.0': {
           node_modules: {
             '@scoped': {
               b: {
@@ -62,12 +62,12 @@ t.test('load actual', async t => {
               },
               c: t.fixture(
                 'symlink',
-                '../../../../.vlt/registry;;@scoped%2Fc@1.0.0/node_modules/@scoped/c',
+                '../../../../.vlt/;;@scoped%2Fc@1.0.0/node_modules/@scoped/c',
               ),
             },
           },
         },
-        'registry;;@scoped%2Fc@1.0.0': {
+        ';;@scoped%2Fc@1.0.0': {
           node_modules: {
             '@scoped': {
               c: {
@@ -79,7 +79,7 @@ t.test('load actual', async t => {
             },
           },
         },
-        'registry;;bar@1.0.0': {
+        ';;bar@1.0.0': {
           node_modules: {
             bar: {
               'package.json': JSON.stringify({
@@ -92,11 +92,11 @@ t.test('load actual', async t => {
             },
             baz: t.fixture(
               'symlink',
-              '../../registry;custom;baz@1.0.0/node_modules/baz',
+              '../../;custom;baz@1.0.0/node_modules/baz',
             ),
           },
         },
-        'registry;;foo@1.0.0': {
+        ';;foo@1.0.0': {
           node_modules: {
             foo: {
               'package.json': JSON.stringify({
@@ -106,7 +106,7 @@ t.test('load actual', async t => {
             },
           },
         },
-        'registry;;ipsum@1.0.0': {
+        ';;ipsum@1.0.0': {
           node_modules: {
             ipsum: {
               'package.json': JSON.stringify({
@@ -116,7 +116,7 @@ t.test('load actual', async t => {
             },
           },
         },
-        'registry;;extraneous@1.0.0': {
+        ';;extraneous@1.0.0': {
           node_modules: {
             extraneous: {
               'package.json': JSON.stringify({
@@ -126,7 +126,7 @@ t.test('load actual', async t => {
             },
           },
         },
-        'registry;custom;baz@1.0.0': {
+        ';custom;baz@1.0.0': {
           node_modules: {
             baz: {
               'package.json': JSON.stringify({
@@ -136,7 +136,7 @@ t.test('load actual', async t => {
             },
           },
         },
-        'registry;custom;foo@1.0.0': {
+        ';custom;foo@1.0.0': {
           node_modules: {
             foo: {
               'package.json': JSON.stringify({
@@ -150,30 +150,30 @@ t.test('load actual', async t => {
       '@scoped': {
         a: t.fixture(
           'symlink',
-          '../.vlt/registry;;@scoped%2Fa@1.0.0/node_modules/@scoped/a',
+          '../.vlt/;;@scoped%2Fa@1.0.0/node_modules/@scoped/a',
         ),
         b: t.fixture(
           'symlink',
-          '../.vlt/registry;;@scoped%2Fb@1.0.0/node_modules/@scoped/b',
+          '../.vlt/;;@scoped%2Fb@1.0.0/node_modules/@scoped/b',
         ),
       },
       aliased: t.fixture(
         'symlink',
-        '.vlt/registry;custom;foo@1.0.0/node_modules/foo',
+        '.vlt/;custom;foo@1.0.0/node_modules/foo',
       ),
       bar: t.fixture(
         'symlink',
-        '.vlt/registry;;bar@1.0.0/node_modules/bar',
+        '.vlt/;;bar@1.0.0/node_modules/bar',
       ),
       // This should be ignored when traversing the file system
       broken_symlink: t.fixture('symlink', './link-to-nowhere'),
       extraneous: t.fixture(
         'symlink',
-        '.vlt/registry;;extraneous@1.0.0/node_modules/extraneous',
+        '.vlt/;;extraneous@1.0.0/node_modules/extraneous',
       ),
       foo: t.fixture(
         'symlink',
-        '.vlt/registry;;foo@1.0.0/node_modules/foo',
+        '.vlt/;;foo@1.0.0/node_modules/foo',
       ),
       link: t.fixture('symlink', '../linked'),
     },
@@ -191,11 +191,11 @@ t.test('load actual', async t => {
         node_modules: {
           foo: t.fixture(
             'symlink',
-            '../../../node_modules/.vlt/registry;;foo@1.0.0/node_modules/foo',
+            '../../../node_modules/.vlt/;;foo@1.0.0/node_modules/foo',
           ),
           ipsum: t.fixture(
             'symlink',
-            '../../../node_modules/.vlt/registry;;ipsum@1.0.0/node_modules/ipsum',
+            '../../../node_modules/.vlt/;;ipsum@1.0.0/node_modules/ipsum',
           ),
           'workspace-b': t.fixture('symlink', '../../workspace-b'),
         },
@@ -258,7 +258,7 @@ t.test('cycle', async t => {
     }),
     node_modules: {
       '.vlt': {
-        'registry;;a@1.0.0': {
+        ';;a@1.0.0': {
           node_modules: {
             a: {
               'package.json': JSON.stringify({
@@ -271,11 +271,11 @@ t.test('cycle', async t => {
             },
             b: t.fixture(
               'symlink',
-              '../../registry;;b@1.0.0/node_modules/b',
+              '../../;;b@1.0.0/node_modules/b',
             ),
           },
         },
-        'registry;;b@1.0.0': {
+        ';;b@1.0.0': {
           node_modules: {
             b: {
               'package.json': JSON.stringify({
@@ -288,14 +288,14 @@ t.test('cycle', async t => {
             },
             a: t.fixture(
               'symlink',
-              '../../registry;;a@1.0.0/node_modules/a',
+              '../../;;a@1.0.0/node_modules/a',
             ),
           },
         },
       },
       a: t.fixture(
         'symlink',
-        '.vlt/registry;;a@1.0.0/node_modules/a',
+        '.vlt/;;a@1.0.0/node_modules/a',
       ),
     },
   })

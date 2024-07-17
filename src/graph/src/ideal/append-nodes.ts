@@ -1,6 +1,8 @@
-import { join } from 'node:path/posix'
+import { DepID, joinDepIDTuple } from '@vltpkg/dep-id'
+import { error } from '@vltpkg/error-cause'
 import { PackageInfoClient } from '@vltpkg/package-info'
 import { Spec, SpecOptions } from '@vltpkg/spec'
+import { join } from 'node:path/posix'
 import {
   Dependency,
   DependencyTypeLong,
@@ -9,24 +11,23 @@ import {
 } from '../dependencies.js'
 import { Graph } from '../graph.js'
 import { Node } from '../node.js'
-import { error } from '@vltpkg/error-cause'
-import { DepID, joinDepIDTuple } from '@vltpkg/dep-id'
 
 interface FileTypeInfo {
   id: DepID
   path: string
 }
 
-// TODO: peer deps
+/**
+ * Only install devDeps for git dependencies and importers
+ * Everything else always gets installed
+ */
 const shouldInstallDepType = (
   node: Node,
   depType: DependencyTypeLong,
 ) =>
-  // TODO: install dev deps for git & file (symlinks) type spec
-  // manifest -> scripts.prepare
-  depType === 'dependencies' ||
-  depType === 'optionalDependencies' ||
-  (depType === 'devDependencies' && node.importer)
+  depType !== 'devDependencies' ||
+  node.importer ||
+  node.id.startsWith('git;')
 
 /**
  * Retrieve the {@link DepID} and location for a `file:` type {@link Node}.
@@ -35,10 +36,10 @@ const getFileTypeInfo = (
   spec: Spec,
   fromNode: Node,
 ): FileTypeInfo | undefined => {
-  if (spec.type !== 'file') return
+  const f = spec.final
+  if (f.type !== 'file') return
 
   /* c8 ignore start - should be impossible */
-  const f = spec.final
   if (!f.file) {
     throw error('no path on file specifier', { spec })
   }
@@ -61,26 +62,40 @@ export const appendNodes = async (
   graph: Graph,
   fromNode: Node,
   deps: Dependency[],
-  config: SpecOptions,
+  options: SpecOptions,
 ) => {
-  // TODO: create one queue and promise all at the end
   await Promise.all(
     deps.map(async ({ spec, type }) => {
-      // TODO: check existing satisfying nodes currently in the graph
-      // before hitting packageInfo.manifest
-      const mani = await packageInfo.manifest(spec)
+      // see if there's a satisfying node in the graph currently
       const fileTypeInfo = getFileTypeInfo(spec, fromNode)
-      const node = graph.placePackage(
-        fromNode,
-        type,
-        spec,
-        mani,
-        fileTypeInfo?.id,
-      )
+      const existingNode = graph.findResolution(spec, fromNode)
+      if (existingNode) {
+        graph.addEdge(type, spec, fromNode, existingNode)
+      }
+      const node =
+        existingNode?.manifest ? existingNode :
+        graph.placePackage(
+          fromNode,
+          type,
+          spec,
+          await packageInfo.manifest(spec).catch((er) => {
+            // optional deps ignored if inaccessible
+            if (type === 'optional' || type === 'peerOptional') {
+              return undefined
+            }
+            throw er
+          }),
+          fileTypeInfo?.id,
+        )
+      const mani = node?.manifest ?? {}
 
       if (!node) {
-        throw error('Failed to place a node for manifest', {
-          manifest: mani,
+        if (type === 'peerOptional' || type === 'optional') {
+          return
+        }
+        throw error('Failed to place node', {
+          spec,
+          from: fromNode.location,
         })
       }
 
@@ -98,11 +113,11 @@ export const appendNodes = async (
           const nextDeps: Dependency[] = Object.entries(
             depRecord,
           ).map(([name, bareSpec]) => ({
-            spec: Spec.parse(name, bareSpec, config as SpecOptions),
+            spec: Spec.parse(name, bareSpec, options),
             type: shorten(depTypeName, name, fromNode.manifest),
           }))
           nestedAppends.push(
-            appendNodes(packageInfo, graph, node, nextDeps, config),
+            appendNodes(packageInfo, graph, node, nextDeps, options),
           )
         }
       }

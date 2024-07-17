@@ -13,13 +13,13 @@ exports[`test/visualization/human-readable-output.ts > TAP > cycle > should prin
     importer: true,
     edgesOut: [
       Edge spec(a@^1.0.0) -prod-> to: Node {
-        id: 'registry;;a@1.0.0',
-        location: './node_modules/.vlt/registry;;a@1.0.0/node_modules/a',
+        id: ';;a@1.0.0',
+        location: './node_modules/.vlt/;;a@1.0.0/node_modules/a',
         edgesOut: [
           Edge spec(b@^1.0.0) -prod-> to: Node {
-            id: 'registry;;b@1.0.0',
-            location: './node_modules/.vlt/registry;;b@1.0.0/node_modules/b',
-            edgesOut: [ Edge spec(a@^1.0.0) -prod-> to: Node { ref: 'registry;;a@1.0.0' } ]
+            id: ';;b@1.0.0',
+            location: './node_modules/.vlt/;;b@1.0.0/node_modules/b',
+            edgesOut: [ Edge spec(a@^1.0.0) -prod-> to: Node { ref: ';;a@1.0.0' } ]
           }
         ]
       }
@@ -36,21 +36,19 @@ exports[`test/visualization/human-readable-output.ts > TAP > human-readable-outp
     importer: true,
     edgesOut: [
       Edge spec(foo@^1.0.0) -prod-> to: Node {
-        id: 'registry;;foo@1.0.0',
-        location: './node_modules/.vlt/registry;;foo@1.0.0/node_modules/foo'
+        id: ';;foo@1.0.0',
+        location: './node_modules/.vlt/;;foo@1.0.0/node_modules/foo'
       },
       Edge spec(bar@^1.0.0) -prod-> to: Node {
-        id: 'registry;;bar@1.0.0',
-        location: './node_modules/.vlt/registry;;bar@1.0.0/node_modules/bar',
+        id: ';;bar@1.0.0',
+        location: './node_modules/.vlt/;;bar@1.0.0/node_modules/bar',
         edgesOut: [
           Edge spec(baz@custom:bar@^1.0.0) -prod-> to: Node {
-            id: 'registry;custom;baz@1.0.0',
-            location: './node_modules/.vlt/registry;custom;baz@1.0.0/node_modules/baz',
+            id: ';custom;baz@1.0.0',
+            location: './node_modules/.vlt/;custom;baz@1.0.0/node_modules/baz',
             resolved: 'http://example.com/baz',
             integrity: 'sha512-deadbeef',
-            edgesOut: [
-              Edge spec(foo@^1.0.0) -prod-> to: Node { ref: 'registry;;foo@1.0.0' }
-            ]
+            edgesOut: [ Edge spec(foo@^1.0.0) -prod-> to: Node { ref: ';;foo@1.0.0' } ]
           },
           Edge spec(extraneous@extraneous@^1.0.0) -prod-> to: [extraneous package]: <extraneous>
         ]

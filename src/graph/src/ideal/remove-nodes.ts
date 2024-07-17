@@ -22,13 +22,8 @@ export const removeNodes = ({
 
     // Removes any edges / nodes pointing to the specified name
     for (const name of names) {
-      const edge = importer.edgesOut.get(name)
-      if (!edge) continue
-      graph.removeEdge(edge)
-
-      const node = edge.to
-      if (!node) continue
-      graph.removeNode(node)
+      const node = importer.edgesOut.get(name)?.to
+      if (node) graph.removeNode(node)
     }
   }
 }

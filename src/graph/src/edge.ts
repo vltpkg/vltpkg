@@ -1,7 +1,7 @@
+import { satisfies } from '@vltpkg/satisfies'
 import { Spec } from '@vltpkg/spec'
-import { edgeValid } from './edge-valid.js'
-import { Node } from './node.js'
 import { DependencyTypeShort } from './dependencies.js'
+import { Node } from './node.js'
 
 export class Edge {
   get [Symbol.toStringTag]() {
@@ -67,6 +67,13 @@ export class Edge {
   }
 
   valid(): boolean {
-    return edgeValid(this)
+    return !this.to ?
+        this.optional
+      : satisfies(
+          this.to.id,
+          this.spec,
+          this.from.location,
+          this.from.projectRoot,
+        )
   }
 }

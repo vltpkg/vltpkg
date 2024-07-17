@@ -17,19 +17,19 @@ exports[`test/lockfile/load.ts > TAP > load > must match snapshot 1`] = `
         location: './node_modules/.vlt/file;linked/node_modules/linked'
       },
       Edge spec(foo@^1.0.0) -prod-> to: Node {
-        id: 'registry;;foo@1.0.0',
-        location: './node_modules/.vlt/registry;;foo@1.0.0/node_modules/foo',
+        id: ';;foo@1.0.0',
+        location: './node_modules/.vlt/;;foo@1.0.0/node_modules/foo',
         integrity: 'sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ=='
       },
       Edge spec(bar@^1.0.0) -prod-> to: Node {
-        id: 'registry;;bar@1.0.0',
-        location: './node_modules/.vlt/registry;;bar@1.0.0/node_modules/bar',
+        id: ';;bar@1.0.0',
+        location: './node_modules/.vlt/;;bar@1.0.0/node_modules/bar',
         resolved: 'https://registry.example.com/bar/-/bar-1.0.0.tgz',
         integrity: 'sha512-6/deadbeef==',
         edgesOut: [
           Edge spec(baz@^1.0.0) -prod-> to: Node {
-            id: 'registry;;baz@1.0.0',
-            location: './node_modules/.vlt/registry;;baz@1.0.0/node_modules/baz'
+            id: ';;baz@1.0.0',
+            location: './node_modules/.pnpm/baz@1.0.0/node_modules/baz'
           }
         ]
       },
@@ -48,8 +48,8 @@ exports[`test/lockfile/load.ts > TAP > workspaces > must match snapshot 1`] = `
     importer: true,
     edgesOut: [
       Edge spec(c@^1.0.0) -prod-> to: Node {
-        id: 'registry;;c@1.0.0',
-        location: './node_modules/.vlt/registry;;c@1.0.0/node_modules/c',
+        id: ';;c@1.0.0',
+        location: './node_modules/.vlt/;;c@1.0.0/node_modules/c',
         integrity: 'sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ=='
       }
     ]

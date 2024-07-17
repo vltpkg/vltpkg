@@ -1,11 +1,11 @@
-import { inspect } from 'node:util'
 import { asDepID } from '@vltpkg/dep-id'
 import { Spec } from '@vltpkg/spec'
+import { inspect } from 'node:util'
 import t from 'tap'
+import { load } from '../../src/actual/load.js'
 import { asDependency } from '../../src/dependencies.js'
 import { Graph } from '../../src/graph.js'
 import { removeSatisfiedSpecs } from '../../src/ideal/remove-satisfied-specs.js'
-import { load } from '../../src/actual/load.js'
 
 const kCustomInspect = Symbol.for('nodejs.util.inspect.custom')
 Object.assign(Spec.prototype, {
@@ -15,7 +15,10 @@ Object.assign(Spec.prototype, {
 })
 
 t.test('empty graph and add parameters', async t => {
-  const graph = new Graph({ mainManifest: {} })
+  const graph = new Graph({
+    mainManifest: {},
+    projectRoot: t.testdirName,
+  })
   const add = new Map()
   removeSatisfiedSpecs({ add, graph })
   t.matchSnapshot(add, 'should return an empty map')
@@ -32,7 +35,7 @@ t.test('graph with an actual node', async t => {
     }),
     node_modules: {
       '.vlt': {
-        'registry;;foo@1.0.0': {
+        ';;foo@1.0.0': {
           node_modules: {
             foo: {
               'package.json': JSON.stringify({
@@ -45,7 +48,7 @@ t.test('graph with an actual node', async t => {
       },
       foo: t.fixture(
         'symlink',
-        '.vlt/registry;;foo@1.0.0/node_modules/foo',
+        '.vlt/;;foo@1.0.0/node_modules/foo',
       ),
     },
   })
@@ -136,7 +139,10 @@ t.test('graph with an actual node', async t => {
   })
 
   await t.test('refer to missing importer', async t => {
-    const graph = new Graph({ mainManifest: {} })
+    const graph = new Graph({
+      mainManifest: {},
+      projectRoot: t.testdirName,
+    })
     const add = new Map([
       // this workspace id does not exist in the given graph
       [

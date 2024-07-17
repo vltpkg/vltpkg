@@ -13,18 +13,18 @@ exports[`test/ideal/add-nodes.ts > TAP > addNodes > graph after adding a previou
     importer: true,
     edgesOut: [
       Edge spec(foo@^1.0.0) -prod-> to: Node {
-        id: 'registry;;foo@1.0.0',
-        location: './node_modules/.vlt/registry;;foo@1.0.0/node_modules/foo',
+        id: ';;foo@1.0.0',
+        location: './node_modules/.vlt/;;foo@1.0.0/node_modules/foo',
         resolved: 'https://registry.npmjs.org/foo/-/foo-1.0.0.tgz',
         edgesOut: [
           Edge spec(bar@^1.0.0) -prod-> to: Node {
-            id: 'registry;;bar@1.0.0',
-            location: './node_modules/.vlt/registry;;bar@1.0.0/node_modules/bar',
+            id: ';;bar@1.0.0',
+            location: './node_modules/.vlt/;;bar@1.0.0/node_modules/bar',
             resolved: 'https://registry.npmjs.org/bar/-/bar-1.0.0.tgz'
           }
         ]
       },
-      Edge spec(bar@^1.0.0) -prod-> to: Node { ref: 'registry;;bar@1.0.0' }
+      Edge spec(bar@^1.0.0) -prod-> to: Node { ref: ';;bar@1.0.0' }
     ]
   }
 ]
@@ -38,13 +38,13 @@ exports[`test/ideal/add-nodes.ts > TAP > addNodes > graph after adding foo when 
     importer: true,
     edgesOut: [
       Edge spec(foo@^1.0.0) -prod-> to: Node {
-        id: 'registry;;foo@1.0.0',
-        location: './node_modules/.vlt/registry;;foo@1.0.0/node_modules/foo',
+        id: ';;foo@1.0.0',
+        location: './node_modules/.vlt/;;foo@1.0.0/node_modules/foo',
         resolved: 'https://registry.npmjs.org/foo/-/foo-1.0.0.tgz',
         edgesOut: [
           Edge spec(bar@^1.0.0) -prod-> to: Node {
-            id: 'registry;;bar@1.0.0',
-            location: './node_modules/.vlt/registry;;bar@1.0.0/node_modules/bar',
+            id: ';;bar@1.0.0',
+            location: './node_modules/.vlt/;;bar@1.0.0/node_modules/bar',
             resolved: 'https://registry.npmjs.org/bar/-/bar-1.0.0.tgz'
           }
         ]
@@ -62,13 +62,13 @@ exports[`test/ideal/add-nodes.ts > TAP > addNodes > graph with an added foo 1`] 
     importer: true,
     edgesOut: [
       Edge spec(foo@^1.0.0) -prod-> to: Node {
-        id: 'registry;;foo@1.0.0',
-        location: './node_modules/.vlt/registry;;foo@1.0.0/node_modules/foo',
+        id: ';;foo@1.0.0',
+        location: './node_modules/.vlt/;;foo@1.0.0/node_modules/foo',
         resolved: 'https://registry.npmjs.org/foo/-/foo-1.0.0.tgz',
         edgesOut: [
           Edge spec(bar@^1.0.0) -prod-> to: Node {
-            id: 'registry;;bar@1.0.0',
-            location: './node_modules/.vlt/registry;;bar@1.0.0/node_modules/bar',
+            id: ';;bar@1.0.0',
+            location: './node_modules/.vlt/;;bar@1.0.0/node_modules/bar',
             resolved: 'https://registry.npmjs.org/bar/-/bar-1.0.0.tgz'
           }
         ]
@@ -86,13 +86,13 @@ exports[`test/ideal/add-nodes.ts > TAP > addNodes > graph with missing package b
     importer: true,
     edgesOut: [
       Edge spec(foo@^1.0.0) -prod-> to: Node {
-        id: 'registry;;foo@1.0.0',
-        location: './node_modules/.vlt/registry;;foo@1.0.0/node_modules/foo',
+        id: ';;foo@1.0.0',
+        location: './node_modules/.vlt/;;foo@1.0.0/node_modules/foo',
         resolved: 'https://registry.npmjs.org/foo/-/foo-1.0.0.tgz',
         edgesOut: [
           Edge spec(bar@^1.0.0) -prod-> to: Node {
-            id: 'registry;;bar@1.0.0',
-            location: './node_modules/.vlt/registry;;bar@1.0.0/node_modules/bar',
+            id: ';;bar@1.0.0',
+            location: './node_modules/.vlt/;;bar@1.0.0/node_modules/bar',
             resolved: 'https://registry.npmjs.org/bar/-/bar-1.0.0.tgz'
           }
         ]
