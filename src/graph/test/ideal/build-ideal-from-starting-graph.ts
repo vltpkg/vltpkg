@@ -66,18 +66,20 @@ t.test('build from a virtual graph', async t => {
           'https://registry.example.com/bar/-/bar-1.0.0.tgz',
         ],
         ';;baz@1.0.0': ['baz', null],
+        ';;pnpmdep@1.0.0': [
+          'pnpmdep',
+          null,
+          null,
+          './node_modules/.pnpm/pnpmdep@1.0.0/node_modules/pnpmdep',
+        ],
       },
       edges: [
         ['file;.', 'prod', 'linked@file:./linked', 'file;linked'],
         ['file;.', 'prod', 'foo@^1.0.0', ';;foo@1.0.0'],
         ['file;.', 'prod', 'bar@^1.0.0', ';;bar@1.0.0'],
         ['file;.', 'prod', 'missing@^1.0.0'],
-        [
-          ';;bar@1.0.0',
-          'prod',
-          'baz@^1.0.0',
-          ';;baz@1.0.0',
-        ],
+        [';;bar@1.0.0', 'prod', 'baz@^1.0.0', ';;baz@1.0.0'],
+        ['file;.', 'prod', 'pnpmdep@1', ';;pnpmdep@1.0.0'],
       ],
     }),
   })
@@ -260,20 +262,14 @@ t.test('build from an actual graph', async t => {
         'symlink',
         '.vlt/;custom;foo@1.0.0/node_modules/foo',
       ),
-      bar: t.fixture(
-        'symlink',
-        '.vlt/;;bar@1.0.0/node_modules/bar',
-      ),
+      bar: t.fixture('symlink', '.vlt/;;bar@1.0.0/node_modules/bar'),
       // This should be ignored when traversing the file system
       broken_symlink: t.fixture('symlink', './link-to-nowhere'),
       extraneous: t.fixture(
         'symlink',
         '.vlt/;;extraneous@1.0.0/node_modules/extraneous',
       ),
-      foo: t.fixture(
-        'symlink',
-        '.vlt/;;foo@1.0.0/node_modules/foo',
-      ),
+      foo: t.fixture('symlink', '.vlt/;;foo@1.0.0/node_modules/foo'),
       link: t.fixture('symlink', '../linked'),
     },
     packages: {
