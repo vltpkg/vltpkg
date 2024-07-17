@@ -26,6 +26,10 @@ t.test('Node', async t => {
     rootMani,
   )
   root.setImporterLocation('./path/to/importer')
+  t.equal(root.location, './path/to/importer')
+  // should have no effect, because it's an importer
+  root.setDefaultLocation()
+  t.equal(root.location, './path/to/importer')
   t.strictSame(
     root.edgesIn.size,
     0,
@@ -87,6 +91,11 @@ t.test('Node', async t => {
     barId,
     barMani,
   )
+  const defaultBarLoc = bar.location
+  bar.location = './node_modules/some/node_modules/path'
+  t.equal(bar.location, './node_modules/some/node_modules/path')
+  bar.setDefaultLocation()
+  t.equal(bar.location, defaultBarLoc)
 
   root.addEdgesTo('prod', new Spec('foo', '^1.0.0'), foo)
   root.addEdgesTo('prod', new Spec('bar', '^1.0.0'), bar)
