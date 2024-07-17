@@ -57,7 +57,7 @@ Set {
       "name": "my-project",
       "version": "1.0.0",
     },
-    "projectRoot": "{CWD}/.tap/fixtures/test-graph.ts-workspaces",
+    "projectRoot": #
     "resolved": undefined,
     "version": "1.0.0",
   },
@@ -73,7 +73,7 @@ Set {
       [Symbol.for(newline)]: "",
       "version": "1.0.0",
     },
-    "projectRoot": "{CWD}/.tap/fixtures/test-graph.ts-workspaces",
+    "projectRoot": #
     "resolved": undefined,
     "version": "1.0.0",
   },
@@ -89,7 +89,7 @@ Set {
       [Symbol.for(newline)]: "",
       "version": "1.0.0",
     },
-    "projectRoot": "{CWD}/.tap/fixtures/test-graph.ts-workspaces",
+    "projectRoot": #
     "resolved": undefined,
     "version": "1.0.0",
   },

@@ -13,7 +13,7 @@ Node [@vltpkg/graph.Node] {
   importer: true,
   integrity: undefined,
   manifest: [Object],
-  projectRoot: '{CWD}/.tap/fixtures/test-node.ts-Node',
+  projectRoot: #
   version: '1.0.0',
   resolved: undefined
 }

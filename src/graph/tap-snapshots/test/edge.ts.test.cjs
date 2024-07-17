@@ -23,7 +23,7 @@ Edge [@vltpkg/graph.Edge] {
     importer: false,
     integrity: undefined,
     manifest: [Object],
-    projectRoot: '{CWD}/.tap/fixtures/test-edge.ts-Edge',
+    projectRoot: #
     version: '1.0.0',
     resolved: undefined
   },
