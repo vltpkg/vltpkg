@@ -169,6 +169,20 @@ export class Node {
     }
   }
 
+  setDefaultLocation() {
+    const def = `./node_modules/.vlt/${this.id}/node_modules/${this.name}`
+
+    // only relocate if the location is in node_modules already
+    if (
+      !this.importer &&
+      (!this.#location ||
+        (this.#location !== def &&
+          /^(?:\.\/)?node_modules\//.test(this.#location)))
+    ) {
+      this.#location = def
+    }
+  }
+
   /**
    * Add an edge from this node connecting it to a direct dependency.
    */
