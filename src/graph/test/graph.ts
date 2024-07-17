@@ -96,7 +96,7 @@ t.test('Graph', async t => {
 
   graph.addEdge(
     'prod',
-    Spec.parse('foo', '^1.0.0'),
+    Spec.parse('foo', '^1.0.0 || 2'),
     graph.mainImporter,
     newNode,
   )
@@ -122,7 +122,7 @@ t.test('Graph', async t => {
     1,
     'should add edge to list of missing dependencies',
   )
-  graph.removeNode(newNode)
+  graph.removeNode(newNode, fooTwo)
   t.same(graph.nodesByName.get('foo'), new Set([fooTwo]))
   graph.removeNode(fooTwo)
   t.same(graph.nodesByName.get('foo'), undefined)
