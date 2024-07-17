@@ -22,6 +22,7 @@ export type LockfileDataNode = [
   name?: string,
   integrity?: Integrity,
   resolved?: string,
+  location?: string,
 ]
 
 /**

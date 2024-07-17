@@ -26,28 +26,23 @@ t.test('load', async t => {
       nodes: {
         'file;.': ['my-project'],
         'file;linked': ['linked'],
-        'registry;;foo@1.0.0': [
+        ';;foo@1.0.0': [
           'foo',
           'sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ==',
         ],
-        'registry;;bar@1.0.0': [
+        ';;bar@1.0.0': [
           'bar',
           'sha512-6/deadbeef==',
           'https://registry.example.com/bar/-/bar-1.0.0.tgz',
         ],
-        'registry;;baz@1.0.0': ['baz', null],
+        ';;baz@1.0.0': ['baz', null, null, './node_modules/.pnpm/baz@1.0.0/node_modules/baz'],
       },
       edges: [
         ['file;.', 'prod', 'linked@file:./linked', 'file;linked'],
-        ['file;.', 'prod', 'foo@^1.0.0', 'registry;;foo@1.0.0'],
-        ['file;.', 'prod', 'bar@^1.0.0', 'registry;;bar@1.0.0'],
+        ['file;.', 'prod', 'foo@^1.0.0', ';;foo@1.0.0'],
+        ['file;.', 'prod', 'bar@^1.0.0', ';;bar@1.0.0'],
         ['file;.', 'prod', 'missing@^1.0.0'],
-        [
-          'registry;;bar@1.0.0',
-          'prod',
-          'baz@^1.0.0',
-          'registry;;baz@1.0.0',
-        ],
+        [';;bar@1.0.0', 'prod', 'baz@^1.0.0', ';;baz@1.0.0'],
       ],
     }),
   })
@@ -69,7 +64,7 @@ t.test('workspaces', async t => {
       },
       nodes: {
         'file;.': ['my-project'],
-        'registry;;c@1.0.0': [
+        ';;c@1.0.0': [
           'c',
           'sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ==',
         ],
@@ -77,12 +72,7 @@ t.test('workspaces', async t => {
         'workspace;packages%2Fb': ['b'],
       },
       edges: [
-        [
-          'workspace;packages%2Fb',
-          'prod',
-          'c@^1.0.0',
-          'registry;;c@1.0.0',
-        ],
+        ['workspace;packages%2Fb', 'prod', 'c@^1.0.0', ';;c@1.0.0'],
       ],
     }),
     'vlt-workspaces.json': JSON.stringify({
@@ -123,14 +113,12 @@ t.test('unknown dep type', async t => {
       },
       nodes: {
         'file;.': ['my-project'],
-        'registry;;foo@1.0.0': [
+        ';;foo@1.0.0': [
           'foo',
           'sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ==',
         ],
       },
-      edges: [
-        ['file;.', 'unknown', 'foo@^1.0.0', 'registry;;foo@1.0.0'],
-      ],
+      edges: [['file;.', 'unknown', 'foo@^1.0.0', ';;foo@1.0.0']],
     }),
   })
 
@@ -153,9 +141,7 @@ t.test('missing root pkg', async t => {
         npm: 'https://registry.npmjs.org',
       },
       nodes: {},
-      edges: [
-        ['file;.', 'unknown', 'foo@^1.0.0', 'registry;;foo@1.0.0'],
-      ],
+      edges: [['file;.', 'unknown', 'foo@^1.0.0', ';;foo@1.0.0']],
     }),
   })
 
@@ -179,12 +165,12 @@ t.test('missing root pkg', async t => {
       },
       nodes: {
         'file;.': ['my-project'],
-        'registry;;foo@1.0.0': [
+        ';;foo@1.0.0': [
           'foo',
           'sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ==',
         ],
       },
-      edges: [[null, 'prod', 'foo@^1.0.0', 'registry;;foo@1.0.0']],
+      edges: [[null, 'prod', 'foo@^1.0.0', ';;foo@1.0.0']],
     }),
   })
 

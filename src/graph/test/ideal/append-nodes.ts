@@ -1,7 +1,8 @@
+import { PackageInfoClient } from '@vltpkg/package-info'
+import { Spec, SpecOptions } from '@vltpkg/spec'
+import { Manifest } from '@vltpkg/types'
 import { inspect } from 'node:util'
 import t from 'tap'
-import { Spec, SpecOptions } from '@vltpkg/spec'
-import { PackageInfoClient } from '@vltpkg/package-info'
 import { Graph } from '../../src/graph.js'
 import { appendNodes } from '../../src/ideal/append-nodes.js'
 import { humanReadableOutput } from '../../src/visualization/human-readable-output.js'
@@ -28,11 +29,16 @@ t.test('append a new node to a graph from a registry', async t => {
       bar: '^1.0.0',
     },
   }
-  const barManifest = {
+  const barManifest: Manifest = {
     name: 'bar',
     version: '1.0.0',
+    // this optional dependency hits the code paths where it's
+    // missing and can't be fetched, but that's ok
+    optionalDependencies: {
+      borked: '*',
+    },
   }
-  const mainManifest = {
+  const mainManifest: Manifest = {
     name: 'my-project',
     version: '1.0.0',
     dependencies: {
@@ -40,6 +46,7 @@ t.test('append a new node to a graph from a registry', async t => {
     },
   }
   const graph = new Graph({
+    projectRoot: t.testdirName,
     ...configData,
     mainManifest,
   })
@@ -81,7 +88,7 @@ t.test('append a new node to a graph from a registry', async t => {
     ['foo'],
     'should have a direct dependency on foo',
   )
-  const barPkg = graph.manifests.get('registry;;bar@1.0.0')
+  const barPkg = graph.manifests.get(';;bar@1.0.0')
   if (!barPkg) {
     throw new Error('Package could not be retrieved')
   }
@@ -97,7 +104,7 @@ t.test('append a new node to a graph from a registry', async t => {
     graph.mainImporter,
     [
       {
-        spec: Spec.parse('bar'),
+        spec: Spec.parse('bar@'),
         type: 'prod',
       },
     ],
@@ -150,6 +157,7 @@ t.test('append different type of dependencies', async t => {
     },
   }
   const graph = new Graph({
+    projectRoot: t.testdirName,
     ...configData,
     mainManifest,
   })
@@ -204,7 +212,7 @@ t.test('append different type of dependencies', async t => {
       ],
       configData,
     ),
-    /Failed to place a node for manifest/,
+    /Failed to place node/,
     'should throw if failes to create a node for a given manifest',
   )
   t.matchSnapshot(
@@ -243,6 +251,7 @@ t.test('append file type of nodes', async t => {
     },
   }
   const graph = new Graph({
+    projectRoot: t.testdirName,
     ...configData,
     mainManifest,
   })
