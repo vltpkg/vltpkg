@@ -1,8 +1,8 @@
-import { inspect } from 'node:util'
-import t from 'tap'
 import { hydrate } from '@vltpkg/dep-id'
 import { Spec, SpecOptions } from '@vltpkg/spec'
 import { Monorepo } from '@vltpkg/workspaces'
+import { inspect } from 'node:util'
+import t from 'tap'
 import { Graph } from '../src/graph.js'
 
 const kCustomInspect = Symbol.for('nodejs.util.inspect.custom')
@@ -27,6 +27,7 @@ t.test('Graph', async t => {
   const graph = new Graph({
     ...configData,
     mainManifest,
+    projectRoot: t.testdirName,
   })
   t.strictSame(
     graph.mainImporter.manifest?.name,
@@ -50,6 +51,49 @@ t.test('Graph', async t => {
     2,
     'should create and add the new node to the graph',
   )
+  t.equal(
+    graph.findResolution(
+      Spec.parse('bar@npm:foo@1.x'),
+      graph.mainImporter,
+    ),
+    newNode,
+  )
+  t.equal(
+    graph.findResolution(
+      Spec.parse('foo@1.x'),
+      graph.mainImporter,
+    ),
+    newNode,
+  )
+  t.equal(
+    graph.findResolution(
+      Spec.parse('foo@3.x'),
+      graph.mainImporter,
+    ),
+    undefined,
+  )
+  t.equal(
+    graph.findResolution(
+      Spec.parse('asdf@1.x'),
+      graph.mainImporter,
+    ),
+    undefined,
+  )
+  t.same(
+    graph.resolutionsReverse.get(newNode),
+    new Set(['foo@^1.0.0', 'foo@1.x']),
+  )
+  t.same(graph.nodesByName.get('foo'), new Set([newNode]))
+  const fooTwo = graph.addNode(
+    undefined,
+    {
+      name: 'foo',
+      version: '2.0.0',
+    },
+    Spec.parse('foo@^2.0.0'),
+  )
+  t.same(graph.nodesByName.get('foo'), new Set([newNode, fooTwo]))
+
   graph.addEdge(
     'prod',
     Spec.parse('foo', '^1.0.0'),
@@ -78,6 +122,10 @@ t.test('Graph', async t => {
     1,
     'should add edge to list of missing dependencies',
   )
+  graph.removeNode(newNode)
+  t.same(graph.nodesByName.get('foo'), new Set([fooTwo]))
+  graph.removeNode(fooTwo)
+  t.same(graph.nodesByName.get('foo'), undefined)
 })
 
 t.test('using placePackage', async t => {
@@ -91,6 +139,7 @@ t.test('using placePackage', async t => {
     },
   }
   const graph = new Graph({
+    projectRoot: t.testdirName,
     ...configData,
     mainManifest,
   })
@@ -142,7 +191,6 @@ t.test('using placePackage', async t => {
   t.matchSnapshot(inspect(graph, { depth: 2 }), 'the graph')
   const [edge] = baz.edgesIn
   if (!edge) throw new Error('failed to retrieve baz')
-  graph.removeEdge(edge)
   graph.removeNode(baz)
   t.matchSnapshot(
     inspect(graph, { depth: 2 }),
@@ -155,6 +203,7 @@ t.test('main manifest missing name', async t => {
     version: '1.0.0',
   }
   const graph = new Graph({
+    projectRoot: t.testdirName,
     ...configData,
     mainManifest,
   })
@@ -198,6 +247,7 @@ t.test('workspaces', async t => {
   })
   const monorepo = Monorepo.maybeLoad(dir)
   const graph = new Graph({
+    projectRoot: t.testdirName,
     ...configData,
     mainManifest,
     monorepo,

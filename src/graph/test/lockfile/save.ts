@@ -26,6 +26,7 @@ t.test('save', async t => {
   const projectRoot = t.testdir()
   const graph = new Graph({
     ...configData,
+    projectRoot,
     mainManifest,
   })
   const foo = graph.placePackage(
@@ -45,6 +46,7 @@ t.test('save', async t => {
     throw new Error('Missing expected package')
   }
   foo.setResolved()
+  foo.location = 'node_modules/.pnpm/foo@1.0.0/node_modules/foo'
   graph
     .placePackage(foo, 'prod', Spec.parse('bar@^1.0.0'), {
       name: 'bar',
@@ -65,7 +67,7 @@ t.test('save', async t => {
       },
     )
     ?.setResolved()
-  save({ ...configData, graph, projectRoot })
+  save({ ...configData, graph })
   t.matchSnapshot(
     readFileSync(resolve(projectRoot, 'vlt-lock.json'), {
       encoding: 'utf8',
@@ -88,10 +90,11 @@ t.test('missing registries', async t => {
   }
   const projectRoot = t.testdir()
   const graph = new Graph({
+    projectRoot,
     ...borkedConfigData,
     mainManifest,
   })
-  save({ ...borkedConfigData, graph, projectRoot })
+  save({ ...borkedConfigData, graph })
   t.matchSnapshot(
     readFileSync(resolve(projectRoot, 'vlt-lock.json'), {
       encoding: 'utf8',
@@ -129,6 +132,7 @@ t.test('workspaces', async t => {
   })
   const monorepo = Monorepo.load(projectRoot)
   const graph = new Graph({
+    projectRoot,
     ...configData,
     mainManifest,
     monorepo,
@@ -148,7 +152,7 @@ t.test('workspaces', async t => {
     })
     ?.setResolved()
 
-  save({ ...configData, graph, projectRoot })
+  save({ ...configData, graph })
 
   t.matchSnapshot(
     readFileSync(resolve(projectRoot, 'vlt-lock.json'), {

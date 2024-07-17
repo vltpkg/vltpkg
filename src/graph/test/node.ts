@@ -1,7 +1,7 @@
-import { inspect } from 'node:util'
-import t from 'tap'
 import { asDepID, getId } from '@vltpkg/dep-id'
 import { Spec, SpecOptions } from '@vltpkg/spec'
+import { inspect } from 'node:util'
+import t from 'tap'
 import { Node } from '../src/node.js'
 
 const configData = {
@@ -17,7 +17,14 @@ t.test('Node', async t => {
     name: 'root',
     version: '1.0.0',
   }
-  const root = new Node(configData, asDepID('file;.'), rootMani)
+  const root = new Node(
+    {
+      ...configData,
+      projectRoot: t.testdirName,
+    },
+    asDepID('file;.'),
+    rootMani,
+  )
   root.setImporterLocation('./path/to/importer')
   t.strictSame(
     root.edgesIn.size,
@@ -44,13 +51,23 @@ t.test('Node', async t => {
     version: '1.0.0',
   }
   const fooSpec = Spec.parse('foo@1.0.0')
-  const foo = new Node(configData, undefined, fooMani, fooSpec)
+  const foo = new Node(
+    {
+      ...configData,
+      projectRoot: t.testdirName,
+    },
+    undefined,
+    fooMani,
+    fooSpec,
+  )
   t.strictSame(
     foo.location,
-    './node_modules/.vlt/registry;;foo@1.0.0/node_modules/foo',
+    './node_modules/.vlt/;;foo@1.0.0/node_modules/foo',
     'should return the expected location value',
   )
+
   foo.location = './arbitrary'
+
   t.strictSame(
     foo.location,
     './arbitrary',
@@ -62,7 +79,14 @@ t.test('Node', async t => {
   }
   const barSpec = Spec.parse('bar@1.0.0')
   const barId = getId(barSpec, barMani)
-  const bar = new Node(configData, barId, barMani)
+  const bar = new Node(
+    {
+      ...configData,
+      projectRoot: t.testdirName,
+    },
+    barId,
+    barMani,
+  )
 
   root.addEdgesTo('prod', new Spec('foo', '^1.0.0'), foo)
   root.addEdgesTo('prod', new Spec('bar', '^1.0.0'), bar)
@@ -91,24 +115,34 @@ t.test('Node', async t => {
 
   t.throws(
     () =>
-      new Node(configData, undefined, {
-        name: 'ipsum',
-        version: '1.0.0',
-      }),
+      new Node(
+        {
+          ...configData,
+          projectRoot: t.testdirName,
+        },
+        undefined,
+        {
+          name: 'ipsum',
+          version: '1.0.0',
+        },
+      ),
     /A new Node needs either a manifest & spec or an id parameter/,
     'should throw a type error',
   )
 
   const barNoMani = new Node(
-    configData,
-    'registry;;bar@1.0.0',
+    {
+      ...configData,
+      projectRoot: t.testdirName,
+    },
+    ';;bar@1.0.0',
     undefined,
     undefined,
     'bar',
   )
   t.strictSame(
     barNoMani.location,
-    './node_modules/.vlt/registry;;bar@1.0.0/node_modules/bar',
+    './node_modules/.vlt/;;bar@1.0.0/node_modules/bar',
     'should infer location url from id',
   )
 
@@ -117,21 +151,24 @@ t.test('Node', async t => {
   }
   const unnamedSpec = Spec.parse('', '0.0.0')
   const unnamed = new Node(
-    configData,
+    { ...configData, projectRoot: t.testdirName },
     undefined,
     unnamedMani,
     unnamedSpec,
   )
   t.strictSame(
     unnamed.location,
-    './node_modules/.vlt/registry;;@0.0.0/node_modules/registry;;@0.0.0',
+    './node_modules/.vlt/;;@0.0.0/node_modules/;;@0.0.0',
     'should have a location for unnamed manifests',
   )
 
   // different resolved values inferred from id
 
   // file type node with no parent
-  const file = new Node(configData, asDepID('file;my-package'))
+  const file = new Node(
+    { ...configData, projectRoot: t.testdirName },
+    asDepID('file;my-package'),
+  )
   file.setResolved()
   t.strictSame(
     file.resolved,
@@ -139,26 +176,39 @@ t.test('Node', async t => {
     'should set expected resolved value for a file id type',
   )
 
-  const git = new Node(configData, 'git;github%3Avltpkg%2Ffoo;')
+  const git = new Node(
+    { ...configData, projectRoot: t.testdirName },
+    'git;github%3Avltpkg%2Ffoo;',
+  )
   git.setResolved()
   t.strictSame(
     git.resolved,
     'github:vltpkg/foo',
     'should set expected resolved value for a git id type',
   )
-  const reg = new Node(configData, 'registry;;foo@1.0.0', {
-    dist: {
-      tarball: '<path-to-tarball>',
-      integrity: 'sha512-deadbeef',
+  const reg = new Node(
+    { ...configData, projectRoot: t.testdirName },
+    ';;foo@1.0.0',
+    {
+      dist: {
+        tarball: '<path-to-tarball>',
+        integrity: 'sha512-deadbeef',
+      },
     },
-  })
+  )
   reg.setResolved()
   t.strictSame(
     reg.resolved,
     '<path-to-tarball>',
     'should set expected resolved value for a registry id type',
   )
-  const regNoManifest = new Node(configData, 'registry;;foo@1.0.0')
+  const regNoManifest = new Node(
+    {
+      ...configData,
+      projectRoot: t.testdirName,
+    },
+    ';;foo@1.0.0',
+  )
   regNoManifest.setResolved()
   t.strictSame(
     regNoManifest.resolved,
@@ -166,7 +216,10 @@ t.test('Node', async t => {
     'should set expected conventional registry value if no manifest',
   )
   const remote = new Node(
-    configData,
+    {
+      ...configData,
+      projectRoot: t.testdirName,
+    },
     'remote;https%3A%2F%2Fx.com%2Fx.tgz',
   )
   remote.setResolved()

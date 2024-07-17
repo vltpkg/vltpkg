@@ -1,11 +1,16 @@
-import { getId, DepID } from '@vltpkg/dep-id'
+import { getId, type DepID } from '@vltpkg/dep-id'
 import { error } from '@vltpkg/error-cause'
-import { Spec, SpecOptions } from '@vltpkg/spec'
-import { ManifestMinified } from '@vltpkg/types'
+import { satisfies } from '@vltpkg/satisfies'
+import { Spec, type SpecOptions } from '@vltpkg/spec'
+import { type ManifestMinified } from '@vltpkg/types'
 import { Monorepo } from '@vltpkg/workspaces'
-import { Edge } from './edge.js'
-import { Node } from './node.js'
+import { inspect, InspectOptions } from 'util'
 import { DependencyTypeShort } from './dependencies.js'
+import { type Edge } from './edge.js'
+import { lockfileData } from './lockfile/save.js'
+import { Node } from './node.js'
+
+const kCustomInspect = Symbol.for('nodejs.util.inspect.custom')
 
 export type ManifestInventory = Map<DepID, ManifestMinified>
 
@@ -22,6 +27,10 @@ export type GraphOptions = SpecOptions & {
    * A {@link Monorepo} object, for managing workspaces
    */
   monorepo?: Monorepo
+  /**
+   * Root of the project this graph represents
+   */
+  projectRoot: string
 }
 
 export class Graph {
@@ -29,12 +38,12 @@ export class Graph {
     return '@vltpkg/graph.Graph'
   }
 
-  #config: SpecOptions
+  #options: GraphOptions
 
   /**
    * A {@link Monorepo} instance, used for managing workspaces.
    */
-  #monorepo?: Monorepo
+  monorepo?: Monorepo
 
   /**
    * An inventory with all manifests related to an install.
@@ -47,9 +56,24 @@ export class Graph {
   edges: Set<Edge> = new Set()
 
   /**
-   * Map registered package ids to the node that represent them in the graph.
+   * Map registered dep ids to the node that represent them in the graph.
    */
   nodes: Map<DepID, Node> = new Map()
+
+  /**
+   * Map of nodes by their name
+   */
+  nodesByName: Map<string, Set<Node>> = new Map()
+
+  /**
+   * Cached resolutions for spec lookups
+   */
+  resolutions: Map<string, Node> = new Map()
+
+  /**
+   * Reverse map of resolutions
+   */
+  resolutionsReverse: Map<Node, Set<string>> = new Map()
 
   /**
    * A set of importer nodes in this graph.
@@ -72,10 +96,16 @@ export class Graph {
    */
   missingDependencies: Set<Edge> = new Set()
 
+  /**
+   * The root of the project this graph represents
+   */
+  projectRoot: string
+
   constructor(options: GraphOptions) {
-    const { mainManifest, manifests, monorepo } = options
-    this.#config = options
-    this.manifests = manifests ?? (new Map() as ManifestInventory)
+    const { mainManifest, manifests, monorepo, projectRoot } = options
+    this.#options = options
+    this.manifests = manifests ?? new Map()
+    this.projectRoot = projectRoot
 
     // add the project root node
     const mainImporterLocation = '.'
@@ -97,9 +127,9 @@ export class Graph {
     // workspaces and create importer nodes for each of them
     // TODO: make the monorepo property public so that it's easier to reuse
     // it when copying stuff from a graph to another
-    this.#monorepo = monorepo
-    if (this.#monorepo) {
-      for (const ws of this.#monorepo) {
+    this.monorepo = monorepo
+    if (this.monorepo) {
+      for (const ws of this.monorepo) {
         const wsNode = this.addNode(
           ws.id,
           ws.manifest,
@@ -135,6 +165,34 @@ export class Graph {
   }
 
   /**
+   * Find an existing node to satisfy a dependency
+   */
+  findResolution(spec: Spec, fromNode: Node) {
+    const f = spec.final
+    const sf = String(f)
+    const cached = this.resolutions.get(sf)
+    if (cached) return cached
+    const nbn = this.nodesByName.get(f.name)
+    if (!nbn) return undefined
+    for (const node of nbn) {
+      if (
+        satisfies(
+          node.id,
+          f,
+          fromNode.location,
+          this.projectRoot,
+          this.monorepo,
+        )
+      ) {
+        this.resolutions.set(sf, node)
+        // always set by now, because the node was added at some point
+        this.resolutionsReverse.get(node)?.add(sf)
+        return node
+      }
+    }
+  }
+
+  /**
    * Create a new node in the graph.
    */
   addNode(
@@ -145,7 +203,7 @@ export class Graph {
     version?: string,
   ) {
     const node = new Node(
-      this.#config,
+      this.#options,
       id,
       manifest,
       spec,
@@ -153,6 +211,16 @@ export class Graph {
       version,
     )
     this.nodes.set(node.id, node)
+    const nbn = this.nodesByName.get(node.name) ?? new Set()
+    nbn.add(node)
+    this.nodesByName.set(node.name, nbn)
+    if (spec) {
+      const f = String(spec.final)
+      this.resolutions.set(f, node)
+      const rrev = this.resolutionsReverse.get(node) ?? new Set()
+      rrev.add(f)
+      this.resolutionsReverse.set(node, rrev)
+    }
     if (manifest) {
       this.manifests.set(node.id, manifest)
     }
@@ -207,26 +275,31 @@ export class Graph {
   }
 
   /**
-   * Removes an edge from the graph.
-   */
-  removeEdge(edge: Edge) {
-    const from = edge.from
-    if (from) {
-      from.edgesOut.delete(edge.name)
-    }
-    const to = edge.to
-    if (to) {
-      to.edgesIn.delete(edge)
-    }
-    this.edges.delete(edge)
-    this.missingDependencies.delete(edge)
-  }
-
-  /**
-   * Removes a node from the graph.
+   * Removes a node and its relevant edges from the graph.
    */
   removeNode(node: Node) {
     this.nodes.delete(node.id)
+    const nbn = this.nodesByName.get(node.name)
+    // if it's the last one, just remove the set
+    if (nbn?.size === 1) this.nodesByName.delete(node.name)
+    else nbn?.delete(node)
+    for (const r of this.resolutionsReverse.get(node) ?? new Set()) {
+      this.resolutions.delete(r)
+    }
+    this.resolutionsReverse.delete(node)
     this.manifests.delete(node.id)
+    for (const edge of node.edgesOut.values()) {
+      this.edges.delete(edge)
+      this.missingDependencies.delete(edge)
+    }
+    for (const edge of node.edgesIn) {
+      edge.to = undefined
+      if (!edge.optional) this.missingDependencies.add(edge)
+    }
+  }
+
+  [kCustomInspect](_: number, options: InspectOptions) {
+    const data = lockfileData({ graph: this })
+    return `${this[Symbol.toStringTag]} ${inspect(data, options)}`
   }
 }

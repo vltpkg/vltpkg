@@ -1,6 +1,6 @@
+import { Spec, SpecOptions } from '@vltpkg/spec'
 import { inspect } from 'node:util'
 import t from 'tap'
-import { Spec, SpecOptions } from '@vltpkg/spec'
 import { Edge } from '../src/edge.js'
 import { Node } from '../src/node.js'
 
@@ -24,13 +24,29 @@ t.test('Edge', async t => {
     version: '1.0.0',
   }
   const rootSpec = Spec.parse('root@1.0.0')
-  const root = new Node(configData, undefined, rootMani, rootSpec)
+  const root = new Node(
+    {
+      ...configData,
+      projectRoot: t.testdirName,
+    },
+    undefined,
+    rootMani,
+    rootSpec,
+  )
   const childMani = {
     name: 'child',
     version: '1.0.0',
   }
   const childSpec = Spec.parse('child@1.0.0')
-  const child = new Node(configData, undefined, childMani, childSpec)
+  const child = new Node(
+    {
+      ...configData,
+      projectRoot: t.testdirName,
+    },
+    undefined,
+    childMani,
+    childSpec,
+  )
 
   const edge = new Edge(
     'prod',
@@ -64,7 +80,12 @@ t.test('Edge', async t => {
     peerDependenciesMeta: { foo: { optional: true } },
   }
   const pdmSpec = Spec.parse('pdm@1.2.3')
-  const pdm = new Node(configData, undefined, pdmMani, pdmSpec)
+  const pdm = new Node(
+    { ...configData, projectRoot: t.testdirName },
+    undefined,
+    pdmMani,
+    pdmSpec,
+  )
   const pdmEdge = new Edge('peerOptional', Spec.parse('foo@*'), pdm)
   t.equal(pdmEdge.peer, true)
   t.equal(pdmEdge.peerOptional, true)

@@ -1,11 +1,11 @@
-import { inspect } from 'node:util'
 import { asDepID } from '@vltpkg/dep-id'
 import { Spec } from '@vltpkg/spec'
+import { inspect } from 'node:util'
 import t from 'tap'
-import { getImporterSpecs } from '../../src/ideal/get-importer-specs.js'
-import { Graph } from '../../src/graph.js'
-import { asDependency } from '../../src/dependencies.js'
 import { load } from '../../src/actual/load.js'
+import { asDependency } from '../../src/dependencies.js'
+import { Graph } from '../../src/graph.js'
+import { getImporterSpecs } from '../../src/ideal/get-importer-specs.js'
 
 const kCustomInspect = Symbol.for('nodejs.util.inspect.custom')
 Object.assign(Spec.prototype, {
@@ -15,7 +15,10 @@ Object.assign(Spec.prototype, {
 })
 
 t.test('empty graph and nothing to add', async t => {
-  const graph = new Graph({ mainManifest: {} })
+  const graph = new Graph({
+    projectRoot: t.testdirName,
+    mainManifest: {},
+  })
   const add = new Map()
   const specs = getImporterSpecs({ add, graph })
   t.strictSame(specs.size, 0, 'should have no items to add')
@@ -50,7 +53,10 @@ t.test('empty graph with workspaces and nothing to add', async t => {
 })
 
 t.test('empty graph and something to add', async t => {
-  const graph = new Graph({ mainManifest: {} })
+  const graph = new Graph({
+    projectRoot: t.testdirName,
+    mainManifest: {},
+  })
   const add = new Map([
     [
       asDepID('file;.'),
@@ -247,7 +253,10 @@ t.test(
 )
 
 t.test('adding to a non existing importer', async t => {
-  const graph = new Graph({ mainManifest: {} })
+  const graph = new Graph({
+    projectRoot: t.testdirName,
+    mainManifest: {},
+  })
   const add = new Map([
     // this workspace id does not exist in the given graph
     [

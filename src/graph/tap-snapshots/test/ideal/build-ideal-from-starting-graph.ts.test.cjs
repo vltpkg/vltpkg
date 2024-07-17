@@ -12,23 +12,21 @@ exports[`test/ideal/build-ideal-from-starting-graph.ts > TAP > build from a virt
     location: '.',
     importer: true,
     edgesOut: [
-      Edge spec(linked@file:./linked) -prod-> to: Node {
-        id: 'file;linked',
-        location: './node_modules/.vlt/file;linked/node_modules/linked'
-      },
+      Edge spec(linked@file:./linked) -prod-> to: Node { id: 'file;linked', location: 'linked', resolved: 'linked' },
       Edge spec(foo@^1.0.0) -prod-> to: Node {
-        id: 'registry;;foo@1.0.0',
-        location: './node_modules/.vlt/registry;;foo@1.0.0/node_modules/foo',
+        id: ';;foo@1.0.0',
+        location: './node_modules/.vlt/;;foo@1.0.0/node_modules/foo',
         integrity: 'sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ=='
       },
+      Edge spec(bar@^1.0.0) -prod-> to: [missing package]: <bar@^1.0.0>,
       Edge spec(missing@^1.0.0) -prod-> to: Node {
-        id: 'registry;;missing@1.0.0',
-        location: './node_modules/.vlt/registry;;missing@1.0.0/node_modules/missing',
+        id: ';;missing@1.0.0',
+        location: './node_modules/.vlt/;;missing@1.0.0/node_modules/missing',
         resolved: 'https://registry.npmjs.org/missing/-/missing-1.0.0.tgz'
       },
       Edge spec(baz@^1.0.0) -prod-> to: Node {
-        id: 'registry;;baz@1.0.0',
-        location: './node_modules/.vlt/registry;;baz@1.0.0/node_modules/baz',
+        id: ';;baz@1.0.0',
+        location: './node_modules/.vlt/;;baz@1.0.0/node_modules/baz',
         resolved: 'https://registry.npmjs.org/baz/-/baz-1.0.0.tgz'
       }
     ]
@@ -43,38 +41,39 @@ exports[`test/ideal/build-ideal-from-starting-graph.ts > TAP > build from an act
     location: '.',
     importer: true,
     edgesOut: [
-      Edge spec(link@file:./linked) -prod-> to: Node { id: 'file;linked', location: './linked' },
+      Edge spec(link@file:./linked) -prod-> to: Node { id: 'file;linked', location: 'linked', resolved: 'linked' },
       Edge spec(foo@^1.0.0) -prod-> to: Node {
-        id: 'registry;;foo@1.0.0',
-        location: './node_modules/.vlt/registry;;foo@1.0.0/node_modules/foo'
+        id: ';;foo@1.0.0',
+        location: './node_modules/.vlt/;;foo@1.0.0/node_modules/foo'
       },
       Edge spec(extraneous@*) -prod-> to: [extraneous package]: <extraneous>,
+      Edge spec(bar@^1.0.0) -prod-> to: [missing package]: <bar@^1.0.0>,
       Edge spec(aliased@custom:foo@^1.0.0) -dev-> to: Node {
-        id: 'registry;custom;foo@1.0.0',
-        location: './node_modules/.vlt/registry;custom;foo@1.0.0/node_modules/foo'
+        id: ';custom;foo@1.0.0',
+        location: './node_modules/.vlt/;custom;foo@1.0.0/node_modules/foo'
       },
       Edge spec(@scoped/b@^1.0.0) -prod-> to: Node {
-        id: 'registry;;@scoped%2Fb@1.0.0',
-        location: './node_modules/.vlt/registry;;@scoped%2Fb@1.0.0/node_modules/@scoped/b',
+        id: ';;@scoped%2Fb@1.0.0',
+        location: './node_modules/.vlt/;;@scoped%2Fb@1.0.0/node_modules/@scoped/b',
         edgesOut: [
           Edge spec(@scoped/c@^1.0.0) -prod-> to: Node {
-            id: 'registry;;@scoped%2Fc@1.0.0',
-            location: './node_modules/.vlt/registry;;@scoped%2Fc@1.0.0/node_modules/@scoped/c'
+            id: ';;@scoped%2Fc@1.0.0',
+            location: './node_modules/.vlt/;;@scoped%2Fc@1.0.0/node_modules/@scoped/c'
           }
         ]
       },
       Edge spec(@scoped/a@^1.0.0) -prod-> to: Node {
-        id: 'registry;;@scoped%2Fa@1.0.0',
-        location: './node_modules/.vlt/registry;;@scoped%2Fa@1.0.0/node_modules/@scoped/a'
+        id: ';;@scoped%2Fa@1.0.0',
+        location: './node_modules/.vlt/;;@scoped%2Fa@1.0.0/node_modules/@scoped/a'
       },
       Edge spec(missing@^1.0.0) -prod-> to: Node {
-        id: 'registry;;missing@1.0.0',
-        location: './node_modules/.vlt/registry;;missing@1.0.0/node_modules/missing',
+        id: ';;missing@1.0.0',
+        location: './node_modules/.vlt/;;missing@1.0.0/node_modules/missing',
         resolved: 'https://registry.npmjs.org/missing/-/missing-1.0.0.tgz'
       },
       Edge spec(baz@^1.0.0) -prod-> to: Node {
-        id: 'registry;;baz@1.0.0',
-        location: './node_modules/.vlt/registry;;baz@1.0.0/node_modules/baz',
+        id: ';;baz@1.0.0',
+        location: './node_modules/.vlt/;;baz@1.0.0/node_modules/baz',
         resolved: 'https://registry.npmjs.org/baz/-/baz-1.0.0.tgz'
       }
     ]
@@ -83,9 +82,7 @@ exports[`test/ideal/build-ideal-from-starting-graph.ts > TAP > build from an act
     id: 'workspace;packages%2Fworkspace-b',
     location: './packages/workspace-b',
     importer: true,
-    edgesOut: [
-      Edge spec(baz@^1.0.0) -prod-> to: Node { ref: 'registry;;baz@1.0.0' }
-    ]
+    edgesOut: [ Edge spec(baz@^1.0.0) -prod-> to: Node { ref: ';;baz@1.0.0' } ]
   },
   Node {
     id: 'workspace;packages%2Fworkspace-a',
@@ -94,10 +91,10 @@ exports[`test/ideal/build-ideal-from-starting-graph.ts > TAP > build from an act
     edgesOut: [
       Edge spec(workspace-b@workspace:*) -dev-> to: Node { ref: 'workspace;packages%2Fworkspace-b' },
       Edge spec(ipsum@^1.0.0) -dev-> to: Node {
-        id: 'registry;;ipsum@1.0.0',
-        location: './node_modules/.vlt/registry;;ipsum@1.0.0/node_modules/ipsum'
+        id: ';;ipsum@1.0.0',
+        location: './node_modules/.vlt/;;ipsum@1.0.0/node_modules/ipsum'
       },
-      Edge spec(foo@^1.0.0) -dev-> to: Node { ref: 'registry;;foo@1.0.0' }
+      Edge spec(foo@^1.0.0) -dev-> to: Node { ref: ';;foo@1.0.0' }
     ]
   }
 ]

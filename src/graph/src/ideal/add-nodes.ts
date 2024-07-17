@@ -36,13 +36,8 @@ export const addNodes = async ({
     // Removes any edges and nodes that are currently part of the
     // graph but are also in the list of dependencies to be installed
     for (const { spec } of dependencies.values()) {
-      const edge = importer.edgesOut.get(spec.name)
-      if (!edge) continue
-      graph.removeEdge(edge)
-
-      const node = edge.to
-      if (!node) continue
-      graph.removeNode(node)
+      const node = importer.edgesOut.get(spec.name)?.to
+      if (node) graph.removeNode(node)
     }
 
     // Add new nodes for packages defined in the dependencies list fetching

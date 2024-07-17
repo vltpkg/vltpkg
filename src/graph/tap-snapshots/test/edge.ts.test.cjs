@@ -19,11 +19,11 @@ Edge [@vltpkg/graph.Edge] {
   from: Node [@vltpkg/graph.Node] {
     edgesIn: Set(0) {},
     edgesOut: Map(0) {},
-    id: 'registry;;child@1.0.0',
+    id: ';;child@1.0.0',
     importer: false,
     integrity: undefined,
     manifest: [Object],
-    name: 'child',
+    projectRoot: '{CWD}/.tap/fixtures/test-edge.ts-Edge',
     version: '1.0.0',
     resolved: undefined
   },

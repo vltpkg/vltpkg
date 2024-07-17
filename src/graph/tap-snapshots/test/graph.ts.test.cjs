@@ -6,248 +6,42 @@
  */
 'use strict'
 exports[`test/graph.ts > TAP > Graph > should print with special tag name 1`] = `
-Graph [@vltpkg/graph.Graph] {
-  manifests: [Map],
-  edges: Set(0) {},
-  nodes: [Map],
-  importers: [Set],
-  mainImporter: [Node [@vltpkg/graph.Node]],
-  extraneousDependencies: Set(0) {},
-  missingDependencies: Set(0) {}
-}
+@vltpkg/graph.Graph { registries: {}, nodes: [Object], edges: [] }
 `
 
 exports[`test/graph.ts > TAP > using placePackage > should have removed baz from the graph 1`] = `
-Graph [@vltpkg/graph.Graph] {
-  manifests: Map(3) {
-    'file;.' => { name: 'my-project', version: '1.0.0', dependencies: [Object] },
-    'registry;;foo@1.0.0' => { name: 'foo', version: '1.0.0' },
-    'registry;;bar@1.0.0' => { name: 'bar', version: '1.0.0', dependencies: [Object] }
+@vltpkg/graph.Graph {
+  registries: {},
+  nodes: {
+    'file;.': [ 'my-project' ],
+    ';;bar@1.0.0': [ 'bar' ],
+    ';;foo@1.0.0': [ 'foo' ]
   },
-  edges: Set(4) {
-    Edge [@vltpkg/graph.Edge] {
-      from: [Node [@vltpkg/graph.Node]],
-      to: [Node [@vltpkg/graph.Node]],
-      type: 'prod',
-      spec: Spec {foo@^1.0.0}
-    },
-    Edge [@vltpkg/graph.Edge] {
-      from: [Node [@vltpkg/graph.Node]],
-      to: [Node [@vltpkg/graph.Node]],
-      type: 'prod',
-      spec: Spec {bar@^1.0.0}
-    },
-    Edge [@vltpkg/graph.Edge] {
-      from: [Node [@vltpkg/graph.Node]],
-      to: undefined,
-      type: 'prod',
-      spec: Spec {missing@^1.0.0}
-    },
-    Edge [@vltpkg/graph.Edge] {
-      from: [Node [@vltpkg/graph.Node]],
-      to: [Node [@vltpkg/graph.Node]],
-      type: 'prod',
-      spec: Spec {foo@^1.0.0}
-    }
-  },
-  nodes: Map(3) {
-    'file;.' => Node [@vltpkg/graph.Node] {
-      edgesIn: Set(0) {},
-      edgesOut: [Map],
-      id: 'file;.',
-      importer: true,
-      integrity: undefined,
-      manifest: [Object],
-      name: 'my-project',
-      version: '1.0.0',
-      resolved: undefined
-    },
-    'registry;;foo@1.0.0' => Node [@vltpkg/graph.Node] {
-      edgesIn: [Set],
-      edgesOut: Map(0) {},
-      id: 'registry;;foo@1.0.0',
-      importer: false,
-      integrity: undefined,
-      manifest: [Object],
-      name: 'foo',
-      version: '1.0.0',
-      resolved: undefined
-    },
-    'registry;;bar@1.0.0' => Node [@vltpkg/graph.Node] {
-      edgesIn: [Set],
-      edgesOut: Map(0) {},
-      id: 'registry;;bar@1.0.0',
-      importer: false,
-      integrity: undefined,
-      manifest: [Object],
-      name: 'bar',
-      version: '1.0.0',
-      resolved: undefined
-    }
-  },
-  importers: Set(1) {
-    Node [@vltpkg/graph.Node] {
-      edgesIn: Set(0) {},
-      edgesOut: [Map],
-      id: 'file;.',
-      importer: true,
-      integrity: undefined,
-      manifest: [Object],
-      name: 'my-project',
-      version: '1.0.0',
-      resolved: undefined
-    }
-  },
-  mainImporter: Node [@vltpkg/graph.Node] {
-    edgesIn: Set(0) {},
-    edgesOut: Map(3) {
-      'foo' => [Edge [@vltpkg/graph.Edge]],
-      'bar' => [Edge [@vltpkg/graph.Edge]],
-      'missing' => [Edge [@vltpkg/graph.Edge]]
-    },
-    id: 'file;.',
-    importer: true,
-    integrity: undefined,
-    manifest: { name: 'my-project', version: '1.0.0', dependencies: [Object] },
-    name: 'my-project',
-    version: '1.0.0',
-    resolved: undefined
-  },
-  extraneousDependencies: Set(0) {},
-  missingDependencies: Set(1) {
-    Edge [@vltpkg/graph.Edge] {
-      from: [Node [@vltpkg/graph.Node]],
-      to: undefined,
-      type: 'prod',
-      spec: Spec {missing@^1.0.0}
-    }
-  }
+  edges: [
+    [ 'file;.', 'prod', 'missing@^1.0.0', undefined ],
+    [ 'file;.', 'prod', 'bar@^1.0.0', ';;bar@1.0.0' ],
+    [ 'file;.', 'prod', 'foo@^1.0.0', ';;foo@1.0.0' ],
+    [ ';;bar@1.0.0', 'prod', 'baz@^1.0.0', undefined ]
+  ]
 }
 `
 
 exports[`test/graph.ts > TAP > using placePackage > the graph 1`] = `
-Graph [@vltpkg/graph.Graph] {
-  manifests: Map(4) {
-    'file;.' => { name: 'my-project', version: '1.0.0', dependencies: [Object] },
-    'registry;;foo@1.0.0' => { name: 'foo', version: '1.0.0' },
-    'registry;;bar@1.0.0' => { name: 'bar', version: '1.0.0', dependencies: [Object] },
-    'registry;;baz@1.0.0' => { name: 'baz', version: '1.0.0', dist: [Object] }
+@vltpkg/graph.Graph {
+  registries: {},
+  nodes: {
+    'file;.': [ 'my-project' ],
+    ';;bar@1.0.0': [ 'bar' ],
+    ';;baz@1.0.0': [ 'baz' ],
+    ';;foo@1.0.0': [ 'foo' ]
   },
-  edges: Set(5) {
-    Edge [@vltpkg/graph.Edge] {
-      from: [Node [@vltpkg/graph.Node]],
-      to: [Node [@vltpkg/graph.Node]],
-      type: 'prod',
-      spec: Spec {foo@^1.0.0}
-    },
-    Edge [@vltpkg/graph.Edge] {
-      from: [Node [@vltpkg/graph.Node]],
-      to: [Node [@vltpkg/graph.Node]],
-      type: 'prod',
-      spec: Spec {bar@^1.0.0}
-    },
-    Edge [@vltpkg/graph.Edge] {
-      from: [Node [@vltpkg/graph.Node]],
-      to: [Node [@vltpkg/graph.Node]],
-      type: 'prod',
-      spec: Spec {baz@^1.0.0}
-    },
-    Edge [@vltpkg/graph.Edge] {
-      from: [Node [@vltpkg/graph.Node]],
-      to: undefined,
-      type: 'prod',
-      spec: Spec {missing@^1.0.0}
-    },
-    Edge [@vltpkg/graph.Edge] {
-      from: [Node [@vltpkg/graph.Node]],
-      to: [Node [@vltpkg/graph.Node]],
-      type: 'prod',
-      spec: Spec {foo@^1.0.0}
-    }
-  },
-  nodes: Map(4) {
-    'file;.' => Node [@vltpkg/graph.Node] {
-      edgesIn: Set(0) {},
-      edgesOut: [Map],
-      id: 'file;.',
-      importer: true,
-      integrity: undefined,
-      manifest: [Object],
-      name: 'my-project',
-      version: '1.0.0',
-      resolved: undefined
-    },
-    'registry;;foo@1.0.0' => Node [@vltpkg/graph.Node] {
-      edgesIn: [Set],
-      edgesOut: Map(0) {},
-      id: 'registry;;foo@1.0.0',
-      importer: false,
-      integrity: undefined,
-      manifest: [Object],
-      name: 'foo',
-      version: '1.0.0',
-      resolved: undefined
-    },
-    'registry;;bar@1.0.0' => Node [@vltpkg/graph.Node] {
-      edgesIn: [Set],
-      edgesOut: [Map],
-      id: 'registry;;bar@1.0.0',
-      importer: false,
-      integrity: undefined,
-      manifest: [Object],
-      name: 'bar',
-      version: '1.0.0',
-      resolved: undefined
-    },
-    'registry;;baz@1.0.0' => Node [@vltpkg/graph.Node] {
-      edgesIn: [Set],
-      edgesOut: [Map],
-      id: 'registry;;baz@1.0.0',
-      importer: false,
-      integrity: undefined,
-      manifest: [Object],
-      name: 'baz',
-      version: '1.0.0',
-      resolved: undefined
-    }
-  },
-  importers: Set(1) {
-    Node [@vltpkg/graph.Node] {
-      edgesIn: Set(0) {},
-      edgesOut: [Map],
-      id: 'file;.',
-      importer: true,
-      integrity: undefined,
-      manifest: [Object],
-      name: 'my-project',
-      version: '1.0.0',
-      resolved: undefined
-    }
-  },
-  mainImporter: Node [@vltpkg/graph.Node] {
-    edgesIn: Set(0) {},
-    edgesOut: Map(3) {
-      'foo' => [Edge [@vltpkg/graph.Edge]],
-      'bar' => [Edge [@vltpkg/graph.Edge]],
-      'missing' => [Edge [@vltpkg/graph.Edge]]
-    },
-    id: 'file;.',
-    importer: true,
-    integrity: undefined,
-    manifest: { name: 'my-project', version: '1.0.0', dependencies: [Object] },
-    name: 'my-project',
-    version: '1.0.0',
-    resolved: undefined
-  },
-  extraneousDependencies: Set(0) {},
-  missingDependencies: Set(1) {
-    Edge [@vltpkg/graph.Edge] {
-      from: [Node [@vltpkg/graph.Node]],
-      to: undefined,
-      type: 'prod',
-      spec: Spec {missing@^1.0.0}
-    }
-  }
+  edges: [
+    [ 'file;.', 'prod', 'missing@^1.0.0', undefined ],
+    [ 'file;.', 'prod', 'bar@^1.0.0', ';;bar@1.0.0' ],
+    [ 'file;.', 'prod', 'foo@^1.0.0', ';;foo@1.0.0' ],
+    [ ';;bar@1.0.0', 'prod', 'baz@^1.0.0', ';;baz@1.0.0' ],
+    [ ';;baz@1.0.0', 'prod', 'foo@^1.0.0', ';;foo@1.0.0' ]
+  ]
 }
 `
 
@@ -263,7 +57,7 @@ Set {
       "name": "my-project",
       "version": "1.0.0",
     },
-    "name": "my-project",
+    "projectRoot": "{CWD}/.tap/fixtures/test-graph.ts-workspaces",
     "resolved": undefined,
     "version": "1.0.0",
   },
@@ -279,7 +73,7 @@ Set {
       [Symbol.for(newline)]: "",
       "version": "1.0.0",
     },
-    "name": "b",
+    "projectRoot": "{CWD}/.tap/fixtures/test-graph.ts-workspaces",
     "resolved": undefined,
     "version": "1.0.0",
   },
@@ -295,7 +89,7 @@ Set {
       [Symbol.for(newline)]: "",
       "version": "1.0.0",
     },
-    "name": "a",
+    "projectRoot": "{CWD}/.tap/fixtures/test-graph.ts-workspaces",
     "resolved": undefined,
     "version": "1.0.0",
   },

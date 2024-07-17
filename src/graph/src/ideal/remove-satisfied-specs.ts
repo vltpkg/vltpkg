@@ -1,5 +1,5 @@
 import { error } from '@vltpkg/error-cause'
-import { edgeValid } from '../edge-valid.js'
+import { satisfies } from '@vltpkg/satisfies'
 import {
   BuildIdealAddOptions,
   BuildIdealFromGraphOptions,
@@ -26,11 +26,21 @@ export const removeSatisfiedSpecs = ({
     for (const [name, dependency] of dependencies) {
       const edge = importer.edgesOut.get(name)
       if (!edge) {
+        // brand new edge being added
         continue
       }
+
       // If the current graph edge is already valid, then we remove that
       // dependency item from the list of items to be added to the graph
-      if (edge.to && edgeValid(edge, dependency)) {
+      if (
+        satisfies(
+          edge.to?.id,
+          dependency.spec,
+          edge.from.location,
+          graph.projectRoot,
+          graph.monorepo,
+        )
+      ) {
         dependencies.delete(name)
       }
     }

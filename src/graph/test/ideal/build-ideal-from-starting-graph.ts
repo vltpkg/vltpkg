@@ -1,10 +1,10 @@
+import { PackageInfoClient } from '@vltpkg/package-info'
+import { Spec, SpecOptions } from '@vltpkg/spec'
 import t from 'tap'
-import { load as loadVirtual } from '../../src/lockfile/load.js'
 import { load as loadActual } from '../../src/actual/load.js'
 import { buildIdealFromStartingGraph } from '../../src/ideal/build-ideal-from-starting-graph.js'
+import { load as loadVirtual } from '../../src/lockfile/load.js'
 import { humanReadableOutput } from '../../src/visualization/human-readable-output.js'
-import { Spec, SpecOptions } from '@vltpkg/spec'
-import { PackageInfoClient } from '@vltpkg/package-info'
 
 const configData = {
   registry: 'https://registry.npmjs.org',
@@ -56,27 +56,27 @@ t.test('build from a virtual graph', async t => {
       nodes: {
         'file;.': ['my-project'],
         'file;linked': ['linked'],
-        'registry;;foo@1.0.0': [
+        ';;foo@1.0.0': [
           'foo',
           'sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ==',
         ],
-        'registry;;bar@1.0.0': [
+        ';;bar@1.0.0': [
           'bar',
           'sha512-6/deadbeef==',
           'https://registry.example.com/bar/-/bar-1.0.0.tgz',
         ],
-        'registry;;baz@1.0.0': ['baz', null],
+        ';;baz@1.0.0': ['baz', null],
       },
       edges: [
         ['file;.', 'prod', 'linked@file:./linked', 'file;linked'],
-        ['file;.', 'prod', 'foo@^1.0.0', 'registry;;foo@1.0.0'],
-        ['file;.', 'prod', 'bar@^1.0.0', 'registry;;bar@1.0.0'],
+        ['file;.', 'prod', 'foo@^1.0.0', ';;foo@1.0.0'],
+        ['file;.', 'prod', 'bar@^1.0.0', ';;bar@1.0.0'],
         ['file;.', 'prod', 'missing@^1.0.0'],
         [
-          'registry;;bar@1.0.0',
+          ';;bar@1.0.0',
           'prod',
           'baz@^1.0.0',
-          'registry;;baz@1.0.0',
+          ';;baz@1.0.0',
         ],
       ],
     }),
@@ -90,6 +90,7 @@ t.test('build from a virtual graph', async t => {
 
   const graph = await buildIdealFromStartingGraph({
     ...configData,
+    projectRoot,
     packageInfo,
     graph: virtual,
     add: new Map([
@@ -134,7 +135,7 @@ t.test('build from an actual graph', async t => {
     },
     node_modules: {
       '.vlt': {
-        'registry;;@scoped%2Fa@1.0.0': {
+        ';;@scoped%2Fa@1.0.0': {
           node_modules: {
             '@scoped': {
               a: {
@@ -146,7 +147,7 @@ t.test('build from an actual graph', async t => {
             },
           },
         },
-        'registry;;@scoped%2Fb@1.0.0': {
+        ';;@scoped%2Fb@1.0.0': {
           node_modules: {
             '@scoped': {
               b: {
@@ -160,12 +161,12 @@ t.test('build from an actual graph', async t => {
               },
               c: t.fixture(
                 'symlink',
-                '../../../../.vlt/registry;;@scoped%2Fc@1.0.0/node_modules/@scoped/c',
+                '../../../../.vlt/;;@scoped%2Fc@1.0.0/node_modules/@scoped/c',
               ),
             },
           },
         },
-        'registry;;@scoped%2Fc@1.0.0': {
+        ';;@scoped%2Fc@1.0.0': {
           node_modules: {
             '@scoped': {
               c: {
@@ -177,7 +178,7 @@ t.test('build from an actual graph', async t => {
             },
           },
         },
-        'registry;;bar@1.0.0': {
+        ';;bar@1.0.0': {
           node_modules: {
             bar: {
               'package.json': JSON.stringify({
@@ -190,11 +191,11 @@ t.test('build from an actual graph', async t => {
             },
             baz: t.fixture(
               'symlink',
-              '../../registry;custom;baz@1.0.0/node_modules/baz',
+              '../../;custom;baz@1.0.0/node_modules/baz',
             ),
           },
         },
-        'registry;;foo@1.0.0': {
+        ';;foo@1.0.0': {
           node_modules: {
             foo: {
               'package.json': JSON.stringify({
@@ -204,7 +205,7 @@ t.test('build from an actual graph', async t => {
             },
           },
         },
-        'registry;;ipsum@1.0.0': {
+        ';;ipsum@1.0.0': {
           node_modules: {
             ipsum: {
               'package.json': JSON.stringify({
@@ -214,7 +215,7 @@ t.test('build from an actual graph', async t => {
             },
           },
         },
-        'registry;;extraneous@1.0.0': {
+        ';;extraneous@1.0.0': {
           node_modules: {
             extraneous: {
               'package.json': JSON.stringify({
@@ -224,7 +225,7 @@ t.test('build from an actual graph', async t => {
             },
           },
         },
-        'registry;custom;baz@1.0.0': {
+        ';custom;baz@1.0.0': {
           node_modules: {
             baz: {
               'package.json': JSON.stringify({
@@ -234,7 +235,7 @@ t.test('build from an actual graph', async t => {
             },
           },
         },
-        'registry;custom;foo@1.0.0': {
+        ';custom;foo@1.0.0': {
           node_modules: {
             foo: {
               'package.json': JSON.stringify({
@@ -248,30 +249,30 @@ t.test('build from an actual graph', async t => {
       '@scoped': {
         a: t.fixture(
           'symlink',
-          '../.vlt/registry;;@scoped%2Fa@1.0.0/node_modules/@scoped/a',
+          '../.vlt/;;@scoped%2Fa@1.0.0/node_modules/@scoped/a',
         ),
         b: t.fixture(
           'symlink',
-          '../.vlt/registry;;@scoped%2Fb@1.0.0/node_modules/@scoped/b',
+          '../.vlt/;;@scoped%2Fb@1.0.0/node_modules/@scoped/b',
         ),
       },
       aliased: t.fixture(
         'symlink',
-        '.vlt/registry;custom;foo@1.0.0/node_modules/foo',
+        '.vlt/;custom;foo@1.0.0/node_modules/foo',
       ),
       bar: t.fixture(
         'symlink',
-        '.vlt/registry;;bar@1.0.0/node_modules/bar',
+        '.vlt/;;bar@1.0.0/node_modules/bar',
       ),
       // This should be ignored when traversing the file system
       broken_symlink: t.fixture('symlink', './link-to-nowhere'),
       extraneous: t.fixture(
         'symlink',
-        '.vlt/registry;;extraneous@1.0.0/node_modules/extraneous',
+        '.vlt/;;extraneous@1.0.0/node_modules/extraneous',
       ),
       foo: t.fixture(
         'symlink',
-        '.vlt/registry;;foo@1.0.0/node_modules/foo',
+        '.vlt/;;foo@1.0.0/node_modules/foo',
       ),
       link: t.fixture('symlink', '../linked'),
     },
@@ -289,11 +290,11 @@ t.test('build from an actual graph', async t => {
         node_modules: {
           foo: t.fixture(
             'symlink',
-            '../../../node_modules/.vlt/registry;;foo@1.0.0/node_modules/foo',
+            '../../../node_modules/.vlt/;;foo@1.0.0/node_modules/foo',
           ),
           ipsum: t.fixture(
             'symlink',
-            '../../../node_modules/.vlt/registry;;ipsum@1.0.0/node_modules/ipsum',
+            '../../../node_modules/.vlt/;;ipsum@1.0.0/node_modules/ipsum',
           ),
           'workspace-b': t.fixture('symlink', '../../workspace-b'),
         },
@@ -317,6 +318,7 @@ t.test('build from an actual graph', async t => {
   })
 
   const graph = await buildIdealFromStartingGraph({
+    projectRoot,
     ...configData,
     packageInfo,
     graph: actual,
