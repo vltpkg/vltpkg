@@ -4,6 +4,9 @@ import { inspect } from 'node:util'
 import t from 'tap'
 import { Node } from '../src/node.js'
 
+t.cleanSnapshot = s =>
+  s.replace(/^(\s+)projectRoot: .*$/gm, '$1projectRoot: #')
+
 const configData = {
   registry: 'https://registry.npmjs.org',
   registries: {
