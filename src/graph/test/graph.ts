@@ -5,6 +5,9 @@ import { inspect } from 'node:util'
 import t from 'tap'
 import { Graph } from '../src/graph.js'
 
+t.cleanSnapshot = s =>
+  s.replace(/^(\s+)"projectRoot": .*$/gm, '$1"projectRoot": #')
+
 const kCustomInspect = Symbol.for('nodejs.util.inspect.custom')
 Object.assign(Spec.prototype, {
   [kCustomInspect]() {
