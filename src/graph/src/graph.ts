@@ -276,8 +276,12 @@ export class Graph {
 
   /**
    * Removes a node and its relevant edges from the graph.
+   *
+   * If a replacement is provided, then any edges that were previously
+   * pointing to the removed node will be directed to the replacement,
+   * if it is valid to do so.
    */
-  removeNode(node: Node) {
+  removeNode(node: Node, replacement?: Node) {
     this.nodes.delete(node.id)
     const nbn = this.nodesByName.get(node.name)
     // if it's the last one, just remove the set
@@ -293,8 +297,21 @@ export class Graph {
       this.missingDependencies.delete(edge)
     }
     for (const edge of node.edgesIn) {
-      edge.to = undefined
-      if (!edge.optional) this.missingDependencies.add(edge)
+      if (
+        replacement &&
+        satisfies(
+          replacement.id,
+          edge.spec,
+          edge.from.location,
+          this.projectRoot,
+          this.monorepo,
+        )
+      ) {
+        edge.to = replacement
+      } else {
+        edge.to = undefined
+        if (!edge.optional) this.missingDependencies.add(edge)
+      }
     }
   }
 
