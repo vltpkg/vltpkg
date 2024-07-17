@@ -4,7 +4,9 @@ import { AddNodesOptions, addNodes } from './add-nodes.js'
 import { RemoveNodesOptions, removeNodes } from './remove-nodes.js'
 
 export type BuildIdealFromStartingGraphOptions = AddNodesOptions &
-  RemoveNodesOptions
+  RemoveNodesOptions & {
+    projectRoot: string
+  }
 
 /**
  * Builds an ideal {@link Graph} representing the dependencies that

@@ -38,6 +38,7 @@ t.test('addNodes', async t => {
     version: '1.0.0',
   }
   const graph = new Graph({
+    projectRoot: t.testdirName,
     ...configData,
     mainManifest,
   })

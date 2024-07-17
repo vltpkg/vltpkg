@@ -1,6 +1,6 @@
 import {
-  DepID,
   asDepID,
+  DepID,
   hydrate,
   joinDepIDTuple,
 } from '@vltpkg/dep-id'
@@ -9,10 +9,13 @@ import { Spec, SpecOptions } from '@vltpkg/spec'
 import { ManifestMinified } from '@vltpkg/types'
 import { Monorepo } from '@vltpkg/workspaces'
 import { Path, PathScurry } from 'path-scurry'
-import { RawDependency, shorten } from '../dependencies.js'
+import {
+  longDependencyTypes,
+  RawDependency,
+  shorten,
+} from '../dependencies.js'
 import { Graph } from '../graph.js'
 import { Node } from '../node.js'
-import { longDependencyTypes } from '../dependencies.js'
 
 export type LoadOptions = SpecOptions & {
   /**
@@ -110,6 +113,17 @@ const getDeps = (node: Node) => {
   for (const depType of longDependencyTypes) {
     const obj: Record<string, string> | undefined =
       node.manifest?.[depType]
+    // only care about devDeps for importers and git or symlink deps
+    // technically this will also include devDeps for tarball file: specs,
+    // but that is likely rare enough to not worry about too much.
+    if (
+      depType === 'devDependencies' &&
+      !node.importer &&
+      !node.id.startsWith('git;') &&
+      !node.id.startsWith('file;')
+    ) {
+      continue
+    }
     if (obj) {
       for (const [name, bareSpec] of Object.entries(obj)) {
         dependencies.set(name, { name, type: depType, bareSpec })

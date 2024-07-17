@@ -1,7 +1,7 @@
 import { DepID } from '@vltpkg/dep-id'
 import { error } from '@vltpkg/error-cause'
-import { Graph } from '../graph.js'
 import { Dependency } from '../dependencies.js'
+import { Graph } from '../graph.js'
 import { removeSatisfiedSpecs } from './remove-satisfied-specs.js'
 import {
   BuildIdealAddOptions,
@@ -49,7 +49,10 @@ export const getImporterSpecs = ({
   }
 
   // removes already satisfied dependencies from the dependencies list
-  removeSatisfiedSpecs({ add: res, graph })
+  removeSatisfiedSpecs({
+    add: res,
+    graph,
+  })
 
   return res
 }

@@ -14,6 +14,7 @@ const configData = {
 
 t.test('human-readable-output', async t => {
   const graph = new Graph({
+    projectRoot: t.testdirName,
     ...configData,
     mainManifest: {
       name: 'my-project',
@@ -124,6 +125,7 @@ t.test('workspaces', async t => {
   })
   const monorepo = Monorepo.load(dir)
   const graph = new Graph({
+    projectRoot: t.testdirName,
     ...configData,
     mainManifest,
     monorepo,
@@ -136,6 +138,7 @@ t.test('workspaces', async t => {
 
 t.test('cycle', async t => {
   const graph = new Graph({
+    projectRoot: t.testdirName,
     ...configData,
     mainManifest: {
       name: 'my-project',

@@ -11,12 +11,16 @@ import { Integrity, ManifestMinified } from '@vltpkg/types'
 import { DependencyTypeShort } from './dependencies.js'
 import { Edge } from './edge.js'
 
+export type NodeOptions = SpecOptions & {
+  projectRoot: string
+}
+
 export class Node {
   get [Symbol.toStringTag]() {
     return '@vltpkg/graph.Node'
   }
 
-  #config: SpecOptions
+  #options: SpecOptions
   #location?: string
 
   /**
@@ -51,12 +55,22 @@ export class Node {
   manifest?: ManifestMinified
 
   /**
+   * Project where this node resides
+   */
+  projectRoot: string
+
+  /**
    * The name of the package represented by this node, this is usually
    * equivalent to `manifest.name` but in a few ways it may differ such as
    * nodes loaded from a lockfile that lacks a loaded manifest.
    * This field should be used to retrieve package names instead.
    */
-  name?: string
+  #name?: string
+  get name() {
+    if (this.#name) return this.#name
+    this.#name = this.id
+    return this.#name
+  }
 
   /**
    * The version of the package represented by this node, this is usually
@@ -78,7 +92,7 @@ export class Node {
     if (this.#location) {
       return this.#location
     }
-    this.#location = `./node_modules/.vlt/${this.id}/node_modules/${this.name || this.id}`
+    this.#location = `./node_modules/.vlt/${this.id}/node_modules/${this.name}`
     return this.#location
   }
 
@@ -87,14 +101,15 @@ export class Node {
   }
 
   constructor(
-    config: SpecOptions,
+    options: NodeOptions,
     id?: DepID,
     manifest?: ManifestMinified,
     spec?: Spec,
     name?: string,
     version?: string,
   ) {
-    this.#config = config
+    this.#options = options
+    this.projectRoot = options.projectRoot
     if (id) {
       this.id = id
     } else {
@@ -109,15 +124,16 @@ export class Node {
       this.id = getId(spec, manifest)
     }
     this.manifest = manifest
-    this.name = name || this.manifest?.name
+    this.#name = name || this.manifest?.name
     this.version = version || this.manifest?.version
   }
 
   #registryNodeResolved(tuple: DepIDTuple) {
     const spec = hydrateTuple(
       tuple,
-      this.name,
-      this.#config as SpecOptions,
+      /* c8 ignore next - name always set for registry nodes */
+      this.name === this.id ? undefined : this.name,
+      this.#options,
     )
     this.resolved =
       this.manifest?.dist?.tarball || spec.conventionalRegistryTarball
@@ -144,14 +160,12 @@ export class Node {
     const tuple = splitDepID(this.id)
     const [type, resolved] = tuple
     switch (type) {
-      case 'file':
-      case 'remote':
-      case 'workspace':
-      case 'git':
-        this.resolved = resolved
-        return
       case 'registry':
-        return this.#registryNodeResolved(tuple)
+        this.#registryNodeResolved(tuple)
+        break
+      default:
+        this.resolved = resolved
+        break
     }
   }
 
