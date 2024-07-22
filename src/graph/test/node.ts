@@ -7,7 +7,7 @@ import { Node } from '../src/node.js'
 t.cleanSnapshot = s =>
   s.replace(/^(\s+)projectRoot: .*$/gm, '$1projectRoot: #')
 
-const configData = {
+const options = {
   registry: 'https://registry.npmjs.org',
   registries: {
     npm: 'https://registry.npmjs.org',
@@ -22,7 +22,7 @@ t.test('Node', async t => {
   }
   const root = new Node(
     {
-      ...configData,
+      ...options,
       projectRoot: t.testdirName,
     },
     asDepID('file;.'),
@@ -60,7 +60,7 @@ t.test('Node', async t => {
   const fooSpec = Spec.parse('foo@1.0.0')
   const foo = new Node(
     {
-      ...configData,
+      ...options,
       projectRoot: t.testdirName,
     },
     undefined,
@@ -88,7 +88,7 @@ t.test('Node', async t => {
   const barId = getId(barSpec, barMani)
   const bar = new Node(
     {
-      ...configData,
+      ...options,
       projectRoot: t.testdirName,
     },
     barId,
@@ -129,7 +129,7 @@ t.test('Node', async t => {
     () =>
       new Node(
         {
-          ...configData,
+          ...options,
           projectRoot: t.testdirName,
         },
         undefined,
@@ -144,7 +144,7 @@ t.test('Node', async t => {
 
   const barNoMani = new Node(
     {
-      ...configData,
+      ...options,
       projectRoot: t.testdirName,
     },
     ';;bar@1.0.0',
@@ -163,7 +163,7 @@ t.test('Node', async t => {
   }
   const unnamedSpec = Spec.parse('', '0.0.0')
   const unnamed = new Node(
-    { ...configData, projectRoot: t.testdirName },
+    { ...options, projectRoot: t.testdirName },
     undefined,
     unnamedMani,
     unnamedSpec,
@@ -178,7 +178,7 @@ t.test('Node', async t => {
 
   // file type node with no parent
   const file = new Node(
-    { ...configData, projectRoot: t.testdirName },
+    { ...options, projectRoot: t.testdirName },
     asDepID('file;my-package'),
   )
   file.setResolved()
@@ -189,7 +189,7 @@ t.test('Node', async t => {
   )
 
   const git = new Node(
-    { ...configData, projectRoot: t.testdirName },
+    { ...options, projectRoot: t.testdirName },
     'git;github%3Avltpkg%2Ffoo;',
   )
   git.setResolved()
@@ -199,7 +199,7 @@ t.test('Node', async t => {
     'should set expected resolved value for a git id type',
   )
   const reg = new Node(
-    { ...configData, projectRoot: t.testdirName },
+    { ...options, projectRoot: t.testdirName },
     ';;foo@1.0.0',
     {
       dist: {
@@ -216,7 +216,7 @@ t.test('Node', async t => {
   )
   const regNoManifest = new Node(
     {
-      ...configData,
+      ...options,
       projectRoot: t.testdirName,
     },
     ';;foo@1.0.0',
@@ -227,9 +227,10 @@ t.test('Node', async t => {
     'https://registry.npmjs.org/foo/-/foo-1.0.0.tgz',
     'should set expected conventional registry value if no manifest',
   )
+
   const remote = new Node(
     {
-      ...configData,
+      ...options,
       projectRoot: t.testdirName,
     },
     'remote;https%3A%2F%2Fx.com%2Fx.tgz',
