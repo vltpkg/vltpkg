@@ -20,29 +20,43 @@ import { Manifest } from '@vltpkg/types'
  * - `git`: `'git;<git remote>;<git selector>`. For example:
  *   - `git;github:user/project;branchname`
  *   - `git;git%2Bssh%3A%2F%2Fuser%40host%3Aproject.git;semver:1.x`
- * - `workspace`: `'workspace;<name>;<specifier>`. For example:
- *   - `workspace;mything:*`
- *   - `workspace;library:1.x`
+ * - `workspace`: `'workspace;<path>`. For example:
+ *   - `workspace;src/mything`
  * - `remote`: `'remote;<url>'`
  * - `file`: `'file;<path>`
+ *
+ * Lastly, the final portion can contain arbitrary string data, and is
+ * used to store peer dep resolutions to maintain the peerDep contract.
  */
 export type DepID =
   | `${'' | 'git'};${string};${string}`
+  | `${'' | 'git'};${string};${string};${string}`
   | `${'remote' | 'file' | 'workspace'};${string}`
+  | `${'remote' | 'file' | 'workspace'};${string};${string}`
 
 /**
  * A {@link DepID}, split apart and URI-decoded
  */
 export type DepIDTuple =
-  | [type: 'registry', registry: string, registrySpec: string]
-  | [type: 'git', gitRemote: string, gitSelector: string]
-  | [type: 'file', path: string]
-  | [type: 'remote', url: string]
-  | [type: 'workspace', workspace: string]
+  | [
+      type: 'registry',
+      registry: string,
+      registrySpec: string,
+      extra?: string,
+    ]
+  | [
+      type: 'git',
+      gitRemote: string,
+      gitSelector: string,
+      extra?: string,
+    ]
+  | [type: 'file', path: string, extra?: string]
+  | [type: 'remote', url: string, extra?: string]
+  | [type: 'workspace', workspace: string, extra?: string]
 
 export const isDepID = (str: unknown): str is DepID =>
   typeof str === 'string' &&
-  /^((git)?;[^;]*;[^;]*$|(file|remote|workspace);[^;]*)$/.test(str)
+  /^((git)?;[^;]*;[^;]*(;[^;]*)?$|(file|remote|workspace);[^;]*)(;[^;]*)?$/.test(str)
 
 export const asDepID = (str: string): DepID => {
   if (!isDepID(str)) {
@@ -57,15 +71,15 @@ export const asDepID = (str: string): DepID => {
  * turn a {@link DepIDTuple} into a {@link DepID}
  */
 export const joinDepIDTuple = (list: DepIDTuple): DepID => {
-  const [type, first, second] = list
+  const [type, first, second, extra] = list
   const f = encode(first)
   switch (type) {
     case 'registry':
-      return `;${f};${encode(second)}`
+      return `;${f};${encode(second)}${extra ? `;${encode(extra)}` : ''}`
     case 'git':
-      return `${type};${f};${encode(second)}`
+      return `${type};${f};${encode(second)}${extra ? `;${encode(extra)}` : ''}`
     default:
-      return `${type};${f}`
+      return `${type};${f}${second ? `;${encode(second)}` : ''}`
   }
 }
 
@@ -77,19 +91,25 @@ const encode = (s: string): string =>
  * turn a {@link DepID} into a {@link DepIDTuple}
  */
 export const splitDepID = (id: string): DepIDTuple => {
-  const [type, first = '', second] = id.split(';', 3)
+  const [type, first = '', second, extra] = id.split(';', 4)
   const f = decodeURIComponent(first)
   switch (type) {
     case 'git':
-    case '':
+    case '': {
       if (second === undefined) {
         throw error(`invalid ${type} id`, { found: id })
       }
-      return [type || 'registry', f, decodeURIComponent(second)]
+      const t: DepIDTuple = [type || 'registry', f, decodeURIComponent(second)]
+      if (extra) t.push(decodeURIComponent(extra))
+      return t
+    }
     case 'file':
     case 'remote':
-    case 'workspace':
-      return [type, f]
+    case 'workspace': {
+      const t: DepIDTuple = [type, f]
+      if (second) t.push(decodeURIComponent(second))
+      return t
+    }
     default: {
       throw error('invalid DepID type', {
         found: type,
@@ -224,9 +244,19 @@ export const getTuple = (spec: Spec, mani: Manifest): DepIDTuple => {
   const f = spec.final
   switch (f.type) {
     case 'registry': {
+      // try to shorten to a known name if we can.
+      const reg = omitDefReg(f.registry)
+      if (!f.namedRegistry && reg) {
+        for (const [alias, host] of Object.entries(spec.options.registries)) {
+          if (reg === host) {
+            f.namedRegistry = alias
+            break
+          }
+        }
+      }
       return [
         f.type,
-        f.namedRegistry ?? omitDefReg(f.registry),
+        f.namedRegistry ?? reg,
         `${mani.name ?? spec.name}@${mani.version ?? spec.bareSpec}`,
       ]
     }
