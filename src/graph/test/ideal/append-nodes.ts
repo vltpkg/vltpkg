@@ -3,6 +3,7 @@ import { Spec, SpecOptions } from '@vltpkg/spec'
 import { Manifest } from '@vltpkg/types'
 import { inspect } from 'node:util'
 import t from 'tap'
+import { Dependency } from '../../src/dependencies.js'
 import { Graph } from '../../src/graph.js'
 import { appendNodes } from '../../src/ideal/append-nodes.js'
 import { humanReadableOutput } from '../../src/visualization/human-readable-output.js'
@@ -301,4 +302,108 @@ t.test('append file type of nodes', async t => {
     humanReadableOutput(graph),
     'should have a graph with file type dependencies',
   )
+})
+
+t.test('resolve against the correct registries', async t => {
+  const mainManifest = {
+    version: '1.0.0',
+    dependencies: {
+      bar: 'a:bar@1.x',
+      baz: 'b:baz@1.x',
+    },
+  }
+  const abarManifest = {
+    name: 'bar',
+    version: '1.2.3',
+    dependencies: { x: '1.x' },
+  }
+  const axManifest = {
+    name: 'x',
+    version: '1.99.99',
+    description: 'x on a',
+    dependencies: { y: '1' },
+  }
+  const ayManifest = { name: 'y', version: '1.99.99' }
+  const bbazManifest = {
+    name: 'baz',
+    version: '1.2.3',
+    dependencies: { x: '1.x' },
+  }
+  const bxManifest = {
+    name: 'x',
+    version: '1.99.99',
+    description: 'x on b',
+    dependencies: { y: '1000' },
+  }
+  const byManifest = { name: 'y', version: '1000.0.0' }
+
+  const projectRoot = t.testdir({
+    'package.json': JSON.stringify(mainManifest),
+  })
+
+  const registries = {
+    a: 'https://a.example.com/',
+    b: 'https://b.example.com/',
+  }
+
+  const packageInfo = {
+    async manifest(spec: Spec) {
+      switch (spec.name) {
+        case 'bar':
+          switch (spec.registry) {
+            case registries.a:
+              return abarManifest
+            default:
+              throw new Error('404 - bar', { cause: { spec } })
+          }
+        case 'baz':
+          switch (spec.registry) {
+            case registries.b:
+              return bbazManifest
+            default:
+              throw new Error('404 - baz', { cause: { spec } })
+          }
+        case 'x':
+          switch (spec.registry) {
+            case registries.a:
+              return axManifest
+            case registries.b:
+              return bxManifest
+            default:
+              throw new Error('404 - x', { cause: { spec } })
+          }
+        case 'y':
+          switch (spec.registry) {
+            case registries.a:
+              return ayManifest
+            case registries.b:
+              return byManifest
+            default:
+              throw new Error('404 - y', { cause: { spec } })
+          }
+        default:
+          throw new Error('404 - ' + spec.name, { cause: { spec } })
+      }
+    },
+  } as PackageInfoClient
+
+  const graph = new Graph({
+    projectRoot,
+    mainManifest,
+    registries,
+  })
+  const deps: Dependency[] = [
+    {
+      type: 'prod',
+      spec: Spec.parse('bar@a:bar@1.x', { registries }),
+    },
+    {
+      type: 'prod',
+      spec: Spec.parse('baz@b:bar@1.x', { registries }),
+    },
+  ]
+  await appendNodes(packageInfo, graph, graph.mainImporter, deps, {
+    registries,
+  })
+  t.matchSnapshot(inspect(graph, { colors: false }))
 })

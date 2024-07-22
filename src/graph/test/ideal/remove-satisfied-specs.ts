@@ -46,10 +46,7 @@ t.test('graph with an actual node', async t => {
           },
         },
       },
-      foo: t.fixture(
-        'symlink',
-        '.vlt/;;foo@1.0.0/node_modules/foo',
-      ),
+      foo: t.fixture('symlink', '.vlt/;;foo@1.0.0/node_modules/foo'),
     },
   })
 
