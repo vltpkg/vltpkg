@@ -138,8 +138,7 @@ export class Node {
   #registryNodeResolved(tuple: DepIDTuple) {
     const spec = hydrateTuple(
       tuple,
-      /* c8 ignore next - name always set for registry nodes */
-      this.name === this.id ? undefined : this.name,
+      this.#name,
       this.#options,
     )
     this.resolved =
