@@ -22,9 +22,7 @@ t.test('build from lockfile', async t => {
           'sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ==',
         ],
       },
-      edges: [
-        ['file;.', 'prod', 'foo@^1.0.0', ';;foo@1.0.0'],
-      ],
+      edges: [['file;.', 'prod', 'foo@^1.0.0', ';;foo@1.0.0']],
     }),
   })
 
@@ -62,10 +60,7 @@ t.test('build from actual files', async t => {
           },
         },
       },
-      foo: t.fixture(
-        'symlink',
-        '.vlt/;;foo@1.0.0/node_modules/foo',
-      ),
+      foo: t.fixture('symlink', '.vlt/;;foo@1.0.0/node_modules/foo'),
     },
   })
 

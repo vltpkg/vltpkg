@@ -55,54 +55,43 @@ export interface ReadEntry {
   realpath: Path
 }
 
+const pathBasedType = new Set(['file', 'workspace'])
+const isPathBasedType = (
+  type: string,
+): type is 'file' | 'workspace' => pathBasedType.has(type)
 const getPathBasedId = (
   spec: Spec,
   path: string,
-): DepID | undefined => {
-  const isPathBasedType = (
-    type: string,
-  ): type is 'file' | 'workspace' =>
-    new Set(['file', 'workspace']).has(type)
-  return isPathBasedType(spec.type) ?
-      joinDepIDTuple([spec.type, path])
-    : undefined
-}
+): DepID | undefined =>
+  isPathBasedType(spec.type) ?
+    joinDepIDTuple([spec.type, path])
+  : undefined
 
 /**
  * Retrieve the {@link DepID} for a given package from its location.
  */
-const findDepID = (entry: Path): DepID | undefined => {
-  if (!entry.parent) {
-    return
-  }
-  if (entry.parent.name === '.vlt') {
-    return asDepID(entry.name)
-  } else if (!entry.parent.isCWD) {
-    return findDepID(entry.parent)
-  }
-}
+const findDepID = ({ parent, name }: Path): DepID | undefined =>
+  parent?.name === '.vlt' ? asDepID(name)
+  : parent?.isCWD === false ? findDepID(parent)
+  : undefined
 
 /**
  * Retrieves the closest `node_modules` parent {@link Path} found.
  */
-const findNodeModules = (entry: Path): Path | undefined => {
-  if (!entry.parent) {
-    return
-  }
-  if (entry.parent.name === 'node_modules') {
-    return entry.parent
-  } else if (entry.name !== '.vlt' && !entry.isCWD) {
-    return findNodeModules(entry.parent)
-  }
-}
+const findNodeModules = ({
+  parent,
+  name,
+  isCWD,
+}: Path): Path | undefined =>
+  parent?.name === 'node_modules' ? parent
+  : parent && name !== '.vlt' && !isCWD ? findNodeModules(parent)
+  : undefined
 
 /**
  * Retrieves the scoped-normalized package name from its {@link Path}.
  */
-const findName = (entry: Path): string =>
-  entry.parent?.name.startsWith('@') ?
-    `${entry.parent.name}/${entry.name}`
-  : entry.name
+const findName = ({ parent, name }: Path): string =>
+  parent?.name.startsWith('@') ? `${parent.name}/${name}` : name
 
 /*
  * Retrieves a map of all dependencies, of all types, that can be iterated
@@ -126,7 +115,12 @@ const getDeps = (node: Node) => {
     }
     if (obj) {
       for (const [name, bareSpec] of Object.entries(obj)) {
-        dependencies.set(name, { name, type: depType, bareSpec })
+        dependencies.set(name, {
+          name,
+          type: depType,
+          bareSpec,
+          registry: node.registry,
+        })
       }
     }
   }
@@ -218,7 +212,10 @@ const parseDir = (
       const depId = findDepID(realpath)
 
       if (depId) {
-        const h = hydrate(depId, alias, options)
+        const h = hydrate(depId, alias, {
+          ...options,
+          registry: fromNode.registry,
+        })
 
         // graphs build with no manifest have no notion of
         // dependency types and or spec definitions since those
@@ -255,7 +252,10 @@ const parseDir = (
       const bareSpec = deps?.bareSpec || '*'
 
       const depType = shorten(type, alias, fromNode.manifest)
-      const spec = Spec.parse(alias, bareSpec, options)
+      const spec = Spec.parse(alias, bareSpec, {
+        ...options,
+        registry: fromNode.registry,
+      })
       const maybeId = getPathBasedId(spec, realpath.relativePosix())
       node = graph.placePackage(
         fromNode,
@@ -298,7 +298,10 @@ const parseDir = (
   for (const { name, type, bareSpec } of dependencies.values()) {
     if (!seenDeps.has(name)) {
       const depType = shorten(type, name, fromNode.manifest)
-      const spec = Spec.parse(name, bareSpec, options)
+      const spec = Spec.parse(name, bareSpec, {
+        ...options,
+        registry: fromNode.registry,
+      })
       graph.placePackage(fromNode, depType, spec)
     }
   }

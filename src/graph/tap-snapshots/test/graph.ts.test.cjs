@@ -58,6 +58,7 @@ Set {
       "version": "1.0.0",
     },
     "projectRoot": #
+    "registry": undefined,
     "resolved": undefined,
     "version": "1.0.0",
   },
@@ -74,6 +75,7 @@ Set {
       "version": "1.0.0",
     },
     "projectRoot": #
+    "registry": undefined,
     "resolved": undefined,
     "version": "1.0.0",
   },
@@ -90,6 +92,7 @@ Set {
       "version": "1.0.0",
     },
     "projectRoot": #
+    "registry": undefined,
     "resolved": undefined,
     "version": "1.0.0",
   },

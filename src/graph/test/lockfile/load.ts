@@ -35,7 +35,12 @@ t.test('load', async t => {
           'sha512-6/deadbeef==',
           'https://registry.example.com/bar/-/bar-1.0.0.tgz',
         ],
-        ';;baz@1.0.0': ['baz', null, null, './node_modules/.pnpm/baz@1.0.0/node_modules/baz'],
+        ';;baz@1.0.0': [
+          'baz',
+          null,
+          null,
+          './node_modules/.pnpm/baz@1.0.0/node_modules/baz',
+        ],
       },
       edges: [
         ['file;.', 'prod', 'linked@file:./linked', 'file;linked'],
