@@ -91,12 +91,6 @@ export class Graph {
   extraneousDependencies: Set<Edge> = new Set()
 
   /**
-   * A list of dangling edges from the root node, representing
-   * missing direct dependencies of a given install.
-   */
-  missingDependencies: Set<Edge> = new Set()
-
-  /**
    * The root of the project this graph represents
    */
   projectRoot: string
@@ -158,9 +152,6 @@ export class Graph {
   ) {
     const edgeOut = from.addEdgesTo(type, spec, to)
     this.edges.add(edgeOut)
-    if (!to) {
-      this.missingDependencies.add(edgeOut)
-    }
     return edgeOut
   }
 
@@ -295,7 +286,6 @@ export class Graph {
     this.manifests.delete(node.id)
     for (const edge of node.edgesOut.values()) {
       this.edges.delete(edge)
-      this.missingDependencies.delete(edge)
     }
     for (const edge of node.edgesIn) {
       if (
@@ -311,7 +301,6 @@ export class Graph {
         edge.to = replacement
       } else {
         edge.to = undefined
-        if (!edge.optional) this.missingDependencies.add(edge)
       }
     }
   }

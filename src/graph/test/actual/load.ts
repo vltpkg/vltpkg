@@ -213,12 +213,6 @@ t.test('load actual', async t => {
   })
 
   t.strictSame(
-    fullGraph.missingDependencies.size,
-    1,
-    'should only have a single missing dependency',
-  )
-
-  t.strictSame(
     fullGraph.extraneousDependencies.size,
     1,
     'should only have found a single extraneous dependency',
