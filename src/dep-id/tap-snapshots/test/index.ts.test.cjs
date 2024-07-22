@@ -263,6 +263,60 @@ Array [
 ]
 `
 
+exports[`test/index.ts > TAP > valid specs > x@a:asfd@1.2.3 > hydrated 1`] = `
+x@a:manifest-name@1.2.3
+`
+
+exports[`test/index.ts > TAP > valid specs > x@a:asfd@1.2.3 > hydrated with name asdf 1`] = `
+asdf@a:manifest-name@1.2.3
+`
+
+exports[`test/index.ts > TAP > valid specs > x@a:asfd@1.2.3 > hydrated with name unknown 1`] = `
+(unknown)@a:manifest-name@1.2.3
+`
+
+exports[`test/index.ts > TAP > valid specs > x@a:asfd@1.2.3 > hydrated with name y 1`] = `
+y@a:manifest-name@1.2.3
+`
+
+exports[`test/index.ts > TAP > valid specs > x@a:asfd@1.2.3 > must match snapshot 1`] = `
+Array [
+  ";a;manifest-name@1.2.3",
+  Array [
+    "registry",
+    "a",
+    "manifest-name@1.2.3",
+  ],
+]
+`
+
+exports[`test/index.ts > TAP > valid specs > x@b:asfd@1.2.3 > hydrated 1`] = `
+x@b:manifest-name@1.2.3
+`
+
+exports[`test/index.ts > TAP > valid specs > x@b:asfd@1.2.3 > hydrated with name asdf 1`] = `
+asdf@b:manifest-name@1.2.3
+`
+
+exports[`test/index.ts > TAP > valid specs > x@b:asfd@1.2.3 > hydrated with name unknown 1`] = `
+(unknown)@b:manifest-name@1.2.3
+`
+
+exports[`test/index.ts > TAP > valid specs > x@b:asfd@1.2.3 > hydrated with name y 1`] = `
+y@b:manifest-name@1.2.3
+`
+
+exports[`test/index.ts > TAP > valid specs > x@b:asfd@1.2.3 > must match snapshot 1`] = `
+Array [
+  ";b;manifest-name@1.2.3",
+  Array [
+    "registry",
+    "b",
+    "manifest-name@1.2.3",
+  ],
+]
+`
+
 exports[`test/index.ts > TAP > valid specs > x@git+ssh://host.com/x.git > hydrated 1`] = `
 x@git+ssh://host.com/x.git#
 `
@@ -447,6 +501,87 @@ Array [
   Array [
     "remote",
     "https://x.com/x.tgz",
+  ],
+]
+`
+
+exports[`test/index.ts > TAP > valid specs > x@registry:https://a.example.com/#asfd@1.2.3 > hydrated 1`] = `
+x@a:manifest-name@1.2.3
+`
+
+exports[`test/index.ts > TAP > valid specs > x@registry:https://a.example.com/#asfd@1.2.3 > hydrated with name asdf 1`] = `
+asdf@a:manifest-name@1.2.3
+`
+
+exports[`test/index.ts > TAP > valid specs > x@registry:https://a.example.com/#asfd@1.2.3 > hydrated with name unknown 1`] = `
+(unknown)@a:manifest-name@1.2.3
+`
+
+exports[`test/index.ts > TAP > valid specs > x@registry:https://a.example.com/#asfd@1.2.3 > hydrated with name y 1`] = `
+y@a:manifest-name@1.2.3
+`
+
+exports[`test/index.ts > TAP > valid specs > x@registry:https://a.example.com/#asfd@1.2.3 > must match snapshot 1`] = `
+Array [
+  ";a;manifest-name@1.2.3",
+  Array [
+    "registry",
+    "a",
+    "manifest-name@1.2.3",
+  ],
+]
+`
+
+exports[`test/index.ts > TAP > valid specs > x@registry:https://b.example.com/#asfd@1.2.3 > hydrated 1`] = `
+x@b:manifest-name@1.2.3
+`
+
+exports[`test/index.ts > TAP > valid specs > x@registry:https://b.example.com/#asfd@1.2.3 > hydrated with name asdf 1`] = `
+asdf@b:manifest-name@1.2.3
+`
+
+exports[`test/index.ts > TAP > valid specs > x@registry:https://b.example.com/#asfd@1.2.3 > hydrated with name unknown 1`] = `
+(unknown)@b:manifest-name@1.2.3
+`
+
+exports[`test/index.ts > TAP > valid specs > x@registry:https://b.example.com/#asfd@1.2.3 > hydrated with name y 1`] = `
+y@b:manifest-name@1.2.3
+`
+
+exports[`test/index.ts > TAP > valid specs > x@registry:https://b.example.com/#asfd@1.2.3 > must match snapshot 1`] = `
+Array [
+  ";b;manifest-name@1.2.3",
+  Array [
+    "registry",
+    "b",
+    "manifest-name@1.2.3",
+  ],
+]
+`
+
+exports[`test/index.ts > TAP > valid specs > x@registry:https://c.example.com/#asfd@1.2.3 > hydrated 1`] = `
+manifest-name@registry:https://c.example.com/#manifest-name@1.2.3
+`
+
+exports[`test/index.ts > TAP > valid specs > x@registry:https://c.example.com/#asfd@1.2.3 > hydrated with name asdf 1`] = `
+manifest-name@registry:https://c.example.com/#manifest-name@1.2.3
+`
+
+exports[`test/index.ts > TAP > valid specs > x@registry:https://c.example.com/#asfd@1.2.3 > hydrated with name unknown 1`] = `
+(unknown)@registry:https://c.example.com/#manifest-name@1.2.3
+`
+
+exports[`test/index.ts > TAP > valid specs > x@registry:https://c.example.com/#asfd@1.2.3 > hydrated with name y 1`] = `
+manifest-name@registry:https://c.example.com/#manifest-name@1.2.3
+`
+
+exports[`test/index.ts > TAP > valid specs > x@registry:https://c.example.com/#asfd@1.2.3 > must match snapshot 1`] = `
+Array [
+  ";https%3A%2F%2Fc.example.com%2F;manifest-name@1.2.3",
+  Array [
+    "registry",
+    "https://c.example.com/",
+    "manifest-name@1.2.3",
   ],
 ]
 `
