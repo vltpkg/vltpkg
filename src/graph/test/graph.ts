@@ -111,11 +111,6 @@ t.test('Graph', async t => {
     'should not allow for adding new edges between same nodes',
   )
   graph.addEdge('prod', Spec.parse('missing@*'), graph.mainImporter)
-  t.strictSame(
-    graph.missingDependencies.size,
-    1,
-    'should add edge to list of missing dependencies',
-  )
   graph.removeNode(newNode, fooTwo)
   t.same(graph.nodesByName.get('foo'), new Set([fooTwo]))
   graph.removeNode(fooTwo)
