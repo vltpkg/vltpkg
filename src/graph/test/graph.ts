@@ -62,24 +62,15 @@ t.test('Graph', async t => {
     newNode,
   )
   t.equal(
-    graph.findResolution(
-      Spec.parse('foo@1.x'),
-      graph.mainImporter,
-    ),
+    graph.findResolution(Spec.parse('foo@1.x'), graph.mainImporter),
     newNode,
   )
   t.equal(
-    graph.findResolution(
-      Spec.parse('foo@3.x'),
-      graph.mainImporter,
-    ),
+    graph.findResolution(Spec.parse('foo@3.x'), graph.mainImporter),
     undefined,
   )
   t.equal(
-    graph.findResolution(
-      Spec.parse('asdf@1.x'),
-      graph.mainImporter,
-    ),
+    graph.findResolution(Spec.parse('asdf@1.x'), graph.mainImporter),
     undefined,
   )
   t.same(

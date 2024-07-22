@@ -49,3 +49,26 @@ exports[`test/ideal/append-nodes.ts > TAP > append file type of nodes > should h
   }
 ]
 `
+
+exports[`test/ideal/append-nodes.ts > TAP > resolve against the correct registries > must match snapshot 1`] = `
+@vltpkg/graph.Graph {
+  registries: {},
+  nodes: {
+    'file;.': [ 'file;.' ],
+    ';a;bar@1.2.3': [ 'bar' ],
+    ';a;x@1.99.99': [ 'x' ],
+    ';a;y@1.99.99': [ 'y' ],
+    ';b;baz@1.2.3': [ 'baz' ],
+    ';b;x@1.99.99': [ 'x' ],
+    ';b;y@1000.0.0': [ 'y' ]
+  },
+  edges: [
+    [ 'file;.', 'prod', 'bar@a:bar@1.x', ';a;bar@1.2.3' ],
+    [ 'file;.', 'prod', 'baz@b:bar@1.x', ';b;baz@1.2.3' ],
+    [ ';a;bar@1.2.3', 'prod', 'x@1.x', ';a;x@1.99.99' ],
+    [ ';a;x@1.99.99', 'prod', 'y@1', ';a;y@1.99.99' ],
+    [ ';b;baz@1.2.3', 'prod', 'x@1.x', ';b;x@1.99.99' ],
+    [ ';b;x@1.99.99', 'prod', 'y@1000', ';b;y@1000.0.0' ]
+  ]
+}
+`

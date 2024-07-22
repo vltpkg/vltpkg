@@ -270,6 +270,7 @@ export class Graph {
 
     // creates a new node and edges to its parent
     const toNode = this.addNode(depId, manifest)
+    toNode.registry = spec.registry
     this.addEdge(depType, spec, fromNode, toNode)
     return toNode
   }

@@ -73,19 +73,20 @@ export const appendNodes = async (
         graph.addEdge(type, spec, fromNode, existingNode)
       }
       const node =
-        existingNode?.manifest ? existingNode :
-        graph.placePackage(
-          fromNode,
-          type,
-          spec,
-          await packageInfo.manifest(spec).catch((er) => {
-            // optional deps ignored if inaccessible
-            if (type === 'optional' || type === 'peerOptional') {
-              return undefined
-            }
-            throw er
-          }),
-          fileTypeInfo?.id,
+        existingNode?.manifest ? existingNode : (
+          graph.placePackage(
+            fromNode,
+            type,
+            spec,
+            await packageInfo.manifest(spec).catch(er => {
+              // optional deps ignored if inaccessible
+              if (type === 'optional' || type === 'peerOptional') {
+                return undefined
+              }
+              throw er
+            }),
+            fileTypeInfo?.id,
+          )
         )
       const mani = node?.manifest ?? {}
 
@@ -113,7 +114,11 @@ export const appendNodes = async (
           const nextDeps: Dependency[] = Object.entries(
             depRecord,
           ).map(([name, bareSpec]) => ({
-            spec: Spec.parse(name, bareSpec, options),
+            // if foo:a@1 depends on b@2, then it must be foo:b@2
+            spec: Spec.parse(name, bareSpec, {
+              ...options,
+              registry: spec.registry,
+            }),
             type: shorten(depTypeName, name, fromNode.manifest),
           }))
           nestedAppends.push(

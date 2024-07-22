@@ -28,6 +28,7 @@ export interface RawDependency {
   name: string
   bareSpec: string
   type: DependencyTypeLong
+  registry?: string
 }
 
 /**
