@@ -161,20 +161,14 @@ t.test('load actual', async t => {
         'symlink',
         '.vlt/;custom;foo@1.0.0/node_modules/foo',
       ),
-      bar: t.fixture(
-        'symlink',
-        '.vlt/;;bar@1.0.0/node_modules/bar',
-      ),
+      bar: t.fixture('symlink', '.vlt/;;bar@1.0.0/node_modules/bar'),
       // This should be ignored when traversing the file system
       broken_symlink: t.fixture('symlink', './link-to-nowhere'),
       extraneous: t.fixture(
         'symlink',
         '.vlt/;;extraneous@1.0.0/node_modules/extraneous',
       ),
-      foo: t.fixture(
-        'symlink',
-        '.vlt/;;foo@1.0.0/node_modules/foo',
-      ),
+      foo: t.fixture('symlink', '.vlt/;;foo@1.0.0/node_modules/foo'),
       link: t.fixture('symlink', '../linked'),
     },
     packages: {
@@ -269,10 +263,7 @@ t.test('cycle', async t => {
                 },
               }),
             },
-            b: t.fixture(
-              'symlink',
-              '../../;;b@1.0.0/node_modules/b',
-            ),
+            b: t.fixture('symlink', '../../;;b@1.0.0/node_modules/b'),
           },
         },
         ';;b@1.0.0': {
@@ -286,17 +277,11 @@ t.test('cycle', async t => {
                 },
               }),
             },
-            a: t.fixture(
-              'symlink',
-              '../../;;a@1.0.0/node_modules/a',
-            ),
+            a: t.fixture('symlink', '../../;;a@1.0.0/node_modules/a'),
           },
         },
       },
-      a: t.fixture(
-        'symlink',
-        '.vlt/;;a@1.0.0/node_modules/a',
-      ),
+      a: t.fixture('symlink', '.vlt/;;a@1.0.0/node_modules/a'),
     },
   })
   t.matchSnapshot(

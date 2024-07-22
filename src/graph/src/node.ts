@@ -60,6 +60,13 @@ export class Node {
   projectRoot: string
 
   /**
+   * For registry nodes, this is the registry we fetched them from.
+   * Needed because their un-prefixed dependencies need to come from
+   * the same registry, if it's not the default.
+   */
+  registry?: string
+
+  /**
    * The name of the package represented by this node, this is usually
    * equivalent to `manifest.name` but in a few ways it may differ such as
    * nodes loaded from a lockfile that lacks a loaded manifest.
