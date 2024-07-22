@@ -231,9 +231,10 @@ export class Spec {
       options = bareOrOptions
       bareOrOptions = undefined
     }
+    const registry = options.registry ?? defaultRegistry
     this.options = {
-      registry: defaultRegistry,
       ...options,
+      registry,
       'git-hosts':
         options['git-hosts'] ?
           {
