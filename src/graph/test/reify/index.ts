@@ -10,7 +10,7 @@ import {
 import { statSync } from 'node:fs'
 import { resolve } from 'path'
 import t from 'tap'
-import { actual, buildIdeal, reify } from '../../src/index.js'
+import { actual, ideal, reify } from '../../src/index.js'
 import {
   fixtureManifest,
   mockPackageInfo,
@@ -33,7 +33,7 @@ t.test('super basic reification', async t => {
     },
   })
   const projectRoot = resolve(dir, 'project')
-  const graph = await buildIdeal({ projectRoot })
+  const graph = await ideal.build({ projectRoot })
   await reify({
     projectRoot,
     packageInfo: mockPackageInfo,
@@ -140,7 +140,7 @@ t.test('reify with a bin', async t => {
   })
 
   const projectRoot = resolve(dir, 'project')
-  const graph = await buildIdeal({ projectRoot })
+  const graph = await ideal.build({ projectRoot })
   await reify({
     projectRoot,
     packageInfo: mockPackageInfo,
@@ -173,7 +173,7 @@ t.test('reify with a bin', async t => {
   })
 
   const projectRoot = resolve(dir, 'project')
-  const graph = await buildIdeal({ projectRoot })
+  const graph = await ideal.build({ projectRoot })
   await reify({
     projectRoot,
     packageInfo: mockPackageInfo,
@@ -208,7 +208,7 @@ t.test('failure rolls back', async t => {
   const projectRoot = resolve(dir, 'project')
 
   const before = actual.load({ projectRoot })
-  const graph = await buildIdeal({ projectRoot })
+  const graph = await ideal.build({ projectRoot })
   const { reify } = await t.mockImport('../../src/reify/index.js', {
     '../../src/reify/chmod-bins.js': {
       chmodBins: () => [
