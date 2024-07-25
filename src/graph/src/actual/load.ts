@@ -153,6 +153,9 @@ const readDir = (
       continue
     }
 
+    // skip anything that isn't a symlink, it's not an edge
+    if (!entry.isSymbolicLink()) continue
+
     // we'll need to learn what is the real path for this entry in order
     // to retrieve the `location` and `id` properties for the node, if a
     // realpath is not found just move on to the next element
