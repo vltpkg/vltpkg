@@ -156,13 +156,14 @@ export function pickManifest(
   let spec: Spec | undefined = undefined
   if (typeof wanted === 'object') {
     if (wanted instanceof Spec) {
-      range = wanted.range
-      spec = wanted
+      const f = wanted.final
+      range = f.range
+      spec = f
     } else {
       range = wanted
     }
   } else {
-    spec = Spec.parse(`${name}@${wanted}`)
+    spec = Spec.parse(`${name}@${wanted}`).final
     range = spec.range
   }
 
