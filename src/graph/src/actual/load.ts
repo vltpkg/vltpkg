@@ -168,9 +168,6 @@ const readDir = (
     const alias = findName(entry)
     const name = findName(realpath)
 
-    // skips reading from the package's own folder
-    if (name === fromNodeName) continue
-
     res.add({
       alias,
       name,
