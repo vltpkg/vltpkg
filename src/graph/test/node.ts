@@ -256,3 +256,64 @@ t.test('Node', async t => {
     'should set expected resolved value for a remote id type',
   )
 })
+
+t.test('nodeModules path and inVltStore flag', t => {
+  const rootMani = { name: 'root' }
+  const root = new Node(
+    {
+      ...options,
+      projectRoot: t.testdirName,
+    },
+    asDepID('file;.'),
+    rootMani,
+  )
+  root.location = '.'
+  t.equal(root.nodeModules, './node_modules')
+  const foo = new Node(
+    {
+      ...options,
+      projectRoot: t.testdirName,
+    },
+    ';;foo@1.2.3',
+    { name: 'foo', version: '1.2.3' },
+  )
+  t.equal(
+    foo.location,
+    './node_modules/.vlt/;;foo@1.2.3/node_modules/foo',
+  )
+  t.equal(foo.inVltStore(), true)
+  t.equal(foo.inVltStore(), true, 'test twice for caching')
+  t.equal(
+    foo.nodeModules,
+    './node_modules/.vlt/;;foo@1.2.3/node_modules',
+  )
+  const bar = new Node(
+    {
+      ...options,
+      projectRoot: t.testdirName,
+    },
+    ';;bar@1.2.3',
+    { name: 'bar', version: '1.2.3' },
+  )
+  t.equal(bar.inVltStore(), true)
+  t.equal(bar.inVltStore(), true, 'test twice for caching')
+  t.equal(
+    bar.location,
+    './node_modules/.vlt/;;bar@1.2.3/node_modules/bar',
+  )
+  t.equal(
+    bar.nodeModules,
+    './node_modules/.vlt/;;bar@1.2.3/node_modules',
+  )
+  const outside = new Node(
+    {
+      ...options,
+      projectRoot: t.testdirName,
+    },
+    'file;some/path',
+    { name: 'foo', version: '1.2.3' },
+  )
+  outside.location = './some/path'
+  t.equal(outside.nodeModules, './some/path/node_modules')
+  t.end()
+})
