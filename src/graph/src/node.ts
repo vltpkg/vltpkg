@@ -80,6 +80,21 @@ export class Node {
   }
 
   /**
+   * The location of the node_modules folder where this node's edgesOut
+   * should be linked into. For nodes in the store, this is the parent
+   * directory, since they're extracted into a node_modules folder
+   * side by side with links to their deps. For nodes outside of the store
+   * (ie, importers and arbitrary link deps) this is the node_modules folder
+   * directly inside the node's directory.
+   */
+  get nodeModules() {
+    const loc = this.location
+    return this.inVltStore() ?
+        loc.substring(0, loc.length - this.name.length - 1)
+      : loc + '/node_modules'
+  }
+
+  /**
    * The version of the package represented by this node, this is usually
    * equivalent to `manifest.version` but in a few ways it may differ such as
    * nodes loaded from a lockfile that lacks a loaded manifest.
@@ -100,11 +115,17 @@ export class Node {
       return this.#location
     }
     this.#location = `./node_modules/.vlt/${this.id}/node_modules/${this.name}`
+    // if using the default location, it is in the store
+    this.inVltStore = () => true
     return this.#location
   }
 
   set location(location: string) {
     this.#location = location
+    // reset memoization, since it might be elsewhere now
+    if (this.inVltStore !== Node.prototype.inVltStore) {
+      this.inVltStore = Node.prototype.inVltStore
+    }
   }
 
   constructor(
@@ -135,18 +156,30 @@ export class Node {
     this.version = version || this.manifest?.version
   }
 
-  #registryNodeResolved(tuple: DepIDTuple) {
-    const spec = hydrateTuple(
-      tuple,
-      this.#name,
-      this.#options,
+  /**
+   * return true if this node is located in the vlt store
+   * memoized the first time it's called, since the store location
+   * doesn't change within the context of a single operation.
+   */
+  inVltStore(): boolean {
+    // technically this just means it's in *a* vlt store, but we can safely
+    // assume that a user won't construct a path like this by accident,
+    // and there's only ever one store in any given project.
+    const inStore = this.location.endsWith(
+      `.vlt/${this.id}/node_modules/${this.name}`,
     )
+    this.inVltStore = () => inStore
+    return inStore
+  }
+
+  #registryNodeResolved(tuple: DepIDTuple) {
+    const spec = hydrateTuple(tuple, this.#name, this.#options)
     this.resolved =
       this.manifest?.dist?.tarball || spec.conventionalRegistryTarball
     this.integrity ??= this.manifest?.dist?.integrity
   }
 
-  equals (other: Node) {
+  equals(other: Node) {
     return this.id === other.id && this.location === other.location
   }
 
