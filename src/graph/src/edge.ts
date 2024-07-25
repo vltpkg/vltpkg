@@ -1,11 +1,27 @@
 import { satisfies } from '@vltpkg/satisfies'
 import { Spec } from '@vltpkg/spec'
+import { inspect, InspectOptions } from 'util'
 import { DependencyTypeShort } from './dependencies.js'
 import { Node } from './node.js'
+
+const kCustomInspect = Symbol.for('nodejs.util.inspect.custom')
 
 export class Edge {
   get [Symbol.toStringTag]() {
     return '@vltpkg/graph.Edge'
+  }
+
+  [kCustomInspect](_: number, options: InspectOptions) {
+    const str = inspect(
+      {
+        from: this.from.id,
+        type: this.type,
+        spec: String(this.spec),
+        to: this.to?.id,
+      },
+      options,
+    )
+    return `${this[Symbol.toStringTag]} ${str}`
   }
 
   /**

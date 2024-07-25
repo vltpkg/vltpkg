@@ -6,30 +6,19 @@
  */
 'use strict'
 exports[`test/edge.ts > TAP > Edge > must match snapshot 1`] = `
-Edge [@vltpkg/graph.Edge] {
-  from: [Node [@vltpkg/graph.Node]],
-  to: [Node [@vltpkg/graph.Node]],
+@vltpkg/graph.Edge {
+  from: ';;root@1.0.0',
   type: 'prod',
-  spec: Spec {child@^1.0.0}
+  spec: 'child@^1.0.0',
+  to: ';;child@1.0.0'
 }
 `
 
 exports[`test/edge.ts > TAP > Edge > must match snapshot 2`] = `
-Edge [@vltpkg/graph.Edge] {
-  from: Node [@vltpkg/graph.Node] {
-    edgesIn: Set(0) {},
-    edgesOut: Map(0) {},
-    id: ';;child@1.0.0',
-    importer: false,
-    integrity: undefined,
-    manifest: [Object],
-    projectRoot: #
-    registry: undefined,
-    version: '1.0.0',
-    resolved: undefined
-  },
-  to: undefined,
+@vltpkg/graph.Edge {
+  from: ';;child@1.0.0',
   type: 'prod',
-  spec: Spec {missing@latest}
+  spec: 'missing@latest',
+  to: undefined
 }
 `
