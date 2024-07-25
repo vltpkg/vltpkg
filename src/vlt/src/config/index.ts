@@ -37,11 +37,11 @@ import {
 } from 'polite-json'
 import { walkUp } from 'walk-up-path'
 import {
-  type Commands,
   commands,
   definition,
   isRecordField,
   recordFields,
+  type Commands,
 } from './definition.js'
 import { merge } from './merge.js'
 export { recordFields, isRecordField }
@@ -69,7 +69,11 @@ const isRecordFieldValue = (k: string, v: unknown): v is string[] =>
   Array.isArray(v) &&
   recordFields.includes(k as (typeof recordFields)[number])
 
-export const pairsToRecords = (obj: ConfigFileData): ConfigData => {
+export const pairsToRecords = (
+  obj: ConfigFileData,
+): Omit<ConfigOptions, 'projectRoot'> & {
+  command?: Record<string, ConfigOptions>
+} => {
   return Object.fromEntries(
     Object.entries(obj).map(([k, v]) => [
       k,
@@ -135,6 +139,15 @@ export type ConfigFileData = {
   : ConfigData[k]
 }
 
+export type ConfigOptions = {
+  [k in keyof ConfigFileData]?: k extends OptListKeys<ConfigData> ?
+    Record<string, string>
+  : k extends 'command' ? never
+  : ConfigData[k]
+} & {
+  projectRoot: string
+}
+
 /**
  * The base config definition set as a type
  */
@@ -182,13 +195,16 @@ export class Config {
   /**
    * A flattened object of the parsed configuration
    */
-  get options(): ConfigFileData {
+  get options(): ConfigOptions {
     if (this.#options) return this.#options
-    this.#options = pairsToRecords(this.parse().values)
+    this.#options = Object.assign(
+      pairsToRecords(this.parse().values),
+      { projectRoot: this.projectRoot },
+    )
     return this.#options
   }
   // memoized options() getter value
-  #options?: ConfigFileData
+  #options?: ConfigOptions
 
   /**
    * positional arguments to the vlt process
