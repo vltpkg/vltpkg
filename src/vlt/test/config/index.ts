@@ -208,6 +208,7 @@ t.test(
     }
     const opts = conf.options
     t.strictSame(opts, {
+      projectRoot: t.testdirName,
       'git-hosts': {
         asdfasdf: 'https://example.com',
         github: 'https://github',
