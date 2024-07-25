@@ -60,6 +60,25 @@ t.test('basic carat range selection', t => {
   t.end()
 })
 
+t.test('do not be confused by subspecs', t => {
+  const metadata = {
+    name: 'bar',
+    versions: {
+      '1.0.0': { version: '1.0.0' },
+      '1.0.1': { version: '1.0.1' },
+      '1.0.2': { version: '1.0.2' },
+      '2.0.0': { version: '2.0.0' },
+    },
+  } as unknown as Packument
+  const manifest = pickManifest(metadata, Spec.parse('foo@npm:bar@^1.0.0'))
+  t.equal(
+    manifest?.version,
+    '1.0.2',
+    'picked the right manifest using ^ in a subspec',
+  )
+  t.end()
+})
+
 t.test('caret range object selection', t => {
   const metadata = {
     versions: {
