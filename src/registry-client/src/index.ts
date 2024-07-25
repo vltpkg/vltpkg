@@ -134,7 +134,8 @@ export class RegistryClient {
       userAgent,
     )
     options.method = options.method ?? 'GET'
-    return await new Promise<CacheEntry>((res, rej) => {
+    // do not await, or else stack overflow happens
+    return new Promise<CacheEntry>((res, rej) => {
       let entry: CacheEntry
       pool.dispatch(options as Dispatcher.DispatchOptions, {
         onHeaders: (sc, h, resume) => {
