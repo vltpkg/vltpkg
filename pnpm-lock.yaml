@@ -989,6 +989,9 @@ importers:
 
   src/vlt:
     dependencies:
+      '@vltpkg/dep-id':
+        specifier: workspace:*
+        version: link:../dep-id
       '@vltpkg/error-cause':
         specifier: workspace:*
         version: link:../error-cause
@@ -1004,6 +1007,9 @@ importers:
       '@vltpkg/run':
         specifier: workspace:*
         version: link:../run
+      '@vltpkg/spec':
+        specifier: workspace:*
+        version: link:../spec
       '@vltpkg/types':
         specifier: workspace:*
         version: link:../types

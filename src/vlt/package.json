@@ -21,11 +21,13 @@
     "vlix": "./dist/esm/vlix.js"
   },
   "dependencies": {
+    "@vltpkg/dep-id": "workspace:*",
     "@vltpkg/error-cause": "workspace:*",
     "@vltpkg/graph": "workspace:*",
     "@vltpkg/package-json": "workspace:*",
     "@vltpkg/promise-spawn": "workspace:*",
     "@vltpkg/run": "workspace:*",
+    "@vltpkg/spec": "workspace:*",
     "@vltpkg/types": "workspace:*",
     "@vltpkg/workspaces": "workspace:*",
     "@vltpkg/xdg": "workspace:*",
