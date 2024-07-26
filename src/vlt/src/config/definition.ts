@@ -455,6 +455,30 @@ export const definition = jack({
   })
 
   .flag({
+    'save-dev': {
+      short: 'D',
+      description: `Save installed packages to a package.json file as
+                    devDependencies`,
+    },
+    'save-optional': {
+      short: 'O',
+      description: `Save installed packages to a package.json file as
+                    optionalDependencies`,
+    },
+    'save-peer': {
+      description: `Save installed packages to a package.json file as
+                    peerDependencies`,
+    },
+    'save-prod': {
+      short: 'P',
+      description: `Save installed packages into dependencies specifically.
+                    This is useful if a package already exists in
+                    devDependencies or optionalDependencies, but you want to
+                    move it to be a non-optional production dependency.`,
+    },
+  })
+
+  .flag({
     help: {
       short: 'h',
       description: 'Print helpful information',

@@ -218,6 +218,25 @@ Object {
     "hint": "url",
     "type": "string",
   },
+  "save-dev": Object {
+    "description": "Save installed packages to a package.json file as devDependencies",
+    "short": "D",
+    "type": "boolean",
+  },
+  "save-optional": Object {
+    "description": "Save installed packages to a package.json file as optionalDependencies",
+    "short": "O",
+    "type": "boolean",
+  },
+  "save-peer": Object {
+    "description": "Save installed packages to a package.json file as peerDependencies",
+    "type": "boolean",
+  },
+  "save-prod": Object {
+    "description": "Save installed packages into dependencies specifically. This is useful if a package already exists in devDependencies or optionalDependencies, but you want to move it to be a non-optional production dependency.",
+    "short": "P",
+    "type": "boolean",
+  },
   "scope-registries": Object {
     "description": String(
       Map package name scopes to registry URLs.
