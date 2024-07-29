@@ -75,6 +75,85 @@ export const gitHostWebsites = {
   gitlab: 'https://gitlab.com/',
 }
 
+const getOptions = (options: SpecOptions): SpecOptionsFilled => ({
+  ...options,
+  registry: options.registry ?? defaultRegistry,
+  'scope-registries': options['scope-registries'] ?? {},
+  'git-hosts':
+    options['git-hosts'] ?
+      {
+        ...defaultGitHosts,
+        ...options['git-hosts'],
+      }
+    : defaultGitHosts,
+  registries:
+    options.registries ?
+      {
+        ...defaultRegistries,
+        ...options.registries,
+      }
+    : defaultRegistries,
+  'git-host-archives':
+    options['git-host-archives'] ?
+      {
+        ...defaultGitHostArchives,
+        ...options['git-host-archives'],
+      }
+    : defaultGitHostArchives,
+})
+
+/**
+ * Various nameless scenarios that are handled in the
+ * standard spec parsing and should return an unknown name.
+ *
+ * Returns `true` if the name can not be inferred, `false` otherwise.
+ */
+const startsWithSpecIdentifier = (
+  spec: string,
+  options: SpecOptionsFilled,
+): boolean =>
+  spec.startsWith('/') ||
+  spec.startsWith('./') ||
+  spec.startsWith('../') ||
+  spec.startsWith('file:') ||
+  spec.startsWith('http:') ||
+  spec.startsWith('https:') ||
+  spec.startsWith('workspace:') ||
+  spec.startsWith('git@') ||
+  spec.startsWith('git://') ||
+  spec.startsWith('git+ssh://') ||
+  spec.startsWith('git+http://') ||
+  spec.startsWith('git+https://') ||
+  spec.startsWith('git+file://') ||
+  spec.startsWith('git@github.com') ||
+  spec.startsWith('registry:') ||
+  // anything that starts with a known git host key, or a
+  // custom registered registry protocol e.g: `github:`, `custom:`
+  [
+    ...Object.keys(options['git-hosts']),
+    ...Object.keys(options.registries),
+  ].some(key => spec.startsWith(`${key}:`))
+
+/**
+ * Returns the location in which the first `@` value is found in a given
+ * string, also takes into account that a string starting with @ is
+ * using a scoped-name.
+ */
+const findFirstAt = (spec: string, hasScope: boolean) =>
+  spec.indexOf('@', hasScope ? 1 : 0)
+
+/**
+ * Return `true` if a given spec string is likely to be a git spec.
+ */
+const findGitIdentifier = (spec: string): boolean =>
+  spec.indexOf('#') > 2
+
+/**
+ * Return `true` if a given spec string is likely to be a file spec.
+ */
+const findFileIdentifier = (spec: string): boolean =>
+  spec.includes('/')
+
 export class Spec {
   /**
    * Create a Spec object from a full spec, name+bareSpec, or Spec object
@@ -97,6 +176,38 @@ export class Spec {
     return typeof spec === 'object' ? spec : (
         new Spec(spec, bareOrOptions, options)
       )
+  }
+
+  static parseArgs(specOrBareSpec: string, opts?: SpecOptions): Spec {
+    const options = getOptions(opts || {})
+
+    if (startsWithSpecIdentifier(specOrBareSpec, options)) {
+      const parsed = Spec.parse('(unknown)', specOrBareSpec, options)
+      // try to look into a potential parsed subspec for a name
+      if (parsed.subspec) {
+        parsed.name = parsed.subspec.name
+        parsed.spec = `${parsed.name}@${parsed.bareSpec}`
+      }
+      return parsed
+    } else {
+      const hasScope = specOrBareSpec.startsWith('@')
+      let at = findFirstAt(specOrBareSpec, hasScope)
+      if (at > -1) {
+        return Spec.parse(
+          specOrBareSpec.substring(0, at),
+          specOrBareSpec.substring(at + 1),
+          options,
+        )
+      } else if (
+        findGitIdentifier(specOrBareSpec) ||
+        (!hasScope && findFileIdentifier(specOrBareSpec))
+      ) {
+        return Spec.parse('(unknown)', specOrBareSpec, options)
+      } else {
+        // doesn't have an @, so it's just a name with no version
+        return Spec.parse(`${specOrBareSpec}@`, options)
+      }
+    }
   }
 
   /** the type of spec that this is, ultimately */
@@ -244,32 +355,7 @@ export class Spec {
       options = bareOrOptions
       bareOrOptions = undefined
     }
-    this.options = {
-      ...options,
-      registry: options.registry ?? defaultRegistry,
-      'scope-registries': options['scope-registries'] ?? {},
-      'git-hosts':
-        options['git-hosts'] ?
-          {
-            ...defaultGitHosts,
-            ...options['git-hosts'],
-          }
-        : defaultGitHosts,
-      registries:
-        options.registries ?
-          {
-            ...defaultRegistries,
-            ...options.registries,
-          }
-        : defaultRegistries,
-      'git-host-archives':
-        options['git-host-archives'] ?
-          {
-            ...defaultGitHostArchives,
-            ...options['git-host-archives'],
-          }
-        : defaultGitHostArchives,
-    }
+    this.options = getOptions(options)
 
     if (typeof bareOrOptions === 'string') {
       this.name = spec
@@ -279,7 +365,7 @@ export class Spec {
     } else {
       this.spec = spec
       const hasScope = spec.startsWith('@')
-      let at = spec.indexOf('@', hasScope ? 1 : 0)
+      let at = findFirstAt(spec, hasScope)
       if (at === -1) {
         // assume that an unadorned spec is just a name at the default
         // registry
