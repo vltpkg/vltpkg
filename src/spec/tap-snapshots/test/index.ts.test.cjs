@@ -6010,6 +6010,2478 @@ exports[`test/index.ts > TAP > mixing scopes and names > scopes: @a, @y, @j 1`] 
 }
 `
 
+exports[`test/index.ts > TAP > parse args > ./foo > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'file',
+  spec: '(unknown)@file:./foo',
+  name: '(unknown)',
+  bareSpec: 'file:./foo',
+  file: './foo'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > @a/b@bitbucket:a/b > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: '@a/b@bitbucket:a/b',
+  name: '@a/b',
+  scope: '@a',
+  bareSpec: 'bitbucket:a/b',
+  gitRemote: 'git+ssh://git@bitbucket.org:a/b.git',
+  namedGitHost: 'bitbucket',
+  namedGitHostPath: 'a/b'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > @a/b@npm:@y/z@1.2.3 > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'registry',
+  spec: '@a/b@npm:@y/z@1.2.3',
+  name: '@a/b',
+  scope: '@a',
+  bareSpec: 'npm:@y/z@1.2.3',
+  namedRegistry: 'npm',
+  registry: 'https://registry.npmjs.org/',
+  conventionalRegistryTarball: 'https://registry.npmjs.org/@y/z/-/z-1.2.3.tgz',
+  subspec: @vltpkg/spec.Spec {
+    type: 'registry',
+    spec: '@y/z@1.2.3',
+    name: '@y/z',
+    scope: '@y',
+    bareSpec: '1.2.3',
+    namedRegistry: 'npm',
+    registry: 'https://registry.npmjs.org/',
+    registrySpec: '1.2.3',
+    conventionalRegistryTarball: 'https://registry.npmjs.org/@y/z/-/z-1.2.3.tgz',
+    semver: '1.2.3',
+    range: Range {
+      raw: '1.2.3',
+      isAny: false,
+      set: [ [Comparator] ],
+      includePrerelease: false
+    }
+  }
+}
+`
+
+exports[`test/index.ts > TAP > parse args > @foo/bar > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'registry',
+  spec: '@foo/bar@',
+  name: '@foo/bar',
+  scope: '@foo',
+  bareSpec: '',
+  registry: 'https://registry.npmjs.org/',
+  registrySpec: '',
+  semver: '',
+  range: Range {
+    raw: '',
+    isAny: true,
+    set: [ [Comparator] ],
+    includePrerelease: false
+  }
+}
+`
+
+exports[`test/index.ts > TAP > parse args > @foo/bar@ > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'registry',
+  spec: '@foo/bar@',
+  name: '@foo/bar',
+  scope: '@foo',
+  bareSpec: '',
+  registry: 'https://registry.npmjs.org/',
+  registrySpec: '',
+  semver: '',
+  range: Range {
+    raw: '',
+    isAny: true,
+    set: [ [Comparator] ],
+    includePrerelease: false
+  }
+}
+`
+
+exports[`test/index.ts > TAP > parse args > @foo/bar@* > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'registry',
+  spec: '@foo/bar@*',
+  name: '@foo/bar',
+  scope: '@foo',
+  bareSpec: '*',
+  registry: 'https://registry.npmjs.org/',
+  registrySpec: '*',
+  semver: '*',
+  range: Range {
+    raw: '*',
+    isAny: true,
+    set: [ [Comparator] ],
+    includePrerelease: false
+  }
+}
+`
+
+exports[`test/index.ts > TAP > parse args > @foo/bar@baz > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'registry',
+  spec: '@foo/bar@baz',
+  name: '@foo/bar',
+  scope: '@foo',
+  bareSpec: 'baz',
+  registry: 'https://registry.npmjs.org/',
+  registrySpec: 'baz',
+  distTag: 'baz'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > @foo/bar@git+ssh://bitbucket.org/user/foo > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: '@foo/bar@git+ssh://bitbucket.org/user/foo',
+  name: '@foo/bar',
+  scope: '@foo',
+  bareSpec: 'git+ssh://bitbucket.org/user/foo',
+  gitRemote: 'git+ssh://bitbucket.org/user/foo'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > @foo/bar@git+ssh://github.com/user/foo > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: '@foo/bar@git+ssh://github.com/user/foo',
+  name: '@foo/bar',
+  scope: '@foo',
+  bareSpec: 'git+ssh://github.com/user/foo',
+  gitRemote: 'git+ssh://github.com/user/foo'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > @foo/bar@git+ssh://gitlab.com/user/foo > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: '@foo/bar@git+ssh://gitlab.com/user/foo',
+  name: '@foo/bar',
+  scope: '@foo',
+  bareSpec: 'git+ssh://gitlab.com/user/foo',
+  gitRemote: 'git+ssh://gitlab.com/user/foo'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > @foo/bar@git+ssh://notgithub.com/user/foo > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: '@foo/bar@git+ssh://notgithub.com/user/foo',
+  name: '@foo/bar',
+  scope: '@foo',
+  bareSpec: 'git+ssh://notgithub.com/user/foo',
+  gitRemote: 'git+ssh://notgithub.com/user/foo'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > @x/y@workspace:@a/b@ > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'workspace',
+  spec: '@x/y@workspace:@a/b@',
+  name: '@x/y',
+  scope: '@x',
+  bareSpec: 'workspace:@a/b@',
+  workspaceSpec: '*',
+  workspace: '@a/b'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > /path/to/foo > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'file',
+  spec: '(unknown)@file:///path/to/foo',
+  name: '(unknown)',
+  bareSpec: 'file:///path/to/foo',
+  file: '/path/to/foo'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > /path/to/foo.tar > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'file',
+  spec: '(unknown)@file:///path/to/foo.tar',
+  name: '(unknown)',
+  bareSpec: 'file:///path/to/foo.tar',
+  file: '/path/to/foo.tar'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > /path/to/foo.tgz > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'file',
+  spec: '(unknown)@file:///path/to/foo.tgz',
+  name: '(unknown)',
+  bareSpec: 'file:///path/to/foo.tgz',
+  file: '/path/to/foo.tgz'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > custom:foo > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'registry',
+  spec: 'foo@custom:foo',
+  name: 'foo',
+  bareSpec: 'custom:foo',
+  namedRegistry: 'custom',
+  registry: 'http://example.com',
+  subspec: @vltpkg/spec.Spec {
+    type: 'registry',
+    spec: 'foo',
+    name: 'foo',
+    bareSpec: '',
+    namedRegistry: 'custom',
+    registry: 'http://example.com',
+    registrySpec: '',
+    semver: '',
+    range: Range {
+      raw: '',
+      isAny: true,
+      set: [ [Comparator] ],
+      includePrerelease: false
+    }
+  }
+}
+`
+
+exports[`test/index.ts > TAP > parse args > custom:foo@1 > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'registry',
+  spec: 'foo@custom:foo@1',
+  name: 'foo',
+  bareSpec: 'custom:foo@1',
+  namedRegistry: 'custom',
+  registry: 'http://example.com',
+  subspec: @vltpkg/spec.Spec {
+    type: 'registry',
+    spec: 'foo@1',
+    name: 'foo',
+    bareSpec: '1',
+    namedRegistry: 'custom',
+    registry: 'http://example.com',
+    registrySpec: '1',
+    semver: '1',
+    range: Range {
+      raw: '1',
+      isAny: false,
+      set: [ [Comparator] ],
+      includePrerelease: false
+    }
+  }
+}
+`
+
+exports[`test/index.ts > TAP > parse args > file: > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'file',
+  spec: '(unknown)@file:.',
+  name: '(unknown)',
+  bareSpec: 'file:.',
+  file: '.'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > file:../path/to/foo > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'file',
+  spec: '(unknown)@file:../path/to/foo',
+  name: '(unknown)',
+  bareSpec: 'file:../path/to/foo',
+  file: '../path/to/foo'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > file:./path/to/foo > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'file',
+  spec: '(unknown)@file:./path/to/foo',
+  name: '(unknown)',
+  bareSpec: 'file:./path/to/foo',
+  file: './path/to/foo'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > file:/. > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'file',
+  spec: '(unknown)@file:.',
+  name: '(unknown)',
+  bareSpec: 'file:.',
+  file: '.'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > file:/.. > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'file',
+  spec: '(unknown)@file:..',
+  name: '(unknown)',
+  bareSpec: 'file:..',
+  file: '..'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > file:/../path/to/foo > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'file',
+  spec: '(unknown)@file:../path/to/foo',
+  name: '(unknown)',
+  bareSpec: 'file:../path/to/foo',
+  file: '../path/to/foo'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > file:/./path/to/foo > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'file',
+  spec: '(unknown)@file:./path/to/foo',
+  name: '(unknown)',
+  bareSpec: 'file:./path/to/foo',
+  file: './path/to/foo'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > file:/.path/to/foo > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'file',
+  spec: '(unknown)@file:///.path/to/foo',
+  name: '(unknown)',
+  bareSpec: 'file:///.path/to/foo',
+  file: '/.path/to/foo'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > file:// > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'file',
+  spec: '(unknown)@file:.',
+  name: '(unknown)',
+  bareSpec: 'file:.',
+  file: '.'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > file://. > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'file',
+  spec: '(unknown)@file:.',
+  name: '(unknown)',
+  bareSpec: 'file:.',
+  file: '.'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > file://.. > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'file',
+  spec: '(unknown)@file:..',
+  name: '(unknown)',
+  bareSpec: 'file:..',
+  file: '..'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > file://../path/to/foo > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'file',
+  spec: '(unknown)@file:../path/to/foo',
+  name: '(unknown)',
+  bareSpec: 'file:../path/to/foo',
+  file: '../path/to/foo'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > file://./path/to/foo > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'file',
+  spec: '(unknown)@file:./path/to/foo',
+  name: '(unknown)',
+  bareSpec: 'file:./path/to/foo',
+  file: './path/to/foo'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > file:////path/to/foo > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'file',
+  spec: '(unknown)@file:////path/to/foo',
+  name: '(unknown)',
+  bareSpec: 'file:////path/to/foo',
+  file: '//path/to/foo'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > file:///~/path/to/foo > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'file',
+  spec: '(unknown)@file:~/path/to/foo',
+  name: '(unknown)',
+  bareSpec: 'file:~/path/to/foo',
+  file: '/mock/home/path/to/foo'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > file:///path/to/foo > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'file',
+  spec: '(unknown)@file:///path/to/foo',
+  name: '(unknown)',
+  bareSpec: 'file:///path/to/foo',
+  file: '/path/to/foo'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > file://~/path/to/foo > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'file',
+  spec: '(unknown)@file:~/path/to/foo',
+  name: '(unknown)',
+  bareSpec: 'file:~/path/to/foo',
+  file: '/mock/home/path/to/foo'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > file:/~/path/to/foo > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'file',
+  spec: '(unknown)@file:~/path/to/foo',
+  name: '(unknown)',
+  bareSpec: 'file:~/path/to/foo',
+  file: '/mock/home/path/to/foo'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > file:/path/to/foo > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'file',
+  spec: '(unknown)@file:///path/to/foo',
+  name: '(unknown)',
+  bareSpec: 'file:///path/to/foo',
+  file: '/path/to/foo'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > file:~/path/to/foo > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'file',
+  spec: '(unknown)@file:~/path/to/foo',
+  name: '(unknown)',
+  bareSpec: 'file:~/path/to/foo',
+  file: '/mock/home/path/to/foo'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > file:path/to/foo > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'file',
+  spec: '(unknown)@file:./path/to/foo',
+  name: '(unknown)',
+  bareSpec: 'file:./path/to/foo',
+  file: './path/to/foo'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > file:path/to/foo.tar.gz > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'file',
+  spec: '(unknown)@file:./path/to/foo.tar.gz',
+  name: '(unknown)',
+  bareSpec: 'file:./path/to/foo.tar.gz',
+  file: './path/to/foo.tar.gz'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > foo > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'registry',
+  spec: 'foo@',
+  name: 'foo',
+  bareSpec: '',
+  registry: 'https://registry.npmjs.org/',
+  registrySpec: '',
+  semver: '',
+  range: Range {
+    raw: '',
+    isAny: true,
+    set: [ [Comparator] ],
+    includePrerelease: false
+  }
+}
+`
+
+exports[`test/index.ts > TAP > parse args > foo@ > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'registry',
+  spec: 'foo@',
+  name: 'foo',
+  bareSpec: '',
+  registry: 'https://registry.npmjs.org/',
+  registrySpec: '',
+  semver: '',
+  range: Range {
+    raw: '',
+    isAny: true,
+    set: [ [Comparator] ],
+    includePrerelease: false
+  }
+}
+`
+
+exports[`test/index.ts > TAP > parse args > foo@ 1.2 > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'registry',
+  spec: 'foo@ 1.2 ',
+  name: 'foo',
+  bareSpec: ' 1.2 ',
+  registry: 'https://registry.npmjs.org/',
+  registrySpec: ' 1.2 ',
+  semver: '1.2',
+  range: Range {
+    raw: ' 1.2 ',
+    isAny: false,
+    set: [ [Comparator] ],
+    includePrerelease: false
+  }
+}
+`
+
+exports[`test/index.ts > TAP > parse args > foo@ 1.2.3 > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'registry',
+  spec: 'foo@ 1.2.3 ',
+  name: 'foo',
+  bareSpec: ' 1.2.3 ',
+  registry: 'https://registry.npmjs.org/',
+  registrySpec: ' 1.2.3 ',
+  conventionalRegistryTarball: 'https://registry.npmjs.org/foo/-/foo-1.2.3.tgz',
+  semver: '1.2.3',
+  range: Range {
+    raw: ' 1.2.3 ',
+    isAny: false,
+    set: [ [Comparator] ],
+    includePrerelease: false
+  }
+}
+`
+
+exports[`test/index.ts > TAP > parse args > foo@ 1.2.3 > inspect default 2`] = `
+@vltpkg/spec.Spec {
+  type: 'registry',
+  spec: 'foo@ 1.2.3',
+  name: 'foo',
+  bareSpec: ' 1.2.3',
+  registry: 'https://registry.npmjs.org/',
+  registrySpec: ' 1.2.3',
+  conventionalRegistryTarball: 'https://registry.npmjs.org/foo/-/foo-1.2.3.tgz',
+  semver: '1.2.3',
+  range: Range {
+    raw: ' 1.2.3',
+    isAny: false,
+    set: [ [Comparator] ],
+    includePrerelease: false
+  }
+}
+`
+
+exports[`test/index.ts > TAP > parse args > foo@=v1.2.3 > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'registry',
+  spec: 'foo@=v1.2.3',
+  name: 'foo',
+  bareSpec: '=v1.2.3',
+  registry: 'https://registry.npmjs.org/',
+  registrySpec: '=v1.2.3',
+  conventionalRegistryTarball: 'https://registry.npmjs.org/foo/-/foo-1.2.3.tgz',
+  semver: '=v1.2.3',
+  range: Range {
+    raw: '=v1.2.3',
+    isAny: false,
+    set: [ [Comparator] ],
+    includePrerelease: false
+  }
+}
+`
+
+exports[`test/index.ts > TAP > parse args > foo@~1.2 > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'registry',
+  spec: 'foo@~1.2',
+  name: 'foo',
+  bareSpec: '~1.2',
+  registry: 'https://registry.npmjs.org/',
+  registrySpec: '~1.2',
+  semver: '~1.2',
+  range: Range {
+    raw: '~1.2',
+    isAny: false,
+    set: [ [Comparator] ],
+    includePrerelease: false
+  }
+}
+`
+
+exports[`test/index.ts > TAP > parse args > foo@1.2 > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'registry',
+  spec: 'foo@1.2',
+  name: 'foo',
+  bareSpec: '1.2',
+  registry: 'https://registry.npmjs.org/',
+  registrySpec: '1.2',
+  semver: '1.2',
+  range: Range {
+    raw: '1.2',
+    isAny: false,
+    set: [ [Comparator] ],
+    includePrerelease: false
+  }
+}
+`
+
+exports[`test/index.ts > TAP > parse args > foo@1.2.3 > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'registry',
+  spec: 'foo@1.2.3',
+  name: 'foo',
+  bareSpec: '1.2.3',
+  registry: 'https://registry.npmjs.org/',
+  registrySpec: '1.2.3',
+  conventionalRegistryTarball: 'https://registry.npmjs.org/foo/-/foo-1.2.3.tgz',
+  semver: '1.2.3',
+  range: Range {
+    raw: '1.2.3',
+    isAny: false,
+    set: [ [Comparator] ],
+    includePrerelease: false
+  }
+}
+`
+
+exports[`test/index.ts > TAP > parse args > foo@1.2.3 > inspect default 2`] = `
+@vltpkg/spec.Spec {
+  type: 'registry',
+  spec: 'foo@1.2.3 ',
+  name: 'foo',
+  bareSpec: '1.2.3 ',
+  registry: 'https://registry.npmjs.org/',
+  registrySpec: '1.2.3 ',
+  conventionalRegistryTarball: 'https://registry.npmjs.org/foo/-/foo-1.2.3.tgz',
+  semver: '1.2.3',
+  range: Range {
+    raw: '1.2.3 ',
+    isAny: false,
+    set: [ [Comparator] ],
+    includePrerelease: false
+  }
+}
+`
+
+exports[`test/index.ts > TAP > parse args > foo@bar/foo > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: 'foo@github:bar/foo',
+  name: 'foo',
+  bareSpec: 'github:bar/foo',
+  gitRemote: 'git+ssh://git@github.com:bar/foo.git',
+  namedGitHost: 'github',
+  namedGitHostPath: 'bar/foo'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > foo@bitbucket:user/foo-js > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: 'foo@bitbucket:user/foo-js',
+  name: 'foo',
+  bareSpec: 'bitbucket:user/foo-js',
+  gitRemote: 'git+ssh://git@bitbucket.org:user/foo-js.git',
+  namedGitHost: 'bitbucket',
+  namedGitHostPath: 'user/foo-js'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > foo@gitlab:user/foo-js > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: 'foo@gitlab:user/foo-js',
+  name: 'foo',
+  bareSpec: 'gitlab:user/foo-js',
+  gitRemote: 'git+ssh://git@gitlab.com:user/foo-js.git',
+  namedGitHost: 'gitlab',
+  namedGitHostPath: 'user/foo-js'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > foo@https://bitbucket.org/user/project/a/s/d/f/#semver:1.x::path:src/foo > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: 'foo@bitbucket:user/project#semver:1.x::path:src/foo',
+  name: 'foo',
+  bareSpec: 'bitbucket:user/project#semver:1.x::path:src/foo',
+  gitRemote: 'git+ssh://git@bitbucket.org:user/project.git',
+  gitSelector: 'semver:1.x::path:src/foo',
+  gitSelectorParsed: { semver: '1.x', path: 'src/foo' },
+  namedGitHost: 'bitbucket',
+  namedGitHostPath: 'user/project',
+  range: Range {
+    raw: '1.x',
+    isAny: false,
+    set: [ [Comparator] ],
+    includePrerelease: false
+  }
+}
+`
+
+exports[`test/index.ts > TAP > parse args > foo@latest > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'registry',
+  spec: 'foo@latest',
+  name: 'foo',
+  bareSpec: 'latest',
+  registry: 'https://registry.npmjs.org/',
+  registrySpec: 'latest',
+  distTag: 'latest'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > foo@npm:bar@ > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'registry',
+  spec: 'foo@npm:bar@',
+  name: 'foo',
+  bareSpec: 'npm:bar@',
+  namedRegistry: 'npm',
+  registry: 'https://registry.npmjs.org/',
+  subspec: @vltpkg/spec.Spec {
+    type: 'registry',
+    spec: 'bar@',
+    name: 'bar',
+    bareSpec: '',
+    namedRegistry: 'npm',
+    registry: 'https://registry.npmjs.org/',
+    registrySpec: '',
+    semver: '',
+    range: Range {
+      raw: '',
+      isAny: true,
+      set: [ [Comparator] ],
+      includePrerelease: false
+    }
+  }
+}
+`
+
+exports[`test/index.ts > TAP > parse args > foo@user/foo-js > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: 'foo@github:user/foo-js',
+  name: 'foo',
+  bareSpec: 'github:user/foo-js',
+  gitRemote: 'git+ssh://git@github.com:user/foo-js.git',
+  namedGitHost: 'github',
+  namedGitHostPath: 'user/foo-js'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > foo/bar/baz > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'file',
+  spec: '(unknown)@file:./foo/bar/baz',
+  name: '(unknown)',
+  bareSpec: 'file:./foo/bar/baz',
+  file: './foo/bar/baz'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > git://notgithub.com/user/foo > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: '(unknown)@git://notgithub.com/user/foo',
+  name: '(unknown)',
+  bareSpec: 'git://notgithub.com/user/foo',
+  gitRemote: 'git://notgithub.com/user/foo'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > git+file://path/to/repo#1.2.3 > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: '(unknown)@git+file://path/to/repo#1.2.3',
+  name: '(unknown)',
+  bareSpec: 'git+file://path/to/repo#1.2.3',
+  gitRemote: 'git+file://path/to/repo',
+  gitSelector: '1.2.3',
+  gitSelectorParsed: {},
+  gitCommittish: '1.2.3'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > git+ssh://git@github.com:user/foo#semver:^1.2.3 > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: '(unknown)@github:user/foo#semver:^1.2.3',
+  name: '(unknown)',
+  bareSpec: 'github:user/foo#semver:^1.2.3',
+  gitRemote: 'git+ssh://git@github.com:user/foo.git',
+  gitSelector: 'semver:^1.2.3',
+  gitSelectorParsed: { semver: '^1.2.3' },
+  namedGitHost: 'github',
+  namedGitHostPath: 'user/foo',
+  range: Range {
+    raw: '^1.2.3',
+    isAny: false,
+    set: [ [Comparator] ],
+    includePrerelease: false
+  }
+}
+`
+
+exports[`test/index.ts > TAP > parse args > git+ssh://git@github.com/user/foo#1.2.3 > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: '(unknown)@git+ssh://git@github.com/user/foo#1.2.3',
+  name: '(unknown)',
+  bareSpec: 'git+ssh://git@github.com/user/foo#1.2.3',
+  gitRemote: 'git+ssh://git@github.com/user/foo',
+  gitSelector: '1.2.3',
+  gitSelectorParsed: {},
+  gitCommittish: '1.2.3'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > git+ssh://git@github.com/user/foo#semver:^1.2.3 > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: '(unknown)@git+ssh://git@github.com/user/foo#semver:^1.2.3',
+  name: '(unknown)',
+  bareSpec: 'git+ssh://git@github.com/user/foo#semver:^1.2.3',
+  gitRemote: 'git+ssh://git@github.com/user/foo',
+  gitSelector: 'semver:^1.2.3',
+  gitSelectorParsed: { semver: '^1.2.3' },
+  range: Range {
+    raw: '^1.2.3',
+    isAny: false,
+    set: [ [Comparator] ],
+    includePrerelease: false
+  }
+}
+`
+
+exports[`test/index.ts > TAP > parse args > git+ssh://git@notgithub.com:user/foo > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: '(unknown)@git+ssh://git@notgithub.com:user/foo',
+  name: '(unknown)',
+  bareSpec: 'git+ssh://git@notgithub.com:user/foo',
+  gitRemote: 'git+ssh://git@notgithub.com:user/foo'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > git+ssh://git@notgithub.com:user/foo#1.2.3 > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: '(unknown)@git+ssh://git@notgithub.com:user/foo#1.2.3',
+  name: '(unknown)',
+  bareSpec: 'git+ssh://git@notgithub.com:user/foo#1.2.3',
+  gitRemote: 'git+ssh://git@notgithub.com:user/foo',
+  gitSelector: '1.2.3',
+  gitSelectorParsed: {},
+  gitCommittish: '1.2.3'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > git+ssh://git@notgithub.com:user/foo#semver:^1.2.3 > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: '(unknown)@git+ssh://git@notgithub.com:user/foo#semver:^1.2.3',
+  name: '(unknown)',
+  bareSpec: 'git+ssh://git@notgithub.com:user/foo#semver:^1.2.3',
+  gitRemote: 'git+ssh://git@notgithub.com:user/foo',
+  gitSelector: 'semver:^1.2.3',
+  gitSelectorParsed: { semver: '^1.2.3' },
+  range: Range {
+    raw: '^1.2.3',
+    isAny: false,
+    set: [ [Comparator] ],
+    includePrerelease: false
+  }
+}
+`
+
+exports[`test/index.ts > TAP > parse args > git+ssh://git@notgithub.com/user/foo > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: '(unknown)@git+ssh://git@notgithub.com/user/foo',
+  name: '(unknown)',
+  bareSpec: 'git+ssh://git@notgithub.com/user/foo',
+  gitRemote: 'git+ssh://git@notgithub.com/user/foo'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > git+ssh://git@notgithub.com/user/foo#1.2.3 > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: '(unknown)@git+ssh://git@notgithub.com/user/foo#1.2.3',
+  name: '(unknown)',
+  bareSpec: 'git+ssh://git@notgithub.com/user/foo#1.2.3',
+  gitRemote: 'git+ssh://git@notgithub.com/user/foo',
+  gitSelector: '1.2.3',
+  gitSelectorParsed: {},
+  gitCommittish: '1.2.3'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > git+ssh://git@notgithub.com/user/foo#semver:^1.2.3 > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: '(unknown)@git+ssh://git@notgithub.com/user/foo#semver:^1.2.3',
+  name: '(unknown)',
+  bareSpec: 'git+ssh://git@notgithub.com/user/foo#semver:^1.2.3',
+  gitRemote: 'git+ssh://git@notgithub.com/user/foo',
+  gitSelector: 'semver:^1.2.3',
+  gitSelectorParsed: { semver: '^1.2.3' },
+  range: Range {
+    raw: '^1.2.3',
+    isAny: false,
+    set: [ [Comparator] ],
+    includePrerelease: false
+  }
+}
+`
+
+exports[`test/index.ts > TAP > parse args > git+ssh://mydomain.com:1234/hey > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: '(unknown)@git+ssh://mydomain.com:1234/hey',
+  name: '(unknown)',
+  bareSpec: 'git+ssh://mydomain.com:1234/hey',
+  gitRemote: 'git+ssh://mydomain.com:1234/hey'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > git+ssh://mydomain.com:1234/hey#1.2.3 > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: '(unknown)@git+ssh://mydomain.com:1234/hey#1.2.3',
+  name: '(unknown)',
+  bareSpec: 'git+ssh://mydomain.com:1234/hey#1.2.3',
+  gitRemote: 'git+ssh://mydomain.com:1234/hey',
+  gitSelector: '1.2.3',
+  gitSelectorParsed: {},
+  gitCommittish: '1.2.3'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > git+ssh://mydomain.com:1234#1.2.3 > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: '(unknown)@git+ssh://mydomain.com:1234#1.2.3',
+  name: '(unknown)',
+  bareSpec: 'git+ssh://mydomain.com:1234#1.2.3',
+  gitRemote: 'git+ssh://mydomain.com:1234',
+  gitSelector: '1.2.3',
+  gitSelectorParsed: {},
+  gitCommittish: '1.2.3'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > git+ssh://mydomain.com:foo > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: '(unknown)@git+ssh://mydomain.com:foo',
+  name: '(unknown)',
+  bareSpec: 'git+ssh://mydomain.com:foo',
+  gitRemote: 'git+ssh://mydomain.com:foo'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > git+ssh://mydomain.com:foo/bar#1.2.3 > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: '(unknown)@git+ssh://mydomain.com:foo/bar#1.2.3',
+  name: '(unknown)',
+  bareSpec: 'git+ssh://mydomain.com:foo/bar#1.2.3',
+  gitRemote: 'git+ssh://mydomain.com:foo/bar',
+  gitSelector: '1.2.3',
+  gitSelectorParsed: {},
+  gitCommittish: '1.2.3'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > git+ssh://mydomain.com:foo#1.2.3 > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: '(unknown)@git+ssh://mydomain.com:foo#1.2.3',
+  name: '(unknown)',
+  bareSpec: 'git+ssh://mydomain.com:foo#1.2.3',
+  gitRemote: 'git+ssh://mydomain.com:foo',
+  gitSelector: '1.2.3',
+  gitSelectorParsed: {},
+  gitCommittish: '1.2.3'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > git+ssh://username:password@mydomain.com:1234/hey#1.2.3 > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: '(unknown)@git+ssh://username:password@mydomain.com:1234/hey#1.2.3',
+  name: '(unknown)',
+  bareSpec: 'git+ssh://username:password@mydomain.com:1234/hey#1.2.3',
+  gitRemote: 'git+ssh://username:password@mydomain.com:1234/hey',
+  gitSelector: '1.2.3',
+  gitSelectorParsed: {},
+  gitCommittish: '1.2.3'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > github:a/b > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: '(unknown)@github:a/b',
+  name: '(unknown)',
+  bareSpec: 'github:a/b',
+  gitRemote: 'git+ssh://git@github.com:a/b.git',
+  namedGitHost: 'github',
+  namedGitHostPath: 'a/b'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > no options > no options 1`] = `
+@vltpkg/spec.Spec {
+  type: 'registry',
+  spec: 'foo@^1.0.0',
+  name: 'foo',
+  bareSpec: '^1.0.0',
+  registry: 'https://registry.npmjs.org/',
+  registrySpec: '^1.0.0',
+  semver: '^1.0.0',
+  range: Range {
+    raw: '^1.0.0',
+    isAny: false,
+    set: [ [Comparator] ],
+    includePrerelease: false
+  }
+}
+`
+
+exports[`test/index.ts > TAP > parse args > npm:foo > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'registry',
+  spec: 'foo@npm:foo',
+  name: 'foo',
+  bareSpec: 'npm:foo',
+  namedRegistry: 'npm',
+  registry: 'https://registry.npmjs.org/',
+  subspec: @vltpkg/spec.Spec {
+    type: 'registry',
+    spec: 'foo',
+    name: 'foo',
+    bareSpec: '',
+    namedRegistry: 'npm',
+    registry: 'https://registry.npmjs.org/',
+    registrySpec: '',
+    semver: '',
+    range: Range {
+      raw: '',
+      isAny: true,
+      set: [ [Comparator] ],
+      includePrerelease: false
+    }
+  }
+}
+`
+
+exports[`test/index.ts > TAP > parse args > user/foo#1234::path:dist > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: '(unknown)@github:user/foo#1234::path:dist',
+  name: '(unknown)',
+  bareSpec: 'github:user/foo#1234::path:dist',
+  gitRemote: 'git+ssh://git@github.com:user/foo.git',
+  gitSelector: '1234::path:dist',
+  gitSelectorParsed: { path: 'dist' },
+  gitCommittish: '1234',
+  namedGitHost: 'github',
+  namedGitHostPath: 'user/foo'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > user/foo#notimplemented:value > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: '(unknown)@github:user/foo#notimplemented:value',
+  name: '(unknown)',
+  bareSpec: 'github:user/foo#notimplemented:value',
+  gitRemote: 'git+ssh://git@github.com:user/foo.git',
+  gitSelector: 'notimplemented:value',
+  gitSelectorParsed: {},
+  namedGitHost: 'github',
+  namedGitHostPath: 'user/foo'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > user/foo#path:dist > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: '(unknown)@github:user/foo#path:dist',
+  name: '(unknown)',
+  bareSpec: 'github:user/foo#path:dist',
+  gitRemote: 'git+ssh://git@github.com:user/foo.git',
+  gitSelector: 'path:dist',
+  gitSelectorParsed: { path: 'dist' },
+  namedGitHost: 'github',
+  namedGitHostPath: 'user/foo'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > user/foo#semver:^1.2.3 > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: '(unknown)@github:user/foo#semver:^1.2.3',
+  name: '(unknown)',
+  bareSpec: 'github:user/foo#semver:^1.2.3',
+  gitRemote: 'git+ssh://git@github.com:user/foo.git',
+  gitSelector: 'semver:^1.2.3',
+  gitSelectorParsed: { semver: '^1.2.3' },
+  namedGitHost: 'github',
+  namedGitHostPath: 'user/foo',
+  range: Range {
+    raw: '^1.2.3',
+    isAny: false,
+    set: [ [Comparator] ],
+    includePrerelease: false
+  }
+}
+`
+
+exports[`test/index.ts > TAP > parse args > workspace: > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'workspace',
+  spec: '(unknown)@workspace:',
+  name: '(unknown)',
+  bareSpec: 'workspace:',
+  workspaceSpec: '',
+  workspace: '(unknown)',
+  semver: '',
+  range: Range {
+    raw: '',
+    isAny: true,
+    set: [ [Comparator] ],
+    includePrerelease: false
+  }
+}
+`
+
+exports[`test/index.ts > TAP > parse args > workspace:@a/b@ > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'workspace',
+  spec: '(unknown)@workspace:@a/b@',
+  name: '(unknown)',
+  bareSpec: 'workspace:@a/b@',
+  workspaceSpec: '*',
+  workspace: '@a/b'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > workspace:@a/b@ > inspect default 2`] = `
+@vltpkg/spec.Spec {
+  type: 'workspace',
+  spec: '(unknown)@workspace:@a/b@',
+  name: '(unknown)',
+  bareSpec: 'workspace:@a/b@',
+  workspaceSpec: '*',
+  workspace: '@a/b'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > workspace:* > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'workspace',
+  spec: '(unknown)@workspace:*',
+  name: '(unknown)',
+  bareSpec: 'workspace:*',
+  workspaceSpec: '*',
+  workspace: '(unknown)'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > workspace:^ > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'workspace',
+  spec: '(unknown)@workspace:^',
+  name: '(unknown)',
+  bareSpec: 'workspace:^',
+  workspaceSpec: '^',
+  workspace: '(unknown)'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > workspace:~ > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'workspace',
+  spec: '(unknown)@workspace:~',
+  name: '(unknown)',
+  bareSpec: 'workspace:~',
+  workspaceSpec: '~',
+  workspace: '(unknown)'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > workspace:1.x > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'workspace',
+  spec: '(unknown)@workspace:1.x',
+  name: '(unknown)',
+  bareSpec: 'workspace:1.x',
+  workspaceSpec: '1.x',
+  workspace: '(unknown)',
+  semver: '1.x',
+  range: Range {
+    raw: '1.x',
+    isAny: false,
+    set: [ [Comparator] ],
+    includePrerelease: false
+  }
+}
+`
+
+exports[`test/index.ts > TAP > parse args > workspace:y@ > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'workspace',
+  spec: '(unknown)@workspace:y@',
+  name: '(unknown)',
+  bareSpec: 'workspace:y@',
+  workspaceSpec: '*',
+  workspace: 'y'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > workspace:y@* > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'workspace',
+  spec: '(unknown)@workspace:y@*',
+  name: '(unknown)',
+  bareSpec: 'workspace:y@*',
+  workspaceSpec: '*',
+  workspace: 'y'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > workspace:y@^ > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'workspace',
+  spec: '(unknown)@workspace:y@^',
+  name: '(unknown)',
+  bareSpec: 'workspace:y@^',
+  workspaceSpec: '^',
+  workspace: 'y'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > workspace:y@~ > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'workspace',
+  spec: '(unknown)@workspace:y@~',
+  name: '(unknown)',
+  bareSpec: 'workspace:y@~',
+  workspaceSpec: '~',
+  workspace: 'y'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > workspace:y@1.x > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'workspace',
+  spec: '(unknown)@workspace:y@1.x',
+  name: '(unknown)',
+  bareSpec: 'workspace:y@1.x',
+  workspaceSpec: '1.x',
+  workspace: 'y',
+  semver: '1.x',
+  range: Range {
+    raw: '1.x',
+    isAny: false,
+    set: [ [Comparator] ],
+    includePrerelease: false
+  }
+}
+`
+
+exports[`test/index.ts > TAP > parse args > x@./foo > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'file',
+  spec: 'x@file:./foo',
+  name: 'x',
+  bareSpec: 'file:./foo',
+  file: './foo'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > x@/path/to/foo > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'file',
+  spec: 'x@file:///path/to/foo',
+  name: 'x',
+  bareSpec: 'file:///path/to/foo',
+  file: '/path/to/foo'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > x@/path/to/foo.tar > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'file',
+  spec: 'x@file:///path/to/foo.tar',
+  name: 'x',
+  bareSpec: 'file:///path/to/foo.tar',
+  file: '/path/to/foo.tar'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > x@/path/to/foo.tgz > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'file',
+  spec: 'x@file:///path/to/foo.tgz',
+  name: 'x',
+  bareSpec: 'file:///path/to/foo.tgz',
+  file: '/path/to/foo.tgz'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > x@bitbucket:user..blerg--/..foo-js# . . . . . some . tags / / / > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: 'x@bitbucket:user..blerg--/..foo-js# . . . . . some . tags / / /',
+  name: 'x',
+  bareSpec: 'bitbucket:user..blerg--/..foo-js# . . . . . some . tags / / /',
+  gitRemote: 'git+ssh://git@bitbucket.org:user..blerg--/..foo-js.git',
+  gitSelector: ' . . . . . some . tags / / /',
+  gitSelectorParsed: {},
+  gitCommittish: ' . . . . . some . tags / / /',
+  namedGitHost: 'bitbucket',
+  namedGitHostPath: 'user..blerg--/..foo-js',
+  remoteURL: 'https://bitbucket.org/user..blerg--/..foo-js/get/ . . . . . some . tags / / /.tar.gz'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > x@bitbucket:user/foo-js > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: 'x@bitbucket:user/foo-js',
+  name: 'x',
+  bareSpec: 'bitbucket:user/foo-js',
+  gitRemote: 'git+ssh://git@bitbucket.org:user/foo-js.git',
+  namedGitHost: 'bitbucket',
+  namedGitHostPath: 'user/foo-js'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > x@bitbucket:user/foo-js#bar/baz > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: 'x@bitbucket:user/foo-js#bar/baz',
+  name: 'x',
+  bareSpec: 'bitbucket:user/foo-js#bar/baz',
+  gitRemote: 'git+ssh://git@bitbucket.org:user/foo-js.git',
+  gitSelector: 'bar/baz',
+  gitSelectorParsed: {},
+  gitCommittish: 'bar/baz',
+  namedGitHost: 'bitbucket',
+  namedGitHostPath: 'user/foo-js',
+  remoteURL: 'https://bitbucket.org/user/foo-js/get/bar/baz.tar.gz'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > x@bitbucket:user/foo-js#bar/baz/bin > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: 'x@bitbucket:user/foo-js#bar/baz/bin',
+  name: 'x',
+  bareSpec: 'bitbucket:user/foo-js#bar/baz/bin',
+  gitRemote: 'git+ssh://git@bitbucket.org:user/foo-js.git',
+  gitSelector: 'bar/baz/bin',
+  gitSelectorParsed: {},
+  gitCommittish: 'bar/baz/bin',
+  namedGitHost: 'bitbucket',
+  namedGitHostPath: 'user/foo-js',
+  remoteURL: 'https://bitbucket.org/user/foo-js/get/bar/baz/bin.tar.gz'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > x@f fo o al/ a d s ;f > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: 'x@github:f fo o al/ a d s ;f',
+  name: 'x',
+  bareSpec: 'github:f fo o al/ a d s ;f',
+  gitRemote: 'git+ssh://git@github.com:f fo o al/ a d s ;f.git',
+  namedGitHost: 'github',
+  namedGitHostPath: 'f fo o al/ a d s ;f'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > x@file: > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'file',
+  spec: 'x@file:.',
+  name: 'x',
+  bareSpec: 'file:.',
+  file: '.'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > x@file:../path/to/foo > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'file',
+  spec: 'x@file:../path/to/foo',
+  name: 'x',
+  bareSpec: 'file:../path/to/foo',
+  file: '../path/to/foo'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > x@file:./path/to/foo > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'file',
+  spec: 'x@file:./path/to/foo',
+  name: 'x',
+  bareSpec: 'file:./path/to/foo',
+  file: './path/to/foo'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > x@file:/. > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'file',
+  spec: 'x@file:.',
+  name: 'x',
+  bareSpec: 'file:.',
+  file: '.'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > x@file:/.. > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'file',
+  spec: 'x@file:..',
+  name: 'x',
+  bareSpec: 'file:..',
+  file: '..'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > x@file:/../path/to/foo > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'file',
+  spec: 'x@file:../path/to/foo',
+  name: 'x',
+  bareSpec: 'file:../path/to/foo',
+  file: '../path/to/foo'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > x@file:/./path/to/foo > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'file',
+  spec: 'x@file:./path/to/foo',
+  name: 'x',
+  bareSpec: 'file:./path/to/foo',
+  file: './path/to/foo'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > x@file:/.path/to/foo > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'file',
+  spec: 'x@file:///.path/to/foo',
+  name: 'x',
+  bareSpec: 'file:///.path/to/foo',
+  file: '/.path/to/foo'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > x@file:// > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'file',
+  spec: 'x@file:.',
+  name: 'x',
+  bareSpec: 'file:.',
+  file: '.'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > x@file://. > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'file',
+  spec: 'x@file:.',
+  name: 'x',
+  bareSpec: 'file:.',
+  file: '.'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > x@file://.. > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'file',
+  spec: 'x@file:..',
+  name: 'x',
+  bareSpec: 'file:..',
+  file: '..'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > x@file://../path/to/foo > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'file',
+  spec: 'x@file:../path/to/foo',
+  name: 'x',
+  bareSpec: 'file:../path/to/foo',
+  file: '../path/to/foo'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > x@file://./path/to/foo > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'file',
+  spec: 'x@file:./path/to/foo',
+  name: 'x',
+  bareSpec: 'file:./path/to/foo',
+  file: './path/to/foo'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > x@file:////path/to/foo > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'file',
+  spec: 'x@file:////path/to/foo',
+  name: 'x',
+  bareSpec: 'file:////path/to/foo',
+  file: '//path/to/foo'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > x@file:///~/path/to/foo > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'file',
+  spec: 'x@file:~/path/to/foo',
+  name: 'x',
+  bareSpec: 'file:~/path/to/foo',
+  file: '/mock/home/path/to/foo'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > x@file:///path/to/foo > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'file',
+  spec: 'x@file:///path/to/foo',
+  name: 'x',
+  bareSpec: 'file:///path/to/foo',
+  file: '/path/to/foo'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > x@file://~/path/to/foo > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'file',
+  spec: 'x@file:~/path/to/foo',
+  name: 'x',
+  bareSpec: 'file:~/path/to/foo',
+  file: '/mock/home/path/to/foo'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > x@file:/~/path/to/foo > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'file',
+  spec: 'x@file:~/path/to/foo',
+  name: 'x',
+  bareSpec: 'file:~/path/to/foo',
+  file: '/mock/home/path/to/foo'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > x@file:/path/to/foo > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'file',
+  spec: 'x@file:///path/to/foo',
+  name: 'x',
+  bareSpec: 'file:///path/to/foo',
+  file: '/path/to/foo'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > x@file:~/path/to/foo > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'file',
+  spec: 'x@file:~/path/to/foo',
+  name: 'x',
+  bareSpec: 'file:~/path/to/foo',
+  file: '/mock/home/path/to/foo'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > x@file:path/to/foo > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'file',
+  spec: 'x@file:./path/to/foo',
+  name: 'x',
+  bareSpec: 'file:./path/to/foo',
+  file: './path/to/foo'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > x@file:path/to/foo.tar.gz > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'file',
+  spec: 'x@file:./path/to/foo.tar.gz',
+  name: 'x',
+  bareSpec: 'file:./path/to/foo.tar.gz',
+  file: './path/to/foo.tar.gz'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > x@foo/bar/baz > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'file',
+  spec: 'x@file:./foo/bar/baz',
+  name: 'x',
+  bareSpec: 'file:./foo/bar/baz',
+  file: './foo/bar/baz'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > x@git://github.com/user/foo > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: 'x@git://github.com/user/foo',
+  name: 'x',
+  bareSpec: 'git://github.com/user/foo',
+  gitRemote: 'git://github.com/user/foo'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > x@git://notgithub.com/user/foo > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: 'x@git://notgithub.com/user/foo',
+  name: 'x',
+  bareSpec: 'git://notgithub.com/user/foo',
+  gitRemote: 'git://notgithub.com/user/foo'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > x@git@github.com:12345/foo > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: 'x@github:12345/foo',
+  name: 'x',
+  bareSpec: 'github:12345/foo',
+  gitRemote: 'git+ssh://git@github.com:12345/foo.git',
+  namedGitHost: 'github',
+  namedGitHostPath: '12345/foo'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > x@git@npm:not-git > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'registry',
+  spec: 'x@git@npm:not-git',
+  name: 'x',
+  bareSpec: 'git@npm:not-git',
+  registry: 'https://registry.npmjs.org/',
+  registrySpec: 'git@npm:not-git',
+  distTag: 'git@npm:not-git'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > x@git+file://path/to/repo#1.2.3 > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: 'x@git+file://path/to/repo#1.2.3',
+  name: 'x',
+  bareSpec: 'git+file://path/to/repo#1.2.3',
+  gitRemote: 'git+file://path/to/repo',
+  gitSelector: '1.2.3',
+  gitSelectorParsed: {},
+  gitCommittish: '1.2.3'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > x@git+ssh://git@bitbucket.org/user/foo#1.2.3 > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: 'x@git+ssh://git@bitbucket.org/user/foo#1.2.3',
+  name: 'x',
+  bareSpec: 'git+ssh://git@bitbucket.org/user/foo#1.2.3',
+  gitRemote: 'git+ssh://git@bitbucket.org/user/foo',
+  gitSelector: '1.2.3',
+  gitSelectorParsed: {},
+  gitCommittish: '1.2.3'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > x@git+ssh://git@github.com:user/foo#1.2.3 > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: 'x@github:user/foo#1.2.3',
+  name: 'x',
+  bareSpec: 'github:user/foo#1.2.3',
+  gitRemote: 'git+ssh://git@github.com:user/foo.git',
+  gitSelector: '1.2.3',
+  gitSelectorParsed: {},
+  gitCommittish: '1.2.3',
+  namedGitHost: 'github',
+  namedGitHostPath: 'user/foo',
+  remoteURL: 'https://codeload.github.com/user/foo/tar.gz/1.2.3'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > x@git+ssh://git@github.com:user/foo#semver:^1.2.3 > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: 'x@github:user/foo#semver:^1.2.3',
+  name: 'x',
+  bareSpec: 'github:user/foo#semver:^1.2.3',
+  gitRemote: 'git+ssh://git@github.com:user/foo.git',
+  gitSelector: 'semver:^1.2.3',
+  gitSelectorParsed: { semver: '^1.2.3' },
+  namedGitHost: 'github',
+  namedGitHostPath: 'user/foo',
+  range: Range {
+    raw: '^1.2.3',
+    isAny: false,
+    set: [ [Comparator] ],
+    includePrerelease: false
+  }
+}
+`
+
+exports[`test/index.ts > TAP > parse args > x@git+ssh://git@github.com/user/foo#1.2.3 > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: 'x@git+ssh://git@github.com/user/foo#1.2.3',
+  name: 'x',
+  bareSpec: 'git+ssh://git@github.com/user/foo#1.2.3',
+  gitRemote: 'git+ssh://git@github.com/user/foo',
+  gitSelector: '1.2.3',
+  gitSelectorParsed: {},
+  gitCommittish: '1.2.3'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > x@git+ssh://git@github.com/user/foo#semver:^1.2.3 > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: 'x@git+ssh://git@github.com/user/foo#semver:^1.2.3',
+  name: 'x',
+  bareSpec: 'git+ssh://git@github.com/user/foo#semver:^1.2.3',
+  gitRemote: 'git+ssh://git@github.com/user/foo',
+  gitSelector: 'semver:^1.2.3',
+  gitSelectorParsed: { semver: '^1.2.3' },
+  range: Range {
+    raw: '^1.2.3',
+    isAny: false,
+    set: [ [Comparator] ],
+    includePrerelease: false
+  }
+}
+`
+
+exports[`test/index.ts > TAP > parse args > x@git+ssh://git@gitlab.com/user/foo#1.2.3 > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: 'x@git+ssh://git@gitlab.com/user/foo#1.2.3',
+  name: 'x',
+  bareSpec: 'git+ssh://git@gitlab.com/user/foo#1.2.3',
+  gitRemote: 'git+ssh://git@gitlab.com/user/foo',
+  gitSelector: '1.2.3',
+  gitSelectorParsed: {},
+  gitCommittish: '1.2.3'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > x@git+ssh://git@notgithub.com:user/foo > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: 'x@git+ssh://git@notgithub.com:user/foo',
+  name: 'x',
+  bareSpec: 'git+ssh://git@notgithub.com:user/foo',
+  gitRemote: 'git+ssh://git@notgithub.com:user/foo'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > x@git+ssh://git@notgithub.com:user/foo#1.2.3 > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: 'x@git+ssh://git@notgithub.com:user/foo#1.2.3',
+  name: 'x',
+  bareSpec: 'git+ssh://git@notgithub.com:user/foo#1.2.3',
+  gitRemote: 'git+ssh://git@notgithub.com:user/foo',
+  gitSelector: '1.2.3',
+  gitSelectorParsed: {},
+  gitCommittish: '1.2.3'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > x@git+ssh://git@notgithub.com:user/foo#semver:^1.2.3 > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: 'x@git+ssh://git@notgithub.com:user/foo#semver:^1.2.3',
+  name: 'x',
+  bareSpec: 'git+ssh://git@notgithub.com:user/foo#semver:^1.2.3',
+  gitRemote: 'git+ssh://git@notgithub.com:user/foo',
+  gitSelector: 'semver:^1.2.3',
+  gitSelectorParsed: { semver: '^1.2.3' },
+  range: Range {
+    raw: '^1.2.3',
+    isAny: false,
+    set: [ [Comparator] ],
+    includePrerelease: false
+  }
+}
+`
+
+exports[`test/index.ts > TAP > parse args > x@git+ssh://git@notgithub.com/user/foo > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: 'x@git+ssh://git@notgithub.com/user/foo',
+  name: 'x',
+  bareSpec: 'git+ssh://git@notgithub.com/user/foo',
+  gitRemote: 'git+ssh://git@notgithub.com/user/foo'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > x@git+ssh://git@notgithub.com/user/foo#1.2.3 > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: 'x@git+ssh://git@notgithub.com/user/foo#1.2.3',
+  name: 'x',
+  bareSpec: 'git+ssh://git@notgithub.com/user/foo#1.2.3',
+  gitRemote: 'git+ssh://git@notgithub.com/user/foo',
+  gitSelector: '1.2.3',
+  gitSelectorParsed: {},
+  gitCommittish: '1.2.3'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > x@git+ssh://git@notgithub.com/user/foo#semver:^1.2.3 > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: 'x@git+ssh://git@notgithub.com/user/foo#semver:^1.2.3',
+  name: 'x',
+  bareSpec: 'git+ssh://git@notgithub.com/user/foo#semver:^1.2.3',
+  gitRemote: 'git+ssh://git@notgithub.com/user/foo',
+  gitSelector: 'semver:^1.2.3',
+  gitSelectorParsed: { semver: '^1.2.3' },
+  range: Range {
+    raw: '^1.2.3',
+    isAny: false,
+    set: [ [Comparator] ],
+    includePrerelease: false
+  }
+}
+`
+
+exports[`test/index.ts > TAP > parse args > x@git+ssh://mydomain.com:1234/hey > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: 'x@git+ssh://mydomain.com:1234/hey',
+  name: 'x',
+  bareSpec: 'git+ssh://mydomain.com:1234/hey',
+  gitRemote: 'git+ssh://mydomain.com:1234/hey'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > x@git+ssh://mydomain.com:1234/hey#1.2.3 > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: 'x@git+ssh://mydomain.com:1234/hey#1.2.3',
+  name: 'x',
+  bareSpec: 'git+ssh://mydomain.com:1234/hey#1.2.3',
+  gitRemote: 'git+ssh://mydomain.com:1234/hey',
+  gitSelector: '1.2.3',
+  gitSelectorParsed: {},
+  gitCommittish: '1.2.3'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > x@git+ssh://mydomain.com:1234#1.2.3 > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: 'x@git+ssh://mydomain.com:1234#1.2.3',
+  name: 'x',
+  bareSpec: 'git+ssh://mydomain.com:1234#1.2.3',
+  gitRemote: 'git+ssh://mydomain.com:1234',
+  gitSelector: '1.2.3',
+  gitSelectorParsed: {},
+  gitCommittish: '1.2.3'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > x@git+ssh://mydomain.com:foo > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: 'x@git+ssh://mydomain.com:foo',
+  name: 'x',
+  bareSpec: 'git+ssh://mydomain.com:foo',
+  gitRemote: 'git+ssh://mydomain.com:foo'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > x@git+ssh://mydomain.com:foo/bar#1.2.3 > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: 'x@git+ssh://mydomain.com:foo/bar#1.2.3',
+  name: 'x',
+  bareSpec: 'git+ssh://mydomain.com:foo/bar#1.2.3',
+  gitRemote: 'git+ssh://mydomain.com:foo/bar',
+  gitSelector: '1.2.3',
+  gitSelectorParsed: {},
+  gitCommittish: '1.2.3'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > x@git+ssh://mydomain.com:foo#1.2.3 > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: 'x@git+ssh://mydomain.com:foo#1.2.3',
+  name: 'x',
+  bareSpec: 'git+ssh://mydomain.com:foo#1.2.3',
+  gitRemote: 'git+ssh://mydomain.com:foo',
+  gitSelector: '1.2.3',
+  gitSelectorParsed: {},
+  gitCommittish: '1.2.3'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > x@git+ssh://username:password@mydomain.com:1234/hey#1.2.3 > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: 'x@git+ssh://username:password@mydomain.com:1234/hey#1.2.3',
+  name: 'x',
+  bareSpec: 'git+ssh://username:password@mydomain.com:1234/hey#1.2.3',
+  gitRemote: 'git+ssh://username:password@mydomain.com:1234/hey',
+  gitSelector: '1.2.3',
+  gitSelectorParsed: {},
+  gitCommittish: '1.2.3'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > x@github:user/foo-js > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: 'x@github:user/foo-js',
+  name: 'x',
+  bareSpec: 'github:user/foo-js',
+  gitRemote: 'git+ssh://git@github.com:user/foo-js.git',
+  namedGitHost: 'github',
+  namedGitHostPath: 'user/foo-js'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > x@gitlab:user..blerg--/..foo-js# . . . . . some . tags / / / > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: 'x@gitlab:user..blerg--/..foo-js# . . . . . some . tags / / /',
+  name: 'x',
+  bareSpec: 'gitlab:user..blerg--/..foo-js# . . . . . some . tags / / /',
+  gitRemote: 'git+ssh://git@gitlab.com:user..blerg--/..foo-js.git',
+  gitSelector: ' . . . . . some . tags / / /',
+  gitSelectorParsed: {},
+  gitCommittish: ' . . . . . some . tags / / /',
+  namedGitHost: 'gitlab',
+  namedGitHostPath: 'user..blerg--/..foo-js',
+  remoteURL: 'https://gitlab.com/user..blerg--/..foo-js/repository/archive.tar.gz?ref= . . . . . some . tags / / /'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > x@gitlab:user/foo-js > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: 'x@gitlab:user/foo-js',
+  name: 'x',
+  bareSpec: 'gitlab:user/foo-js',
+  gitRemote: 'git+ssh://git@gitlab.com:user/foo-js.git',
+  namedGitHost: 'gitlab',
+  namedGitHostPath: 'user/foo-js'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > x@gitlab:user/foo-js#bar/baz > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: 'x@gitlab:user/foo-js#bar/baz',
+  name: 'x',
+  bareSpec: 'gitlab:user/foo-js#bar/baz',
+  gitRemote: 'git+ssh://git@gitlab.com:user/foo-js.git',
+  gitSelector: 'bar/baz',
+  gitSelectorParsed: {},
+  gitCommittish: 'bar/baz',
+  namedGitHost: 'gitlab',
+  namedGitHostPath: 'user/foo-js',
+  remoteURL: 'https://gitlab.com/user/foo-js/repository/archive.tar.gz?ref=bar/baz'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > x@gitlab:user/foo-js#bar/baz/bin > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: 'x@gitlab:user/foo-js#bar/baz/bin',
+  name: 'x',
+  bareSpec: 'gitlab:user/foo-js#bar/baz/bin',
+  gitRemote: 'git+ssh://git@gitlab.com:user/foo-js.git',
+  gitSelector: 'bar/baz/bin',
+  gitSelectorParsed: {},
+  gitCommittish: 'bar/baz/bin',
+  namedGitHost: 'gitlab',
+  namedGitHostPath: 'user/foo-js',
+  remoteURL: 'https://gitlab.com/user/foo-js/repository/archive.tar.gz?ref=bar/baz/bin'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > x@http://insecure.com/foo.tgz > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'remote',
+  spec: 'x@http://insecure.com/foo.tgz',
+  name: 'x',
+  bareSpec: 'http://insecure.com/foo.tgz',
+  remoteURL: 'http://insecure.com/foo.tgz'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > x@https://bitbucket.org/user/foo.git > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: 'x@bitbucket:user/foo',
+  name: 'x',
+  bareSpec: 'bitbucket:user/foo',
+  gitRemote: 'git+ssh://git@bitbucket.org:user/foo.git',
+  namedGitHost: 'bitbucket',
+  namedGitHostPath: 'user/foo'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > x@https://github.com/user/foo.git > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: 'x@github:user/foo',
+  name: 'x',
+  bareSpec: 'github:user/foo',
+  gitRemote: 'git+ssh://git@github.com:user/foo.git',
+  namedGitHost: 'github',
+  namedGitHostPath: 'user/foo'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > x@https://github.com/user/project > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: 'x@github:user/project',
+  name: 'x',
+  bareSpec: 'github:user/project',
+  gitRemote: 'git+ssh://git@github.com:user/project.git',
+  namedGitHost: 'github',
+  namedGitHostPath: 'user/project'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > x@https://gitlab.com/user/foo.git > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: 'x@gitlab:user/foo',
+  name: 'x',
+  bareSpec: 'gitlab:user/foo',
+  gitRemote: 'git+ssh://git@gitlab.com:user/foo.git',
+  namedGitHost: 'gitlab',
+  namedGitHostPath: 'user/foo'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > x@https://server.com/foo.tgz > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'remote',
+  spec: 'x@https://server.com/foo.tgz',
+  name: 'x',
+  bareSpec: 'https://server.com/foo.tgz',
+  remoteURL: 'https://server.com/foo.tgz'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > x@not-git@hostname.com:some/repo > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: 'x@github:not-git@hostname.com:some/repo',
+  name: 'x',
+  bareSpec: 'github:not-git@hostname.com:some/repo',
+  gitRemote: 'git+ssh://git@github.com:not-git@hostname.com:some/repo.git',
+  namedGitHost: 'github',
+  namedGitHostPath: 'not-git@hostname.com:some/repo'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > x@npm:foo@npm:bar@npm:baz@1 > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'registry',
+  spec: 'x@npm:foo@npm:bar@npm:baz@1',
+  name: 'x',
+  bareSpec: 'npm:foo@npm:bar@npm:baz@1',
+  namedRegistry: 'npm',
+  registry: 'https://registry.npmjs.org/',
+  subspec: @vltpkg/spec.Spec {
+    type: 'registry',
+    spec: 'foo@npm:bar@npm:baz@1',
+    name: 'foo',
+    bareSpec: 'npm:bar@npm:baz@1',
+    namedRegistry: 'npm',
+    registry: 'https://registry.npmjs.org/',
+    subspec: @vltpkg/spec.Spec {
+      type: 'registry',
+      spec: 'bar@npm:baz@1',
+      name: 'bar',
+      bareSpec: 'npm:baz@1',
+      namedRegistry: 'npm',
+      registry: 'https://registry.npmjs.org/',
+      subspec: @vltpkg/spec.Spec {
+        type: 'registry',
+        spec: 'baz@1',
+        name: 'baz',
+        bareSpec: '1',
+        namedRegistry: 'npm',
+        registry: 'https://registry.npmjs.org/',
+        registrySpec: '1',
+        semver: '1',
+        range: Range {
+          raw: '1',
+          isAny: false,
+          set: [ [Comparator] ],
+          includePrerelease: false
+        }
+      }
+    }
+  }
+}
+`
+
+exports[`test/index.ts > TAP > parse args > x@npm:y@npm:z@github:a/x#branch > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'registry',
+  spec: 'x@npm:y@npm:z@github:a/x#branch',
+  name: 'x',
+  bareSpec: 'npm:y@npm:z@github:a/x#branch',
+  namedRegistry: 'npm',
+  registry: 'https://registry.npmjs.org/',
+  subspec: @vltpkg/spec.Spec {
+    type: 'registry',
+    spec: 'y@npm:z@github:a/x#branch',
+    name: 'y',
+    bareSpec: 'npm:z@github:a/x#branch',
+    namedRegistry: 'npm',
+    registry: 'https://registry.npmjs.org/',
+    subspec: @vltpkg/spec.Spec {
+      type: 'git',
+      spec: 'z@github:a/x#branch',
+      name: 'z',
+      bareSpec: 'github:a/x#branch',
+      gitRemote: 'git+ssh://git@github.com:a/x.git',
+      gitSelector: 'branch',
+      gitSelectorParsed: {},
+      gitCommittish: 'branch',
+      namedGitHost: 'github',
+      namedGitHostPath: 'a/x',
+      namedRegistry: 'npm',
+      remoteURL: 'https://codeload.github.com/a/x/tar.gz/branch'
+    }
+  }
+}
+`
+
+exports[`test/index.ts > TAP > parse args > x@registry:https://example.com/npm#@org/pkg@latest > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'registry',
+  spec: 'x@registry:https://example.com/npm#@org/pkg@latest',
+  name: 'x',
+  bareSpec: 'registry:https://example.com/npm#@org/pkg@latest',
+  registry: 'https://example.com/npm/',
+  subspec: @vltpkg/spec.Spec {
+    type: 'registry',
+    spec: '@org/pkg@latest',
+    name: '@org/pkg',
+    scope: '@org',
+    bareSpec: 'latest',
+    registry: 'https://example.com/npm/',
+    registrySpec: 'latest',
+    distTag: 'latest'
+  }
+}
+`
+
+exports[`test/index.ts > TAP > parse args > x@user..blerg--/..foo-js# . . . . . some . tags / / / > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: 'x@github:user..blerg--/..foo-js# . . . . . some . tags / / /',
+  name: 'x',
+  bareSpec: 'github:user..blerg--/..foo-js# . . . . . some . tags / / /',
+  gitRemote: 'git+ssh://git@github.com:user..blerg--/..foo-js.git',
+  gitSelector: ' . . . . . some . tags / / /',
+  gitSelectorParsed: {},
+  gitCommittish: ' . . . . . some . tags / / /',
+  namedGitHost: 'github',
+  namedGitHostPath: 'user..blerg--/..foo-js',
+  remoteURL: 'https://codeload.github.com/user..blerg--/..foo-js/tar.gz/ . . . . . some . tags / / /'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > x@user/foo-js > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: 'x@github:user/foo-js',
+  name: 'x',
+  bareSpec: 'github:user/foo-js',
+  gitRemote: 'git+ssh://git@github.com:user/foo-js.git',
+  namedGitHost: 'github',
+  namedGitHostPath: 'user/foo-js'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > x@user/foo-js#bar/baz > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: 'x@github:user/foo-js#bar/baz',
+  name: 'x',
+  bareSpec: 'github:user/foo-js#bar/baz',
+  gitRemote: 'git+ssh://git@github.com:user/foo-js.git',
+  gitSelector: 'bar/baz',
+  gitSelectorParsed: {},
+  gitCommittish: 'bar/baz',
+  namedGitHost: 'github',
+  namedGitHostPath: 'user/foo-js',
+  remoteURL: 'https://codeload.github.com/user/foo-js/tar.gz/bar/baz'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > x@user/foo-js#bar/baz/bin > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: 'x@github:user/foo-js#bar/baz/bin',
+  name: 'x',
+  bareSpec: 'github:user/foo-js#bar/baz/bin',
+  gitRemote: 'git+ssh://git@github.com:user/foo-js.git',
+  gitSelector: 'bar/baz/bin',
+  gitSelectorParsed: {},
+  gitCommittish: 'bar/baz/bin',
+  namedGitHost: 'github',
+  namedGitHostPath: 'user/foo-js',
+  remoteURL: 'https://codeload.github.com/user/foo-js/tar.gz/bar/baz/bin'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > x@user/foo#1234::path:dist > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: 'x@github:user/foo#1234::path:dist',
+  name: 'x',
+  bareSpec: 'github:user/foo#1234::path:dist',
+  gitRemote: 'git+ssh://git@github.com:user/foo.git',
+  gitSelector: '1234::path:dist',
+  gitSelectorParsed: { path: 'dist' },
+  gitCommittish: '1234',
+  namedGitHost: 'github',
+  namedGitHostPath: 'user/foo'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > x@user/foo#notimplemented:value > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: 'x@github:user/foo#notimplemented:value',
+  name: 'x',
+  bareSpec: 'github:user/foo#notimplemented:value',
+  gitRemote: 'git+ssh://git@github.com:user/foo.git',
+  gitSelector: 'notimplemented:value',
+  gitSelectorParsed: {},
+  namedGitHost: 'github',
+  namedGitHostPath: 'user/foo'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > x@user/foo#path:dist > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: 'x@github:user/foo#path:dist',
+  name: 'x',
+  bareSpec: 'github:user/foo#path:dist',
+  gitRemote: 'git+ssh://git@github.com:user/foo.git',
+  gitSelector: 'path:dist',
+  gitSelectorParsed: { path: 'dist' },
+  namedGitHost: 'github',
+  namedGitHostPath: 'user/foo'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > x@user/foo#semver:^1.2.3 > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'git',
+  spec: 'x@github:user/foo#semver:^1.2.3',
+  name: 'x',
+  bareSpec: 'github:user/foo#semver:^1.2.3',
+  gitRemote: 'git+ssh://git@github.com:user/foo.git',
+  gitSelector: 'semver:^1.2.3',
+  gitSelectorParsed: { semver: '^1.2.3' },
+  namedGitHost: 'github',
+  namedGitHostPath: 'user/foo',
+  range: Range {
+    raw: '^1.2.3',
+    isAny: false,
+    set: [ [Comparator] ],
+    includePrerelease: false
+  }
+}
+`
+
+exports[`test/index.ts > TAP > parse args > x@workspace: > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'workspace',
+  spec: 'x@workspace:',
+  name: 'x',
+  bareSpec: 'workspace:',
+  workspaceSpec: '',
+  workspace: 'x',
+  semver: '',
+  range: Range {
+    raw: '',
+    isAny: true,
+    set: [ [Comparator] ],
+    includePrerelease: false
+  }
+}
+`
+
+exports[`test/index.ts > TAP > parse args > x@workspace:@a/b@ > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'workspace',
+  spec: 'x@workspace:@a/b@',
+  name: 'x',
+  bareSpec: 'workspace:@a/b@',
+  workspaceSpec: '*',
+  workspace: '@a/b'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > x@workspace:* > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'workspace',
+  spec: 'x@workspace:*',
+  name: 'x',
+  bareSpec: 'workspace:*',
+  workspaceSpec: '*',
+  workspace: 'x'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > x@workspace:^ > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'workspace',
+  spec: 'x@workspace:^',
+  name: 'x',
+  bareSpec: 'workspace:^',
+  workspaceSpec: '^',
+  workspace: 'x'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > x@workspace:~ > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'workspace',
+  spec: 'x@workspace:~',
+  name: 'x',
+  bareSpec: 'workspace:~',
+  workspaceSpec: '~',
+  workspace: 'x'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > x@workspace:1.x > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'workspace',
+  spec: 'x@workspace:1.x',
+  name: 'x',
+  bareSpec: 'workspace:1.x',
+  workspaceSpec: '1.x',
+  workspace: 'x',
+  semver: '1.x',
+  range: Range {
+    raw: '1.x',
+    isAny: false,
+    set: [ [Comparator] ],
+    includePrerelease: false
+  }
+}
+`
+
+exports[`test/index.ts > TAP > parse args > x@workspace:y@ > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'workspace',
+  spec: 'x@workspace:y@',
+  name: 'x',
+  bareSpec: 'workspace:y@',
+  workspaceSpec: '*',
+  workspace: 'y'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > x@workspace:y@* > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'workspace',
+  spec: 'x@workspace:y@*',
+  name: 'x',
+  bareSpec: 'workspace:y@*',
+  workspaceSpec: '*',
+  workspace: 'y'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > x@workspace:y@^ > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'workspace',
+  spec: 'x@workspace:y@^',
+  name: 'x',
+  bareSpec: 'workspace:y@^',
+  workspaceSpec: '^',
+  workspace: 'y'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > x@workspace:y@~ > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'workspace',
+  spec: 'x@workspace:y@~',
+  name: 'x',
+  bareSpec: 'workspace:y@~',
+  workspaceSpec: '~',
+  workspace: 'y'
+}
+`
+
+exports[`test/index.ts > TAP > parse args > x@workspace:y@1.x > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'workspace',
+  spec: 'x@workspace:y@1.x',
+  name: 'x',
+  bareSpec: 'workspace:y@1.x',
+  workspaceSpec: '1.x',
+  workspace: 'y',
+  semver: '1.x',
+  range: Range {
+    raw: '1.x',
+    isAny: false,
+    set: [ [Comparator] ],
+    includePrerelease: false
+  }
+}
+`
+
 exports[`test/index.ts > TAP > reverse-lookup registry: specifiers if named > must match snapshot 1`] = `
 Array [
   "x@registry:http://vlt.sh#x@latest",
