@@ -150,6 +150,18 @@ export class Graph {
     from: Node,
     to?: Node,
   ) {
+    // fix any nameless spec
+    if (spec.name === '(unknown)') {
+      if (to) {
+        spec.name = to.name
+        spec.spec = `${to.name}@${spec.bareSpec}`
+      } else {
+        throw error(
+          'Impossible to place a missing, nameless dependency',
+          { spec },
+        )
+      }
+    }
     const existing = from.edgesOut.get(spec.name)
     if (
       existing &&

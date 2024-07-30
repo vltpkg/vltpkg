@@ -187,6 +187,36 @@ t.test('using placePackage', async t => {
     inspect(graph, { depth: 2 }),
     'should have removed baz from the graph',
   )
+
+  // placing a package using a spec: (unknown)@file:./a
+  // returned from Spec.parseArgs()
+  graph.placePackage(
+    graph.mainImporter,
+    'prod',
+    Spec.parseArgs('file:./a'),
+    {
+      name: 'a',
+      version: '1.0.0',
+    },
+    'file;a',
+  )
+  t.matchSnapshot(
+    inspect(graph, { depth: 2 }),
+    'should find and fix nameless spec packages',
+  )
+
+  // trying to place a **missing** package using a spec: (unknown)@github:a/b
+  // returned from Spec.parseArgs()
+  t.throws(
+    () =>
+      graph.placePackage(
+        graph.mainImporter,
+        'prod',
+        Spec.parseArgs('github:a/b'),
+      ),
+    /Impossible to place a missing, nameless dependency/,
+    'should throw an impossible to place error',
+  )
 })
 
 t.test('main manifest missing name', async t => {
