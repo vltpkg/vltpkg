@@ -9,6 +9,25 @@ exports[`test/graph.ts > TAP > Graph > should print with special tag name 1`] = 
 @vltpkg/graph.Graph { registries: {}, nodes: [Object], edges: [] }
 `
 
+exports[`test/graph.ts > TAP > using placePackage > should find and fix nameless spec packages 1`] = `
+@vltpkg/graph.Graph {
+  registries: {},
+  nodes: {
+    'file;.': [ 'my-project' ],
+    ';;bar@1.0.0': [ 'bar' ],
+    ';;foo@1.0.0': [ 'foo' ],
+    'file;a': [ 'a' ]
+  },
+  edges: [
+    [ 'file;.', 'prod', 'missing@^1.0.0', undefined ],
+    [ 'file;.', 'prod', 'bar@^1.0.0', ';;bar@1.0.0' ],
+    [ 'file;.', 'prod', 'foo@^1.0.0', ';;foo@1.0.0' ],
+    [ 'file;.', 'prod', 'a@file:./a', 'file;a' ],
+    [ ';;bar@1.0.0', 'prod', 'baz@^1.0.0', undefined ]
+  ]
+}
+`
+
 exports[`test/graph.ts > TAP > using placePackage > should have removed baz from the graph 1`] = `
 @vltpkg/graph.Graph {
   registries: {},
