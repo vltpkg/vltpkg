@@ -22,10 +22,10 @@ export const buildIdealFromStartingGraph = async (
   // merging values already found in the graph with user specified values.
   // Any dependencies that are already satisfied in the starting `graph`
   // are going to be pruned from the resulting object.
-  const specs = getImporterSpecs(options)
+  const importerSpecs = getImporterSpecs(options)
 
   // add nodes, fetching remote manifests for each dependency to be added
-  await addNodes({ ...options, add: specs })
+  await addNodes({ ...options, ...importerSpecs })
 
   // move things into their default locations, if possible
   for (const node of options.graph.nodes.values()) {

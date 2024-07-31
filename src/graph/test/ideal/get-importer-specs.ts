@@ -20,8 +20,9 @@ t.test('empty graph and nothing to add', async t => {
     mainManifest: {},
   })
   const add = new Map()
-  const specs = getImporterSpecs({ add, graph })
-  t.strictSame(specs.size, 0, 'should have no items to add')
+  const remove = new Map()
+  const specs = getImporterSpecs({ add, graph, remove })
+  t.strictSame(specs.add.size, 0, 'should have no items to add')
 })
 
 t.test('empty graph with workspaces and nothing to add', async t => {
@@ -48,8 +49,9 @@ t.test('empty graph with workspaces and nothing to add', async t => {
   })
   const graph = load({ projectRoot })
   const add = new Map()
-  const specs = getImporterSpecs({ add, graph })
-  t.matchSnapshot(specs, 'should have no items to add')
+  const remove = new Map()
+  const specs = getImporterSpecs({ add, graph, remove })
+  t.matchSnapshot(specs.add, 'should have no items to add')
 })
 
 t.test('empty graph and something to add', async t => {
@@ -74,9 +76,10 @@ t.test('empty graph and something to add', async t => {
       ),
     ],
   ])
-  const specs = getImporterSpecs({ add, graph })
+  const remove = new Map()
+  const specs = getImporterSpecs({ add, graph, remove })
   t.matchSnapshot(
-    inspect(specs, { depth: Infinity }),
+    inspect(specs.add, { depth: Infinity }),
     'should result in only added specs',
   )
 })
@@ -97,9 +100,10 @@ t.test('graph specs and nothing to add', async t => {
   })
   const graph = load({ projectRoot })
   const add = new Map()
-  const specs = getImporterSpecs({ add, graph })
+  const remove = new Map()
+  const specs = getImporterSpecs({ add, graph, remove })
   t.matchSnapshot(
-    inspect(specs, { depth: Infinity }),
+    inspect(specs.add, { depth: Infinity }),
     'should have root specs added only',
   )
 })
@@ -133,9 +137,10 @@ t.test('graph specs and new things to add', async t => {
       ),
     ],
   ])
-  const specs = getImporterSpecs({ add, graph })
+  const remove = new Map()
+  const specs = getImporterSpecs({ add, graph, remove })
   t.matchSnapshot(
-    inspect(specs, { depth: Infinity }),
+    inspect(specs.add, { depth: Infinity }),
     'should have root specs along with the added ones',
   )
 })
@@ -165,9 +170,10 @@ t.test('graph specs and something to update', async t => {
       ),
     ],
   ])
-  const specs = getImporterSpecs({ add, graph })
+  const remove = new Map()
+  const specs = getImporterSpecs({ add, graph, remove })
   t.matchSnapshot(
-    inspect(specs, { depth: Infinity }),
+    inspect(specs.add, { depth: Infinity }),
     'should have the updated root spec',
   )
 })
@@ -244,9 +250,10 @@ t.test(
         ),
       ],
     ])
-    const specs = getImporterSpecs({ add, graph })
+    const remove = new Map()
+    const specs = getImporterSpecs({ add, graph, remove })
     t.matchSnapshot(
-      inspect(specs, { depth: Infinity }),
+      inspect(specs.add, { depth: Infinity }),
       'should have root and workspaces nodes with specs to add',
     )
   },
@@ -271,9 +278,140 @@ t.test('adding to a non existing importer', async t => {
       ),
     ],
   ])
+  const remove = new Map()
   t.throws(
-    () => getImporterSpecs({ add, graph }),
+    () => getImporterSpecs({ add, graph, remove }),
     /Not an importer/,
     'should throw an bad importer id error',
   )
 })
+
+t.test('graph specs and something to remove', async t => {
+  const mainManifest = {
+    name: 'my-project',
+    version: '1.0.0',
+    dependencies: {
+      bar: '^1.0.0',
+    },
+  }
+  const projectRoot = t.testdir({
+    'package.json': JSON.stringify(mainManifest),
+    node_modules: {
+      '.vlt': {
+        ';;bar@1.0.0': {
+          node_modules: {
+            bar: {
+              'package.json': JSON.stringify({
+                name: 'bar',
+                version: '1.0.0',
+              }),
+            },
+          },
+        },
+        ';;foo@1.0.0': {
+          node_modules: {
+            foo: {
+              'package.json': JSON.stringify({
+                name: 'foo',
+                version: '1.0.0',
+              }),
+            },
+          },
+        },
+      },
+      bar: t.fixture('symlink', '.vlt/;;bar@1.0.0/node_modules/bar'),
+      foo: t.fixture('symlink', '.vlt/;;foo@1.0.0/node_modules/foo'),
+    },
+  })
+  const graph = load({ projectRoot })
+  const add = new Map()
+  const remove = new Map()
+  const specs = getImporterSpecs({ add, graph, remove })
+  t.matchSnapshot(
+    inspect(specs, { depth: Infinity }),
+    'should removed entries missing from manifest file',
+  )
+})
+
+t.test(
+  'graph specs with workspaces and somethings to remove',
+  async t => {
+    const mainManifest = {
+      name: 'my-project',
+      version: '1.0.0',
+      dependencies: {
+        foo: '^1.0.0',
+      },
+    }
+    const projectRoot = t.testdir({
+      'package.json': JSON.stringify(mainManifest),
+      node_modules: {
+        '.vlt': {
+          ';;bar@1.0.0': {
+            node_modules: {
+              bar: {
+                'package.json': JSON.stringify({
+                  name: 'bar',
+                  version: '1.0.0',
+                }),
+              },
+            },
+          },
+          ';;foo@1.0.0': {
+            node_modules: {
+              foo: {
+                'package.json': JSON.stringify({
+                  name: 'foo',
+                  version: '1.0.0',
+                }),
+              },
+            },
+          },
+        },
+        foo: t.fixture(
+          'symlink',
+          '.vlt/;;foo@1.0.0/node_modules/foo',
+        ),
+      },
+      packages: {
+        a: {
+          'package.json': JSON.stringify({
+            name: 'a',
+            version: '1.0.0',
+          }),
+          node_modules: {
+            bar: t.fixture(
+              'symlink',
+              '../../../node_modules/.vlt/;;bar@1.0.0/node_modules/bar',
+            ),
+          },
+        },
+        b: {
+          'package.json': JSON.stringify({
+            name: 'b',
+            version: '1.0.0',
+            dependencies: {
+              a: 'workspace:*',
+            },
+          }),
+          node_modules: {
+            a: t.fixture('symlink', '../../a'),
+          },
+        },
+      },
+      'vlt-workspaces.json': JSON.stringify({
+        packages: ['./packages/*'],
+      }),
+    })
+    const graph = load({ projectRoot })
+    const add = new Map()
+    const remove = new Map([
+      [asDepID('workspace;packages%2Fb'), new Set(['a'])],
+    ])
+    const specs = getImporterSpecs({ add, graph, remove })
+    t.matchSnapshot(
+      inspect(specs, { depth: Infinity }),
+      'should have root and workspaces nodes with specs to remove',
+    )
+  },
+)

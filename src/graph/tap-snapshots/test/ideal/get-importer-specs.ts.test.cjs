@@ -37,6 +37,10 @@ Map(1) {
 }
 `
 
+exports[`test/ideal/get-importer-specs.ts > TAP > graph specs and something to remove > should removed entries missing from manifest file 1`] = `
+{ add: Map(0) {}, remove: Map(1) { 'file;.' => Set(1) { 'foo' } } }
+`
+
 exports[`test/ideal/get-importer-specs.ts > TAP > graph specs and something to update > should have the updated root spec 1`] = `
 Map(1) {
   'file;.' => Map(1) { 'foo' => { spec: Spec {foo@^2.0.0}, type: 'prod' } }
@@ -56,6 +60,16 @@ Map(3) {
   'workspace;packages%2Fb' => Map(2) {
     'a' => { spec: Spec {a@workspace:*}, type: 'prod' },
     'baz' => { spec: Spec {baz@^1.0.0}, type: 'prod' }
+  }
+}
+`
+
+exports[`test/ideal/get-importer-specs.ts > TAP > graph specs with workspaces and somethings to remove > should have root and workspaces nodes with specs to remove 1`] = `
+{
+  add: Map(0) {},
+  remove: Map(2) {
+    'workspace;packages%2Fa' => Set(1) { 'bar' },
+    'workspace;packages%2Fb' => Set(1) { 'a' }
   }
 }
 `
