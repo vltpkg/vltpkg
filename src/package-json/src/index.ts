@@ -1,8 +1,8 @@
 import { error, ErrorCauseObject } from '@vltpkg/error-cause'
 import { asManifest, Manifest } from '@vltpkg/types'
-import { readFileSync } from 'node:fs'
+import { readFileSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
-import { parse } from 'polite-json'
+import { parse, stringify } from 'polite-json'
 
 export class PackageJson {
   /**
@@ -47,6 +47,29 @@ export class PackageJson {
       }
       this.errCache.set(dir, ec)
       throw fail(ec)
+    }
+  }
+
+  write(dir: string, manifest: Manifest) {
+    const filename = resolve(dir, 'package.json')
+
+    try {
+      // This assumes kIndent and kNewline are already present on the manifest because we would
+      // only write a package.json after reading it which will set those properties.
+      writeFileSync(filename, stringify(manifest))
+      this.cache.set(dir, manifest)
+    } catch (err) {
+      // If there was an error writing to this package.json then also delete it from our cache
+      // just in case a future read would get stale data.
+      this.cache.delete(dir)
+      throw error(
+        'Could not write package.json file',
+        {
+          path: filename,
+          cause: err as Error,
+        },
+        this.write,
+      )
     }
   }
 }
