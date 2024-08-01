@@ -134,7 +134,7 @@ t.test('fails on fs errors during write', async t => {
     'node:fs': {
       ...(await import('node:fs')),
       writeFileSync: () => {
-        throw Object.assign(new Error('yikes!'), { code: 'ENOENT' })
+        throw Object.assign(new Error(''), { code: 'ENOENT' })
       },
     },
   })
