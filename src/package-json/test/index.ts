@@ -134,7 +134,7 @@ t.test('fails on fs errors during write', async t => {
     'node:fs': {
       ...(await import('node:fs')),
       writeFileSync: () => {
-        throw Object.assign(new Error(''), { code: 'ENOENT' })
+        throw new Error('yikes!')
       },
     },
   })
@@ -144,7 +144,7 @@ t.test('fails on fs errors during write', async t => {
     message: 'Could not write package.json file',
     cause: {
       path: join(dir, 'package.json'),
-      cause: { code: 'ENOENT' },
+      cause: { message: 'yikes!' },
     },
   })
 })
