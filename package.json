@@ -11,12 +11,14 @@
     "eslint": "catalog:",
     "globals": "^15.9.0",
     "prettier": "catalog:",
+    "turbo": "^2.0.11",
     "typedoc": "catalog:",
     "typescript": "catalog:",
     "typescript-eslint": "catalog:",
     "yaml": "^2.5.0"
   },
   "scripts": {
+    ".": "./scripts/local-cli vlt",
     "devPreinstall": "node scripts/consistent-package-json.js",
     "fix": "pnpm devPreinstall && pnpm lint && pnpm format",
     "format": "prettier --write . --log-level warn --ignore-path ./.prettierignore --cache",
@@ -25,7 +27,12 @@
     "lint:check": "eslint .",
     "snap": "pnpm --silent --no-bail --report-summary run -r snap -Rsilent || node scripts/report-test-failures.js",
     "test": "pnpm --silent --no-bail --report-summary -r test -- -Rsilent || node scripts/report-test-failures.js",
-    "typedoc": "typedoc"
+    "typedoc": "typedoc",
+    "vlix": "./scripts/local-cli vlix",
+    "vlr": "./scripts/local-cli vlr",
+    "vlrx": "./scripts/local-cli vlrx",
+    "vlt": "./scripts/local-cli vlt",
+    "vlx": "./scripts/local-cli vlx"
   },
   "prettier": "./.prettierrc.json",
   "type": "module",
