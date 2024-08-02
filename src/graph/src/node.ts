@@ -136,17 +136,13 @@ export class Node {
   }
 
   #registryNodeResolved(tuple: DepIDTuple) {
-    const spec = hydrateTuple(
-      tuple,
-      this.#name,
-      this.#options,
-    )
+    const spec = hydrateTuple(tuple, this.#name, this.#options)
     this.resolved =
       this.manifest?.dist?.tarball || spec.conventionalRegistryTarball
     this.integrity ??= this.manifest?.dist?.integrity
   }
 
-  equals (other: Node) {
+  equals(other: Node) {
     return this.id === other.id && this.location === other.location
   }
 

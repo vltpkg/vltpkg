@@ -14,7 +14,11 @@ t.equal(v8.serialize, serialize)
 t.equal(v8.deserialize, deserialize)
 
 t.test('simulate deno', async t => {
-  t.intercept(globalThis as typeof globalThis & { Deno: any }, 'Deno', { value: { version: { v8: '420.69.lol' } } } )
+  t.intercept(
+    globalThis as typeof globalThis & { Deno: any },
+    'Deno',
+    { value: { version: { v8: '420.69.lol' } } },
+  )
   t.intercept(globalThis, 'process', { value: undefined })
   const { serializedHeader } = await t.mockImport<
     typeof import('../src/serdes.js')
@@ -23,7 +27,9 @@ t.test('simulate deno', async t => {
 })
 
 t.test('simulate bun', async t => {
-  t.intercept(globalThis as typeof globalThis & { Bun: any }, 'Bun', { value: { version: '420.69.lol' } } )
+  t.intercept(globalThis as typeof globalThis & { Bun: any }, 'Bun', {
+    value: { version: '420.69.lol' },
+  })
   t.intercept(globalThis, 'process', { value: undefined })
   const { serializedHeader } = await t.mockImport<
     typeof import('../src/serdes.js')

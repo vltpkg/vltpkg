@@ -263,7 +263,8 @@ export class CacheEntry {
       return (this.#json = deserialize(ser))
     }
     const obj = JSON.parse(this.text())
-    if (serializedHeader) this.setHeader(serializedHeader, serialize(obj))
+    if (serializedHeader)
+      this.setHeader(serializedHeader, serialize(obj))
     return obj
   }
 

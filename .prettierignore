@@ -7,6 +7,7 @@
 /docs
 /example
 /node_modules
+/pnpm-lock.yaml
 /tap-snapshots
 /test/**/fixture
 /test/**/fixtures
@@ -21,4 +22,5 @@
 /src/*/node_modules
 /src/*/tap-snapshots
 /src/*/test/**/fixture
-/src/*/test/**/fixtures
+/src/*/test/**/fixtures/**
+!/src/*/test/**/fixtures/*.ts
