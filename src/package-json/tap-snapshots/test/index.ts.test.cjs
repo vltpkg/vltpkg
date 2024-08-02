@@ -5,6 +5,14 @@
  * Make sure to inspect the output below.  Do not ignore changes!
  */
 'use strict'
+exports[`test/index.ts > TAP > successfully saves a manifest > manifest should be read with original indent 1`] = `
+{
+        "name": "my-project",
+        "version": "1.0.1"
+}
+
+`
+
 exports[`test/index.ts > TAP > successfully writes a valid package.json file > manifest should be read with original indent 1`] = `
 {
         "name": "my-project",

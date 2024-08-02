@@ -11,6 +11,11 @@ export class PackageJson {
   cache: Map<string, Manifest> = new Map()
 
   /**
+   * cache of `package.json` paths by manifest
+   */
+  pathCache: Map<Manifest, string> = new Map()
+
+  /**
    * cache of load errors
    */
   errCache: Map<string, ErrorCauseObject> = new Map()
@@ -39,6 +44,7 @@ export class PackageJson {
         parse(readFileSync(filename, { encoding: 'utf8' })),
       )
       this.cache.set(dir, res)
+      this.pathCache.set(res, dir)
       return res
     } catch (err) {
       const ec: ErrorCauseObject = {
@@ -50,7 +56,7 @@ export class PackageJson {
     }
   }
 
-  write(dir: string, manifest: Manifest) {
+  write(dir: string, manifest: Manifest): void {
     const filename = resolve(dir, 'package.json')
 
     try {
@@ -58,10 +64,12 @@ export class PackageJson {
       // only write a package.json after reading it which will set those properties.
       writeFileSync(filename, stringify(manifest))
       this.cache.set(dir, manifest)
+      this.pathCache.set(manifest, dir)
     } catch (err) {
       // If there was an error writing to this package.json then also delete it from our cache
       // just in case a future read would get stale data.
       this.cache.delete(dir)
+      this.pathCache.delete(manifest)
       throw error(
         'Could not write package.json file',
         {
@@ -71,5 +79,19 @@ export class PackageJson {
         this.write,
       )
     }
+  }
+
+  save(manifest: Manifest) {
+    const dir = this.pathCache.get(manifest)
+    if (!dir) {
+      throw error(
+        'Could not save manifest',
+        {
+          manifest,
+        },
+        this.save,
+      )
+    }
+    this.write(dir, manifest)
   }
 }

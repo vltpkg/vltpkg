@@ -148,3 +148,55 @@ t.test('fails on fs errors during write', async t => {
     },
   })
 })
+
+t.test('successfully saves a manifest', async t => {
+  const dir = t.testdir({
+    'package.json': JSON.stringify(
+      {
+        name: 'my-project',
+        version: '1.0.0',
+      },
+      null,
+      8,
+    ),
+  })
+  const pj = new PackageJson()
+  const mani = pj.read(dir)
+  mani.version = '1.0.1'
+  pj.save(mani)
+  const rawMani = readFileSync(join(dir, 'package.json'), 'utf8')
+  t.equal(
+    JSON.parse(rawMani).version,
+    '1.0.1',
+    'version should be updated on new manifest',
+  )
+  t.matchSnapshot(
+    rawMani,
+    'manifest should be read with original indent',
+  )
+})
+
+t.test(
+  'fails saving a manifest that does not have a cached dir',
+  async t => {
+    const dir = t.testdir({
+      'package.json': JSON.stringify(
+        {
+          name: 'my-project',
+          version: '1.0.0',
+        },
+        null,
+        8,
+      ),
+    })
+    const pj = new PackageJson()
+    const mani = pj.read(dir)
+    pj.pathCache.clear()
+    t.throws(() => pj.save(mani), {
+      message: 'Could not save manifest',
+      cause: {
+        manifest: mani,
+      },
+    })
+  },
+)
