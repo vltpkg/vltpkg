@@ -190,8 +190,7 @@ t.test(
       ),
     })
     const pj = new PackageJson()
-    const mani = pj.read(dir)
-    pj.pathCache.clear()
+    const mani = { name: 'this is not a manifest' }
     t.throws(() => pj.save(mani), {
       message: 'Could not save manifest',
       cause: {
