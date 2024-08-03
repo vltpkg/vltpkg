@@ -1,8 +1,9 @@
-import { ErrorCause, ErrorCauseObject } from '@vltpkg/error-cause'
 import t from 'tap'
 import { PackageJson } from '../src/index.js'
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
 
-t.test('successfully reads a valid package.jsonf file', async t => {
+t.test('successfully reads a valid package.json file', async t => {
   const dir = t.testdir({
     'package.json': JSON.stringify({
       name: 'my-project',
@@ -40,7 +41,7 @@ t.test('fails on missing package.json file', async t => {
     {
       message: 'Could not read package.json file',
       cause: {
-        path: dir,
+        path: join(dir, 'package.json'),
         cause: { code: 'ENOENT' },
       },
     },
@@ -58,7 +59,7 @@ t.test('fails on malformed package.json file', async t => {
     {
       message: 'Could not read package.json file',
       cause: {
-        path: dir,
+        path: join(dir, 'package.json'),
         cause: { name: 'JSONParseError' },
       },
     },
@@ -81,10 +82,120 @@ t.test('read subsequent calls from in-memory cache', async t => {
       version: '2.0.0',
     }),
   })
-
   t.strictSame(
     pj.read(sameDir),
     pkg,
     'should run any subsequent call from local in-memory cache',
   )
+  t.strictSame(
+    JSON.parse(readFileSync(join(dir, 'package.json'), 'utf8')).name,
+    'swapped-under-your-feet',
+    'package.json on disk should be updated though',
+  )
 })
+
+t.test('successfully writes a valid package.json file', async t => {
+  const dir = t.testdir({
+    'package.json': JSON.stringify(
+      {
+        name: 'my-project',
+        version: '1.0.0',
+      },
+      null,
+      8,
+    ),
+  })
+  const pj = new PackageJson()
+  const originalMani = pj.read(dir)
+  originalMani.version = '1.0.1'
+  pj.write(dir, originalMani)
+  const mani = pj.read(dir)
+  t.equal(
+    mani.version,
+    '1.0.1',
+    'version should be updated on new manifest',
+  )
+  t.matchSnapshot(
+    readFileSync(join(dir, 'package.json'), 'utf8'),
+    'manifest should be read with original indent',
+  )
+})
+
+t.test('fails on fs errors during write', async t => {
+  const dir = t.testdir({
+    'package.json': JSON.stringify({
+      name: 'my-project',
+      version: '1.0.0',
+    }),
+  })
+  const { PackageJson: MockedPackageJson } = await t.mockImport<
+    typeof import('../src/index.js')
+  >('../src/index.js', {
+    'node:fs': {
+      ...(await import('node:fs')),
+      writeFileSync: () => {
+        throw new Error('yikes!')
+      },
+    },
+  })
+  const pj = new MockedPackageJson()
+  const mani = pj.read(dir)
+  t.throws(() => pj.write(dir, mani), {
+    message: 'Could not write package.json file',
+    cause: {
+      path: join(dir, 'package.json'),
+      cause: { message: 'yikes!' },
+    },
+  })
+})
+
+t.test('successfully saves a manifest', async t => {
+  const dir = t.testdir({
+    'package.json': JSON.stringify(
+      {
+        name: 'my-project',
+        version: '1.0.0',
+      },
+      null,
+      8,
+    ),
+  })
+  const pj = new PackageJson()
+  const mani = pj.read(dir)
+  mani.version = '1.0.1'
+  pj.save(mani)
+  const rawMani = readFileSync(join(dir, 'package.json'), 'utf8')
+  t.equal(
+    JSON.parse(rawMani).version,
+    '1.0.1',
+    'version should be updated on new manifest',
+  )
+  t.matchSnapshot(
+    rawMani,
+    'manifest should be read with original indent',
+  )
+})
+
+t.test(
+  'fails saving a manifest that does not have a cached dir',
+  async t => {
+    const dir = t.testdir({
+      'package.json': JSON.stringify(
+        {
+          name: 'my-project',
+          version: '1.0.0',
+        },
+        null,
+        8,
+      ),
+    })
+    const pj = new PackageJson()
+    const mani = { name: 'this is not a manifest' }
+    t.throws(() => pj.save(mani), {
+      message: 'Could not save manifest',
+      cause: {
+        manifest: mani,
+      },
+    })
+  },
+)
