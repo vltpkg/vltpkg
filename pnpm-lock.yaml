@@ -51,6 +51,9 @@ importers:
       tap:
         specifier: ^20.0.1
         version: 20.0.1(@types/node@20.14.8)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.2)
+      tar:
+        specifier: ^7.2.0
+        version: 7.2.0
       tshy:
         specifier: ^1.16.1
         version: 1.16.1
