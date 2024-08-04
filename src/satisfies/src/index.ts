@@ -104,8 +104,7 @@ export const satisfiesTuple = (
         if (namedGitHost && namedGitHostPath) {
           const ngh = `${namedGitHost}:`
           if (first.startsWith(ngh)) {
-            if (first !== ngh + namedGitHostPath)
-              return false
+            if (first !== ngh + namedGitHostPath) return false
           } else return false
         } else return false
       }
