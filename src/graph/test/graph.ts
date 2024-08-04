@@ -3,7 +3,9 @@ import { Spec, SpecOptions } from '@vltpkg/spec'
 import { Monorepo } from '@vltpkg/workspaces'
 import { inspect } from 'node:util'
 import t from 'tap'
+import { Edge } from '../src/edge.js'
 import { Graph } from '../src/graph.js'
+import { Node } from '../src/node.js'
 
 t.cleanSnapshot = s =>
   s.replace(/^(\s+)"projectRoot": .*$/gm, '$1"projectRoot": #')
@@ -244,5 +246,81 @@ t.test('workspaces', async t => {
   t.matchSnapshot(
     graph.importers,
     'should have root and workspaces as importers',
+  )
+})
+
+t.test('prevent duplicate edges', async t => {
+  const mainManifest = {
+    name: 'my-project',
+    version: '1.0.0',
+    dependencies: { foo: '*' },
+  }
+  const fooManifest = {
+    name: 'foo',
+    version: '1.0.0',
+    dependencies: { bar: '*' },
+  }
+  const bar1Manifest = {
+    name: 'bar',
+    version: '1.0.0',
+  }
+  const bar2Manifest = {
+    name: 'bar',
+    version: '2.0.0',
+  }
+  const bar3Manifest = {
+    name: 'bar',
+    version: '3.0.0',
+  }
+  const graph = new Graph({
+    ...configData,
+    mainManifest,
+    projectRoot: t.testdirName,
+  })
+  graph.placePackage(
+    graph.mainImporter,
+    'prod',
+    Spec.parse('foo@*'),
+    fooManifest,
+  )
+  graph.addNode(';;bar@1.0.0', bar1Manifest)
+  graph.addNode(';;bar@2.0.0', bar2Manifest)
+  graph.addNode(';;bar@3.0.0', bar3Manifest)
+  const fooNode = graph.nodes.get(';;foo@1.0.0')
+  if (!fooNode) throw new Error('did not get node added to graph')
+  graph.addEdge(
+    'prod',
+    Spec.parse('bar@*'),
+    fooNode,
+    graph.nodes.get(';;bar@1.0.0'),
+  )
+  graph.addEdge(
+    'prod',
+    Spec.parse('bar@*'),
+    fooNode,
+    graph.nodes.get(';;bar@1.0.0'),
+  )
+  graph.addEdge(
+    'prod',
+    Spec.parse('bar@*'),
+    fooNode,
+    graph.nodes.get(';;bar@2.0.0'),
+  )
+  t.match(
+    graph.edges,
+    new Set([
+      new Edge(
+        'prod',
+        Spec.parse('foo@*'),
+        graph.nodes.get('file;.') as Node,
+        graph.nodes.get(';;foo@1.0.0'),
+      ),
+      new Edge(
+        'prod',
+        Spec.parse('bar@*'),
+        graph.nodes.get(';;foo@1.0.0') as Node,
+        graph.nodes.get(';;bar@2.0.0'),
+      ),
+    ]),
   )
 })
