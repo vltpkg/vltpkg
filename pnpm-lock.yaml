@@ -476,6 +476,31 @@ importers:
         specifier: ^0.26.2
         version: 0.26.2(typescript@5.5.2)
 
+  src/rollback-remove:
+    dependencies:
+      '@vltpkg/error-cause':
+        specifier: workspace:*
+        version: link:../error-cause
+      rimraf:
+        specifier: ^5.0.5
+        version: 5.0.7
+    devDependencies:
+      '@types/node':
+        specifier: ^20.14.8
+        version: 20.14.8
+      prettier:
+        specifier: ^3.3.2
+        version: 3.3.2
+      tap:
+        specifier: ^20.0.1
+        version: 20.0.1(@types/node@20.14.8)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.2)
+      tshy:
+        specifier: ^1.16.1
+        version: 1.16.1
+      typedoc:
+        specifier: ^0.26.2
+        version: 0.26.2(typescript@5.5.2)
+
   src/run:
     dependencies:
       '@vltpkg/error-cause':
