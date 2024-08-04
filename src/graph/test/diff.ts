@@ -48,7 +48,12 @@ t.test('diff two graphs', async t => {
       },
       nodes: {
         'file;.': ['my-project'],
-        ';;foo@1.0.0': ['foo', 'sha512-foofoofoo==', null, './node_modules/.pnpm/foo@1.0.0/node_modules/foo'],
+        ';;foo@1.0.0': [
+          'foo',
+          'sha512-foofoofoo==',
+          null,
+          './node_modules/.pnpm/foo@1.0.0/node_modules/foo',
+        ],
         ';;a@1.0.0': ['foo', 'sha512-aaaaaaaaa=='],
         ';;bar@1.0.0': [
           'bar',
@@ -65,12 +70,7 @@ t.test('diff two graphs', async t => {
         ['file;.', 'prod', 'foo@^1.0.0', ';;foo@1.0.0'],
         ['file;.', 'prod', 'a@^1.0.0', ';;a@1.0.0'],
         ['file;.', 'prod', 'bar@^1.0.0', ';;bar@1.0.0'],
-        [
-          ';;bar@1.0.0',
-          'prod',
-          'baz@^1.0.0',
-          ';;baz@1.0.0',
-        ],
+        [';;bar@1.0.0', 'prod', 'baz@^1.0.0', ';;baz@1.0.0'],
       ],
     },
   )
@@ -112,25 +112,10 @@ t.test('diff two graphs', async t => {
       edges: [
         ['file;.', 'prod', 'foo@^1.0.0', ';;foo@1.0.0'],
         ['file;.', 'prod', 'b@^1.0.0', ';;b@1.0.0'],
-        [
-          ';;b@1.0.0',
-          'prod',
-          'c@^1.0.0',
-          ';;c@1.0.0',
-        ],
+        [';;b@1.0.0', 'prod', 'c@^1.0.0', ';;c@1.0.0'],
         ['file;.', 'prod', 'bar@^1.0.0', ';;bar@1.0.0'],
-        [
-          ';;bar@1.0.0',
-          'prod',
-          'baz@^1.0.1',
-          ';;baz@1.0.1',
-        ],
-        [
-          ';;bar@1.0.0',
-          'optional',
-          'ooo@^1.0.1',
-          ';;ooo@1.0.1',
-        ],
+        [';;bar@1.0.0', 'prod', 'baz@^1.0.1', ';;baz@1.0.1'],
+        [';;bar@1.0.0', 'optional', 'ooo@^1.0.1', ';;ooo@1.0.1'],
       ],
     },
   )

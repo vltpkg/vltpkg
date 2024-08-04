@@ -19,3 +19,5 @@ export type { ActualLoadOptions, LockfileLoadOptions }
 import { BuildIdealOptions, build } from './ideal/build.js'
 export type { BuildIdealOptions }
 export const buildIdeal = build
+
+export { reify } from './reify/index.js'
