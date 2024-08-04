@@ -2,6 +2,8 @@ import { DepID, joinDepIDTuple } from '@vltpkg/dep-id'
 import { error } from '@vltpkg/error-cause'
 import { PackageInfoClient } from '@vltpkg/package-info'
 import { Spec, SpecOptions } from '@vltpkg/spec'
+import { statSync } from 'node:fs'
+import { resolve } from 'node:path'
 import { join } from 'node:path/posix'
 import {
   Dependency,
@@ -15,6 +17,7 @@ import { Node } from '../node.js'
 interface FileTypeInfo {
   id: DepID
   path: string
+  isDirectory: boolean
 }
 
 /**
@@ -49,11 +52,18 @@ const getFileTypeInfo = (
   // usage of the `file:` spec prefix) location needs to be relative to their
   // parents, build the expected path and use it for both location and id
   const path = join(fromNode.location, f.file)
+  const full = resolve(fromNode.projectRoot, path)
   const id = joinDepIDTuple(['file', path])
+
+  let isDirectory = false
+  try {
+    isDirectory = statSync(full).isDirectory()
+  } catch {}
 
   return {
     path,
     id,
+    isDirectory,
   }
 }
 
@@ -63,32 +73,29 @@ export const appendNodes = async (
   fromNode: Node,
   deps: Dependency[],
   options: SpecOptions,
-) => {
-  await Promise.all(
+) =>
+  Promise.all(
     deps.map(async ({ spec, type }) => {
       // see if there's a satisfying node in the graph currently
       const fileTypeInfo = getFileTypeInfo(spec, fromNode)
       const existingNode = graph.findResolution(spec, fromNode)
       if (existingNode) {
         graph.addEdge(type, spec, fromNode, existingNode)
+        return
       }
-      const node =
-        existingNode?.manifest ? existingNode : (
-          graph.placePackage(
-            fromNode,
-            type,
-            spec,
-            await packageInfo.manifest(spec).catch(er => {
-              // optional deps ignored if inaccessible
-              if (type === 'optional' || type === 'peerOptional') {
-                return undefined
-              }
-              throw er
-            }),
-            fileTypeInfo?.id,
-          )
-        )
-      const mani = node?.manifest ?? {}
+      const node = graph.placePackage(
+        fromNode,
+        type,
+        spec,
+        await packageInfo.manifest(spec).catch(er => {
+          // optional deps ignored if inaccessible
+          if (type === 'optional' || type === 'peerOptional') {
+            return undefined
+          }
+          throw er
+        }),
+        fileTypeInfo?.id,
+      )
 
       if (!node) {
         if (type === 'peerOptional' || type === 'optional') {
@@ -100,11 +107,13 @@ export const appendNodes = async (
         })
       }
 
-      if (fileTypeInfo?.path) {
+      /* c8 ignore next - always set by now, but ts doesn't know */
+      const mani = node.manifest ?? {}
+      if (fileTypeInfo?.path && fileTypeInfo.isDirectory) {
         node.location = fileTypeInfo.path
       }
       node.setResolved()
-      const nestedAppends: Promise<void>[] = []
+      const nestedAppends: Promise<unknown>[] = []
 
       for (const depTypeName of longDependencyTypes) {
         const depRecord: Record<string, string> | undefined =
@@ -129,4 +138,3 @@ export const appendNodes = async (
       await Promise.all(nestedAppends)
     }),
   )
-}

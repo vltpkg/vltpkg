@@ -63,7 +63,6 @@ export const build = async (
       monorepo,
       packageJson,
       scurry,
-      loadManifests: false,
     })
   }
 

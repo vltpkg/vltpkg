@@ -252,7 +252,10 @@ t.test('append file type of nodes', async t => {
     },
   }
   const graph = new Graph({
-    projectRoot: t.testdirName,
+    projectRoot: t.testdir({
+      bar: { 'package.json': JSON.stringify(barManifest) },
+      linked: { 'package.json': JSON.stringify(linkedManifest) },
+    }),
     ...configData,
     mainManifest,
   })
