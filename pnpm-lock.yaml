@@ -524,6 +524,9 @@ importers:
       '@vltpkg/promise-spawn':
         specifier: workspace:*
         version: link:../promise-spawn
+      '@vltpkg/types':
+        specifier: workspace:*
+        version: link:../types
       foreground-child:
         specifier: ^3.2.0
         version: 3.2.0

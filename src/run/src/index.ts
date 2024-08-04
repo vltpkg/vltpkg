@@ -6,6 +6,7 @@ import {
   type SpawnResultNoStdio,
   type SpawnResultStdioStrings,
 } from '@vltpkg/promise-spawn'
+import { Manifest } from '@vltpkg/types'
 import { foregroundChild } from 'foreground-child'
 import { proxySignals } from 'foreground-child/proxy-signals'
 import { statSync } from 'node:fs'
@@ -95,10 +96,22 @@ export interface RunOptions extends SharedOptions {
   packageJson?: PackageJson
 
   /**
+   * Pass in a manifest to avoid having to read it at all
+   */
+  manifest?: Manifest
+
+  /**
    * if the script is not defined in package.json#scripts, just ignore it and
    * treat as success. Otherwise, treat as an error. Default false.
    */
   ignoreMissing?: boolean
+
+  /**
+   * skip the pre/post commands, just run the one specified.
+   * This can be used to run JUST the specified script, without any
+   * pre/post commands.
+   */
+  ignorePrePost?: boolean
 }
 
 /**
@@ -174,10 +187,11 @@ const runImpl = async <
     arg0,
     packageJson = new PackageJson(),
     ignoreMissing = false,
+    manifest,
     ...execArgs
   } = options
   const pjPath = resolve(options.cwd, 'package.json')
-  const pj = packageJson.read(options.cwd)
+  const pj = manifest ?? packageJson.read(options.cwd)
   const { scripts } = pj
   const command = scripts?.[arg0]
   if (!command) {
@@ -204,7 +218,7 @@ const runImpl = async <
     })
   }
 
-  const precommand = scripts[`pre${arg0}`]
+  const precommand = !options.ignorePrePost && scripts[`pre${arg0}`]
   const pre =
     precommand ?
       await execImpl({
@@ -237,7 +251,7 @@ const runImpl = async <
     return result
   }
 
-  const postcommand = scripts[`post${arg0}`]
+  const postcommand = !options.ignorePrePost && scripts[`post${arg0}`]
   if (!postcommand) return result
 
   const post = await execImpl({
