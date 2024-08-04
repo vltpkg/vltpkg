@@ -412,7 +412,10 @@ t.test('git path selector must be relative', async t => {
   }
 })
 
-t.test('spec with registry:undefined uses default registry', async t => {
-  const s = Spec.parse('foo@1.x', { registry: undefined })
-  t.equal(s.registry, 'https://registry.npmjs.org/')
-})
+t.test(
+  'spec with registry:undefined uses default registry',
+  async t => {
+    const s = Spec.parse('foo@1.x', { registry: undefined })
+    t.equal(s.registry, 'https://registry.npmjs.org/')
+  },
+)

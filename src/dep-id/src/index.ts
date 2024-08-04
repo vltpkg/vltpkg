@@ -56,7 +56,9 @@ export type DepIDTuple =
 
 export const isDepID = (str: unknown): str is DepID =>
   typeof str === 'string' &&
-  /^((git)?;[^;]*;[^;]*(;[^;]*)?$|(file|remote|workspace);[^;]*)(;[^;]*)?$/.test(str)
+  /^((git)?;[^;]*;[^;]*(;[^;]*)?$|(file|remote|workspace);[^;]*)(;[^;]*)?$/.test(
+    str,
+  )
 
 export const asDepID = (str: string): DepID => {
   if (!isDepID(str)) {
@@ -99,7 +101,11 @@ export const splitDepID = (id: string): DepIDTuple => {
       if (second === undefined) {
         throw error(`invalid ${type} id`, { found: id })
       }
-      const t: DepIDTuple = [type || 'registry', f, decodeURIComponent(second)]
+      const t: DepIDTuple = [
+        type || 'registry',
+        f,
+        decodeURIComponent(second),
+      ]
       if (extra) t.push(decodeURIComponent(extra))
       return t
     }
@@ -247,7 +253,9 @@ export const getTuple = (spec: Spec, mani: Manifest): DepIDTuple => {
       // try to shorten to a known name if we can.
       const reg = omitDefReg(f.registry)
       if (!f.namedRegistry && reg) {
-        for (const [alias, host] of Object.entries(spec.options.registries)) {
+        for (const [alias, host] of Object.entries(
+          spec.options.registries,
+        )) {
           if (reg === host) {
             f.namedRegistry = alias
             break

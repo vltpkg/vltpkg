@@ -1,5 +1,8 @@
 import t from 'tap'
-import { nonEmptyList, isNonEmptyList } from '../src/non-empty-list.js'
+import {
+  nonEmptyList,
+  isNonEmptyList,
+} from '../src/non-empty-list.js'
 
 t.equal(isNonEmptyList([]), false)
 t.equal(isNonEmptyList([1]), true)

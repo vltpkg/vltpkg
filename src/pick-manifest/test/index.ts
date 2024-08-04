@@ -70,7 +70,10 @@ t.test('do not be confused by subspecs', t => {
       '2.0.0': { version: '2.0.0' },
     },
   } as unknown as Packument
-  const manifest = pickManifest(metadata, Spec.parse('foo@npm:bar@^1.0.0'))
+  const manifest = pickManifest(
+    metadata,
+    Spec.parse('foo@npm:bar@^1.0.0'),
+  )
   t.equal(
     manifest?.version,
     '1.0.2',

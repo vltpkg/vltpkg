@@ -1,6 +1,6 @@
 import type { PackageJson } from '@vltpkg/package-json'
 import type { RollbackRemove } from '@vltpkg/rollback-remove'
-import {PathScurry} from 'path-scurry'
+import { PathScurry } from 'path-scurry'
 import type { Diff } from '../diff.js'
 import { addEdge } from './add-edge.js'
 
