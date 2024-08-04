@@ -253,6 +253,12 @@ importers:
       '@vltpkg/registry-client':
         specifier: workspace:*
         version: link:../registry-client
+      '@vltpkg/rollback-remove':
+        specifier: workspace:*
+        version: link:../rollback-remove
+      '@vltpkg/run':
+        specifier: workspace:*
+        version: link:../run
       '@vltpkg/satisfies':
         specifier: workspace:*
         version: link:../satisfies
@@ -268,6 +274,9 @@ importers:
       '@vltpkg/workspaces':
         specifier: workspace:*
         version: link:../workspaces
+      graph-run:
+        specifier: ^1.0.3
+        version: 1.0.3
       path-scurry:
         specifier: ^1.11.1
         version: 1.11.1
@@ -281,6 +290,9 @@ importers:
       tap:
         specifier: ^20.0.1
         version: 20.0.1(@types/node@20.14.8)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.2)
+      tar:
+        specifier: ^7.2.0
+        version: 7.2.0
       tshy:
         specifier: ^1.16.1
         version: 1.16.1
@@ -1398,6 +1410,9 @@ packages:
 
   graph-run@1.0.2:
     resolution: {integrity: sha512-q3HYpDgZvdkI1qnLEiov/6BXBjujOnzNw3N9fjOilYCtTmeKSzOrjA2F9i4uCI0jyAI6AKaLw+XZZ9bg85kJhw==}
+
+  graph-run@1.0.3:
+    resolution: {integrity: sha512-NCETWIYbXqWhfDOJYitj4VZzkvuSPxOJZF/Sxu/OUWzjXj1iRDGPlImA2XfBbZgLDOwAMti8JN2o0IGQVPWhjw==}
 
   has-flag@4.0.0:
     resolution: {integrity: sha512-EykJT/Q1KjTWctppgIAgfSO0tKVuZUjhgMr17kqTumMl6Afv3EISleU7qZUzoXDFTAHTDC4NOoG/ZxU3EvlMPQ==}
@@ -2831,6 +2846,8 @@ snapshots:
   graceful-fs@4.2.11: {}
 
   graph-run@1.0.2: {}
+
+  graph-run@1.0.3: {}
 
   has-flag@4.0.0: {}
 

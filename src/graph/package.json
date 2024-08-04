@@ -19,16 +19,20 @@
     "@vltpkg/package-json": "workspace:*",
     "@vltpkg/registry-client": "workspace:*",
     "@vltpkg/satisfies": "workspace:*",
+    "@vltpkg/rollback-remove": "workspace:*",
+    "@vltpkg/run": "workspace:*",
     "@vltpkg/semver": "workspace:*",
     "@vltpkg/spec": "workspace:*",
     "@vltpkg/types": "workspace:*",
     "@vltpkg/workspaces": "workspace:*",
+    "graph-run": "^1.0.3",
     "path-scurry": "^1.11.1"
   },
   "devDependencies": {
     "@types/node": "^20.14.8",
     "prettier": "^3.3.2",
     "tap": "^20.0.1",
+    "tar": "^7.2.0",
     "tshy": "^1.16.1",
     "typedoc": "^0.26.2"
   },
