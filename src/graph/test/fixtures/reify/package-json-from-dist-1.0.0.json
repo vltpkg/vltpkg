@@ -1,0 +1,25 @@
+{
+  "name": "package-json-from-dist",
+  "version": "1.0.0",
+  "devDependencies": {
+    "@types/node": "^20.12.12",
+    "prettier": "^3.2.5",
+    "tap": "^18.5.3",
+    "typedoc": "^0.24.8",
+    "typescript": "^5.1.6",
+    "tshy": "^1.14.0"
+  },
+  "dist": {
+    "integrity": "sha512-dATvCeZN/8wQsGywez1mzHtTlP22H8OEfPrVMLNr4/eGa+ijtLn/6M5f0dY8UKNrC2O9UCU6SSoG3qRKnt7STw==",
+    "shasum": "e501cd3094b278495eb4258d4c9f6d5ac3019f00",
+    "tarball": "https://registry.npmjs.org/package-json-from-dist/-/package-json-from-dist-1.0.0.tgz",
+    "fileCount": 13,
+    "unpackedSize": 33940,
+    "signatures": [
+      {
+        "keyid": "SHA256:jl3bwswu80PjjokCgh0o2w5c2U4LhQAE57gj9cz1kzA",
+        "sig": "MEUCIBk1UxJB1c1W5JqTwhuKr1Dnao3WgyeqtoSK5jKUvZyTAiEA8nD3BvBEUOi8z1O5qVay68RDTcOeH1op6kTxNdKi7CI="
+      }
+    ]
+  }
+}

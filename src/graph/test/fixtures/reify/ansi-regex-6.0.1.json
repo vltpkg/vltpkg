@@ -1,0 +1,27 @@
+{
+  "name": "ansi-regex",
+  "version": "6.0.1",
+  "devDependencies": {
+    "ava": "^3.15.0",
+    "tsd": "^0.14.0",
+    "xo": "^0.38.2"
+  },
+  "dist": {
+    "integrity": "sha512-n5M855fKb2SsfMIiFFoVrABHJC8QtHwVx+mHWP3QcEqBHYienj5dHSgjbxtC0WEZXYt4wcD6zrQElDPhFuZgfA==",
+    "shasum": "3183e38fae9a65d7cb5e53945cd5897d0260a06a",
+    "tarball": "https://registry.npmjs.org/ansi-regex/-/ansi-regex-6.0.1.tgz",
+    "fileCount": 5,
+    "unpackedSize": 5667,
+    "npm-signature": "-----BEGIN PGP SIGNATURE-----\r\nVersion: OpenPGP.js v3.0.13\r\nComment: https://openpgpjs.org\r\n\r\nwsFcBAEBCAAQBQJhO78hCRA9TVsSAnZWagAA+F4P/0Xt4D0GoXduv+o147iO\nj3b1oPSNypnmThhmCAUInwB1Xd9SXFEjzuNDNGX/8xeWUQrJssJ+SBEzb5te\nr34P6wPHUeuTa2p1j3ABN9ABP/NPCPkaEDgjx86ImkT++3VI8yNEuSSOsghI\n5Ssvhm6bLJBWzCt/cweIG7x4ZJQPeUbyoWIJmBobCDyNuVgabmk9B2B1RyO0\nf2aounmh5w1fBWsx65MjTi7fu4e/GOP+xscf9Rn1AdRP6rcxJakPjaGTF3HE\naz6UNP9UZCuZ4rb6xOFEfLmiqfNbK31NKNLPrABDXF6NkbJepsUhNmju32cg\nUuo4lSkxfFaVyFXFB1h62RmDdemxZWl9j24fVt+99K4BH6xOiwPmOHHHPJnL\nXNuZ6eCwdcLjPe8Af/0GEsFqdDu591Hwi2Nl8UNAD5hCzcDTITOTL95Dopaw\nGzySTClnDsh17Ud73FWM51FQzVDORa2vOmVzQts3aHlF93ufk9RHtlN9YxAV\nUvM3IxMHx2O8Rc2gSc6t/pJAdFACBLkLDGtcQVhxaFcTpGXrKUr+KN2gFC4D\nXZA/MvK0YXBmrwec20k2wTAdmi7XO5k8HciCPT7MZDJONTBlt9cC/LL41JNc\nvxj0A0loP9R44eVoAJOSbxhpnteeIjw4rwkOySZOqqEsUw5MDFp/peiojlcv\nCOQk\r\n=VRgZ\r\n-----END PGP SIGNATURE-----\r\n",
+    "signatures": [
+      {
+        "keyid": "SHA256:jl3bwswu80PjjokCgh0o2w5c2U4LhQAE57gj9cz1kzA",
+        "sig": "MEUCIQCWW/ZEXmQGK500jBFw7uRYczrrcLTzOEnm3uDiNPs6rAIgcKX8SLAOUpBu/tWg+7vPsMA4l7siraEVYPpTETOVqX0="
+      }
+    ]
+  },
+  "engines": {
+    "node": ">=12"
+  },
+  "funding": "https://github.com/chalk/ansi-regex?sponsor=1"
+}

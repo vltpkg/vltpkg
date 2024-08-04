@@ -1,0 +1,32 @@
+{
+  "name": "string-width",
+  "version": "5.1.2",
+  "dependencies": {
+    "strip-ansi": "^7.0.1",
+    "emoji-regex": "^9.2.2",
+    "eastasianwidth": "^0.2.0"
+  },
+  "devDependencies": {
+    "xo": "^0.38.2",
+    "ava": "^3.15.0",
+    "tsd": "^0.14.0"
+  },
+  "dist": {
+    "shasum": "14f8daec6d81e7221d2a357e668cab73bdbca794",
+    "tarball": "https://registry.npmjs.org/string-width/-/string-width-5.1.2.tgz",
+    "fileCount": 5,
+    "integrity": "sha512-HnLOCR3vjcY8beoNLtcjZ5/nxn2afmME6lhrDrebokqMap+XbeW8n9TXpPDOqdGK5qcI3oT0GKTW6wC7EMiVqA==",
+    "signatures": [
+      {
+        "sig": "MEUCIFh4IjLA+aBQo7r/VZcidTSCApNLobLlmjMKnBREpog9AiEApke6FV5/3E44vAJKBbdIZ832/aqqaNMi8TFY+Px6Rwc=",
+        "keyid": "SHA256:jl3bwswu80PjjokCgh0o2w5c2U4LhQAE57gj9cz1kzA"
+      }
+    ],
+    "unpackedSize": 5781,
+    "npm-signature": "-----BEGIN PGP SIGNATURE-----\r\nVersion: OpenPGP.js v4.10.10\r\nComment: https://openpgpjs.org\r\n\r\nwsFzBAEBCAAGBQJiHIYtACEJED1NWxICdlZqFiEECWMYAoorWMhJKdjhPU1b\r\nEgJ2VmqVLA/+M/8rKbhdnMv4nDBxBiwykx9T/GKuPldo2n9HpmPoqdaYbsUR\r\nKqB4g+cLAbMdr3kSMkt82Ou2Ceb8b23wBVNZbzYRQS+OKzzQKwwgi8PggU0t\r\niAm9V1k14zoV9r+hXKAG0MTp7+hEoqjjVYBEiz+z7TL5W0XR4c5iHBjUgNfg\r\n3G3flpdODgSZ4c5wgcODfSbEly/8GAh8hKzNNdYqgVVXLdPwzag4ArCP64TN\r\nBry4KwaNEguk3bqK0BGM4IZc3iz4bkZILEb5FgTUZuO2HbkBkNg0TD7rQz57\r\nTzzjnNJRzzF15NNijEVuuWj7BJBzEx7SUeZ6rBQbRAtMpZDgnYMjfnm1UOvs\r\nRLRaJt6phv/mYtLNVjW/Q5k8QAZHZr7aVAcOH314OFo1TopJwYfZfd8HdtVo\r\nYT2smUy2iVMs3KbHKQ+JKlnlA5u+x/0jv2eD4BvY1F2j86JHI8XoLT3JwYDS\r\nfZogtRhjGClSSyXyhihqkV/DlfeQxglZ7QFkAWlNt8xhUupzZ2fezqOX+15M\r\nimEdQ67SYm9akBBvxsbLvWaaMPlIdJW9fIspHwOKHctD00qjPmcwcJFKJAmt\r\noETedpGcdQHFko/wFjqSIeHThKrodnbWH5s/7C8c0Eie4Ran/NSihB4GSFgx\r\nlXX/hq0UhZhoc6EmR3kBXOealyRvPm0sA14=\r\n=ZoNR\r\n-----END PGP SIGNATURE-----\r\n"
+  },
+  "engines": {
+    "node": ">=12"
+  },
+  "funding": "https://github.com/sponsors/sindresorhus"
+}

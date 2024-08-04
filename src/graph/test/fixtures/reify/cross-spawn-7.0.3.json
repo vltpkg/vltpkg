@@ -1,0 +1,41 @@
+{
+  "name": "cross-spawn",
+  "version": "7.0.3",
+  "dependencies": {
+    "path-key": "^3.1.0",
+    "shebang-command": "^2.0.0",
+    "which": "^2.0.1"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^8.1.0",
+    "@commitlint/config-conventional": "^8.1.0",
+    "babel-core": "^6.26.3",
+    "babel-jest": "^24.9.0",
+    "babel-preset-moxy": "^3.1.0",
+    "eslint": "^5.16.0",
+    "eslint-config-moxy": "^7.1.0",
+    "husky": "^3.0.5",
+    "jest": "^24.9.0",
+    "lint-staged": "^9.2.5",
+    "mkdirp": "^0.5.1",
+    "rimraf": "^3.0.0",
+    "standard-version": "^7.0.0"
+  },
+  "dist": {
+    "integrity": "sha512-iRDPJKUPVEND7dHPO8rkbOnPpyDygcDFtWjpeWNCgy8WP2rXcxXL8TskReQl6OrB2G7+UJrags1q15Fudc7G6w==",
+    "shasum": "f73a85b9d5d41d045551c177e2882d4ac85728a6",
+    "tarball": "https://registry.npmjs.org/cross-spawn/-/cross-spawn-7.0.3.tgz",
+    "fileCount": 10,
+    "unpackedSize": 21207,
+    "npm-signature": "-----BEGIN PGP SIGNATURE-----\r\nVersion: OpenPGP.js v3.0.4\r\nComment: https://openpgpjs.org\r\n\r\nwsFcBAEBCAAQBQJey+WtCRA9TVsSAnZWagAAQbcP/1FGxwkPr+a5gx/ntrWD\n5YJdj1PVM6QsC2wUtn8CwW8GQVt5S4jMEQ4ZWbhBPgsHKyvfC4O5CxwGa7JR\n/ONvY8hrfjeXZZ7ePL0u683K05+wBC8n9anUd/RROEbF/0Ptia7pWyiKGEpG\nTh6btdUzKIijKtXrANxXe/U7dXOtFtg3sEtKKhFGB0EFl2x6vQJi3FlCasfT\nTrL4kCVcGiLFVDFLPgM18iRDG83obqsi0fnujL/EzLSGt1ldBm0aTNyIUWkt\nDdcvuWYTDAH6yCEB/kDIUfBTy94p2Vc5yp76Rp5vMCbPPBWEHszGbHcGqhkK\n0BFTs/e5dzhCDZ0i83YCwyTBP0bF+Jzum4/lckN2m5VYeeWAbfvB5G2jmUAv\nlTXNyPsg03ycX3p6OvSxbdpSzea/SZVYybr59gHHBkL4JgoFo2ypFs0ZVJfw\ncG4A8LF4z6V2DbLVviLUVsQ6KQqKaCTLxMLcfwd59AHVUrGqtzB6EzqYfyl5\n9oYQgZF78WjXTezST2e7cf14ITfIv7voJ5ci9xVh27L0wvkSvJX4SENyn9Nr\ngIvfeSSJndO76mhB0vZ6ArW6S9BV/FspGpZm5zASk+i9tj+ppy19zbNWhm/5\ncvN8TJiui80niDmnM6mHXHrC3mZiIBgFJHp9NoepmUG03GG9lmLCab3CkGu6\nhqhR\r\n=lXVa\r\n-----END PGP SIGNATURE-----\r\n",
+    "signatures": [
+      {
+        "keyid": "SHA256:jl3bwswu80PjjokCgh0o2w5c2U4LhQAE57gj9cz1kzA",
+        "sig": "MEYCIQDV3uyoAawrXTO40sTQ71+tY4UBLGXyIxxzykg9MOSZRgIhAOXE5g5AY0aGrmKohMbsOiiiWUWew3zD5tGO9e/D6VNJ"
+      }
+    ]
+  },
+  "engines": {
+    "node": ">= 8"
+  }
+}

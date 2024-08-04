@@ -1,0 +1,28 @@
+{
+  "name": "strip-ansi",
+  "version": "6.0.1",
+  "dependencies": {
+    "ansi-regex": "^5.0.1"
+  },
+  "devDependencies": {
+    "ava": "^2.4.0",
+    "tsd": "^0.10.0",
+    "xo": "^0.25.3"
+  },
+  "dist": {
+    "integrity": "sha512-Y38VPSHcqkFrCpFnQ9vuSXmquuv5oXOKpGeT6aGrr3o3Gc9AlVa6JBfUSOCnbxGGZF+/0ooI7KrPuUSztUdU5A==",
+    "shasum": "9e26c63d30f53443e9489495b2105d37b67a85d9",
+    "tarball": "https://registry.npmjs.org/strip-ansi/-/strip-ansi-6.0.1.tgz",
+    "fileCount": 5,
+    "unpackedSize": 4029,
+    "signatures": [
+      {
+        "keyid": "SHA256:jl3bwswu80PjjokCgh0o2w5c2U4LhQAE57gj9cz1kzA",
+        "sig": "MEQCIEIaIvQJAMRlSerQ8cuHIzWxWLJPS6LkkF/9tMpiAXTvAiBY3tMFoj8tB0mc3dm7Th97E9p88NfZfjOdr/HKu8apLw=="
+      }
+    ]
+  },
+  "engines": {
+    "node": ">=8"
+  }
+}

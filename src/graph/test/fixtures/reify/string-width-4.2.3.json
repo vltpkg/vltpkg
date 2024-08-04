@@ -1,0 +1,30 @@
+{
+  "name": "string-width",
+  "version": "4.2.3",
+  "dependencies": {
+    "strip-ansi": "^6.0.1",
+    "emoji-regex": "^8.0.0",
+    "is-fullwidth-code-point": "^3.0.0"
+  },
+  "devDependencies": {
+    "xo": "^0.24.0",
+    "ava": "^1.4.1",
+    "tsd": "^0.7.1"
+  },
+  "dist": {
+    "shasum": "269c7117d27b05ad2e536830a8ec895ef9c6d010",
+    "tarball": "https://registry.npmjs.org/string-width/-/string-width-4.2.3.tgz",
+    "fileCount": 5,
+    "integrity": "sha512-wKyQRQpjJ0sIp62ErSZdGsjMJWsap5oRNihHhu6G7JVO/9jIB6UyevL+tXuOqrng8j/cxKTWyWUwvSTriiZz/g==",
+    "signatures": [
+      {
+        "sig": "MEUCIQCdE8iSHW3j8YsH6u/KbZmvj9DtpGTXHmhmmp6oeUG6/AIge8jaI1Qk/Z/GED/SrwJ+yNQAEzkZ28FrbwLFqeAqdSg=",
+        "keyid": "SHA256:jl3bwswu80PjjokCgh0o2w5c2U4LhQAE57gj9cz1kzA"
+      }
+    ],
+    "unpackedSize": 5161
+  },
+  "engines": {
+    "node": ">=8"
+  }
+}

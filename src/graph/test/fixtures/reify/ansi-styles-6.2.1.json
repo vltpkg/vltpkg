@@ -1,0 +1,28 @@
+{
+  "name": "ansi-styles",
+  "version": "6.2.1",
+  "devDependencies": {
+    "ava": "^3.15.0",
+    "svg-term-cli": "^2.1.1",
+    "tsd": "^0.19.0",
+    "xo": "^0.47.0"
+  },
+  "dist": {
+    "integrity": "sha512-bN798gFfQX+viw3R7yrGWRqnrN2oRkEkUjjl4JNn4E8GxxbjtG3FbrEIIY3l8/hrwUwIeCZvi4QuOTP4MErVug==",
+    "shasum": "0e62320cf99c21afff3b3012192546aacbfb05c5",
+    "tarball": "https://registry.npmjs.org/ansi-styles/-/ansi-styles-6.2.1.tgz",
+    "fileCount": 5,
+    "unpackedSize": 17512,
+    "signatures": [
+      {
+        "keyid": "SHA256:jl3bwswu80PjjokCgh0o2w5c2U4LhQAE57gj9cz1kzA",
+        "sig": "MEUCIFG8Ismuz7QceJds84ad7aPzrkac5X2fz77O03EWGd2NAiEAjEl3Glc9eJKUdpAivBYekFwYpFD11EcZpMgchlpobk8="
+      }
+    ],
+    "npm-signature": "-----BEGIN PGP SIGNATURE-----\r\nVersion: OpenPGP.js v4.10.10\r\nComment: https://openpgpjs.org\r\n\r\nwsFzBAEBCAAGBQJjRux+ACEJED1NWxICdlZqFiEECWMYAoorWMhJKdjhPU1b\r\nEgJ2Vmr5ig//VjdkOryvuCnDcYpJhihW65JHJVw6Ppc/93gfYkqRDvVEkENx\r\nMTCPrrxwTB59Ksos12hrIy+Wk7/w5HGxiA/p/hoxSmf44eePej4L8VUDgkEx\r\nlrYW4B9i/pNIvcZcX27FoOALXq2/PiZPAWne+n61Tzg9MP2mQvMpc6UGRr0/\r\nMJ7XyuS3n5T7Sw6IknuH4Ts1Q+rboQWXo3/gYdnLUubh979f9nBs7PMpRxPo\r\ngIAcbrer2MfXEkaHwYu7GV2xiaCk9DZNPFM4GCucaV8bm1AP/QnLlu8/ATzv\r\nFpprkNnvwb4cMTzbTf8Q0hgURPpwtUIxci7ROegqRKC5F9k4OCsy8NgfFgkR\r\nrUpT3bzhe4DnUVCQS58hE5WweFqmmcJBTa4XGyaOtov0cyARkaVt/f6MIeup\r\nvFAXEphN0m+OHOLt7DQan3Mi0OMRig+CsQxK93EQz2QGC4rlMjzEC2x0UFC6\r\ntJOGB0vAwi+0vCSuHg/rxTqV+5QuJ916+4ASaTvhgtAP5+Y6hDTBgRFBPzae\r\nEj2gUVX4Jn9jdFp17PmLjdFj3DZjRfiE6yFTi06Egn63eS29wFxXI0rTfCwt\r\ndyGJkB/Vzdw/b7eLixIsOPS5ibTxrfkfzCyjZOJxOVPbUOBbGEG9WtPoZpDJ\r\noLxKumt3S+KsvopOSRGnjzHnk7Y9bYF5iew=\r\n=3p57\r\n-----END PGP SIGNATURE-----\r\n"
+  },
+  "engines": {
+    "node": ">=12"
+  },
+  "funding": "https://github.com/chalk/ansi-styles?sponsor=1"
+}

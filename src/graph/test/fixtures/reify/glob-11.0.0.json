@@ -1,0 +1,45 @@
+{
+  "name": "glob",
+  "version": "11.0.0",
+  "dependencies": {
+    "minipass": "^7.1.2",
+    "jackspeak": "^4.0.1",
+    "minimatch": "^10.0.0",
+    "path-scurry": "^2.0.0",
+    "foreground-child": "^3.1.0",
+    "package-json-from-dist": "^1.0.0"
+  },
+  "devDependencies": {
+    "tap": "^20.0.3",
+    "tshy": "^2.0.1",
+    "memfs": "^4.9.3",
+    "mkdirp": "^3.0.1",
+    "rimraf": "^5.0.7",
+    "typedoc": "^0.26.3",
+    "prettier": "^3.2.5",
+    "@types/node": "^20.11.30",
+    "sync-content": "^1.0.2"
+  },
+  "bin": {
+    "glob": "dist/esm/bin.mjs"
+  },
+  "dist": {
+    "shasum": "6031df0d7b65eaa1ccb9b29b5ced16cea658e77e",
+    "tarball": "https://registry.npmjs.org/glob/-/glob-11.0.0.tgz",
+    "fileCount": 65,
+    "integrity": "sha512-9UiX/Bl6J2yaBbxKoEBRm4Cipxgok8kQYcOPEhScPwebu2I0HoQOuYdIO6S3hLuWoZgpDpwQZMzTFxgpkyT76g==",
+    "signatures": [
+      {
+        "sig": "MEUCIDcrb+cZALFLxpz8+7X8I+6JK/PP+5bHPA1sqhiOP7mOAiEA/cRMl/d2qmk3sT4QEJI1ZyMrRoy1B5RLTlu7bkWOcvo=",
+        "keyid": "SHA256:jl3bwswu80PjjokCgh0o2w5c2U4LhQAE57gj9cz1kzA"
+      }
+    ],
+    "unpackedSize": 474708
+  },
+  "engines": {
+    "node": "20 || >=22"
+  },
+  "funding": {
+    "url": "https://github.com/sponsors/isaacs"
+  }
+}
