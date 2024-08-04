@@ -10,6 +10,7 @@
 /tap-snapshots
 /test/**/fixture
 /test/**/fixtures
+/pnpm-lock.yaml
 
 /src/*/scripts/fixtures
 /src/*/.tap
