@@ -51,10 +51,12 @@ export interface PackageInfoClientOptions
   /** PackageJson object */
   packageJson?: PackageJson
 
-  /** workspace groups to load */
+  monorepo?: Monorepo
+
+  /** workspace groups to load, irrelevant if Monorepo provided */
   'workspace-group'?: string[]
 
-  /** workspace paths to load */
+  /** workspace paths to load, irrelevant if Monorepo provided */
   workspace?: string[]
 }
 
@@ -224,10 +226,12 @@ export class PackageInfoClient {
         groups: options['workspace-group'],
       }),
     }
-    this.monorepo = Monorepo.maybeLoad(this.#projectRoot, {
-      load: wsLoad,
-      packageJson: this.packageJson,
-    })
+    this.monorepo =
+      options.monorepo ??
+      Monorepo.maybeLoad(this.#projectRoot, {
+        load: wsLoad,
+        packageJson: this.packageJson,
+      })
   }
 
   async extract(
