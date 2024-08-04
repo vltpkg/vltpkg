@@ -794,8 +794,8 @@ importers:
         specifier: ^10.4.1
         version: 10.4.1
       graph-run:
-        specifier: ^1.0.2
-        version: 1.0.2
+        specifier: ^1.0.3
+        version: 1.0.3
       minimatch:
         specifier: ^9.0.4
         version: 9.0.4
@@ -1410,9 +1410,6 @@ packages:
 
   graceful-fs@4.2.11:
     resolution: {integrity: sha512-RbJ5/jmFcNNCcDV5o9eTnBLJ/HszWV0P73bc+Ff4nS/rJj+YaS6IGyiOL0VoBYX+l1Wrl3k63h/KrH+nhJ0XvQ==}
-
-  graph-run@1.0.2:
-    resolution: {integrity: sha512-q3HYpDgZvdkI1qnLEiov/6BXBjujOnzNw3N9fjOilYCtTmeKSzOrjA2F9i4uCI0jyAI6AKaLw+XZZ9bg85kJhw==}
 
   graph-run@1.0.3:
     resolution: {integrity: sha512-NCETWIYbXqWhfDOJYitj4VZzkvuSPxOJZF/Sxu/OUWzjXj1iRDGPlImA2XfBbZgLDOwAMti8JN2o0IGQVPWhjw==}
@@ -2847,8 +2844,6 @@ snapshots:
       path-scurry: 1.11.1
 
   graceful-fs@4.2.11: {}
-
-  graph-run@1.0.2: {}
 
   graph-run@1.0.3: {}
 

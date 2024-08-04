@@ -18,7 +18,7 @@
     "@vltpkg/package-json": "workspace:*",
     "@vltpkg/types": "workspace:*",
     "glob": "^10.4.1",
-    "graph-run": "^1.0.2",
+    "graph-run": "^1.0.3",
     "minimatch": "^9.0.4",
     "path-scurry": "^1.11.1",
     "polite-json": "^5.0.0",
