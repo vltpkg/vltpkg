@@ -150,6 +150,15 @@ export class Graph {
     from: Node,
     to?: Node,
   ) {
+    const existing = from.edgesOut.get(spec.name)
+    if (
+      existing &&
+      existing.type === type &&
+      existing.spec.bareSpec === spec.bareSpec
+    ) {
+      if (to && to !== existing.to) existing.to = to
+      return existing
+    }
     const edgeOut = from.addEdgesTo(type, spec, to)
     this.edges.add(edgeOut)
     return edgeOut
