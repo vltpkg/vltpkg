@@ -165,6 +165,7 @@ export class Monorepo {
     this.projectRoot = resolve(projectRoot)
     this.scurry = options.scurry ?? new PathScurry(projectRoot)
     this.packageJson = options.packageJson ?? new PackageJson()
+    this.#config = options.config
     if (options.load) this.load(options.load)
   }
 
