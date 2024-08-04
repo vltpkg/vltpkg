@@ -167,7 +167,6 @@ const readDir = (
     // infer both the alias and proper package names, including scopes
     const alias = findName(entry)
     const name = findName(realpath)
-
     res.add({
       alias,
       name,
