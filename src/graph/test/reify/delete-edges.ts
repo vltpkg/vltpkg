@@ -1,9 +1,9 @@
 import { RollbackRemove } from '@vltpkg/rollback-remove'
-import {Spec} from '@vltpkg/spec'
-import {resolve} from 'path'
+import { Spec } from '@vltpkg/spec'
+import { resolve } from 'path'
 import { PathScurry } from 'path-scurry'
 import t from 'tap'
-import {Diff} from '../../src/diff.js'
+import { Diff } from '../../src/diff.js'
 import { Edge } from '../../src/edge.js'
 import { Node } from '../../src/node.js'
 
@@ -26,14 +26,29 @@ const { deleteEdges } = await t.mockImport<
 })
 
 const projectRoot = t.testdirName
-const fooNode = new Node({projectRoot}, ';;foo@1.2.3')
-const barNode = new Node({projectRoot}, ';;bar@1.2.3')
-const bazNode = new Node({projectRoot}, ';;baz@1.2.3')
-const outNode = new Node({projectRoot}, 'file;./outside')
+const fooNode = new Node({ projectRoot }, ';;foo@1.2.3')
+const barNode = new Node({ projectRoot }, ';;bar@1.2.3')
+const bazNode = new Node({ projectRoot }, ';;baz@1.2.3')
+const outNode = new Node({ projectRoot }, 'file;./outside')
 outNode.location = resolve(projectRoot, 'outside')
-const foobarEdge = new Edge('prod', Spec.parse('bar@*'), fooNode, barNode)
-const bazbarEdge = new Edge('prod', Spec.parse('bar@*'), bazNode, barNode)
-const outbarEdge = new Edge('prod', Spec.parse('bar@*'), outNode, barNode)
+const foobarEdge = new Edge(
+  'prod',
+  Spec.parse('bar@*'),
+  fooNode,
+  barNode,
+)
+const bazbarEdge = new Edge(
+  'prod',
+  Spec.parse('bar@*'),
+  bazNode,
+  barNode,
+)
+const outbarEdge = new Edge(
+  'prod',
+  Spec.parse('bar@*'),
+  outNode,
+  barNode,
+)
 
 const diff = {
   nodes: {

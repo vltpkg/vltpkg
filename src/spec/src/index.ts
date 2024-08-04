@@ -560,7 +560,10 @@ export class Spec {
     return false
   }
 
-  [kCustomInspect](_depth?: number, options?: InspectOptions): string {
+  [kCustomInspect](
+    _depth?: number,
+    options?: InspectOptions,
+  ): string {
     const str = inspect(
       Object.fromEntries(
         Object.entries(this).filter(([k, v]) => {

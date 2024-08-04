@@ -54,7 +54,9 @@ const runTest = async (t: Test, withManifest: boolean) => {
 
   await Promise.all(chmodBins(diff, new PackageJson(), scurry))
   t.strictSame(chmods, [
-    scurry.resolve('node_modules/.vlt/;;foo@1.2.3/node_modules/foo/foo.sh')
+    scurry.resolve(
+      'node_modules/.vlt/;;foo@1.2.3/node_modules/foo/foo.sh',
+    ),
   ])
 }
 

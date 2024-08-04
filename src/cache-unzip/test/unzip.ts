@@ -123,12 +123,10 @@ t.test('unzip an entry that had headers', async t => {
     Buffer.from(String(z.byteLength)),
   ])
   const zlen = zheaders.byteLength + 7
-  const zipped = Buffer.concat([
-    Buffer.from([0, 0, 0, zlen]),
-    Buffer.from('200'),
-    zheaders,
-    z,
-  ], zlen + z.byteLength)
+  const zipped = Buffer.concat(
+    [Buffer.from([0, 0, 0, zlen]), Buffer.from('200'), zheaders, z],
+    zlen + z.byteLength,
+  )
 
   const resultHead = Buffer.concat([
     Buffer.from([0, 0, 0, 'content-encoding'.length + 4]),
@@ -141,12 +139,15 @@ t.test('unzip an entry that had headers', async t => {
     Buffer.from(String(unz.length)),
   ])
   const rlen = resultHead.byteLength + 7
-  const result = Buffer.concat([
-    Buffer.from([0, 0, 0, rlen]),
-    Buffer.from('200'),
-    resultHead,
-    Buffer.from(unz),
-  ], rlen + unz.length)
+  const result = Buffer.concat(
+    [
+      Buffer.from([0, 0, 0, rlen]),
+      Buffer.from('200'),
+      resultHead,
+      Buffer.from(unz),
+    ],
+    rlen + unz.length,
+  )
 
   const cache = new Cache({ path: t.testdir() })
   cache.set('gz1', zipped)
@@ -165,8 +166,5 @@ t.test('unzip an entry that had headers', async t => {
     stderr: null,
   })
   const c = new Cache({ path: t.testdirName })
-  t.same(
-    await c.fetch('gz1'),
-    result,
-  )
+  t.same(await c.fetch('gz1'), result)
 })

@@ -129,10 +129,7 @@ t.test('do not delete some stuff', async t => {
   )
   await remover.rollback()
   t.strictSame(spawns, [])
-  t.strictSame(
-    new Set(readdirSync('a')),
-    new Set(['b', 'c']),
-  )
+  t.strictSame(new Set(readdirSync('a')), new Set(['b', 'c']))
   t.strictSame(
     new Set(readdirSync(t.testdirName)),
     new Set(['d', 'a']),
