@@ -1,0 +1,37 @@
+{
+  "name": "foreground-child",
+  "version": "3.2.1",
+  "dependencies": {
+    "cross-spawn": "^7.0.0",
+    "signal-exit": "^4.0.1"
+  },
+  "devDependencies": {
+    "@types/cross-spawn": "^6.0.2",
+    "@types/node": "^18.15.11",
+    "@types/tap": "^15.0.8",
+    "prettier": "^3.3.2",
+    "tap": "^19.2.5",
+    "tshy": "^1.15.1",
+    "typedoc": "^0.24.2",
+    "typescript": "^5.0.2"
+  },
+  "dist": {
+    "integrity": "sha512-PXUUyLqrR2XCWICfv6ukppP96sdFwWbNEnfEMt7jNsISjMsvaLNinAHNDYyvkyU+SZG2BTSbT5NjG+vZslfGTA==",
+    "shasum": "767004ccf3a5b30df39bed90718bab43fe0a59f7",
+    "tarball": "https://registry.npmjs.org/foreground-child/-/foreground-child-3.2.1.tgz",
+    "fileCount": 37,
+    "unpackedSize": 68184,
+    "signatures": [
+      {
+        "keyid": "SHA256:jl3bwswu80PjjokCgh0o2w5c2U4LhQAE57gj9cz1kzA",
+        "sig": "MEQCICh3UF+VAJBE3PR4nCLEMutI04CojoFdJIieW6ffZVutAiBpPfgu74fUsaEfaA39HHpkoMqf9ICY3vOGIdNkiz3TWw=="
+      }
+    ]
+  },
+  "engines": {
+    "node": ">=14"
+  },
+  "funding": {
+    "url": "https://github.com/sponsors/isaacs"
+  }
+}

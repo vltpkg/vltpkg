@@ -1,0 +1,23 @@
+{
+  "name": "isexe",
+  "version": "2.0.0",
+  "devDependencies": {
+    "mkdirp": "^0.5.1",
+    "rimraf": "^2.5.0",
+    "tap": "^10.3.0"
+  },
+  "directories": {
+    "test": "test"
+  },
+  "dist": {
+    "shasum": "e8fbf374dc556ff8947a10dcb0572d633f2cfa10",
+    "tarball": "https://registry.npmjs.org/isexe/-/isexe-2.0.0.tgz",
+    "integrity": "sha512-RHxMLp9lnKHGHRng9QFhRCMbYAcVpn69smSGcq3f36xjgVVWThj4qqLbTLlq7Ssj8B+fIQ1EuCEGI2lKsyQeIw==",
+    "signatures": [
+      {
+        "keyid": "SHA256:jl3bwswu80PjjokCgh0o2w5c2U4LhQAE57gj9cz1kzA",
+        "sig": "MEQCIADIHL0vHAyBDSHK5BeCzNQb3ooCTHoBU+bp0my0d0pwAiAEzxUmLzKn2xsUOTDZngxVYgQ+2BELnj8z+ZNAJWENzA=="
+      }
+    ]
+  }
+}

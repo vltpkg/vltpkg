@@ -1,0 +1,31 @@
+{
+  "name": "minipass",
+  "version": "7.1.2",
+  "devDependencies": {
+    "@types/end-of-stream": "^1.4.2",
+    "@types/node": "^20.1.2",
+    "end-of-stream": "^1.4.0",
+    "node-abort-controller": "^3.1.1",
+    "prettier": "^2.6.2",
+    "tap": "^19.0.0",
+    "through2": "^2.0.3",
+    "tshy": "^1.14.0",
+    "typedoc": "^0.25.1"
+  },
+  "dist": {
+    "integrity": "sha512-qOOzS1cBTWYF4BH8fVePDBOO9iptMnGUEZwNc/cMWnTV2nVLZ7VoNWEPHkYczZA0pdoA7dl6e7FL659nX9S2aw==",
+    "shasum": "93a9626ce5e5e66bd4db86849e7515e92340a707",
+    "tarball": "https://registry.npmjs.org/minipass/-/minipass-7.1.2.tgz",
+    "fileCount": 13,
+    "unpackedSize": 286202,
+    "signatures": [
+      {
+        "keyid": "SHA256:jl3bwswu80PjjokCgh0o2w5c2U4LhQAE57gj9cz1kzA",
+        "sig": "MEUCIBkQJPfSAC23QGJC4cJMYAUXpqqVOq4t69yc/4rkRU3GAiEAl4BdS3v8U/I+g+Na71CrCfplx3P1Z2lvj7NBGdATUR8="
+      }
+    ]
+  },
+  "engines": {
+    "node": ">=16 || 14 >=14.17"
+  }
+}

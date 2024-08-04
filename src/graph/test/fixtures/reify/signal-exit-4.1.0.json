@@ -1,0 +1,35 @@
+{
+  "name": "signal-exit",
+  "version": "4.1.0",
+  "devDependencies": {
+    "@types/cross-spawn": "^6.0.2",
+    "@types/node": "^18.15.11",
+    "@types/signal-exit": "^3.0.1",
+    "@types/tap": "^15.0.8",
+    "c8": "^7.13.0",
+    "prettier": "^2.8.6",
+    "tap": "^16.3.4",
+    "ts-node": "^10.9.1",
+    "typedoc": "^0.23.28",
+    "typescript": "^5.0.2"
+  },
+  "dist": {
+    "integrity": "sha512-bzyZ1e88w9O1iNJbKnOlvYTrWPDl46O1bG0D3XInv+9tkPrxrN8jUUTiFlDkkmKWgn1M6CfIA13SuGqOa9Korw==",
+    "shasum": "952188c1cbd546070e2dd20d0f41c0ae0530cb04",
+    "tarball": "https://registry.npmjs.org/signal-exit/-/signal-exit-4.1.0.tgz",
+    "fileCount": 29,
+    "unpackedSize": 76966,
+    "signatures": [
+      {
+        "keyid": "SHA256:jl3bwswu80PjjokCgh0o2w5c2U4LhQAE57gj9cz1kzA",
+        "sig": "MEUCIQC17YSNmo/hSXVVI2cchqvs3la7twHltiehlUoPq/9VGgIgD2Hb18tHfjmWx8vendx1mWOOOYvu7+XRLUj+wwxejPE="
+      }
+    ]
+  },
+  "engines": {
+    "node": ">=14"
+  },
+  "funding": {
+    "url": "https://github.com/sponsors/isaacs"
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "name": "underscore",
+  "version": "1.13.7",
+  "devDependencies": {
+    "nyc": "^15.1.0",
+    "glob": "^7.1.6",
+    "docco": "^0.8.0",
+    "husky": "^4.2.3",
+    "karma": "^4.4.1",
+    "qunit": "2.10.1",
+    "eslint": "^6.8.0",
+    "rollup": "^2.40.0",
+    "terser": "^4.6.13",
+    "cpy-cli": "^3.1.1",
+    "coveralls": "^3.1.1",
+    "karma-qunit": "^4.1.2",
+    "gzip-size-cli": "^1.0.0",
+    "patch-package": "^6.4.7",
+    "pretty-bytes-cli": "^1.0.0",
+    "eslint-plugin-import": "^2.20.1",
+    "karma-sauce-launcher": "^4.3.6"
+  },
+  "dist": {
+    "shasum": "970e33963af9a7dda228f17ebe8399e5fbe63a10",
+    "tarball": "https://registry.npmjs.org/underscore/-/underscore-1.13.7.tgz",
+    "fileCount": 507,
+    "integrity": "sha512-GMXzWtsc57XAtguZgaQViUOzs0KTkk8ojr3/xAxXLITqf/3EMwxC0inyETfDFjH/Krbhuep0HNbbjI9i/q3F3g==",
+    "signatures": [
+      {
+        "sig": "MEQCIFJARw3h2U3TFUq0XViT/p0g3pG/H/mgATRfwJXhAvx4AiB8WfyGah6DCRhrgSFtWnAFg+QpGghEE80JUjWenboCLw==",
+        "keyid": "SHA256:jl3bwswu80PjjokCgh0o2w5c2U4LhQAE57gj9cz1kzA"
+      }
+    ],
+    "unpackedSize": 906308
+  }
+}

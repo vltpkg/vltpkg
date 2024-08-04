@@ -1,0 +1,35 @@
+{
+  "name": "wrap-ansi",
+  "version": "7.0.0",
+  "dependencies": {
+    "ansi-styles": "^4.0.0",
+    "string-width": "^4.1.0",
+    "strip-ansi": "^6.0.0"
+  },
+  "devDependencies": {
+    "ava": "^2.1.0",
+    "chalk": "^4.0.0",
+    "coveralls": "^3.0.3",
+    "has-ansi": "^4.0.0",
+    "nyc": "^15.0.1",
+    "xo": "^0.29.1"
+  },
+  "dist": {
+    "integrity": "sha512-YVGIj2kamLSTxw6NsZjoBxfSwsn0ycdesmc4p+Q21c5zPuZ1pl+NfxVdxPtdHvmNVOQ6XSYG4AUtyt/Fi7D16Q==",
+    "shasum": "67e145cff510a6a6984bdf1152911d69d2eb9e43",
+    "tarball": "https://registry.npmjs.org/wrap-ansi/-/wrap-ansi-7.0.0.tgz",
+    "fileCount": 4,
+    "unpackedSize": 10648,
+    "npm-signature": "-----BEGIN PGP SIGNATURE-----\r\nVersion: OpenPGP.js v3.0.4\r\nComment: https://openpgpjs.org\r\n\r\nwsFcBAEBCAAQBQJeoHaECRA9TVsSAnZWagAAK24P/jwyeF34W9cqIv/B3ksz\n92WOZxBeOfH13jbFs4Ha3FhMDAtvLeTJeomi6vcxSMEm2QwClv4xWQB8zHom\nqOXcdDIZ0vOXXZIEtkdpRsYu+jYh5sH/Wqp7CZMtYbMuAPZb2JmmbW+8YL5H\nSOX9I1J8VUGZ0Nsz12tEYbWDaeeK1ALa6qp88TfiUtOGr8T+GhI1kIH9zSEq\nper8hpXgbaX14k+sAey2iVY4zZmfPQbKEbcpPUKLX3QHVYuRVWcI/eFgET9C\nyA39dJDetiFDdPrSKps8/5YA+jNbYWyip+ljT8/Em2PF5JJlOuAii+42EKyM\nUwxii3cKKQ4Q5Zuh5j2RnFutBOFdCLOQfYZAoJEeuxd2UQPZrTEOGD5mXbng\n7g3wf33Syyr+SVbHnRCI8NNrRu1agm4m/uIpugTuvPo1cg4I+hNshRGX1+1D\n5DJKE9KSpz5M67B6mZfsJfLC5ksGtrNBDFvjNAoqo69oSNaGfFJZNC0iXHE6\nIYkRDb/aN4w6JmnaO6vFIx4+5HozLd3iDLKzlDYmTloJNjN1r9kcdMnQUoAG\n5IGC8lGYuTQYyhemyJ92e+OaZQBXaPxBa64Atvj9psPTFko5m18FOqh0HMbp\nreGEUF3K+5wyUv+1C97ZAHbxJ5ZJ3s/qCeIzzWcxuEiqAAAiDxpPmOj9WXan\nRWNd\r\n=dAFV\r\n-----END PGP SIGNATURE-----\r\n",
+    "signatures": [
+      {
+        "keyid": "SHA256:jl3bwswu80PjjokCgh0o2w5c2U4LhQAE57gj9cz1kzA",
+        "sig": "MEYCIQCKo7j2UdQx54mSbTdaaej2HDd+7W+ESXd3KKVPvJfvJAIhAMJ7QP5IP0+ZduLVTIUpiMK2pHSoyirpMJPR7ttSpH2z"
+      }
+    ]
+  },
+  "engines": {
+    "node": ">=10"
+  },
+  "funding": "https://github.com/chalk/wrap-ansi?sponsor=1"
+}

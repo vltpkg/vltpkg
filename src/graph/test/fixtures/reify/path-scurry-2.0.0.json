@@ -1,0 +1,39 @@
+{
+  "name": "path-scurry",
+  "version": "2.0.0",
+  "dependencies": {
+    "lru-cache": "^11.0.0",
+    "minipass": "^7.1.2"
+  },
+  "devDependencies": {
+    "@nodelib/fs.walk": "^2.0.0",
+    "@types/node": "^20.14.10",
+    "mkdirp": "^3.0.0",
+    "prettier": "^3.3.2",
+    "rimraf": "^5.0.8",
+    "tap": "^20.0.3",
+    "ts-node": "^10.9.2",
+    "tshy": "^2.0.1",
+    "typedoc": "^0.26.3",
+    "typescript": "^5.5.3"
+  },
+  "dist": {
+    "integrity": "sha512-ypGJsmGtdXUOeM5u93TyeIEfEhM6s+ljAhrk5vAvSx8uyY/02OvrZnA0YNGUrPXfpJMgI1ODd3nwz8Npx4O4cg==",
+    "shasum": "9f052289f23ad8bf9397a2a0425e7b8615c58580",
+    "tarball": "https://registry.npmjs.org/path-scurry/-/path-scurry-2.0.0.tgz",
+    "fileCount": 13,
+    "unpackedSize": 535406,
+    "signatures": [
+      {
+        "keyid": "SHA256:jl3bwswu80PjjokCgh0o2w5c2U4LhQAE57gj9cz1kzA",
+        "sig": "MEYCIQDyWFYPZsi0MocNbjahmj23VwiVSjOIa/XKvdV3StQ5EgIhAOJBaAAlBnipKRFdcMGi91JxE2KTbOupQMpQuXcka5+I"
+      }
+    ]
+  },
+  "engines": {
+    "node": "20 || >=22"
+  },
+  "funding": {
+    "url": "https://github.com/sponsors/isaacs"
+  }
+}

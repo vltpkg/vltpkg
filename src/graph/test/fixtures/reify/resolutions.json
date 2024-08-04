@@ -1,0 +1,725 @@
+{
+  "lodash@4.17.21": {
+    "resolved": "https://registry.npmjs.org/lodash/-/lodash-4.17.21.tgz",
+    "integrity": "sha512-v2kDEe57lecTulaDIuNTPy3Ry4gLGJ6Z1O3vE1krgXZNrsQ+LFTGHVxVjcXPs17LhbZVGedAJv8XZ1tvj5FvSg==",
+    "signatures": [
+      {
+        "sig": "MEUCIF3Yithbtmy1aEBNlfNWbLswAfPIyQUuNUGARD3Ex2t4AiEA6TlN2ZKJCUpS/Sf2Z6MduF1BNSvayHIpu5wAcICcKXw=",
+        "keyid": "SHA256:jl3bwswu80PjjokCgh0o2w5c2U4LhQAE57gj9cz1kzA"
+      }
+    ]
+  },
+  "underscore@1.13.7": {
+    "resolved": "https://registry.npmjs.org/underscore/-/underscore-1.13.7.tgz",
+    "integrity": "sha512-GMXzWtsc57XAtguZgaQViUOzs0KTkk8ojr3/xAxXLITqf/3EMwxC0inyETfDFjH/Krbhuep0HNbbjI9i/q3F3g==",
+    "signatures": [
+      {
+        "sig": "MEQCIFJARw3h2U3TFUq0XViT/p0g3pG/H/mgATRfwJXhAvx4AiB8WfyGah6DCRhrgSFtWnAFg+QpGghEE80JUjWenboCLw==",
+        "keyid": "SHA256:jl3bwswu80PjjokCgh0o2w5c2U4LhQAE57gj9cz1kzA"
+      }
+    ]
+  },
+  "package-json-from-dist@1.0.0": {
+    "resolved": "https://registry.npmjs.org/package-json-from-dist/-/package-json-from-dist-1.0.0.tgz",
+    "integrity": "sha512-dATvCeZN/8wQsGywez1mzHtTlP22H8OEfPrVMLNr4/eGa+ijtLn/6M5f0dY8UKNrC2O9UCU6SSoG3qRKnt7STw==",
+    "signatures": [
+      {
+        "keyid": "SHA256:jl3bwswu80PjjokCgh0o2w5c2U4LhQAE57gj9cz1kzA",
+        "sig": "MEUCIBk1UxJB1c1W5JqTwhuKr1Dnao3WgyeqtoSK5jKUvZyTAiEA8nD3BvBEUOi8z1O5qVay68RDTcOeH1op6kTxNdKi7CI="
+      }
+    ]
+  },
+  "foreground-child@3.2.1": {
+    "resolved": "https://registry.npmjs.org/foreground-child/-/foreground-child-3.2.1.tgz",
+    "integrity": "sha512-PXUUyLqrR2XCWICfv6ukppP96sdFwWbNEnfEMt7jNsISjMsvaLNinAHNDYyvkyU+SZG2BTSbT5NjG+vZslfGTA==",
+    "signatures": [
+      {
+        "keyid": "SHA256:jl3bwswu80PjjokCgh0o2w5c2U4LhQAE57gj9cz1kzA",
+        "sig": "MEQCICh3UF+VAJBE3PR4nCLEMutI04CojoFdJIieW6ffZVutAiBpPfgu74fUsaEfaA39HHpkoMqf9ICY3vOGIdNkiz3TWw=="
+      }
+    ]
+  },
+  "glob@11.0.0": {
+    "resolved": "https://registry.npmjs.org/glob/-/glob-11.0.0.tgz",
+    "integrity": "sha512-9UiX/Bl6J2yaBbxKoEBRm4Cipxgok8kQYcOPEhScPwebu2I0HoQOuYdIO6S3hLuWoZgpDpwQZMzTFxgpkyT76g==",
+    "signatures": [
+      {
+        "sig": "MEUCIDcrb+cZALFLxpz8+7X8I+6JK/PP+5bHPA1sqhiOP7mOAiEA/cRMl/d2qmk3sT4QEJI1ZyMrRoy1B5RLTlu7bkWOcvo=",
+        "keyid": "SHA256:jl3bwswu80PjjokCgh0o2w5c2U4LhQAE57gj9cz1kzA"
+      }
+    ]
+  },
+  "jackspeak@4.0.1": {
+    "resolved": "https://registry.npmjs.org/jackspeak/-/jackspeak-4.0.1.tgz",
+    "integrity": "sha512-cub8rahkh0Q/bw1+GxP7aeSe29hHHn2V4m29nnDlvCdlgU+3UGxkZp7Z53jLUdpX3jdTO0nJZUDl3xvbWc2Xog==",
+    "signatures": [
+      {
+        "sig": "MEUCIQCwFZSakffx0zh80svM1leNXLwXZpRVrC7sXM6jNanc+AIgYgZUnpSjK0dxvjDz3NX1Ztmd0VE4h6MkT8kXYE93SPg=",
+        "keyid": "SHA256:jl3bwswu80PjjokCgh0o2w5c2U4LhQAE57gj9cz1kzA"
+      }
+    ]
+  },
+  "minipass@7.1.2": {
+    "resolved": "https://registry.npmjs.org/minipass/-/minipass-7.1.2.tgz",
+    "integrity": "sha512-qOOzS1cBTWYF4BH8fVePDBOO9iptMnGUEZwNc/cMWnTV2nVLZ7VoNWEPHkYczZA0pdoA7dl6e7FL659nX9S2aw==",
+    "signatures": [
+      {
+        "keyid": "SHA256:jl3bwswu80PjjokCgh0o2w5c2U4LhQAE57gj9cz1kzA",
+        "sig": "MEUCIBkQJPfSAC23QGJC4cJMYAUXpqqVOq4t69yc/4rkRU3GAiEAl4BdS3v8U/I+g+Na71CrCfplx3P1Z2lvj7NBGdATUR8="
+      }
+    ]
+  },
+  "signal-exit@4.1.0": {
+    "resolved": "https://registry.npmjs.org/signal-exit/-/signal-exit-4.1.0.tgz",
+    "integrity": "sha512-bzyZ1e88w9O1iNJbKnOlvYTrWPDl46O1bG0D3XInv+9tkPrxrN8jUUTiFlDkkmKWgn1M6CfIA13SuGqOa9Korw==",
+    "signatures": [
+      {
+        "keyid": "SHA256:jl3bwswu80PjjokCgh0o2w5c2U4LhQAE57gj9cz1kzA",
+        "sig": "MEUCIQC17YSNmo/hSXVVI2cchqvs3la7twHltiehlUoPq/9VGgIgD2Hb18tHfjmWx8vendx1mWOOOYvu7+XRLUj+wwxejPE="
+      }
+    ]
+  },
+  "path-scurry@2.0.0": {
+    "resolved": "https://registry.npmjs.org/path-scurry/-/path-scurry-2.0.0.tgz",
+    "integrity": "sha512-ypGJsmGtdXUOeM5u93TyeIEfEhM6s+ljAhrk5vAvSx8uyY/02OvrZnA0YNGUrPXfpJMgI1ODd3nwz8Npx4O4cg==",
+    "signatures": [
+      {
+        "keyid": "SHA256:jl3bwswu80PjjokCgh0o2w5c2U4LhQAE57gj9cz1kzA",
+        "sig": "MEYCIQDyWFYPZsi0MocNbjahmj23VwiVSjOIa/XKvdV3StQ5EgIhAOJBaAAlBnipKRFdcMGi91JxE2KTbOupQMpQuXcka5+I"
+      }
+    ]
+  },
+  "@isaacs/cliui@8.0.2": {
+    "resolved": "https://registry.npmjs.org/@isaacs/cliui/-/cliui-8.0.2.tgz",
+    "integrity": "sha512-O8jcjabXaleOG9DQ0+ARXWZBTfnP4WNAqzuiJK7ll44AmxGKv/J2M4TPjxjY3znBCfvBXFzucm1twdyFybFqEA==",
+    "signatures": [
+      {
+        "keyid": "SHA256:jl3bwswu80PjjokCgh0o2w5c2U4LhQAE57gj9cz1kzA",
+        "sig": "MEUCIQCelNZKJbAgma4U+TKy/m8jcOFEB03QqxhuvMsoQQpI9AIgMX6M/cVX8QYc0s3/19XRfc/+14yhVC1V1t5pwSlM4YE="
+      }
+    ]
+  },
+  "cross-spawn@7.0.3": {
+    "resolved": "https://registry.npmjs.org/cross-spawn/-/cross-spawn-7.0.3.tgz",
+    "integrity": "sha512-iRDPJKUPVEND7dHPO8rkbOnPpyDygcDFtWjpeWNCgy8WP2rXcxXL8TskReQl6OrB2G7+UJrags1q15Fudc7G6w==",
+    "signatures": [
+      {
+        "keyid": "SHA256:jl3bwswu80PjjokCgh0o2w5c2U4LhQAE57gj9cz1kzA",
+        "sig": "MEYCIQDV3uyoAawrXTO40sTQ71+tY4UBLGXyIxxzykg9MOSZRgIhAOXE5g5AY0aGrmKohMbsOiiiWUWew3zD5tGO9e/D6VNJ"
+      }
+    ]
+  },
+  "brace-expansion@2.0.1": {
+    "resolved": "https://registry.npmjs.org/brace-expansion/-/brace-expansion-2.0.1.tgz",
+    "integrity": "sha512-XnAIvQ8eM+kC6aULx6wuQiwVsnzsi9d3WxzV3FpWTGA19F621kwdbsAcFKXgKUHZWsy+mY6iL1sHTxWEFCytDA==",
+    "signatures": [
+      {
+        "keyid": "SHA256:jl3bwswu80PjjokCgh0o2w5c2U4LhQAE57gj9cz1kzA",
+        "sig": "MEYCIQDgNFdV3ddgnkb39ucmGYRgdjxRfJEZcnAt+BXCAQaVPgIhAKW05a01tUGrzy0G/gZFOVqMptjiKbs9uy+dDpF0C75F"
+      }
+    ]
+  },
+  "@pkgjs/parseargs@0.11.0": {
+    "resolved": "https://registry.npmjs.org/@pkgjs/parseargs/-/parseargs-0.11.0.tgz",
+    "integrity": "sha512-+1VkjdD0QBLPodGrJUeqarH8VAIvQODIbwh9XpP5Syisf7YoQgsJKPNFoqqLQlu+VQ/tVSshMR6loPMn8U+dPg==",
+    "signatures": [
+      {
+        "keyid": "SHA256:jl3bwswu80PjjokCgh0o2w5c2U4LhQAE57gj9cz1kzA",
+        "sig": "MEYCIQDvG/+saUhufCRZDSAMyqIZHb0x4c7N/gUvaev0PjFqHQIhAP3fAOwBeiw8NWaXAwTHTxmCZ5hxLTuFeTKtFBuLZrUz"
+      }
+    ]
+  },
+  "path-key@3.1.1": {
+    "resolved": "https://registry.npmjs.org/path-key/-/path-key-3.1.1.tgz",
+    "integrity": "sha512-ojmeN0qd+y0jszEtoY48r0Peq5dwMEkIlCOu6Q5f41lfkswXuKtYrhgoTpLnyIcHm24Uhqx+5Tqm2InSwLhE6Q==",
+    "signatures": [
+      {
+        "keyid": "SHA256:jl3bwswu80PjjokCgh0o2w5c2U4LhQAE57gj9cz1kzA",
+        "sig": "MEQCIAwOqg8TUPAYc0BU4fVgYQw5sg3cZlPq2S90+ei63ZrEAiAsWC5WjxqdP1lbFmNySWF/BHy6UfJwkONg7eFU55uHwA=="
+      }
+    ]
+  },
+  "shebang-command@2.0.0": {
+    "resolved": "https://registry.npmjs.org/shebang-command/-/shebang-command-2.0.0.tgz",
+    "integrity": "sha512-kHxr2zZpYtdmrN1qDjrrX/Z1rR1kG8Dx+gkpK1G4eXmvXswmcE1hTWBWYUzlraYw1/yZp6YuDY77YtvbN0dmDA==",
+    "signatures": [
+      {
+        "keyid": "SHA256:jl3bwswu80PjjokCgh0o2w5c2U4LhQAE57gj9cz1kzA",
+        "sig": "MEYCIQC25PLpUCo3H8DMi9MpLxwheAbym3M3S5MW5QaCZpOUEwIhAIka9U63aHBdDqIcMUiGesgVKHjIiySGTAsxdQJx7wSP"
+      }
+    ]
+  },
+  "balanced-match@1.0.2": {
+    "resolved": "https://registry.npmjs.org/balanced-match/-/balanced-match-1.0.2.tgz",
+    "integrity": "sha512-3oSeUO0TMV67hN1AmbXsK4yaqU7tjiHlbxRDZOpH0KW9+CeX4bRAaX0Anxt0tx2MrpRpWwQaPwIlISEJhYU5Pw==",
+    "signatures": [
+      {
+        "keyid": "SHA256:jl3bwswu80PjjokCgh0o2w5c2U4LhQAE57gj9cz1kzA",
+        "sig": "MEQCIHRQpAKwqTgs0SDP5KcV7MzsuTPMEkHeNqJFBOy5hYMwAiB/QgzhE/4zo/h6mn5Sl6u4YP0UZKqPYCZe5GhyLntdKA=="
+      }
+    ]
+  },
+  "minimatch@10.0.1": {
+    "resolved": "https://registry.npmjs.org/minimatch/-/minimatch-10.0.1.tgz",
+    "integrity": "sha512-ethXTt3SGGR+95gudmqJ1eNhRO7eGEGIgYA9vnPatK4/etz2MEVDno5GMCibdMTuBMyElzIlgxMna3K94XDIDQ==",
+    "signatures": [
+      {
+        "keyid": "SHA256:jl3bwswu80PjjokCgh0o2w5c2U4LhQAE57gj9cz1kzA",
+        "sig": "MEUCIQCAYhDBiow3JZoo/Wjad4/ocXc9Ijsec0bAReaf4pYqYQIgMDAifdJ7f0bom8/4uSrttUwr4NUIdWu9FMYhcy9wvZY="
+      }
+    ]
+  },
+  "which@2.0.2": {
+    "resolved": "https://registry.npmjs.org/which/-/which-2.0.2.tgz",
+    "integrity": "sha512-BLI3Tl1TW3Pvl70l3yq3Y64i+awpwXqsGBYWkkqMtnbXgrMD+yj7rhW0kuEDxzJaYXGjEW5ogapKNMEKNMjibA==",
+    "signatures": [
+      {
+        "sig": "MEYCIQDyPP0ND3fboT3W2mBlojUZmkvbY2KjDxGtB8vG07fjWAIhAPYfINxHQt1SI7Ic6dhnGscWdcYwLfGhKRrIcS6tW8Js",
+        "keyid": "SHA256:jl3bwswu80PjjokCgh0o2w5c2U4LhQAE57gj9cz1kzA"
+      }
+    ]
+  },
+  "strip-ansi@7.1.0": {
+    "resolved": "https://registry.npmjs.org/strip-ansi/-/strip-ansi-7.1.0.tgz",
+    "integrity": "sha512-iq6eVVI64nQQTRYq2KtEg2d2uU7LElhTJwsH4YzIHZshxlgZms/wIc4VoDQTlG/IvVIrBKG06CrZnp0qv7hkcQ==",
+    "signatures": [
+      {
+        "keyid": "SHA256:jl3bwswu80PjjokCgh0o2w5c2U4LhQAE57gj9cz1kzA",
+        "sig": "MEYCIQDLcWbjmD7JZAQ0csSDb2mo3VnE7r9e8bQPjsVd2SmvmQIhAKTReWeeAy2ZNI3H+RItkH7tubYl4uZ/Jg4hN4TzQKAB"
+      }
+    ]
+  },
+  "strip-ansi@6.0.1": {
+    "resolved": "https://registry.npmjs.org/strip-ansi/-/strip-ansi-6.0.1.tgz",
+    "integrity": "sha512-Y38VPSHcqkFrCpFnQ9vuSXmquuv5oXOKpGeT6aGrr3o3Gc9AlVa6JBfUSOCnbxGGZF+/0ooI7KrPuUSztUdU5A==",
+    "signatures": [
+      {
+        "keyid": "SHA256:jl3bwswu80PjjokCgh0o2w5c2U4LhQAE57gj9cz1kzA",
+        "sig": "MEQCIEIaIvQJAMRlSerQ8cuHIzWxWLJPS6LkkF/9tMpiAXTvAiBY3tMFoj8tB0mc3dm7Th97E9p88NfZfjOdr/HKu8apLw=="
+      }
+    ]
+  },
+  "isexe@2.0.0": {
+    "resolved": "https://registry.npmjs.org/isexe/-/isexe-2.0.0.tgz",
+    "integrity": "sha512-RHxMLp9lnKHGHRng9QFhRCMbYAcVpn69smSGcq3f36xjgVVWThj4qqLbTLlq7Ssj8B+fIQ1EuCEGI2lKsyQeIw==",
+    "signatures": [
+      {
+        "keyid": "SHA256:jl3bwswu80PjjokCgh0o2w5c2U4LhQAE57gj9cz1kzA",
+        "sig": "MEQCIADIHL0vHAyBDSHK5BeCzNQb3ooCTHoBU+bp0my0d0pwAiAEzxUmLzKn2xsUOTDZngxVYgQ+2BELnj8z+ZNAJWENzA=="
+      }
+    ]
+  },
+  "string-width@5.1.2": {
+    "resolved": "https://registry.npmjs.org/string-width/-/string-width-5.1.2.tgz",
+    "integrity": "sha512-HnLOCR3vjcY8beoNLtcjZ5/nxn2afmME6lhrDrebokqMap+XbeW8n9TXpPDOqdGK5qcI3oT0GKTW6wC7EMiVqA==",
+    "signatures": [
+      {
+        "sig": "MEUCIFh4IjLA+aBQo7r/VZcidTSCApNLobLlmjMKnBREpog9AiEApke6FV5/3E44vAJKBbdIZ832/aqqaNMi8TFY+Px6Rwc=",
+        "keyid": "SHA256:jl3bwswu80PjjokCgh0o2w5c2U4LhQAE57gj9cz1kzA"
+      }
+    ]
+  },
+  "string-width@4.2.3": {
+    "resolved": "https://registry.npmjs.org/string-width/-/string-width-4.2.3.tgz",
+    "integrity": "sha512-wKyQRQpjJ0sIp62ErSZdGsjMJWsap5oRNihHhu6G7JVO/9jIB6UyevL+tXuOqrng8j/cxKTWyWUwvSTriiZz/g==",
+    "signatures": [
+      {
+        "sig": "MEUCIQCdE8iSHW3j8YsH6u/KbZmvj9DtpGTXHmhmmp6oeUG6/AIge8jaI1Qk/Z/GED/SrwJ+yNQAEzkZ28FrbwLFqeAqdSg=",
+        "keyid": "SHA256:jl3bwswu80PjjokCgh0o2w5c2U4LhQAE57gj9cz1kzA"
+      }
+    ]
+  },
+  "shebang-regex@3.0.0": {
+    "resolved": "https://registry.npmjs.org/shebang-regex/-/shebang-regex-3.0.0.tgz",
+    "integrity": "sha512-7++dFhtcx3353uBaq8DDR4NuxBetBzC7ZQOhmTQInHEd6bSrXdiEyzCvG07Z44UYdLShWUyXt5M/yhz8ekcb1A==",
+    "signatures": [
+      {
+        "keyid": "SHA256:jl3bwswu80PjjokCgh0o2w5c2U4LhQAE57gj9cz1kzA",
+        "sig": "MEUCIQD9D5iHzHiq8RRcvBjhnVc1TDXKPStoeEAQrqtkEg9qXAIgPFNBElrbSUhCoAjEd/BRJo48gQudG1I1KkUMNo6x+/E="
+      }
+    ]
+  },
+  "wrap-ansi@7.0.0": {
+    "resolved": "https://registry.npmjs.org/wrap-ansi/-/wrap-ansi-7.0.0.tgz",
+    "integrity": "sha512-YVGIj2kamLSTxw6NsZjoBxfSwsn0ycdesmc4p+Q21c5zPuZ1pl+NfxVdxPtdHvmNVOQ6XSYG4AUtyt/Fi7D16Q==",
+    "signatures": [
+      {
+        "keyid": "SHA256:jl3bwswu80PjjokCgh0o2w5c2U4LhQAE57gj9cz1kzA",
+        "sig": "MEYCIQCKo7j2UdQx54mSbTdaaej2HDd+7W+ESXd3KKVPvJfvJAIhAMJ7QP5IP0+ZduLVTIUpiMK2pHSoyirpMJPR7ttSpH2z"
+      }
+    ]
+  },
+  "wrap-ansi@8.1.0": {
+    "resolved": "https://registry.npmjs.org/wrap-ansi/-/wrap-ansi-8.1.0.tgz",
+    "integrity": "sha512-si7QWI6zUMq56bESFvagtmzMdGOtoxfR+Sez11Mobfc7tm+VkUckk9bW2UeffTGVUbOksxmSw0AA2gs8g71NCQ==",
+    "signatures": [
+      {
+        "keyid": "SHA256:jl3bwswu80PjjokCgh0o2w5c2U4LhQAE57gj9cz1kzA",
+        "sig": "MEUCIQCTLHPWZRhU1psYEAvTz2AEDNsMLsR+G9tplhjk3/R3BAIgNOJvHTwK2n7NB5EqKVWO2XlPckE0YuQWw6rMaitomrA="
+      }
+    ]
+  },
+  "ansi-regex@5.0.1": {
+    "resolved": "https://registry.npmjs.org/ansi-regex/-/ansi-regex-5.0.1.tgz",
+    "integrity": "sha512-quJQXlTSUGL2LH9SUXo8VwsY4soanhgo6LNSm84E1LBcE8s3O0wpdiRzyR9z/ZZJMlMWv37qOOb9pdJlMUEKFQ==",
+    "signatures": [
+      {
+        "keyid": "SHA256:jl3bwswu80PjjokCgh0o2w5c2U4LhQAE57gj9cz1kzA",
+        "sig": "MEUCIQCS7XsMq0d29jMXjedcRcP044S7ZelyMVBxKjkUpCShHAIgGyiTNkLoCCh/rpMnXAisLtOsV3SGe2ftVRwhvZTAPyw="
+      }
+    ]
+  },
+  "ansi-regex@6.0.1": {
+    "resolved": "https://registry.npmjs.org/ansi-regex/-/ansi-regex-6.0.1.tgz",
+    "integrity": "sha512-n5M855fKb2SsfMIiFFoVrABHJC8QtHwVx+mHWP3QcEqBHYienj5dHSgjbxtC0WEZXYt4wcD6zrQElDPhFuZgfA==",
+    "signatures": [
+      {
+        "keyid": "SHA256:jl3bwswu80PjjokCgh0o2w5c2U4LhQAE57gj9cz1kzA",
+        "sig": "MEUCIQCWW/ZEXmQGK500jBFw7uRYczrrcLTzOEnm3uDiNPs6rAIgcKX8SLAOUpBu/tWg+7vPsMA4l7siraEVYPpTETOVqX0="
+      }
+    ]
+  },
+  "eastasianwidth@0.2.0": {
+    "resolved": "https://registry.npmjs.org/eastasianwidth/-/eastasianwidth-0.2.0.tgz",
+    "integrity": "sha512-I88TYZWc9XiYHRQ4/3c5rjjfgkjhLyW2luGIheGERbNQ6OY7yTybanSpDXZa8y7VUP9YmDcYa+eyq4ca7iLqWA==",
+    "signatures": [
+      {
+        "keyid": "SHA256:jl3bwswu80PjjokCgh0o2w5c2U4LhQAE57gj9cz1kzA",
+        "sig": "MEUCIDNcp1SIwsuxLGmN5jJS4ZVTyfWVfHzoC3URtimwSMusAiEA4eLB2KCWmzEszVyewyStQBj4U38rvuXvf4AcXnx/IjM="
+      }
+    ]
+  },
+  "is-fullwidth-code-point@3.0.0": {
+    "resolved": "https://registry.npmjs.org/is-fullwidth-code-point/-/is-fullwidth-code-point-3.0.0.tgz",
+    "integrity": "sha512-zymm5+u+sCsSWyD9qNaejV3DFvhCKclKdizYaJUuHA83RLjb7nSuGnddCHGv0hk+KY7BMAlsWeK4Ueg6EV6XQg==",
+    "signatures": [
+      {
+        "keyid": "SHA256:jl3bwswu80PjjokCgh0o2w5c2U4LhQAE57gj9cz1kzA",
+        "sig": "MEUCIFqdK0e+RN4xM+7IrAyYmqvTaNg8MFEzwF42BtAoAgitAiEA/9YISFLSR/ut9zSkO4XG67As7nGNUWRBkhM21Q+8foU="
+      }
+    ]
+  },
+  "ansi-styles@4.3.0": {
+    "resolved": "https://registry.npmjs.org/ansi-styles/-/ansi-styles-4.3.0.tgz",
+    "integrity": "sha512-zbB9rCJAT1rbjiVDb2hqKFHNYLxgtk8NURxZ3IZwD3F6NtxbXZQCnnSi1Lkx+IDohdPlFp222wVALIheZJQSEg==",
+    "signatures": [
+      {
+        "keyid": "SHA256:jl3bwswu80PjjokCgh0o2w5c2U4LhQAE57gj9cz1kzA",
+        "sig": "MEUCIQCiWmk7MXmf0ZVnUHbCbR2mb9eLfmcN5XoDJMyjv/VX/QIgKOsdyMm5gXdutN1mR1lRxBc/muUtoCWbdoL3I/e7TB4="
+      }
+    ]
+  },
+  "ansi-styles@6.2.1": {
+    "resolved": "https://registry.npmjs.org/ansi-styles/-/ansi-styles-6.2.1.tgz",
+    "integrity": "sha512-bN798gFfQX+viw3R7yrGWRqnrN2oRkEkUjjl4JNn4E8GxxbjtG3FbrEIIY3l8/hrwUwIeCZvi4QuOTP4MErVug==",
+    "signatures": [
+      {
+        "keyid": "SHA256:jl3bwswu80PjjokCgh0o2w5c2U4LhQAE57gj9cz1kzA",
+        "sig": "MEUCIFG8Ismuz7QceJds84ad7aPzrkac5X2fz77O03EWGd2NAiEAjEl3Glc9eJKUdpAivBYekFwYpFD11EcZpMgchlpobk8="
+      }
+    ]
+  },
+  "emoji-regex@9.2.2": {
+    "resolved": "https://registry.npmjs.org/emoji-regex/-/emoji-regex-9.2.2.tgz",
+    "integrity": "sha512-L18DaJsXSUk2+42pv8mLs5jJT2hqFkFE4j21wOmgbUqsZ2hL72NsUU785g9RXgo3s0ZNgVl42TiHp3ZtOv/Vyg==",
+    "signatures": [
+      {
+        "keyid": "SHA256:jl3bwswu80PjjokCgh0o2w5c2U4LhQAE57gj9cz1kzA",
+        "sig": "MEUCIHcrGCbwiwzFWONg4AI9JKPLHIGCCljRRyA4x8QCMhWDAiEA22sFAR+MgR75takXx5jHHB1cLnhXUYIoWF5xMrMD5ds="
+      }
+    ]
+  },
+  "emoji-regex@8.0.0": {
+    "resolved": "https://registry.npmjs.org/emoji-regex/-/emoji-regex-8.0.0.tgz",
+    "integrity": "sha512-MSjYzcWNOA0ewAHpz0MxpYFvwg6yjy1NG3xteoqz644VCo/RPgnr1/GGt+ic3iJTzQ8Eu3TdM14SawnVUmGE6A==",
+    "signatures": [
+      {
+        "keyid": "SHA256:jl3bwswu80PjjokCgh0o2w5c2U4LhQAE57gj9cz1kzA",
+        "sig": "MEUCIC+waQdufSheUTEjvna3EaQZWs+5GUI/0/r9f5VSiZIAAiEA9mR+WzssFvsrqZPJ7zzRTzWZRyOxn1ZaJlSRNglwMlk="
+      }
+    ]
+  },
+  "lru-cache@11.0.0": {
+    "resolved": "https://registry.npmjs.org/lru-cache/-/lru-cache-11.0.0.tgz",
+    "integrity": "sha512-Qv32eSV1RSCfhY3fpPE2GNZ8jgM9X7rdAfemLWqTUxwiyIC4jJ6Sy0fZ8H+oLWevO6i4/bizg7c8d8i6bxrzbA==",
+    "signatures": [
+      {
+        "sig": "MEYCIQDGn9fFQIL8qN3Dot1OMtld9asGdAOLBqwSqfa6KxeRnwIhAPbWWndVdzfEUT5/izJiZp5GghEYMu7WdHZWml1Lo5Ed",
+        "keyid": "SHA256:jl3bwswu80PjjokCgh0o2w5c2U4LhQAE57gj9cz1kzA"
+      }
+    ]
+  },
+  "color-convert@2.0.1": {
+    "resolved": "https://registry.npmjs.org/color-convert/-/color-convert-2.0.1.tgz",
+    "integrity": "sha512-RRECPsj7iu/xb5oKYcsFHSppFNnsj/52OVTRKb4zP5onXwVF3zVmmToNcOfGC+CRDpfK/U584fMg38ZHCaElKQ==",
+    "signatures": [
+      {
+        "keyid": "SHA256:jl3bwswu80PjjokCgh0o2w5c2U4LhQAE57gj9cz1kzA",
+        "sig": "MEUCIQDawANUBU4JyKUu4FIXFy8S7MRHb4bNg7kk0ifG6KLYaQIgJ3p3N1TtoTXNQlvECo4whQoW3oot3kbzgAOutQTZTrA="
+      }
+    ]
+  },
+  "color-name@1.1.4": {
+    "resolved": "https://registry.npmjs.org/color-name/-/color-name-1.1.4.tgz",
+    "integrity": "sha512-dOy+3AuW3a2wNbZHIuMZpTcgjGuLU/uBL/ubcZF9OXbDo8ff4O8yVp5Bf0efS8uEoYo5q4Fx7dY9OgQGXgAsQA==",
+    "signatures": [
+      {
+        "keyid": "SHA256:jl3bwswu80PjjokCgh0o2w5c2U4LhQAE57gj9cz1kzA",
+        "sig": "MEQCIA/cRJF1USbKE8OvNZK7EOTIg9+Bg+KvqGyAcFM83/7VAiB4QKj7PJ06UPRuqXUutmL6e+n5XgOGZlpNzYmkOyPUSQ=="
+      }
+    ]
+  },
+  "missing@file:./missing.tgz": {
+    "resolved": "/path/to/missing/tarball/missing.tgz"
+  },
+  "glob@11": {
+    "resolved": "https://registry.npmjs.org/glob/-/glob-11.0.0.tgz",
+    "integrity": "sha512-9UiX/Bl6J2yaBbxKoEBRm4Cipxgok8kQYcOPEhScPwebu2I0HoQOuYdIO6S3hLuWoZgpDpwQZMzTFxgpkyT76g==",
+    "signatures": [
+      {
+        "sig": "MEUCIDcrb+cZALFLxpz8+7X8I+6JK/PP+5bHPA1sqhiOP7mOAiEA/cRMl/d2qmk3sT4QEJI1ZyMrRoy1B5RLTlu7bkWOcvo=",
+        "keyid": "SHA256:jl3bwswu80PjjokCgh0o2w5c2U4LhQAE57gj9cz1kzA"
+      }
+    ]
+  },
+  "foreground-child@^3.1.0": {
+    "resolved": "https://registry.npmjs.org/foreground-child/-/foreground-child-3.2.1.tgz",
+    "integrity": "sha512-PXUUyLqrR2XCWICfv6ukppP96sdFwWbNEnfEMt7jNsISjMsvaLNinAHNDYyvkyU+SZG2BTSbT5NjG+vZslfGTA==",
+    "signatures": [
+      {
+        "keyid": "SHA256:jl3bwswu80PjjokCgh0o2w5c2U4LhQAE57gj9cz1kzA",
+        "sig": "MEQCICh3UF+VAJBE3PR4nCLEMutI04CojoFdJIieW6ffZVutAiBpPfgu74fUsaEfaA39HHpkoMqf9ICY3vOGIdNkiz3TWw=="
+      }
+    ]
+  },
+  "path-scurry@^2.0.0": {
+    "resolved": "https://registry.npmjs.org/path-scurry/-/path-scurry-2.0.0.tgz",
+    "integrity": "sha512-ypGJsmGtdXUOeM5u93TyeIEfEhM6s+ljAhrk5vAvSx8uyY/02OvrZnA0YNGUrPXfpJMgI1ODd3nwz8Npx4O4cg==",
+    "signatures": [
+      {
+        "keyid": "SHA256:jl3bwswu80PjjokCgh0o2w5c2U4LhQAE57gj9cz1kzA",
+        "sig": "MEYCIQDyWFYPZsi0MocNbjahmj23VwiVSjOIa/XKvdV3StQ5EgIhAOJBaAAlBnipKRFdcMGi91JxE2KTbOupQMpQuXcka5+I"
+      }
+    ]
+  },
+  "jackspeak@^4.0.1": {
+    "resolved": "https://registry.npmjs.org/jackspeak/-/jackspeak-4.0.1.tgz",
+    "integrity": "sha512-cub8rahkh0Q/bw1+GxP7aeSe29hHHn2V4m29nnDlvCdlgU+3UGxkZp7Z53jLUdpX3jdTO0nJZUDl3xvbWc2Xog==",
+    "signatures": [
+      {
+        "sig": "MEUCIQCwFZSakffx0zh80svM1leNXLwXZpRVrC7sXM6jNanc+AIgYgZUnpSjK0dxvjDz3NX1Ztmd0VE4h6MkT8kXYE93SPg=",
+        "keyid": "SHA256:jl3bwswu80PjjokCgh0o2w5c2U4LhQAE57gj9cz1kzA"
+      }
+    ]
+  },
+  "package-json-from-dist@^1.0.0": {
+    "resolved": "https://registry.npmjs.org/package-json-from-dist/-/package-json-from-dist-1.0.0.tgz",
+    "integrity": "sha512-dATvCeZN/8wQsGywez1mzHtTlP22H8OEfPrVMLNr4/eGa+ijtLn/6M5f0dY8UKNrC2O9UCU6SSoG3qRKnt7STw==",
+    "signatures": [
+      {
+        "keyid": "SHA256:jl3bwswu80PjjokCgh0o2w5c2U4LhQAE57gj9cz1kzA",
+        "sig": "MEUCIBk1UxJB1c1W5JqTwhuKr1Dnao3WgyeqtoSK5jKUvZyTAiEA8nD3BvBEUOi8z1O5qVay68RDTcOeH1op6kTxNdKi7CI="
+      }
+    ]
+  },
+  "minipass@^7.1.2": {
+    "resolved": "https://registry.npmjs.org/minipass/-/minipass-7.1.2.tgz",
+    "integrity": "sha512-qOOzS1cBTWYF4BH8fVePDBOO9iptMnGUEZwNc/cMWnTV2nVLZ7VoNWEPHkYczZA0pdoA7dl6e7FL659nX9S2aw==",
+    "signatures": [
+      {
+        "keyid": "SHA256:jl3bwswu80PjjokCgh0o2w5c2U4LhQAE57gj9cz1kzA",
+        "sig": "MEUCIBkQJPfSAC23QGJC4cJMYAUXpqqVOq4t69yc/4rkRU3GAiEAl4BdS3v8U/I+g+Na71CrCfplx3P1Z2lvj7NBGdATUR8="
+      }
+    ]
+  },
+  "minimatch@^10.0.0": {
+    "resolved": "https://registry.npmjs.org/minimatch/-/minimatch-10.0.1.tgz",
+    "integrity": "sha512-ethXTt3SGGR+95gudmqJ1eNhRO7eGEGIgYA9vnPatK4/etz2MEVDno5GMCibdMTuBMyElzIlgxMna3K94XDIDQ==",
+    "signatures": [
+      {
+        "keyid": "SHA256:jl3bwswu80PjjokCgh0o2w5c2U4LhQAE57gj9cz1kzA",
+        "sig": "MEUCIQCAYhDBiow3JZoo/Wjad4/ocXc9Ijsec0bAReaf4pYqYQIgMDAifdJ7f0bom8/4uSrttUwr4NUIdWu9FMYhcy9wvZY="
+      }
+    ]
+  },
+  "signal-exit@^4.0.1": {
+    "resolved": "https://registry.npmjs.org/signal-exit/-/signal-exit-4.1.0.tgz",
+    "integrity": "sha512-bzyZ1e88w9O1iNJbKnOlvYTrWPDl46O1bG0D3XInv+9tkPrxrN8jUUTiFlDkkmKWgn1M6CfIA13SuGqOa9Korw==",
+    "signatures": [
+      {
+        "keyid": "SHA256:jl3bwswu80PjjokCgh0o2w5c2U4LhQAE57gj9cz1kzA",
+        "sig": "MEUCIQC17YSNmo/hSXVVI2cchqvs3la7twHltiehlUoPq/9VGgIgD2Hb18tHfjmWx8vendx1mWOOOYvu7+XRLUj+wwxejPE="
+      }
+    ]
+  },
+  "cross-spawn@^7.0.0": {
+    "resolved": "https://registry.npmjs.org/cross-spawn/-/cross-spawn-7.0.3.tgz",
+    "integrity": "sha512-iRDPJKUPVEND7dHPO8rkbOnPpyDygcDFtWjpeWNCgy8WP2rXcxXL8TskReQl6OrB2G7+UJrags1q15Fudc7G6w==",
+    "signatures": [
+      {
+        "keyid": "SHA256:jl3bwswu80PjjokCgh0o2w5c2U4LhQAE57gj9cz1kzA",
+        "sig": "MEYCIQDV3uyoAawrXTO40sTQ71+tY4UBLGXyIxxzykg9MOSZRgIhAOXE5g5AY0aGrmKohMbsOiiiWUWew3zD5tGO9e/D6VNJ"
+      }
+    ]
+  },
+  "lru-cache@^11.0.0": {
+    "resolved": "https://registry.npmjs.org/lru-cache/-/lru-cache-11.0.0.tgz",
+    "integrity": "sha512-Qv32eSV1RSCfhY3fpPE2GNZ8jgM9X7rdAfemLWqTUxwiyIC4jJ6Sy0fZ8H+oLWevO6i4/bizg7c8d8i6bxrzbA==",
+    "signatures": [
+      {
+        "sig": "MEYCIQDGn9fFQIL8qN3Dot1OMtld9asGdAOLBqwSqfa6KxeRnwIhAPbWWndVdzfEUT5/izJiZp5GghEYMu7WdHZWml1Lo5Ed",
+        "keyid": "SHA256:jl3bwswu80PjjokCgh0o2w5c2U4LhQAE57gj9cz1kzA"
+      }
+    ]
+  },
+  "brace-expansion@^2.0.1": {
+    "resolved": "https://registry.npmjs.org/brace-expansion/-/brace-expansion-2.0.1.tgz",
+    "integrity": "sha512-XnAIvQ8eM+kC6aULx6wuQiwVsnzsi9d3WxzV3FpWTGA19F621kwdbsAcFKXgKUHZWsy+mY6iL1sHTxWEFCytDA==",
+    "signatures": [
+      {
+        "keyid": "SHA256:jl3bwswu80PjjokCgh0o2w5c2U4LhQAE57gj9cz1kzA",
+        "sig": "MEYCIQDgNFdV3ddgnkb39ucmGYRgdjxRfJEZcnAt+BXCAQaVPgIhAKW05a01tUGrzy0G/gZFOVqMptjiKbs9uy+dDpF0C75F"
+      }
+    ]
+  },
+  "@pkgjs/parseargs@^0.11.0": {
+    "resolved": "https://registry.npmjs.org/@pkgjs/parseargs/-/parseargs-0.11.0.tgz",
+    "integrity": "sha512-+1VkjdD0QBLPodGrJUeqarH8VAIvQODIbwh9XpP5Syisf7YoQgsJKPNFoqqLQlu+VQ/tVSshMR6loPMn8U+dPg==",
+    "signatures": [
+      {
+        "keyid": "SHA256:jl3bwswu80PjjokCgh0o2w5c2U4LhQAE57gj9cz1kzA",
+        "sig": "MEYCIQDvG/+saUhufCRZDSAMyqIZHb0x4c7N/gUvaev0PjFqHQIhAP3fAOwBeiw8NWaXAwTHTxmCZ5hxLTuFeTKtFBuLZrUz"
+      }
+    ]
+  },
+  "@isaacs/cliui@^8.0.2": {
+    "resolved": "https://registry.npmjs.org/@isaacs/cliui/-/cliui-8.0.2.tgz",
+    "integrity": "sha512-O8jcjabXaleOG9DQ0+ARXWZBTfnP4WNAqzuiJK7ll44AmxGKv/J2M4TPjxjY3znBCfvBXFzucm1twdyFybFqEA==",
+    "signatures": [
+      {
+        "keyid": "SHA256:jl3bwswu80PjjokCgh0o2w5c2U4LhQAE57gj9cz1kzA",
+        "sig": "MEUCIQCelNZKJbAgma4U+TKy/m8jcOFEB03QqxhuvMsoQQpI9AIgMX6M/cVX8QYc0s3/19XRfc/+14yhVC1V1t5pwSlM4YE="
+      }
+    ]
+  },
+  "which@^2.0.1": {
+    "resolved": "https://registry.npmjs.org/which/-/which-2.0.2.tgz",
+    "integrity": "sha512-BLI3Tl1TW3Pvl70l3yq3Y64i+awpwXqsGBYWkkqMtnbXgrMD+yj7rhW0kuEDxzJaYXGjEW5ogapKNMEKNMjibA==",
+    "signatures": [
+      {
+        "sig": "MEYCIQDyPP0ND3fboT3W2mBlojUZmkvbY2KjDxGtB8vG07fjWAIhAPYfINxHQt1SI7Ic6dhnGscWdcYwLfGhKRrIcS6tW8Js",
+        "keyid": "SHA256:jl3bwswu80PjjokCgh0o2w5c2U4LhQAE57gj9cz1kzA"
+      }
+    ]
+  },
+  "path-key@^3.1.0": {
+    "resolved": "https://registry.npmjs.org/path-key/-/path-key-3.1.1.tgz",
+    "integrity": "sha512-ojmeN0qd+y0jszEtoY48r0Peq5dwMEkIlCOu6Q5f41lfkswXuKtYrhgoTpLnyIcHm24Uhqx+5Tqm2InSwLhE6Q==",
+    "signatures": [
+      {
+        "keyid": "SHA256:jl3bwswu80PjjokCgh0o2w5c2U4LhQAE57gj9cz1kzA",
+        "sig": "MEQCIAwOqg8TUPAYc0BU4fVgYQw5sg3cZlPq2S90+ei63ZrEAiAsWC5WjxqdP1lbFmNySWF/BHy6UfJwkONg7eFU55uHwA=="
+      }
+    ]
+  },
+  "shebang-command@^2.0.0": {
+    "resolved": "https://registry.npmjs.org/shebang-command/-/shebang-command-2.0.0.tgz",
+    "integrity": "sha512-kHxr2zZpYtdmrN1qDjrrX/Z1rR1kG8Dx+gkpK1G4eXmvXswmcE1hTWBWYUzlraYw1/yZp6YuDY77YtvbN0dmDA==",
+    "signatures": [
+      {
+        "keyid": "SHA256:jl3bwswu80PjjokCgh0o2w5c2U4LhQAE57gj9cz1kzA",
+        "sig": "MEYCIQC25PLpUCo3H8DMi9MpLxwheAbym3M3S5MW5QaCZpOUEwIhAIka9U63aHBdDqIcMUiGesgVKHjIiySGTAsxdQJx7wSP"
+      }
+    ]
+  },
+  "strip-ansi@^7.0.1": {
+    "resolved": "https://registry.npmjs.org/strip-ansi/-/strip-ansi-7.1.0.tgz",
+    "integrity": "sha512-iq6eVVI64nQQTRYq2KtEg2d2uU7LElhTJwsH4YzIHZshxlgZms/wIc4VoDQTlG/IvVIrBKG06CrZnp0qv7hkcQ==",
+    "signatures": [
+      {
+        "keyid": "SHA256:jl3bwswu80PjjokCgh0o2w5c2U4LhQAE57gj9cz1kzA",
+        "sig": "MEYCIQDLcWbjmD7JZAQ0csSDb2mo3VnE7r9e8bQPjsVd2SmvmQIhAKTReWeeAy2ZNI3H+RItkH7tubYl4uZ/Jg4hN4TzQKAB"
+      }
+    ]
+  },
+  "balanced-match@^1.0.0": {
+    "resolved": "https://registry.npmjs.org/balanced-match/-/balanced-match-1.0.2.tgz",
+    "integrity": "sha512-3oSeUO0TMV67hN1AmbXsK4yaqU7tjiHlbxRDZOpH0KW9+CeX4bRAaX0Anxt0tx2MrpRpWwQaPwIlISEJhYU5Pw==",
+    "signatures": [
+      {
+        "keyid": "SHA256:jl3bwswu80PjjokCgh0o2w5c2U4LhQAE57gj9cz1kzA",
+        "sig": "MEQCIHRQpAKwqTgs0SDP5KcV7MzsuTPMEkHeNqJFBOy5hYMwAiB/QgzhE/4zo/h6mn5Sl6u4YP0UZKqPYCZe5GhyLntdKA=="
+      }
+    ]
+  },
+  "string-width@^5.1.2": {
+    "resolved": "https://registry.npmjs.org/string-width/-/string-width-5.1.2.tgz",
+    "integrity": "sha512-HnLOCR3vjcY8beoNLtcjZ5/nxn2afmME6lhrDrebokqMap+XbeW8n9TXpPDOqdGK5qcI3oT0GKTW6wC7EMiVqA==",
+    "signatures": [
+      {
+        "sig": "MEUCIFh4IjLA+aBQo7r/VZcidTSCApNLobLlmjMKnBREpog9AiEApke6FV5/3E44vAJKBbdIZ832/aqqaNMi8TFY+Px6Rwc=",
+        "keyid": "SHA256:jl3bwswu80PjjokCgh0o2w5c2U4LhQAE57gj9cz1kzA"
+      }
+    ]
+  },
+  "string-width@^4.2.0": {
+    "resolved": "https://registry.npmjs.org/string-width/-/string-width-4.2.3.tgz",
+    "integrity": "sha512-wKyQRQpjJ0sIp62ErSZdGsjMJWsap5oRNihHhu6G7JVO/9jIB6UyevL+tXuOqrng8j/cxKTWyWUwvSTriiZz/g==",
+    "signatures": [
+      {
+        "sig": "MEUCIQCdE8iSHW3j8YsH6u/KbZmvj9DtpGTXHmhmmp6oeUG6/AIge8jaI1Qk/Z/GED/SrwJ+yNQAEzkZ28FrbwLFqeAqdSg=",
+        "keyid": "SHA256:jl3bwswu80PjjokCgh0o2w5c2U4LhQAE57gj9cz1kzA"
+      }
+    ]
+  },
+  "strip-ansi@^6.0.1": {
+    "resolved": "https://registry.npmjs.org/strip-ansi/-/strip-ansi-6.0.1.tgz",
+    "integrity": "sha512-Y38VPSHcqkFrCpFnQ9vuSXmquuv5oXOKpGeT6aGrr3o3Gc9AlVa6JBfUSOCnbxGGZF+/0ooI7KrPuUSztUdU5A==",
+    "signatures": [
+      {
+        "keyid": "SHA256:jl3bwswu80PjjokCgh0o2w5c2U4LhQAE57gj9cz1kzA",
+        "sig": "MEQCIEIaIvQJAMRlSerQ8cuHIzWxWLJPS6LkkF/9tMpiAXTvAiBY3tMFoj8tB0mc3dm7Th97E9p88NfZfjOdr/HKu8apLw=="
+      }
+    ]
+  },
+  "wrap-ansi@^7.0.0": {
+    "resolved": "https://registry.npmjs.org/wrap-ansi/-/wrap-ansi-7.0.0.tgz",
+    "integrity": "sha512-YVGIj2kamLSTxw6NsZjoBxfSwsn0ycdesmc4p+Q21c5zPuZ1pl+NfxVdxPtdHvmNVOQ6XSYG4AUtyt/Fi7D16Q==",
+    "signatures": [
+      {
+        "keyid": "SHA256:jl3bwswu80PjjokCgh0o2w5c2U4LhQAE57gj9cz1kzA",
+        "sig": "MEYCIQCKo7j2UdQx54mSbTdaaej2HDd+7W+ESXd3KKVPvJfvJAIhAMJ7QP5IP0+ZduLVTIUpiMK2pHSoyirpMJPR7ttSpH2z"
+      }
+    ]
+  },
+  "wrap-ansi@^8.1.0": {
+    "resolved": "https://registry.npmjs.org/wrap-ansi/-/wrap-ansi-8.1.0.tgz",
+    "integrity": "sha512-si7QWI6zUMq56bESFvagtmzMdGOtoxfR+Sez11Mobfc7tm+VkUckk9bW2UeffTGVUbOksxmSw0AA2gs8g71NCQ==",
+    "signatures": [
+      {
+        "keyid": "SHA256:jl3bwswu80PjjokCgh0o2w5c2U4LhQAE57gj9cz1kzA",
+        "sig": "MEUCIQCTLHPWZRhU1psYEAvTz2AEDNsMLsR+G9tplhjk3/R3BAIgNOJvHTwK2n7NB5EqKVWO2XlPckE0YuQWw6rMaitomrA="
+      }
+    ]
+  },
+  "isexe@^2.0.0": {
+    "resolved": "https://registry.npmjs.org/isexe/-/isexe-2.0.0.tgz",
+    "integrity": "sha512-RHxMLp9lnKHGHRng9QFhRCMbYAcVpn69smSGcq3f36xjgVVWThj4qqLbTLlq7Ssj8B+fIQ1EuCEGI2lKsyQeIw==",
+    "signatures": [
+      {
+        "keyid": "SHA256:jl3bwswu80PjjokCgh0o2w5c2U4LhQAE57gj9cz1kzA",
+        "sig": "MEQCIADIHL0vHAyBDSHK5BeCzNQb3ooCTHoBU+bp0my0d0pwAiAEzxUmLzKn2xsUOTDZngxVYgQ+2BELnj8z+ZNAJWENzA=="
+      }
+    ]
+  },
+  "shebang-regex@^3.0.0": {
+    "resolved": "https://registry.npmjs.org/shebang-regex/-/shebang-regex-3.0.0.tgz",
+    "integrity": "sha512-7++dFhtcx3353uBaq8DDR4NuxBetBzC7ZQOhmTQInHEd6bSrXdiEyzCvG07Z44UYdLShWUyXt5M/yhz8ekcb1A==",
+    "signatures": [
+      {
+        "keyid": "SHA256:jl3bwswu80PjjokCgh0o2w5c2U4LhQAE57gj9cz1kzA",
+        "sig": "MEUCIQD9D5iHzHiq8RRcvBjhnVc1TDXKPStoeEAQrqtkEg9qXAIgPFNBElrbSUhCoAjEd/BRJo48gQudG1I1KkUMNo6x+/E="
+      }
+    ]
+  },
+  "ansi-regex@^5.0.1": {
+    "resolved": "https://registry.npmjs.org/ansi-regex/-/ansi-regex-5.0.1.tgz",
+    "integrity": "sha512-quJQXlTSUGL2LH9SUXo8VwsY4soanhgo6LNSm84E1LBcE8s3O0wpdiRzyR9z/ZZJMlMWv37qOOb9pdJlMUEKFQ==",
+    "signatures": [
+      {
+        "keyid": "SHA256:jl3bwswu80PjjokCgh0o2w5c2U4LhQAE57gj9cz1kzA",
+        "sig": "MEUCIQCS7XsMq0d29jMXjedcRcP044S7ZelyMVBxKjkUpCShHAIgGyiTNkLoCCh/rpMnXAisLtOsV3SGe2ftVRwhvZTAPyw="
+      }
+    ]
+  },
+  "ansi-regex@^6.0.1": {
+    "resolved": "https://registry.npmjs.org/ansi-regex/-/ansi-regex-6.0.1.tgz",
+    "integrity": "sha512-n5M855fKb2SsfMIiFFoVrABHJC8QtHwVx+mHWP3QcEqBHYienj5dHSgjbxtC0WEZXYt4wcD6zrQElDPhFuZgfA==",
+    "signatures": [
+      {
+        "keyid": "SHA256:jl3bwswu80PjjokCgh0o2w5c2U4LhQAE57gj9cz1kzA",
+        "sig": "MEUCIQCWW/ZEXmQGK500jBFw7uRYczrrcLTzOEnm3uDiNPs6rAIgcKX8SLAOUpBu/tWg+7vPsMA4l7siraEVYPpTETOVqX0="
+      }
+    ]
+  },
+  "eastasianwidth@^0.2.0": {
+    "resolved": "https://registry.npmjs.org/eastasianwidth/-/eastasianwidth-0.2.0.tgz",
+    "integrity": "sha512-I88TYZWc9XiYHRQ4/3c5rjjfgkjhLyW2luGIheGERbNQ6OY7yTybanSpDXZa8y7VUP9YmDcYa+eyq4ca7iLqWA==",
+    "signatures": [
+      {
+        "keyid": "SHA256:jl3bwswu80PjjokCgh0o2w5c2U4LhQAE57gj9cz1kzA",
+        "sig": "MEUCIDNcp1SIwsuxLGmN5jJS4ZVTyfWVfHzoC3URtimwSMusAiEA4eLB2KCWmzEszVyewyStQBj4U38rvuXvf4AcXnx/IjM="
+      }
+    ]
+  },
+  "emoji-regex@^9.2.2": {
+    "resolved": "https://registry.npmjs.org/emoji-regex/-/emoji-regex-9.2.2.tgz",
+    "integrity": "sha512-L18DaJsXSUk2+42pv8mLs5jJT2hqFkFE4j21wOmgbUqsZ2hL72NsUU785g9RXgo3s0ZNgVl42TiHp3ZtOv/Vyg==",
+    "signatures": [
+      {
+        "keyid": "SHA256:jl3bwswu80PjjokCgh0o2w5c2U4LhQAE57gj9cz1kzA",
+        "sig": "MEUCIHcrGCbwiwzFWONg4AI9JKPLHIGCCljRRyA4x8QCMhWDAiEA22sFAR+MgR75takXx5jHHB1cLnhXUYIoWF5xMrMD5ds="
+      }
+    ]
+  },
+  "ansi-styles@^4.0.0": {
+    "resolved": "https://registry.npmjs.org/ansi-styles/-/ansi-styles-4.3.0.tgz",
+    "integrity": "sha512-zbB9rCJAT1rbjiVDb2hqKFHNYLxgtk8NURxZ3IZwD3F6NtxbXZQCnnSi1Lkx+IDohdPlFp222wVALIheZJQSEg==",
+    "signatures": [
+      {
+        "keyid": "SHA256:jl3bwswu80PjjokCgh0o2w5c2U4LhQAE57gj9cz1kzA",
+        "sig": "MEUCIQCiWmk7MXmf0ZVnUHbCbR2mb9eLfmcN5XoDJMyjv/VX/QIgKOsdyMm5gXdutN1mR1lRxBc/muUtoCWbdoL3I/e7TB4="
+      }
+    ]
+  },
+  "ansi-styles@^6.1.0": {
+    "resolved": "https://registry.npmjs.org/ansi-styles/-/ansi-styles-6.2.1.tgz",
+    "integrity": "sha512-bN798gFfQX+viw3R7yrGWRqnrN2oRkEkUjjl4JNn4E8GxxbjtG3FbrEIIY3l8/hrwUwIeCZvi4QuOTP4MErVug==",
+    "signatures": [
+      {
+        "keyid": "SHA256:jl3bwswu80PjjokCgh0o2w5c2U4LhQAE57gj9cz1kzA",
+        "sig": "MEUCIFG8Ismuz7QceJds84ad7aPzrkac5X2fz77O03EWGd2NAiEAjEl3Glc9eJKUdpAivBYekFwYpFD11EcZpMgchlpobk8="
+      }
+    ]
+  },
+  "is-fullwidth-code-point@^3.0.0": {
+    "resolved": "https://registry.npmjs.org/is-fullwidth-code-point/-/is-fullwidth-code-point-3.0.0.tgz",
+    "integrity": "sha512-zymm5+u+sCsSWyD9qNaejV3DFvhCKclKdizYaJUuHA83RLjb7nSuGnddCHGv0hk+KY7BMAlsWeK4Ueg6EV6XQg==",
+    "signatures": [
+      {
+        "keyid": "SHA256:jl3bwswu80PjjokCgh0o2w5c2U4LhQAE57gj9cz1kzA",
+        "sig": "MEUCIFqdK0e+RN4xM+7IrAyYmqvTaNg8MFEzwF42BtAoAgitAiEA/9YISFLSR/ut9zSkO4XG67As7nGNUWRBkhM21Q+8foU="
+      }
+    ]
+  },
+  "emoji-regex@^8.0.0": {
+    "resolved": "https://registry.npmjs.org/emoji-regex/-/emoji-regex-8.0.0.tgz",
+    "integrity": "sha512-MSjYzcWNOA0ewAHpz0MxpYFvwg6yjy1NG3xteoqz644VCo/RPgnr1/GGt+ic3iJTzQ8Eu3TdM14SawnVUmGE6A==",
+    "signatures": [
+      {
+        "keyid": "SHA256:jl3bwswu80PjjokCgh0o2w5c2U4LhQAE57gj9cz1kzA",
+        "sig": "MEUCIC+waQdufSheUTEjvna3EaQZWs+5GUI/0/r9f5VSiZIAAiEA9mR+WzssFvsrqZPJ7zzRTzWZRyOxn1ZaJlSRNglwMlk="
+      }
+    ]
+  },
+  "color-convert@^2.0.1": {
+    "resolved": "https://registry.npmjs.org/color-convert/-/color-convert-2.0.1.tgz",
+    "integrity": "sha512-RRECPsj7iu/xb5oKYcsFHSppFNnsj/52OVTRKb4zP5onXwVF3zVmmToNcOfGC+CRDpfK/U584fMg38ZHCaElKQ==",
+    "signatures": [
+      {
+        "keyid": "SHA256:jl3bwswu80PjjokCgh0o2w5c2U4LhQAE57gj9cz1kzA",
+        "sig": "MEUCIQDawANUBU4JyKUu4FIXFy8S7MRHb4bNg7kk0ifG6KLYaQIgJ3p3N1TtoTXNQlvECo4whQoW3oot3kbzgAOutQTZTrA="
+      }
+    ]
+  },
+  "color-name@~1.1.4": {
+    "resolved": "https://registry.npmjs.org/color-name/-/color-name-1.1.4.tgz",
+    "integrity": "sha512-dOy+3AuW3a2wNbZHIuMZpTcgjGuLU/uBL/ubcZF9OXbDo8ff4O8yVp5Bf0efS8uEoYo5q4Fx7dY9OgQGXgAsQA==",
+    "signatures": [
+      {
+        "keyid": "SHA256:jl3bwswu80PjjokCgh0o2w5c2U4LhQAE57gj9cz1kzA",
+        "sig": "MEQCIA/cRJF1USbKE8OvNZK7EOTIg9+Bg+KvqGyAcFM83/7VAiB4QKj7PJ06UPRuqXUutmL6e+n5XgOGZlpNzYmkOyPUSQ=="
+      }
+    ]
+  }
+}

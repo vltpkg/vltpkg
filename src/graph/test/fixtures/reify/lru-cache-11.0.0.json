@@ -1,0 +1,35 @@
+{
+  "name": "lru-cache",
+  "version": "11.0.0",
+  "devDependencies": {
+    "tap": "^20.0.3",
+    "tshy": "^2.0.0",
+    "tslib": "^2.4.0",
+    "marked": "^4.2.12",
+    "mkdirp": "^2.1.5",
+    "esbuild": "^0.17.11",
+    "typedoc": "^0.25.3",
+    "prettier": "^2.6.2",
+    "benchmark": "^2.1.4",
+    "@types/tap": "^15.0.6",
+    "typescript": "^5.2.2",
+    "@types/node": "^20.2.5",
+    "eslint-config-prettier": "^8.5.0"
+  },
+  "dist": {
+    "shasum": "15d93a196f189034d7166caf9fe55e7384c98a21",
+    "tarball": "https://registry.npmjs.org/lru-cache/-/lru-cache-11.0.0.tgz",
+    "fileCount": 17,
+    "integrity": "sha512-Qv32eSV1RSCfhY3fpPE2GNZ8jgM9X7rdAfemLWqTUxwiyIC4jJ6Sy0fZ8H+oLWevO6i4/bizg7c8d8i6bxrzbA==",
+    "signatures": [
+      {
+        "sig": "MEYCIQDGn9fFQIL8qN3Dot1OMtld9asGdAOLBqwSqfa6KxeRnwIhAPbWWndVdzfEUT5/izJiZp5GghEYMu7WdHZWml1Lo5Ed",
+        "keyid": "SHA256:jl3bwswu80PjjokCgh0o2w5c2U4LhQAE57gj9cz1kzA"
+      }
+    ],
+    "unpackedSize": 804296
+  },
+  "engines": {
+    "node": "20 || >=22"
+  }
+}

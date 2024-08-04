@@ -1,0 +1,27 @@
+{
+  "name": "emoji-regex",
+  "version": "9.2.2",
+  "devDependencies": {
+    "@babel/cli": "^7.4.4",
+    "@babel/core": "^7.4.4",
+    "@babel/plugin-proposal-unicode-property-regex": "^7.4.4",
+    "@babel/preset-env": "^7.4.4",
+    "@unicode/unicode-13.0.0": "^1.0.3",
+    "mocha": "^6.1.4",
+    "regexgen": "^1.3.0"
+  },
+  "dist": {
+    "integrity": "sha512-L18DaJsXSUk2+42pv8mLs5jJT2hqFkFE4j21wOmgbUqsZ2hL72NsUU785g9RXgo3s0ZNgVl42TiHp3ZtOv/Vyg==",
+    "shasum": "840c8803b0d8047f4ff0cf963176b32d4ef3ed72",
+    "tarball": "https://registry.npmjs.org/emoji-regex/-/emoji-regex-9.2.2.tgz",
+    "fileCount": 15,
+    "unpackedSize": 97916,
+    "npm-signature": "-----BEGIN PGP SIGNATURE-----\r\nVersion: OpenPGP.js v3.0.13\r\nComment: https://openpgpjs.org\r\n\r\nwsFcBAEBCAAQBQJgPhpBCRA9TVsSAnZWagAA1/YQAJ00Flm0hn1THHoKTG0t\nylutoznvVmXBkTi8RRd7sUoXWfWYTTYYd0kZy1sFqlBdqYSvafkt5gMvednF\nnbhYuFyYM+xhVaLJNiWspc2uMuUHwlivQYrCqH4Sak3YPzhk0hBuj5sgAk4U\nYcGYf4gKOVp/jwcmXVZWWFrn+Rm07/OHZzhIsBnWzBh99UWzFwFom/nGaoCe\nVZxx2OOrWmWFNVDKtubMnJADaHug7oo0o0S4YyMHQU6Rn69flvafdA5f076m\nnn9NVUO/h8He4xrLXoAnUybphaSNJPnFENqK1gN26e5nOzzsAxwRY5DKG9zA\n7czAXBGNAGYkjV8wOC+suYGgwvmfnKqf8h5Teerdo9Gcycn7sHIdsU+qAV2D\n+KqNJ8ql6nI0xrIf8lYtmxZjYjOPhUaKEer/sfxZUUqNzO0LdAkBOpK7Rga3\nFQyB0Pvg3VEFjmL78eDj3/D5GY1VYXogFXJY2lWrd02kPM6IlMjBQH9X9jx6\nwq84cFdGvDmW37dAtJdfuplkPNDd4I3Ivv8ASBphxqPjbSPCgn2vMueKIwHv\nEf8h8QUy9y/qo1QrVjo7kHrdFcjx73zgLZMElrlN9ax1KsgPxXTUmTZoN0K6\ntkC5T6h2LAnyxyi+x2/8XMnFTuzG20ExspSMVWBI4kHQtDWjua9YlCbIccgi\n81rc\r\n=B/lZ\r\n-----END PGP SIGNATURE-----\r\n",
+    "signatures": [
+      {
+        "keyid": "SHA256:jl3bwswu80PjjokCgh0o2w5c2U4LhQAE57gj9cz1kzA",
+        "sig": "MEUCIHcrGCbwiwzFWONg4AI9JKPLHIGCCljRRyA4x8QCMhWDAiEA22sFAR+MgR75takXx5jHHB1cLnhXUYIoWF5xMrMD5ds="
+      }
+    ]
+  }
+}

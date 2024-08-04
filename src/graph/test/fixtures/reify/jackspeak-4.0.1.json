@@ -1,0 +1,38 @@
+{
+  "name": "jackspeak",
+  "version": "4.0.1",
+  "dependencies": {
+    "@isaacs/cliui": "^8.0.2"
+  },
+  "optionalDependencies": {
+    "@pkgjs/parseargs": "^0.11.0"
+  },
+  "devDependencies": {
+    "tap": "^18.8.0",
+    "tshy": "^1.14.0",
+    "typedoc": "^0.25.1",
+    "prettier": "^3.2.5",
+    "typescript": "^5.2.2",
+    "@types/node": "^20.7.0",
+    "@types/pkgjs__parseargs": "^0.10.1"
+  },
+  "dist": {
+    "shasum": "9fca4ce961af6083e259c376e9e3541431f5287b",
+    "tarball": "https://registry.npmjs.org/jackspeak/-/jackspeak-4.0.1.tgz",
+    "fileCount": 21,
+    "integrity": "sha512-cub8rahkh0Q/bw1+GxP7aeSe29hHHn2V4m29nnDlvCdlgU+3UGxkZp7Z53jLUdpX3jdTO0nJZUDl3xvbWc2Xog==",
+    "signatures": [
+      {
+        "sig": "MEUCIQCwFZSakffx0zh80svM1leNXLwXZpRVrC7sXM6jNanc+AIgYgZUnpSjK0dxvjDz3NX1Ztmd0VE4h6MkT8kXYE93SPg=",
+        "keyid": "SHA256:jl3bwswu80PjjokCgh0o2w5c2U4LhQAE57gj9cz1kzA"
+      }
+    ],
+    "unpackedSize": 296917
+  },
+  "engines": {
+    "node": "20 || >=22"
+  },
+  "funding": {
+    "url": "https://github.com/sponsors/isaacs"
+  }
+}
