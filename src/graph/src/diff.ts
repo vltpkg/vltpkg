@@ -3,8 +3,24 @@ import { Edge } from './edge.js'
 import { Graph } from './graph.js'
 import { Node } from './node.js'
 
+// XXX should file; deps *always* be considered changed?
+// unless the thing containing it wasn't possibly changed because it's inside
+// a dep that didn't change?
+// Same with remote deps
+
 const kCustomInspect = Symbol.for('nodejs.util.inspect.custom')
 
+/**
+ * A Diff object is a representation of a set of changes from one
+ * graph to another, typically from the actual graph as it is reified
+ * on disk, to an intended ideal graph.
+ *
+ * The naming convention can get a bit confusing here, because it's a
+ * set of directed changes from one set of directed objects to another.
+ *
+ * Within the context the Diff object, `from` is the Graph we're coming from,
+ * and `to` is the Graph we're trying to create.
+ */
 export class Diff {
   from: Graph
   to: Graph
@@ -50,6 +66,7 @@ export class Diff {
     }
 
     for (const edge of this.to.edges) {
+      // the node with this dep, in the from  graph
       const fromNode = this.from.nodes.get(edge.from.id)
       const fromEdge = fromNode?.edgesOut.get(edge.spec.name)
       if (fromEdge?.to?.id === edge.to?.id) continue
@@ -57,11 +74,12 @@ export class Diff {
       if (edge.to) this.edges.add.add(edge)
     }
     for (const edge of this.from.edges) {
+      // the node with this dep, in the to graph
       const toNode = this.to.nodes.get(edge.from.id)
       const toEdge = toNode?.edgesOut.get(edge.spec.name)
       if (toEdge?.to?.id === edge.to?.id) continue
       if (edge.to) this.edges.delete.add(edge)
-      if (toNode && toEdge) this.edges.add.add(toEdge)
+      if (toEdge?.to) this.edges.add.add(toEdge)
     }
   }
 
