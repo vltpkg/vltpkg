@@ -187,10 +187,10 @@ const childMethod = async (fn, args) => {
         cwd,
         projectRoot,
         env: Object.fromEntries(Object.entries(process.env).filter(([k]) => /^(npm|VLT)_/i.test(k))),
-        path: (process.env.PATH ?? '')
-            .split(delimiter)
-            .map(p => relative(projectRoot, p).replace(/\\/g, '/'))
-            .filter(p => !p.startsWith('..') && !isAbsolute(p)),
+        path: [...new Set((process.env.PATH ?? '')
+                .split(delimiter)
+                .map(p => relative(projectRoot, p).replace(/\\/g, '/'))
+                .filter(p => !p.startsWith('..') && !isAbsolute(p)))],
     }));
 };
 const execChild = async (args) => childMethod('exec', args);
