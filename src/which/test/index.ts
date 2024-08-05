@@ -37,7 +37,7 @@ const runTest = async (
         },
       )
       const er = expect as { code: string }
-      if (er?.code) {
+      if (er.code) {
         await t.rejects(() => which(exec, opt), er, 'async rejects')
         t.throws(() => whichSync(exec, opt), er, 'sync throws')
       } else {

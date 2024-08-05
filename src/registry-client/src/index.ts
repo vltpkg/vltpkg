@@ -65,7 +65,7 @@ const { version } = loadPackageJson(
   import.meta.url,
   '../package.json',
 )
-const navUA = globalThis.navigator?.userAgent
+const navUA = globalThis.navigator.userAgent
 const bun =
   navUA ??
   //@ts-ignore
@@ -77,7 +77,7 @@ const deno =
   navUA ?? (globalThis.Deno?.deno?.version as string | undefined)
 const node =
   //@ts-ignore
-  navUA ?? (globalThis.process?.version as string | undefined)
+  navUA ?? (globalThis.process.version as string | undefined)
 const nua =
   navUA ??
   (bun ? `Bun/${bun}`

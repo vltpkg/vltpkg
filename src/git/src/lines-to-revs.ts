@@ -198,7 +198,7 @@ const linesToRevsReducer = (revs: RevDoc, line: string) => {
       : doc.ref.match(/v?(\d+\.\d+\.\d+(?:[-+].+)?)$/)
     if (match) {
       /* c8 ignore start */
-      if (!match?.[1])
+      if (!match[1])
         throw error(`invalid semver tag`, { found: doc.ref })
       /* c8 ignore stop */
       const v = parse(match[1])

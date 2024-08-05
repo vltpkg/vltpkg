@@ -12,7 +12,7 @@
  */
 
 const isNode =
-  typeof process?.versions === 'object' && !!process.versions
+  typeof process.versions === 'object' && !!process.versions
 //@ts-ignore
 const isDeno = !isNode && typeof Deno === 'object' && !!Deno
 const isBun =

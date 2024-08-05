@@ -140,7 +140,7 @@ export class ExecCommand<B extends RunnerBG, F extends RunnerFG> {
 
   fgArg(): RunnerOptions | undefined {
     const cwd =
-      this.monorepo?.values()?.next().value?.fullpath ??
+      this.monorepo?.values().next().value.fullpath ??
       this.projectRoot
     const arg0 = this.arg0 ?? this.defaultArg0()
     if (!arg0) {

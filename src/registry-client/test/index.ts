@@ -111,7 +111,7 @@ t.test('register unzipping for gzip responses', async t => {
     [
       t.testdirName,
       JSON.stringify([
-        `${registryURL}`,
+        registryURL,
         'GET',
         '/some/tarball',
         null,

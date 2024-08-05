@@ -736,7 +736,7 @@ export class PackageInfoClient {
 
       case 'registry': {
         const mani = await this.manifest(spec, options)
-        if (mani?.dist) {
+        if (mani.dist) {
           const { integrity, tarball, signatures } = mani.dist
           if (tarball) {
             const r = {

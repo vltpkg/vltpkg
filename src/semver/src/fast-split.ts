@@ -19,7 +19,7 @@
  */
 
 // utility types to turn a null/undefined/void return into string
-export type NullToString<T> = VoidReplace<T, string>
+export type NullToString<T> = VoidReplace<T>
 
 export type NullReplace<T, R = string> =
   T extends NonNullable<T> ? T : NonNullable<T> | R
