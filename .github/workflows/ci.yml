@@ -46,9 +46,12 @@ jobs:
           - os: macos-latest
             shell: bash
             name: macOS
+          - os: macos-13
+            shell: bash
+            name: macOS Intel
           - os: windows-latest
             shell: bash
-            name: Windows Bash
+            name: Windows
           - os: windows-latest
             shell: powershell
             name: Windows Powershell
