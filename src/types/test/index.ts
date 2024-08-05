@@ -120,7 +120,7 @@ t.test('keyID', t => {
   //@ts-expect-error
   const str: KeyID = 'hello'
   t.equal(isKeyID(str), false)
-  let keyOK = 'SHA256:jl3bwswu80PjjokCgh0o2w5c2U4LhQAE57gj9cz1kzA'
+  const keyOK = 'SHA256:jl3bwswu80PjjokCgh0o2w5c2U4LhQAE57gj9cz1kzA'
   //@ts-expect-error - still just a string as far as TS knows
   const kNope: KeyID = keyOK
   kNope
@@ -145,7 +145,7 @@ t.test('integrity', t => {
   const iNotInt: Integrity = 'hello'
   t.equal(isIntegrity(iNotInt), false)
   t.throws(() => asIntegrity('hello'))
-  let intOK =
+  const intOK =
     'sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ=='
   //@ts-expect-error - still just a string as far as TS knows
   const iNope: Integrity = intOK
@@ -261,11 +261,11 @@ t.test('type checks', t => {
     //@ts-expect-error
     dist: { tarball: 'url', integrity: 'hello' },
   }
-  let dist = { foo: 'x' }
+  const dist = { foo: 'x' }
   //@ts-expect-error
   rm.dist = dist
 
-  let p: Packument = {
+  const p: Packument = {
     name: 'x',
     'dist-tags': {},
     versions: {},
@@ -273,21 +273,21 @@ t.test('type checks', t => {
   //@ts-expect-error
   p.versions['1.2.3'] = { name: true }
   p.foo = 'baz'
-  let pb: PackumentBase = p
+  const pb: PackumentBase = p
   p.foo = 'bar'
   //@ts-expect-error
   pb.foo
-  let pm: PackumentMinified = p
+  const pm: PackumentMinified = p
   //@ts-expect-error
   pm.foo = 'bar'
   pm.versions['1.2.3'] = m
   //@ts-expect-error
   pm.versions['1.2.3'].foo = 'bar'
 
-  let pd: Exclude<Manifest['peerDependenciesMeta'], undefined> = {}
+  const pd: Exclude<Manifest['peerDependenciesMeta'], undefined> = {}
   //@ts-expect-error
   pd.foo = true
-  let pdm: PeerDependenciesMetaValue = { optional: false }
+  const pdm: PeerDependenciesMetaValue = { optional: false }
   //@ts-expect-error
   pdm.optional = 'foo'
   //@ts-expect-error

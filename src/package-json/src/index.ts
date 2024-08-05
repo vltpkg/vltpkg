@@ -37,7 +37,7 @@ export class PackageJson {
 
     const cachedError = !reload && this.#errCache.get(dir)
     if (cachedError) {
-      throw fail(cachedError as ErrorCauseObject)
+      throw fail(cachedError)
     }
 
     try {

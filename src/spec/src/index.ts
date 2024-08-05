@@ -593,7 +593,7 @@ export class Spec {
 
     this.conventionalRegistryTarball = String(
       new URL(
-        `/${name}/-/${name.replace(/^@[^\/]+\//, '')}-${
+        `/${name}/-/${name.replace(/^@[^/]+\//, '')}-${
           cmp.tuples[0][1]
         }.tgz`,
         registry,

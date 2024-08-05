@@ -785,7 +785,7 @@ export class PackageInfoClient {
           return r
         }
         // have to actually clone somewhere
-        const s: Spec = spec as Spec
+        const s: Spec = spec
         return this.#tmpdir(async tmpdir => {
           const sha = await clone(
             gitRemote,

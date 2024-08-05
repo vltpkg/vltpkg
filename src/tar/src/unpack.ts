@@ -17,7 +17,7 @@ const checkFs = (
   if (!h.path) return false
   if (!tarDir) return false
   /* c8 ignore stop */
-  h.path = h.path.replace(/[\\\/]+/g, '/')
+  h.path = h.path.replace(/[\\/]+/g, '/')
   const parsed = parse(h.path)
   if (parsed.root) return false
   const p = h.path.replace(/\\/, '/')

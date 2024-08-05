@@ -1,7 +1,6 @@
 import { DepID } from '@vltpkg/dep-id'
 import { error } from '@vltpkg/error-cause'
 import { Dependency } from '../dependencies.js'
-import { Graph } from '../graph.js'
 import { removeSatisfiedSpecs } from './remove-satisfied-specs.js'
 import {
   BuildIdealAddOptions,

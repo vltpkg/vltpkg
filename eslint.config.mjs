@@ -14,7 +14,9 @@ export default tseslint.config(
   },
   eslint.configs.recommended,
   ...tseslint.configs.recommendedTypeChecked,
-  ...tseslint.configs.stylisticTypeChecked,
+  // TODO: turn on the following instead of recommended for more checks
+  // ...tseslint.configs.strictTypeChecked,
+  // ...tseslint.configs.stylisticTypeChecked,
   {
     languageOptions: {
       parserOptions: {
@@ -54,6 +56,7 @@ export default tseslint.config(
       '@typescript-eslint/ban-ts-comment': 'off',
       '@typescript-eslint/class-literal-property-style': 'off',
       '@typescript-eslint/no-base-to-string': 'off',
+      '@typescript-eslint/no-confusing-void-expression': 'off',
       '@typescript-eslint/no-dynamic-delete': 'off',
       '@typescript-eslint/no-empty-function': 'off',
       '@typescript-eslint/no-empty-object-type': 'off',

@@ -340,7 +340,7 @@ export class Monorepo {
           if (!pj?.isFile()) return true
           try {
             this.packageJson.read(p.fullpath())
-          } catch (er) {
+          } catch {
             return true
           }
           for (const m of maybeDelete) {

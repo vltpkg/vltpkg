@@ -106,12 +106,12 @@ const versionOk = (
  * be a full non-minified Packument object. Otherwise, a minified packument
  * is fine.
  */
-export function pickManifest<O>(
+export function pickManifest(
   packument: Packument,
   wanted: string | Range | Spec,
   opts: PickManifestOptions,
 ): Manifest | undefined
-export function pickManifest<O>(
+export function pickManifest(
   packument: PackumentMinified,
   wanted: string | Range | Spec,
   opts: PickManifestOptionsNoBefore,

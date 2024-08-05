@@ -19,6 +19,7 @@ const splitTest = () => str.split('.')
 
 const splitEmptyCheck = () => {
   const parts = str.split('.')
+  // eslint-disable-next-line no-empty
   for (const _ of parts) {
   }
   return parts

@@ -1,7 +1,6 @@
 import { spawn as spawnGit } from '@vltpkg/git'
 import { Spec } from '@vltpkg/spec'
 import { Pool } from '@vltpkg/tar'
-import { Manifest } from '@vltpkg/types'
 import { Workspace } from '@vltpkg/workspaces'
 import { lstatSync, readFileSync, readlinkSync } from 'node:fs'
 import { writeFile } from 'node:fs/promises'
@@ -149,9 +148,7 @@ const options = {
   registry: defaultRegistry,
   cache,
 }
-for (const manifest of Object.values(
-  pakuAbbrev.versions,
-) as Manifest[]) {
+for (const manifest of Object.values(pakuAbbrev.versions)) {
   if (manifest.dist?.tarball) {
     manifest.dist.tarball = manifest.dist.tarball.replace(
       /^https:\/\/registry.npmjs.org\//,
@@ -159,9 +156,7 @@ for (const manifest of Object.values(
     )
   }
 }
-for (const manifest of Object.values(
-  pakuAbbrevFull.versions,
-) as Manifest[]) {
+for (const manifest of Object.values(pakuAbbrevFull.versions)) {
   if (manifest.dist?.tarball) {
     manifest.dist.tarball = manifest.dist.tarball.replace(
       /^https:\/\/registry.npmjs.org\//,

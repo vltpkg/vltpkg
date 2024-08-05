@@ -570,7 +570,7 @@ export class Config {
       positionals: string[]
     }
   > {
-    let c = this.get('color')
+    const c = this.get('color')
     const chalk = (await import('chalk')).default
     let color: boolean
     if (
@@ -614,12 +614,12 @@ export class Config {
      */
     reload: boolean = false,
   ): Promise<LoadedConfig> {
-    if (this.#loaded && !reload) return this.#loaded as LoadedConfig
+    if (this.#loaded && !reload) return this.#loaded
     const a = new Config(definition, projectRoot)
     const b = await a.loadConfigFile()
     const c = await b.parse(argv).loadColor()
     this.#loaded = c as LoadedConfig
-    return this.#loaded as LoadedConfig
+    return this.#loaded
   }
 }
 
