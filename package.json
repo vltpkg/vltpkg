@@ -7,7 +7,10 @@
     "test": "pnpm --silent --no-bail --report-summary -r test -- -Rsilent || node scripts/report-test-failures.js",
     "snap": "pnpm --silent --no-bail --report-summary run -r snap -Rsilent || node scripts/report-test-failures.js",
     "typedoc": "typedoc",
-    "format": "prettier --write . --log-level warn --ignore-path ./.prettierignore --cache"
+    "format": "prettier --write . --log-level warn --ignore-path ./.prettierignore --cache",
+    "lint:format": "prettier --check . --ignore-path ./.prettierignore --cache",
+    "lint": "npm run lint:format; npm run lint:code",
+    "lint:code": "echo todo"
   },
   "type": "module",
   "devDependencies": {

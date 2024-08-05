@@ -13,8 +13,8 @@
     }
   },
   "dependencies": {
-    "@vltpkg/error-cause": "workspace:*",
     "@vltpkg/dep-id": "workspace:*",
+    "@vltpkg/error-cause": "workspace:*",
     "@vltpkg/semver": "workspace:*",
     "@vltpkg/spec": "workspace:*",
     "@vltpkg/workspaces": "workspace:*"
@@ -36,7 +36,10 @@
     "test": "tap",
     "snap": "tap",
     "format": "prettier --write . --log-level warn --ignore-path ../../.prettierignore --cache",
-    "typedoc": "typedoc"
+    "typedoc": "typedoc",
+    "lint:format": "prettier --check . --ignore-path ../../.prettierignore --cache",
+    "lint": "npm run lint:format; npm run lint:code",
+    "lint:code": "echo todo"
   },
   "tap": {
     "extends": "../../tap-config.yaml"

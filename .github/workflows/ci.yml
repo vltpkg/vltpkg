@@ -3,6 +3,24 @@ name: CI
 on: [push, pull_request]
 
 jobs:
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Use Nodejs 20.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+
+      - name: Install dependencies
+        run: 'npx --yes pnpm i'
+
+      - name: Run Tests
+        run: 'npx --yes pnpm --no-bail --report-summary -r lint'
+
   build:
     strategy:
       matrix:
