@@ -14,6 +14,8 @@ concurrency:
 
 jobs:
   lint:
+    name: Lint
+
     runs-on: ubuntu-latest
 
     steps:
@@ -31,19 +33,25 @@ jobs:
       - name: Run Tests
         run: 'npx --yes pnpm --no-bail --report-summary -r lint'
 
-  build:
+  test:
+    name: Test - ${{ matrix.platform.name }} - ${{ matrix.node-version }}
+
     strategy:
       matrix:
         node-version: [20.x]
         platform:
           - os: ubuntu-latest
             shell: bash
+            name: Ubuntu
           - os: macos-latest
             shell: bash
+            name: macOS
           - os: windows-latest
             shell: bash
+            name: Windows Bash
           - os: windows-latest
             shell: powershell
+            name: Windows Powershell
       fail-fast: false
 
     runs-on: ${{ matrix.platform.os }}
