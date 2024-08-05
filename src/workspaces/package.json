@@ -25,11 +25,17 @@
     "walk-up-path": "^3.0.1"
   },
   "devDependencies": {
+    "@eslint/js": "^9.8.0",
+    "@types/eslint__js": "^8.42.3",
     "@types/node": "^20.14.8",
+    "eslint": "^9.8.0",
+    "globals": "^14.0.0",
     "prettier": "^3.3.2",
     "tap": "^20.0.1",
     "tshy": "^1.16.1",
-    "typedoc": "^0.26.2"
+    "typedoc": "^0.26.2",
+    "typescript": "^5.5.4",
+    "typescript-eslint": "^8.0.1"
   },
   "scripts": {
     "preversion": "npm test",
@@ -44,7 +50,7 @@
     "typedoc": "typedoc",
     "lint:format": "prettier --check . --ignore-path ../../.prettierignore --cache",
     "lint": "npm run lint:format; npm run lint:code",
-    "lint:code": "echo todo"
+    "lint:code": "eslint ."
   },
   "tap": {
     "extends": "../../tap-config.yaml"

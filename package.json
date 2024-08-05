@@ -10,15 +10,19 @@
     "format": "prettier --write . --log-level warn --ignore-path ./.prettierignore --cache",
     "lint:format": "prettier --check . --ignore-path ./.prettierignore --cache",
     "lint": "npm run lint:format; npm run lint:code",
-    "lint:code": "echo todo"
+    "lint:code": "eslint ."
   },
   "type": "module",
   "devDependencies": {
+    "@eslint/js": "^9.8.0",
+    "@types/eslint__js": "^8.42.3",
     "@types/node": "^20.14.8",
     "@types/retry": "^0.12.5",
     "@types/semver": "^7.5.8",
     "@types/tar": "^6.1.13",
     "chalk": "^5.3.0",
+    "eslint": "^9.8.0",
+    "globals": "^14.0.0",
     "mutate-fs": "^2.1.1",
     "npm-package-arg": "^11.0.2",
     "npm-pick-manifest": "^9.0.1",
@@ -28,7 +32,9 @@
     "spawk": "^1.8.2",
     "tap": "^20.0.1",
     "tshy": "^1.16.1",
-    "typedoc": "^0.26.2"
+    "typedoc": "^0.26.2",
+    "typescript": "^5.5.4",
+    "typescript-eslint": "^8.0.1"
   },
   "dependencies": {
     "vlt": "workspace:0.0.0-0"
