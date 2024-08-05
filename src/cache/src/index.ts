@@ -60,7 +60,7 @@ export class Cache extends LRUCache<
   #path: string;
   [Symbol.toStringTag]: string = '@vltpkg/cache.Cache'
   #random: string = randomBytes(6).toString('hex')
-  #pending: Set<Promise<void | boolean>> = new Set()
+  #pending: Set<Promise<undefined | boolean>> = new Set()
   onDiskWrite?: CacheOptions['onDiskWrite']
   onDiskDelete?: CacheOptions['onDiskDelete']
 
@@ -168,7 +168,7 @@ export class Cache extends LRUCache<
     }
     dir.closeSync()
   }
-  [Symbol.iterator](): Generator<[string, Buffer], void, unknown> {
+  [Symbol.iterator](): Generator<[string, Buffer], void> {
     return this.walkSync()
   }
 
