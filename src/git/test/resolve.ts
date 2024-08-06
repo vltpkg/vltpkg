@@ -52,7 +52,7 @@ t.test('setup', () =>
     .then(() => git('commit', '-m', 'bob plays the obo'))
     .then(() => git('tag', '-am', 'version 1.2.3', 'version-1.2.3'))
     .then(() =>
-      git('tag', '-am', 'too big', '69' + Math.pow(2, 53) + '.0.0'),
+      git('tag', '-am', 'too big', `69${Math.pow(2, 53)}.0.0`),
     )
     .then(() => write('gleep', 'glorp'))
     .then(() => git('add', 'gleep'))
@@ -132,7 +132,7 @@ t.test('no revs if cannot read repo', async t => {
 t.test('resolve the revs', async t => {
   const revDoc = await revs(repo, { noGitRevCache: true })
   if (!revDoc) throw new Error('failed to load revs')
-  const repoRemote = pathToFileURL(repo) + '/.git'
+  const repoRemote = pathToFileURL(repo).toString() + '/.git'
 
   const head = await resolve(repo)
   const headRef = resolveRef(revDoc, 'HEAD')

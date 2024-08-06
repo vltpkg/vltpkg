@@ -72,19 +72,19 @@ export default tseslint.config(
       '@typescript-eslint/require-await': 'off',
       // TODO: Would be nice to turn this on, but doesn't play well with how we pass instance methods to error() to capture stack traces
       '@typescript-eslint/unbound-method': 'off',
-      // TODO: audit each of these and either fix, inline disable, or comment here
-      '@typescript-eslint/ban-ts-comment': 'off',
-      '@typescript-eslint/no-base-to-string': 'off',
-      '@typescript-eslint/no-dynamic-delete': 'off',
-      '@typescript-eslint/no-explicit-any': 'off',
-      '@typescript-eslint/no-floating-promises': 'off',
+      // TODO: these rules have to do with unsafe usage of `any`
       '@typescript-eslint/no-unsafe-argument': 'off',
       '@typescript-eslint/no-unsafe-assignment': 'off',
       '@typescript-eslint/no-unsafe-call': 'off',
       '@typescript-eslint/no-unsafe-member-access': 'off',
+      '@typescript-eslint/no-explicit-any': 'off',
       '@typescript-eslint/no-unsafe-return': 'off',
+      // TODO: audit each of these and either fix, inline disable, or comment here
+      '@typescript-eslint/ban-ts-comment': 'off',
+      '@typescript-eslint/no-base-to-string': 'off',
+      '@typescript-eslint/no-dynamic-delete': 'off',
+      '@typescript-eslint/no-floating-promises': 'off',
       '@typescript-eslint/no-unused-expressions': 'off',
-      '@typescript-eslint/restrict-plus-operands': 'off',
       '@typescript-eslint/restrict-template-expressions': 'off',
       '@typescript-eslint/use-unknown-in-catch-callback-variable':
         'off',

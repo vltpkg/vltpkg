@@ -212,7 +212,7 @@ t.test('create git repo', { bail: true }, async () => {
   await git('add', 'other-file')
   await git('commit', '-m', 'others')
   await git('tag', '-am', 'version 1.2.3', 'version-1.2.3')
-  await git('tag', '-am', 'too big', '69' + Math.pow(2, 53) + '.0.0')
+  await git('tag', '-am', 'too big', `69${Math.pow(2, 53)}.0.0`)
   await write('gleep', 'glorp')
   await git('add', 'gleep')
   await git('commit', '-m', 'gleep glorp')
@@ -239,7 +239,10 @@ t.test('packument', async t => {
   t.matchSnapshot(await packument(`abbrev@${tgzFile}`, options))
 
   t.matchOnly(
-    await packument('x@git+' + pathToFileURL(repo), options),
+    await packument(
+      'x@git+' + pathToFileURL(repo).toString(),
+      options,
+    ),
     {
       name: '',
       versions: {
@@ -420,7 +423,10 @@ t.test('manifest', async t => {
   t.matchSnapshot(await manifest(`abbrev@${pkgDir}`, options))
 
   t.matchOnly(
-    await manifest('x@git+' + pathToFileURL(repo), options),
+    await manifest(
+      'x@git+' + pathToFileURL(repo).toString(),
+      options,
+    ),
     {
       name: 'abbrev',
       version: '2.0.0',
@@ -472,9 +478,9 @@ t.test('resolve', async t => {
   })
 
   t.matchOnly(
-    await resolve('x@git+' + pathToFileURL(repo), options),
+    await resolve('x@git+' + pathToFileURL(repo).toString(), options),
     {
-      resolved: 'git+' + pathToFileURL(repo) + '#',
+      resolved: 'git+' + pathToFileURL(repo).toString() + '#',
       spec: Spec,
     },
   )
@@ -517,10 +523,12 @@ t.test('tarball', async t => {
 
   // just verify we got a gzipped something there
   t.strictSame(
-    (await tarball('x@git+' + pathToFileURL(repo), options)).subarray(
-      0,
-      2,
-    ),
+    (
+      await tarball(
+        'x@git+' + pathToFileURL(repo).toString(),
+        options,
+      )
+    ).subarray(0, 2),
     Buffer.from([0x1f, 0x8b]),
   )
   t.strictSame(
@@ -564,11 +572,11 @@ t.test('extract', async t => {
 
   t.match(
     await extract(
-      'x@git+' + pathToFileURL(repo),
+      'x@git+' + pathToFileURL(repo).toString(),
       dir + '/git',
       options,
     ),
-    { resolved: 'git+' + pathToFileURL(repo) + '#' },
+    { resolved: 'git+' + pathToFileURL(repo).toString() + '#' },
   )
   for (const p of ['registry', 'remote', 'file', 'git']) {
     const json = readFileSync(`${dir}/${p}/package.json`, 'utf8')
