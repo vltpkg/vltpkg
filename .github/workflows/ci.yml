@@ -30,8 +30,24 @@ jobs:
       - name: Install dependencies
         run: 'npx --yes pnpm i'
 
-      - name: Run Tests
-        run: 'npx --yes pnpm --no-bail --report-summary -r lint'
+      # These don't need to be recursive since the root is setup to lint all files
+      - name: Run Style Linting
+        run: 'npx --yes pnpm run lint:style'
+        id: style
+        continue-on-error: true
+
+      - name: Run Code Linting
+        run: 'npx --yes pnpm run lint:code'
+        id: code
+        continue-on-error: true
+
+      - name: Check Results
+        run: |
+          echo "Style: ${{ steps.style.outcome }}"
+          echo "Code: ${{ steps.code.outcome }}"
+          if [ "${{ steps.style.outcome }}" != "success" ] || [ "${{ steps.code.outcome }}" != "success" ]; then
+            exit 1
+          fi
 
   test:
     name: Test - ${{ matrix.platform.name }} - ${{ matrix.node-version }}

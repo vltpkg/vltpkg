@@ -47,9 +47,7 @@ export type Dependency = {
 
 export const isDependency = (obj: any): obj is Dependency =>
   // TODO: it would be nice to have a @vltpkg/spec.isSpec method
-  obj?.spec?.type &&
-  obj?.type &&
-  shortDependencyTypes.has(obj?.type)
+  obj?.spec?.type && obj?.type && shortDependencyTypes.has(obj?.type)
 
 export const asDependency = (obj: any): Dependency => {
   if (!isDependency(obj)) {
@@ -72,9 +70,13 @@ export const longDependencyTypes = new Set<DependencyTypeLong>([
 /**
  * A set of the short type keys used to represent dependency relationships.
  */
-export const shortDependencyTypes = new Set<DependencyTypeShort>(
-  ['prod', 'dev', 'peer', 'optional', 'peerOptional'],
-)
+export const shortDependencyTypes = new Set<DependencyTypeShort>([
+  'prod',
+  'dev',
+  'peer',
+  'optional',
+  'peerOptional',
+])
 
 /**
  * Maps between long form names usually used in `package.json` files

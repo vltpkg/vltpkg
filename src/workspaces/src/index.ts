@@ -30,7 +30,7 @@ export type LoadQuery = {
  * Canonical form of the {@link WorkspaceConfig}, used
  * internally for consistency.
  */
-export type WorkspaceConfigObject = Record<string, string[]>;
+export type WorkspaceConfigObject = Record<string, string[]>
 
 /**
  * Allowed datatype in the `vlt-workspaces.json` file.

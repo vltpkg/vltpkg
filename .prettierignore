@@ -1,4 +1,3 @@
-/scripts/fixtures
 /.tap
 /.tshy
 /.tshy-build
@@ -8,10 +7,8 @@
 /node_modules
 /pnpm-lock.yaml
 /tap-snapshots
-/test/**/fixture
 /test/**/fixtures
 
-/src/*/scripts/fixtures
 /src/*/.tap
 /src/*/.tshy
 /src/*/.tshy-build
@@ -20,6 +17,5 @@
 /src/*/example
 /src/*/node_modules
 /src/*/tap-snapshots
-/src/*/test/**/fixture
 /src/*/test/**/fixtures/**
 !/src/*/test/**/fixtures/*.ts

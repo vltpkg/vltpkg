@@ -54,7 +54,8 @@ export type PackageInfoClientOptions = {
 
   /** workspace paths to load */
   workspace?: string[]
-} & RegistryClientOptions & SpecOptions
+} & RegistryClientOptions &
+  SpecOptions
 
 export type PackageInfoClientRequestOptions = {
   /** dir to resolve `file://` specifiers against. Defaults to projectRoot. */

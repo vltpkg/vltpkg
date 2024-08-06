@@ -50,4 +50,5 @@ export type GitOptions = {
    * Just to test rev lookup without continually clearing the cache
    */
   noGitRevCache?: boolean
-} & SpawnOptions & PickManifestOptionsNoBefore
+} & SpawnOptions &
+  PickManifestOptionsNoBefore

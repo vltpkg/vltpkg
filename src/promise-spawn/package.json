@@ -39,9 +39,8 @@
     "snap": "tap",
     "format": "prettier --write . --log-level warn --ignore-path ../../.prettierignore --cache",
     "typedoc": "typedoc",
-    "lint:format": "prettier --check . --ignore-path ../../.prettierignore --cache",
-    "lint": "npm run lint:format; npm run lint:code",
-    "lint:code": "eslint ."
+    "lint:code": "eslint .",
+    "lint:style": "prettier --check . --ignore-path ../../.prettierignore --cache"
   },
   "tap": {
     "extends": "../../tap-config.yaml"

@@ -164,7 +164,9 @@ const runParent = async (args: string[]) => {
     JSON.stringify({
       ...result,
       stdout:
-        arg0.includes('ignoremissing') ? '' : JSON.parse(result.stdout),
+        arg0.includes('ignoremissing') ? '' : (
+          JSON.parse(result.stdout)
+        ),
     }),
   )
 }
