@@ -163,7 +163,7 @@ export class RegistryClient {
                 return true
               }
             } catch (er) {
-              rej(er)
+              rej(er as Error)
               return true
             }
           }
