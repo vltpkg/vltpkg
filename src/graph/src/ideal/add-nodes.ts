@@ -6,7 +6,7 @@ import {
   BuildIdealAddOptions,
 } from './types.js'
 import { PackageInfoClient } from '@vltpkg/package-info'
-import {PathScurry} from 'path-scurry'
+import { PathScurry } from 'path-scurry'
 
 export type AddNodesOptions = SpecOptions &
   BuildIdealFromGraphOptions &

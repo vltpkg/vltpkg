@@ -3,17 +3,17 @@
   "description": "An extremely limited and very fast tar extractor",
   "version": "0.0.0-0",
   "tshy": {
+    "selfLink": false,
     "dialects": [
       "esm"
     ],
     "exports": {
       "./package.json": "./package.json",
       ".": "./src/index.ts",
+      "./pool": "./src/pool.ts",
       "./unpack": "./src/unpack.ts",
-      "./unpack-request": "./src/unpack-request.ts",
-      "./pool": "./src/pool.ts"
-    },
-    "selfLink": false
+      "./unpack-request": "./src/unpack-request.ts"
+    }
   },
   "dependencies": {
     "@vltpkg/error-cause": "workspace:*",
@@ -21,25 +21,33 @@
     "tar": "^7.2.0"
   },
   "devDependencies": {
-    "@types/node": "^20.14.8",
+    "@eslint/js": "catalog:",
+    "@types/eslint__js": "catalog:",
+    "@types/node": "catalog:",
     "@types/tar": "^6.1.13",
+    "eslint": "catalog:",
     "mutate-fs": "^2.1.1",
-    "pacote": "^18.0.6",
-    "prettier": "^3.3.2",
-    "tap": "^20.0.1",
-    "tshy": "^1.16.1"
+    "pacote": "catalog:",
+    "prettier": "catalog:",
+    "tap": "catalog:",
+    "tshy": "catalog:",
+    "typescript": "catalog:",
+    "typescript-eslint": "catalog:"
   },
   "scripts": {
-    "preversion": "npm test",
-    "postversion": "npm publish",
-    "prepublishOnly": "git push origin --follow-tags",
-    "prepare": "tshy",
-    "pretest": "npm run prepare",
-    "presnap": "npm run prepare",
-    "test": "tap",
-    "snap": "tap",
     "format": "prettier --write . --log-level warn --ignore-path ../../.prettierignore --cache",
-    "typedoc": "typedoc"
+    "format:check": "prettier --check . --ignore-path ../../.prettierignore --cache",
+    "lint": "eslint . --fix",
+    "lint:check": "eslint .",
+    "prepare": "tshy",
+    "prepublishOnly": "git push origin --follow-tags",
+    "presnap": "npm run prepare",
+    "snap": "tap",
+    "pretest": "npm run prepare",
+    "test": "tap",
+    "typedoc": "typedoc",
+    "preversion": "npm test",
+    "postversion": "npm publish"
   },
   "tap": {
     "extends": "../../tap-config.yaml"
@@ -55,6 +63,13 @@
         "default": "./dist/esm/index.js"
       }
     },
+    "./pool": {
+      "import": {
+        "source": "./src/pool.ts",
+        "types": "./dist/esm/pool.d.ts",
+        "default": "./dist/esm/pool.js"
+      }
+    },
     "./unpack": {
       "import": {
         "source": "./src/unpack.ts",
@@ -67,13 +82,6 @@
         "source": "./src/unpack-request.ts",
         "types": "./dist/esm/unpack-request.d.ts",
         "default": "./dist/esm/unpack-request.js"
-      }
-    },
-    "./pool": {
-      "import": {
-        "source": "./src/pool.ts",
-        "types": "./dist/esm/pool.d.ts",
-        "default": "./dist/esm/pool.js"
       }
     }
   }

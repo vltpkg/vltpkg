@@ -126,7 +126,14 @@ export const appendNodes = async (
             type: shorten(depTypeName, name, fromNode.manifest),
           }))
           nestedAppends.push(
-            appendNodes(packageInfo, graph, node, nextDeps, scurry, options),
+            appendNodes(
+              packageInfo,
+              graph,
+              node,
+              nextDeps,
+              scurry,
+              options,
+            ),
           )
         }
       }
