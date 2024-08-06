@@ -140,6 +140,7 @@ export class ExecCommand<B extends RunnerBG, F extends RunnerFG> {
 
   fgArg(): RunnerOptions | undefined {
     const cwd =
+      // Bug in typescript-eslint?
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       this.monorepo?.values()?.next().value?.fullpath ??
       this.projectRoot

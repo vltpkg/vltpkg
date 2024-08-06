@@ -14,6 +14,7 @@ class RunCommand extends ExecCommand<typeof run, typeof runFG> {
   defaultArg0(): string | undefined {
     // called when there's no arg0, with a single workspace or root
     const cwd =
+      // Bug in typescript-eslint?
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       this.monorepo?.values()?.next().value?.fullpath ??
       this.projectRoot
