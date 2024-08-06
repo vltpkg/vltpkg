@@ -76,8 +76,8 @@ const platformCheck = (
       return false
     }
   }
-  if (wantOs && !checkList(wantOs, os)) return false
-  if (wantArch && !checkList(wantArch, cpu)) return false
+  if (!checkList(wantOs, os)) return false
+  if (!checkList(wantArch, cpu)) return false
   return true
 }
 
@@ -194,10 +194,11 @@ export function pickManifest(
   // to try a little harder.
   const defaultVer = distTags[tag]
   const defTagVersion =
+    // Version.parse can throw but that doesn't satisfy ts-eslint
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     (!!defaultVer && Version.parse(defaultVer)) || undefined
   if (
     defaultVer &&
-    !!range &&
     (range.isAny || defTagVersion?.satisfies(range)) &&
     versionOk(packument, defaultVer, nv, os, arch, time)
   ) {

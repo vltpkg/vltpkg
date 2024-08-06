@@ -127,4 +127,6 @@ await Promise.all(
   }),
 )
 await cache.promise()
+// should never happen
+// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 if (!didSomething) process.exit(1)

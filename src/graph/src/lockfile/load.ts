@@ -80,7 +80,7 @@ const loadEdges = (
   options: SpecOptions,
 ) => {
   for (const [fromId, type, spec, toId] of edgesInfo) {
-    if (!type || !shortDependencyTypes.has(type)) {
+    if (!shortDependencyTypes.has(type)) {
       throw error('Found unsupported dependency type in lockfile', {
         validOptions: [...longDependencyTypes],
       })

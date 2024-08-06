@@ -208,7 +208,7 @@ export const hydrateTuple = (
           found: tuple,
         })
       }
-      if (second === undefined) {
+      if (!second) {
         throw error('no git selector in git ID', {
           found: tuple,
         })

@@ -102,6 +102,7 @@ export const unpack = (
     let gex: HeaderData | undefined = undefined
     while (
       offset < buffer.length &&
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       (h = new Header(buffer, offset, ex, gex)) &&
       !h.nullBlock
     ) {

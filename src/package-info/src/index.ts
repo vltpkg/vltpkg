@@ -777,7 +777,7 @@ export class PackageInfoClient {
           }
           if (gitSelectorParsed) {
             r.resolved += Object.entries(gitSelectorParsed)
-              .filter(([_, v]) => v !== undefined)
+              .filter(([_, v]) => v)
               .map(([k, v]) => `::${k}:${v}`)
               .join('')
           }

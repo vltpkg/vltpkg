@@ -67,19 +67,19 @@ const { version } = loadPackageJson(
 )
 const navUA = globalThis.navigator.userAgent
 const bun =
-  navUA ??
+  navUA ||
   //@ts-ignore
   ((await import('bun').catch(() => {}))?.default?.version as
     | string
     | undefined)
 const deno =
   //@ts-ignore
-  navUA ?? (globalThis.Deno?.deno?.version as string | undefined)
+  navUA || (globalThis.Deno?.deno?.version as string | undefined)
 const node =
   //@ts-ignore
-  navUA ?? (globalThis.process.version as string | undefined)
+  navUA || (globalThis.process.version as string | undefined)
 const nua =
-  navUA ??
+  navUA ||
   (bun ? `Bun/${bun}`
   : deno ? `Deno/${deno}`
   : node ? `Node.js/${node}`

@@ -3,7 +3,7 @@ import t from 'tap'
 import { gzipSync } from 'zlib'
 import { RegistryClient } from '../src/index.js'
 
-const PORT = (t.childId ?? 0) + 8080
+const PORT = (t.childId || 0) + 8080
 
 // need to keep the fixture, because the cache-unzip operation will
 // cause the rmdir to fail with ENOTEMPTY sporadically.
@@ -110,12 +110,7 @@ t.test('register unzipping for gzip responses', async t => {
   t.strictSame(registered, [
     [
       t.testdirName,
-      JSON.stringify([
-        registryURL,
-        'GET',
-        '/some/tarball',
-        null,
-      ]),
+      JSON.stringify([registryURL, 'GET', '/some/tarball', null]),
     ],
   ])
 })

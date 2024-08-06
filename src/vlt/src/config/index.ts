@@ -244,7 +244,10 @@ export class Config {
       'fallback-command'
     ] as Commands[keyof Commands]
     const argv0 = p.positionals[0]
-    const cmd = this.commands[argv0 as keyof Commands]
+    const cmd =
+      typeof argv0 === 'string' ?
+        this.commands[argv0 as keyof Commands]
+      : null
     if (cmd) {
       this.command = cmd
     }
@@ -278,9 +281,7 @@ export class Config {
    *
    * If the config value is not set at all, an empty object is returned.
    */
-  getRecord<K extends OptListKeys<ConfigData>>(
-    k: K,
-  ): Record<string, string> {
+  getRecord(k: OptListKeys<ConfigData>): Record<string, string> {
     const pairs = this.get(k) as
       | undefined
       | (string[] & { [kRecord]?: Record<string, string> })
@@ -358,7 +359,8 @@ export class Config {
         const { command, ...values } = recordsToPairs(result)
         if (command) {
           for (const [c, opts] of Object.entries(command)) {
-            const cmd = commands[c as keyof Commands]
+            const cmd =
+              c in commands ? commands[c as keyof Commands] : null
             if (cmd) {
               this.commandValues[cmd] = merge(
                 this.commandValues[cmd] ?? {},
@@ -445,10 +447,8 @@ export class Config {
           }
         }
       } else {
-        if (v !== undefined) {
-          didSomething = true
-          delete data[k]
-        }
+        didSomething = true
+        delete data[k]
       }
     }
     const d = jsonStringify(data)
@@ -538,9 +538,11 @@ export class Config {
       }
       if (
         !foundLikelyRoot &&
-        (await Promise.all(likelies))
-          .map(s => exists(resolve(dir, s)))
-          .find(x => x)
+        (
+          await Promise.all(
+            likelies.map(s => exists(resolve(dir, s))),
+          )
+        ).find(x => x)
       ) {
         foundLikelyRoot = true
         this.projectRoot = dir

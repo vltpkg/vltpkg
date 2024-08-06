@@ -18,7 +18,7 @@ function parseNode(seenNodes: Set<Node>, graph: Graph, node: Node) {
             ...(node.integrity ?
               { integrity: node.integrity }
             : null),
-            ...(node.edgesOut && node.edgesOut.size ?
+            ...(node.edgesOut.size ?
               {
                 edgesOut: [...node.edgesOut.values()].map(i => {
                   seenNodes.add(node)

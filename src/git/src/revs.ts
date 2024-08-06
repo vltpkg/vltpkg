@@ -35,7 +35,7 @@ export const revs = async (repo: string, opts: GitOptions = {}) => {
     const result = await fetchMethod(repo, undefined, {
       context: opts,
     })
-    if (result) revsCache.set(repo, result)
+    revsCache.set(repo, result)
     return result
   }
   return await revsCache.fetch(repo, { context: opts })

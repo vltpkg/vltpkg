@@ -220,7 +220,7 @@ export type ChildProcessByOptions<T extends PromiseSpawnOptions> =
  */
 export class SpawnPromise<
   O extends PromiseSpawnOptions,
-  T extends {} = {},
+  T extends object = object,
 > extends Promise<SpawnResultByOptions<O> & T> {
   [Symbol.toStringTag] = 'SpawnPromise'
 
@@ -299,7 +299,7 @@ export class SpawnPromise<
 export function promiseSpawn<
   O extends PromiseSpawnOptions = PromiseSpawnOptionsStderrString &
     PromiseSpawnOptionsStdoutString,
-  E extends {} = {},
+  E extends object = object,
 >(command: string, args: string[], opts = {} as O, extra = {} as E) {
   return new SpawnPromise<O, E>(command, args, opts, extra)
 }

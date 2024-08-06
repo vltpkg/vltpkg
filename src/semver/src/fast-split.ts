@@ -25,7 +25,7 @@ export type NullReplace<T, R = string> =
   T extends NonNullable<T> ? T : NonNullable<T> | R
 
 export type VoidReplace<T, R = string> =
-  void extends T ? NullReplace<Exclude<T, void>, R> | R
+  undefined extends T ? NullReplace<Exclude<T, void>, R> | R
   : NullReplace<T, R>
 
 // overloaded so we can infer the return type.

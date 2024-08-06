@@ -199,9 +199,11 @@ export class Comparator {
       followingOperator = false
     }
 
+    // defense in depth for TS, already guaranteed
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (hyphen) {
       const [min, _, max] = comps
-      /* c8 ignore start - defense in depth for TS, already gauranteed */
+      /* c8 ignore start - defense in depth for TS, already guaranteed */
       if (!min || !max) {
         throw invalidComp(comp, 'hyphen must be between two versions')
       }
