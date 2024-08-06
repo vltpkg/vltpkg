@@ -268,11 +268,11 @@ export class PackageInfoClient {
             const src = pathResolve(tmp, path)
             await rename(src, target)
             // intentionally not awaited
-            rm(tmp, { recursive: true, force: true })
+            void rm(tmp, { recursive: true, force: true })
           } else {
             await clone(gitRemote, gitCommittish, target, { spec })
             // intentionally not awaited
-            rm(target + '/.git', { recursive: true })
+            void rm(target + '/.git', { recursive: true })
           }
           return r
         }
@@ -813,7 +813,7 @@ export class PackageInfoClient {
       return await fn(dir)
     } finally {
       // intentionally do not await
-      rm(dir, { recursive: true, force: true })
+      void rm(dir, { recursive: true, force: true })
     }
   }
 

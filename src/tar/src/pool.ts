@@ -71,7 +71,7 @@ export class Pool {
     const next = this.queue.shift()
     if (!next) {
       this.workers.delete(w)
-      w.terminate()
+      void w.terminate()
     } else this.#request(w, next)
   }
 
@@ -118,7 +118,7 @@ export class Pool {
     const ur = new UnpackRequest(tarData, target)
     this.pending.set(ur.id, ur)
     if (this.workers.size < this.jobs) {
-      this.#createWorker(ur)
+      void this.#createWorker(ur)
     } else {
       this.queue.push(ur)
     }

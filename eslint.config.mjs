@@ -94,7 +94,6 @@ export default tseslint.config(
       '@typescript-eslint/no-unsafe-return': 'off',
       // TODO: audit each of these and either fix, inline disable, or comment here
       '@typescript-eslint/no-base-to-string': 'off',
-      '@typescript-eslint/no-floating-promises': 'off',
     },
   },
   {
