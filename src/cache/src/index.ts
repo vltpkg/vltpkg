@@ -255,7 +255,7 @@ export class Cache extends LRUCache<
   async promise(): Promise<void> {
     await Promise.all(this.pending)
     /* c8 ignore next - race condition */
-    if (this.#pending.size) await this.promise()
+    if (this.#pending.size) void this.promise()
   }
 
   /**

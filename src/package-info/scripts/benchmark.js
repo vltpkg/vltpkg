@@ -178,9 +178,7 @@ for (const name of pkgNames.slice(0, extractCount)) {
   pacoteExtractW.push(
     pacote
       .extract(name, extractDir + '/' + name, { cache: cacache })
-      .catch(e => {
-        console.error(name, e)
-      }),
+      .catch(e => console.error(name, e)),
   )
 }
 await Promise.all(pacoteExtractW)
