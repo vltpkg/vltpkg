@@ -1,11 +1,8 @@
 import { readFileSync, readdirSync, writeFileSync } from 'fs'
-import { dirname, resolve } from 'path'
-import { fileURLToPath } from 'url'
+import { resolve } from 'path'
 
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = dirname(__filename)
-const wsdir = resolve(__dirname, '../src')
-const root = resolve(__dirname, '..')
+const wsdir = resolve(import.meta.dirname, '../src')
+const root = resolve(import.meta.dirname, '..')
 const rootPJ = JSON.parse(
   readFileSync(resolve(root, 'package.json'), 'utf8'),
 )
