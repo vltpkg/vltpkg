@@ -45,7 +45,10 @@ export class RollbackRemove {
     const promises: Promise<unknown>[] = []
     for (const [original, moved] of this.#paths) {
       promises.push(
-        rimraf(original).then(() => rename(moved, original)),
+        rimraf(original)
+          /* c8 ignore next */
+          .catch(() => {})
+          .then(() => rename(moved, original)),
       )
     }
     await Promise.all(promises)
