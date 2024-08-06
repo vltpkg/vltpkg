@@ -68,6 +68,7 @@ export const build = async (
 
   return buildIdealFromStartingGraph({
     ...options,
+    scurry,
     add,
     graph,
     packageInfo,

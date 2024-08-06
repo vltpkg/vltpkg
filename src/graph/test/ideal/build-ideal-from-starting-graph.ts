@@ -1,5 +1,6 @@
 import { PackageInfoClient } from '@vltpkg/package-info'
 import { Spec, SpecOptions } from '@vltpkg/spec'
+import { PathScurry } from 'path-scurry'
 import t from 'tap'
 import { load as loadActual } from '../../src/actual/load.js'
 import { buildIdealFromStartingGraph } from '../../src/ideal/build-ideal-from-starting-graph.js'
@@ -94,6 +95,7 @@ t.test('build from a virtual graph', async t => {
     ...configData,
     projectRoot,
     packageInfo,
+    scurry: new PathScurry(projectRoot),
     graph: virtual,
     add: new Map([
       [
@@ -318,6 +320,7 @@ t.test('build from an actual graph', async t => {
     ...configData,
     packageInfo,
     graph: actual,
+    scurry: new PathScurry(projectRoot),
     add: new Map([
       [
         'file;.',

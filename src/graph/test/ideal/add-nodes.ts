@@ -1,10 +1,11 @@
-import t from 'tap'
-import { Spec, SpecOptions } from '@vltpkg/spec'
+import { asDepID } from '@vltpkg/dep-id'
 import { PackageInfoClient } from '@vltpkg/package-info'
+import { Spec, SpecOptions } from '@vltpkg/spec'
+import { PathScurry } from 'path-scurry'
+import t from 'tap'
+import { Dependency } from '../../src/dependencies.js'
 import { Graph } from '../../src/graph.js'
 import { addNodes } from '../../src/ideal/add-nodes.js'
-import { asDepID } from '@vltpkg/dep-id'
-import { Dependency } from '../../src/dependencies.js'
 import { humanReadableOutput } from '../../src/index.js'
 
 const configData = {
@@ -68,6 +69,7 @@ t.test('addNodes', async t => {
     add: new Map([[asDepID('file;.'), addEntry('foo')]]),
     graph,
     packageInfo,
+    scurry: new PathScurry(t.testdirName),
   })
   t.matchSnapshot(
     humanReadableOutput(graph),
@@ -79,6 +81,7 @@ t.test('addNodes', async t => {
       add: new Map([[asDepID('file;unknown'), addEntry('foo')]]),
       graph,
       packageInfo,
+      scurry: new PathScurry(t.testdirName),
     }),
     /Could not find importer/,
     'should throw an error if finding an unknown importer id',
@@ -87,6 +90,7 @@ t.test('addNodes', async t => {
   await addNodes({
     add: new Map([[asDepID('file;.'), addEntry('foo')]]),
     graph,
+    scurry: new PathScurry(t.testdirName),
     packageInfo,
   })
   t.matchSnapshot(
@@ -108,6 +112,7 @@ t.test('addNodes', async t => {
   // now it should install the package bar to the main importer
   await addNodes({
     add: new Map([[asDepID('file;.'), addEntry('bar')]]),
+    scurry: new PathScurry(t.testdirName),
     graph,
     packageInfo,
   })
