@@ -9,7 +9,8 @@
     ],
     "exports": {
       "./package.json": "./package.json",
-      ".": "./src/index.ts"
+      ".": "./src/index.ts",
+      "./dot-prop": "./src/dot-prop.ts"
     }
   },
   "dependencies": {
@@ -55,6 +56,13 @@
       "import": {
         "types": "./dist/esm/index.d.ts",
         "default": "./dist/esm/index.js"
+      }
+    },
+    "./dot-prop": {
+      "import": {
+        "source": "./src/dot-prop.ts",
+        "types": "./dist/esm/dot-prop.d.ts",
+        "default": "./dist/esm/dot-prop.js"
       }
     }
   },

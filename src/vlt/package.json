@@ -39,6 +39,7 @@
   },
   "devDependencies": {
     "@eslint/js": "catalog:",
+    "@tapjs/fixture": "^3.0.1",
     "@types/eslint__js": "catalog:",
     "@types/node": "catalog:",
     "eslint": "catalog:",
