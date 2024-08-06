@@ -91,4 +91,4 @@ jobs:
         run: 'npx --yes pnpm i'
 
       - name: Run Tests
-        run: 'npx --yes pnpm --no-bail --report-summary -r test'
+        run: 'npx --yes pnpm --no-bail --aggregate-output -r test'
