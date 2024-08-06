@@ -4,6 +4,39 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+catalogs:
+  default:
+    '@eslint/js':
+      specifier: ^9.8.0
+      version: 9.8.0
+    '@types/eslint__js':
+      specifier: ^8.42.3
+      version: 8.42.3
+    '@types/node':
+      specifier: ^20.14.8
+      version: 20.14.8
+    eslint:
+      specifier: ^9.8.0
+      version: 9.8.0
+    prettier:
+      specifier: ^3.3.2
+      version: 3.3.2
+    tap:
+      specifier: ^20.0.1
+      version: 20.0.1
+    tshy:
+      specifier: ^1.16.1
+      version: 1.16.1
+    typedoc:
+      specifier: ^0.26.2
+      version: 0.26.2
+    typescript:
+      specifier: ^5.5.4
+      version: 5.5.4
+    typescript-eslint:
+      specifier: ^8.0.1
+      version: 8.0.1
+
 importers:
 
   .:
@@ -13,13 +46,13 @@ importers:
         version: link:src/vlt
     devDependencies:
       '@eslint/js':
-        specifier: ^9.8.0
+        specifier: 'catalog:'
         version: 9.8.0
       '@types/eslint__js':
-        specifier: ^8.42.3
+        specifier: 'catalog:'
         version: 8.42.3
       '@types/node':
-        specifier: ^20.14.8
+        specifier: 'catalog:'
         version: 20.14.8
       '@types/retry':
         specifier: ^0.12.5
@@ -34,7 +67,7 @@ importers:
         specifier: ^5.3.0
         version: 5.3.0
       eslint:
-        specifier: ^9.8.0
+        specifier: 'catalog:'
         version: 9.8.0
       globals:
         specifier: ^15.9.0
@@ -52,7 +85,7 @@ importers:
         specifier: ^18.0.6
         version: 18.0.6
       prettier:
-        specifier: ^3.3.2
+        specifier: 'catalog:'
         version: 3.3.2
       semver:
         specifier: ^7.6.2
@@ -61,19 +94,19 @@ importers:
         specifier: ^1.8.2
         version: 1.8.2
       tap:
-        specifier: ^20.0.1
+        specifier: 'catalog:'
         version: 20.0.1(@types/node@20.14.8)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4)
       tshy:
-        specifier: ^1.16.1
+        specifier: 'catalog:'
         version: 1.16.1
       typedoc:
-        specifier: ^0.26.2
+        specifier: 'catalog:'
         version: 0.26.2(typescript@5.5.4)
       typescript:
-        specifier: ^5.5.4
+        specifier: 'catalog:'
         version: 5.5.4
       typescript-eslint:
-        specifier: ^8.0.1
+        specifier: 'catalog:'
         version: 8.0.1(eslint@9.8.0)(typescript@5.5.4)
 
   src/cache:
@@ -95,34 +128,34 @@ importers:
         version: 5.0.7
     devDependencies:
       '@eslint/js':
-        specifier: ^9.8.0
+        specifier: 'catalog:'
         version: 9.8.0
       '@types/eslint__js':
-        specifier: ^8.42.3
+        specifier: 'catalog:'
         version: 8.42.3
       '@types/node':
-        specifier: ^20.14.8
+        specifier: 'catalog:'
         version: 20.14.8
       eslint:
-        specifier: ^9.8.0
+        specifier: 'catalog:'
         version: 9.8.0
       prettier:
-        specifier: ^3.3.2
+        specifier: 'catalog:'
         version: 3.3.2
       tap:
-        specifier: ^20.0.1
+        specifier: 'catalog:'
         version: 20.0.1(@types/node@20.14.8)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4)
       tshy:
-        specifier: ^1.16.1
+        specifier: 'catalog:'
         version: 1.16.1
       typedoc:
-        specifier: ^0.26.2
+        specifier: 'catalog:'
         version: 0.26.2(typescript@5.5.4)
       typescript:
-        specifier: ^5.5.4
+        specifier: 'catalog:'
         version: 5.5.4
       typescript-eslint:
-        specifier: ^8.0.1
+        specifier: 'catalog:'
         version: 8.0.1(eslint@9.8.0)(typescript@5.5.4)
 
   src/cache-unzip:
@@ -135,34 +168,34 @@ importers:
         version: link:../error-cause
     devDependencies:
       '@eslint/js':
-        specifier: ^9.8.0
+        specifier: 'catalog:'
         version: 9.8.0
       '@types/eslint__js':
-        specifier: ^8.42.3
+        specifier: 'catalog:'
         version: 8.42.3
       '@types/node':
-        specifier: ^20.14.8
+        specifier: 'catalog:'
         version: 20.14.8
       eslint:
-        specifier: ^9.8.0
+        specifier: 'catalog:'
         version: 9.8.0
       prettier:
-        specifier: ^3.3.2
+        specifier: 'catalog:'
         version: 3.3.2
       tap:
-        specifier: ^20.0.1
+        specifier: 'catalog:'
         version: 20.0.1(@types/node@20.14.8)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4)
       tshy:
-        specifier: ^1.16.1
+        specifier: 'catalog:'
         version: 1.16.1
       typedoc:
-        specifier: ^0.26.2
+        specifier: 'catalog:'
         version: 0.26.2(typescript@5.5.4)
       typescript:
-        specifier: ^5.5.4
+        specifier: 'catalog:'
         version: 5.5.4
       typescript-eslint:
-        specifier: ^8.0.1
+        specifier: 'catalog:'
         version: 8.0.1(eslint@9.8.0)(typescript@5.5.4)
 
   src/dep-id:
@@ -178,67 +211,67 @@ importers:
         version: link:../types
     devDependencies:
       '@eslint/js':
-        specifier: ^9.8.0
+        specifier: 'catalog:'
         version: 9.8.0
       '@types/eslint__js':
-        specifier: ^8.42.3
+        specifier: 'catalog:'
         version: 8.42.3
       '@types/node':
-        specifier: ^20.14.8
+        specifier: 'catalog:'
         version: 20.14.8
       eslint:
-        specifier: ^9.8.0
+        specifier: 'catalog:'
         version: 9.8.0
       prettier:
-        specifier: ^3.3.2
+        specifier: 'catalog:'
         version: 3.3.2
       tap:
-        specifier: ^20.0.1
+        specifier: 'catalog:'
         version: 20.0.1(@types/node@20.14.8)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4)
       tshy:
-        specifier: ^1.16.1
+        specifier: 'catalog:'
         version: 1.16.1
       typedoc:
-        specifier: ^0.26.2
+        specifier: 'catalog:'
         version: 0.26.2(typescript@5.5.4)
       typescript:
-        specifier: ^5.5.4
+        specifier: 'catalog:'
         version: 5.5.4
       typescript-eslint:
-        specifier: ^8.0.1
+        specifier: 'catalog:'
         version: 8.0.1(eslint@9.8.0)(typescript@5.5.4)
 
   src/error-cause:
     devDependencies:
       '@eslint/js':
-        specifier: ^9.8.0
+        specifier: 'catalog:'
         version: 9.8.0
       '@types/eslint__js':
-        specifier: ^8.42.3
+        specifier: 'catalog:'
         version: 8.42.3
       '@types/node':
-        specifier: ^20.14.8
+        specifier: 'catalog:'
         version: 20.14.8
       eslint:
-        specifier: ^9.8.0
+        specifier: 'catalog:'
         version: 9.8.0
       prettier:
-        specifier: ^3.3.2
+        specifier: 'catalog:'
         version: 3.3.2
       tap:
-        specifier: ^20.0.1
+        specifier: 'catalog:'
         version: 20.0.1(@types/node@20.14.8)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4)
       tshy:
-        specifier: ^1.16.1
+        specifier: 'catalog:'
         version: 1.16.1
       typedoc:
-        specifier: ^0.26.2
+        specifier: 'catalog:'
         version: 0.26.2(typescript@5.5.4)
       typescript:
-        specifier: ^5.5.4
+        specifier: 'catalog:'
         version: 5.5.4
       typescript-eslint:
-        specifier: ^8.0.1
+        specifier: 'catalog:'
         version: 8.0.1(eslint@9.8.0)(typescript@5.5.4)
 
   src/git:
@@ -275,13 +308,13 @@ importers:
         version: 2.0.1
     devDependencies:
       '@eslint/js':
-        specifier: ^9.8.0
+        specifier: 'catalog:'
         version: 9.8.0
       '@types/eslint__js':
-        specifier: ^8.42.3
+        specifier: 'catalog:'
         version: 8.42.3
       '@types/node':
-        specifier: ^20.14.8
+        specifier: 'catalog:'
         version: 20.14.8
       '@types/retry':
         specifier: ^0.12.5
@@ -290,58 +323,58 @@ importers:
         specifier: workspace:*
         version: link:../types
       eslint:
-        specifier: ^9.8.0
+        specifier: 'catalog:'
         version: 9.8.0
       prettier:
-        specifier: ^3.3.2
+        specifier: 'catalog:'
         version: 3.3.2
       tap:
-        specifier: ^20.0.1
+        specifier: 'catalog:'
         version: 20.0.1(@types/node@20.14.8)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4)
       tshy:
-        specifier: ^1.16.1
+        specifier: 'catalog:'
         version: 1.16.1
       typedoc:
-        specifier: ^0.26.2
+        specifier: 'catalog:'
         version: 0.26.2(typescript@5.5.4)
       typescript:
-        specifier: ^5.5.4
+        specifier: 'catalog:'
         version: 5.5.4
       typescript-eslint:
-        specifier: ^8.0.1
+        specifier: 'catalog:'
         version: 8.0.1(eslint@9.8.0)(typescript@5.5.4)
 
   src/git-scp-url:
     devDependencies:
       '@eslint/js':
-        specifier: ^9.8.0
+        specifier: 'catalog:'
         version: 9.8.0
       '@types/eslint__js':
-        specifier: ^8.42.3
+        specifier: 'catalog:'
         version: 8.42.3
       '@types/node':
-        specifier: ^20.14.8
+        specifier: 'catalog:'
         version: 20.14.8
       eslint:
-        specifier: ^9.8.0
+        specifier: 'catalog:'
         version: 9.8.0
       prettier:
-        specifier: ^3.3.2
+        specifier: 'catalog:'
         version: 3.3.2
       tap:
-        specifier: ^20.0.1
+        specifier: 'catalog:'
         version: 20.0.1(@types/node@20.14.8)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4)
       tshy:
-        specifier: ^1.16.1
+        specifier: 'catalog:'
         version: 1.16.1
       typedoc:
-        specifier: ^0.26.2
+        specifier: 'catalog:'
         version: 0.26.2(typescript@5.5.4)
       typescript:
-        specifier: ^5.5.4
+        specifier: 'catalog:'
         version: 5.5.4
       typescript-eslint:
-        specifier: ^8.0.1
+        specifier: 'catalog:'
         version: 8.0.1(eslint@9.8.0)(typescript@5.5.4)
 
   src/graph:
@@ -381,34 +414,34 @@ importers:
         version: 1.11.1
     devDependencies:
       '@eslint/js':
-        specifier: ^9.8.0
+        specifier: 'catalog:'
         version: 9.8.0
       '@types/eslint__js':
-        specifier: ^8.42.3
+        specifier: 'catalog:'
         version: 8.42.3
       '@types/node':
-        specifier: ^20.14.8
+        specifier: 'catalog:'
         version: 20.14.8
       eslint:
-        specifier: ^9.8.0
+        specifier: 'catalog:'
         version: 9.8.0
       prettier:
-        specifier: ^3.3.2
+        specifier: 'catalog:'
         version: 3.3.2
       tap:
-        specifier: ^20.0.1
+        specifier: 'catalog:'
         version: 20.0.1(@types/node@20.14.8)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4)
       tshy:
-        specifier: ^1.16.1
+        specifier: 'catalog:'
         version: 1.16.1
       typedoc:
-        specifier: ^0.26.2
+        specifier: 'catalog:'
         version: 0.26.2(typescript@5.5.4)
       typescript:
-        specifier: ^5.5.4
+        specifier: 'catalog:'
         version: 5.5.4
       typescript-eslint:
-        specifier: ^8.0.1
+        specifier: 'catalog:'
         version: 8.0.1(eslint@9.8.0)(typescript@5.5.4)
 
   src/package-info:
@@ -448,37 +481,37 @@ importers:
         version: 7.2.0
     devDependencies:
       '@eslint/js':
-        specifier: ^9.8.0
+        specifier: 'catalog:'
         version: 9.8.0
       '@types/eslint__js':
-        specifier: ^8.42.3
+        specifier: 'catalog:'
         version: 8.42.3
       '@types/node':
-        specifier: ^20.14.8
+        specifier: 'catalog:'
         version: 20.14.8
       eslint:
-        specifier: ^9.8.0
+        specifier: 'catalog:'
         version: 9.8.0
       pacote:
         specifier: ^18.0.6
         version: 18.0.6
       prettier:
-        specifier: ^3.3.2
+        specifier: 'catalog:'
         version: 3.3.2
       tap:
-        specifier: ^20.0.1
+        specifier: 'catalog:'
         version: 20.0.1(@types/node@20.14.8)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4)
       tshy:
-        specifier: ^1.16.1
+        specifier: 'catalog:'
         version: 1.16.1
       typedoc:
-        specifier: ^0.26.2
+        specifier: 'catalog:'
         version: 0.26.2(typescript@5.5.4)
       typescript:
-        specifier: ^5.5.4
+        specifier: 'catalog:'
         version: 5.5.4
       typescript-eslint:
-        specifier: ^8.0.1
+        specifier: 'catalog:'
         version: 8.0.1(eslint@9.8.0)(typescript@5.5.4)
 
   src/package-json:
@@ -494,34 +527,34 @@ importers:
         version: 4.0.1
     devDependencies:
       '@eslint/js':
-        specifier: ^9.8.0
+        specifier: 'catalog:'
         version: 9.8.0
       '@types/eslint__js':
-        specifier: ^8.42.3
+        specifier: 'catalog:'
         version: 8.42.3
       '@types/node':
-        specifier: ^20.14.8
+        specifier: 'catalog:'
         version: 20.14.8
       eslint:
-        specifier: ^9.8.0
+        specifier: 'catalog:'
         version: 9.8.0
       prettier:
-        specifier: ^3.3.2
+        specifier: 'catalog:'
         version: 3.3.2
       tap:
-        specifier: ^20.0.1
+        specifier: 'catalog:'
         version: 20.0.1(@types/node@20.14.8)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4)
       tshy:
-        specifier: ^1.16.1
+        specifier: 'catalog:'
         version: 1.16.1
       typedoc:
-        specifier: ^0.26.2
+        specifier: 'catalog:'
         version: 0.26.2(typescript@5.5.4)
       typescript:
-        specifier: ^5.5.4
+        specifier: 'catalog:'
         version: 5.5.4
       typescript-eslint:
-        specifier: ^8.0.1
+        specifier: 'catalog:'
         version: 8.0.1(eslint@9.8.0)(typescript@5.5.4)
 
   src/pick-manifest:
@@ -540,16 +573,16 @@ importers:
         version: link:../types
     devDependencies:
       '@eslint/js':
-        specifier: ^9.8.0
+        specifier: 'catalog:'
         version: 9.8.0
       '@types/eslint__js':
-        specifier: ^8.42.3
+        specifier: 'catalog:'
         version: 8.42.3
       '@types/node':
-        specifier: ^20.14.8
+        specifier: 'catalog:'
         version: 20.14.8
       eslint:
-        specifier: ^9.8.0
+        specifier: 'catalog:'
         version: 9.8.0
       npm-pick-manifest:
         specifier: ^9.0.1
@@ -558,22 +591,22 @@ importers:
         specifier: ^18.0.6
         version: 18.0.6
       prettier:
-        specifier: ^3.3.2
+        specifier: 'catalog:'
         version: 3.3.2
       tap:
-        specifier: ^20.0.1
+        specifier: 'catalog:'
         version: 20.0.1(@types/node@20.14.8)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4)
       tshy:
-        specifier: ^1.16.1
+        specifier: 'catalog:'
         version: 1.16.1
       typedoc:
-        specifier: ^0.26.2
+        specifier: 'catalog:'
         version: 0.26.2(typescript@5.5.4)
       typescript:
-        specifier: ^5.5.4
+        specifier: 'catalog:'
         version: 5.5.4
       typescript-eslint:
-        specifier: ^8.0.1
+        specifier: 'catalog:'
         version: 8.0.1(eslint@9.8.0)(typescript@5.5.4)
 
   src/promise-spawn:
@@ -583,37 +616,37 @@ importers:
         version: link:../error-cause
     devDependencies:
       '@eslint/js':
-        specifier: ^9.8.0
+        specifier: 'catalog:'
         version: 9.8.0
       '@types/eslint__js':
-        specifier: ^8.42.3
+        specifier: 'catalog:'
         version: 8.42.3
       '@types/node':
-        specifier: ^20.14.8
+        specifier: 'catalog:'
         version: 20.14.8
       eslint:
-        specifier: ^9.8.0
+        specifier: 'catalog:'
         version: 9.8.0
       prettier:
-        specifier: ^3.3.2
+        specifier: 'catalog:'
         version: 3.3.2
       spawk:
         specifier: ^1.8.2
         version: 1.8.2
       tap:
-        specifier: ^20.0.1
+        specifier: 'catalog:'
         version: 20.0.1(@types/node@20.14.8)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4)
       tshy:
-        specifier: ^1.16.1
+        specifier: 'catalog:'
         version: 1.16.1
       typedoc:
-        specifier: ^0.26.2
+        specifier: 'catalog:'
         version: 0.26.2(typescript@5.5.4)
       typescript:
-        specifier: ^5.5.4
+        specifier: 'catalog:'
         version: 5.5.4
       typescript-eslint:
-        specifier: ^8.0.1
+        specifier: 'catalog:'
         version: 8.0.1(eslint@9.8.0)(typescript@5.5.4)
 
   src/registry-client:
@@ -644,34 +677,34 @@ importers:
         version: 6.18.1
     devDependencies:
       '@eslint/js':
-        specifier: ^9.8.0
+        specifier: 'catalog:'
         version: 9.8.0
       '@types/eslint__js':
-        specifier: ^8.42.3
+        specifier: 'catalog:'
         version: 8.42.3
       '@types/node':
-        specifier: ^20.14.8
+        specifier: 'catalog:'
         version: 20.14.8
       eslint:
-        specifier: ^9.8.0
+        specifier: 'catalog:'
         version: 9.8.0
       prettier:
-        specifier: ^3.3.2
+        specifier: 'catalog:'
         version: 3.3.2
       tap:
-        specifier: ^20.0.1
+        specifier: 'catalog:'
         version: 20.0.1(@types/node@20.14.8)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4)
       tshy:
-        specifier: ^1.16.1
+        specifier: 'catalog:'
         version: 1.16.1
       typedoc:
-        specifier: ^0.26.2
+        specifier: 'catalog:'
         version: 0.26.2(typescript@5.5.4)
       typescript:
-        specifier: ^5.5.4
+        specifier: 'catalog:'
         version: 5.5.4
       typescript-eslint:
-        specifier: ^8.0.1
+        specifier: 'catalog:'
         version: 8.0.1(eslint@9.8.0)(typescript@5.5.4)
 
   src/run:
@@ -693,34 +726,34 @@ importers:
         version: 3.0.1
     devDependencies:
       '@eslint/js':
-        specifier: ^9.8.0
+        specifier: 'catalog:'
         version: 9.8.0
       '@types/eslint__js':
-        specifier: ^8.42.3
+        specifier: 'catalog:'
         version: 8.42.3
       '@types/node':
-        specifier: ^20.14.8
+        specifier: 'catalog:'
         version: 20.14.8
       eslint:
-        specifier: ^9.8.0
+        specifier: 'catalog:'
         version: 9.8.0
       prettier:
-        specifier: ^3.3.2
+        specifier: 'catalog:'
         version: 3.3.2
       tap:
-        specifier: ^20.0.1
+        specifier: 'catalog:'
         version: 20.0.1(@types/node@20.14.8)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4)
       tshy:
-        specifier: ^1.16.1
+        specifier: 'catalog:'
         version: 1.16.1
       typedoc:
-        specifier: ^0.26.2
+        specifier: 'catalog:'
         version: 0.26.2(typescript@5.5.4)
       typescript:
-        specifier: ^5.5.4
+        specifier: 'catalog:'
         version: 5.5.4
       typescript-eslint:
-        specifier: ^8.0.1
+        specifier: 'catalog:'
         version: 8.0.1(eslint@9.8.0)(typescript@5.5.4)
 
   src/satisfies:
@@ -742,34 +775,34 @@ importers:
         version: link:../workspaces
     devDependencies:
       '@eslint/js':
-        specifier: ^9.8.0
+        specifier: 'catalog:'
         version: 9.8.0
       '@types/eslint__js':
-        specifier: ^8.42.3
+        specifier: 'catalog:'
         version: 8.42.3
       '@types/node':
-        specifier: ^20.14.8
+        specifier: 'catalog:'
         version: 20.14.8
       eslint:
-        specifier: ^9.8.0
+        specifier: 'catalog:'
         version: 9.8.0
       prettier:
-        specifier: ^3.3.2
+        specifier: 'catalog:'
         version: 3.3.2
       tap:
-        specifier: ^20.0.1
+        specifier: 'catalog:'
         version: 20.0.1(@types/node@20.14.8)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4)
       tshy:
-        specifier: ^1.16.1
+        specifier: 'catalog:'
         version: 1.16.1
       typedoc:
-        specifier: ^0.26.2
+        specifier: 'catalog:'
         version: 0.26.2(typescript@5.5.4)
       typescript:
-        specifier: ^5.5.4
+        specifier: 'catalog:'
         version: 5.5.4
       typescript-eslint:
-        specifier: ^8.0.1
+        specifier: 'catalog:'
         version: 8.0.1(eslint@9.8.0)(typescript@5.5.4)
 
   src/semver:
@@ -779,40 +812,40 @@ importers:
         version: link:../error-cause
     devDependencies:
       '@eslint/js':
-        specifier: ^9.8.0
+        specifier: 'catalog:'
         version: 9.8.0
       '@types/eslint__js':
-        specifier: ^8.42.3
+        specifier: 'catalog:'
         version: 8.42.3
       '@types/node':
-        specifier: ^20.14.8
+        specifier: 'catalog:'
         version: 20.14.8
       '@types/semver':
         specifier: ^7.5.8
         version: 7.5.8
       eslint:
-        specifier: ^9.8.0
+        specifier: 'catalog:'
         version: 9.8.0
       prettier:
-        specifier: ^3.3.2
+        specifier: 'catalog:'
         version: 3.3.2
       semver:
         specifier: ^7.6.2
         version: 7.6.2
       tap:
-        specifier: ^20.0.1
+        specifier: 'catalog:'
         version: 20.0.1(@types/node@20.14.8)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4)
       tshy:
-        specifier: ^1.16.1
+        specifier: 'catalog:'
         version: 1.16.1
       typedoc:
-        specifier: ^0.26.2
+        specifier: 'catalog:'
         version: 0.26.2(typescript@5.5.4)
       typescript:
-        specifier: ^5.5.4
+        specifier: 'catalog:'
         version: 5.5.4
       typescript-eslint:
-        specifier: ^8.0.1
+        specifier: 'catalog:'
         version: 8.0.1(eslint@9.8.0)(typescript@5.5.4)
 
   src/spec:
@@ -825,37 +858,37 @@ importers:
         version: link:../semver
     devDependencies:
       '@eslint/js':
-        specifier: ^9.8.0
+        specifier: 'catalog:'
         version: 9.8.0
       '@types/eslint__js':
-        specifier: ^8.42.3
+        specifier: 'catalog:'
         version: 8.42.3
       '@types/node':
-        specifier: ^20.14.8
+        specifier: 'catalog:'
         version: 20.14.8
       eslint:
-        specifier: ^9.8.0
+        specifier: 'catalog:'
         version: 9.8.0
       npm-package-arg:
         specifier: ^11.0.2
         version: 11.0.2
       prettier:
-        specifier: ^3.3.2
+        specifier: 'catalog:'
         version: 3.3.2
       tap:
-        specifier: ^20.0.1
+        specifier: 'catalog:'
         version: 20.0.1(@types/node@20.14.8)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4)
       tshy:
-        specifier: ^1.16.1
+        specifier: 'catalog:'
         version: 1.16.1
       typedoc:
-        specifier: ^0.26.2
+        specifier: 'catalog:'
         version: 0.26.2(typescript@5.5.4)
       typescript:
-        specifier: ^5.5.4
+        specifier: 'catalog:'
         version: 5.5.4
       typescript-eslint:
-        specifier: ^8.0.1
+        specifier: 'catalog:'
         version: 8.0.1(eslint@9.8.0)(typescript@5.5.4)
 
   src/tar:
@@ -871,19 +904,19 @@ importers:
         version: 7.2.0
     devDependencies:
       '@eslint/js':
-        specifier: ^9.8.0
+        specifier: 'catalog:'
         version: 9.8.0
       '@types/eslint__js':
-        specifier: ^8.42.3
+        specifier: 'catalog:'
         version: 8.42.3
       '@types/node':
-        specifier: ^20.14.8
+        specifier: 'catalog:'
         version: 20.14.8
       '@types/tar':
         specifier: ^6.1.13
         version: 6.1.13
       eslint:
-        specifier: ^9.8.0
+        specifier: 'catalog:'
         version: 9.8.0
       mutate-fs:
         specifier: ^2.1.1
@@ -892,19 +925,19 @@ importers:
         specifier: ^18.0.6
         version: 18.0.6
       prettier:
-        specifier: ^3.3.2
+        specifier: 'catalog:'
         version: 3.3.2
       tap:
-        specifier: ^20.0.1
+        specifier: 'catalog:'
         version: 20.0.1(@types/node@20.14.8)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4)
       tshy:
-        specifier: ^1.16.1
+        specifier: 'catalog:'
         version: 1.16.1
       typescript:
-        specifier: ^5.5.4
+        specifier: 'catalog:'
         version: 5.5.4
       typescript-eslint:
-        specifier: ^8.0.1
+        specifier: 'catalog:'
         version: 8.0.1(eslint@9.8.0)(typescript@5.5.4)
 
   src/types:
@@ -914,34 +947,34 @@ importers:
         version: link:../error-cause
     devDependencies:
       '@eslint/js':
-        specifier: ^9.8.0
+        specifier: 'catalog:'
         version: 9.8.0
       '@types/eslint__js':
-        specifier: ^8.42.3
+        specifier: 'catalog:'
         version: 8.42.3
       '@types/node':
-        specifier: ^20.14.8
+        specifier: 'catalog:'
         version: 20.14.8
       eslint:
-        specifier: ^9.8.0
+        specifier: 'catalog:'
         version: 9.8.0
       prettier:
-        specifier: ^3.3.2
+        specifier: 'catalog:'
         version: 3.3.2
       tap:
-        specifier: ^20.0.1
+        specifier: 'catalog:'
         version: 20.0.1(@types/node@20.14.8)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4)
       tshy:
-        specifier: ^1.16.1
+        specifier: 'catalog:'
         version: 1.16.1
       typedoc:
-        specifier: ^0.26.2
+        specifier: 'catalog:'
         version: 0.26.2(typescript@5.5.4)
       typescript:
-        specifier: ^5.5.4
+        specifier: 'catalog:'
         version: 5.5.4
       typescript-eslint:
-        specifier: ^8.0.1
+        specifier: 'catalog:'
         version: 8.0.1(eslint@9.8.0)(typescript@5.5.4)
 
   src/vlt:
@@ -987,34 +1020,34 @@ importers:
         version: 3.0.1
     devDependencies:
       '@eslint/js':
-        specifier: ^9.8.0
+        specifier: 'catalog:'
         version: 9.8.0
       '@types/eslint__js':
-        specifier: ^8.42.3
+        specifier: 'catalog:'
         version: 8.42.3
       '@types/node':
-        specifier: ^20.14.8
+        specifier: 'catalog:'
         version: 20.14.8
       eslint:
-        specifier: ^9.8.0
+        specifier: 'catalog:'
         version: 9.8.0
       prettier:
-        specifier: ^3.3.2
+        specifier: 'catalog:'
         version: 3.3.2
       tap:
-        specifier: ^20.0.1
+        specifier: 'catalog:'
         version: 20.0.1(@types/node@20.14.8)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4)
       tshy:
-        specifier: ^1.16.1
+        specifier: 'catalog:'
         version: 1.16.1
       typedoc:
-        specifier: ^0.26.2
+        specifier: 'catalog:'
         version: 0.26.2(typescript@5.5.4)
       typescript:
-        specifier: ^5.5.4
+        specifier: 'catalog:'
         version: 5.5.4
       typescript-eslint:
-        specifier: ^8.0.1
+        specifier: 'catalog:'
         version: 8.0.1(eslint@9.8.0)(typescript@5.5.4)
 
   src/which:
@@ -1024,34 +1057,34 @@ importers:
         version: 3.1.1
     devDependencies:
       '@eslint/js':
-        specifier: ^9.8.0
+        specifier: 'catalog:'
         version: 9.8.0
       '@types/eslint__js':
-        specifier: ^8.42.3
+        specifier: 'catalog:'
         version: 8.42.3
       '@types/node':
-        specifier: ^20.14.8
+        specifier: 'catalog:'
         version: 20.14.8
       eslint:
-        specifier: ^9.8.0
+        specifier: 'catalog:'
         version: 9.8.0
       prettier:
-        specifier: ^3.3.2
+        specifier: 'catalog:'
         version: 3.3.2
       tap:
-        specifier: ^20.0.1
+        specifier: 'catalog:'
         version: 20.0.1(@types/node@20.14.8)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4)
       tshy:
-        specifier: ^1.16.1
+        specifier: 'catalog:'
         version: 1.16.1
       typedoc:
-        specifier: ^0.26.2
+        specifier: 'catalog:'
         version: 0.26.2(typescript@5.5.4)
       typescript:
-        specifier: ^5.5.4
+        specifier: 'catalog:'
         version: 5.5.4
       typescript-eslint:
-        specifier: ^8.0.1
+        specifier: 'catalog:'
         version: 8.0.1(eslint@9.8.0)(typescript@5.5.4)
 
   src/workspaces:
@@ -1088,67 +1121,67 @@ importers:
         version: 3.0.1
     devDependencies:
       '@eslint/js':
-        specifier: ^9.8.0
+        specifier: 'catalog:'
         version: 9.8.0
       '@types/eslint__js':
-        specifier: ^8.42.3
+        specifier: 'catalog:'
         version: 8.42.3
       '@types/node':
-        specifier: ^20.14.8
+        specifier: 'catalog:'
         version: 20.14.8
       eslint:
-        specifier: ^9.8.0
+        specifier: 'catalog:'
         version: 9.8.0
       prettier:
-        specifier: ^3.3.2
+        specifier: 'catalog:'
         version: 3.3.2
       tap:
-        specifier: ^20.0.1
+        specifier: 'catalog:'
         version: 20.0.1(@types/node@20.14.8)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4)
       tshy:
-        specifier: ^1.16.1
+        specifier: 'catalog:'
         version: 1.16.1
       typedoc:
-        specifier: ^0.26.2
+        specifier: 'catalog:'
         version: 0.26.2(typescript@5.5.4)
       typescript:
-        specifier: ^5.5.4
+        specifier: 'catalog:'
         version: 5.5.4
       typescript-eslint:
-        specifier: ^8.0.1
+        specifier: 'catalog:'
         version: 8.0.1(eslint@9.8.0)(typescript@5.5.4)
 
   src/xdg:
     devDependencies:
       '@eslint/js':
-        specifier: ^9.8.0
+        specifier: 'catalog:'
         version: 9.8.0
       '@types/eslint__js':
-        specifier: ^8.42.3
+        specifier: 'catalog:'
         version: 8.42.3
       '@types/node':
-        specifier: ^20.14.8
+        specifier: 'catalog:'
         version: 20.14.8
       eslint:
-        specifier: ^9.8.0
+        specifier: 'catalog:'
         version: 9.8.0
       prettier:
-        specifier: ^3.3.2
+        specifier: 'catalog:'
         version: 3.3.2
       tap:
-        specifier: ^20.0.1
+        specifier: 'catalog:'
         version: 20.0.1(@types/node@20.14.8)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4)
       tshy:
-        specifier: ^1.16.1
+        specifier: 'catalog:'
         version: 1.16.1
       typedoc:
-        specifier: ^0.26.2
+        specifier: 'catalog:'
         version: 0.26.2(typescript@5.5.4)
       typescript:
-        specifier: ^5.5.4
+        specifier: 'catalog:'
         version: 5.5.4
       typescript-eslint:
-        specifier: ^8.0.1
+        specifier: 'catalog:'
         version: 8.0.1(eslint@9.8.0)(typescript@5.5.4)
 
 packages:
@@ -1578,11 +1611,6 @@ packages:
   acorn-walk@8.3.2:
     resolution: {integrity: sha512-cjkyv4OtNCIeqhHrfS81QWXoCBPExR/J62oyEqepVw8WaQeSqpW2uhuLPh1m9eWhDuOo/jUXVTlifvesOWp/4A==}
     engines: {node: '>=0.4.0'}
-
-  acorn@8.11.3:
-    resolution: {integrity: sha512-Y9rRfJG5jcKOE0CLisYbojUjIrIEE7AGMzA/Sm4BslANhbS+cDMpgBdcPT91oJ7OuJ9hYJBx59RjbhxVnrF8Xg==}
-    engines: {node: '>=0.4.0'}
-    hasBin: true
 
   acorn@8.12.1:
     resolution: {integrity: sha512-tcpGyI9zbizT9JbV6oYE477V6mTlXvvi0T0G3SNIYE2apm/G5huBa1+K89VGeovbg+jycCrfhl3ADxErOuO6Jg==}
@@ -2811,11 +2839,6 @@ packages:
     peerDependencies:
       yaml: ^2.3.0
 
-  yaml@2.4.2:
-    resolution: {integrity: sha512-B3VqDZ+JAg1nZpaEmWtTXUlBneoGx6CPM9b0TENK6aoSu5t73dItudwdgmi6tHlIZZId4dZ9skcAQ2UbcyAeVA==}
-    engines: {node: '>= 14'}
-    hasBin: true
-
   yaml@2.4.5:
     resolution: {integrity: sha512-aBx2bnqDzVOyNKfsysjA2ms5ZlnjSAW2eG3/L5G/CSujfjLJTJsEw1bGw8kCf04KodQWk1pxlGnZ56CRxiawmg==}
     engines: {node: '>= 14'}
@@ -2909,7 +2932,7 @@ snapshots:
       '@tsconfig/node18': 18.2.4
       '@tsconfig/node20': 20.1.4
       '@types/node': 20.14.8
-      acorn: 8.11.3
+      acorn: 8.12.1
       acorn-walk: 8.3.2
       arg: 4.1.3
       diff: 4.0.2
@@ -3428,8 +3451,6 @@ snapshots:
       acorn: 8.12.1
 
   acorn-walk@8.3.2: {}
-
-  acorn@8.11.3: {}
 
   acorn@8.12.1: {}
 
@@ -4485,8 +4506,8 @@ snapshots:
 
   tap-yaml@3.0.0:
     dependencies:
-      yaml: 2.4.2
-      yaml-types: 0.3.0(yaml@2.4.2)
+      yaml: 2.4.5
+      yaml-types: 0.3.0(yaml@2.4.5)
 
   tap@20.0.1(@types/node@20.14.8)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4):
     dependencies:
@@ -4696,11 +4717,9 @@ snapshots:
 
   yallist@5.0.0: {}
 
-  yaml-types@0.3.0(yaml@2.4.2):
+  yaml-types@0.3.0(yaml@2.4.5):
     dependencies:
-      yaml: 2.4.2
-
-  yaml@2.4.2: {}
+      yaml: 2.4.5
 
   yaml@2.4.5: {}
 

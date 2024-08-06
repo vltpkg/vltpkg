@@ -19,18 +19,18 @@
     "@vltpkg/types": "workspace:*"
   },
   "devDependencies": {
-    "@eslint/js": "^9.8.0",
-    "@types/eslint__js": "^8.42.3",
-    "@types/node": "^20.14.8",
-    "eslint": "^9.8.0",
+    "@eslint/js": "catalog:",
+    "@types/eslint__js": "catalog:",
+    "@types/node": "catalog:",
+    "eslint": "catalog:",
     "npm-pick-manifest": "^9.0.1",
     "pacote": "^18.0.6",
-    "prettier": "^3.3.2",
-    "tap": "^20.0.1",
-    "tshy": "^1.16.1",
-    "typedoc": "^0.26.2",
-    "typescript": "^5.5.4",
-    "typescript-eslint": "^8.0.1"
+    "prettier": "catalog:",
+    "tap": "catalog:",
+    "tshy": "catalog:",
+    "typedoc": "catalog:",
+    "typescript": "catalog:",
+    "typescript-eslint": "catalog:"
   },
   "scripts": {
     "preversion": "npm test",
