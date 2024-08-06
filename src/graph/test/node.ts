@@ -292,18 +292,18 @@ t.test('nodeModules path and inVltStore flag', t => {
       ...options,
       projectRoot: t.testdirName,
     },
-    ';;bar@1.2.3',
-    { name: 'bar', version: '1.2.3' },
+    ';;@bar%2Fbloo@1.2.3',
+    { name: '@bar/bloo', version: '1.2.3' },
   )
   t.equal(bar.inVltStore(), true)
   t.equal(bar.inVltStore(), true, 'test twice for caching')
   t.equal(
     bar.location,
-    './node_modules/.vlt/;;bar@1.2.3/node_modules/bar',
+    './node_modules/.vlt/;;@bar%2Fbloo@1.2.3/node_modules/@bar/bloo',
   )
   t.equal(
     bar.nodeModules,
-    './node_modules/.vlt/;;bar@1.2.3/node_modules',
+    './node_modules/.vlt/;;@bar%2Fbloo@1.2.3/node_modules',
   )
   const outside = new Node(
     {
