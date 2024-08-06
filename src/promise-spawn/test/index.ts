@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-expressions */
 import cp from 'child_process'
 import spawk from 'spawk'
 import t from 'tap'

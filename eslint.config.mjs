@@ -70,6 +70,8 @@ export default tseslint.config(
       '@typescript-eslint/unified-signatures': 'off',
       // It's ok to use async functions that dont use await to signal its a Promise
       '@typescript-eslint/require-await': 'off',
+      // It's ok to use objects in template expressions and have the default toString method called
+      '@typescript-eslint/restrict-template-expressions': 'off',
       // TODO: Would be nice to turn this on, but doesn't play well with how we pass instance methods to error() to capture stack traces
       '@typescript-eslint/unbound-method': 'off',
       // TODO: these rules have to do with unsafe usage of `any`
@@ -84,8 +86,6 @@ export default tseslint.config(
       '@typescript-eslint/no-base-to-string': 'off',
       '@typescript-eslint/no-dynamic-delete': 'off',
       '@typescript-eslint/no-floating-promises': 'off',
-      '@typescript-eslint/no-unused-expressions': 'off',
-      '@typescript-eslint/restrict-template-expressions': 'off',
       '@typescript-eslint/use-unknown-in-catch-callback-variable':
         'off',
     },

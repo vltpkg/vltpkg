@@ -146,8 +146,8 @@ t.test('create a repo with a submodule', { bail: true }, async () => {
   await git('add', 'other-file')
   await git('commit', '-m', 'others')
   await git('tag', '-am', 'version 1.2.3', 'version-1.2.3')
-  await git('tag', '-am', 'too big', `69${Math.pow(2, 53)}.0.0`),
-    await write('gleep', 'glorp')
+  await git('tag', '-am', 'too big', `69${Math.pow(2, 53)}.0.0`)
+  await write('gleep', 'glorp')
   await git('add', 'gleep')
   await git('commit', '-m', 'gleep glorp')
   await git('tag', '-am', 'head version', '69.42.0')
