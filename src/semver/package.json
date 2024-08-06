@@ -21,7 +21,6 @@
     "@types/node": "^20.14.8",
     "@types/semver": "^7.5.8",
     "eslint": "^9.8.0",
-    "globals": "^14.0.0",
     "prettier": "^3.3.2",
     "semver": "^7.6.2",
     "tap": "^20.0.1",

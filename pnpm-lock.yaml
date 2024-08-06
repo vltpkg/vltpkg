@@ -37,8 +37,8 @@ importers:
         specifier: ^9.8.0
         version: 9.8.0
       globals:
-        specifier: ^14.0.0
-        version: 14.0.0
+        specifier: ^15.9.0
+        version: 15.9.0
       mutate-fs:
         specifier: ^2.1.1
         version: 2.1.1
@@ -106,9 +106,6 @@ importers:
       eslint:
         specifier: ^9.8.0
         version: 9.8.0
-      globals:
-        specifier: ^14.0.0
-        version: 14.0.0
       prettier:
         specifier: ^3.3.2
         version: 3.3.2
@@ -149,9 +146,6 @@ importers:
       eslint:
         specifier: ^9.8.0
         version: 9.8.0
-      globals:
-        specifier: ^14.0.0
-        version: 14.0.0
       prettier:
         specifier: ^3.3.2
         version: 3.3.2
@@ -195,9 +189,6 @@ importers:
       eslint:
         specifier: ^9.8.0
         version: 9.8.0
-      globals:
-        specifier: ^14.0.0
-        version: 14.0.0
       prettier:
         specifier: ^3.3.2
         version: 3.3.2
@@ -231,9 +222,6 @@ importers:
       eslint:
         specifier: ^9.8.0
         version: 9.8.0
-      globals:
-        specifier: ^14.0.0
-        version: 14.0.0
       prettier:
         specifier: ^3.3.2
         version: 3.3.2
@@ -304,9 +292,6 @@ importers:
       eslint:
         specifier: ^9.8.0
         version: 9.8.0
-      globals:
-        specifier: ^14.0.0
-        version: 14.0.0
       prettier:
         specifier: ^3.3.2
         version: 3.3.2
@@ -340,9 +325,6 @@ importers:
       eslint:
         specifier: ^9.8.0
         version: 9.8.0
-      globals:
-        specifier: ^14.0.0
-        version: 14.0.0
       prettier:
         specifier: ^3.3.2
         version: 3.3.2
@@ -410,9 +392,6 @@ importers:
       eslint:
         specifier: ^9.8.0
         version: 9.8.0
-      globals:
-        specifier: ^14.0.0
-        version: 14.0.0
       prettier:
         specifier: ^3.3.2
         version: 3.3.2
@@ -480,9 +459,6 @@ importers:
       eslint:
         specifier: ^9.8.0
         version: 9.8.0
-      globals:
-        specifier: ^14.0.0
-        version: 14.0.0
       pacote:
         specifier: ^18.0.6
         version: 18.0.6
@@ -529,9 +505,6 @@ importers:
       eslint:
         specifier: ^9.8.0
         version: 9.8.0
-      globals:
-        specifier: ^14.0.0
-        version: 14.0.0
       prettier:
         specifier: ^3.3.2
         version: 3.3.2
@@ -578,9 +551,6 @@ importers:
       eslint:
         specifier: ^9.8.0
         version: 9.8.0
-      globals:
-        specifier: ^14.0.0
-        version: 14.0.0
       npm-pick-manifest:
         specifier: ^9.0.1
         version: 9.0.1
@@ -624,9 +594,6 @@ importers:
       eslint:
         specifier: ^9.8.0
         version: 9.8.0
-      globals:
-        specifier: ^14.0.0
-        version: 14.0.0
       prettier:
         specifier: ^3.3.2
         version: 3.3.2
@@ -688,9 +655,6 @@ importers:
       eslint:
         specifier: ^9.8.0
         version: 9.8.0
-      globals:
-        specifier: ^14.0.0
-        version: 14.0.0
       prettier:
         specifier: ^3.3.2
         version: 3.3.2
@@ -740,9 +704,6 @@ importers:
       eslint:
         specifier: ^9.8.0
         version: 9.8.0
-      globals:
-        specifier: ^14.0.0
-        version: 14.0.0
       prettier:
         specifier: ^3.3.2
         version: 3.3.2
@@ -792,9 +753,6 @@ importers:
       eslint:
         specifier: ^9.8.0
         version: 9.8.0
-      globals:
-        specifier: ^14.0.0
-        version: 14.0.0
       prettier:
         specifier: ^3.3.2
         version: 3.3.2
@@ -835,9 +793,6 @@ importers:
       eslint:
         specifier: ^9.8.0
         version: 9.8.0
-      globals:
-        specifier: ^14.0.0
-        version: 14.0.0
       prettier:
         specifier: ^3.3.2
         version: 3.3.2
@@ -881,9 +836,6 @@ importers:
       eslint:
         specifier: ^9.8.0
         version: 9.8.0
-      globals:
-        specifier: ^14.0.0
-        version: 14.0.0
       npm-package-arg:
         specifier: ^11.0.2
         version: 11.0.2
@@ -933,9 +885,6 @@ importers:
       eslint:
         specifier: ^9.8.0
         version: 9.8.0
-      globals:
-        specifier: ^14.0.0
-        version: 14.0.0
       mutate-fs:
         specifier: ^2.1.1
         version: 2.1.1
@@ -976,9 +925,6 @@ importers:
       eslint:
         specifier: ^9.8.0
         version: 9.8.0
-      globals:
-        specifier: ^14.0.0
-        version: 14.0.0
       prettier:
         specifier: ^3.3.2
         version: 3.3.2
@@ -1052,9 +998,6 @@ importers:
       eslint:
         specifier: ^9.8.0
         version: 9.8.0
-      globals:
-        specifier: ^14.0.0
-        version: 14.0.0
       prettier:
         specifier: ^3.3.2
         version: 3.3.2
@@ -1092,9 +1035,6 @@ importers:
       eslint:
         specifier: ^9.8.0
         version: 9.8.0
-      globals:
-        specifier: ^14.0.0
-        version: 14.0.0
       prettier:
         specifier: ^3.3.2
         version: 3.3.2
@@ -1159,9 +1099,6 @@ importers:
       eslint:
         specifier: ^9.8.0
         version: 9.8.0
-      globals:
-        specifier: ^14.0.0
-        version: 14.0.0
       prettier:
         specifier: ^3.3.2
         version: 3.3.2
@@ -1195,9 +1132,6 @@ importers:
       eslint:
         specifier: ^9.8.0
         version: 9.8.0
-      globals:
-        specifier: ^14.0.0
-        version: 14.0.0
       prettier:
         specifier: ^3.3.2
         version: 3.3.2
@@ -2009,6 +1943,10 @@ packages:
 
   globals@14.0.0:
     resolution: {integrity: sha512-oahGvuMGQlPw/ivIYBjVSrWAfWLBeku5tpPE2fOPLi+WHffIWbuh2tCjhyQhTBPMf5E9jDEH4FOmTYgYwbKwtQ==}
+    engines: {node: '>=18'}
+
+  globals@15.9.0:
+    resolution: {integrity: sha512-SmSKyLLKFbSr6rptvP8izbyxJL4ILwqO9Jg23UA0sDlGlu58V59D1//I3vlc0KJphVdUR7vMjHIplYnzBxorQA==}
     engines: {node: '>=18'}
 
   globby@11.1.0:
@@ -3853,6 +3791,8 @@ snapshots:
       path-scurry: 1.11.1
 
   globals@14.0.0: {}
+
+  globals@15.9.0: {}
 
   globby@11.1.0:
     dependencies:

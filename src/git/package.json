@@ -31,7 +31,6 @@
     "@types/retry": "^0.12.5",
     "@vltpkg/types": "workspace:*",
     "eslint": "^9.8.0",
-    "globals": "^14.0.0",
     "prettier": "^3.3.2",
     "tap": "^20.0.1",
     "tshy": "^1.16.1",

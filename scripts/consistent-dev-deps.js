@@ -42,8 +42,9 @@ const sortObject = o =>
     }),
   )
 
-for (const w of readdirSync(wsdir)) {
-  const pf = resolve(wsdir, w, 'package.json')
+for (const w of readdirSync(wsdir, { withFileTypes: true })) {
+  if (!w.isDirectory()) continue
+  const pf = resolve(w.parentPath, w.name, 'package.json')
   const pj = sortObject(JSON.parse(readFileSync(pf, 'utf8')))
   const { devDependencies } = pj
   if (devDependencies) {

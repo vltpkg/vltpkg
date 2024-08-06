@@ -26,7 +26,6 @@
     "@types/node": "^20.14.8",
     "@types/tar": "^6.1.13",
     "eslint": "^9.8.0",
-    "globals": "^14.0.0",
     "mutate-fs": "^2.1.1",
     "pacote": "^18.0.6",
     "prettier": "^3.3.2",

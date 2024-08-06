@@ -30,7 +30,6 @@
     "@types/eslint__js": "^8.42.3",
     "@types/node": "^20.14.8",
     "eslint": "^9.8.0",
-    "globals": "^14.0.0",
     "pacote": "^18.0.6",
     "prettier": "^3.3.2",
     "tap": "^20.0.1",

@@ -22,7 +22,7 @@
     "@types/tar": "^6.1.13",
     "chalk": "^5.3.0",
     "eslint": "^9.8.0",
-    "globals": "^14.0.0",
+    "globals": "^15.9.0",
     "mutate-fs": "^2.1.1",
     "npm-package-arg": "^11.0.2",
     "npm-pick-manifest": "^9.0.1",
