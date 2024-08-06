@@ -6,10 +6,16 @@ import {
   BuildIdealAddOptions,
 } from './types.js'
 import { PackageInfoClient } from '@vltpkg/package-info'
+import {PathScurry} from 'path-scurry'
 
 export type AddNodesOptions = SpecOptions &
   BuildIdealFromGraphOptions &
   BuildIdealAddOptions & {
+    /**
+     * A {@link PathScurry} instance based on the `projectRoot` path
+     */
+    scurry: PathScurry
+
     /**
      * A {@link PackageInfoClient} instance to read manifest info from.
      */
@@ -23,6 +29,7 @@ export const addNodes = async ({
   add,
   graph,
   packageInfo,
+  scurry,
   ...specOptions
 }: AddNodesOptions) => {
   // iterates on the list of dependencies per importer updating
@@ -47,6 +54,7 @@ export const addNodes = async ({
       graph,
       importer,
       [...dependencies.values()],
+      scurry,
       specOptions,
     )
   }

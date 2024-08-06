@@ -2,9 +2,7 @@ import { DepID, joinDepIDTuple } from '@vltpkg/dep-id'
 import { error } from '@vltpkg/error-cause'
 import { PackageInfoClient } from '@vltpkg/package-info'
 import { Spec, SpecOptions } from '@vltpkg/spec'
-import { statSync } from 'node:fs'
-import { resolve } from 'node:path'
-import { join } from 'node:path/posix'
+import { PathScurry } from 'path-scurry'
 import {
   Dependency,
   DependencyTypeLong,
@@ -38,6 +36,7 @@ const shouldInstallDepType = (
 const getFileTypeInfo = (
   spec: Spec,
   fromNode: Node,
+  scurry: PathScurry,
 ): FileTypeInfo | undefined => {
   const f = spec.final
   if (f.type !== 'file') return
@@ -51,19 +50,14 @@ const getFileTypeInfo = (
   // Given that both linked folders and local tarballs (both defined with
   // usage of the `file:` spec prefix) location needs to be relative to their
   // parents, build the expected path and use it for both location and id
-  const path = join(fromNode.location, f.file)
-  const full = resolve(fromNode.projectRoot, path)
+  const target = scurry.cwd.resolve(fromNode.location).resolve(f.file)
+  const path = target.relativePosix()
   const id = joinDepIDTuple(['file', path])
-
-  let isDirectory = false
-  try {
-    isDirectory = statSync(full).isDirectory()
-  } catch {}
 
   return {
     path,
     id,
-    isDirectory,
+    isDirectory: !!target.lstatSync()?.isDirectory(),
   }
 }
 
@@ -72,12 +66,13 @@ export const appendNodes = async (
   graph: Graph,
   fromNode: Node,
   deps: Dependency[],
+  scurry: PathScurry,
   options: SpecOptions,
 ) =>
   Promise.all(
     deps.map(async ({ spec, type }) => {
       // see if there's a satisfying node in the graph currently
-      const fileTypeInfo = getFileTypeInfo(spec, fromNode)
+      const fileTypeInfo = getFileTypeInfo(spec, fromNode, scurry)
       const existingNode = graph.findResolution(spec, fromNode)
       if (existingNode) {
         graph.addEdge(type, spec, fromNode, existingNode)
@@ -131,7 +126,7 @@ export const appendNodes = async (
             type: shorten(depTypeName, name, fromNode.manifest),
           }))
           nestedAppends.push(
-            appendNodes(packageInfo, graph, node, nextDeps, options),
+            appendNodes(packageInfo, graph, node, nextDeps, scurry, options),
           )
         }
       }

@@ -2,6 +2,7 @@ import { PackageInfoClient } from '@vltpkg/package-info'
 import { Spec, SpecOptions } from '@vltpkg/spec'
 import { Manifest } from '@vltpkg/types'
 import { inspect } from 'node:util'
+import { PathScurry } from 'path-scurry'
 import t from 'tap'
 import { Dependency } from '../../src/dependencies.js'
 import { Graph } from '../../src/graph.js'
@@ -70,6 +71,7 @@ t.test('append a new node to a graph from a registry', async t => {
     0,
     'has no direct dependency yet',
   )
+  const scurry = new PathScurry(t.testdirName)
   await appendNodes(
     packageInfo,
     graph,
@@ -80,6 +82,7 @@ t.test('append a new node to a graph from a registry', async t => {
         type: 'prod',
       },
     ],
+    scurry,
     configData,
   )
   t.strictSame(
@@ -109,6 +112,7 @@ t.test('append a new node to a graph from a registry', async t => {
         type: 'prod',
       },
     ],
+    new PathScurry(t.testdirName),
     configData,
   )
   t.strictSame(
@@ -128,6 +132,7 @@ t.test('append a new node to a graph from a registry', async t => {
           type: 'prod',
         },
       ],
+      new PathScurry(t.testdirName),
       configData,
     ),
     /ERR/,
@@ -184,6 +189,7 @@ t.test('append different type of dependencies', async t => {
         type: 'dev',
       },
     ],
+    new PathScurry(t.testdirName),
     configData,
   )
 
@@ -197,6 +203,7 @@ t.test('append different type of dependencies', async t => {
         type: 'optional',
       },
     ],
+    new PathScurry(t.testdirName),
     configData,
   )
 
@@ -211,6 +218,7 @@ t.test('append different type of dependencies', async t => {
           type: 'prod',
         },
       ],
+      new PathScurry(t.testdirName),
       configData,
     ),
     /Failed to place node/,
@@ -287,6 +295,7 @@ t.test('append file type of nodes', async t => {
         type: 'prod',
       },
     ],
+    new PathScurry(t.testdirName),
     configData,
   )
   await appendNodes(
@@ -299,6 +308,7 @@ t.test('append file type of nodes', async t => {
         type: 'prod',
       },
     ],
+    new PathScurry(t.testdirName),
     configData,
   )
   t.matchSnapshot(
@@ -405,8 +415,15 @@ t.test('resolve against the correct registries', async t => {
       spec: Spec.parse('baz@b:bar@1.x', { registries }),
     },
   ]
-  await appendNodes(packageInfo, graph, graph.mainImporter, deps, {
-    registries,
-  })
+  await appendNodes(
+    packageInfo,
+    graph,
+    graph.mainImporter,
+    deps,
+    new PathScurry(t.testdirName),
+    {
+      registries,
+    },
+  )
   t.matchSnapshot(inspect(graph, { colors: false }))
 })
