@@ -26,13 +26,13 @@ export class Node {
   /**
    * List of edges coming into this node.
    */
-  edgesIn: Set<Edge> = new Set()
+  edgesIn = new Set<Edge>()
 
   /**
    * List of edges from this node into other nodes. This usually represents
    * that the connected node is a direct dependency of this node.
    */
-  edgesOut: Map<string, Edge> = new Map()
+  edgesOut = new Map<string, Edge>()
 
   /**
    * A reference to the {@link @DepID} this node represents in the graph.

@@ -16,7 +16,7 @@ export type Integrity = `sha512-${string}`
 export type KeyID = `SHA256:${string}`
 
 /** The Manifest['dist'] field present in registry manifests */
-export type Dist = {
+export interface Dist {
   integrity?: Integrity
   shasum?: string
   tarball?: string
@@ -29,13 +29,11 @@ export type Dist = {
 }
 
 /** An object used to mark some peerDeps as optional */
-export type PeerDependenciesMetaValue = {
+export interface PeerDependenciesMetaValue {
   optional?: boolean
 }
 
-export type ConditionalValueObject = {
-  [k: string]: ConditionalValue
-}
+export type ConditionalValueObject = Record<string, ConditionalValue>;
 export type ConditionalValue =
   | null
   | string
@@ -50,9 +48,7 @@ export type Exports =
   | Exclude<ConditionalValue, null>
   | ExportsSubpaths
 
-export type Imports = {
-  [path: `#${string}`]: ConditionalValue
-}
+export type Imports = Record<`#${string}`, ConditionalValue>;
 
 export type FundingEntry = string | { url: string }
 export type Funding = FundingEntry | FundingEntry[]
@@ -63,7 +59,7 @@ export type ManifestRegistry = Manifest & {
   dist: Dist
 }
 
-export type ManifestMinified = {
+export interface ManifestMinified {
   /** The name of the package. optional because {} is a valid package.json */
   name?: string
   /** The version of the package. optional because {} is a valid package.json */
@@ -150,7 +146,7 @@ export type Manifest = Record<string, JSONField> &
     gitHead?: string
   }
 
-export type PackumentBase = {
+export interface PackumentBase {
   name: string
   'dist-tags': Record<string, string>
 }

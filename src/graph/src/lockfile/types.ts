@@ -9,7 +9,7 @@ import { DependencyTypeShort } from '../dependencies.js'
  * The nodes and edges information from the lockfile are used to reconstruct
  * a {@link Graph} representing a previous install.
  */
-export type LockfileData = {
+export interface LockfileData {
   registries: Record<string, string>
   nodes: Record<DepID, LockfileDataNode>
   edges: LockfileDataEdge[]

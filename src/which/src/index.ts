@@ -33,14 +33,14 @@ const getPathInfo = (
         // windows always checks the cwd first
         /* c8 ignore next - platform-specific */
         ...(isWindows ? [process.cwd()] : []),
-        ...(optPath || /* c8 ignore next - very unusual */ '').split(
+        ...(optPath ?? /* c8 ignore next - very unusual */ '').split(
           optDelimiter,
         ),
       ]
 
   if (isWindows) {
     const pathExtExe =
-      optPathExt ||
+      optPathExt ??
       ['.EXE', '.CMD', '.BAT', '.COM'].join(optDelimiter)
     const pathExt = pathExtExe
       .split(optDelimiter)
@@ -62,7 +62,7 @@ const getPathPart = (raw: string, cmd: string) => {
   return prefix + join(pathPart, cmd)
 }
 
-export type WhichOptions = {
+export interface WhichOptions {
   all?: boolean
   path?: string
   pathExt?: string

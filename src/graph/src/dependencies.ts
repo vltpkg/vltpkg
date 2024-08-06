@@ -47,7 +47,6 @@ export interface Dependency {
 
 export const isDependency = (obj: any): obj is Dependency =>
   // TODO: it would be nice to have a @vltpkg/spec.isSpec method
-  obj?.spec &&
   obj?.spec?.type &&
   obj?.type &&
   shortDependencyTypes.has(obj?.type)
@@ -63,7 +62,7 @@ export const asDependency = (obj: any): Dependency => {
  * A set of the possible long dependency type names,
  * as used in `package.json` files.
  */
-export const longDependencyTypes: Set<DependencyTypeLong> = new Set([
+export const longDependencyTypes = new Set<DependencyTypeLong>([
   'dependencies',
   'devDependencies',
   'peerDependencies',
@@ -73,7 +72,7 @@ export const longDependencyTypes: Set<DependencyTypeLong> = new Set([
 /**
  * A set of the short type keys used to represent dependency relationships.
  */
-export const shortDependencyTypes: Set<DependencyTypeShort> = new Set(
+export const shortDependencyTypes = new Set<DependencyTypeShort>(
   ['prod', 'dev', 'peer', 'optional', 'peerOptional'],
 )
 
@@ -81,10 +80,10 @@ export const shortDependencyTypes: Set<DependencyTypeShort> = new Set(
  * Maps between long form names usually used in `package.json` files
  * to a corresponding short form name, used in lockfiles.
  */
-export const dependencyTypes: Map<
+export const dependencyTypes = new Map<
   DependencyTypeLong,
   DependencyTypeShort
-> = new Map([
+>([
   ['dependencies', 'prod'],
   ['devDependencies', 'dev'],
   ['peerDependencies', 'peer'],

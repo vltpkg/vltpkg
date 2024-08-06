@@ -188,14 +188,14 @@ export class Comparator {
     const comps: string[] = []
     let followingOperator = false
     for (let i = 0; i < rawComps.length; i++) {
-      const c = rawComps[i] as string
+      const c = rawComps[i]!
       if (c === '') continue
       if (!followingOperator) {
         followingOperator = isOperator(c)
         comps.push(c)
         continue
       }
-      ;(comps[comps.length - 1] as string) += c
+      ;(comps[comps.length - 1]!) += c
       followingOperator = false
     }
 

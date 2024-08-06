@@ -7,7 +7,7 @@ import { getRawHeader } from './raw-header.js'
 import { isCacheable } from './is-cacheable.js'
 import { setRawHeader } from './set-raw-header.js'
 
-export type CacheHandlerOptions = {
+export interface CacheHandlerOptions {
   /** cache key for this request */
   key: string
   /** handler being extended */

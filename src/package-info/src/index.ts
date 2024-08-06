@@ -36,7 +36,7 @@ import { rename } from './rename.js'
 
 const xdg = new XDG('vlt')
 
-export type Resolution = {
+export interface Resolution {
   resolved: string
   integrity?: Integrity
   signatures?: Exclude<Manifest['dist'], undefined>['signatures']
@@ -707,7 +707,7 @@ export class PackageInfoClient {
           )
         }
         const { from = this.#projectRoot } = options
-        const resolved = pathResolve(from, spec.file as string)
+        const resolved = pathResolve(from, spec.file!)
         const r = { resolved, spec }
         this.#resolutions.set(memoKey, r)
         return r

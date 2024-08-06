@@ -60,7 +60,7 @@ export class Cache extends LRUCache<
   #path: string;
   [Symbol.toStringTag] = '@vltpkg/cache.Cache'
   #random: string = randomBytes(6).toString('hex')
-  #pending: Set<Promise<undefined | boolean>> = new Set()
+  #pending = new Set<Promise<undefined | boolean>>()
   onDiskWrite?: CacheOptions['onDiskWrite']
   onDiskDelete?: CacheOptions['onDiskDelete']
 
@@ -270,7 +270,7 @@ export class Cache extends LRUCache<
    */
   integrityPath(integrity?: Integrity) {
     if (!integrity) return undefined
-    const m = integrity.match(/^sha512-([a-zA-Z0-9/+]{86}==)$/)
+    const m = /^sha512-([a-zA-Z0-9/+]{86}==)$/.exec(integrity)
     const hash = m?.[1]
     if (!hash) {
       throw error('invalid integrity value', {

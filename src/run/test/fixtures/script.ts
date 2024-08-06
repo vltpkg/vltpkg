@@ -13,7 +13,7 @@ import {
 } from '../../dist/esm/index.js'
 const __filename = fileURLToPath(import.meta.url)
 const node =
-  / /.test(process.execPath) ?
+  process.execPath.includes(' ') ?
     '"' + process.execPath + '"'
   : process.execPath
 
@@ -157,14 +157,14 @@ const runParent = async (args: string[]) => {
     args: args.slice(3),
     cwd,
     projectRoot,
-    acceptFail: /fail/.test(arg0),
-    ignoreMissing: /ignoremissing/.test(arg0),
+    acceptFail: arg0.includes('fail'),
+    ignoreMissing: arg0.includes('ignoremissing'),
   })
   console.log(
     JSON.stringify({
       ...result,
       stdout:
-        /ignoremissing/.test(arg0) ? '' : JSON.parse(result.stdout),
+        arg0.includes('ignoremissing') ? '' : JSON.parse(result.stdout),
     }),
   )
 }
@@ -179,10 +179,10 @@ const runFGParent = async (args: string[]) => {
     args: args.slice(3),
     cwd,
     projectRoot,
-    acceptFail: /fail/.test(arg0),
-    ignoreMissing: /ignoremissing/.test(arg0),
+    acceptFail: arg0.includes('fail'),
+    ignoreMissing: arg0.includes('ignoremissing'),
   })
-  if (/ignoremissing/.test(arg0)) console.log('{}')
+  if (arg0.includes('ignoremissing')) console.log('{}')
   console.log(',' + JSON.stringify(result) + ']')
 }
 

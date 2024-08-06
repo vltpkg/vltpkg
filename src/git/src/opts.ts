@@ -18,7 +18,7 @@ export const opts = (
   PromiseSpawnOptionsStderrString => ({
   acceptFail: true,
   ...opts,
-  env: opts.env || { ...gitEnv, ...process.env },
+  env: opts.env ?? { ...gitEnv, ...process.env },
   stdio: 'pipe',
   stdioString: true,
   shell: false,

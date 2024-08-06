@@ -21,7 +21,7 @@ export const kCustomInspect = Symbol.for('nodejs.util.inspect.custom')
 
 export type Scope = `@${string}`
 
-export type SpecOptionsFilled = {
+export interface SpecOptionsFilled {
   /** the registry where a spec should be resolved against */
   registry: string
   /** shorthand prefix names for known registries */
@@ -34,7 +34,7 @@ export type SpecOptionsFilled = {
   'scope-registries': Record<Scope, string>
 }
 
-export type GitSelectorParsed = {
+export interface GitSelectorParsed {
   path?: string
   semver?: string
 }

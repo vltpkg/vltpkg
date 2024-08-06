@@ -13,7 +13,7 @@ import { parse } from 'polite-json'
  * The object passed to the constructor or {@link Monorepo#load} to limit which
  * {@link Workspace Workspaces} get loaded.
  */
-export type LoadQuery = {
+export interface LoadQuery {
   /**
    * A glob pattern string, or an array of them. Only workspaces found
    * in paths matched will be loaded.
@@ -30,9 +30,7 @@ export type LoadQuery = {
  * Canonical form of the {@link WorkspaceConfig}, used
  * internally for consistency.
  */
-export type WorkspaceConfigObject = {
-  [group: string]: string[]
-}
+export type WorkspaceConfigObject = Record<string, string[]>;
 
 /**
  * Allowed datatype in the `vlt-workspaces.json` file.
@@ -259,7 +257,7 @@ export class Monorepo {
       : query.groups ?? [],
     )
 
-    const groupsExpanded: { [k: string]: Set<string> } = {}
+    const groupsExpanded: Record<string, Set<string>> = {}
     for (const [group, pattern] of Object.entries(this.config)) {
       if (groups.size && !groups.has(group)) continue
       groupsExpanded[group] = this.#glob(pattern)

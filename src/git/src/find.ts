@@ -1,7 +1,7 @@
 import { dirname } from 'path'
 import { is } from './is.js'
 
-export type FindOpts = {
+export interface FindOpts {
   cwd?: string
   root?: string
 }

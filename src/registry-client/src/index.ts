@@ -11,7 +11,7 @@ import { isRedirect, redirect } from './redirect.js'
 
 export { CacheEntry, cacheInterceptor }
 
-export type RegistryClientOptions = {
+export interface RegistryClientOptions {
   /**
    * Path on disk where the cache should be stored
    *
@@ -89,7 +89,7 @@ export const userAgent = `@vltpkg/registry-client/${version} ${nua}`
 const xdg = new XDG('vlt')
 
 export class RegistryClient {
-  pools: Map<string, Pool> = new Map()
+  pools = new Map<string, Pool>()
   cache: Cache
 
   constructor({

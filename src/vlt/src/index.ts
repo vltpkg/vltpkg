@@ -20,7 +20,7 @@ if (vlt.get('workspace') === undefined) {
   if (ws) vlt.values.workspace = [ws.path]
 }
 
-export type CliCommand = {
+export interface CliCommand {
   command: (conf: LoadedConfig) => Promise<void>
   usage: string
 }

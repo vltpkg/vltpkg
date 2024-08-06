@@ -52,7 +52,7 @@ function parseEdge(seenNodes: Set<Node>, graph: Graph, edge: Edge) {
 }
 
 export function humanReadableOutput(graph: Graph) {
-  const seenNodes: Set<Node> = new Set()
+  const seenNodes = new Set<Node>()
   const importers = [...graph.importers]
   return inspect(
     importers.map(i => parseNode(seenNodes, graph, i)),

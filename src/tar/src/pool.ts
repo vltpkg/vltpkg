@@ -5,14 +5,14 @@ import { UnpackRequest } from './unpack-request.js'
 
 const workerScript = new URL('./worker.js', import.meta.url)
 
-export type ResponseOK = { id: number; ok: true }
+export interface ResponseOK { id: number; ok: true }
 export const isResponseOK = (o: any): o is ResponseOK =>
   !!o &&
   typeof o === 'object' &&
   typeof o.id === 'number' &&
   o.ok === true
 
-export type ResponseError = { id: number; error: string }
+export interface ResponseError { id: number; error: string }
 export const isResponseError = (o: any): o is ResponseError =>
   !!o &&
   typeof o === 'object' &&
@@ -38,7 +38,7 @@ export class Pool {
   /**
    * Set of currently active worker threads
    */
-  workers: Set<Worker> = new Set()
+  workers = new Set<Worker>()
   /**
    * Queue of requests awaiting an available worker
    */
@@ -47,7 +47,7 @@ export class Pool {
    * Requests that have been assigned to a worker, but have not yet
    * been confirmed completed.
    */
-  pending: Map<number, UnpackRequest> = new Map()
+  pending = new Map<number, UnpackRequest>()
 
   // handle a message from the worker
   #onMessage(w: Worker, m: ResponseError | ResponseOK) {

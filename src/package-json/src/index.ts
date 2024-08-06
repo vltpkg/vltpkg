@@ -8,17 +8,17 @@ export class PackageJson {
   /**
    * cache of `package.json` loads
    */
-  #cache: Map<string, Manifest> = new Map()
+  #cache = new Map<string, Manifest>()
 
   /**
    * cache of `package.json` paths by manifest
    */
-  #pathCache: Map<Manifest, string> = new Map()
+  #pathCache = new Map<Manifest, string>()
 
   /**
    * cache of load errors
    */
-  #errCache: Map<string, ErrorCauseObject> = new Map()
+  #errCache = new Map<string, ErrorCauseObject>()
 
   /**
    * Reads and parses contents of a `package.json` file at a directory `dir`.

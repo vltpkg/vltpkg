@@ -90,8 +90,8 @@ t.test('spawn daemon', { bail: true }, t => {
   const p = t.parent as Test
   const onDaemonData = (c: Buffer) => {
     // prepare to slay the daemon
-    const cpid = c.toString().match(/^\[(\d+)\]/)
-    if (cpid && cpid[1]) {
+    const cpid = /^\[(\d+)\]/.exec(c.toString())
+    if (cpid?.[1]) {
       daemon.stderr?.removeListener('data', onDaemonData)
       const pid = +cpid[1]
       p.teardown(() => process.kill(pid))

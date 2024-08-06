@@ -233,7 +233,7 @@ export class CacheEntry {
     if (this.isGzip) {
       // we know that if we know it's gzip, that the body has been
       // flattened to a single buffer, so save the extra call.
-      const b = gunzipSync(this.#body[0] as Buffer)
+      const b = gunzipSync(this.#body[0]!)
       this.setHeader('content-encoding', 'identity')
       this.#body = [b]
       this.#bodyLength = b.byteLength
