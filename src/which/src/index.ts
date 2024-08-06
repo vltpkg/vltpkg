@@ -33,7 +33,7 @@ const getPathInfo = (
         // windows always checks the cwd first
         /* c8 ignore next - platform-specific */
         ...(isWindows ? [process.cwd()] : []),
-        ...(optPath || /* c8 ignore next - very unusual */ '').split(
+        ...(optPath ?? /* c8 ignore next - very unusual */ '').split(
           optDelimiter,
         ),
       ]

@@ -65,21 +65,21 @@ const { version } = loadPackageJson(
   import.meta.url,
   '../package.json',
 )
-const navUA = globalThis.navigator?.userAgent
+const navUA = (globalThis.navigator as Navigator | undefined)
+  ?.userAgent
 const bun =
-  navUA ??
-  //@ts-ignore
+  navUA ||
+  //@ts-expect-error
   ((await import('bun').catch(() => {}))?.default?.version as
     | string
     | undefined)
 const deno =
-  //@ts-ignore
+  //@ts-expect-error
   navUA ?? (globalThis.Deno?.deno?.version as string | undefined)
 const node =
-  //@ts-ignore
-  navUA ?? (globalThis.process?.version as string | undefined)
+  navUA ?? (globalThis.process as NodeJS.Process | undefined)?.version
 const nua =
-  navUA ??
+  navUA ||
   (bun ? `Bun/${bun}`
   : deno ? `Deno/${deno}`
   : node ? `Node.js/${node}`
@@ -89,7 +89,7 @@ export const userAgent = `@vltpkg/registry-client/${version} ${nua}`
 const xdg = new XDG('vlt')
 
 export class RegistryClient {
-  pools: Map<string, Pool> = new Map()
+  pools = new Map<string, Pool>()
   cache: Cache
 
   constructor({
@@ -164,7 +164,7 @@ export class RegistryClient {
                 return true
               }
             } catch (er) {
-              rej(er)
+              rej(er as Error)
               return true
             }
           }

@@ -30,9 +30,7 @@ export type LoadQuery = {
  * Canonical form of the {@link WorkspaceConfig}, used
  * internally for consistency.
  */
-export type WorkspaceConfigObject = {
-  [group: string]: string[]
-}
+export type WorkspaceConfigObject = Record<string, string[]>
 
 /**
  * Allowed datatype in the `vlt-workspaces.json` file.
@@ -117,7 +115,7 @@ export const assertWSConfig: (
   })
 }
 
-export interface MonorepoOptions {
+export type MonorepoOptions = {
   /**
    * A {@link PackageJson} object, for sharing manifest caches
    */
@@ -260,7 +258,7 @@ export class Monorepo {
       : query.groups ?? [],
     )
 
-    const groupsExpanded: { [k: string]: Set<string> } = {}
+    const groupsExpanded: Record<string, Set<string>> = {}
     for (const [group, pattern] of Object.entries(this.config)) {
       if (groups.size && !groups.has(group)) continue
       groupsExpanded[group] = this.#glob(pattern)
@@ -341,7 +339,7 @@ export class Monorepo {
           if (!pj?.isFile()) return true
           try {
             this.packageJson.read(p.fullpath())
-          } catch (er) {
+          } catch {
             return true
           }
           for (const m of maybeDelete) {
@@ -383,7 +381,7 @@ export class Monorepo {
       'optionalDependencies',
       'peerDependencies',
     ]) {
-      const deps = manifest[depType]
+      const deps = manifest[depType] as Manifest['dependencies']
       if (!deps) continue
       for (const [dep, spec] of Object.entries(deps)) {
         if (spec.startsWith('workspace:')) {

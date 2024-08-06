@@ -53,32 +53,32 @@ export class Graph {
   /**
    * A set of all edges in this graph.
    */
-  edges: Set<Edge> = new Set()
+  edges = new Set<Edge>()
 
   /**
    * Map registered dep ids to the node that represent them in the graph.
    */
-  nodes: Map<DepID, Node> = new Map()
+  nodes = new Map<DepID, Node>()
 
   /**
    * Map of nodes by their name
    */
-  nodesByName: Map<string, Set<Node>> = new Map()
+  nodesByName = new Map<string, Set<Node>>()
 
   /**
    * Cached resolutions for spec lookups
    */
-  resolutions: Map<string, Node> = new Map()
+  resolutions = new Map<string, Node>()
 
   /**
    * Reverse map of resolutions
    */
-  resolutionsReverse: Map<Node, Set<string>> = new Map()
+  resolutionsReverse = new Map<Node, Set<string>>()
 
   /**
    * A set of importer nodes in this graph.
    */
-  importers: Set<Node> = new Set()
+  importers = new Set<Node>()
 
   /**
    * The {@link Node} that represents the project root `package.json`.
@@ -88,7 +88,7 @@ export class Graph {
   /**
    * A set of extraneous dependencies found when building the graph.
    */
-  extraneousDependencies: Set<Edge> = new Set()
+  extraneousDependencies = new Set<Edge>()
 
   /**
    * The root of the project this graph represents

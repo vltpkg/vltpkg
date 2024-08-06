@@ -29,13 +29,13 @@ const revsCache = new LRUCache<string, RevDoc, GitOptions>({
 })
 
 export const revs = async (repo: string, opts: GitOptions = {}) => {
-  repo = String(gitScpURL(repo) || repo).replace(/^git\+/, '')
+  repo = String(gitScpURL(repo) ?? repo).replace(/^git\+/, '')
   if (repo.startsWith('file://')) repo = fileURLToPath(repo)
   if (opts.noGitRevCache) {
     const result = await fetchMethod(repo, undefined, {
       context: opts,
     })
-    if (result) revsCache.set(repo, result)
+    revsCache.set(repo, result)
     return result
   }
   return await revsCache.fetch(repo, { context: opts })

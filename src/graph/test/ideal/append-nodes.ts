@@ -1,5 +1,5 @@
 import { PackageInfoClient } from '@vltpkg/package-info'
-import { Spec, SpecOptions } from '@vltpkg/spec'
+import { Spec, SpecOptions } from '../fixtures/spec.js'
 import { Manifest } from '@vltpkg/types'
 import { inspect } from 'node:util'
 import { PathScurry } from 'path-scurry'
@@ -15,13 +15,6 @@ const configData = {
     npm: 'https://registry.npmjs.org',
   },
 } satisfies SpecOptions
-
-const kCustomInspect = Symbol.for('nodejs.util.inspect.custom')
-Object.assign(Spec.prototype, {
-  [kCustomInspect]() {
-    return `Spec {${this}}`
-  },
-})
 
 t.test('append a new node to a graph from a registry', async t => {
   const fooManifest = {

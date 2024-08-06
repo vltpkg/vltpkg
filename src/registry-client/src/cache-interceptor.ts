@@ -53,7 +53,7 @@ export const cacheInterceptor = (
     if (typeof br?.resume === 'function') br.resume()
 
     const key = JSON.stringify([origin, method, path, accept])
-    cache.fetch(key, { context: { integrity } }).then(buffer => {
+    void cache.fetch(key, { context: { integrity } }).then(buffer => {
       const entry = buffer ? CacheEntry.decode(buffer) : undefined
       const cacheHandler = new CacheHandler({
         key,

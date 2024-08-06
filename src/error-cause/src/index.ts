@@ -8,7 +8,7 @@ import type { IncomingMessage } from 'http'
  * Several of these types are just very basic duck-typing, because referencing
  * internal types directly would create a workspace dependency cycle.
  */
-export interface ErrorCauseObject {
+export type ErrorCauseObject = {
   /**
    * The `cause` field within a `cause` object should
    * always be an `Error` object that was previously thrown. Note
@@ -80,7 +80,7 @@ export interface ErrorCauseObject {
    * Array of valid options when something is not a valid option.
    * (For use in `did you mean X?` output.)
    */
-  validOptions?: Array<any>
+  validOptions?: any[]
 
   /**
    * message indicating what bit of work this might be a part of, what feature
@@ -193,12 +193,12 @@ export type Codes =
 
 const create = (
   cls: typeof Error,
-  defaultFrom: ((...a: any[]) => any) | { new (...a: any[]): any },
+  defaultFrom: ((...a: any[]) => any) | (new (...a: any[]) => any),
   message: string,
   cause?: ErrorCause,
   from:
     | ((...a: any[]) => any)
-    | { new (...a: any[]): any } = defaultFrom,
+    | (new (...a: any[]) => any) = defaultFrom,
 ) => {
   const er = new cls(message, cause ? { cause } : undefined)
   Error.captureStackTrace(er, from)
@@ -208,17 +208,17 @@ const create = (
 export const error = (
   message: string,
   cause?: ErrorCause,
-  from?: ((...a: any[]) => any) | { new (...a: any[]): any },
+  from?: ((...a: any[]) => any) | (new (...a: any[]) => any),
 ) => create(Error, error, message, cause, from)
 
 export const typeError = (
   message: string,
   cause?: ErrorCause,
-  from?: ((...a: any[]) => any) | { new (...a: any[]): any },
+  from?: ((...a: any[]) => any) | (new (...a: any[]) => any),
 ) => create(TypeError, typeError, message, cause, from)
 
 export const syntaxError = (
   message: string,
   cause?: ErrorCause,
-  from?: ((...a: any[]) => any) | { new (...a: any[]): any },
+  from?: ((...a: any[]) => any) | (new (...a: any[]) => any),
 ) => create(SyntaxError, syntaxError, message, cause, from)

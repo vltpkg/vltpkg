@@ -58,9 +58,9 @@ export class Cache extends LRUCache<
   CacheFetchContext
 > {
   #path: string;
-  [Symbol.toStringTag]: string = '@vltpkg/cache.Cache'
+  [Symbol.toStringTag] = '@vltpkg/cache.Cache'
   #random: string = randomBytes(6).toString('hex')
-  #pending: Set<Promise<void | boolean>> = new Set()
+  #pending = new Set<Promise<undefined | boolean>>()
   onDiskWrite?: CacheOptions['onDiskWrite']
   onDiskDelete?: CacheOptions['onDiskDelete']
 
@@ -168,7 +168,7 @@ export class Cache extends LRUCache<
     }
     dir.closeSync()
   }
-  [Symbol.iterator](): Generator<[string, Buffer], void, unknown> {
+  [Symbol.iterator](): Generator<[string, Buffer], void> {
     return this.walkSync()
   }
 
@@ -189,7 +189,7 @@ export class Cache extends LRUCache<
    * Pass `true` as second argument to delete not just from the in-memory
    * cache, but the disk backing as well.
    */
-  delete(key: string, fromDisk: boolean = false): boolean {
+  delete(key: string, fromDisk = false): boolean {
     const ret = super.delete(key)
     if (fromDisk) {
       const path = this.path(key)
@@ -252,12 +252,10 @@ export class Cache extends LRUCache<
   /**
    * Resolves when there are no pending writes to the disk cache
    */
-  promise(): Promise<void> {
-    return new Promise(async res => {
-      await Promise.all(this.pending)
-      /* c8 ignore next - race condition */
-      this.#pending.size ? res(this.promise()) : res()
-    })
+  async promise(): Promise<void> {
+    await Promise.all(this.pending)
+    /* c8 ignore next - race condition */
+    if (this.#pending.size) await this.promise()
   }
 
   /**
@@ -272,7 +270,7 @@ export class Cache extends LRUCache<
    */
   integrityPath(integrity?: Integrity) {
     if (!integrity) return undefined
-    const m = integrity.match(/^sha512-([a-zA-Z0-9/+]{86}==)$/)
+    const m = /^sha512-([a-zA-Z0-9/+]{86}==)$/.exec(integrity)
     const hash = m?.[1]
     if (!hash) {
       throw error('invalid integrity value', {

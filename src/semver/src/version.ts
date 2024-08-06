@@ -304,7 +304,7 @@ export class Version {
         this.inc('pre', prereleaseIdentifier)
         break
 
-      case 'pre':
+      case 'pre': {
         // this is a bit different than node-semver's logic, but simpler
         // always do zero-based incrementing, and either bump the existing
         // numeric pr value, or add a `.0` after the identifier.
@@ -343,6 +343,7 @@ export class Version {
         }
         this.prerelease.splice(i + 1, 0, 0)
         break
+      }
 
       case 'major':
         if (!this.prerelease?.length || this.minor || this.patch)

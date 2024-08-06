@@ -331,6 +331,7 @@ export class Spec {
    */
   toString() {
     if (this.#toString !== undefined) return this.#toString
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
     let sub: Spec = this
     // we want the SECOND from the last in the chain
     while (sub.subspec?.subspec) sub = sub.subspec
@@ -679,7 +680,7 @@ export class Spec {
 
     this.conventionalRegistryTarball = String(
       new URL(
-        `/${name}/-/${name.replace(/^@[^\/]+\//, '')}-${
+        `/${name}/-/${name.replace(/^@[^/]+\//, '')}-${
           cmp.tuples[0][1]
         }.tgz`,
         registry,

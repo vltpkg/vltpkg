@@ -1,18 +1,11 @@
 import { asDepID } from '@vltpkg/dep-id'
-import { Spec } from '@vltpkg/spec'
+import { Spec } from '../fixtures/spec.js'
 import { inspect } from 'node:util'
 import t from 'tap'
 import { load } from '../../src/actual/load.js'
 import { asDependency } from '../../src/dependencies.js'
 import { Graph } from '../../src/graph.js'
 import { removeSatisfiedSpecs } from '../../src/ideal/remove-satisfied-specs.js'
-
-const kCustomInspect = Symbol.for('nodejs.util.inspect.custom')
-Object.assign(Spec.prototype, {
-  [kCustomInspect]() {
-    return `Spec {${this}}`
-  },
-})
 
 t.test('empty graph and add parameters', async t => {
   const graph = new Graph({

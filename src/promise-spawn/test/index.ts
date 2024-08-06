@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-expressions */
 import cp from 'child_process'
 import spawk from 'spawk'
 import t from 'tap'
@@ -225,7 +226,7 @@ t.test('exposes stdin', async t => {
   const proc = spawk.spawn('stdin', [], {})
   const p = promiseSpawn('stdin', [])
   process.nextTick(() => {
-    //@ts-ignore
+    //@ts-expect-error
     p.process.stdin.pipe(p.process.stdout)
     p.stdin.end('hello')
   })
@@ -242,7 +243,6 @@ t.test('exposes stdin', async t => {
 })
 
 t.test('exposes process', async t => {
-  //@ts-ignore
   const proc = spawk.spawn('proc', [], {}).exitOnSignal('SIGKILL')
 
   const p = promiseSpawn('proc', [])
@@ -278,7 +278,6 @@ t.test('exposes process', async t => {
 t.test('rejects when spawn errors', async t => {
   const proc = spawk
     .spawn('notfound', [], {})
-    //@ts-ignore
     .spawnError(new Error('command not found'))
 
   await t.rejects(promiseSpawn('notfound', []), {
@@ -298,7 +297,6 @@ t.test('rejects when spawn errors', async t => {
 t.test('spawn error includes extra', async t => {
   const proc = spawk
     .spawn('notfound', [], {})
-    //@ts-ignore
     .spawnError(new Error('command not found'))
 
   await t.rejects(
@@ -320,7 +318,6 @@ t.test('spawn error includes extra', async t => {
 t.test('spawn error respects stdioString', async t => {
   const proc = spawk
     .spawn('notfound', [], {})
-    //@ts-ignore
     .spawnError(new Error('command not found'))
 
   await t.rejects(
@@ -341,7 +338,6 @@ t.test('spawn error respects stdioString', async t => {
 t.test('spawn error respects stdio as inherit', async t => {
   const proc = spawk
     .spawn('notfound', [], { stdio: 'inherit' })
-    //@ts-ignore
     .spawnError(new Error('command not found'))
 
   await t.rejects(

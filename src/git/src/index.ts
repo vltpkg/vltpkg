@@ -14,9 +14,7 @@ export * from './spawn.js'
 /**
  * This extends all options that can be passed to spawn() or pickManifest.
  */
-export interface GitOptions
-  extends SpawnOptions,
-    PickManifestOptionsNoBefore {
+export type GitOptions = {
   /** the path to git binary, or 'false' to prevent all git operations */
   git?: string | false
   /** the current working directory to perform git operations in */
@@ -52,4 +50,5 @@ export interface GitOptions
    * Just to test rev lookup without continually clearing the cache
    */
   noGitRevCache?: boolean
-}
+} & SpawnOptions &
+  PickManifestOptionsNoBefore

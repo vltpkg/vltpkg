@@ -21,7 +21,7 @@ const pkgNames = readFileSync(
   .trim()
   .split(/\r?\n/)
   // randomize order
-  .sort((_a, _b) => Math.random() - 0.5)
+  .sort(() => Math.random() - 0.5)
 const extractDir = resolve(__dirname, 'fixtures/extract')
 const cache = resolve(__dirname, 'fixtures/cache')
 const cacache = resolve(__dirname, 'fixtures/cacache')

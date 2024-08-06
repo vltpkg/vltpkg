@@ -124,8 +124,8 @@ const addFixture = async (spec: Spec) => {
     const response = await fetch(res.resolved)
     const buf = Buffer.from(await response.arrayBuffer())
     writeFileSync(artifact, buf)
-  } else if (/^git/.test(res.resolved)) {
-    throw 'git deps have to be added manually'
+  } else if (res.resolved.startsWith('git')) {
+    throw new Error('git deps have to be added manually')
   } else {
     const st = statSync(res.resolved)
     if (st.isFile()) {

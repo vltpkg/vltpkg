@@ -49,7 +49,7 @@ export type LoadOptions = SpecOptions & {
   loadManifests?: boolean
 }
 
-export interface ReadEntry {
+export type ReadEntry = {
   alias: string
   name: string
   realpath: Path
@@ -138,7 +138,7 @@ const readDir = (
   currDir: Path,
   fromNodeName?: string,
 ) => {
-  const res: Set<ReadEntry> = new Set()
+  const res = new Set<ReadEntry>()
   for (const entry of scurry.readdirSync(currDir)) {
     // ignore any hidden files / folders
     if (entry.name.startsWith('.')) continue
@@ -191,7 +191,7 @@ const parseDir = (
 ) => {
   const { loadManifests } = options
   const dependencies = getDeps(fromNode)
-  const seenDeps: Set<string> = new Set()
+  const seenDeps = new Set<string>()
   const readItems: Set<ReadEntry> = readDir(
     scurry,
     currDir,

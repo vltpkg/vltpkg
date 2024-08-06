@@ -92,13 +92,13 @@ const list = (conf: LoadedConfig) => {
   console.log(JSON.stringify(recordsToPairs(conf.options), null, 2))
 }
 
-const del = (conf: LoadedConfig) => {
+const del = async (conf: LoadedConfig) => {
   const fields = conf.positionals.slice(1)
   if (!fields.length) {
     console.error(usage)
     throw error('At least one key is required')
   }
-  conf.deleteConfigKeys(
+  await conf.deleteConfigKeys(
     conf.get('config') as 'user' | 'project',
     fields,
   )

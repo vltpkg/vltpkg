@@ -29,7 +29,7 @@ const makePkg = (name: string, version: string): Buffer => {
 const makePkgFlat = (name: string, version: string): Buffer => {
   const p = makePkg(name, version)
   const b = Buffer.allocUnsafeSlow(p.length)
-  for (let i = 0; i < p.length; i++) b[i] = p[i] as number
+  for (let i = 0; i < p.length; i++) b[i] = p[i]!
   if (b.byteOffset !== 0)
     throw new Error('got an offset of not zero??')
   return b
@@ -38,7 +38,7 @@ const makePkgFlat = (name: string, version: string): Buffer => {
 const makeJob = (
   name: string,
   version: string,
-  flat: boolean = false,
+  flat = false,
 ): [string, Buffer] => {
   return [
     `node_modules/.vlt/registry.npmjs.org/${name}/${version}/node_modules/${name}`,

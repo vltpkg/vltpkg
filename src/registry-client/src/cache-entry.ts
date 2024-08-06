@@ -57,7 +57,7 @@ export class CacheEntry {
   #statusCode: number
   #headers: Buffer[]
   #body: Buffer[] = []
-  #bodyLength: number = 0
+  #bodyLength = 0
   #integrity?: Integrity
   #integrityActual?: Integrity
   #json?: Record<string, JSONField>
@@ -233,7 +233,8 @@ export class CacheEntry {
     if (this.isGzip) {
       // we know that if we know it's gzip, that the body has been
       // flattened to a single buffer, so save the extra call.
-      const b = gunzipSync(this.#body[0] as Buffer)
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      const b = gunzipSync(this.#body[0]!)
       this.setHeader('content-encoding', 'identity')
       this.#body = [b]
       this.#bodyLength = b.byteLength

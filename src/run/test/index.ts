@@ -6,7 +6,7 @@ const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
 const fixture = resolve(__dirname, 'fixtures/script.js')
 const node =
-  / /.test(process.execPath) ?
+  process.execPath.includes(' ') ?
     '"' + process.execPath + '"'
   : process.execPath
 

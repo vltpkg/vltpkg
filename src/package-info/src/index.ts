@@ -43,9 +43,7 @@ export type Resolution = {
   spec: Spec
 }
 
-export interface PackageInfoClientOptions
-  extends RegistryClientOptions,
-    SpecOptions {
+export type PackageInfoClientOptions = {
   /** root of the project. Defaults to process.cwd() */
   projectRoot?: string
   /** PackageJson object */
@@ -58,10 +56,10 @@ export interface PackageInfoClientOptions
 
   /** workspace paths to load, irrelevant if Monorepo provided */
   workspace?: string[]
-}
+} & RegistryClientOptions &
+  SpecOptions
 
-export interface PackageInfoClientRequestOptions
-  extends PickManifestOptions {
+export type PackageInfoClientRequestOptions = {
   /** dir to resolve `file://` specifiers against. Defaults to projectRoot. */
   from?: string
   /**
@@ -69,7 +67,7 @@ export interface PackageInfoClientRequestOptions
    * enabled here.
    */
   fullMetadata?: boolean
-}
+} & PickManifestOptions
 
 // if fullMetadata is set, or we have a 'before' query, will be full data
 export type PackageInfoClientRequestOptionsFull =
@@ -272,11 +270,11 @@ export class PackageInfoClient {
             const src = pathResolve(tmp, path)
             await rename(src, target)
             // intentionally not awaited
-            rm(tmp, { recursive: true, force: true })
+            void rm(tmp, { recursive: true, force: true })
           } else {
             await clone(gitRemote, gitCommittish, target, { spec })
             // intentionally not awaited
-            rm(target + '/.git', { recursive: true })
+            void rm(target + '/.git', { recursive: true })
           }
           return r
         }
@@ -711,7 +709,8 @@ export class PackageInfoClient {
           )
         }
         const { from = this.#projectRoot } = options
-        const resolved = pathResolve(from, spec.file as string)
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        const resolved = pathResolve(from, spec.file!)
         const r = { resolved, spec }
         this.#resolutions.set(memoKey, r)
         return r
@@ -740,7 +739,7 @@ export class PackageInfoClient {
 
       case 'registry': {
         const mani = await this.manifest(spec, options)
-        if (mani?.dist) {
+        if (mani.dist) {
           const { integrity, tarball, signatures } = mani.dist
           if (tarball) {
             const r = {
@@ -781,7 +780,7 @@ export class PackageInfoClient {
           }
           if (gitSelectorParsed) {
             r.resolved += Object.entries(gitSelectorParsed)
-              .filter(([_, v]) => v !== undefined)
+              .filter(([_, v]) => v)
               .map(([k, v]) => `::${k}:${v}`)
               .join('')
           }
@@ -789,7 +788,7 @@ export class PackageInfoClient {
           return r
         }
         // have to actually clone somewhere
-        const s: Spec = spec as Spec
+        const s: Spec = spec
         return this.#tmpdir(async tmpdir => {
           const sha = await clone(
             gitRemote,
@@ -817,7 +816,7 @@ export class PackageInfoClient {
       return await fn(dir)
     } finally {
       // intentionally do not await
-      rm(dir, { recursive: true, force: true })
+      void rm(dir, { recursive: true, force: true })
     }
   }
 
@@ -825,7 +824,7 @@ export class PackageInfoClient {
   #resolveError(
     spec?: Spec,
     options: PackageInfoClientRequestOptions = {},
-    message: string = 'Could not resolve',
+    message = 'Could not resolve',
     extra: ErrorCauseObject = {},
   ) {
     const { from = this.#projectRoot } = options

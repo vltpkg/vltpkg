@@ -107,6 +107,8 @@ await Promise.all(keys.map(async (key) => {
     }
 }));
 await cache.promise();
+// TS mistakenly things didSomething is always false
+// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 if (!didSomething)
     process.exit(1);
 //# sourceMappingURL=unzip.js.map

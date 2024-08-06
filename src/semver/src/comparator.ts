@@ -138,7 +138,7 @@ export class Comparator {
    */
   tuples: (OVTuple | Comparator)[] = []
   /** true if this comparator can not match anything */
-  isNone: boolean = false
+  isNone = false
   /**
    * true if this comparator is a `'*'` type of range.
    *
@@ -147,7 +147,7 @@ export class Comparator {
    * comparator, and the comparator version also has a prerelease value,
    * unless `includePrerelease` is set.
    */
-  isAny: boolean = false
+  isAny = false
 
   /** the canonical strict simplified parsed form of this constructor */
   toString() {
@@ -159,11 +159,11 @@ export class Comparator {
     )
   }
 
-  constructor(comp: string, includePrerelease: boolean = false) {
+  constructor(comp: string, includePrerelease = false) {
     this.includePrerelease = includePrerelease
     comp = comp.trim()
     this.raw = comp
-    let hyphen: boolean = false
+    let hyphen = false
     const rawComps = fastSplit(comp, ' ', -1, (part, parts, i) => {
       if (part === '-') {
         if (hyphen) {
@@ -187,21 +187,23 @@ export class Comparator {
     // remove excess spaces, `> 1   2` => `>1 2`
     const comps: string[] = []
     let followingOperator = false
-    for (let i = 0; i < rawComps.length; i++) {
-      const c = rawComps[i] as string
+    for (const c of rawComps) {
       if (c === '') continue
       if (!followingOperator) {
         followingOperator = isOperator(c)
         comps.push(c)
         continue
       }
-      ;(comps[comps.length - 1] as string) += c
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      comps[comps.length - 1]! += c
       followingOperator = false
     }
 
+    // TS mistakenly thinks hyphen is always false here
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (hyphen) {
       const [min, _, max] = comps
-      /* c8 ignore start - defense in depth for TS, already gauranteed */
+      /* c8 ignore start - defense in depth for TS, already guaranteed */
       if (!min || !max) {
         throw invalidComp(comp, 'hyphen must be between two versions')
       }

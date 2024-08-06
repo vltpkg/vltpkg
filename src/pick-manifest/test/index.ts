@@ -40,6 +40,7 @@ const typechecks = () => {
   //@ts-expect-error
   mm.true = false
 }
+// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 typechecks
 
 t.test('basic carat range selection', t => {

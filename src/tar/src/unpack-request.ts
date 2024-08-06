@@ -5,7 +5,7 @@ export class UnpackRequest {
   target: string
   resolve!: () => void
   reject!: (reason?: any) => void
-  promise: Promise<void> = new Promise((res, rej) => {
+  promise = new Promise<void>((res, rej) => {
     this.resolve = res
     this.reject = rej
   })

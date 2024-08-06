@@ -19,13 +19,13 @@
  */
 
 // utility types to turn a null/undefined/void return into string
-export type NullToString<T> = VoidReplace<T, string>
+export type NullToString<T> = VoidReplace<T>
 
 export type NullReplace<T, R = string> =
   T extends NonNullable<T> ? T : NonNullable<T> | R
 
 export type VoidReplace<T, R = string> =
-  void extends T ? NullReplace<Exclude<T, void>, R> | R
+  undefined extends T ? NullReplace<Exclude<T, void>, R> | R
   : NullReplace<T, R>
 
 // overloaded so we can infer the return type.
@@ -44,7 +44,7 @@ export function fastSplit(
 export function fastSplit<T = string>(
   str: string,
   delim: string,
-  limit: number = -1,
+  limit = -1,
   onPart?: (
     part: string,
     parts: NullToString<T>[],

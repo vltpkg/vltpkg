@@ -1,8 +1,8 @@
 import { asDepID } from '@vltpkg/dep-id'
-import { PackageInfoClient } from '@vltpkg/package-info'
-import { Spec, SpecOptions } from '@vltpkg/spec'
-import { PathScurry } from 'path-scurry'
 import t from 'tap'
+import { Spec, SpecOptions } from '../fixtures/spec.js'
+import { PackageInfoClient } from '@vltpkg/package-info'
+import { PathScurry } from 'path-scurry'
 import { Dependency } from '../../src/dependencies.js'
 import { Graph } from '../../src/graph.js'
 import { addNodes } from '../../src/ideal/add-nodes.js'
@@ -14,13 +14,6 @@ const configData = {
     npm: 'https://registry.npmjs.org',
   },
 } satisfies SpecOptions
-
-const kCustomInspect = Symbol.for('nodejs.util.inspect.custom')
-Object.assign(Spec.prototype, {
-  [kCustomInspect]() {
-    return `Spec {${this}}`
-  },
-})
 
 t.test('addNodes', async t => {
   const fooManifest = {

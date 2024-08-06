@@ -33,6 +33,9 @@ export type PeerDependenciesMetaValue = {
   optional?: boolean
 }
 
+// Don't use Record here since TS cant do circular references with that
+// https://github.com/microsoft/TypeScript/issues/41164#issuecomment-1427073368
+// eslint-disable-next-line @typescript-eslint/consistent-indexed-object-style
 export type ConditionalValueObject = {
   [k: string]: ConditionalValue
 }
@@ -50,9 +53,7 @@ export type Exports =
   | Exclude<ConditionalValue, null>
   | ExportsSubpaths
 
-export type Imports = {
-  [path: `#${string}`]: ConditionalValue
-}
+export type Imports = Record<`#${string}`, ConditionalValue>
 
 export type FundingEntry = string | { url: string }
 export type Funding = FundingEntry | FundingEntry[]

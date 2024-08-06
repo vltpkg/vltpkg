@@ -1,5 +1,5 @@
 import { Spec } from '@vltpkg/spec'
-import { ChildProcess, spawn } from 'child_process'
+import { spawn } from 'child_process'
 import fs from 'fs'
 import { join, resolve } from 'path'
 import t, { Test } from 'tap'
@@ -26,8 +26,8 @@ const submodsRemote = `git://localhost:${port}/submodule-repo`
 const repo = resolve(me, 'repo')
 const repoUrl = String(pathToFileURL(repo))
 
-let repoSha = ''
-let submodsRepoSha = ''
+const repoSha = ''
+const submodsRepoSha = ''
 
 t.setTimeout(120000)
 t.test('create repo', { bail: true }, async () => {
@@ -63,7 +63,7 @@ t.test('create repo', { bail: true }, async () => {
   await git('add', 'other-file')
   await git('commit', '-m', 'others')
   await git('tag', '-am', 'version 1.2.3', 'version-1.2.3')
-  await git('tag', '-am', 'too big', '69' + Math.pow(2, 53) + '.0.0')
+  await git('tag', '-am', 'too big', `69${Math.pow(2, 53)}.0.0`)
   await write('gleep', 'glorp')
   await git('add', 'gleep')
   await git('commit', '-m', 'gleep glorp')
@@ -88,10 +88,10 @@ t.test('spawn daemon', { bail: true }, t => {
     { cwd: me, stdio: ['pipe', 1, 'pipe'] },
   )
   const p = t.parent as Test
-  const onDaemonData = (c: ChildProcess) => {
+  const onDaemonData = (c: Buffer) => {
     // prepare to slay the daemon
-    const cpid = c.toString().match(/^\[(\d+)\]/)
-    if (cpid && cpid[1]) {
+    const cpid = /^\[(\d+)\]/.exec(c.toString())
+    if (cpid?.[1]) {
       daemon.stderr?.removeListener('data', onDaemonData)
       const pid = +cpid[1]
       p.teardown(() => process.kill(pid))
@@ -146,8 +146,8 @@ t.test('create a repo with a submodule', { bail: true }, async () => {
   await git('add', 'other-file')
   await git('commit', '-m', 'others')
   await git('tag', '-am', 'version 1.2.3', 'version-1.2.3')
-  await git('tag', '-am', 'too big', '69' + Math.pow(2, 53) + '.0.0'),
-    await write('gleep', 'glorp')
+  await git('tag', '-am', 'too big', `69${Math.pow(2, 53)}.0.0`)
+  await write('gleep', 'glorp')
   await git('add', 'gleep')
   await git('commit', '-m', 'gleep glorp')
   await git('tag', '-am', 'head version', '69.42.0')
@@ -178,15 +178,15 @@ const hashre = /^[a-f0-9]{40}$/
 t.test('check every out', t => {
   t.jobs = 2
   t.plan(platforms.length)
-  platforms.forEach(fakePlatform =>
+  for (const fakePlatform of platforms) {
     t.test(`platform=${fakePlatform}`, t => {
       t.jobs = 2
       t.plan(shallows.length)
-      shallows.forEach(gitShallow =>
+      for (const gitShallow of shallows) {
         t.test(`shallow=${gitShallow}`, t => {
           t.jobs = 2
           t.plan(refs.length + 1)
-          refs.concat(repoSha).forEach(ref =>
+          for (const ref of refs.concat(repoSha)) {
             t.test(`ref=${ref}`, async t => {
               const safeRef = `${ref}`.replace(/[^a-z0-9.]/g, '-')
               const name = `${fakePlatform}-${gitShallow}-${safeRef}`
@@ -209,26 +209,26 @@ t.test('check every out', t => {
                 opts,
               )
               t.match(sha, hashre, `got a sha for ref=${ref}`)
-            }),
-          )
-        }),
-      )
-    }),
-  )
+            })
+          }
+        })
+      }
+    })
+  }
 })
 
 t.test('again, with a submodule', async t => {
   t.jobs = 2
   t.plan(platforms.length)
-  platforms.forEach(fakePlatform =>
+  for (const fakePlatform of platforms) {
     t.test(`platform=${fakePlatform}`, t => {
       t.jobs = 2
       t.plan(shallows.length)
-      shallows.forEach(gitShallow =>
+      for (const gitShallow of shallows) {
         t.test(`shallow=${gitShallow}`, t => {
           t.jobs = 2
           t.plan(refs.length + 1)
-          refs.concat(submodsRepoSha).forEach(ref =>
+          for (const ref of refs.concat(submodsRepoSha)) {
             t.test(`ref=${ref}`, async t => {
               const safeRef = `${ref}`.replace(/[^a-z0-9.]/g, '-')
               const name = `withsub-${fakePlatform}-${gitShallow}-${safeRef}`
@@ -261,12 +261,12 @@ t.test('again, with a submodule', async t => {
                 'glorp',
                 'gleep file is glorpy',
               )
-            }),
-          )
-        }),
-      )
-    }),
-  )
+            })
+          }
+        })
+      }
+    })
+  }
 })
 
 const clonedRepoDir = 'cloned-folder'
