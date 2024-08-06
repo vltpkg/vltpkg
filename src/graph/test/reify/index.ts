@@ -10,7 +10,7 @@ import {
 import { statSync } from 'node:fs'
 import { resolve } from 'path'
 import t from 'tap'
-import { buildIdeal, reify } from '../../src/index.js'
+import { actual, buildIdeal, reify } from '../../src/index.js'
 import {
   fixtureManifest,
   mockPackageInfo,
@@ -206,6 +206,8 @@ t.test('failure rolls back', async t => {
   })
 
   const projectRoot = resolve(dir, 'project')
+
+  const before = actual.load({ projectRoot })
   const graph = await buildIdeal({ projectRoot })
   const { reify } = await t.mockImport('../../src/reify/index.js', {
     '../../src/reify/chmod-bins.js': {
@@ -224,6 +226,10 @@ t.test('failure rolls back', async t => {
       graph,
     }),
   )
+
+  const after = actual.load({ projectRoot })
+
+  t.strictSame(before, after, 'no changes to actual graph')
 
   t.throws(
     // note: not lstat, since this is going to be a shim on windows,
