@@ -52,7 +52,7 @@ t.test('comparisons', t => {
 
 t.test('equality', t => {
   t.plan(equality.length)
-  for (const [v0, v1] of comparisons) {
+  for (const [v0, v1] of equality) {
     t.test(`${v0} ${v1}`, t => {
       const s0 = Version.parse(v0)
       const s1 = Version.parse(v1)
