@@ -37,7 +37,7 @@ export type PeerDependenciesMetaValue = {
 // https://github.com/microsoft/TypeScript/issues/41164#issuecomment-1427073368
 // eslint-disable-next-line @typescript-eslint/consistent-indexed-object-style
 export type ConditionalValueObject = {
-  [key: string]: ConditionalValue
+  [k: string]: ConditionalValue
 }
 export type ConditionalValue =
   | null
