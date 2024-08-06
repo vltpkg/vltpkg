@@ -220,7 +220,7 @@ export function pickManifest(
     mani: ManifestMinified
   }
   let found: ManiCheck | undefined = undefined
-  let foundIsDefTag: boolean = false
+  let foundIsDefTag = false
 
   for (const [ver, mani] of entries) {
     if (time && verTimes && !isBefore(ver, time, verTimes)) {

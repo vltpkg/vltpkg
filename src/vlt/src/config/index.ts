@@ -525,7 +525,7 @@ export class Config {
     const stops = ['vlt-workspaces.json', '.git']
     // indicators that this *may* be the root, if no .git or workspaces
     // file is found higher up in the search.
-    let foundLikelyRoot: boolean = false
+    let foundLikelyRoot = false
     const likelies = ['package.json', 'node_modules']
     for (const dir of walkUp(this.projectRoot)) {
       // don't look in ~
@@ -614,7 +614,7 @@ export class Config {
      * only used in tests, resets the memoization
      * @internal
      */
-    reload: boolean = false,
+    reload = false,
   ): Promise<LoadedConfig> {
     if (this.#loaded && !reload) return this.#loaded
     const a = new Config(definition, projectRoot)

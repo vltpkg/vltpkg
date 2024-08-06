@@ -1,4 +1,4 @@
-import { Spec, SpecOptions } from '@vltpkg/spec'
+import { Spec, SpecOptions } from './fixtures/spec.js'
 import { inspect } from 'node:util'
 import t from 'tap'
 import { Edge } from '../src/edge.js'
@@ -13,13 +13,6 @@ const configData = {
     npm: 'https://registry.npmjs.org',
   },
 } satisfies SpecOptions
-
-const kCustomInspect = Symbol.for('nodejs.util.inspect.custom')
-Object.assign(Spec.prototype, {
-  [kCustomInspect]() {
-    return `Spec {${this}}`
-  },
-})
 
 t.test('Edge', async t => {
   const rootMani = {

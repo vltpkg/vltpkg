@@ -1,5 +1,5 @@
 import { Spec } from '@vltpkg/spec'
-import { ChildProcess, spawn } from 'child_process'
+import { spawn } from 'child_process'
 import fs from 'fs'
 import { join, resolve } from 'path'
 import t, { Test } from 'tap'
@@ -88,7 +88,7 @@ t.test('spawn daemon', { bail: true }, t => {
     { cwd: me, stdio: ['pipe', 1, 'pipe'] },
   )
   const p = t.parent as Test
-  const onDaemonData = (c: ChildProcess) => {
+  const onDaemonData = (c: Buffer) => {
     // prepare to slay the daemon
     const cpid = c.toString().match(/^\[(\d+)\]/)
     if (cpid && cpid[1]) {

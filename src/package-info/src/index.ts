@@ -821,7 +821,7 @@ export class PackageInfoClient {
   #resolveError(
     spec?: Spec,
     options: PackageInfoClientRequestOptions = {},
-    message: string = 'Could not resolve',
+    message = 'Could not resolve',
     extra: ErrorCauseObject = {},
   ) {
     const { from = this.#projectRoot } = options

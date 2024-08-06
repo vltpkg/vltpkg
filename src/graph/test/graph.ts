@@ -1,5 +1,5 @@
 import { hydrate } from '@vltpkg/dep-id'
-import { Spec, SpecOptions } from '@vltpkg/spec'
+import { Spec, SpecOptions } from './fixtures/spec.js'
 import { Monorepo } from '@vltpkg/workspaces'
 import { inspect } from 'node:util'
 import t from 'tap'
@@ -7,13 +7,6 @@ import { Graph } from '../src/graph.js'
 
 t.cleanSnapshot = s =>
   s.replace(/^(\s+)"projectRoot": .*$/gm, '$1"projectRoot": #')
-
-const kCustomInspect = Symbol.for('nodejs.util.inspect.custom')
-Object.assign(Spec.prototype, {
-  [kCustomInspect]() {
-    return `Spec {${this}}`
-  },
-})
 
 const configData = {
   registry: 'https://registry.npmjs.org',

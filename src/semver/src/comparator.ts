@@ -138,7 +138,7 @@ export class Comparator {
    */
   tuples: (OVTuple | Comparator)[] = []
   /** true if this comparator can not match anything */
-  isNone: boolean = false
+  isNone = false
   /**
    * true if this comparator is a `'*'` type of range.
    *
@@ -147,7 +147,7 @@ export class Comparator {
    * comparator, and the comparator version also has a prerelease value,
    * unless `includePrerelease` is set.
    */
-  isAny: boolean = false
+  isAny = false
 
   /** the canonical strict simplified parsed form of this constructor */
   toString() {
@@ -159,11 +159,11 @@ export class Comparator {
     )
   }
 
-  constructor(comp: string, includePrerelease: boolean = false) {
+  constructor(comp: string, includePrerelease = false) {
     this.includePrerelease = includePrerelease
     comp = comp.trim()
     this.raw = comp
-    let hyphen: boolean = false
+    let hyphen = false
     const rawComps = fastSplit(comp, ' ', -1, (part, parts, i) => {
       if (part === '-') {
         if (hyphen) {

@@ -44,7 +44,7 @@ export function fastSplit(
 export function fastSplit<T = string>(
   str: string,
   delim: string,
-  limit: number = -1,
+  limit = -1,
   onPart?: (
     part: string,
     parts: NullToString<T>[],

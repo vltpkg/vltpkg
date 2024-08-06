@@ -14,7 +14,6 @@ export default tseslint.config(
   },
   eslint.configs.recommended,
   ...tseslint.configs.strictTypeChecked,
-  // TODO: turn on stylisistic
   // ...tseslint.configs.stylisticTypeChecked,
   {
     languageOptions: {
@@ -92,13 +91,15 @@ export default tseslint.config(
       '@typescript-eslint/no-unsafe-member-access': 'off',
       '@typescript-eslint/no-explicit-any': 'off',
       '@typescript-eslint/no-unsafe-return': 'off',
-      // TODO: audit each of these and either fix, inline disable, or comment here
-      '@typescript-eslint/no-base-to-string': 'off',
+      // TODO: remove all stylistic rules and turn on use tseslint.configs.stylisticTypeChecked instead
+      '@typescript-eslint/no-inferrable-types': 'error',
     },
   },
   {
     files: ['**/test/**/*.ts'],
     rules: {
+      // top level t.test dont need await. Probably some more fine-grained way to turn this off
+      // but not as big of an issue in tests.
       '@typescript-eslint/no-floating-promises': 'off',
     },
   },

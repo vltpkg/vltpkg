@@ -1,5 +1,5 @@
 import t from 'tap'
-import { Spec, SpecOptions } from '@vltpkg/spec'
+import { Spec, SpecOptions } from '../fixtures/spec.js'
 import { PackageInfoClient } from '@vltpkg/package-info'
 import { Graph } from '../../src/graph.js'
 import { addNodes } from '../../src/ideal/add-nodes.js'
@@ -13,13 +13,6 @@ const configData = {
     npm: 'https://registry.npmjs.org',
   },
 } satisfies SpecOptions
-
-const kCustomInspect = Symbol.for('nodejs.util.inspect.custom')
-Object.assign(Spec.prototype, {
-  [kCustomInspect]() {
-    return `Spec {${this}}`
-  },
-})
 
 t.test('addNodes', async t => {
   const fooManifest = {

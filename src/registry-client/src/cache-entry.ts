@@ -57,7 +57,7 @@ export class CacheEntry {
   #statusCode: number
   #headers: Buffer[]
   #body: Buffer[] = []
-  #bodyLength: number = 0
+  #bodyLength = 0
   #integrity?: Integrity
   #integrityActual?: Integrity
   #json?: Record<string, JSONField>

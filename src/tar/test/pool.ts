@@ -38,7 +38,7 @@ const makePkgFlat = (name: string, version: string): Buffer => {
 const makeJob = (
   name: string,
   version: string,
-  flat: boolean = false,
+  flat = false,
 ): [string, Buffer] => {
   return [
     `node_modules/.vlt/registry.npmjs.org/${name}/${version}/node_modules/${name}`,

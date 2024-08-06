@@ -27,7 +27,7 @@ export class Range {
   /** true if all prerelease versions should be included */
   includePrerelease: boolean
 
-  constructor(range: string, includePrerelease: boolean = false) {
+  constructor(range: string, includePrerelease = false) {
     this.raw = range
     this.includePrerelease = includePrerelease
     fastSplit(range, '||', -1, part =>

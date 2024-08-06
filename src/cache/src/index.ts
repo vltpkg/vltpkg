@@ -58,7 +58,7 @@ export class Cache extends LRUCache<
   CacheFetchContext
 > {
   #path: string;
-  [Symbol.toStringTag]: string = '@vltpkg/cache.Cache'
+  [Symbol.toStringTag] = '@vltpkg/cache.Cache'
   #random: string = randomBytes(6).toString('hex')
   #pending: Set<Promise<undefined | boolean>> = new Set()
   onDiskWrite?: CacheOptions['onDiskWrite']
@@ -189,7 +189,7 @@ export class Cache extends LRUCache<
    * Pass `true` as second argument to delete not just from the in-memory
    * cache, but the disk backing as well.
    */
-  delete(key: string, fromDisk: boolean = false): boolean {
+  delete(key: string, fromDisk = false): boolean {
     const ret = super.delete(key)
     if (fromDisk) {
       const path = this.path(key)

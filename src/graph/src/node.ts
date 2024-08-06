@@ -42,7 +42,7 @@ export class Node {
   /**
    * True if this node is an importer node.
    */
-  importer: boolean = false
+  importer = false
 
   /**
    * The manifest integrity value.
