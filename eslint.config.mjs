@@ -91,8 +91,7 @@ export default tseslint.config(
       '@typescript-eslint/no-unsafe-member-access': 'off',
       '@typescript-eslint/no-explicit-any': 'off',
       '@typescript-eslint/no-unsafe-return': 'off',
-      // TODO: remove all stylistic rules and turn on use tseslint.configs.stylisticTypeChecked instead
-      '@typescript-eslint/no-inferrable-types': 'error',
+      // These rules from tseslint.configs.stylisticTypeChecked are ok
       '@typescript-eslint/no-empty-function': 'off',
       '@typescript-eslint/class-literal-property-style': 'off',
       '@typescript-eslint/prefer-nullish-coalescing': [

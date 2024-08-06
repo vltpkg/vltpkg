@@ -187,15 +187,15 @@ export class Comparator {
     // remove excess spaces, `> 1   2` => `>1 2`
     const comps: string[] = []
     let followingOperator = false
-    for (let i = 0; i < rawComps.length; i++) {
-      const c = rawComps[i]!
+    for (const c of rawComps) {
       if (c === '') continue
       if (!followingOperator) {
         followingOperator = isOperator(c)
         comps.push(c)
         continue
       }
-      ;(comps[comps.length - 1]!) += c
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      comps[comps.length - 1]! += c
       followingOperator = false
     }
 

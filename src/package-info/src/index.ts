@@ -707,6 +707,7 @@ export class PackageInfoClient {
           )
         }
         const { from = this.#projectRoot } = options
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         const resolved = pathResolve(from, spec.file!)
         const r = { resolved, spec }
         this.#resolutions.set(memoKey, r)
