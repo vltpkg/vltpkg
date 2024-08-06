@@ -68,6 +68,8 @@ export default tseslint.config(
       ],
       // We can user overload signatures
       '@typescript-eslint/unified-signatures': 'off',
+      // It's ok to use async functions that dont use await to signal its a Promise
+      '@typescript-eslint/require-await': 'off',
       // TODO: Would be nice to turn this on, but doesn't play well with how we pass instance methods to error() to capture stack traces
       '@typescript-eslint/unbound-method': 'off',
       // TODO: audit each of these and either fix, inline disable, or comment here
@@ -84,9 +86,8 @@ export default tseslint.config(
       '@typescript-eslint/no-unsafe-member-access': 'off',
       '@typescript-eslint/no-unsafe-return': 'off',
       '@typescript-eslint/no-unused-expressions': 'off',
-      '@typescript-eslint/only-throw-error': 'off',
+      // '@typescript-eslint/only-throw-error': 'off',
       '@typescript-eslint/prefer-promise-reject-errors': 'off',
-      '@typescript-eslint/require-await': 'off',
       '@typescript-eslint/restrict-plus-operands': 'off',
       '@typescript-eslint/restrict-template-expressions': 'off',
       '@typescript-eslint/use-unknown-in-catch-callback-variable':

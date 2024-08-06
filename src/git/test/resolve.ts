@@ -131,7 +131,7 @@ t.test('no revs if cannot read repo', async t => {
 
 t.test('resolve the revs', async t => {
   const revDoc = await revs(repo, { noGitRevCache: true })
-  if (!revDoc) throw 'failed to load revs'
+  if (!revDoc) throw new Error('failed to load revs')
   const repoRemote = pathToFileURL(repo) + '/.git'
 
   const head = await resolve(repo)
