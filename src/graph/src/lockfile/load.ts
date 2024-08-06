@@ -41,12 +41,12 @@ export type LoadOptions = SpecOptions & {
   scurry?: PathScurry
 }
 
-interface LoadEdgesOptions {
+type LoadEdgesOptions = {
   graph: Graph
   edgesInfo: LockfileDataEdge[]
 }
 
-interface LoadNodesOptions {
+type LoadNodesOptions = {
   graph: Graph
   nodesInfo: [DepID, LockfileDataNode][]
 }

@@ -13,7 +13,7 @@ import { parse } from 'polite-json'
  * The object passed to the constructor or {@link Monorepo#load} to limit which
  * {@link Workspace Workspaces} get loaded.
  */
-export interface LoadQuery {
+export type LoadQuery = {
   /**
    * A glob pattern string, or an array of them. Only workspaces found
    * in paths matched will be loaded.
@@ -115,7 +115,7 @@ export const assertWSConfig: (
   })
 }
 
-export interface MonorepoOptions {
+export type MonorepoOptions = {
   /**
    * A {@link PackageJson} object, for sharing manifest caches
    */

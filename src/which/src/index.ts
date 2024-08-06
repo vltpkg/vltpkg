@@ -62,7 +62,7 @@ const getPathPart = (raw: string, cmd: string) => {
   return prefix + join(pathPart, cmd)
 }
 
-export interface WhichOptions {
+export type WhichOptions = {
   all?: boolean
   path?: string
   pathExt?: string

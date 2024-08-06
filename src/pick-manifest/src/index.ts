@@ -10,7 +10,7 @@ import {
 
 const parsedNodeVersion = Version.parse(process.version)
 
-export interface PickManifestOptions {
+export type PickManifestOptions = {
   tag?: string
   before?: Date | string | number
   'node-version'?: string
@@ -212,7 +212,7 @@ export function pickManifest(
     return undefined
   }
 
-  interface ManiCheck {
+  type ManiCheck = {
     version: Version
     deprecated: boolean
     platform: boolean

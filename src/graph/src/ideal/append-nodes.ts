@@ -12,7 +12,7 @@ import {
 import { Graph } from '../graph.js'
 import { Node } from '../node.js'
 
-interface FileTypeInfo {
+type FileTypeInfo = {
   id: DepID
   path: string
 }

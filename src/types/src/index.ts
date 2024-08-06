@@ -16,7 +16,7 @@ export type Integrity = `sha512-${string}`
 export type KeyID = `SHA256:${string}`
 
 /** The Manifest['dist'] field present in registry manifests */
-export interface Dist {
+export type Dist = {
   integrity?: Integrity
   shasum?: string
   tarball?: string
@@ -29,14 +29,14 @@ export interface Dist {
 }
 
 /** An object used to mark some peerDeps as optional */
-export interface PeerDependenciesMetaValue {
+export type PeerDependenciesMetaValue = {
   optional?: boolean
 }
 
 // Don't use Record here since TS cant do circular references with that
 // https://github.com/microsoft/TypeScript/issues/41164#issuecomment-1427073368
 // eslint-disable-next-line @typescript-eslint/consistent-indexed-object-style
-export interface ConditionalValueObject {
+export type ConditionalValueObject = {
   [key: string]: ConditionalValue
 }
 export type ConditionalValue =
@@ -64,7 +64,7 @@ export type ManifestRegistry = Manifest & {
   dist: Dist
 }
 
-export interface ManifestMinified {
+export type ManifestMinified = {
   /** The name of the package. optional because {} is a valid package.json */
   name?: string
   /** The version of the package. optional because {} is a valid package.json */
@@ -151,7 +151,7 @@ export type Manifest = Record<string, JSONField> &
     gitHead?: string
   }
 
-export interface PackumentBase {
+export type PackumentBase = {
   name: string
   'dist-tags': Record<string, string>
 }

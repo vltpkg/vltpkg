@@ -49,7 +49,7 @@ export type LoadOptions = SpecOptions & {
   loadManifests?: boolean
 }
 
-export interface ReadEntry {
+export type ReadEntry = {
   alias: string
   name: string
   realpath: Path

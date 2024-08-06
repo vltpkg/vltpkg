@@ -19,20 +19,17 @@ const isPipe = (
 
 export type IOTypeNoPipe = Exclude<IOType, IOTypePipe>
 export type IOTypePipe = 'pipe' | 'overlapped' | null | undefined
-export interface PromiseSpawnOptions extends SpawnOptions {
+export type PromiseSpawnOptions = {
   stdioString?: boolean
   acceptFail?: boolean
-}
-export interface PromiseSpawnOptionsString
-  extends PromiseSpawnOptions {
+} & SpawnOptions
+export type PromiseSpawnOptionsString = {
   stdioString?: true
-}
-export interface PromiseSpawnOptionsBuffer
-  extends PromiseSpawnOptions {
+} & PromiseSpawnOptions
+export type PromiseSpawnOptionsBuffer = {
   stdioString: false
-}
-export interface PromiseSpawnOptionsStdin
-  extends PromiseSpawnOptions {
+} & PromiseSpawnOptions
+export type PromiseSpawnOptionsStdin = {
   stdio?:
     | Exclude<IOTypePipe, null>
     | [
@@ -40,9 +37,8 @@ export interface PromiseSpawnOptionsStdin
         stdout?: Exclude<StdioOptions, IOType>[number],
         stderr?: Exclude<StdioOptions, IOType>[number],
       ]
-}
-export interface PromiseSpawnOptionsNoStdin
-  extends PromiseSpawnOptions {
+} & PromiseSpawnOptions
+export type PromiseSpawnOptionsNoStdin = {
   stdio:
     | IOTypeNoPipe
     | IOTypeNoPipe[]
@@ -51,9 +47,8 @@ export interface PromiseSpawnOptionsNoStdin
         stdout?: Exclude<StdioOptions, IOType>[number],
         stderr?: Exclude<StdioOptions, IOType>[number],
       ]
-}
-export interface PromiseSpawnOptionsStdout
-  extends PromiseSpawnOptions {
+} & PromiseSpawnOptions
+export type PromiseSpawnOptionsStdout = {
   stdio?:
     | Exclude<IOTypePipe, null>
     | [
@@ -61,17 +56,14 @@ export interface PromiseSpawnOptionsStdout
         stdout?: IOTypePipe,
         stderr?: Exclude<StdioOptions, IOType>[number],
       ]
-}
-export interface PromiseSpawnOptionsStdoutString
-  extends PromiseSpawnOptionsStdout {
+} & PromiseSpawnOptions
+export type PromiseSpawnOptionsStdoutString = {
   stdioString?: true
-}
-export interface PromiseSpawnOptionsStdoutBuffer
-  extends PromiseSpawnOptionsStdout {
+} & PromiseSpawnOptionsStdout
+export type PromiseSpawnOptionsStdoutBuffer = {
   stdioString: false
-}
-export interface PromiseSpawnOptionsNoStdout
-  extends PromiseSpawnOptions {
+} & PromiseSpawnOptionsStdout
+export type PromiseSpawnOptionsNoStdout = {
   stdio:
     | IOTypeNoPipe
     | IOTypeNoPipe[]
@@ -80,10 +72,9 @@ export interface PromiseSpawnOptionsNoStdout
         stdout?: IOTypeNoPipe,
         stderr?: Exclude<StdioOptions, IOType>[number],
       ]
-}
+} & PromiseSpawnOptions
 /* c8 ignore start - weird windows coverage bug */
-export interface PromiseSpawnOptionsStderr
-  extends PromiseSpawnOptions {
+export type PromiseSpawnOptionsStderr = {
   stdio?:
     | Exclude<IOTypePipe, null>
     | [
@@ -91,16 +82,14 @@ export interface PromiseSpawnOptionsStderr
         stdout: undefined | Exclude<StdioOptions, IOType>[number],
         stderr?: IOTypePipe,
       ]
-}
+} & PromiseSpawnOptions
 /* c8 ignore stop */
-export interface PromiseSpawnOptionsStderrString
-  extends PromiseSpawnOptionsStderr {
+export type PromiseSpawnOptionsStderrString = {
   stdioString?: true
-}
-export interface PromiseSpawnOptionsStderrBuffer
-  extends PromiseSpawnOptionsStderr {
+} & PromiseSpawnOptionsStderr
+export type PromiseSpawnOptionsStderrBuffer = {
   stdioString: false
-}
+} & PromiseSpawnOptionsStderr
 export type PromiseSpawnOptionsNoStderr = PromiseSpawnOptions & {
   stdio:
     | IOTypeNoPipe
@@ -132,7 +121,7 @@ function stdioResult<O extends PromiseSpawnOptions>(
   }
 }
 
-export interface SpawnResult {
+export type SpawnResult = {
   command: string
   args: string[]
   cwd: string
@@ -141,51 +130,51 @@ export interface SpawnResult {
   stdout: Buffer | string | null
   stderr: Buffer | string | null
 }
-export interface SpawnResultString extends SpawnResult {
+export type SpawnResultString = {
   stdout: string | null
   stderr: string | null
-}
-export interface SpawnResultBuffer extends SpawnResult {
+} & SpawnResult
+export type SpawnResultBuffer = {
   stdout: Buffer | null
   stderr: Buffer | null
-}
-export interface SpawnResultStdout extends SpawnResult {
+} & SpawnResult
+export type SpawnResultStdout = {
   stdout: string | Buffer
-}
-export interface SpawnResultStdoutString extends SpawnResultString {
+} & SpawnResult
+export type SpawnResultStdoutString = {
   stdout: string
-}
-export interface SpawnResultStdoutBuffer extends SpawnResultBuffer {
+} & SpawnResultString
+export type SpawnResultStdoutBuffer = {
   stdout: Buffer
-}
-export interface SpawnResultNoStdout extends SpawnResult {
+} & SpawnResultBuffer
+export type SpawnResultNoStdout = {
   stdout: null
-}
-export interface SpawnResultStderr extends SpawnResult {
+} & SpawnResult
+export type SpawnResultStderr = {
   stderr: string | Buffer
-}
-export interface SpawnResultStderrString extends SpawnResultString {
+} & SpawnResult
+export type SpawnResultStderrString = {
   stderr: string
-}
-export interface SpawnResultStderrBuffer extends SpawnResultBuffer {
+} & SpawnResultString
+export type SpawnResultStderrBuffer = {
   stderr: Buffer
-}
-export interface SpawnResultNoStderr extends SpawnResult {
+} & SpawnResultBuffer
+export type SpawnResultNoStderr = {
   stderr: null
-}
+} & SpawnResult
 
-export interface SpawnResultNoStdio extends SpawnResult {
+export type SpawnResultNoStdio = {
   stderr: null
   stdout: null
-}
-export interface SpawnResultStdioStrings extends SpawnResult {
+} & SpawnResult
+export type SpawnResultStdioStrings = {
   stdout: string
   stderr: string
-}
-export interface SpawnResultStdioBuffers extends SpawnResult {
+} & SpawnResult
+export type SpawnResultStdioBuffers = {
   stdout: Buffer
   stderr: Buffer
-}
+} & SpawnResult
 
 export type SpawnResultByOptions<T extends PromiseSpawnOptions> =
   SpawnResult & {

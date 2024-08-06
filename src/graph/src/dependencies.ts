@@ -24,7 +24,7 @@ export type DependencyTypeShort =
 /**
  * Dependency entries info as defined in a package.json file.
  */
-export interface RawDependency {
+export type RawDependency = {
   name: string
   bareSpec: string
   type: DependencyTypeLong
@@ -34,7 +34,7 @@ export interface RawDependency {
 /**
  * Parsed dependency entries info.
  */
-export interface Dependency {
+export type Dependency = {
   /**
    * The parsed {@link Spec} object describing the dependency requirements.
    */

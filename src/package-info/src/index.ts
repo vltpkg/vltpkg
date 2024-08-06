@@ -36,16 +36,14 @@ import { rename } from './rename.js'
 
 const xdg = new XDG('vlt')
 
-export interface Resolution {
+export type Resolution = {
   resolved: string
   integrity?: Integrity
   signatures?: Exclude<Manifest['dist'], undefined>['signatures']
   spec: Spec
 }
 
-export interface PackageInfoClientOptions
-  extends RegistryClientOptions,
-    SpecOptions {
+export type PackageInfoClientOptions = {
   /** root of the project. Defaults to process.cwd() */
   projectRoot?: string
   /** PackageJson object */
@@ -56,10 +54,9 @@ export interface PackageInfoClientOptions
 
   /** workspace paths to load */
   workspace?: string[]
-}
+} & RegistryClientOptions & SpecOptions
 
-export interface PackageInfoClientRequestOptions
-  extends PickManifestOptions {
+export type PackageInfoClientRequestOptions = {
   /** dir to resolve `file://` specifiers against. Defaults to projectRoot. */
   from?: string
   /**
@@ -67,7 +64,7 @@ export interface PackageInfoClientRequestOptions
    * enabled here.
    */
   fullMetadata?: boolean
-}
+} & PickManifestOptions
 
 // if fullMetadata is set, or we have a 'before' query, will be full data
 export type PackageInfoClientRequestOptionsFull =

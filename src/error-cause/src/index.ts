@@ -8,7 +8,7 @@ import type { IncomingMessage } from 'http'
  * Several of these types are just very basic duck-typing, because referencing
  * internal types directly would create a workspace dependency cycle.
  */
-export interface ErrorCauseObject {
+export type ErrorCauseObject = {
   /**
    * The `cause` field within a `cause` object should
    * always be an `Error` object that was previously thrown. Note

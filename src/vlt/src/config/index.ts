@@ -360,6 +360,7 @@ export class Config {
         if (command) {
           for (const [c, opts] of Object.entries(command)) {
             const cmd =
+              /* c8 ignore next */
               c in commands ? commands[c as keyof Commands] : null
             if (cmd) {
               this.commandValues[cmd] = merge(

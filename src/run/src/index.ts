@@ -55,7 +55,7 @@ const addPaths = (
 }
 
 /** options shared by run() and exec() */
-export interface SharedOptions extends PromiseSpawnOptions {
+export type SharedOptions = {
   /** additional arguments to pass to the command */
   args?: string[]
   /** the root of the project, which we don't walk up past */
@@ -79,12 +79,12 @@ export interface SharedOptions extends PromiseSpawnOptions {
    * platform-specific shell will be used.
    */
   'script-shell'?: string | boolean
-}
+} & PromiseSpawnOptions
 
 /**
  * Options for run() and runFG()
  */
-export interface RunOptions extends SharedOptions {
+export type RunOptions = {
   /** the name of the thing in package.json#scripts */
   arg0: string
   /**
@@ -99,20 +99,20 @@ export interface RunOptions extends SharedOptions {
    * treat as success. Otherwise, treat as an error. Default false.
    */
   ignoreMissing?: boolean
-}
+} & SharedOptions
 
 /**
  * Options for exec() and execFG()
  */
-export interface ExecOptions extends SharedOptions {
+export type ExecOptions = {
   /** the command to execute */
   arg0: string
-}
+} & SharedOptions
 
 /**
  * Options for runExec() and runExecFG()
  */
-export interface RunExecOptions extends SharedOptions {
+export type RunExecOptions = {
   /**
    * Either the command to be executed, or the event to be run
    */
@@ -123,7 +123,7 @@ export interface RunExecOptions extends SharedOptions {
    * may improve performance somewhat.
    */
   packageJson?: PackageJson
-}
+} & SharedOptions
 
 /**
  * Run a package.json#scripts event in the background

@@ -5,14 +5,14 @@ import { UnpackRequest } from './unpack-request.js'
 
 const workerScript = new URL('./worker.js', import.meta.url)
 
-export interface ResponseOK { id: number; ok: true }
+export type ResponseOK = { id: number; ok: true }
 export const isResponseOK = (o: any): o is ResponseOK =>
   !!o &&
   typeof o === 'object' &&
   typeof o.id === 'number' &&
   o.ok === true
 
-export interface ResponseError { id: number; error: string }
+export type ResponseError = { id: number; error: string }
 export const isResponseError = (o: any): o is ResponseError =>
   !!o &&
   typeof o === 'object' &&

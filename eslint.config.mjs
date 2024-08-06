@@ -94,6 +94,10 @@ export default tseslint.config(
       // These rules from tseslint.configs.stylisticTypeChecked are ok
       '@typescript-eslint/no-empty-function': 'off',
       '@typescript-eslint/class-literal-property-style': 'off',
+      '@typescript-eslint/consistent-type-definitions': [
+        'error',
+        'type',
+      ],
       '@typescript-eslint/prefer-nullish-coalescing': [
         'error',
         {

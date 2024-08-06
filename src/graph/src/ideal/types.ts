@@ -3,7 +3,7 @@ import { Dependency } from '../dependencies.js'
 import { Graph } from '../graph.js'
 import { PackageInfoClient } from '@vltpkg/package-info'
 
-export interface BuildIdealAddOptions {
+export type BuildIdealAddOptions = {
   /**
    * A `Map` in which keys are {@link DepID} linking to another `Map` in which
    * keys are the dependency names and values are {@link Dependency}. This
@@ -13,7 +13,7 @@ export interface BuildIdealAddOptions {
   add: Map<DepID, Map<string, Dependency>>
 }
 
-export interface BuildIdealRemoveOptions {
+export type BuildIdealRemoveOptions = {
   /**
    * A `Map` object representing nodes to be removed from the ideal graph.
    * Each {@link DepID} key represents an importer node and the `Set` of
@@ -22,7 +22,7 @@ export interface BuildIdealRemoveOptions {
   remove: Map<DepID, Set<string>>
 }
 
-export interface BuildIdealFromGraphOptions {
+export type BuildIdealFromGraphOptions = {
   /**
    * An initial {@link Graph} to start building from, adding nodes to any
    * missing edges and appending any new specs defined in `addSpecs`.
@@ -30,7 +30,7 @@ export interface BuildIdealFromGraphOptions {
   graph: Graph
 }
 
-export interface BuildIdealPackageInfoOptions {
+export type BuildIdealPackageInfoOptions = {
   /**
    * A {@link PackageInfoClient} instance to read manifest info from.
    */

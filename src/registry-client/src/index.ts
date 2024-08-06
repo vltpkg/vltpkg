@@ -11,7 +11,7 @@ import { isRedirect, redirect } from './redirect.js'
 
 export { CacheEntry, cacheInterceptor }
 
-export interface RegistryClientOptions {
+export type RegistryClientOptions = {
   /**
    * Path on disk where the cache should be stored
    *
