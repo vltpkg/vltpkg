@@ -259,7 +259,6 @@ t.test('user-agent', t => {
     })
 
     t.test('node', async t => {
-      //@ts-expect-error
       t.intercept(process, 'version', { value: 'nodever' })
       const { userAgent } = await t.mockImport('../src/index.js')
       t.match(
@@ -269,7 +268,6 @@ t.test('user-agent', t => {
     })
 
     t.test('nothing we know about', async t => {
-      //@ts-expect-error
       t.intercept(process, 'version', { value: '' })
       const { userAgent } = await t.mockImport('../src/index.js')
       t.match(

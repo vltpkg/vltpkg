@@ -65,7 +65,8 @@ const { version } = loadPackageJson(
   import.meta.url,
   '../package.json',
 )
-const navUA = globalThis.navigator.userAgent
+// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+const navUA = globalThis.navigator?.userAgent
 const bun =
   navUA ||
   //@ts-expect-error
@@ -76,7 +77,6 @@ const deno =
   //@ts-expect-error
   navUA || (globalThis.Deno?.deno?.version as string | undefined)
 const node =
-  //@ts-expect-error
   navUA || (globalThis.process.version as string | undefined)
 const nua =
   navUA ||

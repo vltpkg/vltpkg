@@ -17,6 +17,7 @@ import {
   resolve,
   tarball,
 } from '../src/index.js'
+import { Manifest } from '@vltpkg/types'
 
 t.saveFixture = true
 
@@ -148,7 +149,7 @@ const options = {
   registry: defaultRegistry,
   cache,
 }
-for (const manifest of Object.values(pakuAbbrev.versions)) {
+for (const manifest of Object.values<Manifest>(pakuAbbrev.versions)) {
   if (manifest.dist?.tarball) {
     manifest.dist.tarball = manifest.dist.tarball.replace(
       /^https:\/\/registry.npmjs.org\//,
@@ -156,7 +157,9 @@ for (const manifest of Object.values(pakuAbbrev.versions)) {
     )
   }
 }
-for (const manifest of Object.values(pakuAbbrevFull.versions)) {
+for (const manifest of Object.values<Manifest>(
+  pakuAbbrevFull.versions,
+)) {
   if (manifest.dist?.tarball) {
     manifest.dist.tarball = manifest.dist.tarball.replace(
       /^https:\/\/registry.npmjs.org\//,

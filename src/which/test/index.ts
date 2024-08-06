@@ -36,8 +36,8 @@ const runTest = async (
           isexe: isWindows ? isexeWin : isexePosix,
         },
       )
-      const er = expect as { code: string }
-      if (er.code) {
+      const er = expect as null | { code: string }
+      if (er?.code) {
         await t.rejects(() => which(exec, opt), er, 'async rejects')
         t.throws(() => whichSync(exec, opt), er, 'sync throws')
       } else {

@@ -208,7 +208,9 @@ export const hydrateTuple = (
           found: tuple,
         })
       }
-      if (!second) {
+      // Bug in typescript-eslint?
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      if (second === undefined) {
         throw error('no git selector in git ID', {
           found: tuple,
         })

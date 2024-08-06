@@ -30,7 +30,9 @@ const typechecks = () => {
   // but, it'll prevent you from accessing arbitrary values on the
   // minified type.
   maniMin = mani
+  //@ts-expect-error
   mani = maniMin
+  //@ts-expect-error
   paku = pakuMin
   pakuMin = paku
   const pm: PackumentMinified = paku

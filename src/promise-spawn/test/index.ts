@@ -243,7 +243,6 @@ t.test('exposes stdin', async t => {
 })
 
 t.test('exposes process', async t => {
-  //@ts-expect-error
   const proc = spawk.spawn('proc', [], {}).exitOnSignal('SIGKILL')
 
   const p = promiseSpawn('proc', [])
@@ -279,7 +278,6 @@ t.test('exposes process', async t => {
 t.test('rejects when spawn errors', async t => {
   const proc = spawk
     .spawn('notfound', [], {})
-    //@ts-expect-error
     .spawnError(new Error('command not found'))
 
   await t.rejects(promiseSpawn('notfound', []), {
@@ -299,7 +297,6 @@ t.test('rejects when spawn errors', async t => {
 t.test('spawn error includes extra', async t => {
   const proc = spawk
     .spawn('notfound', [], {})
-    //@ts-expect-error
     .spawnError(new Error('command not found'))
 
   await t.rejects(
@@ -321,7 +318,6 @@ t.test('spawn error includes extra', async t => {
 t.test('spawn error respects stdioString', async t => {
   const proc = spawk
     .spawn('notfound', [], {})
-    //@ts-expect-error
     .spawnError(new Error('command not found'))
 
   await t.rejects(
@@ -342,7 +338,6 @@ t.test('spawn error respects stdioString', async t => {
 t.test('spawn error respects stdio as inherit', async t => {
   const proc = spawk
     .spawn('notfound', [], { stdio: 'inherit' })
-    //@ts-expect-error
     .spawnError(new Error('command not found'))
 
   await t.rejects(

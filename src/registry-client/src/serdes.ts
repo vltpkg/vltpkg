@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unnecessary-condition */
+
 /**
  * This tiny module abstracts out the v8-specific serialization mechanism,
  * so that we can swap out based on platform.
@@ -12,7 +14,7 @@
  */
 
 const isNode =
-  typeof process.versions === 'object' && !!process.versions
+  typeof process?.versions === 'object' && !!process.versions
 //@ts-expect-error
 const isDeno = !isNode && typeof Deno === 'object' && !!Deno
 const isBun =
