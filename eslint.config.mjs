@@ -30,16 +30,16 @@ export default tseslint.config(
       },
     },
     rules: {
-      // Empty catch blocks are useful
+      // allow empty catch blocks
       'no-empty': ['error', { allowEmptyCatch: true }],
-      // Prefer const but dont force it when destructuring some mutable vars
+      // dont force it when destructuring some mutable vars
       'prefer-const': [
         'error',
         {
           destructuring: 'all',
         },
       ],
-      // Emulate TypeScript behavior of allowing unused prefixed with _
+      // emularte TypeScript behavior of allowing unused prefixed with _
       '@typescript-eslint/no-unused-vars': [
         'error',
         {
@@ -52,7 +52,7 @@ export default tseslint.config(
           ignoreRestSiblings: true,
         },
       ],
-      // Allow void arrow functions to not need to be wrapped in braces
+      // allow void arrow functions to not need to be wrapped in braces
       '@typescript-eslint/no-confusing-void-expression': [
         'off',
         {
@@ -66,13 +66,24 @@ export default tseslint.config(
           allowConstantLoopConditions: true,
         },
       ],
-      // We can user overload signatures
+      // using both overload signatures and union types
       '@typescript-eslint/unified-signatures': 'off',
-      // It's ok to use async functions that dont use await to signal its a Promise
+      // async functions that dont use await to signal its a Promise
       '@typescript-eslint/require-await': 'off',
-      // It's ok to use objects in template expressions and have the default toString method called
+      // objects in template expressions and have the default toString method called
       '@typescript-eslint/restrict-template-expressions': 'off',
-      // TODO: Would be nice to turn this on, but doesn't play well with how we pass instance methods to error() to capture stack traces
+      // meh these are fine
+      '@typescript-eslint/no-dynamic-delete': 'off',
+      '@typescript-eslint/use-unknown-in-catch-callback-variable':
+        'off',
+      // TODO: add descriptions to ts-expect-error comments
+      '@typescript-eslint/ban-ts-comment': [
+        'error',
+        {
+          'ts-expect-error': false,
+        },
+      ],
+      // TODO: doesn't play well with how we pass instance methods to error() to capture stack traces
       '@typescript-eslint/unbound-method': 'off',
       // TODO: these rules have to do with unsafe usage of `any`
       '@typescript-eslint/no-unsafe-argument': 'off',
@@ -82,12 +93,8 @@ export default tseslint.config(
       '@typescript-eslint/no-explicit-any': 'off',
       '@typescript-eslint/no-unsafe-return': 'off',
       // TODO: audit each of these and either fix, inline disable, or comment here
-      '@typescript-eslint/ban-ts-comment': 'off',
       '@typescript-eslint/no-base-to-string': 'off',
-      '@typescript-eslint/no-dynamic-delete': 'off',
       '@typescript-eslint/no-floating-promises': 'off',
-      '@typescript-eslint/use-unknown-in-catch-callback-variable':
-        'off',
     },
   },
   {

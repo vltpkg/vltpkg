@@ -24,7 +24,7 @@ const fixMainBranch = (err: Error & { status: number }) => {
       fixedRefs[index] = expect.refs[index]
     }
   }
-  //@ts-ignore
+  //@ts-expect-error
   expect.refs = fixedRefs
   mainBranch = oldMainBranch
   return git('init')

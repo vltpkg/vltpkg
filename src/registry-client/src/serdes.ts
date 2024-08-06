@@ -13,17 +13,17 @@
 
 const isNode =
   typeof process.versions === 'object' && !!process.versions
-//@ts-ignore
+//@ts-expect-error
 const isDeno = !isNode && typeof Deno === 'object' && !!Deno
 const isBun =
-  //@ts-ignore
+  //@ts-expect-error
   !isNode && !isDeno && typeof Bun === 'object' && !!Bun
 
 const engineVersion: string | undefined =
   isNode ? process.versions.v8
-    //@ts-ignore
+    //@ts-expect-error
   : isDeno ? Deno.version.v8
-    //@ts-ignore
+    //@ts-expect-error
   : isBun ? Bun.version
   : undefined
 

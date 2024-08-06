@@ -1,5 +1,5 @@
 import { lstatSync, readFileSync } from 'fs'
-//@ts-ignore
+//@ts-expect-error
 import mutateFS from 'mutate-fs'
 import { resolve } from 'path'
 import t, { Test } from 'tap'

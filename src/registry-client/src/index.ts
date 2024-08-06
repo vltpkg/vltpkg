@@ -68,15 +68,15 @@ const { version } = loadPackageJson(
 const navUA = globalThis.navigator.userAgent
 const bun =
   navUA ||
-  //@ts-ignore
+  //@ts-expect-error
   ((await import('bun').catch(() => {}))?.default?.version as
     | string
     | undefined)
 const deno =
-  //@ts-ignore
+  //@ts-expect-error
   navUA || (globalThis.Deno?.deno?.version as string | undefined)
 const node =
-  //@ts-ignore
+  //@ts-expect-error
   navUA || (globalThis.process.version as string | undefined)
 const nua =
   navUA ||
