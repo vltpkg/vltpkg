@@ -178,15 +178,15 @@ const hashre = /^[a-f0-9]{40}$/
 t.test('check every out', t => {
   t.jobs = 2
   t.plan(platforms.length)
-  platforms.forEach(fakePlatform =>
+  for (const fakePlatform of platforms) {
     t.test(`platform=${fakePlatform}`, t => {
       t.jobs = 2
       t.plan(shallows.length)
-      shallows.forEach(gitShallow =>
+      for (const gitShallow of shallows) {
         t.test(`shallow=${gitShallow}`, t => {
           t.jobs = 2
           t.plan(refs.length + 1)
-          refs.concat(repoSha).forEach(ref =>
+          for (const ref of refs.concat(repoSha)) {
             t.test(`ref=${ref}`, async t => {
               const safeRef = `${ref}`.replace(/[^a-z0-9.]/g, '-')
               const name = `${fakePlatform}-${gitShallow}-${safeRef}`
@@ -209,26 +209,26 @@ t.test('check every out', t => {
                 opts,
               )
               t.match(sha, hashre, `got a sha for ref=${ref}`)
-            }),
-          )
-        }),
-      )
-    }),
-  )
+            })
+          }
+        })
+      }
+    })
+  }
 })
 
 t.test('again, with a submodule', async t => {
   t.jobs = 2
   t.plan(platforms.length)
-  platforms.forEach(fakePlatform =>
+  for (const fakePlatform of platforms) {
     t.test(`platform=${fakePlatform}`, t => {
       t.jobs = 2
       t.plan(shallows.length)
-      shallows.forEach(gitShallow =>
+      for (const gitShallow of shallows) {
         t.test(`shallow=${gitShallow}`, t => {
           t.jobs = 2
           t.plan(refs.length + 1)
-          refs.concat(submodsRepoSha).forEach(ref =>
+          for (const ref of refs.concat(submodsRepoSha)) {
             t.test(`ref=${ref}`, async t => {
               const safeRef = `${ref}`.replace(/[^a-z0-9.]/g, '-')
               const name = `withsub-${fakePlatform}-${gitShallow}-${safeRef}`
@@ -261,12 +261,12 @@ t.test('again, with a submodule', async t => {
                 'glorp',
                 'gleep file is glorpy',
               )
-            }),
-          )
-        }),
-      )
-    }),
-  )
+            })
+          }
+        })
+      }
+    })
+  }
 })
 
 const clonedRepoDir = 'cloned-folder'

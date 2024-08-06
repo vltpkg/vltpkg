@@ -220,6 +220,7 @@ export class Spec {
    */
   toString() {
     if (this.#toString !== undefined) return this.#toString
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
     let sub: Spec = this
     // we want the SECOND from the last in the chain
     while (sub.subspec?.subspec) sub = sub.subspec
