@@ -40,7 +40,7 @@ const getPathInfo = (
 
   if (isWindows) {
     const pathExtExe =
-      optPathExt ??
+      optPathExt ||
       ['.EXE', '.CMD', '.BAT', '.COM'].join(optDelimiter)
     const pathExt = pathExtExe
       .split(optDelimiter)
