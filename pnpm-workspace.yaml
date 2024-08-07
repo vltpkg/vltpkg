@@ -1,2 +1,15 @@
 packages:
   - 'src/*'
+
+catalog:
+  '@eslint/js': '^9.8.0'
+  '@types/eslint__js': '^8.42.3'
+  '@types/node': '^20.14.8'
+  'eslint': '^9.8.0'
+  'pacote': '^18.0.6'
+  'prettier': '^3.3.2'
+  'tap': '^20.0.1'
+  'tshy': '^1.16.1'
+  'typedoc': '^0.26.2'
+  'typescript-eslint': '^8.0.1'
+  'typescript': '^5.5.4'

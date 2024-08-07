@@ -54,7 +54,9 @@ let fixtureMapChanged = false
 let resolutionsMapChanged = false
 
 export const fixtureManifest = (name: string): Manifest =>
-  JSON.parse(readFileSync(resolve(fixtureDir, name) + '.json', 'utf8'))
+  JSON.parse(
+    readFileSync(resolve(fixtureDir, name) + '.json', 'utf8'),
+  )
 
 export const mockPackageInfo = {
   resolve: async (
