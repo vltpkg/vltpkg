@@ -8,7 +8,9 @@ const { usage, command } = await t.mockImport<
   typeof import('../../src/commands/install.js')
 >('../../src/commands/install.js', {
   '@vltpkg/graph': {
-    buildIdeal: async () => 'buildideal result',
+    ideal: {
+      build: async () => 'buildideal result',
+    },
     actual: {
       load: () => 'actual.load result',
     },
