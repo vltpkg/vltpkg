@@ -16,28 +16,36 @@
     "@vltpkg/error-cause": "workspace:*"
   },
   "devDependencies": {
-    "@types/node": "^20.14.8",
+    "@eslint/js": "catalog:",
+    "@types/eslint__js": "catalog:",
+    "@types/node": "catalog:",
     "@types/semver": "^7.5.8",
-    "prettier": "^3.3.2",
+    "eslint": "catalog:",
+    "prettier": "catalog:",
     "semver": "^7.6.2",
-    "tap": "^20.0.1",
-    "tshy": "^1.16.1",
-    "typedoc": "^0.26.2"
+    "tap": "catalog:",
+    "tshy": "catalog:",
+    "typedoc": "catalog:",
+    "typescript": "catalog:",
+    "typescript-eslint": "catalog:"
   },
   "scripts": {
-    "bun": "hyperfine --warmup 3 'bun ./benchmarks/bun.js' 'bun ./benchmarks/npm.js' 'bun ./benchmarks/this.js'",
-    "node": "hyperfine --warmup 3 'node ./benchmarks/npm.js' 'node ./benchmarks/this.js'",
     "benchmark": "./test/fixtures/vs-node-semver.ts",
-    "preversion": "npm test",
-    "postversion": "npm publish",
-    "prepublishOnly": "git push origin --follow-tags",
-    "prepare": "tshy",
-    "pretest": "npm run prepare",
-    "presnap": "npm run prepare",
-    "test": "tap",
-    "snap": "tap",
+    "bun": "hyperfine --warmup 3 'bun ./benchmarks/bun.js' 'bun ./benchmarks/npm.js' 'bun ./benchmarks/this.js'",
     "format": "prettier --write . --log-level warn --ignore-path ../../.prettierignore --cache",
-    "typedoc": "typedoc"
+    "format:check": "prettier --check . --ignore-path ../../.prettierignore --cache",
+    "lint": "eslint . --fix",
+    "lint:check": "eslint .",
+    "node": "hyperfine --warmup 3 'node ./benchmarks/npm.js' 'node ./benchmarks/this.js'",
+    "prepare": "tshy",
+    "prepublishOnly": "git push origin --follow-tags",
+    "presnap": "npm run prepare",
+    "snap": "tap",
+    "pretest": "npm run prepare",
+    "test": "tap",
+    "typedoc": "typedoc",
+    "preversion": "npm test",
+    "postversion": "npm publish"
   },
   "tap": {
     "extends": "../../tap-config.yaml"

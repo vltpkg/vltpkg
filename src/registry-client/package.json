@@ -8,10 +8,10 @@
       "esm"
     ],
     "exports": {
+      "./package.json": "./package.json",
       ".": "./src/index.ts",
       "./cache-entry": "./src/cache-entry.ts",
-      "./cache-interceptor": "./src/cache-interceptor.ts",
-      "./package.json": "./package.json"
+      "./cache-interceptor": "./src/cache-interceptor.ts"
     }
   },
   "dependencies": {
@@ -25,23 +25,31 @@
     "undici": "^6.13.0"
   },
   "devDependencies": {
-    "@types/node": "^20.14.8",
-    "prettier": "^3.3.2",
-    "tap": "^20.0.1",
-    "tshy": "^1.16.1",
-    "typedoc": "^0.26.2"
+    "@eslint/js": "catalog:",
+    "@types/eslint__js": "catalog:",
+    "@types/node": "catalog:",
+    "eslint": "catalog:",
+    "prettier": "catalog:",
+    "tap": "catalog:",
+    "tshy": "catalog:",
+    "typedoc": "catalog:",
+    "typescript": "catalog:",
+    "typescript-eslint": "catalog:"
   },
   "scripts": {
-    "preversion": "npm test",
-    "postversion": "npm publish",
-    "prepublishOnly": "git push origin --follow-tags",
-    "prepare": "tshy",
-    "pretest": "npm run prepare",
-    "presnap": "npm run prepare",
-    "test": "tap",
-    "snap": "tap",
     "format": "prettier --write . --log-level warn --ignore-path ../../.prettierignore --cache",
-    "typedoc": "typedoc"
+    "format:check": "prettier --check . --ignore-path ../../.prettierignore --cache",
+    "lint": "eslint . --fix",
+    "lint:check": "eslint .",
+    "prepare": "tshy",
+    "prepublishOnly": "git push origin --follow-tags",
+    "presnap": "npm run prepare",
+    "snap": "tap",
+    "pretest": "npm run prepare",
+    "test": "tap",
+    "typedoc": "typedoc",
+    "preversion": "npm test",
+    "postversion": "npm publish"
   },
   "tap": {
     "extends": "../../tap-config.yaml"
@@ -49,6 +57,7 @@
   "prettier": "../../.prettierrc.json",
   "type": "module",
   "exports": {
+    "./package.json": "./package.json",
     ".": {
       "import": {
         "source": "./src/index.ts",
@@ -69,7 +78,6 @@
         "types": "./dist/esm/cache-interceptor.d.ts",
         "default": "./dist/esm/cache-interceptor.js"
       }
-    },
-    "./package.json": "./package.json"
+    }
   }
 }

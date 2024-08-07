@@ -220,10 +220,14 @@ const childMethod = async (fn: string, args: string[]) => {
           /^(npm|VLT)_/i.test(k),
         ),
       ),
-      path: [...new Set((process.env.PATH ?? '')
-        .split(delimiter)
-        .map(p => relative(projectRoot, p).replace(/\\/g, '/'))
-        .filter(p => !p.startsWith('..') && !isAbsolute(p)))],
+      path: [
+        ...new Set(
+          (process.env.PATH ?? '')
+            .split(delimiter)
+            .map(p => relative(projectRoot, p).replace(/\\/g, '/'))
+            .filter(p => !p.startsWith('..') && !isAbsolute(p)),
+        ),
+      ],
     }),
   )
 }

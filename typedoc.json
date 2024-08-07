@@ -15,20 +15,5 @@
     "private": false,
     "inherited": true,
     "external": false
-  },
-  "compilerOptions": {
-    "jsx": "react",
-    "declaration": true,
-    "declarationMap": true,
-    "inlineSources": true,
-    "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true,
-    "moduleResolution": "nodenext",
-    "resolveJsonModule": true,
-    "skipLibCheck": true,
-    "sourceMap": true,
-    "strict": true,
-    "target": "es2022",
-    "module": "nodenext"
   }
 }
