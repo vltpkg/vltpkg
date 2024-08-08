@@ -179,7 +179,7 @@ export class Spec {
   }
 
   static parseArgs(specOrBareSpec: string, opts?: SpecOptions): Spec {
-    const options = getOptions(opts || {})
+    const options = getOptions(opts ?? {})
 
     if (startsWithSpecIdentifier(specOrBareSpec, options)) {
       const parsed = Spec.parse('(unknown)', specOrBareSpec, options)
@@ -191,7 +191,7 @@ export class Spec {
       return parsed
     } else {
       const hasScope = specOrBareSpec.startsWith('@')
-      let at = findFirstAt(specOrBareSpec, hasScope)
+      const at = findFirstAt(specOrBareSpec, hasScope)
       if (at > -1) {
         return Spec.parse(
           specOrBareSpec.substring(0, at),

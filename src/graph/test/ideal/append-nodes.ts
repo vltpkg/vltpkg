@@ -1,5 +1,5 @@
 import { PackageInfoClient } from '@vltpkg/package-info'
-import { Spec, SpecOptions } from '../fixtures/spec.js'
+import { Spec, SpecOptions } from '@vltpkg/spec'
 import { Manifest } from '@vltpkg/types'
 import { inspect } from 'node:util'
 import { PathScurry } from 'path-scurry'
@@ -8,6 +8,12 @@ import { Dependency } from '../../src/dependencies.js'
 import { Graph } from '../../src/graph.js'
 import { appendNodes } from '../../src/ideal/append-nodes.js'
 import { humanReadableOutput } from '../../src/visualization/human-readable-output.js'
+
+Object.assign(Spec.prototype, {
+  [Symbol.for('nodejs.util.inspect.custom')]() {
+    return `Spec {${this as unknown as Spec}}`
+  },
+})
 
 const configData = {
   registry: 'https://registry.npmjs.org',

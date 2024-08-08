@@ -4,7 +4,7 @@ import {
   parseRemoveArgs,
 } from '../src/parse-add-remove-args.js'
 import { LoadedConfig } from '../src/index.js'
-import { Spec } from '@vltpkg/spec'
+import { Spec, kCustomInspect } from '@vltpkg/spec'
 import { inspect } from 'util'
 
 class MockConfig {
@@ -15,7 +15,7 @@ class MockConfig {
 const kCustomInspect = Symbol.for('nodejs.util.inspect.custom')
 Object.assign(Spec.prototype, {
   [kCustomInspect]() {
-    return `Spec {${this}}`
+    return `Spec {${this as unknown as Spec}}`
   },
 })
 

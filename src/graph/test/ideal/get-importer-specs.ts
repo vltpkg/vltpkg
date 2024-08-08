@@ -1,11 +1,17 @@
 import { asDepID } from '@vltpkg/dep-id'
-import { Spec } from '../fixtures/spec.js'
+import { Spec } from '@vltpkg/spec'
 import { inspect } from 'node:util'
 import t from 'tap'
 import { load } from '../../src/actual/load.js'
 import { asDependency } from '../../src/dependencies.js'
 import { Graph } from '../../src/graph.js'
 import { getImporterSpecs } from '../../src/ideal/get-importer-specs.js'
+
+Object.assign(Spec.prototype, {
+  [Symbol.for('nodejs.util.inspect.custom')]() {
+    return `Spec {${this as unknown as Spec}}`
+  },
+})
 
 t.test('empty graph and nothing to add', async t => {
   const graph = new Graph({

@@ -1,4 +1,4 @@
-import { Spec, SpecOptions } from './fixtures/spec.js'
+import { Spec, SpecOptions } from '@vltpkg/spec'
 import { inspect } from 'node:util'
 import t from 'tap'
 import { Edge } from '../src/edge.js'
@@ -6,6 +6,12 @@ import { Node } from '../src/node.js'
 
 t.cleanSnapshot = s =>
   s.replace(/^(\s+)projectRoot: .*$/gm, '$1projectRoot: #')
+
+Object.assign(Spec.prototype, {
+  [Symbol.for('nodejs.util.inspect.custom')]() {
+    return `Spec {${this as unknown as Spec}}`
+  },
+})
 
 const configData = {
   registry: 'https://registry.npmjs.org',
