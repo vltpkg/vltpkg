@@ -12,7 +12,6 @@ class MockConfig {
   positionals: string[] = []
 }
 
-const kCustomInspect = Symbol.for('nodejs.util.inspect.custom')
 Object.assign(Spec.prototype, {
   [kCustomInspect]() {
     return `Spec {${this as unknown as Spec}}`

@@ -1,17 +1,16 @@
-// @ts-check
-
 import eslint from '@eslint/js'
 import tseslint from 'typescript-eslint'
 import globals from 'globals'
+import { readFileSync } from 'fs'
 
 export default tseslint.config(
   {
-    ignores: [
-      '**/tap-snapshots/**',
-      '**/dist/**',
-      '**/.tshy-build/**',
-      '**/docs/**',
-    ],
+    ignores: readFileSync('./.prettierignore')
+      .toString()
+      .trim()
+      .split('\n')
+      .filter(Boolean)
+      .map(v => v.replace(/^(!?)\//, '$1')),
   },
   eslint.configs.recommended,
   ...tseslint.configs.strictTypeChecked,
@@ -19,10 +18,7 @@ export default tseslint.config(
   {
     languageOptions: {
       parserOptions: {
-        projectService: {
-          allowDefaultProject: ['eslint.config.mjs'],
-          defaultProject: './tsconfig.json',
-        },
+        projectService: true,
         tsconfigRootDir: import.meta.dirname,
       },
       globals: {
@@ -142,7 +138,7 @@ export default tseslint.config(
     },
   },
   {
-    files: ['**/*.js'],
+    files: ['**/*.js', '**/*.mjs'],
     ...eslint.configs.recommended,
     ...tseslint.configs.disableTypeChecked,
     rules: {
