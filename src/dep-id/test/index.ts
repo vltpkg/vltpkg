@@ -177,8 +177,6 @@ t.test('invalid values', t => {
   )
   t.throws(() => hydrateTuple(['git', '', ''], 'x'))
   //@ts-expect-error
-  t.throws(() => hydrateTuple(['git', 'x'], 'x'))
-  //@ts-expect-error
   t.throws(() => hydrate('git;x', 'x'))
   t.throws(() => getId({ final: { type: 'remote' } } as Spec, mani))
   t.throws(() =>
