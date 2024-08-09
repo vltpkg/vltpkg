@@ -1,11 +1,13 @@
 .DS_Store
 
+/.turbo
 /docs
 /node_modules
 /pnpm-exec-summary.json
 
 /src/*/.tap
 /src/*/.tshy-build
+/src/*/.turbo
 /src/*/dist
 /src/*/docs
 /src/*/node_modules

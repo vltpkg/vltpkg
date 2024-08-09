@@ -1,0 +1,10 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "dangerouslyDisablePackageManagerCheck": true,
+  "ui": "stream",
+  "tasks": {
+    "prepare": {
+      "outputs": ["dist/**"]
+    }
+  }
+}
