@@ -2,7 +2,6 @@
 // event and args only relevant for run/runFG
 
 import { delimiter, isAbsolute, relative } from 'path'
-import { fileURLToPath } from 'url'
 import {
   exec,
   execFG,
@@ -10,8 +9,7 @@ import {
   runExec,
   runExecFG,
   runFG,
-} from '../../dist/esm/index.js'
-const __filename = fileURLToPath(import.meta.url)
+} from '../../../dist/esm/index.js'
 const node =
   process.execPath.includes(' ') ?
     '"' + process.execPath + '"'
@@ -66,7 +64,7 @@ const runExecParent = async (args: string[]) => {
   const result = await runExec({
     arg0,
     args: [
-      __filename,
+      import.meta.filename,
       'child',
       'runExec',
       cwd,
@@ -92,7 +90,7 @@ const runExecFGParent = async (args: string[]) => {
   const result = await runExecFG({
     arg0,
     args: [
-      __filename,
+      import.meta.filename,
       'child',
       'runExecFG',
       cwd,
@@ -110,7 +108,7 @@ const execParent = async (args: string[]) => {
   const result = await exec({
     arg0: node,
     args: [
-      __filename,
+      import.meta.filename,
       'child',
       'exec',
       cwd,
@@ -135,7 +133,7 @@ const execFGParent = async (args: string[]) => {
   const result = await execFG({
     arg0: node,
     args: [
-      __filename,
+      import.meta.filename,
       'child',
       'execFG',
       cwd,
