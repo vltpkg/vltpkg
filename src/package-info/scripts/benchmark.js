@@ -2,8 +2,7 @@
 
 import { mkdirSync, readFileSync, rmSync } from 'fs'
 import pacote from 'pacote'
-import { dirname, resolve } from 'path'
-import { fileURLToPath } from 'url'
+import { resolve } from 'path'
 import { PackageInfoClient } from '../dist/esm/index.js'
 
 console.log('smaller number is better')
@@ -12,19 +11,20 @@ console.log('smaller number is better')
 // the npm registry.
 const extractCount = 500
 
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = dirname(__filename)
 const pkgNames = readFileSync(
-  resolve(__dirname, '1000-most-depended-packages-2019.txt'),
+  resolve(
+    import.meta.dirname,
+    '1000-most-depended-packages-2019.txt',
+  ),
   'utf8',
 )
   .trim()
   .split(/\r?\n/)
   // randomize order
   .sort(() => Math.random() - 0.5)
-const extractDir = resolve(__dirname, 'fixtures/extract')
-const cache = resolve(__dirname, 'fixtures/cache')
-const cacache = resolve(__dirname, 'fixtures/cacache')
+const extractDir = resolve(import.meta.dirname, 'fixtures/extract')
+const cache = resolve(import.meta.dirname, 'fixtures/cache')
+const cacache = resolve(import.meta.dirname, 'fixtures/cacache')
 
 const p = new PackageInfoClient({ cache })
 

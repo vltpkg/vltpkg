@@ -5,7 +5,7 @@ import { Workspace } from '@vltpkg/workspaces'
 import { lstatSync, readFileSync, readlinkSync } from 'node:fs'
 import { writeFile } from 'node:fs/promises'
 import { createServer } from 'node:http'
-import { dirname, resolve as pathResolve } from 'node:path'
+import { resolve as pathResolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import t from 'tap'
 import { x as tarX } from 'tar'
@@ -21,9 +21,7 @@ import { Manifest } from '@vltpkg/types'
 
 t.saveFixture = true
 
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = dirname(__filename)
-const fixtures = pathResolve(__dirname, 'fixtures')
+const fixtures = pathResolve(import.meta.dirname, 'fixtures')
 const pakuAbbrev = JSON.parse(
   readFileSync(pathResolve(fixtures, 'abbrev.json'), 'utf8'),
 )

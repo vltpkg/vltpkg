@@ -24,14 +24,11 @@ import {
   writeFileSync,
 } from 'fs'
 import { statSync } from 'node:fs'
-import { basename, dirname, resolve } from 'path'
+import { basename, resolve } from 'path'
 import { extract } from 'tar'
-import { fileURLToPath } from 'url'
 
 const realPackageInfo = new PackageInfoClient({})
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = dirname(__filename)
-export const fixtureDir = resolve(__dirname, 'reify')
+export const fixtureDir = resolve(import.meta.dirname, 'reify')
 
 const fixtureMapFile = resolve(fixtureDir, 'map.json')
 const fixtureMap = JSON.parse(
