@@ -1,5 +1,5 @@
 import { hydrate } from '@vltpkg/dep-id'
-import { Spec, SpecOptions } from '@vltpkg/spec'
+import { Spec, SpecOptions, kCustomInspect } from '@vltpkg/spec'
 import { Monorepo } from '@vltpkg/workspaces'
 import { inspect } from 'node:util'
 import t from 'tap'
@@ -10,7 +10,7 @@ t.cleanSnapshot = s =>
   s.replace(/^(\s+)"projectRoot": .*$/gm, '$1"projectRoot": #')
 
 Object.assign(Spec.prototype, {
-  [Symbol.for('nodejs.util.inspect.custom')](this: Spec) {
+  [kCustomInspect](this: Spec) {
     return `Spec {${this}}`
   },
 })

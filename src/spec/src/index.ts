@@ -17,7 +17,7 @@ export type SpecOptions = {
   [k in keyof SpecOptionsFilled]?: SpecOptionsFilled[k]
 }
 
-const kCustomInspect = Symbol.for('nodejs.util.inspect.custom')
+export const kCustomInspect = Symbol.for('nodejs.util.inspect.custom')
 
 export type Scope = `@${string}`
 

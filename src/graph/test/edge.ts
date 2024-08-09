@@ -1,4 +1,4 @@
-import { Spec, SpecOptions } from '@vltpkg/spec'
+import { Spec, SpecOptions, kCustomInspect } from '@vltpkg/spec'
 import { inspect } from 'node:util'
 import t from 'tap'
 import { Edge } from '../src/edge.js'
@@ -8,7 +8,7 @@ t.cleanSnapshot = s =>
   s.replace(/^(\s+)projectRoot: .*$/gm, '$1projectRoot: #')
 
 Object.assign(Spec.prototype, {
-  [Symbol.for('nodejs.util.inspect.custom')](this: Spec) {
+  [kCustomInspect](this: Spec) {
     return `Spec {${this}}`
   },
 })

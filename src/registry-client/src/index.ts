@@ -164,9 +164,17 @@ export class RegistryClient {
                 return true
               }
             } catch (er) {
-              // TODO: fix this when turning on errors as unknown
-              // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
-              rej(er)
+              if (er instanceof Error) {
+                rej(er)
+                /* c8 ignore start */
+              } else {
+                rej(
+                  new Error(
+                    typeof er === 'string' ? er : 'Unknown error',
+                  ),
+                )
+              }
+              /* c8 ignore stop */
               return true
             }
           }

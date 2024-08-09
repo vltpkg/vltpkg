@@ -4,6 +4,7 @@ import {
   definition,
   isRecordField,
   recordFields,
+  getCommand,
 } from '../../src/config/definition.js'
 
 t.matchSnapshot(commands, 'commands')
@@ -82,4 +83,10 @@ t.test('infer editor from env/platform', async t => {
       t.match(definition.parse().values.editor, expect)
     })
   }
+})
+
+t.test('getCommand', async t => {
+  t.equal(getCommand('__wut__'), undefined)
+  t.equal(getCommand(), undefined)
+  t.equal(getCommand('?'), 'help')
 })

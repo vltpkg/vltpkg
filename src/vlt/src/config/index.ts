@@ -260,8 +260,8 @@ export class Config {
 
     const fallback = getCommand(p.values['fallback-command'])
     this.command = getCommand(p.positionals[0])
-    const cmdOrFallback = this.command ?? fallback
 
+    const cmdOrFallback = this.command ?? fallback
     const cmdSpecific =
       cmdOrFallback && this.commandValues[cmdOrFallback]
     if (cmdSpecific) {
@@ -273,7 +273,7 @@ export class Config {
     this.jack.writeEnv(p)
 
     if (this.command) p.positionals.shift()
-    else this.command = fallback
+    else this.command = getCommand(p.values['fallback-command'])
 
     return Object.assign(this, p)
   }

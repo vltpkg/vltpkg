@@ -1,5 +1,5 @@
 import { asDepID } from '@vltpkg/dep-id'
-import { Spec } from '@vltpkg/spec'
+import { Spec, kCustomInspect } from '@vltpkg/spec'
 import { inspect } from 'node:util'
 import t from 'tap'
 import { load } from '../../src/actual/load.js'
@@ -8,7 +8,7 @@ import { Graph } from '../../src/graph.js'
 import { getImporterSpecs } from '../../src/ideal/get-importer-specs.js'
 
 Object.assign(Spec.prototype, {
-  [Symbol.for('nodejs.util.inspect.custom')](this: Spec) {
+  [kCustomInspect](this: Spec) {
     return `Spec {${this}}`
   },
 })

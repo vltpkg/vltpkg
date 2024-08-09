@@ -107,7 +107,6 @@ export class ExecCommand<B extends RunnerBG, F extends RunnerFG> {
       }
       results[ws.path] = result
     }
-    //console.log(results)
     return results
   }
 

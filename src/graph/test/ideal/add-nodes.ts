@@ -1,6 +1,6 @@
 import { asDepID } from '@vltpkg/dep-id'
 import t from 'tap'
-import { Spec, SpecOptions } from '@vltpkg/spec'
+import { Spec, SpecOptions, kCustomInspect } from '@vltpkg/spec'
 import { PackageInfoClient } from '@vltpkg/package-info'
 import { PathScurry } from 'path-scurry'
 import { Dependency } from '../../src/dependencies.js'
@@ -9,7 +9,7 @@ import { addNodes } from '../../src/ideal/add-nodes.js'
 import { humanReadableOutput } from '../../src/index.js'
 
 Object.assign(Spec.prototype, {
-  [Symbol.for('nodejs.util.inspect.custom')](this: Spec) {
+  [kCustomInspect](this: Spec) {
     return `Spec {${this}}`
   },
 })

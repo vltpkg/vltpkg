@@ -2,6 +2,7 @@ import { promiseSpawn } from '@vltpkg/promise-spawn'
 import { dirname, resolve } from 'path'
 import t from 'tap'
 import { fileURLToPath } from 'url'
+import { isRunResult } from '../src/index.js'
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
 const fixture = resolve(__dirname, 'fixtures/script.js')
@@ -792,4 +793,19 @@ t.test('runExec (run)', async t => {
       },
     ])
   })
+})
+
+t.test('is run reseult', async t => {
+  t.equal(isRunResult({}), false)
+  t.equal(isRunResult(null), false)
+  t.equal(isRunResult([]), false)
+  t.equal(
+    isRunResult({
+      stdout: null,
+      stderr: null,
+      signal: null,
+      status: null,
+    }),
+    true,
+  )
 })

@@ -1,5 +1,5 @@
 import { PackageInfoClient } from '@vltpkg/package-info'
-import { Spec, SpecOptions } from '@vltpkg/spec'
+import { Spec, SpecOptions, kCustomInspect } from '@vltpkg/spec'
 import { Manifest } from '@vltpkg/types'
 import { inspect } from 'node:util'
 import { PathScurry } from 'path-scurry'
@@ -10,7 +10,7 @@ import { appendNodes } from '../../src/ideal/append-nodes.js'
 import { humanReadableOutput } from '../../src/visualization/human-readable-output.js'
 
 Object.assign(Spec.prototype, {
-  [Symbol.for('nodejs.util.inspect.custom')](this: Spec) {
+  [kCustomInspect](this: Spec) {
     return `Spec {${this}}`
   },
 })
