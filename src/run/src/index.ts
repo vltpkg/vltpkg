@@ -163,6 +163,18 @@ export type RunFGResult = SpawnResultNoStdio & {
   post?: SpawnResultNoStdio
 }
 
+export const isRunResult = (v: unknown): v is RunResult => {
+  return (
+    !!v &&
+    typeof v === 'object' &&
+    !Array.isArray(v) &&
+    'stdout' in v &&
+    'stderr' in v &&
+    'status' in v &&
+    'signal' in v
+  )
+}
+
 /**
  * Return type of {@link run} or {@link runFG}, as determined by their base
  * type

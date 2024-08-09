@@ -86,9 +86,6 @@ export default tseslint.config(
       ],
       // this rule doesn't catch anything except useful patterns we might need
       '@typescript-eslint/no-this-alias': 'off',
-      // TODO: this might be good to turn on
-      '@typescript-eslint/use-unknown-in-catch-callback-variable':
-        'off',
       // TODO: add descriptions to ts-expect-error comments
       '@typescript-eslint/ban-ts-comment': [
         'error',

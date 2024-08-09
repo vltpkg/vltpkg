@@ -15,6 +15,7 @@ import type {
   RunOptions,
   RunResult,
 } from '@vltpkg/run'
+import { isRunResult } from '@vltpkg/run'
 import { Monorepo, Workspace } from '@vltpkg/workspaces'
 import { ansiToAnsi } from 'ansi-to-pre'
 import chalk from 'chalk'
@@ -82,8 +83,14 @@ export class ExecCommand<B extends RunnerBG, F extends RunnerFG> {
     const resultMap = await m.run(async ws => {
       if (!failed) console.error(`${ws.path} ${arg0}`)
       const result = await this.bg(this.bgArg(ws)).catch(
-        (er: Error & { cause: RunResult }) => {
-          this.printResult(ws, er.cause)
+        (er: unknown) => {
+          if (
+            er instanceof Error &&
+            er.cause &&
+            isRunResult(er.cause)
+          ) {
+            this.printResult(ws, er.cause)
+          }
           failed = true
           throw er
         },
