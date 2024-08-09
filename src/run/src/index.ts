@@ -56,7 +56,7 @@ const addPaths = (
 }
 
 /** options shared by run() and exec() */
-export interface SharedOptions extends PromiseSpawnOptions {
+export type SharedOptions = PromiseSpawnOptions & {
   /** additional arguments to pass to the command */
   args?: string[]
   /** the root of the project, which we don't walk up past */
@@ -79,13 +79,13 @@ export interface SharedOptions extends PromiseSpawnOptions {
    * the shell to run the script in. If not set, then the default
    * platform-specific shell will be used.
    */
-  'script-shell'?: string | boolean
+  'script-shell'?: boolean | string
 }
 
 /**
  * Options for run() and runFG()
  */
-export interface RunOptions extends SharedOptions {
+export type RunOptions = SharedOptions & {
   /** the name of the thing in package.json#scripts */
   arg0: string
   /**
@@ -117,7 +117,7 @@ export interface RunOptions extends SharedOptions {
 /**
  * Options for exec() and execFG()
  */
-export interface ExecOptions extends SharedOptions {
+export type ExecOptions = SharedOptions & {
   /** the command to execute */
   arg0: string
 }
@@ -125,7 +125,7 @@ export interface ExecOptions extends SharedOptions {
 /**
  * Options for runExec() and runExecFG()
  */
-export interface RunExecOptions extends SharedOptions {
+export type RunExecOptions = SharedOptions & {
   /**
    * Either the command to be executed, or the event to be run
    */
@@ -162,6 +162,15 @@ export type RunFGResult = SpawnResultNoStdio & {
   pre?: SpawnResultNoStdio
   post?: SpawnResultNoStdio
 }
+
+export const isRunResult = (v: unknown): v is RunResult =>
+  !!v &&
+  typeof v === 'object' &&
+  !Array.isArray(v) &&
+  'stdout' in v &&
+  'stderr' in v &&
+  'status' in v &&
+  'signal' in v
 
 /**
  * Return type of {@link run} or {@link runFG}, as determined by their base
@@ -357,7 +366,7 @@ const runExecImpl = async <
   options: RunExecOptions,
   runImpl: (options: RunOptions) => Promise<RunImplResult<R>>,
   execImpl: (options: ExecOptions) => Promise<R>,
-): Promise<RunImplResult<R> | R> => {
+): Promise<R | RunImplResult<R>> => {
   const { arg0, packageJson = new PackageJson(), ...args } = options
   const pj = packageJson.read(options.cwd)
   const { scripts } = pj
@@ -374,7 +383,7 @@ const runExecImpl = async <
  */
 export const runExec = async (
   options: RunExecOptions,
-): Promise<SpawnResultStdioStrings | RunResult> =>
+): Promise<RunResult | SpawnResultStdioStrings> =>
   runExecImpl<SpawnResultStdioStrings>(options, run, exec)
 
 /**
@@ -383,5 +392,5 @@ export const runExec = async (
  */
 export const runExecFG = async (
   options: RunExecOptions,
-): Promise<SpawnResultNoStdio | RunFGResult> =>
+): Promise<RunFGResult | SpawnResultNoStdio> =>
   runExecImpl<SpawnResultNoStdio>(options, runFG, execFG)

@@ -14,7 +14,7 @@ const fetchMethod = async (
   _: any,
   options: { context: GitOptions },
 ) => {
-  const result: SpawnResultStdoutString & SpawnResultStderrString =
+  const result: SpawnResultStderrString & SpawnResultStdoutString =
     await spawn(['ls-remote', repo], options.context)
   const revsDoc = linesToRevs(result.stdout.split('\n'))
   return revsDoc
@@ -29,13 +29,13 @@ const revsCache = new LRUCache<string, RevDoc, GitOptions>({
 })
 
 export const revs = async (repo: string, opts: GitOptions = {}) => {
-  repo = String(gitScpURL(repo) || repo).replace(/^git\+/, '')
+  repo = String(gitScpURL(repo) ?? repo).replace(/^git\+/, '')
   if (repo.startsWith('file://')) repo = fileURLToPath(repo)
   if (opts.noGitRevCache) {
     const result = await fetchMethod(repo, undefined, {
       context: opts,
     })
-    if (result) revsCache.set(repo, result)
+    revsCache.set(repo, result)
     return result
   }
   return await revsCache.fetch(repo, { context: opts })

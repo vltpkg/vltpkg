@@ -15,14 +15,15 @@ import type {
   RunOptions,
   RunResult,
 } from '@vltpkg/run'
+import { isRunResult } from '@vltpkg/run'
 import { Monorepo, Workspace } from '@vltpkg/workspaces'
 import { ansiToAnsi } from 'ansi-to-pre'
 import chalk from 'chalk'
 import { LoadedConfig } from './config/index.js'
 
-export type RunnerBG = typeof run | typeof runExec | typeof exec
-export type RunnerFG = typeof runFG | typeof runExecFG | typeof execFG
-export type RunnerOptions = RunOptions & ExecOptions & RunExecOptions
+export type RunnerBG = typeof exec | typeof run | typeof runExec
+export type RunnerFG = typeof execFG | typeof runExecFG | typeof runFG
+export type RunnerOptions = ExecOptions & RunExecOptions & RunOptions
 
 export class ExecCommand<B extends RunnerBG, F extends RunnerFG> {
   bg: B
@@ -82,8 +83,14 @@ export class ExecCommand<B extends RunnerBG, F extends RunnerFG> {
     const resultMap = await m.run(async ws => {
       if (!failed) console.error(`${ws.path} ${arg0}`)
       const result = await this.bg(this.bgArg(ws)).catch(
-        (er: Error & { cause: RunResult }) => {
-          this.printResult(ws, er.cause)
+        (er: unknown) => {
+          if (
+            er instanceof Error &&
+            er.cause &&
+            isRunResult(er.cause)
+          ) {
+            this.printResult(ws, er.cause)
+          }
           failed = true
           throw er
         },
@@ -100,7 +107,6 @@ export class ExecCommand<B extends RunnerBG, F extends RunnerFG> {
       }
       results[ws.path] = result
     }
-    //console.log(results)
     return results
   }
 
@@ -139,9 +145,8 @@ export class ExecCommand<B extends RunnerBG, F extends RunnerFG> {
   }
 
   fgArg(): RunnerOptions | undefined {
-    const cwd =
-      this.monorepo?.values()?.next().value?.fullpath ??
-      this.projectRoot
+    const ws = this.monorepo?.values().next().value
+    const cwd = ws?.fullpath ?? this.projectRoot
     const arg0 = this.arg0 ?? this.defaultArg0()
     if (!arg0) {
       return undefined

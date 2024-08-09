@@ -8,9 +8,9 @@ import {
 import { PackageInfoClient } from '@vltpkg/package-info'
 import { PathScurry } from 'path-scurry'
 
-export type AddNodesOptions = SpecOptions &
+export type AddNodesOptions = BuildIdealAddOptions &
   BuildIdealFromGraphOptions &
-  BuildIdealAddOptions & {
+  SpecOptions & {
     /**
      * A {@link PathScurry} instance based on the `projectRoot` path
      */

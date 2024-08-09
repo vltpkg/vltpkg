@@ -40,6 +40,6 @@ t.test('registering the beforeExit event', async t => {
   register(t.testdirName, 'key 1')
   t.equal(beHooks.length, 1)
   t.type(beHooks[0], 'function')
-  beHooks[0]!()
+  beHooks[0]?.()
   t.equal(unrefCalled, true)
 })

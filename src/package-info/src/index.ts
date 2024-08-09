@@ -43,25 +43,23 @@ export type Resolution = {
   spec: Spec
 }
 
-export interface PackageInfoClientOptions
-  extends RegistryClientOptions,
-    SpecOptions {
-  /** root of the project. Defaults to process.cwd() */
-  projectRoot?: string
-  /** PackageJson object */
-  packageJson?: PackageJson
+export type PackageInfoClientOptions = RegistryClientOptions &
+  SpecOptions & {
+    /** root of the project. Defaults to process.cwd() */
+    projectRoot?: string
+    /** PackageJson object */
+    packageJson?: PackageJson
 
-  monorepo?: Monorepo
+    monorepo?: Monorepo
 
-  /** workspace groups to load, irrelevant if Monorepo provided */
-  'workspace-group'?: string[]
+    /** workspace groups to load, irrelevant if Monorepo provided */
+    'workspace-group'?: string[]
 
-  /** workspace paths to load, irrelevant if Monorepo provided */
-  workspace?: string[]
-}
+    /** workspace paths to load, irrelevant if Monorepo provided */
+    workspace?: string[]
+  }
 
-export interface PackageInfoClientRequestOptions
-  extends PickManifestOptions {
+export type PackageInfoClientRequestOptions = PickManifestOptions & {
   /** dir to resolve `file://` specifiers against. Defaults to projectRoot. */
   from?: string
   /**
@@ -75,16 +73,17 @@ export interface PackageInfoClientRequestOptions
 export type PackageInfoClientRequestOptionsFull =
   PackageInfoClientRequestOptions &
     (
+      | PickManifestOptionsBefore
       | {
           fullMetadata: true
         }
-      | PickManifestOptionsBefore
     )
 
 export type PackageInfoClientRequestOptionsMin =
-  PackageInfoClientRequestOptions & {
-    fullMetadata?: false
-  } & PickManifestOptionsNoBefore
+  PackageInfoClientRequestOptions &
+    PickManifestOptionsNoBefore & {
+      fullMetadata?: false
+    }
 
 export type PackumentByOptions<
   T extends PackageInfoClientRequestOptions,
@@ -128,67 +127,67 @@ const client = (
 }
 
 export async function packument(
-  spec: string | Spec,
+  spec: Spec | string,
   options: PackageInfoClientOptions &
     PackageInfoClientRequestOptionsMin,
 ): Promise<PackumentMinified>
 export async function packument(
-  spec: string | Spec,
+  spec: Spec | string,
   options: PackageInfoClientOptions &
     PackageInfoClientRequestOptionsFull,
 ): Promise<Packument>
 export async function packument(
-  spec: string | Spec,
+  spec: Spec | string,
 ): Promise<PackumentMinified>
 export async function packument<
   O extends PackageInfoClientOptions &
     PackageInfoClientRequestOptions = PackageInfoClientOptions &
     PackageInfoClientRequestOptions,
 >(
-  spec: string | Spec,
+  spec: Spec | string,
   options: O = {} as O,
 ): Promise<PackumentByOptions<O>> {
   return client(options).packument<O>(spec, options)
 }
 
 export async function manifest(
-  spec: string | Spec,
+  spec: Spec | string,
   options: PackageInfoClientOptions &
     PackageInfoClientRequestOptionsMin,
 ): Promise<ManifestMinified>
 export async function manifest(
-  spec: string | Spec,
+  spec: Spec | string,
   options: PackageInfoClientOptions &
     PackageInfoClientRequestOptionsFull,
 ): Promise<Manifest>
 export async function manifest(
-  spec: string | Spec,
+  spec: Spec | string,
 ): Promise<ManifestMinified>
 export async function manifest<
   O extends PackageInfoClientOptions &
     PackageInfoClientRequestOptions = PackageInfoClientOptions &
     PackageInfoClientRequestOptions,
 >(
-  spec: string | Spec,
+  spec: Spec | string,
   options: O = {} as O,
 ): Promise<ManifestByOptions<O>> {
   return client(options).manifest<O>(spec, options)
 }
 
 export const resolve = async (
-  spec: string | Spec,
+  spec: Spec | string,
   options: PackageInfoClientOptions &
     PackageInfoClientRequestOptions = {},
 ): Promise<Resolution> => client(options).resolve(spec, options)
 
 export const tarball = async (
-  spec: string | Spec,
+  spec: Spec | string,
   options: PackageInfoClientOptions &
     PackageInfoClientRequestOptions = {},
 ): Promise<Buffer> => client(options).tarball(spec, options)
 
 export const extract = async (
-  spec: string | Spec,
+  spec: Spec | string,
   target: string,
   options: PackageInfoClientOptions &
     PackageInfoClientRequestOptions = {},
@@ -235,7 +234,7 @@ export class PackageInfoClient {
   }
 
   async extract(
-    spec: string | Spec,
+    spec: Spec | string,
     target: string,
     options: PackageInfoClientRequestOptions = {},
   ): Promise<Resolution> {
@@ -272,11 +271,11 @@ export class PackageInfoClient {
             const src = pathResolve(tmp, path)
             await rename(src, target)
             // intentionally not awaited
-            rm(tmp, { recursive: true, force: true })
+            void rm(tmp, { recursive: true, force: true })
           } else {
             await clone(gitRemote, gitCommittish, target, { spec })
             // intentionally not awaited
-            rm(target + '/.git', { recursive: true })
+            void rm(target + '/.git', { recursive: true })
           }
           return r
         }
@@ -382,7 +381,7 @@ export class PackageInfoClient {
   }
 
   async tarball(
-    spec: string | Spec,
+    spec: Spec | string,
     options: PackageInfoClientRequestOptions = {},
   ): Promise<Buffer> {
     if (typeof spec === 'string')
@@ -503,13 +502,13 @@ export class PackageInfoClient {
     }
   }
 
-  async manifest(spec: string | Spec): Promise<ManifestMinified>
+  async manifest(spec: Spec | string): Promise<ManifestMinified>
   async manifest<
     O extends
       PackageInfoClientRequestOptions = PackageInfoClientRequestOptions,
-  >(spec: string | Spec, options: O): Promise<ManifestByOptions<O>>
+  >(spec: Spec | string, options: O): Promise<ManifestByOptions<O>>
   async manifest(
-    spec: string | Spec,
+    spec: Spec | string,
     options: PackageInfoClientRequestOptions = {},
   ) {
     const { from = this.#projectRoot } = options
@@ -623,13 +622,13 @@ export class PackageInfoClient {
     }
   }
 
-  async packument(spec: string | Spec): Promise<PackumentMinified>
+  async packument(spec: Spec | string): Promise<PackumentMinified>
   async packument<
     O extends
       PackageInfoClientRequestOptions = PackageInfoClientRequestOptions,
-  >(spec: string | Spec, options: O): Promise<PackumentByOptions<O>>
+  >(spec: Spec | string, options: O): Promise<PackumentByOptions<O>>
   async packument(
-    spec: string | Spec,
+    spec: Spec | string,
     options: PackageInfoClientRequestOptions = {},
   ) {
     if (typeof spec === 'string')
@@ -691,7 +690,7 @@ export class PackageInfoClient {
   }
 
   async resolve(
-    spec: string | Spec,
+    spec: Spec | string,
     options: PackageInfoClientRequestOptions = {},
   ): Promise<Resolution> {
     const memoKey = String(spec)
@@ -703,7 +702,7 @@ export class PackageInfoClient {
     switch (f.type) {
       case 'file': {
         const { file } = f
-        if (!file) {
+        if (!file || !spec.file) {
           throw this.#resolveError(
             spec,
             options,
@@ -711,7 +710,7 @@ export class PackageInfoClient {
           )
         }
         const { from = this.#projectRoot } = options
-        const resolved = pathResolve(from, spec.file as string)
+        const resolved = pathResolve(from, spec.file)
         const r = { resolved, spec }
         this.#resolutions.set(memoKey, r)
         return r
@@ -740,7 +739,7 @@ export class PackageInfoClient {
 
       case 'registry': {
         const mani = await this.manifest(spec, options)
-        if (mani?.dist) {
+        if (mani.dist) {
           const { integrity, tarball, signatures } = mani.dist
           if (tarball) {
             const r = {
@@ -781,7 +780,7 @@ export class PackageInfoClient {
           }
           if (gitSelectorParsed) {
             r.resolved += Object.entries(gitSelectorParsed)
-              .filter(([_, v]) => v !== undefined)
+              .filter(([_, v]) => v)
               .map(([k, v]) => `::${k}:${v}`)
               .join('')
           }
@@ -789,7 +788,7 @@ export class PackageInfoClient {
           return r
         }
         // have to actually clone somewhere
-        const s: Spec = spec as Spec
+        const s: Spec = spec
         return this.#tmpdir(async tmpdir => {
           const sha = await clone(
             gitRemote,
@@ -817,7 +816,7 @@ export class PackageInfoClient {
       return await fn(dir)
     } finally {
       // intentionally do not await
-      rm(dir, { recursive: true, force: true })
+      void rm(dir, { recursive: true, force: true })
     }
   }
 
@@ -825,7 +824,7 @@ export class PackageInfoClient {
   #resolveError(
     spec?: Spec,
     options: PackageInfoClientRequestOptions = {},
-    message: string = 'Could not resolve',
+    message = 'Could not resolve',
     extra: ErrorCauseObject = {},
   ) {
     const { from = this.#projectRoot } = options

@@ -124,7 +124,7 @@ t.test('run scripts for importers with changed deps', async t => {
   ideal3.importers.add(newImp)
   ideal3.nodes.set(newImp.id, newImp)
   const globNode = ideal3.nodes.get(';;glob@11.0.0')
-  if (!globNode) throw 'no glob??'
+  if (!globNode) throw new Error('no glob??')
   // upgrade!
   globNode.id = ';;glob@11.0.1'
   globNode.location =

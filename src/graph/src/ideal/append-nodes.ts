@@ -12,7 +12,7 @@ import {
 import { Graph } from '../graph.js'
 import { Node } from '../node.js'
 
-interface FileTypeInfo {
+type FileTypeInfo = {
   id: DepID
   path: string
   isDirectory: boolean
@@ -82,7 +82,7 @@ export const appendNodes = async (
         fromNode,
         type,
         spec,
-        await packageInfo.manifest(spec).catch(er => {
+        await packageInfo.manifest(spec).catch((er: unknown) => {
           // optional deps ignored if inaccessible
           if (type === 'optional' || type === 'peerOptional') {
             return undefined

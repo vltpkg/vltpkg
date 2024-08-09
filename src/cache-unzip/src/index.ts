@@ -6,7 +6,7 @@ const unzipScript = fileURLToPath(
 )
 
 let didProcessBeforeExitHook = false
-const registered: Map<string, Set<string>> = new Map()
+const registered = new Map<string, Set<string>>()
 
 export const register = (path: string, key: string): void => {
   const r = registered.get(path) ?? new Set<string>()

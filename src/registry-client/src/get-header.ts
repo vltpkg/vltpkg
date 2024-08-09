@@ -3,13 +3,13 @@ const isIterable = <T>(o: any): o is Iterable<T> =>
 
 export const getHeader = (
   headers:
+    | Iterable<[string, string[] | string | undefined]>
+    | Record<string, string[] | string | undefined>
     | string[]
-    | Record<string, string | string[] | undefined>
-    | Iterable<[string, string | string[] | undefined]>
     | null
     | undefined,
   key: string,
-): string | string[] | undefined => {
+): string[] | string | undefined => {
   if (!headers) return undefined
   key = key.toLowerCase()
   if (Array.isArray(headers)) {
@@ -18,7 +18,7 @@ export const getHeader = (
       // [string,HeaderValue][]
       for (const [k, v] of headers as unknown as [
         string,
-        string | string[],
+        string[] | string,
       ][]) {
         if (k.toLowerCase() === key) return v
       }
@@ -29,7 +29,7 @@ export const getHeader = (
       }
     }
   } else if (
-    isIterable<[string, string | string[] | undefined]>(headers)
+    isIterable<[string, string[] | string | undefined]>(headers)
   ) {
     for (const [k, v] of headers) {
       if (k.toLowerCase() === key) return v

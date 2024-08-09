@@ -34,11 +34,11 @@ export class Pool {
    * CPUs, or 1.
    */
   /* c8 ignore next */
-  jobs: number = Math.max(os.availableParallelism?.() ?? 2, 2) - 1
+  jobs: number = Math.max(os.availableParallelism(), 2) - 1
   /**
    * Set of currently active worker threads
    */
-  workers: Set<Worker> = new Set()
+  workers = new Set<Worker>()
   /**
    * Queue of requests awaiting an available worker
    */
@@ -47,7 +47,7 @@ export class Pool {
    * Requests that have been assigned to a worker, but have not yet
    * been confirmed completed.
    */
-  pending: Map<number, UnpackRequest> = new Map()
+  pending = new Map<number, UnpackRequest>()
 
   // handle a message from the worker
   #onMessage(w: Worker, m: ResponseError | ResponseOK) {
@@ -71,7 +71,7 @@ export class Pool {
     const next = this.queue.shift()
     if (!next) {
       this.workers.delete(w)
-      w.terminate()
+      void w.terminate()
     } else this.#request(w, next)
   }
 
@@ -118,7 +118,7 @@ export class Pool {
     const ur = new UnpackRequest(tarData, target)
     this.pending.set(ur.id, ur)
     if (this.workers.size < this.jobs) {
-      this.#createWorker(ur)
+      void this.#createWorker(ur)
     } else {
       this.queue.push(ur)
     }

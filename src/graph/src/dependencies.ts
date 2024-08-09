@@ -8,23 +8,23 @@ import { ManifestMinified } from '@vltpkg/types'
 export type DependencyTypeLong =
   | 'dependencies'
   | 'devDependencies'
-  | 'peerDependencies'
   | 'optionalDependencies'
+  | 'peerDependencies'
 
 /**
  * Unique keys that define different types of dependencies relationship.
  */
 export type DependencyTypeShort =
-  | 'prod'
   | 'dev'
-  | 'peer'
   | 'optional'
+  | 'peer'
   | 'peerOptional'
+  | 'prod'
 
 /**
  * Dependency entries info as defined in a package.json file.
  */
-export interface RawDependency {
+export type RawDependency = {
   name: string
   bareSpec: string
   type: DependencyTypeLong
@@ -34,7 +34,7 @@ export interface RawDependency {
 /**
  * Parsed dependency entries info.
  */
-export interface Dependency {
+export type Dependency = {
   /**
    * The parsed {@link Spec} object describing the dependency requirements.
    */
@@ -47,10 +47,7 @@ export interface Dependency {
 
 export const isDependency = (obj: any): obj is Dependency =>
   // TODO: it would be nice to have a @vltpkg/spec.isSpec method
-  obj?.spec &&
-  obj?.spec?.type &&
-  obj?.type &&
-  shortDependencyTypes.has(obj?.type)
+  obj?.spec?.type && obj?.type && shortDependencyTypes.has(obj?.type)
 
 export const asDependency = (obj: any): Dependency => {
   if (!isDependency(obj)) {
@@ -63,7 +60,7 @@ export const asDependency = (obj: any): Dependency => {
  * A set of the possible long dependency type names,
  * as used in `package.json` files.
  */
-export const longDependencyTypes: Set<DependencyTypeLong> = new Set([
+export const longDependencyTypes = new Set<DependencyTypeLong>([
   'dependencies',
   'devDependencies',
   'peerDependencies',
@@ -73,18 +70,22 @@ export const longDependencyTypes: Set<DependencyTypeLong> = new Set([
 /**
  * A set of the short type keys used to represent dependency relationships.
  */
-export const shortDependencyTypes: Set<DependencyTypeShort> = new Set(
-  ['prod', 'dev', 'peer', 'optional', 'peerOptional'],
-)
+export const shortDependencyTypes = new Set<DependencyTypeShort>([
+  'prod',
+  'dev',
+  'peer',
+  'optional',
+  'peerOptional',
+])
 
 /**
  * Maps between long form names usually used in `package.json` files
  * to a corresponding short form name, used in lockfiles.
  */
-export const dependencyTypes: Map<
+export const dependencyTypes = new Map<
   DependencyTypeLong,
   DependencyTypeShort
-> = new Map([
+>([
   ['dependencies', 'prod'],
   ['devDependencies', 'dev'],
   ['peerDependencies', 'peer'],

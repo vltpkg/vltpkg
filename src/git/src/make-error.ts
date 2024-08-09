@@ -22,7 +22,7 @@ const missingPathspecRe =
   /pathspec .* did not match any file\(s\) known to git/
 
 export const makeError = (
-  result: SpawnResultString & SpawnResultStderr,
+  result: SpawnResultStderr & SpawnResultString,
 ): Error & { shouldRetry: (n: number) => boolean } =>
   connectionErrorRe.test(result.stderr) ?
     Object.assign(error('A git connection error occurred', result), {

@@ -22,7 +22,7 @@ const fixMainBranch = (err: Error & { status: number }) => {
       fixedRefs[index] = expect.refs[index]
     }
   }
-  //@ts-ignore
+  //@ts-expect-error
   expect.refs = fixedRefs
   mainBranch = oldMainBranch
   return git('init')
@@ -50,7 +50,7 @@ t.test('setup', () =>
     .then(() => git('commit', '-m', 'bob plays the obo'))
     .then(() => git('tag', '-am', 'version 1.2.3', 'version-1.2.3'))
     .then(() =>
-      git('tag', '-am', 'too big', '69' + Math.pow(2, 53) + '.0.0'),
+      git('tag', '-am', 'too big', `69${Math.pow(2, 53)}.0.0`),
     )
     .then(() => write('gleep', 'glorp'))
     .then(() => git('add', 'gleep'))

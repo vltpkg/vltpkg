@@ -5,11 +5,11 @@ const root = homedir()
 const path = (p: string) => resolve(root, p)
 
 export type PathType =
-  | 'config'
   | 'cache'
+  | 'config'
   | 'data'
-  | 'state'
   | 'runtime'
+  | 'state'
 
 const defaults =
   process.platform === 'darwin' ?
@@ -89,19 +89,19 @@ export class XDG {
   constructor(name: string) {
     this.name = name
   }
-  config(p: string = '') {
+  config(p = '') {
     return resolve(this.base.config, this.name, p)
   }
-  cache(p: string = '') {
+  cache(p = '') {
     return resolve(this.base.cache, this.name, p)
   }
-  data(p: string = '') {
+  data(p = '') {
     return resolve(this.base.data, this.name, p)
   }
-  state(p: string = '') {
+  state(p = '') {
     return resolve(this.base.state, this.name, p)
   }
-  runtime(p: string = '') {
+  runtime(p = '') {
     return resolve(this.base.runtime, this.name, p)
   }
 }

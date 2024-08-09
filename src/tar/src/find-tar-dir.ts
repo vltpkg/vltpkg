@@ -7,7 +7,7 @@ export const findTarDir = (
 ) => {
   if (tarDir !== undefined) return tarDir
   if (!path) return undefined
-  let i = path.indexOf('/', path.startsWith('./') ? 2 : 0)
+  const i = path.indexOf('/', path.startsWith('./') ? 2 : 0)
   if (i === -1) return undefined
   const chomp = path.substring(0, i)
   if (

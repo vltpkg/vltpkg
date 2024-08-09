@@ -33,7 +33,7 @@ const getPathInfo = (
         // windows always checks the cwd first
         /* c8 ignore next - platform-specific */
         ...(isWindows ? [process.cwd()] : []),
-        ...(optPath || /* c8 ignore next - very unusual */ '').split(
+        ...(optPath ?? /* c8 ignore next - very unusual */ '').split(
           optDelimiter,
         ),
       ]
@@ -90,11 +90,11 @@ export async function which(cmd: string): Promise<string>
 export async function which(
   cmd: string,
   opt: WhichOptionsFindAllNoThrow,
-): Promise<null | string[]>
+): Promise<string[] | null>
 export async function which(
   cmd: string,
   opt: WhichOptionsFindOneNoThrow,
-): Promise<null | string>
+): Promise<string | null>
 export async function which(
   cmd: string,
   opt: WhichOptionsFindAllThrow,
@@ -106,19 +106,19 @@ export async function which(
 export async function which(
   cmd: string,
   opt: WhichOptionsFindOne,
-): Promise<null | string>
+): Promise<string | null>
 export async function which(
   cmd: string,
   opt: WhichOptionsNoThrow,
-): Promise<null | string[] | string>
+): Promise<string[] | string | null>
 export async function which(
   cmd: string,
   opt: WhichOptionsFindAll,
-): Promise<null | string[]>
+): Promise<string[] | null>
 export async function which(
   cmd: string,
   opt: WhichOptions,
-): Promise<string | null | string[]>
+): Promise<string[] | string | null>
 export async function which(cmd: string, opt: WhichOptions = {}) {
   const { pathEnv, pathExt, pathExtExe } = getPathInfo(cmd, opt)
   const found = []
@@ -156,11 +156,11 @@ export function whichSync(cmd: string): string
 export function whichSync(
   cmd: string,
   opt: WhichOptionsFindAllNoThrow,
-): null | string[]
+): string[] | null
 export function whichSync(
   cmd: string,
   opt: WhichOptionsFindOneNoThrow,
-): null | string
+): string | null
 export function whichSync(
   cmd: string,
   opt: WhichOptionsFindAllThrow,
@@ -172,19 +172,19 @@ export function whichSync(
 export function whichSync(
   cmd: string,
   opt: WhichOptionsFindOne,
-): null | string
+): string | null
 export function whichSync(
   cmd: string,
   opt: WhichOptionsNoThrow,
-): null | string[] | string
+): string[] | string | null
 export function whichSync(
   cmd: string,
   opt: WhichOptionsFindAll,
-): null | string[]
+): string[] | null
 export function whichSync(
   cmd: string,
   opt?: WhichOptions,
-): string | null | string[]
+): string[] | string | null
 export function whichSync(cmd: string, opt: WhichOptions = {}) {
   const { pathEnv, pathExt, pathExtExe } = getPathInfo(cmd, opt)
   const found = []

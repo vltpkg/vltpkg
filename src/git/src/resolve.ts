@@ -12,7 +12,7 @@ import { revs } from './revs.js'
  */
 export const resolve = async (
   repo: string,
-  ref: string = 'HEAD',
+  ref = 'HEAD',
   opts: GitOptions = {},
 ) => {
   const revDoc = await revs(repo, opts)
@@ -28,7 +28,7 @@ export const resolve = async (
  */
 export const resolveRef = (
   revDoc: RevDoc,
-  ref: string = 'HEAD',
+  ref = 'HEAD',
   opts: GitOptions = {},
 ) => {
   const { spec } = opts

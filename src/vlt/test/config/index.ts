@@ -87,7 +87,7 @@ t.test('read and write a user config', async t => {
           return dir + '/xdg/vlt.json'
         }
         cache() {
-          dir + '/default/cache'
+          return dir + '/default/cache'
         }
       },
     },
@@ -161,7 +161,7 @@ t.test(
             return dir + '/xdg/vlt.json'
           }
           cache() {
-            dir + '/default/cache'
+            return dir + '/default/cache'
           }
         },
       },

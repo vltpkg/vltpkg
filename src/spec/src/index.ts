@@ -169,7 +169,7 @@ export class Spec {
   static parse(spec: string, options?: SpecOptions): Spec
   static parse(spec: Spec, options?: SpecOptions): Spec
   static parse(
-    spec: string | Spec,
+    spec: Spec | string,
     bareOrOptions?: SpecOptions | string,
     options?: SpecOptions,
   ) {
@@ -179,7 +179,7 @@ export class Spec {
   }
 
   static parseArgs(specOrBareSpec: string, opts?: SpecOptions): Spec {
-    const options = getOptions(opts || {})
+    const options = getOptions(opts ?? {})
 
     if (startsWithSpecIdentifier(specOrBareSpec, options)) {
       const parsed = Spec.parse('(unknown)', specOrBareSpec, options)
@@ -191,7 +191,7 @@ export class Spec {
       return parsed
     } else {
       const hasScope = specOrBareSpec.startsWith('@')
-      let at = findFirstAt(specOrBareSpec, hasScope)
+      const at = findFirstAt(specOrBareSpec, hasScope)
       if (at > -1) {
         return Spec.parse(
           specOrBareSpec.substring(0, at),
@@ -211,7 +211,7 @@ export class Spec {
   }
 
   /** the type of spec that this is, ultimately */
-  type: 'git' | 'file' | 'remote' | 'registry' | 'workspace'
+  type: 'file' | 'git' | 'registry' | 'remote' | 'workspace'
 
   /** the full named specifier passed to the constructor */
   spec: string
@@ -342,7 +342,7 @@ export class Spec {
   constructor(name: string, bareSpec: string, options?: SpecOptions)
   constructor(spec: string, options?: SpecOptions)
   constructor(
-    spec: string | Spec,
+    spec: Spec | string,
     bareOrOptions?: SpecOptions | string,
     options?: SpecOptions,
   )
@@ -679,7 +679,7 @@ export class Spec {
 
     this.conventionalRegistryTarball = String(
       new URL(
-        `/${name}/-/${name.replace(/^@[^\/]+\//, '')}-${
+        `/${name}/-/${name.replace(/^@[^/]+\//, '')}-${
           cmp.tuples[0][1]
         }.tgz`,
         registry,

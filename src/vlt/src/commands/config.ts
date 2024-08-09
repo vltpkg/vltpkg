@@ -92,14 +92,14 @@ const list = (conf: LoadedConfig) => {
   console.log(JSON.stringify(recordsToPairs(conf.options), null, 2))
 }
 
-const del = (conf: LoadedConfig) => {
+const del = async (conf: LoadedConfig) => {
   const fields = conf.positionals.slice(1)
   if (!fields.length) {
     console.error(usage)
     throw error('At least one key is required')
   }
-  conf.deleteConfigKeys(
-    conf.get('config') as 'user' | 'project',
+  await conf.deleteConfigKeys(
+    conf.get('config') as 'project' | 'user',
     fields,
   )
 }
@@ -124,7 +124,7 @@ const edit = async (conf: LoadedConfig) => {
   }
   /* c8 ignore stop */
   await conf.editConfigFile(
-    conf.get('config') as 'user' | 'project',
+    conf.get('config') as 'project' | 'user',
     async file => {
       spawnSync(editor, [file], { stdio: 'inherit' })
     },
@@ -138,6 +138,6 @@ const set = async (conf: LoadedConfig) => {
     throw error('At least one key=value pair is required')
   }
   const { values } = conf.jack.parseRaw(pairs.map(kv => `--${kv}`))
-  const which = conf.get('config') as 'user' | 'project'
+  const which = conf.get('config') as 'project' | 'user'
   await conf.addConfigToFile(which, pairsToRecords(values))
 }
