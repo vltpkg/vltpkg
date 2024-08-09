@@ -13,8 +13,8 @@ class MockConfig {
 }
 
 Object.assign(Spec.prototype, {
-  [kCustomInspect]() {
-    return `Spec {${this as unknown as Spec}}`
+  [kCustomInspect](this: Spec) {
+    return `Spec {${this}}`
   },
 })
 

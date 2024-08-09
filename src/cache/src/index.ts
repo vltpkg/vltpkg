@@ -253,7 +253,7 @@ export class Cache extends LRUCache<
    * Resolves when there are no pending writes to the disk cache
    */
   async promise(): Promise<void> {
-    await Promise.all(this.pending)
+    if (this.pending.length) await Promise.all(this.pending)
     /* c8 ignore next - race condition */
     if (this.#pending.size) await this.promise()
   }

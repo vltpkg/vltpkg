@@ -129,6 +129,7 @@ export default tseslint.config(
       ],
       // this is helpful and not really dangerous in tests
       '@typescript-eslint/no-non-null-assertion': 'off',
+      '@typescript-eslint/no-unused-expressions': 'off',
       // Duplicate turning off these rules for test files so
       // we can prioritize fixing them in src/ over test/
       '@typescript-eslint/no-unsafe-argument': 'off',

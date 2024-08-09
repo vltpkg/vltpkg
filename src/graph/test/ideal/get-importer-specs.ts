@@ -8,8 +8,8 @@ import { Graph } from '../../src/graph.js'
 import { getImporterSpecs } from '../../src/ideal/get-importer-specs.js'
 
 Object.assign(Spec.prototype, {
-  [Symbol.for('nodejs.util.inspect.custom')]() {
-    return `Spec {${this as unknown as Spec}}`
+  [Symbol.for('nodejs.util.inspect.custom')](this: Spec) {
+    return `Spec {${this}}`
   },
 })
 

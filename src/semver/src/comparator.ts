@@ -194,6 +194,7 @@ export class Comparator {
         comps.push(c)
         continue
       }
+      // we know this is not undefined since followingOperator guards that
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       comps[comps.length - 1]! += c
       followingOperator = false

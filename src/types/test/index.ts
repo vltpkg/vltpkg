@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-expressions */
 import {
   asIntegrity,
   asKeyID,
@@ -121,7 +120,9 @@ t.test('keyID', t => {
   //@ts-expect-error
   const str: KeyID = 'hello'
   t.equal(isKeyID(str), false)
-  const keyOK = 'SHA256:jl3bwswu80PjjokCgh0o2w5c2U4LhQAE57gj9cz1kzA'
+  let keyOK = ''
+  keyOK = 'SHA256:jl3bwswu80PjjokCgh0o2w5c2U4LhQAE57gj9cz1kzA'
+  //@ts-expect-error - still just a string as far as TS knows
   const kNope: KeyID = keyOK
   kNope
   const asKey: KeyID = asKeyID(keyOK)
@@ -145,8 +146,10 @@ t.test('integrity', t => {
   const iNotInt: Integrity = 'hello'
   t.equal(isIntegrity(iNotInt), false)
   t.throws(() => asIntegrity('hello'))
-  const intOK =
+  let intOK = ''
+  intOK =
     'sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ=='
+  //@ts-expect-error - still just a string as far as TS knows
   const iNope: Integrity = intOK
   iNope
   const asInt: Integrity = asIntegrity(intOK)

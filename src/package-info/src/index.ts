@@ -701,7 +701,7 @@ export class PackageInfoClient {
     switch (f.type) {
       case 'file': {
         const { file } = f
-        if (!file) {
+        if (!file || !spec.file) {
           throw this.#resolveError(
             spec,
             options,
@@ -709,8 +709,7 @@ export class PackageInfoClient {
           )
         }
         const { from = this.#projectRoot } = options
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        const resolved = pathResolve(from, spec.file!)
+        const resolved = pathResolve(from, spec.file)
         const r = { resolved, spec }
         this.#resolutions.set(memoKey, r)
         return r

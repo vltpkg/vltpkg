@@ -39,6 +39,7 @@ import { walkUp } from 'walk-up-path'
 import {
   commands,
   definition,
+  getCommand,
   isRecordField,
   recordFields,
   type Commands,
@@ -256,18 +257,13 @@ export class Config {
     }
     this.jack.loadEnvDefaults()
     const p = this.jack.parseRaw(args)
-    const fallback = p.values[
-      'fallback-command'
-    ] as Commands[keyof Commands]
-    const argv0 = p.positionals[0]
-    const cmd =
-      argv0 && argv0 in this.commands ?
-        this.commands[argv0 as keyof Commands]
-      : null
-    if (cmd) {
-      this.command = cmd
-    }
-    const cmdSpecific = this.commandValues[this.command || fallback]
+
+    const fallback = getCommand(p.values['fallback-command'])
+    this.command = getCommand(p.positionals[0])
+    const cmdOrFallback = this.command ?? fallback
+
+    const cmdSpecific =
+      cmdOrFallback && this.commandValues[cmdOrFallback]
     if (cmdSpecific) {
       this.jack.setConfigValues(recordsToPairs(cmdSpecific))
     }
@@ -276,12 +272,9 @@ export class Config {
     this.jack.applyDefaults(p)
     this.jack.writeEnv(p)
 
-    if (cmd) p.positionals.shift()
-    else {
-      this.command = p.values[
-        'fallback-command'
-      ] as Commands[keyof Commands]
-    }
+    if (this.command) p.positionals.shift()
+    else this.command = fallback
+
     return Object.assign(this, p)
   }
 
@@ -375,9 +368,7 @@ export class Config {
         const { command, ...values } = recordsToPairs(result)
         if (command) {
           for (const [c, opts] of Object.entries(command)) {
-            const cmd =
-              /* c8 ignore next */
-              c in commands ? commands[c as keyof Commands] : null
+            const cmd = getCommand(c)
             if (cmd) {
               this.commandValues[cmd] = merge(
                 this.commandValues[cmd] ?? {},

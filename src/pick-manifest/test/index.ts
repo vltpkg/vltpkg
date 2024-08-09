@@ -10,7 +10,7 @@ import {
 import { pickManifest } from '../src/index.js'
 
 // don't need to run, just for typechecking
-const typechecks = () => {
+const _typechecks = () => {
   let paku = {} as unknown as Packument
   let pakuMin = {} as unknown as PackumentMinified
   const optBefore = { before: 1 }
@@ -40,8 +40,6 @@ const typechecks = () => {
   //@ts-expect-error
   mm.true = false
 }
-// eslint-disable-next-line @typescript-eslint/no-unused-expressions
-typechecks
 
 t.test('basic carat range selection', t => {
   const metadata = {

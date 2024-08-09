@@ -8,8 +8,8 @@ t.cleanSnapshot = s =>
   s.replace(/^(\s+)projectRoot: .*$/gm, '$1projectRoot: #')
 
 Object.assign(Spec.prototype, {
-  [Symbol.for('nodejs.util.inspect.custom')]() {
-    return `Spec {${this as unknown as Spec}}`
+  [Symbol.for('nodejs.util.inspect.custom')](this: Spec) {
+    return `Spec {${this}}`
   },
 })
 

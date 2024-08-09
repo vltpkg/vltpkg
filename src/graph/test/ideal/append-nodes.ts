@@ -10,8 +10,8 @@ import { appendNodes } from '../../src/ideal/append-nodes.js'
 import { humanReadableOutput } from '../../src/visualization/human-readable-output.js'
 
 Object.assign(Spec.prototype, {
-  [Symbol.for('nodejs.util.inspect.custom')]() {
-    return `Spec {${this as unknown as Spec}}`
+  [Symbol.for('nodejs.util.inspect.custom')](this: Spec) {
+    return `Spec {${this}}`
   },
 })
 

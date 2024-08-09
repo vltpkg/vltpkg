@@ -280,7 +280,7 @@ t.test('one ws fails, with bail', async t => {
     new Set(errs()),
     new Set([['src/b hello'], ['src/a hello']]),
   )
-  t.equal(process.exitCode, exitCode ?? 1)
+  t.equal(process.exitCode, exitCode || 1)
   process.exitCode = exitCode
 })
 
@@ -358,7 +358,7 @@ t.test('one ws fails, without bail', async t => {
     new Set(errs()),
     new Set([['src/b hello'], ['src/a hello']]),
   )
-  t.equal(process.exitCode, exitCode ?? 1)
+  t.equal(process.exitCode, exitCode || 1)
   process.exitCode = exitCode
 })
 

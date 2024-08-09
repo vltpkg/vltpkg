@@ -26,9 +26,6 @@ const submodsRemote = `git://localhost:${port}/submodule-repo`
 const repo = resolve(me, 'repo')
 const repoUrl = String(pathToFileURL(repo))
 
-const repoSha = ''
-const submodsRepoSha = ''
-
 t.setTimeout(120000)
 t.test('create repo', { bail: true }, async () => {
   const git = (...cmd: string[]) => spawnGit(cmd, { cwd: repo })
@@ -186,7 +183,7 @@ t.test('check every out', t => {
         t.test(`shallow=${gitShallow}`, t => {
           t.jobs = 2
           t.plan(refs.length + 1)
-          for (const ref of refs.concat(repoSha)) {
+          for (const ref of refs.concat('')) {
             t.test(`ref=${ref}`, async t => {
               const safeRef = `${ref}`.replace(/[^a-z0-9.]/g, '-')
               const name = `${fakePlatform}-${gitShallow}-${safeRef}`
@@ -228,7 +225,7 @@ t.test('again, with a submodule', async t => {
         t.test(`shallow=${gitShallow}`, t => {
           t.jobs = 2
           t.plan(refs.length + 1)
-          for (const ref of refs.concat(submodsRepoSha)) {
+          for (const ref of refs.concat('')) {
             t.test(`ref=${ref}`, async t => {
               const safeRef = `${ref}`.replace(/[^a-z0-9.]/g, '-')
               const name = `withsub-${fakePlatform}-${gitShallow}-${safeRef}`
