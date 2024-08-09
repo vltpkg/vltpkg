@@ -8,11 +8,8 @@ const repo = t.testdir()
 const repoUrl = pathToFileURL(repo)
 const git = (...cmd: string[]) => spawn(cmd, { cwd: repo })
 let mainBranch = 'main'
-const fixMainBranch = (err: unknown) => {
-  if (
-    err instanceof Error &&
-    (err as Error & { status: number }).status !== 129
-  ) {
+const fixMainBranch = (err: Error & { status: number }) => {
+  if (err.status !== 129) {
     throw err
   }
   const oldMainBranch = 'master'

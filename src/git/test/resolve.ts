@@ -10,11 +10,8 @@ t.cleanSnapshot = s => s.replace(/"[0-9a-f]{40}"/g, '"{SHA}"')
 const repo = t.testdir()
 const git = (...cmd: string[]) => spawn(cmd, { cwd: repo })
 let mainBranch = 'main'
-const fixMainBranch = (err: unknown) => {
-  if (
-    err instanceof Error &&
-    (err as Error & { status: number }).status !== 129
-  ) {
+const fixMainBranch = (err: Error & { status: number }) => {
+  if (err.status !== 129) {
     throw err
   }
   const oldMainBranch = 'master'

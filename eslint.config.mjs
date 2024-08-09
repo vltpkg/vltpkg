@@ -86,7 +86,7 @@ export default tseslint.config(
       ],
       // this rule doesn't catch anything except useful patterns we might need
       '@typescript-eslint/no-this-alias': 'off',
-      // TODO: add descriptions to ts-expect-error comments
+      // allow us to use ts-expect-error directives without descriptions
       '@typescript-eslint/ban-ts-comment': [
         'error',
         {
@@ -127,6 +127,8 @@ export default tseslint.config(
       // this is helpful and not really dangerous in tests
       '@typescript-eslint/no-non-null-assertion': 'off',
       '@typescript-eslint/no-unused-expressions': 'off',
+      '@typescript-eslint/use-unknown-in-catch-callback-variable':
+        'off',
       // Duplicate turning off these rules for test files so
       // we can prioritize fixing them in src/ over test/
       '@typescript-eslint/no-unsafe-argument': 'off',
