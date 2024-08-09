@@ -52,7 +52,7 @@ export { definition, commands, Commands }
 // if a kv pair doesn't have a = character, set to `''`
 const reducePairs = <T extends string[]>(
   pairs: T,
-): T | Record<string, string> => {
+): Record<string, string> | T => {
   const record: Record<string, string> = {}
   for (const kv of pairs) {
     const eq = kv.indexOf('=')
@@ -135,7 +135,7 @@ export type ConfigData = OptionsResults<ConfigDefinitions> & {
  */
 export type ConfigFileData = {
   [k in keyof ConfigData]?: k extends OptListKeys<ConfigData> ?
-    string[] | Record<string, string>
+    Record<string, string> | string[]
   : k extends 'command' ? Record<string, ConfigFileData>
   : ConfigData[k]
 }
@@ -292,8 +292,8 @@ export class Config {
    */
   getRecord(k: OptListKeys<ConfigData>): Record<string, string> {
     const pairs = this.get(k) as
-      | undefined
       | (string[] & { [kRecord]?: Record<string, string> })
+      | undefined
     if (!pairs) return {}
     if (pairs[kRecord]) return pairs[kRecord]
     const kv = pairs.reduce((kv: Record<string, string>, pair) => {
@@ -325,7 +325,7 @@ export class Config {
    * Write the config values to the user or project config file.
    */
   async writeConfigFile(
-    which: 'user' | 'project',
+    which: 'project' | 'user',
     values: ConfigFileData,
   ) {
     const f = this.getFilename(which)
@@ -344,7 +344,7 @@ export class Config {
    * in the config file.
    */
   async addConfigToFile(
-    which: 'user' | 'project',
+    which: 'project' | 'user',
     values: ConfigFileData,
   ) {
     const f = this.getFilename(which)
@@ -411,14 +411,14 @@ export class Config {
     return result
   }
 
-  getFilename(which: 'user' | 'project' = 'project'): string {
+  getFilename(which: 'project' | 'user' = 'project'): string {
     return which === 'user' ?
         xdg.config('vlt.json')
       : resolve(this.projectRoot, 'vlt.json')
   }
 
   async deleteConfigKeys(
-    which: 'user' | 'project',
+    which: 'project' | 'user',
     fields: string[],
   ) {
     const file = this.getFilename(which)
@@ -479,8 +479,8 @@ export class Config {
    * mean deleting the file.
    */
   async editConfigFile(
-    which: 'user' | 'project',
-    edit: (file: string) => void | Promise<void>,
+    which: 'project' | 'user',
+    edit: (file: string) => Promise<void> | void,
   ) {
     const file = this.getFilename(which)
     const backup = this.configFiles[file]

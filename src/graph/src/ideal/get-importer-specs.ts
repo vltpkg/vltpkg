@@ -11,8 +11,8 @@ import { Edge } from '../edge.js'
 import { Node } from '../node.js'
 
 export type GetImporterSpecsOptions = BuildIdealAddOptions &
-  BuildIdealRemoveOptions &
-  BuildIdealFromGraphOptions
+  BuildIdealFromGraphOptions &
+  BuildIdealRemoveOptions
 
 const hasDepName = (importer: Node, edge: Edge): boolean => {
   for (const depType of longDependencyTypes) {

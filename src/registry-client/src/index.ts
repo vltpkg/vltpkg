@@ -22,7 +22,7 @@ export type RegistryClientOptions = {
 
 export type RegistryClientRequestOptions = Omit<
   Dispatcher.DispatchOptions,
-  'path' | 'method'
+  'method' | 'path'
 > & {
   /**
    * `path` should not be set when using the RegistryClient.
@@ -104,7 +104,7 @@ export class RegistryClient {
   }
 
   async request(
-    url: string | URL,
+    url: URL | string,
     options: RegistryClientRequestOptions = {},
   ): Promise<CacheEntry> {
     const u = typeof url === 'string' ? new URL(url) : url

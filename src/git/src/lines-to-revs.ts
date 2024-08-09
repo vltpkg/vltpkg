@@ -5,7 +5,7 @@ import type {
 import { parse } from '@vltpkg/semver'
 import { error } from '@vltpkg/error-cause'
 
-export type RefType = 'head' | 'branch' | 'tag' | 'pull' | 'other'
+export type RefType = 'branch' | 'head' | 'other' | 'pull' | 'tag'
 
 /**
  * A representation of a given remote ref in a {@link RevDoc} object.

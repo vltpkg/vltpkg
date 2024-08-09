@@ -43,23 +43,23 @@ export type Resolution = {
   spec: Spec
 }
 
-export type PackageInfoClientOptions = {
-  /** root of the project. Defaults to process.cwd() */
-  projectRoot?: string
-  /** PackageJson object */
-  packageJson?: PackageJson
+export type PackageInfoClientOptions = RegistryClientOptions &
+  SpecOptions & {
+    /** root of the project. Defaults to process.cwd() */
+    projectRoot?: string
+    /** PackageJson object */
+    packageJson?: PackageJson
 
-  monorepo?: Monorepo
+    monorepo?: Monorepo
 
-  /** workspace groups to load, irrelevant if Monorepo provided */
-  'workspace-group'?: string[]
+    /** workspace groups to load, irrelevant if Monorepo provided */
+    'workspace-group'?: string[]
 
-  /** workspace paths to load, irrelevant if Monorepo provided */
-  workspace?: string[]
-} & RegistryClientOptions &
-  SpecOptions
+    /** workspace paths to load, irrelevant if Monorepo provided */
+    workspace?: string[]
+  }
 
-export type PackageInfoClientRequestOptions = {
+export type PackageInfoClientRequestOptions = PickManifestOptions & {
   /** dir to resolve `file://` specifiers against. Defaults to projectRoot. */
   from?: string
   /**
@@ -67,22 +67,23 @@ export type PackageInfoClientRequestOptions = {
    * enabled here.
    */
   fullMetadata?: boolean
-} & PickManifestOptions
+}
 
 // if fullMetadata is set, or we have a 'before' query, will be full data
 export type PackageInfoClientRequestOptionsFull =
   PackageInfoClientRequestOptions &
     (
+      | PickManifestOptionsBefore
       | {
           fullMetadata: true
         }
-      | PickManifestOptionsBefore
     )
 
 export type PackageInfoClientRequestOptionsMin =
-  PackageInfoClientRequestOptions & {
-    fullMetadata?: false
-  } & PickManifestOptionsNoBefore
+  PackageInfoClientRequestOptions &
+    PickManifestOptionsNoBefore & {
+      fullMetadata?: false
+    }
 
 export type PackumentByOptions<
   T extends PackageInfoClientRequestOptions,
@@ -126,67 +127,67 @@ const client = (
 }
 
 export async function packument(
-  spec: string | Spec,
+  spec: Spec | string,
   options: PackageInfoClientOptions &
     PackageInfoClientRequestOptionsMin,
 ): Promise<PackumentMinified>
 export async function packument(
-  spec: string | Spec,
+  spec: Spec | string,
   options: PackageInfoClientOptions &
     PackageInfoClientRequestOptionsFull,
 ): Promise<Packument>
 export async function packument(
-  spec: string | Spec,
+  spec: Spec | string,
 ): Promise<PackumentMinified>
 export async function packument<
   O extends PackageInfoClientOptions &
     PackageInfoClientRequestOptions = PackageInfoClientOptions &
     PackageInfoClientRequestOptions,
 >(
-  spec: string | Spec,
+  spec: Spec | string,
   options: O = {} as O,
 ): Promise<PackumentByOptions<O>> {
   return client(options).packument<O>(spec, options)
 }
 
 export async function manifest(
-  spec: string | Spec,
+  spec: Spec | string,
   options: PackageInfoClientOptions &
     PackageInfoClientRequestOptionsMin,
 ): Promise<ManifestMinified>
 export async function manifest(
-  spec: string | Spec,
+  spec: Spec | string,
   options: PackageInfoClientOptions &
     PackageInfoClientRequestOptionsFull,
 ): Promise<Manifest>
 export async function manifest(
-  spec: string | Spec,
+  spec: Spec | string,
 ): Promise<ManifestMinified>
 export async function manifest<
   O extends PackageInfoClientOptions &
     PackageInfoClientRequestOptions = PackageInfoClientOptions &
     PackageInfoClientRequestOptions,
 >(
-  spec: string | Spec,
+  spec: Spec | string,
   options: O = {} as O,
 ): Promise<ManifestByOptions<O>> {
   return client(options).manifest<O>(spec, options)
 }
 
 export const resolve = async (
-  spec: string | Spec,
+  spec: Spec | string,
   options: PackageInfoClientOptions &
     PackageInfoClientRequestOptions = {},
 ): Promise<Resolution> => client(options).resolve(spec, options)
 
 export const tarball = async (
-  spec: string | Spec,
+  spec: Spec | string,
   options: PackageInfoClientOptions &
     PackageInfoClientRequestOptions = {},
 ): Promise<Buffer> => client(options).tarball(spec, options)
 
 export const extract = async (
-  spec: string | Spec,
+  spec: Spec | string,
   target: string,
   options: PackageInfoClientOptions &
     PackageInfoClientRequestOptions = {},
@@ -233,7 +234,7 @@ export class PackageInfoClient {
   }
 
   async extract(
-    spec: string | Spec,
+    spec: Spec | string,
     target: string,
     options: PackageInfoClientRequestOptions = {},
   ): Promise<Resolution> {
@@ -380,7 +381,7 @@ export class PackageInfoClient {
   }
 
   async tarball(
-    spec: string | Spec,
+    spec: Spec | string,
     options: PackageInfoClientRequestOptions = {},
   ): Promise<Buffer> {
     if (typeof spec === 'string')
@@ -501,13 +502,13 @@ export class PackageInfoClient {
     }
   }
 
-  async manifest(spec: string | Spec): Promise<ManifestMinified>
+  async manifest(spec: Spec | string): Promise<ManifestMinified>
   async manifest<
     O extends
       PackageInfoClientRequestOptions = PackageInfoClientRequestOptions,
-  >(spec: string | Spec, options: O): Promise<ManifestByOptions<O>>
+  >(spec: Spec | string, options: O): Promise<ManifestByOptions<O>>
   async manifest(
-    spec: string | Spec,
+    spec: Spec | string,
     options: PackageInfoClientRequestOptions = {},
   ) {
     const { from = this.#projectRoot } = options
@@ -621,13 +622,13 @@ export class PackageInfoClient {
     }
   }
 
-  async packument(spec: string | Spec): Promise<PackumentMinified>
+  async packument(spec: Spec | string): Promise<PackumentMinified>
   async packument<
     O extends
       PackageInfoClientRequestOptions = PackageInfoClientRequestOptions,
-  >(spec: string | Spec, options: O): Promise<PackumentByOptions<O>>
+  >(spec: Spec | string, options: O): Promise<PackumentByOptions<O>>
   async packument(
-    spec: string | Spec,
+    spec: Spec | string,
     options: PackageInfoClientRequestOptions = {},
   ) {
     if (typeof spec === 'string')
@@ -689,7 +690,7 @@ export class PackageInfoClient {
   }
 
   async resolve(
-    spec: string | Spec,
+    spec: Spec | string,
     options: PackageInfoClientRequestOptions = {},
   ): Promise<Resolution> {
     const memoKey = String(spec)

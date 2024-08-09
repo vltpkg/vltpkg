@@ -47,16 +47,16 @@ export type ErrorCauseObject = {
   spec?:
     | string
     | {
-        type: 'git' | 'file' | 'remote' | 'registry' | 'workspace'
+        type: 'file' | 'git' | 'registry' | 'remote' | 'workspace'
         spec: string
-        [k: string | symbol | number]: any
+        [k: number | string | symbol]: any
       }
 
   /** exit code of a process, or HTTP response status code */
   status?: number | null
 
   /** null or a signal that a process received */
-  signal?: null | NodeJS.Signals
+  signal?: NodeJS.Signals | null
 
   /** the root of a project */
   projectRoot?: string
@@ -71,10 +71,10 @@ export type ErrorCauseObject = {
   args?: string[]
 
   /** standard output from a process */
-  stdout?: null | string | Buffer
+  stdout?: Buffer | string | null
 
   /** standard error from a process */
-  stderr?: null | string | Buffer
+  stderr?: Buffer | string | null
 
   /**
    * Array of valid options when something is not a valid option.
@@ -99,17 +99,17 @@ export type ErrorCauseObject = {
 
   /** HTTP message, fetch.Response, or `@vltpkg/registry-client.CacheEntry` */
   response?:
-    | Response
     | IncomingMessage
+    | Response
     | {
         statusCode: number
-        headers: Record<string, string | string[]> | Buffer[]
+        headers: Buffer[] | Record<string, string[] | string>
         text: () => string
-        [k: string | symbol | number]: any
+        [k: number | string | symbol]: any
       }
 
   /** string or URL object */
-  url?: string | URL
+  url?: URL | string
 
   /** git repository remote or path */
   repository?: string
@@ -122,7 +122,7 @@ export type ErrorCauseObject = {
         major: number
         minor: number
         patch: number
-        [k: string | symbol | number]: any
+        [k: number | string | symbol]: any
       }
 
   /** string or `@vltpkg/semver.Range` object */
@@ -132,7 +132,7 @@ export type ErrorCauseObject = {
         raw: string
         isAny: boolean
         includePrerelease: boolean
-        [k: string | symbol | number]: any
+        [k: number | string | symbol]: any
       }
 
   /** a package manifest, either from `package.json` or a registry */
@@ -158,8 +158,8 @@ export type DuckTypeManifest = Record<string, any> & {
   version?: string
   deprecated?: string
   engines?: Record<string, string>
-  os?: string | string[]
-  arch?: string | string[]
+  os?: string[] | string
+  arch?: string[] | string
   dist?: {
     integrity?: string
     shasum?: string
@@ -180,16 +180,16 @@ export type ErrorCause = Error | ErrorCauseObject
  * Add new options to this list as needed.
  */
 export type Codes =
+  | 'EEXIST'
+  | 'EINTEGRITY'
+  | 'EINVAL'
   | 'ELIFECYCLE'
+  | 'EMAXREDIRECT'
   | 'ENEEDAUTH'
+  | 'ENOENT'
+  | 'ENOGIT'
   | 'ERESOLVE'
   | 'EUNKNOWN'
-  | 'EINTEGRITY'
-  | 'EEXIST'
-  | 'ENOENT'
-  | 'EINVAL'
-  | 'EMAXREDIRECT'
-  | 'ENOGIT'
 
 const create = (
   cls: typeof Error,

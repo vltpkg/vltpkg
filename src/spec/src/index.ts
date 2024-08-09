@@ -169,7 +169,7 @@ export class Spec {
   static parse(spec: string, options?: SpecOptions): Spec
   static parse(spec: Spec, options?: SpecOptions): Spec
   static parse(
-    spec: string | Spec,
+    spec: Spec | string,
     bareOrOptions?: SpecOptions | string,
     options?: SpecOptions,
   ) {
@@ -211,7 +211,7 @@ export class Spec {
   }
 
   /** the type of spec that this is, ultimately */
-  type: 'git' | 'file' | 'remote' | 'registry' | 'workspace'
+  type: 'file' | 'git' | 'registry' | 'remote' | 'workspace'
 
   /** the full named specifier passed to the constructor */
   spec: string
@@ -342,7 +342,7 @@ export class Spec {
   constructor(name: string, bareSpec: string, options?: SpecOptions)
   constructor(spec: string, options?: SpecOptions)
   constructor(
-    spec: string | Spec,
+    spec: Spec | string,
     bareOrOptions?: SpecOptions | string,
     options?: SpecOptions,
   )

@@ -12,7 +12,7 @@ const parsedNodeVersion = Version.parse(process.version)
 
 export type PickManifestOptions = {
   tag?: string
-  before?: Date | string | number
+  before?: Date | number | string
   'node-version'?: string
   os?: NodeJS.Platform
   arch?: NodeJS.Architecture
@@ -35,7 +35,7 @@ const isBefore = (
   return !!time && Date.parse(time) <= before
 }
 
-const checkList = (value: string, list?: string | string[]) => {
+const checkList = (value: string, list?: string[] | string) => {
   if (typeof list === 'string') {
     list = [list]
   }
@@ -108,31 +108,31 @@ const versionOk = (
  */
 export function pickManifest(
   packument: Packument,
-  wanted: string | Range | Spec,
+  wanted: Range | Spec | string,
   opts: PickManifestOptions,
 ): Manifest | undefined
 export function pickManifest(
   packument: PackumentMinified,
-  wanted: string | Range | Spec,
+  wanted: Range | Spec | string,
   opts: PickManifestOptionsNoBefore,
 ): ManifestMinified | undefined
 export function pickManifest(
   packument: Packument,
-  wanted: string | Range | Spec,
+  wanted: Range | Spec | string,
 ): Manifest | undefined
 export function pickManifest(
   packument: PackumentMinified,
-  wanted: string | Range | Spec,
+  wanted: Range | Spec | string,
 ): ManifestMinified | undefined
 export function pickManifest(
   packument: Packument | PackumentMinified,
-  wanted: string | Range | Spec,
+  wanted: Range | Spec | string,
 ): Manifest | ManifestMinified | undefined
 export function pickManifest(
   packument: Packument | PackumentMinified,
-  wanted: string | Range | Spec,
+  wanted: Range | Spec | string,
   opts: PickManifestOptions = {},
-): ManifestMinified | Manifest | undefined {
+): Manifest | ManifestMinified | undefined {
   const {
     tag = 'latest',
     before,

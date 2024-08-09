@@ -21,9 +21,9 @@ import { ansiToAnsi } from 'ansi-to-pre'
 import chalk from 'chalk'
 import { LoadedConfig } from './config/index.js'
 
-export type RunnerBG = typeof run | typeof runExec | typeof exec
-export type RunnerFG = typeof runFG | typeof runExecFG | typeof execFG
-export type RunnerOptions = RunOptions & ExecOptions & RunExecOptions
+export type RunnerBG = typeof exec | typeof run | typeof runExec
+export type RunnerFG = typeof execFG | typeof runExecFG | typeof runFG
+export type RunnerOptions = ExecOptions & RunExecOptions & RunOptions
 
 export class ExecCommand<B extends RunnerBG, F extends RunnerFG> {
   bg: B

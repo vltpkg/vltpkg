@@ -18,7 +18,7 @@ t.saveFixture = isWindows
 const runTest = async (
   t: Test,
   exec: string,
-  expect?: string | string[] | { code: string } | null,
+  expect?: string[] | string | { code: string } | null,
   {
     platforms = ['posix', 'win32'],
     ..._opt
@@ -36,7 +36,7 @@ const runTest = async (
           isexe: isWindows ? isexeWin : isexePosix,
         },
       )
-      const er = expect as null | { code: string }
+      const er = expect as { code: string } | null
       if (er?.code) {
         await t.rejects(() => which(exec, opt), er, 'async rejects')
         t.throws(() => whichSync(exec, opt), er, 'sync throws')

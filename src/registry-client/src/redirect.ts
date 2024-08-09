@@ -36,7 +36,7 @@ export const redirect = (
   options: RegistryClientRequestOptions,
   response: RedirectResponse,
   from: URL,
-): [URL, RegistryClientRequestOptions] | [] => {
+): [] | [URL, RegistryClientRequestOptions] => {
   const { redirections = new Set<string>(), maxRedirections = 10 } =
     options
   if (maxRedirections <= 0) return []

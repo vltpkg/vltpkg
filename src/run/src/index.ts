@@ -56,7 +56,7 @@ const addPaths = (
 }
 
 /** options shared by run() and exec() */
-export type SharedOptions = {
+export type SharedOptions = PromiseSpawnOptions & {
   /** additional arguments to pass to the command */
   args?: string[]
   /** the root of the project, which we don't walk up past */
@@ -79,13 +79,13 @@ export type SharedOptions = {
    * the shell to run the script in. If not set, then the default
    * platform-specific shell will be used.
    */
-  'script-shell'?: string | boolean
-} & PromiseSpawnOptions
+  'script-shell'?: boolean | string
+}
 
 /**
  * Options for run() and runFG()
  */
-export type RunOptions = {
+export type RunOptions = SharedOptions & {
   /** the name of the thing in package.json#scripts */
   arg0: string
   /**
@@ -112,20 +112,20 @@ export type RunOptions = {
    * pre/post commands.
    */
   ignorePrePost?: boolean
-} & SharedOptions
+}
 
 /**
  * Options for exec() and execFG()
  */
-export type ExecOptions = {
+export type ExecOptions = SharedOptions & {
   /** the command to execute */
   arg0: string
-} & SharedOptions
+}
 
 /**
  * Options for runExec() and runExecFG()
  */
-export type RunExecOptions = {
+export type RunExecOptions = SharedOptions & {
   /**
    * Either the command to be executed, or the event to be run
    */
@@ -136,7 +136,7 @@ export type RunExecOptions = {
    * may improve performance somewhat.
    */
   packageJson?: PackageJson
-} & SharedOptions
+}
 
 /**
  * Run a package.json#scripts event in the background
@@ -366,7 +366,7 @@ const runExecImpl = async <
   options: RunExecOptions,
   runImpl: (options: RunOptions) => Promise<RunImplResult<R>>,
   execImpl: (options: ExecOptions) => Promise<R>,
-): Promise<RunImplResult<R> | R> => {
+): Promise<R | RunImplResult<R>> => {
   const { arg0, packageJson = new PackageJson(), ...args } = options
   const pj = packageJson.read(options.cwd)
   const { scripts } = pj
@@ -383,7 +383,7 @@ const runExecImpl = async <
  */
 export const runExec = async (
   options: RunExecOptions,
-): Promise<SpawnResultStdioStrings | RunResult> =>
+): Promise<RunResult | SpawnResultStdioStrings> =>
   runExecImpl<SpawnResultStdioStrings>(options, run, exec)
 
 /**
@@ -392,5 +392,5 @@ export const runExec = async (
  */
 export const runExecFG = async (
   options: RunExecOptions,
-): Promise<SpawnResultNoStdio | RunFGResult> =>
+): Promise<RunFGResult | SpawnResultNoStdio> =>
   runExecImpl<SpawnResultNoStdio>(options, runFG, execFG)

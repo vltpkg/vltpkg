@@ -8,18 +8,18 @@ import { ManifestMinified } from '@vltpkg/types'
 export type DependencyTypeLong =
   | 'dependencies'
   | 'devDependencies'
-  | 'peerDependencies'
   | 'optionalDependencies'
+  | 'peerDependencies'
 
 /**
  * Unique keys that define different types of dependencies relationship.
  */
 export type DependencyTypeShort =
-  | 'prod'
   | 'dev'
-  | 'peer'
   | 'optional'
+  | 'peer'
   | 'peerOptional'
+  | 'prod'
 
 /**
  * Dependency entries info as defined in a package.json file.

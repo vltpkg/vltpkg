@@ -2,12 +2,12 @@ import { error } from '@vltpkg/error-cause'
 
 /** anything that can be encoded in JSON */
 export type JSONField =
-  | string
-  | number
-  | null
-  | boolean
   | JSONField[]
+  | boolean
+  | number
+  | string
   | { [k: string]: JSONField }
+  | null
 
 /** sha512 SRI string */
 export type Integrity = `sha512-${string}`
@@ -35,15 +35,14 @@ export type PeerDependenciesMetaValue = {
 
 // Don't use Record here since TS cant do circular references with that
 // https://github.com/microsoft/TypeScript/issues/41164#issuecomment-1427073368
-// eslint-disable-next-line @typescript-eslint/consistent-indexed-object-style
 export type ConditionalValueObject = {
   [k: string]: ConditionalValue
 }
 export type ConditionalValue =
-  | null
-  | string
-  | ConditionalValueObject
   | ConditionalValue[]
+  | ConditionalValueObject
+  | string
+  | null
 
 export type ExportsSubpaths = {
   [path in '.' | `./${string}`]?: ConditionalValue
@@ -86,15 +85,15 @@ export type ManifestMinified = {
   /** a message indicating that this is not to be used */
   deprecated?: string
   /** executable built and linked by this package */
-  bin?: string | Record<string, string>
+  bin?: Record<string, string> | string
   /** run-script actions for this package */
   scripts?: Record<string, string>
   /** supported run-time platforms this package can run on */
   engines?: Record<string, string>
   /** supported operating systems this package can run on */
-  os?: string | string[]
+  os?: string[] | string
   /** supported CPU architectures this package can run on */
-  cpu?: string | string[]
+  cpu?: string[] | string
   /** URLs that can be visited to fund this project */
   funding?: Funding
   /**
@@ -126,8 +125,8 @@ export type Bugs =
       email?: string
     }
 
-export type Manifest = Record<string, JSONField> &
-  ManifestMinified & {
+export type Manifest = ManifestMinified &
+  Record<string, JSONField> & {
     /** a short description of the package */
     description?: string
     /** search keywords */
@@ -137,7 +136,7 @@ export type Manifest = Record<string, JSONField> &
     /** where the development happens */
     repository?: Repository
     /** whether this is ESM or CommonJS by default */
-    type?: 'module' | 'commonjs'
+    type?: 'commonjs' | 'module'
     /** the main module, if exports['.'] is not set */
     main?: string
     /** named subpath exports */
@@ -160,8 +159,8 @@ export type PackumentMinified = PackumentBase & {
   modified?: string
 }
 
-export type Packument = Record<string, JSONField> &
-  PackumentBase & {
+export type Packument = PackumentBase &
+  Record<string, JSONField> & {
     versions: Record<string, Manifest>
     time?: Record<string, string>
     readme?: string
@@ -215,7 +214,7 @@ export const assertKeyID: (k: unknown) => asserts k is KeyID = k => {
 
 const maybeRecordStringString = (
   o: unknown,
-): o is undefined | Record<string, string> =>
+): o is Record<string, string> | undefined =>
   o === undefined || isRecordStringString(o)
 
 const isRecordStringString = (
@@ -240,7 +239,7 @@ const isRecordStringManifest = (
 
 const maybePeerDependenciesMetaSet = (
   o: unknown,
-): o is undefined | Record<string, PeerDependenciesMetaValue> =>
+): o is Record<string, PeerDependenciesMetaValue> | undefined =>
   o === undefined ||
   isRecordStringT<PeerDependenciesMetaValue>(o, v =>
     isPeerDependenciesMetaValue(v),
@@ -254,7 +253,7 @@ const isPeerDependenciesMetaValue = (
 ): o is PeerDependenciesMetaValue =>
   !!o && typeof o === 'object' && maybeBoolean(o.optional)
 
-const maybeString = (a: unknown): a is undefined | string =>
+const maybeString = (a: unknown): a is string | undefined =>
   a === undefined || typeof a === 'string'
 
 const maybeDist = (a: any): a is Manifest['dist'] =>

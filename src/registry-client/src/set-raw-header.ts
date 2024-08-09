@@ -5,7 +5,7 @@
 export const setRawHeader = (
   headers: Buffer[],
   key: string,
-  value: string | Buffer,
+  value: Buffer | string,
 ) => {
   key = key.toLowerCase()
   const keyBuf = Buffer.from(key)

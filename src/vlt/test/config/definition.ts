@@ -42,7 +42,7 @@ t.test(
 t.test('infer editor from env/platform', async t => {
   const cases: [
     { platform: NodeJS.Platform; EDITOR?: string; VISUAL?: string },
-    string | RegExp,
+    RegExp | string,
   ][] = [
     [
       { platform: 'win32', EDITOR: undefined, VISUAL: undefined },

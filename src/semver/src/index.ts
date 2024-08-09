@@ -7,7 +7,7 @@ export * from './range.js'
 export * from './version.js'
 
 /** Return the parsed version string, or `undefined` if invalid */
-export const parse = (version: string | Version) => {
+export const parse = (version: Version | string) => {
   if (version instanceof Version) return version
   try {
     return Version.parse(String(version))
@@ -18,7 +18,7 @@ export const parse = (version: string | Version) => {
 
 /** Return the parsed version range, or `undefined` if invalid */
 export const parseRange = (
-  range: string | Range,
+  range: Range | string,
   includePrerelease = false,
 ) => {
   if (typeof range === 'object') {
@@ -39,7 +39,7 @@ export const parseRange = (
  * valid. Just use {@link parse}, and guard the possible undefined value, or
  * use `Version.parse(..)` to throw on invalid values.
  */
-export const valid = (version: string | Version) => !!parse(version)
+export const valid = (version: Version | string) => !!parse(version)
 
 /**
  * return true if the range is valid
@@ -48,15 +48,15 @@ export const valid = (version: string | Version) => !!parse(version)
  * valid. Just use {@link parseRange}, and guard the possible undefined value,
  * or use `new Range(..)` to throw on invalid values.
  */
-export const validRange = (range: string | Range) =>
+export const validRange = (range: Range | string) =>
   !!parseRange(range)
 
 /**
  * Return true if the version satisfies the range.
  */
 export const satisfies = (
-  version: string | Version,
-  range: string | Range,
+  version: Version | string,
+  range: Range | string,
   includePrerelease = false,
 ) => {
   if (typeof version === 'string') {
@@ -128,7 +128,7 @@ export const satisfies = (
  *       `inc('1.2.3-beta.3', 'pre')` becomes `1.2.3-beta.4`.
  */
 export const inc = (
-  version: string | Version,
+  version: Version | string,
   part: IncrementType,
   prereleaseIdentifier?: string,
 ) =>
@@ -151,8 +151,8 @@ export const inc = (
  * ```
  */
 export const sortMethod = (
-  a: string | Version,
-  b: string | Version,
+  a: Version | string,
+  b: Version | string,
 ) => {
   const pa = parse(a)
   const pb = parse(b)
@@ -248,7 +248,7 @@ export const filterMethod = (
  */
 export const filter = <T extends Version | string = Version | string>(
   list: T[],
-  range: string | Range,
+  range: Range | string,
   includePrerelease = false,
 ): T[] => list.filter(filterMethod(range, includePrerelease))
 
@@ -410,49 +410,49 @@ export const rcompare = (
 
 /** true if versionA is > versionB. throws on invalid values */
 export const gt = (
-  versionA: string | Version,
-  versionB: string | Version,
+  versionA: Version | string,
+  versionB: Version | string,
 ) => compare(versionA, versionB) > 0
 /** true if versionA is >= versionB. throws on invalid values */
 export const gte = (
-  versionA: string | Version,
-  versionB: string | Version,
+  versionA: Version | string,
+  versionB: Version | string,
 ) => compare(versionA, versionB) >= 0
 /** true if versionA is < versionB. throws on invalid values */
 export const lt = (
-  versionA: string | Version,
-  versionB: string | Version,
+  versionA: Version | string,
+  versionB: Version | string,
 ) => compare(versionA, versionB) < 0
 /** true if versionA is <= versionB. throws on invalid values */
 export const lte = (
-  versionA: string | Version,
-  versionB: string | Version,
+  versionA: Version | string,
+  versionB: Version | string,
 ) => compare(versionA, versionB) <= 0
 /** true if versionA is not equal to versionB. throws on invalid values */
 export const neq = (
-  versionA: string | Version,
-  versionB: string | Version,
+  versionA: Version | string,
+  versionB: Version | string,
 ) => compare(versionA, versionB) !== 0
 /** true if versionA is equal to versionB. throws on invalid values */
 export const eq = (
-  versionA: string | Version,
-  versionB: string | Version,
+  versionA: Version | string,
+  versionB: Version | string,
 ) => compare(versionA, versionB) === 0
 
 /** extract the major version number, or undefined if invalid */
-export const major = (version: string | Version) =>
+export const major = (version: Version | string) =>
   parse(version)?.major
 /** extract the minor version number, or undefined if invalid */
-export const minor = (version: string | Version) =>
+export const minor = (version: Version | string) =>
   parse(version)?.minor
 /** extract the patch version number, or undefined if invalid */
-export const patch = (version: string | Version) =>
+export const patch = (version: Version | string) =>
   parse(version)?.patch
 /**
  * extract the list of prerelease identifiers, or undefined if the version
  * is invalid. If no prerelease identifiers are present, returns `[]`.
  */
-export const prerelease = (version: string | Version) => {
+export const prerelease = (version: Version | string) => {
   const p = parse(version)
   if (!p) return undefined
   return p.prerelease ?? []
@@ -461,14 +461,14 @@ export const prerelease = (version: string | Version) => {
  * extract the list of build identifiers, or undefined if the version
  * is invalid. If no build identifiers are present, returns `[]`.
  */
-export const build = (version: string | Version) => {
+export const build = (version: Version | string) => {
   const p = parse(version)
   if (!p) return undefined
   return p.build ?? []
 }
 
 /** return all versions that do not have any prerelease identifiers */
-export const stable = <T extends string | Version = string | Version>(
+export const stable = <T extends Version | string = Version | string>(
   versions: T[],
 ): T[] =>
   versions.filter(v => {

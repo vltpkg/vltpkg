@@ -42,7 +42,7 @@ const mkdir = (d: string) => {
 }
 
 export const unpack = (
-  tarData: ArrayBufferLike | Uint8Array | Buffer,
+  tarData: ArrayBufferLike | Buffer | Uint8Array,
   target: string,
   didGzipAlready = false,
 ): void => {

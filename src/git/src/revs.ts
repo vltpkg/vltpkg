@@ -14,7 +14,7 @@ const fetchMethod = async (
   _: any,
   options: { context: GitOptions },
 ) => {
-  const result: SpawnResultStdoutString & SpawnResultStderrString =
+  const result: SpawnResultStderrString & SpawnResultStdoutString =
     await spawn(['ls-remote', repo], options.context)
   const revsDoc = linesToRevs(result.stdout.split('\n'))
   return revsDoc

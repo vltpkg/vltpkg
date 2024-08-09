@@ -18,12 +18,12 @@ export type LoadQuery = {
    * A glob pattern string, or an array of them. Only workspaces found
    * in paths matched will be loaded.
    */
-  paths?: string | string[]
+  paths?: string[] | string
   /**
    * A string, or an array of strings. If set, only workspaces in the
    * specified groups named will be included, if set.
    */
-  groups?: string | string[]
+  groups?: string[] | string
 }
 
 /**
@@ -36,9 +36,9 @@ export type WorkspaceConfigObject = Record<string, string[]>
  * Allowed datatype in the `vlt-workspaces.json` file.
  */
 export type WorkspaceConfig =
-  | string
   | string[]
   | WorkspaceConfigObject
+  | string
 
 /**
  * Turn a {@link WorkspaceConfig} into a
@@ -352,7 +352,7 @@ export class Monorepo {
     }
   }
 
-  #glob(pattern: string | string[]) {
+  #glob(pattern: string[] | string) {
     const matches = new Set<string>()
     globSync(pattern, this.#globOptions(matches))
     return matches

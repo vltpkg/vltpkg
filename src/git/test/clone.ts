@@ -156,7 +156,7 @@ const windowsPlatform =
   process.platform === 'win32' ? undefined : 'win32'
 const posixPlatform =
   process.platform === 'win32' ? 'darwin' : undefined
-const platforms: (undefined | NodeJS.Platform)[] = [
+const platforms: (NodeJS.Platform | undefined)[] = [
   windowsPlatform,
   posixPlatform,
 ]

@@ -17,10 +17,10 @@ import { basename, dirname } from 'path'
 import { rimraf } from 'rimraf'
 
 export type CacheFetchContext =
-  | undefined
   | {
       integrity?: Integrity
     }
+  | undefined
 
 export type CacheOptions = {
   [k in keyof LRUCache.Options<
@@ -60,7 +60,7 @@ export class Cache extends LRUCache<
   #path: string;
   [Symbol.toStringTag] = '@vltpkg/cache.Cache'
   #random: string = randomBytes(6).toString('hex')
-  #pending = new Set<Promise<undefined | boolean>>()
+  #pending = new Set<Promise<boolean | undefined>>()
   onDiskWrite?: CacheOptions['onDiskWrite']
   onDiskDelete?: CacheOptions['onDiskDelete']
 

@@ -5,13 +5,13 @@ import { fastSplit } from './fast-split.js'
 import { Version } from './version.js'
 
 /** all comparators are expressed in terms of these operators */
-export type SimpleOperator = '>' | '<' | '>=' | '<=' | ''
+export type SimpleOperator = '' | '<' | '<=' | '>' | '>='
 /** operators that are expanded to simpler forms */
-export type ComplexOperator = '~' | '^' | '~>'
+export type ComplexOperator = '^' | '~' | '~>'
 
 const isOperator = (
   o?: string,
-): o is SimpleOperator | ComplexOperator =>
+): o is ComplexOperator | SimpleOperator =>
   !!o &&
   (o === '>' ||
     o === '<' ||
@@ -136,7 +136,7 @@ export class Comparator {
    * Either the `any` comparator, the `none` comparator, or an operator
    * and a {@link ParsedXRange}
    */
-  tuples: (OVTuple | Comparator)[] = []
+  tuples: (Comparator | OVTuple)[] = []
   /** true if this comparator can not match anything */
   isNone = false
   /**
@@ -232,7 +232,7 @@ export class Comparator {
   }
 
   // inclusive min
-  #xInclusiveMin(raw: string): OVTuple | Comparator {
+  #xInclusiveMin(raw: string): Comparator | OVTuple {
     const z = this.includePrerelease ? '0' : undefined
     const [M, m = 0, p = 0, pr = z, build] = this.#parseX(raw)
     return M === undefined ?
@@ -242,7 +242,7 @@ export class Comparator {
 
   // exclusive min.
   // Note, if not a full version, then
-  #xExclusiveMin(raw: string): OVTuple | Comparator {
+  #xExclusiveMin(raw: string): Comparator | OVTuple {
     const parsed = this.#parseX(raw)
     if (isFullVersion(parsed)) {
       return ['>', new Version(raw, ...parsed)]
@@ -274,7 +274,7 @@ export class Comparator {
     return comparatorNone
   }
 
-  #xInclusiveMax(raw: string): OVTuple | Comparator {
+  #xInclusiveMax(raw: string): Comparator | OVTuple {
     const parsed = this.#parseX(raw)
     if (isFullVersion(parsed)) {
       return ['<=', new Version(raw, ...parsed)]
@@ -301,7 +301,7 @@ export class Comparator {
     return this.#getComparatorAny()
   }
 
-  #xExclusiveMax(raw: string): OVTuple | Comparator {
+  #xExclusiveMax(raw: string): Comparator | OVTuple {
     const z = this.includePrerelease ? '0' : undefined
     const [M = 0, m = 0, p = 0, pr = z, build] = this.#parseX(raw)
     if (M === 0 && m === 0 && p === 0 && pr === '0') {
@@ -627,7 +627,7 @@ export class Comparator {
   }
 }
 
-const isAny = (c: OVTuple | Comparator): c is Comparator =>
+const isAny = (c: Comparator | OVTuple): c is Comparator =>
   c === comparatorAny || c === comparatorAnyPR
 const comparatorAny = {
   isAny: true,

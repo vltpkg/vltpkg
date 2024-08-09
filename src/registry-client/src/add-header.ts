@@ -5,12 +5,12 @@ const isIterable = <T>(o: any): o is Iterable<T> =>
 // since the opts.headers type is so loosey goosey to begin with.
 export const addHeader = <
   H extends
-    | string[]
-    | [string, string | string[]][]
-    | Record<string, string | string[] | undefined>
-    | Iterable<[string, string | string[] | undefined]>,
+    | [string, string[] | string][]
+    | Iterable<[string, string[] | string | undefined]>
+    | Record<string, string[] | string | undefined>
+    | string[],
 >(
-  headers: null | undefined | H,
+  headers: H | null | undefined,
   key: string,
   value: string,
 ): H => {
@@ -22,7 +22,7 @@ export const addHeader = <
     else (headers as string[]).push(key, value)
     return headers
   } else if (
-    isIterable<[string, string | string[] | undefined]>(headers)
+    isIterable<[string, string[] | string | undefined]>(headers)
   ) {
     return [...headers, [key, value]] as unknown as H
   } else {

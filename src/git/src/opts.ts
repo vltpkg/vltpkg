@@ -14,8 +14,8 @@ const gitEnv = {
 
 export const opts = (
   opts: SpawnOptions = {},
-): PromiseSpawnOptionsStdoutString &
-  PromiseSpawnOptionsStderrString => ({
+): PromiseSpawnOptionsStderrString &
+  PromiseSpawnOptionsStdoutString => ({
   acceptFail: true,
   ...opts,
   env: opts.env ?? { ...gitEnv, ...process.env },

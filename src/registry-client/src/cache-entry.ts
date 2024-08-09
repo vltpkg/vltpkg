@@ -168,7 +168,7 @@ export class CacheEntry {
   /**
    * Set a header to a specific value
    */
-  setHeader(h: string, value: string | Buffer) {
+  setHeader(h: string, value: Buffer | string) {
     this.#headers = setRawHeader(this.#headers, h, value)
   }
 

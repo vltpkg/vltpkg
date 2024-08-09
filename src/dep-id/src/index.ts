@@ -29,25 +29,25 @@ import { Manifest } from '@vltpkg/types'
  * used to store peer dep resolutions to maintain the peerDep contract.
  */
 export type DepID =
-  | `${'' | 'git'};${string};${string}`
   | `${'' | 'git'};${string};${string};${string}`
-  | `${'remote' | 'file' | 'workspace'};${string}`
-  | `${'remote' | 'file' | 'workspace'};${string};${string}`
+  | `${'' | 'git'};${string};${string}`
+  | `${'file' | 'remote' | 'workspace'};${string};${string}`
+  | `${'file' | 'remote' | 'workspace'};${string}`
 
 /**
  * A {@link DepID}, split apart and URI-decoded
  */
 export type DepIDTuple =
   | [
-      type: 'registry',
-      registry: string,
-      registrySpec: string,
-      extra?: string,
-    ]
-  | [
       type: 'git',
       gitRemote: string,
       gitSelector: string,
+      extra?: string,
+    ]
+  | [
+      type: 'registry',
+      registry: string,
+      registrySpec: string,
       extra?: string,
     ]
   | [type: 'file', path: string, extra?: string]
