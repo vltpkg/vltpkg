@@ -1,7 +1,5 @@
 import { readdirSync, readFileSync } from 'fs'
 import npmPickManifest from 'npm-pick-manifest'
-import { dirname } from 'path'
-import { fileURLToPath } from 'url'
 import { pickManifest } from '../dist/esm/index.js'
 import { resolve } from 'path'
 
@@ -23,9 +21,7 @@ const test = (fn, howLong = 1000) => {
   return num(count / (performance.now() - start))
 }
 
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = dirname(__filename)
-const pakuDir = resolve(__dirname, 'fixtures/artifacts')
+const pakuDir = resolve(import.meta.dirname, 'fixtures/artifacts')
 const packuments = readdirSync(pakuDir).map(p =>
   JSON.parse(readFileSync(resolve(pakuDir, p), 'utf8')),
 )

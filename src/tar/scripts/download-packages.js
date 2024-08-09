@@ -10,20 +10,20 @@ import {
 } from 'fs'
 import pacote from 'pacote'
 import { resolve, dirname } from 'path'
-import { fileURLToPath } from 'url'
 import { gunzipSync } from 'zlib'
 
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = dirname(__filename)
 const names = readFileSync(
-  resolve(__dirname, '1000-most-depended-packages-2019.txt'),
+  resolve(
+    import.meta.dirname,
+    '1000-most-depended-packages-2019.txt',
+  ),
   'utf8',
 )
   .trim()
   .split(/\n/)
   .sort(() => Math.random() - 0.5)
 
-const tarDir = resolve(__dirname, 'fixtures/artifacts')
+const tarDir = resolve(import.meta.dirname, 'fixtures/artifacts')
 
 console.log('downloading artifacts...')
 const cols = process.stdout.columns

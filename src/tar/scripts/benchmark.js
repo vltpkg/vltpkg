@@ -2,14 +2,11 @@
 
 import { mkdirSync, readdirSync, readFileSync, rmSync } from 'fs'
 import pacote from 'pacote'
-import { dirname, resolve } from 'path'
-import { fileURLToPath } from 'url'
+import { resolve } from 'path'
 import { Pool } from '../dist/esm/pool.js'
 
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = dirname(__filename)
-const artifactDir = resolve(__dirname, 'fixtures/artifacts')
-const targetDir = resolve(__dirname, 'fixtures/extract')
+const artifactDir = resolve(import.meta.dirname, 'fixtures/artifacts')
+const targetDir = resolve(import.meta.dirname, 'fixtures/extract')
 
 const artifacts = readdirSync(artifactDir)
   .sort(() => Math.random() - 0.5)
