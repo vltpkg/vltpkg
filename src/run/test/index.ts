@@ -1,11 +1,14 @@
 import { promiseSpawn } from '@vltpkg/promise-spawn'
-import { dirname, resolve } from 'path'
+import { resolve } from 'path'
 import t from 'tap'
-import { fileURLToPath } from 'url'
+import { tsTestdir } from './fixtures/testdir-ts.js'
 import { isRunResult } from '../src/index.js'
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = dirname(__filename)
-const fixture = resolve(__dirname, 'fixtures/script.js')
+
+const fixture = resolve(
+  tsTestdir(t, resolve(import.meta.dirname, 'fixtures/script')),
+  'index.js',
+)
+
 const node =
   process.execPath.includes(' ') ?
     '"' + process.execPath + '"'
