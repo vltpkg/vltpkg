@@ -15,7 +15,8 @@ export const addEdges = (
     const { to } = edge
     if (!to) continue
     const mani = to.manifest ?? packageJson.read(to.location)
-    promises.push(addEdge(edge, mani, scurry, remover))
+    const seen = new Set<string>()
+    promises.push(addEdge(edge, mani, scurry, remover, seen))
   }
   return promises
 }

@@ -10,8 +10,16 @@ const clobberSymlink = async (
   target: string,
   link: string,
   remover: RollbackRemove,
+  seen: Set<string>,
   type = 'file',
 ) => {
+  // keep a cache of seen items, since all `clobberSymlink` calls for edges
+  // being added are run in parallel, the EEXIST catch will not prevent
+  // errors in case we're trying to write to that same destination within a
+  // unique `reify.addEdges` run.
+  if (seen.has(link)) return
+  seen.add(link)
+
   await mkdir(dirname(link), { recursive: true })
   try {
     await symlink(target, link, type)
@@ -37,6 +45,7 @@ export const addEdge = async (
   manifest: Manifest,
   scurry: PathScurry,
   remover: RollbackRemove,
+  seen: Set<string>,
 ) => {
   if (!edge.to) return
   const binRoot = scurry.resolve(edge.from.nodeModules, '.bin')
@@ -46,13 +55,13 @@ export const addEdge = async (
     dirname(path),
     scurry.resolve(edge.to.location),
   )
-  promises.push(clobberSymlink(target, path, remover, 'dir'))
+  promises.push(clobberSymlink(target, path, remover, seen, 'dir'))
   const bp = binPaths(manifest)
   for (const [key, val] of Object.entries(bp)) {
     const link = scurry.resolve(binRoot, key)
     const target = relative(binRoot, scurry.resolve(path, val))
     // TODO: bash/cmd/pwsh shims on Windows
-    promises.push(clobberSymlink(target, link, remover))
+    promises.push(clobberSymlink(target, link, remover, seen))
   }
   await Promise.all(promises)
 }

@@ -74,8 +74,9 @@ t.test('reify an edge', async t => {
 
   const edge = new Edge('prod', Spec.parse('bar@'), fooNode, barNode)
   const scurry = new PathScurry(projectRoot)
+  const seen = new Set<string>()
 
-  await addEdge(edge, barManifest, scurry, mockRemover)
+  await addEdge(edge, barManifest, scurry, mockRemover, seen)
 
   t.throws(() => statSync(projectRoot + '/node_modules/.bin/bar'))
   statSync(fooNM + '/bar')
@@ -87,7 +88,12 @@ t.test('reify an edge', async t => {
     rootNode,
     barNode,
   )
-  await addEdge(rootEdge, barManifest, scurry, mockRemover)
+
+  // should only create a single destination link when adding edges
+  await Promise.all([
+    addEdge(rootEdge, barManifest, scurry, mockRemover, seen),
+    addEdge(rootEdge, barManifest, scurry, mockRemover, seen),
+  ])
   statSync(projectRoot + '/node_modules/bar')
   statSync(projectRoot + '/node_modules/.bin/bar')
 
@@ -98,10 +104,11 @@ t.test('reify an edge', async t => {
     undefined,
   )
   // just verify it doesn't blow up
-  await addEdge(dangle, {}, scurry, mockRemover)
+  await addEdge(dangle, {}, scurry, mockRemover, seen)
 
-  // exercise the clobbering case
-  await addEdge(rootEdge, barManifest, scurry, mockRemover)
+  // exercise the clobbering case, clears the seen cache for that
+  const unseen = new Set<string>()
+  await addEdge(rootEdge, barManifest, scurry, mockRemover, unseen)
   statSync(projectRoot + '/node_modules/bar')
   statSync(projectRoot + '/node_modules/.bin/bar')
 })
