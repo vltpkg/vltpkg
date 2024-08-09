@@ -1,13 +1,10 @@
 import { Cache } from '@vltpkg/cache'
 import { spawnSync } from 'child_process'
-import { dirname, resolve } from 'path'
+import { resolve } from 'path'
 import t from 'tap'
-import { fileURLToPath } from 'url'
 import { gzipSync } from 'zlib'
 
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = dirname(__filename)
-const script = resolve(__dirname, '../dist/esm/unzip.js')
+const script = resolve(import.meta.dirname, '../dist/esm/unzip.js')
 
 t.test('validate args', async t => {
   t.match(spawnSync(process.execPath, [script]), { status: 1 })
