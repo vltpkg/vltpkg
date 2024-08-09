@@ -6,7 +6,7 @@ import { IncrementType } from '../../src/version.js'
 const list: [
   v: string,
   part: IncrementType,
-  res: string,
+  res: string | null,
   identifier?: string,
 ][] = [
   ['1.2.3', 'major', '2.0.0'],
@@ -135,7 +135,7 @@ const list: [
   ['1.2.3-1.1', 'prerelease', '1.2.3-1.2', '1'],
   ['1.2.3-1.1', 'prerelease', '1.2.3-2', '2'],
   ['1.2.3-1', 'preminor', '1.3.0-dev', 'dev'],
-  ['1.2.3', 'invalid' as IncrementType, null as unknown as string],
+  ['1.2.3', 'invalid' as IncrementType, null],
   ['1.2.3-alpha.2.dev', 'prerelease', '1.2.3-alpha.2.dev.0', 'dev'],
 ]
 

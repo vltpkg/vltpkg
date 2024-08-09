@@ -244,5 +244,5 @@ const fixPackage = async ws => {
 }
 
 for (const ws of workspaces) {
-  writeJson(ws.path, await fixPackage(ws))
+  await writeJson(ws.path, await fixPackage(ws))
 }

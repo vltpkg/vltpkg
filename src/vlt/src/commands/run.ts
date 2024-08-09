@@ -13,9 +13,8 @@ class RunCommand extends ExecCommand<typeof run, typeof runFG> {
 
   defaultArg0(): string | undefined {
     // called when there's no arg0, with a single workspace or root
-    const cwd =
-      this.monorepo?.values()?.next().value?.fullpath ??
-      this.projectRoot
+    const ws = this.monorepo?.values().next().value
+    const cwd = ws?.fullpath ?? this.projectRoot
     const packageJson =
       this.monorepo?.packageJson ?? new PackageJson()
     const mani = packageJson.read(cwd)

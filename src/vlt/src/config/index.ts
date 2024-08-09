@@ -39,6 +39,7 @@ import { walkUp } from 'walk-up-path'
 import {
   commands,
   definition,
+  getCommand,
   isRecordField,
   recordFields,
   type Commands,
@@ -51,7 +52,7 @@ export { definition, commands, Commands }
 // if a kv pair doesn't have a = character, set to `''`
 const reducePairs = <T extends string[]>(
   pairs: T,
-): T | Record<string, string> => {
+): Record<string, string> | T => {
   const record: Record<string, string> = {}
   for (const kv of pairs) {
     const eq = kv.indexOf('=')
@@ -134,7 +135,7 @@ export type ConfigData = OptionsResults<ConfigDefinitions> & {
  */
 export type ConfigFileData = {
   [k in keyof ConfigData]?: k extends OptListKeys<ConfigData> ?
-    string[] | Record<string, string>
+    Record<string, string> | string[]
   : k extends 'command' ? Record<string, ConfigFileData>
   : ConfigData[k]
 }
@@ -256,15 +257,13 @@ export class Config {
     }
     this.jack.loadEnvDefaults()
     const p = this.jack.parseRaw(args)
-    const fallback = p.values[
-      'fallback-command'
-    ] as Commands[keyof Commands]
-    const argv0 = p.positionals[0]
-    const cmd = this.commands[argv0 as keyof Commands]
-    if (cmd) {
-      this.command = cmd
-    }
-    const cmdSpecific = this.commandValues[this.command || fallback]
+
+    const fallback = getCommand(p.values['fallback-command'])
+    this.command = getCommand(p.positionals[0])
+
+    const cmdOrFallback = this.command ?? fallback
+    const cmdSpecific =
+      cmdOrFallback && this.commandValues[cmdOrFallback]
     if (cmdSpecific) {
       this.jack.setConfigValues(recordsToPairs(cmdSpecific))
     }
@@ -273,12 +272,9 @@ export class Config {
     this.jack.applyDefaults(p)
     this.jack.writeEnv(p)
 
-    if (cmd) p.positionals.shift()
-    else {
-      this.command = p.values[
-        'fallback-command'
-      ] as Commands[keyof Commands]
-    }
+    if (this.command) p.positionals.shift()
+    else this.command = getCommand(p.values['fallback-command'])
+
     return Object.assign(this, p)
   }
 
@@ -294,12 +290,10 @@ export class Config {
    *
    * If the config value is not set at all, an empty object is returned.
    */
-  getRecord<K extends OptListKeys<ConfigData>>(
-    k: K,
-  ): Record<string, string> {
+  getRecord(k: OptListKeys<ConfigData>): Record<string, string> {
     const pairs = this.get(k) as
-      | undefined
       | (string[] & { [kRecord]?: Record<string, string> })
+      | undefined
     if (!pairs) return {}
     if (pairs[kRecord]) return pairs[kRecord]
     const kv = pairs.reduce((kv: Record<string, string>, pair) => {
@@ -331,7 +325,7 @@ export class Config {
    * Write the config values to the user or project config file.
    */
   async writeConfigFile(
-    which: 'user' | 'project',
+    which: 'project' | 'user',
     values: ConfigFileData,
   ) {
     const f = this.getFilename(which)
@@ -350,7 +344,7 @@ export class Config {
    * in the config file.
    */
   async addConfigToFile(
-    which: 'user' | 'project',
+    which: 'project' | 'user',
     values: ConfigFileData,
   ) {
     const f = this.getFilename(which)
@@ -374,7 +368,7 @@ export class Config {
         const { command, ...values } = recordsToPairs(result)
         if (command) {
           for (const [c, opts] of Object.entries(command)) {
-            const cmd = commands[c as keyof Commands]
+            const cmd = getCommand(c)
             if (cmd) {
               this.commandValues[cmd] = merge(
                 this.commandValues[cmd] ?? {},
@@ -417,14 +411,14 @@ export class Config {
     return result
   }
 
-  getFilename(which: 'user' | 'project' = 'project'): string {
+  getFilename(which: 'project' | 'user' = 'project'): string {
     return which === 'user' ?
         xdg.config('vlt.json')
       : resolve(this.projectRoot, 'vlt.json')
   }
 
   async deleteConfigKeys(
-    which: 'user' | 'project',
+    which: 'project' | 'user',
     fields: string[],
   ) {
     const file = this.getFilename(which)
@@ -461,10 +455,8 @@ export class Config {
           }
         }
       } else {
-        if (v !== undefined) {
-          didSomething = true
-          delete data[k]
-        }
+        didSomething = true
+        delete data[k]
       }
     }
     const d = jsonStringify(data)
@@ -487,8 +479,8 @@ export class Config {
    * mean deleting the file.
    */
   async editConfigFile(
-    which: 'user' | 'project',
-    edit: (file: string) => void | Promise<void>,
+    which: 'project' | 'user',
+    edit: (file: string) => Promise<void> | void,
   ) {
     const file = this.getFilename(which)
     const backup = this.configFiles[file]
@@ -541,7 +533,7 @@ export class Config {
     const stops = ['vlt-workspaces.json', '.git']
     // indicators that this *may* be the root, if no .git or workspaces
     // file is found higher up in the search.
-    let foundLikelyRoot: boolean = false
+    let foundLikelyRoot = false
     const likelies = ['package.json', 'node_modules']
     for (const dir of walkUp(this.projectRoot)) {
       // don't look in ~
@@ -554,9 +546,11 @@ export class Config {
       }
       if (
         !foundLikelyRoot &&
-        (await Promise.all(likelies))
-          .map(s => exists(resolve(dir, s)))
-          .find(x => x)
+        (
+          await Promise.all(
+            likelies.map(s => exists(resolve(dir, s))),
+          )
+        ).find(x => x)
       ) {
         foundLikelyRoot = true
         this.projectRoot = dir
@@ -586,7 +580,7 @@ export class Config {
       positionals: string[]
     }
   > {
-    let c = this.get('color')
+    const c = this.get('color')
     const chalk = (await import('chalk')).default
     let color: boolean
     if (
@@ -628,14 +622,14 @@ export class Config {
      * only used in tests, resets the memoization
      * @internal
      */
-    reload: boolean = false,
+    reload = false,
   ): Promise<LoadedConfig> {
-    if (this.#loaded && !reload) return this.#loaded as LoadedConfig
+    if (this.#loaded && !reload) return this.#loaded
     const a = new Config(definition, projectRoot)
     const b = await a.loadConfigFile()
     const c = await b.parse(argv).loadColor()
     this.#loaded = c as LoadedConfig
-    return this.#loaded as LoadedConfig
+    return this.#loaded
   }
 }
 

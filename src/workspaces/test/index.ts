@@ -257,7 +257,7 @@ export const isOdd = (n) => !isEven(n)
   t.equal(n.get('utils/is-even'), undefined)
   t.equal(n.get('app/bar/thisisignored'), undefined)
   t.equal(n.get(''), undefined)
-  t.strictSame(n.getDeps(n.get('utils/is-odd') as Workspace), [])
+  t.strictSame(n.getDeps(n.get('utils/is-odd')!), [])
   n.runSync(() => {}, true)
   t.strictSame(
     [...n.paths()],
@@ -375,7 +375,7 @@ t.test('force a full load, but still not found', t => {
     },
   })
   const m = new Monorepo(dir).load()
-  t.strictSame(m.getDeps(m.get('src/ws') as Workspace), [])
-  t.strictSame(m.getDeps(m.get('src/ws') as Workspace, true), [])
+  t.strictSame(m.getDeps(m.get('src/ws')!), [])
+  t.strictSame(m.getDeps(m.get('src/ws')!, true), [])
   t.end()
 })

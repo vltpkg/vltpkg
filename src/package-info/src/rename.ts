@@ -26,7 +26,7 @@ export const rename =
       const retry = async (er: unknown): Promise<void> => {
         if (
           retries > 0 &&
-          (er as NodeJS.ErrnoException)?.code === 'EPERM'
+          (er as NodeJS.ErrnoException).code === 'EPERM'
         ) {
           retries--
           await rm(newPath, { recursive: true, force: true })

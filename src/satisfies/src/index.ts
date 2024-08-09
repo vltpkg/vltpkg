@@ -112,9 +112,9 @@ export const satisfiesTuple = (
       /* c8 ignore next - always set to something, even if empty */
       const [parsed, committish] = Spec.parseGitSelector(second ?? '')
       if (gitCommittish && committish)
-        return !!committish?.startsWith(gitCommittish)
+        return !!committish.startsWith(gitCommittish)
       for (const [k, v] of Object.entries(gitSelectorParsed)) {
-        if (parsed?.[k as keyof GitSelectorParsed] !== v) return false
+        if (parsed[k as keyof GitSelectorParsed] !== v) return false
       }
       return true
     }

@@ -1,7 +1,6 @@
 import { DepID } from '@vltpkg/dep-id'
 import { Integrity } from '@vltpkg/types'
 import { DependencyTypeShort } from '../dependencies.js'
-import type { Graph } from '../graph.js'
 
 /**
  * This is the main type definition for the contents of the

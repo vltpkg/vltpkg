@@ -44,7 +44,7 @@ export const parseAddArgs = (config: LoadedConfig): ParsedAddArgs => {
   // stringified spec result instead of their name in order
   // to have an unique key name in the resulting Map
   const getName = (s: Spec): string =>
-    s.name === '(unknown)' ? `${s.spec}` : s.name
+    s.name === '(unknown)' ? s.spec : s.name
 
   for (const item of items) {
     const spec = Spec.parseArgs(item, specOptions)

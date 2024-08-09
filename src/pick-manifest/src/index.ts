@@ -12,7 +12,7 @@ const parsedNodeVersion = Version.parse(process.version)
 
 export type PickManifestOptions = {
   tag?: string
-  before?: Date | string | number
+  before?: Date | number | string
   'node-version'?: string
   os?: NodeJS.Platform
   arch?: NodeJS.Architecture
@@ -35,7 +35,7 @@ const isBefore = (
   return !!time && Date.parse(time) <= before
 }
 
-const checkList = (value: string, list: unknown) => {
+const checkList = (value: string, list?: string[] | string) => {
   if (typeof list === 'string') {
     list = [list]
   }
@@ -49,7 +49,7 @@ const checkList = (value: string, list: unknown) => {
   let negated = 0
   let match = false
   for (const entry of list) {
-    const negate = entry.charAt(0) === '!'
+    const negate = entry.startsWith('!')
     const test = negate ? entry.slice(1) : entry
     if (negate) {
       negated++
@@ -66,8 +66,8 @@ const checkList = (value: string, list: unknown) => {
 const platformCheck = (
   mani: Manifest | ManifestMinified,
   nodeVersion: Version,
-  wantOs: NodeJS.Process['platform'],
-  wantArch: NodeJS.Process['arch'],
+  wantOs?: NodeJS.Process['platform'],
+  wantArch?: NodeJS.Process['arch'],
 ): boolean => {
   const { engines, os, cpu } = mani
   if (engines) {
@@ -106,33 +106,33 @@ const versionOk = (
  * be a full non-minified Packument object. Otherwise, a minified packument
  * is fine.
  */
-export function pickManifest<O>(
+export function pickManifest(
   packument: Packument,
-  wanted: string | Range | Spec,
+  wanted: Range | Spec | string,
   opts: PickManifestOptions,
 ): Manifest | undefined
-export function pickManifest<O>(
+export function pickManifest(
   packument: PackumentMinified,
-  wanted: string | Range | Spec,
+  wanted: Range | Spec | string,
   opts: PickManifestOptionsNoBefore,
 ): ManifestMinified | undefined
 export function pickManifest(
   packument: Packument,
-  wanted: string | Range | Spec,
+  wanted: Range | Spec | string,
 ): Manifest | undefined
 export function pickManifest(
   packument: PackumentMinified,
-  wanted: string | Range | Spec,
+  wanted: Range | Spec | string,
 ): ManifestMinified | undefined
 export function pickManifest(
   packument: Packument | PackumentMinified,
-  wanted: string | Range | Spec,
+  wanted: Range | Spec | string,
 ): Manifest | ManifestMinified | undefined
 export function pickManifest(
   packument: Packument | PackumentMinified,
-  wanted: string | Range | Spec,
+  wanted: Range | Spec | string,
   opts: PickManifestOptions = {},
-): ManifestMinified | Manifest | undefined {
+): Manifest | ManifestMinified | undefined {
   const {
     tag = 'latest',
     before,
@@ -195,10 +195,9 @@ export function pickManifest(
   // to try a little harder.
   const defaultVer = distTags[tag]
   const defTagVersion =
-    (!!defaultVer && Version.parse(defaultVer)) || undefined
+    defaultVer ? Version.parse(defaultVer) : undefined
   if (
     defaultVer &&
-    !!range &&
     (range.isAny || defTagVersion?.satisfies(range)) &&
     versionOk(packument, defaultVer, nv, os, arch, time)
   ) {
@@ -220,7 +219,7 @@ export function pickManifest(
     mani: ManifestMinified
   }
   let found: ManiCheck | undefined = undefined
-  let foundIsDefTag: boolean = false
+  let foundIsDefTag = false
 
   for (const [ver, mani] of entries) {
     if (time && verTimes && !isBefore(ver, time, verTimes)) {

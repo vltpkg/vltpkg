@@ -402,7 +402,6 @@ t.test('mixing scopes and names', t => {
     },
     'scope-registries': scopeRegistries,
   }
-
   for (const [scope, reg] of scopeRegs) {
     scopeRegistries[scope] = reg
     t.matchSnapshot(

@@ -20,8 +20,8 @@ class MockConfig {
   values: Record<string, any>
   positionals: string[]
   jack = definition
-  deletedKeys?: ['user' | 'project', string[]]
-  addedConfig?: ['user' | 'project', Record<string, any>]
+  deletedKeys?: ['project' | 'user', string[]]
+  addedConfig?: ['project' | 'user', Record<string, any>]
 
   constructor(positionals: string[], values: Record<string, any>) {
     this.positionals = positionals
@@ -33,17 +33,17 @@ class MockConfig {
   get(k: string) {
     return this.values[k]
   }
-  deleteConfigKeys(which: 'user' | 'project', fields: string[]) {
+  deleteConfigKeys(which: 'project' | 'user', fields: string[]) {
     this.deletedKeys = [which, fields]
   }
   async editConfigFile(
-    which: 'user' | 'project',
+    which: 'project' | 'user',
     editFunction: (...a: any[]) => any,
   ) {
     await editFunction(which)
   }
   async addConfigToFile(
-    which: 'user' | 'project',
+    which: 'project' | 'user',
     values: Record<string, any>,
   ) {
     this.addedConfig = [which, values]

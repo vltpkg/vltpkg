@@ -8,4 +8,4 @@ const { usage, command } = await t.mockImport<
 t.type(usage, 'string')
 t.capture(console, 'log')
 t.capture(console, 'error')
-command({ positionals: [] } as unknown as LoadedConfig)
+await command({ positionals: [] } as unknown as LoadedConfig)

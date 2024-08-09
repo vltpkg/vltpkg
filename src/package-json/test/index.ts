@@ -179,7 +179,7 @@ t.test('successfully saves a manifest', async t => {
 t.test(
   'fails saving a manifest that does not have a cached dir',
   async t => {
-    const dir = t.testdir({
+    t.testdir({
       'package.json': JSON.stringify(
         {
           name: 'my-project',

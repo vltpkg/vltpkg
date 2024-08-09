@@ -80,11 +80,13 @@ t.test('delete some stuff', async t => {
   t.matchStrict(spawns, [
     {
       cmd: process.execPath,
-      args: [/[\\\/]remove\.js$/],
+      args: [/[\\/]remove\.js$/],
       options: { detached: true },
       written: [
-        /^a[\\\/]\.VLT\.DELETE\.[0-9]+\.b\x00$/,
-        /^.[\\\/]\.VLT\.DELETE\.[0-9]+\.d\x00$/,
+        // eslint-disable-next-line no-control-regex
+        /^a[\\/]\.VLT\.DELETE\.[0-9]+\.b\x00$/,
+        // eslint-disable-next-line no-control-regex
+        /^.[\\/]\.VLT\.DELETE\.[0-9]+\.d\x00$/,
       ],
       stdinEnded: true,
       reffed: false,

@@ -3,7 +3,7 @@ import t from 'tap'
 import { gzipSync } from 'zlib'
 import { RegistryClient } from '../src/index.js'
 
-const PORT = (t.childId ?? 0) + 8080
+const PORT = (t.childId || 0) + 8080
 
 // need to keep the fixture, because the cache-unzip operation will
 // cause the rmdir to fail with ENOTEMPTY sporadically.
@@ -110,12 +110,7 @@ t.test('register unzipping for gzip responses', async t => {
   t.strictSame(registered, [
     [
       t.testdirName,
-      JSON.stringify([
-        `${registryURL}`,
-        'GET',
-        '/some/tarball',
-        null,
-      ]),
+      JSON.stringify([registryURL, 'GET', '/some/tarball', null]),
     ],
   ])
 })
@@ -250,7 +245,7 @@ t.test('user-agent', t => {
     })
 
     t.test('bun', async t => {
-      //@ts-ignore
+      //@ts-expect-error
       t.intercept(globalThis, 'Deno', {
         value: {
           deno: { version: 'denover' },
@@ -264,7 +259,6 @@ t.test('user-agent', t => {
     })
 
     t.test('node', async t => {
-      //@ts-ignore
       t.intercept(process, 'version', { value: 'nodever' })
       const { userAgent } = await t.mockImport('../src/index.js')
       t.match(
@@ -274,7 +268,6 @@ t.test('user-agent', t => {
     })
 
     t.test('nothing we know about', async t => {
-      //@ts-ignore
       t.intercept(process, 'version', { value: '' })
       const { userAgent } = await t.mockImport('../src/index.js')
       t.match(

@@ -2,7 +2,7 @@ import { syntaxError, typeError } from '@vltpkg/error-cause'
 import { fastSplit } from './fast-split.js'
 import { type Range } from './range.js'
 
-const maybeNumber = (s: string): string | number => {
+const maybeNumber = (s: string): number | string => {
   if (!/^[0-9]+$/.test(s)) return s
   const n = Number(s)
   return n <= Number.MAX_SAFE_INTEGER ? n : s
@@ -50,11 +50,11 @@ export type IncrementType =
   | 'major'
   | 'minor'
   | 'patch'
+  | 'pre'
   | 'premajor'
   | 'preminor'
   | 'prepatch'
   | 'prerelease'
-  | 'pre'
 
 /**
  * A parsed object representation of a SemVer version string
@@ -78,7 +78,7 @@ export class Version {
    *
    * This is undefined if the version does not have a prerelease section.
    */
-  prerelease?: (string | number)[]
+  prerelease?: (number | string)[]
   /**
    * List of `'.'`-separated strings in the `build` section.
    *
@@ -304,7 +304,7 @@ export class Version {
         this.inc('pre', prereleaseIdentifier)
         break
 
-      case 'pre':
+      case 'pre': {
         // this is a bit different than node-semver's logic, but simpler
         // always do zero-based incrementing, and either bump the existing
         // numeric pr value, or add a `.0` after the identifier.
@@ -343,6 +343,7 @@ export class Version {
         }
         this.prerelease.splice(i + 1, 0, 0)
         break
+      }
 
       case 'major':
         if (!this.prerelease?.length || this.minor || this.patch)

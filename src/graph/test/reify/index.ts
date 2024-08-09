@@ -96,7 +96,7 @@ t.test('super basic reification', async t => {
     'prod',
     Spec.parse('underscore@1'),
     graph.mainImporter,
-    graph.nodes.get(';;underscore@1.13.7')!,
+    graph.nodes.get(';;underscore@1.13.7'),
   )
   writeFileSync(
     resolve(projectRoot, 'package.json'),

@@ -66,7 +66,7 @@ const correctUrl = (url: string): string => {
     lastColon = corrected.lastIndexOf(':')
   }
 
-  if (firstColon === -1 && url.indexOf('//') === -1) {
+  if (firstColon === -1 && !url.includes('//')) {
     // we have no : at all
     // as it would be in:
     // username@hostname.com/user/repo

@@ -41,12 +41,12 @@ export type LoadOptions = SpecOptions & {
   scurry?: PathScurry
 }
 
-interface LoadEdgesOptions {
+type LoadEdgesOptions = {
   graph: Graph
   edgesInfo: LockfileDataEdge[]
 }
 
-interface LoadNodesOptions {
+type LoadNodesOptions = {
   graph: Graph
   nodesInfo: [DepID, LockfileDataNode][]
 }
@@ -80,7 +80,7 @@ const loadEdges = (
   options: SpecOptions,
 ) => {
   for (const [fromId, type, spec, toId] of edgesInfo) {
-    if (!type || !shortDependencyTypes.has(type)) {
+    if (!shortDependencyTypes.has(type)) {
       throw error('Found unsupported dependency type in lockfile', {
         validOptions: [...longDependencyTypes],
       })

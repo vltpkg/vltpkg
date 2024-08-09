@@ -74,7 +74,7 @@ process.exit(1)
       cwd: repo,
       git: process.execPath,
       ...retryOptions,
-      //@ts-ignore
+      //@ts-expect-error
       allowReplace: true,
     }),
     er,
@@ -105,7 +105,7 @@ process.exit(1)
     spawn([te], {
       cwd: repo,
       git: process.execPath,
-      //@ts-ignore
+      //@ts-expect-error
       allowReplace: true,
     }),
     er,
@@ -135,7 +135,7 @@ process.exit(1)
     spawn([te], {
       cwd: repo,
       git: process.execPath,
-      //@ts-ignore
+      //@ts-expect-error
       allowReplace: true,
     }),
     er,

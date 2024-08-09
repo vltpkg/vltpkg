@@ -13,7 +13,7 @@ import { which } from './which.js'
 export const spawn = async (
   gitArgs: string[],
   opts: GitOptions = {},
-): Promise<SpawnResultStdoutString & SpawnResultStderrString> => {
+): Promise<SpawnResultStderrString & SpawnResultStdoutString> => {
   const gitPath = which(opts)
 
   if (gitPath instanceof Error) {

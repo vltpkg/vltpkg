@@ -26,7 +26,7 @@ t.test('Version.parse', t => {
 
 t.test('comparisons', t => {
   t.plan(comparisons.length)
-  comparisons.forEach(([v0, v1]) =>
+  for (const [v0, v1] of comparisons) {
     t.test(`${v0} ${v1}`, t => {
       const s0 = Version.parse(v0)
       const s1 = Version.parse(v1)
@@ -46,13 +46,13 @@ t.test('comparisons', t => {
       t.equal(s1.compare(s1), 0)
       t.equal(s1.equals(s1), true)
       t.end()
-    }),
-  )
+    })
+  }
 })
 
 t.test('equality', t => {
   t.plan(equality.length)
-  equality.forEach(([v0, v1]) =>
+  for (const [v0, v1] of equality) {
     t.test(`${v0} ${v1}`, t => {
       const s0 = Version.parse(v0)
       const s1 = Version.parse(v1)
@@ -67,8 +67,8 @@ t.test('equality', t => {
       t.equal(s1.compare(s1), 0)
       t.equal(s1.equals(s1), true)
       t.end()
-    }),
-  )
+    })
+  }
 })
 
 t.test('toString equals parsed version', t => {

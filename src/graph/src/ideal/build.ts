@@ -56,7 +56,7 @@ export const build = async (
       packageJson,
       scurry,
     })
-  } catch (err) {
+  } catch {
     graph = loadActual({
       ...options,
       mainManifest,

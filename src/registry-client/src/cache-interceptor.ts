@@ -49,11 +49,11 @@ export const cacheInterceptor = (
 
     // throw away the body stream, should never have one of these
     // no package registry supports GET request bodies.
-    const br = body as undefined | Readable
+    const br = body as Readable | undefined
     if (typeof br?.resume === 'function') br.resume()
 
     const key = JSON.stringify([origin, method, path, accept])
-    cache.fetch(key, { context: { integrity } }).then(buffer => {
+    void cache.fetch(key, { context: { integrity } }).then(buffer => {
       const entry = buffer ? CacheEntry.decode(buffer) : undefined
       const cacheHandler = new CacheHandler({
         key,

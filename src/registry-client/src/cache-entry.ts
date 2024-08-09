@@ -57,7 +57,7 @@ export class CacheEntry {
   #statusCode: number
   #headers: Buffer[]
   #body: Buffer[] = []
-  #bodyLength: number = 0
+  #bodyLength = 0
   #integrity?: Integrity
   #integrityActual?: Integrity
   #json?: Record<string, JSONField>
@@ -168,7 +168,7 @@ export class CacheEntry {
   /**
    * Set a header to a specific value
    */
-  setHeader(h: string, value: string | Buffer) {
+  setHeader(h: string, value: Buffer | string) {
     this.#headers = setRawHeader(this.#headers, h, value)
   }
 
@@ -233,7 +233,11 @@ export class CacheEntry {
     if (this.isGzip) {
       // we know that if we know it's gzip, that the body has been
       // flattened to a single buffer, so save the extra call.
-      const b = gunzipSync(this.#body[0] as Buffer)
+      /* c8 ignore start */
+      if (this.#body[0] == null)
+        throw error('Invalid buffer, cant unzip')
+      /* c8 ignore stop */
+      const b = gunzipSync(this.#body[0])
       this.setHeader('content-encoding', 'identity')
       this.#body = [b]
       this.#bodyLength = b.byteLength

@@ -38,7 +38,7 @@ export const clone = async (
   target: string | undefined = undefined,
   opts: GitOptions = {},
 ) => {
-  repo = String(gitScpURL(repo) || repo).replace(/^git\+/, '')
+  repo = String(gitScpURL(repo) ?? repo).replace(/^git\+/, '')
   if (repo.startsWith('file://')) repo = fileURLToPath(repo)
   const revs = await getRevs(repo, opts)
   return await clone_(

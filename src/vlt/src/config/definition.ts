@@ -31,6 +31,11 @@ export const commands = {
 
 export type Commands = typeof commands
 
+export const getCommand = (
+  s?: string,
+): Commands[keyof Commands] | undefined =>
+  s && s in commands ? commands[s as keyof Commands] : undefined
+
 const xdg = new XDG('vlt')
 const home = homedir()
 const confDir = xdg.config('vlt.json')

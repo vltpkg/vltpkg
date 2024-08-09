@@ -30,7 +30,7 @@ const diff = {
 
 const scurry = new PathScurry(t.testdirName)
 
-deleteNodes(diff, mockRemover, scurry)
+await Promise.all(deleteNodes(diff, mockRemover, scurry))
 
 t.strictSame(removed, [
   scurry.resolve('node_modules/.vlt/;;foo@1.2.3'),

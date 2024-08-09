@@ -36,7 +36,7 @@ function parseEdge(seenNodes: Set<DepID>, graph: Graph, edge: Edge) {
 }
 
 export function mermaidOutput(graph: Graph) {
-  const seenNodes: Set<DepID> = new Set()
+  const seenNodes = new Set<DepID>()
   const importers = [...graph.importers]
   return (
     'flowchart TD\n' +

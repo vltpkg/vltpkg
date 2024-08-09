@@ -5,7 +5,7 @@ import type {
 import { parse } from '@vltpkg/semver'
 import { error } from '@vltpkg/error-cause'
 
-export type RefType = 'head' | 'branch' | 'tag' | 'pull' | 'other'
+export type RefType = 'branch' | 'head' | 'other' | 'pull' | 'tag'
 
 /**
  * A representation of a given remote ref in a {@link RevDoc} object.
@@ -95,7 +95,7 @@ const distTags = (revs: RevDoc) => {
   // not entirely sure what situations would result in an
   // ichabod repo, but best to be careful in Sleepy Hollow anyway
   /* c8 ignore start */
-  const HEAD = revs.refs.HEAD || {
+  const HEAD = revs.refs.HEAD ?? {
     sha: undefined,
   }
   /* c8 ignore stop */
@@ -195,10 +195,10 @@ const linesToRevsReducer = (revs: RevDoc, line: string) => {
     const match =
       doc.ref.endsWith('^{}') ?
         null
-      : doc.ref.match(/v?(\d+\.\d+\.\d+(?:[-+].+)?)$/)
+      : /v?(\d+\.\d+\.\d+(?:[-+].+)?)$/.exec(doc.ref)
     if (match) {
       /* c8 ignore start */
-      if (!match?.[1])
+      if (!match[1])
         throw error(`invalid semver tag`, { found: doc.ref })
       /* c8 ignore stop */
       const v = parse(match[1])

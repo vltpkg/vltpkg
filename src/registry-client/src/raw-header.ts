@@ -21,7 +21,7 @@ export const getRawHeader = (headers: Buffer[], k: string) => {
 export const setRawHeader = (
   headers: Buffer[],
   k: string,
-  v: string | Buffer,
+  v: Buffer | string,
 ): Buffer[] => {
   k = k.toLowerCase()
   const value = typeof v === 'string' ? Buffer.from(v) : v

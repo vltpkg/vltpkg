@@ -22,7 +22,7 @@ export type RegistryClientOptions = {
 
 export type RegistryClientRequestOptions = Omit<
   Dispatcher.DispatchOptions,
-  'path' | 'method'
+  'method' | 'path'
 > & {
   /**
    * `path` should not be set when using the RegistryClient.
@@ -65,21 +65,21 @@ const { version } = loadPackageJson(
   import.meta.url,
   '../package.json',
 )
-const navUA = globalThis.navigator?.userAgent
+const navUA = (globalThis.navigator as Navigator | undefined)
+  ?.userAgent
 const bun =
-  navUA ??
-  //@ts-ignore
+  navUA ||
+  //@ts-expect-error
   ((await import('bun').catch(() => {}))?.default?.version as
     | string
     | undefined)
 const deno =
-  //@ts-ignore
+  //@ts-expect-error
   navUA ?? (globalThis.Deno?.deno?.version as string | undefined)
 const node =
-  //@ts-ignore
-  navUA ?? (globalThis.process?.version as string | undefined)
+  navUA ?? (globalThis.process as NodeJS.Process | undefined)?.version
 const nua =
-  navUA ??
+  navUA ||
   (bun ? `Bun/${bun}`
   : deno ? `Deno/${deno}`
   : node ? `Node.js/${node}`
@@ -89,7 +89,7 @@ export const userAgent = `@vltpkg/registry-client/${version} ${nua}`
 const xdg = new XDG('vlt')
 
 export class RegistryClient {
-  pools: Map<string, Pool> = new Map()
+  pools = new Map<string, Pool>()
   cache: Cache
 
   constructor({
@@ -104,7 +104,7 @@ export class RegistryClient {
   }
 
   async request(
-    url: string | URL,
+    url: URL | string,
     options: RegistryClientRequestOptions = {},
   ): Promise<CacheEntry> {
     const u = typeof url === 'string' ? new URL(url) : url
@@ -164,7 +164,17 @@ export class RegistryClient {
                 return true
               }
             } catch (er) {
-              rej(er)
+              if (er instanceof Error) {
+                rej(er)
+                /* c8 ignore start */
+              } else {
+                rej(
+                  new Error(
+                    typeof er === 'string' ? er : 'Unknown error',
+                  ),
+                )
+              }
+              /* c8 ignore stop */
               return true
             }
           }

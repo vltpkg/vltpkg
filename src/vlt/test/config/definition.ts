@@ -4,6 +4,7 @@ import {
   definition,
   isRecordField,
   recordFields,
+  getCommand,
 } from '../../src/config/definition.js'
 
 t.matchSnapshot(commands, 'commands')
@@ -41,7 +42,7 @@ t.test(
 t.test('infer editor from env/platform', async t => {
   const cases: [
     { platform: NodeJS.Platform; EDITOR?: string; VISUAL?: string },
-    string | RegExp,
+    RegExp | string,
   ][] = [
     [
       { platform: 'win32', EDITOR: undefined, VISUAL: undefined },
@@ -66,7 +67,9 @@ t.test('infer editor from env/platform', async t => {
   ]
   t.plan(cases.length)
   const cleanEnv = Object.fromEntries(
-    Object.entries(process.env).filter(([k]) => !/^VLT_/.test(k)),
+    Object.entries(process.env).filter(
+      ([k]) => !k.startsWith('VLT_'),
+    ),
   )
   for (const [{ platform, EDITOR, VISUAL }, expect] of cases) {
     t.test(`${platform} ${EDITOR} ${VISUAL}`, async t => {
@@ -80,4 +83,10 @@ t.test('infer editor from env/platform', async t => {
       t.match(definition.parse().values.editor, expect)
     })
   }
+})
+
+t.test('getCommand', async t => {
+  t.equal(getCommand('__wut__'), undefined)
+  t.equal(getCommand(), undefined)
+  t.equal(getCommand('?'), 'help')
 })

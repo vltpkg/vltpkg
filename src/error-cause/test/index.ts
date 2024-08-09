@@ -41,6 +41,6 @@ t.test('stack pruning', t => {
   const asdf = () => {
     return error('x', undefined, bar)
   }
-  t.match(foo().stack, /Error: x\n    at foo/)
+  t.match(foo().stack, /Error: x\n {4}at foo/)
   t.end()
 })

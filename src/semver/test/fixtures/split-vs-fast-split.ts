@@ -20,6 +20,7 @@ const splitTest = () => str.split('.')
 const splitEmptyCheck = () => {
   const parts = str.split('.')
   for (const _ of parts) {
+    // empty
   }
   return parts
 }
