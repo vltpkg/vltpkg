@@ -4,6 +4,7 @@
 /docs
 /node_modules
 /pnpm-exec-summary.json
+/scripts/fixtures/
 
 /src/*/.tap
 /src/*/.tshy-build
@@ -11,6 +12,7 @@
 /src/*/dist
 /src/*/docs
 /src/*/node_modules
+/src/*/scripts/fixtures/
 
 !/src/cache-unzip/dist
 /src/cache-unzip/dist/esm/*

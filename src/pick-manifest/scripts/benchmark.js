@@ -1,85 +1,44 @@
-import { readdirSync, readFileSync } from 'fs'
+import { readFileSync } from 'fs'
 import npmPickManifest from 'npm-pick-manifest'
 import { pickManifest } from '../dist/esm/index.js'
 import { resolve } from 'path'
+import {
+  copyPackuments,
+  numToFixed,
+  resetDir,
+  runFor,
+} from '@vltpkg/benchmark'
 
-console.log('bigger number is better')
+const source = resolve(import.meta.dirname, 'fixtures/artifacts')
 
-const num = n =>
-  String(Math.floor(n)).padStart(3) +
-  '.' +
-  String(n - Math.floor(n)).substring(2, 6)
-
-const test = (fn, howLong = 1000) => {
-  const start = performance.now()
-  const end = start + howLong
-  let count = 0
-  while (performance.now() < end) {
-    fn()
-    count += packuments.length
-  }
-  return num(count / (performance.now() - start))
-}
-
-const pakuDir = resolve(import.meta.dirname, 'fixtures/artifacts')
-const packuments = readdirSync(pakuDir).map(p =>
-  JSON.parse(readFileSync(resolve(pakuDir, p), 'utf8')),
+const packuments = copyPackuments(source).map(p =>
+  JSON.parse(readFileSync(resolve(p.parentPath, p.name), 'utf-8')),
 )
 
-const vltStar = () => {
-  for (const paku of packuments) {
-    pickManifest(paku, '*')
-  }
-}
-const npmStar = () => {
-  for (const paku of packuments) {
-    try {
-      npmPickManifest(paku, '*')
-    } catch {}
-  }
-}
-const vltGte = () => {
-  for (const paku of packuments) {
-    pickManifest(paku, '>=1.2.3')
-  }
-}
-const npmGte = () => {
-  for (const paku of packuments) {
-    try {
-      npmPickManifest(paku, '>=1.2.3')
-    } catch {}
-  }
-}
-const vltCaret = () => {
-  for (const paku of packuments) {
-    pickManifest(paku, '^1.2.3')
-  }
-}
-const npmCaret = () => {
-  for (const paku of packuments) {
-    try {
-      npmPickManifest(paku, '^1.2.3')
-    } catch {}
-  }
-}
-const vltBefore = () => {
-  for (const paku of packuments) {
-    pickManifest(paku, '*', { before: '2020-01-01' })
-  }
-}
-const npmBefore = () => {
-  for (const paku of packuments) {
-    try {
-      npmPickManifest(paku, '*', { before: '2020-01-01' })
-    } catch {}
-  }
+const test = (name, comp, fn, howLong) => {
+  process.stdout.write(`${name} ${comp.padEnd(3)}`)
+  const { errors, iterations, per } = runFor(
+    i => fn(packuments[i % packuments.length]),
+    howLong,
+  )
+  const errMsg =
+    errors ?
+      ` - errors: ${numToFixed((errors / iterations) * 100, { decimals: 1 })}%`
+    : ''
+  process.stdout.write(
+    numToFixed(per, { padStart: 3, decimals: 4 }) + errMsg + '\n',
+  )
 }
 
-console.error('vlt * ', test(vltStar))
-console.error('npm * ', test(npmStar))
-console.error('vlt >=', test(vltGte))
-console.error('npm >=', test(npmGte))
-console.error('vlt ^ ', test(vltCaret))
-console.error('npm ^ ', test(npmCaret))
-console.error('vlt bf', test(vltBefore))
-console.error('npm bf', test(npmBefore))
+const compare = (comp, args) => {
+  test('vlt', comp, p => pickManifest(p, ...args))
+  test('npm', comp, p => npmPickManifest(p, ...args))
+}
+
+console.log('picks per ms (bigger number is better)')
+compare('*', ['*'])
+compare('>=', ['>=1.2.3'])
+compare('^', ['^1.2.3'])
+compare('bf', ['*', { before: '2020-01-01' }])
+
+resetDir(source)

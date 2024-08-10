@@ -7,9 +7,9 @@
 /node_modules
 /package.json
 /pnpm-lock.yaml
+/scripts/fixtures
 /tap-snapshots
 /test/**/fixtures
-/pnpm-lock.yaml
 
 /src/*/.tap
 /src/*/.tshy
@@ -19,6 +19,7 @@
 /src/*/example
 /src/*/node_modules
 /src/*/package.json
+/src/*/scripts/fixtures
 /src/*/tap-snapshots
 /src/*/test/**/fixtures/**
 !/src/*/test/**/fixtures/*.ts

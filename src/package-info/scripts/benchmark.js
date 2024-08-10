@@ -1,188 +1,74 @@
-// run the download-packages.js script before this one
-
-import { mkdirSync, readFileSync, rmSync } from 'fs'
 import pacote from 'pacote'
-import { resolve } from 'path'
+import { resolve, join } from 'path'
 import { PackageInfoClient } from '../dist/esm/index.js'
+import {
+  randomPackages,
+  convertNs,
+  numToFixed,
+  packages,
+  resetDir,
+  timePromises,
+} from '@vltpkg/benchmark'
+
+const COUNT = Number(process.argv[2]) || packages.length
+
+const DIRS = {
+  extract: resolve(import.meta.dirname, 'fixtures/extract'),
+  vlt: resolve(import.meta.dirname, 'fixtures/cache'),
+  npm: resolve(import.meta.dirname, 'fixtures/cacache'),
+}
+
+const p = new PackageInfoClient({ cache: DIRS.vlt })
+
+const run = async (title, fn, packages, unit) => {
+  // Run everything without vlt in-memory cache
+  p.registryClient.cache.clear()
+  resetDir(DIRS.extract)
+  process.stdout.write(`${title}:`)
+  const { time, errors } = await timePromises(packages, fn)
+  const elapsed = convertNs(time, unit)
+  process.stdout.write(
+    numToFixed(elapsed[0], { padStart: 5 }) + elapsed[1],
+  )
+  process.stdout.write((errors ? ` - errors ${errors}` : '') + '\n')
+  return elapsed[1]
+}
+
+const test = async (title, { vlt, npm, count }) => {
+  const packages = randomPackages(count)
+  const unit = await run(`vlt (${title})`, vlt, packages)
+  await run(`npm (${title})`, npm, packages, unit)
+}
+
+const compare = async (title, { vlt, npm, max = COUNT }) => {
+  resetDir(DIRS.vlt)
+  resetDir(DIRS.npm)
+  const count = Math.min(COUNT, max)
+  console.log(`${title} - ${count} packages`)
+  await test('cold', { vlt, npm, count })
+  await test('warm', { vlt, npm, count })
+}
 
 console.log('smaller number is better')
 
-// only extract a subset, or else we get rate-limited by
-// the npm registry.
-const extractCount = 500
+await compare('resolve', {
+  vlt: n => p.resolve(n),
+  npm: n => pacote.resolve(n, { cache: DIRS.npm }),
+})
 
-const pkgNames = readFileSync(
-  resolve(
-    import.meta.dirname,
-    '1000-most-depended-packages-2019.txt',
-  ),
-  'utf8',
-)
-  .trim()
-  .split(/\r?\n/)
-  // randomize order
-  .sort(() => Math.random() - 0.5)
-const extractDir = resolve(import.meta.dirname, 'fixtures/extract')
-const cache = resolve(import.meta.dirname, 'fixtures/cache')
-const cacache = resolve(import.meta.dirname, 'fixtures/cacache')
+await compare('manifests', {
+  vlt: n => p.manifest(n),
+  npm: n => pacote.manifest(n, { cache: DIRS.npm }),
+})
 
-const p = new PackageInfoClient({ cache })
+await compare('extract', {
+  // dont extract more than this or else we get rate-limited by the npm registry
+  max: 500,
+  vlt: n => p.extract(n, join(DIRS.extract, n)),
+  npm: n =>
+    pacote.extract(n, join(DIRS.extract, n), {
+      cache: DIRS.npm,
+    }),
+})
 
-const reset = () => {
-  try {
-    rmSync(extractDir, { recursive: true })
-  } catch {}
-  mkdirSync(extractDir, { recursive: true })
-}
-
-const resetCache = () => {
-  try {
-    rmSync(cache, { recursive: true })
-  } catch {}
-  try {
-    rmSync(cacache, { recursive: true })
-  } catch {}
-  mkdirSync(cache)
-  mkdirSync(cacache)
-  p.registryClient.cache.clear()
-}
-
-reset()
-resetCache()
-console.error(`resolve (cold)`)
-console.time('vlt')
-const vltResolves = []
-for (const name of pkgNames) {
-  vltResolves.push(p.resolve(name).catch(() => {}))
-}
-await Promise.all(vltResolves)
-console.timeEnd('vlt')
-
-reset()
-console.time('npm')
-const pacoteResolves = []
-for (const name of pkgNames) {
-  pacoteResolves.push(
-    pacote.resolve(name, { cache: cacache }).catch(() => {}),
-  )
-}
-await Promise.all(pacoteResolves)
-console.timeEnd('npm')
-
-reset()
-resetCache()
-console.error(`resolve (warm)`)
-console.time('vlt')
-const vltResolvesW = []
-for (const name of pkgNames) {
-  vltResolvesW.push(p.resolve(name).catch(() => {}))
-}
-await Promise.all(vltResolvesW)
-console.timeEnd('vlt')
-
-reset()
-console.time('npm')
-const pacoteResolvesW = []
-for (const name of pkgNames) {
-  pacoteResolvesW.push(
-    pacote.resolve(name, { cache: cacache }).catch(() => {}),
-  )
-}
-await Promise.all(pacoteResolvesW)
-console.timeEnd('npm')
-
-reset()
-resetCache()
-console.error(`manifests (cold)`)
-console.time('vlt')
-const vltManifests = []
-for (const name of pkgNames) {
-  vltManifests.push(p.manifest(name).catch(() => {}))
-}
-await Promise.all(vltManifests)
-console.timeEnd('vlt')
-
-reset()
-console.time('npm')
-const pacoteManifests = []
-for (const name of pkgNames) {
-  pacoteManifests.push(
-    pacote.manifest(name, { cache: cacache }).catch(() => {}),
-  )
-}
-await Promise.all(pacoteManifests)
-console.timeEnd('npm')
-
-reset()
-
-console.error(`manifests (warm)`)
-console.time('vlt')
-const vltManifestsW = []
-for (const name of pkgNames) {
-  vltManifestsW.push(p.manifest(name).catch(() => {}))
-}
-await Promise.all(vltManifestsW)
-console.timeEnd('vlt')
-
-reset()
-console.time('npm')
-const pacoteManifestsW = []
-for (const name of pkgNames) {
-  pacoteManifestsW.push(
-    pacote.manifest(name, { cache: cacache }).catch(() => {}),
-  )
-}
-await Promise.all(pacoteManifestsW)
-console.timeEnd('npm')
-
-reset()
-resetCache()
-console.error('extract (cold)')
-console.time('vlt')
-const vltExtract = []
-for (const name of pkgNames.slice(0, extractCount)) {
-  vltExtract.push(p.extract(name, extractDir + '/' + name))
-}
-await Promise.all(vltExtract)
-console.timeEnd('vlt')
-
-reset()
-console.time('npm')
-const pacoteExtract = []
-for (const name of pkgNames.slice(0, extractCount)) {
-  pacoteExtract.push(
-    pacote
-      .extract(name, extractDir + '/' + name, { cache: cacache })
-      .catch(() => {}),
-  )
-}
-await Promise.all(pacoteExtract)
-console.timeEnd('npm')
-
-reset()
-console.error('extract (warm)')
-console.time('vlt')
-const vltExtractW = []
-for (const name of pkgNames.slice(0, extractCount)) {
-  vltExtractW.push(
-    p.extract(name, extractDir + '/' + name).catch(() => {}),
-  )
-}
-await Promise.all(vltExtractW)
-console.timeEnd('vlt')
-
-reset()
-console.time('npm')
-const pacoteExtractW = []
-for (const name of pkgNames.slice(0, extractCount)) {
-  pacoteExtractW.push(
-    pacote
-      .extract(name, extractDir + '/' + name, { cache: cacache })
-      .catch(e => console.error(name, e)),
-  )
-}
-await Promise.all(pacoteExtractW)
-console.timeEnd('npm')
-
-reset()
-resetCache()
+for (const d of Object.values(DIRS)) resetDir(d)

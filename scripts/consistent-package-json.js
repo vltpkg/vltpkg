@@ -102,7 +102,15 @@ const shouldBeCatalogDevDeps = new Set(
 )
 
 const fixDevDeps = async ws => {
-  const { devDependencies } = ws.pj
+  const { devDependencies, dependencies } = ws.pj
+
+  for (const k of Object.keys(dependencies ?? {})) {
+    if (k.startsWith('@vltpkg/')) {
+      dependencies[k] = 'workspace:*'
+      continue
+    }
+  }
+
   for (const k of Object.keys(devDependencies ?? {})) {
     if (
       k.startsWith('@vltpkg/') &&

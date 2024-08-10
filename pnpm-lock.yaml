@@ -45,7 +45,7 @@ importers:
   .:
     dependencies:
       vlt:
-        specifier: workspace:0.0.0-0
+        specifier: workspace:*
         version: link:src/vlt
     devDependencies:
       '@eslint/js':
@@ -54,6 +54,9 @@ importers:
       '@types/eslint__js':
         specifier: 'catalog:'
         version: 8.42.3
+      '@vltpkg/benchmark':
+        specifier: workspace:*
+        version: link:src/benchmark
       chalk:
         specifier: ^5.3.0
         version: 5.3.0
@@ -81,6 +84,46 @@ importers:
       yaml:
         specifier: ^2.5.0
         version: 2.5.0
+
+  src/benchmark:
+    dependencies:
+      pacote:
+        specifier: 'catalog:'
+        version: 18.0.6
+    devDependencies:
+      '@eslint/js':
+        specifier: 'catalog:'
+        version: 9.8.0
+      '@types/eslint__js':
+        specifier: 'catalog:'
+        version: 8.42.3
+      '@types/node':
+        specifier: 'catalog:'
+        version: 20.14.8
+      '@types/pacote':
+        specifier: ^11.1.8
+        version: 11.1.8
+      eslint:
+        specifier: 'catalog:'
+        version: 9.8.0
+      prettier:
+        specifier: 'catalog:'
+        version: 3.3.2
+      tap:
+        specifier: 'catalog:'
+        version: 20.0.1(@types/node@20.14.8)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4)
+      tshy:
+        specifier: 'catalog:'
+        version: 1.16.1
+      typedoc:
+        specifier: 'catalog:'
+        version: 0.26.2(typescript@5.5.4)
+      typescript:
+        specifier: 'catalog:'
+        version: 5.5.4
+      typescript-eslint:
+        specifier: 'catalog:'
+        version: 8.0.1(eslint@9.8.0)(typescript@5.5.4)
 
   src/cache:
     dependencies:
@@ -474,6 +517,9 @@ importers:
       '@types/node':
         specifier: 'catalog:'
         version: 20.14.8
+      '@vltpkg/benchmark':
+        specifier: workspace:*
+        version: link:../benchmark
       eslint:
         specifier: 'catalog:'
         version: 9.8.0
@@ -566,15 +612,15 @@ importers:
       '@types/node':
         specifier: 'catalog:'
         version: 20.14.8
+      '@vltpkg/benchmark':
+        specifier: workspace:*
+        version: link:../benchmark
       eslint:
         specifier: 'catalog:'
         version: 9.8.0
       npm-pick-manifest:
-        specifier: ^9.0.1
-        version: 9.0.1
-      pacote:
-        specifier: 'catalog:'
-        version: 18.0.6
+        specifier: ^9.1.0
+        version: 9.1.0
       prettier:
         specifier: 'catalog:'
         version: 3.3.2
@@ -879,6 +925,9 @@ importers:
       '@types/node':
         specifier: 'catalog:'
         version: 20.14.8
+      '@vltpkg/benchmark':
+        specifier: workspace:*
+        version: link:../benchmark
       eslint:
         specifier: 'catalog:'
         version: 9.8.0
@@ -928,6 +977,9 @@ importers:
       '@types/tar':
         specifier: ^6.1.13
         version: 6.1.13
+      '@vltpkg/benchmark':
+        specifier: workspace:*
+        version: link:../benchmark
       eslint:
         specifier: 'catalog:'
         version: 9.8.0
@@ -1546,8 +1598,23 @@ packages:
   '@types/json-schema@7.0.15':
     resolution: {integrity: sha512-5+fP8P8MFNC+AyZCDxrB2pkZFPGzqQWUzpSeuuVLvm8VMcorNYavBqoFcxK8bQz4Qsbn4oUEEem4wDLfcysGHA==}
 
+  '@types/node-fetch@2.6.11':
+    resolution: {integrity: sha512-24xFj9R5+rfQJLRyM56qh+wnVSYhyXC2tkoBndtY0U+vubqNsYXGjufB2nn8Q6gt0LrARwL6UBtMCSVCwl4B1g==}
+
   '@types/node@20.14.8':
     resolution: {integrity: sha512-DO+2/jZinXfROG7j7WKFn/3C6nFwxy2lLpgLjEXJz+0XKphZlTLJ14mo8Vfg8X5BWN6XjyESXq+LcYdT7tR3bA==}
+
+  '@types/npm-package-arg@6.1.4':
+    resolution: {integrity: sha512-vDgdbMy2QXHnAruzlv68pUtXCjmqUk3WrBAsRboRovsOmxbfn/WiYCjmecyKjGztnMps5dWp4Uq2prp+Ilo17Q==}
+
+  '@types/npm-registry-fetch@8.0.7':
+    resolution: {integrity: sha512-db9iBh7kDDg4lRT4k4XZ6IiecTEgFCID4qk+VDVPbtzU855q3KZLCn08ATr4H27ntRJVhulQ7GWjl24H42x96w==}
+
+  '@types/npmlog@7.0.0':
+    resolution: {integrity: sha512-hJWbrKFvxKyWwSUXjZMYTINsSOY6IclhvGOZ97M8ac2tmR9hMwmTnYaMdpGhvju9ctWLTPhCS+eLfQNluiEjQQ==}
+
+  '@types/pacote@11.1.8':
+    resolution: {integrity: sha512-/XLR0VoTh2JEO0jJg1q/e6Rh9bxjBq9vorJuQmtT7rRrXSiWz7e7NsvXVYJQ0i8JxMlBMPPYDTnrRe7MZRFA8Q==}
 
   '@types/promise-retry@1.1.6':
     resolution: {integrity: sha512-EC1+OMXV0PZb0pf+cmyxc43MEP2CDumZe4AfuxWboxxEixztIebknpJPZAX5XlodGF1OY+C1E/RAeNGzxf+bJA==}
@@ -1557,6 +1624,9 @@ packages:
 
   '@types/semver@7.5.8':
     resolution: {integrity: sha512-I8EUhyrgfLrcTkzV3TSsGyl1tSuPrEDzr0yd5m90UgNxQkyDXULk3b6MlQqTCpZpNtWe1K0hzclnZkTcLBe2UQ==}
+
+  '@types/ssri@7.1.5':
+    resolution: {integrity: sha512-odD/56S3B51liILSk5aXJlnYt99S6Rt9EFDDqGtJM26rKHApHcwyU/UoYHrzKkdkHMAIquGWCuHtQTbes+FRQw==}
 
   '@types/tar@6.1.13':
     resolution: {integrity: sha512-IznnlmU5f4WcGTh2ltRu/Ijpmk8wiWXfF0VA4s+HPjHZgvFggk1YaIkbo5krX/zUCzWF8N/l4+W/LNxnvAJ8nw==}
@@ -1689,6 +1759,9 @@ packages:
     resolution: {integrity: sha512-bSktexGodAjfHWIrSrrqxqWzf1hWBZBpmPNZv+TYUMyWa2eoefFc6q6H1+KtdHYSz35lrhWdmXt/XK9wNEZvww==}
     engines: {node: '>=16'}
 
+  asynckit@0.4.0:
+    resolution: {integrity: sha512-Oei9OH4tRh0YqU3GxhX79dM/mwVgvbZJaSNaRk+bshkj0S5cfHcgYakreBjrHwatXKbz+IoIdYLxrKim2MjW0Q==}
+
   auto-bind@5.0.1:
     resolution: {integrity: sha512-ooviqdwwgfIfNmDwo94wlshcdzfO64XV0Cg6oDsDYBJfITDz1EngD2z7DkbvCWn+XIMsIqW27sEVF6qcpJrRcg==}
     engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
@@ -1782,6 +1855,10 @@ packages:
   color-name@1.1.4:
     resolution: {integrity: sha512-dOy+3AuW3a2wNbZHIuMZpTcgjGuLU/uBL/ubcZF9OXbDo8ff4O8yVp5Bf0efS8uEoYo5q4Fx7dY9OgQGXgAsQA==}
 
+  combined-stream@1.0.8:
+    resolution: {integrity: sha512-FQN4MRfuJeHf7cBbBMJFXhKSDq+2kAArBlmRBvcvFE5BB1HZKXtSFASDhdlz9zOYwxh8lDdnvmMOe/+5cdoEdg==}
+    engines: {node: '>= 0.8'}
+
   concat-map@0.0.1:
     resolution: {integrity: sha512-/Srv4dswyQNBfohGpz9o6Yb3Gz3SrUDqBH5rTuhGR7ahtlbYKnVxw2bCFMRljaA7EXHaXZ8wsHdodFvbkhKmqg==}
 
@@ -1807,6 +1884,10 @@ packages:
 
   deep-is@0.1.4:
     resolution: {integrity: sha512-oIPzksmTg4/MriiaYGO+okXDT7ztn/w3Eptv/+gSIdMdKsJo0u4CfYNFJPy+4SKMuCqGw2wxnA+URMg3t8a/bQ==}
+
+  delayed-stream@1.0.0:
+    resolution: {integrity: sha512-ZySD7Nf91aLB0RxL4KGrKHBXl7Eds1DAmEdcoVawXnLD7SDhpNgtuII2aAkg7a7QS41jxPSZ17p4VdGnMHk3MQ==}
+    engines: {node: '>=0.4.0'}
 
   diff@4.0.2:
     resolution: {integrity: sha512-58lmxKSA4BNyLz+HHMUzlOEpg09FV+ev6ZMe3vJihgdxzgcwZ8VoEEPmALCZG9LmqfVoNMMKpttIYTVG6uDY7A==}
@@ -1944,6 +2025,10 @@ packages:
   foreground-child@3.2.0:
     resolution: {integrity: sha512-CrWQNaEl1/6WeZoarcM9LHupTo3RpZO2Pdk1vktwzPiQTsJnAKJmm3TACKeG5UZbWDfaH2AbvYxzP96y0MT7fA==}
     engines: {node: '>=14'}
+
+  form-data@4.0.0:
+    resolution: {integrity: sha512-ETEklSGi5t0QMZuiXoA/Q6vcnxcLQP5vdugSpuAyi6SVGi2clPPp+xgEhuMaHC+zGgn31Kd235W35f7Hykkaww==}
+    engines: {node: '>= 6'}
 
   fromentries@1.3.2:
     resolution: {integrity: sha512-cHEpEQHUg0f8XdtZCc2ZAhrHzKzT0MrFUTcvx+hfxYu7rGMDc5SKoXFh+n4YigxsHXRzc6OrCshdR1bWH6HHyg==}
@@ -2237,6 +2322,14 @@ packages:
     resolution: {integrity: sha512-LPP/3KorzCwBxfeUuZmaR6bG2kdeHSbe0P2tY3FLRU4vYrjYz5hI4QZwV0njUx3jeuKe67YukQ1LSPZBKDqO/Q==}
     engines: {node: '>=8.6'}
 
+  mime-db@1.52.0:
+    resolution: {integrity: sha512-sPU4uV7dYlvtWJxwwxHD0PuihVNiE7TyAbQ5SWxDCB9mUYvOgroQOwYQQOKPJ8CIbE+1ETVlOoK1UC2nU3gYvg==}
+    engines: {node: '>= 0.6'}
+
+  mime-types@2.1.35:
+    resolution: {integrity: sha512-ZDY+bPm5zTTF+YpCrAU9nK0UgICYPT0QtT1NZWFv4s++TNkcgVaT0g6+4R2uI4MjQjzysHB1zxuWL50hzaeXiw==}
+    engines: {node: '>= 0.6'}
+
   mimic-fn@2.1.0:
     resolution: {integrity: sha512-OqbOk5oEQeAZ8WXWydlu9HJjz9WVdEIvamMCcXmuqUYjTknH/sqsWvhQ3vgwKFRR1HpjvNBKQ37nbJgYzGqGcg==}
     engines: {node: '>=6'}
@@ -2359,8 +2452,8 @@ packages:
     resolution: {integrity: sha512-shYrPFIS/JLP4oQmAwDyk5HcyysKW8/JLTEA32S0Z5TzvpaeeX2yMFfoK1fjEBnCBvVyIB/Jj/GBFdm0wsgzbA==}
     engines: {node: ^14.17.0 || ^16.13.0 || >=18.0.0}
 
-  npm-pick-manifest@9.0.1:
-    resolution: {integrity: sha512-Udm1f0l2nXb3wxDpKjfohwgdFUSV50UVwzEIpDXVsbDMXVIEF81a/i0UhuQbhrPMMmdiq3+YMFLFIRVLs3hxQw==}
+  npm-pick-manifest@9.1.0:
+    resolution: {integrity: sha512-nkc+3pIIhqHVQr085X9d2JzPzLyjzQS96zbruppqC9aZRm/x8xx6xhI98gHtsfELP2bE+loHq8ZaHFHhe+NauA==}
     engines: {node: ^16.14.0 || >=18.0.0}
 
   npm-registry-fetch@17.0.1:
@@ -3039,7 +3132,7 @@ snapshots:
     dependencies:
       '@npmcli/promise-spawn': 7.0.2
       lru-cache: 10.2.2
-      npm-pick-manifest: 9.0.1
+      npm-pick-manifest: 9.1.0
       proc-log: 4.2.0
       promise-inflight: 1.0.1
       promise-retry: 2.0.1
@@ -3399,9 +3492,35 @@ snapshots:
 
   '@types/json-schema@7.0.15': {}
 
+  '@types/node-fetch@2.6.11':
+    dependencies:
+      '@types/node': 20.14.8
+      form-data: 4.0.0
+
   '@types/node@20.14.8':
     dependencies:
       undici-types: 5.26.5
+
+  '@types/npm-package-arg@6.1.4': {}
+
+  '@types/npm-registry-fetch@8.0.7':
+    dependencies:
+      '@types/node': 20.14.8
+      '@types/node-fetch': 2.6.11
+      '@types/npm-package-arg': 6.1.4
+      '@types/npmlog': 7.0.0
+      '@types/ssri': 7.1.5
+
+  '@types/npmlog@7.0.0':
+    dependencies:
+      '@types/node': 20.14.8
+
+  '@types/pacote@11.1.8':
+    dependencies:
+      '@types/node': 20.14.8
+      '@types/npm-registry-fetch': 8.0.7
+      '@types/npmlog': 7.0.0
+      '@types/ssri': 7.1.5
 
   '@types/promise-retry@1.1.6':
     dependencies:
@@ -3410,6 +3529,10 @@ snapshots:
   '@types/retry@0.12.5': {}
 
   '@types/semver@7.5.8': {}
+
+  '@types/ssri@7.1.5':
+    dependencies:
+      '@types/node': 20.14.8
 
   '@types/tar@6.1.13':
     dependencies:
@@ -3557,6 +3680,8 @@ snapshots:
 
   async-hook-domain@4.0.1: {}
 
+  asynckit@0.4.0: {}
+
   auto-bind@5.0.1: {}
 
   balanced-match@1.0.2: {}
@@ -3661,6 +3786,10 @@ snapshots:
 
   color-name@1.1.4: {}
 
+  combined-stream@1.0.8:
+    dependencies:
+      delayed-stream: 1.0.0
+
   concat-map@0.0.1: {}
 
   convert-source-map@2.0.0: {}
@@ -3678,6 +3807,8 @@ snapshots:
       ms: 2.1.2
 
   deep-is@0.1.4: {}
+
+  delayed-stream@1.0.0: {}
 
   diff@4.0.2: {}
 
@@ -3826,6 +3957,12 @@ snapshots:
     dependencies:
       cross-spawn: 7.0.3
       signal-exit: 4.1.0
+
+  form-data@4.0.0:
+    dependencies:
+      asynckit: 0.4.0
+      combined-stream: 1.0.8
+      mime-types: 2.1.35
 
   fromentries@1.3.2: {}
 
@@ -4114,6 +4251,12 @@ snapshots:
       braces: 3.0.3
       picomatch: 2.3.1
 
+  mime-db@1.52.0: {}
+
+  mime-types@2.1.35:
+    dependencies:
+      mime-db: 1.52.0
+
   mimic-fn@2.1.0: {}
 
   minimatch@3.1.2:
@@ -4236,7 +4379,7 @@ snapshots:
     dependencies:
       ignore-walk: 6.0.5
 
-  npm-pick-manifest@9.0.1:
+  npm-pick-manifest@9.1.0:
     dependencies:
       npm-install-checks: 6.3.0
       npm-normalize-package-bin: 3.0.1
@@ -4297,7 +4440,7 @@ snapshots:
       minipass: 7.1.2
       npm-package-arg: 11.0.2
       npm-packlist: 8.0.2
-      npm-pick-manifest: 9.0.1
+      npm-pick-manifest: 9.1.0
       npm-registry-fetch: 17.0.1
       proc-log: 4.2.0
       promise-retry: 2.0.1

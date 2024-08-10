@@ -1,4 +1,4 @@
-#!/usr/bin/env tap -Rtap --disable-coverage --allow-empty-coverage
+#!/usr/bin/env -S tap -Rtap --disable-coverage --allow-empty-coverage
 import t from 'tap'
 import { fastSplit } from '../../src/fast-split.js'
 

@@ -1,4 +1,4 @@
-#!/usr/bin/env tap -Rtap --disable-coverage --allow-empty-coverage
+#!/usr/bin/env -S tap -Rtap --disable-coverage --allow-empty-coverage
 import semver from 'semver'
 import t from 'tap'
 import { highest } from '../../src/index.js'
