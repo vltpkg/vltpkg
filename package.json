@@ -2,11 +2,12 @@
   "name": "@vltpkg/vltpkg",
   "version": "0.0.0-0",
   "dependencies": {
-    "vlt": "workspace:0.0.0-0"
+    "vlt": "workspace:*"
   },
   "devDependencies": {
     "@eslint/js": "catalog:",
     "@types/eslint__js": "catalog:",
+    "@vltpkg/benchmark": "workspace:*",
     "chalk": "^5.3.0",
     "eslint": "catalog:",
     "globals": "^15.9.0",
@@ -19,6 +20,8 @@
   },
   "scripts": {
     ".": "./scripts/local-cli vlt",
+    "prebenchmark": "pnpm vlt-benchmark-download-fixtures",
+    "benchmark": "pnpm -r --sequential --no-bail --if-present run \"/^benchmark*/\"",
     "devPreinstall": "node scripts/consistent-package-json.js",
     "fix": "pnpm devPreinstall && pnpm lint && pnpm format",
     "format": "prettier --write . --log-level warn --ignore-path ./.prettierignore --cache",

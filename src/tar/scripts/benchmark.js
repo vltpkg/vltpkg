@@ -1,51 +1,47 @@
-// run the download-packages.js script before this one
-
-import { mkdirSync, readdirSync, readFileSync, rmSync } from 'fs'
+import { readFileSync } from 'fs'
 import pacote from 'pacote'
 import { resolve } from 'path'
 import { Pool } from '../dist/esm/pool.js'
+import {
+  convertNs,
+  copyTarballs,
+  resetDir,
+  numToFixed,
+  timePromises,
+} from '@vltpkg/benchmark'
 
-const artifactDir = resolve(import.meta.dirname, 'fixtures/artifacts')
-const targetDir = resolve(import.meta.dirname, 'fixtures/extract')
-
-const artifacts = readdirSync(artifactDir)
-  .sort(() => Math.random() - 0.5)
-  .slice(0, 1000)
-
-const reset = () => {
-  console.time('reset')
-  try {
-    rmSync(targetDir, { recursive: true })
-  } catch {}
-  mkdirSync(targetDir, { recursive: true })
-  console.timeEnd('reset')
+const DIRS = {
+  source: resolve(import.meta.dirname, 'fixtures/artifacts'),
+  target: resolve(import.meta.dirname, 'fixtures/extract'),
 }
 
-reset()
-console.error(
-  `extracting ${artifacts.length} artifacts with @vltpkg/tar`,
+const artifacts = copyTarballs(DIRS.source)
+
+const test = async (name, fn, setup) => {
+  resetDir(DIRS.target)
+  process.stdout.write(`${name}: `)
+  const state = setup ? setup() : undefined
+  const { time } = await timePromises(artifacts, a =>
+    fn(
+      resolve(a.parentPath, a.name),
+      resolve(DIRS.target, a.name.replace(/\.tgz$/, '')),
+      state,
+    ),
+  )
+  const [elapsed, unit] = convertNs(time)
+  process.stdout.write(
+    numToFixed(elapsed, { decimals: 3, padStart: 2 }) + unit + '\n',
+  )
+}
+
+console.log(`extracting ${artifacts.length} artifacts`)
+
+await test(
+  '@vltpkg/tar',
+  (tgz, target, p) => p.unpack(readFileSync(tgz), target),
+  () => new Pool(),
 )
-console.time('@vltpkg/tar extract')
-const p = new Pool()
-const vltPromises = []
-for (const a of artifacts) {
-  const tgz = resolve(artifactDir, a)
-  const target = resolve(targetDir, a.replace(/\.tgz$/, ''))
-  vltPromises.push(p.unpack(readFileSync(tgz), target))
-}
-await Promise.all(vltPromises)
-console.timeEnd('@vltpkg/tar extract')
 
-reset()
-console.error(`extracting ${artifacts.length} artifacts with pacote`)
-console.time('pacote extract')
-const pacotePromises = []
-for (const a of artifacts) {
-  const tgz = resolve(artifactDir, a)
-  const target = resolve(targetDir, a.replace(/\.tgz$/, ''))
-  pacotePromises.push(pacote.extract(tgz, target))
-}
-await Promise.all(pacotePromises)
-console.timeEnd('pacote extract')
+await test('pacote', (tgz, target) => pacote.extract(tgz, target))
 
-reset()
+for (const d of Object.values(DIRS)) resetDir(d)

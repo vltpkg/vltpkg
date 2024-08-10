@@ -1,5 +1,6 @@
 import npa from 'npm-package-arg'
 import { Spec } from '../dist/esm/index.js'
+import { numToFixed, runFor } from '@vltpkg/benchmark'
 
 const versions = [
   'foo',
@@ -42,7 +43,6 @@ const versions = [
   'x@file:path/to/foo.tar.gz',
   'x@file:~/path/to/foo',
   'x@file:/~/path/to/foo',
-  'x@file:/~path/to/foo',
   'x@file:/.path/to/foo',
   'x@file:./path/to/foo',
   'x@file:/./path/to/foo',
@@ -52,7 +52,6 @@ const versions = [
   'x@file://../path/to/foo',
   'x@file:///path/to/foo',
   'x@file:/path/to/foo',
-  'x@file://path/to/foo',
   'x@file:////path/to/foo',
   'x@file://.',
   'x@http://insecure.com/foo.tgz',
@@ -93,23 +92,15 @@ const versions = [
   '@foo/bar@git+ssh://gitlab.com/user/foo',
 ]
 
-const ours = v => Spec.parse(v)
-const npms = v => npa(v)
+const ours = i => Spec.parse(versions[i % versions.length])
+const npms = i => npa(versions[i % versions.length])
 
-const test = (fn, howLong) => {
-  let did = 0
-  const start = performance.now()
-  while (performance.now() < start + howLong) {
-    for (const v of versions) {
-      fn(v)
-      did++
-    }
-  }
-  const elapsed = performance.now() - start
-  return did / elapsed
-}
-
-console.log('parses per ms')
-
-console.log('npa', test(npms, 1000))
-console.log('vlt', test(ours, 1000))
+console.log('parses per ms (bigger number is better)')
+console.log(
+  'npa',
+  numToFixed(runFor(npms, 1000).per, { padStart: 3, decimals: 3 }),
+)
+console.log(
+  'vlt',
+  numToFixed(runFor(ours, 1000).per, { padStart: 3, decimals: 3 }),
+)
