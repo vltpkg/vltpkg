@@ -74,17 +74,16 @@
     "./package.json": "./package.json",
     ".": {
       "import": {
-        "source": "./src/index.ts",
         "types": "./dist/esm/index.d.ts",
         "default": "./dist/esm/index.js"
       }
     },
     "./config": {
       "import": {
-        "source": "./src/config/index.ts",
         "types": "./dist/esm/config/index.d.ts",
         "default": "./dist/esm/config/index.js"
       }
     }
-  }
+  },
+  "module": "./dist/esm/index.js"
 }

@@ -60,24 +60,22 @@
     "./package.json": "./package.json",
     ".": {
       "import": {
-        "source": "./src/index.ts",
         "types": "./dist/esm/index.d.ts",
         "default": "./dist/esm/index.js"
       }
     },
     "./cache-entry": {
       "import": {
-        "source": "./src/cache-entry.ts",
         "types": "./dist/esm/cache-entry.d.ts",
         "default": "./dist/esm/cache-entry.js"
       }
     },
     "./cache-interceptor": {
       "import": {
-        "source": "./src/cache-interceptor.ts",
         "types": "./dist/esm/cache-interceptor.d.ts",
         "default": "./dist/esm/cache-interceptor.js"
       }
     }
-  }
+  },
+  "module": "./dist/esm/index.js"
 }

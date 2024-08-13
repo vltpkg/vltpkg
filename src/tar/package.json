@@ -60,31 +60,28 @@
     "./package.json": "./package.json",
     ".": {
       "import": {
-        "source": "./src/index.ts",
         "types": "./dist/esm/index.d.ts",
         "default": "./dist/esm/index.js"
       }
     },
     "./pool": {
       "import": {
-        "source": "./src/pool.ts",
         "types": "./dist/esm/pool.d.ts",
         "default": "./dist/esm/pool.js"
       }
     },
     "./unpack": {
       "import": {
-        "source": "./src/unpack.ts",
         "types": "./dist/esm/unpack.d.ts",
         "default": "./dist/esm/unpack.js"
       }
     },
     "./unpack-request": {
       "import": {
-        "source": "./src/unpack-request.ts",
         "types": "./dist/esm/unpack-request.d.ts",
         "default": "./dist/esm/unpack-request.js"
       }
     }
-  }
+  },
+  "module": "./dist/esm/index.js"
 }
