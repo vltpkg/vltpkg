@@ -62,7 +62,6 @@
     "./package.json": "./package.json",
     ".": {
       "import": {
-        "source": "./src/index.ts",
         "types": "./dist/esm/index.d.ts",
         "default": "./dist/esm/index.js"
       }
@@ -71,5 +70,6 @@
   "files": [
     "dist"
   ],
-  "license": "ISC"
+  "license": "ISC",
+  "module": "./dist/esm/index.js"
 }
