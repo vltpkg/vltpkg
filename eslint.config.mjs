@@ -146,7 +146,7 @@ export default tseslint.config(
     },
   },
   {
-    files: ['**/test/**/*.ts'],
+    files: ['**/test/**/*.ts', '**/test/**/*.tsx'],
     rules: {
       // tap handles these floating promises
       '@typescript-eslint/no-floating-promises': [
@@ -186,6 +186,14 @@ export default tseslint.config(
     rules: {
       ...tseslint.configs.disableTypeChecked.rules,
       ...eslint.configs.recommended.rules,
+    },
+  },
+  {
+    files: ['src/gui/src/**/*.tsx'],
+    rules: {
+      // shadcn-ui specific patterns
+      '@typescript-eslint/no-unsafe-call': 'off',
+      '@typescript-eslint/no-empty-object-type': 'off',
     },
   },
 )
