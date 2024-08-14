@@ -4,7 +4,7 @@ import {
   set as setProperty,
   del as deleteProperty,
   has as hasProperty,
-} from '../src/dot-prop.js'
+} from '../src/index.js'
 
 t.test('getProperty', async t => {
   const fixture1: any = { foo: { bar: 1 } }

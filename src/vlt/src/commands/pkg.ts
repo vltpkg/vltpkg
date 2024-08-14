@@ -1,7 +1,7 @@
 import { error } from '@vltpkg/error-cause'
 import { LoadedConfig } from '../config/index.js'
 import { PackageJson } from '@vltpkg/package-json'
-import * as dotProp from '@vltpkg/package-json/dot-prop'
+import * as dotProp from '@vltpkg/dot-prop'
 import { Manifest } from '@vltpkg/types'
 
 export const usage = `Usage:

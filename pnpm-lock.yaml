@@ -257,6 +257,39 @@ importers:
         specifier: 'catalog:'
         version: 8.0.1(eslint@9.8.0)(typescript@5.5.4)
 
+  src/dot-prop:
+    devDependencies:
+      '@eslint/js':
+        specifier: 'catalog:'
+        version: 9.8.0
+      '@types/eslint__js':
+        specifier: 'catalog:'
+        version: 8.42.3
+      '@types/node':
+        specifier: 'catalog:'
+        version: 20.14.8
+      eslint:
+        specifier: 'catalog:'
+        version: 9.8.0
+      prettier:
+        specifier: 'catalog:'
+        version: 3.3.2
+      tap:
+        specifier: 'catalog:'
+        version: 20.0.1(@types/node@20.14.8)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4)
+      tshy:
+        specifier: 'catalog:'
+        version: 1.16.1
+      typedoc:
+        specifier: 'catalog:'
+        version: 0.26.2(typescript@5.5.4)
+      typescript:
+        specifier: 'catalog:'
+        version: 5.5.4
+      typescript-eslint:
+        specifier: 'catalog:'
+        version: 8.0.1(eslint@9.8.0)(typescript@5.5.4)
+
   src/error-cause:
     devDependencies:
       '@eslint/js':
@@ -1047,6 +1080,9 @@ importers:
       '@vltpkg/dep-id':
         specifier: workspace:*
         version: link:../dep-id
+      '@vltpkg/dot-prop':
+        specifier: workspace:*
+        version: link:../dot-prop
       '@vltpkg/error-cause':
         specifier: workspace:*
         version: link:../error-cause
