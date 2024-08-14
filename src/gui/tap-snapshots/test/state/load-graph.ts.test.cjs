@@ -1,0 +1,272 @@
+/* IMPORTANT
+ * This snapshot file is auto-generated, but designed for humans.
+ * It should be checked into source control and tracked carefully.
+ * Re-generate by setting TAP_SNAPSHOT=1 and running tests.
+ * Make sure to inspect the output below.  Do not ignore changes!
+ */
+'use strict'
+exports[`test/state/load-graph.ts > TAP > should load the graph from transfer data 1`] = `
+{
+  graph: <ref *1> {
+    importers: Set(1) {
+      {
+        id: 'file·.',
+        name: 'my-project',
+        version: '1.0.0',
+        manifest: { name: 'my-project', version: '1.0.0' },
+        edgesIn: Set(0) {},
+        edgesOut: Map(2) { 'foo' => [Object], 'baz' => [Object] },
+        graph: [Circular *1],
+        importer: true,
+        mainImporter: true,
+        projectRoot: '/path/to/project',
+        dev: false,
+        optional: false,
+        location: '.',
+        integrity: undefined,
+        resolved: undefined
+      }
+    },
+    edges: Set(3) {
+      {
+        from: {
+          id: 'file·.',
+          name: 'my-project',
+          version: '1.0.0',
+          manifest: [Object],
+          edgesIn: Set(0) {},
+          edgesOut: [Map],
+          graph: [Circular *1],
+          importer: true,
+          mainImporter: true,
+          projectRoot: '/path/to/project',
+          dev: false,
+          optional: false,
+          location: '.',
+          integrity: undefined,
+          resolved: undefined
+        },
+        name: 'foo',
+        spec: Spec {foo@^1.0.0 || 1.2.3 || 2},
+        to: {
+          id: '··foo@1.0.0',
+          name: 'foo',
+          version: '1.0.0',
+          manifest: [Object],
+          edgesIn: [Set],
+          edgesOut: [Map],
+          graph: [Circular *1],
+          importer: false,
+          mainImporter: false,
+          projectRoot: '/path/to/project',
+          dev: true,
+          optional: false,
+          integrity: 'sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ==',
+          resolved: undefined,
+          location: 'node_modules/.pnpm/foo@1.0.0/node_modules/foo'
+        },
+        type: 'prod'
+      },
+      {
+        from: {
+          id: 'file·.',
+          name: 'my-project',
+          version: '1.0.0',
+          manifest: [Object],
+          edgesIn: Set(0) {},
+          edgesOut: [Map],
+          graph: [Circular *1],
+          importer: true,
+          mainImporter: true,
+          projectRoot: '/path/to/project',
+          dev: false,
+          optional: false,
+          location: '.',
+          integrity: undefined,
+          resolved: undefined
+        },
+        name: 'baz',
+        spec: Spec {baz@custom:baz@^1.0.0},
+        to: {
+          id: '·custom·baz@1.0.0',
+          name: 'baz',
+          version: '1.0.0',
+          manifest: [Object],
+          edgesIn: [Set],
+          edgesOut: Map(0) {},
+          graph: [Circular *1],
+          importer: false,
+          mainImporter: false,
+          projectRoot: '/path/to/project',
+          dev: false,
+          optional: true,
+          integrity: undefined,
+          resolved: 'http://example.com/baz.tgz'
+        },
+        type: 'prod'
+      },
+      {
+        from: {
+          id: '··foo@1.0.0',
+          name: 'foo',
+          version: '1.0.0',
+          manifest: [Object],
+          edgesIn: [Set],
+          edgesOut: [Map],
+          graph: [Circular *1],
+          importer: false,
+          mainImporter: false,
+          projectRoot: '/path/to/project',
+          dev: true,
+          optional: false,
+          integrity: 'sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ==',
+          resolved: undefined,
+          location: 'node_modules/.pnpm/foo@1.0.0/node_modules/foo'
+        },
+        name: 'bar',
+        spec: Spec {bar@^1.0.0},
+        to: {
+          id: '··bar@1.0.0',
+          name: 'bar',
+          version: '1.0.0',
+          manifest: [Object],
+          edgesIn: [Set],
+          edgesOut: Map(0) {},
+          graph: [Circular *1],
+          importer: false,
+          mainImporter: false,
+          projectRoot: '/path/to/project',
+          dev: true,
+          optional: true,
+          integrity: undefined,
+          resolved: undefined
+        },
+        type: 'prod'
+      }
+    },
+    nodes: Map(4) {
+      'file·.' => {
+        id: 'file·.',
+        name: 'my-project',
+        version: '1.0.0',
+        manifest: { name: 'my-project', version: '1.0.0' },
+        edgesIn: Set(0) {},
+        edgesOut: Map(2) { 'foo' => [Object], 'baz' => [Object] },
+        graph: [Circular *1],
+        importer: true,
+        mainImporter: true,
+        projectRoot: '/path/to/project',
+        dev: false,
+        optional: false,
+        location: '.',
+        integrity: undefined,
+        resolved: undefined
+      },
+      '··bar@1.0.0' => {
+        id: '··bar@1.0.0',
+        name: 'bar',
+        version: '1.0.0',
+        manifest: { name: 'bar', version: '1.0.0' },
+        edgesIn: Set(1) { [Object] },
+        edgesOut: Map(0) {},
+        graph: [Circular *1],
+        importer: false,
+        mainImporter: false,
+        projectRoot: '/path/to/project',
+        dev: true,
+        optional: true,
+        integrity: undefined,
+        resolved: undefined
+      },
+      '··foo@1.0.0' => {
+        id: '··foo@1.0.0',
+        name: 'foo',
+        version: '1.0.0',
+        manifest: { name: 'foo', version: '1.0.0', dist: [Object] },
+        edgesIn: Set(1) { [Object] },
+        edgesOut: Map(1) { 'bar' => [Object] },
+        graph: [Circular *1],
+        importer: false,
+        mainImporter: false,
+        projectRoot: '/path/to/project',
+        dev: true,
+        optional: false,
+        integrity: 'sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ==',
+        resolved: undefined,
+        location: 'node_modules/.pnpm/foo@1.0.0/node_modules/foo'
+      },
+      '·custom·baz@1.0.0' => {
+        id: '·custom·baz@1.0.0',
+        name: 'baz',
+        version: '1.0.0',
+        manifest: { name: 'baz', version: '1.0.0', dist: [Object] },
+        edgesIn: Set(1) { [Object] },
+        edgesOut: Map(0) {},
+        graph: [Circular *1],
+        importer: false,
+        mainImporter: false,
+        projectRoot: '/path/to/project',
+        dev: false,
+        optional: true,
+        integrity: undefined,
+        resolved: 'http://example.com/baz.tgz'
+      }
+    },
+    projectRoot: '/path/to/project',
+    addEdge: [Function: addEdge],
+    addNode: [Function: addNode],
+    mainImporter: <ref *2> {
+      id: 'file·.',
+      name: 'my-project',
+      version: '1.0.0',
+      manifest: { name: 'my-project', version: '1.0.0' },
+      edgesIn: Set(0) {},
+      edgesOut: Map(2) {
+        'foo' => {
+          from: [Circular *2],
+          name: 'foo',
+          spec: Spec {foo@^1.0.0 || 1.2.3 || 2},
+          to: [Object],
+          type: 'prod'
+        },
+        'baz' => {
+          from: [Circular *2],
+          name: 'baz',
+          spec: Spec {baz@custom:baz@^1.0.0},
+          to: [Object],
+          type: 'prod'
+        }
+      },
+      graph: [Circular *1],
+      importer: true,
+      mainImporter: true,
+      projectRoot: '/path/to/project',
+      dev: false,
+      optional: false,
+      location: '.',
+      integrity: undefined,
+      resolved: undefined
+    }
+  },
+  specOptions: {
+    registries: {
+      npm: 'https://registry.npmjs.org/',
+      custom: 'http://example.com'
+    },
+    registry: 'https://registry.npmjs.org/',
+    'git-hosts': {
+      github: 'git+ssh://git@github.com:$1/$2.git',
+      bitbucket: 'git+ssh://git@bitbucket.org:$1/$2.git',
+      gitlab: 'git+ssh://git@gitlab.com:$1/$2.git',
+      gist: 'git+ssh://git@gist.github.com/$1.git'
+    },
+    'git-host-archives': {
+      github: 'https://codeload.github.com/$1/$2/tar.gz/$committish',
+      bitbucket: 'https://bitbucket.org/$1/$2/get/$committish.tar.gz',
+      gist: 'https://codeload.github.com/gist/$1/tar.gz/$committish',
+      gitlab: 'https://gitlab.com/$1/$2/repository/archive.tar.gz?ref=$committish'
+    },
+    'scope-registries': {}
+  }
+}
+`
