@@ -12,26 +12,30 @@ const DIGITS = new Set('0123456789')
 
 const ARRAY_PUSH = Symbol('ARRAY_PUSH')
 
-enum Characters {
-  Escape = '\\',
-  Dot = '.',
-  Empty = '',
-  LeftBracket = '[',
-  RightBracket = ']',
-}
+const Characters = {
+  Escape: '\\',
+  Dot: '.',
+  Empty: '',
+  LeftBracket: '[',
+  RightBracket: ']',
+} as const
 
-type Character = Characters | (string & {})
+type Character =
+  | (typeof Characters)[keyof typeof Characters]
+  | (string & {})
 
-enum Parts {
-  Start = 'start',
-  Index = 'index',
-  IndexEnd = 'indexEnd',
-  Property = 'property',
-}
+const Parts = {
+  Start: 'start',
+  Index: 'index',
+  IndexEnd: 'indexEnd',
+  Property: 'property',
+} as const
+
+type Part = (typeof Parts)[keyof typeof Parts]
 
 const checkInvalidCharacter = (
-  part: Parts | Character,
-  current: Parts | Character,
+  part: Part | Character,
+  current: Part | Character,
   msg?: string,
 ) => {
   if (current === part) {
@@ -57,7 +61,7 @@ const getPathSegments = (path: string, allowEmptyIndex = false) => {
   const segments = []
 
   let currentSegment: Character = Characters.Empty
-  let currentPart = Parts.Start
+  let currentPart: Part = Parts.Start
   let isIgnoring = false
 
   for (const character of path.split('') as Character[]) {
