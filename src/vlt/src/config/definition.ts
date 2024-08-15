@@ -27,6 +27,7 @@ export const commands = {
   config: 'config',
   ix: 'install-exec',
   'install-exec': 'install-exec',
+  pkg: 'pkg',
 } as const
 
 export type Commands = typeof commands

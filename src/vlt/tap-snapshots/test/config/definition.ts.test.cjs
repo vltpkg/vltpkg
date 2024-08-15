@@ -18,6 +18,7 @@ Object {
   "install": "install",
   "install-exec": "install-exec",
   "ix": "install-exec",
+  "pkg": "pkg",
   "r": "run",
   "rm": "uninstall",
   "run": "run",
@@ -97,6 +98,7 @@ Object {
       "help",
       "config",
       "install-exec",
+      "pkg",
     ],
   },
   "fetch-retries": Object {

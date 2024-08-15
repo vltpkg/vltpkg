@@ -95,6 +95,14 @@ export default tseslint.config(
           'ts-expect-error': false,
         },
       ],
+      // no enums because they mix types/values
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: 'TSEnumDeclaration',
+          message: "Don't declare enums",
+        },
+      ],
       /**
        * These rules should be turned on at some point in the future but are too much work currently.
        *  */
