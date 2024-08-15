@@ -257,6 +257,39 @@ importers:
         specifier: 'catalog:'
         version: 8.0.1(eslint@9.8.0)(typescript@5.5.4)
 
+  src/dot-prop:
+    devDependencies:
+      '@eslint/js':
+        specifier: 'catalog:'
+        version: 9.8.0
+      '@types/eslint__js':
+        specifier: 'catalog:'
+        version: 8.42.3
+      '@types/node':
+        specifier: 'catalog:'
+        version: 20.14.8
+      eslint:
+        specifier: 'catalog:'
+        version: 9.8.0
+      prettier:
+        specifier: 'catalog:'
+        version: 3.3.2
+      tap:
+        specifier: 'catalog:'
+        version: 21.0.1(@types/node@20.14.8)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4)
+      tshy:
+        specifier: 'catalog:'
+        version: 3.0.2
+      typedoc:
+        specifier: 'catalog:'
+        version: 0.26.5(typescript@5.5.4)
+      typescript:
+        specifier: 'catalog:'
+        version: 5.5.4
+      typescript-eslint:
+        specifier: 'catalog:'
+        version: 8.0.1(eslint@9.8.0)(typescript@5.5.4)
+
   src/error-cause:
     devDependencies:
       '@eslint/js':
@@ -1047,6 +1080,9 @@ importers:
       '@vltpkg/dep-id':
         specifier: workspace:*
         version: link:../dep-id
+      '@vltpkg/dot-prop':
+        specifier: workspace:*
+        version: link:../dot-prop
       '@vltpkg/error-cause':
         specifier: workspace:*
         version: link:../error-cause
@@ -1093,6 +1129,9 @@ importers:
       '@eslint/js':
         specifier: 'catalog:'
         version: 9.8.0
+      '@tapjs/fixture':
+        specifier: ^3.0.1
+        version: 3.0.3(@tapjs/core@4.0.0(@types/node@20.14.8)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
       '@types/eslint__js':
         specifier: 'catalog:'
         version: 8.42.3
@@ -1480,6 +1519,12 @@ packages:
     engines: {node: 20 || >=22}
     peerDependencies:
       '@tapjs/core': 4.0.0
+
+  '@tapjs/fixture@3.0.3':
+    resolution: {integrity: sha512-wnVqaduQiERRQS7bqKEvBEwhAITOfj8rKjYuEsuNFCRpgTFwXopp8u3c7YONSmJljXCU6lMSXBV3+4zjBlXlJA==}
+    engines: {node: '>= 18.6.0'}
+    peerDependencies:
+      '@tapjs/core': 3.0.3
 
   '@tapjs/fixture@4.0.0':
     resolution: {integrity: sha512-h8qZwzQqNd0aLU+oU+0uhBSSlU4+5a8kkFfPrwlNQr9Vde2CyW5vMMVWvX2do+5wFyiFwKHAjbtBS7BSkfH7Kw==}
@@ -2889,8 +2934,8 @@ packages:
     resolution: {integrity: sha512-XleUoc9uwGXqjWwXaUTZAmzMcFZ5858QA2vvx1Ur5xIcixXIP+8LnFDgRplU30us6teqdlskFfu+ae4K79Ooew==}
     engines: {node: '>= 0.8.0'}
 
-  type-fest@4.20.1:
-    resolution: {integrity: sha512-R6wDsVsoS9xYOpy8vgeBlqpdOyzJ12HNfQhC/aAKWM3YoCV9TtunJzh/QpkMgeDhkoynDcw5f1y+qF9yc/HHyg==}
+  type-fest@4.24.0:
+    resolution: {integrity: sha512-spAaHzc6qre0TlZQQ2aA/nGMe+2Z/wyGk5Z+Ru2VUfdNwT6kWO6TjevOlpebsATEG1EIQ2sOiDszud3lO5mt/Q==}
     engines: {node: '>=16'}
 
   typedoc@0.26.5:
@@ -3322,6 +3367,12 @@ snapshots:
   '@tapjs/filter@4.0.0(@tapjs/core@4.0.0(@types/node@20.14.8)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))':
     dependencies:
       '@tapjs/core': 4.0.0(@types/node@20.14.8)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+
+  '@tapjs/fixture@3.0.3(@tapjs/core@4.0.0(@types/node@20.14.8)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))':
+    dependencies:
+      '@tapjs/core': 4.0.0(@types/node@20.14.8)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      mkdirp: 3.0.1
+      rimraf: 5.0.7
 
   '@tapjs/fixture@4.0.0(@tapjs/core@4.0.0(@types/node@20.14.8)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))':
     dependencies:
@@ -4136,7 +4187,7 @@ snapshots:
       slice-ansi: 7.1.0
       stack-utils: 2.0.6
       string-width: 7.1.0
-      type-fest: 4.20.1
+      type-fest: 4.24.0
       widest-line: 5.0.0
       wrap-ansi: 9.0.0
       ws: 8.17.0
@@ -4843,7 +4894,7 @@ snapshots:
     dependencies:
       '@istanbuljs/schema': 0.1.3
       glob: 10.4.1
-      minimatch: 9.0.4
+      minimatch: 9.0.5
 
   text-table@0.2.0: {}
 
@@ -4910,7 +4961,7 @@ snapshots:
     dependencies:
       prelude-ls: 1.2.1
 
-  type-fest@4.20.1: {}
+  type-fest@4.24.0: {}
 
   typedoc@0.26.5(typescript@5.5.4):
     dependencies:

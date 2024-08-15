@@ -13,11 +13,14 @@ export const randomPackages = (count?: number) => {
 export const randomize = <T>(arr: T[]): T[] =>
   [...arr].sort(() => Math.random() - 0.5)
 
+// TODO: make these not enums
+// eslint-disable-next-line no-restricted-syntax
 export enum EXT {
   tgz = 'tgz',
   json = 'json',
 }
 
+// eslint-disable-next-line no-restricted-syntax
 export enum UNIT {
   ns = 'ns',
   us = 'us',
