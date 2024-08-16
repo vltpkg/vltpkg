@@ -15,6 +15,7 @@
   "dependencies": {
     "@vltpkg/dep-id": "workspace:*",
     "@vltpkg/error-cause": "workspace:*",
+    "@vltpkg/fast-split": "workspace:*",
     "@vltpkg/package-info": "workspace:*",
     "@vltpkg/package-json": "workspace:*",
     "@vltpkg/registry-client": "workspace:*",
