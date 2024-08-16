@@ -1,5 +1,6 @@
-import { DepID, splitDepID } from '@vltpkg/dep-id'
+import { asDepID, DepID, splitDepID } from '@vltpkg/dep-id'
 import { error } from '@vltpkg/error-cause'
+import { fastSplit } from '@vltpkg/fast-split'
 import { PackageJson } from '@vltpkg/package-json'
 import { Spec, SpecOptions } from '@vltpkg/spec'
 import { ManifestMinified } from '@vltpkg/types'
@@ -8,14 +9,17 @@ import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { PathScurry } from 'path-scurry'
 import {
+  DependencyTypeShort,
   longDependencyTypes,
   shortDependencyTypes,
 } from '../dependencies.js'
 import { Graph } from '../graph.js'
 import {
+  getBooleanFlagsFromNum,
   LockfileData,
-  LockfileDataEdge,
-  LockfileDataNode,
+  LockfileEdgeKey,
+  LockfileEdgeValue,
+  LockfileNode,
 } from './types.js'
 
 export type LoadOptions = SpecOptions & {
@@ -41,61 +45,6 @@ export type LoadOptions = SpecOptions & {
   scurry?: PathScurry
 }
 
-type LoadEdgesOptions = {
-  graph: Graph
-  edgesInfo: LockfileDataEdge[]
-}
-
-type LoadNodesOptions = {
-  graph: Graph
-  nodesInfo: [DepID, LockfileDataNode][]
-}
-
-const loadNodes = ({ graph, nodesInfo }: LoadNodesOptions) => {
-  for (const [id, lockfileNode] of nodesInfo) {
-    // workspace nodes and the project root node are already part of the
-    // graph and it should not create new nodes if an existing one is there
-    if (graph.nodes.has(id)) return
-
-    const [name, integrity, resolved, location] = lockfileNode
-    const [type, , spec] = splitDepID(id)
-    const version =
-      type === 'registry' ? Spec.parse(spec).bareSpec : undefined
-    const node = graph.addNode(
-      id,
-      undefined,
-      undefined,
-      /* c8 ignore next */
-      name ?? undefined,
-      version,
-    )
-    node.integrity = integrity ?? undefined
-    node.resolved = resolved ?? undefined
-    if (location) node.location = location
-  }
-}
-
-const loadEdges = (
-  { graph, edgesInfo }: LoadEdgesOptions,
-  options: SpecOptions,
-) => {
-  for (const [fromId, type, spec, toId] of edgesInfo) {
-    if (!shortDependencyTypes.has(type)) {
-      throw error('Found unsupported dependency type in lockfile', {
-        validOptions: [...longDependencyTypes],
-      })
-    }
-    const from = graph.nodes.get(fromId)
-    const to = toId && graph.nodes.get(toId)
-    if (!from) {
-      throw error('Edge info missing its `from` node', {
-        found: edgesInfo,
-      })
-    }
-    graph.addEdge(type, Spec.parse(spec, options), from, to)
-  }
-}
-
 export const load = (options: LoadOptions): Graph => {
   const { projectRoot } = options
   const file = readFileSync(resolve(projectRoot, 'vlt-lock.json'), {
@@ -110,17 +59,6 @@ export const loadObject = (
   lockfileData: LockfileData,
 ) => {
   const { mainManifest, scurry } = options
-  const store = Object.entries(lockfileData.nodes) as [
-    DepID,
-    LockfileDataNode,
-  ][]
-  const edgesInfo = lockfileData.edges
-  const [mainImporterInfo, ...nodesInfo] = store
-  if (!mainImporterInfo) {
-    throw error('Missing nodes from lockfile', {
-      found: store,
-    })
-  }
   const packageJson = options.packageJson ?? new PackageJson()
   const monorepo =
     options.monorepo ??
@@ -135,8 +73,83 @@ export const loadObject = (
     monorepo,
   })
 
-  loadNodes({ graph, nodesInfo })
-  loadEdges({ graph, edgesInfo }, mergedOptions)
+  loadNodes(graph, lockfileData.nodes)
+  loadEdges(graph, lockfileData.edges, mergedOptions)
 
   return graph
+}
+
+const loadNodes = (graph: Graph, nodes: LockfileData['nodes']) => {
+  const entries = Object.entries(nodes) as [DepID, LockfileNode][]
+  for (const [id, lockfileNode] of entries) {
+    // workspace nodes and the project root node are already part of the
+    // graph and it should not create new nodes if an existing one is there
+    if (graph.nodes.has(id)) continue
+
+    const [flags, name, integrity, resolved, location] = lockfileNode
+    const [type, , spec] = splitDepID(id)
+    const version =
+      type === 'registry' ? Spec.parse(spec).bareSpec : undefined
+    const node = graph.addNode(
+      id,
+      undefined,
+      undefined,
+      /* c8 ignore next */
+      name ?? undefined,
+      version,
+    )
+    const { dev, optional } = getBooleanFlagsFromNum(flags)
+    node.dev = dev
+    node.optional = optional
+    node.integrity = integrity ?? undefined
+    node.resolved = resolved ?? undefined
+    if (location) node.location = location
+  }
+}
+
+const loadEdges = (
+  graph: Graph,
+  edges: LockfileData['edges'],
+  options: SpecOptions,
+) => {
+  const entries = Object.entries(edges) as [
+    LockfileEdgeKey,
+    LockfileEdgeValue,
+  ][]
+  for (const [key, value] of entries) {
+    const [fromId, specName] = fastSplit(key, ' ', 2)
+    const [depType, valRest] = fastSplit(value, ' ', 2)
+    const vrSplit = valRest?.lastIndexOf(' ') ?? -1
+    // not a valid edge record
+    /* c8 ignore start */
+    if (!valRest || !depType || !fromId || !specName || vrSplit < 1) {
+      continue
+    }
+    /* c8 ignore stop */
+    const spec = Spec.parse(
+      specName,
+      valRest.substring(0, vrSplit),
+      options,
+    )
+    const toId = valRest.substring(vrSplit + 1)
+    const from = graph.nodes.get(asDepID(fromId))
+    if (!from) {
+      throw error('Edge info missing its `from` node', {
+        found: {
+          nodes: [...graph.nodes].map(([id]) => id),
+          from,
+          fromId,
+          edge: { [key]: value },
+        },
+      })
+    }
+    const to =
+      toId === 'missing' ? undefined : graph.nodes.get(asDepID(toId))
+    if (!shortDependencyTypes.has(depType as DependencyTypeShort)) {
+      throw error('Found unsupported dependency type in lockfile', {
+        validOptions: [...longDependencyTypes],
+      })
+    }
+    graph.addEdge(depType as DependencyTypeShort, spec, from, to)
+  }
 }

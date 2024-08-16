@@ -9,14 +9,14 @@ exports[`test/ideal/append-nodes.ts > TAP > append different type of dependencie
 @vltpkg/graph.Graph {
   registries: {},
   nodes: {
-    'file;.': [ 'my-project' ],
-    ';;bar@1.0.0': [ 'bar' ],
-    ';;foo@1.0.0': [ 'foo' ]
+    'file;.': [ 0, 'my-project' ],
+    ';;bar@1.0.0': [ 0, 'bar' ],
+    ';;foo@1.0.0': [ 0, 'foo' ]
   },
-  edges: [
-    [ 'file;.', 'dev', 'foo@^1.0.0', ';;foo@1.0.0' ],
-    [ 'file;.', 'optional', 'bar@^1.0.0', ';;bar@1.0.0' ]
-  ]
+  edges: {
+    'file;. foo': 'dev ^1.0.0 ;;foo@1.0.0',
+    'file;. bar': 'optional ^1.0.0 ;;bar@1.0.0'
+  }
 }
 `
 
@@ -54,21 +54,21 @@ exports[`test/ideal/append-nodes.ts > TAP > resolve against the correct registri
 @vltpkg/graph.Graph {
   registries: {},
   nodes: {
-    'file;.': [ 'file;.' ],
-    ';a;bar@1.2.3': [ 'bar' ],
-    ';a;x@1.99.99': [ 'x' ],
-    ';a;y@1.99.99': [ 'y' ],
-    ';b;baz@1.2.3': [ 'baz' ],
-    ';b;x@1.99.99': [ 'x' ],
-    ';b;y@1000.0.0': [ 'y' ]
+    'file;.': [ 0, 'file;.' ],
+    ';a;bar@1.2.3': [ 0, 'bar' ],
+    ';a;x@1.99.99': [ 0, 'x' ],
+    ';a;y@1.99.99': [ 0, 'y' ],
+    ';b;baz@1.2.3': [ 0, 'baz' ],
+    ';b;x@1.99.99': [ 0, 'x' ],
+    ';b;y@1000.0.0': [ 0, 'y' ]
   },
-  edges: [
-    [ 'file;.', 'prod', 'bar@a:bar@1.x', ';a;bar@1.2.3' ],
-    [ 'file;.', 'prod', 'baz@b:bar@1.x', ';b;baz@1.2.3' ],
-    [ ';a;bar@1.2.3', 'prod', 'x@1.x', ';a;x@1.99.99' ],
-    [ ';a;x@1.99.99', 'prod', 'y@1', ';a;y@1.99.99' ],
-    [ ';b;baz@1.2.3', 'prod', 'x@1.x', ';b;x@1.99.99' ],
-    [ ';b;x@1.99.99', 'prod', 'y@1000', ';b;y@1000.0.0' ]
-  ]
+  edges: {
+    'file;. bar': 'prod a:bar@1.x ;a;bar@1.2.3',
+    'file;. baz': 'prod b:bar@1.x ;b;baz@1.2.3',
+    ';a;bar@1.2.3 x': 'prod 1.x ;a;x@1.99.99',
+    ';a;x@1.99.99 y': 'prod 1 ;a;y@1.99.99',
+    ';b;baz@1.2.3 x': 'prod 1.x ;b;x@1.99.99',
+    ';b;x@1.99.99 y': 'prod 1000 ;b;y@1000.0.0'
+  }
 }
 `

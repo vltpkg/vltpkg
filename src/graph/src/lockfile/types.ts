@@ -1,4 +1,5 @@
 import { DepID } from '@vltpkg/dep-id'
+import { Spec } from '@vltpkg/spec'
 import { Integrity, ManifestMinified } from '@vltpkg/types'
 import { DependencyTypeShort } from '../dependencies.js'
 
@@ -11,14 +12,39 @@ import { DependencyTypeShort } from '../dependencies.js'
  */
 export type LockfileData = {
   registries: Record<string, string>
-  nodes: Record<DepID, LockfileDataNode>
-  edges: LockfileDataEdge[]
+  nodes: Record<DepID, LockfileNode>
+  edges: LockfileEdges
 }
+
+export const getFlagNumFromNode = (node: {
+  optional?: boolean
+  dev?: boolean
+}) =>
+  node.optional && node.dev ? LockfileNodeFlagDevOptional
+  : node.optional ? LockfileNodeFlagOptional
+  : node.dev ? LockfileNodeFlagDev
+  : LockfileNodeFlagNone
+
+export const getBooleanFlagsFromNum = (flags: LockfileNodeFlags) => ({
+  dev: !!(flags & LockfileNodeFlagDev),
+  optional: !!(flags & LockfileNodeFlagOptional),
+})
+
+export const LockfileNodeFlagNone = 0
+export const LockfileNodeFlagOptional = 1
+export const LockfileNodeFlagDev = 2
+export const LockfileNodeFlagDevOptional = 3
+
+/**
+ * Bit flags indicating whether a node is optional and/or dev.
+ */
+export type LockfileNodeFlags = 0 | 1 | 2 | 3
 
 /**
  * Lockfile representation of a node from the install graph.
  */
-export type LockfileDataNode = [
+export type LockfileNode = [
+  flags: LockfileNodeFlags,
   name?: string | null,
   integrity?: Integrity | null,
   resolved?: string | null,
@@ -27,11 +53,21 @@ export type LockfileDataNode = [
 ]
 
 /**
- * Lockfile representation of an edge (or vertice) from the install graph.
+ * Lockfile edges are stored as a record object where the key
+ * is `${from.id} ${spec.name}` and the value is
+ * `${type} ${spec.bareSpec} ${to.id | 'missing'}`
+ *
+ * Storing them in a record like this means that we are guaranteed to
+ * never end up with duplicates, and a standard `JSON.stringify()`
+ * will nicely print them out one line per edge.
  */
-export type LockfileDataEdge = [
-  from: DepID,
-  type: DependencyTypeShort,
-  spec: string,
-  to?: DepID,
-]
+export type LockfileEdges = {
+  [key: LockfileEdgeKey]: LockfileEdgeValue
+}
+
+/** `${from} ${dep name}` */
+export type LockfileEdgeKey = `${DepID} ${string}`
+
+/** `${type} ${spec} ${to}` */
+export type LockfileEdgeValue =
+  `${DependencyTypeShort} ${Spec['bareSpec']} ${DepID | 'missing'}`

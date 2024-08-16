@@ -4,6 +4,7 @@ import { PathScurry } from 'path-scurry'
 import t from 'tap'
 import { load as loadActual } from '../../src/actual/load.js'
 import { buildIdealFromStartingGraph } from '../../src/ideal/build-ideal-from-starting-graph.js'
+import { LockfileData } from '../../src/index.js'
 import { load as loadVirtual } from '../../src/lockfile/load.js'
 import { humanReadableOutput } from '../../src/visualization/human-readable-output.js'
 
@@ -48,41 +49,45 @@ const packageInfo = {
 } as PackageInfoClient
 
 t.test('build from a virtual graph', async t => {
-  const projectRoot = t.testdir({
-    'vlt-lock.json': JSON.stringify({
-      registries: {
-        npm: 'https://registry.npmjs.org',
-        custom: 'https://registry.example.com',
-      },
-      nodes: {
-        'file;.': ['my-project'],
-        'file;linked': ['linked'],
-        ';;foo@1.0.0': [
-          'foo',
-          'sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ==',
-        ],
-        ';;bar@1.0.0': [
-          'bar',
-          'sha512-6/deadbeef==',
-          'https://registry.example.com/bar/-/bar-1.0.0.tgz',
-        ],
-        ';;baz@1.0.0': ['baz', null],
-        ';;pnpmdep@1.0.0': [
-          'pnpmdep',
-          null,
-          null,
-          './node_modules/.pnpm/pnpmdep@1.0.0/node_modules/pnpmdep',
-        ],
-      },
-      edges: [
-        ['file;.', 'prod', 'linked@file:./linked', 'file;linked'],
-        ['file;.', 'prod', 'foo@^1.0.0', ';;foo@1.0.0'],
-        ['file;.', 'prod', 'bar@^1.0.0', ';;bar@1.0.0'],
-        ['file;.', 'prod', 'missing@^1.0.0'],
-        [';;bar@1.0.0', 'prod', 'baz@^1.0.0', ';;baz@1.0.0'],
-        ['file;.', 'prod', 'pnpmdep@1', ';;pnpmdep@1.0.0'],
+  const lockfileData: LockfileData = {
+    registries: {
+      npm: 'https://registry.npmjs.org',
+      custom: 'https://registry.example.com',
+    },
+    nodes: {
+      'file;.': [0, 'my-project'],
+      'file;linked': [0, 'linked'],
+      ';;foo@1.0.0': [
+        0,
+        'foo',
+        'sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ==',
       ],
-    }),
+      ';;bar@1.0.0': [
+        0,
+        'bar',
+        'sha512-6/deadbeef==',
+        'https://registry.example.com/bar/-/bar-1.0.0.tgz',
+      ],
+      ';;baz@1.0.0': [0, 'baz', null],
+      ';;pnpmdep@1.0.0': [
+        0,
+        'pnpmdep',
+        null,
+        null,
+        './node_modules/.pnpm/pnpmdep@1.0.0/node_modules/pnpmdep',
+      ],
+    },
+    edges: {
+      'file;. linked': 'prod file:./linked file;linked',
+      'file;. foo': 'prod ^1.0.0 ;;foo@1.0.0',
+      'file;. bar': 'prod ^1.0.0 ;;bar@1.0.0',
+      'file;. missing': 'prod ^1.0.0 missing',
+      ';;bar@1.0.0 baz': 'prod ^1.0.0 ;;baz@1.0.0',
+      'file;. pnpmdep': 'prod 1 ;;pnpmdep@1.0.0',
+    },
+  }
+  const projectRoot = t.testdir({
+    'vlt-lock.json': JSON.stringify(lockfileData),
   })
 
   const virtual = loadVirtual({

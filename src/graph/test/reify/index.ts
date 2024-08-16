@@ -1,5 +1,4 @@
 import { Spec } from '@vltpkg/spec'
-import { pathToFileURL } from 'node:url'
 import {
   lstatSync,
   readdirSync,
@@ -8,9 +7,15 @@ import {
   writeFileSync,
 } from 'fs'
 import { statSync } from 'node:fs'
+import { pathToFileURL } from 'node:url'
 import { resolve } from 'path'
 import t from 'tap'
-import { actual, ideal, reify } from '../../src/index.js'
+import {
+  actual,
+  ideal,
+  LockfileData,
+  reify,
+} from '../../src/index.js'
 import {
   fixtureManifest,
   mockPackageInfo,
@@ -52,21 +57,25 @@ t.test('super basic reification', async t => {
     true,
   )
 
+  const expectLockfileData: LockfileData = {
+    registries: {},
+    nodes: {
+      'file;.': [0, 'x'],
+      ';;lodash@4.17.21': [
+        0,
+        'lodash',
+        'sha512-v2kDEe57lecTulaDIuNTPy3Ry4gLGJ6Z1O3vE1krgXZNrsQ+LFTGHVxVjcXPs17LhbZVGedAJv8XZ1tvj5FvSg==',
+      ],
+    },
+    edges: {
+      'file;. lodash': 'prod 4 ;;lodash@4.17.21',
+    },
+  }
   t.strictSame(
     JSON.parse(
       readFileSync(resolve(projectRoot, 'vlt-lock.json'), 'utf8'),
     ),
-    {
-      registries: {},
-      nodes: {
-        'file;.': ['x'],
-        ';;lodash@4.17.21': [
-          'lodash',
-          'sha512-v2kDEe57lecTulaDIuNTPy3Ry4gLGJ6Z1O3vE1krgXZNrsQ+LFTGHVxVjcXPs17LhbZVGedAJv8XZ1tvj5FvSg==',
-        ],
-      },
-      edges: [['file;.', 'prod', 'lodash@4', ';;lodash@4.17.21']],
-    },
+    expectLockfileData,
   )
 
   const ldPath = resolve(projectRoot, 'node_modules/lodash/index.js')

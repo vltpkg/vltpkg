@@ -5,6 +5,7 @@ import { Spec, SpecOptions } from '@vltpkg/spec'
 import { Monorepo } from '@vltpkg/workspaces'
 import { Graph } from '../../src/graph.js'
 import { save } from '../../src/lockfile/save.js'
+import { Edge } from '../../src/edge.js'
 
 const configData = {
   registry: 'https://registry.npmjs.org',
@@ -32,7 +33,7 @@ t.test('save', async t => {
   const foo = graph.placePackage(
     graph.mainImporter,
     'prod',
-    Spec.parse('foo@^1.0.0'),
+    Spec.parse('foo@^1.0.0 || 1.2.3 || 2'),
     {
       name: 'foo',
       version: '1.0.0',
@@ -45,14 +46,21 @@ t.test('save', async t => {
   if (!foo) {
     throw new Error('Missing expected package')
   }
+  const fooBarEdge = new Edge('prod', Spec.parse('bar@1.2.3'), foo)
+  graph.edges.add(fooBarEdge)
   foo.setResolved()
   foo.location = 'node_modules/.pnpm/foo@1.0.0/node_modules/foo'
+  foo.dev = true
   graph
     .placePackage(foo, 'prod', Spec.parse('bar@^1.0.0'), {
       name: 'bar',
       version: '1.0.0',
     })
     ?.setResolved()
+  const bar = graph.nodes.get(';;bar@1.0.0')
+  if (!bar) throw new Error('no bar')
+  bar.dev = true
+  bar.optional = true
   graph
     .placePackage(
       graph.mainImporter,
@@ -67,6 +75,9 @@ t.test('save', async t => {
       },
     )
     ?.setResolved()
+  const baz = graph.nodes.get(';custom;baz@1.0.0')
+  if (!baz) throw new Error('no baz node')
+  baz.optional = true
   save({ ...configData, graph })
   t.matchSnapshot(
     readFileSync(resolve(projectRoot, 'vlt-lock.json'), {

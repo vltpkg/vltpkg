@@ -47,31 +47,34 @@ t.test('diff two graphs', async t => {
         custom: 'https://registry.example.com',
       },
       nodes: {
-        'file;.': ['my-project'],
+        'file;.': [0, 'my-project'],
         ';;foo@1.0.0': [
+          0,
           'foo',
           'sha512-foofoofoo==',
           null,
           './node_modules/.pnpm/foo@1.0.0/node_modules/foo',
         ],
-        ';;a@1.0.0': ['foo', 'sha512-aaaaaaaaa=='],
+        ';;a@1.0.0': [0, 'foo', 'sha512-aaaaaaaaa=='],
         ';;bar@1.0.0': [
+          0,
           'bar',
           'sha512-barbarbar==',
           'https://registry.example.com/bar/-/bar-1.0.0.tgz',
         ],
         ';;baz@1.0.0': [
+          0,
           'baz',
           'sha512-bazbazbaz==',
           'https://registry.example.com/baz/-/baz-1.0.0.tgz',
         ],
       },
-      edges: [
-        ['file;.', 'prod', 'foo@^1.0.0', ';;foo@1.0.0'],
-        ['file;.', 'prod', 'a@^1.0.0', ';;a@1.0.0'],
-        ['file;.', 'prod', 'bar@^1.0.0', ';;bar@1.0.0'],
-        [';;bar@1.0.0', 'prod', 'baz@^1.0.0', ';;baz@1.0.0'],
-      ],
+      edges: {
+        'file;. foo': 'prod ^1.0.0 ;;foo@1.0.0',
+        'file;. a': 'prod ^1.0.0 ;;a@1.0.0',
+        'file;. bar': 'prod ^1.0.0 ;;bar@1.0.0',
+        ';;bar@1.0.0 baz': 'prod ^1.0.0 ;;baz@1.0.0',
+      },
     },
   )
 
@@ -89,34 +92,37 @@ t.test('diff two graphs', async t => {
         custom: 'https://registry.example.com',
       },
       nodes: {
-        'file;.': ['my-project'],
-        ';;foo@1.0.0': ['foo', 'sha512-foofoofoo=='],
-        ';;b@1.0.0': ['foo', 'sha512-bbbbbbbbb=='],
-        ';;c@1.0.0': ['foo', 'sha512-ccccccccc=='],
+        'file;.': [0, 'my-project'],
+        ';;foo@1.0.0': [0, 'foo', 'sha512-foofoofoo=='],
+        ';;b@1.0.0': [0, 'foo', 'sha512-bbbbbbbbb=='],
+        ';;c@1.0.0': [0, 'foo', 'sha512-ccccccccc=='],
         ';;bar@1.0.0': [
+          0,
           'bar',
           'sha512-barbarbar==',
           'https://registry.example.com/bar/-/bar-1.0.0.tgz',
         ],
         ';;baz@1.0.1': [
+          0,
           'baz',
           'sha512-baz101baz101baz101==',
           'https://registry.example.com/baz/-/baz-1.0.1.tgz',
         ],
         ';;ooo@1.0.1': [
+          0,
           'ooo',
           'sha512-ooo420ooo420ooo420==',
           'https://registry.example.com/ooo/-/ooo-1.0.1.tgz',
         ],
       },
-      edges: [
-        ['file;.', 'prod', 'foo@^1.0.0', ';;foo@1.0.0'],
-        ['file;.', 'prod', 'b@^1.0.0', ';;b@1.0.0'],
-        [';;b@1.0.0', 'prod', 'c@^1.0.0', ';;c@1.0.0'],
-        ['file;.', 'prod', 'bar@^1.0.0', ';;bar@1.0.0'],
-        [';;bar@1.0.0', 'prod', 'baz@^1.0.1', ';;baz@1.0.1'],
-        [';;bar@1.0.0', 'optional', 'ooo@^1.0.1', ';;ooo@1.0.1'],
-      ],
+      edges: {
+        'file;. foo': 'prod ^1.0.0 ;;foo@1.0.0',
+        'file;. b': 'prod ^1.0.0 ;;b@1.0.0',
+        ';;b@1.0.0 c': 'prod ^1.0.0 ;;c@1.0.0',
+        'file;. bar': 'prod ^1.0.0 ;;bar@1.0.0',
+        ';;bar@1.0.0 baz': 'prod ^1.0.1 ;;baz@1.0.1',
+        ';;bar@1.0.0 ooo': 'optional ^1.0.1 ;;ooo@1.0.1',
+      },
     },
   )
 

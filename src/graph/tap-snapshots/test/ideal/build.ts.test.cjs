@@ -31,7 +31,8 @@ exports[`test/ideal/build.ts > TAP > build from lockfile > should build an ideal
       Edge spec(foo@^1.0.0) -prod-> to: Node {
         id: ';;foo@1.0.0',
         location: './node_modules/.vlt/;;foo@1.0.0/node_modules/foo',
-        integrity: 'sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ=='
+        resolved: 'https://registry.npmjs.org/foo/-/foo-1.0.0.tgz',
+        integrity: 'sha512-URO90jLnKPqX+P7OLnJkiIQfMX4I6gEdGZ1T84drQLtRPw6uNKYLZfB6K3hjWIrj0VZB1kh2cTFdeq01i6XIYQ=='
       }
     ]
   }
