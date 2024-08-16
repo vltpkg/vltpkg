@@ -1,5 +1,5 @@
 import { DepID } from '@vltpkg/dep-id'
-import { Integrity } from '@vltpkg/types'
+import { Integrity, ManifestMinified } from '@vltpkg/types'
 import { DependencyTypeShort } from '../dependencies.js'
 
 /**
@@ -23,6 +23,7 @@ export type LockfileDataNode = [
   integrity?: Integrity | null,
   resolved?: string | null,
   location?: string | null,
+  manifest?: ManifestMinified | null,
 ]
 
 /**
