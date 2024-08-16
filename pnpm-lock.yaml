@@ -1165,9 +1165,6 @@ importers:
       '@eslint/js':
         specifier: 'catalog:'
         version: 9.8.0
-      '@tapjs/fixture':
-        specifier: ^3.0.1
-        version: 3.0.3(@tapjs/core@4.0.0(@types/node@20.14.8)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
       '@types/eslint__js':
         specifier: 'catalog:'
         version: 8.42.3
@@ -1555,12 +1552,6 @@ packages:
     engines: {node: 20 || >=22}
     peerDependencies:
       '@tapjs/core': 4.0.0
-
-  '@tapjs/fixture@3.0.3':
-    resolution: {integrity: sha512-wnVqaduQiERRQS7bqKEvBEwhAITOfj8rKjYuEsuNFCRpgTFwXopp8u3c7YONSmJljXCU6lMSXBV3+4zjBlXlJA==}
-    engines: {node: '>= 18.6.0'}
-    peerDependencies:
-      '@tapjs/core': 3.0.3
 
   '@tapjs/fixture@4.0.0':
     resolution: {integrity: sha512-h8qZwzQqNd0aLU+oU+0uhBSSlU4+5a8kkFfPrwlNQr9Vde2CyW5vMMVWvX2do+5wFyiFwKHAjbtBS7BSkfH7Kw==}
@@ -3403,12 +3394,6 @@ snapshots:
   '@tapjs/filter@4.0.0(@tapjs/core@4.0.0(@types/node@20.14.8)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))':
     dependencies:
       '@tapjs/core': 4.0.0(@types/node@20.14.8)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-
-  '@tapjs/fixture@3.0.3(@tapjs/core@4.0.0(@types/node@20.14.8)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))':
-    dependencies:
-      '@tapjs/core': 4.0.0(@types/node@20.14.8)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      mkdirp: 3.0.1
-      rimraf: 5.0.7
 
   '@tapjs/fixture@4.0.0(@tapjs/core@4.0.0(@types/node@20.14.8)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))':
     dependencies:

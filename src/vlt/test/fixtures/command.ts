@@ -1,5 +1,4 @@
 import { Test } from 'tap'
-import { FixtureDirContent } from '@tapjs/fixture'
 import { join } from 'path'
 import { CliCommand, LoadedConfig } from '../../src/index.js'
 
@@ -26,7 +25,7 @@ export const setupCommand = async <TCommand extends CliCommand>(
     reload = true,
   }: {
     command: string
-    testdir?: FixtureDirContent
+    testdir?: Parameters<Test['testdir']>[0]
     chdir?: string
     projectRoot?: string
     argv?: string[]
