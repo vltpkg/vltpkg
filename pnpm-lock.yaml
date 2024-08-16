@@ -773,6 +773,58 @@ importers:
         specifier: 'catalog:'
         version: 8.2.0(eslint@9.9.0)(typescript@5.5.4)
 
+  src/query:
+    dependencies:
+      '@vltpkg/error-cause':
+        specifier: workspace:*
+        version: link:../error-cause
+      '@vltpkg/fast-split':
+        specifier: workspace:*
+        version: link:../fast-split
+      '@vltpkg/graph':
+        specifier: workspace:*
+        version: link:../graph
+      '@vltpkg/spec':
+        specifier: workspace:*
+        version: link:../spec
+      '@vltpkg/types':
+        specifier: workspace:*
+        version: link:../types
+      postcss-selector-parser:
+        specifier: ^6.1.2
+        version: 6.1.2
+    devDependencies:
+      '@eslint/js':
+        specifier: 'catalog:'
+        version: 9.9.0
+      '@types/eslint__js':
+        specifier: 'catalog:'
+        version: 8.42.3
+      '@types/node':
+        specifier: 'catalog:'
+        version: 22.5.0
+      eslint:
+        specifier: 'catalog:'
+        version: 9.9.0
+      prettier:
+        specifier: 'catalog:'
+        version: 3.3.3
+      tap:
+        specifier: 'catalog:'
+        version: 21.0.1(@types/node@22.5.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4)
+      tshy:
+        specifier: 'catalog:'
+        version: 3.0.2
+      typedoc:
+        specifier: 'catalog:'
+        version: 0.26.6(typescript@5.5.4)
+      typescript:
+        specifier: 'catalog:'
+        version: 5.5.4
+      typescript-eslint:
+        specifier: 'catalog:'
+        version: 8.2.0(eslint@9.9.0)(typescript@5.5.4)
+
   src/registry-client:
     dependencies:
       '@vltpkg/cache':
@@ -1978,6 +2030,11 @@ packages:
     resolution: {integrity: sha512-iRDPJKUPVEND7dHPO8rkbOnPpyDygcDFtWjpeWNCgy8WP2rXcxXL8TskReQl6OrB2G7+UJrags1q15Fudc7G6w==}
     engines: {node: '>= 8'}
 
+  cssesc@3.0.0:
+    resolution: {integrity: sha512-/Tb/JcjK111nNScGob5MNtsntNM1aCNUDipB/TkwZFhyDrrE47SOx/18wF2bbjgc3ZzCSKW1T5nt5EbFoAz/Vg==}
+    engines: {node: '>=4'}
+    hasBin: true
+
   debug@4.3.6:
     resolution: {integrity: sha512-O/09Bd4Z1fBrU4VzkhFqVgpPzaGbw6Sm9FEkBT1A/YBXQFGuuSxa1dN2nxgxS34JmKXqYx8CZAwEVoJFImUXIg==}
     engines: {node: '>=6.0'}
@@ -2650,6 +2707,10 @@ packages:
     resolution: {integrity: sha512-OLS/0XeUAcE8a2fdwemNja+udKgXNnY6yKVIXqAD2zVRx1KvY6Ato/rZ2vdzbxqYwPW0u6SCNC/bAMPNzpzxbw==}
     engines: {node: ^14.17.0 || ^16.13.0 || >=18.0.0}
 
+  postcss-selector-parser@6.1.2:
+    resolution: {integrity: sha512-Q8qQfPiZ+THO/3ZrOrO0cJJKfpYCagtMUkXbnEfmgUjwXg6z/WBeOyS9APBBPCTSiDV+s4SwQGu8yFsiMRIudg==}
+    engines: {node: '>=4'}
+
   prelude-ls@1.2.1:
     resolution: {integrity: sha512-vkcDPrRZo1QZLbn5RLGPpg/WmIQ65qoWWhcGKf/b5eplkkarX0m9z8ppCat4mlOqUsWpyNuYgO3VRyrYHSzX5g==}
     engines: {node: '>= 0.8.0'}
@@ -3022,6 +3083,9 @@ packages:
 
   uri-js@4.4.1:
     resolution: {integrity: sha512-7rKUyy33Q1yc98pQ1DAmLtwX109F7TIfWlW1Ydo8Wl1ii1SeHieeh0HHfPeL2fMXK6z0s8ecKs9frCuLJvndBg==}
+
+  util-deprecate@1.0.2:
+    resolution: {integrity: sha512-EPD5q1uXyFxJpCrLnCc1nHnq3gOa6DZBocAIiI2TaSCA7VCJ1UJDMagCzIkXNsUYfD1daK//LTEQ8xiIbrHtcw==}
 
   uuid@8.3.2:
     resolution: {integrity: sha512-+NYs2QeMWy+GWFOEm9xnn6HCDp0l7QBD7ml8zLUmJ+93Q5NF0NocErnwkTkXVFNiX3/fpC6afS8Dhb/gz7R7eg==}
@@ -3933,6 +3997,8 @@ snapshots:
       shebang-command: 2.0.0
       which: 2.0.2
 
+  cssesc@3.0.0: {}
+
   debug@4.3.6:
     dependencies:
       ms: 2.1.2
@@ -4620,6 +4686,11 @@ snapshots:
 
   polite-json@5.0.0: {}
 
+  postcss-selector-parser@6.1.2:
+    dependencies:
+      cssesc: 3.0.0
+      util-deprecate: 1.0.2
+
   prelude-ls@1.2.1: {}
 
   prettier@3.3.3: {}
@@ -5029,6 +5100,8 @@ snapshots:
   uri-js@4.4.1:
     dependencies:
       punycode: 2.3.1
+
+  util-deprecate@1.0.2: {}
 
   uuid@8.3.2: {}
 
