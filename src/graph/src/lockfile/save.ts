@@ -16,9 +16,17 @@ export type SaveOptions = SpecOptions & {
    * The graph to be stored in the lockfile.
    */
   graph: Graph
+  /**
+   * Should it save manifest data in the lockfile?
+   */
+  saveManifests?: boolean
 }
 
-const formatNodes = (nodes: Iterable<Node>, registry?: string) => {
+const formatNodes = (
+  nodes: Iterable<Node>,
+  saveManifests?: boolean,
+  registry?: string,
+) => {
   const arr: Node[] = [...nodes]
   const [mainImporter, ...restPackages] = arr
   // nodes are sorted in order to have a deterministic result
@@ -67,6 +75,10 @@ const formatNodes = (nodes: Iterable<Node>, registry?: string) => {
       lockfileNode[3] = location
     }
 
+    if (saveManifests) {
+      lockfileNode[4] = node.manifest
+    }
+
     res[node.id] = lockfileNode
   }
   return res
@@ -101,18 +113,22 @@ export const lockfileData = ({
   graph,
   registry,
   registries,
+  saveManifests,
 }: SaveOptions): LockfileData => ({
   registries: isRegistries(registries) ? registries : {},
-  nodes: formatNodes(graph.nodes.values(), registry),
+  nodes: formatNodes(graph.nodes.values(), saveManifests, registry),
   edges: formatEdges(graph.edges),
 })
 
 export const save = (options: SaveOptions) => {
   const { graph } = options
+  const json = JSON.stringify(lockfileData(options), null, 2)
   const content =
-    `${JSON.stringify(lockfileData(options), null, 2)}\n`
-      // renders each node / edge as a single line entry
-      .replaceAll('\n      ', '')
-      .replaceAll('\n    ]', ']')
+    options.saveManifests ? json : (
+      `${json}\n`
+        // renders each node / edge as a single line entry
+        .replaceAll('\n      ', '')
+        .replaceAll('\n    ]', ']')
+    )
   writeFileSync(resolve(graph.projectRoot, 'vlt-lock.json'), content)
 }
