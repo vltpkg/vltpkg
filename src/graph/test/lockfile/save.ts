@@ -73,6 +73,15 @@ t.test('save', async t => {
       encoding: 'utf8',
     }),
   )
+
+  await t.test('save manifests', async t => {
+    save({ ...configData, graph, saveManifests: true })
+    t.matchSnapshot(
+      readFileSync(resolve(projectRoot, 'vlt-lock.json'), {
+        encoding: 'utf8',
+      }),
+    )
+  })
 })
 
 t.test('missing registries', async t => {
@@ -160,4 +169,13 @@ t.test('workspaces', async t => {
     }),
     'should save lockfile with workspaces nodes',
   )
+
+  await t.test('save manifests', async t => {
+    save({ ...configData, graph, saveManifests: true })
+    t.matchSnapshot(
+      readFileSync(resolve(projectRoot, 'vlt-lock.json'), {
+        encoding: 'utf8',
+      }),
+    )
+  })
 })
