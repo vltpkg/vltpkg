@@ -467,6 +467,9 @@ importers:
       '@vltpkg/error-cause':
         specifier: workspace:*
         version: link:../error-cause
+      '@vltpkg/fast-split':
+        specifier: workspace:*
+        version: link:../fast-split
       '@vltpkg/package-info':
         specifier: workspace:*
         version: link:../package-info
