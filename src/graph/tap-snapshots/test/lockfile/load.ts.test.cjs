@@ -16,7 +16,7 @@ exports[`test/lockfile/load.ts > TAP > load > must match snapshot 1`] = `
         id: 'file;linked',
         location: './node_modules/.vlt/file;linked/node_modules/linked'
       },
-      Edge spec(foo@^1.0.0) -prod-> to: Node {
+      Edge spec(foo@^1.0.0 || 1.2.3 ||  2.3.4) -prod-> to: Node {
         id: ';;foo@1.0.0',
         location: './node_modules/.vlt/;;foo@1.0.0/node_modules/foo',
         integrity: 'sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ=='

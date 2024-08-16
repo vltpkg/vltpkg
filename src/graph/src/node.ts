@@ -24,6 +24,17 @@ export class Node {
   #location?: string
 
   /**
+   * True if a node is only reachable via optional or peerOptional edges from
+   * any importer.
+   */
+  optional = false
+
+  /**
+   * True if a node is only reachable via dev edges from any importer.
+   */
+  dev = false
+
+  /**
    * List of edges coming into this node.
    */
   edgesIn = new Set<Edge>()

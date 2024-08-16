@@ -6,25 +6,25 @@
  */
 'use strict'
 exports[`test/graph.ts > TAP > Graph > should print with special tag name 1`] = `
-@vltpkg/graph.Graph { registries: {}, nodes: [Object], edges: [] }
+@vltpkg/graph.Graph { registries: {}, nodes: [Object], edges: {} }
 `
 
 exports[`test/graph.ts > TAP > using placePackage > should find and fix nameless spec packages 1`] = `
 @vltpkg/graph.Graph {
   registries: {},
   nodes: {
-    'file;.': [ 'my-project' ],
-    ';;bar@1.0.0': [ 'bar' ],
-    ';;foo@1.0.0': [ 'foo' ],
-    'file;a': [ 'a' ]
+    'file;.': [ 0, 'my-project' ],
+    ';;bar@1.0.0': [ 0, 'bar' ],
+    ';;foo@1.0.0': [ 0, 'foo' ],
+    'file;a': [ 0, 'a' ]
   },
-  edges: [
-    [ 'file;.', 'prod', 'missing@^1.0.0', undefined ],
-    [ 'file;.', 'prod', 'bar@^1.0.0', ';;bar@1.0.0' ],
-    [ 'file;.', 'prod', 'foo@^1.0.0', ';;foo@1.0.0' ],
-    [ 'file;.', 'prod', 'a@file:./a', 'file;a' ],
-    [ ';;bar@1.0.0', 'prod', 'baz@^1.0.0', undefined ]
-  ]
+  edges: {
+    'file;. missing': 'prod ^1.0.0 missing',
+    'file;. bar': 'prod ^1.0.0 ;;bar@1.0.0',
+    'file;. foo': 'prod ^1.0.0 ;;foo@1.0.0',
+    'file;. a': 'prod file:./a file;a',
+    ';;bar@1.0.0 baz': 'prod ^1.0.0 missing'
+  }
 }
 `
 
@@ -32,16 +32,16 @@ exports[`test/graph.ts > TAP > using placePackage > should have removed baz from
 @vltpkg/graph.Graph {
   registries: {},
   nodes: {
-    'file;.': [ 'my-project' ],
-    ';;bar@1.0.0': [ 'bar' ],
-    ';;foo@1.0.0': [ 'foo' ]
+    'file;.': [ 0, 'my-project' ],
+    ';;bar@1.0.0': [ 0, 'bar' ],
+    ';;foo@1.0.0': [ 0, 'foo' ]
   },
-  edges: [
-    [ 'file;.', 'prod', 'missing@^1.0.0', undefined ],
-    [ 'file;.', 'prod', 'bar@^1.0.0', ';;bar@1.0.0' ],
-    [ 'file;.', 'prod', 'foo@^1.0.0', ';;foo@1.0.0' ],
-    [ ';;bar@1.0.0', 'prod', 'baz@^1.0.0', undefined ]
-  ]
+  edges: {
+    'file;. missing': 'prod ^1.0.0 missing',
+    'file;. bar': 'prod ^1.0.0 ;;bar@1.0.0',
+    'file;. foo': 'prod ^1.0.0 ;;foo@1.0.0',
+    ';;bar@1.0.0 baz': 'prod ^1.0.0 missing'
+  }
 }
 `
 
@@ -49,24 +49,25 @@ exports[`test/graph.ts > TAP > using placePackage > the graph 1`] = `
 @vltpkg/graph.Graph {
   registries: {},
   nodes: {
-    'file;.': [ 'my-project' ],
-    ';;bar@1.0.0': [ 'bar' ],
-    ';;baz@1.0.0': [ 'baz' ],
-    ';;foo@1.0.0': [ 'foo' ]
+    'file;.': [ 0, 'my-project' ],
+    ';;bar@1.0.0': [ 0, 'bar' ],
+    ';;baz@1.0.0': [ 0, 'baz' ],
+    ';;foo@1.0.0': [ 0, 'foo' ]
   },
-  edges: [
-    [ 'file;.', 'prod', 'missing@^1.0.0', undefined ],
-    [ 'file;.', 'prod', 'bar@^1.0.0', ';;bar@1.0.0' ],
-    [ 'file;.', 'prod', 'foo@^1.0.0', ';;foo@1.0.0' ],
-    [ ';;bar@1.0.0', 'prod', 'baz@^1.0.0', ';;baz@1.0.0' ],
-    [ ';;baz@1.0.0', 'prod', 'foo@^1.0.0', ';;foo@1.0.0' ]
-  ]
+  edges: {
+    'file;. missing': 'prod ^1.0.0 missing',
+    'file;. bar': 'prod ^1.0.0 ;;bar@1.0.0',
+    'file;. foo': 'prod ^1.0.0 ;;foo@1.0.0',
+    ';;bar@1.0.0 baz': 'prod ^1.0.0 ;;baz@1.0.0',
+    ';;baz@1.0.0 foo': 'prod ^1.0.0 ;;foo@1.0.0'
+  }
 }
 `
 
 exports[`test/graph.ts > TAP > workspaces > should have root and workspaces as importers 1`] = `
 Set {
   Node {
+    "dev": false,
     "edgesIn": Set {},
     "edgesOut": Map {},
     "id": "file;.",
@@ -76,12 +77,14 @@ Set {
       "name": "my-project",
       "version": "1.0.0",
     },
+    "optional": false,
     "projectRoot": #
     "registry": undefined,
     "resolved": undefined,
     "version": "1.0.0",
   },
   Node {
+    "dev": false,
     "edgesIn": Set {},
     "edgesOut": Map {},
     "id": "workspace;packages%2Fb",
@@ -93,12 +96,14 @@ Set {
       [Symbol.for(newline)]: "",
       "version": "1.0.0",
     },
+    "optional": false,
     "projectRoot": #
     "registry": undefined,
     "resolved": undefined,
     "version": "1.0.0",
   },
   Node {
+    "dev": false,
     "edgesIn": Set {},
     "edgesOut": Map {},
     "id": "workspace;packages%2Fa",
@@ -110,6 +115,7 @@ Set {
       [Symbol.for(newline)]: "",
       "version": "1.0.0",
     },
+    "optional": false,
     "projectRoot": #
     "registry": undefined,
     "resolved": undefined,

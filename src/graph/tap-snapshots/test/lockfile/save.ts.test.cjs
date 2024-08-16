@@ -9,9 +9,9 @@ exports[`test/lockfile/save.ts > TAP > missing registries > must match snapshot 
 {
   "registries": {},
   "nodes": {
-    "file;.": ["my-project"]
+    "file;.": [0,"my-project"]
   },
-  "edges": []
+  "edges": {}
 }
 
 `
@@ -23,16 +23,16 @@ exports[`test/lockfile/save.ts > TAP > save > must match snapshot 1`] = `
     "custom": "http://example.com"
   },
   "nodes": {
-    "file;.": ["my-project"],
-    ";;bar@1.0.0": ["bar"],
-    ";;foo@1.0.0": ["foo","sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ==",null,"node_modules/.pnpm/foo@1.0.0/node_modules/foo"],
-    ";custom;baz@1.0.0": ["baz",null,"http://example.com/baz.tgz"]
+    "file;.": [0,"my-project"],
+    ";;bar@1.0.0": [3,"bar"],
+    ";;foo@1.0.0": [2,"foo","sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ==",null,"node_modules/.pnpm/foo@1.0.0/node_modules/foo"],
+    ";custom;baz@1.0.0": [1,"baz",null,"http://example.com/baz.tgz"]
   },
-  "edges": [
-    ["file;.","prod","foo@^1.0.0",";;foo@1.0.0"],
-    ["file;.","prod","baz@custom:baz@^1.0.0",";custom;baz@1.0.0"],
-    [";;foo@1.0.0","prod","bar@^1.0.0",";;bar@1.0.0"]
-  ]
+  "edges": {
+    "file;. foo": "prod ^1.0.0 || 1.2.3 || 2 ;;foo@1.0.0",
+    "file;. baz": "prod custom:baz@^1.0.0 ;custom;baz@1.0.0",
+    ";;foo@1.0.0 bar": "prod ^1.0.0 ;;bar@1.0.0"
+  }
 }
 
 `
@@ -45,6 +45,7 @@ exports[`test/lockfile/save.ts > TAP > save > save manifests > must match snapsh
   },
   "nodes": {
     "file;.": [
+      0,
       "my-project",
       null,
       null,
@@ -59,6 +60,7 @@ exports[`test/lockfile/save.ts > TAP > save > save manifests > must match snapsh
       }
     ],
     ";;bar@1.0.0": [
+      3,
       "bar",
       null,
       null,
@@ -69,6 +71,7 @@ exports[`test/lockfile/save.ts > TAP > save > save manifests > must match snapsh
       }
     ],
     ";;foo@1.0.0": [
+      2,
       "foo",
       "sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ==",
       null,
@@ -82,6 +85,7 @@ exports[`test/lockfile/save.ts > TAP > save > save manifests > must match snapsh
       }
     ],
     ";custom;baz@1.0.0": [
+      1,
       "baz",
       null,
       "http://example.com/baz.tgz",
@@ -95,26 +99,11 @@ exports[`test/lockfile/save.ts > TAP > save > save manifests > must match snapsh
       }
     ]
   },
-  "edges": [
-    [
-      "file;.",
-      "prod",
-      "foo@^1.0.0",
-      ";;foo@1.0.0"
-    ],
-    [
-      "file;.",
-      "prod",
-      "baz@custom:baz@^1.0.0",
-      ";custom;baz@1.0.0"
-    ],
-    [
-      ";;foo@1.0.0",
-      "prod",
-      "bar@^1.0.0",
-      ";;bar@1.0.0"
-    ]
-  ]
+  "edges": {
+    "file;. foo": "prod ^1.0.0 || 1.2.3 || 2 ;;foo@1.0.0",
+    "file;. baz": "prod custom:baz@^1.0.0 ;custom;baz@1.0.0",
+    ";;foo@1.0.0 bar": "prod ^1.0.0 ;;bar@1.0.0"
+  }
 }
 `
 
@@ -126,6 +115,7 @@ exports[`test/lockfile/save.ts > TAP > workspaces > save manifests > must match 
   },
   "nodes": {
     "file;.": [
+      0,
       "my-project",
       null,
       null,
@@ -136,6 +126,7 @@ exports[`test/lockfile/save.ts > TAP > workspaces > save manifests > must match 
       }
     ],
     "workspace;packages%2Fa": [
+      0,
       "a",
       null,
       null,
@@ -146,6 +137,7 @@ exports[`test/lockfile/save.ts > TAP > workspaces > save manifests > must match 
       }
     ],
     "workspace;packages%2Fb": [
+      0,
       "b",
       null,
       null,
@@ -159,6 +151,7 @@ exports[`test/lockfile/save.ts > TAP > workspaces > save manifests > must match 
       }
     ],
     ";;c@1.0.0": [
+      0,
       "c",
       "sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ==",
       null,
@@ -172,14 +165,9 @@ exports[`test/lockfile/save.ts > TAP > workspaces > save manifests > must match 
       }
     ]
   },
-  "edges": [
-    [
-      "workspace;packages%2Fb",
-      "prod",
-      "c@^1.0.0",
-      ";;c@1.0.0"
-    ]
-  ]
+  "edges": {
+    "workspace;packages%2Fb c": "prod ^1.0.0 ;;c@1.0.0"
+  }
 }
 `
 
@@ -190,14 +178,14 @@ exports[`test/lockfile/save.ts > TAP > workspaces > should save lockfile with wo
     "custom": "http://example.com"
   },
   "nodes": {
-    "file;.": ["my-project"],
-    "workspace;packages%2Fa": ["a"],
-    "workspace;packages%2Fb": ["b"],
-    ";;c@1.0.0": ["c","sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ=="]
+    "file;.": [0,"my-project"],
+    "workspace;packages%2Fa": [0,"a"],
+    "workspace;packages%2Fb": [0,"b"],
+    ";;c@1.0.0": [0,"c","sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ=="]
   },
-  "edges": [
-    ["workspace;packages%2Fb","prod","c@^1.0.0",";;c@1.0.0"]
-  ]
+  "edges": {
+    "workspace;packages%2Fb c": "prod ^1.0.0 ;;c@1.0.0"
+  }
 }
 
 `

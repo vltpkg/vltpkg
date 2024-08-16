@@ -6,9 +6,12 @@ import { type Edge } from '../edge.js'
 import { type Graph } from '../graph.js'
 import { type Node } from '../node.js'
 import {
+  getFlagNumFromNode,
   LockfileData,
-  LockfileDataEdge,
-  LockfileDataNode,
+  LockfileEdgeKey,
+  LockfileEdges,
+  LockfileEdgeValue,
+  LockfileNode,
 } from './types.js'
 
 export type SaveOptions = SpecOptions & {
@@ -42,7 +45,7 @@ const formatNodes = (
     orderedNodes.unshift(mainImporter)
   }
 
-  const res: Record<DepID, LockfileDataNode> = {}
+  const res: Record<DepID, LockfileNode> = {}
   for (const node of orderedNodes) {
     const customRegistry =
       node.resolved && registry && !node.resolved.startsWith(registry)
@@ -61,22 +64,24 @@ const formatNodes = (
       ) ?
         undefined
       : node.location
-    const lockfileNode: LockfileDataNode = [node.name]
+
+    const flags = getFlagNumFromNode(node)
+    const lockfileNode: LockfileNode = [flags, node.name]
 
     if (node.integrity) {
-      lockfileNode[1] = node.integrity
+      lockfileNode[2] = node.integrity
     }
 
     if (resolved) {
-      lockfileNode[2] = resolved
+      lockfileNode[3] = resolved
     }
 
     if (location) {
-      lockfileNode[3] = location
+      lockfileNode[4] = location
     }
 
     if (saveManifests) {
-      lockfileNode[4] = node.manifest
+      lockfileNode[5] = node.manifest
     }
 
     res[node.id] = lockfileNode
@@ -84,25 +89,25 @@ const formatNodes = (
   return res
 }
 
-const formatEdges = (edges: Set<Edge>): LockfileDataEdge[] =>
-  [...edges]
-    .sort(
-      (a, b) =>
-        /* c8 ignore start - nondeterminstic and annoying to test */
-        // sort importers to the top, then alphabetically by
-        // id, type, target
-        Number(b.from.importer) - Number(a.from.importer) ||
-        a.from.id.localeCompare(b.from.id, 'en') ||
-        a.type.localeCompare(b.type, 'en') ||
-        (a.to?.id ?? '').localeCompare(b.to?.id ?? ''),
-      /* c8 ignore stop */
-    )
-    .map(edge => [
-      edge.from.id,
-      edge.type,
-      String(edge.spec),
-      edge.to?.id,
-    ])
+const formatEdges = (edges: Set<Edge>): LockfileEdges =>
+  Object.fromEntries(
+    [...edges]
+      .sort(
+        (a, b) =>
+          /* c8 ignore start - nondeterminstic and annoying to test */
+          // sort importers to the top, then alphabetically by
+          // id, type, target
+          Number(b.from.importer) - Number(a.from.importer) ||
+          a.from.id.localeCompare(b.from.id, 'en') ||
+          a.type.localeCompare(b.type, 'en') ||
+          (a.to?.id ?? '').localeCompare(b.to?.id ?? ''),
+        /* c8 ignore stop */
+      )
+      .map((edge): [LockfileEdgeKey, LockfileEdgeValue] => [
+        `${edge.from.id} ${edge.spec.name}`,
+        `${edge.type} ${edge.spec.bareSpec} ${edge.to?.id ?? 'missing'}`,
+      ]),
+  )
 
 const isRegistries = (
   registries: unknown,
