@@ -1,7 +1,7 @@
 // TODO: it might be faster to not have Version objects in the
 // comparator tuples, and instead just keep the parsed number arrays?
 import { syntaxError } from '@vltpkg/error-cause'
-import { fastSplit } from './fast-split.js'
+import { fastSplit } from '@vltpkg/fast-split'
 import { Version } from './version.js'
 
 /** all comparators are expressed in terms of these operators */

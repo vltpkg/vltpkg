@@ -1,5 +1,5 @@
+import { fastSplit } from '@vltpkg/fast-split'
 import { Comparator } from './comparator.js'
-import { fastSplit } from './fast-split.js'
 import { Version } from './version.js'
 
 /**

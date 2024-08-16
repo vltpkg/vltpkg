@@ -1,5 +1,5 @@
 import { syntaxError, typeError } from '@vltpkg/error-cause'
-import { fastSplit } from './fast-split.js'
+import { fastSplit } from '@vltpkg/fast-split'
 import { type Range } from './range.js'
 
 const maybeNumber = (s: string): number | string => {
