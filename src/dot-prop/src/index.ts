@@ -1,6 +1,6 @@
-type ArrayArg = unknown[]
-type ObjectArg = Record<PropertyKey, unknown>
-type Arg = ArrayArg | ObjectArg
+export type ArrayArg = unknown[]
+export type ObjectArg = Record<PropertyKey, unknown>
+export type Arg = ArrayArg | ObjectArg
 
 const DISALLOWED_KEYS = new Set([
   '__proto__',
@@ -20,7 +20,7 @@ const Characters = {
   RightBracket: ']',
 } as const
 
-type Character =
+export type Character =
   | (typeof Characters)[keyof typeof Characters]
   | (string & {})
 
@@ -31,7 +31,7 @@ const Parts = {
   Property: 'property',
 } as const
 
-type Part = (typeof Parts)[keyof typeof Parts]
+export type Part = (typeof Parts)[keyof typeof Parts]
 
 const checkInvalidCharacter = (
   part: Part | Character,
