@@ -35,17 +35,21 @@ exports[`test/visualization/human-readable-output.ts > TAP > human-readable-outp
     location: '.',
     importer: true,
     edgesOut: [
-      Edge spec(foo@^1.0.0) -prod-> to: Node {
+      Edge spec(foo@^1.0.0) -dev-> to: Node {
         id: ';;foo@1.0.0',
-        location: './node_modules/.vlt/;;foo@1.0.0/node_modules/foo'
+        location: './node_modules/.vlt/;;foo@1.0.0/node_modules/foo',
+        dev: true
       },
-      Edge spec(bar@^1.0.0) -prod-> to: Node {
+      Edge spec(bar@^1.0.0) -optional-> to: Node {
         id: ';;bar@1.0.0',
         location: './node_modules/.vlt/;;bar@1.0.0/node_modules/bar',
+        optional: true,
         edgesOut: [
-          Edge spec(baz@custom:bar@^1.0.0) -prod-> to: Node {
+          Edge spec(baz@custom:bar@^1.0.0) -dev-> to: Node {
             id: ';custom;baz@1.0.0',
             location: './node_modules/.vlt/;custom;baz@1.0.0/node_modules/baz',
+            dev: true,
+            optional: true,
             resolved: 'http://example.com/baz',
             integrity: 'sha512-deadbeef',
             edgesOut: [ Edge spec(foo@^1.0.0) -prod-> to: Node { ref: ';;foo@1.0.0' } ]

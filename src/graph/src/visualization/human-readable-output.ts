@@ -1,7 +1,7 @@
 import { inspect } from 'node:util'
+import { Edge } from '../edge.js'
 import { Graph } from '../graph.js'
 import { Node } from '../node.js'
-import { Edge } from '../edge.js'
 
 function parseNode(seenNodes: Set<Node>, graph: Graph, node: Node) {
   ;(node as any)[inspect.custom] = (): string => {
@@ -14,6 +14,8 @@ function parseNode(seenNodes: Set<Node>, graph: Graph, node: Node) {
             id: node.id,
             location: node.location,
             ...(node.importer ? { importer: true } : null),
+            ...(node.dev ? { dev: true } : null),
+            ...(node.optional ? { optional: true } : null),
             ...(node.resolved ? { resolved: node.resolved } : null),
             ...(node.integrity ?
               { integrity: node.integrity }

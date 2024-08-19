@@ -263,6 +263,15 @@ export class Graph {
       return
     }
 
+    // flags set on the node we're about to create or find.
+    const flags = {
+      dev: fromNode.dev || depType === 'dev',
+      optional:
+        fromNode.optional ||
+        depType === 'optional' ||
+        depType === 'peerOptional',
+    }
+
     const depId = id || (manifest && getId(spec, manifest))
 
     /* c8 ignore start - should not be possible */
@@ -279,12 +288,18 @@ export class Graph {
     const toFoundNode = this.nodes.get(depId)
     if (toFoundNode) {
       this.addEdge(depType, spec, fromNode, toFoundNode)
+      // the current only stays dev/optional if this dep lets it remain so
+      // if it's not already, we don't make it dev or optional.
+      toFoundNode.dev &&= flags.dev
+      toFoundNode.optional &&= flags.optional
       return toFoundNode
     }
 
     // creates a new node and edges to its parent
     const toNode = this.addNode(depId, manifest)
     toNode.registry = spec.registry
+    toNode.dev = flags.dev
+    toNode.optional = flags.optional
     this.addEdge(depType, spec, fromNode, toNode)
     return toNode
   }

@@ -57,7 +57,8 @@ exports[`test/ideal/build-ideal-from-starting-graph.ts > TAP > build from an act
       Edge spec(bar@^1.0.0) -prod-> to: [missing package]: <bar@^1.0.0>,
       Edge spec(aliased@custom:foo@^1.0.0) -dev-> to: Node {
         id: ';custom;foo@1.0.0',
-        location: './node_modules/.vlt/;custom;foo@1.0.0/node_modules/foo'
+        location: './node_modules/.vlt/;custom;foo@1.0.0/node_modules/foo',
+        dev: true
       },
       Edge spec(@scoped/b@^1.0.0) -prod-> to: Node {
         id: ';;@scoped%2Fb@1.0.0',
@@ -99,7 +100,8 @@ exports[`test/ideal/build-ideal-from-starting-graph.ts > TAP > build from an act
       Edge spec(workspace-b@workspace:*) -dev-> to: Node { ref: 'workspace;packages%2Fworkspace-b' },
       Edge spec(ipsum@^1.0.0) -dev-> to: Node {
         id: ';;ipsum@1.0.0',
-        location: './node_modules/.vlt/;;ipsum@1.0.0/node_modules/ipsum'
+        location: './node_modules/.vlt/;;ipsum@1.0.0/node_modules/ipsum',
+        dev: true
       },
       Edge spec(foo@^1.0.0) -dev-> to: Node { ref: ';;foo@1.0.0' }
     ]

@@ -24,6 +24,9 @@ t.test('load actual', async t => {
         link: 'file:./linked',
         missing: '^1.0.0',
       },
+      optionalDependencies: {
+        bar: '^1.0.0',
+      },
       devDependencies: {
         aliased: 'custom:foo@^1.0.0',
       },
@@ -87,6 +90,7 @@ t.test('load actual', async t => {
                 version: '1.0.0',
                 dependencies: {
                   baz: 'custom:baz@^1.0.0',
+                  blooo: '1',
                 },
               }),
             },
@@ -94,6 +98,20 @@ t.test('load actual', async t => {
               'symlink',
               '../../;custom;baz@1.0.0/node_modules/baz',
             ),
+            blooo: t.fixture(
+              'symlink',
+              '../../;;blooo@1.0.0/node_modules/blooo',
+            ),
+          },
+        },
+        ';;blooo@1.0.0': {
+          node_modules: {
+            blooo: {
+              'package.json': JSON.stringify({
+                name: 'blooo',
+                version: '1.0.0',
+              }),
+            },
           },
         },
         ';;foo@1.0.0': {
