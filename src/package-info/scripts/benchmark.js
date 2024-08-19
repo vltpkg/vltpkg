@@ -21,8 +21,6 @@ const DIRS = {
 const p = new PackageInfoClient({ cache: DIRS.vlt })
 
 const run = async (title, fn, packages, unit) => {
-  // Run everything without vlt in-memory cache
-  p.registryClient.cache.clear()
   resetDir(DIRS.extract)
   process.stdout.write(`${title}:`)
   const { time, errors } = await timePromises(packages, fn)
@@ -34,26 +32,54 @@ const run = async (title, fn, packages, unit) => {
   return elapsed[1]
 }
 
-const test = async (title, { vlt, npm, count }) => {
+const test = async (title, { vlt, npm, count, memory }) => {
   const packages = randomPackages(count)
+  if (memory) {
+    // Prime the in-memory registry-client cache and delete the
+    // resulting FS cache
+    await Promise.all(packages.map(vlt))
+    resetDir(DIRS.vlt)
+  } else {
+    // vlt/package-info keeps a registry client cache by default
+    // so for all other benchmarks clear it before
+    p.registryClient.cache.clear()
+  }
   const unit = await run(`vlt (${title})`, vlt, packages)
+  if (memory) {
+    // pacote does not keep a packument cache by default
+    // so we create one and prime it by running all packages
+    // and then passing that cache along the the fn to be benchmarked
+    const npmCache = new Map()
+    await Promise.all(packages.map(n => npm(n, npmCache)))
+    resetDir(DIRS.npm)
+    const _npm = npm
+    npm = (...a) => _npm(...a, npmCache)
+  }
   await run(`npm (${title})`, npm, packages, unit)
 }
 
-const compare = async (title, { vlt, npm, max = COUNT }) => {
-  resetDir(DIRS.vlt)
-  resetDir(DIRS.npm)
+const compare = async (
+  title,
+  { vlt, npm, max = COUNT, memory = false },
+) => {
   const count = Math.min(COUNT, max)
   console.log(`${title} - ${count} packages`)
-  await test('cold', { vlt, npm, count })
-  await test('warm', { vlt, npm, count })
+  resetDir(DIRS.vlt)
+  resetDir(DIRS.npm)
+  await test('cold fs', { vlt, npm, count })
+  await test('warm fs', { vlt, npm, count })
+  if (memory) {
+    await test('warm in-memory', { vlt, npm, count, memory })
+  }
 }
 
 console.log('smaller number is better')
 
 await compare('resolve', {
+  memory: true,
   vlt: n => p.resolve(n),
-  npm: n => pacote.resolve(n, { cache: DIRS.npm }),
+  npm: (n, c) =>
+    pacote.resolve(n, { cache: DIRS.npm, packumentCache: c }),
 })
 
 await compare('manifests', {
