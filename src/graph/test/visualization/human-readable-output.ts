@@ -28,7 +28,7 @@ t.test('human-readable-output', async t => {
   })
   const foo = graph.placePackage(
     graph.mainImporter,
-    'prod',
+    'dev',
     Spec.parse('foo', '^1.0.0'),
     {
       name: 'foo',
@@ -38,7 +38,7 @@ t.test('human-readable-output', async t => {
   t.ok(foo)
   const bar = graph.placePackage(
     graph.mainImporter,
-    'prod',
+    'optional',
     Spec.parse('bar', '^1.0.0'),
     {
       name: 'bar',
@@ -51,7 +51,7 @@ t.test('human-readable-output', async t => {
   if (!bar) throw new Error('failed to place bar')
   const baz = graph.placePackage(
     bar,
-    'prod',
+    'dev',
     Spec.parse('baz', 'custom:bar@^1.0.0', configData as SpecOptions),
     {
       name: 'baz',

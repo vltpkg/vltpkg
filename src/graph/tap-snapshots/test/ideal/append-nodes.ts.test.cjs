@@ -10,8 +10,8 @@ exports[`test/ideal/append-nodes.ts > TAP > append different type of dependencie
   registries: {},
   nodes: {
     'file;.': [ 0, 'my-project' ],
-    ';;bar@1.0.0': [ 0, 'bar' ],
-    ';;foo@1.0.0': [ 0, 'foo' ]
+    ';;bar@1.0.0': [ 1, 'bar' ],
+    ';;foo@1.0.0': [ 2, 'foo' ]
   },
   edges: {
     'file;. foo': 'dev ^1.0.0 ;;foo@1.0.0',
