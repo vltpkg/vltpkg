@@ -25,8 +25,8 @@
     "@vltpkg/spec": "workspace:*",
     "@vltpkg/types": "workspace:*",
     "@vltpkg/workspaces": "workspace:*",
-    "graph-run": "^1.0.3",
-    "path-scurry": "^1.11.1"
+    "graph-run": "catalog:",
+    "path-scurry": "catalog:"
   },
   "devDependencies": {
     "@eslint/js": "catalog:",
@@ -35,7 +35,7 @@
     "eslint": "catalog:",
     "prettier": "catalog:",
     "tap": "catalog:",
-    "tar": "^7.2.0",
+    "tar": "catalog:",
     "tshy": "catalog:",
     "typedoc": "catalog:",
     "typescript-eslint": "catalog:",

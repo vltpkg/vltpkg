@@ -18,11 +18,11 @@
     "@vltpkg/package-json": "workspace:*",
     "@vltpkg/types": "workspace:*",
     "glob": "^10.4.1",
-    "graph-run": "^1.0.3",
+    "graph-run": "catalog:",
     "minimatch": "^9.0.4",
-    "path-scurry": "^1.11.1",
-    "polite-json": "^5.0.0",
-    "walk-up-path": "^3.0.1"
+    "path-scurry": "catalog:",
+    "polite-json": "catalog:",
+    "walk-up-path": "catalog:"
   },
   "devDependencies": {
     "@eslint/js": "catalog:",

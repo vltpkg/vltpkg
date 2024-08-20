@@ -1,9 +1,34 @@
 import { readFileSync, readdirSync, writeFileSync } from 'node:fs'
 import { relative, resolve } from 'node:path'
-import { parse as yamlParse } from 'yaml'
-import { format as prettierFormat } from 'prettier'
+import * as yaml from 'yaml'
+import * as prettier from 'prettier'
+import * as semver from '../src/semver/dist/esm/index.js'
 
 const ROOT = resolve(import.meta.dirname, '..')
+
+const skipCatalog = ({ name, spec, from, type }) => {
+  // An fake example so I don't have to remember what to type next time
+  if (
+    type === 'dependencies' &&
+    name === 'DEP_THAT_NEEDS_A_SPECIAL_VERSION' &&
+    spec.startsWith('^SOME_MAJOR_VERSION') &&
+    from === '@vltpkg/SOME_WORKSPACE'
+  ) {
+    return true
+  }
+  return false
+}
+
+const isInternal = name =>
+  name.startsWith('@vltpkg/') || name === 'vlt'
+
+const format = async (source, filepath) => {
+  const options = await prettier.resolveConfig(filepath)
+  return prettier.format(source, { ...options, filepath })
+}
+
+const writeYaml = async (p, data) =>
+  writeFileSync(p, await format(yaml.stringify(data), p))
 
 const readJson = f => JSON.parse(readFileSync(f, 'utf8'))
 
@@ -11,7 +36,7 @@ const writeJson = async (p, data, { prettier } = {}) =>
   writeFileSync(
     p,
     prettier ?
-      await prettierFormat(JSON.stringify(data), { filepath: p })
+      await format(JSON.stringify(data), p)
     : JSON.stringify(data, null, 2) + '\n',
   )
 
@@ -72,56 +97,113 @@ const parseWS = path => ({
   pj: readJson(resolve(path, 'package.json')),
 })
 
-const root = parseWS(ROOT)
-const rootConfig = yamlParse(
-  readFileSync(resolve(ROOT, 'pnpm-workspace.yaml'), 'utf8'),
-)
+const getCatalogDeps = (workspaces, currentCatalog = {}) => {
+  const acc = new Map()
 
-const workspaces = [
-  root,
-  ...readdirSync(resolve(ROOT, rootConfig.packages[0].slice(0, -1)), {
-    withFileTypes: true,
-  })
-    .filter(w => w.isDirectory())
-    .map(w => parseWS(resolve(w.parentPath, w.name))),
-]
-
-const shouldBeCatalogDevDeps = new Set(
-  [
-    ...workspaces
-      .reduce((acc, { pj }) => {
-        for (const k of Object.keys(pj.devDependencies ?? {})) {
-          acc.set(k, (acc.get(k) ?? 0) + 1)
+  for (const type of ['dependencies', 'devDependencies']) {
+    for (const { pj } of workspaces) {
+      for (const name of Object.keys(pj[type] ?? {})) {
+        const rawSpec = pj[type][name]
+        const spec =
+          rawSpec === 'catalog:' ? currentCatalog[name] : rawSpec
+        const version =
+          spec === 'workspace:*' ? null : (
+            semver.parseRange(spec).set[0].tuples[0][1]
+          )
+        // type is not used currently but is kept here to make it
+        // easier to separate catalogs by prod vs dev since that is
+        // a somewhat common usecase.
+        const depInfo = { spec, type, from: pj.name }
+        const versions = acc.get(name) ?? []
+        if (!skipCatalog({ ...depInfo, name })) {
+          versions.push({ ...depInfo, version })
         }
-        return acc
-      }, new Map())
-      .entries(),
-  ]
-    .filter(([, v]) => v > 1)
-    .map(([k]) => k),
-)
-
-const fixDevDeps = async ws => {
-  const { devDependencies, dependencies } = ws.pj
-
-  for (const k of Object.keys(dependencies ?? {})) {
-    if (k.startsWith('@vltpkg/')) {
-      dependencies[k] = 'workspace:*'
-      continue
+        acc.set(name, versions)
+      }
     }
   }
 
-  for (const k of Object.keys(devDependencies ?? {})) {
-    if (
-      k.startsWith('@vltpkg/') &&
-      !devDependencies[k].startsWith('workspace:')
-    ) {
-      devDependencies[k] = 'workspace:*'
-      continue
+  // For our use case we never want to catalog our own internal deps
+  // because those should use `workspace:`. And we only catalog other
+  // deps if there is more than one version of it in our graph
+  for (const [k, v] of acc.entries()) {
+    if (v.length <= 1 || isInternal(k)) {
+      acc.delete(k)
     }
-    if (shouldBeCatalogDevDeps.has(k)) {
-      devDependencies[k] = 'catalog:'
-      continue
+  }
+
+  const problems = []
+  const newCatalog = {}
+
+  for (const [name, versions] of acc.entries()) {
+    const [lowest] = versions
+      .filter(v => !!v.version)
+      .sort((a, b) => semver.gt(a.version, b.version))
+
+    if (lowest) {
+      newCatalog[name] = lowest.spec
+      for (const v of versions) {
+        if (!semver.satisfies(v.version, lowest.spec)) {
+          problems.push({ name, found: v, wanted: lowest })
+        }
+      }
+    }
+  }
+
+  if (problems.length) {
+    const msg = problems.map(
+      p =>
+        `'${p.name}@${p.found.spec}' in '${p.found.from}' does not ` +
+        `satisfy the lowest spec '${p.wanted.spec}' in '${p.wanted.from}'`,
+    )
+    throw new Error(
+      `Catalog problems were found. Either update all the versions` +
+        `to be compatible or explicitly skip by adding to \`${skipCatalog.name}\` in this file.` +
+        `\n  ${msg.join('\n  ')}`,
+    )
+  }
+
+  return Object.fromEntries(
+    Object.entries(newCatalog).sort(([a], [b]) =>
+      a.localeCompare(b, 'en'),
+    ),
+  )
+}
+
+const fixDeps = async (ws, { catalog }) => {
+  // All internal deps used `workspace:` protocol
+  const internalDep = (name, deps) => {
+    if (isInternal(name)) {
+      deps[name] = 'workspace:*'
+      return true
+    }
+  }
+  // Set a dep to use the `catalog:` protocol if it
+  // is used in multiple places
+  const catalogDep = (name, deps, type) => {
+    if (
+      name in catalog &&
+      !skipCatalog({
+        name,
+        spec: deps[name],
+        type,
+        from: ws.pj.name,
+      })
+    ) {
+      deps[name] = 'catalog:'
+      return true
+    }
+  }
+
+  for (const type of ['dependencies', 'devDependencies']) {
+    const deps = ws.pj[type] ?? {}
+    for (const name of Object.keys(deps)) {
+      if (internalDep(name, deps, type)) {
+        continue
+      }
+      if (catalogDep(name, deps, type)) {
+        continue
+      }
     }
   }
 }
@@ -229,10 +311,10 @@ const fixTools = async ws => {
   }
 }
 
-const fixPackage = async ws => {
-  await fixDevDeps(ws)
-  await fixScripts(ws)
-  await fixTools(ws)
+const fixPackage = async (ws, opts) => {
+  await fixDeps(ws, opts)
+  await fixScripts(ws, opts)
+  await fixTools(ws, opts)
   return sortObject(ws.pj, [
     'name',
     'description',
@@ -251,6 +333,26 @@ const fixPackage = async ws => {
   ])
 }
 
-for (const ws of workspaces) {
-  await writeJson(ws.path, await fixPackage(ws))
+const main = async () => {
+  const root = parseWS(ROOT)
+  const configPath = resolve(ROOT, 'pnpm-workspace.yaml')
+  const rootConfig = yaml.parse(readFileSync(configPath, 'utf8'))
+  const workspaces = [
+    root,
+    ...readdirSync(
+      resolve(ROOT, rootConfig.packages[0].slice(0, -1)),
+      {
+        withFileTypes: true,
+      },
+    )
+      .filter(w => w.isDirectory())
+      .map(w => parseWS(resolve(w.parentPath, w.name))),
+  ]
+  const catalog = getCatalogDeps(workspaces, rootConfig.catalog)
+  for (const ws of workspaces) {
+    await writeJson(ws.path, await fixPackage(ws, { catalog }))
+  }
+  await writeYaml(configPath, { ...rootConfig, catalog })
 }
+
+main()
