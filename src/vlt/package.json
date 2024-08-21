@@ -34,7 +34,7 @@
     "@vltpkg/xdg": "workspace:*",
     "ansi-to-pre": "^1.0.5",
     "chalk": "catalog:",
-    "jackspeak": "^3.4.0",
+    "jackspeak": "^4.0.1",
     "polite-json": "catalog:",
     "walk-up-path": "catalog:"
   },
