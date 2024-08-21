@@ -97,15 +97,14 @@ const parseWS = path => ({
   pj: readJson(resolve(path, 'package.json')),
 })
 
-const getCatalogDeps = (workspaces, currentCatalog = {}) => {
+const getCatalogDeps = (workspaces, catalog = {}) => {
   const acc = new Map()
 
   for (const type of ['dependencies', 'devDependencies']) {
     for (const { pj } of workspaces) {
       for (const name of Object.keys(pj[type] ?? {})) {
         const rawSpec = pj[type][name]
-        const spec =
-          rawSpec === 'catalog:' ? currentCatalog[name] : rawSpec
+        const spec = rawSpec === 'catalog:' ? catalog[name] : rawSpec
         const version =
           spec === 'workspace:*' ? null : (
             semver.parseRange(spec).set[0].tuples[0][1]
@@ -133,7 +132,6 @@ const getCatalogDeps = (workspaces, currentCatalog = {}) => {
   }
 
   const problems = []
-  const newCatalog = {}
 
   for (const [name, versions] of acc.entries()) {
     const [lowest] = versions
@@ -141,7 +139,7 @@ const getCatalogDeps = (workspaces, currentCatalog = {}) => {
       .sort((a, b) => semver.gt(a.version, b.version))
 
     if (lowest) {
-      newCatalog[name] = lowest.spec
+      catalog[name] = lowest.spec
       for (const v of versions) {
         if (!semver.satisfies(v.version, lowest.spec)) {
           problems.push({ name, found: v, wanted: lowest })
@@ -164,7 +162,7 @@ const getCatalogDeps = (workspaces, currentCatalog = {}) => {
   }
 
   return Object.fromEntries(
-    Object.entries(newCatalog).sort(([a], [b]) =>
+    Object.entries(catalog).sort(([a], [b]) =>
       a.localeCompare(b, 'en'),
     ),
   )
