@@ -250,12 +250,12 @@ export class Monorepo {
     const paths = new Set(
       typeof query.paths === 'string' ?
         [query.paths]
-      : query.paths ?? [],
+      : (query.paths ?? []),
     )
     const groups = new Set(
       typeof query.groups === 'string' ?
         [query.groups]
-      : query.groups ?? [],
+      : (query.groups ?? []),
     )
 
     const groupsExpanded: Record<string, Set<string>> = {}
