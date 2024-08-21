@@ -450,9 +450,7 @@ export class PackageInfoClient {
                 await rename(src, pkg)
               }
             }
-            return tarC({ cwd, gzip: true }, [
-              'package',
-            ]).concat() as Promise<Buffer>
+            return tarC({ cwd, gzip: true }, ['package']).concat()
           })
         }
         // fallthrough if remoteURL set
@@ -484,9 +482,7 @@ export class PackageInfoClient {
           const p = dirname(path)
           const b = basename(path)
           // TODO: Pack properly, ignore stuff, bundleDeps, etc
-          return tarC({ cwd: p, gzip: true }, [
-            b,
-          ]).concat() as Promise<Buffer>
+          return tarC({ cwd: p, gzip: true }, [b]).concat()
         }
         return readFile(path)
       }
@@ -495,9 +491,7 @@ export class PackageInfoClient {
         const ws = this.#getWS(spec, options)
         const p = dirname(ws.fullpath)
         const b = basename(ws.fullpath)
-        return tarC({ cwd: p, gzip: true }, [
-          b,
-        ]).concat() as Promise<Buffer>
+        return tarC({ cwd: p, gzip: true }, [b]).concat()
       }
     }
   }
