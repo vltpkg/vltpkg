@@ -29,6 +29,10 @@ export class Node {
    */
   optional = false
 
+  isOptional(): this is Node & { optional: true } {
+    return this.optional
+  }
+
   /**
    * True if a node is only reachable via dev edges from any importer.
    */

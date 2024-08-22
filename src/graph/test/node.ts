@@ -313,6 +313,10 @@ t.test('nodeModules path and inVltStore flag', t => {
     'file;some/path',
     { name: 'foo', version: '1.2.3' },
   )
+  outside.optional = true
+  t.equal(outside.isOptional(), true)
+  outside.optional = false
+  t.equal(outside.isOptional(), false)
   outside.location = './some/path'
   t.equal(outside.nodeModules, './some/path/node_modules')
   t.end()
