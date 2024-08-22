@@ -1,4 +1,4 @@
-# @vltpkg/graph
+# `@vltpkg/graph`
 
 This is the graph library responsible for representing the packages
 that are involved in a given install.
