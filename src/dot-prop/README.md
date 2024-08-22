@@ -1,1 +1,1 @@
-# @vltpkg/dot-prop
+# `@vltpkg/dot-prop`

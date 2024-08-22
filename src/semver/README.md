@@ -1,6 +1,8 @@
+# `@vltpkg/semver`
+
 <img src="https://github.com/darcyclarke/octofiles/assets/459713/8ee74129-34e6-4bd4-8686-82954f424709" width="85" />
 
-# Semantic Versions
+## Semantic Versions
 
 Parsing, validating & comparing Semantic Versions used by `vlt`.
 

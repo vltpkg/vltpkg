@@ -1,4 +1,4 @@
-# @vltpkg/package-json
+# `@vltpkg/package-json`
 
 Manages reading `package.json` files.
 

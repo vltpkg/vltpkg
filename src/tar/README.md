@@ -1,4 +1,4 @@
-# @vltpkg/tar
+# `@vltpkg/tar`
 
 If you are unpacking anything other than npm packages, in
 precisely the way that [vlt](https://vlt.sh) does, then this is

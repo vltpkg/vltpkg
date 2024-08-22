@@ -1,4 +1,4 @@
-# @vltpkg/cache-unzip
+# `@vltpkg/cache-unzip`
 
 This is a script that can be run as a detached background process
 to un-gzip any cached response bodies in the vlt cache.
