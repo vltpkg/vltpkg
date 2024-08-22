@@ -1,5 +1,5 @@
 import { hydrate } from '@vltpkg/dep-id'
-import { Spec, SpecOptions, kCustomInspect } from '@vltpkg/spec'
+import { kCustomInspect, Spec, SpecOptions } from '@vltpkg/spec'
 import { Monorepo } from '@vltpkg/workspaces'
 import { inspect } from 'node:util'
 import t from 'tap'
@@ -350,5 +350,32 @@ t.test('prevent duplicate edges', async t => {
         graph.nodes.get(';;bar@2.0.0'),
       ),
     ]),
+  )
+  // use graph.gc to remove the excess
+  t.match(
+    graph.nodes.keys(),
+    new Set([
+      'file;.',
+      ';;foo@1.0.0',
+      ';;bar@1.0.0',
+      ';;bar@2.0.0',
+      ';;bar@3.0.0',
+    ]),
+    'gut-check that nodes are here to be collected',
+  )
+  // create a missing edge to verify it's not a problem
+  fooNode.edgesOut.set(
+    ';;asdf@1.0.0',
+    new Edge('prod', Spec.parse('asdf@1'), fooNode),
+  )
+  const collected = graph.gc()
+  t.match(
+    graph.nodes.keys(),
+    new Set(['file;.', ';;foo@1.0.0', ';;bar@2.0.0']),
+  )
+  t.match(
+    collected.keys(),
+    new Set([';;bar@1.0.0', ';;bar@3.0.0']),
+    'garbage-collected nodes are returned',
   )
 })

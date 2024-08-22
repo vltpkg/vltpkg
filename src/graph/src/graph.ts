@@ -140,6 +140,33 @@ export class Graph {
   }
 
   /**
+   * Delete all nodes that are unreachable from the importers.
+   * The collection of deleted nodes is returned.
+   *
+   * NOTE: This can be extremely slow for large graphs, and is almost always
+   * unnecessary! Only call when it is known that some unreachable nodes may
+   * have been created, for example when deleting the unneeded subgraph when an
+   * optional node fails to resolve/install.
+   */
+  gc() {
+    const { nodes } = this
+    this.nodes = new Map()
+    const marked = new Set(this.importers)
+    for (const imp of marked) {
+      for (const { to } of imp.edgesOut.values()) {
+        if (!to || marked.has(to)) continue
+        marked.add(to)
+        nodes.delete(to.id)
+        this.nodes.set(to.id, to)
+      }
+    }
+    for (const node of nodes.values()) {
+      this.removeNode(node)
+    }
+    return nodes
+  }
+
+  /**
    * Create a new edge between two nodes of the graph in case both exist,
    * in case the destination node does not exists, then a dangling edge,
    * pointing to nothing will be created to represent that missing dependency.
