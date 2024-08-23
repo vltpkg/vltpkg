@@ -19,11 +19,11 @@ exports[`test/graph.ts > TAP > using placePackage > should find and fix nameless
     'file;a': [ 0, 'a' ]
   },
   edges: {
-    'file;. missing': 'prod ^1.0.0 missing',
+    'file;. missing': 'prod ^1.0.0 MISSING',
     'file;. bar': 'prod ^1.0.0 ;;bar@1.0.0',
     'file;. foo': 'prod ^1.0.0 ;;foo@1.0.0',
     'file;. a': 'prod file:./a file;a',
-    ';;bar@1.0.0 baz': 'prod ^1.0.0 missing'
+    ';;bar@1.0.0 baz': 'prod ^1.0.0 MISSING'
   }
 }
 `
@@ -37,10 +37,10 @@ exports[`test/graph.ts > TAP > using placePackage > should have removed baz from
     ';;foo@1.0.0': [ 0, 'foo' ]
   },
   edges: {
-    'file;. missing': 'prod ^1.0.0 missing',
+    'file;. missing': 'prod ^1.0.0 MISSING',
     'file;. bar': 'prod ^1.0.0 ;;bar@1.0.0',
     'file;. foo': 'prod ^1.0.0 ;;foo@1.0.0',
-    ';;bar@1.0.0 baz': 'prod ^1.0.0 missing'
+    ';;bar@1.0.0 baz': 'prod ^1.0.0 MISSING'
   }
 }
 `
@@ -55,7 +55,7 @@ exports[`test/graph.ts > TAP > using placePackage > the graph 1`] = `
     ';;foo@1.0.0': [ 0, 'foo' ]
   },
   edges: {
-    'file;. missing': 'prod ^1.0.0 missing',
+    'file;. missing': 'prod ^1.0.0 MISSING',
     'file;. bar': 'prod ^1.0.0 ;;bar@1.0.0',
     'file;. foo': 'prod ^1.0.0 ;;foo@1.0.0',
     ';;bar@1.0.0 baz': 'prod ^1.0.0 ;;baz@1.0.0',

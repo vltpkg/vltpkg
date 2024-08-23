@@ -81,7 +81,7 @@ t.test('build from a virtual graph', async t => {
       'file;. linked': 'prod file:./linked file;linked',
       'file;. foo': 'prod ^1.0.0 ;;foo@1.0.0',
       'file;. bar': 'prod ^1.0.0 ;;bar@1.0.0',
-      'file;. missing': 'prod ^1.0.0 missing',
+      'file;. missing': 'prod ^1.0.0 MISSING',
       ';;bar@1.0.0 baz': 'prod ^1.0.0 ;;baz@1.0.0',
       'file;. pnpmdep': 'prod 1 ;;pnpmdep@1.0.0',
     },
