@@ -161,8 +161,9 @@ t.test('workspaces', async t => {
   if (!b) {
     throw new Error('Missing workspace b')
   }
+  // verify (in the snapshot) that the lockfile saves '' as '*'
   graph
-    .placePackage(b, 'prod', Spec.parse('c@^1.0.0'), {
+    .placePackage(b, 'prod', Spec.parse('c@'), {
       name: 'c',
       version: '1.0.0',
       dist: {
