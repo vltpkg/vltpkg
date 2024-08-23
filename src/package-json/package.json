@@ -15,7 +15,7 @@
   "dependencies": {
     "@vltpkg/error-cause": "workspace:*",
     "@vltpkg/types": "workspace:*",
-    "polite-json": "^4.0.1"
+    "polite-json": "catalog:"
   },
   "devDependencies": {
     "@eslint/js": "catalog:",

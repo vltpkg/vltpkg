@@ -14,7 +14,7 @@
   },
   "dependencies": {
     "@vltpkg/error-cause": "workspace:*",
-    "rimraf": "^5.0.5"
+    "rimraf": "catalog:"
   },
   "devDependencies": {
     "@types/node": "catalog:",
