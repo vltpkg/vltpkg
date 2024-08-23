@@ -105,7 +105,7 @@ const formatEdges = (edges: Set<Edge>): LockfileEdges =>
       )
       .map((edge): [LockfileEdgeKey, LockfileEdgeValue] => [
         `${edge.from.id} ${edge.spec.name}`,
-        `${edge.type} ${edge.spec.bareSpec} ${edge.to?.id ?? 'missing'}`,
+        `${edge.type} ${edge.spec.bareSpec || '*'} ${edge.to?.id ?? 'missing'}`,
       ]),
   )
 

@@ -166,7 +166,7 @@ exports[`test/lockfile/save.ts > TAP > workspaces > save manifests > must match 
     ]
   },
   "edges": {
-    "workspace;packages%2Fb c": "prod ^1.0.0 ;;c@1.0.0"
+    "workspace;packages%2Fb c": "prod * ;;c@1.0.0"
   }
 }
 `
@@ -184,7 +184,7 @@ exports[`test/lockfile/save.ts > TAP > workspaces > should save lockfile with wo
     ";;c@1.0.0": [0,"c","sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ=="]
   },
   "edges": {
-    "workspace;packages%2Fb c": "prod ^1.0.0 ;;c@1.0.0"
+    "workspace;packages%2Fb c": "prod * ;;c@1.0.0"
   }
 }
 
