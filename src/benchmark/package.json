@@ -2,6 +2,7 @@
   "name": "@vltpkg/benchmark",
   "description": "Benchmark scripts for this monorepo",
   "version": "0.0.0-0",
+  "private": true,
   "tshy": {
     "selfLink": false,
     "dialects": [
@@ -31,6 +32,9 @@
     "typescript": "catalog:",
     "typescript-eslint": "catalog:"
   },
+  "engines": {
+    "node": "20 || >=22"
+  },
   "scripts": {
     "format": "prettier --write . --log-level warn --ignore-path ../../.prettierignore --cache",
     "format:check": "prettier --check . --ignore-path ../../.prettierignore --cache",
@@ -48,7 +52,6 @@
   },
   "prettier": "../../.prettierrc.json",
   "type": "module",
-  "private": true,
   "exports": {
     "./package.json": "./package.json",
     ".": {

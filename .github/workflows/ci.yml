@@ -47,11 +47,32 @@ jobs:
         id: code
         continue-on-error: true
 
+      - name: Check Dependencies
+        run: node ./scripts/check-deps.js
+        id: deps
+        continue-on-error: true
+
+      - name: Check Packages
+        run: |
+          node ./scripts/consistent-package-json.js
+          if [ -n "$(git status --porcelain)" ]; then
+            git diff
+            exit 1
+          fi
+        id: pkg
+        continue-on-error: true
+
       - name: Check Results
         run: |
-          echo "Style: ${{ steps.style.outcome }}"
-          echo "Code: ${{ steps.code.outcome }}"
-          if [ "${{ steps.style.outcome }}" != "success" ] || [ "${{ steps.code.outcome }}" != "success" ]; then
+          STYLE="${{ steps.style.outcome }}"
+          CODE="${{ steps.code.outcome }}"
+          DEPS="${{ steps.deps.outcome }}"
+          PKG="${{ steps.pkg.outcome }}"
+          echo "Style: $STYLE"
+          echo "Code: $CODE"
+          echo "Dependencies: $DEPS"
+          echo "Packages: $PKG"
+          if [ "${STYLE}_${CODE}_${DEPS}_${PKG}" != "success_success_success_success" ]; then
             exit 1
           fi
 
