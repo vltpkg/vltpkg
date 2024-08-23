@@ -144,7 +144,7 @@ const loadEdges = (
       })
     }
     const to =
-      toId === 'missing' ? undefined : graph.nodes.get(asDepID(toId))
+      toId === 'MISSING' ? undefined : graph.nodes.get(asDepID(toId))
     if (!shortDependencyTypes.has(depType as DependencyTypeShort)) {
       throw error('Found unsupported dependency type in lockfile', {
         validOptions: [...longDependencyTypes],

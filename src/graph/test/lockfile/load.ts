@@ -34,7 +34,7 @@ t.test('load', async t => {
     // a spec with spaces, verify it doesn't get confused
     'file;. foo': 'prod ^1.0.0 || 1.2.3 ||  2.3.4 ;;foo@1.0.0',
     'file;. bar': 'prod ^1.0.0 ;;bar@1.0.0',
-    'file;. missing': 'prod ^1.0.0 missing',
+    'file;. missing': 'prod ^1.0.0 MISSING',
     ';;bar@1.0.0 baz': 'prod ^1.0.0 ;;baz@1.0.0',
     //@ts-expect-error
     '': '',

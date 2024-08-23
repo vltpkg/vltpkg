@@ -55,7 +55,7 @@ export type LockfileNode = [
 /**
  * Lockfile edges are stored as a record object where the key
  * is `${from.id} ${spec.name}` and the value is
- * `${type} ${spec.bareSpec} ${to.id | 'missing'}`
+ * `${type} ${spec.bareSpec} ${to.id | 'MISSING'}`
  *
  * Storing them in a record like this means that we are guaranteed to
  * never end up with duplicates, and a standard `JSON.stringify()`
@@ -70,4 +70,4 @@ export type LockfileEdgeKey = `${DepID} ${string}`
 
 /** `${type} ${spec} ${to}` */
 export type LockfileEdgeValue =
-  `${DependencyTypeShort} ${Spec['bareSpec']} ${DepID | 'missing'}`
+  `${DependencyTypeShort} ${Spec['bareSpec']} ${DepID | 'MISSING'}`
