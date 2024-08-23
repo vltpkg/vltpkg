@@ -6,7 +6,7 @@ import t from 'tap'
 import {
   kCustomInspect,
   Scope,
-  SpecOptions,
+  type SpecOptions,
   type Spec as SpecType,
 } from '../src/index.js'
 
