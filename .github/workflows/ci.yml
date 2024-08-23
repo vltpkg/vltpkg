@@ -64,7 +64,7 @@ jobs:
 
       - name: Check Results
         run: |
-          STLYE="${{ steps.style.outcome }}"
+          STYLE="${{ steps.style.outcome }}"
           CODE="${{ steps.code.outcome }}"
           DEPS="${{ steps.deps.outcome }}"
           PKG="${{ steps.pkg.outcome }}"
