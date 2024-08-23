@@ -25,6 +25,7 @@
     "typescript-eslint": "catalog:"
   },
   "scripts": {
+    "benchmark:split": "./test/fixtures/split-vs-fast-split.ts",
     "format": "prettier --write . --log-level warn --ignore-path ../../.prettierignore --cache",
     "format:check": "prettier --check . --ignore-path ../../.prettierignore --cache",
     "lint": "eslint . --fix",
@@ -34,7 +35,6 @@
     "presnap": "npm run prepare",
     "snap": "tap",
     "pretest": "npm run prepare",
-    "benchmark:split": "./test/fixtures/split-vs-fast-split.ts",
     "test": "tap",
     "typedoc": "typedoc",
     "preversion": "npm test",

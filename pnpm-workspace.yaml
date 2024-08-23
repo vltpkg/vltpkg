@@ -1,15 +1,22 @@
 packages:
-  - 'src/*'
-
+  - src/*
 catalog:
-  '@eslint/js': '^9.8.0'
-  '@types/eslint__js': '^8.42.3'
-  '@types/node': '^20.14.8'
-  'eslint': '^9.8.0'
-  'pacote': '^18.0.6'
-  'prettier': '^3.3.2'
-  'tap': '^21.0.1'
-  'tshy': '^3.0.2'
-  'typedoc': '^0.26.5'
-  'typescript-eslint': '^8.0.1'
-  'typescript': '^5.5.4'
+  '@eslint/js': ^9.8.0
+  '@types/eslint__js': ^8.42.3
+  '@types/node': ^20.14.8
+  chalk: ^5.3.0
+  eslint: ^9.8.0
+  graph-run: ^1.0.3
+  lru-cache: ^10.2.0
+  pacote: ^18.0.6
+  path-scurry: ^1.11.1
+  polite-json: ^5.0.0
+  prettier: ^3.3.2
+  rimraf: ^5.0.5
+  tap: ^21.0.1
+  tar: ^7.2.0
+  tshy: ^3.0.2
+  typedoc: ^0.26.5
+  typescript: ^5.5.4
+  typescript-eslint: ^8.0.1
+  walk-up-path: ^3.0.1

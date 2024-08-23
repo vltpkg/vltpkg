@@ -18,7 +18,7 @@
     "@vltpkg/promise-spawn": "workspace:*",
     "@vltpkg/types": "workspace:*",
     "foreground-child": "^3.2.0",
-    "walk-up-path": "^3.0.1"
+    "walk-up-path": "catalog:"
   },
   "devDependencies": {
     "@eslint/js": "catalog:",

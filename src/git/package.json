@@ -21,7 +21,7 @@
     "@vltpkg/semver": "workspace:*",
     "@vltpkg/spec": "workspace:*",
     "@vltpkg/which": "workspace:*",
-    "lru-cache": "^10.2.2",
+    "lru-cache": "catalog:",
     "promise-retry": "^2.0.1"
   },
   "devDependencies": {
