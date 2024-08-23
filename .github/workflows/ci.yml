@@ -72,7 +72,7 @@ jobs:
           echo "Code: $CODE"
           echo "Dependencies: $DEPS"
           echo "Packages: $PKG"
-          if [ "$STYLE_$CODE_$DEPS_$PKG" != "success_success_success_success" ]; then
+          if [ "${STYLE}_${CODE}_${DEPS}_${PKG}" != "success_success_success_success" ]; then
             exit 1
           fi
 
