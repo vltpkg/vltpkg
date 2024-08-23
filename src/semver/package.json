@@ -30,6 +30,9 @@
     "typescript": "catalog:",
     "typescript-eslint": "catalog:"
   },
+  "engines": {
+    "node": "20 || >=22"
+  },
   "scripts": {
     "benchmark": "./test/fixtures/vs-node-semver.ts",
     "benchmark:bun": "hyperfine --warmup 3 'bun ./benchmarks/bun.js' 'bun ./benchmarks/npm.js' 'bun ./benchmarks/this.js'",

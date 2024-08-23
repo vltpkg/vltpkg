@@ -39,6 +39,9 @@
     "typescript": "catalog:",
     "typescript-eslint": "catalog:"
   },
+  "engines": {
+    "node": "20 || >=22"
+  },
   "scripts": {
     "benchmark": "node scripts/benchmark.js",
     "format": "prettier --write . --log-level warn --ignore-path ../../.prettierignore --cache",

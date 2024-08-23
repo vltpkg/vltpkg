@@ -106,9 +106,11 @@ const getCatalogDeps = (workspaces, catalog = {}) => {
         const rawSpec = pj[type][name]
         const spec = rawSpec === 'catalog:' ? catalog[name] : rawSpec
         const version =
-          spec === 'workspace:*' ? null : (
-            semver.parseRange(spec).set[0].tuples[0][1]
-          )
+          spec === 'workspace:*' ? null
+            // Hacky way to get the base version from a range
+            // Only works with simple ranges that we use in our engines
+            // TODO: implement intersects/subset in @vltpkg/semver
+          : semver.parseRange(spec).set[0].tuples[0][1]
         // type is not used currently but is kept here to make it
         // easier to separate catalogs by prod vs dev since that is
         // a somewhat common usecase.
@@ -313,21 +315,23 @@ const fixPackage = async (ws, opts) => {
   await fixDeps(ws, opts)
   await fixScripts(ws, opts)
   await fixTools(ws, opts)
+  ws.pj.engines = { node: '20 || >=22' }
   return sortObject(ws.pj, [
     'name',
     'description',
     'version',
+    'private',
     'tshy',
     'bin',
     'dependencies',
     'devDependencies',
+    'engines',
     'scripts',
     'tap',
     'prettier',
     'main',
     'types',
     'type',
-    'private',
   ])
 }
 

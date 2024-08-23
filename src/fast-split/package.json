@@ -24,6 +24,9 @@
     "typescript": "catalog:",
     "typescript-eslint": "catalog:"
   },
+  "engines": {
+    "node": "20 || >=22"
+  },
   "scripts": {
     "benchmark:split": "./test/fixtures/split-vs-fast-split.ts",
     "format": "prettier --write . --log-level warn --ignore-path ../../.prettierignore --cache",
