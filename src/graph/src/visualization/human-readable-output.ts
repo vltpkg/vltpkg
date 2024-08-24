@@ -1,9 +1,11 @@
 import { inspect } from 'node:util'
-import { Edge } from '../edge.js'
-import { Graph } from '../graph.js'
-import { Node } from '../node.js'
+import { EdgeLike, GraphLike, NodeLike } from '../types.js'
 
-function parseNode(seenNodes: Set<Node>, graph: Graph, node: Node) {
+function parseNode(
+  seenNodes: Set<NodeLike>,
+  graph: GraphLike,
+  node: NodeLike,
+) {
   ;(node as any)[inspect.custom] = (): string => {
     const res =
       'Node ' +
@@ -36,25 +38,26 @@ function parseNode(seenNodes: Set<Node>, graph: Graph, node: Node) {
   return node
 }
 
-function parseEdge(seenNodes: Set<Node>, graph: Graph, edge: Edge) {
+function parseEdge(
+  seenNodes: Set<NodeLike>,
+  graph: GraphLike,
+  edge: EdgeLike,
+) {
   ;(edge as any)[inspect.custom] = () => {
-    const extraneousNode = `[extraneous package]: <${edge.name}>`
     const missingNode = `[missing package]: <${edge.name}@${edge.spec.bareSpec}>`
     const toLabel: string =
       edge.to ?
-        graph.extraneousDependencies.has(edge) ?
-          extraneousNode
-        : inspect(parseNode(seenNodes, graph, edge.to), {
-            depth: Infinity,
-          })
+        inspect(parseNode(seenNodes, graph, edge.to), {
+          depth: Infinity,
+        })
       : missingNode
-    return `Edge spec(${edge.spec}) -${edge.type}-> to: ${toLabel}`
+    return `Edge spec(${String(edge.spec)}) -${edge.type}-> to: ${toLabel}`
   }
   return edge
 }
 
-export function humanReadableOutput(graph: Graph) {
-  const seenNodes = new Set<Node>()
+export function humanReadableOutput(graph: GraphLike) {
+  const seenNodes = new Set<NodeLike>()
   const importers = [...graph.importers]
   return inspect(
     importers.map(i => parseNode(seenNodes, graph, i)),

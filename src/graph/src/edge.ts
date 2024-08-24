@@ -3,10 +3,11 @@ import { Spec } from '@vltpkg/spec'
 import { inspect, InspectOptions } from 'util'
 import { DependencyTypeShort } from './dependencies.js'
 import { Node } from './node.js'
+import { EdgeLike } from './types.js'
 
 const kCustomInspect = Symbol.for('nodejs.util.inspect.custom')
 
-export class Edge {
+export class Edge implements EdgeLike {
   get [Symbol.toStringTag]() {
     return '@vltpkg/graph.Edge'
   }
