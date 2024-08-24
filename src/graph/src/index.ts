@@ -5,6 +5,7 @@ export * from './dependencies.js'
 export * from './lockfile/types.js'
 export * from './visualization/human-readable-output.js'
 export * from './visualization/mermaid-output.js'
+export * from './types.js'
 
 import { load as actualLoad } from './actual/load.js'
 export const actual = { load: actualLoad }
