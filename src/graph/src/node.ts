@@ -10,12 +10,13 @@ import { Spec, SpecOptions } from '@vltpkg/spec'
 import { Integrity, ManifestMinified } from '@vltpkg/types'
 import { DependencyTypeShort } from './dependencies.js'
 import { Edge } from './edge.js'
+import { NodeLike } from './types.js'
 
 export type NodeOptions = SpecOptions & {
   projectRoot: string
 }
 
-export class Node {
+export class Node implements NodeLike {
   get [Symbol.toStringTag]() {
     return '@vltpkg/graph.Node'
   }

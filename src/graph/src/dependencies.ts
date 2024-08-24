@@ -1,6 +1,6 @@
 import { error } from '@vltpkg/error-cause'
-import { Spec } from '@vltpkg/spec'
-import { ManifestMinified } from '@vltpkg/types'
+import { type Spec } from '@vltpkg/spec'
+import { type ManifestMinified } from '@vltpkg/types'
 
 /**
  * Name of the package.json keys used to define different types of dependencies.

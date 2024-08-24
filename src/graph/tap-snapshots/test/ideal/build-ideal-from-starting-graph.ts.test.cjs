@@ -52,7 +52,10 @@ exports[`test/ideal/build-ideal-from-starting-graph.ts > TAP > build from an act
         id: ';;foo@1.0.0',
         location: './node_modules/.vlt/;;foo@1.0.0/node_modules/foo'
       },
-      Edge spec(extraneous@*) -prod-> to: [extraneous package]: <extraneous>,
+      Edge spec(extraneous@*) -prod-> to: Node {
+        id: ';;extraneous@1.0.0',
+        location: './node_modules/.vlt/;;extraneous@1.0.0/node_modules/extraneous'
+      },
       Edge spec(bar@^1.0.0) -prod-> to: [missing package]: <bar@^1.0.0>,
       Edge spec(aliased@custom:foo@^1.0.0) -dev-> to: Node {
         id: ';custom;foo@1.0.0',

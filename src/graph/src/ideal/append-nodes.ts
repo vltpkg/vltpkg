@@ -1,7 +1,7 @@
 import { DepID, joinDepIDTuple } from '@vltpkg/dep-id'
 import { error } from '@vltpkg/error-cause'
 import { PackageInfoClient } from '@vltpkg/package-info'
-import { Spec, SpecOptions } from '@vltpkg/spec'
+import { Spec, type SpecOptions } from '@vltpkg/spec'
 import { PathScurry } from 'path-scurry'
 import {
   Dependency,

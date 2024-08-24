@@ -9,6 +9,7 @@ import { DependencyTypeShort } from './dependencies.js'
 import { type Edge } from './edge.js'
 import { lockfileData } from './lockfile/save.js'
 import { Node } from './node.js'
+import { GraphLike } from './types.js'
 
 const kCustomInspect = Symbol.for('nodejs.util.inspect.custom')
 
@@ -33,7 +34,7 @@ export type GraphOptions = SpecOptions & {
   projectRoot: string
 }
 
-export class Graph {
+export class Graph implements GraphLike {
   get [Symbol.toStringTag]() {
     return '@vltpkg/graph.Graph'
   }

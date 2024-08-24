@@ -63,7 +63,10 @@ exports[`test/actual/load.ts > TAP > load actual > should load an actual graph c
         id: ';;foo@1.0.0',
         location: './node_modules/.vlt/;;foo@1.0.0/node_modules/foo'
       },
-      Edge spec(extraneous@*) -prod-> to: [extraneous package]: <extraneous>,
+      Edge spec(extraneous@*) -prod-> to: Node {
+        id: ';;extraneous@1.0.0',
+        location: './node_modules/.vlt/;;extraneous@1.0.0/node_modules/extraneous'
+      },
       Edge spec(bar@^1.0.0) -optional-> to: Node {
         id: ';;bar@1.0.0',
         location: './node_modules/.vlt/;;bar@1.0.0/node_modules/bar',

@@ -54,7 +54,11 @@ exports[`test/visualization/human-readable-output.ts > TAP > human-readable-outp
             integrity: 'sha512-deadbeef',
             edgesOut: [ Edge spec(foo@^1.0.0) -prod-> to: Node { ref: ';;foo@1.0.0' } ]
           },
-          Edge spec(extraneous@extraneous@^1.0.0) -prod-> to: [extraneous package]: <extraneous>
+          Edge spec(extraneous@extraneous@^1.0.0) -prod-> to: Node {
+            id: ';;extraneous@1.0.0',
+            location: './node_modules/.vlt/;;extraneous@1.0.0/node_modules/extraneous',
+            optional: true
+          }
         ]
       },
       Edge spec(missing@^1.0.0) -prod-> to: [missing package]: <missing@^1.0.0>
