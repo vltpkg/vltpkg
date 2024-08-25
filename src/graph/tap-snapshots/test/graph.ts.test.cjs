@@ -72,6 +72,7 @@ Set {
     "id": "file;.",
     "importer": true,
     "integrity": undefined,
+    "mainImporter": true,
     "manifest": Object {
       "name": "my-project",
       "version": "1.0.0",
@@ -87,6 +88,7 @@ Set {
     "id": "workspace;packages%2Fb",
     "importer": true,
     "integrity": undefined,
+    "mainImporter": false,
     "manifest": Object {
       "name": "b",
       [Symbol.for(indent)]: "",
@@ -104,6 +106,7 @@ Set {
     "id": "workspace;packages%2Fa",
     "importer": true,
     "integrity": undefined,
+    "mainImporter": false,
     "manifest": Object {
       "name": "a",
       [Symbol.for(indent)]: "",

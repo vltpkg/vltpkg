@@ -114,6 +114,7 @@ export class Graph implements GraphLike {
       mainImporterSpec,
     )
     mainImporter.setImporterLocation(mainImporterLocation)
+    mainImporter.mainImporter = true
     this.mainImporter = mainImporter
     this.importers.add(mainImporter)
     this.manifests.set(mainImporter.id, mainManifest)
