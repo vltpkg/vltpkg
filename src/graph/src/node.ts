@@ -97,6 +97,11 @@ export class Node implements NodeLike {
   importer = false
 
   /**
+   * True if this node is the project root node.
+   */
+  mainImporter = false
+
+  /**
    * The manifest integrity value.
    */
   integrity?: Integrity

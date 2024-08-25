@@ -28,6 +28,7 @@ export interface NodeLike {
   integrity?: string | null
   resolved?: string | null
   importer: boolean
+  mainImporter: boolean
   projectRoot: string
   dev: boolean
   optional: boolean
