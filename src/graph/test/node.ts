@@ -29,6 +29,7 @@ t.test('Node', async t => {
     asDepID('file;.'),
     rootMani,
   )
+  root.mainImporter = true // signal the main importer node
   root.setImporterLocation('./path/to/importer')
   t.equal(root.location, './path/to/importer')
   // should have no effect, because it's an importer
