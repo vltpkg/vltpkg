@@ -73,5 +73,7 @@
   "is-fullwidth-code-point@^3.0.0": "is-fullwidth-code-point-3.0.0",
   "emoji-regex@^8.0.0": "emoji-regex-8.0.0",
   "color-convert@^2.0.1": "color-convert-2.0.1",
-  "color-name@~1.1.4": "color-name-1.1.4"
+  "color-name@~1.1.4": "color-name-1.1.4",
+  "notmissing@file:./src/filedep/notmissing": "notmissing",
+  "notmissing@file:./notmissing": "notmissing"
 }

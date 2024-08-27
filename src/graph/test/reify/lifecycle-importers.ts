@@ -29,6 +29,20 @@ t.test('run scripts for importers with changed deps', async t => {
     project: {
       'vlt-workspaces.json': JSON.stringify('src/*'),
       'package.json': JSON.stringify({}),
+      node_modules: {
+        '.vlt': {
+          ';;extra@1.0.0': {
+            node_modules: {
+              extra: {
+                'package.json': JSON.stringify({
+                  name: 'extra',
+                  version: '1.0.0',
+                }),
+              },
+            },
+          },
+        },
+      },
       src: {
         a: {
           'package.json': JSON.stringify({
@@ -37,11 +51,32 @@ t.test('run scripts for importers with changed deps', async t => {
             dependencies: { glob: '11' },
           }),
         },
+        extradep: {
+          node_modules: {
+            extra: t.fixture(
+              'symlink',
+              '../../../.vlt/;;extra@1.0.0/node_modules/extra',
+            ),
+          },
+          'package.json': JSON.stringify({
+            name: 'extradep',
+            version: '1.2.3',
+          }),
+        },
         filedep: {
+          notmissing: {
+            'package.json': JSON.stringify({
+              name: 'notmissing',
+              version: '1.2.3',
+            }),
+          },
           'package.json': JSON.stringify({
             name: 'filedep',
             version: '1.2.3',
-            optionalDependencies: { missing: 'file:./missing.tgz' },
+            optionalDependencies: {
+              missing: 'file:./missing.tgz',
+              notmissing: 'file:./notmissing',
+            },
           }),
         },
       },
@@ -57,8 +92,9 @@ t.test('run scripts for importers with changed deps', async t => {
   const diff = new Diff(actual, ideal)
   const packageJson = new PackageJson()
   await lifecycleImporters(diff, packageJson, projectRoot)
+
   t.match(
-    new Set(runs),
+    new Set(runs.map(({ arg0, cwd }) => ({ arg0, cwd }))),
     new Set([
       { arg0: 'install', cwd: './src/a' },
       { arg0: 'install', cwd: './src/filedep' },
@@ -66,6 +102,7 @@ t.test('run scripts for importers with changed deps', async t => {
       { arg0: 'prepare', cwd: './src/filedep' },
     ]),
   )
+
   // now we do the same thing, but only the src/a has changes
   ideal.nodes.delete(';;glob@11.0.0')
   const globEdge = ideal.nodes
@@ -81,10 +118,13 @@ t.test('run scripts for importers with changed deps', async t => {
   const diff2 = new Diff(ideal, ideal2)
   runs.length = 0
   await lifecycleImporters(diff2, packageJson, projectRoot)
-  t.match(runs, [
-    { arg0: 'install', cwd: './src/a' },
-    { arg0: 'prepare', cwd: './src/a' },
-  ])
+  t.match(
+    new Set(runs.map(({ arg0, cwd }) => ({ arg0, cwd }))),
+    new Set([
+      { arg0: 'install', cwd: './src/a' },
+      { arg0: 'prepare', cwd: './src/a' },
+    ]),
+  )
   runs.length = 0
 
   const fd = ideal2.nodes.get('workspace;src%2Ffiledep')

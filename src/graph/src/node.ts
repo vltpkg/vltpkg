@@ -23,20 +23,56 @@ export class Node {
   #options: SpecOptions
   #location?: string
 
+  #optional = false
   /**
    * True if a node is only reachable via optional or peerOptional edges from
    * any importer.
+   *
+   * Setting this to false, if previously set to true, will also unset
+   * the flag on any optional-flagged non-optional dependencies.
    */
-  optional = false
-
-  isOptional(): this is Node & { optional: true } {
-    return this.optional
+  get optional() {
+    return this.#optional
+  }
+  set optional(optional: boolean) {
+    const before = this.#optional
+    this.#optional = optional
+    if (before && !optional) {
+      // unset for all deps, as well
+      for (const { to, optional } of this.edgesOut.values()) {
+        if (!optional && to?.optional) to.optional = false
+      }
+    }
   }
 
+  isOptional(): this is Node & { optional: true } {
+    return this.#optional
+  }
+
+  #dev = false
   /**
    * True if a node is only reachable via dev edges from any importer.
+   *
+   * Setting this to false, if previously set to true, will also unset
+   * the flag on any dev-flagged non-dev dependencies.
    */
-  dev = false
+  get dev() {
+    return this.#dev
+  }
+  set dev(dev: boolean) {
+    const before = this.#dev
+    this.#dev = dev
+    if (before && !dev) {
+      // unset for all deps, as well
+      for (const { to, dev } of this.edgesOut.values()) {
+        if (!dev && to?.dev) to.dev = false
+      }
+    }
+  }
+
+  isDev(): this is Node & { dev: true } {
+    return this.#dev
+  }
 
   /**
    * List of edges coming into this node.

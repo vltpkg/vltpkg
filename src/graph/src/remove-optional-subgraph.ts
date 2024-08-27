@@ -37,7 +37,7 @@ export const removeOptionalSubgraph = (
 export function* findOptionalSubgraph(
   node: Node & { optional: true },
   seen = new Set<Node & { optional: true }>(),
-): Generator<Node & { optional: true }, void, unknown> {
+): Generator<Node & { optional: true }, void> {
   // already visited, prevent looping
   if (seen.has(node)) return
 

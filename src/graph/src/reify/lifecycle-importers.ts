@@ -25,16 +25,17 @@ export const lifecycleImporters = async (
         // if the edge is being removed, that's a change
         /* c8 ignore next */
         if (!idealEdge) return true
-        // if ideal is missing, that's a change unless edgeOut is too
-        /* c8 ignore next */
-        if (!idealEdge.to) return !!edgeOut.to
-        // if actual is missing, that's a change unless ideal is too
-        // but we know here that ideal is not missing
-        if (!edgeOut.to) return true
-        // if it's not functionally equivalent, it's a change
-        /* c8 ignore next - covered by previous conditions irl */
-        if (!idealEdge.to.equals(edgeOut.to)) return true
+
+        // if one is missing, that's a change unless the other also is
+        if (!!idealEdge.to !== !!edgeOut.to) return true
+
+        /* c8 ignore start - covered by previous conditions irl */
+        if (!!edgeOut.to && !idealEdge.to?.equals(edgeOut.to)) {
+          return true
+        }
+        /* c8 ignore end */
       }
+
       // now scan for any new edges added
       for (const name of node.edgesOut.keys()) {
         if (!actualImp.edgesOut.get(name)) return true

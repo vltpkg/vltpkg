@@ -37,6 +37,14 @@ t.test('append a new node to a graph from a registry', async t => {
     // missing and can't be fetched, but that's ok
     optionalDependencies: {
       borked: '*',
+      metaborked: '*',
+    },
+  }
+  const metaborkedManifest: Manifest = {
+    name: 'metaborked',
+    version: '1.0.0',
+    dependencies: {
+      borked: '*',
     },
   }
   const mainManifest: Manifest = {
@@ -54,6 +62,8 @@ t.test('append a new node to a graph from a registry', async t => {
   const packageInfo = {
     async manifest(spec: Spec) {
       switch (spec.name) {
+        case 'metaborked':
+          return metaborkedManifest
         case 'bar':
           return barManifest
         case 'foo':
@@ -220,7 +230,7 @@ t.test('append different type of dependencies', async t => {
       new PathScurry(t.testdirName),
       configData,
     ),
-    /Failed to place node/,
+    /failed to resolve dependency/,
     'should throw if failes to create a node for a given manifest',
   )
   t.matchSnapshot(

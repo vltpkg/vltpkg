@@ -5,7 +5,10 @@ import { DependencyTypeShort } from '../src/dependencies.js'
 import { Edge } from '../src/edge.js'
 import { Graph } from '../src/graph.js'
 import { Node } from '../src/node.js'
-import { findOptionalSubgraph, removeOptionalSubgraph } from '../src/remove-optional-subgraph.js'
+import {
+  findOptionalSubgraph,
+  removeOptionalSubgraph,
+} from '../src/remove-optional-subgraph.js'
 
 const pp = (
   graph: Graph,
@@ -45,7 +48,6 @@ t.test('remove optional nodes starting from a given spot', t => {
       y: '',
     },
   })
-  if (!barNode) throw new Error('no bar')
 
   const xNode = pp(graph, barNode, 'prod', Spec.parse('x@'), {
     name: 'x',
@@ -83,7 +85,10 @@ t.test('remove optional nodes starting from a given spot', t => {
     [zNode.id, xNode.id, barNode.id, yNode.id],
   )
   const removed = removeOptionalSubgraph(graph, xNode)
-  t.strictSame([...removed].map(({id})=>id), [ ';;x@1.2.3', ';;bar@1.2.3' ])
+  t.strictSame(
+    [...removed].map(({ id }) => id),
+    [';;x@1.2.3', ';;bar@1.2.3'],
+  )
   for (const node of removed) {
     t.equal(graph.nodes.get(node.id), undefined, 'node was removed')
   }
