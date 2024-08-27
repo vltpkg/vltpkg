@@ -2,6 +2,7 @@ import { asDepID, getId } from '@vltpkg/dep-id'
 import { Spec, SpecOptions } from '@vltpkg/spec'
 import { inspect } from 'node:util'
 import t from 'tap'
+import { Edge } from '../src/edge.js'
 import { Node } from '../src/node.js'
 
 t.cleanSnapshot = s =>
@@ -313,11 +314,82 @@ t.test('nodeModules path and inVltStore flag', t => {
     'file;some/path',
     { name: 'foo', version: '1.2.3' },
   )
+  t.equal(outside.isOptional(), false)
   outside.optional = true
   t.equal(outside.isOptional(), true)
   outside.optional = false
   t.equal(outside.isOptional(), false)
   outside.location = './some/path'
   t.equal(outside.nodeModules, './some/path/node_modules')
+  t.end()
+})
+
+t.test('optional flag is contagious', t => {
+  const opts = { ...options, projectRoot: t.testdirName }
+  const rootMani = {
+    name: 'root',
+    optionalDependencies: { o: '' },
+  }
+  const root = new Node(opts, asDepID('file;.'), rootMani)
+
+  const oMani = {
+    name: 'o',
+    version: '1.0.0',
+    dependencies: {
+      oo: '',
+    },
+  }
+  const o = new Node(opts, asDepID(';;o@1.0.0'), oMani)
+  o.optional = true
+  const rootoEdge = new Edge('optional', Spec.parse('o@'), root, o)
+  root.edgesOut.set('o', rootoEdge)
+  o.edgesIn.add(rootoEdge)
+
+  const ooMani = { name: 'oo', version: '1.0.0' }
+  const oo = new Node(opts, asDepID(';;oo@1.0.0'), ooMani)
+  oo.optional = true
+  const oooEdge = new Edge('prod', Spec.parse('oo@'), o, oo)
+  o.edgesOut.set('oo', oooEdge)
+  oo.edgesIn.add(oooEdge)
+
+  // now if o becomes non-optional, oo does as well
+  o.optional = false
+  t.equal(oo.isOptional(), false)
+
+  t.end()
+})
+
+t.test('dev flag is contagious', t => {
+  const opts = { ...options, projectRoot: t.testdirName }
+  const rootMani = {
+    name: 'root',
+    devDependencies: { o: '' },
+  }
+  const root = new Node(opts, asDepID('file;.'), rootMani)
+
+  const dMani = {
+    name: 'd',
+    version: '1.0.0',
+    dependencies: {
+      dd: '',
+    },
+  }
+  const d = new Node(opts, asDepID(';;d@1.0.0'), dMani)
+  d.dev = true
+  const rootoEdge = new Edge('dev', Spec.parse('d@'), root, d)
+  root.edgesOut.set('d', rootoEdge)
+  d.edgesIn.add(rootoEdge)
+
+  const ddMani = { name: 'dd', version: '1.0.0' }
+  const dd = new Node(opts, asDepID(';;dd@1.0.0'), ddMani)
+  dd.dev = true
+  const dddEdge = new Edge('prod', Spec.parse('dd@'), d, dd)
+  d.edgesOut.set('dd', dddEdge)
+  dd.edgesIn.add(dddEdge)
+
+  // now if d becomes non-optional, oo does as well
+  d.dev = false
+  t.equal(dd.isDev(), false)
+
   t.end()
 })

@@ -731,5 +731,15 @@
         "sig": "MEUCIG2l+FZMwxYIqqQGjpRh1N/qB5x1d1x89kMSCvYnU+YjAiEAvz0mL63vMV7ARidb4UDiJitlZftiltOXhGp5tfSQHoU="
       }
     ]
+  },
+  "abbrev@": {
+    "resolved": "https://registry.npmjs.org/abbrev/-/abbrev-2.0.0.tgz",
+    "integrity": "sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ==",
+    "signatures": [
+      {
+        "sig": "MEQCIAqmMUR8ZhXSrjGlpIqySNBD9Pa236Qja5gsIWoqGhRaAiBss1eUkBZQkv4pCtZXOXp5D1pZDUNnz0y/bz7oDuH3uQ==",
+        "keyid": "SHA256:jl3bwswu80PjjokCgh0o2w5c2U4LhQAE57gj9cz1kzA"
+      }
+    ]
   }
 }

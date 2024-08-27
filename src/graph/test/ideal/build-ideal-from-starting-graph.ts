@@ -1,4 +1,4 @@
-import { PackageInfoClient } from '@vltpkg/package-info'
+import { manifest, PackageInfoClient } from '@vltpkg/package-info'
 import { Spec, SpecOptions } from '@vltpkg/spec'
 import { PathScurry } from 'path-scurry'
 import t from 'tap'
@@ -36,12 +36,15 @@ const missingManifest = {
   version: '1.0.0',
 }
 const packageInfo = {
-  async manifest(spec: Spec) {
+  async manifest(spec: Spec, options?: any) {
     switch (spec.name) {
       case 'baz':
         return bazManifest
       case 'missing':
         return missingManifest
+      case 'linked':
+      case 'link':
+        return manifest(spec, options)
       default:
         return null
     }
@@ -88,6 +91,12 @@ t.test('build from a virtual graph', async t => {
   }
   const projectRoot = t.testdir({
     'vlt-lock.json': JSON.stringify(lockfileData),
+    linked: {
+      'package.json': JSON.stringify({
+        name: 'linked',
+        version: '1.2.3',
+      }),
+    },
   })
 
   const virtual = loadVirtual({

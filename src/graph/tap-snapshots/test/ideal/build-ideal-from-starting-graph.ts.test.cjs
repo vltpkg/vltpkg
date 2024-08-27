@@ -12,11 +12,7 @@ exports[`test/ideal/build-ideal-from-starting-graph.ts > TAP > build from a virt
     location: '.',
     importer: true,
     edgesOut: [
-      Edge spec(linked@file:./linked) -prod-> to: Node {
-        id: 'file;linked',
-        location: './node_modules/.vlt/file;linked/node_modules/file;linked',
-        resolved: 'linked'
-      },
+      Edge spec(linked@file:./linked) -prod-> to: Node { id: 'file;linked', location: 'linked', resolved: 'linked' },
       Edge spec(foo@^1.0.0) -prod-> to: Node {
         id: ';;foo@1.0.0',
         location: './node_modules/.vlt/;;foo@1.0.0/node_modules/foo',
