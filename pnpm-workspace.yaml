@@ -14,7 +14,7 @@ catalog:
   prettier: ^3.3.2
   rimraf: ^6.0.1
   tap: ^21.0.1
-  tar: ^7.2.0
+  tar: ^7.4.3
   tshy: ^3.0.2
   typedoc: ^0.26.5
   typescript: ^5.5.4
