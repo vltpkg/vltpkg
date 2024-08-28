@@ -13,7 +13,7 @@
     "eslint": "catalog:",
     "globals": "^15.9.0",
     "prettier": "catalog:",
-    "turbo": "^2.0.11",
+    "turbo": "^2.1.0",
     "typedoc": "catalog:",
     "typescript": "catalog:",
     "typescript-eslint": "catalog:",
