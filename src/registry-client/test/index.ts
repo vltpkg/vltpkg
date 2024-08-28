@@ -1,5 +1,5 @@
 import { createServer } from 'http'
-import t from 'tap'
+import t, { Test } from 'tap'
 import { gzipSync } from 'zlib'
 import { RegistryClient } from '../src/index.js'
 
@@ -75,6 +75,12 @@ const registry = createServer((req, res) => {
 
 const registryURL = `http://localhost:${PORT}`
 
+const mockIndex = async (t: Test, mocks?: Record<string, any>) =>
+  t.mockImport('../src/index.js', {
+    '../src/env.js': await t.mockImport('../src/env.js'),
+    ...mocks,
+  })
+
 t.teardown(() => registry.close())
 t.before(
   async () => await new Promise<void>(r => registry.listen(PORT, r)),
@@ -98,7 +104,7 @@ t.test('register unzipping for gzip responses', async t => {
   const registered: [string, string][] = []
   const register = (path: string, key: string) =>
     registered.push([path, key])
-  const { RegistryClient } = await t.mockImport('../src/index.js', {
+  const { RegistryClient } = await mockIndex(t, {
     '@vltpkg/cache-unzip': { register },
   })
   const rc = new RegistryClient({ cache: t.testdir() })
@@ -223,7 +229,7 @@ t.test('user-agent', t => {
     t.intercept(globalThis, 'navigator', {
       value: { userAgent: 'navUA' },
     })
-    const { userAgent } = await t.mockImport('../src/index.js')
+    const { userAgent } = await mockIndex(t)
     t.match(
       userAgent,
       /^@vltpkg\/registry-client\/[^ ]+ navUA$/,
@@ -235,23 +241,27 @@ t.test('user-agent', t => {
     t.intercept(globalThis, 'navigator', { value: null })
 
     t.test('bun', async t => {
-      const { userAgent } = await t.mockImport('../src/index.js', {
-        bun: { default: { version: 'bunver' } },
-      })
+      t.intercept(
+        globalThis as typeof globalThis & { Bun: any },
+        'Bun',
+        {
+          value: { version: 'bunver' },
+        },
+      )
+      const { userAgent } = await mockIndex(t)
       t.match(
         userAgent,
         /^@vltpkg\/registry-client\/[^ ]+ Bun\/bunver$/,
       )
     })
 
-    t.test('bun', async t => {
-      //@ts-expect-error
-      t.intercept(globalThis, 'Deno', {
-        value: {
-          deno: { version: 'denover' },
-        },
-      })
-      const { userAgent } = await t.mockImport('../src/index.js')
+    t.test('deno', async t => {
+      t.intercept(
+        globalThis as typeof globalThis & { Deno: any },
+        'Deno',
+        { value: { version: { deno: 'denover' } } },
+      )
+      const { userAgent } = await mockIndex(t)
       t.match(
         userAgent,
         /^@vltpkg\/registry-client\/[^ ]+ Deno\/denover$/,
@@ -260,7 +270,7 @@ t.test('user-agent', t => {
 
     t.test('node', async t => {
       t.intercept(process, 'version', { value: 'nodever' })
-      const { userAgent } = await t.mockImport('../src/index.js')
+      const { userAgent } = await mockIndex(t)
       t.match(
         userAgent,
         /^@vltpkg\/registry-client\/[^ ]+ Node.js\/nodever$/,
@@ -269,7 +279,7 @@ t.test('user-agent', t => {
 
     t.test('nothing we know about', async t => {
       t.intercept(process, 'version', { value: '' })
-      const { userAgent } = await t.mockImport('../src/index.js')
+      const { userAgent } = await mockIndex(t)
       t.match(
         userAgent,
         /^@vltpkg\/registry-client\/[^ ]+ \(unknown platform\)$/,

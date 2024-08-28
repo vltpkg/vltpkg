@@ -11,27 +11,7 @@
  * which major versions changed the serialization wire format.
  */
 
-const proc = process as NodeJS.Process | undefined
-const isNode =
-  typeof proc?.versions === 'object' && !!process.versions
-//@ts-expect-error
-const isDeno = !isNode && typeof Deno === 'object' && !!Deno
-const isBun =
-  //@ts-expect-error
-  !isNode && !isDeno && typeof Bun === 'object' && !!Bun
-
-const engineVersion: string | undefined =
-  isNode ? proc.versions.v8
-    //@ts-expect-error
-  : isDeno ? Deno.version.v8
-    //@ts-expect-error
-  : isBun ? Bun.version
-  : undefined
-
-const engineName =
-  isNode || isDeno ? 'v8'
-  : isBun ? 'bun'
-  : undefined
+import { engineVersion, engineName } from './env.js'
 
 const engineMajor = parseInt(
   engineVersion?.replace(/[^0-9]/g, ' ').trim() ?? '',
