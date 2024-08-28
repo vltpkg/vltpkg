@@ -11,17 +11,12 @@
  * which major versions changed the serialization wire format.
  */
 
-import { engineVersion, engineName } from './env.js'
-
-const engineMajor = parseInt(
-  engineVersion?.replace(/[^0-9]/g, ' ').trim() ?? '',
-  10,
-)
+import { engine } from './env.js'
 
 // these aren't used if we couldn't determine the engine type & version
 export const serializedHeader =
-  engineName && engineMajor ?
-    `${engineName}-serialize-${engineMajor}`
+  engine ?
+    `${engine.name}-serialize-${parseInt(engine.version.replace(/[^0-9]/g, ' ').trim(), 10)}`
   : undefined
 
 export { deserialize, serialize } from 'node:v8'

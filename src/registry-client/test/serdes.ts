@@ -24,22 +24,24 @@ t.test('simulate deno', async t => {
   t.intercept(
     globalThis as typeof globalThis & { Deno: any },
     'Deno',
-    { value: { version: { v8: '420.69.lol' } } },
+    { value: {} },
   )
+  t.intercept(process, 'versions', { value: { v8: '420.69.lol' } })
   const { serializedHeader } = await mock(t)
   t.equal(serializedHeader, 'v8-serialize-420')
 })
 
 t.test('simulate bun', async t => {
   t.intercept(globalThis as typeof globalThis & { Bun: any }, 'Bun', {
-    value: { version: '420.69.lol' },
+    value: {},
   })
+  t.intercept(process, 'versions', { value: { bun: '420.69.lol' } })
   const { serializedHeader } = await mock(t)
   t.equal(serializedHeader, 'bun-serialize-420')
 })
 
 t.test('simulate unknown', async t => {
-  t.intercept(globalThis, 'process', { value: undefined })
+  t.intercept(process, 'versions', { value: {} })
   const { serializedHeader } = await mock(t)
   t.equal(serializedHeader, undefined)
 })

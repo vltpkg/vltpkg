@@ -1,34 +1,24 @@
-export type GlobalEnv = {
-  process:
-    | undefined
-    | { version: string; versions: Record<string, string> }
-  Deno: undefined | { version: { deno: string; v8: string } }
-  Bun: undefined | { version: string }
-}
+import proc from 'node:process'
 
-const {
-  Deno,
-  Bun,
-  process: proc,
-} = globalThis as unknown as GlobalEnv
+const { Deno, Bun } = globalThis as typeof globalThis & {
+  Deno: undefined | object
+  Bun: undefined | object
+}
 
 const isObj = (v: unknown) => typeof v === 'object' && !!v
 
 export const isDeno = isObj(Deno)
 export const isBun = !isDeno && isObj(Bun)
-export const isNode = !isDeno && !isBun && isObj(proc?.versions)
+// bun and deno also report 'node' in process.versions so its only
+// node if it is not bun or deno
+export const isNode = !isDeno && !isBun && 'node' in proc.versions
 
-export const bun = isBun ? Bun?.version : undefined
-export const deno = isDeno ? Deno?.version.deno : undefined
-export const node = isNode ? proc?.version : undefined
+// All the runtimes put their versions into process.versions
+export const bun = isBun ? proc.versions.bun : undefined
+export const deno = isDeno ? proc.versions.deno : undefined
+export const node = isNode ? proc.versions.node : undefined
 
-export const engineVersion =
-  isNode ? proc?.versions.v8
-  : isDeno ? Deno?.version.v8
-  : isBun ? bun
-  : undefined
-
-export const engineName =
-  isNode || isDeno ? 'v8'
-  : isBun ? 'bun'
+export const engine =
+  isNode || isDeno ? { name: 'v8', version: proc.versions.v8 }
+  : isBun && bun ? { name: 'bun', version: bun }
   : undefined

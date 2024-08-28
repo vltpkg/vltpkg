@@ -229,7 +229,9 @@ t.test('user-agent', t => {
     t.intercept(globalThis, 'navigator', {
       value: { userAgent: 'navUA' },
     })
-    const { userAgent } = await mockIndex(t)
+    const { userAgent } = await mockIndex(t, {
+      navigator: { userAgent: 'navUA' },
+    })
     t.match(
       userAgent,
       /^@vltpkg\/registry-client\/[^ ]+ navUA$/,
@@ -244,10 +246,11 @@ t.test('user-agent', t => {
       t.intercept(
         globalThis as typeof globalThis & { Bun: any },
         'Bun',
-        {
-          value: { version: 'bunver' },
-        },
+        { value: {} },
       )
+      t.intercept(process, 'versions', {
+        value: { bun: 'bunver' },
+      })
       const { userAgent } = await mockIndex(t)
       t.match(
         userAgent,
@@ -259,8 +262,11 @@ t.test('user-agent', t => {
       t.intercept(
         globalThis as typeof globalThis & { Deno: any },
         'Deno',
-        { value: { version: { deno: 'denover' } } },
+        { value: {} },
       )
+      t.intercept(process, 'versions', {
+        value: { deno: 'denover' },
+      })
       const { userAgent } = await mockIndex(t)
       t.match(
         userAgent,
@@ -269,7 +275,9 @@ t.test('user-agent', t => {
     })
 
     t.test('node', async t => {
-      t.intercept(process, 'version', { value: 'nodever' })
+      t.intercept(process, 'versions', {
+        value: { node: 'nodever' },
+      })
       const { userAgent } = await mockIndex(t)
       t.match(
         userAgent,
@@ -278,7 +286,7 @@ t.test('user-agent', t => {
     })
 
     t.test('nothing we know about', async t => {
-      t.intercept(process, 'version', { value: '' })
+      t.intercept(process, 'versions', { value: {} })
       const { userAgent } = await mockIndex(t)
       t.match(
         userAgent,
