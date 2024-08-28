@@ -77,6 +77,7 @@ const registryURL = `http://localhost:${PORT}`
 
 const mockIndex = async (t: Test, mocks?: Record<string, any>) =>
   t.mockImport('../src/index.js', {
+    // always get fresh copy of env since it reads globalThis
     '../src/env.js': await t.mockImport('../src/env.js'),
     ...mocks,
   })
@@ -229,9 +230,7 @@ t.test('user-agent', t => {
     t.intercept(globalThis, 'navigator', {
       value: { userAgent: 'navUA' },
     })
-    const { userAgent } = await mockIndex(t, {
-      navigator: { userAgent: 'navUA' },
-    })
+    const { userAgent } = await mockIndex(t)
     t.match(
       userAgent,
       /^@vltpkg\/registry-client\/[^ ]+ navUA$/,
