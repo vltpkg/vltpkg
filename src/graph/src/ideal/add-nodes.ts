@@ -1,12 +1,12 @@
 import { error } from '@vltpkg/error-cause'
+import { PackageInfoClient } from '@vltpkg/package-info'
 import { SpecOptions } from '@vltpkg/spec'
+import { PathScurry } from 'path-scurry'
 import { appendNodes } from './append-nodes.js'
 import {
-  BuildIdealFromGraphOptions,
   BuildIdealAddOptions,
+  BuildIdealFromGraphOptions,
 } from './types.js'
-import { PackageInfoClient } from '@vltpkg/package-info'
-import { PathScurry } from 'path-scurry'
 
 export type AddNodesOptions = BuildIdealAddOptions &
   BuildIdealFromGraphOptions &

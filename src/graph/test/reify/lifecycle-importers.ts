@@ -75,6 +75,8 @@ t.test('run scripts for importers with changed deps', async t => {
             version: '1.2.3',
             optionalDependencies: {
               missing: 'file:./missing.tgz',
+            },
+            dependencies: {
               notmissing: 'file:./notmissing',
             },
           }),

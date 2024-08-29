@@ -153,6 +153,9 @@ export class Graph {
     this.nodes = new Map()
     const marked = new Set(this.importers)
     for (const imp of marked) {
+      // don't delete the importer!
+      nodes.delete(imp.id)
+      this.nodes.set(imp.id, imp)
       for (const { to } of imp.edgesOut.values()) {
         if (!to || marked.has(to)) continue
         marked.add(to)
@@ -210,7 +213,10 @@ export class Graph {
    */
   findResolution(spec: Spec, fromNode: Node) {
     const f = spec.final
-    const sf = String(f)
+    // if it's a file: dep, then the fromNode location matters
+    const fromPref =
+      f.type === 'file' ? fromNode.location + ' : ' : ''
+    const sf = fromPref + String(f)
     const cached = this.resolutions.get(sf)
     if (cached) return cached
     const nbn = this.nodesByName.get(f.name)
@@ -257,10 +263,14 @@ export class Graph {
     this.nodesByName.set(node.name, nbn)
     if (spec) {
       const f = String(spec.final)
-      this.resolutions.set(f, node)
-      const rrev = this.resolutionsReverse.get(node) ?? new Set()
-      rrev.add(f)
-      this.resolutionsReverse.set(node, rrev)
+      // if it's a file: type, then that is fromNode-specific,
+      // so we can't shortcut add it here.
+      if (spec.final.type !== 'file') {
+        this.resolutions.set(f, node)
+        const rrev = this.resolutionsReverse.get(node) ?? new Set()
+        rrev.add(f)
+        this.resolutionsReverse.set(node, rrev)
+      }
     }
     if (manifest) {
       this.manifests.set(node.id, manifest)

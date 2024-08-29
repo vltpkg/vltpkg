@@ -44,6 +44,7 @@ export const lifecycleImporters = async (
       return false
     }),
   )
+
   if (importersWithChangedDeps) {
     const set = new Set(importersWithChangedDeps)
     await graphRun({

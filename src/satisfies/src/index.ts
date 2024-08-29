@@ -69,7 +69,11 @@ export const satisfiesTuple = (
     case 'file': {
       /* c8 ignore next - should be impossible */
       if (spec.file === undefined) return false
-      const resolvedSpec = resolve(fromLocation, spec.file)
+      const resolvedSpec = resolve(
+        projectRoot,
+        fromLocation,
+        spec.file,
+      )
       const resolvedId = resolve(projectRoot, first)
       // valid if the relative path is '', refers to the same path
       return !relative(resolvedSpec, resolvedId)

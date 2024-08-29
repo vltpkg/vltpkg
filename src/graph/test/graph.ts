@@ -1,4 +1,4 @@
-import { hydrate } from '@vltpkg/dep-id'
+import { asDepID, hydrate } from '@vltpkg/dep-id'
 import { kCustomInspect, Spec, SpecOptions } from '@vltpkg/spec'
 import { Monorepo } from '@vltpkg/workspaces'
 import { inspect } from 'node:util'
@@ -46,6 +46,7 @@ t.test('Graph', async t => {
     {
       name: 'foo',
       version: '1.0.0',
+      dependencies: { localdep: 'file:localdep' },
     },
     Spec.parse('foo@^1.0.0'),
   )
@@ -54,6 +55,32 @@ t.test('Graph', async t => {
     2,
     'should create and add the new node to the graph',
   )
+
+  // gutchecks
+  t.strictSame(newNode.id, ';;foo@1.0.0', 'id gutcheck')
+  t.strictSame(
+    newNode.location,
+    './node_modules/.vlt/;;foo@1.0.0/node_modules/foo',
+    'location gutcheck',
+  )
+
+  const localdep = graph.addNode(
+    asDepID(
+      'file;' + encodeURIComponent(newNode.location + '/localdep'),
+    ),
+    { name: 'localdep', version: '1.2.3' },
+    Spec.parse('localdep@file:localdep'),
+    'localdep',
+    '1.2.3',
+  )
+  t.equal(
+    graph.findResolution(
+      Spec.parse('localdep@file:./localdep'),
+      newNode,
+    ),
+    localdep,
+  )
+
   t.equal(
     graph.findResolution(
       Spec.parse('bar@npm:foo@1.x'),

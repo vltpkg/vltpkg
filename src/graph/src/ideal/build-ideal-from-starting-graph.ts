@@ -35,5 +35,7 @@ export const buildIdealFromStartingGraph = async (
   // removes any dependencies that are listed in the `remove` option
   removeNodes(options)
 
+  options.graph.gc()
+
   return options.graph
 }
