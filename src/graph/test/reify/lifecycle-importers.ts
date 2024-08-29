@@ -160,7 +160,10 @@ t.test('run scripts for importers with changed deps', async t => {
     packageInfo: mockPackageInfo,
     loadManifests: true,
   })
-  const newImp = new Node({ projectRoot }, ';;workspace%2Fsrc/x')
+  const newImp = new Node(
+    { projectRoot, importers: new Set() },
+    ';;workspace%2Fsrc/x',
+  )
   newImp.location = './src/x'
   newImp.importer = true
   ideal3.importers.add(newImp)

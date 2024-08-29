@@ -29,7 +29,7 @@ const fooMani: Manifest = {
   dependencies: { bar: '1' },
 }
 const fooNode = new Node(
-  { projectRoot },
+  { projectRoot, importers: new Set() },
   ';;foo@1.2.3',
   fooMani,
   Spec.parse('foo@1'),
@@ -43,7 +43,7 @@ const barMani: Manifest = {
   optionalDependencies: { baz: '1' },
 }
 const barNode = new Node(
-  { projectRoot },
+  { projectRoot, importers: new Set() },
   ';;bar@1.2.3',
   barMani,
   Spec.parse('bar@1'),
@@ -69,7 +69,7 @@ const mockDiff = {
 } as unknown as Diff
 
 const gitNode = new Node(
-  { projectRoot },
+  { projectRoot, importers: new Set() },
   'git;github:a/b;deadbeefcafebad',
   {},
   Spec.parse('github:a/b'),
@@ -78,7 +78,7 @@ const gitNode = new Node(
 )
 
 const outNode = new Node(
-  { projectRoot },
+  { projectRoot, importers: new Set() },
   'file;./outside',
   {},
   Spec.parse('file:./outside'),
