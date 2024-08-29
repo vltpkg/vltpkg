@@ -8,7 +8,7 @@ import { inspect, InspectOptions } from 'util'
 import { DependencyTypeShort } from './dependencies.js'
 import { type Edge } from './edge.js'
 import { lockfileData } from './lockfile/save.js'
-import { Node } from './node.js'
+import { Node, NodeOptions } from './node.js'
 import { GraphLike } from './types.js'
 
 const kCustomInspect = Symbol.for('nodejs.util.inspect.custom')
@@ -40,6 +40,8 @@ export class Graph implements GraphLike {
   }
 
   #options: GraphOptions
+
+  #nodeOptions: NodeOptions
 
   /**
    * A {@link Monorepo} instance, used for managing workspaces.
@@ -101,6 +103,10 @@ export class Graph implements GraphLike {
     this.#options = options
     this.manifests = manifests ?? new Map()
     this.projectRoot = projectRoot
+    this.#nodeOptions = {
+      ...this.#options,
+      importers: this.importers,
+    }
 
     // add the project root node
     const mainImporterLocation = '.'
@@ -252,7 +258,7 @@ export class Graph implements GraphLike {
     version?: string,
   ) {
     const node = new Node(
-      this.#options,
+      this.#nodeOptions,
       id,
       manifest,
       spec,

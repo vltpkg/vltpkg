@@ -56,20 +56,24 @@ t.test('reify an edge', async t => {
   t.throws(() => statSync(fooNM + '/bar'))
   t.throws(() => statSync(fooNM + '/.bin/bar'))
   const fooNode = new Node(
-    { projectRoot },
+    { projectRoot, importers: new Set() },
     ';;foo@1.2.3',
     fooManifest,
   )
   fooNode.location =
     projectRoot + '/node_modules/.vlt/;;foo@1.2.3/node_modules/foo'
   const barNode = new Node(
-    { projectRoot },
+    { projectRoot, importers: new Set() },
     ';;bar@1.2.3',
     barManifest,
   )
   barNode.location =
     projectRoot + '/node_modules/.vlt/;;bar@1.2.3/node_modules/bar'
-  const rootNode = new Node({ projectRoot }, 'file;.', {})
+  const rootNode = new Node(
+    { projectRoot, importers: new Set() },
+    'file;.',
+    {},
+  )
   rootNode.location = projectRoot
 
   const edge = new Edge('prod', Spec.parse('bar@'), fooNode, barNode)

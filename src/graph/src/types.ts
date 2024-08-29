@@ -15,6 +15,7 @@ export interface GraphLike {
   importers: Set<NodeLike>
   mainImporter: NodeLike
   nodes: Map<DepID, NodeLike>
+  edges: Set<EdgeLike>
 }
 
 export interface NodeLike {
@@ -28,6 +29,7 @@ export interface NodeLike {
   integrity?: string | null
   resolved?: string | null
   importer: boolean
+  importers: Set<NodeLike>
   mainImporter: boolean
   projectRoot: string
   dev: boolean

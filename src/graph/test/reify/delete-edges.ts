@@ -26,10 +26,22 @@ const { deleteEdges } = await t.mockImport<
 })
 
 const projectRoot = t.testdirName
-const fooNode = new Node({ projectRoot }, ';;foo@1.2.3')
-const barNode = new Node({ projectRoot }, ';;bar@1.2.3')
-const bazNode = new Node({ projectRoot }, ';;baz@1.2.3')
-const outNode = new Node({ projectRoot }, 'file;./outside')
+const fooNode = new Node(
+  { projectRoot, importers: new Set() },
+  ';;foo@1.2.3',
+)
+const barNode = new Node(
+  { projectRoot, importers: new Set() },
+  ';;bar@1.2.3',
+)
+const bazNode = new Node(
+  { projectRoot, importers: new Set() },
+  ';;baz@1.2.3',
+)
+const outNode = new Node(
+  { projectRoot, importers: new Set() },
+  'file;./outside',
+)
 outNode.location = resolve(projectRoot, 'outside')
 const foobarEdge = new Edge(
   'prod',

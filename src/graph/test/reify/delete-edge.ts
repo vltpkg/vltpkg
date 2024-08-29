@@ -91,8 +91,16 @@ t.test('posix', async t => {
   const edge = new Edge(
     'prod',
     Spec.parse('bar@'),
-    new Node({ projectRoot }, ';;foo@1.2.3', fooManifest),
-    new Node({ projectRoot }, ';;bar@1.2.3', barManifest),
+    new Node(
+      { projectRoot, importers: new Set() },
+      ';;foo@1.2.3',
+      fooManifest,
+    ),
+    new Node(
+      { projectRoot, importers: new Set() },
+      ';;bar@1.2.3',
+      barManifest,
+    ),
   )
   const scurry = new PathScurry(projectRoot)
 
@@ -129,8 +137,16 @@ t.test('win32', async t => {
   const edge = new Edge(
     'prod',
     Spec.parse('bar@'),
-    new Node({ projectRoot }, ';;foo@1.2.3', fooManifest),
-    new Node({ projectRoot }, ';;bar@1.2.3', barManifest),
+    new Node(
+      { projectRoot, importers: new Set() },
+      ';;foo@1.2.3',
+      fooManifest,
+    ),
+    new Node(
+      { projectRoot, importers: new Set() },
+      ';;bar@1.2.3',
+      barManifest,
+    ),
   )
   const scurry = new PathScurry(projectRoot)
 
