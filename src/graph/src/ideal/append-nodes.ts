@@ -69,9 +69,8 @@ export const appendNodes = async (
   deps: Dependency[],
   scurry: PathScurry,
   options: SpecOptions,
-  failedOptionalNodes = false,
-) => {
-  await Promise.all(
+) =>
+  Promise.all(
     deps.map(async ({ spec, type }) => {
       // see if there's a satisfying node in the graph currently
       const fileTypeInfo = getFileTypeInfo(spec, fromNode, scurry)
@@ -97,7 +96,6 @@ export const appendNodes = async (
           // failed resolution of a non-optional dep of an optional node
           // have to clean up the dependents
           removeOptionalSubgraph(graph, fromNode)
-          failedOptionalNodes = true
           return
         } else if (edgeOptional) {
           // failed resolution of an optional dep, just ignore it,
@@ -158,7 +156,6 @@ export const appendNodes = async (
               nextDeps,
               scurry,
               options,
-              failedOptionalNodes,
             ),
           )
         }
@@ -166,8 +163,3 @@ export const appendNodes = async (
       await Promise.all(nestedAppends)
     }),
   )
-
-  // if we have failed optional nodes that got removed, then need to make
-  // sure we're not including any stranded dependencies in the graph.
-  if (failedOptionalNodes) graph.gc()
-}

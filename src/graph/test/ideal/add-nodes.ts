@@ -3,7 +3,10 @@ import t from 'tap'
 import { Spec, SpecOptions, kCustomInspect } from '@vltpkg/spec'
 import { PackageInfoClient } from '@vltpkg/package-info'
 import { PathScurry } from 'path-scurry'
-import { Dependency } from '../../src/dependencies.js'
+import {
+  Dependency,
+  DependencyTypeShort,
+} from '../../src/dependencies.js'
 import { Graph } from '../../src/graph.js'
 import { addNodes } from '../../src/ideal/add-nodes.js'
 import { humanReadableOutput } from '../../src/index.js'
@@ -52,12 +55,15 @@ t.test('addNodes', async t => {
       }
     },
   } as PackageInfoClient
-  const addEntry = (name: string) =>
+  const addEntry = (
+    name: string,
+    type: DependencyTypeShort = 'prod',
+  ) =>
     new Map(
       Object.entries({
         foo: {
           spec: Spec.parse(name, '^1.0.0'),
-          type: 'prod',
+          type,
         } satisfies Dependency,
       }),
     )
@@ -75,17 +81,6 @@ t.test('addNodes', async t => {
     'graph with an added foo',
   )
 
-  t.rejects(
-    addNodes({
-      add: new Map([[asDepID('file;unknown'), addEntry('foo')]]),
-      graph,
-      packageInfo,
-      scurry: new PathScurry(t.testdirName),
-    }),
-    /Could not find importer/,
-    'should throw an error if finding an unknown importer id',
-  )
-
   await addNodes({
     add: new Map([[asDepID('file;.'), addEntry('foo')]]),
     graph,
@@ -95,6 +90,17 @@ t.test('addNodes', async t => {
   t.matchSnapshot(
     humanReadableOutput(graph),
     'graph after adding foo when there is an already existing foo',
+  )
+
+  await t.rejects(
+    addNodes({
+      add: new Map([[asDepID('file;unknown'), addEntry('foo')]]),
+      graph,
+      packageInfo,
+      scurry: new PathScurry(t.testdirName),
+    }),
+    /Could not find importer/,
+    'should throw an error if finding an unknown importer id',
   )
 
   // place a missing package bar on the main importer

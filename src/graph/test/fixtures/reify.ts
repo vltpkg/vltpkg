@@ -6,14 +6,14 @@
 // is there, we serve it up. Otherwise, we fetch from the actual real
 // world location, and stash it in the fixtures dir.
 
-import {
-  PackageInfoClientRequestOptions,
-  Resolution,
-} from '@vltpkg/package-info'
 import { Spec } from '@vltpkg/spec'
 import t from 'tap'
 
-import { PackageInfoClient } from '@vltpkg/package-info'
+import {
+  PackageInfoClient,
+  PackageInfoClientRequestOptions,
+  Resolution,
+} from '@vltpkg/package-info'
 import { Manifest } from '@vltpkg/types'
 import {
   existsSync,
@@ -55,12 +55,17 @@ export const fixtureManifest = (name: string): Manifest =>
     readFileSync(resolve(fixtureDir, name) + '.json', 'utf8'),
   )
 
+const actualPackageInfo = new PackageInfoClient()
+
 export const mockPackageInfo = {
   resolve: async (
     spec: string | Spec,
     options: PackageInfoClientRequestOptions = {},
   ): Promise<Resolution> => {
     spec = typeof spec === 'string' ? Spec.parse(spec) : spec
+    if (spec.type === 'file') {
+      return actualPackageInfo.resolve(spec, options)
+    }
     const res =
       resolutionsMap[String(spec)] ??
       (await realPackageInfo.resolve(spec, options))
@@ -74,9 +79,12 @@ export const mockPackageInfo = {
 
   manifest: async (
     spec: string | Spec,
-    _options: PackageInfoClientRequestOptions = {},
+    options: PackageInfoClientRequestOptions = {},
   ) => {
     spec = Spec.parse(String(spec)).final
+    if (spec.type === 'file') {
+      return actualPackageInfo.manifest(spec, options)
+    }
     const fixture =
       fixtureMap[String(spec)] ?? (await fixtureName(spec))
     if (!fixtureExists(fixture)) await addFixture(spec)
@@ -91,9 +99,12 @@ export const mockPackageInfo = {
   extract: async (
     spec: string | Spec,
     target: string,
-    _options: PackageInfoClientRequestOptions = {},
+    options: PackageInfoClientRequestOptions = {},
   ) => {
     spec = Spec.parse(String(spec)).final
+    if (spec.type === 'file') {
+      return actualPackageInfo.extract(spec, target, options)
+    }
     const fixture =
       fixtureMap[String(spec)] ?? (await fixtureName(spec))
     if (!fixtureExists(fixture)) await addFixture(spec)
