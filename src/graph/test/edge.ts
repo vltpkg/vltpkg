@@ -30,6 +30,7 @@ t.test('Edge', async t => {
     {
       ...configData,
       projectRoot: t.testdirName,
+      importers: new Set(),
     },
     undefined,
     rootMani,
@@ -44,6 +45,7 @@ t.test('Edge', async t => {
     {
       ...configData,
       projectRoot: t.testdirName,
+      importers: new Set(),
     },
     undefined,
     childMani,
@@ -83,7 +85,11 @@ t.test('Edge', async t => {
   }
   const pdmSpec = Spec.parse('pdm@1.2.3')
   const pdm = new Node(
-    { ...configData, projectRoot: t.testdirName },
+    {
+      ...configData,
+      projectRoot: t.testdirName,
+      importers: new Set(),
+    },
     undefined,
     pdmMani,
     pdmSpec,

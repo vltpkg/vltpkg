@@ -14,6 +14,7 @@ import { NodeLike } from './types.js'
 
 export type NodeOptions = SpecOptions & {
   projectRoot: string
+  importers: Set<Node>
 }
 
 export class Node implements NodeLike {
@@ -100,6 +101,11 @@ export class Node implements NodeLike {
    * True if this node is the project root node.
    */
   mainImporter = false
+
+  /**
+   * The set of importer nodes to the graph this node is a part of.
+   */
+  importers: Set<Node>
 
   /**
    * The manifest integrity value.
@@ -208,6 +214,7 @@ export class Node implements NodeLike {
       }
       this.id = getId(spec, manifest)
     }
+    this.importers = options.importers
     this.manifest = manifest
     this.#name = name || this.manifest?.name
     this.version = version || this.manifest?.version

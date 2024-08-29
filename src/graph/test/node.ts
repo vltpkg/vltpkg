@@ -25,6 +25,7 @@ t.test('Node', async t => {
     {
       ...options,
       projectRoot: t.testdirName,
+      importers: new Set(),
     },
     asDepID('file;.'),
     rootMani,
@@ -64,6 +65,7 @@ t.test('Node', async t => {
     {
       ...options,
       projectRoot: t.testdirName,
+      importers: new Set(),
     },
     undefined,
     fooMani,
@@ -92,6 +94,7 @@ t.test('Node', async t => {
     {
       ...options,
       projectRoot: t.testdirName,
+      importers: new Set(),
     },
     barId,
     barMani,
@@ -106,6 +109,7 @@ t.test('Node', async t => {
     {
       ...options,
       projectRoot: t.testdirName,
+      importers: new Set(),
     },
     barId,
     barMani,
@@ -147,6 +151,7 @@ t.test('Node', async t => {
         {
           ...options,
           projectRoot: t.testdirName,
+          importers: new Set(),
         },
         undefined,
         {
@@ -162,6 +167,7 @@ t.test('Node', async t => {
     {
       ...options,
       projectRoot: t.testdirName,
+      importers: new Set(),
     },
     ';;bar@1.0.0',
     undefined,
@@ -179,7 +185,11 @@ t.test('Node', async t => {
   }
   const unnamedSpec = Spec.parse('', '0.0.0')
   const unnamed = new Node(
-    { ...options, projectRoot: t.testdirName },
+    {
+      ...options,
+      projectRoot: t.testdirName,
+      importers: new Set(),
+    },
     undefined,
     unnamedMani,
     unnamedSpec,
@@ -194,7 +204,11 @@ t.test('Node', async t => {
 
   // file type node with no parent
   const file = new Node(
-    { ...options, projectRoot: t.testdirName },
+    {
+      ...options,
+      projectRoot: t.testdirName,
+      importers: new Set(),
+    },
     asDepID('file;my-package'),
   )
   file.setResolved()
@@ -205,7 +219,11 @@ t.test('Node', async t => {
   )
 
   const git = new Node(
-    { ...options, projectRoot: t.testdirName },
+    {
+      ...options,
+      projectRoot: t.testdirName,
+      importers: new Set(),
+    },
     'git;github%3Avltpkg%2Ffoo;',
   )
   git.setResolved()
@@ -215,7 +233,11 @@ t.test('Node', async t => {
     'should set expected resolved value for a git id type',
   )
   const reg = new Node(
-    { ...options, projectRoot: t.testdirName },
+    {
+      ...options,
+      projectRoot: t.testdirName,
+      importers: new Set(),
+    },
     ';;foo@1.0.0',
     {
       dist: {
@@ -234,6 +256,7 @@ t.test('Node', async t => {
     {
       ...options,
       projectRoot: t.testdirName,
+      importers: new Set(),
     },
     ';;foo@1.0.0',
   )
@@ -248,6 +271,7 @@ t.test('Node', async t => {
     {
       ...options,
       projectRoot: t.testdirName,
+      importers: new Set(),
     },
     'remote;https%3A%2F%2Fx.com%2Fx.tgz',
   )
@@ -265,6 +289,7 @@ t.test('nodeModules path and inVltStore flag', t => {
     {
       ...options,
       projectRoot: t.testdirName,
+      importers: new Set(),
     },
     asDepID('file;.'),
     rootMani,
@@ -275,6 +300,7 @@ t.test('nodeModules path and inVltStore flag', t => {
     {
       ...options,
       projectRoot: t.testdirName,
+      importers: new Set(),
     },
     ';;foo@1.2.3',
     { name: 'foo', version: '1.2.3' },
@@ -293,6 +319,7 @@ t.test('nodeModules path and inVltStore flag', t => {
     {
       ...options,
       projectRoot: t.testdirName,
+      importers: new Set(),
     },
     ';;@bar%2Fbloo@1.2.3',
     { name: '@bar/bloo', version: '1.2.3' },
@@ -311,6 +338,7 @@ t.test('nodeModules path and inVltStore flag', t => {
     {
       ...options,
       projectRoot: t.testdirName,
+      importers: new Set(),
     },
     'file;some/path',
     { name: 'foo', version: '1.2.3' },
@@ -326,7 +354,11 @@ t.test('nodeModules path and inVltStore flag', t => {
 })
 
 t.test('optional flag is contagious', t => {
-  const opts = { ...options, projectRoot: t.testdirName }
+  const opts = {
+    ...options,
+    importers: new Set<Node>(),
+    projectRoot: t.testdirName,
+  }
   const rootMani = {
     name: 'root',
     optionalDependencies: { o: '' },
@@ -361,7 +393,11 @@ t.test('optional flag is contagious', t => {
 })
 
 t.test('dev flag is contagious', t => {
-  const opts = { ...options, projectRoot: t.testdirName }
+  const opts = {
+    ...options,
+    importers: new Set<Node>(),
+    projectRoot: t.testdirName,
+  }
   const rootMani = {
     name: 'root',
     devDependencies: { o: '' },

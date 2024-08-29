@@ -40,7 +40,7 @@ const runTest = async (t: Test, withManifest: boolean) => {
     nodes: {
       add: new Set([
         new Node(
-          { projectRoot },
+          { projectRoot, importers: new Set() },
           ';;foo@1.2.3',
           withManifest ? fooManifest : undefined,
           undefined,
