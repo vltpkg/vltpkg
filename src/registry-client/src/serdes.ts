@@ -11,37 +11,12 @@
  * which major versions changed the serialization wire format.
  */
 
-const proc = process as NodeJS.Process | undefined
-const isNode =
-  typeof proc?.versions === 'object' && !!process.versions
-//@ts-expect-error
-const isDeno = !isNode && typeof Deno === 'object' && !!Deno
-const isBun =
-  //@ts-expect-error
-  !isNode && !isDeno && typeof Bun === 'object' && !!Bun
-
-const engineVersion: string | undefined =
-  isNode ? proc.versions.v8
-    //@ts-expect-error
-  : isDeno ? Deno.version.v8
-    //@ts-expect-error
-  : isBun ? Bun.version
-  : undefined
-
-const engineName =
-  isNode || isDeno ? 'v8'
-  : isBun ? 'bun'
-  : undefined
-
-const engineMajor = parseInt(
-  engineVersion?.replace(/[^0-9]/g, ' ').trim() ?? '',
-  10,
-)
+import { engine } from './env.js'
 
 // these aren't used if we couldn't determine the engine type & version
 export const serializedHeader =
-  engineName && engineMajor ?
-    `${engineName}-serialize-${engineMajor}`
+  engine ?
+    `${engine.name}-serialize-${parseInt(engine.version.replace(/[^0-9]/g, ' ').trim(), 10)}`
   : undefined
 
 export { deserialize, serialize } from 'node:v8'

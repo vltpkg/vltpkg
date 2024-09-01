@@ -8,6 +8,7 @@ import { addHeader } from './add-header.js'
 import { CacheEntry } from './cache-entry.js'
 import { cacheInterceptor } from './cache-interceptor.js'
 import { isRedirect, redirect } from './redirect.js'
+import { bun, deno, node } from './env.js'
 
 export { CacheEntry, cacheInterceptor }
 
@@ -65,21 +66,8 @@ const { version } = loadPackageJson(
   import.meta.url,
   '../package.json',
 )
-const navUA = (globalThis.navigator as Navigator | undefined)
-  ?.userAgent
-const bun =
-  navUA ||
-  //@ts-expect-error
-  ((await import('bun').catch(() => {}))?.default?.version as
-    | string
-    | undefined)
-const deno =
-  //@ts-expect-error
-  navUA ?? (globalThis.Deno?.deno?.version as string | undefined)
-const node =
-  navUA ?? (globalThis.process as NodeJS.Process | undefined)?.version
 const nua =
-  navUA ||
+  (globalThis.navigator as Navigator | undefined)?.userAgent ??
   (bun ? `Bun/${bun}`
   : deno ? `Deno/${deno}`
   : node ? `Node.js/${node}`
