@@ -24,6 +24,7 @@ t.test('load actual', async t => {
         link: 'file:./linked',
         missing: '^1.0.0',
       },
+      bundleDependencies: ['bundled'],
       optionalDependencies: {
         bar: '^1.0.0',
       },
@@ -46,6 +47,10 @@ t.test('load actual', async t => {
                 'package.json': JSON.stringify({
                   name: '@scoped/a',
                   version: '1.0.0',
+                  dependencies: {
+                    bundled: '2.3.4',
+                  },
+                  bundleDependencies: ['bundled'],
                 }),
               },
             },
@@ -61,6 +66,11 @@ t.test('load actual', async t => {
                   dependencies: {
                     '@scoped/c': '^1.0.0',
                   },
+                  bundleDependencies: [
+                    'not',
+                    'string array',
+                    { so: 'this is ignored' },
+                  ],
                 }),
               },
               c: t.fixture(
