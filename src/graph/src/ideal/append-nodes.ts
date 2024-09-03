@@ -62,6 +62,9 @@ const getFileTypeInfo = (
   }
 }
 
+const isStringArray = (a: unknown): a is string[] =>
+  Array.isArray(a) && !a.some(b => typeof b !== 'string')
+
 export const appendNodes = async (
   packageInfo: PackageInfoClient,
   graph: Graph,
@@ -126,38 +129,49 @@ export const appendNodes = async (
       }
       /* c8 ignore stop */
 
-      /* c8 ignore next - always set by now, but ts doesn't know */
       if (fileTypeInfo?.path && fileTypeInfo.isDirectory) {
         node.location = fileTypeInfo.path
       }
       node.setResolved()
       const nestedAppends: Promise<unknown>[] = []
 
+      const bundleDeps = node.manifest?.bundleDependencies
+      const bundled = new Set<string>(
+        (
+          node.id.startsWith('git;') ||
+          node.importer ||
+          !isStringArray(bundleDeps)
+        ) ?
+          []
+        : bundleDeps,
+      )
       for (const depTypeName of longDependencyTypes) {
         const depRecord: Record<string, string> | undefined =
           mani[depTypeName]
 
         if (depRecord && shouldInstallDepType(node, depTypeName)) {
-          const nextDeps: Dependency[] = Object.entries(
-            depRecord,
-          ).map(([name, bareSpec]) => ({
-            // if foo:a@1 depends on b@2, then it must be foo:b@2
-            spec: Spec.parse(name, bareSpec, {
-              ...options,
-              registry: spec.registry,
-            }),
-            type: shorten(depTypeName, name, fromNode.manifest),
-          }))
-          nestedAppends.push(
-            appendNodes(
-              packageInfo,
-              graph,
-              node,
-              nextDeps,
-              scurry,
-              options,
-            ),
-          )
+          const nextDeps: Dependency[] = Object.entries(depRecord)
+            .filter(([name]) => !bundled.has(name))
+            .map(([name, bareSpec]) => ({
+              // if foo:a@1 depends on b@2, then it must be foo:b@2
+              spec: Spec.parse(name, bareSpec, {
+                ...options,
+                registry: spec.registry,
+              }),
+              type: shorten(depTypeName, name, fromNode.manifest),
+            }))
+          if (nextDeps.length) {
+            nestedAppends.push(
+              appendNodes(
+                packageInfo,
+                graph,
+                node,
+                nextDeps,
+                scurry,
+                options,
+              ),
+            )
+          }
         }
       }
       await Promise.all(nestedAppends)

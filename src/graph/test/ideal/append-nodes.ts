@@ -28,7 +28,9 @@ t.test('append a new node to a graph from a registry', async t => {
     version: '1.0.0',
     dependencies: {
       bar: '^1.0.0',
+      bundled: '*',
     },
+    bundleDependencies: ['bundled'],
   }
   const barManifest: Manifest = {
     name: 'bar',

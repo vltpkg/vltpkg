@@ -93,12 +93,26 @@ const findNodeModules = ({
 const findName = ({ parent, name }: Path): string =>
   parent?.name.startsWith('@') ? `${parent.name}/${name}` : name
 
+const isStringArray = (a: unknown): a is string[] =>
+  Array.isArray(a) && !a.some(b => typeof b !== 'string')
+
 /*
  * Retrieves a map of all dependencies, of all types, that can be iterated
  * on and consulted when parsing the directory contents of the current node.
  */
 const getDeps = (node: Node) => {
   const dependencies = new Map<string, RawDependency>()
+  const bundleDeps: unknown = node.manifest?.bundleDependencies ?? []
+  // if it's an importer, bundleDeps are just normal. if it's a dep,
+  // then they're ignored entirely.
+  const bundled =
+    (
+      !node.importer &&
+      !node.id.startsWith('git;') &&
+      isStringArray(bundleDeps)
+    ) ?
+      new Set(bundleDeps)
+    : new Set<string>()
   for (const depType of longDependencyTypes) {
     const obj: Record<string, string> | undefined =
       node.manifest?.[depType]
@@ -115,6 +129,8 @@ const getDeps = (node: Node) => {
     }
     if (obj) {
       for (const [name, bareSpec] of Object.entries(obj)) {
+        // if it's a bundled dependency, we just ignore it entirely.
+        if (bundled.has(name)) continue
         dependencies.set(name, {
           name,
           type: depType,
