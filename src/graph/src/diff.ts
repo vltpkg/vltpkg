@@ -26,6 +26,12 @@ export class Diff {
   to: Graph
 
   /**
+   * If changes need to be made later for failures of optional nodes,
+   * set this flag so that we know to call graph.gc() at the appropriate time.
+   */
+  hadOptionalFailures = false
+
+  /**
    * Collection of nodes to add and delete
    */
   nodes = {

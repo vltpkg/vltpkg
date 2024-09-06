@@ -3,6 +3,7 @@ import { chmod } from 'fs/promises'
 import { PathScurry } from 'path-scurry'
 import { Diff } from '../diff.js'
 import { binPaths } from './bin-paths.js'
+import { optionalFail } from './optional-fail.js'
 
 export const chmodBins = (
   diff: Diff,
@@ -17,7 +18,9 @@ export const chmodBins = (
     } = node
     for (const bin of Object.values(binPaths(manifest))) {
       const path = scurry.resolve(node.location, bin)
-      chmodPromises.push(chmod(path, 0o777))
+      chmodPromises.push(
+        chmod(path, 0o777).then(x => x, optionalFail(diff, node)),
+      )
     }
   }
   return chmodPromises

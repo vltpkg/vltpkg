@@ -12,6 +12,9 @@ const runs: RunOptions[] = []
 t.beforeEach(() => (runs.length = 0))
 
 const mockRun = async (options: RunOptions) => {
+  if (options.cwd.endsWith('/fail')) {
+    throw new Error('failed somehow')
+  }
   runs.push(options)
 }
 

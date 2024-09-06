@@ -15,6 +15,7 @@ import {
   shorten,
 } from '../dependencies.js'
 import { Graph } from '../graph.js'
+import { loadHidden } from '../lockfile/load.js'
 import { Node } from '../node.js'
 
 export type LoadOptions = SpecOptions & {
@@ -47,6 +48,11 @@ export type LoadOptions = SpecOptions & {
    * no information on missing and extraneous dependencies.
    */
   loadManifests?: boolean
+  /**
+   * If set to `true`, then do not shortcut the process by reading the
+   * hidden lockfile at `node_modules/.vlt-lock.json`
+   */
+  skipHiddenLockfile?: boolean
 }
 
 export type ReadEntry = {
@@ -328,13 +334,31 @@ const parseDir = (
  * between the dependencies found.
  */
 export const load = (options: LoadOptions): Graph => {
+  // TODO: once hidden lockfile is more reliable, default to false here
+  const { skipHiddenLockfile = true, projectRoot } = options
   const packageJson = options.packageJson ?? new PackageJson()
   const mainManifest =
-    options.mainManifest ?? packageJson.read(options.projectRoot)
-  const scurry = options.scurry ?? new PathScurry(options.projectRoot)
+    options.mainManifest ?? packageJson.read(projectRoot)
+  const scurry = options.scurry ?? new PathScurry(projectRoot)
   const monorepo =
     options.monorepo ??
-    Monorepo.maybeLoad(options.projectRoot, { packageJson, scurry })
+    Monorepo.maybeLoad(projectRoot, { packageJson, scurry })
+
+  if (!skipHiddenLockfile) {
+    try {
+      const graph = loadHidden({
+        projectRoot,
+        mainManifest,
+        packageJson,
+        monorepo,
+        scurry,
+      })
+      // TODO: merge in the monorepo workspaces
+      // TODO: check mtime of lockfile vs .vlt folder
+      return graph
+    } catch {}
+  }
+
   const graph = new Graph({ ...options, mainManifest, monorepo })
   const depsFound = new Map<Node, Path>()
 
