@@ -1,7 +1,7 @@
 import { DepID } from '@vltpkg/dep-id'
 import { SpecOptions } from '@vltpkg/spec'
-import { writeFileSync } from 'node:fs'
-import { resolve } from 'node:path'
+import { mkdirSync, writeFileSync } from 'node:fs'
+import { dirname, resolve } from 'node:path'
 import { type Edge } from '../edge.js'
 import { type Graph } from '../graph.js'
 import { type Node } from '../node.js'
@@ -125,15 +125,36 @@ export const lockfileData = ({
   edges: formatEdges(graph.edges),
 })
 
-export const save = (options: SaveOptions) => {
-  const { graph } = options
-  const json = JSON.stringify(lockfileData(options), null, 2)
+export const saveData = (
+  data: LockfileData,
+  fileName: string,
+  saveManifests = false,
+) => {
+  const json = JSON.stringify(data, null, 2)
   const content =
-    options.saveManifests ? json : (
+    saveManifests ? json : (
       `${json}\n`
         // renders each node / edge as a single line entry
         .replaceAll('\n      ', '')
         .replaceAll('\n    ]', ']')
     )
-  writeFileSync(resolve(graph.projectRoot, 'vlt-lock.json'), content)
+  writeFileSync(fileName, content)
+}
+
+export const save = (options: SaveOptions) => {
+  const { graph } = options
+  const data = lockfileData({ ...options, saveManifests: false })
+  const fileName = resolve(graph.projectRoot, 'vlt-lock.json')
+  return saveData(data, fileName, false)
+}
+
+export const saveHidden = (options: SaveOptions) => {
+  const { graph } = options
+  const data = lockfileData({ ...options, saveManifests: true })
+  const fileName = resolve(
+    graph.projectRoot,
+    'node_modules/.vlt-lock.json',
+  )
+  mkdirSync(dirname(fileName), { recursive: true })
+  return saveData(data, fileName, true)
 }

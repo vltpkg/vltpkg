@@ -42,7 +42,8 @@ export const addNodes = async ({
 
     // Removes any edges and nodes that are currently part of the
     // graph but are also in the list of dependencies to be installed
-    for (const { spec } of dependencies.values()) {
+    const deps = [...dependencies.values()]
+    for (const { spec } of deps) {
       const node = importer.edgesOut.get(spec.name)?.to
       if (node) graph.removeNode(node)
     }
@@ -53,7 +54,7 @@ export const addNodes = async ({
       packageInfo,
       graph,
       importer,
-      [...dependencies.values()],
+      deps,
       scurry,
       specOptions,
     )

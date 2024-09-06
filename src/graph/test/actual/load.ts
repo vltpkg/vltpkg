@@ -237,6 +237,7 @@ t.test('load actual', async t => {
   const fullGraph = load({
     projectRoot,
     loadManifests: true,
+    skipHiddenLockfile: false,
     ...configData,
   })
 

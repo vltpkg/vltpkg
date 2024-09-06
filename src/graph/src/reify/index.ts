@@ -7,11 +7,16 @@ import { updatePackageJson } from './update-importers-package-json.js'
 import { load as loadActual, LoadOptions } from '../actual/load.js'
 import { Diff } from '../diff.js'
 import { Graph } from '../graph.js'
-import { lockfile } from '../index.js'
 import {
   AddImportersDependenciesMap,
   RemoveImportersDependenciesMap,
 } from '../dependencies.js'
+import { lockfile } from '../index.js'
+import {
+  lockfileData,
+  saveData,
+  saveHidden,
+} from '../lockfile/save.js'
 import { addEdges } from './add-edges.js'
 import { addNodes } from './add-nodes.js'
 import { chmodBins } from './chmod-bins.js'
@@ -104,6 +109,12 @@ const reify_ = async (
     graph: options.graph,
     packageJson,
   })
+  // before anything else happens, grab the ideal tree as it was resolved
+  // so that we can store it in the lockfile. We do this here so that
+  // any failed/removed optional deps are not reflected in the lockfile
+  // data as it is saved.
+  const lfData = lockfileData(options)
+
   // XXX: almost certainly will need to throttle this
   const promises = addNodes(
     diff,
@@ -128,8 +139,16 @@ const reify_ = async (
 
   // save the lockfile
   lockfile.save(options)
-  // TODO: save a hidden lockfile at node_modules/.vlt-lock.json,
-  // because we've updated the actual tree.
+
+  // if we had to change the actual graph along the way,
+  // make sure we do not leave behind any unreachable nodes
+  if (diff.hadOptionalFailures) {
+    for (const node of options.graph.gc().values()) {
+      diff.nodes.add.delete(node)
+      diff.nodes.delete.add(node)
+    }
+  }
+  saveHidden(options)
 
   // delete garbage from the store.
   const rmPromises = deleteNodes(diff, remover, scurry)
@@ -137,4 +156,7 @@ const reify_ = async (
 
   // updates package.json files if anything was added / removed
   saveImportersPackageJson()
+
+  // write the ideal graph data to the lockfile
+  saveData(lfData, scurry.resolve('vlt-lock.json'), false)
 }

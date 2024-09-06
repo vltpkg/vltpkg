@@ -206,7 +206,10 @@ export class Graph implements GraphLike {
         existing.type === type &&
         existing.spec.bareSpec === spec.bareSpec
       ) {
-        if (to && to !== existing.to) existing.to = to
+        if (to && to !== existing.to) {
+          existing.to = to
+          existing.to.edgesIn.add(existing)
+        }
         return existing
       }
       this.edges.delete(existing)

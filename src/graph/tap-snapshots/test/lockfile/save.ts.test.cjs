@@ -37,7 +37,7 @@ exports[`test/lockfile/save.ts > TAP > save > must match snapshot 1`] = `
 
 `
 
-exports[`test/lockfile/save.ts > TAP > save > save manifests > must match snapshot 1`] = `
+exports[`test/lockfile/save.ts > TAP > save > save hidden (yes manifests) > must match snapshot 1`] = `
 {
   "registries": {
     "npm": "https://registry.npmjs.org",
@@ -107,6 +107,27 @@ exports[`test/lockfile/save.ts > TAP > save > save manifests > must match snapsh
 }
 `
 
+exports[`test/lockfile/save.ts > TAP > save > save normal (no manifests) > must match snapshot 1`] = `
+{
+  "registries": {
+    "npm": "https://registry.npmjs.org",
+    "custom": "http://example.com"
+  },
+  "nodes": {
+    "file;.": [0,"my-project"],
+    ";;bar@1.0.0": [3,"bar"],
+    ";;foo@1.0.0": [2,"foo","sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ==",null,"node_modules/.pnpm/foo@1.0.0/node_modules/foo"],
+    ";custom;baz@1.0.0": [1,"baz",null,"http://example.com/baz.tgz"]
+  },
+  "edges": {
+    "file;. foo": "prod ^1.0.0 || 1.2.3 || 2 ;;foo@1.0.0",
+    "file;. baz": "prod custom:baz@^1.0.0 ;custom;baz@1.0.0",
+    ";;foo@1.0.0 bar": "prod ^1.0.0 ;;bar@1.0.0"
+  }
+}
+
+`
+
 exports[`test/lockfile/save.ts > TAP > workspaces > save manifests > must match snapshot 1`] = `
 {
   "registries": {
@@ -114,61 +135,16 @@ exports[`test/lockfile/save.ts > TAP > workspaces > save manifests > must match 
     "custom": "http://example.com"
   },
   "nodes": {
-    "file;.": [
-      0,
-      "my-project",
-      null,
-      null,
-      null,
-      {
-        "name": "my-project",
-        "version": "1.0.0"
-      }
-    ],
-    "workspace;packages%2Fa": [
-      0,
-      "a",
-      null,
-      null,
-      null,
-      {
-        "name": "a",
-        "version": "1.0.0"
-      }
-    ],
-    "workspace;packages%2Fb": [
-      0,
-      "b",
-      null,
-      null,
-      null,
-      {
-        "name": "b",
-        "version": "1.0.0",
-        "dependencies": {
-          "c": "^1.0.0"
-        }
-      }
-    ],
-    ";;c@1.0.0": [
-      0,
-      "c",
-      "sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ==",
-      null,
-      null,
-      {
-        "name": "c",
-        "version": "1.0.0",
-        "dist": {
-          "integrity": "sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ=="
-        }
-      }
-    ]
+    "file;.": [0,"my-project"],
+    "workspace;packages%2Fa": [0,"a"],
+    "workspace;packages%2Fb": [0,"b"],
+    ";;c@1.0.0": [0,"c","sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ=="]
   },
   "edges": {
     "workspace;packages%2Fb c": "prod * ;;c@1.0.0"
   }
 }
+
 `
 
 exports[`test/lockfile/save.ts > TAP > workspaces > should save lockfile with workspaces nodes 1`] = `

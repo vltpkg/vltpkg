@@ -1,3 +1,8 @@
+import {
+  PackageInfoClient,
+  PackageInfoClientRequestOptions,
+  Resolution,
+} from '@vltpkg/package-info'
 import { Spec } from '@vltpkg/spec'
 import {
   lstatSync,
@@ -10,6 +15,7 @@ import { statSync } from 'node:fs'
 import { pathToFileURL } from 'node:url'
 import { resolve } from 'path'
 import t from 'tap'
+import { inspect } from 'util'
 import {
   actual,
   ideal,
@@ -47,7 +53,7 @@ t.test('super basic reification', async t => {
 
   t.strictSame(
     new Set(readdirSync(projectRoot + '/node_modules')),
-    new Set(['.vlt', 'lodash']),
+    new Set(['.vlt', '.vlt-lock.json', 'lodash']),
   )
 
   t.strictSame(
@@ -164,39 +170,6 @@ t.test('reify with a bin', async t => {
   )
 })
 
-t.test('reify with a bin', async t => {
-  const dir = t.testdir({
-    cache: {},
-    project: {
-      'vlt.json': JSON.stringify({
-        cache: resolve(t.testdirName, 'cache'),
-      }),
-      'package.json': JSON.stringify({
-        name: 'x',
-        version: '1.0.0',
-        dependencies: {
-          glob: '11',
-        },
-      }),
-    },
-  })
-
-  const projectRoot = resolve(dir, 'project')
-  const graph = await ideal.build({ projectRoot })
-  await reify({
-    projectRoot,
-    packageInfo: mockPackageInfo,
-    graph,
-  })
-  t.equal(
-    // note: not lstat, since this is going to be a shim on windows,
-    // but a symlink on posix
-    statSync(resolve(projectRoot, 'node_modules/.bin/glob')).isFile(),
-    true,
-    'bin was created',
-  )
-})
-
 t.test('failure rolls back', async t => {
   const dir = t.testdir({
     cache: {},
@@ -239,6 +212,69 @@ t.test('failure rolls back', async t => {
   const after = actual.load({ projectRoot })
 
   t.strictSame(before, after, 'no changes to actual graph')
+
+  t.throws(
+    // note: not lstat, since this is going to be a shim on windows,
+    // but a symlink on posix
+    () => statSync(resolve(projectRoot, 'node_modules/.bin/glob')),
+  )
+})
+
+t.test('failure of optional node just deletes it', async t => {
+  const dir = t.testdir({
+    cache: {},
+    project: {
+      'vlt.json': JSON.stringify({
+        cache: resolve(t.testdirName, 'cache'),
+      }),
+      'package.json': JSON.stringify({
+        name: 'x',
+        version: '1.0.0',
+        optionalDependencies: {
+          glob: '11',
+        },
+      }),
+    },
+  })
+
+  const projectRoot = resolve(dir, 'project')
+
+  const before = actual.load({ projectRoot })
+  const graph = await ideal.build({ projectRoot })
+  const globEdge = graph.mainImporter.edgesOut.get('glob')
+  t.ok(globEdge, 'main importer depends on glob')
+  t.equal(
+    globEdge?.to?.edgesIn.has(globEdge),
+    true,
+    'glob has same edgeIn from main',
+  )
+
+  await reify({
+    projectRoot,
+    packageInfo: {
+      ...mockPackageInfo,
+      async extract(
+        spec: Spec | string,
+        target: string,
+        options: PackageInfoClientRequestOptions = {},
+      ): Promise<Resolution> {
+        const s = Spec.parse(String(spec))
+        if (s.name === 'path-scurry') {
+          throw new Error('no path scurry for you!')
+        }
+        return mockPackageInfo.extract(spec, target, options)
+      },
+    } as unknown as PackageInfoClient,
+    graph,
+  })
+
+  const after = actual.load({ projectRoot })
+
+  t.strictSame(
+    inspect(before),
+    inspect(after),
+    'ultimately no changes to actual graph',
+  )
 
   t.throws(
     // note: not lstat, since this is going to be a shim on windows,

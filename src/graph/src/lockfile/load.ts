@@ -47,11 +47,27 @@ export type LoadOptions = SpecOptions & {
 
 export const load = (options: LoadOptions): Graph => {
   const { projectRoot } = options
-  const file = readFileSync(resolve(projectRoot, 'vlt-lock.json'), {
-    encoding: 'utf8',
-  })
-  const lockfileData = JSON.parse(file) as LockfileData
-  return loadObject(options, lockfileData)
+  return loadObject(
+    options,
+    JSON.parse(
+      readFileSync(resolve(projectRoot, 'vlt-lock.json'), {
+        encoding: 'utf8',
+      }),
+    ),
+  )
+}
+
+export const loadHidden = (options: LoadOptions): Graph => {
+  const { projectRoot } = options
+  return loadObject(
+    options,
+    JSON.parse(
+      readFileSync(
+        resolve(projectRoot, 'node_modules/.vlt-lock.json'),
+        { encoding: 'utf8' },
+      ),
+    ),
+  )
 }
 
 export const loadObject = (

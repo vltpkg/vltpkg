@@ -1,6 +1,6 @@
 import { SpecOptions } from '@vltpkg/spec'
 import t from 'tap'
-import { load } from '../../src/lockfile/load.js'
+import { load, loadHidden } from '../../src/lockfile/load.js'
 import {
   LockfileData,
   LockfileEdgeKey,
@@ -74,6 +74,67 @@ t.test('load', async t => {
   })
 
   const graph = load({
+    ...configData,
+    projectRoot,
+    mainManifest,
+  })
+  t.matchSnapshot(humanReadableOutput(graph))
+})
+
+t.test('loadHidden', async t => {
+  // split these out to verify TS will complain about them.
+  // otherwise it stops at the first '': '' type error in the object.
+  //@ts-expect-error
+  const spaceKey: LockfileEdgeKey = ' '
+  //@ts-expect-error
+  const spaceVal: LockfileEdgeValue = ' '
+  const edges: LockfileEdges = {
+    'file;. linked': 'prod file:./linked file;linked',
+    // a spec with spaces, verify it doesn't get confused
+    'file;. foo': 'prod ^1.0.0 || 1.2.3 ||  2.3.4 ;;foo@1.0.0',
+    'file;. bar': 'prod ^1.0.0 ;;bar@1.0.0',
+    'file;. missing': 'prod ^1.0.0 MISSING',
+    ';;bar@1.0.0 baz': 'prod ^1.0.0 ;;baz@1.0.0',
+    //@ts-expect-error
+    '': '',
+    [spaceKey]: spaceVal,
+  }
+  const lockfileData: LockfileData = {
+    registries: {
+      npm: 'https://registry.npmjs.org',
+      custom: 'https://registry.example.com',
+    },
+    nodes: {
+      'file;.': [0, 'my-project'],
+      'file;linked': [0, 'linked'],
+      ';;foo@1.0.0': [
+        0,
+        'foo',
+        'sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ==',
+      ],
+      ';;bar@1.0.0': [
+        0,
+        'bar',
+        'sha512-6/deadbeef==',
+        'https://registry.example.com/bar/-/bar-1.0.0.tgz',
+      ],
+      ';;baz@1.0.0': [
+        0,
+        'baz',
+        null,
+        null,
+        './node_modules/.pnpm/baz@1.0.0/node_modules/baz',
+      ],
+    },
+    edges,
+  }
+  const projectRoot = t.testdir({
+    node_modules: {
+      '.vlt-lock.json': JSON.stringify(lockfileData),
+    },
+  })
+
+  const graph = loadHidden({
     ...configData,
     projectRoot,
     mainManifest,

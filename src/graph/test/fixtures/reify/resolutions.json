@@ -752,16 +752,6 @@
       }
     ]
   },
-  "lru-cache@11.0.1": {
-    "resolved": "https://registry.npmjs.org/lru-cache/-/lru-cache-11.0.1.tgz",
-    "integrity": "sha512-CgeuL5uom6j/ZVrg7G/+1IXqRY8JXX4Hghfy5YE0EhoYQWvndP1kufu58cmZLNIDKnRhZrXfdS9urVWx98AipQ==",
-    "signatures": [
-      {
-        "keyid": "SHA256:jl3bwswu80PjjokCgh0o2w5c2U4LhQAE57gj9cz1kzA",
-        "sig": "MEYCIQCBAXzukOQcYJLVMrIdRR1FFh7eEbKJmNU0UeC1f0AWUQIhAInNuD6vQ8KGpMVFPaCdqR1q83W64kTLMJcYBVt4FP15"
-      }
-    ]
-  },
   "jackspeak@4.0.2": {
     "resolved": "https://registry.npmjs.org/jackspeak/-/jackspeak-4.0.2.tgz",
     "integrity": "sha512-bZsjR/iRjl1Nk1UkjGpAzLNfQtzuijhn2g+pbZb98HQ1Gk8vM9hfbxeMBP+M2/UUdwj0RqGG3mlvk2MsAqwvEw==",
@@ -769,6 +759,16 @@
       {
         "keyid": "SHA256:jl3bwswu80PjjokCgh0o2w5c2U4LhQAE57gj9cz1kzA",
         "sig": "MEUCIQCTjcQDpKmIu0DlsTsfBBVM0JD6fjPUz1qL/fbAbK7umQIgUPbIHQN3bUdbZMoHToZpQR7r3ZSNOOTa6w4Trwg6cUU="
+      }
+    ]
+  },
+  "lru-cache@11.0.1": {
+    "resolved": "https://registry.npmjs.org/lru-cache/-/lru-cache-11.0.1.tgz",
+    "integrity": "sha512-CgeuL5uom6j/ZVrg7G/+1IXqRY8JXX4Hghfy5YE0EhoYQWvndP1kufu58cmZLNIDKnRhZrXfdS9urVWx98AipQ==",
+    "signatures": [
+      {
+        "keyid": "SHA256:jl3bwswu80PjjokCgh0o2w5c2U4LhQAE57gj9cz1kzA",
+        "sig": "MEYCIQCBAXzukOQcYJLVMrIdRR1FFh7eEbKJmNU0UeC1f0AWUQIhAInNuD6vQ8KGpMVFPaCdqR1q83W64kTLMJcYBVt4FP15"
       }
     ]
   }

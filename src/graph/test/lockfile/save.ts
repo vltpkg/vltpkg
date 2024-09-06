@@ -1,11 +1,11 @@
+import { Spec, SpecOptions } from '@vltpkg/spec'
+import { Monorepo } from '@vltpkg/workspaces'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import t from 'tap'
-import { Spec, SpecOptions } from '@vltpkg/spec'
-import { Monorepo } from '@vltpkg/workspaces'
-import { Graph } from '../../src/graph.js'
-import { save } from '../../src/lockfile/save.js'
 import { Edge } from '../../src/edge.js'
+import { Graph } from '../../src/graph.js'
+import { save, saveHidden } from '../../src/lockfile/save.js'
 
 const configData = {
   registry: 'https://registry.npmjs.org',
@@ -85,12 +85,24 @@ t.test('save', async t => {
     }),
   )
 
-  await t.test('save manifests', async t => {
-    save({ ...configData, graph, saveManifests: true })
+  await t.test('save normal (no manifests)', async t => {
+    save({ ...configData, graph })
     t.matchSnapshot(
       readFileSync(resolve(projectRoot, 'vlt-lock.json'), {
         encoding: 'utf8',
       }),
+    )
+  })
+
+  await t.test('save hidden (yes manifests)', async t => {
+    saveHidden({ ...configData, graph })
+    t.matchSnapshot(
+      readFileSync(
+        resolve(projectRoot, 'node_modules/.vlt-lock.json'),
+        {
+          encoding: 'utf8',
+        },
+      ),
     )
   })
 })

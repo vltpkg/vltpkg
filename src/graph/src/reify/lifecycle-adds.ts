@@ -1,9 +1,11 @@
 import { PackageJson } from '@vltpkg/package-json'
 import { run } from '@vltpkg/run'
+import { Manifest } from '@vltpkg/types'
 import { graphRun } from 'graph-run'
 import { Diff } from '../diff.js'
 import { Node } from '../node.js'
 import { nonEmptyList } from '../non-empty-list.js'
+import { optionalFail } from './optional-fail.js'
 
 // run install lifecycle script for all installed deps, in dep graph order
 // plus prepare for all importers and git deps
@@ -29,31 +31,43 @@ export const lifecycleAdds = async (
         }
         return deps
       },
-      visit: async node => {
-        const { location: cwd, manifest } = node
-        // TODO: if the dep is optional, let it fail?
-        // then remove it etc.
-        await run({
-          arg0: 'install',
-          ignoreMissing: true,
+      visit: async node =>
+        visit(
+          node,
           packageJson,
-          cwd,
+          node.location,
           projectRoot,
-          manifest,
-        })
-        // have to also run prepare for all the git deps, but only
-        // *after* their deps are prepared, and pre/post install runs
-        if (node.id.startsWith('git;') || !node.inVltStore()) {
-          await run({
-            arg0: 'prepare',
-            ignoreMissing: true,
-            packageJson,
-            cwd,
-            projectRoot,
-            manifest,
-          })
-        }
-      },
+          node.manifest,
+        ).then(x => x, optionalFail(diff, node)),
+    })
+  }
+}
+
+const visit = async (
+  node: Node,
+  packageJson: PackageJson,
+  cwd: string,
+  projectRoot: string,
+  manifest?: Manifest,
+) => {
+  await run({
+    arg0: 'install',
+    ignoreMissing: true,
+    packageJson,
+    cwd,
+    projectRoot,
+    manifest,
+  })
+
+  // also run prepare for all the git deps
+  if (node.id.startsWith('git;') || !node.inVltStore()) {
+    await run({
+      arg0: 'prepare',
+      ignoreMissing: true,
+      packageJson,
+      cwd,
+      projectRoot,
+      manifest,
     })
   }
 }
