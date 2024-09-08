@@ -57,7 +57,9 @@ const runTest = async (t: Test, withManifest: boolean) => {
   } as unknown as Diff
   const scurry = new PathScurry(projectRoot)
 
-  await Promise.all(chmodBins(diff, new PackageJson(), scurry))
+  await Promise.all(
+    chmodBins(diff, new PackageJson(), scurry).map(x => x()),
+  )
   t.strictSame(chmods, [
     scurry.resolve(
       'node_modules/.vlt/;;foo@1.2.3/node_modules/foo/foo.sh',

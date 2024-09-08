@@ -12,8 +12,8 @@ export const addNodes = (
   remover: RollbackRemove,
   options: SpecOptions,
   packageInfo: PackageInfoClient,
-) => {
-  const promises: Promise<unknown>[] = []
+): (() => Promise<unknown>)[] => {
+  const actions: (() => Promise<unknown>)[] = []
   // fetch and extract all the nodes, removing any in the way
   for (const node of diff.nodes.add) {
     // if it's not in the store, we don't have to extract it, because
@@ -24,7 +24,7 @@ export const addNodes = (
     const from = scurry.resolve('')
     const spec = hydrate(node.id, node.manifest?.name, options)
     const onErr = optionalFail(diff, node)
-    promises.push(
+    actions.push(() =>
       remover
         .rm(target)
         .then(() =>
@@ -34,5 +34,5 @@ export const addNodes = (
         ),
     )
   }
-  return promises
+  return actions
 }

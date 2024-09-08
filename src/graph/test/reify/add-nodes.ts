@@ -77,7 +77,9 @@ const diff = {
 const scurry = new PathScurry(t.testdirName)
 
 await Promise.all(
-  addNodes(diff, scurry, mockRemover, {}, mockPackageInfo),
+  addNodes(diff, scurry, mockRemover, {}, mockPackageInfo).map(x =>
+    x(),
+  ),
 )
 
 t.notMatch(

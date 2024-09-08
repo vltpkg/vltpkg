@@ -194,9 +194,10 @@ t.test('failure rolls back', async t => {
   const { reify } = await t.mockImport('../../src/reify/index.js', {
     '../../src/reify/chmod-bins.js': {
       chmodBins: () => [
-        Promise.reject(
-          new Error('expected failure, time to roll back'),
-        ),
+        () =>
+          Promise.reject(
+            new Error('expected failure, time to roll back'),
+          ),
       ],
     },
   })

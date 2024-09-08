@@ -19,15 +19,16 @@
     "@vltpkg/package-info": "workspace:*",
     "@vltpkg/package-json": "workspace:*",
     "@vltpkg/registry-client": "workspace:*",
-    "@vltpkg/satisfies": "workspace:*",
     "@vltpkg/rollback-remove": "workspace:*",
     "@vltpkg/run": "workspace:*",
+    "@vltpkg/satisfies": "workspace:*",
     "@vltpkg/semver": "workspace:*",
     "@vltpkg/spec": "workspace:*",
     "@vltpkg/types": "workspace:*",
     "@vltpkg/workspaces": "workspace:*",
     "graph-run": "catalog:",
-    "path-scurry": "catalog:"
+    "path-scurry": "catalog:",
+    "promise-call-limit": "^3.0.2"
   },
   "devDependencies": {
     "@eslint/js": "catalog:",
@@ -39,8 +40,8 @@
     "tar": "catalog:",
     "tshy": "catalog:",
     "typedoc": "catalog:",
-    "typescript-eslint": "catalog:",
-    "typescript": "catalog:"
+    "typescript": "catalog:",
+    "typescript-eslint": "catalog:"
   },
   "engines": {
     "node": "20 || >=22"

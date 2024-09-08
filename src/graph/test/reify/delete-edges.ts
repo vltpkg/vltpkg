@@ -67,6 +67,6 @@ const diff = {
 const scurry = new PathScurry(projectRoot)
 const remover = new RollbackRemove()
 
-await Promise.all(deleteEdges(diff, scurry, remover))
+await Promise.all(deleteEdges(diff, scurry, remover).map(x => x()))
 
 t.strictSame(new Set(deleted), new Set([bazbarEdge, outbarEdge]))

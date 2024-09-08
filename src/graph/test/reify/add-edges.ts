@@ -49,7 +49,7 @@ t.test('add some edges', async t => {
       { read: () => ({}) } as unknown as PackageJson,
       scurry,
       {} as unknown as RollbackRemove,
-    ),
+    ).map(x => x()),
   )
   t.strictSame(
     new Set(reified),
