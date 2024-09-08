@@ -530,6 +530,9 @@ importers:
       path-scurry:
         specifier: 'catalog:'
         version: 2.0.0
+      promise-call-limit:
+        specifier: ^3.0.2
+        version: 3.0.2
     devDependencies:
       '@eslint/js':
         specifier: 'catalog:'
@@ -2739,6 +2742,9 @@ packages:
     resolution: {integrity: sha512-1WsPDsUSMmZH5LeMLegqkPDrsGgsWwk1Exipy2hvB0o/F0ASzbpIctSCcZIK1ykJvtTJULEH+20WOFjMvGnCTg==}
     engines: {node: '>=8'}
 
+  promise-call-limit@3.0.2:
+    resolution: {integrity: sha512-mRPQO2T1QQVw11E7+UdCJu7S61eJVWknzml9sC1heAdj1jxl0fWMBypIt9ZOcLFf8FkG995ZD7RnVk7HH72fZw==}
+
   promise-inflight@1.0.1:
     resolution: {integrity: sha512-6zWPyEOFaQBJYcGMHBKTKJ3u6TBsnMFOIZSa6ce1e/ZrrsOlnHRHbabMjLiBYKp+n44X9eUI6VUPaukCXHuG4g==}
     peerDependencies:
@@ -4711,6 +4717,8 @@ snapshots:
   process-on-spawn@1.0.0:
     dependencies:
       fromentries: 1.3.2
+
+  promise-call-limit@3.0.2: {}
 
   promise-inflight@1.0.1: {}
 

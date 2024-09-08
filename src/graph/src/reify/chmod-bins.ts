@@ -9,19 +9,19 @@ export const chmodBins = (
   diff: Diff,
   packageJson: PackageJson,
   scurry: PathScurry,
-) => {
+): (() => Promise<unknown>)[] => {
   // now that the nodes are all unpacked and built, chmod any bins
-  const chmodPromises: Promise<unknown>[] = []
+  const chmodActions: (() => Promise<unknown>)[] = []
   for (const node of diff.nodes.add) {
     const {
       manifest = packageJson.read(scurry.resolve(node.location)),
     } = node
     for (const bin of Object.values(binPaths(manifest))) {
       const path = scurry.resolve(node.location, bin)
-      chmodPromises.push(
+      chmodActions.push(() =>
         chmod(path, 0o777).then(x => x, optionalFail(diff, node)),
       )
     }
   }
-  return chmodPromises
+  return chmodActions
 }

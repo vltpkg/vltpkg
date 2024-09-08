@@ -6,13 +6,13 @@ export const deleteNodes = (
   diff: Diff,
   remover: RollbackRemove,
   scurry: PathScurry,
-) => {
+): (() => Promise<unknown>)[] => {
   const store = scurry.resolve('node_modules/.vlt')
-  const rmPromises: Promise<unknown>[] = []
+  const rmActions: (() => Promise<unknown>)[] = []
   for (const node of diff.nodes.delete) {
     // do not delete workspaces or link targets
     if (!node.inVltStore()) continue
-    rmPromises.push(remover.rm(scurry.resolve(store, node.id)))
+    rmActions.push(() => remover.rm(scurry.resolve(store, node.id)))
   }
-  return rmPromises
+  return rmActions
 }

@@ -2,8 +2,10 @@ import { PackageInfoClient } from '@vltpkg/package-info'
 import { PackageJson } from '@vltpkg/package-json'
 import { RollbackRemove } from '@vltpkg/rollback-remove'
 import { Monorepo } from '@vltpkg/workspaces'
+import { availableParallelism } from 'node:os'
 import { PathScurry } from 'path-scurry'
 import { updatePackageJson } from './update-importers-package-json.js'
+import { callLimit } from 'promise-call-limit'
 import { load as loadActual, LoadOptions } from '../actual/load.js'
 import { Diff } from '../diff.js'
 import { Graph } from '../graph.js'
@@ -25,6 +27,8 @@ import { deleteNodes } from './delete-nodes.js'
 import { lifecycleAdds } from './lifecycle-adds.js'
 import { lifecycleImporters } from './lifecycle-importers.js'
 import { rollback } from './rollback.js'
+
+const limit = Math.max(availableParallelism() - 1, 1)
 
 // - [ ] depid's with peer resolutions
 // - [ ] ensure that failures for optional deps don't reify the dep,
@@ -115,8 +119,7 @@ const reify_ = async (
   // data as it is saved.
   const lfData = lockfileData(options)
 
-  // XXX: almost certainly will need to throttle this
-  const promises = addNodes(
+  const actions: (() => Promise<unknown>)[] = addNodes(
     diff,
     scurry,
     remover,
@@ -125,17 +128,26 @@ const reify_ = async (
   ).concat(deleteEdges(diff, scurry, remover))
 
   // need to wait, so that the nodes exist to link to
-  if (promises.length) await Promise.all(promises)
+  if (actions.length) await callLimit(actions, { limit })
 
   // create all node_modules symlinks, and link bins to nm/.bin
-  const edgePromises = addEdges(diff, packageJson, scurry, remover)
-  if (edgePromises.length) await Promise.all(edgePromises)
+  const edgeActions: (() => Promise<unknown>)[] = addEdges(
+    diff,
+    packageJson,
+    scurry,
+    remover,
+  )
+  if (edgeActions.length) await callLimit(edgeActions, { limit })
 
   await lifecycleAdds(diff, packageJson, projectRoot)
   await lifecycleImporters(diff, packageJson, projectRoot)
 
-  const chmodPromises = chmodBins(diff, packageJson, scurry)
-  if (chmodPromises.length) await Promise.all(chmodPromises)
+  const chmodActions: (() => Promise<unknown>)[] = chmodBins(
+    diff,
+    packageJson,
+    scurry,
+  )
+  if (chmodActions.length) await callLimit(chmodActions, { limit })
 
   // save the lockfile
   lockfile.save(options)
@@ -151,8 +163,12 @@ const reify_ = async (
   saveHidden(options)
 
   // delete garbage from the store.
-  const rmPromises = deleteNodes(diff, remover, scurry)
-  if (rmPromises.length) await Promise.all(rmPromises)
+  const rmActions: (() => Promise<unknown>)[] = deleteNodes(
+    diff,
+    remover,
+    scurry,
+  )
+  if (rmActions.length) await callLimit(rmActions, { limit })
 
   // updates package.json files if anything was added / removed
   saveImportersPackageJson()
