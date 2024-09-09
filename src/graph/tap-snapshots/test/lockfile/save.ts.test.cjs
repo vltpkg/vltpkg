@@ -8,9 +8,7 @@
 exports[`test/lockfile/save.ts > TAP > missing registries > must match snapshot 1`] = `
 {
   "registries": {},
-  "nodes": {
-    "file;.": [0,"my-project"]
-  },
+  "nodes": {},
   "edges": {}
 }
 
@@ -23,7 +21,6 @@ exports[`test/lockfile/save.ts > TAP > save > must match snapshot 1`] = `
     "custom": "http://example.com"
   },
   "nodes": {
-    "file;.": [0,"my-project"],
     ";;bar@1.0.0": [3,"bar"],
     ";;foo@1.0.0": [2,"foo","sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ==",null,"node_modules/.pnpm/foo@1.0.0/node_modules/foo"],
     ";custom;baz@1.0.0": [1,"baz",null,"http://example.com/baz.tgz"]
@@ -44,21 +41,6 @@ exports[`test/lockfile/save.ts > TAP > save > save hidden (yes manifests) > must
     "custom": "http://example.com"
   },
   "nodes": {
-    "file;.": [
-      0,
-      "my-project",
-      null,
-      null,
-      null,
-      {
-        "name": "my-project",
-        "version": "1.0.0",
-        "dependencies": {
-          "baz": "custom:^1.0.0",
-          "foo": "^1.0.0"
-        }
-      }
-    ],
     ";;bar@1.0.0": [
       3,
       "bar",
@@ -114,7 +96,6 @@ exports[`test/lockfile/save.ts > TAP > save > save normal (no manifests) > must 
     "custom": "http://example.com"
   },
   "nodes": {
-    "file;.": [0,"my-project"],
     ";;bar@1.0.0": [3,"bar"],
     ";;foo@1.0.0": [2,"foo","sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ==",null,"node_modules/.pnpm/foo@1.0.0/node_modules/foo"],
     ";custom;baz@1.0.0": [1,"baz",null,"http://example.com/baz.tgz"]
@@ -135,9 +116,6 @@ exports[`test/lockfile/save.ts > TAP > workspaces > save manifests > must match 
     "custom": "http://example.com"
   },
   "nodes": {
-    "file;.": [0,"my-project"],
-    "workspace;packages%2Fa": [0,"a"],
-    "workspace;packages%2Fb": [0,"b"],
     ";;c@1.0.0": [0,"c","sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ=="]
   },
   "edges": {
@@ -154,9 +132,6 @@ exports[`test/lockfile/save.ts > TAP > workspaces > should save lockfile with wo
     "custom": "http://example.com"
   },
   "nodes": {
-    "file;.": [0,"my-project"],
-    "workspace;packages%2Fa": [0,"a"],
-    "workspace;packages%2Fb": [0,"b"],
     ";;c@1.0.0": [0,"c","sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ=="]
   },
   "edges": {

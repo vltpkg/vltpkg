@@ -6,14 +6,13 @@
  */
 'use strict'
 exports[`test/graph.ts > TAP > Graph > should print with special tag name 1`] = `
-@vltpkg/graph.Graph { registries: {}, nodes: [Object], edges: {} }
+@vltpkg/graph.Graph { registries: {}, nodes: {}, edges: {} }
 `
 
 exports[`test/graph.ts > TAP > using placePackage > should find and fix nameless spec packages 1`] = `
 @vltpkg/graph.Graph {
   registries: {},
   nodes: {
-    'file;.': [ 0, 'my-project' ],
     ';;bar@1.0.0': [ 0, 'bar' ],
     ';;foo@1.0.0': [ 0, 'foo' ],
     'file;a': [ 0, 'a' ]
@@ -31,11 +30,7 @@ exports[`test/graph.ts > TAP > using placePackage > should find and fix nameless
 exports[`test/graph.ts > TAP > using placePackage > should have removed baz from the graph 1`] = `
 @vltpkg/graph.Graph {
   registries: {},
-  nodes: {
-    'file;.': [ 0, 'my-project' ],
-    ';;bar@1.0.0': [ 0, 'bar' ],
-    ';;foo@1.0.0': [ 0, 'foo' ]
-  },
+  nodes: { ';;bar@1.0.0': [ 0, 'bar' ], ';;foo@1.0.0': [ 0, 'foo' ] },
   edges: {
     'file;. missing': 'prod ^1.0.0 MISSING',
     'file;. bar': 'prod ^1.0.0 ;;bar@1.0.0',
@@ -49,7 +44,6 @@ exports[`test/graph.ts > TAP > using placePackage > the graph 1`] = `
 @vltpkg/graph.Graph {
   registries: {},
   nodes: {
-    'file;.': [ 0, 'my-project' ],
     ';;bar@1.0.0': [ 0, 'bar' ],
     ';;baz@1.0.0': [ 0, 'baz' ],
     ';;foo@1.0.0': [ 0, 'foo' ]

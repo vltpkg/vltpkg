@@ -771,5 +771,15 @@
         "sig": "MEYCIQCBAXzukOQcYJLVMrIdRR1FFh7eEbKJmNU0UeC1f0AWUQIhAInNuD6vQ8KGpMVFPaCdqR1q83W64kTLMJcYBVt4FP15"
       }
     ]
+  },
+  "ansi-regex@6.1.0": {
+    "resolved": "https://registry.npmjs.org/ansi-regex/-/ansi-regex-6.1.0.tgz",
+    "integrity": "sha512-7HSX4QQb4CspciLpVFwyRe79O3xsIZDDLER21kERQ71oaPodF8jL725AgJMFAYbooIqolJoRLuM81SpeUkpkvA==",
+    "signatures": [
+      {
+        "keyid": "SHA256:jl3bwswu80PjjokCgh0o2w5c2U4LhQAE57gj9cz1kzA",
+        "sig": "MEQCIDGQvwQxWIDhiEnJTo1Tb35X3bxVWxMjBoPaj+qTxlfnAiA3pztqy3OFgYbMqWZC5GdWT1yG2frnePf72yHSrhynBw=="
+      }
+    ]
   }
 }
