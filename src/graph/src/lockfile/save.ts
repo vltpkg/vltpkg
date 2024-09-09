@@ -30,20 +30,13 @@ const formatNodes = (
   saveManifests?: boolean,
   registry?: string,
 ) => {
-  const arr: Node[] = [...nodes]
-  const [mainImporter, ...restPackages] = arr
+  // we do not store importers in the lockfile, though we do store
+  // their edges. when we load, we always read workspaces/main fresh.
+  const arr: Node[] = [...nodes].filter(node => !node.importer)
   // nodes are sorted in order to have a deterministic result
-  const orderedNodes: Node[] = restPackages.sort(
-    (a, b) =>
-      // sort importers to the top, then alphabetically by id
-      Number(b.importer) - Number(a.importer) ||
-      a.id.localeCompare(b.id, 'en'),
+  const orderedNodes: Node[] = arr.sort((a, b) =>
+    a.id.localeCompare(b.id, 'en'),
   )
-
-  // the main importer node is always the first of the list
-  if (mainImporter) {
-    orderedNodes.unshift(mainImporter)
-  }
 
   const res: Record<DepID, LockfileNode> = {}
   for (const node of orderedNodes) {
@@ -53,7 +46,6 @@ const formatNodes = (
     // if it's in a location other than the default, stash that
     const location =
       (
-        node.importer ||
         node.id.startsWith('file;') ||
         node.location.endsWith(
           '/node_modules/.vlt/' +

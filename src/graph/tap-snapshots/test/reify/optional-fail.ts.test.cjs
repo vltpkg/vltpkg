@@ -16,10 +16,6 @@ Object {
       0,
       "foo",
     ],
-    "file;.": Array [
-      0,
-      "project",
-    ],
   },
   "registries": Object {},
 }

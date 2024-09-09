@@ -66,7 +66,6 @@ t.test('super basic reification', async t => {
   const expectLockfileData: LockfileData = {
     registries: {},
     nodes: {
-      'file;.': [0, 'x'],
       ';;lodash@4.17.21': [
         0,
         'lodash',

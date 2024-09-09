@@ -8,11 +8,7 @@
 exports[`test/ideal/append-nodes.ts > TAP > append different type of dependencies > should install different type of deps on different conditions 1`] = `
 @vltpkg/graph.Graph {
   registries: {},
-  nodes: {
-    'file;.': [ 0, 'my-project' ],
-    ';;bar@1.0.0': [ 1, 'bar' ],
-    ';;foo@1.0.0': [ 2, 'foo' ]
-  },
+  nodes: { ';;bar@1.0.0': [ 1, 'bar' ], ';;foo@1.0.0': [ 2, 'foo' ] },
   edges: {
     'file;. foo': 'dev ^1.0.0 ;;foo@1.0.0',
     'file;. bar': 'optional ^1.0.0 ;;bar@1.0.0'
@@ -54,7 +50,6 @@ exports[`test/ideal/append-nodes.ts > TAP > resolve against the correct registri
 @vltpkg/graph.Graph {
   registries: {},
   nodes: {
-    'file;.': [ 0, 'file;.' ],
     ';a;bar@1.2.3': [ 0, 'bar' ],
     ';a;x@1.99.99': [ 0, 'x' ],
     ';a;y@1.99.99': [ 0, 'y' ],
