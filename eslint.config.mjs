@@ -2,13 +2,15 @@ import eslint from '@eslint/js'
 import tseslint from 'typescript-eslint'
 import globals from 'globals'
 import { readFileSync } from 'fs'
+import { resolve } from 'path'
 
 // 'error' to fix, or 'warn' to see
 const BE_EXTRA = process.env.LINT_SUPER_CONSISTENT ?? 'off'
 
+const ignoresPath = resolve(import.meta.dirname, '.prettierignore')
 export default tseslint.config(
   {
-    ignores: readFileSync('./.prettierignore')
+    ignores: readFileSync(ignoresPath)
       .toString()
       .trim()
       .split('\n')
