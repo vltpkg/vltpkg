@@ -500,6 +500,9 @@ importers:
       '@vltpkg/package-json':
         specifier: workspace:*
         version: link:../package-json
+      '@vltpkg/pick-manifest':
+        specifier: workspace:*
+        version: link:../pick-manifest
       '@vltpkg/registry-client':
         specifier: workspace:*
         version: link:../registry-client

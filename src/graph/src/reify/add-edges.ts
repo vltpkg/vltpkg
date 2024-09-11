@@ -9,13 +9,13 @@ export const addEdges = (
   packageJson: PackageJson,
   scurry: PathScurry,
   remover: RollbackRemove,
-): (() => Promise<unknown>)[] => {
-  const actions: (() => Promise<unknown>)[] = []
+): Promise<unknown>[] => {
+  const actions: Promise<unknown>[] = []
   for (const edge of diff.edges.add) {
     const { to } = edge
     if (!to) continue
     const mani = to.manifest ?? packageJson.read(to.location)
-    actions.push(() => addEdge(edge, mani, scurry, remover))
+    actions.push(addEdge(edge, mani, scurry, remover))
   }
   return actions
 }

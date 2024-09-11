@@ -29,7 +29,7 @@ const shouldInstallDepType = (
 ) =>
   depType !== 'devDependencies' ||
   node.importer ||
-  node.id.startsWith('git;')
+  node.id.startsWith('git')
 
 /**
  * Retrieve the {@link DepID} and location for a `file:` type {@link Node}.
@@ -138,7 +138,7 @@ export const appendNodes = async (
       const bundleDeps = node.manifest?.bundleDependencies
       const bundled = new Set<string>(
         (
-          node.id.startsWith('git;') ||
+          node.id.startsWith('git') ||
           node.importer ||
           !isStringArray(bundleDeps)
         ) ?
