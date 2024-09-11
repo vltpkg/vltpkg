@@ -131,8 +131,6 @@ export class Graph implements GraphLike {
 
     // uses the monorepo instance in order to retrieve info on
     // workspaces and create importer nodes for each of them
-    // TODO: make the monorepo property public so that it's easier to reuse
-    // it when copying stuff from a graph to another
     this.monorepo = monorepo
     if (this.monorepo) {
       for (const ws of this.monorepo) {

@@ -21,14 +21,12 @@ import {
 } from '../lockfile/save.js'
 import { addEdges } from './add-edges.js'
 import { addNodes } from './add-nodes.js'
-import { chmodBins } from './chmod-bins.js'
+import { build } from './build.js'
 import { deleteEdges } from './delete-edges.js'
 import { deleteNodes } from './delete-nodes.js'
-import { lifecycleAdds } from './lifecycle-adds.js'
-import { lifecycleImporters } from './lifecycle-importers.js'
 import { rollback } from './rollback.js'
 
-const limit = Math.max(availableParallelism() - 1, 1)
+const limit = Math.max(availableParallelism() - 1, 1) * 8
 
 // - [ ] depid's with peer resolutions
 // - [ ] ensure that failures for optional deps don't reify the dep,
@@ -42,6 +40,8 @@ export type ReifyOptions = LoadOptions & {
   actual?: Graph
   packageInfo?: PackageInfoClient
 }
+
+// const start = performance.now()
 
 /**
  * Make the current project match the supplied graph.
@@ -81,7 +81,6 @@ export const reify = async (options: ReifyOptions) => {
   try {
     await reify_(
       options,
-      projectRoot,
       packageInfo,
       diff,
       remover,
@@ -100,7 +99,6 @@ export const reify = async (options: ReifyOptions) => {
 
 const reify_ = async (
   options: ReifyOptions,
-  projectRoot: string,
   packageInfo: PackageInfoClient,
   diff: Diff,
   remover: RollbackRemove,
@@ -113,12 +111,12 @@ const reify_ = async (
     graph: options.graph,
     packageJson,
   })
+
   // before anything else happens, grab the ideal tree as it was resolved
   // so that we can store it in the lockfile. We do this here so that
   // any failed/removed optional deps are not reflected in the lockfile
   // data as it is saved.
   const lfData = lockfileData(options)
-
   const actions: (() => Promise<unknown>)[] = addNodes(
     diff,
     scurry,
@@ -131,23 +129,16 @@ const reify_ = async (
   if (actions.length) await callLimit(actions, { limit })
 
   // create all node_modules symlinks, and link bins to nm/.bin
-  const edgeActions: (() => Promise<unknown>)[] = addEdges(
+  const edgeActions: Promise<unknown>[] = addEdges(
     diff,
     packageJson,
     scurry,
     remover,
   )
-  if (edgeActions.length) await callLimit(edgeActions, { limit })
+  if (edgeActions.length) await Promise.all(edgeActions)
 
-  await lifecycleAdds(diff, packageJson, projectRoot)
-  await lifecycleImporters(diff, packageJson, projectRoot)
-
-  const chmodActions: (() => Promise<unknown>)[] = chmodBins(
-    diff,
-    packageJson,
-    scurry,
-  )
-  if (chmodActions.length) await callLimit(chmodActions, { limit })
+  // run lifecycles and chmod bins
+  await build(diff, packageJson, scurry)
 
   // save the lockfile
   lockfile.save(options)
@@ -163,12 +154,12 @@ const reify_ = async (
   saveHidden(options)
 
   // delete garbage from the store.
-  const rmActions: (() => Promise<unknown>)[] = deleteNodes(
+  const rmActions: Promise<unknown>[] = deleteNodes(
     diff,
     remover,
     scurry,
   )
-  if (rmActions.length) await callLimit(rmActions, { limit })
+  if (rmActions.length) await Promise.all(rmActions)
 
   // updates package.json files if anything was added / removed
   saveImportersPackageJson()

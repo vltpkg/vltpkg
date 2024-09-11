@@ -18,6 +18,7 @@
     "@vltpkg/fast-split": "workspace:*",
     "@vltpkg/package-info": "workspace:*",
     "@vltpkg/package-json": "workspace:*",
+    "@vltpkg/pick-manifest": "workspace:*",
     "@vltpkg/registry-client": "workspace:*",
     "@vltpkg/rollback-remove": "workspace:*",
     "@vltpkg/run": "workspace:*",

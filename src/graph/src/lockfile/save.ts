@@ -46,7 +46,7 @@ const formatNodes = (
     // if it's in a location other than the default, stash that
     const location =
       (
-        node.id.startsWith('file;') ||
+        node.id.startsWith('file') ||
         node.location.endsWith(
           '/node_modules/.vlt/' +
             node.id +

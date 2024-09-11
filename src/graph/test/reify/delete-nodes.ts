@@ -34,9 +34,7 @@ const diff = {
 
 const scurry = new PathScurry(t.testdirName)
 
-await Promise.all(
-  deleteNodes(diff, mockRemover, scurry).map(x => x()),
-)
+await Promise.all(deleteNodes(diff, mockRemover, scurry))
 
 t.strictSame(removed, [
   scurry.resolve(

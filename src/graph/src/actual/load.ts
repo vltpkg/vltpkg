@@ -114,7 +114,7 @@ const getDeps = (node: Node) => {
   const bundled =
     (
       !node.importer &&
-      !node.id.startsWith('git;') &&
+      !node.id.startsWith('git') &&
       isStringArray(bundleDeps)
     ) ?
       new Set(bundleDeps)
@@ -128,8 +128,8 @@ const getDeps = (node: Node) => {
     if (
       depType === 'devDependencies' &&
       !node.importer &&
-      !node.id.startsWith('git;') &&
-      !node.id.startsWith('file;')
+      !node.id.startsWith('git') &&
+      !node.id.startsWith('file')
     ) {
       continue
     }
