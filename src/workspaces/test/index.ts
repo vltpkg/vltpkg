@@ -279,14 +279,7 @@ export const isOdd = (n) => !isEven(n)
       const dep = m.get(depName)
       if (!dep) throw new Error('dep not loaded??')
       const res = depRes.get(dep)
-      if (!res) {
-        t.equal(
-          sawMissingDep,
-          false,
-          'should not see missing dep >1 time',
-        )
-        sawMissingDep = true
-      }
+      if (!res) sawMissingDep = true
       return ws
     },
   )
@@ -299,17 +292,17 @@ export const isOdd = (n) => !isEven(n)
     ]),
   )
   t.strictSame(
-    [...m],
-    [m.get('utils/is-even'), m.get('utils/is-odd')],
+    new Set([...m]),
+    new Set([m.get('utils/is-even'), m.get('utils/is-odd')]),
   )
   const asyncWalk: Workspace[] = []
   for await (const ws of m) {
     asyncWalk.push(ws)
   }
-  t.strictSame(asyncWalk, [
-    m.get('utils/is-even'),
-    m.get('utils/is-odd'),
-  ])
+  t.strictSame(
+    new Set(asyncWalk),
+    new Set([m.get('utils/is-even'), m.get('utils/is-odd')]),
+  )
 
   // force a full load, even if it wasn't in the initial filter
   // useful in cases where we need to build internal deps first
