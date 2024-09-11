@@ -22,8 +22,8 @@ catalogs:
       specifier: ^9.8.0
       version: 9.9.0
     graph-run:
-      specifier: ^1.0.3
-      version: 1.0.3
+      specifier: ^1.0.4
+      version: 1.0.4
     lru-cache:
       specifier: ^11.0.0
       version: 11.0.0
@@ -526,7 +526,7 @@ importers:
         version: link:../workspaces
       graph-run:
         specifier: 'catalog:'
-        version: 1.0.3
+        version: 1.0.4
       path-scurry:
         specifier: 'catalog:'
         version: 2.0.0
@@ -1334,7 +1334,7 @@ importers:
         version: 11.0.0
       graph-run:
         specifier: 'catalog:'
-        version: 1.0.3
+        version: 1.0.4
       minimatch:
         specifier: ^10.0.1
         version: 10.0.1
@@ -2265,8 +2265,8 @@ packages:
   graceful-fs@4.2.11:
     resolution: {integrity: sha512-RbJ5/jmFcNNCcDV5o9eTnBLJ/HszWV0P73bc+Ff4nS/rJj+YaS6IGyiOL0VoBYX+l1Wrl3k63h/KrH+nhJ0XvQ==}
 
-  graph-run@1.0.3:
-    resolution: {integrity: sha512-NCETWIYbXqWhfDOJYitj4VZzkvuSPxOJZF/Sxu/OUWzjXj1iRDGPlImA2XfBbZgLDOwAMti8JN2o0IGQVPWhjw==}
+  graph-run@1.0.4:
+    resolution: {integrity: sha512-QCT8ovkn5v+rJh88hvxnPEhA+L/jKnZCMm+TVVOVRKotQS2KJPM2UfChh1Pj+/EhcAG3SkIzqFPzFnn6o1yLNg==}
 
   graphemer@1.4.0:
     resolution: {integrity: sha512-EtKwoO6kxCL9WO5xipiHTZlSzBm7WLT627TqC/uVRd0HKmq8NXyebnNYxDoBi7wt8eTWrUrKXCOVaFq9x1kgag==}
@@ -4232,7 +4232,7 @@ snapshots:
 
   graceful-fs@4.2.11: {}
 
-  graph-run@1.0.3: {}
+  graph-run@1.0.4: {}
 
   graphemer@1.4.0: {}
 
