@@ -1,18 +1,19 @@
+import { delimiter } from '@vltpkg/dep-id'
+import { error } from '@vltpkg/error-cause'
 import { fastSplit } from '@vltpkg/fast-split'
 import type { EdgeLike, NodeLike } from '@vltpkg/graph'
+import { asManifest, JSONField } from '@vltpkg/types'
+import { attributeSelectorsMap } from './attribute.js'
 import {
-  ParserFn,
-  ParserState,
-  PostcssNode,
   asAttributeNode,
   asPostcssNodeWithChildren,
   asPseudoNode,
   asTagNode,
   isSelectorNode,
+  ParserFn,
+  ParserState,
+  PostcssNode,
 } from './types.js'
-import { error } from '@vltpkg/error-cause'
-import { attributeSelectorsMap } from './attribute.js'
-import { JSONField, asManifest } from '@vltpkg/types'
 
 interface AttrInternals {
   attribute: string
@@ -418,7 +419,7 @@ const typeFn = async (state: ParserState) => {
   const name = asTagNode(selector.nodes[0]).value
   const compareName = name === 'registry' ? '' : name
   for (const node of state.partial.nodes) {
-    const nodeType = fastSplit(node.id, ';', 2)[0]
+    const nodeType = fastSplit(node.id, delimiter, 2)[0]
     if (nodeType !== compareName) {
       state.partial.nodes.delete(node)
     }

@@ -1,3 +1,4 @@
+import { joinDepIDTuple } from '@vltpkg/dep-id'
 import t from 'tap'
 import { classFn } from '../src/class.js'
 import {
@@ -13,7 +14,9 @@ const testClass = selectorFixture(classFn)
 t.test('class', async t => {
   const simpleGraph = getSimpleGraph()
   const all = [...simpleGraph.nodes.values()]
-  const b = simpleGraph.nodes.get(';;b@1.0.0')!
+  const b = simpleGraph.nodes.get(
+    joinDepIDTuple(['registry', '', 'b@1.0.0']),
+  )!
   const queryToExpected = new Set<TestCase>([
     ['.prod', all, ['a']], // prod-only deps
     ['.dev', all, ['b', 'c', 'd', 'e', 'f', '@x/y']], // all dev deps and their deps

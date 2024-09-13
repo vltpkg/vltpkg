@@ -8,13 +8,13 @@
 exports[`test/ideal/build.ts > TAP > build from actual files > should build an ideal tree starting from a virtual graph 1`] = `
 [
   Node {
-    id: 'file;.',
+    id: 'file·.',
     location: '.',
     importer: true,
     edgesOut: [
       Edge spec(foo@1.0.0) -prod-> to: Node {
-        id: ';;foo@1.0.0',
-        location: './node_modules/.vlt/;;foo@1.0.0/node_modules/foo'
+        id: '··foo@1.0.0',
+        location: './node_modules/.vlt/··foo@1.0.0/node_modules/foo'
       }
     ]
   }
@@ -24,13 +24,13 @@ exports[`test/ideal/build.ts > TAP > build from actual files > should build an i
 exports[`test/ideal/build.ts > TAP > build from lockfile > should build an ideal tree starting from a virtual graph 1`] = `
 [
   Node {
-    id: 'file;.',
+    id: 'file·.',
     location: '.',
     importer: true,
     edgesOut: [
       Edge spec(foo@^1.0.0) -prod-> to: Node {
-        id: ';;foo@1.0.0',
-        location: './node_modules/.vlt/;;foo@1.0.0/node_modules/foo',
+        id: '··foo@1.0.0',
+        location: './node_modules/.vlt/··foo@1.0.0/node_modules/foo',
         resolved: 'https://registry.npmjs.org/foo/-/foo-1.0.0.tgz',
         integrity: 'sha512-URO90jLnKPqX+P7OLnJkiIQfMX4I6gEdGZ1T84drQLtRPw6uNKYLZfB6K3hjWIrj0VZB1kh2cTFdeq01i6XIYQ=='
       }

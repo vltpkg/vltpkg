@@ -8,11 +8,11 @@
 exports[`test/reify/optional-fail.ts > TAP > register and optional node failure > must match snapshot 1`] = `
 Object {
   "edges": Object {
-    ";;foo@1.2.3 bar": "prod * MISSING",
-    "file;. foo": "optional * ;;foo@1.2.3",
+    "··foo@1.2.3 bar": "prod * MISSING",
+    "file·. foo": "optional * ··foo@1.2.3",
   },
   "nodes": Object {
-    ";;foo@1.2.3": Array [
+    "··foo@1.2.3": Array [
       0,
       "foo",
     ],

@@ -1,4 +1,4 @@
-import { getId, type DepID } from '@vltpkg/dep-id'
+import { getId, joinDepIDTuple, type DepID } from '@vltpkg/dep-id'
 import { error } from '@vltpkg/error-cause'
 import { satisfies } from '@vltpkg/satisfies'
 import { Spec, type SpecOptions } from '@vltpkg/spec'
@@ -12,6 +12,10 @@ import { Node, NodeOptions } from './node.js'
 import { GraphLike } from './types.js'
 
 const kCustomInspect = Symbol.for('nodejs.util.inspect.custom')
+
+// this is always the same, but we don't hard code it as a string,
+// in case the DepID module needs to change its delimiter again ever.
+const mainDepID = joinDepIDTuple(['file', '.'])
 
 export type ManifestInventory = Map<DepID, ManifestMinified>
 
@@ -115,7 +119,7 @@ export class Graph implements GraphLike {
       mainImporterLocation,
     )
     const mainImporter = this.addNode(
-      'file;.',
+      mainDepID,
       mainManifest,
       mainImporterSpec,
     )

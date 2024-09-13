@@ -9,7 +9,7 @@ exports[`test/commands/install.ts > TAP > should call reify with expected option
 Object {
   "actual": "actual.load result",
   "add": Map {
-    "file;." => Map {},
+    "file·." => Map {},
   },
   "graph": "buildideal result adds 0 new package(s)",
   "loadManifests": true,
@@ -24,7 +24,7 @@ exports[`test/commands/install.ts > TAP > should reify installing a new dependen
 Object {
   "actual": "actual.load result",
   "add": Map {
-    "file;." => Map {
+    "file·." => Map {
       "abbrev" => Object {
         "spec": Spec {
           "bareSpec": "2",

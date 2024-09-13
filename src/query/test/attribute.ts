@@ -1,3 +1,4 @@
+import { joinDepIDTuple } from '@vltpkg/dep-id'
 import t from 'tap'
 import { attribute } from '../src/attribute.js'
 import { getSimpleGraph } from './fixtures/graph.js'
@@ -9,7 +10,9 @@ const testAttr = selectorFixture(attribute)
 t.test('attribute', async t => {
   const simpleGraph = getSimpleGraph()
   const all = [...simpleGraph.nodes.values()]
-  const b = simpleGraph.nodes.get(';;b@1.0.0')!
+  const b = simpleGraph.nodes.get(
+    joinDepIDTuple(['registry', '', 'b@1.0.0']),
+  )!
   const queryToExpected = new Set<TestCase>([
     [
       '[version="1.0.0"]',

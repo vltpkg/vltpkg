@@ -1,3 +1,4 @@
+import { joinDepIDTuple } from '@vltpkg/dep-id'
 import { Spec, SpecOptions } from '@vltpkg/spec'
 import { Monorepo } from '@vltpkg/workspaces'
 import { readFileSync } from 'node:fs'
@@ -57,7 +58,9 @@ t.test('save', async t => {
       version: '1.0.0',
     })
     ?.setResolved()
-  const bar = graph.nodes.get(';;bar@1.0.0')
+  const bar = graph.nodes.get(
+    joinDepIDTuple(['registry', '', 'bar@1.0.0']),
+  )
   if (!bar) throw new Error('no bar')
   bar.dev = true
   bar.optional = true
@@ -75,7 +78,9 @@ t.test('save', async t => {
       },
     )
     ?.setResolved()
-  const baz = graph.nodes.get(';custom;baz@1.0.0')
+  const baz = graph.nodes.get(
+    joinDepIDTuple(['registry', 'custom', 'baz@1.0.0']),
+  )
   if (!baz) throw new Error('no baz node')
   baz.optional = true
   save({ ...configData, graph })
@@ -169,7 +174,9 @@ t.test('workspaces', async t => {
     mainManifest,
     monorepo,
   })
-  const b = graph.nodes.get('workspace;packages%2Fb')
+  const b = graph.nodes.get(
+    joinDepIDTuple(['workspace', 'packages/b']),
+  )
   if (!b) {
     throw new Error('Missing workspace b')
   }

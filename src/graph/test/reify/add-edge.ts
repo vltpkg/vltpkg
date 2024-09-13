@@ -1,3 +1,4 @@
+import { joinDepIDTuple } from '@vltpkg/dep-id'
 import { RollbackRemove } from '@vltpkg/rollback-remove'
 import { Spec } from '@vltpkg/spec'
 import { statSync } from 'fs'
@@ -31,14 +32,14 @@ t.test('reify an edge', async t => {
   const projectRoot = t.testdir({
     node_modules: {
       '.vlt': {
-        ';;foo@1.2.3': {
+        [joinDepIDTuple(['registry', '', 'foo@1.2.3'])]: {
           node_modules: {
             foo: {
               'package.json': JSON.stringify(fooManifest),
             },
           },
         },
-        ';;bar@1.2.3': {
+        [joinDepIDTuple(['registry', '', 'bar@1.2.3'])]: {
           node_modules: {
             bar: {
               'package.json': JSON.stringify(barManifest),
@@ -51,7 +52,10 @@ t.test('reify an edge', async t => {
   })
 
   const fooNM =
-    projectRoot + '/node_modules/.vlt/;;foo@1.2.3/node_modules'
+    projectRoot +
+    '/node_modules/.vlt/' +
+    joinDepIDTuple(['registry', '', 'foo@1.2.3']) +
+    '/node_modules'
 
   t.throws(() => statSync(projectRoot + '/node_modules/.bin/bar'))
   t.throws(() => statSync(fooNM + '/bar'))
@@ -60,13 +64,27 @@ t.test('reify an edge', async t => {
     projectRoot,
     graph: {} as GraphLike,
   }
-  const fooNode = new Node(opts, ';;foo@1.2.3', fooManifest)
+  const fooNode = new Node(
+    opts,
+    joinDepIDTuple(['registry', '', 'foo@1.2.3']),
+    fooManifest,
+  )
   fooNode.location =
-    projectRoot + '/node_modules/.vlt/;;foo@1.2.3/node_modules/foo'
-  const barNode = new Node(opts, ';;bar@1.2.3', barManifest)
+    projectRoot +
+    '/node_modules/.vlt/' +
+    joinDepIDTuple(['registry', '', 'foo@1.2.3']) +
+    '/node_modules/foo'
+  const barNode = new Node(
+    opts,
+    joinDepIDTuple(['registry', '', 'bar@1.2.3']),
+    barManifest,
+  )
   barNode.location =
-    projectRoot + '/node_modules/.vlt/;;bar@1.2.3/node_modules/bar'
-  const rootNode = new Node(opts, 'file;.', {})
+    projectRoot +
+    '/node_modules/.vlt/' +
+    joinDepIDTuple(['registry', '', 'bar@1.2.3']) +
+    '/node_modules/bar'
+  const rootNode = new Node(opts, joinDepIDTuple(['file', '.']), {})
   rootNode.location = projectRoot
 
   const edge = new Edge('prod', Spec.parse('bar@'), fooNode, barNode)

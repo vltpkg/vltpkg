@@ -13,16 +13,16 @@ exports[`test/graph.ts > TAP > using placePackage > should find and fix nameless
 @vltpkg/graph.Graph {
   registries: {},
   nodes: {
-    ';;bar@1.0.0': [ 0, 'bar' ],
-    ';;foo@1.0.0': [ 0, 'foo' ],
-    'file;a': [ 0, 'a' ]
+    '··bar@1.0.0': [ 0, 'bar' ],
+    '··foo@1.0.0': [ 0, 'foo' ],
+    'file·a': [ 0, 'a' ]
   },
   edges: {
-    'file;. missing': 'prod ^1.0.0 MISSING',
-    'file;. bar': 'prod ^1.0.0 ;;bar@1.0.0',
-    'file;. foo': 'prod ^1.0.0 ;;foo@1.0.0',
-    'file;. a': 'prod file:./a file;a',
-    ';;bar@1.0.0 baz': 'prod ^1.0.0 MISSING'
+    'file·. missing': 'prod ^1.0.0 MISSING',
+    'file·. bar': 'prod ^1.0.0 ··bar@1.0.0',
+    'file·. foo': 'prod ^1.0.0 ··foo@1.0.0',
+    'file·. a': 'prod file:./a file·a',
+    '··bar@1.0.0 baz': 'prod ^1.0.0 MISSING'
   }
 }
 `
@@ -30,12 +30,12 @@ exports[`test/graph.ts > TAP > using placePackage > should find and fix nameless
 exports[`test/graph.ts > TAP > using placePackage > should have removed baz from the graph 1`] = `
 @vltpkg/graph.Graph {
   registries: {},
-  nodes: { ';;bar@1.0.0': [ 0, 'bar' ], ';;foo@1.0.0': [ 0, 'foo' ] },
+  nodes: { '··bar@1.0.0': [ 0, 'bar' ], '··foo@1.0.0': [ 0, 'foo' ] },
   edges: {
-    'file;. missing': 'prod ^1.0.0 MISSING',
-    'file;. bar': 'prod ^1.0.0 ;;bar@1.0.0',
-    'file;. foo': 'prod ^1.0.0 ;;foo@1.0.0',
-    ';;bar@1.0.0 baz': 'prod ^1.0.0 MISSING'
+    'file·. missing': 'prod ^1.0.0 MISSING',
+    'file·. bar': 'prod ^1.0.0 ··bar@1.0.0',
+    'file·. foo': 'prod ^1.0.0 ··foo@1.0.0',
+    '··bar@1.0.0 baz': 'prod ^1.0.0 MISSING'
   }
 }
 `
@@ -44,16 +44,16 @@ exports[`test/graph.ts > TAP > using placePackage > the graph 1`] = `
 @vltpkg/graph.Graph {
   registries: {},
   nodes: {
-    ';;bar@1.0.0': [ 0, 'bar' ],
-    ';;baz@1.0.0': [ 0, 'baz' ],
-    ';;foo@1.0.0': [ 0, 'foo' ]
+    '··bar@1.0.0': [ 0, 'bar' ],
+    '··baz@1.0.0': [ 0, 'baz' ],
+    '··foo@1.0.0': [ 0, 'foo' ]
   },
   edges: {
-    'file;. missing': 'prod ^1.0.0 MISSING',
-    'file;. bar': 'prod ^1.0.0 ;;bar@1.0.0',
-    'file;. foo': 'prod ^1.0.0 ;;foo@1.0.0',
-    ';;bar@1.0.0 baz': 'prod ^1.0.0 ;;baz@1.0.0',
-    ';;baz@1.0.0 foo': 'prod ^1.0.0 ;;foo@1.0.0'
+    'file·. missing': 'prod ^1.0.0 MISSING',
+    'file·. bar': 'prod ^1.0.0 ··bar@1.0.0',
+    'file·. foo': 'prod ^1.0.0 ··foo@1.0.0',
+    '··bar@1.0.0 baz': 'prod ^1.0.0 ··baz@1.0.0',
+    '··baz@1.0.0 foo': 'prod ^1.0.0 ··foo@1.0.0'
   }
 }
 `
@@ -64,7 +64,7 @@ Set {
     "edgesIn": Set {},
     "edgesOut": Map {},
     "graph": "Graph {}",
-    "id": "file;.",
+    "id": "file·.",
     "importer": true,
     "integrity": undefined,
     "mainImporter": true,
@@ -81,7 +81,7 @@ Set {
     "edgesIn": Set {},
     "edgesOut": Map {},
     "graph": "Graph {}",
-    "id": "workspace;packages%2Fb",
+    "id": "workspace·packages%2Fb",
     "importer": true,
     "integrity": undefined,
     "mainImporter": false,
@@ -100,7 +100,7 @@ Set {
     "edgesIn": Set {},
     "edgesOut": Map {},
     "graph": "Graph {}",
-    "id": "workspace;packages%2Fa",
+    "id": "workspace·packages%2Fa",
     "importer": true,
     "integrity": undefined,
     "mainImporter": false,

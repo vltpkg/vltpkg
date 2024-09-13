@@ -1,3 +1,4 @@
+import { joinDepIDTuple } from '@vltpkg/dep-id'
 import t from 'tap'
 import { combinator } from '../src/combinator.js'
 import { walk } from '../src/index.js'
@@ -10,10 +11,18 @@ const testCombinator = selectorFixture(combinator)
 t.test('combinator', async t => {
   const simpleGraph = getSimpleGraph()
   const all = [...simpleGraph.nodes.values()]
-  const b = simpleGraph.nodes.get(';;b@1.0.0')!
-  const d = simpleGraph.nodes.get(';;d@1.0.0')!
-  const e = simpleGraph.nodes.get(';;e@1.0.0')!
-  const f = simpleGraph.nodes.get(';;f@1.0.0')!
+  const b = simpleGraph.nodes.get(
+    joinDepIDTuple(['registry', '', 'b@1.0.0']),
+  )!
+  const d = simpleGraph.nodes.get(
+    joinDepIDTuple(['registry', '', 'd@1.0.0']),
+  )!
+  const e = simpleGraph.nodes.get(
+    joinDepIDTuple(['registry', '', 'e@1.0.0']),
+  )!
+  const f = simpleGraph.nodes.get(
+    joinDepIDTuple(['registry', '', 'f@1.0.0']),
+  )!
   const queryToExpected = new Set<TestCase>([
     // child combinator
     ['>', all, ['a', 'b', 'e', '@x/y', 'c', 'd', 'f']], // direct children of all nodes
@@ -58,8 +67,12 @@ t.test('combinator', async t => {
   await t.test('cycle', async t => {
     const cycleGraph = getCycleGraph()
     const all = [...cycleGraph.nodes.values()]
-    const a = cycleGraph.nodes.get(';;a@1.0.0')!
-    const b = cycleGraph.nodes.get(';;b@1.0.0')!
+    const a = cycleGraph.nodes.get(
+      joinDepIDTuple(['registry', '', 'a@1.0.0']),
+    )!
+    const b = cycleGraph.nodes.get(
+      joinDepIDTuple(['registry', '', 'b@1.0.0']),
+    )!
     const queryToExpected = new Set<TestCase>([
       ['>', all, ['a', 'b']], // direct children of all nodes
       ['>', [a], ['b']], // direct children of a

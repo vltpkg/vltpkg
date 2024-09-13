@@ -1,5 +1,6 @@
+import { joinDepIDTuple } from '@vltpkg/dep-id'
 import { PackageInfoClient } from '@vltpkg/package-info'
-import { Spec, SpecOptions, kCustomInspect } from '@vltpkg/spec'
+import { kCustomInspect, Spec, SpecOptions } from '@vltpkg/spec'
 import { Manifest } from '@vltpkg/types'
 import { inspect } from 'node:util'
 import { PathScurry } from 'path-scurry'
@@ -103,7 +104,9 @@ t.test('append a new node to a graph from a registry', async t => {
     ['foo'],
     'should have a direct dependency on foo',
   )
-  const barPkg = graph.manifests.get(';;bar@1.0.0')
+  const barPkg = graph.manifests.get(
+    joinDepIDTuple(['registry', '', 'bar@1.0.0']),
+  )
   if (!barPkg) {
     throw new Error('Package could not be retrieved')
   }

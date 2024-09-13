@@ -1,3 +1,4 @@
+import { joinDepIDTuple } from '@vltpkg/dep-id'
 import { RollbackRemove } from '@vltpkg/rollback-remove'
 import { Spec } from '@vltpkg/spec'
 import { resolve } from 'path'
@@ -31,10 +32,19 @@ const opts = {
   projectRoot,
   graph: {} as GraphLike,
 }
-const fooNode = new Node(opts, ';;foo@1.2.3')
-const barNode = new Node(opts, ';;bar@1.2.3')
-const bazNode = new Node(opts, ';;baz@1.2.3')
-const outNode = new Node(opts, 'file;./outside')
+const fooNode = new Node(
+  opts,
+  joinDepIDTuple(['registry', '', 'foo@1.2.3']),
+)
+const barNode = new Node(
+  opts,
+  joinDepIDTuple(['registry', '', 'bar@1.2.3']),
+)
+const bazNode = new Node(
+  opts,
+  joinDepIDTuple(['registry', '', 'baz@1.2.3']),
+)
+const outNode = new Node(opts, joinDepIDTuple(['file', './outside']))
 outNode.location = resolve(projectRoot, 'outside')
 const foobarEdge = new Edge(
   'prod',

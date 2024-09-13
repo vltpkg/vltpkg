@@ -1,3 +1,4 @@
+import { joinDepIDTuple } from '@vltpkg/dep-id'
 import { SpecOptions } from '@vltpkg/spec'
 import t from 'tap'
 import { load } from '../../src/actual/load.js'
@@ -40,7 +41,7 @@ t.test('load actual', async t => {
     },
     node_modules: {
       '.vlt': {
-        ';;@scoped%2Fa@1.0.0': {
+        [joinDepIDTuple(['registry', '', '@scoped/a@1.0.0'])]: {
           node_modules: {
             '@scoped': {
               a: {
@@ -56,7 +57,7 @@ t.test('load actual', async t => {
             },
           },
         },
-        ';;@scoped%2Fb@1.0.0': {
+        [joinDepIDTuple(['registry', '', '@scoped/b@1.0.0'])]: {
           node_modules: {
             '@scoped': {
               b: {
@@ -75,12 +76,18 @@ t.test('load actual', async t => {
               },
               c: t.fixture(
                 'symlink',
-                '../../../../.vlt/;;@scoped%2Fc@1.0.0/node_modules/@scoped/c',
+                '../../../../.vlt/' +
+                  joinDepIDTuple([
+                    'registry',
+                    '',
+                    '@scoped/c@1.0.0',
+                  ]) +
+                  '/node_modules/@scoped/c',
               ),
             },
           },
         },
-        ';;@scoped%2Fc@1.0.0': {
+        [joinDepIDTuple(['registry', '', '@scoped/c@1.0.0'])]: {
           node_modules: {
             '@scoped': {
               c: {
@@ -92,7 +99,7 @@ t.test('load actual', async t => {
             },
           },
         },
-        ';;bar@1.0.0': {
+        [joinDepIDTuple(['registry', '', 'bar@1.0.0'])]: {
           node_modules: {
             bar: {
               'package.json': JSON.stringify({
@@ -106,15 +113,19 @@ t.test('load actual', async t => {
             },
             baz: t.fixture(
               'symlink',
-              '../../;custom;baz@1.0.0/node_modules/baz',
+              '../../' +
+                joinDepIDTuple(['registry', 'custom', 'baz@1.0.0']) +
+                '/node_modules/baz',
             ),
             blooo: t.fixture(
               'symlink',
-              '../../;;blooo@1.0.0/node_modules/blooo',
+              '../../' +
+                joinDepIDTuple(['registry', '', 'blooo@1.0.0']) +
+                '/node_modules/blooo',
             ),
           },
         },
-        ';;blooo@1.0.0': {
+        [joinDepIDTuple(['registry', '', 'blooo@1.0.0'])]: {
           node_modules: {
             blooo: {
               'package.json': JSON.stringify({
@@ -124,7 +135,7 @@ t.test('load actual', async t => {
             },
           },
         },
-        ';;foo@1.0.0': {
+        [joinDepIDTuple(['registry', '', 'foo@1.0.0'])]: {
           node_modules: {
             foo: {
               'package.json': JSON.stringify({
@@ -134,7 +145,7 @@ t.test('load actual', async t => {
             },
           },
         },
-        ';;ipsum@1.0.0': {
+        [joinDepIDTuple(['registry', '', 'ipsum@1.0.0'])]: {
           node_modules: {
             ipsum: {
               'package.json': JSON.stringify({
@@ -144,7 +155,7 @@ t.test('load actual', async t => {
             },
           },
         },
-        ';;extraneous@1.0.0': {
+        [joinDepIDTuple(['registry', '', 'extraneous@1.0.0'])]: {
           node_modules: {
             extraneous: {
               'package.json': JSON.stringify({
@@ -154,7 +165,7 @@ t.test('load actual', async t => {
             },
           },
         },
-        ';custom;baz@1.0.0': {
+        [joinDepIDTuple(['registry', 'custom', 'baz@1.0.0'])]: {
           node_modules: {
             baz: {
               'package.json': JSON.stringify({
@@ -164,7 +175,7 @@ t.test('load actual', async t => {
             },
           },
         },
-        ';custom;foo@1.0.0': {
+        [joinDepIDTuple(['registry', 'custom', 'foo@1.0.0'])]: {
           node_modules: {
             foo: {
               'package.json': JSON.stringify({
@@ -178,25 +189,43 @@ t.test('load actual', async t => {
       '@scoped': {
         a: t.fixture(
           'symlink',
-          '../.vlt/;;@scoped%2Fa@1.0.0/node_modules/@scoped/a',
+          '../.vlt/' +
+            joinDepIDTuple(['registry', '', '@scoped/a@1.0.0']) +
+            '/node_modules/@scoped/a',
         ),
         b: t.fixture(
           'symlink',
-          '../.vlt/;;@scoped%2Fb@1.0.0/node_modules/@scoped/b',
+          '../.vlt/' +
+            joinDepIDTuple(['registry', '', '@scoped/b@1.0.0']) +
+            '/node_modules/@scoped/b',
         ),
       },
       aliased: t.fixture(
         'symlink',
-        '.vlt/;custom;foo@1.0.0/node_modules/foo',
+        '.vlt/' +
+          joinDepIDTuple(['registry', 'custom', 'foo@1.0.0']) +
+          '/node_modules/foo',
       ),
-      bar: t.fixture('symlink', '.vlt/;;bar@1.0.0/node_modules/bar'),
+      bar: t.fixture(
+        'symlink',
+        '.vlt/' +
+          joinDepIDTuple(['registry', '', 'bar@1.0.0']) +
+          '/node_modules/bar',
+      ),
       // This should be ignored when traversing the file system
       broken_symlink: t.fixture('symlink', './link-to-nowhere'),
       extraneous: t.fixture(
         'symlink',
-        '.vlt/;;extraneous@1.0.0/node_modules/extraneous',
+        '.vlt/' +
+          joinDepIDTuple(['registry', '', 'extraneous@1.0.0']) +
+          '/node_modules/extraneous',
       ),
-      foo: t.fixture('symlink', '.vlt/;;foo@1.0.0/node_modules/foo'),
+      foo: t.fixture(
+        'symlink',
+        '.vlt/' +
+          joinDepIDTuple(['registry', '', 'foo@1.0.0']) +
+          '/node_modules/foo',
+      ),
       link: t.fixture('symlink', '../linked'),
     },
     packages: {
@@ -213,11 +242,15 @@ t.test('load actual', async t => {
         node_modules: {
           foo: t.fixture(
             'symlink',
-            '../../../node_modules/.vlt/;;foo@1.0.0/node_modules/foo',
+            '../../../node_modules/.vlt/' +
+              joinDepIDTuple(['registry', '', 'foo@1.0.0']) +
+              '/node_modules/foo',
           ),
           ipsum: t.fixture(
             'symlink',
-            '../../../node_modules/.vlt/;;ipsum@1.0.0/node_modules/ipsum',
+            '../../../node_modules/.vlt/' +
+              joinDepIDTuple(['registry', '', 'ipsum@1.0.0']) +
+              '/node_modules/ipsum',
           ),
           'workspace-b': t.fixture('symlink', '../../workspace-b'),
         },
@@ -275,7 +308,7 @@ t.test('cycle', async t => {
     }),
     node_modules: {
       '.vlt': {
-        ';;a@1.0.0': {
+        [joinDepIDTuple(['registry', '', 'a@1.0.0'])]: {
           node_modules: {
             a: {
               'package.json': JSON.stringify({
@@ -286,10 +319,15 @@ t.test('cycle', async t => {
                 },
               }),
             },
-            b: t.fixture('symlink', '../../;;b@1.0.0/node_modules/b'),
+            b: t.fixture(
+              'symlink',
+              '../../' +
+                joinDepIDTuple(['registry', '', 'b@1.0.0']) +
+                '/node_modules/b',
+            ),
           },
         },
-        ';;b@1.0.0': {
+        [joinDepIDTuple(['registry', '', 'b@1.0.0'])]: {
           node_modules: {
             b: {
               'package.json': JSON.stringify({
@@ -300,11 +338,21 @@ t.test('cycle', async t => {
                 },
               }),
             },
-            a: t.fixture('symlink', '../../;;a@1.0.0/node_modules/a'),
+            a: t.fixture(
+              'symlink',
+              '../../' +
+                joinDepIDTuple(['registry', '', 'a@1.0.0']) +
+                '/node_modules/a',
+            ),
           },
         },
       },
-      a: t.fixture('symlink', '.vlt/;;a@1.0.0/node_modules/a'),
+      a: t.fixture(
+        'symlink',
+        '.vlt/' +
+          joinDepIDTuple(['registry', '', 'a@1.0.0']) +
+          '/node_modules/a',
+      ),
     },
   })
   t.matchSnapshot(

@@ -1,4 +1,4 @@
-import { asDepID, hydrate } from '@vltpkg/dep-id'
+import { hydrate, joinDepIDTuple } from '@vltpkg/dep-id'
 import { kCustomInspect, Spec, SpecOptions } from '@vltpkg/spec'
 import { Monorepo } from '@vltpkg/workspaces'
 import { inspect } from 'node:util'
@@ -58,17 +58,21 @@ t.test('Graph', async t => {
   )
 
   // gutchecks
-  t.strictSame(newNode.id, ';;foo@1.0.0', 'id gutcheck')
+  t.strictSame(
+    newNode.id,
+    joinDepIDTuple(['registry', '', 'foo@1.0.0']),
+    'id gutcheck',
+  )
   t.strictSame(
     newNode.location,
-    './node_modules/.vlt/;;foo@1.0.0/node_modules/foo',
+    './node_modules/.vlt/' +
+      joinDepIDTuple(['registry', '', 'foo@1.0.0']) +
+      '/node_modules/foo',
     'location gutcheck',
   )
 
   const localdep = graph.addNode(
-    asDepID(
-      'file;' + encodeURIComponent(newNode.location + '/localdep'),
-    ),
+    joinDepIDTuple(['file', newNode.location + '/localdep']),
     { name: 'localdep', version: '1.2.3' },
     Spec.parse('localdep@file:localdep'),
     'localdep',
@@ -224,7 +228,7 @@ t.test('using placePackage', async t => {
       name: 'a',
       version: '1.0.0',
     },
-    'file;a',
+    joinDepIDTuple(['file', 'a']),
   )
   t.matchSnapshot(
     inspect(graph, { depth: 2 }),
@@ -347,28 +351,39 @@ t.test('prevent duplicate edges', async t => {
     Spec.parse('foo@*'),
     fooManifest,
   )
-  graph.addNode(';;bar@1.0.0', bar1Manifest)
-  graph.addNode(';;bar@2.0.0', bar2Manifest)
-  graph.addNode(';;bar@3.0.0', bar3Manifest)
-  const fooNode = graph.nodes.get(';;foo@1.0.0')
+  graph.addNode(
+    joinDepIDTuple(['registry', '', 'bar@1.0.0']),
+    bar1Manifest,
+  )
+  graph.addNode(
+    joinDepIDTuple(['registry', '', 'bar@2.0.0']),
+    bar2Manifest,
+  )
+  graph.addNode(
+    joinDepIDTuple(['registry', '', 'bar@3.0.0']),
+    bar3Manifest,
+  )
+  const fooNode = graph.nodes.get(
+    joinDepIDTuple(['registry', '', 'foo@1.0.0']),
+  )
   if (!fooNode) throw new Error('did not get node added to graph')
   graph.addEdge(
     'prod',
     Spec.parse('bar@*'),
     fooNode,
-    graph.nodes.get(';;bar@1.0.0'),
+    graph.nodes.get(joinDepIDTuple(['registry', '', 'bar@1.0.0'])),
   )
   graph.addEdge(
     'prod',
     Spec.parse('bar@*'),
     fooNode,
-    graph.nodes.get(';;bar@1.0.0'),
+    graph.nodes.get(joinDepIDTuple(['registry', '', 'bar@1.0.0'])),
   )
   graph.addEdge(
     'prod',
     Spec.parse('bar@*'),
     fooNode,
-    graph.nodes.get(';;bar@2.0.0'),
+    graph.nodes.get(joinDepIDTuple(['registry', '', 'bar@2.0.0'])),
   )
   t.match(
     graph.edges,
@@ -376,14 +391,20 @@ t.test('prevent duplicate edges', async t => {
       new Edge(
         'prod',
         Spec.parse('foo@*'),
-        graph.nodes.get('file;.')!,
-        graph.nodes.get(';;foo@1.0.0'),
+        graph.nodes.get(joinDepIDTuple(['file', '.']))!,
+        graph.nodes.get(
+          joinDepIDTuple(['registry', '', 'foo@1.0.0']),
+        ),
       ),
       new Edge(
         'prod',
         Spec.parse('bar@*'),
-        graph.nodes.get(';;foo@1.0.0')!,
-        graph.nodes.get(';;bar@2.0.0'),
+        graph.nodes.get(
+          joinDepIDTuple(['registry', '', 'foo@1.0.0']),
+        )!,
+        graph.nodes.get(
+          joinDepIDTuple(['registry', '', 'bar@2.0.0']),
+        ),
       ),
     ]),
   )
@@ -391,27 +412,34 @@ t.test('prevent duplicate edges', async t => {
   t.match(
     graph.nodes.keys(),
     new Set([
-      'file;.',
-      ';;foo@1.0.0',
-      ';;bar@1.0.0',
-      ';;bar@2.0.0',
-      ';;bar@3.0.0',
+      joinDepIDTuple(['file', '.']),
+      joinDepIDTuple(['registry', '', 'foo@1.0.0']),
+      joinDepIDTuple(['registry', '', 'bar@1.0.0']),
+      joinDepIDTuple(['registry', '', 'bar@2.0.0']),
+      joinDepIDTuple(['registry', '', 'bar@3.0.0']),
     ]),
     'gut-check that nodes are here to be collected',
   )
   // create a missing edge to verify it's not a problem
   fooNode.edgesOut.set(
-    ';;asdf@1.0.0',
+    joinDepIDTuple(['registry', '', 'asdf@1.0.0']),
     new Edge('prod', Spec.parse('asdf@1'), fooNode),
   )
   const collected = graph.gc()
   t.match(
     graph.nodes.keys(),
-    new Set(['file;.', ';;foo@1.0.0', ';;bar@2.0.0']),
+    new Set([
+      joinDepIDTuple(['file', '.']),
+      joinDepIDTuple(['registry', '', 'foo@1.0.0']),
+      joinDepIDTuple(['registry', '', 'bar@2.0.0']),
+    ]),
   )
   t.match(
     collected.keys(),
-    new Set([';;bar@1.0.0', ';;bar@3.0.0']),
+    new Set([
+      joinDepIDTuple(['registry', '', 'bar@1.0.0']),
+      joinDepIDTuple(['registry', '', 'bar@3.0.0']),
+    ]),
     'garbage-collected nodes are returned',
   )
 })

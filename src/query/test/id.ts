@@ -1,3 +1,4 @@
+import { joinDepIDTuple } from '@vltpkg/dep-id'
 import t from 'tap'
 import { id } from '../src/id.js'
 import { getSimpleGraph } from './fixtures/graph.js'
@@ -9,7 +10,9 @@ const testId = selectorFixture(id)
 t.test('id', async t => {
   const simpleGraph = getSimpleGraph()
   const all = [...simpleGraph.nodes.values()]
-  const b = simpleGraph.nodes.get(';;b@1.0.0')!
+  const b = simpleGraph.nodes.get(
+    joinDepIDTuple(['registry', '', 'b@1.0.0']),
+  )!
   const queryToExpected = new Set<TestCase>([
     ['#my-project', all, ['my-project']], // select root node
     ['#a', all, ['a']], // direct dep

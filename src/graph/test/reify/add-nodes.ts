@@ -1,3 +1,4 @@
+import { joinDepIDTuple } from '@vltpkg/dep-id'
 import { PackageInfoClient } from '@vltpkg/package-info'
 import { RollbackRemove } from '@vltpkg/rollback-remove'
 import { Spec } from '@vltpkg/spec'
@@ -44,27 +45,35 @@ const diff = {
       },
       // this one gets added
       {
-        id: ';;foo@1.2.3',
+        id: joinDepIDTuple(['registry', '', 'foo@1.2.3']),
         inVltStore: inVltStoreTrue,
-        location: './node_modules/.vlt/;;foo@1.2.3/node_modules/foo',
+        location:
+          './node_modules/.vlt/' +
+          joinDepIDTuple(['registry', '', 'foo@1.2.3']) +
+          '/node_modules/foo',
         name: 'foo',
         isOptional: isOptionalFalse,
       },
       // this one too, but has a manifest
       {
-        id: ';;bar@1.2.3',
+        id: joinDepIDTuple(['registry', '', 'bar@1.2.3']),
         inVltStore: inVltStoreTrue,
-        location: './node_modules/.vlt/;;bar@1.2.3/node_modules/bar',
+        location:
+          './node_modules/.vlt/' +
+          joinDepIDTuple(['registry', '', 'bar@1.2.3']) +
+          '/node_modules/bar',
         name: 'bar',
         manifest: { name: 'bar', version: '1.2.3' },
         isOptional: isOptionalFalse,
       },
       // this one fails, but it's optional, so it's fine
       {
-        id: ';;failer@1.2.3',
+        id: joinDepIDTuple(['registry', '', 'failer@1.2.3']),
         inVltStore: inVltStoreTrue,
         location:
-          './node_modules/.vlt/;;failer@1.2.3/node_modules/failer',
+          './node_modules/.vlt/' +
+          joinDepIDTuple(['registry', '', 'failer@1.2.3']) +
+          '/node_modules/failer',
         name: 'failer',
         manifest: { name: 'failer', version: '1.2.3' },
         isOptional: isOptionalTrue,
@@ -84,27 +93,33 @@ await Promise.all(
 
 t.notMatch(
   diff.nodes.add,
-  new Set([{ id: ';;failer@1.2.3' }]),
+  new Set([{ id: joinDepIDTuple(['registry', '', 'failer@1.2.3']) }]),
   'failer was removed',
 )
 t.match(
   diff.nodes.delete,
-  new Set([{ id: ';;failer@1.2.3' }]),
+  new Set([{ id: joinDepIDTuple(['registry', '', 'failer@1.2.3']) }]),
   'failer scheduled for deletion',
 )
 
 t.strictSame(removed, [
   resolve(
     t.testdirName,
-    'node_modules/.vlt/;;foo@1.2.3/node_modules/foo',
+    'node_modules/.vlt/' +
+      joinDepIDTuple(['registry', '', 'foo@1.2.3']) +
+      '/node_modules/foo',
   ),
   resolve(
     t.testdirName,
-    'node_modules/.vlt/;;bar@1.2.3/node_modules/bar',
+    'node_modules/.vlt/' +
+      joinDepIDTuple(['registry', '', 'bar@1.2.3']) +
+      '/node_modules/bar',
   ),
   resolve(
     t.testdirName,
-    'node_modules/.vlt/;;failer@1.2.3/node_modules/failer',
+    'node_modules/.vlt/' +
+      joinDepIDTuple(['registry', '', 'failer@1.2.3']) +
+      '/node_modules/failer',
   ),
 ])
 
@@ -113,14 +128,18 @@ t.strictSame(extracted, [
     Spec.parse('foo@1.2.3'),
     resolve(
       t.testdirName,
-      'node_modules/.vlt/;;foo@1.2.3/node_modules/foo',
+      'node_modules/.vlt/' +
+        joinDepIDTuple(['registry', '', 'foo@1.2.3']) +
+        '/node_modules/foo',
     ),
   ],
   [
     Spec.parse('bar@1.2.3'),
     resolve(
       t.testdirName,
-      'node_modules/.vlt/;;bar@1.2.3/node_modules/bar',
+      'node_modules/.vlt/' +
+        joinDepIDTuple(['registry', '', 'bar@1.2.3']) +
+        '/node_modules/bar',
     ),
   ],
 ])

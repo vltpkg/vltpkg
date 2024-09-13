@@ -238,7 +238,7 @@ t.test('one ws fails, with bail', async t => {
     message: 'failed graph traversal',
     cause: {
       node: {
-        id: 'workspace;src%2Fa',
+        id: 'workspace·src%2Fa',
         path: 'src/a',
         fullpath: resolve(dir, 'src/a'),
         manifest: {

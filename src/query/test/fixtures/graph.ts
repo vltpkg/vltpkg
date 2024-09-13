@@ -1,9 +1,10 @@
+import { joinDepIDTuple } from '@vltpkg/dep-id'
 import type {
   DependencyTypeShort,
   GraphLike,
   NodeLike,
 } from '@vltpkg/graph'
-import { type SpecLike, Spec } from '@vltpkg/spec/browser'
+import { Spec, type SpecLike } from '@vltpkg/spec/browser'
 import { Manifest } from '@vltpkg/types'
 
 const projectRoot = '.'
@@ -12,7 +13,7 @@ export const newGraph = (rootName: string): GraphLike => {
   const graph = {} as GraphLike
   const addNode = newNode(graph)
   const mainImporter = addNode(rootName)
-  mainImporter.id = 'file;.'
+  mainImporter.id = joinDepIDTuple(['file', '.'])
   mainImporter.mainImporter = true
   mainImporter.importer = true
   mainImporter.graph = graph
@@ -32,7 +33,7 @@ export const newNode =
     importer: false,
     mainImporter: false,
     graph,
-    id: `;;${name}@1.0.0`,
+    id: joinDepIDTuple(['registry', '', `${name}@1.0.0`]),
     name,
     version: '1.0.0',
     location:
@@ -91,7 +92,7 @@ export const getSimpleGraph = (): GraphLike => {
   ]
   b.dev = c.dev = d.dev = e.dev = f.dev = y.dev = true // deps of dev deps
   f.optional = true
-  y.id = 'file;y'
+  y.id = joinDepIDTuple(['file', 'y'])
   ;[a, b, c, d, e, f, y].forEach(i => {
     graph.nodes.set(i.id, i)
   })
@@ -177,7 +178,7 @@ export const getSingleWorkspaceGraph = (): GraphLike => {
   const graph = newGraph('ws')
   const addNode = newNode(graph)
   const w = addNode('w')
-  w.id = 'workspace;w'
+  w.id = joinDepIDTuple(['workspace', 'w'])
   graph.nodes.set(w.id, w)
   graph.importers.add(w)
   w.importer = true

@@ -1,14 +1,16 @@
+import { joinDepIDTuple } from '@vltpkg/dep-id'
 import { RollbackRemove } from '@vltpkg/rollback-remove'
 import { PathScurry } from 'path-scurry'
 import t from 'tap'
 import { Diff } from '../../src/diff.js'
 import { Edge } from '../../src/edge.js'
 
+const fooId = joinDepIDTuple(['registry', '', 'foo@1.2.3'])
 const diff = {
   nodes: {
     add: new Set([
       { inVltStore: () => false },
-      { inVltStore: () => true, id: ';;foo@1.2.3' },
+      { inVltStore: () => true, id: fooId },
     ]),
   },
   edges: { add: new Set([{ deleteThisEdge: true }]) },
@@ -49,6 +51,9 @@ t.test('rollback that works', async t => {
   )
   t.strictSame(deletedEdges, [{ deleteThisEdge: true }])
   t.strictSame(removed, [
-    scurry.resolve('node_modules/.vlt/;;foo@1.2.3'),
+    scurry.resolve(
+      'node_modules/.vlt/' +
+        joinDepIDTuple(['registry', '', 'foo@1.2.3']),
+    ),
   ])
 })

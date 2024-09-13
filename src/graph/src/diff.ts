@@ -1,9 +1,10 @@
+import { error } from '@vltpkg/error-cause'
 import { InspectOptions } from 'node:util'
 import { Edge } from './edge.js'
 import { Graph } from './graph.js'
 import { Node } from './node.js'
 
-// XXX should file; deps *always* be considered changed?
+// XXX should file deps *always* be considered changed?
 // unless the thing containing it wasn't possibly changed because it's inside
 // a dep that didn't change?
 // Same with remote deps
@@ -24,6 +25,8 @@ const kCustomInspect = Symbol.for('nodejs.util.inspect.custom')
 export class Diff {
   from: Graph
   to: Graph
+
+  projectRoot: string
 
   /**
    * If changes need to be made later for failures of optional nodes,
@@ -58,6 +61,13 @@ export class Diff {
   constructor(from: Graph, to: Graph) {
     this.from = from
     this.to = to
+    this.projectRoot = from.projectRoot
+    if (to.projectRoot !== from.projectRoot) {
+      throw error('projectRoot mismatch in Graph diff', {
+        wanted: from.projectRoot,
+        found: to.projectRoot,
+      })
+    }
 
     for (const [id, node] of this.from.nodes) {
       if (!this.to.nodes.get(id)?.equals(node)) {

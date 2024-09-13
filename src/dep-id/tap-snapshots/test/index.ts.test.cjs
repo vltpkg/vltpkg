@@ -5,99 +5,99 @@
  * Make sure to inspect the output below.  Do not ignore changes!
  */
 'use strict'
-exports[`test/index.ts > TAP > hydrate only > file;./x.tgz > hydrated with name asdf 1`] = `
+exports[`test/index.ts > TAP > hydrate only > file·./x.tgz > hydrated with name asdf 1`] = `
 asdf@file:./x.tgz
 `
 
-exports[`test/index.ts > TAP > hydrate only > file;./x.tgz > hydrated with name unknown 1`] = `
+exports[`test/index.ts > TAP > hydrate only > file·./x.tgz > hydrated with name unknown 1`] = `
 (unknown)@file:./x.tgz
 `
 
-exports[`test/index.ts > TAP > hydrate only > file;./x.tgz > hydrated with name y 1`] = `
+exports[`test/index.ts > TAP > hydrate only > file·./x.tgz > hydrated with name y 1`] = `
 y@file:./x.tgz
 `
 
-exports[`test/index.ts > TAP > hydrate only > file;./x.tgz > hydrated with scoped name 1`] = `
+exports[`test/index.ts > TAP > hydrate only > file·./x.tgz > hydrated with scoped name 1`] = `
 @scoped/x@file:./x.tgz
 `
 
-exports[`test/index.ts > TAP > hydrate only > file;///x.tgz > hydrated with name asdf 1`] = `
+exports[`test/index.ts > TAP > hydrate only > file·///x.tgz > hydrated with name asdf 1`] = `
 asdf@file:///x.tgz
 `
 
-exports[`test/index.ts > TAP > hydrate only > file;///x.tgz > hydrated with name unknown 1`] = `
+exports[`test/index.ts > TAP > hydrate only > file·///x.tgz > hydrated with name unknown 1`] = `
 (unknown)@file:///x.tgz
 `
 
-exports[`test/index.ts > TAP > hydrate only > file;///x.tgz > hydrated with name y 1`] = `
+exports[`test/index.ts > TAP > hydrate only > file·///x.tgz > hydrated with name y 1`] = `
 y@file:///x.tgz
 `
 
-exports[`test/index.ts > TAP > hydrate only > file;///x.tgz > hydrated with scoped name 1`] = `
+exports[`test/index.ts > TAP > hydrate only > file·///x.tgz > hydrated with scoped name 1`] = `
 @scoped/x@file:///x.tgz
 `
 
-exports[`test/index.ts > TAP > hydrate only > file;~/x.tgz > hydrated with name asdf 1`] = `
+exports[`test/index.ts > TAP > hydrate only > file·~/x.tgz > hydrated with name asdf 1`] = `
 asdf@file:~/x.tgz
 `
 
-exports[`test/index.ts > TAP > hydrate only > file;~/x.tgz > hydrated with name unknown 1`] = `
+exports[`test/index.ts > TAP > hydrate only > file·~/x.tgz > hydrated with name unknown 1`] = `
 (unknown)@file:~/x.tgz
 `
 
-exports[`test/index.ts > TAP > hydrate only > file;~/x.tgz > hydrated with name y 1`] = `
+exports[`test/index.ts > TAP > hydrate only > file·~/x.tgz > hydrated with name y 1`] = `
 y@file:~/x.tgz
 `
 
-exports[`test/index.ts > TAP > hydrate only > file;~/x.tgz > hydrated with scoped name 1`] = `
+exports[`test/index.ts > TAP > hydrate only > file·~/x.tgz > hydrated with scoped name 1`] = `
 @scoped/x@file:~/x.tgz
 `
 
-exports[`test/index.ts > TAP > hydrate only > file;x.tgz > hydrated with name asdf 1`] = `
+exports[`test/index.ts > TAP > hydrate only > file·x.tgz > hydrated with name asdf 1`] = `
 asdf@file:./x.tgz
 `
 
-exports[`test/index.ts > TAP > hydrate only > file;x.tgz > hydrated with name unknown 1`] = `
+exports[`test/index.ts > TAP > hydrate only > file·x.tgz > hydrated with name unknown 1`] = `
 (unknown)@file:./x.tgz
 `
 
-exports[`test/index.ts > TAP > hydrate only > file;x.tgz > hydrated with name y 1`] = `
+exports[`test/index.ts > TAP > hydrate only > file·x.tgz > hydrated with name y 1`] = `
 y@file:./x.tgz
 `
 
-exports[`test/index.ts > TAP > hydrate only > file;x.tgz > hydrated with scoped name 1`] = `
+exports[`test/index.ts > TAP > hydrate only > file·x.tgz > hydrated with scoped name 1`] = `
 @scoped/x@file:./x.tgz
 `
 
-exports[`test/index.ts > TAP > hydrate only > workspace;./a > hydrated with name asdf 1`] = `
+exports[`test/index.ts > TAP > hydrate only > workspace·./a > hydrated with name asdf 1`] = `
 asdf@workspace:./a@*
 `
 
-exports[`test/index.ts > TAP > hydrate only > workspace;./a > hydrated with name unknown 1`] = `
+exports[`test/index.ts > TAP > hydrate only > workspace·./a > hydrated with name unknown 1`] = `
 ./a@workspace:*
 `
 
-exports[`test/index.ts > TAP > hydrate only > workspace;./a > hydrated with name y 1`] = `
+exports[`test/index.ts > TAP > hydrate only > workspace·./a > hydrated with name y 1`] = `
 y@workspace:./a@*
 `
 
-exports[`test/index.ts > TAP > hydrate only > workspace;./a > hydrated with scoped name 1`] = `
+exports[`test/index.ts > TAP > hydrate only > workspace·./a > hydrated with scoped name 1`] = `
 @scoped/x@workspace:./a@*
 `
 
-exports[`test/index.ts > TAP > hydrate only > workspace;a > hydrated with name asdf 1`] = `
+exports[`test/index.ts > TAP > hydrate only > workspace·a > hydrated with name asdf 1`] = `
 asdf@workspace:a@*
 `
 
-exports[`test/index.ts > TAP > hydrate only > workspace;a > hydrated with name unknown 1`] = `
+exports[`test/index.ts > TAP > hydrate only > workspace·a > hydrated with name unknown 1`] = `
 a@workspace:*
 `
 
-exports[`test/index.ts > TAP > hydrate only > workspace;a > hydrated with name y 1`] = `
+exports[`test/index.ts > TAP > hydrate only > workspace·a > hydrated with name y 1`] = `
 y@workspace:a@*
 `
 
-exports[`test/index.ts > TAP > hydrate only > workspace;a > hydrated with scoped name 1`] = `
+exports[`test/index.ts > TAP > hydrate only > workspace·a > hydrated with scoped name 1`] = `
 @scoped/x@workspace:a@*
 `
 
@@ -119,7 +119,7 @@ exports[`test/index.ts > TAP > valid specs > @scoped/x@1.2.3 > hydrated with sco
 
 exports[`test/index.ts > TAP > valid specs > @scoped/x@1.2.3 > must match snapshot 1`] = `
 Array [
-  ";;@scoped%2Fmanifest-name@1.2.3",
+  "··@scoped%2Fmanifest-name@1.2.3",
   Array [
     "registry",
     "",
@@ -146,7 +146,7 @@ exports[`test/index.ts > TAP > valid specs > @scoped/x@github:a/b > hydrated wit
 
 exports[`test/index.ts > TAP > valid specs > @scoped/x@github:a/b > must match snapshot 1`] = `
 Array [
-  "git;github%3Aa%2Fb;",
+  "git·github%3Aa%2Fb·",
   Array [
     "git",
     "github:a/b",
@@ -173,7 +173,7 @@ exports[`test/index.ts > TAP > valid specs > @scoped/x@npm:@scoped/x@1.2.3 > hyd
 
 exports[`test/index.ts > TAP > valid specs > @scoped/x@npm:@scoped/x@1.2.3 > must match snapshot 1`] = `
 Array [
-  ";npm;@scoped%2Fmanifest-name@1.2.3",
+  "·npm·@scoped%2Fmanifest-name@1.2.3",
   Array [
     "registry",
     "npm",
@@ -200,7 +200,7 @@ exports[`test/index.ts > TAP > valid specs > @scoped/y@npm:@scoped/x@1.2.3 > hyd
 
 exports[`test/index.ts > TAP > valid specs > @scoped/y@npm:@scoped/x@1.2.3 > must match snapshot 1`] = `
 Array [
-  ";npm;@scoped%2Fmanifest-name@1.2.3",
+  "·npm·@scoped%2Fmanifest-name@1.2.3",
   Array [
     "registry",
     "npm",
@@ -227,7 +227,7 @@ y@npm:manifest-name@1.2.3
 
 exports[`test/index.ts > TAP > valid specs > x@1 > must match snapshot 1`] = `
 Array [
-  ";;manifest-name@1.2.3",
+  "··manifest-name@1.2.3",
   Array [
     "registry",
     "",
@@ -254,7 +254,7 @@ y@npm:manifest-name@1.2.3
 
 exports[`test/index.ts > TAP > valid specs > x@1.2.3 > must match snapshot 1`] = `
 Array [
-  ";;manifest-name@1.2.3",
+  "··manifest-name@1.2.3",
   Array [
     "registry",
     "",
@@ -281,7 +281,7 @@ y@a:manifest-name@1.2.3
 
 exports[`test/index.ts > TAP > valid specs > x@a:asfd@1.2.3 > must match snapshot 1`] = `
 Array [
-  ";a;manifest-name@1.2.3",
+  "·a·manifest-name@1.2.3",
   Array [
     "registry",
     "a",
@@ -308,7 +308,7 @@ y@b:manifest-name@1.2.3
 
 exports[`test/index.ts > TAP > valid specs > x@b:asfd@1.2.3 > must match snapshot 1`] = `
 Array [
-  ";b;manifest-name@1.2.3",
+  "·b·manifest-name@1.2.3",
   Array [
     "registry",
     "b",
@@ -335,7 +335,7 @@ y@git+ssh://host.com/x.git#
 
 exports[`test/index.ts > TAP > valid specs > x@git+ssh://host.com/x.git > must match snapshot 1`] = `
 Array [
-  "git;git%2Bssh%3A%2F%2Fhost.com%2Fx.git;",
+  "git·git%2Bssh%3A%2F%2Fhost.com%2Fx.git·",
   Array [
     "git",
     "git+ssh://host.com/x.git",
@@ -362,7 +362,7 @@ y@git+ssh://host.com/x.git#branch
 
 exports[`test/index.ts > TAP > valid specs > x@git+ssh://host.com/x.git#branch > must match snapshot 1`] = `
 Array [
-  "git;git%2Bssh%3A%2F%2Fhost.com%2Fx.git;branch",
+  "git·git%2Bssh%3A%2F%2Fhost.com%2Fx.git·branch",
   Array [
     "git",
     "git+ssh://host.com/x.git",
@@ -389,7 +389,7 @@ y@git+ssh://host.com/x.git#semver:1
 
 exports[`test/index.ts > TAP > valid specs > x@git+ssh://host.com/x.git#semver:1 > must match snapshot 1`] = `
 Array [
-  "git;git%2Bssh%3A%2F%2Fhost.com%2Fx.git;semver%3A1",
+  "git·git%2Bssh%3A%2F%2Fhost.com%2Fx.git·semver%3A1",
   Array [
     "git",
     "git+ssh://host.com/x.git",
@@ -416,7 +416,7 @@ y@github:a/b#
 
 exports[`test/index.ts > TAP > valid specs > x@github:a/b > must match snapshot 1`] = `
 Array [
-  "git;github%3Aa%2Fb;",
+  "git·github%3Aa%2Fb·",
   Array [
     "git",
     "github:a/b",
@@ -443,7 +443,7 @@ y@github:a/b#branch
 
 exports[`test/index.ts > TAP > valid specs > x@github:a/b#branch > must match snapshot 1`] = `
 Array [
-  "git;github%3Aa%2Fb;branch",
+  "git·github%3Aa%2Fb·branch",
   Array [
     "git",
     "github:a/b",
@@ -470,7 +470,7 @@ y@github:a/b#semver:1
 
 exports[`test/index.ts > TAP > valid specs > x@github:a/b#semver:1 > must match snapshot 1`] = `
 Array [
-  "git;github%3Aa%2Fb;semver%3A1",
+  "git·github%3Aa%2Fb·semver%3A1",
   Array [
     "git",
     "github:a/b",
@@ -497,7 +497,7 @@ y@https://x.com/x.tgz
 
 exports[`test/index.ts > TAP > valid specs > x@https://x.com/x.tgz > must match snapshot 1`] = `
 Array [
-  "remote;https%3A%2F%2Fx.com%2Fx.tgz",
+  "remote·https%3A%2F%2Fx.com%2Fx.tgz",
   Array [
     "remote",
     "https://x.com/x.tgz",
@@ -523,7 +523,7 @@ y@a:manifest-name@1.2.3
 
 exports[`test/index.ts > TAP > valid specs > x@registry:https://a.example.com/#asfd@1.2.3 > must match snapshot 1`] = `
 Array [
-  ";a;manifest-name@1.2.3",
+  "·a·manifest-name@1.2.3",
   Array [
     "registry",
     "a",
@@ -550,7 +550,7 @@ y@b:manifest-name@1.2.3
 
 exports[`test/index.ts > TAP > valid specs > x@registry:https://b.example.com/#asfd@1.2.3 > must match snapshot 1`] = `
 Array [
-  ";b;manifest-name@1.2.3",
+  "·b·manifest-name@1.2.3",
   Array [
     "registry",
     "b",
@@ -577,7 +577,7 @@ manifest-name@registry:https://c.example.com/#manifest-name@1.2.3
 
 exports[`test/index.ts > TAP > valid specs > x@registry:https://c.example.com/#asfd@1.2.3 > must match snapshot 1`] = `
 Array [
-  ";https%3A%2F%2Fc.example.com%2F;manifest-name@1.2.3",
+  "·https%3A%2F%2Fc.example.com%2F·manifest-name@1.2.3",
   Array [
     "registry",
     "https://c.example.com/",
@@ -604,7 +604,7 @@ y@npm:manifest-name@1.2.3
 
 exports[`test/index.ts > TAP > valid specs > y@1.2.3 > must match snapshot 1`] = `
 Array [
-  ";;manifest-name@1.2.3",
+  "··manifest-name@1.2.3",
   Array [
     "registry",
     "",
@@ -631,7 +631,7 @@ exports[`test/index.ts > TAP > valid specs > y@npm:@scoped/x@1.2.3 > hydrated wi
 
 exports[`test/index.ts > TAP > valid specs > y@npm:@scoped/x@1.2.3 > must match snapshot 1`] = `
 Array [
-  ";npm;@scoped%2Fmanifest-name@1.2.3",
+  "·npm·@scoped%2Fmanifest-name@1.2.3",
   Array [
     "registry",
     "npm",
@@ -658,7 +658,7 @@ y@npm:manifest-name@1.2.3
 
 exports[`test/index.ts > TAP > valid specs > y@npm:x@1 > must match snapshot 1`] = `
 Array [
-  ";npm;manifest-name@1.2.3",
+  "·npm·manifest-name@1.2.3",
   Array [
     "registry",
     "npm",
@@ -685,7 +685,7 @@ y@npm:manifest-name@1.2.3
 
 exports[`test/index.ts > TAP > valid specs > y@npm:x@1.2.3 > must match snapshot 1`] = `
 Array [
-  ";npm;manifest-name@1.2.3",
+  "·npm·manifest-name@1.2.3",
   Array [
     "registry",
     "npm",
@@ -712,7 +712,7 @@ y@github:a/b#branch
 
 exports[`test/index.ts > TAP > valid specs > y@npm:x@github:a/b#branch > must match snapshot 1`] = `
 Array [
-  "git;github%3Aa%2Fb;branch",
+  "git·github%3Aa%2Fb·branch",
   Array [
     "git",
     "github:a/b",
@@ -739,7 +739,7 @@ y@npm:manifest-name@1.2.3
 
 exports[`test/index.ts > TAP > valid specs > y@registry:https://registry.npmjs.org/#x@1 > must match snapshot 1`] = `
 Array [
-  ";;manifest-name@1.2.3",
+  "··manifest-name@1.2.3",
   Array [
     "registry",
     "",
@@ -766,7 +766,7 @@ y@npm:manifest-name@1.2.3
 
 exports[`test/index.ts > TAP > valid specs > y@registry:https://registry.npmjs.org#x@1 > must match snapshot 1`] = `
 Array [
-  ";;manifest-name@1.2.3",
+  "··manifest-name@1.2.3",
   Array [
     "registry",
     "",
@@ -793,7 +793,7 @@ manifest-name@registry:https://x.com/#manifest-name@1.2.3
 
 exports[`test/index.ts > TAP > valid specs > y@registry:https://x.com#x@1 > must match snapshot 1`] = `
 Array [
-  ";https%3A%2F%2Fx.com%2F;manifest-name@1.2.3",
+  "·https%3A%2F%2Fx.com%2F·manifest-name@1.2.3",
   Array [
     "registry",
     "https://x.com/",

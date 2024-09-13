@@ -13,6 +13,7 @@
     }
   },
   "dependencies": {
+    "@vltpkg/dep-id": "workspace:*",
     "@vltpkg/error-cause": "workspace:*",
     "@vltpkg/fast-split": "workspace:*",
     "@vltpkg/graph": "workspace:*",

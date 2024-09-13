@@ -1,3 +1,4 @@
+import { joinDepIDTuple } from '@vltpkg/dep-id'
 import t from 'tap'
 import { build } from '../../src/ideal/build.js'
 import { humanReadableOutput } from '../../src/visualization/human-readable-output.js'
@@ -16,19 +17,26 @@ t.test('build from lockfile', async t => {
         npm: 'https://registry.npmjs.org',
       },
       nodes: {
-        'file;.': ['my-project'],
-        ';;foo@1.0.0': [
+        [joinDepIDTuple(['file', '.'])]: ['my-project'],
+        [joinDepIDTuple(['registry', '', 'foo@1.0.0'])]: [
           'foo',
           'sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ==',
         ],
       },
-      edges: [['file;.', 'prod', 'foo@^1.0.0', ';;foo@1.0.0']],
+      edges: [
+        [
+          joinDepIDTuple(['file', '.']),
+          'prod',
+          'foo@^1.0.0',
+          joinDepIDTuple(['registry', '', 'foo@1.0.0']),
+        ],
+      ],
     }),
   })
 
   const graph = await build({
     projectRoot,
-    add: new Map([['file;.', new Map()]]),
+    add: new Map([[joinDepIDTuple(['file', '.']), new Map()]]),
     remove: new Map(),
   })
 
@@ -49,7 +57,7 @@ t.test('build from actual files', async t => {
     }),
     node_modules: {
       '.vlt': {
-        ';;foo@1.0.0': {
+        [joinDepIDTuple(['registry', '', 'foo@1.0.0'])]: {
           node_modules: {
             foo: {
               'package.json': JSON.stringify({
@@ -60,7 +68,12 @@ t.test('build from actual files', async t => {
           },
         },
       },
-      foo: t.fixture('symlink', '.vlt/;;foo@1.0.0/node_modules/foo'),
+      foo: t.fixture(
+        'symlink',
+        '.vlt/' +
+          joinDepIDTuple(['registry', '', 'foo@1.0.0']) +
+          '/node_modules/foo',
+      ),
     },
   })
 

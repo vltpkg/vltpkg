@@ -14,7 +14,7 @@ Object {
   "packageJson": PackageJson {},
   projectRoot: #
   "remove": Map {
-    "file;." => Set {},
+    "file·." => Set {},
   },
   "scurry": PathScurry {},
 }

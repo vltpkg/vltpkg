@@ -1,3 +1,4 @@
+import { DepID, joinDepIDTuple } from '@vltpkg/dep-id'
 import {
   PackageInfoClient,
   PackageInfoClientRequestOptions,
@@ -20,6 +21,8 @@ import {
   actual,
   ideal,
   LockfileData,
+  LockfileEdges,
+  LockfileNode,
   reify,
 } from '../../src/index.js'
 import {
@@ -66,15 +69,17 @@ t.test('super basic reification', async t => {
   const expectLockfileData: LockfileData = {
     registries: {},
     nodes: {
-      ';;lodash@4.17.21': [
+      [joinDepIDTuple(['registry', '', 'lodash@4.17.21'])]: [
         0,
         'lodash',
         'sha512-v2kDEe57lecTulaDIuNTPy3Ry4gLGJ6Z1O3vE1krgXZNrsQ+LFTGHVxVjcXPs17LhbZVGedAJv8XZ1tvj5FvSg==',
       ],
-    },
+    } as Record<DepID, LockfileNode>,
     edges: {
-      'file;. lodash': 'prod 4 ;;lodash@4.17.21',
-    },
+      [`${joinDepIDTuple(['file', '.'])} lodash`]:
+        'prod 4 ' +
+        joinDepIDTuple(['registry', '', 'lodash@4.17.21']),
+    } as LockfileEdges,
   }
   t.strictSame(
     JSON.parse(
@@ -98,9 +103,13 @@ t.test('super basic reification', async t => {
     },
   }
   graph.mainImporter.edgesOut.delete('lodash')
-  graph.removeNode(graph.nodes.get(';;lodash@4.17.21')!)
+  graph.removeNode(
+    graph.nodes.get(
+      joinDepIDTuple(['registry', '', 'lodash@4.17.21']),
+    )!,
+  )
   graph.addNode(
-    ';;underscore@1.13.7',
+    joinDepIDTuple(['registry', '', 'underscore@1.13.7']),
     fixtureManifest('underscore-1.13.7'),
     Spec.parse('underscore@1'),
     'underscore',
@@ -110,7 +119,9 @@ t.test('super basic reification', async t => {
     'prod',
     Spec.parse('underscore@1'),
     graph.mainImporter,
-    graph.nodes.get(';;underscore@1.13.7'),
+    graph.nodes.get(
+      joinDepIDTuple(['registry', '', 'underscore@1.13.7']),
+    ),
   )
   writeFileSync(
     resolve(projectRoot, 'package.json'),

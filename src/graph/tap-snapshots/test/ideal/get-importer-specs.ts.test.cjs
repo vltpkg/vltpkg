@@ -7,7 +7,7 @@
 'use strict'
 exports[`test/ideal/get-importer-specs.ts > TAP > empty graph and something to add > should result in only added specs 1`] = `
 Map(1) {
-  'file;.' => Map(2) {
+  'file·.' => Map(2) {
     'bar' => { spec: Spec {bar@custom:bar@^1.1.1}, type: 'dev' },
     'foo' => { spec: Spec {foo@^1.1.1}, type: 'prod' }
   }
@@ -20,7 +20,7 @@ Map {}
 
 exports[`test/ideal/get-importer-specs.ts > TAP > graph specs and new things to add > should have root specs along with the added ones 1`] = `
 Map(1) {
-  'file;.' => Map(3) {
+  'file·.' => Map(3) {
     'foo' => { spec: Spec {foo@^1.0.0}, type: 'prod' },
     'bar' => { spec: Spec {bar@^1.0.0}, type: 'dev' },
     'baz' => { spec: Spec {baz@^1.0.0}, type: 'prod' }
@@ -30,7 +30,7 @@ Map(1) {
 
 exports[`test/ideal/get-importer-specs.ts > TAP > graph specs and nothing to add > should have root specs added only 1`] = `
 Map(1) {
-  'file;.' => Map(2) {
+  'file·.' => Map(2) {
     'foo' => { spec: Spec {foo@^1.0.0}, type: 'prod' },
     'bar' => { spec: Spec {bar@^1.0.0}, type: 'dev' }
   }
@@ -38,26 +38,26 @@ Map(1) {
 `
 
 exports[`test/ideal/get-importer-specs.ts > TAP > graph specs and something to remove > should removed entries missing from manifest file 1`] = `
-{ add: Map(0) {}, remove: Map(1) { 'file;.' => Set(1) { 'foo' } } }
+{ add: Map(0) {}, remove: Map(1) { 'file·.' => Set(1) { 'foo' } } }
 `
 
 exports[`test/ideal/get-importer-specs.ts > TAP > graph specs and something to update > should have the updated root spec 1`] = `
 Map(1) {
-  'file;.' => Map(1) { 'foo' => { spec: Spec {foo@^2.0.0}, type: 'prod' } }
+  'file·.' => Map(1) { 'foo' => { spec: Spec {foo@^2.0.0}, type: 'prod' } }
 }
 `
 
 exports[`test/ideal/get-importer-specs.ts > TAP > graph specs with workspaces and something to add > should have root and workspaces nodes with specs to add 1`] = `
 Map(3) {
-  'file;.' => Map(2) {
+  'file·.' => Map(2) {
     'foo' => { spec: Spec {foo@^1.0.0}, type: 'prod' },
     'bar' => { spec: Spec {bar@^2.0.0}, type: 'prod' }
   },
-  'workspace;packages%2Fa' => Map(2) {
+  'workspace·packages%2Fa' => Map(2) {
     'bar' => { spec: Spec {bar@^1.0.0}, type: 'dev' },
     'baz' => { spec: Spec {baz@^1.0.0}, type: 'prod' }
   },
-  'workspace;packages%2Fb' => Map(2) {
+  'workspace·packages%2Fb' => Map(2) {
     'a' => { spec: Spec {a@workspace:*}, type: 'prod' },
     'baz' => { spec: Spec {baz@^1.0.0}, type: 'prod' }
   }
@@ -68,8 +68,8 @@ exports[`test/ideal/get-importer-specs.ts > TAP > graph specs with workspaces an
 {
   add: Map(0) {},
   remove: Map(2) {
-    'workspace;packages%2Fa' => Set(1) { 'bar' },
-    'workspace;packages%2Fb' => Set(1) { 'a' }
+    'workspace·packages%2Fa' => Set(1) { 'bar' },
+    'workspace·packages%2Fb' => Set(1) { 'a' }
   }
 }
 `
