@@ -103,6 +103,7 @@ export class RegistryClient {
       cache: this.cache,
       maxRedirections,
       redirections,
+      connect: { timeout: 60_000 },
     })
     options.origin = u.origin
     const pool =
