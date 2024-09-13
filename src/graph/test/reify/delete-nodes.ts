@@ -1,3 +1,4 @@
+import { joinDepIDTuple } from '@vltpkg/dep-id'
 import { RollbackRemove } from '@vltpkg/rollback-remove'
 import { PathScurry } from 'path-scurry'
 import t from 'tap'
@@ -19,9 +20,12 @@ const diff = {
       { name: 'name', inVltStore: inVltStoreFalse },
       // this one gets added
       {
-        id: ';;foo@1.2.3',
+        id: joinDepIDTuple(['registry', '', 'foo@1.2.3']),
         inVltStore: inVltStoreTrue,
-        location: './node_modules/.vlt/;;foo@1.2.3/node_modules/foo',
+        location:
+          './node_modules/.vlt/' +
+          joinDepIDTuple(['registry', '', 'foo@1.2.3']) +
+          '/node_modules/foo',
         name: 'foo',
       },
     ]),
@@ -35,5 +39,8 @@ await Promise.all(
 )
 
 t.strictSame(removed, [
-  scurry.resolve('node_modules/.vlt/;;foo@1.2.3'),
+  scurry.resolve(
+    'node_modules/.vlt/' +
+      joinDepIDTuple(['registry', '', 'foo@1.2.3']),
+  ),
 ])

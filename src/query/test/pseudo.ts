@@ -1,3 +1,4 @@
+import { joinDepIDTuple } from '@vltpkg/dep-id'
 import t from 'tap'
 import { pseudo } from '../src/pseudo.js'
 import {
@@ -13,9 +14,15 @@ const testPseudo = selectorFixture(pseudo)
 
 t.test('pseudo', async t => {
   const simpleGraph = getSimpleGraph()
-  const a = simpleGraph.nodes.get(';;a@1.0.0')!
-  const b = simpleGraph.nodes.get(';;b@1.0.0')!
-  const d = simpleGraph.nodes.get(';;d@1.0.0')!
+  const a = simpleGraph.nodes.get(
+    joinDepIDTuple(['registry', '', 'a@1.0.0']),
+  )!
+  const b = simpleGraph.nodes.get(
+    joinDepIDTuple(['registry', '', 'b@1.0.0']),
+  )!
+  const d = simpleGraph.nodes.get(
+    joinDepIDTuple(['registry', '', 'd@1.0.0']),
+  )!
   const all = [...simpleGraph.nodes.values()]
   const queryToExpected = new Set<TestCase>([
     [':root', all, ['my-project']], // from initial nodes
@@ -139,7 +146,9 @@ t.test('pseudo', async t => {
 
   await t.test('workspace', async t => {
     const wsGraph = getSingleWorkspaceGraph()
-    const w = simpleGraph.nodes.get(';;w@1.0.0')!
+    const w = simpleGraph.nodes.get(
+      joinDepIDTuple(['registry', '', 'w@1.0.0']),
+    )!
     const all = [...wsGraph.nodes.values()]
     const queryToExpected = new Set<TestCase>([
       [':root', all, ['ws']], // root

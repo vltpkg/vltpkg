@@ -3,12 +3,13 @@ import { Manifest } from '@vltpkg/types'
 import t from 'tap'
 import {
   asDepID,
+  delimiter,
   DepID,
   getId,
   getTuple,
-  isDepID,
   hydrate,
   hydrateTuple,
+  isDepID,
   joinDepIDTuple,
   splitDepID,
 } from '../src/index.js'
@@ -101,12 +102,12 @@ t.test('valid specs', t => {
 
 t.test('hydrate only', t => {
   const hydrateOnlyDepIDs: DepID[] = [
-    'file;x.tgz',
-    'file;./x.tgz',
-    'file;///x.tgz',
-    'file;~/x.tgz',
-    'workspace;./a',
-    'workspace;a',
+    `file${delimiter}x.tgz`,
+    `file${delimiter}./x.tgz`,
+    `file${delimiter}///x.tgz`,
+    `file${delimiter}~/x.tgz`,
+    `workspace${delimiter}./a`,
+    `workspace${delimiter}a`,
   ]
   for (const id of hydrateOnlyDepIDs) {
     t.test(id, t => {
@@ -128,7 +129,9 @@ t.test('hydrate only', t => {
 t.test('named registry', t => {
   const options = { registries: { vlt: 'http://vlt.sh' } }
   t.equal(
-    String(hydrate(';vlt;x@1.2.3', 'x', options)),
+    String(
+      hydrate(`${delimiter}vlt${delimiter}x@1.2.3`, 'x', options),
+    ),
     'x@vlt:x@1.2.3',
   )
   t.end()
@@ -148,15 +151,19 @@ t.test('invalid values', t => {
   t.throws(() => hydrateTuple(['workspace']))
   //@ts-expect-error
   t.throws(() => hydrate('workspace'))
-  t.throws(() => hydrate('workspace;'))
+  t.throws(() => hydrate(`workspace${delimiter}`))
   t.throws(() =>
     getId({ final: { type: 'workspace' } } as Spec, mani),
   )
   t.throws(() =>
     getTuple({ final: { type: 'workspace' } } as Spec, mani),
   )
-  t.throws(() => hydrate('git;github:;branch', 'x'))
-  t.throws(() => hydrate('git;github:;branch', 'x'))
+  t.throws(() =>
+    hydrate(`git${delimiter}github:${delimiter}branch`, 'x'),
+  )
+  t.throws(() =>
+    hydrate(`git${delimiter}github:${delimiter}branch`, 'x'),
+  )
   t.throws(() =>
     getId(
       { final: { type: 'git', namedGitHost: 'github' } } as Spec,
@@ -177,37 +184,39 @@ t.test('invalid values', t => {
   )
   t.throws(() => hydrateTuple(['git', '', ''], 'x'))
   //@ts-expect-error
-  t.throws(() => hydrate('git;x', 'x'))
+  t.throws(() => hydrate(`git${delimiter}x`, 'x'))
   t.throws(() => getId({ final: { type: 'remote' } } as Spec, mani))
   t.throws(() =>
     getTuple({ final: { type: 'remote' } } as Spec, mani),
   )
   t.throws(() => getTuple({ final: { type: 'file' } } as Spec, mani))
-  t.throws(() => hydrate(';xyz;x@1.2.1', 'x'))
-  t.throws(() => hydrate(';;', 'x'))
+  t.throws(() => hydrate(`${delimiter}xyz${delimiter}x@1.2.1`, 'x'))
+  t.throws(() => hydrate(`${delimiter}${delimiter}`, 'x'))
   //@ts-expect-error
-  t.throws(() => hydrate(';', 'x'))
+  t.throws(() => hydrate(delimiter, 'x'))
   //@ts-expect-error
   t.throws(() => hydrateTuple(['registry'], 'x'))
   //@ts-expect-error
   t.throws(() => hydrateTuple(['registry', ''], 'x'))
-  t.throws(() => hydrate('file;', 'x'))
-  t.throws(() => hydrate('remote;', 'x'))
-  t.throws(() => splitDepID('xyz;a;b;c'))
+  t.throws(() => hydrate(`file${delimiter}`, 'x'))
+  t.throws(() => hydrate(`remote${delimiter}`, 'x'))
+  t.throws(() =>
+    splitDepID(`xyz${delimiter}a${delimiter}b${delimiter}c`),
+  )
   t.end()
 })
 
-const validDepIDs = [
-  ';;foo@1.0.0',
-  'git;github%3Aa%2Fb;branch',
-  'remote;https%3A%2F%2Fx.com%2Fx.tgz',
-  'file;.%2Fx.tgz',
-  'workspace;a',
-  ';;foo@1.0.0;extra',
-  'git;github%3Aa%2Fb;branch;extra',
-  'remote;https%3A%2F%2Fx.com%2Fx.tgz;extra',
-  'file;.%2Fx.tgz;extra',
-  'workspace;a;extra',
+const validDepIDs: DepID[] = [
+  `${delimiter}${delimiter}foo@1.0.0`,
+  `git${delimiter}github%3Aa%2Fb${delimiter}branch`,
+  `remote${delimiter}https%3A%2F%2Fx.com%2Fx.tgz`,
+  `file${delimiter}.%2Fx.tgz`,
+  `workspace${delimiter}a`,
+  `${delimiter}${delimiter}foo@1.0.0${delimiter}extra`,
+  `git${delimiter}github%3Aa%2Fb${delimiter}branch${delimiter}extra`,
+  `remote${delimiter}https%3A%2F%2Fx.com%2Fx.tgz${delimiter}extra`,
+  `file${delimiter}.%2Fx.tgz${delimiter}extra`,
+  `workspace${delimiter}a${delimiter}extra`,
 ]
 const invalidDepIDs = ['', 'git', 'abobrinha', 'https://example.com']
 t.test('asDepID', t => {

@@ -1,5 +1,6 @@
-import t from 'tap'
+import { joinDepIDTuple } from '@vltpkg/dep-id'
 import { BuildIdealOptions } from '@vltpkg/graph'
+import t from 'tap'
 import { LoadedConfig } from '../../src/config/index.js'
 
 t.cleanSnapshot = s =>
@@ -17,13 +18,15 @@ class PackageJson {
 // eslint-disable-next-line @typescript-eslint/no-extraneous-class
 class PathScurry {}
 
+const rootDepID = joinDepIDTuple(['file', '.'])
+
 const { usage, command } = await t.mockImport<
   typeof import('../../src/commands/install.js')
 >('../../src/commands/install.js', {
   '@vltpkg/graph': {
     ideal: {
       build: async ({ add }: BuildIdealOptions) =>
-        `buildideal result adds ${add?.get('file;.')?.size || 0} new package(s)`,
+        `buildideal result adds ${add?.get(rootDepID)?.size || 0} new package(s)`,
     },
     actual: {
       load: () => 'actual.load result',

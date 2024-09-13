@@ -1,5 +1,5 @@
-import { asDepID } from '@vltpkg/dep-id'
-import { Spec, kCustomInspect } from '@vltpkg/spec'
+import { joinDepIDTuple } from '@vltpkg/dep-id'
+import { kCustomInspect, Spec } from '@vltpkg/spec'
 import { inspect } from 'node:util'
 import t from 'tap'
 import { load } from '../../src/actual/load.js'
@@ -60,7 +60,7 @@ t.test('empty graph and something to add', async t => {
   })
   const add = new Map([
     [
-      asDepID('file;.'),
+      joinDepIDTuple(['file', '.']),
       new Map(
         Object.entries({
           bar: asDependency({
@@ -121,7 +121,7 @@ t.test('graph specs and new things to add', async t => {
   const graph = load({ projectRoot })
   const add = new Map([
     [
-      asDepID('file;.'),
+      joinDepIDTuple(['file', '.']),
       new Map(
         Object.entries({
           bar: asDependency({
@@ -158,7 +158,7 @@ t.test('graph specs and something to update', async t => {
   const graph = load({ projectRoot })
   const add = new Map([
     [
-      asDepID('file;.'),
+      joinDepIDTuple(['file', '.']),
       new Map(
         Object.entries({
           foo: asDependency({
@@ -216,7 +216,7 @@ t.test(
     const graph = load({ projectRoot })
     const add = new Map([
       [
-        asDepID('file;.'),
+        joinDepIDTuple(['file', '.']),
         new Map(
           Object.entries({
             bar: asDependency({
@@ -227,7 +227,7 @@ t.test(
         ),
       ],
       [
-        asDepID('workspace;packages%2Fa'),
+        joinDepIDTuple(['workspace', 'packages/a']),
         new Map(
           Object.entries({
             baz: asDependency({
@@ -238,7 +238,7 @@ t.test(
         ),
       ],
       [
-        asDepID('workspace;packages%2Fb'),
+        joinDepIDTuple(['workspace', 'packages/b']),
         new Map(
           Object.entries({
             baz: asDependency({
@@ -266,7 +266,7 @@ t.test('adding to a non existing importer', async t => {
   const add = new Map([
     // this workspace id does not exist in the given graph
     [
-      asDepID('workspace;packages%2Fa'),
+      joinDepIDTuple(['workspace', 'packages/a']),
       new Map(
         Object.entries({
           baz: asDependency({
@@ -297,7 +297,7 @@ t.test('graph specs and something to remove', async t => {
     'package.json': JSON.stringify(mainManifest),
     node_modules: {
       '.vlt': {
-        ';;bar@1.0.0': {
+        [joinDepIDTuple(['registry', '', 'bar@1.0.0'])]: {
           node_modules: {
             bar: {
               'package.json': JSON.stringify({
@@ -307,7 +307,7 @@ t.test('graph specs and something to remove', async t => {
             },
           },
         },
-        ';;foo@1.0.0': {
+        [joinDepIDTuple(['registry', '', 'foo@1.0.0'])]: {
           node_modules: {
             foo: {
               'package.json': JSON.stringify({
@@ -318,8 +318,18 @@ t.test('graph specs and something to remove', async t => {
           },
         },
       },
-      bar: t.fixture('symlink', '.vlt/;;bar@1.0.0/node_modules/bar'),
-      foo: t.fixture('symlink', '.vlt/;;foo@1.0.0/node_modules/foo'),
+      bar: t.fixture(
+        'symlink',
+        '.vlt/' +
+          joinDepIDTuple(['registry', '', 'bar@1.0.0']) +
+          '/node_modules/bar',
+      ),
+      foo: t.fixture(
+        'symlink',
+        '.vlt/' +
+          joinDepIDTuple(['registry', '', 'foo@1.0.0']) +
+          '/node_modules/foo',
+      ),
     },
   })
   const graph = load({ projectRoot })
@@ -346,7 +356,7 @@ t.test(
       'package.json': JSON.stringify(mainManifest),
       node_modules: {
         '.vlt': {
-          ';;bar@1.0.0': {
+          [joinDepIDTuple(['registry', '', 'bar@1.0.0'])]: {
             node_modules: {
               bar: {
                 'package.json': JSON.stringify({
@@ -356,7 +366,7 @@ t.test(
               },
             },
           },
-          ';;foo@1.0.0': {
+          [joinDepIDTuple(['registry', '', 'foo@1.0.0'])]: {
             node_modules: {
               foo: {
                 'package.json': JSON.stringify({
@@ -369,7 +379,9 @@ t.test(
         },
         foo: t.fixture(
           'symlink',
-          '.vlt/;;foo@1.0.0/node_modules/foo',
+          '.vlt/' +
+            joinDepIDTuple(['registry', '', 'foo@1.0.0']) +
+            '/node_modules/foo',
         ),
       },
       packages: {
@@ -381,7 +393,9 @@ t.test(
           node_modules: {
             bar: t.fixture(
               'symlink',
-              '../../../node_modules/.vlt/;;bar@1.0.0/node_modules/bar',
+              '../../../node_modules/.vlt/' +
+                joinDepIDTuple(['registry', '', 'bar@1.0.0']) +
+                '/node_modules/bar',
             ),
           },
         },
@@ -405,7 +419,7 @@ t.test(
     const graph = load({ projectRoot })
     const add = new Map()
     const remove = new Map([
-      [asDepID('workspace;packages%2Fb'), new Set(['a'])],
+      [joinDepIDTuple(['workspace', 'packages/b']), new Set(['a'])],
     ])
     const specs = getImporterSpecs({ add, graph, remove })
     t.matchSnapshot(

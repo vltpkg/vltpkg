@@ -1,3 +1,4 @@
+import { joinDepIDTuple } from '@vltpkg/dep-id'
 import { Spec } from '@vltpkg/spec'
 import { ManifestMinified } from '@vltpkg/types'
 import t from 'tap'
@@ -87,7 +88,10 @@ t.test('remove optional nodes starting from a given spot', t => {
   const removed = removeOptionalSubgraph(graph, xNode)
   t.strictSame(
     [...removed].map(({ id }) => id),
-    [';;x@1.2.3', ';;bar@1.2.3'],
+    [
+      joinDepIDTuple(['registry', '', 'x@1.2.3']),
+      joinDepIDTuple(['registry', '', 'bar@1.2.3']),
+    ],
   )
   for (const node of removed) {
     t.equal(graph.nodes.get(node.id), undefined, 'node was removed')

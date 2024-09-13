@@ -1,7 +1,26 @@
+import { DepID, DepIDTuple, joinDepIDTuple } from '@vltpkg/dep-id'
 import t from 'tap'
 import { inspect } from 'util'
 import { Diff } from '../src/diff.js'
+import {
+  Graph,
+  LockfileEdgeKey,
+  LockfileEdges,
+  LockfileNode,
+} from '../src/index.js'
 import { loadObject } from '../src/lockfile/load.js'
+
+const edgeKey = (from: DepIDTuple, to: string): LockfileEdgeKey =>
+  (joinDepIDTuple(from) + ' ' + to) as LockfileEdgeKey
+
+t.test('graphs must have same projectRoot', t => {
+  const a = { projectRoot: '/some/path' } as unknown as Graph
+  const b = { projectRoot: '/other/path' } as unknown as Graph
+  t.throws(() => new Diff(a, b), {
+    message: 'projectRoot mismatch in Graph diff',
+  })
+  t.end()
+})
 
 t.test('diff two graphs', async t => {
   const projectRoot = t.testdir({
@@ -47,34 +66,46 @@ t.test('diff two graphs', async t => {
         custom: 'https://registry.example.com',
       },
       nodes: {
-        'file;.': [0, 'my-project'],
-        ';;foo@1.0.0': [
+        [joinDepIDTuple(['file', '.'])]: [0, 'my-project'],
+        [joinDepIDTuple(['registry', '', 'foo@1.0.0'])]: [
           0,
           'foo',
           'sha512-foofoofoo==',
           null,
           './node_modules/.pnpm/foo@1.0.0/node_modules/foo',
         ],
-        ';;a@1.0.0': [0, 'foo', 'sha512-aaaaaaaaa=='],
-        ';;bar@1.0.0': [
+        [joinDepIDTuple(['registry', '', 'a@1.0.0'])]: [
+          0,
+          'foo',
+          'sha512-aaaaaaaaa==',
+        ],
+        [joinDepIDTuple(['registry', '', 'bar@1.0.0'])]: [
           0,
           'bar',
           'sha512-barbarbar==',
           'https://registry.example.com/bar/-/bar-1.0.0.tgz',
         ],
-        ';;baz@1.0.0': [
+        [joinDepIDTuple(['registry', '', 'baz@1.0.0'])]: [
           0,
           'baz',
           'sha512-bazbazbaz==',
           'https://registry.example.com/baz/-/baz-1.0.0.tgz',
         ],
-      },
+      } as Record<DepID, LockfileNode>,
       edges: {
-        'file;. foo': 'prod ^1.0.0 ;;foo@1.0.0',
-        'file;. a': 'prod ^1.0.0 ;;a@1.0.0',
-        'file;. bar': 'prod ^1.0.0 ;;bar@1.0.0',
-        ';;bar@1.0.0 baz': 'prod ^1.0.0 ;;baz@1.0.0',
-      },
+        [edgeKey(['file', '.'], 'foo')]:
+          'prod ^1.0.0 ' +
+          joinDepIDTuple(['registry', '', 'foo@1.0.0']),
+        [edgeKey(['file', '.'], 'a')]:
+          'prod ^1.0.0 ' +
+          joinDepIDTuple(['registry', '', 'a@1.0.0']),
+        [edgeKey(['file', '.'], 'bar')]:
+          'prod ^1.0.0 ' +
+          joinDepIDTuple(['registry', '', 'bar@1.0.0']),
+        [edgeKey(['registry', '', 'bar@1.0.0'], 'baz')]:
+          'prod ^1.0.0 ' +
+          joinDepIDTuple(['registry', '', 'baz@1.0.0']),
+      } as LockfileEdges,
     },
   )
 
@@ -92,37 +123,61 @@ t.test('diff two graphs', async t => {
         custom: 'https://registry.example.com',
       },
       nodes: {
-        'file;.': [0, 'my-project'],
-        ';;foo@1.0.0': [0, 'foo', 'sha512-foofoofoo=='],
-        ';;b@1.0.0': [0, 'foo', 'sha512-bbbbbbbbb=='],
-        ';;c@1.0.0': [0, 'foo', 'sha512-ccccccccc=='],
-        ';;bar@1.0.0': [
+        [joinDepIDTuple(['file', '.'])]: [0, 'my-project'],
+        [joinDepIDTuple(['registry', '', 'foo@1.0.0'])]: [
+          0,
+          'foo',
+          'sha512-foofoofoo==',
+        ],
+        [joinDepIDTuple(['registry', '', 'b@1.0.0'])]: [
+          0,
+          'foo',
+          'sha512-bbbbbbbbb==',
+        ],
+        [joinDepIDTuple(['registry', '', 'c@1.0.0'])]: [
+          0,
+          'foo',
+          'sha512-ccccccccc==',
+        ],
+        [joinDepIDTuple(['registry', '', 'bar@1.0.0'])]: [
           0,
           'bar',
           'sha512-barbarbar==',
           'https://registry.example.com/bar/-/bar-1.0.0.tgz',
         ],
-        ';;baz@1.0.1': [
+        [joinDepIDTuple(['registry', '', 'baz@1.0.1'])]: [
           0,
           'baz',
           'sha512-baz101baz101baz101==',
           'https://registry.example.com/baz/-/baz-1.0.1.tgz',
         ],
-        ';;ooo@1.0.1': [
+        [joinDepIDTuple(['registry', '', 'ooo@1.0.1'])]: [
           0,
           'ooo',
           'sha512-ooo420ooo420ooo420==',
           'https://registry.example.com/ooo/-/ooo-1.0.1.tgz',
         ],
-      },
+      } as Record<DepID, LockfileNode>,
       edges: {
-        'file;. foo': 'prod ^1.0.0 ;;foo@1.0.0',
-        'file;. b': 'prod ^1.0.0 ;;b@1.0.0',
-        ';;b@1.0.0 c': 'prod ^1.0.0 ;;c@1.0.0',
-        'file;. bar': 'prod ^1.0.0 ;;bar@1.0.0',
-        ';;bar@1.0.0 baz': 'prod ^1.0.1 ;;baz@1.0.1',
-        ';;bar@1.0.0 ooo': 'optional ^1.0.1 ;;ooo@1.0.1',
-      },
+        [edgeKey(['file', '.'], 'foo')]:
+          'prod ^1.0.0 ' +
+          joinDepIDTuple(['registry', '', 'foo@1.0.0']),
+        [edgeKey(['file', '.'], 'b')]:
+          'prod ^1.0.0 ' +
+          joinDepIDTuple(['registry', '', 'b@1.0.0']),
+        [edgeKey(['registry', '', 'b@1.0.0'], 'c')]:
+          'prod ^1.0.0 ' +
+          joinDepIDTuple(['registry', '', 'c@1.0.0']),
+        [edgeKey(['file', '.'], 'bar')]:
+          'prod ^1.0.0 ' +
+          joinDepIDTuple(['registry', '', 'bar@1.0.0']),
+        [edgeKey(['registry', '', 'bar@1.0.0'], 'baz')]:
+          'prod ^1.0.1 ' +
+          joinDepIDTuple(['registry', '', 'baz@1.0.1']),
+        [edgeKey(['registry', '', 'bar@1.0.0'], 'ooo')]:
+          'optional ^1.0.1 ' +
+          joinDepIDTuple(['registry', '', 'ooo@1.0.1']),
+      } as LockfileEdges,
     },
   )
 

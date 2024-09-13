@@ -1,3 +1,4 @@
+import { joinDepIDTuple } from '@vltpkg/dep-id'
 import { Spec } from '@vltpkg/spec'
 import t from 'tap'
 import { Diff } from '../../src/diff.js'
@@ -31,11 +32,15 @@ t.test('register and optional node failure', async t => {
       optionalDependencies: { foo: '' },
     },
   })
-  const foo = new Node({ graph: ideal, projectRoot }, ';;foo@1.2.3', {
-    name: 'foo',
-    version: '1.2.3',
-    dependencies: { bar: '' },
-  })
+  const foo = new Node(
+    { graph: ideal, projectRoot },
+    joinDepIDTuple(['registry', '', 'foo@1.2.3']),
+    {
+      name: 'foo',
+      version: '1.2.3',
+      dependencies: { bar: '' },
+    },
+  )
   ideal.nodes.set(foo.id, foo)
   const fooEdge = new Edge(
     'optional',
@@ -46,20 +51,28 @@ t.test('register and optional node failure', async t => {
   ideal.edges.add(fooEdge)
   foo.edgesIn.add(fooEdge)
   ideal.mainImporter.edgesOut.set('foo', fooEdge)
-  const bar = new Node({ graph: ideal, projectRoot }, ';;bar@1.2.3', {
-    name: 'bar',
-    version: '1.2.3',
-    dependencies: { baz: '' },
-  })
+  const bar = new Node(
+    { projectRoot, graph: ideal },
+    joinDepIDTuple(['registry', '', 'bar@1.2.3']),
+    {
+      name: 'bar',
+      version: '1.2.3',
+      dependencies: { baz: '' },
+    },
+  )
   bar.optional = true
   const barEdge = new Edge('prod', Spec.parse('bar@'), foo, bar)
   bar.edgesIn.add(barEdge)
   foo.edgesOut.set('bar', barEdge)
   ideal.edges.add(barEdge)
-  const baz = new Node({ graph: ideal, projectRoot }, ';;baz@1.2.3', {
-    name: 'baz',
-    version: '1.2.3',
-  })
+  const baz = new Node(
+    { projectRoot, graph: ideal },
+    joinDepIDTuple(['registry', '', 'baz@1.2.3']),
+    {
+      name: 'baz',
+      version: '1.2.3',
+    },
+  )
   baz.optional = true
   const bazEdge = new Edge('prod', Spec.parse('baz@'), bar, baz)
   baz.edgesIn.add(bazEdge)

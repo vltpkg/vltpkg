@@ -1,4 +1,4 @@
-import { DepID } from '@vltpkg/dep-id'
+import { DepID, joinDepIDTuple } from '@vltpkg/dep-id'
 import {
   AddImportersDependenciesMap,
   Dependency,
@@ -30,6 +30,8 @@ export type WorkspaceTypes = {
   'workspace-group'?: string[]
 }
 
+const rootDepID = joinDepIDTuple(['file', '.'])
+
 /**
  * Get the list of importers that are currently selected
  * in {@link WorkspaceTypes}.
@@ -49,7 +51,7 @@ const getImporters = (
 
   // if no references were found, default behavior is to point to project root
   if (!res.size) {
-    res.add('file;.')
+    res.add(rootDepID)
   }
 
   return res

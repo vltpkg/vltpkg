@@ -1,4 +1,4 @@
-import { asDepID, getId } from '@vltpkg/dep-id'
+import { delimiter, getId, joinDepIDTuple } from '@vltpkg/dep-id'
 import { Spec, SpecOptions } from '@vltpkg/spec'
 import { inspect } from 'node:util'
 import t from 'tap'
@@ -27,7 +27,7 @@ t.test('Node', async t => {
     name: 'root',
     version: '1.0.0',
   }
-  const root = new Node(opts, asDepID('file;.'), rootMani)
+  const root = new Node(opts, joinDepIDTuple(['file', '.']), rootMani)
   root.mainImporter = true // signal the main importer node
   root.setImporterLocation('./path/to/importer')
   t.equal(root.location, './path/to/importer')
@@ -62,7 +62,9 @@ t.test('Node', async t => {
   const foo = new Node(opts, undefined, fooMani, fooSpec)
   t.strictSame(
     foo.location,
-    './node_modules/.vlt/;;foo@1.0.0/node_modules/foo',
+    './node_modules/.vlt/' +
+      joinDepIDTuple(['registry', '', 'foo@1.0.0']) +
+      '/node_modules/foo',
     'should return the expected location value',
   )
 
@@ -130,14 +132,16 @@ t.test('Node', async t => {
 
   const barNoMani = new Node(
     opts,
-    ';;bar@1.0.0',
+    joinDepIDTuple(['registry', '', 'bar@1.0.0']),
     undefined,
     undefined,
     'bar',
   )
   t.strictSame(
     barNoMani.location,
-    './node_modules/.vlt/;;bar@1.0.0/node_modules/bar',
+    './node_modules/.vlt/' +
+      joinDepIDTuple(['registry', '', 'bar@1.0.0']) +
+      '/node_modules/bar',
     'should infer location url from id',
   )
 
@@ -148,14 +152,14 @@ t.test('Node', async t => {
   const unnamed = new Node(opts, undefined, unnamedMani, unnamedSpec)
   t.strictSame(
     unnamed.location,
-    './node_modules/.vlt/;;@0.0.0/node_modules/;;@0.0.0',
+    `./node_modules/.vlt/${delimiter}${delimiter}@0.0.0/node_modules/${delimiter}${delimiter}@0.0.0`,
     'should have a location for unnamed manifests',
   )
 
   // different resolved values inferred from id
 
   // file type node with no parent
-  const file = new Node(opts, asDepID('file;my-package'))
+  const file = new Node(opts, joinDepIDTuple(['file', 'my-package']))
   file.setResolved()
   t.strictSame(
     file.resolved,
@@ -163,26 +167,36 @@ t.test('Node', async t => {
     'should set expected resolved value for a file id type',
   )
 
-  const git = new Node(opts, 'git;github%3Avltpkg%2Ffoo;')
+  const git = new Node(
+    opts,
+    joinDepIDTuple(['git', 'github:vltpkg/foo', '']),
+  )
   git.setResolved()
   t.strictSame(
     git.resolved,
     'github:vltpkg/foo',
     'should set expected resolved value for a git id type',
   )
-  const reg = new Node(opts, ';;foo@1.0.0', {
-    dist: {
-      tarball: '<path-to-tarball>',
-      integrity: 'sha512-deadbeef',
+  const reg = new Node(
+    opts,
+    joinDepIDTuple(['registry', '', 'foo@1.0.0']),
+    {
+      dist: {
+        tarball: '<path-to-tarball>',
+        integrity: 'sha512-deadbeef',
+      },
     },
-  })
+  )
   reg.setResolved()
   t.strictSame(
     reg.resolved,
     '<path-to-tarball>',
     'should set expected resolved value for a registry id type',
   )
-  const regNoManifest = new Node(opts, ';;foo@1.0.0')
+  const regNoManifest = new Node(
+    opts,
+    joinDepIDTuple(['registry', '', 'foo@1.0.0']),
+  )
   regNoManifest.setResolved()
   t.strictSame(
     regNoManifest.resolved,
@@ -190,7 +204,10 @@ t.test('Node', async t => {
     'should set expected conventional registry value if no manifest',
   )
 
-  const remote = new Node(opts, 'remote;https%3A%2F%2Fx.com%2Fx.tgz')
+  const remote = new Node(
+    opts,
+    joinDepIDTuple(['remote', 'https://x.com/x.tgz']),
+  )
   remote.setResolved()
   t.strictSame(
     remote.resolved,
@@ -206,41 +223,52 @@ t.test('nodeModules path and inVltStore flag', t => {
     graph: {} as GraphLike,
   }
   const rootMani = { name: 'root' }
-  const root = new Node(opts, asDepID('file;.'), rootMani)
+  const root = new Node(opts, joinDepIDTuple(['file', '.']), rootMani)
   root.location = '.'
   t.equal(root.nodeModules, './node_modules')
-  const foo = new Node(opts, ';;foo@1.2.3', {
-    name: 'foo',
-    version: '1.2.3',
-  })
+  const foo = new Node(
+    opts,
+    joinDepIDTuple(['registry', '', 'foo@1.2.3']),
+    { name: 'foo', version: '1.2.3' },
+  )
   t.equal(
     foo.location,
-    './node_modules/.vlt/;;foo@1.2.3/node_modules/foo',
+    './node_modules/.vlt/' +
+      joinDepIDTuple(['registry', '', 'foo@1.2.3']) +
+      '/node_modules/foo',
   )
   t.equal(foo.inVltStore(), true)
   t.equal(foo.inVltStore(), true, 'test twice for caching')
   t.equal(
     foo.nodeModules,
-    './node_modules/.vlt/;;foo@1.2.3/node_modules',
+    './node_modules/.vlt/' +
+      joinDepIDTuple(['registry', '', 'foo@1.2.3']) +
+      '/node_modules',
   )
-  const bar = new Node(opts, ';;@bar%2Fbloo@1.2.3', {
-    name: '@bar/bloo',
-    version: '1.2.3',
-  })
+  const bar = new Node(
+    opts,
+    joinDepIDTuple(['registry', '', '@bar/bloo@1.2.3']),
+    { name: '@bar/bloo', version: '1.2.3' },
+  )
   t.equal(bar.inVltStore(), true)
   t.equal(bar.inVltStore(), true, 'test twice for caching')
   t.equal(
     bar.location,
-    './node_modules/.vlt/;;@bar%2Fbloo@1.2.3/node_modules/@bar/bloo',
+    './node_modules/.vlt/' +
+      joinDepIDTuple(['registry', '', '@bar/bloo@1.2.3']) +
+      '/node_modules/@bar/bloo',
   )
   t.equal(
     bar.nodeModules,
-    './node_modules/.vlt/;;@bar%2Fbloo@1.2.3/node_modules',
+    './node_modules/.vlt/' +
+      joinDepIDTuple(['registry', '', '@bar/bloo@1.2.3']) +
+      '/node_modules',
   )
-  const outside = new Node(opts, 'file;some/path', {
-    name: 'foo',
-    version: '1.2.3',
-  })
+  const outside = new Node(
+    opts,
+    joinDepIDTuple(['file', 'some/path']),
+    { name: 'foo', version: '1.2.3' },
+  )
   t.equal(outside.isOptional(), false)
   outside.optional = true
   t.equal(outside.isOptional(), true)
@@ -261,7 +289,7 @@ t.test('optional flag is contagious', t => {
     name: 'root',
     optionalDependencies: { o: '' },
   }
-  const root = new Node(opts, asDepID('file;.'), rootMani)
+  const root = new Node(opts, joinDepIDTuple(['file', '.']), rootMani)
 
   const oMani = {
     name: 'o',
@@ -270,14 +298,22 @@ t.test('optional flag is contagious', t => {
       oo: '',
     },
   }
-  const o = new Node(opts, asDepID(';;o@1.0.0'), oMani)
+  const o = new Node(
+    opts,
+    joinDepIDTuple(['registry', '', 'o@1.0.0']),
+    oMani,
+  )
   o.optional = true
   const rootoEdge = new Edge('optional', Spec.parse('o@'), root, o)
   root.edgesOut.set('o', rootoEdge)
   o.edgesIn.add(rootoEdge)
 
   const ooMani = { name: 'oo', version: '1.0.0' }
-  const oo = new Node(opts, asDepID(';;oo@1.0.0'), ooMani)
+  const oo = new Node(
+    opts,
+    joinDepIDTuple(['registry', '', 'oo@1.0.0']),
+    ooMani,
+  )
   oo.optional = true
   const oooEdge = new Edge('prod', Spec.parse('oo@'), o, oo)
   o.edgesOut.set('oo', oooEdge)
@@ -299,7 +335,7 @@ t.test('dev flag is contagious', t => {
     name: 'root',
     devDependencies: { o: '' },
   }
-  const root = new Node(opts, asDepID('file;.'), rootMani)
+  const root = new Node(opts, joinDepIDTuple(['file', '.']), rootMani)
 
   const dMani = {
     name: 'd',
@@ -308,14 +344,22 @@ t.test('dev flag is contagious', t => {
       dd: '',
     },
   }
-  const d = new Node(opts, asDepID(';;d@1.0.0'), dMani)
+  const d = new Node(
+    opts,
+    joinDepIDTuple(['registry', '', 'd@1.0.0']),
+    dMani,
+  )
   d.dev = true
   const rootoEdge = new Edge('dev', Spec.parse('d@'), root, d)
   root.edgesOut.set('d', rootoEdge)
   d.edgesIn.add(rootoEdge)
 
   const ddMani = { name: 'dd', version: '1.0.0' }
-  const dd = new Node(opts, asDepID(';;dd@1.0.0'), ddMani)
+  const dd = new Node(
+    opts,
+    joinDepIDTuple(['registry', '', 'dd@1.0.0']),
+    ddMani,
+  )
   dd.dev = true
   const dddEdge = new Edge('prod', Spec.parse('dd@'), d, dd)
   d.edgesOut.set('dd', dddEdge)

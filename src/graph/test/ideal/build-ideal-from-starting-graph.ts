@@ -1,12 +1,21 @@
+import { DepID, DepIDTuple, joinDepIDTuple } from '@vltpkg/dep-id'
 import { manifest, PackageInfoClient } from '@vltpkg/package-info'
 import { Spec, SpecOptions } from '@vltpkg/spec'
 import { PathScurry } from 'path-scurry'
 import t from 'tap'
 import { load as loadActual } from '../../src/actual/load.js'
 import { buildIdealFromStartingGraph } from '../../src/ideal/build-ideal-from-starting-graph.js'
-import { LockfileData } from '../../src/index.js'
+import {
+  LockfileData,
+  LockfileEdgeKey,
+  LockfileEdges,
+  LockfileNode,
+} from '../../src/index.js'
 import { load as loadVirtual } from '../../src/lockfile/load.js'
 import { humanReadableOutput } from '../../src/visualization/human-readable-output.js'
+
+const edgeKey = (from: DepIDTuple, to: string): LockfileEdgeKey =>
+  `${joinDepIDTuple(from)} ${to}`
 
 const configData = {
   registry: 'https://registry.npmjs.org',
@@ -58,36 +67,48 @@ t.test('build from a virtual graph', async t => {
       custom: 'https://registry.example.com',
     },
     nodes: {
-      'file;.': [0, 'my-project'],
-      'file;linked': [0, 'linked'],
-      ';;foo@1.0.0': [
+      [joinDepIDTuple(['file', '.'])]: [0, 'my-project'],
+      [joinDepIDTuple(['file', 'linked'])]: [0, 'linked'],
+      [joinDepIDTuple(['registry', '', 'foo@1.0.0'])]: [
         0,
         'foo',
         'sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ==',
       ],
-      ';;bar@1.0.0': [
+      [joinDepIDTuple(['registry', '', 'bar@1.0.0'])]: [
         0,
         'bar',
         'sha512-6/deadbeef==',
         'https://registry.example.com/bar/-/bar-1.0.0.tgz',
       ],
-      ';;baz@1.0.0': [0, 'baz', null],
-      ';;pnpmdep@1.0.0': [
+      [joinDepIDTuple(['registry', '', 'baz@1.0.0'])]: [
+        0,
+        'baz',
+        null,
+      ],
+      [joinDepIDTuple(['registry', '', 'pnpmdep@1.0.0'])]: [
         0,
         'pnpmdep',
         null,
         null,
         './node_modules/.pnpm/pnpmdep@1.0.0/node_modules/pnpmdep',
       ],
-    },
+    } as Record<DepID, LockfileNode>,
     edges: {
-      'file;. linked': 'prod file:./linked file;linked',
-      'file;. foo': 'prod ^1.0.0 ;;foo@1.0.0',
-      'file;. bar': 'prod ^1.0.0 ;;bar@1.0.0',
-      'file;. missing': 'prod ^1.0.0 MISSING',
-      ';;bar@1.0.0 baz': 'prod ^1.0.0 ;;baz@1.0.0',
-      'file;. pnpmdep': 'prod 1 ;;pnpmdep@1.0.0',
-    },
+      [edgeKey(['file', '.'], 'linked')]:
+        'prod file:./linked ' + joinDepIDTuple(['file', 'linked']),
+      [edgeKey(['file', '.'], 'foo')]:
+        'prod ^1.0.0 ' +
+        joinDepIDTuple(['registry', '', 'foo@1.0.0']),
+      [edgeKey(['file', '.'], 'bar')]:
+        'prod ^1.0.0 ' +
+        joinDepIDTuple(['registry', '', 'bar@1.0.0']),
+      [edgeKey(['file', '.'], 'missing')]: 'prod ^1.0.0 MISSING',
+      [edgeKey(['registry', '', 'bar@1.0.0'], 'baz')]:
+        'prod ^1.0.0 ' +
+        joinDepIDTuple(['registry', '', 'baz@1.0.0']),
+      [edgeKey(['file', '.'], 'pnpmdep')]:
+        'prod 1 ' + joinDepIDTuple(['registry', '', 'pnpmdep@1.0.0']),
+    } as LockfileEdges,
   }
   const projectRoot = t.testdir({
     'vlt-lock.json': JSON.stringify(lockfileData),
@@ -113,7 +134,7 @@ t.test('build from a virtual graph', async t => {
     graph: virtual,
     add: new Map([
       [
-        'file;.',
+        joinDepIDTuple(['file', '.']),
         new Map([
           [
             'baz',
@@ -122,7 +143,9 @@ t.test('build from a virtual graph', async t => {
         ]),
       ],
     ]),
-    remove: new Map([['file;.', new Set(['bar'])]]),
+    remove: new Map([
+      [joinDepIDTuple(['file', '.']), new Set(['bar'])],
+    ]),
   })
 
   t.matchSnapshot(humanReadableOutput(graph))
@@ -153,7 +176,7 @@ t.test('build from an actual graph', async t => {
     },
     node_modules: {
       '.vlt': {
-        ';;@scoped%2Fa@1.0.0': {
+        [joinDepIDTuple(['registry', '', '@scoped/a@1.0.0'])]: {
           node_modules: {
             '@scoped': {
               a: {
@@ -165,7 +188,7 @@ t.test('build from an actual graph', async t => {
             },
           },
         },
-        ';;@scoped%2Fb@1.0.0': {
+        [joinDepIDTuple(['registry', '', '@scoped/b@1.0.0'])]: {
           node_modules: {
             '@scoped': {
               b: {
@@ -179,12 +202,18 @@ t.test('build from an actual graph', async t => {
               },
               c: t.fixture(
                 'symlink',
-                '../../../../.vlt/;;@scoped%2Fc@1.0.0/node_modules/@scoped/c',
+                '../../../../.vlt/' +
+                  joinDepIDTuple([
+                    'registry',
+                    '',
+                    '@scoped/c@1.0.0',
+                  ]) +
+                  '/node_modules/@scoped/c',
               ),
             },
           },
         },
-        ';;@scoped%2Fc@1.0.0': {
+        [joinDepIDTuple(['registry', '', '@scoped/c@1.0.0'])]: {
           node_modules: {
             '@scoped': {
               c: {
@@ -196,7 +225,7 @@ t.test('build from an actual graph', async t => {
             },
           },
         },
-        ';;bar@1.0.0': {
+        [joinDepIDTuple(['registry', '', 'bar@1.0.0'])]: {
           node_modules: {
             bar: {
               'package.json': JSON.stringify({
@@ -209,11 +238,13 @@ t.test('build from an actual graph', async t => {
             },
             baz: t.fixture(
               'symlink',
-              '../../;custom;baz@1.0.0/node_modules/baz',
+              '../../' +
+                joinDepIDTuple(['registry', 'custom', 'baz@1.0.0']) +
+                '/node_modules/baz',
             ),
           },
         },
-        ';;foo@1.0.0': {
+        [joinDepIDTuple(['registry', '', 'foo@1.0.0'])]: {
           node_modules: {
             foo: {
               'package.json': JSON.stringify({
@@ -223,7 +254,7 @@ t.test('build from an actual graph', async t => {
             },
           },
         },
-        ';;ipsum@1.0.0': {
+        [joinDepIDTuple(['registry', '', 'ipsum@1.0.0'])]: {
           node_modules: {
             ipsum: {
               'package.json': JSON.stringify({
@@ -233,7 +264,7 @@ t.test('build from an actual graph', async t => {
             },
           },
         },
-        ';;extraneous@1.0.0': {
+        [joinDepIDTuple(['registry', '', 'extraneous@1.0.0'])]: {
           node_modules: {
             extraneous: {
               'package.json': JSON.stringify({
@@ -243,7 +274,7 @@ t.test('build from an actual graph', async t => {
             },
           },
         },
-        ';custom;baz@1.0.0': {
+        [joinDepIDTuple(['registry', 'custom', 'baz@1.0.0'])]: {
           node_modules: {
             baz: {
               'package.json': JSON.stringify({
@@ -253,7 +284,7 @@ t.test('build from an actual graph', async t => {
             },
           },
         },
-        ';custom;foo@1.0.0': {
+        [joinDepIDTuple(['registry', 'custom', 'foo@1.0.0'])]: {
           node_modules: {
             foo: {
               'package.json': JSON.stringify({
@@ -267,25 +298,43 @@ t.test('build from an actual graph', async t => {
       '@scoped': {
         a: t.fixture(
           'symlink',
-          '../.vlt/;;@scoped%2Fa@1.0.0/node_modules/@scoped/a',
+          '../.vlt/' +
+            joinDepIDTuple(['registry', '', '@scoped/a@1.0.0']) +
+            '/node_modules/@scoped/a',
         ),
         b: t.fixture(
           'symlink',
-          '../.vlt/;;@scoped%2Fb@1.0.0/node_modules/@scoped/b',
+          '../.vlt/' +
+            joinDepIDTuple(['registry', '', '@scoped/b@1.0.0']) +
+            '/node_modules/@scoped/b',
         ),
       },
       aliased: t.fixture(
         'symlink',
-        '.vlt/;custom;foo@1.0.0/node_modules/foo',
+        '.vlt/' +
+          joinDepIDTuple(['registry', 'custom', 'foo@1.0.0']) +
+          '/node_modules/foo',
       ),
-      bar: t.fixture('symlink', '.vlt/;;bar@1.0.0/node_modules/bar'),
+      bar: t.fixture(
+        'symlink',
+        '.vlt/' +
+          joinDepIDTuple(['registry', '', 'bar@1.0.0']) +
+          '/node_modules/bar',
+      ),
       // This should be ignored when traversing the file system
       broken_symlink: t.fixture('symlink', './link-to-nowhere'),
       extraneous: t.fixture(
         'symlink',
-        '.vlt/;;extraneous@1.0.0/node_modules/extraneous',
+        '.vlt/' +
+          joinDepIDTuple(['registry', '', 'extraneous@1.0.0']) +
+          '/node_modules/extraneous',
       ),
-      foo: t.fixture('symlink', '.vlt/;;foo@1.0.0/node_modules/foo'),
+      foo: t.fixture(
+        'symlink',
+        '.vlt/' +
+          joinDepIDTuple(['registry', '', 'foo@1.0.0']) +
+          '/node_modules/foo',
+      ),
       link: t.fixture('symlink', '../linked'),
     },
     packages: {
@@ -302,11 +351,15 @@ t.test('build from an actual graph', async t => {
         node_modules: {
           foo: t.fixture(
             'symlink',
-            '../../../node_modules/.vlt/;;foo@1.0.0/node_modules/foo',
+            '../../../node_modules/.vlt/' +
+              joinDepIDTuple(['registry', '', 'foo@1.0.0']) +
+              '/node_modules/foo',
           ),
           ipsum: t.fixture(
             'symlink',
-            '../../../node_modules/.vlt/;;ipsum@1.0.0/node_modules/ipsum',
+            '../../../node_modules/.vlt/' +
+              joinDepIDTuple(['registry', '', 'ipsum@1.0.0']) +
+              '/node_modules/ipsum',
           ),
           'workspace-b': t.fixture('symlink', '../../workspace-b'),
         },
@@ -337,7 +390,7 @@ t.test('build from an actual graph', async t => {
     scurry: new PathScurry(projectRoot),
     add: new Map([
       [
-        'file;.',
+        joinDepIDTuple(['file', '.']),
         new Map([
           [
             'baz',
@@ -346,7 +399,7 @@ t.test('build from an actual graph', async t => {
         ]),
       ],
       [
-        'workspace;packages%2Fworkspace-b',
+        joinDepIDTuple(['workspace', 'packages/workspace-b']),
         new Map([
           [
             'baz',
@@ -355,7 +408,9 @@ t.test('build from an actual graph', async t => {
         ]),
       ],
     ]),
-    remove: new Map([['file;.', new Set(['bar'])]]),
+    remove: new Map([
+      [joinDepIDTuple(['file', '.']), new Set(['bar'])],
+    ]),
   })
 
   t.matchSnapshot(humanReadableOutput(graph))

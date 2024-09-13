@@ -1,5 +1,5 @@
-import { asDepID } from '@vltpkg/dep-id'
-import { Spec, kCustomInspect } from '@vltpkg/spec'
+import { joinDepIDTuple } from '@vltpkg/dep-id'
+import { kCustomInspect, Spec } from '@vltpkg/spec'
 import { inspect } from 'node:util'
 import t from 'tap'
 import { load } from '../../src/actual/load.js'
@@ -34,7 +34,7 @@ t.test('graph with an actual node', async t => {
     }),
     node_modules: {
       '.vlt': {
-        ';;foo@1.0.0': {
+        [joinDepIDTuple(['registry', '', 'foo@1.0.0'])]: {
           node_modules: {
             foo: {
               'package.json': JSON.stringify({
@@ -45,7 +45,12 @@ t.test('graph with an actual node', async t => {
           },
         },
       },
-      foo: t.fixture('symlink', '.vlt/;;foo@1.0.0/node_modules/foo'),
+      foo: t.fixture(
+        'symlink',
+        '.vlt/' +
+          joinDepIDTuple(['registry', '', 'foo@1.0.0']) +
+          '/node_modules/foo',
+      ),
     },
   })
 
@@ -53,7 +58,7 @@ t.test('graph with an actual node', async t => {
     const graph = load({ projectRoot })
     const add = new Map([
       [
-        asDepID('file;.'),
+        joinDepIDTuple(['file', '.']),
         new Map(
           Object.entries({
             foo: asDependency({
@@ -72,7 +77,7 @@ t.test('graph with an actual node', async t => {
     const graph = load({ projectRoot })
     const add = new Map([
       [
-        asDepID('file;.'),
+        joinDepIDTuple(['file', '.']),
         new Map(
           Object.entries({
             bar: asDependency({
@@ -94,7 +99,7 @@ t.test('graph with an actual node', async t => {
     const graph = load({ projectRoot })
     const add = new Map([
       [
-        asDepID('file;.'),
+        joinDepIDTuple(['file', '.']),
         new Map(
           Object.entries({
             foo: asDependency({
@@ -116,7 +121,7 @@ t.test('graph with an actual node', async t => {
     const graph = load({ projectRoot })
     const add = new Map([
       [
-        asDepID('file;.'),
+        joinDepIDTuple(['file', '.']),
         new Map(
           Object.entries({
             foo: asDependency({
@@ -142,7 +147,7 @@ t.test('graph with an actual node', async t => {
     const add = new Map([
       // this workspace id does not exist in the given graph
       [
-        asDepID('workspace;packages%2Fa'),
+        joinDepIDTuple(['workspace', 'packages/a']),
         new Map(
           Object.entries({
             baz: asDependency({
