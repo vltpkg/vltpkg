@@ -63,9 +63,13 @@ const checkList = (value: string, list?: string[] | string) => {
   return match || negated === list.length
 }
 
-const platformCheck = (
+/**
+ * Call with a manifest and the node version and process platform/arch
+ * to check whether a version is suitable for the current platform.
+ */
+export const platformCheck = (
   mani: Manifest | ManifestMinified,
-  nodeVersion: Version,
+  nodeVersion: Version | string,
   wantOs?: NodeJS.Process['platform'],
   wantArch?: NodeJS.Process['arch'],
 ): boolean => {

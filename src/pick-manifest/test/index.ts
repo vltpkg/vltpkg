@@ -7,10 +7,12 @@ import {
   Packument,
   PackumentMinified,
 } from '@vltpkg/types'
-import { pickManifest } from '../src/index.js'
+import { pickManifest, platformCheck } from '../src/index.js'
 
 // don't need to run, just for typechecking
-const _typechecks = () => {
+const typechecks = () => {
+  // verify node version can be a string
+  platformCheck({}, '1.2.3')
   let paku = {} as unknown as Packument
   let pakuMin = {} as unknown as PackumentMinified
   const optBefore = { before: 1 }
@@ -40,6 +42,7 @@ const _typechecks = () => {
   //@ts-expect-error
   mm.true = false
 }
+void typechecks
 
 t.test('basic carat range selection', t => {
   const metadata = {
