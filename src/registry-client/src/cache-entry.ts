@@ -264,7 +264,11 @@ export class CacheEntry {
     if (this.#json !== undefined) return this.#json
     const ser = serializedHeader && this.getHeader(serializedHeader)
     if (ser) {
-      return (this.#json = deserialize(ser))
+      /* c8 ignore start - very rare, but theoretically possible to throw */
+      try {
+        return (this.#json = deserialize(ser))
+      } catch {}
+      /* c8 ignore stop */
     }
     const obj = JSON.parse(this.text())
     if (serializedHeader)
