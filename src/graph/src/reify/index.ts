@@ -25,7 +25,6 @@ export type ReifyOptions = LoadOptions & {
   graph: Graph
   actual?: Graph
   packageInfo?: PackageInfoClient
-  // TODO: add/remove options?
 }
 
 /**
@@ -46,6 +45,7 @@ export const reify = async (options: ReifyOptions) => {
     new PackageInfoClient({
       ...options,
       monorepo,
+      packageJson,
     })
   /* c8 ignore stop */
 
