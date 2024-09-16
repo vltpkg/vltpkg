@@ -1,7 +1,7 @@
-import { Config, LoadedConfig } from '../config/index.js'
+import { Config } from '../config/index.js'
 
 export const usage = (await Config.load()).jack.usage()
 
-export const command = async (conf: LoadedConfig) => {
-  console.log('todo: show some helpful output', conf.positionals)
+export const command = async () => {
+  console.log(usage)
 }
