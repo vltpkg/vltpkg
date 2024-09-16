@@ -36,14 +36,15 @@ export const build = async (
   // Creates the shared instances that are going to be used
   // in both the loader methods and the build graph
   const packageJson = options.packageJson ?? new PackageJson()
-  const mainManifest = packageJson.read(options.projectRoot)
+  const mainManifest =
+    options.mainManifest ?? packageJson.read(options.projectRoot)
   const scurry = options.scurry ?? new PathScurry(options.projectRoot)
   const monorepo =
     options.monorepo ??
     Monorepo.maybeLoad(options.projectRoot, { packageJson, scurry })
   const packageInfo =
     options.packageInfo ??
-    new PackageInfoClient({ ...options, packageJson })
+    new PackageInfoClient({ ...options, monorepo, packageJson })
   const add = options.add ?? new Map()
   const remove = options.remove ?? new Map()
 
