@@ -1,11 +1,12 @@
+import { inspect } from 'util'
 import t from 'tap'
+import { Spec, kCustomInspect } from '@vltpkg/spec'
+import { Monorepo } from '@vltpkg/workspaces'
 import {
   parseAddArgs,
   parseRemoveArgs,
 } from '../src/parse-add-remove-args.js'
 import { LoadedConfig } from '../src/index.js'
-import { Spec, kCustomInspect } from '@vltpkg/spec'
-import { inspect } from 'util'
 
 class MockConfig {
   values: Record<string, any> = {}
@@ -115,6 +116,165 @@ t.test('parseAddArgs', async t => {
       'should return dependency as type=prod',
     )
   })
+
+  await t.test('workspaces', async t => {
+    const dir = t.testdir({
+      'vlt-workspaces.json': JSON.stringify({
+        app: ['./app/*'],
+        utils: ['./utils/*'],
+        other: ['foo', 'bar'],
+      }),
+      app: {
+        a: {
+          'package.json': JSON.stringify({
+            name: 'a',
+            version: '1.0.0',
+          }),
+        },
+        b: {
+          'package.json': JSON.stringify({
+            name: 'b',
+            version: '1.0.0',
+          }),
+        },
+      },
+      utils: {
+        c: {
+          'package.json': JSON.stringify({
+            name: 'c',
+            version: '1.0.0',
+          }),
+        },
+      },
+      foo: {
+        'package.json': JSON.stringify({
+          name: 'foo',
+          version: '1.0.0',
+        }),
+      },
+      bar: {
+        'package.json': JSON.stringify({
+          name: 'bar',
+          version: '1.0.0',
+        }),
+      },
+    })
+
+    await t.test(
+      'define single dep of a single workspace',
+      async t => {
+        const monorepo = Monorepo.load(dir)
+        const conf = new MockConfig() as LoadedConfig
+        conf.positionals = ['foo']
+        conf.values = { workspace: ['./app/a'] }
+        t.matchSnapshot(
+          inspect(parseAddArgs(conf, monorepo), { depth: Infinity }),
+          'should return dependency of a workspace',
+        )
+      },
+    )
+
+    await t.test(
+      'define root dep if no workspace config defined',
+      async t => {
+        const monorepo = Monorepo.load(dir)
+        const conf = new MockConfig() as LoadedConfig
+        conf.positionals = ['foo']
+        t.matchSnapshot(
+          inspect(parseAddArgs(conf, monorepo), { depth: Infinity }),
+          'should return dependency of root',
+        )
+      },
+    )
+
+    await t.test(
+      'define multiple deps of a single workspace',
+      async t => {
+        const monorepo = Monorepo.load(dir)
+        const conf = new MockConfig() as LoadedConfig
+        conf.positionals = [
+          'foo@^1',
+          'bar@latest',
+          'baz@1.0.0',
+          'github:a/b',
+          'file:./a',
+        ]
+        conf.values = { workspace: ['c'] }
+        t.matchSnapshot(
+          inspect(parseAddArgs(conf, monorepo), { depth: Infinity }),
+          'should return multiple deps of a workspace',
+        )
+      },
+    )
+
+    await t.test(
+      'define multiple deps to multiple workspaces',
+      async t => {
+        const monorepo = Monorepo.load(dir)
+        const conf = new MockConfig() as LoadedConfig
+        conf.positionals = [
+          'foo@^1',
+          'bar@latest',
+          'baz@1.0.0',
+          'github:a/b',
+          'file:./a',
+        ]
+        conf.values = { workspace: ['a', 'b', 'c'] }
+        t.matchSnapshot(
+          inspect(parseAddArgs(conf, monorepo), { depth: Infinity }),
+          'should return multiple deps to multiple workspaces',
+        )
+      },
+    )
+
+    await t.test(
+      'define single dep to a group of workspaces',
+      async t => {
+        const monorepo = Monorepo.load(dir)
+        const conf = new MockConfig() as LoadedConfig
+        conf.positionals = ['foo']
+        conf.values = { 'workspace-group': ['other'] }
+        t.matchSnapshot(
+          inspect(parseAddArgs(conf, monorepo), { depth: Infinity }),
+          'should return dependency to a group of workspaces',
+        )
+      },
+    )
+
+    await t.test(
+      'define single dep to multiple groups of workspaces',
+      async t => {
+        const monorepo = Monorepo.load(dir)
+        const conf = new MockConfig() as LoadedConfig
+        conf.positionals = ['foo']
+        conf.values = { 'workspace-group': ['utils', 'other'] }
+        t.matchSnapshot(
+          inspect(parseAddArgs(conf, monorepo), { depth: Infinity }),
+          'should return dependency to many groups of workspaces',
+        )
+      },
+    )
+
+    await t.test(
+      'define multiple deps to multiple groups of workspaces',
+      async t => {
+        const monorepo = Monorepo.load(dir)
+        const conf = new MockConfig() as LoadedConfig
+        conf.positionals = [
+          'foo@^1',
+          'bar@latest',
+          'baz@1.0.0',
+          'github:a/b',
+          'file:./a',
+        ]
+        conf.values = { 'workspace-group': ['utils', 'other'] }
+        t.matchSnapshot(
+          inspect(parseAddArgs(conf, monorepo), { depth: Infinity }),
+          'should return multiple deps to many groups of workspaces',
+        )
+      },
+    )
+  })
 })
 
 t.test('parseRemoveArgs', async t => {
@@ -142,6 +302,126 @@ t.test('parseRemoveArgs', async t => {
     t.matchSnapshot(
       inspect(parseRemoveArgs(conf)),
       'should return no items',
+    )
+  })
+
+  await t.test('workspaces', async t => {
+    const dir = t.testdir({
+      'vlt-workspaces.json': JSON.stringify({
+        app: ['./app/*'],
+        utils: ['./utils/*'],
+        other: ['foo', 'bar'],
+      }),
+      app: {
+        a: {
+          'package.json': JSON.stringify({
+            name: 'a',
+            version: '1.0.0',
+          }),
+        },
+        b: {
+          'package.json': JSON.stringify({
+            name: 'b',
+            version: '1.0.0',
+          }),
+        },
+      },
+      utils: {
+        c: {
+          'package.json': JSON.stringify({
+            name: 'c',
+            version: '1.0.0',
+          }),
+        },
+      },
+      foo: {
+        'package.json': JSON.stringify({
+          name: 'foo',
+          version: '1.0.0',
+        }),
+      },
+      bar: {
+        'package.json': JSON.stringify({
+          name: 'bar',
+          version: '1.0.0',
+        }),
+      },
+    })
+
+    await t.test(
+      'remove dep from root if no workspace defined',
+      async t => {
+        const monorepo = Monorepo.load(dir)
+        const conf = new MockConfig() as LoadedConfig
+        conf.positionals = ['foo']
+        conf.values = {}
+        t.matchSnapshot(
+          inspect(parseRemoveArgs(conf, monorepo), {
+            depth: Infinity,
+          }),
+          'should remove dep from root',
+        )
+      },
+    )
+
+    await t.test('single dep of a single workspace', async t => {
+      const monorepo = Monorepo.load(dir)
+      const conf = new MockConfig() as LoadedConfig
+      conf.positionals = ['foo']
+      conf.values = { workspace: ['./app/a'] }
+      t.matchSnapshot(
+        inspect(parseRemoveArgs(conf, monorepo), { depth: Infinity }),
+        'should remove single dep of workspace',
+      )
+    })
+
+    await t.test('multiple deps of a single workspace', async t => {
+      const monorepo = Monorepo.load(dir)
+      const conf = new MockConfig() as LoadedConfig
+      conf.positionals = ['foo', 'bar']
+      conf.values = { workspace: ['c'] }
+      t.matchSnapshot(
+        inspect(parseRemoveArgs(conf, monorepo), { depth: Infinity }),
+        'should remove multiple deps of workspace',
+      )
+    })
+
+    await t.test('single dep from a workspace group', async t => {
+      const monorepo = Monorepo.load(dir)
+      const conf = new MockConfig() as LoadedConfig
+      conf.positionals = ['foo']
+      conf.values = { 'workspace-group': ['app'] }
+      t.matchSnapshot(
+        inspect(parseRemoveArgs(conf, monorepo), { depth: Infinity }),
+        'should remove single dep from a single workspace group',
+      )
+    })
+
+    await t.test('multiple deps from a workspace group', async t => {
+      const monorepo = Monorepo.load(dir)
+      const conf = new MockConfig() as LoadedConfig
+      conf.positionals = ['foo', 'bar']
+      conf.values = { 'workspace-group': ['app'] }
+      t.matchSnapshot(
+        inspect(parseRemoveArgs(conf, monorepo), { depth: Infinity }),
+        'should remove multiple dep from a single workspace group',
+      )
+    })
+
+    await t.test(
+      'multiple deps from multiple workspace groups',
+      async t => {
+        const monorepo = Monorepo.load(dir)
+        const conf = new MockConfig() as LoadedConfig
+        conf.positionals = ['foo', 'bar']
+        conf.values = { 'workspace-group': ['utils', 'other'] }
+        t.matchSnapshot(
+          inspect(parseRemoveArgs(conf, monorepo), {
+            depth: Infinity,
+          }),
+          'should remove multiple dep from multiple workspace groups',
+        )
+      },
     )
   })
 })
