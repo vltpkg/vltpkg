@@ -35,6 +35,7 @@
     "ansi-to-pre": "^1.0.5",
     "chalk": "catalog:",
     "jackspeak": "^4.0.1",
+    "path-scurry": "catalog:",
     "polite-json": "catalog:",
     "walk-up-path": "catalog:"
   },
