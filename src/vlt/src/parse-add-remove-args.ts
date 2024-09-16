@@ -1,7 +1,9 @@
 import { DepID } from '@vltpkg/dep-id'
 import {
+  AddImportersDependenciesMap,
   Dependency,
   DependencyTypeShort,
+  RemoveImportersDependenciesMap,
   asDependency,
 } from '@vltpkg/graph'
 import { LoadedConfig } from './config/index.js'
@@ -9,11 +11,11 @@ import { Spec, SpecOptions } from '@vltpkg/spec'
 import { Monorepo } from '@vltpkg/workspaces'
 
 export type ParsedAddArgs = {
-  add: Map<DepID, Map<string, Dependency>>
+  add: AddImportersDependenciesMap
 }
 
 export type ParsedRemoveArgs = {
-  remove: Map<DepID, Set<string>>
+  remove: RemoveImportersDependenciesMap
 }
 
 export type SaveTypes = {

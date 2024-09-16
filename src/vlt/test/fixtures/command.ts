@@ -58,7 +58,7 @@ export const setupCommand = async <TCommand extends CliCommand>(
       : confOrArgv
     const logs = t.capture(console, 'log').args
     const errs = t.capture(console, 'error').args
-    await command(config)
+    await command(config, {})
     return {
       logs: logs()
         .map(v => v[0])
