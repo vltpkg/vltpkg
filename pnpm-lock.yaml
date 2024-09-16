@@ -521,6 +521,9 @@ importers:
       '@vltpkg/types':
         specifier: workspace:*
         version: link:../types
+      '@vltpkg/update-package-json':
+        specifier: workspace:*
+        version: link:../update-package-json
       '@vltpkg/workspaces':
         specifier: workspace:*
         version: link:../workspaces

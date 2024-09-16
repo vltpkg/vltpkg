@@ -3,6 +3,7 @@ import { LoadedConfig } from '../config/index.js'
 import { PackageJson } from '@vltpkg/package-json'
 import * as dotProp from '@vltpkg/dot-prop'
 import { Manifest } from '@vltpkg/types'
+import { CliCommandOptions } from '../types.js'
 
 export const usage = `Usage:
   vlt pkg get [<key>]
@@ -12,9 +13,12 @@ export const usage = `Usage:
   vlt pkg set [<array>[].<key>=<value> ...]
   vlt pkg <rm|remove|unset|delete> <key> [<key> ...]`
 
-export const command = async (conf: LoadedConfig) => {
+export const command = async (
+  conf: LoadedConfig,
+  options: CliCommandOptions,
+) => {
   const [sub, ...args] = conf.positionals
-  const pkg = new PackageJson()
+  const pkg = options.packageJson ?? new PackageJson()
   const mani = pkg.read(conf.projectRoot)
 
   switch (sub) {
