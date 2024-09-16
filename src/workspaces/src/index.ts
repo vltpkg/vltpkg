@@ -5,9 +5,15 @@ import { Manifest } from '@vltpkg/types'
 import { readFileSync, statSync } from 'fs'
 import { GlobOptionsWithFileTypesFalse, globSync } from 'glob'
 import { DepResults, graphRun, graphRunSync } from 'graph-run'
-import { basename, resolve } from 'path'
+import { basename, resolve, posix } from 'path'
 import { Path, PathScurry } from 'path-scurry'
 import { parse } from 'polite-json'
+import { minimatch } from 'minimatch'
+
+export type WorkspacesLoadedConfig = {
+  workspace?: string[]
+  'workspace-group'?: string[]
+}
 
 /**
  * The object passed to the constructor or {@link Monorepo#load} to limit which
@@ -267,6 +273,7 @@ export class Monorepo {
 
     // if we specified paths, but none matched, nothing to do
     if (paths.size && !filter.size) return this
+
     for (const [group, matches] of Object.entries(groupsExpanded)) {
       for (const path of matches) {
         if (filter.size && !filter.has(path)) continue
@@ -479,6 +486,43 @@ export class Monorepo {
   }
 
   /**
+   * Filter the monorepo object yielding the workspace objects that matches
+   * either of the {@link WorkspacesLoadedConfig} options provided, in as close
+   * to topological dependency order as possible.
+   */
+  *filter({
+    workspace: namesOrPaths,
+    'workspace-group': groupName,
+  }: WorkspacesLoadedConfig) {
+    const globPatternChecks = namesOrPaths?.map(glob =>
+      minimatch.filter(posix.join(glob)),
+    )
+    for (const ws of this) {
+      // check if any group has any of the provided group names
+      if (groupName?.some(i => ws.groups.includes(i))) {
+        yield ws
+        continue
+      }
+      // check if any workspace-provided name directly matches any of the
+      // configured workspaces by either name or file path
+      if (
+        namesOrPaths
+          ?.map(i => posix.join(i))
+          .some(i => ws.keys.includes(i))
+      ) {
+        yield ws
+        continue
+      }
+      // check if one of the workspace values are matching glob patterns
+      if (
+        ws.keys.some(key => globPatternChecks?.some(fn => fn(key)))
+      ) {
+        yield ws
+      }
+    }
+  }
+
+  /**
    * Run an operation asynchronously over all loaded workspaces
    *
    * If the `forceLoad` param is true, then it will attempt to do a full load
@@ -593,6 +637,7 @@ export class Workspace {
   manifest: Manifest
   groups: string[] = []
   name: string
+  #keys?: string[]
 
   constructor(path: string, manifest: Manifest, fullpath: string) {
     this.id = joinDepIDTuple(['workspace', path])
@@ -601,5 +646,13 @@ export class Workspace {
     this.fullpath = fullpath
     this.manifest = manifest
     this.name = manifest.name ?? path
+  }
+
+  get keys(): string[] {
+    if (this.#keys) {
+      return this.#keys
+    }
+    this.#keys = [this.name, this.path, this.fullpath]
+    return this.#keys
   }
 }

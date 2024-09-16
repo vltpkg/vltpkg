@@ -7,6 +7,7 @@ import {
   Monorepo,
   Workspace,
 } from '../src/index.js'
+import { resolve } from 'node:path'
 
 t.test('load some workspaces', t => {
   const dir = t.testdir({
@@ -117,6 +118,75 @@ t.test('load some workspaces', t => {
       [{ name: 'src/noname' }, 'src/noname'],
     ]),
   )
+
+  // filters a single workspace
+  const singleResult: string[] = []
+  for (const ws of m.filter({ workspace: ['foo'] })) {
+    singleResult.push(ws.name)
+  }
+  t.strictSame(
+    singleResult,
+    ['foo'],
+    'should return the selected workspace',
+  )
+
+  // filters a single workspace using leading dot relative path notation
+  const dottedResult: string[] = []
+  for (const ws of m.filter({ workspace: ['./src/foo'] })) {
+    dottedResult.push(ws.name)
+  }
+  t.strictSame(
+    dottedResult,
+    ['foo'],
+    'should return the selected workspace from a dot relative path',
+  )
+
+  // filters multiple workspaces
+  const multiResult: string[] = []
+  for (const ws of m.filter({
+    workspace: ['src/foo', resolve(dir, 'src/bar')],
+  })) {
+    multiResult.push(ws.name)
+  }
+  t.strictSame(
+    multiResult,
+    ['@company/bar', 'foo'],
+    'should return the selected workspaces',
+  )
+
+  // filters a single workspace using a matching glob pattern
+  const singleGlobResult: string[] = []
+  for (const ws of m.filter({ workspace: ['./*/foo'] })) {
+    singleGlobResult.push(ws.name)
+  }
+  t.strictSame(
+    singleGlobResult,
+    ['foo'],
+    'should return the selected workspace from a glob pattern match',
+  )
+
+  // filters many workspaces using a matching glob pattern
+  const globResult: string[] = []
+  for (const ws of m.filter({ workspace: ['./src/*'] })) {
+    globResult.push(ws.name)
+  }
+  t.strictSame(
+    globResult,
+    ['src/noname', '@company/bar', 'foo'],
+    'should return the selected workspace from a glob pattern match',
+  )
+
+  // filters many workspaces using a matching glob pattern
+  const otherGlobResult: string[] = []
+  for (const ws of m.filter({ workspace: ['./**'] })) {
+    otherGlobResult.push(ws.name)
+  }
+  t.strictSame(
+    otherGlobResult,
+    ['src/noname', '@company/bar', 'foo'],
+    'should return the selected workspace from a glob pattern match',
+  )
+
   t.end()
 })
 
@@ -269,6 +339,33 @@ export const isOdd = (n) => !isEven(n)
       'app/bar',
     ],
   )
+
+  const o = new Monorepo(dir, { load: {} })
+
+  // filters single group
+  const singleResult: string[] = []
+  for (const ws of o.filter({ 'workspace-group': ['utils'] })) {
+    singleResult.push(ws.name)
+  }
+  t.strictSame(
+    singleResult,
+    ['is-even', 'is-odd'],
+    'should return the group workspaces',
+  )
+
+  // filters multiple groups
+  const multiResult: string[] = []
+  for (const ws of o.filter({
+    'workspace-group': ['utils', 'apps'],
+  })) {
+    multiResult.push(ws.name)
+  }
+  t.strictSame(
+    multiResult,
+    ['is-even', 'is-odd', 'app/noname', '@company/bar', 'foo'],
+    'should return the group workspaces',
+  )
+
   t.end()
 })
 
