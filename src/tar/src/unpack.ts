@@ -28,9 +28,12 @@ const checkFs = (
   return true
 }
 
-const writeFile = (path: string, body: Buffer) => {
+const writeFile = (path: string, body: Buffer, executable = false) => {
   mkdir(dirname(path))
-  writeFileSync(path, body, { mode: 0o666 })
+  // if the mode is world-executable, then make it executable
+  // this is needed for some packages that have a file that is
+  // not a declared bin, but still used as a cli executable.
+  writeFileSync(path, body, { mode: executable ? 0o777 : 0o666 })
 }
 
 const made = new Set<string>()
@@ -126,6 +129,9 @@ export const unpack = (
           writeFile(
             resolve(tmp, h.path.substring(tarDir.length)),
             body,
+            // if it's world-executable, it's an executable
+            // otherwise, make it read-only.
+            1 === ((h.mode ?? 0x666) & 1)
           )
           break
         case 'Directory':
