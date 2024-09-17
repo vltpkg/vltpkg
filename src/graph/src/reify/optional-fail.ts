@@ -11,7 +11,7 @@ import { removeOptionalSubgraph } from '../remove-optional-subgraph.js'
 export function optionalFail(
   diff: Diff,
   node: Node & { optional: true },
-): () => Promise<void>
+): () => void
 export function optionalFail(
   diff: Diff,
   node: Node & { optional: false },
@@ -19,15 +19,15 @@ export function optionalFail(
 export function optionalFail(
   diff: Diff,
   node: Node,
-): (() => Promise<void>) | undefined
+): (() => void) | undefined
 export function optionalFail(
   diff: Diff,
   node: Node,
-): (() => Promise<void>) | undefined {
+): (() => void) | undefined {
   return node.isOptional() ? () => del(diff, node) : undefined
 }
 
-const del = async (diff: Diff, node: Node & { optional: true }) => {
+const del = (diff: Diff, node: Node & { optional: true }) => {
   diff.hadOptionalFailures = true
   for (const del of removeOptionalSubgraph(diff.to, node)) {
     // add it to the set of nodes being deleted

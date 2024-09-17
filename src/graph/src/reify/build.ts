@@ -23,7 +23,7 @@ export const build = async (
   /* c8 ignore next - all graphs have at least one importer */
   if (!nodes) return
 
-  await graphRun<Node, boolean | void>({
+  await graphRun<Node, unknown>({
     graph: nodes,
     visit: async (node: Node, signal, path) => {
       // if it's not an importer or an added node, nothing to do.
@@ -34,7 +34,7 @@ export const build = async (
       // track all that other stuff.
       if (!node.importer && !diff.nodes.add.has(node)) return
 
-      return visit(packageJson, scurry, node, signal, path).then(
+      await visit(packageJson, scurry, node, signal, path).then(
         x => x,
         optionalFail(diff, node),
       )
