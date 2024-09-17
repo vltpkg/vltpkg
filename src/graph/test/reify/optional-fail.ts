@@ -94,7 +94,7 @@ t.test('register and optional node failure', async t => {
     'function',
     'provides error handler for optional node',
   )
-  await handler()
+  handler()
   t.equal(
     diff.hadOptionalFailures,
     true,

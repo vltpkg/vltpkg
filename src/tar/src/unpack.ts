@@ -28,7 +28,11 @@ const checkFs = (
   return true
 }
 
-const writeFile = (path: string, body: Buffer, executable = false) => {
+const writeFile = (
+  path: string,
+  body: Buffer,
+  executable = false,
+) => {
   mkdir(dirname(path))
   // if the mode is world-executable, then make it executable
   // this is needed for some packages that have a file that is
@@ -131,7 +135,7 @@ export const unpack = (
             body,
             // if it's world-executable, it's an executable
             // otherwise, make it read-only.
-            1 === ((h.mode ?? 0x666) & 1)
+            1 === ((h.mode ?? 0x666) & 1),
           )
           break
         case 'Directory':
