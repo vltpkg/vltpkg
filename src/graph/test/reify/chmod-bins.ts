@@ -4,6 +4,7 @@ import { PathScurry } from 'path-scurry'
 import t, { Test } from 'tap'
 import { Diff } from '../../src/diff.js'
 import { Node } from '../../src/node.js'
+import { GraphLike } from '../../src/types.js'
 
 const runTest = async (t: Test, withManifest: boolean) => {
   const chmods: string[] = []
@@ -36,11 +37,15 @@ const runTest = async (t: Test, withManifest: boolean) => {
       },
     },
   })
+  const opts = {
+    projectRoot,
+    graph: {} as GraphLike,
+  }
   const diff = {
     nodes: {
       add: new Set([
         new Node(
-          { projectRoot, importers: new Set() },
+          opts,
           ';;foo@1.2.3',
           withManifest ? fooManifest : undefined,
           undefined,

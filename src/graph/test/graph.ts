@@ -5,6 +5,7 @@ import { inspect } from 'node:util'
 import t from 'tap'
 import { Edge } from '../src/edge.js'
 import { Graph } from '../src/graph.js'
+import { GraphLike } from '../src/types.js'
 
 t.cleanSnapshot = s =>
   s.replace(/^(\s+)"projectRoot": .*$/gm, '$1"projectRoot": #')
@@ -298,6 +299,14 @@ t.test('workspaces', async t => {
     mainManifest,
     monorepo,
   })
+  for (const importer of graph.importers) {
+    t.strictSame(
+      importer.graph,
+      graph,
+      'should have a ref to its graph',
+    )
+    importer.graph = 'Graph {}' as unknown as GraphLike
+  }
   t.matchSnapshot(
     graph.importers,
     'should have root and workspaces as importers',

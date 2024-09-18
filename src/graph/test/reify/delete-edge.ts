@@ -6,6 +6,7 @@ import { PathScurry } from 'path-scurry'
 import t, { Test } from 'tap'
 import { Edge } from '../../src/edge.js'
 import { Node } from '../../src/node.js'
+import { GraphLike } from '../../src/types.js'
 
 const fooManifest = {
   name: 'foo',
@@ -78,6 +79,10 @@ t.test('posix', async t => {
   >('../../src/reify/delete-edge.js')
 
   const projectRoot = vltInstallFixture(t)
+  const opts = {
+    projectRoot,
+    graph: {} as GraphLike,
+  }
   // gutcheck
   statSync(projectRoot + '/node_modules/.bin/bar')
   statSync(projectRoot + '/node_modules/.bin/bar.cmd')
@@ -91,16 +96,8 @@ t.test('posix', async t => {
   const edge = new Edge(
     'prod',
     Spec.parse('bar@'),
-    new Node(
-      { projectRoot, importers: new Set() },
-      ';;foo@1.2.3',
-      fooManifest,
-    ),
-    new Node(
-      { projectRoot, importers: new Set() },
-      ';;bar@1.2.3',
-      barManifest,
-    ),
+    new Node(opts, ';;foo@1.2.3', fooManifest),
+    new Node(opts, ';;bar@1.2.3', barManifest),
   )
   const scurry = new PathScurry(projectRoot)
 
@@ -134,19 +131,15 @@ t.test('win32', async t => {
   statSync(fooNM + '/.bin/bar')
   statSync(fooNM + '/.bin/bar.cmd')
   statSync(fooNM + '/.bin/bar.pwsh')
+  const opts = {
+    projectRoot,
+    graph: {} as GraphLike,
+  }
   const edge = new Edge(
     'prod',
     Spec.parse('bar@'),
-    new Node(
-      { projectRoot, importers: new Set() },
-      ';;foo@1.2.3',
-      fooManifest,
-    ),
-    new Node(
-      { projectRoot, importers: new Set() },
-      ';;bar@1.2.3',
-      barManifest,
-    ),
+    new Node(opts, ';;foo@1.2.3', fooManifest),
+    new Node(opts, ';;bar@1.2.3', barManifest),
   )
   const scurry = new PathScurry(projectRoot)
 

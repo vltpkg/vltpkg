@@ -12,7 +12,7 @@ Node [@vltpkg/graph.Node] {
   id: 'file;.',
   importer: true,
   mainImporter: true,
-  importers: Set(0) {},
+  graph: {},
   integrity: undefined,
   manifest: [Object],
   projectRoot: #
