@@ -105,7 +105,7 @@ export class Graph implements GraphLike {
     this.projectRoot = projectRoot
     this.#nodeOptions = {
       ...this.#options,
-      importers: this.importers,
+      graph: this,
     }
 
     // add the project root node

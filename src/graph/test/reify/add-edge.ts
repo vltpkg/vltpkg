@@ -7,6 +7,7 @@ import t from 'tap'
 import { Edge } from '../../src/edge.js'
 import { Node } from '../../src/node.js'
 import { addEdge } from '../../src/reify/add-edge.js'
+import { GraphLike } from '../../src/types.js'
 
 const mockRemover = {
   rm: (path: string) => rm(path, { recursive: true, force: true }),
@@ -55,25 +56,17 @@ t.test('reify an edge', async t => {
   t.throws(() => statSync(projectRoot + '/node_modules/.bin/bar'))
   t.throws(() => statSync(fooNM + '/bar'))
   t.throws(() => statSync(fooNM + '/.bin/bar'))
-  const fooNode = new Node(
-    { projectRoot, importers: new Set() },
-    ';;foo@1.2.3',
-    fooManifest,
-  )
+  const opts = {
+    projectRoot,
+    graph: {} as GraphLike,
+  }
+  const fooNode = new Node(opts, ';;foo@1.2.3', fooManifest)
   fooNode.location =
     projectRoot + '/node_modules/.vlt/;;foo@1.2.3/node_modules/foo'
-  const barNode = new Node(
-    { projectRoot, importers: new Set() },
-    ';;bar@1.2.3',
-    barManifest,
-  )
+  const barNode = new Node(opts, ';;bar@1.2.3', barManifest)
   barNode.location =
     projectRoot + '/node_modules/.vlt/;;bar@1.2.3/node_modules/bar'
-  const rootNode = new Node(
-    { projectRoot, importers: new Set() },
-    'file;.',
-    {},
-  )
+  const rootNode = new Node(opts, 'file;.', {})
   rootNode.location = projectRoot
 
   const edge = new Edge('prod', Spec.parse('bar@'), fooNode, barNode)

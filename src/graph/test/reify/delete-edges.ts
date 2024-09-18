@@ -6,6 +6,7 @@ import t from 'tap'
 import { Diff } from '../../src/diff.js'
 import { Edge } from '../../src/edge.js'
 import { Node } from '../../src/node.js'
+import { GraphLike } from '../../src/types.js'
 
 // verify that we delete the deleted edges, but skip the ones
 // that are coming from something in the store being deleted,
@@ -26,22 +27,14 @@ const { deleteEdges } = await t.mockImport<
 })
 
 const projectRoot = t.testdirName
-const fooNode = new Node(
-  { projectRoot, importers: new Set() },
-  ';;foo@1.2.3',
-)
-const barNode = new Node(
-  { projectRoot, importers: new Set() },
-  ';;bar@1.2.3',
-)
-const bazNode = new Node(
-  { projectRoot, importers: new Set() },
-  ';;baz@1.2.3',
-)
-const outNode = new Node(
-  { projectRoot, importers: new Set() },
-  'file;./outside',
-)
+const opts = {
+  projectRoot,
+  graph: {} as GraphLike,
+}
+const fooNode = new Node(opts, ';;foo@1.2.3')
+const barNode = new Node(opts, ';;bar@1.2.3')
+const bazNode = new Node(opts, ';;baz@1.2.3')
+const outNode = new Node(opts, 'file;./outside')
 outNode.location = resolve(projectRoot, 'outside')
 const foobarEdge = new Edge(
   'prod',

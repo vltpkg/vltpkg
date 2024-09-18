@@ -29,7 +29,7 @@ export interface NodeLike {
   integrity?: string | null
   resolved?: string | null
   importer: boolean
-  importers: Set<NodeLike>
+  graph: GraphLike
   mainImporter: boolean
   projectRoot: string
   dev: boolean
