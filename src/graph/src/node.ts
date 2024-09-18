@@ -10,11 +10,11 @@ import { Spec, SpecOptions } from '@vltpkg/spec'
 import { Integrity, ManifestMinified } from '@vltpkg/types'
 import { DependencyTypeShort } from './dependencies.js'
 import { Edge } from './edge.js'
-import { NodeLike } from './types.js'
+import { GraphLike, NodeLike } from './types.js'
 
 export type NodeOptions = SpecOptions & {
   projectRoot: string
-  importers: Set<Node>
+  graph: GraphLike
 }
 
 export class Node implements NodeLike {
@@ -103,9 +103,9 @@ export class Node implements NodeLike {
   mainImporter = false
 
   /**
-   * The set of importer nodes to the graph this node is a part of.
+   * A reference to the graph this node is a part of.
    */
-  importers: Set<Node>
+  graph: GraphLike
 
   /**
    * The manifest integrity value.
@@ -214,7 +214,7 @@ export class Node implements NodeLike {
       }
       this.id = getId(spec, manifest)
     }
-    this.importers = options.importers
+    this.graph = options.graph
     this.manifest = manifest
     this.#name = name || this.manifest?.name
     this.version = version || this.manifest?.version

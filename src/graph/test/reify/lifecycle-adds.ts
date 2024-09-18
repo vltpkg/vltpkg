@@ -6,6 +6,7 @@ import t from 'tap'
 import { Diff } from '../../src/diff.js'
 import { Edge } from '../../src/edge.js'
 import { Node } from '../../src/node.js'
+import { GraphLike } from '../../src/types.js'
 
 const runs: RunOptions[] = []
 t.beforeEach(() => (runs.length = 0))
@@ -28,8 +29,12 @@ const fooMani: Manifest = {
   version: '1.2.3',
   dependencies: { bar: '1' },
 }
+const opts = {
+  projectRoot,
+  graph: {} as GraphLike,
+}
 const fooNode = new Node(
-  { projectRoot, importers: new Set() },
+  opts,
   ';;foo@1.2.3',
   fooMani,
   Spec.parse('foo@1'),
@@ -43,7 +48,7 @@ const barMani: Manifest = {
   optionalDependencies: { baz: '1' },
 }
 const barNode = new Node(
-  { projectRoot, importers: new Set() },
+  opts,
   ';;bar@1.2.3',
   barMani,
   Spec.parse('bar@1'),
@@ -69,7 +74,7 @@ const mockDiff = {
 } as unknown as Diff
 
 const gitNode = new Node(
-  { projectRoot, importers: new Set() },
+  opts,
   'git;github:a/b;deadbeefcafebad',
   {},
   Spec.parse('github:a/b'),
@@ -78,7 +83,7 @@ const gitNode = new Node(
 )
 
 const outNode = new Node(
-  { projectRoot, importers: new Set() },
+  opts,
   'file;./outside',
   {},
   Spec.parse('file:./outside'),

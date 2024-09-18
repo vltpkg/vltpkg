@@ -9,6 +9,7 @@ import { Edge } from '../../src/edge.js'
 import { build as buildIdeal } from '../../src/ideal/build.js'
 import { Node } from '../../src/node.js'
 import { mockPackageInfo } from '../fixtures/reify.js'
+import { GraphLike } from '../../src/types.js'
 
 const runs: RunOptions[] = []
 t.beforeEach(() => (runs.length = 0))
@@ -160,10 +161,11 @@ t.test('run scripts for importers with changed deps', async t => {
     packageInfo: mockPackageInfo,
     loadManifests: true,
   })
-  const newImp = new Node(
-    { projectRoot, importers: new Set() },
-    ';;workspace%2Fsrc/x',
-  )
+  const opts = {
+    projectRoot,
+    graph: {} as GraphLike,
+  }
+  const newImp = new Node(opts, ';;workspace%2Fsrc/x')
   newImp.location = './src/x'
   newImp.importer = true
   ideal3.importers.add(newImp)

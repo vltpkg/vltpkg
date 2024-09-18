@@ -65,13 +65,13 @@ exports[`test/graph.ts > TAP > using placePackage > the graph 1`] = `
 `
 
 exports[`test/graph.ts > TAP > workspaces > should have root and workspaces as importers 1`] = `
-&ref_1 Set {
+Set {
   Node {
     "edgesIn": Set {},
     "edgesOut": Map {},
+    "graph": "Graph {}",
     "id": "file;.",
     "importer": true,
-    "importers": <*ref_1>,
     "integrity": undefined,
     "mainImporter": true,
     "manifest": Object {
@@ -86,9 +86,9 @@ exports[`test/graph.ts > TAP > workspaces > should have root and workspaces as i
   Node {
     "edgesIn": Set {},
     "edgesOut": Map {},
+    "graph": "Graph {}",
     "id": "workspace;packages%2Fb",
     "importer": true,
-    "importers": <*ref_1>,
     "integrity": undefined,
     "mainImporter": false,
     "manifest": Object {
@@ -105,9 +105,9 @@ exports[`test/graph.ts > TAP > workspaces > should have root and workspaces as i
   Node {
     "edgesIn": Set {},
     "edgesOut": Map {},
+    "graph": "Graph {}",
     "id": "workspace;packages%2Fa",
     "importer": true,
-    "importers": <*ref_1>,
     "integrity": undefined,
     "mainImporter": false,
     "manifest": Object {

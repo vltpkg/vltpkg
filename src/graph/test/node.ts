@@ -4,6 +4,7 @@ import { inspect } from 'node:util'
 import t from 'tap'
 import { Edge } from '../src/edge.js'
 import { Node } from '../src/node.js'
+import { GraphLike } from '../src/types.js'
 
 t.cleanSnapshot = s =>
   s.replace(/^(\s+)projectRoot: .*$/gm, '$1projectRoot: #')
@@ -16,20 +17,17 @@ const options = {
 } satisfies SpecOptions
 
 t.test('Node', async t => {
+  const opts = {
+    ...options,
+    projectRoot: t.testdirName,
+    graph: {} as GraphLike,
+  }
   // Create an importer node that behaves like the root project node
   const rootMani = {
     name: 'root',
     version: '1.0.0',
   }
-  const root = new Node(
-    {
-      ...options,
-      projectRoot: t.testdirName,
-      importers: new Set(),
-    },
-    asDepID('file;.'),
-    rootMani,
-  )
+  const root = new Node(opts, asDepID('file;.'), rootMani)
   root.mainImporter = true // signal the main importer node
   root.setImporterLocation('./path/to/importer')
   t.equal(root.location, './path/to/importer')
@@ -61,16 +59,7 @@ t.test('Node', async t => {
     version: '1.0.0',
   }
   const fooSpec = Spec.parse('foo@1.0.0')
-  const foo = new Node(
-    {
-      ...options,
-      projectRoot: t.testdirName,
-      importers: new Set(),
-    },
-    undefined,
-    fooMani,
-    fooSpec,
-  )
+  const foo = new Node(opts, undefined, fooMani, fooSpec)
   t.strictSame(
     foo.location,
     './node_modules/.vlt/;;foo@1.0.0/node_modules/foo',
@@ -90,30 +79,14 @@ t.test('Node', async t => {
   }
   const barSpec = Spec.parse('bar@1.0.0')
   const barId = getId(barSpec, barMani)
-  const bar = new Node(
-    {
-      ...options,
-      projectRoot: t.testdirName,
-      importers: new Set(),
-    },
-    barId,
-    barMani,
-  )
+  const bar = new Node(opts, barId, barMani)
   const defaultBarLoc = bar.location
   bar.location = './node_modules/some/node_modules/path'
   t.equal(bar.location, './node_modules/some/node_modules/path')
   bar.setDefaultLocation()
   t.equal(bar.location, defaultBarLoc)
 
-  const otherBar = new Node(
-    {
-      ...options,
-      projectRoot: t.testdirName,
-      importers: new Set(),
-    },
-    barId,
-    barMani,
-  )
+  const otherBar = new Node(opts, barId, barMani)
   t.equal(bar.equals(otherBar), true)
   t.equal(otherBar.equals(bar), true)
   otherBar.location = './other/location'
@@ -147,28 +120,16 @@ t.test('Node', async t => {
 
   t.throws(
     () =>
-      new Node(
-        {
-          ...options,
-          projectRoot: t.testdirName,
-          importers: new Set(),
-        },
-        undefined,
-        {
-          name: 'ipsum',
-          version: '1.0.0',
-        },
-      ),
+      new Node(opts, undefined, {
+        name: 'ipsum',
+        version: '1.0.0',
+      }),
     /A new Node needs either a manifest & spec or an id parameter/,
     'should throw a type error',
   )
 
   const barNoMani = new Node(
-    {
-      ...options,
-      projectRoot: t.testdirName,
-      importers: new Set(),
-    },
+    opts,
     ';;bar@1.0.0',
     undefined,
     undefined,
@@ -184,16 +145,7 @@ t.test('Node', async t => {
     version: '0.0.0',
   }
   const unnamedSpec = Spec.parse('', '0.0.0')
-  const unnamed = new Node(
-    {
-      ...options,
-      projectRoot: t.testdirName,
-      importers: new Set(),
-    },
-    undefined,
-    unnamedMani,
-    unnamedSpec,
-  )
+  const unnamed = new Node(opts, undefined, unnamedMani, unnamedSpec)
   t.strictSame(
     unnamed.location,
     './node_modules/.vlt/;;@0.0.0/node_modules/;;@0.0.0',
@@ -203,14 +155,7 @@ t.test('Node', async t => {
   // different resolved values inferred from id
 
   // file type node with no parent
-  const file = new Node(
-    {
-      ...options,
-      projectRoot: t.testdirName,
-      importers: new Set(),
-    },
-    asDepID('file;my-package'),
-  )
+  const file = new Node(opts, asDepID('file;my-package'))
   file.setResolved()
   t.strictSame(
     file.resolved,
@@ -218,48 +163,26 @@ t.test('Node', async t => {
     'should set expected resolved value for a file id type',
   )
 
-  const git = new Node(
-    {
-      ...options,
-      projectRoot: t.testdirName,
-      importers: new Set(),
-    },
-    'git;github%3Avltpkg%2Ffoo;',
-  )
+  const git = new Node(opts, 'git;github%3Avltpkg%2Ffoo;')
   git.setResolved()
   t.strictSame(
     git.resolved,
     'github:vltpkg/foo',
     'should set expected resolved value for a git id type',
   )
-  const reg = new Node(
-    {
-      ...options,
-      projectRoot: t.testdirName,
-      importers: new Set(),
+  const reg = new Node(opts, ';;foo@1.0.0', {
+    dist: {
+      tarball: '<path-to-tarball>',
+      integrity: 'sha512-deadbeef',
     },
-    ';;foo@1.0.0',
-    {
-      dist: {
-        tarball: '<path-to-tarball>',
-        integrity: 'sha512-deadbeef',
-      },
-    },
-  )
+  })
   reg.setResolved()
   t.strictSame(
     reg.resolved,
     '<path-to-tarball>',
     'should set expected resolved value for a registry id type',
   )
-  const regNoManifest = new Node(
-    {
-      ...options,
-      projectRoot: t.testdirName,
-      importers: new Set(),
-    },
-    ';;foo@1.0.0',
-  )
+  const regNoManifest = new Node(opts, ';;foo@1.0.0')
   regNoManifest.setResolved()
   t.strictSame(
     regNoManifest.resolved,
@@ -267,14 +190,7 @@ t.test('Node', async t => {
     'should set expected conventional registry value if no manifest',
   )
 
-  const remote = new Node(
-    {
-      ...options,
-      projectRoot: t.testdirName,
-      importers: new Set(),
-    },
-    'remote;https%3A%2F%2Fx.com%2Fx.tgz',
-  )
+  const remote = new Node(opts, 'remote;https%3A%2F%2Fx.com%2Fx.tgz')
   remote.setResolved()
   t.strictSame(
     remote.resolved,
@@ -284,27 +200,19 @@ t.test('Node', async t => {
 })
 
 t.test('nodeModules path and inVltStore flag', t => {
+  const opts = {
+    ...options,
+    projectRoot: t.testdirName,
+    graph: {} as GraphLike,
+  }
   const rootMani = { name: 'root' }
-  const root = new Node(
-    {
-      ...options,
-      projectRoot: t.testdirName,
-      importers: new Set(),
-    },
-    asDepID('file;.'),
-    rootMani,
-  )
+  const root = new Node(opts, asDepID('file;.'), rootMani)
   root.location = '.'
   t.equal(root.nodeModules, './node_modules')
-  const foo = new Node(
-    {
-      ...options,
-      projectRoot: t.testdirName,
-      importers: new Set(),
-    },
-    ';;foo@1.2.3',
-    { name: 'foo', version: '1.2.3' },
-  )
+  const foo = new Node(opts, ';;foo@1.2.3', {
+    name: 'foo',
+    version: '1.2.3',
+  })
   t.equal(
     foo.location,
     './node_modules/.vlt/;;foo@1.2.3/node_modules/foo',
@@ -315,15 +223,10 @@ t.test('nodeModules path and inVltStore flag', t => {
     foo.nodeModules,
     './node_modules/.vlt/;;foo@1.2.3/node_modules',
   )
-  const bar = new Node(
-    {
-      ...options,
-      projectRoot: t.testdirName,
-      importers: new Set(),
-    },
-    ';;@bar%2Fbloo@1.2.3',
-    { name: '@bar/bloo', version: '1.2.3' },
-  )
+  const bar = new Node(opts, ';;@bar%2Fbloo@1.2.3', {
+    name: '@bar/bloo',
+    version: '1.2.3',
+  })
   t.equal(bar.inVltStore(), true)
   t.equal(bar.inVltStore(), true, 'test twice for caching')
   t.equal(
@@ -334,15 +237,10 @@ t.test('nodeModules path and inVltStore flag', t => {
     bar.nodeModules,
     './node_modules/.vlt/;;@bar%2Fbloo@1.2.3/node_modules',
   )
-  const outside = new Node(
-    {
-      ...options,
-      projectRoot: t.testdirName,
-      importers: new Set(),
-    },
-    'file;some/path',
-    { name: 'foo', version: '1.2.3' },
-  )
+  const outside = new Node(opts, 'file;some/path', {
+    name: 'foo',
+    version: '1.2.3',
+  })
   t.equal(outside.isOptional(), false)
   outside.optional = true
   t.equal(outside.isOptional(), true)
@@ -356,8 +254,8 @@ t.test('nodeModules path and inVltStore flag', t => {
 t.test('optional flag is contagious', t => {
   const opts = {
     ...options,
-    importers: new Set<Node>(),
     projectRoot: t.testdirName,
+    graph: {} as GraphLike,
   }
   const rootMani = {
     name: 'root',
@@ -391,12 +289,11 @@ t.test('optional flag is contagious', t => {
 
   t.end()
 })
-
 t.test('dev flag is contagious', t => {
   const opts = {
     ...options,
-    importers: new Set<Node>(),
     projectRoot: t.testdirName,
+    graph: {} as GraphLike,
   }
   const rootMani = {
     name: 'root',

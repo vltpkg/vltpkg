@@ -3,6 +3,7 @@ import { inspect } from 'node:util'
 import t from 'tap'
 import { Edge } from '../src/edge.js'
 import { Node } from '../src/node.js'
+import { GraphLike } from '../src/types.js'
 
 t.cleanSnapshot = s =>
   s.replace(/^(\s+)projectRoot: .*$/gm, '$1projectRoot: #')
@@ -21,36 +22,23 @@ const configData = {
 } satisfies SpecOptions
 
 t.test('Edge', async t => {
+  const opts = {
+    ...configData,
+    projectRoot: t.testdirName,
+    graph: {} as GraphLike,
+  }
   const rootMani = {
     name: 'root',
     version: '1.0.0',
   }
   const rootSpec = Spec.parse('root@1.0.0')
-  const root = new Node(
-    {
-      ...configData,
-      projectRoot: t.testdirName,
-      importers: new Set(),
-    },
-    undefined,
-    rootMani,
-    rootSpec,
-  )
+  const root = new Node(opts, undefined, rootMani, rootSpec)
   const childMani = {
     name: 'child',
     version: '1.0.0',
   }
   const childSpec = Spec.parse('child@1.0.0')
-  const child = new Node(
-    {
-      ...configData,
-      projectRoot: t.testdirName,
-      importers: new Set(),
-    },
-    undefined,
-    childMani,
-    childSpec,
-  )
+  const child = new Node(opts, undefined, childMani, childSpec)
 
   const edge = new Edge(
     'prod',
@@ -84,16 +72,7 @@ t.test('Edge', async t => {
     peerDependenciesMeta: { foo: { optional: true } },
   }
   const pdmSpec = Spec.parse('pdm@1.2.3')
-  const pdm = new Node(
-    {
-      ...configData,
-      projectRoot: t.testdirName,
-      importers: new Set(),
-    },
-    undefined,
-    pdmMani,
-    pdmSpec,
-  )
+  const pdm = new Node(opts, undefined, pdmMani, pdmSpec)
   const pdmEdge = new Edge('peerOptional', Spec.parse('foo@*'), pdm)
   t.equal(pdmEdge.peer, true)
   t.equal(pdmEdge.peerOptional, true)

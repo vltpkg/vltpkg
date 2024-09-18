@@ -5,7 +5,6 @@ import {
   getMissingManifestsGraph,
   getSimpleGraph,
   getSingleWorkspaceGraph,
-  newNode,
 } from './fixtures/graph.js'
 import { selectorFixture } from './fixtures/selector.js'
 import { TestCase } from './fixtures/types.js'
@@ -216,17 +215,14 @@ t.test('pseudo', async t => {
   })
 
   await t.test('missing importers info on nodes', async t => {
-    const node = newNode('foo')
-    const all = [node]
-
     await t.rejects(
-      testPseudo(':project', all, []),
+      testPseudo(':project', [], []),
       /:project pseudo-element works on local graphs only/,
       'should throw an local-graph-only error',
     )
 
     await t.rejects(
-      testPseudo(':root', all, []),
+      testPseudo(':root', [], []),
       /:root pseudo-element works on local graphs only/,
       'should throw an local-graph-only error',
     )

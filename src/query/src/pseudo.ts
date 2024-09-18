@@ -373,9 +373,9 @@ const privateFn = async (state: ParserState) => {
  * :root Pseudo-Element will return the project root node for the graph.
  */
 const root = async (state: ParserState) => {
-  const [anyNode] = state.initial.nodes
-  const [mainImporter] = new Set(anyNode?.importers)
-  if (!mainImporter?.mainImporter) {
+  const [anyNode] = state.initial.nodes.values()
+  const mainImporter = anyNode?.graph.mainImporter
+  if (!mainImporter) {
     throw error(':root pseudo-element works on local graphs only')
   }
   state.partial.nodes = new Set<NodeLike>([mainImporter])
@@ -387,8 +387,8 @@ const root = async (state: ParserState) => {
  * root node along with any configured workspace)
  */
 const project = async (state: ParserState) => {
-  const [anyNode] = state.initial.nodes
-  const importers = anyNode?.importers
+  const [anyNode] = state.initial.nodes.values()
+  const importers = anyNode?.graph.importers
   if (!importers?.size) {
     throw error(':project pseudo-element works on local graphs only')
   }
