@@ -1,3 +1,4 @@
+import type { DepID } from '@vltpkg/dep-id'
 import { error } from '@vltpkg/error-cause'
 import { type Spec } from '@vltpkg/spec'
 import { type ManifestMinified } from '@vltpkg/types'
@@ -44,6 +45,24 @@ export type Dependency = {
    */
   type: DependencyTypeShort
 }
+
+/**
+ * A `Map` in which keys are {@link DepID} linking to another `Map` in which
+ * keys are the dependency names and values are {@link Dependency}. This
+ * structure represents dependencies that need to be added to the importer
+ * represented by {@link DepID}.
+ */
+export type AddImportersDependenciesMap = Map<
+  DepID,
+  Map<string, Dependency>
+>
+
+/**
+ * A `Map` object representing nodes to be removed from the ideal graph.
+ * Each {@link DepID} key represents an importer node and the `Set` of
+ * dependency names to be removed from its dependency list.
+ */
+export type RemoveImportersDependenciesMap = Map<DepID, Set<string>>
 
 export const isDependency = (obj: any): obj is Dependency =>
   // TODO: it would be nice to have a @vltpkg/spec.isSpec method
