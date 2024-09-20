@@ -1,6 +1,10 @@
-import { DepID } from '@vltpkg/dep-id'
 import { error } from '@vltpkg/error-cause'
-import { Dependency, longDependencyTypes } from '../dependencies.js'
+import {
+  AddImportersDependenciesMap,
+  Dependency,
+  RemoveImportersDependenciesMap,
+  longDependencyTypes,
+} from '../dependencies.js'
 import { removeSatisfiedSpecs } from './remove-satisfied-specs.js'
 import {
   BuildIdealAddOptions,
@@ -33,8 +37,8 @@ export const getImporterSpecs = ({
   graph,
   remove,
 }: GetImporterSpecsOptions) => {
-  const addResult = new Map<DepID, Map<string, Dependency>>()
-  const removeResult = new Map<DepID, Set<string>>()
+  const addResult: AddImportersDependenciesMap = new Map()
+  const removeResult: RemoveImportersDependenciesMap = new Map()
 
   // traverse the list of importers in the starting graph
   for (const importer of graph.importers) {

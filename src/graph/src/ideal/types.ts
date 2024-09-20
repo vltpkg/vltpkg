@@ -1,25 +1,28 @@
-import { DepID } from '@vltpkg/dep-id'
-import { Dependency } from '../dependencies.js'
+import {
+  AddImportersDependenciesMap,
+  RemoveImportersDependenciesMap,
+} from '../dependencies.js'
 import { Graph } from '../graph.js'
 import { PackageInfoClient } from '@vltpkg/package-info'
 
 export type BuildIdealAddOptions = {
   /**
-   * A `Map` in which keys are {@link DepID} linking to another `Map` in which
-   * keys are the dependency names and values are {@link Dependency}. This
-   * structure represents dependencies that need to be added to the importer
-   * represented by {@link DepID}.
+   * A {@link AddImportersDependenciesMap} in which keys are {@link DepID}
+   * linking to another `Map` in which keys are the dependency names and values
+   * are {@link Dependency}. This structure represents dependencies that need
+   * to be added to the importer represented by {@link DepID}.
    */
-  add: Map<DepID, Map<string, Dependency>>
+  add: AddImportersDependenciesMap
 }
 
 export type BuildIdealRemoveOptions = {
   /**
-   * A `Map` object representing nodes to be removed from the ideal graph.
-   * Each {@link DepID} key represents an importer node and the `Set` of
-   * dependency names to be removed from its dependency list.
+   * A {@link RemoveImportersDependenciesMap} object representing nodes to be
+   * removed from the ideal graph. Each {@link DepID} key represents an
+   * importer node and the `Set` of dependency names to be removed from its
+   * dependency list.
    */
-  remove: Map<DepID, Set<string>>
+  remove: RemoveImportersDependenciesMap
 }
 
 export type BuildIdealFromGraphOptions = {

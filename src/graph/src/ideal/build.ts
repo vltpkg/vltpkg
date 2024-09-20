@@ -5,18 +5,29 @@ import {
 } from '../actual/load.js'
 import { load as loadVirtual } from '../lockfile/load.js'
 import { buildIdealFromStartingGraph } from './build-ideal-from-starting-graph.js'
-import {
-  BuildIdealAddOptions,
-  BuildIdealRemoveOptions,
-} from './types.js'
 import { PackageInfoClient } from '@vltpkg/package-info'
 import { PackageJson } from '@vltpkg/package-json'
 import { PathScurry } from 'path-scurry'
 import { Monorepo } from '@vltpkg/workspaces'
+import {
+  AddImportersDependenciesMap,
+  RemoveImportersDependenciesMap,
+} from '../dependencies.js'
 
 export type BuildIdealOptions = LoadActualOptions & {
-  add?: BuildIdealAddOptions['add']
-  remove?: BuildIdealRemoveOptions['remove']
+  /**
+   * A `Map` in which keys are {@link DepID} linking to another `Map` in which
+   * keys are the dependency names and values are {@link Dependency}. This
+   * structure represents dependencies that need to be added to the importer
+   * represented by {@link DepID}.
+   */
+  add?: AddImportersDependenciesMap
+  /**
+   * A `Map` object representing nodes to be removed from the ideal graph.
+   * Each {@link DepID} key represents an importer node and the `Set` of
+   * dependency names to be removed from its dependency list.
+   */
+  remove?: RemoveImportersDependenciesMap
   /**
    * A {@link PackageInfoClient} instance to read manifest info from.
    */
