@@ -29,6 +29,7 @@ exports[`test/index.ts > TAP > basic parsing tests > @a/b@npm:@y/z@1.2.3 > inspe
     range: Range {
       raw: '1.2.3',
       isAny: false,
+      isSingle: true,
       set: [
         Comparator {
           includePrerelease: false,
@@ -81,6 +82,7 @@ exports[`test/index.ts > TAP > basic parsing tests > @a/b@npm:@y/z@1.2.3 > inspe
     range: Range {
       raw: '1.2.3',
       isAny: false,
+      isSingle: true,
       set: [ [Comparator] ],
       includePrerelease: false
     }
@@ -112,6 +114,7 @@ exports[`test/index.ts > TAP > basic parsing tests > @a/b@npm:@y/z@1.2.3 > inspe
     range: Range {
       raw: [32m'1.2.3'[39m,
       isAny: [33mfalse[39m,
+      isSingle: [33mtrue[39m,
       set: [ [36m[Comparator][39m ],
       includePrerelease: [33mfalse[39m
     }
@@ -136,6 +139,7 @@ exports[`test/index.ts > TAP > basic parsing tests > @foo/bar@ > inspect deep 1`
   range: Range {
     raw: '',
     isAny: true,
+    isSingle: false,
     set: [
       Comparator {
         includePrerelease: false,
@@ -171,6 +175,7 @@ exports[`test/index.ts > TAP > basic parsing tests > @foo/bar@ > inspect default
   range: Range {
     raw: '',
     isAny: true,
+    isSingle: false,
     set: [ [Comparator] ],
     includePrerelease: false
   }
@@ -190,6 +195,7 @@ exports[`test/index.ts > TAP > basic parsing tests > @foo/bar@ > inspect with co
   range: Range {
     raw: [32m''[39m,
     isAny: [33mtrue[39m,
+    isSingle: [33mfalse[39m,
     set: [ [36m[Comparator][39m ],
     includePrerelease: [33mfalse[39m
   }
@@ -213,6 +219,7 @@ exports[`test/index.ts > TAP > basic parsing tests > @foo/bar@* > inspect deep 1
   range: Range {
     raw: '*',
     isAny: true,
+    isSingle: false,
     set: [
       Comparator {
         includePrerelease: false,
@@ -248,6 +255,7 @@ exports[`test/index.ts > TAP > basic parsing tests > @foo/bar@* > inspect defaul
   range: Range {
     raw: '*',
     isAny: true,
+    isSingle: false,
     set: [ [Comparator] ],
     includePrerelease: false
   }
@@ -267,6 +275,7 @@ exports[`test/index.ts > TAP > basic parsing tests > @foo/bar@* > inspect with c
   range: Range {
     raw: [32m'*'[39m,
     isAny: [33mtrue[39m,
+    isSingle: [33mfalse[39m,
     set: [ [36m[Comparator][39m ],
     includePrerelease: [33mfalse[39m
   }
@@ -520,6 +529,7 @@ exports[`test/index.ts > TAP > basic parsing tests > foo > inspect deep 1`] = `
   range: Range {
     raw: '',
     isAny: true,
+    isSingle: false,
     set: [
       Comparator {
         includePrerelease: false,
@@ -554,6 +564,7 @@ exports[`test/index.ts > TAP > basic parsing tests > foo > inspect default 1`] =
   range: Range {
     raw: '',
     isAny: true,
+    isSingle: false,
     set: [ [Comparator] ],
     includePrerelease: false
   }
@@ -572,6 +583,7 @@ exports[`test/index.ts > TAP > basic parsing tests > foo > inspect with color 1`
   range: Range {
     raw: [32m''[39m,
     isAny: [33mtrue[39m,
+    isSingle: [33mfalse[39m,
     set: [ [36m[Comparator][39m ],
     includePrerelease: [33mfalse[39m
   }
@@ -594,6 +606,7 @@ exports[`test/index.ts > TAP > basic parsing tests > foo@ > inspect deep 1`] = `
   range: Range {
     raw: '',
     isAny: true,
+    isSingle: false,
     set: [
       Comparator {
         includePrerelease: false,
@@ -628,6 +641,7 @@ exports[`test/index.ts > TAP > basic parsing tests > foo@ > inspect default 1`] 
   range: Range {
     raw: '',
     isAny: true,
+    isSingle: false,
     set: [ [Comparator] ],
     includePrerelease: false
   }
@@ -646,6 +660,7 @@ exports[`test/index.ts > TAP > basic parsing tests > foo@ > inspect with color 1
   range: Range {
     raw: [32m''[39m,
     isAny: [33mtrue[39m,
+    isSingle: [33mfalse[39m,
     set: [ [36m[Comparator][39m ],
     includePrerelease: [33mfalse[39m
   }
@@ -668,6 +683,7 @@ exports[`test/index.ts > TAP > basic parsing tests > foo@ 1.2 > inspect deep 1`]
   range: Range {
     raw: ' 1.2 ',
     isAny: false,
+    isSingle: false,
     set: [
       Comparator {
         includePrerelease: false,
@@ -718,6 +734,7 @@ exports[`test/index.ts > TAP > basic parsing tests > foo@ 1.2 > inspect default 
   range: Range {
     raw: ' 1.2 ',
     isAny: false,
+    isSingle: false,
     set: [ [Comparator] ],
     includePrerelease: false
   }
@@ -736,6 +753,7 @@ exports[`test/index.ts > TAP > basic parsing tests > foo@ 1.2 > inspect with col
   range: Range {
     raw: [32m' 1.2 '[39m,
     isAny: [33mfalse[39m,
+    isSingle: [33mfalse[39m,
     set: [ [36m[Comparator][39m ],
     includePrerelease: [33mfalse[39m
   }
@@ -759,6 +777,7 @@ exports[`test/index.ts > TAP > basic parsing tests > foo@ 1.2.3 > inspect deep 1
   range: Range {
     raw: ' 1.2.3 ',
     isAny: false,
+    isSingle: true,
     set: [
       Comparator {
         includePrerelease: false,
@@ -799,6 +818,7 @@ exports[`test/index.ts > TAP > basic parsing tests > foo@ 1.2.3 > inspect deep 2
   range: Range {
     raw: ' 1.2.3',
     isAny: false,
+    isSingle: true,
     set: [
       Comparator {
         includePrerelease: false,
@@ -839,6 +859,7 @@ exports[`test/index.ts > TAP > basic parsing tests > foo@ 1.2.3 > inspect defaul
   range: Range {
     raw: ' 1.2.3 ',
     isAny: false,
+    isSingle: true,
     set: [ [Comparator] ],
     includePrerelease: false
   }
@@ -858,6 +879,7 @@ exports[`test/index.ts > TAP > basic parsing tests > foo@ 1.2.3 > inspect defaul
   range: Range {
     raw: ' 1.2.3',
     isAny: false,
+    isSingle: true,
     set: [ [Comparator] ],
     includePrerelease: false
   }
@@ -877,6 +899,7 @@ exports[`test/index.ts > TAP > basic parsing tests > foo@ 1.2.3 > inspect with c
   range: Range {
     raw: [32m' 1.2.3 '[39m,
     isAny: [33mfalse[39m,
+    isSingle: [33mtrue[39m,
     set: [ [36m[Comparator][39m ],
     includePrerelease: [33mfalse[39m
   }
@@ -896,6 +919,7 @@ exports[`test/index.ts > TAP > basic parsing tests > foo@ 1.2.3 > inspect with c
   range: Range {
     raw: [32m' 1.2.3'[39m,
     isAny: [33mfalse[39m,
+    isSingle: [33mtrue[39m,
     set: [ [36m[Comparator][39m ],
     includePrerelease: [33mfalse[39m
   }
@@ -923,6 +947,7 @@ exports[`test/index.ts > TAP > basic parsing tests > foo@=v1.2.3 > inspect deep 
   range: Range {
     raw: '=v1.2.3',
     isAny: false,
+    isSingle: true,
     set: [
       Comparator {
         includePrerelease: false,
@@ -963,6 +988,7 @@ exports[`test/index.ts > TAP > basic parsing tests > foo@=v1.2.3 > inspect defau
   range: Range {
     raw: '=v1.2.3',
     isAny: false,
+    isSingle: true,
     set: [ [Comparator] ],
     includePrerelease: false
   }
@@ -982,6 +1008,7 @@ exports[`test/index.ts > TAP > basic parsing tests > foo@=v1.2.3 > inspect with 
   range: Range {
     raw: [32m'=v1.2.3'[39m,
     isAny: [33mfalse[39m,
+    isSingle: [33mtrue[39m,
     set: [ [36m[Comparator][39m ],
     includePrerelease: [33mfalse[39m
   }
@@ -1004,6 +1031,7 @@ exports[`test/index.ts > TAP > basic parsing tests > foo@~1.2 > inspect deep 1`]
   range: Range {
     raw: '~1.2',
     isAny: false,
+    isSingle: false,
     set: [
       Comparator {
         includePrerelease: false,
@@ -1054,6 +1082,7 @@ exports[`test/index.ts > TAP > basic parsing tests > foo@~1.2 > inspect default 
   range: Range {
     raw: '~1.2',
     isAny: false,
+    isSingle: false,
     set: [ [Comparator] ],
     includePrerelease: false
   }
@@ -1072,6 +1101,7 @@ exports[`test/index.ts > TAP > basic parsing tests > foo@~1.2 > inspect with col
   range: Range {
     raw: [32m'~1.2'[39m,
     isAny: [33mfalse[39m,
+    isSingle: [33mfalse[39m,
     set: [ [36m[Comparator][39m ],
     includePrerelease: [33mfalse[39m
   }
@@ -1094,6 +1124,7 @@ exports[`test/index.ts > TAP > basic parsing tests > foo@1.2 > inspect deep 1`] 
   range: Range {
     raw: '1.2',
     isAny: false,
+    isSingle: false,
     set: [
       Comparator {
         includePrerelease: false,
@@ -1144,6 +1175,7 @@ exports[`test/index.ts > TAP > basic parsing tests > foo@1.2 > inspect default 1
   range: Range {
     raw: '1.2',
     isAny: false,
+    isSingle: false,
     set: [ [Comparator] ],
     includePrerelease: false
   }
@@ -1162,6 +1194,7 @@ exports[`test/index.ts > TAP > basic parsing tests > foo@1.2 > inspect with colo
   range: Range {
     raw: [32m'1.2'[39m,
     isAny: [33mfalse[39m,
+    isSingle: [33mfalse[39m,
     set: [ [36m[Comparator][39m ],
     includePrerelease: [33mfalse[39m
   }
@@ -1185,6 +1218,7 @@ exports[`test/index.ts > TAP > basic parsing tests > foo@1.2.3 > inspect deep 1`
   range: Range {
     raw: '1.2.3',
     isAny: false,
+    isSingle: true,
     set: [
       Comparator {
         includePrerelease: false,
@@ -1225,6 +1259,7 @@ exports[`test/index.ts > TAP > basic parsing tests > foo@1.2.3 > inspect deep 2`
   range: Range {
     raw: '1.2.3 ',
     isAny: false,
+    isSingle: true,
     set: [
       Comparator {
         includePrerelease: false,
@@ -1265,6 +1300,7 @@ exports[`test/index.ts > TAP > basic parsing tests > foo@1.2.3 > inspect default
   range: Range {
     raw: '1.2.3',
     isAny: false,
+    isSingle: true,
     set: [ [Comparator] ],
     includePrerelease: false
   }
@@ -1284,6 +1320,7 @@ exports[`test/index.ts > TAP > basic parsing tests > foo@1.2.3 > inspect default
   range: Range {
     raw: '1.2.3 ',
     isAny: false,
+    isSingle: true,
     set: [ [Comparator] ],
     includePrerelease: false
   }
@@ -1303,6 +1340,7 @@ exports[`test/index.ts > TAP > basic parsing tests > foo@1.2.3 > inspect with co
   range: Range {
     raw: [32m'1.2.3'[39m,
     isAny: [33mfalse[39m,
+    isSingle: [33mtrue[39m,
     set: [ [36m[Comparator][39m ],
     includePrerelease: [33mfalse[39m
   }
@@ -1322,6 +1360,7 @@ exports[`test/index.ts > TAP > basic parsing tests > foo@1.2.3 > inspect with co
   range: Range {
     raw: [32m'1.2.3 '[39m,
     isAny: [33mfalse[39m,
+    isSingle: [33mtrue[39m,
     set: [ [36m[Comparator][39m ],
     includePrerelease: [33mfalse[39m
   }
@@ -1470,6 +1509,7 @@ exports[`test/index.ts > TAP > basic parsing tests > foo@https://bitbucket.org/u
   range: Range {
     raw: '1.x',
     isAny: false,
+    isSingle: false,
     set: [
       Comparator {
         includePrerelease: false,
@@ -1522,6 +1562,7 @@ exports[`test/index.ts > TAP > basic parsing tests > foo@https://bitbucket.org/u
   range: Range {
     raw: '1.x',
     isAny: false,
+    isSingle: false,
     set: [ [Comparator] ],
     includePrerelease: false
   }
@@ -1542,6 +1583,7 @@ exports[`test/index.ts > TAP > basic parsing tests > foo@https://bitbucket.org/u
   range: Range {
     raw: [32m'1.x'[39m,
     isAny: [33mfalse[39m,
+    isSingle: [33mfalse[39m,
     set: [ [36m[Comparator][39m ],
     includePrerelease: [33mfalse[39m
   }
@@ -1612,6 +1654,7 @@ exports[`test/index.ts > TAP > basic parsing tests > foo@npm:bar@ > inspect deep
     range: Range {
       raw: '',
       isAny: true,
+      isSingle: false,
       set: [
         Comparator {
           includePrerelease: false,
@@ -1655,6 +1698,7 @@ exports[`test/index.ts > TAP > basic parsing tests > foo@npm:bar@ > inspect defa
     range: Range {
       raw: '',
       isAny: true,
+      isSingle: false,
       set: [ [Comparator] ],
       includePrerelease: false
     }
@@ -1682,6 +1726,7 @@ exports[`test/index.ts > TAP > basic parsing tests > foo@npm:bar@ > inspect with
     range: Range {
       raw: [32m''[39m,
       isAny: [33mtrue[39m,
+      isSingle: [33mfalse[39m,
       set: [ [36m[Comparator][39m ],
       includePrerelease: [33mfalse[39m
     }
@@ -3187,6 +3232,7 @@ exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://git@github.com:
   range: Range {
     raw: '^1.2.3',
     isAny: false,
+    isSingle: false,
     set: [
       Comparator {
         includePrerelease: false,
@@ -3239,6 +3285,7 @@ exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://git@github.com:
   range: Range {
     raw: '^1.2.3',
     isAny: false,
+    isSingle: false,
     set: [ [Comparator] ],
     includePrerelease: false
   }
@@ -3259,6 +3306,7 @@ exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://git@github.com:
   range: Range {
     raw: [32m'^1.2.3'[39m,
     isAny: [33mfalse[39m,
+    isSingle: [33mfalse[39m,
     set: [ [36m[Comparator][39m ],
     includePrerelease: [33mfalse[39m
   }
@@ -3324,6 +3372,7 @@ exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://git@github.com/
   range: Range {
     raw: '^1.2.3',
     isAny: false,
+    isSingle: false,
     set: [
       Comparator {
         includePrerelease: false,
@@ -3374,6 +3423,7 @@ exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://git@github.com/
   range: Range {
     raw: '^1.2.3',
     isAny: false,
+    isSingle: false,
     set: [ [Comparator] ],
     includePrerelease: false
   }
@@ -3392,6 +3442,7 @@ exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://git@github.com/
   range: Range {
     raw: [32m'^1.2.3'[39m,
     isAny: [33mfalse[39m,
+    isSingle: [33mfalse[39m,
     set: [ [36m[Comparator][39m ],
     includePrerelease: [33mfalse[39m
   }
@@ -3534,6 +3585,7 @@ exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://git@notgithub.c
   range: Range {
     raw: '^1.2.3',
     isAny: false,
+    isSingle: false,
     set: [
       Comparator {
         includePrerelease: false,
@@ -3584,6 +3636,7 @@ exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://git@notgithub.c
   range: Range {
     raw: '^1.2.3',
     isAny: false,
+    isSingle: false,
     set: [ [Comparator] ],
     includePrerelease: false
   }
@@ -3602,6 +3655,7 @@ exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://git@notgithub.c
   range: Range {
     raw: [32m'^1.2.3'[39m,
     isAny: [33mfalse[39m,
+    isSingle: [33mfalse[39m,
     set: [ [36m[Comparator][39m ],
     includePrerelease: [33mfalse[39m
   }
@@ -3701,6 +3755,7 @@ exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://git@notgithub.c
   range: Range {
     raw: '^1.2.3',
     isAny: false,
+    isSingle: false,
     set: [
       Comparator {
         includePrerelease: false,
@@ -3751,6 +3806,7 @@ exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://git@notgithub.c
   range: Range {
     raw: '^1.2.3',
     isAny: false,
+    isSingle: false,
     set: [ [Comparator] ],
     includePrerelease: false
   }
@@ -3769,6 +3825,7 @@ exports[`test/index.ts > TAP > basic parsing tests > x@git+ssh://git@notgithub.c
   range: Range {
     raw: [32m'^1.2.3'[39m,
     isAny: [33mfalse[39m,
+    isSingle: [33mfalse[39m,
     set: [ [36m[Comparator][39m ],
     includePrerelease: [33mfalse[39m
   }
@@ -4600,6 +4657,7 @@ exports[`test/index.ts > TAP > basic parsing tests > x@npm:foo@npm:bar@npm:baz@1
         range: Range {
           raw: '1',
           isAny: false,
+          isSingle: false,
           set: [
             Comparator {
               includePrerelease: false,
@@ -4675,6 +4733,7 @@ exports[`test/index.ts > TAP > basic parsing tests > x@npm:foo@npm:bar@npm:baz@1
         range: Range {
           raw: '1',
           isAny: false,
+          isSingle: false,
           set: [ [Comparator] ],
           includePrerelease: false
         }
@@ -4718,6 +4777,7 @@ exports[`test/index.ts > TAP > basic parsing tests > x@npm:foo@npm:bar@npm:baz@1
         range: Range {
           raw: [32m'1'[39m,
           isAny: [33mfalse[39m,
+          isSingle: [33mfalse[39m,
           set: [ [36m[Comparator][39m ],
           includePrerelease: [33mfalse[39m
         }
@@ -5249,6 +5309,7 @@ exports[`test/index.ts > TAP > basic parsing tests > x@user/foo#semver:^1.2.3 > 
   range: Range {
     raw: '^1.2.3',
     isAny: false,
+    isSingle: false,
     set: [
       Comparator {
         includePrerelease: false,
@@ -5301,6 +5362,7 @@ exports[`test/index.ts > TAP > basic parsing tests > x@user/foo#semver:^1.2.3 > 
   range: Range {
     raw: '^1.2.3',
     isAny: false,
+    isSingle: false,
     set: [ [Comparator] ],
     includePrerelease: false
   }
@@ -5321,6 +5383,7 @@ exports[`test/index.ts > TAP > basic parsing tests > x@user/foo#semver:^1.2.3 > 
   range: Range {
     raw: [32m'^1.2.3'[39m,
     isAny: [33mfalse[39m,
+    isSingle: [33mfalse[39m,
     set: [ [36m[Comparator][39m ],
     includePrerelease: [33mfalse[39m
   }
@@ -5343,6 +5406,7 @@ exports[`test/index.ts > TAP > basic parsing tests > x@workspace: > inspect deep
   range: Range {
     raw: '',
     isAny: true,
+    isSingle: false,
     set: [
       Comparator {
         includePrerelease: false,
@@ -5377,6 +5441,7 @@ exports[`test/index.ts > TAP > basic parsing tests > x@workspace: > inspect defa
   range: Range {
     raw: '',
     isAny: true,
+    isSingle: false,
     set: [ [Comparator] ],
     includePrerelease: false
   }
@@ -5395,6 +5460,7 @@ exports[`test/index.ts > TAP > basic parsing tests > x@workspace: > inspect with
   range: Range {
     raw: [32m''[39m,
     isAny: [33mtrue[39m,
+    isSingle: [33mfalse[39m,
     set: [ [36m[Comparator][39m ],
     includePrerelease: [33mfalse[39m
   }
@@ -5565,6 +5631,7 @@ exports[`test/index.ts > TAP > basic parsing tests > x@workspace:1.x > inspect d
   range: Range {
     raw: '1.x',
     isAny: false,
+    isSingle: false,
     set: [
       Comparator {
         includePrerelease: false,
@@ -5615,6 +5682,7 @@ exports[`test/index.ts > TAP > basic parsing tests > x@workspace:1.x > inspect d
   range: Range {
     raw: '1.x',
     isAny: false,
+    isSingle: false,
     set: [ [Comparator] ],
     includePrerelease: false
   }
@@ -5633,6 +5701,7 @@ exports[`test/index.ts > TAP > basic parsing tests > x@workspace:1.x > inspect w
   range: Range {
     raw: [32m'1.x'[39m,
     isAny: [33mfalse[39m,
+    isSingle: [33mfalse[39m,
     set: [ [36m[Comparator][39m ],
     includePrerelease: [33mfalse[39m
   }
@@ -5803,6 +5872,7 @@ exports[`test/index.ts > TAP > basic parsing tests > x@workspace:y@1.x > inspect
   range: Range {
     raw: '1.x',
     isAny: false,
+    isSingle: false,
     set: [
       Comparator {
         includePrerelease: false,
@@ -5853,6 +5923,7 @@ exports[`test/index.ts > TAP > basic parsing tests > x@workspace:y@1.x > inspect
   range: Range {
     raw: '1.x',
     isAny: false,
+    isSingle: false,
     set: [ [Comparator] ],
     includePrerelease: false
   }
@@ -5871,6 +5942,7 @@ exports[`test/index.ts > TAP > basic parsing tests > x@workspace:y@1.x > inspect
   range: Range {
     raw: [32m'1.x'[39m,
     isAny: [33mfalse[39m,
+    isSingle: [33mfalse[39m,
     set: [ [36m[Comparator][39m ],
     includePrerelease: [33mfalse[39m
   }
@@ -5915,6 +5987,7 @@ exports[`test/index.ts > TAP > mixing scopes and names > scopes: @a 1`] = `
       range: Range {
         raw: '1.2.3',
         isAny: false,
+        isSingle: true,
         set: [ [Comparator] ],
         includePrerelease: false
       }
@@ -5958,6 +6031,7 @@ exports[`test/index.ts > TAP > mixing scopes and names > scopes: @a, @y 1`] = `
       range: Range {
         raw: '1.2.3',
         isAny: false,
+        isSingle: true,
         set: [ [Comparator] ],
         includePrerelease: false
       }
@@ -6002,6 +6076,7 @@ exports[`test/index.ts > TAP > mixing scopes and names > scopes: @a, @y, @j 1`] 
       range: Range {
         raw: '1.2.3',
         isAny: false,
+        isSingle: true,
         set: [ [Comparator] ],
         includePrerelease: false
       }
@@ -6057,6 +6132,7 @@ exports[`test/index.ts > TAP > parse args > @a/b@npm:@y/z@1.2.3 > inspect defaul
     range: Range {
       raw: '1.2.3',
       isAny: false,
+      isSingle: true,
       set: [ [Comparator] ],
       includePrerelease: false
     }
@@ -6077,6 +6153,7 @@ exports[`test/index.ts > TAP > parse args > @foo/bar > inspect default 1`] = `
   range: Range {
     raw: '',
     isAny: true,
+    isSingle: false,
     set: [ [Comparator] ],
     includePrerelease: false
   }
@@ -6096,6 +6173,7 @@ exports[`test/index.ts > TAP > parse args > @foo/bar@ > inspect default 1`] = `
   range: Range {
     raw: '',
     isAny: true,
+    isSingle: false,
     set: [ [Comparator] ],
     includePrerelease: false
   }
@@ -6115,6 +6193,7 @@ exports[`test/index.ts > TAP > parse args > @foo/bar@* > inspect default 1`] = `
   range: Range {
     raw: '*',
     isAny: true,
+    isSingle: false,
     set: [ [Comparator] ],
     includePrerelease: false
   }
@@ -6240,6 +6319,7 @@ exports[`test/index.ts > TAP > parse args > custom:foo > inspect default 1`] = `
     range: Range {
       raw: '',
       isAny: true,
+      isSingle: false,
       set: [ [Comparator] ],
       includePrerelease: false
     }
@@ -6267,6 +6347,7 @@ exports[`test/index.ts > TAP > parse args > custom:foo@1 > inspect default 1`] =
     range: Range {
       raw: '1',
       isAny: false,
+      isSingle: false,
       set: [ [Comparator] ],
       includePrerelease: false
     }
@@ -6506,6 +6587,7 @@ exports[`test/index.ts > TAP > parse args > foo > inspect default 1`] = `
   range: Range {
     raw: '',
     isAny: true,
+    isSingle: false,
     set: [ [Comparator] ],
     includePrerelease: false
   }
@@ -6524,6 +6606,7 @@ exports[`test/index.ts > TAP > parse args > foo@ > inspect default 1`] = `
   range: Range {
     raw: '',
     isAny: true,
+    isSingle: false,
     set: [ [Comparator] ],
     includePrerelease: false
   }
@@ -6542,6 +6625,7 @@ exports[`test/index.ts > TAP > parse args > foo@ 1.2 > inspect default 1`] = `
   range: Range {
     raw: ' 1.2 ',
     isAny: false,
+    isSingle: false,
     set: [ [Comparator] ],
     includePrerelease: false
   }
@@ -6561,6 +6645,7 @@ exports[`test/index.ts > TAP > parse args > foo@ 1.2.3 > inspect default 1`] = `
   range: Range {
     raw: ' 1.2.3 ',
     isAny: false,
+    isSingle: true,
     set: [ [Comparator] ],
     includePrerelease: false
   }
@@ -6580,6 +6665,7 @@ exports[`test/index.ts > TAP > parse args > foo@ 1.2.3 > inspect default 2`] = `
   range: Range {
     raw: ' 1.2.3',
     isAny: false,
+    isSingle: true,
     set: [ [Comparator] ],
     includePrerelease: false
   }
@@ -6599,6 +6685,7 @@ exports[`test/index.ts > TAP > parse args > foo@=v1.2.3 > inspect default 1`] = 
   range: Range {
     raw: '=v1.2.3',
     isAny: false,
+    isSingle: true,
     set: [ [Comparator] ],
     includePrerelease: false
   }
@@ -6617,6 +6704,7 @@ exports[`test/index.ts > TAP > parse args > foo@~1.2 > inspect default 1`] = `
   range: Range {
     raw: '~1.2',
     isAny: false,
+    isSingle: false,
     set: [ [Comparator] ],
     includePrerelease: false
   }
@@ -6635,6 +6723,7 @@ exports[`test/index.ts > TAP > parse args > foo@1.2 > inspect default 1`] = `
   range: Range {
     raw: '1.2',
     isAny: false,
+    isSingle: false,
     set: [ [Comparator] ],
     includePrerelease: false
   }
@@ -6654,6 +6743,7 @@ exports[`test/index.ts > TAP > parse args > foo@1.2.3 > inspect default 1`] = `
   range: Range {
     raw: '1.2.3',
     isAny: false,
+    isSingle: true,
     set: [ [Comparator] ],
     includePrerelease: false
   }
@@ -6673,6 +6763,7 @@ exports[`test/index.ts > TAP > parse args > foo@1.2.3 > inspect default 2`] = `
   range: Range {
     raw: '1.2.3 ',
     isAny: false,
+    isSingle: true,
     set: [ [Comparator] ],
     includePrerelease: false
   }
@@ -6729,6 +6820,7 @@ exports[`test/index.ts > TAP > parse args > foo@https://bitbucket.org/user/proje
   range: Range {
     raw: '1.x',
     isAny: false,
+    isSingle: false,
     set: [ [Comparator] ],
     includePrerelease: false
   }
@@ -6767,6 +6859,7 @@ exports[`test/index.ts > TAP > parse args > foo@npm:bar@ > inspect default 1`] =
     range: Range {
       raw: '',
       isAny: true,
+      isSingle: false,
       set: [ [Comparator] ],
       includePrerelease: false
     }
@@ -6833,6 +6926,7 @@ exports[`test/index.ts > TAP > parse args > git+ssh://git@github.com:user/foo#se
   range: Range {
     raw: '^1.2.3',
     isAny: false,
+    isSingle: false,
     set: [ [Comparator] ],
     includePrerelease: false
   }
@@ -6864,6 +6958,7 @@ exports[`test/index.ts > TAP > parse args > git+ssh://git@github.com/user/foo#se
   range: Range {
     raw: '^1.2.3',
     isAny: false,
+    isSingle: false,
     set: [ [Comparator] ],
     includePrerelease: false
   }
@@ -6905,6 +7000,7 @@ exports[`test/index.ts > TAP > parse args > git+ssh://git@notgithub.com:user/foo
   range: Range {
     raw: '^1.2.3',
     isAny: false,
+    isSingle: false,
     set: [ [Comparator] ],
     includePrerelease: false
   }
@@ -6946,6 +7042,7 @@ exports[`test/index.ts > TAP > parse args > git+ssh://git@notgithub.com/user/foo
   range: Range {
     raw: '^1.2.3',
     isAny: false,
+    isSingle: false,
     set: [ [Comparator] ],
     includePrerelease: false
   }
@@ -7061,6 +7158,7 @@ exports[`test/index.ts > TAP > parse args > no options > no options 1`] = `
   range: Range {
     raw: '^1.0.0',
     isAny: false,
+    isSingle: false,
     set: [ [Comparator] ],
     includePrerelease: false
   }
@@ -7087,6 +7185,7 @@ exports[`test/index.ts > TAP > parse args > npm:foo > inspect default 1`] = `
     range: Range {
       raw: '',
       isAny: true,
+      isSingle: false,
       set: [ [Comparator] ],
       includePrerelease: false
     }
@@ -7151,6 +7250,7 @@ exports[`test/index.ts > TAP > parse args > user/foo#semver:^1.2.3 > inspect def
   range: Range {
     raw: '^1.2.3',
     isAny: false,
+    isSingle: false,
     set: [ [Comparator] ],
     includePrerelease: false
   }
@@ -7169,6 +7269,7 @@ exports[`test/index.ts > TAP > parse args > workspace: > inspect default 1`] = `
   range: Range {
     raw: '',
     isAny: true,
+    isSingle: false,
     set: [ [Comparator] ],
     includePrerelease: false
   }
@@ -7242,6 +7343,7 @@ exports[`test/index.ts > TAP > parse args > workspace:1.x > inspect default 1`] 
   range: Range {
     raw: '1.x',
     isAny: false,
+    isSingle: false,
     set: [ [Comparator] ],
     includePrerelease: false
   }
@@ -7304,6 +7406,7 @@ exports[`test/index.ts > TAP > parse args > workspace:y@1.x > inspect default 1`
   range: Range {
     raw: '1.x',
     isAny: false,
+    isSingle: false,
     set: [ [Comparator] ],
     includePrerelease: false
   }
@@ -7752,6 +7855,7 @@ exports[`test/index.ts > TAP > parse args > x@git+ssh://git@github.com:user/foo#
   range: Range {
     raw: '^1.2.3',
     isAny: false,
+    isSingle: false,
     set: [ [Comparator] ],
     includePrerelease: false
   }
@@ -7783,6 +7887,7 @@ exports[`test/index.ts > TAP > parse args > x@git+ssh://git@github.com/user/foo#
   range: Range {
     raw: '^1.2.3',
     isAny: false,
+    isSingle: false,
     set: [ [Comparator] ],
     includePrerelease: false
   }
@@ -7837,6 +7942,7 @@ exports[`test/index.ts > TAP > parse args > x@git+ssh://git@notgithub.com:user/f
   range: Range {
     raw: '^1.2.3',
     isAny: false,
+    isSingle: false,
     set: [ [Comparator] ],
     includePrerelease: false
   }
@@ -7878,6 +7984,7 @@ exports[`test/index.ts > TAP > parse args > x@git+ssh://git@notgithub.com/user/f
   range: Range {
     raw: '^1.2.3',
     isAny: false,
+    isSingle: false,
     set: [ [Comparator] ],
     includePrerelease: false
   }
@@ -8155,6 +8262,7 @@ exports[`test/index.ts > TAP > parse args > x@npm:foo@npm:bar@npm:baz@1 > inspec
         range: Range {
           raw: '1',
           isAny: false,
+          isSingle: false,
           set: [ [Comparator] ],
           includePrerelease: false
         }
@@ -8334,6 +8442,7 @@ exports[`test/index.ts > TAP > parse args > x@user/foo#semver:^1.2.3 > inspect d
   range: Range {
     raw: '^1.2.3',
     isAny: false,
+    isSingle: false,
     set: [ [Comparator] ],
     includePrerelease: false
   }
@@ -8352,6 +8461,7 @@ exports[`test/index.ts > TAP > parse args > x@workspace: > inspect default 1`] =
   range: Range {
     raw: '',
     isAny: true,
+    isSingle: false,
     set: [ [Comparator] ],
     includePrerelease: false
   }
@@ -8414,6 +8524,7 @@ exports[`test/index.ts > TAP > parse args > x@workspace:1.x > inspect default 1`
   range: Range {
     raw: '1.x',
     isAny: false,
+    isSingle: false,
     set: [ [Comparator] ],
     includePrerelease: false
   }
@@ -8476,6 +8587,7 @@ exports[`test/index.ts > TAP > parse args > x@workspace:y@1.x > inspect default 
   range: Range {
     raw: '1.x',
     isAny: false,
+    isSingle: false,
     set: [ [Comparator] ],
     includePrerelease: false
   }

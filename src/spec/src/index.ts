@@ -572,26 +572,13 @@ export class Spec implements SpecLike<Spec> {
   }
 
   #guessRegistryTarball() {
-    const { name, registry, range } = this.final
-    if (!registry || !range || range.set.length !== 1) return
-
     // only try to guess if it's a single comparator for a single version
-    const cmp = range.set[0]
-    if (
-      !cmp ||
-      !Array.isArray(cmp.tuples) ||
-      cmp.tuples.length !== 1 ||
-      !Array.isArray(cmp.tuples[0]) ||
-      cmp.tuples[0][0] !== ''
-    ) {
-      return
-    }
-
+    const { name, registry, range } = this.final
+    if (!registry || !range?.isSingle) return
+    const stripScope = /^@[^/]+\//
     this.conventionalRegistryTarball = String(
       new URL(
-        `/${name}/-/${name.replace(/^@[^/]+\//, '')}-${
-          cmp.tuples[0][1]
-        }.tgz`,
+        `/${name}/-/${name.replace(stripScope, '')}-${range}.tgz`,
         registry,
       ),
     )

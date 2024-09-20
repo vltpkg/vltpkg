@@ -14,3 +14,14 @@ for (const [range, ts, pts] of rangeToString) {
   t.equal(new Range(range).toString(), ts)
   t.equal(new Range(range, true).toString(), pts)
 }
+
+t.equal(new Range('1.2.3').isSingle, true)
+t.equal(new Range('>=1.2.3').isSingle, false)
+t.equal(new Range('=1.2.3').isSingle, true)
+t.equal(new Range('1.2.3 || 1.2.4').isSingle, false)
+t.equal(new Range('1.2').isSingle, false)
+// technically only one version can satisfy this, but it's not expressed
+// as a single version, so it doesn't get the special treatment.
+t.equal(new Range('>=1.2.3 <1.2.4').isSingle, false)
+t.equal(new Range('>=1.2.3 <1.2.4 >1.2.0').isSingle, false)
+t.equal(new Range('=1.2.3 <1.2.4 >1.2.0').isSingle, false)
