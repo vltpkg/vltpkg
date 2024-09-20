@@ -32,15 +32,6 @@ Object {
 }
 `
 
-exports[`test/browser.ts > TAP > spec foo of type registry 1`] = `
-Object {
-  "bareSpec": "",
-  "name": "foo",
-  "spec": "foo",
-  "type": "registry",
-}
-`
-
 exports[`test/browser.ts > TAP > spec foo@ 1.2  of type registry 1`] = `
 Object {
   "bareSpec": " 1.2 ",
