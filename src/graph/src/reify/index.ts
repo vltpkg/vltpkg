@@ -3,10 +3,15 @@ import { PackageJson } from '@vltpkg/package-json'
 import { RollbackRemove } from '@vltpkg/rollback-remove'
 import { Monorepo } from '@vltpkg/workspaces'
 import { PathScurry } from 'path-scurry'
+import { updatePackageJson } from './update-importers-package-json.js'
 import { load as loadActual, LoadOptions } from '../actual/load.js'
 import { Diff } from '../diff.js'
 import { Graph } from '../graph.js'
 import { lockfile } from '../index.js'
+import {
+  AddImportersDependenciesMap,
+  RemoveImportersDependenciesMap,
+} from '../dependencies.js'
 import { addEdges } from './add-edges.js'
 import { addNodes } from './add-nodes.js'
 import { chmodBins } from './chmod-bins.js'
@@ -22,6 +27,8 @@ import { rollback } from './rollback.js'
 // - [ ] depid shortening
 
 export type ReifyOptions = LoadOptions & {
+  add?: AddImportersDependenciesMap
+  remove?: RemoveImportersDependenciesMap
   graph: Graph
   actual?: Graph
   packageInfo?: PackageInfoClient
@@ -91,6 +98,12 @@ const reify_ = async (
   scurry: PathScurry,
   packageJson: PackageJson,
 ) => {
+  const saveImportersPackageJson = updatePackageJson({
+    add: options.add,
+    remove: options.remove,
+    graph: options.graph,
+    packageJson,
+  })
   // XXX: almost certainly will need to throttle this
   const promises = addNodes(
     diff,
@@ -118,9 +131,10 @@ const reify_ = async (
   // TODO: save a hidden lockfile at node_modules/.vlt-lock.json,
   // because we've updated the actual tree.
 
-  // TODO: update deps if anything was added/removed via argument
-
   // delete garbage from the store.
   const rmPromises = deleteNodes(diff, remover, scurry)
   if (rmPromises.length) await Promise.all(rmPromises)
+
+  // updates package.json files if anything was added / removed
+  saveImportersPackageJson()
 }

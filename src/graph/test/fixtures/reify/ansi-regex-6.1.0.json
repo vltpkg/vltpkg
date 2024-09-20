@@ -1,0 +1,27 @@
+{
+  "name": "ansi-regex",
+  "version": "6.1.0",
+  "devDependencies": {
+    "ansi-escapes": "^5.0.0",
+    "ava": "^3.15.0",
+    "tsd": "^0.21.0",
+    "xo": "^0.54.2"
+  },
+  "dist": {
+    "integrity": "sha512-7HSX4QQb4CspciLpVFwyRe79O3xsIZDDLER21kERQ71oaPodF8jL725AgJMFAYbooIqolJoRLuM81SpeUkpkvA==",
+    "shasum": "95ec409c69619d6cb1b8b34f14b660ef28ebd654",
+    "tarball": "https://registry.npmjs.org/ansi-regex/-/ansi-regex-6.1.0.tgz",
+    "fileCount": 5,
+    "unpackedSize": 5412,
+    "signatures": [
+      {
+        "keyid": "SHA256:jl3bwswu80PjjokCgh0o2w5c2U4LhQAE57gj9cz1kzA",
+        "sig": "MEQCIDGQvwQxWIDhiEnJTo1Tb35X3bxVWxMjBoPaj+qTxlfnAiA3pztqy3OFgYbMqWZC5GdWT1yG2frnePf72yHSrhynBw=="
+      }
+    ]
+  },
+  "engines": {
+    "node": ">=12"
+  },
+  "funding": "https://github.com/chalk/ansi-regex?sponsor=1"
+}

@@ -15,7 +15,7 @@ Object {
   "loadManifests": true,
   "monorepo": undefined,
   "packageJson": PackageJson {},
-  "projectRoot": "{CWD}/.tap/fixtures/test-commands-install.ts",
+  projectRoot: #
   "scurry": PathScurry {},
 }
 `
@@ -52,7 +52,7 @@ Object {
               "github": "git+ssh://git@github.com:$1/$2.git",
               "gitlab": "git+ssh://git@gitlab.com:$1/$2.git",
             },
-            "projectRoot": "{CWD}/.tap/fixtures/test-commands-install.ts",
+            projectRoot: #
             "registries": Object {
               "npm": "https://registry.npmjs.org/",
             },
@@ -122,7 +122,7 @@ Object {
   "loadManifests": true,
   "monorepo": undefined,
   "packageJson": PackageJson {},
-  "projectRoot": "{CWD}/.tap/fixtures/test-commands-install.ts",
+  projectRoot: #
   "scurry": PathScurry {},
 }
 `
