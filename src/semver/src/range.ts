@@ -15,6 +15,9 @@ export class Range {
   /** true if the range is `*` */
   isAny: boolean
 
+  /** true if the range is a single semver version */
+  isSingle: boolean
+
   /** true if the range cannot match anything */
 
   /**
@@ -27,6 +30,9 @@ export class Range {
   /** true if all prerelease versions should be included */
   includePrerelease: boolean
 
+  /** cached toString */
+  #toString?: string
+
   constructor(range: string, includePrerelease = false) {
     this.raw = range
     this.includePrerelease = includePrerelease
@@ -34,6 +40,19 @@ export class Range {
       this.set.push(new Comparator(part, this.includePrerelease)),
     )
     this.isAny = this.set.some(c => c.isAny)
+
+    const cmp = this.set[0]
+    this.isSingle =
+      this.set.length === 1 &&
+      !!cmp &&
+      Array.isArray(cmp.tuples) &&
+      cmp.tuples.length === 1 &&
+      Array.isArray(cmp.tuples[0]) &&
+      cmp.tuples[0][0] === ''
+
+    if (this.isSingle) {
+      this.#toString = String(cmp)
+    }
   }
 
   /**
@@ -45,6 +64,8 @@ export class Range {
 
   /** return the simplified canonical form of this range */
   toString() {
-    return this.set.map(c => String(c)).join(' || ')
+    if (this.#toString) return this.#toString
+    this.#toString = this.set.map(c => String(c)).join(' || ')
+    return this.#toString
   }
 }
