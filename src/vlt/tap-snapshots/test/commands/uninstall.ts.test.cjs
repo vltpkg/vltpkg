@@ -12,7 +12,7 @@ Object {
   "loadManifests": true,
   "monorepo": undefined,
   "packageJson": PackageJson {},
-  "projectRoot": "{CWD}/.tap/fixtures/test-commands-uninstall.ts",
+  projectRoot: #
   "remove": Map {
     "file;." => Set {},
   },
