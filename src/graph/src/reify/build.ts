@@ -4,6 +4,7 @@
 
 import { PackageJson } from '@vltpkg/package-json'
 import { run } from '@vltpkg/run'
+import { statSync } from 'fs'
 import { chmod } from 'fs/promises'
 import { graphRun } from 'graph-run'
 import { PathScurry } from 'path-scurry'
@@ -106,7 +107,18 @@ const visit = async (
   const chmods: Promise<unknown>[] = []
   for (const bin of Object.values(binPaths(manifest))) {
     const path = scurry.resolve(node.location, bin)
-    chmods.push(chmod(path, 0o777))
+    chmods.push(makeExecutable(path))
   }
   await Promise.all(chmods)
+}
+
+// 0 is "not yet set"
+// This is defined by doing `0o111 | <mode>` so that systems
+// that create files group-writable result in 0o775 instead of 0o755
+let execMode = 0
+const makeExecutable = async (path: string) => {
+  if (!execMode) {
+    execMode = (statSync(path).mode & 0o777) | 0o111
+  }
+  await chmod(path, execMode)
 }
