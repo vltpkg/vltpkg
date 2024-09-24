@@ -393,8 +393,16 @@ export class Graph implements GraphLike {
     }
   }
 
+  toJSON() {
+    return lockfileData({
+      ...this.#options,
+      graph: this,
+      saveManifests: true,
+    })
+  }
+
   [kCustomInspect](_: number, options: InspectOptions) {
-    const data = lockfileData({ graph: this })
+    const data = this.toJSON()
     return `${this[Symbol.toStringTag]} ${inspect(data, options)}`
   }
 }

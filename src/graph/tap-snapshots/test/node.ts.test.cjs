@@ -21,3 +21,18 @@ Node [@vltpkg/graph.Node] {
   resolved: undefined
 }
 `
+
+exports[`test/node.ts > TAP > Node > should serialize node to JSON 1`] = `
+{
+  "id": "file·.",
+  "name": "root",
+  "version": "1.0.0",
+  "location": "./path/to/importer",
+  "importer": true,
+  "manifest": {
+    "name": "root",
+    "version": "1.0.0"
+  },
+  "projectRoot": "{ROOT}"
+}
+`

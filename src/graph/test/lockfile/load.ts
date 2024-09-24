@@ -9,7 +9,7 @@ import {
   LockfileEdges,
   LockfileEdgeValue,
 } from '../../src/lockfile/types.js'
-import { humanReadableOutput } from '../../src/visualization/human-readable-output.js'
+import { objectLikeOutput } from '../../src/visualization/object-like-output.js'
 
 const configData = {
   registry: 'https://registry.npmjs.org',
@@ -88,7 +88,7 @@ t.test('load', async t => {
     projectRoot,
     mainManifest,
   })
-  t.matchSnapshot(humanReadableOutput(graph))
+  t.matchSnapshot(objectLikeOutput(graph))
 })
 
 t.test('loadHidden', async t => {
@@ -154,7 +154,7 @@ t.test('loadHidden', async t => {
     projectRoot,
     mainManifest,
   })
-  t.matchSnapshot(humanReadableOutput(graph))
+  t.matchSnapshot(objectLikeOutput(graph))
 })
 
 t.test('workspaces', async t => {
@@ -207,7 +207,7 @@ t.test('workspaces', async t => {
     projectRoot,
     mainManifest,
   })
-  t.matchSnapshot(humanReadableOutput(graph))
+  t.matchSnapshot(objectLikeOutput(graph))
 })
 
 t.test('unknown dep type', async t => {

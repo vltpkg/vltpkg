@@ -8,7 +8,7 @@ import t from 'tap'
 import { Dependency } from '../../src/dependencies.js'
 import { Graph } from '../../src/graph.js'
 import { appendNodes } from '../../src/ideal/append-nodes.js'
-import { humanReadableOutput } from '../../src/visualization/human-readable-output.js'
+import { objectLikeOutput } from '../../src/visualization/object-like-output.js'
 
 Object.assign(Spec.prototype, {
   [kCustomInspect](this: Spec) {
@@ -239,7 +239,7 @@ t.test('append different type of dependencies', async t => {
     'should throw if failes to create a node for a given manifest',
   )
   t.matchSnapshot(
-    inspect(graph, { depth: 3 }),
+    inspect(graph, { depth: 4 }),
     'should install different type of deps on different conditions',
   )
 })
@@ -326,7 +326,7 @@ t.test('append file type of nodes', async t => {
     configData,
   )
   t.matchSnapshot(
-    humanReadableOutput(graph),
+    objectLikeOutput(graph),
     'should have a graph with file type dependencies',
   )
 })

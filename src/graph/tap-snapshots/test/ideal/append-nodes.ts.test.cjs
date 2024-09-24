@@ -7,8 +7,20 @@
 'use strict'
 exports[`test/ideal/append-nodes.ts > TAP > append different type of dependencies > should install different type of deps on different conditions 1`] = `
 @vltpkg/graph.Graph {
-  registries: {},
-  nodes: { '··bar@1.0.0': [ 1, 'bar' ], '··foo@1.0.0': [ 2, 'foo' ] },
+  registries: { npm: 'https://registry.npmjs.org' },
+  nodes: {
+    '··bar@1.0.0': [ 1, 'bar', <3 empty items>, { name: 'bar', version: '1.0.0' } ],
+    '··foo@1.0.0': [
+      2,
+      'foo',
+      <3 empty items>,
+      {
+        name: 'foo',
+        version: '1.0.0',
+        devDependencies: { baz: '^1.0.0' }
+      }
+    ]
+  },
   edges: {
     'file·. foo': 'dev ^1.0.0 ··foo@1.0.0',
     'file·. bar': 'optional ^1.0.0 ··bar@1.0.0'
@@ -48,14 +60,14 @@ exports[`test/ideal/append-nodes.ts > TAP > append file type of nodes > should h
 
 exports[`test/ideal/append-nodes.ts > TAP > resolve against the correct registries > must match snapshot 1`] = `
 @vltpkg/graph.Graph {
-  registries: {},
+  registries: { a: 'https://a.example.com/', b: 'https://b.example.com/' },
   nodes: {
-    '·a·bar@1.2.3': [ 0, 'bar' ],
-    '·a·x@1.99.99': [ 0, 'x' ],
-    '·a·y@1.99.99': [ 0, 'y' ],
-    '·b·baz@1.2.3': [ 0, 'baz' ],
-    '·b·x@1.99.99': [ 0, 'x' ],
-    '·b·y@1000.0.0': [ 0, 'y' ]
+    '·a·bar@1.2.3': [ 0, 'bar', <3 empty items>, [Object] ],
+    '·a·x@1.99.99': [ 0, 'x', <3 empty items>, [Object] ],
+    '·a·y@1.99.99': [ 0, 'y', <3 empty items>, [Object] ],
+    '·b·baz@1.2.3': [ 0, 'baz', <3 empty items>, [Object] ],
+    '·b·x@1.99.99': [ 0, 'x', <3 empty items>, [Object] ],
+    '·b·y@1000.0.0': [ 0, 'y', <3 empty items>, [Object] ]
   },
   edges: {
     'file·. bar': 'prod a:bar@1.x ·a·bar@1.2.3',
