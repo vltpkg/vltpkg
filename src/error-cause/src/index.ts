@@ -201,7 +201,8 @@ const create = (
     | (new (...a: any[]) => any) = defaultFrom,
 ) => {
   const er = new cls(message, cause ? { cause } : undefined)
-  Error.captureStackTrace(er, from)
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+  Error.captureStackTrace?.(er, from)
   return er
 }
 
