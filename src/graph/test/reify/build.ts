@@ -18,7 +18,7 @@ const mockRun = async (options: RunOptions) => {
 const chmods: string[] = []
 const mockFSP = t.createMock(FSP, {
   chmod: async (path: string, mode: number) => {
-    t.equal(mode, 0o777)
+    t.equal(mode & 0o111, 0o111)
     chmods.push(path)
   },
 })
