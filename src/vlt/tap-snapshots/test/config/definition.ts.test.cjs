@@ -12,6 +12,7 @@ Object {
   "conf": "config",
   "config": "config",
   "exec": "exec",
+  "gui": "gui",
   "h": "help",
   "help": "help",
   "i": "install",
@@ -104,6 +105,7 @@ Object {
       "pkg",
       "list",
       "query",
+      "gui",
     ],
   },
   "fetch-retries": Object {
