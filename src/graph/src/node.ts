@@ -299,4 +299,18 @@ export class Node implements NodeLike {
     this.edgesOut.set(spec.name, edge)
     return edge
   }
+
+  toJSON() {
+    return {
+      id: this.id,
+      name: this.name,
+      version: this.version,
+      location: this.location,
+      importer: this.importer,
+      manifest: this.manifest,
+      projectRoot: this.projectRoot,
+      integrity: this.integrity,
+      resolved: this.resolved,
+    }
+  }
 }

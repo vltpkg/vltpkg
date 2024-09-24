@@ -7,7 +7,12 @@ import { Node } from '../src/node.js'
 import { GraphLike } from '../src/types.js'
 
 t.cleanSnapshot = s =>
-  s.replace(/^(\s+)projectRoot: .*$/gm, '$1projectRoot: #')
+  s
+    .replace(
+      /^(\s+)"projectRoot": ".*"/gm,
+      '$1"projectRoot": "{ROOT}"',
+    )
+    .replace(/^(\s+)projectRoot: .*$/gm, '$1projectRoot: #')
 
 const options = {
   registry: 'https://registry.npmjs.org',
@@ -52,6 +57,10 @@ t.test('Node', async t => {
   t.matchSnapshot(
     inspect(root, { depth: 0 }),
     'should print with special tag name',
+  )
+  t.matchSnapshot(
+    JSON.stringify(root, null, 2),
+    'should serialize node to JSON',
   )
 
   const fooMani = {

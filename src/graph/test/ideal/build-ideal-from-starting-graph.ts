@@ -14,7 +14,7 @@ import {
   LockfileNode,
 } from '../../src/index.js'
 import { load as loadVirtual } from '../../src/lockfile/load.js'
-import { humanReadableOutput } from '../../src/visualization/human-readable-output.js'
+import { objectLikeOutput } from '../../src/visualization/object-like-output.js'
 
 const edgeKey = (from: DepIDTuple, to: string): LockfileEdgeKey =>
   `${joinDepIDTuple(from)} ${to}`
@@ -150,7 +150,7 @@ t.test('build from a virtual graph', async t => {
     ]),
   })
 
-  t.matchSnapshot(humanReadableOutput(graph))
+  t.matchSnapshot(objectLikeOutput(graph))
 })
 
 t.test('build from an actual graph', async t => {
@@ -418,5 +418,5 @@ t.test('build from an actual graph', async t => {
     ]),
   })
 
-  t.matchSnapshot(humanReadableOutput(graph))
+  t.matchSnapshot(objectLikeOutput(graph))
 })
