@@ -31,6 +31,7 @@ export const commands = {
   list: 'list',
   ls: 'list',
   query: 'query',
+  gui: 'gui',
 } as const
 
 export type Commands = typeof commands
