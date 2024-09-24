@@ -5,7 +5,7 @@ import { Monorepo } from '@vltpkg/workspaces'
 import { PathScurry } from 'path-scurry'
 import t from 'tap'
 import { build } from '../../src/ideal/build.js'
-import { humanReadableOutput } from '../../src/visualization/human-readable-output.js'
+import { objectLikeOutput } from '../../src/visualization/object-like-output.js'
 
 t.test('build from lockfile', async t => {
   const projectRoot = t.testdir({
@@ -49,7 +49,7 @@ t.test('build from lockfile', async t => {
   })
 
   t.matchSnapshot(
-    humanReadableOutput(graph),
+    objectLikeOutput(graph),
     'should build an ideal tree starting from a virtual graph',
   )
 })
@@ -94,7 +94,7 @@ t.test('build from actual files', async t => {
   })
 
   t.matchSnapshot(
-    humanReadableOutput(graph),
+    objectLikeOutput(graph),
     'should build an ideal tree starting from a virtual graph',
   )
 })

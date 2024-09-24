@@ -9,7 +9,7 @@ import {
 } from '../../src/dependencies.js'
 import { Graph } from '../../src/graph.js'
 import { addNodes } from '../../src/ideal/add-nodes.js'
-import { humanReadableOutput } from '../../src/index.js'
+import { objectLikeOutput } from '../../src/visualization/object-like-output.js'
 
 Object.assign(Spec.prototype, {
   [kCustomInspect](this: Spec) {
@@ -68,7 +68,7 @@ t.test('addNodes', async t => {
       }),
     )
 
-  t.matchSnapshot(humanReadableOutput(graph), 'initial graph')
+  t.matchSnapshot(objectLikeOutput(graph), 'initial graph')
 
   await addNodes({
     add: new Map([[joinDepIDTuple(['file', '.']), addEntry('foo')]]),
@@ -76,10 +76,7 @@ t.test('addNodes', async t => {
     packageInfo,
     scurry: new PathScurry(t.testdirName),
   })
-  t.matchSnapshot(
-    humanReadableOutput(graph),
-    'graph with an added foo',
-  )
+  t.matchSnapshot(objectLikeOutput(graph), 'graph with an added foo')
 
   await addNodes({
     add: new Map([[joinDepIDTuple(['file', '.']), addEntry('foo')]]),
@@ -88,7 +85,7 @@ t.test('addNodes', async t => {
     packageInfo,
   })
   t.matchSnapshot(
-    humanReadableOutput(graph),
+    objectLikeOutput(graph),
     'graph after adding foo when there is an already existing foo',
   )
 
@@ -112,7 +109,7 @@ t.test('addNodes', async t => {
     Spec.parse('bar', '^1.0.0'),
   )
   t.matchSnapshot(
-    humanReadableOutput(graph),
+    objectLikeOutput(graph),
     'graph with missing package bar',
   )
 
@@ -124,7 +121,7 @@ t.test('addNodes', async t => {
     packageInfo,
   })
   t.matchSnapshot(
-    humanReadableOutput(graph),
+    objectLikeOutput(graph),
     'graph after adding a previously missing dependency bar',
   )
 })
