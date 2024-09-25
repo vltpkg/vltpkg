@@ -19,6 +19,12 @@ t.test('attribute', async t => {
       all,
       ['my-project', 'a', 'b', 'c', 'd', 'e', 'f', '@x/y'],
     ], // attribute matches all
+    [
+      '[name]',
+      all,
+      ['my-project', 'a', 'b', 'c', 'd', 'e', 'f', '@x/y'],
+    ], // attribute has any content
+    ['[nonexistingattribute]', all, []], // non existing attribute
     ['[name="@x/y"]', all, ['@x/y']], // attribute matches scoped quoted
     ['[name^=m]', all, ['my-project']], // attribute starts with value
     ['[name^="m"]', all, ['my-project']], // attribute starts with value

@@ -15,10 +15,12 @@ const filterAttributes = (
       curr.attribute as keyof ManifestMinified
     ] as JSONField
     const value = curr.value
+    const stringRepresentation = (i: JSONField) =>
+      !i ? '' : String(i)
     const attrs =
       Array.isArray(jsonValue) ?
-        jsonValue.map(String)
-      : [String(jsonValue)]
+        jsonValue.map(stringRepresentation)
+      : [stringRepresentation(jsonValue)]
     if (
       !attrs.some(attr =>
         comparator(
@@ -45,6 +47,7 @@ const attributeSelectors: Record<string, ComparatorFn> = {
   '*=': (attr: string, value = '') => attr.includes(value),
   '|=': (attr: string, value = '') =>
     attr === value || attr.startsWith(`${value}-`),
+  undefined: (attr: string) => !!attr,
 }
 export const attributeSelectorsMap = new Map<string, ComparatorFn>(
   Object.entries(attributeSelectors),
@@ -54,8 +57,7 @@ export const attribute = async (
   state: ParserState,
 ): Promise<ParserState> => {
   const curr = asAttributeNode(state.current)
-  const operatorFn =
-    curr.operator && attributeSelectorsMap.get(curr.operator)
+  const operatorFn = attributeSelectorsMap.get(String(curr.operator))
   if (!operatorFn) {
     if (state.loose) {
       return state
