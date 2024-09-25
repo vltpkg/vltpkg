@@ -56,6 +56,7 @@ t.test('simple graph', async t => {
     [':root .optional', ['f']], // optional descendent found
     [':root *', ['a', 'b', 'e', '@x/y', 'c', 'd', 'f']], // all descendents from root
     ['[name=a]', ['a']], // select by name
+    [':root :has([name])', ['b', 'd']], // combined has example, filtering any descendent that has direct deps with a name
     [':root > [name=a]', ['a']], // select children by name
     [':root > [name=d] [name=b]', []], // no direct descendent with that name
     [':root > [name=d] [name=e]', []], // descendent found by name
