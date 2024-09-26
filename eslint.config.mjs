@@ -7,15 +7,17 @@ import { resolve } from 'path'
 // 'error' to fix, or 'warn' to see
 const BE_EXTRA = process.env.LINT_SUPER_CONSISTENT ?? 'off'
 
-const ignoresPath = resolve(import.meta.dirname, '.prettierignore')
 export default tseslint.config(
   {
-    ignores: readFileSync(ignoresPath)
-      .toString()
-      .trim()
-      .split('\n')
-      .filter(Boolean)
-      .map(v => v.replace(/^(!?)\//, '$1')),
+    ignores: [
+      'infra/build/src/bundle-import-meta.js',
+      ...readFileSync(resolve(import.meta.dirname, '.prettierignore'))
+        .toString()
+        .trim()
+        .split('\n')
+        .filter(Boolean)
+        .map(v => v.replace(/^(!?)\//, '$1')),
+    ],
   },
   eslint.configs.recommended,
   ...tseslint.configs.strictTypeChecked,
