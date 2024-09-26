@@ -1,14 +1,26 @@
+import { rimraf } from 'rimraf'
+
+export const __CODE_SPLIT_SCRIPT_NAME = import.meta.filename.replace(
+  /\.ts$/,
+  '.js',
+)
+
 // This is run as a background process, and all the paths to
 // be removed written into stdin. We can't pass on argv, because
 // it'll be a very long list in many cases.
-import { rimraf } from 'rimraf'
-const input: Buffer[] = []
-process.stdin.on('data', c => input.push(c))
-process.stdin.on('end', () => {
-  const paths = Buffer.concat(input)
-    .toString()
-    // eslint-disable-next-line no-control-regex
-    .replace(/^\u0000+|\u0000+$/, '')
-    .split('\u0000')
-  if (paths.length) void rimraf(paths)
-})
+const main = () => {
+  const input: Buffer[] = []
+  process.stdin.on('data', c => input.push(c))
+  process.stdin.on('end', () => {
+    const paths = Buffer.concat(input)
+      .toString()
+      // eslint-disable-next-line no-control-regex
+      .replace(/^\u0000+|\u0000+$/, '')
+      .split('\u0000')
+    if (paths.length) void rimraf(paths)
+  })
+}
+
+if (process.argv[1] === import.meta.filename) {
+  main()
+}
