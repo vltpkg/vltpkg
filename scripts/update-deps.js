@@ -18,11 +18,13 @@ const parseWS = path => [
 const getWorkspaces = config =>
   new Map([
     parseWS(ROOT),
-    ...readdirSync(resolve(ROOT, config.packages[0].slice(0, -1)), {
-      withFileTypes: true,
-    })
-      .filter(w => w.isDirectory())
-      .map(w => parseWS(resolve(w.parentPath, w.name))),
+    ...config.packages.flatMap(p =>
+      readdirSync(resolve(ROOT, p.replaceAll('*', '')), {
+        withFileTypes: true,
+      })
+        .filter(w => w.isDirectory())
+        .map(w => parseWS(resolve(w.parentPath, w.name))),
+    ),
   ])
 
 const spawn = (cmd, args, opts = {}) =>

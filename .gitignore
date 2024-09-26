@@ -13,3 +13,11 @@
 /src/*/docs
 /src/*/node_modules
 /src/*/scripts/fixtures/
+
+/infra/*/.tap
+/infra/*/.tshy-build
+/infra/*/.turbo
+/infra/*/dist
+/infra/*/docs
+/infra/*/node_modules
+/infra/*/scripts/fixtures/

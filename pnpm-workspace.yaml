@@ -1,5 +1,6 @@
 packages:
   - src/*
+  - infra/*
 catalog:
   '@eslint/js': ^9.8.0
   '@types/eslint__js': ^8.42.3
@@ -8,6 +9,7 @@ catalog:
   eslint: ^9.8.0
   graph-run: ^1.0.4
   lru-cache: ^11.0.0
+  package-json-from-dist: ^1.0.0
   pacote: ^18.0.6
   path-scurry: ^2.0.0
   polite-json: ^5.0.0
