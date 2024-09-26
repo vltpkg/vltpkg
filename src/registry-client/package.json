@@ -21,7 +21,7 @@
     "@vltpkg/types": "workspace:*",
     "@vltpkg/xdg": "workspace:*",
     "cache-control-parser": "^2.0.5",
-    "package-json-from-dist": "^1.0.0",
+    "package-json-from-dist": "catalog:",
     "undici": "^6.13.0"
   },
   "devDependencies": {
