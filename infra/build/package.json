@@ -1,0 +1,68 @@
+{
+  "name": "@vltpkg/infra-build",
+  "description": "Build scripts for this monorepo",
+  "version": "0.0.0-0",
+  "private": true,
+  "tshy": {
+    "selfLink": false,
+    "dialects": [
+      "esm"
+    ],
+    "exports": {
+      "./package.json": "./package.json",
+      ".": "./src/index.ts"
+    }
+  },
+  "dependencies": {
+    "@yao-pkg/pkg": "^5.15.0",
+    "esbuild": "^0.23.1",
+    "jscodeshift": "^17.0.0",
+    "package-json-from-dist": "catalog:"
+  },
+  "devDependencies": {
+    "@eslint/js": "catalog:",
+    "@types/eslint__js": "catalog:",
+    "@types/jscodeshift": "^0.11.11",
+    "@types/node": "catalog:",
+    "eslint": "catalog:",
+    "prettier": "catalog:",
+    "tap": "catalog:",
+    "tshy": "catalog:",
+    "typedoc": "catalog:",
+    "typescript": "catalog:",
+    "typescript-eslint": "catalog:"
+  },
+  "engines": {
+    "node": "20 || >=22"
+  },
+  "scripts": {
+    "build:deno": "node dist/esm/bin.js --deno",
+    "build:node": "node dist/esm/bin.js --node",
+    "format": "prettier --write . --log-level warn --ignore-path ../../.prettierignore --cache",
+    "format:check": "prettier --check . --ignore-path ../../.prettierignore --cache",
+    "lint": "eslint . --fix",
+    "lint:check": "eslint .",
+    "prepare": "tshy",
+    "presnap": "npm run prepare",
+    "snap": "tap",
+    "pretest": "npm run prepare",
+    "test": "tap",
+    "typedoc": "typedoc"
+  },
+  "tap": {
+    "extends": "../../tap-config.yaml",
+    "timeout": 600
+  },
+  "prettier": "../../.prettierrc.json",
+  "type": "module",
+  "exports": {
+    "./package.json": "./package.json",
+    ".": {
+      "import": {
+        "types": "./dist/esm/index.d.ts",
+        "default": "./dist/esm/index.js"
+      }
+    }
+  },
+  "module": "./dist/esm/index.js"
+}
