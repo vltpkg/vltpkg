@@ -2,8 +2,7 @@ import { error } from '@vltpkg/error-cause'
 import os from 'os'
 import { Worker } from 'worker_threads'
 import { UnpackRequest } from './unpack-request.js'
-
-const workerScript = new URL('./worker.js', import.meta.url)
+import { __CODE_SPLIT_SCRIPT_NAME } from './worker.js'
 
 export type ResponseOK = { id: number; ok: true }
 export const isResponseOK = (o: any): o is ResponseOK =>
@@ -101,7 +100,7 @@ export class Pool {
 
   // create a new worker
   async #createWorker(req: UnpackRequest) {
-    const w = new Worker(workerScript)
+    const w = new Worker(__CODE_SPLIT_SCRIPT_NAME)
     this.workers.add(w)
     w.addListener('message', (m: any) => this.#onMessage(w, m))
     this.#request(w, req)
