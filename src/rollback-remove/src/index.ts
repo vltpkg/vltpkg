@@ -2,11 +2,7 @@ import { spawn } from 'child_process'
 import { rename } from 'fs/promises'
 import { basename, dirname } from 'path'
 import { rimraf } from 'rimraf'
-import { fileURLToPath } from 'url'
-
-const removeScript = fileURLToPath(
-  new URL('./remove.js', import.meta.url),
-)
+import { __CODE_SPLIT_SCRIPT_NAME } from './remove.js'
 
 export class RollbackRemove {
   #key = String(Math.random()).substring(2)
@@ -29,10 +25,14 @@ export class RollbackRemove {
     // nothing to confirm!
     if (!this.#paths.size) return
 
-    const child = spawn(process.execPath, [removeScript], {
-      stdio: ['pipe', 'ignore', 'ignore'],
-      detached: true,
-    })
+    const child = spawn(
+      process.execPath,
+      [__CODE_SPLIT_SCRIPT_NAME],
+      {
+        stdio: ['pipe', 'ignore', 'ignore'],
+        detached: true,
+      },
+    )
     child.unref()
     for (const path of this.#paths.values()) {
       child.stdin.write(path + '\u0000')
