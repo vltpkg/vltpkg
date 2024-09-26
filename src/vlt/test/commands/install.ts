@@ -59,7 +59,7 @@ await command(
     positionals: ['abbrev@2'],
     values: { 'save-dev': true },
     options,
-  } as unknown as LoadedConfig,
+  } as LoadedConfig,
   {},
 )
 t.matchSnapshot(reifyOpts, 'should reify installing a new dependency')
