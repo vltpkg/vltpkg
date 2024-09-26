@@ -1,32 +1,42 @@
-import EventEmitter from 'events'
+import { spawnSync } from 'child_process'
 import t from 'tap'
+import { join } from 'node:path'
+import { __CODE_SPLIT_SCRIPT_NAME } from '../dist/esm/remove.js'
+import { readdirSync } from 'fs'
 
 t.test('run the remover', async t => {
-  const mockStdin = new EventEmitter()
-  t.intercept(process, 'stdin', { value: mockStdin })
-  t.chdir(
-    t.testdir({
-      a: {
-        b: '',
-        c: '',
-      },
-      d: {
-        e: '',
-        f: '',
-      },
-    }),
-  )
-  const rms: string[] = []
-  await t.mockImport('../src/remove.js', {
-    rimraf: {
-      rimraf: (paths: string[]) => rms.push(...paths),
+  const dir = t.testdir({
+    a: {
+      b: '',
+      c: '',
+    },
+    d: {
+      e: '',
+      f: '',
     },
   })
-  // verify that it works if it's all chunked weird
-  const message = Buffer.from('a/b\x00./d\x00')
-  for (let i = 0; i < message.length; i += 2) {
-    mockStdin.emit('data', message.subarray(i, i + 2))
-  }
-  mockStdin.emit('end')
-  t.strictSame(rms, ['a/b', './d'])
+
+  const readDirs = () =>
+    readdirSync(dir, { withFileTypes: true })
+      .flatMap(r =>
+        readdirSync(join(r.parentPath, r.name), {
+          withFileTypes: true,
+        }),
+      )
+      .map(d => join(d.parentPath, d.name))
+      .sort()
+
+  t.strictSame(
+    readDirs(),
+    ['a/b', 'a/c', 'd/e', 'd/f'].map(d => join(dir, d)),
+  )
+
+  t.chdir(dir)
+
+  spawnSync(process.execPath, [__CODE_SPLIT_SCRIPT_NAME], {
+    // verify that it works if it's all chunked weird
+    input: Buffer.from('a/b\x00./d\x00'),
+  })
+
+  t.strictSame(readDirs(), [join(dir, 'a/c')])
 })
