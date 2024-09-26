@@ -1,16 +1,13 @@
-import { spawnSync } from 'child_process'
 import { lstatSync, readFileSync } from 'fs'
 import { resolve } from 'path'
 import t, { Test } from 'tap'
 import { Pax } from 'tar'
-import { fileURLToPath } from 'url'
 import { Worker } from 'worker_threads'
 import { gzipSync } from 'zlib'
 import { makeTar } from './fixtures/make-tar.js'
+import { __CODE_SPLIT_SCRIPT_NAME } from '../dist/esm/worker.js'
 
-const workerScript = new URL('../dist/esm/worker.js', import.meta.url)
-
-const w = new Worker(workerScript)
+const w = new Worker(__CODE_SPLIT_SCRIPT_NAME)
 t.teardown(() => w.terminate())
 
 const pj = JSON.stringify({
@@ -143,19 +140,6 @@ t.test('unpack into a dir', t => {
     const p = new Promise<any>(res => w.once('message', res))
     w.postMessage({ id: 5, target: 13, tarData: 'asdf' })
     t.strictSame(await p, { id: 5, error: 'invalid arguments' })
-  })
-
-  t.test('cannot be main', t => {
-    const res = spawnSync(
-      process.execPath,
-      [fileURLToPath(workerScript)],
-      {
-        encoding: 'utf8',
-      },
-    )
-    t.equal(res.status, 1)
-    t.match(res.stderr, /worker\.js should be run in a worker thread/)
-    t.end()
   })
 
   t.end()
