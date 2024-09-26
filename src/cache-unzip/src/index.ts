@@ -1,9 +1,5 @@
 import { spawn } from 'child_process'
-import { fileURLToPath } from 'url'
-
-const unzipScript = fileURLToPath(
-  new URL('./unzip.js', import.meta.url),
-)
+import { __CODE_SPLIT_SCRIPT_NAME } from './unzip.js'
 
 let didProcessBeforeExitHook = false
 const registered = new Map<string, Set<string>>()
@@ -22,7 +18,7 @@ const handleBeforeExit = () => {
   for (const [path, r] of registered) {
     /* c8 ignore next */
     if (!r.size) return
-    const args = [unzipScript, path, ...r]
+    const args = [__CODE_SPLIT_SCRIPT_NAME, path, ...r]
     registered.delete(path)
     spawn(process.execPath, args, {
       detached: true,

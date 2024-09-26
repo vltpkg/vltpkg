@@ -1,19 +1,22 @@
 import { Cache } from '@vltpkg/cache'
 import { spawnSync } from 'child_process'
-import { resolve } from 'path'
 import t from 'tap'
 import { gzipSync } from 'zlib'
-
-const script = resolve(import.meta.dirname, '../dist/esm/unzip.js')
+import { __CODE_SPLIT_SCRIPT_NAME } from '../dist/esm/unzip.js'
 
 t.test('validate args', async t => {
-  t.match(spawnSync(process.execPath, [script]), { status: 1 })
-  t.match(spawnSync(process.execPath, [script, 'path']), {
+  t.match(spawnSync(process.execPath, [__CODE_SPLIT_SCRIPT_NAME]), {
     status: 1,
   })
   t.match(
+    spawnSync(process.execPath, [__CODE_SPLIT_SCRIPT_NAME, 'path']),
+    {
+      status: 1,
+    },
+  )
+  t.match(
     spawnSync(process.execPath, [
-      script,
+      __CODE_SPLIT_SCRIPT_NAME,
       t.testdir(),
       'nope',
       'not valid',
@@ -63,7 +66,14 @@ t.test('unzip some stuff in the cache', async t => {
 
   const res = spawnSync(
     process.execPath,
-    [script, t.testdirName, 'gz1', 'gz2', 'plain1', 'bogus'],
+    [
+      __CODE_SPLIT_SCRIPT_NAME,
+      t.testdirName,
+      'gz1',
+      'gz2',
+      'plain1',
+      'bogus',
+    ],
     { stdio: 'inherit' },
   )
   t.matchOnlyStrict(res, {
@@ -151,7 +161,7 @@ t.test('unzip an entry that had headers', async t => {
   await cache.promise()
   const res = spawnSync(
     process.execPath,
-    [script, t.testdirName, 'gz1'],
+    [__CODE_SPLIT_SCRIPT_NAME, t.testdirName, 'gz1'],
     { stdio: 'inherit' },
   )
   t.matchOnlyStrict(res, {
