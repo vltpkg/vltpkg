@@ -1,5 +1,5 @@
 import { readFileSync, readdirSync, writeFileSync } from 'node:fs'
-import { relative, resolve } from 'node:path'
+import { relative, resolve, basename, dirname } from 'node:path'
 import * as yaml from 'yaml'
 import * as prettier from 'prettier'
 import * as semver from '../src/semver/dist/esm/index.js'
@@ -94,6 +94,7 @@ const parseWS = path => ({
   relDir: `${path == ROOT ? '.' : relative(path, ROOT)}/`,
   path: resolve(path, 'package.json'),
   dir: path,
+  workspaceDir: basename(dirname(path)),
   pj: readJson(resolve(path, 'package.json')),
 })
 
@@ -316,6 +317,10 @@ const fixPackage = async (ws, opts) => {
   await fixScripts(ws, opts)
   await fixTools(ws, opts)
   ws.pj.engines = { node: '20 || >=22' }
+  ws.pj.private =
+    ws.workspaceDir === 'infra' || ws.isRoot || ws.pj.name === 'vlt' ?
+      true
+    : undefined
   return sortObject(ws.pj, [
     'name',
     'description',
@@ -341,14 +346,13 @@ const main = async () => {
   const rootConfig = yaml.parse(readFileSync(configPath, 'utf8'))
   const workspaces = [
     root,
-    ...readdirSync(
-      resolve(ROOT, rootConfig.packages[0].slice(0, -1)),
-      {
+    ...rootConfig.packages.flatMap(p =>
+      readdirSync(resolve(ROOT, p.replaceAll('*', '')), {
         withFileTypes: true,
-      },
-    )
-      .filter(w => w.isDirectory())
-      .map(w => parseWS(resolve(w.parentPath, w.name))),
+      })
+        .filter(w => w.isDirectory())
+        .map(w => parseWS(resolve(w.parentPath, w.name))),
+    ),
   ]
   const catalog = getCatalogDeps(workspaces, rootConfig.catalog)
   for (const ws of workspaces) {

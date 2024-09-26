@@ -23,3 +23,16 @@
 /src/*/tap-snapshots
 /src/*/test/**/fixtures/**
 !/src/*/test/**/fixtures/*.ts
+
+/infra/*/.tap
+/infra/*/.tshy
+/infra/*/.tshy-build
+/infra/*/dist
+/infra/*/docs
+/infra/*/example
+/infra/*/node_modules
+/infra/*/package.json
+/infra/*/scripts/fixtures
+/infra/*/tap-snapshots
+/infra/*/test/**/fixtures/**
+!/infra/*/test/**/fixtures/*.ts
