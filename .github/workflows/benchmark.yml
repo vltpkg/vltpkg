@@ -17,6 +17,14 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - uses: denoland/setup-deno@v1
+        with:
+          deno-version: v1.x
+
       - uses: pnpm/action-setup@v4
         with:
           version: 9
@@ -27,10 +35,6 @@ jobs:
         with:
           node-version: 20.x
           cache: pnpm
-
-      - uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: latest
 
       - name: Install Hyperfine
         run: |
