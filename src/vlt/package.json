@@ -2,6 +2,7 @@
   "name": "vlt",
   "description": "A very fast JavaScript package manager",
   "version": "0.0.0-0",
+  "private": true,
   "tshy": {
     "selfLink": false,
     "dialects": [
@@ -9,16 +10,15 @@
     ],
     "exports": {
       "./package.json": "./package.json",
-      ".": "./src/index.ts",
-      "./config": "./src/config/index.ts"
+      ".": "./src/index.ts"
     }
   },
   "bin": {
-    "vlt": "./dist/esm/index.js",
-    "vlr": "./dist/esm/vlr.js",
-    "vlx": "./dist/esm/vlx.js",
-    "vlrx": "./dist/esm/vlrx.js",
-    "vlix": "./dist/esm/vlix.js"
+    "vlt": "./dist/esm/bins/vlt.js",
+    "vlr": "./dist/esm/bins/vlr.js",
+    "vlx": "./dist/esm/bins/vlx.js",
+    "vlrx": "./dist/esm/bins/vlrx.js",
+    "vlix": "./dist/esm/bins/vlix.js"
   },
   "dependencies": {
     "@vltpkg/dep-id": "workspace:*",
@@ -34,7 +34,7 @@
     "@vltpkg/xdg": "workspace:*",
     "ansi-to-pre": "^1.0.5",
     "chalk": "catalog:",
-    "jackspeak": "^4.0.1",
+    "jackspeak": "^4.0.2",
     "path-scurry": "catalog:",
     "polite-json": "catalog:",
     "walk-up-path": "catalog:"
@@ -81,12 +81,6 @@
       "import": {
         "types": "./dist/esm/index.d.ts",
         "default": "./dist/esm/index.js"
-      }
-    },
-    "./config": {
-      "import": {
-        "types": "./dist/esm/config/index.d.ts",
-        "default": "./dist/esm/config/index.js"
       }
     }
   },
