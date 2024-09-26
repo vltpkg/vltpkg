@@ -1,7 +1,7 @@
 import { Config } from '../config/index.js'
 
-export const usage = (await Config.load()).jack.usage()
+export const usage = async () => (await Config.load()).jack.usage()
 
 export const command = async () => {
-  console.log(usage)
+  console.log(await usage())
 }

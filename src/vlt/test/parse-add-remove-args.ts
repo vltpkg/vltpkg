@@ -6,7 +6,7 @@ import {
   parseAddArgs,
   parseRemoveArgs,
 } from '../src/parse-add-remove-args.js'
-import { LoadedConfig } from '../src/index.js'
+import { LoadedConfig, ConfigData } from '../src/types.js'
 
 class MockConfig {
   values: Record<string, any> = {}
@@ -57,7 +57,7 @@ t.test('parseAddArgs', async t => {
     const conf = new MockConfig() as LoadedConfig
     conf.values = {
       'save-dev': true,
-    }
+    } as ConfigData
     conf.positionals = ['foo@latest']
     t.matchSnapshot(
       inspect(parseAddArgs(conf), { depth: Infinity }),
@@ -69,7 +69,7 @@ t.test('parseAddArgs', async t => {
     const conf = new MockConfig() as LoadedConfig
     conf.values = {
       'save-optional': true,
-    }
+    } as ConfigData
     conf.positionals = ['foo@latest']
     t.matchSnapshot(
       inspect(parseAddArgs(conf), { depth: Infinity }),
@@ -81,7 +81,7 @@ t.test('parseAddArgs', async t => {
     const conf = new MockConfig() as LoadedConfig
     conf.values = {
       'save-peer': true,
-    }
+    } as ConfigData
     conf.positionals = ['foo@latest']
     t.matchSnapshot(
       inspect(parseAddArgs(conf), { depth: Infinity }),
@@ -94,7 +94,7 @@ t.test('parseAddArgs', async t => {
     conf.values = {
       'save-optional': true,
       'save-peer': true,
-    }
+    } as ConfigData
     conf.positionals = ['foo@latest']
     t.matchSnapshot(
       inspect(parseAddArgs(conf), { depth: Infinity }),
@@ -109,7 +109,7 @@ t.test('parseAddArgs', async t => {
       'save-optional': true,
       'save-peer': true,
       'save-prod': true,
-    }
+    } as ConfigData
     conf.positionals = ['foo@latest']
     t.matchSnapshot(
       inspect(parseAddArgs(conf), { depth: Infinity }),
@@ -166,7 +166,7 @@ t.test('parseAddArgs', async t => {
         const monorepo = Monorepo.load(dir)
         const conf = new MockConfig() as LoadedConfig
         conf.positionals = ['foo']
-        conf.values = { workspace: ['./app/a'] }
+        conf.values = { workspace: ['./app/a'] } as ConfigData
         t.matchSnapshot(
           inspect(parseAddArgs(conf, monorepo), { depth: Infinity }),
           'should return dependency of a workspace',
@@ -199,7 +199,7 @@ t.test('parseAddArgs', async t => {
           'github:a/b',
           'file:./a',
         ]
-        conf.values = { workspace: ['c'] }
+        conf.values = { workspace: ['c'] } as ConfigData
         t.matchSnapshot(
           inspect(parseAddArgs(conf, monorepo), { depth: Infinity }),
           'should return multiple deps of a workspace',
@@ -219,7 +219,7 @@ t.test('parseAddArgs', async t => {
           'github:a/b',
           'file:./a',
         ]
-        conf.values = { workspace: ['a', 'b', 'c'] }
+        conf.values = { workspace: ['a', 'b', 'c'] } as ConfigData
         t.matchSnapshot(
           inspect(parseAddArgs(conf, monorepo), { depth: Infinity }),
           'should return multiple deps to multiple workspaces',
@@ -233,7 +233,7 @@ t.test('parseAddArgs', async t => {
         const monorepo = Monorepo.load(dir)
         const conf = new MockConfig() as LoadedConfig
         conf.positionals = ['foo']
-        conf.values = { 'workspace-group': ['other'] }
+        conf.values = { 'workspace-group': ['other'] } as ConfigData
         t.matchSnapshot(
           inspect(parseAddArgs(conf, monorepo), { depth: Infinity }),
           'should return dependency to a group of workspaces',
@@ -247,7 +247,9 @@ t.test('parseAddArgs', async t => {
         const monorepo = Monorepo.load(dir)
         const conf = new MockConfig() as LoadedConfig
         conf.positionals = ['foo']
-        conf.values = { 'workspace-group': ['utils', 'other'] }
+        conf.values = {
+          'workspace-group': ['utils', 'other'],
+        } as ConfigData
         t.matchSnapshot(
           inspect(parseAddArgs(conf, monorepo), { depth: Infinity }),
           'should return dependency to many groups of workspaces',
@@ -267,7 +269,9 @@ t.test('parseAddArgs', async t => {
           'github:a/b',
           'file:./a',
         ]
-        conf.values = { 'workspace-group': ['utils', 'other'] }
+        conf.values = {
+          'workspace-group': ['utils', 'other'],
+        } as ConfigData
         t.matchSnapshot(
           inspect(parseAddArgs(conf, monorepo), { depth: Infinity }),
           'should return multiple deps to many groups of workspaces',
@@ -354,7 +358,7 @@ t.test('parseRemoveArgs', async t => {
         const monorepo = Monorepo.load(dir)
         const conf = new MockConfig() as LoadedConfig
         conf.positionals = ['foo']
-        conf.values = {}
+        conf.values = {} as ConfigData
         t.matchSnapshot(
           inspect(parseRemoveArgs(conf, monorepo), {
             depth: Infinity,
@@ -368,7 +372,7 @@ t.test('parseRemoveArgs', async t => {
       const monorepo = Monorepo.load(dir)
       const conf = new MockConfig() as LoadedConfig
       conf.positionals = ['foo']
-      conf.values = { workspace: ['./app/a'] }
+      conf.values = { workspace: ['./app/a'] } as ConfigData
       t.matchSnapshot(
         inspect(parseRemoveArgs(conf, monorepo), { depth: Infinity }),
         'should remove single dep of workspace',
@@ -379,7 +383,7 @@ t.test('parseRemoveArgs', async t => {
       const monorepo = Monorepo.load(dir)
       const conf = new MockConfig() as LoadedConfig
       conf.positionals = ['foo', 'bar']
-      conf.values = { workspace: ['c'] }
+      conf.values = { workspace: ['c'] } as ConfigData
       t.matchSnapshot(
         inspect(parseRemoveArgs(conf, monorepo), { depth: Infinity }),
         'should remove multiple deps of workspace',
@@ -390,7 +394,7 @@ t.test('parseRemoveArgs', async t => {
       const monorepo = Monorepo.load(dir)
       const conf = new MockConfig() as LoadedConfig
       conf.positionals = ['foo']
-      conf.values = { 'workspace-group': ['app'] }
+      conf.values = { 'workspace-group': ['app'] } as ConfigData
       t.matchSnapshot(
         inspect(parseRemoveArgs(conf, monorepo), { depth: Infinity }),
         'should remove single dep from a single workspace group',
@@ -401,7 +405,7 @@ t.test('parseRemoveArgs', async t => {
       const monorepo = Monorepo.load(dir)
       const conf = new MockConfig() as LoadedConfig
       conf.positionals = ['foo', 'bar']
-      conf.values = { 'workspace-group': ['app'] }
+      conf.values = { 'workspace-group': ['app'] } as ConfigData
       t.matchSnapshot(
         inspect(parseRemoveArgs(conf, monorepo), { depth: Infinity }),
         'should remove multiple dep from a single workspace group',
@@ -414,7 +418,9 @@ t.test('parseRemoveArgs', async t => {
         const monorepo = Monorepo.load(dir)
         const conf = new MockConfig() as LoadedConfig
         conf.positionals = ['foo', 'bar']
-        conf.values = { 'workspace-group': ['utils', 'other'] }
+        conf.values = {
+          'workspace-group': ['utils', 'other'],
+        } as ConfigData
         t.matchSnapshot(
           inspect(parseRemoveArgs(conf, monorepo), {
             depth: Infinity,

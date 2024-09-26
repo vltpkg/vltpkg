@@ -8,6 +8,7 @@ import {
 import * as OS from 'os'
 import { resolve } from 'path'
 import t from 'tap'
+import { ConfigData } from '../../src/types.js'
 
 process.env.XDG_CONFIG_HOME = t.testdir()
 
@@ -205,7 +206,7 @@ t.test(
         'asdfasdf=https://example.com',
         'github=https://github',
       ],
-    }
+    } as ConfigData
     const opts = conf.options
     t.strictSame(opts, {
       projectRoot: t.testdirName,

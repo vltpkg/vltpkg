@@ -370,8 +370,8 @@ export class Config {
           for (const [c, opts] of Object.entries(command)) {
             const cmd = getCommand(c)
             if (cmd) {
-              this.commandValues[cmd] = merge(
-                this.commandValues[cmd] ?? {},
+              this.commandValues[cmd] = merge<ConfigData>(
+                this.commandValues[cmd] ?? ({} as ConfigData),
                 opts as ConfigData,
               )
             }
