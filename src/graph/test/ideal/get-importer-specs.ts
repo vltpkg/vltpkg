@@ -1,6 +1,9 @@
 import { joinDepIDTuple } from '@vltpkg/dep-id'
+import { PackageJson } from '@vltpkg/package-json'
 import { kCustomInspect, Spec } from '@vltpkg/spec'
+import { Monorepo } from '@vltpkg/workspaces'
 import { inspect } from 'node:util'
+import { PathScurry } from 'path-scurry'
 import t from 'tap'
 import { load } from '../../src/actual/load.js'
 import { asDependency } from '../../src/dependencies.js'
@@ -17,6 +20,7 @@ t.test('empty graph and nothing to add', async t => {
   const graph = new Graph({
     projectRoot: t.testdirName,
     mainManifest: {},
+    monorepo: Monorepo.maybeLoad(t.testdirName),
   })
   const add = new Map()
   const remove = new Map()
@@ -46,7 +50,11 @@ t.test('empty graph with workspaces and nothing to add', async t => {
       packages: ['./packages/*'],
     }),
   })
-  const graph = load({ projectRoot })
+  const graph = load({
+    projectRoot,
+    scurry: new PathScurry(projectRoot),
+    packageJson: new PackageJson(),
+  })
   const add = new Map()
   const remove = new Map()
   const specs = getImporterSpecs({ add, graph, remove })
@@ -57,6 +65,7 @@ t.test('empty graph and something to add', async t => {
   const graph = new Graph({
     projectRoot: t.testdirName,
     mainManifest: {},
+    monorepo: Monorepo.maybeLoad(t.testdirName),
   })
   const add = new Map([
     [
@@ -97,7 +106,11 @@ t.test('graph specs and nothing to add', async t => {
   const projectRoot = t.testdir({
     'package.json': JSON.stringify(mainManifest),
   })
-  const graph = load({ projectRoot })
+  const graph = load({
+    projectRoot,
+    scurry: new PathScurry(projectRoot),
+    packageJson: new PackageJson(),
+  })
   const add = new Map()
   const remove = new Map()
   const specs = getImporterSpecs({ add, graph, remove })
@@ -118,7 +131,11 @@ t.test('graph specs and new things to add', async t => {
   const projectRoot = t.testdir({
     'package.json': JSON.stringify(mainManifest),
   })
-  const graph = load({ projectRoot })
+  const graph = load({
+    projectRoot,
+    scurry: new PathScurry(projectRoot),
+    packageJson: new PackageJson(),
+  })
   const add = new Map([
     [
       joinDepIDTuple(['file', '.']),
@@ -155,7 +172,11 @@ t.test('graph specs and something to update', async t => {
   const projectRoot = t.testdir({
     'package.json': JSON.stringify(mainManifest),
   })
-  const graph = load({ projectRoot })
+  const graph = load({
+    projectRoot,
+    scurry: new PathScurry(projectRoot),
+    packageJson: new PackageJson(),
+  })
   const add = new Map([
     [
       joinDepIDTuple(['file', '.']),
@@ -213,7 +234,12 @@ t.test(
         packages: ['./packages/*'],
       }),
     })
-    const graph = load({ projectRoot })
+    const graph = load({
+      projectRoot,
+      scurry: new PathScurry(projectRoot),
+      packageJson: new PackageJson(),
+      monorepo: Monorepo.maybeLoad(projectRoot),
+    })
     const add = new Map([
       [
         joinDepIDTuple(['file', '.']),
@@ -262,6 +288,7 @@ t.test('adding to a non existing importer', async t => {
   const graph = new Graph({
     projectRoot: t.testdirName,
     mainManifest: {},
+    monorepo: Monorepo.maybeLoad(t.testdirName),
   })
   const add = new Map([
     // this workspace id does not exist in the given graph
@@ -332,7 +359,11 @@ t.test('graph specs and something to remove', async t => {
       ),
     },
   })
-  const graph = load({ projectRoot })
+  const graph = load({
+    projectRoot,
+    scurry: new PathScurry(projectRoot),
+    packageJson: new PackageJson(),
+  })
   const add = new Map()
   const remove = new Map()
   const specs = getImporterSpecs({ add, graph, remove })
@@ -416,7 +447,12 @@ t.test(
         packages: ['./packages/*'],
       }),
     })
-    const graph = load({ projectRoot })
+    const graph = load({
+      projectRoot,
+      scurry: new PathScurry(projectRoot),
+      packageJson: new PackageJson(),
+      monorepo: Monorepo.maybeLoad(projectRoot),
+    })
     const add = new Map()
     const remove = new Map([
       [joinDepIDTuple(['workspace', 'packages/b']), new Set(['a'])],

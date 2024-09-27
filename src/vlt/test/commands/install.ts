@@ -5,10 +5,6 @@ import { LoadedConfig } from '../../src/config/index.js'
 
 t.cleanSnapshot = s =>
   s.replace(/^(\s+)"?projectRoot"?: .*$/gm, '$1projectRoot: #')
-
-const options = { projectRoot: t.testdirName }
-let reifyOpts: any
-
 class PackageJson {
   read() {
     return { name: 'my-project', version: '1.0.0' }
@@ -17,6 +13,13 @@ class PackageJson {
 
 // eslint-disable-next-line @typescript-eslint/no-extraneous-class
 class PathScurry {}
+
+const options = {
+  projectRoot: t.testdirName,
+  scurry: new PathScurry(),
+  packageJson: new PackageJson(),
+}
+let reifyOpts: any
 
 const rootDepID = joinDepIDTuple(['file', '.'])
 
@@ -40,6 +43,10 @@ const { usage, command } = await t.mockImport<
   },
   'path-scurry': {
     PathScurry,
+    PathScurryDarwin: PathScurry,
+    PathScurryLinux: PathScurry,
+    PathScurryPosix: PathScurry,
+    PathScurryWin32: PathScurry,
   },
 })
 t.type(usage, 'string')
@@ -59,7 +66,7 @@ await command(
     positionals: ['abbrev@2'],
     values: { 'save-dev': true },
     options,
-  } as LoadedConfig,
+  } as unknown as LoadedConfig,
   {},
 )
 t.matchSnapshot(reifyOpts, 'should reify installing a new dependency')

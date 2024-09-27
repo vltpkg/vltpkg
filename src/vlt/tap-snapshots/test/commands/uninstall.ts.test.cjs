@@ -11,6 +11,15 @@ Object {
   "graph": "buildideal result removes 0 new package(s)",
   "loadManifests": true,
   "monorepo": undefined,
+  "packageInfo": PackageInfoClient {
+    "monorepo": undefined,
+    "options": Object {
+      "packageJson": PackageJson {},
+      projectRoot: #
+      "scurry": PathScurry {},
+    },
+    "packageJson": PackageJson {},
+  },
   "packageJson": PackageJson {},
   projectRoot: #
   "remove": Map {

@@ -25,6 +25,7 @@
     "@vltpkg/dot-prop": "workspace:*",
     "@vltpkg/error-cause": "workspace:*",
     "@vltpkg/graph": "workspace:*",
+    "@vltpkg/package-info": "workspace:*",
     "@vltpkg/package-json": "workspace:*",
     "@vltpkg/promise-spawn": "workspace:*",
     "@vltpkg/run": "workspace:*",

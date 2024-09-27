@@ -1,6 +1,8 @@
 import { DepID, DepIDTuple, joinDepIDTuple } from '@vltpkg/dep-id'
 import { manifest, PackageInfoClient } from '@vltpkg/package-info'
+import { PackageJson } from '@vltpkg/package-json'
 import { Spec, SpecOptions } from '@vltpkg/spec'
+import { Monorepo } from '@vltpkg/workspaces'
 import { PathScurry } from 'path-scurry'
 import t from 'tap'
 import { load as loadActual } from '../../src/actual/load.js'
@@ -377,6 +379,9 @@ t.test('build from an actual graph', async t => {
   })
 
   const actual = loadActual({
+    scurry: new PathScurry(projectRoot),
+    packageJson: new PackageJson(),
+    monorepo: Monorepo.maybeLoad(projectRoot),
     projectRoot,
     loadManifests: true,
     ...configData,

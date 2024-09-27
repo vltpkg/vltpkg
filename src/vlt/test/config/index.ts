@@ -208,13 +208,18 @@ t.test(
       ],
     } as ConfigData
     const opts = conf.options
-    t.strictSame(opts, {
+    const { scurry, packageJson, monorepo, ...o } = opts
+    t.strictSame(o, {
       projectRoot: t.testdirName,
       'git-hosts': {
         asdfasdf: 'https://example.com',
         github: 'https://github',
       },
     })
+    // can't check the type, because it came in via a mockImport,
+    // so tap sees a different class.
+    t.ok(scurry, 'always includes a scurry')
+    t.ok(packageJson, 'always includes a packageJson')
     t.equal(conf.options, opts, 'memoized')
 
     await conf.writeConfigFile('project', {

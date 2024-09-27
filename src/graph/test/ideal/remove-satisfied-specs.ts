@@ -1,6 +1,9 @@
 import { joinDepIDTuple } from '@vltpkg/dep-id'
+import { PackageJson } from '@vltpkg/package-json'
 import { kCustomInspect, Spec } from '@vltpkg/spec'
+import { Monorepo } from '@vltpkg/workspaces'
 import { inspect } from 'node:util'
+import { PathScurry } from 'path-scurry'
 import t from 'tap'
 import { load } from '../../src/actual/load.js'
 import { asDependency } from '../../src/dependencies.js'
@@ -55,7 +58,12 @@ t.test('graph with an actual node', async t => {
   })
 
   await t.test('add spec is satisfied', async t => {
-    const graph = load({ projectRoot })
+    const graph = load({
+      projectRoot,
+      scurry: new PathScurry(projectRoot),
+      monorepo: Monorepo.maybeLoad(projectRoot),
+      packageJson: new PackageJson(),
+    })
     const add = new Map([
       [
         joinDepIDTuple(['file', '.']),
@@ -74,7 +82,12 @@ t.test('graph with an actual node', async t => {
   })
 
   await t.test('add a new spec item', async t => {
-    const graph = load({ projectRoot })
+    const graph = load({
+      projectRoot,
+      scurry: new PathScurry(projectRoot),
+      monorepo: Monorepo.maybeLoad(projectRoot),
+      packageJson: new PackageJson(),
+    })
     const add = new Map([
       [
         joinDepIDTuple(['file', '.']),
@@ -96,7 +109,12 @@ t.test('graph with an actual node', async t => {
   })
 
   await t.test('update existing spec', async t => {
-    const graph = load({ projectRoot })
+    const graph = load({
+      projectRoot,
+      scurry: new PathScurry(projectRoot),
+      monorepo: Monorepo.maybeLoad(projectRoot),
+      packageJson: new PackageJson(),
+    })
     const add = new Map([
       [
         joinDepIDTuple(['file', '.']),
@@ -118,7 +136,12 @@ t.test('graph with an actual node', async t => {
   })
 
   await t.test('registry tag', async t => {
-    const graph = load({ projectRoot })
+    const graph = load({
+      projectRoot,
+      scurry: new PathScurry(projectRoot),
+      monorepo: Monorepo.maybeLoad(projectRoot),
+      packageJson: new PackageJson(),
+    })
     const add = new Map([
       [
         joinDepIDTuple(['file', '.']),

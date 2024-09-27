@@ -1,6 +1,7 @@
 import { joinDepIDTuple } from '@vltpkg/dep-id'
 import { PackageJson } from '@vltpkg/package-json'
 import { RunOptions } from '@vltpkg/run'
+import { Monorepo } from '@vltpkg/workspaces'
 import * as FSP from 'node:fs/promises'
 import { resolve } from 'node:path'
 import { PathScurry } from 'path-scurry'
@@ -133,8 +134,20 @@ t.test(
     })
 
     // pretend like we didn't have the deps, and then added them
-    const after = actual.load({ projectRoot, loadManifests: true })
-    const before = actual.load({ projectRoot, loadManifests: true })
+    const after = actual.load({
+      monorepo: Monorepo.maybeLoad(projectRoot),
+      packageJson: new PackageJson(),
+      scurry: new PathScurry(projectRoot),
+      projectRoot,
+      loadManifests: true,
+    })
+    const before = actual.load({
+      projectRoot,
+      monorepo: Monorepo.maybeLoad(projectRoot),
+      packageJson: new PackageJson(),
+      scurry: new PathScurry(projectRoot),
+      loadManifests: true,
+    })
     const bx = before.nodes.get(xid)
     const by = before.nodes.get(yid)
     if (!bx) throw new Error('no x node in before??')

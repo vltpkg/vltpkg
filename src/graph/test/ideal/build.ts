@@ -1,4 +1,8 @@
 import { joinDepIDTuple } from '@vltpkg/dep-id'
+import { PackageInfoClient } from '@vltpkg/package-info'
+import { PackageJson } from '@vltpkg/package-json'
+import { Monorepo } from '@vltpkg/workspaces'
+import { PathScurry } from 'path-scurry'
 import t from 'tap'
 import { build } from '../../src/ideal/build.js'
 import { humanReadableOutput } from '../../src/visualization/human-readable-output.js'
@@ -35,6 +39,10 @@ t.test('build from lockfile', async t => {
   })
 
   const graph = await build({
+    scurry: new PathScurry(projectRoot),
+    monorepo: Monorepo.maybeLoad(projectRoot),
+    packageJson: new PackageJson(),
+    packageInfo: new PackageInfoClient({ projectRoot }),
     projectRoot,
     add: new Map([[joinDepIDTuple(['file', '.']), new Map()]]),
     remove: new Map(),
@@ -78,6 +86,10 @@ t.test('build from actual files', async t => {
   })
 
   const graph = await build({
+    scurry: new PathScurry(projectRoot),
+    monorepo: Monorepo.maybeLoad(projectRoot),
+    packageJson: new PackageJson(),
+    packageInfo: new PackageInfoClient({ projectRoot }),
     projectRoot,
   })
 

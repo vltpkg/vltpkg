@@ -1,9 +1,15 @@
 import t, { Test } from 'tap'
 
-import { definition, LoadedConfig } from '../../src/config/index.js'
+import {
+  definition,
+  LoadedConfig,
+  recordsToPairs,
+} from '../../src/config/index.js'
 
+import { PackageJson } from '@vltpkg/package-json'
 import * as CP from 'node:child_process'
 import { SpawnOptions } from 'node:child_process'
+import { PathScurry } from 'path-scurry'
 let edited: string | undefined = undefined
 const mockSpawnSync = (
   cmd: string,
@@ -26,6 +32,8 @@ class MockConfig {
   constructor(positionals: string[], values: Record<string, any>) {
     this.positionals = positionals
     this.values = values
+    this.values.packageJson = new PackageJson()
+    this.values.scurry = new PathScurry(t.testdirName)
   }
   get options() {
     return this.values
@@ -132,7 +140,9 @@ t.test('list', async t => {
       const vals = { some: 'options' }
       await run(t, [cmd], vals)
       t.strictSame(consoleErrors(), [])
-      t.strictSame(consoleLogs(), [[JSON.stringify(vals, null, 2)]])
+      t.strictSame(consoleLogs(), [
+        [JSON.stringify(recordsToPairs(vals), null, 2)],
+      ])
     })
   }
 })

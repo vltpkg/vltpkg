@@ -1,18 +1,15 @@
-import { Graph } from '../graph.js'
-import {
-  LoadOptions as LoadActualOptions,
-  load as loadActual,
-} from '../actual/load.js'
-import { load as loadVirtual } from '../lockfile/load.js'
-import { buildIdealFromStartingGraph } from './build-ideal-from-starting-graph.js'
 import { PackageInfoClient } from '@vltpkg/package-info'
-import { PackageJson } from '@vltpkg/package-json'
-import { PathScurry } from 'path-scurry'
-import { Monorepo } from '@vltpkg/workspaces'
+import {
+  load as loadActual,
+  LoadOptions as LoadActualOptions,
+} from '../actual/load.js'
 import {
   AddImportersDependenciesMap,
   RemoveImportersDependenciesMap,
 } from '../dependencies.js'
+import { Graph } from '../graph.js'
+import { load as loadVirtual } from '../lockfile/load.js'
+import { buildIdealFromStartingGraph } from './build-ideal-from-starting-graph.js'
 
 export type BuildIdealOptions = LoadActualOptions & {
   /**
@@ -31,7 +28,7 @@ export type BuildIdealOptions = LoadActualOptions & {
   /**
    * A {@link PackageInfoClient} instance to read manifest info from.
    */
-  packageInfo?: PackageInfoClient
+  packageInfo: PackageInfoClient
 }
 
 /**
@@ -46,16 +43,9 @@ export const build = async (
 ): Promise<Graph> => {
   // Creates the shared instances that are going to be used
   // in both the loader methods and the build graph
-  const packageJson = options.packageJson ?? new PackageJson()
+  const { packageInfo, packageJson, scurry, monorepo } = options
   const mainManifest =
     options.mainManifest ?? packageJson.read(options.projectRoot)
-  const scurry = options.scurry ?? new PathScurry(options.projectRoot)
-  const monorepo =
-    options.monorepo ??
-    Monorepo.maybeLoad(options.projectRoot, { packageJson, scurry })
-  const packageInfo =
-    options.packageInfo ??
-    new PackageInfoClient({ ...options, monorepo, packageJson })
   const add = options.add ?? new Map()
   const remove = options.remove ?? new Map()
 
@@ -65,16 +55,12 @@ export const build = async (
       ...options,
       mainManifest,
       monorepo,
-      packageJson,
-      scurry,
     })
   } catch {
     graph = loadActual({
       ...options,
       mainManifest,
       monorepo,
-      packageJson,
-      scurry,
     })
   }
 

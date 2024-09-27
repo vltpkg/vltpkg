@@ -34,11 +34,11 @@ export type LoadOptions = SpecOptions & {
   /**
    * A {@link PackageJson} object, for sharing manifest caches
    */
-  packageJson?: PackageJson
+  packageJson: PackageJson
   /**
    * A {@link PathScurry} object, for use in globs
    */
-  scurry?: PathScurry
+  scurry: PathScurry
   /**
    * If set to `false`, `actual.load` will not load any `package.json`
    * files while traversing the file system.
@@ -335,14 +335,15 @@ const parseDir = (
  */
 export const load = (options: LoadOptions): Graph => {
   // TODO: once hidden lockfile is more reliable, default to false here
-  const { skipHiddenLockfile = true, projectRoot } = options
-  const packageJson = options.packageJson ?? new PackageJson()
+  const {
+    skipHiddenLockfile = true,
+    projectRoot,
+    packageJson,
+    scurry,
+    monorepo,
+  } = options
   const mainManifest =
     options.mainManifest ?? packageJson.read(projectRoot)
-  const scurry = options.scurry ?? new PathScurry(projectRoot)
-  const monorepo =
-    options.monorepo ??
-    Monorepo.maybeLoad(projectRoot, { packageJson, scurry })
 
   if (!skipHiddenLockfile) {
     try {
@@ -353,13 +354,12 @@ export const load = (options: LoadOptions): Graph => {
         monorepo,
         scurry,
       })
-      // TODO: merge in the monorepo workspaces
       // TODO: check mtime of lockfile vs .vlt folder
       return graph
     } catch {}
   }
 
-  const graph = new Graph({ ...options, mainManifest, monorepo })
+  const graph = new Graph({ ...options, mainManifest })
   const depsFound = new Map<Node, Path>()
 
   // starts the list of initial folders to parse using the importer nodes

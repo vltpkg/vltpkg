@@ -14,6 +14,15 @@ Object {
   "graph": "buildideal result adds 0 new package(s)",
   "loadManifests": true,
   "monorepo": undefined,
+  "packageInfo": PackageInfoClient {
+    "monorepo": undefined,
+    "options": Object {
+      "packageJson": PackageJson {},
+      projectRoot: #
+      "scurry": PathScurry {},
+    },
+    "packageJson": PackageJson {},
+  },
   "packageJson": PackageJson {},
   projectRoot: #
   "scurry": PathScurry {},
@@ -52,12 +61,14 @@ Object {
               "github": "git+ssh://git@github.com:$1/$2.git",
               "gitlab": "git+ssh://git@gitlab.com:$1/$2.git",
             },
+            "packageJson": PackageJson {},
             projectRoot: #
             "registries": Object {
               "npm": "https://registry.npmjs.org/",
             },
             "registry": "https://registry.npmjs.org/",
             "scope-registries": Object {},
+            "scurry": PathScurry {},
           },
           "range": Range {
             "includePrerelease": false,
@@ -121,6 +132,15 @@ Object {
   "graph": "buildideal result adds 1 new package(s)",
   "loadManifests": true,
   "monorepo": undefined,
+  "packageInfo": PackageInfoClient {
+    "monorepo": undefined,
+    "options": Object {
+      "packageJson": PackageJson {},
+      projectRoot: #
+      "scurry": PathScurry {},
+    },
+    "packageJson": PackageJson {},
+  },
   "packageJson": PackageJson {},
   projectRoot: #
   "scurry": PathScurry {},
