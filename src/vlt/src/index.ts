@@ -1,9 +1,6 @@
-import { Monorepo } from '@vltpkg/workspaces'
-import { Config } from './config/index.js'
-import { PathScurry } from 'path-scurry'
-import { PackageJson } from '@vltpkg/package-json'
-import { CliCommand, Commands } from './types.js'
 import { error } from '@vltpkg/error-cause'
+import { Config } from './config/index.js'
+import { CliCommand, Commands } from './types.js'
 
 const loadCommand = async (
   command: Commands[keyof Commands] | undefined,
@@ -25,17 +22,15 @@ const loadCommand = async (
 const run = async () => {
   const vlt = await Config.load(process.cwd(), process.argv)
   const cwd = process.cwd()
-  const packageJson = new PackageJson()
-  const scurry = new PathScurry(vlt.projectRoot)
-  const monorepo = Monorepo.maybeLoad(vlt.projectRoot, {
-    packageJson,
-    scurry,
-  })
+  const { monorepo } = vlt.options
 
   // Infer the workspace by being in that directory.
   if (vlt.get('workspace') === undefined) {
     const ws = monorepo?.get(cwd)
-    if (ws) vlt.values.workspace = [ws.path]
+    if (ws) {
+      vlt.values.workspace = [ws.path]
+      vlt.options.workspace = [ws.path]
+    }
   }
 
   const { command, usage } = await loadCommand(vlt.command)
@@ -44,11 +39,7 @@ const run = async () => {
     console.log(typeof usage === 'function' ? await usage() : usage)
   } else {
     // TODO: if it throws, pass to central error handler
-    await command(vlt, {
-      monorepo,
-      packageJson,
-      scurry,
-    })
+    await command(vlt, vlt.options)
   }
 }
 

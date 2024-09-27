@@ -772,13 +772,13 @@
       }
     ]
   },
-  "ansi-regex@6.1.0": {
-    "resolved": "https://registry.npmjs.org/ansi-regex/-/ansi-regex-6.1.0.tgz",
-    "integrity": "sha512-7HSX4QQb4CspciLpVFwyRe79O3xsIZDDLER21kERQ71oaPodF8jL725AgJMFAYbooIqolJoRLuM81SpeUkpkvA==",
+  "lodash@4": {
+    "resolved": "https://registry.npmjs.org/lodash/-/lodash-4.17.21.tgz",
+    "integrity": "sha512-v2kDEe57lecTulaDIuNTPy3Ry4gLGJ6Z1O3vE1krgXZNrsQ+LFTGHVxVjcXPs17LhbZVGedAJv8XZ1tvj5FvSg==",
     "signatures": [
       {
-        "keyid": "SHA256:jl3bwswu80PjjokCgh0o2w5c2U4LhQAE57gj9cz1kzA",
-        "sig": "MEQCIDGQvwQxWIDhiEnJTo1Tb35X3bxVWxMjBoPaj+qTxlfnAiA3pztqy3OFgYbMqWZC5GdWT1yG2frnePf72yHSrhynBw=="
+        "sig": "MEUCIF3Yithbtmy1aEBNlfNWbLswAfPIyQUuNUGARD3Ex2t4AiEA6TlN2ZKJCUpS/Sf2Z6MduF1BNSvayHIpu5wAcICcKXw=",
+        "keyid": "SHA256:jl3bwswu80PjjokCgh0o2w5c2U4LhQAE57gj9cz1kzA"
       }
     ]
   }

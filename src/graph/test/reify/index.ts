@@ -4,7 +4,9 @@ import {
   PackageInfoClientRequestOptions,
   Resolution,
 } from '@vltpkg/package-info'
+import { PackageJson } from '@vltpkg/package-json'
 import { Spec } from '@vltpkg/spec'
+import { Monorepo } from '@vltpkg/workspaces'
 import {
   lstatSync,
   readdirSync,
@@ -15,6 +17,7 @@ import {
 import { statSync } from 'node:fs'
 import { pathToFileURL } from 'node:url'
 import { resolve } from 'path'
+import { PathScurry } from 'path-scurry'
 import t from 'tap'
 import { inspect } from 'util'
 import {
@@ -47,10 +50,19 @@ t.test('super basic reification', async t => {
     },
   })
   const projectRoot = resolve(dir, 'project')
-  const graph = await ideal.build({ projectRoot })
+  const graph = await ideal.build({
+    projectRoot,
+    packageInfo: mockPackageInfo,
+    monorepo: Monorepo.maybeLoad(projectRoot),
+    scurry: new PathScurry(projectRoot),
+    packageJson: new PackageJson(),
+  })
   await reify({
     projectRoot,
     packageInfo: mockPackageInfo,
+    monorepo: Monorepo.maybeLoad(projectRoot),
+    scurry: new PathScurry(projectRoot),
+    packageJson: new PackageJson(),
     graph,
   })
 
@@ -135,6 +147,9 @@ t.test('super basic reification', async t => {
   await reify({
     projectRoot,
     packageInfo: mockPackageInfo,
+    monorepo: Monorepo.maybeLoad(projectRoot),
+    scurry: new PathScurry(projectRoot),
+    packageJson: new PackageJson(),
     graph,
   })
 
@@ -165,11 +180,20 @@ t.test('reify with a bin', async t => {
   })
 
   const projectRoot = resolve(dir, 'project')
-  const graph = await ideal.build({ projectRoot })
+  const graph = await ideal.build({
+    projectRoot,
+    monorepo: Monorepo.maybeLoad(projectRoot),
+    scurry: new PathScurry(projectRoot),
+    packageJson: new PackageJson(),
+    packageInfo: mockPackageInfo,
+  })
   await reify({
     projectRoot,
     packageInfo: mockPackageInfo,
     graph,
+    monorepo: Monorepo.maybeLoad(projectRoot),
+    scurry: new PathScurry(projectRoot),
+    packageJson: new PackageJson(),
   })
   t.equal(
     // note: not lstat, since this is going to be a shim on windows,
@@ -199,8 +223,19 @@ t.test('failure rolls back', async t => {
 
   const projectRoot = resolve(dir, 'project')
 
-  const before = actual.load({ projectRoot })
-  const graph = await ideal.build({ projectRoot })
+  const before = actual.load({
+    projectRoot,
+    monorepo: Monorepo.maybeLoad(projectRoot),
+    scurry: new PathScurry(projectRoot),
+    packageJson: new PackageJson(),
+  })
+  const graph = await ideal.build({
+    projectRoot,
+    packageInfo: mockPackageInfo,
+    monorepo: Monorepo.maybeLoad(projectRoot),
+    scurry: new PathScurry(projectRoot),
+    packageJson: new PackageJson(),
+  })
   const { reify } = await t.mockImport('../../src/reify/index.js', {
     '../../src/reify/build.js': {
       build: () =>
@@ -216,7 +251,12 @@ t.test('failure rolls back', async t => {
     }),
   )
 
-  const after = actual.load({ projectRoot })
+  const after = actual.load({
+    projectRoot,
+    monorepo: Monorepo.maybeLoad(projectRoot),
+    scurry: new PathScurry(projectRoot),
+    packageJson: new PackageJson(),
+  })
 
   t.strictSame(before, after, 'no changes to actual graph')
 
@@ -246,8 +286,19 @@ t.test('failure of optional node just deletes it', async t => {
 
   const projectRoot = resolve(dir, 'project')
 
-  const before = actual.load({ projectRoot })
-  const graph = await ideal.build({ projectRoot })
+  const before = actual.load({
+    projectRoot,
+    monorepo: Monorepo.maybeLoad(projectRoot),
+    scurry: new PathScurry(projectRoot),
+    packageJson: new PackageJson(),
+  })
+  const graph = await ideal.build({
+    projectRoot,
+    packageInfo: mockPackageInfo,
+    monorepo: Monorepo.maybeLoad(projectRoot),
+    scurry: new PathScurry(projectRoot),
+    packageJson: new PackageJson(),
+  })
   const globEdge = graph.mainImporter.edgesOut.get('glob')
   t.ok(globEdge, 'main importer depends on glob')
   t.equal(
@@ -258,6 +309,9 @@ t.test('failure of optional node just deletes it', async t => {
 
   await reify({
     projectRoot,
+    monorepo: Monorepo.maybeLoad(projectRoot),
+    scurry: new PathScurry(projectRoot),
+    packageJson: new PackageJson(),
     packageInfo: {
       ...mockPackageInfo,
       async extract(
@@ -275,7 +329,12 @@ t.test('failure of optional node just deletes it', async t => {
     graph,
   })
 
-  const after = actual.load({ projectRoot })
+  const after = actual.load({
+    projectRoot,
+    monorepo: Monorepo.maybeLoad(projectRoot),
+    scurry: new PathScurry(projectRoot),
+    packageJson: new PackageJson(),
+  })
 
   t.strictSame(
     inspect(before),

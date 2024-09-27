@@ -23,12 +23,15 @@
  */
 
 import { error } from '@vltpkg/error-cause'
+import { PackageJson } from '@vltpkg/package-json'
+import { Monorepo } from '@vltpkg/workspaces'
 import { XDG } from '@vltpkg/xdg'
 import { readFileSync, rmSync, writeFileSync } from 'fs'
 import { lstat, mkdir, readFile, writeFile } from 'fs/promises'
 import { Jack, OptionsResults, Unwrap } from 'jackspeak'
 import { homedir } from 'os'
 import { dirname, resolve } from 'path'
+import { PathScurry } from 'path-scurry'
 import {
   kIndent,
   kNewline,
@@ -41,6 +44,7 @@ import {
   definition,
   getCommand,
   isRecordField,
+  RecordField,
   recordFields,
   type Commands,
 } from './definition.js'
@@ -72,7 +76,10 @@ const isRecordFieldValue = (k: string, v: unknown): v is string[] =>
 
 export const pairsToRecords = (
   obj: ConfigFileData,
-): Omit<ConfigOptions, 'projectRoot'> & {
+): Omit<
+  ConfigOptions,
+  'projectRoot' | 'scurry' | 'packageJson' | 'monorepo'
+> & {
   command?: Record<string, ConfigOptions>
 } => {
   return Object.fromEntries(
@@ -95,19 +102,29 @@ export const recordsToPairs = (
   obj: Record<string | symbol, any>,
 ): Record<string | symbol, any> => {
   return Object.fromEntries(
-    Object.entries(obj).map(([k, v]) => [
-      k,
-      k === 'command' && v && typeof v === 'object' ?
-        recordsToPairs(v)
-      : (
-        !v ||
-        typeof v !== 'object' ||
-        Array.isArray(v) ||
-        !isRecordField(k)
-      ) ?
-        v
-      : Object.entries(v).map(([k, v]) => `${k}=${v}`),
-    ]),
+    Object.entries(obj)
+      .filter(
+        ([k]) =>
+          !(
+            k === 'scurry' ||
+            k === 'packageJson' ||
+            k === 'monorepo' ||
+            k === 'projectRoot'
+          ),
+      )
+      .map(([k, v]) => [
+        k,
+        k === 'command' && v && typeof v === 'object' ?
+          recordsToPairs(v)
+        : (
+          !v ||
+          typeof v !== 'object' ||
+          Array.isArray(v) ||
+          !isRecordField(k)
+        ) ?
+          v
+        : Object.entries(v).map(([k, v]) => `${k}=${v}`),
+      ]),
   )
 }
 
@@ -141,12 +158,15 @@ export type ConfigFileData = {
 }
 
 export type ConfigOptions = {
-  [k in keyof ConfigFileData]?: k extends OptListKeys<ConfigData> ?
+  [k in keyof ConfigFileData]?: k extends RecordField ?
     Record<string, string>
   : k extends 'command' ? never
   : ConfigData[k]
 } & {
+  packageJson: PackageJson
+  scurry: PathScurry
   projectRoot: string
+  monorepo?: Monorepo
 }
 
 /**
@@ -198,10 +218,21 @@ export class Config {
    */
   get options(): ConfigOptions {
     if (this.#options) return this.#options
+    const scurry = new PathScurry(this.projectRoot)
+    const packageJson = new PackageJson()
     this.#options = Object.assign(
       pairsToRecords(this.parse().values),
-      { projectRoot: this.projectRoot },
+      {
+        projectRoot: this.projectRoot,
+        scurry,
+        packageJson,
+        monorepo: Monorepo.maybeLoad(this.projectRoot, {
+          scurry,
+          packageJson,
+        }),
+      },
     )
+
     return this.#options
   }
   // memoized options() getter value

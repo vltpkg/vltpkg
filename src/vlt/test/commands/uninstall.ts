@@ -6,7 +6,6 @@ import { LoadedConfig } from '../../src/config/index.js'
 t.cleanSnapshot = s =>
   s.replace(/^(\s+)"?projectRoot"?: .*$/gm, '$1projectRoot: #')
 
-const options = { projectRoot: t.testdirName }
 let reifyOpts: any
 
 class PackageJson {
@@ -18,6 +17,11 @@ class PackageJson {
 // eslint-disable-next-line @typescript-eslint/no-extraneous-class
 class PathScurry {}
 
+const options = {
+  projectRoot: t.testdirName,
+  packageJson: new PackageJson(),
+  scurry: new PathScurry(),
+}
 const rootDepID = joinDepIDTuple(['file', '.'])
 
 const { usage, command } = await t.mockImport<
@@ -40,6 +44,10 @@ const { usage, command } = await t.mockImport<
   },
   'path-scurry': {
     PathScurry,
+    PathScurryDarwin: PathScurry,
+    PathScurryLinux: PathScurry,
+    PathScurryPosix: PathScurry,
+    PathScurryWin32: PathScurry,
   },
 })
 t.type(usage, 'string')

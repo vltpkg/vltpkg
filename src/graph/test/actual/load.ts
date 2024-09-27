@@ -1,5 +1,8 @@
 import { joinDepIDTuple } from '@vltpkg/dep-id'
+import { PackageJson } from '@vltpkg/package-json'
 import { SpecOptions } from '@vltpkg/spec'
+import { Monorepo } from '@vltpkg/workspaces'
+import { PathScurry } from 'path-scurry'
 import t from 'tap'
 import { load } from '../../src/actual/load.js'
 import { humanReadableOutput } from '../../src/visualization/human-readable-output.js'
@@ -269,6 +272,9 @@ t.test('load actual', async t => {
 
   const fullGraph = load({
     projectRoot,
+    scurry: new PathScurry(projectRoot),
+    packageJson: new PackageJson(),
+    monorepo: Monorepo.maybeLoad(projectRoot),
     loadManifests: true,
     skipHiddenLockfile: false,
     ...configData,
@@ -287,7 +293,14 @@ t.test('load actual', async t => {
 
   t.matchSnapshot(
     humanReadableOutput(
-      load({ projectRoot, loadManifests: false, ...configData }),
+      load({
+        scurry: new PathScurry(projectRoot),
+        packageJson: new PackageJson(),
+        monorepo: Monorepo.maybeLoad(projectRoot),
+        projectRoot,
+        loadManifests: false,
+        ...configData,
+      }),
     ),
     'should load an actual graph without any manifest info',
   )
@@ -357,13 +370,27 @@ t.test('cycle', async t => {
   })
   t.matchSnapshot(
     humanReadableOutput(
-      load({ projectRoot, loadManifests: true, ...configData }),
+      load({
+        scurry: new PathScurry(projectRoot),
+        packageJson: new PackageJson(),
+        monorepo: Monorepo.maybeLoad(projectRoot),
+        projectRoot,
+        loadManifests: true,
+        ...configData,
+      }),
     ),
     'should load an actual graph with cycle containing missing deps info',
   )
   t.matchSnapshot(
     humanReadableOutput(
-      load({ projectRoot, loadManifests: false, ...configData }),
+      load({
+        scurry: new PathScurry(projectRoot),
+        packageJson: new PackageJson(),
+        monorepo: Monorepo.maybeLoad(projectRoot),
+        projectRoot,
+        loadManifests: false,
+        ...configData,
+      }),
     ),
     'should load an actual graph with cycle without any manifest info',
   )
@@ -381,13 +408,27 @@ t.test('uninstalled dependencies', async t => {
   })
   t.matchSnapshot(
     humanReadableOutput(
-      load({ projectRoot, loadManifests: true, ...configData }),
+      load({
+        scurry: new PathScurry(projectRoot),
+        packageJson: new PackageJson(),
+        monorepo: Monorepo.maybeLoad(projectRoot),
+        projectRoot,
+        loadManifests: true,
+        ...configData,
+      }),
     ),
     'should load an actual graph with missing deps with manifest info',
   )
   t.matchSnapshot(
     humanReadableOutput(
-      load({ projectRoot, loadManifests: false, ...configData }),
+      load({
+        scurry: new PathScurry(projectRoot),
+        packageJson: new PackageJson(),
+        monorepo: Monorepo.maybeLoad(projectRoot),
+        projectRoot,
+        loadManifests: false,
+        ...configData,
+      }),
     ),
     'should load an actual graph with missing deps with no manifest info',
   )
