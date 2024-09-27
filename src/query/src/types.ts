@@ -37,7 +37,7 @@ export type GraphSelectionState = {
 }
 
 export type ParserState = {
-  collect: Set<NodeLike>
+  collect: GraphSelectionState
   current: PostcssNode
   initial: GraphSelectionState
   loose?: boolean
@@ -46,6 +46,11 @@ export type ParserState = {
   result?: NodeLike[]
   walk: ParserFn
   partial: GraphSelectionState
+}
+
+export type QueryResponse = {
+  edges: EdgeLike[]
+  nodes: NodeLike[]
 }
 
 export type ParserFn = (opt: ParserState) => Promise<ParserState>

@@ -12,24 +12,22 @@ import {
  * ref: https://developer.mozilla.org/en-US/docs/Web/CSS/Child_combinator
  */
 const childCombinator = async (state: ParserState) => {
-  const edges = new Set<EdgeLike>()
-  const nodes = new Set<NodeLike>()
+  const traverse = new Set(state.partial.nodes)
+  state.partial.edges.clear()
+  state.partial.nodes.clear()
 
   // visit direct children of the current list of nodes
   // collecting refs to these children and the edges that
   // connected them.
-  for (const node of state.partial.nodes) {
-    state.partial.nodes.delete(node)
+  for (const node of traverse) {
     for (const edge of node.edgesOut.values()) {
       if (edge.to) {
-        edges.add(edge)
-        nodes.add(edge.to)
+        state.partial.edges.add(edge)
+        state.partial.nodes.add(edge.to)
       }
     }
   }
 
-  state.partial.edges = edges
-  state.partial.nodes = nodes
   return state
 }
 
@@ -46,27 +44,26 @@ const childCombinator = async (state: ParserState) => {
  * ref: https://developer.mozilla.org/en-US/docs/Web/CSS/Subsequent-sibling_combinator
  */
 const subsequentSiblingCombinator = async (state: ParserState) => {
-  const edges = new Set<EdgeLike>()
-  const nodes = new Set<NodeLike>()
+  const traverse = new Set(state.partial.nodes)
+  state.partial.edges.clear()
+  state.partial.nodes.clear()
 
   // visits direct parents of the current list of node and then
   // visit their children, collecting refs to all children and edges
   // that are not in the original list of nodes.
-  for (const node of state.partial.nodes) {
+  for (const node of traverse) {
     for (const edge of node.edgesIn) {
       const parents: IterableIterator<EdgeLike> =
         edge.from.edgesOut.values()
       for (const edge of parents) {
         if (edge.to && edge.to !== node) {
-          edges.add(edge)
-          nodes.add(edge.to)
+          state.partial.edges.add(edge)
+          state.partial.nodes.add(edge.to)
         }
       }
     }
   }
 
-  state.partial.edges = edges
-  state.partial.nodes = nodes
   return state
 }
 
@@ -82,19 +79,19 @@ const descendentCombinator = async (state: ParserState) => {
     return state
   }
 
-  const edges = new Set<EdgeLike>()
-  const nodes = new Set<NodeLike>()
+  const traverse = new Set<NodeLike>(state.partial.nodes)
+  state.partial.edges.clear()
+  state.partial.nodes.clear()
 
   // breadth-first traversal of the graph, starting from the current
   // list of nodes, collecting all nodes and edges along the way
-  const traverse = new Set<NodeLike>(state.partial.nodes)
   for (const node of traverse) {
     const children = new Set<NodeLike>()
     for (const edge of node.edgesOut.values()) {
       if (edge.to) {
         children.add(edge.to)
-        edges.add(edge)
-        nodes.add(edge.to)
+        state.partial.edges.add(edge)
+        state.partial.nodes.add(edge.to)
       }
     }
     for (const child of children) {
@@ -102,8 +99,6 @@ const descendentCombinator = async (state: ParserState) => {
     }
   }
 
-  state.partial.edges = edges
-  state.partial.nodes = nodes
   return state
 }
 

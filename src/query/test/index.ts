@@ -6,38 +6,32 @@ import {
   getSingleWorkspaceGraph,
 } from './fixtures/graph.js'
 import { ParserState, PostcssNode } from '../src/types.js'
-import { EdgeLike } from '@vltpkg/graph'
+import { copyGraphSelectionState } from './fixtures/selector.js'
 
 type TestCase = [string, string[]]
 
-const testState = (): ParserState => {
+const testBrokenState = (): ParserState => {
   const graph = getSimpleGraph()
-  const initial = [...graph.nodes.values()]
-  const current = { type: 'bork' } as unknown as PostcssNode
-  const edges = new Set<EdgeLike>()
-  for (const node of initial) {
-    for (const edge of node.edgesOut.values()) {
-      edges.add(edge)
-    }
+  const initial = {
+    nodes: new Set(graph.nodes.values()),
+    edges: new Set(graph.edges.values()),
   }
+  const current = { type: 'bork' } as unknown as PostcssNode
   const state: ParserState = {
-    collect: new Set(),
+    collect: {
+      nodes: new Set(),
+      edges: new Set(),
+    },
     current,
-    initial: {
-      nodes: new Set(initial),
-      edges: new Set(edges),
-    },
-    partial: {
-      nodes: new Set(initial),
-      edges: new Set(edges),
-    },
+    initial: copyGraphSelectionState(initial),
+    partial: copyGraphSelectionState(initial),
     walk,
   }
   return state
 }
 
 t.test('simple graph', async t => {
-  const nodes = [...getSimpleGraph().nodes.values()]
+  const graph = getSimpleGraph()
   const queryToExpected = new Set<TestCase>([
     ['', []], // should match no deps on missing query
     ['*', ['my-project', 'a', 'b', 'c', 'd', 'e', 'f', '@x/y']], // universal
@@ -47,7 +41,7 @@ t.test('simple graph', async t => {
     [':root > *', ['a', 'b', 'e', '@x/y']], // direct deps of :root
     [':root > :root', ['my-project']], // :root always places a ref to root
     ['.dev', ['b', 'c', 'd', 'e', 'f', '@x/y']], // retrieve deps of dev type
-    [':root > .dev', ['b', 'e', '@x/y']], // mixed with a combinator
+    [':root > .dev', ['b', '@x/y']], // mixed with a combinator
     [':root > .dev[name=b]', ['b']], // specific node
     [':root > [name=b].dev', ['b']], // specific node backwards
     [':root > *[name=b].dev', ['b']], // specific node backwards with universal
@@ -67,6 +61,7 @@ t.test('simple graph', async t => {
     [':root > * { &[name=a] }', ['a']], // support nesting with spaces
     [':root > * { &[name=a], &[name=b] }', ['a', 'b']], // support multiple nesting selectors
     ['[name=b], [name=c], [name=f]', ['b', 'c', 'f']], // select by name
+    ['[name=d], [name=d] > *', ['d', 'e', 'f']], // select a package and its dependencies
     [
       ':root > *, .prod, [name=a], :has(.dev, .optional)',
       ['a', 'b', 'e', '@x/y', 'my-project', 'd'],
@@ -74,10 +69,10 @@ t.test('simple graph', async t => {
     ['#a', ['a']], // identifier
   ])
 
-  const query = new Query({ nodes })
+  const query = new Query({ graph })
   for (const [q, expected] of queryToExpected) {
     t.strictSame(
-      (await query.search(q)).map(i => i.name),
+      (await query.search(q)).nodes.map(i => i.name),
       expected,
       `query > "${q}"`,
     )
@@ -85,7 +80,7 @@ t.test('simple graph', async t => {
 })
 
 t.test('workspace', async t => {
-  const nodes = [...getSingleWorkspaceGraph().nodes.values()]
+  const graph = getSingleWorkspaceGraph()
   const queryToExpected = new Map<string, string[]>([
     ['', []], // should match no deps on missing query
     ['*', ['ws', 'w']], // universal
@@ -94,10 +89,10 @@ t.test('workspace', async t => {
     [':root > :root', ['ws']], // :root always places a ref to root
     ['/* do something */ [name^=w]', ['ws', 'w']], // support comments
   ])
-  const query = new Query({ nodes })
+  const query = new Query({ graph })
   for (const [q, expected] of queryToExpected) {
     t.strictSame(
-      (await query.search(q)).map(i => i.name),
+      (await query.search(q)).nodes.map(i => i.name),
       expected,
       `query > "${q}"`,
     )
@@ -105,7 +100,7 @@ t.test('workspace', async t => {
 })
 
 t.test('cycle', async t => {
-  const nodes = [...getCycleGraph().nodes.values()]
+  const graph = getCycleGraph()
   const queryToExpected = new Set<TestCase>([
     ['', []], // should match no deps on missing query
     ['*', ['cycle-project', 'a', 'b']], // universal
@@ -115,19 +110,29 @@ t.test('cycle', async t => {
     ['/* do something */ [name^=a]', ['a']], // support comments
     [':root > :root > .prod > *', ['b']], // mixed selectors
   ])
-  const query = new Query({ nodes })
+  const query = new Query({ graph })
   for (const [q, expected] of queryToExpected) {
     t.strictSame(
-      (await query.search(q)).map(i => i.name),
+      (await query.search(q)).nodes.map(i => i.name),
       expected,
       `query > "${q}"`,
     )
   }
 })
 
+t.test('bad search argument', async t => {
+  const graph = getSimpleGraph()
+  const query = new Query({ graph })
+  await t.rejects(
+    query.search(null as unknown as string),
+    /Query search argument needs to be a string/,
+    'should throw a type error',
+  )
+})
+
 t.test('bad selector type', async t => {
   await t.rejects(
-    walk(testState()),
+    walk(testBrokenState()),
     /Missing parser for query node: bork/,
     'should throw a parser error',
   )
@@ -135,16 +140,14 @@ t.test('bad selector type', async t => {
 
 t.test('bad selector type [loose mode]', async t => {
   await t.resolves(
-    walk({ ...testState(), loose: true }),
+    walk({ ...testBrokenState(), loose: true }),
     'should resolve with no error',
   )
 })
 
 t.test('trying to use tag selectors', async t => {
   await t.rejects(
-    new Query({ nodes: [...getSimpleGraph().nodes.values()] }).search(
-      'foo',
-    ),
+    new Query({ graph: getSimpleGraph() }).search('foo'),
     /Unsupported selector/,
     'should throw an unsupported selector error',
   )
@@ -152,9 +155,7 @@ t.test('trying to use tag selectors', async t => {
 
 t.test('trying to use string selectors', async t => {
   await t.rejects(
-    new Query({ nodes: [...getSimpleGraph().nodes.values()] }).search(
-      '"foo"',
-    ),
+    new Query({ graph: getSimpleGraph() }).search('"foo"'),
     /Unsupported selector/,
     'should throw an unsupported selector error',
   )

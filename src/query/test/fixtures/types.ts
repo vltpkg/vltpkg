@@ -1,7 +1,7 @@
-import { NodeLike } from '@vltpkg/graph'
+import { GraphSelectionState } from '../../src/types.js'
 
 export type TestCase = [
   string, // query
-  NodeLike[], // partial state nodes to start from
+  GraphSelectionState, // partial state nodes to start from
   string[], // list of expected result names
 ]
