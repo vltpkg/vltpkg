@@ -55,6 +55,7 @@ const newEdge = (
   if (to) {
     to.edgesIn.add(edge)
   }
+  from.graph.edges.add(edge)
 }
 
 // Returns a graph that looks like:
@@ -129,6 +130,7 @@ export const getSimpleGraph = (): GraphLike => {
   // more attribute selector scenarios
   b.manifest = {
     ...b.manifest,
+    version: '2.0.0',
     scripts: {
       postinstall: 'postinstall',
       test: 'test',
@@ -250,6 +252,22 @@ export const getMissingManifestsGraph = (): GraphLike => {
     new Spec('a', '^1.0.0', 'registry'),
     'prod',
     a,
+  )
+  return graph
+}
+
+// Returns a graph in which nodes are missing
+export const getMissingNodeGraph = (): GraphLike => {
+  const graph = newGraph('node-missing-project')
+  newEdge(
+    graph.mainImporter,
+    new Spec('a', '^1.0.0', 'registry'),
+    'prod',
+  )
+  newEdge(
+    graph.mainImporter,
+    new Spec('b', '^1.0.0', 'registry'),
+    'dev',
   )
   return graph
 }

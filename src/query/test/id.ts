@@ -1,32 +1,53 @@
-import { joinDepIDTuple } from '@vltpkg/dep-id'
 import t from 'tap'
 import { id } from '../src/id.js'
 import { getSimpleGraph } from './fixtures/graph.js'
-import { selectorFixture } from './fixtures/selector.js'
+import {
+  copyGraphSelectionState,
+  getGraphSelectionState,
+  selectorFixture,
+} from './fixtures/selector.js'
 import { TestCase } from './fixtures/types.js'
+import { GraphSelectionState } from '../src/types.js'
+import { EdgeLike, NodeLike } from '@vltpkg/graph'
 
 const testId = selectorFixture(id)
 
 t.test('id', async t => {
   const simpleGraph = getSimpleGraph()
-  const all = [...simpleGraph.nodes.values()]
-  const b = simpleGraph.nodes.get(
-    joinDepIDTuple(['registry', '', 'b@1.0.0']),
-  )!
+  const all: GraphSelectionState = {
+    edges: new Set<EdgeLike>(simpleGraph.edges),
+    nodes: new Set<NodeLike>(simpleGraph.nodes.values()),
+  }
+  const b = getGraphSelectionState(simpleGraph, 'b')
+  const empty: GraphSelectionState = {
+    edges: new Set(),
+    nodes: new Set(),
+  }
   const queryToExpected = new Set<TestCase>([
     ['#my-project', all, ['my-project']], // select root node
     ['#a', all, ['a']], // direct dep
     ['#f', all, ['f']], // transitive dep
-    ['#a', [b], []], // missing from partial
-    ['#b', [b], ['b']], // exact match from partial
-    ['#a', [], []], // no partial
+    ['#a', b, []], // missing from partial
+    ['#b', b, ['b']], // exact match from partial
+    ['#a', empty, []], // no partial
   ])
-  const initial = [...simpleGraph.nodes.values()]
+  const initial = copyGraphSelectionState(all)
   for (const [query, partial, expected] of queryToExpected) {
-    const res = await testId(query, initial, partial)
+    const res = await testId(
+      query,
+      initial,
+      copyGraphSelectionState(partial),
+    )
     t.strictSame(
-      res.map(i => i.name),
+      res.nodes.map(i => i.name),
       expected,
+      `query > "${query}"`,
+    )
+    t.matchSnapshot(
+      {
+        edges: res.edges.map(i => i.name).sort(),
+        nodes: res.nodes.map(i => i.name).sort(),
+      },
       `query > "${query}"`,
     )
   }
@@ -34,7 +55,7 @@ t.test('id', async t => {
 
 t.test('bad selector type', async t => {
   await t.rejects(
-    testId(':foo', [], []),
+    testId(':foo'),
     /Mismatching query node/,
     'should throw an error',
   )
