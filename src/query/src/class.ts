@@ -1,41 +1,116 @@
-import { asClassNode, type ParserState } from './types.js'
-import type { NodeLike } from '@vltpkg/graph'
+import { ParserFn, asClassNode, type ParserState } from './types.js'
 
-type ComparatorFn = (types: Set<string>, node: NodeLike) => boolean
-
-/**
- * Filter the current list of nodes, using the `comparator` function
- * removing any nodes that are not of the same type requested.
- */
-const filterTypes = (
-  state: ParserState,
-  comparator: ComparatorFn,
-): ParserState => {
-  for (const node of state.partial.nodes) {
-    const types = new Set<string>()
-    for (const edge of node.edgesIn) {
-      types.add(edge.type)
+const classSelectors: Record<string, ParserFn> = {
+  prod: async (state: ParserState) => {
+    for (const edge of state.partial.edges) {
+      if (edge.type !== 'prod' || edge.from.dev) {
+        state.partial.edges.delete(edge)
+      }
     }
-    if (!comparator(types, node)) {
-      state.partial.nodes.delete(node)
+    for (const node of state.partial.nodes) {
+      if (!node.edgesIn.size) {
+        state.partial.nodes.delete(node)
+        continue
+      }
+      const iterator = new Set(node.edgesIn)
+      for (const edge of iterator) {
+        if (!state.partial.edges.has(edge)) {
+          iterator.delete(edge)
+        }
+      }
+      if (!iterator.size) {
+        state.partial.nodes.delete(node)
+      }
     }
-  }
-  return state
-}
-
-const classSelectors: Record<string, ComparatorFn> = {
-  prod: (types: Set<string>, node: NodeLike) =>
-    types.has('prod') && !node.dev && !node.optional,
-  dev: (_: Set<string>, node: NodeLike) => node.dev,
-  optional: (_: Set<string>, node: NodeLike) => node.optional,
-  peer: (types: Set<string>) => types.has('peer'),
-  workspace: (_: Set<string>, node: NodeLike) =>
-    node.importer && !node.mainImporter,
+    return state
+  },
+  dev: async (state: ParserState) => {
+    for (const edge of state.partial.edges) {
+      if (edge.type !== 'dev' && !edge.from.dev) {
+        state.partial.edges.delete(edge)
+      }
+    }
+    for (const node of state.partial.nodes) {
+      if (!node.edgesIn.size) {
+        state.partial.nodes.delete(node)
+        continue
+      }
+      const iterator = new Set(node.edgesIn)
+      for (const edge of iterator) {
+        if (!state.partial.edges.has(edge)) {
+          iterator.delete(edge)
+        }
+      }
+      if (!iterator.size) {
+        state.partial.nodes.delete(node)
+      }
+    }
+    return state
+  },
+  optional: async (state: ParserState) => {
+    for (const edge of state.partial.edges) {
+      if (edge.type !== 'optional' && !edge.from.optional) {
+        state.partial.edges.delete(edge)
+      }
+    }
+    for (const node of state.partial.nodes) {
+      if (!node.edgesIn.size) {
+        state.partial.nodes.delete(node)
+        continue
+      }
+      const iterator = new Set(node.edgesIn)
+      for (const edge of iterator) {
+        if (!state.partial.edges.has(edge)) {
+          iterator.delete(edge)
+        }
+      }
+      if (!iterator.size) {
+        state.partial.nodes.delete(node)
+      }
+    }
+    return state
+  },
+  peer: async (state: ParserState) => {
+    for (const edge of state.partial.edges) {
+      if (edge.type !== 'peer') {
+        state.partial.edges.delete(edge)
+      }
+    }
+    for (const node of state.partial.nodes) {
+      if (!node.edgesIn.size) {
+        state.partial.nodes.delete(node)
+        continue
+      }
+      for (const e of node.edgesIn) {
+        if (!state.partial.edges.has(e)) {
+          state.partial.nodes.delete(node)
+        }
+      }
+    }
+    return state
+  },
+  workspace: async (state: ParserState) => {
+    for (const node of state.partial.nodes) {
+      if (!node.importer || node.mainImporter) {
+        state.partial.nodes.delete(node)
+      }
+    }
+    for (const edge of state.partial.edges) {
+      // workspaces can't be missing
+      if (!edge.to) {
+        state.partial.edges.delete(edge)
+        // keep only edges that are linking to preivously kept nodes
+      } else if (!state.partial.nodes.has(edge.to)) {
+        state.partial.edges.delete(edge)
+      }
+    }
+    return state
+  },
   // TBD: all things bundled
   // bundled: () => false,
 }
 
-const classSelectorsMap = new Map<string, ComparatorFn>(
+const classSelectorsMap = new Map<string, ParserFn>(
   Object.entries(classSelectors),
 )
 
@@ -52,5 +127,5 @@ export const classFn = async (state: ParserState) => {
 
     throw new Error(`Unsupported class: ${state.current.value}`)
   }
-  return filterTypes(state, comparatorFn)
+  return comparatorFn(state)
 }

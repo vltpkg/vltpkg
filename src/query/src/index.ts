@@ -1,5 +1,5 @@
 import { error } from '@vltpkg/error-cause'
-import type { EdgeLike, NodeLike } from '@vltpkg/graph'
+import type { EdgeLike, GraphLike, NodeLike } from '@vltpkg/graph'
 import postcssSelectorParser from 'postcss-selector-parser'
 import { attribute } from './attribute.js'
 import { classFn } from './class.js'
@@ -13,6 +13,7 @@ import {
   isPostcssNodeWithChildren,
   asPostcssNodeWithChildren,
   isSelectorNode,
+  QueryResponse,
 } from './types.js'
 
 const noopFn = async (state: ParserState) => state
@@ -88,8 +89,11 @@ export const walk = async (
     }
 
     if (isSelectorNode(node)) {
+      for (const edge of state.partial.edges) {
+        state.collect.edges.add(edge)
+      }
       for (const node of state.partial.nodes) {
-        state.collect.add(node)
+        state.collect.nodes.add(node)
       }
     }
   }
@@ -97,38 +101,36 @@ export const walk = async (
 }
 
 export type QueryOptions = {
-  nodes: NodeLike[]
+  graph: GraphLike
 }
 
 export class Query {
-  #cache: Map<string, NodeLike[]>
-  #nodes: NodeLike[]
+  #cache: Map<string, QueryResponse>
+  #graph: GraphLike
 
-  constructor({ nodes }: QueryOptions) {
+  constructor({ graph }: QueryOptions) {
     this.#cache = new Map()
-    this.#nodes = nodes
+    this.#graph = graph
   }
 
-  async search(query: string): Promise<NodeLike[]> {
-    if (!query) return []
+  async search(query: string): Promise<QueryResponse> {
+    if (typeof query !== 'string') {
+      throw new TypeError(
+        'Query search argument needs to be a string',
+      )
+    }
+
+    if (!query) return { edges: [], nodes: [] }
 
     const cachedResult = this.#cache.get(query)
     if (cachedResult) {
       return cachedResult
     }
 
-    // breadth-first nodes traversal to read all edges
-    const nodes = new Set(this.#nodes)
-    const edges = new Set<EdgeLike>()
-    const traverse = new Set<NodeLike>(nodes)
-    for (const node of traverse) {
-      for (const edge of node.edgesOut.values()) {
-        edges.add(edge)
-        if (edge.to) {
-          traverse.add(edge.to)
-        }
-      }
-    }
+    const nodes = new Set<NodeLike>(
+      Array.from(this.#graph.nodes.values()),
+    )
+    const edges = new Set<EdgeLike>(Array.from(this.#graph.edges))
 
     // builds initial state and walks over it,
     // retrieving the collected result
@@ -138,12 +140,18 @@ export class Query {
         nodes: new Set(nodes),
         edges: new Set(edges),
       },
-      collect: new Set(),
+      collect: {
+        nodes: new Set<NodeLike>(),
+        edges: new Set<EdgeLike>(),
+      },
       partial: { nodes, edges },
       walk,
     })
 
-    const res = Array.from(collect)
+    const res: QueryResponse = {
+      edges: Array.from(collect.edges),
+      nodes: Array.from(collect.nodes),
+    }
     this.#cache.set(query, res)
     return res
   }
