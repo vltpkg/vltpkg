@@ -1,17 +1,13 @@
 import t, { Test } from 'tap'
-import { join, relative } from 'path'
+import { join } from 'path'
 import compile from '../src/compile.js'
 import bundle from '../src/bundle.js'
 import { defaultOptions } from '../src/index.js'
-import {
-  BundleFactors,
-  CompileFactors,
-  Runtimes,
-} from '../src/types.js'
+import * as types from '../src/types.js'
 
 const testCompile = async (
   t: Test,
-  options: Partial<BundleFactors> & Partial<CompileFactors>,
+  options: Partial<types.Factors>,
 ) => {
   const dir = t.testdir({
     source: {},
@@ -23,29 +19,29 @@ const testCompile = async (
     ...def,
     ...options,
   })
-  const bins = compile({
+  compile({
     source,
     outdir: join(dir, 'compile'),
+    bin: 'vlt',
     ...def,
     ...options,
   })
-  return bins.map(p => relative(dir, p))
 }
 
 t.test('runtimes', async t => {
   await t.resolves(
     testCompile(t, {
-      runtime: Runtimes.Node,
+      runtime: types.Runtimes.Node,
     }),
   )
   await t.resolves(
     testCompile(t, {
-      runtime: Runtimes.Deno,
+      runtime: types.Runtimes.Deno,
     }),
   )
   await t.resolves(
     testCompile(t, {
-      runtime: Runtimes.Bun,
+      runtime: types.Runtimes.Bun,
     }),
   )
 })

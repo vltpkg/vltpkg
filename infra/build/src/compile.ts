@@ -8,8 +8,14 @@ import {
   rmSync,
   writeFileSync,
 } from 'node:fs'
-import { Paths, BIN_NAMES } from './index.js'
 import * as types from './types.js'
+import { Paths } from './index.js'
+
+export type CompileOptions = types.CompileFactors & {
+  source: string
+  outdir: string
+  bin: types.BinName
+}
 
 const randIdent = () => `_${randomBytes(6).toString('hex')}`
 
@@ -59,12 +65,29 @@ const getTarget = (o: types.CompileFactors) => {
 }
 
 const getCompileOptions = (
-  o: Omit<types.CompileOptions, 'platform' | 'arch' | 'format'> & {
-    include: string[]
-    entry: string
-    outfile: string
-  },
-) => {
+  outfile: string,
+  o: CompileOptions,
+): {
+  command: string
+  args: string[] | ((f: Record<string, string>) => string[])
+  positionals: string[]
+  setup?: () => Record<string, string>
+  teardown?: () => string[]
+} => {
+  const entry = join(o.source, `${o.bin}.js`)
+  // TODO: copy sourcemaps to compiled binaries?
+  const include = readdirSync(o.source, {
+    recursive: true,
+    withFileTypes: true,
+  })
+    .filter(
+      f =>
+        f.isFile() &&
+        extname(f.name) === '.js' &&
+        relative(o.source, join(f.parentPath, f.name)).includes(sep),
+    )
+    .map(i => join(i.parentPath, i.name))
+
   if (o.runtime === types.Runtimes.Bun) {
     return {
       command: 'bun',
@@ -72,42 +95,44 @@ const getCompileOptions = (
         'build',
         '--compile',
         '--packages=external',
-        `--outfile=${o.outfile}`,
+        `--outfile=${outfile}`,
         `--root=${o.source}`,
       ],
-      positionals: [o.entry, ...o.include],
+      positionals: [entry, ...include],
       teardown: () =>
         readdirSync(process.cwd(), { withFileTypes: true })
           .filter(d => d.isFile() && d.name.endsWith('.bun-build'))
           .map(d => join(d.parentPath, d.name)),
     }
   }
+
   if (o.runtime === types.Runtimes.Deno) {
     return {
       command: 'deno',
       args: [
         'compile',
         '-A',
-        `--output=${o.outfile}`,
-        ...o.include.map(i => `--include=${i}`),
+        `--output=${outfile}`,
+        ...include.map(i => `--include=${i}`),
       ],
-      positionals: [o.entry],
+      positionals: [entry],
     }
   }
+
   return {
     command: join(Paths.BUILD_ROOT, 'node_modules/.bin/pkg'),
     args: (f: Record<string, string>) => [
       `--config=${f.config}`,
-      `--output=${o.outfile}`,
+      `--output=${outfile}`,
       '--public',
       `--public-packages='*'`,
       '--no-bytecode',
     ],
-    positionals: [o.entry],
+    positionals: [entry],
     setup: () => {
       const config = join(o.outdir, `${randIdent()}.json`)
       const pkg = {
-        scripts: o.include.map(f => relative(o.outdir, f)),
+        scripts: include.map(f => relative(o.outdir, f)),
       }
       writeFileSync(config, JSON.stringify({ pkg }, null, 2))
       return { config }
@@ -115,21 +140,22 @@ const getCompileOptions = (
   }
 }
 
-const runCompile = (o: {
-  command: string
-  args: string[] | ((f: Record<string, string>) => string[])
-  positionals: string[]
-  target: string
-  setup?: () => Record<string, string>
-  teardown?: () => string[]
-}) => {
-  const files = o.setup?.() ?? {}
+export default (o: CompileOptions) => {
+  const outfile = join(o.outdir, o.bin)
+  mkdirSync(dirname(outfile), { recursive: true })
+
+  const target = getTarget(o)
+  const compileOptions = getCompileOptions(outfile, o)
+
+  const files = compileOptions.setup?.() ?? {}
   const args = [
-    ...(typeof o.args === 'function' ? o.args(files) : o.args),
-    `--target=${o.target}`,
-    ...o.positionals,
+    ...(typeof compileOptions.args === 'function' ?
+      compileOptions.args(files)
+    : compileOptions.args),
+    `--target=${target}`,
+    ...compileOptions.positionals,
   ]
-  const res = spawnSync(o.command, args, {
+  const res = spawnSync(compileOptions.command, args, {
     shell: true,
     encoding: 'utf8',
   })
@@ -138,51 +164,18 @@ const runCompile = (o: {
     new Error('compile error', {
       cause: {
         ...res,
-        command: o.command,
+        command: compileOptions.command,
         args,
       },
     }),
   )
+
   for (const f of [
     ...Object.values(files),
-    ...(o.teardown?.() ?? []),
+    ...(compileOptions.teardown?.() ?? []),
   ]) {
     rmSync(f, { force: true })
   }
-}
 
-export const compileBin = (
-  o: types.CompileOptions & { bin: string },
-) => {
-  const outfile = join(o.outdir, o.bin)
-  const options = getCompileOptions({
-    ...o,
-    outfile,
-    entry: join(o.source, `${o.bin}.js`),
-    // TODO: copy sourcemaps to compiled binaries?
-    include: readdirSync(o.source, {
-      recursive: true,
-      withFileTypes: true,
-    })
-      .filter(
-        f =>
-          f.isFile() &&
-          extname(f.name) === '.js' &&
-          relative(o.source, join(f.parentPath, f.name)).includes(
-            sep,
-          ),
-      )
-      .map(i => join(i.parentPath, i.name)),
-  })
-  mkdirSync(dirname(outfile), { recursive: true })
-  runCompile({ ...options, target: getTarget(o) })
   return outfile
 }
-
-export default (o: types.CompileOptions) =>
-  BIN_NAMES.map(bin =>
-    compileBin({
-      ...o,
-      bin,
-    }),
-  )

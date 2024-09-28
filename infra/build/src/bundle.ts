@@ -13,6 +13,7 @@ import {
   sep,
   posix,
   extname,
+  resolve,
 } from 'node:path'
 import { readFile } from 'node:fs/promises'
 import * as esbuild from 'esbuild'
@@ -20,13 +21,15 @@ import j from 'jscodeshift'
 import { findPackageJson } from 'package-json-from-dist'
 import { builtinModules } from 'node:module'
 import assert from 'node:assert'
-import { Paths } from './index.js'
+import { Bins, Paths } from './index.js'
 import { randomBytes } from 'node:crypto'
 import * as types from './types.js'
 
+const EXT = '.js'
+
 const randIdent = () => `_${randomBytes(6).toString('hex')}`
 
-type OnLoadPlugin = {
+export type OnLoadPlugin = {
   paths: () => string[]
   plugin: esbuild.Plugin
 }
@@ -45,18 +48,18 @@ const createOnLoad = (
   includes: (source: string) => boolean,
   fn: (path: string, source: string) => string,
 ): {
-  paths: () => string[]
+  paths: OnLoadPlugin['paths']
   plugin: (
     o: esbuild.OnLoadArgs,
   ) => Promise<esbuild.OnLoadResult | undefined>
 } => {
-  const found: string[] = []
+  const found = new Set<string>()
   return {
-    paths: () => found,
+    paths: () => [...found],
     plugin: async o => {
       const source = await readFile(o.path, 'utf8')
       if (includes(source)) {
-        found.push(o.path)
+        found.add(o.path)
         return { contents: fn(o.path, source) }
       }
     },
@@ -66,18 +69,18 @@ const createOnLoad = (
 // All files that will be code split into external scripts
 // export __CODE_SPLIT_SCRIPT_NAME which we change to a path
 // to that external script instead
-const CODE_SPLIT_SCRIPT = {
-  file: (path: string) =>
-    readFileSync(
-      join(Paths.BUILD_ROOT, './src/bundle-code-split.js'),
-      'utf8',
-    ).replaceAll('{{PATH}}', path),
-  name: '__CODE_SPLIT_SCRIPT_NAME',
-}
 const codeSplitPlugin = (
   filter: string,
   transform: (path: string) => string,
 ): OnLoadPlugin => {
+  const CODE_SPLIT_SCRIPT = {
+    file: (path: string) =>
+      readFileSync(
+        join(Paths.BUILD_ROOT, './src/bundle-code-split.js'),
+        'utf8',
+      ).replaceAll('{{PATH}}', path),
+    name: '__CODE_SPLIT_SCRIPT_NAME',
+  }
   const { paths, plugin } = createOnLoad(
     s => s.includes(`export const ${CODE_SPLIT_SCRIPT.name}`),
     p =>
@@ -98,17 +101,18 @@ const codeSplitPlugin = (
 // directory. When we bundle those package.json files will be in different
 // places so this plugin will rewrite the package and its function calls
 // to read from the correct places.
-const READ_PACKAGE_JSON = {
-  file: readFileSync(
-    join(Paths.BUILD_ROOT, './src/bundle-package-json.js'),
-  ),
-  name: 'package-json-from-dist',
-  exports: ['loadPackageJson', 'findPackageJson'],
-}
+
 const readPackageJsonPlugin = (
   filter: string,
   transform: (path: string) => string,
 ): OnLoadPlugin => {
+  const READ_PACKAGE_JSON = {
+    file: readFileSync(
+      join(Paths.BUILD_ROOT, './src/bundle-package-json.js'),
+    ),
+    name: 'package-json-from-dist',
+    exports: ['loadPackageJson', 'findPackageJson'],
+  }
   const { paths, plugin } = createOnLoad(
     s => s.includes(READ_PACKAGE_JSON.name),
     (p, s) =>
@@ -149,8 +153,9 @@ const readPackageJsonPlugin = (
 
 const loadCommandsPlugin = (
   filter: string,
-  o: Pick<types.BundleOptions, 'externalCommands' | 'format'>,
-): OnLoadPlugin => {
+  o: Pick<types.BundleFactors, 'externalCommands' | 'format'>,
+): esbuild.Plugin => {
+  const COMMENT = '/* LOAD COMMANDS '
   const isCjs = o.format === types.Formats.Cjs
   const isExt = o.externalCommands
   const replaceCommand = (line: string) => {
@@ -160,13 +165,13 @@ const loadCommandsPlugin = (
       )?.groups
     assert(m, `load commands code does not match expected`)
     const load = isCjs ? 'require(' : m.load
-    const id = randIdent()
-    const path = isExt ? id : m.path
-    const prefix = isExt ? `${m.ws}const ${id} = ${m.path}\n` : ''
+    const pathVar = `__commandPath${randIdent()}`
+    const path = isExt ? pathVar : m.path
+    const prefix =
+      isExt ? `${m.ws}const ${pathVar} = ${m.path}\n` : ''
     return [prefix, m.ws, m.ret, load, path, m.end].join('')
   }
-  const COMMENT = '/* LOAD COMMANDS '
-  const { paths, plugin } = createOnLoad(
+  const { plugin } = createOnLoad(
     s => s.includes(COMMENT),
     (_, s) => {
       let insideBlock = false
@@ -185,12 +190,9 @@ const loadCommandsPlugin = (
     },
   )
   return {
-    paths,
-    plugin: {
-      name: 'load-commands-plugin',
-      setup({ onLoad }) {
-        onLoad(filePluginFilter(filter), plugin)
-      },
+    name: 'load-commands-plugin',
+    setup({ onLoad }) {
+      onLoad(filePluginFilter(filter), plugin)
     },
   }
 }
@@ -208,26 +210,71 @@ const nodeImportsPlugin = (): esbuild.Plugin => ({
           external: true,
         }
       }
-      return undefined
     })
   },
 })
 
-const buildFile = async (
-  o: Pick<
-    esbuild.BuildOptions,
-    'entryPoints' | 'plugins' | 'sourcemap' | 'minify' | 'outdir'
-  > & { format: types.Format },
-) => {
-  const rand = randIdent()
-  const createGlobal = (id: string, path: string) => {
-    if (o.format === types.Formats.Cjs) {
-      return `const ${id} = require('${path}')`
-    }
-    return `import ${id} from '${path}'`
+const bundle = async (o: {
+  plugins: esbuild.BuildOptions['plugins']
+  sourcemap: esbuild.BuildOptions['sourcemap']
+  minify: esbuild.BuildOptions['minify']
+  outdir: string
+  format: types.Format
+  in: string
+  out: string
+}) => {
+  const id = (() => {
+    const i = randIdent()
+    return (p: string) => `${p}${i}`
+  })()
+  const cjs = o.format === types.Formats.Cjs
+  const define = {
+    url: id('__bundleUrl'),
+    dirname: id('__bundleDirname'),
+    filename: id('__bundleFilename'),
   }
+
+  const createImport = (
+    name: string | string[],
+    path: string,
+    map: (n: string) => string = (n: string) => n,
+  ) => {
+    const names =
+      Array.isArray(name) ?
+        `{${name.map(map).join(', ')}}`
+      : map(name)
+    const parts =
+      cjs ? ['var', '= require(', ')'] : ['import', 'from', '']
+    return `${parts[0]} ${names} ${parts[1]}${JSON.stringify(path)}${parts[2]}`
+  }
+
+  const createUniqImport = (name: string | string[], path: string) =>
+    createImport(
+      name,
+      path,
+      n => `${n} ${cjs ? ':' : ' as'} ${id(n)}`,
+    )
+
+  const createGlobal = (
+    name: string,
+    value: string | [string, string],
+    args?: string[],
+  ) => {
+    const [pre, post] = Array.isArray(value) ? value : [value, '']
+    return `var ${name} = ${pre}${args ? `(${args.join(', ')})` : ''}${post}`
+  }
+
+  const createUniqGlobal = (
+    name: string,
+    value: string | [string, string],
+    args?: string[],
+  ) => {
+    const [pre, post] = Array.isArray(value) ? value : [value, '']
+    return createGlobal(name, [id(pre), post], args)
+  }
+
   const { errors, warnings, metafile } = await esbuild.build({
-    entryPoints: o.entryPoints,
+    entryPoints: [{ in: o.in, out: o.out }],
     plugins: o.plugins,
     sourcemap: o.sourcemap,
     minify: o.minify,
@@ -236,33 +283,51 @@ const buildFile = async (
     metafile: true,
     bundle: true,
     platform: 'node',
-    target: 'es2022',
-    ...(o.format === types.Formats.Cjs ?
-      {
-        inject: [
-          join(Paths.BUILD_ROOT, './src/bundle-import-meta.js'),
-        ],
-      }
-    : {}),
+    target: JSON.parse(
+      readFileSync(join(Paths.MONO_ROOT, 'tsconfig.json'), 'utf8'),
+    ).compilerOptions.target,
     // Define global variables that are required for our deps and testing
     // runtime support
     banner: {
-      js: [
-        createGlobal('process', 'node:process'),
-        createGlobal('{Buffer}', 'node:buffer'),
-        createGlobal(`{setImmediate,clearImmediate}`, 'node:timers'),
-        ...(o.format === types.Formats.Esm ?
-          [
-            createGlobal(
-              `{createRequire as createRequire${rand}}`,
-              'node:module',
-            ),
-            `const require = createRequire${rand}(import.meta.filename)`,
-          ]
-        : []),
-        'const global = globalThis',
-      ].join('\n'),
+      [EXT.slice(1)]: [
+        createImport('process', 'node:process'),
+        createImport(['Buffer'], 'node:buffer'),
+        createImport(
+          ['setImmediate', 'clearImmediate'],
+          'node:timers',
+        ),
+        createUniqImport(['resolve'], 'node:path'),
+        createUniqImport(['pathToFileURL'], 'node:url'),
+        createUniqImport(['createRequire'], 'node:module'),
+        createGlobal('global', 'globalThis'),
+        createUniqGlobal(define.dirname, 'resolve', [
+          cjs ? '__dirname' : 'import.meta.dirname',
+          JSON.stringify(
+            relative(resolve(o.outdir, dirname(o.out)), o.outdir),
+          ),
+        ]),
+        createUniqGlobal(define.filename, 'resolve', [
+          define.dirname,
+          JSON.stringify(`${basename(o.out)}${EXT}`),
+        ]),
+        createUniqGlobal(
+          define.url,
+          ['pathToFileURL', '.toString()'],
+          [define.filename],
+        ),
+        !cjs ?
+          createUniqGlobal('require', 'createRequire', [
+            define.filename,
+          ])
+        : '',
+      ]
+        .filter(Boolean)
+        .join('\n'),
     },
+    define: Object.entries(define).reduce((acc, [k, v]) => {
+      ;(acc as any)[`import.meta.${k}`] = v
+      return acc
+    }, {}),
   })
 
   assert(
@@ -273,47 +338,38 @@ const buildFile = async (
   return metafile
 }
 
-export const getBundleOptions = (o: types.BundleFactors) => {
-  if (o.runtime === types.Runtimes.Bun) {
-    // HACK: this is a hack to get bun to compile to benchmark
-    // cold start CLI performance but we can't actually use it until
-    // fs.opendirSync is implemented in bun (or removed from our code)
-    // https://github.com/oven-sh/bun/issues/6546
-    return {
-      transform: (s: string) =>
-        s.replaceAll(
-          /import\s*{\s*opendirSync\s*(as \w+)?,/g,
-          'import {',
-        ),
-    }
-  }
-  return true
-}
-
 export default async ({
   outdir,
   minify,
   format,
-  runtime,
   externalCommands,
   sourcemap,
-}: types.BundleOptions): Promise<
+}: types.BundleFactors & { outdir: string }): Promise<
   esbuild.Metafile & { outdir: string }
 > => {
   rmSync(outdir, { recursive: true, force: true })
   mkdirSync(outdir, { recursive: true })
 
-  const buildFileWithOptions = (
-    o: Pick<esbuild.BuildOptions, 'entryPoints' | 'plugins'>,
-  ) =>
-    buildFile({
-      entryPoints: o.entryPoints,
-      plugins: o.plugins,
-      sourcemap,
-      format,
-      minify,
-      outdir,
-    })
+  const files: esbuild.Metafile[] = []
+  const bundleFiles = async (
+    bundles: {
+      in: string
+      out: string
+      plugins: esbuild.BuildOptions['plugins']
+    }[],
+  ) => {
+    for (const b of bundles) {
+      files.push(
+        await bundle({
+          ...b,
+          sourcemap,
+          format,
+          minify,
+          outdir,
+        }),
+      )
+    }
+  }
 
   const codeSplit = codeSplitPlugin(`^${Paths.SRC}`, p =>
     getSrcPath(p),
@@ -327,59 +383,46 @@ export default async ({
   })
   const nodeImports = nodeImportsPlugin()
 
-  const commands = readdirSync(join(Paths.CLI, 'dist/esm/commands'), {
-    withFileTypes: true,
-  }).filter(p => p.isFile() && extname(p.name) === '.js')
-
-  const buildBins = await buildFileWithOptions({
-    entryPoints: Paths.BINS.map(bin => ({
+  await bundleFiles(
+    Bins.PATHS.map(bin => ({
       in: join(Paths.CLI, bin),
-      out: basename(bin, '.js'),
+      out: basename(bin, extname(bin)),
+      plugins: [
+        codeSplit.plugin,
+        readPackageJson.plugin,
+        loadCommands,
+        nodeImports,
+      ],
     })),
-    plugins: [
-      codeSplit.plugin,
-      readPackageJson.plugin,
-      loadCommands.plugin,
-      nodeImports,
-    ],
-  })
-
-  const buildCommands =
-    externalCommands ?
-      await buildFileWithOptions({
-        entryPoints: commands.map(c => ({
-          in: join(c.parentPath, c.name),
-          out: `commands/${basename(c.name, '.js')}`,
-        })),
-        plugins: [
-          codeSplit.plugin,
-          readPackageJson.plugin,
-          nodeImports,
-        ],
-      })
-    : null
-
-  const chunks = codeSplit.paths()
-  assert(chunks.length, `no external entry points were found`)
-
-  const buildExternals = await Promise.all(
-    chunks.map(p =>
-      buildFileWithOptions({
-        entryPoints: [
-          {
-            in: p,
-            out: getSrcPath(p).replace(/\.js$/, ''),
-          },
-        ],
-        plugins: [readPackageJson.plugin, nodeImports],
-      }),
-    ),
   )
 
-  const packageJsons = readPackageJson.paths()
-  assert(packageJsons.length, `no package.json references were found`)
+  if (externalCommands) {
+    await bundleFiles(
+      readdirSync(join(Paths.CLI, 'dist/esm/commands'), {
+        withFileTypes: true,
+      })
+        .filter(p => p.isFile() && extname(p.name) === '.js')
+        .map(c => ({
+          in: join(c.parentPath, c.name),
+          out: `commands/${basename(c.name, extname(c.name))}`,
+          plugins: [
+            codeSplit.plugin,
+            readPackageJson.plugin,
+            nodeImports,
+          ],
+        })),
+    )
+  }
 
-  for (const file of packageJsons) {
+  await bundleFiles(
+    codeSplit.paths().map(p => ({
+      in: p,
+      out: getSrcPath(p).replaceAll(EXT, ''),
+      plugins: [readPackageJson.plugin, nodeImports],
+    })),
+  )
+
+  for (const file of readPackageJson.paths()) {
     const pkgFile = findPackageJson(file)
     const to = join(
       outdir,
@@ -394,41 +437,20 @@ export default async ({
     )
   }
 
-  const res = [buildBins, buildCommands, ...buildExternals]
-    .filter(v => v !== null)
-    .reduce<esbuild.Metafile>(
-      (a, m) => ({
-        inputs: { ...a.inputs, ...m.inputs },
-        outputs: { ...a.outputs, ...m.outputs },
-      }),
-      { inputs: {}, outputs: {} },
-    )
+  const { inputs, outputs } = files.reduce<esbuild.Metafile>(
+    (a, m) => ({
+      inputs: { ...a.inputs, ...m.inputs },
+      outputs: { ...a.outputs, ...m.outputs },
+    }),
+    { inputs: {}, outputs: {} },
+  )
 
-  const runtimeOpts = getBundleOptions({
-    format,
-    runtime,
-    externalCommands,
-    minify,
-    sourcemap,
-  })
+  writeFileSync(
+    join(outdir, 'package.json'),
+    JSON.stringify({
+      type: format === types.Formats.Cjs ? 'commonjs' : 'module',
+    }),
+  )
 
-  for (const f of Object.keys(res.outputs).filter(
-    b => extname(b) === '.js',
-  )) {
-    const contents = readFileSync(f, 'utf8')
-    writeFileSync(
-      f,
-      runtimeOpts === true ? contents : (
-        runtimeOpts.transform(contents)
-      ),
-    )
-    writeFileSync(
-      join(outdir, 'package.json'),
-      JSON.stringify({
-        type: format === types.Formats.Cjs ? 'commonjs' : 'module',
-      }),
-    )
-  }
-
-  return { ...res, outdir }
+  return { inputs, outputs, outdir }
 }

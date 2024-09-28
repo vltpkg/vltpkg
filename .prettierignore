@@ -1,6 +1,4 @@
-/.tap
-/.tshy
-/.tshy-build
+/.*
 /dist
 /docs
 /example
@@ -11,9 +9,7 @@
 /tap-snapshots
 /test/**/fixtures
 
-/src/*/.tap
-/src/*/.tshy
-/src/*/.tshy-build
+/src/*/.*
 /src/*/dist
 /src/*/docs
 /src/*/example
@@ -24,9 +20,7 @@
 /src/*/test/**/fixtures/**
 !/src/*/test/**/fixtures/*.ts
 
-/infra/*/.tap
-/infra/*/.tshy
-/infra/*/.tshy-build
+/infra/*/.*
 /infra/*/dist
 /infra/*/docs
 /infra/*/example

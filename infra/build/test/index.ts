@@ -13,7 +13,32 @@ const mock = await t.mockImport<typeof import('../src/index.js')>(
 t.test('defaults', async t => {
   t.matchSnapshot(mock.defaultOptions(), 'default options')
   t.matchSnapshot(mock.defaultMatrix(), 'defaults')
-  t.matchSnapshot(mock.defaultMatrix(true), 'all defaults')
+  t.matchSnapshot(mock.fullMatrix(), 'all defaults')
+})
+
+t.test('format', async t => {
+  t.strictSame(mock.defaultMatrix().format, ['esm'])
+  t.strictSame(
+    mock.defaultMatrix({
+      runtime: new Set(['bun']),
+      compile: new Set([true]),
+    }).format,
+    ['esm'],
+  )
+  t.strictSame(
+    mock.defaultMatrix({
+      runtime: new Set(['deno']),
+      compile: new Set([true]),
+    }).format,
+    ['esm'],
+  )
+  t.strictSame(
+    mock.defaultMatrix({
+      runtime: new Set(['node']),
+      compile: new Set([true]),
+    }).format,
+    ['esm', 'cjs'],
+  )
 })
 
 t.test('unsupported', async t => {
