@@ -28,6 +28,7 @@
     "typescript": "catalog:",
     "typescript-eslint": "catalog:"
   },
+  "license": "ISC",
   "engines": {
     "node": "20 || >=22"
   },

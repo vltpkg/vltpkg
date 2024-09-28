@@ -38,6 +38,7 @@
     "typescript": "catalog:",
     "typescript-eslint": "catalog:"
   },
+  "license": "ISC",
   "engines": {
     "node": "20 || >=22"
   },
@@ -70,9 +71,5 @@
       }
     }
   },
-  "files": [
-    "dist"
-  ],
-  "license": "ISC",
   "module": "./dist/esm/index.js"
 }

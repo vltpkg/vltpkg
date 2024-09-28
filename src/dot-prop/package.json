@@ -25,6 +25,7 @@
     "typescript": "catalog:",
     "typescript-eslint": "catalog:"
   },
+  "license": "MIT",
   "engines": {
     "node": "20 || >=22"
   },

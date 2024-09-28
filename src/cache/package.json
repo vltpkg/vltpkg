@@ -31,6 +31,7 @@
     "typescript": "catalog:",
     "typescript-eslint": "catalog:"
   },
+  "license": "BSD-2-Clause-Patent",
   "engines": {
     "node": "20 || >=22"
   },
