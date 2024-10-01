@@ -1,5 +1,11 @@
-import { readFileSync, readdirSync, writeFileSync } from 'node:fs'
-import { relative, resolve, basename, dirname } from 'node:path'
+import {
+  readFileSync,
+  readdirSync,
+  writeFileSync,
+  copyFileSync,
+  existsSync,
+} from 'node:fs'
+import { relative, resolve, basename, dirname, join } from 'node:path'
 import * as yaml from 'yaml'
 import * as prettier from 'prettier'
 import * as semver from '../src/semver/dist/esm/index.js'
@@ -312,10 +318,44 @@ const fixTools = async ws => {
   }
 }
 
+const fixLicense = ws => {
+  const defaultLicense = 'BSD-2-Clause-Patent'
+  let license = null
+  switch (ws.pj.name) {
+    case '@vltpkg/dot-prop':
+      license = 'MIT'
+      break
+    case '@vltpkg/git':
+    case '@vltpkg/promise-spawn':
+      license = 'ISC'
+      break
+    default:
+      license = defaultLicense
+  }
+  ws.pj.license = license
+  if (license === defaultLicense) {
+    copyFileSync(join(ROOT, 'LICENSE'), join(ws.dir, 'LICENSE'))
+  } else {
+    const hasLicense = existsSync(join(ws.dir, 'LICENSE'))
+    if (!hasLicense) {
+      throw new Error(`${ws.pj.name} must have a license`)
+    } else {
+      const contents = readFileSync(join(ws.dir, 'LICENSE'), 'utf8')
+      if (!contents.includes('Copyright (c) vlt technology, Inc.')) {
+        throw new Error(
+          `${ws.pj.name} should contain vlt company name`,
+        )
+      }
+    }
+  }
+}
+
 const fixPackage = async (ws, opts) => {
   await fixDeps(ws, opts)
   await fixScripts(ws, opts)
   await fixTools(ws, opts)
+  await fixLicense(ws, opts)
+  ws.pj.files = undefined
   ws.pj.engines = { node: '20 || >=22' }
   ws.pj.private =
     ws.workspaceDir === 'infra' || ws.isRoot || ws.pj.name === 'vlt' ?
@@ -330,6 +370,7 @@ const fixPackage = async (ws, opts) => {
     'bin',
     'dependencies',
     'devDependencies',
+    'license',
     'engines',
     'scripts',
     'tap',
