@@ -23,6 +23,7 @@
     "tshy": "catalog:",
     "typedoc": "catalog:"
   },
+  "license": "BSD-2-Clause-Patent",
   "engines": {
     "node": "20 || >=22"
   },

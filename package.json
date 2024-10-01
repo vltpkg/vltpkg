@@ -19,6 +19,7 @@
     "typescript-eslint": "catalog:",
     "yaml": "^2.5.0"
   },
+  "license": "BSD-2-Clause-Patent",
   "engines": {
     "node": "20 || >=22"
   },
