@@ -214,7 +214,7 @@ export const getMatrix = (o: ParseArgs['matrix'] = {}) => {
 export default async (o: {
   outdir: string
   verbose?: boolean
-  bin?: types.BinName
+  bin?: types.Bin
   save?: boolean
   matrix: ReturnType<typeof getMatrix>
 }) => {

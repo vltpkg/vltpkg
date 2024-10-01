@@ -39,7 +39,7 @@ const parseArgs = () => {
   }).values
 
   assert(
-    bins.every(b => types.isBinName(b)),
+    bins.every(b => types.isBin(b)),
     new Error('invalid bin', {
       cause: {
         found: bins,
@@ -73,7 +73,7 @@ const npm = (
     },
   })
 
-const getToken = (bin: types.BinName) => {
+const getToken = (bin: types.Bin) => {
   const { sections, fields } = JSON.parse(
     spawnSync(
       'op',
@@ -158,18 +158,17 @@ const writeFiles = (
     name,
     version: `${p.version}.${DATE_ID}`,
     type: format === types.Formats.Cjs ? 'commonjs' : 'module',
-    bin:
-      name === types.DefaultBin ?
-        keysToObj(
-          types.BinNames.map(v => v),
-          binPath,
-        )
-      : binPath(name),
+    bin: keysToObj(
+      (name === types.DefaultBin ? types.BinNames : [name]).map(
+        v => v,
+      ),
+      binPath,
+    ),
     files: [
       ...dirs.map(d => `${d}/`),
       ...files.filter(f => {
         const base = f.split('.')[0]
-        const bin = types.isBinName(base) ? base : null
+        const bin = types.isBin(base) ? base : null
         if (bin && types.BinNames.includes(bin)) {
           return name === types.DefaultBin ? true : bin === name
         }
@@ -197,7 +196,7 @@ const main = async () => {
 
   for (const bin of bins) {
     // XXX: skip vlix until we have a package name reserved for it
-    if (bin === 'vlix') continue
+    if (bin === types.Bins.vlix) continue
     writeFiles(bin, pkg)
     npm(pkg, ['publish', ...npmArgs], {
       env: {

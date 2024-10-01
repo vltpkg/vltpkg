@@ -1,16 +1,17 @@
 export const All = 'all'
 
-export const DefaultBin = 'vlt'
-export const BinNames = [
-  DefaultBin,
-  'vlr',
-  'vlx',
-  'vlrx',
-  'vlix',
-] as const
-export type BinName = (typeof BinNames)[number]
-export const isBinName = (v: unknown): v is BinName =>
-  BinNames.includes(v as BinName)
+export const Bins = {
+  vlt: 'vlt',
+  vlr: 'vlr',
+  vlx: 'vlx',
+  vlrx: 'vlrx',
+  vlix: 'vlix',
+} as const
+export const DefaultBin = Bins.vlt
+export const BinNames = Object.values(Bins)
+export type Bin = (typeof Bins)[keyof typeof Bins]
+export const isBin = (v: unknown): v is Bin =>
+  BinNames.includes(v as Bin)
 
 export const Booleans = {
   True: 'true',

@@ -14,7 +14,7 @@ import { Paths } from './index.js'
 export type CompileOptions = types.CompileFactors & {
   source: string
   outdir: string
-  bin: types.BinName
+  bin: types.Bin
 }
 
 const randIdent = () => `_${randomBytes(6).toString('hex')}`

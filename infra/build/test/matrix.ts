@@ -5,11 +5,11 @@ import generateMatrix, {
   ParseArgs,
 } from '../src/matrix.js'
 import { sep } from 'node:path'
-import { BinName } from '../src/types.js'
+import { Bin, Bins } from '../src/types.js'
 
 const testGenerateMatrix = async (
   t: Test,
-  { bin, ...o }: ParseArgs['matrix'] & { bin?: BinName } = {},
+  { bin, ...o }: ParseArgs['matrix'] & { bin?: Bin } = {},
 ) => {
   const dir = t.testdir()
   t.capture(console, 'log')
@@ -63,7 +63,7 @@ t.test('compile matrix', async t => {
 
 t.test('single bin', async t => {
   const { files } = await testGenerateMatrix(t, {
-    bin: 'vlt',
+    bin: Bins.vlt,
     platform: ['linux'],
     arch: ['arm64'],
     compile: [true],

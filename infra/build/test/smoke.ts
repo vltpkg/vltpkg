@@ -15,10 +15,19 @@ type CommandResult = {
   output: string
 }
 
-type MatchCommand = {
+type TestCase = {
   args?: string[]
   testdir?: Testdir
+  snapshot?: boolean
 } & Partial<CommandResult>
+
+type TestCommand = {
+  bin: types.Bin
+  command: string
+  outdir: string
+  source: string
+  testCase: TestCase
+}
 
 const clean = (s: string) =>
   s
@@ -44,141 +53,156 @@ const tResult = async <T>(
   return res as T
 }
 
+const testdirs: Record<string, Testdir> = {
+  default: {
+    'package.json': JSON.stringify({
+      name: 'default',
+      scripts: {
+        'some-script': `node -e "console.log('script output')"`,
+      },
+    }),
+  },
+  pkg: {
+    'package.json': JSON.stringify({
+      name: 'hi',
+    }),
+  },
+}
+
 const testCommand = async (
   t: Test,
   {
     bin,
     command,
-    args,
-    testdir = {},
     outdir,
     source,
-  }: {
-    bin: types.BinName
-    command: string
-    args: string[]
-    outdir: string
-    source: string
-    testdir?: Testdir
-  },
-): Promise<CommandResult> => {
-  const run = async (
-    t: Test,
-    dir: string,
-  ): Promise<CommandResult> => {
-    const binPath = join(dir, `${bin}.js`)
-    const cwd = t.testdir(testdir)
-    // Remove env vars that might cause trouble for tests since
-    // we might be be using vlt or another tool to run these tests.
-    // Not all of these have been proven to cause problems but it
-    // errs on the side of removing more for a cleaner test environment.
-    const env = Object.entries(process.env).reduce<
-      NodeJS.Process['env']
-    >((acc, [k, v]) => {
-      if (!/^_?(tapjs|tap|npm|vlt|node|ts_node)(_|$)/i.test(k)) {
-        acc[k] = v
-      }
-      return acc
-    }, {})
-    return new Promise((res, rej) => {
-      const proc = spawn(
-        process.execPath,
-        [binPath, command, ...args].filter(Boolean),
-        {
-          cwd: cwd,
-          shell: true,
-          env: {
-            ...env,
-            NO_COLOR: '1',
-            // Config will always stop at $HOME so override that one
-            // level about the testdir so we dont go back up to our
-            // own monorepo root
-            HOME: cwd,
-            USERPROFILE: cwd,
+    testCase: {
+      args = [],
+      testdir = testdirs[bin] ??
+        testdirs[command] ??
+        testdirs.default,
+      snapshot,
+      status = 0,
+      ...match
+    },
+  }: TestCommand,
+) =>
+  t.test(args.length ? args.join(' ') : '(no args)', async t => {
+    const run = async (
+      t: Test,
+      dir: string,
+    ): Promise<CommandResult> => {
+      const binPath = join(dir, `${bin}.js`)
+      const cwd = t.testdir(testdir)
+      // Remove env vars that might cause trouble for tests since
+      // we might be be using vlt or another tool to run these tests.
+      // Not all of these have been proven to cause problems but it
+      // errs on the side of removing more for a cleaner test environment.
+      const env = Object.entries(process.env).reduce<
+        NodeJS.Process['env']
+      >((acc, [k, v]) => {
+        if (!/^_?(tapjs|tap|npm|vlt|node|ts_node)(_|$)/i.test(k)) {
+          acc[k] = v
+        }
+        return acc
+      }, {})
+      return new Promise((res, rej) => {
+        const proc = spawn(
+          process.execPath,
+          [binPath, command, ...args].filter(Boolean),
+          {
+            cwd: cwd,
+            shell: true,
+            env: {
+              ...env,
+              NO_COLOR: '1',
+              // Config will always stop at $HOME so override that one
+              // level about the testdir so we dont go back up to our
+              // own monorepo root
+              HOME: cwd,
+              USERPROFILE: cwd,
+            },
           },
-        },
-      )
-      let stdout = ''
-      let stderr = ''
-      let output = ''
-      proc.stdout.on('data', d => {
-        stdout += `${d.toString()}`
-        output += `${d.toString()}`
-      })
-      proc.stderr.on('data', d => {
-        stderr += `${d.toString()}`
-        output += `${d.toString()}`
-      })
-      proc
-        .on('close', code =>
-          res({
-            stdout: stdout.replaceAll(t.testdirName, '{{TEST_NAME}}'),
-            stderr: stderr.replaceAll(t.testdirName, '{{TEST_NAME}}'),
-            output: output.replaceAll(t.testdirName, '{{TEST_NAME}}'),
-            status: code,
-          }),
         )
-        .on('error', err => rej(err))
-    })
-  }
+        let stdout = ''
+        let stderr = ''
+        let output = ''
+        proc.stdout.on('data', d => {
+          stdout += `${d.toString()}`
+          output += `${d.toString()}`
+        })
+        proc.stderr.on('data', d => {
+          stderr += `${d.toString()}`
+          output += `${d.toString()}`
+        })
+        proc
+          .on('close', code =>
+            res({
+              stdout: stdout.replaceAll(
+                t.testdirName,
+                '{{TEST_NAME}}',
+              ),
+              stderr: stderr.replaceAll(
+                t.testdirName,
+                '{{TEST_NAME}}',
+              ),
+              output: output.replaceAll(
+                t.testdirName,
+                '{{TEST_NAME}}',
+              ),
+              status: code,
+            }),
+          )
+          .on('error', err => rej(err))
+      })
+    }
 
-  const sourceRes = await tResult<CommandResult>(t, 'source', t =>
-    run(t, source),
-  )
-  const buildRes = await tResult<CommandResult>(t, 'build', t =>
-    run(t, outdir),
-  )
-  t.equal(sourceRes.status, buildRes.status, 'status')
-  t.equal(sourceRes.stdout, buildRes.stdout, 'stdout')
-  t.equal(clean(sourceRes.stderr), clean(buildRes.stderr), 'stderr')
-  t.matchSnapshot(buildRes.output, 'output')
-  return buildRes
-}
+    const sourceRes = await tResult<CommandResult>(t, 'source', t =>
+      run(t, source),
+    )
+    const buildRes = await tResult<CommandResult>(t, 'build', t =>
+      run(t, outdir),
+    )
+    t.equal(sourceRes.status, buildRes.status, 'status')
+    t.equal(sourceRes.stdout, buildRes.stdout, 'stdout')
+    t.equal(clean(sourceRes.stderr), clean(buildRes.stderr), 'stderr')
+    if (snapshot) {
+      t.matchSnapshot(buildRes.output, 'output')
+    }
+    t.match(buildRes, { status, ...match })
+  })
 
-t.test('snapshots', async t => {
+t.test('commands', async t => {
   const outdir = t.testdir()
   await bundle({ outdir, ...defaultOptions() })
 
-  const testdirs: Record<string, Testdir> = {
-    default: {
-      'package.json': JSON.stringify({
-        name: 'default',
-        scripts: {
-          'some-script': `node -e "console.log('script output')"`,
-        },
-      }),
-    },
-    pkg: {
-      'package.json': JSON.stringify({
-        name: 'hi',
-      }),
-    },
-  }
-
   const snapshots: Record<
     typeof types.DefaultBin,
-    { [command: string]: MatchCommand[] }
+    { [command: string]: TestCase[] }
   > &
     Record<
-      Exclude<types.BinName, typeof types.DefaultBin>,
-      MatchCommand[]
+      Exclude<types.Bin, typeof types.DefaultBin | 'vlix'>,
+      TestCase[]
     > = {
     vlt: {
       pkg: [
-        { args: ['get'] },
-        { args: ['get', 'name'] },
-        { args: ['get', 'name', 'version'], status: 1 },
+        { args: ['get'], snapshot: true },
+        { args: ['get', 'name'], snapshot: true },
+        {
+          args: ['get', 'name', 'version'],
+          status: 1,
+          snapshot: true,
+        },
       ],
       install: [{}, { args: ['--help'] }],
     },
-    vlx: [{ args: ['missing-command'] }],
-    vlr: [{ args: ['some-script'] }],
-    vlrx: [{ args: ['some-script'] }],
-    vlix: [{ args: ['todo'] }],
+    vlx: [{ args: ['missing-command'], output: 'missing-command' }],
+    vlr: [{ args: ['some-script'], output: 'script output' }],
+    vlrx: [{ args: ['some-script'], output: 'script output' }],
   }
 
   for (const [bin, commands] of Object.entries(snapshots)) {
-    assert(types.isBinName(bin))
+    assert(types.isBin(bin))
     await t.test(bin, async t => {
       for (const [command, cases] of Object.entries(
         Array.isArray(commands) ? { '': commands } : commands,
@@ -186,30 +210,14 @@ t.test('snapshots', async t => {
         await t.test(
           command.length ? command : '(no command)',
           async t => {
-            for (const {
-              args = [],
-              testdir = testdirs[bin] ??
-                testdirs[command] ??
-                testdirs.default,
-              status = 0,
-              ...match
-            } of cases) {
-              t.test(
-                !args.length ? '(no args)' : args.join(' '),
-                async t => {
-                  t.match(
-                    await testCommand(t, {
-                      testdir,
-                      bin,
-                      command,
-                      args,
-                      outdir,
-                      source: Bins.DIR,
-                    }),
-                    { status, ...match },
-                  )
-                },
-              )
+            for (const c of cases) {
+              await testCommand(t, {
+                bin,
+                command,
+                source: Bins.DIR,
+                outdir,
+                testCase: c,
+              })
             }
           },
         )

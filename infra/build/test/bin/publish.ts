@@ -1,17 +1,17 @@
 import { join } from 'node:path'
 import t, { Test } from 'tap'
 import { spawnSync, SpawnSyncOptions } from 'node:child_process'
-import { BinName, BinNames } from '../../src/types.js'
+import { Bin, BinNames, Bins } from '../../src/types.js'
 import { readdirSync, readFileSync } from 'node:fs'
 
 type SpawnRes = { stderr: string[]; stdout: string[] }
 
-const findBin = (res: SpawnRes[], bin: BinName) =>
+const findBin = (res: SpawnRes[], bin: Bin) =>
   res.find(r => r.stdout[0]?.match(new RegExp(`${bin}@`)))
 
 const hasBinFile = (
   r: SpawnRes | undefined,
-  bin: BinName,
+  bin: Bin,
   compiled = false,
 ) =>
   r?.stderr.find(v =>
@@ -92,13 +92,13 @@ await t.test('bins', async t => {
   for (const [binName, output] of BinNames.map(
     bin => [bin, findBin(res, bin)] as const,
   )) {
-    if (binName === 'vlix') {
+    if (binName === Bins.vlix) {
       t.notOk(output)
     } else {
       const hasBins = BinNames.map(
         bin => [bin, hasBinFile(output, bin)] as const,
       )
-      if (binName === 'vlt') {
+      if (binName === Bins.vlt) {
         t.ok(Object.values(hasBins).every(Boolean))
       } else {
         for (const [hasBinName, hasBin] of hasBins) {

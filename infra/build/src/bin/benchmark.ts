@@ -26,7 +26,7 @@ const parseArgs = () => {
   const bin = args.shift()
 
   assert(
-    types.isBinName(bin),
+    types.isBin(bin),
     new Error('invalid bin', {
       cause: {
         found: bin,
