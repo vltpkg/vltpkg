@@ -92,13 +92,6 @@ const testCommand = async (
       t: Test,
       dir: string,
     ): Promise<CommandResult> => {
-      const dirName = t.testdirName.replaceAll(sep, '/')
-      t.comment(
-        JSON.stringify({
-          testdirName: t.testdirName,
-          dirName,
-        }),
-      )
       const binPath = join(dir, `${bin}.js`)
       const cwd = t.testdir(testdir)
       // Remove env vars that might cause trouble for tests since
@@ -143,14 +136,26 @@ const testCommand = async (
           output += `${d.toString()}`
         })
         proc
-          .on('close', code =>
+          .on('close', code => {
+            const replace = (s: string) =>
+              s.replaceAll(t.testdirName, '{{DIR_NAME}}')
+            const resStdout = replace(stdout)
+            const resStderr = replace(stderr)
+            const resOutput = replace(output)
+            t.comment(stdout)
+            t.comment(resStdout)
+            t.comment(stderr)
+            t.comment(resStderr)
+            t.comment(output)
+            t.comment(resOutput)
+
             res({
-              stdout: stdout.replaceAll(dirName, '{{DIR_NAME}}'),
-              stderr: stderr.replaceAll(dirName, '{{DIR_NAME}}'),
-              output: output.replaceAll(dirName, '{{DIR_NAME}}'),
+              stdout: resStdout,
+              stderr: resStderr,
+              output: resOutput,
               status: code,
-            }),
-          )
+            })
+          })
           .on('error', err => rej(err))
       })
     }
