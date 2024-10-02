@@ -10,7 +10,6 @@ const BE_EXTRA = process.env.LINT_SUPER_CONSISTENT ?? 'off'
 export default tseslint.config(
   {
     ignores: [
-      'infra/build/src/bundle-import-meta.js',
       ...readFileSync(resolve(import.meta.dirname, '.prettierignore'))
         .toString()
         .trim()

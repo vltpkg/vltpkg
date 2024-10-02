@@ -5,19 +5,19 @@
  * Make sure to inspect the output below.  Do not ignore changes!
  */
 'use strict'
-exports[`test/commands.ts > TAP > snapshots > vlt > pkg > get > (no args) > output 1`] = `
+exports[`test/smoke.ts > TAP > commands > vlt > pkg > get > output 1`] = `
 {
   "name": "hi"
 }
 
 `
 
-exports[`test/commands.ts > TAP > snapshots > vlt > pkg > get > name > output 1`] = `
+exports[`test/smoke.ts > TAP > commands > vlt > pkg > get name > output 1`] = `
 "hi"
 
 `
 
-exports[`test/commands.ts > TAP > snapshots > vlt > pkg > get > name version > output 1`] = `
+exports[`test/smoke.ts > TAP > commands > vlt > pkg > get name version > output 1`] = `
 {ROOT}/src/vlt/src/commands/pkg.ts:{LINE_NUMBER}
       throw error(
             ^
