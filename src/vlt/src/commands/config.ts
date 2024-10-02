@@ -98,10 +98,7 @@ const del = async (conf: LoadedConfig) => {
     console.error(usage)
     throw error('At least one key is required')
   }
-  await conf.deleteConfigKeys(
-    conf.get('config') as 'project' | 'user',
-    fields,
-  )
+  await conf.deleteConfigKeys(conf.get('config'), fields)
 }
 
 const get = (conf: LoadedConfig) => {
@@ -117,18 +114,13 @@ const get = (conf: LoadedConfig) => {
 }
 
 const edit = async (conf: LoadedConfig) => {
-  const editor = conf.get('editor')
-  /* c8 ignore start - there's a default, it can't be blank */
+  const [editor, ...args] = conf.get('editor').split(' ')
   if (!editor) {
-    throw error('no editor set in config')
+    throw error(`editor is empty`)
   }
-  /* c8 ignore stop */
-  await conf.editConfigFile(
-    conf.get('config') as 'project' | 'user',
-    async file => {
-      spawnSync(editor, [file], { stdio: 'inherit' })
-    },
-  )
+  await conf.editConfigFile(conf.get('config'), file => {
+    spawnSync(editor, [...args, file], { stdio: 'inherit' })
+  })
 }
 
 const set = async (conf: LoadedConfig) => {
@@ -138,6 +130,6 @@ const set = async (conf: LoadedConfig) => {
     throw error('At least one key=value pair is required')
   }
   const { values } = conf.jack.parseRaw(pairs.map(kv => `--${kv}`))
-  const which = conf.get('config') as 'project' | 'user'
+  const which = conf.get('config')
   await conf.addConfigToFile(which, pairsToRecords(values))
 }

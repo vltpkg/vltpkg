@@ -403,7 +403,7 @@ export const definition = jack({
       hint: 'user | project',
       description: `Specify whether to operate on user-level or project-level
                     configuration files when running \`vlt config\` commands.`,
-      validOptions: ['user', 'project'],
+      validOptions: ['user', 'project'] as const,
       default: 'project',
     },
 
@@ -446,7 +446,7 @@ export const definition = jack({
                     vlt config set fallback-command=run-exec
                     \`\`\``,
       default: 'help',
-      validOptions: [...new Set(Object.values(commands))],
+      validOptions: [...new Set(Object.values(commands))] as const,
     },
   })
 
