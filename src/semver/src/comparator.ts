@@ -187,16 +187,19 @@ export class Comparator {
     // remove excess spaces, `> 1   2` => `>1 2`
     const comps: string[] = []
     let followingOperator = false
+
+    let l = 0
     for (const c of rawComps) {
       if (c === '') continue
       if (!followingOperator) {
         followingOperator = isOperator(c)
         comps.push(c)
+        l++
         continue
       }
       // we know this is not undefined since followingOperator guards that
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      comps[comps.length - 1]! += c
+      comps[l - 1]! += c
       followingOperator = false
     }
 
@@ -240,8 +243,7 @@ export class Comparator {
       : ['>=', new Version(raw, M, m, p, pr, build)]
   }
 
-  // exclusive min.
-  // Note, if not a full version, then
+  // exclusive min
   #xExclusiveMin(raw: string): Comparator | OVTuple {
     const parsed = this.#parseX(raw)
     if (isFullVersion(parsed)) {
@@ -276,29 +278,27 @@ export class Comparator {
 
   #xInclusiveMax(raw: string): Comparator | OVTuple {
     const parsed = this.#parseX(raw)
-    if (isFullVersion(parsed)) {
-      return ['<=', new Version(raw, ...parsed)]
-    }
-    if (isXPatch(parsed)) {
-      return [
-        '<',
-        new Version(
-          raw,
-          parsed[MAJOR],
-          parsed[MINOR] + 1,
-          0,
-          '0',
-          undefined,
-        ),
-      ]
-    }
-    if (isXMinor(parsed)) {
-      return [
-        '<',
-        new Version(raw, parsed[MAJOR] + 1, 0, 0, '0', undefined),
-      ]
-    }
-    return this.#getComparatorAny()
+    return (
+      isFullVersion(parsed) ? ['<=', new Version(raw, ...parsed)]
+      : isXPatch(parsed) ?
+        [
+          '<',
+          new Version(
+            raw,
+            parsed[MAJOR],
+            parsed[MINOR] + 1,
+            0,
+            '0',
+            undefined,
+          ),
+        ]
+      : isXMinor(parsed) ?
+        [
+          '<',
+          new Version(raw, parsed[MAJOR] + 1, 0, 0, '0', undefined),
+        ]
+      : this.#getComparatorAny()
+    )
   }
 
   #xExclusiveMax(raw: string): Comparator | OVTuple {
@@ -312,68 +312,88 @@ export class Comparator {
     return ['<', new Version(raw, M, m, p, pr, build)]
   }
 
-  // pull the relevant values out of an X-range or version
-  // return the fields for creating a Version object.
-  // only call once operator is stripped off
-  #parseX(raw: string): ParsedXRange {
-    let [M, m, p] = fastSplit(raw, '.', 3)
-    let prune = 0
-    while (M && preJunk.has(M.charAt(prune))) prune++
-    if (M !== undefined && prune !== 0) M = M.substring(prune)
-    // the `|| !M` is so TS knows we've handled undefined
-    if (isX(M) || !M) {
-      assertMissing(m, raw, 'major')
-      assertMissing(p, raw, 'major')
-      if (m === '' || p === '') {
-        throw invalidComp(raw, `(Did you mean '*'?)`)
-      }
-      return []
+  #validXM(raw: string, m?: string, p?: string): ParsedXMajor {
+    assertMissing(m, raw, 'major')
+    assertMissing(p, raw, 'major')
+    if (m === '' || p === '') {
+      throw invalidComp(raw, `(Did you mean '*'?)`)
     }
-    if (isX(m) || !m) {
-      assertMissing(p, raw, 'major')
-      if (m === '' || p === '') {
-        throw invalidComp(raw, `(Did you mean '${M}'?)`)
-      }
-      return [assertNumber(M, raw, 'major')]
+    return []
+  }
+  #validXm(
+    raw: string,
+    M: string,
+    m?: string,
+    p?: string,
+  ): ParsedXMinor {
+    assertMissing(p, raw, 'major')
+    if (m === '' || p === '') {
+      throw invalidComp(raw, `(Did you mean '${M}'?)`)
     }
-    if (isX(p) || !p) {
-      if (p === '') {
-        throw invalidComp(raw, `(Did you mean '${M}.${m}'?)`)
-      }
-      return [
-        assertNumber(M, raw, 'major'),
-        assertNumber(m, raw, 'minor'),
-      ]
+    return [assertNumber(M, raw, 'major')]
+  }
+  #validXp(
+    raw: string,
+    M: string,
+    m: string,
+    p?: string,
+  ): ParsedXPatch {
+    if (p === '') {
+      throw invalidComp(raw, `(Did you mean '${M}.${m}'?)`)
     }
-    const hy = p.indexOf('-')
-    const pl = p.indexOf('+')
-    if (pl === -1 && hy === -1) {
-      return [
-        assertNumber(M, raw, 'major'),
-        assertNumber(m, raw, 'minor'),
-        assertNumber(p, raw, 'patch'),
-      ]
+    return [
+      assertNumber(M, raw, 'major'),
+      assertNumber(m, raw, 'minor'),
+    ]
+  }
+  #validTuple(
+    raw: string,
+    M: string,
+    m: string,
+    p: string,
+  ): ParsedXVersion {
+    return [
+      assertNumber(M, raw, 'major'),
+      assertNumber(m, raw, 'minor'),
+      assertNumber(p, raw, 'patch'),
+    ]
+  }
+  #validXbuild(
+    raw: string,
+    M: string,
+    m: string,
+    p: string,
+    pl: number,
+  ): ParsedXVersion {
+    // build, no prerelease
+    const patch = p.substring(0, pl)
+    const build = p.substring(pl + 1)
+    if (!patch) {
+      throw invalidComp(raw, 'cannot specify build without patch')
     }
-    if (hy === -1) {
-      // build, no prerelease
-      const [patch, build] = fastSplit(p, '+', 2)
-      if (!patch) {
-        throw invalidComp(raw, 'cannot specify build without patch')
-      }
-      if (!build) {
-        throw invalidComp(raw, `encountered '+', but no build value`)
-      }
-      return [
-        assertNumber(M, raw, 'major'),
-        assertNumber(m, raw, 'minor'),
-        assertNumber(patch, raw, 'patch'),
-        undefined,
-        build,
-      ]
+    if (!build) {
+      throw invalidComp(raw, `encountered '+', but no build value`)
     }
-    if (pl === -1) {
+    return [
+      assertNumber(M, raw, 'major'),
+      assertNumber(m, raw, 'minor'),
+      assertNumber(patch, raw, 'patch'),
+      undefined,
+      build,
+    ]
+  }
+
+  #validXpr(
+    raw: string,
+    M: string,
+    m: string,
+    p: string,
+    hy: number,
+  ): ParsedXVersion {
+    {
       // prerelease, no build
-      const [patch, pr] = fastSplit(p, '-', 2)
+      const patch = p.substring(0, hy)
+      const pr = p.substring(hy + 1)
       if (!patch) {
         throw invalidComp(
           raw,
@@ -391,17 +411,28 @@ export class Comparator {
         assertNumber(m, raw, 'minor'),
         assertNumber(patch, raw, 'patch'),
         pr,
+        undefined,
       ]
     }
+  }
+  #validXprbuild(
+    raw: string,
+    M: string,
+    m: string,
+    p: string,
+    hy: number,
+    pl: number,
+  ): ParsedXVersion {
     // both prerelease and build
-    const [patch, trailers = ''] = fastSplit(p, '-', 2)
+    const patch = p.substring(0, hy)
+    const pr = p.substring(hy + 1, pl)
+    const build = p.substring(pl + 1)
     if (!patch) {
       throw invalidComp(
         raw,
         'cannot specify prerelease without patch',
       )
     }
-    const [pr, build] = fastSplit(trailers, '+', 2)
     if (!pr) {
       throw invalidComp(
         raw,
@@ -420,17 +451,36 @@ export class Comparator {
     ]
   }
 
+  // pull the relevant values out of an X-range or version
+  // return the fields for creating a Version object.
+  // only call once operator is stripped off
+  #parseX(raw: string): ParsedXRange {
+    let [M, m, p] = fastSplit(raw, '.', 3)
+    let prune = 0
+    while (M && preJunk.has(M.charAt(prune))) prune++
+    if (M !== undefined && prune !== 0) M = M.substring(prune)
+    // the `|| !M` is so TS knows we've handled undefined
+    if (!M || isX(M)) return this.#validXM(raw, m, p)
+    if (!m || isX(m)) return this.#validXm(raw, M, m, p)
+    if (!p || isX(p)) return this.#validXp(raw, M, m, p)
+
+    const hy = p.indexOf('-')
+    const pl = p.indexOf('+')
+    if (pl === -1 && hy === -1) return this.#validTuple(raw, M, m, p)
+    if (pl === -1) return this.#validXpr(raw, M, m, p, hy)
+    if (hy === -1) return this.#validXbuild(raw, M, m, p, pl)
+    return this.#validXprbuild(raw, M, m, p, hy, pl)
+  }
+
   #parseHyphenRange(min: string, max: string) {
     const minv = this.#xInclusiveMin(min)
     const maxv = this.#xInclusiveMax(max)
     const minAny = isAny(minv)
     const maxAny = isAny(maxv)
-    return (
-      minAny && maxAny ? this.tuples.push(this.#getComparatorAny())
-      : maxAny ? this.tuples.push(minv)
-      : minAny ? this.tuples.push(maxv)
-      : this.tuples.push(minv, maxv)
-    )
+    if (minAny && maxAny) this.tuples.push(this.#getComparatorAny())
+    else if (minAny) this.tuples.push(maxv)
+    else if (maxAny) this.tuples.push(minv)
+    else this.tuples.push(minv, maxv)
   }
 
   #parse(comp: string) {
@@ -447,9 +497,7 @@ export class Comparator {
         return this.tuples.push(this.#xInclusiveMin(v2))
       case '<=':
         assertVersion(v2, comp)
-        return this.tuples.push(
-          this.#xInclusiveMax(comp.substring(2)),
-        )
+        return this.tuples.push(this.#xInclusiveMax(v2))
     }
     switch (first) {
       case '~':
@@ -460,14 +508,10 @@ export class Comparator {
         return this.#parseCaret(v1)
       case '>':
         assertVersion(v1, comp)
-        return this.tuples.push(
-          this.#xExclusiveMin(comp.substring(1)),
-        )
+        return this.tuples.push(this.#xExclusiveMin(v1))
       case '<':
         assertVersion(v1, comp)
-        return this.tuples.push(
-          this.#xExclusiveMax(comp.substring(1)),
-        )
+        return this.tuples.push(this.#xExclusiveMax(v1))
     }
     return this.#parseEq(comp)
   }
@@ -547,18 +591,19 @@ export class Comparator {
   #parseEq(comp: string) {
     const parsed = this.#parseX(comp)
     const z = this.includePrerelease ? '0' : undefined
-    if (isXMajor(parsed)) {
-      this.tuples.push(this.#getComparatorAny())
-    } else if (isFullVersion(parsed)) {
+    if (isFullVersion(parsed)) {
       this.tuples.push(['', new Version(comp, ...parsed)])
+    } else if (isXMajor(parsed)) {
+      this.tuples.push(this.#getComparatorAny())
     } else if (isXMinor(parsed)) {
-      this.tuples.push(
-        ['>=', new Version(comp, parsed[MAJOR], 0, 0, z, undefined)],
-        [
-          '<',
-          new Version(comp, parsed[MAJOR] + 1, 0, 0, '0', undefined),
-        ],
-      )
+      this.tuples.push([
+        '>=',
+        new Version(comp, parsed[MAJOR], 0, 0, z, undefined),
+      ])
+      this.tuples.push([
+        '<',
+        new Version(comp, parsed[MAJOR] + 1, 0, 0, '0', undefined),
+      ])
     } else if (isXPatch(parsed)) {
       this.tuples.push(
         [

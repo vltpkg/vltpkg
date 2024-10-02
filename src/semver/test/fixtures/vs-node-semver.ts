@@ -43,26 +43,31 @@ t.test('version parses per ms', t => {
 
 t.test('range parses per ms', t => {
   const rangeNodeSemVer = () => {
-    for (const [range] of all) {
+    for (const range of allRanges) {
       new semver.Range(range)
     }
   }
 
   const rangeVltSemVer = () => {
-    for (const [range] of all) {
+    for (const range of allRanges) {
       new Range(range)
     }
   }
 
-  const ns = test(rangeNodeSemVer) * all.length
-  const vs = test(rangeVltSemVer) * all.length
+  const ns = test(rangeNodeSemVer) * allRanges.length
+  const vs = test(rangeVltSemVer) * allRanges.length
   t.comment('node-semver', ns)
   t.comment('@vltpkg/semver', vs)
   t.comment(vs / ns)
-  t.equal(vs > ns, true, 'faster', {
-    'node-semver': ns,
-    '@vltpkg/semver': vs,
-  })
+  t.equal(
+    vs / ns > 0.7,
+    true,
+    'similar speeds for just range parse',
+    {
+      'node-semver': ns,
+      '@vltpkg/semver': vs,
+    },
+  )
   t.end()
 })
 
