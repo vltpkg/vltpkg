@@ -2,7 +2,7 @@ import t, { Test } from 'tap'
 import { spawn } from 'node:child_process'
 import { Bins, Paths, defaultOptions } from '../src/index.js'
 import bundle from '../src/bundle.js'
-import { join, sep } from 'node:path'
+import { join } from 'node:path'
 import * as types from '../src/types.js'
 import assert from 'node:assert'
 
@@ -142,11 +142,18 @@ const testCommand = async (
             const resStdout = replace(stdout)
             const resStderr = replace(stderr)
             const resOutput = replace(output)
+            t.comment(t.testdirName)
+            t.comment('stdout')
             t.comment(stdout)
+            t.comment('---')
             t.comment(resStdout)
+            t.comment('stderr')
             t.comment(stderr)
+            t.comment('---')
             t.comment(resStderr)
+            t.comment('output')
             t.comment(output)
+            t.comment('---')
             t.comment(resOutput)
 
             res({
