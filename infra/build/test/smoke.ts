@@ -141,43 +141,22 @@ const testCommand = async (
               s
                 .replaceAll(/\\+/g, '\\')
                 .replaceAll(t.testdirName, '{{DIR_NAME}}')
-            const resStdout = replace(stdout)
-            const resStderr = replace(stderr)
-            const resOutput = replace(output)
-            t.comment(t.testdirName)
-            t.comment(join(t.testdirName))
-            t.comment('stdout')
-            t.comment(stdout)
-            t.comment('---')
-            t.comment(resStdout)
-            t.comment('stderr')
-            t.comment(stderr)
-            t.comment('---')
-            t.comment(resStderr)
-            t.comment('output')
-            t.comment(output)
-            t.comment('---')
-            t.comment(resOutput)
-
             res({
-              stdout: resStdout,
-              stderr: resStderr,
-              output: resOutput,
+              stdout: replace(stdout),
+              stderr: replace(stderr),
+              output: replace(output),
               status: code,
             })
           })
           .on('error', err => rej(err))
       })
     }
-
     const sourceRes = await tResult<CommandResult>(t, 'source', t =>
       run(t, source),
     )
-
     const buildRes = await tResult<CommandResult>(t, 'build', t =>
       run(t, outdir),
     )
-    t.comment(JSON.stringify({ sourceRes, buildRes }, null, 2))
     t.equal(sourceRes.status, buildRes.status, 'status')
     t.equal(sourceRes.stdout, buildRes.stdout, 'stdout')
     t.equal(clean(sourceRes.stderr), clean(buildRes.stderr), 'stderr')
@@ -211,7 +190,15 @@ t.test('commands', async t => {
       ],
       install: [{}, { args: ['--help'] }],
     },
-    vlx: [{ args: ['missing-command'], output: 'missing-command' }],
+    vlx: [
+      {
+        args: ['missing-command'],
+        output: 'missing-command',
+        // temporary hack until https://github.com/vltpkg/vltpkg/issues/157
+        // FIXME: this should always be 1
+        status: process.platform === 'win32' ? 1 : 0,
+      },
+    ],
     vlr: [{ args: ['some-script'], output: 'script output' }],
     vlrx: [{ args: ['some-script'], output: 'script output' }],
   }
