@@ -137,4 +137,4 @@ jobs:
         run: pnpm install
 
       - name: Run Tests
-        run: pnpm --no-bail --aggregate-output -r test
+        run: pnpm --no-bail --aggregate-output -F infra-build test

@@ -93,6 +93,12 @@ const testCommand = async (
       dir: string,
     ): Promise<CommandResult> => {
       const dirName = t.testdirName.replaceAll(sep, '/')
+      t.comment(
+        JSON.stringify({
+          testdirName: t.testdirName,
+          dirName,
+        }),
+      )
       const binPath = join(dir, `${bin}.js`)
       const cwd = t.testdir(testdir)
       // Remove env vars that might cause trouble for tests since
@@ -152,9 +158,11 @@ const testCommand = async (
     const sourceRes = await tResult<CommandResult>(t, 'source', t =>
       run(t, source),
     )
+
     const buildRes = await tResult<CommandResult>(t, 'build', t =>
       run(t, outdir),
     )
+    t.comment(JSON.stringify({ sourceRes, buildRes }, null, 2))
     t.equal(sourceRes.status, buildRes.status, 'status')
     t.equal(sourceRes.stdout, buildRes.stdout, 'stdout')
     t.equal(clean(sourceRes.stderr), clean(buildRes.stderr), 'stderr')
