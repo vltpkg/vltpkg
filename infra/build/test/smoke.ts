@@ -138,7 +138,9 @@ const testCommand = async (
         proc
           .on('close', code => {
             const replace = (s: string) =>
-              s.replaceAll(join(t.testdirName), '{{DIR_NAME}}')
+              s
+                .replaceAll(/\\+/g, '\\')
+                .replaceAll(t.testdirName, '{{DIR_NAME}}')
             const resStdout = replace(stdout)
             const resStderr = replace(stderr)
             const resOutput = replace(output)
