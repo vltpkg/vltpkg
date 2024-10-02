@@ -2,7 +2,7 @@ import t, { Test } from 'tap'
 import { spawn } from 'node:child_process'
 import { Bins, Paths, defaultOptions } from '../src/index.js'
 import bundle from '../src/bundle.js'
-import { join } from 'node:path'
+import { join, sep } from 'node:path'
 import * as types from '../src/types.js'
 import assert from 'node:assert'
 
@@ -92,6 +92,7 @@ const testCommand = async (
       t: Test,
       dir: string,
     ): Promise<CommandResult> => {
+      const dirName = t.testdirName.replaceAll(sep, '/')
       const binPath = join(dir, `${bin}.js`)
       const cwd = t.testdir(testdir)
       // Remove env vars that might cause trouble for tests since
@@ -138,18 +139,9 @@ const testCommand = async (
         proc
           .on('close', code =>
             res({
-              stdout: stdout.replaceAll(
-                t.testdirName,
-                '{{TEST_NAME}}',
-              ),
-              stderr: stderr.replaceAll(
-                t.testdirName,
-                '{{TEST_NAME}}',
-              ),
-              output: output.replaceAll(
-                t.testdirName,
-                '{{TEST_NAME}}',
-              ),
+              stdout: stdout.replaceAll(dirName, '{{DIR_NAME}}'),
+              stderr: stderr.replaceAll(dirName, '{{DIR_NAME}}'),
+              output: output.replaceAll(dirName, '{{DIR_NAME}}'),
               status: code,
             }),
           )

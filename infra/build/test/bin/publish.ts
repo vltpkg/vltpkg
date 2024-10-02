@@ -65,7 +65,6 @@ const publish = async (t: Test, argv: string[] = []) => {
                 stdio: 'pipe',
                 encoding: 'utf8',
               })
-              t.comment(JSON.stringify(r, null, 2))
               res.push({
                 stderr: parseOutput(r.stderr),
                 stdout: parseOutput(r.stdout),
