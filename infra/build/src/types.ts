@@ -1,3 +1,18 @@
+export const All = 'all'
+
+export const Bins = {
+  vlt: 'vlt',
+  vlr: 'vlr',
+  vlx: 'vlx',
+  vlrx: 'vlrx',
+  vlix: 'vlix',
+} as const
+export const DefaultBin = Bins.vlt
+export const BinNames = Object.values(Bins)
+export type Bin = (typeof Bins)[keyof typeof Bins]
+export const isBin = (v: unknown): v is Bin =>
+  BinNames.includes(v as Bin)
+
 export const Booleans = {
   True: 'true',
   False: 'false',
@@ -46,56 +61,79 @@ export type Format = (typeof Formats)[keyof typeof Formats]
 export const isFormat = (v: unknown): v is Format =>
   FormatValues.includes(v as Format)
 
-export const bundleFactorKeys = [
-  'runtime',
+export type Factors = {
+  arch: Arch
+  compile: boolean
+  externalCommands: boolean
+  format: Format
+  minify: boolean
+  platform: Platform
+  runtime: Runtime
+  sourcemap: boolean
+}
+
+export type Keys = keyof Factors
+
+export const metaKeys = ['compile'] as const
+
+export type MetaKeys = (typeof metaKeys)[number]
+
+export type Matrix = Omit<Factors, MetaKeys>
+
+export const pickMatrix = (
+  m: FactorSets,
+): Omit<FactorSets, MetaKeys> => ({
+  arch: m.arch,
+  externalCommands: m.externalCommands,
+  format: m.format,
+  minify: m.minify,
+  platform: m.platform,
+  runtime: m.runtime,
+  sourcemap: m.sourcemap,
+})
+
+export type FactorSets = {
+  [K in keyof Factors]: Set<Factors[K]>
+}
+
+export type FactorArrays = {
+  [K in keyof Factors]: Factors[K][]
+}
+
+export const bundleKeys = [
   'format',
   'externalCommands',
   'minify',
   'sourcemap',
 ] as const
 
-export type BundleFactors = {
-  runtime: Runtime
-  format: Format
-  externalCommands: boolean
-  minify: boolean
-  sourcemap: boolean
-}
+export type BundleFactors = Pick<Factors, (typeof bundleKeys)[number]>
 
-export type BundleOptions = {
-  outdir: string
-} & BundleFactors
+export const pickBundle = (m: Matrix): BundleFactors => ({
+  format: m.format,
+  externalCommands: m.externalCommands,
+  minify: m.minify,
+  sourcemap: m.sourcemap,
+})
 
-export const compileFactorsKeys = [
-  'runtime',
-  'format',
+export const compileKeys = [
   'platform',
   'arch',
+  'runtime',
+  ...bundleKeys,
 ] as const
 
-export type CompileFactors = {
-  runtime: Runtime
-  format: Format
-  platform: Platform
-  arch: Arch
-}
+export type CompileFactors = Pick<
+  Factors,
+  (typeof compileKeys)[number]
+>
 
-export type CompileOptions = {
-  source: string
-  outdir: string
-} & CompileFactors
-
-export type Matrix = {
-  minify: boolean
-  sourcemap: boolean
-  externalCommands: boolean
-  runtime: Runtime
-  format: Format
-  platform: Platform
-  arch: Arch
-  compile: boolean
-}
-
-export type MatrixOptions = {
-  [K in keyof Matrix]: Set<Matrix[K]>
-}
+export const pickCompilation = (m: Matrix): CompileFactors => ({
+  platform: m.platform,
+  arch: m.arch,
+  runtime: m.runtime,
+  format: m.format,
+  externalCommands: m.externalCommands,
+  minify: m.minify,
+  sourcemap: m.sourcemap,
+})

@@ -3,65 +3,91 @@ import { resolve, join, dirname } from 'node:path'
 import { findPackageJson } from 'package-json-from-dist'
 import * as os from 'node:os'
 import * as types from './types.js'
-
-const osPlatform = os.platform()
-const osArch = os.arch()
+import assert from 'node:assert'
 
 const BUILD_ROOT = dirname(findPackageJson(import.meta.filename))
 const MONO_ROOT = resolve(BUILD_ROOT, '../..')
 const SRC = join(MONO_ROOT, 'src')
 const CLI = join(SRC, 'vlt')
-const CLI_PKG = JSON.parse(
-  readFileSync(join(CLI, 'package.json'), 'utf8'),
-)
-export const BIN_NAMES = Object.keys(CLI_PKG.bin)
+
 export const Paths = {
   BUILD_ROOT,
   MONO_ROOT,
   SRC,
   CLI,
-  BINS: Object.values<string>(CLI_PKG.bin),
 }
 
-export const defaultOptions = (): Readonly<types.Matrix> =>
-  ({
+export const Bins = (() => {
+  const { bin } = JSON.parse(
+    readFileSync(join(CLI, 'package.json'), 'utf8'),
+  )
+  assert(
+    [...types.BinNames].sort().join() ===
+      Object.keys(bin).sort().join(),
+    new Error(`bin field in ${CLI} must match types`),
+  )
+  const paths = Object.values<string>(bin)
+  assert(
+    paths[0],
+    new Error(`bin field in ${CLI} must be an object of paths`),
+  )
+  return {
+    PATHS: paths,
+    DIR: join(CLI, dirname(paths[0])),
+  }
+})()
+
+export const fullMatrix = (): Readonly<types.FactorArrays> => {
+  return {
+    minify: types.BooleanValues.map(types.toBoolean),
+    sourcemap: types.BooleanValues.map(types.toBoolean),
+    externalCommands: types.BooleanValues.map(types.toBoolean),
+    compile: types.BooleanValues.map(types.toBoolean),
+    runtime: types.RuntimeValues,
+    format: types.FormatValues,
+    platform: types.PlatformValues,
+    arch: types.ArchValues,
+  } as const
+}
+
+export const defaultOptions = (): Readonly<types.Factors> => {
+  const osPlatform = os.platform()
+  const osArch = os.arch()
+  return {
     minify: false,
     sourcemap: true,
     externalCommands: true,
-    compile: true,
-    runtime: types.Runtimes.Deno,
+    compile: false,
+    runtime: types.Runtimes.Node,
     format: types.Formats.Esm,
     platform:
       types.isPlatform(osPlatform) ? osPlatform : types.Platforms.Mac,
     arch: types.isArch(osArch) ? osArch : types.Archs.arm64,
-  }) as const
+  } as const
+}
 
 export const defaultMatrix = (
-  all?: boolean,
-): Readonly<types.MatrixOptions> => {
-  if (all) {
-    return {
-      minify: new Set(types.BooleanValues.map(types.toBoolean)),
-      sourcemap: new Set(types.BooleanValues.map(types.toBoolean)),
-      externalCommands: new Set(
-        types.BooleanValues.map(types.toBoolean),
-      ),
-      compile: new Set(types.BooleanValues.map(types.toBoolean)),
-      runtime: new Set(types.RuntimeValues),
-      format: new Set(types.FormatValues),
-      platform: new Set(types.PlatformValues),
-      arch: new Set(types.ArchValues),
-    } as const
-  }
+  o?: Pick<types.FactorSets, 'compile' | 'runtime'>,
+): Readonly<types.FactorArrays> => {
   const defaults = defaultOptions()
+  const formats = new Set([defaults.format])
+  if (
+    o?.runtime.has(types.Runtimes.Bun) ||
+    o?.runtime.has(types.Runtimes.Deno)
+  ) {
+    formats.add(types.Formats.Esm)
+  }
+  if (o?.runtime.has(types.Runtimes.Node) && o.compile.has(true)) {
+    formats.add(types.Formats.Cjs)
+  }
   return {
-    minify: new Set([defaults.minify]),
-    sourcemap: new Set([defaults.sourcemap]),
-    externalCommands: new Set([defaults.externalCommands]),
-    compile: new Set([defaults.compile]),
-    runtime: new Set([defaults.runtime]),
-    format: new Set([defaults.format]),
-    platform: new Set([defaults.platform]),
-    arch: new Set([defaults.arch]),
+    minify: [defaults.minify],
+    sourcemap: [defaults.sourcemap],
+    externalCommands: [defaults.externalCommands],
+    compile: [defaults.compile],
+    runtime: [defaults.runtime],
+    format: [...formats],
+    platform: [defaults.platform],
+    arch: [defaults.arch],
   } as const
 }

@@ -7,81 +7,81 @@
 'use strict'
 exports[`test/index.ts > TAP > defaults > all defaults 1`] = `
 Object {
-  "arch": Set {
+  "arch": Array [
     "x64",
     "arm64",
-  },
-  "compile": Set {
+  ],
+  "compile": Array [
     true,
     false,
-  },
-  "externalCommands": Set {
+  ],
+  "externalCommands": Array [
     true,
     false,
-  },
-  "format": Set {
+  ],
+  "format": Array [
     "cjs",
     "esm",
-  },
-  "minify": Set {
+  ],
+  "minify": Array [
     true,
     false,
-  },
-  "platform": Set {
+  ],
+  "platform": Array [
     "linux",
     "win32",
     "darwin",
-  },
-  "runtime": Set {
+  ],
+  "runtime": Array [
     "node",
     "deno",
     "bun",
-  },
-  "sourcemap": Set {
+  ],
+  "sourcemap": Array [
     true,
     false,
-  },
+  ],
 }
 `
 
 exports[`test/index.ts > TAP > defaults > default options 1`] = `
 Object {
   "arch": "arm64",
-  "compile": true,
+  "compile": false,
   "externalCommands": true,
   "format": "esm",
   "minify": false,
   "platform": "darwin",
-  "runtime": "deno",
+  "runtime": "node",
   "sourcemap": true,
 }
 `
 
 exports[`test/index.ts > TAP > defaults > defaults 1`] = `
 Object {
-  "arch": Set {
+  "arch": Array [
     "arm64",
-  },
-  "compile": Set {
-    true,
-  },
-  "externalCommands": Set {
-    true,
-  },
-  "format": Set {
-    "esm",
-  },
-  "minify": Set {
+  ],
+  "compile": Array [
     false,
-  },
-  "platform": Set {
-    "darwin",
-  },
-  "runtime": Set {
-    "deno",
-  },
-  "sourcemap": Set {
+  ],
+  "externalCommands": Array [
     true,
-  },
+  ],
+  "format": Array [
+    "esm",
+  ],
+  "minify": Array [
+    false,
+  ],
+  "platform": Array [
+    "darwin",
+  ],
+  "runtime": Array [
+    "node",
+  ],
+  "sourcemap": Array [
+    true,
+  ],
 }
 `

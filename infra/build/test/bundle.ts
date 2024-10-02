@@ -1,55 +1,95 @@
 import t, { Test } from 'tap'
-import bundle from '../src/bundle.js'
-import { Formats, Runtimes, BundleFactors } from '../src/types.js'
-import { relative, sep } from 'path'
+import { ESLint } from 'eslint'
+import globals from 'globals'
+import { relative, sep, join } from 'path'
+import * as types from '../src/types.js'
 import { defaultOptions } from '../src/index.js'
+import bundle from '../src/bundle.js'
 
 const testBundle = async (
   t: Test,
-  options: Partial<BundleFactors>,
+  {
+    testdir,
+    ...options
+  }: Partial<types.BundleFactors> & { testdir?: object },
 ) => {
-  const dir = t.testdir()
+  const dir = t.testdir({ ...testdir, '.build': {} })
+  const outdir = join(dir, '.build')
   const { outputs } = await bundle({
-    outdir: dir,
+    outdir,
     ...defaultOptions(),
     ...options,
   })
-  const keys = Object.keys(outputs).map(p => relative(dir, p))
-  return keys
+  return {
+    dir,
+    outdir,
+    files: Object.keys(outputs).map(p => relative(outdir, p)),
+  }
 }
 
 t.test('bundle', async t => {
   await t.resolves(
     testBundle(t, {
-      runtime: Runtimes.Node,
-      format: Formats.Esm,
+      format: types.Formats.Esm,
     }),
   )
   await t.resolves(
     testBundle(t, {
-      runtime: Runtimes.Node,
-      format: Formats.Cjs,
-    }),
-  )
-  await t.resolves(
-    testBundle(t, {
-      runtime: Runtimes.Bun,
-      format: Formats.Esm,
+      format: types.Formats.Cjs,
     }),
   )
 })
 
 t.test('external commands', async t => {
-  const commands = await testBundle(t, {
-    runtime: Runtimes.Node,
-    format: Formats.Esm,
+  const { files: commands } = await testBundle(t, {
     externalCommands: true,
   })
-  const noCommands = await testBundle(t, {
-    runtime: Runtimes.Node,
-    format: Formats.Esm,
+  const { files: noCommands } = await testBundle(t, {
     externalCommands: false,
   })
   t.ok(commands.some(c => c.startsWith(`commands${sep}`)))
   t.notOk(noCommands.some(c => c.startsWith(`commands${sep}`)))
+})
+
+t.test('lint', async t => {
+  const { dir, outdir } = await testBundle(t, {
+    testdir: {
+      'eslint.config.mjs': `export default {}`,
+    },
+  })
+  const eslint = new ESLint({
+    cwd: dir,
+    allowInlineConfig: false,
+    baseConfig: {
+      linterOptions: {
+        reportUnusedDisableDirectives: false,
+      },
+      languageOptions: {
+        globals: {
+          // Only allow globals that are not node specific
+          // Anything else should be included with an esbuild banner
+          ...globals['shared-node-browser'],
+          // These are used by 3rd party deps that we do
+          // not control but don't pose any runtime problems.
+          window: false,
+          define: false,
+          textLen: true,
+        },
+      },
+      rules: {
+        'no-undef': 'error',
+      },
+    },
+  })
+  const results = await eslint.lintFiles([
+    `${relative(dir, outdir)}/**/*.js`,
+  ])
+  t.strictSame(
+    [
+      ...new Set(
+        results.flatMap(r => r.messages.map(m => m.message)),
+      ),
+    ],
+    [],
+  )
 })
