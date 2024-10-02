@@ -61,11 +61,12 @@ const parseArgs = () => {
 const npm = (
   pkg: Package,
   args: string[],
-  options: Omit<SpawnSyncOptions, 'cwd' | 'stdio'> = {},
+  options: Omit<SpawnSyncOptions, 'cwd' | 'stdio' | 'shell'> = {},
 ) =>
   spawnSync('npm', args, {
     cwd: pkg.dir,
     stdio: 'inherit',
+    shell: true,
     ...options,
     env: {
       ...process.env,
