@@ -87,7 +87,7 @@ const publish = async (t: Test, argv: string[] = []) => {
 }
 
 await t.test('bins', async t => {
-  const { res } = await publish(t)
+  const { res } = await publish(t, ['--bins=all'])
   t.equal(res.length, 4)
   for (const [binName, output] of BinNames.map(
     bin => [bin, findBin(res, bin)] as const,

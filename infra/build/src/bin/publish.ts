@@ -27,7 +27,7 @@ const parseArgs = () => {
   const {
     outdir,
     forReal,
-    bins = types.BinNames,
+    bins: binsArg = [types.DefaultBin],
     ...matrix
   } = nodeParseArgs({
     options: {
@@ -38,6 +38,7 @@ const parseArgs = () => {
     },
   }).values
 
+  const bins = binsArg.includes(types.All) ? types.BinNames : binsArg
   assert(
     bins.every(b => types.isBin(b)),
     new Error('invalid bin', {
