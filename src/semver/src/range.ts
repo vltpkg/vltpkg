@@ -36,23 +36,29 @@ export class Range {
   constructor(range: string, includePrerelease = false) {
     this.raw = range
     this.includePrerelease = includePrerelease
-    fastSplit(range, '||', -1, part =>
-      this.set.push(new Comparator(part, this.includePrerelease)),
-    )
-    this.isAny = this.set.some(c => c.isAny)
-
-    const cmp = this.set[0]
-    this.isSingle =
-      this.set.length === 1 &&
-      !!cmp &&
-      Array.isArray(cmp.tuples) &&
-      cmp.tuples.length === 1 &&
-      Array.isArray(cmp.tuples[0]) &&
-      cmp.tuples[0][0] === ''
-
-    if (this.isSingle) {
-      this.#toString = String(cmp)
-    }
+    this.isAny = false
+    let isFirst = true
+    this.isSingle = false
+    fastSplit(range, '||', -1, part => {
+      if (this.isAny) return
+      const cmp = new Comparator(part, this.includePrerelease)
+      if (cmp.isAny) {
+        this.set = [cmp]
+        this.isAny = true
+        return
+      }
+      this.set.push(cmp)
+      if (!isFirst) this.isSingle = false
+      else if (
+        Array.isArray(cmp.tuples) &&
+        cmp.tuples.length === 1 &&
+        Array.isArray(cmp.tuples[0]) &&
+        cmp.tuples[0][0] === ''
+      ) {
+        this.isSingle = true
+      }
+      isFirst = false
+    })
   }
 
   /**
@@ -65,6 +71,10 @@ export class Range {
   /** return the simplified canonical form of this range */
   toString() {
     if (this.#toString) return this.#toString
+    if (this.isSingle) {
+      this.#toString = String(this.set[0])
+      return this.#toString
+    }
     this.#toString = this.set.map(c => String(c)).join(' || ')
     return this.#toString
   }
