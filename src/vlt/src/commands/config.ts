@@ -114,12 +114,22 @@ const get = (conf: LoadedConfig) => {
 }
 
 const edit = async (conf: LoadedConfig) => {
-  const [editor, ...args] = conf.get('editor').split(' ')
-  if (!editor) {
+  const [command, ...args] = conf.get('editor').split(' ')
+  if (!command) {
     throw error(`editor is empty`)
   }
   await conf.editConfigFile(conf.get('config'), file => {
-    spawnSync(editor, [...args, file], { stdio: 'inherit' })
+    args.push(file)
+    const res = spawnSync(command, args, {
+      stdio: 'inherit',
+    })
+    if (res.status !== 0) {
+      throw error(`${command} command failed`, {
+        ...res,
+        command,
+        args,
+      })
+    }
   })
 }
 
