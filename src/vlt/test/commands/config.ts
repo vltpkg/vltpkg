@@ -10,10 +10,10 @@ const mockSpawnSync = (
   args: string[],
   options: SpawnOptions,
 ) => {
-  t.matchOnly(args, [String])
+  t.matchOnly(args, [String, String])
   t.strictSame(options, { stdio: 'inherit' })
   t.equal(cmd, 'EDITOR')
-  edited = args[0]
+  edited = args.at(-1)
 }
 
 class MockConfig {
@@ -183,10 +183,16 @@ t.test('get', async t => {
 t.test('edit', async t => {
   for (const which of ['user', 'project']) {
     t.test(which, async t => {
-      await run(t, ['edit'], { config: which, editor: 'EDITOR' })
+      await run(t, ['edit'], {
+        config: which,
+        editor: 'EDITOR --passes-flags-to-args',
+      })
       t.equal(edited, which)
     })
   }
+  t.test('no editor', async t => {
+    t.rejects(run(t, ['edit'], { editor: '' }))
+  })
 })
 
 t.test('set', async t => {
