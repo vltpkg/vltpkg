@@ -35,6 +35,7 @@
     "@eslint/js": "catalog:",
     "@types/eslint__js": "catalog:",
     "@types/node": "catalog:",
+    "chalk": "catalog:",
     "eslint": "catalog:",
     "prettier": "catalog:",
     "tap": "catalog:",

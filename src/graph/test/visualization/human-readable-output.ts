@@ -3,6 +3,18 @@ import { Spec, SpecOptions } from '@vltpkg/spec'
 import { Monorepo } from '@vltpkg/workspaces'
 import { Graph } from '../../src/graph.js'
 import { humanReadableOutput } from '../../src/visualization/human-readable-output.js'
+import { loadActualGraph } from '../fixtures/actual.js'
+import { ChalkInstance } from 'chalk'
+import { joinDepIDTuple } from '@vltpkg/dep-id'
+import chalk from 'chalk'
+chalk.level = 1
+
+const colors = {
+  dim: (s: string) => s,
+  red: (s: string) => s,
+  reset: (s: string) => s,
+  yellow: (s: string) => s,
+} as ChalkInstance
 
 const configData = {
   registry: 'https://registry.npmjs.org',
@@ -93,9 +105,60 @@ t.test('human-readable-output', async t => {
   }
   graph.extraneousDependencies.add(edge)
   t.matchSnapshot(
-    humanReadableOutput(graph),
+    humanReadableOutput({
+      edges: [...graph.edges],
+      highlightSelection: false,
+      importers: graph.importers,
+      nodes: [...graph.nodes.values()],
+    }),
     'should print human readable output',
   )
+})
+
+t.test('actual graph', async t => {
+  const graph = loadActualGraph(t)
+  t.matchSnapshot(
+    humanReadableOutput({
+      colors,
+      edges: [...graph.edges],
+      highlightSelection: false,
+      importers: graph.importers,
+      nodes: [...graph.nodes.values()],
+    }),
+    'should print from an actual loaded graph',
+  )
+
+  t.test('selected packages', async t => {
+    const edges = [...graph.edges].filter(e => e.name === 'baz')
+    const nodes = [
+      graph.nodes.get(
+        joinDepIDTuple(['registry', 'custom', 'baz@1.0.0']),
+      )!,
+    ]
+    t.matchSnapshot(
+      humanReadableOutput({
+        colors,
+        edges,
+        highlightSelection: true,
+        importers: graph.importers,
+        nodes,
+      }),
+      'should print selected packages',
+    )
+  })
+
+  t.test('colors', async t => {
+    t.matchSnapshot(
+      humanReadableOutput({
+        colors: chalk,
+        edges: [...graph.edges],
+        highlightSelection: false,
+        importers: graph.importers,
+        nodes: [...graph.nodes.values()],
+      }),
+      'should use colors',
+    )
+  })
 })
 
 t.test('workspaces', async t => {
@@ -131,7 +194,13 @@ t.test('workspaces', async t => {
     monorepo,
   })
   t.matchSnapshot(
-    humanReadableOutput(graph),
+    humanReadableOutput({
+      colors,
+      edges: [...graph.edges],
+      highlightSelection: false,
+      importers: graph.importers,
+      nodes: [...graph.nodes.values()],
+    }),
     'should print human readable workspaces output',
   )
 })
@@ -175,7 +244,133 @@ t.test('cycle', async t => {
     version: '1.0.0',
   })
   t.matchSnapshot(
-    humanReadableOutput(graph),
+    humanReadableOutput({
+      colors,
+      edges: [...graph.edges],
+      highlightSelection: false,
+      importers: graph.importers,
+      nodes: [...graph.nodes.values()],
+    }),
     'should print cycle human readable output',
   )
+})
+
+t.test('nameless package', async t => {
+  const graph = new Graph({
+    projectRoot: t.testdirName,
+    ...configData,
+    mainManifest: {},
+  })
+  t.matchSnapshot(
+    humanReadableOutput({
+      colors,
+      edges: [...graph.edges],
+      highlightSelection: false,
+      importers: graph.importers,
+      nodes: [...graph.nodes.values()],
+    }),
+    'should fallback to printing package id if name is missing',
+  )
+})
+
+t.test('versionless package', async t => {
+  const graph = new Graph({
+    projectRoot: t.testdirName,
+    ...configData,
+    mainManifest: {
+      name: 'my-project',
+      version: '1.0.0',
+      dependencies: {
+        a: '^1.0.0',
+      },
+    },
+  })
+  graph.placePackage(
+    graph.mainImporter,
+    'optional',
+    Spec.parse('a', '^1.0.0'),
+    { name: 'a' },
+  )
+  t.matchSnapshot(
+    humanReadableOutput({
+      colors,
+      edges: [...graph.edges],
+      highlightSelection: false,
+      importers: graph.importers,
+      nodes: [...graph.nodes.values()],
+    }),
+    'should skip printing version number',
+  )
+})
+
+t.test('aliased package', async t => {
+  const graph = new Graph({
+    projectRoot: t.testdirName,
+    ...configData,
+    mainManifest: {
+      name: 'my-project',
+      version: '1.0.0',
+      dependencies: {
+        a: '^1.0.0',
+      },
+    },
+  })
+  graph.placePackage(
+    graph.mainImporter,
+    'optional',
+    Spec.parse('a', '^1.0.0'),
+    { name: '@myscope/foo', version: '1.0.0' },
+  )
+  t.matchSnapshot(
+    humanReadableOutput({
+      colors,
+      edges: [...graph.edges],
+      highlightSelection: false,
+      importers: graph.importers,
+      nodes: [...graph.nodes.values()],
+    }),
+    'should print both edge and node names',
+  )
+})
+
+t.test('missing optional', async t => {
+  const graph = new Graph({
+    projectRoot: t.testdirName,
+    ...configData,
+    mainManifest: {
+      name: 'my-project',
+      version: '1.0.0',
+      optionalDependencies: {
+        a: '^1.0.0',
+      },
+    },
+  })
+  graph.placePackage(
+    graph.mainImporter,
+    'optional',
+    Spec.parse('a', '^1.0.0'),
+  )
+  t.matchSnapshot(
+    humanReadableOutput({
+      colors,
+      edges: [...graph.edges],
+      highlightSelection: false,
+      importers: graph.importers,
+      nodes: [...graph.nodes.values()],
+    }),
+    'should print missing optional package',
+  )
+
+  t.test('colors', async t => {
+    t.matchSnapshot(
+      humanReadableOutput({
+        colors: chalk,
+        edges: [...graph.edges],
+        highlightSelection: false,
+        importers: graph.importers,
+        nodes: [...graph.nodes.values()],
+      }),
+      'should use colors',
+    )
+  })
 })
