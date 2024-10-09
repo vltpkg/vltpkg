@@ -114,7 +114,7 @@ jobs:
       run:
         shell: ${{ matrix.platform.shell }}
 
-    steps:          
+    steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
@@ -158,7 +158,8 @@ jobs:
             FILTER_ARG="${FILTER_ARG:---filter}"
             FILTER_TEST="\"...$FILTER\""
             pnpm --fail-if-no-match "$FILTER_ARG" "$FILTER_TEST" exec
-            if [ $? -eq 0 ]; then
+            STATUS=$?
+            if [[ "$STATUS" -eq 0 ]]; then
               echo "prepare=$FILTER_ARG \"$FILTER...\"" >> "$GITHUB_OUTPUT"
               echo "test=$FILTER_ARG $FILTER_TEST" >> "$GITHUB_OUTPUT"
             fi
