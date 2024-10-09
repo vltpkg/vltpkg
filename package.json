@@ -26,8 +26,7 @@
   },
   "scripts": {
     ".": "./scripts/local-cli vlt",
-    "prebenchmark": "pnpm vlt-benchmark-download-fixtures",
-    "benchmark": "pnpm -r --sequential --no-bail --if-present run \"/^benchmark*/\"",
+    "benchmark": "./scripts/benchmark",
     "fix": "pnpm fix:pkg && pnpm lint && pnpm format",
     "fix:pkg": "node scripts/consistent-package-json.js",
     "format": "prettier --write . --log-level warn --ignore-path ./.prettierignore --cache",

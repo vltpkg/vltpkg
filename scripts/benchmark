@@ -1,0 +1,16 @@
+#!/bin/sh
+
+if [ "$#" -eq 0 ]; then
+  FILTER="--recursive"
+  # Run a few instances of download fixtures concurrently since we
+  # know that running all benchmarks will require them.
+  # Two seems to be safe to not get rate limited.
+  pnpm vlt-benchmark-download-fixtures
+  pnpm vlt-benchmark-download-fixtures
+else
+  # Dont download any fixtures since we might not need them based
+  # on the filter argument. Individual workspaces specify a prebenchmark
+  # run-script if they will need the fixtures.
+  FILTER="--filter $@"
+fi
+pnpm $FILTER --sequential --no-bail --if-present run "/^benchmark*/"
