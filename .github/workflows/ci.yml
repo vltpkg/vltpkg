@@ -1,6 +1,10 @@
 name: CI
 
 on:
+  workflow_dispatch:
+    inputs:
+      filter:
+        description: 'run-script filter for tests'
   push:
     branches:
       - main
@@ -111,8 +115,27 @@ jobs:
         shell: ${{ matrix.platform.shell }}
 
     steps:
+      - name: Set run-script filters
+        id: filters
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" == "pull_request" ]; then
+            FILTER="[origin/${{ github.base_ref }}]"          
+          elif [ "${{ github.event_name }}" == "workflow_dispatch" ] && [ "${{ inputs.filter }}" != "" ]; then
+            FILTER="${{ inputs.filter }}"
+          fi
+          if [ -z "${FILTER}" ]; then
+            echo "flags=--recursive" >> "$GITHUB_OUTPUT"
+          else
+            echo "filter=$FILTER" >> "$GITHUB_OUTPUT"
+          fi
+          
       - name: Checkout Repository
         uses: actions/checkout@v4
+
+      - name: Fetch base ref
+        if: github.event_name == 'pull_request'
+        run: git fetch --no-tags --prune --depth=1 origin +refs/heads/${{ github.base_ref }}:refs/remotes/origin/${{ github.base_ref }}
 
       - uses: oven-sh/setup-bun@v2
         with:
@@ -132,9 +155,16 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
           cache: pnpm
-
+  
       - name: Install dependencies
-        run: pnpm install
+        run: pnpm ${{ steps.filters.outputs.filter && format('--filter-prod "{0}..."', steps.filters.outputs.filter) || steps.filters.outputs.flags }} install --ignore-scripts
+
+      - name: Prepare
+        run: pnpm ${{ steps.filters.outputs.filter && format('--filter-prod "{0}..."', steps.filters.outputs.filter) || steps.filters.outputs.flags }} prepare
+
 
       - name: Run Tests
-        run: pnpm --no-bail --aggregate-output -r test
+        run: |
+          touch .npmrc
+          echo "enable-pre-post-scripts=false\n" >> .npmrc
+          pnpm ${{ steps.filters.outputs.filter && format('--filter-prod "...{0}"', steps.filters.outputs.filter) || steps.filters.outputs.flags }} --no-bail --aggregate-output test
