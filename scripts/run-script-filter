@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+function output() {
+  local PREPARE="prepare=$1"
+  local TEST="test=${2:-$1}"
+
+  echo "$PREPARE"
+  echo "$TEST"
+
+  if [ ! -z "${GITHUB_OUTPUT}" ]; then
+    echo "$PREPARE" >> "$GITHUB_OUTPUT"
+    echo "$TEST" >> "$GITHUB_OUTPUT"
+  fi
+  
+  exit 0
+}
+
+function has_changes() {
+  set +e
+  echo "Found changes in the following workspaces based on \"$1=$2\":"
+  pnpm --fail-if-no-match --shell-mode $1 $2 exec echo \$PNPM_PACKAGE_NAME
+  STATUS=$?
+  set -e
+  return $STATUS
+}
+
+if [ "$1" == "pull_request" ]; then
+  FILTER="[origin/$2]"
+  FILTER_ARG="--filter-prod"
+elif [ "$1" == "workflow_dispatch" ] && [ "$2" != "" ]; then
+  FILTER="$2"
+  FILTER_ARG="--filter"
+else
+  output "--recursive"
+fi
+
+if has_changes $FILTER_ARG "...$FILTER"; then
+  output "$FILTER_ARG=\"$FILTER...\"" "$FILTER_ARG=\"...$FILTER\""
+fi
