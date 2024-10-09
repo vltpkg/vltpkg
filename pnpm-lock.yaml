@@ -851,6 +851,9 @@ importers:
       '@vltpkg/fast-split':
         specifier: workspace:*
         version: link:../fast-split
+      '@vltpkg/graph':
+        specifier: workspace:*
+        version: link:../graph
       '@vltpkg/spec':
         specifier: workspace:*
         version: link:../spec
@@ -870,9 +873,6 @@ importers:
       '@types/node':
         specifier: 'catalog:'
         version: 22.5.0
-      '@vltpkg/graph':
-        specifier: workspace:*
-        version: link:../graph
       eslint:
         specifier: 'catalog:'
         version: 9.9.0(jiti@1.21.6)
@@ -1286,6 +1286,9 @@ importers:
       '@vltpkg/promise-spawn':
         specifier: workspace:*
         version: link:../promise-spawn
+      '@vltpkg/query':
+        specifier: workspace:*
+        version: link:../query
       '@vltpkg/run':
         specifier: workspace:*
         version: link:../run

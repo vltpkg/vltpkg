@@ -28,6 +28,9 @@ export const commands = {
   ix: 'install-exec',
   'install-exec': 'install-exec',
   pkg: 'pkg',
+  list: 'list',
+  ls: 'list',
+  query: 'query',
 } as const
 
 export type Commands = typeof commands
@@ -457,6 +460,14 @@ export const definition = jack({
                     explicitly set the package to search for bins. If not
                     provided, then vlt will interpret the first argument as
                     the package, and attempt to run the default executable.`,
+    },
+  })
+
+  .opt({
+    view: {
+      hint: 'output',
+      description: `Configures the output format for ls & query commands.`,
+      validOptions: ['human', 'json', 'mermaid'] as const,
     },
   })
 

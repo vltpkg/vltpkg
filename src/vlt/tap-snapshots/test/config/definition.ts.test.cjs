@@ -18,7 +18,10 @@ Object {
   "install": "install",
   "install-exec": "install-exec",
   "ix": "install-exec",
+  "list": "list",
+  "ls": "list",
   "pkg": "pkg",
+  "query": "query",
   "r": "run",
   "rm": "uninstall",
   "run": "run",
@@ -99,6 +102,8 @@ Object {
       "config",
       "install-exec",
       "pkg",
+      "list",
+      "query",
     ],
   },
   "fetch-retries": Object {
@@ -269,6 +274,16 @@ Object {
   "tag": Object {
     "description": "Default \`dist-tag\` to install",
     "type": "string",
+  },
+  "view": Object {
+    "description": "Configures the output format for ls & query commands.",
+    "hint": "output",
+    "type": "string",
+    "validOptions": Array [
+      "human",
+      "json",
+      "mermaid",
+    ],
   },
   "workspace": Object {
     "description": String(
