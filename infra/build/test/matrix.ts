@@ -1,10 +1,10 @@
 import t, { Test } from 'tap'
-import { readdir } from 'node:fs/promises'
+import { readdirSync } from 'node:fs'
 import generateMatrix, {
   getMatrix,
   ParseArgs,
 } from '../src/matrix.js'
-import { sep } from 'node:path'
+import { sep, join } from 'node:path'
 import { Bin, Bins } from '../src/types.js'
 
 const testGenerateMatrix = async (
@@ -22,9 +22,11 @@ const testGenerateMatrix = async (
     }),
   )
   return {
-    files: (await readdir(dir, { recursive: true })).map(f =>
-      f.replaceAll(sep, '/'),
-    ),
+    files: readdirSync(dir)
+      .flatMap(f =>
+        readdirSync(join(dir, f), { withFileTypes: true }),
+      )
+      .map(d => (d.isDirectory() ? `${d.name}/` : d.name)),
   }
 }
 
@@ -68,5 +70,5 @@ t.test('single bin', async t => {
     arch: ['arm64'],
     compile: [true],
   })
-  t.equal(files.length, 2)
+  t.equal(files.length, 1)
 })
