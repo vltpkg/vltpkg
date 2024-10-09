@@ -18,6 +18,7 @@ const options = {
   registry: 'https://registry.npmjs.org',
   registries: {
     npm: 'https://registry.npmjs.org',
+    custom: 'https://example.com',
   },
 } satisfies SpecOptions
 
@@ -62,6 +63,7 @@ t.test('Node', async t => {
     JSON.stringify(root, null, 2),
     'should serialize node to JSON',
   )
+  t.matchSnapshot(String(root), 'should stringify root node')
 
   const fooMani = {
     name: 'foo',
@@ -78,6 +80,8 @@ t.test('Node', async t => {
   )
 
   foo.location = './arbitrary'
+
+  t.matchSnapshot(String(foo), 'should stringify registry node')
 
   t.strictSame(
     foo.location,
@@ -175,6 +179,17 @@ t.test('Node', async t => {
     'my-package',
     'should set expected resolved value for a file id type',
   )
+  t.matchSnapshot(
+    String(file),
+    'should stringify file node with no manifest',
+  )
+
+  const fileMani = new Node(
+    opts,
+    joinDepIDTuple(['file', 'my-package']),
+    { name: 'my-package', version: '1.0.0' },
+  )
+  t.matchSnapshot(String(fileMani), 'should stringify file node')
 
   const git = new Node(
     opts,
@@ -186,9 +201,24 @@ t.test('Node', async t => {
     'github:vltpkg/foo',
     'should set expected resolved value for a git id type',
   )
+  t.matchSnapshot(
+    String(git),
+    'should stringify git node with no manifest',
+  )
+
+  const gitMani = new Node(
+    opts,
+    joinDepIDTuple(['git', 'github:vltpkg/foo', '']),
+    {
+      name: 'foo',
+      version: '1.0.0',
+    },
+  )
+  t.matchSnapshot(String(gitMani), 'should stringify git node')
+
   const reg = new Node(
     opts,
-    joinDepIDTuple(['registry', '', 'foo@1.0.0']),
+    joinDepIDTuple(['registry', 'custom', 'foo@1.0.0']),
     {
       dist: {
         tarball: '<path-to-tarball>',
@@ -202,6 +232,11 @@ t.test('Node', async t => {
     '<path-to-tarball>',
     'should set expected resolved value for a registry id type',
   )
+  t.matchSnapshot(
+    String(reg),
+    'should stringify custom registry node',
+  )
+
   const regNoManifest = new Node(
     opts,
     joinDepIDTuple(['registry', '', 'foo@1.0.0']),
@@ -211,6 +246,10 @@ t.test('Node', async t => {
     regNoManifest.resolved,
     'https://registry.npmjs.org/foo/-/foo-1.0.0.tgz',
     'should set expected conventional registry value if no manifest',
+  )
+  t.matchSnapshot(
+    String(regNoManifest),
+    'should stringify manifest-less registry node',
   )
 
   const remote = new Node(
@@ -223,6 +262,20 @@ t.test('Node', async t => {
     'https://x.com/x.tgz',
     'should set expected resolved value for a remote id type',
   )
+  t.matchSnapshot(
+    String(remote),
+    'should stringify remote node with no manifest',
+  )
+
+  const remoteMani = new Node(
+    opts,
+    joinDepIDTuple(['remote', 'https://x.com/x.tgz']),
+    {
+      name: 'x',
+      version: '1.0.0',
+    },
+  )
+  t.matchSnapshot(String(remoteMani), 'should stringify remote node')
 })
 
 t.test('nodeModules path and inVltStore flag', t => {

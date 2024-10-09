@@ -36,3 +36,43 @@ exports[`test/node.ts > TAP > Node > should serialize node to JSON 1`] = `
   "projectRoot": "{ROOT}"
 }
 `
+
+exports[`test/node.ts > TAP > Node > should stringify custom registry node 1`] = `
+custom:foo@1.0.0
+`
+
+exports[`test/node.ts > TAP > Node > should stringify file node 1`] = `
+file(my-package):my-package@1.0.0
+`
+
+exports[`test/node.ts > TAP > Node > should stringify file node with no manifest 1`] = `
+file(my-package)
+`
+
+exports[`test/node.ts > TAP > Node > should stringify git node 1`] = `
+git(github:vltpkg/foo):foo@1.0.0
+`
+
+exports[`test/node.ts > TAP > Node > should stringify git node with no manifest 1`] = `
+git(github:vltpkg/foo)
+`
+
+exports[`test/node.ts > TAP > Node > should stringify manifest-less registry node 1`] = `
+foo@1.0.0
+`
+
+exports[`test/node.ts > TAP > Node > should stringify registry node 1`] = `
+foo@1.0.0
+`
+
+exports[`test/node.ts > TAP > Node > should stringify remote node 1`] = `
+remote(https://x.com/x.tgz):x@1.0.0
+`
+
+exports[`test/node.ts > TAP > Node > should stringify remote node with no manifest 1`] = `
+remote(https://x.com/x.tgz)
+`
+
+exports[`test/node.ts > TAP > Node > should stringify root node 1`] = `
+file(.):root@1.0.0
+`
