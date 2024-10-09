@@ -86,5 +86,6 @@
       }
     }
   },
-  "module": "./dist/esm/index.js"
+  "module": "./dist/esm/index.js",
+  "testing-ci-filtering": "whoa this is changed, run it and dependents"
 }

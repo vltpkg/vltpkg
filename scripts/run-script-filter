@@ -18,8 +18,8 @@ function output() {
 }
 
 function has_changes() {
-  set +e
   echo "Found changes in the following workspaces based on \"$1=$2\":"
+  set +e
   pnpm --fail-if-no-match --shell-mode $1 $2 exec echo \$PNPM_PACKAGE_NAME
   STATUS=$?
   set -e
