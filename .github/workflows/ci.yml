@@ -114,22 +114,7 @@ jobs:
       run:
         shell: ${{ matrix.platform.shell }}
 
-    steps:
-      - name: Set run-script filters
-        id: filters
-        shell: bash
-        run: |
-          if [ "${{ github.event_name }}" == "pull_request" ]; then
-            FILTER="[origin/${{ github.base_ref }}]"          
-          elif [ "${{ github.event_name }}" == "workflow_dispatch" ] && [ "${{ inputs.filter }}" != "" ]; then
-            FILTER="${{ inputs.filter }}"
-          fi
-          if [ -z "${FILTER}" ]; then
-            echo "flags=--recursive" >> "$GITHUB_OUTPUT"
-          else
-            echo "filter=$FILTER" >> "$GITHUB_OUTPUT"
-          fi
-          
+    steps:          
       - name: Checkout Repository
         uses: actions/checkout@v4
 
@@ -155,16 +140,41 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
           cache: pnpm
+
+      - name: Set run-script filters
+        id: filters
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" == "pull_request" ]; then
+            FILTER="[origin/${{ github.base_ref }}]"
+            FILTER_ARG="--filter-prod"
+            elif [ "${{ github.event_name }}" == "workflow_dispatch" ] && [ "${{ inputs.filter }}" != "" ]; then
+            FILTER="${{ inputs.filter }}"
+          fi
+          if [ -z "${FILTER}" ]; then
+            echo "prepare=--recursive" >> "$GITHUB_OUTPUT"
+            echo "test=--recursive" >> "$GITHUB_OUTPUT"
+          else
+            FILTER_ARG="${FILTER_ARG:---filter}"
+            FILTER_TEST="\"...$FILTER\""
+            pnpm --fail-if-no-match "$FILTER_ARG" "$FILTER_TEST" exec
+            if [ $? -eq 0 ]; then
+              echo "prepare=$FILTER_ARG \"$FILTER...\"" >> "$GITHUB_OUTPUT"
+              echo "test=$FILTER_ARG $FILTER_TEST" >> "$GITHUB_OUTPUT"
+            fi
+          fi
   
       - name: Install dependencies
-        run: pnpm ${{ steps.filters.outputs.filter && format('--filter-prod "{0}..."', steps.filters.outputs.filter) || steps.filters.outputs.flags }} install --ignore-scripts
+        if: steps.filters.outputs.prepare
+        run: pnpm ${{ steps.filters.outputs.prepare }} install --ignore-scripts
 
       - name: Prepare
-        run: pnpm ${{ steps.filters.outputs.filter && format('--filter-prod "{0}..."', steps.filters.outputs.filter) || steps.filters.outputs.flags }} prepare
-
+        if: steps.filters.outputs.prepare
+        run: pnpm ${{ steps.filters.outputs.prepare }} prepare
 
       - name: Run Tests
+        if: steps.filters.outputs.test
         run: |
           touch .npmrc
           echo "enable-pre-post-scripts=false\n" >> .npmrc
-          pnpm ${{ steps.filters.outputs.filter && format('--filter-prod "...{0}"', steps.filters.outputs.filter) || steps.filters.outputs.flags }} --no-bail --aggregate-output test
+          pnpm ${{ steps.filters.outputs.test }} --no-bail --aggregate-output test
