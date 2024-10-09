@@ -3,6 +3,8 @@ import { Spec, SpecOptions } from '@vltpkg/spec'
 import { Monorepo } from '@vltpkg/workspaces'
 import { Graph } from '../../src/graph.js'
 import { mermaidOutput } from '../../src/visualization/mermaid-output.js'
+import { loadActualGraph } from '../fixtures/actual.js'
+import { joinDepIDTuple } from '@vltpkg/dep-id'
 
 const configData = {
   registry: 'https://registry.npmjs.org',
@@ -70,7 +72,43 @@ t.test('human-readable-output', async t => {
     name: 'foo',
     version: '1.0.0',
   })
-  t.matchSnapshot(mermaidOutput(graph), 'should print mermaid output')
+  t.matchSnapshot(
+    mermaidOutput({
+      edges: [...graph.edges],
+      importers: graph.importers,
+      nodes: [...graph.nodes.values()],
+    }),
+    'should print mermaid output',
+  )
+})
+
+t.test('actual graph', async t => {
+  const graph = loadActualGraph(t)
+  t.matchSnapshot(
+    mermaidOutput({
+      edges: [...graph.edges],
+      importers: graph.importers,
+      nodes: [...graph.nodes.values()],
+    }),
+    'should print from an actual loaded graph',
+  )
+
+  t.test('selected packages', async t => {
+    const edges = [...graph.edges].filter(e => e.name === 'baz')
+    const nodes = [
+      graph.nodes.get(
+        joinDepIDTuple(['registry', 'custom', 'baz@1.0.0']),
+      )!,
+    ]
+    t.matchSnapshot(
+      mermaidOutput({
+        edges,
+        importers: graph.importers,
+        nodes,
+      }),
+      'should print selected packages',
+    )
+  })
 })
 
 t.test('workspaces', async t => {
@@ -106,7 +144,59 @@ t.test('workspaces', async t => {
     monorepo,
   })
   t.matchSnapshot(
-    mermaidOutput(graph),
+    mermaidOutput({
+      edges: [...graph.edges],
+      importers: graph.importers,
+      nodes: [...graph.nodes.values()],
+    }),
     'should print workspaces mermaid output',
+  )
+})
+
+t.test('cycle', async t => {
+  const graph = new Graph({
+    projectRoot: t.testdirName,
+    ...configData,
+    mainManifest: {
+      name: 'my-project',
+      version: '1.0.0',
+      dependencies: {
+        a: '^1.0.0',
+      },
+    },
+  })
+  const a = graph.placePackage(
+    graph.mainImporter,
+    'prod',
+    Spec.parse('a', '^1.0.0'),
+    {
+      name: 'a',
+      version: '1.0.0',
+    },
+  )
+  if (!a) {
+    throw new Error('missing package a')
+  }
+  const b = graph.placePackage(a, 'prod', Spec.parse('b', '^1.0.0'), {
+    name: 'b',
+    version: '1.0.0',
+    dependencies: {
+      a: '^1.0.0',
+    },
+  })
+  if (!b) {
+    throw new Error('missing package b')
+  }
+  graph.placePackage(b, 'prod', Spec.parse('a', '^1.0.0'), {
+    name: 'a',
+    version: '1.0.0',
+  })
+  t.matchSnapshot(
+    mermaidOutput({
+      edges: [...graph.edges],
+      importers: graph.importers,
+      nodes: [...graph.nodes.values()],
+    }),
+    'should print cycle mermaid output',
   )
 })
