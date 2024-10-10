@@ -154,9 +154,13 @@ jobs:
         if: steps.filters.outputs.prepare
         run: pnpm ${{ steps.filters.outputs.prepare }} prepare
 
-      - name: Run Tests
+      - name: Set Test Config
         if: steps.filters.outputs.test
+        shell: bash
         run: |
           touch .npmrc
           echo "enable-pre-post-scripts=false\n" >> .npmrc
-          pnpm ${{ steps.filters.outputs.test }} --no-bail --aggregate-output test
+
+      - name: Run Tests
+        if: steps.filters.outputs.test
+        run: pnpm ${{ steps.filters.outputs.test }} --no-bail --aggregate-output test
