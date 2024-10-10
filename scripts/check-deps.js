@@ -1,4 +1,4 @@
-import { spawnSync } from 'node:child_process'
+import { spawn } from 'node:child_process'
 import { readFileSync } from 'node:fs'
 import { join, relative, resolve } from 'node:path'
 import subset from 'semver/ranges/subset.js'
@@ -8,7 +8,7 @@ const ROOT = resolve(import.meta.dirname, '..')
 const getPkg = dir =>
   JSON.parse(readFileSync(join(dir, 'package.json')))
 
-const getAllProdDeps = () => {
+const getAllProdDeps = async () => {
   const deps = []
   const walk = (dep, from = []) => {
     deps.push({ path: dep.path, from })
@@ -16,17 +16,25 @@ const getAllProdDeps = () => {
       walk(child, [...from, dep.from ?? dep.name])
     }
   }
-  // TODO: make this a `vlt query`
-  const proc = spawnSync(
-    'pnpm',
-    ['list', '--depth=Infinity', '--json', '--prod'],
-    {
-      cwd: ROOT,
-    },
+  walk(
+    await new Promise((res, rej) => {
+      // TODO: make this a `vlt query`
+      const proc = spawn(
+        'pnpm',
+        ['list', '--depth=Infinity', '--json', '--prod'],
+        {
+          cwd: ROOT,
+        },
+      )
+      let output = ''
+      proc.stdout.on('data', data => (output += data.toString()))
+      proc
+        .on('close', () => res(JSON.parse(output)[0]))
+        .on('error', rej)
+    }),
   )
-  walk(JSON.parse(proc.stdout.toString())[0])
-  return [
-    ...deps
+  return Array.from(
+    deps
       .reduce((acc, d) => {
         const c = acc.get(d.path) ?? {}
         acc.set(d.path, {
@@ -37,7 +45,7 @@ const getAllProdDeps = () => {
         return acc
       }, new Map())
       .values(),
-  ]
+  )
 }
 
 const checkEngines = (engines, deps) => {
@@ -51,10 +59,11 @@ const checkEngines = (engines, deps) => {
 
 const indent = (n = 0) => `\n${' '.repeat(n)}`
 
-const main = () => {
+const main = async () => {
   const pkg = getPkg(ROOT)
   const engines = pkg.engines.node
-  const checkEngineLight = checkEngines(engines, getAllProdDeps())
+  const deps = await getAllProdDeps()
+  const checkEngineLight = checkEngines(engines, deps)
   if (checkEngineLight) {
     throw new Error(
       `The following dependencies engines conflict ${pkg.name} \`${engines}\`:` +
@@ -69,6 +78,12 @@ const main = () => {
           .join(indent()),
     )
   }
+  return `Successfully checked engines for ${deps.length} production dependencies`
 }
 
 main()
+  .then(console.log)
+  .catch(e => {
+    process.exitCode = 1
+    console.error(e.message)
+  })
