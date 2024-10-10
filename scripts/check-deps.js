@@ -1,10 +1,7 @@
 import { spawnSync } from 'node:child_process'
 import { readFileSync } from 'node:fs'
 import { join, relative, resolve } from 'node:path'
-import {
-  satisfies,
-  parseRange,
-} from '../src/semver/dist/esm/index.js'
+import subset from 'semver/ranges/subset.js'
 
 const ROOT = resolve(import.meta.dirname, '..')
 
@@ -44,17 +41,11 @@ const getAllProdDeps = () => {
 }
 
 const checkEngines = (engines, deps) => {
-  // Hacky way to get the base version from a range
-  // Only works with simple ranges that we use in our engines
-  // TODO: implement intersects/subset in @vltpkg/semver
-  const ourVersions = parseRange(engines).set.map(s => s.tuples[0][1])
   const problems = deps
     .map(d => ({ ...d, path: relative(ROOT, d.path) }))
     .map(d => ({ ...d, pkg: getPkg(d.path) }))
     .filter(d => d.pkg.engines?.node)
-    .filter(
-      d => !ourVersions.every(v => satisfies(v, d.pkg.engines.node)),
-    )
+    .filter(d => !subset(engines, d.pkg.engines.node))
   return problems.length ? problems : undefined
 }
 

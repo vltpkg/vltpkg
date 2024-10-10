@@ -8,9 +8,22 @@ import {
 import { relative, resolve, basename, dirname, join } from 'node:path'
 import * as yaml from 'yaml'
 import * as prettier from 'prettier'
-import * as semver from '../src/semver/dist/esm/index.js'
+import {
+  gt,
+  satisfies,
+  validRange,
+} from '../src/semver/dist/esm/index.js'
+import { Spec } from '../src/spec/dist/esm/index.js'
+import minVersion from 'semver/ranges/min-version.js'
 
 const ROOT = resolve(import.meta.dirname, '..')
+
+const parseRangeFromSpec = spec =>
+  spec === 'workspace:*' ? null : (
+    minVersion(
+      validRange(spec) ? spec : Spec.parseArgs(spec).subspec.semver,
+    ).version
+  )
 
 const skipCatalog = ({ name, spec, from, type }) => {
   // An fake example so I don't have to remember what to type next time
@@ -112,12 +125,7 @@ const getCatalogDeps = (workspaces, catalog = {}) => {
       for (const name of Object.keys(pj[type] ?? {})) {
         const rawSpec = pj[type][name]
         const spec = rawSpec === 'catalog:' ? catalog[name] : rawSpec
-        const version =
-          spec === 'workspace:*' ? null
-            // Hacky way to get the base version from a range
-            // Only works with simple ranges that we use in our engines
-            // TODO: implement intersects/subset in @vltpkg/semver
-          : semver.parseRange(spec).set[0].tuples[0][1]
+        const version = parseRangeFromSpec(spec)
         // type is not used currently but is kept here to make it
         // easier to separate catalogs by prod vs dev since that is
         // a somewhat common usecase.
@@ -145,12 +153,12 @@ const getCatalogDeps = (workspaces, catalog = {}) => {
   for (const [name, versions] of acc.entries()) {
     const [lowest] = versions
       .filter(v => !!v.version)
-      .sort((a, b) => semver.gt(a.version, b.version))
+      .sort((a, b) => gt(a.version, b.version))
 
     if (lowest) {
       catalog[name] = lowest.spec
       for (const v of versions) {
-        if (!semver.satisfies(v.version, lowest.spec)) {
+        if (!satisfies(v.version, lowest.spec)) {
           problems.push({ name, found: v, wanted: lowest })
         }
       }

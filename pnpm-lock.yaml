@@ -45,6 +45,9 @@ catalogs:
     rimraf:
       specifier: ^6.0.1
       version: 6.0.1
+    semver:
+      specifier: ^7.6.3
+      version: 7.6.3
     tap:
       specifier: ^21.0.1
       version: 21.0.1
@@ -96,6 +99,9 @@ importers:
       prettier:
         specifier: 'catalog:'
         version: 3.3.3
+      semver:
+        specifier: 'catalog:'
+        version: 7.6.3
       turbo:
         specifier: ^2.1.0
         version: 2.1.0
@@ -1082,6 +1088,9 @@ importers:
       '@eslint/js':
         specifier: 'catalog:'
         version: 9.9.0
+      '@std/semver':
+        specifier: npm:@jsr/std__semver@^1.0.3
+        version: '@jsr/std__semver@1.0.3'
       '@types/eslint__js':
         specifier: 'catalog:'
         version: 8.42.3
@@ -1098,7 +1107,7 @@ importers:
         specifier: 'catalog:'
         version: 3.3.3
       semver:
-        specifier: ^7.6.2
+        specifier: 'catalog:'
         version: 7.6.3
       tap:
         specifier: 'catalog:'
@@ -1921,6 +1930,9 @@ packages:
 
   '@jridgewell/trace-mapping@0.3.9':
     resolution: {integrity: sha512-3Belt6tdc8bPgAtbcmdtNJlirVoTmEb5e2gC94PnkwEW9jI6CAHUeoG85tjWP5WquqfavoMtMwiG4P926ZKKuQ==}
+
+  '@jsr/std__semver@1.0.3':
+    resolution: {integrity: sha512-d1uBT0Muxhd3yBIw9ZE1Q/4N1Y0td0EJe1AqwM3hP05IMwaWQV/miksQOPR3rup3bVovuIvqBm7WJcoUripdQA==, tarball: https://npm.jsr.io/~/11/@jsr/std__semver/1.0.3.tgz}
 
   '@nodelib/fs.scandir@2.1.5':
     resolution: {integrity: sha512-vq24Bq3ym5HEQm2NKCr3yXDwjc7vTsEThRDnkp2DK9p1uqLR+DHurm/NOTo0KG7HYHU7eppKZj3MyqYuMBf62g==}
@@ -4561,6 +4573,8 @@ snapshots:
     dependencies:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.0
+
+  '@jsr/std__semver@1.0.3': {}
 
   '@nodelib/fs.scandir@2.1.5':
     dependencies:

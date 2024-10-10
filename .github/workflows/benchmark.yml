@@ -2,6 +2,10 @@ name: Benchmark
 
 on:
   workflow_dispatch:
+    inputs:
+      filter:
+        description: 'run-script filter for benchmark scripts. Default is to run everything.'
+        type: string
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -45,4 +49,4 @@ jobs:
         run: pnpm install
 
       - name: Run Benchmarks
-        run: pnpm benchmark
+        run: pnpm benchmark ${{ inputs.filter }}
