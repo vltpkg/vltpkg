@@ -4,7 +4,7 @@ import generateMatrix, {
   getMatrix,
   ParseArgs,
 } from '../src/matrix.js'
-import { sep, join } from 'node:path'
+import { join } from 'node:path'
 import { Bin, Bins } from '../src/types.js'
 
 const testGenerateMatrix = async (
