@@ -1,6 +1,10 @@
 name: CI
 
 on:
+  workflow_dispatch:
+    inputs:
+      filter:
+        description: 'run-script filter for tests'
   push:
     branches:
       - main
@@ -114,6 +118,10 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
+      - name: Fetch base ref
+        if: github.event_name == 'pull_request'
+        run: git fetch --no-tags --prune --depth=1 origin +refs/heads/${{ github.base_ref }}:refs/remotes/origin/${{ github.base_ref }}
+
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: latest
@@ -133,8 +141,22 @@ jobs:
           node-version: ${{ matrix.node-version }}
           cache: pnpm
 
+      - name: Set run-script filters
+        id: filters
+        shell: bash
+        run: ./scripts/run-script-filter "${{ github.event_name }}" "${{ inputs.filter || github.base_ref }}"
+  
       - name: Install dependencies
-        run: pnpm install
+        if: steps.filters.outputs.prepare
+        run: pnpm ${{ steps.filters.outputs.prepare }} install --ignore-scripts
+
+      - name: Prepare
+        if: steps.filters.outputs.prepare
+        run: pnpm ${{ steps.filters.outputs.prepare }} prepare
 
       - name: Run Tests
-        run: pnpm --no-bail --aggregate-output -r test
+        if: steps.filters.outputs.test
+        run: |
+          touch .npmrc
+          echo "enable-pre-post-scripts=false\n" >> .npmrc
+          pnpm ${{ steps.filters.outputs.test }} --no-bail --aggregate-output test
