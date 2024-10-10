@@ -327,6 +327,7 @@ const fixLicense = ws => {
       break
     case '@vltpkg/git':
     case '@vltpkg/promise-spawn':
+    case '@vltpkg/which':
       license = 'ISC'
       break
     default:
@@ -336,16 +337,15 @@ const fixLicense = ws => {
   if (license === defaultLicense) {
     copyFileSync(join(ROOT, 'LICENSE'), join(ws.dir, 'LICENSE'))
   } else {
-    const hasLicense = existsSync(join(ws.dir, 'LICENSE'))
-    if (!hasLicense) {
+    if (!existsSync(join(ws.dir, 'LICENSE'))) {
       throw new Error(`${ws.pj.name} must have a license`)
-    } else {
-      const contents = readFileSync(join(ws.dir, 'LICENSE'), 'utf8')
-      if (!contents.includes('Copyright (c) vlt technology, Inc.')) {
-        throw new Error(
-          `${ws.pj.name} should contain vlt company name`,
-        )
-      }
+    }
+    const contents = readFileSync(join(ws.dir, 'LICENSE'), 'utf8')
+    if (!contents.includes('Copyright (c) vlt technology, Inc.')) {
+      throw new Error(`${ws.pj.name} should contain vlt company name`)
+    }
+    if (!contents.includes(`${license} License`)) {
+      throw new Error(`${ws.pj.name} should contain ${license}`)
     }
   }
 }
