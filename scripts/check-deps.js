@@ -40,6 +40,7 @@ const getAllProdDeps = async () => {
         acc.set(d.path, {
           ...c,
           path: d.path,
+          pkg: getPkg(d.path),
           from: [...(c.from ?? []), d.from],
         })
         return acc
@@ -48,37 +49,52 @@ const getAllProdDeps = async () => {
   )
 }
 
-const checkEngines = (engines, deps) => {
-  const problems = deps
-    .map(d => ({ ...d, path: relative(ROOT, d.path) }))
-    .map(d => ({ ...d, pkg: getPkg(d.path) }))
-    .filter(d => d.pkg.engines?.node)
-    .filter(d => !subset(engines, d.pkg.engines.node))
-  return problems.length ? problems : undefined
-}
-
-const indent = (n = 0) => `\n${' '.repeat(n)}`
-
-const main = async () => {
-  const pkg = getPkg(ROOT)
-  const engines = pkg.engines.node
-  const deps = await getAllProdDeps()
-  const checkEngineLight = checkEngines(engines, deps)
-  if (checkEngineLight) {
-    throw new Error(
-      `The following dependencies engines conflict ${pkg.name} \`${engines}\`:` +
-        checkEngineLight
-          .map(
-            d =>
-              `${indent(2)}${d.pkg.name}@${d.pkg.version}` +
-              `${indent(4)}engines: ${d.pkg.engines.node}` +
-              `${indent(4)}path: ${d.path}` +
-              `${indent(4)}from: ${d.from.map(f => f.join(' > ')).join(indent(4 + 'from: '.length))}`,
-          )
-          .join(indent()),
+const check = (key, packages, value, ok) => {
+  const problems = packages.filter(d => !ok(value(d)))
+  if (problems.length) {
+    const indent = (n = 0) => `\n${' '.repeat(n)}`
+    return (
+      `The following dependencies ${key} problems were found:` +
+      problems
+        .map(
+          d =>
+            `${indent(2)}${d.pkg.name}@${d.pkg.version}` +
+            `${indent(4)}${key}: ${value(d)}` +
+            `${indent(4)}path: ${relative(ROOT, d.path)}` +
+            `${indent(4)}from: ${d.from.map(f => f.join(' > ')).join(indent(4 + 'from: '.length))}`,
+        )
+        .join(indent())
     )
   }
-  return `Successfully checked engines for ${deps.length} production dependencies`
+}
+
+const main = async () => {
+  const deps = await getAllProdDeps()
+  const allowedEngines = getPkg(ROOT).engines.node
+  const checkEngines = check(
+    'engines',
+    deps,
+    d => d.pkg.engines?.node,
+    v => v === undefined || subset(allowedEngines, v),
+  )
+  const allowedLicenes = new Set([
+    'MIT',
+    'ISC',
+    'BSD-2-Clause-Patent',
+    'BlueOak-1.0.0',
+  ])
+  const checkLicenses = check(
+    'license',
+    deps,
+    d => d.pkg.license,
+    v => allowedLicenes.has(v),
+  )
+  if (checkEngines || checkLicenses) {
+    throw new Error(
+      [checkEngines, checkLicenses].filter(Boolean).join('\n\n'),
+    )
+  }
+  return `Successfully checked ${deps.length} production dependencies`
 }
 
 main()
