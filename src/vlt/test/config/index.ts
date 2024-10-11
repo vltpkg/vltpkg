@@ -645,6 +645,14 @@ t.test('edit config file', async t => {
   t.throws(() => statSync(f), 'no configs, deleted file')
 
   await t.rejects(
+    conf.editConfigFile('project', () => {
+      t.equal(readFileSync(f, 'utf8'), '{\n\n}\n')
+      throw new Error()
+    }),
+  )
+  t.throws(() => statSync(f), 'edit throws, deleted file')
+
+  await t.rejects(
     conf.editConfigFile('project', filename => {
       writeFileSync(filename, '"just a string"')
     }),

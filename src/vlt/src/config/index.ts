@@ -518,9 +518,9 @@ export class Config {
     if (!backup) {
       writeFileSync(file, '{\n\n}\n')
     }
-    await edit(file)
     let valid = false
     try {
+      await edit(file)
       const res = jsonParse(readFileSync(file, 'utf8'))
       if (!res || typeof res !== 'object' || Array.isArray(res)) {
         throw error('Invalid configuration, expected object', {
