@@ -20,6 +20,7 @@ const mockSpawnSync = (
   t.strictSame(options, { stdio: 'inherit' })
   t.equal(cmd, 'EDITOR')
   edited = args.at(-1)
+  return { status: 0 }
 }
 
 class MockConfig {
@@ -67,12 +68,13 @@ const run = async (
   t: Test,
   positionals: string[],
   values: Record<string, any>,
+  spawnSync = mockSpawnSync,
 ) => {
   const conf = new MockConfig(positionals, values)
   const cmd = await t.mockImport<
     typeof import('../../src/commands/config.js')
   >('../../src/commands/config.js', {
-    child_process: t.createMock(CP, { spawnSync: mockSpawnSync }),
+    child_process: t.createMock(CP, { spawnSync }),
   })
   return {
     result: await cmd.command(conf as unknown as LoadedConfig),
@@ -202,6 +204,15 @@ t.test('edit', async t => {
   }
   t.test('no editor', async t => {
     t.rejects(run(t, ['edit'], { editor: '' }))
+    t.rejects(
+      run(t, ['edit'], { editor: 'BAD_EDITOR --not-good' }, () => ({
+        status: 100,
+      })),
+      {
+        message: `BAD_EDITOR command failed`,
+        cause: { status: 100, args: ['--not-good'] },
+      },
+    )
   })
 })
 
