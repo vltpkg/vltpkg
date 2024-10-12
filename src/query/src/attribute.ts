@@ -1,6 +1,6 @@
 import { error } from '@vltpkg/error-cause'
 import type { NodeLike } from '@vltpkg/graph'
-import type { JSONField, ManifestMinified } from '@vltpkg/types'
+import type { JSONField } from '@vltpkg/types'
 import { asAttributeNode, ParserState } from './types.js'
 
 export type ComparatorFn = (attr: string, value?: string) => boolean
@@ -16,7 +16,7 @@ export const getManifestPropertyValues = (
 ): string[] | undefined => {
   if (!node.manifest) return
 
-  const traverse = new Set<JSONField>([node.manifest])
+  const traverse = new Set<JSONField>([node.manifest as JSONField])
   const props = new Set<JSONField>()
   for (const key of properties) {
     for (const prop of traverse) {
@@ -84,7 +84,7 @@ export const filterAttributes = (
   state: ParserState,
   comparator: ComparatorFn | undefined,
   value: string,
-  propertyName: keyof ManifestMinified,
+  propertyName: string,
   insensitive: boolean,
   prefixProperties: string[] = [],
 ): ParserState => {
@@ -170,7 +170,7 @@ export const attribute = async (
   }
 
   const value = curr.value || ''
-  const propertyName = curr.attribute as keyof ManifestMinified
+  const propertyName = curr.attribute
   const insensitive = !!curr.insensitive
   return filterAttributes(
     state,

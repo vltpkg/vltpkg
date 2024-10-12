@@ -387,8 +387,8 @@ export class Monorepo {
       'devDependencies',
       'optionalDependencies',
       'peerDependencies',
-    ]) {
-      const deps = manifest[depType] as Manifest['dependencies']
+    ] as const) {
+      const deps = manifest[depType]
       if (!deps) continue
       for (const [dep, spec] of Object.entries(deps)) {
         if (spec.startsWith('workspace:')) {

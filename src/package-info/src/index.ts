@@ -4,8 +4,6 @@ import { PackageJson } from '@vltpkg/package-json'
 import {
   pickManifest,
   PickManifestOptions,
-  PickManifestOptionsBefore,
-  PickManifestOptionsNoBefore,
 } from '@vltpkg/pick-manifest'
 import {
   RegistryClient,
@@ -14,12 +12,10 @@ import {
 import { Spec, type SpecOptions } from '@vltpkg/spec'
 import { Pool } from '@vltpkg/tar'
 import {
-  asPackumentMinified,
+  asPackument,
   Integrity,
   Manifest,
-  ManifestMinified,
   Packument,
-  PackumentMinified,
 } from '@vltpkg/types'
 import { Monorepo } from '@vltpkg/workspaces'
 import { XDG } from '@vltpkg/xdg'
@@ -62,57 +58,17 @@ export type PackageInfoClientOptions = RegistryClientOptions &
 export type PackageInfoClientRequestOptions = PickManifestOptions & {
   /** dir to resolve `file://` specifiers against. Defaults to projectRoot. */
   from?: string
-  /**
-   * If `before` is set, then `fullMetadata` will be fetched, even if not
-   * enabled here.
-   */
-  fullMetadata?: boolean
 }
 
-// if fullMetadata is set, or we have a 'before' query, will be full data
-export type PackageInfoClientRequestOptionsFull =
-  PackageInfoClientRequestOptions &
-    (
-      | PickManifestOptionsBefore
-      | {
-          fullMetadata: true
-        }
-    )
-
-export type PackageInfoClientRequestOptionsMin =
-  PackageInfoClientRequestOptions &
-    PickManifestOptionsNoBefore & {
-      fullMetadata?: false
-    }
-
-export type PackumentByOptions<
-  T extends PackageInfoClientRequestOptions,
-> =
-  T extends PackageInfoClientRequestOptionsMin ? PackumentMinified
-  : T extends PackageInfoClientRequestOptionsFull ? Packument
-  : Packument | PackumentMinified
-
-export type ManifestByOptions<
-  T extends PackageInfoClientRequestOptions,
-> =
-  T extends PackageInfoClientRequestOptionsMin ? ManifestMinified
-  : T extends PackageInfoClientRequestOptionsFull ? Manifest
-  : Manifest | ManifestMinified
-
-// pull minified packuments if possible
-const corgiDoc =
-  'application/vnd.npm.install-v1+json; q=1.0, application/json; q=0.8, */*'
-const fullDoc = 'application/json'
+export type PackageInfoClientAllOptions = PackageInfoClientOptions &
+  PackageInfoClientRequestOptions
 
 // provide some helper methods at the top level. Re-use the client if
 // the same options are provided.
 const clients = new Map<string, PackageInfoClient>()
-const client = (
-  o: PackageInfoClientOptions & PackageInfoClientRequestOptions = {},
-) => {
+const client = (o: PackageInfoClientAllOptions = {}) => {
   const {
     from: _from,
-    fullMetadata: _fullMetadata,
     packageJson: _packageJson,
     workspace: _workspace,
     'workspace-group': _workspaceGroup,
@@ -126,71 +82,30 @@ const client = (
   return c
 }
 
-export async function packument(
+export const packument = async (
   spec: Spec | string,
-  options: PackageInfoClientOptions &
-    PackageInfoClientRequestOptionsMin,
-): Promise<PackumentMinified>
-export async function packument(
-  spec: Spec | string,
-  options: PackageInfoClientOptions &
-    PackageInfoClientRequestOptionsFull,
-): Promise<Packument>
-export async function packument(
-  spec: Spec | string,
-): Promise<PackumentMinified>
-export async function packument<
-  O extends PackageInfoClientOptions &
-    PackageInfoClientRequestOptions = PackageInfoClientOptions &
-    PackageInfoClientRequestOptions,
->(
-  spec: Spec | string,
-  options: O = {} as O,
-): Promise<PackumentByOptions<O>> {
-  return client(options).packument<O>(spec, options)
-}
+  options: PackageInfoClientAllOptions = {},
+): Promise<Packument> => client(options).packument(spec, options)
 
-export async function manifest(
+export const manifest = async (
   spec: Spec | string,
-  options: PackageInfoClientOptions &
-    PackageInfoClientRequestOptionsMin,
-): Promise<ManifestMinified>
-export async function manifest(
-  spec: Spec | string,
-  options: PackageInfoClientOptions &
-    PackageInfoClientRequestOptionsFull,
-): Promise<Manifest>
-export async function manifest(
-  spec: Spec | string,
-): Promise<ManifestMinified>
-export async function manifest<
-  O extends PackageInfoClientOptions &
-    PackageInfoClientRequestOptions = PackageInfoClientOptions &
-    PackageInfoClientRequestOptions,
->(
-  spec: Spec | string,
-  options: O = {} as O,
-): Promise<ManifestByOptions<O>> {
-  return client(options).manifest<O>(spec, options)
-}
+  options: PackageInfoClientAllOptions = {},
+): Promise<Manifest> => client(options).manifest(spec, options)
 
 export const resolve = async (
   spec: Spec | string,
-  options: PackageInfoClientOptions &
-    PackageInfoClientRequestOptions = {},
+  options: PackageInfoClientAllOptions = {},
 ): Promise<Resolution> => client(options).resolve(spec, options)
 
 export const tarball = async (
   spec: Spec | string,
-  options: PackageInfoClientOptions &
-    PackageInfoClientRequestOptions = {},
+  options: PackageInfoClientAllOptions = {},
 ): Promise<Buffer> => client(options).tarball(spec, options)
 
 export const extract = async (
   spec: Spec | string,
   target: string,
-  options: PackageInfoClientOptions &
-    PackageInfoClientRequestOptions = {},
+  options: PackageInfoClientAllOptions = {},
 ): Promise<Resolution> =>
   client(options).extract(spec, target, options)
 
@@ -496,11 +411,6 @@ export class PackageInfoClient {
     }
   }
 
-  async manifest(spec: Spec | string): Promise<ManifestMinified>
-  async manifest<
-    O extends
-      PackageInfoClientRequestOptions = PackageInfoClientRequestOptions,
-  >(spec: Spec | string, options: O): Promise<ManifestByOptions<O>>
   async manifest(
     spec: Spec | string,
     options: PackageInfoClientRequestOptions = {},
@@ -512,21 +422,11 @@ export class PackageInfoClient {
 
     switch (f.type) {
       case 'registry': {
-        const { from: _, before, fullMetadata: fm, ...opts } = options
-        const fullMetadata = !!fm || !!before
-        const mani =
-          fullMetadata ?
-            pickManifest(
-              await this.packument(f, {
-                before,
-                fullMetadata,
-                ...opts,
-              }),
-              spec,
-              options,
-            )
-          : pickManifest(await this.packument(f, opts), spec, opts)
-
+        const mani = pickManifest(
+          await this.packument(f, options),
+          spec,
+          options,
+        )
         if (!mani) throw this.#resolveError(spec, options)
         return mani
       }
@@ -616,15 +516,10 @@ export class PackageInfoClient {
     }
   }
 
-  async packument(spec: Spec | string): Promise<PackumentMinified>
-  async packument<
-    O extends
-      PackageInfoClientRequestOptions = PackageInfoClientRequestOptions,
-  >(spec: Spec | string, options: O): Promise<PackumentByOptions<O>>
   async packument(
     spec: Spec | string,
     options: PackageInfoClientRequestOptions = {},
-  ) {
+  ): Promise<Packument> {
     if (typeof spec === 'string')
       spec = Spec.parse(spec, this.options)
     const f = spec.final
@@ -643,7 +538,7 @@ export class PackageInfoClient {
           cwd: this.options.projectRoot,
         })
         if (!revDoc) throw this.#resolveError(spec, options)
-        return asPackumentMinified(revDoc)
+        return asPackument(revDoc)
       }
       // these are all faked packuments
       case 'file':
@@ -663,9 +558,10 @@ export class PackageInfoClient {
       case 'registry': {
         const { registry, name } = f
         const pakuURL = new URL(name, registry)
-        const accept = options.fullMetadata ? fullDoc : corgiDoc
         const response = await this.registryClient.request(pakuURL, {
-          headers: { accept },
+          headers: {
+            accept: 'application/json',
+          },
         })
         if (response.statusCode !== 200) {
           throw this.#resolveError(
@@ -678,7 +574,7 @@ export class PackageInfoClient {
             },
           )
         }
-        return response.json()
+        return response.json() as Packument
       }
     }
   }

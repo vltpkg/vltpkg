@@ -7,7 +7,7 @@ import {
 } from '@vltpkg/dep-id'
 import { typeError } from '@vltpkg/error-cause'
 import { Spec, SpecOptions } from '@vltpkg/spec'
-import { Integrity, ManifestMinified } from '@vltpkg/types'
+import { Integrity, Manifest } from '@vltpkg/types'
 import { DependencyTypeShort } from './dependencies.js'
 import { Edge } from './edge.js'
 import { GraphLike, NodeLike } from './types.js'
@@ -115,7 +115,7 @@ export class Node implements NodeLike {
   /**
    * The manifest this node represents in the graph.
    */
-  manifest?: ManifestMinified
+  manifest?: Manifest
 
   /**
    * Project where this node resides
@@ -194,7 +194,7 @@ export class Node implements NodeLike {
   constructor(
     options: NodeOptions,
     id?: DepID,
-    manifest?: ManifestMinified,
+    manifest?: Manifest,
     spec?: Spec,
     name?: string,
     version?: string,

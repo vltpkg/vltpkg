@@ -3,9 +3,9 @@ import { parse, Range, satisfies, Version } from '@vltpkg/semver'
 import { Spec } from '@vltpkg/spec'
 import {
   Manifest,
-  ManifestMinified,
   Packument,
-  PackumentMinified,
+  RevDoc,
+  RevDocEntry,
 } from '@vltpkg/types'
 
 const parsedNodeVersion = Version.parse(process.version)
@@ -18,11 +18,16 @@ export type PickManifestOptions = {
   arch?: NodeJS.Architecture
 }
 
-export type PickManifestOptionsBefore = PickManifestOptions & {
-  before: NonNullable<PickManifestOptions['before']>
-}
-export type PickManifestOptionsNoBefore = PickManifestOptions & {
-  before?: undefined
+export type Manifestish = Manifest | RevDocEntry
+export type Packumentish = Packument | RevDoc
+export type PickManifestish<T extends Packumentish> =
+  T extends RevDoc ? RevDocEntry : Manifest
+export type ManiCheck<T extends Packumentish> = {
+  version: Version
+  deprecated: boolean
+  platform: boolean
+  prerelease: boolean
+  mani: PickManifestish<T>
 }
 
 const isBefore = (
@@ -68,7 +73,7 @@ const checkList = (value: string, list?: string[] | string) => {
  * to check whether a version is suitable for the current platform.
  */
 export const platformCheck = (
-  mani: Manifest | ManifestMinified,
+  mani: Manifestish,
   nodeVersion: Version | string,
   wantOs?: NodeJS.Process['platform'],
   wantArch?: NodeJS.Process['arch'],
@@ -86,7 +91,7 @@ export const platformCheck = (
 }
 
 const versionOk = (
-  packument: Packument | PackumentMinified,
+  packument: Packumentish,
   version: string,
   nodeVersion: Version,
   os: NodeJS.Process['platform'],
@@ -96,7 +101,7 @@ const versionOk = (
   const mani = packument.versions[version]
   /* c8 ignore next */
   if (!mani) return false
-  const { time } = packument as Packument
+  const { time } = packument
   return (
     isBefore(version, before, time) &&
     platformCheck(mani, nodeVersion, os, arch)
@@ -110,33 +115,11 @@ const versionOk = (
  * be a full non-minified Packument object. Otherwise, a minified packument
  * is fine.
  */
-export function pickManifest(
-  packument: Packument,
-  wanted: Range | Spec | string,
-  opts: PickManifestOptions,
-): Manifest | undefined
-export function pickManifest(
-  packument: PackumentMinified,
-  wanted: Range | Spec | string,
-  opts: PickManifestOptionsNoBefore,
-): ManifestMinified | undefined
-export function pickManifest(
-  packument: Packument,
-  wanted: Range | Spec | string,
-): Manifest | undefined
-export function pickManifest(
-  packument: PackumentMinified,
-  wanted: Range | Spec | string,
-): ManifestMinified | undefined
-export function pickManifest(
-  packument: Packument | PackumentMinified,
-  wanted: Range | Spec | string,
-): Manifest | ManifestMinified | undefined
-export function pickManifest(
-  packument: Packument | PackumentMinified,
+export function pickManifest<T extends Packumentish>(
+  packument: T,
   wanted: Range | Spec | string,
   opts: PickManifestOptions = {},
-): Manifest | ManifestMinified | undefined {
+): PickManifestish<T> | undefined {
   const {
     tag = 'latest',
     before,
@@ -153,7 +136,7 @@ export function pickManifest(
     time: verTimes,
     versions = {},
     'dist-tags': distTags = {},
-  } = packument as Packument
+  } = packument
 
   const time = before && verTimes ? +new Date(before) : Infinity
   let range: Range | undefined = undefined
@@ -186,7 +169,7 @@ export function pickManifest(
     // prior to the dist-tag.
     const mani = versions[ver]
     if (mani && versionOk(packument, ver, nv, os, arch, time)) {
-      return mani
+      return mani as PickManifestish<T>
     } else {
       range = new Range(`<=${ver}`)
     }
@@ -205,7 +188,7 @@ export function pickManifest(
     (range.isAny || defTagVersion?.satisfies(range)) &&
     versionOk(packument, defaultVer, nv, os, arch, time)
   ) {
-    return versions[defaultVer]
+    return versions[defaultVer] as PickManifestish<T>
   }
 
   // ok, actually have to scan the list
@@ -215,14 +198,7 @@ export function pickManifest(
     return undefined
   }
 
-  type ManiCheck = {
-    version: Version
-    deprecated: boolean
-    platform: boolean
-    prerelease: boolean
-    mani: ManifestMinified
-  }
-  let found: ManiCheck | undefined = undefined
+  let found: ManiCheck<T> | undefined = undefined
   let foundIsDefTag = false
 
   for (const [ver, mani] of entries) {
@@ -233,7 +209,7 @@ export function pickManifest(
     if (!version?.satisfies(range)) {
       continue
     }
-    const mc: ManiCheck = {
+    const mc = {
       version,
       deprecated: !!mani.deprecated,
       platform: platformCheck(mani, nv, os, arch),

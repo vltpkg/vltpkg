@@ -2,7 +2,7 @@ import { delimiter } from '@vltpkg/dep-id'
 import { error } from '@vltpkg/error-cause'
 import { fastSplit } from '@vltpkg/fast-split'
 import type { EdgeLike, NodeLike } from '@vltpkg/graph'
-import { ManifestMinified, asManifest } from '@vltpkg/types'
+import { asManifest } from '@vltpkg/types'
 import {
   attributeSelectorsMap,
   filterAttributes,
@@ -91,7 +91,7 @@ const attr = async (state: ParserState) => {
       attributeSelectorsMap.get(internals.operator)
     : undefined
   const value = internals.value || ''
-  const propertyName = internals.attribute as keyof ManifestMinified
+  const propertyName = internals.attribute
   const insensitive = internals.insensitive
   const prefixProperties = internals.properties
   return filterAttributes(

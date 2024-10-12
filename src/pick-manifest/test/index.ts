@@ -1,42 +1,20 @@
 import { Range } from '@vltpkg/semver'
 import { Spec } from '@vltpkg/spec'
 import t from 'tap'
-import {
-  Manifest,
-  ManifestMinified,
-  Packument,
-  PackumentMinified,
-} from '@vltpkg/types'
+import { Manifest, Packument } from '@vltpkg/types'
 import { pickManifest, platformCheck } from '../src/index.js'
 
 // don't need to run, just for typechecking
 const typechecks = () => {
   // verify node version can be a string
   platformCheck({}, '1.2.3')
-  let paku = {} as unknown as Packument
-  let pakuMin = {} as unknown as PackumentMinified
+  const paku = {} as unknown as Packument
   const optBefore = { before: 1 }
-  const optNoBefore = {}
-  let mani: Manifest | undefined
-  let maniMin: ManifestMinified | undefined
-  mani = pickManifest(paku, 'x', optBefore)
-  maniMin = pickManifest(paku, 'x', optBefore)
+  const mani = pickManifest(paku, 'x', optBefore)
   //@ts-expect-error
-  if (maniMin) maniMin.foo = 'bar'
   if (mani) mani.foo = 'bar'
-  const x = pickManifest(pakuMin, 'x', optNoBefore)
-  //@ts-expect-error
-  x.foo = 'bar'
 
-  // because minified is a subset, they can be assigned to each other
-  // but, it'll prevent you from accessing arbitrary values on the
-  // minified type.
-  maniMin = mani
-  mani = maniMin
-  paku = pakuMin
-  pakuMin = paku
-  const pm: PackumentMinified = paku
-  const mm: ManifestMinified = mani ?? {}
+  const mm: Manifest = mani ?? {}
   //@ts-expect-error
   pm.foo = 'bar'
   //@ts-expect-error

@@ -2,17 +2,13 @@ import {
   asIntegrity,
   asKeyID,
   asManifest,
-  asManifestMinified,
   asManifestRegistry,
   asPackument,
-  asPackumentMinified,
   assertIntegrity,
   assertKeyID,
   assertManifest,
-  assertManifestMinified,
   assertManifestRegistry,
   assertPackument,
-  assertPackumentMinified,
   Bugs,
   ConditionalValueObject,
   Dist,
@@ -24,14 +20,11 @@ import {
   isManifest,
   isManifestRegistry,
   isPackument,
-  isPackumentMinified,
   JSONField,
   KeyID,
   Manifest,
   ManifestRegistry,
   Packument,
-  PackumentBase,
-  PackumentMinified,
   PeerDependenciesMetaValue,
   Person,
   Repository,
@@ -47,21 +40,15 @@ t.test('manifest', t => {
   t.equal(isManifest({ name: 'x', version: 'y' }), true)
   t.equal(isManifest({ name: 'x', version: 420 }), false)
   const om: Record<any, unknown> = { name: 'x', version: '123' }
-  //@ts-expect-error
-  const mnope: Manifest = om
-  mnope
   // this is fine, type-detected
   const mok: Manifest = asManifest(om)
   mok
   t.throws(() => asManifestRegistry(om))
   const rom = { ...om, type: 'commonjs', dist: { tarball: 'x' } }
   t.equal(asManifestRegistry(rom), rom)
-  t.equal(asManifestMinified(om), om)
   t.throws(() => asManifest({ name: true }))
   t.throws(() => assertManifest({ name: true }))
-  t.throws(() => asManifestMinified({ name: true }))
   t.throws(() => asManifestRegistry({ name: true }))
-  t.throws(() => assertManifestMinified({ name: true }))
   t.throws(() => assertManifestRegistry({ name: true }))
   t.equal(isManifestRegistry({ name: true }), false)
   t.equal(isManifest({ name: true }), false)
@@ -92,20 +79,14 @@ t.test('packument', t => {
   pnope
   const pok: Packument = asPackument(op)
   assertPackument(op)
-  assertPackumentMinified(op)
   const ppp: Packument = op
   ppp
 
-  const pMinNope: PackumentMinified = asPackument(op)
   //@ts-expect-error
-  pMinNope.foo = 'bar'
   pok.foo = 'bar'
   t.equal(isPackument({}), false)
-  t.equal(isPackumentMinified({}), false)
   t.throws(() => asPackument({}))
-  t.throws(() => asPackumentMinified({}))
   t.throws(() => assertPackument({}))
-  t.throws(() => assertPackumentMinified({}))
 
   t.end()
 })
@@ -248,12 +229,6 @@ t.test('type checks', t => {
   m = { name: true, dependencies: /x/ }
 
   //@ts-expect-error
-  let mm: ManifestMinified = { tap: { typecheck: true } }
-  mm
-  mm = {}
-  mm = { name: 's', version: 'v' }
-
-  //@ts-expect-error
   let rm: ManifestRegistry = {}
   rm
   rm = { name: 'string', version: 'string', dist: { tarball: 'url' } }
@@ -274,17 +249,10 @@ t.test('type checks', t => {
   }
   //@ts-expect-error
   p.versions['1.2.3'] = { name: true }
+  //@ts-expect-error
   p.foo = 'baz'
-  const pb: PackumentBase = p
+  //@ts-expect-error
   p.foo = 'bar'
-  //@ts-expect-error
-  pb.foo
-  const pm: PackumentMinified = p
-  //@ts-expect-error
-  pm.foo = 'bar'
-  pm.versions['1.2.3'] = m
-  //@ts-expect-error
-  pm.versions['1.2.3'].foo = 'bar'
 
   const pd: Exclude<Manifest['peerDependenciesMeta'], undefined> = {}
   //@ts-expect-error

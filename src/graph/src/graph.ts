@@ -2,7 +2,7 @@ import { getId, joinDepIDTuple, type DepID } from '@vltpkg/dep-id'
 import { error } from '@vltpkg/error-cause'
 import { satisfies } from '@vltpkg/satisfies'
 import { Spec, type SpecOptions } from '@vltpkg/spec'
-import { type ManifestMinified } from '@vltpkg/types'
+import { type Manifest } from '@vltpkg/types'
 import { Monorepo } from '@vltpkg/workspaces'
 import { inspect, InspectOptions } from 'util'
 import { DependencyTypeShort } from './dependencies.js'
@@ -17,13 +17,13 @@ const kCustomInspect = Symbol.for('nodejs.util.inspect.custom')
 // in case the DepID module needs to change its delimiter again ever.
 const mainDepID = joinDepIDTuple(['file', '.'])
 
-export type ManifestInventory = Map<DepID, ManifestMinified>
+export type ManifestInventory = Map<DepID, Manifest>
 
 export type GraphOptions = SpecOptions & {
   /**
    * The main importer manifest info.
    */
-  mainManifest: ManifestMinified
+  mainManifest: Manifest
   /**
    * An inventory of seen manifests.
    */
@@ -257,7 +257,7 @@ export class Graph implements GraphLike {
    */
   addNode(
     id?: DepID,
-    manifest?: ManifestMinified,
+    manifest?: Manifest,
     spec?: Spec,
     name?: string,
     version?: string,
@@ -303,7 +303,7 @@ export class Graph implements GraphLike {
     fromNode: Node,
     depType: DependencyTypeShort,
     spec: Spec,
-    manifest?: ManifestMinified,
+    manifest?: Manifest,
     id?: DepID,
   ) {
     // if no manifest is available, then create an edge that has no
