@@ -1,5 +1,5 @@
 import type { DepID } from '@vltpkg/dep-id'
-import type { ManifestMinified } from '@vltpkg/types'
+import type { Manifest } from '@vltpkg/types'
 import type { SpecLikeBase } from '@vltpkg/spec'
 import type { DependencyTypeShort } from './dependencies.js'
 
@@ -24,7 +24,7 @@ export interface NodeLike {
   edgesIn: Set<EdgeLike>
   edgesOut: Map<string, EdgeLike>
   location?: string
-  manifest?: ManifestMinified | null
+  manifest?: Manifest | null
   name?: string | null
   version?: string | null
   integrity?: string | null

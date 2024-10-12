@@ -3,7 +3,7 @@ import { error } from '@vltpkg/error-cause'
 import { fastSplit } from '@vltpkg/fast-split'
 import { PackageJson } from '@vltpkg/package-json'
 import { Spec, SpecOptions } from '@vltpkg/spec'
-import { ManifestMinified } from '@vltpkg/types'
+import { Manifest } from '@vltpkg/types'
 import { Monorepo } from '@vltpkg/workspaces'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
@@ -30,7 +30,7 @@ export type LoadOptions = SpecOptions & {
   /**
    * The project root manifest.
    */
-  mainManifest: ManifestMinified
+  mainManifest: Manifest
   /**
    * A {@link Monorepo} object, for managing workspaces
    */

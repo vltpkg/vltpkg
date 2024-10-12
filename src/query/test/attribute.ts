@@ -1,6 +1,6 @@
 import { joinDepIDTuple } from '@vltpkg/dep-id'
 import { EdgeLike, NodeLike } from '@vltpkg/graph'
-import { ManifestMinified } from '@vltpkg/types'
+import { Manifest } from '@vltpkg/types'
 import type { Attribute } from 'postcss-selector-parser'
 import t from 'tap'
 import {
@@ -190,21 +190,21 @@ t.test('getManifestPropertyValues', async t => {
     'should return the value from a array-nested object',
   )
 
-  b.manifest = { foo: 1 } as ManifestMinified
+  b.manifest = { foo: 1 } as Manifest
   t.strictSame(
     getManifestPropertyValues(b, ['foo'], 'foo'),
     ['1'],
     'should return values as strings',
   )
 
-  b.manifest = { keywords: [undefined, 'foo'] } as ManifestMinified
+  b.manifest = { keywords: [undefined, 'foo'] } as Manifest
   t.strictSame(
     getManifestPropertyValues(b, ['keywords'], 'keywords'),
     ['', 'foo'],
     'should turn falsy values into empty strings',
   )
 
-  b.manifest = 'bad manifest' as ManifestMinified
+  b.manifest = 'bad manifest' as Manifest
   t.strictSame(
     getManifestPropertyValues(b, ['name'], 'name'),
     undefined,

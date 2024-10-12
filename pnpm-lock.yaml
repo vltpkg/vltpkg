@@ -688,6 +688,9 @@ importers:
       '@vltpkg/benchmark':
         specifier: workspace:*
         version: link:../../infra/benchmark
+      '@vltpkg/cache-unzip':
+        specifier: workspace:*
+        version: link:../cache-unzip
       eslint:
         specifier: 'catalog:'
         version: 9.9.0(jiti@1.21.6)

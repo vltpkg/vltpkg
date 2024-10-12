@@ -6,7 +6,8 @@ import {
 import { LRUCache } from 'lru-cache'
 import { fileURLToPath } from 'url'
 import { GitOptions } from './index.js'
-import { linesToRevs, RevDoc } from './lines-to-revs.js'
+import { linesToRevs } from './lines-to-revs.js'
+import { RevDoc } from '@vltpkg/types'
 import { spawn } from './spawn.js'
 
 const fetchMethod = async (

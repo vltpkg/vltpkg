@@ -1,43 +1,6 @@
-import type {
-  ManifestMinified,
-  PackumentMinified,
-} from '@vltpkg/types'
+import { RevDoc, RevDocEntry, RefType } from '@vltpkg/types'
 import { parse } from '@vltpkg/semver'
 import { error } from '@vltpkg/error-cause'
-
-export type RefType = 'branch' | 'head' | 'other' | 'pull' | 'tag'
-
-/**
- * A representation of a given remote ref in a {@link RevDoc} object.
- */
-export type RevDocEntry = ManifestMinified & {
-  version: string
-  /** sha this references */
-  sha: string
-  /** ref as passed git locally */
-  ref: string
-  /** canonical full ref, like `refs/tags/blahblah` */
-  rawRef: string
-  /** what type of ref this is: 'branch', 'tag', etc. */
-  type: RefType
-}
-
-/**
- * An object kind of resembling a packument, but about a git repo.
- */
-export type RevDoc = PackumentMinified & {
-  /** all semver-looking tags go in this record */
-  versions: Record<string, RevDocEntry>
-  /**
-   * named refs like 'main' or 'HEAD'. 'latest' is added synthetically if
-   * needed
-   */
-  'dist-tags': Record<string, string>
-  /** all named things that can be cloned down remotely */
-  refs: Record<string, RevDocEntry>
-  /** all named shas referenced above */
-  shas: Record<string, string[]>
-}
 
 /**
  * turn an array of lines from `git ls-remote` into a thing

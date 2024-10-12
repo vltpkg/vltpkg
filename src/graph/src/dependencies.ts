@@ -1,7 +1,7 @@
 import type { DepID } from '@vltpkg/dep-id'
 import { error } from '@vltpkg/error-cause'
 import { type Spec } from '@vltpkg/spec'
-import { type ManifestMinified } from '@vltpkg/types'
+import { type Manifest } from '@vltpkg/types'
 
 /**
  * Name of the package.json keys used to define different types of dependencies.
@@ -117,7 +117,7 @@ export const dependencyTypes = new Map<
 export const shorten = (
   typeLong: DependencyTypeLong,
   name?: string,
-  manifest?: ManifestMinified,
+  manifest?: Manifest,
 ): DependencyTypeShort => {
   const shortName = dependencyTypes.get(typeLong)
   if (!shortName) {

@@ -38,6 +38,7 @@ export type PeerDependenciesMetaValue = {
 export type ConditionalValueObject = {
   [k: string]: ConditionalValue
 }
+
 export type ConditionalValue =
   | ConditionalValue[]
   | ConditionalValueObject
@@ -57,13 +58,29 @@ export type Imports = Record<`#${string}`, ConditionalValue>
 export type FundingEntry = string | { url: string }
 export type Funding = FundingEntry | FundingEntry[]
 
-export type ManifestRegistry = Manifest & {
-  name: string
-  version: string
-  dist: Dist
-}
+export type Person =
+  | string
+  | {
+      name: string
+      url?: string
+      email?: string
+    }
 
-export type ManifestMinified = {
+export type Repository =
+  | string
+  | {
+      type: string
+      url: string
+    }
+
+export type Bugs =
+  | string
+  | {
+      url?: string
+      email?: string
+    }
+
+export type Manifest = {
   /** The name of the package. optional because {} is a valid package.json */
   name?: string
   /** The version of the package. optional because {} is a valid package.json */
@@ -101,70 +118,71 @@ export type ManifestMinified = {
    * about the artifact served for this package release.
    */
   dist?: Dist
+  /** a short description of the package */
+  description?: string
+  /** search keywords */
+  keywords?: string[]
+  /** where to go to file issues */
+  bugs?: Bugs
+  /** where the development happens */
+  repository?: Repository
+  /** the main module, if exports['.'] is not set */
+  main?: string
+  /** named subpath exports */
+  exports?: Exports
+  /** named #identifier imports */
+  imports?: Imports
+  /**
+   * the HEAD of the git repo this was published from
+   * only present in published packages
+   */
+  gitHead?: string
+  /** whether the package is private */
+  private?: boolean
+  /** whether this is ESM or CommonJS by default */
+  type?: 'commonjs' | 'module'
 }
 
-export type Person =
-  | string
-  | {
-      name: string
-      url?: string
-      email?: string
-    }
+export type ManifestRegistry = Manifest &
+  Required<Pick<Manifest, 'name' | 'version' | 'dist'>>
 
-export type Repository =
-  | string
-  | {
-      type: string
-      url: string
-    }
-
-export type Bugs =
-  | string
-  | {
-      url?: string
-      email?: string
-    }
-
-export type Manifest = ManifestMinified &
-  Record<string, JSONField> & {
-    /** a short description of the package */
-    description?: string
-    /** search keywords */
-    keywords?: string[]
-    /** where to go to file issues */
-    bugs?: Bugs
-    /** where the development happens */
-    repository?: Repository
-    /** whether this is ESM or CommonJS by default */
-    type?: 'commonjs' | 'module'
-    /** the main module, if exports['.'] is not set */
-    main?: string
-    /** named subpath exports */
-    exports?: Exports
-    /** named #identifier imports */
-    imports?: Imports
-    /**
-     * the HEAD of the git repo this was published from
-     * only present in published packages
-     */
-    gitHead?: string
-  }
-
-export type PackumentBase = {
+export type Packument = {
   name: string
   'dist-tags': Record<string, string>
-}
-export type PackumentMinified = PackumentBase & {
-  versions: Record<string, ManifestMinified>
+  versions: Record<string, Manifest>
   modified?: string
+  time?: Record<string, string>
+  readme?: string
 }
 
-export type Packument = PackumentBase &
-  Record<string, JSONField> & {
-    versions: Record<string, Manifest>
-    time?: Record<string, string>
-    readme?: string
+export type RefType = 'branch' | 'head' | 'other' | 'pull' | 'tag'
+
+/**
+ * A representation of a given remote ref in a {@link RevDoc} object.
+ */
+export type RevDocEntry = Omit<Manifest, 'type'> &
+  Required<Pick<Manifest, 'version'>> & {
+    /** sha this references */
+    sha: string
+    /** ref as passed git locally */
+    ref: string
+    /** canonical full ref, like `refs/tags/blahblah` */
+    rawRef: string
+    /** what type of ref this is: 'branch', 'tag', etc. */
+    type: RefType
   }
+
+/**
+ * An object kind of resembling a packument, but about a git repo.
+ */
+export type RevDoc = Omit<Packument, 'versions'> & {
+  /** all semver-looking tags go in this record */
+  versions: Record<string, RevDocEntry>
+  /** all named things that can be cloned down remotely */
+  refs: Record<string, RevDocEntry>
+  /** all named shas referenced above */
+  shas: Record<string, string[]>
+}
 
 const integrityRE = /^sha512-[a-zA-Z0-9/+]{86}==$/
 export const isIntegrity = (i: unknown): i is Integrity =>
@@ -289,11 +307,6 @@ export const asManifest = (
   return m
 }
 
-export const asManifestMinified = (
-  m: unknown,
-  from?: (...a: any[]) => any,
-): ManifestMinified => asManifest(m, from ?? asManifestMinified)
-
 export const asManifestRegistry = (
   m: unknown,
   from?: (...a: any[]) => any,
@@ -313,11 +326,6 @@ export const assertManifest: (
 ) => asserts m is Manifest = m => {
   asManifest(m, assertManifest)
 }
-export const assertManifestMinified: (
-  m: unknown,
-) => asserts m is Manifest = m => {
-  asManifestMinified(m, assertManifestMinified)
-}
 export const assertManifestRegistry: (
   m: unknown,
 ) => asserts m is ManifestRegistry = m => {
@@ -334,12 +342,6 @@ export const isPackument = (p: any): p is Packument =>
   Object.values(p['dist-tags']).every(
     v => !!p.versions[v] && p.versions[v].name == p.name,
   )
-
-export const isPackumentMinified = (
-  p: unknown,
-): p is PackumentMinified => isPackument(p)
-export const asPackumentMinified = (p: unknown): PackumentMinified =>
-  asPackument(p, asPackumentMinified)
 
 export const asPackument = (
   p: unknown,
@@ -359,9 +361,4 @@ export const assertPackument: (
   m: unknown,
 ) => asserts m is Packument = m => {
   asPackument(m)
-}
-export const assertPackumentMinified: (
-  m: unknown,
-) => asserts m is PackumentMinified = m => {
-  asPackumentMinified(m)
 }

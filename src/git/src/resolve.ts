@@ -1,6 +1,6 @@
+import { RevDoc } from '@vltpkg/types'
 import { pickManifest } from '@vltpkg/pick-manifest'
 import { type GitOptions } from './index.js'
-import { RevDoc, RevDocEntry } from './lines-to-revs.js'
 import { revs } from './revs.js'
 
 /**
@@ -34,9 +34,7 @@ export const resolveRef = (
   const { spec } = opts
   ref = spec?.gitCommittish || ref
   if (spec?.range) {
-    return pickManifest(revDoc, spec.range, opts) as
-      | RevDocEntry
-      | undefined
+    return pickManifest(revDoc, spec.range, opts)
   }
   if (!ref) {
     return revDoc.refs.HEAD

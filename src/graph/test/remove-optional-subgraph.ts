@@ -1,6 +1,6 @@
 import { joinDepIDTuple } from '@vltpkg/dep-id'
 import { Spec } from '@vltpkg/spec'
-import { ManifestMinified } from '@vltpkg/types'
+import { Manifest } from '@vltpkg/types'
 import t from 'tap'
 import { DependencyTypeShort } from '../src/dependencies.js'
 import { Edge } from '../src/edge.js'
@@ -16,7 +16,7 @@ const pp = (
   fromNode: Node,
   depType: DependencyTypeShort,
   spec: Spec,
-  manifest?: ManifestMinified,
+  manifest?: Manifest,
 ): Node => {
   const node = graph.placePackage(fromNode, depType, spec, manifest)
   if (!node) throw new Error('failed to place package')

@@ -6,7 +6,7 @@ import {
 } from '@vltpkg/dep-id'
 import { PackageJson } from '@vltpkg/package-json'
 import { Spec, SpecOptions } from '@vltpkg/spec'
-import { ManifestMinified } from '@vltpkg/types'
+import { Manifest } from '@vltpkg/types'
 import { Monorepo } from '@vltpkg/workspaces'
 import { Path, PathScurry } from 'path-scurry'
 import {
@@ -26,7 +26,7 @@ export type LoadOptions = SpecOptions & {
   /**
    * The project root manifest.
    */
-  mainManifest?: ManifestMinified
+  mainManifest?: Manifest
   /**
    * A {@link Monorepo} object, for managing workspaces
    */

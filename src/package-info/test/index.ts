@@ -23,9 +23,6 @@ t.saveFixture = true
 
 const fixtures = pathResolve(import.meta.dirname, 'fixtures')
 const pakuAbbrev = JSON.parse(
-  readFileSync(pathResolve(fixtures, 'abbrev.json'), 'utf8'),
-)
-const pakuAbbrevFull = JSON.parse(
   readFileSync(pathResolve(fixtures, 'abbrev-full.json'), 'utf8'),
 )
 const tgzAbbrev = readFileSync(fixtures + '/abbrev-2.0.0.tgz')
@@ -34,8 +31,6 @@ const tgzFile = String(
 )
 
 const shaRE = /^[0-9a-f]{40}$/
-const corgiDoc =
-  'application/vnd.npm.install-v1+json; q=1.0, application/json; q=0.8, */*'
 
 const dir = t.testdir({
   cache: {},
@@ -55,7 +50,6 @@ const PORT = 15443 + Number(process.env.TAP_CHILD_ID || 0)
 const etag = '"yolo"'
 const server = createServer((req, res) => {
   res.setHeader('connection', 'close')
-  let response: any
   switch (req.url) {
     case '/abbrev/-/abbrev-2.0.0.tgz': {
       res.setHeader('content-type', 'application/octet-stream')
@@ -116,15 +110,7 @@ const server = createServer((req, res) => {
         res.statusCode = 304
         return res.end()
       }
-      switch (req.headers.accept) {
-        case corgiDoc:
-          response = pakuAbbrev
-          break
-        default:
-          response = pakuAbbrevFull
-          break
-      }
-      const j = Buffer.from(JSON.stringify(response))
+      const j = Buffer.from(JSON.stringify(pakuAbbrev))
       res.setHeader('cache-control', 'public, maxage=300')
       res.setHeader('etag', etag)
       res.setHeader('content-length', j.byteLength)
@@ -155,9 +141,7 @@ for (const manifest of Object.values<Manifest>(pakuAbbrev.versions)) {
     )
   }
 }
-for (const manifest of Object.values<Manifest>(
-  pakuAbbrevFull.versions,
-)) {
+for (const manifest of Object.values<Manifest>(pakuAbbrev.versions)) {
   if (manifest.dist?.tarball) {
     manifest.dist.tarball = manifest.dist.tarball.replace(
       /^https:\/\/registry.npmjs.org\//,
@@ -222,13 +206,6 @@ t.test('create git repo', { bail: true }, async () => {
 
 t.test('packument', async t => {
   t.strictSame(await packument('abbrev', options), pakuAbbrev)
-  t.strictSame(
-    await packument('abbrev', {
-      fullMetadata: true,
-      ...options,
-    }),
-    pakuAbbrevFull,
-  )
 
   t.matchSnapshot(
     await packument(
@@ -405,13 +382,6 @@ t.test('manifest', async t => {
     await manifest('abbrev@2', options),
     pakuAbbrev.versions['2.0.0'],
   )
-  t.strictSame(
-    await manifest('abbrev@2', {
-      fullMetadata: true,
-      ...options,
-    }),
-    pakuAbbrevFull.versions['2.0.0'],
-  )
 
   t.matchSnapshot(
     await manifest(
@@ -444,19 +414,6 @@ t.test('resolve', async t => {
     signatures: pakuAbbrev.versions['2.0.0'].dist.signatures,
     spec: Spec,
   })
-
-  t.matchOnly(
-    await resolve('abbrev@2', {
-      fullMetadata: true,
-      ...options,
-    }),
-    {
-      resolved: pakuAbbrevFull.versions['2.0.0'].dist.tarball,
-      integrity: pakuAbbrevFull.versions['2.0.0'].dist.integrity,
-      signatures: pakuAbbrevFull.versions['2.0.0'].dist.signatures,
-      spec: Spec,
-    },
-  )
 
   t.matchOnly(
     await resolve(
