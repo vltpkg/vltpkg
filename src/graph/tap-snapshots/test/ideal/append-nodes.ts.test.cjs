@@ -7,7 +7,7 @@
 'use strict'
 exports[`test/ideal/append-nodes.ts > TAP > append different type of dependencies > should install different type of deps on different conditions 1`] = `
 @vltpkg/graph.Graph {
-  registries: { npm: 'https://registry.npmjs.org' },
+  options: { registries: {} },
   nodes: {
     '··bar@1.0.0': [ 1, 'bar', <3 empty items>, { name: 'bar', version: '1.0.0' } ],
     '··foo@1.0.0': [
@@ -60,7 +60,9 @@ exports[`test/ideal/append-nodes.ts > TAP > append file type of nodes > should h
 
 exports[`test/ideal/append-nodes.ts > TAP > resolve against the correct registries > must match snapshot 1`] = `
 @vltpkg/graph.Graph {
-  registries: { a: 'https://a.example.com/', b: 'https://b.example.com/' },
+  options: {
+    registries: { a: 'https://a.example.com/', b: 'https://b.example.com/' }
+  },
   nodes: {
     '·a·bar@1.2.3': [ 0, 'bar', <3 empty items>, [Object] ],
     '·a·x@1.99.99': [ 0, 'x', <3 empty items>, [Object] ],

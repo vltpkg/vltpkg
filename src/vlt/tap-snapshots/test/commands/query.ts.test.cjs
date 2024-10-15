@@ -98,7 +98,9 @@ Array [
               "missing": "^1.0.0"
             }
           },
-          "projectRoot": "{ROOT}"
+          "projectRoot": "{ROOT}",
+          "dev": false,
+          "optional": false
         }
       },
       {
@@ -116,7 +118,9 @@ Array [
             "name": "foo",
             "version": "1.0.0"
           },
-          "projectRoot": "{ROOT}"
+          "projectRoot": "{ROOT}",
+          "dev": false,
+          "optional": false
         }
       },
       {
@@ -137,7 +141,9 @@ Array [
               "baz": "^1.0.0"
             }
           },
-          "projectRoot": "{ROOT}"
+          "projectRoot": "{ROOT}",
+          "dev": false,
+          "optional": false
         }
       },
       {
@@ -158,7 +164,9 @@ Array [
               "tarball": "https://registry.vlt.sh/baz"
             }
           },
-          "projectRoot": "{ROOT}"
+          "projectRoot": "{ROOT}",
+          "dev": false,
+          "optional": false
         }
       },
       {
@@ -182,7 +190,9 @@ Array [
             "name": "foo",
             "version": "1.0.0"
           },
-          "projectRoot": "{ROOT}"
+          "projectRoot": "{ROOT}",
+          "dev": false,
+          "optional": false
         }
       }
     ]
@@ -218,7 +228,9 @@ Array [
             "name": "my-project",
             "version": "1.0.0"
           },
-          "projectRoot": "{ROOT}"
+          "projectRoot": "{ROOT}",
+          "dev": false,
+          "optional": false
         }
       },
       {
@@ -233,7 +245,9 @@ Array [
             "name": "b",
             "version": "1.0.0"
           },
-          "projectRoot": "{ROOT}"
+          "projectRoot": "{ROOT}",
+          "dev": false,
+          "optional": false
         }
       },
       {
@@ -248,7 +262,9 @@ Array [
             "name": "a",
             "version": "1.0.0"
           },
-          "projectRoot": "{ROOT}"
+          "projectRoot": "{ROOT}",
+          "dev": false,
+          "optional": false
         }
       }
     ]

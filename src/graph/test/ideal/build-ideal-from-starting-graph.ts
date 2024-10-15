@@ -20,9 +20,9 @@ const edgeKey = (from: DepIDTuple, to: string): LockfileEdgeKey =>
   `${joinDepIDTuple(from)} ${to}`
 
 const configData = {
-  registry: 'https://registry.npmjs.org',
+  registry: 'https://registry.npmjs.org/',
   registries: {
-    npm: 'https://registry.npmjs.org',
+    npm: 'https://registry.npmjs.org/',
     custom: 'http://example.com',
   },
 } satisfies SpecOptions
@@ -64,9 +64,11 @@ const packageInfo = {
 
 t.test('build from a virtual graph', async t => {
   const lockfileData: LockfileData = {
-    registries: {
-      npm: 'https://registry.npmjs.org',
-      custom: 'https://registry.example.com',
+    options: {
+      registries: {
+        npm: 'https://registry.npmjs.org/',
+        custom: 'https://registry.example.com',
+      },
     },
     nodes: {
       [joinDepIDTuple(['file', '.'])]: [0, 'my-project'],

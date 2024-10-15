@@ -79,7 +79,7 @@ t.test('super basic reification', async t => {
   )
 
   const expectLockfileData: LockfileData = {
-    registries: {},
+    options: {},
     nodes: {
       [joinDepIDTuple(['registry', '', 'lodash@4.17.21'])]: [
         0,

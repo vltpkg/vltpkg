@@ -9,10 +9,10 @@ import { objectLikeOutput } from '../../src/visualization/object-like-output.js'
 import { actualGraph } from '../fixtures/actual.js'
 
 const configData = {
-  registry: 'https://registry.npmjs.org',
+  registry: 'https://registry.npmjs.org/',
   registries: {
     custom: 'http://example.com',
-    npm: 'https://registry.npmjs.org',
+    npm: 'https://registry.npmjs.org/',
   },
 } satisfies SpecOptions
 

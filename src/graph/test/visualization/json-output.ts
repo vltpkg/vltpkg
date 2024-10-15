@@ -13,10 +13,10 @@ t.cleanSnapshot = s =>
   )
 
 const configData = {
-  registry: 'https://registry.npmjs.org',
+  registry: 'https://registry.npmjs.org/',
   registries: {
     custom: 'http://example.com',
-    npm: 'https://registry.npmjs.org',
+    npm: 'https://registry.npmjs.org/',
   },
 } satisfies SpecOptions
 

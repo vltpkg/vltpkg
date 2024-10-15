@@ -2,7 +2,11 @@ import { DepID, DepIDTuple, joinDepIDTuple } from '@vltpkg/dep-id'
 import { SpecOptions } from '@vltpkg/spec'
 import t from 'tap'
 import { LockfileNode } from '../../dist/esm/index.js'
-import { load, loadHidden } from '../../src/lockfile/load.js'
+import {
+  load,
+  loadHidden,
+  loadObject,
+} from '../../src/lockfile/load.js'
 import {
   LockfileData,
   LockfileEdgeKey,
@@ -11,10 +15,16 @@ import {
 } from '../../src/lockfile/types.js'
 import { objectLikeOutput } from '../../src/visualization/object-like-output.js'
 
+t.cleanSnapshot = s =>
+  s.replace(
+    /^(\s+)"projectRoot": ".*"/gm,
+    '$1"projectRoot": "{ROOT}"',
+  )
+
 const configData = {
-  registry: 'https://registry.npmjs.org',
+  registry: 'https://registry.npmjs.org/',
   registries: {
-    npm: 'https://registry.npmjs.org',
+    npm: 'https://registry.npmjs.org/',
     custom: 'http://example.com',
   },
 } satisfies SpecOptions
@@ -51,9 +61,10 @@ t.test('load', async t => {
     [spaceKey]: spaceVal,
   }
   const lockfileData: LockfileData = {
-    registries: {
-      npm: 'https://registry.npmjs.org',
-      custom: 'https://registry.example.com',
+    options: {
+      registries: {
+        custom: 'https://registry.example.com',
+      },
     },
     nodes: {
       [joinDepIDTuple(['file', '.'])]: [0, 'my-project'],
@@ -115,9 +126,10 @@ t.test('loadHidden', async t => {
     [spaceKey]: spaceVal,
   }
   const lockfileData: LockfileData = {
-    registries: {
-      npm: 'https://registry.npmjs.org',
-      custom: 'https://registry.example.com',
+    options: {
+      registries: {
+        custom: 'https://registry.example.com',
+      },
     },
     nodes: {
       [joinDepIDTuple(['file', '.'])]: [0, 'my-project'],
@@ -159,9 +171,10 @@ t.test('loadHidden', async t => {
 
 t.test('workspaces', async t => {
   const lockfileData: LockfileData = {
-    registries: {
-      npm: 'https://registry.npmjs.org',
-      custom: 'http://example.com',
+    options: {
+      registries: {
+        custom: 'http://example.com',
+      },
     },
     nodes: {
       [joinDepIDTuple(['file', '.'])]: [0, 'my-project'],
@@ -212,9 +225,7 @@ t.test('workspaces', async t => {
 
 t.test('unknown dep type', async t => {
   const lockfileData: LockfileData = {
-    registries: {
-      npm: 'https://registry.npmjs.org',
-    },
+    options: {},
     nodes: {
       [joinDepIDTuple(['file', '.'])]: [0, 'my-project'],
       [joinDepIDTuple(['registry', '', 'foo@1.0.0'])]: [
@@ -247,9 +258,7 @@ t.test('unknown dep type', async t => {
 
 t.test('invalid dep id in edge', async t => {
   const lockfileData: LockfileData = {
-    registries: {
-      npm: 'https://registry.npmjs.org',
-    },
+    options: {},
     nodes: {
       [joinDepIDTuple(['file', '.'])]: [0, 'my-project'],
       [joinDepIDTuple(['registry', '', 'foo@1.0.0'])]: [
@@ -283,9 +292,7 @@ t.test('invalid dep id in edge', async t => {
 
 t.test('missing edge `from`', async t => {
   const lockfileData: LockfileData = {
-    registries: {
-      npm: 'https://registry.npmjs.org',
-    },
+    options: {},
     nodes: {
       [joinDepIDTuple(['file', '.'])]: [0, 'my-project'],
       [joinDepIDTuple(['registry', '', 'foo@1.0.0'])]: [
@@ -315,3 +322,111 @@ t.test('missing edge `from`', async t => {
     'should throw a missing from edge property',
   )
 })
+
+t.test('load with custom git hosts', async t => {
+  const lockfileData: LockfileData = {
+    options: {
+      'git-hosts': {
+        example: 'git+ssh://example.com/$1/$2.git',
+      },
+      'git-host-archives': {
+        example: 'git+ssh://example.com/$1/$2/archive/$3.tar.gz',
+      },
+    },
+    nodes: {
+      [joinDepIDTuple(['git', 'example:foo/bar', ''])]: [0, 'foo'],
+    } as Record<DepID, LockfileNode>,
+    edges: {
+      [edgeKey(['file', '.'], 'foo')]:
+        'prod example:foo/bar ' +
+        joinDepIDTuple(['git', 'example:foo/bar', '']),
+    } as LockfileEdges,
+  }
+  const projectRoot = t.testdir({
+    'vlt-lock.json': JSON.stringify(lockfileData),
+  })
+
+  const graph = load({
+    ...configData,
+    projectRoot,
+    mainManifest,
+  })
+  t.matchSnapshot(
+    objectLikeOutput(graph),
+    'should load custom git hosts graph',
+  )
+  const [edge] = graph.edges
+  t.matchSnapshot(
+    edge?.spec,
+    'should build specs with custom git hosts',
+  )
+})
+
+t.test('load with custom scope registry', async t => {
+  const lockfileData: LockfileData = {
+    options: {
+      'scope-registries': {
+        '@myscope': 'http://example.com',
+      },
+    },
+    nodes: {
+      [joinDepIDTuple(['registry', '', '@myscope/foo@1.0.0'])]: [
+        0,
+        '@myscope/foo',
+      ],
+    } as Record<DepID, LockfileNode>,
+    edges: {
+      [edgeKey(['file', '.'], '@myscope/foo')]:
+        'prod ^1.0.0 ' +
+        joinDepIDTuple(['registry', '', '@myscope/foo@1.0.0']),
+    } as LockfileEdges,
+  }
+  const projectRoot = t.testdir({
+    'vlt-lock.json': JSON.stringify(lockfileData),
+  })
+
+  const graph = load({
+    ...configData,
+    projectRoot,
+    mainManifest,
+  })
+  t.matchSnapshot(
+    objectLikeOutput(graph),
+    'should load custom scope registry graph',
+  )
+  const [edge] = graph.edges
+  t.matchSnapshot(
+    edge?.spec,
+    'should build specs with custom scope registry',
+  )
+})
+
+t.test(
+  'option-defined values should overwrite lockfile values',
+  async t => {
+    const projectRoot = t.testdir()
+    const mainManifest = { name: 'my-project', version: '1.0.0' }
+    const loadOptions = {
+      registries: {
+        example: 'http://foo',
+      },
+      mainManifest,
+      projectRoot,
+    }
+    const lockfileData: LockfileData = {
+      options: {
+        registry: 'http://example.com',
+        registries: {
+          example: 'http://bar',
+          lorem: 'http://lorem',
+        },
+      },
+      nodes: {},
+      edges: {},
+    }
+    t.matchSnapshot(
+      JSON.stringify(loadObject(loadOptions, lockfileData), null, 2),
+      'should overwrite lockfile values with option-defined values',
+    )
+  },
+)

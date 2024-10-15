@@ -33,7 +33,9 @@ exports[`test/node.ts > TAP > Node > should serialize node to JSON 1`] = `
     "name": "root",
     "version": "1.0.0"
   },
-  "projectRoot": "{ROOT}"
+  "projectRoot": "{ROOT}",
+  "dev": false,
+  "optional": false
 }
 `
 
