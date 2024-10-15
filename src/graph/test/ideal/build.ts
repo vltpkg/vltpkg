@@ -18,7 +18,7 @@ t.test('build from lockfile', async t => {
     }),
     'vlt-lock.json': JSON.stringify({
       registries: {
-        npm: 'https://registry.npmjs.org',
+        npm: 'https://registry.npmjs.org/',
       },
       nodes: {
         [joinDepIDTuple(['file', '.'])]: ['my-project'],

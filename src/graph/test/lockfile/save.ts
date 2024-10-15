@@ -6,12 +6,16 @@ import { resolve } from 'node:path'
 import t from 'tap'
 import { Edge } from '../../src/edge.js'
 import { Graph } from '../../src/graph.js'
-import { save, saveHidden } from '../../src/lockfile/save.js'
+import {
+  lockfileData,
+  save,
+  saveHidden,
+} from '../../src/lockfile/save.js'
 
 const configData = {
-  registry: 'https://registry.npmjs.org',
+  registry: 'https://registry.npmjs.org/',
   registries: {
-    npm: 'https://registry.npmjs.org',
+    npm: 'https://registry.npmjs.org/',
     custom: 'http://example.com',
   },
 } satisfies SpecOptions
@@ -131,12 +135,103 @@ t.test('missing registries', async t => {
     ...borkedConfigData,
     mainManifest,
   })
-  save({ ...borkedConfigData, graph })
-  t.matchSnapshot(
-    readFileSync(resolve(projectRoot, 'vlt-lock.json'), {
-      encoding: 'utf8',
-    }),
+  const lockfile = lockfileData({ ...borkedConfigData, graph })
+  t.matchSnapshot(JSON.stringify(lockfile, null, 2))
+})
+
+t.test('custom git hosts', async t => {
+  const mainManifest = {
+    name: 'my-project',
+    version: '1.0.0',
+    dependencies: {
+      foo: 'example:foo/bar',
+    },
+  }
+  const specOptions = {
+    'git-hosts': {
+      example: 'git+ssh://example.com/$1/$2.git',
+    },
+    'git-host-archives': {
+      example: 'https://example.com/$1/$2/archive/$3.tar.gz',
+    },
+  }
+  const projectRoot = t.testdir()
+  const graph = new Graph({
+    projectRoot,
+    ...specOptions,
+    mainManifest,
+  })
+  graph.placePackage(
+    graph.mainImporter,
+    'prod',
+    Spec.parse('foo', mainManifest.dependencies.foo, specOptions),
+    {
+      name: 'foo',
+      version: '1.0.0',
+    },
   )
+  const lockfile = lockfileData({ ...specOptions, graph })
+  t.matchSnapshot(JSON.stringify(lockfile, null, 2))
+})
+
+t.test('scope-registries', async t => {
+  const mainManifest = {
+    name: 'my-project',
+    version: '1.0.0',
+    dependencies: {
+      '@myscope/foo': '^1.0.0',
+    },
+  }
+  const specOptions = {
+    'scope-registries': {
+      '@myscope': 'https://example.com/',
+    },
+  }
+  const projectRoot = t.testdir()
+  const graph = new Graph({
+    projectRoot,
+    ...specOptions,
+    mainManifest,
+  })
+  graph.placePackage(
+    graph.mainImporter,
+    'prod',
+    Spec.parse(
+      'foo',
+      mainManifest.dependencies['@myscope/foo'],
+      specOptions,
+    ),
+    {
+      name: 'foo',
+      version: '1.0.0',
+    },
+  )
+  const lockfile = lockfileData({ ...specOptions, graph })
+  t.matchSnapshot(JSON.stringify(lockfile, null, 2))
+})
+
+t.test('overrides default registries', async t => {
+  const mainManifest = {
+    name: 'my-project',
+    version: '1.0.0',
+    dependencies: {
+      foo: '^1.0.0',
+    },
+  }
+  const specOptions = {
+    registry: 'http://example.com',
+    registries: {
+      npm: 'http://example.com',
+    },
+  }
+  const projectRoot = t.testdir()
+  const graph = new Graph({
+    projectRoot,
+    ...specOptions,
+    mainManifest,
+  })
+  const lockfile = lockfileData({ ...specOptions, graph })
+  t.matchSnapshot(JSON.stringify(lockfile, null, 2))
 })
 
 t.test('workspaces', async t => {

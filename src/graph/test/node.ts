@@ -15,9 +15,9 @@ t.cleanSnapshot = s =>
     .replace(/^(\s+)projectRoot: .*$/gm, '$1projectRoot: #')
 
 const options = {
-  registry: 'https://registry.npmjs.org',
+  registry: 'https://registry.npmjs.org/',
   registries: {
-    npm: 'https://registry.npmjs.org',
+    npm: 'https://registry.npmjs.org/',
     custom: 'https://example.com',
   },
 } satisfies SpecOptions

@@ -220,7 +220,7 @@ Object {
       
       For example, \`express@latest\` will be resolved by looking up the metadata from this registry.
       
-      Note that alias specifiers starting with \`npm:\` will still map to \`https://registry.npmjs.org\` if this is changed, unless the a new mapping is created via the \`--registries\` option.
+      Note that alias specifiers starting with \`npm:\` will still map to \`https://registry.npmjs.org/\` if this is changed, unless the a new mapping is created via the \`--registries\` option.
     ),
     "hint": "url",
     "type": "string",

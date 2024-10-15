@@ -14,6 +14,7 @@ export interface EdgeLike {
 export interface GraphLike {
   importers: Set<NodeLike>
   mainImporter: NodeLike
+  projectRoot: string
   nodes: Map<DepID, NodeLike>
   edges: Set<EdgeLike>
 }

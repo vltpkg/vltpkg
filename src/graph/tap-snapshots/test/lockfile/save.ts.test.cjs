@@ -5,20 +5,57 @@
  * Make sure to inspect the output below.  Do not ignore changes!
  */
 'use strict'
+exports[`test/lockfile/save.ts > TAP > custom git hosts > must match snapshot 1`] = `
+{
+  "options": {
+    "git-hosts": {
+      "example": "git+ssh://example.com/$1/$2.git"
+    },
+    "git-host-archives": {
+      "example": "https://example.com/$1/$2/archive/$3.tar.gz"
+    }
+  },
+  "nodes": {
+    "git·example%3Afoo%2Fbar·": [
+      0,
+      "foo"
+    ]
+  },
+  "edges": {
+    "file·. foo": "prod example:foo/bar git·example%3Afoo%2Fbar·"
+  }
+}
+`
+
 exports[`test/lockfile/save.ts > TAP > missing registries > must match snapshot 1`] = `
 {
-  "registries": {},
+  "options": {
+    "registry": "http://example.com"
+  },
   "nodes": {},
   "edges": {}
 }
+`
 
+exports[`test/lockfile/save.ts > TAP > overrides default registries > must match snapshot 1`] = `
+{
+  "options": {
+    "registry": "http://example.com",
+    "registries": {
+      "npm": "http://example.com"
+    }
+  },
+  "nodes": {},
+  "edges": {}
+}
 `
 
 exports[`test/lockfile/save.ts > TAP > save > must match snapshot 1`] = `
 {
-  "registries": {
-    "npm": "https://registry.npmjs.org",
-    "custom": "http://example.com"
+  "options": {
+    "registries": {
+      "custom": "http://example.com"
+    }
   },
   "nodes": {
     "··bar@1.0.0": [3,"bar"],
@@ -36,9 +73,10 @@ exports[`test/lockfile/save.ts > TAP > save > must match snapshot 1`] = `
 
 exports[`test/lockfile/save.ts > TAP > save > save hidden (yes manifests) > must match snapshot 1`] = `
 {
-  "registries": {
-    "npm": "https://registry.npmjs.org",
-    "custom": "http://example.com"
+  "options": {
+    "registries": {
+      "custom": "http://example.com"
+    }
   },
   "nodes": {
     "··bar@1.0.0": [
@@ -91,9 +129,10 @@ exports[`test/lockfile/save.ts > TAP > save > save hidden (yes manifests) > must
 
 exports[`test/lockfile/save.ts > TAP > save > save normal (no manifests) > must match snapshot 1`] = `
 {
-  "registries": {
-    "npm": "https://registry.npmjs.org",
-    "custom": "http://example.com"
+  "options": {
+    "registries": {
+      "custom": "http://example.com"
+    }
   },
   "nodes": {
     "··bar@1.0.0": [3,"bar"],
@@ -109,11 +148,31 @@ exports[`test/lockfile/save.ts > TAP > save > save normal (no manifests) > must 
 
 `
 
+exports[`test/lockfile/save.ts > TAP > scope-registries > must match snapshot 1`] = `
+{
+  "options": {
+    "scope-registries": {
+      "@myscope": "https://example.com/"
+    }
+  },
+  "nodes": {
+    "··foo@1.0.0": [
+      0,
+      "foo"
+    ]
+  },
+  "edges": {
+    "file·. foo": "prod ^1.0.0 ··foo@1.0.0"
+  }
+}
+`
+
 exports[`test/lockfile/save.ts > TAP > workspaces > save manifests > must match snapshot 1`] = `
 {
-  "registries": {
-    "npm": "https://registry.npmjs.org",
-    "custom": "http://example.com"
+  "options": {
+    "registries": {
+      "custom": "http://example.com"
+    }
   },
   "nodes": {
     "··c@1.0.0": [0,"c","sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ=="]
@@ -127,9 +186,10 @@ exports[`test/lockfile/save.ts > TAP > workspaces > save manifests > must match 
 
 exports[`test/lockfile/save.ts > TAP > workspaces > should save lockfile with workspaces nodes 1`] = `
 {
-  "registries": {
-    "npm": "https://registry.npmjs.org",
-    "custom": "http://example.com"
+  "options": {
+    "registries": {
+      "custom": "http://example.com"
+    }
   },
   "nodes": {
     "··c@1.0.0": [0,"c","sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ=="]

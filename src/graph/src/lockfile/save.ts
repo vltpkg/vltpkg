@@ -1,5 +1,12 @@
 import { DepID } from '@vltpkg/dep-id'
-import { SpecOptions } from '@vltpkg/spec'
+import {
+  defaultRegistry,
+  defaultRegistries,
+  defaultGitHosts,
+  defaultGitHostArchives,
+  defaultScopeRegistries,
+  SpecOptions,
+} from '@vltpkg/spec'
 import { mkdirSync, writeFileSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import { type Edge } from '../edge.js'
@@ -101,21 +108,86 @@ const formatEdges = (edges: Set<Edge>): LockfileEdges =>
       ]),
   )
 
-const isRegistries = (
+const isRecordStringString = (
   registries: unknown,
 ): registries is Record<string, string> =>
   !(!registries || typeof registries === 'string')
 
+const removeDefaultItems = (
+  defaultItems: Record<string, string>,
+  items: Record<string, string>,
+) => {
+  const res: Record<string, string> = {}
+  for (const [key, value] of Object.entries(items)) {
+    if (!defaultItems[key] || defaultItems[key] !== value) {
+      res[key] = value
+    }
+  }
+  return res
+}
+
 export const lockfileData = ({
   graph,
+  'git-hosts': gitHosts,
+  'git-host-archives': gitHostArchives,
   registry,
   registries,
   saveManifests,
-}: SaveOptions): LockfileData => ({
-  registries: isRegistries(registries) ? registries : {},
-  nodes: formatNodes(graph.nodes.values(), saveManifests, registry),
-  edges: formatEdges(graph.edges),
-})
+  'scope-registries': scopeRegistries,
+}: SaveOptions): LockfileData => {
+  const cleanGitHosts =
+    isRecordStringString(gitHosts) ?
+      removeDefaultItems(defaultGitHosts, gitHosts)
+    : undefined
+  const cleanGitHostArchives =
+    isRecordStringString(gitHostArchives) ?
+      removeDefaultItems(defaultGitHostArchives, gitHostArchives)
+    : undefined
+  const cleanRegistries =
+    isRecordStringString(registries) ?
+      removeDefaultItems(defaultRegistries, registries)
+    : undefined
+  const cleanScopeRegistries =
+    isRecordStringString(scopeRegistries) ?
+      removeDefaultItems(defaultScopeRegistries, scopeRegistries)
+    : undefined
+  const hasItems = (clean: Record<string, string> | undefined) =>
+    clean && Object.keys(clean).length
+  return {
+    options: {
+      ...(hasItems(cleanScopeRegistries) ?
+        { 'scope-registries': cleanScopeRegistries }
+      : undefined),
+      ...(registry !== undefined && registry !== defaultRegistry ?
+        { registry }
+      : undefined),
+      ...(hasItems(registries) ?
+        { registries: cleanRegistries }
+      : undefined),
+      ...(hasItems(cleanGitHosts) ?
+        { 'git-hosts': cleanGitHosts }
+      : undefined),
+      ...(hasItems(cleanGitHostArchives) ?
+        { 'git-host-archives': cleanGitHostArchives }
+      : undefined),
+    },
+    nodes: formatNodes(graph.nodes.values(), saveManifests, registry),
+    edges: formatEdges(graph.edges),
+  }
+}
+
+// renders each node / edge as a single line entry
+const extraFormat = (jsonString: string) => {
+  const str = `${jsonString}\n`
+  const [init, ...parts] = str.split('  "nodes": {')
+  const res = [init]
+  for (const part of parts) {
+    res.push(
+      part.replaceAll('\n      ', '').replaceAll('\n    ]', ']'),
+    )
+  }
+  return res.join('  "nodes": {')
+}
 
 export const saveData = (
   data: LockfileData,
@@ -123,13 +195,7 @@ export const saveData = (
   saveManifests = false,
 ) => {
   const json = JSON.stringify(data, null, 2)
-  const content =
-    saveManifests ? json : (
-      `${json}\n`
-        // renders each node / edge as a single line entry
-        .replaceAll('\n      ', '')
-        .replaceAll('\n    ]', ']')
-    )
+  const content = saveManifests ? json : extraFormat(json)
   writeFileSync(fileName, content)
 }
 

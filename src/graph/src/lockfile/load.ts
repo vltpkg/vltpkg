@@ -79,9 +79,32 @@ export const loadObject = (
   const monorepo =
     options.monorepo ??
     Monorepo.maybeLoad(options.projectRoot, { packageJson, scurry })
+  const {
+    'scope-registries': scopeRegistries,
+    registry,
+    registries,
+    'git-hosts': gitHosts,
+    'git-host-archives': gitHostArchives,
+  } = lockfileData.options
   const mergedOptions = {
     ...options,
-    registries: lockfileData.registries,
+    'scope-registries': {
+      ...options['scope-registries'],
+      ...scopeRegistries,
+    },
+    registry: registry ?? options.registry,
+    registries: {
+      ...options.registries,
+      ...registries,
+    },
+    'git-hosts': {
+      ...options['git-hosts'],
+      ...gitHosts,
+    },
+    'git-host-archives': {
+      ...options['git-host-archives'],
+      ...gitHostArchives,
+    },
   }
   const graph = new Graph({
     ...mergedOptions,
