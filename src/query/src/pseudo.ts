@@ -1,6 +1,5 @@
-import { delimiter } from '@vltpkg/dep-id'
+import { splitDepID } from '@vltpkg/dep-id/browser'
 import { error } from '@vltpkg/error-cause'
-import { fastSplit } from '@vltpkg/fast-split'
 import type { EdgeLike, NodeLike } from '@vltpkg/graph'
 import { asManifest } from '@vltpkg/types'
 import {
@@ -372,10 +371,9 @@ const typeFn = async (state: ParserState) => {
   const type = asPostcssNodeWithChildren(state.current)
   const selector = asPostcssNodeWithChildren(type.nodes[0])
   const name = asTagNode(selector.nodes[0]).value
-  const compareName = name === 'registry' ? '' : name
   for (const node of state.partial.nodes) {
-    const nodeType = fastSplit(node.id, delimiter, 2)[0]
-    if (nodeType !== compareName) {
+    const nodeType = splitDepID(node.id)[0]
+    if (nodeType !== name) {
       removeNode(state, node)
     }
   }
