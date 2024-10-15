@@ -49,3 +49,7 @@ in the same identifier. For example, the specifiers
 `x@npm:y@latest` and `asdf@npm:y@1.x` might both ultimately
 resolve to the same package, so they only need to appear in the
 store once.
+
+## BROWSER API
+
+An isomorphic API `@vltpkg/dep-id/browser` is provided for use in the browser.
