@@ -22,7 +22,9 @@ exports[`test/visualization/json-output.ts > TAP > actual graph > selected packa
         "name": "baz",
         "version": "1.0.0"
       },
-      "projectRoot": "{ROOT}"
+      "projectRoot": "{ROOT}",
+      "dev": false,
+      "optional": true
     }
   }
 ]
@@ -59,7 +61,9 @@ exports[`test/visualization/json-output.ts > TAP > actual graph > should print f
           "aliased": "custom:foo@^1.0.0"
         }
       },
-      "projectRoot": "{ROOT}"
+      "projectRoot": "{ROOT}",
+      "dev": false,
+      "optional": false
     }
   },
   {
@@ -74,7 +78,9 @@ exports[`test/visualization/json-output.ts > TAP > actual graph > should print f
         "name": "workspace-b",
         "version": "1.0.0"
       },
-      "projectRoot": "{ROOT}"
+      "projectRoot": "{ROOT}",
+      "dev": false,
+      "optional": false
     }
   },
   {
@@ -94,7 +100,9 @@ exports[`test/visualization/json-output.ts > TAP > actual graph > should print f
           "workspace-b": "workspace:*"
         }
       },
-      "projectRoot": "{ROOT}"
+      "projectRoot": "{ROOT}",
+      "dev": false,
+      "optional": false
     }
   },
   {
@@ -112,7 +120,9 @@ exports[`test/visualization/json-output.ts > TAP > actual graph > should print f
         "name": "linked",
         "version": "1.0.0"
       },
-      "projectRoot": "{ROOT}"
+      "projectRoot": "{ROOT}",
+      "dev": false,
+      "optional": false
     }
   },
   {
@@ -130,7 +140,9 @@ exports[`test/visualization/json-output.ts > TAP > actual graph > should print f
         "name": "foo",
         "version": "1.0.0"
       },
-      "projectRoot": "{ROOT}"
+      "projectRoot": "{ROOT}",
+      "dev": false,
+      "optional": false
     }
   },
   {
@@ -148,7 +160,9 @@ exports[`test/visualization/json-output.ts > TAP > actual graph > should print f
         "name": "extraneous",
         "version": "1.0.0"
       },
-      "projectRoot": "{ROOT}"
+      "projectRoot": "{ROOT}",
+      "dev": false,
+      "optional": false
     }
   },
   {
@@ -170,7 +184,9 @@ exports[`test/visualization/json-output.ts > TAP > actual graph > should print f
           "blooo": "1"
         }
       },
-      "projectRoot": "{ROOT}"
+      "projectRoot": "{ROOT}",
+      "dev": false,
+      "optional": true
     }
   },
   {
@@ -188,7 +204,9 @@ exports[`test/visualization/json-output.ts > TAP > actual graph > should print f
         "name": "foo",
         "version": "1.0.0"
       },
-      "projectRoot": "{ROOT}"
+      "projectRoot": "{ROOT}",
+      "dev": true,
+      "optional": false
     }
   },
   {
@@ -216,7 +234,9 @@ exports[`test/visualization/json-output.ts > TAP > actual graph > should print f
           }
         ]
       },
-      "projectRoot": "{ROOT}"
+      "projectRoot": "{ROOT}",
+      "dev": false,
+      "optional": false
     }
   },
   {
@@ -240,7 +260,9 @@ exports[`test/visualization/json-output.ts > TAP > actual graph > should print f
           "bundled"
         ]
       },
-      "projectRoot": "{ROOT}"
+      "projectRoot": "{ROOT}",
+      "dev": false,
+      "optional": false
     }
   },
   {
@@ -264,7 +286,9 @@ exports[`test/visualization/json-output.ts > TAP > actual graph > should print f
         "name": "workspace-b",
         "version": "1.0.0"
       },
-      "projectRoot": "{ROOT}"
+      "projectRoot": "{ROOT}",
+      "dev": false,
+      "optional": false
     }
   },
   {
@@ -282,7 +306,9 @@ exports[`test/visualization/json-output.ts > TAP > actual graph > should print f
         "name": "ipsum",
         "version": "1.0.0"
       },
-      "projectRoot": "{ROOT}"
+      "projectRoot": "{ROOT}",
+      "dev": true,
+      "optional": false
     }
   },
   {
@@ -300,7 +326,9 @@ exports[`test/visualization/json-output.ts > TAP > actual graph > should print f
         "name": "foo",
         "version": "1.0.0"
       },
-      "projectRoot": "{ROOT}"
+      "projectRoot": "{ROOT}",
+      "dev": false,
+      "optional": false
     }
   },
   {
@@ -318,7 +346,9 @@ exports[`test/visualization/json-output.ts > TAP > actual graph > should print f
         "name": "blooo",
         "version": "1.0.0"
       },
-      "projectRoot": "{ROOT}"
+      "projectRoot": "{ROOT}",
+      "dev": false,
+      "optional": true
     }
   },
   {
@@ -336,7 +366,9 @@ exports[`test/visualization/json-output.ts > TAP > actual graph > should print f
         "name": "baz",
         "version": "1.0.0"
       },
-      "projectRoot": "{ROOT}"
+      "projectRoot": "{ROOT}",
+      "dev": false,
+      "optional": true
     }
   },
   {
@@ -354,7 +386,9 @@ exports[`test/visualization/json-output.ts > TAP > actual graph > should print f
         "name": "@scoped/c",
         "version": "1.0.0"
       },
-      "projectRoot": "{ROOT}"
+      "projectRoot": "{ROOT}",
+      "dev": false,
+      "optional": false
     }
   }
 ]
@@ -377,7 +411,9 @@ exports[`test/visualization/json-output.ts > TAP > aliased package > should prin
           "a": "^1.0.0"
         }
       },
-      "projectRoot": "{ROOT}"
+      "projectRoot": "{ROOT}",
+      "dev": false,
+      "optional": false
     }
   },
   {
@@ -395,7 +431,9 @@ exports[`test/visualization/json-output.ts > TAP > aliased package > should prin
         "name": "@myscope/foo",
         "version": "1.0.0"
       },
-      "projectRoot": "{ROOT}"
+      "projectRoot": "{ROOT}",
+      "dev": false,
+      "optional": true
     }
   }
 ]
@@ -418,7 +456,9 @@ exports[`test/visualization/json-output.ts > TAP > cycle > should print cycle js
           "a": "^1.0.0"
         }
       },
-      "projectRoot": "{ROOT}"
+      "projectRoot": "{ROOT}",
+      "dev": false,
+      "optional": false
     }
   },
   {
@@ -436,7 +476,9 @@ exports[`test/visualization/json-output.ts > TAP > cycle > should print cycle js
         "name": "a",
         "version": "1.0.0"
       },
-      "projectRoot": "{ROOT}"
+      "projectRoot": "{ROOT}",
+      "dev": false,
+      "optional": false
     }
   },
   {
@@ -457,7 +499,9 @@ exports[`test/visualization/json-output.ts > TAP > cycle > should print cycle js
           "a": "^1.0.0"
         }
       },
-      "projectRoot": "{ROOT}"
+      "projectRoot": "{ROOT}",
+      "dev": false,
+      "optional": false
     }
   },
   {
@@ -475,7 +519,9 @@ exports[`test/visualization/json-output.ts > TAP > cycle > should print cycle js
         "name": "a",
         "version": "1.0.0"
       },
-      "projectRoot": "{ROOT}"
+      "projectRoot": "{ROOT}",
+      "dev": false,
+      "optional": false
     }
   }
 ]
@@ -500,7 +546,9 @@ exports[`test/visualization/json-output.ts > TAP > json-output > should print js
           "missing": "^1.0.0"
         }
       },
-      "projectRoot": "{ROOT}"
+      "projectRoot": "{ROOT}",
+      "dev": false,
+      "optional": false
     }
   },
   {
@@ -518,7 +566,9 @@ exports[`test/visualization/json-output.ts > TAP > json-output > should print js
         "name": "foo",
         "version": "1.0.0"
       },
-      "projectRoot": "{ROOT}"
+      "projectRoot": "{ROOT}",
+      "dev": true,
+      "optional": false
     }
   },
   {
@@ -539,7 +589,9 @@ exports[`test/visualization/json-output.ts > TAP > json-output > should print js
           "baz": "custom:baz@^1.0.0"
         }
       },
-      "projectRoot": "{ROOT}"
+      "projectRoot": "{ROOT}",
+      "dev": false,
+      "optional": true
     }
   },
   {
@@ -563,7 +615,9 @@ exports[`test/visualization/json-output.ts > TAP > json-output > should print js
       },
       "projectRoot": "{ROOT}",
       "integrity": "sha512-deadbeef",
-      "resolved": "http://example.com/baz"
+      "resolved": "http://example.com/baz",
+      "dev": true,
+      "optional": true
     }
   },
   {
@@ -587,7 +641,9 @@ exports[`test/visualization/json-output.ts > TAP > json-output > should print js
         "name": "foo",
         "version": "1.0.0"
       },
-      "projectRoot": "{ROOT}"
+      "projectRoot": "{ROOT}",
+      "dev": true,
+      "optional": false
     }
   },
   {
@@ -605,7 +661,9 @@ exports[`test/visualization/json-output.ts > TAP > json-output > should print js
         "name": "extraneous",
         "version": "1.0.0"
       },
-      "projectRoot": "{ROOT}"
+      "projectRoot": "{ROOT}",
+      "dev": false,
+      "optional": true
     }
   }
 ]
@@ -628,7 +686,9 @@ exports[`test/visualization/json-output.ts > TAP > missing optional > should pri
           "a": "^1.0.0"
         }
       },
-      "projectRoot": "{ROOT}"
+      "projectRoot": "{ROOT}",
+      "dev": false,
+      "optional": false
     }
   },
   {
@@ -650,7 +710,9 @@ exports[`test/visualization/json-output.ts > TAP > nameless package > should fal
       "location": ".",
       "importer": true,
       "manifest": {},
-      "projectRoot": "{ROOT}"
+      "projectRoot": "{ROOT}",
+      "dev": false,
+      "optional": false
     }
   }
 ]
@@ -673,7 +735,9 @@ exports[`test/visualization/json-output.ts > TAP > versionless package > should 
           "a": "^1.0.0"
         }
       },
-      "projectRoot": "{ROOT}"
+      "projectRoot": "{ROOT}",
+      "dev": false,
+      "optional": false
     }
   },
   {
@@ -689,7 +753,9 @@ exports[`test/visualization/json-output.ts > TAP > versionless package > should 
       "manifest": {
         "name": "a"
       },
-      "projectRoot": "{ROOT}"
+      "projectRoot": "{ROOT}",
+      "dev": false,
+      "optional": true
     }
   }
 ]
@@ -709,7 +775,9 @@ exports[`test/visualization/json-output.ts > TAP > workspaces > should print jso
         "name": "my-project",
         "version": "1.0.0"
       },
-      "projectRoot": "{ROOT}"
+      "projectRoot": "{ROOT}",
+      "dev": false,
+      "optional": false
     }
   },
   {
@@ -724,7 +792,9 @@ exports[`test/visualization/json-output.ts > TAP > workspaces > should print jso
         "name": "b",
         "version": "1.0.0"
       },
-      "projectRoot": "{ROOT}"
+      "projectRoot": "{ROOT}",
+      "dev": false,
+      "optional": false
     }
   },
   {
@@ -739,7 +809,9 @@ exports[`test/visualization/json-output.ts > TAP > workspaces > should print jso
         "name": "a",
         "version": "1.0.0"
       },
-      "projectRoot": "{ROOT}"
+      "projectRoot": "{ROOT}",
+      "dev": false,
+      "optional": false
     }
   }
 ]

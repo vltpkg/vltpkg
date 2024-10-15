@@ -39,6 +39,192 @@ exports[`test/lockfile/load.ts > TAP > load > must match snapshot 1`] = `
 ]
 `
 
+exports[`test/lockfile/load.ts > TAP > load with custom git hosts > should build specs with custom git hosts 1`] = `
+Spec {
+  "bareSpec": "example:foo/bar",
+  "conventionalRegistryTarball": undefined,
+  "distTag": undefined,
+  "file": undefined,
+  "gitCommittish": undefined,
+  "gitRemote": "git+ssh://example.com/foo/bar.git",
+  "gitSelector": undefined,
+  "gitSelectorParsed": undefined,
+  "name": "foo",
+  "namedGitHost": "example",
+  "namedGitHostPath": "foo/bar",
+  "namedRegistry": undefined,
+  "options": Object {
+    "git-host-archives": Object {
+      "bitbucket": "https://bitbucket.org/$1/$2/get/$committish.tar.gz",
+      "example": "git+ssh://example.com/$1/$2/archive/$3.tar.gz",
+      "gist": "https://codeload.github.com/gist/$1/tar.gz/$committish",
+      "github": "https://codeload.github.com/$1/$2/tar.gz/$committish",
+      "gitlab": "https://gitlab.com/$1/$2/repository/archive.tar.gz?ref=$committish",
+    },
+    "git-hosts": Object {
+      "bitbucket": "git+ssh://git@bitbucket.org:$1/$2.git",
+      "example": "git+ssh://example.com/$1/$2.git",
+      "gist": "git+ssh://git@gist.github.com/$1.git",
+      "github": "git+ssh://git@github.com:$1/$2.git",
+      "gitlab": "git+ssh://git@gitlab.com:$1/$2.git",
+    },
+    "mainManifest": Object {
+      "name": "my-project",
+      "version": "1.0.0",
+    },
+    "projectRoot": "{ROOT}",
+    "registries": Object {
+      "custom": "http://example.com",
+      "npm": "https://registry.npmjs.org/",
+    },
+    "registry": "https://registry.npmjs.org/",
+    "scope-registries": Object {},
+  },
+  "range": undefined,
+  "registry": undefined,
+  "registrySpec": undefined,
+  "remoteURL": undefined,
+  "scope": undefined,
+  "scopeRegistry": undefined,
+  "semver": undefined,
+  "spec": "foo@example:foo/bar",
+  "subspec": undefined,
+  "type": "git",
+  "workspace": undefined,
+  "workspaceSpec": undefined,
+}
+`
+
+exports[`test/lockfile/load.ts > TAP > load with custom git hosts > should load custom git hosts graph 1`] = `
+[
+  Node {
+    id: 'file·.',
+    location: '.',
+    importer: true,
+    edgesOut: [
+      Edge spec(foo@example:foo/bar) -prod-> to: Node {
+        id: 'git·example%3Afoo%2Fbar·',
+        location: './node_modules/.vlt/git·example%3Afoo%2Fbar·/node_modules/foo'
+      }
+    ]
+  }
+]
+`
+
+exports[`test/lockfile/load.ts > TAP > load with custom scope registry > should build specs with custom scope registry 1`] = `
+Spec {
+  "bareSpec": "^1.0.0",
+  "conventionalRegistryTarball": undefined,
+  "distTag": undefined,
+  "file": undefined,
+  "gitCommittish": undefined,
+  "gitRemote": undefined,
+  "gitSelector": undefined,
+  "gitSelectorParsed": undefined,
+  "name": "@myscope/foo",
+  "namedGitHost": undefined,
+  "namedGitHostPath": undefined,
+  "namedRegistry": undefined,
+  "options": Object {
+    "git-host-archives": Object {
+      "bitbucket": "https://bitbucket.org/$1/$2/get/$committish.tar.gz",
+      "gist": "https://codeload.github.com/gist/$1/tar.gz/$committish",
+      "github": "https://codeload.github.com/$1/$2/tar.gz/$committish",
+      "gitlab": "https://gitlab.com/$1/$2/repository/archive.tar.gz?ref=$committish",
+    },
+    "git-hosts": Object {
+      "bitbucket": "git+ssh://git@bitbucket.org:$1/$2.git",
+      "gist": "git+ssh://git@gist.github.com/$1.git",
+      "github": "git+ssh://git@github.com:$1/$2.git",
+      "gitlab": "git+ssh://git@gitlab.com:$1/$2.git",
+    },
+    "mainManifest": Object {
+      "name": "my-project",
+      "version": "1.0.0",
+    },
+    "projectRoot": "{ROOT}",
+    "registries": Object {
+      "custom": "http://example.com",
+      "npm": "https://registry.npmjs.org/",
+    },
+    "registry": "https://registry.npmjs.org/",
+    "scope-registries": Object {
+      "@myscope": "http://example.com",
+    },
+  },
+  "range": Range {
+    "includePrerelease": false,
+    "isAny": false,
+    "isSingle": false,
+    "raw": "^1.0.0",
+    "set": Array [
+      Comparator {
+        "includePrerelease": false,
+        "isAny": false,
+        "isNone": false,
+        "raw": "^1.0.0",
+        "tokens": Array [
+          "^1.0.0",
+        ],
+        "tuples": Array [
+          Array [
+            ">=",
+            Version {
+              "build": undefined,
+              "major": 1,
+              "minor": 0,
+              "patch": 0,
+              "prerelease": undefined,
+              "raw": "1.0.0",
+            },
+          ],
+          Array [
+            "<",
+            Version {
+              "build": undefined,
+              "major": 2,
+              "minor": 0,
+              "patch": 0,
+              "prerelease": Array [
+                0,
+              ],
+              "raw": "1.0.0",
+            },
+          ],
+        ],
+      },
+    ],
+  },
+  "registry": "http://example.com",
+  "registrySpec": "^1.0.0",
+  "remoteURL": undefined,
+  "scope": "@myscope",
+  "scopeRegistry": "http://example.com",
+  "semver": "^1.0.0",
+  "spec": "@myscope/foo@^1.0.0",
+  "subspec": undefined,
+  "type": "registry",
+  "workspace": undefined,
+  "workspaceSpec": undefined,
+}
+`
+
+exports[`test/lockfile/load.ts > TAP > load with custom scope registry > should load custom scope registry graph 1`] = `
+[
+  Node {
+    id: 'file·.',
+    location: '.',
+    importer: true,
+    edgesOut: [
+      Edge spec(@myscope/foo@^1.0.0) -prod-> to: Node {
+        id: '··@myscope%2Ffoo@1.0.0',
+        location: './node_modules/.vlt/··@myscope%2Ffoo@1.0.0/node_modules/@myscope/foo'
+      }
+    ]
+  }
+]
+`
+
 exports[`test/lockfile/load.ts > TAP > loadHidden > must match snapshot 1`] = `
 [
   Node {
@@ -71,6 +257,20 @@ exports[`test/lockfile/load.ts > TAP > loadHidden > must match snapshot 1`] = `
     ]
   }
 ]
+`
+
+exports[`test/lockfile/load.ts > TAP > option-defined values should overwrite lockfile values > should overwrite lockfile values with option-defined values 1`] = `
+{
+  "options": {
+    "registry": "http://example.com",
+    "registries": {
+      "example": "http://bar",
+      "lorem": "http://lorem"
+    }
+  },
+  "nodes": {},
+  "edges": {}
+}
 `
 
 exports[`test/lockfile/load.ts > TAP > workspaces > must match snapshot 1`] = `

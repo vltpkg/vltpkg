@@ -17,6 +17,6 @@ Object {
       "foo",
     ],
   },
-  "registries": Object {},
+  "options": Object {},
 }
 `

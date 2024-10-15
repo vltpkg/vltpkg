@@ -418,7 +418,7 @@ t.test('kv string[] stored as Record<string, string>', async t => {
   const dir = t.testdir({
     'vlt.json': JSON.stringify({
       registries: {
-        npm: 'https://registry.npmjs.org',
+        npm: 'https://registry.npmjs.org/',
         vlt: 'https://vlt.sh',
       },
     }),
@@ -426,11 +426,11 @@ t.test('kv string[] stored as Record<string, string>', async t => {
   })
   const c = await Config.load(dir, undefined, true)
   t.strictSame(c.get('registries'), [
-    'npm=https://registry.npmjs.org',
+    'npm=https://registry.npmjs.org/',
     'vlt=https://vlt.sh',
   ])
   t.strictSame(c.getRecord('registries'), {
-    npm: 'https://registry.npmjs.org',
+    npm: 'https://registry.npmjs.org/',
     vlt: 'https://vlt.sh',
   })
   await c.writeConfigFile('project', {

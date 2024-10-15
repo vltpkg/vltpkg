@@ -1,5 +1,5 @@
 import { DepID } from '@vltpkg/dep-id'
-import { Spec } from '@vltpkg/spec'
+import { Spec, SpecOptions } from '@vltpkg/spec'
 import { Integrity, ManifestMinified } from '@vltpkg/types'
 import { DependencyTypeShort } from '../dependencies.js'
 
@@ -11,7 +11,7 @@ import { DependencyTypeShort } from '../dependencies.js'
  * a {@link Graph} representing a previous install.
  */
 export type LockfileData = {
-  registries: Record<string, string>
+  options: SpecOptions
   nodes: Record<DepID, LockfileNode>
   edges: LockfileEdges
 }

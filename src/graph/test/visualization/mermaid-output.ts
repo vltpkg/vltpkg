@@ -7,9 +7,9 @@ import { loadActualGraph } from '../fixtures/actual.js'
 import { joinDepIDTuple } from '@vltpkg/dep-id'
 
 const configData = {
-  registry: 'https://registry.npmjs.org',
+  registry: 'https://registry.npmjs.org/',
   registries: {
-    npm: 'https://registry.npmjs.org',
+    npm: 'https://registry.npmjs.org/',
   },
 } satisfies SpecOptions
 

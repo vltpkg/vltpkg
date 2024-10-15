@@ -311,6 +311,8 @@ export class Node implements NodeLike {
       projectRoot: this.projectRoot,
       integrity: this.integrity,
       resolved: this.resolved,
+      dev: this.dev,
+      optional: this.optional,
     }
   }
 

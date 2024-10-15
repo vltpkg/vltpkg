@@ -61,9 +61,11 @@ t.test('diff two graphs', async t => {
       },
     },
     {
-      registries: {
-        npm: 'https://registry.npmjs.org',
-        custom: 'https://registry.example.com',
+      options: {
+        registries: {
+          npm: 'https://registry.npmjs.org/',
+          custom: 'https://registry.example.com',
+        },
       },
       nodes: {
         [joinDepIDTuple(['file', '.'])]: [0, 'my-project'],
@@ -118,9 +120,11 @@ t.test('diff two graphs', async t => {
       },
     },
     {
-      registries: {
-        npm: 'https://registry.npmjs.org',
-        custom: 'https://registry.example.com',
+      options: {
+        registries: {
+          npm: 'https://registry.npmjs.org/',
+          custom: 'https://registry.example.com',
+        },
       },
       nodes: {
         [joinDepIDTuple(['file', '.'])]: [0, 'my-project'],
