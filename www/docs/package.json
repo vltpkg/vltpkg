@@ -1,0 +1,43 @@
+{
+  "name": "@vltpkg/docs",
+  "version": "0.0.1",
+  "private": true,
+  "dependencies": {
+    "@astrojs/check": "^0.9.4",
+    "@astrojs/mdx": "4.0.0-beta.2",
+    "@astrojs/starlight": "^0.28.3",
+    "@astrojs/vercel": "^7.8.1",
+    "astro": "5.0.0-beta.4",
+    "sharp": "^0.32.5",
+    "typescript": "catalog:",
+    "vite": "6.0.0-beta.2"
+  },
+  "devDependencies": {
+    "@eslint/js": "catalog:",
+    "@types/eslint__js": "catalog:",
+    "@types/node": "catalog:",
+    "eslint": "catalog:",
+    "prettier": "catalog:",
+    "typescript-eslint": "catalog:",
+    "vitest": "^2.1.3"
+  },
+  "license": "BSD-2-Clause-Patent",
+  "engines": {
+    "node": "20 || >=22"
+  },
+  "scripts": {
+    "astro": "astro",
+    "build": "astro check && astro build",
+    "dev": "astro dev",
+    "format": "prettier --write . --log-level warn --ignore-path ../../.prettierignore --cache",
+    "format:check": "prettier --check . --ignore-path ../../.prettierignore --cache",
+    "lint": "eslint . --fix",
+    "lint:check": "eslint .",
+    "snap": "vitest",
+    "start": "astro dev",
+    "test": "vitest",
+    "preview": "astro preview"
+  },
+  "prettier": "../../.prettierrc.json",
+  "type": "module"
+}

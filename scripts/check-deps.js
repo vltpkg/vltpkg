@@ -21,9 +21,17 @@ const getAllProdDeps = async () => {
       // TODO: make this a `vlt query`
       const proc = spawn(
         'pnpm',
-        ['list', '--depth=Infinity', '--json', '--prod'],
+        [
+          '--filter',
+          '"./src/**"',
+          'list',
+          '--depth=Infinity',
+          '--json',
+          '--prod',
+        ],
         {
           cwd: ROOT,
+          shell: true,
         },
       )
       let output = ''
@@ -94,7 +102,13 @@ const main = async () => {
       [checkEngines, checkLicenses].filter(Boolean).join('\n\n'),
     )
   }
-  return `Successfully checked ${deps.length} production dependencies`
+  return (
+    `Successfully checked ${deps.length} production dependencies:\n` +
+    deps
+      .map(d => `${d.pkg.name}@${d.pkg.version} `)
+      .sort()
+      .join('\n')
+  )
 }
 
 main()
