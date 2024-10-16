@@ -158,7 +158,7 @@ export const appendNodes = async (
                 ...options,
                 registry: spec.registry,
               }),
-              type: shorten(depTypeName, name, fromNode.manifest),
+              type: shorten(depTypeName, name, mani),
             }))
           if (nextDeps.length) {
             nestedAppends.push(
