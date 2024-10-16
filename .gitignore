@@ -1,4 +1,6 @@
 .DS_Store
+.env
+.env.production
 
 /.turbo
 /docs
@@ -21,3 +23,10 @@
 /infra/*/docs
 /infra/*/node_modules
 /infra/*/scripts/fixtures/
+
+/www/*/.tap
+/www/*/.astro
+/www/*/.turbo
+/www/*/dist
+/www/*/node_modules
+/www/*/scripts/fixtures/

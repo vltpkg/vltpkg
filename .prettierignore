@@ -30,3 +30,14 @@
 /infra/*/tap-snapshots
 /infra/*/test/**/fixtures/**
 !/infra/*/test/**/fixtures/*.ts
+
+/www/*/.*
+/www/*/dist
+/www/*/docs
+/www/*/example
+/www/*/node_modules
+/www/*/package.json
+/www/*/scripts/fixtures
+/www/*/tap-snapshots
+/www/*/test/**/fixtures/**
+!/www/*/test/**/fixtures/*.ts
