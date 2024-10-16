@@ -244,6 +244,11 @@ const fixScripts = async ws => {
         test: 'tap',
         snap: 'tap',
       }
+    : ws.pj.devDependencies.vitest ?
+      {
+        test: 'vitest',
+        snap: 'vitest',
+      }
     : {},
     ws.pj.devDependencies.tshy ?
       {
@@ -366,7 +371,12 @@ const fixPackage = async (ws, opts) => {
   ws.pj.files = undefined
   ws.pj.engines = { node: '20 || >=22' }
   ws.pj.private =
-    ws.workspaceDir === 'infra' || ws.isRoot || ws.pj.name === 'vlt' ?
+    (
+      ws.isRoot ||
+      ws.pj.name === 'vlt' ||
+      ws.workspaceDir === 'infra' ||
+      ws.workspaceDir === 'www'
+    ) ?
       true
     : undefined
   return sortObject(ws.pj, [
@@ -386,6 +396,7 @@ const fixPackage = async (ws, opts) => {
     'main',
     'types',
     'type',
+    'pnpm',
   ])
 }
 
