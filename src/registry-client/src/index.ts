@@ -7,8 +7,8 @@ import { Client, Dispatcher, Pool } from 'undici'
 import { addHeader } from './add-header.js'
 import { CacheEntry } from './cache-entry.js'
 import { cacheInterceptor } from './cache-interceptor.js'
-import { isRedirect, redirect } from './redirect.js'
 import { bun, deno, node } from './env.js'
+import { isRedirect, redirect } from './redirect.js'
 
 export { CacheEntry, cacheInterceptor }
 
@@ -100,12 +100,20 @@ export class RegistryClient {
       cache: this.cache,
       maxRedirections,
       redirections,
+      timeout: 600_000,
+      bodyTimeout: 600_000,
+      headersTimeout: 600_000,
+      keepAliveMaxTimeout: 1_200_000,
+      keepAliveTimeout: 60_000,
+      keepAliveTimeoutThreshold: 30_000,
+      keepAliveInitialDelay: 30_000,
       connect: { timeout: 60_000 },
     })
     options.origin = u.origin
     const pool =
       this.pools.get(options.origin) ??
       new Pool(options.origin, {
+        ...(options as Pool.Options),
         factory: (origin, opts) =>
           new Client(origin, opts).compose(cacheInterceptor),
       })
