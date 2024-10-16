@@ -22,7 +22,7 @@
     "@vltpkg/xdg": "workspace:*",
     "cache-control-parser": "^2.0.5",
     "package-json-from-dist": "catalog:",
-    "undici": "^6.13.0"
+    "undici": "^6.20.0"
   },
   "devDependencies": {
     "@eslint/js": "catalog:",

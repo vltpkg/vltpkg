@@ -930,8 +930,8 @@ importers:
         specifier: 'catalog:'
         version: 1.0.0
       undici:
-        specifier: ^6.13.0
-        version: 6.19.8
+        specifier: ^6.20.0
+        version: 6.20.0
     devDependencies:
       '@eslint/js':
         specifier: 'catalog:'
@@ -5684,8 +5684,8 @@ packages:
   undici-types@6.19.8:
     resolution: {integrity: sha512-ve2KP6f/JnbPBFyobGHuerC9g1FYGn/F8n1LWTwNxCEzd6IfqTwUQcNXgEtmmQ6DlRrC1hrSrBnCZPokRrDHjw==}
 
-  undici@6.19.8:
-    resolution: {integrity: sha512-U8uCCl2x9TK3WANvmBavymRzxbfFYG+tAu+fgx3zxQy3qdagQqBLwJVrdyO1TBfUXvfKveMKJZhpvUYoOjM+4g==}
+  undici@6.20.0:
+    resolution: {integrity: sha512-AITZfPuxubm31Sx0vr8bteSalEbs9wQb/BOBi9FPlD9Qpd6HxZ4Q0+hI742jBhkPb4RT2v5MQzaW5VhRVyj+9A==}
     engines: {node: '>=18.17'}
 
   unified@11.0.5:
@@ -11147,7 +11147,7 @@ snapshots:
 
   undici-types@6.19.8: {}
 
-  undici@6.19.8: {}
+  undici@6.20.0: {}
 
   unified@11.0.5:
     dependencies:
