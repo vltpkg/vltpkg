@@ -1,8 +1,9 @@
 import { promiseSpawn } from '@vltpkg/promise-spawn'
+import { Manifest } from '@vltpkg/types'
 import { resolve } from 'path'
 import t from 'tap'
+import { isRunResult, run } from '../src/index.js'
 import { tsTestdir } from './fixtures/testdir-ts.js'
-import { isRunResult } from '../src/index.js'
 
 const fixture = resolve(
   tsTestdir(t, resolve(import.meta.dirname, 'fixtures/script')),
@@ -811,4 +812,36 @@ t.test('is run reseult', async t => {
     }),
     true,
   )
+})
+
+t.test('do not trust manifests npm mucks with', async t => {
+  const cwd = t.testdir({
+    'package.json': JSON.stringify({
+      name: 'x',
+      version: '1.2.3',
+      scripts: { install: 'echo ok' },
+    }),
+  })
+  // this one is a lie! read the actual package.json file
+  const manifest: Manifest = {
+    name: 'x',
+    version: '1.2.3',
+    gypfile: true,
+    scripts: { install: 'node-gyp rebuild' },
+  }
+  const res = await run({
+    cwd,
+    manifest,
+    arg0: 'install',
+    projectRoot: cwd,
+  })
+  t.match(res, {
+    command: 'echo ok',
+    args: [],
+    status: 0,
+    signal: null,
+    stdout: 'ok',
+    stderr: '',
+    pre: undefined,
+  })
 })

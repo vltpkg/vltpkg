@@ -200,7 +200,18 @@ const runImpl = async <
     ...execArgs
   } = options
   const pjPath = resolve(options.cwd, 'package.json')
-  const pj = manifest ?? packageJson.read(options.cwd)
+  // npm adds a `"install": "node-gyp rebuild"` if a binding.gyp
+  // is present at the time of publish, EVEN IF it's not included
+  // in the package. So, we need to read the actual package.json
+  // in those cases.
+  const untrustworthy = !!(
+    manifest?.gypfile &&
+    arg0 === 'install' &&
+    manifest.scripts?.install === 'node-gyp rebuild'
+  )
+  const pj =
+    (untrustworthy ? undefined : manifest) ??
+    packageJson.read(options.cwd)
   const { scripts } = pj
   const command = scripts?.[arg0]
   if (!command) {
