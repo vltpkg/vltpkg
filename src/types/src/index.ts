@@ -141,6 +141,8 @@ export type Manifest = {
   private?: boolean
   /** whether this is ESM or CommonJS by default */
   type?: 'commonjs' | 'module'
+  /** npm puts this on published manifests */
+  gypfile?: boolean
 }
 
 export type ManifestRegistry = Manifest &
