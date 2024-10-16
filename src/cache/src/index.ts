@@ -60,9 +60,19 @@ export class Cache extends LRUCache<
   #path: string;
   [Symbol.toStringTag] = '@vltpkg/cache.Cache'
   #random: string = randomBytes(6).toString('hex')
+  #i = 0
   #pending = new Set<Promise<boolean | undefined>>()
   onDiskWrite?: CacheOptions['onDiskWrite']
   onDiskDelete?: CacheOptions['onDiskDelete']
+
+  /**
+   * ensure we get a different random key for every write,
+   * just in case the same file tries to write multiple times,
+   * it'll still be atomic.
+   */
+  get random(): string {
+    return this.#random + '.' + String(this.#i++)
+  }
 
   /**
    * A list of the actions currently happening in the background
@@ -335,8 +345,8 @@ export class Cache extends LRUCache<
     const intFile = this.#maybeIntegrityPath(integrity)
     const base = basename(path)
     const keyFile = base + '.key'
-    const tmp = dir + '/.' + base + '.' + this.#random
-    const keyTmp = dir + '/.' + keyFile + '.' + this.#random
+    const tmp = dir + '/.' + base + '.' + this.random
+    const keyTmp = dir + '/.' + keyFile + '.' + this.random
     const writeData =
       intFile ?
         // try to just link into the temp location, rather than write
