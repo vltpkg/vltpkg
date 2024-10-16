@@ -77,6 +77,36 @@ Object {
 }
 `
 
+exports[`test/browser.ts > TAP > spec foo@example:foo/bar of type git with git options 1`] = `
+Object {
+  "bareSpec": "example:foo/bar",
+  "name": "foo",
+  "options": Object {
+    "git-host-archives": Object {
+      "bitbucket": "https://bitbucket.org/$1/$2/get/$committish.tar.gz",
+      "example": "https://example.com/$1/$2/archive/$committish.tar.gz",
+      "gist": "https://codeload.github.com/gist/$1/tar.gz/$committish",
+      "github": "https://codeload.github.com/$1/$2/tar.gz/$committish",
+      "gitlab": "https://gitlab.com/$1/$2/repository/archive.tar.gz?ref=$committish",
+    },
+    "git-hosts": Object {
+      "bitbucket": "git+ssh://git@bitbucket.org:$1/$2.git",
+      "example": "git+ssh://git@example.com/$1/$2.git",
+      "gist": "git+ssh://git@gist.github.com/$1.git",
+      "github": "git+ssh://git@github.com:$1/$2.git",
+      "gitlab": "git+ssh://git@gitlab.com:$1/$2.git",
+    },
+    "registries": Object {
+      "npm": "https://registry.npmjs.org/",
+    },
+    "registry": "https://registry.npmjs.org/",
+    "scope-registries": Object {},
+  },
+  "spec": "foo@example:foo/bar",
+  "type": "git",
+}
+`
+
 exports[`test/browser.ts > TAP > spec foo@latest of type registry 1`] = `
 Object {
   "bareSpec": "latest",
