@@ -14,6 +14,36 @@ const toRawHeaders = (h: Record<string, string>): Buffer[] => {
   return r
 }
 
+const toLenBuf = (b: Buffer): Buffer => {
+  const bl = b.byteLength + 4
+  const blBuf = Buffer.allocUnsafe(4)
+  blBuf.set(
+    [
+      (bl >> 24) & 0xff,
+      (bl >> 16) & 0xff,
+      (bl >> 8) & 0xff,
+      bl & 0xff,
+    ],
+    0,
+  )
+  return Buffer.concat([blBuf, b])
+}
+
+const toRawEntry = (
+  status: number,
+  headers: Record<string, string>,
+  body: Buffer,
+): Buffer => {
+  const headerChunks: Buffer[] = [Buffer.from(String(status))]
+  const rawh = toRawHeaders(headers)
+  for (const h of rawh) {
+    headerChunks.push(toLenBuf(h))
+  }
+  const chunks: Buffer[] = [toLenBuf(Buffer.concat(headerChunks))]
+  chunks.push(toLenBuf(body))
+  return Buffer.concat(chunks)
+}
+
 const z = gzipSync(Buffer.from('{"hello":"world"}'))
 const ce = new CacheEntry(
   200,
@@ -261,6 +291,20 @@ t.test('decoding a partial buffer should not blow up', t => {
     statusCode: 0,
     headers: [],
     body: Buffer.alloc(0),
+  })
+  t.end()
+})
+
+t.test('treat bad json as cache miss', t => {
+  const trash = Buffer.from('\u0001\u0002\u0003\u0004\u0005\u0099')
+  const body = Buffer.from(`{"hello":"world"\u0054}`)
+  const headers = { 'content-type': 'application/json' }
+  const enc = toRawEntry(200, headers, Buffer.concat([body, trash]))
+  const dec = CacheEntry.decode(enc)
+  t.equal(dec.isJSON, false)
+  t.match(dec, {
+    headers: [],
+    body: Buffer.allocUnsafe(0),
   })
   t.end()
 })

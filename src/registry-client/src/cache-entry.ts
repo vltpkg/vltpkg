@@ -304,6 +304,13 @@ export class CacheEntry {
     c.#body = [body]
     c.#bodyLength = body.byteLength
     c.setHeader('content-length', String(c.#bodyLength))
+    if (c.isJSON) {
+      try {
+        c.json()
+      } catch {
+        return new CacheEntry(0, [])
+      }
+    }
     return c
   }
 
