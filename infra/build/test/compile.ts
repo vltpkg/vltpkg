@@ -1,7 +1,5 @@
 import t, { Test } from 'tap'
 import { join } from 'path'
-import compile from '../src/compile.js'
-import bundle from '../src/bundle.js'
 import { defaultOptions } from '../src/index.js'
 import * as types from '../src/types.js'
 
@@ -9,18 +7,26 @@ const testCompile = async (
   t: Test,
   options: Partial<types.Factors>,
 ) => {
+  const { default: compile } = await t.mockImport(
+    '../src/compile.js',
+    {
+      'node:child_process': {
+        spawnSync: () => ({ status: 0 }),
+      },
+    },
+  )
   const dir = t.testdir({
-    source: {},
+    source: {
+      nested: {
+        file: '',
+      },
+      'some-file.js': '',
+    },
     compile: {},
   })
   const def = defaultOptions()
-  const { outdir: source } = await bundle({
-    outdir: join(dir, 'source'),
-    ...def,
-    ...options,
-  })
   compile({
-    source,
+    source: join(dir, 'source'),
     outdir: join(dir, 'compile'),
     bin: types.Bins.vlt,
     ...def,

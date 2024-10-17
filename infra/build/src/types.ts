@@ -1,5 +1,9 @@
 export const All = 'all'
 
+// TODO(bins): generating a bundle/compiled binary for each bin is not
+// very efficient. Come up with a way to splice the command name based
+// on the name of the argument that will work in both bundle and compile
+// scenarios.
 export const Bins = {
   vlt: 'vlt',
   vlr: 'vlr',
@@ -7,7 +11,6 @@ export const Bins = {
   vlrx: 'vlrx',
   vlix: 'vlix',
 } as const
-export const DefaultBin = Bins.vlt
 export const BinNames = Object.values(Bins)
 export type Bin = (typeof Bins)[keyof typeof Bins]
 export const isBin = (v: unknown): v is Bin =>

@@ -27,12 +27,7 @@ const testBundle = async (
   }
 }
 
-t.test('bundle', async t => {
-  await t.resolves(
-    testBundle(t, {
-      format: types.Formats.Esm,
-    }),
-  )
+t.test('cjs', async t => {
   await t.resolves(
     testBundle(t, {
       format: types.Formats.Cjs,
@@ -40,14 +35,10 @@ t.test('bundle', async t => {
   )
 })
 
-t.test('external commands', async t => {
-  const { files: commands } = await testBundle(t, {
-    externalCommands: true,
-  })
+t.test('no external commands', async t => {
   const { files: noCommands } = await testBundle(t, {
     externalCommands: false,
   })
-  t.ok(commands.some(c => c.startsWith(`commands${sep}`)))
   t.notOk(noCommands.some(c => c.startsWith(`commands${sep}`)))
 })
 

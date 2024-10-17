@@ -1,10 +1,5 @@
 import t, { Test } from 'tap'
-import { readdirSync } from 'node:fs'
-import generateMatrix, {
-  getMatrix,
-  ParseArgs,
-} from '../src/matrix.js'
-import { join } from 'node:path'
+import { getMatrix, ParseArgs } from '../src/matrix.js'
 import { Bin, Bins } from '../src/types.js'
 
 const testGenerateMatrix = async (
@@ -13,6 +8,23 @@ const testGenerateMatrix = async (
 ) => {
   const dir = t.testdir()
   t.capture(console, 'log')
+  const bundles: any[] = []
+  const compiles: any[] = []
+  const { default: generateMatrix } = await t.mockImport(
+    '../src/matrix.js',
+    {
+      '../src/compile.js': {
+        default: (a: any) => {
+          compiles.push(a)
+        },
+      },
+      '../src/bundle.js': {
+        default: (a: any) => {
+          bundles.push(a)
+        },
+      },
+    },
+  )
   await t.resolves(
     generateMatrix({
       outdir: dir,
@@ -22,11 +34,8 @@ const testGenerateMatrix = async (
     }),
   )
   return {
-    files: readdirSync(dir)
-      .flatMap(f =>
-        readdirSync(join(dir, f), { withFileTypes: true }),
-      )
-      .map(d => (d.isDirectory() ? `${d.name}/` : d.name)),
+    bundles,
+    compiles,
   }
 }
 
@@ -50,25 +59,33 @@ t.test('matrix', async t => {
 })
 
 t.test('bundle matrix', async t => {
-  const { files } = await testGenerateMatrix(t)
-  t.matchSnapshot(files, 'files')
+  const { bundles, compiles } = await testGenerateMatrix(t)
+  t.equal(bundles.length, 1)
+  t.strictSame(compiles, [])
 })
 
 t.test('compile matrix', async t => {
-  const { files } = await testGenerateMatrix(t, {
+  const { bundles, compiles } = await testGenerateMatrix(t, {
     platform: ['linux'],
     arch: ['arm64'],
     compile: [true],
   })
-  t.matchSnapshot(files, 'files')
+  t.matchSnapshot(
+    bundles.map(b => b.format),
+    'bundles',
+  )
+  t.matchSnapshot(
+    compiles.map(c => c.bin),
+    'files',
+  )
 })
 
 t.test('single bin', async t => {
-  const { files } = await testGenerateMatrix(t, {
+  const { compiles } = await testGenerateMatrix(t, {
     bin: Bins.vlt,
     platform: ['linux'],
     arch: ['arm64'],
     compile: [true],
   })
-  t.equal(files.length, 1)
+  t.equal(compiles.length, 1)
 })

@@ -112,6 +112,7 @@ const getCompileOptions = (
       args: [
         'compile',
         '-A',
+        '--no-check',
         `--output=${outfile}`,
         ...include.map(i => `--include=${i}`),
       ],
