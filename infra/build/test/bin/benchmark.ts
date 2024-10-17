@@ -19,6 +19,17 @@ const benchmark = async (t: Test, ...argv: string[]) => {
       'node:child_process': {
         spawnSync: (_: any, a: string[]) => (args = a),
       },
+      '../../src/matrix.js': await t.mockImport(
+        '../../src/matrix.js',
+        {
+          '../../src/compile.js': {
+            default: () => {},
+          },
+          '../../src/bundle.js': {
+            default: () => {},
+          },
+        },
+      ),
     },
   )
   const benchmarkArg = args.at(-2)

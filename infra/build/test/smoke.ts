@@ -170,14 +170,8 @@ t.test('commands', async t => {
   const outdir = t.testdir()
   await bundle({ outdir, ...defaultOptions() })
 
-  const snapshots: Record<
-    typeof types.DefaultBin,
-    { [command: string]: TestCase[] }
-  > &
-    Record<
-      Exclude<types.Bin, typeof types.DefaultBin | 'vlix'>,
-      TestCase[]
-    > = {
+  const snapshots: Record<'vlt', { [command: string]: TestCase[] }> &
+    Record<Exclude<types.Bin, 'vlt' | 'vlix'>, TestCase[]> = {
     vlt: {
       pkg: [
         { args: ['get'], snapshot: true },

@@ -214,6 +214,23 @@ const nodeImportsPlugin = (): esbuild.Plugin => ({
   },
 })
 
+const rewriteBinPlugin = (
+  o: Pick<types.BundleFactors, 'format'>,
+): esbuild.Plugin => {
+  const isCjs = o.format === types.Formats.Cjs
+  const { plugin } = createOnLoad(
+    s => s.includes('await import('),
+    (_, s) =>
+      isCjs ? s.replaceAll('await import(', 'void import(') : s,
+  )
+  return {
+    name: 'rewrite-bin-plugin',
+    setup({ onLoad }) {
+      onLoad(filePluginFilter(`^${Bins.DIR}`), plugin)
+    },
+  }
+}
+
 const bundle = async (o: {
   plugins: esbuild.BuildOptions['plugins']
   sourcemap: esbuild.BuildOptions['sourcemap']
@@ -388,6 +405,7 @@ export default async ({
       in: join(Paths.CLI, bin),
       out: basename(bin, extname(bin)),
       plugins: [
+        rewriteBinPlugin({ format }),
         codeSplit.plugin,
         readPackageJson.plugin,
         loadCommands,
@@ -398,7 +416,7 @@ export default async ({
 
   if (externalCommands) {
     await bundleFiles(
-      readdirSync(join(Paths.CLI, 'dist/esm/commands'), {
+      readdirSync(Paths.COMMANDS, {
         withFileTypes: true,
       })
         .filter(p => p.isFile() && extname(p.name) === '.js')
