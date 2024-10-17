@@ -5,34 +5,20 @@
  * Make sure to inspect the output below.  Do not ignore changes!
  */
 'use strict'
-exports[`test/matrix.ts > TAP > bundle matrix > files 1`] = `
+exports[`test/matrix.ts > TAP > compile matrix > bundles 1`] = `
 Array [
-  "cache-unzip/",
-  "commands/",
-  "package.json",
-  "registry-client/",
-  "rollback-remove/",
-  "tar/",
-  "vlix.js",
-  "vlix.js.map",
-  "vlr.js",
-  "vlr.js.map",
-  "vlrx.js",
-  "vlrx.js.map",
-  "vlt.js",
-  "vlt.js.map",
-  "vlx.js",
-  "vlx.js.map",
+  "cjs",
+  "esm",
 ]
 `
 
 exports[`test/matrix.ts > TAP > compile matrix > files 1`] = `
 Array [
-  "vlix",
-  "vlr",
-  "vlrx",
   "vlt",
+  "vlr",
   "vlx",
+  "vlrx",
+  "vlix",
 ]
 `
 

@@ -9,12 +9,17 @@ const BUILD_ROOT = dirname(findPackageJson(import.meta.filename))
 const MONO_ROOT = resolve(BUILD_ROOT, '../..')
 const SRC = join(MONO_ROOT, 'src')
 const CLI = join(SRC, 'vlt')
+// TODO(source-maps): this is a ./dist/ path which might need
+// to be changed to a src path to get proper sourcemaps
+// https://github.com/vltpkg/vltpkg/issues/150
+const COMMANDS = join(CLI, 'dist/esm/commands')
 
 export const Paths = {
   BUILD_ROOT,
   MONO_ROOT,
   SRC,
   CLI,
+  COMMANDS,
 }
 
 export const Bins = (() => {
@@ -33,6 +38,9 @@ export const Bins = (() => {
   )
   return {
     PATHS: paths,
+    // TODO(source-maps): this is a ./dist/ path which might need
+    // to be changed to a src path to get proper sourcemaps
+    // https://github.com/vltpkg/vltpkg/issues/150
     DIR: join(CLI, dirname(paths[0])),
   }
 })()

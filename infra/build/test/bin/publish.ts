@@ -1,13 +1,10 @@
 import { join } from 'node:path'
 import t, { Test } from 'tap'
 import { spawnSync, SpawnSyncOptions } from 'node:child_process'
-import { Bin, BinNames, Bins } from '../../src/types.js'
+import { Bin, BinNames } from '../../src/types.js'
 import { readdirSync, readFileSync } from 'node:fs'
 
 type SpawnRes = { stderr: string[]; stdout: string[] }
-
-const findBin = (res: SpawnRes[], bin: Bin) =>
-  res.find(r => r.stdout[0]?.match(new RegExp(`${bin}@`)))
 
 const hasBinFile = (
   r: SpawnRes | undefined,
@@ -39,6 +36,21 @@ const publish = async (t: Test, argv: string[] = []) => {
   await t.mockImport<typeof import('../../src/bin/publish.js')>(
     '../../src/bin/publish.js',
     {
+      '../../src/matrix.js': await t.mockImport(
+        '../../src/matrix.js',
+        {
+          '../../src/compile.js': await t.mockImport(
+            '../../src/compile.js',
+            {
+              'node:child_process': {
+                spawnSync: () => ({
+                  status: 0,
+                }),
+              },
+            },
+          ),
+        },
+      ),
       'node:child_process': {
         spawnSync: (
           command: string,
@@ -86,43 +98,26 @@ const publish = async (t: Test, argv: string[] = []) => {
   }
 }
 
-await t.test('bins', async t => {
-  const { res } = await publish(t, ['--bins=all'])
-  t.equal(res.length, 4)
-  for (const [binName, output] of BinNames.map(
-    bin => [bin, findBin(res, bin)] as const,
-  )) {
-    if (binName === Bins.vlix) {
-      t.notOk(output)
-    } else {
-      const hasBins = BinNames.map(
-        bin => [bin, hasBinFile(output, bin)] as const,
-      )
-      if (binName === Bins.vlt) {
-        t.ok(Object.values(hasBins).every(Boolean))
-      } else {
-        for (const [hasBinName, hasBin] of hasBins) {
-          t[hasBinName === binName ? 'ok' : 'notOk'](
-            hasBin,
-            hasBinName,
-          )
-        }
-      }
-    }
-  }
-})
-
 await t.test('compile', async t => {
-  const { res } = await publish(t, ['--compile=true', '--bins=vlt'])
+  const { res } = await publish(t, ['--compile=true'])
   t.equal(res.length, 1)
   const hasBins = BinNames.map(bin => hasBinFile(res[0], bin, true))
   t.ok(hasBins.every(Boolean))
 })
 
 await t.test('format', async t => {
-  const { dirs } = await publish(t, ['--format=cjs'])
-  const pkg = JSON.parse(
-    readFileSync(join(dirs[0] ?? '', 'package.json'), 'utf8'),
-  )
-  t.equal(pkg.type, 'commonjs')
+  t.test('cjs', async t => {
+    const { dirs } = await publish(t, ['--format=cjs'])
+    const pkg = JSON.parse(
+      readFileSync(join(dirs[0] ?? '', 'package.json'), 'utf8'),
+    )
+    t.equal(pkg.type, 'commonjs')
+  })
+  t.test('esm', async t => {
+    const { dirs } = await publish(t, ['--format=esm'])
+    const pkg = JSON.parse(
+      readFileSync(join(dirs[0] ?? '', 'package.json'), 'utf8'),
+    )
+    t.equal(pkg.type, 'module')
+  })
 })

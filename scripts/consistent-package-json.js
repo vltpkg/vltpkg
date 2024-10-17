@@ -38,8 +38,7 @@ const skipCatalog = ({ name, spec, from, type }) => {
   return false
 }
 
-const isInternal = name =>
-  name.startsWith('@vltpkg/') || name === 'vlt'
+const isInternal = name => name.startsWith('@vltpkg/')
 
 const format = async (source, filepath) => {
   const options = await prettier.resolveConfig(filepath)
@@ -373,7 +372,7 @@ const fixPackage = async (ws, opts) => {
   ws.pj.private =
     (
       ws.isRoot ||
-      ws.pj.name === 'vlt' ||
+      ws.pj.name === '@vltpkg/cli' ||
       ws.workspaceDir === 'infra' ||
       ws.workspaceDir === 'www'
     ) ?

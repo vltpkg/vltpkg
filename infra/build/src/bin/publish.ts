@@ -24,37 +24,19 @@ const DATE_ID = `${Date.now()}`
 type Package = BundleDir | CompilationDir
 
 const parseArgs = () => {
-  const {
-    outdir,
-    forReal,
-    bins: binsArg = [types.DefaultBin],
-    ...matrix
-  } = nodeParseArgs({
+  const { outdir, forReal, ...matrix } = nodeParseArgs({
     options: {
       outdir: { type: 'string' },
       forReal: { type: 'boolean' },
-      bins: { type: 'string', multiple: true },
       ...matrixConfig,
     },
   }).values
-
-  const bins = binsArg.includes(types.All) ? types.BinNames : binsArg
-  assert(
-    bins.every(b => types.isBin(b)),
-    new Error('invalid bin', {
-      cause: {
-        found: bins,
-        wanted: types.BinNames,
-      },
-    }),
-  )
 
   return {
     /* c8 ignore next */
     outdir: resolve(outdir ?? '.publish'),
     /* c8 ignore next */
     npmArgs: forReal ? [] : ['--dry-run'],
-    bins,
     matrix: getMatrix(matrix),
   }
 }
@@ -106,24 +88,16 @@ const getToken = (bin: types.Bin) => {
   return token
 }
 
-const transformFile = <
-  T extends string,
-  U extends Record<string, any> | string = T extends (
-    `${infer _Prefix}.json`
-  ) ?
-    Record<string, any>
-  : string,
->(
+const transformJsonFile = <U extends Record<string, any>>(
   dir: string,
-  f: T,
+  f: string,
   t: (v: U) => U,
 ) => {
   const p = join(dir, f)
-  const transform = (s: string) =>
-    f.endsWith('.json') ?
-      JSON.stringify(t(JSON.parse(s)), null, 2)
-    : (t(s as U) as string)
-  return writeFileSync(p, transform(readFileSync(p, 'utf8')))
+  return writeFileSync(
+    p,
+    JSON.stringify(t(JSON.parse(readFileSync(p, 'utf8'))), null, 2),
+  )
 }
 
 const keysToObj = (arr: string[], t: (k: string) => string) =>
@@ -146,8 +120,6 @@ const writeFiles = (
     { dirs: [], files: [] },
   )
   const binPath = (p: string) => `${p}${compileId ? '' : '.js'}`
-  const replaceName = (s: string) =>
-    s.replaceAll(types.DefaultBin, name)
   writeFileSync(
     join(dir, '.npmrc'),
     `//registry.npmjs.org/:_authToken=\${${PUBLISH_TOKEN}}`,
@@ -155,25 +127,17 @@ const writeFiles = (
   for (const f of ['README.md', 'LICENSE', 'package.json']) {
     copyFileSync(join(Paths.CLI, f), join(dir, f))
   }
-  transformFile(dir, 'README.md', replaceName)
-  transformFile(dir, 'package.json', p => ({
+  transformJsonFile(dir, 'package.json', p => ({
     name,
     version: `${p.version}.${DATE_ID}`,
     type: format === types.Formats.Cjs ? 'commonjs' : 'module',
-    bin: keysToObj(
-      (name === types.DefaultBin ? types.BinNames : [name]).map(
-        v => v,
-      ),
-      binPath,
-    ),
+    bin: keysToObj(types.BinNames, binPath),
     files: [
       ...dirs.map(d => `${d}/`),
       ...files.filter(f => {
         const base = f.split('.')[0]
         const bin = types.isBin(base) ? base : null
-        if (bin && types.BinNames.includes(bin)) {
-          return name === types.DefaultBin ? true : bin === name
-        }
+        return bin && types.BinNames.includes(bin)
       }),
     ],
     ...keysToObj(['description', 'license', 'engines'], k => p[k]),
@@ -181,7 +145,7 @@ const writeFiles = (
 }
 
 const main = async () => {
-  const { outdir, matrix, npmArgs, bins } = parseArgs()
+  const { outdir, matrix, npmArgs } = parseArgs()
 
   rmSync(outdir, { recursive: true, force: true })
   const { bundles, compilations } = await generateMatrix({
@@ -196,16 +160,13 @@ const main = async () => {
   )
   assert(pkg, 'could not find package to publish')
 
-  for (const bin of bins) {
-    // XXX: skip vlix until we have a package name reserved for it
-    if (bin === types.Bins.vlix) continue
-    writeFiles(bin, pkg)
-    npm(pkg, ['publish', ...npmArgs], {
-      env: {
-        [PUBLISH_TOKEN]: getToken(bin),
-      },
-    })
-  }
+  const registryPackageToPublish = 'vlt'
+  writeFiles(registryPackageToPublish, pkg)
+  npm(pkg, ['publish', ...npmArgs], {
+    env: {
+      [PUBLISH_TOKEN]: getToken(registryPackageToPublish),
+    },
+  })
 }
 
 await main()
