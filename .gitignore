@@ -26,6 +26,7 @@
 
 /www/*/.tap
 /www/*/.astro
+/www/*/.vercel/
 /www/*/.turbo
 /www/*/dist
 /www/*/node_modules

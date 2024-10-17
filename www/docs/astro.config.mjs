@@ -3,7 +3,6 @@ import { defineConfig } from 'astro/config'
 import starlight from '@astrojs/starlight'
 import vercelStatic from '@astrojs/vercel/static'
 
-// https://astro.build/config
 export default defineConfig({
   integrations: [
     starlight({
@@ -14,10 +13,7 @@ export default defineConfig({
       sidebar: [
         {
           label: 'Guides',
-          items: [
-            // Each item here is one entry in the navigation menu.
-            { label: 'Example Guide', slug: 'guides/example' },
-          ],
+          items: [{ label: 'Example Guide', slug: 'guides/example' }],
         },
         {
           label: 'Reference',
