@@ -2,8 +2,10 @@ import t from 'tap'
 import {
   DependencyTypeLong,
   asDependency,
+  asDependencyTypeShort,
   dependencyTypes,
   isDependency,
+  isDependencyTypeShort,
   longDependencyTypes,
   shorten,
 } from '../src/dependencies.js'
@@ -103,5 +105,27 @@ t.test('asDependency', async t => {
     () => asDependency({}),
     /Invalid dependency/,
     'should throw if object is missing expected properties',
+  )
+})
+
+t.test('isDependencyTypeShort', async t => {
+  t.ok(
+    isDependencyTypeShort('prod'),
+    'should be ok if type is a valid short type',
+  )
+  t.notOk(
+    isDependencyTypeShort('unknown'),
+    'should not be ok if type is not a valid short type',
+  )
+})
+
+t.test('asDependencyTypeShort', async t => {
+  const type = asDependencyTypeShort('prod')
+  t.strictSame(type, 'prod', 'valid short type')
+
+  t.throws(
+    () => asDependencyTypeShort('unknown'),
+    /Invalid dependency type/,
+    'should throw if type is not a valid short type',
   )
 })

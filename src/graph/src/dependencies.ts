@@ -22,6 +22,22 @@ export type DependencyTypeShort =
   | 'peerOptional'
   | 'prod'
 
+export const isDependencyTypeShort = (
+  obj: any,
+): obj is DependencyTypeShort => shortDependencyTypes.has(obj)
+
+export const asDependencyTypeShort = (
+  obj: any,
+): DependencyTypeShort => {
+  if (!isDependencyTypeShort(obj)) {
+    throw error('Invalid dependency type', {
+      found: obj,
+      validOptions: [...shortDependencyTypes],
+    })
+  }
+  return obj
+}
+
 /**
  * Dependency entries info as defined in a package.json file.
  */
@@ -66,7 +82,7 @@ export type RemoveImportersDependenciesMap = Map<DepID, Set<string>>
 
 export const isDependency = (obj: any): obj is Dependency =>
   // TODO: it would be nice to have a @vltpkg/spec.isSpec method
-  obj?.spec?.type && obj?.type && shortDependencyTypes.has(obj?.type)
+  obj?.spec?.type && obj?.type && isDependencyTypeShort(obj?.type)
 
 export const asDependency = (obj: any): Dependency => {
   if (!isDependency(obj)) {
