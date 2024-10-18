@@ -1,10 +1,26 @@
-# `@vltpkg/fast-split`
+<section align="center">
+    <a href="https://www.vlt.sh">
+        <img src="https://github.com/user-attachments/assets/81436c4c-0c01-4200-a041-6de088ffdd67" />
+        <h1 align="center">
+            <strong>@vltpkg/fast-split</strong>
+        </h1>
+    </a>
+</section>
 
-This is a very fast alternative to `String.split()`, which can be
-used to quickly parse a small-to-medium sized string by a given
-delimiter.
 
-## HOW FAST IS IT!?
+<p align="center">
+    This is a very fast alternative to `String.split()`, which can be
+    used to quickly parse a small-to-medium sized string by a given
+    delimiter.
+</p>
+
+<p align="center">
+    <a href="#how-fast-is-it"><strong>It's fast</strong></a>
+    ·
+    <a href="#usage"><strong>Usage</strong></a>
+</p>
+
+## How Fast Is It!?
 
 This is about 10% faster for splitting short strings by a short delimiter.
 When we have to walk the resulting list for any reason, or limit the number
@@ -26,7 +42,7 @@ fastSplitEmptyCheck 11273.537
      fastSplitLimit 13257.948
 ```
 
-## USAGE
+## Usage
 
 ```js
 import { fastSplit } from '@vltpkg/fast-split'

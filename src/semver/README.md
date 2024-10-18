@@ -1,10 +1,24 @@
-# `@vltpkg/semver`
+<section align="center">
+    <a href="https://www.vlt.sh">
+        <img src="https://github.com/user-attachments/assets/6977bbfd-41ec-4740-b126-8ff190a7e953" />
+        <h1 align="center">
+            <strong>@vltpkg/semver</strong>
+        </h1>
+    </a>
+</section>
 
-<img src="https://github.com/darcyclarke/octofiles/assets/459713/8ee74129-34e6-4bd4-8686-82954f424709" width="85" />
 
-## Semantic Versions
+<p align="center">
+    A library for parsing, validating & comparing Semantic Versions used by `vlt`.
+</p>
 
-Parsing, validating & comparing Semantic Versions used by `vlt`.
+<p align="center">
+    <a href="#usage"><strong>Usage</strong></a>
+    ·
+    <a href="#functions"><strong>Functions</strong></a>
+    ·
+    <a href="#differences"><strong>Differences from node-semver</strong></a>
+</p>
 
 ## Usage
 
@@ -117,7 +131,9 @@ Unless otherwise noted, they throw an error on invalid versions.
   versions. This is an internal class, and should usually not be
   used directly.
 
-## Differences from `node-semver` (the one used by `npm`)
+## Differences
+
+### Differences from `node-semver` (the one used by `npm`)
 
 - The API is slightly different. Most notably, `@vltpkg/semver`
   lacks range intersection and other methods that are not needed

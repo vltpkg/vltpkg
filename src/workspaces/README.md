@@ -1,8 +1,23 @@
-# `@vltpkg/workspaces`
+<section align="center">
+    <a href="https://www.vlt.sh">
+        <img src="https://github.com/user-attachments/assets/71ecb5a9-9140-414b-9e57-39d652a56a8f" />
+        <h1 align="center">
+            <strong>@vltpkg/workspaces</strong>
+        </h1>
+    </a>
+</section>
 
-Utility for working with vlt workspaces.
+<p align="center">
+    Utilities for working with vlt workspaces.
+</p>
 
-## USAGE
+<p align="center">
+    <a href="#usage"><strong>Usage</strong></a>
+    ·
+    <a href="#run-order"><strong>Run Order</strong></a>
+</p>
+
+## Usage
 
 ```js
 import { Monorepo, Workspace } from '@vltpkg/workspaces'

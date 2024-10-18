@@ -1,12 +1,27 @@
-# `@vltpkg/registry-client`
+<section align="center">
+    <a href="https://www.vlt.sh">
+        <img src="https://github.com/user-attachments/assets/cb5bbe74-10c5-42b5-930e-32057aa5777d" />
+        <h1 align="center">
+            <strong>@vltpkg/registry-client</strong>
+        </h1>
+    </a>
+</section>
 
-This is a very light wrapper around undici, optimized for
-interfacing with an npm registry.
+<p align="center">
+    This is a very light wrapper around undici, optimized for interfacing with an npm registry.
+</p>
 
-Any response with `immutable` in the `cache-control` header, or
-with a `content-type` of `application/octet-stream` or a path
-ending in `.tgz`, will be cached forever and never requested
-again as long as the cache survives.
+<p align="center">
+    <a href="#cache-unzipped"><strong>Cache Unzipped</strong></a>
+    ·
+    <a href="#integrity-options"><strong>Integrity Options</strong></a>
+    ·
+    <a href="#usage"><strong>Usage</strong></a>
+</p>
+
+## Overview
+
+Any response with `immutable` in the `cache-control` header, or with a `content-type` of `application/octet-stream` or a path ending in `.tgz`, will be cached forever and never requested again as long as the cache survives.
 
 If the request has a cached response:
 
@@ -92,7 +107,7 @@ being cached. Typically, the integrity is related to the body of
 the response that a `@vltpkg/registry-client.CacheEntry` object
 represents.
 
-## USAGE
+## Usage
 
 ```js
 import { Cache } from '@vltpkg/cache'
