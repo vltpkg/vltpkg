@@ -1,6 +1,26 @@
-# `@vltpkg/git`
+<section align="center">
+    <a href="https://www.vlt.sh">
+        <img src="https://github.com/user-attachments/assets/36e6a81d-ef77-4b39-a33c-b5878e1cf996" />
+        <h1 align="center">
+            <strong>@vltpkg/git</strong>
+        </h1>
+    </a>
+</section>
 
-A utility for spawning git from npm CLI contexts.
+
+<p align="center">
+    A utility for spawning git from npm CLI contexts.
+</p>
+
+<p align="center">
+    <a href="#usage"><strong>Usage</strong></a>
+    ·
+    <a href="#api"><strong>API</strong></a>
+    ·
+    <a href="#options"><strong>Options</strong></a>
+</p>
+
+## Overview
 
 This is _not_ an implementation of git itself, it's just a thing that
 spawns child processes to tell the system git CLI implementation to do
@@ -8,7 +28,7 @@ stuff.
 
 Fork of `@npmcli/git`.
 
-## USAGE
+## Usage
 
 ```js
 import { clone, spawn } from '@vltpkg/git'
@@ -141,7 +161,7 @@ This will resolve `true` if the git working dir is clean, or
 `false` if not, and reject if the path is not within a git
 directory or some other error occurs.
 
-## OPTIONS
+## Options
 
 - `retry` An object to configure retry behavior for transient network
   errors with exponential backoff.

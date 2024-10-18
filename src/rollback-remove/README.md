@@ -1,10 +1,18 @@
-# `@vltpkg/rollback-remove`
+<section align="center">
+    <a href="https://www.vlt.sh">
+        <img src="https://github.com/user-attachments/assets/212bfa17-cbef-4403-a68a-dccadb1095e9" />
+        <h1 align="center">
+            <strong>@vltpkg/rollback-remove</strong>
+        </h1>
+    </a>
+</section>
 
-A utility for removing stuff, in such a way that the removal
-can be rolled back on failure, or confirmed and executed in a
-detached background process.
+<p align="center">
+    A utility for removing stuff, in such a way that the removal can be rolled back on failure, or confirmed and executed in a
+    detached background process.
+</p>
 
-## USAGE
+## Usage
 
 The best way to use this is to _not_ catch errors, but detect
 failure in a `finally` block and either confirm or roll back

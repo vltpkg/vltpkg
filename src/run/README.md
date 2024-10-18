@@ -1,10 +1,17 @@
-# `@vltpkg/run`
+<section align="center">
+    <a href="https://www.vlt.sh">
+        <img src="https://github.com/user-attachments/assets/27189c7c-4e52-4618-a0e9-4719838d8879" />
+        <h1 align="center">
+            <strong>@vltpkg/run</strong>
+        </h1>
+    </a>
+</section>
 
-Run a script defined in a `package.json` file (eg, `vlt run` and
-lifecycle scripts), or an arbitrary command as if it was (eg,
-`vlt exec`).
+<p align="center">
+    Run a script defined in a `package.json` file (eg, `vlt run` and lifecycle scripts), or an arbitrary command as if it was (eg, `vlt exec`).
+</p>
 
-## USAGE
+## Usage
 
 ```js
 import { run, exec } from '@vltpkg/run'

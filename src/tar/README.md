@@ -1,13 +1,30 @@
-# `@vltpkg/tar`
+<section align="center">
+    <a href="https://www.vlt.sh">
+        <img src="https://github.com/user-attachments/assets/0be3e9b6-c61c-4022-b8a6-2344dc4f452e" />
+        <h1 align="center">
+            <strong>@vltpkg/tar</strong>
+        </h1>
+    </a>
+</section>
 
-If you are unpacking anything other than npm packages, in
-precisely the way that [vlt](https://vlt.sh) does, then this is
+<p align="center">
+    A library for unpacking JavaScript package tarballs (gzip-compressed or raw) into a specified folder.
+</p>
+
+<p align="center">
+    <a href="#usage"><strong>Usage</strong></a>
+    ·
+    <a href="#caveats"><strong>Caveats</strong></a>
+</p>
+
+## Overview
+
+If you are unpacking anything other than npm packages, in precisely the way that [vlt](https://vlt.sh) does, then this is
 probably not what you're looking for.
 
-For a very complete and battle-tested generic tar implementation
-in JavaScript, see [node-tar](http://npm.im/tar).
+For a very complete and battle-tested generic tar implementation in JavaScript, see [node-tar](http://npm.im/tar).
 
-## USAGE
+## Usage
 
 ### unpack(tarData, targetFolder)
 
@@ -63,7 +80,7 @@ using synchronous I/O in a worker thread.
 
 Promise resolves when this unpack request has been completed.
 
-## CAVEATS
+## Caveats
 
 As stated above, **this is not a general purpose tar
 implementation**. It does not handle symbolic links at all (those

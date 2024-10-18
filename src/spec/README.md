@@ -1,6 +1,27 @@
-# `@vltpkg/spec`
+<section align="center">
+    <a href="https://www.vlt.sh">
+        <img src="https://github.com/user-attachments/assets/78080e6c-0935-4c2f-b6b0-3376be5c32ac" />
+        <h1 align="center">
+            <strong>@vltpkg/spec</strong>
+        </h1>
+    </a>
+</section>
 
-This is a library for parsing **package specifiers**.
+<p align="center">
+    This is a library for parsing **package specifiers**.
+</p>
+
+<p align="center">
+    <a href="#named-vs-unnamed"><strong>Namings</strong></a>
+    ·
+    <a href="#types-of-specifiers"><strong>Specifiers</strong></a>
+    ·
+    <a href="#usage"><strong>Usage</strong></a>
+    ·
+    <a href="#properties"><strong>Properties</strong></a>
+</p>
+
+## Overview
 
 Specifiers are primarily used in the following cases:
 
@@ -89,7 +110,7 @@ The following specifier types are supported:
 - Anything else will be treated as a `dist-tag` in the registry
   packument. For example, `foo@latest` or `blah@legacy-v2`
 
-## USAGE
+## Usage
 
 ```js
 import { Spec, type SpecOptions } from '@vltpkg/spec'

@@ -1,10 +1,17 @@
-# `@vltpkg/xdg`
+<section align="center">
+    <a href="https://www.vlt.sh">
+        <img src="https://github.com/user-attachments/assets/65e1d69f-f780-492f-b57d-15b4170c9557" />
+        <h1 align="center">
+            <strong>@vltpkg/xdg</strong>
+        </h1>
+    </a>
+</section>
 
-Get appropriate data, cache, and config directories following the
-[XDG spec](https://wiki.archlinux.org/title/XDG_Base_Directory),
-namespaced to a specific app-name subfolder.
+<p align="center">
+    Get appropriate data, cache, and config directories following the [XDG spec](https://wiki.archlinux.org/title/XDG_Base_Directory), namespaced to a specific app-name subfolder.
+</p>
 
-## USAGE
+## Usage
 
 ```js
 import XDG from '@vltpkg/xdg'

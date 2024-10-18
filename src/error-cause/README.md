@@ -1,9 +1,40 @@
-# `@vltpkg/error-cause`
+<section align="center">
+    <a href="https://www.vlt.sh">
+        <img src="https://github.com/user-attachments/assets/48bd23bd-301f-45d8-b9da-be92a66ac8e4" />
+        <h1 align="center">
+            <strong>@vltpkg/error-cause</strong>
+        </h1>
+    </a>
+</section>
 
-Utility functions for `Error` creation to help enforce vlt's
-`Error.cause` conventions.
+<p align="center">
+    Utility functions for `Error` creation to help enforce vlt's `Error.cause` conventions.
+</p>
 
-## USAGE
+<p align="center">
+    <a href="#usage"><strong>Usage</strong></a>
+    ·
+    <a href="#challenges-of-error-reporting"><strong>Error Reporting</strong></a>
+    ·
+    <a href="#conventions"><strong>Conventions</strong></a>
+    ·
+    <a href="#error-types"><strong>Error Types</strong></a>
+</p>
+
+## Why
+
+Most node programs have a mishmash of error codes and various
+`Error` subtypes, all in different shapes, making error handling
+and reporting more difficult at the top level. This negatively
+impacts debugging and user experience.
+
+The JavaScript `Error` constructor has a [`cause`
+option](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error/cause)
+which is supported since Node 16.9. We should use it!
+
+This module makes that easy.
+
+## Usage
 
 ```js
 import { error, typeError } from '@vltpkg/error-cause'
@@ -49,19 +80,6 @@ const checkBar = () => {
 The functions will create an error object with a `cause` property
 if set, and the type checks will ensure that the `cause` object
 matches vlt's conventions.
-
-## Why
-
-Most node programs have a mishmash of error codes and various
-`Error` subtypes, all in different shapes, making error handling
-and reporting more difficult at the top level. This negatively
-impacts debugging and user experience.
-
-The JavaScript `Error` constructor has a [`cause`
-option](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error/cause)
-which is supported since Node 16.9. We should use it!
-
-This module makes that easy.
 
 ## Challenges of Error Reporting
 
@@ -274,7 +292,7 @@ Just use the `Error` classes defined in the language. Additional
 information about error causes should be on the `cause` property,
 not implicit in the constructor type.
 
-Ie, do not do this:
+I.e. do not do this:
 
 ```
 class VersionError extends Error {

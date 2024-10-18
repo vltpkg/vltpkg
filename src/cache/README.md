@@ -1,15 +1,30 @@
-# `@vltpkg/cache`
+<section align="center">
+    <a href="https://www.vlt.sh">
+        <img src="https://github.com/user-attachments/assets/2a0cec02-bfae-441b-86af-be2a13eec93f" />
+        <h1 align="center">
+            <strong>@vltpkg/cache</strong>
+        </h1>
+    </a>
+</section>
 
-The filesystem cache for `@vlt/registry-client`, but also, a
-general-purpose filesystem-backed
-[LRUCache](http://npm.im/lru-cache).
+<p align="center">
+    The filesystem cache for <code>@vlt/registry-client</code>, but also, a
+    general-purpose filesystem-backed <a href="http://npm.im/lru-cache">LRUCache</a>.
+</p>
 
-This is very minimal on features, because it has a very narrow
-use case, but if you want to have a persistently fs-backed LRU
+<p align="center">
+    <a href="#usage"><strong>Usage</strong></a>
+    ·
+    <a href="#note"><strong>Note</strong></a>
+</p>
+
+## Overview
+
+This is very minimal on features, because it has a very narrow use case, but if you want to have a persistently fs-backed LRU
 memory cache of Buffers using strings as keys, then this is the
 thing to use.
 
-## USAGE
+## Usage
 
 ```js
 import { Cache } from '@vltpkg/cache'
@@ -61,9 +76,7 @@ const otherValue = await cache.fetch(otherKey, {
 })
 ```
 
-Note:
+## Note
 
-- The key type _must_ be a string. It gets `sha512` hashed to
-  determine the file on disk.
-- The value must be a Buffer, so that it can be written to a
-  file and read from it without having to convert anything.
+- The key type must be a string. It gets sha512 hashed to determine the file on disk.
+- The value must be a Buffer, so that it can be written to a file and read from it without having to convert anything.

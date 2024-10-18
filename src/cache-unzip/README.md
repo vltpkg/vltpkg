@@ -1,9 +1,23 @@
-# `@vltpkg/cache-unzip`
+<section align="center">
+    <a href="https://www.vlt.sh">
+        <img src="https://github.com/user-attachments/assets/2772ef7c-9a0e-4bbc-8581-6055ffe17eaf" />
+        <h1 align="center">
+            <strong>@vltpkg/cache-unzip</strong>
+        </h1>
+    </a>
+</section>
 
-This is a script that can be run as a detached background process
-to un-gzip any cached response bodies in the vlt cache.
+<p align="center">
+This is a script that can be run as a detached background process to un-gzip any cached response bodies in the vlt cache.
+</p>
 
-## USAGE
+<p align="center">
+  <a href="#usage"><strong>Usage</strong></a>
+	·
+  <a href="#why-do-this"><strong>Why Do This?</strong></a>
+</p>
+
+## Usage
 
 Whenever you get a cache entry with a gzipped body, tell this
 module about it.
@@ -25,13 +39,10 @@ if (response.isGzip) {
 }
 ```
 
-On process exit, these registered keys will be passed as
-arguments to a detached deref'ed `vlt-cache-unzip` process. So,
-the main program exits normally, but the worker ignores the
-`SIGHUP` and keeps going until it's done. The next time that
+On process exit, these registered keys will be passed as arguments to a detached deref'ed `vlt-cache-unzip` process. So,
+the main program exits normally, but the worker ignores the `SIGHUP` and keeps going until it's done. The next time that
 cache entry is read, it won't have to be unzipped.
 
 ## Why Do This
 
-Because it's faster to not have to decompress the same content
-more times than necessary.
+Because it's faster to not have to decompress the same content more times than necessary.
