@@ -1,15 +1,29 @@
-# `@vltpkg/which`
+<section align="center">
+    <a href="https://www.vlt.sh">
+        <img src="https://github.com/user-attachments/assets/8f53fd72-9f87-4a2e-8f09-585a6f0e8d6a" />
+        <h1 align="center">
+            <strong>@vltpkg/which</strong>
+        </h1>
+    </a>
+</section>
 
-Like the unix `which` utility.
+<p align="center">
+    Like the unix `which` utility.
+</p>
 
-Finds the first instance of a specified executable in the PATH
-environment variable. Does not cache the results, so `hash -r` is not
-needed when the PATH changes.
+<p align="center">
+    <a href="#usage"><strong>Usage</strong></a>
+    ·
+    <a href="#options"><strong>Options</strong></a>
+</p>
 
-Port of the [`which`](http://npm.im/which) to a TypeScript hybrid
-module.
+## Overview
 
-## USAGE
+Finds the first instance of a specified executable in the PATH environment variable. Does not cache the results, so `hash -r` is not needed when the PATH changes.
+
+Port of the [`which`](http://npm.im/which) to a TypeScript hybrid module.
+
+## Usage
 
 ```js
 import { which, whichSync } from '@vltpkg/which'
@@ -32,7 +46,7 @@ const resolvedOrNull = whichSync('node', { nothrow: true })
 await which('node', { path: someOtherPath, pathExt: somePathExt })
 ```
 
-## OPTIONS
+## Options
 
 You may pass an options object as the second argument.
 

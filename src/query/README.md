@@ -1,6 +1,23 @@
-# @vltkpkg/query
+<section align="center">
+    <a href="https://www.vlt.sh">
+        <img src="https://github.com/user-attachments/assets/4bd8caf0-3fc0-48db-b9d0-b2a133f44467" />
+        <h1 align="center">
+            <strong>@vltpkg/query</strong>
+        </h1>
+    </a>
+</section>
 
-The **vlt** query syntax engine.
+<p align="center">
+    The **vlt** query syntax engine.
+</p>
+
+<p align="center">
+    <a href="#usage"><strong>Usage</strong></a>
+    ·
+    <a href="#examples"><strong>Examples</strong></a>
+    ·
+    <a href="#supported-syntax-reference"><strong>Supported Syntax Reference</strong></a>
+</p>
 
 ## Usage
 

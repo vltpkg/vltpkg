@@ -1,8 +1,26 @@
-# `@vltpkg/promise-spawn`
+<section align="center">
+    <a href="https://www.vlt.sh">
+        <img src="https://github.com/user-attachments/assets/74784105-f0d8-49ce-a14b-1c9142cfbfda" />
+        <h1 align="center">
+            <strong>@vltpkg/promise-spawn</strong>
+        </h1>
+    </a>
+</section>
 
-Spawn a process and return a promise that resolves when the
-process closes. Fork of
-[`@npmcli/promise-spawn`](http://npm.im/@npmcli/promise-spawn)
+<p align="center">
+    Spawn a process and return a promise that resolves when the process closes.
+    <br/>
+    Fork of
+    [`@npmcli/promise-spawn`](http://npm.im/@npmcli/promise-spawn)
+</p>
+
+<p align="center">
+    <a href="#usage"><strong>Usage</strong></a>
+    ·
+    <a href="#api"><strong>API</strong></a>
+    ·
+    <a href="#typescript-inference-caveats"><strong>Caveats</strong></a>
+</p>
 
 ## Differences from `@npmcli/promise-spawn`
 
@@ -18,7 +36,7 @@ process closes. Fork of
   of `stdout` and `stderr` properties, as well as the properties
   added via the optional `extra` argument.
 
-## USAGE
+## Usage
 
 ```js
 import { promiseSpawn, SpawnPromise } from '@vltpkg/promise-spawn'
@@ -81,7 +99,9 @@ spawned process.
 - Any other options for `child_process.spawn` can be passed as
   well.
 
-## TypeScript Inference Caveat (and workaround)
+## TypeScript Inference Caveats
+
+_Workaround:_
 
 If you provide a complex stdio option like `['pipe', 'inherit']`,
 then this will of course mean that `stdin` is set to a writable

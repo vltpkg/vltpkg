@@ -1,10 +1,17 @@
-# `@vltpkg/types`
+<section align="center">
+    <a href="https://www.vlt.sh">
+        <img src="https://github.com/user-attachments/assets/c81fb214-e03f-407a-ad3c-47b1fa4078af" />
+        <h1 align="center">
+            <strong>@vltpkg/types</strong>
+        </h1>
+    </a>
+</section>
 
-A module for a handful of core types that are used
-throughout vlt extensively, and don't belong to any one
-particular implementation.
+<p align="center">
+    A module for a handful of core types that are used throughout vlt extensively, and don't belong to any one particular implementation.
+</p>
 
-## USAGE
+## Usage
 
 ```js
 import {
