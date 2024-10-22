@@ -28,11 +28,7 @@ export enum UNIT {
   s = 's',
 }
 
-export const SOURCE = resolve(
-  import.meta.dirname,
-  '..',
-  '.artificats',
-)
+export const SOURCE = resolve(import.meta.dirname, '..', '.artifacts')
 
 export const timePromises = async <T>(
   items: T[],
@@ -40,14 +36,15 @@ export const timePromises = async <T>(
 ) => {
   const start = hrtime.bigint()
   const promises = []
-  let errors = 0
+  const errors: unknown[] = []
   for (const item of items) {
-    promises.push(fn(item).catch(() => (errors += 1)))
+    promises.push(fn(item).catch((e: unknown) => errors.push(e)))
   }
   await Promise.all(promises)
   return {
     time: Number(hrtime.bigint() - start),
-    errors,
+    errors: errors.length,
+    fullErrors: errors,
   }
 }
 
@@ -118,10 +115,12 @@ export const copyTarballs = (d: string) => copyFixtures(d, EXT.tgz)
 
 export const copyPackuments = (d: string) => copyFixtures(d, EXT.json)
 
-export const resetDir = (dir: string) => {
-  try {
-    rmSync(dir, { recursive: true })
-  } catch {}
-  mkdirSync(dir, { recursive: true })
+export const resetDir = (...dirs: string[]) => {
+  for (const dir of dirs) {
+    try {
+      rmSync(dir, { recursive: true, force: true })
+    } catch {}
+    mkdirSync(dir, { recursive: true })
+  }
 }
 /* c8 ignore stop */
