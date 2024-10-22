@@ -1,23 +1,12 @@
-import { error } from '@vltpkg/error-cause'
+import { error, ErrorCauseObject } from '@vltpkg/error-cause'
 import os from 'os'
-import { Worker } from 'worker_threads'
 import { UnpackRequest } from './unpack-request.js'
-import { __CODE_SPLIT_SCRIPT_NAME } from './worker.js'
-
-export type ResponseOK = { id: number; ok: true }
-export const isResponseOK = (o: any): o is ResponseOK =>
-  !!o &&
-  typeof o === 'object' &&
-  typeof o.id === 'number' &&
-  o.ok === true
-
-export type ResponseError = { id: number; error: string }
-export const isResponseError = (o: any): o is ResponseError =>
-  !!o &&
-  typeof o === 'object' &&
-  typeof o.id === 'number' &&
-  typeof o.error === 'string' &&
-  o.ok !== true
+import {
+  isResponseOK,
+  ResponseError,
+  ResponseOK,
+  Worker,
+} from './worker.js'
 
 /**
  * Automatically expanding/contracting set of workers to maximize parallelism
@@ -33,7 +22,7 @@ export class Pool {
    * CPUs, or 1.
    */
   /* c8 ignore next */
-  jobs: number = Math.max(os.availableParallelism(), 2) - 1
+  jobs: number = 8 * (Math.max(os.availableParallelism(), 2) - 1)
   /**
    * Set of currently active worker threads
    */
@@ -60,50 +49,28 @@ export class Pool {
       ur.resolve()
       /* c8 ignore start - nearly impossible in normal circumstances */
     } else {
-      ur.reject(
-        error(m.error || 'failed without error message', {
-          found: m,
-        }),
-      )
+      const er =
+        m.error instanceof Error ? m.error.message : String(m.error)
+      const cause: ErrorCauseObject = { found: m }
+      if (m.error instanceof Error) cause.cause = m.error
+      ur.reject(error(er || 'failed without error message', cause))
     }
     /* c8 ignore stop */
     const next = this.queue.shift()
     if (!next) {
       this.workers.delete(w)
-      void w.terminate()
-    } else this.#request(w, next)
-  }
-
-  // send a request to a worker
-  #request(w: Worker, req: UnpackRequest) {
-    const { tarData: raw, target, id } = req
-    const tarData =
-      (
-        raw.byteOffset === 0 &&
-        raw.byteLength === raw.buffer.byteLength
-      ) ?
-        raw.buffer
-      : raw.buffer.slice(
-          raw.byteOffset,
-          raw.byteOffset + raw.byteLength,
-        )
-
-    w.postMessage(
-      {
-        tarData,
-        target,
-        id,
-      },
-      [tarData],
-    )
+    } else {
+      void w.process(next)
+    }
   }
 
   // create a new worker
-  async #createWorker(req: UnpackRequest) {
-    const w = new Worker(__CODE_SPLIT_SCRIPT_NAME)
+  #createWorker(req: UnpackRequest) {
+    const w: Worker = new Worker((m: ResponseError | ResponseOK) =>
+      this.#onMessage(w, m),
+    )
     this.workers.add(w)
-    w.addListener('message', (m: any) => this.#onMessage(w, m))
-    this.#request(w, req)
+    void w.process(req)
   }
 
   /**
@@ -117,7 +84,7 @@ export class Pool {
     const ur = new UnpackRequest(tarData, target)
     this.pending.set(ur.id, ur)
     if (this.workers.size < this.jobs) {
-      void this.#createWorker(ur)
+      this.#createWorker(ur)
     } else {
       this.queue.push(ur)
     }
