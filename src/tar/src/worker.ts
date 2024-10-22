@@ -1,36 +1,35 @@
-import { isMainThread, parentPort, MessagePort } from 'worker_threads'
+import { UnpackRequest } from './unpack-request.js'
 import { unpack } from './unpack.js'
 
-export const __CODE_SPLIT_SCRIPT_NAME = import.meta.filename.replace(
-  /\.ts$/,
-  '.js',
-)
+export type ResponseError = { id: number; error: unknown }
+export type ResponseOK = { id: number; ok: true }
 
-// this is the code that runs in the worker thread
-/* c8 ignore start - V8 coverage can't see into worker threads */
-const main = (pp: MessagePort) => {
-  const onMessage = ({
-    id,
-    tarData,
-    target,
-  }: {
-    id: string
-    tarData?: Buffer
-    target?: string
-  }) => {
-    if (
-      !(tarData instanceof ArrayBuffer) ||
-      typeof target !== 'string'
-    ) {
-      return pp.postMessage({ id, error: 'invalid arguments' })
-    }
-    unpack(Buffer.from(tarData), target)
-    pp.postMessage({ id, ok: true })
+export const isResponseOK = (o: any): o is ResponseOK =>
+  !!o &&
+  typeof o === 'object' &&
+  typeof o.id === 'number' &&
+  o.ok === true
+
+/**
+ * Basically just a queue of unpack requests,
+ * to keep them throttled to a reasonable amount of parallelism
+ */
+export class Worker {
+  onMessage: (m: ResponseError | ResponseOK) => void
+
+  constructor(onMessage: (m: ResponseError | ResponseOK) => void) {
+    this.onMessage = onMessage
   }
-  pp.on('message', onMessage)
-}
 
-if (!isMainThread && parentPort) {
-  main(parentPort)
+  async process(req: UnpackRequest) {
+    const { target, tarData, id } = req
+    try {
+      await unpack(tarData, target)
+      const m: ResponseOK = { id, ok: true }
+      this.onMessage(m)
+    } catch (error) {
+      const m: ResponseError = { id, error }
+      this.onMessage(m)
+    }
+  }
 }
-/* c8 ignore stop */

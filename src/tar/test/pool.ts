@@ -1,9 +1,6 @@
 import t from 'tap'
-import {
-  isResponseError,
-  isResponseOK,
-  Pool,
-} from '../dist/esm/pool.js'
+import { isResponseOK } from '../src/worker.js'
+import { Pool } from '../src/pool.js'
 
 import { lstatSync } from 'fs'
 import { availableParallelism } from 'os'
@@ -11,7 +8,10 @@ import { resolve } from 'path'
 import { makeTar } from './fixtures/make-tar.js'
 
 const p = new Pool()
-t.equal(p.jobs, Math.max(availableParallelism(), 2) - 1)
+t.equal(p.jobs, 8 * (Math.max(availableParallelism(), 2) - 1))
+
+// make it smaller so we can cover the contention cases
+p.jobs = 2
 
 const makePkg = (name: string, version: string): Buffer => {
   const pj = { name, version }
@@ -113,10 +113,7 @@ t.test('unpack all the things, but flattened', async t => {
 
 t.test('response ok/error checking', t => {
   t.equal(isResponseOK({ id: 1, ok: true }), true)
-  t.equal(isResponseError({ id: 1, error: 'asdf' }), true)
-  t.equal(isResponseError({ id: 1, ok: true }), false)
   t.equal(isResponseOK({ id: 1, error: 'x' }), false)
   t.equal(isResponseOK({ ok: true }), false, 'id required')
-  t.equal(isResponseError({ error: 'x' }), false, 'id required')
   t.end()
 })

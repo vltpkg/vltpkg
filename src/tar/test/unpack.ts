@@ -1,6 +1,4 @@
 import { lstatSync, readFileSync } from 'fs'
-//@ts-expect-error
-import mutateFS from 'mutate-fs'
 import { resolve } from 'path'
 import t, { Test } from 'tap'
 import { Pax } from 'tar'
@@ -79,7 +77,7 @@ const tarball = makeTar([
 const gzipped = gzipSync(tarball)
 
 t.test('unpack into a dir', t => {
-  const check = (t: Test) => {
+  const check = async (t: Test) => {
     t.throws(() => lstatSync(resolve('ignore/absolute/paths')))
     const d = t.testdirName
     t.equal(lstatSync(d + '/package.json').isFile(), true)
@@ -95,16 +93,16 @@ t.test('unpack into a dir', t => {
     t.throws(() => lstatSync(d + '/../outside/directory'))
     t.equal(readFileSync(d + '/asdfasdfasdfasdf', 'utf8'), 'a')
 
-    t.throws(
+    await t.rejects(
       () => unpack(tarball.subarray(0, tarball.length - 1024), d),
       {
         message: 'Invalid tarball: not terminated by 1024 null bytes',
       },
     )
-    t.throws(() => unpack(Buffer.alloc(512), d), {
+    await t.rejects(() => unpack(Buffer.alloc(512), d), {
       message: 'Invalid tarball: not terminated by 1024 null bytes',
     })
-    t.throws(() => unpack(Buffer.alloc(5), d), {
+    await t.rejects(() => unpack(Buffer.alloc(5), d), {
       message: 'Invalid tarball: length not divisible by 512',
     })
     // got path overridden with pax header
@@ -117,35 +115,35 @@ t.test('unpack into a dir', t => {
     t.end()
   }
 
-  t.test('buffer', t => {
-    unpack(tarball, t.testdir())
-    check(t)
+  t.test('buffer', async t => {
+    await unpack(tarball, t.testdir())
+    await check(t)
   })
 
-  t.test('buffer, folder does not exist yet', t => {
-    unpack(tarball, t.testdirName)
-    check(t)
+  t.test('buffer, folder does not exist yet', async t => {
+    await unpack(tarball, t.testdirName)
+    await check(t)
   })
 
-  t.test('gzipped', t => {
-    unpack(gzipped, t.testdir())
-    check(t)
+  t.test('gzipped', async t => {
+    await unpack(gzipped, t.testdir())
+    await check(t)
   })
 
-  t.test('Uint8Array', t => {
-    unpack(new Uint8Array(tarball), t.testdir())
-    check(t)
-  })
-
-  t.test('ArrayBuffer', t => {
-    unpack(new Uint8Array(tarball).buffer, t.testdir())
-    check(t)
-  })
-
-  t.test('errors do not leave garbage lying around', t => {
+  t.test('errors do not leave garbage lying around', async t => {
     const dir = t.testdir({ still: 'here' })
-    t.teardown(mutateFS.fail('write', new Error('poop')))
-    t.throws(() => unpack(tarball, dir), new Error('poop'))
+    const FSP = await import('node:fs/promises')
+    const poop = new Error('poop')
+    const { unpack } = await t.mockImport<
+      typeof import('../src/unpack.js')
+    >('../src/unpack.js', {
+      'node:fs/promises': t.createMock(FSP, {
+        writeFile: async () => {
+          throw poop
+        },
+      }),
+    })
+    await t.rejects(() => unpack(tarball, dir), poop)
     t.equal(readFileSync(dir + '/still', 'utf8'), 'here')
     t.end()
   })
