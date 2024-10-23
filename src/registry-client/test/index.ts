@@ -35,15 +35,16 @@ const registry = createServer((req, res) => {
     res.setHeader('location', location)
     return res.end(JSON.stringify({ location }))
   }
+
   if (req.headers['if-none-match'] === etag) {
-    res.statusCode = 306
+    res.statusCode = 304
     return res.end('not modified (and this is not valid json)')
   }
   const ifs = req.headers['if-modified-since']
   if (ifs) {
     const difs = new Date(ifs)
     if (difs > date) {
-      res.statusCode = 306
+      res.statusCode = 304
       return res.end()
     }
   }
@@ -99,6 +100,16 @@ t.test('make a request', { saveFixture: true }, async t => {
 
   const res2 = await rc.request(`${registryURL}/abbrev`)
   t.strictSame(res2.json(), { hello: 'world' })
+
+  // make it look like an old cache entry that's an etag match
+  res2.setHeader('date', new Date('2020-01-01').toISOString())
+  const { origin, pathname } = new URL(`${registryURL}/abbrev`)
+  const key = JSON.stringify([origin, 'GET', pathname])
+  rc.cache.set(key, res2.encode())
+
+  // make a cache hit request
+  const hit = await rc.request(`${registryURL}/abbrev`)
+  t.strictSame(hit, res2)
 })
 
 t.test('register unzipping for gzip responses', async t => {
@@ -117,7 +128,7 @@ t.test('register unzipping for gzip responses', async t => {
   t.strictSame(registered, [
     [
       t.testdirName,
-      JSON.stringify([registryURL, 'GET', '/some/tarball', null]),
+      JSON.stringify([registryURL, 'GET', '/some/tarball']),
     ],
   ])
 })

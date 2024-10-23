@@ -3,14 +3,15 @@ import { register } from '@vltpkg/cache-unzip'
 import { Integrity } from '@vltpkg/types'
 import { XDG } from '@vltpkg/xdg'
 import { loadPackageJson } from 'package-json-from-dist'
-import { Client, Dispatcher, Pool } from 'undici'
+import { Agent, Dispatcher } from 'undici'
 import { addHeader } from './add-header.js'
 import { CacheEntry } from './cache-entry.js'
-import { cacheInterceptor } from './cache-interceptor.js'
 import { bun, deno, node } from './env.js'
+import { handle304Response } from './handle-304-response.js'
 import { isRedirect, redirect } from './redirect.js'
+import { setCacheHeaders } from './set-cache-headers.js'
 
-export { CacheEntry, cacheInterceptor }
+export { type CacheEntry }
 
 export type RegistryClientOptions = {
   /**
@@ -71,10 +72,26 @@ const nua =
   : '(unknown platform)')
 export const userAgent = `@vltpkg/registry-client/${version} ${nua}`
 
+const agentOptions: Agent.Options = {
+  bodyTimeout: 600_000,
+  headersTimeout: 600_000,
+  keepAliveMaxTimeout: 1_200_000,
+  keepAliveTimeout: 600_000,
+  keepAliveTimeoutThreshold: 30_000,
+  connect: {
+    timeout: 600_000,
+    keepAlive: true,
+    keepAliveInitialDelay: 30_000,
+    sessionTimeout: 600,
+  },
+  connections: 128,
+  pipelining: 10,
+}
+
 const xdg = new XDG('vlt')
 
 export class RegistryClient {
-  pools = new Map<string, Pool>()
+  agent: Agent
   cache: Cache
 
   constructor({
@@ -86,6 +103,7 @@ export class RegistryClient {
         if (CacheEntry.decode(data).isGzip) register(cache, key)
       },
     })
+    this.agent = new Agent(agentOptions)
   }
 
   async request(
@@ -93,31 +111,36 @@ export class RegistryClient {
     options: RegistryClientRequestOptions = {},
   ): Promise<CacheEntry> {
     const u = typeof url === 'string' ? new URL(url) : url
-    const { maxRedirections = 10, redirections = new Set() } = options
+    const {
+      method = 'GET',
+      integrity,
+      redirections = new Set(),
+    } = options
+
+    // first, try to get from the cache before making any request.
+    const { origin, pathname } = u
+    const key = JSON.stringify([origin, method, pathname])
+    const buffer = await this.cache.fetch(key, {
+      context: { integrity },
+    })
+
+    const entry = buffer ? CacheEntry.decode(buffer) : undefined
+    if (entry?.valid) return entry
+    // TODO: stale-while-revalidate timeout, say 1 day, where we'll
+    // use the cached response even if it's invalid, and validate
+    // in the background without waiting for it.
+
+    // either no cache entry, or need to revalidate it.
+    setCacheHeaders(options, entry)
+
     redirections.add(String(url))
+
     Object.assign(options, {
       path: u.pathname.replace(/\/+$/, '') + u.search,
-      cache: this.cache,
-      maxRedirections,
-      redirections,
-      timeout: 600_000,
-      bodyTimeout: 600_000,
-      headersTimeout: 600_000,
-      keepAliveMaxTimeout: 1_200_000,
-      keepAliveTimeout: 60_000,
-      keepAliveTimeoutThreshold: 30_000,
-      keepAliveInitialDelay: 30_000,
-      connect: { timeout: 60_000 },
+      ...agentOptions,
     })
+
     options.origin = u.origin
-    const pool =
-      this.pools.get(options.origin) ??
-      new Pool(options.origin, {
-        ...(options as Pool.Options),
-        factory: (origin, opts) =>
-          new Client(origin, opts).compose(cacheInterceptor),
-      })
-    this.pools.set(options.origin, pool)
     options.headers = addHeader(
       addHeader(
         options.headers,
@@ -128,54 +151,61 @@ export class RegistryClient {
       userAgent,
     )
     options.method = options.method ?? 'GET'
-    // do not await, or else stack overflow happens
-    return new Promise<CacheEntry>((res, rej) => {
-      let entry: CacheEntry
-      pool.dispatch(options as Dispatcher.DispatchOptions, {
-        onHeaders: (sc, h, resume) => {
-          entry = new CacheEntry(sc, h, options.integrity)
-          resume()
-          return true
-        },
-        onData: chunk => {
-          entry.addBody(chunk)
-          return true
-        },
-        onError: rej,
-        onComplete: () => {
-          if (isRedirect(entry)) {
-            try {
-              const [nextURL, nextOptions] = redirect(
-                options,
-                entry,
-                u,
-              )
-              if (nextOptions && nextURL) {
-                res(this.request(nextURL, nextOptions))
-                return true
-              } else {
-                res(entry)
-                return true
-              }
-            } catch (er) {
-              if (er instanceof Error) {
-                rej(er)
-                /* c8 ignore start */
-              } else {
-                rej(
-                  new Error(
-                    typeof er === 'string' ? er : 'Unknown error',
-                  ),
-                )
-              }
-              /* c8 ignore stop */
-              return true
-            }
+
+    const result = await new Promise<Dispatcher.ResponseData>(
+      (res, rej) => {
+        /* c8 ignore start - excessive type setting for eslint */
+        this.agent
+          .request(options as Dispatcher.RequestOptions)
+          .then(res)
+          .catch((er: unknown) => rej(er as Error))
+        /* c8 ignore stop */
+      },
+    ).then(resp => {
+      if (handle304Response(resp, entry)) return entry
+
+      const h: Buffer[] = []
+      for (const [key, value] of Object.entries(resp.headers)) {
+        /* c8 ignore start - theoretical */
+        if (Array.isArray(value)) {
+          h.push(Buffer.from(key), Buffer.from(value.join(', ')))
+          /* c8 ignore stop */
+        } else if (typeof value === 'string') {
+          h.push(Buffer.from(key), Buffer.from(value))
+        }
+      }
+      const result = new CacheEntry(
+        /* c8 ignore next - should always have a status code */
+        resp.statusCode || 200,
+        h,
+        options.integrity,
+      )
+
+      if (isRedirect(result)) {
+        resp.body.resume()
+        try {
+          const [nextURL, nextOptions] = redirect(options, result, u)
+          if (nextOptions && nextURL) {
+            return this.request(nextURL, nextOptions)
           }
-          res(entry)
-          return true
-        },
+          return result
+        } catch (er) {
+          /* c8 ignore start */
+          throw er instanceof Error ? er : (
+              new Error(typeof er === 'string' ? er : 'Unknown error')
+            )
+          /* c8 ignore stop */
+        }
+      }
+
+      resp.body.on('data', (chunk: Buffer) => result.addBody(chunk))
+      return new Promise<CacheEntry>((res, rej) => {
+        resp.body.on('error', rej)
+        resp.body.on('end', () => res(result))
       })
     })
+
+    this.cache.set(key, result.encode())
+    return result
   }
 }
