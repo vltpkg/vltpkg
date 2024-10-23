@@ -18,11 +18,15 @@ const handleBeforeExit = () => {
   for (const [path, r] of registered) {
     /* c8 ignore next */
     if (!r.size) return
-    const args = [__CODE_SPLIT_SCRIPT_NAME, path, ...r]
+    const args = [__CODE_SPLIT_SCRIPT_NAME, path]
     registered.delete(path)
-    spawn(process.execPath, args, {
+    const proc = spawn(process.execPath, args, {
       detached: true,
-      stdio: 'ignore',
-    }).unref()
+      stdio: ['pipe', 'ignore', 'ignore'],
+    })
+    for (const key of r) {
+      proc.stdin.write(`${key}\0`)
+    }
+    proc.unref()
   }
 }

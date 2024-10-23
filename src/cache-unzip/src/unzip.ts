@@ -7,13 +7,29 @@ export const __CODE_SPLIT_SCRIPT_NAME = import.meta.filename.replace(
   '.js',
 )
 
-const main = async () => {
-  process.title = 'vlt-cache-unzip'
+export const main = async (
+  path: undefined | string,
+  input = process.stdin,
+) => {
+  if (!path) process.exit(1)
+  const keys = await new Promise<string[]>(res => {
+    const chunks: Buffer[] = []
+    let chunkLen = 0
+    input.on('data', chunk => {
+      chunks.push(chunk)
+      chunkLen += chunk.length
+    })
+    input.on('end', () => {
+      res(
+        Buffer.concat(chunks, chunkLen)
+          .toString()
+          .split('\0')
+          .filter(i => !!i),
+      )
+    })
+  })
 
-  const path = process.argv[2]
-  if (typeof path !== 'string') process.exit(1)
-  const keys = process.argv.slice(3)
-  if (!path || !keys.length) process.exit(1)
+  if (!keys.length) process.exit(1)
 
   const cache = new Cache({ path })
 
@@ -139,5 +155,6 @@ const main = async () => {
 }
 
 if (process.argv[1] === import.meta.filename) {
-  void main()
+  process.title = 'vlt-cache-unzip'
+  void main(process.argv[2], process.stdin)
 }
