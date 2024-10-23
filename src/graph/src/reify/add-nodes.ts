@@ -46,9 +46,11 @@ export const addNodes = (
       remover
         .rm(target)
         .then(() =>
-          packageInfo
-            .extract(spec, target, { from })
-            .then(x => x, onErr),
+          onErr ?
+            packageInfo
+              .extract(spec, target, { from })
+              .then(x => x, onErr)
+          : packageInfo.extract(spec, target, { from }),
         ),
     )
   }
