@@ -5,23 +5,32 @@ import { gzipSync } from 'zlib'
 import { __CODE_SPLIT_SCRIPT_NAME } from '../dist/esm/unzip.js'
 
 t.test('validate args', async t => {
-  t.match(spawnSync(process.execPath, [__CODE_SPLIT_SCRIPT_NAME]), {
-    status: 1,
-  })
   t.match(
-    spawnSync(process.execPath, [__CODE_SPLIT_SCRIPT_NAME, 'path']),
+    spawnSync(process.execPath, [__CODE_SPLIT_SCRIPT_NAME], {
+      input: '',
+      stdio: ['pipe', 'inherit', 'inherit'],
+      encoding: 'utf8',
+    }),
     {
       status: 1,
     },
   )
   t.match(
-    spawnSync(process.execPath, [
-      __CODE_SPLIT_SCRIPT_NAME,
-      t.testdir(),
-      'nope',
-      'not valid',
-      'no valid keys',
-    ]),
+    spawnSync(process.execPath, [__CODE_SPLIT_SCRIPT_NAME, 'path'], {
+      input: '',
+    }),
+    {
+      status: 1,
+    },
+  )
+  t.match(
+    spawnSync(
+      process.execPath,
+      [__CODE_SPLIT_SCRIPT_NAME, t.testdir()],
+      {
+        input: 'nope\0not valid\0no valid keys\0',
+      },
+    ),
     { status: 1 },
   )
 })
@@ -66,15 +75,11 @@ t.test('unzip some stuff in the cache', async t => {
 
   const res = spawnSync(
     process.execPath,
-    [
-      __CODE_SPLIT_SCRIPT_NAME,
-      t.testdirName,
-      'gz1',
-      'gz2',
-      'plain1',
-      'bogus',
-    ],
-    { stdio: 'inherit' },
+    [__CODE_SPLIT_SCRIPT_NAME, t.testdirName],
+    {
+      input: 'gz1\0gz2\0plain1\0bogus\0',
+      stdio: ['pipe', 'inherit', 'inherit'],
+    },
   )
   t.matchOnlyStrict(res, {
     status: 0,
@@ -161,8 +166,8 @@ t.test('unzip an entry that had headers', async t => {
   await cache.promise()
   const res = spawnSync(
     process.execPath,
-    [__CODE_SPLIT_SCRIPT_NAME, t.testdirName, 'gz1'],
-    { stdio: 'inherit' },
+    [__CODE_SPLIT_SCRIPT_NAME, t.testdirName],
+    { stdio: ['pipe', 'inherit', 'inherit'], input: 'gz1\0' },
   )
   t.matchOnlyStrict(res, {
     status: 0,

@@ -19,16 +19,23 @@ t.test('registering the beforeExit event', async t => {
         opts: Record<string, any>,
       ) => {
         t.equal(cmd, process.execPath)
-        t.equal(args.length, 4)
+        t.equal(args.length, 2)
         t.match(args[0], /unzip\.js$/)
         t.equal(args[1], t.testdirName)
         t.strictSame(opts, {
           detached: true,
-          stdio: 'ignore',
+          stdio: ['pipe', 'ignore', 'ignore'],
         })
+        const written: string[] = []
         return {
+          stdin: {
+            write: (arg: string) => {
+              written.push(arg)
+            },
+          },
           unref: () => {
             unrefCalled = true
+            t.strictSame(written, ['key 1\0', 'key 2\0'])
           },
         }
       },
