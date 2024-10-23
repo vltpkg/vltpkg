@@ -72,8 +72,13 @@ export const appendNodes = async (
   deps: Dependency[],
   scurry: PathScurry,
   options: SpecOptions,
-) =>
-  Promise.all(
+  seen: Set<DepID>,
+) => {
+  /* c8 ignore next */
+  if (seen.has(fromNode.id)) return
+  seen.add(fromNode.id)
+
+  await Promise.all(
     deps.map(async ({ spec, type }) => {
       // see if there's a satisfying node in the graph currently
       const fileTypeInfo = getFileTypeInfo(spec, fromNode, scurry)
@@ -169,6 +174,7 @@ export const appendNodes = async (
                 nextDeps,
                 scurry,
                 options,
+                seen,
               ),
             )
           }
@@ -177,3 +183,4 @@ export const appendNodes = async (
       await Promise.all(nestedAppends)
     }),
   )
+}

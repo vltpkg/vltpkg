@@ -96,6 +96,7 @@ t.test('append a new node to a graph from a registry', async t => {
     ],
     scurry,
     configData,
+    new Set(),
   )
   t.strictSame(
     [...graph.mainImporter.edgesOut.values()].map(
@@ -128,6 +129,7 @@ t.test('append a new node to a graph from a registry', async t => {
     ],
     new PathScurry(t.testdirName),
     configData,
+    new Set(),
   )
   t.strictSame(
     graph.mainImporter.edgesOut.get('bar')?.spec.semver,
@@ -148,6 +150,7 @@ t.test('append a new node to a graph from a registry', async t => {
       ],
       new PathScurry(t.testdirName),
       configData,
+      new Set(),
     ),
     /ERR/,
     'should not intercept errors on fetching / parsing manifest',
@@ -205,6 +208,7 @@ t.test('append different type of dependencies', async t => {
     ],
     new PathScurry(t.testdirName),
     configData,
+    new Set(),
   )
 
   await appendNodes(
@@ -219,6 +223,7 @@ t.test('append different type of dependencies', async t => {
     ],
     new PathScurry(t.testdirName),
     configData,
+    new Set(),
   )
 
   t.rejects(
@@ -234,6 +239,7 @@ t.test('append different type of dependencies', async t => {
       ],
       new PathScurry(t.testdirName),
       configData,
+      new Set(),
     ),
     /failed to resolve dependency/,
     'should throw if failes to create a node for a given manifest',
@@ -311,6 +317,7 @@ t.test('append file type of nodes', async t => {
     ],
     new PathScurry(t.testdirName),
     configData,
+    new Set(),
   )
   await appendNodes(
     packageInfo,
@@ -324,6 +331,7 @@ t.test('append file type of nodes', async t => {
     ],
     new PathScurry(t.testdirName),
     configData,
+    new Set(),
   )
   t.matchSnapshot(
     objectLikeOutput(graph),
@@ -438,6 +446,7 @@ t.test('resolve against the correct registries', async t => {
     {
       registries,
     },
+    new Set(),
   )
   t.matchSnapshot(inspect(graph, { colors: false }))
 })

@@ -1,3 +1,4 @@
+import { DepID } from '@vltpkg/dep-id'
 import { error } from '@vltpkg/error-cause'
 import { PackageInfoClient } from '@vltpkg/package-info'
 import { SpecOptions } from '@vltpkg/spec'
@@ -32,6 +33,7 @@ export const addNodes = async ({
   scurry,
   ...specOptions
 }: AddNodesOptions) => {
+  const seen = new Set<DepID>()
   // iterates on the list of dependencies per importer updating
   // the graph using metadata fetch from the registry manifest files
   for (const [depID, dependencies] of add) {
@@ -57,6 +59,7 @@ export const addNodes = async ({
       deps,
       scurry,
       specOptions,
+      seen,
     )
   }
 }
