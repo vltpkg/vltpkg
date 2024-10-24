@@ -9,7 +9,7 @@ import { DependencyTypeShort } from './dependencies.js'
 import { type Edge } from './edge.js'
 import { lockfileData } from './lockfile/save.js'
 import { Node, NodeOptions } from './node.js'
-import { GraphLike } from './types.js'
+import { GraphLike, NodeLike } from './types.js'
 
 const kCustomInspect = Symbol.for('nodejs.util.inspect.custom')
 
@@ -187,13 +187,13 @@ export class Graph implements GraphLike {
   addEdge(
     type: DependencyTypeShort,
     spec: Spec,
-    from: Node,
-    to?: Node,
+    from: NodeLike,
+    to?: NodeLike,
   ) {
     // fix any nameless spec
     if (spec.name === '(unknown)') {
       if (to) {
-        spec.name = to.name
+        spec.name = to.name /* c8 ignore next */ || '(unknown)'
         spec.spec = `${to.name}@${spec.bareSpec}`
       } else {
         throw error(
@@ -204,19 +204,21 @@ export class Graph implements GraphLike {
     }
     const existing = from.edgesOut.get(spec.name)
     if (existing) {
+      const edge = existing as Edge
       if (
-        existing.type === type &&
-        existing.spec.bareSpec === spec.bareSpec
+        edge.type === type &&
+        edge.spec.bareSpec === spec.bareSpec
       ) {
-        if (to && to !== existing.to) {
-          existing.to = to
-          existing.to.edgesIn.add(existing)
+        if (to && to !== edge.to) {
+          edge.to = to as Node
+          edge.to.edgesIn.add(edge)
         }
-        return existing
+        return edge
       }
-      this.edges.delete(existing)
+      this.edges.delete(edge)
     }
-    const edgeOut = from.addEdgesTo(type, spec, to)
+    const f = from as Node
+    const edgeOut = f.addEdgesTo(type, spec, to as Node | undefined)
     this.edges.add(edgeOut)
     return edgeOut
   }
