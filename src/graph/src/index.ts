@@ -12,13 +12,20 @@ import { load as actualLoad } from './actual/load.js'
 export const actual = { load: actualLoad }
 
 import { load as lockfileLoad } from './lockfile/load.js'
+import { loadEdges } from './lockfile/load-edges.js'
+import { loadNodes } from './lockfile/load-nodes.js'
 import { save } from './lockfile/save.js'
-export { SaveOptions } from './lockfile/save.js'
-export const lockfile = { load: lockfileLoad, save }
+export const lockfile = {
+  load: lockfileLoad,
+  loadEdges,
+  loadNodes,
+  save,
+}
 
 import type { LoadOptions as ActualLoadOptions } from './actual/load.js'
 import type { LoadOptions as LockfileLoadOptions } from './lockfile/load.js'
 export type { ActualLoadOptions, LockfileLoadOptions }
+export type { SaveOptions } from './lockfile/save.js'
 
 import { BuildIdealOptions, build } from './ideal/build.js'
 export type { BuildIdealOptions }
