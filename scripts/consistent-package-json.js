@@ -313,7 +313,7 @@ const fixTools = async ws => {
     )
   }
   if (ws.pj.devDependencies.prettier) {
-    ws.pj.prettier = `${ws.relDir}.prettierrc.json`
+    ws.pj.prettier = `${ws.relDir}.prettierrc.js`
   }
   if (ws.pj.devDependencies.typedoc && !ws.isRoot) {
     await mergeJson(

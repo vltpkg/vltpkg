@@ -1,4 +1,4 @@
-/.*
+/.*/
 /dist
 /docs
 /example
@@ -9,7 +9,7 @@
 /tap-snapshots
 /test/**/fixtures
 
-/src/*/.*
+/src/*/.*/
 /src/*/dist
 /src/*/docs
 /src/*/example
@@ -20,7 +20,7 @@
 /src/*/test/**/fixtures/**
 !/src/*/test/**/fixtures/*.ts
 
-/infra/*/.*
+/infra/*/.*/
 /infra/*/dist
 /infra/*/docs
 /infra/*/example
@@ -31,7 +31,7 @@
 /infra/*/test/**/fixtures/**
 !/infra/*/test/**/fixtures/*.ts
 
-/www/*/.*
+/www/*/.*/
 /www/*/dist
 /www/*/docs
 /www/*/example
