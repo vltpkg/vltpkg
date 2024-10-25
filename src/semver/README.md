@@ -7,7 +7,6 @@
     </a>
 </section>
 
-
 <p align="center">
     A library for parsing, validating & comparing Semantic Versions used by `vlt`.
 </p>
