@@ -13,6 +13,7 @@
     "eslint": "catalog:",
     "globals": "^15.9.0",
     "prettier": "catalog:",
+    "prettier-plugin-astro": "^0.14.1",
     "semver": "catalog:",
     "turbo": "^2.1.0",
     "typedoc": "catalog:",
@@ -42,7 +43,7 @@
     "vlt": "./scripts/local-cli vlt",
     "vlx": "./scripts/local-cli vlx"
   },
-  "prettier": "./.prettierrc.json",
+  "prettier": "./.prettierrc.js",
   "type": "module",
   "pnpm": {
     "//overrides": "these apply to www/docs but have to be set in the root",

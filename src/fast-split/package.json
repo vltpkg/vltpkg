@@ -47,7 +47,7 @@
   "tap": {
     "extends": "../../tap-config.yaml"
   },
-  "prettier": "../../.prettierrc.json",
+  "prettier": "../../.prettierrc.js",
   "type": "module",
   "exports": {
     "./package.json": "./package.json",
