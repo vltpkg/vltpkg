@@ -7,7 +7,6 @@
     </a>
 </section>
 
-
 <p align="center">
     This is a very fast alternative to `String.split()`, which can be
     used to quickly parse a small-to-medium sized string by a given

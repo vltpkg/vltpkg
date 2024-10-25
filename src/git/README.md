@@ -7,7 +7,6 @@
     </a>
 </section>
 
-
 <p align="center">
     A utility for spawning git from npm CLI contexts.
 </p>
