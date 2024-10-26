@@ -11,7 +11,7 @@ export default defineConfig({
       title: 'docs | vlt',
       social: {
         github: 'https://github.com/vltpkg/vltpkg',
-        discord: 'https://github.com/vltpkg/vltpkg',
+        discord: 'https://discord.gg/vltpkg',
       },
       customCss: [
         '@fontsource-variable/manrope/index.css',
@@ -19,16 +19,8 @@ export default defineConfig({
       ],
       sidebar: [
         {
-          label: 'Guides',
-          items: [{ label: 'Example Guide', slug: 'guides/example' }],
-        },
-        {
-          label: 'Reference',
-          autogenerate: { directory: 'reference' },
-        },
-        {
-          label: 'Commands',
-          autogenerate: { directory: 'cli/commands' },
+          label: 'CLI',
+          autogenerate: { directory: 'cli' },
         },
         {
           label: 'API',
