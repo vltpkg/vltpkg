@@ -6,6 +6,15 @@ import react from '@astrojs/react'
 import tailwind from '@astrojs/tailwind'
 
 export default defineConfig({
+  vite: {
+    build: {
+      rollupOptions: {
+        // This is necessary to treeshake the imports @vltpkg/cli commands
+        // since we only use the `usage`
+        treeshake: 'smallest',
+      },
+    },
+  },
   integrations: [
     starlight({
       title: 'docs | vlt',
