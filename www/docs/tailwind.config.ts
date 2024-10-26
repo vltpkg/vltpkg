@@ -1,10 +1,73 @@
 /** @type {import('tailwindcss').Config} */
 
 import animate from 'tailwindcss-animate'
-import starlight from '@astrojs/starlight-tailwind'
 import defaultTheme from 'tailwindcss/defaultTheme'
+import plugin from 'tailwindcss/plugin'
+
+// https://github.com/withastro/starlight/blob/b56ccc6302f9204841daf6157037a2cb0f92b980/packages/tailwind/index.ts
+// The starlight function is copied and modified from the above link.
+// MIT License
+// Copyright (c) 2023 [Astro contributors](https://github.com/withastro/starlight/graphs/contributors)
+const starlight = () =>
+  plugin(({ addBase, theme }) => {
+    addBase({
+      // Restore crucial styles from Tailwind Preflight: https://tailwindcss.com/docs/preflight
+      // Allow adding a border to an element by just adding a border-width.
+      // (https://github.com/tailwindcss/tailwindcss/pull/116)
+      '*, ::before, ::after': {
+        borderWidth: '0',
+        borderStyle: 'solid',
+        borderColor: theme('borderColor.DEFAULT', 'currentColor'),
+      },
+      '::before, ::after': { '--tw-content': '' },
+      // Keep base font-family styles even in non-Starlight pages.
+      'html, :host': { 'font-family': theme('fontFamily.sans') },
+      'code, kbd, samp, pre': {
+        'font-family': theme('fontFamily.mono'),
+      },
+      // Wire up Starlight theme to use Tailwind config.
+      ':root': {
+        // Use Tailwind-configured font families.
+        '--sl-font': theme('fontFamily.sans'),
+        '--sl-font-mono': theme('fontFamily.mono'),
+        // Dark mode Starlight theme variables.
+        '--sl-color-white': theme('colors.white'),
+        '--sl-color-gray-1': theme('colors.gray.200'),
+        '--sl-color-gray-2': theme('colors.gray.300'),
+        '--sl-color-gray-3': theme('colors.gray.400'),
+        '--sl-color-gray-4': theme('colors.gray.600'),
+        '--sl-color-gray-5': theme('colors.gray.700'),
+        '--sl-color-gray-6': theme('colors.gray.800'),
+        '--sl-color-black': theme('colors.gray.900'),
+        '--sl-color-accent-low': 'hsl(var(--accent))',
+        '--sl-color-accent': 'hsl(var(--accent-foreground))',
+        '--sl-color-accent-high': 'hsl(var(--accent-foreground))',
+        // Light mode Starlight theme variables
+        '&[data-theme="light"]': {
+          '--sl-color-white': theme('colors.gray.900'),
+          '--sl-color-gray-1': theme('colors.gray.800'),
+          '--sl-color-gray-2': theme('colors.gray.700'),
+          '--sl-color-gray-3': theme('colors.gray.500'),
+          '--sl-color-gray-4': theme('colors.gray.400'),
+          '--sl-color-gray-5': theme('colors.gray.300'),
+          '--sl-color-gray-6': theme('colors.gray.200'),
+          '--sl-color-gray-7': theme('colors.gray.100'),
+          '--sl-color-black': theme('colors.white'),
+          '--sl-color-accent-low': 'hsl(var(--accent))',
+          '--sl-color-accent': 'hsl(var(--accent-foreground))',
+          '--sl-color-accent-high': 'hsl(var(--accent-foreground))',
+        },
+      },
+    })
+  })
 
 export default {
+  // Starlight uses a `data-theme` attribute to power its dark mode.
+  darkMode: ['class', '[data-theme="dark"]'],
+  corePlugins: {
+    // Disable Tailwind’s default reset styles which conflict with Starlight.
+    preflight: false,
+  },
   content: [
     './src/**/*.{astro,html,js,jsx,md,mdx,svelte,ts,tsx,vue}',
   ],
@@ -19,6 +82,7 @@ export default {
         sm: 'calc(var(--radius) - 4px)',
       },
       colors: {
+        gray: 'hsl(var(--background))',
         background: 'hsl(var(--background))',
         foreground: 'hsl(var(--foreground))',
         card: {

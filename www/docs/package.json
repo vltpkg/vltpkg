@@ -7,7 +7,6 @@
     "@astrojs/mdx": "4.0.0-beta.2",
     "@astrojs/react": "^3.6.2",
     "@astrojs/starlight": "^0.28.3",
-    "@astrojs/starlight-tailwind": "^2.0.3",
     "@astrojs/tailwind": "^5.1.2",
     "@astrojs/vercel": "8.0.0-beta.2",
     "@fontsource-variable/manrope": "^5.1.0",
