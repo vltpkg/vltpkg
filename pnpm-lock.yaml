@@ -1516,9 +1516,6 @@ importers:
       '@astrojs/starlight':
         specifier: ^0.28.3
         version: 0.28.3(astro@5.0.0-beta.4(@types/node@22.5.0)(rollup@4.24.0)(typescript@5.5.4))
-      '@astrojs/starlight-tailwind':
-        specifier: ^2.0.3
-        version: 2.0.3(@astrojs/starlight@0.28.3(astro@5.0.0-beta.4(@types/node@22.5.0)(rollup@4.24.0)(typescript@5.5.4)))(@astrojs/tailwind@5.1.2(astro@5.0.0-beta.4(@types/node@22.5.0)(rollup@4.24.0)(typescript@5.5.4))(tailwindcss@3.4.14))(tailwindcss@3.4.14)
       '@astrojs/tailwind':
         specifier: ^5.1.2
         version: 5.1.2(astro@5.0.0-beta.4(@types/node@22.5.0)(rollup@4.24.0)(typescript@5.5.4))(tailwindcss@3.4.14)
@@ -1673,13 +1670,6 @@ packages:
 
   '@astrojs/sitemap@3.2.1':
     resolution: {integrity: sha512-uxMfO8f7pALq0ADL6Lk68UV6dNYjJ2xGUzyjjVj60JLBs5a6smtlkBYv3tQ0DzoqwS7c9n4FUx5lgv0yPo/fgA==}
-
-  '@astrojs/starlight-tailwind@2.0.3':
-    resolution: {integrity: sha512-ZwbdXS/9rxYlo3tKZoTZoBPUnaaqek02b341dHwOkmMT0lIR2w+8k0mRUGxnRaYtPdMcaL+nYFd8RUa8sjdyRg==}
-    peerDependencies:
-      '@astrojs/starlight': '>=0.9.0'
-      '@astrojs/tailwind': ^5.0.0
-      tailwindcss: ^3.3.3
 
   '@astrojs/starlight@0.28.3':
     resolution: {integrity: sha512-GXXIPKSu5d50mLVtgI4jf6pb3FPQm8n4MI6ZXuQQqqnA0xg7PJQ76WFSVyrICeqM5fKABSqcBksp/glyEJes/A==}
@@ -6853,12 +6843,6 @@ snapshots:
       sitemap: 8.0.0
       stream-replace-string: 2.0.0
       zod: 3.23.8
-
-  '@astrojs/starlight-tailwind@2.0.3(@astrojs/starlight@0.28.3(astro@5.0.0-beta.4(@types/node@22.5.0)(rollup@4.24.0)(typescript@5.5.4)))(@astrojs/tailwind@5.1.2(astro@5.0.0-beta.4(@types/node@22.5.0)(rollup@4.24.0)(typescript@5.5.4))(tailwindcss@3.4.14))(tailwindcss@3.4.14)':
-    dependencies:
-      '@astrojs/starlight': 0.28.3(astro@5.0.0-beta.4(@types/node@22.5.0)(rollup@4.24.0)(typescript@5.5.4))
-      '@astrojs/tailwind': 5.1.2(astro@5.0.0-beta.4(@types/node@22.5.0)(rollup@4.24.0)(typescript@5.5.4))(tailwindcss@3.4.14)
-      tailwindcss: 3.4.14
 
   '@astrojs/starlight@0.28.3(astro@5.0.0-beta.4(@types/node@22.5.0)(rollup@4.24.0)(typescript@5.5.4))':
     dependencies:
