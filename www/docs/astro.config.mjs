@@ -6,12 +6,21 @@ import react from '@astrojs/react'
 import tailwind from '@astrojs/tailwind'
 
 export default defineConfig({
+  vite: {
+    build: {
+      rollupOptions: {
+        // This is necessary to treeshake the imports @vltpkg/cli commands
+        // since we only use the `usage`
+        treeshake: 'smallest',
+      },
+    },
+  },
   integrations: [
     starlight({
       title: 'docs | vlt',
       social: {
         github: 'https://github.com/vltpkg/vltpkg',
-        discord: 'https://github.com/vltpkg/vltpkg',
+        discord: 'https://discord.gg/vltpkg',
       },
       customCss: [
         '@fontsource-variable/manrope/index.css',
@@ -19,16 +28,8 @@ export default defineConfig({
       ],
       sidebar: [
         {
-          label: 'Guides',
-          items: [{ label: 'Example Guide', slug: 'guides/example' }],
-        },
-        {
-          label: 'Reference',
-          autogenerate: { directory: 'reference' },
-        },
-        {
-          label: 'Commands',
-          autogenerate: { directory: 'cli/commands' },
+          label: 'CLI',
+          autogenerate: { directory: 'cli' },
         },
         {
           label: 'API',
