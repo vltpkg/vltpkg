@@ -1,6 +1,6 @@
 <section align="center">
     <a href="https://www.vlt.sh">
-        <img src="https://github.com/user-attachments/assets/36ba6d2d-4af7-403c-a973-058d09a16ff1" />
+        <img src="https://github.com/user-attachments/assets/e03cad94-9146-4b67-8644-497caf2f2267" />
         <h1 align="center">
             <strong>vlt</strong>
             /vōlt/

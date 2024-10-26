@@ -1,6 +1,6 @@
 <section align="center">
     <a href="https://www.vlt.sh">
-        <img src="https://github.com/user-attachments/assets/2a0cec02-bfae-441b-86af-be2a13eec93f" />
+        <img src="https://github.com/user-attachments/assets/beb8e72b-9af4-42ff-a39c-11c937bffdb6" />
         <h1 align="center">
             <strong>@vltpkg/cache</strong>
         </h1>

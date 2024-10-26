@@ -1,6 +1,6 @@
 <section align="center">
     <a href="https://www.vlt.sh">
-        <img src="https://github.com/user-attachments/assets/c81fb214-e03f-407a-ad3c-47b1fa4078af" />
+        <img src="https://github.com/user-attachments/assets/67722b51-a70f-4779-be2e-405adeb55d06" />
         <h1 align="center">
             <strong>@vltpkg/types</strong>
         </h1>

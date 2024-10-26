@@ -1,6 +1,6 @@
 <section align="center">
     <a href="https://www.vlt.sh">
-        <img src="https://github.com/user-attachments/assets/f5e3adcc-3179-43dd-9f40-21c957fa4e55" />
+        <img src="https://github.com/user-attachments/assets/f44cb9f8-e778-447c-8100-9ff564427048" />
         <h1 align="center">
             <strong>@vltpkg/dep-id</strong>
         </h1>

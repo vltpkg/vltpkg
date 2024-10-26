@@ -1,6 +1,6 @@
 <section align="center">
     <a href="https://www.vlt.sh">
-        <img src="https://github.com/user-attachments/assets/81436c4c-0c01-4200-a041-6de088ffdd67" />
+        <img src="https://github.com/user-attachments/assets/0181afb7-0e03-41e6-b85c-2b5095b5d263" />
         <h1 align="center">
             <strong>@vltpkg/fast-split</strong>
         </h1>

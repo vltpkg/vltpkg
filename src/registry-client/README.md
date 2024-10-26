@@ -1,6 +1,6 @@
 <section align="center">
     <a href="https://www.vlt.sh">
-        <img src="https://github.com/user-attachments/assets/cb5bbe74-10c5-42b5-930e-32057aa5777d" />
+        <img src="https://github.com/user-attachments/assets/664e4107-bf7b-4179-802d-9ec9f1499955" />
         <h1 align="center">
             <strong>@vltpkg/registry-client</strong>
         </h1>
