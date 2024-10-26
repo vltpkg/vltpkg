@@ -1,6 +1,6 @@
 <section align="center">
     <a href="https://www.vlt.sh">
-        <img src="https://github.com/user-attachments/assets/48bd23bd-301f-45d8-b9da-be92a66ac8e4" />
+        <img src="https://github.com/user-attachments/assets/5fa00d7e-19dd-400e-9a77-6d37ded3fe2d" />
         <h1 align="center">
             <strong>@vltpkg/error-cause</strong>
         </h1>

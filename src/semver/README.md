@@ -1,6 +1,6 @@
 <section align="center">
     <a href="https://www.vlt.sh">
-        <img src="https://github.com/user-attachments/assets/6977bbfd-41ec-4740-b126-8ff190a7e953" />
+        <img src="https://github.com/user-attachments/assets/8ace86b8-cf67-43f0-991d-b9c1a069ffa0" />
         <h1 align="center">
             <strong>@vltpkg/semver</strong>
         </h1>

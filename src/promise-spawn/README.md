@@ -1,6 +1,6 @@
 <section align="center">
     <a href="https://www.vlt.sh">
-        <img src="https://github.com/user-attachments/assets/74784105-f0d8-49ce-a14b-1c9142cfbfda" />
+        <img src="https://github.com/user-attachments/assets/8dcb044f-7611-4db9-8042-3a964e270d61" />
         <h1 align="center">
             <strong>@vltpkg/promise-spawn</strong>
         </h1>

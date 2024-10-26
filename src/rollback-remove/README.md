@@ -1,6 +1,6 @@
 <section align="center">
     <a href="https://www.vlt.sh">
-        <img src="https://github.com/user-attachments/assets/212bfa17-cbef-4403-a68a-dccadb1095e9" />
+        <img src="https://github.com/user-attachments/assets/a3c217d9-991c-4702-98f9-e14df13b03ec" />
         <h1 align="center">
             <strong>@vltpkg/rollback-remove</strong>
         </h1>

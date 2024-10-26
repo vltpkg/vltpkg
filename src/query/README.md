@@ -1,6 +1,6 @@
 <section align="center">
     <a href="https://www.vlt.sh">
-        <img src="https://github.com/user-attachments/assets/4bd8caf0-3fc0-48db-b9d0-b2a133f44467" />
+        <img src="https://github.com/user-attachments/assets/5b4802b7-7567-4f50-8f77-7ee398f58d43" />
         <h1 align="center">
             <strong>@vltpkg/query</strong>
         </h1>

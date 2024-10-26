@@ -1,6 +1,6 @@
 <section align="center">
     <a href="https://www.vlt.sh">
-        <img src="https://github.com/user-attachments/assets/65e1d69f-f780-492f-b57d-15b4170c9557" />
+        <img src="https://github.com/user-attachments/assets/72b3e499-40c0-4f2a-8cd7-7761303bda62" />
         <h1 align="center">
             <strong>@vltpkg/xdg</strong>
         </h1>

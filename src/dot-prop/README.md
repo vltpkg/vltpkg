@@ -1,6 +1,6 @@
 <section align="center">
     <a href="https://www.vlt.sh">
-        <img src="https://github.com/user-attachments/assets/3c1af691-b4eb-4d3d-aa7b-bd3b4dfc93cb" />
+        <img src="https://github.com/user-attachments/assets/2f26fc9d-5f78-49cc-bb4b-6549e2233111" />
         <h1 align="center">
             <strong>@vltpkg/dot-prop</strong>
         </h1>

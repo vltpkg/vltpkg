@@ -1,6 +1,6 @@
 <section align="center">
     <a href="https://www.vlt.sh">
-        <img src="https://github.com/user-attachments/assets/1db369d1-940b-4519-a9e0-3876ee490f1d" />
+        <img src="https://github.com/user-attachments/assets/55a9538d-5c29-4ee5-b740-46db8b17611a" />
         <h1 align="center">
             <strong>@vltpkg/git-scp-url</strong>
         </h1>
