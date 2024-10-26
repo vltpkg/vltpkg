@@ -1,6 +1,6 @@
 <section align="center">
     <a href="https://www.vlt.sh">
-        <img src="https://github.com/user-attachments/assets/2772ef7c-9a0e-4bbc-8581-6055ffe17eaf" />
+        <img src="https://github.com/user-attachments/assets/edbe377f-d0ae-4d48-9658-3eb91d1bd482" />
         <h1 align="center">
             <strong>@vltpkg/cache-unzip</strong>
         </h1>

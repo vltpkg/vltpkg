@@ -1,6 +1,6 @@
 <section align="center">
     <a href="https://www.vlt.sh">
-        <img src="https://github.com/user-attachments/assets/897582bc-bd4d-4b64-9945-900df6dd88e8" />
+        <img src="https://github.com/user-attachments/assets/26cf64ba-55e7-451b-98d2-6cca938d8f4b" />
         <h1 align="center">
             <strong>@vltpkg/benchmark</strong>
         </h1>
