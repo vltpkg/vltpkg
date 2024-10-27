@@ -13,6 +13,7 @@ export const actual = { load: actualLoad }
 
 import { load as lockfileLoad } from './lockfile/load.js'
 import { save } from './lockfile/save.js'
+export { SaveOptions } from './lockfile/save.js'
 export const lockfile = { load: lockfileLoad, save }
 
 import type { LoadOptions as ActualLoadOptions } from './actual/load.js'

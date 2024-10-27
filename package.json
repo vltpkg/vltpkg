@@ -16,7 +16,6 @@
     "prettier-plugin-astro": "^0.14.1",
     "semver": "catalog:",
     "turbo": "^2.1.0",
-    "typedoc": "catalog:",
     "typescript": "catalog:",
     "typescript-eslint": "catalog:",
     "yaml": "^2.5.0"
@@ -36,7 +35,6 @@
     "lint:check": "eslint .",
     "snap": "pnpm --silent --no-bail --report-summary run -r snap -Rsilent || node scripts/report-test-failures.js",
     "test": "pnpm --silent --no-bail --report-summary -r test -- -Rsilent || node scripts/report-test-failures.js",
-    "typedoc": "typedoc",
     "vlix": "./scripts/local-cli vlix",
     "vlr": "./scripts/local-cli vlr",
     "vlrx": "./scripts/local-cli vlrx",

@@ -28,7 +28,6 @@
     "prettier": "catalog:",
     "tap": "catalog:",
     "tshy": "catalog:",
-    "typedoc": "catalog:",
     "typescript": "catalog:",
     "typescript-eslint": "catalog:"
   },
@@ -43,11 +42,10 @@
     "lint": "eslint . --fix",
     "lint:check": "eslint .",
     "prepare": "tshy",
-    "presnap": "npm run prepare",
+    "presnap": "tshy",
     "snap": "tap",
-    "pretest": "npm run prepare",
-    "test": "tap",
-    "typedoc": "typedoc"
+    "pretest": "tshy",
+    "test": "tap"
   },
   "tap": {
     "extends": "../../tap-config.yaml"
