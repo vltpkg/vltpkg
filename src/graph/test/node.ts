@@ -276,6 +276,12 @@ t.test('Node', async t => {
     },
   )
   t.matchSnapshot(String(remoteMani), 'should stringify remote node')
+
+  const wsMani = new Node(opts, joinDepIDTuple(['workspace', 'a']), {
+    name: 'a',
+    version: '1.0.0',
+  })
+  t.matchSnapshot(String(wsMani), 'should stringify workspace node')
 })
 
 t.test('nodeModules path and inVltStore flag', t => {
