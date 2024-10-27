@@ -60,11 +60,11 @@ git(github:vltpkg/foo)
 `
 
 exports[`test/node.ts > TAP > Node > should stringify manifest-less registry node 1`] = `
-foo@1.0.0
+npm:foo@1.0.0
 `
 
 exports[`test/node.ts > TAP > Node > should stringify registry node 1`] = `
-foo@1.0.0
+npm:foo@1.0.0
 `
 
 exports[`test/node.ts > TAP > Node > should stringify remote node 1`] = `
@@ -76,5 +76,9 @@ remote(https://x.com/x.tgz)
 `
 
 exports[`test/node.ts > TAP > Node > should stringify root node 1`] = `
-file(.):root@1.0.0
+root:root
+`
+
+exports[`test/node.ts > TAP > Node > should stringify workspace node 1`] = `
+workspace:a
 `
