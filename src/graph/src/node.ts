@@ -11,6 +11,7 @@ import { Integrity, Manifest } from '@vltpkg/types'
 import { DependencyTypeShort } from './dependencies.js'
 import { Edge } from './edge.js'
 import { GraphLike, NodeLike } from './types.js'
+import { stringifyNode } from './stringify-node.js'
 
 export type NodeOptions = SpecOptions & {
   projectRoot: string
@@ -317,22 +318,6 @@ export class Node implements NodeLike {
   }
 
   toString() {
-    const version = this.version ? `@${this.version}` : ''
-    const depIdTuple = splitDepID(this.id)
-    switch (depIdTuple[0]) {
-      case 'registry': {
-        const prefix = depIdTuple[1] ? `${depIdTuple[1]}:` : ''
-        return `${prefix}${depIdTuple[2]}`
-      }
-      case 'git':
-      case 'workspace':
-      case 'file':
-      case 'remote': {
-        const nameVersion =
-          this.name !== this.id ? `:${this.name}${version}` : ''
-        return `${depIdTuple[0]}(${depIdTuple[1]})${nameVersion}`
-      }
-    }
-    /* c8 ignore next - impossible */
+    return stringifyNode(this)
   }
 }
