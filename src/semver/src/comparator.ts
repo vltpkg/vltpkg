@@ -119,8 +119,6 @@ const isXMajor = (parsed: ParsedXRange): parsed is ParsedXMajor =>
  * This does most of the heavy lifting of range testing, and provides
  * little affordance for improperly formatted strings. It should be
  * considered an internal class, and usually not accessed directly.
- *
- * @internal
  */
 export class Comparator {
   /**

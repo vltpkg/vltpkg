@@ -45,6 +45,9 @@ const format = async (source, filepath) => {
   return prettier.format(source, { ...options, filepath })
 }
 
+const writeFormatted = async (p, str) =>
+  writeFileSync(p, await format(str, p))
+
 const writeYaml = async (p, data) =>
   writeFileSync(p, await format(yaml.stringify(data), p))
 
@@ -225,7 +228,6 @@ const fixDeps = async (ws, { catalog }) => {
 const fixScripts = async ws => {
   Object.assign(
     ws.pj.scripts,
-    ws.pj.devDependencies.typedoc ? { typedoc: 'typedoc' } : {},
     ws.pj.devDependencies.prettier ?
       {
         format: `prettier --write . --log-level warn --ignore-path ${ws.relDir}.prettierignore --cache`,
@@ -252,17 +254,15 @@ const fixScripts = async ws => {
     ws.pj.devDependencies.tshy ?
       {
         prepare: 'tshy',
-        pretest: 'npm run prepare',
-        presnap: 'npm run prepare',
+        pretest: 'tshy',
+        presnap: 'tshy',
       }
     : {},
-    !ws.pj.private ?
-      {
-        preversion: 'npm test',
-        postversion: 'npm publish',
-        prepublishOnly: 'git push origin --follow-tags',
-      }
-    : {},
+    {
+      preversion: undefined,
+      postversion: undefined,
+      prepublishOnly: undefined,
+    },
   )
   ws.pj.scripts = sortObject(ws.pj.scripts, (a, b) => {
     const aName = a.replace(/^(pre|post)/, '')
@@ -315,17 +315,13 @@ const fixTools = async ws => {
   if (ws.pj.devDependencies.prettier) {
     ws.pj.prettier = `${ws.relDir}.prettierrc.js`
   }
-  if (ws.pj.devDependencies.typedoc && !ws.isRoot) {
-    await mergeJson(
-      resolve(ws.dir, 'typedoc.json'),
-      d =>
-        sortObject({
-          ...d,
-          entryPoints: ['./src/**/*.+(ts|tsx|mts|cts)'],
-          extends: [`${ws.relDir}typedoc.base.json`],
-          tsconfig: './.tshy/esm.json',
-        }),
-      { prettier: true },
+  if (!ws.pj.private) {
+    await writeFormatted(
+      resolve(ws.dir, 'typedoc.mjs'),
+      [
+        `import config from '${ws.relDir}www/docs/typedoc.workspace.mjs'`,
+        `export default config(import.meta.dirname)`,
+      ].join('\n'),
     )
   }
 }
@@ -363,10 +359,6 @@ const fixLicense = ws => {
 }
 
 const fixPackage = async (ws, opts) => {
-  await fixDeps(ws, opts)
-  await fixScripts(ws, opts)
-  await fixTools(ws, opts)
-  await fixLicense(ws, opts)
   ws.pj.files = undefined
   ws.pj.engines = { node: '20 || >=22' }
   ws.pj.private =
@@ -378,6 +370,10 @@ const fixPackage = async (ws, opts) => {
     ) ?
       true
     : undefined
+  await fixDeps(ws, opts)
+  await fixScripts(ws, opts)
+  await fixTools(ws, opts)
+  await fixLicense(ws, opts)
   return sortObject(ws.pj, [
     'name',
     'description',

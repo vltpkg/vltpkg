@@ -1,7 +1,7 @@
 {
   "name": "@vltpkg/git",
   "description": "a util for spawning git from npm CLI contexts",
-  "version": "5.0.7",
+  "version": "0.0.0-0",
   "tshy": {
     "selfLink": false,
     "dialects": [
@@ -34,7 +34,6 @@
     "prettier": "catalog:",
     "tap": "catalog:",
     "tshy": "catalog:",
-    "typedoc": "catalog:",
     "typescript": "catalog:",
     "typescript-eslint": "catalog:"
   },
@@ -48,14 +47,10 @@
     "lint": "eslint . --fix",
     "lint:check": "eslint .",
     "prepare": "tshy",
-    "prepublishOnly": "git push origin --follow-tags",
-    "presnap": "npm run prepare",
+    "presnap": "tshy",
     "snap": "tap",
-    "pretest": "npm run prepare",
-    "test": "tap",
-    "typedoc": "typedoc",
-    "preversion": "npm test",
-    "postversion": "npm publish"
+    "pretest": "tshy",
+    "test": "tap"
   },
   "tap": {
     "extends": "../../tap-config.yaml"
