@@ -1,15 +1,8 @@
-<section align="center">
-    <a href="https://www.vlt.sh">
-        <img src="https://github.com/user-attachments/assets/72b3e499-40c0-4f2a-8cd7-7761303bda62" />
-        <h1 align="center">
-            <strong>@vltpkg/xdg</strong>
-        </h1>
-    </a>
-</section>
+![xdg](https://github.com/user-attachments/assets/72b3e499-40c0-4f2a-8cd7-7761303bda62)
 
-<p align="center">
-    Get appropriate data, cache, and config directories following the [XDG spec](https://wiki.archlinux.org/title/XDG_Base_Directory), namespaced to a specific app-name subfolder.
-</p>
+# @vltpkg/xdg
+
+Get appropriate data, cache, and config directories following the [XDG spec](https://wiki.archlinux.org/title/XDG_Base_Directory), namespaced to a specific app-name subfolder.
 
 ## Usage
 

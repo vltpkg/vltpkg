@@ -1,17 +1,10 @@
-<section align="center">
-    <a href="https://www.vlt.sh">
-        <img src="https://github.com/user-attachments/assets/51412725-7bb3-4126-92b9-a6ba0d1ec18a" />
-        <h1 align="center">
-            <strong>@vltpkg/package-info</strong>
-        </h1>
-    </a>
-</section>
+![package-info](https://github.com/user-attachments/assets/51412725-7bb3-4126-92b9-a6ba0d1ec18a)
 
-<p align="center">
-    Get information about packages.
-    <br/>
-    A spiritual descendant of [pacote](http://npm.im/pacote).
-</p>
+# @vltpkg/package-info
+
+Get information about packages.
+
+A spiritual descendant of [pacote](http://npm.im/pacote).
 
 ## Usage
 

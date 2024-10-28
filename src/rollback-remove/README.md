@@ -1,16 +1,8 @@
-<section align="center">
-    <a href="https://www.vlt.sh">
-        <img src="https://github.com/user-attachments/assets/a3c217d9-991c-4702-98f9-e14df13b03ec" />
-        <h1 align="center">
-            <strong>@vltpkg/rollback-remove</strong>
-        </h1>
-    </a>
-</section>
+![rollback-remove](https://github.com/user-attachments/assets/a3c217d9-991c-4702-98f9-e14df13b03ec)
 
-<p align="center">
-    A utility for removing stuff, in such a way that the removal can be rolled back on failure, or confirmed and executed in a
-    detached background process.
-</p>
+# @vltpkg/rollback-remove
+
+A utility for removing stuff, in such a way that the removal can be rolled back on failure, or confirmed and executed in a detached background process.
 
 ## Usage
 

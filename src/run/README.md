@@ -1,15 +1,8 @@
-<section align="center">
-    <a href="https://www.vlt.sh">
-        <img src="https://github.com/user-attachments/assets/7546e081-c35c-44ac-a4bc-05caf88b7a2b" />
-        <h1 align="center">
-            <strong>@vltpkg/run</strong>
-        </h1>
-    </a>
-</section>
+![run](https://github.com/user-attachments/assets/7546e081-c35c-44ac-a4bc-05caf88b7a2b)
 
-<p align="center">
-    Run a script defined in a `package.json` file (eg, `vlt run` and lifecycle scripts), or an arbitrary command as if it was (eg, `vlt exec`).
-</p>
+# @vltpkg/run
+
+Run a script defined in a `package.json` file (eg, `vlt run` and lifecycle scripts), or an arbitrary command as if it was (eg, `vlt exec`).
 
 ## Usage
 
