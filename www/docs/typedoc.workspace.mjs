@@ -10,9 +10,6 @@ export default cwd => {
     return
   }
   return {
-    excludeInternal: true,
-    excludePrivate: true,
-    excludeExternals: true,
     readme: join(cwd, './README.md'),
     entryPoints: Object.values(exports)
       .filter(p => !p.endsWith('package.json'))

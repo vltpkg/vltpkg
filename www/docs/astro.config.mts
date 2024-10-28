@@ -4,6 +4,10 @@ import starlight from '@astrojs/starlight'
 import vercelStatic from '@astrojs/vercel/static'
 import react from '@astrojs/react'
 import tailwind from '@astrojs/tailwind'
+import { existsSync } from 'fs'
+import { relative, resolve } from 'path'
+
+const PACKAGES = 'packages'
 
 export default defineConfig({
   site: 'https://docs.vlt.sh',
@@ -32,6 +36,17 @@ export default defineConfig({
           name: 'typedoc',
           hooks: {
             async setup({ logger }) {
+              const dir = resolve(
+                import.meta.dirname,
+                'src/content/docs',
+                PACKAGES,
+              )
+              if (existsSync(dir)) {
+                logger.warn(
+                  `using cached typedoc markdown, delete ${relative(process.cwd(), dir)} to rebuild`,
+                )
+                return
+              }
               await new Promise<void>((res, rej) => {
                 const proc = spawn('./node_modules/.bin/typedoc', [])
                 proc.stdout
@@ -68,12 +83,7 @@ export default defineConfig({
         {
           label: 'Packages',
           collapsed: true,
-          autogenerate: { directory: 'packages' },
-          // items: workspaces.paths.map(path => ({
-          //   label: path.name,
-          //   collapsed: true,
-          //   autogenerate: { directory: `packages/${path.name}` },
-          // })),
+          autogenerate: { directory: PACKAGES },
         },
       ],
     }),
