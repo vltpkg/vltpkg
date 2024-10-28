@@ -1,9 +1,9 @@
-import * as React from 'react'
-import { cn } from '@/lib/utils'
+import { type HTMLAttributes, forwardRef } from 'react'
+import { cn } from '@/lib/utils.js'
 
-export const Logo = React.forwardRef<
+export const Logo = forwardRef<
   HTMLParagraphElement,
-  React.HTMLAttributes<HTMLHeadingElement>
+  HTMLAttributes<HTMLHeadingElement>
 >(({ className }, ref) => (
   <div ref={ref} className={cn('flex flex-row', className)}>
     <h1>

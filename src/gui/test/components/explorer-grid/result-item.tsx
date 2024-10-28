@@ -1,5 +1,4 @@
-import t from 'tap'
-import React from 'react'
+import { describe, test, expect, afterEach, assert } from 'vitest'
 import {
   cleanup,
   render,
@@ -13,15 +12,18 @@ import { useGraphStore as useStore } from '@/state/index.js'
 import { ResultItem } from '@/components/explorer-grid/result-item.jsx'
 import { GridItemData } from '@/components/explorer-grid/types.js'
 
-t.cleanSnapshot = s => html(s)
+expect.addSnapshotSerializer({
+  serialize: v => html(v),
+  test: () => true,
+})
 
-t.afterEach(() => {
+afterEach(() => {
   const CleanUp = () => (useStore(state => state.reset)(), '')
   render(<CleanUp />)
   cleanup()
 })
 
-t.test('ResultItem render with item', async t => {
+test('ResultItem render with item', async () => {
   const item = {
     id: '1',
     labels: ['prod'],
@@ -33,10 +35,10 @@ t.test('ResultItem render with item', async t => {
     size: 1,
   } satisfies GridItemData
   render(<ResultItem item={item} />)
-  t.matchSnapshot(window.document.body.innerHTML)
+  expect(window.document.body.innerHTML).toMatchSnapshot()
 })
 
-t.test('ResultItem render with type', async t => {
+test('ResultItem render with type', async () => {
   const item = {
     id: '1',
     labels: ['prod'],
@@ -55,10 +57,10 @@ t.test('ResultItem render with type', async t => {
     size: 1,
   } satisfies GridItemData
   render(<ResultItem item={item} />)
-  t.matchSnapshot(window.document.body.innerHTML)
+  expect(window.document.body.innerHTML).toMatchSnapshot()
 })
 
-t.test('ResultItem render stacked two', async t => {
+test('ResultItem render stacked two', async () => {
   const item = {
     id: '1',
     labels: ['dev'],
@@ -70,10 +72,10 @@ t.test('ResultItem render stacked two', async t => {
     size: 2,
   } satisfies GridItemData
   render(<ResultItem item={item} />)
-  t.matchSnapshot(window.document.body.innerHTML)
+  expect(window.document.body.innerHTML).toMatchSnapshot()
 })
 
-t.test('ResultItem render stacked many', async t => {
+test('ResultItem render stacked many', async () => {
   const item = {
     id: '1',
     labels: ['peer'],
@@ -85,10 +87,10 @@ t.test('ResultItem render stacked many', async t => {
     size: 5,
   } satisfies GridItemData
   render(<ResultItem item={item} />)
-  t.matchSnapshot(window.document.body.innerHTML)
+  expect(window.document.body.innerHTML).toMatchSnapshot()
 })
 
-t.test('ResultItem render missing version and labels', async t => {
+test('ResultItem render missing version and labels', async () => {
   const item = {
     id: '1',
     name: 'item',
@@ -98,11 +100,11 @@ t.test('ResultItem render missing version and labels', async t => {
     size: 1,
   } as GridItemData
   render(<ResultItem item={item} />)
-  t.matchSnapshot(window.document.body.innerHTML)
+  expect(window.document.body.innerHTML).toMatchSnapshot()
 })
 
-t.test('ResultItem updates query store value', async t => {
-  await t.test('stacked item', async t => {
+describe('ResultItem updates query store value', () => {
+  test('stacked item', async () => {
     const item = {
       id: '1',
       labels: ['prod'],
@@ -127,14 +129,14 @@ t.test('ResultItem updates query store value', async t => {
     )
     render(<RetrieveQuery />)
 
-    t.strictSame(
+    assert.deepEqual(
       query,
       ':project > *[name="item"][version="1.0.0"]',
       'should append item and version in order to narrow & show stacked items',
     )
   })
 
-  await t.test('importer item', async t => {
+  test('importer item', async () => {
     const item = {
       id: '1',
       labels: ['prod'],
@@ -160,14 +162,14 @@ t.test('ResultItem updates query store value', async t => {
     )
     render(<RetrieveQuery />)
 
-    t.strictSame(
+    assert.deepEqual(
       query,
       ':project[name="my-item"]',
       'should prefix with :project followed by the name of the importer',
     )
   })
 
-  await t.test('has parent', async t => {
+  test('has parent', async () => {
     const item = {
       id: '1',
       labels: ['prod'],
@@ -193,14 +195,14 @@ t.test('ResultItem updates query store value', async t => {
     )
     render(<RetrieveQuery />)
 
-    t.strictSame(
+    assert.deepEqual(
       query,
       '[name="parent"][version="1.0.0"] > :is(:project > *)',
       'should prefix the parent name and version',
     )
   })
 
-  await t.test('add suffix', async t => {
+  test('add suffix', async () => {
     const item = {
       id: '1',
       labels: ['prod'],
@@ -225,7 +227,7 @@ t.test('ResultItem updates query store value', async t => {
     )
     render(<RetrieveQuery />)
 
-    t.strictSame(
+    assert.deepEqual(
       query,
       ':project > *[name="item"][version="1.0.0"]',
       'should add name and version suffix',

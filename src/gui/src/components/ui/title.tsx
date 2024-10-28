@@ -1,10 +1,9 @@
-import * as React from 'react'
+import { type HTMLAttributes, forwardRef } from 'react'
+import { cn } from '@/lib/utils.js'
 
-import { cn } from '@/lib/utils'
-
-export const Title = React.forwardRef<
+export const Title = forwardRef<
   HTMLParagraphElement,
-  React.HTMLAttributes<HTMLHeadingElement>
+  HTMLAttributes<HTMLHeadingElement>
 >(({ className, ...props }, ref) => (
   <h3
     ref={ref}

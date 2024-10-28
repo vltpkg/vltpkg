@@ -1,5 +1,4 @@
-import t from 'tap'
-import React from 'react'
+import { test, expect, vi, afterEach } from 'vitest'
 import { cleanup, render } from '@testing-library/react'
 import html from 'diffable-html'
 import { Spec, getOptions } from '@vltpkg/spec/browser'
@@ -7,22 +6,17 @@ import { joinDepIDTuple } from '@vltpkg/dep-id'
 import type { NodeLike } from '@vltpkg/graph'
 import { useGraphStore as useStore } from '@/state/index.js'
 import { GridItemData } from '@/components/explorer-grid/types.js'
+import { SelectedItem } from '@/components/explorer-grid/selected-item.jsx'
 
-// avoids rendering the internals of each component
-const { SelectedItem } = await t.mockImport(
-  '../../../src/components/explorer-grid/selected-item.jsx',
-  {
-    '@/components/ui/badge.jsx': {
-      Badge: 'gui-badge',
-    },
-    '@/components/ui/card.jsx': {
-      Card: 'gui-card',
-      CardDescription: 'gui-card-description',
-      CardHeader: 'gui-card-header',
-      CardTitle: 'gui-card-title',
-    },
-  },
-)
+vi.mock('@/components/ui/badge.jsx', () => ({
+  Badge: 'gui-badge',
+}))
+vi.mock('@/components/ui/card.jsx', () => ({
+  Card: 'gui-card',
+  CardDescription: 'gui-card-description',
+  CardHeader: 'gui-card-header',
+  CardTitle: 'gui-card-title',
+}))
 
 const specOptions = getOptions({
   registries: {
@@ -30,15 +24,18 @@ const specOptions = getOptions({
   },
 })
 
-t.cleanSnapshot = s => html(s)
+expect.addSnapshotSerializer({
+  serialize: v => html(v),
+  test: () => true,
+})
 
-t.afterEach(() => {
+afterEach(() => {
   const CleanUp = () => (useStore(state => state.reset)(), '')
   render(<CleanUp />)
   cleanup()
 })
 
-t.test('SelectedItem render with item', async t => {
+test('SelectedItem render with item', async () => {
   const item = {
     name: 'item',
     title: 'item',
@@ -46,10 +43,10 @@ t.test('SelectedItem render with item', async t => {
     spec: Spec.parse('item', '^1.0.0', specOptions),
   } as unknown as GridItemData
   render(<SelectedItem item={item} />)
-  t.matchSnapshot(window.document.body.innerHTML)
+  expect(window.document.body.innerHTML).toMatchSnapshot()
 })
 
-t.test('SelectedItem render with custom registry', async t => {
+test('SelectedItem render with custom registry', async () => {
   const item = {
     name: 'item',
     title: 'item',
@@ -74,10 +71,10 @@ t.test('SelectedItem render with custom registry', async t => {
     return <SelectedItem item={item} />
   }
   render(<Container />)
-  t.matchSnapshot(window.document.body.innerHTML)
+  expect(window.document.body.innerHTML).toMatchSnapshot()
 })
 
-t.test('SelectedItem render with scoped registry', async t => {
+test('SelectedItem render with scoped registry', async () => {
   const options = {
     ...specOptions,
     'scope-registries': {
@@ -108,10 +105,10 @@ t.test('SelectedItem render with scoped registry', async t => {
     return <SelectedItem item={item} />
   }
   render(<Container />)
-  t.matchSnapshot(window.document.body.innerHTML)
+  expect(window.document.body.innerHTML).toMatchSnapshot()
 })
 
-t.test('SelectedItem render with default git host', async t => {
+test('SelectedItem render with default git host', async () => {
   const item = {
     name: 'item',
     title: 'item',
@@ -136,10 +133,10 @@ t.test('SelectedItem render with default git host', async t => {
     return <SelectedItem item={item} />
   }
   render(<Container />)
-  t.matchSnapshot(window.document.body.innerHTML)
+  expect(window.document.body.innerHTML).toMatchSnapshot()
 })
 
-t.test('SelectedItem render connection lines', async t => {
+test('SelectedItem render connection lines', async () => {
   const item = {
     name: 'item',
     title: 'item',
@@ -158,5 +155,5 @@ t.test('SelectedItem render connection lines', async t => {
     } as NodeLike,
   } as unknown as GridItemData
   render(<SelectedItem item={item} />)
-  t.matchSnapshot(window.document.body.innerHTML)
+  expect(window.document.body.innerHTML).toMatchSnapshot()
 })

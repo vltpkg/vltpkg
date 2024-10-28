@@ -16,7 +16,7 @@
   "dependencies": {
     "@vltpkg/cli": "workspace:*",
     "@yao-pkg/pkg": "^5.15.0",
-    "esbuild": "^0.23.1",
+    "esbuild": "catalog:",
     "jscodeshift": "^17.0.0",
     "package-json-from-dist": "catalog:"
   },
@@ -51,6 +51,7 @@
   },
   "tap": {
     "extends": "../../tap-config.yaml",
+    "disable-coverage": true,
     "timeout": 600
   },
   "prettier": "../../.prettierrc.js",

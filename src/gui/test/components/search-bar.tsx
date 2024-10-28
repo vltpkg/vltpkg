@@ -1,5 +1,4 @@
-import t from 'tap'
-import React from 'react'
+import { test, assert, expect, afterEach } from 'vitest'
 import {
   cleanup,
   render,
@@ -10,30 +9,33 @@ import html from 'diffable-html'
 import { useGraphStore as useStore } from '@/state/index.js'
 import { SearchBar } from '@/components/search-bar.jsx'
 
-t.cleanSnapshot = s => html(s)
+expect.addSnapshotSerializer({
+  serialize: v => html(v),
+  test: () => true,
+})
 
-t.afterEach(() => {
+afterEach(() => {
   const CleanUp = () => (useStore(state => state.reset)(), '')
   render(<CleanUp />)
   cleanup()
 })
 
-t.test('search-bar render default', async t => {
+test('search-bar render default', async () => {
   render(<SearchBar />)
-  t.matchSnapshot(window.document.body.innerHTML)
+  expect(window.document.body.innerHTML).toMatchSnapshot()
 })
 
-t.test('search-bar render with custom query', async t => {
+test('search-bar render with custom query', async () => {
   const Container = () => {
     const updateQuery = useStore(state => state.updateQuery)
     updateQuery('[name="my-package"][version="1.0.0"]')
     return <SearchBar />
   }
   render(<Container />)
-  t.matchSnapshot(window.document.body.innerHTML)
+  expect(window.document.body.innerHTML).toMatchSnapshot()
 })
 
-t.test('search-bar updates query store value', async t => {
+test('search-bar updates query store value', async () => {
   render(<SearchBar />)
 
   const value = '[name="my-package"][version="2.0.0"]'
@@ -47,5 +49,5 @@ t.test('search-bar updates query store value', async t => {
   )
   render(<RetrieveQuery />)
 
-  t.strictSame(query, '[name="my-package"][version="2.0.0"]')
+  assert.equal(query, '[name="my-package"][version="2.0.0"]')
 })

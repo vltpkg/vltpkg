@@ -1,11 +1,6 @@
-/* IMPORTANT
- * This snapshot file is auto-generated, but designed for humans.
- * It should be checked into source control and tracked carefully.
- * Re-generate by setting TAP_SNAPSHOT=1 and running tests.
- * Make sure to inspect the output below.  Do not ignore changes!
- */
-'use strict'
-exports[`test/app/explorer.tsx > TAP > explorer has project root info > must match snapshot 1`] = `
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`explorer has project root info 1`] = `
 
 <div>
   <div class="grid grid-cols-7 gap-4 py-2 border-b">
@@ -26,9 +21,9 @@ exports[`test/app/explorer.tsx > TAP > explorer has project root info > must mat
   </gui-explorer-grid>
 </div>
 
-`
+`;
 
-exports[`test/app/explorer.tsx > TAP > explorer render default > must match snapshot 1`] = `
+exports[`render default 1`] = `
 
 <div>
   <div class="grid grid-cols-7 gap-4 py-2 border-b">
@@ -46,4 +41,4 @@ exports[`test/app/explorer.tsx > TAP > explorer render default > must match snap
   </gui-explorer-grid>
 </div>
 
-`
+`;

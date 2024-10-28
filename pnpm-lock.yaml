@@ -9,15 +9,33 @@ catalogs:
     '@eslint/js':
       specifier: ^9.8.0
       version: 9.9.0
+    '@radix-ui/react-slot':
+      specifier: ^1.1.0
+      version: 1.1.0
     '@types/eslint__js':
       specifier: ^8.42.3
       version: 8.42.3
     '@types/node':
       specifier: ^22.4.1
       version: 22.5.0
+    '@types/react':
+      specifier: ^18.3.11
+      version: 18.3.11
+    '@types/react-dom':
+      specifier: ^18.3.1
+      version: 18.3.1
     chalk:
       specifier: ^5.3.0
       version: 5.3.0
+    class-variance-authority:
+      specifier: ^0.7.0
+      version: 0.7.0
+    clsx:
+      specifier: ^2.1.1
+      version: 2.1.1
+    esbuild:
+      specifier: ^0.23.1
+      version: 0.23.1
     eslint:
       specifier: ^9.8.0
       version: 9.9.0
@@ -27,6 +45,9 @@ catalogs:
     lru-cache:
       specifier: ^11.0.0
       version: 11.0.0
+    lucide-react:
+      specifier: ^0.453.0
+      version: 0.453.0
     package-json-from-dist:
       specifier: ^1.0.0
       version: 1.0.0
@@ -42,12 +63,27 @@ catalogs:
     prettier:
       specifier: ^3.3.2
       version: 3.3.3
+    react:
+      specifier: ^18.3.1
+      version: 18.3.1
+    react-dom:
+      specifier: ^18.3.1
+      version: 18.3.1
     rimraf:
       specifier: ^6.0.1
       version: 6.0.1
     semver:
       specifier: ^7.6.3
       version: 7.6.3
+    tailwind-merge:
+      specifier: ^2.5.2
+      version: 2.5.4
+    tailwindcss:
+      specifier: ^3.4.14
+      version: 3.4.14
+    tailwindcss-animate:
+      specifier: ^1.0.7
+      version: 1.0.7
     tap:
       specifier: ^21.0.1
       version: 21.0.1
@@ -63,6 +99,9 @@ catalogs:
     typescript-eslint:
       specifier: ^8.0.1
       version: 8.2.0
+    vitest:
+      specifier: ^2.1.3
+      version: 2.1.3
     walk-up-path:
       specifier: ^4.0.0
       version: 4.0.0
@@ -166,7 +205,7 @@ importers:
         specifier: ^5.15.0
         version: 5.15.0(encoding@0.1.13)
       esbuild:
-        specifier: ^0.23.1
+        specifier: 'catalog:'
         version: 0.23.1
       jscodeshift:
         specifier: ^17.0.0
@@ -607,7 +646,7 @@ importers:
   src/gui:
     dependencies:
       '@radix-ui/react-slot':
-        specifier: ^1.1.0
+        specifier: 'catalog:'
         version: 1.1.0(@types/react@18.3.11)(react@18.3.1)
       '@vltpkg/dep-id':
         specifier: workspace:*
@@ -628,25 +667,25 @@ importers:
         specifier: workspace:*
         version: link:../types
       class-variance-authority:
-        specifier: ^0.7.0
+        specifier: 'catalog:'
         version: 0.7.0
       clsx:
-        specifier: ^2.1.1
+        specifier: 'catalog:'
         version: 2.1.1
       lucide-react:
-        specifier: ^0.453.0
+        specifier: 'catalog:'
         version: 0.453.0(react@18.3.1)
       react:
-        specifier: ^18.3.1
+        specifier: 'catalog:'
         version: 18.3.1
       react-dom:
-        specifier: ^18.3.1
+        specifier: 'catalog:'
         version: 18.3.1(react@18.3.1)
       tailwind-merge:
-        specifier: ^2.5.2
-        version: 2.5.3
+        specifier: 'catalog:'
+        version: 2.5.4
       tailwindcss-animate:
-        specifier: ^1.0.7
+        specifier: 'catalog:'
         version: 1.0.7(tailwindcss@3.4.14)
       zustand:
         specifier: ^4.5.4
@@ -655,9 +694,6 @@ importers:
       '@eslint/js':
         specifier: 'catalog:'
         version: 9.9.0
-      '@tapjs/tsx':
-        specifier: ^3.0.0
-        version: 3.0.0(@tapjs/core@4.0.0(@types/node@22.5.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
       '@testing-library/dom':
         specifier: ^10.4.0
         version: 10.4.0
@@ -677,11 +713,14 @@ importers:
         specifier: 'catalog:'
         version: 22.5.0
       '@types/react':
-        specifier: ^18.3.11
+        specifier: 'catalog:'
         version: 18.3.11
       '@types/react-dom':
-        specifier: ^18.3.1
+        specifier: 'catalog:'
         version: 18.3.1
+      '@vitejs/plugin-react':
+        specifier: ^4.3.3
+        version: 4.3.3(vite@6.0.0-beta.2(@types/node@22.5.0))
       chokidar-cli:
         specifier: ^3.0.0
         version: 3.0.0
@@ -689,7 +728,7 @@ importers:
         specifier: ^5.0.0
         version: 5.0.0
       esbuild:
-        specifier: ^0.23.1
+        specifier: 'catalog:'
         version: 0.23.1
       eslint:
         specifier: 'catalog:'
@@ -701,17 +740,17 @@ importers:
         specifier: 'catalog:'
         version: 3.3.3
       tailwindcss:
-        specifier: ^3.4.14
-        version: 3.4.14
-      tap:
         specifier: 'catalog:'
-        version: 21.0.1(@types/node@22.5.0)(@types/react@18.3.11)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4)
+        version: 3.4.14
       typescript:
         specifier: 'catalog:'
         version: 5.5.4
       typescript-eslint:
         specifier: 'catalog:'
         version: 8.2.0(eslint@9.9.0(jiti@1.21.6))(typescript@5.5.4)
+      vitest:
+        specifier: 'catalog:'
+        version: 2.1.3(@types/node@22.5.0)(jsdom@25.0.1)
 
   src/package-info:
     dependencies:
@@ -1569,16 +1608,16 @@ importers:
         specifier: ^1.1.0
         version: 1.1.0(@types/react-dom@18.3.1)(@types/react@18.3.11)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@radix-ui/react-slot':
-        specifier: ^1.1.0
+        specifier: 'catalog:'
         version: 1.1.0(@types/react@18.3.11)(react@18.3.1)
       '@radix-ui/react-tooltip':
         specifier: ^1.1.3
         version: 1.1.3(@types/react-dom@18.3.1)(@types/react@18.3.11)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@types/react':
-        specifier: ^18.3.11
+        specifier: 'catalog:'
         version: 18.3.11
       '@types/react-dom':
-        specifier: ^18.3.1
+        specifier: 'catalog:'
         version: 18.3.1
       '@vltpkg/cli':
         specifier: workspace:*
@@ -1587,31 +1626,31 @@ importers:
         specifier: 5.0.0-beta.4
         version: 5.0.0-beta.4(@types/node@22.5.0)(rollup@4.24.0)(typescript@5.5.4)
       class-variance-authority:
-        specifier: ^0.7.0
+        specifier: 'catalog:'
         version: 0.7.0
       clsx:
-        specifier: ^2.1.1
+        specifier: 'catalog:'
         version: 2.1.1
       lucide-react:
-        specifier: ^0.453.0
+        specifier: 'catalog:'
         version: 0.453.0(react@18.3.1)
       react:
-        specifier: ^18.3.1
+        specifier: 'catalog:'
         version: 18.3.1
       react-dom:
-        specifier: ^18.3.1
+        specifier: 'catalog:'
         version: 18.3.1(react@18.3.1)
       sharp:
         specifier: ^0.33.5
         version: 0.33.5
       tailwind-merge:
-        specifier: ^2.5.4
+        specifier: 'catalog:'
         version: 2.5.4
       tailwindcss:
-        specifier: ^3.4.14
+        specifier: 'catalog:'
         version: 3.4.14
       tailwindcss-animate:
-        specifier: ^1.0.7
+        specifier: 'catalog:'
         version: 1.0.7(tailwindcss@3.4.14)
       typedoc:
         specifier: ^0.26.10
@@ -1648,7 +1687,7 @@ importers:
         specifier: 'catalog:'
         version: 8.2.0(eslint@9.9.0(jiti@1.21.6))(typescript@5.5.4)
       vitest:
-        specifier: ^2.1.3
+        specifier: 'catalog:'
         version: 2.1.3(@types/node@22.5.0)(jsdom@25.0.1)
 
 packages:
@@ -3264,12 +3303,6 @@ packages:
     peerDependencies:
       '@tapjs/core': 4.0.0
 
-  '@tapjs/tsx@3.0.0':
-    resolution: {integrity: sha512-AzrzK0UY1X4e2EuxhSIXD9mo3Owi8KLlrf9hfT05kkGQabsJ8AgO7IiOO3SVnNzQmuXL2iBblsBlMxK7NSH6RQ==}
-    engines: {node: 20 || >=22}
-    peerDependencies:
-      '@tapjs/core': 4.0.0
-
   '@tapjs/typescript@3.0.0':
     resolution: {integrity: sha512-gKDv+07vdNuplN32sQvkzuEnai9JqJlUX5BuqTrSeWMsoKCoGPdyt8YNwaoebVeyBpt7IgjOBln8YLhfI3AcpA==}
     engines: {node: 20 || >=22}
@@ -3534,6 +3567,12 @@ packages:
 
   '@vitejs/plugin-react@4.3.2':
     resolution: {integrity: sha512-hieu+o05v4glEBucTcKMK3dlES0OeJlD9YVOAPraVMOInBCwzumaIFiUjr4bHK7NPgnAHgiskUoceKercrN8vg==}
+    engines: {node: ^14.18.0 || >=16.0.0}
+    peerDependencies:
+      vite: 6.0.0-beta.2
+
+  '@vitejs/plugin-react@4.3.3':
+    resolution: {integrity: sha512-NooDe9GpHGqNns1i8XDERg0Vsg5SSYRhRxxyTGogUdkdNt47jal+fbuYi+Yfq6pzRCKXyoPcWisfxE6RIM3GKA==}
     engines: {node: ^14.18.0 || >=16.0.0}
     peerDependencies:
       vite: 6.0.0-beta.2
@@ -4517,9 +4556,6 @@ packages:
   get-nonce@1.0.1:
     resolution: {integrity: sha512-FJhYRoDaiatfEkUK8HKlicmu/3SGFD51q3itKDGoSTysQJBnfOcxU5GxnhE1E6soB76MbT0MBtnKJuXyAx+96Q==}
     engines: {node: '>=6'}
-
-  get-tsconfig@4.8.1:
-    resolution: {integrity: sha512-k9PN+cFBmaLWtVz29SkUoqU5O0slLuHJXt/2P+tMVFT+phsSGXGkp9t3rQIqdz0e+06EHNGs3oM6ZX1s2zHxRg==}
 
   github-from-package@0.0.0:
     resolution: {integrity: sha512-SyHy3T1v2NUXn29OsWdxmK6RwHD+vkj3v8en8AOBZ1wBQ/hCAQ5bAQTD02kW4W9tUp/3Qh6J8r9EvntiyCmOOw==}
@@ -6000,9 +6036,6 @@ packages:
     resolution: {integrity: sha512-jpKjLibLuc8D1XEV2+7zb0aqN7I8d12u89g/v6IsgCzdVlccMQJq4TKkPw5fbhHdxhm7nbVtN+KvOTnjFf+nEA==}
     engines: {node: 20 || >=22}
 
-  resolve-pkg-maps@1.0.0:
-    resolution: {integrity: sha512-seS2Tj26TBVOC2NIc2rOe2y2ZO7efxITtLZcGSOnHHNOQ7CkiUBfw0Iw2ck6xkIhPwLhKNLS8BO+hEpngQlqzw==}
-
   resolve@1.22.8:
     resolution: {integrity: sha512-oKWePCxqpd6FlLvGV1VU0x7bkPmmCNolxzjMf4NczoDnQcIWrAF+cPtZn5i6n+RfD2d9i0tzpKnG6Yk168yIyw==}
     hasBin: true
@@ -6332,9 +6365,6 @@ packages:
     engines: {node: 20 || >=22}
     hasBin: true
 
-  tailwind-merge@2.5.3:
-    resolution: {integrity: sha512-d9ZolCAIzom1nf/5p4LdD5zvjmgSxY0BGgdSvmXIoMYAiPdAW/dSpP7joCDYFY7r/HkEa2qmPtkgsu0xjQeQtw==}
-
   tailwind-merge@2.5.4:
     resolution: {integrity: sha512-0q8cfZHMu9nuYP/b5Shb7Y7Sh1B7Nnl5GqNr1U+n2p6+mybvRtayrQ+0042Z5byvTA8ihjlP8Odo8/VnHbZu4Q==}
 
@@ -6482,11 +6512,6 @@ packages:
 
   tslib@2.7.0:
     resolution: {integrity: sha512-gLXCKdN1/j47AiHiOkJN69hJmcbGTHI0ImLmbYLHykhgeN0jVGola9yVjFgzCUklsZQMW55o+dW7IXv3RCXDzA==}
-
-  tsx@4.19.1:
-    resolution: {integrity: sha512-0flMz1lh74BR4wOvBjuh9olbnwqCPc35OOlfyzHba0Dc+QNUeWX/Gq2YTbnwcWPO3BMd8fkzRVrHcsR+a7z7rA==}
-    engines: {node: '>=18.0.0'}
-    hasBin: true
 
   tuf-js@2.2.1:
     resolution: {integrity: sha512-GwIJau9XaA8nLVbUXsN3IlFi7WmQ48gBUrl3FTkkL/XLu/POhBzfmX9hd33FNMX1qAsfl6ozO1iMmW9NC8YniA==}
@@ -7373,7 +7398,7 @@ snapshots:
   '@babel/helper-module-imports@7.25.7':
     dependencies:
       '@babel/traverse': 7.25.7
-      '@babel/types': 7.25.7
+      '@babel/types': 7.25.8
     transitivePeerDependencies:
       - supports-color
 
@@ -8793,11 +8818,6 @@ snapshots:
       - react
       - react-dom
 
-  '@tapjs/tsx@3.0.0(@tapjs/core@4.0.0(@types/node@22.5.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))':
-    dependencies:
-      '@tapjs/core': 4.0.0(@types/node@22.5.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      tsx: 4.19.1
-
   '@tapjs/typescript@3.0.0(@tapjs/core@4.0.0(@types/node@22.5.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@types/node@22.5.0)(typescript@5.5.4)':
     dependencies:
       '@isaacs/ts-node-temp-fork-for-pr-2009': 10.9.7(@types/node@22.5.0)(typescript@5.5.4)
@@ -8856,24 +8876,24 @@ snapshots:
 
   '@types/babel__core@7.20.5':
     dependencies:
-      '@babel/parser': 7.25.7
-      '@babel/types': 7.25.7
+      '@babel/parser': 7.25.8
+      '@babel/types': 7.25.8
       '@types/babel__generator': 7.6.8
       '@types/babel__template': 7.4.4
       '@types/babel__traverse': 7.20.6
 
   '@types/babel__generator@7.6.8':
     dependencies:
-      '@babel/types': 7.25.7
+      '@babel/types': 7.25.8
 
   '@types/babel__template@7.4.4':
     dependencies:
-      '@babel/parser': 7.25.7
-      '@babel/types': 7.25.7
+      '@babel/parser': 7.25.8
+      '@babel/types': 7.25.8
 
   '@types/babel__traverse@7.20.6':
     dependencies:
-      '@babel/types': 7.25.7
+      '@babel/types': 7.25.8
 
   '@types/cookie@0.6.0': {}
 
@@ -9119,6 +9139,17 @@ snapshots:
       - supports-color
 
   '@vitejs/plugin-react@4.3.2(vite@6.0.0-beta.2(@types/node@22.5.0))':
+    dependencies:
+      '@babel/core': 7.25.7
+      '@babel/plugin-transform-react-jsx-self': 7.25.7(@babel/core@7.25.7)
+      '@babel/plugin-transform-react-jsx-source': 7.25.7(@babel/core@7.25.7)
+      '@types/babel__core': 7.20.5
+      react-refresh: 0.14.2
+      vite: 6.0.0-beta.2(@types/node@22.5.0)
+    transitivePeerDependencies:
+      - supports-color
+
+  '@vitejs/plugin-react@4.3.3(vite@6.0.0-beta.2(@types/node@22.5.0))':
     dependencies:
       '@babel/core': 7.25.7
       '@babel/plugin-transform-react-jsx-self': 7.25.7(@babel/core@7.25.7)
@@ -10256,10 +10287,6 @@ snapshots:
   get-east-asian-width@1.2.0: {}
 
   get-nonce@1.0.1: {}
-
-  get-tsconfig@4.8.1:
-    dependencies:
-      resolve-pkg-maps: 1.0.0
 
   github-from-package@0.0.0: {}
 
@@ -12218,8 +12245,6 @@ snapshots:
       glob: 11.0.0
       walk-up-path: 4.0.0
 
-  resolve-pkg-maps@1.0.0: {}
-
   resolve@1.22.8:
     dependencies:
       is-core-module: 2.15.1
@@ -12614,8 +12639,6 @@ snapshots:
       rimraf: 6.0.1
       tshy: 3.0.2
 
-  tailwind-merge@2.5.3: {}
-
   tailwind-merge@2.5.4: {}
 
   tailwindcss-animate@1.0.7(tailwindcss@3.4.14):
@@ -12823,13 +12846,6 @@ snapshots:
       walk-up-path: 4.0.0
 
   tslib@2.7.0: {}
-
-  tsx@4.19.1:
-    dependencies:
-      esbuild: 0.23.1
-      get-tsconfig: 4.8.1
-    optionalDependencies:
-      fsevents: 2.3.3
 
   tuf-js@2.2.1:
     dependencies:
@@ -13053,7 +13069,7 @@ snapshots:
   vite-node@2.1.3(@types/node@22.5.0):
     dependencies:
       cac: 6.7.14
-      debug: 4.3.6
+      debug: 4.3.7
       pathe: 1.1.2
       vite: 6.0.0-beta.2(@types/node@22.5.0)
     transitivePeerDependencies:
@@ -13090,7 +13106,7 @@ snapshots:
       '@vitest/spy': 2.1.3
       '@vitest/utils': 2.1.3
       chai: 5.1.1
-      debug: 4.3.6
+      debug: 4.3.7
       magic-string: 0.30.12
       pathe: 1.1.2
       std-env: 3.7.0

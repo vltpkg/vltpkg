@@ -1,9 +1,9 @@
-import * as React from 'react'
-import { cn } from '@/lib/utils'
+import { type HTMLAttributes, forwardRef } from 'react'
+import { cn } from '@/lib/utils.js'
 
-const Label = React.forwardRef<
+const Label = forwardRef<
   HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement>
+  HTMLAttributes<HTMLDivElement>
 >(({ className, ...props }, ref) => (
   <div
     ref={ref}

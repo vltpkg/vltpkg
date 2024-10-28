@@ -1,5 +1,4 @@
-import t from 'tap'
-import React from 'react'
+import { test, expect, afterEach } from 'vitest'
 import { cleanup, render } from '@testing-library/react'
 import html from 'diffable-html'
 import {
@@ -11,13 +10,16 @@ import {
   CardFooter,
 } from '@/components/ui/card.jsx'
 
-t.cleanSnapshot = s => html(s)
+expect.addSnapshotSerializer({
+  serialize: v => html(v),
+  test: () => true,
+})
 
-t.afterEach(() => {
+afterEach(() => {
   cleanup()
 })
 
-t.test('card render default', async t => {
+test('card render default', async () => {
   const Container = () => (
     <Card>
       <CardHeader>
@@ -29,13 +31,13 @@ t.test('card render default', async t => {
     </Card>
   )
   render(<Container />)
-  t.matchSnapshot(window.document.body.innerHTML)
+  expect(window.document.body.innerHTML).toMatchSnapshot()
 })
 
-t.test('card render as link', async t => {
+test('card render as link', async () => {
   const Container = () => (
     <Card renderAsLink={true}>Card Content</Card>
   )
   render(<Container />)
-  t.matchSnapshot(window.document.body.innerHTML)
+  expect(window.document.body.innerHTML).toMatchSnapshot()
 })
