@@ -4,8 +4,18 @@ import type {
   GraphLike,
   NodeLike,
 } from '@vltpkg/graph'
-import { Spec, type SpecLike } from '@vltpkg/spec/browser'
+import {
+  Spec,
+  type SpecLike,
+  type SpecOptions,
+} from '@vltpkg/spec/browser'
 import { Manifest } from '@vltpkg/types'
+
+const specOptions = {
+  registries: {
+    custom: 'http://example.com',
+  },
+} satisfies SpecOptions
 
 const projectRoot = '.'
 // NOTE: name is the only property that is being tracked in these fixture
@@ -99,32 +109,32 @@ export const getSimpleGraph = (): GraphLike => {
   })
   newEdge(
     graph.mainImporter,
-    new Spec('a', '^1.0.0', 'registry'),
+    Spec.parse('a', '^1.0.0', specOptions),
     'prod',
     a,
   )
   newEdge(
     graph.mainImporter,
-    new Spec('b', '^1.0.0', 'registry'),
+    Spec.parse('b', '^1.0.0', specOptions),
     'dev',
     b,
   )
   newEdge(
     graph.mainImporter,
-    new Spec('e', '^1.0.0', 'registry'),
+    Spec.parse('e', '^1.0.0', specOptions),
     'prod',
     e,
   )
   newEdge(
     graph.mainImporter,
-    new Spec('@x/y', '^1.0.0', 'file'),
+    Spec.parse('@x/y', '^1.0.0', specOptions),
     'dev',
     y,
   )
-  newEdge(b, new Spec('c', '^1.0.0', 'registry'), 'prod', c)
-  newEdge(b, new Spec('d', '^1.0.0', 'registry'), 'prod', d)
-  newEdge(d, new Spec('e', '^1.0.0', 'registry'), 'prod', e)
-  newEdge(d, new Spec('f', '^1.0.0', 'registry'), 'optional', f)
+  newEdge(b, Spec.parse('c', '^1.0.0', specOptions), 'prod', c)
+  newEdge(b, Spec.parse('d', '^1.0.0', specOptions), 'prod', d)
+  newEdge(d, Spec.parse('e', '^1.0.0', specOptions), 'prod', e)
+  newEdge(d, Spec.parse('f', '^1.0.0', specOptions), 'optional', f)
 
   // give some nodes an expanded manifest so that we can test
   // more attribute selector scenarios
@@ -216,7 +226,7 @@ export const getCycleGraph = (): GraphLike => {
   graph.nodes.set(a.id, a)
   newEdge(
     graph.mainImporter,
-    new Spec('a', '^1.0.0', 'registry'),
+    Spec.parse('a', '^1.0.0', specOptions),
     'prod',
     a,
   )
@@ -232,8 +242,8 @@ export const getCycleGraph = (): GraphLike => {
     },
   }
   graph.nodes.set(b.id, b)
-  newEdge(a, new Spec('b', '^1.0.0', 'registry'), 'prod', b)
-  newEdge(b, new Spec('a', '^1.0.0', 'registry'), 'prod', a)
+  newEdge(a, Spec.parse('b', '^1.0.0', specOptions), 'prod', b)
+  newEdge(b, Spec.parse('a', '^1.0.0', specOptions), 'prod', a)
 
   return graph
 }
@@ -249,7 +259,7 @@ export const getMissingManifestsGraph = (): GraphLike => {
   graph.nodes.set(a.id, a)
   newEdge(
     graph.mainImporter,
-    new Spec('a', '^1.0.0', 'registry'),
+    Spec.parse('a', '^1.0.0', specOptions),
     'prod',
     a,
   )
@@ -261,12 +271,12 @@ export const getMissingNodeGraph = (): GraphLike => {
   const graph = newGraph('node-missing-project')
   newEdge(
     graph.mainImporter,
-    new Spec('a', '^1.0.0', 'registry'),
+    Spec.parse('a', '^1.0.0', specOptions),
     'prod',
   )
   newEdge(
     graph.mainImporter,
-    new Spec('b', '^1.0.0', 'registry'),
+    Spec.parse('b', '^1.0.0', specOptions),
     'dev',
   )
   return graph
