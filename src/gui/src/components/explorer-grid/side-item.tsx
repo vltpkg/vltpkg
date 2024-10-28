@@ -1,4 +1,4 @@
-import * as React from 'react'
+import { useRef, useEffect } from 'react'
 import { Badge } from '@/components/ui/badge.jsx'
 import { Card, CardHeader, CardTitle } from '@/components/ui/card.jsx'
 import { labelClassNamesMap } from './label-helper.js'
@@ -16,9 +16,9 @@ export const SideItem = ({
 }: SideItemOptions) => {
   // These refs and the code in useEffect are used to fix the line connection
   // height for when the dependency item takes up more space than a single line
-  const divRef = React.useRef<HTMLDivElement>(null)
-  const lineRef = React.useRef<HTMLDivElement>(null)
-  React.useEffect(() => {
+  const divRef = useRef<HTMLDivElement>(null)
+  const lineRef = useRef<HTMLDivElement>(null)
+  useEffect(() => {
     const rect = divRef.current?.getBoundingClientRect()
     if (rect && lineRef.current && rect.height > 42.5) {
       lineRef.current.style.height = `${rect.height + 19}px`

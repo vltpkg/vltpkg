@@ -1,4 +1,3 @@
-import * as React from 'react'
 import { CornerRightDown, MoveRight } from 'lucide-react'
 import type { EdgeLike, NodeLike } from '@vltpkg/graph'
 import { stringifyNode } from '@vltpkg/graph/browser'
@@ -111,8 +110,8 @@ const getItemsData = (edges: EdgeLike[], nodes: NodeLike[]) => {
   }
 
   // this is a singled out, selected node
-  if (items.length === 1) {
-    const [item] = items
+  const item = items[0]
+  if (item && items.length === 1) {
     item.title = item.to?.name || 'Missing package'
     item.version = item.to?.version ? `v${item.to.version}` : ''
   }
@@ -184,19 +183,21 @@ export const ExplorerGrid = () => {
   const items = getItemsData(edges, nodes)
   const selected = items.length === 1
   const [selectedItem] = items
-  const parent = selected ? selectedItem.from : undefined
-  const parentItem = getParent(selectedItem, parent)
+  const parent = selected ? selectedItem?.from : undefined
+  const parentItem =
+    selectedItem ? getParent(selectedItem, parent) : undefined
   const dependents =
-    selected && getDependentItems(selectedItem.to, parent)
-  const dependencies = selected && getDependencyItems(selectedItem.to)
+    selected && getDependentItems(selectedItem?.to, parent)
+  const dependencies =
+    selected && getDependencyItems(selectedItem?.to)
   const dependentsClick =
     (item: GridItemData, isParent?: boolean) => () => {
       const selectedName =
-        selectedItem.to?.name ?
+        selectedItem?.to?.name ?
           `[name="${selectedItem.to.name}"]`
         : ''
       const selectedVersion =
-        selectedItem.to?.version ?
+        selectedItem?.to?.version ?
           `[version="${selectedItem.to.version}"]`
         : ''
       const newQuery =

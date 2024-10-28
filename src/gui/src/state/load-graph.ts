@@ -1,6 +1,6 @@
 import type { Spec } from '@vltpkg/spec/browser'
 import type { DependencyTypeShort } from '@vltpkg/graph'
-import type { ManifestMinified } from '@vltpkg/types'
+import type { Manifest } from '@vltpkg/types'
 import { lockfile } from '@vltpkg/graph/browser'
 import type { DepID } from '@vltpkg/dep-id/browser'
 import type {
@@ -67,7 +67,7 @@ export const load = (transfered: TransferData): LoadResponse => {
     importers: new Set<NodeLike>(),
     edges: new Set<EdgeLike>(),
     nodes: new Map<DepID, NodeLike>(),
-    projectRoot: mainImporter.projectRoot || '',
+    projectRoot: mainImporter?.projectRoot || '',
     addEdge(
       type: DependencyTypeShort,
       spec: Spec,
@@ -101,12 +101,15 @@ export const load = (transfered: TransferData): LoadResponse => {
       this.edges.add(edge)
       return edge
     },
-    addNode(id: DepID, manifest: ManifestMinified) {
+    addNode(id?: DepID, manifest?: Manifest) {
       const graph = this as GraphLike
       const node: NodeLike = {
-        id,
-        name: manifest.name,
-        version: manifest.version,
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        id: id!,
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        name: manifest!.name,
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        version: manifest!.version,
         manifest,
         edgesIn: new Set(),
         edgesOut: new Map(),
@@ -128,7 +131,7 @@ export const load = (transfered: TransferData): LoadResponse => {
     const graph = maybeGraph
     const node: NodeLike = graph.addNode(id, importer.manifest)
     node.importer = true
-    node.mainImporter = importer.id === mainImporter.id
+    node.mainImporter = importer.id === mainImporter?.id
     node.location = importer.location
     node.integrity = importer.integrity
     node.resolved = importer.resolved

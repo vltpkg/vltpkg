@@ -1,5 +1,5 @@
+import { test, expect } from 'vitest'
 import { inspect } from 'util'
-import t from 'tap'
 import { joinDepIDTuple } from '@vltpkg/dep-id'
 import { load } from '@/state/load-graph.js'
 import { TransferData } from '@/state/types.js'
@@ -84,7 +84,6 @@ const transferData: TransferData = {
   },
 }
 
-t.matchSnapshot(
-  inspect(load(transferData), { depth: 4 }),
-  'should load the graph from transfer data',
-)
+test('load graph', () => {
+  expect(inspect(load(transferData), { depth: 4 })).toMatchSnapshot()
+})

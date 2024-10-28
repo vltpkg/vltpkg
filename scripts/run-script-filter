@@ -28,7 +28,7 @@ function has_changes() {
 
 if [ "$1" == "pull_request" ]; then
   FILTER="[origin/$2]"
-  FILTER_FLAG="--filter-prod"
+  FILTER_FLAG="--filter"
 elif [ "$1" == "workflow_dispatch" ] && [ "$2" != "" ]; then
   FILTER="$2"
   FILTER_FLAG="--filter"

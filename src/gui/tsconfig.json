@@ -1,23 +1,14 @@
 {
+  "extends": "../../tsconfig.json",
   "compilerOptions": {
     "outDir": "dist",
-    "module": "nodenext",
     "target": "esnext",
     "lib": ["es6", "dom"],
-    "sourceMap": true,
-    "allowJs": true,
     "jsx": "preserve",
-    "moduleResolution": "nodenext",
-    "rootDir": "src",
     "noImplicitReturns": true,
-    "noImplicitThis": true,
-    "noImplicitAny": true,
-    "strictNullChecks": true,
-    "baseUrl": "./src",
+    "baseUrl": ".",
     "paths": {
-      "@/*": ["./*"]
+      "@/*": ["./src/*"]
     }
-  },
-  "exclude": ["node_modules", "dist", "scripts"],
-  "types": ["typePatches"]
+  }
 }

@@ -1,5 +1,4 @@
-import t from 'tap'
-import React from 'react'
+import { test, expect, afterEach } from 'vitest'
 import { cleanup, render } from '@testing-library/react'
 import html from 'diffable-html'
 import { useGraphStore as useStore } from '@/state/index.js'
@@ -8,20 +7,23 @@ import { Spec } from '@vltpkg/spec/browser'
 import { EdgeLike, NodeLike } from '@vltpkg/graph'
 import { ExplorerGrid } from '@/components/explorer-grid/index.jsx'
 
-t.cleanSnapshot = s => html(s)
+expect.addSnapshotSerializer({
+  serialize: v => html(v),
+  test: () => true,
+})
 
-t.afterEach(() => {
+afterEach(() => {
   const CleanUp = () => (useStore(state => state.reset)(), '')
   render(<CleanUp />)
   cleanup()
 })
 
-t.test('explorer-grid render default', async t => {
+test('explorer-grid render default', async () => {
   render(<ExplorerGrid />)
-  t.matchSnapshot(window.document.body.innerHTML)
+  expect(window.document.body.innerHTML).toMatchSnapshot()
 })
 
-t.test('explorer-grid with results', async t => {
+test('explorer-grid with results', async () => {
   const Container = () => {
     const updateEdges = useStore(state => state.updateEdges)
     const updateNodes = useStore(state => state.updateNodes)
@@ -62,10 +64,10 @@ t.test('explorer-grid with results', async t => {
     return <ExplorerGrid />
   }
   render(<Container />)
-  t.matchSnapshot(window.document.body.innerHTML)
+  expect(window.document.body.innerHTML).toMatchSnapshot()
 })
 
-t.test('explorer-grid with stack', async t => {
+test('explorer-grid with stack', async () => {
   const Container = () => {
     const updateEdges = useStore(state => state.updateEdges)
     const updateNodes = useStore(state => state.updateNodes)
@@ -113,5 +115,5 @@ t.test('explorer-grid with stack', async t => {
     return <ExplorerGrid />
   }
   render(<Container />)
-  t.matchSnapshot(window.document.body.innerHTML)
+  expect(window.document.body.innerHTML).toMatchSnapshot()
 })

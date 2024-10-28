@@ -1,11 +1,6 @@
-/* IMPORTANT
- * This snapshot file is auto-generated, but designed for humans.
- * It should be checked into source control and tracked carefully.
- * Re-generate by setting TAP_SNAPSHOT=1 and running tests.
- * Make sure to inspect the output below.  Do not ignore changes!
- */
-'use strict'
-exports[`test/components/ui/logo.tsx > TAP > logo render custom class > must match snapshot 1`] = `
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`logo render custom class 1`] = `
 
 <div>
   <div class="flex flex-row custom-class">
@@ -20,9 +15,9 @@ exports[`test/components/ui/logo.tsx > TAP > logo render custom class > must mat
   </div>
 </div>
 
-`
+`;
 
-exports[`test/components/ui/logo.tsx > TAP > logo render default > must match snapshot 1`] = `
+exports[`logo render default 1`] = `
 
 <div>
   <div class="flex flex-row">
@@ -37,4 +32,4 @@ exports[`test/components/ui/logo.tsx > TAP > logo render default > must match sn
   </div>
 </div>
 
-`
+`;

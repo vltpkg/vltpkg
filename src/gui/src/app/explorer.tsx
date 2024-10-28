@@ -1,4 +1,4 @@
-import * as React from 'react'
+import { useEffect } from 'react'
 import { SearchBar } from '@/components/search-bar.jsx'
 import { Logo } from '@/components/ui/logo.jsx'
 import { Title } from '@/components/ui/title.jsx'
@@ -19,7 +19,7 @@ export const Explorer = () => {
   // updates the query response state anytime the query changes
   // by defining query and q as dependencies of `useEffect` we
   // make sure that this only runs when the query changes
-  React.useEffect(() => {
+  useEffect(() => {
     async function updateQueryData() {
       if (!q) return
       const queryResponse = await q.search(query)

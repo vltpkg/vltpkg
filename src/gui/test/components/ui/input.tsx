@@ -1,26 +1,28 @@
-import t from 'tap'
-import React from 'react'
+import { test, expect, afterEach } from 'vitest'
 import { cleanup, render } from '@testing-library/react'
 import html from 'diffable-html'
 import { Input } from '@/components/ui/input.jsx'
 
-t.cleanSnapshot = s => html(s)
+expect.addSnapshotSerializer({
+  serialize: v => html(v),
+  test: () => true,
+})
 
-t.afterEach(() => {
+afterEach(() => {
   cleanup()
 })
 
-t.test('input render default', async t => {
+test('input render default', async () => {
   render(<Input />)
-  t.matchSnapshot(window.document.body.innerHTML)
+  expect(window.document.body.innerHTML).toMatchSnapshot()
 })
 
-t.test('input render with type', async t => {
+test('input render with type', async () => {
   render(<Input type="search" />)
-  t.matchSnapshot(window.document.body.innerHTML)
+  expect(window.document.body.innerHTML).toMatchSnapshot()
 })
 
-t.test('input render with custom classname', async t => {
+test('input render with custom classname', async () => {
   render(<Input className="custom-class" />)
-  t.matchSnapshot(window.document.body.innerHTML)
+  expect(window.document.body.innerHTML).toMatchSnapshot()
 })

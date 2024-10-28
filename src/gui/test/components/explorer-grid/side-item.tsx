@@ -1,48 +1,32 @@
-import t from 'tap'
-import React from 'react'
+import { test, expect, vi, afterEach } from 'vitest'
 import { cleanup, render } from '@testing-library/react'
 import html from 'diffable-html'
 import { useGraphStore as useStore } from '@/state/index.js'
 import { GridItemData } from '@/components/explorer-grid/types.js'
+import { SideItem } from '@/components/explorer-grid/side-item.jsx'
 
-// avoids rendering the internals of each component
-const { SideItem } = await t.mockImport(
-  '../../../src/components/explorer-grid/side-item.jsx',
-  {
-    '@/components/ui/badge.jsx': {
-      Badge: 'gui-badge',
-    },
-    '@/components/ui/card.jsx': {
-      Card: 'gui-card',
-      CardHeader: 'gui-card-header',
-      CardTitle: 'gui-card-title',
-    },
-  },
-)
+vi.mock('@/components/ui/badge.jsx', () => ({
+  Badge: 'gui-badge',
+}))
+vi.mock('@/components/ui/card.jsx', () => ({
+  Card: 'gui-card',
+  CardDescription: 'gui-card-description',
+  CardHeader: 'gui-card-header',
+  CardTitle: 'gui-card-title',
+}))
 
-t.cleanSnapshot = s => html(s)
+expect.addSnapshotSerializer({
+  serialize: v => html(v),
+  test: () => true,
+})
 
-t.afterEach(() => {
+afterEach(() => {
   const CleanUp = () => (useStore(state => state.reset)(), '')
   render(<CleanUp />)
   cleanup()
 })
 
-t.test('SideItem render as dependent', async t => {
-  const item = {
-    id: '1',
-    labels: ['prod'],
-    name: 'item',
-    title: 'item',
-    version: '1.0.0',
-    stacked: false,
-    size: 1,
-  } satisfies GridItemData
-  render(<SideItem item={item} dependencies={false} />)
-  t.matchSnapshot(window.document.body.innerHTML)
-})
-
-t.test('SideItem render as parent', async t => {
+test('SideItem render as dependent', async () => {
   const item = {
     id: '1',
     labels: ['prod'],
@@ -53,12 +37,33 @@ t.test('SideItem render as parent', async t => {
     size: 1,
   } satisfies GridItemData
   render(
-    <SideItem item={item} dependencies={false} highlight={true} />,
+    <SideItem item={item} dependencies={false} onClick={() => {}} />,
   )
-  t.matchSnapshot(window.document.body.innerHTML)
+  expect(window.document.body.innerHTML).toMatchSnapshot()
 })
 
-t.test('SideItem render as two-stacked dependent', async t => {
+test('SideItem render as parent', async () => {
+  const item = {
+    id: '1',
+    labels: ['prod'],
+    name: 'item',
+    title: 'item',
+    version: '1.0.0',
+    stacked: false,
+    size: 1,
+  } satisfies GridItemData
+  render(
+    <SideItem
+      item={item}
+      dependencies={false}
+      highlight={true}
+      onClick={() => {}}
+    />,
+  )
+  expect(window.document.body.innerHTML).toMatchSnapshot()
+})
+
+test('SideItem render as two-stacked dependent', async () => {
   const item = {
     id: '1',
     labels: ['prod'],
@@ -68,11 +73,13 @@ t.test('SideItem render as two-stacked dependent', async t => {
     stacked: true,
     size: 2,
   } satisfies GridItemData
-  render(<SideItem item={item} dependencies={false} />)
-  t.matchSnapshot(window.document.body.innerHTML)
+  render(
+    <SideItem item={item} dependencies={false} onClick={() => {}} />,
+  )
+  expect(window.document.body.innerHTML).toMatchSnapshot()
 })
 
-t.test('SideItem render as multi-stacked dependent', async t => {
+test('SideItem render as multi-stacked dependent', async () => {
   const item = {
     id: '1',
     labels: ['prod'],
@@ -82,11 +89,13 @@ t.test('SideItem render as multi-stacked dependent', async t => {
     stacked: true,
     size: 5,
   } satisfies GridItemData
-  render(<SideItem item={item} dependencies={false} />)
-  t.matchSnapshot(window.document.body.innerHTML)
+  render(
+    <SideItem item={item} dependencies={false} onClick={() => {}} />,
+  )
+  expect(window.document.body.innerHTML).toMatchSnapshot()
 })
 
-t.test('SideItem render as dependency', async t => {
+test('SideItem render as dependency', async () => {
   const item = {
     id: '1',
     labels: ['peer'],
@@ -96,11 +105,13 @@ t.test('SideItem render as dependency', async t => {
     stacked: false,
     size: 1,
   } satisfies GridItemData
-  render(<SideItem item={item} dependencies={true} />)
-  t.matchSnapshot(window.document.body.innerHTML)
+  render(
+    <SideItem item={item} dependencies={true} onClick={() => {}} />,
+  )
+  expect(window.document.body.innerHTML).toMatchSnapshot()
 })
 
-t.test('SideItem render as dependency with long name', async t => {
+test('SideItem render as dependency with long name', async () => {
   const item = {
     id: '1',
     labels: ['peer'],
@@ -111,6 +122,8 @@ t.test('SideItem render as dependency with long name', async t => {
     stacked: false,
     size: 1,
   } satisfies GridItemData
-  render(<SideItem item={item} dependencies={true} />)
-  t.matchSnapshot(window.document.body.innerHTML)
+  render(
+    <SideItem item={item} dependencies={true} onClick={() => {}} />,
+  )
+  expect(window.document.body.innerHTML).toMatchSnapshot()
 })

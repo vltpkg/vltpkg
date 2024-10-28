@@ -1,4 +1,3 @@
-import * as React from 'react'
 import { splitDepID } from '@vltpkg/dep-id/browser'
 import { SpecOptionsFilled } from '@vltpkg/spec/browser'
 import { Badge } from '@/components/ui/badge.jsx'

@@ -145,7 +145,7 @@ jobs:
         id: filters
         shell: bash
         run: ./scripts/run-script-filter "${{ github.event_name }}" "${{ inputs.filter || github.base_ref }}"
-  
+
       - name: Install dependencies
         if: steps.filters.outputs.prepare
         run: pnpm ${{ steps.filters.outputs.prepare }} install --ignore-scripts
@@ -159,3 +159,4 @@ jobs:
         run: |
           pnpm config set enable-pre-post-scripts false --location=project
           pnpm ${{ steps.filters.outputs.test }} --no-bail --aggregate-output test
+          pnpm ${{ steps.filters.outputs.test }} --no-bail --aggregate-output posttest

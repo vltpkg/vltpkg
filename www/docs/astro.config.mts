@@ -36,6 +36,10 @@ export default defineConfig({
           name: 'typedoc',
           hooks: {
             async setup({ logger }) {
+              if (process.env.NODE_ENV === 'test') {
+                logger.warn(`skipping typedoc due to NODE_ENV=test`)
+                return
+              }
               const dir = resolve(
                 import.meta.dirname,
                 'src/content/docs',
