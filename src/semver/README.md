@@ -1,23 +1,14 @@
-<section align="center">
-    <a href="https://www.vlt.sh">
-        <img src="https://github.com/user-attachments/assets/8ace86b8-cf67-43f0-991d-b9c1a069ffa0" />
-        <h1 align="center">
-            <strong>@vltpkg/semver</strong>
-        </h1>
-    </a>
-</section>
+![semver](https://github.com/user-attachments/assets/8ace86b8-cf67-43f0-991d-b9c1a069ffa0)
 
-<p align="center">
-    A library for parsing, validating & comparing Semantic Versions used by `vlt`.
-</p>
+# @vltpkg/semver
 
-<p align="center">
-    <a href="#usage"><strong>Usage</strong></a>
-    ·
-    <a href="#functions"><strong>Functions</strong></a>
-    ·
-    <a href="#differences"><strong>Differences from node-semver</strong></a>
-</p>
+A library for parsing, validating & comparing Semantic Versions used by `vlt`.
+
+**[Usage](#usage)**
+·
+**[Function](#function)**
+·
+**[Differences from node-semver](#differences)**
 
 ## Usage
 

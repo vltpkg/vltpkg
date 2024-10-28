@@ -1,23 +1,14 @@
-<section align="center">
-    <a href="https://www.vlt.sh">
-        <img src="https://github.com/user-attachments/assets/184a7d71-fbfd-4a81-8d8b-fc8a27931d20" />
-        <h1 align="center">
-            <strong>@vltpkg/git</strong>
-        </h1>
-    </a>
-</section>
+![git](https://github.com/user-attachments/assets/184a7d71-fbfd-4a81-8d8b-fc8a27931d20)
 
-<p align="center">
-    A utility for spawning git from npm CLI contexts.
-</p>
+# @vltpkg/git
 
-<p align="center">
-    <a href="#usage"><strong>Usage</strong></a>
-    ·
-    <a href="#api"><strong>API</strong></a>
-    ·
-    <a href="#options"><strong>Options</strong></a>
-</p>
+A utility for spawning git from npm CLI contexts.
+
+**[Usage](#usage)**
+·
+**[API](#api)**
+·
+**[Options](#options)**
 
 ## Overview
 

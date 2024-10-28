@@ -1,25 +1,16 @@
-<section align="center">
-    <a href="https://www.vlt.sh">
-        <img src="https://github.com/user-attachments/assets/5fa00d7e-19dd-400e-9a77-6d37ded3fe2d" />
-        <h1 align="center">
-            <strong>@vltpkg/error-cause</strong>
-        </h1>
-    </a>
-</section>
+![error-cause](https://github.com/user-attachments/assets/5fa00d7e-19dd-400e-9a77-6d37ded3fe2d)
 
-<p align="center">
-    Utility functions for `Error` creation to help enforce vlt's `Error.cause` conventions.
-</p>
+# @vltpkg/error-cause
 
-<p align="center">
-    <a href="#usage"><strong>Usage</strong></a>
-    ·
-    <a href="#challenges-of-error-reporting"><strong>Error Reporting</strong></a>
-    ·
-    <a href="#conventions"><strong>Conventions</strong></a>
-    ·
-    <a href="#error-types"><strong>Error Types</strong></a>
-</p>
+Utility functions for `Error` creation to help enforce vlt's `Error.cause` conventions.
+
+**[Usage](#usage)**
+·
+**[Error Reporting](#challenges-of-error-reporting)**
+·
+**[Conventions](#conventions)**
+·
+**[Error Types](#error-types)**
 
 ## Why
 

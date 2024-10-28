@@ -1,15 +1,8 @@
-<section align="center">
-    <a href="https://www.vlt.sh">
-        <img src="https://github.com/user-attachments/assets/5dc35dbc-c8b2-4dac-844d-81ee5569347b" />
-        <h1 align="center">
-            <strong>@vltpkg/satisfies</strong>
-        </h1>
-    </a>
-</section>
+![satisfies](https://github.com/user-attachments/assets/5dc35dbc-c8b2-4dac-844d-81ee5569347b)
 
-<p align="center">
-    Give it a DepID and a Spec, and it'll tell you whether that dep satisfies the spec.
-</p>
+# @vltpkg/satisfies
+
+Give it a DepID and a Spec, and it'll tell you whether that dep satisfies the spec.
 
 ## Usage
 

@@ -1,26 +1,14 @@
-<section align="center">
-    <a href="https://www.vlt.sh">
-        <img src="https://github.com/user-attachments/assets/8dcb044f-7611-4db9-8042-3a964e270d61" />
-        <h1 align="center">
-            <strong>@vltpkg/promise-spawn</strong>
-        </h1>
-    </a>
-</section>
+![promise-spawn](https://github.com/user-attachments/assets/8dcb044f-7611-4db9-8042-3a964e270d61)
 
-<p align="center">
-    Spawn a process and return a promise that resolves when the process closes.
-    <br/>
-    Fork of
-    [`@npmcli/promise-spawn`](http://npm.im/@npmcli/promise-spawn)
-</p>
+# @vltpkg/promise-spawn
 
-<p align="center">
-    <a href="#usage"><strong>Usage</strong></a>
-    ·
-    <a href="#api"><strong>API</strong></a>
-    ·
-    <a href="#typescript-inference-caveats"><strong>Caveats</strong></a>
-</p>
+Spawn a process and return a promise that resolves when the process closes. Fork of [`@npmcli/promise-spawn`](http://npm.im/@npmcli/promise-spawn).
+
+**[Usage](#usage)**
+·
+**[API](#api)**
+·
+**[Caveats](#typescript-inference-caveats)**
 
 ## Differences from `@npmcli/promise-spawn`
 

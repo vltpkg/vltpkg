@@ -1,22 +1,12 @@
-<section align="center">
-    <a href="https://www.vlt.sh">
-        <img src="https://github.com/user-attachments/assets/beb8e72b-9af4-42ff-a39c-11c937bffdb6" />
-        <h1 align="center">
-            <strong>@vltpkg/cache</strong>
-        </h1>
-    </a>
-</section>
+![cache](https://github.com/user-attachments/assets/beb8e72b-9af4-42ff-a39c-11c937bffdb6)
 
-<p align="center">
-    The filesystem cache for <code>@vlt/registry-client</code>, but also, a
-    general-purpose filesystem-backed <a href="http://npm.im/lru-cache">LRUCache</a>.
-</p>
+# @vltpkg/cache
 
-<p align="center">
-    <a href="#usage"><strong>Usage</strong></a>
-    ·
-    <a href="#note"><strong>Note</strong></a>
-</p>
+The filesystem cache for `@vlt/registry-client`, but also, a general-purpose filesystem-backed [LRUCache](http://npm.im/lru-cache)
+
+**[Usage](#usage)**
+·
+**[Note](#note)**
 
 ## Overview
 

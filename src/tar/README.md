@@ -1,21 +1,12 @@
-<section align="center">
-    <a href="https://www.vlt.sh">
-        <img src="https://github.com/user-attachments/assets/a01d2d1e-1815-4888-bb2e-67094af74de0" />
-        <h1 align="center">
-            <strong>@vltpkg/tar</strong>
-        </h1>
-    </a>
-</section>
+![tar](https://github.com/user-attachments/assets/a01d2d1e-1815-4888-bb2e-67094af74de0)
 
-<p align="center">
-    A library for unpacking JavaScript package tarballs (gzip-compressed or raw) into a specified folder.
-</p>
+# @vltpkg/tar
 
-<p align="center">
-    <a href="#usage"><strong>Usage</strong></a>
-    ·
-    <a href="#caveats"><strong>Caveats</strong></a>
-</p>
+A library for unpacking JavaScript package tarballs (gzip-compressed or raw) into a specified folder.
+
+**[Usage](#usage)**
+·
+**[Caveats](#caveats)**
 
 ## Overview
 

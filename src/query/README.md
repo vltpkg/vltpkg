@@ -1,23 +1,14 @@
-<section align="center">
-    <a href="https://www.vlt.sh">
-        <img src="https://github.com/user-attachments/assets/5b4802b7-7567-4f50-8f77-7ee398f58d43" />
-        <h1 align="center">
-            <strong>@vltpkg/query</strong>
-        </h1>
-    </a>
-</section>
+![query](https://github.com/user-attachments/assets/5b4802b7-7567-4f50-8f77-7ee398f58d43)
 
-<p align="center">
-    The **vlt** query syntax engine.
-</p>
+# @vltpkg/query
 
-<p align="center">
-    <a href="#usage"><strong>Usage</strong></a>
-    ·
-    <a href="#examples"><strong>Examples</strong></a>
-    ·
-    <a href="#supported-syntax-reference"><strong>Supported Syntax Reference</strong></a>
-</p>
+The **vlt** query syntax engine.
+
+**[Usage](#usage)**
+·
+**[Examples](#examples)**
+·
+**[Supported Syntax Reference](#supported-syntax-reference)**
 
 ## Usage
 
