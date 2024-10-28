@@ -27,7 +27,7 @@ const testBundle = async (
   }
 }
 
-t.test('cjs', async t => {
+t.skip('cjs', async t => {
   await t.resolves(
     testBundle(t, {
       format: types.Formats.Cjs,

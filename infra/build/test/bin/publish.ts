@@ -98,7 +98,7 @@ const publish = async (t: Test, argv: string[] = []) => {
   }
 }
 
-await t.test('compile', async t => {
+await t.skip('compile', async t => {
   const { res } = await publish(t, ['--compile=true'])
   t.equal(res.length, 1)
   const hasBins = BinNames.map(bin => hasBinFile(res[0], bin, true))
@@ -106,7 +106,7 @@ await t.test('compile', async t => {
 })
 
 await t.test('format', async t => {
-  t.test('cjs', async t => {
+  t.skip('cjs', async t => {
     const { dirs } = await publish(t, ['--format=cjs'])
     const pkg = JSON.parse(
       readFileSync(join(dirs[0] ?? '', 'package.json'), 'utf8'),

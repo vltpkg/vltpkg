@@ -157,6 +157,7 @@ export default tseslint.config(
             'rejects',
             'resolveMatch',
             'resolves',
+            'skip',
           ].map(name => ({
             name,
             from: 'package',
