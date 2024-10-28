@@ -1,11 +1,6 @@
-/* IMPORTANT
- * This snapshot file is auto-generated, but designed for humans.
- * It should be checked into source control and tracked carefully.
- * Re-generate by setting TAP_SNAPSHOT=1 and running tests.
- * Make sure to inspect the output below.  Do not ignore changes!
- */
-'use strict'
-exports[`test/components/explorer-grid/result-item.tsx > TAP > ResultItem render missing version and labels > must match snapshot 1`] = `
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`ResultItem render missing version and labels 1`] = `
 
 <div>
   <div class="relative">
@@ -24,9 +19,9 @@ exports[`test/components/explorer-grid/result-item.tsx > TAP > ResultItem render
   </div>
 </div>
 
-`
+`;
 
-exports[`test/components/explorer-grid/result-item.tsx > TAP > ResultItem render stacked many > must match snapshot 1`] = `
+exports[`ResultItem render stacked many 1`] = `
 
 <div>
   <div class="relative">
@@ -57,9 +52,9 @@ exports[`test/components/explorer-grid/result-item.tsx > TAP > ResultItem render
   </div>
 </div>
 
-`
+`;
 
-exports[`test/components/explorer-grid/result-item.tsx > TAP > ResultItem render stacked two > must match snapshot 1`] = `
+exports[`ResultItem render stacked two 1`] = `
 
 <div>
   <div class="relative">
@@ -88,9 +83,9 @@ exports[`test/components/explorer-grid/result-item.tsx > TAP > ResultItem render
   </div>
 </div>
 
-`
+`;
 
-exports[`test/components/explorer-grid/result-item.tsx > TAP > ResultItem render with item > must match snapshot 1`] = `
+exports[`ResultItem render with item 1`] = `
 
 <div>
   <div class="relative">
@@ -117,9 +112,9 @@ exports[`test/components/explorer-grid/result-item.tsx > TAP > ResultItem render
   </div>
 </div>
 
-`
+`;
 
-exports[`test/components/explorer-grid/result-item.tsx > TAP > ResultItem render with type > must match snapshot 1`] = `
+exports[`ResultItem render with type 1`] = `
 
 <div>
   <div class="relative">
@@ -157,4 +152,4 @@ exports[`test/components/explorer-grid/result-item.tsx > TAP > ResultItem render
   </div>
 </div>
 
-`
+`;

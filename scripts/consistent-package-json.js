@@ -249,6 +249,8 @@ const fixScripts = async ws => {
       {
         test: 'vitest',
         snap: 'vitest',
+        posttest:
+          ws.pj.name !== '@vltpkg/docs' ? 'tsc --noEmit' : undefined,
       }
     : {},
     ws.pj.devDependencies.tshy ?
@@ -364,6 +366,7 @@ const fixPackage = async (ws, opts) => {
   ws.pj.private =
     (
       ws.isRoot ||
+      ws.pj.name === '@vltpkg/gui' ||
       ws.pj.name === '@vltpkg/cli' ||
       ws.workspaceDir === 'infra' ||
       ws.workspaceDir === 'www'

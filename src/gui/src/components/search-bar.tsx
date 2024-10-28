@@ -1,4 +1,4 @@
-import * as React from 'react'
+import type { ChangeEvent } from 'react'
 import { Input } from '@/components/ui/input.jsx'
 import { useGraphStore } from '@/state/index.js'
 
@@ -12,7 +12,7 @@ export const SearchBar = () => {
         type="search"
         placeholder="Query Lookup, e.g: :root > *"
         value={query}
-        onChange={(e: React.ChangeEvent) => {
+        onChange={(e: ChangeEvent) => {
           const value = (e.currentTarget as HTMLInputElement).value
           updateQuery(value)
         }}

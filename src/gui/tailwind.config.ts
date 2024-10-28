@@ -1,8 +1,8 @@
-/* eslint-disable @typescript-eslint/no-require-imports */
-const { fontFamily } = require('tailwindcss/defaultTheme')
+import animate from 'tailwindcss-animate'
+import defaultTheme from 'tailwindcss/defaultTheme.js'
+import type { Config } from 'tailwindcss'
 
-/** @type {import('tailwindcss').Config} */
-module.exports = {
+export default {
   darkMode: ['class'],
   content: [
     'src/index.tsx',
@@ -61,7 +61,7 @@ module.exports = {
         sm: 'calc(var(--radius) - 4px)',
       },
       fontFamily: {
-        sans: fontFamily.sans,
+        sans: defaultTheme.fontFamily.sans,
       },
       keyframes: {
         'accordion-down': {
@@ -79,5 +79,5 @@ module.exports = {
       },
     },
   },
-  plugins: [require('tailwindcss-animate')],
-}
+  plugins: [animate],
+} satisfies Config

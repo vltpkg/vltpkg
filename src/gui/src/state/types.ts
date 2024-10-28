@@ -6,7 +6,7 @@ import type {
 } from '@vltpkg/graph'
 import type { Query } from '@vltpkg/query'
 import type { SpecOptionsFilled } from '@vltpkg/spec/browser'
-import { Integrity, ManifestMinified } from '@vltpkg/types'
+import { Integrity, Manifest } from '@vltpkg/types'
 
 export type Action = {
   updateGraph: (graph: State['graph']) => void
@@ -34,7 +34,7 @@ export type RawNode = {
   name: string
   version: string
   location: string
-  manifest: ManifestMinified
+  manifest: Manifest
   projectRoot?: string
   integrity?: Integrity
   resolved?: string

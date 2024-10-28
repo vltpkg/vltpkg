@@ -1,36 +1,38 @@
-import t from 'tap'
-import React from 'react'
+import { test, expect, afterEach } from 'vitest'
 import { cleanup, render } from '@testing-library/react'
 import html from 'diffable-html'
 import { Badge } from '@/components/ui/badge.jsx'
 
-t.cleanSnapshot = s => html(s)
+expect.addSnapshotSerializer({
+  serialize: v => html(v),
+  test: () => true,
+})
 
-t.afterEach(() => {
+afterEach(() => {
   cleanup()
 })
 
-t.test('badge render default', async t => {
+test('badge render default', async () => {
   render(<Badge />)
-  t.matchSnapshot(window.document.body.innerHTML)
+  expect(window.document.body.innerHTML).toMatchSnapshot()
 })
 
-t.test('badge render secondary', async t => {
+test('badge render secondary', async () => {
   render(<Badge variant="secondary" />)
-  t.matchSnapshot(window.document.body.innerHTML)
+  expect(window.document.body.innerHTML).toMatchSnapshot()
 })
 
-t.test('badge render destructive', async t => {
+test('badge render destructive', async () => {
   render(<Badge variant="destructive" />)
-  t.matchSnapshot(window.document.body.innerHTML)
+  expect(window.document.body.innerHTML).toMatchSnapshot()
 })
 
-t.test('badge render outline', async t => {
+test('badge render outline', async () => {
   render(<Badge variant="outline" />)
-  t.matchSnapshot(window.document.body.innerHTML)
+  expect(window.document.body.innerHTML).toMatchSnapshot()
 })
 
-t.test('badge render custom class', async t => {
+test('badge render custom class', async () => {
   render(<Badge className="custom-class" />)
-  t.matchSnapshot(window.document.body.innerHTML)
+  expect(window.document.body.innerHTML).toMatchSnapshot()
 })

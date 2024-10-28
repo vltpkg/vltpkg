@@ -1,11 +1,6 @@
-/* IMPORTANT
- * This snapshot file is auto-generated, but designed for humans.
- * It should be checked into source control and tracked carefully.
- * Re-generate by setting TAP_SNAPSHOT=1 and running tests.
- * Make sure to inspect the output below.  Do not ignore changes!
- */
-'use strict'
-exports[`test/components/explorer-grid/selected-item.tsx > TAP > SelectedItem render connection lines > must match snapshot 1`] = `
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`SelectedItem render connection lines 1`] = `
 
 <div>
   <div class="relative">
@@ -44,9 +39,9 @@ exports[`test/components/explorer-grid/selected-item.tsx > TAP > SelectedItem re
   </div>
 </div>
 
-`
+`;
 
-exports[`test/components/explorer-grid/selected-item.tsx > TAP > SelectedItem render with custom registry > must match snapshot 1`] = `
+exports[`SelectedItem render with custom registry 1`] = `
 
 <div>
   <div class="relative">
@@ -85,9 +80,9 @@ exports[`test/components/explorer-grid/selected-item.tsx > TAP > SelectedItem re
   </div>
 </div>
 
-`
+`;
 
-exports[`test/components/explorer-grid/selected-item.tsx > TAP > SelectedItem render with default git host > must match snapshot 1`] = `
+exports[`SelectedItem render with default git host 1`] = `
 
 <div>
   <div class="relative">
@@ -126,9 +121,9 @@ exports[`test/components/explorer-grid/selected-item.tsx > TAP > SelectedItem re
   </div>
 </div>
 
-`
+`;
 
-exports[`test/components/explorer-grid/selected-item.tsx > TAP > SelectedItem render with item > must match snapshot 1`] = `
+exports[`SelectedItem render with item 1`] = `
 
 <div>
   <div class="relative">
@@ -152,9 +147,9 @@ exports[`test/components/explorer-grid/selected-item.tsx > TAP > SelectedItem re
   </div>
 </div>
 
-`
+`;
 
-exports[`test/components/explorer-grid/selected-item.tsx > TAP > SelectedItem render with scoped registry > must match snapshot 1`] = `
+exports[`SelectedItem render with scoped registry 1`] = `
 
 <div>
   <div class="relative">
@@ -193,4 +188,4 @@ exports[`test/components/explorer-grid/selected-item.tsx > TAP > SelectedItem re
   </div>
 </div>
 
-`
+`;

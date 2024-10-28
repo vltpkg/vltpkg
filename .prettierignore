@@ -1,4 +1,3 @@
-/.*/
 /dist
 /docs
 /example
@@ -19,7 +18,6 @@
 /src/*/tap-snapshots
 /src/*/test/**/fixtures/**
 !/src/*/test/**/fixtures/*.ts
-/src/gui/scripts/importer.js
 
 /infra/*/.*/
 /infra/*/dist

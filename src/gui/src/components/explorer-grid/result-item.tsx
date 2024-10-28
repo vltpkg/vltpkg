@@ -1,4 +1,4 @@
-import * as React from 'react'
+import type { MouseEvent } from 'react'
 import { stringifyNode } from '@vltpkg/graph/browser'
 import { useGraphStore } from '@/state/index.js'
 import { Badge } from '@/components/ui/badge.jsx'
@@ -19,7 +19,7 @@ export type ResultItemClickOptions = {
 
 const onResultItemClick =
   ({ item, query, updateQuery }: ResultItemClickOptions) =>
-  (e: React.MouseEvent) => {
+  (e: MouseEvent) => {
     e.preventDefault()
     if (!item.to) return
     let newQuery = ''

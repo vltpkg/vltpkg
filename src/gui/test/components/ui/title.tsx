@@ -1,21 +1,23 @@
-import t from 'tap'
-import React from 'react'
+import { test, expect, afterEach } from 'vitest'
 import { cleanup, render } from '@testing-library/react'
 import html from 'diffable-html'
 import { Title } from '@/components/ui/title.jsx'
 
-t.cleanSnapshot = s => html(s)
+expect.addSnapshotSerializer({
+  serialize: v => html(v),
+  test: () => true,
+})
 
-t.afterEach(() => {
+afterEach(() => {
   cleanup()
 })
 
-t.test('title render default', async t => {
+test('title render default', async () => {
   render(<Title />)
-  t.matchSnapshot(window.document.body.innerHTML)
+  expect(window.document.body.innerHTML).toMatchSnapshot()
 })
 
-t.test('title render custom class', async t => {
+test('title render custom class', async () => {
   render(<Title className="custom-class" />)
-  t.matchSnapshot(window.document.body.innerHTML)
+  expect(window.document.body.innerHTML).toMatchSnapshot()
 })

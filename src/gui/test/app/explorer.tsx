@@ -1,60 +1,57 @@
-import t from 'tap'
-import React from 'react'
+import { test, assert, expect, vi, afterEach } from 'vitest'
 import type { Query } from '@vltpkg/query'
 import type { EdgeLike, GraphLike, NodeLike } from '@vltpkg/graph'
 import { cleanup, render } from '@testing-library/react'
 import html from 'diffable-html'
 import { useGraphStore as useStore } from '@/state/index.js'
+import { Explorer } from '@/app/explorer.jsx'
 
-// avoids rendering the internals of each component
-const { Explorer } = await t.mockImport(
-  '../../src/app/explorer.jsx',
-  {
-    '@/components/search-bar.jsx': {
-      SearchBar: 'gui-search-bar',
-    },
-    '@/components/ui/logo.jsx': {
-      Logo: 'gui-logo',
-    },
-    '@/components/ui/title.jsx': {
-      Title: 'gui-title',
-    },
-    '@/components/ui/card.jsx': {
-      Card: 'gui-card',
-      CardDescription: 'gui-card-description',
-      CardHeader: 'gui-card-header',
-      CardTitle: 'gui-card-title',
-    },
-    '@/components/explorer-grid/index.jsx': {
-      ExplorerGrid: 'gui-explorer-grid',
-    },
-  },
-)
+vi.mock('@/components/search-bar.jsx', () => ({
+  SearchBar: 'gui-search-bar',
+}))
+vi.mock('@/components/ui/logo.jsx', () => ({
+  Logo: 'gui-logo',
+}))
+vi.mock('@/components/ui/title.jsx', () => ({
+  Title: 'gui-title',
+}))
+vi.mock('@/components/ui/card.jsx', () => ({
+  Card: 'gui-card',
+  CardDescription: 'gui-card-description',
+  CardHeader: 'gui-card-header',
+  CardTitle: 'gui-card-title',
+}))
+vi.mock('@/components/explorer-grid/index.jsx', () => ({
+  ExplorerGrid: 'gui-explorer-grid',
+}))
 
-t.cleanSnapshot = s => html(s)
+expect.addSnapshotSerializer({
+  serialize: v => html(v),
+  test: () => true,
+})
 
-t.afterEach(() => {
+afterEach(() => {
   const CleanUp = () => (useStore(state => state.reset)(), '')
   render(<CleanUp />)
   cleanup()
 })
 
-t.test('explorer render default', async t => {
+test('render default', async () => {
   render(<Explorer />)
-  t.matchSnapshot(window.document.body.innerHTML)
+  expect(window.document.body.innerHTML).toMatchSnapshot()
 })
 
-t.test('explorer has project root info', async t => {
+test('explorer has project root info', async () => {
   const Container = () => {
     const updateGraph = useStore(state => state.updateGraph)
     updateGraph({ projectRoot: '/path/to/project' } as GraphLike)
     return <Explorer />
   }
   render(<Container />)
-  t.matchSnapshot(window.document.body.innerHTML)
+  expect(window.document.body.innerHTML).toMatchSnapshot()
 })
 
-t.test('update nodes and edges info on query change', async t => {
+test('update nodes and edges info on query change', async () => {
   render(<Explorer />)
 
   const nodes: NodeLike[] = []
@@ -83,12 +80,12 @@ t.test('update nodes and edges info on query change', async t => {
   }
   render(<Retrieve />)
 
-  t.strictSame(
+  assert.deepEqual(
     edgesResult,
     edges,
     'should update edges with result from query',
   )
-  t.strictSame(
+  assert.deepEqual(
     nodesResult,
     nodes,
     'should update nodes with result from query',
