@@ -1,21 +1,12 @@
-<section align="center">
-    <a href="https://www.vlt.sh">
-        <img src="https://github.com/user-attachments/assets/93b29348-69b9-4d95-a80f-f6044ba5c17c" />
-        <h1 align="center">
-            <strong>@vltpkg/which</strong>
-        </h1>
-    </a>
-</section>
+![which](https://github.com/user-attachments/assets/93b29348-69b9-4d95-a80f-f6044ba5c17c)
 
-<p align="center">
-    Like the unix `which` utility.
-</p>
+# @vltpkg/which
 
-<p align="center">
-    <a href="#usage"><strong>Usage</strong></a>
-    ·
-    <a href="#options"><strong>Options</strong></a>
-</p>
+Like the unix `which` utility.
+
+**[Usage](#usage)**
+·
+**[Options](#options)**
 
 ## Overview
 

@@ -1,21 +1,12 @@
-<section align="center">
-    <a href="https://www.vlt.sh">
-        <img src="https://github.com/user-attachments/assets/dfbed9e0-8ef0-4a43-993d-d3e5d1e5ae1d" />
-        <h1 align="center">
-            <strong>@vltpkg/graph</strong>
-        </h1>
-    </a>
-</section>
+![graph](https://github.com/user-attachments/assets/dfbed9e0-8ef0-4a43-993d-d3e5d1e5ae1d)
 
-<p align="center">
-    This is the graph library responsible for representing the packages that are involved in a given install.
-</p>
+# @vltpkg/graph
 
-<p align="center">
-    <a href="#api"><strong>API</strong></a>
-    ·
-    <a href="#usage"><strong>Usage</strong></a>
-</p>
+This is the graph library responsible for representing the packages that are involved in a given install.
+
+**[API](#api)**
+·
+**[Usage](#usage)**
 
 ## API
 

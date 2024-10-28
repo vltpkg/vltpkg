@@ -1,23 +1,14 @@
-<section align="center">
-    <a href="https://www.vlt.sh">
-        <img src="https://github.com/user-attachments/assets/664e4107-bf7b-4179-802d-9ec9f1499955" />
-        <h1 align="center">
-            <strong>@vltpkg/registry-client</strong>
-        </h1>
-    </a>
-</section>
+![registry-client](https://github.com/user-attachments/assets/664e4107-bf7b-4179-802d-9ec9f1499955)
 
-<p align="center">
-    This is a very light wrapper around undici, optimized for interfacing with an npm registry.
-</p>
+# @vltpkg/registry-client
 
-<p align="center">
-    <a href="#cache-unzipped"><strong>Cache Unzipped</strong></a>
-    ·
-    <a href="#integrity-options"><strong>Integrity Options</strong></a>
-    ·
-    <a href="#usage"><strong>Usage</strong></a>
-</p>
+This is a very light wrapper around undici, optimized for interfacing with an npm registry.
+
+**[Cache Unzipped](#cache-unzip)**
+·
+**[Integrity Options](#integrity-options)**
+·
+**[Usage](#usage)**
 
 ## Overview
 

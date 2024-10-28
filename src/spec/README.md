@@ -1,25 +1,16 @@
-<section align="center">
-    <a href="https://www.vlt.sh">
-        <img src="https://github.com/user-attachments/assets/39f3e98d-ad31-4efc-882c-1fe75c115507" />
-        <h1 align="center">
-            <strong>@vltpkg/spec</strong>
-        </h1>
-    </a>
-</section>
+![spec](https://github.com/user-attachments/assets/39f3e98d-ad31-4efc-882c-1fe75c115507)
 
-<p align="center">
-    This is a library for parsing **package specifiers**.
-</p>
+# @vltpkg/spec
 
-<p align="center">
-    <a href="#named-vs-unnamed"><strong>Namings</strong></a>
-    ·
-    <a href="#types-of-specifiers"><strong>Specifiers</strong></a>
-    ·
-    <a href="#usage"><strong>Usage</strong></a>
-    ·
-    <a href="#properties"><strong>Properties</strong></a>
-</p>
+This is a library for parsing **package specifiers**.
+
+**[Namings](#named-vs-unnamed)**
+·
+**[Specifiers](#types-of-specifiers)**
+·
+**[Usage](#usage)**
+·
+**[Properties](#properties)**
 
 ## Overview
 

@@ -1,21 +1,12 @@
-<section align="center">
-    <a href="https://www.vlt.sh">
-        <img src="https://github.com/user-attachments/assets/1f6f73ad-bb51-461a-9f2f-efcf1b884a1a" />
-        <h1 align="center">
-            <strong>@vltpkg/workspaces</strong>
-        </h1>
-    </a>
-</section>
+![workspaces](https://github.com/user-attachments/assets/1f6f73ad-bb51-461a-9f2f-efcf1b884a1a);
 
-<p align="center">
-    Utilities for working with vlt workspaces.
-</p>
+# @vltpkg/workspaces
 
-<p align="center">
-    <a href="#usage"><strong>Usage</strong></a>
-    ·
-    <a href="#run-order"><strong>Run Order</strong></a>
-</p>
+Utilities for working with vlt workspaces.
+
+**[Usage](#usage)**
+·
+**[Run Order](#run-order)**
 
 ## Usage
 

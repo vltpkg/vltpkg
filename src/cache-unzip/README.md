@@ -1,21 +1,12 @@
-<section align="center">
-    <a href="https://www.vlt.sh">
-        <img src="https://github.com/user-attachments/assets/edbe377f-d0ae-4d48-9658-3eb91d1bd482" />
-        <h1 align="center">
-            <strong>@vltpkg/cache-unzip</strong>
-        </h1>
-    </a>
-</section>
+![cache-unzip](https://github.com/user-attachments/assets/edbe377f-d0ae-4d48-9658-3eb91d1bd482)
 
-<p align="center">
+# @vltpkg/cache-unzip
+
 This is a script that can be run as a detached background process to un-gzip any cached response bodies in the vlt cache.
-</p>
 
-<p align="center">
-  <a href="#usage"><strong>Usage</strong></a>
-	·
-  <a href="#why-do-this"><strong>Why Do This?</strong></a>
-</p>
+**[Usage](#usage)**
+·
+**[Why Do This?](#why-do-this)**
 
 ## Usage
 

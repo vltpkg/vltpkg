@@ -1,23 +1,12 @@
-<section align="center">
-    <a href="https://www.vlt.sh">
-        <img src="https://github.com/user-attachments/assets/f44cb9f8-e778-447c-8100-9ff564427048" />
-        <h1 align="center">
-            <strong>@vltpkg/dep-id</strong>
-        </h1>
-    </a>
-</section>
+![dep-id](https://github.com/user-attachments/assets/f44cb9f8-e778-447c-8100-9ff564427048)
 
-<p align="center">
-    A library for serializing dependencies into terse string
-    identifiers, and turning those serialized identifiers back into
-    `Spec` objects.
-</p>
+# @vltpkg/dep-id
 
-<p align="center">
-  <a href="#usage"><strong>Usage</strong></a>
-	·
-  <a href="#note"><strong>Note</strong></a>
-</p>
+A library for serializing dependencies into terse string identifiers, and turning those serialized identifiers back into `Spec` objects.
+
+**[Usage](#usage)**
+·
+**[Note](#note)**
 
 ## Usage
 

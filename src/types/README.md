@@ -1,15 +1,8 @@
-<section align="center">
-    <a href="https://www.vlt.sh">
-        <img src="https://github.com/user-attachments/assets/67722b51-a70f-4779-be2e-405adeb55d06" />
-        <h1 align="center">
-            <strong>@vltpkg/types</strong>
-        </h1>
-    </a>
-</section>
+![types](https://github.com/user-attachments/assets/67722b51-a70f-4779-be2e-405adeb55d06)
 
-<p align="center">
-    A module for a handful of core types that are used throughout vlt extensively, and don't belong to any one particular implementation.
-</p>
+# @vltpkg/types
+
+A module for a handful of core types that are used throughout vlt extensively, and don't belong to any one particular implementation.
 
 ## Usage
 
