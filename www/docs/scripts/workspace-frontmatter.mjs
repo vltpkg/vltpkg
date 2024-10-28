@@ -9,36 +9,20 @@ export function load(app) {
     MarkdownPageEvent.BEGIN,
     /** @param {import('typedoc-plugin-markdown').MarkdownPageEvent} page */
     page => {
-      const { url, frontmatter, model } = page
-      const name = model.name
-      const parentName = model.parent?.name ?? ''
-
-      let title
-      let order
-      let label
-
-      if (!parentName) {
-        title = 'Packages'
-        order = 0
-        console.log(page.contents)
-        page.contents = page.contents?.replaceAll('/index.md)', ')')
-        console.log(page.contents)
-      } else {
-        if (url.endsWith('/index.md')) {
-          label = 'Readme'
-          order = 0
-        } else if (url.endsWith('/globals.md')) {
-          label = 'Globals'
-          order = 1
-        } else {
-          label = `${name}.js`
-        }
-        title = `${parentName.startsWith('@vltpkg/') ? parentName : name} | ${label}`
-      }
-
+      const name = page.model.name
+      const parentName = page.model.parent?.name
+      const [label, order] =
+        parentName ?
+          page.url.endsWith('/index.md') ? ['Readme', 0]
+          : page.url.endsWith('/globals.md') ? ['Globals', 1]
+          : [`${name}.js`]
+        : ['Packages', 0]
       page.frontmatter = {
-        title,
-        ...frontmatter,
+        title:
+          parentName ?
+            `${parentName.startsWith('@vltpkg/') ? parentName : name} | ${label}`
+          : label,
+        ...page.frontmatter,
         sidebar: {
           label,
           order,
@@ -51,9 +35,7 @@ export function load(app) {
     /** @param {import('typedoc-plugin-markdown').MarkdownPageEvent} page */
     page => {
       if (!page.model.parent?.name) {
-        console.log(page.contents)
         page.contents = page.contents?.replaceAll('/index.md)', ')')
-        console.log(page.contents)
       }
     },
   )
