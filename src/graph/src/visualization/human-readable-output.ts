@@ -12,7 +12,7 @@ const chars = new Map(
   }),
 )
 
-type TreeItem = {
+export type TreeItem = {
   name?: string | null
   edge: EdgeLike | undefined
   node: NodeLike | undefined
@@ -24,7 +24,7 @@ type TreeItem = {
   parent: TreeItem | undefined
 }
 
-type HumanReadableOutputOptions = {
+export type HumanReadableOutputOptions = {
   edges: EdgeLike[]
   importers: Set<NodeLike>
   nodes: NodeLike[]

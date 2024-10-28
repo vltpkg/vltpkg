@@ -8,6 +8,8 @@ import {
   Worker,
 } from './worker.js'
 
+export * from './worker.js'
+
 /**
  * Automatically expanding/contracting set of workers to maximize parallelism
  * of unpack operations up to 1 less than the number of CPUs (or 1).

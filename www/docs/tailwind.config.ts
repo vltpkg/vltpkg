@@ -42,6 +42,9 @@ const starlight = () =>
         '--sl-color-accent-low': 'hsl(var(--accent))',
         '--sl-color-accent': 'hsl(var(--accent-foreground))',
         '--sl-color-accent-high': 'hsl(var(--accent-foreground))',
+        '--sl-color-bg-sidebar': 'hsl(var(--sidebar-background))',
+        '--sl-color-bg-nav': 'hsl(var(--sidebar-background))',
+        '--sl-color-hairline-shade': 'hsl(var(--sidebar-border))',
         // Light mode Starlight theme variables
         '&[data-theme="light"]': {
           '--sl-color-white': theme('colors.gray.900'),
@@ -56,6 +59,9 @@ const starlight = () =>
           '--sl-color-accent-low': 'hsl(var(--accent))',
           '--sl-color-accent': 'hsl(var(--accent-foreground))',
           '--sl-color-accent-high': 'hsl(var(--accent-foreground))',
+          '--sl-color-bg-sidebar': 'hsl(var(--sidebar-background))',
+          '--sl-color-bg-nav': 'hsl(var(--sidebar-background))',
+          '--sl-color-hairline-shade': 'hsl(var(--sidebar-border))',
         },
       },
     })

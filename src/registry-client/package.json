@@ -10,8 +10,7 @@
     "exports": {
       "./package.json": "./package.json",
       ".": "./src/index.ts",
-      "./cache-entry": "./src/cache-entry.ts",
-      "./cache-interceptor": "./src/cache-interceptor.ts"
+      "./cache-entry": "./src/cache-entry.ts"
     }
   },
   "dependencies": {
@@ -32,7 +31,6 @@
     "prettier": "catalog:",
     "tap": "catalog:",
     "tshy": "catalog:",
-    "typedoc": "catalog:",
     "typescript": "catalog:",
     "typescript-eslint": "catalog:"
   },
@@ -46,14 +44,10 @@
     "lint": "eslint . --fix",
     "lint:check": "eslint .",
     "prepare": "tshy",
-    "prepublishOnly": "git push origin --follow-tags",
-    "presnap": "npm run prepare",
+    "presnap": "tshy",
     "snap": "tap",
-    "pretest": "npm run prepare",
-    "test": "tap",
-    "typedoc": "typedoc",
-    "preversion": "npm test",
-    "postversion": "npm publish"
+    "pretest": "tshy",
+    "test": "tap"
   },
   "tap": {
     "extends": "../../tap-config.yaml"
@@ -72,12 +66,6 @@
       "import": {
         "types": "./dist/esm/cache-entry.d.ts",
         "default": "./dist/esm/cache-entry.js"
-      }
-    },
-    "./cache-interceptor": {
-      "import": {
-        "types": "./dist/esm/cache-interceptor.d.ts",
-        "default": "./dist/esm/cache-interceptor.js"
       }
     }
   },

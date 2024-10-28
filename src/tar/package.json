@@ -47,14 +47,10 @@
     "lint": "eslint . --fix",
     "lint:check": "eslint .",
     "prepare": "tshy",
-    "prepublishOnly": "git push origin --follow-tags",
-    "presnap": "npm run prepare",
+    "presnap": "tshy",
     "snap": "tap",
-    "pretest": "npm run prepare",
-    "test": "tap",
-    "typedoc": "typedoc",
-    "preversion": "npm test",
-    "postversion": "npm publish"
+    "pretest": "tshy",
+    "test": "tap"
   },
   "tap": {
     "extends": "../../tap-config.yaml"

@@ -12,7 +12,7 @@ const DIGITS = new Set('0123456789')
 
 const ARRAY_PUSH = Symbol('ARRAY_PUSH')
 
-const Characters = {
+export const Characters = {
   Escape: '\\',
   Dot: '.',
   Empty: '',
@@ -24,7 +24,7 @@ export type Character =
   | (typeof Characters)[keyof typeof Characters]
   | (string & {})
 
-const Parts = {
+export const Parts = {
   Start: 'start',
   Index: 'index',
   IndexEnd: 'indexEnd',

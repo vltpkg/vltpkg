@@ -57,9 +57,6 @@ catalogs:
     tshy:
       specifier: ^3.0.2
       version: 3.0.2
-    typedoc:
-      specifier: ^0.26.5
-      version: 0.26.6
     typescript:
       specifier: ^5.5.4
       version: 5.5.4
@@ -113,9 +110,6 @@ importers:
       turbo:
         specifier: ^2.1.0
         version: 2.1.0
-      typedoc:
-        specifier: 'catalog:'
-        version: 0.26.6(typescript@5.5.4)
       typescript:
         specifier: 'catalog:'
         version: 5.5.4
@@ -156,9 +150,6 @@ importers:
       tshy:
         specifier: 'catalog:'
         version: 3.0.2
-      typedoc:
-        specifier: 'catalog:'
-        version: 0.26.6(typescript@5.5.4)
       typescript:
         specifier: 'catalog:'
         version: 5.5.4
@@ -208,9 +199,6 @@ importers:
       tshy:
         specifier: 'catalog:'
         version: 3.0.2
-      typedoc:
-        specifier: 'catalog:'
-        version: 0.26.6(typescript@5.5.4)
       typescript:
         specifier: 'catalog:'
         version: 5.5.4
@@ -257,9 +245,6 @@ importers:
       tshy:
         specifier: 'catalog:'
         version: 3.0.2
-      typedoc:
-        specifier: 'catalog:'
-        version: 0.26.6(typescript@5.5.4)
       typescript:
         specifier: 'catalog:'
         version: 5.5.4
@@ -297,9 +282,6 @@ importers:
       tshy:
         specifier: 'catalog:'
         version: 3.0.2
-      typedoc:
-        specifier: 'catalog:'
-        version: 0.26.6(typescript@5.5.4)
       typescript:
         specifier: 'catalog:'
         version: 5.5.4
@@ -340,9 +322,6 @@ importers:
       tshy:
         specifier: 'catalog:'
         version: 3.0.2
-      typedoc:
-        specifier: 'catalog:'
-        version: 0.26.6(typescript@5.5.4)
       typescript:
         specifier: 'catalog:'
         version: 5.5.4
@@ -373,9 +352,6 @@ importers:
       tshy:
         specifier: 'catalog:'
         version: 3.0.2
-      typedoc:
-        specifier: 'catalog:'
-        version: 0.26.6(typescript@5.5.4)
       typescript:
         specifier: 'catalog:'
         version: 5.5.4
@@ -406,9 +382,6 @@ importers:
       tshy:
         specifier: 'catalog:'
         version: 3.0.2
-      typedoc:
-        specifier: 'catalog:'
-        version: 0.26.6(typescript@5.5.4)
       typescript:
         specifier: 'catalog:'
         version: 5.5.4
@@ -439,9 +412,6 @@ importers:
       tshy:
         specifier: 'catalog:'
         version: 3.0.2
-      typedoc:
-        specifier: 'catalog:'
-        version: 0.26.6(typescript@5.5.4)
       typescript:
         specifier: 'catalog:'
         version: 5.5.4
@@ -509,9 +479,6 @@ importers:
       tshy:
         specifier: 'catalog:'
         version: 3.0.2
-      typedoc:
-        specifier: 'catalog:'
-        version: 0.26.6(typescript@5.5.4)
       typescript:
         specifier: 'catalog:'
         version: 5.5.4
@@ -542,9 +509,6 @@ importers:
       tshy:
         specifier: 'catalog:'
         version: 3.0.2
-      typedoc:
-        specifier: 'catalog:'
-        version: 0.26.6(typescript@5.5.4)
       typescript:
         specifier: 'catalog:'
         version: 5.5.4
@@ -633,9 +597,6 @@ importers:
       tshy:
         specifier: 'catalog:'
         version: 3.0.2
-      typedoc:
-        specifier: 'catalog:'
-        version: 0.26.6(typescript@5.5.4)
       typescript:
         specifier: 'catalog:'
         version: 5.5.4
@@ -709,9 +670,6 @@ importers:
       tshy:
         specifier: 'catalog:'
         version: 3.0.2
-      typedoc:
-        specifier: 'catalog:'
-        version: 0.26.6(typescript@5.5.4)
       typescript:
         specifier: 'catalog:'
         version: 5.5.4
@@ -752,9 +710,6 @@ importers:
       tshy:
         specifier: 'catalog:'
         version: 3.0.2
-      typedoc:
-        specifier: 'catalog:'
-        version: 0.26.6(typescript@5.5.4)
       typescript:
         specifier: 'catalog:'
         version: 5.5.4
@@ -804,9 +759,6 @@ importers:
       tshy:
         specifier: 'catalog:'
         version: 3.0.2
-      typedoc:
-        specifier: 'catalog:'
-        version: 0.26.6(typescript@5.5.4)
       typescript:
         specifier: 'catalog:'
         version: 5.5.4
@@ -844,9 +796,6 @@ importers:
       tshy:
         specifier: 'catalog:'
         version: 3.0.2
-      typedoc:
-        specifier: 'catalog:'
-        version: 0.26.6(typescript@5.5.4)
       typescript:
         specifier: 'catalog:'
         version: 5.5.4
@@ -899,9 +848,6 @@ importers:
       tshy:
         specifier: 'catalog:'
         version: 3.0.2
-      typedoc:
-        specifier: 'catalog:'
-        version: 0.26.6(typescript@5.5.4)
       typescript:
         specifier: 'catalog:'
         version: 5.5.4
@@ -957,9 +903,6 @@ importers:
       tshy:
         specifier: 'catalog:'
         version: 3.0.2
-      typedoc:
-        specifier: 'catalog:'
-        version: 0.26.6(typescript@5.5.4)
       typescript:
         specifier: 'catalog:'
         version: 5.5.4
@@ -988,9 +931,6 @@ importers:
       tshy:
         specifier: 'catalog:'
         version: 3.0.2
-      typedoc:
-        specifier: 'catalog:'
-        version: 0.26.6(typescript@5.5.4)
 
   src/run:
     dependencies:
@@ -1034,9 +974,6 @@ importers:
       tshy:
         specifier: 'catalog:'
         version: 3.0.2
-      typedoc:
-        specifier: 'catalog:'
-        version: 0.26.6(typescript@5.5.4)
       typescript:
         specifier: 'catalog:'
         version: 5.5.4
@@ -1083,9 +1020,6 @@ importers:
       tshy:
         specifier: 'catalog:'
         version: 3.0.2
-      typedoc:
-        specifier: 'catalog:'
-        version: 0.26.6(typescript@5.5.4)
       typescript:
         specifier: 'catalog:'
         version: 5.5.4
@@ -1132,9 +1066,6 @@ importers:
       tshy:
         specifier: 'catalog:'
         version: 3.0.2
-      typedoc:
-        specifier: 'catalog:'
-        version: 0.26.6(typescript@5.5.4)
       typescript:
         specifier: 'catalog:'
         version: 5.5.4
@@ -1178,9 +1109,6 @@ importers:
       tshy:
         specifier: 'catalog:'
         version: 3.0.2
-      typedoc:
-        specifier: 'catalog:'
-        version: 0.26.6(typescript@5.5.4)
       typescript:
         specifier: 'catalog:'
         version: 5.5.4
@@ -1267,9 +1195,6 @@ importers:
       tshy:
         specifier: 'catalog:'
         version: 3.0.2
-      typedoc:
-        specifier: 'catalog:'
-        version: 0.26.6(typescript@5.5.4)
       typescript:
         specifier: 'catalog:'
         version: 5.5.4
@@ -1358,9 +1283,6 @@ importers:
       tshy:
         specifier: 'catalog:'
         version: 3.0.2
-      typedoc:
-        specifier: 'catalog:'
-        version: 0.26.6(typescript@5.5.4)
       typescript:
         specifier: 'catalog:'
         version: 5.5.4
@@ -1395,9 +1317,6 @@ importers:
       tshy:
         specifier: 'catalog:'
         version: 3.0.2
-      typedoc:
-        specifier: 'catalog:'
-        version: 0.26.6(typescript@5.5.4)
       typescript:
         specifier: 'catalog:'
         version: 5.5.4
@@ -1459,9 +1378,6 @@ importers:
       tshy:
         specifier: 'catalog:'
         version: 3.0.2
-      typedoc:
-        specifier: 'catalog:'
-        version: 0.26.6(typescript@5.5.4)
       typescript:
         specifier: 'catalog:'
         version: 5.5.4
@@ -1492,9 +1408,6 @@ importers:
       tshy:
         specifier: 'catalog:'
         version: 3.0.2
-      typedoc:
-        specifier: 'catalog:'
-        version: 0.26.6(typescript@5.5.4)
       typescript:
         specifier: 'catalog:'
         version: 5.5.4
@@ -1579,6 +1492,15 @@ importers:
       tailwindcss-animate:
         specifier: ^1.0.7
         version: 1.0.7(tailwindcss@3.4.14)
+      typedoc:
+        specifier: ^0.26.10
+        version: 0.26.10(typescript@5.5.4)
+      typedoc-plugin-frontmatter:
+        specifier: ^1.0.0
+        version: 1.0.0(typedoc-plugin-markdown@4.2.9(typedoc@0.26.10(typescript@5.5.4)))
+      typedoc-plugin-markdown:
+        specifier: ^4.2.9
+        version: 4.2.9(typedoc@0.26.10(typescript@5.5.4))
       typescript:
         specifier: 'catalog:'
         version: 5.5.4
@@ -6233,12 +6155,23 @@ packages:
     resolution: {integrity: sha512-bRkIGlXsnGBRBQRAY56UXBm//9qH4bmJfFvq83gSz41N282df+fjy8ofcEgc1sM8geNt5cl6mC2g9Fht1cs8Aw==}
     engines: {node: '>=16'}
 
-  typedoc@0.26.6:
-    resolution: {integrity: sha512-SfEU3SH3wHNaxhFPjaZE2kNl/NFtLNW5c1oHsg7mti7GjmUj1Roq6osBQeMd+F4kL0BoRBBr8gQAuqBlfFu8LA==}
+  typedoc-plugin-frontmatter@1.0.0:
+    resolution: {integrity: sha512-Mqn96+RjUjPUz/42H8MOp/8eOKjE5MVIgZRFDGmSI2YuggnMZSfh5MMpvd6ykjNTpq7gV5D2iwjqLt8nYRg9rg==}
+    peerDependencies:
+      typedoc-plugin-markdown: '>=4.0.0'
+
+  typedoc-plugin-markdown@4.2.9:
+    resolution: {integrity: sha512-Wqmx+7ezKFgtTklEq/iUhQ5uFeBDhAT6wiS2na9cFLidIpl9jpDHJy/COYh8jUZXgIRIZVQ/bPNjyrnPFoDwzg==}
+    engines: {node: '>= 18'}
+    peerDependencies:
+      typedoc: 0.26.x
+
+  typedoc@0.26.10:
+    resolution: {integrity: sha512-xLmVKJ8S21t+JeuQLNueebEuTVphx6IrP06CdV7+0WVflUSW3SPmR+h1fnWVdAR/FQePEgsSWCUHXqKKjzuUAw==}
     engines: {node: '>= 18'}
     hasBin: true
     peerDependencies:
-      typescript: 4.6.x || 4.7.x || 4.8.x || 4.9.x || 5.0.x || 5.1.x || 5.2.x || 5.3.x || 5.4.x || 5.5.x
+      typescript: 4.6.x || 4.7.x || 4.8.x || 4.9.x || 5.0.x || 5.1.x || 5.2.x || 5.3.x || 5.4.x || 5.5.x || 5.6.x
 
   typesafe-path@0.2.2:
     resolution: {integrity: sha512-OJabfkAg1WLZSqJAJ0Z6Sdt3utnbzr/jh+NAHoyWHJe8CMSy79Gm085094M9nvTPy22KzTVn5Zq5mbapCI/hPA==}
@@ -6672,6 +6605,11 @@ packages:
     engines: {node: '>= 14'}
     hasBin: true
 
+  yaml@2.6.0:
+    resolution: {integrity: sha512-a6ae//JvKDEra2kdi1qzCyrJW/WZCgFi8ydDV+eXExl95t+5R+ijnqHJbz9tmMh8FUjx3iv2fCQ4dclAQlO2UQ==}
+    engines: {node: '>= 14'}
+    hasBin: true
+
   yargs-parser@20.2.9:
     resolution: {integrity: sha512-y11nGElTIV+CT3Zv9t7VKl+Q3hTQoT9a1Qzezhhl6Rp21gJ/IVTW7Z3y9EWXhuUBC2Shnf+DX0antecpAwSP8w==}
     engines: {node: '>=10'}
@@ -6912,7 +6850,7 @@ snapshots:
 
   '@astrojs/yaml2ts@0.2.1':
     dependencies:
-      yaml: 2.5.0
+      yaml: 2.6.0
 
   '@babel/code-frame@7.25.7':
     dependencies:
@@ -12027,8 +11965,8 @@ snapshots:
 
   tap-yaml@4.0.0:
     dependencies:
-      yaml: 2.5.0
-      yaml-types: 0.4.0(yaml@2.5.0)
+      yaml: 2.6.0
+      yaml-types: 0.4.0(yaml@2.6.0)
 
   tap@21.0.1(@types/node@22.5.0)(@types/react@18.3.11)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4):
     dependencies:
@@ -12226,14 +12164,23 @@ snapshots:
 
   type-fest@4.25.0: {}
 
-  typedoc@0.26.6(typescript@5.5.4):
+  typedoc-plugin-frontmatter@1.0.0(typedoc-plugin-markdown@4.2.9(typedoc@0.26.10(typescript@5.5.4))):
+    dependencies:
+      typedoc-plugin-markdown: 4.2.9(typedoc@0.26.10(typescript@5.5.4))
+      yaml: 2.6.0
+
+  typedoc-plugin-markdown@4.2.9(typedoc@0.26.10(typescript@5.5.4)):
+    dependencies:
+      typedoc: 0.26.10(typescript@5.5.4)
+
+  typedoc@0.26.10(typescript@5.5.4):
     dependencies:
       lunr: 2.3.9
       markdown-it: 14.1.0
       minimatch: 9.0.5
       shiki: 1.22.0
       typescript: 5.5.4
-      yaml: 2.5.0
+      yaml: 2.6.0
 
   typesafe-path@0.2.2: {}
 
@@ -12657,13 +12604,15 @@ snapshots:
     optionalDependencies:
       prettier: 2.8.7
 
-  yaml-types@0.4.0(yaml@2.5.0):
+  yaml-types@0.4.0(yaml@2.6.0):
     dependencies:
-      yaml: 2.5.0
+      yaml: 2.6.0
 
   yaml@2.2.2: {}
 
   yaml@2.5.0: {}
+
+  yaml@2.6.0: {}
 
   yargs-parser@20.2.9: {}
 

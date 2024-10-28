@@ -16,6 +16,8 @@ import {
   QueryResponse,
 } from './types.js'
 
+export * from './types.js'
+
 const noopFn = async (state: ParserState) => state
 
 const selectors = {

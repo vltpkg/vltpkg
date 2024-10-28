@@ -88,7 +88,7 @@ export class Node implements NodeLike {
   edgesOut = new Map<string, Edge>()
 
   /**
-   * A reference to the {@link @DepID} this node represents in the graph.
+   * A reference to the {@link DepID} this node represents in the graph.
    */
   id: DepID
 
