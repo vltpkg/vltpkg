@@ -4,6 +4,7 @@ import { Logo } from '@/components/ui/logo.jsx'
 import { Title } from '@/components/ui/title.jsx'
 import { ExplorerGrid } from '@/components/explorer-grid/index.jsx'
 import { useGraphStore } from '@/state/index.js'
+import { ModeToggle } from '@/components/ui/mode-toggle.jsx'
 
 export type ExplorerOptions = {
   projectRoot?: string
@@ -46,9 +47,12 @@ export const Explorer = () => {
         <Logo className="col-span-2 p-8" />
         <div className="col-span-5 relative pt-6 pb-1">
           <Title className="mt-2 -ml-24 pr-2 absolute">Explore</Title>
-          <SearchBar />
+          <div className="flex">
+            <SearchBar />
+            <ModeToggle />
+          </div>
           {graph?.projectRoot ?
-            <div className="text-xs text-gray-500 mt-2 absolute border border-solid border-gray-200 rounded-bl-sm rounded-br-sm z-0 py-1 px-3 top-full right-0 w-auto text-right">
+            <div className="text-xs text-gray-500 mt-2 absolute border border-solid rounded-bl-sm rounded-br-sm z-0 py-1 px-3 top-full right-0 w-auto text-right">
               Context: {graph.projectRoot}
             </div>
           : ''}
