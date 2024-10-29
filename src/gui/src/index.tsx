@@ -1,4 +1,4 @@
-import React, { StrictMode } from 'react'
+import { useEffect, StrictMode } from 'react'
 import { Query } from '@vltpkg/query'
 import { createRoot } from 'react-dom/client'
 import { Explorer } from './app/explorer.js'
@@ -40,7 +40,7 @@ const App = () => {
   // only load graph data when we want to manually update the graph
   // state in the app, to make sure we're controlling it, we use the
   // stamp state as a dependency of `useEffect` to trigger the load.
-  React.useEffect(() => {
+  useEffect(() => {
     startGraphData({
       updateGraph,
       updateQ,

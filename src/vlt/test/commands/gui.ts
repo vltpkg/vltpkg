@@ -1,7 +1,6 @@
 import t from 'tap'
 import { readFileSync, readdirSync } from 'node:fs'
 import { resolve } from 'node:path'
-import { pathToFileURL } from 'node:url'
 import { LoadedConfig } from '../../src/config/index.js'
 
 class PackageJson {
@@ -72,9 +71,10 @@ t.test('starts gui data and server', async t => {
   t.type(usage, 'string')
 
   // workaround for the import.meta.resolve issue not working with tap atm
-  const guiFolder = pathToFileURL(
-    resolve(import.meta.dirname, '../../../../src/gui/dist/index.js'),
-  ).href
+  const guiFolder = resolve(
+    import.meta.dirname,
+    '../../../../src/gui/dist',
+  )
 
   const log = t.capture(console, 'log').args
 

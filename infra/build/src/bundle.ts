@@ -4,6 +4,7 @@ import {
   mkdirSync,
   writeFileSync,
   readdirSync,
+  cpSync,
 } from 'node:fs'
 import {
   join,
@@ -27,12 +28,27 @@ import * as types from './types.js'
 
 const EXT = '.js'
 
-const randIdent = () => `_${randomBytes(6).toString('hex')}`
+export const IMPORT_META: Record<
+  Capitalize<keyof ImportMeta>,
+  `import.meta.${keyof ImportMeta}`
+> = {
+  Dirname: 'import.meta.dirname',
+  Filename: 'import.meta.filename',
+  Url: 'import.meta.url',
+  Resolve: 'import.meta.resolve',
+}
+
+const ident = (pre = '') =>
+  [...pre.split(/[.:]/g), randomBytes(3).toString('hex')].join('_')
 
 export type OnLoadPlugin = {
   paths: () => string[]
   plugin: esbuild.Plugin
 }
+
+const readJson = (p: string) => JSON.parse(readFileSync(p, 'utf8'))
+
+const readPkg = (p: string) => readJson(join(p, 'package.json'))
 
 const getSrcPath = (p: string) =>
   relative(Paths.SRC, p).replace(join('/dist/esm/'), sep)
@@ -101,7 +117,6 @@ const codeSplitPlugin = (
 // directory. When we bundle those package.json files will be in different
 // places so this plugin will rewrite the package and its function calls
 // to read from the correct places.
-
 const readPackageJsonPlugin = (
   filter: string,
   transform: (path: string) => string,
@@ -151,6 +166,59 @@ const readPackageJsonPlugin = (
   }
 }
 
+const metaResolvePlugin = (filter: string): OnLoadPlugin => {
+  const parts = IMPORT_META.Resolve.split('.')
+  const found = new Set<string>()
+  const { plugin } = createOnLoad(
+    s => s.includes(IMPORT_META.Resolve),
+    (_, s) =>
+      j(s)
+        .find(j.CallExpression, {
+          callee: {
+            object: {
+              type: 'MetaProperty',
+              meta: { name: parts[0] },
+              property: { name: parts[1] },
+            },
+            property: { name: parts[2] },
+          },
+        })
+        .find(j.Literal)
+        .forEach(path => {
+          const { value } = path.node
+          assert(
+            typeof value === 'string',
+            `${IMPORT_META.Resolve} must be a string`,
+          )
+          const workspace = readdirSync(Paths.SRC, {
+            withFileTypes: true,
+          })
+            .filter(d => d.isDirectory())
+            .find(d =>
+              value.startsWith(
+                readPkg(join(d.parentPath, d.name)).name,
+              ),
+            )
+          assert(
+            workspace,
+            `${IMPORT_META.Resolve} can only be used with a workspace in src/`,
+          )
+          found.add(join(workspace.parentPath, workspace.name))
+          path.node.value = workspace.name
+        })
+        .toSource(),
+  )
+  return {
+    paths: () => [...found],
+    plugin: {
+      name: 'meta-resolve',
+      setup({ onLoad }) {
+        onLoad(filePluginFilter(filter), plugin)
+      },
+    },
+  }
+}
+
 const loadCommandsPlugin = (
   filter: string,
   o: Pick<types.BundleFactors, 'externalCommands' | 'format'>,
@@ -165,7 +233,7 @@ const loadCommandsPlugin = (
       )?.groups
     assert(m, `load commands code does not match expected`)
     const load = isCjs ? 'require(' : m.load
-    const pathVar = `__commandPath${randIdent()}`
+    const pathVar = ident('commandPath')
     const path = isExt ? pathVar : m.path
     const prefix =
       isExt ? `${m.ws}const ${pathVar} = ${m.path}\n` : ''
@@ -240,55 +308,128 @@ const bundle = async (o: {
   in: string
   out: string
 }) => {
-  const id = (() => {
-    const i = randIdent()
-    return (p: string) => `${p}${i}`
-  })()
   const cjs = o.format === types.Formats.Cjs
-  const define = {
-    url: id('__bundleUrl'),
-    dirname: id('__bundleDirname'),
-    filename: id('__bundleFilename'),
+
+  class Globals {
+    #ids = new Map<string, string>()
+    #items = new Map<string, string>()
+
+    static quote = (v: string) => `"${v}"`
+
+    static var = (name: string, value: string) =>
+      `var ${name} = ${value}`
+
+    static import = (name: string | string[], path: string) => {
+      const mod = Globals.quote(`node:${path}`)
+      const imports =
+        Array.isArray(name) ? `{${name.join(', ')}}` : name
+      return cjs ?
+          Globals.var(imports, `require(${mod})`)
+        : `import ${imports} from ${mod}`
+    }
+
+    toString() {
+      return [...this.#items.values()].join('\n')
+    }
+
+    constructor(
+      ...args: (
+        | false
+        | string
+        | ((b: Globals) => string)
+        | Record<string, (id: string, b: Globals) => string>
+      )[]
+    ) {
+      for (const [k, v] of args.flatMap(arg => {
+        if (typeof arg === 'object') {
+          return Object.entries(arg).map(([k, v]) => {
+            const id = this.#id(k)
+            return [id, v(id, this)] as const
+          })
+        }
+        const value =
+          typeof arg === 'string' ? arg
+          : typeof arg === 'function' ? arg(this)
+          : null
+        return value ? [[value, value] as const] : []
+      })) {
+        this.#items.set(k, v)
+      }
+    }
+
+    #id(key: string) {
+      const cached = this.#ids.get(key)
+      if (cached) {
+        return cached
+      }
+      const id = ident(`bundle.${key}`)
+      this.#ids.set(key, id)
+      return id
+    }
+
+    get = (key: string) => {
+      const value = this.#ids.get(key)
+      assert(value)
+      return value
+    }
+
+    fn = (fn: string, args: string[]) => {
+      const id = this.#id(fn)
+      const [mod, name] = fn.split('.')
+      assert(name && mod)
+      this.#items.set(id, Globals.import([`${name} as ${id}`], mod))
+      return `${id}(${args.join(', ')})`
+    }
   }
 
-  const createImport = (
-    name: string | string[],
-    path: string,
-    map: (n: string) => string = (n: string) => n,
-  ) => {
-    const names =
-      Array.isArray(name) ?
-        `{${name.map(map).join(', ')}}`
-      : map(name)
-    const parts =
-      cjs ? ['var', '= require(', ')'] : ['import', 'from', '']
-    return `${parts[0]} ${names} ${parts[1]}${JSON.stringify(path)}${parts[2]}`
-  }
-
-  const createUniqImport = (name: string | string[], path: string) =>
-    createImport(
-      name,
-      path,
-      n => `${n} ${cjs ? ':' : ' as'} ${id(n)}`,
-    )
-
-  const createGlobal = (
-    name: string,
-    value: string | [string, string],
-    args?: string[],
-  ) => {
-    const [pre, post] = Array.isArray(value) ? value : [value, '']
-    return `var ${name} = ${pre}${args ? `(${args.join(', ')})` : ''}${post}`
-  }
-
-  const createUniqGlobal = (
-    name: string,
-    value: string | [string, string],
-    args?: string[],
-  ) => {
-    const [pre, post] = Array.isArray(value) ? value : [value, '']
-    return createGlobal(name, [id(pre), post], args)
-  }
+  const globals = new Globals(
+    // These are globals that are needed to run in all runtimes
+    Globals.var('global', 'globalThis'),
+    Globals.import('process', 'process'),
+    Globals.import(['Buffer'], 'buffer'),
+    Globals.import(['setImmediate', 'clearImmediate'], 'timers'),
+    // These are to shim import.meta properties
+    {
+      [IMPORT_META.Dirname]: (id, { fn }) =>
+        Globals.var(
+          id,
+          fn('path.resolve', [
+            cjs ? '__dirname' : IMPORT_META.Dirname,
+            Globals.quote(
+              relative(resolve(o.outdir, dirname(o.out)), o.outdir),
+            ),
+          ]),
+        ),
+      [IMPORT_META.Filename]: (id, { fn, get }) =>
+        Globals.var(
+          id,
+          fn('path.resolve', [
+            get(IMPORT_META.Dirname),
+            Globals.quote(basename(o.out) + EXT),
+          ]),
+        ),
+      [IMPORT_META.Url]: (id, { fn, get }) =>
+        Globals.var(
+          id,
+          `${fn('url.pathToFileURL', [get(IMPORT_META.Filename)])}.toString()`,
+        ),
+      [IMPORT_META.Resolve]: (id, { fn, get }) => {
+        const arg = ident()
+        return Globals.var(
+          id,
+          `(${arg}) => ${fn('url.pathToFileURL', [
+            fn('path.resolve', [get(IMPORT_META.Dirname), arg]),
+          ])}`,
+        )
+      },
+    },
+    !cjs &&
+      (({ fn, get }) =>
+        Globals.var(
+          'require',
+          fn('module.createRequire', [get(IMPORT_META.Filename)]),
+        )),
+  )
 
   const { errors, warnings, metafile } = await esbuild.build({
     entryPoints: [{ in: o.in, out: o.out }],
@@ -300,51 +441,22 @@ const bundle = async (o: {
     metafile: true,
     bundle: true,
     platform: 'node',
-    target: JSON.parse(
-      readFileSync(join(Paths.MONO_ROOT, 'tsconfig.json'), 'utf8'),
-    ).compilerOptions.target,
+    target: readJson(join(Paths.MONO_ROOT, 'tsconfig.json'))
+      .compilerOptions.target,
     // Define global variables that are required for our deps and testing
     // runtime support
     banner: {
-      [EXT.slice(1)]: [
-        createImport('process', 'node:process'),
-        createImport(['Buffer'], 'node:buffer'),
-        createImport(
-          ['setImmediate', 'clearImmediate'],
-          'node:timers',
-        ),
-        createUniqImport(['resolve'], 'node:path'),
-        createUniqImport(['pathToFileURL'], 'node:url'),
-        createUniqImport(['createRequire'], 'node:module'),
-        createGlobal('global', 'globalThis'),
-        createUniqGlobal(define.dirname, 'resolve', [
-          cjs ? '__dirname' : 'import.meta.dirname',
-          JSON.stringify(
-            relative(resolve(o.outdir, dirname(o.out)), o.outdir),
-          ),
-        ]),
-        createUniqGlobal(define.filename, 'resolve', [
-          define.dirname,
-          JSON.stringify(`${basename(o.out)}${EXT}`),
-        ]),
-        createUniqGlobal(
-          define.url,
-          ['pathToFileURL', '.toString()'],
-          [define.filename],
-        ),
-        !cjs ?
-          createUniqGlobal('require', 'createRequire', [
-            define.filename,
-          ])
-        : '',
-      ]
-        .filter(Boolean)
-        .join('\n'),
+      [EXT.slice(1)]: globals.toString(),
     },
-    define: Object.entries(define).reduce((acc, [k, v]) => {
-      ;(acc as any)[`import.meta.${k}`] = v
-      return acc
-    }, {}),
+    // The import.meta shims are then globally replaced with our newly defined values
+    define: Object.values(IMPORT_META).reduce(
+      (acc, k) => {
+        acc[k] = globals.get(k)
+        return acc
+      },
+      // eslint-disable-next-line @typescript-eslint/prefer-reduce-type-parameter
+      {} as Record<`import.meta.${keyof ImportMeta}`, string>,
+    ),
   })
 
   assert(
@@ -367,18 +479,37 @@ export default async ({
   rmSync(outdir, { recursive: true, force: true })
   mkdirSync(outdir, { recursive: true })
 
+  const codeSplit = codeSplitPlugin(`^${Paths.SRC}`, p =>
+    getSrcPath(p),
+  )
+  const readPackageJson = readPackageJsonPlugin(`^${Paths.SRC}`, p =>
+    dirname(getSrcPath(p)),
+  )
+  const metaResolve = metaResolvePlugin(`^${Paths.SRC}`)
+  const loadCommands = loadCommandsPlugin(`^${Paths.CLI}`, {
+    externalCommands,
+    format,
+  })
+  const nodeImports = nodeImportsPlugin()
+
   const files: esbuild.Metafile[] = []
   const bundleFiles = async (
     bundles: {
       in: string
       out: string
-      plugins: esbuild.BuildOptions['plugins']
+      plugins?: esbuild.BuildOptions['plugins']
     }[],
   ) => {
     for (const b of bundles) {
       files.push(
         await bundle({
           ...b,
+          plugins: [
+            readPackageJson.plugin,
+            metaResolve.plugin,
+            nodeImports,
+            ...(b.plugins ?? []),
+          ],
           sourcemap,
           format,
           minify,
@@ -388,18 +519,6 @@ export default async ({
     }
   }
 
-  const codeSplit = codeSplitPlugin(`^${Paths.SRC}`, p =>
-    getSrcPath(p),
-  )
-  const readPackageJson = readPackageJsonPlugin(`^${Paths.SRC}`, p =>
-    dirname(getSrcPath(p)),
-  )
-  const loadCommands = loadCommandsPlugin(`^${Paths.CLI}`, {
-    externalCommands,
-    format,
-  })
-  const nodeImports = nodeImportsPlugin()
-
   await bundleFiles(
     Bins.PATHS.map(bin => ({
       in: join(Paths.CLI, bin),
@@ -407,9 +526,7 @@ export default async ({
       plugins: [
         rewriteBinPlugin({ format }),
         codeSplit.plugin,
-        readPackageJson.plugin,
         loadCommands,
-        nodeImports,
       ],
     })),
   )
@@ -423,11 +540,7 @@ export default async ({
         .map(c => ({
           in: join(c.parentPath, c.name),
           out: `commands/${basename(c.name, extname(c.name))}`,
-          plugins: [
-            codeSplit.plugin,
-            readPackageJson.plugin,
-            nodeImports,
-          ],
+          plugins: [codeSplit.plugin],
         })),
     )
   }
@@ -436,23 +549,41 @@ export default async ({
     codeSplit.paths().map(p => ({
       in: p,
       out: getSrcPath(p).replaceAll(EXT, ''),
-      plugins: [readPackageJson.plugin, nodeImports],
     })),
   )
 
+  const createWorkspace = (base: string, source: string) => {
+    const pkg = readPkg(source)
+    const dest = join(base, basename(source))
+    mkdirSync(dest, { recursive: true })
+    return { pkg, dest }
+  }
+
   for (const file of readPackageJson.paths()) {
-    const pkgFile = findPackageJson(file)
-    const to = join(
+    const { pkg, dest } = createWorkspace(
       outdir,
-      basename(dirname(pkgFile)),
-      'package.json',
+      dirname(findPackageJson(file)),
     )
-    mkdirSync(dirname(to), { recursive: true })
-    const pkg = JSON.parse(readFileSync(pkgFile, 'utf8'))
     writeFileSync(
-      to,
-      JSON.stringify({ name: pkg.name, version: pkg.version }),
+      join(dest, 'package.json'),
+      JSON.stringify(
+        {
+          name: pkg.name,
+          version: pkg.version,
+        },
+        null,
+        2,
+      ),
     )
+  }
+
+  for (const dir of metaResolve.paths()) {
+    const { pkg, dest } = createWorkspace(outdir, dir)
+    const main = pkg.exports['.']
+    assert(typeof main === 'string')
+    cpSync(join(dir, main), join(dest), {
+      recursive: true,
+    })
   }
 
   const { inputs, outputs } = files.reduce<esbuild.Metafile>(
