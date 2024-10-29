@@ -6,10 +6,10 @@ import {
 } from '@vltpkg/graph'
 import { PackageJson } from '@vltpkg/package-json'
 import { Spec, SpecOptions } from '@vltpkg/spec'
+import { Monorepo } from '@vltpkg/workspaces'
 import { PathScurry } from 'path-scurry'
 import t from 'tap'
 import { LoadedConfig } from '../../src/types.js'
-import { Monorepo } from '@vltpkg/workspaces'
 
 t.cleanSnapshot = s =>
   s.replace(
@@ -116,9 +116,7 @@ t.test('list', async t => {
 
   await command({
     positionals: [],
-    values: {
-      view: 'human',
-    },
+    values: { view: 'human' },
     options,
   } as unknown as LoadedConfig)
   t.matchSnapshot(
@@ -128,27 +126,21 @@ t.test('list', async t => {
 
   await command({
     positionals: [],
-    values: {
-      view: 'json',
-    },
+    values: { view: 'json' },
     options,
   } as unknown as LoadedConfig)
   t.matchSnapshot(logs()[0], 'should list pkgs in json format')
 
   await command({
     positionals: [],
-    values: {
-      view: 'mermaid',
-    },
+    values: { view: 'mermaid' },
     options,
   } as unknown as LoadedConfig)
   t.matchSnapshot(logs()[0], 'should list mermaid in json format')
 
   await command({
     positionals: ['*'],
-    values: {
-      view: 'human',
-    },
+    values: { view: 'human' },
     options,
   } as unknown as LoadedConfig)
   t.matchSnapshot(
@@ -158,21 +150,24 @@ t.test('list', async t => {
 
   await command({
     positionals: ['*'],
-    values: {
-      view: 'json',
-    },
+    values: { view: 'json' },
     options,
   } as unknown as LoadedConfig)
   t.matchSnapshot(logs()[0], 'should list all pkgs in json format')
 
   await command({
     positionals: ['*'],
-    values: {
-      view: 'mermaid',
-    },
+    values: { view: 'mermaid' },
     options,
   } as unknown as LoadedConfig)
   t.matchSnapshot(logs()[0], 'should list all pkgs in mermaid format')
+
+  await command({
+    positionals: ['foo', 'bar'],
+    values: { view: 'human' },
+    options,
+  } as unknown as LoadedConfig)
+  t.matchSnapshot(logs()[0], 'should list all pkgs in human format')
 
   await t.test('workspaces', async t => {
     const mainManifest = {

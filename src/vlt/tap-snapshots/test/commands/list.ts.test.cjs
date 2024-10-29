@@ -34,6 +34,8 @@ Examples:
           List direct dependencies of the current project / workspace
   vlt ls *
           List all dependencies for the current project / workspace
+  vlt ls foo bar baz
+          List all dependencies named 'foo', 'bar', or 'baz'
   vlt ls '[name="@scoped/package"] > *'
           Lists direct dependencies of a specific package
   vlt ls '*.workspace > *.peer'
@@ -44,6 +46,19 @@ Options:
   --view=[human | json | mermaid]
           Output format. Defaults to human-readable or json if no tty.
 
+`
+
+exports[`test/commands/list.ts > TAP > list > should list all pkgs in human format 1`] = `
+Array [
+  String(
+    my-project
+    ├── foo@1.0.0
+    └─┬ bar@1.0.0
+      └─┬ custom:baz@1.0.0
+        └── foo@1.0.0 (deduped)
+    
+  ),
+]
 `
 
 exports[`test/commands/list.ts > TAP > list > should list all pkgs in human readable format 1`] = `
