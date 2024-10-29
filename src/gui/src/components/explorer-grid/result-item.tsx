@@ -36,7 +36,7 @@ const onResultItemClick =
           item.to.version ? `[version="${item.to.version}"]` : ''
         suffix = `${name}${version}`
       }
-      if (item.to.importer) {
+      if (item.to.importer && !item.from) {
         newQuery = `:project[name="${item.to.name}"]`
       } else if (item.from) {
         const fromName = `[name="${item.from.name}"]`

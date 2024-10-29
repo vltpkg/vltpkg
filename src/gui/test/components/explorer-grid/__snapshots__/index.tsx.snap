@@ -20,6 +20,105 @@ exports[`explorer-grid render default 1`] = `
 
 `;
 
+exports[`explorer-grid renders workspace with edges in 1`] = `
+
+<div>
+  <div class="grid grid-cols-7 gap-4">
+    <div class="col-span-2">
+      <div class="pt-6 text-xl flex flex-row font-semibold">
+        Parent
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          height="24"
+          viewbox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          class="lucide lucide-corner-right-down mt-1 ml-2"
+        >
+          <polyline points="10 15 15 20 20 15">
+          </polyline>
+          <path d="M4 4h7a4 4 0 0 1 4 4v12">
+          </path>
+        </svg>
+      </div>
+      <div class="group relative z-10">
+        <div class="block rounded-lg border bg-card text-card-foreground shadow-sm transition-colors relative my-4 border-primary cursor-pointer group-hover:border-indigo-600 group-hover:bg-indigo-100">
+          <div class="rounded-t-lg relative flex flex-row p-2 px-3">
+            <h3 class="font-semibold tracking-tight text-md grow">
+              a@1.0.0
+            </h3>
+          </div>
+        </div>
+        <div class="absolute border-t border-solid border-primary w-4 -right-4 top-5">
+        </div>
+      </div>
+    </div>
+    <div class="col-span-3">
+      <div class="pt-6 text-xl flex flex-row font-semibold">
+        Selected Item
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          height="24"
+          viewbox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          class="lucide lucide-corner-right-down mt-1 ml-2"
+        >
+          <polyline points="10 15 15 20 20 15">
+          </polyline>
+          <path d="M4 4h7a4 4 0 0 1 4 4v12">
+          </path>
+        </svg>
+      </div>
+      <div class="relative">
+        <div class="block rounded-lg border bg-card text-card-foreground shadow-sm relative my-4 border-primary">
+          <div class="flex flex-row p-2 px-3">
+            <h3 class="font-semibold tracking-tight text-md grow">
+              b@workspace:*
+            </h3>
+            <div class="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 grow-0 border-transparent bg-cyan-100 text-neutral-900 hover:bg-cyan-100/80">
+              prod
+            </div>
+          </div>
+          <div class="absolute border-l border-solid border-primary w-1 h-[17px] -bottom-[17px] left-1/2">
+          </div>
+        </div>
+        <div class="block rounded-lg border bg-card text-card-foreground shadow-sm relative my-4 border-primary">
+          <div class="rounded-t-lg relative flex flex-row -m-px p-2 px-4 bg-primary text-primary-foreground">
+            <h3 class="text-2xl font-semibold leading-none tracking-tight grow">
+              <span class="text-xl">
+                b
+              </span>
+              <span class="mx-2">
+                ·
+              </span>
+              <span class="text-lg text-gray-200">
+                v1.0.0
+              </span>
+            </h3>
+          </div>
+          <div class="flex flex-row pl-4 pr-3">
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-span-2">
+      <div class="h-[7.9rem]">
+      </div>
+    </div>
+  </div>
+</div>
+
+`;
+
 exports[`explorer-grid with results 1`] = `
 
 <div>
@@ -55,11 +154,6 @@ exports[`explorer-grid with results 1`] = `
             <p class="text-sm text-muted-foreground grow content-center py-2">
               Resolves to: npm:a@1.0.0
             </p>
-            <div>
-              <div class="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 my-2 mx-1 grow-0 border-transparent bg-cyan-100 text-neutral-900 hover:bg-cyan-100/80">
-                prod
-              </div>
-            </div>
           </div>
         </a>
       </div>
@@ -88,11 +182,6 @@ exports[`explorer-grid with results 1`] = `
             <p class="text-sm text-muted-foreground grow content-center py-2">
               Resolves to: npm:b@1.0.0
             </p>
-            <div>
-              <div class="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 my-2 mx-1 grow-0 border-transparent bg-cyan-100 text-neutral-900 hover:bg-cyan-100/80">
-                prod
-              </div>
-            </div>
           </div>
         </a>
       </div>
@@ -141,11 +230,6 @@ exports[`explorer-grid with stack 1`] = `
             <p class="text-sm text-muted-foreground grow content-center py-2">
               Resolves to: npm:a@1.0.0
             </p>
-            <div>
-              <div class="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 my-2 mx-1 grow-0 border-transparent bg-cyan-100 text-neutral-900 hover:bg-cyan-100/80">
-                prod
-              </div>
-            </div>
           </div>
         </a>
       </div>
@@ -173,11 +257,6 @@ exports[`explorer-grid with stack 1`] = `
             <p class="text-sm text-muted-foreground grow content-center py-2">
               Resolves to: npm:b@1.0.0
             </p>
-            <div>
-              <div class="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 my-2 mx-1 grow-0 border-transparent bg-cyan-100 text-neutral-900 hover:bg-cyan-100/80">
-                prod
-              </div>
-            </div>
           </div>
         </a>
       </div>
