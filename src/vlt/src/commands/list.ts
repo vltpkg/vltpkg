@@ -23,6 +23,8 @@ Examples:
           List direct dependencies of the current project / workspace
   vlt ls *
           List all dependencies for the current project / workspace
+  vlt ls foo bar baz
+          List all dependencies named 'foo', 'bar', or 'baz'
   vlt ls '[name="@scoped/package"] > *'
           Lists direct dependencies of a specific package
   vlt ls '*.workspace > *.peer'
@@ -46,7 +48,9 @@ export const command = async (conf: LoadedConfig) => {
     loadManifests: true,
   })
 
-  const queryString = conf.positionals[0]
+  const queryString = conf.positionals
+    .map(k => (/^[@\w-]/.test(k) ? `#${k}` : k))
+    .join(', ')
   const query = new Query({ graph })
   const projectQueryString = ':project, :project > *'
   const selectImporters: string[] = []
