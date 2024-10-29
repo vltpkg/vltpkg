@@ -6,7 +6,7 @@ import {
   writeFileSync,
 } from 'node:fs'
 import { createServer } from 'node:http'
-import { dirname, resolve } from 'node:path'
+import { resolve } from 'node:path'
 import { tmpdir } from 'node:os'
 import { fileURLToPath } from 'node:url'
 import handler from 'serve-handler'
@@ -39,14 +39,11 @@ export const command = async (
   })
 
   const tmp = resolve(tmpdir(), 'vltgui')
-  try {
-    rmSync(tmp, { recursive: true })
-  } /* c8 ignore next */ catch (_e) {}
+  rmSync(tmp, { recursive: true, force: true })
   mkdirSync(tmp, { recursive: true })
-  const dir = dirname(
+  const dir =
     /* c8 ignore next */
-    fileURLToPath(extra || import.meta.resolve('@vltpkg/gui')),
-  )
+    extra || fileURLToPath(import.meta.resolve('@vltpkg/gui'))
   for (const file of readdirSync(dir)) {
     cpSync(resolve(dir, file), resolve(tmp, file), {
       recursive: true,

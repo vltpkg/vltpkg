@@ -4,7 +4,7 @@ import globals from 'globals'
 import { relative, sep, join } from 'path'
 import * as types from '../src/types.js'
 import { defaultOptions } from '../src/index.js'
-import bundle from '../src/bundle.js'
+import bundle, { IMPORT_META } from '../src/bundle.js'
 
 const testBundle = async (
   t: Test,
@@ -69,18 +69,50 @@ t.test('lint', async t => {
       },
       rules: {
         'no-undef': 'error',
+        'no-restricted-syntax': [
+          2,
+          ...Object.values(IMPORT_META).map(message => ({
+            message,
+            selector: [
+              'MemberExpression',
+              `[object.type='MetaProperty']`,
+              `[object.property.name='meta']`,
+              `[property.name='${message.replace('import.meta.', '')}']`,
+            ].join(''),
+          })),
+        ],
       },
     },
+    overrideConfig: [
+      {
+        files: ['**/gui/*.js'],
+        languageOptions: {
+          globals: {
+            ...globals.browser,
+            // These are used by 3rd party deps that we do
+            // not control but don't pose any runtime problems.
+            global: false,
+            setImmediate: false,
+            MSApp: false,
+            checkDCE: false,
+            IS_REACT_ACT_ENVIRONMENT: false,
+            __REACT_DEVTOOLS_GLOBAL_HOOK__: false,
+          },
+        },
+      },
+    ],
   })
   const results = await eslint.lintFiles([
     `${relative(dir, outdir)}/**/*.js`,
   ])
-  t.strictSame(
-    [
-      ...new Set(
-        results.flatMap(r => r.messages.map(m => m.message)),
-      ),
-    ],
-    [],
-  )
+  for (const result of results) {
+    const messages = result.messages.map(m => [m.ruleId, m.message])
+    const file = relative(outdir, result.filePath)
+    const expected =
+      file.startsWith(`gui${sep}`) ?
+        []
+        // 1 use of import.meta.dirname is expected in all our built esm files
+      : [['no-restricted-syntax', IMPORT_META.Dirname]]
+    t.strictSame(messages, expected, file)
+  }
 })

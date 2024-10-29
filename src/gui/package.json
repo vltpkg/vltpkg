@@ -63,12 +63,6 @@
   "type": "module",
   "exports": {
     "./package.json": "./package.json",
-    ".": {
-      "import": {
-        "source": "./src/index.ts",
-        "types": "./dist/index.d.ts",
-        "default": "./dist/index.js"
-      }
-    }
+    ".": "./dist"
   }
 }
