@@ -120,7 +120,7 @@ const getItemsData = (edges: EdgeLike[], nodes: NodeLike[]) => {
 }
 
 const getParent = (
-  edge: GridItemData,
+  edge?: GridItemData,
   node?: NodeLike,
 ): GridItemData | undefined => {
   if (!node) return undefined
@@ -184,8 +184,7 @@ export const ExplorerGrid = () => {
   const selected = items.length === 1
   const [selectedItem] = items
   const parent = selected ? selectedItem?.from : undefined
-  const parentItem =
-    selectedItem ? getParent(selectedItem, parent) : undefined
+  const parentItem = getParent(selectedItem, parent)
   const dependents =
     selected && getDependentItems(selectedItem?.to, parent)
   const dependencies =
