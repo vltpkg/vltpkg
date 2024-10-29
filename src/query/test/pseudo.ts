@@ -4,6 +4,7 @@ import {
   getCycleGraph,
   getMissingManifestsGraph,
   getMissingNodeGraph,
+  getMultiWorkspaceGraph,
   getSimpleGraph,
   getSingleWorkspaceGraph,
 } from './fixtures/graph.js'
@@ -194,6 +195,39 @@ t.test('pseudo', async t => {
       [':type(registry)', all, []], // type selector
       [':type(workspace)', all, ['w']], // type selector workspace
       [':type(file)', all, ['ws']], // type selector root
+    ])
+    const initial = copyGraphSelectionState(all)
+    for (const [query, partial, expected] of queryToExpected) {
+      const result = await testPseudo(
+        query,
+        initial,
+        copyGraphSelectionState(partial),
+      )
+      t.strictSame(
+        result.nodes.map(i => i.name),
+        expected,
+        `query > "${query}"`,
+      )
+      t.matchSnapshot(
+        {
+          edges: result.edges.map(i => i.name).sort(),
+          nodes: result.nodes.map(i => i.name).sort(),
+        },
+        `query > "${query}"`,
+      )
+    }
+  })
+
+  await t.test('complex workspace', async t => {
+    const wsGraph = getMultiWorkspaceGraph()
+    const all: GraphSelectionState = {
+      edges: new Set(wsGraph.edges),
+      nodes: new Set(wsGraph.nodes.values()),
+    }
+    //const w = getGraphSelectionState(wsGraph, 'w')
+    const queryToExpected = new Set<TestCase>([
+      [':root', all, ['ws']], // root
+      [':project', all, ['ws', 'a', 'b', 'c']], // project = root & workspaces
     ])
     const initial = copyGraphSelectionState(all)
     for (const [query, partial, expected] of queryToExpected) {

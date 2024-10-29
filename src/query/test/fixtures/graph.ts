@@ -197,6 +197,46 @@ export const getSingleWorkspaceGraph = (): GraphLike => {
   return graph
 }
 
+// Returns a complex graph with a multiple workspaces with dependencies
+export const getMultiWorkspaceGraph = (): GraphLike => {
+  const graph = newGraph('ws')
+  const addNode = newNode(graph)
+  const a = addNode('a')
+  a.id = joinDepIDTuple(['workspace', 'a'])
+  graph.nodes.set(a.id, a)
+  graph.importers.add(a)
+  a.importer = true
+  const b = addNode('b')
+  b.id = joinDepIDTuple(['workspace', 'b'])
+  graph.nodes.set(b.id, b)
+  graph.importers.add(b)
+  b.importer = true
+  const c = addNode('c')
+  c.id = joinDepIDTuple(['workspace', 'c'])
+  graph.nodes.set(c.id, c)
+  graph.importers.add(c)
+  c.importer = true
+  const [d, e, f, y] = ['d', 'e', 'f', '@x/y'].map(addNode) as [
+    NodeLike,
+    NodeLike,
+    NodeLike,
+    NodeLike,
+    NodeLike,
+  ]
+
+  newEdge(b, Spec.parse('a', 'workspace:*', specOptions), 'prod', a)
+  newEdge(b, Spec.parse('d', '^1.0.0', specOptions), 'prod', d)
+  newEdge(b, Spec.parse('e', '^1.0.0', specOptions), 'prod', e)
+  newEdge(a, Spec.parse('f', '^1.0.0', specOptions), 'prod', f)
+  newEdge(
+    graph.mainImporter,
+    Spec.parse('@x/y', '^1.0.0', specOptions),
+    'prod',
+    y,
+  )
+  return graph
+}
+
 // Returns a graph that looks like:
 //
 // cycle-project (#a.prod)
