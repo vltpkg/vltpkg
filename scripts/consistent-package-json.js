@@ -248,7 +248,7 @@ const fixScripts = async ws => {
     : ws.pj.devDependencies.vitest ?
       {
         test: 'vitest',
-        snap: 'vitest',
+        snap: 'vitest --no-watch -u',
         posttest:
           ws.pj.name !== '@vltpkg/docs' ? 'tsc --noEmit' : undefined,
       }
