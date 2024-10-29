@@ -1,6 +1,7 @@
 {
   "extends": "../../tsconfig.json",
   "compilerOptions": {
+    "incremental": false,
     "outDir": "dist",
     "target": "esnext",
     "lib": ["es6", "dom"],
