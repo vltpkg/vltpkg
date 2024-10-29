@@ -59,7 +59,9 @@ export const command = async (conf: LoadedConfig) => {
     }
   }
   if (importers.size === 0) {
-    importers.add(graph.mainImporter)
+    for (const importer of graph.importers) {
+      importers.add(importer)
+    }
   }
 
   const colors = conf.values.color ? chalk : undefined
