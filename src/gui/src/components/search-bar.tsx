@@ -6,9 +6,8 @@ export const SearchBar = () => {
   const updateQuery = useGraphStore(state => state.updateQuery)
   const query = useGraphStore(state => state.query)
   return (
-    <div className="flex grow items-center space-x-2">
+    <div className="flex items-center space-x-2 lg:w-[35.25rem] w-96 mr-4">
       <Input
-        className="lg:w-[35.25rem] w-96"
         type="search"
         placeholder="Query Lookup, e.g: :root > *"
         value={query}

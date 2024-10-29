@@ -29,13 +29,13 @@ export const SideItem = ({
       {item.stacked ?
         <>
           {item.size > 2 ?
-            <div className="absolute border top-2 left-2 w-[96%] h-full bg-card rounded-lg group-hover:border-indigo-600 group-hover:bg-indigo-100"></div>
+            <div className="absolute border top-2 left-2 w-[96%] h-full bg-card rounded-lg group-hover:light:border-indigo-600 group-hover:light:bg-indigo-100 dark:group-hover:bg-gradient-to-b dark:group-hoverfrom-indigo-950 dark:group-hoverto-zinc-950 dark:group-hover:border-indigo-300"></div>
           : ''}
-          <div className="absolute border top-1 left-1 w-[98%] h-full bg-card rounded-lg group-hover:border-indigo-600 group-hover:bg-indigo-100"></div>
+          <div className="absolute border top-1 left-1 w-[98%] h-full bg-card rounded-lg group-hover:light:border-indigo-600 group-hover:light:bg-indigo-100 dark:group-hover:bg-gradient-to-b dark:group-hover:from-indigo-950 dark:group-hover:to-zinc-950 dark:group-hover:border-indigo-300"></div>
         </>
       : ''}
       <Card
-        className={`transition-colors relative my-4 ${highlight ? 'border-primary' : ''} ${item.to ? 'cursor-pointer' : ''} group-hover:border-indigo-600 group-hover:bg-indigo-100`}
+        className={`transition-colors relative my-4 ${highlight ? 'border-primary' : ''} ${item.to ? 'cursor-pointer' : ''} group-hover:light:border-indigo-600 group-hover:light:bg-indigo-100  dark:group-hover:bg-gradient-to-b dark:group-hover:from-indigo-950 dark:group-hover:to-zinc-950 dark:group-hover:border-indigo-300`}
         onClick={onClick}>
         <CardHeader className="rounded-t-lg relative flex flex-row p-2 px-3">
           <CardTitle className="text-md grow">{item.title}</CardTitle>
@@ -57,10 +57,10 @@ export const SideItem = ({
         <div className="absolute border-t border-solid border-primary w-4 -right-4 top-5"></div>
       : dependencies ?
         <div
-          className="absolute border-b border-l border-solid border-gray-300 rounded-bl-sm z-0 w-[9px] h-16 -left-[9px] bottom-5"
+          className="absolute border-b border-l border-solid border-gray-300 dark:border-gray-700 rounded-bl-sm z-0 w-[9px] h-16 -left-[9px] bottom-5"
           ref={lineRef}></div>
       : <div
-          className="absolute border-b border-r border-solid border-gray-300 rounded-br-sm z-0 w-[9px] h-16 -right-[9px] bottom-5"
+          className="absolute border-b border-r border-solid border-gray-300 dark:border-gray-700 rounded-br-sm z-0 w-[9px] h-16 -right-[9px] bottom-5"
           ref={lineRef}></div>
       }
     </div>

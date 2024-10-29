@@ -65,11 +65,11 @@ export const SelectedItem = ({ item }: GridItemOptions) => {
         </Card>
       : ''}
       <Card className="relative my-4 border-primary">
-        <CardHeader className="rounded-t-lg relative flex flex-row -m-px p-2 px-4 bg-primary text-primary-foreground">
+        <CardHeader className="rounded-t-lg relative flex flex-row -m-px p-2 px-4 bg-primary dark:bg-gradient-to-b dark:from-cyan-100 dark:to-purple-200 dark:border dark:border-solid dark:border-primary text-primary-foreground">
           <CardTitle className="grow">
             <span className="text-xl">{item.title}</span>
             <span className="mx-2">{'·'}</span>
-            <span className="text-lg text-gray-200">
+            <span className="text-lg text-secondary">
               {item.version}
             </span>
             {origin ?
@@ -90,14 +90,14 @@ export const SelectedItem = ({ item }: GridItemOptions) => {
       {
         // Draw the connection line between dependents and the selected item
         item.from && item.to?.edgesIn && item.to.edgesIn.size > 1 ?
-          <div className="absolute border-t border-l border-solid border-gray-300 rounded-tl-sm w-2 h-2 top-20 -left-2"></div>
+          <div className="absolute border-t border-l border-solid border-gray-300 dark:border-gray-700 rounded-tl-sm w-2 h-2 top-20 -left-2"></div>
         : ''
       }
       {
         // Draw the connection line between dependencies and the selected item
         item.to?.edgesOut && item.to.edgesOut.size > 0 ?
           <div
-            className={`absolute border-t border-r border-solid border-gray-300 rounded-tr-sm w-2 ${item.from ? 'h-2 top-20' : 'h-20 top-5'} -right-2`}></div>
+            className={`absolute border-t border-r border-solid border-gray-300 dark:border-gray-700 rounded-tr-sm w-2 ${item.from ? 'h-2 top-20' : 'h-20 top-5'} -right-2`}></div>
         : ''
       }
     </div>
