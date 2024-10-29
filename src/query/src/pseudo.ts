@@ -335,8 +335,19 @@ const project = async (state: ParserState) => {
   if (!importers?.size) {
     throw error(':project pseudo-element works on local graphs only')
   }
+
+  // make a list of all edges that are coming from importers
+  // so that we can filter out any edges that are not direct
+  // dependencies of the importers
+  const importersEdgesIn = new Set<EdgeLike>()
+  for (const importer of importers) {
+    for (const edge of importer.edgesIn) {
+      importersEdgesIn.add(edge)
+    }
+  }
+
   for (const edge of state.partial.edges) {
-    if (!edge.to || !importers.has(edge.to)) {
+    if (!edge.to || !importersEdgesIn.has(edge)) {
       state.partial.edges.delete(edge)
     }
   }
