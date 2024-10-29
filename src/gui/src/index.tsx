@@ -5,6 +5,7 @@ import { Explorer } from './app/explorer.js'
 import { useGraphStore } from './state/index.js'
 import { load } from './state/load-graph.js'
 import { Action, State } from './state/types.js'
+import { ThemeProvider } from '@/components/ui/theme-provider.jsx'
 
 type StartGraphData = {
   updateGraph: Action['updateGraph']
@@ -61,7 +62,9 @@ if (rootElement) {
   const root = createRoot(rootElement)
   root.render(
     <StrictMode>
-      <App />
+      <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
+        <App />
+      </ThemeProvider>
     </StrictMode>,
   )
 }
