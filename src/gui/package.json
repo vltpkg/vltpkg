@@ -54,7 +54,7 @@
     "prepare": "npm run prepare:css && npm run prepare:js -- --define:process.env.NODE_ENV='\"production\"'",
     "prepare:css": "tailwindcss -i ./src/main.css -o ./dist/main.css",
     "prepare:js": "esbuild src/index.tsx --target=chrome129,edge129,firefox130,safari18 --sourcemap --outdir=dist --bundle --format=cjs --jsx=automatic",
-    "snap": "vitest",
+    "snap": "vitest --no-watch -u",
     "test": "vitest",
     "posttest": "tsc --noEmit",
     "watch": "chokidar 'src/**/*.{ts,tsx,css}' -c 'npm run prepare:css && npm run prepare:js'"

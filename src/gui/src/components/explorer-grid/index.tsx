@@ -33,7 +33,7 @@ const getItemsData = (edges: EdgeLike[], nodes: NodeLike[]) => {
         type: 'prod',
         spec: Spec.parse(
           name || '',
-          node.mainImporter ? 'file:.' : `workspace:${name || ''}`,
+          node.mainImporter ? 'file:.' : `workspace:*`,
         ),
         from: undefined,
         to: node,
@@ -48,10 +48,12 @@ const getItemsData = (edges: EdgeLike[], nodes: NodeLike[]) => {
   const sameItems = ids.size === 1
 
   for (const edge of allEdges) {
+    if (sameItems && !edge.from && allEdges.length > 1) continue
     const id = edge.to?.id
     const titleVersion =
       edge.spec?.bareSpec ? `@${edge.spec.bareSpec}` : ''
-    const title = `${edge.name}${titleVersion}`
+    const title =
+      edge.from ? `${edge.name}${titleVersion}` : edge.name
     // will not stack missing packages
     if (!id) {
       items.push({
@@ -83,15 +85,25 @@ const getItemsData = (edges: EdgeLike[], nodes: NodeLike[]) => {
       }
     } else {
       // when nothing was seen, create a new item
-      const nodeType: string =
+      const nodeType: string | undefined =
         edge.to?.dev ? 'dev'
         : edge.to?.optional ? 'optional'
-        : 'prod'
+        : undefined
+      const workspaceLabel: string | undefined =
+        edge.to?.importer && !edge.to.mainImporter ?
+          'workspace'
+        : undefined
       const labelNames: string[] =
         edge.to?.edgesIn ?
           Array.from(edge.to.edgesIn).map(e => e.type)
         : []
-      const labels = Array.from(new Set([...labelNames, nodeType]))
+      const labels = Array.from(
+        new Set(
+          [...labelNames, nodeType, workspaceLabel].filter(
+            Boolean,
+          ) as string[],
+        ),
+      )
       const data: GridItemData = {
         ...edge,
         id: `${edge.from?.id}${edge.to?.id}` || title,
