@@ -260,11 +260,6 @@ const fixScripts = async ws => {
         presnap: 'tshy',
       }
     : {},
-    {
-      preversion: undefined,
-      postversion: undefined,
-      prepublishOnly: undefined,
-    },
   )
   ws.pj.scripts = sortObject(ws.pj.scripts, (a, b) => {
     const aName = a.replace(/^(pre|post)/, '')
@@ -373,6 +368,9 @@ const fixPackage = async (ws, opts) => {
     ) ?
       true
     : undefined
+  if (!ws.pj.private) {
+    ws.pj.files = ['dist']
+  }
   await fixDeps(ws, opts)
   await fixScripts(ws, opts)
   await fixTools(ws, opts)
@@ -392,8 +390,11 @@ const fixPackage = async (ws, opts) => {
     'tap',
     'prettier',
     'main',
+    'module',
     'types',
     'type',
+    'exports',
+    'files',
     'pnpm',
   ])
 }
