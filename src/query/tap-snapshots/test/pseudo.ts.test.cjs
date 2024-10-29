@@ -5,6 +5,29 @@
  * Make sure to inspect the output below.  Do not ignore changes!
  */
 'use strict'
+exports[`test/pseudo.ts > TAP > pseudo > complex workspace > query > ":project" 1`] = `
+Object {
+  "edges": Array [
+    "a",
+  ],
+  "nodes": Array [
+    "a",
+    "b",
+    "c",
+    "ws",
+  ],
+}
+`
+
+exports[`test/pseudo.ts > TAP > pseudo > complex workspace > query > ":root" 1`] = `
+Object {
+  "edges": Array [],
+  "nodes": Array [
+    "ws",
+  ],
+}
+`
+
 exports[`test/pseudo.ts > TAP > pseudo > cycle > query > ":attr([scripts])" 1`] = `
 Object {
   "edges": Array [
