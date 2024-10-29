@@ -49,6 +49,7 @@
     "extends": "../../tap-config.yaml"
   },
   "prettier": "../../.prettierrc.js",
+  "module": "./dist/esm/index.js",
   "type": "module",
   "exports": {
     "./package.json": "./package.json",
@@ -59,5 +60,7 @@
       }
     }
   },
-  "module": "./dist/esm/index.js"
+  "files": [
+    "dist"
+  ]
 }

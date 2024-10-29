@@ -14,6 +14,7 @@
     "globals": "^15.9.0",
     "prettier": "catalog:",
     "prettier-plugin-astro": "^0.14.1",
+    "read": "^4.0.0",
     "semver": "catalog:",
     "turbo": "^2.1.0",
     "typescript": "catalog:",
