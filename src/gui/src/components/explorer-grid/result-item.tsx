@@ -1,4 +1,4 @@
-import type { MouseEvent } from 'react'
+import { type MouseEvent } from 'react'
 import { stringifyNode } from '@vltpkg/graph/browser'
 import { useGraphStore } from '@/state/index.js'
 import { Badge } from '@/components/ui/badge.jsx'
