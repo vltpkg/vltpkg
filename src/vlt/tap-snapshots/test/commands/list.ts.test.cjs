@@ -312,7 +312,12 @@ Array [
 
 exports[`test/commands/list.ts > TAP > list > workspaces > should list workspaces in human readable format 1`] = `
 Array [
-  "my-project\\n",
+  String(
+    my-project
+    b
+    a
+    
+  ),
 ]
 `
 

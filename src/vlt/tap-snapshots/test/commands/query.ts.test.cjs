@@ -208,7 +208,12 @@ Array [
 
 exports[`test/commands/query.ts > TAP > query > workspaces > should list workspaces in human readable format 1`] = `
 Array [
-  "my-project\\n",
+  String(
+    my-project
+    b
+    a
+    
+  ),
 ]
 `
 
