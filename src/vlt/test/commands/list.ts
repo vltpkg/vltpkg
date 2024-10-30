@@ -37,7 +37,7 @@ const graph = new Graph({
     name: 'my-project',
     version: '1.0.0',
     dependencies: {
-      foo: '^1.0.0',
+      '@foo/bazz': '^1.0.0',
       bar: '^1.0.0',
       missing: '^1.0.0',
     },
@@ -46,9 +46,9 @@ const graph = new Graph({
 graph.placePackage(
   graph.mainImporter,
   'prod',
-  Spec.parse('foo', '^1.0.0', specOptions),
+  Spec.parse('@foo/bazz', '^1.0.0', specOptions),
   {
-    name: 'foo',
+    name: '@foo/bazz',
     version: '1.0.0',
   },
 )
@@ -84,9 +84,9 @@ graph.placePackage(
 graph.placePackage(
   baz,
   'prod',
-  Spec.parse('foo', '^1.0.0', specOptions),
+  Spec.parse('@foo/bazz', '^1.0.0', specOptions),
   {
-    name: 'foo',
+    name: '@foo/bazz',
     version: '1.0.0',
   },
 )
@@ -163,7 +163,7 @@ t.test('list', async t => {
   t.matchSnapshot(logs()[0], 'should list all pkgs in mermaid format')
 
   await command({
-    positionals: ['foo', 'bar'],
+    positionals: ['@foo/bazz', 'bar'],
     values: { view: 'human' },
     options,
   } as unknown as LoadedConfig)

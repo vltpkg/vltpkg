@@ -5,9 +5,9 @@ import {
   mermaidOutput,
   Node,
 } from '@vltpkg/graph'
-import { LoadedConfig } from '../config/index.js'
 import { Query } from '@vltpkg/query'
 import chalk from 'chalk'
+import { LoadedConfig } from '../config/index.js'
 
 export const usage = `Usage:
   vlt ls
@@ -49,7 +49,7 @@ export const command = async (conf: LoadedConfig) => {
   })
 
   const queryString = conf.positionals
-    .map(k => (/^[@\w-]/.test(k) ? `#${k}` : k))
+    .map(k => (/^[@\w-]/.test(k) ? `#${k.replace(/\//, '\\/')}` : k))
     .join(', ')
   const query = new Query({ graph })
   const projectQueryString = ':project, :project > *'

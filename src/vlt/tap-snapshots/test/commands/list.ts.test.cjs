@@ -9,10 +9,10 @@ exports[`test/commands/list.ts > TAP > list > colors > should use colors when se
 Array [
   String(
     \\u001b[0m\\u001b[33mmy-project\\u001b[39m\\u001b[0m
-    \\u001b[0m├── \\u001b[33mfoo@1.0.0\\u001b[39m\\u001b[0m
+    \\u001b[0m├── \\u001b[33m@foo/bazz@1.0.0\\u001b[39m\\u001b[0m
     \\u001b[0m├─┬ \\u001b[33mbar@1.0.0\\u001b[39m\\u001b[0m
     \\u001b[0m│ └─┬ \\u001b[33mcustom:baz@1.0.0\\u001b[39m\\u001b[0m
-    \\u001b[0m│   └── \\u001b[33mfoo@1.0.0\\u001b[39m \\u001b[2m(deduped)\\u001b[22m\\u001b[0m
+    \\u001b[0m│   └── \\u001b[33m@foo/bazz@1.0.0\\u001b[39m \\u001b[2m(deduped)\\u001b[22m\\u001b[0m
     \\u001b[0m└── \\u001b[33mmissing@^1.0.0\\u001b[39m \\u001b[31m(missing)\\u001b[39m\\u001b[0m
     \\u001b[0m\\u001b[0m
   ),
@@ -52,10 +52,10 @@ exports[`test/commands/list.ts > TAP > list > should list all pkgs in human form
 Array [
   String(
     my-project
-    ├── foo@1.0.0
+    ├── @foo/bazz@1.0.0
     └─┬ bar@1.0.0
       └─┬ custom:baz@1.0.0
-        └── foo@1.0.0 (deduped)
+        └── @foo/bazz@1.0.0 (deduped)
     
   ),
 ]
@@ -65,10 +65,10 @@ exports[`test/commands/list.ts > TAP > list > should list all pkgs in human read
 Array [
   String(
     my-project
-    ├── foo@1.0.0
+    ├── @foo/bazz@1.0.0
     ├─┬ bar@1.0.0
     │ └─┬ custom:baz@1.0.0
-    │   └── foo@1.0.0 (deduped)
+    │   └── @foo/bazz@1.0.0 (deduped)
     └── missing@^1.0.0 (missing)
     
   ),
@@ -91,7 +91,7 @@ Array [
             "name": "my-project",
             "version": "1.0.0",
             "dependencies": {
-              "foo": "^1.0.0",
+              "@foo/bazz": "^1.0.0",
               "bar": "^1.0.0",
               "missing": "^1.0.0"
             }
@@ -102,18 +102,18 @@ Array [
         }
       },
       {
-        "name": "foo",
+        "name": "@foo/bazz",
         "fromID": "file·.",
-        "spec": "foo@^1.0.0",
+        "spec": "@foo/bazz@^1.0.0",
         "type": "prod",
         "to": {
-          "id": "··foo@1.0.0",
-          "name": "foo",
+          "id": "··@foo%2Fbazz@1.0.0",
+          "name": "@foo/bazz",
           "version": "1.0.0",
-          "location": "./node_modules/.vlt/··foo@1.0.0/node_modules/foo",
+          "location": "./node_modules/.vlt/··@foo%2Fbazz@1.0.0/node_modules/@foo/bazz",
           "importer": false,
           "manifest": {
-            "name": "foo",
+            "name": "@foo/bazz",
             "version": "1.0.0"
           },
           "projectRoot": "{ROOT}",
@@ -174,18 +174,18 @@ Array [
         "type": "prod"
       },
       {
-        "name": "foo",
+        "name": "@foo/bazz",
         "fromID": "·custom·baz@1.0.0",
-        "spec": "foo@^1.0.0",
+        "spec": "@foo/bazz@^1.0.0",
         "type": "prod",
         "to": {
-          "id": "··foo@1.0.0",
-          "name": "foo",
+          "id": "··@foo%2Fbazz@1.0.0",
+          "name": "@foo/bazz",
           "version": "1.0.0",
-          "location": "./node_modules/.vlt/··foo@1.0.0/node_modules/foo",
+          "location": "./node_modules/.vlt/··@foo%2Fbazz@1.0.0/node_modules/@foo/bazz",
           "importer": false,
           "manifest": {
-            "name": "foo",
+            "name": "@foo/bazz",
             "version": "1.0.0"
           },
           "projectRoot": "{ROOT}",
@@ -203,13 +203,13 @@ Array [
   String(
     flowchart TD
     file%C2%B7.("root:my-project")
-    file%C2%B7.("root:my-project") -->|"foo#64;^1.0.0 (prod)"| %C2%B7%C2%B7foo%401.0.0("npm:foo#64;1.0.0")
-    %C2%B7%C2%B7foo%401.0.0("npm:foo#64;1.0.0")
+    file%C2%B7.("root:my-project") -->|"#64;foo/bazz#64;^1.0.0 (prod)"| %C2%B7%C2%B7%40foo%252Fbazz%401.0.0("npm:#64;foo/bazz#64;1.0.0")
+    %C2%B7%C2%B7%40foo%252Fbazz%401.0.0("npm:#64;foo/bazz#64;1.0.0")
     file%C2%B7.("root:my-project") -->|"bar#64;^1.0.0 (prod)"| %C2%B7%C2%B7bar%401.0.0("npm:bar#64;1.0.0")
     %C2%B7%C2%B7bar%401.0.0("npm:bar#64;1.0.0")
     %C2%B7%C2%B7bar%401.0.0("npm:bar#64;1.0.0") -->|"baz#64;custom:baz#64;^1.0.0 (prod)"| %C2%B7custom%C2%B7baz%401.0.0("custom:baz#64;1.0.0")
     %C2%B7custom%C2%B7baz%401.0.0("custom:baz#64;1.0.0")
-    %C2%B7custom%C2%B7baz%401.0.0("custom:baz#64;1.0.0") -->|"foo#64;^1.0.0 (prod)"| %C2%B7%C2%B7foo%401.0.0("npm:foo#64;1.0.0")
+    %C2%B7custom%C2%B7baz%401.0.0("custom:baz#64;1.0.0") -->|"#64;foo/bazz#64;^1.0.0 (prod)"| %C2%B7%C2%B7%40foo%252Fbazz%401.0.0("npm:#64;foo/bazz#64;1.0.0")
     
     file%C2%B7.("root:my-project") -->|"missing#64;^1.0.0 (prod)"| missing-0(Missing)
     
@@ -222,13 +222,13 @@ Array [
   String(
     flowchart TD
     file%C2%B7.("root:my-project")
-    file%C2%B7.("root:my-project") -->|"foo#64;^1.0.0 (prod)"| %C2%B7%C2%B7foo%401.0.0("npm:foo#64;1.0.0")
-    %C2%B7%C2%B7foo%401.0.0("npm:foo#64;1.0.0")
+    file%C2%B7.("root:my-project") -->|"#64;foo/bazz#64;^1.0.0 (prod)"| %C2%B7%C2%B7%40foo%252Fbazz%401.0.0("npm:#64;foo/bazz#64;1.0.0")
+    %C2%B7%C2%B7%40foo%252Fbazz%401.0.0("npm:#64;foo/bazz#64;1.0.0")
     file%C2%B7.("root:my-project") -->|"bar#64;^1.0.0 (prod)"| %C2%B7%C2%B7bar%401.0.0("npm:bar#64;1.0.0")
     %C2%B7%C2%B7bar%401.0.0("npm:bar#64;1.0.0")
     %C2%B7%C2%B7bar%401.0.0("npm:bar#64;1.0.0") -->|"baz#64;custom:baz#64;^1.0.0 (prod)"| %C2%B7custom%C2%B7baz%401.0.0("custom:baz#64;1.0.0")
     %C2%B7custom%C2%B7baz%401.0.0("custom:baz#64;1.0.0")
-    %C2%B7custom%C2%B7baz%401.0.0("custom:baz#64;1.0.0") -->|"foo#64;^1.0.0 (prod)"| %C2%B7%C2%B7foo%401.0.0("npm:foo#64;1.0.0")
+    %C2%B7custom%C2%B7baz%401.0.0("custom:baz#64;1.0.0") -->|"#64;foo/bazz#64;^1.0.0 (prod)"| %C2%B7%C2%B7%40foo%252Fbazz%401.0.0("npm:#64;foo/bazz#64;1.0.0")
     
   ),
 ]
@@ -238,7 +238,7 @@ exports[`test/commands/list.ts > TAP > list > should list pkgs in human readable
 Array [
   String(
     my-project
-    ├── foo@1.0.0
+    ├── @foo/bazz@1.0.0
     └── bar@1.0.0
     
   ),
@@ -261,7 +261,7 @@ Array [
             "name": "my-project",
             "version": "1.0.0",
             "dependencies": {
-              "foo": "^1.0.0",
+              "@foo/bazz": "^1.0.0",
               "bar": "^1.0.0",
               "missing": "^1.0.0"
             }
@@ -272,18 +272,18 @@ Array [
         }
       },
       {
-        "name": "foo",
+        "name": "@foo/bazz",
         "fromID": "file·.",
-        "spec": "foo@^1.0.0",
+        "spec": "@foo/bazz@^1.0.0",
         "type": "prod",
         "to": {
-          "id": "··foo@1.0.0",
-          "name": "foo",
+          "id": "··@foo%2Fbazz@1.0.0",
+          "name": "@foo/bazz",
           "version": "1.0.0",
-          "location": "./node_modules/.vlt/··foo@1.0.0/node_modules/foo",
+          "location": "./node_modules/.vlt/··@foo%2Fbazz@1.0.0/node_modules/@foo/bazz",
           "importer": false,
           "manifest": {
-            "name": "foo",
+            "name": "@foo/bazz",
             "version": "1.0.0"
           },
           "projectRoot": "{ROOT}",
