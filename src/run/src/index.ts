@@ -175,7 +175,6 @@ export const isRunResult = (v: unknown): v is RunResult =>
 /**
  * Return type of {@link run} or {@link runFG}, as determined by their base
  * type
- *
  * @internal
  */
 export type RunImplResult<

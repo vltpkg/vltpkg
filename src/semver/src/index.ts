@@ -76,56 +76,7 @@ export const satisfies = (
  * Increment the specified part of the version, and return the resulting
  * object. If a Version object is provided, it will be modified in-place.
  *
- * Part behaviors:
- *
- * - `'major'` If the version is a `M.0.0-...` version with a prerelease, then
- * simply drop the prerelease. Otherwise, set the minor and patch to 0, and
- * increment the major. So `1.0.0-beta` becomes `1.0.0`, and `1.2.3` becomes
- * `2.0.0`
- *
- * - `'minor'` If the version is a `M.m.0-...` version with a prerelease, then
- * simply drop the prerelease. Otherwise, set the patch to 0, and increment the
- * minor. So `1.2.0-beta` becomes `1.2.0`, and `1.2.3` becomes `1.3.0`.
- *
- * - `'patch'` If the version has a prerelease, then simply drop the
- * prerelease. Otherwise, increment the patch value. So `1.2.3-beta` becomes
- * `1.2.3` and `1.2.3` becomes `1.2.4`.
- *
- * - `'premajor'` Set the patch and minor versions to `0`, increment the major
- * version, and add a prerelease, using the optional identifier.
- *
- * - `'preminor'` Set the patch version to `0`, increment the minor version,
- * and add a prerelease, using the optional identifier.
- *
- * - `'prepatch'` If a prerelease is already present, increment the patch
- * version, otherwise leave it untouched, and add a prerelease, using the
- * optional identifier.
- *
- * - `'prerelease'` If a prerelease version is present, then behave the same as
- * `'prepatch'`. Otherwise, add a prerelease, using the optional identifier.
- *
- * - `'pre'` This is mostly for use by the other prerelease incrementers.
- *
- *     - If a prerelease identifier is provided:
- *
- *        Update that named portion of the prerelease. For example,
- *        `inc('1.2.3-beta.4', 'pre', 'beta')` would result in `1.2.3-beta.5`.
- *
- *        If there is no prerelease identifier by that name, then replace the
- *        prerelease with `[name]`. So `inc('1.2.3-alpha.4', 'pre', 'beta')`
- *        would result in `1.2.3-beta`.
- *
- *        If the prerelease identifer is present, but has no numeric value
- *        following it, then add `0`. So `inc('1.2.3-beta', 'pre', 'beta')`
- *        would result in `1.2.3-beta.0`.
- *
- *     - If no prerelease identifier is provided:
- *
- *       If there is no current prerelease, then set the prerelease to `0`. So,
- *       `inc('1.2.3', 'pre')` becomes `1.2.3-0`.
- *
- *       If the last item in the prerelease is numeric, then increment it. So,
- *       `inc('1.2.3-beta.3', 'pre')` becomes `1.2.3-beta.4`.
+ * See {@link Version.inc} for full description.
  */
 export const inc = (
   version: Version | string,

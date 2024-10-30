@@ -222,6 +222,9 @@ const fixDeps = async (ws, { catalog }) => {
         continue
       }
     }
+    if (ws.pj[type]) {
+      ws.pj[type] = sortObject(ws.pj[type])
+    }
   }
 }
 

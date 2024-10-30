@@ -15,8 +15,7 @@ export type Delimiter = '·'
  *
  * - `registry`: `'registry·<registry>·name@specifier'`
  *   The `<registry>` portion can be a known named registry name, or a
- *   url to a registry. If empty, it is the default registry.
- *   Examples:
+ *   url to a registry. If empty, it is the default registry. Examples:
  *   - `··some-package@2.0.1`
  *   - `·npm·whatever@1.2.3'
  *   - `·http%3A%2F%2Fvlt.sh%2F·x@1.2.3`

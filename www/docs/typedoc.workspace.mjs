@@ -4,7 +4,7 @@ import { readFileSync } from 'fs'
 
 /**
  * @param {string} cwd
- * @return {Record<string, unknown>}
+ * @returns {Record<string, unknown>}
  */
 const readPkg = cwd => {
   try {
@@ -14,7 +14,10 @@ const readPkg = cwd => {
   }
 }
 
-/** @param {string} cwd */
+/**
+ * @param {string} cwd
+ * @returns {undefined | Partial<import('typedoc').TypeDocOptions>}
+ */
 export default cwd => {
   const pkg = readPkg(cwd)
   if (pkg.private) {
@@ -27,6 +30,10 @@ export default cwd => {
       tshy.exports
     : null
   return {
+    excludeInternal: true,
+    excludePrivate: true,
+    excludeProtected: true,
+    excludeExternals: true,
     readme: join(cwd, './README.md'),
     entryPoints: Object.values(exports ?? {})
       .filter(p => !p.endsWith('package.json'))
