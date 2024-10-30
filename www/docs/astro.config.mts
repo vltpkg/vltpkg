@@ -92,6 +92,7 @@ export default defineConfig({
           label: 'CLI',
           items: [
             { label: 'Getting Started', link: 'cli' },
+            { label: 'Configuring', link: 'cli/configuring' },
             {
               label: 'Commands',
               items: commands.map(c => ({

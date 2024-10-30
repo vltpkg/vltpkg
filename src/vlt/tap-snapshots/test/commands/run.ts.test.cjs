@@ -9,6 +9,12 @@ exports[`test/commands/run.ts > TAP > usage 1`] = `
 Usage:
   vlt run <script> [args ...]
 
-Run the named script from package.json
+Run a script defined in 'package.json', passing along any extra arguments. Note
+that vlt config values must be specified *before* the script name, because
+everything after that is handed off to the script process.
+
+  Aliases
+
+    ​r, run-script
 
 `

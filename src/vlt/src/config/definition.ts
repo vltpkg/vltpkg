@@ -1,36 +1,61 @@
 import { XDG } from '@vltpkg/xdg'
 import { jack } from 'jackspeak'
 
+const canonicalCommands = {
+  config: 'config',
+  exec: 'exec',
+  gui: 'gui',
+  help: 'help',
+  'install-exec': 'install-exec',
+  install: 'install',
+  list: 'list',
+  ls: 'ls',
+  pkg: 'pkg',
+  query: 'query',
+  'run-exec': 'run-exec',
+  run: 'run',
+  uninstall: 'uninstall',
+} as const
+
+const aliases = {
+  i: 'install',
+  add: 'install',
+  rm: 'uninstall',
+  u: 'uninstall',
+  r: 'run',
+  'run-script': 'run',
+  rx: 'run-exec',
+  x: 'exec',
+  h: 'help',
+  '?': 'help',
+  conf: 'config',
+  ix: 'install-exec',
+  ls: 'list',
+} as const
+
 /**
  * Command aliases mapped to their canonical names
  */
 export const commands = {
-  i: 'install',
-  add: 'install',
-  install: 'install',
-  rm: 'uninstall',
-  u: 'uninstall',
-  uninstall: 'uninstall',
-  r: 'run',
-  'run-script': 'run',
-  run: 'run',
-  rx: 'run-exec',
-  'run-exec': 'run-exec',
-  x: 'exec',
-  exec: 'exec',
-  h: 'help',
-  '?': 'help',
-  help: 'help',
-  conf: 'config',
-  config: 'config',
-  ix: 'install-exec',
-  'install-exec': 'install-exec',
-  pkg: 'pkg',
-  list: 'list',
-  ls: 'list',
-  query: 'query',
-  gui: 'gui',
+  ...canonicalCommands,
+  ...aliases,
 } as const
+
+/**
+ * Canonical command names mapped to an array of its aliases
+ */
+export const commandAliases = Object.entries(aliases).reduce(
+  (acc, [alias, canonical]) => {
+    const commandAliases = acc.get(canonical)
+    if (commandAliases) {
+      commandAliases.push(alias)
+    } else {
+      acc.set(canonical, [alias])
+    }
+    return acc
+  },
+  new Map<string, string[]>(),
+)
 
 export type Commands = typeof commands
 
@@ -66,10 +91,7 @@ const stopParsingCommands: Commands[keyof Commands][] = [
 
 let stopParsing: boolean | undefined = undefined
 
-/**
- * Definition of all configuration values used by vlt.
- */
-export const definition = jack({
+const j = jack({
   envPrefix: 'VLT',
   allowPositionals: true,
   usage: `vlt [<options>] [<cmd> [<args> ...]]`,
@@ -86,84 +108,22 @@ export const definition = jack({
     return false
   },
 })
-  .heading('vlt - A New Home for JavaScript')
+  .heading('vlt')
   .description(
-    `Here goes a short description of the vlt command line client.
-
-     Much more documentation available at <https://docs.vlt.sh>`,
+    `More documentation available at <https://docs.vlt.sh>`,
   )
-
   .heading('Subcommands')
-  // make this one an H3, and wrap in a <pre>
-  .heading('vlt install [packages ...]', 3, { pre: true })
-  .description(
-    `Install the specified packages, updating package.json and vlt-lock.json
-     appropriately.`,
-  )
-  .heading('vlt uninstall [packages ...]', 3, { pre: true })
-  .description(
-    `The opposite of \`vlt install\`. Removes deps and updates vlt-lock.json
-     and package.json appropriately.`,
-  )
 
-  .heading('vlt run <script> [args ...]', 3, { pre: true })
-  .description(
-    `Run a script defined in 'package.json', passing along any extra
-    arguments. Note that vlt config values must be specified *before*
-    the script name, because everything after that is handed off to
-    the script process.`,
-  )
+j.description(Object.keys(canonicalCommands).join(', '), {
+  pre: true,
+}).description(
+  'Run `vlt <cmd> --help` for more information about a specific command',
+)
 
-  .heading('vlt exec [args ...]', 3, { pre: true })
-  .description(
-    `Run an arbitrary command, with the local installed packages first in the
-     PATH. Ie, this will run your locally installed package bins.
-
-     If no command is provided, then a shell is spawned in the current working
-     directory, with the locally installed package bins first in the PATH.
-
-     Note that any vlt configs must be specified *before* the command,
-     as the remainder of the command line options are provided to the exec
-     process.`,
-  )
-
-  .heading('vlt run-exec [args ...]', 3, { pre: true })
-  .description(
-    `If the first argument is a defined script in package.json, then this is
-     equivalent to \`vlt run\`.
-
-     If not, then this is equivalent to \`vlt exec\`.`,
-  )
-
-  .heading('vlt config <subcommand>', 3, { pre: true })
-  .description('Work with vlt configuration')
-
-  .heading('vlt config get <key>', 4, { pre: true })
-  .description('Print the named config value')
-  .heading('vlt config list', 4, { pre: true })
-  .description('Print all configuration settings currently in effect')
-  .heading('vlt config set <key=value> [<key=value> ...]', 4, {
-    pre: true,
-  })
-  .description(
-    `Set config values. By default, these are written to the project config
-     file, \`vlt.json\` in the root of the project. To set things for all
-     projects, run with \`--config=user\``,
-  )
-  .heading('vlt config del <key> [<key> ...]', 4, { pre: true })
-  .description(
-    `Delete the named config fields. If no values remain in the config file,
-     delete the file as well. By default, operates on the \`vlt.json\` file
-     in the root of the current project. To delete a config field from the
-     user config file, specify \`--config=user\`.`,
-  )
-
-  .heading('vlt config help [field ...]', 4, { pre: true })
-  .description(
-    `Get information about a config field, or show a list of known
-    config field names.`,
-  )
-
+export const definition = j
+  /**
+   * Definition of all configuration values used by vlt.
+   */
   .heading('Configuration')
   .description(
     `If a \`vlt.json\` file is present in the root of the current project,
@@ -445,7 +405,7 @@ export const definition = jack({
                     vlt config set fallback-command=run-exec
                     \`\`\``,
       default: 'help',
-      validOptions: [...new Set(Object.values(commands))] as const,
+      validOptions: Object.keys(canonicalCommands),
     },
   })
 

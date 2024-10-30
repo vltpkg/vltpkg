@@ -7,7 +7,10 @@ export const usage: CliCommandUsage = () =>
   commandUsage({
     command: 'run-exec',
     usage: '[command ...]',
-    description: `Runs 'vlt run' if the command is a named script, 'vlt exec' otherwise`,
+    description: `If the first argument is a defined script in package.json, then this is
+                  equivalent to \`vlt run\`.
+
+                  If not, then this is equivalent to \`vlt exec\`.`,
   })
 
 export const command: CliCommandFn<ExecResult> = async conf => {

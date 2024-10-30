@@ -9,6 +9,13 @@ exports[`test/commands/run-exec.ts > TAP > usage 1`] = `
 Usage:
   vlt run-exec [command ...]
 
-Runs 'vlt run' if the command is a named script, 'vlt exec' otherwise
+If the first argument is a defined script in package.json, then this is
+equivalent to \`vlt run\`.
+
+If not, then this is equivalent to \`vlt exec\`.
+
+  Aliases
+
+    ​rx
 
 `

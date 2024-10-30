@@ -33,6 +33,11 @@ exports[`test/commands/uninstall.ts > TAP > usage 1`] = `
 Usage:
   vlt uninstall [package ...]
 
-Remove the named packages from the dependency graph
+The opposite of \`vlt install\`. Removes deps and updates vlt-lock.json and
+package.json appropriately.
+
+  Aliases
+
+    ​rm, u
 
 `
