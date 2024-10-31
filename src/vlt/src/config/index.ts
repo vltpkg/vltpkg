@@ -18,7 +18,6 @@
  *   }
  * }
  * ```
- *
  * @module
  */
 
@@ -254,7 +253,7 @@ export class Config {
   projectRoot: string
 
   /**
-   * Record<alias, canonical name> to dereference command aliases.
+   * `Record<alias, canonical name>` to dereference command aliases.
    */
   commands: Commands
 

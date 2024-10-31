@@ -141,7 +141,7 @@ export class CacheEntry {
    *
    * Note that this will *usually* not be true if the value is coming out of
    * the cache, because the cache entries are un-gzipped in place. It should
-   * *only* be called for artifacts that come from an actual http response.
+   * _only_ be called for artifacts that come from an actual http response.
    */
   checkIntegrity(): boolean {
     if (!this.#integrity) return false

@@ -19,45 +19,60 @@ const entryPoints = readdirSync(
 
 await writeFile(
   resolve(import.meta.dirname, tsconfig),
-  JSON.stringify({
-    files: [],
-    references: entryPoints.map(path => ({ path })),
-  }),
+  JSON.stringify(
+    {
+      files: [],
+      references: entryPoints.map(path => ({ path })),
+    },
+    null,
+    2,
+  ),
 )
 
-/** @type {Partial<
+/**
+ * @type {Partial<
  * import('typedoc').TypeDocOptions &
  * import('typedoc-plugin-markdown').PluginOptions &
- * import('typedoc-plugin-frontmatter/dist/options/option-types').PluginOptions
- * >} */
+ * import('typedoc-plugin-frontmatter/dist/options/option-types').PluginOptions &
+ * import('typedoc-plugin-remark/dist/types/index').PluginOptions
+  >} */
 export default {
   entryPoints,
   tsconfig,
   plugin: [
     'typedoc-plugin-markdown',
+    'typedoc-plugin-remark',
     'typedoc-plugin-frontmatter',
     './scripts/workspace-frontmatter.mjs',
   ],
   entryPointStrategy: 'packages',
+  remarkPlugins: ['unified-prettier'],
   outputFileStrategy: 'modules',
+  modulesFileName: 'modules',
   entryFileName: 'index',
-  modulesFileName: 'globals',
   mergeReadme: false,
   readme: 'none',
   out: `src/content/docs/packages`,
   cleanOutputDir: true,
   excludeScopesInPaths: true,
   includeVersion: false,
+  disableGit: true,
+  useCodeBlocks: true,
   hideBreadcrumbs: true,
   hidePageHeader: true,
   hidePageTitle: true,
-  excludeInternal: true,
-  excludePrivate: true,
-  excludeProtected: true,
   githubPages: false,
   frontmatterGlobals: {
     editUrl: false,
     next: false,
     prev: false,
+  },
+  externalSymbolLinkMappings: {
+    'path-scurry': {
+      '*': 'https://isaacs.github.io/path-scurry/',
+    },
+    'lru-cache': {
+      '*': 'https://isaacs.github.io/node-lru-cache/',
+    },
   },
 }

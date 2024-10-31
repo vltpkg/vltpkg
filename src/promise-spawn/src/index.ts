@@ -207,7 +207,7 @@ export type ChildProcessByOptions<T extends PromiseSpawnOptions> =
   }
 
 /**
- * Subtype of Promise returned by {@link spawnPromise}.
+ * Subtype of Promise returned by {@link promiseSpawn}.
  *
  * Resolution value is inferred from the provided options.
  */
