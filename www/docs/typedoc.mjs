@@ -33,13 +33,15 @@ await writeFile(
  * @type {Partial<
  * import('typedoc').TypeDocOptions &
  * import('typedoc-plugin-markdown').PluginOptions &
- * import('typedoc-plugin-frontmatter/dist/options/option-types').PluginOptions
+ * import('typedoc-plugin-frontmatter/dist/options/option-types').PluginOptions &
+ * import('typedoc-plugin-remark/dist/types/index').PluginOptions
   >} */
 export default {
   entryPoints,
   tsconfig,
   plugin: [
     'typedoc-plugin-markdown',
+    'typedoc-plugin-remark',
     'typedoc-plugin-frontmatter',
     './scripts/workspace-frontmatter.mjs',
   ],
@@ -53,6 +55,7 @@ export default {
   excludeScopesInPaths: true,
   includeVersion: false,
   disableGit: true,
+  useCodeBlocks: true,
   hideBreadcrumbs: true,
   hidePageHeader: true,
   hidePageTitle: true,
@@ -67,4 +70,6 @@ export default {
       '*': 'https://isaacs.github.io/path-scurry/',
     },
   },
+  logLevel: 'Verbose',
+  // remarkPlugins: ['unified-prettier'],
 }

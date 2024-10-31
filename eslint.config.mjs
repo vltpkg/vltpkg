@@ -156,6 +156,7 @@ export default tseslint.config(
       'jsdoc/require-param-description': 0,
       'jsdoc/require-returns-description': 0,
       'jsdoc/require-jsdoc': 0,
+      'jsdoc/text-escaping': [2, { escapeHTML: true }],
     },
   },
   {

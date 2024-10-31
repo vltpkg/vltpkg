@@ -40,8 +40,10 @@
     "@types/node": "catalog:",
     "eslint": "catalog:",
     "prettier": "catalog:",
+    "typedoc-plugin-remark": "^1.0.3",
     "typescript": "catalog:",
     "typescript-eslint": "catalog:",
+    "unified-prettier": "^2.0.1",
     "vitest": "catalog:"
   },
   "license": "BSD-2-Clause-Patent",
