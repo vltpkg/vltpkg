@@ -224,7 +224,7 @@ export const startGUI = async ({
         json += d
       })
       req.on('end', () => {
-        const data = JSON.parse(json)
+        const data = JSON.parse(json) as { path: unknown }
         conf.resetOptions(String(data.path))
         updateGraphData(tmp, conf, hasDashboard)
         res.writeHead(200, { 'Content-Type': 'application/json' })

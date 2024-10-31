@@ -32,6 +32,10 @@ export type HumanReadableOutputOptions = {
   highlightSelection: boolean
 }
 
+export type EdgeMap = Map<NodeLike | undefined, TreeItem>
+
+export type TreeMap = Map<EdgeLike | undefined, EdgeMap>
+
 const isSelected = (
   options: HumanReadableOutputOptions,
   edge?: EdgeLike,
@@ -50,10 +54,7 @@ const getTreeItems = (
   options: HumanReadableOutputOptions,
 ) => {
   const seenNodes = new Set<NodeLike>()
-  const treeItems = new Map<
-    EdgeLike | undefined,
-    Map<NodeLike | undefined, TreeItem>
-  >()
+  const treeItems: TreeMap = new Map()
   const traverse = new Set<TreeItem>(initialItems)
   for (const item of traverse) {
     if (item.node) {
@@ -66,7 +67,8 @@ const getTreeItems = (
         Number(i.to?.importer),
       )
       for (const edge of edges) {
-        const toItems = treeItems.get(edge) ?? new Map()
+        const toItems: EdgeMap =
+          treeItems.get(edge) ?? (new Map() as EdgeMap)
         const nextItem: TreeItem = {
           edge,
           node: edge.to,

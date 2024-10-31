@@ -33,15 +33,18 @@ export type LoadOptions = SpecOptions & {
   scurry?: PathScurry
 }
 
+const loadLockfile = (projectRoot: string, lockfilePath: string) =>
+  JSON.parse(
+    readFileSync(resolve(projectRoot, lockfilePath), {
+      encoding: 'utf8',
+    }),
+  ) as LockfileData
+
 export const load = (options: LoadOptions): Graph => {
   const { projectRoot } = options
   return loadObject(
     options,
-    JSON.parse(
-      readFileSync(resolve(projectRoot, 'vlt-lock.json'), {
-        encoding: 'utf8',
-      }),
-    ),
+    loadLockfile(projectRoot, 'vlt-lock.json'),
   )
 }
 
@@ -49,12 +52,7 @@ export const loadHidden = (options: LoadOptions): Graph => {
   const { projectRoot } = options
   return loadObject(
     options,
-    JSON.parse(
-      readFileSync(
-        resolve(projectRoot, 'node_modules/.vlt-lock.json'),
-        { encoding: 'utf8' },
-      ),
-    ),
+    loadLockfile(projectRoot, 'node_modules/.vlt-lock.json'),
   )
 }
 

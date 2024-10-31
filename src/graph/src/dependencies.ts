@@ -23,11 +23,12 @@ export type DependencyTypeShort =
   | 'prod'
 
 export const isDependencyTypeShort = (
-  obj: any,
-): obj is DependencyTypeShort => shortDependencyTypes.has(obj)
+  obj: unknown,
+): obj is DependencyTypeShort =>
+  shortDependencyTypes.has(obj as DependencyTypeShort)
 
 export const asDependencyTypeShort = (
-  obj: any,
+  obj: unknown,
 ): DependencyTypeShort => {
   if (!isDependencyTypeShort(obj)) {
     throw error('Invalid dependency type', {
@@ -80,11 +81,18 @@ export type AddImportersDependenciesMap = Map<
  */
 export type RemoveImportersDependenciesMap = Map<DepID, Set<string>>
 
-export const isDependency = (obj: any): obj is Dependency =>
-  // TODO: it would be nice to have a @vltpkg/spec.isSpec method
-  obj?.spec?.type && obj?.type && isDependencyTypeShort(obj?.type)
+const isObj = (o: unknown): o is Record<string, unknown> =>
+  !!o && typeof o === 'object'
 
-export const asDependency = (obj: any): Dependency => {
+// TODO: it would be nice to have a @vltpkg/spec.isSpec method
+export const isDependency = (o: unknown): o is Dependency =>
+  // TODO: it would be nice to have a @vltpkg/spec.isSpec method
+  isObj(o) &&
+  isObj(o.spec) &&
+  !!o.spec.type &&
+  isDependencyTypeShort(o.type)
+
+export const asDependency = (obj: unknown): Dependency => {
   if (!isDependency(obj)) {
     throw error('Invalid dependency', { found: obj })
   }

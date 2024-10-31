@@ -1,5 +1,5 @@
-const isIterable = <T>(o: any): o is Iterable<T> =>
-  !!o && !!o[Symbol.iterator]
+const isIterable = <T>(o: unknown): o is Iterable<T> =>
+  !!o && typeof o === 'object' && Symbol.iterator in o
 
 export const getHeader = (
   headers:

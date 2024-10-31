@@ -40,6 +40,7 @@ import {
   kNewline,
   parse as jsonParse,
   stringify as jsonStringify,
+  type JSONResult,
 } from 'polite-json'
 import { walkUp } from 'walk-up-path'
 import {
@@ -55,12 +56,16 @@ import { merge } from './merge.js'
 export { recordFields, isRecordField }
 export { definition, commands, Commands }
 
+type RecordPairs = Record<string, unknown>
+type RecordString = Record<string, string>
+type ConfigFiles = Record<string, ConfigFileData>
+
 // turn a set of pairs into a Record object.
 // if a kv pair doesn't have a = character, set to `''`
 const reducePairs = <T extends string[]>(
   pairs: T,
-): Record<string, string> | T => {
-  const record: Record<string, string> = {}
+): RecordString | T => {
+  const record: RecordString = {}
   for (const kv of pairs) {
     const eq = kv.indexOf('=')
     if (eq === -1) record[kv] = ''
@@ -101,9 +106,7 @@ export const pairsToRecords = (
   )
 }
 
-export const recordsToPairs = (
-  obj: Record<string | symbol, any>,
-): Record<string | symbol, any> => {
+export const recordsToPairs = (obj: RecordPairs): RecordPairs => {
   return Object.fromEntries(
     Object.entries(obj)
       .filter(
@@ -118,7 +121,7 @@ export const recordsToPairs = (
       .map(([k, v]) => [
         k,
         k === 'command' && v && typeof v === 'object' ?
-          recordsToPairs(v)
+          recordsToPairs(v as RecordPairs)
         : (
           !v ||
           typeof v !== 'object' ||
@@ -155,14 +158,13 @@ export type ConfigData = OptionsResults<ConfigDefinitions> & {
  */
 export type ConfigFileData = {
   [k in keyof ConfigData]?: k extends OptListKeys<ConfigData> ?
-    Record<string, string> | string[]
-  : k extends 'command' ? Record<string, ConfigFileData>
+    RecordString | string[]
+  : k extends 'command' ? ConfigFiles
   : ConfigData[k]
 }
 
 export type ConfigOptions = {
-  [k in keyof ConfigFileData]?: k extends RecordField ?
-    Record<string, string>
+  [k in keyof ConfigFileData]?: k extends RecordField ? RecordString
   : k extends 'command' ? never
   : ConfigData[k]
 } & {
@@ -202,7 +204,7 @@ export class Config {
     [kNewline]: string
   } = { [kIndent]: '  ', [kNewline]: '\n' }
 
-  configFiles: Record<string, ConfigFileData> = {}
+  configFiles: ConfigFiles = {}
 
   /**
    * Parsed values in effect
@@ -334,13 +336,13 @@ export class Config {
    *
    * If the config value is not set at all, an empty object is returned.
    */
-  getRecord(k: OptListKeys<ConfigData>): Record<string, string> {
+  getRecord(k: OptListKeys<ConfigData>): RecordString {
     const pairs = this.get(k) as
-      | (string[] & { [kRecord]?: Record<string, string> })
+      | (string[] & { [kRecord]?: RecordString })
       | undefined
     if (!pairs) return {}
     if (pairs[kRecord]) return pairs[kRecord]
-    const kv = pairs.reduce((kv: Record<string, string>, pair) => {
+    const kv = pairs.reduce((kv: RecordString, pair) => {
       const eq = pair.indexOf('=')
       if (eq === -1) return kv
       const key = pair.substring(0, eq)
@@ -438,21 +440,23 @@ export class Config {
     if (this.configFiles[file]) return this.configFiles[file]
     const data = await readFile(file, 'utf8').catch(() => {})
     if (!data) return undefined
-    let result: any
+    let result: JSONResult
     try {
       result = jsonParse(data)
-      if (result[kIndent] !== undefined)
-        this.stringifyOptions[kIndent] = result[kIndent]
-      if (result[kNewline] !== undefined)
-        this.stringifyOptions[kNewline] = result[kNewline]
+      if (result && typeof result === 'object') {
+        if (result[kIndent] !== undefined)
+          this.stringifyOptions[kIndent] = result[kIndent]
+        if (result[kNewline] !== undefined)
+          this.stringifyOptions[kNewline] = result[kNewline]
+      }
     } catch (er) {
       throw error('failed to parse vlt config file', {
         path: file,
         cause: er as Error,
       })
     }
-    this.configFiles[file] = result
-    return result
+    this.configFiles[file] = result as ConfigFileData
+    return result as ConfigFileData
   }
 
   getFilename(which: 'project' | 'user' = 'project'): string {

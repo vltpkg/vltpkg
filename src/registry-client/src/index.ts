@@ -61,7 +61,9 @@ export type RegistryClientRequestOptions = Omit<
   redirections?: Set<string>
 }
 
-const { version } = loadPackageJson(import.meta.filename)
+const { version } = loadPackageJson(import.meta.filename) as {
+  version: string
+}
 const nua =
   (globalThis.navigator as Navigator | undefined)?.userAgent ??
   (bun ? `Bun/${bun}`

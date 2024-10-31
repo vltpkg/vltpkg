@@ -4,7 +4,11 @@ import { SearchBar } from '@/components/search-bar.jsx'
 import { Logo } from '@/components/ui/logo.jsx'
 import { ExplorerGrid } from '@/components/explorer-grid/index.jsx'
 import { useGraphStore } from '@/state/index.js'
-import { type Action, type State } from '@/state/types.js'
+import {
+  type TransferData,
+  type Action,
+  type State,
+} from '@/state/types.js'
 import { load } from '@/state/load-graph.js'
 import { Button } from '@/components/ui/button.jsx'
 import { LayoutDashboard, Search, Command } from 'lucide-react'
@@ -32,7 +36,9 @@ const startGraphData = async ({
   stamp,
 }: StartGraphData) => {
   const res = await fetch('./graph.json?random=' + stamp)
-  const data = await res.json()
+  const data = (await res.json()) as TransferData & {
+    hasDashboard: boolean
+  }
   const { graph, specOptions } = load(data)
   const q = new Query({ graph })
 
@@ -101,10 +107,13 @@ const ExplorerContent = () => {
       updateNodes(queryResponse.nodes)
 
       // make sure we update the URL with the query string
+      const state = history.state as
+        | undefined
+        | { query: string; route: string }
       if (
-        !history.state ||
-        query !== history.state.query ||
-        history.state.route !== '/explore'
+        !state ||
+        query !== state.query ||
+        state.route !== '/explore'
       ) {
         history.pushState(
           { query, route: '/explore' },

@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/no-unsafe-return */
+
 // deep merge 2 objects
 // scalars are overwritten, objects are folded in together
 // if nothing to be added, then return the base object.

@@ -4,11 +4,11 @@ import { unpack } from './unpack.js'
 export type ResponseError = { id: number; error: unknown }
 export type ResponseOK = { id: number; ok: true }
 
-export const isResponseOK = (o: any): o is ResponseOK =>
-  !!o &&
-  typeof o === 'object' &&
-  typeof o.id === 'number' &&
-  o.ok === true
+const isObj = (o: unknown): o is Record<string, unknown> =>
+  !!o && typeof o === 'object'
+
+export const isResponseOK = (o: unknown): o is ResponseOK =>
+  isObj(o) && typeof o.id === 'number' && o.ok === true
 
 /**
  * Basically just a queue of unpack requests,

@@ -79,7 +79,7 @@ export const assertWSConfig: (
       if (typeof c !== 'string') {
         throw error('Invalid workspace definition', {
           path,
-          found: c,
+          found: c as unknown,
           wanted: 'string',
         })
       }
@@ -96,7 +96,7 @@ export const assertWSConfig: (
             throw error('Invalid workspace definition', {
               path,
               name: group,
-              found: c,
+              found: c as unknown,
               wanted: 'string',
             })
           }
@@ -106,7 +106,7 @@ export const assertWSConfig: (
       throw error('Invalid workspace definition', {
         path,
         name: group,
-        found: value,
+        found: value as unknown,
         wanted: 'string | string[]',
       })
     }

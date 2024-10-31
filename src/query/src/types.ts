@@ -75,8 +75,11 @@ export const asPostcssNodeWithChildren = (
   return node
 }
 
-export const isAttributeNode = (node: any): node is Attribute =>
-  node.attribute && node.type === 'attribute'
+const isObj = (o: unknown): o is Record<string, unknown> =>
+  !!o && typeof o === 'object'
+
+export const isAttributeNode = (node: unknown): node is Attribute =>
+  isObj(node) && !!node.attribute && node.type === 'attribute'
 
 export const asAttributeNode = (node?: PostcssNode): Attribute => {
   if (!node) {
@@ -92,8 +95,8 @@ export const asAttributeNode = (node?: PostcssNode): Attribute => {
   return node
 }
 
-export const isClassNode = (node: any): node is ClassName =>
-  node.value && node.type === 'class'
+export const isClassNode = (node: unknown): node is ClassName =>
+  isObj(node) && !!node.value && node.type === 'class'
 
 export const asClassNode = (node?: PostcssNode): ClassName => {
   if (!node) {
@@ -109,8 +112,8 @@ export const asClassNode = (node?: PostcssNode): ClassName => {
   return node
 }
 
-export const isCombinatorNode = (node: any): node is Combinator =>
-  node.value && node.type === 'combinator'
+export const isCombinatorNode = (node: unknown): node is Combinator =>
+  isObj(node) && !!node.value && node.type === 'combinator'
 
 export const asCombinatorNode = (node?: PostcssNode): Combinator => {
   if (!node) {
@@ -127,7 +130,7 @@ export const asCombinatorNode = (node?: PostcssNode): Combinator => {
 }
 
 export const isIdentifierNode = (node: any): node is Identifier =>
-  node.value && node.type === 'id'
+  isObj(node) && !!node.value && node.type === 'id'
 
 export const asIdentifierNode = (node?: PostcssNode): Identifier => {
   if (!node) {
@@ -146,8 +149,8 @@ export const asIdentifierNode = (node?: PostcssNode): Identifier => {
 export const isSelectorNode = (node: any): node is Selector =>
   isPostcssNodeWithChildren(node) && node.type === 'selector'
 
-export const isPseudoNode = (node: any): node is Pseudo =>
-  node.value && node.type === 'pseudo'
+export const isPseudoNode = (node: unknown): node is Pseudo =>
+  isObj(node) && !!node.value && node.type === 'pseudo'
 
 export const asPseudoNode = (node?: PostcssNode): Pseudo => {
   if (!node) {
@@ -163,8 +166,8 @@ export const asPseudoNode = (node?: PostcssNode): Pseudo => {
   return node
 }
 
-export const isTagNode = (node: any): node is Tag =>
-  node.value && node.type === 'tag'
+export const isTagNode = (node: unknown): node is Tag =>
+  isObj(node) && !!node.value && node.type === 'tag'
 
 export const asTagNode = (node?: PostcssNode): Tag => {
   if (!node) {

@@ -23,10 +23,12 @@ import { error } from '@vltpkg/error-cause'
 import { type Integrity, type JSONField } from '@vltpkg/types'
 import ccp from 'cache-control-parser'
 import { createHash } from 'crypto'
-import { inspect } from 'util'
+import { inspect, type InspectOptions } from 'util'
 import { gunzipSync } from 'zlib'
 import { getRawHeader, setRawHeader } from './raw-header.js'
 import { deserialize, serialize, serializedHeader } from './serdes.js'
+
+type JSONObj = Record<string, JSONField>
 
 const readSize = (buf: Buffer, offset: number) => {
   const a = buf[offset]
@@ -60,7 +62,7 @@ export class CacheEntry {
   #bodyLength = 0
   #integrity?: Integrity
   #integrityActual?: Integrity
-  #json?: Record<string, JSONField>
+  #json?: JSONObj
 
   constructor(
     statusCode: number,
@@ -82,14 +84,17 @@ export class CacheEntry {
     return ret
   }
 
-  [kCustomInspect](...args: any[]): string {
+  [kCustomInspect](depth: number, options: InspectOptions): string {
     const str = inspect(
       {
         statusCode: this.statusCode,
         headers: this.#headersAsObject,
         text: this.text(),
       },
-      ...args,
+      {
+        depth,
+        ...options,
+      },
     )
     return `@vltpkg/registry-client.CacheEntry ${str}`
   }
@@ -260,17 +265,17 @@ export class CacheEntry {
   /**
    * Parse the entry body as JSON and return the result
    */
-  json(): Record<string, JSONField> {
+  json(): JSONObj {
     if (this.#json !== undefined) return this.#json
     const ser = serializedHeader && this.getHeader(serializedHeader)
     if (ser) {
       /* c8 ignore start - very rare, but theoretically possible to throw */
       try {
-        return (this.#json = deserialize(ser))
+        return (this.#json = deserialize(ser) as JSONObj)
       } catch {}
       /* c8 ignore stop */
     }
-    const obj = JSON.parse(this.text())
+    const obj = JSON.parse(this.text()) as JSONObj
     if (serializedHeader)
       this.setHeader(serializedHeader, serialize(obj))
     return obj
