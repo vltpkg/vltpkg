@@ -3,13 +3,13 @@ import { error } from '@vltpkg/error-cause'
 import { satisfies } from '@vltpkg/satisfies'
 import { Spec, type SpecOptions } from '@vltpkg/spec'
 import { type Manifest } from '@vltpkg/types'
-import { Monorepo } from '@vltpkg/workspaces'
-import { inspect, InspectOptions } from 'util'
-import { DependencyTypeShort } from './dependencies.js'
+import { type Monorepo } from '@vltpkg/workspaces'
+import { inspect, type InspectOptions } from 'util'
+import { type DependencyTypeShort } from './dependencies.js'
 import { type Edge } from './edge.js'
 import { lockfileData } from './lockfile/save.js'
-import { Node, NodeOptions } from './node.js'
-import { GraphLike, NodeLike } from './types.js'
+import { Node, type NodeOptions } from './node.js'
+import { type GraphLike, type NodeLike } from './types.js'
 
 const kCustomInspect = Symbol.for('nodejs.util.inspect.custom')
 

@@ -1,8 +1,8 @@
-import { DepID, joinDepIDTuple } from '@vltpkg/dep-id'
+import { type DepID, joinDepIDTuple } from '@vltpkg/dep-id'
 import {
-  PackageInfoClient,
-  PackageInfoClientRequestOptions,
-  Resolution,
+  type PackageInfoClient,
+  type PackageInfoClientRequestOptions,
+  type Resolution,
 } from '@vltpkg/package-info'
 import { PackageJson } from '@vltpkg/package-json'
 import { Spec } from '@vltpkg/spec'
@@ -23,9 +23,9 @@ import { inspect } from 'util'
 import {
   actual,
   ideal,
-  LockfileData,
-  LockfileEdges,
-  LockfileNode,
+  type LockfileData,
+  type LockfileEdges,
+  type LockfileNode,
   reify,
 } from '../../src/index.js'
 import {

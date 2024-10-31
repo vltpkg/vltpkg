@@ -1,21 +1,21 @@
-import { error, ErrorCauseObject } from '@vltpkg/error-cause'
+import { error, type ErrorCauseObject } from '@vltpkg/error-cause'
 import { clone, resolve as gitResolve, revs } from '@vltpkg/git'
 import { PackageJson } from '@vltpkg/package-json'
 import {
   pickManifest,
-  PickManifestOptions,
+  type PickManifestOptions,
 } from '@vltpkg/pick-manifest'
 import {
   RegistryClient,
-  RegistryClientOptions,
+  type RegistryClientOptions,
 } from '@vltpkg/registry-client'
 import { Spec, type SpecOptions } from '@vltpkg/spec'
 import { Pool } from '@vltpkg/tar'
 import {
   asPackument,
-  Integrity,
-  Manifest,
-  Packument,
+  type Integrity,
+  type Manifest,
+  type Packument,
 } from '@vltpkg/types'
 import { Monorepo } from '@vltpkg/workspaces'
 import { XDG } from '@vltpkg/xdg'

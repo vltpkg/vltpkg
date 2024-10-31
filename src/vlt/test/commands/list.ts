@@ -5,13 +5,16 @@ import {
   mermaidOutput,
 } from '@vltpkg/graph'
 import { PackageJson } from '@vltpkg/package-json'
-import { Spec, SpecOptions } from '@vltpkg/spec'
+import { Spec, type SpecOptions } from '@vltpkg/spec'
 import { Monorepo } from '@vltpkg/workspaces'
 import { PathScurry } from 'path-scurry'
-import t, { Test } from 'tap'
-import { LoadedConfig } from '../../src/types.js'
-import type { StartGUIOptions } from '../../src/start-gui.js'
-import { commandView, CommandResultOptions } from '../fixtures/run.js'
+import t, { type Test } from 'tap'
+import { type LoadedConfig } from '../../src/types.js'
+import { type StartGUIOptions } from '../../src/start-gui.js'
+import {
+  commandView,
+  type CommandResultOptions,
+} from '../fixtures/run.js'
 
 t.cleanSnapshot = s =>
   s.replace(

@@ -1,8 +1,7 @@
-import type { MouseEvent } from 'react'
-import { DashboardData } from '@/state/types.js'
+import { type MouseEvent } from 'react'
+import { type DashboardData, type Action } from '@/state/types.js'
 import { CardTitle } from '@/components/ui/card.jsx'
 import { DEFAULT_QUERY, useGraphStore } from '@/state/index.js'
-import { Action } from '@/state/types.js'
 
 type SelectDashboardItemOptions = {
   updateActiveRoute: Action['updateActiveRoute']

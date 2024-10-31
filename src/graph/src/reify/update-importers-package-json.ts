@@ -1,8 +1,8 @@
 import { type DepID, splitDepID } from '@vltpkg/dep-id'
 import { error } from '@vltpkg/error-cause'
-import type { PackageJson } from '@vltpkg/package-json'
-import type { Manifest } from '@vltpkg/types'
-import { Graph } from '../graph.js'
+import { type PackageJson } from '@vltpkg/package-json'
+import { type Manifest } from '@vltpkg/types'
+import { type Graph } from '../graph.js'
 import {
   type AddImportersDependenciesMap,
   type RemoveImportersDependenciesMap,

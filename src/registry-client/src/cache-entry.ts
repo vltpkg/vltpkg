@@ -20,7 +20,7 @@
 // of the file.
 
 import { error } from '@vltpkg/error-cause'
-import { Integrity, JSONField } from '@vltpkg/types'
+import { type Integrity, type JSONField } from '@vltpkg/types'
 import ccp from 'cache-control-parser'
 import { createHash } from 'crypto'
 import { inspect } from 'util'

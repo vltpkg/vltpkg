@@ -1,16 +1,16 @@
-import { DepID, joinDepIDTuple } from '@vltpkg/dep-id'
+import { type DepID, joinDepIDTuple } from '@vltpkg/dep-id'
 import { error } from '@vltpkg/error-cause'
-import { PackageInfoClient } from '@vltpkg/package-info'
+import { type PackageInfoClient } from '@vltpkg/package-info'
 import { Spec, type SpecOptions } from '@vltpkg/spec'
-import { PathScurry } from 'path-scurry'
+import { type PathScurry } from 'path-scurry'
 import {
-  Dependency,
-  DependencyTypeLong,
+  type Dependency,
+  type DependencyTypeLong,
   longDependencyTypes,
   shorten,
 } from '../dependencies.js'
-import { Graph } from '../graph.js'
-import { Node } from '../node.js'
+import { type Graph } from '../graph.js'
+import { type Node } from '../node.js'
 import { removeOptionalSubgraph } from '../remove-optional-subgraph.js'
 
 type FileTypeInfo = {

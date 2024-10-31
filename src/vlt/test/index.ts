@@ -1,9 +1,9 @@
-import t, { Test } from 'tap'
-import { Jack, jack } from 'jackspeak'
+import t, { type Test } from 'tap'
+import { type Jack, jack } from 'jackspeak'
 import {
   setupEnv,
   mockConfig,
-  Testdir,
+  type Testdir,
   chtestdir,
 } from './fixtures/run.js'
 import { error } from '@vltpkg/error-cause'

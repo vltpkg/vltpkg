@@ -1,7 +1,7 @@
 import t from 'tap'
 import {
-  CacheEntry,
-  RegistryClientRequestOptions,
+  type CacheEntry,
+  type RegistryClientRequestOptions,
 } from '../src/index.js'
 import { setCacheHeaders } from '../src/set-cache-headers.js'
 

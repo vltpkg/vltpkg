@@ -1,10 +1,10 @@
-import { PackageJson } from '@vltpkg/package-json'
-import { RollbackRemove } from '@vltpkg/rollback-remove'
-import { Manifest } from '@vltpkg/types'
+import { type PackageJson } from '@vltpkg/package-json'
+import { type RollbackRemove } from '@vltpkg/rollback-remove'
+import { type Manifest } from '@vltpkg/types'
 import { PathScurry } from 'path-scurry'
 import t from 'tap'
-import { Diff } from '../../src/diff.js'
-import { Edge } from '../../src/edge.js'
+import { type Diff } from '../../src/diff.js'
+import { type Edge } from '../../src/edge.js'
 
 t.test('add some edges', async t => {
   const projectRoot = t.testdirName

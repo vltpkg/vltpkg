@@ -1,8 +1,8 @@
 import chalk from 'chalk'
 import {
-  CliCommand,
-  CliCommandResult,
-  LoadedConfig,
+  type CliCommand,
+  type CliCommandResult,
+  type LoadedConfig,
 } from './types.js'
 
 // TODO: make these have log levels etc

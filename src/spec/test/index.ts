@@ -5,7 +5,7 @@ import { inspect } from 'node:util'
 import t from 'tap'
 import {
   kCustomInspect,
-  Scope,
+  type Scope,
   type SpecOptions,
   type Spec as SpecType,
 } from '../src/index.js'

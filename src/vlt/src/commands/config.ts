@@ -1,15 +1,15 @@
 import { error } from '@vltpkg/error-cause'
 import { spawnSync } from 'child_process'
 import {
-  ConfigDefinitions,
+  type ConfigDefinitions,
   definition,
   isRecordField,
-  LoadedConfig,
+  type LoadedConfig,
   pairsToRecords,
   recordsToPairs,
 } from '../config/index.js'
 import { commandUsage } from '../config/usage.js'
-import { CliCommandFn, CliCommandUsage } from '../types.js'
+import { type CliCommandFn, type CliCommandUsage } from '../types.js'
 
 export const usage: CliCommandUsage = () =>
   commandUsage({

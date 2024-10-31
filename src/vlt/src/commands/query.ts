@@ -1,16 +1,16 @@
 import { fileURLToPath } from 'node:url'
 import {
   actual,
-  EdgeLike,
+  type EdgeLike,
   humanReadableOutput,
   jsonOutput,
   mermaidOutput,
-  Node,
-  NodeLike,
+  type Node,
+  type NodeLike,
 } from '@vltpkg/graph'
 import { Query } from '@vltpkg/query'
 import { commandUsage } from '../config/usage.js'
-import { type CliCommandUsage, CliCommandFn } from '../types.js'
+import { type CliCommandUsage, type CliCommandFn } from '../types.js'
 import { startGUI } from '../start-gui.js'
 
 export const usage: CliCommandUsage = () =>

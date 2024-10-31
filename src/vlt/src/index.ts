@@ -1,6 +1,6 @@
 import { error } from '@vltpkg/error-cause'
 import { Config } from './config/index.js'
-import { CliCommand, Commands } from './types.js'
+import { type CliCommand, type Commands } from './types.js'
 import { stdout, outputCommand, outputError } from './output.js'
 
 const loadCommand = async (

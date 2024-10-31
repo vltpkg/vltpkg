@@ -1,8 +1,8 @@
 import { error } from '@vltpkg/error-cause'
-import { InspectOptions } from 'node:util'
-import { Edge } from './edge.js'
-import { Graph } from './graph.js'
-import { Node } from './node.js'
+import { type InspectOptions } from 'node:util'
+import { type Edge } from './edge.js'
+import { type Graph } from './graph.js'
+import { type Node } from './node.js'
 
 // XXX should file deps *always* be considered changed?
 // unless the thing containing it wasn't possibly changed because it's inside

@@ -1,7 +1,7 @@
 import t from 'tap'
 import { stringifyNode } from '../src/stringify-node.js'
 import { joinDepIDTuple } from '@vltpkg/dep-id'
-import { NodeLike } from '../src/types.js'
+import { type NodeLike } from '../src/types.js'
 
 const nodes = {
   ['undefined']: undefined,

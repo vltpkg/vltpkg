@@ -1,7 +1,7 @@
 import { actual, ideal, reify } from '@vltpkg/graph'
 import { PackageInfoClient } from '@vltpkg/package-info'
 import { parseRemoveArgs } from '../parse-add-remove-args.js'
-import { CliCommandFn, CliCommandUsage } from '../types.js'
+import { type CliCommandFn, type CliCommandUsage } from '../types.js'
 import { commandUsage } from '../config/usage.js'
 
 export const usage: CliCommandUsage = () =>

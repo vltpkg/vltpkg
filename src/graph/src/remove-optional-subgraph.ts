@@ -1,5 +1,5 @@
-import { Graph } from './graph.js'
-import { Node } from './node.js'
+import { type Graph } from './graph.js'
+import { type Node } from './node.js'
 
 /**
  * Remove the affected optional nodes starting from a given optional node

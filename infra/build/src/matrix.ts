@@ -27,8 +27,8 @@ export type ParseArgs = {
   defaults: types.FactorArrays
   full: types.FactorArrays
   matrix: Partial<
-    Record<types.Keys, string[] | boolean[] | undefined> &
-      Record<'all', boolean | undefined>
+    Record<'all', boolean | undefined> &
+      Record<types.Keys, string[] | boolean[] | undefined>
   >
 }
 

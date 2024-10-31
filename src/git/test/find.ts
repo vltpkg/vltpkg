@@ -1,8 +1,8 @@
-import t, { Test } from 'tap'
+import t, { type Test } from 'tap'
 import { join, parse } from 'path'
 import { tmpdir } from 'os'
-import { find, FindOpts } from '../src/find.js'
-import { GitOptions } from '../src/index.js'
+import { find, type FindOpts } from '../src/find.js'
+import { type GitOptions } from '../src/index.js'
 
 t.test('find the git dir many folders up', t => {
   const root = t.testdir({

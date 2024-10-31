@@ -6,7 +6,7 @@ import pathModule, {
   relative,
   sep,
 } from 'path'
-import t, { Test } from 'tap'
+import t, { type Test } from 'tap'
 import { type WhichOptions } from '../src/index.js'
 
 import { posix as isexePosix, win32 as isexeWin } from 'isexe'

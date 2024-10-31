@@ -3,25 +3,25 @@
  */
 
 import { error } from '@vltpkg/error-cause'
-import type {
-  exec,
-  execFG,
-  ExecOptions,
-  run,
-  runExec,
-  runExecFG,
-  RunExecOptions,
-  runFG,
-  RunOptions,
-  RunResult,
+import {
+  type exec,
+  type execFG,
+  type ExecOptions,
+  type run,
+  type runExec,
+  type runExecFG,
+  type RunExecOptions,
+  type runFG,
+  type RunOptions,
+  type RunResult,
+  isRunResult,
 } from '@vltpkg/run'
-import { isRunResult } from '@vltpkg/run'
-import { Monorepo, Workspace } from '@vltpkg/workspaces'
+import { Monorepo, type Workspace } from '@vltpkg/workspaces'
 import { ansiToAnsi } from 'ansi-to-pre'
 import chalk from 'chalk'
-import { LoadedConfig } from './config/index.js'
+import { type LoadedConfig } from './config/index.js'
 import { stdout, stderr } from './output.js'
-import { SpawnResultNoStdio } from '@vltpkg/promise-spawn'
+import { type SpawnResultNoStdio } from '@vltpkg/promise-spawn'
 
 export type RunnerBG = typeof exec | typeof run | typeof runExec
 export type RunnerFG = typeof execFG | typeof runExecFG | typeof runFG

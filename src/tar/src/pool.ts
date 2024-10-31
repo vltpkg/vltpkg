@@ -1,10 +1,10 @@
-import { error, ErrorCauseObject } from '@vltpkg/error-cause'
+import { error, type ErrorCauseObject } from '@vltpkg/error-cause'
 import os from 'os'
 import { UnpackRequest } from './unpack-request.js'
 import {
   isResponseOK,
-  ResponseError,
-  ResponseOK,
+  type ResponseError,
+  type ResponseOK,
   Worker,
 } from './worker.js'
 

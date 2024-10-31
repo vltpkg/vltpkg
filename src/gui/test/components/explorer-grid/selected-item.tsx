@@ -3,9 +3,9 @@ import { cleanup, render } from '@testing-library/react'
 import html from 'diffable-html'
 import { Spec, getOptions } from '@vltpkg/spec/browser'
 import { joinDepIDTuple } from '@vltpkg/dep-id'
-import type { NodeLike } from '@vltpkg/graph'
+import { type NodeLike } from '@vltpkg/graph'
 import { useGraphStore as useStore } from '@/state/index.js'
-import { GridItemData } from '@/components/explorer-grid/types.js'
+import { type GridItemData } from '@/components/explorer-grid/types.js'
 import { SelectedItem } from '@/components/explorer-grid/selected-item.jsx'
 
 vi.mock('@/components/ui/badge.jsx', () => ({

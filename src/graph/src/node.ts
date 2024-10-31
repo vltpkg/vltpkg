@@ -1,16 +1,16 @@
 import {
-  DepID,
-  DepIDTuple,
+  type DepID,
+  type DepIDTuple,
   getId,
   hydrateTuple,
   splitDepID,
 } from '@vltpkg/dep-id'
 import { typeError } from '@vltpkg/error-cause'
-import { Spec, SpecOptions } from '@vltpkg/spec'
-import { Integrity, Manifest } from '@vltpkg/types'
-import { DependencyTypeShort } from './dependencies.js'
+import { type Spec, type SpecOptions } from '@vltpkg/spec'
+import { type Integrity, type Manifest } from '@vltpkg/types'
+import { type DependencyTypeShort } from './dependencies.js'
 import { Edge } from './edge.js'
-import { GraphLike, NodeLike } from './types.js'
+import { type GraphLike, type NodeLike } from './types.js'
 import { stringifyNode } from './stringify-node.js'
 import { type PackageInfoClient } from '@vltpkg/package-info'
 

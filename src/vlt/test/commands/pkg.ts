@@ -1,4 +1,4 @@
-import t, { Test } from 'tap'
+import t, { type Test } from 'tap'
 import { setupCommand, setupEnv } from '../fixtures/run.js'
 import * as Command from '../../src/commands/pkg.js'
 import { readFileSync } from 'fs'

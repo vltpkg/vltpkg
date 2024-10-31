@@ -24,7 +24,7 @@ export type GitSelectorParsed = {
   semver?: string
 }
 
-export interface SpecLikeBase {
+export type SpecLikeBase = {
   /** the type of spec that this is, ultimately */
   type: 'file' | 'git' | 'registry' | 'remote' | 'workspace'
 
@@ -128,8 +128,7 @@ export interface SpecLikeBase {
   final: SpecLikeBase
 }
 
-export interface SpecLike<Type extends SpecLikeBase>
-  extends SpecLikeBase {
+export type SpecLike<Type extends SpecLikeBase> = SpecLikeBase & {
   subspec?: Type
   final: Type
 }

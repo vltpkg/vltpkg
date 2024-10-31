@@ -1,5 +1,5 @@
 import { splitDepID } from '@vltpkg/dep-id/browser'
-import { NodeLike } from './types.js'
+import { type NodeLike } from './types.js'
 
 export const stringifyNode = (node?: NodeLike) => {
   if (!node) return ''

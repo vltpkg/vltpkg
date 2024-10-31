@@ -1,9 +1,12 @@
 import t from 'tap'
 import { PackageJson } from '@vltpkg/package-json'
-import { DepID } from '@vltpkg/dep-id'
+import { type DepID } from '@vltpkg/dep-id'
 import { Spec } from '@vltpkg/spec'
 import { Graph } from '../../src/graph.js'
-import { Dependency, asDependency } from '../../src/dependencies.js'
+import {
+  type Dependency,
+  asDependency,
+} from '../../src/dependencies.js'
 import { updatePackageJson } from '../../src/reify/update-importers-package-json.js'
 
 t.test('updatePackageJson', async t => {

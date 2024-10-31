@@ -1,12 +1,16 @@
-import { DepID, DepIDTuple, joinDepIDTuple } from '@vltpkg/dep-id'
+import {
+  type DepID,
+  type DepIDTuple,
+  joinDepIDTuple,
+} from '@vltpkg/dep-id'
 import t from 'tap'
 import { inspect } from 'util'
 import { Diff } from '../src/diff.js'
 import {
-  Graph,
-  LockfileEdgeKey,
-  LockfileEdges,
-  LockfileNode,
+  type Graph,
+  type LockfileEdgeKey,
+  type LockfileEdges,
+  type LockfileNode,
 } from '../src/index.js'
 import { loadObject } from '../src/lockfile/load.js'
 

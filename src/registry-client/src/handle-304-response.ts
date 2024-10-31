@@ -1,5 +1,5 @@
-import { Dispatcher } from 'undici'
-import { CacheEntry } from './cache-entry.js'
+import { type Dispatcher } from 'undici'
+import { type CacheEntry } from './cache-entry.js'
 
 export const handle304Response = (
   resp: Dispatcher.ResponseData,

@@ -1,7 +1,10 @@
-import { Graph } from '../graph.js'
+import { type Graph } from '../graph.js'
 import { getImporterSpecs } from './get-importer-specs.js'
-import { AddNodesOptions, addNodes } from './add-nodes.js'
-import { RemoveNodesOptions, removeNodes } from './remove-nodes.js'
+import { type AddNodesOptions, addNodes } from './add-nodes.js'
+import {
+  type RemoveNodesOptions,
+  removeNodes,
+} from './remove-nodes.js'
 
 export type BuildIdealFromStartingGraphOptions = AddNodesOptions &
   RemoveNodesOptions & {

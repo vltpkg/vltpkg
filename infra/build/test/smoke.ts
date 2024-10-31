@@ -1,4 +1,4 @@
-import t, { Test } from 'tap'
+import t, { type Test } from 'tap'
 import { spawn } from 'node:child_process'
 import { Bins, defaultOptions } from '../src/index.js'
 import bundle from '../src/bundle.js'
@@ -15,11 +15,11 @@ type CommandResult = {
   output: string
 }
 
-type TestCase = {
+type TestCase = Partial<CommandResult> & {
   args?: string[]
   testdir?: Testdir
   snapshot?: boolean
-} & Partial<CommandResult>
+}
 
 type TestCommand = {
   bin: types.Bin

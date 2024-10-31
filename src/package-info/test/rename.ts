@@ -1,6 +1,6 @@
 import t from 'tap'
 import * as FSP from 'node:fs/promises'
-import { PathLike, RmOptions } from 'node:fs'
+import { type PathLike, type RmOptions } from 'node:fs'
 const { rename: fsRename } = FSP
 
 t.test('posix', async t => {

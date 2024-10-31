@@ -9,7 +9,7 @@ import {
   CardTitle,
 } from '@/components/ui/card.jsx'
 import { labelClassNamesMap } from './label-helper.js'
-import { GridItemData, GridItemOptions } from './types.js'
+import { type GridItemData, type GridItemOptions } from './types.js'
 
 export type ResultItemClickOptions = {
   item: GridItemData

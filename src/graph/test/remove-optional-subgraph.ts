@@ -1,11 +1,11 @@
 import { joinDepIDTuple } from '@vltpkg/dep-id'
 import { Spec } from '@vltpkg/spec'
-import { Manifest } from '@vltpkg/types'
+import { type Manifest } from '@vltpkg/types'
 import t from 'tap'
-import { DependencyTypeShort } from '../src/dependencies.js'
+import { type DependencyTypeShort } from '../src/dependencies.js'
 import { Edge } from '../src/edge.js'
 import { Graph } from '../src/graph.js'
-import { Node } from '../src/node.js'
+import { type Node } from '../src/node.js'
 import {
   findOptionalSubgraph,
   removeOptionalSubgraph,

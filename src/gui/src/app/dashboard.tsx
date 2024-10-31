@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 import { Logo } from '@/components/ui/logo.jsx'
 import { DashboardGrid } from '@/components/dashboard-grid/index.jsx'
 import { ThemeSwitcher } from '@/components/ui/theme-switcher.jsx'
-import { Action, State } from '@/state/types.js'
+import { type Action, type State } from '@/state/types.js'
 import { useGraphStore } from '@/state/index.js'
 import { Footer } from '@/components/ui/footer.jsx'
 

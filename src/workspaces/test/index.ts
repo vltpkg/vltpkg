@@ -1,11 +1,11 @@
 import { mkdirSync, rmdirSync, writeFileSync } from 'fs'
-import { DepResults } from 'graph-run'
+import { type DepResults } from 'graph-run'
 import t from 'tap'
 import {
   assertWSConfig,
   asWSConfig,
   Monorepo,
-  Workspace,
+  type Workspace,
 } from '../src/index.js'
 import { resolve } from 'node:path'
 

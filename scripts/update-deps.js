@@ -3,7 +3,7 @@ import { resolve } from 'node:path'
 import { parseArgs } from 'node:util'
 import { spawnSync } from 'node:child_process'
 import * as yaml from 'yaml'
-import * as prettier from 'prettier'
+import { resolveConfig, format as prettier } from 'prettier'
 import { packument } from '../src/package-info/dist/esm/index.js'
 import { pickManifest } from '../src/pick-manifest/dist/esm/index.js'
 import * as semver from '../src/semver/dist/esm/index.js'
@@ -44,8 +44,8 @@ const spawnRes = (cmd, args) =>
     .map(l => l.trim())
 
 const format = async (source, filepath) =>
-  prettier.format(source, {
-    ...(await prettier.resolveConfig(filepath)),
+  prettier(source, {
+    ...(await resolveConfig(filepath)),
     filepath,
   })
 
