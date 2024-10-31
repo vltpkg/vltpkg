@@ -5,12 +5,17 @@ import {
   type NodeLike,
 } from '../types.js'
 
+const addInspect = (o: unknown, fn: () => string) =>
+  ((o as { [K in typeof inspect.custom]: () => string })[
+    inspect.custom
+  ] = fn)
+
 function parseNode(
   seenNodes: Set<NodeLike>,
   graph: GraphLike,
   node: NodeLike,
 ) {
-  ;(node as any)[inspect.custom] = (): string => {
+  addInspect(node, () => {
     const res =
       'Node ' +
       inspect(
@@ -38,7 +43,7 @@ function parseNode(
         { depth: Infinity },
       )
     return res
-  }
+  })
   return node
 }
 
@@ -47,7 +52,7 @@ function parseEdge(
   graph: GraphLike,
   edge: EdgeLike,
 ) {
-  ;(edge as any)[inspect.custom] = () => {
+  addInspect(edge, () => {
     const missingNode = `[missing package]: <${edge.name}@${edge.spec.bareSpec}>`
     const toLabel: string =
       edge.to ?
@@ -56,7 +61,7 @@ function parseEdge(
         })
       : missingNode
     return `Edge spec(${String(edge.spec)}) -${edge.type}-> to: ${toLabel}`
-  }
+  })
   return edge
 }
 

@@ -49,6 +49,9 @@ export type CacheOptions = {
   onDiskDelete?: (path: string, key: string, deleted: boolean) => any
 }
 
+// eslint-disable-next-line @typescript-eslint/no-invalid-void-type
+export type BooleanOrVoid = boolean | void
+
 const hash = (s: string) =>
   createHash('sha512').update(s).digest('hex')
 
@@ -61,7 +64,7 @@ export class Cache extends LRUCache<
   [Symbol.toStringTag] = '@vltpkg/cache.Cache'
   #random: string = randomBytes(6).toString('hex')
   #i = 0
-  #pending = new Set<Promise<boolean | undefined>>()
+  #pending = new Set<Promise<BooleanOrVoid>>()
   onDiskWrite?: CacheOptions['onDiskWrite']
   onDiskDelete?: CacheOptions['onDiskDelete']
 
@@ -183,7 +186,7 @@ export class Cache extends LRUCache<
   }
 
   #unpend<F extends (...a: any[]) => any>(
-    p: Promise<any>,
+    p: Promise<BooleanOrVoid>,
     fn: F | undefined,
     ...args: Parameters<F>
   ) {
@@ -191,7 +194,7 @@ export class Cache extends LRUCache<
     if (fn) fn(...args)
   }
 
-  #pend(p: Promise<any>) {
+  #pend(p: Promise<BooleanOrVoid>) {
     this.#pending.add(p)
   }
 
@@ -354,17 +357,16 @@ export class Cache extends LRUCache<
         link(intFile, tmp).catch(() => writeFile(tmp, val))
         // don't have it by integrity, write the new entry
       : writeFile(tmp, val)
-
-    let p: Promise<any> = Promise.all([
+    return Promise.all([
       writeData.then(() => rename(tmp, path)),
       writeFile(keyTmp, key).then(() =>
         rename(keyTmp, path + '.key'),
       ),
-    ])
-    if (intFile) {
-      p = p.then(() => link(path, intFile))
-    }
-    return p
+    ]).then(() => {
+      if (intFile) {
+        return link(path, intFile)
+      }
+    })
   }
 
   async #diskRead(

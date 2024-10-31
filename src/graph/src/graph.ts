@@ -19,6 +19,9 @@ const mainDepID = joinDepIDTuple(['file', '.'])
 
 export type ManifestInventory = Map<DepID, Manifest>
 
+const getMap = <T extends Map<any, any>>(m?: T) =>
+  m ?? (new Map() as T)
+
 export type GraphOptions = SpecOptions & {
   /**
    * The main importer manifest info.
@@ -103,10 +106,10 @@ export class Graph implements GraphLike {
   projectRoot: string
 
   constructor(options: GraphOptions) {
-    const { mainManifest, manifests, monorepo, projectRoot } = options
+    const { mainManifest, monorepo } = options
     this.#options = options
-    this.manifests = manifests ?? new Map()
-    this.projectRoot = projectRoot
+    this.manifests = getMap(options.manifests)
+    this.projectRoot = options.projectRoot
     this.#nodeOptions = {
       ...this.#options,
       graph: this,

@@ -71,7 +71,7 @@ export const parseAddArgs = (
   config: LoadedConfig,
   monorepo?: Monorepo,
 ): ParsedAddArgs => {
-  const add = new Map()
+  const add: AddImportersDependenciesMap = new Map()
   const items = config.positionals
   const type = getType(config.values)
   const importers = getImporters(config.values, monorepo)
@@ -102,7 +102,7 @@ export const parseRemoveArgs = (
   config: LoadedConfig,
   monorepo?: Monorepo,
 ): ParsedRemoveArgs => {
-  const remove = new Map()
+  const remove: RemoveImportersDependenciesMap = new Map()
   const importers = getImporters(config.values, monorepo)
 
   for (const importer of importers) {
