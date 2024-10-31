@@ -1,5 +1,5 @@
-import { DepID } from '@vltpkg/dep-id'
-import { EdgeLike, NodeLike } from '../types.js'
+import { type DepID } from '@vltpkg/dep-id'
+import { type EdgeLike, type NodeLike } from '../types.js'
 
 /**
  * A JSON output item describes a package that is present in the install

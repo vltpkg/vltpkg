@@ -1,17 +1,24 @@
-import { DepID, DepIDTuple, joinDepIDTuple } from '@vltpkg/dep-id'
-import { manifest, PackageInfoClient } from '@vltpkg/package-info'
+import {
+  type DepID,
+  type DepIDTuple,
+  joinDepIDTuple,
+} from '@vltpkg/dep-id'
+import {
+  manifest,
+  type PackageInfoClient,
+} from '@vltpkg/package-info'
 import { PackageJson } from '@vltpkg/package-json'
-import { Spec, SpecOptions } from '@vltpkg/spec'
+import { Spec, type SpecOptions } from '@vltpkg/spec'
 import { Monorepo } from '@vltpkg/workspaces'
 import { PathScurry } from 'path-scurry'
 import t from 'tap'
 import { load as loadActual } from '../../src/actual/load.js'
 import { buildIdealFromStartingGraph } from '../../src/ideal/build-ideal-from-starting-graph.js'
 import {
-  LockfileData,
-  LockfileEdgeKey,
-  LockfileEdges,
-  LockfileNode,
+  type LockfileData,
+  type LockfileEdgeKey,
+  type LockfileEdges,
+  type LockfileNode,
 } from '../../src/index.js'
 import { load as loadVirtual } from '../../src/lockfile/load.js'
 import { objectLikeOutput } from '../../src/visualization/object-like-output.js'

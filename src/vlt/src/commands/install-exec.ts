@@ -1,5 +1,5 @@
 import { commandUsage } from '../config/usage.js'
-import { type CliCommandUsage, CliCommandFn } from '../types.js'
+import { type CliCommandUsage, type CliCommandFn } from '../types.js'
 
 export const usage: CliCommandUsage = () =>
   commandUsage({

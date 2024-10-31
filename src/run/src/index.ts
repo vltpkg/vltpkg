@@ -2,11 +2,11 @@ import { error } from '@vltpkg/error-cause'
 import { PackageJson } from '@vltpkg/package-json'
 import {
   promiseSpawn,
-  PromiseSpawnOptions,
+  type PromiseSpawnOptions,
   type SpawnResultNoStdio,
   type SpawnResultStdioStrings,
 } from '@vltpkg/promise-spawn'
-import { Manifest } from '@vltpkg/types'
+import { type Manifest } from '@vltpkg/types'
 import { foregroundChild } from 'foreground-child'
 import { proxySignals } from 'foreground-child/proxy-signals'
 import { statSync } from 'node:fs'

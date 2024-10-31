@@ -1,7 +1,7 @@
-import { DepID } from '@vltpkg/dep-id'
+import { type DepID } from '@vltpkg/dep-id'
 import { Edge } from '../edge.js'
 import { Node } from '../node.js'
-import { EdgeLike, NodeLike } from '../types.js'
+import { type EdgeLike, type NodeLike } from '../types.js'
 
 export type MermaidOutputOptions = {
   edges: EdgeLike[]

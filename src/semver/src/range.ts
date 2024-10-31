@@ -1,6 +1,6 @@
 import { fastSplit } from '@vltpkg/fast-split'
 import { Comparator } from './comparator.js'
-import { Version } from './version.js'
+import { type Version } from './version.js'
 
 /**
  * A representation of a semver range, used to test versions.

@@ -5,7 +5,7 @@ import {
   resolve,
   win32 as winPath,
 } from 'node:path'
-import { inspect, InspectOptions } from 'node:util'
+import { inspect, type InspectOptions } from 'node:util'
 import {
   defaultRegistry,
   defaultRegistries,
@@ -16,7 +16,7 @@ import {
   gitHostWebsites,
   kCustomInspect,
   Spec as BrowserSpec,
-  SpecLike,
+  type SpecLike,
 } from './browser.js'
 
 export {

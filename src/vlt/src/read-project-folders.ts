@@ -1,4 +1,4 @@
-import { PathBase, PathScurry } from 'path-scurry'
+import { type PathBase, type PathScurry } from 'path-scurry'
 
 type ProjectFolderOptions = {
   /**

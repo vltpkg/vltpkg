@@ -1,7 +1,7 @@
 import { join } from 'node:path'
-import t, { Test } from 'tap'
-import { spawnSync, SpawnSyncOptions } from 'node:child_process'
-import { Bin, BinNames } from '../../src/types.js'
+import t, { type Test } from 'tap'
+import { spawnSync, type SpawnSyncOptions } from 'node:child_process'
+import { type Bin, BinNames } from '../../src/types.js'
 import { readdirSync, readFileSync } from 'node:fs'
 
 type SpawnRes = { stderr: string[]; stdout: string[] }

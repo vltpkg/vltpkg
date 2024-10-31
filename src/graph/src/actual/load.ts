@@ -1,22 +1,22 @@
 import {
   asDepID,
-  DepID,
+  type DepID,
   hydrate,
   joinDepIDTuple,
 } from '@vltpkg/dep-id'
-import { PackageJson } from '@vltpkg/package-json'
-import { Spec, SpecOptions } from '@vltpkg/spec'
-import { Manifest } from '@vltpkg/types'
-import { Monorepo } from '@vltpkg/workspaces'
-import { Path, PathScurry } from 'path-scurry'
+import { type PackageJson } from '@vltpkg/package-json'
+import { Spec, type SpecOptions } from '@vltpkg/spec'
+import { type Manifest } from '@vltpkg/types'
+import { type Monorepo } from '@vltpkg/workspaces'
+import { type Path, type PathScurry } from 'path-scurry'
 import {
   longDependencyTypes,
-  RawDependency,
+  type RawDependency,
   shorten,
 } from '../dependencies.js'
 import { Graph } from '../graph.js'
 import { loadHidden } from '../lockfile/load.js'
-import { Node } from '../node.js'
+import { type Node } from '../node.js'
 
 export type LoadOptions = SpecOptions & {
   /**

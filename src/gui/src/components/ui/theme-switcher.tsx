@@ -1,6 +1,11 @@
 import { useRef, useEffect } from 'react'
-import { LucideIcon, Sun, Moon, LaptopMinimal } from 'lucide-react'
-import { Theme, useTheme } from './theme-provider.jsx'
+import {
+  type LucideIcon,
+  Sun,
+  Moon,
+  LaptopMinimal,
+} from 'lucide-react'
+import { type Theme, useTheme } from './theme-provider.jsx'
 import { Button } from '@/components/ui/button.jsx'
 import {
   DropdownMenu,

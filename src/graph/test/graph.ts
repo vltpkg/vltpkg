@@ -1,11 +1,11 @@
 import { hydrate, joinDepIDTuple } from '@vltpkg/dep-id'
-import { kCustomInspect, Spec, SpecOptions } from '@vltpkg/spec'
+import { kCustomInspect, Spec, type SpecOptions } from '@vltpkg/spec'
 import { Monorepo } from '@vltpkg/workspaces'
 import { inspect } from 'node:util'
 import t from 'tap'
 import { Edge } from '../src/edge.js'
 import { Graph } from '../src/graph.js'
-import { GraphLike } from '../src/types.js'
+import { type GraphLike } from '../src/types.js'
 
 t.cleanSnapshot = s =>
   s.replace(/^(\s+)"projectRoot": .*$/gm, '$1"projectRoot": #')

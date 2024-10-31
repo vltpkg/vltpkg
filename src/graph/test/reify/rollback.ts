@@ -1,9 +1,9 @@
 import { joinDepIDTuple } from '@vltpkg/dep-id'
-import { RollbackRemove } from '@vltpkg/rollback-remove'
+import { type RollbackRemove } from '@vltpkg/rollback-remove'
 import { PathScurry } from 'path-scurry'
 import t from 'tap'
-import { Diff } from '../../src/diff.js'
-import { Edge } from '../../src/edge.js'
+import { type Diff } from '../../src/diff.js'
+import { type Edge } from '../../src/edge.js'
 
 const fooId = joinDepIDTuple(['registry', '', 'foo@1.2.3'])
 const diff = {

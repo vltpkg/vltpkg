@@ -1,4 +1,8 @@
-import { RevDoc, RevDocEntry, RefType } from '@vltpkg/types'
+import {
+  type RevDoc,
+  type RevDocEntry,
+  type RefType,
+} from '@vltpkg/types'
 import { parse } from '@vltpkg/semver'
 import { error } from '@vltpkg/error-cause'
 

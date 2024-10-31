@@ -22,7 +22,8 @@
     "@vltpkg/spec": "workspace:*",
     "@vltpkg/which": "workspace:*",
     "lru-cache": "catalog:",
-    "promise-retry": "^2.0.1"
+    "promise-retry": "^2.0.1",
+    "retry": "^0.13.1"
   },
   "devDependencies": {
     "@eslint/js": "catalog:",

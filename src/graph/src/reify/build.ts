@@ -2,14 +2,14 @@
 // at the end, we get back to the importers, and run their prepare
 // script as well as install script.
 
-import { PackageJson } from '@vltpkg/package-json'
+import { type PackageJson } from '@vltpkg/package-json'
 import { run } from '@vltpkg/run'
 import { statSync } from 'fs'
 import { chmod } from 'fs/promises'
 import { graphRun } from 'graph-run'
-import { PathScurry } from 'path-scurry'
-import { Diff } from '../diff.js'
-import { Node } from '../node.js'
+import { type PathScurry } from 'path-scurry'
+import { type Diff } from '../diff.js'
+import { type Node } from '../node.js'
 import { nonEmptyList } from '../non-empty-list.js'
 import { binPaths } from './bin-paths.js'
 import { optionalFail } from './optional-fail.js'

@@ -2,7 +2,7 @@ import { error } from '@vltpkg/error-cause'
 import fs from 'fs'
 import { resolve } from 'path'
 import t from 'tap'
-import { GitOptions } from '../src/index.js'
+import { type GitOptions } from '../src/index.js'
 import { spawn } from '../src/spawn.js'
 
 t.rejects(spawn(['status'], { git: false }), {

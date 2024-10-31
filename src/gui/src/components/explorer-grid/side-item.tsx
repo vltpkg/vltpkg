@@ -2,7 +2,7 @@ import { useRef, useEffect } from 'react'
 import { Badge } from '@/components/ui/badge.jsx'
 import { Card, CardHeader, CardTitle } from '@/components/ui/card.jsx'
 import { labelClassNamesMap } from './label-helper.js'
-import { GridItemOptions } from './types.js'
+import { type GridItemOptions } from './types.js'
 
 export type SideItemOptions = GridItemOptions & {
   onClick: () => undefined

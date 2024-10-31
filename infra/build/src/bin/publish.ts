@@ -1,6 +1,6 @@
 import { join, resolve } from 'node:path'
 import assert from 'node:assert'
-import { spawnSync, SpawnSyncOptions } from 'node:child_process'
+import { spawnSync, type SpawnSyncOptions } from 'node:child_process'
 import { parseArgs as nodeParseArgs } from 'node:util'
 import {
   copyFileSync,
@@ -12,8 +12,8 @@ import {
 import generateMatrix, {
   getMatrix,
   matrixConfig,
-  BundleDir,
-  CompilationDir,
+  type BundleDir,
+  type CompilationDir,
 } from '../matrix.js'
 import { Paths } from '../index.js'
 import * as types from '../types.js'

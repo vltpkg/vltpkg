@@ -1,11 +1,11 @@
-import { DepID } from '@vltpkg/dep-id'
+import { type DepID } from '@vltpkg/dep-id'
 import {
   defaultRegistry,
   defaultRegistries,
   defaultGitHosts,
   defaultGitHostArchives,
   defaultScopeRegistries,
-  SpecOptions,
+  type SpecOptions,
 } from '@vltpkg/spec'
 import { mkdirSync, writeFileSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
@@ -14,11 +14,11 @@ import { type Graph } from '../graph.js'
 import { type Node } from '../node.js'
 import {
   getFlagNumFromNode,
-  LockfileData,
-  LockfileEdgeKey,
-  LockfileEdges,
-  LockfileEdgeValue,
-  LockfileNode,
+  type LockfileData,
+  type LockfileEdgeKey,
+  type LockfileEdges,
+  type LockfileEdgeValue,
+  type LockfileNode,
 } from './types.js'
 
 export type SaveOptions = SpecOptions & {

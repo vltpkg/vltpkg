@@ -1,9 +1,9 @@
 import { PackageJson } from '@vltpkg/package-json'
 import { run, runFG } from '@vltpkg/run'
-import { LoadedConfig } from '../config/index.js'
-import { ExecCommand, ExecResult } from '../exec-command.js'
+import { type LoadedConfig } from '../config/index.js'
+import { ExecCommand, type ExecResult } from '../exec-command.js'
 import { commandUsage } from '../config/usage.js'
-import { type CliCommandUsage, CliCommandFn } from '../types.js'
+import { type CliCommandUsage, type CliCommandFn } from '../types.js'
 import { stdout } from '../output.js'
 
 export const usage: CliCommandUsage = () =>

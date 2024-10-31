@@ -1,10 +1,10 @@
 import { Spec } from '@vltpkg/spec'
-import { Manifest } from '@vltpkg/types'
+import { type Manifest } from '@vltpkg/types'
 import t from 'tap'
 import {
   asDepID,
   delimiter,
-  DepID,
+  type DepID,
   getId,
   getTuple,
   hydrate,

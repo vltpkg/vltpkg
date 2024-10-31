@@ -5,17 +5,17 @@ import {
   GalleryThumbnails,
   GitFork,
 } from 'lucide-react'
-import type { EdgeLike, NodeLike } from '@vltpkg/graph'
+import { type EdgeLike, type NodeLike } from '@vltpkg/graph'
 import { stringifyNode } from '@vltpkg/graph/browser'
-import type { DepID } from '@vltpkg/dep-id'
+import { type DepID } from '@vltpkg/dep-id'
 import { Spec } from '@vltpkg/spec/browser'
 import { useGraphStore } from '@/state/index.js'
 import { ResultItem } from '@/components/explorer-grid/result-item.jsx'
 import { SideItem } from '@/components/explorer-grid/side-item.jsx'
 import { SelectedItem } from '@/components/explorer-grid/selected-item.jsx'
 import {
-  EdgeLoose,
-  GridItemData,
+  type EdgeLoose,
+  type GridItemData,
 } from '@/components/explorer-grid//types.js'
 
 const GridHeader = ({ ...props }) => (

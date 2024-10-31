@@ -1,17 +1,21 @@
-import { DepID, DepIDTuple, joinDepIDTuple } from '@vltpkg/dep-id'
-import { SpecOptions } from '@vltpkg/spec'
+import {
+  type DepID,
+  type DepIDTuple,
+  joinDepIDTuple,
+} from '@vltpkg/dep-id'
+import { type SpecOptions } from '@vltpkg/spec'
 import t from 'tap'
-import { LockfileNode } from '../../dist/esm/index.js'
+import { type LockfileNode } from '../../dist/esm/index.js'
 import {
   load,
   loadHidden,
   loadObject,
 } from '../../src/lockfile/load.js'
 import {
-  LockfileData,
-  LockfileEdgeKey,
-  LockfileEdges,
-  LockfileEdgeValue,
+  type LockfileData,
+  type LockfileEdgeKey,
+  type LockfileEdges,
+  type LockfileEdgeValue,
 } from '../../src/lockfile/types.js'
 import { objectLikeOutput } from '../../src/visualization/object-like-output.js'
 

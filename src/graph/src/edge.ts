@@ -1,9 +1,9 @@
 import { satisfies } from '@vltpkg/satisfies'
-import { Spec } from '@vltpkg/spec'
-import { inspect, InspectOptions } from 'util'
-import { DependencyTypeShort } from './dependencies.js'
-import { Node } from './node.js'
-import { EdgeLike } from './types.js'
+import { type Spec } from '@vltpkg/spec'
+import { inspect, type InspectOptions } from 'util'
+import { type DependencyTypeShort } from './dependencies.js'
+import { type Node } from './node.js'
+import { type EdgeLike } from './types.js'
 
 const kCustomInspect = Symbol.for('nodejs.util.inspect.custom')
 

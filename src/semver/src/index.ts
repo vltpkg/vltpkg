@@ -1,5 +1,5 @@
 import { Range } from './range.js'
-import { IncrementType, Version } from './version.js'
+import { type IncrementType, Version } from './version.js'
 import { syntaxError } from '@vltpkg/error-cause'
 
 export * from './comparator.js'

@@ -1,6 +1,6 @@
-import { RollbackRemove } from '@vltpkg/rollback-remove'
-import { PathScurry } from 'path-scurry'
-import { Diff } from '../diff.js'
+import { type RollbackRemove } from '@vltpkg/rollback-remove'
+import { type PathScurry } from 'path-scurry'
+import { type Diff } from '../diff.js'
 import { deleteEdge } from './delete-edge.js'
 
 export const deleteEdges = (

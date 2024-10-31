@@ -1,7 +1,7 @@
 import animate from 'tailwindcss-animate'
 import defaultTheme from 'tailwindcss/defaultTheme'
 import plugin from 'tailwindcss/plugin'
-import type { Config } from 'tailwindcss'
+import { type Config } from 'tailwindcss'
 
 // https://github.com/withastro/starlight/blob/b56ccc6302f9204841daf6157037a2cb0f92b980/packages/tailwind/index.ts
 // The starlight function is copied and modified from the above link.

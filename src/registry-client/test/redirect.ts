@@ -3,7 +3,7 @@ import { CacheEntry } from '../src/cache-entry.js'
 import {
   isRedirect,
   redirect,
-  RedirectResponse,
+  type RedirectResponse,
 } from '../src/redirect.js'
 
 t.compareOptions = { includeGetters: true }

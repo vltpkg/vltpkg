@@ -1,4 +1,4 @@
-import { useEffect, MouseEvent } from 'react'
+import { useEffect, type MouseEvent } from 'react'
 import { Logo } from '@/components/ui/logo.jsx'
 import { Title } from '@/components/ui/title.jsx'
 import { ThemeSwitcher } from '@/components/ui/theme-switcher.jsx'

@@ -17,7 +17,7 @@ import {
   resolve,
   tarball,
 } from '../src/index.js'
-import { Manifest } from '@vltpkg/types'
+import { type Manifest } from '@vltpkg/types'
 
 t.saveFixture = true
 

@@ -1,10 +1,10 @@
 // Values we want to set if they're not already defined by the end user
 
 import {
-  PromiseSpawnOptionsStderrString,
-  PromiseSpawnOptionsStdoutString,
+  type PromiseSpawnOptionsStderrString,
+  type PromiseSpawnOptionsStdoutString,
 } from '@vltpkg/promise-spawn'
-import { SpawnOptions } from 'child_process'
+import { type SpawnOptions } from 'child_process'
 
 // This defaults to accepting new ssh host key fingerprints
 const gitEnv = {

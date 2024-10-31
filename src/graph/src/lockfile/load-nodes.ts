@@ -4,8 +4,8 @@ import {
   getBooleanFlagsFromNum,
   type LockfileNode,
 } from './types.js'
-import type { DepID } from '@vltpkg/dep-id'
-import type { GraphLike } from '../types.js'
+import { type DepID } from '@vltpkg/dep-id'
+import { type GraphLike } from '../types.js'
 
 export const loadNodes = (
   graph: GraphLike,

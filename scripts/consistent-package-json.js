@@ -7,7 +7,7 @@ import {
 } from 'node:fs'
 import { relative, resolve, basename, dirname, join } from 'node:path'
 import * as yaml from 'yaml'
-import * as prettier from 'prettier'
+import { resolveConfig, format as prettier } from 'prettier'
 import {
   gt,
   satisfies,
@@ -44,8 +44,8 @@ const skipCatalog = ({ name, spec, from, type }) => {
 const isInternal = name => name.startsWith('@vltpkg/')
 
 const format = async (source, filepath) => {
-  const options = await prettier.resolveConfig(filepath)
-  return prettier.format(source, { ...options, filepath })
+  const options = await resolveConfig(filepath)
+  return prettier(source, { ...options, filepath })
 }
 
 const writeFormatted = async (p, str) =>

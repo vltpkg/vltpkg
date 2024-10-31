@@ -4,10 +4,10 @@ import html from 'diffable-html'
 import { useGraphStore as useStore } from '@/state/index.js'
 import { joinDepIDTuple } from '@vltpkg/dep-id'
 import { Spec } from '@vltpkg/spec/browser'
-import { EdgeLike, NodeLike } from '@vltpkg/graph'
+import { type EdgeLike, type NodeLike } from '@vltpkg/graph'
 import { ExplorerGrid } from '@/components/explorer-grid/index.jsx'
 import { load } from '@/state/load-graph.js'
-import { RawNode } from '@/state/types.js'
+import { type RawNode } from '@/state/types.js'
 import { Query } from '@vltpkg/query'
 
 expect.addSnapshotSerializer({

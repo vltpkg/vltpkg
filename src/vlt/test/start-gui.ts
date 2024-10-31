@@ -1,13 +1,13 @@
 import t from 'tap'
 import { readFileSync, readdirSync } from 'node:fs'
 import { resolve } from 'node:path'
-import { PathBase, PathScurry } from 'path-scurry'
+import { type PathBase, PathScurry } from 'path-scurry'
 import { PackageJson } from '@vltpkg/package-json'
-import { Manifest } from '@vltpkg/types'
+import { type Manifest } from '@vltpkg/types'
 import { inferTools, formatDashboardJson } from '../src/start-gui.js'
-import type {
-  ConfigOptions,
-  LoadedConfig,
+import {
+  type ConfigOptions,
+  type LoadedConfig,
 } from '../src/config/index.js'
 import { actualObject } from './fixtures/actual.js'
 

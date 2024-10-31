@@ -1,7 +1,7 @@
 import { joinDepIDTuple } from '@vltpkg/dep-id'
-import { BuildIdealOptions } from '@vltpkg/graph'
+import { type BuildIdealOptions } from '@vltpkg/graph'
 import t from 'tap'
-import { LoadedConfig } from '../../src/config/index.js'
+import { type LoadedConfig } from '../../src/config/index.js'
 
 t.cleanSnapshot = s =>
   s.replace(/^(\s+)"?projectRoot"?: .*$/gm, '$1projectRoot: #')

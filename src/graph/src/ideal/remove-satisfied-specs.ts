@@ -1,8 +1,8 @@
 import { error } from '@vltpkg/error-cause'
 import { satisfies } from '@vltpkg/satisfies'
 import {
-  BuildIdealAddOptions,
-  BuildIdealFromGraphOptions,
+  type BuildIdealAddOptions,
+  type BuildIdealFromGraphOptions,
 } from './types.js'
 
 export type RemoveSatisfiedSpecsOptions = BuildIdealAddOptions &

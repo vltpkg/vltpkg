@@ -11,6 +11,8 @@
     "@vltpkg/benchmark": "workspace:*",
     "chalk": "catalog:",
     "eslint": "catalog:",
+    "eslint-import-resolver-typescript": "^3.6.3",
+    "eslint-plugin-import": "^2.31.0",
     "eslint-plugin-jsdoc": "^50.4.3",
     "globals": "^15.9.0",
     "prettier": "catalog:",
