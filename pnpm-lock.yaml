@@ -43,7 +43,7 @@ catalogs:
       specifier: ^1.0.4
       version: 1.0.4
     lru-cache:
-      specifier: lukekarrys/node-lru-cache#patch-1
+      specifier: ^11.0.1
       version: 11.0.1
     lucide-react:
       specifier: ^0.453.0
@@ -264,7 +264,7 @@ importers:
         version: link:../xdg
       lru-cache:
         specifier: 'catalog:'
-        version: https://codeload.github.com/lukekarrys/node-lru-cache/tar.gz/926a883e6308c3484b5d2f16003dbda80e89f021
+        version: 11.0.1
       rimraf:
         specifier: 'catalog:'
         version: 6.0.1
@@ -492,7 +492,7 @@ importers:
         version: link:../which
       lru-cache:
         specifier: 'catalog:'
-        version: https://codeload.github.com/lukekarrys/node-lru-cache/tar.gz/926a883e6308c3484b5d2f16003dbda80e89f021
+        version: 11.0.1
       promise-retry:
         specifier: ^2.0.1
         version: 2.0.1
@@ -5174,11 +5174,6 @@ packages:
 
   lru-cache@5.1.1:
     resolution: {integrity: sha512-KpNARQA3Iwv+jTA0utUVVbrh+Jlrr1Fv0e56GGzAFOXN7dk/FviaDW8LHmK52DlcH4WP2n6gI8vN1aesBFgo9w==}
-
-  lru-cache@https://codeload.github.com/lukekarrys/node-lru-cache/tar.gz/926a883e6308c3484b5d2f16003dbda80e89f021:
-    resolution: {tarball: https://codeload.github.com/lukekarrys/node-lru-cache/tar.gz/926a883e6308c3484b5d2f16003dbda80e89f021}
-    version: 11.0.1
-    engines: {node: 20 || >=22}
 
   lucide-react@0.453.0:
     resolution: {integrity: sha512-kL+RGZCcJi9BvJtzg2kshO192Ddy9hv3ij+cPrVPWSRzgCWCVazoQJxOjAwgK53NomL07HB7GPHW120FimjNhQ==}
@@ -11145,8 +11140,6 @@ snapshots:
   lru-cache@5.1.1:
     dependencies:
       yallist: 3.1.1
-
-  lru-cache@https://codeload.github.com/lukekarrys/node-lru-cache/tar.gz/926a883e6308c3484b5d2f16003dbda80e89f021: {}
 
   lucide-react@0.453.0(react@18.3.1):
     dependencies:
