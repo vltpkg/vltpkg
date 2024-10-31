@@ -374,7 +374,7 @@ export const lt = (
   versionA: Version | string,
   versionB: Version | string,
 ) => compare(versionA, versionB) < 0
-/** true if versionA is <= versionB. throws on invalid values */
+/** true if versionA is &lt;= versionB. throws on invalid values */
 export const lte = (
   versionA: Version | string,
   versionB: Version | string,

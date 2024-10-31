@@ -246,7 +246,7 @@ export class Version {
     return this.compare(v) === -1
   }
 
-  /** true if this version is <= the argument */
+  /** true if this version is &lt;= the argument */
   lessThanEqual(v: Version) {
     return this.compare(v) < 1
   }

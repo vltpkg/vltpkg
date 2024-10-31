@@ -46,7 +46,9 @@ export default {
     './scripts/workspace-frontmatter.mjs',
   ],
   entryPointStrategy: 'packages',
+  remarkPlugins: ['unified-prettier'],
   outputFileStrategy: 'modules',
+  modulesFileName: 'modules',
   entryFileName: 'index',
   mergeReadme: false,
   readme: 'none',
@@ -70,6 +72,4 @@ export default {
       '*': 'https://isaacs.github.io/path-scurry/',
     },
   },
-  logLevel: 'Verbose',
-  // remarkPlugins: ['unified-prettier'],
 }

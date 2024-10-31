@@ -1,4 +1,4 @@
-![workspaces](https://github.com/user-attachments/assets/1f6f73ad-bb51-461a-9f2f-efcf1b884a1a);
+![workspaces](https://github.com/user-attachments/assets/1f6f73ad-bb51-461a-9f2f-efcf1b884a1a)
 
 # @vltpkg/workspaces
 
