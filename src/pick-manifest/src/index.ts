@@ -192,7 +192,10 @@ export function pickManifest<T extends Packumentish>(
   }
 
   // ok, actually have to scan the list
-  const entries = Object.entries(versions)
+  const entries = Object.entries(versions) as [
+    string,
+    PickManifestish<T>,
+  ][]
 
   if (!entries.length) {
     return undefined

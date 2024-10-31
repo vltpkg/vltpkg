@@ -12,7 +12,6 @@ const BE_EXTRA = process.env.LINT_SUPER_CONSISTENT ?? 'off'
 export default tseslint.config(
   {
     ignores: [
-      'www/docs/vitest.config.ts',
       ...readFileSync(resolve(import.meta.dirname, '.prettierignore'))
         .toString()
         .trim()
@@ -124,12 +123,9 @@ export default tseslint.config(
        */
       // TODO: doesn't play well with how we pass instance methods to error() to capture stack traces
       '@typescript-eslint/unbound-method': 'off',
-      // TODO: these rules have to do with unsafe usage of `any`
+      // TODO: there are good reasons to use any but this is helpful to turn on
+      // occassionally to see if there are some where unknown is better
       '@typescript-eslint/no-explicit-any': 'off',
-      '@typescript-eslint/no-unsafe-argument': 'off',
-      '@typescript-eslint/no-unsafe-assignment': 'off',
-      '@typescript-eslint/no-unsafe-member-access': 'off',
-      '@typescript-eslint/no-unsafe-return': 'off',
       // TODO: turn this on
       '@typescript-eslint/class-literal-property-style': 'off',
       /**
@@ -183,7 +179,26 @@ export default tseslint.config(
     },
   },
   {
-    files: ['**/test/**/*.ts', '**/test/**/*.tsx'],
+    /**
+     * Allow unsafe code here. Probably not worth fixing in tests
+     * but anywhere else is beneficial. Goal is to at least not
+     * have any src/ files in here.
+     */
+    files: ['**/test/**/*.{ts,tsx}', '**/infra/**/*.ts'],
+    rules: {
+      '@typescript-eslint/no-unsafe-argument': 'off',
+      '@typescript-eslint/no-unsafe-assignment': 'off',
+      '@typescript-eslint/no-unsafe-call': 'off',
+      '@typescript-eslint/no-unsafe-member-access': 'off',
+      '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/no-unsafe-return': 'off',
+    },
+  },
+  {
+    /**
+     * Tests
+     */
+    files: ['**/test/**/*.{ts,tsx}'],
     rules: {
       // tap handles these floating promises
       '@typescript-eslint/no-floating-promises': [
@@ -207,26 +222,12 @@ export default tseslint.config(
       '@typescript-eslint/no-unused-expressions': 'off',
       '@typescript-eslint/use-unknown-in-catch-callback-variable':
         'off',
-      // Duplicate turning off these rules for test files so
-      // we can prioritize fixing them in src/ over test/
-      '@typescript-eslint/no-unsafe-argument': 'off',
-      '@typescript-eslint/no-unsafe-assignment': 'off',
-      '@typescript-eslint/no-unsafe-call': 'off',
-      '@typescript-eslint/no-unsafe-member-access': 'off',
-      '@typescript-eslint/no-explicit-any': 'off',
-      '@typescript-eslint/no-unsafe-return': 'off',
     },
   },
   {
-    files: ['**/*.js', '**/*.mjs'],
-    ...eslint.configs.recommended,
-    ...tseslint.configs.disableTypeChecked,
-    rules: {
-      ...tseslint.configs.disableTypeChecked.rules,
-      ...eslint.configs.recommended.rules,
-    },
-  },
-  {
+    /**
+     * Front end code
+     */
     files: ['{src/gui,www/docs}/{src,test}/**/*.{tsx,ts}'],
     rules: {
       // TODO: get eslint import resolver working with workspace tsconfig paths
@@ -239,6 +240,21 @@ export default tseslint.config(
     files: ['src/*/src/**/*.ts'],
     rules: {
       'no-console': 2,
+    },
+  },
+  {
+    /**
+     * Plain JS code.
+     * TODO: there is a way to get typechecking with tseslint for
+     * JS code but I couldn't get it configured right. Might be worth
+     * looking in to for our JS scripts.
+     */
+    files: ['**/*.{js,mjs}'],
+    ...eslint.configs.recommended,
+    ...tseslint.configs.disableTypeChecked,
+    rules: {
+      ...tseslint.configs.disableTypeChecked.rules,
+      ...eslint.configs.recommended.rules,
     },
   },
 )

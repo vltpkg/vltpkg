@@ -16,7 +16,7 @@ const startDashboardData = async ({
   stamp,
 }: StartDashboardData) => {
   const res = await fetch('./dashboard.json?random=' + stamp)
-  const data = await res.json()
+  const data = (await res.json()) as State['dashboard']
   updateDashboard(data)
 }
 

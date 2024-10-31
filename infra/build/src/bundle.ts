@@ -228,10 +228,10 @@ const loadCommandsPlugin = (
   const isExt = o.externalCommands
   const replaceCommand = (line: string) => {
     const m =
-      /^(?<ws>\s+)(?<ret>return )(?<load>await import\()(?<path>.*?)(?<end>\);?)$/.exec(
+      /^(?<ws>\s+)(?<ret>return \()(?<load>await import\()(?<path>.*?)(?<end>\)\);?)$/.exec(
         line,
       )?.groups
-    assert(m, `load commands code does not match expected`)
+    assert(m, `load commands code does not match expected: ${line}`)
     const load = isCjs ? 'require(' : m.load
     const pathVar = ident('commandPath')
     const path = isExt ? pathVar : m.path

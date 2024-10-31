@@ -13,6 +13,9 @@ import { load as loadVirtual } from '../lockfile/load.js'
 import { buildIdealFromStartingGraph } from './build-ideal-from-starting-graph.js'
 import { type DepID } from '@vltpkg/dep-id'
 
+const getMap = <T extends Map<any, any>>(m?: T) =>
+  m ?? (new Map() as T)
+
 export type BuildIdealOptions = LoadActualOptions & {
   /**
    * A `Map` in which keys are {@link DepID} linking to another `Map` in which
@@ -48,9 +51,6 @@ export const build = async (
   const { packageInfo, packageJson, scurry, monorepo } = options
   const mainManifest =
     options.mainManifest ?? packageJson.read(options.projectRoot)
-  const add = options.add ?? new Map()
-  const remove = options.remove ?? new Map()
-
   let graph
   try {
     graph = loadVirtual({
@@ -69,9 +69,9 @@ export const build = async (
   return buildIdealFromStartingGraph({
     ...options,
     scurry,
-    add,
+    add: getMap(options.add),
     graph,
     packageInfo,
-    remove,
+    remove: getMap(options.remove),
   })
 }

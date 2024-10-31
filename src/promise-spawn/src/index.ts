@@ -256,12 +256,12 @@ export class SpawnPromise<
       proc.on('error', reject)
       if (proc.stdout) {
         proc.stdout
-          .on('data', c => stdout.push(c))
+          .on('data', c => stdout.push(c as Buffer))
           .on('error', er => reject(er))
       }
       if (proc.stderr) {
         proc.stderr
-          .on('data', c => stderr.push(c))
+          .on('data', c => stderr.push(c as Buffer))
           .on('error', er => reject(er))
       }
       proc.on('close', (status, signal) => {

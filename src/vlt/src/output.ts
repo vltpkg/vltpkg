@@ -7,9 +7,9 @@ import {
 
 // TODO: make these have log levels etc
 // eslint-disable-next-line no-console
-export const stdout = (...args: any[]) => console.log(...args)
+export const stdout = (...args: unknown[]) => console.log(...args)
 // eslint-disable-next-line no-console
-export const stderr = (...args: any[]) => console.error(...args)
+export const stderr = (...args: unknown[]) => console.error(...args)
 
 export const outputCommand = (
   commandResult: CliCommandResult,

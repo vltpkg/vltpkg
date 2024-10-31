@@ -232,6 +232,9 @@ export const assertKeyID: (k: unknown) => asserts k is KeyID = k => {
   asKeyID(k)
 }
 
+const isObj = (o: unknown): o is Record<string, unknown> =>
+  !!o && typeof o === 'object'
+
 const maybeRecordStringString = (
   o: unknown,
 ): o is Record<string, string> | undefined =>
@@ -246,8 +249,7 @@ const isRecordStringT = <T>(
   o: unknown,
   check: (o: unknown) => boolean,
 ): o is Record<string, T> =>
-  !!o &&
-  typeof o === 'object' &&
+  isObj(o) &&
   Object.entries(o).every(
     ([k, v]) => typeof k === 'string' && check(v),
   )
@@ -269,20 +271,18 @@ const maybeBoolean = (o: unknown): o is boolean =>
   o === undefined || typeof o === 'boolean'
 
 const isPeerDependenciesMetaValue = (
-  o: any,
+  o: unknown,
 ): o is PeerDependenciesMetaValue =>
-  !!o && typeof o === 'object' && maybeBoolean(o.optional)
+  isObj(o) && maybeBoolean(o.optional)
 
 const maybeString = (a: unknown): a is string | undefined =>
   a === undefined || typeof a === 'string'
 
-const maybeDist = (a: any): a is Manifest['dist'] =>
-  a === undefined ||
-  (!!a && typeof a === 'object' && maybeString(a.tarball))
+const maybeDist = (a: unknown): a is Manifest['dist'] =>
+  a === undefined || (isObj(a) && maybeString(a.tarball))
 
-export const isManifest = (m: any): m is Manifest =>
-  !!m &&
-  typeof m === 'object' &&
+export const isManifest = (m: unknown): m is Manifest =>
+  isObj(m) &&
   !Array.isArray(m) &&
   maybeString(m.name) &&
   maybeString(m.version) &&
@@ -301,7 +301,7 @@ export const isManifestRegistry = (
 
 export const asManifest = (
   m: unknown,
-  from?: (...a: any[]) => any,
+  from?: (...a: unknown[]) => any,
 ): Manifest => {
   if (!isManifest(m)) {
     throw error('invalid manifest', { found: m }, from ?? asManifest)
@@ -311,7 +311,7 @@ export const asManifest = (
 
 export const asManifestRegistry = (
   m: unknown,
-  from?: (...a: any[]) => any,
+  from?: (...a: unknown[]) => any,
 ): ManifestRegistry => {
   if (!isManifestRegistry(m)) {
     throw error(
@@ -334,16 +334,16 @@ export const assertManifestRegistry: (
   asManifestRegistry(m, assertManifestRegistry)
 }
 
-export const isPackument = (p: any): p is Packument =>
-  !!p &&
-  typeof p === 'object' &&
-  typeof p.name === 'string' &&
-  isRecordStringString(p['dist-tags']) &&
-  isRecordStringManifest(p.versions) &&
-  maybeRecordStringString(p.time) &&
-  Object.values(p['dist-tags']).every(
-    v => !!p.versions[v] && p.versions[v].name == p.name,
+export const isPackument = (p: unknown): p is Packument => {
+  if (!isObj(p) || typeof p.name !== 'string') return false
+  const { versions, 'dist-tags': distTags, time } = p
+  return (
+    isRecordStringString(distTags) &&
+    isRecordStringManifest(versions) &&
+    maybeRecordStringString(time) &&
+    Object.values(distTags).every(v => versions[v]?.name == p.name)
   )
+}
 
 export const asPackument = (
   p: unknown,

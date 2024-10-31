@@ -56,7 +56,10 @@ export const useGraphStore = create<Action & State>(set => {
   // updates internal state anytime the browser URL changes
   window.addEventListener('popstate', (e: PopStateEvent): void => {
     if (!e.state) return
-    const { query, route } = e.state
+    const { query, route } = e.state as {
+      query?: string
+      route?: string
+    }
     if (query != null) {
       store.updateQuery(query)
     }
