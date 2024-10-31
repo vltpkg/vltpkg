@@ -10,12 +10,12 @@
  *
  * ```json
  * {
- * "registry": "https://registry.npmjs.org/",
- * "command": {
- * "publish": {
- * "registry": "http://registry.internal"
- * }
- * }
+ *   "registry": "https://registry.npmjs.org/",
+ *   "command": {
+ *     "publish": {
+ *       "registry": "http://registry.internal"
+ *     }
+ *   }
  * }
  * ```
  * @module
