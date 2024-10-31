@@ -1,12 +1,12 @@
-import t, { Test } from 'tap'
+import t, { type Test } from 'tap'
 import {
   definition,
-  LoadedConfig,
+  type LoadedConfig,
   recordsToPairs,
 } from '../../src/config/index.js'
 import { PackageJson } from '@vltpkg/package-json'
 import * as CP from 'node:child_process'
-import { SpawnOptions } from 'node:child_process'
+import { type SpawnOptions } from 'node:child_process'
 import { PathScurry } from 'path-scurry'
 
 const mockCommand = (t: Test, mocks?: Record<string, any>) =>

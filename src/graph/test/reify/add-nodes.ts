@@ -1,11 +1,11 @@
 import { joinDepIDTuple } from '@vltpkg/dep-id'
-import { PackageInfoClient } from '@vltpkg/package-info'
-import { RollbackRemove } from '@vltpkg/rollback-remove'
+import { type PackageInfoClient } from '@vltpkg/package-info'
+import { type RollbackRemove } from '@vltpkg/rollback-remove'
 import { Spec } from '@vltpkg/spec'
 import { resolve } from 'path'
 import { PathScurry } from 'path-scurry'
 import t from 'tap'
-import { Diff } from '../../src/diff.js'
+import { type Diff } from '../../src/diff.js'
 
 import { addNodes } from '../../src/reify/add-nodes.js'
 

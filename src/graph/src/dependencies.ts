@@ -1,4 +1,4 @@
-import type { DepID } from '@vltpkg/dep-id'
+import { type DepID } from '@vltpkg/dep-id'
 import { error } from '@vltpkg/error-cause'
 import { type Spec } from '@vltpkg/spec'
 import { type Manifest } from '@vltpkg/types'

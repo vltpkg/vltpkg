@@ -5,7 +5,7 @@ import {
   getSimpleGraph,
   getSingleWorkspaceGraph,
 } from './fixtures/graph.js'
-import { ParserState, PostcssNode } from '../src/types.js'
+import { type ParserState, type PostcssNode } from '../src/types.js'
 import { copyGraphSelectionState } from './fixtures/selector.js'
 
 type TestCase = [string, string[]]

@@ -1,11 +1,11 @@
 import { joinDepIDTuple } from '@vltpkg/dep-id'
-import { PackageInfoClient } from '@vltpkg/package-info'
-import { kCustomInspect, Spec, SpecOptions } from '@vltpkg/spec'
+import { type PackageInfoClient } from '@vltpkg/package-info'
+import { kCustomInspect, Spec, type SpecOptions } from '@vltpkg/spec'
 import { PathScurry } from 'path-scurry'
 import t from 'tap'
 import {
-  Dependency,
-  DependencyTypeShort,
+  type Dependency,
+  type DependencyTypeShort,
 } from '../../src/dependencies.js'
 import { Graph } from '../../src/graph.js'
 import { addNodes } from '../../src/ideal/add-nodes.js'

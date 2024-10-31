@@ -1,6 +1,6 @@
 import { lstatSync, readFileSync } from 'fs'
 import { resolve } from 'path'
-import t, { Test } from 'tap'
+import t, { type Test } from 'tap'
 import { Pax } from 'tar'
 import { gzipSync } from 'zlib'
 import { unpack } from '../dist/esm/unpack.js'

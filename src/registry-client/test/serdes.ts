@@ -1,5 +1,5 @@
 import * as v8 from 'node:v8'
-import t, { Test } from 'tap'
+import t, { type Test } from 'tap'
 
 const mockSerdes = async (t: Test) =>
   t.mockImport<typeof import('../src/serdes.js')>(

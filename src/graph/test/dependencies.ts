@@ -1,6 +1,6 @@
 import t from 'tap'
 import {
-  DependencyTypeLong,
+  type DependencyTypeLong,
   asDependency,
   asDependencyTypeShort,
   dependencyTypes,

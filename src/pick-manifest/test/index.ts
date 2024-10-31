@@ -1,7 +1,7 @@
 import { Range } from '@vltpkg/semver'
 import { Spec } from '@vltpkg/spec'
 import t from 'tap'
-import { Manifest, Packument } from '@vltpkg/types'
+import { type Manifest, type Packument } from '@vltpkg/types'
 import { pickManifest, platformCheck } from '../src/index.js'
 
 // don't need to run, just for typechecking

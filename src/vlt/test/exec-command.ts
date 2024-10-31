@@ -4,7 +4,7 @@ import './commands/run-exec.js'
 import './commands/run.js'
 
 import { exec, execFG } from '@vltpkg/run'
-import { LoadedConfig } from '../src/config/index.js'
+import { type LoadedConfig } from '../src/config/index.js'
 import { ExecCommand } from '../src/exec-command.js'
 
 const e = new ExecCommand(

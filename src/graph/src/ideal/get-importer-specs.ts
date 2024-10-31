@@ -1,18 +1,18 @@
 import { error } from '@vltpkg/error-cause'
 import {
-  AddImportersDependenciesMap,
-  Dependency,
-  RemoveImportersDependenciesMap,
+  type AddImportersDependenciesMap,
+  type Dependency,
+  type RemoveImportersDependenciesMap,
   longDependencyTypes,
 } from '../dependencies.js'
 import { removeSatisfiedSpecs } from './remove-satisfied-specs.js'
 import {
-  BuildIdealAddOptions,
-  BuildIdealFromGraphOptions,
-  BuildIdealRemoveOptions,
+  type BuildIdealAddOptions,
+  type BuildIdealFromGraphOptions,
+  type BuildIdealRemoveOptions,
 } from './types.js'
-import { Edge } from '../edge.js'
-import { Node } from '../node.js'
+import { type Edge } from '../edge.js'
+import { type Node } from '../node.js'
 import { type Graph } from '../graph.js'
 import { type DepID } from '@vltpkg/dep-id'
 

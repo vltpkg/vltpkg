@@ -1,4 +1,4 @@
-import { DepID, joinDepIDTuple } from '@vltpkg/dep-id'
+import { type DepID, joinDepIDTuple } from '@vltpkg/dep-id'
 import { Spec } from '@vltpkg/spec'
 import { Monorepo } from '@vltpkg/workspaces'
 import t from 'tap'

@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { State, Action } from './types.js'
+import { type State, type Action } from './types.js'
 
 export const DEFAULT_QUERY = ':project > *'
 
@@ -26,7 +26,7 @@ const initialState: State = {
  * to the rest of the app. Also defines a few useful default
  * values and integrates with browser history.
  */
-export const useGraphStore = create<State & Action>(set => {
+export const useGraphStore = create<Action & State>(set => {
   const store = {
     ...initialState,
     updateActiveRoute: (activeRoute: State['activeRoute']) =>

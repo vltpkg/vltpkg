@@ -1,5 +1,9 @@
 import { inspect } from 'node:util'
-import { EdgeLike, GraphLike, NodeLike } from '../types.js'
+import {
+  type EdgeLike,
+  type GraphLike,
+  type NodeLike,
+} from '../types.js'
 
 function parseNode(
   seenNodes: Set<NodeLike>,

@@ -1,9 +1,9 @@
 import { error } from '@vltpkg/error-cause'
-import { LoadedConfig } from '../config/index.js'
-import { PackageJson } from '@vltpkg/package-json'
+import { type LoadedConfig } from '../config/index.js'
+import { type PackageJson } from '@vltpkg/package-json'
 import * as dotProp from '@vltpkg/dot-prop'
-import { Manifest } from '@vltpkg/types'
-import { CliCommandUsage, CliCommandFn } from '../types.js'
+import { type Manifest } from '@vltpkg/types'
+import { type CliCommandUsage, type CliCommandFn } from '../types.js'
 import assert from 'assert'
 import { commandUsage } from '../config/usage.js'
 

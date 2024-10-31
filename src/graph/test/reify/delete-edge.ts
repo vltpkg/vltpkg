@@ -1,13 +1,13 @@
 import { joinDepIDTuple } from '@vltpkg/dep-id'
-import { RollbackRemove } from '@vltpkg/rollback-remove'
+import { type RollbackRemove } from '@vltpkg/rollback-remove'
 import { Spec } from '@vltpkg/spec'
 import { statSync } from 'fs'
 import { rm } from 'fs/promises'
 import { PathScurry } from 'path-scurry'
-import t, { Test } from 'tap'
+import t, { type Test } from 'tap'
 import { Edge } from '../../src/edge.js'
 import { Node } from '../../src/node.js'
-import { GraphLike } from '../../src/types.js'
+import { type GraphLike } from '../../src/types.js'
 
 const fooManifest = {
   name: 'foo',

@@ -1,5 +1,5 @@
 import { createServer } from 'http'
-import t, { Test } from 'tap'
+import t, { type Test } from 'tap'
 import { gzipSync } from 'zlib'
 import { RegistryClient } from '../src/index.js'
 

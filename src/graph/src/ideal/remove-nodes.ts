@@ -1,6 +1,6 @@
 import {
-  BuildIdealFromGraphOptions,
-  BuildIdealRemoveOptions,
+  type BuildIdealFromGraphOptions,
+  type BuildIdealRemoveOptions,
 } from './types.js'
 import { error } from '@vltpkg/error-cause'
 

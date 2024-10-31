@@ -1,4 +1,4 @@
-import t, { Test } from 'tap'
+import t, { type Test } from 'tap'
 import { ESLint } from 'eslint'
 import globals from 'globals'
 import { relative, sep, join } from 'path'

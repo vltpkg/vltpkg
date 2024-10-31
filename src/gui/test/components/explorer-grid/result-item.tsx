@@ -7,10 +7,10 @@ import {
 } from '@testing-library/react'
 import html from 'diffable-html'
 import { joinDepIDTuple } from '@vltpkg/dep-id'
-import type { NodeLike } from '@vltpkg/graph'
+import { type NodeLike } from '@vltpkg/graph'
 import { useGraphStore as useStore } from '@/state/index.js'
 import { ResultItem } from '@/components/explorer-grid/result-item.jsx'
-import { GridItemData } from '@/components/explorer-grid/types.js'
+import { type GridItemData } from '@/components/explorer-grid/types.js'
 
 expect.addSnapshotSerializer({
   serialize: v => html(v),

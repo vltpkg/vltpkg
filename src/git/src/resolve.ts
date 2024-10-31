@@ -1,4 +1,4 @@
-import { RevDoc } from '@vltpkg/types'
+import { type RevDoc } from '@vltpkg/types'
 import { pickManifest } from '@vltpkg/pick-manifest'
 import { type GitOptions } from './index.js'
 import { revs } from './revs.js'

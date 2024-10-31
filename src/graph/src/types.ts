@@ -1,10 +1,9 @@
-import type { DepID } from '@vltpkg/dep-id'
-import type { Manifest } from '@vltpkg/types'
-import type { Spec } from '@vltpkg/spec'
-import type { SpecLikeBase } from '@vltpkg/spec'
-import type { DependencyTypeShort } from './dependencies.js'
+import { type DepID } from '@vltpkg/dep-id'
+import { type Manifest } from '@vltpkg/types'
+import { type Spec, type SpecLikeBase } from '@vltpkg/spec'
+import { type DependencyTypeShort } from './dependencies.js'
 
-export interface EdgeLike {
+export type EdgeLike = {
   name: string
   from: NodeLike
   spec: SpecLikeBase
@@ -12,7 +11,7 @@ export interface EdgeLike {
   type: DependencyTypeShort
 }
 
-export interface GraphLike {
+export type GraphLike = {
   importers: Set<NodeLike>
   mainImporter: NodeLike
   projectRoot: string
@@ -33,7 +32,7 @@ export interface GraphLike {
   ) => NodeLike
 }
 
-export interface NodeLike {
+export type NodeLike = {
   id: DepID
   edgesIn: Set<EdgeLike>
   edgesOut: Map<string, EdgeLike>

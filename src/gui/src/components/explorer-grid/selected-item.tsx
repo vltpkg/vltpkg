@@ -1,5 +1,5 @@
 import { splitDepID } from '@vltpkg/dep-id/browser'
-import { SpecOptionsFilled } from '@vltpkg/spec/browser'
+import { type SpecOptionsFilled } from '@vltpkg/spec/browser'
 import {
   Card,
   CardDescription,
@@ -7,7 +7,7 @@ import {
   CardTitle,
 } from '@/components/ui/card.jsx'
 import { useGraphStore } from '@/state/index.js'
-import { GridItemData, GridItemOptions } from './types.js'
+import { type GridItemData, type GridItemOptions } from './types.js'
 
 const getItemOrigin = ({
   item,

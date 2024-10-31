@@ -1,5 +1,5 @@
 import { joinDepIDTuple } from '@vltpkg/dep-id'
-import { Spec, SpecOptions } from '@vltpkg/spec'
+import { Spec, type SpecOptions } from '@vltpkg/spec'
 import { Monorepo } from '@vltpkg/workspaces'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'

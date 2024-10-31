@@ -1,6 +1,6 @@
 import t from 'tap'
-import { LoadedConfig } from '../../src/config/index.js'
-import type { StartGUIOptions } from '../../src/start-gui.js'
+import { type LoadedConfig } from '../../src/config/index.js'
+import { type StartGUIOptions } from '../../src/start-gui.js'
 
 t.test('starts gui data and server', async t => {
   let startGUIOptions: StartGUIOptions | undefined

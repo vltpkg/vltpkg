@@ -1,5 +1,5 @@
-import { Diff } from '../diff.js'
-import { Node } from '../node.js'
+import { type Diff } from '../diff.js'
+import { type Node } from '../node.js'
 import { removeOptionalSubgraph } from '../remove-optional-subgraph.js'
 
 /**

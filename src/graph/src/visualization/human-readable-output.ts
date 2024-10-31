@@ -1,6 +1,6 @@
 import { splitDepID } from '@vltpkg/dep-id'
-import { EdgeLike, NodeLike } from '../types.js'
-import type { ChalkInstance } from 'chalk'
+import { type EdgeLike, type NodeLike } from '../types.js'
+import { type ChalkInstance } from 'chalk'
 
 const chars = new Map(
   Object.entries({

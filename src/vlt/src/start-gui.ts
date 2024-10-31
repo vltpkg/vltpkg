@@ -5,16 +5,19 @@ import {
   rmSync,
   writeFileSync,
 } from 'node:fs'
-import { Server, createServer } from 'node:http'
+import { type Server, createServer } from 'node:http'
 import { resolve } from 'node:path'
 import { tmpdir } from 'node:os'
 import { actual } from '@vltpkg/graph'
 import handler from 'serve-handler'
 import opener from 'opener'
-import { PathScurry, PathBase } from 'path-scurry'
+import { type PathScurry, type PathBase } from 'path-scurry'
 import { readProjectFolders } from './read-project-folders.js'
-import type { Manifest } from '@vltpkg/types'
-import type { ConfigOptions, LoadedConfig } from './config/index.js'
+import { type Manifest } from '@vltpkg/types'
+import {
+  type ConfigOptions,
+  type LoadedConfig,
+} from './config/index.js'
 import { stderr, stdout } from './output.js'
 
 const HOST = 'localhost'

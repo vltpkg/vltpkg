@@ -1,8 +1,8 @@
 // given a RegistryClientOptions object, and a redirection response,
 
 import { error } from '@vltpkg/error-cause'
-import { CacheEntry } from './cache-entry.js'
-import { RegistryClientRequestOptions } from './index.js'
+import { type CacheEntry } from './cache-entry.js'
+import { type RegistryClientRequestOptions } from './index.js'
 
 export type RedirectStatus = 301 | 302 | 303 | 307 | 308
 

@@ -1,9 +1,9 @@
 import { Range } from '@vltpkg/semver'
-import { InspectOptions, inspect } from 'node:util'
+import { type InspectOptions, inspect } from 'node:util'
 import t from 'tap'
 import {
   kCustomInspect,
-  Scope,
+  type Scope,
   type SpecOptions,
   Spec,
 } from '../src/browser.js'

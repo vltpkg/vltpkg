@@ -1,14 +1,17 @@
-import { PackageInfoClient } from '@vltpkg/package-info'
+import { type PackageInfoClient } from '@vltpkg/package-info'
 import { RollbackRemove } from '@vltpkg/rollback-remove'
 import { availableParallelism } from 'node:os'
 import { callLimit } from 'promise-call-limit'
-import { load as loadActual, LoadOptions } from '../actual/load.js'
 import {
-  AddImportersDependenciesMap,
-  RemoveImportersDependenciesMap,
+  load as loadActual,
+  type LoadOptions,
+} from '../actual/load.js'
+import {
+  type AddImportersDependenciesMap,
+  type RemoveImportersDependenciesMap,
 } from '../dependencies.js'
 import { Diff } from '../diff.js'
-import { Graph } from '../graph.js'
+import { type Graph } from '../graph.js'
 import { lockfile } from '../index.js'
 import {
   lockfileData,

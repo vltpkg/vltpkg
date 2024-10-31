@@ -1,5 +1,5 @@
-import type { LoadedConfig } from './config/index.js'
-import type { Jack } from 'jackspeak'
+import { type LoadedConfig } from './config/index.js'
+import { type Jack } from 'jackspeak'
 
 export type * from './config/index.js'
 

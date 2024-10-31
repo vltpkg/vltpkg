@@ -27,7 +27,11 @@ import { Monorepo } from '@vltpkg/workspaces'
 import { XDG } from '@vltpkg/xdg'
 import { readFileSync, rmSync, writeFileSync } from 'fs'
 import { lstat, mkdir, readFile, writeFile } from 'fs/promises'
-import { Jack, OptionsResults, Unwrap } from 'jackspeak'
+import {
+  type Jack,
+  type OptionsResults,
+  type Unwrap,
+} from 'jackspeak'
 import { homedir } from 'os'
 import { dirname, resolve } from 'path'
 import { PathScurry } from 'path-scurry'
@@ -43,7 +47,7 @@ import {
   definition,
   getCommand,
   isRecordField,
-  RecordField,
+  type RecordField,
   recordFields,
   type Commands,
 } from './definition.js'

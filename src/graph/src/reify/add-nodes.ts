@@ -1,10 +1,10 @@
 import { hydrate } from '@vltpkg/dep-id'
-import { PackageInfoClient } from '@vltpkg/package-info'
+import { type PackageInfoClient } from '@vltpkg/package-info'
 import { platformCheck } from '@vltpkg/pick-manifest'
-import { RollbackRemove } from '@vltpkg/rollback-remove'
-import { SpecOptions } from '@vltpkg/spec'
-import { PathScurry } from 'path-scurry'
-import { Diff } from '../diff.js'
+import { type RollbackRemove } from '@vltpkg/rollback-remove'
+import { type SpecOptions } from '@vltpkg/spec'
+import { type PathScurry } from 'path-scurry'
+import { type Diff } from '../diff.js'
 import { optionalFail } from './optional-fail.js'
 
 export const addNodes = (

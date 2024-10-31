@@ -1,4 +1,4 @@
-import type { IncomingMessage } from 'http'
+import { type IncomingMessage } from 'http'
 
 /**
  * Codification of vlt's Error.cause conventions

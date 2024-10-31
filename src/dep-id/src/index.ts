@@ -1,6 +1,6 @@
 import { error } from '@vltpkg/error-cause'
-import { Spec, SpecOptions } from '@vltpkg/spec'
-import { Manifest } from '@vltpkg/types'
+import { Spec, type SpecOptions } from '@vltpkg/spec'
+import { type Manifest } from '@vltpkg/types'
 
 export const delimiter: Delimiter = '·'
 export type Delimiter = '·'

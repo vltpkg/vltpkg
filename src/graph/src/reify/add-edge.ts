@@ -1,9 +1,9 @@
-import { RollbackRemove } from '@vltpkg/rollback-remove'
-import { Manifest } from '@vltpkg/types'
+import { type RollbackRemove } from '@vltpkg/rollback-remove'
+import { type Manifest } from '@vltpkg/types'
 import { mkdir, symlink } from 'fs/promises'
 import { dirname, relative } from 'path'
-import { PathScurry } from 'path-scurry'
-import { Edge } from '../edge.js'
+import { type PathScurry } from 'path-scurry'
+import { type Edge } from '../edge.js'
 import { binPaths } from './bin-paths.js'
 
 const clobberSymlink = async (

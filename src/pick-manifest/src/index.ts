@@ -2,10 +2,10 @@ import { error } from '@vltpkg/error-cause'
 import { parse, Range, satisfies, Version } from '@vltpkg/semver'
 import { Spec } from '@vltpkg/spec'
 import {
-  Manifest,
-  Packument,
-  RevDoc,
-  RevDocEntry,
+  type Manifest,
+  type Packument,
+  type RevDoc,
+  type RevDocEntry,
 } from '@vltpkg/types'
 
 const parsedNodeVersion = Version.parse(process.version)

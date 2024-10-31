@@ -6,7 +6,7 @@ import {
   parseAddArgs,
   parseRemoveArgs,
 } from '../src/parse-add-remove-args.js'
-import { LoadedConfig, ConfigData } from '../src/types.js'
+import { type LoadedConfig, type ConfigData } from '../src/types.js'
 
 class MockConfig {
   values: Record<string, any> = {}

@@ -1,5 +1,9 @@
 import { error } from '@vltpkg/error-cause'
-import type { EdgeLike, GraphLike, NodeLike } from '@vltpkg/graph'
+import {
+  type EdgeLike,
+  type GraphLike,
+  type NodeLike,
+} from '@vltpkg/graph'
 import postcssSelectorParser from 'postcss-selector-parser'
 import { attribute } from './attribute.js'
 import { classFn } from './class.js'
@@ -13,7 +17,7 @@ import {
   isPostcssNodeWithChildren,
   asPostcssNodeWithChildren,
   isSelectorNode,
-  QueryResponse,
+  type QueryResponse,
 } from './types.js'
 
 export * from './types.js'

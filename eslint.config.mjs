@@ -4,6 +4,7 @@ import globals from 'globals'
 import { readFileSync } from 'fs'
 import { resolve } from 'path'
 import jsdoc from 'eslint-plugin-jsdoc'
+import importPlugin from 'eslint-plugin-import'
 
 // 'error' to fix, or 'warn' to see
 const BE_EXTRA = process.env.LINT_SUPER_CONSISTENT ?? 'off'
@@ -24,6 +25,8 @@ export default tseslint.config(
   ...tseslint.configs.strictTypeChecked,
   ...tseslint.configs.stylisticTypeChecked,
   jsdoc.configs['flat/recommended-error'],
+  importPlugin.flatConfigs.recommended,
+  importPlugin.flatConfigs.typescript,
   {
     plugins: { jsdoc },
     languageOptions: {
@@ -33,6 +36,12 @@ export default tseslint.config(
       },
       globals: {
         ...globals.node,
+      },
+    },
+    settings: {
+      'import/resolver': {
+        typescript: true,
+        node: true,
       },
     },
     rules: {
@@ -110,7 +119,6 @@ export default tseslint.config(
           message: "Don't declare enums",
         },
       ],
-
       /**
        * These rules should be turned on at some point in the future but are too much work currently.
        */
@@ -124,7 +132,6 @@ export default tseslint.config(
       '@typescript-eslint/no-unsafe-return': 'off',
       // TODO: turn this on
       '@typescript-eslint/class-literal-property-style': 'off',
-
       /**
        * These rules were turned on originally for their autofixing capabilities and to start
        * from a consistent baseline, but keeping them on creates too much friction day-to-day.
@@ -132,7 +139,11 @@ export default tseslint.config(
        */
       // prefer Record<string,string> over { [k: string]: string }
       '@typescript-eslint/consistent-indexed-object-style': [
-        BE_EXTRA,
+        /**
+         * This is not worth the consistency so it is now always off. We use
+         * recursive types which break when autofixed to Record, and mapped
+         * types provide a name for the key which is nice in many cases.
+         */ 0,
         'record',
       ],
       // prefer type over interface but force consistent use of one
@@ -148,7 +159,20 @@ export default tseslint.config(
           checkUnions: false,
         },
       ],
-      //jsdoc
+      // use inline type imports
+      '@typescript-eslint/consistent-type-imports': [
+        2,
+        {
+          disallowTypeAnnotations: false,
+          fixStyle: 'inline-type-imports',
+        },
+      ],
+      'import/no-duplicates': ['error', { 'prefer-inline': true }],
+      'import/consistent-type-specifier-style': [2, 'prefer-inline'],
+      // eslint-plugin-import
+      'import/no-named-as-default': 0,
+      'import/no-named-as-default-member': 0,
+      // eslint-plugin-jsdoc
       'jsdoc/no-undefined-types': 2,
       'jsdoc/require-param': 0,
       'jsdoc/require-returns': 0,
@@ -203,10 +227,11 @@ export default tseslint.config(
     },
   },
   {
-    files: ['src/gui/src/**/*.tsx'],
+    files: ['{src/gui,www/docs}/{src,test}/**/*.{tsx,ts}'],
     rules: {
+      // TODO: get eslint import resolver working with workspace tsconfig paths
+      'import/no-unresolved': 'off',
       // shadcn-ui specific patterns
-      '@typescript-eslint/no-unsafe-call': 'off',
       '@typescript-eslint/no-empty-object-type': 'off',
     },
   },

@@ -1,4 +1,4 @@
-import type { EdgeLike, NodeLike } from '@vltpkg/graph'
+import { type EdgeLike, type NodeLike } from '@vltpkg/graph'
 import {
   type ParserState,
   type ParserFn,

@@ -1,4 +1,4 @@
-import t, { Test } from 'tap'
+import t, { type Test } from 'tap'
 
 const build = async (t: Test, ...argv: string[]) => {
   const dir = t.testdir()

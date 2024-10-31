@@ -1,4 +1,4 @@
-import type { EdgeLike } from '@vltpkg/graph'
+import { type EdgeLike } from '@vltpkg/graph'
 
 /**
  * A looser representation of an edge, it contains optional properties that

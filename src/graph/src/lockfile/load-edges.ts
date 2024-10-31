@@ -6,11 +6,11 @@ import {
   isDependencyTypeShort,
   longDependencyTypes,
 } from '../dependencies.js'
-import type { GraphLike } from '../types.js'
+import { type GraphLike } from '../types.js'
 import {
-  LockfileData,
-  LockfileEdgeKey,
-  LockfileEdgeValue,
+  type LockfileData,
+  type LockfileEdgeKey,
+  type LockfileEdgeValue,
 } from './types.js'
 
 export const loadEdges = (
