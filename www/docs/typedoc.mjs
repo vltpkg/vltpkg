@@ -71,5 +71,8 @@ export default {
     'path-scurry': {
       '*': 'https://isaacs.github.io/path-scurry/',
     },
+    'lru-cache': {
+      '*': 'https://isaacs.github.io/node-lru-cache/',
+    },
   },
 }

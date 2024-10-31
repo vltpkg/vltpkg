@@ -33,7 +33,6 @@ export default cwd => {
     excludeInternal: true,
     excludePrivate: true,
     excludeProtected: true,
-    excludeExternals: true,
     readme: join(cwd, './README.md'),
     entryPoints: Object.values(exports ?? {})
       .filter(p => !p.endsWith('package.json'))
