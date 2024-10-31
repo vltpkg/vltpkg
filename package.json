@@ -11,6 +11,7 @@
     "@vltpkg/benchmark": "workspace:*",
     "chalk": "catalog:",
     "eslint": "catalog:",
+    "eslint-plugin-jsdoc": "^50.4.3",
     "globals": "^15.9.0",
     "prettier": "catalog:",
     "prettier-plugin-astro": "^0.14.1",

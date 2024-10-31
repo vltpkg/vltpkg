@@ -10,7 +10,6 @@
  * This is only relevant when renaming *directories*, since files will
  * generally not raise problems. When/if we rename directories outside of
  * package-info, this can be moved to its own shared module.
- *
  * @module
  */
 const { platform } = process

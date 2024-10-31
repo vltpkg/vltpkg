@@ -9,6 +9,7 @@ import {
   type DependencyTypeLong,
   type DependencyTypeShort,
   longDependencyTypes,
+  type Dependency,
 } from '../dependencies.js'
 
 const SAVE_PREFIX = '^'

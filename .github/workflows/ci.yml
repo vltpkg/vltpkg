@@ -40,45 +40,58 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
-      # These don't need to be recursive since the root is setup to lint all files
-      - name: Run Style Linting
+      # TODO: if the lint job starts to take too long, it can be sped up
+      # by making any of the steps operate on only changed workspaces.
+      # For now any steps that dont use filters are run from the root
+      # on all workspaces.
+      - name: Formatting
         run: pnpm run format:check
-        id: style
+        id: format
         continue-on-error: true
 
-      - name: Run Code Linting
+      - name: Linting
         run: pnpm run lint:check
-        id: code
+        id: lint
         continue-on-error: true
 
-      - name: Check Dependencies
+      - name: Dependencies
         run: node ./scripts/check-deps.js
         id: deps
         continue-on-error: true
 
-      - name: Check Packages
+      - name: Docs
+        run: pnpm -F docs typedoc:check
+        id: docs
+        continue-on-error: true
+
+      - name: Consistent Workspaces
         run: |
           node ./scripts/consistent-package-json.js
           if [ -n "$(git status --porcelain)" ]; then
             git diff
             exit 1
           fi
-        id: pkg
+        id: workspaces
         continue-on-error: true
 
       - name: Check Results
         run: |
-          STYLE="${{ steps.style.outcome }}"
-          CODE="${{ steps.code.outcome }}"
-          DEPS="${{ steps.deps.outcome }}"
-          PKG="${{ steps.pkg.outcome }}"
-          echo "Style: $STYLE"
-          echo "Code: $CODE"
-          echo "Dependencies: $DEPS"
-          echo "Packages: $PKG"
-          if [ "${STYLE}_${CODE}_${DEPS}_${PKG}" != "success_success_success_success" ]; then
-            exit 1
-          fi
+          declare -A OUTCOMES=(
+            [format]="${{ steps.format.outcome }}"
+            [lint]="${{ steps.lint.outcome }}"
+            [deps]="${{ steps.deps.outcome }}"
+            [docs]="${{ steps.docs.outcome }}"
+            [workspaces]="${{ steps.workspaces.outcome }}"
+          )
+          STATUS=0
+          for STEP in "${!OUTCOMES[@]}"; do
+            OUTCOME="${OUTCOMES[$STEP]}"
+            echo "$STEP: $OUTCOME"
+            if [ "$OUTCOME" != "success" ]; then
+              STATUS=1
+            fi
+          done
+          exit $STATUS
 
   test:
     name: Test - ${{ matrix.platform.name }} - ${{ matrix.node-version }}

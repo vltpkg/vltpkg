@@ -13,6 +13,8 @@ import {
 } from './types.js'
 import { Edge } from '../edge.js'
 import { Node } from '../node.js'
+import { type Graph } from '../graph.js'
+import { type DepID } from '@vltpkg/dep-id'
 
 export type GetImporterSpecsOptions = BuildIdealAddOptions &
   BuildIdealFromGraphOptions &

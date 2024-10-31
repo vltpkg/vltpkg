@@ -13,18 +13,17 @@ export type Delimiter = '·'
  *
  * - `registry`: `'registry·<registry>·name@specifier'`
  *   The `<registry>` portion can be a known named registry name, or a
- *   url to a registry. If empty, it is the default registry.
- *   Examples:
+ *   url to a registry. If empty, it is the default registry. Examples:
  *   - `··some-package@2.0.1`
- *   - `·npm·whatever@1.2.3'
+ *   - `·npm·whatever@1.2.3`
  *   - `·http%3A%2F%2Fvlt.sh%2F·x@1.2.3`
- * - `git`: `'git·<git remote>·<git selector>`. For example:
+ * - `git`: `'git·<git remote>·<git selector>'`. For example:
  *   - `git·github:user/project·branchname`
  *   - `git·git%2Bssh%3A%2F%2Fuser%40host%3Aproject.git·semver:1.x`
- * - `workspace`: `'workspace·<path>`. For example:
+ * - `workspace`: `'workspace·<path>'`. For example:
  *   - `workspace·src/mything`
  * - `remote`: `'remote·<url>'`
- * - `file`: `'file·<path>`
+ * - `file`: `'file·<path>'`
  *
  * Lastly, the final portion can contain arbitrary string data, and is
  * used to store peer dep resolutions to maintain the peerDep contract.

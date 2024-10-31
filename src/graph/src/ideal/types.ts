@@ -1,9 +1,11 @@
 import {
   AddImportersDependenciesMap,
   RemoveImportersDependenciesMap,
+  Dependency,
 } from '../dependencies.js'
 import { Graph } from '../graph.js'
 import { PackageInfoClient } from '@vltpkg/package-info'
+import { type DepID } from '@vltpkg/dep-id'
 
 export type BuildIdealAddOptions = {
   /**

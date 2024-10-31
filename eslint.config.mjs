@@ -3,6 +3,7 @@ import tseslint from 'typescript-eslint'
 import globals from 'globals'
 import { readFileSync } from 'fs'
 import { resolve } from 'path'
+import jsdoc from 'eslint-plugin-jsdoc'
 
 // 'error' to fix, or 'warn' to see
 const BE_EXTRA = process.env.LINT_SUPER_CONSISTENT ?? 'off'
@@ -22,7 +23,9 @@ export default tseslint.config(
   eslint.configs.recommended,
   ...tseslint.configs.strictTypeChecked,
   ...tseslint.configs.stylisticTypeChecked,
+  jsdoc.configs['flat/recommended-error'],
   {
+    plugins: { jsdoc },
     languageOptions: {
       parserOptions: {
         projectService: true,
@@ -36,7 +39,7 @@ export default tseslint.config(
       /**
        * All the following rules are changed from the defaults set by the eslint and tseslint
        * installed configs. The comments above each one are the reason the default has been changed.
-       *  */
+       */
       // allow empty catch blocks
       'no-empty': ['error', { allowEmptyCatch: true }],
       // dont force it when destructuring some mutable vars
@@ -107,9 +110,10 @@ export default tseslint.config(
           message: "Don't declare enums",
         },
       ],
+
       /**
        * These rules should be turned on at some point in the future but are too much work currently.
-       *  */
+       */
       // TODO: doesn't play well with how we pass instance methods to error() to capture stack traces
       '@typescript-eslint/unbound-method': 'off',
       // TODO: these rules have to do with unsafe usage of `any`
@@ -120,6 +124,7 @@ export default tseslint.config(
       '@typescript-eslint/no-unsafe-return': 'off',
       // TODO: turn this on
       '@typescript-eslint/class-literal-property-style': 'off',
+
       /**
        * These rules were turned on originally for their autofixing capabilities and to start
        * from a consistent baseline, but keeping them on creates too much friction day-to-day.
@@ -143,6 +148,14 @@ export default tseslint.config(
           checkUnions: false,
         },
       ],
+      //jsdoc
+      'jsdoc/no-undefined-types': 2,
+      'jsdoc/require-param': 0,
+      'jsdoc/require-returns': 0,
+      'jsdoc/require-yields': 0,
+      'jsdoc/require-param-description': 0,
+      'jsdoc/require-returns-description': 0,
+      'jsdoc/require-jsdoc': 0,
     },
   },
   {

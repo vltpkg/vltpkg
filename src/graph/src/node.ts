@@ -12,6 +12,7 @@ import { DependencyTypeShort } from './dependencies.js'
 import { Edge } from './edge.js'
 import { GraphLike, NodeLike } from './types.js'
 import { stringifyNode } from './stringify-node.js'
+import { type PackageInfoClient } from '@vltpkg/package-info'
 
 export type NodeOptions = SpecOptions & {
   projectRoot: string

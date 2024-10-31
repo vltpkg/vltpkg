@@ -1,6 +1,6 @@
 {
   "name": "@vltpkg/docs",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "private": true,
   "dependencies": {
     "@astrojs/check": "^0.9.4",
@@ -25,12 +25,12 @@
     "react": "catalog:",
     "react-dom": "catalog:",
     "sharp": "^0.33.5",
-    "typedoc": "^0.26.10",
-    "typedoc-plugin-frontmatter": "^1.0.0",
-    "typedoc-plugin-markdown": "^4.2.9",
     "tailwind-merge": "catalog:",
     "tailwindcss": "catalog:",
     "tailwindcss-animate": "catalog:",
+    "typedoc": "^0.26.10",
+    "typedoc-plugin-frontmatter": "^1.0.0",
+    "typedoc-plugin-markdown": "^4.2.9",
     "typescript": "catalog:",
     "vite": "6.0.0-beta.2"
   },
@@ -40,7 +40,10 @@
     "@types/node": "catalog:",
     "eslint": "catalog:",
     "prettier": "catalog:",
+    "typedoc-plugin-remark": "^1.0.3",
+    "typescript": "catalog:",
     "typescript-eslint": "catalog:",
+    "unified-prettier": "^2.0.1",
     "vitest": "catalog:"
   },
   "license": "BSD-2-Clause-Patent",
@@ -51,6 +54,7 @@
     "astro": "astro",
     "build": "astro check && astro build",
     "dev": "astro dev",
+    "dev:rebuild": "rm -rf src/content/docs/packages/ && astro dev",
     "format": "prettier --write . --log-level warn --ignore-path ../../.prettierignore --cache",
     "format:check": "prettier --check . --ignore-path ../../.prettierignore --cache",
     "lint": "eslint . --fix",
@@ -58,6 +62,7 @@
     "snap": "vitest --no-watch -u",
     "start": "astro dev",
     "test": "vitest",
+    "typedoc:check": "typedoc --validation.notExported --validation.invalidLink #FIXME --treatValidationWarningsAsErrors",
     "preview": "astro preview"
   },
   "prettier": "../../.prettierrc.js",

@@ -6,10 +6,12 @@ import {
 import {
   AddImportersDependenciesMap,
   RemoveImportersDependenciesMap,
+  type Dependency,
 } from '../dependencies.js'
 import { Graph } from '../graph.js'
 import { load as loadVirtual } from '../lockfile/load.js'
 import { buildIdealFromStartingGraph } from './build-ideal-from-starting-graph.js'
+import { type DepID } from '@vltpkg/dep-id'
 
 export type BuildIdealOptions = LoadActualOptions & {
   /**

@@ -16,7 +16,6 @@ export { type CacheEntry }
 export type RegistryClientOptions = {
   /**
    * Path on disk where the cache should be stored
-   *
    * @default `$HOME/.config/vlt/cache`
    */
   cache?: string
@@ -57,7 +56,6 @@ export type RegistryClientRequestOptions = Omit<
   /**
    * the number of redirections that have already been seen. This is used
    * internally, and should always start at 0.
-   *
    * @internal
    */
   redirections?: Set<string>

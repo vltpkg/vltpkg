@@ -31,6 +31,10 @@ export default defineConfig({
         '@fontsource-variable/manrope/index.css',
         './src/styles/globals.css',
       ],
+      tableOfContents: {
+        minHeadingLevel: 2,
+        maxHeadingLevel: 5,
+      },
       plugins: [
         {
           name: 'typedoc',
