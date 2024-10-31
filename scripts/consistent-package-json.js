@@ -18,12 +18,15 @@ import minVersion from 'semver/ranges/min-version.js'
 
 const ROOT = resolve(import.meta.dirname, '..')
 
-const parseRangeFromSpec = spec =>
-  spec === 'workspace:*' ? null : (
-    minVersion(
-      validRange(spec) ? spec : Spec.parseArgs(spec).subspec.semver,
-    ).version
-  )
+const parseRangeFromSpec = spec => {
+  let range = validRange(spec) ? spec : null
+  if (!range) {
+    try {
+      range = Spec.parseArgs(spec).subspec.semver
+    } catch {}
+  }
+  return range ? minVersion(range).version : null
+}
 
 const skipCatalog = ({ name, spec, from, type }) => {
   // An fake example so I don't have to remember what to type next time
