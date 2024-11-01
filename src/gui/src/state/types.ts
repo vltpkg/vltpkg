@@ -6,13 +6,17 @@ import type {
 } from '@vltpkg/graph'
 import type { Query } from '@vltpkg/query'
 import type { SpecOptionsFilled } from '@vltpkg/spec/browser'
-import { Integrity, Manifest } from '@vltpkg/types'
+import type { Integrity, Manifest } from '@vltpkg/types'
 
 export type Action = {
+  updateActiveRoute: (route: State['activeRoute']) => void
+  updateDashboard: (dashboard: State['dashboard']) => void
   updateGraph: (graph: State['graph']) => void
   updateQ: (q: State['q']) => void
   updateQuery: (query: State['query']) => void
   updateEdges: (edges: State['edges']) => void
+  updateErrorCause: (errorCause: State['errorCause']) => void
+  updateHasDashboard: (hasDashboard: State['hasDashboard']) => void
   updateNodes: (nodes: State['nodes']) => void
   updateSelectedNode: (node: State['selectedNode']) => void
   updateSpecOptions: (specOptions: State['specOptions']) => void
@@ -47,6 +51,14 @@ export type RawNode = {
  */
 export type State = {
   /**
+   * The current location.pathname (e.g. route) in the app.
+   */
+  activeRoute: string
+  /**
+   * List of projects to be displayed in the dashboard.
+   */
+  dashboard?: DashboardData[]
+  /**
    * Current graph to be explored.
    */
   graph?: GraphLike
@@ -54,6 +66,14 @@ export type State = {
    * List of selected edges returned after querying the graph.
    */
   edges: EdgeLike[]
+  /**
+   * An informative message to be displayed when an error occurs.
+   */
+  errorCause: string
+  /**
+   * Whether the dashboard is enabled or not.
+   */
+  hasDashboard: boolean
   /**
    * List of selected nodes returned after querying the graph.
    */
@@ -78,4 +98,22 @@ export type State = {
    * A random string to control when graph data should be reloaded.
    */
   stamp: string
+}
+
+export type DashboardTools =
+  | 'vlt'
+  | 'node'
+  | 'deno'
+  | 'bun'
+  | 'npm'
+  | 'pnpm'
+  | 'yarn'
+  | 'js'
+
+export type DashboardData = {
+  name: string
+  path: string
+  manifest: Manifest
+  tools: DashboardTools[]
+  mtime?: number | null
 }

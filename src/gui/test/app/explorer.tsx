@@ -1,10 +1,21 @@
-import { test, assert, expect, vi, afterEach } from 'vitest'
+import {
+  test,
+  assert,
+  expect,
+  vi,
+  afterAll,
+  afterEach,
+  beforeAll,
+} from 'vitest'
+import { setupServer } from 'msw/node'
+import { http, HttpResponse } from 'msw'
 import type { Query } from '@vltpkg/query'
 import type { EdgeLike, GraphLike, NodeLike } from '@vltpkg/graph'
 import { cleanup, render } from '@testing-library/react'
 import html from 'diffable-html'
 import { useGraphStore as useStore } from '@/state/index.js'
 import { Explorer } from '@/app/explorer.jsx'
+import { joinDepIDTuple } from '@vltpkg/dep-id/browser'
 
 vi.mock('@/components/search-bar.jsx', () => ({
   SearchBar: 'gui-search-bar',
@@ -25,16 +36,44 @@ vi.mock('@/components/explorer-grid/index.jsx', () => ({
   ExplorerGrid: 'gui-explorer-grid',
 }))
 
+export const restHandlers = [
+  http.get('/graph.json', () => {
+    return HttpResponse.json({
+      importers: [
+        {
+          id: joinDepIDTuple(['file', '.']),
+          name: 'root',
+          version: '1.0.0',
+          mainImporter: true,
+          importer: true,
+          location: '.',
+          dev: false,
+          optional: false,
+          manifest: { name: 'root', version: '1.0.0' },
+        },
+      ],
+      lockfile: { options: {}, nodes: [], edges: [] },
+    })
+  }),
+]
+
+const server = setupServer(...restHandlers)
+
 expect.addSnapshotSerializer({
   serialize: v => html(v),
   test: () => true,
 })
 
+beforeAll(() => server.listen())
+
 afterEach(() => {
+  server.resetHandlers()
   const CleanUp = () => (useStore(state => state.reset)(), '')
   render(<CleanUp />)
   cleanup()
 })
+
+afterAll(() => server.close())
 
 test('render default', async () => {
   render(<Explorer />)

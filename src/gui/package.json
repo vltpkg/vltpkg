@@ -37,6 +37,7 @@
     "esbuild": "catalog:",
     "eslint": "catalog:",
     "jsdom": "^25.0.1",
+    "msw": "^2.6.0",
     "prettier": "catalog:",
     "tailwindcss": "catalog:",
     "typescript": "catalog:",
