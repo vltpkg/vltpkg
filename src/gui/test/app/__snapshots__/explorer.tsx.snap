@@ -3,86 +3,287 @@
 exports[`explorer has project root info 1`] = `
 
 <div>
-  <div class="grid grid-cols-7 gap-4 py-2 border-b">
-    <gui-logo classname="col-span-2 p-8">
-    </gui-logo>
-    <div class="col-span-5 relative pt-6 pb-1">
-      <gui-title classname="mt-2 -ml-24 pr-2 absolute">
-        Explore
-      </gui-title>
-      <div class="flex">
-        <gui-search-bar>
-        </gui-search-bar>
-        <button
-          class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&amp;_svg]:pointer-events-none [&amp;_svg]:size-4 [&amp;_svg]:shrink-0 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 w-10"
-          type="button"
-          id="radix-:r2:"
-          aria-haspopup="menu"
-          aria-expanded="false"
-          data-state="closed"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            viewbox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            class="lucide lucide-sun h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0"
-          >
-            <circle
-              cx="12"
-              cy="12"
-              r="4"
+  <section class="flex grow flex-col justify-between">
+    <div>
+      <nav
+        class="flex gap-4 md:gap-0 px-8 py-4 items-center justify-between border-b-[1px] border-solid"
+        role="navigation"
+      >
+        <div class="flex w-full h-full items-center justify-between">
+          <div class="flex items-baseline">
+            <gui-logo>
+            </gui-logo>
+            <div class="ml-6">
+              <p class="text-md font-medium">
+                Explore
+              </p>
+            </div>
+          </div>
+          <div class="hidden sm:flex relative flex-row items-center h-12 justify-center border rounded-full gap-3 px-2 py-2">
+            <div
+              class="absolute top-[4.5px] left-0 rounded-md shadow-md"
+              style="width: 50px;"
             >
-            </circle>
-            <path d="M12 2v2">
-            </path>
-            <path d="M12 20v2">
-            </path>
-            <path d="m4.93 4.93 1.41 1.41">
-            </path>
-            <path d="m17.66 17.66 1.41 1.41">
-            </path>
-            <path d="M2 12h2">
-            </path>
-            <path d="M20 12h2">
-            </path>
-            <path d="m6.34 17.66-1.41 1.41">
-            </path>
-            <path d="m19.07 4.93-1.41 1.41">
-            </path>
-          </svg>
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            viewbox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            class="lucide lucide-moon absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100"
+            </div>
+            <div
+              class="relative cursor-pointer flex items-center justify-center p-2 offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              role="button"
+              tabindex="0"
+              aria-pressed="false"
+              aria-label="Light mode"
+              data-theme="light"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                viewbox="0 0 24 24"
+                fill="none"
+                stroke="white"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="lucide lucide-sun"
+              >
+                <circle
+                  cx="12"
+                  cy="12"
+                  r="4"
+                >
+                </circle>
+                <path d="M12 2v2">
+                </path>
+                <path d="M12 20v2">
+                </path>
+                <path d="m4.93 4.93 1.41 1.41">
+                </path>
+                <path d="m17.66 17.66 1.41 1.41">
+                </path>
+                <path d="M2 12h2">
+                </path>
+                <path d="M20 12h2">
+                </path>
+                <path d="m6.34 17.66-1.41 1.41">
+                </path>
+                <path d="m19.07 4.93-1.41 1.41">
+                </path>
+              </svg>
+            </div>
+            <div
+              class="relative cursor-pointer flex items-center justify-center p-2 offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              role="button"
+              tabindex="0"
+              aria-pressed="false"
+              aria-label="Dark mode"
+              data-theme="dark"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                viewbox="0 0 24 24"
+                fill="none"
+                stroke="white"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="lucide lucide-moon"
+              >
+                <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z">
+                </path>
+              </svg>
+            </div>
+            <div
+              class="relative cursor-pointer flex items-center justify-center p-2 offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              role="button"
+              tabindex="0"
+              aria-pressed="true"
+              aria-label="System mode"
+              data-theme="system"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                viewbox="0 0 24 24"
+                fill="none"
+                stroke="#212121"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="lucide lucide-laptop-minimal"
+              >
+                <rect
+                  width="18"
+                  height="12"
+                  x="3"
+                  y="4"
+                  rx="2"
+                  ry="2"
+                >
+                </rect>
+                <line
+                  x1="2"
+                  x2="22"
+                  y1="20"
+                  y2="20"
+                >
+                </line>
+              </svg>
+            </div>
+          </div>
+          <div class="flex sm:hidden">
+            <button
+              class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&amp;_svg]:pointer-events-none [&amp;_svg]:size-4 [&amp;_svg]:shrink-0 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 w-10"
+              type="button"
+              id="radix-:r2:"
+              aria-haspopup="menu"
+              aria-expanded="false"
+              data-state="closed"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="22"
+                height="22"
+                viewbox="0 0 24 24"
+                fill="none"
+                stroke="#212121"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="lucide lucide-sun transition-all"
+                style="display: none;"
+              >
+                <circle
+                  cx="12"
+                  cy="12"
+                  r="4"
+                >
+                </circle>
+                <path d="M12 2v2">
+                </path>
+                <path d="M12 20v2">
+                </path>
+                <path d="m4.93 4.93 1.41 1.41">
+                </path>
+                <path d="m17.66 17.66 1.41 1.41">
+                </path>
+                <path d="M2 12h2">
+                </path>
+                <path d="M20 12h2">
+                </path>
+                <path d="m6.34 17.66-1.41 1.41">
+                </path>
+                <path d="m19.07 4.93-1.41 1.41">
+                </path>
+              </svg>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="22"
+                height="22"
+                viewbox="0 0 24 24"
+                fill="none"
+                stroke="#212121"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="lucide lucide-moon transition-all"
+                style="display: none;"
+              >
+                <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z">
+                </path>
+              </svg>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="22"
+                height="22"
+                viewbox="0 0 24 24"
+                fill="none"
+                stroke="white"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="lucide lucide-laptop-minimal transition-all"
+                style="display: flex;"
+              >
+                <rect
+                  width="18"
+                  height="12"
+                  x="3"
+                  y="4"
+                  rx="2"
+                  ry="2"
+                >
+                </rect>
+                <line
+                  x1="2"
+                  x2="22"
+                  y1="20"
+                  y2="20"
+                >
+                </line>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </nav>
+      <section class="flex items-center px-8 py-4 border-b-[1px] border-solid">
+        <div class="flex flex-col gap-2 w-full">
+          <p class="text-xs font-mono font-light text-muted-foreground">
+            :host-context(file:/path/to/project)
+          </p>
+          <gui-search-bar
+            tabindex="0"
+            classname="w-full bg-muted-foreground/5"
+            startcontent="[object Object]"
+            endcontent="[object Object]"
           >
-            <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z">
-            </path>
-          </svg>
-          <span class="sr-only">
-            Toggle theme
-          </span>
-        </button>
-      </div>
-      <div class="text-xs text-gray-500 mt-2 absolute border border-solid rounded-bl-sm rounded-br-sm z-0 py-1 px-3 top-full right-0 w-auto text-right">
-        Context: /path/to/project
-      </div>
+          </gui-search-bar>
+        </div>
+      </section>
     </div>
-  </div>
-  <gui-explorer-grid>
-  </gui-explorer-grid>
+    <gui-explorer-grid>
+    </gui-explorer-grid>
+    <footer class="flex border-t-[1px] border-solid h-24 items-center justify-between px-8 w-full">
+      <div class="flex items-center gap-3">
+        <a href="https://www.linkedin.com/company/vltpkg/">
+          <img
+            src="/icons/linkedin.svg"
+            width="20"
+            style="filter: invert(1);"
+          >
+        </a>
+        <a href="https://x.com/vltpkg">
+          <img
+            src="/icons/twitter-x.svg"
+            width="20"
+            style="filter: invert(1);"
+          >
+        </a>
+        <a href="https://github.com/vltpkg">
+          <img
+            src="/icons/github.svg"
+            width="20"
+            style="filter: invert(1);"
+          >
+        </a>
+        <a href="https://discord.gg/vltpkg">
+          <img
+            src="/icons/discord.svg"
+            width="20"
+            style="filter: invert(1);"
+          >
+        </a>
+      </div>
+      <div class="flex items-center">
+        <p class="text-md text-muted-foreground">
+          © 2024 vlt technology inc.
+        </p>
+      </div>
+      <div>
+      </div>
+    </footer>
+  </section>
 </div>
 
 `;
@@ -90,83 +291,284 @@ exports[`explorer has project root info 1`] = `
 exports[`render default 1`] = `
 
 <div>
-  <div class="grid grid-cols-7 gap-4 py-2 border-b">
-    <gui-logo classname="col-span-2 p-8">
-    </gui-logo>
-    <div class="col-span-5 relative pt-6 pb-1">
-      <gui-title classname="mt-2 -ml-24 pr-2 absolute">
-        Explore
-      </gui-title>
-      <div class="flex">
-        <gui-search-bar>
-        </gui-search-bar>
-        <button
-          class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&amp;_svg]:pointer-events-none [&amp;_svg]:size-4 [&amp;_svg]:shrink-0 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 w-10"
-          type="button"
-          id="radix-:r0:"
-          aria-haspopup="menu"
-          aria-expanded="false"
-          data-state="closed"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            viewbox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            class="lucide lucide-sun h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0"
-          >
-            <circle
-              cx="12"
-              cy="12"
-              r="4"
+  <section class="flex grow flex-col justify-between">
+    <div>
+      <nav
+        class="flex gap-4 md:gap-0 px-8 py-4 items-center justify-between border-b-[1px] border-solid"
+        role="navigation"
+      >
+        <div class="flex w-full h-full items-center justify-between">
+          <div class="flex items-baseline">
+            <gui-logo>
+            </gui-logo>
+            <div class="ml-6">
+              <p class="text-md font-medium">
+                Explore
+              </p>
+            </div>
+          </div>
+          <div class="hidden sm:flex relative flex-row items-center h-12 justify-center border rounded-full gap-3 px-2 py-2">
+            <div
+              class="absolute top-[4.5px] left-0 rounded-md shadow-md"
+              style="width: 50px;"
             >
-            </circle>
-            <path d="M12 2v2">
-            </path>
-            <path d="M12 20v2">
-            </path>
-            <path d="m4.93 4.93 1.41 1.41">
-            </path>
-            <path d="m17.66 17.66 1.41 1.41">
-            </path>
-            <path d="M2 12h2">
-            </path>
-            <path d="M20 12h2">
-            </path>
-            <path d="m6.34 17.66-1.41 1.41">
-            </path>
-            <path d="m19.07 4.93-1.41 1.41">
-            </path>
-          </svg>
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            viewbox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            class="lucide lucide-moon absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100"
+            </div>
+            <div
+              class="relative cursor-pointer flex items-center justify-center p-2 offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              role="button"
+              tabindex="0"
+              aria-pressed="false"
+              aria-label="Light mode"
+              data-theme="light"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                viewbox="0 0 24 24"
+                fill="none"
+                stroke="white"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="lucide lucide-sun"
+              >
+                <circle
+                  cx="12"
+                  cy="12"
+                  r="4"
+                >
+                </circle>
+                <path d="M12 2v2">
+                </path>
+                <path d="M12 20v2">
+                </path>
+                <path d="m4.93 4.93 1.41 1.41">
+                </path>
+                <path d="m17.66 17.66 1.41 1.41">
+                </path>
+                <path d="M2 12h2">
+                </path>
+                <path d="M20 12h2">
+                </path>
+                <path d="m6.34 17.66-1.41 1.41">
+                </path>
+                <path d="m19.07 4.93-1.41 1.41">
+                </path>
+              </svg>
+            </div>
+            <div
+              class="relative cursor-pointer flex items-center justify-center p-2 offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              role="button"
+              tabindex="0"
+              aria-pressed="false"
+              aria-label="Dark mode"
+              data-theme="dark"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                viewbox="0 0 24 24"
+                fill="none"
+                stroke="white"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="lucide lucide-moon"
+              >
+                <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z">
+                </path>
+              </svg>
+            </div>
+            <div
+              class="relative cursor-pointer flex items-center justify-center p-2 offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              role="button"
+              tabindex="0"
+              aria-pressed="true"
+              aria-label="System mode"
+              data-theme="system"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                viewbox="0 0 24 24"
+                fill="none"
+                stroke="#212121"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="lucide lucide-laptop-minimal"
+              >
+                <rect
+                  width="18"
+                  height="12"
+                  x="3"
+                  y="4"
+                  rx="2"
+                  ry="2"
+                >
+                </rect>
+                <line
+                  x1="2"
+                  x2="22"
+                  y1="20"
+                  y2="20"
+                >
+                </line>
+              </svg>
+            </div>
+          </div>
+          <div class="flex sm:hidden">
+            <button
+              class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&amp;_svg]:pointer-events-none [&amp;_svg]:size-4 [&amp;_svg]:shrink-0 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 w-10"
+              type="button"
+              id="radix-:r0:"
+              aria-haspopup="menu"
+              aria-expanded="false"
+              data-state="closed"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="22"
+                height="22"
+                viewbox="0 0 24 24"
+                fill="none"
+                stroke="#212121"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="lucide lucide-sun transition-all"
+                style="display: none;"
+              >
+                <circle
+                  cx="12"
+                  cy="12"
+                  r="4"
+                >
+                </circle>
+                <path d="M12 2v2">
+                </path>
+                <path d="M12 20v2">
+                </path>
+                <path d="m4.93 4.93 1.41 1.41">
+                </path>
+                <path d="m17.66 17.66 1.41 1.41">
+                </path>
+                <path d="M2 12h2">
+                </path>
+                <path d="M20 12h2">
+                </path>
+                <path d="m6.34 17.66-1.41 1.41">
+                </path>
+                <path d="m19.07 4.93-1.41 1.41">
+                </path>
+              </svg>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="22"
+                height="22"
+                viewbox="0 0 24 24"
+                fill="none"
+                stroke="#212121"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="lucide lucide-moon transition-all"
+                style="display: none;"
+              >
+                <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z">
+                </path>
+              </svg>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="22"
+                height="22"
+                viewbox="0 0 24 24"
+                fill="none"
+                stroke="white"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="lucide lucide-laptop-minimal transition-all"
+                style="display: flex;"
+              >
+                <rect
+                  width="18"
+                  height="12"
+                  x="3"
+                  y="4"
+                  rx="2"
+                  ry="2"
+                >
+                </rect>
+                <line
+                  x1="2"
+                  x2="22"
+                  y1="20"
+                  y2="20"
+                >
+                </line>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </nav>
+      <section class="flex items-center px-8 py-4 border-b-[1px] border-solid">
+        <div class="flex flex-col gap-2 w-full">
+          <gui-search-bar
+            tabindex="0"
+            classname="w-full bg-muted-foreground/5"
+            startcontent="[object Object]"
+            endcontent="[object Object]"
           >
-            <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z">
-            </path>
-          </svg>
-          <span class="sr-only">
-            Toggle theme
-          </span>
-        </button>
-      </div>
+          </gui-search-bar>
+        </div>
+      </section>
     </div>
-  </div>
-  <gui-explorer-grid>
-  </gui-explorer-grid>
+    <gui-explorer-grid>
+    </gui-explorer-grid>
+    <footer class="flex border-t-[1px] border-solid h-24 items-center justify-between px-8 w-full">
+      <div class="flex items-center gap-3">
+        <a href="https://www.linkedin.com/company/vltpkg/">
+          <img
+            src="/icons/linkedin.svg"
+            width="20"
+            style="filter: invert(1);"
+          >
+        </a>
+        <a href="https://x.com/vltpkg">
+          <img
+            src="/icons/twitter-x.svg"
+            width="20"
+            style="filter: invert(1);"
+          >
+        </a>
+        <a href="https://github.com/vltpkg">
+          <img
+            src="/icons/github.svg"
+            width="20"
+            style="filter: invert(1);"
+          >
+        </a>
+        <a href="https://discord.gg/vltpkg">
+          <img
+            src="/icons/discord.svg"
+            width="20"
+            style="filter: invert(1);"
+          >
+        </a>
+      </div>
+      <div class="flex items-center">
+        <p class="text-md text-muted-foreground">
+          © 2024 vlt technology inc.
+        </p>
+      </div>
+      <div>
+      </div>
+    </footer>
+  </section>
 </div>
 
 `;

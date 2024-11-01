@@ -4,19 +4,35 @@ exports[`SideItem render as dependency 1`] = `
 
 <div>
   <div class="group relative z-10">
-    <gui-card classname="transition-colors relative my-4   group-hover:border-indigo-600 group-hover:bg-indigo-100  dark:group-hover:bg-gradient-to-b dark:group-hover:from-indigo-950 dark:group-hover:to-zinc-950 dark:group-hover:border-indigo-300">
-      <gui-card-header classname="rounded-t-lg relative flex flex-row p-2 px-3">
-        <gui-card-title classname="text-md grow">
-          item
-        </gui-card-title>
-        <div>
-          <gui-badge classname="mx-1 grow-0 border-transparent bg-lime-100 text-neutral-900 hover:bg-lime-100/80">
-            peer
-          </gui-badge>
+    <gui-card
+      tabindex="1"
+      role="article"
+      classname="transition-all relative my-4   group-hover:border-neutral-400 dark:group-hover:border-neutral-600"
+    >
+      <gui-card-header classname="rounded-t-lg relative flex flex-col w-full p-0">
+        <div class="flex items-center justify-between px-3 py-2">
+          <gui-card-title classname="text-sm font-medium flex items-center">
+            item
+          </gui-card-title>
+          <div class="px-2 py-1 border-[1px] border-solid rounded-full">
+            <p class="text-xs">
+              1.0.0
+            </p>
+          </div>
+        </div>
+        <div class="flex items-center flex-row justify-between gap-2 flex-wrap px-3 py-2 border-muted-foreground/20 border-t-[1px]">
+          <p class="text-sm text-muted-foreground/50">
+            item@
+          </p>
+          <div>
+            <gui-badge classname="grow-0 border-transparent bg-lime-100 text-neutral-900 hover:bg-lime-100/80">
+              peer
+            </gui-badge>
+          </div>
         </div>
       </gui-card-header>
     </gui-card>
-    <div class="absolute border-b border-l border-solid border-gray-300 dark:border-gray-700 rounded-bl-sm z-0 w-[9px] h-16 -left-[9px] bottom-5">
+    <div class="absolute border-b border-l border-solid border-neutral-300 dark:border-neutral-700 rounded-bl-sm z-0 w-[9px] -left-[9px] h-28 bottom-10">
     </div>
   </div>
 </div>
@@ -27,19 +43,35 @@ exports[`SideItem render as dependency with long name 1`] = `
 
 <div>
   <div class="group relative z-10">
-    <gui-card classname="transition-colors relative my-4   group-hover:border-indigo-600 group-hover:bg-indigo-100  dark:group-hover:bg-gradient-to-b dark:group-hover:from-indigo-950 dark:group-hover:to-zinc-950 dark:group-hover:border-indigo-300">
-      <gui-card-header classname="rounded-t-lg relative flex flex-row p-2 px-3">
-        <gui-card-title classname="text-md grow">
-          lorem-ipsum-dolor-sit-amet-consectetur-adipiscing-elit-sed-do-eiusmod-tempor-incididunt-ut-labore-et-dolore-magna-aliqua-ut-enim-ad-minim-veniam-quis-nostrud-exercitation
-        </gui-card-title>
-        <div>
-          <gui-badge classname="mx-1 grow-0 border-transparent bg-lime-100 text-neutral-900 hover:bg-lime-100/80">
-            peer
-          </gui-badge>
+    <gui-card
+      tabindex="1"
+      role="article"
+      classname="transition-all relative my-4   group-hover:border-neutral-400 dark:group-hover:border-neutral-600"
+    >
+      <gui-card-header classname="rounded-t-lg relative flex flex-col w-full p-0">
+        <div class="flex items-center justify-between px-3 py-2">
+          <gui-card-title classname="text-sm font-medium flex items-center">
+            lorem-ipsum-dolor-sit-amet-consectetur-adipiscing-elit-sed-do-eiusmod-tempor-incididunt-ut-labore-et-dolore-magna-aliqua-ut-enim-ad-minim-veniam-quis-nostrud-exercitation
+          </gui-card-title>
+          <div class="px-2 py-1 border-[1px] border-solid rounded-full">
+            <p class="text-xs">
+              1.0.0
+            </p>
+          </div>
+        </div>
+        <div class="flex items-center flex-row justify-between gap-2 flex-wrap px-3 py-2 border-muted-foreground/20 border-t-[1px]">
+          <p class="text-sm text-muted-foreground/50">
+            lorem-ipsum-dolor-sit-amet-consectetur-adipiscing-elit-sed-do-eiusmod-tempor-incididunt-ut-labore-et-dolore-magna-aliqua-ut-enim-ad-minim-veniam-quis-nostrud-exercitation@
+          </p>
+          <div>
+            <gui-badge classname="grow-0 border-transparent bg-lime-100 text-neutral-900 hover:bg-lime-100/80">
+              peer
+            </gui-badge>
+          </div>
         </div>
       </gui-card-header>
     </gui-card>
-    <div class="absolute border-b border-l border-solid border-gray-300 dark:border-gray-700 rounded-bl-sm z-0 w-[9px] h-16 -left-[9px] bottom-5">
+    <div class="absolute border-b border-l border-solid border-neutral-300 dark:border-neutral-700 rounded-bl-sm z-0 w-[9px] -left-[9px] h-28 bottom-10">
     </div>
   </div>
 </div>
@@ -50,20 +82,34 @@ exports[`SideItem render as dependent 1`] = `
 
 <div>
   <div class="group relative z-10">
-    <gui-card classname="transition-colors relative my-4   group-hover:border-indigo-600 group-hover:bg-indigo-100  dark:group-hover:bg-gradient-to-b dark:group-hover:from-indigo-950 dark:group-hover:to-zinc-950 dark:group-hover:border-indigo-300">
-      <gui-card-header classname="rounded-t-lg relative flex flex-row p-2 px-3">
-        <gui-card-title classname="text-md grow">
-          item
-        </gui-card-title>
-        <div>
-          <gui-badge classname="mx-1 grow-0 border-transparent bg-cyan-100 text-neutral-900 hover:bg-cyan-100/80">
-            prod
-          </gui-badge>
+    <gui-card
+      tabindex="1"
+      role="article"
+      classname="transition-all relative my-4   group-hover:border-neutral-400 dark:group-hover:border-neutral-600"
+    >
+      <gui-card-header classname="rounded-t-lg relative flex flex-col w-full p-0">
+        <div class="flex items-center justify-between px-3 py-2">
+          <gui-card-title classname="text-sm font-medium flex items-center">
+            item
+          </gui-card-title>
+          <div class="px-2 py-1 border-[1px] border-solid rounded-full">
+            <p class="text-xs">
+              1.0.0
+            </p>
+          </div>
+        </div>
+        <div class="flex items-center flex-row justify-between gap-2 flex-wrap px-3 py-2 border-muted-foreground/20 border-t-[1px]">
+          <p class="text-sm text-muted-foreground/50">
+            item@
+          </p>
+          <div>
+            <gui-badge classname="grow-0 border-transparent bg-cyan-100 text-neutral-900 hover:bg-cyan-100/80">
+              prod
+            </gui-badge>
+          </div>
         </div>
       </gui-card-header>
     </gui-card>
-    <div class="absolute border-b border-r border-solid border-gray-300 dark:border-gray-700 rounded-br-sm z-0 w-[9px] h-16 -right-[9px] bottom-5">
-    </div>
   </div>
 </div>
 
@@ -73,24 +119,38 @@ exports[`SideItem render as multi-stacked dependent 1`] = `
 
 <div>
   <div class="group relative z-10">
-    <div class="absolute border top-2 left-2 w-[96%] h-full bg-card rounded-lg group-hover:border-indigo-600 group-hover:bg-indigo-100 dark:group-hover:bg-gradient-to-b dark:group-hoverfrom-indigo-950 dark:group-hoverto-zinc-950 dark:group-hover:border-indigo-300">
+    <div class="transition-all absolute border top-2 left-2 w-[96%] h-full bg-card rounded-lg group-hover:border-neutral-400 dark:group-hover:border-neutral-600">
     </div>
-    <div class="absolute border top-1 left-1 w-[98%] h-full bg-card rounded-lg group-hover:border-indigo-600 group-hover:bg-indigo-100 dark:group-hover:bg-gradient-to-b dark:group-hover:from-indigo-950 dark:group-hover:to-zinc-950 dark:group-hover:border-indigo-300">
+    <div class="transition-all absolute border top-1 left-1 w-[98%] h-full bg-card rounded-lg group-hover:border-neutral-400 dark:group-hover:border-neutral-600">
     </div>
-    <gui-card classname="transition-colors relative my-4   group-hover:border-indigo-600 group-hover:bg-indigo-100  dark:group-hover:bg-gradient-to-b dark:group-hover:from-indigo-950 dark:group-hover:to-zinc-950 dark:group-hover:border-indigo-300">
-      <gui-card-header classname="rounded-t-lg relative flex flex-row p-2 px-3">
-        <gui-card-title classname="text-md grow">
-          item
-        </gui-card-title>
-        <div>
-          <gui-badge classname="mx-1 grow-0 border-transparent bg-cyan-100 text-neutral-900 hover:bg-cyan-100/80">
-            prod
-          </gui-badge>
+    <gui-card
+      tabindex="1"
+      role="article"
+      classname="transition-all relative my-4   group-hover:border-neutral-400 dark:group-hover:border-neutral-600"
+    >
+      <gui-card-header classname="rounded-t-lg relative flex flex-col w-full p-0">
+        <div class="flex items-center justify-between px-3 py-2">
+          <gui-card-title classname="text-sm font-medium flex items-center">
+            item
+          </gui-card-title>
+          <div class="px-2 py-1 border-[1px] border-solid rounded-full">
+            <p class="text-xs">
+              1.0.0
+            </p>
+          </div>
+        </div>
+        <div class="flex items-center flex-row justify-between gap-2 flex-wrap px-3 py-2 border-muted-foreground/20 border-t-[1px]">
+          <p class="text-sm text-muted-foreground/50">
+            item@
+          </p>
+          <div>
+            <gui-badge classname="grow-0 border-transparent bg-cyan-100 text-neutral-900 hover:bg-cyan-100/80">
+              prod
+            </gui-badge>
+          </div>
         </div>
       </gui-card-header>
     </gui-card>
-    <div class="absolute border-b border-r border-solid border-gray-300 dark:border-gray-700 rounded-br-sm z-0 w-[9px] h-16 -right-[9px] bottom-5">
-    </div>
   </div>
 </div>
 
@@ -100,19 +160,35 @@ exports[`SideItem render as parent 1`] = `
 
 <div>
   <div class="group relative z-10">
-    <gui-card classname="transition-colors relative my-4 border-primary  group-hover:border-indigo-600 group-hover:bg-indigo-100  dark:group-hover:bg-gradient-to-b dark:group-hover:from-indigo-950 dark:group-hover:to-zinc-950 dark:group-hover:border-indigo-300">
-      <gui-card-header classname="rounded-t-lg relative flex flex-row p-2 px-3">
-        <gui-card-title classname="text-md grow">
-          item
-        </gui-card-title>
-        <div>
-          <gui-badge classname="mx-1 grow-0 border-transparent bg-cyan-100 text-neutral-900 hover:bg-cyan-100/80">
-            prod
-          </gui-badge>
+    <gui-card
+      tabindex="1"
+      role="article"
+      classname="transition-all relative my-4 border-foreground  group-hover:border-neutral-400 dark:group-hover:border-neutral-600"
+    >
+      <gui-card-header classname="rounded-t-lg relative flex flex-col w-full p-0">
+        <div class="flex items-center justify-between px-3 py-2">
+          <gui-card-title classname="text-sm font-medium flex items-center">
+            item
+          </gui-card-title>
+          <div class="px-2 py-1 border-[1px] border-solid rounded-full">
+            <p class="text-xs">
+              1.0.0
+            </p>
+          </div>
+        </div>
+        <div class="flex items-center flex-row justify-between gap-2 flex-wrap px-3 py-2 border-muted-foreground/20 border-t-[1px]">
+          <p class="text-sm text-muted-foreground/50">
+            item@
+          </p>
+          <div>
+            <gui-badge classname="grow-0 border-transparent bg-cyan-100 text-neutral-900 hover:bg-cyan-100/80">
+              prod
+            </gui-badge>
+          </div>
         </div>
       </gui-card-header>
     </gui-card>
-    <div class="absolute border-t border-solid border-primary w-4 -right-4 top-5">
+    <div class="absolute border-t border-solid border-muted-foreground w-4 -right-4 top-12">
     </div>
   </div>
 </div>
@@ -123,22 +199,36 @@ exports[`SideItem render as two-stacked dependent 1`] = `
 
 <div>
   <div class="group relative z-10">
-    <div class="absolute border top-1 left-1 w-[98%] h-full bg-card rounded-lg group-hover:border-indigo-600 group-hover:bg-indigo-100 dark:group-hover:bg-gradient-to-b dark:group-hover:from-indigo-950 dark:group-hover:to-zinc-950 dark:group-hover:border-indigo-300">
+    <div class="transition-all absolute border top-1 left-1 w-[98%] h-full bg-card rounded-lg group-hover:border-neutral-400 dark:group-hover:border-neutral-600">
     </div>
-    <gui-card classname="transition-colors relative my-4   group-hover:border-indigo-600 group-hover:bg-indigo-100  dark:group-hover:bg-gradient-to-b dark:group-hover:from-indigo-950 dark:group-hover:to-zinc-950 dark:group-hover:border-indigo-300">
-      <gui-card-header classname="rounded-t-lg relative flex flex-row p-2 px-3">
-        <gui-card-title classname="text-md grow">
-          item
-        </gui-card-title>
-        <div>
-          <gui-badge classname="mx-1 grow-0 border-transparent bg-cyan-100 text-neutral-900 hover:bg-cyan-100/80">
-            prod
-          </gui-badge>
+    <gui-card
+      tabindex="1"
+      role="article"
+      classname="transition-all relative my-4   group-hover:border-neutral-400 dark:group-hover:border-neutral-600"
+    >
+      <gui-card-header classname="rounded-t-lg relative flex flex-col w-full p-0">
+        <div class="flex items-center justify-between px-3 py-2">
+          <gui-card-title classname="text-sm font-medium flex items-center">
+            item
+          </gui-card-title>
+          <div class="px-2 py-1 border-[1px] border-solid rounded-full">
+            <p class="text-xs">
+              1.0.0
+            </p>
+          </div>
+        </div>
+        <div class="flex items-center flex-row justify-between gap-2 flex-wrap px-3 py-2 border-muted-foreground/20 border-t-[1px]">
+          <p class="text-sm text-muted-foreground/50">
+            item@
+          </p>
+          <div>
+            <gui-badge classname="grow-0 border-transparent bg-cyan-100 text-neutral-900 hover:bg-cyan-100/80">
+              prod
+            </gui-badge>
+          </div>
         </div>
       </gui-card-header>
     </gui-card>
-    <div class="absolute border-b border-r border-solid border-gray-300 dark:border-gray-700 rounded-br-sm z-0 w-[9px] h-16 -right-[9px] bottom-5">
-    </div>
   </div>
 </div>
 
