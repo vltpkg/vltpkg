@@ -4,38 +4,25 @@ exports[`SelectedItem render connection lines 1`] = `
 
 <div>
   <div class="relative">
-    <gui-card classname="relative my-4 border-primary">
-      <gui-card-header classname="flex flex-row p-2 px-3">
-        <gui-card-title classname="text-md grow">
-          item@^1.0.0
-        </gui-card-title>
-        <gui-badge classname="grow-0 border-transparent bg-gray-100 text-neutral-900 hover:bg-gray-100/80">
-        </gui-badge>
-      </gui-card-header>
-      <div class="absolute border-l border-solid border-primary w-1 h-[17px] -bottom-[17px] left-1/2">
-      </div>
-    </gui-card>
-    <gui-card classname="relative my-4 border-primary">
-      <gui-card-header classname="rounded-t-lg relative flex flex-row -m-px p-2 px-4 bg-primary dark:bg-gradient-to-b dark:from-cyan-100 dark:to-purple-200 dark:border dark:border-solid dark:border-primary text-primary-foreground">
-        <gui-card-title classname="grow">
-          <span class="text-xl">
-            item
-          </span>
-          <span class="mx-2">
-            ·
-          </span>
-          <span class="text-lg text-secondary">
-            1.0.0
-          </span>
+    <gui-card classname="relative my-4 border-muted-foreground">
+      <gui-card-header classname="rounded-t-lg relative flex flex-row -m-px py-3 px-4 bg-primary dark:border dark:border-solid dark:border-muted-foreground text-white dark:text-black rounded-b-lg">
+        <gui-card-title classname="flex items-center w-full justify-between">
+          <div class="flex items-center justify-between">
+            <span class="text-sm font-medium">
+              item
+            </span>
+            <span class="mx-2">
+              ·
+            </span>
+            <span class="text-sm font-light text-muted-foreground">
+              1.0.0
+            </span>
+          </div>
         </gui-card-title>
       </gui-card-header>
       <div class="flex flex-row pl-4 pr-3">
       </div>
     </gui-card>
-    <div class="absolute border-t border-l border-solid border-gray-300 dark:border-gray-700 rounded-tl-sm w-2 h-2 top-20 -left-2">
-    </div>
-    <div class="absolute border-t border-r border-solid border-gray-300 dark:border-gray-700 rounded-tr-sm w-2 h-2 top-20 -right-2">
-    </div>
   </div>
 </div>
 
@@ -45,31 +32,21 @@ exports[`SelectedItem render with custom registry 1`] = `
 
 <div>
   <div class="relative">
-    <gui-card classname="relative my-4 border-primary">
-      <gui-card-header classname="flex flex-row p-2 px-3">
-        <gui-card-title classname="text-md grow">
-          item@custom:item@^1.0.0
-        </gui-card-title>
-        <gui-badge classname="grow-0 border-transparent bg-fuchsia-100 text-neutral-900 hover:bg-fuchsia-100/80">
-          dev
-        </gui-badge>
-      </gui-card-header>
-      <div class="absolute border-l border-solid border-primary w-1 h-[17px] -bottom-[17px] left-1/2">
-      </div>
-    </gui-card>
-    <gui-card classname="relative my-4 border-primary">
-      <gui-card-header classname="rounded-t-lg relative flex flex-row -m-px p-2 px-4 bg-primary dark:bg-gradient-to-b dark:from-cyan-100 dark:to-purple-200 dark:border dark:border-solid dark:border-primary text-primary-foreground">
-        <gui-card-title classname="grow">
-          <span class="text-xl">
-            item
-          </span>
-          <span class="mx-2">
-            ·
-          </span>
-          <span class="text-lg text-secondary">
-            1.0.0
-          </span>
-          <div class="text-xs text-gray-200 font-light border border-solid border-gray-200 rounded-sm p-0.5 px-2 float-right mt-[3px]">
+    <gui-card classname="relative my-4 border-muted-foreground">
+      <gui-card-header classname="rounded-t-lg relative flex flex-row -m-px py-3 px-4 bg-primary dark:border dark:border-solid dark:border-muted-foreground text-white dark:text-black rounded-b-lg">
+        <gui-card-title classname="flex items-center w-full justify-between">
+          <div class="flex items-center justify-between">
+            <span class="text-sm font-medium">
+              item
+            </span>
+            <span class="mx-2">
+              ·
+            </span>
+            <span class="text-sm font-light text-muted-foreground">
+              1.0.0
+            </span>
+          </div>
+          <div class="text-xs px-2 py-1 font-medium border border-solid border-neutral-200 rounded-full dark:border-gray-600">
             https://example.com
           </div>
         </gui-card-title>
@@ -86,31 +63,21 @@ exports[`SelectedItem render with default git host 1`] = `
 
 <div>
   <div class="relative">
-    <gui-card classname="relative my-4 border-primary">
-      <gui-card-header classname="flex flex-row p-2 px-3">
-        <gui-card-title classname="text-md grow">
-          item@github:a/b
-        </gui-card-title>
-        <gui-badge classname="grow-0 border-transparent bg-fuchsia-100 text-neutral-900 hover:bg-fuchsia-100/80">
-          dev
-        </gui-badge>
-      </gui-card-header>
-      <div class="absolute border-l border-solid border-primary w-1 h-[17px] -bottom-[17px] left-1/2">
-      </div>
-    </gui-card>
-    <gui-card classname="relative my-4 border-primary">
-      <gui-card-header classname="rounded-t-lg relative flex flex-row -m-px p-2 px-4 bg-primary dark:bg-gradient-to-b dark:from-cyan-100 dark:to-purple-200 dark:border dark:border-solid dark:border-primary text-primary-foreground">
-        <gui-card-title classname="grow">
-          <span class="text-xl">
-            item
-          </span>
-          <span class="mx-2">
-            ·
-          </span>
-          <span class="text-lg text-secondary">
-            1.0.0
-          </span>
-          <div class="text-xs text-gray-200 font-light border border-solid border-gray-200 rounded-sm p-0.5 px-2 float-right mt-[3px]">
+    <gui-card classname="relative my-4 border-muted-foreground">
+      <gui-card-header classname="rounded-t-lg relative flex flex-row -m-px py-3 px-4 bg-primary dark:border dark:border-solid dark:border-muted-foreground text-white dark:text-black rounded-b-lg">
+        <gui-card-title classname="flex items-center w-full justify-between">
+          <div class="flex items-center justify-between">
+            <span class="text-sm font-medium">
+              item
+            </span>
+            <span class="mx-2">
+              ·
+            </span>
+            <span class="text-sm font-light text-muted-foreground">
+              1.0.0
+            </span>
+          </div>
+          <div class="text-xs px-2 py-1 font-medium border border-solid border-neutral-200 rounded-full dark:border-gray-600">
             github:a/b
           </div>
         </gui-card-title>
@@ -127,18 +94,20 @@ exports[`SelectedItem render with item 1`] = `
 
 <div>
   <div class="relative">
-    <gui-card classname="relative my-4 border-primary">
-      <gui-card-header classname="rounded-t-lg relative flex flex-row -m-px p-2 px-4 bg-primary dark:bg-gradient-to-b dark:from-cyan-100 dark:to-purple-200 dark:border dark:border-solid dark:border-primary text-primary-foreground">
-        <gui-card-title classname="grow">
-          <span class="text-xl">
-            item
-          </span>
-          <span class="mx-2">
-            ·
-          </span>
-          <span class="text-lg text-secondary">
-            1.0.0
-          </span>
+    <gui-card classname="relative my-4 border-muted-foreground">
+      <gui-card-header classname="rounded-t-lg relative flex flex-row -m-px py-3 px-4 bg-primary dark:border dark:border-solid dark:border-muted-foreground text-white dark:text-black rounded-b-lg">
+        <gui-card-title classname="flex items-center w-full justify-between">
+          <div class="flex items-center justify-between">
+            <span class="text-sm font-medium">
+              item
+            </span>
+            <span class="mx-2">
+              ·
+            </span>
+            <span class="text-sm font-light text-muted-foreground">
+              1.0.0
+            </span>
+          </div>
         </gui-card-title>
       </gui-card-header>
       <div class="flex flex-row pl-4 pr-3">
@@ -153,31 +122,21 @@ exports[`SelectedItem render with scoped registry 1`] = `
 
 <div>
   <div class="relative">
-    <gui-card classname="relative my-4 border-primary">
-      <gui-card-header classname="flex flex-row p-2 px-3">
-        <gui-card-title classname="text-md grow">
-          item@^1.0.0
-        </gui-card-title>
-        <gui-badge classname="grow-0 border-transparent bg-fuchsia-100 text-neutral-900 hover:bg-fuchsia-100/80">
-          dev
-        </gui-badge>
-      </gui-card-header>
-      <div class="absolute border-l border-solid border-primary w-1 h-[17px] -bottom-[17px] left-1/2">
-      </div>
-    </gui-card>
-    <gui-card classname="relative my-4 border-primary">
-      <gui-card-header classname="rounded-t-lg relative flex flex-row -m-px p-2 px-4 bg-primary dark:bg-gradient-to-b dark:from-cyan-100 dark:to-purple-200 dark:border dark:border-solid dark:border-primary text-primary-foreground">
-        <gui-card-title classname="grow">
-          <span class="text-xl">
-            item
-          </span>
-          <span class="mx-2">
-            ·
-          </span>
-          <span class="text-lg text-secondary">
-            1.0.0
-          </span>
-          <div class="text-xs text-gray-200 font-light border border-solid border-gray-200 rounded-sm p-0.5 px-2 float-right mt-[3px]">
+    <gui-card classname="relative my-4 border-muted-foreground">
+      <gui-card-header classname="rounded-t-lg relative flex flex-row -m-px py-3 px-4 bg-primary dark:border dark:border-solid dark:border-muted-foreground text-white dark:text-black rounded-b-lg">
+        <gui-card-title classname="flex items-center w-full justify-between">
+          <div class="flex items-center justify-between">
+            <span class="text-sm font-medium">
+              item
+            </span>
+            <span class="mx-2">
+              ·
+            </span>
+            <span class="text-sm font-light text-muted-foreground">
+              1.0.0
+            </span>
+          </div>
+          <div class="text-xs px-2 py-1 font-medium border border-solid border-neutral-200 rounded-full dark:border-gray-600">
             http://custom-scope
           </div>
         </gui-card-title>

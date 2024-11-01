@@ -13,8 +13,8 @@ vi.mock('@/components/ui/title.jsx', () => ({
 vi.mock('@/components/ui/button.jsx', () => ({
   Button: 'gui-button',
 }))
-vi.mock('@/components/ui/mode-toggle.jsx', () => ({
-  ModeToggle: 'gui-mode-toggle',
+vi.mock('@/components/ui/theme-switcher.jsx', () => ({
+  ThemeSwitcher: 'gui-theme-switcher',
 }))
 vi.mock('lucide-react', () => ({
   BatteryLow: 'gui-battery-low-icon',

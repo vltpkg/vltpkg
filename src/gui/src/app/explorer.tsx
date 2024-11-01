@@ -2,14 +2,16 @@ import { useEffect, MouseEvent } from 'react'
 import { Query } from '@vltpkg/query'
 import { SearchBar } from '@/components/search-bar.jsx'
 import { Logo } from '@/components/ui/logo.jsx'
-import { Title } from '@/components/ui/title.jsx'
 import { ExplorerGrid } from '@/components/explorer-grid/index.jsx'
 import { useGraphStore } from '@/state/index.js'
 import { Action, State } from '@/state/types.js'
 import { load } from '@/state/load-graph.js'
-import { ModeToggle } from '@/components/ui/mode-toggle.jsx'
 import { Button } from '@/components/ui/button.jsx'
 import { LayoutDashboard } from 'lucide-react'
+import { ThemeSwitcher } from '@/components/ui/theme-switcher.jsx'
+import { Search, Command } from 'lucide-react'
+import { Kbd } from '@/components/ui/kbd.jsx'
+import { Footer } from '@/components/ui/footer.jsx'
 
 export type ExplorerOptions = {
   projectRoot?: string
@@ -122,14 +124,19 @@ const ExplorerContent = () => {
   }
 
   return (
-    <>
-      <div className="grid grid-cols-7 gap-4 py-2 border-b">
-        <Logo className="col-span-2 p-8" />
-        <div className="col-span-5 relative pt-6 pb-1">
-          <Title className="mt-2 -ml-24 pr-2 absolute">Explore</Title>
-          <div className="flex">
-            <SearchBar />
-            <ModeToggle />
+    <section className="flex grow flex-col justify-between">
+      <div>
+        <nav
+          className="flex gap-4 md:gap-0 px-8 py-4 items-center justify-between border-b-[1px] border-solid"
+          role="navigation">
+          <div className="flex w-full h-full items-center justify-between">
+            <div className="flex items-baseline">
+              <Logo />
+              <div className="ml-6">
+                <p className="text-md font-medium">Explore</p>
+              </div>
+            </div>
+            <ThemeSwitcher />
             {hasDashboard ?
               <Button
                 className="ml-2"
@@ -139,14 +146,34 @@ const ExplorerContent = () => {
               </Button>
             : ''}
           </div>
-          {graph?.projectRoot ?
-            <div className="text-xs text-gray-500 mt-2 absolute border border-solid rounded-bl-sm rounded-br-sm z-0 py-1 px-3 top-full right-0 w-auto text-right">
-              Context: {graph.projectRoot}
-            </div>
-          : ''}
-        </div>
+        </nav>
+        <section className="flex items-center px-8 py-4 border-b-[1px] border-solid">
+          <div className="flex flex-col gap-2 w-full">
+            {graph?.projectRoot ?
+              <p className="text-xs font-mono font-light text-muted-foreground">
+                :host-context(file:{graph.projectRoot})
+              </p>
+            : ''}
+            <SearchBar
+              tabIndex={0}
+              className="w-full bg-muted-foreground/5"
+              startContent={
+                <Search size={20} className="ml-3" color="#a3a3a3" />
+              }
+              endContent={
+                <div className="hidden md:flex gap-1 mr-3 backdrop-blur-sm">
+                  <Kbd>
+                    <Command size={12} />
+                  </Kbd>
+                  <Kbd className="text-sm">k</Kbd>
+                </div>
+              }
+            />
+          </div>
+        </section>
       </div>
       <ExplorerGrid />
-    </>
+      <Footer />
+    </section>
   )
 }

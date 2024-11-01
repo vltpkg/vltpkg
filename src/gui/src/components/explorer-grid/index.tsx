@@ -1,4 +1,10 @@
-import { CornerRightDown, MoveRight } from 'lucide-react'
+import {
+  Search,
+  GalleryVertical,
+  GalleryVerticalEnd,
+  GalleryThumbnails,
+  GitFork,
+} from 'lucide-react'
 import type { EdgeLike, NodeLike } from '@vltpkg/graph'
 import { stringifyNode } from '@vltpkg/graph/browser'
 import type { DepID } from '@vltpkg/dep-id'
@@ -14,7 +20,7 @@ import {
 
 const GridHeader = ({ ...props }) => (
   <div
-    className="pt-6 text-xl flex flex-row font-semibold"
+    className="pt-6 text-md flex flex-row items-center font-medium"
     {...props}></div>
 )
 
@@ -136,13 +142,13 @@ const getParent = (
   node?: NodeLike,
 ): GridItemData | undefined => {
   if (!node) return undefined
-  const version = node.version ? `@${node.version}` : ''
+  const version = node.version ? `${node.version}` : ''
   return {
     ...edge,
     id: node.id,
     name: node.name || '',
     title: `${node.name}${version}`,
-    version: '',
+    version: version || '',
     stacked: false,
     size: 1,
     labels: undefined,
@@ -154,13 +160,14 @@ const getDependentItems = (node?: NodeLike, parent?: NodeLike) => {
   if (!node) return items
   for (const edge of Array.from(node.edgesIn)) {
     if (edge.from === parent) continue
-    const version = edge.from.version ? `@${edge.from.version}` : ''
+    const version = edge.from.version ? `${edge.from.version}` : ''
 
     items.push({
       ...edge,
       id: edge.from.id,
       title: `${edge.from.name}${version}`,
-      version: '',
+      version: version || '',
+      name: edge.from.name || '',
       stacked: edge.from.edgesIn.size > 1,
       size: edge.from.edgesIn.size,
       labels: undefined,
@@ -178,7 +185,8 @@ const getDependencyItems = (node?: NodeLike) => {
       ...edge,
       id: edge.to?.id || title,
       title,
-      version: '',
+      name: edge.to?.name || '',
+      version: edge.to?.version || '',
       stacked: false,
       size: 1,
       labels: [edge.type],
@@ -237,14 +245,16 @@ export const ExplorerGrid = () => {
     return undefined
   }
   return (
-    <div className="grid grid-cols-7 gap-4">
+    <div className="grow grid grid-cols-7 gap-4 px-8 bg-secondary dark:bg-black">
       <div className="col-span-2">
         {parentItem ?
           <>
             <GridHeader>
-              Parent <CornerRightDown className="mt-1 ml-2" />
+              <GalleryThumbnails size={22} className="mr-3" />
+              Parent
             </GridHeader>
             <SideItem
+              parent={true}
               item={parentItem}
               highlight={true}
               onClick={dependentsClick(parentItem, true)}
@@ -254,7 +264,8 @@ export const ExplorerGrid = () => {
         {dependents && dependents.length > 0 ?
           <>
             <GridHeader>
-              Dependents <MoveRight className="mt-1 ml-2" />
+              <GalleryVerticalEnd size={22} className="mr-3" />
+              Dependents
             </GridHeader>
             {dependents.map(item => (
               <SideItem
@@ -268,11 +279,15 @@ export const ExplorerGrid = () => {
       </div>
       <div className="col-span-3">
         {items.length === 0 ?
-          <GridHeader>No Results</GridHeader>
+          <GridHeader>
+            <Search size={22} className="mr-3" />
+            No Results
+          </GridHeader>
         : items.length > 1 ?
           <GridHeader>Results</GridHeader>
         : <GridHeader>
-            Selected Item <CornerRightDown className="mt-1 ml-2" />
+            <GalleryVertical size={22} className="mr-3" />
+            Selected Item
           </GridHeader>
         }
         {items.map(item =>
@@ -282,16 +297,16 @@ export const ExplorerGrid = () => {
         )}
       </div>
       <div className="col-span-2">
-        <div className="h-[7.9rem]"></div>
         {dependencies && dependencies.length > 0 ?
           <>
             <GridHeader>
-              <MoveRight className="mt-1 ml-2 mr-2" />
+              <GitFork size={22} className="mr-3 rotate-180" />
               Dependencies
             </GridHeader>
-            {dependencies.map(item => (
+            {dependencies.map((item, idx) => (
               <SideItem
                 item={item}
+                idx={idx}
                 key={item.id}
                 dependencies={true}
                 onClick={dependencyClick(item)}
