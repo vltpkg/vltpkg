@@ -4,7 +4,7 @@ exports[`SideItem render as dependency 1`] = `
 
 <div>
   <div class="group relative z-10">
-    <gui-card classname="transition-colors relative my-4   group-hover:light:border-indigo-600 group-hover:light:bg-indigo-100  dark:group-hover:bg-gradient-to-b dark:group-hover:from-indigo-950 dark:group-hover:to-zinc-950 dark:group-hover:border-indigo-300">
+    <gui-card classname="transition-colors relative my-4   group-hover:border-indigo-600 group-hover:bg-indigo-100  dark:group-hover:bg-gradient-to-b dark:group-hover:from-indigo-950 dark:group-hover:to-zinc-950 dark:group-hover:border-indigo-300">
       <gui-card-header classname="rounded-t-lg relative flex flex-row p-2 px-3">
         <gui-card-title classname="text-md grow">
           item
@@ -27,7 +27,7 @@ exports[`SideItem render as dependency with long name 1`] = `
 
 <div>
   <div class="group relative z-10">
-    <gui-card classname="transition-colors relative my-4   group-hover:light:border-indigo-600 group-hover:light:bg-indigo-100  dark:group-hover:bg-gradient-to-b dark:group-hover:from-indigo-950 dark:group-hover:to-zinc-950 dark:group-hover:border-indigo-300">
+    <gui-card classname="transition-colors relative my-4   group-hover:border-indigo-600 group-hover:bg-indigo-100  dark:group-hover:bg-gradient-to-b dark:group-hover:from-indigo-950 dark:group-hover:to-zinc-950 dark:group-hover:border-indigo-300">
       <gui-card-header classname="rounded-t-lg relative flex flex-row p-2 px-3">
         <gui-card-title classname="text-md grow">
           lorem-ipsum-dolor-sit-amet-consectetur-adipiscing-elit-sed-do-eiusmod-tempor-incididunt-ut-labore-et-dolore-magna-aliqua-ut-enim-ad-minim-veniam-quis-nostrud-exercitation
@@ -50,7 +50,7 @@ exports[`SideItem render as dependent 1`] = `
 
 <div>
   <div class="group relative z-10">
-    <gui-card classname="transition-colors relative my-4   group-hover:light:border-indigo-600 group-hover:light:bg-indigo-100  dark:group-hover:bg-gradient-to-b dark:group-hover:from-indigo-950 dark:group-hover:to-zinc-950 dark:group-hover:border-indigo-300">
+    <gui-card classname="transition-colors relative my-4   group-hover:border-indigo-600 group-hover:bg-indigo-100  dark:group-hover:bg-gradient-to-b dark:group-hover:from-indigo-950 dark:group-hover:to-zinc-950 dark:group-hover:border-indigo-300">
       <gui-card-header classname="rounded-t-lg relative flex flex-row p-2 px-3">
         <gui-card-title classname="text-md grow">
           item
@@ -73,11 +73,11 @@ exports[`SideItem render as multi-stacked dependent 1`] = `
 
 <div>
   <div class="group relative z-10">
-    <div class="absolute border top-2 left-2 w-[96%] h-full bg-card rounded-lg group-hover:light:border-indigo-600 group-hover:light:bg-indigo-100 dark:group-hover:bg-gradient-to-b dark:group-hoverfrom-indigo-950 dark:group-hoverto-zinc-950 dark:group-hover:border-indigo-300">
+    <div class="absolute border top-2 left-2 w-[96%] h-full bg-card rounded-lg group-hover:border-indigo-600 group-hover:bg-indigo-100 dark:group-hover:bg-gradient-to-b dark:group-hoverfrom-indigo-950 dark:group-hoverto-zinc-950 dark:group-hover:border-indigo-300">
     </div>
-    <div class="absolute border top-1 left-1 w-[98%] h-full bg-card rounded-lg group-hover:light:border-indigo-600 group-hover:light:bg-indigo-100 dark:group-hover:bg-gradient-to-b dark:group-hover:from-indigo-950 dark:group-hover:to-zinc-950 dark:group-hover:border-indigo-300">
+    <div class="absolute border top-1 left-1 w-[98%] h-full bg-card rounded-lg group-hover:border-indigo-600 group-hover:bg-indigo-100 dark:group-hover:bg-gradient-to-b dark:group-hover:from-indigo-950 dark:group-hover:to-zinc-950 dark:group-hover:border-indigo-300">
     </div>
-    <gui-card classname="transition-colors relative my-4   group-hover:light:border-indigo-600 group-hover:light:bg-indigo-100  dark:group-hover:bg-gradient-to-b dark:group-hover:from-indigo-950 dark:group-hover:to-zinc-950 dark:group-hover:border-indigo-300">
+    <gui-card classname="transition-colors relative my-4   group-hover:border-indigo-600 group-hover:bg-indigo-100  dark:group-hover:bg-gradient-to-b dark:group-hover:from-indigo-950 dark:group-hover:to-zinc-950 dark:group-hover:border-indigo-300">
       <gui-card-header classname="rounded-t-lg relative flex flex-row p-2 px-3">
         <gui-card-title classname="text-md grow">
           item
@@ -100,7 +100,7 @@ exports[`SideItem render as parent 1`] = `
 
 <div>
   <div class="group relative z-10">
-    <gui-card classname="transition-colors relative my-4 border-primary  group-hover:light:border-indigo-600 group-hover:light:bg-indigo-100  dark:group-hover:bg-gradient-to-b dark:group-hover:from-indigo-950 dark:group-hover:to-zinc-950 dark:group-hover:border-indigo-300">
+    <gui-card classname="transition-colors relative my-4 border-primary  group-hover:border-indigo-600 group-hover:bg-indigo-100  dark:group-hover:bg-gradient-to-b dark:group-hover:from-indigo-950 dark:group-hover:to-zinc-950 dark:group-hover:border-indigo-300">
       <gui-card-header classname="rounded-t-lg relative flex flex-row p-2 px-3">
         <gui-card-title classname="text-md grow">
           item
@@ -123,9 +123,9 @@ exports[`SideItem render as two-stacked dependent 1`] = `
 
 <div>
   <div class="group relative z-10">
-    <div class="absolute border top-1 left-1 w-[98%] h-full bg-card rounded-lg group-hover:light:border-indigo-600 group-hover:light:bg-indigo-100 dark:group-hover:bg-gradient-to-b dark:group-hover:from-indigo-950 dark:group-hover:to-zinc-950 dark:group-hover:border-indigo-300">
+    <div class="absolute border top-1 left-1 w-[98%] h-full bg-card rounded-lg group-hover:border-indigo-600 group-hover:bg-indigo-100 dark:group-hover:bg-gradient-to-b dark:group-hover:from-indigo-950 dark:group-hover:to-zinc-950 dark:group-hover:border-indigo-300">
     </div>
-    <gui-card classname="transition-colors relative my-4   group-hover:light:border-indigo-600 group-hover:light:bg-indigo-100  dark:group-hover:bg-gradient-to-b dark:group-hover:from-indigo-950 dark:group-hover:to-zinc-950 dark:group-hover:border-indigo-300">
+    <gui-card classname="transition-colors relative my-4   group-hover:border-indigo-600 group-hover:bg-indigo-100  dark:group-hover:bg-gradient-to-b dark:group-hover:from-indigo-950 dark:group-hover:to-zinc-950 dark:group-hover:border-indigo-300">
       <gui-card-header classname="rounded-t-lg relative flex flex-row p-2 px-3">
         <gui-card-title classname="text-md grow">
           item

@@ -46,7 +46,7 @@ exports[`explorer-grid renders workspace with edges in 1`] = `
         </svg>
       </div>
       <div class="group relative z-10">
-        <div class="block rounded-lg border bg-card text-card-foreground shadow-sm transition-colors relative my-4 border-primary cursor-pointer group-hover:light:border-indigo-600 group-hover:light:bg-indigo-100 dark:group-hover:bg-gradient-to-b dark:group-hover:from-indigo-950 dark:group-hover:to-zinc-950 dark:group-hover:border-indigo-300">
+        <div class="block rounded-lg border bg-card text-card-foreground shadow-sm transition-colors relative my-4 border-primary cursor-pointer group-hover:border-indigo-600 group-hover:bg-indigo-100 dark:group-hover:bg-gradient-to-b dark:group-hover:from-indigo-950 dark:group-hover:to-zinc-950 dark:group-hover:border-indigo-300">
           <div class="rounded-t-lg relative flex flex-row p-2 px-3">
             <h3 class="font-semibold tracking-tight text-md grow">
               a@1.0.0
