@@ -8,8 +8,8 @@ exports[`error-found has a cause 1`] = `
     </gui-logo>
     <div class="col-span-5 relative pt-6 pb-1">
       <div class="flex ml-[580px]">
-        <gui-mode-toggle>
-        </gui-mode-toggle>
+        <gui-theme-switcher>
+        </gui-theme-switcher>
         <gui-button
           classname="ml-2"
           variant="outline"
@@ -48,8 +48,8 @@ exports[`render default 1`] = `
     </gui-logo>
     <div class="col-span-5 relative pt-6 pb-1">
       <div class="flex ml-[580px]">
-        <gui-mode-toggle>
-        </gui-mode-toggle>
+        <gui-theme-switcher>
+        </gui-theme-switcher>
         <gui-button
           classname="ml-2"
           variant="outline"

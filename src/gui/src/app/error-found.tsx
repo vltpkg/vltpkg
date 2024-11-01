@@ -1,7 +1,7 @@
 import { useEffect, MouseEvent } from 'react'
 import { Logo } from '@/components/ui/logo.jsx'
 import { Title } from '@/components/ui/title.jsx'
-import { ModeToggle } from '@/components/ui/mode-toggle.jsx'
+import { ThemeSwitcher } from '@/components/ui/theme-switcher.jsx'
 import { BatteryLow, LayoutDashboard } from 'lucide-react'
 import { useGraphStore } from '@/state/index.js'
 import { Button } from '@/components/ui/button.jsx'
@@ -27,7 +27,7 @@ export const ErrorFound = () => {
         <Logo className="col-span-2 p-8" />
         <div className="col-span-5 relative pt-6 pb-1">
           <div className="flex ml-[580px]">
-            <ModeToggle />
+            <ThemeSwitcher />
             <Button
               className="ml-2"
               variant="outline"

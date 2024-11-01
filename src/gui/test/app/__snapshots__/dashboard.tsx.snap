@@ -11,8 +11,8 @@ exports[`render default 1`] = `
         Dashboard
       </gui-title>
       <div class="flex ml-[580px]">
-        <gui-mode-toggle>
-        </gui-mode-toggle>
+        <gui-theme-switcher>
+        </gui-theme-switcher>
       </div>
     </div>
   </div>

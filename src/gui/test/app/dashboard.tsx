@@ -19,8 +19,8 @@ vi.mock('@/components/ui/logo.jsx', () => ({
 vi.mock('@/components/ui/title.jsx', () => ({
   Title: 'gui-title',
 }))
-vi.mock('@/components/ui/mode-toggle.jsx', () => ({
-  ModeToggle: 'gui-mode-toggle',
+vi.mock('@/components/ui/theme-switcher.jsx', () => ({
+  ThemeSwitcher: 'gui-theme-switcher',
 }))
 vi.mock('@/components/dashboard-grid/index.jsx', () => ({
   DashboardGrid: 'gui-dashboard-grid',

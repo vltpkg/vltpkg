@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 import { Logo } from '@/components/ui/logo.jsx'
 import { Title } from '@/components/ui/title.jsx'
 import { DashboardGrid } from '@/components/dashboard-grid/index.jsx'
-import { ModeToggle } from '@/components/ui/mode-toggle.jsx'
+import { ThemeSwitcher } from '@/components/ui/theme-switcher.jsx'
 import { Action, State } from '@/state/types.js'
 import { useGraphStore } from '@/state/index.js'
 
@@ -66,7 +66,7 @@ export const Dashboard = () => {
             Dashboard
           </Title>
           <div className="flex ml-[580px]">
-            <ModeToggle />
+            <ThemeSwitcher />
           </div>
         </div>
       </div>

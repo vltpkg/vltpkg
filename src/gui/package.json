@@ -14,6 +14,7 @@
     "@vltpkg/types": "workspace:*",
     "class-variance-authority": "catalog:",
     "clsx": "catalog:",
+    "gsap": "^3.12.5",
     "lucide-react": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",

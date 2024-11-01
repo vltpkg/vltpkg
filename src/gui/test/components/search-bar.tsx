@@ -39,7 +39,7 @@ test('search-bar updates query store value', async () => {
   render(<SearchBar />)
 
   const value = '[name="my-package"][version="2.0.0"]'
-  fireEvent.change(screen.getByRole('searchbox'), {
+  fireEvent.change(screen.getByRole('search'), {
     target: { value },
   })
 

@@ -5,12 +5,17 @@ export const Logo = forwardRef<
   HTMLParagraphElement,
   HTMLAttributes<HTMLHeadingElement>
 >(({ className }, ref) => (
-  <div ref={ref} className={cn('flex flex-row', className)}>
-    <h1>
+  <div
+    ref={ref}
+    className={cn(
+      'flex flex-row items-center justify-center',
+      className,
+    )}>
+    <h1 className="flex items-center justify-center">
       <span className="text-2xl font-semibold leading-none pr-2 tracking-wide">
         vlt
       </span>
-      <span className="text-2xl font-light leading-none text-zinc-500 tracking-wide">
+      <span className="text-2xl font-light leading-none text-neutral-500 tracking-wide">
         {'/vōlt/'}
       </span>
     </h1>
