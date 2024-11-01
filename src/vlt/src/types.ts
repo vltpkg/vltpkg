@@ -2,6 +2,7 @@ import type { PackageJson } from '@vltpkg/package-json'
 import type { Monorepo } from '@vltpkg/workspaces'
 import type { PathScurry } from 'path-scurry'
 import type { LoadedConfig } from './config/index.js'
+import type { Jack } from 'jackspeak'
 
 export type * from './config/index.js'
 
@@ -16,5 +17,5 @@ export type CliCommand = {
     conf: LoadedConfig,
     options: CliCommandOptions,
   ) => Promise<void>
-  usage: string | (() => Promise<string>)
+  usage: () => Promise<Jack>
 }

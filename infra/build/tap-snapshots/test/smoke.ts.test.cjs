@@ -19,7 +19,7 @@ exports[`test/smoke.ts > TAP > commands > vlt > pkg > get name > output 1`] = `
 
 exports[`test/smoke.ts > TAP > commands > vlt > pkg > get name version > output 1`] = `
 {ROOT}/src/vlt/src/commands/pkg.ts:{LINE_NUMBER}
-      throw error(
+      throw noArg()
             ^
 
 

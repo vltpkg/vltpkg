@@ -2,10 +2,16 @@ import { actual, ideal, reify } from '@vltpkg/graph'
 import { PackageInfoClient } from '@vltpkg/package-info'
 import { LoadedConfig } from '../config/index.js'
 import { parseRemoveArgs } from '../parse-add-remove-args.js'
-import { CliCommandOptions } from '../types.js'
+import { CliCommandOptions, CliCommand } from '../types.js'
+import { commandUsage } from '../config/usage.js'
 
-export const usage = `vlt uninstall [package ...]
-Remove the named packages from the dependency graph`
+export const usage: CliCommand['usage'] = () =>
+  commandUsage({
+    command: 'uninstall',
+    usage: '[package ...]',
+    description:
+      'Remove the named packages from the dependency graph',
+  })
 
 export const command = async (
   conf: LoadedConfig,

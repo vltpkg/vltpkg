@@ -1,4 +1,5 @@
 import t, { Test } from 'tap'
+import { Jack, jack } from 'jackspeak'
 import {
   setupEnv,
   mockConfig,
@@ -23,7 +24,7 @@ export const run = async (
     argv?: string[]
     command?: {
       command: () => Promise<void>
-      usage?: string | (() => Promise<string>)
+      usage?: () => Promise<Jack>
     }
   },
 ) => {
@@ -79,28 +80,10 @@ t.test('print usage', async t => {
       command: async () => {
         commandRun = true
       },
-      usage: 'im helping!!! im helping youuuuuu',
-    },
-    testdir: {
-      '.git': {},
-      'vlt.json': JSON.stringify({}),
-    },
-  })
-  t.equal(commandRun, false)
-  t.strictSame(logs, [['im helping!!! im helping youuuuuu']])
-})
-
-t.test('print async usage', async t => {
-  let commandRun = false
-  const { logs } = await run(t, {
-    commandName: 'install',
-    argv: ['-h'],
-    command: {
-      command: async () => {
-        commandRun = true
-      },
       usage: async () =>
-        'im helping!!! im helping youuuuuu asynchronously',
+        jack({
+          usage: 'im helping!!! im helping youuuuuu',
+        }),
     },
     testdir: {
       '.git': {},
@@ -108,7 +91,10 @@ t.test('print async usage', async t => {
     },
   })
   t.equal(commandRun, false)
-  t.strictSame(logs, [
-    ['im helping!!! im helping youuuuuu asynchronously'],
-  ])
+  t.equal(logs.length, 1)
+  t.equal(logs[0].length, 1)
+  t.strictSame(
+    logs[0][0].split('\n').map((l: string) => l.trim()),
+    ['Usage:', 'im helping!!! im helping youuuuuu', ''],
+  )
 })

@@ -6,6 +6,7 @@ import {
   recordFields,
   getCommand,
 } from '../../src/config/definition.js'
+import { setupEnv } from '../fixtures/run.js'
 
 t.matchSnapshot(commands, 'commands')
 const defObj = definition.toJSON()
@@ -66,11 +67,7 @@ t.test('infer editor from env/platform', async t => {
     ],
   ]
   t.plan(cases.length)
-  const cleanEnv = Object.fromEntries(
-    Object.entries(process.env).filter(
-      ([k]) => !k.startsWith('VLT_'),
-    ),
-  )
+  const cleanEnv = setupEnv(t)
   for (const [{ platform, EDITOR, VISUAL }, expect] of cases) {
     t.test(`${platform} ${EDITOR} ${VISUAL}`, async t => {
       t.intercept(process, 'env', {

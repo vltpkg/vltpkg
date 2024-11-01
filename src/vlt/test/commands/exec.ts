@@ -1,21 +1,15 @@
 import { resolve } from 'path'
 import t from 'tap'
-
 import { command, usage } from '../../src/commands/exec.js'
+import { setupEnv } from '../fixtures/run.js'
 
-t.type(usage, 'string')
+setupEnv(t)
 
 const pass = 'node -e "process.exit(0)"'
 
-// fresh process.env on every test
-const cleanEnv = Object.fromEntries(
-  Object.entries(process.env).filter(([k]) => !/^VLT_/i.test(k)),
-)
-// not sure why this is required, but Windows tests fail without it.
-cleanEnv.PATH = process.env.PATH
-t.beforeEach(t =>
-  t.intercept(process, 'env', { value: { ...cleanEnv } }),
-)
+if (process.argv[1] === import.meta.filename) {
+  t.matchSnapshot((await usage()).usage(), 'usage')
+}
 
 t.test('run script in a project', async t => {
   const dir = t.testdir({

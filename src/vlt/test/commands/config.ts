@@ -1,15 +1,20 @@
 import t, { Test } from 'tap'
-
 import {
   definition,
   LoadedConfig,
   recordsToPairs,
 } from '../../src/config/index.js'
-
 import { PackageJson } from '@vltpkg/package-json'
 import * as CP from 'node:child_process'
 import { SpawnOptions } from 'node:child_process'
 import { PathScurry } from 'path-scurry'
+
+const mockCommand = (t: Test, mocks?: Record<string, any>) =>
+  t.mockImport<typeof import('../../src/commands/config.js')>(
+    '../../src/commands/config.js',
+    mocks,
+  )
+
 let edited: string | undefined = undefined
 const mockSpawnSync = (
   cmd: string,
@@ -71,9 +76,7 @@ const run = async (
   spawnSync = mockSpawnSync,
 ) => {
   const conf = new MockConfig(positionals, values)
-  const cmd = await t.mockImport<
-    typeof import('../../src/commands/config.js')
-  >('../../src/commands/config.js', {
+  const cmd = await mockCommand(t, {
     child_process: t.createMock(CP, { spawnSync }),
   })
   return {
@@ -82,12 +85,11 @@ const run = async (
   }
 }
 
-let USAGE: string
-t.test('has usage', async t => {
-  const { usage } = await t.mockImport('../../src/commands/config.js')
-  USAGE = usage
-  t.type(usage, 'string')
-})
+const USAGE = await mockCommand(t).then(async c =>
+  (await c.usage()).usage(),
+)
+
+t.matchSnapshot(USAGE, 'usage')
 
 t.test('show usage', async t => {
   t.test('explicit -h', async t => {

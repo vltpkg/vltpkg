@@ -106,7 +106,7 @@ const { usage, command } = await t.mockImport<
 })
 
 t.test('list', async t => {
-  t.matchSnapshot(usage, 'should have usage')
+  t.matchSnapshot((await usage()).usage(), 'should have usage')
 
   sharedOptions.packageJson.read = () => graph.mainImporter.manifest!
   const options = {

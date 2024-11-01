@@ -10,29 +10,39 @@ import { LoadedConfig } from '../config/index.js'
 import { Query } from '@vltpkg/query'
 import chalk from 'chalk'
 import { startGUI } from '../start-gui.js'
+import { commandUsage } from '../config/usage.js'
+import { type CliCommand } from '../types.js'
 
-export const usage = `Usage:
-  vlt query
-  vlt query <query> --view=[human | json | mermaid | gui]
-
-List installed dependencies matching the provided query.
-
-Examples:
-
-  vlt query '#foo'
-          Query packages with the name "foo"
-  vlt query '*.workspace > *.peer'
-          Query all peer dependencies of workspaces
-  vlt query ':project > *:attr(scripts, [build])'
-          Query all direct project dependencies with a "build" script
-  vlt query '[name^="@vltpkg"]'
-          Query packages with names starting with "@vltpkg"
-
-Options:
-
-  --view=[human | json | mermaid | gui]
-          Output format. Defaults to human-readable or json if no tty.
-`
+export const usage: CliCommand['usage'] = () =>
+  commandUsage({
+    command: 'query',
+    usage: ['', '<query> --view=[human | json | mermaid | gui]'],
+    description:
+      'List installed dependencies matching the provided query.',
+    examples: {
+      [`'#foo'`]: {
+        description: 'Query packages with the name "foo"',
+      },
+      [`'*.workspace > *.peer'`]: {
+        description: 'Query all peer dependencies of workspaces',
+      },
+      [`':project > *:attr(scripts, [build])'`]: {
+        description:
+          'Query all direct project dependencies with a "build" script',
+      },
+      [`'[name^="@vltpkg"]'`]: {
+        description:
+          'Query packages with names starting with "@vltpkg"',
+      },
+    },
+    options: {
+      view: {
+        value: '[human | json | mermaid | gui]',
+        description:
+          'Output format. Defaults to human-readable or json if no tty.',
+      },
+    },
+  })
 
 export const command = async (
   conf: LoadedConfig,
