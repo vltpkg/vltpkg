@@ -1,0 +1,60 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`dashboard-grid render default 1`] = `
+
+<div>
+  <div class="flex flex-wrap width-full mt-6">
+  </div>
+</div>
+
+`;
+
+exports[`dashboard-grid with results 1`] = `
+
+<div>
+  <div class="flex flex-wrap width-full mt-6">
+    <a
+      href="#"
+      class="bg-primary rounded-lg w-96 m-4 p-4"
+    >
+      <div class="text-[9px] text-gray-500 text-right pb-4">
+        Latest modified: 2024-11-01T22:01:23.044Z
+      </div>
+      <gui-card-title classname="text-md text-secondary grow mb-2">
+        project-foo
+      </gui-card-title>
+      <div class="flex flex-row-reverse">
+        <div class="flex-none bg-secondary rounded-lg text-[10px] text-primary px-2 ml-2 mb-2 width-auto">
+          node
+        </div>
+        <div class="flex-none bg-secondary rounded-lg text-[10px] text-primary px-2 ml-2 mb-2 width-auto">
+          vlt
+        </div>
+      </div>
+      <div class="text-[10px] text-secondary ">
+        /home/user/project-foo
+      </div>
+    </a>
+    <a
+      href="#"
+      class="bg-primary rounded-lg w-96 m-4 p-4"
+    >
+      <div class="text-[9px] text-gray-500 text-right pb-4">
+        Latest modified: 2024-11-01T22:01:31.029Z
+      </div>
+      <gui-card-title classname="text-md text-secondary grow mb-2">
+        project-bar
+      </gui-card-title>
+      <div class="flex flex-row-reverse">
+        <div class="flex-none bg-secondary rounded-lg text-[10px] text-primary px-2 ml-2 mb-2 width-auto">
+          pnpm
+        </div>
+      </div>
+      <div class="text-[10px] text-secondary ">
+        /home/user/project-bar
+      </div>
+    </a>
+  </div>
+</div>
+
+`;
