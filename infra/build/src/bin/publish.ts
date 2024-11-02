@@ -112,6 +112,7 @@ const keysToObj = (arr: string[], t: (k: string) => string) =>
 const writeFiles = (
   name: string,
   { dir, format, compileId }: Package,
+  { bins = types.BinNames }: { bins?: types.Bin[] },
 ) => {
   const { dirs, files } = readdirSync(dir, {
     withFileTypes: true,
@@ -134,13 +135,13 @@ const writeFiles = (
     name,
     version: `${p.version}.${DATE_ID}`,
     type: format === types.Formats.Cjs ? 'commonjs' : 'module',
-    bin: keysToObj(types.BinNames, binPath),
+    bin: keysToObj(bins, binPath),
     files: [
       ...dirs.map(d => `${d}/`),
       ...files.filter(f => {
         const base = f.split('.')[0]
         const bin = types.isBin(base) ? base : null
-        return bin && types.BinNames.includes(bin)
+        return bin && bins.includes(bin)
       }),
     ],
     ...keysToObj(['description', 'license', 'engines'], k => p[k]),
@@ -163,9 +164,14 @@ const main = async () => {
   )
   assert(pkg, 'could not find package to publish')
 
+  const [opts = {}, args = []] =
+    'runtime' in pkg && pkg.runtime === 'deno' ?
+      [{ bins: [types.Bins.vlt] }, ['--tag=deno']]
+    : []
+
   const registryPackageToPublish = 'vlt'
-  writeFiles(registryPackageToPublish, pkg)
-  npm(pkg, ['publish', ...npmArgs], {
+  writeFiles(registryPackageToPublish, pkg, opts)
+  npm(pkg, ['publish', ...npmArgs, ...args], {
     env: {
       [PUBLISH_TOKEN]: getToken(registryPackageToPublish),
     },
