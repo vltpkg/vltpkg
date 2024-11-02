@@ -15,9 +15,13 @@ The monorepo containing the [vlt](https://www.vlt.sh) package manager.
 ### Development
 
 ```bash
-$ git clone <url>
-$ pnpm install
-
-$ cd src/<thing-to-work-on>
-# Do stuff, use pnpm here to add/remove deps
+# Clone the repo
+git clone git@github.com:vltpkg/vltpkg.git
+cd vltpkg
+# Install deps and prepare
+pnpm install
+# Run the locally built CLI
+./node_modules/.bin/vlt
 ```
+
+See the [contributing guide](./CONTRIBUTING.md) for more information on how to build and develop the various workspaces.
