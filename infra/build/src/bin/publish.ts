@@ -58,6 +58,9 @@ const npm = (
   })
 
 const getToken = (bin: types.Bin) => {
+  if (process.env.CI) {
+    return process.env.VLT_CLI_PUBLISH_TOKEN
+  }
   const { sections, fields } = JSON.parse(
     spawnSync(
       'op',
