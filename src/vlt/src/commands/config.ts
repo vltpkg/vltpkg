@@ -8,23 +8,53 @@ import {
   pairsToRecords,
   recordsToPairs,
 } from '../config/index.js'
+import { commandUsage } from '../config/usage.js'
+import { type CliCommand } from '../types.js'
 
 // TODO: need a proper error/logging handler thing
 // replace all these string throws and direct console.log/error
 // with appropriate output and error handling.
 
-export const usage = `Usage:
-  vlt config get <key> [<key> ...]
-  vlt config ls
-  vlt config set <key>=<value> [<key>=<value> ...] [--config=<user | project>]
-  vlt config del <key> [<key> ...] [--config=<user | project>]
-  vlt config edit [--config=<user | project>]
-  vlt config help [field ...]`
+export const usage: CliCommand['usage'] = () =>
+  commandUsage({
+    command: 'config',
+    usage: '<command> [flags]',
+    description:
+      'Get or manipulate the configuration for the vlt CLI',
+    subcommands: {
+      get: {
+        usage: '<key> [<key> ...]',
+        description: 'Get the value of a configuration key',
+      },
+      ls: {
+        description: 'List all configuration keys and values',
+      },
+      set: {
+        usage:
+          '<key>=<value> [<key>=<value> ...] [--config=<user | project>]',
+        description: 'Set the value of a configuration key',
+      },
+      del: {
+        usage: '<key> [<key> ...] [--config=<user | project>]',
+        description: 'Delete a configuration key',
+      },
+      edit: {
+        usage: '[--config=<user | project>]',
+        description: 'Edit the configuration file',
+      },
+      help: {
+        usage: '[field ...]',
+        description: 'Show help for a specific configuration field',
+      },
+    },
+  })
+
+const usageString = async () => (await usage()).usage()
 
 export const command = async (conf: LoadedConfig) => {
   const sub = conf.positionals[0]
   if (conf.get('help') || !sub) {
-    console.log(usage)
+    console.log(await usageString())
     return
   }
 
@@ -43,7 +73,7 @@ export const command = async (conf: LoadedConfig) => {
     case 'del':
       return del(conf)
     default: {
-      console.error(usage)
+      console.error(await usageString())
       throw error('Unrecognized config command', {
         found: conf.positionals[0],
         validOptions: ['set', 'get', 'list', 'edit', 'help', 'del'],
@@ -95,17 +125,17 @@ const list = (conf: LoadedConfig) => {
 const del = async (conf: LoadedConfig) => {
   const fields = conf.positionals.slice(1)
   if (!fields.length) {
-    console.error(usage)
+    console.error(await usageString())
     throw error('At least one key is required')
   }
   await conf.deleteConfigKeys(conf.get('config'), fields)
 }
 
-const get = (conf: LoadedConfig) => {
+const get = async (conf: LoadedConfig) => {
   const keys = conf.positionals.slice(1)
   const k = keys[0]
   if (!k || keys.length > 1) {
-    console.error(usage)
+    console.error(await usageString())
     throw error('Exactly one key is required')
   }
   console.log(
@@ -136,7 +166,7 @@ const edit = async (conf: LoadedConfig) => {
 const set = async (conf: LoadedConfig) => {
   const pairs = conf.positionals.slice(1)
   if (!pairs.length) {
-    console.error(usage)
+    console.error(await usageString())
     throw error('At least one key=value pair is required')
   }
   const { values } = conf.jack.parseRaw(pairs.map(kv => `--${kv}`))

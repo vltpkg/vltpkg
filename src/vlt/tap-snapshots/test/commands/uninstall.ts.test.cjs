@@ -28,3 +28,11 @@ Object {
   "scurry": PathScurry {},
 }
 `
+
+exports[`test/commands/uninstall.ts > TAP > usage 1`] = `
+Usage:
+  vlt uninstall [package ...]
+
+Remove the named packages from the dependency graph
+
+`

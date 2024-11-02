@@ -14,6 +14,7 @@ export const setupEnv = (t: Test) => {
   t.beforeEach(t =>
     t.intercept(process, 'env', { value: { ...cleanEnv } }),
   )
+  return cleanEnv
 }
 
 export const mockConfig = (t: Test) =>

@@ -10,33 +10,44 @@ import { Query } from '@vltpkg/query'
 import chalk from 'chalk'
 import { LoadedConfig } from '../config/index.js'
 import { startGUI } from '../start-gui.js'
+import { commandUsage } from '../config/usage.js'
+import { CliCommand } from '../types.js'
 
-export const usage = `Usage:
-  vlt ls
-  vlt ls <query> --view=[human | json | mermaid | gui]
-
-List installed dependencies matching the provided query.
-Defaults to listing direct dependencies of a project and
-any configured workspace.
-
-Examples:
-
-  vlt ls
-          List direct dependencies of the current project / workspace
-  vlt ls *
-          List all dependencies for the current project / workspace
-  vlt ls foo bar baz
-          List all dependencies named 'foo', 'bar', or 'baz'
-  vlt ls '[name="@scoped/package"] > *'
-          Lists direct dependencies of a specific package
-  vlt ls '*.workspace > *.peer'
-          List all peer dependencies of all workspaces
-
-Options:
-
-  --view=[human | json | mermaid | gui]
-          Output format. Defaults to human-readable or json if no tty.
-`
+export const usage: CliCommand['usage'] = () =>
+  commandUsage({
+    command: 'ls',
+    usage: ['', '<query> --view=[human | json | mermaid | gui]'],
+    description: `List installed dependencies matching the provided query.
+                  Defaults to listing direct dependencies of a project and
+                  any configured workspace.`,
+    examples: {
+      '': {
+        description:
+          'List direct dependencies of the current project / workspace',
+      },
+      '*': {
+        description:
+          'List all dependencies for the current project / workspace',
+      },
+      'foo bar baz': {
+        description: `List all dependencies named 'foo', 'bar', or 'baz'`,
+      },
+      [`'[name="@scoped/package"] > *'`]: {
+        description:
+          'Lists direct dependencies of a specific package',
+      },
+      [`'*.workspace > *.peer'`]: {
+        description: 'List all peer dependencies of all workspaces',
+      },
+    },
+    options: {
+      view: {
+        value: '[human | json | mermaid | gui]',
+        description:
+          'Output format. Defaults to human-readable or json if no tty.',
+      },
+    },
+  })
 
 export const command = async (
   conf: LoadedConfig,

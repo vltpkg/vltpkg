@@ -24,27 +24,37 @@ Usage:
   vlt ls
   vlt ls <query> --view=[human | json | mermaid | gui]
 
-List installed dependencies matching the provided query.
-Defaults to listing direct dependencies of a project and
-any configured workspace.
+List installed dependencies matching the provided query. Defaults to listing
+direct dependencies of a project and any configured workspace.
 
-Examples:
+  Examples
 
-  vlt ls
-          List direct dependencies of the current project / workspace
-  vlt ls *
-          List all dependencies for the current project / workspace
-  vlt ls foo bar baz
-          List all dependencies named 'foo', 'bar', or 'baz'
-  vlt ls '[name="@scoped/package"] > *'
-          Lists direct dependencies of a specific package
-  vlt ls '*.workspace > *.peer'
-          List all peer dependencies of all workspaces
+    List direct dependencies of the current project / workspace
 
-Options:
+    ​vlt ls
 
-  --view=[human | json | mermaid | gui]
-          Output format. Defaults to human-readable or json if no tty.
+    List all dependencies for the current project / workspace
+
+    ​vlt ls *
+
+    List all dependencies named 'foo', 'bar', or 'baz'
+
+    ​vlt ls foo bar baz
+
+    Lists direct dependencies of a specific package
+
+    ​vlt ls '[name="@scoped/package"] > *'
+
+    List all peer dependencies of all workspaces
+
+    ​vlt ls '*.workspace > *.peer'
+
+  Options
+
+    view
+      Output format. Defaults to human-readable or json if no tty.
+
+      ​--view=[human | json | mermaid | gui]
 
 `
 

@@ -26,21 +26,30 @@ Usage:
 
 List installed dependencies matching the provided query.
 
-Examples:
+  Examples
 
-  vlt query '#foo'
-          Query packages with the name "foo"
-  vlt query '*.workspace > *.peer'
-          Query all peer dependencies of workspaces
-  vlt query ':project > *:attr(scripts, [build])'
-          Query all direct project dependencies with a "build" script
-  vlt query '[name^="@vltpkg"]'
-          Query packages with names starting with "@vltpkg"
+    Query packages with the name "foo"
 
-Options:
+    ​vlt query '#foo'
 
-  --view=[human | json | mermaid | gui]
-          Output format. Defaults to human-readable or json if no tty.
+    Query all peer dependencies of workspaces
+
+    ​vlt query '*.workspace > *.peer'
+
+    Query all direct project dependencies with a "build" script
+
+    ​vlt query ':project > *:attr(scripts, [build])'
+
+    Query packages with names starting with "@vltpkg"
+
+    ​vlt query '[name^="@vltpkg"]'
+
+  Options
+
+    view
+      Output format. Defaults to human-readable or json if no tty.
+
+      ​--view=[human | json | mermaid | gui]
 
 `
 

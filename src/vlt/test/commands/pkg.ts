@@ -4,7 +4,7 @@ import * as Command from '../../src/commands/pkg.js'
 import { readFileSync } from 'fs'
 import { join } from 'path'
 
-t.type(Command.usage, 'string')
+t.matchSnapshot((await Command.usage()).usage(), 'usage')
 
 setupEnv(t)
 

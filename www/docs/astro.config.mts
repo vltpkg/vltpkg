@@ -4,8 +4,16 @@ import starlight from '@astrojs/starlight'
 import vercelStatic from '@astrojs/vercel/static'
 import react from '@astrojs/react'
 import tailwind from '@astrojs/tailwind'
-import { existsSync } from 'fs'
-import { relative, resolve } from 'path'
+import { existsSync, readdirSync } from 'fs'
+import { basename, relative, resolve } from 'path'
+import { fileURLToPath } from 'url'
+import { resolve as metaResolve } from 'import-meta-resolve'
+
+const commands = readdirSync(
+  fileURLToPath(metaResolve('@vltpkg/cli/commands', import.meta.url)),
+)
+  .filter(c => c.endsWith('.js'))
+  .map(c => basename(c, '.js'))
 
 const PACKAGES = 'packages'
 
@@ -82,11 +90,16 @@ export default defineConfig({
       sidebar: [
         {
           label: 'CLI',
-          autogenerate: { directory: 'cli' },
-        },
-        {
-          label: 'API',
-          autogenerate: { directory: 'api' },
+          items: [
+            { label: 'Getting Started', link: 'cli' },
+            {
+              label: 'Commands',
+              items: commands.map(c => ({
+                label: c,
+                link: `cli/commands/${c}`,
+              })),
+            },
+          ],
         },
         {
           label: 'Packages',

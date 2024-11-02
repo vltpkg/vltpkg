@@ -1,7 +1,5 @@
 import { XDG } from '@vltpkg/xdg'
 import { jack } from 'jackspeak'
-import { homedir } from 'os'
-import { relative, sep } from 'path'
 
 /**
  * Command aliases mapped to their canonical names
@@ -42,9 +40,6 @@ export const getCommand = (
   s && s in commands ? commands[s as keyof Commands] : undefined
 
 const xdg = new XDG('vlt')
-const home = homedir()
-const confDir = xdg.config('vlt.json')
-
 const cacheDir = xdg.cache()
 
 /**
@@ -174,7 +169,7 @@ export const definition = jack({
     `If a \`vlt.json\` file is present in the root of the current project,
      then that will be used as a source of configuration information.
 
-     Next, the file at \`$HOME${sep}${relative(home, confDir)}\`
+     Next, the \`vlt.json\` file in the XDG specified config directory
      will be checked, and loaded for any fields not set in the local project.
 
      Object type values will be merged together. Set a field to \`null\` in

@@ -2,9 +2,15 @@ import { PackageJson } from '@vltpkg/package-json'
 import { run, runFG } from '@vltpkg/run'
 import { LoadedConfig } from '../config/index.js'
 import { ExecCommand } from '../exec-command.js'
+import { commandUsage } from '../config/usage.js'
+import { type CliCommand } from '../types.js'
 
-export const usage = `vlt run <script> [args ...]
-Run the named script from package.json`
+export const usage: CliCommand['usage'] = () =>
+  commandUsage({
+    command: 'run',
+    usage: '<script> [args ...]',
+    description: `Run the named script from package.json`,
+  })
 
 class RunCommand extends ExecCommand<typeof run, typeof runFG> {
   constructor(conf: LoadedConfig, bg = run, fg = runFG) {

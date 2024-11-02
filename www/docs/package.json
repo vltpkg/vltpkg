@@ -39,6 +39,7 @@
     "@types/eslint__js": "catalog:",
     "@types/node": "catalog:",
     "eslint": "catalog:",
+    "import-meta-resolve": "^4.1.0",
     "prettier": "catalog:",
     "typedoc-plugin-remark": "^1.0.3",
     "typescript": "catalog:",

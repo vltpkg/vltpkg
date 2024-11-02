@@ -11,6 +11,7 @@
     "exports": {
       "./package.json": "./package.json",
       ".": "./src/index.ts",
+      "./commands": "./src/commands",
       "./commands/*": "./src/commands/*.ts",
       "./config": "./src/config/index.ts",
       "./config/definition": "./src/config/definition.ts",
@@ -89,6 +90,12 @@
       "import": {
         "types": "./dist/esm/index.d.ts",
         "default": "./dist/esm/index.js"
+      }
+    },
+    "./commands": {
+      "import": {
+        "types": "./dist/esm/commands",
+        "default": "./dist/esm/commands"
       }
     },
     "./commands/*": {

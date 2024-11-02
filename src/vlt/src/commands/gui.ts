@@ -1,9 +1,15 @@
 import { fileURLToPath } from 'node:url'
 import type { LoadedConfig } from '../config/index.js'
 import { startGUI } from '../start-gui.js'
+import { commandUsage } from '../config/usage.js'
+import { type CliCommand } from '../types.js'
 
-export const usage = `Usage:
-  vlt gui`
+export const usage: CliCommand['usage'] = () =>
+  commandUsage({
+    command: 'gui',
+    usage: '',
+    description: 'Launch a graphical user interface in a browser',
+  })
 
 export const command = async (
   conf: LoadedConfig,
