@@ -13,7 +13,7 @@ concurrency:
 
 jobs:
   lint:
-    name: Benchmark
+    name: Publish vlt CLI
 
     runs-on: ubuntu-latest
 
