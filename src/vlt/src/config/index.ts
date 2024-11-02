@@ -234,6 +234,16 @@ export class Config {
 
     return this.#options
   }
+
+  /**
+   * Reset the options value, optionally setting a new project root
+   * to recalculate the options.
+   */
+  resetOptions(projectRoot: string = process.cwd()) {
+    this.projectRoot = projectRoot
+    this.#options = undefined
+  }
+
   // memoized options() getter value
   #options?: ConfigOptions
 

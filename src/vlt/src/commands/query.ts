@@ -1,3 +1,4 @@
+import { fileURLToPath } from 'node:url'
 import {
   actual,
   humanReadableOutput,
@@ -8,10 +9,11 @@ import {
 import { LoadedConfig } from '../config/index.js'
 import { Query } from '@vltpkg/query'
 import chalk from 'chalk'
+import { startGUI } from '../start-gui.js'
 
 export const usage = `Usage:
   vlt query
-  vlt query <query> --view=[human | json | mermaid]
+  vlt query <query> --view=[human | json | mermaid | gui]
 
 List installed dependencies matching the provided query.
 
@@ -28,11 +30,17 @@ Examples:
 
 Options:
 
-  --view=[human | json | mermaid]
+  --view=[human | json | mermaid | gui]
           Output format. Defaults to human-readable or json if no tty.
 `
 
-export const command = async (conf: LoadedConfig) => {
+export const command = async (
+  conf: LoadedConfig,
+  _opts: unknown,
+  assetsDir: string = fileURLToPath(
+    import.meta.resolve('@vltpkg/gui'),
+  ),
+) => {
   const monorepo = conf.options.monorepo
   const mainManifest = conf.options.packageJson.read(
     conf.options.projectRoot,
@@ -62,6 +70,16 @@ export const command = async (conf: LoadedConfig) => {
     for (const importer of graph.importers) {
       importers.add(importer)
     }
+  }
+
+  if (conf.values.view === 'gui') {
+    return startGUI({
+      assetsDir,
+      conf,
+      startingRoute:
+        '/explore?query=' +
+        encodeURIComponent(queryString || defaultQueryString),
+    })
   }
 
   const colors = conf.values.color ? chalk : undefined
