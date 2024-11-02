@@ -15,7 +15,7 @@ catalog:
   esbuild: ^0.23.1
   eslint: ^9.8.0
   graph-run: ^1.0.4
-  lru-cache: ^11.0.1
+  lru-cache: ^11.0.2
   lucide-react: ^0.453.0
   package-json-from-dist: ^1.0.0
   pacote: ^18.0.6
