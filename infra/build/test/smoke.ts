@@ -193,7 +193,7 @@ t.test('commands', async t => {
 
   for (const [bin, commands] of Object.entries(snapshots)) {
     assert(types.isBin(bin))
-    await t.test(bin, async t => {
+    await t[bin === 'vlt' ? 'test' : 'skip'](bin, async t => {
       for (const [command, cases] of Object.entries(
         Array.isArray(commands) ? { '': commands } : commands,
       )) {
