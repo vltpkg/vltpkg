@@ -9,13 +9,9 @@ import {
   recordsToPairs,
 } from '../config/index.js'
 import { commandUsage } from '../config/usage.js'
-import { type CliCommand } from '../types.js'
+import { CliCommandFn, CliCommandUsage } from '../types.js'
 
-// TODO: need a proper error/logging handler thing
-// replace all these string throws and direct console.log/error
-// with appropriate output and error handling.
-
-export const usage: CliCommand['usage'] = () =>
+export const usage: CliCommandUsage = () =>
   commandUsage({
     command: 'config',
     usage: '<command> [flags]',
@@ -49,15 +45,8 @@ export const usage: CliCommand['usage'] = () =>
     },
   })
 
-const usageString = async () => (await usage()).usage()
-
-export const command = async (conf: LoadedConfig) => {
+export const command: CliCommandFn = async conf => {
   const sub = conf.positionals[0]
-  if (conf.get('help') || !sub) {
-    console.log(await usageString())
-    return
-  }
-
   switch (sub) {
     case 'set':
       return set(conf)
@@ -73,9 +62,9 @@ export const command = async (conf: LoadedConfig) => {
     case 'del':
       return del(conf)
     default: {
-      console.error(await usageString())
       throw error('Unrecognized config command', {
-        found: conf.positionals[0],
+        code: 'EUSAGE',
+        found: sub,
         validOptions: ['set', 'get', 'list', 'edit', 'help', 'del'],
       })
     }
@@ -86,47 +75,49 @@ const help = (conf: LoadedConfig) => {
   const j = definition.toJSON()
   const fields = conf.positionals.slice(1)
   if (!fields.length) {
-    console.log('Specify one or more options to see information:')
-    console.log(
-      Object.keys(j)
+    return [
+      'Specify one or more options to see information:',
+      ...Object.keys(j)
         .sort((a, b) => a.localeCompare(b, 'en'))
-        .map(c => `  ${c}`)
-        .join('\n'),
-    )
-    return
+        .map(c => `  ${c}`),
+    ]
   }
   // TODO: some kind of fuzzy search?
+  const res: string[] = []
   for (const f of fields) {
     const def = j[f]
     if (!def) {
-      console.log(`unknown config field: ${f}`)
+      res.push(`unknown config field: ${f}`)
     } else {
-      console.log(`--${f}${def.hint ? `=<${def.hint}>` : ''}
-  type: ${
-    isRecordField(f) ?
-      'Record<string, string>'
-    : def.type + (def.multiple ? '[]' : '')
-  }${
-    def.default ?
-      `
-  default: ${JSON.stringify(def.default)}\n`
-    : ''
-  }
-${def.description}
-  `)
+      const hint = def.hint ? `=<${def.hint}>` : ''
+      const type =
+        isRecordField(f) ?
+          'Record<string, string>'
+        : def.type + (def.multiple ? '[]' : '')
+
+      res.push(`--${f}${hint}`)
+      res.push(`  type: ${type}`)
+      if (def.default) {
+        res.push(`  default: ${JSON.stringify(def.default)}`)
+      }
+      if (def.description) {
+        res.push(def.description)
+      }
     }
   }
+  return res
 }
 
 const list = (conf: LoadedConfig) => {
-  console.log(JSON.stringify(recordsToPairs(conf.options), null, 2))
+  return { result: recordsToPairs(conf.options) }
 }
 
 const del = async (conf: LoadedConfig) => {
   const fields = conf.positionals.slice(1)
   if (!fields.length) {
-    console.error(await usageString())
-    throw error('At least one key is required')
+    throw error('At least one key is required', {
+      code: 'EUSAGE',
+    })
   }
   await conf.deleteConfigKeys(conf.get('config'), fields)
 }
@@ -135,12 +126,11 @@ const get = async (conf: LoadedConfig) => {
   const keys = conf.positionals.slice(1)
   const k = keys[0]
   if (!k || keys.length > 1) {
-    console.error(await usageString())
-    throw error('Exactly one key is required')
+    throw error('Exactly one key is required', {
+      code: 'EUSAGE',
+    })
   }
-  console.log(
-    JSON.stringify(conf.get(k as keyof ConfigDefinitions), null, 2),
-  )
+  return { result: conf.get(k as keyof ConfigDefinitions) }
 }
 
 const edit = async (conf: LoadedConfig) => {
@@ -166,10 +156,14 @@ const edit = async (conf: LoadedConfig) => {
 const set = async (conf: LoadedConfig) => {
   const pairs = conf.positionals.slice(1)
   if (!pairs.length) {
-    console.error(await usageString())
-    throw error('At least one key=value pair is required')
+    throw error('At least one key=value pair is required', {
+      code: 'EUSAGE',
+    })
   }
-  const { values } = conf.jack.parseRaw(pairs.map(kv => `--${kv}`))
-  const which = conf.get('config')
-  await conf.addConfigToFile(which, pairsToRecords(values))
+  await conf.addConfigToFile(
+    conf.get('config'),
+    pairsToRecords(
+      conf.jack.parseRaw(pairs.map(kv => `--${kv}`)).values,
+    ),
+  )
 }

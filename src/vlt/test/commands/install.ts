@@ -1,10 +1,11 @@
+import t from 'tap'
 import { joinDepIDTuple } from '@vltpkg/dep-id'
 import { BuildIdealOptions } from '@vltpkg/graph'
-import t from 'tap'
 import { LoadedConfig } from '../../src/config/index.js'
 
 t.cleanSnapshot = s =>
   s.replace(/^(\s+)"?projectRoot"?: .*$/gm, '$1projectRoot: #')
+
 class PackageJson {
   read() {
     return { name: 'my-project', version: '1.0.0' }
@@ -50,23 +51,17 @@ const { usage, command } = await t.mockImport<
   },
 })
 t.matchSnapshot((await usage()).usage(), 'usage')
-await command(
-  {
-    positionals: [],
-    values: {},
-    options,
-  } as unknown as LoadedConfig,
-  {},
-)
+await command({
+  positionals: [],
+  values: {},
+  options,
+} as unknown as LoadedConfig)
 t.matchSnapshot(reifyOpts, 'should call reify with expected options')
 
 // adds a new package
-await command(
-  {
-    positionals: ['abbrev@2'],
-    values: { 'save-dev': true },
-    options,
-  } as unknown as LoadedConfig,
-  {},
-)
+await command({
+  positionals: ['abbrev@2'],
+  values: { 'save-dev': true },
+  options,
+} as unknown as LoadedConfig)
 t.matchSnapshot(reifyOpts, 'should reify installing a new dependency')

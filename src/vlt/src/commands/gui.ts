@@ -1,19 +1,17 @@
 import { fileURLToPath } from 'node:url'
-import type { LoadedConfig } from '../config/index.js'
 import { startGUI } from '../start-gui.js'
 import { commandUsage } from '../config/usage.js'
-import { type CliCommand } from '../types.js'
+import { type CliCommandUsage, CliCommandFn } from '../types.js'
 
-export const usage: CliCommand['usage'] = () =>
+export const usage: CliCommandUsage = () =>
   commandUsage({
     command: 'gui',
     usage: '',
     description: 'Launch a graphical user interface in a browser',
   })
 
-export const command = async (
-  conf: LoadedConfig,
-  _opts: unknown,
+export const command: CliCommandFn = async (
+  conf,
   assetsDir: string = fileURLToPath(
     import.meta.resolve('@vltpkg/gui'),
   ),

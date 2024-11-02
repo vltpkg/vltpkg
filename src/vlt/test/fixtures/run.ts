@@ -17,9 +17,16 @@ export const setupEnv = (t: Test) => {
   return cleanEnv
 }
 
-export const mockConfig = (t: Test) =>
+export const mockConfig = async (t: Test) =>
   t.mockImport<typeof import('../../src/config/index.js')>(
     '../../src/config/index.js',
+    // jackspeak definitions keep state so if we want a clean
+    // config, we need a clean definitions file too
+    {
+      '../../src/config/definition.js': await t.mockImport(
+        '../../src/config/definition.js',
+      ),
+    },
   )
 
 export type SetupCommand = {
@@ -41,6 +48,22 @@ export const chtestdir = (
   return dir
 }
 
+export const mockCommandOutput = async (
+  t: Test,
+  command: CliCommand,
+  config: LoadedConfig,
+  extra?: any,
+) => {
+  const { outputCommand } = await t.mockImport<
+    typeof import('../../src/output.ts')
+  >('../../src/output.ts')
+  const logs = t.capture(console, 'log').args
+  const errs = t.capture(console, 'error').args
+  const res = await command.command(config, extra)
+  outputCommand(res, config, { view: command.view })
+  return { logs: logs(), errs: errs() }
+}
+
 export const setupCommand = async <TCommand extends CliCommand>(
   t: Test,
   {
@@ -54,7 +77,7 @@ export const setupCommand = async <TCommand extends CliCommand>(
 ) => {
   const dir = chtestdir(t, testdir, chdir)
   const { Config } = await mockConfig(t)
-  const { command } = await t.mockImport<TCommand>(
+  const Command = await t.mockImport<TCommand>(
     join('../../src/commands', `${commandName}.ts`),
   )
   const loadConfig = async (...argv: string[]) => {
@@ -73,22 +96,43 @@ export const setupCommand = async <TCommand extends CliCommand>(
       Array.isArray(confOrArgv) ?
         await loadConfig(...confOrArgv)
       : confOrArgv
-    const logs = t.capture(console, 'log').args
-    const errs = t.capture(console, 'error').args
-    await command(config, {})
+    const { logs, errs } = await mockCommandOutput(t, Command, config)
     return {
-      logs: logs()
-        .map(v => v[0])
-        .join('\n'),
-      errs: errs()
-        .map(v => v[0])
-        .join('\n'),
+      logs: logs.map(v => v[0]).join('\n'),
+      errs: errs.map(v => v[0]).join('\n'),
     }
   }
   return {
     dir,
-    command,
+    command: Command.command,
     loadConfig,
     runCommand,
   }
+}
+
+export type CommandResultOptions = {
+  positionals?: LoadedConfig['positionals']
+  values?: Partial<LoadedConfig['values']>
+  options?: Partial<LoadedConfig['options']>
+}
+
+export const commandView = async <TCommand extends CliCommand>(
+  t: Test,
+  command: TCommand,
+  {
+    positionals = [],
+    values = {},
+    options = {},
+  }: CommandResultOptions,
+  // This prevents import.meta.resolve from being called
+  // which causes tap to hang
+  extra: any = '',
+) => {
+  const config = {
+    positionals,
+    values,
+    options,
+  } as LoadedConfig
+  const { logs } = await mockCommandOutput(t, command, config, extra)
+  return logs.map(v => v[0]).join('\n')
 }

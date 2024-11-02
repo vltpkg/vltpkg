@@ -51,14 +51,11 @@ const { usage, command } = await t.mockImport<
   },
 })
 t.matchSnapshot((await usage()).usage(), 'usage')
-await command(
-  {
-    positionals: [],
-    values: {},
-    options,
-  } as unknown as LoadedConfig,
-  {},
-)
+await command({
+  positionals: [],
+  values: {},
+  options,
+} as unknown as LoadedConfig)
 t.matchSnapshot(
   reifyOpts,
   'should reify uninstalling a new dependency',
