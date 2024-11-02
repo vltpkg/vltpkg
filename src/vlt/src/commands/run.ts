@@ -1,11 +1,12 @@
 import { PackageJson } from '@vltpkg/package-json'
 import { run, runFG } from '@vltpkg/run'
 import { LoadedConfig } from '../config/index.js'
-import { ExecCommand } from '../exec-command.js'
+import { ExecCommand, ExecResult } from '../exec-command.js'
 import { commandUsage } from '../config/usage.js'
-import { type CliCommand } from '../types.js'
+import { type CliCommandUsage, CliCommandFn } from '../types.js'
+import { stdout } from '../output.js'
 
-export const usage: CliCommand['usage'] = () =>
+export const usage: CliCommandUsage = () =>
   commandUsage({
     command: 'run',
     usage: '<script> [args ...]',
@@ -13,8 +14,8 @@ export const usage: CliCommand['usage'] = () =>
   })
 
 class RunCommand extends ExecCommand<typeof run, typeof runFG> {
-  constructor(conf: LoadedConfig, bg = run, fg = runFG) {
-    super(conf, bg, fg)
+  constructor(conf: LoadedConfig) {
+    super(conf, run, runFG)
   }
 
   defaultArg0(): string | undefined {
@@ -24,7 +25,7 @@ class RunCommand extends ExecCommand<typeof run, typeof runFG> {
     const packageJson =
       this.monorepo?.packageJson ?? new PackageJson()
     const mani = packageJson.read(cwd)
-    console.log('Scripts available:', mani.scripts)
+    stdout('Scripts available:', mani.scripts)
     return undefined
   }
 
@@ -33,14 +34,17 @@ class RunCommand extends ExecCommand<typeof run, typeof runFG> {
     /* c8 ignore next - already guarded */
     if (!m) return
 
-    console.log('Scripts available:')
+    stdout('Scripts available:')
     for (const [ws, scripts] of m.runSync(
       ws => ws.manifest.scripts,
     )) {
-      console.log(ws.path, scripts)
+      stdout(ws.path, scripts)
     }
   }
 }
 
-export const command = async (conf: LoadedConfig) =>
-  await new RunCommand(conf).run()
+export const command: CliCommandFn<ExecResult> = async conf => {
+  return {
+    result: await new RunCommand(conf).run(),
+  }
+}

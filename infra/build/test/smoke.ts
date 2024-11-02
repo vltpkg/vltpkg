@@ -1,6 +1,6 @@
 import t, { Test } from 'tap'
 import { spawn } from 'node:child_process'
-import { Bins, Paths, defaultOptions } from '../src/index.js'
+import { Bins, defaultOptions } from '../src/index.js'
 import bundle from '../src/bundle.js'
 import { join } from 'node:path'
 import * as types from '../src/types.js'
@@ -30,13 +30,7 @@ type TestCommand = {
 }
 
 const clean = (s: string) =>
-  s
-    .replaceAll(Paths.MONO_ROOT, '{ROOT}')
-    .replaceAll(/^( {4}at )(.*)$/gm, '$1{STACK}')
-    .replaceAll(/(\{ROOT\}(.*?):)\d+/g, '$1{LINE_NUMBER}')
-    .replaceAll(process.version, '{NODE}')
-    .replaceAll('\\', '/')
-    .replaceAll(/\r\n/g, '\n')
+  s.replaceAll('\\', '/').replaceAll(/\r\n/g, '\n')
 
 t.cleanSnapshot = clean
 

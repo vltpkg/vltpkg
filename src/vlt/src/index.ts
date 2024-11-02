@@ -1,6 +1,7 @@
 import { error } from '@vltpkg/error-cause'
 import { Config } from './config/index.js'
 import { CliCommand, Commands } from './types.js'
+import { stdout, outputCommand, outputError } from './output.js'
 
 const loadCommand = async (
   command: Commands[keyof Commands] | undefined,
@@ -33,13 +34,16 @@ const run = async () => {
     }
   }
 
-  const { command, usage } = await loadCommand(vlt.command)
+  const { command, usage, view } = await loadCommand(vlt.command)
 
   if (vlt.get('help')) {
-    console.log((await usage()).usage())
-  } else {
-    // TODO: if it throws, pass to central error handler
-    await command(vlt, vlt.options)
+    return stdout((await usage()).usage())
+  }
+
+  try {
+    outputCommand(await command(vlt), vlt, { view })
+  } catch (e) {
+    outputError(e, vlt, { usage: (await usage()).usage() })
   }
 }
 

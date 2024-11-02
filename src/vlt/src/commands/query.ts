@@ -1,19 +1,19 @@
 import { fileURLToPath } from 'node:url'
 import {
   actual,
+  EdgeLike,
   humanReadableOutput,
   jsonOutput,
   mermaidOutput,
   Node,
+  NodeLike,
 } from '@vltpkg/graph'
-import { LoadedConfig } from '../config/index.js'
 import { Query } from '@vltpkg/query'
-import chalk from 'chalk'
-import { startGUI } from '../start-gui.js'
 import { commandUsage } from '../config/usage.js'
-import { type CliCommand } from '../types.js'
+import { type CliCommandUsage, CliCommandFn } from '../types.js'
+import { startGUI } from '../start-gui.js'
 
-export const usage: CliCommand['usage'] = () =>
+export const usage: CliCommandUsage = () =>
   commandUsage({
     command: 'query',
     usage: ['', '<query> --view=[human | json | mermaid | gui]'],
@@ -44,9 +44,21 @@ export const usage: CliCommand['usage'] = () =>
     },
   })
 
-export const command = async (
-  conf: LoadedConfig,
-  _opts: unknown,
+export const view = {
+  json: jsonOutput,
+  mermaid: mermaidOutput,
+  human: humanReadableOutput,
+}
+
+export type CommandResult = {
+  importers: Set<Node>
+  edges: EdgeLike[]
+  nodes: NodeLike[]
+  highlightSelection: boolean
+}
+
+export const command: CliCommandFn = async (
+  conf,
   assetsDir: string = fileURLToPath(
     import.meta.resolve('@vltpkg/gui'),
   ),
@@ -83,33 +95,24 @@ export const command = async (
   }
 
   if (conf.values.view === 'gui') {
-    return startGUI({
+    await startGUI({
       assetsDir,
       conf,
       startingRoute:
         '/explore?query=' +
         encodeURIComponent(queryString || defaultQueryString),
     })
+    return
   }
 
-  const colors = conf.values.color ? chalk : undefined
-
-  const result =
-    (
-      conf.values.view === 'json' ||
-      /* c8 ignore next */
-      (!conf.values.view && !process.stdout.isTTY)
-    ) ?
-      jsonOutput({ edges, nodes })
-    : conf.values.view === 'mermaid' ?
-      mermaidOutput({ importers, edges, nodes })
-    : humanReadableOutput({
-        colors,
-        importers,
-        edges,
-        nodes,
-        highlightSelection: !!queryString,
-      })
-
-  console.log(result)
+  return {
+    /* c8 ignore next */
+    defaultView: !process.stdout.isTTY ? 'json' : 'human',
+    result: {
+      importers,
+      edges,
+      nodes,
+      highlightSelection: !!queryString,
+    },
+  }
 }

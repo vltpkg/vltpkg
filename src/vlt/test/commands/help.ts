@@ -1,4 +1,5 @@
 import t from 'tap'
+import { LoadedConfig } from '../../src/types.js'
 
 t.test('basic', async t => {
   const { usage, command } = await t.mockImport<
@@ -6,8 +7,6 @@ t.test('basic', async t => {
   >('../../src/commands/help.js')
   const USAGE = (await usage()).usage()
   t.matchSnapshot(USAGE, 'usage')
-  const out = t.capture(console, 'log').args
-  t.capture(console, 'error')
-  await command()
-  t.strictSame(out()[0]?.[0], USAGE, 'should print usage')
+  const result = await command({} as LoadedConfig)
+  t.strictSame(result, USAGE, 'should print usage')
 })

@@ -20,10 +20,16 @@ import { Monorepo, Workspace } from '@vltpkg/workspaces'
 import { ansiToAnsi } from 'ansi-to-pre'
 import chalk from 'chalk'
 import { LoadedConfig } from './config/index.js'
+import { stdout, stderr } from './output.js'
+import { SpawnResultNoStdio } from '@vltpkg/promise-spawn'
 
 export type RunnerBG = typeof exec | typeof run | typeof runExec
 export type RunnerFG = typeof execFG | typeof runExecFG | typeof runFG
 export type RunnerOptions = ExecOptions & RunExecOptions & RunOptions
+export type ExecResult =
+  | undefined
+  | SpawnResultNoStdio
+  | Record<string, RunResult>
 
 export class ExecCommand<B extends RunnerBG, F extends RunnerFG> {
   bg: B
@@ -58,12 +64,12 @@ export class ExecCommand<B extends RunnerBG, F extends RunnerFG> {
     this.projectRoot = projectRoot
   }
 
-  async run() {
+  async run(): Promise<ExecResult> {
     if (this.spaces === 1) {
       const arg = this.fgArg()
       if (!arg) return
       const result = await this.fg(arg)
-      console.log(result)
+      stdout(result)
       return result
     }
     const m = this.monorepo
@@ -81,7 +87,7 @@ export class ExecCommand<B extends RunnerBG, F extends RunnerFG> {
     // run across workspaces
     let failed = false
     const resultMap = await m.run(async ws => {
-      if (!failed) console.error(`${ws.path} ${arg0}`)
+      if (!failed) stderr(`${ws.path} ${arg0}`)
       const result = await this.bg(this.bgArg(ws)).catch(
         (er: unknown) => {
           if (
@@ -112,18 +118,15 @@ export class ExecCommand<B extends RunnerBG, F extends RunnerFG> {
 
   printResult(ws: Workspace, result: RunResult) {
     if (result.status === 0 && result.signal === null) {
-      console.log(ws.path, 'ok')
+      stdout(ws.path, 'ok')
     } else {
-      console.log(
-        chalk.bgWhiteBright.black.bold(ws.path + ' failure'),
-        {
-          status: result.status,
-          signal: result.signal,
-        },
-      )
+      stdout(chalk.bgWhiteBright.black.bold(ws.path + ' failure'), {
+        status: result.status,
+        signal: result.signal,
+      })
       /* c8 ignore start */
-      if (result.stderr) console.error(ansiToAnsi(result.stderr))
-      if (result.stdout) console.log(ansiToAnsi(result.stdout))
+      if (result.stderr) stderr(ansiToAnsi(result.stderr))
+      if (result.stdout) stdout(ansiToAnsi(result.stdout))
       process.exitCode = process.exitCode || (result.status ?? 1)
       /* c8 ignore stop */
     }

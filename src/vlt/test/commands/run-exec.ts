@@ -29,7 +29,7 @@ t.test('run script in a project', async t => {
   conf.projectRoot = dir
   const logs = t.capture(console, 'log').args
   const errs = t.capture(console, 'error').args
-  const result = await command(conf)
+  const { result } = await command(conf)
   t.strictSame(result, {
     command: pass,
     args: [],
@@ -68,7 +68,7 @@ t.test('run script in a single workspace', async t => {
   conf.projectRoot = dir
   const logs = t.capture(console, 'log').args
   const errs = t.capture(console, 'error').args
-  const result = await command(conf)
+  const { result } = await command(conf)
   t.strictSame(result, {
     command: pass,
     args: [],
@@ -110,7 +110,7 @@ t.test('run script across several workspaces', async t => {
   conf.projectRoot = dir
   const logs = t.capture(console, 'log').args
   const errs = t.capture(console, 'error').args
-  const result = await command(conf)
+  const { result } = await command(conf)
   t.strictSame(result, {
     'src/a': {
       command: 'echo',

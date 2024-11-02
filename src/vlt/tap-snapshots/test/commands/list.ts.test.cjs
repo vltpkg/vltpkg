@@ -6,17 +6,13 @@
  */
 'use strict'
 exports[`test/commands/list.ts > TAP > list > colors > should use colors when set in human readable format 1`] = `
-Array [
-  String(
-    \\u001b[0m\\u001b[33mmy-project\\u001b[39m\\u001b[0m
-    \\u001b[0m├── \\u001b[33m@foo/bazz@1.0.0\\u001b[39m\\u001b[0m
-    \\u001b[0m├─┬ \\u001b[33mbar@1.0.0\\u001b[39m\\u001b[0m
-    \\u001b[0m│ └─┬ \\u001b[33mcustom:baz@1.0.0\\u001b[39m\\u001b[0m
-    \\u001b[0m│   └── \\u001b[33m@foo/bazz@1.0.0\\u001b[39m \\u001b[2m(deduped)\\u001b[22m\\u001b[0m
-    \\u001b[0m└── \\u001b[33mmissing@^1.0.0\\u001b[39m \\u001b[31m(missing)\\u001b[39m\\u001b[0m
-    \\u001b[0m\\u001b[0m
-  ),
-]
+[0m[33mmy-project[39m[0m
+[0m├── [33m@foo/bazz@1.0.0[39m[0m
+[0m├─┬ [33mbar@1.0.0[39m[0m
+[0m│ └─┬ [33mcustom:baz@1.0.0[39m[0m
+[0m│   └── [33m@foo/bazz@1.0.0[39m [2m(deduped)[22m[0m
+[0m└── [33mmissing@^1.0.0[39m [31m(missing)[39m[0m
+[0m[0m
 `
 
 exports[`test/commands/list.ts > TAP > list > should have usage 1`] = `
@@ -59,349 +55,312 @@ direct dependencies of a project and any configured workspace.
 `
 
 exports[`test/commands/list.ts > TAP > list > should list all pkgs in human format 1`] = `
-Array [
-  String(
-    my-project
-    ├── @foo/bazz@1.0.0
-    └─┬ bar@1.0.0
-      └─┬ custom:baz@1.0.0
-        └── @foo/bazz@1.0.0 (deduped)
-    
-  ),
-]
+my-project
+├── @foo/bazz@1.0.0
+└─┬ bar@1.0.0
+  └─┬ custom:baz@1.0.0
+    └── @foo/bazz@1.0.0 (deduped)
+
 `
 
 exports[`test/commands/list.ts > TAP > list > should list all pkgs in human readable format 1`] = `
-Array [
-  String(
-    my-project
-    ├── @foo/bazz@1.0.0
-    ├─┬ bar@1.0.0
-    │ └─┬ custom:baz@1.0.0
-    │   └── @foo/bazz@1.0.0 (deduped)
-    └── missing@^1.0.0 (missing)
-    
-  ),
-]
+my-project
+├── @foo/bazz@1.0.0
+├─┬ bar@1.0.0
+│ └─┬ custom:baz@1.0.0
+│   └── @foo/bazz@1.0.0 (deduped)
+└── missing@^1.0.0 (missing)
+
 `
 
 exports[`test/commands/list.ts > TAP > list > should list all pkgs in json format 1`] = `
-Array [
-  String(
-    [
-      {
+[
+  {
+    "name": "my-project",
+    "to": {
+      "id": "file·.",
+      "name": "my-project",
+      "version": "1.0.0",
+      "location": ".",
+      "importer": true,
+      "manifest": {
         "name": "my-project",
-        "to": {
-          "id": "file·.",
-          "name": "my-project",
-          "version": "1.0.0",
-          "location": ".",
-          "importer": true,
-          "manifest": {
-            "name": "my-project",
-            "version": "1.0.0",
-            "dependencies": {
-              "@foo/bazz": "^1.0.0",
-              "bar": "^1.0.0",
-              "missing": "^1.0.0"
-            }
-          },
-          "projectRoot": "{ROOT}",
-          "dev": false,
-          "optional": false
+        "version": "1.0.0",
+        "dependencies": {
+          "@foo/bazz": "^1.0.0",
+          "bar": "^1.0.0",
+          "missing": "^1.0.0"
         }
       },
-      {
+      "projectRoot": "{ROOT}",
+      "dev": false,
+      "optional": false
+    }
+  },
+  {
+    "name": "@foo/bazz",
+    "fromID": "file·.",
+    "spec": "@foo/bazz@^1.0.0",
+    "type": "prod",
+    "to": {
+      "id": "··@foo%2Fbazz@1.0.0",
+      "name": "@foo/bazz",
+      "version": "1.0.0",
+      "location": "./node_modules/.vlt/··@foo%2Fbazz@1.0.0/node_modules/@foo/bazz",
+      "importer": false,
+      "manifest": {
         "name": "@foo/bazz",
-        "fromID": "file·.",
-        "spec": "@foo/bazz@^1.0.0",
-        "type": "prod",
-        "to": {
-          "id": "··@foo%2Fbazz@1.0.0",
-          "name": "@foo/bazz",
-          "version": "1.0.0",
-          "location": "./node_modules/.vlt/··@foo%2Fbazz@1.0.0/node_modules/@foo/bazz",
-          "importer": false,
-          "manifest": {
-            "name": "@foo/bazz",
-            "version": "1.0.0"
-          },
-          "projectRoot": "{ROOT}",
-          "dev": false,
-          "optional": false
-        }
+        "version": "1.0.0"
       },
-      {
+      "projectRoot": "{ROOT}",
+      "dev": false,
+      "optional": false
+    }
+  },
+  {
+    "name": "bar",
+    "fromID": "file·.",
+    "spec": "bar@^1.0.0",
+    "type": "prod",
+    "to": {
+      "id": "··bar@1.0.0",
+      "name": "bar",
+      "version": "1.0.0",
+      "location": "./node_modules/.vlt/··bar@1.0.0/node_modules/bar",
+      "importer": false,
+      "manifest": {
         "name": "bar",
-        "fromID": "file·.",
-        "spec": "bar@^1.0.0",
-        "type": "prod",
-        "to": {
-          "id": "··bar@1.0.0",
-          "name": "bar",
-          "version": "1.0.0",
-          "location": "./node_modules/.vlt/··bar@1.0.0/node_modules/bar",
-          "importer": false,
-          "manifest": {
-            "name": "bar",
-            "version": "1.0.0",
-            "dependencies": {
-              "baz": "^1.0.0"
-            }
-          },
-          "projectRoot": "{ROOT}",
-          "dev": false,
-          "optional": false
+        "version": "1.0.0",
+        "dependencies": {
+          "baz": "^1.0.0"
         }
       },
-      {
+      "projectRoot": "{ROOT}",
+      "dev": false,
+      "optional": false
+    }
+  },
+  {
+    "name": "baz",
+    "fromID": "··bar@1.0.0",
+    "spec": "baz@custom:baz@^1.0.0",
+    "type": "prod",
+    "to": {
+      "id": "·custom·baz@1.0.0",
+      "name": "baz",
+      "version": "1.0.0",
+      "location": "./node_modules/.vlt/·custom·baz@1.0.0/node_modules/baz",
+      "importer": false,
+      "manifest": {
         "name": "baz",
-        "fromID": "··bar@1.0.0",
-        "spec": "baz@custom:baz@^1.0.0",
-        "type": "prod",
-        "to": {
-          "id": "·custom·baz@1.0.0",
-          "name": "baz",
-          "version": "1.0.0",
-          "location": "./node_modules/.vlt/·custom·baz@1.0.0/node_modules/baz",
-          "importer": false,
-          "manifest": {
-            "name": "baz",
-            "version": "1.0.0",
-            "dist": {
-              "tarball": "https://registry.vlt.sh/baz"
-            }
-          },
-          "projectRoot": "{ROOT}",
-          "dev": false,
-          "optional": false
+        "version": "1.0.0",
+        "dist": {
+          "tarball": "https://registry.vlt.sh/baz"
         }
       },
-      {
-        "name": "missing",
-        "fromID": "file·.",
-        "spec": "missing@^1.0.0",
-        "type": "prod"
-      },
-      {
+      "projectRoot": "{ROOT}",
+      "dev": false,
+      "optional": false
+    }
+  },
+  {
+    "name": "missing",
+    "fromID": "file·.",
+    "spec": "missing@^1.0.0",
+    "type": "prod"
+  },
+  {
+    "name": "@foo/bazz",
+    "fromID": "·custom·baz@1.0.0",
+    "spec": "@foo/bazz@^1.0.0",
+    "type": "prod",
+    "to": {
+      "id": "··@foo%2Fbazz@1.0.0",
+      "name": "@foo/bazz",
+      "version": "1.0.0",
+      "location": "./node_modules/.vlt/··@foo%2Fbazz@1.0.0/node_modules/@foo/bazz",
+      "importer": false,
+      "manifest": {
         "name": "@foo/bazz",
-        "fromID": "·custom·baz@1.0.0",
-        "spec": "@foo/bazz@^1.0.0",
-        "type": "prod",
-        "to": {
-          "id": "··@foo%2Fbazz@1.0.0",
-          "name": "@foo/bazz",
-          "version": "1.0.0",
-          "location": "./node_modules/.vlt/··@foo%2Fbazz@1.0.0/node_modules/@foo/bazz",
-          "importer": false,
-          "manifest": {
-            "name": "@foo/bazz",
-            "version": "1.0.0"
-          },
-          "projectRoot": "{ROOT}",
-          "dev": false,
-          "optional": false
-        }
-      }
-    ]
-  ),
+        "version": "1.0.0"
+      },
+      "projectRoot": "{ROOT}",
+      "dev": false,
+      "optional": false
+    }
+  }
 ]
 `
 
 exports[`test/commands/list.ts > TAP > list > should list all pkgs in mermaid format 1`] = `
-Array [
-  String(
-    flowchart TD
-    file%C2%B7.("root:my-project")
-    file%C2%B7.("root:my-project") -->|"#64;foo/bazz#64;^1.0.0 (prod)"| %C2%B7%C2%B7%40foo%252Fbazz%401.0.0("npm:#64;foo/bazz#64;1.0.0")
-    %C2%B7%C2%B7%40foo%252Fbazz%401.0.0("npm:#64;foo/bazz#64;1.0.0")
-    file%C2%B7.("root:my-project") -->|"bar#64;^1.0.0 (prod)"| %C2%B7%C2%B7bar%401.0.0("npm:bar#64;1.0.0")
-    %C2%B7%C2%B7bar%401.0.0("npm:bar#64;1.0.0")
-    %C2%B7%C2%B7bar%401.0.0("npm:bar#64;1.0.0") -->|"baz#64;custom:baz#64;^1.0.0 (prod)"| %C2%B7custom%C2%B7baz%401.0.0("custom:baz#64;1.0.0")
-    %C2%B7custom%C2%B7baz%401.0.0("custom:baz#64;1.0.0")
-    %C2%B7custom%C2%B7baz%401.0.0("custom:baz#64;1.0.0") -->|"#64;foo/bazz#64;^1.0.0 (prod)"| %C2%B7%C2%B7%40foo%252Fbazz%401.0.0("npm:#64;foo/bazz#64;1.0.0")
-    
-    file%C2%B7.("root:my-project") -->|"missing#64;^1.0.0 (prod)"| missing-0(Missing)
-    
-  ),
-]
+flowchart TD
+file%C2%B7.("root:my-project")
+file%C2%B7.("root:my-project") -->|"#64;foo/bazz#64;^1.0.0 (prod)"| %C2%B7%C2%B7%40foo%252Fbazz%401.0.0("npm:#64;foo/bazz#64;1.0.0")
+%C2%B7%C2%B7%40foo%252Fbazz%401.0.0("npm:#64;foo/bazz#64;1.0.0")
+file%C2%B7.("root:my-project") -->|"bar#64;^1.0.0 (prod)"| %C2%B7%C2%B7bar%401.0.0("npm:bar#64;1.0.0")
+%C2%B7%C2%B7bar%401.0.0("npm:bar#64;1.0.0")
+%C2%B7%C2%B7bar%401.0.0("npm:bar#64;1.0.0") -->|"baz#64;custom:baz#64;^1.0.0 (prod)"| %C2%B7custom%C2%B7baz%401.0.0("custom:baz#64;1.0.0")
+%C2%B7custom%C2%B7baz%401.0.0("custom:baz#64;1.0.0")
+%C2%B7custom%C2%B7baz%401.0.0("custom:baz#64;1.0.0") -->|"#64;foo/bazz#64;^1.0.0 (prod)"| %C2%B7%C2%B7%40foo%252Fbazz%401.0.0("npm:#64;foo/bazz#64;1.0.0")
+
+file%C2%B7.("root:my-project") -->|"missing#64;^1.0.0 (prod)"| missing-0(Missing)
+
 `
 
 exports[`test/commands/list.ts > TAP > list > should list mermaid in json format 1`] = `
-Array [
-  String(
-    flowchart TD
-    file%C2%B7.("root:my-project")
-    file%C2%B7.("root:my-project") -->|"#64;foo/bazz#64;^1.0.0 (prod)"| %C2%B7%C2%B7%40foo%252Fbazz%401.0.0("npm:#64;foo/bazz#64;1.0.0")
-    %C2%B7%C2%B7%40foo%252Fbazz%401.0.0("npm:#64;foo/bazz#64;1.0.0")
-    file%C2%B7.("root:my-project") -->|"bar#64;^1.0.0 (prod)"| %C2%B7%C2%B7bar%401.0.0("npm:bar#64;1.0.0")
-    %C2%B7%C2%B7bar%401.0.0("npm:bar#64;1.0.0")
-    %C2%B7%C2%B7bar%401.0.0("npm:bar#64;1.0.0") -->|"baz#64;custom:baz#64;^1.0.0 (prod)"| %C2%B7custom%C2%B7baz%401.0.0("custom:baz#64;1.0.0")
-    %C2%B7custom%C2%B7baz%401.0.0("custom:baz#64;1.0.0")
-    %C2%B7custom%C2%B7baz%401.0.0("custom:baz#64;1.0.0") -->|"#64;foo/bazz#64;^1.0.0 (prod)"| %C2%B7%C2%B7%40foo%252Fbazz%401.0.0("npm:#64;foo/bazz#64;1.0.0")
-    
-  ),
-]
+flowchart TD
+file%C2%B7.("root:my-project")
+file%C2%B7.("root:my-project") -->|"#64;foo/bazz#64;^1.0.0 (prod)"| %C2%B7%C2%B7%40foo%252Fbazz%401.0.0("npm:#64;foo/bazz#64;1.0.0")
+%C2%B7%C2%B7%40foo%252Fbazz%401.0.0("npm:#64;foo/bazz#64;1.0.0")
+file%C2%B7.("root:my-project") -->|"bar#64;^1.0.0 (prod)"| %C2%B7%C2%B7bar%401.0.0("npm:bar#64;1.0.0")
+%C2%B7%C2%B7bar%401.0.0("npm:bar#64;1.0.0")
+%C2%B7%C2%B7bar%401.0.0("npm:bar#64;1.0.0") -->|"baz#64;custom:baz#64;^1.0.0 (prod)"| %C2%B7custom%C2%B7baz%401.0.0("custom:baz#64;1.0.0")
+%C2%B7custom%C2%B7baz%401.0.0("custom:baz#64;1.0.0")
+%C2%B7custom%C2%B7baz%401.0.0("custom:baz#64;1.0.0") -->|"#64;foo/bazz#64;^1.0.0 (prod)"| %C2%B7%C2%B7%40foo%252Fbazz%401.0.0("npm:#64;foo/bazz#64;1.0.0")
+
 `
 
 exports[`test/commands/list.ts > TAP > list > should list pkgs in human readable format 1`] = `
-Array [
-  String(
-    my-project
-    ├── @foo/bazz@1.0.0
-    └── bar@1.0.0
-    
-  ),
-]
+my-project
+├── @foo/bazz@1.0.0
+└── bar@1.0.0
+
 `
 
 exports[`test/commands/list.ts > TAP > list > should list pkgs in json format 1`] = `
-Array [
-  String(
-    [
-      {
+[
+  {
+    "name": "my-project",
+    "to": {
+      "id": "file·.",
+      "name": "my-project",
+      "version": "1.0.0",
+      "location": ".",
+      "importer": true,
+      "manifest": {
         "name": "my-project",
-        "to": {
-          "id": "file·.",
-          "name": "my-project",
-          "version": "1.0.0",
-          "location": ".",
-          "importer": true,
-          "manifest": {
-            "name": "my-project",
-            "version": "1.0.0",
-            "dependencies": {
-              "@foo/bazz": "^1.0.0",
-              "bar": "^1.0.0",
-              "missing": "^1.0.0"
-            }
-          },
-          "projectRoot": "{ROOT}",
-          "dev": false,
-          "optional": false
+        "version": "1.0.0",
+        "dependencies": {
+          "@foo/bazz": "^1.0.0",
+          "bar": "^1.0.0",
+          "missing": "^1.0.0"
         }
       },
-      {
+      "projectRoot": "{ROOT}",
+      "dev": false,
+      "optional": false
+    }
+  },
+  {
+    "name": "@foo/bazz",
+    "fromID": "file·.",
+    "spec": "@foo/bazz@^1.0.0",
+    "type": "prod",
+    "to": {
+      "id": "··@foo%2Fbazz@1.0.0",
+      "name": "@foo/bazz",
+      "version": "1.0.0",
+      "location": "./node_modules/.vlt/··@foo%2Fbazz@1.0.0/node_modules/@foo/bazz",
+      "importer": false,
+      "manifest": {
         "name": "@foo/bazz",
-        "fromID": "file·.",
-        "spec": "@foo/bazz@^1.0.0",
-        "type": "prod",
-        "to": {
-          "id": "··@foo%2Fbazz@1.0.0",
-          "name": "@foo/bazz",
-          "version": "1.0.0",
-          "location": "./node_modules/.vlt/··@foo%2Fbazz@1.0.0/node_modules/@foo/bazz",
-          "importer": false,
-          "manifest": {
-            "name": "@foo/bazz",
-            "version": "1.0.0"
-          },
-          "projectRoot": "{ROOT}",
-          "dev": false,
-          "optional": false
+        "version": "1.0.0"
+      },
+      "projectRoot": "{ROOT}",
+      "dev": false,
+      "optional": false
+    }
+  },
+  {
+    "name": "bar",
+    "fromID": "file·.",
+    "spec": "bar@^1.0.0",
+    "type": "prod",
+    "to": {
+      "id": "··bar@1.0.0",
+      "name": "bar",
+      "version": "1.0.0",
+      "location": "./node_modules/.vlt/··bar@1.0.0/node_modules/bar",
+      "importer": false,
+      "manifest": {
+        "name": "bar",
+        "version": "1.0.0",
+        "dependencies": {
+          "baz": "^1.0.0"
         }
       },
-      {
-        "name": "bar",
-        "fromID": "file·.",
-        "spec": "bar@^1.0.0",
-        "type": "prod",
-        "to": {
-          "id": "··bar@1.0.0",
-          "name": "bar",
-          "version": "1.0.0",
-          "location": "./node_modules/.vlt/··bar@1.0.0/node_modules/bar",
-          "importer": false,
-          "manifest": {
-            "name": "bar",
-            "version": "1.0.0",
-            "dependencies": {
-              "baz": "^1.0.0"
-            }
-          },
-          "projectRoot": "{ROOT}",
-          "dev": false,
-          "optional": false
-        }
-      }
-    ]
-  ),
+      "projectRoot": "{ROOT}",
+      "dev": false,
+      "optional": false
+    }
+  }
 ]
 `
 
 exports[`test/commands/list.ts > TAP > list > workspaces > should list single workspace 1`] = `
-Array [
-  "a\\n",
-]
+a
+
 `
 
 exports[`test/commands/list.ts > TAP > list > workspaces > should list workspaces in human readable format 1`] = `
-Array [
-  String(
-    my-project
-    b
-    a
-    
-  ),
-]
+my-project
+b
+a
+
 `
 
 exports[`test/commands/list.ts > TAP > list > workspaces > should list workspaces in json format 1`] = `
-Array [
-  String(
-    [
-      {
+[
+  {
+    "name": "my-project",
+    "to": {
+      "id": "file·.",
+      "name": "my-project",
+      "version": "1.0.0",
+      "location": ".",
+      "importer": true,
+      "manifest": {
         "name": "my-project",
-        "to": {
-          "id": "file·.",
-          "name": "my-project",
-          "version": "1.0.0",
-          "location": ".",
-          "importer": true,
-          "manifest": {
-            "name": "my-project",
-            "version": "1.0.0"
-          },
-          "projectRoot": "{ROOT}",
-          "dev": false,
-          "optional": false
-        }
+        "version": "1.0.0"
       },
-      {
+      "projectRoot": "{ROOT}",
+      "dev": false,
+      "optional": false
+    }
+  },
+  {
+    "name": "b",
+    "to": {
+      "id": "workspace·packages%2Fb",
+      "name": "b",
+      "version": "1.0.0",
+      "location": "./packages/b",
+      "importer": true,
+      "manifest": {
         "name": "b",
-        "to": {
-          "id": "workspace·packages%2Fb",
-          "name": "b",
-          "version": "1.0.0",
-          "location": "./packages/b",
-          "importer": true,
-          "manifest": {
-            "name": "b",
-            "version": "1.0.0"
-          },
-          "projectRoot": "{ROOT}",
-          "dev": false,
-          "optional": false
-        }
+        "version": "1.0.0"
       },
-      {
+      "projectRoot": "{ROOT}",
+      "dev": false,
+      "optional": false
+    }
+  },
+  {
+    "name": "a",
+    "to": {
+      "id": "workspace·packages%2Fa",
+      "name": "a",
+      "version": "1.0.0",
+      "location": "./packages/a",
+      "importer": true,
+      "manifest": {
         "name": "a",
-        "to": {
-          "id": "workspace·packages%2Fa",
-          "name": "a",
-          "version": "1.0.0",
-          "location": "./packages/a",
-          "importer": true,
-          "manifest": {
-            "name": "a",
-            "version": "1.0.0"
-          },
-          "projectRoot": "{ROOT}",
-          "dev": false,
-          "optional": false
-        }
-      }
-    ]
-  ),
+        "version": "1.0.0"
+      },
+      "projectRoot": "{ROOT}",
+      "dev": false,
+      "optional": false
+    }
+  }
 ]
 `

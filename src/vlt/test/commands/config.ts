@@ -64,11 +64,6 @@ class MockConfig {
   }
 }
 
-// Note: have to use console.debug() in this test, because we
-// hijack these.
-const consoleErrors = t.capture(console, 'error').args
-const consoleLogs = t.capture(console, 'log').args
-
 const run = async (
   t: Test,
   positionals: string[],
@@ -91,30 +86,16 @@ const USAGE = await mockCommand(t).then(async c =>
 
 t.matchSnapshot(USAGE, 'usage')
 
-t.test('show usage', async t => {
-  t.test('explicit -h', async t => {
-    await run(t, ['get'], { help: true })
-    t.strictSame(consoleLogs(), [[USAGE]])
-    t.strictSame(consoleErrors(), [])
-  })
-  t.test('no sub', async t => {
-    await run(t, [], {})
-    t.strictSame(consoleLogs(), [[USAGE]])
-    t.strictSame(consoleErrors(), [])
-  })
-})
-
 t.test('help', async t => {
-  await run(t, ['help'], {})
-  t.matchOnly(consoleLogs(), [
-    ['Specify one or more options to see information:'],
-    [String],
+  const { result } = await run(t, ['help'], {})
+  t.match(result, [
+    'Specify one or more options to see information:',
+    String,
   ])
-  t.strictSame(consoleErrors(), [])
 })
 
 t.test('help <options>', async t => {
-  await run(
+  const { result } = await run(
     t,
     [
       'help',
@@ -127,26 +108,36 @@ t.test('help <options>', async t => {
     ],
     {},
   )
-  t.matchOnly(consoleLogs(), [
-    ['--registry=<url>\n  type: string\n'],
-    ['unknown config field: boof'],
-    ['--registries=<name=url>\n  type: Record<string, string>\n'],
-    ['--workspace=<ws>\n  type: string[]\n'],
-    ['--fetch-retry-maxtimeout=<n>\n  type: number'],
-    ['--color\n  type: boolean'],
+  t.matchOnly(result, [
+    '--registry=<url>',
+    '  type: string',
+    String,
+    String,
+    'unknown config field: boof',
+    '--registries=<name=url>',
+    '  type: Record<string, string>',
+    String,
+    '--workspace=<ws>',
+    '  type: string[]',
+    String,
+    '--fetch-retry-maxtimeout=<n>',
+    '  type: number',
+    String,
+    String,
+    '--color',
+    '  type: boolean',
+    String,
   ])
-  t.strictSame(consoleErrors(), [])
 })
 
 t.test('list', async t => {
   for (const cmd of ['list', 'ls']) {
     t.test(cmd, async t => {
       const vals = { some: 'options' }
-      await run(t, [cmd], vals)
-      t.strictSame(consoleErrors(), [])
-      t.strictSame(consoleLogs(), [
-        [JSON.stringify(recordsToPairs(vals), null, 2)],
-      ])
+      const { result } = await run(t, [cmd], vals)
+      t.strictSame(result, {
+        result: recordsToPairs(vals),
+      })
     })
   }
 })
@@ -158,16 +149,12 @@ t.test('del', async t => {
         config: which,
       })
       t.strictSame(conf.deletedKeys, [which, ['registry']])
-      t.strictSame(consoleLogs(), [])
-      t.strictSame(consoleErrors(), [])
     })
   }
   t.test('must specify key(s)', async t => {
     await t.rejects(run(t, ['del'], { config: 'user' }), {
       message: 'At least one key is required',
     })
-    t.strictSame(consoleLogs(), [])
-    t.strictSame(consoleErrors(), [[USAGE]])
   })
 })
 
@@ -177,19 +164,16 @@ t.test('get', async t => {
       'npm=https://registry.npmjs.org/',
       'vlt=https://registry.vlt.sh/',
     ]
-    await run(t, ['get', 'registries'], { registries })
-    t.strictSame(consoleLogs(), [
-      [JSON.stringify(registries, null, 2)],
-    ])
-    t.strictSame(consoleErrors(), [])
+    const { result } = await run(t, ['get', 'registries'], {
+      registries,
+    })
+    t.strictSame(result, { result: registries })
   })
   for (const i of [0, 2]) {
     t.test(`${i} keys`, async t => {
       await t.rejects(run(t, ['get', 'a', 'b'], {}), {
         message: 'Exactly one key is required',
       })
-      t.strictSame(consoleLogs(), [])
-      t.strictSame(consoleErrors(), [[USAGE]])
     })
   }
 })
@@ -223,8 +207,6 @@ t.test('set', async t => {
     await t.rejects(run(t, ['set'], {}), {
       message: 'At least one key=value pair is required',
     })
-    t.strictSame(consoleLogs(), [])
-    t.strictSame(consoleErrors(), [[USAGE]])
   })
   for (const which of ['user', 'project']) {
     t.test(which, async t => {
@@ -237,8 +219,6 @@ t.test('set', async t => {
         which,
         { registry: 'https://example.com/' },
       ])
-      t.strictSame(consoleLogs(), [])
-      t.strictSame(consoleErrors(), [])
     })
   }
 })
