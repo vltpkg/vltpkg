@@ -210,4 +210,10 @@ export default tseslint.config(
       '@typescript-eslint/no-empty-object-type': 'off',
     },
   },
+  {
+    files: ['src/*/src/**/*.ts'],
+    rules: {
+      'no-console': 2,
+    },
+  },
 )

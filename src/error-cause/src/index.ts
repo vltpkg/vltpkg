@@ -190,6 +190,7 @@ export type Codes =
   | 'ENOGIT'
   | 'ERESOLVE'
   | 'EUNKNOWN'
+  | 'EUSAGE'
 
 const create = (
   cls: typeof Error,

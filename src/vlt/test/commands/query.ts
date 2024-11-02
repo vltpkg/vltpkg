@@ -7,10 +7,11 @@ import {
 import { PackageJson } from '@vltpkg/package-json'
 import { Spec, SpecOptions } from '@vltpkg/spec'
 import { PathScurry } from 'path-scurry'
-import t from 'tap'
+import t, { Test } from 'tap'
 import { LoadedConfig } from '../../src/types.js'
 import { Monorepo } from '@vltpkg/workspaces'
 import type { StartGUIOptions } from '../../src/start-gui.js'
+import { commandView, CommandResultOptions } from '../fixtures/run.js'
 
 t.cleanSnapshot = s =>
   s.replace(
@@ -92,70 +93,77 @@ graph.placePackage(
   },
 )
 
-const { usage, command } = await t.mockImport<
-  typeof import('../../src/commands/query.js')
->('../../src/commands/query.js', {
-  '@vltpkg/graph': {
-    actual: {
-      load: () => graph,
+const mockQuery = async (
+  t: Test,
+  { graph: g = graph, ...mocks }: Record<string, any> = {},
+) =>
+  t.mockImport<typeof import('../../src/commands/query.js')>(
+    '../../src/commands/query.js',
+    {
+      '@vltpkg/graph': {
+        actual: {
+          load: () => g,
+        },
+        humanReadableOutput,
+        jsonOutput,
+        mermaidOutput,
+      },
+      ...mocks,
     },
-    humanReadableOutput,
-    jsonOutput,
-    mermaidOutput,
-  },
-})
+  )
+
+const Command = await mockQuery(t)
+
+const runCommand = async (
+  t: Test,
+  o: CommandResultOptions,
+  cmd: typeof Command = Command,
+) => commandView(t, cmd, o)
 
 t.test('query', async t => {
-  t.matchSnapshot((await usage()).usage(), 'should have usage')
+  t.matchSnapshot(
+    (await Command.usage()).usage(),
+    'should have usage',
+  )
 
   sharedOptions.packageJson.read = () => graph.mainImporter.manifest!
   const options = {
     ...sharedOptions,
     projectRoot: t.testdirName,
   }
-  const logs = t.capture(console, 'log').args
 
-  await command(
-    {
+  t.matchSnapshot(
+    await runCommand(t, {
       positionals: [],
       values: {
         view: 'human',
       },
       options,
-    } as unknown as LoadedConfig,
-    options,
-    '/path/to/assets',
-  )
-  t.matchSnapshot(
-    logs()[0],
+    }),
     'should list pkgs in human readable format',
   )
 
-  await command(
-    {
+  t.matchSnapshot(
+    await runCommand(t, {
       positionals: [],
       values: {
         view: 'json',
       },
       options,
-    } as unknown as LoadedConfig,
-    options,
-    '/path/to/assets',
+    }),
+    'should list pkgs in json format',
   )
-  t.matchSnapshot(logs()[0], 'should list pkgs in json format')
 
-  await command(
-    {
+  t.matchSnapshot(
+    await runCommand(t, {
       positionals: [],
       values: {
         view: 'mermaid',
       },
       options,
-    } as unknown as LoadedConfig,
-    options,
-    '/path/to/assets',
+    }),
+    'should list mermaid in json format',
   )
-  t.matchSnapshot(logs()[0], 'should list mermaid in json format')
 
   await t.test('workspaces', async t => {
     const mainManifest = {
@@ -198,64 +206,53 @@ t.test('query', async t => {
       monorepo,
     }
 
-    const { command } = await t.mockImport<
-      typeof import('../../src/commands/query.js')
-    >('../../src/commands/query.js', {
-      '@vltpkg/graph': {
-        actual: {
-          load: () => graph,
-        },
-        humanReadableOutput,
-        jsonOutput,
-        mermaidOutput,
-      },
-    })
+    const Command = await mockQuery(t, { graph })
 
-    await command(
-      {
-        positionals: [],
-        values: {
-          view: 'human',
-        },
-        options,
-      } as unknown as LoadedConfig,
-      options,
-      '/path/to/assets',
-    )
     t.matchSnapshot(
-      logs()[0],
+      await runCommand(
+        t,
+        {
+          positionals: [],
+          values: {
+            view: 'human',
+          },
+          options,
+        },
+        Command,
+      ),
       'should list workspaces in human readable format',
     )
 
-    await command(
-      {
-        positionals: [],
-        values: {
-          view: 'json',
-        },
-        options,
-      } as unknown as LoadedConfig,
-      options,
-      '/path/to/assets',
-    )
     t.matchSnapshot(
-      logs()[0],
+      await runCommand(
+        t,
+        {
+          positionals: [],
+          values: {
+            view: 'json',
+          },
+          options,
+        },
+        Command,
+      ),
       'should list workspaces in json format',
     )
 
-    await command(
-      {
-        positionals: [],
-        values: {
-          workspace: ['a'],
-          view: 'human',
+    t.matchSnapshot(
+      await runCommand(
+        t,
+        {
+          positionals: [],
+          values: {
+            workspace: ['a'],
+            view: 'human',
+          },
+          options,
         },
-        options,
-      } as unknown as LoadedConfig,
-      options,
-      '/path/to/assets',
+        Command,
+      ),
+      'should list single workspace',
     )
-    t.matchSnapshot(logs()[0], 'should list single workspace')
   })
 
   t.test('view=gui', async t => {
@@ -267,17 +264,7 @@ t.test('query', async t => {
     }
 
     let startGUIOptions: StartGUIOptions | undefined
-    const { command } = await t.mockImport<
-      typeof import('../../src/commands/query.js')
-    >('../../src/commands/query.js', {
-      '@vltpkg/graph': {
-        actual: {
-          load: () => graph,
-        },
-        humanReadableOutput,
-        jsonOutput,
-        mermaidOutput,
-      },
+    const { command } = await mockQuery(t, {
       '../../src/start-gui.js': {
         startGUI: async (options: StartGUIOptions) => {
           startGUIOptions = options
@@ -294,7 +281,6 @@ t.test('query', async t => {
         },
         options,
       } as unknown as LoadedConfig,
-      undefined,
       '/path/to/assets',
     )
 
@@ -308,36 +294,26 @@ t.test('query', async t => {
     )
   })
 
-  process.env.FORCE_COLOR = '1'
   await t.test('colors', async t => {
-    const { command } = await t.mockImport<
-      typeof import('../../src/commands/query.js')
-    >('../../src/commands/query.js', {
-      '@vltpkg/graph': {
-        actual: {
-          load: () => graph,
-        },
-        humanReadableOutput,
-        jsonOutput,
-        mermaidOutput,
-      },
+    t.intercept(process, 'env', {
+      value: { ...process.env, FORCE_COLOR: '1' },
     })
-    await command(
-      {
-        positionals: [],
-        values: {
-          color: true,
-          view: 'human',
-        },
-        options,
-      } as unknown as LoadedConfig,
-      options,
-      '/path/to/assets',
-    )
+    const Command = await mockQuery(t)
+
     t.matchSnapshot(
-      logs()[0],
+      await runCommand(
+        t,
+        {
+          positionals: [],
+          values: {
+            color: true,
+            view: 'human',
+          },
+          options,
+        },
+        Command,
+      ),
       'should use colors when set in human readable format',
     )
   })
-  delete process.env.FORCE_COLOR
 })

@@ -1,8 +1,7 @@
-import { LoadedConfig } from '../config/index.js'
 import { commandUsage } from '../config/usage.js'
-import { CliCommand } from '../types.js'
+import { type CliCommandUsage, CliCommandFn } from '../types.js'
 
-export const usage: CliCommand['usage'] = () =>
+export const usage: CliCommandUsage = () =>
   commandUsage({
     command: 'install-exec',
     usage: '[--package=<pkg>] [command...]',
@@ -10,7 +9,9 @@ export const usage: CliCommand['usage'] = () =>
       'Run a command defined by a package, installing it if necessary',
   })
 
-export const command = async (conf: LoadedConfig) => {
-  console.log('todo: exec, but install if not present')
-  console.error(conf.positionals)
+export const command: CliCommandFn = async conf => {
+  return [
+    'TODO: exec, but install if not present',
+    ...conf.positionals,
+  ]
 }

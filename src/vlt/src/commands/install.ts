@@ -1,22 +1,18 @@
 import { actual, ideal, reify } from '@vltpkg/graph'
 import { PackageInfoClient } from '@vltpkg/package-info'
-import { LoadedConfig } from '../config/index.js'
 import { parseAddArgs } from '../parse-add-remove-args.js'
-import { CliCommandOptions, CliCommand } from '../types.js'
+import { CliCommandUsage, CliCommandFn } from '../types.js'
 import { commandUsage } from '../config/usage.js'
 
-export const usage: CliCommand['usage'] = () =>
+export const usage: CliCommandUsage = () =>
   commandUsage({
     command: 'install',
     usage: '[package ...]',
     description: `Install the specified package, updating dependencies appropriately`,
   })
 
-export const command = async (
-  conf: LoadedConfig,
-  options: CliCommandOptions,
-) => {
-  const monorepo = options.monorepo
+export const command: CliCommandFn = async conf => {
+  const monorepo = conf.options.monorepo
   const { add } = parseAddArgs(conf, monorepo)
   const mainManifest = conf.options.packageJson.read(
     conf.options.projectRoot,

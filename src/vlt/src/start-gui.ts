@@ -15,6 +15,7 @@ import { PathScurry, PathBase } from 'path-scurry'
 import { readProjectFolders } from './read-project-folders.js'
 import type { Manifest } from '@vltpkg/types'
 import type { ConfigOptions, LoadedConfig } from './config/index.js'
+import { stderr, stdout } from './output.js'
 
 const HOST = 'localhost'
 const PORT = 7017
@@ -229,7 +230,7 @@ export const startGUI = async ({
       /* c8 ignore start */
     } else {
       handler(req, res, opts).catch((err: unknown) => {
-        console.error(err)
+        stderr(err)
         res.statusCode = 500
         res.end('Internal server error')
       })
@@ -237,9 +238,9 @@ export const startGUI = async ({
     /* c8 ignore stop */
   })
 
-  return await new Promise<Server>(res => {
+  return new Promise<Server>(res => {
     server.listen(port, 'localhost', () => {
-      console.log(`⚡️ vlt GUI running at http://${HOST}:${port}`)
+      stdout(`⚡️ vlt GUI running at http://${HOST}:${port}`)
       opener(`http://${HOST}:${port}${startingRoute}`)
       res(server)
     })

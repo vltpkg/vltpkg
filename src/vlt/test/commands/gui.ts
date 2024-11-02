@@ -4,16 +4,15 @@ import type { StartGUIOptions } from '../../src/start-gui.js'
 
 t.test('starts gui data and server', async t => {
   let startGUIOptions: StartGUIOptions | undefined
-  const { usage, command } = await t.mockImport(
-    '../../src/commands/gui.js',
-    {
-      '../../src/start-gui.js': {
-        startGUI: async (options: StartGUIOptions) => {
-          startGUIOptions = options
-        },
+  const { usage, command } = await t.mockImport<
+    typeof import('../../src/commands/gui.js')
+  >('../../src/commands/gui.js', {
+    '../../src/start-gui.js': {
+      startGUI: async (options: StartGUIOptions) => {
+        startGUIOptions = options
       },
     },
-  )
+  })
 
   t.matchSnapshot((await usage()).usage(), 'usage')
 
@@ -24,8 +23,7 @@ t.test('starts gui data and server', async t => {
       options: {
         projectRoot: '/path/to/project',
       },
-    } as unknown as LoadedConfig,
-    undefined,
+    } as LoadedConfig,
     assetsDir,
   )
 

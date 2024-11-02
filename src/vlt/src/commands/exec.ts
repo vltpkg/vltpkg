@@ -1,10 +1,9 @@
 import { exec, execFG } from '@vltpkg/run'
-import { LoadedConfig } from '../config/index.js'
-import { ExecCommand } from '../exec-command.js'
+import { ExecCommand, ExecResult } from '../exec-command.js'
 import { commandUsage } from '../config/usage.js'
-import { type CliCommand } from '../types.js'
+import { CliCommandUsage, type CliCommandFn } from '../types.js'
 
-export const usage: CliCommand['usage'] = () =>
+export const usage: CliCommandUsage = () =>
   commandUsage({
     command: 'exec',
     usage: '[command]',
@@ -12,5 +11,8 @@ export const usage: CliCommand['usage'] = () =>
                   If no command specified, an interactive subshell is spawned.`,
   })
 
-export const command = async (conf: LoadedConfig) =>
-  await new ExecCommand(conf, exec, execFG).run()
+export const command: CliCommandFn<ExecResult> = async conf => {
+  return {
+    result: await new ExecCommand(conf, exec, execFG).run(),
+  }
+}

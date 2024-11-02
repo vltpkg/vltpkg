@@ -3,11 +3,11 @@ import { LoadedConfig } from '../config/index.js'
 import { PackageJson } from '@vltpkg/package-json'
 import * as dotProp from '@vltpkg/dot-prop'
 import { Manifest } from '@vltpkg/types'
-import { CliCommandOptions, CliCommand } from '../types.js'
+import { CliCommandUsage, CliCommandFn } from '../types.js'
 import assert from 'assert'
 import { commandUsage } from '../config/usage.js'
 
-export const usage: CliCommand['usage'] = () =>
+export const usage: CliCommandUsage = () =>
   commandUsage({
     command: 'pkg',
     usage: '[<command>] [<args>]',
@@ -40,12 +40,9 @@ export const usage: CliCommand['usage'] = () =>
     },
   })
 
-export const command = async (
-  conf: LoadedConfig,
-  options: CliCommandOptions,
-) => {
+export const command: CliCommandFn = async conf => {
   const [sub, ...args] = conf.positionals
-  const pkg = options.packageJson ?? new PackageJson()
+  const pkg = conf.options.packageJson
   const mani = pkg.read(conf.projectRoot)
 
   switch (sub) {
@@ -61,8 +58,8 @@ export const command = async (
     case 'delete':
       return rm(conf, mani, pkg, args)
     default: {
-      console.error((await usage()).usage)
       throw error('Unrecognized pkg command', {
+        code: 'EUSAGE',
         found: sub,
         validOptions: ['get', 'set', 'rm'],
       })
@@ -74,7 +71,7 @@ const get = (mani: Manifest, args: string[]) => {
   const noArg = () =>
     error(
       'get requires not more than 1 argument. use `pick` to get more than 1.',
-      undefined,
+      { code: 'EUSAGE' },
       noArg,
     )
   if (args.length !== 1) {
@@ -84,18 +81,21 @@ const get = (mani: Manifest, args: string[]) => {
     return pick(mani, args)
   }
   assert(args[0], noArg())
-  console.log(JSON.stringify(dotProp.get(mani, args[0]), null, 2))
+  return {
+    result: dotProp.get(mani, args[0]),
+  }
 }
 
 const pick = (mani: Manifest, args: string[]) => {
-  const res =
-    args.length ?
-      args.reduce(
-        (acc, key) => dotProp.set(acc, key, dotProp.get(mani, key)),
-        {},
-      )
-    : mani
-  console.log(JSON.stringify(res, null, 2))
+  return {
+    result:
+      args.length ?
+        args.reduce(
+          (acc, key) => dotProp.set(acc, key, dotProp.get(mani, key)),
+          {},
+        )
+      : mani,
+  }
 }
 
 const set = (
@@ -105,17 +105,21 @@ const set = (
   args: string[],
 ) => {
   if (args.length < 1) {
-    throw error('set requires arguments')
+    throw error('set requires arguments', { code: 'EUSAGE' })
   }
 
   const res = args.reduce((acc, p) => {
     const index = p.indexOf('=')
     if (index === -1) {
-      throw error('set arguments must contain `=`')
+      throw error('set arguments must contain `=`', {
+        code: 'EUSAGE',
+      })
     }
-    const key = p.substring(0, index)
-    const value = p.substring(index + 1)
-    return dotProp.set(acc, key, value)
+    return dotProp.set(
+      acc,
+      p.substring(0, index),
+      p.substring(index + 1),
+    )
   }, mani)
 
   pkg.write(conf.projectRoot, res)
@@ -128,7 +132,7 @@ const rm = (
   args: string[],
 ) => {
   if (args.length < 1) {
-    throw error('rm requires arguments')
+    throw error('rm requires arguments', { code: 'EUSAGE' })
   }
 
   const res = args.reduce((acc, key) => {

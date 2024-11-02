@@ -30,7 +30,7 @@ t.test('run script in a project', async t => {
   conf.projectRoot = dir
   const logs = t.capture(console, 'log').args
   const errs = t.capture(console, 'error').args
-  const result = await command(conf)
+  const { result } = await command(conf)
   t.strictSame(result, {
     command: pass,
     args: [],
@@ -69,7 +69,7 @@ t.test('run script in a single workspace', async t => {
   conf.projectRoot = dir
   const logs = t.capture(console, 'log').args
   const errs = t.capture(console, 'error').args
-  const result = await command(conf)
+  const { result } = await command(conf)
   t.strictSame(result, {
     command: pass,
     args: [],
@@ -115,7 +115,7 @@ t.test('run script across several workspaces', async t => {
   conf.projectRoot = dir
   const logs = t.capture(console, 'log').args
   const errs = t.capture(console, 'error').args
-  const result = await command(conf)
+  const { result } = await command(conf)
   t.strictSame(result, {
     'src/a': {
       command: pass,
@@ -227,8 +227,6 @@ t.test('one ws fails, with bail', async t => {
   conf.projectRoot = dir
   const logs = t.capture(console, 'log').args
   const errs = t.capture(console, 'error').args
-  // had a set in there somewhere
-
   await t.rejects(command(conf), {
     message: 'failed graph traversal',
     cause: {
@@ -311,10 +309,7 @@ t.test('one ws fails, without bail', async t => {
   conf.projectRoot = dir
   const logs = t.capture(console, 'log').args
   const errs = t.capture(console, 'error').args
-  // had a set in there somewhere
-
-  const result = await command(conf)
-
+  const { result } = await command(conf)
   t.strictSame(result, {
     'src/b': {
       command: pass,
@@ -337,7 +332,6 @@ t.test('one ws fails, without bail', async t => {
       pre: undefined,
     },
   })
-
   t.match(
     new Set(logs()),
     new Set([
@@ -378,7 +372,7 @@ t.test('show scripts if no event specified', async t => {
   conf.values['workspace-group'] = undefined
   const logs = t.capture(console, 'log').args
   const errs = t.capture(console, 'error').args
-  const result = await command(conf)
+  const { result } = await command(conf)
   t.equal(result, undefined)
   t.strictSame(logs(), [
     ['Scripts available:', { hello: 'node -e "process.exit(0)"' }],
@@ -411,7 +405,7 @@ t.test('show scripts if no event specified, single ws', async t => {
   conf.projectRoot = dir
   const logs = t.capture(console, 'log').args
   const errs = t.capture(console, 'error').args
-  const result = await command(conf)
+  const { result } = await command(conf)
   t.equal(result, undefined)
   t.strictSame(logs(), [
     ['Scripts available:', { hello: 'node -e "process.exit(0)"' }],
@@ -450,7 +444,7 @@ t.test('show scripts across several workspaces', async t => {
   conf.projectRoot = dir
   const logs = t.capture(console, 'log').args
   const errs = t.capture(console, 'error').args
-  const result = await command(conf)
+  const { result } = await command(conf)
   t.strictSame(result, undefined)
   t.strictSame(
     new Set(logs()),

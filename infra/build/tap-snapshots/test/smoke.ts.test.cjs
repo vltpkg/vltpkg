@@ -18,16 +18,43 @@ exports[`test/smoke.ts > TAP > commands > vlt > pkg > get name > output 1`] = `
 `
 
 exports[`test/smoke.ts > TAP > commands > vlt > pkg > get name version > output 1`] = `
-{ROOT}/src/vlt/src/commands/pkg.ts:{LINE_NUMBER}
-      throw noArg()
-            ^
+Usage:
+  vlt pkg [<command>] [<args>]
 
+Get or manipulate package.json values
+
+  Subcommands
+
+    get
+      Get a single value
+
+      ​vlt pkg get [<key>]
+
+    pick
+      Get multiple values or the entire package
+
+      ​vlt pkg pick [<key> [<key> ...]]
+
+    set
+      Set one or more key value pairs
+
+      ​vlt pkg set <key>=<value> [<key>=<value> ...]
+
+    delete
+      Delete one or more keys from the package
+
+      ​vlt pkg delete <key> [<key> ...]
+
+  Examples
+
+    Set a value on an object inside an array
+
+    ​vlt pkg set "array[1].key=value"
+
+    Append a value to an array
+
+    ​vlt pkg set "array[]=value"
 
 Error: get requires not more than 1 argument. use \`pick\` to get more than 1.
-    at {STACK}
-    at {STACK}
-    at {STACK}
-
-Node.js {NODE}
 
 `

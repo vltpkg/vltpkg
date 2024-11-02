@@ -6,6 +6,7 @@ import {
   Testdir,
   chtestdir,
 } from './fixtures/run.js'
+import { error } from '@vltpkg/error-cause'
 
 setupEnv(t)
 
@@ -33,18 +34,21 @@ export const run = async (
     value: [process.execPath, 'index.js', commandName, ...argv],
   })
   const logs: any[] = []
+  const errs: any[] = []
   t.capture(console, 'log', (...msg: any[]) => logs.push(msg))
-  const config = await mockConfig(t)
+  t.capture(console, 'error', (...msg: any[]) => errs.push(msg))
+  const Config = await mockConfig(t)
   const index = await t.mockImport(`../src/index.js`, {
-    '../src/config/index.js': config,
+    '../src/config/index.js': Config,
     ...(command ?
       { [`../src/commands/${commandName}.js`]: command }
     : {}),
   })
   await index.default()
   return {
-    config: await config.Config.load(),
+    config: await Config.Config.load(),
     logs,
+    errs,
   }
 }
 
@@ -91,10 +95,49 @@ t.test('print usage', async t => {
     },
   })
   t.equal(commandRun, false)
-  t.equal(logs.length, 1)
-  t.equal(logs[0].length, 1)
   t.strictSame(
-    logs[0][0].split('\n').map((l: string) => l.trim()),
-    ['Usage:', 'im helping!!! im helping youuuuuu', ''],
+    logs
+      .flatMap(e => e)
+      .flatMap(e => e.split('\n'))
+      .map(e => e.trim())
+      .filter(Boolean),
+    ['Usage:', 'im helping!!! im helping youuuuuu'],
   )
+})
+
+t.test('print EUSAGE error', async t => {
+  const { logs, errs } = await run(t, {
+    commandName: 'config',
+    argv: ['ls'],
+    command: {
+      command: async () => {
+        throw error('there was a problem', {
+          code: 'EUSAGE',
+        })
+      },
+      usage: async () =>
+        jack({
+          usage: 'im helping!!! im helping youuuuuu',
+        }),
+    },
+    testdir: {
+      '.git': {},
+      'vlt.json': JSON.stringify({}),
+    },
+  })
+  t.strictSame(logs, [])
+  t.strictSame(
+    errs
+      .flatMap(e => e)
+      .flatMap(e => e.split('\n'))
+      .map(e => e.trim())
+      .filter(Boolean),
+    [
+      'Usage:',
+      'im helping!!! im helping youuuuuu',
+      'Error: there was a problem',
+    ],
+  )
+  t.equal(process.exitCode, 1)
+  process.exitCode = undefined
 })

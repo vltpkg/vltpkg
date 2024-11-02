@@ -1,11 +1,10 @@
 import { actual, ideal, reify } from '@vltpkg/graph'
 import { PackageInfoClient } from '@vltpkg/package-info'
-import { LoadedConfig } from '../config/index.js'
 import { parseRemoveArgs } from '../parse-add-remove-args.js'
-import { CliCommandOptions, CliCommand } from '../types.js'
+import { CliCommandFn, CliCommandUsage } from '../types.js'
 import { commandUsage } from '../config/usage.js'
 
-export const usage: CliCommand['usage'] = () =>
+export const usage: CliCommandUsage = () =>
   commandUsage({
     command: 'uninstall',
     usage: '[package ...]',
@@ -13,11 +12,8 @@ export const usage: CliCommand['usage'] = () =>
       'Remove the named packages from the dependency graph',
   })
 
-export const command = async (
-  conf: LoadedConfig,
-  options: CliCommandOptions,
-) => {
-  const monorepo = options.monorepo
+export const command: CliCommandFn = async conf => {
+  const monorepo = conf.options.monorepo
   const { remove } = parseRemoveArgs(conf, monorepo)
   const mainManifest = conf.options.packageJson.read(
     conf.options.projectRoot,

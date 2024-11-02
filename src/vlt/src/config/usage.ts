@@ -1,5 +1,5 @@
 import { jack } from 'jackspeak'
-import { type CliCommand } from '../types.js'
+import { type CliCommandUsage } from '../types.js'
 
 const toArr = <T>(v: T | T[]): T[] => (Array.isArray(v) ? v : [v])
 
@@ -25,7 +25,7 @@ export const commandUsage = async ({
   >
   examples?: Record<string, { description: string }>
   options?: Record<string, { value?: string; description: string }>
-}): ReturnType<CliCommand['usage']> => {
+}): ReturnType<CliCommandUsage> => {
   const vlt = (s?: string) => join([`vlt`, command, s])
 
   const joinUsage = (usages?: string | string[]) =>
