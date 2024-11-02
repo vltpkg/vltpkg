@@ -146,3 +146,11 @@ Object {
   "scurry": PathScurry {},
 }
 `
+
+exports[`test/commands/install.ts > TAP > usage 1`] = `
+Usage:
+  vlt install [package ...]
+
+Install the specified package, updating dependencies appropriately
+
+`

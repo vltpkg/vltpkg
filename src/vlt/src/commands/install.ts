@@ -2,10 +2,15 @@ import { actual, ideal, reify } from '@vltpkg/graph'
 import { PackageInfoClient } from '@vltpkg/package-info'
 import { LoadedConfig } from '../config/index.js'
 import { parseAddArgs } from '../parse-add-remove-args.js'
-import { CliCommandOptions } from '../types.js'
+import { CliCommandOptions, CliCommand } from '../types.js'
+import { commandUsage } from '../config/usage.js'
 
-export const usage = `vlt install [package ...]
-Install the specified package, updating dependencies appropriately`
+export const usage: CliCommand['usage'] = () =>
+  commandUsage({
+    command: 'install',
+    usage: '[package ...]',
+    description: `Install the specified package, updating dependencies appropriately`,
+  })
 
 export const command = async (
   conf: LoadedConfig,

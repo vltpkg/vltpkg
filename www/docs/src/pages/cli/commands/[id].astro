@@ -1,0 +1,21 @@
+---
+import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro'
+import { getCollection, render } from 'astro:content'
+import { type MarkdownHeading } from 'astro'
+
+export const getStaticPaths = async () =>
+  (await getCollection('commands')).map(command => ({
+    params: { id: command.id },
+    props: { command },
+  }))
+
+const { command } = Astro.props
+const { Content } = await render(command)
+---
+
+<StarlightPage
+  frontmatter={{ title: command.id }}
+  headings={(command.rendered?.metadata
+    ?.headings as MarkdownHeading[]) ?? []}>
+  <Content />
+</StarlightPage>

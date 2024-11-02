@@ -36,7 +36,7 @@ const run = async () => {
   const { command, usage } = await loadCommand(vlt.command)
 
   if (vlt.get('help')) {
-    console.log(typeof usage === 'function' ? await usage() : usage)
+    console.log((await usage()).usage())
   } else {
     // TODO: if it throws, pass to central error handler
     await command(vlt, vlt.options)
