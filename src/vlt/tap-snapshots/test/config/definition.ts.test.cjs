@@ -285,6 +285,7 @@ Object {
       "human",
       "json",
       "mermaid",
+      "gui",
     ],
   },
   "workspace": Object {
