@@ -22,7 +22,7 @@ Array [
 exports[`test/commands/query.ts > TAP > query > should have usage 1`] = `
 Usage:
   vlt query
-  vlt query <query> --view=[human | json | mermaid]
+  vlt query <query> --view=[human | json | mermaid | gui]
 
 List installed dependencies matching the provided query.
 
@@ -39,7 +39,7 @@ Examples:
 
 Options:
 
-  --view=[human | json | mermaid]
+  --view=[human | json | mermaid | gui]
           Output format. Defaults to human-readable or json if no tty.
 
 `

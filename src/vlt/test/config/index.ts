@@ -63,6 +63,14 @@ t.test('read and write a project config', async t => {
     },
     'wrote without merging if not already data present',
   )
+
+  await t.test(
+    'reset options relative to a new project root',
+    async t => {
+      conf.resetOptions(dir + '/a')
+      t.strictSame(conf.projectRoot, dir + '/a')
+    },
+  )
 })
 
 t.test('read and write a user config', async t => {

@@ -22,7 +22,7 @@ Array [
 exports[`test/commands/list.ts > TAP > list > should have usage 1`] = `
 Usage:
   vlt ls
-  vlt ls <query> --view=[human | json | mermaid]
+  vlt ls <query> --view=[human | json | mermaid | gui]
 
 List installed dependencies matching the provided query.
 Defaults to listing direct dependencies of a project and
@@ -43,7 +43,7 @@ Examples:
 
 Options:
 
-  --view=[human | json | mermaid]
+  --view=[human | json | mermaid | gui]
           Output format. Defaults to human-readable or json if no tty.
 
 `

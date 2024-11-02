@@ -1,3 +1,4 @@
+import { fileURLToPath } from 'node:url'
 import {
   actual,
   humanReadableOutput,
@@ -8,10 +9,11 @@ import {
 import { Query } from '@vltpkg/query'
 import chalk from 'chalk'
 import { LoadedConfig } from '../config/index.js'
+import { startGUI } from '../start-gui.js'
 
 export const usage = `Usage:
   vlt ls
-  vlt ls <query> --view=[human | json | mermaid]
+  vlt ls <query> --view=[human | json | mermaid | gui]
 
 List installed dependencies matching the provided query.
 Defaults to listing direct dependencies of a project and
@@ -32,11 +34,17 @@ Examples:
 
 Options:
 
-  --view=[human | json | mermaid]
+  --view=[human | json | mermaid | gui]
           Output format. Defaults to human-readable or json if no tty.
 `
 
-export const command = async (conf: LoadedConfig) => {
+export const command = async (
+  conf: LoadedConfig,
+  _opts: unknown,
+  assetsDir: string = fileURLToPath(
+    import.meta.resolve('@vltpkg/gui'),
+  ),
+) => {
   const monorepo = conf.options.monorepo
   const mainManifest = conf.options.packageJson.read(
     conf.options.projectRoot,
@@ -83,6 +91,17 @@ export const command = async (conf: LoadedConfig) => {
   const { edges, nodes } = await query.search(
     queryString || defaultQueryString,
   )
+
+  if (conf.values.view === 'gui') {
+    return startGUI({
+      assetsDir,
+      conf,
+      startingRoute:
+        '/explore?query=' +
+        encodeURIComponent(queryString || defaultQueryString),
+    })
+  }
+
   const colors = conf.values.color ? chalk : undefined
 
   const result =

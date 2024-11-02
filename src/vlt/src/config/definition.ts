@@ -468,7 +468,7 @@ export const definition = jack({
     view: {
       hint: 'output',
       description: `Configures the output format for ls & query commands.`,
-      validOptions: ['human', 'json', 'mermaid'] as const,
+      validOptions: ['human', 'json', 'mermaid', 'gui'] as const,
     },
   })
 

@@ -10,6 +10,7 @@ import { PathScurry } from 'path-scurry'
 import t from 'tap'
 import { LoadedConfig } from '../../src/types.js'
 import { Monorepo } from '@vltpkg/workspaces'
+import type { StartGUIOptions } from '../../src/start-gui.js'
 
 t.cleanSnapshot = s =>
   s.replace(
@@ -114,34 +115,46 @@ t.test('query', async t => {
   }
   const logs = t.capture(console, 'log').args
 
-  await command({
-    positionals: [],
-    values: {
-      view: 'human',
-    },
+  await command(
+    {
+      positionals: [],
+      values: {
+        view: 'human',
+      },
+      options,
+    } as unknown as LoadedConfig,
     options,
-  } as unknown as LoadedConfig)
+    '/path/to/assets',
+  )
   t.matchSnapshot(
     logs()[0],
     'should list pkgs in human readable format',
   )
 
-  await command({
-    positionals: [],
-    values: {
-      view: 'json',
-    },
+  await command(
+    {
+      positionals: [],
+      values: {
+        view: 'json',
+      },
+      options,
+    } as unknown as LoadedConfig,
     options,
-  } as unknown as LoadedConfig)
+    '/path/to/assets',
+  )
   t.matchSnapshot(logs()[0], 'should list pkgs in json format')
 
-  await command({
-    positionals: [],
-    values: {
-      view: 'mermaid',
-    },
+  await command(
+    {
+      positionals: [],
+      values: {
+        view: 'mermaid',
+      },
+      options,
+    } as unknown as LoadedConfig,
     options,
-  } as unknown as LoadedConfig)
+    '/path/to/assets',
+  )
   t.matchSnapshot(logs()[0], 'should list mermaid in json format')
 
   await t.test('workspaces', async t => {
@@ -198,39 +211,101 @@ t.test('query', async t => {
       },
     })
 
-    await command({
-      positionals: [],
-      values: {
-        view: 'human',
-      },
+    await command(
+      {
+        positionals: [],
+        values: {
+          view: 'human',
+        },
+        options,
+      } as unknown as LoadedConfig,
       options,
-    } as unknown as LoadedConfig)
+      '/path/to/assets',
+    )
     t.matchSnapshot(
       logs()[0],
       'should list workspaces in human readable format',
     )
 
-    await command({
-      positionals: [],
-      values: {
-        view: 'json',
-      },
+    await command(
+      {
+        positionals: [],
+        values: {
+          view: 'json',
+        },
+        options,
+      } as unknown as LoadedConfig,
       options,
-    } as unknown as LoadedConfig)
+      '/path/to/assets',
+    )
     t.matchSnapshot(
       logs()[0],
       'should list workspaces in json format',
     )
 
-    await command({
-      positionals: [],
-      values: {
-        workspace: ['a'],
-        view: 'human',
-      },
+    await command(
+      {
+        positionals: [],
+        values: {
+          workspace: ['a'],
+          view: 'human',
+        },
+        options,
+      } as unknown as LoadedConfig,
       options,
-    } as unknown as LoadedConfig)
+      '/path/to/assets',
+    )
     t.matchSnapshot(logs()[0], 'should list single workspace')
+  })
+
+  t.test('view=gui', async t => {
+    sharedOptions.packageJson.read = () =>
+      graph.mainImporter.manifest!
+    const options = {
+      ...sharedOptions,
+      projectRoot: t.testdirName,
+    }
+
+    let startGUIOptions: StartGUIOptions | undefined
+    const { command } = await t.mockImport<
+      typeof import('../../src/commands/query.js')
+    >('../../src/commands/query.js', {
+      '@vltpkg/graph': {
+        actual: {
+          load: () => graph,
+        },
+        humanReadableOutput,
+        jsonOutput,
+        mermaidOutput,
+      },
+      '../../src/start-gui.js': {
+        startGUI: async (options: StartGUIOptions) => {
+          startGUIOptions = options
+        },
+      },
+    })
+
+    await command(
+      {
+        positionals: [],
+        values: {
+          workspace: [],
+          view: 'gui',
+        },
+        options,
+      } as unknown as LoadedConfig,
+      undefined,
+      '/path/to/assets',
+    )
+
+    t.matchStrict(
+      startGUIOptions,
+      {
+        conf: { options: { projectRoot: t.testdirName } },
+        assetsDir: '/path/to/assets',
+      },
+      'should call startGUI with expected options',
+    )
   })
 
   process.env.FORCE_COLOR = '1'
@@ -247,14 +322,18 @@ t.test('query', async t => {
         mermaidOutput,
       },
     })
-    await command({
-      positionals: [],
-      values: {
-        color: true,
-        view: 'human',
-      },
+    await command(
+      {
+        positionals: [],
+        values: {
+          color: true,
+          view: 'human',
+        },
+        options,
+      } as unknown as LoadedConfig,
       options,
-    } as unknown as LoadedConfig)
+      '/path/to/assets',
+    )
     t.matchSnapshot(
       logs()[0],
       'should use colors when set in human readable format',
