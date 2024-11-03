@@ -27,22 +27,26 @@ test('dashboard-grid render default', async () => {
 test('dashboard-grid with results', async () => {
   const Container = () => {
     const updateDashboard = useStore(state => state.updateDashboard)
-    updateDashboard([
-      {
-        name: 'project-foo',
-        path: '/home/user/project-foo',
-        manifest: { name: 'project-foo', version: '1.0.0' },
-        tools: ['node', 'vlt'],
-        mtime: 1730498483044,
-      },
-      {
-        name: 'project-bar',
-        path: '/home/user/project-bar',
-        manifest: { name: 'project-bar', version: '1.0.0' },
-        tools: ['pnpm'],
-        mtime: 1730498491029,
-      },
-    ])
+    updateDashboard({
+      buildVersion: '1.0.0',
+      cwd: '/path/to/cwd',
+      projects: [
+        {
+          name: 'project-foo',
+          path: '/home/user/project-foo',
+          manifest: { name: 'project-foo', version: '1.0.0' },
+          tools: ['node', 'vlt'],
+          mtime: 1730498483044,
+        },
+        {
+          name: 'project-bar',
+          path: '/home/user/project-bar',
+          manifest: { name: 'project-bar', version: '1.0.0' },
+          tools: ['pnpm'],
+          mtime: 1730498491029,
+        },
+      ],
+    })
     return <DashboardGrid />
   }
   render(<Container />)

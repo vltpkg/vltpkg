@@ -227,11 +227,17 @@ exports[`explorer has project root info 1`] = `
           </div>
         </div>
       </nav>
-      <section class="flex items-center px-8 py-4 border-b-[1px] border-solid">
+      <section class="flex items-center px-8 pt-4">
         <div class="flex flex-col gap-2 w-full">
           <p class="text-xs font-mono font-light text-muted-foreground">
             :host-context(file:/path/to/project)
           </p>
+        </div>
+        <div class="flex flex-col gap-2 w-full flex-end">
+        </div>
+      </section>
+      <section class="flex items-center px-8 py-4 border-b-[1px] border-solid">
+        <div class="flex flex-col gap-2 w-full">
           <gui-search-bar
             tabindex="0"
             classname="w-full bg-muted-foreground/5"
@@ -515,6 +521,12 @@ exports[`render default 1`] = `
           </div>
         </div>
       </nav>
+      <section class="flex items-center px-8 pt-4">
+        <div class="flex flex-col gap-2 w-full">
+        </div>
+        <div class="flex flex-col gap-2 w-full flex-end">
+        </div>
+      </section>
       <section class="flex items-center px-8 py-4 border-b-[1px] border-solid">
         <div class="flex flex-col gap-2 w-full">
           <gui-search-bar

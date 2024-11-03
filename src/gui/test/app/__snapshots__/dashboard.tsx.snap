@@ -23,6 +23,12 @@ exports[`render default 1`] = `
           </gui-theme-switcher>
         </div>
       </nav>
+      <section class="flex items-center px-8 py-4 border-b-[1px] border-solid">
+        <div class="flex flex-col gap-2 w-full">
+        </div>
+        <div class="flex flex-col gap-2 w-full flex-end">
+        </div>
+      </section>
     </div>
     <gui-dashboard-grid>
     </gui-dashboard-grid>

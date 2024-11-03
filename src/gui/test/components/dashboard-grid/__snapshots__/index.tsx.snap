@@ -24,10 +24,10 @@ exports[`dashboard-grid with results 1`] = `
         project-foo
       </gui-card-title>
       <div class="flex flex-row-reverse">
-        <div class="flex-none bg-secondary rounded-lg text-[10px] text-primary px-2 ml-2 mb-2 width-auto">
+        <div class="flex-none bg-secondary rounded-xl text-[10px] text-primary px-2 py-1 ml-2 mb-2 width-auto">
           node
         </div>
-        <div class="flex-none bg-secondary rounded-lg text-[10px] text-primary px-2 ml-2 mb-2 width-auto">
+        <div class="flex-none bg-secondary rounded-xl text-[10px] text-primary px-2 py-1 ml-2 mb-2 width-auto">
           vlt
         </div>
       </div>
@@ -46,7 +46,7 @@ exports[`dashboard-grid with results 1`] = `
         project-bar
       </gui-card-title>
       <div class="flex flex-row-reverse">
-        <div class="flex-none bg-secondary rounded-lg text-[10px] text-primary px-2 ml-2 mb-2 width-auto">
+        <div class="flex-none bg-secondary rounded-xl text-[10px] text-primary px-2 py-1 ml-2 mb-2 width-auto">
           pnpm
         </div>
       </div>

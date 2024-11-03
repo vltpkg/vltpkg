@@ -1,5 +1,8 @@
 import { type MouseEvent } from 'react'
-import { type DashboardData, type Action } from '@/state/types.js'
+import {
+  type DashboardDataProject,
+  type Action,
+} from '@/state/types.js'
 import { CardTitle } from '@/components/ui/card.jsx'
 import { DEFAULT_QUERY, useGraphStore } from '@/state/index.js'
 
@@ -8,7 +11,7 @@ type SelectDashboardItemOptions = {
   updateErrorCause: Action['updateErrorCause']
   updateQuery: Action['updateQuery']
   updateStamp: Action['updateStamp']
-  item: DashboardData
+  item: DashboardDataProject
 }
 
 const selectDashboardItem = async ({
@@ -54,7 +57,11 @@ const selectDashboardItem = async ({
   }
 }
 
-export const DashboardItem = ({ item }: { item: DashboardData }) => {
+export const DashboardItem = ({
+  item,
+}: {
+  item: DashboardDataProject
+}) => {
   const updateActiveRoute = useGraphStore(
     state => state.updateActiveRoute,
   )
@@ -91,7 +98,7 @@ export const DashboardItem = ({ item }: { item: DashboardData }) => {
         {item.tools.map((tool, index) => (
           <div
             key={index}
-            className="flex-none bg-secondary rounded-lg text-[10px] text-primary px-2 ml-2 mb-2 width-auto">
+            className="flex-none bg-secondary rounded-xl text-[10px] text-primary px-2 py-1 ml-2 mb-2 width-auto">
             {tool}
           </div>
         ))}
@@ -106,9 +113,12 @@ export const DashboardGrid = () => {
 
   return (
     <div className="flex flex-wrap justify-center width-full mt-6">
-      {dashboard?.map((item, index) => (
-        <DashboardItem key={index} item={item} />
-      ))}
+      {dashboard?.projects.map(
+        (item, index) => (
+          console.error(item),
+          (<DashboardItem key={index} item={item} />)
+        ),
+      )}
     </div>
   )
 }
