@@ -5,69 +5,19 @@
  * Make sure to inspect the output below.  Do not ignore changes!
  */
 'use strict'
-exports[`test/commands/help.ts > TAP > basic > usage 1`] = `
-vlt - A New Home for JavaScript
+exports[`test/commands/help.ts > TAP > basic > output 1`] = `
+vlt
 Usage:
   vlt [<options>] [<cmd> [<args> ...]]
 
-Here goes a short description of the vlt command line client.
-
-Much more documentation available at <https://docs.vlt.sh>
+More documentation available at <https://docs.vlt.sh>
 
   Subcommands
 
-    ​vlt install [packages ...]
-      Install the specified packages, updating package.json and vlt-lock.json
-      appropriately.
+    ​config, exec, gui, help, install-exec, install, list, ls, pkg, query,
+    run-exec, run, uninstall
 
-    ​vlt uninstall [packages ...]
-      The opposite of \`vlt install\`. Removes deps and updates vlt-lock.json and
-      package.json appropriately.
-
-    ​vlt run <script> [args ...]
-      Run a script defined in 'package.json', passing along any extra arguments.
-      Note that vlt config values must be specified *before* the script name,
-      because everything after that is handed off to the script process.
-
-    ​vlt exec [args ...]
-      Run an arbitrary command, with the local installed packages first in the
-      PATH. Ie, this will run your locally installed package bins.
-
-      If no command is provided, then a shell is spawned in the current working
-      directory, with the locally installed package bins first in the PATH.
-
-      Note that any vlt configs must be specified *before* the command, as the
-      remainder of the command line options are provided to the exec process.
-
-    ​vlt run-exec [args ...]
-      If the first argument is a defined script in package.json, then this is
-      equivalent to \`vlt run\`.
-
-      If not, then this is equivalent to \`vlt exec\`.
-
-    ​vlt config <subcommand>
-      Work with vlt configuration
-
-      ​vlt config get <key>
-        Print the named config value
-
-      ​vlt config list
-        Print all configuration settings currently in effect
-
-      ​vlt config set <key=value> [<key=value> ...]
-        Set config values. By default, these are written to the project config
-        file, \`vlt.json\` in the root of the project. To set things for all
-        projects, run with \`--config=user\`
-
-      ​vlt config del <key> [<key> ...]
-        Delete the named config fields. If no values remain in the config file,
-        delete the file as well. By default, operates on the \`vlt.json\` file in
-        the root of the current project. To delete a config field from the user
-        config file, specify \`--config=user\`.
-
-      ​vlt config help [field ...]
-        Get information about a config field, or show a list of known config
-        field names.
+    Run \`vlt <cmd> --help\` for more information about a specific command
 
   Configuration
 
@@ -265,9 +215,9 @@ Much more documentation available at <https://docs.vlt.sh>
 
 
 
-                       Valid options: "install", "uninstall", "run", "run-exec",
-                       "exec", "help", "config", "install-exec", "pkg", "list",
-                       "query", "gui"
+                       Valid options: "config", "exec", "gui", "help",
+                       "install-exec", "install", "list", "ls", "pkg", "query",
+                       "run-exec", "run", "uninstall"
 
   --package=<p>        When running \`vlt install-exec\`, this allows you to
                        explicitly set the package to search for bins. If not
@@ -292,4 +242,16 @@ Much more documentation available at <https://docs.vlt.sh>
                        move it to be a non-optional production dependency.
 
   -h --help            Print helpful information
+`
+
+exports[`test/commands/help.ts > TAP > basic > usage 1`] = `
+Usage:
+  vlt help
+
+Print the full help output for the CLI
+
+  Aliases
+
+    ​h, ?
+
 `

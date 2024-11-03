@@ -1,5 +1,6 @@
 import { jack } from 'jackspeak'
 import { type CliCommandUsage } from '../types.js'
+import { commandAliases } from './definition.js'
 
 const toArr = <T>(v: T | T[]): T[] => (Array.isArray(v) ? v : [v])
 
@@ -32,6 +33,13 @@ export const commandUsage = async ({
     toArr(usages).map(vlt).filter(Boolean).join('\n')
 
   const j = jack({ usage: joinUsage(usage) }).description(description)
+
+  const aliases = commandAliases.get(command)
+  if (aliases) {
+    j.heading('Aliases', 2).description(aliases.join(', '), {
+      pre: true,
+    })
+  }
 
   if (subcommands) {
     j.heading('Subcommands', 2)

@@ -7,8 +7,15 @@ export const usage: CliCommandUsage = () =>
   commandUsage({
     command: 'exec',
     usage: '[command]',
-    description: `Runs the command with all installed bins in the $PATH
-                  If no command specified, an interactive subshell is spawned.`,
+    description: `Run an arbitrary command, with the local installed packages first in the
+                  PATH. Ie, this will run your locally installed package bins.
+
+                  If no command is provided, then a shell is spawned in the current working
+                  directory, with the locally installed package bins first in the PATH.
+
+                  Note that any vlt configs must be specified *before* the command,
+                  as the remainder of the command line options are provided to the exec
+                  process.`,
   })
 
 export const command: CliCommandFn<ExecResult> = async conf => {

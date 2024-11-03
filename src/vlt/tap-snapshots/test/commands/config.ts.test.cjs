@@ -9,28 +9,37 @@ exports[`test/commands/config.ts > TAP > usage 1`] = `
 Usage:
   vlt config <command> [flags]
 
-Get or manipulate the configuration for the vlt CLI
+Work with vlt configuration
+
+  Aliases
+
+    ​conf
 
   Subcommands
 
     get
-      Get the value of a configuration key
+      Print the named config value
 
       ​vlt config get <key> [<key> ...]
 
-    ls
-      List all configuration keys and values
+    list
+      Print all configuration settings currently in effect
 
-      ​vlt config ls
+      ​vlt config list
 
     set
-      Set the value of a configuration key
+      Set config values. By default, these are written to the project config
+      file, \`vlt.json\` in the root of the project. To set things for all
+      projects, run with \`--config=user\`
 
       ​vlt config set <key>=<value> [<key>=<value> ...] [--config=<user |
       project>]
 
     del
-      Delete a configuration key
+      Delete the named config fields. If no values remain in the config file,
+      delete the file as well. By default, operates on the \`vlt.json\` file in
+      the root of the current project. To delete a config field from the user
+      config file, specify \`--config=user\`.
 
       ​vlt config del <key> [<key> ...] [--config=<user | project>]
 
@@ -40,7 +49,8 @@ Get or manipulate the configuration for the vlt CLI
       ​vlt config edit [--config=<user | project>]
 
     help
-      Show help for a specific configuration field
+      Get information about a config field, or show a list of known config field
+      names.
 
       ​vlt config help [field ...]
 

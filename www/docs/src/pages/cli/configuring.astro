@@ -1,0 +1,16 @@
+---
+import { getEntry } from 'astro:content'
+import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro'
+import { render } from 'astro:content'
+import { type MarkdownHeading } from 'astro'
+
+const config = await getEntry('config', 'index')
+const { Content } = await render(config)
+---
+
+<StarlightPage
+  frontmatter={{ title: 'Configuring the vlt CLI' }}
+  headings={(config.rendered?.metadata
+    ?.headings as MarkdownHeading[]) ?? []}>
+  <Content />
+</StarlightPage>

@@ -7,8 +7,9 @@ import { commandUsage } from '../config/usage.js'
 export const usage: CliCommandUsage = () =>
   commandUsage({
     command: 'install',
-    usage: '[package ...]',
-    description: `Install the specified package, updating dependencies appropriately`,
+    usage: '[packages ...]',
+    description: `Install the specified packages, updating package.json and
+                  vlt-lock.json appropriately.`,
   })
 
 export const command: CliCommandFn = async conf => {

@@ -8,8 +8,8 @@ export const usage: CliCommandUsage = () =>
   commandUsage({
     command: 'uninstall',
     usage: '[package ...]',
-    description:
-      'Remove the named packages from the dependency graph',
+    description: `The opposite of \`vlt install\`. Removes deps and updates
+                  vlt-lock.json and package.json appropriately.`,
   })
 
 export const command: CliCommandFn = async conf => {
