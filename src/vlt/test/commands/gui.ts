@@ -14,7 +14,7 @@ t.test('starts gui data and server', async t => {
     },
   })
 
-  t.matchSnapshot((await usage()).usage(), 'usage')
+  t.matchSnapshot(usage().usage(), 'usage')
 
   // workaround for the import.meta.resolve issue not working with tap atm
   const assetsDir = '/path/to/assets'

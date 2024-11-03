@@ -50,7 +50,7 @@ const { usage, command } = await t.mockImport<
     PathScurryWin32: PathScurry,
   },
 })
-t.matchSnapshot((await usage()).usage(), 'usage')
+t.matchSnapshot(usage().usage(), 'usage')
 await command({
   positionals: [],
   values: {},

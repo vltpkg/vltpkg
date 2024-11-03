@@ -25,7 +25,7 @@ export const run = async (
     argv?: string[]
     command?: {
       command: () => Promise<void>
-      usage?: () => Promise<Jack>
+      usage?: () => Jack
     }
   },
 ) => {
@@ -84,7 +84,7 @@ t.test('print usage', async t => {
       command: async () => {
         commandRun = true
       },
-      usage: async () =>
+      usage: () =>
         jack({
           usage: 'im helping!!! im helping youuuuuu',
         }),
@@ -115,7 +115,7 @@ t.test('print EUSAGE error', async t => {
           code: 'EUSAGE',
         })
       },
-      usage: async () =>
+      usage: () =>
         jack({
           usage: 'im helping!!! im helping youuuuuu',
         }),

@@ -5,7 +5,7 @@ t.test('basic', async t => {
   const { usage, command } = await t.mockImport<
     typeof import('../../src/commands/help.js')
   >('../../src/commands/help.js')
-  const USAGE = (await usage()).usage()
+  const USAGE = usage().usage()
   t.matchSnapshot(USAGE, 'usage')
   const { Config } = await mockConfig(t)
   const result = await command(await Config.load())

@@ -33,8 +33,9 @@ const jackLoader = (
           ...md,
           extensions: ['.js'],
           getEntryInfo: async ({ fileUrl }) => {
-            const js = await import(/* @vite-ignore */ fileUrl)
-            const jack = await getJack(js)
+            const jack = await import(
+              /* @vite-ignore */ fileUrl
+            ).then(js => getJack(js))
             return md.getEntryInfo({
               contents: jack.usageMarkdown(),
               fileUrl,
@@ -55,7 +56,7 @@ const commands = jackLoader(
     ),
   }),
   async (cmd: CliCommand) => {
-    return await cmd.usage()
+    return cmd.usage()
   },
 )
 

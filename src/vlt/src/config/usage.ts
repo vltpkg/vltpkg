@@ -9,7 +9,7 @@ const code = (v: string) => [v, { pre: true }] as const
 const join = (args: (string | undefined)[], joiner = ' ') =>
   args.filter(Boolean).join(joiner)
 
-export const commandUsage = async ({
+export const commandUsage = ({
   command,
   usage,
   description,

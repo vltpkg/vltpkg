@@ -80,9 +80,7 @@ const run = async (
   }
 }
 
-const USAGE = await mockCommand(t).then(async c =>
-  (await c.usage()).usage(),
-)
+const USAGE = await mockCommand(t).then(C => C.usage().usage())
 
 t.matchSnapshot(USAGE, 'usage')
 

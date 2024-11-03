@@ -14,7 +14,7 @@ export type CliCommandResult<T = null> =
     void | string | string[] | CliCommandResultOnly<unknown>
   : CliCommandResultOnly<T>
 
-export type CliCommandUsage = () => Promise<Jack>
+export type CliCommandUsage = () => Jack
 
 export type CliCommandFn<T = null> = (
   conf: LoadedConfig,

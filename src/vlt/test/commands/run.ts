@@ -9,7 +9,7 @@ const pass = 'node -e "process.exit(0)"'
 const fail = 'node -e "process.exit(1)"'
 
 if (process.argv[1] === import.meta.filename) {
-  t.matchSnapshot((await usage()).usage(), 'usage')
+  t.matchSnapshot(usage().usage(), 'usage')
 }
 
 t.test('run script in a project', async t => {
