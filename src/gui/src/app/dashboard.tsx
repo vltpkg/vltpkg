@@ -21,6 +21,7 @@ const startDashboardData = async ({
 }
 
 export const Dashboard = () => {
+  const dashboard = useGraphStore(state => state.dashboard)
   const updateActiveRoute = useGraphStore(
     state => state.updateActiveRoute,
   )
@@ -73,6 +74,22 @@ export const Dashboard = () => {
             <ThemeSwitcher />
           </div>
         </nav>
+        <section className="flex items-center px-8 py-4 border-b-[1px] border-solid">
+          <div className="flex flex-col gap-2 w-full">
+            {dashboard?.cwd ?
+              <p className="text-xs font-mono font-light text-muted-foreground">
+                Directory: {dashboard.cwd}
+              </p>
+            : ''}
+          </div>
+          <div className="flex flex-col gap-2 w-full flex-end">
+            {dashboard?.buildVersion ?
+              <p className="text-xs font-mono font-light text-muted-foreground text-right">
+                build: v{dashboard.buildVersion}
+              </p>
+            : ''}
+          </div>
+        </section>
       </div>
       <DashboardContent />
       <Footer />
