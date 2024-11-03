@@ -21,6 +21,7 @@ export type Action = {
   updateSelectedNode: (node: State['selectedNode']) => void
   updateSpecOptions: (specOptions: State['specOptions']) => void
   updateStamp: (stamp: string) => void
+  updateTheme: (theme: State['theme']) => void
   reset: () => void
 }
 
@@ -98,6 +99,10 @@ export type State = {
    * A random string to control when graph data should be reloaded.
    */
   stamp: string
+  /**
+   * Store the current theme value.
+   */
+  theme: 'light' | 'dark'
 }
 
 export type DashboardTools =

@@ -19,6 +19,7 @@ const initialState: State = {
   selectedNode: undefined,
   specOptions: undefined,
   stamp: String(Math.random()).slice(2),
+  theme: localStorage.getItem('vite-ui-theme') as State['theme'],
 }
 
 /**
@@ -50,6 +51,7 @@ export const useGraphStore = create<Action & State>(set => {
     updateSpecOptions: (specOptions: State['specOptions']) =>
       set(() => ({ specOptions })),
     updateStamp: (stamp: string) => set(() => ({ stamp })),
+    updateTheme: (theme: State['theme']) => set(() => ({ theme })),
     reset: () => set(initialState),
   }
 
