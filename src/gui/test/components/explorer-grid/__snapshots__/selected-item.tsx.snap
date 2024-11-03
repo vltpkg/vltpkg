@@ -20,7 +20,46 @@ exports[`SelectedItem render connection lines 1`] = `
           </div>
         </gui-card-title>
       </gui-card-header>
-      <div class="flex flex-row pl-4 pr-3">
+      <div class="p-4">
+      </div>
+      <div class="px-4 pb-4 w-full">
+        <gui-tabs>
+          <gui-tabs-list classname="grid w-full grid-cols-2">
+            <gui-tabs-trigger
+              value="package.json"
+              classname="w-36"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                viewbox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="lucide lucide-file-search2 mr-2"
+              >
+                <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z">
+                </path>
+                <path d="M14 2v4a2 2 0 0 0 2 2h4">
+                </path>
+                <circle
+                  cx="11.5"
+                  cy="14.5"
+                  r="2.5"
+                >
+                </circle>
+                <path d="M13.3 16.3 15 18">
+                </path>
+              </svg>
+              package.json
+            </gui-tabs-trigger>
+          </gui-tabs-list>
+          <gui-tabs-content value="package.json">
+          </gui-tabs-content>
+        </gui-tabs>
       </div>
     </gui-card>
     <div class="absolute border-t border-solid border-neutral-300 dark:border-neutral-600 rounded-tr-sm w-4 top-7 -right-4">
@@ -53,7 +92,46 @@ exports[`SelectedItem render with custom registry 1`] = `
           </div>
         </gui-card-title>
       </gui-card-header>
-      <div class="flex flex-row pl-4 pr-3">
+      <div class="p-4">
+      </div>
+      <div class="px-4 pb-4 w-full">
+        <gui-tabs>
+          <gui-tabs-list classname="grid w-full grid-cols-2">
+            <gui-tabs-trigger
+              value="package.json"
+              classname="w-36"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                viewbox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="lucide lucide-file-search2 mr-2"
+              >
+                <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z">
+                </path>
+                <path d="M14 2v4a2 2 0 0 0 2 2h4">
+                </path>
+                <circle
+                  cx="11.5"
+                  cy="14.5"
+                  r="2.5"
+                >
+                </circle>
+                <path d="M13.3 16.3 15 18">
+                </path>
+              </svg>
+              package.json
+            </gui-tabs-trigger>
+          </gui-tabs-list>
+          <gui-tabs-content value="package.json">
+          </gui-tabs-content>
+        </gui-tabs>
       </div>
     </gui-card>
   </div>
@@ -84,7 +162,46 @@ exports[`SelectedItem render with default git host 1`] = `
           </div>
         </gui-card-title>
       </gui-card-header>
-      <div class="flex flex-row pl-4 pr-3">
+      <div class="p-4">
+      </div>
+      <div class="px-4 pb-4 w-full">
+        <gui-tabs>
+          <gui-tabs-list classname="grid w-full grid-cols-2">
+            <gui-tabs-trigger
+              value="package.json"
+              classname="w-36"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                viewbox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="lucide lucide-file-search2 mr-2"
+              >
+                <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z">
+                </path>
+                <path d="M14 2v4a2 2 0 0 0 2 2h4">
+                </path>
+                <circle
+                  cx="11.5"
+                  cy="14.5"
+                  r="2.5"
+                >
+                </circle>
+                <path d="M13.3 16.3 15 18">
+                </path>
+              </svg>
+              package.json
+            </gui-tabs-trigger>
+          </gui-tabs-list>
+          <gui-tabs-content value="package.json">
+          </gui-tabs-content>
+        </gui-tabs>
       </div>
     </gui-card>
   </div>
@@ -112,7 +229,46 @@ exports[`SelectedItem render with item 1`] = `
           </div>
         </gui-card-title>
       </gui-card-header>
-      <div class="flex flex-row pl-4 pr-3">
+      <div class="p-4">
+      </div>
+      <div class="px-4 pb-4 w-full">
+        <gui-tabs>
+          <gui-tabs-list classname="grid w-full grid-cols-2">
+            <gui-tabs-trigger
+              value="package.json"
+              classname="w-36"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                viewbox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="lucide lucide-file-search2 mr-2"
+              >
+                <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z">
+                </path>
+                <path d="M14 2v4a2 2 0 0 0 2 2h4">
+                </path>
+                <circle
+                  cx="11.5"
+                  cy="14.5"
+                  r="2.5"
+                >
+                </circle>
+                <path d="M13.3 16.3 15 18">
+                </path>
+              </svg>
+              package.json
+            </gui-tabs-trigger>
+          </gui-tabs-list>
+          <gui-tabs-content value="package.json">
+          </gui-tabs-content>
+        </gui-tabs>
       </div>
     </gui-card>
   </div>
@@ -143,7 +299,46 @@ exports[`SelectedItem render with scoped registry 1`] = `
           </div>
         </gui-card-title>
       </gui-card-header>
-      <div class="flex flex-row pl-4 pr-3">
+      <div class="p-4">
+      </div>
+      <div class="px-4 pb-4 w-full">
+        <gui-tabs>
+          <gui-tabs-list classname="grid w-full grid-cols-2">
+            <gui-tabs-trigger
+              value="package.json"
+              classname="w-36"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                viewbox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="lucide lucide-file-search2 mr-2"
+              >
+                <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z">
+                </path>
+                <path d="M14 2v4a2 2 0 0 0 2 2h4">
+                </path>
+                <circle
+                  cx="11.5"
+                  cy="14.5"
+                  r="2.5"
+                >
+                </circle>
+                <path d="M13.3 16.3 15 18">
+                </path>
+              </svg>
+              package.json
+            </gui-tabs-trigger>
+          </gui-tabs-list>
+          <gui-tabs-content value="package.json">
+          </gui-tabs-content>
+        </gui-tabs>
       </div>
     </gui-card>
   </div>

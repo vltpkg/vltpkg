@@ -11,11 +11,20 @@ import { SelectedItem } from '@/components/explorer-grid/selected-item.jsx'
 vi.mock('@/components/ui/badge.jsx', () => ({
   Badge: 'gui-badge',
 }))
+vi.mock('lucid-react', () => ({
+  FileSearch2: 'gui-lucid-file-search2',
+}))
 vi.mock('@/components/ui/card.jsx', () => ({
   Card: 'gui-card',
   CardDescription: 'gui-card-description',
   CardHeader: 'gui-card-header',
   CardTitle: 'gui-card-title',
+}))
+vi.mock('@/components/ui/tabs.jsx', () => ({
+  Tabs: 'gui-tabs',
+  TabsContent: 'gui-tabs-content',
+  TabsList: 'gui-tabs-list',
+  TabsTrigger: 'gui-tabs-trigger',
 }))
 
 const specOptions = getOptions({

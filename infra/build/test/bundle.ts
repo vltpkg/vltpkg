@@ -98,6 +98,8 @@ t.test('lint', async t => {
             IS_REACT_ACT_ENVIRONMENT: false,
             __REACT_DEVTOOLS_GLOBAL_HOOK__: false,
             __webpack_nonce__: false,
+            Buffer: false,
+            process: false,
           },
         },
       },

@@ -8,6 +8,14 @@ import {
 } from '@/components/ui/card.jsx'
 import { useGraphStore } from '@/state/index.js'
 import { type GridItemData, type GridItemOptions } from './types.js'
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from '@/components/ui/tabs.jsx'
+import { CodeBlock } from '../ui/shiki.jsx'
+import { FileSearch2 } from 'lucide-react'
 
 const getItemOrigin = ({
   item,
@@ -68,12 +76,28 @@ export const SelectedItem = ({ item }: GridItemOptions) => {
             )}
           </CardTitle>
         </CardHeader>
-        <div className="flex flex-row pl-4 pr-3">
+        <div className="p-4">
           {item.to?.manifest?.description ?
             <CardDescription className="grow content-center py-2">
               {item.to.manifest.description}
             </CardDescription>
           : ''}
+        </div>
+        <div className="px-4 pb-4 w-full">
+          <Tabs defaultValue="package.json">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="package.json" className="w-36">
+                <FileSearch2 size={16} className="mr-2" />
+                package.json
+              </TabsTrigger>
+            </TabsList>
+            <TabsContent value="package.json">
+              <CodeBlock
+                code={JSON.stringify(item.to?.manifest, null, 2)}
+                lang="json"
+              />
+            </TabsContent>
+          </Tabs>
         </div>
       </Card>
       {

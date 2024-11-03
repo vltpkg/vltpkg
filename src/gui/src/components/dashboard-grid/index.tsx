@@ -113,12 +113,9 @@ export const DashboardGrid = () => {
 
   return (
     <div className="flex flex-wrap justify-center width-full mt-6">
-      {dashboard?.projects.map(
-        (item, index) => (
-          console.error(item),
-          (<DashboardItem key={index} item={item} />)
-        ),
-      )}
+      {dashboard?.projects.map((item, index) => (
+        <DashboardItem key={index} item={item} />
+      ))}
     </div>
   )
 }
