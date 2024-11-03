@@ -103,7 +103,7 @@ export default defineConfig({
           ],
         },
         {
-          label: 'Packages',
+          label: 'Workspaces',
           collapsed: true,
           autogenerate: { directory: PACKAGES },
         },

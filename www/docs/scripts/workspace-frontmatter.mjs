@@ -31,7 +31,7 @@ export function load(app) {
           isReadme(page.url) ? ['Readme', 0]
           : page.url.endsWith('/modules.md') ? ['Modules', 1]
           : [name]
-        : ['Packages', 0]
+        : ['Workspaces', 0]
 
       page.frontmatter = {
         title:
