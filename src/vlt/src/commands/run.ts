@@ -10,7 +10,10 @@ export const usage: CliCommandUsage = () =>
   commandUsage({
     command: 'run',
     usage: '<script> [args ...]',
-    description: `Run the named script from package.json`,
+    description: `Run a script defined in 'package.json', passing along any extra
+                  arguments. Note that vlt config values must be specified *before*
+                  the script name, because everything after that is handed off to
+                  the script process.`,
   })
 
 class RunCommand extends ExecCommand<typeof run, typeof runFG> {

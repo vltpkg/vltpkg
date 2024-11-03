@@ -15,24 +15,30 @@ export const usage: CliCommandUsage = () =>
   commandUsage({
     command: 'config',
     usage: '<command> [flags]',
-    description:
-      'Get or manipulate the configuration for the vlt CLI',
+    description: 'Work with vlt configuration',
     subcommands: {
       get: {
         usage: '<key> [<key> ...]',
-        description: 'Get the value of a configuration key',
+        description: 'Print the named config value',
       },
-      ls: {
-        description: 'List all configuration keys and values',
+      list: {
+        description:
+          'Print all configuration settings currently in effect',
       },
       set: {
         usage:
           '<key>=<value> [<key>=<value> ...] [--config=<user | project>]',
-        description: 'Set the value of a configuration key',
+        description: `Set config values. By default, these are
+                      written to the project config file, \`vlt.json\`
+                      in the root of the project. To set things for all
+                      projects, run with \`--config=user\``,
       },
       del: {
         usage: '<key> [<key> ...] [--config=<user | project>]',
-        description: 'Delete a configuration key',
+        description: `Delete the named config fields. If no values remain in the config file,
+                      delete the file as well. By default, operates on the \`vlt.json\` file
+                      in the root of the current project. To delete a config field from the
+                      user config file, specify \`--config=user\`.`,
       },
       edit: {
         usage: '[--config=<user | project>]',
@@ -40,7 +46,8 @@ export const usage: CliCommandUsage = () =>
       },
       help: {
         usage: '[field ...]',
-        description: 'Show help for a specific configuration field',
+        description:
+          'Get information about a config field, or show a list of known config field names.',
       },
     },
   })

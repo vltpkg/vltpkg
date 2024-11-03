@@ -149,8 +149,13 @@ Object {
 
 exports[`test/commands/install.ts > TAP > usage 1`] = `
 Usage:
-  vlt install [package ...]
+  vlt install [packages ...]
 
-Install the specified package, updating dependencies appropriately
+Install the specified packages, updating package.json and vlt-lock.json
+appropriately.
+
+  Aliases
+
+    ​i, add
 
 `

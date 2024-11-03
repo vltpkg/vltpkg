@@ -14,7 +14,7 @@ const { Content } = await render(command)
 ---
 
 <StarlightPage
-  frontmatter={{ title: command.id }}
+  frontmatter={{ title: `vlt ${command.id}` }}
   headings={(command.rendered?.metadata
     ?.headings as MarkdownHeading[]) ?? []}>
   <Content />

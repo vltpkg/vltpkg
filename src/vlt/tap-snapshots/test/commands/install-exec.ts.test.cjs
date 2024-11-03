@@ -11,4 +11,8 @@ Usage:
 
 Run a command defined by a package, installing it if necessary
 
+  Aliases
+
+    ​ix
+
 `
