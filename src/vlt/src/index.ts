@@ -37,13 +37,13 @@ const run = async () => {
   const { command, usage, view } = await loadCommand(vlt.command)
 
   if (vlt.get('help')) {
-    return stdout((await usage()).usage())
+    return stdout(usage().usage())
   }
 
   try {
     outputCommand(await command(vlt), vlt, { view })
   } catch (e) {
-    outputError(e, vlt, { usage: (await usage()).usage() })
+    outputError(e, vlt, { usage: usage().usage() })
   }
 }
 

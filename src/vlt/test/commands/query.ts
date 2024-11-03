@@ -121,10 +121,7 @@ const runCommand = async (
 ) => commandView(t, cmd, o)
 
 t.test('query', async t => {
-  t.matchSnapshot(
-    (await Command.usage()).usage(),
-    'should have usage',
-  )
+  t.matchSnapshot(Command.usage().usage(), 'should have usage')
 
   sharedOptions.packageJson.read = () => graph.mainImporter.manifest!
   const options = {
