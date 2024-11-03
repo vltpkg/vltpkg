@@ -44,6 +44,7 @@
     "chalk": "catalog:",
     "jackspeak": "^4.0.2",
     "opener": "^1.5.2",
+    "package-json-from-dist": "catalog:",
     "path-scurry": "catalog:",
     "polite-json": "catalog:",
     "serve-handler": "^6.1.5",
