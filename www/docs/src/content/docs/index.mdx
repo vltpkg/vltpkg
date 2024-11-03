@@ -1,5 +1,5 @@
 ---
-title: Welcome to vlt!
+title: vlt Documentation
 tableOfContents: false
 hero:
   tagline: Develop, Run, Distribute, Discover, and Secure your Javascript Packages
@@ -9,15 +9,22 @@ hero:
     - text: Explore the CLI
       link: /cli/
       icon: right-arrow
+    - text: Workspaces
+      link: /packages/
+      icon: right-arrow
+      variant: minimal
 ---
 
 import { Card, CardGrid } from '@astrojs/starlight/components'
 
 <CardGrid>
-  <Card title="Registry Docs" icon="pencil">
-    [Learn more](/api/)
+
+  <Card title="Installation">
+    ```
+    npm install vlt@latest -g
+    ```
   </Card>
-  <Card title="Packages" icon="pencil">
+  <Card title="Workspaces">
     [See the packages that make up the vlt CLI](/packages/)
   </Card>
 </CardGrid>
