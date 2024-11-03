@@ -19,27 +19,18 @@ export const SideItem = ({
   idx,
 }: SideItemOptions) => {
   // These refs and the code in useEffect are used to fix the line connection
-  // height for when the dependency item takes up more space than a single line
+  // height for when the first dependency item title takes up more space than
+  // a single line, which should be a very rare occasion
   const divRef = useRef<HTMLDivElement>(null)
   const lineRef = useRef<HTMLDivElement>(null)
   useEffect(() => {
-    if (idx === 0) {
-      const rect = divRef.current?.getBoundingClientRect()
-      if (rect && lineRef.current && rect.height > 42.5) {
-        lineRef.current.style.height = '0px'
-        lineRef.current.style.borderBottomRightRadius = '0.125rem'
-        lineRef.current.style.width = '1rem'
-        lineRef.current.style.left = '-1rem'
-        lineRef.current.style.top = '2.5rem'
-      }
-    }
     if (idx === 1) {
       const rect = divRef.current?.getBoundingClientRect()
       if (rect && lineRef.current && rect.height > 42.5) {
-        lineRef.current.style.height = '6.7rem'
+        lineRef.current.style.height = '124px'
       }
     }
-  }, [idx])
+  })
 
   return (
     <div className="group relative z-10" ref={divRef}>
@@ -92,10 +83,10 @@ export const SideItem = ({
         </CardHeader>
       </Card>
       {highlight ?
-        <div className="absolute border-t border-solid border-muted-foreground w-4 -right-4 top-12" />
+        <div className="absolute border-t border-solid border-muted-foreground w-4 -right-4 top-7" />
       : dependencies ?
         <div
-          className="absolute border-b border-l border-solid border-neutral-300 dark:border-neutral-700 rounded-bl-sm z-0 w-[9px] -left-[9px] h-28 bottom-10"
+          className="absolute border-b border-l border-solid border-neutral-300 dark:border-neutral-700 rounded-bl-sm z-0 w-[9px] -left-[9px] h-32 bottom-[62px] group-[&:nth-child(2)]:hidden group-[&:nth-child(3)]:h-24"
           ref={lineRef}
         />
       : null}

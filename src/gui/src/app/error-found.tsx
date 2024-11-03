@@ -5,6 +5,7 @@ import { ThemeSwitcher } from '@/components/ui/theme-switcher.jsx'
 import { BatteryLow, LayoutDashboard } from 'lucide-react'
 import { useGraphStore } from '@/state/index.js'
 import { Button } from '@/components/ui/button.jsx'
+import { Footer } from '@/components/ui/footer.jsx'
 
 export const ErrorFound = () => {
   const updateActiveRoute = useGraphStore(
@@ -22,11 +23,18 @@ export const ErrorFound = () => {
   }
 
   return (
-    <>
-      <div className="grid grid-cols-7 gap-4 py-2 border-b">
-        <Logo className="col-span-2 p-8" />
-        <div className="col-span-5 relative pt-6 pb-1">
-          <div className="flex ml-[580px]">
+    <section className="flex grow flex-col justify-between">
+      <div>
+        <nav
+          className="flex gap-4 md:gap-0 px-8 py-4 items-center justify-between border-b-[1px] border-solid"
+          role="navigation">
+          <div className="flex w-full h-full items-center justify-end">
+            <div className="flex items-baseline flex-1">
+              <Logo />
+              <div className="ml-6">
+                <p className="text-md font-medium">Dashboard</p>
+              </div>
+            </div>
             <ThemeSwitcher />
             <Button
               className="ml-2"
@@ -35,7 +43,7 @@ export const ErrorFound = () => {
               <LayoutDashboard size={12} /> Back to Dashboard
             </Button>
           </div>
-        </div>
+        </nav>
       </div>
       <div className="grid grid-cols-5 pt-12">
         <div className="col-span3 col-start-2">
@@ -45,6 +53,7 @@ export const ErrorFound = () => {
           <p className="px-6">{errorCause}</p>
         </div>
       </div>
-    </>
+      <Footer />
+    </section>
   )
 }

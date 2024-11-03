@@ -9,8 +9,8 @@ exports[`explorer has project root info 1`] = `
         class="flex gap-4 md:gap-0 px-8 py-4 items-center justify-between border-b-[1px] border-solid"
         role="navigation"
       >
-        <div class="flex w-full h-full items-center justify-between">
-          <div class="flex items-baseline">
+        <div class="flex w-full h-full items-center justify-end">
+          <div class="flex items-baseline flex-1">
             <gui-logo>
             </gui-logo>
             <div class="ml-6">
@@ -276,7 +276,7 @@ exports[`explorer has project root info 1`] = `
         </a>
       </div>
       <div class="flex items-center">
-        <p class="text-md text-muted-foreground">
+        <p class="text-xs text-muted-foreground">
           © 2024 vlt technology inc.
         </p>
       </div>
@@ -297,8 +297,8 @@ exports[`render default 1`] = `
         class="flex gap-4 md:gap-0 px-8 py-4 items-center justify-between border-b-[1px] border-solid"
         role="navigation"
       >
-        <div class="flex w-full h-full items-center justify-between">
-          <div class="flex items-baseline">
+        <div class="flex w-full h-full items-center justify-end">
+          <div class="flex items-baseline flex-1">
             <gui-logo>
             </gui-logo>
             <div class="ml-6">
@@ -561,7 +561,7 @@ exports[`render default 1`] = `
         </a>
       </div>
       <div class="flex items-center">
-        <p class="text-md text-muted-foreground">
+        <p class="text-xs text-muted-foreground">
           © 2024 vlt technology inc.
         </p>
       </div>
