@@ -61,7 +61,7 @@ const filePluginFilter = (r: string) => ({
 })
 
 const createOnLoad = (
-  includes: (source: string) => boolean,
+  includes: (source: string, path: string) => boolean,
   fn: (path: string, source: string) => string,
 ): {
   paths: OnLoadPlugin['paths']
@@ -74,7 +74,7 @@ const createOnLoad = (
     paths: () => [...found],
     plugin: async o => {
       const source = await readFile(o.path, 'utf8')
-      if (includes(source)) {
+      if (includes(source, o.path)) {
         found.add(o.path)
         return { contents: fn(o.path, source) }
       }
@@ -482,8 +482,14 @@ export default async ({
   const codeSplit = codeSplitPlugin(`^${Paths.SRC}`, p =>
     getSrcPath(p),
   )
-  const readPackageJson = readPackageJsonPlugin(`^${Paths.SRC}`, p =>
-    dirname(getSrcPath(p)),
+  const readPackageJson = readPackageJsonPlugin(
+    `^${Paths.SRC}`,
+    p => {
+      // Map the vlt package.json to the actual package.json used for publishing
+      // which will be at the root by resolving an empty string instead of the pkg name.
+      const pkg = dirname(getSrcPath(p))
+      return pkg === 'vlt' ? '' : pkg
+    },
   )
   const metaResolve = metaResolvePlugin(`^${Paths.SRC}`)
   const loadCommands = loadCommandsPlugin(`^${Paths.CLI}`, {
