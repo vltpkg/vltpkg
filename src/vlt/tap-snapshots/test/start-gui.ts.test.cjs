@@ -10,6 +10,7 @@ Array [
   "dashboard.json",
   "favicon.ico",
   "graph.json",
+  "icons",
   "index.html",
   "index.js",
   "index.js.map",
@@ -103,6 +104,7 @@ exports[`test/start-gui.ts > TAP > e2e server test > should write graph.json wit
 exports[`test/start-gui.ts > TAP > no data to be found > should not create json files if no data was found 1`] = `
 Array [
   "favicon.ico",
+  "icons",
   "index.html",
   "index.js",
   "index.js.map",
@@ -115,6 +117,7 @@ Array [
   "dashboard.json",
   "favicon.ico",
   "graph.json",
+  "icons",
   "index.html",
   "index.js",
   "index.js.map",

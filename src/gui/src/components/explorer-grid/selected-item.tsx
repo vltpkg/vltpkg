@@ -76,6 +76,15 @@ export const SelectedItem = ({ item }: GridItemOptions) => {
           : ''}
         </div>
       </Card>
+      {
+        // Draw the connection line between dependencies and the selected item
+        item.to?.edgesOut && item.to.edgesOut.size > 0 ?
+          <div
+            className={
+              'absolute border-t border-solid border-gray-300 dark:border-gray-700 rounded-tr-sm w-4 top-7 -right-4'
+            }></div>
+        : ''
+      }
     </div>
   )
 }

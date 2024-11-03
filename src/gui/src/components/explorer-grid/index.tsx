@@ -142,7 +142,7 @@ const getParent = (
   node?: NodeLike,
 ): GridItemData | undefined => {
   if (!node) return undefined
-  const version = node.version ? `${node.version}` : ''
+  const version = node.version ? node.version : ''
   return {
     ...edge,
     id: node.id,
@@ -160,7 +160,7 @@ const getDependentItems = (node?: NodeLike, parent?: NodeLike) => {
   if (!node) return items
   for (const edge of Array.from(node.edgesIn)) {
     if (edge.from === parent) continue
-    const version = edge.from.version ? `${edge.from.version}` : ''
+    const version = edge.from.version ? edge.from.version : ''
 
     items.push({
       ...edge,

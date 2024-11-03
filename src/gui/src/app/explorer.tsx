@@ -129,8 +129,8 @@ const ExplorerContent = () => {
         <nav
           className="flex gap-4 md:gap-0 px-8 py-4 items-center justify-between border-b-[1px] border-solid"
           role="navigation">
-          <div className="flex w-full h-full items-center justify-between">
-            <div className="flex items-baseline">
+          <div className="flex w-full h-full items-center justify-end">
+            <div className="flex items-baseline flex-1">
               <Logo />
               <div className="ml-6">
                 <p className="text-md font-medium">Explore</p>

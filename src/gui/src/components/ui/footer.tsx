@@ -43,7 +43,7 @@ export const Footer = () => {
         ))}
       </div>
       <div className="flex items-center">
-        <p className="text-md text-muted-foreground">
+        <p className="text-xs text-muted-foreground">
           &copy; {new Date().getFullYear()} vlt technology inc.
         </p>
       </div>

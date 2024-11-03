@@ -106,7 +106,7 @@ export const DashboardGrid = () => {
   const dashboard = useGraphStore(state => state.dashboard)
 
   return (
-    <div className="flex flex-wrap width-full mt-6">
+    <div className="flex flex-wrap justify-center width-full mt-6">
       {dashboard?.map((item, index) => (
         <DashboardItem key={index} item={item} />
       ))}

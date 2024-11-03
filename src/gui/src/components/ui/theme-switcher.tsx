@@ -45,23 +45,25 @@ export const ThemeSwitcher = () => {
     )
 
     if (activeIdx !== -1 && sliderRef.current) {
-      const activeTab = tabRefs.current[activeIdx] as HTMLDivElement
-      const { offsetLeft, offsetHeight } = activeTab as HTMLDivElement
+      const activeTab = tabRefs.current[activeIdx]
+      if (activeTab) {
+        const { offsetLeft, offsetHeight } = activeTab
 
-      const bgColor =
-        theme === 'dark' ? 'white'
-        : theme === 'light' ? '#212121'
-        : 'white'
+        const bgColor =
+          theme === 'dark' ? 'white'
+          : theme === 'light' ? '#212121'
+          : 'white'
 
-      gsap.to(sliderRef.current, {
-        x: offsetLeft,
-        width: offsetHeight,
-        borderRadius: `${offsetHeight / 2}px`,
-        height: offsetHeight,
-        backgroundColor: bgColor,
-        ease: 'power2.inOut',
-        duration: 0.3,
-      })
+        gsap.to(sliderRef.current, {
+          x: offsetLeft,
+          width: offsetHeight,
+          borderRadius: `${offsetHeight / 2}px`,
+          height: offsetHeight,
+          backgroundColor: bgColor,
+          ease: 'power2.inOut',
+          duration: 0.3,
+        })
+      }
     }
   }
 
@@ -120,7 +122,7 @@ export const ThemeSwitcher = () => {
           <div
             key={setting.mode}
             ref={(el: HTMLDivElement) => {
-              if (el) tabRefs.current[idx] = el
+              tabRefs.current[idx] = el
             }}
             className="relative cursor-pointer flex items-center justify-center p-2 offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             role="button"
