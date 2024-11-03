@@ -1,3 +1,5 @@
+import { useGraphStore } from '@/state/index.js'
+import { type State } from '@/state/types.js'
 import { createContext, useContext, useEffect, useState } from 'react'
 
 export type Theme = 'dark' | 'light' | 'system'
@@ -31,6 +33,7 @@ export function ThemeProvider({
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     () => (localStorage.getItem(storageKey) as Theme) || defaultTheme,
   )
+  const updateTheme = useGraphStore(state => state.updateTheme)
 
   useEffect(() => {
     const root = window.document.documentElement
@@ -55,6 +58,7 @@ export function ThemeProvider({
     setTheme: (theme: Theme) => {
       localStorage.setItem(storageKey, theme)
       setTheme(theme)
+      updateTheme(theme as State['theme'])
     },
   }
 

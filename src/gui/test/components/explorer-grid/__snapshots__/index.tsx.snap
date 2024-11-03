@@ -153,7 +153,73 @@ exports[`explorer-grid renders workspace with edges in 1`] = `
               </div>
             </h3>
           </div>
-          <div class="flex flex-row pl-4 pr-3">
+          <div class="p-4">
+          </div>
+          <div class="px-4 pb-4 w-full">
+            <div
+              dir="ltr"
+              data-orientation="horizontal"
+            >
+              <div
+                role="tablist"
+                aria-orientation="horizontal"
+                class="h-10 items-center justify-center rounded-md bg-muted p-1 text-muted-foreground grid w-full grid-cols-2"
+                tabindex="0"
+                data-orientation="horizontal"
+                style="outline: none;"
+              >
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected="true"
+                  aria-controls="radix-:r0:-content-package.json"
+                  data-state="active"
+                  id="radix-:r0:-trigger-package.json"
+                  class="inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm w-36"
+                  tabindex="-1"
+                  data-orientation="horizontal"
+                  data-radix-collection-item
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    viewbox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    class="lucide lucide-file-search2 mr-2"
+                  >
+                    <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z">
+                    </path>
+                    <path d="M14 2v4a2 2 0 0 0 2 2h4">
+                    </path>
+                    <circle
+                      cx="11.5"
+                      cy="14.5"
+                      r="2.5"
+                    >
+                    </circle>
+                    <path d="M13.3 16.3 15 18">
+                    </path>
+                  </svg>
+                  package.json
+                </button>
+              </div>
+              <div
+                data-state="active"
+                data-orientation="horizontal"
+                role="tabpanel"
+                aria-labelledby="radix-:r0:-trigger-package.json"
+                id="radix-:r0:-content-package.json"
+                tabindex="0"
+                class="mt-2 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                style="animation-duration: 0s;"
+              >
+              </div>
+            </div>
           </div>
         </div>
       </div>
