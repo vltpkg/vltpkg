@@ -11,6 +11,7 @@ import { tmpdir } from 'node:os'
 import { actual } from '@vltpkg/graph'
 import handler from 'serve-handler'
 import opener from 'opener'
+import { loadPackageJson } from 'package-json-from-dist'
 import { type PathScurry, type PathBase } from 'path-scurry'
 import { readProjectFolders } from './read-project-folders.js'
 import { type Manifest } from '@vltpkg/types'
@@ -22,6 +23,10 @@ import { stderr, stdout } from './output.js'
 
 const HOST = 'localhost'
 const PORT = 7017
+
+const { version } = loadPackageJson(import.meta.filename) as {
+  version: string
+}
 
 export type StartGUIOptions = {
   assetsDir: string
@@ -42,6 +47,12 @@ export type DashboardTools =
   | 'js'
 
 export type DashboardData = {
+  cwd: string
+  buildVersion: string
+  projects: DashboardDataProject[]
+}
+
+export type DashboardDataProject = {
   name: string
   path: string
   manifest: Manifest
@@ -53,7 +64,7 @@ const knownTools = new Map<DashboardTools, string[]>([
   ['vlt', ['vlt-lock.json', 'vlt-workspaces.json']],
   ['node', []],
   ['deno', ['deno.json']],
-  ['bun', ['bunfig.toml']],
+  ['bun', ['bun.lockb', 'bunfig.toml']],
   ['npm', ['package-lock.json']],
   ['pnpm', ['pnpm-lock.yaml', 'pnpm-workspace.yaml']],
   ['yarn', ['yarn.lock']],
@@ -107,7 +118,11 @@ export const formatDashboardJson = (
   projectFolders: PathBase[],
   options: ConfigOptions,
 ) => {
-  const result: DashboardData[] = []
+  const result: DashboardData = {
+    cwd: process.cwd(),
+    buildVersion: version,
+    projects: [],
+  }
   for (const folder of projectFolders) {
     let manifest
     try {
@@ -115,7 +130,7 @@ export const formatDashboardJson = (
     } catch (_err) {
       continue
     }
-    result.push({
+    result.projects.push({
       /* c8 ignore next */
       name: manifest.name || folder.name,
       path: folder.fullpath(),
@@ -165,14 +180,14 @@ const updateDashboardData = async (
   )
   const dashboardJson = JSON.stringify(dashboard, null, 2)
   writeFileSync(resolve(tmp, 'dashboard.json'), dashboardJson)
-  return dashboard.length > 0
+  return dashboard.projects.length > 0
 }
 
 export const startGUI = async ({
   assetsDir,
   conf,
-  startingRoute = '/dashboard',
   port = PORT,
+  startingRoute = '/dashboard',
   tmpDir = tmpdir(),
 }: StartGUIOptions) => {
   const { options } = conf

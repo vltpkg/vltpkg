@@ -198,7 +198,9 @@ t.test('formatDashboardJson', async t => {
     formatDashboardJson(scurry.readdirSync(dir), {
       packageJson,
       scurry,
-    } as ConfigOptions).map(({ name }: { name: string }) => name),
+    } as ConfigOptions).projects.map(
+      ({ name }: { name: string }) => name,
+    ),
     ['b'],
     'should skip folders without package.json',
   )
@@ -228,7 +230,6 @@ t.test('e2e server test', async t => {
     import.meta.dirname,
     '../../../src/gui/dist',
   )
-
   const log = t.capture(console, 'log').args
 
   const { startGUI } = await t.mockImport('../src/start-gui.js', {
