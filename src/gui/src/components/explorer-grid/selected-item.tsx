@@ -81,7 +81,7 @@ export const SelectedItem = ({ item }: GridItemOptions) => {
         item.to?.edgesOut && item.to.edgesOut.size > 0 ?
           <div
             className={
-              'absolute border-t border-solid border-gray-300 dark:border-gray-700 rounded-tr-sm w-4 top-7 -right-4'
+              'absolute border-t border-solid border-neutral-300 dark:border-neutral-600 rounded-tr-sm w-4 top-7 -right-4'
             }></div>
         : ''
       }

@@ -57,7 +57,7 @@ export type State = {
   /**
    * List of projects to be displayed in the dashboard.
    */
-  dashboard?: DashboardData[]
+  dashboard?: DashboardData
   /**
    * Current graph to be explored.
    */
@@ -111,6 +111,12 @@ export type DashboardTools =
   | 'js'
 
 export type DashboardData = {
+  cwd: string
+  buildVersion: string
+  projects: DashboardDataProject[]
+}
+
+export type DashboardDataProject = {
   name: string
   path: string
   manifest: Manifest

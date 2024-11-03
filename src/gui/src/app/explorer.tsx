@@ -88,6 +88,7 @@ const ExplorerContent = () => {
   const updateActiveRoute = useGraphStore(
     state => state.updateActiveRoute,
   )
+  const dashboard = useGraphStore(state => state.dashboard)
   const updateEdges = useGraphStore(state => state.updateEdges)
   const updateNodes = useGraphStore(state => state.updateNodes)
   const hasDashboard = useGraphStore(state => state.hasDashboard)
@@ -155,13 +156,24 @@ const ExplorerContent = () => {
             : ''}
           </div>
         </nav>
-        <section className="flex items-center px-8 py-4 border-b-[1px] border-solid">
+        <section className="flex items-center px-8 pt-4">
           <div className="flex flex-col gap-2 w-full">
             {graph?.projectRoot ?
               <p className="text-xs font-mono font-light text-muted-foreground">
                 :host-context(file:{graph.projectRoot})
               </p>
             : ''}
+          </div>
+          <div className="flex flex-col gap-2 w-full flex-end">
+            {dashboard?.buildVersion ?
+              <p className="text-xs font-mono font-light text-muted-foreground text-right">
+                build: v{dashboard.buildVersion}
+              </p>
+            : ''}
+          </div>
+        </section>
+        <section className="flex items-center px-8 py-4 border-b-[1px] border-solid">
+          <div className="flex flex-col gap-2 w-full">
             <SearchBar
               tabIndex={0}
               className="w-full bg-muted-foreground/5"

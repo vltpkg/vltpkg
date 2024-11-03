@@ -23,7 +23,7 @@ exports[`SelectedItem render connection lines 1`] = `
       <div class="flex flex-row pl-4 pr-3">
       </div>
     </gui-card>
-    <div class="absolute border-t border-solid border-gray-300 dark:border-gray-700 rounded-tr-sm w-4 top-7 -right-4">
+    <div class="absolute border-t border-solid border-neutral-300 dark:border-neutral-600 rounded-tr-sm w-4 top-7 -right-4">
     </div>
   </div>
 </div>

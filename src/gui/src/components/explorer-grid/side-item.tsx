@@ -26,7 +26,7 @@ export const SideItem = ({
   useEffect(() => {
     if (idx === 1) {
       const rect = divRef.current?.getBoundingClientRect()
-      if (rect && lineRef.current && rect.height > 42.5) {
+      if (rect && lineRef.current && rect.height > 85.5) {
         lineRef.current.style.height = '124px'
       }
     }
