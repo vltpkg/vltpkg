@@ -1,3 +1,4 @@
+import { joinDepIDTuple } from '@vltpkg/dep-id'
 import { resolve } from 'path'
 import t from 'tap'
 import { command, usage } from '../../src/commands/run.js'
@@ -231,7 +232,7 @@ t.test('one ws fails, with bail', async t => {
     message: 'failed graph traversal',
     cause: {
       node: {
-        id: 'workspace·src%2Fa',
+        id: joinDepIDTuple(['workspace', 'src/a']),
         path: 'src/a',
         fullpath: resolve(dir, 'src/a'),
         manifest: {

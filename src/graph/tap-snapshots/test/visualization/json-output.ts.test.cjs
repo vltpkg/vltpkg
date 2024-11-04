@@ -69,7 +69,7 @@ exports[`test/visualization/json-output.ts > TAP > actual graph > should print f
   {
     "name": "workspace-b",
     "to": {
-      "id": "workspace·packages%2Fworkspace-b",
+      "id": "workspace·packages§workspace-b",
       "name": "workspace-b",
       "version": "1.0.0",
       "location": "./packages/workspace-b",
@@ -86,7 +86,7 @@ exports[`test/visualization/json-output.ts > TAP > actual graph > should print f
   {
     "name": "workspace-a",
     "to": {
-      "id": "workspace·packages%2Fworkspace-a",
+      "id": "workspace·packages§workspace-a",
       "name": "workspace-a",
       "version": "1.0.0",
       "location": "./packages/workspace-a",
@@ -215,10 +215,10 @@ exports[`test/visualization/json-output.ts > TAP > actual graph > should print f
     "spec": "@scoped/b@^1.0.0",
     "type": "prod",
     "to": {
-      "id": "··@scoped%2Fb@1.0.0",
+      "id": "··@scoped§b@1.0.0",
       "name": "@scoped/b",
       "version": "1.0.0",
-      "location": "./node_modules/.vlt/··@scoped%2Fb@1.0.0/node_modules/@scoped/b",
+      "location": "./node_modules/.vlt/··@scoped§b@1.0.0/node_modules/@scoped/b",
       "importer": false,
       "manifest": {
         "name": "@scoped/b",
@@ -245,10 +245,10 @@ exports[`test/visualization/json-output.ts > TAP > actual graph > should print f
     "spec": "@scoped/a@^1.0.0",
     "type": "prod",
     "to": {
-      "id": "··@scoped%2Fa@1.0.0",
+      "id": "··@scoped§a@1.0.0",
       "name": "@scoped/a",
       "version": "1.0.0",
-      "location": "./node_modules/.vlt/··@scoped%2Fa@1.0.0/node_modules/@scoped/a",
+      "location": "./node_modules/.vlt/··@scoped§a@1.0.0/node_modules/@scoped/a",
       "importer": false,
       "manifest": {
         "name": "@scoped/a",
@@ -273,11 +273,11 @@ exports[`test/visualization/json-output.ts > TAP > actual graph > should print f
   },
   {
     "name": "workspace-b",
-    "fromID": "workspace·packages%2Fworkspace-a",
+    "fromID": "workspace·packages§workspace-a",
     "spec": "workspace-b@workspace:*",
     "type": "dev",
     "to": {
-      "id": "workspace·packages%2Fworkspace-b",
+      "id": "workspace·packages§workspace-b",
       "name": "workspace-b",
       "version": "1.0.0",
       "location": "./packages/workspace-b",
@@ -293,7 +293,7 @@ exports[`test/visualization/json-output.ts > TAP > actual graph > should print f
   },
   {
     "name": "ipsum",
-    "fromID": "workspace·packages%2Fworkspace-a",
+    "fromID": "workspace·packages§workspace-a",
     "spec": "ipsum@^1.0.0",
     "type": "dev",
     "to": {
@@ -313,7 +313,7 @@ exports[`test/visualization/json-output.ts > TAP > actual graph > should print f
   },
   {
     "name": "foo",
-    "fromID": "workspace·packages%2Fworkspace-a",
+    "fromID": "workspace·packages§workspace-a",
     "spec": "foo@^1.0.0",
     "type": "dev",
     "to": {
@@ -373,14 +373,14 @@ exports[`test/visualization/json-output.ts > TAP > actual graph > should print f
   },
   {
     "name": "@scoped/c",
-    "fromID": "··@scoped%2Fb@1.0.0",
+    "fromID": "··@scoped§b@1.0.0",
     "spec": "@scoped/c@^1.0.0",
     "type": "prod",
     "to": {
-      "id": "··@scoped%2Fc@1.0.0",
+      "id": "··@scoped§c@1.0.0",
       "name": "@scoped/c",
       "version": "1.0.0",
-      "location": "./node_modules/.vlt/··@scoped%2Fc@1.0.0/node_modules/@scoped/c",
+      "location": "./node_modules/.vlt/··@scoped§c@1.0.0/node_modules/@scoped/c",
       "importer": false,
       "manifest": {
         "name": "@scoped/c",
@@ -422,10 +422,10 @@ exports[`test/visualization/json-output.ts > TAP > aliased package > should prin
     "spec": "a@^1.0.0",
     "type": "optional",
     "to": {
-      "id": "··@myscope%2Ffoo@1.0.0",
+      "id": "··@myscope§foo@1.0.0",
       "name": "@myscope/foo",
       "version": "1.0.0",
-      "location": "./node_modules/.vlt/··@myscope%2Ffoo@1.0.0/node_modules/@myscope/foo",
+      "location": "./node_modules/.vlt/··@myscope§foo@1.0.0/node_modules/@myscope/foo",
       "importer": false,
       "manifest": {
         "name": "@myscope/foo",
@@ -783,7 +783,7 @@ exports[`test/visualization/json-output.ts > TAP > workspaces > should print jso
   {
     "name": "b",
     "to": {
-      "id": "workspace·packages%2Fb",
+      "id": "workspace·packages§b",
       "name": "b",
       "version": "1.0.0",
       "location": "./packages/b",
@@ -800,7 +800,7 @@ exports[`test/visualization/json-output.ts > TAP > workspaces > should print jso
   {
     "name": "a",
     "to": {
-      "id": "workspace·packages%2Fa",
+      "id": "workspace·packages§a",
       "name": "a",
       "version": "1.0.0",
       "location": "./packages/a",

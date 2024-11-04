@@ -119,7 +119,7 @@ exports[`test/index.ts > TAP > valid specs > @scoped/x@1.2.3 > hydrated with sco
 
 exports[`test/index.ts > TAP > valid specs > @scoped/x@1.2.3 > must match snapshot 1`] = `
 Array [
-  "··@scoped%2Fmanifest-name@1.2.3",
+  "··@scoped§manifest-name@1.2.3",
   Array [
     "registry",
     "",
@@ -146,7 +146,7 @@ exports[`test/index.ts > TAP > valid specs > @scoped/x@github:a/b > hydrated wit
 
 exports[`test/index.ts > TAP > valid specs > @scoped/x@github:a/b > must match snapshot 1`] = `
 Array [
-  "git·github%3Aa%2Fb·",
+  "git·github%3Aa§b·",
   Array [
     "git",
     "github:a/b",
@@ -173,7 +173,7 @@ exports[`test/index.ts > TAP > valid specs > @scoped/x@npm:@scoped/x@1.2.3 > hyd
 
 exports[`test/index.ts > TAP > valid specs > @scoped/x@npm:@scoped/x@1.2.3 > must match snapshot 1`] = `
 Array [
-  "·npm·@scoped%2Fmanifest-name@1.2.3",
+  "·npm·@scoped§manifest-name@1.2.3",
   Array [
     "registry",
     "npm",
@@ -200,7 +200,7 @@ exports[`test/index.ts > TAP > valid specs > @scoped/y@npm:@scoped/x@1.2.3 > hyd
 
 exports[`test/index.ts > TAP > valid specs > @scoped/y@npm:@scoped/x@1.2.3 > must match snapshot 1`] = `
 Array [
-  "·npm·@scoped%2Fmanifest-name@1.2.3",
+  "·npm·@scoped§manifest-name@1.2.3",
   Array [
     "registry",
     "npm",
@@ -335,7 +335,7 @@ y@git+ssh://host.com/x.git#
 
 exports[`test/index.ts > TAP > valid specs > x@git+ssh://host.com/x.git > must match snapshot 1`] = `
 Array [
-  "git·git%2Bssh%3A%2F%2Fhost.com%2Fx.git·",
+  "git·git%2Bssh%3A§§host.com§x.git·",
   Array [
     "git",
     "git+ssh://host.com/x.git",
@@ -362,7 +362,7 @@ y@git+ssh://host.com/x.git#branch
 
 exports[`test/index.ts > TAP > valid specs > x@git+ssh://host.com/x.git#branch > must match snapshot 1`] = `
 Array [
-  "git·git%2Bssh%3A%2F%2Fhost.com%2Fx.git·branch",
+  "git·git%2Bssh%3A§§host.com§x.git·branch",
   Array [
     "git",
     "git+ssh://host.com/x.git",
@@ -389,7 +389,7 @@ y@git+ssh://host.com/x.git#semver:1
 
 exports[`test/index.ts > TAP > valid specs > x@git+ssh://host.com/x.git#semver:1 > must match snapshot 1`] = `
 Array [
-  "git·git%2Bssh%3A%2F%2Fhost.com%2Fx.git·semver%3A1",
+  "git·git%2Bssh%3A§§host.com§x.git·semver%3A1",
   Array [
     "git",
     "git+ssh://host.com/x.git",
@@ -416,7 +416,7 @@ y@github:a/b#
 
 exports[`test/index.ts > TAP > valid specs > x@github:a/b > must match snapshot 1`] = `
 Array [
-  "git·github%3Aa%2Fb·",
+  "git·github%3Aa§b·",
   Array [
     "git",
     "github:a/b",
@@ -443,7 +443,7 @@ y@github:a/b#branch
 
 exports[`test/index.ts > TAP > valid specs > x@github:a/b#branch > must match snapshot 1`] = `
 Array [
-  "git·github%3Aa%2Fb·branch",
+  "git·github%3Aa§b·branch",
   Array [
     "git",
     "github:a/b",
@@ -470,7 +470,7 @@ y@github:a/b#semver:1
 
 exports[`test/index.ts > TAP > valid specs > x@github:a/b#semver:1 > must match snapshot 1`] = `
 Array [
-  "git·github%3Aa%2Fb·semver%3A1",
+  "git·github%3Aa§b·semver%3A1",
   Array [
     "git",
     "github:a/b",
@@ -497,7 +497,7 @@ y@https://x.com/x.tgz
 
 exports[`test/index.ts > TAP > valid specs > x@https://x.com/x.tgz > must match snapshot 1`] = `
 Array [
-  "remote·https%3A%2F%2Fx.com%2Fx.tgz",
+  "remote·https%3A§§x.com§x.tgz",
   Array [
     "remote",
     "https://x.com/x.tgz",
@@ -577,7 +577,7 @@ manifest-name@registry:https://c.example.com/#manifest-name@1.2.3
 
 exports[`test/index.ts > TAP > valid specs > x@registry:https://c.example.com/#asfd@1.2.3 > must match snapshot 1`] = `
 Array [
-  "·https%3A%2F%2Fc.example.com%2F·manifest-name@1.2.3",
+  "·https%3A§§c.example.com§·manifest-name@1.2.3",
   Array [
     "registry",
     "https://c.example.com/",
@@ -631,7 +631,7 @@ exports[`test/index.ts > TAP > valid specs > y@npm:@scoped/x@1.2.3 > hydrated wi
 
 exports[`test/index.ts > TAP > valid specs > y@npm:@scoped/x@1.2.3 > must match snapshot 1`] = `
 Array [
-  "·npm·@scoped%2Fmanifest-name@1.2.3",
+  "·npm·@scoped§manifest-name@1.2.3",
   Array [
     "registry",
     "npm",
@@ -712,7 +712,7 @@ y@github:a/b#branch
 
 exports[`test/index.ts > TAP > valid specs > y@npm:x@github:a/b#branch > must match snapshot 1`] = `
 Array [
-  "git·github%3Aa%2Fb·branch",
+  "git·github%3Aa§b·branch",
   Array [
     "git",
     "github:a/b",
@@ -793,7 +793,7 @@ manifest-name@registry:https://x.com/#manifest-name@1.2.3
 
 exports[`test/index.ts > TAP > valid specs > y@registry:https://x.com#x@1 > must match snapshot 1`] = `
 Array [
-  "·https%3A%2F%2Fx.com%2F·manifest-name@1.2.3",
+  "·https%3A§§x.com§·manifest-name@1.2.3",
   Array [
     "registry",
     "https://x.com/",

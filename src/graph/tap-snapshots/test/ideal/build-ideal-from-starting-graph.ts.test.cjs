@@ -63,18 +63,18 @@ exports[`test/ideal/build-ideal-from-starting-graph.ts > TAP > build from an act
         dev: true
       },
       Edge spec(@scoped/b@^1.0.0) -prod-> to: Node {
-        id: '··@scoped%2Fb@1.0.0',
-        location: './node_modules/.vlt/··@scoped%2Fb@1.0.0/node_modules/@scoped/b',
+        id: '··@scoped§b@1.0.0',
+        location: './node_modules/.vlt/··@scoped§b@1.0.0/node_modules/@scoped/b',
         edgesOut: [
           Edge spec(@scoped/c@^1.0.0) -prod-> to: Node {
-            id: '··@scoped%2Fc@1.0.0',
-            location: './node_modules/.vlt/··@scoped%2Fc@1.0.0/node_modules/@scoped/c'
+            id: '··@scoped§c@1.0.0',
+            location: './node_modules/.vlt/··@scoped§c@1.0.0/node_modules/@scoped/c'
           }
         ]
       },
       Edge spec(@scoped/a@^1.0.0) -prod-> to: Node {
-        id: '··@scoped%2Fa@1.0.0',
-        location: './node_modules/.vlt/··@scoped%2Fa@1.0.0/node_modules/@scoped/a'
+        id: '··@scoped§a@1.0.0',
+        location: './node_modules/.vlt/··@scoped§a@1.0.0/node_modules/@scoped/a'
       },
       Edge spec(missing@^1.0.0) -prod-> to: Node {
         id: '··missing@1.0.0',
@@ -89,17 +89,17 @@ exports[`test/ideal/build-ideal-from-starting-graph.ts > TAP > build from an act
     ]
   },
   Node {
-    id: 'workspace·packages%2Fworkspace-b',
+    id: 'workspace·packages§workspace-b',
     location: './packages/workspace-b',
     importer: true,
     edgesOut: [ Edge spec(baz@^1.0.0) -prod-> to: Node { ref: '··baz@1.0.0' } ]
   },
   Node {
-    id: 'workspace·packages%2Fworkspace-a',
+    id: 'workspace·packages§workspace-a',
     location: './packages/workspace-a',
     importer: true,
     edgesOut: [
-      Edge spec(workspace-b@workspace:*) -dev-> to: Node { ref: 'workspace·packages%2Fworkspace-b' },
+      Edge spec(workspace-b@workspace:*) -dev-> to: Node { ref: 'workspace·packages§workspace-b' },
       Edge spec(ipsum@^1.0.0) -dev-> to: Node {
         id: '··ipsum@1.0.0',
         location: './node_modules/.vlt/··ipsum@1.0.0/node_modules/ipsum',

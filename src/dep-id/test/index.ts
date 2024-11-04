@@ -208,14 +208,14 @@ t.test('invalid values', t => {
 
 const validDepIDs: DepID[] = [
   `${delimiter}${delimiter}foo@1.0.0`,
-  `git${delimiter}github%3Aa%2Fb${delimiter}branch`,
-  `remote${delimiter}https%3A%2F%2Fx.com%2Fx.tgz`,
-  `file${delimiter}.%2Fx.tgz`,
+  `git${delimiter}github%3Aa§b${delimiter}branch`,
+  `remote${delimiter}https%3A§§x.com§x.tgz`,
+  `file${delimiter}.§x.tgz`,
   `workspace${delimiter}a`,
   `${delimiter}${delimiter}foo@1.0.0${delimiter}extra`,
-  `git${delimiter}github%3Aa%2Fb${delimiter}branch${delimiter}extra`,
-  `remote${delimiter}https%3A%2F%2Fx.com%2Fx.tgz${delimiter}extra`,
-  `file${delimiter}.%2Fx.tgz${delimiter}extra`,
+  `git${delimiter}github%3Aa§b${delimiter}branch${delimiter}extra`,
+  `remote${delimiter}https%3A§§x.com§x.tgz${delimiter}extra`,
+  `file${delimiter}.§x.tgz${delimiter}extra`,
   `workspace${delimiter}a${delimiter}extra`,
 ]
 const invalidDepIDs = ['', 'git', 'abobrinha', 'https://example.com']

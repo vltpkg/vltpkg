@@ -33,21 +33,21 @@ file%C2%B7.("root:my-project") -->|"bar#64;^1.0.0 (optional)"| %C2%B7%C2%B7bar%4
 %C2%B7custom%C2%B7baz%401.0.0("custom:baz#64;1.0.0")
 file%C2%B7.("root:my-project") -->|"aliased#64;custom:foo#64;^1.0.0 (dev)"| %C2%B7custom%C2%B7foo%401.0.0("custom:foo#64;1.0.0")
 %C2%B7custom%C2%B7foo%401.0.0("custom:foo#64;1.0.0")
-file%C2%B7.("root:my-project") -->|"#64;scoped/b#64;^1.0.0 (prod)"| %C2%B7%C2%B7%40scoped%252Fb%401.0.0("npm:#64;scoped/b#64;1.0.0")
-%C2%B7%C2%B7%40scoped%252Fb%401.0.0("npm:#64;scoped/b#64;1.0.0")
-%C2%B7%C2%B7%40scoped%252Fb%401.0.0("npm:#64;scoped/b#64;1.0.0") -->|"#64;scoped/c#64;^1.0.0 (prod)"| %C2%B7%C2%B7%40scoped%252Fc%401.0.0("npm:#64;scoped/c#64;1.0.0")
-%C2%B7%C2%B7%40scoped%252Fc%401.0.0("npm:#64;scoped/c#64;1.0.0")
-file%C2%B7.("root:my-project") -->|"#64;scoped/a#64;^1.0.0 (prod)"| %C2%B7%C2%B7%40scoped%252Fa%401.0.0("npm:#64;scoped/a#64;1.0.0")
-%C2%B7%C2%B7%40scoped%252Fa%401.0.0("npm:#64;scoped/a#64;1.0.0")
+file%C2%B7.("root:my-project") -->|"#64;scoped/b#64;^1.0.0 (prod)"| %C2%B7%C2%B7%40scoped%C2%A7b%401.0.0("npm:#64;scoped/b#64;1.0.0")
+%C2%B7%C2%B7%40scoped%C2%A7b%401.0.0("npm:#64;scoped/b#64;1.0.0")
+%C2%B7%C2%B7%40scoped%C2%A7b%401.0.0("npm:#64;scoped/b#64;1.0.0") -->|"#64;scoped/c#64;^1.0.0 (prod)"| %C2%B7%C2%B7%40scoped%C2%A7c%401.0.0("npm:#64;scoped/c#64;1.0.0")
+%C2%B7%C2%B7%40scoped%C2%A7c%401.0.0("npm:#64;scoped/c#64;1.0.0")
+file%C2%B7.("root:my-project") -->|"#64;scoped/a#64;^1.0.0 (prod)"| %C2%B7%C2%B7%40scoped%C2%A7a%401.0.0("npm:#64;scoped/a#64;1.0.0")
+%C2%B7%C2%B7%40scoped%C2%A7a%401.0.0("npm:#64;scoped/a#64;1.0.0")
 file%C2%B7.("root:my-project") -->|"missing#64;^1.0.0 (prod)"| missing-1(Missing)
 
-workspace%C2%B7packages%252Fworkspace-b("workspace:workspace-b")
-workspace%C2%B7packages%252Fworkspace-a("workspace:workspace-a")
-workspace%C2%B7packages%252Fworkspace-a("workspace:workspace-a") -->|"workspace-b#64;workspace:* (dev)"| workspace%C2%B7packages%252Fworkspace-b("workspace:workspace-b")
-workspace%C2%B7packages%252Fworkspace-b("workspace:workspace-b")
-workspace%C2%B7packages%252Fworkspace-a("workspace:workspace-a") -->|"ipsum#64;^1.0.0 (dev)"| %C2%B7%C2%B7ipsum%401.0.0("npm:ipsum#64;1.0.0")
+workspace%C2%B7packages%C2%A7workspace-b("workspace:workspace-b")
+workspace%C2%B7packages%C2%A7workspace-a("workspace:workspace-a")
+workspace%C2%B7packages%C2%A7workspace-a("workspace:workspace-a") -->|"workspace-b#64;workspace:* (dev)"| workspace%C2%B7packages%C2%A7workspace-b("workspace:workspace-b")
+workspace%C2%B7packages%C2%A7workspace-b("workspace:workspace-b")
+workspace%C2%B7packages%C2%A7workspace-a("workspace:workspace-a") -->|"ipsum#64;^1.0.0 (dev)"| %C2%B7%C2%B7ipsum%401.0.0("npm:ipsum#64;1.0.0")
 %C2%B7%C2%B7ipsum%401.0.0("npm:ipsum#64;1.0.0")
-workspace%C2%B7packages%252Fworkspace-a("workspace:workspace-a") -->|"foo#64;^1.0.0 (dev)"| %C2%B7%C2%B7foo%401.0.0("npm:foo#64;1.0.0")
+workspace%C2%B7packages%C2%A7workspace-a("workspace:workspace-a") -->|"foo#64;^1.0.0 (dev)"| %C2%B7%C2%B7foo%401.0.0("npm:foo#64;1.0.0")
 %C2%B7%C2%B7foo%401.0.0("npm:foo#64;1.0.0")
 `
 
@@ -80,6 +80,6 @@ file%C2%B7.("root:my-project") -->|"missing#64;^1.0.0 (prod)"| missing-0(Missing
 exports[`test/visualization/mermaid-output.ts > TAP > workspaces > should print workspaces mermaid output 1`] = `
 flowchart TD
 file%C2%B7.("root:my-project")
-workspace%C2%B7packages%252Fb("workspace:b")
-workspace%C2%B7packages%252Fa("workspace:a")
+workspace%C2%B7packages%C2%A7b("workspace:b")
+workspace%C2%B7packages%C2%A7a("workspace:a")
 `
