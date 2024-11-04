@@ -1,4 +1,4 @@
-![vlt](https://github.com/user-attachments/assets/e03cad94-9146-4b67-8644-497caf2f2267)
+![vlt](https://github.com/user-attachments/assets/17d0d791-51fb-49f6-abd4-7355bba7989c)
 
 # vlt /vōlt/
 
