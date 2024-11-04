@@ -29,7 +29,10 @@ export const readProjectFolders = (
   // if the given directory is also the project root, we then
   // proceed to read its siblings instead
   let cwd = scurry.resolve(dir)
-  if (cwd.startsWith(projectRoot)) {
+  if (
+    cwd.startsWith(projectRoot) &&
+    scurry.lstatSync(scurry.resolve(projectRoot, 'package.json'))
+  ) {
     dir = scurry.resolve(projectRoot, '..')
     cwd = scurry.resolve(dir)
   }
