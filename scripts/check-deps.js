@@ -1,12 +1,7 @@
 import { spawn } from 'node:child_process'
-import { readFileSync } from 'node:fs'
-import { join, relative, resolve } from 'node:path'
+import { relative } from 'node:path'
 import subset from 'semver/ranges/subset.js'
-
-const ROOT = resolve(import.meta.dirname, '..')
-
-const getPkg = dir =>
-  JSON.parse(readFileSync(join(dir, 'package.json')))
+import { ROOT, readPkgJson as getPkg } from './utils.js'
 
 const getAllProdDeps = async () => {
   const deps = []

@@ -37,6 +37,7 @@
     "format:check": "prettier --check . --ignore-path ./.prettierignore --cache",
     "lint": "eslint . --fix",
     "lint:check": "eslint .",
+    "pnpm:devPreinstall": "node scripts/make-dist-bins.js",
     "snap": "pnpm --silent --no-bail --report-summary run -r snap -Rsilent || node scripts/report-test-failures.js",
     "test": "pnpm --silent --no-bail --report-summary -r test -- -Rsilent || node scripts/report-test-failures.js",
     "vlix": "./scripts/local-cli vlix",

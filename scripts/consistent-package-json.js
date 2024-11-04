@@ -1,13 +1,10 @@
 import {
   readFileSync,
-  readdirSync,
   writeFileSync,
   copyFileSync,
   existsSync,
 } from 'node:fs'
 import { relative, resolve, basename, dirname, join } from 'node:path'
-import * as yaml from 'yaml'
-import { resolveConfig, format as prettier } from 'prettier'
 import {
   gt,
   satisfies,
@@ -15,8 +12,15 @@ import {
 } from '../src/semver/dist/esm/index.js'
 import { Spec } from '../src/spec/dist/esm/index.js'
 import minVersion from 'semver/ranges/min-version.js'
-
-const ROOT = resolve(import.meta.dirname, '..')
+import {
+  ROOT,
+  getConfig,
+  configPath,
+  getWorkspaces,
+  writeYaml,
+  format,
+  writeJson,
+} from './utils.js'
 
 const parseRangeFromSpec = spec => {
   let range = validRange(spec) ? spec : null
@@ -43,29 +47,12 @@ const skipCatalog = ({ name, spec, from, type }) => {
 
 const isInternal = name => name.startsWith('@vltpkg/')
 
-const format = async (source, filepath) => {
-  const options = await resolveConfig(filepath)
-  return prettier(source, { ...options, filepath })
-}
-
 const writeFormatted = async (p, str) =>
   writeFileSync(p, await format(str, p))
 
-const writeYaml = async (p, data) =>
-  writeFileSync(p, await format(yaml.stringify(data), p))
-
 const readJson = f => JSON.parse(readFileSync(f, 'utf8'))
 
-const writeJson = async (p, data, { prettier } = {}) =>
-  writeFileSync(
-    p,
-    prettier ?
-      await format(JSON.stringify(data), p)
-    : JSON.stringify(data, null, 2) + '\n',
-  )
-
-const mergeJson = async (p, fn, opts) =>
-  writeJson(p, fn(readJson(p)), opts)
+const mergeJson = (p, fn, opts) => writeJson(p, fn(readJson(p)), opts)
 
 const sortObject = (o, ...args) => {
   const byLocale = (a, b) => a.localeCompare(b, 'en')
@@ -299,7 +286,7 @@ const fixTools = async ws => {
       },
       ['selfLink', 'dialects'],
     )
-    await mergeJson(resolve(ws.dir, 'tsconfig.json'), d =>
+    mergeJson(resolve(ws.dir, 'tsconfig.json'), d =>
       sortObject({
         ...d,
         extends: `${ws.relDir}tsconfig.json`,
@@ -406,22 +393,11 @@ const fixPackage = async (ws, opts) => {
 }
 
 const main = async () => {
-  const root = parseWS(ROOT)
-  const configPath = resolve(ROOT, 'pnpm-workspace.yaml')
-  const rootConfig = yaml.parse(readFileSync(configPath, 'utf8'))
-  const workspaces = [
-    root,
-    ...rootConfig.packages.flatMap(p =>
-      readdirSync(resolve(ROOT, p.replaceAll('*', '')), {
-        withFileTypes: true,
-      })
-        .filter(w => w.isDirectory())
-        .map(w => parseWS(resolve(w.parentPath, w.name))),
-    ),
-  ]
+  const rootConfig = getConfig()
+  const workspaces = getWorkspaces().map(parseWS)
   const catalog = getCatalogDeps(workspaces, rootConfig.catalog)
   for (const ws of workspaces) {
-    await writeJson(ws.path, await fixPackage(ws, { catalog }))
+    writeJson(ws.path, await fixPackage(ws, { catalog }))
   }
   await writeYaml(configPath, { ...rootConfig, catalog })
 }
