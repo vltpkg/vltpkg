@@ -105,6 +105,21 @@ t.test('print usage', async t => {
   )
 })
 
+t.test('print version', async t => {
+  const { logs } = await run(t, {
+    commandName: '',
+    argv: ['-v'],
+    testdir: {
+      '.git': {},
+      'vlt.json': JSON.stringify({}),
+    },
+  })
+  t.matchOnly(
+    logs.flatMap(e => e).flatMap(e => e.split('\n')),
+    [/^\d\.\d\.\d/],
+  )
+})
+
 t.test('print EUSAGE error', async t => {
   const { logs, errs } = await run(t, {
     commandName: 'config',

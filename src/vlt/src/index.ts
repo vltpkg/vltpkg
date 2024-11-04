@@ -1,7 +1,12 @@
 import { error } from '@vltpkg/error-cause'
+import { loadPackageJson } from 'package-json-from-dist'
 import { Config } from './config/index.js'
 import { type CliCommand, type Commands } from './types.js'
 import { stdout, outputCommand, outputError } from './output.js'
+
+const { version } = loadPackageJson(import.meta.filename) as {
+  version: string
+}
 
 const loadCommand = async (
   command: Commands[keyof Commands] | undefined,
@@ -24,6 +29,11 @@ const loadCommand = async (
 
 const run = async () => {
   const vlt = await Config.load(process.cwd(), process.argv)
+
+  if (vlt.get('version')) {
+    return stdout(version)
+  }
+
   const cwd = process.cwd()
   const { monorepo } = vlt.options
 
