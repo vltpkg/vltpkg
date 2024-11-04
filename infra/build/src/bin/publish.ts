@@ -103,6 +103,15 @@ const transformJsonFile = <U extends Record<string, any>>(
   )
 }
 
+const transformMdFile = (
+  dir: string,
+  f: string,
+  t: (v: string) => string,
+) => {
+  const p = join(dir, f)
+  return writeFileSync(p, t(readFileSync(p, 'utf8')))
+}
+
 const keysToObj = (arr: string[], t: (k: string) => string) =>
   arr.reduce<Record<string, string>>((acc, k) => {
     acc[k] = t(k)
@@ -131,6 +140,9 @@ const writeFiles = (
   for (const f of ['README.md', 'LICENSE', 'package.json']) {
     copyFileSync(join(Paths.CLI, f), join(dir, f))
   }
+  transformMdFile(dir, 'README.md', p => {
+    return p.replaceAll('# @vltpkg/vlt', '# vlt')
+  })
   transformJsonFile(dir, 'package.json', p => ({
     name,
     version: `${p.version}.${DATE_ID}`,
@@ -144,7 +156,10 @@ const writeFiles = (
         return bin && bins.includes(bin)
       }),
     ],
-    ...keysToObj(['description', 'license', 'engines'], k => p[k]),
+    ...keysToObj(
+      ['description', 'license', 'engines', 'keywords'],
+      k => p[k],
+    ),
   }))
 }
 
