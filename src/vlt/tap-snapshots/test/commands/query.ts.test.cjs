@@ -227,7 +227,7 @@ exports[`test/commands/query.ts > TAP > query > workspaces > should list workspa
   {
     "name": "b",
     "to": {
-      "id": "workspace·packages%2Fb",
+      "id": "workspace·packages§b",
       "name": "b",
       "version": "1.0.0",
       "location": "./packages/b",
@@ -244,7 +244,7 @@ exports[`test/commands/query.ts > TAP > query > workspaces > should list workspa
   {
     "name": "a",
     "to": {
-      "id": "workspace·packages%2Fa",
+      "id": "workspace·packages§a",
       "name": "a",
       "version": "1.0.0",
       "location": "./packages/a",

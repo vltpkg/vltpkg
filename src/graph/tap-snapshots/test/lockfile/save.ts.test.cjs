@@ -16,13 +16,13 @@ exports[`test/lockfile/save.ts > TAP > custom git hosts > must match snapshot 1`
     }
   },
   "nodes": {
-    "git·example%3Afoo%2Fbar·": [
+    "git·example%3Afoo§bar·": [
       0,
       "foo"
     ]
   },
   "edges": {
-    "file·. foo": "prod example:foo/bar git·example%3Afoo%2Fbar·"
+    "file·. foo": "prod example:foo/bar git·example%3Afoo§bar·"
   }
 }
 `
@@ -178,7 +178,7 @@ exports[`test/lockfile/save.ts > TAP > workspaces > save manifests > must match 
     "··c@1.0.0": [0,"c","sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ=="]
   },
   "edges": {
-    "workspace·packages%2Fb c": "prod * ··c@1.0.0"
+    "workspace·packages§b c": "prod * ··c@1.0.0"
   }
 }
 
@@ -195,7 +195,7 @@ exports[`test/lockfile/save.ts > TAP > workspaces > should save lockfile with wo
     "··c@1.0.0": [0,"c","sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ=="]
   },
   "edges": {
-    "workspace·packages%2Fb c": "prod * ··c@1.0.0"
+    "workspace·packages§b c": "prod * ··c@1.0.0"
   }
 }
 

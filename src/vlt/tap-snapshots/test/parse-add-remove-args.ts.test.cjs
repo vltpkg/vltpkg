@@ -76,7 +76,7 @@ exports[`test/parse-add-remove-args.ts > TAP > parseAddArgs > single item > shou
 exports[`test/parse-add-remove-args.ts > TAP > parseAddArgs > workspaces > define multiple deps of a single workspace > should return multiple deps of a workspace 1`] = `
 {
   add: Map(1) {
-    'workspace·utils%2Fc' => Map(5) {
+    'workspace·utils§c' => Map(5) {
       'foo' => { spec: Spec {foo@^1}, type: 'prod' },
       'bar' => { spec: Spec {bar@latest}, type: 'prod' },
       'baz' => { spec: Spec {baz@1.0.0}, type: 'prod' },
@@ -90,7 +90,7 @@ exports[`test/parse-add-remove-args.ts > TAP > parseAddArgs > workspaces > defin
 exports[`test/parse-add-remove-args.ts > TAP > parseAddArgs > workspaces > define multiple deps to multiple groups of workspaces > should return multiple deps to many groups of workspaces 1`] = `
 {
   add: Map(3) {
-    'workspace·utils%2Fc' => Map(5) {
+    'workspace·utils§c' => Map(5) {
       'foo' => { spec: Spec {foo@^1}, type: 'prod' },
       'bar' => { spec: Spec {bar@latest}, type: 'prod' },
       'baz' => { spec: Spec {baz@1.0.0}, type: 'prod' },
@@ -118,21 +118,21 @@ exports[`test/parse-add-remove-args.ts > TAP > parseAddArgs > workspaces > defin
 exports[`test/parse-add-remove-args.ts > TAP > parseAddArgs > workspaces > define multiple deps to multiple workspaces > should return multiple deps to multiple workspaces 1`] = `
 {
   add: Map(3) {
-    'workspace·app%2Fb' => Map(5) {
+    'workspace·app§b' => Map(5) {
       'foo' => { spec: Spec {foo@^1}, type: 'prod' },
       'bar' => { spec: Spec {bar@latest}, type: 'prod' },
       'baz' => { spec: Spec {baz@1.0.0}, type: 'prod' },
       '(unknown)@github:a/b' => { spec: Spec {(unknown)@github:a/b}, type: 'prod' },
       '(unknown)@file:./a' => { spec: Spec {(unknown)@file:./a}, type: 'prod' }
     },
-    'workspace·app%2Fa' => Map(5) {
+    'workspace·app§a' => Map(5) {
       'foo' => { spec: Spec {foo@^1}, type: 'prod' },
       'bar' => { spec: Spec {bar@latest}, type: 'prod' },
       'baz' => { spec: Spec {baz@1.0.0}, type: 'prod' },
       '(unknown)@github:a/b' => { spec: Spec {(unknown)@github:a/b}, type: 'prod' },
       '(unknown)@file:./a' => { spec: Spec {(unknown)@file:./a}, type: 'prod' }
     },
-    'workspace·utils%2Fc' => Map(5) {
+    'workspace·utils§c' => Map(5) {
       'foo' => { spec: Spec {foo@^1}, type: 'prod' },
       'bar' => { spec: Spec {bar@latest}, type: 'prod' },
       'baz' => { spec: Spec {baz@1.0.0}, type: 'prod' },
@@ -154,7 +154,7 @@ exports[`test/parse-add-remove-args.ts > TAP > parseAddArgs > workspaces > defin
 exports[`test/parse-add-remove-args.ts > TAP > parseAddArgs > workspaces > define single dep of a single workspace > should return dependency of a workspace 1`] = `
 {
   add: Map(1) {
-    'workspace·app%2Fa' => Map(1) { 'foo' => { spec: Spec {foo@}, type: 'prod' } }
+    'workspace·app§a' => Map(1) { 'foo' => { spec: Spec {foo@}, type: 'prod' } }
   }
 }
 `
@@ -171,7 +171,7 @@ exports[`test/parse-add-remove-args.ts > TAP > parseAddArgs > workspaces > defin
 exports[`test/parse-add-remove-args.ts > TAP > parseAddArgs > workspaces > define single dep to multiple groups of workspaces > should return dependency to many groups of workspaces 1`] = `
 {
   add: Map(3) {
-    'workspace·utils%2Fc' => Map(1) { 'foo' => { spec: Spec {foo@}, type: 'prod' } },
+    'workspace·utils§c' => Map(1) { 'foo' => { spec: Spec {foo@}, type: 'prod' } },
     'workspace·foo' => Map(1) { 'foo' => { spec: Spec {foo@}, type: 'prod' } },
     'workspace·bar' => Map(1) { 'foo' => { spec: Spec {foo@}, type: 'prod' } }
   }
@@ -195,8 +195,8 @@ exports[`test/parse-add-remove-args.ts > TAP > parseRemoveArgs > single item > s
 exports[`test/parse-add-remove-args.ts > TAP > parseRemoveArgs > workspaces > multiple deps from a workspace group > should remove multiple dep from a single workspace group 1`] = `
 {
   remove: Map(2) {
-    'workspace·app%2Fb' => Set(2) { 'foo', 'bar' },
-    'workspace·app%2Fa' => Set(2) { 'foo', 'bar' }
+    'workspace·app§b' => Set(2) { 'foo', 'bar' },
+    'workspace·app§a' => Set(2) { 'foo', 'bar' }
   }
 }
 `
@@ -204,7 +204,7 @@ exports[`test/parse-add-remove-args.ts > TAP > parseRemoveArgs > workspaces > mu
 exports[`test/parse-add-remove-args.ts > TAP > parseRemoveArgs > workspaces > multiple deps from multiple workspace groups > should remove multiple dep from multiple workspace groups 1`] = `
 {
   remove: Map(3) {
-    'workspace·utils%2Fc' => Set(2) { 'foo', 'bar' },
+    'workspace·utils§c' => Set(2) { 'foo', 'bar' },
     'workspace·foo' => Set(2) { 'foo', 'bar' },
     'workspace·bar' => Set(2) { 'foo', 'bar' }
   }
@@ -212,7 +212,7 @@ exports[`test/parse-add-remove-args.ts > TAP > parseRemoveArgs > workspaces > mu
 `
 
 exports[`test/parse-add-remove-args.ts > TAP > parseRemoveArgs > workspaces > multiple deps of a single workspace > should remove multiple deps of workspace 1`] = `
-{ remove: Map(1) { 'workspace·utils%2Fc' => Set(2) { 'foo', 'bar' } } }
+{ remove: Map(1) { 'workspace·utils§c' => Set(2) { 'foo', 'bar' } } }
 `
 
 exports[`test/parse-add-remove-args.ts > TAP > parseRemoveArgs > workspaces > remove dep from root if no workspace defined > should remove dep from root 1`] = `
@@ -222,12 +222,12 @@ exports[`test/parse-add-remove-args.ts > TAP > parseRemoveArgs > workspaces > re
 exports[`test/parse-add-remove-args.ts > TAP > parseRemoveArgs > workspaces > single dep from a workspace group > should remove single dep from a single workspace group 1`] = `
 {
   remove: Map(2) {
-    'workspace·app%2Fb' => Set(1) { 'foo' },
-    'workspace·app%2Fa' => Set(1) { 'foo' }
+    'workspace·app§b' => Set(1) { 'foo' },
+    'workspace·app§a' => Set(1) { 'foo' }
   }
 }
 `
 
 exports[`test/parse-add-remove-args.ts > TAP > parseRemoveArgs > workspaces > single dep of a single workspace > should remove single dep of workspace 1`] = `
-{ remove: Map(1) { 'workspace·app%2Fa' => Set(1) { 'foo' } } }
+{ remove: Map(1) { 'workspace·app§a' => Set(1) { 'foo' } } }
 `

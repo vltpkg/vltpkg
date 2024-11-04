@@ -53,11 +53,11 @@ Map(3) {
     'foo' => { spec: Spec {foo@^1.0.0}, type: 'prod' },
     'bar' => { spec: Spec {bar@^2.0.0}, type: 'prod' }
   },
-  'workspace·packages%2Fa' => Map(2) {
+  'workspace·packages§a' => Map(2) {
     'bar' => { spec: Spec {bar@^1.0.0}, type: 'dev' },
     'baz' => { spec: Spec {baz@^1.0.0}, type: 'prod' }
   },
-  'workspace·packages%2Fb' => Map(2) {
+  'workspace·packages§b' => Map(2) {
     'a' => { spec: Spec {a@workspace:*}, type: 'prod' },
     'baz' => { spec: Spec {baz@^1.0.0}, type: 'prod' }
   }
@@ -68,8 +68,8 @@ exports[`test/ideal/get-importer-specs.ts > TAP > graph specs with workspaces an
 {
   add: Map(0) {},
   remove: Map(2) {
-    'workspace·packages%2Fa' => Set(1) { 'bar' },
-    'workspace·packages%2Fb' => Set(1) { 'a' }
+    'workspace·packages§a' => Set(1) { 'bar' },
+    'workspace·packages§b' => Set(1) { 'a' }
   }
 }
 `

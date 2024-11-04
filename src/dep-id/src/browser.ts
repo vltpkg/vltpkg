@@ -94,13 +94,18 @@ export const joinDepIDTuple = (list: DepIDTuple): DepID => {
 
 // allow @, but otherwise, escape everything urls do
 const encode = (s: string): string =>
-  encodeURIComponent(s).replaceAll('%40', '@')
+  encodeURIComponent(s)
+    .replaceAll('%40', '@')
+    .replaceAll('%2f', '§')
+    .replaceAll('%2F', '§')
 
 /**
  * turn a {@link DepID} into a {@link DepIDTuple}
  */
 export const splitDepID = (id: string): DepIDTuple => {
-  const [type, first = '', second, extra] = id.split(delimiter, 4)
+  const [type, first = '', second, extra] = id
+    .replaceAll('§', '/')
+    .split(delimiter, 4)
   const f = decodeURIComponent(first)
   switch (type) {
     case 'git':

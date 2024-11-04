@@ -103,8 +103,8 @@ exports[`test/lockfile/load.ts > TAP > load with custom git hosts > should load 
     importer: true,
     edgesOut: [
       Edge spec(foo@example:foo/bar) -prod-> to: Node {
-        id: 'git·example%3Afoo%2Fbar·',
-        location: './node_modules/.vlt/git·example%3Afoo%2Fbar·/node_modules/foo'
+        id: 'git·example%3Afoo§bar·',
+        location: './node_modules/.vlt/git·example%3Afoo§bar·/node_modules/foo'
       }
     ]
   }
@@ -217,8 +217,8 @@ exports[`test/lockfile/load.ts > TAP > load with custom scope registry > should 
     importer: true,
     edgesOut: [
       Edge spec(@myscope/foo@^1.0.0) -prod-> to: Node {
-        id: '··@myscope%2Ffoo@1.0.0',
-        location: './node_modules/.vlt/··@myscope%2Ffoo@1.0.0/node_modules/@myscope/foo'
+        id: '··@myscope§foo@1.0.0',
+        location: './node_modules/.vlt/··@myscope§foo@1.0.0/node_modules/@myscope/foo'
       }
     ]
   }
@@ -277,7 +277,7 @@ exports[`test/lockfile/load.ts > TAP > workspaces > must match snapshot 1`] = `
 [
   Node { id: 'file·.', location: '.', importer: true },
   Node {
-    id: 'workspace·packages%2Fb',
+    id: 'workspace·packages§b',
     location: './packages/b',
     importer: true,
     edgesOut: [
@@ -289,7 +289,7 @@ exports[`test/lockfile/load.ts > TAP > workspaces > must match snapshot 1`] = `
     ]
   },
   Node {
-    id: 'workspace·packages%2Fa',
+    id: 'workspace·packages§a',
     location: './packages/a',
     importer: true
   }
