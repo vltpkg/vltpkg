@@ -278,6 +278,11 @@ Object {
     "description": "Default \`dist-tag\` to install",
     "type": "string",
   },
+  "version": Object {
+    "description": "Print the version",
+    "short": "v",
+    "type": "boolean",
+  },
   "view": Object {
     "description": "Configures the output format for ls & query commands.",
     "hint": "output",

@@ -452,6 +452,13 @@ export const definition = j
   })
 
   .flag({
+    version: {
+      short: 'v',
+      description: 'Print the version',
+    },
+  })
+
+  .flag({
     help: {
       short: 'h',
       description: 'Print helpful information',

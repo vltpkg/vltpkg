@@ -241,6 +241,7 @@ More documentation available at <https://docs.vlt.sh>
                        devDependencies or optionalDependencies, but you want to
                        move it to be a non-optional production dependency.
 
+  -v --version         Print the version
   -h --help            Print helpful information
 `
 
