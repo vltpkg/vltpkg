@@ -1,18 +1,33 @@
-import * as fs from 'node:fs'
 import { dirname, resolve } from 'node:path'
+import {
+  statSync,
+  mkdirSync,
+  writeFileSync,
+  readFileSync,
+} from 'node:fs'
 
-const pkgdir = process.cwd()
-const { bin = {} } = JSON.parse(
-  fs.readFileSync(pkgdir + '/package.json'),
-)
+// This file runs via pnpm:devPreinstall so it cannot import
+// any dependencies.
 
-for (const b of Object.values(bin)) {
-  if (!b.startsWith('./dist')) continue
-  const bin = resolve(pkgdir, b)
-  try {
-    fs.statSync(bin)
-  } catch {
-    fs.mkdirSync(dirname(bin), { recursive: true })
-    fs.writeFileSync(bin, '')
+// Manually add any dirs that have package.json#bin scripts that get
+// linked to built dist/ files.
+const DIRS = ['infra/benchmark', 'src/cache-unzip', 'src/vlt']
+
+for (const [pkgdir, { bin = {} }] of DIRS.map(d => {
+  const dir = resolve(import.meta.dirname, '..', d)
+  const pkg = JSON.parse(
+    readFileSync(resolve(dir, 'package.json'), 'utf8'),
+  )
+  return [dir, pkg]
+})) {
+  for (const b of Object.values(bin)) {
+    if (!b.startsWith('./dist')) continue
+    const bin = resolve(pkgdir, b)
+    try {
+      statSync(bin)
+    } catch {
+      mkdirSync(dirname(bin), { recursive: true })
+      writeFileSync(bin, '')
+    }
   }
 }
