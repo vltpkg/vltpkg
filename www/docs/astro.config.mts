@@ -34,6 +34,7 @@ export default defineConfig({
       social: {
         github: 'https://github.com/vltpkg/vltpkg',
         discord: 'https://discord.gg/vltpkg',
+        twitter: 'https://twitter.com/vltpkg',
       },
       customCss: [
         '@fontsource-variable/manrope/index.css',
@@ -106,6 +107,10 @@ export default defineConfig({
           label: 'Workspaces',
           collapsed: true,
           autogenerate: { directory: PACKAGES },
+        },
+        {
+          label: 'Serverless Registry',
+          link: 'https://www.vlt.sh/serverless-registry',
         },
       ],
     }),
