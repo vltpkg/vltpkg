@@ -3,3 +3,7 @@
 # @vltpkg/vlt
 
 The command line interface for `vlt`.
+
+## Documentation
+
+Visit [docs.vlt.sh](https://docs.vlt.sh) to see the full documentation.

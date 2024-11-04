@@ -123,5 +123,8 @@
         "default": "./dist/esm/types.js"
       }
     }
-  }
+  },
+  "keywords": [
+    "vltpkg"
+  ]
 }
