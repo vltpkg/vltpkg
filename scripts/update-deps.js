@@ -1,31 +1,26 @@
-import { readFileSync, writeFileSync, readdirSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { parseArgs } from 'node:util'
 import { spawnSync } from 'node:child_process'
-import * as yaml from 'yaml'
-import { resolveConfig, format as prettier } from 'prettier'
 import { packument } from '../src/package-info/dist/esm/index.js'
 import { pickManifest } from '../src/pick-manifest/dist/esm/index.js'
 import * as semver from '../src/semver/dist/esm/index.js'
+import {
+  getWorkspaces as getWorkspaces_,
+  configPath,
+  getConfig,
+  writeYaml,
+  ROOT,
+  readPkgJson,
+  writeJson,
+} from './utils.js'
 
-const ROOT = resolve(import.meta.dirname, '..')
-
-const parseWS = path => [
-  resolve(path, 'package.json'),
-  JSON.parse(readFileSync(resolve(path, 'package.json'), 'utf8')),
-]
-
-const getWorkspaces = config =>
-  new Map([
-    parseWS(ROOT),
-    ...config.packages.flatMap(p =>
-      readdirSync(resolve(ROOT, p.replaceAll('*', '')), {
-        withFileTypes: true,
-      })
-        .filter(w => w.isDirectory())
-        .map(w => parseWS(resolve(w.parentPath, w.name))),
-    ),
-  ])
+const getWorkspaces = () =>
+  new Map(
+    getWorkspaces_().map(path => [
+      resolve(path, 'package.json'),
+      readPkgJson,
+    ]),
+  )
 
 const spawn = (cmd, args, opts = {}) =>
   spawnSync(cmd, args, {
@@ -42,18 +37,6 @@ const spawnRes = (cmd, args) =>
     .stdout.trim()
     .split('\n')
     .map(l => l.trim())
-
-const format = async (source, filepath) =>
-  prettier(source, {
-    ...(await resolveConfig(filepath)),
-    filepath,
-  })
-
-const writeYaml = async (p, data) =>
-  writeFileSync(p, await format(yaml.stringify(data), p))
-
-const writeJson = async (p, data) =>
-  writeFileSync(p, JSON.stringify(data, null, 2) + '\n')
 
 const shouldReset = (oldSpec, newSpec) => {
   try {
@@ -148,9 +131,8 @@ const main = async ({ latest, force }) => {
     }
   }
 
-  const configPath = resolve(ROOT, 'pnpm-workspace.yaml')
-  const config = yaml.parse(readFileSync(configPath, 'utf8'))
-  const previousPackages = getWorkspaces(config)
+  const config = getConfig()
+  const previousPackages = getWorkspaces()
 
   // pnpm does not provide a way to update catalogs so we do it manually
   const newConfig = await updateCatalog(config, { latest })
@@ -165,7 +147,7 @@ const main = async ({ latest, force }) => {
     'update',
   ])
 
-  resetDependencies(previousPackages, getWorkspaces(config), {
+  resetDependencies(previousPackages, getWorkspaces(), {
     latest,
   })
 

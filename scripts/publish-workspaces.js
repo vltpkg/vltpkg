@@ -1,14 +1,14 @@
 import { spawnSync as spawnSync_ } from 'node:child_process'
-import { writeFileSync, readFileSync } from 'node:fs'
+import { readFileSync } from 'node:fs'
 import { join, relative, sep } from 'node:path'
 import * as semver from 'semver'
 import assert from 'node:assert'
 import { parseArgs } from 'node:util'
 import { read } from 'read'
+import { ROOT, writeJson } from './utils.js'
 
 const SRC = 'src'
 const DATE_ID = `${Date.now()}`
-const ROOT = join(import.meta.dirname, '..')
 const TOKEN_NAME = 'SOME_ARBITRARY_TOKEN_NAME'
 const OP_TOKEN_KEY = 'global'
 const COMMIT_MESSAGE = 'chore: publish all workspaces'
@@ -71,7 +71,9 @@ const spawnSync = (cmd, args, { token, ...opts } = {}) => {
     shell: true,
     cwd: ROOT,
   })
-  res.stdout = res.stdout.trim()
+  if (res.stdout) {
+    res.stdout = res.stdout.trim()
+  }
   return res
 }
 
@@ -119,6 +121,9 @@ const getToken = () => {
   ]
   pnpm(config('set'))
   cleanup.add(() => pnpm(config('delete')))
+  if (process.env.CI) {
+    return process.env.WORKSPACES_PUBLISH_TOKEN
+  }
   const { sections, fields } = JSON.parse(
     spawnSync('op', [
       'item',
@@ -173,7 +178,7 @@ const main = async () => {
       version.prerelease = [version.prerelease[0], DATE_ID]
       pj.version = version.format()
 
-      writeFileSync(path, JSON.stringify(pj, null, 2) + '\n')
+      writeJson(path, pj)
       cleanup.add(
         () => git(['checkout', `"${relative(ROOT, path)}"`]),
         { keepOnSuccess: true },
@@ -197,13 +202,15 @@ const main = async () => {
 
   console.table(Object.fromEntries(changes))
   console.log(`whoami:${whoami} dry-run:${!FOR_REAL}`)
-  assert(
-    await read({
-      prompt: `Ok to continue?`,
-      default: 'y',
-    }).then(r => r.trim().toLowerCase() === 'y'),
-    new Error('canceled'),
-  )
+  if (!process.env.CI) {
+    assert(
+      await read({
+        prompt: `Ok to continue?`,
+        default: 'y',
+      }).then(r => r.trim().toLowerCase() === 'y'),
+      new Error('canceled'),
+    )
+  }
 
   pnpm(
     [
