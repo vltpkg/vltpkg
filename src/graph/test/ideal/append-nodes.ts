@@ -27,11 +27,18 @@ t.test('append a new node to a graph from a registry', async t => {
   const fooManifest = {
     name: 'foo',
     version: '1.0.0',
+    optionalDependencies: {
+      baz: '^1.0.0',
+    },
     dependencies: {
       bar: '^1.0.0',
       bundled: '*',
     },
     bundleDependencies: ['bundled'],
+  }
+  const bazManifest: Manifest = {
+    name: 'baz',
+    version: '1.0.0',
   }
   const barManifest: Manifest = {
     name: 'bar',
@@ -67,6 +74,8 @@ t.test('append a new node to a graph from a registry', async t => {
       switch (spec.name) {
         case 'metaborked':
           return metaborkedManifest
+        case 'baz':
+          return bazManifest
         case 'bar':
           return barManifest
         case 'foo':
@@ -116,6 +125,13 @@ t.test('append a new node to a graph from a registry', async t => {
     'bar',
     'should have added to inventory transitive dependencies',
   )
+  const bazNodeSet = graph.nodesByName.get('baz')
+  t.match(
+    bazNodeSet,
+    new Set([{ id: joinDepIDTuple(['registry', '', 'baz@1.0.0']) }]),
+    'got baz nodes',
+  )
+  t.equal(bazNodeSet?.size, 1)
 
   await appendNodes(
     packageInfo,
