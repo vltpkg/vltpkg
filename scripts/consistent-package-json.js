@@ -221,6 +221,7 @@ const fixDeps = async (ws, { catalog }) => {
 const fixScripts = async ws => {
   Object.assign(
     ws.pj.scripts,
+    { pwd: 'echo PWD:$PWD' },
     ws.pj.devDependencies.prettier ?
       {
         format: `prettier --write . --log-level warn --ignore-path ${ws.relDir}.prettierignore --cache`,

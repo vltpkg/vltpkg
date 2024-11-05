@@ -1,10 +1,15 @@
 import { PackageJson } from '@vltpkg/package-json'
-import { run, runFG } from '@vltpkg/run'
+import { run, runFG, type RunResult } from '@vltpkg/run'
 import { type LoadedConfig } from '../config/index.js'
 import { ExecCommand, type ExecResult } from '../exec-command.js'
 import { commandUsage } from '../config/usage.js'
-import { type CliCommandUsage, type CliCommandFn } from '../types.js'
+import {
+  type CliCommandUsage,
+  type CliCommandFn,
+  type CliCommandView,
+} from '../types.js'
 import { stdout } from '../output.js'
+import assert from 'assert'
 
 export const usage: CliCommandUsage = () =>
   commandUsage({
@@ -16,12 +21,21 @@ export const usage: CliCommandUsage = () =>
                   the script process.`,
   })
 
+export const view: CliCommandView = {
+  human: () => {
+    let res = 'Scripts available:'
+    res += ''
+
+    return res
+  },
+}
+
 class RunCommand extends ExecCommand<typeof run, typeof runFG> {
   constructor(conf: LoadedConfig) {
     super(conf, run, runFG)
   }
 
-  defaultArg0(): string | undefined {
+  defaultArg0(): undefined {
     // called when there's no arg0, with a single workspace or root
     const ws = this.monorepo?.values().next().value
     const cwd = ws?.fullpath ?? this.projectRoot
@@ -32,16 +46,19 @@ class RunCommand extends ExecCommand<typeof run, typeof runFG> {
     return undefined
   }
 
-  noArgsMulti(): void {
+  override noArgsMulti() {
     const m = this.monorepo
-    /* c8 ignore next - already guarded */
-    if (!m) return
+    assert(m)
 
     stdout('Scripts available:')
     for (const [ws, scripts] of m.runSync(
       ws => ws.manifest.scripts,
     )) {
       stdout(ws.path, scripts)
+    }
+
+    return {
+      x: 'ok',
     }
   }
 }

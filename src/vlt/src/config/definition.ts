@@ -9,7 +9,6 @@ const canonicalCommands = {
   'install-exec': 'install-exec',
   install: 'install',
   list: 'list',
-  ls: 'ls',
   pkg: 'pkg',
   query: 'query',
   'run-exec': 'run-exec',

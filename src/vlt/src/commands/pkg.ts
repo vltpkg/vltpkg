@@ -40,10 +40,43 @@ export const usage: CliCommandUsage = () =>
     },
   })
 
-export const command: CliCommandFn = async conf => {
+export const command: CliCommandFn<unknown> = async conf => {
+  if (conf.options.monorepo) {
+    const paths = conf.get('workspace')
+    const groups = conf.get('workspace-group')
+    const recursive = conf.get('recursive')
+    if (paths?.length || groups?.length || recursive) {
+      const loadedMonorepo = conf.options.monorepo.load({
+        paths,
+        groups,
+      })
+      if (!loadedMonorepo.size) {
+        throw error('no workspaces were found', {
+          code: 'EUNKNOWN',
+          wanted: {
+            paths,
+            groups,
+            recursive,
+          },
+        })
+      }
+      const res = [...loadedMonorepo.values()]
+        .map(w => run(conf, w.fullpath)?.result)
+        .filter(v => v !== undefined)
+      return res.length ?
+          {
+            result: res,
+          }
+        : undefined
+    }
+  }
+  return run(conf, conf.projectRoot)
+}
+
+const run = (conf: LoadedConfig, dir: string) => {
   const [sub, ...args] = conf.positionals
   const pkg = conf.options.packageJson
-  const mani = pkg.read(conf.projectRoot)
+  const mani = pkg.read(dir)
 
   switch (sub) {
     case 'get':
@@ -51,12 +84,12 @@ export const command: CliCommandFn = async conf => {
     case 'pick':
       return pick(mani, args)
     case 'set':
-      return set(conf, mani, pkg, args)
+      return set(dir, mani, pkg, args)
     case 'rm':
     case 'remove':
     case 'unset':
     case 'delete':
-      return rm(conf, mani, pkg, args)
+      return rm(dir, mani, pkg, args)
     default: {
       throw error('Unrecognized pkg command', {
         code: 'EUSAGE',
@@ -99,7 +132,7 @@ const pick = (mani: Manifest, args: string[]) => {
 }
 
 const set = (
-  conf: LoadedConfig,
+  dir: string,
   mani: Manifest,
   pkg: PackageJson,
   args: string[],
@@ -122,11 +155,11 @@ const set = (
     )
   }, mani)
 
-  pkg.write(conf.projectRoot, res)
+  pkg.write(dir, res)
 }
 
 const rm = (
-  conf: LoadedConfig,
+  dir: string,
   mani: Manifest,
   pkg: PackageJson,
   args: string[],
@@ -140,5 +173,5 @@ const rm = (
     return acc
   }, mani)
 
-  pkg.write(conf.projectRoot, res)
+  pkg.write(dir, res)
 }

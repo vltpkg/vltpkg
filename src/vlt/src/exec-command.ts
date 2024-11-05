@@ -16,12 +16,13 @@ import {
   type RunResult,
   isRunResult,
 } from '@vltpkg/run'
-import { Monorepo, type Workspace } from '@vltpkg/workspaces'
+import { type Monorepo, type Workspace } from '@vltpkg/workspaces'
 import { ansiToAnsi } from 'ansi-to-pre'
 import chalk from 'chalk'
 import { type LoadedConfig } from './config/index.js'
 import { stdout, stderr } from './output.js'
 import { type SpawnResultNoStdio } from '@vltpkg/promise-spawn'
+import assert from 'node:assert'
 
 export type RunnerBG = typeof exec | typeof run | typeof runExec
 export type RunnerFG = typeof execFG | typeof runExecFG | typeof runFG
@@ -29,7 +30,7 @@ export type RunnerOptions = ExecOptions & RunExecOptions & RunOptions
 export type ExecResult =
   | undefined
   | SpawnResultNoStdio
-  | Record<string, RunResult>
+  | { workspace: Workspace; result: RunResult }[]
 
 export class ExecCommand<B extends RunnerBG, F extends RunnerFG> {
   bg: B
@@ -52,14 +53,7 @@ export class ExecCommand<B extends RunnerBG, F extends RunnerFG> {
     } = conf
     this.arg0 = arg0
     this.args = args
-
-    const paths = conf.get('workspace')
-    const groups = conf.get('workspace-group')
-    const recursive = conf.get('recursive')
-    this.monorepo =
-      paths?.length || groups?.length || recursive ?
-        Monorepo.load(projectRoot, { load: { paths, groups } })
-      : undefined
+    this.monorepo = conf.options.monorepo
     this.spaces = this.monorepo?.size ?? 1
     this.projectRoot = projectRoot
   }
@@ -69,7 +63,6 @@ export class ExecCommand<B extends RunnerBG, F extends RunnerFG> {
       const arg = this.fgArg()
       if (!arg) return
       const result = await this.fg(arg)
-      stdout(result)
       return result
     }
     const m = this.monorepo
@@ -81,8 +74,7 @@ export class ExecCommand<B extends RunnerBG, F extends RunnerFG> {
     }
     const arg0 = this.arg0
     if (!arg0) {
-      this.noArgsMulti()
-      return
+      return this.noArgsMulti()
     }
     // run across workspaces
     let failed = false
@@ -105,22 +97,17 @@ export class ExecCommand<B extends RunnerBG, F extends RunnerFG> {
       return result
     })
 
-    const results: Record<string, RunResult> = {}
-    for (const [ws, result] of resultMap) {
-      if (result.status === 0 && result.signal === null) {
-        result.stdout = ''
-        result.stderr = ''
-      }
-      results[ws.path] = result
-    }
-    return results
+    return [...resultMap.entries()].map(([workspace, result]) => ({
+      workspace,
+      result,
+    }))
   }
 
   printResult(ws: Workspace, result: RunResult) {
     if (result.status === 0 && result.signal === null) {
-      stdout(ws.path, 'ok')
+      stderr(ws.path, 'ok')
     } else {
-      stdout(chalk.bgWhiteBright.black.bold(ws.path + ' failure'), {
+      stderr(chalk.bgWhiteBright.black.bold(ws.path + ' failure'), {
         status: result.status,
         signal: result.signal,
       })
@@ -154,14 +141,12 @@ export class ExecCommand<B extends RunnerBG, F extends RunnerFG> {
     if (!arg0) {
       return undefined
     }
-
     return {
       cwd,
-      /* c8 ignore next - already guarded */
       arg0,
       args: this.args,
       projectRoot: this.projectRoot,
-      packageJson: this.monorepo?.packageJson,
+      packageJson: this.conf.options.packageJson,
       'script-shell':
         this.arg0 ? this.conf.get('script-shell') : false,
     }
@@ -169,12 +154,10 @@ export class ExecCommand<B extends RunnerBG, F extends RunnerFG> {
 
   /** If this returns undefined, then nothing to do */
   bgArg(ws: Workspace): RunnerOptions {
-    /* c8 ignore start - already guarded */
-    if (!this.arg0)
-      throw error(
-        'Cannot spawn interactive shells in multiple workspaces',
-      )
-    /* c8 ignore stop */
+    assert(
+      this.arg0,
+      error('Cannot spawn interactive shells in multiple workspaces'),
+    )
 
     return {
       cwd: ws.fullpath,
@@ -189,7 +172,7 @@ export class ExecCommand<B extends RunnerBG, F extends RunnerFG> {
   }
 
   // overridden in `vlt run` to print available scripts
-  noArgsMulti() {
+  noArgsMulti(): Record<string, Record<string, string>> {
     throw error(
       'Cannot spawn interactive shells in multiple workspaces',
     )

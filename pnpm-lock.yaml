@@ -175,7 +175,7 @@ importers:
     dependencies:
       pacote:
         specifier: 'catalog:'
-        version: 18.0.6
+        version: 18.0.6(supports-color@9.4.0)
     devDependencies:
       '@eslint/js':
         specifier: 'catalog:'
@@ -197,7 +197,7 @@ importers:
         version: 3.3.3
       tap:
         specifier: 'catalog:'
-        version: 21.0.1(@types/node@22.5.0)(@types/react@18.3.11)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4)
+        version: 21.0.1(@types/node@22.5.0)(@types/react@18.3.11)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@9.4.0)(typescript@5.5.4)
       tshy:
         specifier: 'catalog:'
         version: 3.0.2
@@ -246,7 +246,7 @@ importers:
         version: 3.3.3
       tap:
         specifier: 'catalog:'
-        version: 21.0.1(@types/node@22.5.0)(@types/react@18.3.11)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4)
+        version: 21.0.1(@types/node@22.5.0)(@types/react@18.3.11)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@9.4.0)(typescript@5.5.4)
       tshy:
         specifier: 'catalog:'
         version: 3.0.2
@@ -292,7 +292,7 @@ importers:
         version: 3.3.3
       tap:
         specifier: 'catalog:'
-        version: 21.0.1(@types/node@22.5.0)(@types/react@18.3.11)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4)
+        version: 21.0.1(@types/node@22.5.0)(@types/react@18.3.11)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@9.4.0)(typescript@5.5.4)
       tshy:
         specifier: 'catalog:'
         version: 3.0.2
@@ -329,7 +329,7 @@ importers:
         version: 3.3.3
       tap:
         specifier: 'catalog:'
-        version: 21.0.1(@types/node@22.5.0)(@types/react@18.3.11)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4)
+        version: 21.0.1(@types/node@22.5.0)(@types/react@18.3.11)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@9.4.0)(typescript@5.5.4)
       tshy:
         specifier: 'catalog:'
         version: 3.0.2
@@ -369,7 +369,7 @@ importers:
         version: 3.3.3
       tap:
         specifier: 'catalog:'
-        version: 21.0.1(@types/node@22.5.0)(@types/react@18.3.11)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4)
+        version: 21.0.1(@types/node@22.5.0)(@types/react@18.3.11)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@9.4.0)(typescript@5.5.4)
       tshy:
         specifier: 'catalog:'
         version: 3.0.2
@@ -399,7 +399,7 @@ importers:
         version: 3.3.3
       tap:
         specifier: 'catalog:'
-        version: 21.0.1(@types/node@22.5.0)(@types/react@18.3.11)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4)
+        version: 21.0.1(@types/node@22.5.0)(@types/react@18.3.11)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@9.4.0)(typescript@5.5.4)
       tshy:
         specifier: 'catalog:'
         version: 3.0.2
@@ -429,7 +429,7 @@ importers:
         version: 3.3.3
       tap:
         specifier: 'catalog:'
-        version: 21.0.1(@types/node@22.5.0)(@types/react@18.3.11)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4)
+        version: 21.0.1(@types/node@22.5.0)(@types/react@18.3.11)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@9.4.0)(typescript@5.5.4)
       tshy:
         specifier: 'catalog:'
         version: 3.0.2
@@ -459,7 +459,7 @@ importers:
         version: 3.3.3
       tap:
         specifier: 'catalog:'
-        version: 21.0.1(@types/node@22.5.0)(@types/react@18.3.11)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4)
+        version: 21.0.1(@types/node@22.5.0)(@types/react@18.3.11)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@9.4.0)(typescript@5.5.4)
       tshy:
         specifier: 'catalog:'
         version: 3.0.2
@@ -529,7 +529,7 @@ importers:
         version: 3.3.3
       tap:
         specifier: 'catalog:'
-        version: 21.0.1(@types/node@22.5.0)(@types/react@18.3.11)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4)
+        version: 21.0.1(@types/node@22.5.0)(@types/react@18.3.11)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@9.4.0)(typescript@5.5.4)
       tshy:
         specifier: 'catalog:'
         version: 3.0.2
@@ -559,7 +559,7 @@ importers:
         version: 3.3.3
       tap:
         specifier: 'catalog:'
-        version: 21.0.1(@types/node@22.5.0)(@types/react@18.3.11)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4)
+        version: 21.0.1(@types/node@22.5.0)(@types/react@18.3.11)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@9.4.0)(typescript@5.5.4)
       tshy:
         specifier: 'catalog:'
         version: 3.0.2
@@ -644,7 +644,7 @@ importers:
         version: 3.3.3
       tap:
         specifier: 'catalog:'
-        version: 21.0.1(@types/node@22.5.0)(@types/react@18.3.11)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4)
+        version: 21.0.1(@types/node@22.5.0)(@types/react@18.3.11)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@9.4.0)(typescript@5.5.4)
       tar:
         specifier: 'catalog:'
         version: 7.4.3
@@ -838,13 +838,13 @@ importers:
         version: 9.9.0(jiti@1.21.6)
       pacote:
         specifier: 'catalog:'
-        version: 18.0.6
+        version: 18.0.6(supports-color@9.4.0)
       prettier:
         specifier: 'catalog:'
         version: 3.3.3
       tap:
         specifier: 'catalog:'
-        version: 21.0.1(@types/node@22.5.0)(@types/react@18.3.11)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4)
+        version: 21.0.1(@types/node@22.5.0)(@types/react@18.3.11)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@9.4.0)(typescript@5.5.4)
       tshy:
         specifier: 'catalog:'
         version: 3.0.2
@@ -884,7 +884,7 @@ importers:
         version: 3.3.3
       tap:
         specifier: 'catalog:'
-        version: 21.0.1(@types/node@22.5.0)(@types/react@18.3.11)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4)
+        version: 21.0.1(@types/node@22.5.0)(@types/react@18.3.11)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@9.4.0)(typescript@5.5.4)
       tshy:
         specifier: 'catalog:'
         version: 3.0.2
@@ -933,7 +933,7 @@ importers:
         version: 3.3.3
       tap:
         specifier: 'catalog:'
-        version: 21.0.1(@types/node@22.5.0)(@types/react@18.3.11)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4)
+        version: 21.0.1(@types/node@22.5.0)(@types/react@18.3.11)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@9.4.0)(typescript@5.5.4)
       tshy:
         specifier: 'catalog:'
         version: 3.0.2
@@ -970,7 +970,7 @@ importers:
         version: 1.8.2
       tap:
         specifier: 'catalog:'
-        version: 21.0.1(@types/node@22.5.0)(@types/react@18.3.11)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4)
+        version: 21.0.1(@types/node@22.5.0)(@types/react@18.3.11)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@9.4.0)(typescript@5.5.4)
       tshy:
         specifier: 'catalog:'
         version: 3.0.2
@@ -1019,7 +1019,7 @@ importers:
         version: 3.3.3
       tap:
         specifier: 'catalog:'
-        version: 21.0.1(@types/node@22.5.0)(@types/react@18.3.11)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4)
+        version: 21.0.1(@types/node@22.5.0)(@types/react@18.3.11)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@9.4.0)(typescript@5.5.4)
       tshy:
         specifier: 'catalog:'
         version: 3.0.2
@@ -1074,7 +1074,7 @@ importers:
         version: 3.3.3
       tap:
         specifier: 'catalog:'
-        version: 21.0.1(@types/node@22.5.0)(@types/react@18.3.11)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4)
+        version: 21.0.1(@types/node@22.5.0)(@types/react@18.3.11)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@9.4.0)(typescript@5.5.4)
       tshy:
         specifier: 'catalog:'
         version: 3.0.2
@@ -1102,7 +1102,7 @@ importers:
         version: 3.3.3
       tap:
         specifier: 'catalog:'
-        version: 21.0.1(@types/node@22.5.0)(@types/react@18.3.11)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4)
+        version: 21.0.1(@types/node@22.5.0)(@types/react@18.3.11)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@9.4.0)(typescript@5.5.4)
       tshy:
         specifier: 'catalog:'
         version: 3.0.2
@@ -1145,7 +1145,7 @@ importers:
         version: 3.3.3
       tap:
         specifier: 'catalog:'
-        version: 21.0.1(@types/node@22.5.0)(@types/react@18.3.11)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4)
+        version: 21.0.1(@types/node@22.5.0)(@types/react@18.3.11)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@9.4.0)(typescript@5.5.4)
       tshy:
         specifier: 'catalog:'
         version: 3.0.2
@@ -1191,7 +1191,7 @@ importers:
         version: 3.3.3
       tap:
         specifier: 'catalog:'
-        version: 21.0.1(@types/node@22.5.0)(@types/react@18.3.11)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4)
+        version: 21.0.1(@types/node@22.5.0)(@types/react@18.3.11)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@9.4.0)(typescript@5.5.4)
       tshy:
         specifier: 'catalog:'
         version: 3.0.2
@@ -1237,7 +1237,7 @@ importers:
         version: 7.6.3
       tap:
         specifier: 'catalog:'
-        version: 21.0.1(@types/node@22.5.0)(@types/react@18.3.11)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4)
+        version: 21.0.1(@types/node@22.5.0)(@types/react@18.3.11)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@9.4.0)(typescript@5.5.4)
       tshy:
         specifier: 'catalog:'
         version: 3.0.2
@@ -1280,7 +1280,7 @@ importers:
         version: 3.3.3
       tap:
         specifier: 'catalog:'
-        version: 21.0.1(@types/node@22.5.0)(@types/react@18.3.11)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4)
+        version: 21.0.1(@types/node@22.5.0)(@types/react@18.3.11)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@9.4.0)(typescript@5.5.4)
       tshy:
         specifier: 'catalog:'
         version: 3.0.2
@@ -1326,13 +1326,13 @@ importers:
         version: 2.1.1
       pacote:
         specifier: 'catalog:'
-        version: 18.0.6
+        version: 18.0.6(supports-color@9.4.0)
       prettier:
         specifier: 'catalog:'
         version: 3.3.3
       tap:
         specifier: 'catalog:'
-        version: 21.0.1(@types/node@22.5.0)(@types/react@18.3.11)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4)
+        version: 21.0.1(@types/node@22.5.0)(@types/react@18.3.11)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@9.4.0)(typescript@5.5.4)
       tshy:
         specifier: 'catalog:'
         version: 3.0.2
@@ -1366,7 +1366,7 @@ importers:
         version: 3.3.3
       tap:
         specifier: 'catalog:'
-        version: 21.0.1(@types/node@22.5.0)(@types/react@18.3.11)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4)
+        version: 21.0.1(@types/node@22.5.0)(@types/react@18.3.11)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@9.4.0)(typescript@5.5.4)
       tshy:
         specifier: 'catalog:'
         version: 3.0.2
@@ -1445,6 +1445,9 @@ importers:
       serve-handler:
         specifier: ^6.1.5
         version: 6.1.6
+      supports-color:
+        specifier: ^9.4.0
+        version: 9.4.0
       walk-up-path:
         specifier: 'catalog:'
         version: 4.0.0
@@ -1466,13 +1469,13 @@ importers:
         version: 6.1.4
       eslint:
         specifier: 'catalog:'
-        version: 9.9.0(jiti@1.21.6)
+        version: 9.9.0(jiti@1.21.6)(supports-color@9.4.0)
       prettier:
         specifier: 'catalog:'
         version: 3.3.3
       tap:
         specifier: 'catalog:'
-        version: 21.0.1(@types/node@22.5.0)(@types/react@18.3.11)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4)
+        version: 21.0.1(@types/node@22.5.0)(@types/react@18.3.11)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@9.4.0)(typescript@5.5.4)
       tshy:
         specifier: 'catalog:'
         version: 3.0.2
@@ -1481,7 +1484,7 @@ importers:
         version: 5.5.4
       typescript-eslint:
         specifier: 'catalog:'
-        version: 8.2.0(eslint@9.9.0(jiti@1.21.6))(typescript@5.5.4)
+        version: 8.2.0(eslint@9.9.0(jiti@1.21.6)(supports-color@9.4.0))(supports-color@9.4.0)(typescript@5.5.4)
 
   src/which:
     dependencies:
@@ -1506,7 +1509,7 @@ importers:
         version: 3.3.3
       tap:
         specifier: 'catalog:'
-        version: 21.0.1(@types/node@22.5.0)(@types/react@18.3.11)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4)
+        version: 21.0.1(@types/node@22.5.0)(@types/react@18.3.11)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@9.4.0)(typescript@5.5.4)
       tshy:
         specifier: 'catalog:'
         version: 3.0.2
@@ -1567,7 +1570,7 @@ importers:
         version: 3.3.3
       tap:
         specifier: 'catalog:'
-        version: 21.0.1(@types/node@22.5.0)(@types/react@18.3.11)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4)
+        version: 21.0.1(@types/node@22.5.0)(@types/react@18.3.11)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@9.4.0)(typescript@5.5.4)
       tshy:
         specifier: 'catalog:'
         version: 3.0.2
@@ -1597,7 +1600,7 @@ importers:
         version: 3.3.3
       tap:
         specifier: 'catalog:'
-        version: 21.0.1(@types/node@22.5.0)(@types/react@18.3.11)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4)
+        version: 21.0.1(@types/node@22.5.0)(@types/react@18.3.11)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@9.4.0)(typescript@5.5.4)
       tshy:
         specifier: 'catalog:'
         version: 3.0.2
@@ -6930,6 +6933,10 @@ packages:
     resolution: {integrity: sha512-qpCAvRl9stuOHveKsn7HncJRvv501qIacKzQlO/+Lwxc9+0q2wLyv4Dfvt80/DPn2pqOBsJdDiogXGR9+OvwRw==}
     engines: {node: '>=8'}
 
+  supports-color@9.4.0:
+    resolution: {integrity: sha512-VL+lNrEoIXww1coLPOmiEmK/0sGigko5COxI09KzHc2VJXJsQ37UaQ+8quuxjDeA7+KnLGTWRyOXSLLR2Wb4jw==}
+    engines: {node: '>=12'}
+
   supports-preserve-symlinks-flag@1.0.0:
     resolution: {integrity: sha512-ot0WnXS9fgdkgIcePe6RHNk1WA8+muPa6cSjeR3V8K27q9BB1rTE3R1p7Hv0z1ZyAc8s6Vvv8DIyWf681MAt0w==}
     engines: {node: '>= 0.4'}
@@ -7931,7 +7938,7 @@ snapshots:
   '@astrojs/telemetry@3.1.0':
     dependencies:
       ci-info: 4.0.0
-      debug: 4.3.7
+      debug: 4.3.7(supports-color@9.4.0)
       dlv: 1.1.3
       dset: 3.1.4
       is-docker: 3.0.0
@@ -7980,7 +7987,7 @@ snapshots:
       '@babel/traverse': 7.25.7
       '@babel/types': 7.25.7
       convert-source-map: 2.0.0
-      debug: 4.3.7
+      debug: 4.3.7(supports-color@9.4.0)
       gensync: 1.0.0-beta.2
       json5: 2.2.3
       semver: 6.3.1
@@ -8245,7 +8252,7 @@ snapshots:
       '@babel/parser': 7.25.7
       '@babel/template': 7.25.7
       '@babel/types': 7.25.7
-      debug: 4.3.7
+      debug: 4.3.7(supports-color@9.4.0)
       globals: 11.12.0
     transitivePeerDependencies:
       - supports-color
@@ -8538,6 +8545,11 @@ snapshots:
   '@esbuild/win32-x64@0.24.0':
     optional: true
 
+  '@eslint-community/eslint-utils@4.4.0(eslint@9.9.0(jiti@1.21.6)(supports-color@9.4.0))':
+    dependencies:
+      eslint: 9.9.0(jiti@1.21.6)(supports-color@9.4.0)
+      eslint-visitor-keys: 3.4.3
+
   '@eslint-community/eslint-utils@4.4.0(eslint@9.9.0(jiti@1.21.6))':
     dependencies:
       eslint: 9.9.0(jiti@1.21.6)
@@ -8545,18 +8557,18 @@ snapshots:
 
   '@eslint-community/regexpp@4.11.0': {}
 
-  '@eslint/config-array@0.17.1':
+  '@eslint/config-array@0.17.1(supports-color@9.4.0)':
     dependencies:
       '@eslint/object-schema': 2.1.4
-      debug: 4.3.7
+      debug: 4.3.7(supports-color@9.4.0)
       minimatch: 3.1.2
     transitivePeerDependencies:
       - supports-color
 
-  '@eslint/eslintrc@3.1.0':
+  '@eslint/eslintrc@3.1.0(supports-color@9.4.0)':
     dependencies:
       ajv: 6.12.6
-      debug: 4.3.7
+      debug: 4.3.7(supports-color@9.4.0)
       espree: 10.1.0
       globals: 14.0.0
       ignore: 5.3.2
@@ -8841,13 +8853,13 @@ snapshots:
 
   '@nolyfill/is-core-module@1.0.39': {}
 
-  '@npmcli/agent@2.2.2':
+  '@npmcli/agent@2.2.2(supports-color@9.4.0)':
     dependencies:
-      agent-base: 7.1.1
-      http-proxy-agent: 7.0.2
-      https-proxy-agent: 7.0.5
+      agent-base: 7.1.1(supports-color@9.4.0)
+      http-proxy-agent: 7.0.2(supports-color@9.4.0)
+      https-proxy-agent: 7.0.5(supports-color@9.4.0)
       lru-cache: 10.4.3
-      socks-proxy-agent: 8.0.4
+      socks-proxy-agent: 8.0.4(supports-color@9.4.0)
     transitivePeerDependencies:
       - supports-color
 
@@ -8894,12 +8906,12 @@ snapshots:
 
   '@npmcli/redact@2.0.1': {}
 
-  '@npmcli/run-script@8.1.0':
+  '@npmcli/run-script@8.1.0(supports-color@9.4.0)':
     dependencies:
       '@npmcli/node-gyp': 3.0.0
       '@npmcli/package-json': 5.2.0
       '@npmcli/promise-spawn': 7.0.2
-      node-gyp: 10.2.0
+      node-gyp: 10.2.0(supports-color@9.4.0)
       proc-log: 4.2.0
       which: 4.0.0
     transitivePeerDependencies:
@@ -9380,21 +9392,21 @@ snapshots:
 
   '@sigstore/protobuf-specs@0.3.2': {}
 
-  '@sigstore/sign@2.3.2':
+  '@sigstore/sign@2.3.2(supports-color@9.4.0)':
     dependencies:
       '@sigstore/bundle': 2.3.2
       '@sigstore/core': 1.1.0
       '@sigstore/protobuf-specs': 0.3.2
-      make-fetch-happen: 13.0.1
+      make-fetch-happen: 13.0.1(supports-color@9.4.0)
       proc-log: 4.2.0
       promise-retry: 2.0.1
     transitivePeerDependencies:
       - supports-color
 
-  '@sigstore/tuf@2.3.4':
+  '@sigstore/tuf@2.3.4(supports-color@9.4.0)':
     dependencies:
       '@sigstore/protobuf-specs': 0.3.2
-      tuf-js: 2.2.1
+      tuf-js: 2.2.1(supports-color@9.4.0)
     transitivePeerDependencies:
       - supports-color
 
@@ -9536,7 +9548,7 @@ snapshots:
       - react-dom
       - utf-8-validate
 
-  '@tapjs/run@4.0.1(@tapjs/core@4.0.0(@types/node@22.5.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@types/node@22.5.0)(@types/react@18.3.11)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
+  '@tapjs/run@4.0.1(@tapjs/core@4.0.0(@types/node@22.5.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@types/node@22.5.0)(@types/react@18.3.11)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@9.4.0)':
     dependencies:
       '@tapjs/after': 3.0.0(@tapjs/core@4.0.0(@types/node@22.5.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
       '@tapjs/before': 4.0.0(@tapjs/core@4.0.0(@types/node@22.5.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
@@ -9555,7 +9567,7 @@ snapshots:
       minipass: 7.1.2
       mkdirp: 3.0.1
       opener: 1.5.2
-      pacote: 18.0.6
+      pacote: 18.0.6(supports-color@9.4.0)
       path-scurry: 2.0.0
       resolve-import: 2.0.0
       rimraf: 6.0.1
@@ -9853,6 +9865,24 @@ snapshots:
 
   '@types/unist@3.0.3': {}
 
+  '@typescript-eslint/eslint-plugin@8.2.0(@typescript-eslint/parser@8.2.0(eslint@9.9.0(jiti@1.21.6)(supports-color@9.4.0))(supports-color@9.4.0)(typescript@5.5.4))(eslint@9.9.0(jiti@1.21.6)(supports-color@9.4.0))(supports-color@9.4.0)(typescript@5.5.4)':
+    dependencies:
+      '@eslint-community/regexpp': 4.11.0
+      '@typescript-eslint/parser': 8.2.0(eslint@9.9.0(jiti@1.21.6)(supports-color@9.4.0))(supports-color@9.4.0)(typescript@5.5.4)
+      '@typescript-eslint/scope-manager': 8.2.0
+      '@typescript-eslint/type-utils': 8.2.0(eslint@9.9.0(jiti@1.21.6)(supports-color@9.4.0))(supports-color@9.4.0)(typescript@5.5.4)
+      '@typescript-eslint/utils': 8.2.0(eslint@9.9.0(jiti@1.21.6)(supports-color@9.4.0))(supports-color@9.4.0)(typescript@5.5.4)
+      '@typescript-eslint/visitor-keys': 8.2.0
+      eslint: 9.9.0(jiti@1.21.6)(supports-color@9.4.0)
+      graphemer: 1.4.0
+      ignore: 5.3.2
+      natural-compare: 1.4.0
+      ts-api-utils: 1.3.0(typescript@5.5.4)
+    optionalDependencies:
+      typescript: 5.5.4
+    transitivePeerDependencies:
+      - supports-color
+
   '@typescript-eslint/eslint-plugin@8.2.0(@typescript-eslint/parser@8.2.0(eslint@9.9.0(jiti@1.21.6))(typescript@5.5.4))(eslint@9.9.0(jiti@1.21.6))(typescript@5.5.4)':
     dependencies:
       '@eslint-community/regexpp': 4.11.0
@@ -9871,13 +9901,26 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
+  '@typescript-eslint/parser@8.2.0(eslint@9.9.0(jiti@1.21.6)(supports-color@9.4.0))(supports-color@9.4.0)(typescript@5.5.4)':
+    dependencies:
+      '@typescript-eslint/scope-manager': 8.2.0
+      '@typescript-eslint/types': 8.2.0
+      '@typescript-eslint/typescript-estree': 8.2.0(supports-color@9.4.0)(typescript@5.5.4)
+      '@typescript-eslint/visitor-keys': 8.2.0
+      debug: 4.3.7(supports-color@9.4.0)
+      eslint: 9.9.0(jiti@1.21.6)(supports-color@9.4.0)
+    optionalDependencies:
+      typescript: 5.5.4
+    transitivePeerDependencies:
+      - supports-color
+
   '@typescript-eslint/parser@8.2.0(eslint@9.9.0(jiti@1.21.6))(typescript@5.5.4)':
     dependencies:
       '@typescript-eslint/scope-manager': 8.2.0
       '@typescript-eslint/types': 8.2.0
-      '@typescript-eslint/typescript-estree': 8.2.0(typescript@5.5.4)
+      '@typescript-eslint/typescript-estree': 8.2.0(supports-color@9.4.0)(typescript@5.5.4)
       '@typescript-eslint/visitor-keys': 8.2.0
-      debug: 4.3.7
+      debug: 4.3.7(supports-color@9.4.0)
       eslint: 9.9.0(jiti@1.21.6)
     optionalDependencies:
       typescript: 5.5.4
@@ -9889,11 +9932,23 @@ snapshots:
       '@typescript-eslint/types': 8.2.0
       '@typescript-eslint/visitor-keys': 8.2.0
 
+  '@typescript-eslint/type-utils@8.2.0(eslint@9.9.0(jiti@1.21.6)(supports-color@9.4.0))(supports-color@9.4.0)(typescript@5.5.4)':
+    dependencies:
+      '@typescript-eslint/typescript-estree': 8.2.0(supports-color@9.4.0)(typescript@5.5.4)
+      '@typescript-eslint/utils': 8.2.0(eslint@9.9.0(jiti@1.21.6)(supports-color@9.4.0))(supports-color@9.4.0)(typescript@5.5.4)
+      debug: 4.3.7(supports-color@9.4.0)
+      ts-api-utils: 1.3.0(typescript@5.5.4)
+    optionalDependencies:
+      typescript: 5.5.4
+    transitivePeerDependencies:
+      - eslint
+      - supports-color
+
   '@typescript-eslint/type-utils@8.2.0(eslint@9.9.0(jiti@1.21.6))(typescript@5.5.4)':
     dependencies:
-      '@typescript-eslint/typescript-estree': 8.2.0(typescript@5.5.4)
+      '@typescript-eslint/typescript-estree': 8.2.0(supports-color@9.4.0)(typescript@5.5.4)
       '@typescript-eslint/utils': 8.2.0(eslint@9.9.0(jiti@1.21.6))(typescript@5.5.4)
-      debug: 4.3.7
+      debug: 4.3.7(supports-color@9.4.0)
       ts-api-utils: 1.3.0(typescript@5.5.4)
     optionalDependencies:
       typescript: 5.5.4
@@ -9903,11 +9958,11 @@ snapshots:
 
   '@typescript-eslint/types@8.2.0': {}
 
-  '@typescript-eslint/typescript-estree@8.2.0(typescript@5.5.4)':
+  '@typescript-eslint/typescript-estree@8.2.0(supports-color@9.4.0)(typescript@5.5.4)':
     dependencies:
       '@typescript-eslint/types': 8.2.0
       '@typescript-eslint/visitor-keys': 8.2.0
-      debug: 4.3.7
+      debug: 4.3.7(supports-color@9.4.0)
       globby: 11.1.0
       is-glob: 4.0.3
       minimatch: 9.0.5
@@ -9918,12 +9973,23 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
+  '@typescript-eslint/utils@8.2.0(eslint@9.9.0(jiti@1.21.6)(supports-color@9.4.0))(supports-color@9.4.0)(typescript@5.5.4)':
+    dependencies:
+      '@eslint-community/eslint-utils': 4.4.0(eslint@9.9.0(jiti@1.21.6)(supports-color@9.4.0))
+      '@typescript-eslint/scope-manager': 8.2.0
+      '@typescript-eslint/types': 8.2.0
+      '@typescript-eslint/typescript-estree': 8.2.0(supports-color@9.4.0)(typescript@5.5.4)
+      eslint: 9.9.0(jiti@1.21.6)(supports-color@9.4.0)
+    transitivePeerDependencies:
+      - supports-color
+      - typescript
+
   '@typescript-eslint/utils@8.2.0(eslint@9.9.0(jiti@1.21.6))(typescript@5.5.4)':
     dependencies:
       '@eslint-community/eslint-utils': 4.4.0(eslint@9.9.0(jiti@1.21.6))
       '@typescript-eslint/scope-manager': 8.2.0
       '@typescript-eslint/types': 8.2.0
-      '@typescript-eslint/typescript-estree': 8.2.0(typescript@5.5.4)
+      '@typescript-eslint/typescript-estree': 8.2.0(supports-color@9.4.0)(typescript@5.5.4)
       eslint: 9.9.0(jiti@1.21.6)
     transitivePeerDependencies:
       - supports-color
@@ -10129,13 +10195,13 @@ snapshots:
 
   agent-base@6.0.2:
     dependencies:
-      debug: 4.3.7
+      debug: 4.3.7(supports-color@9.4.0)
     transitivePeerDependencies:
       - supports-color
 
-  agent-base@7.1.1:
+  agent-base@7.1.1(supports-color@9.4.0):
     dependencies:
-      debug: 4.3.7
+      debug: 4.3.7(supports-color@9.4.0)
     transitivePeerDependencies:
       - supports-color
 
@@ -10315,7 +10381,7 @@ snapshots:
       common-ancestor-path: 1.0.1
       cookie: 0.7.2
       cssesc: 3.0.0
-      debug: 4.3.7
+      debug: 4.3.7(supports-color@9.4.0)
       deterministic-object-hash: 2.0.2
       devalue: 5.1.1
       diff: 5.2.0
@@ -10719,9 +10785,11 @@ snapshots:
     dependencies:
       ms: 2.1.3
 
-  debug@4.3.7:
+  debug@4.3.7(supports-color@9.4.0):
     dependencies:
       ms: 2.1.3
+    optionalDependencies:
+      supports-color: 9.4.0
 
   decimal.js@10.4.3: {}
 
@@ -11038,7 +11106,7 @@ snapshots:
   eslint-import-resolver-typescript@3.6.3(eslint-plugin-import@2.31.0)(eslint@9.9.0(jiti@1.21.6)):
     dependencies:
       '@nolyfill/is-core-module': 1.0.39
-      debug: 4.3.7
+      debug: 4.3.7(supports-color@9.4.0)
       enhanced-resolve: 5.17.1
       eslint: 9.9.0(jiti@1.21.6)
       eslint-module-utils: 2.12.0(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.6.3(eslint-plugin-import@2.31.0)(eslint@9.9.0(jiti@1.21.6)))(eslint@9.9.0(jiti@1.21.6))
@@ -11096,7 +11164,7 @@ snapshots:
       '@es-joy/jsdoccomment': 0.49.0
       are-docs-informative: 0.0.2
       comment-parser: 1.4.1
-      debug: 4.3.7
+      debug: 4.3.7(supports-color@9.4.0)
       escape-string-regexp: 4.0.0
       eslint: 9.9.0(jiti@1.21.6)
       espree: 10.1.0
@@ -11121,8 +11189,8 @@ snapshots:
     dependencies:
       '@eslint-community/eslint-utils': 4.4.0(eslint@9.9.0(jiti@1.21.6))
       '@eslint-community/regexpp': 4.11.0
-      '@eslint/config-array': 0.17.1
-      '@eslint/eslintrc': 3.1.0
+      '@eslint/config-array': 0.17.1(supports-color@9.4.0)
+      '@eslint/eslintrc': 3.1.0(supports-color@9.4.0)
       '@eslint/js': 9.9.0
       '@humanwhocodes/module-importer': 1.0.1
       '@humanwhocodes/retry': 0.3.0
@@ -11130,7 +11198,48 @@ snapshots:
       ajv: 6.12.6
       chalk: 4.1.2
       cross-spawn: 7.0.3
-      debug: 4.3.7
+      debug: 4.3.7(supports-color@9.4.0)
+      escape-string-regexp: 4.0.0
+      eslint-scope: 8.0.2
+      eslint-visitor-keys: 4.0.0
+      espree: 10.1.0
+      esquery: 1.6.0
+      esutils: 2.0.3
+      fast-deep-equal: 3.1.3
+      file-entry-cache: 8.0.0
+      find-up: 5.0.0
+      glob-parent: 6.0.2
+      ignore: 5.3.2
+      imurmurhash: 0.1.4
+      is-glob: 4.0.3
+      is-path-inside: 3.0.3
+      json-stable-stringify-without-jsonify: 1.0.1
+      levn: 0.4.1
+      lodash.merge: 4.6.2
+      minimatch: 3.1.2
+      natural-compare: 1.4.0
+      optionator: 0.9.4
+      strip-ansi: 6.0.1
+      text-table: 0.2.0
+    optionalDependencies:
+      jiti: 1.21.6
+    transitivePeerDependencies:
+      - supports-color
+
+  eslint@9.9.0(jiti@1.21.6)(supports-color@9.4.0):
+    dependencies:
+      '@eslint-community/eslint-utils': 4.4.0(eslint@9.9.0(jiti@1.21.6)(supports-color@9.4.0))
+      '@eslint-community/regexpp': 4.11.0
+      '@eslint/config-array': 0.17.1(supports-color@9.4.0)
+      '@eslint/eslintrc': 3.1.0(supports-color@9.4.0)
+      '@eslint/js': 9.9.0
+      '@humanwhocodes/module-importer': 1.0.1
+      '@humanwhocodes/retry': 0.3.0
+      '@nodelib/fs.walk': 1.2.8
+      ajv: 6.12.6
+      chalk: 4.1.2
+      cross-spawn: 7.0.3
+      debug: 4.3.7(supports-color@9.4.0)
       escape-string-regexp: 4.0.0
       eslint-scope: 8.0.2
       eslint-visitor-keys: 4.0.0
@@ -11719,24 +11828,24 @@ snapshots:
 
   http-cache-semantics@4.1.1: {}
 
-  http-proxy-agent@7.0.2:
+  http-proxy-agent@7.0.2(supports-color@9.4.0):
     dependencies:
-      agent-base: 7.1.1
-      debug: 4.3.7
+      agent-base: 7.1.1(supports-color@9.4.0)
+      debug: 4.3.7(supports-color@9.4.0)
     transitivePeerDependencies:
       - supports-color
 
   https-proxy-agent@5.0.1:
     dependencies:
       agent-base: 6.0.2
-      debug: 4.3.7
+      debug: 4.3.7(supports-color@9.4.0)
     transitivePeerDependencies:
       - supports-color
 
-  https-proxy-agent@7.0.5:
+  https-proxy-agent@7.0.5(supports-color@9.4.0):
     dependencies:
-      agent-base: 7.1.1
-      debug: 4.3.7
+      agent-base: 7.1.1(supports-color@9.4.0)
+      debug: 4.3.7(supports-color@9.4.0)
     transitivePeerDependencies:
       - supports-color
 
@@ -12047,8 +12156,8 @@ snapshots:
       decimal.js: 10.4.3
       form-data: 4.0.0
       html-encoding-sniffer: 4.0.0
-      http-proxy-agent: 7.0.2
-      https-proxy-agent: 7.0.5
+      http-proxy-agent: 7.0.2(supports-color@9.4.0)
+      https-proxy-agent: 7.0.5(supports-color@9.4.0)
       is-potential-custom-element-name: 1.0.1
       nwsapi: 2.2.13
       parse5: 7.2.0
@@ -12200,9 +12309,9 @@ snapshots:
 
   make-error@1.3.6: {}
 
-  make-fetch-happen@13.0.1:
+  make-fetch-happen@13.0.1(supports-color@9.4.0):
     dependencies:
-      '@npmcli/agent': 2.2.2
+      '@npmcli/agent': 2.2.2(supports-color@9.4.0)
       cacache: 18.0.4
       http-cache-semantics: 4.1.1
       is-lambda: 1.0.1
@@ -12690,7 +12799,7 @@ snapshots:
   micromark@4.0.0:
     dependencies:
       '@types/debug': 4.1.12
-      debug: 4.3.7
+      debug: 4.3.7(supports-color@9.4.0)
       decode-named-character-reference: 1.0.2
       devlop: 1.1.0
       micromark-core-commonmark: 2.0.1
@@ -12876,13 +12985,13 @@ snapshots:
 
   node-gyp-build@4.8.2: {}
 
-  node-gyp@10.2.0:
+  node-gyp@10.2.0(supports-color@9.4.0):
     dependencies:
       env-paths: 2.2.1
       exponential-backoff: 3.1.1
       glob: 10.4.5
       graceful-fs: 4.2.11
-      make-fetch-happen: 13.0.1
+      make-fetch-happen: 13.0.1(supports-color@9.4.0)
       nopt: 7.2.1
       proc-log: 4.2.0
       semver: 7.6.3
@@ -12939,11 +13048,11 @@ snapshots:
       npm-package-arg: 11.0.3
       semver: 7.6.3
 
-  npm-registry-fetch@17.1.0:
+  npm-registry-fetch@17.1.0(supports-color@9.4.0):
     dependencies:
       '@npmcli/redact': 2.0.1
       jsonparse: 1.3.1
-      make-fetch-happen: 13.0.1
+      make-fetch-happen: 13.0.1(supports-color@9.4.0)
       minipass: 7.1.2
       minipass-fetch: 3.0.5
       minizlib: 2.1.2
@@ -13067,23 +13176,23 @@ snapshots:
 
   package-json-from-dist@1.0.1: {}
 
-  pacote@18.0.6:
+  pacote@18.0.6(supports-color@9.4.0):
     dependencies:
       '@npmcli/git': 5.0.8
       '@npmcli/installed-package-contents': 2.1.0
       '@npmcli/package-json': 5.2.0
       '@npmcli/promise-spawn': 7.0.2
-      '@npmcli/run-script': 8.1.0
+      '@npmcli/run-script': 8.1.0(supports-color@9.4.0)
       cacache: 18.0.4
       fs-minipass: 3.0.3
       minipass: 7.1.2
       npm-package-arg: 11.0.3
       npm-packlist: 8.0.2
       npm-pick-manifest: 9.1.0
-      npm-registry-fetch: 17.1.0
+      npm-registry-fetch: 17.1.0(supports-color@9.4.0)
       proc-log: 4.2.0
       promise-retry: 2.0.1
-      sigstore: 2.3.1
+      sigstore: 2.3.1(supports-color@9.4.0)
       ssri: 10.0.6
       tar: 6.2.1
     transitivePeerDependencies:
@@ -13799,13 +13908,13 @@ snapshots:
 
   signal-exit@4.1.0: {}
 
-  sigstore@2.3.1:
+  sigstore@2.3.1(supports-color@9.4.0):
     dependencies:
       '@sigstore/bundle': 2.3.2
       '@sigstore/core': 1.1.0
       '@sigstore/protobuf-specs': 0.3.2
-      '@sigstore/sign': 2.3.2
-      '@sigstore/tuf': 2.3.4
+      '@sigstore/sign': 2.3.2(supports-color@9.4.0)
+      '@sigstore/tuf': 2.3.4(supports-color@9.4.0)
       '@sigstore/verify': 1.2.1
     transitivePeerDependencies:
       - supports-color
@@ -13847,10 +13956,10 @@ snapshots:
 
   smart-buffer@4.2.0: {}
 
-  socks-proxy-agent@8.0.4:
+  socks-proxy-agent@8.0.4(supports-color@9.4.0):
     dependencies:
-      agent-base: 7.1.1
-      debug: 4.3.7
+      agent-base: 7.1.1(supports-color@9.4.0)
+      debug: 4.3.7(supports-color@9.4.0)
       socks: 2.8.3
     transitivePeerDependencies:
       - supports-color
@@ -14018,6 +14127,8 @@ snapshots:
     dependencies:
       has-flag: 4.0.0
 
+  supports-color@9.4.0: {}
+
   supports-preserve-symlinks-flag@1.0.0: {}
 
   symbol-tree@3.2.4: {}
@@ -14078,7 +14189,7 @@ snapshots:
       yaml: 2.6.0
       yaml-types: 0.4.0(yaml@2.6.0)
 
-  tap@21.0.1(@types/node@22.5.0)(@types/react@18.3.11)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4):
+  tap@21.0.1(@types/node@22.5.0)(@types/react@18.3.11)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@9.4.0)(typescript@5.5.4):
     dependencies:
       '@tapjs/after': 3.0.0(@tapjs/core@4.0.0(@types/node@22.5.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
       '@tapjs/after-each': 4.0.0(@tapjs/core@4.0.0(@types/node@22.5.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
@@ -14092,7 +14203,7 @@ snapshots:
       '@tapjs/intercept': 4.0.0(@tapjs/core@4.0.0(@types/node@22.5.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
       '@tapjs/mock': 4.0.0(@tapjs/core@4.0.0(@types/node@22.5.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
       '@tapjs/node-serialize': 4.0.0(@tapjs/core@4.0.0(@types/node@22.5.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
-      '@tapjs/run': 4.0.1(@tapjs/core@4.0.0(@types/node@22.5.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@types/node@22.5.0)(@types/react@18.3.11)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@tapjs/run': 4.0.1(@tapjs/core@4.0.0(@types/node@22.5.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@types/node@22.5.0)(@types/react@18.3.11)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@9.4.0)
       '@tapjs/snapshot': 4.0.0(@tapjs/core@4.0.0(@types/node@22.5.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@tapjs/spawn': 4.0.0(@tapjs/core@4.0.0(@types/node@22.5.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
       '@tapjs/stdin': 4.0.0(@tapjs/core@4.0.0(@types/node@22.5.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
@@ -14263,11 +14374,11 @@ snapshots:
 
   tslib@2.7.0: {}
 
-  tuf-js@2.2.1:
+  tuf-js@2.2.1(supports-color@9.4.0):
     dependencies:
       '@tufjs/models': 2.0.1
-      debug: 4.3.7
-      make-fetch-happen: 13.0.1
+      debug: 4.3.7(supports-color@9.4.0)
+      make-fetch-happen: 13.0.1(supports-color@9.4.0)
     transitivePeerDependencies:
       - supports-color
 
@@ -14378,6 +14489,17 @@ snapshots:
   typescript-auto-import-cache@0.3.3:
     dependencies:
       semver: 7.6.3
+
+  typescript-eslint@8.2.0(eslint@9.9.0(jiti@1.21.6)(supports-color@9.4.0))(supports-color@9.4.0)(typescript@5.5.4):
+    dependencies:
+      '@typescript-eslint/eslint-plugin': 8.2.0(@typescript-eslint/parser@8.2.0(eslint@9.9.0(jiti@1.21.6)(supports-color@9.4.0))(supports-color@9.4.0)(typescript@5.5.4))(eslint@9.9.0(jiti@1.21.6)(supports-color@9.4.0))(supports-color@9.4.0)(typescript@5.5.4)
+      '@typescript-eslint/parser': 8.2.0(eslint@9.9.0(jiti@1.21.6)(supports-color@9.4.0))(supports-color@9.4.0)(typescript@5.5.4)
+      '@typescript-eslint/utils': 8.2.0(eslint@9.9.0(jiti@1.21.6)(supports-color@9.4.0))(supports-color@9.4.0)(typescript@5.5.4)
+    optionalDependencies:
+      typescript: 5.5.4
+    transitivePeerDependencies:
+      - eslint
+      - supports-color
 
   typescript-eslint@8.2.0(eslint@9.9.0(jiti@1.21.6))(typescript@5.5.4):
     dependencies:
@@ -14551,7 +14673,7 @@ snapshots:
   vite-node@2.1.3(@types/node@22.5.0):
     dependencies:
       cac: 6.7.14
-      debug: 4.3.7
+      debug: 4.3.7(supports-color@9.4.0)
       pathe: 1.1.2
       vite: 6.0.0-beta.2(@types/node@22.5.0)
     transitivePeerDependencies:
@@ -14588,7 +14710,7 @@ snapshots:
       '@vitest/spy': 2.1.3
       '@vitest/utils': 2.1.3
       chai: 5.1.1
-      debug: 4.3.7
+      debug: 4.3.7(supports-color@9.4.0)
       magic-string: 0.30.12
       pathe: 1.1.2
       std-env: 3.7.0

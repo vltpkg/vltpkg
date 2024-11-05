@@ -43,6 +43,7 @@
     "lint": "eslint . --fix",
     "lint:check": "eslint .",
     "prepare": "tshy",
+    "pwd": "echo PWD:$PWD",
     "presnap": "tshy",
     "snap": "tap",
     "pretest": "tshy",

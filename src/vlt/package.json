@@ -48,6 +48,7 @@
     "path-scurry": "catalog:",
     "polite-json": "catalog:",
     "serve-handler": "^6.1.5",
+    "supports-color": "^9.4.0",
     "walk-up-path": "catalog:"
   },
   "devDependencies": {
@@ -73,6 +74,7 @@
     "lint": "eslint . --fix",
     "lint:check": "eslint .",
     "prepare": "tshy",
+    "pwd": "echo PWD:$PWD",
     "presnap": "tshy",
     "snap": "tap",
     "pretest": "tshy",

@@ -57,6 +57,7 @@
     "lint": "eslint . --fix",
     "lint:check": "eslint .",
     "prepare": "node scripts/prepare.js --production",
+    "pwd": "echo PWD:$PWD",
     "serve": "node scripts/prepare.js --watch --serve",
     "snap": "vitest --no-watch -u",
     "test": "vitest",

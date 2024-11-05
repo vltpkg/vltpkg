@@ -6,6 +6,7 @@ import {
   isRecordField,
   type LoadedConfig,
   pairsToRecords,
+  type RecordPairs,
   recordsToPairs,
 } from '../config/index.js'
 import { commandUsage } from '../config/usage.js'
@@ -52,7 +53,9 @@ export const usage: CliCommandUsage = () =>
     },
   })
 
-export const command: CliCommandFn = async conf => {
+export const command: CliCommandFn<
+  string | number | boolean | string[] | undefined | RecordPairs
+> = async conf => {
   const sub = conf.positionals[0]
   switch (sub) {
     case 'set':
@@ -101,7 +104,6 @@ const help = (conf: LoadedConfig) => {
         isRecordField(f) ?
           'Record<string, string>'
         : def.type + (def.multiple ? '[]' : '')
-
       res.push(`--${f}${hint}`)
       res.push(`  type: ${type}`)
       if (def.default) {

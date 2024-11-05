@@ -61,5 +61,5 @@ export function jsonOutput({ edges, nodes }: JSONOutputOptions) {
     })
   }
 
-  return JSON.stringify(res, null, 2)
+  return res
 }
