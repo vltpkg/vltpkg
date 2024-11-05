@@ -1,13 +1,13 @@
-import { type DepID, joinDepIDTuple } from '@vltpkg/dep-id'
+import { joinDepIDTuple, type DepID } from '@vltpkg/dep-id'
 import { error } from '@vltpkg/error-cause'
 import { type PackageInfoClient } from '@vltpkg/package-info'
 import { Spec, type SpecOptions } from '@vltpkg/spec'
 import { type PathScurry } from 'path-scurry'
 import {
-  type Dependency,
-  type DependencyTypeLong,
   longDependencyTypes,
   shorten,
+  type Dependency,
+  type DependencyTypeLong,
 } from '../dependencies.js'
 import { type Graph } from '../graph.js'
 import { type Node } from '../node.js'
@@ -150,35 +150,39 @@ export const appendNodes = async (
           []
         : bundleDeps,
       )
+
+      const nextDeps: Dependency[] = []
+
       for (const depTypeName of longDependencyTypes) {
         const depRecord: Record<string, string> | undefined =
           mani[depTypeName]
 
         if (depRecord && shouldInstallDepType(node, depTypeName)) {
-          const nextDeps: Dependency[] = Object.entries(depRecord)
-            .filter(([name]) => !bundled.has(name))
-            .map(([name, bareSpec]) => ({
-              // if foo:a@1 depends on b@2, then it must be foo:b@2
+          for (const [name, bareSpec] of Object.entries(depRecord)) {
+            if (bundled.has(name)) continue
+            nextDeps.push({
+              type: shorten(depTypeName, name, mani),
               spec: Spec.parse(name, bareSpec, {
                 ...options,
                 registry: spec.registry,
               }),
-              type: shorten(depTypeName, name, mani),
-            }))
-          if (nextDeps.length) {
-            nestedAppends.push(
-              appendNodes(
-                packageInfo,
-                graph,
-                node,
-                nextDeps,
-                scurry,
-                options,
-                seen,
-              ),
-            )
+            })
           }
         }
+      }
+
+      if (nextDeps.length) {
+        nestedAppends.push(
+          appendNodes(
+            packageInfo,
+            graph,
+            node,
+            nextDeps,
+            scurry,
+            options,
+            seen,
+          ),
+        )
       }
       await Promise.all(nestedAppends)
     }),
