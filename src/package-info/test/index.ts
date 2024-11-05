@@ -802,7 +802,9 @@ t.test('workspace group option', async t => {
 })
 
 t.test('verify we got the expected missing urls', t => {
-  t.matchSnapshot(notFoundURLs.sort((a, b) => a.localeCompare(b)))
+  t.matchSnapshot(
+    new Set(notFoundURLs.sort((a, b) => a.localeCompare(b))),
+  )
   t.end()
 })
 

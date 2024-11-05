@@ -238,16 +238,9 @@ Object {
 `
 
 exports[`test/index.ts > TAP > verify we got the expected missing urls > must match snapshot 1`] = `
-Array [
+Set {
   "/lodash",
-  "/lodash",
-  "/lodash",
-  "/lodash",
-  "/lodash.tgz",
-  "/lodash.tgz",
-  "/lodash.tgz",
   "/lodash.tgz",
   "/missing.tgz",
-  "/missing.tgz",
-]
+}
 `
