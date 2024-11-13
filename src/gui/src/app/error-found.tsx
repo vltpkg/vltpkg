@@ -5,7 +5,6 @@ import { ThemeSwitcher } from '@/components/ui/theme-switcher.jsx'
 import { BatteryLow, LayoutDashboard } from 'lucide-react'
 import { useGraphStore } from '@/state/index.js'
 import { Button } from '@/components/ui/button.jsx'
-import { Footer } from '@/components/ui/footer.jsx'
 
 export const ErrorFound = () => {
   const updateActiveRoute = useGraphStore(
@@ -53,7 +52,6 @@ export const ErrorFound = () => {
           <p className="px-6">{errorCause}</p>
         </div>
       </div>
-      <Footer />
     </section>
   )
 }

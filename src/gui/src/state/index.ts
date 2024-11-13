@@ -1,5 +1,9 @@
 import { create } from 'zustand'
-import { type State, type Action } from './types.js'
+import {
+  type State,
+  type Action,
+  type DashboardDataProject,
+} from './types.js'
 
 export const DEFAULT_QUERY = ':project > *'
 
@@ -20,6 +24,12 @@ const initialState: State = {
   specOptions: undefined,
   stamp: String(Math.random()).slice(2),
   theme: localStorage.getItem('vite-ui-theme') as State['theme'],
+  savedProjects: JSON.parse(
+    localStorage.getItem('saved-projects') || '[]',
+  ) as State['savedProjects'],
+  lockSidebar: JSON.parse(
+    localStorage.getItem('lock-sidebar') || 'false',
+  ) as State['lockSidebar'],
 }
 
 /**
@@ -27,7 +37,7 @@ const initialState: State = {
  * to the rest of the app. Also defines a few useful default
  * values and integrates with browser history.
  */
-export const useGraphStore = create<Action & State>(set => {
+export const useGraphStore = create<Action & State>((set, get) => {
   const store = {
     ...initialState,
     updateActiveRoute: (activeRoute: State['activeRoute']) =>
@@ -53,6 +63,34 @@ export const useGraphStore = create<Action & State>(set => {
     updateStamp: (stamp: string) => set(() => ({ stamp })),
     updateTheme: (theme: State['theme']) => set(() => ({ theme })),
     reset: () => set(initialState),
+    updateSavedProjects: (savedProjects: State['savedProjects']) =>
+      set(() => ({ savedProjects })),
+    saveProject: (item: DashboardDataProject) => {
+      const savedProjects = (get().savedProjects ??
+        [])
+      let updatedProjects = [...savedProjects]
+      const isProjectSaved = updatedProjects.find(
+        savedProject => savedProject.name === item.name,
+      )
+
+      if (!isProjectSaved) {
+        updatedProjects.push(item)
+      } else {
+        updatedProjects = updatedProjects.filter(
+          savedProject => savedProject.name !== item.name,
+        )
+      }
+
+      set({ savedProjects: updatedProjects })
+      localStorage.setItem(
+        'saved-projects',
+        JSON.stringify(updatedProjects),
+      )
+    },
+    updateLockSidebar: (locked: State['lockSidebar']) => {
+      set({ lockSidebar: locked })
+      localStorage.setItem('lock-sidebar', JSON.stringify(locked))
+    },
   }
 
   // updates internal state anytime the browser URL changes
