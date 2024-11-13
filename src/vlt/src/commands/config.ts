@@ -10,7 +10,11 @@ import {
   recordsToPairs,
 } from '../config/index.js'
 import { commandUsage } from '../config/usage.js'
-import { type CliCommandFn, type CliCommandUsage } from '../types.js'
+import {
+  type CliCommandView,
+  type CliCommandFn,
+  type CliCommandUsage,
+} from '../types.js'
 
 export const usage: CliCommandUsage = () =>
   commandUsage({
@@ -53,6 +57,44 @@ export const usage: CliCommandUsage = () =>
     },
   })
 
+export const view: CliCommandView = {
+  human: (data, _, conf) => {
+    if (conf.positionals[0] === 'help') {
+      const res: string[] = []
+      if (Array.isArray(data)) {
+        res.push('Specify one or more options to see information:')
+        res.push(...data.map(c => `  ${c}`))
+      } else {
+        for (const [f, def] of Object.entries(
+          data as Record<
+            string,
+            ReturnType<typeof definition.toJSON>[string] | null
+          >,
+        )) {
+          if (!def) {
+            res.push(`unknown config field: ${f}`)
+          } else {
+            const hint = def.hint ? `=<${def.hint}>` : ''
+            const type =
+              isRecordField(f) ?
+                'Record<string, string>'
+              : def.type + (def.multiple ? '[]' : '')
+            res.push(`--${f}${hint}`)
+            res.push(`  type: ${type}`)
+            if (def.default) {
+              res.push(`  default: ${JSON.stringify(def.default)}`)
+            }
+            if (def.description) {
+              res.push(def.description)
+            }
+          }
+        }
+      }
+      return res.join('\n')
+    }
+  },
+}
+
 export const command: CliCommandFn<
   string | number | boolean | string[] | undefined | RecordPairs
 > = async conf => {
@@ -61,14 +103,14 @@ export const command: CliCommandFn<
     case 'set':
       return set(conf)
     case 'get':
-      return get(conf)
+      return { result: await get(conf) }
     case 'ls':
     case 'list':
-      return list(conf)
+      return { result: list(conf) }
     case 'edit':
       return edit(conf)
     case 'help':
-      return help(conf)
+      return { result: help(conf) }
     case 'del':
       return del(conf)
     default: {
@@ -85,41 +127,18 @@ const help = (conf: LoadedConfig) => {
   const j = definition.toJSON()
   const fields = conf.positionals.slice(1)
   if (!fields.length) {
-    return [
-      'Specify one or more options to see information:',
-      ...Object.keys(j)
-        .sort((a, b) => a.localeCompare(b, 'en'))
-        .map(c => `  ${c}`),
-    ]
+    return Object.keys(j).sort((a, b) => a.localeCompare(b, 'en'))
   }
   // TODO: some kind of fuzzy search?
-  const res: string[] = []
+  const res: Record<string, (typeof j)[string] | null> = {}
   for (const f of fields) {
     const def = j[f]
-    if (!def) {
-      res.push(`unknown config field: ${f}`)
-    } else {
-      const hint = def.hint ? `=<${def.hint}>` : ''
-      const type =
-        isRecordField(f) ?
-          'Record<string, string>'
-        : def.type + (def.multiple ? '[]' : '')
-      res.push(`--${f}${hint}`)
-      res.push(`  type: ${type}`)
-      if (def.default) {
-        res.push(`  default: ${JSON.stringify(def.default)}`)
-      }
-      if (def.description) {
-        res.push(def.description)
-      }
-    }
+    res[f] = def ?? null
   }
   return res
 }
 
-const list = (conf: LoadedConfig) => {
-  return { result: recordsToPairs(conf.options) }
-}
+const list = (conf: LoadedConfig) => recordsToPairs(conf.options)
 
 const del = async (conf: LoadedConfig) => {
   const fields = conf.positionals.slice(1)
@@ -139,7 +158,8 @@ const get = async (conf: LoadedConfig) => {
       code: 'EUSAGE',
     })
   }
-  return { result: conf.get(k as keyof ConfigDefinitions) }
+  // TODO: maybe throw EUSAGE if k is not actually a keyof definitions?
+  return conf.get(k as keyof ConfigDefinitions)
 }
 
 const edit = async (conf: LoadedConfig) => {

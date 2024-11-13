@@ -51,14 +51,33 @@ import {
   type RecordField,
   recordFields,
   type Commands,
+  recursiveCommands,
 } from './definition.js'
 import { merge } from './merge.js'
 export { recordFields, isRecordField }
 export { definition, commands, Commands }
 
+const extraOptions = new Set([
+  'scurry',
+  'packageJson',
+  'monorepo',
+  'projectRoot',
+] as const)
+
 export type RecordPairs = Record<string, unknown>
 export type RecordString = Record<string, string>
 export type ConfigFiles = Record<string, ConfigFileData>
+export type ExtraOptionKeys =
+  typeof extraOptions extends Set<infer T> ? T : never
+export type RequireAllExtraOptions<T> = T &
+  Record<ExtraOptionKeys, unknown>
+
+export type ExtraOptions = RequireAllExtraOptions<{
+  packageJson: PackageJson
+  scurry: PathScurry
+  projectRoot: string
+  monorepo?: Monorepo
+}>
 
 // turn a set of pairs into a Record object.
 // if a kv pair doesn't have a = character, set to `''`
@@ -84,10 +103,7 @@ const isRecordFieldValue = (k: string, v: unknown): v is string[] =>
 
 export const pairsToRecords = (
   obj: ConfigFileData,
-): Omit<
-  ConfigOptions,
-  'projectRoot' | 'scurry' | 'packageJson' | 'monorepo'
-> & {
+): Omit<ConfigOptions, ExtraOptionKeys> & {
   command?: Record<string, ConfigOptions>
 } => {
   return Object.fromEntries(
@@ -109,15 +125,7 @@ export const pairsToRecords = (
 export const recordsToPairs = (obj: RecordPairs): RecordPairs => {
   return Object.fromEntries(
     Object.entries(obj)
-      .filter(
-        ([k]) =>
-          !(
-            k === 'scurry' ||
-            k === 'packageJson' ||
-            k === 'monorepo' ||
-            k === 'projectRoot'
-          ),
-      )
+      .filter(([k]) => !extraOptions.has(k as ExtraOptionKeys))
       .map(([k, v]) => [
         k,
         k === 'command' && v && typeof v === 'object' ?
@@ -172,12 +180,7 @@ export type ConfigOptions = {
   [k in keyof ConfigFileData]?: k extends RecordField ? RecordString
   : k extends 'command' ? never
   : ConfigData[k]
-} & {
-  packageJson: PackageJson
-  scurry: PathScurry
-  projectRoot: string
-  monorepo?: Monorepo
-}
+} & ExtraOptions
 
 /**
  * The base config definition set as a type
@@ -238,12 +241,10 @@ export class Config {
     const recursive = this.get('recursive')
 
     const load =
-      (
-        paths !== undefined ||
-        groups !== undefined ||
-        recursive !== undefined
-      ) ?
-        { paths, groups }
+      paths !== undefined || groups !== undefined ? { paths, groups }
+      : recursive === true ? {}
+      : recursive === false ? undefined
+      : this.command && recursiveCommands.has(this.command) ? {}
       : undefined
     const monorepo = Monorepo.maybeLoad(this.projectRoot, {
       scurry,
@@ -264,7 +265,7 @@ export class Config {
       scurry,
       packageJson,
       monorepo,
-    })
+    } satisfies ExtraOptions)
 
     return this.#options
   }

@@ -40,7 +40,7 @@ export const usage: CliCommandUsage = () =>
     },
   })
 
-export const command: CliCommandFn<unknown> = async conf => {
+export const command: CliCommandFn = async conf => {
   if (conf.options.monorepo) {
     const paths = conf.get('workspace')
     const groups = conf.get('workspace-group')
