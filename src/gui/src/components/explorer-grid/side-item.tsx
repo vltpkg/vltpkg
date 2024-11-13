@@ -86,7 +86,7 @@ export const SideItem = ({
         <div className="absolute border-t border-solid border-muted-foreground w-4 -right-4 top-7" />
       : dependencies ?
         <div
-          className="absolute border-b border-l border-solid border-neutral-300 dark:border-neutral-700 rounded-bl-sm z-0 w-[9px] -left-[9px] h-32 bottom-[62px] group-[&:nth-child(2)]:hidden group-[&:nth-child(3)]:h-24"
+          className="absolute border-b border-l border-solid border-neutral-300 dark:border-neutral-700 rounded-bl-sm z-0 w-[9px] -left-[9px] h-[13.35rem] bottom-[62px] group-[&:nth-child(2)]:hidden group-[&:nth-child(3)]:h-24"
           ref={lineRef}
         />
       : null}

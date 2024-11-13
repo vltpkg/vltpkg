@@ -3,17 +3,24 @@
 exports[`ResultItem render missing version and labels 1`] = `
 
 <div>
-  <div class="relative">
+  <div class="group relative z-10">
     <a
       href="#"
-      class="block rounded-lg border bg-card text-card-foreground shadow-sm relative my-4 cursor-default"
+      class="block rounded-lg border bg-card text-card-foreground shadow-sm relative group-hover:border-neutral-400 dark:group-hover:border-neutral-600 cursor-default"
     >
-      <div class="rounded-t-lg relative flex flex-row -m-px p-2 px-4 border-b">
-        <h3 class="font-semibold tracking-tight text-md grow">
-          item
-        </h3>
+      <div class="p-6 m-0 px-4 py-3 rounded-t-lg flex flex-row items-center justify-between border-b-[1px]">
+        <button
+          data-state="closed"
+          class="truncate"
+        >
+          <h3 class="font-semibold tracking-tight text-md truncate">
+            item
+          </h3>
+        </button>
       </div>
-      <div class="flex flex-row pl-4 pr-3">
+      <div class="flex flex-row px-3 py-2 items-center justify-between">
+        <div class="flex gap-2 overflow-x-scroll">
+        </div>
       </div>
     </a>
   </div>
@@ -24,27 +31,38 @@ exports[`ResultItem render missing version and labels 1`] = `
 exports[`ResultItem render stacked many 1`] = `
 
 <div>
-  <div class="relative">
-    <div class="absolute border top-2 left-2 w-[97.5%] h-full bg-card rounded-lg">
+  <div class="group relative z-10">
+    <div class="transition-all group-hover:border-neutral-400 dark:group-hover:border-neutral-600 absolute border top-2 left-2 w-[97.5%] h-full bg-card rounded-lg">
     </div>
-    <div class="absolute border top-1 left-1 w-[99%] h-full bg-card rounded-lg">
+    <div class="transition-all group-hover:border-neutral-400 dark:group-hover:border-neutral-600 absolute border top-1 left-1 w-[99%] h-full bg-card rounded-lg">
     </div>
     <a
       href="#"
-      class="block rounded-lg border bg-card text-card-foreground shadow-sm relative my-4 cursor-default"
+      class="block rounded-lg border bg-card text-card-foreground shadow-sm relative group-hover:border-neutral-400 dark:group-hover:border-neutral-600 cursor-default"
     >
-      <div class="rounded-t-lg relative flex flex-row -m-px p-2 px-4 border-b">
-        <h3 class="font-semibold tracking-tight text-md grow">
-          many-edges-stacked
-        </h3>
+      <div class="p-6 m-0 px-4 py-3 rounded-t-lg flex flex-row items-center justify-between border-b-[1px]">
+        <button
+          data-state="closed"
+          class="truncate"
+        >
+          <h3 class="font-semibold tracking-tight text-md truncate">
+            many-edges-stacked
+          </h3>
+        </button>
       </div>
-      <div class="flex flex-row pl-4 pr-3">
-        <p class="text-sm text-muted-foreground grow content-center py-2">
-          1.1.1
-        </p>
-        <div>
-          <div class="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 my-2 mx-1 grow-0 border-transparent bg-lime-100 text-neutral-900 hover:bg-lime-100/80">
-            peer
+      <div class="flex flex-row px-3 py-2 items-center justify-between">
+        <div class="flex items-center justify-center rounded-sm border-[1px] px-2 py-1">
+          <button data-state="closed">
+            <p class="text-[0.65rem] text-muted-foreground font-mono font-medium truncate w-full m-0 p-0 align-baseline">
+              1.1.1
+            </p>
+          </button>
+        </div>
+        <div class="flex gap-2 overflow-x-scroll">
+          <div>
+            <div class="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent bg-lime-100 text-neutral-900 hover:bg-lime-100/80">
+              peer
+            </div>
           </div>
         </div>
       </div>
@@ -57,25 +75,36 @@ exports[`ResultItem render stacked many 1`] = `
 exports[`ResultItem render stacked two 1`] = `
 
 <div>
-  <div class="relative">
-    <div class="absolute border top-1 left-1 w-[99%] h-full bg-card rounded-lg">
+  <div class="group relative z-10">
+    <div class="transition-all group-hover:border-neutral-400 dark:group-hover:border-neutral-600 absolute border top-1 left-1 w-[99%] h-full bg-card rounded-lg">
     </div>
     <a
       href="#"
-      class="block rounded-lg border bg-card text-card-foreground shadow-sm relative my-4 cursor-default"
+      class="block rounded-lg border bg-card text-card-foreground shadow-sm relative group-hover:border-neutral-400 dark:group-hover:border-neutral-600 cursor-default"
     >
-      <div class="rounded-t-lg relative flex flex-row -m-px p-2 px-4 border-b">
-        <h3 class="font-semibold tracking-tight text-md grow">
-          two-edges-stacked
-        </h3>
+      <div class="p-6 m-0 px-4 py-3 rounded-t-lg flex flex-row items-center justify-between border-b-[1px]">
+        <button
+          data-state="closed"
+          class="truncate"
+        >
+          <h3 class="font-semibold tracking-tight text-md truncate">
+            two-edges-stacked
+          </h3>
+        </button>
       </div>
-      <div class="flex flex-row pl-4 pr-3">
-        <p class="text-sm text-muted-foreground grow content-center py-2">
-          1.0.0
-        </p>
-        <div>
-          <div class="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 my-2 mx-1 grow-0 border-transparent bg-fuchsia-100 text-neutral-900 hover:bg-fuchsia-100/80">
-            dev
+      <div class="flex flex-row px-3 py-2 items-center justify-between">
+        <div class="flex items-center justify-center rounded-sm border-[1px] px-2 py-1">
+          <button data-state="closed">
+            <p class="text-[0.65rem] text-muted-foreground font-mono font-medium truncate w-full m-0 p-0 align-baseline">
+              1.0.0
+            </p>
+          </button>
+        </div>
+        <div class="flex gap-2 overflow-x-scroll">
+          <div>
+            <div class="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent bg-fuchsia-100 text-neutral-900 hover:bg-fuchsia-100/80">
+              dev
+            </div>
           </div>
         </div>
       </div>
@@ -88,23 +117,34 @@ exports[`ResultItem render stacked two 1`] = `
 exports[`ResultItem render with item 1`] = `
 
 <div>
-  <div class="relative">
+  <div class="group relative z-10">
     <a
       href="#"
-      class="block rounded-lg border bg-card text-card-foreground shadow-sm relative my-4 cursor-default"
+      class="block rounded-lg border bg-card text-card-foreground shadow-sm relative group-hover:border-neutral-400 dark:group-hover:border-neutral-600 cursor-default"
     >
-      <div class="rounded-t-lg relative flex flex-row -m-px p-2 px-4 border-b">
-        <h3 class="font-semibold tracking-tight text-md grow">
-          item
-        </h3>
+      <div class="p-6 m-0 px-4 py-3 rounded-t-lg flex flex-row items-center justify-between border-b-[1px]">
+        <button
+          data-state="closed"
+          class="truncate"
+        >
+          <h3 class="font-semibold tracking-tight text-md truncate">
+            item
+          </h3>
+        </button>
       </div>
-      <div class="flex flex-row pl-4 pr-3">
-        <p class="text-sm text-muted-foreground grow content-center py-2">
-          1.0.0
-        </p>
-        <div>
-          <div class="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 my-2 mx-1 grow-0 border-transparent bg-cyan-100 text-neutral-900 hover:bg-cyan-100/80">
-            prod
+      <div class="flex flex-row px-3 py-2 items-center justify-between">
+        <div class="flex items-center justify-center rounded-sm border-[1px] px-2 py-1">
+          <button data-state="closed">
+            <p class="text-[0.65rem] text-muted-foreground font-mono font-medium truncate w-full m-0 p-0 align-baseline">
+              1.0.0
+            </p>
+          </button>
+        </div>
+        <div class="flex gap-2 overflow-x-scroll">
+          <div>
+            <div class="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent bg-cyan-100 text-neutral-900 hover:bg-cyan-100/80">
+              prod
+            </div>
           </div>
         </div>
       </div>
@@ -117,34 +157,47 @@ exports[`ResultItem render with item 1`] = `
 exports[`ResultItem render with type 1`] = `
 
 <div>
-  <div class="relative">
+  <div class="group relative z-10">
     <a
       href="#"
-      class="block rounded-lg border bg-card text-card-foreground shadow-sm relative my-4 cursor-pointer"
+      class="block rounded-lg border bg-card text-card-foreground shadow-sm relative group-hover:border-neutral-400 dark:group-hover:border-neutral-600 cursor-pointer"
     >
-      <div class="rounded-t-lg relative flex flex-row -m-px p-2 px-4 border-b">
-        <h3 class="font-semibold tracking-tight text-md grow">
-          item
-        </h3>
-        <div class="rounded-md border px-2.5 py-0.5 text-xs text-gray-500">
-          <span class="font-semibold">
-            prod
-          </span>
-          <span class="px-1 text-gray-400">
-            dep of:
-          </span>
-          <span class="font-semibold">
-            npm:from@1.0.0
-          </span>
+      <div class="p-6 m-0 px-4 py-3 rounded-t-lg flex flex-row items-center justify-between border-b-[1px]">
+        <button
+          data-state="closed"
+          class="truncate"
+        >
+          <h3 class="font-semibold tracking-tight text-md truncate">
+            item
+          </h3>
+        </button>
+        <div class="flex items-center justify-center text-pretty rounded-md border-[1px] px-2.5 py-0.5 text-xs text-muted-foreground">
+          <p class="font-semibold">
+            <span>
+              prod
+            </span>
+            <span class="font-medium px-1 text-muted-foreground">
+              dep of:
+            </span>
+            <span>
+              npm:from@1.0.0
+            </span>
+          </p>
         </div>
       </div>
-      <div class="flex flex-row pl-4 pr-3">
-        <p class="text-sm text-muted-foreground grow content-center py-2">
-          1.0.0
-        </p>
-        <div>
-          <div class="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 my-2 mx-1 grow-0 border-transparent bg-cyan-100 text-neutral-900 hover:bg-cyan-100/80">
-            prod
+      <div class="flex flex-row px-3 py-2 items-center justify-between">
+        <div class="flex items-center justify-center rounded-sm border-[1px] px-2 py-1">
+          <button data-state="closed">
+            <p class="text-[0.65rem] text-muted-foreground font-mono font-medium truncate w-full m-0 p-0 align-baseline">
+              1.0.0
+            </p>
+          </button>
+        </div>
+        <div class="flex gap-2 overflow-x-scroll">
+          <div>
+            <div class="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent bg-cyan-100 text-neutral-900 hover:bg-cyan-100/80">
+              prod
+            </div>
           </div>
         </div>
       </div>
