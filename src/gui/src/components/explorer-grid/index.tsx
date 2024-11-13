@@ -18,10 +18,19 @@ import {
   type GridItemData,
 } from '@/components/explorer-grid//types.js'
 
-const GridHeader = ({ ...props }) => (
+const GridHeader = ({
+  children,
+  className,
+  ...props
+}: {
+  className?: string
+  children: React.ReactNode
+}) => (
   <div
-    className="pt-6 text-md flex flex-row items-center font-medium"
-    {...props}></div>
+    className={`pt-6 text-md flex flex-row items-center font-medium ${className}`}
+    {...props}>
+    {children}
+  </div>
 )
 
 const getItemsData = (edges: EdgeLike[], nodes: NodeLike[]) => {
@@ -115,8 +124,7 @@ const getItemsData = (edges: EdgeLike[], nodes: NodeLike[]) => {
         id: `${edge.from?.id}${edge.to?.id}` || title,
         labels,
         title,
-        version:
-          edge.to ? `Resolves to: ${stringifyNode(edge.to)}` : '',
+        version: edge.to ? stringifyNode(edge.to) : '',
         sameItems,
         stacked: false,
         size: 1,
@@ -284,17 +292,19 @@ export const ExplorerGrid = () => {
             No Results
           </GridHeader>
         : items.length > 1 ?
-          <GridHeader>Results</GridHeader>
+          <GridHeader className="mb-4">Results</GridHeader>
         : <GridHeader>
             <GalleryVertical size={22} className="mr-3" />
             Selected Item
           </GridHeader>
         }
-        {items.map(item =>
-          selected ?
-            <SelectedItem item={item} key={item.id} />
-          : <ResultItem item={item} key={item.id} />,
-        )}
+        <div className="flex flex-col gap-6">
+          {items.map(item =>
+            selected ?
+              <SelectedItem item={item} key={item.id} />
+            : <ResultItem item={item} key={item.id} />,
+          )}
+        </div>
       </div>
       <div className="col-span-2">
         {dependencies && dependencies.length > 0 ?
