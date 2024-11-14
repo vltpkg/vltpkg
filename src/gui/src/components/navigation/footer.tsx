@@ -1,4 +1,4 @@
-import { useTheme } from './theme-provider.jsx'
+import { useTheme } from '@/components/ui/theme-provider.jsx'
 
 interface SocialMediaLink {
   name: string

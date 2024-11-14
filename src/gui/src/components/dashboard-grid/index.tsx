@@ -91,7 +91,7 @@ export const DashboardItem = ({
   return (
     <a
       href="#"
-      className="border-[1px] rounded-lg w-96 hover:border-muted-foreground hover:transition-all"
+      className="border-[1px] rounded-lg w-96 hover:border-muted-foreground hover:transition-all bg-card"
       onClick={onDashboardItemClick}>
       <div className="flex items-start h-20 justify-between px-4 py-3">
         <CardTitle className="self-end text-md">
@@ -137,14 +137,44 @@ export const DashboardItem = ({
   )
 }
 
-export const DashboardGrid = () => {
+const DashboardGrid = () => {
   const dashboard = useGraphStore(state => state.dashboard)
 
   return (
-    <div className="flex items-center justify-center flex-wrap gap-8">
-      {dashboard?.projects.map((item, index) => (
-        <DashboardItem key={index} item={item} />
-      ))}
+    <div className="flex flex-col grow bg-secondary dark:bg-black px-8 py-8 gap-16">
+      {/* all the projects */}
+      <div className="flex flex-col gap-4">
+        <DashboardGrid.Header>All Projects</DashboardGrid.Header>
+        <div className="flex flex-row flex-wrap gap-8">
+          {dashboard?.projects.map((item, index) => (
+            <DashboardItem key={index} item={item} />
+          ))}
+        </div>
+      </div>
+
+      {/* user `pinned` projects */}
+      <div className="flex flex-col gap-4">
+        <DashboardGrid.Header>Pinned Projects</DashboardGrid.Header>
+        <div className="flex flex-row flex-wrap gap-8">
+          {/* put the projects in here */}
+        </div>
+      </div>
     </div>
   )
 }
+
+DashboardGrid.Header = ({
+  children,
+  className = '',
+}: {
+  children: React.ReactNode
+  className?: string
+}) => {
+  return (
+    <h4 className={`text-sm font-medium tracking-wide ${className}`}>
+      {children}
+    </h4>
+  )
+}
+
+export { DashboardGrid }
