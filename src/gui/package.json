@@ -17,6 +17,7 @@
     "class-variance-authority": "catalog:",
     "clsx": "catalog:",
     "date-fns": "^4.1.0",
+    "framer-motion": "^11.11.15",
     "gsap": "^3.12.5",
     "lucide-react": "catalog:",
     "react": "catalog:",
