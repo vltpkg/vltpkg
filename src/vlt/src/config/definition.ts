@@ -293,23 +293,24 @@ export const definition = j
     'fetch-retries': {
       hint: 'n',
       description: `Number of retries to perform when encountering network
-                    or other likely-transient errors from git hosts.`,
+                    errors or likely-transient errors from git hosts.`,
       default: 3,
     },
     'fetch-retry-factor': {
       hint: 'n',
-      description: `The exponential factor to use when retrying`,
+      description: `The exponential backoff factor to use when retrying
+                    requests due to network issues.`,
       default: 2,
     },
     'fetch-retry-mintimeout': {
       hint: 'n',
       description: `Number of milliseconds before starting first retry`,
-      default: 60_000,
+      default: 0,
     },
     'fetch-retry-maxtimeout': {
       hint: 'n',
       description: `Maximum number of milliseconds between two retries`,
-      default: 1000,
+      default: 30_000,
     },
   })
 

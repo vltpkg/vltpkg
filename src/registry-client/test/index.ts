@@ -11,7 +11,16 @@ t.saveFixture = true
 
 const etag = '"an etag is a gate in reverse, think about it"'
 const date = new Date('2023-01-20')
+let dropConnection = false
+
+// verify that it works even if connections get dropped sometimes
+t.beforeEach(() => dropConnection = true)
+
 const registry = createServer((req, res) => {
+  if (dropConnection) {
+    dropConnection = false
+    return setTimeout(() => req.socket.destroy())
+  }
   res.setHeader('connection', 'close')
   res.setHeader('date', new Date().toUTCString())
   const { url = '' } = req
