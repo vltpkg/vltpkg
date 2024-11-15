@@ -3,7 +3,7 @@ import { register } from '@vltpkg/cache-unzip'
 import { type Integrity } from '@vltpkg/types'
 import { XDG } from '@vltpkg/xdg'
 import { loadPackageJson } from 'package-json-from-dist'
-import { Agent, type Dispatcher } from 'undici'
+import { Agent, RetryAgent, type Dispatcher } from 'undici'
 import { addHeader } from './add-header.js'
 import { CacheEntry } from './cache-entry.js'
 import { bun, deno, node } from './env.js'
@@ -19,6 +19,17 @@ export type RegistryClientOptions = {
    * @default `$HOME/.config/vlt/cache`
    */
   cache?: string
+  /**
+   * Number of retries to perform when encountering network errors or
+   * likely-transient errors from git hosts.
+   */
+  'fetch-retries'?: number
+  /** The exponential backoff factor to use when retrying git hosts */
+  'fetch-retry-factor'?: number
+  /** Number of milliseconds before starting first retry */
+  'fetch-retry-mintimeout'?: number
+  /** Maximum number of milliseconds between two retries */
+  'fetch-retry-maxtimeout'?: number
 }
 
 export type RegistryClientRequestOptions = Omit<
@@ -91,19 +102,41 @@ const agentOptions: Agent.Options = {
 const xdg = new XDG('vlt')
 
 export class RegistryClient {
-  agent: Agent
+  agent: RetryAgent
   cache: Cache
 
-  constructor({
-    cache = xdg.cache('registry-client'),
-  }: RegistryClientOptions) {
+  constructor(options: RegistryClientOptions) {
+    const {
+      cache = xdg.cache('registry-client'),
+      'fetch-retry-factor': timeoutFactor = 2,
+      'fetch-retry-mintimeout': minTimeout = 0,
+      'fetch-retry-maxtimeout': maxTimeout = 30_000,
+      'fetch-retries': maxRetries = 3,
+    } = options
     this.cache = new Cache({
       path: cache,
       onDiskWrite(_path, key, data) {
         if (CacheEntry.decode(data).isGzip) register(cache, key)
       },
     })
-    this.agent = new Agent(agentOptions)
+    const dispatch = new Agent(agentOptions)
+    this.agent = new RetryAgent(dispatch, {
+      maxRetries,
+      timeoutFactor,
+      minTimeout,
+      maxTimeout,
+      retryAfter: true,
+      errorCodes: [
+        'ECONNREFUSED',
+        'ECONNRESET',
+        'EHOSTDOWN',
+        'ENETDOWN',
+        'ENETUNREACH',
+        'ENOTFOUND',
+        'EPIPE',
+        'UND_ERR_SOCKET',
+      ],
+    })
   }
 
   async request(

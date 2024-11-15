@@ -139,11 +139,12 @@ More documentation available at <https://docs.vlt.sh>
                        When not set explicitly, \`--depth=1\` will be used for git
                        hosts known to support this behavior.
 
-  --fetch-retries=<n>  Number of retries to perform when encountering network or
-                       other likely-transient errors from git hosts.
+  --fetch-retries=<n>  Number of retries to perform when encountering network
+                       errors or likely-transient errors from git hosts.
 
   --fetch-retry-factor=<n>
-                       The exponential factor to use when retrying
+                       The exponential backoff factor to use when retrying
+                       requests due to network issues.
 
   --fetch-retry-mintimeout=<n>
                        Number of milliseconds before starting first retry
