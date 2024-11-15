@@ -23,6 +23,8 @@ export type Action = {
   updateStamp: (stamp: string) => void
   updateTheme: (theme: State['theme']) => void
   reset: () => void
+  saveProject: (item: DashboardDataProject) => void
+  updateSavedProjects: (savedProjects: DashboardDataProject[]) => void
 }
 
 /**
@@ -103,6 +105,10 @@ export type State = {
    * Store the current theme value.
    */
   theme: 'light' | 'dark'
+  /**
+   * Saved / pinned projects in localStorage.
+   */
+  savedProjects?: DashboardDataProject[]
 }
 
 export type DashboardTools =
