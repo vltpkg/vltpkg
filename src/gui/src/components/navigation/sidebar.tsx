@@ -5,9 +5,13 @@ import {
   LayoutDashboard,
   Lock,
   LockOpen,
+  ChevronRight,
+  Folder,
+  FolderOpen,
 } from 'lucide-react'
-import { motion } from 'framer-motion'
+import { AnimatePresence, motion } from 'framer-motion'
 import { SidebarThemeSwitcher } from '../ui/theme-switcher.jsx'
+import { useGraphStore } from '@/state/index.js'
 
 interface SidebarLink {
   name: string
@@ -68,11 +72,13 @@ Sidebar.Desktop = ({
   animate,
   setAnimate,
 }: SidebarScreenProps) => {
+  const { savedProjects } = useGraphStore()
+
   return (
     <motion.div
       onMouseEnter={() => setIsOpen(true)}
       onMouseLeave={() => setIsOpen(false)}
-      className={`hidden md:flex sticky top-0 w-[${SIDEBAR_WIDTH.open}] h-screen border-r-[1px] px-4 flex-shrink-0`}
+      className={`relative hidden md:flex sticky top-0 w-[${SIDEBAR_WIDTH.open}] h-screen border-r-[1px] flex-shrink-0`}
       animate={{
         width:
           animate ?
@@ -80,22 +86,44 @@ Sidebar.Desktop = ({
             : SIDEBAR_WIDTH.closed
           : SIDEBAR_WIDTH.open,
       }}>
-      <Sidebar.Body>
+      <Sidebar.Divider
+        isOpen={isOpen}
+        animate={animate}
+        className="mt-[52px]"
+      />
+      <Sidebar.Body className="px-4">
         {/* top of the sidebar */}
         <div className="flex flex-col gap-4">
-          <Sidebar.Logo
-            className="mt-4 mb-4"
-            isOpen={isOpen}
-            animate={animate}
-          />
-          {sidebarLinks.map((link, idx) => (
-            <Sidebar.Link
-              link={link}
-              key={idx}
+          <div className="flex flex-col gap-4">
+            <Sidebar.Logo
+              className="mt-4 mb-4"
               isOpen={isOpen}
               animate={animate}
             />
-          ))}
+            {sidebarLinks.map((link, idx) => (
+              <Sidebar.Link
+                link={link}
+                key={idx}
+                isOpen={isOpen}
+                animate={animate}
+              />
+            ))}
+          </div>
+
+          {/* category - pinned projects */}
+          <Sidebar.Category
+            header="pinned"
+            title="pinned projects"
+            animate={animate}
+            isOpen={isOpen}>
+            {savedProjects?.map((project, idx) => (
+              <Sidebar.Item
+                key={idx}
+                label={project.name}
+                icon={<Folder size={18} />}
+              />
+            ))}
+          </Sidebar.Category>
         </div>
 
         {/* bottom of the sidebar */}
@@ -104,6 +132,140 @@ Sidebar.Desktop = ({
           <Sidebar.Lock animate={animate} setAnimate={setAnimate} />
         </div>
       </Sidebar.Body>
+      <Sidebar.Divider
+        isOpen={isOpen}
+        animate={animate}
+        className="mt-[758px]"
+      />
+    </motion.div>
+  )
+}
+
+Sidebar.Category = ({
+  header,
+  title,
+  children,
+  animate,
+  isOpen,
+}: {
+  header: string
+  title: string
+  children: React.ReactNode
+  animate: boolean
+  isOpen: boolean
+}) => {
+  const [isExpanded, setIsExpanded] = useState(false)
+
+  const contentVariants = {
+    hidden: { opacity: 0 },
+    show: { opacity: 1, transition: { staggerChildren: 0.05 } },
+    exit: { opacity: 0, transition: { staggerChildren: 0.05 } },
+  }
+
+  return (
+    <div className="flex flex-col mt-6">
+      {/* category title */}
+      <motion.p
+        className="text-xs font-medium text-muted-foreground/50 uppercase select-none tracking-wide"
+        animate={{
+          opacity:
+            animate ?
+              isOpen ? 1
+              : 0
+            : 1,
+        }}>
+        {header}
+      </motion.p>
+      {/* category item */}
+      <p
+        className="flex flex-row justify-start items-center gap-2 group/sidebar-category-item cursor-pointer mt-4 mb-2 select-none"
+        onClick={() => setIsExpanded(!isExpanded)}>
+        {isExpanded ?
+          <FolderOpen size={20} />
+        : <Folder size={20} />}
+
+        <motion.span
+          className="capitalize flex text-neutral-700 dark:text-neutral-200 text-sm font-medium group-hover/sidebar-category-item:translate-x-1 transition duration-150"
+          animate={{
+            display:
+              animate ?
+                isOpen ? 'inline-block'
+                : 'none'
+              : 'inline-block',
+            opacity:
+              animate ?
+                isOpen ? 1
+                : 0
+              : 1,
+          }}>
+          {title}
+        </motion.span>
+
+        <motion.span
+          className="group-hover/sidebar-category-item:translate-x-1 transition duration-150"
+          animate={{
+            display:
+              animate ?
+                isOpen ? 'inline-block'
+                : 'none'
+              : 'inline-block',
+            opacity:
+              animate ?
+                isOpen ? 1
+                : 0
+              : 1,
+          }}>
+          <ChevronRight
+            className="transition duration-150"
+            size={16}
+            style={{
+              transform: isExpanded ? 'rotate(90deg)' : undefined,
+            }}
+          />
+        </motion.span>
+      </p>
+      {/* category content */}
+      <AnimatePresence>
+        {isExpanded && (
+          <motion.div
+            className="flex flex-col gap-2"
+            variants={contentVariants}
+            initial="hidden"
+            animate={
+              animate ?
+                isOpen ?
+                  'show'
+                : 'undefined'
+              : 'show'
+            }
+            exit="exit">
+            {/* individual projects */}
+            {children}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  )
+}
+
+Sidebar.Item = ({
+  label,
+  icon,
+}: {
+  label: string
+  icon: React.ReactNode
+}) => {
+  const itemVariants = {
+    hidden: { opacity: 0 },
+    show: { opacity: 1 },
+    exit: { opacity: 0 },
+  }
+  return (
+    <motion.div variants={itemVariants}>
+      <p className="flex items-center gap-2 text-neutral-700 hover:text-black dark:text-muted-foreground/50 dark:hover:text-foreground text-sm font-medium select-none cursor-pointer hover:translate-x-2 transition duration-150">
+        {icon}
+        <span>{label}</span>
+      </p>
     </motion.div>
   )
 }
@@ -130,9 +292,16 @@ Sidebar.Mobile = () => {
   return <div></div>
 }
 
-Sidebar.Body = ({ children }: { children: React.ReactNode }) => {
+Sidebar.Body = ({
+  children,
+  className,
+}: {
+  children: React.ReactNode
+  className?: string
+}) => {
   return (
-    <div className="flex flex-col justify-between h-full fixed">
+    <div
+      className={`flex flex-col justify-between h-full fixed ${className}`}>
       {children}
     </div>
   )
@@ -171,6 +340,32 @@ Sidebar.Link = ({
         </motion.span>
       </a>
     </>
+  )
+}
+
+Sidebar.Divider = ({
+  isOpen,
+  animate,
+  className = '',
+}: {
+  isOpen: boolean
+  animate: boolean
+  className?: string
+}) => {
+  return (
+    <motion.div
+      className={`fixed border-t-[1px] ${className}`}
+      initial={{
+        width: SIDEBAR_WIDTH.open,
+      }}
+      animate={{
+        width:
+          animate ?
+            isOpen ? SIDEBAR_WIDTH.open
+            : SIDEBAR_WIDTH.closed
+          : SIDEBAR_WIDTH.open,
+      }}
+    />
   )
 }
 
