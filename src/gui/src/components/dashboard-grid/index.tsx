@@ -13,7 +13,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip.jsx'
 import { Ellipsis } from 'lucide-react'
-import { motion } from 'framer-motion'
+import { AnimatePresence, motion } from 'framer-motion'
 
 type SelectDashboardItemOptions = {
   updateActiveRoute: Action['updateActiveRoute']
@@ -31,6 +31,24 @@ import {
   DropdownMenuGroup,
   DropdownMenuItem,
 } from '@/components/ui/dropdown-menu.jsx'
+
+const itemVariants = {
+  hidden: { opacity: 0 },
+  show: { opacity: 1 },
+  exit: { opacity: 0 },
+}
+
+const pVariants = {
+  hidden: { opacity: 0 },
+  show: { opacity: 1 },
+  exit: { opacity: 0 },
+}
+
+const gridVariants = {
+  hidden: { opacity: 0 },
+  show: { opacity: 1, transition: { staggerChildren: 0.05 } },
+  exit: { opacity: 0 },
+}
 
 const selectDashboardItem = async ({
   updateActiveRoute,
@@ -124,8 +142,12 @@ export const DashboardItem = ({
   }
 
   return (
-    <a
+    <motion.a
       href="#"
+      variants={itemVariants}
+      initial="hidden"
+      animate="show"
+      exit="exit"
       className="border-[1px] rounded-lg w-96 hover:border-muted-foreground transition-all duration-250 bg-card"
       onClick={onDashboardItemClick}
       onMouseEnter={() => setIsHovered(true)}
@@ -198,7 +220,7 @@ export const DashboardItem = ({
           ))}
         </div>
       </div>
-    </a>
+    </motion.a>
   )
 }
 
@@ -224,37 +246,59 @@ const DashboardGrid = () => {
   }, [dashboard, savedProjects])
 
   return (
-    <div className="flex flex-col grow bg-secondary dark:bg-black px-8 py-8 gap-16">
-      {/* Render unsaved projects */}
-      <div className="flex flex-col gap-4">
-        <DashboardGrid.Header>All Projects</DashboardGrid.Header>
-        <div className="flex flex-row flex-wrap gap-8">
-          {unsavedProjects?.length ?
-            unsavedProjects.map((item, index) => (
-              <DashboardItem key={index} item={item} />
-            ))
-          : <p className="text-sm text-muted-foreground/50">
-              No projects available
-            </p>
-          }
+    <AnimatePresence>
+      <div className="flex flex-col grow bg-secondary dark:bg-black px-8 py-8 gap-16">
+        {/* Render unsaved projects */}
+        <div className="flex flex-col gap-4">
+          <DashboardGrid.Header>All Projects</DashboardGrid.Header>
+          <motion.div
+            variants={gridVariants}
+            initial="hidden"
+            animate="show"
+            exit="exit"
+            className="flex flex-row flex-wrap gap-8">
+            {unsavedProjects?.length ?
+              unsavedProjects.map((item, index) => (
+                <DashboardItem key={index} item={item} />
+              ))
+            : <motion.p
+                variants={pVariants}
+                initial="hidden"
+                animate="show"
+                exit="exit"
+                className="text-sm text-muted-foreground/50">
+                No projects available
+              </motion.p>
+            }
+          </motion.div>
         </div>
-      </div>
 
-      {/* Render pinned projects */}
-      <div className="flex flex-col gap-4">
-        <DashboardGrid.Header>Pinned Projects</DashboardGrid.Header>
-        <div className="flex flex-row flex-wrap gap-8">
-          {savedProjects?.length ?
-            savedProjects.map((item, index) => (
-              <DashboardItem key={index} item={item} />
-            ))
-          : <p className="text-sm text-muted-foreground/50">
-              No pinned projects
-            </p>
-          }
+        {/* Render pinned projects */}
+        <div className="flex flex-col gap-4">
+          <DashboardGrid.Header>Pinned Projects</DashboardGrid.Header>
+          <motion.div
+            variants={gridVariants}
+            initial="hidden"
+            animate="show"
+            exit="exit"
+            className="flex flex-row flex-wrap gap-8">
+            {savedProjects?.length ?
+              savedProjects.map((item, index) => (
+                <DashboardItem key={index} item={item} />
+              ))
+            : <motion.p
+                variants={pVariants}
+                initial="hidden"
+                animate="show"
+                exit="exit"
+                className="text-sm text-muted-foreground/50">
+                No pinned projects
+              </motion.p>
+            }
+          </motion.div>
         </div>
       </div>
-    </div>
+    </AnimatePresence>
   )
 }
 
