@@ -1,6 +1,13 @@
 import { useState } from 'react'
-import { Bird, LucideIcon, LayoutDashboard } from 'lucide-react'
+import {
+  Bird,
+  LucideIcon,
+  LayoutDashboard,
+  Lock,
+  LockOpen,
+} from 'lucide-react'
 import { motion } from 'framer-motion'
+import { SidebarThemeSwitcher } from '../ui/theme-switcher.jsx'
 
 interface SidebarLink {
   name: string
@@ -8,14 +15,11 @@ interface SidebarLink {
   icon: LucideIcon
 }
 
-interface SidebarProps {
-  animate?: boolean
-}
-
 interface SidebarScreenProps {
   isOpen: boolean
   setIsOpen: React.Dispatch<React.SetStateAction<boolean>>
   animate: boolean
+  setAnimate: React.Dispatch<React.SetStateAction<boolean>>
 }
 
 const sidebarLinks: SidebarLink[] = [
@@ -41,8 +45,9 @@ const SIDEBAR_WIDTH = {
  *
  * Two different sidebars are rendered on < `sm` and > `md` breakpoints.
  * */
-const Sidebar = ({ animate = true }: SidebarProps) => {
+const Sidebar = () => {
   const [isOpen, setIsOpen] = useState<boolean>(false)
+  const [animate, setAnimate] = useState<boolean>(true)
 
   return (
     <>
@@ -50,12 +55,9 @@ const Sidebar = ({ animate = true }: SidebarProps) => {
         isOpen={isOpen}
         setIsOpen={setIsOpen}
         animate={animate}
+        setAnimate={setAnimate}
       />
-      <Sidebar.Mobile
-        isOpen={isOpen}
-        setIsOpen={setIsOpen}
-        animate={animate}
-      />
+      <Sidebar.Mobile />
     </>
   )
 }
@@ -64,6 +66,7 @@ Sidebar.Desktop = ({
   isOpen,
   setIsOpen,
   animate,
+  setAnimate,
 }: SidebarScreenProps) => {
   return (
     <motion.div
@@ -96,17 +99,34 @@ Sidebar.Desktop = ({
         </div>
 
         {/* bottom of the sidebar */}
-        <div className="flex flex-col mb-6">test</div>
+        <div className="flex flex-col mb-6 gap-2">
+          <SidebarThemeSwitcher />
+          <Sidebar.Lock animate={animate} setAnimate={setAnimate} />
+        </div>
       </Sidebar.Body>
     </motion.div>
   )
 }
 
-Sidebar.Mobile = ({
-  isOpen,
-  setIsOpen,
+Sidebar.Lock = ({
   animate,
-}: SidebarScreenProps) => {
+  setAnimate,
+}: {
+  animate: boolean
+  setAnimate: React.Dispatch<React.SetStateAction<boolean>>
+}) => {
+  return (
+    <div
+      className="cursor-pointer"
+      onClick={() => setAnimate(!animate)}>
+      {animate ?
+        <LockOpen size={20} />
+      : <Lock size={20} />}
+    </div>
+  )
+}
+
+Sidebar.Mobile = () => {
   return <div></div>
 }
 
