@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, type MouseEvent } from 'react'
 import {
   Bird,
   LucideIcon,
@@ -10,8 +10,20 @@ import {
   FolderOpen,
 } from 'lucide-react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { SidebarThemeSwitcher } from '../ui/theme-switcher.jsx'
-import { useGraphStore } from '@/state/index.js'
+import { SidebarThemeSwitcher } from '@/components/ui/theme-switcher.jsx'
+import { DEFAULT_QUERY, useGraphStore } from '@/state/index.js'
+import {
+  type DashboardDataProject,
+  type Action,
+} from '@/state/types.js'
+
+type selectProjectItem = {
+  updateActiveRoute: Action['updateActiveRoute']
+  updateErrorCause: Action['updateErrorCause']
+  updateQuery: Action['updateQuery']
+  updateStamp: Action['updateStamp']
+  item: DashboardDataProject
+}
 
 interface SidebarLink {
   name: string
@@ -72,7 +84,27 @@ Sidebar.Desktop = ({
   animate,
   setAnimate,
 }: SidebarScreenProps) => {
-  const { savedProjects } = useGraphStore()
+  const {
+    updateActiveRoute,
+    updateErrorCause,
+    updateQuery,
+    updateStamp,
+    savedProjects,
+  } = useGraphStore()
+
+  const onProjectClick = (
+    e: MouseEvent,
+    item: DashboardDataProject,
+  ) => {
+    e.preventDefault()
+    selectProjectItem({
+      updateActiveRoute,
+      updateErrorCause,
+      updateQuery,
+      updateStamp,
+      item,
+    }).catch((err: unknown) => console.error(err))
+  }
 
   return (
     <motion.div
@@ -119,6 +151,9 @@ Sidebar.Desktop = ({
             {savedProjects?.map((project, idx) => (
               <Sidebar.Item
                 key={idx}
+                onClick={(e: MouseEvent) =>
+                  onProjectClick(e, project)
+                }
                 label={project.name}
                 icon={<Folder size={18} />}
               />
@@ -251,9 +286,11 @@ Sidebar.Category = ({
 Sidebar.Item = ({
   label,
   icon,
+  onClick,
 }: {
   label: string
   icon: React.ReactNode
+  onClick?: (e: MouseEvent) => void
 }) => {
   const itemVariants = {
     hidden: { opacity: 0 },
@@ -262,10 +299,13 @@ Sidebar.Item = ({
   }
   return (
     <motion.div variants={itemVariants}>
-      <p className="flex items-center gap-2 text-neutral-700 hover:text-black dark:text-muted-foreground/50 dark:hover:text-foreground text-sm font-medium select-none cursor-pointer hover:translate-x-2 transition duration-150">
+      <a
+        href="#"
+        onClick={onClick}
+        className="flex items-center gap-2 text-neutral-700 hover:text-black dark:text-muted-foreground/50 dark:hover:text-foreground text-sm font-medium select-none cursor-pointer hover:translate-x-2 transition duration-150">
         {icon}
         <span>{label}</span>
-      </p>
+      </a>
     </motion.div>
   )
 }
@@ -401,6 +441,49 @@ Sidebar.Logo = ({
       </motion.span>
     </a>
   )
+}
+
+const selectProjectItem = async ({
+  updateActiveRoute,
+  updateErrorCause,
+  updateQuery,
+  updateStamp,
+  item,
+}: selectProjectItem) => {
+  let req
+  try {
+    req = await fetch('/select-project', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        path: item.path,
+      }),
+    })
+  } catch (err) {
+    console.error(err)
+    updateActiveRoute('/error')
+    updateErrorCause('Failed to request project selection.')
+    return
+  }
+
+  let projectSelected = false
+  try {
+    projectSelected = (await req.json()) === 'ok'
+  } catch (err) {
+    console.error(err)
+  }
+
+  if (projectSelected) {
+    window.scrollTo(0, 0)
+    updateQuery(DEFAULT_QUERY)
+    updateActiveRoute('/explore')
+    updateStamp(String(Math.random()).slice(2))
+  } else {
+    updateActiveRoute('/error')
+    updateErrorCause('Failed to select project.')
+  }
 }
 
 export { Sidebar }
