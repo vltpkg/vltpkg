@@ -8,6 +8,7 @@ import {
   ChevronRight,
   Folder,
   FolderOpen,
+  Library,
 } from 'lucide-react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { SidebarThemeSwitcher } from '@/components/ui/theme-switcher.jsx'
@@ -29,6 +30,7 @@ interface SidebarLink {
   name: string
   href: string
   icon: LucideIcon
+  target?: 'blank'
 }
 
 interface SidebarScreenProps {
@@ -43,6 +45,12 @@ const sidebarLinks: SidebarLink[] = [
     name: 'Dashboard',
     href: '/dashboard',
     icon: LayoutDashboard,
+  },
+  {
+    name: 'Docs',
+    href: 'https://docs.vlt.sh/cli/commands/query',
+    icon: Library,
+    target: 'blank',
   },
 ]
 
@@ -360,6 +368,7 @@ Sidebar.Link = ({
     <>
       <a
         href={link.href}
+        target={link.target ? link.target : '_top'}
         className="flex justify-start gap-2 group/sidebar-link">
         <link.icon width={20} height={20} />
         <motion.span
