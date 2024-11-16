@@ -5,6 +5,39 @@
  * Make sure to inspect the output below.  Do not ignore changes!
  */
 'use strict'
+exports[`test/ideal/append-nodes.ts > TAP > append a new node to a graph from a registry > should have fixed the spec name for the nameless git dep 1`] = `
+Array [
+  Array [
+    "foo",
+    Object {
+      "spec": "foo@^1.0.0",
+      "type": "prod",
+    },
+  ],
+  Array [
+    "bar",
+    Object {
+      "spec": "bar@",
+      "type": "prod",
+    },
+  ],
+  Array [
+    "borked",
+    Object {
+      "spec": "borked@",
+      "type": "prod",
+    },
+  ],
+  Array [
+    "ipsum",
+    Object {
+      "spec": "ipsum@github:lorem/ipsum",
+      "type": "prod",
+    },
+  ],
+]
+`
+
 exports[`test/ideal/append-nodes.ts > TAP > append different type of dependencies > should install different type of deps on different conditions 1`] = `
 @vltpkg/graph.Graph {
   options: { registries: {} },

@@ -393,7 +393,7 @@ export class Graph implements GraphLike {
       ) {
         edge.to = replacement
       } else {
-        edge.to = undefined
+        edge.from.edgesOut.delete(edge.spec.name)
       }
     }
   }
