@@ -27,8 +27,26 @@ export const buildIdealFromStartingGraph = async (
   // are going to be pruned from the resulting object.
   const importerSpecs = getImporterSpecs(options)
 
+  // merge values found on importer specs with
+  // user-provided values from `options.add`
+  for (const [importerId, deps] of importerSpecs.add) {
+    if (!options.add.has(importerId)) {
+      options.add.set(importerId, deps)
+      continue
+    }
+
+    // merge any deps found when reading the importers manifest
+    // with the ones provided by the user in the `add` options,
+    // user-provided deps should take precedence
+    for (const [depName, dep] of deps) {
+      if (!options.add.get(importerId)?.has(depName)) {
+        options.add.get(importerId)?.set(depName, dep)
+      }
+    }
+  }
+
   // add nodes, fetching remote manifests for each dependency to be added
-  await addNodes({ ...options, ...importerSpecs })
+  await addNodes(options)
 
   // move things into their default locations, if possible
   for (const node of options.graph.nodes.values()) {
@@ -36,7 +54,7 @@ export const buildIdealFromStartingGraph = async (
   }
 
   // removes any dependencies that are listed in the `remove` option
-  removeNodes(options)
+  removeNodes({ ...options, remove: importerSpecs.remove })
 
   options.graph.gc()
 

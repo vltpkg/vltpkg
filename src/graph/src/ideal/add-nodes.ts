@@ -53,6 +53,7 @@ export const addNodes = async ({
     // Add new nodes for packages defined in the dependencies list fetching
     // metadata from the registry manifests and updating the graph
     await appendNodes(
+      dependencies,
       packageInfo,
       graph,
       importer,

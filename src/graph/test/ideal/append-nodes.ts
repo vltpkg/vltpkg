@@ -5,7 +5,10 @@ import { type Manifest } from '@vltpkg/types'
 import { inspect } from 'node:util'
 import { PathScurry } from 'path-scurry'
 import t from 'tap'
-import { type Dependency } from '../../src/dependencies.js'
+import {
+  asDependency,
+  type Dependency,
+} from '../../src/dependencies.js'
 import { Graph } from '../../src/graph.js'
 import { appendNodes } from '../../src/ideal/append-nodes.js'
 import { objectLikeOutput } from '../../src/visualization/object-like-output.js'
@@ -50,6 +53,10 @@ t.test('append a new node to a graph from a registry', async t => {
       metaborked: '*',
     },
   }
+  const ipsumManifest: Manifest = {
+    name: 'ipsum',
+    version: '1.0.0',
+  }
   const metaborkedManifest: Manifest = {
     name: 'metaborked',
     version: '1.0.0',
@@ -69,8 +76,34 @@ t.test('append a new node to a graph from a registry', async t => {
     ...configData,
     mainManifest,
   })
+  const depFoo = asDependency({
+    spec: Spec.parse('foo@^1.0.0'),
+    type: 'prod',
+  })
+  const depBar = asDependency({
+    spec: Spec.parse('bar@'),
+    type: 'prod',
+  })
+  const depNamelessGit = asDependency({
+    spec: Spec.parseArgs('github:lorem/ipsum'),
+    type: 'prod',
+  })
+  const depBorked = asDependency({
+    spec: Spec.parse('borked'),
+    type: 'prod',
+  })
+  const add = new Map([
+    ['foo', depFoo],
+    ['bar', depBar],
+    ['borked', depBorked],
+    // nameless specs get their stringified value as the key
+    [String(depNamelessGit.spec), depNamelessGit],
+  ])
   const packageInfo = {
     async manifest(spec: Spec) {
+      if (spec.type === 'git') {
+        return ipsumManifest
+      }
       switch (spec.name) {
         case 'metaborked':
           return metaborkedManifest
@@ -94,15 +127,11 @@ t.test('append a new node to a graph from a registry', async t => {
   )
   const scurry = new PathScurry(t.testdirName)
   await appendNodes(
+    add,
     packageInfo,
     graph,
     graph.mainImporter,
-    [
-      {
-        spec: Spec.parse('foo@^1.0.0'),
-        type: 'prod',
-      },
-    ],
+    [depFoo],
     scurry,
     configData,
     new Set(),
@@ -134,15 +163,11 @@ t.test('append a new node to a graph from a registry', async t => {
   t.equal(bazNodeSet?.size, 1)
 
   await appendNodes(
+    add,
     packageInfo,
     graph,
     graph.mainImporter,
-    [
-      {
-        spec: Spec.parse('bar@'),
-        type: 'prod',
-      },
-    ],
+    [depBar],
     new PathScurry(t.testdirName),
     configData,
     new Set(),
@@ -155,21 +180,35 @@ t.test('append a new node to a graph from a registry', async t => {
 
   await t.rejects(
     appendNodes(
+      add,
       packageInfo,
       graph,
       graph.mainImporter,
-      [
-        {
-          spec: Spec.parse('borked'),
-          type: 'prod',
-        },
-      ],
+      [depBorked],
       new PathScurry(t.testdirName),
       configData,
       new Set(),
     ),
     /ERR/,
     'should not intercept errors on fetching / parsing manifest',
+  )
+
+  await appendNodes(
+    add,
+    packageInfo,
+    graph,
+    graph.mainImporter,
+    [depNamelessGit],
+    new PathScurry(t.testdirName),
+    configData,
+    new Set(),
+  )
+  t.matchSnapshot(
+    [...add].map(([name, dep]) => [
+      name,
+      { spec: String(dep.spec), type: dep.type },
+    ]),
+    'should have fixed the spec name for the nameless git dep',
   )
 })
 
@@ -212,31 +251,40 @@ t.test('append different type of dependencies', async t => {
       }
     },
   } as PackageInfoClient
+  const depFoo = asDependency({
+    spec: Spec.parse('foo', '^1.0.0'),
+    type: 'dev',
+  })
+  const depBar = asDependency({
+    spec: Spec.parse('bar', '^1.0.0'),
+    type: 'optional',
+  })
+  const depMissing = asDependency({
+    spec: Spec.parse('missing', '^1.0.0'),
+    type: 'prod',
+  })
+  const add = new Map([
+    ['foo', depFoo],
+    ['bar', depBar],
+    ['missing', depMissing],
+  ])
   await appendNodes(
+    add,
     packageInfo,
     graph,
     graph.mainImporter,
-    [
-      {
-        spec: Spec.parse('foo', '^1.0.0'),
-        type: 'dev',
-      },
-    ],
+    [depFoo],
     new PathScurry(t.testdirName),
     configData,
     new Set(),
   )
 
   await appendNodes(
+    add,
     packageInfo,
     graph,
     graph.mainImporter,
-    [
-      {
-        spec: Spec.parse('bar', '^1.0.0'),
-        type: 'optional',
-      },
-    ],
+    [depBar],
     new PathScurry(t.testdirName),
     configData,
     new Set(),
@@ -244,15 +292,11 @@ t.test('append different type of dependencies', async t => {
 
   t.rejects(
     appendNodes(
+      add,
       packageInfo,
       graph,
       graph.mainImporter,
-      [
-        {
-          spec: Spec.parse('missing', '^1.0.0'),
-          type: 'prod',
-        },
-      ],
+      [depMissing],
       new PathScurry(t.testdirName),
       configData,
       new Set(),
@@ -303,6 +347,18 @@ t.test('append file type of nodes', async t => {
     ...configData,
     mainManifest,
   })
+  const depFoo = asDependency({
+    spec: Spec.parse('foo@^1.0.0'),
+    type: 'prod',
+  })
+  const depLinked = asDependency({
+    spec: Spec.parse('linked@file:./linked'),
+    type: 'prod',
+  })
+  const add = new Map([
+    ['foo', depFoo],
+    ['linked', depLinked],
+  ])
   const packageInfo = {
     async manifest(spec: Spec) {
       switch (spec.name) {
@@ -322,29 +378,21 @@ t.test('append file type of nodes', async t => {
     },
   } as PackageInfoClient
   await appendNodes(
+    add,
     packageInfo,
     graph,
     graph.mainImporter,
-    [
-      {
-        spec: Spec.parse('linked@file:./linked'),
-        type: 'prod',
-      },
-    ],
+    [depLinked],
     new PathScurry(t.testdirName),
     configData,
     new Set(),
   )
   await appendNodes(
+    add,
     packageInfo,
     graph,
     graph.mainImporter,
-    [
-      {
-        spec: Spec.parse('foo@^1.0.0'),
-        type: 'prod',
-      },
-    ],
+    [depFoo],
     new PathScurry(t.testdirName),
     configData,
     new Set(),
@@ -453,7 +501,9 @@ t.test('resolve against the correct registries', async t => {
       spec: Spec.parse('baz@b:bar@1.x', { registries }),
     },
   ]
+  const add = new Map(deps.map(dep => [dep.spec.name, dep]))
   await appendNodes(
+    add,
     packageInfo,
     graph,
     graph.mainImporter,

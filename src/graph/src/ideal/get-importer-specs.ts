@@ -4,6 +4,8 @@ import {
   type Dependency,
   type RemoveImportersDependenciesMap,
   longDependencyTypes,
+  shorten,
+  asDependency,
 } from '../dependencies.js'
 import { removeSatisfiedSpecs } from './remove-satisfied-specs.js'
 import {
@@ -15,6 +17,7 @@ import { type Edge } from '../edge.js'
 import { type Node } from '../node.js'
 import { type Graph } from '../graph.js'
 import { type DepID } from '@vltpkg/dep-id'
+import { Spec } from '@vltpkg/spec'
 
 export type GetImporterSpecsOptions = BuildIdealAddOptions &
   BuildIdealFromGraphOptions &
@@ -48,14 +51,28 @@ export const getImporterSpecs = ({
     // only a single dependency entry for a given dependency for each importer
     const addDeps = new Map<string, Dependency>()
     const removeDeps = new Set<string>()
+    // if an edge from the graph is not listed in the manifest,
+    // add that edge to the list of dependencies to be removed
     for (const edge of importer.edgesOut.values()) {
-      if (hasDepName(importer, edge)) {
-        addDeps.set(edge.name, {
-          spec: edge.spec,
-          type: edge.type,
-        })
-      } else {
+      if (!hasDepName(importer, edge)) {
         removeDeps.add(edge.name)
+      }
+    }
+    // if a dependency is listed in the manifest but not in the graph,
+    // add that dependency to the list of dependencies to be added
+    for (const depType of longDependencyTypes) {
+      const deps = Object.entries(importer.manifest?.[depType] ?? {})
+      for (const [depName, depSpec] of deps) {
+        const edge = importer.edgesOut.get(depName)
+        if (!edge?.to) {
+          addDeps.set(
+            depName,
+            asDependency({
+              spec: Spec.parse(depName, depSpec),
+              type: shorten(depType, depName, importer.manifest),
+            }),
+          )
+        }
       }
     }
     addResult.set(importer.id, addDeps)

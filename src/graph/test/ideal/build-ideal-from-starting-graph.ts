@@ -42,11 +42,16 @@ const mainManifest = {
     foo: '^1.0.0',
     linked: 'file:./linked',
     missing: '^1.0.0',
+    pnpmdep: '^1.0.0',
   },
 }
 
 const bazManifest = {
   name: 'baz',
+  version: '1.0.0',
+}
+const ipsumManifest = {
+  name: 'ipsum',
   version: '1.0.0',
 }
 const missingManifest = {
@@ -55,6 +60,9 @@ const missingManifest = {
 }
 const packageInfo = {
   async manifest(spec: Spec, options?: any) {
+    if (spec.type === 'git') {
+      return ipsumManifest
+    }
     switch (spec.name) {
       case 'baz':
         return bazManifest
@@ -110,9 +118,6 @@ t.test('build from a virtual graph', async t => {
       [edgeKey(['file', '.'], 'foo')]:
         'prod ^1.0.0 ' +
         joinDepIDTuple(['registry', '', 'foo@1.0.0']),
-      [edgeKey(['file', '.'], 'bar')]:
-        'prod ^1.0.0 ' +
-        joinDepIDTuple(['registry', '', 'bar@1.0.0']),
       [edgeKey(['file', '.'], 'missing')]: 'prod ^1.0.0 MISSING',
       [edgeKey(['registry', '', 'bar@1.0.0'], 'baz')]:
         'prod ^1.0.0 ' +
@@ -151,12 +156,129 @@ t.test('build from a virtual graph', async t => {
             'baz',
             { type: 'prod', spec: Spec.parse('baz', '^1.0.0') },
           ],
+          [
+            String(Spec.parseArgs('github:lorem/ipsum')),
+            {
+              type: 'prod',
+              spec: Spec.parseArgs('github:lorem/ipsum'),
+            },
+          ],
         ]),
       ],
     ]),
     remove: new Map([
       [joinDepIDTuple(['file', '.']), new Set(['bar'])],
     ]),
+  })
+
+  t.matchSnapshot(objectLikeOutput(graph))
+})
+
+t.test('add from manifest file only', async t => {
+  const lockfileData: LockfileData = {
+    options: {
+      registries: {
+        npm: 'https://registry.npmjs.org/',
+        custom: 'https://registry.example.com',
+      },
+    },
+    nodes: {
+      [joinDepIDTuple(['file', '.'])]: [0, 'my-project'],
+    } as Record<DepID, LockfileNode>,
+    edges: {} as LockfileEdges,
+  }
+  const mainManifest = {
+    name: 'my-project',
+    version: '1.0.0',
+    dependencies: {
+      baz: '^1.0.0',
+    },
+  }
+  const projectRoot = t.testdir({
+    'vlt-lock.json': JSON.stringify(lockfileData),
+    'package.json': JSON.stringify(mainManifest),
+  })
+
+  const virtual = loadVirtual({
+    ...configData,
+    projectRoot,
+    mainManifest,
+  })
+
+  const graph = await buildIdealFromStartingGraph({
+    ...configData,
+    projectRoot,
+    packageInfo,
+    scurry: new PathScurry(projectRoot),
+    graph: virtual,
+    add: new Map(),
+    remove: new Map(),
+  })
+
+  t.matchSnapshot(objectLikeOutput(graph))
+})
+
+t.test('remove from manifest file only', async t => {
+  const lockfileData: LockfileData = {
+    options: {
+      registries: {
+        npm: 'https://registry.npmjs.org/',
+        custom: 'https://registry.example.com',
+      },
+    },
+    nodes: {
+      [joinDepIDTuple(['file', '.'])]: [0, 'my-project'],
+      [joinDepIDTuple(['registry', '', 'foo@1.0.0'])]: [
+        0,
+        'foo',
+        'sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ==',
+      ],
+      [joinDepIDTuple(['registry', '', 'bar@1.0.0'])]: [
+        0,
+        'bar',
+        'sha512-6/deadbeef==',
+        'https://registry.example.com/bar/-/bar-1.0.0.tgz',
+      ],
+    } as Record<DepID, LockfileNode>,
+    edges: {
+      [edgeKey(['file', '.'], 'foo')]:
+        'prod ^1.0.0 ' +
+        joinDepIDTuple(['registry', '', 'foo@1.0.0']),
+      [edgeKey(['registry', '', 'bar@1.0.0'], 'baz')]:
+        'prod ^1.0.0 ' +
+        joinDepIDTuple(['registry', '', 'baz@1.0.0']),
+    } as LockfileEdges,
+  }
+  const mainManifest = {
+    name: 'my-project',
+    version: '1.0.0',
+    dependencies: {},
+  }
+  const projectRoot = t.testdir({
+    'vlt-lock.json': JSON.stringify(lockfileData),
+    'package.json': JSON.stringify(mainManifest),
+    linked: {
+      'package.json': JSON.stringify({
+        name: 'linked',
+        version: '1.2.3',
+      }),
+    },
+  })
+
+  const virtual = loadVirtual({
+    ...configData,
+    projectRoot,
+    mainManifest,
+  })
+
+  const graph = await buildIdealFromStartingGraph({
+    ...configData,
+    projectRoot,
+    packageInfo,
+    scurry: new PathScurry(projectRoot),
+    graph: virtual,
+    add: new Map(),
+    remove: new Map(),
   })
 
   t.matchSnapshot(objectLikeOutput(graph))

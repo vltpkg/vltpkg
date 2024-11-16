@@ -1,4 +1,4 @@
-import { joinDepIDTuple } from '@vltpkg/dep-id'
+import { type DepIDTuple, joinDepIDTuple } from '@vltpkg/dep-id'
 import { PackageInfoClient } from '@vltpkg/package-info'
 import { PackageJson } from '@vltpkg/package-json'
 import { Monorepo } from '@vltpkg/workspaces'
@@ -6,6 +6,10 @@ import { PathScurry } from 'path-scurry'
 import t from 'tap'
 import { build } from '../../src/ideal/build.js'
 import { objectLikeOutput } from '../../src/visualization/object-like-output.js'
+import { type LockfileEdgeKey } from '../../src/index.js'
+
+const edgeKey = (from: DepIDTuple, to: string): LockfileEdgeKey =>
+  `${joinDepIDTuple(from)} ${to}`
 
 t.test('build from lockfile', async t => {
   const projectRoot = t.testdir({
@@ -17,24 +21,19 @@ t.test('build from lockfile', async t => {
       },
     }),
     'vlt-lock.json': JSON.stringify({
-      registries: {
-        npm: 'https://registry.npmjs.org/',
-      },
+      options: {},
       nodes: {
-        [joinDepIDTuple(['file', '.'])]: ['my-project'],
         [joinDepIDTuple(['registry', '', 'foo@1.0.0'])]: [
+          0,
           'foo',
           'sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ==',
         ],
       },
-      edges: [
-        [
-          joinDepIDTuple(['file', '.']),
-          'prod',
-          'foo@^1.0.0',
+      edges: {
+        [edgeKey(['file', '.'], 'foo')]:
+          'prod ^1.0.0 ' +
           joinDepIDTuple(['registry', '', 'foo@1.0.0']),
-        ],
-      ],
+      },
     }),
   })
 

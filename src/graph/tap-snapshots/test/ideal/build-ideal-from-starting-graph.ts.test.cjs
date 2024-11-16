@@ -5,6 +5,23 @@
  * Make sure to inspect the output below.  Do not ignore changes!
  */
 'use strict'
+exports[`test/ideal/build-ideal-from-starting-graph.ts > TAP > add from manifest file only > must match snapshot 1`] = `
+[
+  Node {
+    id: 'file·.',
+    location: '.',
+    importer: true,
+    edgesOut: [
+      Edge spec(baz@^1.0.0) -prod-> to: Node {
+        id: '··baz@1.0.0',
+        location: './node_modules/.vlt/··baz@1.0.0/node_modules/baz',
+        resolved: 'https://registry.npmjs.org/baz/-/baz-1.0.0.tgz'
+      }
+    ]
+  }
+]
+`
+
 exports[`test/ideal/build-ideal-from-starting-graph.ts > TAP > build from a virtual graph > must match snapshot 1`] = `
 [
   Node {
@@ -21,7 +38,6 @@ exports[`test/ideal/build-ideal-from-starting-graph.ts > TAP > build from a virt
         location: './node_modules/.vlt/··foo@1.0.0/node_modules/foo',
         integrity: 'sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ=='
       },
-      Edge spec(bar@^1.0.0) -prod-> to: [missing package]: <bar@^1.0.0>,
       Edge spec(missing@^1.0.0) -prod-> to: Node {
         id: '··missing@1.0.0',
         location: './node_modules/.vlt/··missing@1.0.0/node_modules/missing',
@@ -34,6 +50,11 @@ exports[`test/ideal/build-ideal-from-starting-graph.ts > TAP > build from a virt
       Edge spec(baz@^1.0.0) -prod-> to: Node {
         id: '··baz@1.0.0',
         location: './node_modules/.vlt/··baz@1.0.0/node_modules/baz'
+      },
+      Edge spec(ipsum@github:lorem/ipsum) -prod-> to: Node {
+        id: 'git·github%3Alorem§ipsum·',
+        location: './node_modules/.vlt/git·github%3Alorem§ipsum·/node_modules/ipsum',
+        resolved: 'github:lorem/ipsum'
       }
     ]
   }
@@ -52,11 +73,6 @@ exports[`test/ideal/build-ideal-from-starting-graph.ts > TAP > build from an act
         id: '··foo@1.0.0',
         location: './node_modules/.vlt/··foo@1.0.0/node_modules/foo'
       },
-      Edge spec(extraneous@*) -prod-> to: Node {
-        id: '··extraneous@1.0.0',
-        location: './node_modules/.vlt/··extraneous@1.0.0/node_modules/extraneous'
-      },
-      Edge spec(bar@^1.0.0) -prod-> to: [missing package]: <bar@^1.0.0>,
       Edge spec(aliased@custom:foo@^1.0.0) -dev-> to: Node {
         id: '·custom·foo@1.0.0',
         location: './node_modules/.vlt/·custom·foo@1.0.0/node_modules/foo',
@@ -109,4 +125,8 @@ exports[`test/ideal/build-ideal-from-starting-graph.ts > TAP > build from an act
     ]
   }
 ]
+`
+
+exports[`test/ideal/build-ideal-from-starting-graph.ts > TAP > remove from manifest file only > must match snapshot 1`] = `
+[ Node { id: 'file·.', location: '.', importer: true } ]
 `
