@@ -434,3 +434,23 @@ t.test(
     )
   },
 )
+
+t.test('missing options object', async t => {
+  const projectRoot = t.testdir()
+  const mainManifest = { name: 'my-project', version: '1.0.0' }
+  const loadOptions = {
+    registries: {
+      example: 'http://foo',
+    },
+    mainManifest,
+    projectRoot,
+  }
+  const lockfileData = {
+    nodes: {},
+    edges: {},
+  } as LockfileData
+  t.matchSnapshot(
+    JSON.stringify(loadObject(loadOptions, lockfileData), null, 2),
+    'should be able to parse lockfile without options object',
+  )
+})
