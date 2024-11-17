@@ -71,7 +71,8 @@ export const loadObject = (
     registries,
     'git-hosts': gitHosts,
     'git-host-archives': gitHostArchives,
-  } = lockfileData.options
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+  } = lockfileData.options || {}
   const mergedOptions = {
     ...options,
     'scope-registries': {
