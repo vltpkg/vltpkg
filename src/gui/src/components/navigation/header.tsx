@@ -16,8 +16,8 @@ const Header = () => {
   }, [route])
 
   return (
-    <div className="flex w-full items-center justify-between px-8 py-3">
-      <h3 className="text-xl font-medium">{routeName}</h3>
+    <div className="flex w-full justify-between px-8 py-3">
+      <h3 className="text-xl font-medium mt-1">{routeName}</h3>
     </div>
   )
 }
