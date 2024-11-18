@@ -1,4 +1,5 @@
-import { useState, useEffect, type MouseEvent } from 'react'
+import { createPortal } from 'react-dom'
+import { useRef, useState, useEffect, type MouseEvent } from 'react'
 import {
   type DashboardDataProject,
   type Action,
@@ -12,7 +13,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip.jsx'
-import { Ellipsis } from 'lucide-react'
+import { Ellipsis, LucideIcon } from 'lucide-react'
 import { AnimatePresence, motion } from 'framer-motion'
 
 type SelectDashboardItemOptions = {
@@ -121,6 +122,7 @@ export const DashboardItem = ({
   }
   const [isHovered, setIsHovered] = useState<boolean>(false)
   const [isSaved, setIsSaved] = useState<boolean>(false)
+  const [dropdownOpen, setDropdownOpen] = useState<boolean>(false)
 
   useEffect(() => {
     if (savedProjects) {
@@ -139,6 +141,7 @@ export const DashboardItem = ({
     e.preventDefault()
     e.stopPropagation()
     saveProject(project)
+    setDropdownOpen(false)
   }
 
   return (
@@ -159,22 +162,22 @@ export const DashboardItem = ({
             animate={{
               opacity: isHovered ? 1 : 0,
             }}>
-            <DropdownMenu>
+            <DropdownMenu
+              open={dropdownOpen}
+              onOpenChange={() => setDropdownOpen(!dropdownOpen)}>
               <DropdownMenuTrigger>
                 <Ellipsis
                   className="text-muted-foreground"
                   size={20}
                 />
               </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-56">
-                <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuGroup>
-                  <DropdownMenuItem
-                    onClick={e => handleSaveProject(e, item)}>
-                    {isSaved ? 'Unpin' : 'Pin'} {item.name}
-                  </DropdownMenuItem>
-                </DropdownMenuGroup>
+              <DropdownMenuContent
+                className="w-24 ml-24"
+                onCloseAutoFocus={e => e.preventDefault()}>
+                <DropdownMenuItem
+                  onClick={e => handleSaveProject(e, item)}>
+                  {isSaved ? 'Unpin' : 'Pin'} project
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </motion.div>
@@ -267,7 +270,9 @@ const DashboardGrid = () => {
                 animate="show"
                 exit="exit"
                 className="text-sm text-muted-foreground/50">
-                No projects available
+                {savedProjects && savedProjects.length >= 0 ?
+                  'All projects pinned'
+                : 'No projects available'}
               </motion.p>
             }
           </motion.div>
