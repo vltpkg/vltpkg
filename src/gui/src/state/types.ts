@@ -25,6 +25,7 @@ export type Action = {
   reset: () => void
   saveProject: (item: DashboardDataProject) => void
   updateSavedProjects: (savedProjects: DashboardDataProject[]) => void
+  updateLockSidebar: (locked: State['lockSidebar']) => void
 }
 
 /**
@@ -109,6 +110,10 @@ export type State = {
    * Saved / pinned projects in localStorage.
    */
   savedProjects?: DashboardDataProject[]
+  /**
+   * Check if the user prefers the sidebar locked or open.
+   */
+  lockSidebar?: boolean
 }
 
 export type DashboardTools =

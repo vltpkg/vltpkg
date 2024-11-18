@@ -1,5 +1,4 @@
-import { createPortal } from 'react-dom'
-import { useRef, useState, useEffect, type MouseEvent } from 'react'
+import { useState, useEffect, type MouseEvent } from 'react'
 import {
   type DashboardDataProject,
   type Action,
@@ -13,7 +12,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip.jsx'
-import { Ellipsis, LucideIcon } from 'lucide-react'
+import { Ellipsis } from 'lucide-react'
 import { AnimatePresence, motion } from 'framer-motion'
 
 type SelectDashboardItemOptions = {
@@ -27,9 +26,6 @@ import {
   DropdownMenu,
   DropdownMenuTrigger,
   DropdownMenuContent,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuGroup,
   DropdownMenuItem,
 } from '@/components/ui/dropdown-menu.jsx'
 

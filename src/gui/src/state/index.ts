@@ -27,6 +27,9 @@ const initialState: State = {
   savedProjects: JSON.parse(
     localStorage.getItem('saved-projects') || '[]',
   ) as State['savedProjects'],
+  lockSidebar: JSON.parse(
+    localStorage.getItem('lock-sidebar') || 'false',
+  ) as State['lockSidebar'],
 }
 
 /**
@@ -83,6 +86,10 @@ export const useGraphStore = create<Action & State>((set, get) => {
         'saved-projects',
         JSON.stringify(updatedProjects),
       )
+    },
+    updateLockSidebar: (locked: State['lockSidebar']) => {
+      set({ lockSidebar: locked })
+      localStorage.setItem('lock-sidebar', JSON.stringify(locked))
     },
   }
 

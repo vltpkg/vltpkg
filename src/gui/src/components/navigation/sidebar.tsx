@@ -1,17 +1,18 @@
 import { useState, type MouseEvent } from 'react'
+import { useTheme } from '@/components/ui/theme-provider.jsx'
 import {
-  Bird,
   LucideIcon,
   LayoutDashboard,
-  Lock,
-  LockOpen,
+  ArrowRightFromLine,
+  ArrowLeftFromLine,
   ChevronRight,
   Folder,
   FolderOpen,
   Library,
+  Sun,
+  Moon,
 } from 'lucide-react'
-import { AnimatePresence, motion } from 'framer-motion'
-import { SidebarThemeSwitcher } from '@/components/ui/theme-switcher.jsx'
+import { useAnimate, AnimatePresence, motion } from 'framer-motion'
 import { DEFAULT_QUERY, useGraphStore } from '@/state/index.js'
 import {
   type DashboardDataProject,
@@ -31,13 +32,14 @@ interface SidebarLink {
   href: string
   icon: LucideIcon
   target?: 'blank'
+  external: boolean
 }
 
 interface SidebarScreenProps {
   isOpen: boolean
   setIsOpen: React.Dispatch<React.SetStateAction<boolean>>
   animate: boolean
-  setAnimate: React.Dispatch<React.SetStateAction<boolean>>
+  setAnimate: (locked: boolean) => void
 }
 
 const sidebarLinks: SidebarLink[] = [
@@ -45,12 +47,14 @@ const sidebarLinks: SidebarLink[] = [
     name: 'Dashboard',
     href: '/dashboard',
     icon: LayoutDashboard,
+    external: false,
   },
   {
     name: 'Docs',
     href: 'https://docs.vlt.sh/cli/commands/query',
     icon: Library,
     target: 'blank',
+    external: true,
   },
 ]
 
@@ -71,14 +75,15 @@ const SIDEBAR_WIDTH = {
  * */
 const Sidebar = () => {
   const [isOpen, setIsOpen] = useState<boolean>(false)
-  const [animate, setAnimate] = useState<boolean>(true)
+  const { lockSidebar: animate, updateLockSidebar: setAnimate } =
+    useGraphStore()
 
   return (
     <>
       <Sidebar.Desktop
         isOpen={isOpen}
         setIsOpen={setIsOpen}
-        animate={animate}
+        animate={animate as boolean}
         setAnimate={setAnimate}
       />
       <Sidebar.Mobile />
@@ -129,16 +134,22 @@ Sidebar.Desktop = ({
       <Sidebar.Divider
         isOpen={isOpen}
         animate={animate}
-        className="mt-[52px]"
+        className="mt-[56px]"
       />
       <Sidebar.Body className="px-4">
         {/* top of the sidebar */}
         <div className="flex flex-col gap-4">
           <div className="flex flex-col gap-4">
             <Sidebar.Logo
-              className="mt-4 mb-4"
+              className="mt-4 mb-6 h-[28px]"
               isOpen={isOpen}
               animate={animate}
+            />
+
+            <Sidebar.Subheader
+              animate={animate}
+              isOpen={isOpen}
+              label="workspaces"
             />
             {sidebarLinks.map((link, idx) => (
               <Sidebar.Link
@@ -146,6 +157,12 @@ Sidebar.Desktop = ({
                 key={idx}
                 isOpen={isOpen}
                 animate={animate}
+                onClick={(e: MouseEvent) => {
+                  if (!link.external) {
+                    e.preventDefault()
+                    updateActiveRoute(link.href)
+                  }
+                }}
               />
             ))}
           </div>
@@ -170,17 +187,44 @@ Sidebar.Desktop = ({
         </div>
 
         {/* bottom of the sidebar */}
-        <div className="flex flex-col mb-6 gap-2">
-          <SidebarThemeSwitcher />
-          <Sidebar.Lock animate={animate} setAnimate={setAnimate} />
+        <div className="flex flex-col mb-[38px] gap-2">
+          <Sidebar.Controls
+            isOpen={isOpen}
+            setAnimate={setAnimate}
+            animate={animate}
+          />
         </div>
       </Sidebar.Body>
       <Sidebar.Divider
         isOpen={isOpen}
         animate={animate}
-        className="mt-[758px]"
+        className="absolute bottom-0 mb-[95px]"
       />
     </motion.div>
+  )
+}
+
+Sidebar.Subheader = ({
+  animate,
+  isOpen,
+  label,
+}: {
+  animate: boolean
+  isOpen: boolean
+  label: string
+}) => {
+  return (
+    <motion.p
+      className="text-xs font-medium text-muted-foreground/50 uppercase select-none tracking-wide"
+      animate={{
+        opacity:
+          animate ?
+            isOpen ? 1
+            : 0
+          : 1,
+      }}>
+      {label}
+    </motion.p>
   )
 }
 
@@ -208,17 +252,11 @@ Sidebar.Category = ({
   return (
     <div className="flex flex-col mt-6">
       {/* category title */}
-      <motion.p
-        className="text-xs font-medium text-muted-foreground/50 uppercase select-none tracking-wide"
-        animate={{
-          opacity:
-            animate ?
-              isOpen ? 1
-              : 0
-            : 1,
-        }}>
-        {header}
-      </motion.p>
+      <Sidebar.Subheader
+        label={header}
+        animate={animate}
+        isOpen={isOpen}
+      />
       {/* category item */}
       <p
         className="flex flex-row justify-start items-center gap-2 group/sidebar-category-item cursor-pointer mt-4 mb-2 select-none"
@@ -228,7 +266,7 @@ Sidebar.Category = ({
         : <Folder size={20} />}
 
         <motion.span
-          className="capitalize flex text-neutral-700 dark:text-neutral-200 text-sm font-medium group-hover/sidebar-category-item:translate-x-1 transition duration-150"
+          className="capitalize flex text-neutral-700 dark:text-neutral-200 text-sm group-hover/sidebar-category-item:translate-x-1 transition duration-150"
           animate={{
             display:
               animate ?
@@ -310,7 +348,7 @@ Sidebar.Item = ({
       <a
         href="#"
         onClick={onClick}
-        className="flex items-center gap-2 text-neutral-700 hover:text-black dark:text-muted-foreground/50 dark:hover:text-foreground text-sm font-medium select-none cursor-pointer hover:translate-x-2 transition duration-150">
+        className="flex items-center gap-2 text-neutral-700 hover:text-black dark:text-muted-foreground/50 dark:hover:text-foreground text-sm select-none cursor-pointer transition duration-150">
         {icon}
         <span>{label}</span>
       </a>
@@ -323,16 +361,29 @@ Sidebar.Lock = ({
   setAnimate,
 }: {
   animate: boolean
-  setAnimate: React.Dispatch<React.SetStateAction<boolean>>
+  setAnimate: (locked: boolean) => void
 }) => {
+  const [lockScope, lockAnimation] = useAnimate()
+
+  const handleClick = async () => {
+    setAnimate(!animate)
+    await lockAnimation(lockScope.current, {
+      rotateZ: [180, 0],
+    })
+  }
+
   return (
-    <div
+    <motion.div
+      ref={lockScope}
       className="cursor-pointer"
-      onClick={() => setAnimate(!animate)}>
+      onClick={handleClick}>
       {animate ?
-        <LockOpen size={20} />
-      : <Lock size={20} />}
-    </div>
+        <ArrowRightFromLine
+          size={20}
+          className="text-muted-foreground"
+        />
+      : <ArrowLeftFromLine size={20} />}
+    </motion.div>
   )
 }
 
@@ -359,20 +410,37 @@ Sidebar.Link = ({
   link,
   isOpen,
   animate,
+  onClick,
 }: {
   link: SidebarLink
   isOpen: boolean
   animate: boolean
+  onClick: (e: MouseEvent) => void
 }) => {
+  const { theme, activeRoute } = useGraphStore()
+
+  const isOnRoute = activeRoute === link.href
+
   return (
     <>
-      <a
+      <motion.a
         href={link.href}
+        onClick={onClick}
         target={link.target ? link.target : '_top'}
-        className="flex justify-start gap-2 group/sidebar-link">
+        animate={{
+          color:
+            isOnRoute ?
+              theme === 'dark' ?
+                '#fafafa'
+              : '#3c3c3c'
+            : '#757575',
+        }}
+        className={`
+          relative flex justify-start gap-2 group/sidebar-link rounded-md
+          `}>
         <link.icon width={20} height={20} />
         <motion.span
-          className="text-neutral-700 dark:text-neutral-200 text-sm font-medium group-hover/sidebar-link:translate-x-1 transition duration-150"
+          className="text-sm"
           animate={{
             display:
               animate ?
@@ -387,7 +455,24 @@ Sidebar.Link = ({
           }}>
           {link.name}
         </motion.span>
-      </a>
+        <motion.div
+          animate={{
+            width:
+              animate ?
+                isOpen ? 175
+                : 0
+              : 175,
+          }}
+          className={`
+            absolute -mt-[7px] -ml-[5px] h-[34px] z-10 rounded-sm
+            ${
+              isOnRoute ?
+                'bg-muted-foreground/25'
+              : 'hover:bg-muted-foreground/10 transition-all'
+            }
+          `}
+        />
+      </motion.a>
     </>
   )
 }
@@ -429,26 +514,100 @@ Sidebar.Logo = ({
 }) => {
   return (
     <a
-      className={`flex justify-start gap-2 group/sidebar-logo ${className}`}
+      className={`flex items-center justify-start gap-2 text-neutral-700 dark:text-neutral-200 text-xl font-medium ${className}`}
       href="/">
-      <Bird width={20} height={20} />
+      vlt
       <motion.span
-        className="text-neutral-700 dark:text-neutral-200 text-sm font-medium group-hover/sidebar-logo:translate-x-1 transition duration-150"
+        className="font-light text-neutral-400 ml-0.5"
         animate={{
           display:
             animate ?
-              isOpen ? 'inline-block'
+              isOpen ? 'flex'
               : 'none'
-            : 'inline-block',
+            : 'flex',
           opacity:
             animate ?
               isOpen ? 1
               : 0
             : 1,
         }}>
-        vlt <span className="font-light">/vōlt/</span>
+        /vōlt/
       </motion.span>
     </a>
+  )
+}
+
+Sidebar.ThemeSwitcher = () => {
+  const { theme, setTheme } = useTheme()
+  const [themeScope, themeAnimation] = useAnimate()
+
+  const handleThemeSwitch = async (mode: 'light' | 'dark') => {
+    await themeAnimation(
+      themeScope.current,
+      {
+        rotateZ: [0, 180, 360],
+        y: [0, -5, 0],
+        transition: {
+          type: 'spring',
+          stiffness: 300,
+          damping: 10,
+        },
+      },
+      { duration: 0.25 },
+    )
+    setTheme(mode)
+  }
+
+  return (
+    <motion.div
+      ref={themeScope}
+      className="flex gap-3 items-center"
+      onClick={() =>
+        handleThemeSwitch(theme === 'light' ? 'dark' : 'light')
+      }>
+      {theme === 'light' ?
+        <Moon className="cursor-pointer" size={20} />
+      : <Sun className="cursor-pointer" size={20} />}
+    </motion.div>
+  )
+}
+
+Sidebar.Controls = ({
+  isOpen,
+  animate,
+  setAnimate,
+}: {
+  isOpen: boolean
+  animate: boolean
+  setAnimate: (locked: boolean) => void
+}) => {
+  return (
+    <AnimatePresence>
+      <motion.div className="flex w-full justify-between items-center">
+        {animate ?
+          isOpen ?
+            <>
+              <Sidebar.ThemeSwitcher />
+              <>
+                <Sidebar.Lock
+                  animate={animate}
+                  setAnimate={setAnimate}
+                />
+              </>
+            </>
+          : <Sidebar.ThemeSwitcher />
+        : <>
+            <Sidebar.ThemeSwitcher />
+            <>
+              <Sidebar.Lock
+                animate={animate}
+                setAnimate={setAnimate}
+              />
+            </>
+          </>
+        }
+      </motion.div>
+    </AnimatePresence>
   )
 }
 

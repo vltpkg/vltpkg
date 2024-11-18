@@ -21,47 +21,6 @@ interface Setting {
   icon: LucideIcon
 }
 
-export const SidebarThemeSwitcher = () => {
-  const { theme, setTheme } = useTheme()
-
-  const settings: Setting[] = [
-    {
-      mode: 'light',
-      ariaLabel: 'Light mode',
-      icon: Sun,
-    },
-    {
-      mode: 'dark',
-      ariaLabel: 'Dark mode',
-      icon: Moon,
-    },
-    {
-      mode: 'system',
-      ariaLabel: 'System mode',
-      icon: LaptopMinimal,
-    },
-  ]
-
-  return (
-    <div className="cursor-pointer hover:-translate-y-1 transition duration-250">
-      {settings.map((setting, idx) => (
-        <setting.icon
-          className={theme === setting.mode ? 'flex' : 'hidden'}
-          key={idx}
-          size={20}
-          onClick={() =>
-            setTheme(
-              setting.mode === 'dark' ? 'light'
-              : setting.mode === 'light' ? 'system'
-              : 'dark',
-            )
-          }
-        />
-      ))}
-    </div>
-  )
-}
-
 export const ThemeSwitcher = () => {
   const { theme, setTheme } = useTheme()
   const tabRefs = useRef<HTMLDivElement[]>([])
