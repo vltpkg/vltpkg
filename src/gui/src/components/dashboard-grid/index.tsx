@@ -5,6 +5,13 @@ import {
 } from '@/state/types.js'
 import { CardTitle } from '@/components/ui/card.jsx'
 import { DEFAULT_QUERY, useGraphStore } from '@/state/index.js'
+import { format } from 'date-fns'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip.jsx'
 
 type SelectDashboardItemOptions = {
   updateActiveRoute: Action['updateActiveRoute']
@@ -84,26 +91,48 @@ export const DashboardItem = ({
   return (
     <a
       href="#"
-      className="bg-primary rounded-lg w-96 m-4 p-4"
+      className="border-[1px] rounded-lg w-96 hover:border-muted-foreground hover:transition-all"
       onClick={onDashboardItemClick}>
-      {item.mtime ?
-        <div className="text-[9px] text-gray-500 text-right pb-4">
-          Latest modified: {new Date(item.mtime).toJSON()}
-        </div>
-      : ''}
-      <CardTitle className="text-md text-secondary grow mb-2">
-        {item.name}
-      </CardTitle>
-      <div className="flex flex-row-reverse">
-        {item.tools.map((tool, index) => (
-          <div
-            key={index}
-            className="flex-none bg-secondary rounded-xl text-[10px] text-primary px-2 py-1 ml-2 mb-2 width-auto">
-            {tool}
+      <div className="flex items-start h-20 justify-between px-4 py-3">
+        <CardTitle className="self-end text-md">
+          {item.name}
+        </CardTitle>
+        {item.mtime ?
+          <div className="text-[0.7rem]">
+            {format(
+              new Date(item.mtime).toJSON(),
+              'LLLL do, yyyy | hh:mm aa',
+            )}
           </div>
-        ))}
+        : ''}
       </div>
-      <div className="text-[10px] text-secondary ">{item.path}</div>
+
+      <div className="w-full h-12 flex items-center gap-4 justify-between border-t-[1px] px-4 py-3">
+        <TooltipProvider>
+          <div className="flex items-center justify-center rounded-sm border-[1px] px-2 py-1">
+            <Tooltip>
+              <TooltipTrigger>
+                <p className="text-[0.65rem] text-muted-foreground font-mono truncate w-full m-0 p-0 align-baseline">
+                  {item.path}
+                </p>
+              </TooltipTrigger>
+              <TooltipContent>{item.path}</TooltipContent>
+            </Tooltip>
+          </div>
+        </TooltipProvider>
+
+        <div className="flex gap-2 overflow-x-scroll">
+          {item.tools.map((tool, index) => (
+            <div
+              key={index}
+              className="flex-none bg-secondary rounded-xl px-2 py-1">
+              <p className="text-[0.7rem] font-medium text-primary ">
+                {tool}
+              </p>
+            </div>
+          ))}
+        </div>
+      </div>
     </a>
   )
 }
@@ -112,7 +141,7 @@ export const DashboardGrid = () => {
   const dashboard = useGraphStore(state => state.dashboard)
 
   return (
-    <div className="flex flex-wrap justify-center width-full mt-6">
+    <div className="flex items-center justify-center flex-wrap gap-8">
       {dashboard?.projects.map((item, index) => (
         <DashboardItem key={index} item={item} />
       ))}

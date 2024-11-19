@@ -7,7 +7,7 @@ exports[`explorer-grid render default 1`] = `
     <div class="col-span-2">
     </div>
     <div class="col-span-3">
-      <div class="pt-6 text-md flex flex-row items-center font-medium">
+      <div class="pt-6 text-md flex flex-row items-center font-medium undefined">
         <svg
           xmlns="http://www.w3.org/2000/svg"
           width="22"
@@ -31,6 +31,8 @@ exports[`explorer-grid render default 1`] = `
         </svg>
         No Results
       </div>
+      <div class="flex flex-col gap-6">
+      </div>
     </div>
     <div class="col-span-2">
     </div>
@@ -44,7 +46,7 @@ exports[`explorer-grid renders workspace with edges in 1`] = `
 <div>
   <div class="grow grid grid-cols-7 gap-4 px-8 bg-secondary dark:bg-black">
     <div class="col-span-2">
-      <div class="pt-6 text-md flex flex-row items-center font-medium">
+      <div class="pt-6 text-md flex flex-row items-center font-medium undefined">
         <svg
           xmlns="http://www.w3.org/2000/svg"
           width="22"
@@ -108,7 +110,7 @@ exports[`explorer-grid renders workspace with edges in 1`] = `
       </div>
     </div>
     <div class="col-span-3">
-      <div class="pt-6 text-md flex flex-row items-center font-medium">
+      <div class="pt-6 text-md flex flex-row items-center font-medium undefined">
         <svg
           xmlns="http://www.w3.org/2000/svg"
           width="22"
@@ -136,88 +138,90 @@ exports[`explorer-grid renders workspace with edges in 1`] = `
         </svg>
         Selected Item
       </div>
-      <div class="relative">
-        <div class="block rounded-lg border bg-card text-card-foreground shadow-sm relative my-4 border-muted-foreground">
-          <div class="p-6 rounded-t-lg relative flex flex-row -m-px py-3 px-4 bg-primary dark:border dark:border-solid dark:border-muted-foreground text-white dark:text-black rounded-b-lg">
-            <h3 class="text-2xl font-semibold leading-none tracking-tight flex items-center w-full justify-between">
-              <div class="flex items-center justify-between">
-                <span class="text-sm font-medium">
-                  b
-                </span>
-                <span class="mx-2">
-                  ·
-                </span>
-                <span class="text-sm font-light text-muted-foreground">
-                  v1.0.0
-                </span>
-              </div>
-            </h3>
-          </div>
-          <div class="p-4">
-          </div>
-          <div class="px-4 pb-4 w-full">
-            <div
-              dir="ltr"
-              data-orientation="horizontal"
-            >
+      <div class="flex flex-col gap-6">
+        <div class="relative">
+          <div class="block rounded-lg border bg-card text-card-foreground shadow-sm relative my-4 border-muted-foreground">
+            <div class="p-6 rounded-t-lg relative flex flex-row -m-px py-3 px-4 bg-primary dark:border dark:border-solid dark:border-muted-foreground text-white dark:text-black rounded-b-lg">
+              <h3 class="text-2xl font-semibold leading-none tracking-tight flex items-center w-full justify-between">
+                <div class="flex items-center justify-between">
+                  <span class="text-sm font-medium">
+                    b
+                  </span>
+                  <span class="mx-2">
+                    ·
+                  </span>
+                  <span class="text-sm font-light text-muted-foreground">
+                    v1.0.0
+                  </span>
+                </div>
+              </h3>
+            </div>
+            <div class="p-4">
+            </div>
+            <div class="px-4 pb-4 w-full">
               <div
-                role="tablist"
-                aria-orientation="horizontal"
-                class="h-10 items-center justify-center rounded-md bg-muted p-1 text-muted-foreground grid w-full grid-cols-2"
-                tabindex="0"
+                dir="ltr"
                 data-orientation="horizontal"
-                style="outline: none;"
               >
-                <button
-                  type="button"
-                  role="tab"
-                  aria-selected="true"
-                  aria-controls="radix-:r0:-content-package.json"
-                  data-state="active"
-                  id="radix-:r0:-trigger-package.json"
-                  class="inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm w-36"
-                  tabindex="-1"
+                <div
+                  role="tablist"
+                  aria-orientation="horizontal"
+                  class="h-10 items-center justify-center rounded-md bg-muted p-1 text-muted-foreground grid w-full grid-cols-2"
+                  tabindex="0"
                   data-orientation="horizontal"
-                  data-radix-collection-item
+                  style="outline: none;"
                 >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="16"
-                    height="16"
-                    viewbox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    class="lucide lucide-file-search2 mr-2"
+                  <button
+                    type="button"
+                    role="tab"
+                    aria-selected="true"
+                    aria-controls="radix-:r8:-content-package.json"
+                    data-state="active"
+                    id="radix-:r8:-trigger-package.json"
+                    class="inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm w-36"
+                    tabindex="-1"
+                    data-orientation="horizontal"
+                    data-radix-collection-item
                   >
-                    <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z">
-                    </path>
-                    <path d="M14 2v4a2 2 0 0 0 2 2h4">
-                    </path>
-                    <circle
-                      cx="11.5"
-                      cy="14.5"
-                      r="2.5"
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="16"
+                      height="16"
+                      viewbox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      class="lucide lucide-file-search2 mr-2"
                     >
-                    </circle>
-                    <path d="M13.3 16.3 15 18">
-                    </path>
-                  </svg>
-                  package.json
-                </button>
-              </div>
-              <div
-                data-state="active"
-                data-orientation="horizontal"
-                role="tabpanel"
-                aria-labelledby="radix-:r0:-trigger-package.json"
-                id="radix-:r0:-content-package.json"
-                tabindex="0"
-                class="mt-2 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                style="animation-duration: 0s;"
-              >
+                      <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z">
+                      </path>
+                      <path d="M14 2v4a2 2 0 0 0 2 2h4">
+                      </path>
+                      <circle
+                        cx="11.5"
+                        cy="14.5"
+                        r="2.5"
+                      >
+                      </circle>
+                      <path d="M13.3 16.3 15 18">
+                      </path>
+                    </svg>
+                    package.json
+                  </button>
+                </div>
+                <div
+                  data-state="active"
+                  data-orientation="horizontal"
+                  role="tabpanel"
+                  aria-labelledby="radix-:r8:-trigger-package.json"
+                  id="radix-:r8:-content-package.json"
+                  tabindex="0"
+                  class="mt-2 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  style="animation-duration: 0s;"
+                >
+                </div>
               </div>
             </div>
           </div>
@@ -238,64 +242,92 @@ exports[`explorer-grid with results 1`] = `
     <div class="col-span-2">
     </div>
     <div class="col-span-3">
-      <div class="pt-6 text-md flex flex-row items-center font-medium">
+      <div class="pt-6 text-md flex flex-row items-center font-medium mb-4">
         Results
       </div>
-      <div class="relative">
-        <a
-          href="#"
-          class="block rounded-lg border bg-card text-card-foreground shadow-sm relative my-4 cursor-pointer"
-        >
-          <div class="rounded-t-lg relative flex flex-row -m-px p-2 px-4 border-b">
-            <h3 class="font-semibold tracking-tight text-md grow">
-              a@^1.0.0
-            </h3>
-            <div class="rounded-md border px-2.5 py-0.5 text-xs text-gray-500">
-              <span class="font-semibold">
-                prod
-              </span>
-              <span class="px-1 text-gray-400">
-                dep of:
-              </span>
-              <span class="font-semibold">
-                file(.):root@1.0.0
-              </span>
+      <div class="flex flex-col gap-6">
+        <div class="group relative z-10">
+          <a
+            href="#"
+            class="block rounded-lg border bg-card text-card-foreground shadow-sm relative group-hover:border-neutral-400 dark:group-hover:border-neutral-600 cursor-pointer"
+          >
+            <div class="p-6 m-0 px-4 py-3 rounded-t-lg flex flex-row items-center justify-between border-b-[1px]">
+              <button
+                data-state="closed"
+                class="truncate"
+              >
+                <h3 class="font-semibold tracking-tight text-md truncate">
+                  a@^1.0.0
+                </h3>
+              </button>
+              <div class="flex items-center justify-center text-pretty rounded-md border-[1px] px-2.5 py-0.5 text-xs text-muted-foreground">
+                <p class="font-semibold">
+                  <span>
+                    prod
+                  </span>
+                  <span class="font-medium px-1 text-muted-foreground">
+                    dep of:
+                  </span>
+                  <span>
+                    file(.):root@1.0.0
+                  </span>
+                </p>
+              </div>
             </div>
-          </div>
-          <div class="flex flex-row pl-4 pr-3">
-            <p class="text-sm text-muted-foreground grow content-center py-2">
-              Resolves to: npm:a@1.0.0
-            </p>
-          </div>
-        </a>
-      </div>
-      <div class="relative">
-        <a
-          href="#"
-          class="block rounded-lg border bg-card text-card-foreground shadow-sm relative my-4 cursor-pointer"
-        >
-          <div class="rounded-t-lg relative flex flex-row -m-px p-2 px-4 border-b">
-            <h3 class="font-semibold tracking-tight text-md grow">
-              b@^1.0.0
-            </h3>
-            <div class="rounded-md border px-2.5 py-0.5 text-xs text-gray-500">
-              <span class="font-semibold">
-                dev
-              </span>
-              <span class="px-1 text-gray-400">
-                dep of:
-              </span>
-              <span class="font-semibold">
-                file(.):root@1.0.0
-              </span>
+            <div class="flex flex-row px-3 py-2 items-center justify-between">
+              <div class="flex items-center justify-center rounded-sm border-[1px] px-2 py-1">
+                <button data-state="closed">
+                  <p class="text-[0.65rem] text-muted-foreground font-mono font-medium truncate w-full m-0 p-0 align-baseline">
+                    npm:a@1.0.0
+                  </p>
+                </button>
+              </div>
+              <div class="flex gap-2 overflow-x-scroll">
+              </div>
             </div>
-          </div>
-          <div class="flex flex-row pl-4 pr-3">
-            <p class="text-sm text-muted-foreground grow content-center py-2">
-              Resolves to: npm:b@1.0.0
-            </p>
-          </div>
-        </a>
+          </a>
+        </div>
+        <div class="group relative z-10">
+          <a
+            href="#"
+            class="block rounded-lg border bg-card text-card-foreground shadow-sm relative group-hover:border-neutral-400 dark:group-hover:border-neutral-600 cursor-pointer"
+          >
+            <div class="p-6 m-0 px-4 py-3 rounded-t-lg flex flex-row items-center justify-between border-b-[1px]">
+              <button
+                data-state="closed"
+                class="truncate"
+              >
+                <h3 class="font-semibold tracking-tight text-md truncate">
+                  b@^1.0.0
+                </h3>
+              </button>
+              <div class="flex items-center justify-center text-pretty rounded-md border-[1px] px-2.5 py-0.5 text-xs text-muted-foreground">
+                <p class="font-semibold">
+                  <span>
+                    dev
+                  </span>
+                  <span class="font-medium px-1 text-muted-foreground">
+                    dep of:
+                  </span>
+                  <span>
+                    file(.):root@1.0.0
+                  </span>
+                </p>
+              </div>
+            </div>
+            <div class="flex flex-row px-3 py-2 items-center justify-between">
+              <div class="flex items-center justify-center rounded-sm border-[1px] px-2 py-1">
+                <button data-state="closed">
+                  <p class="text-[0.65rem] text-muted-foreground font-mono font-medium truncate w-full m-0 p-0 align-baseline">
+                    npm:b@1.0.0
+                  </p>
+                </button>
+              </div>
+              <div class="flex gap-2 overflow-x-scroll">
+              </div>
+            </div>
+          </a>
+        </div>
       </div>
     </div>
     <div class="col-span-2">
@@ -312,63 +344,91 @@ exports[`explorer-grid with stack 1`] = `
     <div class="col-span-2">
     </div>
     <div class="col-span-3">
-      <div class="pt-6 text-md flex flex-row items-center font-medium">
+      <div class="pt-6 text-md flex flex-row items-center font-medium mb-4">
         Results
       </div>
-      <div class="relative">
-        <a
-          href="#"
-          class="block rounded-lg border bg-card text-card-foreground shadow-sm relative my-4 cursor-pointer"
-        >
-          <div class="rounded-t-lg relative flex flex-row -m-px p-2 px-4 border-b">
-            <h3 class="font-semibold tracking-tight text-md grow">
-              a@^1.0.0
-            </h3>
-            <div class="rounded-md border px-2.5 py-0.5 text-xs text-gray-500">
-              <span class="font-semibold">
-                prod
-              </span>
-              <span class="px-1 text-gray-400">
-                dep of:
-              </span>
-              <span class="font-semibold">
-                file(.):root@1.0.0
-              </span>
+      <div class="flex flex-col gap-6">
+        <div class="group relative z-10">
+          <a
+            href="#"
+            class="block rounded-lg border bg-card text-card-foreground shadow-sm relative group-hover:border-neutral-400 dark:group-hover:border-neutral-600 cursor-pointer"
+          >
+            <div class="p-6 m-0 px-4 py-3 rounded-t-lg flex flex-row items-center justify-between border-b-[1px]">
+              <button
+                data-state="closed"
+                class="truncate"
+              >
+                <h3 class="font-semibold tracking-tight text-md truncate">
+                  a@^1.0.0
+                </h3>
+              </button>
+              <div class="flex items-center justify-center text-pretty rounded-md border-[1px] px-2.5 py-0.5 text-xs text-muted-foreground">
+                <p class="font-semibold">
+                  <span>
+                    prod
+                  </span>
+                  <span class="font-medium px-1 text-muted-foreground">
+                    dep of:
+                  </span>
+                  <span>
+                    file(.):root@1.0.0
+                  </span>
+                </p>
+              </div>
             </div>
-          </div>
-          <div class="flex flex-row pl-4 pr-3">
-            <p class="text-sm text-muted-foreground grow content-center py-2">
-              Resolves to: npm:a@1.0.0
-            </p>
-          </div>
-        </a>
-      </div>
-      <div class="relative">
-        <div class="absolute border top-1 left-1 w-[99%] h-full bg-card rounded-lg">
+            <div class="flex flex-row px-3 py-2 items-center justify-between">
+              <div class="flex items-center justify-center rounded-sm border-[1px] px-2 py-1">
+                <button data-state="closed">
+                  <p class="text-[0.65rem] text-muted-foreground font-mono font-medium truncate w-full m-0 p-0 align-baseline">
+                    npm:a@1.0.0
+                  </p>
+                </button>
+              </div>
+              <div class="flex gap-2 overflow-x-scroll">
+              </div>
+            </div>
+          </a>
         </div>
-        <a
-          href="#"
-          class="block rounded-lg border bg-card text-card-foreground shadow-sm relative my-4 cursor-pointer"
-        >
-          <div class="rounded-t-lg relative flex flex-row -m-px p-2 px-4 border-b">
-            <h3 class="font-semibold tracking-tight text-md grow">
-              b@^1.0.0
-            </h3>
-            <div class="rounded-md border px-2.5 py-0.5 text-xs text-gray-500">
-              <span class="px-1 text-gray-400">
-                dep of:
-              </span>
-              <span class="font-semibold">
-                2 packages
-              </span>
+        <div class="group relative z-10">
+          <div class="transition-all group-hover:border-neutral-400 dark:group-hover:border-neutral-600 absolute border top-1 left-1 w-[99%] h-full bg-card rounded-lg">
+          </div>
+          <a
+            href="#"
+            class="block rounded-lg border bg-card text-card-foreground shadow-sm relative group-hover:border-neutral-400 dark:group-hover:border-neutral-600 cursor-pointer"
+          >
+            <div class="p-6 m-0 px-4 py-3 rounded-t-lg flex flex-row items-center justify-between border-b-[1px]">
+              <button
+                data-state="closed"
+                class="truncate"
+              >
+                <h3 class="font-semibold tracking-tight text-md truncate">
+                  b@^1.0.0
+                </h3>
+              </button>
+              <div class="flex items-center justify-center text-pretty rounded-md border-[1px] px-2.5 py-0.5 text-xs text-muted-foreground">
+                <p class="font-semibold">
+                  <span class="font-medium px-1 text-muted-foreground">
+                    dep of:
+                  </span>
+                  <span>
+                    2 packages
+                  </span>
+                </p>
+              </div>
             </div>
-          </div>
-          <div class="flex flex-row pl-4 pr-3">
-            <p class="text-sm text-muted-foreground grow content-center py-2">
-              Resolves to: npm:b@1.0.0
-            </p>
-          </div>
-        </a>
+            <div class="flex flex-row px-3 py-2 items-center justify-between">
+              <div class="flex items-center justify-center rounded-sm border-[1px] px-2 py-1">
+                <button data-state="closed">
+                  <p class="text-[0.65rem] text-muted-foreground font-mono font-medium truncate w-full m-0 p-0 align-baseline">
+                    npm:b@1.0.0
+                  </p>
+                </button>
+              </div>
+              <div class="flex gap-2 overflow-x-scroll">
+              </div>
+            </div>
+          </a>
+        </div>
       </div>
     </div>
     <div class="col-span-2">
