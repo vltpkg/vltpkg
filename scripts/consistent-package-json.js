@@ -42,6 +42,11 @@ const skipCatalog = ({ name, spec, from, type }) => {
   ) {
     return true
   }
+  // prod deps for docs should not be cataloged since it is
+  // not shipped as part of the CLI
+  if (from === '@vltpkg/docs' && type === 'dependencies') {
+    return true
+  }
   return false
 }
 
