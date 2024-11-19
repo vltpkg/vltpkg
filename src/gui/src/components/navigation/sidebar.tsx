@@ -1,7 +1,7 @@
 import { useState, type MouseEvent } from 'react'
 import { useTheme } from '@/components/ui/theme-provider.jsx'
 import {
-  LucideIcon,
+  type LucideIcon,
   LayoutDashboard,
   ArrowRightFromLine,
   ArrowLeftFromLine,
@@ -62,7 +62,7 @@ const sidebarLinks: SidebarLink[] = [
 
 /**
  * Constants placed here for brevity
- * */
+ */
 const SIDEBAR_WIDTH = {
   open: '200px',
   closed: '60px',
@@ -74,7 +74,7 @@ const SIDEBAR_WIDTH = {
  * animations.
  *
  * Two different sidebars are rendered on < `sm` and > `md` breakpoints.
- * */
+ */
 const Sidebar = () => {
   const [isOpen, setIsOpen] = useState<boolean>(false)
   const { lockSidebar: animate, updateLockSidebar: setAnimate } =
@@ -85,7 +85,7 @@ const Sidebar = () => {
       <Sidebar.Desktop
         isOpen={isOpen}
         setIsOpen={setIsOpen}
-        animate={animate as boolean}
+        animate={animate}
         setAnimate={setAnimate}
       />
       <Sidebar.Mobile isOpen={isOpen} setIsOpen={setIsOpen} />
@@ -372,9 +372,9 @@ Sidebar.Lock = ({
 }) => {
   const [lockScope, lockAnimation] = useAnimate()
 
-  const handleClick = async () => {
+  const handleClick = () => {
     setAnimate(!animate)
-    await lockAnimation(lockScope.current, {
+    lockAnimation(lockScope.current, {
       rotateZ: [180, 0],
     })
   }
@@ -397,7 +397,10 @@ Sidebar.Lock = ({
 Sidebar.Mobile = ({
   isOpen,
   setIsOpen,
-}: Partial<SidebarScreenProps>) => {
+}: {
+  isOpen: boolean
+  setIsOpen: React.Dispatch<React.SetStateAction<boolean>>
+}) => {
   const {
     updateActiveRoute,
     updateErrorCause,
@@ -412,12 +415,12 @@ Sidebar.Mobile = ({
       animateIcon(iconScope.current, {
         rotateZ: [0, 180],
       })
-      setIsOpen!(false)
+      setIsOpen(false)
     } else {
       animateIcon(iconScope.current, {
         rotateZ: [180, 0],
       })
-      setIsOpen!(true)
+      setIsOpen(true)
     }
   }
 
@@ -486,12 +489,12 @@ Sidebar.Mobile = ({
           </div>
 
           {/* sidebar projects */}
-          {savedProjects && savedProjects?.length > 0 && (
+          {savedProjects && savedProjects.length > 0 && (
             <div className="flex flex-col w-full gap-4 divide-y-[1px] divide-muted-foreground/10 mt-12">
               <h3 className="text-sm font-medium uppercase text-muted-foreground">
                 pinned projects
               </h3>
-              {savedProjects?.map((project, idx) => (
+              {savedProjects.map((project, idx) => (
                 <a
                   key={idx}
                   href="#"
@@ -659,8 +662,8 @@ Sidebar.ThemeSwitcher = () => {
   const { theme, setTheme } = useTheme()
   const [themeScope, themeAnimation] = useAnimate()
 
-  const handleThemeSwitch = async (mode: 'light' | 'dark') => {
-    await themeAnimation(
+  const handleThemeSwitch = (mode: 'light' | 'dark') => {
+    themeAnimation(
       themeScope.current,
       {
         rotateZ: [0, 180, 360],

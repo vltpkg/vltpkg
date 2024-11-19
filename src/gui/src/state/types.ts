@@ -113,7 +113,7 @@ export type State = {
   /**
    * Check if the user prefers the sidebar locked or open.
    */
-  lockSidebar?: boolean
+  lockSidebar: boolean
 }
 
 export type DashboardTools =

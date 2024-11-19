@@ -233,7 +233,7 @@ const DashboardGrid = () => {
   /**
    * Checks the projects that exist in the dashboard:
    * Sorts them based if they're saved in 'saved-projects' localStorage.
-   * */
+   */
   useEffect(() => {
     if (dashboard?.projects && savedProjects) {
       const filteredProjects = dashboard.projects.filter(
@@ -256,7 +256,7 @@ const DashboardGrid = () => {
             animate="show"
             exit="exit"
             className="flex flex-row flex-wrap gap-8">
-            {unsavedProjects?.length ?
+            {unsavedProjects.length ?
               unsavedProjects.map((item, index) => (
                 <DashboardItem key={index} item={item} />
               ))

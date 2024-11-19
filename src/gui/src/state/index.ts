@@ -2,7 +2,7 @@ import { create } from 'zustand'
 import {
   type State,
   type Action,
-  DashboardDataProject,
+  type DashboardDataProject,
 } from './types.js'
 
 export const DEFAULT_QUERY = ':project > *'
@@ -67,7 +67,7 @@ export const useGraphStore = create<Action & State>((set, get) => {
       set(() => ({ savedProjects })),
     saveProject: (item: DashboardDataProject) => {
       const savedProjects = (get().savedProjects ??
-        []) as DashboardDataProject[]
+        [])
       let updatedProjects = [...savedProjects]
       const isProjectSaved = updatedProjects.find(
         savedProject => savedProject.name === item.name,
