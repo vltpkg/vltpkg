@@ -2,12 +2,13 @@ import { type MouseEvent } from 'react'
 import { stringifyNode } from '@vltpkg/graph/browser'
 import { useGraphStore } from '@/state/index.js'
 import { Badge } from '@/components/ui/badge.jsx'
+import { Card, CardHeader, CardTitle } from '@/components/ui/card.jsx'
 import {
-  Card,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card.jsx'
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip.jsx'
 import { labelClassNamesMap } from './label-helper.js'
 import { type GridItemData, type GridItemOptions } from './types.js'
 
@@ -55,56 +56,81 @@ export const ResultItem = ({ item }: GridItemOptions) => {
   const updateQuery = useGraphStore(state => state.updateQuery)
   const query = useGraphStore(state => state.query)
   return (
-    <div className="relative">
+    <div className="group relative z-10">
       {item.stacked ?
         <>
           {item.size > 2 ?
-            <div className="absolute border top-2 left-2 w-[97.5%] h-full bg-card rounded-lg"></div>
+            <div className="transition-all group-hover:border-neutral-400 dark:group-hover:border-neutral-600 absolute border top-2 left-2 w-[97.5%] h-full bg-card rounded-lg"></div>
           : ''}
-          <div className="absolute border top-1 left-1 w-[99%] h-full bg-card rounded-lg"></div>
+          <div className="transition-all group-hover:border-neutral-400 dark:group-hover:border-neutral-600 absolute border top-1 left-1 w-[99%] h-full bg-card rounded-lg"></div>
         </>
       : ''}
+
+      {/* Card Top */}
       <Card
         renderAsLink={true}
-        className={`relative my-4 ${item.to ? 'cursor-pointer' : 'cursor-default'}`}
+        className={`relative group-hover:border-neutral-400 dark:group-hover:border-neutral-600 ${item.to ? 'cursor-pointer' : 'cursor-default'}`}
         onClick={onResultItemClick({ item, query, updateQuery })}>
-        <CardHeader className="rounded-t-lg relative flex flex-row -m-px p-2 px-4 border-b">
-          <CardTitle className="text-md grow">{item.title}</CardTitle>
+        <CardHeader className="m-0 px-4 py-3 rounded-t-lg flex flex-row items-center justify-between border-b-[1px]">
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger className="truncate">
+                <CardTitle className="text-md truncate">
+                  {item.title}
+                </CardTitle>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{item.title}</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
           {item.type ?
-            <div className="rounded-md border px-2.5 py-0.5 text-xs text-gray-500">
-              {item.stacked ?
-                ''
-              : <span className="font-semibold">{item.type}</span>}
-              <span className="px-1 text-gray-400">dep of:</span>
-              {item.stacked ?
-                <span className="font-semibold">
-                  {item.size} packages
+            <div className="flex items-center justify-center text-pretty rounded-md border-[1px] px-2.5 py-0.5 text-xs text-muted-foreground">
+              <p className="font-semibold">
+                {item.stacked ? '' : <span>{item.type}</span>}
+                <span className="font-medium px-1 text-muted-foreground">
+                  dep of:
                 </span>
-              : <span className="font-semibold">
-                  {stringifyNode(item.from)}
-                </span>
-              }
+                {item.stacked ?
+                  <span>{item.size} packages</span>
+                : <span>{stringifyNode(item.from)}</span>}
+              </p>
             </div>
           : ''}
         </CardHeader>
-        <div className="flex flex-row pl-4 pr-3">
+
+        {/* Card Bottom */}
+        <div className="flex flex-row px-3 py-2 items-center justify-between">
           {item.version ?
-            <CardDescription className="grow content-center py-2">
-              {item.version}
-            </CardDescription>
-          : ''}
-          {item.labels?.length ?
-            item.labels.map(i => (
-              <div key={i}>
-                {
-                  <Badge
-                    className={`my-2 mx-1 grow-0 ${labelClassNamesMap.get(i) || ''}`}>
-                    {i}
-                  </Badge>
-                }
+            <TooltipProvider>
+              <div className="flex items-center justify-center rounded-sm border-[1px] px-2 py-1">
+                <Tooltip>
+                  <TooltipTrigger>
+                    <p className="text-[0.65rem] text-muted-foreground font-mono font-medium truncate w-full m-0 p-0 align-baseline">
+                      {item.version}
+                    </p>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>{item.version}</p>
+                  </TooltipContent>
+                </Tooltip>
               </div>
-            ))
+            </TooltipProvider>
           : ''}
+          <div className="flex gap-2 overflow-x-scroll">
+            {item.labels?.length ?
+              item.labels.map(i => (
+                <div key={i}>
+                  {
+                    <Badge
+                      className={labelClassNamesMap.get(i) || ''}>
+                      {i}
+                    </Badge>
+                  }
+                </div>
+              ))
+            : ''}
+          </div>
         </div>
       </Card>
     </div>
