@@ -8,6 +8,10 @@ vi.mock('@/components/ui/card.jsx', () => ({
   CardTitle: 'gui-card-title',
 }))
 
+vi.mock('date-fns', () => ({
+  format: () => 'November 1st, 2024 | 06:01 PM',
+}))
+
 expect.addSnapshotSerializer({
   serialize: v => html(v),
   test: () => true,

@@ -3,7 +3,39 @@
 exports[`dashboard-grid render default 1`] = `
 
 <div>
-  <div class="flex items-center justify-center flex-wrap gap-8">
+  <div class="flex flex-col grow bg-secondary dark:bg-black px-8 py-8 gap-16">
+    <div class="flex flex-col gap-4">
+      <h4 class="text-sm font-medium tracking-wide ">
+        All Projects
+      </h4>
+      <div
+        class="flex flex-row flex-wrap gap-8"
+        style="opacity: 0;"
+      >
+        <p
+          class="text-sm text-muted-foreground/50"
+          style="opacity: 0;"
+        >
+          All projects pinned
+        </p>
+      </div>
+    </div>
+    <div class="flex flex-col gap-4">
+      <h4 class="text-sm font-medium tracking-wide ">
+        Pinned Projects
+      </h4>
+      <div
+        class="flex flex-row flex-wrap gap-8"
+        style="opacity: 0;"
+      >
+        <p
+          class="text-sm text-muted-foreground/50"
+          style="opacity: 0;"
+        >
+          No pinned projects
+        </p>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -12,70 +44,188 @@ exports[`dashboard-grid render default 1`] = `
 exports[`dashboard-grid with results 1`] = `
 
 <div>
-  <div class="flex items-center justify-center flex-wrap gap-8">
-    <a
-      href="#"
-      class="border-[1px] rounded-lg w-96 hover:border-muted-foreground hover:transition-all"
-    >
-      <div class="flex items-start h-20 justify-between px-4 py-3">
-        <gui-card-title classname="self-end text-md">
-          project-foo
-        </gui-card-title>
-        <div class="text-[0.7rem]">
-          November 1st, 2024 | 06:01 PM
-        </div>
-      </div>
-      <div class="w-full h-12 flex items-center gap-4 justify-between border-t-[1px] px-4 py-3">
-        <div class="flex items-center justify-center rounded-sm border-[1px] px-2 py-1">
-          <button data-state="closed">
-            <p class="text-[0.65rem] text-muted-foreground font-mono truncate w-full m-0 p-0 align-baseline">
-              /home/user/project-foo
-            </p>
-          </button>
-        </div>
-        <div class="flex gap-2 overflow-x-scroll">
-          <div class="flex-none bg-secondary rounded-xl px-2 py-1">
-            <p class="text-[0.7rem] font-medium text-primary ">
-              node
-            </p>
+  <div class="flex flex-col grow bg-secondary dark:bg-black px-8 py-8 gap-16">
+    <div class="flex flex-col gap-4">
+      <h4 class="text-sm font-medium tracking-wide ">
+        All Projects
+      </h4>
+      <div
+        class="flex flex-row flex-wrap gap-8"
+        style="opacity: 0;"
+      >
+        <a
+          href="#"
+          class="border-[1px] rounded-lg w-full md:w-96 hover:border-muted-foreground transition-all duration-250 bg-card"
+          style="opacity: 0;"
+        >
+          <div class="flex flex-col items-start h-20 justify-between px-4 py-3">
+            <div class="flex flex-row w-full items-center justify-between">
+              <div>
+                <button
+                  type="button"
+                  id="radix-:r2:"
+                  aria-haspopup="menu"
+                  aria-expanded="false"
+                  data-state="closed"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="20"
+                    height="20"
+                    viewbox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    class="lucide lucide-ellipsis text-muted-foreground"
+                  >
+                    <circle
+                      cx="12"
+                      cy="12"
+                      r="1"
+                    >
+                    </circle>
+                    <circle
+                      cx="19"
+                      cy="12"
+                      r="1"
+                    >
+                    </circle>
+                    <circle
+                      cx="5"
+                      cy="12"
+                      r="1"
+                    >
+                    </circle>
+                  </svg>
+                </button>
+              </div>
+              <div class="text-[0.7rem]">
+                November 1st, 2024 | 06:01 PM
+              </div>
+            </div>
+            <div class="flex">
+              <gui-card-title classname="self-end text-md">
+                project-foo
+              </gui-card-title>
+            </div>
           </div>
-          <div class="flex-none bg-secondary rounded-xl px-2 py-1">
-            <p class="text-[0.7rem] font-medium text-primary ">
-              vlt
-            </p>
+          <div class="w-full h-12 flex items-center gap-4 justify-between border-t-[1px] px-4 py-3">
+            <div class="flex items-center justify-center rounded-sm border-[1px] px-2 py-1">
+              <button data-state="closed">
+                <p class="text-[0.65rem] text-muted-foreground font-mono truncate w-full m-0 p-0 align-baseline">
+                  /home/user/project-foo
+                </p>
+              </button>
+            </div>
+            <div class="flex gap-2 overflow-x-scroll">
+              <div class="flex-none bg-secondary rounded-xl px-2 py-1">
+                <p class="text-[0.7rem] font-medium text-primary ">
+                  node
+                </p>
+              </div>
+              <div class="flex-none bg-secondary rounded-xl px-2 py-1">
+                <p class="text-[0.7rem] font-medium text-primary ">
+                  vlt
+                </p>
+              </div>
+            </div>
           </div>
-        </div>
-      </div>
-    </a>
-    <a
-      href="#"
-      class="border-[1px] rounded-lg w-96 hover:border-muted-foreground hover:transition-all"
-    >
-      <div class="flex items-start h-20 justify-between px-4 py-3">
-        <gui-card-title classname="self-end text-md">
-          project-bar
-        </gui-card-title>
-        <div class="text-[0.7rem]">
-          November 1st, 2024 | 06:01 PM
-        </div>
-      </div>
-      <div class="w-full h-12 flex items-center gap-4 justify-between border-t-[1px] px-4 py-3">
-        <div class="flex items-center justify-center rounded-sm border-[1px] px-2 py-1">
-          <button data-state="closed">
-            <p class="text-[0.65rem] text-muted-foreground font-mono truncate w-full m-0 p-0 align-baseline">
-              /home/user/project-bar
-            </p>
-          </button>
-        </div>
-        <div class="flex gap-2 overflow-x-scroll">
-          <div class="flex-none bg-secondary rounded-xl px-2 py-1">
-            <p class="text-[0.7rem] font-medium text-primary ">
-              pnpm
-            </p>
+        </a>
+        <a
+          href="#"
+          class="border-[1px] rounded-lg w-full md:w-96 hover:border-muted-foreground transition-all duration-250 bg-card"
+          style="opacity: 0;"
+        >
+          <div class="flex flex-col items-start h-20 justify-between px-4 py-3">
+            <div class="flex flex-row w-full items-center justify-between">
+              <div>
+                <button
+                  type="button"
+                  id="radix-:r5:"
+                  aria-haspopup="menu"
+                  aria-expanded="false"
+                  data-state="closed"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="20"
+                    height="20"
+                    viewbox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    class="lucide lucide-ellipsis text-muted-foreground"
+                  >
+                    <circle
+                      cx="12"
+                      cy="12"
+                      r="1"
+                    >
+                    </circle>
+                    <circle
+                      cx="19"
+                      cy="12"
+                      r="1"
+                    >
+                    </circle>
+                    <circle
+                      cx="5"
+                      cy="12"
+                      r="1"
+                    >
+                    </circle>
+                  </svg>
+                </button>
+              </div>
+              <div class="text-[0.7rem]">
+                November 1st, 2024 | 06:01 PM
+              </div>
+            </div>
+            <div class="flex">
+              <gui-card-title classname="self-end text-md">
+                project-bar
+              </gui-card-title>
+            </div>
           </div>
-        </div>
+          <div class="w-full h-12 flex items-center gap-4 justify-between border-t-[1px] px-4 py-3">
+            <div class="flex items-center justify-center rounded-sm border-[1px] px-2 py-1">
+              <button data-state="closed">
+                <p class="text-[0.65rem] text-muted-foreground font-mono truncate w-full m-0 p-0 align-baseline">
+                  /home/user/project-bar
+                </p>
+              </button>
+            </div>
+            <div class="flex gap-2 overflow-x-scroll">
+              <div class="flex-none bg-secondary rounded-xl px-2 py-1">
+                <p class="text-[0.7rem] font-medium text-primary ">
+                  pnpm
+                </p>
+              </div>
+            </div>
+          </div>
+        </a>
       </div>
-    </a>
+    </div>
+    <div class="flex flex-col gap-4">
+      <h4 class="text-sm font-medium tracking-wide ">
+        Pinned Projects
+      </h4>
+      <div
+        class="flex flex-row flex-wrap gap-8"
+        style="opacity: 0;"
+      >
+        <p
+          class="text-sm text-muted-foreground/50"
+          style="opacity: 0;"
+        >
+          No pinned projects
+        </p>
+      </div>
+    </div>
   </div>
 </div>
 
