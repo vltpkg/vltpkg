@@ -11,6 +11,8 @@ import {
   Library,
   Sun,
   Moon,
+  Menu,
+  X as IconX,
 } from 'lucide-react'
 import { useAnimate, AnimatePresence, motion } from 'framer-motion'
 import { DEFAULT_QUERY, useGraphStore } from '@/state/index.js'
@@ -86,7 +88,7 @@ const Sidebar = () => {
         animate={animate as boolean}
         setAnimate={setAnimate}
       />
-      <Sidebar.Mobile />
+      <Sidebar.Mobile isOpen={isOpen} setIsOpen={setIsOpen} />
     </>
   )
 }
@@ -215,8 +217,13 @@ Sidebar.Subheader = ({
 }) => {
   return (
     <motion.p
-      className="text-xs font-medium text-muted-foreground/50 uppercase select-none tracking-wide"
+      className="text-xs font-medium text-muted-foreground/75 dark:text-muted-foreground/50 uppercase select-none tracking-wide"
       animate={{
+        width:
+          animate ?
+            isOpen ? 'fit-content'
+            : 0
+          : 'fit-content',
         opacity:
           animate ?
             isOpen ? 1
@@ -387,8 +394,120 @@ Sidebar.Lock = ({
   )
 }
 
-Sidebar.Mobile = () => {
-  return <div></div>
+Sidebar.Mobile = ({
+  isOpen,
+  setIsOpen,
+}: Partial<SidebarScreenProps>) => {
+  const {
+    updateActiveRoute,
+    updateErrorCause,
+    updateQuery,
+    updateStamp,
+    savedProjects,
+  } = useGraphStore()
+  const [iconScope, animateIcon] = useAnimate()
+
+  const handleOpen = () => {
+    if (isOpen) {
+      animateIcon(iconScope.current, {
+        rotateZ: [0, 180],
+      })
+      setIsOpen!(false)
+    } else {
+      animateIcon(iconScope.current, {
+        rotateZ: [180, 0],
+      })
+      setIsOpen!(true)
+    }
+  }
+
+  const onProjectClick = (
+    e: MouseEvent,
+    item: DashboardDataProject,
+  ) => {
+    e.preventDefault()
+    selectProjectItem({
+      updateActiveRoute,
+      updateErrorCause,
+      updateQuery,
+      updateStamp,
+      item,
+    }).catch((err: unknown) => console.error(err))
+  }
+
+  return (
+    <div className="flex md:hidden justify-end absolute inset-0">
+      {/* the switch */}
+      <AnimatePresence>
+        <motion.div
+          ref={iconScope}
+          className="absolute p-4 cursor-pointer h-fit z-[101]"
+          onClick={handleOpen}
+          exit={{
+            opacity: 0,
+          }}>
+          {isOpen ?
+            <IconX size={24} className="text-black dark:text-white" />
+          : <Menu size={24} className="text-black dark:text-white" />}
+        </motion.div>
+      </AnimatePresence>
+      <AnimatePresence>
+        <motion.div
+          className="flex flex-col h-screen inset-0 bg-white/80 dark:bg-black/50 backdrop-blur-md w-full z-[100] px-8 py-8 mt-[3.55rem]"
+          initial={{
+            opacity: 0,
+          }}
+          animate={{
+            display: isOpen ? 'flex' : 'none',
+            opacity: isOpen ? 1 : 0,
+          }}
+          exit={{
+            opacity: 0,
+          }}>
+          {/* sidebar links */}
+          <div className="flex flex-col w-full gap-4 divide-y-[1px] divide-muted-foreground/10">
+            <h3 className="text-sm font-medium uppercase text-muted-foreground">
+              workspaces
+            </h3>
+            {sidebarLinks.map((link, idx) => (
+              <a
+                key={idx}
+                href={link.href}
+                onClick={(e: MouseEvent) => {
+                  if (!link.external) {
+                    e.preventDefault()
+                    updateActiveRoute(link.href)
+                  }
+                }}
+                className="font-medium text-lg pt-2">
+                {link.name}
+              </a>
+            ))}
+          </div>
+
+          {/* sidebar projects */}
+          {savedProjects && savedProjects?.length > 0 && (
+            <div className="flex flex-col w-full gap-4 divide-y-[1px] divide-muted-foreground/10 mt-12">
+              <h3 className="text-sm font-medium uppercase text-muted-foreground">
+                pinned projects
+              </h3>
+              {savedProjects?.map((project, idx) => (
+                <a
+                  key={idx}
+                  href="#"
+                  onClick={(e: MouseEvent) => {
+                    onProjectClick(e, project)
+                  }}
+                  className="font-medium text-lg pt-2">
+                  {project.name}
+                </a>
+              ))}
+            </div>
+          )}
+        </motion.div>
+      </AnimatePresence>
+    </div>
+  )
 }
 
 Sidebar.Body = ({
@@ -435,9 +554,7 @@ Sidebar.Link = ({
               : '#3c3c3c'
             : '#757575',
         }}
-        className={`
-          relative flex justify-start gap-2 group/sidebar-link rounded-md
-          `}>
+        className={`relative flex justify-start gap-2 group/sidebar-link rounded-md`}>
         <link.icon width={20} height={20} />
         <motion.span
           className="text-sm"
@@ -455,6 +572,7 @@ Sidebar.Link = ({
           }}>
           {link.name}
         </motion.span>
+        {/* the hover effect background */}
         <motion.div
           animate={{
             width:
@@ -464,7 +582,7 @@ Sidebar.Link = ({
               : 175,
           }}
           className={`
-            absolute -mt-[7px] -ml-[5px] h-[34px] z-10 rounded-sm
+            -mt-[7px] -ml-[5px] h-[34px] z-10 rounded-sm hidden md:absolute
             ${
               isOnRoute ?
                 'bg-muted-foreground/25'
