@@ -1,4 +1,4 @@
-import { useState, type MouseEvent } from 'react'
+import { useEffect, useState, type MouseEvent } from 'react'
 import { useTheme } from '@/components/ui/theme-provider.jsx'
 import {
   type LucideIcon,
@@ -540,8 +540,15 @@ Sidebar.Link = ({
   onClick: (e: MouseEvent) => void
 }) => {
   const { theme, activeRoute } = useGraphStore()
+  const [isOnRoute, setIsOnRoute] = useState<boolean>(false)
 
-  const isOnRoute = activeRoute === link.href
+  useEffect(() => {
+    if (location.pathname === '/' && link.href === '/dashboard') {
+      setIsOnRoute(true)
+    } else {
+      setIsOnRoute(activeRoute === link.href)
+    }
+  }, [activeRoute])
 
   return (
     <>
