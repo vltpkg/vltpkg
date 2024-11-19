@@ -582,7 +582,7 @@ Sidebar.Link = ({
               : 175,
           }}
           className={`
-            -mt-[7px] -ml-[5px] h-[34px] z-10 rounded-sm hidden md:absolute
+            -mt-[7px] -ml-[5px] h-[34px] z-10 rounded-sm md:absolute
             ${
               isOnRoute ?
                 'bg-muted-foreground/25'

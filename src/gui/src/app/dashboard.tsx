@@ -56,7 +56,7 @@ export const Dashboard = () => {
   }, [stamp])
 
   return (
-    <section className="flex grow w-full flex-col">
+    <section className="flex grow w-full flex-col min-h-[80svh]">
       <div>
         <section className="flex items-center px-8 py-4 border-b-[1px] border-t-[1px] border-solid">
           <div className="flex flex-col gap-2 w-full">

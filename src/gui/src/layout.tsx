@@ -48,9 +48,7 @@ Layout.Body = ({ children }: LayoutProps) => {
 }
 
 Layout.Content = ({ children }: LayoutProps) => {
-  return (
-    <div className="flex flex-col flex-grow w-full">{children}</div>
-  )
+  return <div className="flex flex-col grow w-full">{children}</div>
 }
 
 export default Layout

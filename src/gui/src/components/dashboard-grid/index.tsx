@@ -147,7 +147,7 @@ export const DashboardItem = ({
       initial="hidden"
       animate="show"
       exit="exit"
-      className="border-[1px] rounded-lg w-96 hover:border-muted-foreground transition-all duration-250 bg-card"
+      className="border-[1px] rounded-lg w-full md:w-96 hover:border-muted-foreground transition-all duration-250 bg-card"
       onClick={onDashboardItemClick}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}>
