@@ -9,9 +9,6 @@ catalogs:
     '@eslint/js':
       specifier: ^9.8.0
       version: 9.9.0
-    '@radix-ui/react-slot':
-      specifier: ^1.1.0
-      version: 1.1.0
     '@types/eslint__js':
       specifier: ^8.42.3
       version: 8.42.3
@@ -27,12 +24,6 @@ catalogs:
     chalk:
       specifier: ^5.3.0
       version: 5.3.0
-    class-variance-authority:
-      specifier: ^0.7.0
-      version: 0.7.0
-    clsx:
-      specifier: ^2.1.1
-      version: 2.1.1
     esbuild:
       specifier: ^0.23.1
       version: 0.23.1
@@ -45,9 +36,6 @@ catalogs:
     lru-cache:
       specifier: ^11.0.2
       version: 11.0.2
-    lucide-react:
-      specifier: ^0.453.0
-      version: 0.453.0
     package-json-from-dist:
       specifier: ^1.0.0
       version: 1.0.0
@@ -63,27 +51,12 @@ catalogs:
     prettier:
       specifier: ^3.3.2
       version: 3.3.3
-    react:
-      specifier: ^18.3.1
-      version: 18.3.1
-    react-dom:
-      specifier: ^18.3.1
-      version: 18.3.1
     rimraf:
       specifier: ^6.0.1
       version: 6.0.1
     semver:
       specifier: ^7.6.3
       version: 7.6.3
-    tailwind-merge:
-      specifier: ^2.5.2
-      version: 2.5.4
-    tailwindcss:
-      specifier: ^3.4.14
-      version: 3.4.14
-    tailwindcss-animate:
-      specifier: ^1.0.7
-      version: 1.0.7
     tap:
       specifier: ^21.0.1
       version: 21.0.1
@@ -664,7 +637,7 @@ importers:
         specifier: ^2.1.2
         version: 2.1.2(@types/react-dom@18.3.1)(@types/react@18.3.11)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@radix-ui/react-slot':
-        specifier: 'catalog:'
+        specifier: ^1.1.0
         version: 1.1.0(@types/react@18.3.11)(react@18.3.1)
       '@radix-ui/react-tabs':
         specifier: ^1.1.1
@@ -691,37 +664,37 @@ importers:
         specifier: workspace:*
         version: link:../types
       class-variance-authority:
-        specifier: 'catalog:'
+        specifier: ^0.7.0
         version: 0.7.0
       clsx:
-        specifier: 'catalog:'
+        specifier: ^2.1.1
         version: 2.1.1
       date-fns:
         specifier: ^4.1.0
         version: 4.1.0
       framer-motion:
-        specifier: ^11.11.15
-        version: 11.11.15(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        specifier: ^11.11.17
+        version: 11.11.17(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       gsap:
         specifier: ^3.12.5
         version: 3.12.5
       lucide-react:
-        specifier: 'catalog:'
+        specifier: ^0.453.0
         version: 0.453.0(react@18.3.1)
       react:
-        specifier: 'catalog:'
+        specifier: ^18.3.1
         version: 18.3.1
       react-dom:
-        specifier: 'catalog:'
+        specifier: ^18.3.1
         version: 18.3.1(react@18.3.1)
       shiki:
         specifier: ^1.22.2
         version: 1.22.2
       tailwind-merge:
-        specifier: 'catalog:'
+        specifier: ^2.5.2
         version: 2.5.4
       tailwindcss-animate:
-        specifier: 'catalog:'
+        specifier: ^1.0.7
         version: 1.0.7(tailwindcss@3.4.14)
       zustand:
         specifier: ^4.5.4
@@ -779,7 +752,7 @@ importers:
         specifier: 'catalog:'
         version: 3.3.3
       tailwindcss:
-        specifier: 'catalog:'
+        specifier: ^3.4.14
         version: 3.4.14
       typescript:
         specifier: 'catalog:'
@@ -1650,16 +1623,16 @@ importers:
         specifier: ^1.1.0
         version: 1.1.0(@types/react-dom@18.3.1)(@types/react@18.3.11)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@radix-ui/react-slot':
-        specifier: 'catalog:'
+        specifier: ^1.1.0
         version: 1.1.0(@types/react@18.3.11)(react@18.3.1)
       '@radix-ui/react-tooltip':
         specifier: ^1.1.3
         version: 1.1.3(@types/react-dom@18.3.1)(@types/react@18.3.11)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@types/react':
-        specifier: 'catalog:'
+        specifier: ^18.3.11
         version: 18.3.11
       '@types/react-dom':
-        specifier: 'catalog:'
+        specifier: ^18.3.1
         version: 18.3.1
       '@vltpkg/cli':
         specifier: workspace:*
@@ -1668,31 +1641,31 @@ importers:
         specifier: 5.0.0-beta.4
         version: 5.0.0-beta.4(@types/node@22.5.0)(rollup@4.24.0)(typescript@5.5.4)
       class-variance-authority:
-        specifier: 'catalog:'
+        specifier: ^0.7.0
         version: 0.7.0
       clsx:
-        specifier: 'catalog:'
+        specifier: ^2.1.1
         version: 2.1.1
       lucide-react:
-        specifier: 'catalog:'
+        specifier: ^0.453.0
         version: 0.453.0(react@18.3.1)
       react:
-        specifier: 'catalog:'
+        specifier: ^18.3.1
         version: 18.3.1
       react-dom:
-        specifier: 'catalog:'
+        specifier: ^18.3.1
         version: 18.3.1(react@18.3.1)
       sharp:
         specifier: ^0.33.5
         version: 0.33.5
       tailwind-merge:
-        specifier: 'catalog:'
+        specifier: ^2.5.2
         version: 2.5.4
       tailwindcss:
-        specifier: 'catalog:'
+        specifier: ^3.4.14
         version: 3.4.14
       tailwindcss-animate:
-        specifier: 'catalog:'
+        specifier: ^1.0.7
         version: 1.0.7(tailwindcss@3.4.14)
       typedoc:
         specifier: ^0.26.10
@@ -1703,9 +1676,6 @@ importers:
       typedoc-plugin-markdown:
         specifier: ^4.2.9
         version: 4.2.9(typedoc@0.26.10(typescript@5.5.4))
-      typescript:
-        specifier: 'catalog:'
-        version: 5.5.4
       vite:
         specifier: 6.0.0-beta.2
         version: 6.0.0-beta.2(@types/node@22.5.0)
@@ -1731,6 +1701,9 @@ importers:
       typedoc-plugin-remark:
         specifier: ^1.0.3
         version: 1.0.3(typedoc-plugin-markdown@4.2.9(typedoc@0.26.10(typescript@5.5.4)))
+      typescript:
+        specifier: 'catalog:'
+        version: 5.5.4
       typescript-eslint:
         specifier: 'catalog:'
         version: 8.2.0(eslint@9.9.0(jiti@1.21.6))(typescript@5.5.4)
@@ -4847,8 +4820,8 @@ packages:
   fraction.js@4.3.7:
     resolution: {integrity: sha512-ZsDfxO51wGAXREY55a7la9LScWpwv9RxIrYABrlvOFBlH/ShPnrtsXeuUIfXKKOVicNxQ+o8JTbJvjS4M89yew==}
 
-  framer-motion@11.11.15:
-    resolution: {integrity: sha512-fib+OpUe4nap4W1vhaDohnPU+42B5s1q+jNkNkb6TfzmDYtRhDyvn4mkRCAD5a2cQKOI3nJZP7yqGYtxnlmleg==}
+  framer-motion@11.11.17:
+    resolution: {integrity: sha512-O8QzvoKiuzI5HSAHbcYuL6xU+ZLXbrH7C8Akaato4JzQbX2ULNeniqC2Vo5eiCtFktX9XsJ+7nUhxcl2E2IjpA==}
     peerDependencies:
       '@emotion/is-prop-valid': '*'
       react: ^18.0.0
@@ -11344,7 +11317,7 @@ snapshots:
 
   fraction.js@4.3.7: {}
 
-  framer-motion@11.11.15(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
+  framer-motion@11.11.17(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
     dependencies:
       tslib: 2.7.0
     optionalDependencies:
