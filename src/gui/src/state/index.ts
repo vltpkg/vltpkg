@@ -66,8 +66,7 @@ export const useGraphStore = create<Action & State>((set, get) => {
     updateSavedProjects: (savedProjects: State['savedProjects']) =>
       set(() => ({ savedProjects })),
     saveProject: (item: DashboardDataProject) => {
-      const savedProjects = (get().savedProjects ??
-        [])
+      const savedProjects = get().savedProjects ?? []
       let updatedProjects = [...savedProjects]
       const isProjectSaved = updatedProjects.find(
         savedProject => savedProject.name === item.name,
