@@ -69,14 +69,14 @@ export const useGraphStore = create<Action & State>((set, get) => {
       const savedProjects = get().savedProjects ?? []
       let updatedProjects = [...savedProjects]
       const isProjectSaved = updatedProjects.find(
-        savedProject => savedProject.name === item.name,
+        savedProject => savedProject.path === item.path,
       )
 
       if (!isProjectSaved) {
         updatedProjects.push(item)
       } else {
         updatedProjects = updatedProjects.filter(
-          savedProject => savedProject.name !== item.name,
+          savedProject => savedProject.path !== item.path,
         )
       }
 
