@@ -77,8 +77,8 @@ const SIDEBAR_WIDTH = {
  */
 const Sidebar = () => {
   const [isOpen, setIsOpen] = useState<boolean>(false)
-  const { lockSidebar: animate, updateLockSidebar: setAnimate } =
-    useGraphStore()
+  const animate = useGraphStore(state => state.lockSidebar)
+  const setAnimate = useGraphStore(state => state.updateLockSidebar)
 
   return (
     <>
@@ -99,13 +99,15 @@ Sidebar.Desktop = ({
   animate,
   setAnimate,
 }: SidebarScreenProps) => {
-  const {
-    updateActiveRoute,
-    updateErrorCause,
-    updateQuery,
-    updateStamp,
-    savedProjects,
-  } = useGraphStore()
+  const updateActiveRoute = useGraphStore(
+    state => state.updateActiveRoute,
+  )
+  const updateErrorCause = useGraphStore(
+    state => state.updateErrorCause,
+  )
+  const updateQuery = useGraphStore(state => state.updateQuery)
+  const updateStamp = useGraphStore(state => state.updateStamp)
+  const savedProjects = useGraphStore(state => state.savedProjects)
 
   const onProjectClick = (
     e: MouseEvent,
@@ -401,13 +403,16 @@ Sidebar.Mobile = ({
   isOpen: boolean
   setIsOpen: React.Dispatch<React.SetStateAction<boolean>>
 }) => {
-  const {
-    updateActiveRoute,
-    updateErrorCause,
-    updateQuery,
-    updateStamp,
-    savedProjects,
-  } = useGraphStore()
+  const updateActiveRoute = useGraphStore(
+    state => state.updateActiveRoute,
+  )
+  const updateErrorCause = useGraphStore(
+    state => state.updateErrorCause,
+  )
+  const updateQuery = useGraphStore(state => state.updateQuery)
+  const updateStamp = useGraphStore(state => state.updateStamp)
+  const savedProjects = useGraphStore(state => state.savedProjects)
+
   const [iconScope, animateIcon] = useAnimate()
 
   const handleOpen = () => {
@@ -539,7 +544,8 @@ Sidebar.Link = ({
   animate: boolean
   onClick: (e: MouseEvent) => void
 }) => {
-  const { theme, activeRoute } = useGraphStore()
+  const theme = useGraphStore(state => state.theme)
+  const activeRoute = useGraphStore(state => state.activeRoute)
   const [isOnRoute, setIsOnRoute] = useState<boolean>(false)
 
   useEffect(() => {

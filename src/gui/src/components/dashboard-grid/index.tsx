@@ -103,8 +103,8 @@ export const DashboardItem = ({
   )
   const updateQuery = useGraphStore(state => state.updateQuery)
   const updateStamp = useGraphStore(state => state.updateStamp)
-
-  const { savedProjects, saveProject } = useGraphStore()
+  const savedProjects = useGraphStore(state => state.savedProjects)
+  const saveProject = useGraphStore(state => state.saveProject)
 
   const onDashboardItemClick = (e: MouseEvent) => {
     e.preventDefault()
@@ -238,7 +238,7 @@ const DashboardGrid = () => {
     if (dashboard?.projects && savedProjects) {
       const filteredProjects = dashboard.projects.filter(
         project =>
-          !savedProjects.some(saved => saved.name === project.name),
+          !savedProjects.some(saved => saved.path === project.path),
       )
       setUnsavedProjects(filteredProjects)
     }
