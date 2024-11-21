@@ -3,27 +3,9 @@
 exports[`render default 1`] = `
 
 <div>
-  <section class="flex grow flex-col justify-between">
+  <section class="flex grow w-full flex-col min-h-[80svh]">
     <div>
-      <nav
-        class="flex gap-4 md:gap-0 px-8 py-4 items-center justify-between border-b-[1px] border-solid"
-        role="navigation"
-      >
-        <div class="flex w-full h-full items-center justify-end">
-          <div class="flex items-baseline flex-1">
-            <gui-logo>
-            </gui-logo>
-            <div class="ml-6">
-              <p class="text-md font-medium">
-                Dashboard
-              </p>
-            </div>
-          </div>
-          <gui-theme-switcher>
-          </gui-theme-switcher>
-        </div>
-      </nav>
-      <section class="flex items-center px-8 py-4 border-b-[1px] border-solid">
+      <section class="flex items-center px-8 py-4 border-b-[1px] border-t-[1px] border-solid">
         <div class="flex flex-col gap-2 w-full">
         </div>
         <div class="flex flex-col gap-2 w-full flex-end">
@@ -32,45 +14,6 @@ exports[`render default 1`] = `
     </div>
     <gui-dashboard-grid>
     </gui-dashboard-grid>
-    <footer class="flex border-t-[1px] border-solid h-24 items-center justify-between px-8 w-full">
-      <div class="flex items-center gap-3">
-        <a href="https://www.linkedin.com/company/vltpkg/">
-          <img
-            src="/icons/linkedin.svg"
-            width="20"
-            style="filter: invert(1);"
-          >
-        </a>
-        <a href="https://x.com/vltpkg">
-          <img
-            src="/icons/twitter-x.svg"
-            width="20"
-            style="filter: invert(1);"
-          >
-        </a>
-        <a href="https://github.com/vltpkg">
-          <img
-            src="/icons/github.svg"
-            width="20"
-            style="filter: invert(1);"
-          >
-        </a>
-        <a href="https://discord.gg/vltpkg">
-          <img
-            src="/icons/discord.svg"
-            width="20"
-            style="filter: invert(1);"
-          >
-        </a>
-      </div>
-      <div class="flex items-center">
-        <p class="text-xs text-muted-foreground">
-          © 2024 vlt technology inc.
-        </p>
-      </div>
-      <div>
-      </div>
-    </footer>
   </section>
 </div>
 

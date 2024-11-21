@@ -111,9 +111,13 @@ t.test('lint', async t => {
   for (const result of results) {
     const messages = result.messages.map(m => [m.ruleId, m.message])
     const file = relative(outdir, result.filePath)
+    t.comment(JSON.stringify(messages, null, 2))
     const expected =
       file.startsWith(`gui${sep}`) ?
-        []
+        // framer-motion uses a global require in the gui code inside a
+        // try/catch block, so we allow this lint error since it does not cause
+        // any runtime issue.
+        [['no-undef', "'require' is not defined."]]
         // 1 use of import.meta.dirname is expected in all our built esm files
       : [['no-restricted-syntax', IMPORT_META.Dirname]]
     t.strictSame(messages, expected, file)

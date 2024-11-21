@@ -1,7 +1,6 @@
-import { useEffect, type MouseEvent } from 'react'
+import { useEffect } from 'react'
 import { Query } from '@vltpkg/query'
 import { SearchBar } from '@/components/search-bar.jsx'
-import { Logo } from '@/components/ui/logo.jsx'
 import { ExplorerGrid } from '@/components/explorer-grid/index.jsx'
 import { useGraphStore } from '@/state/index.js'
 import {
@@ -10,11 +9,8 @@ import {
   type State,
 } from '@/state/types.js'
 import { load } from '@/state/load-graph.js'
-import { Button } from '@/components/ui/button.jsx'
-import { LayoutDashboard, Search, Command } from 'lucide-react'
-import { ThemeSwitcher } from '@/components/ui/theme-switcher.jsx'
+import { Search, Command } from 'lucide-react'
 import { Kbd } from '@/components/ui/kbd.jsx'
-import { Footer } from '@/components/ui/footer.jsx'
 
 export type ExplorerOptions = {
   projectRoot?: string
@@ -85,13 +81,9 @@ export const Explorer = () => {
 }
 
 const ExplorerContent = () => {
-  const updateActiveRoute = useGraphStore(
-    state => state.updateActiveRoute,
-  )
   const dashboard = useGraphStore(state => state.dashboard)
   const updateEdges = useGraphStore(state => state.updateEdges)
   const updateNodes = useGraphStore(state => state.updateNodes)
-  const hasDashboard = useGraphStore(state => state.hasDashboard)
   const graph = useGraphStore(state => state.graph)
   const query = useGraphStore(state => state.query)
   const q = useGraphStore(state => state.q)
@@ -127,36 +119,10 @@ const ExplorerContent = () => {
     updateQueryData().catch((err: unknown) => console.error(err))
   }, [query, q])
 
-  const onDashboardButtonClick = (e: MouseEvent) => {
-    e.preventDefault()
-    updateActiveRoute('/dashboard')
-  }
-
   return (
     <section className="flex grow flex-col justify-between">
       <div>
-        <nav
-          className="flex gap-4 md:gap-0 px-8 py-4 items-center justify-between border-b-[1px] border-solid"
-          role="navigation">
-          <div className="flex w-full h-full items-center justify-end">
-            <div className="flex items-baseline flex-1">
-              <Logo />
-              <div className="ml-6">
-                <p className="text-md font-medium">Explore</p>
-              </div>
-            </div>
-            <ThemeSwitcher />
-            {hasDashboard ?
-              <Button
-                className="ml-2"
-                variant="outline"
-                onClick={onDashboardButtonClick}>
-                <LayoutDashboard size={12} /> Back to Dashboard
-              </Button>
-            : ''}
-          </div>
-        </nav>
-        <section className="flex items-center px-8 pt-4">
+        <section className="flex items-center px-8 pt-4 border-t-[1px]">
           <div className="flex flex-col gap-2 w-full">
             {graph?.projectRoot ?
               <p className="text-xs font-mono font-light text-muted-foreground">
@@ -193,7 +159,6 @@ const ExplorerContent = () => {
         </section>
       </div>
       <ExplorerGrid />
-      <Footer />
     </section>
   )
 }
