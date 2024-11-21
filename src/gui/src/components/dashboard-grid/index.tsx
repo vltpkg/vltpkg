@@ -123,7 +123,7 @@ export const DashboardItem = ({
   useEffect(() => {
     if (savedProjects) {
       const isProjectSaved = savedProjects.some(
-        savedProject => savedProject.name === item.name,
+        savedProject => savedProject.path === item.path,
       )
       setIsSaved(isProjectSaved)
     }
