@@ -51,14 +51,33 @@ import {
   type RecordField,
   recordFields,
   type Commands,
+  recursiveCommands,
 } from './definition.js'
 import { merge } from './merge.js'
 export { recordFields, isRecordField }
 export { definition, commands, Commands }
 
-type RecordPairs = Record<string, unknown>
-type RecordString = Record<string, string>
-type ConfigFiles = Record<string, ConfigFileData>
+const extraOptions = new Set([
+  'scurry',
+  'packageJson',
+  'monorepo',
+  'projectRoot',
+] as const)
+
+export type RecordPairs = Record<string, unknown>
+export type RecordString = Record<string, string>
+export type ConfigFiles = Record<string, ConfigFileData>
+export type ExtraOptionKeys =
+  typeof extraOptions extends Set<infer T> ? T : never
+export type RequireAllExtraOptions<T> = T &
+  Record<ExtraOptionKeys, unknown>
+
+export type ExtraOptions = RequireAllExtraOptions<{
+  packageJson: PackageJson
+  scurry: PathScurry
+  projectRoot: string
+  monorepo?: Monorepo
+}>
 
 // turn a set of pairs into a Record object.
 // if a kv pair doesn't have a = character, set to `''`
@@ -84,10 +103,7 @@ const isRecordFieldValue = (k: string, v: unknown): v is string[] =>
 
 export const pairsToRecords = (
   obj: ConfigFileData,
-): Omit<
-  ConfigOptions,
-  'projectRoot' | 'scurry' | 'packageJson' | 'monorepo'
-> & {
+): Omit<ConfigOptions, ExtraOptionKeys> & {
   command?: Record<string, ConfigOptions>
 } => {
   return Object.fromEntries(
@@ -109,15 +125,7 @@ export const pairsToRecords = (
 export const recordsToPairs = (obj: RecordPairs): RecordPairs => {
   return Object.fromEntries(
     Object.entries(obj)
-      .filter(
-        ([k]) =>
-          !(
-            k === 'scurry' ||
-            k === 'packageJson' ||
-            k === 'monorepo' ||
-            k === 'projectRoot'
-          ),
-      )
+      .filter(([k]) => !extraOptions.has(k as ExtraOptionKeys))
       .map(([k, v]) => [
         k,
         k === 'command' && v && typeof v === 'object' ?
@@ -135,11 +143,16 @@ export const recordsToPairs = (obj: RecordPairs): RecordPairs => {
 }
 
 const kRecord = Symbol('parsed key=value record')
-const exists = (f: string) =>
-  lstat(f).then(
-    () => true,
-    () => false,
-  )
+
+const oneOfExists = async (base: string, entries: string[]) => {
+  for (const f of entries) {
+    try {
+      await lstat(resolve(base, f))
+      return true
+    } catch {}
+  }
+  return false
+}
 
 const home = homedir()
 const xdg = new XDG('vlt')
@@ -167,12 +180,7 @@ export type ConfigOptions = {
   [k in keyof ConfigFileData]?: k extends RecordField ? RecordString
   : k extends 'command' ? never
   : ConfigData[k]
-} & {
-  packageJson: PackageJson
-  scurry: PathScurry
-  projectRoot: string
-  monorepo?: Monorepo
-}
+} & ExtraOptions
 
 /**
  * The base config definition set as a type
@@ -223,20 +231,41 @@ export class Config {
    */
   get options(): ConfigOptions {
     if (this.#options) return this.#options
+
     const scurry = new PathScurry(this.projectRoot)
     const packageJson = new PackageJson()
-    this.#options = Object.assign(
-      pairsToRecords(this.parse().values),
-      {
-        projectRoot: this.projectRoot,
-        scurry,
-        packageJson,
-        monorepo: Monorepo.maybeLoad(this.projectRoot, {
-          scurry,
-          packageJson,
-        }),
-      },
-    )
+    const { values } = this.parse()
+
+    const paths = this.get('workspace')
+    const groups = this.get('workspace-group')
+    const recursive = this.get('recursive')
+
+    const load =
+      paths !== undefined || groups !== undefined ? { paths, groups }
+      : recursive === true ? {}
+      : recursive === false ? undefined
+      : this.command && recursiveCommands.has(this.command) ? {}
+      : undefined
+    const monorepo = Monorepo.maybeLoad(this.projectRoot, {
+      scurry,
+      packageJson,
+      load,
+    })
+    // Infer the workspace by being in that directory if no other
+    // workspace configs were set
+    if (!load && monorepo) {
+      const wsPath = monorepo.get(process.cwd())?.path
+      if (wsPath !== undefined) {
+        values.workspace = [wsPath]
+      }
+    }
+
+    this.#options = Object.assign(pairsToRecords(values), {
+      projectRoot: this.projectRoot,
+      scurry,
+      packageJson,
+      monorepo,
+    } satisfies ExtraOptions)
 
     return this.#options
   }
@@ -245,8 +274,8 @@ export class Config {
    * Reset the options value, optionally setting a new project root
    * to recalculate the options.
    */
-  resetOptions(projectRoot: string = process.cwd()) {
-    this.projectRoot = projectRoot
+  resetOptions(cwd: string = process.cwd()) {
+    this.projectRoot = cwd
     this.#options = undefined
   }
 
@@ -281,9 +310,9 @@ export class Config {
 
   constructor(
     jack: Jack<ConfigDefinitions> = definition,
-    projectRoot = process.cwd(),
+    cwd = process.cwd(),
   ) {
-    this.projectRoot = projectRoot
+    this.projectRoot = cwd
     this.commands = commands
     this.jack = jack
   }
@@ -592,66 +621,16 @@ export class Config {
         this.projectRoot = dir
         break
       }
-      if (
-        !foundLikelyRoot &&
-        (
-          await Promise.all(
-            likelies.map(s => exists(resolve(dir, s))),
-          )
-        ).find(x => x)
-      ) {
+      if (!foundLikelyRoot && (await oneOfExists(dir, likelies))) {
         foundLikelyRoot = true
         this.projectRoot = dir
       }
-      if (
-        (
-          await Promise.all(stops.map(s => exists(resolve(dir, s))))
-        ).find(x => x)
-      ) {
+      if (await oneOfExists(dir, stops)) {
         this.projectRoot = dir
         break
       }
     }
     return this
-  }
-
-  /**
-   * Determine whether we should use colors in the output. Update
-   * chalk appropriately.
-   *
-   * Implicitly calls this.parse() if it not parsed already.
-   */
-  async loadColor(): Promise<
-    this & {
-      get(key: 'color'): boolean
-      values: OptionsResults<ConfigDefinitions>
-      positionals: string[]
-    }
-  > {
-    const c = this.get('color')
-    const chalk = (await import('chalk')).default
-    let color: boolean
-    if (
-      process.env.NO_COLOR !== '1' &&
-      (c === true || (c === undefined && chalk.level > 0))
-    ) {
-      color = true
-      chalk.level = Math.max(chalk.level, 1) as 0 | 1 | 2 | 3
-      process.env.FORCE_COLOR = String(chalk.level)
-      delete process.env.NO_COLOR
-    } else {
-      color = false
-      chalk.level = 0
-      process.env.FORCE_COLOR = '0'
-      process.env.NO_COLOR = '1'
-    }
-    const { values = this.parse().values } = this
-    ;(values as ConfigData & { color: boolean }).color = color
-    return this as this & {
-      values: OptionsResults<ConfigDefinitions>
-      positionals: string[]
-      get(k: 'color'): boolean
-    }
   }
 
   /**
@@ -664,7 +643,7 @@ export class Config {
    * {@link Config} object
    */
   static async load(
-    projectRoot = process.cwd(),
+    cwd = process.cwd(),
     argv = process.argv,
     /**
      * only used in tests, resets the memoization
@@ -673,9 +652,9 @@ export class Config {
     reload = false,
   ): Promise<LoadedConfig> {
     if (this.#loaded && !reload) return this.#loaded
-    const a = new Config(definition, projectRoot)
+    const a = new Config(definition, cwd)
     const b = await a.loadConfigFile()
-    const c = await b.parse(argv).loadColor()
+    const c = b.parse(argv)
     this.#loaded = c as LoadedConfig
     return this.#loaded
   }
@@ -685,7 +664,6 @@ export class Config {
  * A fully loaded {@link Config} object
  */
 export type LoadedConfig = Config & {
-  get(k: 'color'): boolean
   values: OptionsResults<ConfigDefinitions>
   positionals: string[]
 }

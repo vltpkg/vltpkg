@@ -10,7 +10,11 @@ import {
 } from '@vltpkg/graph'
 import { Query } from '@vltpkg/query'
 import { commandUsage } from '../config/usage.js'
-import { type CliCommandUsage, type CliCommandFn } from '../types.js'
+import {
+  type CliCommandUsage,
+  type CliCommandFn,
+  type CliCommandView,
+} from '../types.js'
 import { startGUI } from '../start-gui.js'
 
 export const usage: CliCommandUsage = () =>
@@ -49,20 +53,18 @@ export const usage: CliCommandUsage = () =>
     },
   })
 
-export const view = {
+export const view: CliCommandView = {
   json: jsonOutput,
   mermaid: mermaidOutput,
   human: humanReadableOutput,
 }
 
-export type CommandResult = {
+export const command: CliCommandFn<{
   importers: Set<Node>
   edges: EdgeLike[]
   nodes: NodeLike[]
   highlightSelection: boolean
-}
-
-export const command: CliCommandFn = async (
+}> = async (
   conf,
   assetsDir: string = fileURLToPath(
     import.meta.resolve('@vltpkg/gui'),
@@ -127,8 +129,6 @@ export const command: CliCommandFn = async (
   }
 
   return {
-    /* c8 ignore next */
-    defaultView: process.stdout.isTTY ? 'human' : 'json',
     result: {
       importers,
       edges,

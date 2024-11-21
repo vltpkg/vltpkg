@@ -18,7 +18,6 @@ export const command: CliCommandFn = async conf => {
   const mainManifest = conf.options.packageJson.read(
     conf.options.projectRoot,
   )
-
   const graph = await ideal.build({
     ...conf.options,
     add,

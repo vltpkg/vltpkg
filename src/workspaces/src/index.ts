@@ -592,10 +592,7 @@ export class Monorepo {
    * Returns undefined if the project is not a monorepo workspaces
    * root, otherwise returns the loaded Monorepo.
    */
-  static maybeLoad(
-    projectRoot: string,
-    options: MonorepoOptions = { load: {} },
-  ) {
+  static maybeLoad(projectRoot: string, options: MonorepoOptions) {
     try {
       if (
         !statSync(
@@ -607,20 +604,18 @@ export class Monorepo {
     } catch {
       return
     }
-    const { load = {} } = options
-    return new Monorepo(projectRoot, { ...options, load })
+    return new Monorepo(projectRoot, options)
   }
 
   /**
    * Convenience method to instantiate and load in one call.
    * Throws if called on a directory that is not a workspaces root.
    */
-  static load(
-    projectRoot: string,
-    options: MonorepoOptions = { load: {} },
-  ) {
-    const { load = {} } = options
-    return new Monorepo(projectRoot, { ...options, load })
+  static load(projectRoot: string, options: MonorepoOptions = {}) {
+    return new Monorepo(projectRoot, {
+      ...options,
+      load: options.load ?? {},
+    })
   }
 }
 

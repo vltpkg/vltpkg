@@ -2,6 +2,7 @@ import { splitDepID } from '@vltpkg/dep-id'
 import { type EdgeLike, type NodeLike } from '../types.js'
 import { type ChalkInstance } from 'chalk'
 
+// TODO: unicode vs ascii support
 const chars = new Map(
   Object.entries({
     connection: '─',
@@ -28,7 +29,6 @@ export type HumanReadableOutputOptions = {
   edges: EdgeLike[]
   importers: Set<NodeLike>
   nodes: NodeLike[]
-  colors?: ChalkInstance
   highlightSelection: boolean
 }
 
@@ -98,15 +98,10 @@ const getTreeItems = (
  */
 export function humanReadableOutput(
   options: HumanReadableOutputOptions,
+  viewOptions: { colors: ChalkInstance },
 ) {
-  const { colors, importers } = options
-  const noop = (s?: string | null) => s
-  const {
-    dim = noop,
-    red = noop,
-    reset = noop,
-    yellow = noop,
-  } = colors ?? {}
+  const { importers } = options
+  const { colors } = viewOptions
   const initialItems = new Set<TreeItem>()
   for (const importer of importers) {
     initialItems.add({
@@ -129,26 +124,24 @@ export function humanReadableOutput(
     let content = ''
 
     const depIdTuple = item.node?.id && splitDepID(item.node.id)
-    const hasCustomReg =
-      depIdTuple?.[0] === 'registry' && depIdTuple[1]
-    const name =
-      hasCustomReg ? `${depIdTuple[1]}:${item.name}` : item.name
+    const customReg = depIdTuple?.[0] === 'registry' && depIdTuple[1]
+    const name = `${customReg ? `${customReg}:` : ''}${item.name}`
     const decoratedName =
       (
         options.highlightSelection &&
         isSelected(options, item.edge, item.node)
       ) ?
-        yellow(name)
+        colors.yellow(name)
       : name
     if (!item.node && item.include) {
       const missing =
         item.edge?.type.endsWith('ptional') ?
-          dim('(missing optional)')
-        : red('(missing)')
+          colors.dim('(missing optional)')
+        : colors.red('(missing)')
       return `${item.padding}${item.prefix}${decoratedName} ${missing}\n`
     }
 
-    const deduped = item.deduped ? ` ${dim('(deduped)')}` : ''
+    const deduped = item.deduped ? ` ${colors.dim('(deduped)')}` : ''
     header += `${item.padding}${item.prefix}${decoratedName}${deduped}\n`
 
     // deduped items need not to be printed or traversed
@@ -198,5 +191,5 @@ export function humanReadableOutput(
   for (const item of initialItems) {
     res += traverse(item)
   }
-  return reset(res)
+  return colors.reset(res)
 }

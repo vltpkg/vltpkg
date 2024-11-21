@@ -38,6 +38,7 @@
     "lint": "eslint . --fix",
     "lint:check": "eslint .",
     "pnpm:devPreinstall": "node scripts/make-dist-bins.js",
+    "pwd": "echo PWD:$PWD",
     "snap": "pnpm --silent --no-bail --report-summary run -r snap &>/dev/null || node scripts/report-test-failures.js",
     "test": "pnpm --silent --no-bail --report-summary -r test -- -Rsilent || node scripts/report-test-failures.js",
     "vlix": "./scripts/local-cli vlix",

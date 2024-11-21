@@ -9,7 +9,6 @@ const canonicalCommands = {
   'install-exec': 'install-exec',
   install: 'install',
   list: 'list',
-  ls: 'ls',
   pkg: 'pkg',
   query: 'query',
   'run-exec': 'run-exec',
@@ -82,12 +81,21 @@ export type RecordField = (typeof recordFields)[number]
 export const isRecordField = (s: string): s is RecordField =>
   recordFields.includes(s as RecordField)
 
-const stopParsingCommands: Commands[keyof Commands][] = [
-  'run',
-  'run-exec',
-  'exec',
-  'install-exec',
-]
+const stopParsingCommands = new Set<Commands[keyof Commands]>([
+  canonicalCommands.run,
+  canonicalCommands['run-exec'],
+  canonicalCommands.exec,
+  canonicalCommands['install-exec'],
+] as const)
+
+export const recursiveCommands = new Set<Commands[keyof Commands]>([
+  canonicalCommands.run,
+  canonicalCommands['run-exec'],
+  canonicalCommands.exec,
+  canonicalCommands['install-exec'],
+  canonicalCommands.install,
+  canonicalCommands.uninstall,
+])
 
 let stopParsing: boolean | undefined = undefined
 
@@ -102,7 +110,7 @@ const j = jack({
     // vlt run --vlt --configs scriptName --args --for --script
     // or
     // vlt exec --vlt --configs command --args --for --command
-    if (stopParsingCommands.includes(commands[a])) {
+    if (stopParsingCommands.has(commands[a])) {
       stopParsing = true
     }
     return false

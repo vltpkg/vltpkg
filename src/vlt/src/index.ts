@@ -34,26 +34,16 @@ const run = async () => {
     return stdout(version)
   }
 
-  const cwd = process.cwd()
-  const { monorepo } = vlt.options
-
-  // Infer the workspace by being in that directory.
-  if (vlt.get('workspace') === undefined) {
-    const ws = monorepo?.get(cwd)
-    if (ws) {
-      vlt.values.workspace = [ws.path]
-      vlt.options.workspace = [ws.path]
-    }
-  }
-
-  const { command, usage, view } = await loadCommand(vlt.command)
+  const { command, usage, ...Command } = await loadCommand(
+    vlt.command,
+  )
 
   if (vlt.get('help')) {
     return stdout(usage().usage())
   }
 
   try {
-    outputCommand(await command(vlt), vlt, { view })
+    outputCommand(await command(vlt), vlt, Command)
   } catch (e) {
     outputError(e, vlt, { usage: usage().usage() })
   }
