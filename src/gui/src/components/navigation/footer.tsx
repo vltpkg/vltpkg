@@ -1,4 +1,4 @@
-import { useTheme } from './theme-provider.jsx'
+import { useTheme } from '@/components/ui/theme-provider.jsx'
 
 interface SocialMediaLink {
   name: string
@@ -29,7 +29,7 @@ export const Footer = () => {
 
   return (
     <footer className="flex border-t-[1px] border-solid h-24 items-center justify-between px-8 w-full">
-      <div className="flex items-center gap-3">
+      <div className="items-center gap-3 hidden md:flex md:justify-start">
         {socialMediaLinks.map((link, idx) => (
           <a href={link.to} key={idx}>
             <img
@@ -42,12 +42,12 @@ export const Footer = () => {
           </a>
         ))}
       </div>
-      <div className="flex items-center">
+      <div className="flex items-center w-full justify-center">
         <p className="text-xs text-muted-foreground">
           &copy; {new Date().getFullYear()} vlt technology inc.
         </p>
       </div>
-      <div />
+      <div className="hidden md:flex" />
     </footer>
   )
 }

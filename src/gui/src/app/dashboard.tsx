@@ -1,10 +1,7 @@
 import { useEffect } from 'react'
-import { Logo } from '@/components/ui/logo.jsx'
 import { DashboardGrid } from '@/components/dashboard-grid/index.jsx'
-import { ThemeSwitcher } from '@/components/ui/theme-switcher.jsx'
 import { type Action, type State } from '@/state/types.js'
 import { useGraphStore } from '@/state/index.js'
-import { Footer } from '@/components/ui/footer.jsx'
 
 type StartDashboardData = {
   updateDashboard: Action['updateDashboard']
@@ -59,22 +56,9 @@ export const Dashboard = () => {
   }, [stamp])
 
   return (
-    <section className="flex grow flex-col justify-between">
+    <section className="flex grow w-full flex-col min-h-[80svh]">
       <div>
-        <nav
-          className="flex gap-4 md:gap-0 px-8 py-4 items-center justify-between border-b-[1px] border-solid"
-          role="navigation">
-          <div className="flex w-full h-full items-center justify-end">
-            <div className="flex items-baseline flex-1">
-              <Logo />
-              <div className="ml-6">
-                <p className="text-md font-medium">Dashboard</p>
-              </div>
-            </div>
-            <ThemeSwitcher />
-          </div>
-        </nav>
-        <section className="flex items-center px-8 py-4 border-b-[1px] border-solid">
+        <section className="flex items-center px-8 py-4 border-b-[1px] border-t-[1px] border-solid">
           <div className="flex flex-col gap-2 w-full">
             {dashboard?.cwd ?
               <p className="text-xs font-mono font-light text-muted-foreground">
@@ -92,7 +76,6 @@ export const Dashboard = () => {
         </section>
       </div>
       <DashboardContent />
-      <Footer />
     </section>
   )
 }
