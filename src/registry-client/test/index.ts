@@ -14,7 +14,7 @@ const date = new Date('2023-01-20')
 let dropConnection = false
 
 // verify that it works even if connections get dropped sometimes
-t.beforeEach(() => dropConnection = true)
+t.beforeEach(() => (dropConnection = true))
 
 const registry = createServer((req, res) => {
   if (dropConnection) {

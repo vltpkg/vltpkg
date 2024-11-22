@@ -48,9 +48,9 @@ import {
   definition,
   getCommand,
   isRecordField,
-  type RecordField,
   recordFields,
   type Commands,
+  type RecordField,
 } from './definition.js'
 import { merge } from './merge.js'
 export { recordFields, isRecordField }
@@ -82,14 +82,16 @@ const isRecordFieldValue = (k: string, v: unknown): v is string[] =>
   Array.isArray(v) &&
   recordFields.includes(k as (typeof recordFields)[number])
 
-export const pairsToRecords = (
-  obj: ConfigFileData,
-): Omit<
+export type PairsAsRecords = Omit<
   ConfigOptions,
   'projectRoot' | 'scurry' | 'packageJson' | 'monorepo'
 > & {
   command?: Record<string, ConfigOptions>
-} => {
+}
+
+export const pairsToRecords = (
+  obj: ConfigFileData,
+): PairsAsRecords => {
   return Object.fromEntries(
     Object.entries(obj).map(([k, v]) => [
       k,
@@ -103,7 +105,8 @@ export const pairsToRecords = (
       : isRecordFieldValue(k, v) ? reducePairs(v)
       : v,
     ]),
-  )
+    // hard cast because TS can't see through the entries/fromEntries
+  ) as unknown as PairsAsRecords
 }
 
 export const recordsToPairs = (obj: RecordPairs): RecordPairs => {
@@ -164,7 +167,7 @@ export type ConfigFileData = {
 }
 
 export type ConfigOptions = {
-  [k in keyof ConfigFileData]?: k extends RecordField ? RecordString
+  [k in keyof ConfigData]: k extends RecordField ? RecordString
   : k extends 'command' ? never
   : ConfigData[k]
 } & {
@@ -291,16 +294,9 @@ export class Config {
   /**
    * Parse the arguments and set configuration and positionals accordingly.
    */
-  parse(args: string[] = process.argv): this & {
-    values: OptionsResults<ConfigDefinitions>
-    positionals: string[]
-  } {
-    if (this.values && this.positionals) {
-      return this as this & {
-        values: OptionsResults<ConfigDefinitions>
-        positionals: string[]
-      }
-    }
+  parse(args: string[] = process.argv): this & ParsedConfig {
+    if (isParsed(this)) return this
+
     this.jack.loadEnvDefaults()
     const p = this.jack.parseRaw(args)
 
@@ -321,7 +317,13 @@ export class Config {
     if (this.command) p.positionals.shift()
     else this.command = getCommand(p.values['fallback-command'])
 
-    return Object.assign(this, p)
+    Object.assign(this, p)
+
+    /* c8 ignore start - unpossible */
+    if (!isParsed(this)) throw error('failed to parse config')
+    /* c8 ignore stop */
+
+    return this
   }
 
   /**
@@ -621,13 +623,7 @@ export class Config {
    *
    * Implicitly calls this.parse() if it not parsed already.
    */
-  async loadColor(): Promise<
-    this & {
-      get(key: 'color'): boolean
-      values: OptionsResults<ConfigDefinitions>
-      positionals: string[]
-    }
-  > {
+  async loadColor(): Promise<this & LoadedConfig> {
     const c = this.get('color')
     const chalk = (await import('chalk')).default
     let color: boolean
@@ -647,11 +643,7 @@ export class Config {
     }
     const { values = this.parse().values } = this
     ;(values as ConfigData & { color: boolean }).color = color
-    return this as this & {
-      values: OptionsResults<ConfigDefinitions>
-      positionals: string[]
-      get(k: 'color'): boolean
-    }
+    return this as this & LoadedConfig
   }
 
   /**
@@ -681,11 +673,18 @@ export class Config {
   }
 }
 
+const isParsed = (c: Config): c is ParsedConfig =>
+  !!(c.values && c.positionals && c.command)
+
+export type ParsedConfig = Config & {
+  command: NonNullable<Config['command']>
+  values: OptionsResults<ConfigDefinitions>
+  positionals: string[]
+}
+
 /**
  * A fully loaded {@link Config} object
  */
-export type LoadedConfig = Config & {
+export type LoadedConfig = ParsedConfig & {
   get(k: 'color'): boolean
-  values: OptionsResults<ConfigDefinitions>
-  positionals: string[]
 }
