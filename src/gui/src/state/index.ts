@@ -7,6 +7,8 @@ import {
 
 export const DEFAULT_QUERY = ':project > *'
 
+const newStamp = () => String(Math.random()).slice(2)
+
 const initialState: State = {
   activeRoute: location.pathname,
   dashboard: undefined,
@@ -22,7 +24,7 @@ const initialState: State = {
   q: undefined,
   selectedNode: undefined,
   specOptions: undefined,
-  stamp: String(Math.random()).slice(2),
+  stamp: newStamp(),
   theme: localStorage.getItem('vite-ui-theme') as State['theme'],
   savedProjects: JSON.parse(
     localStorage.getItem('saved-projects') || '[]',
@@ -60,7 +62,7 @@ export const useGraphStore = create<Action & State>((set, get) => {
       set(() => ({ selectedNode })),
     updateSpecOptions: (specOptions: State['specOptions']) =>
       set(() => ({ specOptions })),
-    updateStamp: (stamp: string) => set(() => ({ stamp })),
+    updateStamp: () => set(() => ({ stamp: newStamp() })),
     updateTheme: (theme: State['theme']) => set(() => ({ theme })),
     reset: () => set(initialState),
     updateSavedProjects: (savedProjects: State['savedProjects']) =>
