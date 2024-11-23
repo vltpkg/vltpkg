@@ -1,4 +1,4 @@
-import { useTheme } from '@/components/ui/theme-provider.jsx'
+import { useGraphStore } from '@/state/index.js'
 
 interface SocialMediaLink {
   name: string
@@ -25,7 +25,7 @@ const socialMediaLinks: SocialMediaLink[] = [
 ]
 
 export const Footer = () => {
-  const { theme } = useTheme()
+  const theme = useGraphStore(state => state.theme)
 
   return (
     <footer className="flex border-t-[1px] border-solid h-24 items-center justify-between px-8 w-full">
