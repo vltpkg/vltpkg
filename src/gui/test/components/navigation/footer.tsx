@@ -35,7 +35,7 @@ describe('Footer Component', () => {
 
     const icons = container.getElementsByTagName('img')
     socialLinks.forEach((link, idx) => {
-      const icon = icons[idx] as HTMLImageElement
+      const icon = icons[idx]!
       expect(icon).toBeDefined()
       expect(icon.src).toContain(`/icons/${link}.svg`)
       const iconStyle = window.getComputedStyle(icon)
@@ -55,7 +55,7 @@ describe('Footer Component', () => {
 
     const icons = container.getElementsByTagName('img')
     socialLinks.forEach((link, idx) => {
-      const icon = icons[idx] as HTMLImageElement
+      const icon = icons[idx]!
       expect(icon).toBeDefined()
       expect(icon.src).toContain(`/icons/${link}.svg`)
       const iconStyle = window.getComputedStyle(icon)
