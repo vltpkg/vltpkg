@@ -383,6 +383,7 @@ Sidebar.Lock = ({
 
   return (
     <motion.div
+      role="button"
       ref={lockScope}
       className="cursor-pointer"
       onClick={handleClick}>
@@ -694,6 +695,7 @@ Sidebar.ThemeSwitcher = () => {
 
   return (
     <motion.div
+      role="button"
       ref={themeScope}
       className="flex gap-3 items-center"
       onClick={() =>

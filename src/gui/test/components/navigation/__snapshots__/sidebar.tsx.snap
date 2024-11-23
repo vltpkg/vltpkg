@@ -1,0 +1,909 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Render the sidebar > should be collapasible 1`] = `
+
+<div
+  role="button"
+  class="cursor-pointer"
+>
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="20"
+    height="20"
+    viewbox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    class="lucide lucide-arrow-left-from-line"
+  >
+    <path d="m9 6-6 6 6 6">
+    </path>
+    <path d="M3 12h14">
+    </path>
+    <path d="M21 19V5">
+    </path>
+  </svg>
+</div>
+
+`;
+
+exports[`Render the sidebar > should change the theme 1`] = `
+
+<div
+  role="button"
+  class="flex gap-3 items-center"
+>
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="20"
+    height="20"
+    viewbox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    class="lucide lucide-moon cursor-pointer"
+  >
+    <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z">
+    </path>
+  </svg>
+</div>
+
+`;
+
+exports[`Render the sidebar > should render the pinned projects 1`] = `
+
+<div class="relative hidden md:flex sticky top-0 w-[200px] h-screen border-r-[1px] flex-shrink-0">
+  <div
+    class="fixed border-t-[1px] mt-[56px]"
+    style="width: 200px;"
+  >
+  </div>
+  <div class="flex flex-col justify-between h-full fixed px-4">
+    <div class="flex flex-col gap-4">
+      <div class="flex flex-col gap-4">
+        <a
+          class="flex items-center justify-start gap-2 text-neutral-700 dark:text-neutral-200 text-xl font-medium mt-4 mb-6 h-[28px]"
+          href="/"
+        >
+          vlt
+          <span class="font-light text-neutral-400 ml-0.5">
+            /vōlt/
+          </span>
+        </a>
+        <p class="text-xs font-medium text-muted-foreground/75 dark:text-muted-foreground/50 uppercase select-none tracking-wide">
+          workspaces
+        </p>
+        <a
+          href="/dashboard"
+          target="_top"
+          class="relative flex justify-start gap-2 group/sidebar-link rounded-md"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="20"
+            height="20"
+            viewbox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="lucide lucide-layout-dashboard"
+          >
+            <rect
+              width="7"
+              height="9"
+              x="3"
+              y="3"
+              rx="1"
+            >
+            </rect>
+            <rect
+              width="7"
+              height="5"
+              x="14"
+              y="3"
+              rx="1"
+            >
+            </rect>
+            <rect
+              width="7"
+              height="9"
+              x="14"
+              y="12"
+              rx="1"
+            >
+            </rect>
+            <rect
+              width="7"
+              height="5"
+              x="3"
+              y="16"
+              rx="1"
+            >
+            </rect>
+          </svg>
+          <span class="text-sm">
+            Dashboard
+          </span>
+          <div class="
+            -mt-[7px] -ml-[5px] h-[34px] z-10 rounded-sm md:absolute
+            bg-muted-foreground/25
+          ">
+          </div>
+        </a>
+        <a
+          href="https://docs.vlt.sh/cli/commands/query"
+          target="blank"
+          class="relative flex justify-start gap-2 group/sidebar-link rounded-md"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="20"
+            height="20"
+            viewbox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="lucide lucide-library"
+          >
+            <path d="m16 6 4 14">
+            </path>
+            <path d="M12 6v14">
+            </path>
+            <path d="M8 8v12">
+            </path>
+            <path d="M4 4v16">
+            </path>
+          </svg>
+          <span class="text-sm">
+            Docs
+          </span>
+          <div class="
+            -mt-[7px] -ml-[5px] h-[34px] z-10 rounded-sm md:absolute
+            hover:bg-muted-foreground/10 transition-all
+          ">
+          </div>
+        </a>
+      </div>
+      <div class="flex flex-col mt-6">
+        <p class="text-xs font-medium text-muted-foreground/75 dark:text-muted-foreground/50 uppercase select-none tracking-wide">
+          pinned
+        </p>
+        <p class="flex flex-row justify-start items-center gap-2 group/sidebar-category-item cursor-pointer mt-4 mb-2 select-none">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="20"
+            height="20"
+            viewbox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="lucide lucide-folder"
+          >
+            <path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z">
+            </path>
+          </svg>
+          <span class="capitalize flex text-neutral-700 dark:text-neutral-200 text-sm group-hover/sidebar-category-item:translate-x-1 transition duration-150">
+            pinned projects
+          </span>
+          <span class="group-hover/sidebar-category-item:translate-x-1 transition duration-150">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              viewbox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              class="lucide lucide-chevron-right transition duration-150"
+            >
+              <path d="m9 18 6-6-6-6">
+              </path>
+            </svg>
+          </span>
+        </p>
+      </div>
+    </div>
+    <div class="flex flex-col mb-[38px] gap-2">
+      <div class="flex w-full justify-between items-center">
+        <div
+          role="button"
+          class="flex gap-3 items-center"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="20"
+            height="20"
+            viewbox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="lucide lucide-moon cursor-pointer"
+          >
+            <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z">
+            </path>
+          </svg>
+        </div>
+        <div
+          role="button"
+          class="cursor-pointer"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="20"
+            height="20"
+            viewbox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="lucide lucide-arrow-left-from-line"
+          >
+            <path d="m9 6-6 6 6 6">
+            </path>
+            <path d="M3 12h14">
+            </path>
+            <path d="M21 19V5">
+            </path>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div
+    class="fixed border-t-[1px] absolute bottom-0 mb-[95px]"
+    style="width: 200px;"
+  >
+  </div>
+</div>
+<div class="flex md:hidden justify-end absolute inset-0">
+  <div class="absolute p-4 cursor-pointer h-fit z-[101]">
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewbox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      class="lucide lucide-menu text-black dark:text-white"
+    >
+      <line
+        x1="4"
+        x2="20"
+        y1="12"
+        y2="12"
+      >
+      </line>
+      <line
+        x1="4"
+        x2="20"
+        y1="6"
+        y2="6"
+      >
+      </line>
+      <line
+        x1="4"
+        x2="20"
+        y1="18"
+        y2="18"
+      >
+      </line>
+    </svg>
+  </div>
+  <div
+    class="flex flex-col h-screen inset-0 bg-white/80 dark:bg-black/50 backdrop-blur-md w-full z-[100] px-8 py-8 mt-[3.55rem]"
+    style="opacity: 0;"
+  >
+    <div class="flex flex-col w-full gap-4 divide-y-[1px] divide-muted-foreground/10">
+      <h3 class="text-sm font-medium uppercase text-muted-foreground">
+        workspaces
+      </h3>
+      <a
+        href="/dashboard"
+        class="font-medium text-lg pt-2"
+      >
+        Dashboard
+      </a>
+      <a
+        href="https://docs.vlt.sh/cli/commands/query"
+        class="font-medium text-lg pt-2"
+      >
+        Docs
+      </a>
+    </div>
+    <div class="flex flex-col w-full gap-4 divide-y-[1px] divide-muted-foreground/10 mt-12">
+      <h3 class="text-sm font-medium uppercase text-muted-foreground">
+        pinned projects
+      </h3>
+      <a
+        href="#"
+        class="font-medium text-lg pt-2"
+      >
+        project-foo
+      </a>
+      <a
+        href="#"
+        class="font-medium text-lg pt-2"
+      >
+        project-bar
+      </a>
+    </div>
+  </div>
+</div>
+
+`;
+
+exports[`Render the sidebar > should render the sidebar on desktop 1`] = `
+
+<div class="relative hidden md:flex sticky top-0 w-[200px] h-screen border-r-[1px] flex-shrink-0">
+  <div
+    class="fixed border-t-[1px] mt-[56px]"
+    style="width: 200px;"
+  >
+  </div>
+  <div class="flex flex-col justify-between h-full fixed px-4">
+    <div class="flex flex-col gap-4">
+      <div class="flex flex-col gap-4">
+        <a
+          class="flex items-center justify-start gap-2 text-neutral-700 dark:text-neutral-200 text-xl font-medium mt-4 mb-6 h-[28px]"
+          href="/"
+        >
+          vlt
+          <span class="font-light text-neutral-400 ml-0.5">
+            /vōlt/
+          </span>
+        </a>
+        <p class="text-xs font-medium text-muted-foreground/75 dark:text-muted-foreground/50 uppercase select-none tracking-wide">
+          workspaces
+        </p>
+        <a
+          href="/dashboard"
+          target="_top"
+          class="relative flex justify-start gap-2 group/sidebar-link rounded-md"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="20"
+            height="20"
+            viewbox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="lucide lucide-layout-dashboard"
+          >
+            <rect
+              width="7"
+              height="9"
+              x="3"
+              y="3"
+              rx="1"
+            >
+            </rect>
+            <rect
+              width="7"
+              height="5"
+              x="14"
+              y="3"
+              rx="1"
+            >
+            </rect>
+            <rect
+              width="7"
+              height="9"
+              x="14"
+              y="12"
+              rx="1"
+            >
+            </rect>
+            <rect
+              width="7"
+              height="5"
+              x="3"
+              y="16"
+              rx="1"
+            >
+            </rect>
+          </svg>
+          <span class="text-sm">
+            Dashboard
+          </span>
+          <div class="
+            -mt-[7px] -ml-[5px] h-[34px] z-10 rounded-sm md:absolute
+            hover:bg-muted-foreground/10 transition-all
+          ">
+          </div>
+        </a>
+        <a
+          href="https://docs.vlt.sh/cli/commands/query"
+          target="blank"
+          class="relative flex justify-start gap-2 group/sidebar-link rounded-md"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="20"
+            height="20"
+            viewbox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="lucide lucide-library"
+          >
+            <path d="m16 6 4 14">
+            </path>
+            <path d="M12 6v14">
+            </path>
+            <path d="M8 8v12">
+            </path>
+            <path d="M4 4v16">
+            </path>
+          </svg>
+          <span class="text-sm">
+            Docs
+          </span>
+          <div class="
+            -mt-[7px] -ml-[5px] h-[34px] z-10 rounded-sm md:absolute
+            hover:bg-muted-foreground/10 transition-all
+          ">
+          </div>
+        </a>
+      </div>
+      <div class="flex flex-col mt-6">
+        <p class="text-xs font-medium text-muted-foreground/75 dark:text-muted-foreground/50 uppercase select-none tracking-wide">
+          pinned
+        </p>
+        <p class="flex flex-row justify-start items-center gap-2 group/sidebar-category-item cursor-pointer mt-4 mb-2 select-none">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="20"
+            height="20"
+            viewbox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="lucide lucide-folder"
+          >
+            <path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z">
+            </path>
+          </svg>
+          <span class="capitalize flex text-neutral-700 dark:text-neutral-200 text-sm group-hover/sidebar-category-item:translate-x-1 transition duration-150">
+            pinned projects
+          </span>
+          <span class="group-hover/sidebar-category-item:translate-x-1 transition duration-150">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              viewbox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              class="lucide lucide-chevron-right transition duration-150"
+            >
+              <path d="m9 18 6-6-6-6">
+              </path>
+            </svg>
+          </span>
+        </p>
+      </div>
+    </div>
+    <div class="flex flex-col mb-[38px] gap-2">
+      <div class="flex w-full justify-between items-center">
+        <div
+          role="button"
+          class="flex gap-3 items-center"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="20"
+            height="20"
+            viewbox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="lucide lucide-moon cursor-pointer"
+          >
+            <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z">
+            </path>
+          </svg>
+        </div>
+        <div
+          role="button"
+          class="cursor-pointer"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="20"
+            height="20"
+            viewbox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="lucide lucide-arrow-left-from-line"
+          >
+            <path d="m9 6-6 6 6 6">
+            </path>
+            <path d="M3 12h14">
+            </path>
+            <path d="M21 19V5">
+            </path>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div
+    class="fixed border-t-[1px] absolute bottom-0 mb-[95px]"
+    style="width: 200px;"
+  >
+  </div>
+</div>
+<div class="flex md:hidden justify-end absolute inset-0">
+  <div class="absolute p-4 cursor-pointer h-fit z-[101]">
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewbox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      class="lucide lucide-menu text-black dark:text-white"
+    >
+      <line
+        x1="4"
+        x2="20"
+        y1="12"
+        y2="12"
+      >
+      </line>
+      <line
+        x1="4"
+        x2="20"
+        y1="6"
+        y2="6"
+      >
+      </line>
+      <line
+        x1="4"
+        x2="20"
+        y1="18"
+        y2="18"
+      >
+      </line>
+    </svg>
+  </div>
+  <div
+    class="flex flex-col h-screen inset-0 bg-white/80 dark:bg-black/50 backdrop-blur-md w-full z-[100] px-8 py-8 mt-[3.55rem]"
+    style="opacity: 0;"
+  >
+    <div class="flex flex-col w-full gap-4 divide-y-[1px] divide-muted-foreground/10">
+      <h3 class="text-sm font-medium uppercase text-muted-foreground">
+        workspaces
+      </h3>
+      <a
+        href="/dashboard"
+        class="font-medium text-lg pt-2"
+      >
+        Dashboard
+      </a>
+      <a
+        href="https://docs.vlt.sh/cli/commands/query"
+        class="font-medium text-lg pt-2"
+      >
+        Docs
+      </a>
+    </div>
+  </div>
+</div>
+
+`;
+
+exports[`Render the sidebar > should render the sidebar on mobile 1`] = `
+
+<div class="relative hidden md:flex sticky top-0 w-[200px] h-screen border-r-[1px] flex-shrink-0">
+  <div
+    class="fixed border-t-[1px] mt-[56px]"
+    style="width: 200px;"
+  >
+  </div>
+  <div class="flex flex-col justify-between h-full fixed px-4">
+    <div class="flex flex-col gap-4">
+      <div class="flex flex-col gap-4">
+        <a
+          class="flex items-center justify-start gap-2 text-neutral-700 dark:text-neutral-200 text-xl font-medium mt-4 mb-6 h-[28px]"
+          href="/"
+        >
+          vlt
+          <span class="font-light text-neutral-400 ml-0.5">
+            /vōlt/
+          </span>
+        </a>
+        <p class="text-xs font-medium text-muted-foreground/75 dark:text-muted-foreground/50 uppercase select-none tracking-wide">
+          workspaces
+        </p>
+        <a
+          href="/dashboard"
+          target="_top"
+          class="relative flex justify-start gap-2 group/sidebar-link rounded-md"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="20"
+            height="20"
+            viewbox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="lucide lucide-layout-dashboard"
+          >
+            <rect
+              width="7"
+              height="9"
+              x="3"
+              y="3"
+              rx="1"
+            >
+            </rect>
+            <rect
+              width="7"
+              height="5"
+              x="14"
+              y="3"
+              rx="1"
+            >
+            </rect>
+            <rect
+              width="7"
+              height="9"
+              x="14"
+              y="12"
+              rx="1"
+            >
+            </rect>
+            <rect
+              width="7"
+              height="5"
+              x="3"
+              y="16"
+              rx="1"
+            >
+            </rect>
+          </svg>
+          <span class="text-sm">
+            Dashboard
+          </span>
+          <div class="
+            -mt-[7px] -ml-[5px] h-[34px] z-10 rounded-sm md:absolute
+            hover:bg-muted-foreground/10 transition-all
+          ">
+          </div>
+        </a>
+        <a
+          href="https://docs.vlt.sh/cli/commands/query"
+          target="blank"
+          class="relative flex justify-start gap-2 group/sidebar-link rounded-md"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="20"
+            height="20"
+            viewbox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="lucide lucide-library"
+          >
+            <path d="m16 6 4 14">
+            </path>
+            <path d="M12 6v14">
+            </path>
+            <path d="M8 8v12">
+            </path>
+            <path d="M4 4v16">
+            </path>
+          </svg>
+          <span class="text-sm">
+            Docs
+          </span>
+          <div class="
+            -mt-[7px] -ml-[5px] h-[34px] z-10 rounded-sm md:absolute
+            hover:bg-muted-foreground/10 transition-all
+          ">
+          </div>
+        </a>
+      </div>
+      <div class="flex flex-col mt-6">
+        <p class="text-xs font-medium text-muted-foreground/75 dark:text-muted-foreground/50 uppercase select-none tracking-wide">
+          pinned
+        </p>
+        <p class="flex flex-row justify-start items-center gap-2 group/sidebar-category-item cursor-pointer mt-4 mb-2 select-none">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="20"
+            height="20"
+            viewbox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="lucide lucide-folder"
+          >
+            <path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z">
+            </path>
+          </svg>
+          <span class="capitalize flex text-neutral-700 dark:text-neutral-200 text-sm group-hover/sidebar-category-item:translate-x-1 transition duration-150">
+            pinned projects
+          </span>
+          <span class="group-hover/sidebar-category-item:translate-x-1 transition duration-150">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              viewbox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              class="lucide lucide-chevron-right transition duration-150"
+            >
+              <path d="m9 18 6-6-6-6">
+              </path>
+            </svg>
+          </span>
+        </p>
+      </div>
+    </div>
+    <div class="flex flex-col mb-[38px] gap-2">
+      <div class="flex w-full justify-between items-center">
+        <div
+          role="button"
+          class="flex gap-3 items-center"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="20"
+            height="20"
+            viewbox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="lucide lucide-moon cursor-pointer"
+          >
+            <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z">
+            </path>
+          </svg>
+        </div>
+        <div
+          role="button"
+          class="cursor-pointer"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="20"
+            height="20"
+            viewbox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="lucide lucide-arrow-left-from-line"
+          >
+            <path d="m9 6-6 6 6 6">
+            </path>
+            <path d="M3 12h14">
+            </path>
+            <path d="M21 19V5">
+            </path>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div
+    class="fixed border-t-[1px] absolute bottom-0 mb-[95px]"
+    style="width: 200px;"
+  >
+  </div>
+</div>
+<div class="flex md:hidden justify-end absolute inset-0">
+  <div class="absolute p-4 cursor-pointer h-fit z-[101]">
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewbox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      class="lucide lucide-menu text-black dark:text-white"
+    >
+      <line
+        x1="4"
+        x2="20"
+        y1="12"
+        y2="12"
+      >
+      </line>
+      <line
+        x1="4"
+        x2="20"
+        y1="6"
+        y2="6"
+      >
+      </line>
+      <line
+        x1="4"
+        x2="20"
+        y1="18"
+        y2="18"
+      >
+      </line>
+    </svg>
+  </div>
+  <div
+    class="flex flex-col h-screen inset-0 bg-white/80 dark:bg-black/50 backdrop-blur-md w-full z-[100] px-8 py-8 mt-[3.55rem]"
+    style="opacity: 0;"
+  >
+    <div class="flex flex-col w-full gap-4 divide-y-[1px] divide-muted-foreground/10">
+      <h3 class="text-sm font-medium uppercase text-muted-foreground">
+        workspaces
+      </h3>
+      <a
+        href="/dashboard"
+        class="font-medium text-lg pt-2"
+      >
+        Dashboard
+      </a>
+      <a
+        href="https://docs.vlt.sh/cli/commands/query"
+        class="font-medium text-lg pt-2"
+      >
+        Docs
+      </a>
+    </div>
+  </div>
+</div>
+
+`;
