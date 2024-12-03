@@ -512,7 +512,7 @@ t.test('kv string[] stored as Record<string, string>', async t => {
 t.test('.git is treated as a backstop', async t => {
   const dir = t.testdir({
     '.git': {},
-    a: {}
+    a: {},
   })
   const c = await Config.load(dir + '/a', undefined, true)
   t.equal(c.projectRoot, resolve(dir, 'a/'))
@@ -523,8 +523,8 @@ t.test('root resolution finds last known good location', async t => {
     '.git': {},
     a: {
       b: {},
-      'package.json': {}
-    }
+      'package.json': {},
+    },
   })
   const c = await Config.load(dir + '/a/b', undefined, true)
   t.equal(c.projectRoot, resolve(dir, 'a/'))

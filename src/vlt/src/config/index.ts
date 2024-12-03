@@ -582,25 +582,29 @@ export class Config {
     // indicators that this *may* be the root, if no .git or workspaces
     // file is found higher up in the search.
     let lastKnownRoot = this.projectRoot
-    for (const dir of walkUp(this.projectRoot)) {      
+    for (const dir of walkUp(this.projectRoot)) {
       // don't look in ~
       if (dir === home) break
 
       // finding a project config file stops the search
       const projectConfig = resolve(dir, 'vlt.json')
       if (projectConfig === userConfig) break
-      if (await exists(projectConfig) && await this.#maybeLoadConfigFile(projectConfig)) {
+      if (
+        (await exists(projectConfig)) &&
+        (await this.#maybeLoadConfigFile(projectConfig))
+      ) {
         lastKnownRoot = dir
         break
       }
 
       // stat existence of these files
-      const [hasPackage, hasModules, hasWorkspaces, hasGit] = await Promise.all([
-        exists(resolve(dir, 'package.json')),
-        exists(resolve(dir, 'node_modules')),
-        exists(resolve(dir, 'vlt-workspaces.json')),
-        exists(resolve(dir, '.git'))
-      ])
+      const [hasPackage, hasModules, hasWorkspaces, hasGit] =
+        await Promise.all([
+          exists(resolve(dir, 'package.json')),
+          exists(resolve(dir, 'node_modules')),
+          exists(resolve(dir, 'vlt-workspaces.json')),
+          exists(resolve(dir, '.git')),
+        ])
 
       // treat these as potential roots
       if (hasPackage || hasModules || hasWorkspaces) {
