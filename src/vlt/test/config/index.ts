@@ -515,7 +515,7 @@ t.test('.git is treated as a backstop', async t => {
     a: {},
   })
   const c = await Config.load(dir + '/a', undefined, true)
-  t.equal(c.projectRoot, resolve(dir, 'a/'))
+  t.equal(c.projectRoot, resolve(dir, 'a'))
 })
 
 t.test('root resolution finds last known good location', async t => {
@@ -527,7 +527,7 @@ t.test('root resolution finds last known good location', async t => {
     },
   })
   const c = await Config.load(dir + '/a/b', undefined, true)
-  t.equal(c.projectRoot, resolve(dir, 'a/'))
+  t.equal(c.projectRoot, resolve(dir, 'a'))
 })
 
 t.test('do not walk to home dir', async t => {
