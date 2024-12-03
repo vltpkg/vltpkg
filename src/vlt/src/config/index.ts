@@ -579,7 +579,6 @@ export class Config {
     const userConfig = xdg.config('vlt.json')
     await this.#maybeLoadConfigFile(userConfig)
 
-    // file is found higher up in the search.
     let lastKnownRoot = resolve(this.projectRoot)
     for (const dir of walkUp(this.projectRoot)) {
       // don't look in ~
