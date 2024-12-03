@@ -581,7 +581,7 @@ export class Config {
 
     // indicators that this *may* be the root, if no .git or workspaces
     // file is found higher up in the search.
-    let lastKnownRoot = this.projectRoot
+    let lastKnownRoot = resolve(this.projectRoot)
     for (const dir of walkUp(this.projectRoot)) {
       // don't look in ~
       if (dir === home) break
