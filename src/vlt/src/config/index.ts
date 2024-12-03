@@ -579,41 +579,42 @@ export class Config {
     const userConfig = xdg.config('vlt.json')
     await this.#maybeLoadConfigFile(userConfig)
 
-    // don't walk up past a folder containing any of these
-    const stops = ['vlt-workspaces.json', '.git']
-    // indicators that this *may* be the root, if no .git or workspaces
-    // file is found higher up in the search.
-    let foundLikelyRoot = false
-    const likelies = ['package.json', 'node_modules']
+    let lastKnownRoot = resolve(this.projectRoot)
     for (const dir of walkUp(this.projectRoot)) {
       // don't look in ~
       if (dir === home) break
+
+      // finding a project config file stops the search
       const projectConfig = resolve(dir, 'vlt.json')
       if (projectConfig === userConfig) break
-      if (await this.#maybeLoadConfigFile(resolve(dir, 'vlt.json'))) {
-        this.projectRoot = dir
+      if (
+        (await exists(projectConfig)) &&
+        (await this.#maybeLoadConfigFile(projectConfig))
+      ) {
+        lastKnownRoot = dir
         break
       }
-      if (
-        !foundLikelyRoot &&
-        (
-          await Promise.all(
-            likelies.map(s => exists(resolve(dir, s))),
-          )
-        ).find(x => x)
-      ) {
-        foundLikelyRoot = true
-        this.projectRoot = dir
+
+      // stat existence of these files
+      const [hasPackage, hasModules, hasWorkspaces, hasGit] =
+        await Promise.all([
+          exists(resolve(dir, 'package.json')),
+          exists(resolve(dir, 'node_modules')),
+          exists(resolve(dir, 'vlt-workspaces.json')),
+          exists(resolve(dir, '.git')),
+        ])
+
+      // treat these as potential roots
+      if (hasPackage || hasModules || hasWorkspaces) {
+        lastKnownRoot = dir
       }
-      if (
-        (
-          await Promise.all(stops.map(s => exists(resolve(dir, s))))
-        ).find(x => x)
-      ) {
-        this.projectRoot = dir
+
+      // define backstops
+      if (hasWorkspaces || hasGit) {
         break
       }
     }
+    this.projectRoot = lastKnownRoot
     return this
   }
 
