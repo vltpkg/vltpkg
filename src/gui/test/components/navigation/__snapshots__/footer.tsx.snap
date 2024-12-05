@@ -1,0 +1,133 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Footer Component > renders the copyright text 1`] = `
+
+<footer class="flex border-t-[1px] border-solid h-24 items-center justify-between px-8 w-full">
+  <div class="items-center gap-3 hidden md:flex md:justify-start">
+    <a href="https://www.linkedin.com/company/vltpkg/">
+      <img
+        src="/icons/linkedin.svg"
+        width="20"
+        style="filter: invert(1);"
+      >
+    </a>
+    <a href="https://x.com/vltpkg">
+      <img
+        src="/icons/twitter-x.svg"
+        width="20"
+        style="filter: invert(1);"
+      >
+    </a>
+    <a href="https://github.com/vltpkg">
+      <img
+        src="/icons/github.svg"
+        width="20"
+        style="filter: invert(1);"
+      >
+    </a>
+    <a href="https://discord.gg/vltpkg">
+      <img
+        src="/icons/discord.svg"
+        width="20"
+        style="filter: invert(1);"
+      >
+    </a>
+  </div>
+  <div class="flex items-center w-full justify-center">
+    <p class="text-xs text-muted-foreground">
+      © 2024 vlt technology inc.
+    </p>
+  </div>
+  <div class="hidden md:flex">
+  </div>
+</footer>
+
+`;
+
+exports[`Footer Component > renders the social media links for dark theme 1`] = `
+
+<footer class="flex border-t-[1px] border-solid h-24 items-center justify-between px-8 w-full">
+  <div class="items-center gap-3 hidden md:flex md:justify-start">
+    <a href="https://www.linkedin.com/company/vltpkg/">
+      <img
+        src="/icons/linkedin.svg"
+        width="20"
+        style="filter: invert(0);"
+      >
+    </a>
+    <a href="https://x.com/vltpkg">
+      <img
+        src="/icons/twitter-x.svg"
+        width="20"
+        style="filter: invert(0);"
+      >
+    </a>
+    <a href="https://github.com/vltpkg">
+      <img
+        src="/icons/github.svg"
+        width="20"
+        style="filter: invert(0);"
+      >
+    </a>
+    <a href="https://discord.gg/vltpkg">
+      <img
+        src="/icons/discord.svg"
+        width="20"
+        style="filter: invert(0);"
+      >
+    </a>
+  </div>
+  <div class="flex items-center w-full justify-center">
+    <p class="text-xs text-muted-foreground">
+      © 2024 vlt technology inc.
+    </p>
+  </div>
+  <div class="hidden md:flex">
+  </div>
+</footer>
+
+`;
+
+exports[`Footer Component > renders the social media links for light theme 1`] = `
+
+<footer class="flex border-t-[1px] border-solid h-24 items-center justify-between px-8 w-full">
+  <div class="items-center gap-3 hidden md:flex md:justify-start">
+    <a href="https://www.linkedin.com/company/vltpkg/">
+      <img
+        src="/icons/linkedin.svg"
+        width="20"
+        style="filter: invert(1);"
+      >
+    </a>
+    <a href="https://x.com/vltpkg">
+      <img
+        src="/icons/twitter-x.svg"
+        width="20"
+        style="filter: invert(1);"
+      >
+    </a>
+    <a href="https://github.com/vltpkg">
+      <img
+        src="/icons/github.svg"
+        width="20"
+        style="filter: invert(1);"
+      >
+    </a>
+    <a href="https://discord.gg/vltpkg">
+      <img
+        src="/icons/discord.svg"
+        width="20"
+        style="filter: invert(1);"
+      >
+    </a>
+  </div>
+  <div class="flex items-center w-full justify-center">
+    <p class="text-xs text-muted-foreground">
+      © 2024 vlt technology inc.
+    </p>
+  </div>
+  <div class="hidden md:flex">
+  </div>
+</footer>
+
+`;
