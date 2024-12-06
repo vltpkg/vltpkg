@@ -2,6 +2,28 @@
 @tailwind components;
 @tailwind utilities;
 
+html {
+  scroll-behavior: smooth !important;
+}
+
+@font-face {
+  font-family: "inter";
+  src: url("/fonts/inter.ttf");
+  font-weight: normal
+}
+
+@font-face {
+  font-family: "geistMono";
+  src: url("/fonts/geist-mono.ttf");
+  font-weight: normal;
+}
+
+@font-face {
+  font-family: "raleway";
+  src: url("/fonts/raleway.ttf");
+  font-weight: normal;
+}
+
 @layer base {
   :root {
     --background: 0 0% 100%;
