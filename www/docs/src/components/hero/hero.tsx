@@ -3,8 +3,6 @@ import CliInstall from '@/components/cli-install/cli-install'
 import { Button } from '@/components/ui/button'
 import { ArrowUpRight } from 'lucide-react'
 
-type Entry = Props['entry']
-
 const navigateTo = (
   e: React.MouseEvent<HTMLButtonElement>,
   url: string,
@@ -18,17 +16,14 @@ const navigateTo = (
   }
 }
 
-interface HeroProps extends Props {
-  entry: Entry
-}
-
-const Hero = ({ entry: { data } }: HeroProps) => {
+const Hero = ({ entry }: Props) => {
+  const { data } = entry
   const { title } = data
-  const tagline = data.hero?.tagline
+  const tagline = data.hero?.tagline ?? ''
 
   return (
     <section className="mx-auto flex flex-col grow w-full justify-between max-w-screen-xl gap-x-4 py-6">
-      <Hero.Introduction title={title} tagline={tagline ?? ''} />
+      <Hero.Introduction title={title} tagline={tagline} />
       <Hero.Workspaces />
     </section>
   )
