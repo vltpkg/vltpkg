@@ -1,12 +1,12 @@
-import type { Props } from '@astrojs/starlight/props'
+import { type Props } from '@astrojs/starlight/props'
 import CliInstall from '@/components/cli-install/cli-install'
 import { Button } from '@/components/ui/button'
 import { ArrowUpRight } from 'lucide-react'
 
-interface HeroProps extends Props {}
+type Entry = Props['entry']
 
 const navigateTo = (
-  e: React.MouseEvent<HTMLButtonElement, MouseEvent>,
+  e: React.MouseEvent<HTMLButtonElement>,
   url: string,
   external?: boolean,
 ) => {
@@ -18,14 +18,17 @@ const navigateTo = (
   }
 }
 
-const Hero = ({ entry }: HeroProps) => {
-  const { data } = entry
+interface HeroProps extends Props {
+  entry: Entry
+}
+
+const Hero = ({ entry: { data } }: HeroProps) => {
   const { title } = data
-  const { tagline } = data.hero!
+  const tagline = data.hero?.tagline
 
   return (
     <section className="mx-auto flex flex-col grow w-full justify-between max-w-screen-xl gap-x-4 py-6">
-      <Hero.Introduction title={title} tagline={tagline as string} />
+      <Hero.Introduction title={title} tagline={tagline ?? ''} />
       <Hero.Workspaces />
     </section>
   )
@@ -135,15 +138,6 @@ Hero.Card = ({
         <h3 className="text-lg">{title}</h3>
       </div>
     </div>
-  )
-}
-
-Hero.Installation = () => {
-  return (
-    <section className="flex flex-col items-center justify-center py-16 gap-8 mt-32">
-      <h2 className="text-3xl">Installation</h2>
-      <CliInstall.QuickInstall />
-    </section>
   )
 }
 

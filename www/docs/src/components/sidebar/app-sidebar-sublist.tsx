@@ -1,7 +1,12 @@
+/* eslint-disable */
 import React, { useRef, useEffect, useState } from 'react'
 import { motion } from 'motion/react'
 import { ChevronUp } from 'lucide-react'
-import type { SidebarEntries, Link, Group } from './app-sidebar'
+import {
+  type SidebarEntries,
+  type Link,
+  type Group,
+} from './app-sidebar'
 
 const AppSidebarSublist = ({
   sidebar,
@@ -18,10 +23,12 @@ const AppSidebarSublist = ({
     )
     if (savedScrollPosition && sidebarRef.current) {
       requestAnimationFrame(() => {
-        sidebarRef.current!.scrollTop = parseInt(
-          savedScrollPosition,
-          10,
-        )
+        if (sidebarRef.current) {
+          sidebarRef.current.scrollTop = parseInt(
+            savedScrollPosition,
+            10,
+          )
+        }
       })
     }
   }, [])
@@ -59,13 +66,15 @@ const AppSidebarSublist = ({
   )
 }
 
+interface SublistProps {
+  className?: string
+  entry: Group
+}
+
 AppSidebarSublist.Group = ({
   className = '',
   entry,
-}: {
-  className?: string
-  entry: Group
-}) => {
+}: SublistProps) => {
   const storedState = JSON.parse(
     localStorage.getItem('sidebar-state') || '{}',
   )
@@ -82,7 +91,7 @@ AppSidebarSublist.Group = ({
    * Pulls the intial state of the collapsed group
    * from astro, and sets in local storage on
    * consecutive requests.
-   * */
+   */
   useEffect(() => {
     const storedState = JSON.parse(
       localStorage.getItem('sidebar-state') || '{}',

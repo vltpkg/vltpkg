@@ -1,11 +1,11 @@
 import { useState } from 'react'
-import type { Props } from '@astrojs/starlight/props'
+import { type Props } from '@astrojs/starlight/props'
 import Logo from '@/components/logo/logo'
 import { AlignLeft, X as CloseIcon } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { AnimatePresence, motion } from 'motion/react'
 import AppSidebarSublist from '@/components/sidebar/app-sidebar-sublist'
-import type { SidebarEntries } from '@/components/sidebar/app-sidebar'
+import { type SidebarEntries } from '@/components/sidebar/app-sidebar'
 import clsx from 'clsx'
 
 interface HeaderProps extends Props {

@@ -1,25 +1,23 @@
 import { useState, useEffect } from 'react'
-import type { Props } from '@astrojs/starlight/props'
+import { type Props } from '@astrojs/starlight/props'
 
 const PageSidebar = ({ toc }: Props) => {
   const [activeAnchor, setActiveAnchor] = useState<string | null>(
     null,
   )
 
-  const anchors = toc?.items || []
+  const anchors = toc?.items ?? []
 
   const flattenAnchors = (
     items: typeof anchors,
   ): { slug: string; text: string }[] => {
-    return items.reduce(
+    return items.reduce<{ slug: string; text: string }[]>(
       (acc, item) => {
         acc.push({ slug: item.slug, text: item.text })
-        if (item.children && item.children.length > 0) {
-          acc.push(...flattenAnchors(item.children))
-        }
+        acc.push(...flattenAnchors(item.children))
         return acc
       },
-      [] as { slug: string; text: string }[],
+      [],
     )
   }
 
@@ -35,10 +33,7 @@ const PageSidebar = ({ toc }: Props) => {
             lastVisible = entry.target.id
           }
         })
-
-        if (lastVisible) {
-          setActiveAnchor(lastVisible)
-        }
+        setActiveAnchor(lastVisible)
       },
       {
         threshold: [0.25, 0.5, 0.75],
@@ -67,9 +62,7 @@ const PageSidebar = ({ toc }: Props) => {
           isActive={activeAnchor === item.slug}>
           {item.text}
         </PageSidebar.Link>
-        {item.children && item.children.length > 0 && (
-          <div className="pl-4">{renderItems(item.children)}</div>
-        )}
+        <div className="pl-4">{renderItems(item.children)}</div>
       </div>
     ))
 

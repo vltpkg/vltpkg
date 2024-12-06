@@ -1,18 +1,5 @@
 import { useAnimate, motion, stagger } from 'motion/react'
 import React, { useState, useEffect } from 'react'
-import { Button } from '@/components/ui/button'
-import { Copy } from 'lucide-react'
-import { toast } from 'sonner'
-import { Toaster } from '@/components/ui/sonner'
-
-const handleCopyInstall = async () => {
-  try {
-    await navigator.clipboard.writeText('npm i -g vlt')
-    toast('Command copied to clipboard')
-  } catch (err) {
-    console.error(`Failed to copy text: ${err}`)
-  }
-}
 
 const CliInstall = () => {
   const terminalButtons = [
@@ -45,7 +32,7 @@ const CliInstall = () => {
 
   /**
    * Allow the commands to run sequentially
-   * */
+   */
   const animateCommands = async () => {
     for (let i = 0; i < commands.length; i++) {
       await new Promise<void>(resolve => {
@@ -56,7 +43,7 @@ const CliInstall = () => {
   }
 
   useEffect(() => {
-    animateCommands()
+    void animateCommands()
   }, [])
 
   return (
@@ -102,7 +89,7 @@ const TerminalUser = () => (
 
 /**
  * TODO: let cursor pos be mapped to the end of each letter
- * */
+ */
 export const Cursor = ({ position }: { position: number }) => (
   <span
     className="animate-blink bg-[#c7359c] select-none h-[2.25ch] w-[1ch] rounded-[1px]"
@@ -159,34 +146,6 @@ const TextEffect = ({
         </p>
       ))}
     </motion.div>
-  )
-}
-
-CliInstall.QuickInstall = () => {
-  return (
-    <>
-      <div className="flex flex-row items-center px-3 py-3 justify-between relative bg-[#0a0a0a] w-[300px] h-[60px] border-[1px] rounded-sm">
-        <div>
-          <p className="flex gap-2 font-mono font-medium text-sm">
-            <span className="text-muted-foreground/20 select-none">
-              $
-            </span>
-            <span>npm i -g vlt</span>
-            <Cursor position={16} />
-          </p>
-        </div>
-        <div className="!m-0">
-          <Button
-            onClick={handleCopyInstall}
-            variant="outline"
-            size="icon"
-            className="cursor-pointer">
-            <Copy size={16} />
-          </Button>
-        </div>
-      </div>
-      <Toaster />
-    </>
   )
 }
 

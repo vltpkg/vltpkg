@@ -1,9 +1,14 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { ChevronRight } from 'lucide-react'
-import { useEffect, useState } from 'react'
-import type { Props } from '@astrojs/starlight/props'
+import { type Props } from '@astrojs/starlight/props'
 
-const PageTitle = ({ entry }: Props) => {
+type Entry = Props['entry']
+
+interface PageTitleProps extends Props {
+  entry: Entry
+}
+
+const PageTitle = ({ entry: { data } }: PageTitleProps) => {
   const [crumbs, setCrumbs] = useState<string[]>([])
 
   useEffect(() => {
@@ -42,9 +47,7 @@ const PageTitle = ({ entry }: Props) => {
           </React.Fragment>
         ))}
       </div>
-      <h1 className="text-2xl font-bold mt-8 mb-4">
-        {entry.data.title}
-      </h1>
+      <h1 className="text-2xl font-bold mt-8 mb-4">{data.title}</h1>
     </div>
   )
 }
