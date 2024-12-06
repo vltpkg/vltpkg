@@ -1,0 +1,28 @@
+---
+import type { Props } from '@astrojs/starlight/props'
+import MobileSidebar from '@/components/page-sidebar/mobile-sidebar.tsx'
+---
+
+<div class="flex h-full flex-col lg:flex-row w-full">
+  {
+    Astro.props.toc && (
+      <>
+        {/* desktop */}
+        <div class="hidden lg:flex relative w-1/3 order-2">
+          <slot name="right-sidebar" />
+        </div>
+
+        {/* mobile */}
+        <div class="flex md:hidden sticky top-0 z-[1000]">
+          <MobileSidebar
+            client:load
+            {...({ ...Astro.props, labels: undefined } as any)}
+          />
+        </div>
+      </>
+    )
+  }
+  <div class="w-full order-1">
+    <slot />
+  </div>
+</div>

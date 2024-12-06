@@ -1,0 +1,9 @@
+---
+import Pagination from './pagination.tsx'
+import type { Props } from '@astrojs/starlight/props'
+---
+
+<Pagination
+  client:load
+  {...{ ...Astro.props, labels: undefined } as any}
+/>
