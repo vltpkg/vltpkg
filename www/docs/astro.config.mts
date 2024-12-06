@@ -30,11 +30,30 @@ export default defineConfig({
   },
   integrations: [
     starlight({
-      title: 'docs | vlt',
+      title: 'vlt /vōlt/',
       social: {
+        linkedin: 'https://www.linkedin.com/company/vltpkg',
+        twitter: 'https://twitter.com/vltpkg',
         github: 'https://github.com/vltpkg/vltpkg',
         discord: 'https://discord.gg/vltpkg',
-        twitter: 'https://twitter.com/vltpkg',
+      },
+      components: {
+        Header: './src/components/header/astro-header.astro',
+        Sidebar: './src/components/sidebar/astro-app-sidebar.astro',
+        PageFrame:
+          './src/components/page-frame/astro-page-frame.astro',
+        ContentPanel:
+          './src/components/content-panel/astro-content-panel.astro',
+        PageTitle:
+          './src/components/page-title/astro-page-title.astro',
+        Pagination:
+          './src/components/pagination/astro-pagination.astro',
+        PageSidebar:
+          './src/components/page-sidebar/astro-page-sidebar.astro',
+        TwoColumnContent:
+          './src/components/two-column-layout/astro-two-column-layout.astro',
+        Hero: './src/components/hero/astro-hero.astro',
+        Footer: './src/components/footer/astro-footer.astro',
       },
       customCss: [
         '@fontsource-variable/manrope/index.css',
