@@ -2,14 +2,9 @@ import React, { useEffect, useState } from 'react'
 import { ChevronRight } from 'lucide-react'
 import { type Props } from '@astrojs/starlight/props'
 
-type Entry = Props['entry']
-
-interface PageTitleProps extends Props {
-  entry: Entry
-}
-
-const PageTitle = ({ entry: { data } }: PageTitleProps) => {
+const PageTitle = ({ entry }: Props) => {
   const [crumbs, setCrumbs] = useState<string[]>([])
+  const { data } = entry
 
   useEffect(() => {
     const formattedCrumbs = window.location.pathname
