@@ -1,7 +1,7 @@
-import type { Props } from '@astrojs/starlight/props'
+import { type Props } from '@astrojs/starlight/props'
 import config from 'virtual:starlight/user-config'
 
-const Footer = ({}: Props) => {
+const Footer = (_props: Props) => {
   return (
     <footer className="border-t-[1px]">
       {/* footer links */}
@@ -45,7 +45,7 @@ const Footer = ({}: Props) => {
 }
 
 Footer.Socials = () => {
-  const socialLinks = Object.entries(config.social || {}).map(
+  const socialLinks = Object.entries(config.social ?? {}).map(
     ([platform, value]) => ({
       platform,
       ...value,
