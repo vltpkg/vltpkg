@@ -355,7 +355,9 @@ const fixLicense = ws => {
 
 const fixPackage = async (ws, opts) => {
   ws.pj.files = undefined
-  ws.pj.engines = { node: '20 || >=22' }
+  ws.pj.engines = {
+    node: ws.workspaceDir === 'www' ? '20' : '20 || >=22',
+  }
   ws.pj.private =
     (
       ws.isRoot ||
