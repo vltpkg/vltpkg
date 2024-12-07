@@ -1,5 +1,5 @@
 import animate from 'tailwindcss-animate'
-import defaultTheme from 'tailwindcss/defaultTheme'
+// import defaultTheme from 'tailwindcss/defaultTheme'
 import plugin from 'tailwindcss/plugin'
 import { type Config } from 'tailwindcss'
 
@@ -78,8 +78,19 @@ export default {
   ],
   theme: {
     extend: {
+      animation: {
+        blink: 'blink 1.25s step-end infinite',
+      },
+      keyframes: {
+        blink: {
+          '0%': { opacity: '1' },
+          '50%': { opacity: '0' },
+          '100%': { opacity: '1' },
+        },
+      },
       fontFamily: {
-        sans: ['Manrope Variable"', ...defaultTheme.fontFamily.sans],
+        sans: ['inter', 'sans-serif'],
+        mono: ['geistMono', 'serif'],
       },
       borderRadius: {
         lg: 'var(--radius)',
