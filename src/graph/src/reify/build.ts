@@ -59,7 +59,7 @@ const visit = async (
   signal: AbortSignal,
   _path: Node[],
 ): Promise<void> => {
-  node.manifest ??= packageJson.read(scurry.resolve(node.location))
+  node.manifest ??= packageJson.read(node.resolvedLocation(scurry))
   const { manifest } = node
   const { scripts = {} } = manifest
 
@@ -80,7 +80,7 @@ const visit = async (
       arg0: 'install',
       ignoreMissing: true,
       packageJson,
-      cwd: node.location,
+      cwd: node.resolvedLocation(scurry),
       projectRoot: node.projectRoot,
       manifest,
     })
@@ -98,7 +98,7 @@ const visit = async (
       arg0: 'prepare',
       ignoreMissing: true,
       packageJson,
-      cwd: node.location,
+      cwd: node.resolvedLocation(scurry),
       projectRoot: node.projectRoot,
       manifest,
     })
@@ -106,7 +106,9 @@ const visit = async (
 
   const chmods: Promise<unknown>[] = []
   for (const bin of Object.values(binPaths(manifest))) {
-    const path = scurry.resolve(node.location, bin)
+    const path = scurry.resolve(
+      `${node.resolvedLocation(scurry)}/${bin}`,
+    )
     chmods.push(makeExecutable(path))
   }
   await Promise.all(chmods)

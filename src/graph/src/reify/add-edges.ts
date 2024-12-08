@@ -14,7 +14,8 @@ export const addEdges = (
   for (const edge of diff.edges.add) {
     const { to } = edge
     if (!to) continue
-    const mani = to.manifest ?? packageJson.read(to.location)
+    const mani =
+      to.manifest ?? packageJson.read(to.resolvedLocation(scurry))
     actions.push(addEdge(edge, mani, scurry, remover))
   }
   return actions

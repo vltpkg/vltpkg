@@ -5,7 +5,12 @@
  * Make sure to inspect the output below.  Do not ignore changes!
  */
 'use strict'
-exports[`test/start-gui.ts > TAP > e2e server test > should copy all files to tmp directory 1`] = `
+exports[`test/start-gui.ts > TAP > e2e server test > /install > should install dependencies 1`] = `
+install
+
+`
+
+exports[`test/start-gui.ts > TAP > e2e server test > /select-project > should copy all files to tmp directory 1`] = `
 Array [
   "dashboard.json",
   "favicon.ico",
@@ -18,13 +23,13 @@ Array [
 ]
 `
 
-exports[`test/start-gui.ts > TAP > e2e server test > should log the server start message 1`] = `
+exports[`test/start-gui.ts > TAP > e2e server test > /select-project > should log the server start message 1`] = `
 Array [
   "⚡️ vlt GUI running at http://localhost:8017",
 ]
 `
 
-exports[`test/start-gui.ts > TAP > e2e server test > should update graph.json with new data 1`] = `
+exports[`test/start-gui.ts > TAP > e2e server test > /select-project > should update graph.json with new data 1`] = `
 {
   "hasDashboard": true,
   "importers": [
@@ -49,7 +54,7 @@ exports[`test/start-gui.ts > TAP > e2e server test > should update graph.json wi
 }
 `
 
-exports[`test/start-gui.ts > TAP > e2e server test > should write graph.json with data from the current project 1`] = `
+exports[`test/start-gui.ts > TAP > e2e server test > /select-project > should write graph.json with data from the current project 1`] = `
 {
   "hasDashboard": true,
   "importers": [
@@ -110,6 +115,287 @@ Array [
   "index.js.map",
   "main.css",
 ]
+`
+
+exports[`test/start-gui.ts > TAP > parseInstallArgs > multiple item added to root and workspace 1`] = `
+Object {
+  "add": Map {
+    "file·." => Map {
+      "abbrev" => Object {
+        "spec": Spec {
+          "bareSpec": "latest",
+          "conventionalRegistryTarball": undefined,
+          "distTag": "latest",
+          "file": undefined,
+          "gitCommittish": undefined,
+          "gitRemote": undefined,
+          "gitSelector": undefined,
+          "gitSelectorParsed": undefined,
+          "name": "abbrev",
+          "namedGitHost": undefined,
+          "namedGitHostPath": undefined,
+          "namedRegistry": undefined,
+          "options": Object {
+            "git-host-archives": Object {
+              "bitbucket": "https://bitbucket.org/$1/$2/get/$committish.tar.gz",
+              "gist": "https://codeload.github.com/gist/$1/tar.gz/$committish",
+              "github": "https://codeload.github.com/$1/$2/tar.gz/$committish",
+              "gitlab": "https://gitlab.com/$1/$2/repository/archive.tar.gz?ref=$committish",
+            },
+            "git-hosts": Object {
+              "bitbucket": "git+ssh://git@bitbucket.org:$1/$2.git",
+              "gist": "git+ssh://git@gist.github.com/$1.git",
+              "github": "git+ssh://git@github.com:$1/$2.git",
+              "gitlab": "git+ssh://git@gitlab.com:$1/$2.git",
+            },
+            "registries": Object {
+              "npm": "https://registry.npmjs.org/",
+            },
+            "registry": "https://registry.npmjs.org/",
+            "scope-registries": Object {},
+          },
+          "range": undefined,
+          "registry": "https://registry.npmjs.org/",
+          "registrySpec": "latest",
+          "remoteURL": undefined,
+          "scope": undefined,
+          "scopeRegistry": undefined,
+          "semver": undefined,
+          "spec": "abbrev@latest",
+          "subspec": undefined,
+          "type": "registry",
+          "workspace": undefined,
+          "workspaceSpec": undefined,
+        },
+        "type": "dev",
+      },
+    },
+    "workspace·packages§a" => Map {
+      "english-days" => Object {
+        "spec": Spec {
+          "bareSpec": "latest",
+          "conventionalRegistryTarball": undefined,
+          "distTag": "latest",
+          "file": undefined,
+          "gitCommittish": undefined,
+          "gitRemote": undefined,
+          "gitSelector": undefined,
+          "gitSelectorParsed": undefined,
+          "name": "english-days",
+          "namedGitHost": undefined,
+          "namedGitHostPath": undefined,
+          "namedRegistry": undefined,
+          "options": Object {
+            "git-host-archives": Object {
+              "bitbucket": "https://bitbucket.org/$1/$2/get/$committish.tar.gz",
+              "gist": "https://codeload.github.com/gist/$1/tar.gz/$committish",
+              "github": "https://codeload.github.com/$1/$2/tar.gz/$committish",
+              "gitlab": "https://gitlab.com/$1/$2/repository/archive.tar.gz?ref=$committish",
+            },
+            "git-hosts": Object {
+              "bitbucket": "git+ssh://git@bitbucket.org:$1/$2.git",
+              "gist": "git+ssh://git@gist.github.com/$1.git",
+              "github": "git+ssh://git@github.com:$1/$2.git",
+              "gitlab": "git+ssh://git@gitlab.com:$1/$2.git",
+            },
+            "registries": Object {
+              "npm": "https://registry.npmjs.org/",
+            },
+            "registry": "https://registry.npmjs.org/",
+            "scope-registries": Object {},
+          },
+          "range": undefined,
+          "registry": "https://registry.npmjs.org/",
+          "registrySpec": "latest",
+          "remoteURL": undefined,
+          "scope": undefined,
+          "scopeRegistry": undefined,
+          "semver": undefined,
+          "spec": "english-days@latest",
+          "subspec": undefined,
+          "type": "registry",
+          "workspace": undefined,
+          "workspaceSpec": undefined,
+        },
+        "type": "prod",
+      },
+      "simple-output" => Object {
+        "spec": Spec {
+          "bareSpec": "latest",
+          "conventionalRegistryTarball": undefined,
+          "distTag": "latest",
+          "file": undefined,
+          "gitCommittish": undefined,
+          "gitRemote": undefined,
+          "gitSelector": undefined,
+          "gitSelectorParsed": undefined,
+          "name": "simple-output",
+          "namedGitHost": undefined,
+          "namedGitHostPath": undefined,
+          "namedRegistry": undefined,
+          "options": Object {
+            "git-host-archives": Object {
+              "bitbucket": "https://bitbucket.org/$1/$2/get/$committish.tar.gz",
+              "gist": "https://codeload.github.com/gist/$1/tar.gz/$committish",
+              "github": "https://codeload.github.com/$1/$2/tar.gz/$committish",
+              "gitlab": "https://gitlab.com/$1/$2/repository/archive.tar.gz?ref=$committish",
+            },
+            "git-hosts": Object {
+              "bitbucket": "git+ssh://git@bitbucket.org:$1/$2.git",
+              "gist": "git+ssh://git@gist.github.com/$1.git",
+              "github": "git+ssh://git@github.com:$1/$2.git",
+              "gitlab": "git+ssh://git@gitlab.com:$1/$2.git",
+            },
+            "registries": Object {
+              "npm": "https://registry.npmjs.org/",
+            },
+            "registry": "https://registry.npmjs.org/",
+            "scope-registries": Object {},
+          },
+          "range": undefined,
+          "registry": "https://registry.npmjs.org/",
+          "registrySpec": "latest",
+          "remoteURL": undefined,
+          "scope": undefined,
+          "scopeRegistry": undefined,
+          "semver": undefined,
+          "spec": "simple-output@latest",
+          "subspec": undefined,
+          "type": "registry",
+          "workspace": undefined,
+          "workspaceSpec": undefined,
+        },
+        "type": "prod",
+      },
+    },
+  },
+  "conf": Object {},
+}
+`
+
+exports[`test/start-gui.ts > TAP > parseInstallArgs > no item added to root 1`] = `
+Object {
+  "add": Map {
+    "file·." => Map {},
+  },
+  "conf": Object {},
+}
+`
+
+exports[`test/start-gui.ts > TAP > parseInstallArgs > single item added to root 1`] = `
+Object {
+  "add": Map {
+    "file·." => Map {
+      "abbrev" => Object {
+        "spec": Spec {
+          "bareSpec": "latest",
+          "conventionalRegistryTarball": undefined,
+          "distTag": "latest",
+          "file": undefined,
+          "gitCommittish": undefined,
+          "gitRemote": undefined,
+          "gitSelector": undefined,
+          "gitSelectorParsed": undefined,
+          "name": "abbrev",
+          "namedGitHost": undefined,
+          "namedGitHostPath": undefined,
+          "namedRegistry": undefined,
+          "options": Object {
+            "git-host-archives": Object {
+              "bitbucket": "https://bitbucket.org/$1/$2/get/$committish.tar.gz",
+              "gist": "https://codeload.github.com/gist/$1/tar.gz/$committish",
+              "github": "https://codeload.github.com/$1/$2/tar.gz/$committish",
+              "gitlab": "https://gitlab.com/$1/$2/repository/archive.tar.gz?ref=$committish",
+            },
+            "git-hosts": Object {
+              "bitbucket": "git+ssh://git@bitbucket.org:$1/$2.git",
+              "gist": "git+ssh://git@gist.github.com/$1.git",
+              "github": "git+ssh://git@github.com:$1/$2.git",
+              "gitlab": "git+ssh://git@gitlab.com:$1/$2.git",
+            },
+            "registries": Object {
+              "npm": "https://registry.npmjs.org/",
+            },
+            "registry": "https://registry.npmjs.org/",
+            "scope-registries": Object {},
+          },
+          "range": undefined,
+          "registry": "https://registry.npmjs.org/",
+          "registrySpec": "latest",
+          "remoteURL": undefined,
+          "scope": undefined,
+          "scopeRegistry": undefined,
+          "semver": undefined,
+          "spec": "abbrev@latest",
+          "subspec": undefined,
+          "type": "registry",
+          "workspace": undefined,
+          "workspaceSpec": undefined,
+        },
+        "type": "dev",
+      },
+    },
+  },
+  "conf": Object {},
+}
+`
+
+exports[`test/start-gui.ts > TAP > parseInstallArgs > single item added to workspace 1`] = `
+Object {
+  "add": Map {
+    "workspace·packages§a" => Map {
+      "abbrev" => Object {
+        "spec": Spec {
+          "bareSpec": "latest",
+          "conventionalRegistryTarball": undefined,
+          "distTag": "latest",
+          "file": undefined,
+          "gitCommittish": undefined,
+          "gitRemote": undefined,
+          "gitSelector": undefined,
+          "gitSelectorParsed": undefined,
+          "name": "abbrev",
+          "namedGitHost": undefined,
+          "namedGitHostPath": undefined,
+          "namedRegistry": undefined,
+          "options": Object {
+            "git-host-archives": Object {
+              "bitbucket": "https://bitbucket.org/$1/$2/get/$committish.tar.gz",
+              "gist": "https://codeload.github.com/gist/$1/tar.gz/$committish",
+              "github": "https://codeload.github.com/$1/$2/tar.gz/$committish",
+              "gitlab": "https://gitlab.com/$1/$2/repository/archive.tar.gz?ref=$committish",
+            },
+            "git-hosts": Object {
+              "bitbucket": "git+ssh://git@bitbucket.org:$1/$2.git",
+              "gist": "git+ssh://git@gist.github.com/$1.git",
+              "github": "git+ssh://git@github.com:$1/$2.git",
+              "gitlab": "git+ssh://git@gitlab.com:$1/$2.git",
+            },
+            "registries": Object {
+              "npm": "https://registry.npmjs.org/",
+            },
+            "registry": "https://registry.npmjs.org/",
+            "scope-registries": Object {},
+          },
+          "range": undefined,
+          "registry": "https://registry.npmjs.org/",
+          "registrySpec": "latest",
+          "remoteURL": undefined,
+          "scope": undefined,
+          "scopeRegistry": undefined,
+          "semver": undefined,
+          "spec": "abbrev@latest",
+          "subspec": undefined,
+          "type": "registry",
+          "workspace": undefined,
+          "workspaceSpec": undefined,
+        },
+        "type": "optional",
+      },
+    },
+  },
+  "conf": Object {},
+}
 `
 
 exports[`test/start-gui.ts > TAP > starts gui data and server > should copy all files to tmp directory 1`] = `

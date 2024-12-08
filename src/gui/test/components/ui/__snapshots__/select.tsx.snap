@@ -1,0 +1,205 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`select render default 1`] = `
+
+<div>
+  <button
+    type="button"
+    role="combobox"
+    aria-controls="radix-:r0:"
+    aria-expanded="false"
+    aria-autocomplete="none"
+    dir="ltr"
+    data-state="closed"
+    class="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 [&amp;>span]:line-clamp-1"
+  >
+    <span
+      tabindex="3"
+      style="pointer-events: none;"
+    >
+      dependencies
+    </span>
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewbox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      class="lucide lucide-chevron-down h-4 w-4 opacity-50"
+      aria-hidden="true"
+    >
+      <path d="m6 9 6 6 6-6">
+      </path>
+    </svg>
+  </button>
+</div>
+
+`;
+
+exports[`select render open 1`] = `
+
+<span
+  data-radix-focus-guard
+  tabindex="0"
+  style="outline: none; opacity: 0; position: fixed; pointer-events: none;"
+  data-aria-hidden="true"
+  aria-hidden="true"
+>
+</span>
+<div
+  data-aria-hidden="true"
+  aria-hidden="true"
+>
+  <button
+    type="button"
+    role="combobox"
+    aria-controls="radix-:r5:"
+    aria-expanded="true"
+    aria-autocomplete="none"
+    dir="ltr"
+    data-state="open"
+    class="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 [&amp;>span]:line-clamp-1"
+  >
+    <span
+      tabindex="3"
+      style="pointer-events: none;"
+    >
+      dependencies
+    </span>
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewbox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      class="lucide lucide-chevron-down h-4 w-4 opacity-50"
+      aria-hidden="true"
+    >
+      <path d="m6 9 6 6 6-6">
+      </path>
+    </svg>
+  </button>
+</div>
+<div
+  data-radix-popper-content-wrapper
+  style="position: fixed; left: 0px; top: 0px; transform: translate(0, -200%); min-width: max-content;"
+  dir="ltr"
+>
+  <div
+    data-side="bottom"
+    data-align="start"
+    role="listbox"
+    id="radix-:r5:"
+    data-state="open"
+    dir="ltr"
+    class="relative z-50 max-h-96 min-w-[8rem] overflow-hidden rounded-md border bg-popover text-popover-foreground shadow-md data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 data-[side=bottom]:translate-y-1 data-[side=left]:-translate-x-1 data-[side=right]:translate-x-1 data-[side=top]:-translate-y-1"
+    style="box-sizing: border-box; display: flex; flex-direction: column; outline: none; --radix-select-content-transform-origin: var(--radix-popper-transform-origin); --radix-select-content-available-width: var(--radix-popper-available-width); --radix-select-content-available-height: var(--radix-popper-available-height); --radix-select-trigger-width: var(--radix-popper-anchor-width); --radix-select-trigger-height: var(--radix-popper-anchor-height); animation: none; pointer-events: auto;"
+    tabindex="-1"
+  >
+    <style>
+      [data-radix-select-viewport]{scrollbar-width:none;-ms-overflow-style:none;-webkit-overflow-scrolling:touch;}[data-radix-select-viewport]::-webkit-scrollbar{display:none}
+    </style>
+    <div
+      data-radix-select-viewport
+      role="presentation"
+      class="p-1 h-[var(--radix-select-trigger-height)] w-full min-w-[var(--radix-select-trigger-width)]"
+      style="position: relative; flex: 1; overflow: hidden auto;"
+    >
+      <div
+        role="option"
+        aria-labelledby="radix-:r6:"
+        aria-selected="false"
+        data-state="checked"
+        tabindex="-1"
+        class="relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
+        data-radix-collection-item
+      >
+        <span class="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
+          <span aria-hidden="true">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewbox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              class="lucide lucide-check h-4 w-4"
+            >
+              <path d="M20 6 9 17l-5-5">
+              </path>
+            </svg>
+          </span>
+        </span>
+        <span id="radix-:r6:">
+          dependencies
+        </span>
+      </div>
+      <div
+        role="option"
+        aria-labelledby="radix-:r7:"
+        aria-selected="false"
+        data-state="unchecked"
+        tabindex="-1"
+        class="relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
+        data-radix-collection-item
+      >
+        <span class="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
+        </span>
+        <span id="radix-:r7:">
+          devDependencies
+        </span>
+      </div>
+      <div
+        role="option"
+        aria-labelledby="radix-:r8:"
+        aria-selected="false"
+        data-state="unchecked"
+        tabindex="-1"
+        class="relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
+        data-radix-collection-item
+      >
+        <span class="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
+        </span>
+        <span id="radix-:r8:">
+          optionalDependencies
+        </span>
+      </div>
+      <div
+        role="option"
+        aria-labelledby="radix-:r9:"
+        aria-selected="false"
+        data-state="unchecked"
+        tabindex="-1"
+        class="relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
+        data-radix-collection-item
+      >
+        <span class="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
+        </span>
+        <span id="radix-:r9:">
+          peerDependencies
+        </span>
+      </div>
+    </div>
+  </div>
+</div>
+<span
+  data-radix-focus-guard
+  tabindex="0"
+  style="outline: none; opacity: 0; position: fixed; pointer-events: none;"
+  data-aria-hidden="true"
+  aria-hidden="true"
+>
+</span>
+
+`;
