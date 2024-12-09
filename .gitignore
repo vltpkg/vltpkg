@@ -31,3 +31,4 @@
 /www/*/dist
 /www/*/node_modules
 /www/*/scripts/fixtures/
+.vercel

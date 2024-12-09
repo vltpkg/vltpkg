@@ -1,0 +1,9 @@
+---
+import Header from './header.tsx'
+import type { Props } from '@astrojs/starlight/props'
+import Search from '@astrojs/starlight/components/Search.astro'
+---
+
+<Header client:load {...{ ...Astro.props, labels: undefined } as any}>
+  <Search {...Astro.props} />
+</Header>

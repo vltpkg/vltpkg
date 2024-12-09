@@ -73,7 +73,7 @@ const check = (key, packages, value, ok) => {
 
 const main = async () => {
   const deps = await getAllProdDeps()
-  const allowedEngines = getPkg(ROOT).engines.node
+  const allowedEngines = '20 || >=22'
   const checkEngines = check(
     'engines',
     deps,
@@ -110,5 +110,5 @@ main()
   .then(console.log)
   .catch(e => {
     process.exitCode = 1
-    console.error(e.message)
+    console.error(e)
   })

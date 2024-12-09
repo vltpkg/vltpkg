@@ -1,0 +1,13 @@
+---
+import type { Props } from '@astrojs/starlight/props'
+import PageSidebar from './page-sidebar.tsx'
+---
+
+{
+  Astro.props.toc && (
+    <PageSidebar
+      client:load
+      {...({ ...Astro.props, labels: undefined } as any)}
+    />
+  )
+}
