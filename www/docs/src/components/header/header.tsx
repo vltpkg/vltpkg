@@ -63,7 +63,7 @@ Header.MobileSidebar = ({ sidebar }: { sidebar: SidebarEntries }) => {
             </div>
             <AppSidebarSublist
               sidebar={sidebar}
-              className="-ml-3 mt-0 p-6"
+              className="-ml-4 -mt-0 p-6"
             />
           </motion.div>
         )}

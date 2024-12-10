@@ -142,27 +142,23 @@ AppSidebarSublist.Item = ({
   className?: string
   entry: Link
 }) => {
-  const navigateTo = (url: string): void => {
-    window.location.href = url
-  }
-
   return (
-    <div className={`relative ${className}`}>
+    <div className={`relative flex h-fit ${className}`}>
       <div
         className={`absolute h-full w-[1px] left-0 -ml-[17px] ${
           entry.isCurrent ? 'bg-foreground' : 'hidden'
         }`}
       />
-      <p
+      <a
+        href={entry.href}
         role="link"
-        onClick={() => navigateTo(entry.href)}
         className={`cursor-pointer text-sm no-underline text-sm font-medium hover:text-foreground transition-all ${
           entry.isCurrent ? 'text-foreground' : (
             'text-muted-foreground'
           )
         }`}>
         {entry.label}
-      </p>
+      </a>
     </div>
   )
 }
