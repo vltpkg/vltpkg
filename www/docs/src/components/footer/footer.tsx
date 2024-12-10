@@ -1,9 +1,10 @@
 import { type Props } from '@astrojs/starlight/props'
 import config from 'virtual:starlight/user-config'
-import ThemeSelect from '../theme-select/theme-select'
+import ThemeSelect, {
+  type Theme,
+  getPreferredColorScheme,
+} from '../theme-select/theme-select'
 import { useState } from 'react'
-import type { Theme } from '../theme-select/theme-select'
-import { getPreferredColorScheme } from '../theme-select/theme-select'
 
 const Footer = (_props: Props) => {
   const [currentTheme, setCurrentTheme] = useState<Theme>(
