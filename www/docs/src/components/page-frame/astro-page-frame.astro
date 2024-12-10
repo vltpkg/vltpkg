@@ -25,5 +25,8 @@ const { hasSidebar } = Astro.props
   </div>
 
   {/* bottom */}
-  <Footer {...Astro.props} />
+  <Footer
+    client:only="react"
+    {...{ ...Astro.props, labels: undefined } as any}
+  />
 </div>

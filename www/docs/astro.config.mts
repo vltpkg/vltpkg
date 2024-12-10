@@ -54,6 +54,8 @@ export default defineConfig({
           './src/components/two-column-layout/astro-two-column-layout.astro',
         Hero: './src/components/hero/astro-hero.astro',
         Footer: './src/components/footer/astro-footer.astro',
+        ThemeSelect:
+          './src/components/theme-select/astro-theme-select.astro',
       },
       customCss: ['./src/styles/globals.css'],
       tableOfContents: {

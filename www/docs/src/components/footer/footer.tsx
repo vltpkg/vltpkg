@@ -1,14 +1,22 @@
 import { type Props } from '@astrojs/starlight/props'
 import config from 'virtual:starlight/user-config'
+import ThemeSelect from '../theme-select/theme-select'
+import { useState } from 'react'
+import type { Theme } from '../theme-select/theme-select'
+import { getPreferredColorScheme } from '../theme-select/theme-select'
 
 const Footer = (_props: Props) => {
+  const [currentTheme, setCurrentTheme] = useState<Theme>(
+    getPreferredColorScheme(),
+  )
+
   return (
     <footer className="border-t-[1px]">
       {/* footer links */}
       <div className="mx-auto flex flex-col w-full max-w-screen-xl gap-x-4 gap-y-4 px-6 py-6">
         <div className="flex flex-row w-full items-center justify-between">
-          <Footer.Socials />
-          <div>
+          <Footer.Socials currentTheme={currentTheme} />
+          <div className="flex items-center gap-2">
             <a
               href="https://www.vlt.sh/join"
               className="no-underline text-foreground pl-3 pr-1 inline-flex gap-3 items-center rounded-[12px] group transition-all">
@@ -16,6 +24,7 @@ const Footer = (_props: Props) => {
                 Join waitlist
               </span>
             </a>
+            <ThemeSelect setCurrentTheme={setCurrentTheme} />
           </div>
         </div>
 
@@ -44,7 +53,7 @@ const Footer = (_props: Props) => {
   )
 }
 
-Footer.Socials = () => {
+Footer.Socials = ({ currentTheme }: { currentTheme: Theme }) => {
   const socialLinks = Object.entries(config.social ?? {}).map(
     ([platform, value]) => ({
       platform,
@@ -56,7 +65,16 @@ Footer.Socials = () => {
     <div className="flex gap-4">
       {socialLinks.map((link, idx) => (
         <a href={link.url} key={idx}>
-          <img src={`/icons/${link.platform}.svg`} className="h-5" />
+          <img
+            src={`/icons/${link.platform}.svg`}
+            className="h-5"
+            style={{
+              filter:
+                currentTheme === 'dark' ? 'invert(0)'
+                : currentTheme === 'light' ? 'invert(1)'
+                : '',
+            }}
+          />
         </a>
       ))}
     </div>
