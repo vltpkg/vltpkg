@@ -48,29 +48,21 @@ Hero.Introduction = ({
         <CliInstall />
       </div>
       <div className="flex items-center justify-center gap-4">
-        <Button
-          onClick={e => navigateTo(e, '/cli')}
+        <a
+          href="/cli"
           role="link"
-          size="lg"
-          rounded="sm"
-          className="cursor-pointer">
+          className="no-underline text-background cursor-pointer rounded-sm bg-foreground px-8 py-2 hover:bg-foreground/90 transition-all"
+          target="_blank">
           Quick Start
-        </Button>
-        <Button
-          onClick={e =>
-            navigateTo(
-              e,
-              'https://www.vlt.sh/serverless-registry',
-              true,
-            )
-          }
+        </a>
+        <a
+          href="https://www.vlt.sh/serverless-registry"
+          target="_blank"
           role="link"
-          size="lg"
-          variant="outline"
-          className="cursor-pointer">
+          className="flex items-center gap-1 no-underline text-foreground cursor-pointer rounded-sm bg-muted-foreground/10 border-muted-foreground/25 border-[1px] px-8 py-2 hover:bg-muted-foreground/20 transition-all">
           Serverless Registry
-          <ArrowUpRight size={16} />
-        </Button>
+          <ArrowUpRight size={20} />
+        </a>
       </div>
     </section>
   )
