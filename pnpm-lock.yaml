@@ -1610,9 +1610,6 @@ importers:
       '@astrojs/vercel':
         specifier: 8.0.0-beta.2
         version: 8.0.0-beta.2(astro@5.0.0-beta.4(@types/node@22.5.0)(rollup@4.24.0)(typescript@5.5.4))(encoding@0.1.13)(react@18.3.1)
-      '@fontsource-variable/manrope':
-        specifier: ^5.1.0
-        version: 5.1.0
       '@radix-ui/react-collapsible':
         specifier: ^1.1.1
         version: 1.1.1(@types/react-dom@18.3.1)(@types/react@18.3.11)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -2576,9 +2573,6 @@ packages:
 
   '@floating-ui/utils@0.2.8':
     resolution: {integrity: sha512-kym7SodPp8/wloecOpcmSnWJsK7M0E5Wg8UcFA+uO4B9s5d0ywXOEro/8HM9x0rW+TljRzul/14UYz3TleT3ig==}
-
-  '@fontsource-variable/manrope@5.1.0':
-    resolution: {integrity: sha512-QjvtYRsCM0UTiOlBs21nNuFpHVcsiBwQuHGIFCTMsQgJvl0jdi4LYiD9sYQ11RplaeZcN6/Z8ynE9Spicqkv0w==}
 
   '@gerrit0/mini-shiki@1.24.2':
     resolution: {integrity: sha512-kw11jMCKwS5+GMMDy/o7W6C1KwsxgHnPO/RXzNBUw000BzRvUhUSi5zE8D2Qq7/A7bfJysFenEVBHUR7aMSxUQ==}
@@ -8679,8 +8673,6 @@ snapshots:
       react-dom: 18.3.1(react@18.3.1)
 
   '@floating-ui/utils@0.2.8': {}
-
-  '@fontsource-variable/manrope@5.1.0': {}
 
   '@gerrit0/mini-shiki@1.24.2':
     dependencies:

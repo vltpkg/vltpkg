@@ -9,7 +9,6 @@
     "@astrojs/starlight": "^0.28.3",
     "@astrojs/tailwind": "^5.1.2",
     "@astrojs/vercel": "8.0.0-beta.2",
-    "@fontsource-variable/manrope": "^5.1.0",
     "@radix-ui/react-collapsible": "^1.1.1",
     "@radix-ui/react-dialog": "^1.1.2",
     "@radix-ui/react-icons": "^1.3.0",

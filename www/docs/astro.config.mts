@@ -55,10 +55,7 @@ export default defineConfig({
         Hero: './src/components/hero/astro-hero.astro',
         Footer: './src/components/footer/astro-footer.astro',
       },
-      customCss: [
-        '@fontsource-variable/manrope/index.css',
-        './src/styles/globals.css',
-      ],
+      customCss: ['./src/styles/globals.css'],
       tableOfContents: {
         minHeadingLevel: 2,
         maxHeadingLevel: 5,

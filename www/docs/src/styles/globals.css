@@ -18,12 +18,6 @@ html {
   font-weight: normal;
 }
 
-@font-face {
-  font-family: 'raleway';
-  src: url('/fonts/raleway.ttf');
-  font-weight: normal;
-}
-
 @layer base {
   :root {
     --background: 0 0% 100%;
