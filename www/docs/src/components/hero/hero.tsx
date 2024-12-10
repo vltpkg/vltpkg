@@ -1,20 +1,6 @@
 import { type Props } from '@astrojs/starlight/props'
 import CliInstall from '@/components/cli-install/cli-install'
-import { Button } from '@/components/ui/button'
 import { ArrowUpRight } from 'lucide-react'
-
-const navigateTo = (
-  e: React.MouseEvent<HTMLButtonElement>,
-  url: string,
-  external?: boolean,
-) => {
-  e.preventDefault()
-  if (external) {
-    window.open(url, '_blank')
-  } else {
-    window.location.href = url
-  }
-}
 
 const Hero = ({ entry }: Props) => {
   const { data } = entry
@@ -118,21 +104,13 @@ Hero.Card = ({
       onClick={() => (window.location.href = link)}
       className="group hover:-translate-y-1 transition-all relative flex flex-col border-[1px] border-muted-foreground/25 h-80 w-full md:w-64 px-3 py-3 rounded-sm justify-end transition-all hover:border-muted-foreground cursor-pointer">
       {/* corner */}
-      <div className="absolute -top-[1px] flex items-center justify-center -right-[1px] border-[1px] border-muted-foreground/25 h-[45px] w-[45px] bg-black group-hover:border-muted-foreground transition-colors" />
+      <div className="absolute -top-[1px] flex items-center justify-center -right-[1px] border-[1px] border-muted-foreground/25 h-[45px] w-[45px] bg-white dark:bg-black group-hover:border-muted-foreground transition-colors" />
       <div className="absolute top-0 h-full ml-[10px] border-r-[1px] border-muted-foreground/25 group-hover:border-muted-foreground transition-colors" />
       <div className="flex flex-col ml-[10px] pl-4">
         <p className="text-xs text-muted-foreground/50">{subtitle}</p>
         <h3 className="text-lg">{title}</h3>
       </div>
     </div>
-  )
-}
-
-Hero.GUI = () => {
-  return (
-    <section className="flex flex-col items-center justify-center py-16 gap-8">
-      <h2></h2>
-    </section>
   )
 }
 
