@@ -120,7 +120,7 @@ const Command = await mockList(t)
 const runCommand = async (
   t: Test,
   o: CommandResultOptions,
-  cmd: typeof Command = Command,
+  cmd = Command,
 ) => commandView(t, cmd, o)
 
 t.test('list', async t => {
@@ -296,23 +296,19 @@ t.test('list', async t => {
       },
     })
 
-    await command(
-      {
-        positionals: [],
-        values: {
-          workspace: [],
-          view: 'gui',
-        },
-        options,
-      } as unknown as LoadedConfig,
-      '/path/to/assets',
-    )
+    await command({
+      positionals: [],
+      values: {
+        workspace: [],
+        view: 'gui',
+      },
+      options,
+    } as unknown as LoadedConfig)
 
     t.matchStrict(
       startGUIOptions,
       {
         conf: { options: { projectRoot: t.testdirName } },
-        assetsDir: '/path/to/assets',
       },
       'should call startGUI with expected options',
     )

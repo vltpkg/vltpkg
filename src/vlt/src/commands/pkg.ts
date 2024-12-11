@@ -3,11 +3,15 @@ import { type LoadedConfig } from '../config/index.js'
 import { type PackageJson } from '@vltpkg/package-json'
 import * as dotProp from '@vltpkg/dot-prop'
 import { type Manifest } from '@vltpkg/types'
-import { type CliCommandUsage, type CliCommandFn } from '../types.js'
+import {
+  type CommandUsage,
+  type CommandFn,
+  type Views,
+} from '../types.js'
 import assert from 'assert'
 import { commandUsage } from '../config/usage.js'
 
-export const usage: CliCommandUsage = () =>
+export const usage: CommandUsage = () =>
   commandUsage({
     command: 'pkg',
     usage: '[<command>] [<args>]',
@@ -40,7 +44,11 @@ export const usage: CliCommandUsage = () =>
     },
   })
 
-export const command: CliCommandFn = async conf => {
+export const views: Views<unknown> = {
+  defaultView: 'json',
+}
+
+export const command: CommandFn<unknown> = async conf => {
   const [sub, ...args] = conf.positionals
   const pkg = conf.options.packageJson
   const mani = pkg.read(conf.projectRoot)

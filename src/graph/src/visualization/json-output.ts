@@ -28,7 +28,7 @@ export type JSONOutputItem = {
   to?: NodeLike
 }
 
-export type JSONOutputOptions = {
+export type JSONOutputGraph = {
   edges: EdgeLike[]
   nodes: NodeLike[]
 }
@@ -36,7 +36,7 @@ export type JSONOutputOptions = {
 /**
  * Returns a JSON string representation of the graph.
  */
-export function jsonOutput({ edges, nodes }: JSONOutputOptions) {
+export function jsonOutput({ edges, nodes }: JSONOutputGraph) {
   const res: JSONOutputItem[] = []
 
   // Collects importer nodes as edgeless json output items
@@ -61,5 +61,5 @@ export function jsonOutput({ edges, nodes }: JSONOutputOptions) {
     })
   }
 
-  return JSON.stringify(res, null, 2)
+  return res
 }

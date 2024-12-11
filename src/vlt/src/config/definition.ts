@@ -426,7 +426,7 @@ export const definition = j
   .opt({
     view: {
       hint: 'output',
-      description: `Configures the output format for ls & query commands.`,
+      description: `Configures the output format for commands.`,
       validOptions: ['human', 'json', 'mermaid', 'gui'] as const,
     },
   })

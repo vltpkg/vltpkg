@@ -8,6 +8,11 @@ t.matchSnapshot(Command.usage().usage(), 'usage')
 
 setupEnv(t)
 
+t.afterEach(() => (process.exitCode = 0))
+
+const parseLogs = (r: { logs: string }) => JSON.parse(r.logs)
+const parseError = (r: { errs: string }) => r.errs
+
 const setupPkg = async (
   t: Test,
   method?: string,
@@ -23,7 +28,6 @@ const setupPkg = async (
   })
   return {
     ...setup,
-    parseLogs: (r: { logs: string }) => JSON.parse(r.logs),
     readPackageJson: () =>
       readFileSync(join(setup.dir, 'package.json'), 'utf8'),
   }
@@ -31,13 +35,11 @@ const setupPkg = async (
 
 t.test('basic', async t => {
   const { runCommand } = await setupPkg(t)
-  t.rejects(runCommand(['gett']), {
-    message: 'Unrecognized pkg command',
-    cause: {
-      found: 'gett',
-      validOptions: ['get', 'set', 'rm'],
-    },
-  })
+  const error = await runCommand(['gett']).then(parseError)
+  t.match(error, 'Error: Unrecognized pkg command')
+  t.match(error, 'Found: gett')
+  t.match(error, 'Valid options: get, set, rm')
+  t.equal(process.exitCode, 1)
 })
 
 t.test('get', async t => {
@@ -49,17 +51,18 @@ t.test('get', async t => {
       keywords: ['one', 'two', 'last', { obj: ['more', 'arrays'] }],
     },
   }
-  const { runCommand, parseLogs } = await setupPkg(t, 'get', pkg)
+  const { runCommand } = await setupPkg(t, 'get', pkg)
   t.strictSame(await runCommand().then(parseLogs), pkg)
   t.strictSame(await runCommand(['name']).then(parseLogs), pkg.name)
   t.strictSame(
     await runCommand(['nested.keywords[3].obj[1]']).then(parseLogs),
     (pkg.nested.keywords[3] as { obj: string[] }).obj[1],
   )
-  await t.rejects(runCommand(['name', 'version']), {
-    message:
-      'get requires not more than 1 argument. use `pick` to get more than 1.',
-  })
+  const error = await runCommand(['name', 'version']).then(parseError)
+  t.match(
+    error,
+    'Error: get requires not more than 1 argument. use `pick` to get more than 1.',
+  )
 })
 
 t.test('pick', async t => {
@@ -71,7 +74,7 @@ t.test('pick', async t => {
       keywords: ['one', 'two', 'last', { obj: ['more', 'arrays'] }],
     },
   }
-  const { runCommand, parseLogs } = await setupPkg(t, 'pick', pkg)
+  const { runCommand } = await setupPkg(t, 'pick', pkg)
   t.strictSame(await runCommand().then(parseLogs), pkg)
   t.strictSame(await runCommand(['name']).then(parseLogs), {
     name: pkg.name,
@@ -116,12 +119,14 @@ t.test('set', async t => {
     version: '1.0.0',
     description: 'This is the desc',
   })
-  t.rejects(runCommand(), {
-    message: 'set requires arguments',
-  })
-  t.rejects(runCommand(['name']), {
-    message: 'set arguments must contain `=`',
-  })
+  t.match(
+    await runCommand().then(parseError),
+    'set requires arguments',
+  )
+  t.match(
+    await runCommand(['name']).then(parseError),
+    'set arguments must contain `=`',
+  )
 })
 
 t.test('delete', async t => {
@@ -148,7 +153,8 @@ t.test('delete', async t => {
       keywords: ['one', 'two', 'last', { obj: ['arrays'] }],
     },
   })
-  t.rejects(runCommand(), {
-    message: 'rm requires arguments',
-  })
+  t.match(
+    await runCommand().then(parseError),
+    'rm requires arguments',
+  )
 })

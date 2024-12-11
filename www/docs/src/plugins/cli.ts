@@ -4,7 +4,7 @@ import { cacheEntries } from './utils'
 import { mkdir, readdir, writeFile } from 'fs/promises'
 import { fileURLToPath } from 'url'
 import { resolve as metaResolve } from 'import-meta-resolve'
-import { type CliCommand } from '@vltpkg/cli/types'
+import { type Command } from '@vltpkg/cli/types'
 import { Config } from '@vltpkg/cli/config'
 import matter from 'gray-matter'
 
@@ -12,7 +12,7 @@ const rel = (s: string) => relative(process.cwd(), s)
 
 const loadedConfig = await Config.load()
 
-const commands: { id: string; command: CliCommand }[] = []
+const commands: { id: string; command: Command<unknown> }[] = []
 for (const c of await readdir(
   fileURLToPath(metaResolve('@vltpkg/cli/commands', import.meta.url)),
   { withFileTypes: true },
@@ -21,7 +21,7 @@ for (const c of await readdir(
   const id = basename(c.name, '.js')
   const command = (await import(
     /* @vite-ignore */ `@vltpkg/cli/commands/${id}`
-  )) as CliCommand
+  )) as Command<unknown>
   commands.push({ id, command })
 }
 

@@ -12,6 +12,8 @@ install
 `
 
 exports[`test/commands/install.ts > TAP > should install adding a new dependency 1`] = `
+parse add args 
+install
 parse add args from abbrev@2, with values save-dev,true
 install
 

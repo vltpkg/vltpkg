@@ -226,7 +226,7 @@ More documentation available at <https://docs.vlt.sh>
                        provided, then vlt will interpret the first argument as
                        the package, and attempt to run the default executable.
 
-  --view=<output>      Configures the output format for ls & query commands.
+  --view=<output>      Configures the output format for commands.
                        Valid options: "human", "json", "mermaid", "gui"
 
   --dashboard-root=<path>

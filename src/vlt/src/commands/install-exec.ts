@@ -1,7 +1,10 @@
 import { commandUsage } from '../config/usage.js'
-import { type CliCommandUsage, type CliCommandFn } from '../types.js'
+import {
+  type CommandUsage,
+  type CommandFnResultOnly,
+} from '../types.js'
 
-export const usage: CliCommandUsage = () =>
+export const usage: CommandUsage = () =>
   commandUsage({
     command: 'install-exec',
     usage: '[--package=<pkg>] [command...]',
@@ -9,9 +12,11 @@ export const usage: CliCommandUsage = () =>
       'Run a command defined by a package, installing it if necessary',
   })
 
-export const command: CliCommandFn = async conf => {
-  return [
-    'TODO: exec, but install if not present',
-    ...conf.positionals,
-  ]
+export const command: CommandFnResultOnly<string> = async conf => {
+  return {
+    result: [
+      'TODO: exec, but install if not present',
+      ...conf.positionals,
+    ].join('\n'),
+  }
 }
