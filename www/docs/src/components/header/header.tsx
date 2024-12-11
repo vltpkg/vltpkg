@@ -19,14 +19,14 @@ const Header = ({ sidebar, children }: HeaderProps) => {
 
       {/* search bar */}
       <div className="flex items-center justify-items-end justify-end w-[300px] gap-2">
-        <Header.MobileSidebar sidebar={sidebar} />
+        <MobileSidebar sidebar={sidebar} />
         {children}
       </div>
     </nav>
   )
 }
 
-Header.MobileSidebar = ({ sidebar }: { sidebar: SidebarEntries }) => {
+const MobileSidebar = ({ sidebar }: { sidebar: SidebarEntries }) => {
   const [open, setOpen] = useState<boolean>(false)
 
   return (
@@ -69,22 +69,6 @@ Header.MobileSidebar = ({ sidebar }: { sidebar: SidebarEntries }) => {
         )}
       </AnimatePresence>
     </>
-  )
-}
-
-Header.Title = ({ title }: { title: string }) => {
-  const formatTitle = (title: string): string[] => {
-    const split = title.split(' ')
-    return split
-  }
-
-  formatTitle(title)
-
-  return (
-    <h1 className="text-2xl">
-      {formatTitle(title)[0]}{' '}
-      <span className="font-light">{formatTitle(title)[1]}</span>
-    </h1>
   )
 }
 

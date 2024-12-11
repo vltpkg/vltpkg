@@ -4,6 +4,6 @@ import type { Props } from '@astrojs/starlight/props'
 ---
 
 <PageTitle
-  client:load
-  {...{ ...Astro.props, labels: undefined } as any}
+  crumbs={Astro.url.pathname.replace(/^\/|\/$/g, '').split('/')}
+  {...Astro.props}
 />

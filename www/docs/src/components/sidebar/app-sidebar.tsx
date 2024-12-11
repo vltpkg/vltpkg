@@ -13,12 +13,12 @@ interface AppSidebarProps {
 const AppSidebar = ({ children }: AppSidebarProps) => {
   return (
     <aside className="sticky top-0">
-      <AppSidebar.Desktop>{children}</AppSidebar.Desktop>
+      <AppSidebarDesktop>{children}</AppSidebarDesktop>
     </aside>
   )
 }
 
-AppSidebar.Desktop = ({
+export const AppSidebarDesktop = ({
   children,
 }: {
   children: React.ReactNode

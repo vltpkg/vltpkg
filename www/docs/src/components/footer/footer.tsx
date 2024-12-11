@@ -16,7 +16,7 @@ const Footer = (_props: Props) => {
       {/* footer links */}
       <div className="mx-auto flex flex-col w-full max-w-screen-xl gap-x-4 gap-y-4 px-6 py-6">
         <div className="flex flex-row w-full items-center justify-between">
-          <Footer.Socials currentTheme={currentTheme} />
+          <FooterSocials currentTheme={currentTheme} />
           <div className="flex items-center gap-2">
             <a
               href="https://www.vlt.sh/join"
@@ -54,7 +54,7 @@ const Footer = (_props: Props) => {
   )
 }
 
-Footer.Socials = ({ currentTheme }: { currentTheme: Theme }) => {
+const FooterSocials = ({ currentTheme }: { currentTheme: Theme }) => {
   const socialLinks = Object.entries(config.social ?? {}).map(
     ([platform, value]) => ({
       platform,

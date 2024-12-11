@@ -9,13 +9,13 @@ const Hero = ({ entry }: Props) => {
 
   return (
     <section className="mx-auto flex flex-col grow w-full justify-between max-w-screen-xl gap-x-4 py-6">
-      <Hero.Introduction title={title} tagline={tagline} />
-      <Hero.Workspaces />
+      <Introduction title={title} tagline={tagline} />
+      <Workspaces />
     </section>
   )
 }
 
-Hero.Introduction = ({
+const Introduction = ({
   title,
   tagline,
 }: {
@@ -54,7 +54,7 @@ Hero.Introduction = ({
   )
 }
 
-Hero.Workspaces = () => {
+const Workspaces = () => {
   return (
     <section className="flex flex-col py-16 gap-8 mt-32 border-t-[1px] border-muted-foreground/10">
       <div className="flex flex-col">
@@ -64,22 +64,22 @@ Hero.Workspaces = () => {
         <h2 className="text-2xl">The vlt guides</h2>
       </div>
       <div className="flex flex-col md:flex-row flex-wrap gap-3 justify-between">
-        <Hero.Card
+        <Card
           title="Getting Started"
           subtitle="Quick Start"
           link="/cli"
         />
-        <Hero.Card
+        <Card
           title="Configuration"
           subtitle="Personalize vlt"
           link="/cli/configuring"
         />
-        <Hero.Card
+        <Card
           title="Serverless Registry"
           subtitle="VSR"
           link="https://www.vlt.sh/serverless-registry"
         />
-        <Hero.Card
+        <Card
           title="The packages of vlt"
           subtitle="Workspaces"
           link="http://localhost:4321/packages/"
@@ -89,7 +89,7 @@ Hero.Workspaces = () => {
   )
 }
 
-Hero.Card = ({
+const Card = ({
   title,
   subtitle,
   link,
@@ -99,18 +99,17 @@ Hero.Card = ({
   link: string
 }) => {
   return (
-    <div
-      role="link"
-      onClick={() => (window.location.href = link)}
-      className="group hover:-translate-y-1 transition-all relative flex flex-col border-[1px] border-muted-foreground/25 h-80 w-full md:w-64 px-3 py-3 rounded-sm justify-end transition-all hover:border-muted-foreground cursor-pointer">
+    <a
+      href={link}
+      className="no-underline group hover:-translate-y-1 transition-all relative flex flex-col border-[1px] border-muted-foreground/25 h-80 w-full md:w-64 px-3 py-3 rounded-sm justify-end transition-all hover:border-muted-foreground cursor-pointer">
       {/* corner */}
       <div className="absolute -top-[1px] flex items-center justify-center -right-[1px] border-[1px] border-muted-foreground/25 h-[45px] w-[45px] bg-white dark:bg-black group-hover:border-muted-foreground transition-colors" />
       <div className="absolute top-0 h-full ml-[10px] border-r-[1px] border-muted-foreground/25 group-hover:border-muted-foreground transition-colors" />
       <div className="flex flex-col ml-[10px] pl-4">
         <p className="text-xs text-muted-foreground/50">{subtitle}</p>
-        <h3 className="text-lg">{title}</h3>
+        <h3 className="text-lg text-foreground">{title}</h3>
       </div>
-    </div>
+    </a>
   )
 }
 

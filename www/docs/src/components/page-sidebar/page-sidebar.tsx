@@ -57,11 +57,9 @@ const PageSidebar = ({ toc }: Props) => {
   const renderItems = (items: typeof anchors) =>
     items.map((item, idx) => (
       <div key={idx} className="flex flex-col">
-        <PageSidebar.Link
-          href={item.slug}
-          isActive={activeAnchor === item.slug}>
+        <Link href={item.slug} isActive={activeAnchor === item.slug}>
           {item.text}
-        </PageSidebar.Link>
+        </Link>
         <div className="pl-4">{renderItems(item.children)}</div>
       </div>
     ))
@@ -76,7 +74,7 @@ const PageSidebar = ({ toc }: Props) => {
   )
 }
 
-PageSidebar.Link = ({
+const Link = ({
   href,
   children,
   isActive,
@@ -85,35 +83,16 @@ PageSidebar.Link = ({
   children: React.ReactNode
   isActive: boolean
 }) => {
-  const scrollTo = ({ slug }: { slug: string }) => {
-    if (slug === '_top') {
-      window.scrollTo({
-        top: 0,
-        behavior: 'smooth',
-      })
-    } else {
-      const el = document.getElementById(slug)
-      if (el) {
-        const elPos = el.offsetTop
-        window.scrollTo({
-          top: elPos - 50,
-          behavior: 'smooth',
-        })
-      }
-    }
-  }
-
   return (
-    <p
-      role="link"
-      onClick={() => scrollTo({ slug: href })}
+    <a
+      href={`#${href}`}
       className={`pl-2 no-underline text-sm cursor-pointer transition-all ${
         isActive ?
           'border-l-[2px] border-foreground text-foreground'
         : 'text-muted-foreground'
       } hover:text-foreground`}>
       {children}
-    </p>
+    </a>
   )
 }
 

@@ -1,4 +1,3 @@
-/* eslint-disable */
 import React, { useRef, useEffect, useState } from 'react'
 import { motion } from 'motion/react'
 import { ChevronUp } from 'lucide-react'
@@ -58,8 +57,8 @@ const AppSidebarSublist = ({
       {sidebar.map((entry, idx) => (
         <React.Fragment key={idx}>
           {entry.type === 'group' ?
-            <AppSidebarSublist.Group entry={entry} />
-          : <AppSidebarSublist.Item entry={entry} />}
+            <Group entry={entry} />
+          : <Item entry={entry} />}
         </React.Fragment>
       ))}
     </div>
@@ -71,10 +70,7 @@ interface SublistProps {
   entry: Group
 }
 
-AppSidebarSublist.Group = ({
-  className = '',
-  entry,
-}: SublistProps) => {
+const Group = ({ className = '', entry }: SublistProps) => {
   const storedState = JSON.parse(
     localStorage.getItem('sidebar-state') || '{}',
   )
@@ -126,8 +122,8 @@ AppSidebarSublist.Group = ({
         {entry.entries.map((entry, idx) => (
           <React.Fragment key={idx}>
             {entry.type === 'group' ?
-              <AppSidebarSublist.Group entry={entry} />
-            : <AppSidebarSublist.Item entry={entry} />}
+              <Group entry={entry} />
+            : <Item entry={entry} />}
           </React.Fragment>
         ))}
       </motion.div>
@@ -135,7 +131,7 @@ AppSidebarSublist.Group = ({
   )
 }
 
-AppSidebarSublist.Item = ({
+const Item = ({
   className = '',
   entry,
 }: {
