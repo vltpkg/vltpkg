@@ -3,7 +3,6 @@ import {
   GalleryVertical,
   GalleryVerticalEnd,
   GalleryThumbnails,
-  GitFork,
 } from 'lucide-react'
 import { type EdgeLike, type NodeLike } from '@vltpkg/graph'
 import { stringifyNode } from '@vltpkg/graph/browser'
@@ -16,22 +15,9 @@ import { SelectedItem } from '@/components/explorer-grid/selected-item.jsx'
 import {
   type EdgeLoose,
   type GridItemData,
-} from '@/components/explorer-grid//types.js'
-
-const GridHeader = ({
-  children,
-  className,
-  ...props
-}: {
-  className?: string
-  children: React.ReactNode
-}) => (
-  <div
-    className={`pt-6 text-md flex flex-row items-center font-medium ${className}`}
-    {...props}>
-    {children}
-  </div>
-)
+} from '@/components/explorer-grid/types.js'
+import { GridHeader } from '@/components/explorer-grid/header.jsx'
+import { DependencySideBar } from '@/components/explorer-grid/dependency-side-bar.jsx'
 
 const getItemsData = (edges: EdgeLike[], nodes: NodeLike[]) => {
   const items: GridItemData[] = []
@@ -211,6 +197,10 @@ export const ExplorerGrid = () => {
   const items = getItemsData(edges, nodes)
   const selected = items.length === 1
   const [selectedItem] = items
+  const importerId =
+    selected && selectedItem?.to?.importer ?
+      selectedItem.to.id
+    : undefined
   const parent = selected ? selectedItem?.from : undefined
   const parentItem = getParent(selectedItem, parent)
   const dependents =
@@ -308,21 +298,11 @@ export const ExplorerGrid = () => {
       </div>
       <div className="col-span-2">
         {dependencies && dependencies.length > 0 ?
-          <>
-            <GridHeader>
-              <GitFork size={22} className="mr-3 rotate-180" />
-              Dependencies
-            </GridHeader>
-            {dependencies.map((item, idx) => (
-              <SideItem
-                item={item}
-                idx={idx}
-                key={item.id}
-                dependencies={true}
-                onClick={dependencyClick(item)}
-              />
-            ))}
-          </>
+          <DependencySideBar
+            dependencies={dependencies}
+            importerId={importerId}
+            onDependencyClick={dependencyClick}
+          />
         : ''}
       </div>
     </div>

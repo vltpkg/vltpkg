@@ -162,9 +162,12 @@ t.test(
       new Set([
         {
           arg0: 'install',
-          cwd: `./node_modules/.vlt/${yid}/node_modules/y`,
+          cwd: resolve(
+            projectRoot,
+            `./node_modules/.vlt/${yid}/node_modules/y`,
+          ),
         },
-        { arg0: 'prepare', cwd: `./src/app` },
+        { arg0: 'prepare', cwd: resolve(projectRoot, `./src/app`) },
       ]),
     )
     t.match(

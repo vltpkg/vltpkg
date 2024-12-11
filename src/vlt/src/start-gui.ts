@@ -8,18 +8,26 @@ import {
 import { type Server, createServer } from 'node:http'
 import { resolve } from 'node:path'
 import { tmpdir } from 'node:os'
-import { actual } from '@vltpkg/graph'
+import {
+  type Dependency,
+  type DependencyTypeShort,
+  actual,
+  asDependency,
+} from '@vltpkg/graph'
 import handler from 'serve-handler'
 import opener from 'opener'
 import { loadPackageJson } from 'package-json-from-dist'
 import { type PathScurry, type PathBase } from 'path-scurry'
 import { readProjectFolders } from './read-project-folders.js'
+import { type DepID, asDepID } from '@vltpkg/dep-id'
 import { type Manifest } from '@vltpkg/types'
 import {
   type ConfigOptions,
   type LoadedConfig,
 } from './config/index.js'
 import { stderr, stdout } from './output.js'
+import { type InstallOptions, install } from './install.js'
+import { Spec } from '@vltpkg/spec'
 
 const HOST = 'localhost'
 const PORT = 7017
@@ -27,6 +35,11 @@ const PORT = 7017
 const { version } = loadPackageJson(import.meta.filename) as {
   version: string
 }
+
+export type GUIInstallOptions = Record<
+  string,
+  Record<string, { version: string; type: DependencyTypeShort }>
+>
 
 export type StartGUIOptions = {
   assetsDir: string
@@ -80,6 +93,27 @@ const asDashboardTools = (str: string): DashboardTools => {
   }
   /* c8 ignore stop */
   return str
+}
+
+export const parseInstallOptions = (
+  conf: LoadedConfig,
+  args: GUIInstallOptions,
+): InstallOptions => {
+  const addArgs = new Map<DepID, Map<string, Dependency>>()
+  for (const [importerId, deps] of Object.entries(args)) {
+    const depMap = new Map<string, Dependency>()
+    for (const [name, { version, type }] of Object.entries(deps)) {
+      depMap.set(
+        name,
+        asDependency({
+          spec: Spec.parse(name, version, conf.options),
+          type,
+        }),
+      )
+    }
+    addArgs.set(asDepID(importerId), depMap)
+  }
+  return { add: addArgs, conf }
 }
 
 export const inferTools = (
@@ -232,7 +266,6 @@ export const startGUI = async ({
   }
   const server = createServer((req, res): void => {
     if (req.url === '/select-project') {
-      // TODO: clean this up, use stream helpers, make it cute
       req.setEncoding('utf8')
       let json = ''
       req.on('data', (d: string) => {
@@ -244,6 +277,37 @@ export const startGUI = async ({
         updateGraphData(tmp, conf, hasDashboard)
         res.writeHead(200, { 'Content-Type': 'application/json' })
         res.end(JSON.stringify('ok'))
+      })
+    } else if (req.url === '/install') {
+      req.setEncoding('utf8')
+      let json = ''
+      req.on('data', (d: string) => {
+        json += d
+      })
+      req.on('end', () => {
+        const { add } = JSON.parse(json) as {
+          add?: GUIInstallOptions
+        }
+        if (!add) {
+          stderr('GUI install endpoint called without add argument')
+          res.statusCode = 400
+          res.end('Bad request')
+          return
+        }
+        install(parseInstallOptions(conf, add))
+          .then(() => {
+            conf.resetOptions(conf.options.projectRoot)
+            updateGraphData(tmp, conf, hasDashboard)
+            res.writeHead(200, {
+              'Content-Type': 'application/json',
+            })
+            res.end(JSON.stringify('ok'))
+          })
+          .catch((err: unknown) => {
+            stderr(err)
+            res.statusCode = 400
+            res.end(`Install failed.\n${String(err)}`)
+          })
       })
       /* c8 ignore start */
     } else {

@@ -5,6 +5,7 @@ import t from 'tap'
 import { Edge } from '../src/edge.js'
 import { Node } from '../src/node.js'
 import { type GraphLike } from '../src/types.js'
+import { PathScurry } from 'path-scurry'
 
 t.cleanSnapshot = s =>
   s
@@ -292,8 +293,12 @@ t.test('nodeModules path and inVltStore flag', t => {
   }
   const rootMani = { name: 'root' }
   const root = new Node(opts, joinDepIDTuple(['file', '.']), rootMani)
+  const scurry = new PathScurry(opts.projectRoot)
   root.location = '.'
-  t.equal(root.nodeModules, './node_modules')
+  t.equal(
+    root.nodeModules(scurry),
+    scurry.resolve(opts.projectRoot, 'node_modules'),
+  )
   const foo = new Node(
     opts,
     joinDepIDTuple(['registry', '', 'foo@1.2.3']),
@@ -308,10 +313,13 @@ t.test('nodeModules path and inVltStore flag', t => {
   t.equal(foo.inVltStore(), true)
   t.equal(foo.inVltStore(), true, 'test twice for caching')
   t.equal(
-    foo.nodeModules,
-    './node_modules/.vlt/' +
-      joinDepIDTuple(['registry', '', 'foo@1.2.3']) +
-      '/node_modules',
+    foo.nodeModules(scurry),
+    scurry.resolve(
+      opts.projectRoot,
+      './node_modules/.vlt/' +
+        joinDepIDTuple(['registry', '', 'foo@1.2.3']) +
+        '/node_modules',
+    ),
   )
   const bar = new Node(
     opts,
@@ -327,10 +335,13 @@ t.test('nodeModules path and inVltStore flag', t => {
       '/node_modules/@bar/bloo',
   )
   t.equal(
-    bar.nodeModules,
-    './node_modules/.vlt/' +
-      joinDepIDTuple(['registry', '', '@bar/bloo@1.2.3']) +
-      '/node_modules',
+    bar.nodeModules(scurry),
+    scurry.resolve(
+      opts.projectRoot,
+      './node_modules/.vlt/' +
+        joinDepIDTuple(['registry', '', '@bar/bloo@1.2.3']) +
+        '/node_modules',
+    ),
   )
   const outside = new Node(
     opts,
@@ -343,7 +354,10 @@ t.test('nodeModules path and inVltStore flag', t => {
   outside.optional = false
   t.equal(outside.isOptional(), false)
   outside.location = './some/path'
-  t.equal(outside.nodeModules, './some/path/node_modules')
+  t.equal(
+    outside.nodeModules(scurry),
+    scurry.resolve(opts.projectRoot, './some/path/node_modules'),
+  )
   t.end()
 })
 

@@ -45,7 +45,8 @@ export const Dashboard = () => {
         '',
         '/dashboard',
       )
-      window.scrollTo(0, 0)
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      window.scrollTo?.(0, 0)
     }
 
     startDashboard().catch((err: unknown) => {

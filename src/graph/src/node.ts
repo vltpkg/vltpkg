@@ -1,3 +1,4 @@
+import { type PathScurry } from 'path-scurry'
 import {
   type DepID,
   type DepIDTuple,
@@ -145,21 +146,6 @@ export class Node implements NodeLike {
   }
 
   /**
-   * The location of the node_modules folder where this node's edgesOut
-   * should be linked into. For nodes in the store, this is the parent
-   * directory, since they're extracted into a node_modules folder
-   * side by side with links to their deps. For nodes outside of the store
-   * (ie, importers and arbitrary link deps) this is the node_modules folder
-   * directly inside the node's directory.
-   */
-  get nodeModules() {
-    const loc = this.location
-    return this.inVltStore() ?
-        loc.substring(0, loc.length - this.name.length - 1)
-      : loc + '/node_modules'
-  }
-
-  /**
    * The version of the package represented by this node, this is usually
    * equivalent to `manifest.version` but in a few ways it may differ such as
    * nodes loaded from a lockfile that lacks a loaded manifest.
@@ -191,6 +177,28 @@ export class Node implements NodeLike {
     if (this.inVltStore !== Node.prototype.inVltStore) {
       this.inVltStore = Node.prototype.inVltStore
     }
+  }
+
+  /**
+   * The resolved location of the node in the file system.
+   */
+  resolvedLocation(scurry: PathScurry): string {
+    return scurry.cwd.resolve(this.location).fullpath()
+  }
+
+  /**
+   * The location of the node_modules folder where this node's edgesOut
+   * should be linked into. For nodes in the store, this is the parent
+   * directory, since they're extracted into a node_modules folder
+   * side by side with links to their deps. For nodes outside of the store
+   * (ie, importers and arbitrary link deps) this is the node_modules folder
+   * directly inside the node's directory.
+   */
+  nodeModules(scurry: PathScurry): string {
+    const loc = this.resolvedLocation(scurry)
+    return this.inVltStore() ?
+        loc.substring(0, loc.length - this.name.length - 1)
+      : scurry.resolve(loc, 'node_modules')
   }
 
   constructor(

@@ -1,0 +1,62 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`popover render default 1`] = `
+
+<div>
+  <button
+    type="button"
+    aria-haspopup="dialog"
+    aria-expanded="false"
+    aria-controls="radix-:r0:"
+    data-state="closed"
+  >
+    Trigger Element
+  </button>
+</div>
+
+`;
+
+exports[`popover render open 1`] = `
+
+<span
+  data-radix-focus-guard
+  tabindex="0"
+  style="outline: none; opacity: 0; position: fixed; pointer-events: none;"
+>
+</span>
+<div>
+  <button
+    type="button"
+    aria-haspopup="dialog"
+    aria-expanded="true"
+    aria-controls="radix-:r1:"
+    data-state="open"
+  >
+    Trigger Element
+  </button>
+</div>
+<div
+  data-radix-popper-content-wrapper
+  style="position: fixed; left: 0px; top: 0px; transform: translate(0, -200%); min-width: max-content;"
+>
+  <div
+    data-side="bottom"
+    data-align="center"
+    data-state="open"
+    role="dialog"
+    id="radix-:r1:"
+    class="z-50 w-72 rounded-md border bg-popover p-4 text-popover-foreground shadow-md outline-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2"
+    style="--radix-popover-content-transform-origin: var(--radix-popper-transform-origin); --radix-popover-content-available-width: var(--radix-popper-available-width); --radix-popover-content-available-height: var(--radix-popper-available-height); --radix-popover-trigger-width: var(--radix-popper-anchor-width); --radix-popover-trigger-height: var(--radix-popper-anchor-height); animation: none;"
+    tabindex="-1"
+  >
+    Content
+  </div>
+</div>
+<span
+  data-radix-focus-guard
+  tabindex="0"
+  style="outline: none; opacity: 0; position: fixed; pointer-events: none;"
+>
+</span>
+
+`;
