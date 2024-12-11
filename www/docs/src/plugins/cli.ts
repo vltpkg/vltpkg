@@ -18,9 +18,10 @@ export const plugin = {
   name: directory,
   hooks: {
     async setup({ logger }: { logger: AstroIntegrationLogger }) {
+      const commandPath = `${directory}/commands`
       const entries = cacheEntries(
         {
-          commandsDir: `${directory}/commands`,
+          commandsDir: commandPath,
           commandsIndex: `${directory}/commands.md`,
           configuring: `${directory}/configuring.md`,
         },
@@ -46,7 +47,7 @@ export const plugin = {
         entries.commandsIndex,
         matter.stringify(
           commands
-            .map(c => `- [${c.id}](/${entries.commandsDir}/${c.id})`)
+            .map(c => `- [${c.id}](/${commandPath}/${c.id})`)
             .join('\n'),
           { title: 'CLI Commands', sidebar: { hidden: true } },
         ),
@@ -76,7 +77,7 @@ export const plugin = {
           /* @vite-ignore */ `${CLI_COMMANDS}/${c.id}`
         )) as CliCommand
         await writeFile(
-          join(c.parentPath, c.id + '.md'),
+          join(entries.commandsDir, c.id + '.md'),
           matter.stringify(usage().usageMarkdown(), {
             title: `vlt ${c.id}`,
             sidebar: { label: c.id },
