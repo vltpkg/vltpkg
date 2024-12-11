@@ -5,6 +5,7 @@ import { mkdir, readdir, writeFile } from 'fs/promises'
 import { fileURLToPath } from 'url'
 import { resolve as metaResolve } from 'import-meta-resolve'
 import { type CliCommand } from '@vltpkg/cli/types'
+import { Config } from '@vltpkg/cli/config'
 import matter from 'gray-matter'
 
 export const directory = 'cli'
@@ -16,10 +17,9 @@ const generated = [
 ]
 
 const importCommand = async (p: string) =>
-  (await import(/* @vite-ignore */ p)) as CliCommand
-
-const importConfig = async () =>
-  await (await import('@vltpkg/cli/config')).Config.load()
+  (await import(
+    /* @vite-ignore */ `@vltpkg/cli/commands/${p}`
+  )) as CliCommand
 
 export const plugin = {
   name: directory,
@@ -51,7 +51,7 @@ export const plugin = {
         commandsIndex,
         matter.stringify(
           commands
-            .map(c => `- [${c.id}](/cli/commands/${c.id})`)
+            .map(c => `- [${c.id}](/${generated[0]}/${c.id})`)
             .join('\n'),
           { title: 'CLI Commands', sidebar: { hidden: true } },
         ),
@@ -60,7 +60,7 @@ export const plugin = {
       await writeFile(
         configuring,
         matter.stringify(
-          (await importConfig()).jack
+          (await Config.load()).jack
             .usageMarkdown()
             .replace(/^# vlt/, ''),
           {
@@ -77,9 +77,7 @@ export const plugin = {
       await mkdir(commandsDir, { recursive: true })
 
       for (const c of commands) {
-        const { usage } = await importCommand(
-          join(c.parentPath, c.name),
-        )
+        const { usage } = await importCommand(c.id)
         await writeFile(
           join(commandsDir, c.id + '.md'),
           matter.stringify(usage().usageMarkdown(), {
