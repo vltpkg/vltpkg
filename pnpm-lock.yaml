@@ -1681,14 +1681,14 @@ importers:
         specifier: ^0.27.4
         version: 0.27.4(typescript@5.5.4)
       typedoc-plugin-frontmatter:
-        specifier: ^1.1.0
-        version: 1.1.0(typedoc-plugin-markdown@4.3.2(typedoc@0.27.4(typescript@5.5.4)))
+        specifier: ^1.1.2
+        version: 1.1.2(typedoc-plugin-markdown@4.3.2(typedoc@0.27.4(typescript@5.5.4)))
       typedoc-plugin-markdown:
         specifier: ^4.3.2
         version: 4.3.2(typedoc@0.27.4(typescript@5.5.4))
       typedoc-plugin-remark:
-        specifier: ^1.2.0
-        version: 1.2.0(typedoc-plugin-markdown@4.3.2(typedoc@0.27.4(typescript@5.5.4)))
+        specifier: ^1.2.1
+        version: 1.2.1(typedoc-plugin-markdown@4.3.2(typedoc@0.27.4(typescript@5.5.4)))
       vite:
         specifier: ^5.4.11
         version: 5.4.11(@types/node@22.5.0)
@@ -7265,8 +7265,8 @@ packages:
     resolution: {integrity: sha512-/OxDN6OtAk5KBpGb28T+HZc2M+ADtvRxXrKKbUwtsLgdoxgX13hyy7ek6bFRl5+aBs2yZzB0c4CnQfAtVypW/g==}
     engines: {node: '>= 0.4'}
 
-  typedoc-plugin-frontmatter@1.1.0:
-    resolution: {integrity: sha512-4PW4V2xDY2hw+fEWmg7g6FBCIWZdiEE+tzjJ5K4JhurvJ0t0Vp0IE/0nuHGGIZVtV5WxPIed+GpiH1uZrpDquQ==}
+  typedoc-plugin-frontmatter@1.1.2:
+    resolution: {integrity: sha512-ySNFQRqKjEM3IobtoND22LUuhpNLwPzTiAxTlqjn5uRLn8k8nqItvxWnWWRzaKMi870ZCvrz4wJHuVg+yqysmw==}
     peerDependencies:
       typedoc-plugin-markdown: '>=4.3.0'
 
@@ -7276,8 +7276,8 @@ packages:
     peerDependencies:
       typedoc: 0.27.x
 
-  typedoc-plugin-remark@1.2.0:
-    resolution: {integrity: sha512-gHv1QCTY6KdKV6vIS2B1u7q4PpmAAZ0LGWVk4IeU7OHDIDA/4L9F7yOPPup14uChkBvt7Tfs8wt6WjrHaBl4FA==}
+  typedoc-plugin-remark@1.2.1:
+    resolution: {integrity: sha512-TZcijdMn6AOcGiIKebV2I6jlKuf8UTMFo2l3d7dTmoovG0x3Kdv69Dxdwb895YwJcQunI3V/VwCL5Pv3FZyHFw==}
     peerDependencies:
       typedoc-plugin-markdown: '>=4.3.0'
 
@@ -11247,7 +11247,7 @@ snapshots:
       debug: 4.3.7
       enhanced-resolve: 5.17.1
       eslint: 9.9.0(jiti@1.21.6)
-      eslint-module-utils: 2.12.0(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.6.3(eslint-plugin-import@2.31.0)(eslint@9.9.0(jiti@1.21.6)))(eslint@9.9.0(jiti@1.21.6))
+      eslint-module-utils: 2.12.0(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.6.3)(eslint@9.9.0(jiti@1.21.6))
       fast-glob: 3.3.2
       get-tsconfig: 4.8.1
       is-bun-module: 1.2.1
@@ -11260,7 +11260,7 @@ snapshots:
       - eslint-import-resolver-webpack
       - supports-color
 
-  eslint-module-utils@2.12.0(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.6.3(eslint-plugin-import@2.31.0)(eslint@9.9.0(jiti@1.21.6)))(eslint@9.9.0(jiti@1.21.6)):
+  eslint-module-utils@2.12.0(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.6.3)(eslint@9.9.0(jiti@1.21.6)):
     dependencies:
       debug: 3.2.7
     optionalDependencies:
@@ -11281,7 +11281,7 @@ snapshots:
       doctrine: 2.1.0
       eslint: 9.9.0(jiti@1.21.6)
       eslint-import-resolver-node: 0.3.9
-      eslint-module-utils: 2.12.0(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.6.3(eslint-plugin-import@2.31.0)(eslint@9.9.0(jiti@1.21.6)))(eslint@9.9.0(jiti@1.21.6))
+      eslint-module-utils: 2.12.0(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.6.3)(eslint@9.9.0(jiti@1.21.6))
       hasown: 2.0.2
       is-core-module: 2.15.1
       is-glob: 4.0.3
@@ -14653,7 +14653,7 @@ snapshots:
       is-typed-array: 1.1.13
       possible-typed-array-names: 1.0.0
 
-  typedoc-plugin-frontmatter@1.1.0(typedoc-plugin-markdown@4.3.2(typedoc@0.27.4(typescript@5.5.4))):
+  typedoc-plugin-frontmatter@1.1.2(typedoc-plugin-markdown@4.3.2(typedoc@0.27.4(typescript@5.5.4))):
     dependencies:
       typedoc-plugin-markdown: 4.3.2(typedoc@0.27.4(typescript@5.5.4))
       yaml: 2.6.1
@@ -14662,7 +14662,7 @@ snapshots:
     dependencies:
       typedoc: 0.27.4(typescript@5.5.4)
 
-  typedoc-plugin-remark@1.2.0(typedoc-plugin-markdown@4.3.2(typedoc@0.27.4(typescript@5.5.4))):
+  typedoc-plugin-remark@1.2.1(typedoc-plugin-markdown@4.3.2(typedoc@0.27.4(typescript@5.5.4))):
     dependencies:
       remark: 15.0.1
       remark-frontmatter: 5.0.0
