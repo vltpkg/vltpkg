@@ -70,14 +70,15 @@ interface SublistProps {
   entry: Group
 }
 
+interface SidebarState {
+  [key: string]: boolean
+}
+
 const Group = ({ className = '', entry }: SublistProps) => {
-  const storedState = JSON.parse(
+  const storedState: SidebarState = JSON.parse(
     localStorage.getItem('sidebar-state') || '{}',
-  )
-  const initialExpanded =
-    storedState[entry.label] !== undefined ?
-      storedState[entry.label]
-    : !entry.collapsed
+  ) as SidebarState
+  const initialExpanded = storedState[entry.label] ?? !entry.collapsed
   const [expanded, setExpanded] = useState<boolean>(initialExpanded)
 
   /**
@@ -91,7 +92,7 @@ const Group = ({ className = '', entry }: SublistProps) => {
   useEffect(() => {
     const storedState = JSON.parse(
       localStorage.getItem('sidebar-state') || '{}',
-    )
+    ) as SidebarState
     storedState[entry.label] = expanded
     localStorage.setItem('sidebar-state', JSON.stringify(storedState))
   }, [expanded, entry.label])
