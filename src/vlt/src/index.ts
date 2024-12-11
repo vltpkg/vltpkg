@@ -46,15 +46,32 @@ const run = async () => {
     }
   }
 
-  const { command, usage, view } = await loadCommand(vlt.command)
+  const { command, usage, views, defaultView } = await loadCommand(
+    vlt.command,
+  )
 
   if (vlt.get('help')) {
     return stdout(usage().usage())
   }
 
+  const viewName = vlt.values.view ?? defaultView
+  const view = viewName ? views?.[viewName] : undefined
+
+  let cleanup: (...args: any) => void = () => {}
+  if (view?.renderer === 'ink') {
+    const ink = view.fn()
+    cleanup = () => {
+      console.log('cleaned up!!')
+      ink.cleanup()
+    }
+  }
+
   try {
-    outputCommand(await command(vlt), vlt, { view })
+    outputCommand(await command(vlt), vlt, view)
+    cleanup()
   } catch (e) {
+    console.error({ e })
+    cleanup(e)
     outputError(e, vlt, { usage: usage().usage() })
   }
 }

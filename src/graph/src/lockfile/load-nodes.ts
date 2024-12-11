@@ -12,6 +12,7 @@ export const loadNodes = (
   nodes: LockfileData['nodes'],
 ) => {
   const entries = Object.entries(nodes) as [DepID, LockfileNode][]
+  console.log('loading nodes', entries.length)
   for (const [id, lockfileNode] of entries) {
     // workspace nodes and the project root node are already part of the
     // graph and it should not create new nodes if an existing one is there
