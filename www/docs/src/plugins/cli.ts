@@ -5,6 +5,7 @@ import { mkdir, readdir, writeFile } from 'fs/promises'
 import { fileURLToPath } from 'url'
 import { resolve as metaResolve } from 'import-meta-resolve'
 import { type CliCommand } from '@vltpkg/cli/types'
+import matter from 'gray-matter'
 
 export const directory = 'cli'
 
@@ -19,26 +20,6 @@ const importCommand = async (p: string) =>
 
 const importConfig = async () =>
   await (await import('@vltpkg/cli/config')).Config.load()
-
-const frontmatter = (
-  title: string,
-  sidebar?: { hidden?: boolean; label?: string; order?: number },
-) => {
-  let sidebarFm = ''
-  if (sidebar) {
-    sidebarFm = `sidebar:\n`
-    if (sidebar.label) {
-      sidebarFm += `  label: "${sidebar.label}"\n`
-    }
-    if (sidebar.hidden) {
-      sidebarFm += `  hidden: true\n`
-    }
-    if (sidebar.order !== undefined) {
-      sidebarFm += `  order: ${sidebar.order}\n`
-    }
-  }
-  return `---\ntitle: "${title}"\n${sidebarFm}---\n\n`
-}
 
 export const plugin = {
   name: directory,
@@ -68,21 +49,29 @@ export const plugin = {
 
       await writeFile(
         commandsIndex,
-        frontmatter('CLI Commands', { hidden: true }) +
+        matter.stringify(
           commands
             .map(c => `- [${c.id}](/cli/commands/${c.id})`)
             .join('\n'),
+          { title: 'CLI Commands', sidebar: { hidden: true } },
+        ),
       )
 
       await writeFile(
         configuring,
-        frontmatter('Configuring the vlt CLI', {
-          label: 'Configuring',
-          order: 1,
-        }) +
+        matter.stringify(
           (await importConfig()).jack
             .usageMarkdown()
             .replace(/^# vlt/, ''),
+          {
+            title: 'Configuring the vlt CLI',
+            sidebar: {
+              label: 'Configuring',
+
+              order: 1,
+            },
+          },
+        ),
       )
 
       await mkdir(commandsDir, { recursive: true })
@@ -93,8 +82,10 @@ export const plugin = {
         )
         await writeFile(
           join(commandsDir, c.id + '.md'),
-          frontmatter(`vlt ${c.id}`, { label: c.id }) +
-            usage().usageMarkdown(),
+          matter.stringify(usage().usageMarkdown(), {
+            title: `vlt ${c.id}`,
+            sidebar: { label: c.id },
+          }),
         )
       }
     },
