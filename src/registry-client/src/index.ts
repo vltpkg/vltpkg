@@ -10,6 +10,7 @@ import { bun, deno, node } from './env.js'
 import { handle304Response } from './handle-304-response.js'
 import { isRedirect, redirect } from './redirect.js'
 import { setCacheHeaders } from './set-cache-headers.js'
+import { logRequest } from '@vltpkg/output'
 
 export { type CacheEntry }
 
@@ -143,6 +144,8 @@ export class RegistryClient {
     url: URL | string,
     options: RegistryClientRequestOptions = {},
   ): Promise<CacheEntry> {
+    logRequest(url)
+
     const u = typeof url === 'string' ? new URL(url) : url
     const {
       method = 'GET',
