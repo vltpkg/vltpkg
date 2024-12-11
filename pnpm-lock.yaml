@@ -1668,14 +1668,17 @@ importers:
         specifier: ^1.0.7
         version: 1.0.7(tailwindcss@3.4.14)
       typedoc:
-        specifier: ^0.26.10
-        version: 0.26.10(typescript@5.5.4)
+        specifier: ^0.27.4
+        version: 0.27.4(typescript@5.5.4)
       typedoc-plugin-frontmatter:
-        specifier: ^1.0.0
-        version: 1.0.0(typedoc-plugin-markdown@4.2.9(typedoc@0.26.10(typescript@5.5.4)))
+        specifier: ^1.1.0
+        version: 1.1.0(typedoc-plugin-markdown@4.3.2(typedoc@0.27.4(typescript@5.5.4)))
       typedoc-plugin-markdown:
-        specifier: ^4.2.9
-        version: 4.2.9(typedoc@0.26.10(typescript@5.5.4))
+        specifier: ^4.3.2
+        version: 4.3.2(typedoc@0.27.4(typescript@5.5.4))
+      typedoc-plugin-remark:
+        specifier: ^1.2.0
+        version: 1.2.0(typedoc-plugin-markdown@4.3.2(typedoc@0.27.4(typescript@5.5.4)))
       vite:
         specifier: 6.0.0-beta.2
         version: 6.0.0-beta.2(@types/node@22.5.0)
@@ -1698,9 +1701,6 @@ importers:
       prettier:
         specifier: 'catalog:'
         version: 3.3.3
-      typedoc-plugin-remark:
-        specifier: ^1.0.3
-        version: 1.0.3(typedoc-plugin-markdown@4.2.9(typedoc@0.26.10(typescript@5.5.4)))
       typescript:
         specifier: 'catalog:'
         version: 5.5.4
@@ -2562,6 +2562,9 @@ packages:
   '@fontsource-variable/manrope@5.1.0':
     resolution: {integrity: sha512-QjvtYRsCM0UTiOlBs21nNuFpHVcsiBwQuHGIFCTMsQgJvl0jdi4LYiD9sYQ11RplaeZcN6/Z8ynE9Spicqkv0w==}
 
+  '@gerrit0/mini-shiki@1.24.2':
+    resolution: {integrity: sha512-kw11jMCKwS5+GMMDy/o7W6C1KwsxgHnPO/RXzNBUw000BzRvUhUSi5zE8D2Qq7/A7bfJysFenEVBHUR7aMSxUQ==}
+
   '@humanwhocodes/module-importer@1.0.1':
     resolution: {integrity: sha512-bxveV4V8v5Yb4ncFTT3rPSgZBOpCkjfK0y4oVVVJwIuDVBRMDXrPyXRL988i5ap9m9bnyEEjWfm5WkBmtffLfA==}
     engines: {node: '>=12.22'}
@@ -3307,11 +3310,17 @@ packages:
   '@shikijs/engine-oniguruma@1.22.2':
     resolution: {integrity: sha512-GIZPAGzQOy56mGvWMoZRPggn0dTlBf1gutV5TdceLCZlFNqWmuc7u+CzD0Gd9vQUTgLbrt0KLzz6FNprqYAxlA==}
 
+  '@shikijs/engine-oniguruma@1.24.2':
+    resolution: {integrity: sha512-ZN6k//aDNWRJs1uKB12pturKHh7GejKugowOFGAuG7TxDRLod1Bd5JhpOikOiFqPmKjKEPtEA6mRCf7q3ulDyQ==}
+
   '@shikijs/types@1.22.0':
     resolution: {integrity: sha512-Fw/Nr7FGFhlQqHfxzZY8Cwtwk5E9nKDUgeLjZgt3UuhcM3yJR9xj3ZGNravZZok8XmEZMiYkSMTPlPkULB8nww==}
 
   '@shikijs/types@1.22.2':
     resolution: {integrity: sha512-NCWDa6LGZqTuzjsGfXOBWfjS/fDIbDdmVDug+7ykVe1IKT4c1gakrvlfFYp5NhAXH/lyqLM8wsAPo5wNy73Feg==}
+
+  '@shikijs/types@1.24.2':
+    resolution: {integrity: sha512-bdeWZiDtajGLG9BudI0AHet0b6e7FbR0EsE4jpGaI0YwHm/XJunI9+3uZnzFtX65gsyJ6ngCIWUfA4NWRPnBkQ==}
 
   '@shikijs/vscode-textmate@9.3.0':
     resolution: {integrity: sha512-jn7/7ky30idSkd/O5yDBfAnVt+JJpepofP/POZ1iMOxK59cOfqIgg/Dj0eFsjOTMw+4ycJN0uhZH/Eb0bs/EUA==}
@@ -6524,6 +6533,9 @@ packages:
   remark-mdx@3.0.1:
     resolution: {integrity: sha512-3Pz3yPQ5Rht2pM5R+0J2MrGoBSrzf+tJG94N+t/ilfdh8YLyyKYtidAYwTveB20BoHAcwIopOUqhcmh2F7hGYA==}
 
+  remark-mdx@3.1.0:
+    resolution: {integrity: sha512-Ngl/H3YXyBV9RcRNdlYsZujAmhsxwzxpDzpDEhFBVAGthS4GDgnctpDjgFl/ULx5UEDzqtW1cyBSNKqYYrqLBA==}
+
   remark-parse@11.0.0:
     resolution: {integrity: sha512-FCxlKLNGknS5ba/1lmpYijMUzX2esxW5xQqjWxw2eHFfS2MSdaHVINFmhjo+qN1WhZhNimq0dZATN9pH0IDrpA==}
 
@@ -7180,28 +7192,28 @@ packages:
     resolution: {integrity: sha512-/OxDN6OtAk5KBpGb28T+HZc2M+ADtvRxXrKKbUwtsLgdoxgX13hyy7ek6bFRl5+aBs2yZzB0c4CnQfAtVypW/g==}
     engines: {node: '>= 0.4'}
 
-  typedoc-plugin-frontmatter@1.0.0:
-    resolution: {integrity: sha512-Mqn96+RjUjPUz/42H8MOp/8eOKjE5MVIgZRFDGmSI2YuggnMZSfh5MMpvd6ykjNTpq7gV5D2iwjqLt8nYRg9rg==}
+  typedoc-plugin-frontmatter@1.1.0:
+    resolution: {integrity: sha512-4PW4V2xDY2hw+fEWmg7g6FBCIWZdiEE+tzjJ5K4JhurvJ0t0Vp0IE/0nuHGGIZVtV5WxPIed+GpiH1uZrpDquQ==}
     peerDependencies:
-      typedoc-plugin-markdown: '>=4.0.0'
+      typedoc-plugin-markdown: '>=4.3.0'
 
-  typedoc-plugin-markdown@4.2.9:
-    resolution: {integrity: sha512-Wqmx+7ezKFgtTklEq/iUhQ5uFeBDhAT6wiS2na9cFLidIpl9jpDHJy/COYh8jUZXgIRIZVQ/bPNjyrnPFoDwzg==}
+  typedoc-plugin-markdown@4.3.2:
+    resolution: {integrity: sha512-hCF3V0axzbzGDYFW21XigWIJQBOJ2ZRVWWs7X+e62ew/pXnvz7iKF/zVdkBm3w8Mk4bmXWp/FT0IF4Zn9uBRww==}
     engines: {node: '>= 18'}
     peerDependencies:
-      typedoc: 0.26.x
+      typedoc: 0.27.x
 
-  typedoc-plugin-remark@1.0.3:
-    resolution: {integrity: sha512-49ShLQTDeuk6h/bT5Clg3sHrbPVZb0JzOBH2UI1BHsAgRrf3kcH6mXF8OZbBSZE1IvwY+6Ifs9ZXu4QCdCLlMw==}
+  typedoc-plugin-remark@1.2.0:
+    resolution: {integrity: sha512-gHv1QCTY6KdKV6vIS2B1u7q4PpmAAZ0LGWVk4IeU7OHDIDA/4L9F7yOPPup14uChkBvt7Tfs8wt6WjrHaBl4FA==}
     peerDependencies:
-      typedoc-plugin-markdown: '>=4.1.0'
+      typedoc-plugin-markdown: '>=4.3.0'
 
-  typedoc@0.26.10:
-    resolution: {integrity: sha512-xLmVKJ8S21t+JeuQLNueebEuTVphx6IrP06CdV7+0WVflUSW3SPmR+h1fnWVdAR/FQePEgsSWCUHXqKKjzuUAw==}
+  typedoc@0.27.4:
+    resolution: {integrity: sha512-wXPQs1AYC2Crk+1XFpNuutLIkNWleokZf1UNf/X8w9KsMnirkvT+LzxTXDvfF6ug3TSLf3Xu5ZXRKGfoXPX7IA==}
     engines: {node: '>= 18'}
     hasBin: true
     peerDependencies:
-      typescript: 4.6.x || 4.7.x || 4.8.x || 4.9.x || 5.0.x || 5.1.x || 5.2.x || 5.3.x || 5.4.x || 5.5.x || 5.6.x
+      typescript: 5.0.x || 5.1.x || 5.2.x || 5.3.x || 5.4.x || 5.5.x || 5.6.x || 5.7.x
 
   typesafe-path@0.2.2:
     resolution: {integrity: sha512-OJabfkAg1WLZSqJAJ0Z6Sdt3utnbzr/jh+NAHoyWHJe8CMSy79Gm085094M9nvTPy22KzTVn5Zq5mbapCI/hPA==}
@@ -7693,8 +7705,8 @@ packages:
     engines: {node: '>= 14'}
     hasBin: true
 
-  yaml@2.6.0:
-    resolution: {integrity: sha512-a6ae//JvKDEra2kdi1qzCyrJW/WZCgFi8ydDV+eXExl95t+5R+ijnqHJbz9tmMh8FUjx3iv2fCQ4dclAQlO2UQ==}
+  yaml@2.6.1:
+    resolution: {integrity: sha512-7r0XPzioN/Q9kXBro/XPnA6kznR73DHq+GXh5ON7ZozRO6aMjbmiBuKste2wslTFkC5d1dw0GooOCepZXJ2SAg==}
     engines: {node: '>= 14'}
     hasBin: true
 
@@ -7957,7 +7969,7 @@ snapshots:
 
   '@astrojs/yaml2ts@0.2.1':
     dependencies:
-      yaml: 2.6.0
+      yaml: 2.6.1
 
   '@babel/code-frame@7.25.7':
     dependencies:
@@ -8613,6 +8625,12 @@ snapshots:
   '@floating-ui/utils@0.2.8': {}
 
   '@fontsource-variable/manrope@5.1.0': {}
+
+  '@gerrit0/mini-shiki@1.24.2':
+    dependencies:
+      '@shikijs/engine-oniguruma': 1.24.2
+      '@shikijs/types': 1.24.2
+      '@shikijs/vscode-textmate': 9.3.0
 
   '@humanwhocodes/module-importer@1.0.1': {}
 
@@ -9359,12 +9377,22 @@ snapshots:
       '@shikijs/types': 1.22.2
       '@shikijs/vscode-textmate': 9.3.0
 
+  '@shikijs/engine-oniguruma@1.24.2':
+    dependencies:
+      '@shikijs/types': 1.24.2
+      '@shikijs/vscode-textmate': 9.3.0
+
   '@shikijs/types@1.22.0':
     dependencies:
       '@shikijs/vscode-textmate': 9.3.0
       '@types/hast': 3.0.4
 
   '@shikijs/types@1.22.2':
+    dependencies:
+      '@shikijs/vscode-textmate': 9.3.0
+      '@types/hast': 3.0.4
+
+  '@shikijs/types@1.24.2':
     dependencies:
       '@shikijs/vscode-textmate': 9.3.0
       '@types/hast': 3.0.4
@@ -13522,6 +13550,13 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
+  remark-mdx@3.1.0:
+    dependencies:
+      mdast-util-mdx: 3.0.0
+      micromark-extension-mdxjs: 3.0.0
+    transitivePeerDependencies:
+      - supports-color
+
   remark-parse@11.0.0:
     dependencies:
       '@types/mdast': 4.0.4
@@ -14083,8 +14118,8 @@ snapshots:
 
   tap-yaml@4.0.0:
     dependencies:
-      yaml: 2.6.0
-      yaml-types: 0.4.0(yaml@2.6.0)
+      yaml: 2.6.1
+      yaml-types: 0.4.0(yaml@2.6.1)
 
   tap@21.0.1(@types/node@22.5.0)(@types/react@18.3.11)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4):
     dependencies:
@@ -14352,34 +14387,34 @@ snapshots:
       is-typed-array: 1.1.13
       possible-typed-array-names: 1.0.0
 
-  typedoc-plugin-frontmatter@1.0.0(typedoc-plugin-markdown@4.2.9(typedoc@0.26.10(typescript@5.5.4))):
+  typedoc-plugin-frontmatter@1.1.0(typedoc-plugin-markdown@4.3.2(typedoc@0.27.4(typescript@5.5.4))):
     dependencies:
-      typedoc-plugin-markdown: 4.2.9(typedoc@0.26.10(typescript@5.5.4))
-      yaml: 2.6.0
+      typedoc-plugin-markdown: 4.3.2(typedoc@0.27.4(typescript@5.5.4))
+      yaml: 2.6.1
 
-  typedoc-plugin-markdown@4.2.9(typedoc@0.26.10(typescript@5.5.4)):
+  typedoc-plugin-markdown@4.3.2(typedoc@0.27.4(typescript@5.5.4)):
     dependencies:
-      typedoc: 0.26.10(typescript@5.5.4)
+      typedoc: 0.27.4(typescript@5.5.4)
 
-  typedoc-plugin-remark@1.0.3(typedoc-plugin-markdown@4.2.9(typedoc@0.26.10(typescript@5.5.4))):
+  typedoc-plugin-remark@1.2.0(typedoc-plugin-markdown@4.3.2(typedoc@0.27.4(typescript@5.5.4))):
     dependencies:
       remark: 15.0.1
       remark-frontmatter: 5.0.0
       remark-gfm: 4.0.0
-      remark-mdx: 3.0.1
+      remark-mdx: 3.1.0
       to-vfile: 8.0.0
-      typedoc-plugin-markdown: 4.2.9(typedoc@0.26.10(typescript@5.5.4))
+      typedoc-plugin-markdown: 4.3.2(typedoc@0.27.4(typescript@5.5.4))
     transitivePeerDependencies:
       - supports-color
 
-  typedoc@0.26.10(typescript@5.5.4):
+  typedoc@0.27.4(typescript@5.5.4):
     dependencies:
+      '@gerrit0/mini-shiki': 1.24.2
       lunr: 2.3.9
       markdown-it: 14.1.0
       minimatch: 9.0.5
-      shiki: 1.22.0
       typescript: 5.5.4
-      yaml: 2.6.0
+      yaml: 2.6.1
 
   typesafe-path@0.2.2: {}
 
@@ -14870,15 +14905,15 @@ snapshots:
     optionalDependencies:
       prettier: 2.8.7
 
-  yaml-types@0.4.0(yaml@2.6.0):
+  yaml-types@0.4.0(yaml@2.6.1):
     dependencies:
-      yaml: 2.6.0
+      yaml: 2.6.1
 
   yaml@2.2.2: {}
 
   yaml@2.5.0: {}
 
-  yaml@2.6.0: {}
+  yaml@2.6.1: {}
 
   yargs-parser@20.2.9: {}
 
