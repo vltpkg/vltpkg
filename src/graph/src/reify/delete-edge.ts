@@ -26,7 +26,7 @@ export const deleteEdge = async (
     spec: { name },
     to,
   } = edge
-  const nm = edge.from.nodeModules
+  const nm = edge.from.nodeModules(scurry)
   const path = scurry.resolve(nm, name)
   const binRoot = scurry.cwd.resolve(`${nm}/.bin`)
   const promises: Promise<unknown>[] = []
