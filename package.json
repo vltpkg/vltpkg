@@ -47,13 +47,5 @@
     "vlx": "./scripts/local-cli vlx"
   },
   "prettier": "./.prettierrc.js",
-  "type": "module",
-  "pnpm": {
-    "//overrides": "these apply to www/docs but have to be set in the root",
-    "overrides": {
-      "@astrojs/mdx": "4.0.0-beta.2",
-      "astro": "5.0.0-beta.4",
-      "vite": "6.0.0-beta.2"
-    }
-  }
+  "type": "module"
 }
