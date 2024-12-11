@@ -1,8 +1,15 @@
-import { actual, ideal, reify } from '@vltpkg/graph'
+import { actual, type Graph, ideal, reify } from '@vltpkg/graph'
 import { PackageInfoClient } from '@vltpkg/package-info'
 import { parseAddArgs } from '../parse-add-remove-args.js'
-import { type CliCommandUsage, type CliCommandFn } from '../types.js'
+import {
+  type CliCommandUsage,
+  type CliCommandFn,
+  type Views,
+} from '../types.js'
 import { commandUsage } from '../config/usage.js'
+import { emitter } from '@vltpkg/output'
+import React, { useState, useEffect } from 'react'
+import { render, Text } from 'ink'
 
 export const usage: CliCommandUsage = () =>
   commandUsage({
@@ -12,7 +19,42 @@ export const usage: CliCommandUsage = () =>
                   vlt-lock.json appropriately.`,
   })
 
-export const command: CliCommandFn = async conf => {
+export const views = {
+  json: {
+    fn: (g: Graph) => JSON.stringify(g, null, 2),
+  },
+  human: {
+    renderer: 'ink',
+    fn: () => {
+      const Counter = () => {
+        const [counter, setCounter] = useState(0)
+
+        useEffect(() => {
+          const update = () => {
+            setCounter(p => p + 1)
+          }
+          emitter.on('request', update)
+          return () => {
+            console.log('unmounted!!!')
+            emitter.off('request', update)
+          }
+        }, [])
+
+        return React.createElement(
+          Text,
+          { color: 'green' },
+          `${counter} requests made`,
+        )
+      }
+
+      return render(React.createElement(Counter))
+    },
+  },
+} satisfies Views
+
+export const defaultView = 'human'
+
+export const command: CliCommandFn<Graph> = async conf => {
   const monorepo = conf.options.monorepo
   const { add } = parseAddArgs(conf, monorepo)
   const mainManifest = conf.options.packageJson.read(
@@ -42,4 +84,6 @@ export const command: CliCommandFn = async conf => {
     graph,
     loadManifests: true,
   })
+
+  return { result: graph }
 }

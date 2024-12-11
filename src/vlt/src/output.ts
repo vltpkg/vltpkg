@@ -1,6 +1,6 @@
 import chalk from 'chalk'
 import {
-  type CliCommand,
+  type View,
   type CliCommandResult,
   type LoadedConfig,
 } from './types.js'
@@ -14,7 +14,7 @@ export const stderr = (...args: unknown[]) => console.error(...args)
 export const outputCommand = (
   commandResult: CliCommandResult,
   conf: LoadedConfig,
-  { view: views }: { view: CliCommand['view'] },
+  view?: View,
 ) => {
   if (commandResult === undefined) {
     return
@@ -28,15 +28,18 @@ export const outputCommand = (
     return stdout(commandResult.join('\n'))
   }
 
-  const { result, defaultView } = commandResult
-  const view = conf.values.view ?? defaultView
+  const { result } = commandResult
 
-  if (!view || !views?.[view]) {
+  if (!view) {
     return stdout(JSON.stringify(result, null, 2))
   }
 
+  if (view.renderer === 'ink') {
+    return
+  }
+
   return stdout(
-    views[view](
+    view.fn(
       result && typeof result === 'object' ?
         {
           colors: conf.values.color ? chalk : undefined,
