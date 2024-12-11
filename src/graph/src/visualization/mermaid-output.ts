@@ -3,7 +3,7 @@ import { Edge } from '../edge.js'
 import { Node } from '../node.js'
 import { type EdgeLike, type NodeLike } from '../types.js'
 
-export type MermaidOutputOptions = {
+export type MermaidOutputGraph = {
   edges: EdgeLike[]
   importers: Set<NodeLike>
   nodes: NodeLike[]
@@ -68,7 +68,7 @@ export function mermaidOutput({
   edges,
   importers,
   nodes,
-}: MermaidOutputOptions) {
+}: MermaidOutputGraph) {
   const seen = new Set<EdgeLike | NodeLike>()
   const includedItems = new Map<EdgeLike | NodeLike, boolean>()
   const traverse = new Set<TraverseItem>(

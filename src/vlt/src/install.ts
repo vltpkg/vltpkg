@@ -37,4 +37,6 @@ export const install = async ({ add, conf }: InstallOptions) => {
     graph,
     loadManifests: true,
   })
+
+  return { graph }
 }

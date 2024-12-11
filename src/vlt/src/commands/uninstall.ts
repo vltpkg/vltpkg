@@ -1,9 +1,9 @@
 import { parseRemoveArgs } from '../parse-add-remove-args.js'
-import { type CliCommandFn, type CliCommandUsage } from '../types.js'
+import { type CommandFn, type CommandUsage } from '../types.js'
 import { commandUsage } from '../config/usage.js'
 import { uninstall } from '../uninstall.js'
 
-export const usage: CliCommandUsage = () =>
+export const usage: CommandUsage = () =>
   commandUsage({
     command: 'uninstall',
     usage: '[package ...]',
@@ -11,7 +11,7 @@ export const usage: CliCommandUsage = () =>
                   vlt-lock.json and package.json appropriately.`,
   })
 
-export const command: CliCommandFn = async conf => {
+export const command: CommandFn = async conf => {
   const monorepo = conf.options.monorepo
   const { remove } = parseRemoveArgs(conf, monorepo)
   await uninstall({ remove, conf })

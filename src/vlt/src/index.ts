@@ -1,8 +1,8 @@
 import { error } from '@vltpkg/error-cause'
 import { loadPackageJson } from 'package-json-from-dist'
 import { Config } from './config/index.js'
-import { type CliCommand, type Commands } from './types.js'
-import { stdout, outputCommand, outputError } from './output.js'
+import { type Command, type Commands } from './types.js'
+import { stdout, outputCommand } from './output.js'
 
 const { version } = loadPackageJson(import.meta.filename) as {
   version: string
@@ -10,12 +10,12 @@ const { version } = loadPackageJson(import.meta.filename) as {
 
 const loadCommand = async (
   command: Commands[keyof Commands] | undefined,
-): Promise<CliCommand> => {
+): Promise<Command> => {
   try {
     // Be careful the line between the LOAD COMMANDS comment.
     // infra-build relies on this to work around esbuild bundling dynamic imports
     /* LOAD COMMANDS START */
-    return (await import(`./commands/${command}.js`)) as CliCommand
+    return (await import(`./commands/${command}.js`)) as Command
     /* LOAD COMMANDS STOP */
     /* c8 ignore start - should not be possible, just a failsafe */
   } catch (e) {
@@ -28,6 +28,7 @@ const loadCommand = async (
 }
 
 const run = async () => {
+  const start = Date.now()
   const vlt = await Config.load(process.cwd(), process.argv)
 
   if (vlt.get('version')) {
@@ -46,17 +47,8 @@ const run = async () => {
     }
   }
 
-  const { command, usage, view } = await loadCommand(vlt.command)
-
-  if (vlt.get('help')) {
-    return stdout(usage().usage())
-  }
-
-  try {
-    outputCommand(await command(vlt), vlt, { view })
-  } catch (e) {
-    outputError(e, vlt, { usage: usage().usage() })
-  }
+  const command = await loadCommand(vlt.command)
+  await outputCommand(command, vlt, { start })
 }
 
 export default run

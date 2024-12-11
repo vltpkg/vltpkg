@@ -269,8 +269,8 @@ const getDefaultStartingRoute = (options: ConfigOptions) => {
 }
 
 export const startGUI = async ({
-  assetsDir,
   conf,
+  assetsDir,
   port = PORT,
   startingRoute = undefined,
   tmpDir = tmpdir(),

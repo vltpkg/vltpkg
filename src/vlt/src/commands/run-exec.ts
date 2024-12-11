@@ -1,9 +1,9 @@
 import { runExec, runExecFG } from '@vltpkg/run'
 import { ExecCommand, type ExecResult } from '../exec-command.js'
 import { commandUsage } from '../config/usage.js'
-import { type CliCommandUsage, type CliCommandFn } from '../types.js'
+import { type CommandUsage, type CommandFn } from '../types.js'
 
-export const usage: CliCommandUsage = () =>
+export const usage: CommandUsage = () =>
   commandUsage({
     command: 'run-exec',
     usage: '[command ...]',
@@ -13,7 +13,7 @@ export const usage: CliCommandUsage = () =>
                   If not, then this is equivalent to \`vlt exec\`.`,
   })
 
-export const command: CliCommandFn<ExecResult> = async conf => {
+export const command: CommandFn<ExecResult> = async conf => {
   return {
     result: await new ExecCommand(conf, runExec, runExecFG).run(),
   }

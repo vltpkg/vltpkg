@@ -1,6 +1,6 @@
 import { Test } from 'tap'
 import { join } from 'path'
-import { CliCommand, LoadedConfig } from '../../src/types.js'
+import { Command, LoadedConfig } from '../../src/types.js'
 
 export type Testdir = Parameters<Test['testdir']>[0]
 
@@ -50,7 +50,7 @@ export const chtestdir = (
 
 export const mockCommandOutput = async (
   t: Test,
-  command: CliCommand,
+  command: Command,
   config: LoadedConfig,
   extra?: any,
 ) => {
@@ -60,11 +60,16 @@ export const mockCommandOutput = async (
   const logs = t.capture(console, 'log').args
   const errs = t.capture(console, 'error').args
   const res = await command.command(config, extra)
-  outputCommand(res, config, { view: command.view })
+  const viewName = config.values.view ?? command.defaultView
+  outputCommand(res, config, {
+    view: viewName ? command.views?.[viewName] : undefined,
+    start: Date.now(),
+    cleanup: null,
+  })
   return { logs: logs(), errs: errs() }
 }
 
-export const setupCommand = async <TCommand extends CliCommand>(
+export const setupCommand = async <TCommand extends Command>(
   t: Test,
   {
     command: commandName,
@@ -116,7 +121,7 @@ export type CommandResultOptions = {
   options?: Partial<LoadedConfig['options']>
 }
 
-export const commandView = async <TCommand extends CliCommand>(
+export const commandView = async <TCommand extends Command>(
   t: Test,
   command: TCommand,
   {

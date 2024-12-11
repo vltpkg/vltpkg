@@ -3,10 +3,10 @@ import { run, runFG } from '@vltpkg/run'
 import { type LoadedConfig } from '../config/index.js'
 import { ExecCommand, type ExecResult } from '../exec-command.js'
 import { commandUsage } from '../config/usage.js'
-import { type CliCommandUsage, type CliCommandFn } from '../types.js'
+import { type CommandUsage, type CommandFn } from '../types.js'
 import { stdout } from '../output.js'
 
-export const usage: CliCommandUsage = () =>
+export const usage: CommandUsage = () =>
   commandUsage({
     command: 'run',
     usage: '<script> [args ...]',
@@ -46,7 +46,7 @@ class RunCommand extends ExecCommand<typeof run, typeof runFG> {
   }
 }
 
-export const command: CliCommandFn<ExecResult> = async conf => {
+export const command: CommandFn<ExecResult> = async conf => {
   return {
     result: await new RunCommand(conf).run(),
   }

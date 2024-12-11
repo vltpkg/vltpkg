@@ -10,6 +10,7 @@ const { usage, command } = await t.mockImport<
   '../../src/install.js': {
     async install() {
       log += 'install\n'
+      return {}
     },
   },
   '../../src/parse-add-remove-args.js': {
