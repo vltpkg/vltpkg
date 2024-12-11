@@ -59,6 +59,7 @@
     "format:check": "prettier --check . --ignore-path ../../.prettierignore --cache",
     "lint": "eslint . --fix",
     "lint:check": "eslint .",
+    "prepare": "astro sync",
     "snap": "vitest --no-watch -u",
     "start": "astro dev",
     "test": "vitest",

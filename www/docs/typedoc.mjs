@@ -26,7 +26,7 @@ await writeFile(
     },
     null,
     2,
-  ),
+  ) + '\n',
 )
 
 /**
