@@ -237,6 +237,15 @@ export default tseslint.config(
     },
   },
   {
+    /**
+     * Astro
+     */
+    files: ['www/docs/src/env.d.ts'],
+    rules: {
+      '@typescript-eslint/triple-slash-reference': 'off',
+    },
+  },
+  {
     files: ['src/*/src/**/*.ts'],
     rules: {
       'no-console': 2,
