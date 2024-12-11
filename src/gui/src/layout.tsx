@@ -9,6 +9,7 @@ import { ErrorFound } from './app/error-found.jsx'
 import { Dashboard } from './app/dashboard.jsx'
 
 import { useGraphStore } from './state/index.js'
+import { Toaster } from '@/components/ui/toaster.jsx'
 
 interface LayoutProps {
   children: React.ReactNode
@@ -31,6 +32,7 @@ const Layout = () => {
           <Footer />
         </Layout.Content>
       </Layout.Body>
+      <Toaster />
     </Layout.Wrapper>
   )
 }

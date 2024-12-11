@@ -23,7 +23,7 @@ export const addNodes = (
     // we're just linking to a location that already exists.
     if (!node.inVltStore()) continue
     // remove anything already there
-    const target = scurry.resolve(node.location)
+    const target = node.resolvedLocation(scurry)
     const from = scurry.resolve('')
     const spec = hydrate(node.id, manifest.name, options)
     const onErr = optionalFail(diff, node)

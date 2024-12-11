@@ -24,21 +24,25 @@ t.test('add some edges', async t => {
     },
   })
 
+  const a = {
+    to: {
+      // no manifest
+      resolvedLocation() {
+        return 'some/path'
+      },
+    },
+  }
+  const b = {
+    to: { manifest: {} },
+  }
   const diff = {
     edges: {
       add: new Set([
         // no target, nothing to reify
         {},
-        // this one gets reified
-        {
-          to: {
-            // no manifest
-            location: 'some/path',
-          },
-        },
-        {
-          to: { manifest: {} },
-        },
+        // these one gets reified
+        a,
+        b,
       ]),
     },
   } as unknown as Diff
@@ -51,18 +55,5 @@ t.test('add some edges', async t => {
       {} as unknown as RollbackRemove,
     ),
   )
-  t.strictSame(
-    new Set(reified),
-    new Set([
-      {
-        to: {
-          // no manifest
-          location: 'some/path',
-        },
-      },
-      {
-        to: { manifest: {} },
-      },
-    ]),
-  )
+  t.strictSame(new Set(reified), new Set([a, b]))
 })

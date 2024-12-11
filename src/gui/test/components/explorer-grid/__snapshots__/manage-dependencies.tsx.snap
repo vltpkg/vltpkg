@@ -1,0 +1,98 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`manage-dependencies render default 1`] = `
+
+<div>
+  <gui-card-header classname="rounded-t-lg relative flex flex-col w-full p-0">
+    <div class="flex items-center justify-between px-6 py-4">
+      <gui-card-title classname="text-lg font-medium flex items-center">
+        <gui-package-plus-icon
+          size="18"
+          classname="mr-2"
+        >
+        </gui-package-plus-icon>
+        Add new dependency
+      </gui-card-title>
+    </div>
+  </gui-card-header>
+  <div class="flex items-center flex-row justify-between gap-2 flex-wrap p-6 border-muted-foreground/20 border-t-[1px]">
+    <gui-label
+      htmlfor="package-name"
+      classname="ml-1"
+    >
+      Package Name
+    </gui-label>
+    <gui-input
+      id="package-name"
+      tabindex="1"
+      type="text"
+      role="input"
+      placeholder="Package name"
+      value
+    >
+    </gui-input>
+    <gui-label
+      htmlfor="package-version"
+      classname="ml-1 mt-2"
+    >
+      Version | Spec
+    </gui-label>
+    <gui-input
+      id="package-version"
+      tabindex="2"
+      type="text"
+      role="input"
+      value="latest"
+    >
+    </gui-input>
+    <gui-label
+      htmlfor="package-type"
+      classname="ml-1 mt-2"
+    >
+      Type
+    </gui-label>
+    <gui-select>
+      <gui-select-trigger>
+        <gui-select-value tabindex="3">
+        </gui-select-value>
+      </gui-select-trigger>
+      <gui-select-content>
+        <gui-select-item value="prod">
+          dependencies
+        </gui-select-item>
+        <gui-select-item value="dev">
+          devDependencies
+        </gui-select-item>
+        <gui-select-item value="optional">
+          optionalDependencies
+        </gui-select-item>
+        <gui-select-item value="peer">
+          peerDependencies
+        </gui-select-item>
+      </gui-select-content>
+    </gui-select>
+    <div class="flex justify-end w-full">
+      <gui-popover-close>
+        <gui-button
+          classname="mt-2 mr-2"
+          role="cancel"
+          variant="secondary"
+          tabindex="4"
+        >
+          Cancel
+        </gui-button>
+      </gui-popover-close>
+      <gui-button
+        classname="mt-2"
+        role="submit"
+        tabindex="5"
+      >
+        <gui-package-check-icon size="16">
+        </gui-package-check-icon>
+        Install package
+      </gui-button>
+    </div>
+  </div>
+</div>
+
+`;

@@ -39,12 +39,18 @@ export const addEdge = async (
   remover: RollbackRemove,
 ) => {
   if (!edge.to) return
-  const binRoot = scurry.resolve(edge.from.nodeModules, '.bin')
-  const path = scurry.resolve(edge.from.nodeModules, edge.spec.name)
+  const binRoot = scurry.resolve(
+    edge.from.nodeModules(scurry),
+    '.bin',
+  )
+  const path = scurry.resolve(
+    edge.from.nodeModules(scurry),
+    edge.spec.name,
+  )
   const promises: Promise<unknown>[] = []
   const target = relative(
     dirname(path),
-    scurry.resolve(edge.to.location),
+    edge.to.resolvedLocation(scurry),
   )
   promises.push(clobberSymlink(target, path, remover, 'dir'))
   const bp = binPaths(manifest)

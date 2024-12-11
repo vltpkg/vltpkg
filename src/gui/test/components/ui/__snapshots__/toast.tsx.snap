@@ -1,0 +1,57 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`toaster render default 1`] = `
+
+<div>
+  <div
+    role="region"
+    aria-label="Notifications (F8)"
+    tabindex="-1"
+    style
+  >
+    <span
+      aria-hidden="true"
+      tabindex="0"
+      style="position: fixed; border: 0px; width: 1px; height: 1px; padding: 0px; margin: -1px; overflow: hidden; clip: rect(0px, 0px, 0px, 0px); white-space: nowrap; word-wrap: normal;"
+    >
+    </span>
+    <ol
+      tabindex="-1"
+      class="fixed top-0 z-[100] flex max-h-screen w-full flex-col-reverse p-4 sm:bottom-0 sm:right-0 sm:top-auto sm:flex-col md:max-w-[420px]"
+    >
+      <li
+        role="status"
+        aria-live="off"
+        aria-atomic="true"
+        tabindex="0"
+        data-state="open"
+        data-swipe-direction="right"
+        class="group pointer-events-auto relative flex w-full items-center justify-between space-x-4 overflow-hidden rounded-md p-6 pr-8 shadow-lg transition-all data-[swipe=cancel]:translate-x-0 data-[swipe=end]:translate-x-[var(--radix-toast-swipe-end-x)] data-[swipe=move]:translate-x-[var(--radix-toast-swipe-move-x)] data-[swipe=move]:transition-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[swipe=end]:animate-out data-[state=closed]:fade-out-80 data-[state=closed]:slide-out-to-right-full data-[state=open]:slide-in-from-top-full data-[state=open]:sm:slide-in-from-bottom-full border bg-background text-foreground"
+        style="user-select: none;"
+        data-radix-collection-item
+      >
+        <div class="text-sm font-semibold">
+          Title
+        </div>
+        <div class="text-sm opacity-90">
+          Description
+        </div>
+      </li>
+    </ol>
+    <span
+      aria-hidden="true"
+      tabindex="0"
+      style="position: fixed; border: 0px; width: 1px; height: 1px; padding: 0px; margin: -1px; overflow: hidden; clip: rect(0px, 0px, 0px, 0px); white-space: nowrap; word-wrap: normal;"
+    >
+    </span>
+  </div>
+</div>
+<span
+  role="status"
+  aria-live="assertive"
+  aria-atomic="true"
+  style="position: absolute; border: 0px; width: 1px; height: 1px; padding: 0px; margin: -1px; overflow: hidden; clip: rect(0px, 0px, 0px, 0px); white-space: nowrap; word-wrap: normal;"
+>
+</span>
+
+`;
