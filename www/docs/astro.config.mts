@@ -9,6 +9,13 @@ import { basename, relative, resolve } from 'path'
 import { fileURLToPath } from 'url'
 import { resolve as metaResolve } from 'import-meta-resolve'
 
+if (process.env.CI && process.env.RUNNER_OS === 'Windows') {
+  console.log(
+    'Skipping astro in CI on Windows because it only needs to be run for linting but not tests',
+  )
+  process.exit(0)
+}
+
 const commands = readdirSync(
   fileURLToPath(metaResolve('@vltpkg/cli/commands', import.meta.url)),
 )
