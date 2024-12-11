@@ -13,38 +13,49 @@ const rebuild = (key: string) => {
   return VLT_DOCS_REBUILD.split(',').includes(key)
 }
 
-export const skipDir = (
-  entries: string[],
-  {
-    logger,
-    rebuildKey,
-  }: {
-    rebuildKey: string
-    logger: AstroIntegrationLogger
-  },
-) => {
+export const cacheEntries = <
+  T extends Record<string, string> | string,
+>(
+  entries: T,
+  rebuildKey: string,
+  logger: AstroIntegrationLogger,
+): T | null => {
   if (process.env.NODE_ENV === 'test') {
     logger.warn(`skipping due to NODE_ENV=test`)
     return null
   }
 
-  const resolvedEntries = entries.map(e =>
-    resolve(import.meta.dirname, '../../src/content/docs', e),
+  const keys: string[] = []
+  const values: string[] = []
+
+  if (typeof entries === 'string') {
+    values.push(entries)
+  } else {
+    for (const [k, v] of Object.entries(entries)) {
+      keys.push(k)
+      values.push(v)
+    }
+  }
+
+  const resolved = values.map(v =>
+    resolve(import.meta.dirname, '../../src/content/docs', v),
   )
 
   if (rebuild(rebuildKey)) {
     logger.info(`removing generated files`)
-    for (const d of resolvedEntries) {
-      rmSync(d, { force: true, recursive: true })
+    for (const v of resolved) {
+      rmSync(v, { force: true, recursive: true })
     }
   }
 
-  if (resolvedEntries.map(d => existsSync(d)).every(Boolean)) {
+  if (resolved.map(v => existsSync(v)).every(Boolean)) {
     logger.info(
       `using previously generated files, run with VLT_DOCS_REBUILD=${rebuildKey} to rebuild`,
     )
     return null
   }
 
-  return resolvedEntries
+  return keys.length ?
+      (Object.fromEntries(keys.map((k, i) => [k, resolved[i]])) as T)
+    : (resolved[0] as T)
 }

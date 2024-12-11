@@ -1,6 +1,6 @@
-import { basename, join } from 'path'
+import { basename, join, relative } from 'path'
 import { type AstroIntegrationLogger } from 'astro'
-import { skipDir } from './utils'
+import { cacheEntries } from './utils'
 import { mkdir, readdir, writeFile } from 'fs/promises'
 import { fileURLToPath } from 'url'
 import { resolve as metaResolve } from 'import-meta-resolve'
@@ -8,36 +8,30 @@ import { type CliCommand } from '@vltpkg/cli/types'
 import { Config } from '@vltpkg/cli/config'
 import matter from 'gray-matter'
 
+const CLI_COMMANDS = '@vltpkg/cli/commands'
+
 export const directory = 'cli'
 
-const generated = [
-  `${directory}/commands`,
-  `${directory}/commands.md`,
-  `${directory}/configuring.md`,
-]
-
-const importCommand = async (p: string) =>
-  (await import(
-    /* @vite-ignore */ `@vltpkg/cli/commands/${p}`
-  )) as CliCommand
+const rel = (s: string) => relative(process.cwd(), s)
 
 export const plugin = {
   name: directory,
   hooks: {
     async setup({ logger }: { logger: AstroIntegrationLogger }) {
-      const dir = skipDir(generated, {
+      const entries = cacheEntries(
+        {
+          commandsDir: `${directory}/commands`,
+          commandsIndex: `${directory}/commands.md`,
+          configuring: `${directory}/configuring.md`,
+        },
+        directory,
         logger,
-        rebuildKey: directory,
-      })
-      if (!dir) return
-
-      const [commandsDir, commandsIndex, configuring] = dir
+      )
+      if (!entries) return
 
       const commands = (
         await readdir(
-          fileURLToPath(
-            metaResolve('@vltpkg/cli/commands', import.meta.url),
-          ),
+          fileURLToPath(metaResolve(CLI_COMMANDS, import.meta.url)),
           { withFileTypes: true },
         )
       )
@@ -47,18 +41,20 @@ export const plugin = {
           id: basename(c.name, '.js'),
         }))
 
+      logger.info(`writing ${rel(entries.commandsIndex)}`)
       await writeFile(
-        commandsIndex,
+        entries.commandsIndex,
         matter.stringify(
           commands
-            .map(c => `- [${c.id}](/${generated[0]}/${c.id})`)
+            .map(c => `- [${c.id}](/${entries.commandsDir}/${c.id})`)
             .join('\n'),
           { title: 'CLI Commands', sidebar: { hidden: true } },
         ),
       )
 
+      logger.info(`writing ${rel(entries.configuring)}`)
       await writeFile(
-        configuring,
+        entries.configuring,
         matter.stringify(
           (await Config.load()).jack
             .usageMarkdown()
@@ -67,19 +63,20 @@ export const plugin = {
             title: 'Configuring the vlt CLI',
             sidebar: {
               label: 'Configuring',
-
               order: 1,
             },
           },
         ),
       )
 
-      await mkdir(commandsDir, { recursive: true })
-
+      logger.info(`writing ${rel(entries.commandsDir)}`)
+      await mkdir(entries.commandsDir, { recursive: true })
       for (const c of commands) {
-        const { usage } = await importCommand(c.id)
+        const { usage } = (await import(
+          /* @vite-ignore */ `${CLI_COMMANDS}/${c.id}`
+        )) as CliCommand
         await writeFile(
-          join(commandsDir, c.id + '.md'),
+          join(c.parentPath, c.id + '.md'),
           matter.stringify(usage().usageMarkdown(), {
             title: `vlt ${c.id}`,
             sidebar: { label: c.id },

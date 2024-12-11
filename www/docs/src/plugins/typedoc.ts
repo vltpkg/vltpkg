@@ -1,6 +1,6 @@
 import { spawn } from 'child_process'
 import { type AstroIntegrationLogger } from 'astro'
-import { skipDir } from './utils'
+import { cacheEntries } from './utils'
 
 export const directory = 'packages'
 
@@ -8,11 +8,8 @@ export const plugin = {
   name: directory,
   hooks: {
     async setup({ logger }: { logger: AstroIntegrationLogger }) {
-      const dir = skipDir([directory], {
-        logger,
-        rebuildKey: directory,
-      })
-      if (!dir) return
+      const entries = cacheEntries(directory, directory, logger)
+      if (!entries) return
       await new Promise<void>((res, rej) => {
         const proc = spawn('./node_modules/.bin/typedoc', [])
         proc.stdout
