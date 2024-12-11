@@ -54,7 +54,7 @@
     "astro": "astro",
     "build": "astro check && astro build",
     "dev": "astro dev",
-    "dev:rebuild": "rm -rf src/content/docs/packages/ && astro dev",
+    "dev:rebuild": "rm -rf src/content/docs/packages/ && rm -rf src/content/docs/cli/commands/ && astro dev",
     "format": "prettier --write . --log-level warn --ignore-path ../../.prettierignore --cache",
     "format:check": "prettier --check . --ignore-path ../../.prettierignore --cache",
     "lint": "eslint . --fix",
