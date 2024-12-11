@@ -1,8 +1,8 @@
 import { RegistryClient } from '@vltpkg/registry-client'
 import { commandUsage } from '../config/usage.js'
-import { type CliCommandFn, type CliCommandUsage } from '../types.js'
+import { type CommandFn, type CommandUsage } from '../types.js'
 
-export const usage: CliCommandUsage = () =>
+export const usage: CommandUsage = () =>
   commandUsage({
     command: 'logout',
     usage: [''],
@@ -10,7 +10,7 @@ export const usage: CliCommandUsage = () =>
                   the local keychain, as well as destroying it on the server.`,
   })
 
-export const command: CliCommandFn = async conf => {
+export const command: CommandFn<void> = async conf => {
   const rc = new RegistryClient(conf.options)
   await rc.logout(conf.options.registry)
 }

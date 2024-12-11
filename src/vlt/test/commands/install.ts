@@ -1,15 +1,22 @@
 import t from 'tap'
 import { type LoadedConfig } from '../../src/config/index.js'
+import { commandView } from '../fixtures/run.js'
 
 const options = {}
 let log = ''
+t.afterEach(() => (log = ''))
 
-const { usage, command } = await t.mockImport<
+const Command = await t.mockImport<
   typeof import('../../src/commands/install.js')
 >('../../src/commands/install.js', {
   '../../src/install.js': {
     async install() {
       log += 'install\n'
+      return {
+        graph: {
+          toJSON: () => ({ install: true }),
+        },
+      }
     },
   },
   '../../src/parse-add-remove-args.js': {
@@ -27,8 +34,10 @@ const { usage, command } = await t.mockImport<
     },
   },
 })
-t.matchSnapshot(usage().usage(), 'usage')
-await command({
+
+t.matchSnapshot(Command.usage().usage(), 'usage')
+
+await Command.command({
   positionals: [],
   values: {},
   options,
@@ -36,10 +45,16 @@ await command({
 t.matchSnapshot(log, 'should call install with expected options')
 
 // adds a new package
-log = ''
-await command({
+await Command.command({
   positionals: ['abbrev@2'],
   values: { 'save-dev': true },
   options,
 } as unknown as LoadedConfig)
 t.matchSnapshot(log, 'should install adding a new dependency')
+
+t.test('json', async t => {
+  const output = await commandView(t, Command, {
+    values: { view: 'json' },
+  })
+  t.strictSame(JSON.parse(output), { install: true })
+})

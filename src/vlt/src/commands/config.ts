@@ -9,9 +9,9 @@ import {
   recordsToPairs,
 } from '../config/index.js'
 import { commandUsage } from '../config/usage.js'
-import { type CliCommandFn, type CliCommandUsage } from '../types.js'
+import { type CommandFn, type CommandUsage } from '../types.js'
 
-export const usage: CliCommandUsage = () =>
+export const usage: CommandUsage = () =>
   commandUsage({
     command: 'config',
     usage: '<command> [flags]',
@@ -52,7 +52,7 @@ export const usage: CliCommandUsage = () =>
     },
   })
 
-export const command: CliCommandFn = async conf => {
+export const command: CommandFn<unknown> = async conf => {
   const sub = conf.positionals[0]
   switch (sub) {
     case 'set':
@@ -82,12 +82,14 @@ const help = (conf: LoadedConfig) => {
   const j = definition.toJSON()
   const fields = conf.positionals.slice(1)
   if (!fields.length) {
-    return [
-      'Specify one or more options to see information:',
-      ...Object.keys(j)
-        .sort((a, b) => a.localeCompare(b, 'en'))
-        .map(c => `  ${c}`),
-    ]
+    return {
+      result: [
+        'Specify one or more options to see information:',
+        ...Object.keys(j)
+          .sort((a, b) => a.localeCompare(b, 'en'))
+          .map(c => `  ${c}`),
+      ].join('\n'),
+    }
   }
   // TODO: some kind of fuzzy search?
   const res: string[] = []
@@ -112,7 +114,7 @@ const help = (conf: LoadedConfig) => {
       }
     }
   }
-  return res
+  return { result: res.join('\n') }
 }
 
 const list = (conf: LoadedConfig) => {
@@ -137,7 +139,9 @@ const get = async (conf: LoadedConfig) => {
       code: 'EUSAGE',
     })
   }
-  return { result: conf.get(k as keyof ConfigDefinitions) }
+  return {
+    result: conf.get(k as keyof ConfigDefinitions),
+  }
 }
 
 const edit = async (conf: LoadedConfig) => {

@@ -1,19 +1,23 @@
-import { fileURLToPath } from 'node:url'
 import {
   actual,
-  type EdgeLike,
   humanReadableOutput,
+  type HumanReadableOutputGraph,
   jsonOutput,
+  type JSONOutputGraph,
   mermaidOutput,
+  type MermaidOutputGraph,
   type Node,
-  type NodeLike,
 } from '@vltpkg/graph'
 import { Query } from '@vltpkg/query'
 import { commandUsage } from '../config/usage.js'
-import { type CliCommandUsage, type CliCommandFn } from '../types.js'
+import {
+  type CommandUsage,
+  type CommandFn,
+  type Views,
+} from '../types.js'
 import { startGUI } from '../start-gui.js'
 
-export const usage: CliCommandUsage = () =>
+export const usage: CommandUsage = () =>
   commandUsage({
     command: 'query',
     usage: ['', '<query> --view=[human | json | mermaid | gui]'],
@@ -44,25 +48,21 @@ export const usage: CliCommandUsage = () =>
     },
   })
 
-export const view = {
-  json: jsonOutput,
-  mermaid: mermaidOutput,
-  human: humanReadableOutput,
+type QueryResult = JSONOutputGraph &
+  MermaidOutputGraph &
+  HumanReadableOutputGraph
+
+export const views: Views<QueryResult> = {
+  /* c8 ignore next */
+  defaultView: process.stdout.isTTY ? 'human' : 'json',
+  views: {
+    json: jsonOutput,
+    mermaid: mermaidOutput,
+    human: humanReadableOutput,
+  },
 }
 
-export type CommandResult = {
-  importers: Set<Node>
-  edges: EdgeLike[]
-  nodes: NodeLike[]
-  highlightSelection: boolean
-}
-
-export const command: CliCommandFn = async (
-  conf,
-  assetsDir: string = fileURLToPath(
-    import.meta.resolve('@vltpkg/gui'),
-  ),
-) => {
+export const command: CommandFn<QueryResult> = async conf => {
   const monorepo = conf.options.monorepo
   const mainManifest = conf.options.packageJson.read(
     conf.options.projectRoot,
@@ -96,7 +96,6 @@ export const command: CliCommandFn = async (
 
   if (conf.values.view === 'gui') {
     await startGUI({
-      assetsDir,
       conf,
       startingRoute:
         '/explore?query=' +
@@ -106,8 +105,6 @@ export const command: CliCommandFn = async (
   }
 
   return {
-    /* c8 ignore next */
-    defaultView: !process.stdout.isTTY ? 'json' : 'human',
     result: {
       importers,
       edges,

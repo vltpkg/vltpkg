@@ -104,12 +104,15 @@ t.test('human-readable-output', async t => {
   }
   graph.extraneousDependencies.add(edge)
   t.matchSnapshot(
-    humanReadableOutput({
-      edges: [...graph.edges],
-      highlightSelection: false,
-      importers: graph.importers,
-      nodes: [...graph.nodes.values()],
-    }),
+    humanReadableOutput(
+      {
+        edges: [...graph.edges],
+        highlightSelection: false,
+        importers: graph.importers,
+        nodes: [...graph.nodes.values()],
+      },
+      { colors: undefined },
+    ),
     'should print human readable output',
   )
 })
@@ -117,13 +120,15 @@ t.test('human-readable-output', async t => {
 t.test('actual graph', async t => {
   const graph = loadActualGraph(t)
   t.matchSnapshot(
-    humanReadableOutput({
-      colors,
-      edges: [...graph.edges],
-      highlightSelection: false,
-      importers: graph.importers,
-      nodes: [...graph.nodes.values()],
-    }),
+    humanReadableOutput(
+      {
+        edges: [...graph.edges],
+        highlightSelection: false,
+        importers: graph.importers,
+        nodes: [...graph.nodes.values()],
+      },
+      { colors },
+    ),
     'should print from an actual loaded graph',
   )
 
@@ -135,26 +140,30 @@ t.test('actual graph', async t => {
       )!,
     ]
     t.matchSnapshot(
-      humanReadableOutput({
-        colors,
-        edges,
-        highlightSelection: true,
-        importers: graph.importers,
-        nodes,
-      }),
+      humanReadableOutput(
+        {
+          edges,
+          highlightSelection: true,
+          importers: graph.importers,
+          nodes,
+        },
+        { colors },
+      ),
       'should print selected packages',
     )
   })
 
   t.test('colors', async t => {
     t.matchSnapshot(
-      humanReadableOutput({
-        colors: chalk,
-        edges: [...graph.edges],
-        highlightSelection: false,
-        importers: graph.importers,
-        nodes: [...graph.nodes.values()],
-      }),
+      humanReadableOutput(
+        {
+          edges: [...graph.edges],
+          highlightSelection: false,
+          importers: graph.importers,
+          nodes: [...graph.nodes.values()],
+        },
+        { colors: chalk },
+      ),
       'should use colors',
     )
   })
@@ -193,13 +202,15 @@ t.test('workspaces', async t => {
     monorepo,
   })
   t.matchSnapshot(
-    humanReadableOutput({
-      colors,
-      edges: [...graph.edges],
-      highlightSelection: false,
-      importers: graph.importers,
-      nodes: [...graph.nodes.values()],
-    }),
+    humanReadableOutput(
+      {
+        edges: [...graph.edges],
+        highlightSelection: false,
+        importers: graph.importers,
+        nodes: [...graph.nodes.values()],
+      },
+      { colors },
+    ),
     'should print human readable workspaces output',
   )
 })
@@ -243,13 +254,15 @@ t.test('cycle', async t => {
     version: '1.0.0',
   })
   t.matchSnapshot(
-    humanReadableOutput({
-      colors,
-      edges: [...graph.edges],
-      highlightSelection: false,
-      importers: graph.importers,
-      nodes: [...graph.nodes.values()],
-    }),
+    humanReadableOutput(
+      {
+        edges: [...graph.edges],
+        highlightSelection: false,
+        importers: graph.importers,
+        nodes: [...graph.nodes.values()],
+      },
+      { colors },
+    ),
     'should print cycle human readable output',
   )
 })
@@ -261,13 +274,15 @@ t.test('nameless package', async t => {
     mainManifest: {},
   })
   t.matchSnapshot(
-    humanReadableOutput({
-      colors,
-      edges: [...graph.edges],
-      highlightSelection: false,
-      importers: graph.importers,
-      nodes: [...graph.nodes.values()],
-    }),
+    humanReadableOutput(
+      {
+        edges: [...graph.edges],
+        highlightSelection: false,
+        importers: graph.importers,
+        nodes: [...graph.nodes.values()],
+      },
+      { colors },
+    ),
     'should fallback to printing package id if name is missing',
   )
 })
@@ -291,13 +306,15 @@ t.test('versionless package', async t => {
     { name: 'a' },
   )
   t.matchSnapshot(
-    humanReadableOutput({
-      colors,
-      edges: [...graph.edges],
-      highlightSelection: false,
-      importers: graph.importers,
-      nodes: [...graph.nodes.values()],
-    }),
+    humanReadableOutput(
+      {
+        edges: [...graph.edges],
+        highlightSelection: false,
+        importers: graph.importers,
+        nodes: [...graph.nodes.values()],
+      },
+      { colors },
+    ),
     'should skip printing version number',
   )
 })
@@ -321,13 +338,15 @@ t.test('aliased package', async t => {
     { name: '@myscope/foo', version: '1.0.0' },
   )
   t.matchSnapshot(
-    humanReadableOutput({
-      colors,
-      edges: [...graph.edges],
-      highlightSelection: false,
-      importers: graph.importers,
-      nodes: [...graph.nodes.values()],
-    }),
+    humanReadableOutput(
+      {
+        edges: [...graph.edges],
+        highlightSelection: false,
+        importers: graph.importers,
+        nodes: [...graph.nodes.values()],
+      },
+      { colors },
+    ),
     'should print both edge and node names',
   )
 })
@@ -350,25 +369,29 @@ t.test('missing optional', async t => {
     Spec.parse('a', '^1.0.0'),
   )
   t.matchSnapshot(
-    humanReadableOutput({
-      colors,
-      edges: [...graph.edges],
-      highlightSelection: false,
-      importers: graph.importers,
-      nodes: [...graph.nodes.values()],
-    }),
+    humanReadableOutput(
+      {
+        edges: [...graph.edges],
+        highlightSelection: false,
+        importers: graph.importers,
+        nodes: [...graph.nodes.values()],
+      },
+      { colors },
+    ),
     'should print missing optional package',
   )
 
   t.test('colors', async t => {
     t.matchSnapshot(
-      humanReadableOutput({
-        colors: chalk,
-        edges: [...graph.edges],
-        highlightSelection: false,
-        importers: graph.importers,
-        nodes: [...graph.nodes.values()],
-      }),
+      humanReadableOutput(
+        {
+          edges: [...graph.edges],
+          highlightSelection: false,
+          importers: graph.importers,
+          nodes: [...graph.nodes.values()],
+        },
+        { colors: chalk },
+      ),
       'should use colors',
     )
   })

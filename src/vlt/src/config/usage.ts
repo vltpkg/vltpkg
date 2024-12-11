@@ -1,5 +1,5 @@
 import { jack } from 'jackspeak'
-import { type CliCommandUsage } from '../types.js'
+import { type CommandUsage } from '../types.js'
 import { commandAliases } from './definition.js'
 
 const toArr = <T>(v: T | T[]): T[] => (Array.isArray(v) ? v : [v])
@@ -26,7 +26,7 @@ export const commandUsage = ({
   >
   examples?: Record<string, { description: string }>
   options?: Record<string, { value?: string; description: string }>
-}): ReturnType<CliCommandUsage> => {
+}): ReturnType<CommandUsage> => {
   const vlt = (s?: string) => join([`vlt`, command, s])
 
   const joinUsage = (usages?: string | string[]) =>

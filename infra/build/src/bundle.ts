@@ -20,7 +20,7 @@ import { readFile } from 'node:fs/promises'
 import * as esbuild from 'esbuild'
 import j from 'jscodeshift'
 import { findPackageJson } from 'package-json-from-dist'
-import { builtinModules } from 'node:module'
+import { builtinModules, createRequire } from 'node:module'
 import assert from 'node:assert'
 import { Bins, Paths } from './index.js'
 import { randomBytes } from 'node:crypto'
@@ -449,6 +449,7 @@ const bundle = async (o: {
       [EXT.slice(1)]: globals.toString(),
     },
     define: {
+      'process.env.NODE_ENV': '"production"',
       'process.env._VLT_DEV_LIVE_RELOAD': 'false',
       // The import.meta shims are then globally replaced with our newly defined values
       ...Object.values(IMPORT_META).reduce(
@@ -594,6 +595,15 @@ export default async ({
       recursive: true,
     })
   }
+
+  // yoga.wasm is loaded at runtime by `ink` so we need to copy
+  // that file to the build directory
+  cpSync(
+    createRequire(
+      createRequire(join(Paths.CLI, 'node_modules')).resolve('ink'),
+    ).resolve('yoga-wasm-web/dist/yoga.wasm'),
+    join(outdir, 'yoga.wasm'),
+  )
 
   const { inputs, outputs } = files.reduce<esbuild.Metafile>(
     (a, m) => ({
