@@ -25,6 +25,7 @@ const commands = readdirSync(
 const PACKAGES = 'packages'
 
 export default defineConfig({
+  experimental: { contentLayer: true },
   site: 'https://docs.vlt.sh',
   vite: {
     build: {
@@ -125,5 +126,5 @@ export default defineConfig({
     tailwind({ applyBaseStyles: false }),
   ],
   output: 'static',
-  adapter: vercelStatic(),
+  adapter: vercelStatic({}),
 })

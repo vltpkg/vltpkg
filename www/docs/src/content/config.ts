@@ -34,7 +34,7 @@ const jackLoader = (
           extensions: ['.js'],
           getEntryInfo: async ({ fileUrl }) => {
             const jack = await import(
-              /* @vite-ignore */ fileUrl
+              /* @vite-ignore */ fileURLToPath(fileUrl)
             ).then(js => getJack(js))
             return md.getEntryInfo({
               contents: jack.usageMarkdown(),
