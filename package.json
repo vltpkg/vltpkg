@@ -1,6 +1,8 @@
 {
   "name": "@vltpkg/vltpkg",
   "version": "0.0.0-0",
+  "type": "module",
+  "packageManager": "pnpm@9.12.0",
   "private": true,
   "dependencies": {
     "@vltpkg/cli": "workspace:*"
@@ -46,6 +48,5 @@
     "vlt": "./scripts/local-cli vlt",
     "vlx": "./scripts/local-cli vlx"
   },
-  "prettier": "./.prettierrc.js",
-  "type": "module"
+  "prettier": "./.prettierrc.js"
 }
