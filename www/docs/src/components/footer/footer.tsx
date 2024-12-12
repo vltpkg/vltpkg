@@ -1,22 +1,15 @@
 import { type Props } from '@astrojs/starlight/props'
 import config from 'virtual:starlight/user-config'
-import ThemeSelect, {
-  type Theme,
-  getPreferredColorScheme,
-} from '../theme-select/theme-select'
-import { useState } from 'react'
+import ThemeSelect from '@/components/theme-select/theme-select'
+import { useStore } from '@/state'
 
 const Footer = (_props: Props) => {
-  const [currentTheme, setCurrentTheme] = useState<Theme>(
-    getPreferredColorScheme(),
-  )
-
   return (
     <footer className="border-t-[1px]">
       {/* footer links */}
       <div className="mx-auto flex flex-col w-full max-w-screen-xl gap-x-4 gap-y-4 px-6 py-6">
         <div className="flex flex-row w-full items-center justify-between">
-          <FooterSocials currentTheme={currentTheme} />
+          <FooterSocials />
           <div className="flex items-center gap-2">
             <a
               href="https://www.vlt.sh/join"
@@ -25,7 +18,7 @@ const Footer = (_props: Props) => {
                 Join waitlist
               </span>
             </a>
-            <ThemeSelect setCurrentTheme={setCurrentTheme} />
+            <ThemeSelect />
           </div>
         </div>
 
@@ -54,7 +47,10 @@ const Footer = (_props: Props) => {
   )
 }
 
-const FooterSocials = ({ currentTheme }: { currentTheme: Theme }) => {
+const FooterSocials = () => {
+  const { getResolvedTheme } = useStore()
+  const theme = getResolvedTheme()
+
   const socialLinks = Object.entries(config.social ?? {}).map(
     ([platform, value]) => ({
       platform,
@@ -70,10 +66,7 @@ const FooterSocials = ({ currentTheme }: { currentTheme: Theme }) => {
             src={`/icons/${link.platform}.svg`}
             className="h-5"
             style={{
-              filter:
-                currentTheme === 'dark' ? 'invert(0)'
-                : currentTheme === 'light' ? 'invert(1)'
-                : '',
+              filter: theme === 'dark' ? 'invert(0)' : 'invert(1)',
             }}
           />
         </a>

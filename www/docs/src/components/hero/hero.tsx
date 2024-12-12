@@ -1,6 +1,14 @@
 import { type Props } from '@astrojs/starlight/props'
 import CliInstall from '@/components/cli-install/cli-install'
 import { ArrowUpRight } from 'lucide-react'
+import clsx from 'clsx'
+import { useStore } from '@/state'
+import {
+  WorkspacesCard,
+  VSRCard,
+  StartedCard,
+  ConfigCard,
+} from './cards'
 
 const Hero = ({ entry }: Props) => {
   const { data } = entry
@@ -22,22 +30,34 @@ const Introduction = ({
   title: string
   tagline: string
 }) => {
+  const { getResolvedTheme } = useStore()
+  const theme = getResolvedTheme()
+
   return (
     <section className="py-16">
+      {/* background image */}
+      <div
+        className={clsx('absolute h-[848px] inset-0 -z-10', {
+          'light-wave': theme === 'light',
+          'dark-wave': theme === 'dark',
+        })}
+      />
+
       <div className="flex flex-col items-center justify-center gap-4 text-center">
         <h1 className="text-5xl">{title}</h1>
-        <p className="w-full md:w-3/5 text-md text-muted-foreground">
+        <p className="text-md max-w-md text-muted-foreground">
           {tagline}
         </p>
       </div>
-      <div className="relative flex items-center justify-center py-8">
+      <div className="max-w-lg mx-auto relative flex items-center justify-center py-8">
         <CliInstall />
       </div>
+
       <div className="flex items-center justify-center gap-4">
         <a
           href="/cli"
           role="link"
-          className="no-underline text-background cursor-pointer rounded-sm bg-foreground px-8 py-2 hover:bg-foreground/90 transition-all"
+          className="no-underline text-white dark:text-black cursor-pointer rounded-sm bg-foreground px-8 py-2 hover:bg-foreground/90 transition-all"
           target="_blank">
           Quick Start
         </a>
@@ -45,7 +65,7 @@ const Introduction = ({
           href="https://www.vlt.sh/serverless-registry"
           target="_blank"
           role="link"
-          className="flex items-center gap-1 no-underline text-foreground cursor-pointer rounded-sm bg-muted-foreground/10 border-muted-foreground/25 border-[1px] px-8 py-2 hover:bg-muted-foreground/20 transition-all">
+          className="flex items-center gap-1 no-underline text-foreground cursor-pointer rounded-sm bg-white dark:bg-black border-muted-foreground/25 border-[1px] px-8 py-2 hover:bg-muted-foreground/20 transition-all">
           Serverless Registry
           <ArrowUpRight size={20} />
         </a>
@@ -56,60 +76,39 @@ const Introduction = ({
 
 const Workspaces = () => {
   return (
-    <section className="flex flex-col py-16 gap-8 mt-32 border-t-[1px] border-muted-foreground/10">
-      <div className="flex flex-col">
+    <section className="flex flex-col py-4 gap-8">
+      <div className="absolute h-[1px] left-0 right-0 w-full bg-muted-foreground/10" />
+
+      <div className="mt-24 mb-10 flex flex-col text-center">
         <p className="text-muted-foreground/50">
           Get started in minutes
         </p>
-        <h2 className="text-2xl">The vlt guides</h2>
+        <h2 className="text-4xl">Guides and Tutorials</h2>
       </div>
-      <div className="flex flex-col md:flex-row flex-wrap gap-3 justify-between">
-        <Card
+
+      <div className="flex flex-col items-center md:flex-row flex-wrap gap-10 md:gap-3 justify-between">
+        <StartedCard
           title="Getting Started"
           subtitle="Quick Start"
           link="/cli"
         />
-        <Card
+        <ConfigCard
           title="Configuration"
           subtitle="Personalize vlt"
           link="/cli/configuring"
         />
-        <Card
+        <VSRCard
           title="Serverless Registry"
           subtitle="VSR"
           link="https://www.vlt.sh/serverless-registry"
         />
-        <Card
-          title="The packages of vlt"
+        <WorkspacesCard
+          title="Packages of vlt"
           subtitle="Workspaces"
-          link="http://localhost:4321/packages/"
+          link="/packages/"
         />
       </div>
     </section>
-  )
-}
-
-const Card = ({
-  title,
-  subtitle,
-  link,
-}: {
-  title: string
-  subtitle: string
-  link: string
-}) => {
-  return (
-    <a
-      href={link}
-      className="no-underline group hover:-translate-y-1 transition-all relative flex flex-col border-[1px] border-muted-foreground/25 h-80 w-full md:w-64 px-3 py-3 rounded-sm justify-end transition-all hover:border-muted-foreground cursor-pointer">
-      {/* corner */}
-      <div className="absolute -top-[1px] flex items-center justify-center -right-[1px] border-[1px] border-muted-foreground/25 h-[45px] w-[45px] bg-white dark:bg-black group-hover:border-muted-foreground transition-colors" />
-      <div className="absolute top-0 h-full ml-[10px] border-r-[1px] border-muted-foreground/25 group-hover:border-muted-foreground transition-colors" />
-      <div className="flex flex-col ml-[10px] pl-4">
-        <p className="text-xs text-muted-foreground/50">{subtitle}</p>
-        <h3 className="text-lg text-foreground">{title}</h3>
-      </div>
-    </a>
   )
 }
 

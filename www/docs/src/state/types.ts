@@ -4,4 +4,6 @@ export type State = {
 
 export type Action = {
   updateTheme: (theme: State['theme']) => void
+  getPreferredColorScheme: () => 'light' | 'dark'
+  getResolvedTheme: () => 'light' | 'dark'
 }

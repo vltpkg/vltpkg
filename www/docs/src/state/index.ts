@@ -1,18 +1,36 @@
 import { create } from 'zustand'
-import type { State, Action } from './types'
+import { type State, type Action } from './types'
 
 const initialState: State = {
   theme: (localStorage.getItem('starlight-theme') ||
     '{}') as State['theme'],
 }
 
-export const useStore = create<Action & State>((set, _get) => {
+export const useStore = create<Action & State>((set, get) => {
   const store = {
     ...initialState,
+
     updateTheme: (theme: State['theme']) => {
       set(() => ({ theme }))
       localStorage.setItem('starlight-theme', theme)
     },
+
+    getPreferredColorScheme: () => {
+      return (
+          window.matchMedia('(prefers-color-scheme: light)').matches
+        ) ?
+          'light'
+        : 'dark'
+    },
+
+    getResolvedTheme: (): 'light' | 'dark' => {
+      const { theme } = get()
+      if (theme === 'auto') {
+        return store.getPreferredColorScheme()
+      }
+      return theme
+    },
   }
+
   return store
 })

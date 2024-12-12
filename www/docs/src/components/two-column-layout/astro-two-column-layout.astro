@@ -1,14 +1,17 @@
 ---
 import type { Props } from '@astrojs/starlight/props'
 import MobileSidebar from '@/components/page-sidebar/mobile-sidebar.tsx'
+
+const isHero = Astro.url.pathname === '/'
 ---
 
-<div class="flex h-full flex-col lg:flex-row w-full">
+<div
+  class="flex h-full flex-col lg:flex-row w-full md:justify-between">
   {
     Astro.props.toc && (
       <>
         {/* desktop */}
-        <div class="hidden lg:flex relative w-1/3 order-2">
+        <div class="hidden lg:flex relative order-2">
           <slot name="right-sidebar" />
         </div>
 
@@ -22,7 +25,7 @@ import MobileSidebar from '@/components/page-sidebar/mobile-sidebar.tsx'
       </>
     )
   }
-  <div class="w-full order-1">
+  <div class={`${!isHero ? 'max-w-[75ch]' : 'w-full'} order-1`}>
     <slot />
   </div>
 </div>

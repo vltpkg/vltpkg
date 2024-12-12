@@ -47,7 +47,7 @@ const CliInstall = () => {
   }, [])
 
   return (
-    <div className="border-[1px] w-full md:w-[600px] h-[300px] px-3 py-3 rounded-sm dark:bg-black z-[10]">
+    <div className="border-[1px] w-full md:w-[600px] h-[300px] px-3 py-3 rounded-sm backdrop-blur-sm bg-white/50 dark:bg-black/50 z-[10]">
       <div className="flex gap-x-[0.5rem]">
         {terminalButtons.map((button, idx) => (
           <div

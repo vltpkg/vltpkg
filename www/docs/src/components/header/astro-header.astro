@@ -1,9 +1,33 @@
 ---
-import Header from './header.tsx'
 import type { Props } from '@astrojs/starlight/props'
 import Search from '@astrojs/starlight/components/Search.astro'
+import Logo from '@/components/header/logo.tsx'
+import MobileSidebar from '@/components/sidebar/mobile-sidebar.tsx'
+import LinearMenu from '@/components/header/linear-menu'
+
+const { sidebar } = Astro.props
 ---
 
-<Header client:load {...{ ...Astro.props, labels: undefined } as any}>
-  <Search {...Astro.props} />
-</Header>
+<nav
+  class="mb-4 flex w-full items-center justify-between max-w-screen-xl mx-auto justify-between gap-x-4 px-6 py-6">
+  <a href="https://www.vlt.sh/" class="h-[43px] w-[94px]">
+    <Logo
+      client:only="react"
+      {...{ ...Astro.props, labels: undefined } as any}
+    />
+  </a>
+
+  <div
+    class="flex items-center justify-items-end justify-end w-full gap-2">
+    <MobileSidebar
+      client:load
+      sidebar={sidebar}
+      {...{ ...Astro.props, labels: undefined } as any}
+    />
+    <LinearMenu
+      client:only="react"
+      {...{ ...Astro.props, labels: undefined } as any}
+    />
+    <Search {...Astro.props} />
+  </div>
+</nav>

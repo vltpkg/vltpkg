@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { AlignLeft } from 'lucide-react'
 import { type Props } from '@astrojs/starlight/props'
 
 const PageSidebar = ({ toc }: Props) => {
@@ -56,7 +57,7 @@ const PageSidebar = ({ toc }: Props) => {
 
   const renderItems = (items: typeof anchors) =>
     items.map((item, idx) => (
-      <div key={idx} className="flex flex-col">
+      <div key={idx} className="flex flex-col gap-1">
         <Link href={item.slug} isActive={activeAnchor === item.slug}>
           {item.text}
         </Link>
@@ -66,8 +67,11 @@ const PageSidebar = ({ toc }: Props) => {
 
   return (
     <div className="hidden md:flex flex-col items-start sticky top-0 pt-8 h-fit md:w-[300px]">
-      <h3 className="text-sm font-bold mb-3">On this page</h3>
-      <div className="flex flex-col gap-2">
+      <h3 className="flex items-center gap-2 text-sm font-bold mb-3">
+        <AlignLeft size={16} />
+        On this page
+      </h3>
+      <div className="flex flex-col gap-2 -ml-2">
         {renderItems(anchors)}
       </div>
     </div>

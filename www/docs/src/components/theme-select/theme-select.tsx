@@ -1,24 +1,24 @@
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-import { useStore } from '@/state'
 import { useEffect } from 'react'
+import { useStore } from '@/state'
+import { type State } from '@/state/types'
+import {
+  SunMedium,
+  Moon,
+  LaptopMinimal,
+  type LucideIcon,
+} from 'lucide-react'
+import clsx from 'clsx'
 
-const getPreferredColorScheme = (): 'light' | 'dark' =>
-  window.matchMedia('(prefers-color-scheme: light)').matches ?
-    'light'
-  : 'dark'
+interface Control {
+  ariaLabel: string
+  icon: LucideIcon
+  name: State['theme']
+}
 
-const ThemeSelect = () => {
-  const { theme, updateTheme } = useStore()
+const ThemeSwitcher = () => {
+  const { theme, getPreferredColorScheme, updateTheme } = useStore()
 
-  const onThemeChange = (
-    selectedTheme: 'auto' | 'light' | 'dark',
-  ) => {
+  const onThemeChange = (selectedTheme: State['theme']) => {
     const effectiveTheme =
       selectedTheme === 'auto' ?
         getPreferredColorScheme()
@@ -47,21 +47,49 @@ const ThemeSelect = () => {
     onThemeChange(theme)
   }, [theme])
 
+  const controls: Control[] = [
+    {
+      ariaLabel: 'system',
+      icon: LaptopMinimal,
+      name: 'auto',
+    },
+    {
+      ariaLabel: 'light mode',
+      icon: SunMedium,
+      name: 'light',
+    },
+    {
+      ariaLabel: 'dark mode',
+      icon: Moon,
+      name: 'dark',
+    },
+  ]
+
   return (
-    <Select
-      value={theme}
-      onValueChange={value =>
-        onThemeChange(value as 'auto' | 'light' | 'dark')
-      }>
-      <SelectTrigger className="w-fit">
-        <SelectValue placeholder="Theme" />
-      </SelectTrigger>
-      <SelectContent>
-        <SelectItem value="light">Light</SelectItem>
-        <SelectItem value="dark">Dark</SelectItem>
-      </SelectContent>
-    </Select>
+    <div className="flex flex-row items-center justify-center w-[114px] h-[38px] border border-neutral-300 dark:border-neutral-800 rounded-full">
+      {controls.map((control, idx) => (
+        <div
+          role="switch"
+          key={idx}
+          aria-label={control.ariaLabel}
+          onClick={() => onThemeChange(control.name)}
+          className={clsx(
+            'cursor-pointer flex items-center justify-center rounded-full aspect-square h-[38px] w-[38px] z-[10]',
+            {
+              'border border-neutral-300 dark:border-neutral-800':
+                theme === control.name,
+            },
+          )}>
+          <control.icon
+            size={20}
+            className={clsx('text-muted-foreground', {
+              'text-black dark:text-white': theme === control.name,
+            })}
+          />
+        </div>
+      ))}
+    </div>
   )
 }
 
-export default ThemeSelect
+export default ThemeSwitcher

@@ -53,7 +53,7 @@ const AppSidebarSublist = ({
   return (
     <div
       ref={sidebarRef}
-      className={`flex flex-col mt-8 ml-12 gap-2 h-full pr-3 overflow-y-auto ${className}`}>
+      className={`flex flex-col mt-8 gap-2 h-full overflow-y-auto ${className}`}>
       {sidebar.map((entry, idx) => (
         <React.Fragment key={idx}>
           {entry.type === 'group' ?
