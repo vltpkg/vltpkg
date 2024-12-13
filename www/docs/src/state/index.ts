@@ -2,8 +2,9 @@ import { create } from 'zustand'
 import { type State, type Action } from './types'
 
 const initialState: State = {
-  theme: (localStorage.getItem('starlight-theme') ||
-    '{}') as State['theme'],
+  theme:
+    (localStorage.getItem('starlight-theme') as State['theme']) ||
+    'auto',
 }
 
 export const useStore = create<Action & State>((set, get) => {
