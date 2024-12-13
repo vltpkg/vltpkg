@@ -30,6 +30,12 @@ const inVltStoreTrue = () => true
 const isOptionalFalse = () => false
 const isOptionalTrue = () => true
 
+const node = (props: Record<string, any>) => ({
+  ...props,
+  resolvedLocation: (scurry: PathScurry) =>
+    scurry.cwd.resolve(props.location).fullpath(),
+})
+
 const diff = {
   to: {
     removeNode: () => {},
@@ -44,7 +50,7 @@ const diff = {
         isOptional: isOptionalFalse,
       },
       // this one gets added
-      {
+      node({
         id: joinDepIDTuple(['registry', '', 'foo@1.2.3']),
         inVltStore: inVltStoreTrue,
         location:
@@ -53,9 +59,9 @@ const diff = {
           '/node_modules/foo',
         name: 'foo',
         isOptional: isOptionalFalse,
-      },
+      }),
       // this one too, but has a manifest
-      {
+      node({
         id: joinDepIDTuple(['registry', '', 'bar@1.2.3']),
         inVltStore: inVltStoreTrue,
         location:
@@ -65,9 +71,9 @@ const diff = {
         name: 'bar',
         manifest: { name: 'bar', version: '1.2.3' },
         isOptional: isOptionalFalse,
-      },
+      }),
       // this one fails, but it's optional, so it's fine
-      {
+      node({
         id: joinDepIDTuple(['registry', '', 'failer@1.2.3']),
         inVltStore: inVltStoreTrue,
         location:
@@ -78,9 +84,9 @@ const diff = {
         manifest: { name: 'failer', version: '1.2.3' },
         isOptional: isOptionalTrue,
         edgesIn: new Set(),
-      },
+      }),
       // this one is incompatible and it's optional, so skip it
-      {
+      node({
         id: joinDepIDTuple([
           'registry',
           '',
@@ -103,9 +109,9 @@ const diff = {
         },
         isOptional: isOptionalTrue,
         edgesIn: new Set(),
-      },
+      }),
       // this one is deprecated and it's optional, so skip it
-      {
+      node({
         id: joinDepIDTuple([
           'registry',
           '',
@@ -128,7 +134,7 @@ const diff = {
         },
         isOptional: isOptionalTrue,
         edgesIn: new Set(),
-      },
+      }),
     ]),
   },
 } as unknown as Diff

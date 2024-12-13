@@ -26,16 +26,15 @@ await writeFile(
     },
     null,
     2,
-  ),
+  ) + '\n',
 )
 
 /**
  * @type {Partial<
  * import('typedoc').TypeDocOptions &
  * import('typedoc-plugin-markdown').PluginOptions &
- * { remarkPlugins: string[] } &
- * { frontmatterGlobals: Record<string, boolean> }>}
- * TODO: PR to typedoc-plugin-frontmatter and typedoc-plugin-remark to export PluginOptions
+ * import('typedoc-plugin-frontmatter').PluginOptions &
+ * import('typedoc-plugin-remark').PluginOptions>}
  */
 export default {
   entryPoints,

@@ -1,33 +1,20 @@
 import { defineConfig } from 'astro/config'
-import { spawn } from 'child_process'
 import starlight from '@astrojs/starlight'
 import vercelStatic from '@astrojs/vercel/static'
 import react from '@astrojs/react'
 import tailwind from '@astrojs/tailwind'
-import { existsSync, readdirSync } from 'fs'
-import { basename, relative, resolve } from 'path'
-import { fileURLToPath } from 'url'
-import { resolve as metaResolve } from 'import-meta-resolve'
+import * as TypedocPlugin from './src/plugins/typedoc'
+import * as CliPlugin from './src/plugins/cli'
 
-const commands = readdirSync(
-  fileURLToPath(metaResolve('@vltpkg/cli/commands', import.meta.url)),
-)
-  .filter(c => c.endsWith('.js'))
-  .map(c => basename(c, '.js'))
-
-const PACKAGES = 'packages'
+if (process.env.CI && process.env.RUNNER_OS === 'Windows') {
+  console.log(
+    'Skipping astro in CI on Windows because it only needs to be run for linting but not tests',
+  )
+  process.exit(0)
+}
 
 export default defineConfig({
   site: 'https://docs.vlt.sh',
-  vite: {
-    build: {
-      rollupOptions: {
-        // This is necessary to treeshake the imports @vltpkg/cli commands
-        // since we only use the `usage`
-        treeshake: 'smallest',
-      },
-    },
-  },
   integrations: [
     starlight({
       title: 'vlt /vōlt/',
@@ -62,69 +49,16 @@ export default defineConfig({
         minHeadingLevel: 2,
         maxHeadingLevel: 5,
       },
-      plugins: [
-        {
-          name: 'typedoc',
-          hooks: {
-            async setup({ logger }) {
-              if (process.env.NODE_ENV === 'test') {
-                logger.warn(`skipping typedoc due to NODE_ENV=test`)
-                return
-              }
-              const dir = resolve(
-                import.meta.dirname,
-                'src/content/docs',
-                PACKAGES,
-              )
-              if (existsSync(dir)) {
-                logger.warn(
-                  `using cached typedoc markdown, delete ${relative(process.cwd(), dir)} to rebuild`,
-                )
-                return
-              }
-              await new Promise<void>((res, rej) => {
-                const proc = spawn('./node_modules/.bin/typedoc', [])
-                proc.stdout
-                  .setEncoding('utf8')
-                  .on('data', (data: string) =>
-                    logger.info(data.trim()),
-                  )
-                proc.stderr
-                  .setEncoding('utf8')
-                  .on('data', (data: string) =>
-                    logger.info(data.trim()),
-                  )
-                proc
-                  .on('close', code =>
-                    code === 0 ? res() : (
-                      rej(new Error(`typedoc failed`))
-                    ),
-                  )
-                  .on('error', rej)
-              })
-            },
-          },
-        },
-      ],
+      plugins: [TypedocPlugin.plugin, CliPlugin.plugin],
       sidebar: [
         {
           label: 'CLI',
-          items: [
-            { label: 'Getting Started', link: 'cli' },
-            { label: 'Configuring', link: 'cli/configuring' },
-            {
-              label: 'Commands',
-              items: commands.map(c => ({
-                label: c,
-                link: `cli/commands/${c}`,
-              })),
-            },
-          ],
+          autogenerate: { directory: CliPlugin.directory },
         },
         {
           label: 'Workspaces',
           collapsed: true,
-          autogenerate: { directory: PACKAGES },
+          autogenerate: { directory: TypedocPlugin.directory },
         },
         {
           label: 'Serverless Registry',
@@ -136,5 +70,5 @@ export default defineConfig({
     tailwind({ applyBaseStyles: false }),
   ],
   output: 'static',
-  adapter: vercelStatic(),
+  adapter: vercelStatic({}),
 })

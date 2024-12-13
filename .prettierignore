@@ -40,3 +40,9 @@
 /www/*/tap-snapshots
 /www/*/test/**/fixtures/**
 !/www/*/test/**/fixtures/*.ts
+
+/www/docs/src/content/docs/packages/
+/www/docs/src/content/docs/cli/commands/
+/www/docs/src/content/docs/cli/commands.md
+/www/docs/src/content/docs/cli/configuring.md
+/www/docs/tsconfig.typedoc-workspaces.json

@@ -4,12 +4,18 @@ import { resolve } from 'node:path'
 import { type PathBase, PathScurry } from 'path-scurry'
 import { PackageJson } from '@vltpkg/package-json'
 import { type Manifest } from '@vltpkg/types'
-import { inferTools, formatDashboardJson } from '../src/start-gui.js'
+import {
+  inferTools,
+  formatDashboardJson,
+  parseInstallOptions,
+} from '../src/start-gui.js'
 import {
   type ConfigOptions,
   type LoadedConfig,
 } from '../src/config/index.js'
 import { actualObject } from './fixtures/actual.js'
+import { type Dependency } from '@vltpkg/graph'
+import { joinDepIDTuple } from '@vltpkg/dep-id'
 
 t.cleanSnapshot = s =>
   s.replace(
@@ -61,6 +67,9 @@ t.test('starts gui data and server', async t => {
             importers: [],
           }
         },
+      },
+      asDependency(item: any): Dependency {
+        return item as Dependency
       },
     },
     '@vltpkg/package-json': {
@@ -230,60 +239,198 @@ t.test('e2e server test', async t => {
     import.meta.dirname,
     '../../../src/gui/dist',
   )
-  const log = t.capture(console, 'log').args
+  const log: string[] = []
+  let ilog = ''
 
   const { startGUI } = await t.mockImport('../src/start-gui.js', {
     opener: () => {},
-  })
-
-  const port = 8017
-  const options = {
-    projectRoot: resolve(dir, 'projects/my-project'),
-    packageJson: new PackageJson(),
-    scurry: new PathScurry(dir),
-  }
-  const server = await startGUI({
-    conf: {
-      options,
-      resetOptions(newProjectRoot: string) {
-        options.projectRoot = newProjectRoot
+    '../src/install.js': {
+      async install() {
+        ilog += 'install\n'
       },
-    } as LoadedConfig,
-    assetsDir,
-    port,
-    tmpDir: resolve(dir, 'assets-dir'),
-  })
-  t.teardown(() => server.close())
-
-  const tmp = resolve(dir, 'assets-dir/vltgui')
-  const files: string[] = []
-  for (const file of readdirSync(tmp)) {
-    files.push(file)
-  }
-  t.matchSnapshot(
-    readFileSync(resolve(tmp, 'graph.json'), 'utf8'),
-    'should write graph.json with data from the current project',
-  )
-  t.matchSnapshot(files, 'should copy all files to tmp directory')
-  t.matchSnapshot(log()[0], 'should log the server start message')
-
-  // tests a POST to /select-project and swap graph.json content
-  const req = await fetch(`http://localhost:${port}/select-project`, {
-    headers: {
-      'Content-Type': 'application/json',
     },
-    method: 'POST',
-    body: JSON.stringify({
-      path: resolve(dir, 'projects/other-project'),
-    }),
+    '../src/output.js': {
+      stderr: () => {},
+      stdout: (str: string) => {
+        log.push(str)
+      },
+    },
   })
-  const res = await req.json()
-  t.strictSame(res, 'ok', 'should respond with ok')
 
-  t.matchSnapshot(
-    readFileSync(resolve(tmp, 'graph.json'), 'utf8'),
-    'should update graph.json with new data',
-  )
+  await t.test('/select-project', async t => {
+    const port = 8017
+    const options = {
+      projectRoot: resolve(dir, 'projects/my-project'),
+      packageJson: new PackageJson(),
+      scurry: new PathScurry(dir),
+    }
+    const server = await startGUI({
+      conf: {
+        options,
+        resetOptions(newProjectRoot: string) {
+          options.projectRoot = newProjectRoot
+        },
+      } as LoadedConfig,
+      assetsDir,
+      port,
+      tmpDir: resolve(dir, 'assets-dir'),
+    })
+    t.teardown(() => server.close())
+
+    const tmp = resolve(dir, 'assets-dir/vltgui')
+    const files: string[] = []
+    for (const file of readdirSync(tmp)) {
+      files.push(file)
+    }
+    t.matchSnapshot(
+      readFileSync(resolve(tmp, 'graph.json'), 'utf8'),
+      'should write graph.json with data from the current project',
+    )
+    t.matchSnapshot(files, 'should copy all files to tmp directory')
+    t.matchSnapshot(log, 'should log the server start message')
+
+    // tests a POST to /select-project and swap graph.json content
+    const reqSelectProject = await fetch(
+      `http://localhost:${port}/select-project`,
+      {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        method: 'POST',
+        body: JSON.stringify({
+          path: resolve(dir, 'projects/other-project'),
+        }),
+      },
+    )
+    const resSelectProject = await reqSelectProject.json()
+    t.strictSame(resSelectProject, 'ok', 'should respond with ok')
+
+    t.matchSnapshot(
+      readFileSync(resolve(tmp, 'graph.json'), 'utf8'),
+      'should update graph.json with new data',
+    )
+  })
+
+  await t.test('/install', async t => {
+    const port = 8018
+    const options = {
+      projectRoot: resolve(dir, 'projects/my-project'),
+      packageJson: new PackageJson(),
+      scurry: new PathScurry(dir),
+    }
+    const server = await startGUI({
+      conf: {
+        options,
+        resetOptions(newProjectRoot: string) {
+          options.projectRoot = newProjectRoot
+        },
+      } as LoadedConfig,
+      assetsDir,
+      port,
+      tmpDir: resolve(dir, 'assets-dir'),
+    })
+    t.teardown(() => server.close())
+
+    // tests a POST to /install
+    const reqInstall = await fetch(
+      `http://localhost:${port}/install`,
+      {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        method: 'POST',
+        body: JSON.stringify({
+          add: {
+            [joinDepIDTuple(['file', '.'])]: {
+              abbrev: { version: 'latest', type: 'prod' },
+            },
+          },
+        }),
+      },
+    )
+    const resInstall = await reqInstall.json()
+    t.matchSnapshot(ilog, 'should install dependencies')
+    t.strictSame(resInstall, 'ok', 'should respond with ok')
+
+    // missing add args
+    ilog = ''
+    const reqMissingArgs = await fetch(
+      `http://localhost:${port}/install`,
+      {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        method: 'POST',
+        body: JSON.stringify({}),
+      },
+    )
+    const resMissingArgs = await reqMissingArgs.text()
+    t.strictSame(ilog, '', 'should not install dependencies')
+    t.strictSame(
+      resMissingArgs,
+      'Bad request',
+      'should respond with bad request response',
+    )
+  })
+
+  await t.test('install error', async t => {
+    const port = 8019
+    const options = {
+      projectRoot: resolve(dir, 'projects/my-project'),
+      packageJson: new PackageJson(),
+      scurry: new PathScurry(dir),
+    }
+    // broken install
+    const { startGUI } = await t.mockImport('../src/start-gui.js', {
+      opener: () => {},
+      '../src/install.js': {
+        async install() {
+          throw new Error('ERR')
+        },
+      },
+      '../src/output.js': {
+        stderr: () => {},
+        stdout: () => {},
+      },
+    })
+    const server = await startGUI({
+      conf: {
+        options,
+        resetOptions(newProjectRoot: string) {
+          options.projectRoot = newProjectRoot
+        },
+      } as LoadedConfig,
+      assetsDir,
+      port,
+      tmpDir: resolve(dir, 'assets-dir'),
+    })
+    t.teardown(() => server.close())
+
+    const req = await fetch(`http://localhost:${port}/install`, {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      method: 'POST',
+      body: JSON.stringify({
+        add: {
+          [joinDepIDTuple(['file', '.'])]: {
+            abbrev: { version: 'latest', type: 'prod' },
+          },
+        },
+      }),
+    })
+    const res = await req.text()
+    t.strictSame(
+      req.status,
+      400,
+      'should respond with bad request status code',
+    )
+    t.match(
+      res,
+      /Install failed./,
+      'should respond with failed error info',
+    )
+  })
 })
 
 t.test('no data to be found', async t => {
@@ -333,5 +480,47 @@ t.test('no data to be found', async t => {
   t.matchSnapshot(
     files,
     'should not create json files if no data was found',
+  )
+})
+
+t.test('parseInstallArgs', async t => {
+  const rootDepID = joinDepIDTuple(['file', '.'])
+  const wsADepID = joinDepIDTuple(['workspace', 'packages/a'])
+  t.matchSnapshot(
+    parseInstallOptions({} as LoadedConfig, {
+      [rootDepID]: {},
+    }),
+    'no item added to root',
+  )
+
+  t.matchSnapshot(
+    parseInstallOptions({} as LoadedConfig, {
+      [rootDepID]: {
+        abbrev: { version: 'latest', type: 'dev' },
+      },
+    }),
+    'single item added to root',
+  )
+
+  t.matchSnapshot(
+    parseInstallOptions({} as LoadedConfig, {
+      [wsADepID]: {
+        abbrev: { version: 'latest', type: 'optional' },
+      },
+    }),
+    'single item added to workspace',
+  )
+
+  t.matchSnapshot(
+    parseInstallOptions({} as LoadedConfig, {
+      [rootDepID]: {
+        abbrev: { version: 'latest', type: 'dev' },
+      },
+      [wsADepID]: {
+        'english-days': { version: 'latest', type: 'prod' },
+        'simple-output': { version: 'latest', type: 'prod' },
+      },
+    }),
+    'multiple item added to root and workspace',
   )
 })
