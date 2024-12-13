@@ -2,6 +2,7 @@ import EventEmitter from 'events'
 
 type Events = {
   request: { url: URL | string }
+  graphStep: { step: Step; state: 'start' | 'stop' }
 }
 
 class OutputEmitter {
@@ -30,4 +31,11 @@ export const emitter = new OutputEmitter()
 
 export const logRequest = (url: URL | string) => {
   emitter.emit('request', { url })
+}
+
+export type Step = 'build' | 'actual' | 'reify'
+
+export const graphStep = (step: Step) => {
+  emitter.emit('graphStep', { step, state: 'start' })
+  return () => emitter.emit('graphStep', { step, state: 'stop' })
 }

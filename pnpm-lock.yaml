@@ -549,6 +549,9 @@ importers:
       '@vltpkg/fast-split':
         specifier: workspace:*
         version: link:../fast-split
+      '@vltpkg/output':
+        specifier: workspace:*
+        version: link:../output
       '@vltpkg/package-info':
         specifier: workspace:*
         version: link:../package-info

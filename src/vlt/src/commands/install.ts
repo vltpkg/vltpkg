@@ -7,9 +7,7 @@ import {
   type Views,
 } from '../types.js'
 import { commandUsage } from '../config/usage.js'
-import { emitter } from '@vltpkg/output'
-import React, { useState, useEffect } from 'react'
-import { render, Text } from 'ink'
+import humanReporter from './install/reporter.js'
 
 export const usage: CliCommandUsage = () =>
   commandUsage({
@@ -25,30 +23,7 @@ export const views = {
   },
   human: {
     renderer: 'ink',
-    fn: () => {
-      const Counter = () => {
-        const [counter, setCounter] = useState(0)
-
-        useEffect(() => {
-          const update = () => {
-            setCounter(p => p + 1)
-          }
-          emitter.on('request', update)
-          return () => {
-            console.log('unmounted!!!')
-            emitter.off('request', update)
-          }
-        }, [])
-
-        return React.createElement(
-          Text,
-          { color: 'green' },
-          `${counter} requests made`,
-        )
-      }
-
-      return render(React.createElement(Counter))
-    },
+    fn: humanReporter,
   },
 } satisfies Views
 
