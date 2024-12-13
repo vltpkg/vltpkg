@@ -1,6 +1,6 @@
 import EventEmitter from 'events'
 
-type Events = {
+export type Events = {
   request: { url: URL | string }
   graphStep: { step: Step; state: 'start' | 'stop' }
 }

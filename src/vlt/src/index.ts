@@ -60,17 +60,13 @@ const run = async () => {
   let cleanup: (...args: any) => void = () => {}
   if (view?.renderer === 'ink') {
     const ink = view.fn()
-    cleanup = () => {
-      console.log('cleaned up!!')
-      ink.cleanup()
-    }
+    cleanup = (e?: Error) => ink.unmount(e)
   }
 
   try {
     outputCommand(await command(vlt), vlt, view)
     cleanup()
   } catch (e) {
-    console.error({ e })
     cleanup(e)
     outputError(e, vlt, { usage: usage().usage() })
   }

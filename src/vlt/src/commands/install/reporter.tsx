@@ -1,22 +1,42 @@
-import { emitter } from '@vltpkg/output'
+import { emitter, type Events } from '@vltpkg/output'
 import React, { useState, useEffect } from 'react'
-import { render, Text } from 'ink'
+import { render, Text, Static } from 'ink'
 
 const App = () => {
   const [counter, setCounter] = useState(0)
+  const [step, setStep] = useState({
+    build: 'waiting',
+    actual: 'waiting',
+    reify: 'waiting',
+  })
 
   useEffect(() => {
-    const update = () => {
-      setCounter(p => p + 1)
-    }
+    const update = () => setCounter(p => p + 1)
     emitter.on('request', update)
-    return () => {
-      console.log('unmounted!!!')
-      emitter.off('request', update)
-    }
+    return () => emitter.off('request', update)
   }, [])
 
-  return <Text color="green">{counter} requests made</Text>
+  useEffect(() => {
+    const update = ({ step }: Events['graphStep']) =>
+      setStep(p => ({ ...p, [step]: }))
+    emitter.on('graphStep', update)
+    return () => emitter.off('graphStep', update)
+  }, [])
+
+  return (
+    <>
+      <Static>
+        <Text>
+          build
+
+
+
+          
+        </Text>
+      </Static>
+      <Text color="green">{counter} requests made</Text>
+    </>
+  )
 }
 
 export default () => render(<App />)
