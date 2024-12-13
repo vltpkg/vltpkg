@@ -17,6 +17,13 @@ export default defineConfig({
   site: 'https://docs.vlt.sh',
   integrations: [
     starlight({
+      expressiveCode: {
+        themes: ['aurora-x', 'catppuccin-latte'],
+        defaultProps: {
+          wrap: true,
+          preserveIndent: true,
+        },
+      },
       title: 'vlt /vōlt/',
       social: {
         linkedin: 'https://www.linkedin.com/company/vltpkg',
