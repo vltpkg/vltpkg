@@ -40,7 +40,7 @@ const PageTitle = ({
           </React.Fragment>
         ))}
       </div>
-      <h1 id="_top" className="text-2xl font-bold mt-8 mb-4">
+      <h1 id="_top" className="text-3xl font-bold mt-8 mb-4">
         {data.title}
       </h1>
     </div>
