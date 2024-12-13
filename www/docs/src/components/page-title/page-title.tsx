@@ -6,7 +6,7 @@ const PageTitle = ({
   entry,
   crumbs,
 }: Props & { crumbs: string[] }) => {
-  const { data } = entry
+  const data = entry.data
 
   const accumulatedPath = crumbs.reduce<string[]>(
     (acc, crumb, idx) => {

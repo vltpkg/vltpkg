@@ -11,8 +11,8 @@ import {
 } from './cards'
 
 const Hero = ({ entry }: Props) => {
-  const { data } = entry
-  const { title } = data
+  const data = entry.data
+  const title = data.title
   const tagline = data.hero?.tagline ?? ''
 
   return (
