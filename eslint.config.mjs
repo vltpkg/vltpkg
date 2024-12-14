@@ -5,6 +5,7 @@ import { readFileSync } from 'fs'
 import { resolve } from 'path'
 import jsdoc from 'eslint-plugin-jsdoc'
 import importPlugin from 'eslint-plugin-import'
+import { defaultConditionNames } from 'eslint-import-resolver-typescript'
 
 // 'error' to fix, or 'warn' to see
 const BE_EXTRA = process.env.LINT_SUPER_CONSISTENT ?? 'off'
@@ -39,7 +40,12 @@ export default tseslint.config(
     },
     settings: {
       'import/resolver': {
-        typescript: true,
+        typescript: {
+          conditionNames: [
+            '@vltpkg/source',
+            ...defaultConditionNames,
+          ],
+        },
         node: true,
       },
     },
