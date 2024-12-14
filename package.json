@@ -47,13 +47,5 @@
     "vlx": "./scripts/local-cli vlx"
   },
   "prettier": "./.prettierrc.js",
-  "type": "module",
-  "pnpm": {
-    "//vitest overrides": "https://github.com/withastro/astro/issues/12662#issuecomment-2523630127",
-    "overrides": {
-      "@vitest/coverage-v8>vite": "6.0.2",
-      "@vitest/mocker>vite": "6.0.2",
-      "vitest>vite": "6.0.2"
-    }
-  }
+  "type": "module"
 }

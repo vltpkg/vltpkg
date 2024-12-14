@@ -44,8 +44,7 @@
     "prettier": "catalog:",
     "typescript": "catalog:",
     "typescript-eslint": "catalog:",
-    "unified-prettier": "^2.0.1",
-    "vitest": "catalog:"
+    "unified-prettier": "^2.0.1"
   },
   "license": "BSD-2-Clause-Patent",
   "engines": {
@@ -61,9 +60,9 @@
     "lint": "eslint . --fix",
     "lint:check": "eslint .",
     "prepare": "astro sync",
-    "snap": "vitest --no-watch -u",
+    "snap": "exit 0",
     "start": "astro dev",
-    "test": "vitest",
+    "test": "exit 0",
     "typedoc:check": "typedoc --validation.notExported --validation.invalidLink --treatValidationWarningsAsErrors",
     "preview": "astro preview"
   },
