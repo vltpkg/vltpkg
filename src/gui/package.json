@@ -41,7 +41,7 @@
     "@types/node": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
-    "@vitejs/plugin-react": "^4.3.3",
+    "@vitejs/plugin-react": "^4.3.4",
     "@vltpkg/which": "workspace:*",
     "diffable-html": "^5.0.0",
     "esbuild": "catalog:",

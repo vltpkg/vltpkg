@@ -33,7 +33,7 @@
     "typedoc-plugin-frontmatter": "^1.1.2",
     "typedoc-plugin-markdown": "^4.3.2",
     "typedoc-plugin-remark": "^1.2.1",
-    "vite": "^5.4.11"
+    "vite": "^6.0.3"
   },
   "devDependencies": {
     "@eslint/js": "catalog:",
