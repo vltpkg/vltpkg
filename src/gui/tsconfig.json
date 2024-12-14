@@ -3,10 +3,9 @@
   "compilerOptions": {
     "incremental": false,
     "outDir": "dist",
-    "target": "esnext",
-    "lib": ["es6", "dom"],
+    "target": "ES2022",
+    "lib": ["ES2022", "dom"],
     "jsx": "preserve",
-    "noImplicitReturns": true,
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"]
