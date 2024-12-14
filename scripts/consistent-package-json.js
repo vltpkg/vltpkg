@@ -280,6 +280,7 @@ const fixTools = async ws => {
         ...ws.pj.tshy,
         selfLink: false,
         dialects: ['esm'],
+        sourceDialects: ['@vltpkg/source'],
         exports: sortObject(
           {
             ...ws.pj.tshy.exports,
@@ -289,7 +290,7 @@ const fixTools = async ws => {
           ['./package.json', '.'],
         ),
       },
-      ['selfLink', 'dialects'],
+      ['selfLink', 'dialects', 'sourceDialects'],
     )
     mergeJson(resolve(ws.dir, 'tsconfig.json'), d =>
       sortObject({
