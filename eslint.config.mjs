@@ -41,9 +41,15 @@ export default tseslint.config(
     settings: {
       'import/resolver': {
         typescript: {
+          alwaysTryTypes: true,
           conditionNames: [
             '@vltpkg/source',
             ...defaultConditionNames,
+          ],
+          project: [
+            'src/*/tsconfig.json',
+            'infra/*/tsconfig.json',
+            'www/*/tsconfig.json',
           ],
         },
         node: true,
@@ -232,14 +238,25 @@ export default tseslint.config(
   },
   {
     /**
-     * Front end code
+     * shadcn-ui specific patterns
      */
-    files: ['{src/gui,www/docs}/{src,test}/**/*.{tsx,ts}'],
+    files: ['{src/gui,www/docs}/src/components/ui/*.{tsx,ts}'],
     rules: {
-      // TODO: get eslint import resolver working with workspace tsconfig paths
-      'import/no-unresolved': 'off',
-      // shadcn-ui specific patterns
       '@typescript-eslint/no-empty-object-type': 'off',
+    },
+  },
+  {
+    /**
+     * Astro
+     */
+    files: ['www/docs/**/*.{ts,tsx}'],
+    rules: {
+      'import/no-unresolved': [
+        2,
+        {
+          ignore: ['astro:content'], // https://github.com/import-js/eslint-import-resolver-typescript/issues/261
+        },
+      ],
     },
   },
   {
