@@ -7,6 +7,9 @@
     "dialects": [
       "esm"
     ],
+    "sourceDialects": [
+      "@vltpkg/source"
+    ],
     "exports": {
       "./package.json": "./package.json",
       ".": "./src/index.ts"
@@ -45,6 +48,7 @@
     "./package.json": "./package.json",
     ".": {
       "import": {
+        "@vltpkg/source": "./src/index.ts",
         "types": "./dist/esm/index.d.ts",
         "default": "./dist/esm/index.js"
       }
