@@ -60,6 +60,7 @@ export const redirect = (
     ...options,
     redirections,
   }
+  // eslint-disable-next-line @typescript-eslint/no-deprecated -- thats why we are deleting it
   delete nextOptions.path
   redirections.add(String(nextURL))
   switch (response.statusCode) {
