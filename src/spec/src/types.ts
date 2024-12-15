@@ -126,6 +126,8 @@ export type SpecLikeBase = {
    * getter that retrieves the actual spec value to be used
    */
   final: SpecLikeBase
+
+  toString(): string
 }
 
 export type SpecLike<Type extends SpecLikeBase> = SpecLikeBase & {

@@ -48,4 +48,5 @@ export type NodeLike = {
   projectRoot: string
   dev: boolean
   optional: boolean
+  toString(): string
 }
