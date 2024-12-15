@@ -34,7 +34,7 @@
   "devDependencies": {
     "@eslint/js": "catalog:",
     "@testing-library/dom": "^10.4.0",
-    "@testing-library/react": "^16.0.1",
+    "@testing-library/react": "^16.1.0",
     "@types/diffable-html": "^5.0.2",
     "@types/eslint__js": "catalog:",
     "@types/jsdom": "^21.1.7",
@@ -47,9 +47,9 @@
     "esbuild": "catalog:",
     "eslint": "catalog:",
     "jsdom": "^25.0.1",
-    "msw": "^2.6.0",
+    "msw": "^2.6.8",
     "prettier": "catalog:",
-    "tailwindcss": "^3.4.14",
+    "tailwindcss": "^3.4.16",
     "typescript": "catalog:",
     "typescript-eslint": "catalog:",
     "vitest": "^2.1.3"
