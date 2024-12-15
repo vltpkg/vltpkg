@@ -408,4 +408,8 @@ const main = async () => {
   await writeYaml(configPath, { ...rootConfig, catalog })
 }
 
-main()
+export default main
+
+if (import.meta.filename === process.argv?.[1]) {
+  main()
+}
