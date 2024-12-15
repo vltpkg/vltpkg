@@ -5,6 +5,11 @@ import { asAttributeNode, type ParserState } from './types.js'
 
 export type ComparatorFn = (attr: string, value?: string) => boolean
 
+// JSONField has a mapped type constituent that would coerce to [object Object]
+// when stringified, which is what we want in this case.
+// eslint-disable-next-line @typescript-eslint/no-base-to-string
+const jsonFieldToString = (v: JSONField) => String(v)
+
 /**
  * Retrieve the {@link Manifest} values found at the given `properties`
  * location for a given {@link Node}.
@@ -68,10 +73,10 @@ export const getManifestPropertyValues = (
   for (const prop of props) {
     if (Array.isArray(prop)) {
       for (const p of prop) {
-        collect.add(p ? String(p) : '')
+        collect.add(p ? jsonFieldToString(p) : '')
       }
     } else {
-      collect.add(String(prop))
+      collect.add(jsonFieldToString(prop))
     }
   }
 
@@ -90,7 +95,9 @@ export const filterAttributes = (
 ): ParserState => {
   const check = (attr: JSONField) =>
     comparator?.(
-      insensitive ? String(attr).toLowerCase() : String(attr),
+      insensitive ?
+        jsonFieldToString(attr).toLowerCase()
+      : jsonFieldToString(attr),
       insensitive ? value.toLowerCase() : value,
     )
   const deleteNode = (node: NodeLike) => {
