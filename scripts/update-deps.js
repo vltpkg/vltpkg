@@ -1,26 +1,13 @@
-import { execSync } from 'node:child_process'
+import { spawn, execSync } from 'node:child_process'
 import { readFileSync } from 'node:fs'
 import { relative, resolve } from 'node:path'
-import { fileURLToPath } from 'node:url'
 import { parseArgs } from 'node:util'
 import { getConfig, getWorkspaces, writeJson } from './utils.js'
 import resetCatalogVersions from './consistent-package-json.js'
+import { run as ncu } from 'npm-check-updates'
+import { fileURLToPath } from 'node:url'
 
-const nonNCUOptions = {
-  noRoot: {
-    type: 'boolean',
-  },
-  workspace: {
-    type: 'string',
-    multiple: true,
-  },
-  omitWorkspace: {
-    type: 'string',
-    multiple: true,
-  },
-}
-
-const replaceDepsWithCatalogVersion = () => {
+const removeCatalogVersions = () => {
   const { catalog } = getConfig()
 
   const res = new Map()
@@ -53,93 +40,111 @@ const replaceDepsWithCatalogVersion = () => {
   return res
 }
 
-const main = async ({ values }) => {
-  const current = replaceDepsWithCatalogVersion()
-
-  const workspaceFlags = []
-
-  if ('omitWorkspace' in values) {
-    workspaceFlags.push(
-      ...execSync('pnpm -r exec npm pkg get name', {
-        encoding: 'utf-8',
-      })
-        .trim()
-        .split('\n')
-        .map(p => JSON.parse(p))
-        .filter(p => !values.omitWorkspace.includes(p))
-        .map(w => `--workspace=${w}`),
-    )
-  } else if ('workspace' in values) {
-    workspaceFlags.push(
-      ...values.workspace.map(w => `--workspace=${w}`),
-    )
-  } else {
-    workspaceFlags.push('--workspaces')
-  }
-
-  if ('noRoot' in values) {
-    workspaceFlags.push('--no-root')
-  }
-
-  for (const v in nonNCUOptions) {
-    delete values[v]
-  }
-
-  const res = execSync(
-    [
-      'node',
-      fileURLToPath(
-        import.meta.resolve('npm-check-updates/build/cli.js'),
-      ),
-      ...workspaceFlags,
-      '--jsonUpgraded',
-      ...Object.entries(values).map(([k, v]) => `--${k}=${v}`),
-    ].join(' '),
-    { encoding: 'utf-8' },
-  )
-
-  let jsonOutput = null
-  try {
-    jsonOutput = JSON.parse(res)
-  } catch {
-    console.log(res)
-  }
-
-  if (jsonOutput) {
-    const noQuotes = v => ({
-      [Symbol.for('nodejs.util.inspect.custom')]: () => v,
-    })
-
-    for (const [pjPath, deps] of Object.entries(jsonOutput)) {
-      const depEntries = Object.entries(deps)
-      if (!depEntries.length) continue
-      console.log(`${pjPath}`)
-      const currentDeps = current.get(pjPath)
-      const depsOutput = []
-      for (const [name, version] of Object.entries(deps)) {
-        const isDev = name in currentDeps.devDependencies
-        depsOutput.push({
-          name: noQuotes(name),
-          type: noQuotes(isDev ? 'dev' : 'prod'),
-          current: noQuotes(
-            (isDev ?
-              currentDeps.devDependencies
-            : currentDeps.dependencies)[name],
+const npmCheckUpdates = async (
+  current,
+  { workspace, omitWorkspace, noRoot, ...cliOpts },
+) => {
+  // make help output work by calling CLI directly
+  if (cliOpts.help) {
+    return new Promise((res, rej) => {
+      const proc = spawn(
+        process.execPath,
+        [
+          fileURLToPath(
+            import.meta.resolve('npm-check-updates/build/cli.js'),
           ),
-          upgrade: noQuotes(version),
+          ...process.argv.slice(2),
+        ],
+        {
+          stdio: 'inherit',
+        },
+      )
+      proc
+        .on('close', code => {
+          process.exitCode = code
+          res()
         })
-      }
-      console.table(depsOutput)
-      console.log('')
-    }
+        .on('error', rej)
+    })
   }
 
+  /**
+   * @type {import('npm-check-updates').RunOptions}
+   */
+  const defaultOptions = {
+    jsonUpgraded: true,
+    root: noRoot ? false : true,
+    workspaces: omitWorkspace || workspace ? false : true,
+    workspace:
+      omitWorkspace ?
+        execSync('pnpm -r exec npm pkg get name', {
+          encoding: 'utf-8',
+        })
+          .trim()
+          .split('\n')
+          .map(p => JSON.parse(p))
+          .filter(p => !omitWorkspace.includes(p))
+      : workspace ? workspace
+      : undefined,
+  }
+
+  const upgraded = await ncu({ ...defaultOptions, ...cliOpts })
+
+  const noQuotes = v => ({
+    [Symbol.for('nodejs.util.inspect.custom')]: () => v,
+  })
+
+  for (const [pjPath, deps] of Object.entries(upgraded)) {
+    const depEntries = Object.entries(deps)
+    if (!depEntries.length) {
+      continue
+    }
+
+    console.log(`${pjPath}`)
+
+    const currentDeps = current.get(pjPath)
+    const depsOutput = []
+    for (const [name, version] of Object.entries(deps)) {
+      const isDev = name in currentDeps.devDependencies
+      depsOutput.push({
+        name: noQuotes(name),
+        type: noQuotes(isDev ? 'dev' : 'prod'),
+        current: noQuotes(
+          (isDev ?
+            currentDeps.devDependencies
+          : currentDeps.dependencies)[name],
+        ),
+        upgrade: noQuotes(version),
+      })
+    }
+    console.table(depsOutput)
+    console.log('')
+  }
+}
+
+const main = async opts => {
+  const current = removeCatalogVersions()
+  await npmCheckUpdates(current, opts)
   await resetCatalogVersions()
 }
 
 main(
   parseArgs({
     strict: false,
-    options: nonNCUOptions,
-  }),
+    options: {
+      noRoot: {
+        type: 'boolean',
+      },
+      workspace: {
+        short: 'w',
+        type: 'string',
+        multiple: true,
+      },
+      omitWorkspace: {
+        short: 'o',
+        type: 'string',
+        multiple: true,
+      },
+    },
+  }).values,
 )
