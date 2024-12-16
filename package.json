@@ -37,7 +37,7 @@
     "format:check": "prettier --check . --ignore-path ./.prettierignore --cache",
     "lint": "eslint . --fix",
     "lint:check": "eslint .",
-    "pnpm:devPreinstall": "node scripts/make-dist-bins.js",
+    "pnpm:devPreinstall": "pnpm --version && node --version && node scripts/make-dist-bins.js",
     "snap": "pnpm --silent --no-bail --report-summary run -r snap &>/dev/null || node scripts/report-test-failures.js",
     "test": "pnpm --silent --no-bail --report-summary -r test -- -Rsilent || node scripts/report-test-failures.js",
     "vlix": "./scripts/local-cli vlix",
@@ -47,13 +47,5 @@
     "vlx": "./scripts/local-cli vlx"
   },
   "prettier": "./.prettierrc.js",
-  "type": "module",
-  "pnpm": {
-    "//overrides": "these apply to www/docs but have to be set in the root",
-    "overrides": {
-      "@astrojs/mdx": "4.0.0-beta.2",
-      "astro": "5.0.0-beta.4",
-      "vite": "6.0.0-beta.2"
-    }
-  }
+  "type": "module"
 }

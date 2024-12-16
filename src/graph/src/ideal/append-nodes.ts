@@ -4,6 +4,7 @@ import { type PackageInfoClient } from '@vltpkg/package-info'
 import { Spec, type SpecOptions } from '@vltpkg/spec'
 import { type PathScurry } from 'path-scurry'
 import {
+  asDependency,
   longDependencyTypes,
   shorten,
   type Dependency,
@@ -66,6 +67,7 @@ const isStringArray = (a: unknown): a is string[] =>
   Array.isArray(a) && !a.some(b => typeof b !== 'string')
 
 export const appendNodes = async (
+  add: Map<string, Dependency>,
   packageInfo: PackageInfoClient,
   graph: Graph,
   fromNode: Node,
@@ -98,6 +100,26 @@ export const appendNodes = async (
           }
           throw er
         })
+
+      // when an user is adding a nameless dependency, e.g: `github:foo/bar`,
+      // `file:./foo/bar`, we need to update the `add` option value to set the
+      // correct name once we have it, so that it can properly be stored in
+      // the `package.json` file at the end of reify.
+      if (mani?.name && spec.name === '(unknown)') {
+        const s = add.get(String(spec))
+        if (s) {
+          // removes the previous, placeholder entry key
+          add.delete(String(spec))
+          // replaces spec with a version with the correct name
+          spec = Spec.parse(mani.name, spec.bareSpec, options)
+          // updates the add map with the fixed up spec
+          const n = asDependency({
+            ...s,
+            spec,
+          })
+          add.set(mani.name, n)
+        }
+      }
 
       if (!mani) {
         if (!edgeOptional && fromNode.isOptional()) {
@@ -174,6 +196,7 @@ export const appendNodes = async (
       if (nextDeps.length) {
         nestedAppends.push(
           appendNodes(
+            add,
             packageInfo,
             graph,
             node,

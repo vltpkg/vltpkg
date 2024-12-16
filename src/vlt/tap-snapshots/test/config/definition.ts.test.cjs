@@ -110,12 +110,12 @@ Object {
     ],
   },
   "fetch-retries": Object {
-    "description": "Number of retries to perform when encountering network or other likely-transient errors from git hosts.",
+    "description": "Number of retries to perform when encountering network errors or likely-transient errors from git hosts.",
     "hint": "n",
     "type": "number",
   },
   "fetch-retry-factor": Object {
-    "description": "The exponential factor to use when retrying",
+    "description": "The exponential backoff factor to use when retrying requests due to network issues.",
     "hint": "n",
     "type": "number",
   },

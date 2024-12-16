@@ -783,7 +783,7 @@ const selectProjectItem = async ({
     window.scrollTo(0, 0)
     updateQuery(DEFAULT_QUERY)
     updateActiveRoute('/explore')
-    updateStamp(String(Math.random()).slice(2))
+    updateStamp()
   } else {
     updateActiveRoute('/error')
     updateErrorCause('Failed to select project.')

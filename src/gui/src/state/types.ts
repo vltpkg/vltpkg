@@ -20,7 +20,7 @@ export type Action = {
   updateNodes: (nodes: State['nodes']) => void
   updateSelectedNode: (node: State['selectedNode']) => void
   updateSpecOptions: (specOptions: State['specOptions']) => void
-  updateStamp: (stamp: string) => void
+  updateStamp: () => void
   updateTheme: (theme: State['theme']) => void
   reset: () => void
   saveProject: (item: DashboardDataProject) => void
@@ -90,6 +90,7 @@ export type State = {
    * The query string typed by the user in the interface.
    */
   query: string
+  // TODO: remove selectedNode as it's unused
   /**
    * Reference to a currently selected node.
    */
