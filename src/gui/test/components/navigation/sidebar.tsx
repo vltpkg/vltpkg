@@ -18,11 +18,19 @@ vi.spyOn(ThemeProviderModule, 'useTheme').mockImplementation(() => ({
   theme: 'light',
   setTheme: setThemeMock,
 }))
-vi.mock('useGraphStore', () => ({
-  useGraphStore: vi.fn(),
-}))
-vi.mock('useTheme', () => ({
-  useTheme: vi.fn(),
+
+vi.mock('lucide-react', () => ({
+  LayoutDashboard: 'gui-lucide-layout-dashboard',
+  ArrowRightFromLine: 'gui-lucide-arrow-right-from-line',
+  ArrowLeftFromLine: 'gui-lucide-arrow-left-from-line',
+  ChevronRight: 'gui-lucide-chevron-right',
+  Folder: 'gui-lucide-folder',
+  FolderOpen: 'gui-lucide-folder-open',
+  Library: 'gui-lucide-library',
+  Sun: 'gui-lucide-sun',
+  Moon: 'gui-lucide-moon',
+  Menu: 'gui-lucide-menu',
+  IconX: 'gui-lucide-icon-x',
 }))
 
 expect.addSnapshotSerializer({
