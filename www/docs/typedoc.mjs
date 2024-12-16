@@ -44,6 +44,7 @@ export default {
     'typedoc-plugin-remark',
     'typedoc-plugin-frontmatter',
     './scripts/workspace-frontmatter.mjs',
+    './scripts/external-link-plugin.mjs',
   ],
   entryPointStrategy: 'packages',
   remarkPlugins: ['unified-prettier'],
