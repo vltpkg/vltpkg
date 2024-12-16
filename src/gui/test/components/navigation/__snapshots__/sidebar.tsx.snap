@@ -6,25 +6,8 @@ exports[`Render the sidebar > should be collapasible 1`] = `
   role="button"
   class="cursor-pointer"
 >
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="20"
-    height="20"
-    viewbox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    stroke-width="2"
-    stroke-linecap="round"
-    stroke-linejoin="round"
-    class="lucide lucide-arrow-left-from-line"
-  >
-    <path d="m9 6-6 6 6 6">
-    </path>
-    <path d="M3 12h14">
-    </path>
-    <path d="M21 19V5">
-    </path>
-  </svg>
+  <gui-lucide-arrow-left-from-line size="20">
+  </gui-lucide-arrow-left-from-line>
 </div>
 
 `;
@@ -35,21 +18,11 @@ exports[`Render the sidebar > should change the theme 1`] = `
   role="button"
   class="flex gap-3 items-center"
 >
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="20"
-    height="20"
-    viewbox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    stroke-width="2"
-    stroke-linecap="round"
-    stroke-linejoin="round"
-    class="lucide lucide-moon cursor-pointer"
+  <gui-lucide-moon
+    classname="cursor-pointer"
+    size="20"
   >
-    <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z">
-    </path>
-  </svg>
+  </gui-lucide-moon>
 </div>
 
 `;
@@ -82,51 +55,11 @@ exports[`Render the sidebar > should render the pinned projects 1`] = `
           target="_top"
           class="relative flex justify-start gap-2 group/sidebar-link rounded-md"
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
+          <gui-lucide-layout-dashboard
             width="20"
             height="20"
-            viewbox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            class="lucide lucide-layout-dashboard"
           >
-            <rect
-              width="7"
-              height="9"
-              x="3"
-              y="3"
-              rx="1"
-            >
-            </rect>
-            <rect
-              width="7"
-              height="5"
-              x="14"
-              y="3"
-              rx="1"
-            >
-            </rect>
-            <rect
-              width="7"
-              height="9"
-              x="14"
-              y="12"
-              rx="1"
-            >
-            </rect>
-            <rect
-              width="7"
-              height="5"
-              x="3"
-              y="16"
-              rx="1"
-            >
-            </rect>
-          </svg>
+          </gui-lucide-layout-dashboard>
           <span class="text-sm">
             Dashboard
           </span>
@@ -141,27 +74,11 @@ exports[`Render the sidebar > should render the pinned projects 1`] = `
           target="blank"
           class="relative flex justify-start gap-2 group/sidebar-link rounded-md"
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
+          <gui-lucide-library
             width="20"
             height="20"
-            viewbox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            class="lucide lucide-library"
           >
-            <path d="m16 6 4 14">
-            </path>
-            <path d="M12 6v14">
-            </path>
-            <path d="M8 8v12">
-            </path>
-            <path d="M4 4v16">
-            </path>
-          </svg>
+          </gui-lucide-library>
           <span class="text-sm">
             Docs
           </span>
@@ -177,40 +94,17 @@ exports[`Render the sidebar > should render the pinned projects 1`] = `
           pinned
         </p>
         <p class="flex flex-row justify-start items-center gap-2 group/sidebar-category-item cursor-pointer mt-4 mb-2 select-none">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="20"
-            height="20"
-            viewbox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            class="lucide lucide-folder"
-          >
-            <path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z">
-            </path>
-          </svg>
+          <gui-lucide-folder size="20">
+          </gui-lucide-folder>
           <span class="capitalize flex text-neutral-700 dark:text-neutral-200 text-sm group-hover/sidebar-category-item:translate-x-1 transition duration-150">
             pinned projects
           </span>
           <span class="group-hover/sidebar-category-item:translate-x-1 transition duration-150">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="16"
-              height="16"
-              viewbox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              class="lucide lucide-chevron-right transition duration-150"
+            <gui-lucide-chevron-right
+              classname="transition duration-150"
+              size="16"
             >
-              <path d="m9 18 6-6-6-6">
-              </path>
-            </svg>
+            </gui-lucide-chevron-right>
           </span>
         </p>
       </div>
@@ -221,45 +115,18 @@ exports[`Render the sidebar > should render the pinned projects 1`] = `
           role="button"
           class="flex gap-3 items-center"
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="20"
-            height="20"
-            viewbox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            class="lucide lucide-moon cursor-pointer"
+          <gui-lucide-moon
+            classname="cursor-pointer"
+            size="20"
           >
-            <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z">
-            </path>
-          </svg>
+          </gui-lucide-moon>
         </div>
         <div
           role="button"
           class="cursor-pointer"
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="20"
-            height="20"
-            viewbox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            class="lucide lucide-arrow-left-from-line"
-          >
-            <path d="m9 6-6 6 6 6">
-            </path>
-            <path d="M3 12h14">
-            </path>
-            <path d="M21 19V5">
-            </path>
-          </svg>
+          <gui-lucide-arrow-left-from-line size="20">
+          </gui-lucide-arrow-left-from-line>
         </div>
       </div>
     </div>
@@ -272,40 +139,11 @@ exports[`Render the sidebar > should render the pinned projects 1`] = `
 </div>
 <div class="flex md:hidden justify-end absolute inset-0">
   <div class="absolute p-4 cursor-pointer h-fit z-[101]">
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewbox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      stroke-width="2"
-      stroke-linecap="round"
-      stroke-linejoin="round"
-      class="lucide lucide-menu text-black dark:text-white"
+    <gui-lucide-menu
+      size="24"
+      classname="text-black dark:text-white"
     >
-      <line
-        x1="4"
-        x2="20"
-        y1="12"
-        y2="12"
-      >
-      </line>
-      <line
-        x1="4"
-        x2="20"
-        y1="6"
-        y2="6"
-      >
-      </line>
-      <line
-        x1="4"
-        x2="20"
-        y1="18"
-        y2="18"
-      >
-      </line>
-    </svg>
+    </gui-lucide-menu>
   </div>
   <div
     class="flex flex-col h-screen inset-0 bg-white/80 dark:bg-black/50 backdrop-blur-md w-full z-[100] px-8 py-8 mt-[3.55rem]"
@@ -378,51 +216,11 @@ exports[`Render the sidebar > should render the sidebar on desktop 1`] = `
           target="_top"
           class="relative flex justify-start gap-2 group/sidebar-link rounded-md"
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
+          <gui-lucide-layout-dashboard
             width="20"
             height="20"
-            viewbox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            class="lucide lucide-layout-dashboard"
           >
-            <rect
-              width="7"
-              height="9"
-              x="3"
-              y="3"
-              rx="1"
-            >
-            </rect>
-            <rect
-              width="7"
-              height="5"
-              x="14"
-              y="3"
-              rx="1"
-            >
-            </rect>
-            <rect
-              width="7"
-              height="9"
-              x="14"
-              y="12"
-              rx="1"
-            >
-            </rect>
-            <rect
-              width="7"
-              height="5"
-              x="3"
-              y="16"
-              rx="1"
-            >
-            </rect>
-          </svg>
+          </gui-lucide-layout-dashboard>
           <span class="text-sm">
             Dashboard
           </span>
@@ -437,27 +235,11 @@ exports[`Render the sidebar > should render the sidebar on desktop 1`] = `
           target="blank"
           class="relative flex justify-start gap-2 group/sidebar-link rounded-md"
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
+          <gui-lucide-library
             width="20"
             height="20"
-            viewbox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            class="lucide lucide-library"
           >
-            <path d="m16 6 4 14">
-            </path>
-            <path d="M12 6v14">
-            </path>
-            <path d="M8 8v12">
-            </path>
-            <path d="M4 4v16">
-            </path>
-          </svg>
+          </gui-lucide-library>
           <span class="text-sm">
             Docs
           </span>
@@ -473,40 +255,17 @@ exports[`Render the sidebar > should render the sidebar on desktop 1`] = `
           pinned
         </p>
         <p class="flex flex-row justify-start items-center gap-2 group/sidebar-category-item cursor-pointer mt-4 mb-2 select-none">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="20"
-            height="20"
-            viewbox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            class="lucide lucide-folder"
-          >
-            <path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z">
-            </path>
-          </svg>
+          <gui-lucide-folder size="20">
+          </gui-lucide-folder>
           <span class="capitalize flex text-neutral-700 dark:text-neutral-200 text-sm group-hover/sidebar-category-item:translate-x-1 transition duration-150">
             pinned projects
           </span>
           <span class="group-hover/sidebar-category-item:translate-x-1 transition duration-150">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="16"
-              height="16"
-              viewbox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              class="lucide lucide-chevron-right transition duration-150"
+            <gui-lucide-chevron-right
+              classname="transition duration-150"
+              size="16"
             >
-              <path d="m9 18 6-6-6-6">
-              </path>
-            </svg>
+            </gui-lucide-chevron-right>
           </span>
         </p>
       </div>
@@ -517,45 +276,18 @@ exports[`Render the sidebar > should render the sidebar on desktop 1`] = `
           role="button"
           class="flex gap-3 items-center"
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="20"
-            height="20"
-            viewbox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            class="lucide lucide-moon cursor-pointer"
+          <gui-lucide-moon
+            classname="cursor-pointer"
+            size="20"
           >
-            <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z">
-            </path>
-          </svg>
+          </gui-lucide-moon>
         </div>
         <div
           role="button"
           class="cursor-pointer"
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="20"
-            height="20"
-            viewbox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            class="lucide lucide-arrow-left-from-line"
-          >
-            <path d="m9 6-6 6 6 6">
-            </path>
-            <path d="M3 12h14">
-            </path>
-            <path d="M21 19V5">
-            </path>
-          </svg>
+          <gui-lucide-arrow-left-from-line size="20">
+          </gui-lucide-arrow-left-from-line>
         </div>
       </div>
     </div>
@@ -568,40 +300,11 @@ exports[`Render the sidebar > should render the sidebar on desktop 1`] = `
 </div>
 <div class="flex md:hidden justify-end absolute inset-0">
   <div class="absolute p-4 cursor-pointer h-fit z-[101]">
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewbox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      stroke-width="2"
-      stroke-linecap="round"
-      stroke-linejoin="round"
-      class="lucide lucide-menu text-black dark:text-white"
+    <gui-lucide-menu
+      size="24"
+      classname="text-black dark:text-white"
     >
-      <line
-        x1="4"
-        x2="20"
-        y1="12"
-        y2="12"
-      >
-      </line>
-      <line
-        x1="4"
-        x2="20"
-        y1="6"
-        y2="6"
-      >
-      </line>
-      <line
-        x1="4"
-        x2="20"
-        y1="18"
-        y2="18"
-      >
-      </line>
-    </svg>
+    </gui-lucide-menu>
   </div>
   <div
     class="flex flex-col h-screen inset-0 bg-white/80 dark:bg-black/50 backdrop-blur-md w-full z-[100] px-8 py-8 mt-[3.55rem]"
@@ -657,51 +360,11 @@ exports[`Render the sidebar > should render the sidebar on mobile 1`] = `
           target="_top"
           class="relative flex justify-start gap-2 group/sidebar-link rounded-md"
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
+          <gui-lucide-layout-dashboard
             width="20"
             height="20"
-            viewbox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            class="lucide lucide-layout-dashboard"
           >
-            <rect
-              width="7"
-              height="9"
-              x="3"
-              y="3"
-              rx="1"
-            >
-            </rect>
-            <rect
-              width="7"
-              height="5"
-              x="14"
-              y="3"
-              rx="1"
-            >
-            </rect>
-            <rect
-              width="7"
-              height="9"
-              x="14"
-              y="12"
-              rx="1"
-            >
-            </rect>
-            <rect
-              width="7"
-              height="5"
-              x="3"
-              y="16"
-              rx="1"
-            >
-            </rect>
-          </svg>
+          </gui-lucide-layout-dashboard>
           <span class="text-sm">
             Dashboard
           </span>
@@ -716,27 +379,11 @@ exports[`Render the sidebar > should render the sidebar on mobile 1`] = `
           target="blank"
           class="relative flex justify-start gap-2 group/sidebar-link rounded-md"
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
+          <gui-lucide-library
             width="20"
             height="20"
-            viewbox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            class="lucide lucide-library"
           >
-            <path d="m16 6 4 14">
-            </path>
-            <path d="M12 6v14">
-            </path>
-            <path d="M8 8v12">
-            </path>
-            <path d="M4 4v16">
-            </path>
-          </svg>
+          </gui-lucide-library>
           <span class="text-sm">
             Docs
           </span>
@@ -752,40 +399,17 @@ exports[`Render the sidebar > should render the sidebar on mobile 1`] = `
           pinned
         </p>
         <p class="flex flex-row justify-start items-center gap-2 group/sidebar-category-item cursor-pointer mt-4 mb-2 select-none">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="20"
-            height="20"
-            viewbox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            class="lucide lucide-folder"
-          >
-            <path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z">
-            </path>
-          </svg>
+          <gui-lucide-folder size="20">
+          </gui-lucide-folder>
           <span class="capitalize flex text-neutral-700 dark:text-neutral-200 text-sm group-hover/sidebar-category-item:translate-x-1 transition duration-150">
             pinned projects
           </span>
           <span class="group-hover/sidebar-category-item:translate-x-1 transition duration-150">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="16"
-              height="16"
-              viewbox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              class="lucide lucide-chevron-right transition duration-150"
+            <gui-lucide-chevron-right
+              classname="transition duration-150"
+              size="16"
             >
-              <path d="m9 18 6-6-6-6">
-              </path>
-            </svg>
+            </gui-lucide-chevron-right>
           </span>
         </p>
       </div>
@@ -796,45 +420,18 @@ exports[`Render the sidebar > should render the sidebar on mobile 1`] = `
           role="button"
           class="flex gap-3 items-center"
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="20"
-            height="20"
-            viewbox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            class="lucide lucide-moon cursor-pointer"
+          <gui-lucide-moon
+            classname="cursor-pointer"
+            size="20"
           >
-            <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z">
-            </path>
-          </svg>
+          </gui-lucide-moon>
         </div>
         <div
           role="button"
           class="cursor-pointer"
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="20"
-            height="20"
-            viewbox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            class="lucide lucide-arrow-left-from-line"
-          >
-            <path d="m9 6-6 6 6 6">
-            </path>
-            <path d="M3 12h14">
-            </path>
-            <path d="M21 19V5">
-            </path>
-          </svg>
+          <gui-lucide-arrow-left-from-line size="20">
+          </gui-lucide-arrow-left-from-line>
         </div>
       </div>
     </div>
@@ -847,40 +444,11 @@ exports[`Render the sidebar > should render the sidebar on mobile 1`] = `
 </div>
 <div class="flex md:hidden justify-end absolute inset-0">
   <div class="absolute p-4 cursor-pointer h-fit z-[101]">
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewbox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      stroke-width="2"
-      stroke-linecap="round"
-      stroke-linejoin="round"
-      class="lucide lucide-menu text-black dark:text-white"
+    <gui-lucide-menu
+      size="24"
+      classname="text-black dark:text-white"
     >
-      <line
-        x1="4"
-        x2="20"
-        y1="12"
-        y2="12"
-      >
-      </line>
-      <line
-        x1="4"
-        x2="20"
-        y1="6"
-        y2="6"
-      >
-      </line>
-      <line
-        x1="4"
-        x2="20"
-        y1="18"
-        y2="18"
-      >
-      </line>
-    </svg>
+    </gui-lucide-menu>
   </div>
   <div
     class="flex flex-col h-screen inset-0 bg-white/80 dark:bg-black/50 backdrop-blur-md w-full z-[100] px-8 py-8 mt-[3.55rem]"
