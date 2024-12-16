@@ -254,7 +254,8 @@ export default tseslint.config(
       'import/no-unresolved': [
         2,
         {
-          ignore: ['astro:content'], // https://github.com/import-js/eslint-import-resolver-typescript/issues/261
+          // https://github.com/import-js/eslint-import-resolver-typescript/issues/261
+          ignore: ['astro:content', 'virtual:starlight/user-config'],
         },
       ],
     },
