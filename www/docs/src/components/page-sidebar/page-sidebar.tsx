@@ -66,7 +66,7 @@ const PageSidebar = ({ toc }: Props) => {
     ))
 
   return (
-    <div className="hidden md:flex flex-col items-start sticky top-0 pt-8 h-fit md:w-[300px]">
+    <div className="hidden md:flex flex-col items-start sticky top-0 pt-8 pb-8 h-fit md:w-[300px]">
       <h3 className="flex items-center gap-2 text-sm font-bold mb-3">
         <AlignLeft size={16} />
         On this page
