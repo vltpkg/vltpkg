@@ -15,6 +15,18 @@ exports[`renders Layout for the "/dashboard" view 1`] = `
       </gui-nav-footer>
     </div>
   </div>
+  <div
+    role="region"
+    aria-label="Notifications (F8)"
+    tabindex="-1"
+    style="pointer-events: none;"
+  >
+    <ol
+      tabindex="-1"
+      class="fixed top-0 z-[100] flex max-h-screen w-full flex-col-reverse p-4 sm:bottom-0 sm:right-0 sm:top-auto sm:flex-col md:max-w-[420px]"
+    >
+    </ol>
+  </div>
 </div>
 
 `;
@@ -34,6 +46,18 @@ exports[`renders Layout for the "/error" view 1`] = `
       </gui-nav-footer>
     </div>
   </div>
+  <div
+    role="region"
+    aria-label="Notifications (F8)"
+    tabindex="-1"
+    style="pointer-events: none;"
+  >
+    <ol
+      tabindex="-1"
+      class="fixed top-0 z-[100] flex max-h-screen w-full flex-col-reverse p-4 sm:bottom-0 sm:right-0 sm:top-auto sm:flex-col md:max-w-[420px]"
+    >
+    </ol>
+  </div>
 </div>
 
 `;
@@ -52,6 +76,18 @@ exports[`renders Layout for the "/explore" view 1`] = `
       <gui-nav-footer>
       </gui-nav-footer>
     </div>
+  </div>
+  <div
+    role="region"
+    aria-label="Notifications (F8)"
+    tabindex="-1"
+    style="pointer-events: none;"
+  >
+    <ol
+      tabindex="-1"
+      class="fixed top-0 z-[100] flex max-h-screen w-full flex-col-reverse p-4 sm:bottom-0 sm:right-0 sm:top-auto sm:flex-col md:max-w-[420px]"
+    >
+    </ol>
   </div>
 </div>
 
