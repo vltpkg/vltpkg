@@ -25,7 +25,7 @@ const isHero = Astro.url.pathname === '/'
       </>
     )
   }
-  <div class={`${!isHero ? 'max-w-[75ch]' : 'w-full'} order-1`}>
+  <div class={`w-full ${!isHero ? 'max-w-[75ch]' : ''} order-1`}>
     <slot />
   </div>
 </div>
