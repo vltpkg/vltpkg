@@ -35,7 +35,7 @@ t.test('basic', async t => {
     message: 'Unrecognized pkg command',
     cause: {
       found: 'gett',
-      validOptions: ['get', 'set', 'rm'],
+      validOptions: ['get', 'set', 'rm', 'init'],
     },
   })
 })
@@ -151,4 +151,28 @@ t.test('delete', async t => {
   t.rejects(runCommand(), {
     message: 'rm requires arguments',
   })
+})
+
+t.test('init', async t => {
+  const { runCommand, readPackageJson } = await setupPkg(t, 'init')
+  t.strictSame(await runCommand(), {
+    errs: '',
+    logs: '',
+  })
+  t.strictSame(JSON.parse(readPackageJson()), {})
+})
+
+t.test('init with force', async t => {
+  const { runCommand, readPackageJson } = await setupPkg(t, 'init', {
+    name: 'package-name',
+    version: '1.0.0',
+  })
+  t.rejects(runCommand(), {
+    message: 'package.json already exists. Use --force to overwrite.',
+  })
+  t.strictSame(await runCommand(['--force']), {
+    errs: '',
+    logs: '',
+  })
+  t.strictSame(JSON.parse(readPackageJson()), {})
 })
