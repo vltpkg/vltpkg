@@ -1,0 +1,9 @@
+---
+import type { Props } from '@astrojs/starlight/props'
+import Hero from '@/components/hero/hero.tsx'
+---
+
+<Hero
+  client:only="react"
+  {...{ ...Astro.props, labels: undefined } as any}
+/>
