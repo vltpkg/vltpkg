@@ -1,8 +1,8 @@
 import { defineConfig } from 'astro/config'
 import starlight from '@astrojs/starlight'
-import vercelStatic from '@astrojs/vercel/static'
 import react from '@astrojs/react'
 import tailwind from '@astrojs/tailwind'
+import vercel from '@astrojs/vercel'
 import * as TypedocPlugin from './src/plugins/typedoc'
 import * as CliPlugin from './src/plugins/cli'
 
@@ -77,5 +77,5 @@ export default defineConfig({
     tailwind({ applyBaseStyles: false }),
   ],
   output: 'static',
-  adapter: vercelStatic({}),
+  adapter: vercel(),
 })

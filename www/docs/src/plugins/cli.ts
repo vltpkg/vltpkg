@@ -8,11 +8,24 @@ import { type CliCommand } from '@vltpkg/cli/types'
 import { Config } from '@vltpkg/cli/config'
 import matter from 'gray-matter'
 
-const CLI_COMMANDS = '@vltpkg/cli/commands'
+const rel = (s: string) => relative(process.cwd(), s)
+
+const loadedConfig = await Config.load()
+
+const commands: { id: string; command: CliCommand }[] = []
+for (const c of await readdir(
+  fileURLToPath(metaResolve('@vltpkg/cli/commands', import.meta.url)),
+  { withFileTypes: true },
+)) {
+  if (!c.name.endsWith('.js')) continue
+  const id = basename(c.name, '.js')
+  const command = (await import(
+    /* @vite-ignore */ `@vltpkg/cli/commands/${id}`
+  )) as CliCommand
+  commands.push({ id, command })
+}
 
 export const directory = 'cli'
-
-const rel = (s: string) => relative(process.cwd(), s)
 
 export const plugin = {
   name: directory,
@@ -30,18 +43,6 @@ export const plugin = {
       )
       if (!entries) return
 
-      const commands = (
-        await readdir(
-          fileURLToPath(metaResolve(CLI_COMMANDS, import.meta.url)),
-          { withFileTypes: true },
-        )
-      )
-        .filter(c => c.name.endsWith('.js'))
-        .map(c => ({
-          ...c,
-          id: basename(c.name, '.js'),
-        }))
-
       logger.info(`writing ${rel(entries.commandsIndex)}`)
       await writeFile(
         entries.commandsIndex,
@@ -57,9 +58,7 @@ export const plugin = {
       await writeFile(
         entries.configuring,
         matter.stringify(
-          (await Config.load()).jack
-            .usageMarkdown()
-            .replace(/^# vlt/, ''),
+          loadedConfig.jack.usageMarkdown().replace(/^# vlt/, ''),
           {
             title: 'Configuring the vlt CLI',
             sidebar: {
@@ -73,12 +72,9 @@ export const plugin = {
       logger.info(`writing ${rel(entries.commandsDir)}`)
       await mkdir(entries.commandsDir, { recursive: true })
       for (const c of commands) {
-        const { usage } = (await import(
-          /* @vite-ignore */ `${CLI_COMMANDS}/${c.id}`
-        )) as CliCommand
         await writeFile(
           join(entries.commandsDir, c.id + '.md'),
-          matter.stringify(usage().usageMarkdown(), {
+          matter.stringify(c.command.usage().usageMarkdown(), {
             title: `vlt ${c.id}`,
             sidebar: { label: c.id },
           }),
