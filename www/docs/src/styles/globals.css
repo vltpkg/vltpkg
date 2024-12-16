@@ -2,6 +2,108 @@
 @tailwind components;
 @tailwind utilities;
 
+.sl-markdown-content h2 {
+  font-size: 1.25rem;
+}
+
+.sl-markdown-content h3 {
+  font-size: 1rem;
+}
+
+.dark-wave {
+  background-image: linear-gradient(
+      to bottom,
+      #000000,
+      rgba(0, 0, 0, 0.5)
+    ),
+    linear-gradient(to right, #000000, rgba(0, 0, 0, 0)),
+    url('/images/wave-dark.png');
+  background-position: bottom right !important;
+  background-size:
+    100% 100%,
+    100% 100%,
+    90% 150%;
+}
+
+.light-wave {
+  background-image: linear-gradient(
+      to bottom,
+      #ffffff,
+      rgba(255, 255, 255, 0)
+    ),
+    linear-gradient(to right, #ffffff, rgba(255, 255, 255, 0)),
+    url('/images/wave-light.png');
+  background-position: bottom right !important;
+  background-size:
+    100% 100%,
+    100% 100%,
+    90% 150%;
+}
+
+button[aria-label='Search'] {
+  height: 56.25px;
+  border-radius: 1rem;
+  border-width: 1px;
+  box-sizing: border-box;
+  width: 50px;
+  padding: 1rem 1rem;
+  margin-left: 1rem;
+  transition-property: all;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+  font-size: 15px;
+}
+
+@media (min-width: 800px) {
+  button[aria-label='Search'] {
+    width: 235px;
+  }
+}
+
+&[data-theme='dark'] {
+  button[aria-label='Search'] {
+    border-color: rgb(26, 26, 26);
+    background-color: rgba(10, 10, 10, 0.75);
+    color: var(--primary-foreground);
+  }
+
+  button[aria-label='Search'] kbd {
+    background-color: #000000;
+    color: var(--secondary-foreground);
+  }
+}
+
+&[data-theme='light'] {
+  button[aria-label='Search'] {
+    border-color: rgb(242, 242, 242);
+    background-color: #fff;
+    color: var(--primary-foreground);
+  }
+
+  button[aria-label='Search'] kbd {
+    background-color: #fff;
+    color: var(--secondary-foreground);
+  }
+}
+
+html {
+  scroll-behavior: smooth !important;
+  -webkit-font-smoothing: auto;
+  -moz-osx-font-smoothing: auto;
+}
+
+@font-face {
+  font-family: 'inter';
+  src: url('/fonts/inter.ttf');
+  font-weight: normal;
+}
+
+@font-face {
+  font-family: 'geistMono';
+  src: url('/fonts/geist-mono.ttf');
+  font-weight: normal;
+}
+
 @layer base {
   :root {
     --background: 0 0% 100%;
@@ -40,7 +142,7 @@
   }
 
   &[data-theme='dark'] {
-    --background: 0 0% 3.9%;
+    --background: 0 0% 0%;
     --foreground: 0 0% 98%;
     --card: 0 0% 3.9%;
     --card-foreground: 0 0% 98%;

@@ -17,16 +17,41 @@ export default defineConfig({
   site: 'https://docs.vlt.sh',
   integrations: [
     starlight({
-      title: 'docs | vlt',
+      expressiveCode: {
+        themes: ['aurora-x', 'catppuccin-latte'],
+        defaultProps: {
+          wrap: true,
+          preserveIndent: true,
+        },
+      },
+      title: 'vlt /vōlt/',
       social: {
+        linkedin: 'https://www.linkedin.com/company/vltpkg',
+        twitter: 'https://twitter.com/vltpkg',
         github: 'https://github.com/vltpkg/vltpkg',
         discord: 'https://discord.gg/vltpkg',
-        twitter: 'https://twitter.com/vltpkg',
       },
-      customCss: [
-        '@fontsource-variable/manrope/index.css',
-        './src/styles/globals.css',
-      ],
+      components: {
+        Header: './src/components/header/astro-header.astro',
+        Sidebar: './src/components/sidebar/astro-app-sidebar.astro',
+        PageFrame:
+          './src/components/page-frame/astro-page-frame.astro',
+        ContentPanel:
+          './src/components/content-panel/astro-content-panel.astro',
+        PageTitle:
+          './src/components/page-title/astro-page-title.astro',
+        Pagination:
+          './src/components/pagination/astro-pagination.astro',
+        PageSidebar:
+          './src/components/page-sidebar/astro-page-sidebar.astro',
+        TwoColumnContent:
+          './src/components/two-column-layout/astro-two-column-layout.astro',
+        Hero: './src/components/hero/astro-hero.astro',
+        Footer: './src/components/footer/astro-footer.astro',
+        ThemeSelect:
+          './src/components/theme-select/astro-theme-select.astro',
+      },
+      customCss: ['./src/styles/globals.css'],
       tableOfContents: {
         minHeadingLevel: 2,
         maxHeadingLevel: 5,

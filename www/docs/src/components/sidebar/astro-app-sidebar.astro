@@ -1,0 +1,14 @@
+---
+import AppSidebar, { AppSidebarDesktop } from './app-sidebar'
+import AppSidebarSublist from './app-sidebar-sublist.tsx'
+import type { Props } from '@astrojs/starlight/props'
+---
+
+<AppSidebar {...Astro.props}>
+  <AppSidebarDesktop client:only="react">
+    <AppSidebarSublist
+      client:only="react"
+      sidebar={Astro.props.sidebar}
+    />
+  </AppSidebarDesktop>
+</AppSidebar>
