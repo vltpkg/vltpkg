@@ -9,22 +9,22 @@ vi.mock('useGraphStore', () => ({
 }))
 
 vi.mock('@/components/navigation/header.jsx', () => ({
-  Header: () => <div>Mock Header</div>,
+  Header: 'gui-nav-header',
 }))
 vi.mock('@/components/navigation/footer.jsx', () => ({
-  Footer: () => <div>Mock Footer</div>,
+  Footer: 'gui-nav-footer',
 }))
 vi.mock('@/components/navigation/sidebar.jsx', () => ({
-  Sidebar: () => <div>Mock Sidebar</div>,
+  Sidebar: 'gui-nav-sidebar',
 }))
 vi.mock('@/app/dashboard.jsx', () => ({
-  Dashboard: () => <div>Mock Dashboard</div>,
+  Dashboard: 'gui-dashboard',
 }))
 vi.mock('@/app/explorer.jsx', () => ({
-  Explorer: () => <div>Mock Explorer</div>,
+  Explorer: 'gui-explorer',
 }))
 vi.mock('@/app/error-found.jsx', () => ({
-  ErrorFound: () => <div>Mock Error Found</div>,
+  ErrorFound: 'gui-error-found',
 }))
 
 expect.addSnapshotSerializer({
