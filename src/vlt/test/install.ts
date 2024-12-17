@@ -36,7 +36,7 @@ t.test('install', async t => {
     '@vltpkg/graph': {
       ideal: {
         build: async ({ add }: BuildIdealOptions) => {
-          log += `buildideal result adds ${add?.get(rootDepID)?.size || 0} new package(s) \n`
+          log += `buildideal result adds ${add?.get(rootDepID)?.size || 0} new package(s)\n`
         },
       },
       actual: {
