@@ -1,4 +1,5 @@
 import { useTheme } from '@/components/ui/theme-provider.jsx'
+import ThemeSwitcher from '@/components/theme-switcher/theme-switcher.jsx'
 
 interface SocialMediaLink {
   name: string
@@ -25,29 +26,55 @@ const socialMediaLinks: SocialMediaLink[] = [
 ]
 
 export const Footer = () => {
-  const { theme } = useTheme()
+  const { resolvedTheme } = useTheme()
 
   return (
-    <footer className="flex border-t-[1px] border-solid h-24 items-center justify-between px-8 w-full">
-      <div className="items-center gap-3 hidden md:flex md:justify-start">
-        {socialMediaLinks.map((link, idx) => (
-          <a href={link.to} key={idx}>
-            <img
-              src={`/icons/${link.name}.svg`}
-              width={20}
-              style={{
-                filter: theme === 'dark' ? 'invert(0)' : 'invert(1)',
-              }}
-            />
+    <footer className="bg-white dark:bg-black border-t-[1px]">
+      <div className="flex flex-col w-full gap-x-4 gap-y-4 px-6 py-6">
+        {/* footer links */}
+        <div className="flex w-full items-center justify-between">
+          <div className="flex gap-4">
+            {socialMediaLinks.map((link, idx) => (
+              <a href={link.to} key={idx}>
+                <img
+                  src={`/icons/${link.name}.svg`}
+                  className="h-5"
+                  style={{
+                    filter:
+                      resolvedTheme === 'dark' ? 'invert(0)' : (
+                        'invert(1)'
+                      ),
+                  }}
+                />
+              </a>
+            ))}
+          </div>
+          <div className="flex">
+            <ThemeSwitcher />
+          </div>
+        </div>
+
+        {/* footer policies */}
+        <div className="flex flex-row w-full items-center justify-between">
+          <a
+            href="https://www.vlt.sh/"
+            className="no-underline text-sm text-muted-foreground hover:text-foreground transition-all">
+            &copy; {new Date().getFullYear()} vlt technology inc.
           </a>
-        ))}
+          <div className="flex flex-row gap-4">
+            <a
+              href="https://www.vlt.sh/terms"
+              className="no-underline font-medium text-muted-foreground text-sm hover:text-foreground transition-all">
+              Terms
+            </a>
+            <a
+              href="https://www.vlt.sh/privacy"
+              className="no-underline font-medium text-muted-foreground text-sm hover:text-foreground transition-all">
+              Privacy
+            </a>
+          </div>
+        </div>
       </div>
-      <div className="flex items-center w-full justify-center">
-        <p className="text-xs text-muted-foreground">
-          &copy; {new Date().getFullYear()} vlt technology inc.
-        </p>
-      </div>
-      <div className="hidden md:flex" />
     </footer>
   )
 }
