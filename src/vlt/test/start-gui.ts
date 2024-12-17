@@ -249,6 +249,11 @@ t.test('e2e server test', async t => {
         ilog += 'install\n'
       },
     },
+    '../src/uninstall.js': {
+      async uninstall() {
+        ilog += 'uninstall\n'
+      },
+    },
     '../src/output.js': {
       stderr: () => {},
       stdout: (str: string) => {
@@ -368,7 +373,9 @@ t.test('e2e server test', async t => {
     t.strictSame(ilog, '', 'should not install dependencies')
     t.strictSame(
       resMissingArgs,
-      'Bad request',
+      JSON.stringify(
+        'Bad request.\nGUI install endpoint called without add argument',
+      ),
       'should respond with bad request response',
     )
   })
@@ -422,12 +429,128 @@ t.test('e2e server test', async t => {
     const res = await req.text()
     t.strictSame(
       req.status,
-      400,
+      500,
       'should respond with bad request status code',
     )
     t.match(
       res,
       /Install failed./,
+      'should respond with failed error info',
+    )
+  })
+
+  await t.test('/uninstall', async t => {
+    const port = 8020
+    const options = {
+      projectRoot: resolve(dir, 'projects/my-project'),
+      packageJson: new PackageJson(),
+      scurry: new PathScurry(dir),
+    }
+    const server = await startGUI({
+      conf: {
+        options,
+        resetOptions(newProjectRoot: string) {
+          options.projectRoot = newProjectRoot
+        },
+      } as LoadedConfig,
+      assetsDir,
+      port,
+      tmpDir: resolve(dir, 'assets-dir'),
+    })
+    t.teardown(() => server.close())
+
+    // tests a POST to /uninstall
+    const reqUninstall = await fetch(
+      `http://localhost:${port}/uninstall`,
+      {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        method: 'POST',
+        body: JSON.stringify({
+          remove: {
+            [joinDepIDTuple(['file', '.'])]: ['abbrev'],
+          },
+        }),
+      },
+    )
+    const resUninstall = await reqUninstall.json()
+    t.strictSame(resUninstall, 'ok', 'should respond with ok')
+
+    // missing remove args
+    const reqMissingArgs = await fetch(
+      `http://localhost:${port}/uninstall`,
+      {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        method: 'POST',
+        body: JSON.stringify({}),
+      },
+    )
+    const resMissingArgs = await reqMissingArgs.text()
+    t.strictSame(
+      resMissingArgs,
+      JSON.stringify(
+        'Bad request.\nGUI uninstall endpoint called with no arguments',
+      ),
+      'should respond with bad request response',
+    )
+  })
+
+  await t.test('uninstall error', async t => {
+    const port = 8021
+    const options = {
+      projectRoot: resolve(dir, 'projects/my-project'),
+      packageJson: new PackageJson(),
+      scurry: new PathScurry(dir),
+    }
+    // broken uninstall
+    const { startGUI } = await t.mockImport('../src/start-gui.js', {
+      opener: () => {},
+      '../src/uninstall.js': {
+        async uninstall() {
+          throw new Error('ERR')
+        },
+      },
+      '../src/output.js': {
+        stderr: () => {},
+        stdout: () => {},
+      },
+    })
+    const server = await startGUI({
+      conf: {
+        options,
+        resetOptions(newProjectRoot: string) {
+          options.projectRoot = newProjectRoot
+        },
+      } as LoadedConfig,
+      assetsDir,
+      port,
+      tmpDir: resolve(dir, 'assets-dir'),
+    })
+    t.teardown(() => server.close())
+
+    const req = await fetch(`http://localhost:${port}/uninstall`, {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      method: 'POST',
+      body: JSON.stringify({
+        remove: {
+          [joinDepIDTuple(['file', '.'])]: ['abbrev'],
+        },
+      }),
+    })
+    const res = await req.text()
+    t.strictSame(
+      req.status,
+      500,
+      'should respond with bad request status code',
+    )
+    t.match(
+      res,
+      /Uninstall failed./,
       'should respond with failed error info',
     )
   })

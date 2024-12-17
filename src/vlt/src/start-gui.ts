@@ -27,6 +27,7 @@ import {
 } from './config/index.js'
 import { stderr, stdout } from './output.js'
 import { type InstallOptions, install } from './install.js'
+import { type UninstallOptions, uninstall } from './uninstall.js'
 import { Spec } from '@vltpkg/spec'
 
 const HOST = 'localhost'
@@ -40,6 +41,8 @@ export type GUIInstallOptions = Record<
   string,
   Record<string, { version: string; type: DependencyTypeShort }>
 >
+
+export type GUIUninstallOptions = Record<string, Set<string>>
 
 export type StartGUIOptions = {
   assetsDir: string
@@ -114,6 +117,21 @@ export const parseInstallOptions = (
     addArgs.set(asDepID(importerId), depMap)
   }
   return { add: addArgs, conf }
+}
+
+export const parseUninstallOptions = (
+  conf: LoadedConfig,
+  args: GUIUninstallOptions,
+): UninstallOptions => {
+  const removeArgs = new Map<DepID, Set<string>>()
+  for (const [importerId, deps] of Object.entries(args)) {
+    const depMap = new Set<string>()
+    for (const name of deps) {
+      depMap.add(name)
+    }
+    removeArgs.set(asDepID(importerId), depMap)
+  }
+  return { remove: removeArgs, conf }
 }
 
 export const inferTools = (
@@ -278,7 +296,7 @@ export const startGUI = async ({
         res.writeHead(200, { 'Content-Type': 'application/json' })
         res.end(JSON.stringify('ok'))
       })
-    } else if (req.url === '/install') {
+    } else if (req.url === '/install' && req.method === 'POST') {
       req.setEncoding('utf8')
       let json = ''
       req.on('data', (d: string) => {
@@ -289,9 +307,11 @@ export const startGUI = async ({
           add?: GUIInstallOptions
         }
         if (!add) {
-          stderr('GUI install endpoint called without add argument')
+          const err =
+            'GUI install endpoint called without add argument'
+          stderr(err)
           res.statusCode = 400
-          res.end('Bad request')
+          res.end(JSON.stringify(`Bad request.\n${err}`))
           return
         }
         install(parseInstallOptions(conf, add))
@@ -305,8 +325,43 @@ export const startGUI = async ({
           })
           .catch((err: unknown) => {
             stderr(err)
-            res.statusCode = 400
-            res.end(`Install failed.\n${String(err)}`)
+            res.statusCode = 500
+            res.end(JSON.stringify(`Install failed.\n${String(err)}`))
+          })
+      })
+    } else if (req.url === '/uninstall' && req.method === 'POST') {
+      req.setEncoding('utf8')
+      let json = ''
+      req.on('data', (d: string) => {
+        json += d
+      })
+      req.on('end', () => {
+        const { remove } = JSON.parse(json) as {
+          remove?: GUIUninstallOptions
+        }
+        if (!remove) {
+          const err =
+            'GUI uninstall endpoint called with no arguments'
+          stderr(err)
+          res.statusCode = 400
+          res.end(JSON.stringify(`Bad request.\n${err}`))
+          return
+        }
+        uninstall(parseUninstallOptions(conf, remove))
+          .then(() => {
+            conf.resetOptions(conf.options.projectRoot)
+            updateGraphData(tmp, conf, hasDashboard)
+            res.writeHead(200, {
+              'Content-Type': 'application/json',
+            })
+            res.end(JSON.stringify('ok'))
+          })
+          .catch((err: unknown) => {
+            stderr(err)
+            res.statusCode = 500
+            res.end(
+              JSON.stringify(`Uninstall failed.\n${String(err)}`),
+            )
           })
       })
       /* c8 ignore start */

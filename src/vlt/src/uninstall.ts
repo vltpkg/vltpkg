@@ -1,5 +1,5 @@
 import {
-  type AddImportersDependenciesMap,
+  type RemoveImportersDependenciesMap,
   actual,
   ideal,
   reify,
@@ -7,22 +7,25 @@ import {
 import { PackageInfoClient } from '@vltpkg/package-info'
 import { type LoadedConfig } from './types.js'
 
-export type InstallOptions = {
+export type UninstallOptions = {
   conf: LoadedConfig
-  add?: AddImportersDependenciesMap
+  remove?: RemoveImportersDependenciesMap
 }
 
-export const install = async ({ add, conf }: InstallOptions) => {
+export const uninstall = async ({
+  remove,
+  conf,
+}: UninstallOptions) => {
   const mainManifest = conf.options.packageJson.read(
     conf.options.projectRoot,
   )
 
   const graph = await ideal.build({
     ...conf.options,
-    add,
+    packageInfo: new PackageInfoClient(conf.options),
+    remove,
     mainManifest,
     loadManifests: true,
-    packageInfo: new PackageInfoClient(conf.options),
   })
   const act = actual.load({
     ...conf.options,
@@ -32,7 +35,7 @@ export const install = async ({ add, conf }: InstallOptions) => {
   await reify({
     ...conf.options,
     packageInfo: new PackageInfoClient(conf.options),
-    add,
+    remove,
     actual: act,
     graph,
     loadManifests: true,

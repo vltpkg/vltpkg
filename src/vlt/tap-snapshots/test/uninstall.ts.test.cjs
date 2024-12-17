@@ -5,15 +5,8 @@
  * Make sure to inspect the output below.  Do not ignore changes!
  */
 'use strict'
-exports[`test/install.ts > TAP > install > should call build -> actual.load -> reify 1`] = `
-buildideal result adds 0 new package(s)
-actual.load
-reify
-
-`
-
-exports[`test/install.ts > TAP > install > should call build adding new dependency 1`] = `
-buildideal result adds 1 new package(s)
+exports[`test/uninstall.ts > TAP > uninstall > should call build removing a dependency 1`] = `
+buildideal result removes 1 new package(s)
 actual.load
 reify
 
