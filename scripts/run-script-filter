@@ -36,6 +36,8 @@ else
   output "--recursive"
 fi
 
+# see if the passed in filter args result in any changed workspaces
+# if so, then return those to be run
 FILTER_PREPARE="...$FILTER..."
 FILTER_TEST="...$FILTER"
 if has_changes $FILTER_FLAG $FILTER_TEST; then
@@ -44,6 +46,20 @@ if has_changes $FILTER_FLAG $FILTER_TEST; then
   echo "Workspaces to test:"
   pnpm --shell-mode $FILTER_FLAG $FILTER_TEST exec echo "  - \$PNPM_PACKAGE_NAME"
   output "$FILTER_FLAG=\"$FILTER_PREPARE\"" "$FILTER_FLAG=\"$FILTER_TEST\""
-else
-  echo "Found no changes based on $FILTER_ARG $FILTER"
 fi
+
+# no workspaces changes, so look for some special files that mean run everything
+CHANGED_FILES=($(git diff HEAD "${FILTER//[\[\]]/}" --name-only))
+RUN_ALL_FILES=("pnpm-lock.yaml" "pnpm-workspace.yaml")
+
+
+for file in "${CHANGED_FILES[@]}"; do
+  if [[ " ${RUN_ALL_FILES[@]} " =~ " ${file} " ]]; then
+    echo "Found ${file} in changed files. Running all workspaces"
+    output "--recursive"
+  fi
+done
+
+echo "Found no changes"
+echo "Filters: '$FILTER_FLAG $FILTER'"
+echo "Changed files: '${CHANGED_FILES[@]}'"
