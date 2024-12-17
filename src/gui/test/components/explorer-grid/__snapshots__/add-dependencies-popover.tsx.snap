@@ -1,6 +1,40 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`manage-dependencies render default 1`] = `
+exports[`add-dependencies-popover error 1`] = `
+
+<div>
+  <gui-card-header classname="rounded-t-lg relative flex flex-col w-full p-0">
+    <div class="flex items-center justify-between px-6 py-4">
+      <gui-card-title classname="text-lg font-medium flex items-center">
+        <gui-battery-low-icon
+          size="18"
+          classname="mr-2"
+        >
+        </gui-battery-low-icon>
+        Error
+      </gui-card-title>
+    </div>
+  </gui-card-header>
+  <div class="flex items-center flex-row justify-between gap-2 flex-wrap p-6 border-muted-foreground/20 border-t-[1px]">
+    <p class="text-sm">
+      Failed to install package
+    </p>
+  </div>
+  <div class="flex justify-end w-full">
+    <gui-button
+      classname="m-2"
+      role="cancel"
+      variant="secondary"
+      tabindex="4"
+    >
+      Close
+    </gui-button>
+  </div>
+</div>
+
+`;
+
+exports[`add-dependencies-popover in progress 1`] = `
 
 <div>
   <gui-card-header classname="rounded-t-lg relative flex flex-col w-full p-0">
@@ -15,7 +49,30 @@ exports[`manage-dependencies render default 1`] = `
       </gui-card-title>
     </div>
   </gui-card-header>
-  <div class="flex items-center flex-row justify-between gap-2 flex-wrap p-6 border-muted-foreground/20 border-t-[1px]">
+  <div class="flex justify-center items-center h-48">
+    <gui-loading-spinner>
+    </gui-loading-spinner>
+  </div>
+</div>
+
+`;
+
+exports[`add-dependencies-popover render default 1`] = `
+
+<div>
+  <gui-card-header classname="rounded-t-lg relative flex flex-col w-full p-0">
+    <div class="flex items-center justify-between px-6 py-4">
+      <gui-card-title classname="text-lg font-medium flex items-center">
+        <gui-package-plus-icon
+          size="18"
+          classname="mr-2"
+        >
+        </gui-package-plus-icon>
+        Add new dependency
+      </gui-card-title>
+    </div>
+  </gui-card-header>
+  <form class="flex items-center flex-row justify-between gap-2 flex-wrap p-6 border-muted-foreground/20 border-t-[1px]">
     <gui-label
       htmlfor="package-name"
       classname="ml-1"
@@ -72,16 +129,14 @@ exports[`manage-dependencies render default 1`] = `
       </gui-select-content>
     </gui-select>
     <div class="flex justify-end w-full">
-      <gui-popover-close>
-        <gui-button
-          classname="mt-2 mr-2"
-          role="cancel"
-          variant="secondary"
-          tabindex="4"
-        >
-          Cancel
-        </gui-button>
-      </gui-popover-close>
+      <gui-button
+        classname="mt-2 mr-2"
+        role="cancel"
+        variant="secondary"
+        tabindex="4"
+      >
+        Cancel
+      </gui-button>
       <gui-button
         classname="mt-2"
         role="submit"
@@ -92,7 +147,7 @@ exports[`manage-dependencies render default 1`] = `
         Install package
       </gui-button>
     </div>
-  </div>
+  </form>
 </div>
 
 `;

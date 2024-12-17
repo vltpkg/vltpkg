@@ -37,7 +37,7 @@ test('SideItem render as dependent', async () => {
     size: 1,
   } satisfies GridItemData
   render(
-    <SideItem item={item} dependencies={false} onClick={() => {}} />,
+    <SideItem item={item} dependencies={false} onSelect={() => {}} />,
   )
   expect(window.document.body.innerHTML).toMatchSnapshot()
 })
@@ -57,7 +57,7 @@ test('SideItem render as parent', async () => {
       item={item}
       dependencies={false}
       highlight={true}
-      onClick={() => {}}
+      onSelect={() => {}}
     />,
   )
   expect(window.document.body.innerHTML).toMatchSnapshot()
@@ -74,7 +74,7 @@ test('SideItem render as two-stacked dependent', async () => {
     size: 2,
   } satisfies GridItemData
   render(
-    <SideItem item={item} dependencies={false} onClick={() => {}} />,
+    <SideItem item={item} dependencies={false} onSelect={() => {}} />,
   )
   expect(window.document.body.innerHTML).toMatchSnapshot()
 })
@@ -90,7 +90,7 @@ test('SideItem render as multi-stacked dependent', async () => {
     size: 5,
   } satisfies GridItemData
   render(
-    <SideItem item={item} dependencies={false} onClick={() => {}} />,
+    <SideItem item={item} dependencies={false} onSelect={() => {}} />,
   )
   expect(window.document.body.innerHTML).toMatchSnapshot()
 })
@@ -106,7 +106,7 @@ test('SideItem render as dependency', async () => {
     size: 1,
   } satisfies GridItemData
   render(
-    <SideItem item={item} dependencies={true} onClick={() => {}} />,
+    <SideItem item={item} dependencies={true} onSelect={() => {}} />,
   )
   expect(window.document.body.innerHTML).toMatchSnapshot()
 })
@@ -123,7 +123,7 @@ test('SideItem render as dependency with long name', async () => {
     size: 1,
   } satisfies GridItemData
   render(
-    <SideItem item={item} dependencies={true} onClick={() => {}} />,
+    <SideItem item={item} dependencies={true} onSelect={() => {}} />,
   )
   expect(window.document.body.innerHTML).toMatchSnapshot()
 })
