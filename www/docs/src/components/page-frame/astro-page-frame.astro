@@ -1,0 +1,33 @@
+---
+import type { Props } from '@astrojs/starlight/props'
+import Footer from '@/components/footer/footer.tsx'
+const { hasSidebar } = Astro.props
+---
+
+<div class="flex flex-col min-h-svh w-full">
+  {/* top */}
+  <header>
+    <slot name="header" />
+  </header>
+
+  {/* content */}
+  <div
+    class="flex flex-row h-full w-full flex-grow max-w-screen-xl mx-0 md:mx-auto md:px-6">
+    {
+      hasSidebar && (
+        <aside class="-pr-10">
+          <slot name="sidebar" />
+        </aside>
+      )
+    }
+    <div class="w-full flex-grow">
+      <slot />
+    </div>
+  </div>
+
+  {/* bottom */}
+  <Footer
+    client:only="react"
+    {...{ ...Astro.props, labels: undefined } as any}
+  />
+</div>
