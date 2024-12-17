@@ -26,6 +26,9 @@ vi.mock('@/app/explorer.jsx', () => ({
 vi.mock('@/app/error-found.jsx', () => ({
   ErrorFound: 'gui-error-found',
 }))
+vi.mock('@/components/ui/toaster.jsx', () => ({
+  Toaster: 'gui-toaster',
+}))
 
 expect.addSnapshotSerializer({
   serialize: v => html(v),
