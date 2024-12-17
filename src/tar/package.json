@@ -7,6 +7,9 @@
     "dialects": [
       "esm"
     ],
+    "sourceDialects": [
+      "@vltpkg/source"
+    ],
     "exports": {
       "./package.json": "./package.json",
       ".": "./src/index.ts",
@@ -62,24 +65,28 @@
     "./package.json": "./package.json",
     ".": {
       "import": {
+        "@vltpkg/source": "./src/index.ts",
         "types": "./dist/esm/index.d.ts",
         "default": "./dist/esm/index.js"
       }
     },
     "./pool": {
       "import": {
+        "@vltpkg/source": "./src/pool.ts",
         "types": "./dist/esm/pool.d.ts",
         "default": "./dist/esm/pool.js"
       }
     },
     "./unpack": {
       "import": {
+        "@vltpkg/source": "./src/unpack.ts",
         "types": "./dist/esm/unpack.d.ts",
         "default": "./dist/esm/unpack.js"
       }
     },
     "./unpack-request": {
       "import": {
+        "@vltpkg/source": "./src/unpack-request.ts",
         "types": "./dist/esm/unpack-request.d.ts",
         "default": "./dist/esm/unpack-request.js"
       }

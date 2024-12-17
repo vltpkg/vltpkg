@@ -5,6 +5,7 @@ import { readFileSync } from 'fs'
 import { resolve } from 'path'
 import jsdoc from 'eslint-plugin-jsdoc'
 import importPlugin from 'eslint-plugin-import'
+import { defaultConditionNames } from 'eslint-import-resolver-typescript'
 
 // 'error' to fix, or 'warn' to see
 const BE_EXTRA = process.env.LINT_SUPER_CONSISTENT ?? 'off'
@@ -39,7 +40,18 @@ export default tseslint.config(
     },
     settings: {
       'import/resolver': {
-        typescript: true,
+        typescript: {
+          alwaysTryTypes: true,
+          conditionNames: [
+            '@vltpkg/source',
+            ...defaultConditionNames,
+          ],
+          project: [
+            'src/*/tsconfig.json',
+            'infra/*/tsconfig.json',
+            'www/*/tsconfig.json',
+          ],
+        },
         node: true,
       },
     },
@@ -226,14 +238,26 @@ export default tseslint.config(
   },
   {
     /**
-     * Front end code
+     * shadcn-ui specific patterns
      */
-    files: ['{src/gui,www/docs}/{src,test}/**/*.{tsx,ts}'],
+    files: ['{src/gui,www/docs}/src/components/ui/*.{tsx,ts}'],
     rules: {
-      // TODO: get eslint import resolver working with workspace tsconfig paths
-      'import/no-unresolved': 'off',
-      // shadcn-ui specific patterns
       '@typescript-eslint/no-empty-object-type': 'off',
+    },
+  },
+  {
+    /**
+     * Astro
+     */
+    files: ['www/docs/**/*.{ts,tsx}'],
+    rules: {
+      'import/no-unresolved': [
+        2,
+        {
+          // https://github.com/import-js/eslint-import-resolver-typescript/issues/261
+          ignore: ['astro:content', 'virtual:starlight/user-config'],
+        },
+      ],
     },
   },
   {
