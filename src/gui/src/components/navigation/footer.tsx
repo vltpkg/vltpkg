@@ -1,33 +1,41 @@
-import { useTheme } from '@/components/ui/theme-provider.jsx'
 import ThemeSwitcher from '@/components/theme-switcher/theme-switcher.jsx'
+import {
+  Discord,
+  Linkedin,
+  Github,
+  TwitterX,
+} from '@/components/icons/index.js'
 
 interface SocialMediaLink {
   name: string
   to: string
+  component: React.ComponentType<React.SVGProps<SVGSVGElement>>
 }
 
 const socialMediaLinks: SocialMediaLink[] = [
   {
     name: 'linkedin',
     to: 'https://www.linkedin.com/company/vltpkg/',
+    component: props => <Linkedin {...props} />,
   },
   {
     name: 'twitter-x',
     to: 'https://x.com/vltpkg',
+    component: props => <TwitterX {...props} />,
   },
   {
     name: 'github',
     to: 'https://github.com/vltpkg',
+    component: props => <Github {...props} />,
   },
   {
     name: 'discord',
     to: 'https://discord.gg/vltpkg',
+    component: props => <Discord {...props} />,
   },
 ]
 
 export const Footer = () => {
-  const { resolvedTheme } = useTheme()
-
   return (
     <footer className="bg-white dark:bg-black border-t-[1px]">
       <div className="flex flex-col w-full gap-x-4 gap-y-4 px-6 py-6">
@@ -36,16 +44,7 @@ export const Footer = () => {
           <div className="flex gap-4">
             {socialMediaLinks.map((link, idx) => (
               <a href={link.to} key={idx}>
-                <img
-                  src={`/icons/${link.name}.svg`}
-                  className="h-5"
-                  style={{
-                    filter:
-                      resolvedTheme === 'dark' ? 'invert(0)' : (
-                        'invert(1)'
-                      ),
-                  }}
-                />
+                <link.component className="fill-black dark:fill-white h-5" />
               </a>
             ))}
           </div>
