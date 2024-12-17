@@ -1,22 +1,31 @@
-import { useRef, useEffect } from 'react'
+import { useRef, useEffect, type MouseEvent } from 'react'
+import { Ellipsis, PackageMinus } from 'lucide-react'
 import { Badge } from '@/components/ui/badge.jsx'
 import { Card, CardHeader, CardTitle } from '@/components/ui/card.jsx'
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from '@/components/ui/dropdown-menu.jsx'
 import { labelClassNamesMap } from './label-helper.js'
-import { type GridItemOptions } from './types.js'
+import { type GridItemData, type GridItemOptions } from './types.js'
 
 export type SideItemOptions = GridItemOptions & {
-  onClick: () => undefined
   parent?: boolean
   idx?: number
+  onSelect: () => undefined
+  onUninstall?: (item: GridItemData) => void
 }
 
 export const SideItem = ({
   dependencies,
   item,
   highlight,
-  onClick,
   parent,
   idx,
+  onSelect,
+  onUninstall,
 }: SideItemOptions) => {
   // These refs and the code in useEffect are used to fix the line connection
   // height for when the first dependency item title takes up more space than
@@ -31,6 +40,14 @@ export const SideItem = ({
       }
     }
   })
+  const uninstallItem = (e: MouseEvent) => {
+    e.preventDefault()
+    if (onUninstall) {
+      onUninstall(item)
+    }
+  }
+
+  const uninstallAvailable = !!onUninstall && item.from?.importer
 
   return (
     <div className="group relative z-10" ref={divRef}>
@@ -43,21 +60,16 @@ export const SideItem = ({
         </>
       : ''}
       <Card
-        tabIndex={1}
         role="article"
-        className={`transition-all relative my-4 ${highlight ? 'border-foreground' : ''} ${item.to ? 'cursor-pointer' : ''} group-hover:border-neutral-400 dark:group-hover:border-neutral-600`}
-        onClick={onClick}
-        onKeyDown={(e: React.KeyboardEvent<HTMLElement>) => {
-          if (e.key === 'Enter') {
-            onClick()
-          }
-        }}>
+        className={`transition-all relative my-4 ${highlight ? 'border-foreground' : ''} cursor-pointer group-hover:border-neutral-400 dark:group-hover:border-neutral-600`}
+        onClick={onSelect}>
         <CardHeader className="rounded-t-lg relative flex flex-col w-full p-0">
-          <div className="flex items-center justify-between px-3 py-2">
-            <CardTitle className="text-sm font-medium flex items-center">
+          <div className="flex items-center px-3 py-2">
+            <CardTitle
+              className={`text-sm font-medium flex-1 items-center ${uninstallAvailable ? 'pl-8' : ''}`}>
               {item.name}
             </CardTitle>
-            <div className="px-2 py-1 border-[1px] border-solid rounded-full">
+            <div className="px-2 py-1 border-[1px] border-solid rounded-full flex-initial">
               <p className="text-xs">{item.version}</p>
             </div>
           </div>
@@ -82,6 +94,23 @@ export const SideItem = ({
           </div>
         </CardHeader>
       </Card>
+      {uninstallAvailable ?
+        <div className="absolute top-3 left-3">
+          <DropdownMenu>
+            <DropdownMenuTrigger className="w-8 flex-none">
+              <Ellipsis className="text-muted-foreground" size={20} />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              className="w-48 ml-48"
+              onCloseAutoFocus={e => e.preventDefault()}>
+              <DropdownMenuItem onClick={uninstallItem}>
+                <PackageMinus size={16} />
+                Remove dependency
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      : ''}
       {highlight ?
         <div className="absolute border-t border-solid border-muted-foreground w-4 -right-4 top-7" />
       : dependencies ?
