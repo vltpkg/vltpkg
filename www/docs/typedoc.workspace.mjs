@@ -30,10 +30,9 @@ export default cwd => {
       tshy.exports
     : null
   return {
-    excludeInternal: true,
-    excludePrivate: true,
-    excludeProtected: true,
+    // get readme local to workspace
     readme: join(cwd, './README.md'),
+    // get entry points from package.json exports
     entryPoints: Object.values(exports ?? {})
       .filter(p => !p.endsWith('package.json'))
       .map(p => join(cwd, p)),
