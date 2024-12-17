@@ -1,4 +1,10 @@
-import { type ChangeEvent, useState } from 'react'
+import {
+  type ChangeEvent,
+  useState,
+  type SyntheticEvent,
+  type KeyboardEvent,
+  type MouseEvent,
+} from 'react'
 import { BatteryLow, PackageCheck, PackagePlus } from 'lucide-react'
 import { Button } from '@/components/ui/button.jsx'
 import { CardHeader, CardTitle } from '@/components/ui/card.jsx'
@@ -11,121 +17,52 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select.jsx'
-import { PopoverClose } from '@/components/ui/popover.jsx'
 import { LoadingSpinner } from '@/components/ui/loading-spinner.jsx'
-import { type Action } from '@/state/types.js'
-import { useGraphStore } from '@/state/index.js'
-import { useToast } from '@/components/hooks/use-toast.js'
 
-type ManageDependenciesProps = {
-  importerId: string
-  onSuccessfulInstall: (str: string) => void
-}
-
-type InstallPackageOptions = {
-  setError: (str: string) => void
-  setInProgress: (bool: boolean) => void
-  updateStamp: Action['updateStamp']
-  toast: ReturnType<typeof useToast>['toast']
+export type InstallOptions = {
   name: string
   version: string
   type: string
-  importerId: string
-  onSuccessfulInstall: ManageDependenciesProps['onSuccessfulInstall']
 }
 
-const installPackage = async ({
-  setError,
-  setInProgress,
-  updateStamp,
-  toast,
-  importerId,
-  name,
-  version,
-  type,
-  onSuccessfulInstall,
-}: InstallPackageOptions) => {
-  let req
-  try {
-    setInProgress(true)
-    req = await fetch('/install', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        add: {
-          [importerId]: {
-            [name]: {
-              version,
-              type,
-            },
-          },
-        },
-      }),
-    })
-  } catch (err) {
-    console.error(err)
-    setError(String(err))
-    return
-  } finally {
-    setInProgress(false)
-  }
-
-  let installed = false
-  try {
-    installed = (await req.json()) === 'ok'
-  } catch (err) {
-    console.error(err)
-  }
-
-  if (installed) {
-    toast({
-      description: `Successfully installed: ${name}`,
-    })
-    onSuccessfulInstall(name)
-    updateStamp()
-  } else {
-    setError('Failed to install dependency.')
-  }
+export type AddDependenciesPopoverProps = {
+  error: string
+  inProgress: boolean
+  onInstall: (o: InstallOptions) => void
+  onClose: () => void
 }
 
-export const ManageDependencies = ({
-  importerId,
-  onSuccessfulInstall,
-}: ManageDependenciesProps) => {
-  const { toast } = useToast()
-  const updateStamp = useGraphStore(state => state.updateStamp)
-  const updateActiveRoute = useGraphStore(
-    state => state.updateActiveRoute,
-  )
-  const updateErrorCause = useGraphStore(
-    state => state.updateErrorCause,
-  )
-  const [error, setError] = useState<string>('')
-  const [inProgress, setInProgress] = useState<boolean>(false)
+export const AddDependenciesPopover = ({
+  error,
+  inProgress,
+  onInstall,
+  onClose,
+}: AddDependenciesPopoverProps) => {
   const [packageName, setPackageName] = useState<string>('')
   const [packageVersion, setPackageVersion] =
     useState<string>('latest')
   const [packageType, setPackageType] = useState<string>('prod')
-  const onInstall = () => {
-    installPackage({
-      setError,
-      setInProgress,
-      updateStamp,
-      toast,
-      importerId,
+  const formSubmit = (e: SyntheticEvent) => {
+    e.stopPropagation()
+    e.preventDefault()
+    onInstall({
       name: packageName,
       version: packageVersion,
       type: packageType,
-      onSuccessfulInstall,
-    }).catch((err: unknown) => {
-      console.error(err)
-      updateActiveRoute('/error')
-      updateErrorCause(
-        'Unexpected error trying to install dependency.',
-      )
     })
+  }
+  // we need to add this extra event handler in order to avoid
+  // radix-ui/popover from closing the popup on pressing enter
+  const keyDown = (e: KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      formSubmit(e)
+    }
+  }
+
+  const closePopover = (e: MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    onClose()
   }
 
   if (inProgress) {
@@ -161,15 +98,14 @@ export const ManageDependencies = ({
           <p className="text-sm">{error}</p>
         </div>
         <div className="flex justify-end w-full">
-          <PopoverClose>
-            <Button
-              className="m-2"
-              role="cancel"
-              variant="secondary"
-              tabIndex={4}>
-              Close
-            </Button>
-          </PopoverClose>
+          <Button
+            className="m-2"
+            role="cancel"
+            variant="secondary"
+            tabIndex={4}
+            onClick={closePopover}>
+            Close
+          </Button>
         </div>
       </>
     )
@@ -185,7 +121,10 @@ export const ManageDependencies = ({
           </CardTitle>
         </div>
       </CardHeader>
-      <div className="flex items-center flex-row justify-between gap-2 flex-wrap p-6 border-muted-foreground/20 border-t-[1px]">
+      <form
+        className="flex items-center flex-row justify-between gap-2 flex-wrap p-6 border-muted-foreground/20 border-t-[1px]"
+        onSubmit={formSubmit}
+        onKeyDown={keyDown}>
         <Label htmlFor="package-name" className="ml-1">
           Package Name
         </Label>
@@ -234,25 +173,20 @@ export const ManageDependencies = ({
           </SelectContent>
         </Select>
         <div className="flex justify-end w-full">
-          <PopoverClose>
-            <Button
-              className="mt-2 mr-2"
-              role="cancel"
-              variant="secondary"
-              tabIndex={4}>
-              Cancel
-            </Button>
-          </PopoverClose>
           <Button
-            className="mt-2"
-            role="submit"
-            tabIndex={5}
-            onClick={onInstall}>
+            className="mt-2 mr-2"
+            role="cancel"
+            variant="secondary"
+            tabIndex={4}
+            onClick={closePopover}>
+            Cancel
+          </Button>
+          <Button className="mt-2" role="submit" tabIndex={5}>
             <PackageCheck size={16} />
             Install package
           </Button>
         </div>
-      </div>
+      </form>
     </>
   )
 }

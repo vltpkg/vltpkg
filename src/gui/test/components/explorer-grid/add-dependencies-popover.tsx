@@ -2,7 +2,7 @@ import { vi, test, expect, afterEach } from 'vitest'
 import { cleanup, render } from '@testing-library/react'
 import html from 'diffable-html'
 import { useGraphStore as useStore } from '@/state/index.js'
-import { ManageDependencies } from '@/components/explorer-grid/manage-dependencies.jsx'
+import { AddDependenciesPopover } from '@/components/explorer-grid/add-dependencies-popover.jsx'
 
 vi.mock('lucide-react', () => ({
   BatteryLow: 'gui-battery-low-icon',
@@ -54,11 +54,37 @@ afterEach(() => {
   cleanup()
 })
 
-test('manage-dependencies render default', async () => {
+test('add-dependencies-popover render default', async () => {
   render(
-    <ManageDependencies
-      importerId="file:."
-      onSuccessfulInstall={() => {}}
+    <AddDependenciesPopover
+      error=""
+      inProgress={false}
+      onInstall={() => {}}
+      onClose={() => {}}
+    />,
+  )
+  expect(window.document.body.innerHTML).toMatchSnapshot()
+})
+
+test('add-dependencies-popover error', async () => {
+  render(
+    <AddDependenciesPopover
+      error="Failed to install package"
+      inProgress={false}
+      onInstall={() => {}}
+      onClose={() => {}}
+    />,
+  )
+  expect(window.document.body.innerHTML).toMatchSnapshot()
+})
+
+test('add-dependencies-popover in progress', async () => {
+  render(
+    <AddDependenciesPopover
+      error=""
+      inProgress={true}
+      onInstall={() => {}}
+      onClose={() => {}}
     />,
   )
   expect(window.document.body.innerHTML).toMatchSnapshot()

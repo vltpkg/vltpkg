@@ -16,7 +16,98 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover.jsx'
-import { ManageDependencies } from '@/components/explorer-grid/manage-dependencies.jsx'
+import {
+  AddDependenciesPopover,
+  type InstallOptions,
+} from '@/components/explorer-grid/add-dependencies-popover.jsx'
+import { useToast } from '@/components/hooks/use-toast.js'
+import { type Action } from '@/state/types.js'
+import { useGraphStore } from '@/state/index.js'
+
+type ChangePackageOptions = {
+  operation: 'install' | 'uninstall'
+  setError: (str: string) => void
+  setInProgress: (bool: boolean) => void
+  updateStamp: Action['updateStamp']
+  toast: ReturnType<typeof useToast>['toast']
+  name: string
+  version?: string
+  type?: string
+  importerId: DepID
+  onSuccessful?: (str: string) => void
+}
+
+const changePackage = async ({
+  operation,
+  setError,
+  setInProgress,
+  updateStamp,
+  toast,
+  importerId,
+  name,
+  version,
+  type,
+  onSuccessful,
+}: ChangePackageOptions) => {
+  const body =
+    operation === 'install' ?
+      {
+        add: {
+          [importerId]: {
+            [name]: {
+              version,
+              type,
+            },
+          },
+        },
+      }
+    : {
+        remove: {
+          [importerId]: [name],
+        },
+      }
+  let req
+  try {
+    setInProgress(true)
+    req = await fetch(`/${operation}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(body),
+    })
+  } catch (err) {
+    console.error(err)
+    setError(String(err))
+    return
+  } finally {
+    setInProgress(false)
+  }
+
+  let installed = false
+  let res = ''
+  try {
+    res = (await req.json()) as string
+    installed = res === 'ok'
+  } catch (err) {
+    console.warn('unable to parse json response:', err)
+  }
+
+  if (installed) {
+    toast({
+      description: `Successfully ${operation}ed: ${name}`,
+    })
+    onSuccessful?.(name)
+    updateStamp()
+  } else {
+    if ((req.status === 500 || req.status === 400) && res) {
+      setError(res)
+    }
+    if (!res) {
+      setError('Failed to install dependency.')
+    }
+  }
+}
 
 export type DependencySideBarProps = {
   dependencies: GridItemData[]
@@ -29,17 +120,85 @@ export const DependencySideBar = ({
   importerId,
   onDependencyClick,
 }: DependencySideBarProps) => {
+  const { toast } = useToast()
+  const updateStamp = useGraphStore(state => state.updateStamp)
+  const updateActiveRoute = useGraphStore(
+    state => state.updateActiveRoute,
+  )
+  const updateErrorCause = useGraphStore(
+    state => state.updateErrorCause,
+  )
+  const [error, setError] = useState<string>('')
+  const [inProgress, setInProgress] = useState<boolean>(false)
   const [showAddDepPopover, setShowAddDepPopover] = useState(false)
   const [addedDependencies, setAddedDependencies] = useState<
     string[]
   >([])
   const toggleShowAddDepPopover = () => {
+    // if there is an error, clear it when opening the popover
+    if (showAddDepPopover && error) {
+      setError('')
+      setInProgress(false)
+    }
     setShowAddDepPopover(!showAddDepPopover)
   }
-  const onDependencyInstall = (name: string) => {
+  const onSuccessfulInstall = (name: string) => {
     toggleShowAddDepPopover()
     setAddedDependencies([name, ...addedDependencies])
   }
+  const onSuccessfulUninstall = (name: string) => {
+    setAddedDependencies(
+      [...addedDependencies].filter(item => item !== name),
+    )
+  }
+  const onInstall = ({ name, version, type }: InstallOptions) => {
+    if (!importerId) {
+      return
+    }
+
+    changePackage({
+      operation: 'install',
+      setError,
+      setInProgress,
+      updateStamp,
+      toast,
+      importerId,
+      name,
+      version,
+      type,
+      onSuccessful: onSuccessfulInstall,
+    }).catch((err: unknown) => {
+      console.error(err)
+      updateActiveRoute('/error')
+      updateErrorCause(
+        'Unexpected error trying to install dependency.',
+      )
+    })
+  }
+
+  const onUninstall = (item: GridItemData) => {
+    if (!importerId) {
+      return
+    }
+
+    changePackage({
+      operation: 'uninstall',
+      setError,
+      setInProgress,
+      updateStamp,
+      toast,
+      importerId,
+      name: item.name,
+      onSuccessful: onSuccessfulUninstall,
+    }).catch((err: unknown) => {
+      console.error(err)
+      updateActiveRoute('/error')
+      updateErrorCause(
+        'Unexpected error trying to uninstall dependency.',
+      )
+    })
+  }
+
   return (
     <>
       <GridHeader>
@@ -47,34 +206,35 @@ export const DependencySideBar = ({
         Dependencies
         {importerId ?
           <div className="grow flex justify-end">
-            <Popover
-              open={showAddDepPopover}
-              onOpenChange={toggleShowAddDepPopover}>
-              <PopoverTrigger>
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger>
-                      <Button
-                        role="button"
-                        variant="outline"
-                        size="xs">
-                        {showAddDepPopover ?
-                          <X size={16} />
-                        : <PlusIcon size={16} />}
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Add a new dependency</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              </PopoverTrigger>
+            <Popover open={showAddDepPopover}>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      role="button"
+                      variant="outline"
+                      size="xs"
+                      onClick={toggleShowAddDepPopover}>
+                      {showAddDepPopover ?
+                        <X size={16} />
+                      : <PlusIcon size={16} />}
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Add a new dependency</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+              {/* XXX: PopoverTrigger is required even though unused */}
+              <PopoverTrigger></PopoverTrigger>
               <PopoverContent
                 align="end"
                 className="p-0 w-96 top-0 right-0">
-                <ManageDependencies
-                  importerId={importerId}
-                  onSuccessfulInstall={onDependencyInstall}
+                <AddDependenciesPopover
+                  error={error}
+                  inProgress={inProgress}
+                  onInstall={onInstall}
+                  onClose={toggleShowAddDepPopover}
                 />
               </PopoverContent>
             </Popover>
@@ -98,7 +258,8 @@ export const DependencySideBar = ({
           idx={idx}
           key={item.id}
           dependencies={true}
-          onClick={onDependencyClick(item)}
+          onSelect={onDependencyClick(item)}
+          onUninstall={onUninstall}
         />
       ))}
     </>
