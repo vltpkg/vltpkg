@@ -1,15 +1,8 @@
-import { afterEach, it, describe, vi, expect } from 'vitest'
+import { afterEach, it, describe, expect } from 'vitest'
 import { cleanup, render, screen } from '@testing-library/react'
 import html from 'diffable-html'
 import { useGraphStore as useStore } from '@/state/index.js'
 import { Footer } from '@/components/navigation/footer.jsx'
-
-vi.mock('useTheme', () => ({
-  useTheme: vi.fn(),
-}))
-vi.mock('useGraphStore', () => ({
-  useGraphStore: vi.fn(),
-}))
 
 expect.addSnapshotSerializer({
   serialize: v => html(v),

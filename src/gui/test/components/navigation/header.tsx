@@ -1,12 +1,8 @@
-import { test, expect, afterEach, vi } from 'vitest'
+import { test, expect, afterEach } from 'vitest'
 import { render, cleanup } from '@testing-library/react'
 import html from 'diffable-html'
 import { useGraphStore as useStore } from '@/state/index.js'
 import { Header } from '@/components/navigation/header.jsx'
-
-vi.mock('useGraphStore', () => ({
-  useGraphStore: vi.fn(),
-}))
 
 expect.addSnapshotSerializer({
   serialize: v => html(v),
