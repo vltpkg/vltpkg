@@ -4,10 +4,6 @@ import html from 'diffable-html'
 import { useGraphStore as useStore } from '@/state/index.js'
 import Layout from '@/layout.jsx'
 
-vi.mock('useGraphStore', () => ({
-  useGraphStore: vi.fn(),
-}))
-
 vi.mock('@/components/navigation/header.jsx', () => ({
   Header: 'gui-nav-header',
 }))
