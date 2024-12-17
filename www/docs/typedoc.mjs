@@ -65,6 +65,7 @@ export default {
   githubPages: false,
   // hard code source link template because vercel deployments do not set the remote
   sourceLinkTemplate: `https://github.com/vltpkg/vltpkg/blob/{gitRevision}/{path}#L{line}`,
+  gitRevision: process.env.VERCEL_GIT_COMMIT_SHA,
   frontmatterGlobals: {
     editUrl: false,
     next: false,
