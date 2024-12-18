@@ -5,6 +5,7 @@ import tailwind from '@astrojs/tailwind'
 import vercel from '@astrojs/vercel'
 import * as TypedocPlugin from './src/plugins/typedoc'
 import * as CliPlugin from './src/plugins/cli'
+import { cpSync } from 'fs'
 
 if (process.env.CI && process.env.RUNNER_OS === 'Windows') {
   console.log(
@@ -75,6 +76,24 @@ export default defineConfig({
     }),
     react(),
     tailwind({ applyBaseStyles: false }),
+    // astro v5 and the vercel adapter don't play well with
+    // content that is generated after the build such as the
+    // pagefind JS. So we copy it manually.
+    // https://github.com/withastro/adapters/issues/445
+    {
+      name: 'copy-pagefind',
+      hooks: {
+        'astro:build:done': async () => {
+          cpSync(
+            'dist/pagefind',
+            './.vercel/output/static/pagefind',
+            {
+              recursive: true,
+            },
+          )
+        },
+      },
+    },
   ],
   output: 'static',
   adapter: vercel(),
