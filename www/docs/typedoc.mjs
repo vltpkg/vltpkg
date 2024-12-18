@@ -3,25 +3,18 @@ import { join, relative, resolve } from 'path'
 import { readdirSync } from 'fs'
 import { writeFile } from 'fs/promises'
 import typedocWorkspace from './typedoc.workspace.mjs'
-import { spawnSync } from 'child_process'
+import { execSync } from 'child_process'
 
-// typedoc can do this for us, but vercel does not setup
-// the necessary git checks or remote that typedoc needs.
-// So we do the same thing locally so we can ensure that
-// it works with this configuration.
-const gitRevision = (() => {
-  const { VERCEL_GIT_COMMIT_SHA } = process.env
-  if (VERCEL_GIT_COMMIT_SHA) {
-    return VERCEL_GIT_COMMIT_SHA
-  }
-  const res = spawnSync('git', ['rev-parse', 'HEAD'], {
-    encoding: 'utf-8',
-  })
-  if (res.status !== 0) {
-    throw new Error('command failed', { cause: res })
-  }
-  return res.stdout.trim()
-})()
+// typedoc requires an origin remote to render source links.
+// there are other typedoc options (sourceLinkTemplate, etc) that
+// can be used but they do not play well with the packages strategy
+// and will not link to the correct workspace.
+if (process.env.VERCEL) {
+  const { VERCEL_GIT_REPO_OWNER: owner, VERCEL_GIT_REPO_SLUG: repo } =
+    process.env
+  const remote = `https://github.com/${owner}/${repo}.git`
+  execSync(`git remote add origin ${remote}`)
+}
 
 const { tsconfig, entryPoints } = await (async () => {
   const srcWorkspaces = readdirSync(
@@ -113,9 +106,6 @@ const packageOptions = {
       '*': 'https://isaacs.github.io/node-lru-cache/',
     },
   },
-  gitRevision,
-  disableGit: true,
-  sourceLinkTemplate: `https://github.com/vltpkg/vltpkg/blob/{gitRevision}/{path}#L{line}`,
 }
 
 /**
