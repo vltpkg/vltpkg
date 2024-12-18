@@ -8,8 +8,10 @@ import {
   fireEvent,
 } from '@testing-library/react'
 import { useGraphStore as useStore } from '@/state/index.js'
-import { Sidebar } from '@/components/navigation/sidebar.jsx'
-import { SidebarLock } from '@/components/navigation/sidebar.jsx'
+import {
+  SidebarLock,
+  Sidebar,
+} from '@/components/navigation/sidebar.jsx'
 
 vi.mock('lucide-react', () => ({
   LayoutDashboard: 'gui-lucide-layout-dashboard',

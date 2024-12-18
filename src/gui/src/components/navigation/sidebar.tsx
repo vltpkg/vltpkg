@@ -16,6 +16,12 @@ import {
   type DashboardDataProject,
   type Action,
 } from '@/state/types.js'
+import {
+  Tooltip,
+  TooltipProvider,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip.jsx'
 
 type selectProjectItem = {
   updateActiveRoute: Action['updateActiveRoute']
@@ -24,12 +30,6 @@ type selectProjectItem = {
   updateStamp: Action['updateStamp']
   item: DashboardDataProject
 }
-import {
-  Tooltip,
-  TooltipProvider,
-  TooltipContent,
-  TooltipTrigger,
-} from '@/components/ui/tooltip.jsx'
 
 interface SidebarLink {
   name: string
@@ -63,7 +63,7 @@ const SIDEBAR_WIDTH = {
   closed: '61px',
 }
 
-const Sidebar = () => {
+export const Sidebar = () => {
   return (
     <>
       <SidebarDesktop />
@@ -600,5 +600,3 @@ const selectProjectItem = async ({
     updateErrorCause('Failed to select project.')
   }
 }
-
-export { Sidebar }
