@@ -70,6 +70,16 @@ export function load(app) {
       if (!parent) {
         page.contents = page.contents.replaceAll('/index.md)', ')')
       }
+
+      // typedoc-plugin-markdown generated intra-page hash links with the
+      // page (modules.md in this case) at the beginning which break. so
+      // since we know the links are to hash on the same page we remove the page
+      if (page.url.endsWith('/modules.md')) {
+        page.contents = page.contents.replaceAll(
+          /\]\(modules.md#([^)]+)\)/g,
+          '](#$1)',
+        )
+      }
     },
   )
 }
