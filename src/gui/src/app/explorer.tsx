@@ -121,43 +121,37 @@ const ExplorerContent = () => {
 
   return (
     <section className="flex grow flex-col justify-between">
-      <div>
-        <section className="flex items-center px-8 pt-4 border-t-[1px]">
-          <div className="flex flex-col gap-2 w-full">
-            {graph?.projectRoot ?
-              <p className="text-xs font-mono font-light text-muted-foreground">
-                :host-context(file:{graph.projectRoot})
-              </p>
-            : ''}
-          </div>
-          <div className="flex flex-col gap-2 w-full flex-end">
-            {dashboard?.buildVersion ?
-              <p className="text-xs font-mono font-light text-muted-foreground text-right">
-                build: v{dashboard.buildVersion}
-              </p>
-            : ''}
-          </div>
-        </section>
-        <section className="flex items-center px-8 py-4 border-b-[1px] border-solid">
-          <div className="flex flex-col gap-2 w-full">
-            <SearchBar
-              tabIndex={0}
-              className="w-full bg-muted-foreground/5"
-              startContent={
-                <Search size={20} className="ml-3" color="#a3a3a3" />
-              }
-              endContent={
-                <div className="hidden md:flex gap-1 mr-3 backdrop-blur-sm">
-                  <Kbd>
-                    <Command size={12} />
-                  </Kbd>
-                  <Kbd className="text-sm">k</Kbd>
-                </div>
-              }
-            />
-          </div>
-        </section>
+      <div className="flex items-center justify-between w-full px-8 pt-4 border-t-[1px]">
+        {graph?.projectRoot ?
+          <p className="text-xs font-mono font-light text-muted-foreground">
+            :host-context(file:{graph.projectRoot})
+          </p>
+        : ''}
+        {dashboard?.buildVersion ?
+          <p className="text-xs font-mono font-light text-muted-foreground text-right">
+            build: v{dashboard.buildVersion}
+          </p>
+        : ''}
       </div>
+      <section className="flex items-center px-8 py-4 border-b-[1px] border-solid">
+        <div className="flex flex-col gap-2 w-full">
+          <SearchBar
+            tabIndex={0}
+            className="w-full bg-muted-foreground/5"
+            startContent={
+              <Search size={20} className="ml-3" color="#a3a3a3" />
+            }
+            endContent={
+              <div className="hidden md:flex gap-1 mr-3 backdrop-blur-sm">
+                <Kbd>
+                  <Command size={12} />
+                </Kbd>
+                <Kbd className="text-sm">k</Kbd>
+              </div>
+            }
+          />
+        </div>
+      </section>
       <ExplorerGrid />
     </section>
   )
