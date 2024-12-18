@@ -9,28 +9,24 @@ import {
 } from '@testing-library/react'
 import { useGraphStore as useStore } from '@/state/index.js'
 import { Sidebar } from '@/components/navigation/sidebar.jsx'
-import * as ThemeProviderModule from '@/components/ui/theme-provider.jsx'
-
-const setAnimateMock = vi.fn()
-const setThemeMock = vi.fn()
-
-vi.spyOn(ThemeProviderModule, 'useTheme').mockImplementation(() => ({
-  theme: 'light',
-  setTheme: setThemeMock,
-}))
+import { SidebarLock } from '@/components/navigation/sidebar.jsx'
 
 vi.mock('lucide-react', () => ({
   LayoutDashboard: 'gui-lucide-layout-dashboard',
-  ArrowRightFromLine: 'gui-lucide-arrow-right-from-line',
-  ArrowLeftFromLine: 'gui-lucide-arrow-left-from-line',
   ChevronRight: 'gui-lucide-chevron-right',
   Folder: 'gui-lucide-folder',
   FolderOpen: 'gui-lucide-folder-open',
   Library: 'gui-lucide-library',
-  Sun: 'gui-lucide-sun',
-  Moon: 'gui-lucide-moon',
   Menu: 'gui-lucide-menu',
   IconX: 'gui-lucide-icon-x',
+  PanelLeft: 'gui-lucide-panel-left',
+}))
+
+vi.mock('@/components/ui/tooltip.jsx', () => ({
+  Tooltip: 'gui-tooltip',
+  TooltipProvider: 'gui-tooltip-provider',
+  TooltipContent: 'gui-tooltip-content',
+  TooltipTrigger: 'gui-tooltip-trigger',
 }))
 
 expect.addSnapshotSerializer({
@@ -100,27 +96,20 @@ describe('Render the sidebar', () => {
     expect(container.innerHTML).toMatchSnapshot()
   })
 
-  it('should change the theme', () => {
-    const { container, getByRole } = render(<Sidebar.ThemeSwitcher />)
-
-    const themeSwitcher = getByRole('button')
-    fireEvent.click(themeSwitcher)
-
-    expect(themeSwitcher).toBeDefined()
-    expect(setThemeMock).toHaveBeenCalledWith('dark')
-    expect(container.innerHTML).toMatchSnapshot()
-  })
-
-  it('should be collapasible', () => {
+  it('should be collapasible', async () => {
     const Container = () => {
+      const sidebarState = useStore(state => state.lockSidebar)
+      const updateSidebar = useStore(state => state.updateLockSidebar)
       return (
-        <Sidebar.Lock animate={false} setAnimate={setAnimateMock} />
+        <SidebarLock
+          sidebarState={sidebarState}
+          updateSidebar={updateSidebar}
+        />
       )
     }
     const { container, getByRole } = render(<Container />)
     const lockButton = getByRole('button')
     fireEvent.click(lockButton)
-    expect(setAnimateMock).toHaveBeenCalledWith(true)
     expect(container.innerHTML).toMatchSnapshot()
   })
 })
