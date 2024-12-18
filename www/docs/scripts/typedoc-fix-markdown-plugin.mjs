@@ -111,7 +111,10 @@ export function load(app) {
       const { isRoot, pkg } = getName(page)
 
       if (isRoot) {
-        page.contents = page.contents.replaceAll('/index.md)', ')')
+        page.contents = page.contents.replaceAll(
+          /]\(([\w-]+\/)index.md\)/g,
+          '](/packages/$1)',
+        )
         page.contents = removeHeading(page.contents, `Packages`, 2)
       }
 
