@@ -43,7 +43,7 @@ export const Footer = () => {
         <div className="flex w-full items-center justify-between">
           <div className="flex gap-4">
             {socialMediaLinks.map((link, idx) => (
-              <a href={link.to} key={idx}>
+              <a href={link.to} key={idx} aria-label={link.name}>
                 <link.component className="fill-black dark:fill-white h-5" />
               </a>
             ))}
