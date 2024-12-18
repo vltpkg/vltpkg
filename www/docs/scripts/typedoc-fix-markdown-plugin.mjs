@@ -1,5 +1,5 @@
 // @ts-check
-import { basename } from 'path'
+import { basename } from 'path/posix'
 import { MarkdownPageEvent } from 'typedoc-plugin-markdown'
 
 /**
