@@ -66,7 +66,8 @@ const { tsconfig, entryPoints } = await (async () => {
 })()
 
 /**
- * @type {Partial<import('typedoc-plugin-markdown').PluginOptions>}
+ * @typedef {Partial<import('typedoc-plugin-markdown').PluginOptions>} Markdown
+ * @type {Markdown}
  */
 const markdownOptions = {
   mergeReadme: false,
@@ -81,14 +82,16 @@ const markdownOptions = {
 }
 
 /**
- * @type {Partial<import('typedoc-plugin-remark').PluginOptions>}
+ * @typedef {Partial<import('typedoc-plugin-remark').PluginOptions>} Remark
+ * @type {Remark}
  */
 const remarkOptions = {
   remarkPlugins: ['unified-prettier'],
 }
 
 /**
- * @type {Partial<import('typedoc-plugin-frontmatter').PluginOptions>}
+ * @typedef {Partial<import('typedoc-plugin-frontmatter').PluginOptions>} Frontmatter
+ * @type {Frontmatter}
  */
 const frontmatterOptions = {
   frontmatterGlobals: {
@@ -99,12 +102,14 @@ const frontmatterOptions = {
 }
 
 /**
- * @type {Partial<import('typedoc').TypeDocOptions>}}
+ * @typedef {Partial<import('typedoc').TypeDocOptions>} PackageOptions
+ * @type {PackageOptions}
  */
 const packageOptions = {
   includeVersion: false,
   githubPages: false,
   excludeInternal: true,
+  excludeExternals: true,
   excludePrivate: true,
   excludeProtected: true,
   externalSymbolLinkMappings: {
@@ -121,7 +126,8 @@ const packageOptions = {
 }
 
 /**
- * @type {Partial<import('typedoc').TypeDocOptions>}
+ * @typedef {Omit<Partial<import('typedoc').TypeDocOptions>, 'packageOptions'>} TypeDoc
+ * @type {TypeDoc}
  */
 const rootTypedocOptions = {
   // root options specify to use packages strategy for all workspaces
@@ -146,13 +152,7 @@ const rootTypedocOptions = {
 }
 
 /**
- * @type {Partial<
- *  Omit<import('typedoc').TypeDocOptions, 'packageOptions'> &
- *  { packageOptions: Partial<import('typedoc').TypeDocOptions> } &
- *  import('typedoc-plugin-markdown').PluginOptions &
- *  import('typedoc-plugin-frontmatter').PluginOptions &
- *  import('typedoc-plugin-remark').PluginOptions
- * >}
+ * @type {TypeDoc & Markdown & Frontmatter & Remark & { packageOptions: PackageOptions }}
  */
 export default {
   ...rootTypedocOptions,
