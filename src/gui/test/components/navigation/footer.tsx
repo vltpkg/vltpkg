@@ -1,8 +1,15 @@
-import { afterEach, it, describe, expect } from 'vitest'
+import { vi, afterEach, it, describe, expect } from 'vitest'
 import { cleanup, render, screen } from '@testing-library/react'
 import html from 'diffable-html'
 import { useGraphStore as useStore } from '@/state/index.js'
 import { Footer } from '@/components/navigation/footer.jsx'
+
+vi.mock('@/components/icons/index.js', () => ({
+  Discord: 'gui-discord-icon',
+  Linkedin: 'gui-linkedin-icon',
+  Github: 'gui-github-icon',
+  TwitterX: 'gui-twitter-icon',
+}))
 
 expect.addSnapshotSerializer({
   serialize: v => html(v),
@@ -15,46 +22,25 @@ afterEach(() => {
   cleanup()
 })
 
-const socialLinks = ['linkedin', 'twitter-x', 'github', 'discord']
-
 describe('Footer Component', () => {
-  it('renders the social media links for light theme', () => {
-    const Container = () => {
-      const setTheme = useStore(state => state.updateTheme)
-      setTheme('light')
-      return <Footer />
-    }
-    const { container } = render(<Container />)
+  it('renders all the social icons', () => {
+    const socialMediaLinks = [
+      {
+        name: 'linkedin',
+        url: 'https://www.linkedin.com/company/vltpkg/',
+      },
+      { name: 'twitter-x', url: 'https://x.com/vltpkg' },
+      { name: 'github', url: 'https://github.com/vltpkg' },
+      { name: 'discord', url: 'https://discord.gg/vltpkg' },
+    ]
 
-    const icons = container.getElementsByTagName('img')
-    socialLinks.forEach((link, idx) => {
-      const icon = icons[idx]!
-      expect(icon).toBeDefined()
-      expect(icon.src).toContain(`/icons/${link}.svg`)
-      const iconStyle = window.getComputedStyle(icon)
-      expect(iconStyle.filter).toBe('invert(1)')
+    render(<Footer />)
+
+    socialMediaLinks.forEach(({ name, url }) => {
+      const link = screen.getByLabelText(name)
+      expect(link).toBeTruthy()
+      expect(link.getAttribute('href')).toBe(url)
     })
-
-    expect(container.innerHTML).toMatchSnapshot()
-  })
-
-  it('renders the social media links for dark theme', () => {
-    const Container = () => {
-      const setTheme = useStore(state => state.updateTheme)
-      setTheme('dark')
-      return <Footer />
-    }
-    const { container } = render(<Container />)
-
-    const icons = container.getElementsByTagName('img')
-    socialLinks.forEach((link, idx) => {
-      const icon = icons[idx]!
-      expect(icon).toBeDefined()
-      expect(icon.src).toContain(`/icons/${link}.svg`)
-      const iconStyle = window.getComputedStyle(icon)
-      expect(iconStyle.filter).toBe('invert(0)')
-    })
-    expect(container.innerHTML).toMatchSnapshot()
   })
 
   it('renders the copyright text', () => {

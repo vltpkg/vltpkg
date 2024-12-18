@@ -2,131 +2,163 @@
 
 exports[`Footer Component > renders the copyright text 1`] = `
 
-<footer class="flex border-t-[1px] border-solid h-24 items-center justify-between px-8 w-full">
-  <div class="items-center gap-3 hidden md:flex md:justify-start">
-    <a href="https://www.linkedin.com/company/vltpkg/">
-      <img
-        src="/icons/linkedin.svg"
-        width="20"
-        style="filter: invert(1);"
+<footer class="bg-white dark:bg-black border-t-[1px]">
+  <div class="flex flex-col w-full gap-x-4 gap-y-4 px-6 py-6">
+    <div class="flex w-full items-center justify-between">
+      <div class="flex gap-4">
+        <a
+          href="https://www.linkedin.com/company/vltpkg/"
+          aria-label="linkedin"
+        >
+          <gui-linkedin-icon classname="fill-black dark:fill-white h-5">
+          </gui-linkedin-icon>
+        </a>
+        <a
+          href="https://x.com/vltpkg"
+          aria-label="twitter-x"
+        >
+          <gui-twitter-icon classname="fill-black dark:fill-white h-5">
+          </gui-twitter-icon>
+        </a>
+        <a
+          href="https://github.com/vltpkg"
+          aria-label="github"
+        >
+          <gui-github-icon classname="fill-black dark:fill-white h-5">
+          </gui-github-icon>
+        </a>
+        <a
+          href="https://discord.gg/vltpkg"
+          aria-label="discord"
+        >
+          <gui-discord-icon classname="fill-black dark:fill-white h-5">
+          </gui-discord-icon>
+        </a>
+      </div>
+      <div class="flex">
+        <div class="flex flex-row items-center justify-center w-[114px] h-[38px] border border-neutral-300 dark:border-neutral-800 rounded-full">
+          <div
+            role="switch"
+            aria-label="system"
+            class="cursor-pointer flex items-center justify-center rounded-full aspect-square h-[38px] w-[38px] z-[10] border border-neutral-300 dark:border-neutral-800"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="20"
+              height="20"
+              viewbox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              class="lucide lucide-laptop-minimal text-muted-foreground text-black dark:text-white"
+            >
+              <rect
+                width="18"
+                height="12"
+                x="3"
+                y="4"
+                rx="2"
+                ry="2"
+              >
+              </rect>
+              <line
+                x1="2"
+                x2="22"
+                y1="20"
+                y2="20"
+              >
+              </line>
+            </svg>
+          </div>
+          <div
+            role="switch"
+            aria-label="light mode"
+            class="cursor-pointer flex items-center justify-center rounded-full aspect-square h-[38px] w-[38px] z-[10]"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="20"
+              height="20"
+              viewbox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              class="lucide lucide-sun-medium text-muted-foreground"
+            >
+              <circle
+                cx="12"
+                cy="12"
+                r="4"
+              >
+              </circle>
+              <path d="M12 3v1">
+              </path>
+              <path d="M12 20v1">
+              </path>
+              <path d="M3 12h1">
+              </path>
+              <path d="M20 12h1">
+              </path>
+              <path d="m18.364 5.636-.707.707">
+              </path>
+              <path d="m6.343 17.657-.707.707">
+              </path>
+              <path d="m5.636 5.636.707.707">
+              </path>
+              <path d="m17.657 17.657.707.707">
+              </path>
+            </svg>
+          </div>
+          <div
+            role="switch"
+            aria-label="dark mode"
+            class="cursor-pointer flex items-center justify-center rounded-full aspect-square h-[38px] w-[38px] z-[10]"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="20"
+              height="20"
+              viewbox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              class="lucide lucide-moon text-muted-foreground"
+            >
+              <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z">
+              </path>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="flex flex-row w-full items-center justify-between">
+      <a
+        href="https://www.vlt.sh/"
+        class="no-underline text-sm text-muted-foreground hover:text-foreground transition-all"
       >
-    </a>
-    <a href="https://x.com/vltpkg">
-      <img
-        src="/icons/twitter-x.svg"
-        width="20"
-        style="filter: invert(1);"
-      >
-    </a>
-    <a href="https://github.com/vltpkg">
-      <img
-        src="/icons/github.svg"
-        width="20"
-        style="filter: invert(1);"
-      >
-    </a>
-    <a href="https://discord.gg/vltpkg">
-      <img
-        src="/icons/discord.svg"
-        width="20"
-        style="filter: invert(1);"
-      >
-    </a>
-  </div>
-  <div class="flex items-center w-full justify-center">
-    <p class="text-xs text-muted-foreground">
-      © 2024 vlt technology inc.
-    </p>
-  </div>
-  <div class="hidden md:flex">
-  </div>
-</footer>
-
-`;
-
-exports[`Footer Component > renders the social media links for dark theme 1`] = `
-
-<footer class="flex border-t-[1px] border-solid h-24 items-center justify-between px-8 w-full">
-  <div class="items-center gap-3 hidden md:flex md:justify-start">
-    <a href="https://www.linkedin.com/company/vltpkg/">
-      <img
-        src="/icons/linkedin.svg"
-        width="20"
-        style="filter: invert(0);"
-      >
-    </a>
-    <a href="https://x.com/vltpkg">
-      <img
-        src="/icons/twitter-x.svg"
-        width="20"
-        style="filter: invert(0);"
-      >
-    </a>
-    <a href="https://github.com/vltpkg">
-      <img
-        src="/icons/github.svg"
-        width="20"
-        style="filter: invert(0);"
-      >
-    </a>
-    <a href="https://discord.gg/vltpkg">
-      <img
-        src="/icons/discord.svg"
-        width="20"
-        style="filter: invert(0);"
-      >
-    </a>
-  </div>
-  <div class="flex items-center w-full justify-center">
-    <p class="text-xs text-muted-foreground">
-      © 2024 vlt technology inc.
-    </p>
-  </div>
-  <div class="hidden md:flex">
-  </div>
-</footer>
-
-`;
-
-exports[`Footer Component > renders the social media links for light theme 1`] = `
-
-<footer class="flex border-t-[1px] border-solid h-24 items-center justify-between px-8 w-full">
-  <div class="items-center gap-3 hidden md:flex md:justify-start">
-    <a href="https://www.linkedin.com/company/vltpkg/">
-      <img
-        src="/icons/linkedin.svg"
-        width="20"
-        style="filter: invert(1);"
-      >
-    </a>
-    <a href="https://x.com/vltpkg">
-      <img
-        src="/icons/twitter-x.svg"
-        width="20"
-        style="filter: invert(1);"
-      >
-    </a>
-    <a href="https://github.com/vltpkg">
-      <img
-        src="/icons/github.svg"
-        width="20"
-        style="filter: invert(1);"
-      >
-    </a>
-    <a href="https://discord.gg/vltpkg">
-      <img
-        src="/icons/discord.svg"
-        width="20"
-        style="filter: invert(1);"
-      >
-    </a>
-  </div>
-  <div class="flex items-center w-full justify-center">
-    <p class="text-xs text-muted-foreground">
-      © 2024 vlt technology inc.
-    </p>
-  </div>
-  <div class="hidden md:flex">
+        © 2024 vlt technology inc.
+      </a>
+      <div class="flex flex-row gap-4">
+        <a
+          href="https://www.vlt.sh/terms"
+          class="no-underline font-medium text-muted-foreground text-sm hover:text-foreground transition-all"
+        >
+          Terms
+        </a>
+        <a
+          href="https://www.vlt.sh/privacy"
+          class="no-underline font-medium text-muted-foreground text-sm hover:text-foreground transition-all"
+        >
+          Privacy
+        </a>
+      </div>
+    </div>
   </div>
 </footer>
 

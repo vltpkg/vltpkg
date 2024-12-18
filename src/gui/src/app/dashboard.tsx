@@ -58,23 +58,17 @@ export const Dashboard = () => {
 
   return (
     <section className="flex grow w-full flex-col min-h-[80svh]">
-      <div>
-        <section className="flex items-center px-8 py-4 border-b-[1px] border-t-[1px] border-solid">
-          <div className="flex flex-col gap-2 w-full">
-            {dashboard?.cwd ?
-              <p className="text-xs font-mono font-light text-muted-foreground">
-                Directory: {dashboard.cwd}
-              </p>
-            : ''}
-          </div>
-          <div className="flex flex-col gap-2 w-full flex-end">
-            {dashboard?.buildVersion ?
-              <p className="text-xs font-mono font-light text-muted-foreground text-right">
-                build: v{dashboard.buildVersion}
-              </p>
-            : ''}
-          </div>
-        </section>
+      <div className="flex items-center justify-between w-full px-8 py-4 border-b-[1px] border-t-[1px] border-solid">
+        {dashboard?.cwd ?
+          <p className="text-xs font-mono font-light text-muted-foreground">
+            Directory: {dashboard.cwd}
+          </p>
+        : ''}
+        {dashboard?.buildVersion ?
+          <p className="text-xs font-mono font-light text-muted-foreground text-right">
+            build: v{dashboard.buildVersion}
+          </p>
+        : ''}
       </div>
       <DashboardContent />
     </section>

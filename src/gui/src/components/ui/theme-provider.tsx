@@ -2,7 +2,11 @@ import { useGraphStore } from '@/state/index.js'
 import { type State } from '@/state/types.js'
 import { createContext, useContext, useEffect, useState } from 'react'
 
+/** The possible states of theme */
 export type Theme = 'dark' | 'light' | 'system'
+
+/** What the `theme` will eventually resolve to */
+export type ResolvedTheme = 'dark' | 'light'
 
 type ThemeProviderProps = {
   children: React.ReactNode
@@ -12,11 +16,13 @@ type ThemeProviderProps = {
 
 type ThemeProviderState = {
   theme: Theme
+  resolvedTheme: ResolvedTheme
   setTheme: (theme: Theme) => void
 }
 
 const initialState: ThemeProviderState = {
   theme: 'system',
+  resolvedTheme: 'dark',
   setTheme: () => null,
 }
 
@@ -33,9 +39,26 @@ export function ThemeProvider({
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     () => (localStorage.getItem(storageKey) as Theme) || defaultTheme,
   )
+  const [resolvedTheme, setResolvedTheme] =
+    useState<ResolvedTheme>('dark')
   const updateTheme = useGraphStore(state => state.updateTheme)
 
   useEffect(() => {
+    const getPreferredColorScheme = (): ResolvedTheme =>
+      window.matchMedia('(prefers-color-scheme: dark)').matches ?
+        'dark'
+      : 'light'
+
+    const resolvedTheme = (): 'dark' | 'light' => {
+      if (theme === 'system') {
+        return getPreferredColorScheme()
+      }
+      return theme
+    }
+
+    const resolved = resolvedTheme()
+    setResolvedTheme(resolved)
+
     const root = window.document.documentElement
 
     root.classList.remove('light', 'dark')
@@ -55,6 +78,7 @@ export function ThemeProvider({
 
   const value = {
     theme,
+    resolvedTheme,
     setTheme: (theme: Theme) => {
       localStorage.setItem(storageKey, theme)
       setTheme(theme)

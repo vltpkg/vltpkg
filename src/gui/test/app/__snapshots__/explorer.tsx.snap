@@ -4,28 +4,22 @@ exports[`explorer has project root info 1`] = `
 
 <div>
   <section class="flex grow flex-col justify-between">
-    <div>
-      <section class="flex items-center px-8 pt-4 border-t-[1px]">
-        <div class="flex flex-col gap-2 w-full">
-          <p class="text-xs font-mono font-light text-muted-foreground">
-            :host-context(file:/path/to/project)
-          </p>
-        </div>
-        <div class="flex flex-col gap-2 w-full flex-end">
-        </div>
-      </section>
-      <section class="flex items-center px-8 py-4 border-b-[1px] border-solid">
-        <div class="flex flex-col gap-2 w-full">
-          <gui-search-bar
-            tabindex="0"
-            classname="w-full bg-muted-foreground/5"
-            startcontent="[object Object]"
-            endcontent="[object Object]"
-          >
-          </gui-search-bar>
-        </div>
-      </section>
+    <div class="flex items-center justify-between w-full px-8 pt-4 border-t-[1px]">
+      <p class="text-xs font-mono font-light text-muted-foreground">
+        :host-context(file:/path/to/project)
+      </p>
     </div>
+    <section class="flex items-center px-8 py-4 border-b-[1px] border-solid">
+      <div class="flex flex-col gap-2 w-full">
+        <gui-search-bar
+          tabindex="0"
+          classname="w-full bg-muted-foreground/5"
+          startcontent="[object Object]"
+          endcontent="[object Object]"
+        >
+        </gui-search-bar>
+      </div>
+    </section>
     <gui-explorer-grid>
     </gui-explorer-grid>
   </section>
@@ -37,25 +31,19 @@ exports[`render default 1`] = `
 
 <div>
   <section class="flex grow flex-col justify-between">
-    <div>
-      <section class="flex items-center px-8 pt-4 border-t-[1px]">
-        <div class="flex flex-col gap-2 w-full">
-        </div>
-        <div class="flex flex-col gap-2 w-full flex-end">
-        </div>
-      </section>
-      <section class="flex items-center px-8 py-4 border-b-[1px] border-solid">
-        <div class="flex flex-col gap-2 w-full">
-          <gui-search-bar
-            tabindex="0"
-            classname="w-full bg-muted-foreground/5"
-            startcontent="[object Object]"
-            endcontent="[object Object]"
-          >
-          </gui-search-bar>
-        </div>
-      </section>
+    <div class="flex items-center justify-between w-full px-8 pt-4 border-t-[1px]">
     </div>
+    <section class="flex items-center px-8 py-4 border-b-[1px] border-solid">
+      <div class="flex flex-col gap-2 w-full">
+        <gui-search-bar
+          tabindex="0"
+          classname="w-full bg-muted-foreground/5"
+          startcontent="[object Object]"
+          endcontent="[object Object]"
+        >
+        </gui-search-bar>
+      </div>
+    </section>
     <gui-explorer-grid>
     </gui-explorer-grid>
   </section>
