@@ -15,11 +15,7 @@ const getName = page => {
   const name = page.model.name
   const parent = page.model.parent?.name
   const pkg = [parent, name].find(n => n?.startsWith('@vltpkg/'))
-  return {
-    name,
-    parent,
-    pkg,
-  }
+  return { name, pkg, isRoot: !parent }
 }
 
 /**
@@ -79,12 +75,15 @@ export function load(app) {
     MarkdownPageEvent.BEGIN,
     /** @param {Page} page */
     page => {
-      const { name, parent, pkg } = getName(page)
+      const { name, isRoot, pkg } = getName(page)
 
       const { frontmatter: fm = {} } = page
       fm.sidebar ??= {}
 
-      if (parent) {
+      if (isRoot) {
+        fm.title = 'Packages'
+        fm.sidebar.hidden = true
+      } else {
         if (pageEndsWith(page, entryFileName)) {
           fm.title = pkg
           fm.sidebar.order = 0
@@ -97,9 +96,6 @@ export function load(app) {
           fm.title = name === 'index' ? pkg : `${pkg}/${name}`
           fm.sidebar.label = name
         }
-      } else {
-        fm.title = 'Packages'
-        fm.sidebar.hidden = true
       }
 
       page.frontmatter = fm
@@ -112,16 +108,16 @@ export function load(app) {
     page => {
       if (!page.contents) return
 
-      const { parent, pkg } = getName(page)
+      const { isRoot, pkg } = getName(page)
 
-      // remove h1 from the readme page since those get included by astro
-      if (pageEndsWith(page, entryFileName) && pkg) {
-        page.contents = removeHeading(page.contents, pkg, 1)
-      }
-
-      if (!parent) {
+      if (isRoot) {
         page.contents = page.contents.replaceAll('/index.md)', ')')
         page.contents = removeHeading(page.contents, `Packages`, 2)
+      }
+
+      if (pageEndsWith(page, entryFileName) && pkg) {
+        // remove h1 from the readme page since those get included by astro
+        page.contents = removeHeading(page.contents, pkg, 1)
       }
 
       if (pageEndsWith(page, modulesFileName)) {
