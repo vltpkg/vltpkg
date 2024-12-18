@@ -233,6 +233,7 @@ export const ExplorerGrid = () => {
       return undefined
     }
   const dependencyClick = (item: GridItemData) => () => {
+    console.error('dependencyClick')
     if (!item.to) return
     let newQuery = ''
     const name = item.to.name ? `[name="${item.to.name}"]` : ''
@@ -255,7 +256,7 @@ export const ExplorerGrid = () => {
               parent={true}
               item={parentItem}
               highlight={true}
-              onClick={dependentsClick(parentItem, true)}
+              onSelect={dependentsClick(parentItem, true)}
             />
           </>
         : ''}
@@ -269,7 +270,7 @@ export const ExplorerGrid = () => {
               <SideItem
                 item={item}
                 key={item.id}
-                onClick={dependentsClick(item)}
+                onSelect={dependentsClick(item)}
               />
             ))}
           </>
@@ -297,9 +298,12 @@ export const ExplorerGrid = () => {
         </div>
       </div>
       <div className="col-span-2">
-        {dependencies && dependencies.length > 0 ?
+        {(
+          (dependencies && dependencies.length > 0) ||
+          selectedItem?.to?.importer
+        ) ?
           <DependencySideBar
-            dependencies={dependencies}
+            dependencies={dependencies || []}
             importerId={importerId}
             onDependencyClick={dependencyClick}
           />
