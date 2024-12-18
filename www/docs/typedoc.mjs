@@ -4,7 +4,10 @@ import { readdirSync } from 'fs'
 import { writeFile } from 'fs/promises'
 import typedocWorkspace from './typedoc.workspace.mjs'
 import { execSync } from 'child_process'
-import { modulesFileName } from './scripts/typedoc-fix-markdown-plugin.mjs'
+import {
+  entryFileName,
+  modulesFileName,
+} from './scripts/typedoc-fix-markdown-plugin.mjs'
 
 // typedoc requires an origin remote to render source links.
 // there are other typedoc options (sourceLinkTemplate, etc) that
@@ -63,7 +66,7 @@ const { tsconfig, entryPoints } = await (async () => {
  */
 const markdownOptions = {
   mergeReadme: false,
-  entryFileName: 'index',
+  entryFileName,
   modulesFileName,
   outputFileStrategy: 'modules',
   excludeScopesInPaths: true,

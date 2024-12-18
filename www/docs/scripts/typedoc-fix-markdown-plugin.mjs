@@ -8,6 +8,7 @@ import { MarkdownPageEvent } from 'typedoc-plugin-markdown'
  */
 
 export const modulesFileName = 'reference'
+export const entryFileName = 'index'
 
 /** @param {Page} page */
 const getName = page => {
@@ -30,15 +31,23 @@ const pageEndsWith = (page, name) =>
     page.url.endsWith(`/${name}.md`)
   : page.url === `${name}.md`
 
-/** @param {Page} page */
-const isReadme = page => pageEndsWith(page, 'index')
+/**
+ * @param {string} text
+ * @param {number} level
+ */
+const headingRegex = (text, level) =>
+  new RegExp(
+    `^(?<level>${'#'.repeat(level)} )${text}(?<trailer>\n\n)`,
+    'm',
+  )
 
 /**
  * @param {string} contents
  * @param {string} text
+ * @param {number} level
  */
-const removeHeading = (contents, text) => {
-  const match = new RegExp(`^${text}\n\n`, 'm').exec(contents)
+const removeHeading = (contents, text, level) => {
+  const match = headingRegex(text, level).exec(contents)
   if (match) {
     return (
       contents.substring(0, match.index) +
@@ -57,12 +66,9 @@ const fixIntraPageHashLinks = (basename, contents) => {
     `\\]\\(${basename}\\.md#(?<hash>[^)]+)\\)`,
     'g',
   )
-  return contents.replaceAll(
-    regex,
-    (_match, _p1, _offset, _string, { hash }) => {
-      return `](#${hash})`
-    },
-  )
+  return contents.replaceAll(regex, (...args) => {
+    return `](#${args.at(-1).hash})`
+  })
 }
 
 /**
@@ -79,7 +85,7 @@ export function load(app) {
       fm.sidebar ??= {}
 
       if (parent) {
-        if (isReadme(page)) {
+        if (pageEndsWith(page, entryFileName)) {
           fm.title = pkg
           fm.sidebar.order = 0
           fm.sidebar.label = 'Readme'
@@ -109,19 +115,20 @@ export function load(app) {
       const { parent, pkg } = getName(page)
 
       // remove h1 from the readme page since those get included by astro
-      if (isReadme(page) && pkg) {
-        page.contents = removeHeading(page.contents, `# ${pkg}`)
+      if (pageEndsWith(page, entryFileName) && pkg) {
+        page.contents = removeHeading(page.contents, pkg, 1)
       }
 
       if (!parent) {
         page.contents = page.contents.replaceAll('/index.md)', ')')
-        page.contents = removeHeading(page.contents, `## Packages`)
+        page.contents = removeHeading(page.contents, `Packages`, 2)
       }
 
       if (pageEndsWith(page, modulesFileName)) {
         page.contents = page.contents.replace(
-          /^(## )Modules(\n\n)/m,
-          '$1Entry Points$2',
+          headingRegex('Modules', 2),
+          (...args) =>
+            `${args.at(-1).level}Entry Points${args.at(-1).trailer}`,
         )
       }
 
