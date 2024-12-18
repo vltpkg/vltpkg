@@ -6,6 +6,8 @@ import { type Manifest } from '@vltpkg/types'
 import { type CliCommandUsage, type CliCommandFn } from '../types.js'
 import assert from 'assert'
 import { commandUsage } from '../config/usage.js'
+import fs from 'fs'
+import path from 'path'
 
 export const usage: CliCommandUsage = () =>
   commandUsage({
@@ -28,6 +30,10 @@ export const usage: CliCommandUsage = () =>
       delete: {
         usage: '<key> [<key> ...]',
         description: 'Delete one or more keys from the package',
+      },
+      init: {
+        usage: '[--force]',
+        description: 'Initialize a new package.json file',
       },
     },
     examples: {
@@ -57,11 +63,13 @@ export const command: CliCommandFn = async conf => {
     case 'unset':
     case 'delete':
       return rm(conf, mani, pkg, args)
+    case 'init':
+      return init(conf, args)
     default: {
       throw error('Unrecognized pkg command', {
         code: 'EUSAGE',
         found: sub,
-        validOptions: ['get', 'set', 'rm'],
+        validOptions: ['get', 'set', 'rm', 'init'],
       })
     }
   }
@@ -141,4 +149,17 @@ const rm = (
   }, mani)
 
   pkg.write(conf.projectRoot, res)
+}
+
+const init = (conf: LoadedConfig, args: string[]) => {
+  const force = conf.values.force || conf.values.f
+  const packageJsonPath = path.join(conf.projectRoot, 'package.json')
+
+  if (fs.existsSync(packageJsonPath) && !force) {
+    throw error('package.json already exists. Use --force to overwrite.', {
+      code: 'EEXIST',
+    })
+  }
+
+  fs.writeFileSync(packageJsonPath, '{}', 'utf8')
 }
