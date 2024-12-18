@@ -4,6 +4,7 @@ import { readdirSync } from 'fs'
 import { writeFile } from 'fs/promises'
 import typedocWorkspace from './typedoc.workspace.mjs'
 import { execSync } from 'child_process'
+import { modulesFileName } from './scripts/typedoc-fix-markdown-plugin.mjs'
 
 // typedoc requires an origin remote to render source links.
 // there are other typedoc options (sourceLinkTemplate, etc) that
@@ -28,9 +29,14 @@ const { tsconfig, entryPoints } = await (async () => {
         d.isDirectory() &&
         typedocWorkspace(join(d.parentPath, d.name)),
     )
-    .map(d =>
-      relative(import.meta.dirname, join(d.parentPath, d.name)),
-    )
+    .filter(d => {
+      const wanted = process.env.VLT_TYPEDOC_WORKSPACES?.split(',')
+      return wanted?.length ? wanted.includes(d.name) : true
+    })
+
+  const relWorkspaces = srcWorkspaces.map(d =>
+    relative(import.meta.dirname, join(d.parentPath, d.name)),
+  )
 
   const generatedTsconfig = './tsconfig.typedoc-workspaces.json'
   await writeFile(
@@ -38,7 +44,7 @@ const { tsconfig, entryPoints } = await (async () => {
     JSON.stringify(
       {
         files: [],
-        references: srcWorkspaces.map(path => ({ path })),
+        references: relWorkspaces.map(path => ({ path })),
       },
       null,
       2,
@@ -47,7 +53,7 @@ const { tsconfig, entryPoints } = await (async () => {
 
   return {
     tsconfig: generatedTsconfig,
-    entryPoints: srcWorkspaces,
+    entryPoints: relWorkspaces,
   }
 })()
 
@@ -58,7 +64,7 @@ const { tsconfig, entryPoints } = await (async () => {
 const markdownOptions = {
   mergeReadme: false,
   entryFileName: 'index',
-  modulesFileName: 'modules',
+  modulesFileName,
   outputFileStrategy: 'modules',
   excludeScopesInPaths: true,
   useCodeBlocks: true,
@@ -122,7 +128,7 @@ const rootTypedocOptions = {
     'typedoc-plugin-markdown',
     'typedoc-plugin-remark',
     'typedoc-plugin-frontmatter',
-    './scripts/workspace-frontmatter.mjs',
+    './scripts/typedoc-fix-markdown-plugin.mjs',
     './scripts/external-link-plugin.mjs',
   ],
   // do not use a readme for the root
