@@ -32,7 +32,6 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip.jsx'
-import { useTheme } from '@/components/ui/theme-provider.jsx'
 
 interface SidebarLink {
   name: string
@@ -40,13 +39,6 @@ interface SidebarLink {
   icon: LucideIcon
   target?: 'blank'
   external: boolean
-}
-
-interface SidebarScreenProps {
-  isOpen: boolean
-  setIsOpen: React.Dispatch<React.SetStateAction<boolean>>
-  animate: boolean
-  setAnimate: (locked: boolean) => void
 }
 
 const sidebarLinks: SidebarLink[] = [
@@ -73,32 +65,16 @@ const SIDEBAR_WIDTH = {
   closed: '61px',
 }
 
-/**
- * The `animate` prop controls whether the sidebar should either:
- * be in an open state, or be in a closed state, without triggering
- * animations.
- *
- * Two different sidebars are rendered on < `sm` and > `md` breakpoints.
- */
 const Sidebar = () => {
-  const [isOpen, setIsOpen] = useState<boolean>(false)
-  const animate = useGraphStore(state => state.lockSidebar)
-  const setAnimate = useGraphStore(state => state.updateLockSidebar)
-
   return (
     <>
-      <Sidebar.Desktop
-        isOpen={isOpen}
-        setIsOpen={setIsOpen}
-        animate={animate}
-        setAnimate={setAnimate}
-      />
-      <Sidebar.Mobile isOpen={isOpen} setIsOpen={setIsOpen} />
+      <Sidebar.Desktop />
+      <Sidebar.Mobile />
     </>
   )
 }
 
-Sidebar.Desktop = ({ isOpen, animate }: SidebarScreenProps) => {
+Sidebar.Desktop = () => {
   const updateActiveRoute = useGraphStore(
     state => state.updateActiveRoute,
   )
@@ -112,6 +88,7 @@ Sidebar.Desktop = ({ isOpen, animate }: SidebarScreenProps) => {
     state => state.updateLockSidebar,
   )
   const sidebarState = useGraphStore(state => state.lockSidebar)
+  const animate = useGraphStore(state => state.lockSidebar)
 
   const onProjectClick = (
     e: MouseEvent,
@@ -131,21 +108,12 @@ Sidebar.Desktop = ({ isOpen, animate }: SidebarScreenProps) => {
     <motion.div
       className={`relative hidden pl-[18px] md:flex flex-col justify-between sticky top-0 w-[${SIDEBAR_WIDTH.open}] h-screen border-r-[1px] flex-shrink-0`}
       animate={{
-        width:
-          animate ?
-            isOpen ? SIDEBAR_WIDTH.open
-            : SIDEBAR_WIDTH.closed
-          : SIDEBAR_WIDTH.open,
+        width: !animate ? SIDEBAR_WIDTH.open : SIDEBAR_WIDTH.closed,
       }}>
       {/* sidebar-top */}
-      <Sidebar.Logo
-        className="pt-4"
-        isOpen={isOpen}
-        animate={animate}
-      />
+      <Sidebar.Logo className="pt-4" animate={animate} />
 
       <Sidebar.Divider
-        isOpen={isOpen}
         animate={animate}
         className="mt-[56px] -ml-[18px]"
       />
@@ -155,17 +123,12 @@ Sidebar.Desktop = ({ isOpen, animate }: SidebarScreenProps) => {
         <div className="flex flex-col gap-4">
           {/* workspaces */}
           <div className="flex flex-col gap-4">
-            <Sidebar.Subheader
-              animate={animate}
-              isOpen={isOpen}
-              label="workspaces"
-            />
+            <Sidebar.Subheader animate={animate} label="workspaces" />
 
             {sidebarLinks.map((link, idx) => (
               <Sidebar.Link
                 link={link}
                 key={idx}
-                isOpen={isOpen}
                 animate={animate}
                 onClick={(e: MouseEvent) => {
                   if (!link.external) {
@@ -181,8 +144,7 @@ Sidebar.Desktop = ({ isOpen, animate }: SidebarScreenProps) => {
           <Sidebar.Category
             header="pinned"
             title="pinned projects"
-            animate={animate}
-            isOpen={isOpen}>
+            animate={animate}>
             {savedProjects?.map((project, idx) => (
               <Sidebar.Item
                 key={idx}
@@ -198,7 +160,6 @@ Sidebar.Desktop = ({ isOpen, animate }: SidebarScreenProps) => {
       </Sidebar.Body>
 
       <Sidebar.Divider
-        isOpen={isOpen}
         animate={animate}
         className="bottom-[122px] -ml-[18px]"
       />
@@ -229,7 +190,6 @@ Sidebar.Subheader = ({
   label,
 }: {
   animate: boolean
-  isOpen?: boolean
   label: string
 }) => {
   return (
@@ -249,13 +209,11 @@ Sidebar.Category = ({
   title,
   children,
   animate,
-  isOpen,
 }: {
   header: string
   title: string
   children: React.ReactNode
   animate: boolean
-  isOpen: boolean
 }) => {
   const [isExpanded, setIsExpanded] = useState(false)
 
@@ -268,11 +226,7 @@ Sidebar.Category = ({
   return (
     <div className="flex flex-col mt-6">
       {/* category title */}
-      <Sidebar.Subheader
-        label={header}
-        animate={animate}
-        isOpen={isOpen}
-      />
+      <Sidebar.Subheader label={header} animate={animate} />
       {/* category item */}
       <p
         className="flex flex-row justify-start items-center gap-2 group/sidebar-category-item cursor-pointer mt-4 mb-2 select-none"
@@ -284,16 +238,8 @@ Sidebar.Category = ({
         <motion.span
           className="capitalize flex text-neutral-700 dark:text-neutral-200 text-sm group-hover/sidebar-category-item:translate-x-1 transition duration-150"
           animate={{
-            display:
-              animate ?
-                isOpen ? 'inline-block'
-                : 'none'
-              : 'inline-block',
-            opacity:
-              animate ?
-                isOpen ? 1
-                : 0
-              : 1,
+            display: !animate ? 'inline-block' : 'none',
+            opacity: !animate ? 1 : 0,
           }}>
           {title}
         </motion.span>
@@ -301,16 +247,8 @@ Sidebar.Category = ({
         <motion.span
           className="group-hover/sidebar-category-item:translate-x-1 transition duration-150"
           animate={{
-            display:
-              animate ?
-                isOpen ? 'inline-block'
-                : 'none'
-              : 'inline-block',
-            opacity:
-              animate ?
-                isOpen ? 1
-                : 0
-              : 1,
+            display: !animate ? 'inline-block' : 'none',
+            opacity: !animate ? 1 : 0,
           }}>
           <ChevronRight
             className="transition duration-150"
@@ -328,13 +266,7 @@ Sidebar.Category = ({
             className="flex flex-col gap-2"
             variants={contentVariants}
             initial="hidden"
-            animate={
-              animate ?
-                isOpen ?
-                  'show'
-                : 'undefined'
-              : 'show'
-            }
+            animate={!animate ? 'show' : 'undefined'}
             exit="exit">
             {/* individual projects */}
             {children}
@@ -404,13 +336,7 @@ Sidebar.Lock = ({
   )
 }
 
-Sidebar.Mobile = ({
-  isOpen,
-  setIsOpen,
-}: {
-  isOpen: boolean
-  setIsOpen: React.Dispatch<React.SetStateAction<boolean>>
-}) => {
+Sidebar.Mobile = () => {
   const updateActiveRoute = useGraphStore(
     state => state.updateActiveRoute,
   )
@@ -422,6 +348,7 @@ Sidebar.Mobile = ({
   const savedProjects = useGraphStore(state => state.savedProjects)
 
   const [iconScope, animateIcon] = useAnimate()
+  const [isOpen, setIsOpen] = useState<boolean>(false)
 
   const handleOpen = () => {
     if (isOpen) {
@@ -542,16 +469,13 @@ Sidebar.Body = ({
 
 Sidebar.Link = ({
   link,
-  isOpen,
   animate,
   onClick,
 }: {
   link: SidebarLink
-  isOpen: boolean
   animate: boolean
   onClick: (e: MouseEvent) => void
 }) => {
-  const { resolvedTheme } = useTheme()
   const activeRoute = useGraphStore(state => state.activeRoute)
   const [isOnRoute, setIsOnRoute] = useState<boolean>(false)
 
@@ -569,15 +493,7 @@ Sidebar.Link = ({
         href={link.href}
         onClick={onClick}
         target={link.target ? link.target : '_top'}
-        animate={{
-          color:
-            isOnRoute ?
-              resolvedTheme === 'dark' ?
-                '#fafafa'
-              : '#3c3c3c'
-            : '#757575',
-        }}
-        className={`relative flex justify-start gap-2 group/sidebar-link rounded-md`}>
+        className={`relative flex text-neutral-500 justify-start gap-2 group/sidebar-link rounded-md ${isOnRoute ? 'text-neutral-900 dark:text-neutral-100' : ''}`}>
         <TooltipProvider skipDelayDuration={175} delayDuration={175}>
           <Tooltip>
             <TooltipTrigger>
@@ -595,33 +511,21 @@ Sidebar.Link = ({
         <motion.span
           className="text-sm"
           animate={{
-            display:
-              animate ?
-                isOpen ? 'inline-block'
-                : 'none'
-              : 'inline-block',
-            opacity:
-              animate ?
-                isOpen ? 1
-                : 0
-              : 1,
+            display: !animate ? 'inline-block' : 'none',
+            opacity: !animate ? 1 : 0,
           }}>
           {link.name}
         </motion.span>
         {/* the hover effect background */}
         <motion.div
           animate={{
-            width:
-              animate ?
-                isOpen ? 175
-                : 0
-              : 175,
+            width: !animate ? 175 : 0,
           }}
           className={`
             -mt-[7px] -ml-[5px] h-[34px] z-10 rounded-sm md:absolute
             ${
               isOnRoute ?
-                'bg-muted-foreground/25'
+                'bg-muted-foreground/15'
               : 'hover:bg-muted-foreground/10 transition-all'
             }
           `}
@@ -632,11 +536,9 @@ Sidebar.Link = ({
 }
 
 Sidebar.Divider = ({
-  isOpen,
   animate,
   className = '',
 }: {
-  isOpen: boolean
   animate: boolean
   className?: string
 }) => {
@@ -647,22 +549,16 @@ Sidebar.Divider = ({
         width: SIDEBAR_WIDTH.open,
       }}
       animate={{
-        width:
-          animate ?
-            isOpen ? SIDEBAR_WIDTH.open
-            : SIDEBAR_WIDTH.closed
-          : SIDEBAR_WIDTH.open,
+        width: !animate ? SIDEBAR_WIDTH.open : SIDEBAR_WIDTH.closed,
       }}
     />
   )
 }
 
 Sidebar.Logo = ({
-  isOpen,
   animate,
   className = '',
 }: {
-  isOpen: boolean
   animate: boolean
   className?: string
 }) => {
@@ -674,16 +570,8 @@ Sidebar.Logo = ({
       <motion.span
         className="font-light text-neutral-400 ml-0.5"
         animate={{
-          display:
-            animate ?
-              isOpen ? 'flex'
-              : 'none'
-            : 'flex',
-          opacity:
-            animate ?
-              isOpen ? 1
-              : 0
-            : 1,
+          display: !animate ? 'flex' : 'none',
+          opacity: !animate ? 1 : 0,
         }}>
         /vōlt/
       </motion.span>
