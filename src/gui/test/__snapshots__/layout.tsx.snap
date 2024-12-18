@@ -1,0 +1,64 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`renders Layout for the "/dashboard" view 1`] = `
+
+<div class="flex flex-col min-h-svh w-full">
+  <div class="flex flex-row min-h-svh w-full">
+    <gui-nav-sidebar>
+    </gui-nav-sidebar>
+    <div class="flex flex-col grow w-full">
+      <gui-nav-header>
+      </gui-nav-header>
+      <gui-dashboard>
+      </gui-dashboard>
+      <gui-nav-footer>
+      </gui-nav-footer>
+    </div>
+  </div>
+  <gui-toaster>
+  </gui-toaster>
+</div>
+
+`;
+
+exports[`renders Layout for the "/error" view 1`] = `
+
+<div class="flex flex-col min-h-svh w-full">
+  <div class="flex flex-row min-h-svh w-full">
+    <gui-nav-sidebar>
+    </gui-nav-sidebar>
+    <div class="flex flex-col grow w-full">
+      <gui-nav-header>
+      </gui-nav-header>
+      <gui-error-found>
+      </gui-error-found>
+      <gui-nav-footer>
+      </gui-nav-footer>
+    </div>
+  </div>
+  <gui-toaster>
+  </gui-toaster>
+</div>
+
+`;
+
+exports[`renders Layout for the "/explore" view 1`] = `
+
+<div class="flex flex-col min-h-svh w-full">
+  <div class="flex flex-row min-h-svh w-full">
+    <gui-nav-sidebar>
+    </gui-nav-sidebar>
+    <div class="flex flex-col grow w-full">
+      <gui-nav-header>
+      </gui-nav-header>
+      <gui-explorer>
+      </gui-explorer>
+      <gui-nav-footer>
+      </gui-nav-footer>
+    </div>
+  </div>
+  <gui-toaster>
+  </gui-toaster>
+</div>
+
+`;
