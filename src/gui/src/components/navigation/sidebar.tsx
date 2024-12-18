@@ -2,8 +2,6 @@ import { useEffect, useState, type MouseEvent } from 'react'
 import {
   type LucideIcon,
   LayoutDashboard,
-  ArrowRightFromLine,
-  ArrowLeftFromLine,
   ChevronRight,
   Folder,
   FolderOpen,
@@ -68,13 +66,13 @@ const SIDEBAR_WIDTH = {
 const Sidebar = () => {
   return (
     <>
-      <Sidebar.Desktop />
-      <Sidebar.Mobile />
+      <SidebarDesktop />
+      <SidebarMobile />
     </>
   )
 }
 
-Sidebar.Desktop = () => {
+const SidebarDesktop = () => {
   const updateActiveRoute = useGraphStore(
     state => state.updateActiveRoute,
   )
@@ -87,7 +85,6 @@ Sidebar.Desktop = () => {
   const updateSidebar = useGraphStore(
     state => state.updateLockSidebar,
   )
-  const sidebarState = useGraphStore(state => state.lockSidebar)
   const animate = useGraphStore(state => state.lockSidebar)
 
   const onProjectClick = (
@@ -111,22 +108,22 @@ Sidebar.Desktop = () => {
         width: !animate ? SIDEBAR_WIDTH.open : SIDEBAR_WIDTH.closed,
       }}>
       {/* sidebar-top */}
-      <Sidebar.Logo className="pt-4" animate={animate} />
+      <SidebarLogo className="pt-4" animate={animate} />
 
-      <Sidebar.Divider
+      <SidebarDivider
         animate={animate}
         className="mt-[56px] -ml-[18px]"
       />
 
       {/* sidebar-body */}
-      <Sidebar.Body className="mt-8 w-[200px]">
+      <SidebarBody className="mt-8 w-[200px]">
         <div className="flex flex-col gap-4">
           {/* workspaces */}
           <div className="flex flex-col gap-4">
-            <Sidebar.Subheader animate={animate} label="workspaces" />
+            <SidebarSubheader animate={animate} label="workspaces" />
 
             {sidebarLinks.map((link, idx) => (
-              <Sidebar.Link
+              <SidebarLink
                 link={link}
                 key={idx}
                 animate={animate}
@@ -141,12 +138,12 @@ Sidebar.Desktop = () => {
           </div>
 
           {/* pinned projects */}
-          <Sidebar.Category
+          <SidebarCategory
             header="pinned"
             title="pinned projects"
             animate={animate}>
             {savedProjects?.map((project, idx) => (
-              <Sidebar.Item
+              <SidebarItem
                 key={idx}
                 onClick={(e: MouseEvent) =>
                   onProjectClick(e, project)
@@ -155,37 +152,51 @@ Sidebar.Desktop = () => {
                 icon={<Folder size={18} />}
               />
             ))}
-          </Sidebar.Category>
+          </SidebarCategory>
         </div>
-      </Sidebar.Body>
+      </SidebarBody>
 
-      <Sidebar.Divider
+      <SidebarDivider
         animate={animate}
         className="bottom-[122px] -ml-[18px]"
       />
 
       {/* sidebar-bottom */}
       <div className="py-6 h-[122px]">
-        <TooltipProvider skipDelayDuration={175} delayDuration={175}>
-          <Tooltip>
-            <TooltipTrigger>
-              <button
-                onClick={() => updateSidebar(!sidebarState)}
-                className={`-ml-[4px] mt-[3px] flex items-center justify-center bg-transparent h-8 w-8 rounded-sm hover:text-foreground hover:bg-neutral-100 hover:dark:bg-neutral-800 transition-all ${!animate ? 'text-foreground' : 'text-neutral-600'}`}>
-                <PanelLeft size={20} />
-              </button>
-            </TooltipTrigger>
-            <TooltipContent align="start" side="right">
-              <p>{sidebarState ? 'open' : 'close'} sidebar</p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
+        <SidebarLock
+          sidebarState={animate}
+          updateSidebar={updateSidebar}
+        />
       </div>
     </motion.div>
   )
 }
 
-Sidebar.Subheader = ({
+export const SidebarLock = ({
+  sidebarState,
+  updateSidebar,
+}: {
+  sidebarState: boolean
+  updateSidebar: (sidebarState: boolean) => void
+}) => {
+  return (
+    <TooltipProvider skipDelayDuration={175} delayDuration={175}>
+      <Tooltip>
+        <TooltipTrigger
+          role="button"
+          onClick={() => updateSidebar(!sidebarState)}
+          className={`-ml-[4px] mt-[3px] flex items-center justify-center bg-transparent h-8 w-8 rounded-sm hover:text-foreground hover:bg-neutral-100 hover:dark:bg-neutral-800 transition-all ${!sidebarState ? 'text-foreground' : 'text-neutral-600'}`}>
+          <PanelLeft size={20} />
+        </TooltipTrigger>
+        <TooltipContent align="start" side="right">
+          <p>{sidebarState ? 'open' : 'close'} sidebar</p>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  )
+}
+
+const SidebarSubheader = ({
   animate,
   label,
 }: {
@@ -204,7 +215,7 @@ Sidebar.Subheader = ({
   )
 }
 
-Sidebar.Category = ({
+const SidebarCategory = ({
   header,
   title,
   children,
@@ -226,7 +237,7 @@ Sidebar.Category = ({
   return (
     <div className="flex flex-col mt-6">
       {/* category title */}
-      <Sidebar.Subheader label={header} animate={animate} />
+      <SidebarSubheader label={header} animate={animate} />
       {/* category item */}
       <p
         className="flex flex-row justify-start items-center gap-2 group/sidebar-category-item cursor-pointer mt-4 mb-2 select-none"
@@ -277,7 +288,7 @@ Sidebar.Category = ({
   )
 }
 
-Sidebar.Item = ({
+const SidebarItem = ({
   label,
   icon,
   onClick,
@@ -304,39 +315,7 @@ Sidebar.Item = ({
   )
 }
 
-Sidebar.Lock = ({
-  animate,
-  setAnimate,
-}: {
-  animate: boolean
-  setAnimate: (locked: boolean) => void
-}) => {
-  const [lockScope, lockAnimation] = useAnimate()
-
-  const handleClick = () => {
-    setAnimate(!animate)
-    lockAnimation(lockScope.current, {
-      rotateZ: [180, 0],
-    })
-  }
-
-  return (
-    <motion.div
-      role="button"
-      ref={lockScope}
-      className="cursor-pointer"
-      onClick={handleClick}>
-      {animate ?
-        <ArrowRightFromLine
-          size={20}
-          className="text-muted-foreground"
-        />
-      : <ArrowLeftFromLine size={20} />}
-    </motion.div>
-  )
-}
-
-Sidebar.Mobile = () => {
+const SidebarMobile = () => {
   const updateActiveRoute = useGraphStore(
     state => state.updateActiveRoute,
   )
@@ -453,7 +432,7 @@ Sidebar.Mobile = () => {
   )
 }
 
-Sidebar.Body = ({
+const SidebarBody = ({
   children,
   className = '',
 }: {
@@ -467,7 +446,7 @@ Sidebar.Body = ({
   )
 }
 
-Sidebar.Link = ({
+const SidebarLink = ({
   link,
   animate,
   onClick,
@@ -535,7 +514,7 @@ Sidebar.Link = ({
   )
 }
 
-Sidebar.Divider = ({
+const SidebarDivider = ({
   animate,
   className = '',
 }: {
@@ -555,7 +534,7 @@ Sidebar.Divider = ({
   )
 }
 
-Sidebar.Logo = ({
+const SidebarLogo = ({
   animate,
   className = '',
 }: {
