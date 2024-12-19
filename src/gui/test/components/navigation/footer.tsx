@@ -10,6 +10,9 @@ vi.mock('@/components/icons/index.js', () => ({
   Github: 'gui-github-icon',
   TwitterX: 'gui-twitter-icon',
 }))
+vi.mock('@/components/theme-switcher/theme-switcher.jsx', () => ({
+  default: () => 'gui-theme-switcher',
+}))
 
 expect.addSnapshotSerializer({
   serialize: v => html(v),
