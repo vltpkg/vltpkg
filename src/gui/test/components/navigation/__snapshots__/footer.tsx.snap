@@ -36,7 +36,8 @@ exports[`Footer Component > renders the copyright text 1`] = `
         </a>
       </div>
       <div class="flex">
-        gui-theme-switcher
+        <gui-theme-switcher>
+        </gui-theme-switcher>
       </div>
     </div>
     <div class="flex flex-row w-full items-center justify-between">

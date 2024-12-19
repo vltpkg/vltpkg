@@ -11,7 +11,7 @@ vi.mock('@/components/icons/index.js', () => ({
   TwitterX: 'gui-twitter-icon',
 }))
 vi.mock('@/components/theme-switcher/theme-switcher.jsx', () => ({
-  default: () => 'gui-theme-switcher',
+  default: 'gui-theme-switcher',
 }))
 
 expect.addSnapshotSerializer({
