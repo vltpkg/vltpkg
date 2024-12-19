@@ -16,6 +16,7 @@ import {
   entryFileName,
   modulesFileName,
 } from './constants.mjs'
+import { slug } from 'github-slugger'
 
 /** @param {string} page */
 const fixHeadings =
@@ -79,17 +80,20 @@ const fixLinks =
         .replace(/\/$/, '')
 
     const [path, anchor] = node.url.split('#')
+    const normalizedPage = normalize(page)
     const absPath = normalize(resolve(dirname(page), path))
+    const anchorSlug =
+      anchor ? slug(decodeURIComponent(anchor)) : null
 
-    if (normalize(page) === absPath) {
-      node.url = `#${anchor}`
+    if (normalizedPage === absPath) {
+      node.url = `#${anchorSlug}`
       return
     }
 
     node.url =
       sep +
       join(typedocBasePath, absPath) +
-      (anchor ? `#${anchor}` : '')
+      (anchorSlug ? `#${anchorSlug}` : '')
   }
 
 /** @type {import('unified').Plugin} */
