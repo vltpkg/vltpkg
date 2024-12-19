@@ -82,10 +82,7 @@ const markdownOptions = {
  * @type {Remark}
  */
 const remarkOptions = {
-  remarkPlugins: [
-    'unified-prettier',
-    './typedoc/remark-fix-markdown-plugin.mjs',
-  ],
+  remarkPlugins: ['unified-prettier', './typedoc/markdown-fixes.mjs'],
 }
 
 /**
