@@ -1,7 +1,13 @@
 // @ts-check
 
 import assert from 'node:assert'
-import { relative, join, posix } from 'node:path'
+import {
+  join,
+  resolve,
+  dirname,
+  sep,
+  relative,
+} from 'node:path/posix'
 import { visit, SKIP } from 'unist-util-visit'
 import { toString } from 'mdast-util-to-string'
 import {
@@ -61,26 +67,28 @@ const fixLinks =
    * @returns {import('unist-util-visit').VisitorResult | void}
    */
   node => {
-    if (
-      !node.url ||
-      node.url.startsWith('https://') ||
-      node.url.startsWith('http://')
-    ) {
+    if (!node.url || /^https?:\/\//.test(node.url)) {
       return
     }
 
-    const [path, anchor] = node.url.split('#')
-    const absPath = posix.resolve(posix.dirname(page), path)
+    /** @param {string} p */
+    const normalize = p =>
+      p
+        .replace(/\/index\.md$/, '')
+        .replace(/\.md$/, '')
+        .replace(/\/$/, '')
 
-    if (page === absPath) {
-      assert(anchor, 'same page links must be a hash')
+    const [path, anchor] = node.url.split('#')
+    const absPath = normalize(resolve(dirname(page), path))
+
+    if (normalize(page) === absPath) {
       node.url = `#${anchor}`
       return
     }
 
     node.url =
-      '/' +
-      join(typedocBasePath, absPath).replace(/\.md$/, '') +
+      sep +
+      join(typedocBasePath, absPath) +
       (anchor ? `#${anchor}` : '')
   }
 
@@ -90,7 +98,7 @@ export default function MarkdownFixes() {
   assert(compiler, 'must have a compiler')
   this.compiler = (tree, file) => {
     const page =
-      '/' + relative(join(file.cwd, typedocContentPath), file.path)
+      sep + relative(join(file.cwd, typedocContentPath), file.path)
 
     visit(tree, 'link', fixLinks(page))
     visit(tree, 'heading', fixHeadings(page))

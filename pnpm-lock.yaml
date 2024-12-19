@@ -1700,13 +1700,13 @@ importers:
         version: 0.27.4(typescript@5.5.4)
       typedoc-plugin-frontmatter:
         specifier: ^1.1.2
-        version: 1.1.2(typedoc-plugin-markdown@4.3.2(typedoc@0.27.4(typescript@5.5.4)))
+        version: 1.1.2(typedoc-plugin-markdown@4.3.3(typedoc@0.27.4(typescript@5.5.4)))
       typedoc-plugin-markdown:
-        specifier: ^4.3.2
-        version: 4.3.2(typedoc@0.27.4(typescript@5.5.4))
+        specifier: ^4.3.3
+        version: 4.3.3(typedoc@0.27.4(typescript@5.5.4))
       typedoc-plugin-remark:
         specifier: ^1.2.1
-        version: 1.2.1(typedoc-plugin-markdown@4.3.2(typedoc@0.27.4(typescript@5.5.4)))
+        version: 1.2.1(typedoc-plugin-markdown@4.3.3(typedoc@0.27.4(typescript@5.5.4)))
       vaul:
         specifier: ^1.1.1
         version: 1.1.1(@types/react-dom@18.3.1)(@types/react@18.3.11)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -7434,8 +7434,8 @@ packages:
     peerDependencies:
       typedoc-plugin-markdown: '>=4.3.0'
 
-  typedoc-plugin-markdown@4.3.2:
-    resolution: {integrity: sha512-hCF3V0axzbzGDYFW21XigWIJQBOJ2ZRVWWs7X+e62ew/pXnvz7iKF/zVdkBm3w8Mk4bmXWp/FT0IF4Zn9uBRww==}
+  typedoc-plugin-markdown@4.3.3:
+    resolution: {integrity: sha512-kESCcNRzOcFJATLML2FoCfaTF9c0ujmbZ+UXsJvmNlFLS3v8tDKfDifreJXvXWa9d8gUcetZqOqFcZ/7+Ba34Q==}
     engines: {node: '>= 18'}
     peerDependencies:
       typedoc: 0.27.x
@@ -14953,23 +14953,23 @@ snapshots:
       is-typed-array: 1.1.13
       possible-typed-array-names: 1.0.0
 
-  typedoc-plugin-frontmatter@1.1.2(typedoc-plugin-markdown@4.3.2(typedoc@0.27.4(typescript@5.5.4))):
+  typedoc-plugin-frontmatter@1.1.2(typedoc-plugin-markdown@4.3.3(typedoc@0.27.4(typescript@5.5.4))):
     dependencies:
-      typedoc-plugin-markdown: 4.3.2(typedoc@0.27.4(typescript@5.5.4))
+      typedoc-plugin-markdown: 4.3.3(typedoc@0.27.4(typescript@5.5.4))
       yaml: 2.6.1
 
-  typedoc-plugin-markdown@4.3.2(typedoc@0.27.4(typescript@5.5.4)):
+  typedoc-plugin-markdown@4.3.3(typedoc@0.27.4(typescript@5.5.4)):
     dependencies:
       typedoc: 0.27.4(typescript@5.5.4)
 
-  typedoc-plugin-remark@1.2.1(typedoc-plugin-markdown@4.3.2(typedoc@0.27.4(typescript@5.5.4))):
+  typedoc-plugin-remark@1.2.1(typedoc-plugin-markdown@4.3.3(typedoc@0.27.4(typescript@5.5.4))):
     dependencies:
       remark: 15.0.1
       remark-frontmatter: 5.0.0
       remark-gfm: 4.0.0
       remark-mdx: 3.1.0
       to-vfile: 8.0.0
-      typedoc-plugin-markdown: 4.3.2(typedoc@0.27.4(typescript@5.5.4))
+      typedoc-plugin-markdown: 4.3.3(typedoc@0.27.4(typescript@5.5.4))
     transitivePeerDependencies:
       - supports-color
 

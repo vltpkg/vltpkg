@@ -37,7 +37,7 @@
     "tailwindcss-animate": "^1.0.7",
     "typedoc": "^0.27.4",
     "typedoc-plugin-frontmatter": "^1.1.2",
-    "typedoc-plugin-markdown": "^4.3.2",
+    "typedoc-plugin-markdown": "^4.3.3",
     "typedoc-plugin-remark": "^1.2.1",
     "vaul": "^1.1.1",
     "vite": "^6.0.3",
