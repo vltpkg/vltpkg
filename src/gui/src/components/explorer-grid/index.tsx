@@ -136,13 +136,15 @@ const getParent = (
   node?: NodeLike,
 ): GridItemData | undefined => {
   if (!node) return undefined
-  const version = node.version ? node.version : ''
+  const edgeVersion =
+    edge?.spec?.bareSpec ? `@${edge.spec.bareSpec}` : ''
+  const title = edge?.name ? `${edge.name}${edgeVersion}` : ''
   return {
     ...edge,
     id: node.id,
     name: node.name || '',
-    title: `${node.name}${version}`,
-    version: version || '',
+    title,
+    version: node.version || '',
     stacked: false,
     size: 1,
     labels: undefined,
@@ -154,13 +156,13 @@ const getDependentItems = (node?: NodeLike, parent?: NodeLike) => {
   if (!node) return items
   for (const edge of Array.from(node.edgesIn)) {
     if (edge.from === parent) continue
-    const version = edge.from.version ? edge.from.version : ''
+    const title = `${edge.name}@${edge.spec.bareSpec}`
 
     items.push({
       ...edge,
       id: edge.from.id,
-      title: `${edge.from.name}${version}`,
-      version: version || '',
+      title,
+      version: edge.from.version || '',
       name: edge.from.name || '',
       stacked: edge.from.edgesIn.size > 1,
       size: edge.from.edgesIn.size,
