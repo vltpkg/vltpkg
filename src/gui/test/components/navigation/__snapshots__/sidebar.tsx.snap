@@ -2,83 +2,115 @@
 
 exports[`Render the sidebar > should be collapasible 1`] = `
 
-<div
-  role="button"
-  class="cursor-pointer"
+<gui-tooltip-provider
+  skipdelayduration="175"
+  delayduration="175"
 >
-  <gui-lucide-arrow-left-from-line size="20">
-  </gui-lucide-arrow-left-from-line>
-</div>
-
-`;
-
-exports[`Render the sidebar > should change the theme 1`] = `
-
-<div
-  role="button"
-  class="flex gap-3 items-center"
->
-  <gui-lucide-moon
-    classname="cursor-pointer"
-    size="20"
-  >
-  </gui-lucide-moon>
-</div>
+  <gui-tooltip>
+    <gui-tooltip-trigger
+      role="button"
+      classname="-ml-[4px] mt-[3px] flex items-center justify-center bg-transparent h-8 w-8 rounded-sm hover:text-foreground hover:bg-neutral-100 hover:dark:bg-neutral-800 transition-all text-neutral-600"
+    >
+      <gui-lucide-panel-left size="20">
+      </gui-lucide-panel-left>
+    </gui-tooltip-trigger>
+    <gui-tooltip-content
+      align="start"
+      side="right"
+    >
+      <p>
+        open sidebar
+      </p>
+    </gui-tooltip-content>
+  </gui-tooltip>
+</gui-tooltip-provider>
 
 `;
 
 exports[`Render the sidebar > should render the pinned projects 1`] = `
 
-<div class="relative hidden md:flex sticky top-0 w-[200px] h-screen border-r-[1px] flex-shrink-0">
+<div class="relative hidden pl-[18px] md:flex flex-col justify-between sticky top-0 w-[200px] h-screen border-r-[1px] flex-shrink-0">
+  <a
+    class="flex items-center justify-start gap-2 text-neutral-700 dark:text-neutral-200 text-xl font-medium pt-4"
+    href="/"
+  >
+    vlt
+    <span class="font-light text-neutral-400 ml-0.5">
+      /vōlt/
+    </span>
+  </a>
   <div
-    class="fixed border-t-[1px] mt-[56px]"
+    class="fixed border-t-[1px] mt-[56px] -ml-[18px]"
     style="width: 200px;"
   >
   </div>
-  <div class="flex flex-col justify-between h-full fixed px-4">
+  <div class="flex grow flex-col mt-8 w-[200px]">
     <div class="flex flex-col gap-4">
       <div class="flex flex-col gap-4">
-        <a
-          class="flex items-center justify-start gap-2 text-neutral-700 dark:text-neutral-200 text-xl font-medium mt-4 mb-6 h-[28px]"
-          href="/"
-        >
-          vlt
-          <span class="font-light text-neutral-400 ml-0.5">
-            /vōlt/
-          </span>
-        </a>
-        <p class="text-xs font-medium text-muted-foreground/75 dark:text-muted-foreground/50 uppercase select-none tracking-wide">
+        <p class="text-xs capitalize font-semibold text-neutral-600 select-none tracking-wide">
           workspaces
         </p>
         <a
           href="/dashboard"
           target="_top"
-          class="relative flex justify-start gap-2 group/sidebar-link rounded-md"
+          class="relative flex text-neutral-500 justify-start gap-2 group/sidebar-link rounded-md text-neutral-900 dark:text-neutral-100"
         >
-          <gui-lucide-layout-dashboard
-            width="20"
-            height="20"
+          <gui-tooltip-provider
+            skipdelayduration="175"
+            delayduration="175"
           >
-          </gui-lucide-layout-dashboard>
+            <gui-tooltip>
+              <gui-tooltip-trigger>
+                <gui-lucide-layout-dashboard
+                  width="20"
+                  height="20"
+                >
+                </gui-lucide-layout-dashboard>
+              </gui-tooltip-trigger>
+              <gui-tooltip-content
+                align="start"
+                sideoffset="20"
+                side="right"
+              >
+                Dashboard
+              </gui-tooltip-content>
+            </gui-tooltip>
+          </gui-tooltip-provider>
           <span class="text-sm">
             Dashboard
           </span>
           <div class="
             -mt-[7px] -ml-[5px] h-[34px] z-10 rounded-sm md:absolute
-            bg-muted-foreground/25
+            bg-muted-foreground/15
           ">
           </div>
         </a>
         <a
           href="https://docs.vlt.sh/cli/commands/query"
           target="blank"
-          class="relative flex justify-start gap-2 group/sidebar-link rounded-md"
+          class="relative flex text-neutral-500 justify-start gap-2 group/sidebar-link rounded-md "
         >
-          <gui-lucide-library
-            width="20"
-            height="20"
+          <gui-tooltip-provider
+            skipdelayduration="175"
+            delayduration="175"
           >
-          </gui-lucide-library>
+            <gui-tooltip>
+              <gui-tooltip-trigger>
+                <gui-lucide-library
+                  width="20"
+                  height="20"
+                >
+                </gui-lucide-library>
+              </gui-tooltip-trigger>
+              <gui-tooltip-content
+                align="start"
+                sideoffset="20"
+                side="right"
+              >
+                Docs
+              </gui-tooltip-content>
+            </gui-tooltip>
+          </gui-tooltip-provider>
           <span class="text-sm">
             Docs
           </span>
@@ -90,7 +122,7 @@ exports[`Render the sidebar > should render the pinned projects 1`] = `
         </a>
       </div>
       <div class="flex flex-col mt-6">
-        <p class="text-xs font-medium text-muted-foreground/75 dark:text-muted-foreground/50 uppercase select-none tracking-wide">
+        <p class="text-xs capitalize font-semibold text-neutral-600 select-none tracking-wide">
           pinned
         </p>
         <p class="flex flex-row justify-start items-center gap-2 group/sidebar-category-item cursor-pointer mt-4 mb-2 select-none">
@@ -109,32 +141,35 @@ exports[`Render the sidebar > should render the pinned projects 1`] = `
         </p>
       </div>
     </div>
-    <div class="flex flex-col mb-[38px] gap-2">
-      <div class="flex w-full justify-between items-center">
-        <div
-          role="button"
-          class="flex gap-3 items-center"
-        >
-          <gui-lucide-moon
-            classname="cursor-pointer"
-            size="20"
-          >
-          </gui-lucide-moon>
-        </div>
-        <div
-          role="button"
-          class="cursor-pointer"
-        >
-          <gui-lucide-arrow-left-from-line size="20">
-          </gui-lucide-arrow-left-from-line>
-        </div>
-      </div>
-    </div>
   </div>
   <div
-    class="fixed border-t-[1px] absolute bottom-0 mb-[95px]"
+    class="fixed border-t-[1px] bottom-[122px] -ml-[18px]"
     style="width: 200px;"
   >
+  </div>
+  <div class="py-6 h-[122px]">
+    <gui-tooltip-provider
+      skipdelayduration="175"
+      delayduration="175"
+    >
+      <gui-tooltip>
+        <gui-tooltip-trigger
+          role="button"
+          classname="-ml-[4px] mt-[3px] flex items-center justify-center bg-transparent h-8 w-8 rounded-sm hover:text-foreground hover:bg-neutral-100 hover:dark:bg-neutral-800 transition-all text-foreground"
+        >
+          <gui-lucide-panel-left size="20">
+          </gui-lucide-panel-left>
+        </gui-tooltip-trigger>
+        <gui-tooltip-content
+          align="start"
+          side="right"
+        >
+          <p>
+            close sidebar
+          </p>
+        </gui-tooltip-content>
+      </gui-tooltip>
+    </gui-tooltip-provider>
   </div>
 </div>
 <div class="flex md:hidden justify-end absolute inset-0">
@@ -190,37 +225,53 @@ exports[`Render the sidebar > should render the pinned projects 1`] = `
 
 exports[`Render the sidebar > should render the sidebar on desktop 1`] = `
 
-<div class="relative hidden md:flex sticky top-0 w-[200px] h-screen border-r-[1px] flex-shrink-0">
+<div class="relative hidden pl-[18px] md:flex flex-col justify-between sticky top-0 w-[200px] h-screen border-r-[1px] flex-shrink-0">
+  <a
+    class="flex items-center justify-start gap-2 text-neutral-700 dark:text-neutral-200 text-xl font-medium pt-4"
+    href="/"
+  >
+    vlt
+    <span class="font-light text-neutral-400 ml-0.5">
+      /vōlt/
+    </span>
+  </a>
   <div
-    class="fixed border-t-[1px] mt-[56px]"
+    class="fixed border-t-[1px] mt-[56px] -ml-[18px]"
     style="width: 200px;"
   >
   </div>
-  <div class="flex flex-col justify-between h-full fixed px-4">
+  <div class="flex grow flex-col mt-8 w-[200px]">
     <div class="flex flex-col gap-4">
       <div class="flex flex-col gap-4">
-        <a
-          class="flex items-center justify-start gap-2 text-neutral-700 dark:text-neutral-200 text-xl font-medium mt-4 mb-6 h-[28px]"
-          href="/"
-        >
-          vlt
-          <span class="font-light text-neutral-400 ml-0.5">
-            /vōlt/
-          </span>
-        </a>
-        <p class="text-xs font-medium text-muted-foreground/75 dark:text-muted-foreground/50 uppercase select-none tracking-wide">
+        <p class="text-xs capitalize font-semibold text-neutral-600 select-none tracking-wide">
           workspaces
         </p>
         <a
           href="/dashboard"
           target="_top"
-          class="relative flex justify-start gap-2 group/sidebar-link rounded-md"
+          class="relative flex text-neutral-500 justify-start gap-2 group/sidebar-link rounded-md "
         >
-          <gui-lucide-layout-dashboard
-            width="20"
-            height="20"
+          <gui-tooltip-provider
+            skipdelayduration="175"
+            delayduration="175"
           >
-          </gui-lucide-layout-dashboard>
+            <gui-tooltip>
+              <gui-tooltip-trigger>
+                <gui-lucide-layout-dashboard
+                  width="20"
+                  height="20"
+                >
+                </gui-lucide-layout-dashboard>
+              </gui-tooltip-trigger>
+              <gui-tooltip-content
+                align="start"
+                sideoffset="20"
+                side="right"
+              >
+                Dashboard
+              </gui-tooltip-content>
+            </gui-tooltip>
+          </gui-tooltip-provider>
           <span class="text-sm">
             Dashboard
           </span>
@@ -233,13 +284,29 @@ exports[`Render the sidebar > should render the sidebar on desktop 1`] = `
         <a
           href="https://docs.vlt.sh/cli/commands/query"
           target="blank"
-          class="relative flex justify-start gap-2 group/sidebar-link rounded-md"
+          class="relative flex text-neutral-500 justify-start gap-2 group/sidebar-link rounded-md "
         >
-          <gui-lucide-library
-            width="20"
-            height="20"
+          <gui-tooltip-provider
+            skipdelayduration="175"
+            delayduration="175"
           >
-          </gui-lucide-library>
+            <gui-tooltip>
+              <gui-tooltip-trigger>
+                <gui-lucide-library
+                  width="20"
+                  height="20"
+                >
+                </gui-lucide-library>
+              </gui-tooltip-trigger>
+              <gui-tooltip-content
+                align="start"
+                sideoffset="20"
+                side="right"
+              >
+                Docs
+              </gui-tooltip-content>
+            </gui-tooltip>
+          </gui-tooltip-provider>
           <span class="text-sm">
             Docs
           </span>
@@ -251,7 +318,7 @@ exports[`Render the sidebar > should render the sidebar on desktop 1`] = `
         </a>
       </div>
       <div class="flex flex-col mt-6">
-        <p class="text-xs font-medium text-muted-foreground/75 dark:text-muted-foreground/50 uppercase select-none tracking-wide">
+        <p class="text-xs capitalize font-semibold text-neutral-600 select-none tracking-wide">
           pinned
         </p>
         <p class="flex flex-row justify-start items-center gap-2 group/sidebar-category-item cursor-pointer mt-4 mb-2 select-none">
@@ -270,32 +337,35 @@ exports[`Render the sidebar > should render the sidebar on desktop 1`] = `
         </p>
       </div>
     </div>
-    <div class="flex flex-col mb-[38px] gap-2">
-      <div class="flex w-full justify-between items-center">
-        <div
-          role="button"
-          class="flex gap-3 items-center"
-        >
-          <gui-lucide-moon
-            classname="cursor-pointer"
-            size="20"
-          >
-          </gui-lucide-moon>
-        </div>
-        <div
-          role="button"
-          class="cursor-pointer"
-        >
-          <gui-lucide-arrow-left-from-line size="20">
-          </gui-lucide-arrow-left-from-line>
-        </div>
-      </div>
-    </div>
   </div>
   <div
-    class="fixed border-t-[1px] absolute bottom-0 mb-[95px]"
+    class="fixed border-t-[1px] bottom-[122px] -ml-[18px]"
     style="width: 200px;"
   >
+  </div>
+  <div class="py-6 h-[122px]">
+    <gui-tooltip-provider
+      skipdelayduration="175"
+      delayduration="175"
+    >
+      <gui-tooltip>
+        <gui-tooltip-trigger
+          role="button"
+          classname="-ml-[4px] mt-[3px] flex items-center justify-center bg-transparent h-8 w-8 rounded-sm hover:text-foreground hover:bg-neutral-100 hover:dark:bg-neutral-800 transition-all text-foreground"
+        >
+          <gui-lucide-panel-left size="20">
+          </gui-lucide-panel-left>
+        </gui-tooltip-trigger>
+        <gui-tooltip-content
+          align="start"
+          side="right"
+        >
+          <p>
+            close sidebar
+          </p>
+        </gui-tooltip-content>
+      </gui-tooltip>
+    </gui-tooltip-provider>
   </div>
 </div>
 <div class="flex md:hidden justify-end absolute inset-0">
@@ -334,37 +404,53 @@ exports[`Render the sidebar > should render the sidebar on desktop 1`] = `
 
 exports[`Render the sidebar > should render the sidebar on mobile 1`] = `
 
-<div class="relative hidden md:flex sticky top-0 w-[200px] h-screen border-r-[1px] flex-shrink-0">
+<div class="relative hidden pl-[18px] md:flex flex-col justify-between sticky top-0 w-[200px] h-screen border-r-[1px] flex-shrink-0">
+  <a
+    class="flex items-center justify-start gap-2 text-neutral-700 dark:text-neutral-200 text-xl font-medium pt-4"
+    href="/"
+  >
+    vlt
+    <span class="font-light text-neutral-400 ml-0.5">
+      /vōlt/
+    </span>
+  </a>
   <div
-    class="fixed border-t-[1px] mt-[56px]"
+    class="fixed border-t-[1px] mt-[56px] -ml-[18px]"
     style="width: 200px;"
   >
   </div>
-  <div class="flex flex-col justify-between h-full fixed px-4">
+  <div class="flex grow flex-col mt-8 w-[200px]">
     <div class="flex flex-col gap-4">
       <div class="flex flex-col gap-4">
-        <a
-          class="flex items-center justify-start gap-2 text-neutral-700 dark:text-neutral-200 text-xl font-medium mt-4 mb-6 h-[28px]"
-          href="/"
-        >
-          vlt
-          <span class="font-light text-neutral-400 ml-0.5">
-            /vōlt/
-          </span>
-        </a>
-        <p class="text-xs font-medium text-muted-foreground/75 dark:text-muted-foreground/50 uppercase select-none tracking-wide">
+        <p class="text-xs capitalize font-semibold text-neutral-600 select-none tracking-wide">
           workspaces
         </p>
         <a
           href="/dashboard"
           target="_top"
-          class="relative flex justify-start gap-2 group/sidebar-link rounded-md"
+          class="relative flex text-neutral-500 justify-start gap-2 group/sidebar-link rounded-md "
         >
-          <gui-lucide-layout-dashboard
-            width="20"
-            height="20"
+          <gui-tooltip-provider
+            skipdelayduration="175"
+            delayduration="175"
           >
-          </gui-lucide-layout-dashboard>
+            <gui-tooltip>
+              <gui-tooltip-trigger>
+                <gui-lucide-layout-dashboard
+                  width="20"
+                  height="20"
+                >
+                </gui-lucide-layout-dashboard>
+              </gui-tooltip-trigger>
+              <gui-tooltip-content
+                align="start"
+                sideoffset="20"
+                side="right"
+              >
+                Dashboard
+              </gui-tooltip-content>
+            </gui-tooltip>
+          </gui-tooltip-provider>
           <span class="text-sm">
             Dashboard
           </span>
@@ -377,13 +463,29 @@ exports[`Render the sidebar > should render the sidebar on mobile 1`] = `
         <a
           href="https://docs.vlt.sh/cli/commands/query"
           target="blank"
-          class="relative flex justify-start gap-2 group/sidebar-link rounded-md"
+          class="relative flex text-neutral-500 justify-start gap-2 group/sidebar-link rounded-md "
         >
-          <gui-lucide-library
-            width="20"
-            height="20"
+          <gui-tooltip-provider
+            skipdelayduration="175"
+            delayduration="175"
           >
-          </gui-lucide-library>
+            <gui-tooltip>
+              <gui-tooltip-trigger>
+                <gui-lucide-library
+                  width="20"
+                  height="20"
+                >
+                </gui-lucide-library>
+              </gui-tooltip-trigger>
+              <gui-tooltip-content
+                align="start"
+                sideoffset="20"
+                side="right"
+              >
+                Docs
+              </gui-tooltip-content>
+            </gui-tooltip>
+          </gui-tooltip-provider>
           <span class="text-sm">
             Docs
           </span>
@@ -395,7 +497,7 @@ exports[`Render the sidebar > should render the sidebar on mobile 1`] = `
         </a>
       </div>
       <div class="flex flex-col mt-6">
-        <p class="text-xs font-medium text-muted-foreground/75 dark:text-muted-foreground/50 uppercase select-none tracking-wide">
+        <p class="text-xs capitalize font-semibold text-neutral-600 select-none tracking-wide">
           pinned
         </p>
         <p class="flex flex-row justify-start items-center gap-2 group/sidebar-category-item cursor-pointer mt-4 mb-2 select-none">
@@ -414,32 +516,35 @@ exports[`Render the sidebar > should render the sidebar on mobile 1`] = `
         </p>
       </div>
     </div>
-    <div class="flex flex-col mb-[38px] gap-2">
-      <div class="flex w-full justify-between items-center">
-        <div
-          role="button"
-          class="flex gap-3 items-center"
-        >
-          <gui-lucide-moon
-            classname="cursor-pointer"
-            size="20"
-          >
-          </gui-lucide-moon>
-        </div>
-        <div
-          role="button"
-          class="cursor-pointer"
-        >
-          <gui-lucide-arrow-left-from-line size="20">
-          </gui-lucide-arrow-left-from-line>
-        </div>
-      </div>
-    </div>
   </div>
   <div
-    class="fixed border-t-[1px] absolute bottom-0 mb-[95px]"
+    class="fixed border-t-[1px] bottom-[122px] -ml-[18px]"
     style="width: 200px;"
   >
+  </div>
+  <div class="py-6 h-[122px]">
+    <gui-tooltip-provider
+      skipdelayduration="175"
+      delayduration="175"
+    >
+      <gui-tooltip>
+        <gui-tooltip-trigger
+          role="button"
+          classname="-ml-[4px] mt-[3px] flex items-center justify-center bg-transparent h-8 w-8 rounded-sm hover:text-foreground hover:bg-neutral-100 hover:dark:bg-neutral-800 transition-all text-foreground"
+        >
+          <gui-lucide-panel-left size="20">
+          </gui-lucide-panel-left>
+        </gui-tooltip-trigger>
+        <gui-tooltip-content
+          align="start"
+          side="right"
+        >
+          <p>
+            close sidebar
+          </p>
+        </gui-tooltip-content>
+      </gui-tooltip>
+    </gui-tooltip-provider>
   </div>
 </div>
 <div class="flex md:hidden justify-end absolute inset-0">

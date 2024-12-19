@@ -1,18 +1,14 @@
 import { useEffect, useState, type MouseEvent } from 'react'
-import { useTheme } from '@/components/ui/theme-provider.jsx'
 import {
   type LucideIcon,
   LayoutDashboard,
-  ArrowRightFromLine,
-  ArrowLeftFromLine,
   ChevronRight,
   Folder,
   FolderOpen,
   Library,
-  Sun,
-  Moon,
   Menu,
   X as IconX,
+  PanelLeft,
 } from 'lucide-react'
 import { useAnimate, AnimatePresence, motion } from 'framer-motion'
 import { DEFAULT_QUERY, useGraphStore } from '@/state/index.js'
@@ -20,6 +16,12 @@ import {
   type DashboardDataProject,
   type Action,
 } from '@/state/types.js'
+import {
+  Tooltip,
+  TooltipProvider,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip.jsx'
 
 type selectProjectItem = {
   updateActiveRoute: Action['updateActiveRoute']
@@ -35,13 +37,6 @@ interface SidebarLink {
   icon: LucideIcon
   target?: 'blank'
   external: boolean
-}
-
-interface SidebarScreenProps {
-  isOpen: boolean
-  setIsOpen: React.Dispatch<React.SetStateAction<boolean>>
-  animate: boolean
-  setAnimate: (locked: boolean) => void
 }
 
 const sidebarLinks: SidebarLink[] = [
@@ -65,40 +60,19 @@ const sidebarLinks: SidebarLink[] = [
  */
 const SIDEBAR_WIDTH = {
   open: '200px',
-  closed: '60px',
+  closed: '61px',
 }
 
-/**
- * The `animate` prop controls whether the sidebar should either:
- * be in an open state, or be in a closed state, without triggering
- * animations.
- *
- * Two different sidebars are rendered on < `sm` and > `md` breakpoints.
- */
-const Sidebar = () => {
-  const [isOpen, setIsOpen] = useState<boolean>(false)
-  const animate = useGraphStore(state => state.lockSidebar)
-  const setAnimate = useGraphStore(state => state.updateLockSidebar)
-
+export const Sidebar = () => {
   return (
     <>
-      <Sidebar.Desktop
-        isOpen={isOpen}
-        setIsOpen={setIsOpen}
-        animate={animate}
-        setAnimate={setAnimate}
-      />
-      <Sidebar.Mobile isOpen={isOpen} setIsOpen={setIsOpen} />
+      <SidebarDesktop />
+      <SidebarMobile />
     </>
   )
 }
 
-Sidebar.Desktop = ({
-  isOpen,
-  setIsOpen,
-  animate,
-  setAnimate,
-}: SidebarScreenProps) => {
+const SidebarDesktop = () => {
   const updateActiveRoute = useGraphStore(
     state => state.updateActiveRoute,
   )
@@ -108,6 +82,10 @@ Sidebar.Desktop = ({
   const updateQuery = useGraphStore(state => state.updateQuery)
   const updateStamp = useGraphStore(state => state.updateStamp)
   const savedProjects = useGraphStore(state => state.savedProjects)
+  const updateSidebar = useGraphStore(
+    state => state.updateLockSidebar,
+  )
+  const animate = useGraphStore(state => state.lockSidebar)
 
   const onProjectClick = (
     e: MouseEvent,
@@ -125,41 +103,29 @@ Sidebar.Desktop = ({
 
   return (
     <motion.div
-      onMouseEnter={() => setIsOpen(true)}
-      onMouseLeave={() => setIsOpen(false)}
-      className={`relative hidden md:flex sticky top-0 w-[${SIDEBAR_WIDTH.open}] h-screen border-r-[1px] flex-shrink-0`}
+      className={`relative hidden pl-[18px] md:flex flex-col justify-between sticky top-0 w-[${SIDEBAR_WIDTH.open}] h-screen border-r-[1px] flex-shrink-0`}
       animate={{
-        width:
-          animate ?
-            isOpen ? SIDEBAR_WIDTH.open
-            : SIDEBAR_WIDTH.closed
-          : SIDEBAR_WIDTH.open,
+        width: !animate ? SIDEBAR_WIDTH.open : SIDEBAR_WIDTH.closed,
       }}>
-      <Sidebar.Divider
-        isOpen={isOpen}
-        animate={animate}
-        className="mt-[56px]"
-      />
-      <Sidebar.Body className="px-4">
-        {/* top of the sidebar */}
-        <div className="flex flex-col gap-4">
-          <div className="flex flex-col gap-4">
-            <Sidebar.Logo
-              className="mt-4 mb-6 h-[28px]"
-              isOpen={isOpen}
-              animate={animate}
-            />
+      {/* sidebar-top */}
+      <SidebarLogo className="pt-4" animate={animate} />
 
-            <Sidebar.Subheader
-              animate={animate}
-              isOpen={isOpen}
-              label="workspaces"
-            />
+      <SidebarDivider
+        animate={animate}
+        className="mt-[56px] -ml-[18px]"
+      />
+
+      {/* sidebar-body */}
+      <SidebarBody className="mt-8 w-[200px]">
+        <div className="flex flex-col gap-4">
+          {/* workspaces */}
+          <div className="flex flex-col gap-4">
+            <SidebarSubheader animate={animate} label="workspaces" />
+
             {sidebarLinks.map((link, idx) => (
-              <Sidebar.Link
+              <SidebarLink
                 link={link}
                 key={idx}
-                isOpen={isOpen}
                 animate={animate}
                 onClick={(e: MouseEvent) => {
                   if (!link.external) {
@@ -171,14 +137,14 @@ Sidebar.Desktop = ({
             ))}
           </div>
 
-          {/* category - pinned projects */}
-          <Sidebar.Category
+          {/* pinned projects */}
+          <SidebarCategory
             header="pinned"
             title="pinned projects"
-            animate={animate}
-            isOpen={isOpen}>
+            updateSidebar={updateSidebar}
+            animate={animate}>
             {savedProjects?.map((project, idx) => (
-              <Sidebar.Item
+              <SidebarItem
                 key={idx}
                 onClick={(e: MouseEvent) =>
                   onProjectClick(e, project)
@@ -187,70 +153,100 @@ Sidebar.Desktop = ({
                 icon={<Folder size={18} />}
               />
             ))}
-          </Sidebar.Category>
+          </SidebarCategory>
         </div>
+      </SidebarBody>
 
-        {/* bottom of the sidebar */}
-        <div className="flex flex-col mb-[38px] gap-2">
-          <Sidebar.Controls
-            isOpen={isOpen}
-            setAnimate={setAnimate}
-            animate={animate}
-          />
-        </div>
-      </Sidebar.Body>
-      <Sidebar.Divider
-        isOpen={isOpen}
+      <SidebarDivider
         animate={animate}
-        className="absolute bottom-0 mb-[95px]"
+        className="bottom-[122px] -ml-[18px]"
       />
+
+      {/* sidebar-bottom */}
+      <div className="py-6 h-[122px]">
+        <SidebarLock
+          sidebarState={animate}
+          updateSidebar={updateSidebar}
+        />
+      </div>
     </motion.div>
   )
 }
 
-Sidebar.Subheader = ({
+export const SidebarLock = ({
+  sidebarState,
+  updateSidebar,
+}: {
+  sidebarState: boolean
+  updateSidebar: (sidebarState: boolean) => void
+}) => {
+  return (
+    <TooltipProvider skipDelayDuration={175} delayDuration={175}>
+      <Tooltip>
+        <TooltipTrigger
+          role="button"
+          onClick={() => updateSidebar(!sidebarState)}
+          className={`-ml-[4px] mt-[3px] flex items-center justify-center bg-transparent h-8 w-8 rounded-sm hover:text-foreground hover:bg-neutral-100 hover:dark:bg-neutral-800 transition-all ${!sidebarState ? 'text-foreground' : 'text-neutral-600'}`}>
+          <PanelLeft size={20} />
+        </TooltipTrigger>
+        <TooltipContent align="start" side="right">
+          <p>{sidebarState ? 'open' : 'close'} sidebar</p>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  )
+}
+
+const SidebarSubheader = ({
   animate,
-  isOpen,
   label,
 }: {
   animate: boolean
-  isOpen: boolean
   label: string
 }) => {
   return (
     <motion.p
-      className="text-xs font-medium text-muted-foreground/75 dark:text-muted-foreground/50 uppercase select-none tracking-wide"
       animate={{
-        width:
-          animate ?
-            isOpen ? 'fit-content'
-            : 0
-          : 'fit-content',
-        opacity:
-          animate ?
-            isOpen ? 1
-            : 0
-          : 1,
-      }}>
+        opacity: !animate ? 1 : 0,
+        marginTop: !animate ? -3 : -20,
+      }}
+      className="text-xs capitalize font-semibold text-neutral-600 select-none tracking-wide">
       {label}
     </motion.p>
   )
 }
 
-Sidebar.Category = ({
+const SidebarCategory = ({
   header,
   title,
   children,
   animate,
-  isOpen,
+  updateSidebar,
 }: {
   header: string
   title: string
   children: React.ReactNode
   animate: boolean
-  isOpen: boolean
+  updateSidebar: (sidebarState: boolean) => void
 }) => {
   const [isExpanded, setIsExpanded] = useState(false)
+
+  useEffect(() => {
+    if (animate) {
+      setIsExpanded(false)
+    }
+  }, [animate])
+
+  const handleCategoryClick = () => {
+    if (!animate && !isExpanded) {
+      setIsExpanded(true)
+    } else if (!animate && isExpanded) {
+      setIsExpanded(false)
+    } else if (animate && !isExpanded) {
+      setIsExpanded(true)
+      updateSidebar(!animate)
+    }
+  }
 
   const contentVariants = {
     hidden: { opacity: 0 },
@@ -261,15 +257,11 @@ Sidebar.Category = ({
   return (
     <div className="flex flex-col mt-6">
       {/* category title */}
-      <Sidebar.Subheader
-        label={header}
-        animate={animate}
-        isOpen={isOpen}
-      />
+      <SidebarSubheader label={header} animate={animate} />
       {/* category item */}
       <p
         className="flex flex-row justify-start items-center gap-2 group/sidebar-category-item cursor-pointer mt-4 mb-2 select-none"
-        onClick={() => setIsExpanded(!isExpanded)}>
+        onClick={() => handleCategoryClick()}>
         {isExpanded ?
           <FolderOpen size={20} />
         : <Folder size={20} />}
@@ -277,16 +269,8 @@ Sidebar.Category = ({
         <motion.span
           className="capitalize flex text-neutral-700 dark:text-neutral-200 text-sm group-hover/sidebar-category-item:translate-x-1 transition duration-150"
           animate={{
-            display:
-              animate ?
-                isOpen ? 'inline-block'
-                : 'none'
-              : 'inline-block',
-            opacity:
-              animate ?
-                isOpen ? 1
-                : 0
-              : 1,
+            display: !animate ? 'inline-block' : 'none',
+            opacity: !animate ? 1 : 0,
           }}>
           {title}
         </motion.span>
@@ -294,16 +278,8 @@ Sidebar.Category = ({
         <motion.span
           className="group-hover/sidebar-category-item:translate-x-1 transition duration-150"
           animate={{
-            display:
-              animate ?
-                isOpen ? 'inline-block'
-                : 'none'
-              : 'inline-block',
-            opacity:
-              animate ?
-                isOpen ? 1
-                : 0
-              : 1,
+            display: !animate ? 'inline-block' : 'none',
+            opacity: !animate ? 1 : 0,
           }}>
           <ChevronRight
             className="transition duration-150"
@@ -321,13 +297,7 @@ Sidebar.Category = ({
             className="flex flex-col gap-2"
             variants={contentVariants}
             initial="hidden"
-            animate={
-              animate ?
-                isOpen ?
-                  'show'
-                : 'undefined'
-              : 'show'
-            }
+            animate={!animate ? 'show' : 'undefined'}
             exit="exit">
             {/* individual projects */}
             {children}
@@ -338,7 +308,7 @@ Sidebar.Category = ({
   )
 }
 
-Sidebar.Item = ({
+const SidebarItem = ({
   label,
   icon,
   onClick,
@@ -365,45 +335,7 @@ Sidebar.Item = ({
   )
 }
 
-Sidebar.Lock = ({
-  animate,
-  setAnimate,
-}: {
-  animate: boolean
-  setAnimate: (locked: boolean) => void
-}) => {
-  const [lockScope, lockAnimation] = useAnimate()
-
-  const handleClick = () => {
-    setAnimate(!animate)
-    lockAnimation(lockScope.current, {
-      rotateZ: [180, 0],
-    })
-  }
-
-  return (
-    <motion.div
-      role="button"
-      ref={lockScope}
-      className="cursor-pointer"
-      onClick={handleClick}>
-      {animate ?
-        <ArrowRightFromLine
-          size={20}
-          className="text-muted-foreground"
-        />
-      : <ArrowLeftFromLine size={20} />}
-    </motion.div>
-  )
-}
-
-Sidebar.Mobile = ({
-  isOpen,
-  setIsOpen,
-}: {
-  isOpen: boolean
-  setIsOpen: React.Dispatch<React.SetStateAction<boolean>>
-}) => {
+const SidebarMobile = () => {
   const updateActiveRoute = useGraphStore(
     state => state.updateActiveRoute,
   )
@@ -415,6 +347,7 @@ Sidebar.Mobile = ({
   const savedProjects = useGraphStore(state => state.savedProjects)
 
   const [iconScope, animateIcon] = useAnimate()
+  const [isOpen, setIsOpen] = useState<boolean>(false)
 
   const handleOpen = () => {
     if (isOpen) {
@@ -519,33 +452,29 @@ Sidebar.Mobile = ({
   )
 }
 
-Sidebar.Body = ({
+const SidebarBody = ({
   children,
-  className,
+  className = '',
 }: {
   children: React.ReactNode
   className?: string
 }) => {
   return (
-    <div
-      className={`flex flex-col justify-between h-full fixed ${className}`}>
+    <div className={`flex grow flex-col ${className}`}>
       {children}
     </div>
   )
 }
 
-Sidebar.Link = ({
+const SidebarLink = ({
   link,
-  isOpen,
   animate,
   onClick,
 }: {
   link: SidebarLink
-  isOpen: boolean
   animate: boolean
   onClick: (e: MouseEvent) => void
 }) => {
-  const theme = useGraphStore(state => state.theme)
   const activeRoute = useGraphStore(state => state.activeRoute)
   const [isOnRoute, setIsOnRoute] = useState<boolean>(false)
 
@@ -563,46 +492,39 @@ Sidebar.Link = ({
         href={link.href}
         onClick={onClick}
         target={link.target ? link.target : '_top'}
-        animate={{
-          color:
-            isOnRoute ?
-              theme === 'dark' ?
-                '#fafafa'
-              : '#3c3c3c'
-            : '#757575',
-        }}
-        className={`relative flex justify-start gap-2 group/sidebar-link rounded-md`}>
-        <link.icon width={20} height={20} />
+        className={`relative flex text-neutral-500 justify-start gap-2 group/sidebar-link rounded-md ${isOnRoute ? 'text-neutral-900 dark:text-neutral-100' : ''}`}>
+        <TooltipProvider skipDelayDuration={175} delayDuration={175}>
+          <Tooltip>
+            <TooltipTrigger>
+              {' '}
+              <link.icon width={20} height={20} />
+            </TooltipTrigger>
+            <TooltipContent
+              align="start"
+              sideOffset={20}
+              side="right">
+              {link.name}
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
         <motion.span
           className="text-sm"
           animate={{
-            display:
-              animate ?
-                isOpen ? 'inline-block'
-                : 'none'
-              : 'inline-block',
-            opacity:
-              animate ?
-                isOpen ? 1
-                : 0
-              : 1,
+            display: !animate ? 'inline-block' : 'none',
+            opacity: !animate ? 1 : 0,
           }}>
           {link.name}
         </motion.span>
         {/* the hover effect background */}
         <motion.div
           animate={{
-            width:
-              animate ?
-                isOpen ? 175
-                : 0
-              : 175,
+            width: !animate ? 175 : 0,
           }}
           className={`
             -mt-[7px] -ml-[5px] h-[34px] z-10 rounded-sm md:absolute
             ${
               isOnRoute ?
-                'bg-muted-foreground/25'
+                'bg-muted-foreground/15'
               : 'hover:bg-muted-foreground/10 transition-all'
             }
           `}
@@ -612,12 +534,10 @@ Sidebar.Link = ({
   )
 }
 
-Sidebar.Divider = ({
-  isOpen,
+const SidebarDivider = ({
   animate,
   className = '',
 }: {
-  isOpen: boolean
   animate: boolean
   className?: string
 }) => {
@@ -628,22 +548,16 @@ Sidebar.Divider = ({
         width: SIDEBAR_WIDTH.open,
       }}
       animate={{
-        width:
-          animate ?
-            isOpen ? SIDEBAR_WIDTH.open
-            : SIDEBAR_WIDTH.closed
-          : SIDEBAR_WIDTH.open,
+        width: !animate ? SIDEBAR_WIDTH.open : SIDEBAR_WIDTH.closed,
       }}
     />
   )
 }
 
-Sidebar.Logo = ({
-  isOpen,
+const SidebarLogo = ({
   animate,
   className = '',
 }: {
-  isOpen: boolean
   animate: boolean
   className?: string
 }) => {
@@ -655,95 +569,12 @@ Sidebar.Logo = ({
       <motion.span
         className="font-light text-neutral-400 ml-0.5"
         animate={{
-          display:
-            animate ?
-              isOpen ? 'flex'
-              : 'none'
-            : 'flex',
-          opacity:
-            animate ?
-              isOpen ? 1
-              : 0
-            : 1,
+          display: !animate ? 'flex' : 'none',
+          opacity: !animate ? 1 : 0,
         }}>
         /vōlt/
       </motion.span>
     </a>
-  )
-}
-
-Sidebar.ThemeSwitcher = () => {
-  const { theme, setTheme } = useTheme()
-  const [themeScope, themeAnimation] = useAnimate()
-
-  const handleThemeSwitch = (mode: 'light' | 'dark') => {
-    themeAnimation(
-      themeScope.current,
-      {
-        rotateZ: [0, 180, 360],
-        y: [0, -5, 0],
-        transition: {
-          type: 'spring',
-          stiffness: 300,
-          damping: 10,
-        },
-      },
-      { duration: 0.25 },
-    )
-    setTheme(mode)
-  }
-
-  return (
-    <motion.div
-      role="button"
-      ref={themeScope}
-      className="flex gap-3 items-center"
-      onClick={() =>
-        handleThemeSwitch(theme === 'light' ? 'dark' : 'light')
-      }>
-      {theme === 'light' ?
-        <Moon className="cursor-pointer" size={20} />
-      : <Sun className="cursor-pointer" size={20} />}
-    </motion.div>
-  )
-}
-
-Sidebar.Controls = ({
-  isOpen,
-  animate,
-  setAnimate,
-}: {
-  isOpen: boolean
-  animate: boolean
-  setAnimate: (locked: boolean) => void
-}) => {
-  return (
-    <AnimatePresence>
-      <motion.div className="flex w-full justify-between items-center">
-        {animate ?
-          isOpen ?
-            <>
-              <Sidebar.ThemeSwitcher />
-              <>
-                <Sidebar.Lock
-                  animate={animate}
-                  setAnimate={setAnimate}
-                />
-              </>
-            </>
-          : <Sidebar.ThemeSwitcher />
-        : <>
-            <Sidebar.ThemeSwitcher />
-            <>
-              <Sidebar.Lock
-                animate={animate}
-                setAnimate={setAnimate}
-              />
-            </>
-          </>
-        }
-      </motion.div>
-    </AnimatePresence>
   )
 }
 
@@ -789,5 +620,3 @@ const selectProjectItem = async ({
     updateErrorCause('Failed to select project.')
   }
 }
-
-export { Sidebar }
