@@ -16,6 +16,7 @@ if (process.env.CI && process.env.RUNNER_OS === 'Windows') {
 
 export default defineConfig({
   site: 'https://docs.vlt.sh',
+  trailingSlash: 'never',
   integrations: [
     starlight({
       expressiveCode: {
@@ -64,7 +65,7 @@ export default defineConfig({
           autogenerate: { directory: CliPlugin.directory },
         },
         {
-          label: 'Workspaces',
+          label: 'Packages',
           collapsed: true,
           autogenerate: { directory: TypedocPlugin.directory },
         },
