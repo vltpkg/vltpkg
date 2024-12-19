@@ -8,7 +8,7 @@ import {
   typedocBasePath,
   typedocContentPath,
   entryFileName,
-} from '../constants.mjs'
+} from './constants.mjs'
 
 /**
  * @param {string} page

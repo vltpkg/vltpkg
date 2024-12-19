@@ -1,7 +1,7 @@
 import { spawn } from 'child_process'
 import { type AstroIntegrationLogger } from 'astro'
 import { cacheEntries } from './utils'
-import { typedocBasePath } from '../../constants.mjs'
+import { typedocBasePath } from '../../typedoc/constants.mjs'
 
 export const directory = typedocBasePath
 
