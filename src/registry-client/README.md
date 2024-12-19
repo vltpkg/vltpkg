@@ -4,7 +4,7 @@
 
 This is a very light wrapper around undici, optimized for interfacing with an npm registry.
 
-**[Cache Unzipped](#cache-unzip)**
+**[Cache Unzipped](#cache-unzipped)**
 ·
 **[Integrity Options](#integrity-options)**
 ·
