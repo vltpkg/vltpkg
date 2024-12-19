@@ -1723,6 +1723,9 @@ importers:
       '@types/eslint__js':
         specifier: 'catalog:'
         version: 8.42.3
+      '@types/mdast':
+        specifier: ^4.0.4
+        version: 4.0.4
       '@types/node':
         specifier: 'catalog:'
         version: 22.10.2
@@ -1732,6 +1735,9 @@ importers:
       import-meta-resolve:
         specifier: ^4.1.0
         version: 4.1.0
+      mdast-util-to-string:
+        specifier: ^4.0.0
+        version: 4.0.0
       prettier:
         specifier: 'catalog:'
         version: 3.4.2
@@ -1741,9 +1747,15 @@ importers:
       typescript-eslint:
         specifier: 'catalog:'
         version: 8.18.0(eslint@9.17.0(jiti@1.21.6))(typescript@5.5.4)
+      unified:
+        specifier: ^11.0.5
+        version: 11.0.5
       unified-prettier:
         specifier: ^2.0.1
         version: 2.0.1(prettier@3.4.2)
+      unist-util-visit:
+        specifier: ^5.0.0
+        version: 5.0.0
 
 packages:
 

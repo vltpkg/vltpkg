@@ -7,7 +7,8 @@ import { execSync } from 'child_process'
 import {
   entryFileName,
   modulesFileName,
-} from './scripts/typedoc-fix-markdown-plugin.mjs'
+  typedocContentPath,
+} from './constants.mjs'
 
 // typedoc requires an origin remote to render source links.
 // there are other typedoc options (sourceLinkTemplate, etc) that
@@ -81,7 +82,10 @@ const markdownOptions = {
  * @type {Remark}
  */
 const remarkOptions = {
-  remarkPlugins: ['unified-prettier'],
+  remarkPlugins: [
+    'unified-prettier',
+    './typedoc/remark-fix-markdown-plugin.mjs',
+  ],
 }
 
 /**
@@ -131,13 +135,13 @@ const rootTypedocOptions = {
     'typedoc-plugin-markdown',
     'typedoc-plugin-remark',
     'typedoc-plugin-frontmatter',
-    './scripts/typedoc-fix-markdown-plugin.mjs',
-    './scripts/external-link-plugin.mjs',
+    './typedoc/add-frontmatter.mjs',
+    './typedoc/unresolved-links.mjs',
   ],
   // do not use a readme for the root
   readme: 'none',
   // output options
-  out: `src/content/docs/packages`,
+  out: typedocContentPath,
   cleanOutputDir: true,
   // all of our package options apply to the root also
   ...packageOptions,

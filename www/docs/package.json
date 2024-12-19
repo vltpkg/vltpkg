@@ -46,13 +46,17 @@
   "devDependencies": {
     "@eslint/js": "catalog:",
     "@types/eslint__js": "catalog:",
+    "@types/mdast": "^4.0.4",
     "@types/node": "catalog:",
     "eslint": "catalog:",
     "import-meta-resolve": "^4.1.0",
+    "mdast-util-to-string": "^4.0.0",
     "prettier": "catalog:",
     "typescript": "catalog:",
     "typescript-eslint": "catalog:",
-    "unified-prettier": "^2.0.1"
+    "unified": "^11.0.5",
+    "unified-prettier": "^2.0.1",
+    "unist-util-visit": "^5.0.0"
   },
   "license": "BSD-2-Clause-Patent",
   "engines": {
