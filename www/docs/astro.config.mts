@@ -62,7 +62,11 @@ export default defineConfig({
       plugins: [
         TypedocPlugin.plugin,
         CliPlugin.plugin,
-        starlightLinksValidator(),
+        starlightLinksValidator({
+          // work around bug in the link validator that strips
+          // the index off of the last segment
+          exclude: ['/packages/*/module_index?(#*)'],
+        }),
       ],
       sidebar: [
         {
