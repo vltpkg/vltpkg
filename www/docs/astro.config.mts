@@ -6,6 +6,7 @@ import vercel from '@astrojs/vercel'
 import * as TypedocPlugin from './src/plugins/typedoc'
 import * as CliPlugin from './src/plugins/cli'
 import { cpSync } from 'fs'
+import starlightLinksValidator from 'starlight-links-validator'
 
 if (process.env.CI && process.env.RUNNER_OS === 'Windows') {
   console.log(
@@ -16,6 +17,7 @@ if (process.env.CI && process.env.RUNNER_OS === 'Windows') {
 
 export default defineConfig({
   site: 'https://docs.vlt.sh',
+  trailingSlash: 'never',
   integrations: [
     starlight({
       expressiveCode: {
@@ -57,14 +59,23 @@ export default defineConfig({
         minHeadingLevel: 2,
         maxHeadingLevel: 5,
       },
-      plugins: [TypedocPlugin.plugin, CliPlugin.plugin],
+      plugins: [
+        TypedocPlugin.plugin,
+        CliPlugin.plugin,
+        starlightLinksValidator({
+          // work around bug in the link validator that strips
+          // the index off of the last segment. Remove when this PR lands:
+          // https://github.com/HiDeoo/starlight-links-validator/pull/80
+          exclude: ['/packages/*/module_index?(#*)'],
+        }),
+      ],
       sidebar: [
         {
           label: 'CLI',
           autogenerate: { directory: CliPlugin.directory },
         },
         {
-          label: 'Workspaces',
+          label: 'Packages',
           collapsed: true,
           autogenerate: { directory: TypedocPlugin.directory },
         },
