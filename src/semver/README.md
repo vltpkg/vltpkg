@@ -6,7 +6,7 @@ A library for parsing, validating & comparing Semantic Versions used by `vlt`.
 
 **[Usage](#usage)**
 ·
-**[Function](#function)**
+**[Functions](#functions)**
 ·
 **[Differences from node-semver](#differences)**
 
