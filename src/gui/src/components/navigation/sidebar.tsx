@@ -141,6 +141,7 @@ const SidebarDesktop = () => {
           <SidebarCategory
             header="pinned"
             title="pinned projects"
+            updateSidebar={updateSidebar}
             animate={animate}>
             {savedProjects?.map((project, idx) => (
               <SidebarItem
@@ -220,13 +221,32 @@ const SidebarCategory = ({
   title,
   children,
   animate,
+  updateSidebar,
 }: {
   header: string
   title: string
   children: React.ReactNode
   animate: boolean
+  updateSidebar: (sidebarState: boolean) => void
 }) => {
   const [isExpanded, setIsExpanded] = useState(false)
+
+  useEffect(() => {
+    if (animate) {
+      setIsExpanded(false)
+    }
+  }, [animate])
+
+  const handleCategoryClick = () => {
+    if (!animate && !isExpanded) {
+      setIsExpanded(true)
+    } else if (!animate && isExpanded) {
+      setIsExpanded(false)
+    } else if (animate && !isExpanded) {
+      setIsExpanded(true)
+      updateSidebar(!animate)
+    }
+  }
 
   const contentVariants = {
     hidden: { opacity: 0 },
@@ -241,7 +261,7 @@ const SidebarCategory = ({
       {/* category item */}
       <p
         className="flex flex-row justify-start items-center gap-2 group/sidebar-category-item cursor-pointer mt-4 mb-2 select-none"
-        onClick={() => setIsExpanded(!isExpanded)}>
+        onClick={() => handleCategoryClick()}>
         {isExpanded ?
           <FolderOpen size={20} />
         : <Folder size={20} />}
