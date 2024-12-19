@@ -6,6 +6,7 @@ import vercel from '@astrojs/vercel'
 import * as TypedocPlugin from './src/plugins/typedoc'
 import * as CliPlugin from './src/plugins/cli'
 import { cpSync } from 'fs'
+import starlightLinksValidator from 'starlight-links-validator'
 
 if (process.env.CI && process.env.RUNNER_OS === 'Windows') {
   console.log(
@@ -58,7 +59,11 @@ export default defineConfig({
         minHeadingLevel: 2,
         maxHeadingLevel: 5,
       },
-      plugins: [TypedocPlugin.plugin, CliPlugin.plugin],
+      plugins: [
+        TypedocPlugin.plugin,
+        CliPlugin.plugin,
+        starlightLinksValidator(),
+      ],
       sidebar: [
         {
           label: 'CLI',
