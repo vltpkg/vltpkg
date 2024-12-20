@@ -1686,6 +1686,9 @@ importers:
       sonner:
         specifier: ^1.7.0
         version: 1.7.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      starlight-links-validator:
+        specifier: ^0.14.0
+        version: 0.14.0(@astrojs/starlight@0.30.1(astro@5.0.5(@types/node@22.10.2)(jiti@1.21.6)(rollup@4.24.0)(typescript@5.5.4)(yaml@2.6.1)))
       tailwind-merge:
         specifier: ^2.5.2
         version: 2.5.4
@@ -1700,13 +1703,13 @@ importers:
         version: 0.27.4(typescript@5.5.4)
       typedoc-plugin-frontmatter:
         specifier: ^1.1.2
-        version: 1.1.2(typedoc-plugin-markdown@4.3.2(typedoc@0.27.4(typescript@5.5.4)))
+        version: 1.1.2(typedoc-plugin-markdown@4.3.3(typedoc@0.27.4(typescript@5.5.4)))
       typedoc-plugin-markdown:
-        specifier: ^4.3.2
-        version: 4.3.2(typedoc@0.27.4(typescript@5.5.4))
+        specifier: ^4.3.3
+        version: 4.3.3(typedoc@0.27.4(typescript@5.5.4))
       typedoc-plugin-remark:
         specifier: ^1.2.1
-        version: 1.2.1(typedoc-plugin-markdown@4.3.2(typedoc@0.27.4(typescript@5.5.4)))
+        version: 1.2.1(typedoc-plugin-markdown@4.3.3(typedoc@0.27.4(typescript@5.5.4)))
       vaul:
         specifier: ^1.1.1
         version: 1.1.1(@types/react-dom@18.3.1)(@types/react@18.3.11)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -1723,15 +1726,24 @@ importers:
       '@types/eslint__js':
         specifier: 'catalog:'
         version: 8.42.3
+      '@types/mdast':
+        specifier: ^4.0.4
+        version: 4.0.4
       '@types/node':
         specifier: 'catalog:'
         version: 22.10.2
       eslint:
         specifier: 'catalog:'
         version: 9.17.0(jiti@1.21.6)
+      github-slugger:
+        specifier: ^2.0.0
+        version: 2.0.0
       import-meta-resolve:
         specifier: ^4.1.0
         version: 4.1.0
+      mdast-util-to-string:
+        specifier: ^4.0.0
+        version: 4.0.0
       prettier:
         specifier: 'catalog:'
         version: 3.4.2
@@ -1741,9 +1753,15 @@ importers:
       typescript-eslint:
         specifier: 'catalog:'
         version: 8.18.0(eslint@9.17.0(jiti@1.21.6))(typescript@5.5.4)
+      unified:
+        specifier: ^11.0.5
+        version: 11.0.5
       unified-prettier:
         specifier: ^2.0.1
         version: 2.0.1(prettier@3.4.2)
+      unist-util-visit:
+        specifier: ^5.0.0
+        version: 5.0.0
 
 packages:
 
@@ -3797,6 +3815,9 @@ packages:
   '@types/pacote@11.1.8':
     resolution: {integrity: sha512-/XLR0VoTh2JEO0jJg1q/e6Rh9bxjBq9vorJuQmtT7rRrXSiWz7e7NsvXVYJQ0i8JxMlBMPPYDTnrRe7MZRFA8Q==}
 
+  '@types/picomatch@3.0.1':
+    resolution: {integrity: sha512-1MRgzpzY0hOp9pW/kLRxeQhUWwil6gnrUYd3oEpeYBqp/FexhaCPv3F8LsYr47gtUU45fO2cm1dbwkSrHEo8Uw==}
+
   '@types/promise-retry@1.1.6':
     resolution: {integrity: sha512-EC1+OMXV0PZb0pf+cmyxc43MEP2CDumZe4AfuxWboxxEixztIebknpJPZAX5XlodGF1OY+C1E/RAeNGzxf+bJA==}
 
@@ -5382,6 +5403,10 @@ packages:
   ip-address@9.0.5:
     resolution: {integrity: sha512-zHtQzGojZXTwZTHQqra+ETKd4Sn3vgi7uBmlPoXVWZqYvuKmtI0l/VZTjqGmJY9x88GGOaZ9+G9ES8hC4T4X8g==}
     engines: {node: '>= 12'}
+
+  is-absolute-url@4.0.1:
+    resolution: {integrity: sha512-/51/TKE88Lmm7Gc4/8btclNXWS+g50wXhYJq8HWIBAGUBnoAdRu1aXeh364t/O7wXDAcTJDP8PNuNKWUDWie+A==}
+    engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
 
   is-actual-promise@1.0.2:
     resolution: {integrity: sha512-xsFiO1of0CLsQnPZ1iXHNTyR9YszOeWKYv+q6n8oSFW3ipooFJ1j1lbRMgiMCr+pp2gLruESI4zb5Ak6eK5OnQ==}
@@ -7070,6 +7095,12 @@ packages:
   stackback@0.0.2:
     resolution: {integrity: sha512-1XMJE5fQo1jGH6Y/7ebnwPOBEkIEnT4QF32d5R1+VXdXveM0IBMJt8zfaxX1P3QhVwrYe+576+jkANtSS2mBbw==}
 
+  starlight-links-validator@0.14.0:
+    resolution: {integrity: sha512-mxaNtlSl+BR32PoBkFPymhNNttrozGLQan2Nkki7mzQw2Z+li5o3c1ltds+EnbIh/RuVm3xHUxZz8THQW6Xgbw==}
+    engines: {node: '>=18.17.1'}
+    peerDependencies:
+      '@astrojs/starlight': '>=0.15.0'
+
   statuses@2.0.1:
     resolution: {integrity: sha512-RwNA9Z/7PrK06rYLIzFMlaF+l73iwpzsqRIFgbMLbTcLD6cOao82TaWefPXQvB2fOC4AjuYSEndS7N/mTCbkdQ==}
     engines: {node: '>= 0.8'}
@@ -7422,8 +7453,8 @@ packages:
     peerDependencies:
       typedoc-plugin-markdown: '>=4.3.0'
 
-  typedoc-plugin-markdown@4.3.2:
-    resolution: {integrity: sha512-hCF3V0axzbzGDYFW21XigWIJQBOJ2ZRVWWs7X+e62ew/pXnvz7iKF/zVdkBm3w8Mk4bmXWp/FT0IF4Zn9uBRww==}
+  typedoc-plugin-markdown@4.3.3:
+    resolution: {integrity: sha512-kESCcNRzOcFJATLML2FoCfaTF9c0ujmbZ+UXsJvmNlFLS3v8tDKfDifreJXvXWa9d8gUcetZqOqFcZ/7+Ba34Q==}
     engines: {node: '>= 18'}
     peerDependencies:
       typedoc: 0.27.x
@@ -10281,6 +10312,8 @@ snapshots:
       '@types/npmlog': 7.0.0
       '@types/ssri': 7.1.5
 
+  '@types/picomatch@3.0.1': {}
+
   '@types/promise-retry@1.1.6':
     dependencies:
       '@types/retry': 0.12.5
@@ -12320,6 +12353,8 @@ snapshots:
     dependencies:
       jsbn: 1.1.0
       sprintf-js: 1.1.3
+
+  is-absolute-url@4.0.1: {}
 
   is-actual-promise@1.0.2: {}
 
@@ -14476,6 +14511,19 @@ snapshots:
 
   stackback@0.0.2: {}
 
+  starlight-links-validator@0.14.0(@astrojs/starlight@0.30.1(astro@5.0.5(@types/node@22.10.2)(jiti@1.21.6)(rollup@4.24.0)(typescript@5.5.4)(yaml@2.6.1))):
+    dependencies:
+      '@astrojs/starlight': 0.30.1(astro@5.0.5(@types/node@22.10.2)(jiti@1.21.6)(rollup@4.24.0)(typescript@5.5.4)(yaml@2.6.1))
+      '@types/picomatch': 3.0.1
+      github-slugger: 2.0.0
+      hast-util-from-html: 2.0.3
+      hast-util-has-property: 3.0.0
+      is-absolute-url: 4.0.1
+      kleur: 4.1.5
+      mdast-util-to-string: 4.0.0
+      picomatch: 4.0.2
+      unist-util-visit: 5.0.0
+
   statuses@2.0.1: {}
 
   std-env@3.8.0: {}
@@ -14941,23 +14989,23 @@ snapshots:
       is-typed-array: 1.1.13
       possible-typed-array-names: 1.0.0
 
-  typedoc-plugin-frontmatter@1.1.2(typedoc-plugin-markdown@4.3.2(typedoc@0.27.4(typescript@5.5.4))):
+  typedoc-plugin-frontmatter@1.1.2(typedoc-plugin-markdown@4.3.3(typedoc@0.27.4(typescript@5.5.4))):
     dependencies:
-      typedoc-plugin-markdown: 4.3.2(typedoc@0.27.4(typescript@5.5.4))
+      typedoc-plugin-markdown: 4.3.3(typedoc@0.27.4(typescript@5.5.4))
       yaml: 2.6.1
 
-  typedoc-plugin-markdown@4.3.2(typedoc@0.27.4(typescript@5.5.4)):
+  typedoc-plugin-markdown@4.3.3(typedoc@0.27.4(typescript@5.5.4)):
     dependencies:
       typedoc: 0.27.4(typescript@5.5.4)
 
-  typedoc-plugin-remark@1.2.1(typedoc-plugin-markdown@4.3.2(typedoc@0.27.4(typescript@5.5.4))):
+  typedoc-plugin-remark@1.2.1(typedoc-plugin-markdown@4.3.3(typedoc@0.27.4(typescript@5.5.4))):
     dependencies:
       remark: 15.0.1
       remark-frontmatter: 5.0.0
       remark-gfm: 4.0.0
       remark-mdx: 3.1.0
       to-vfile: 8.0.0
-      typedoc-plugin-markdown: 4.3.2(typedoc@0.27.4(typescript@5.5.4))
+      typedoc-plugin-markdown: 4.3.3(typedoc@0.27.4(typescript@5.5.4))
     transitivePeerDependencies:
       - supports-color
 

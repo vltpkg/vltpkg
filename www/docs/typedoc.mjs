@@ -4,6 +4,12 @@ import { readdirSync } from 'fs'
 import { writeFile } from 'fs/promises'
 import typedocWorkspace from './typedoc.workspace.mjs'
 import { execSync } from 'child_process'
+import {
+  entryFileName,
+  modulesFileName,
+  typedocContentPath,
+  theme,
+} from './typedoc/constants.mjs'
 
 // typedoc requires an origin remote to render source links.
 // there are other typedoc options (sourceLinkTemplate, etc) that
@@ -28,9 +34,14 @@ const { tsconfig, entryPoints } = await (async () => {
         d.isDirectory() &&
         typedocWorkspace(join(d.parentPath, d.name)),
     )
-    .map(d =>
-      relative(import.meta.dirname, join(d.parentPath, d.name)),
-    )
+    .filter(d => {
+      const wanted = process.env.VLT_TYPEDOC_WORKSPACES?.split(',')
+      return wanted?.length ? wanted.includes(d.name) : true
+    })
+
+  const relWorkspaces = srcWorkspaces.map(d =>
+    relative(import.meta.dirname, join(d.parentPath, d.name)),
+  )
 
   const generatedTsconfig = './tsconfig.typedoc-workspaces.json'
   await writeFile(
@@ -38,7 +49,7 @@ const { tsconfig, entryPoints } = await (async () => {
     JSON.stringify(
       {
         files: [],
-        references: srcWorkspaces.map(path => ({ path })),
+        references: relWorkspaces.map(path => ({ path })),
       },
       null,
       2,
@@ -47,7 +58,7 @@ const { tsconfig, entryPoints } = await (async () => {
 
   return {
     tsconfig: generatedTsconfig,
-    entryPoints: srcWorkspaces,
+    entryPoints: relWorkspaces,
   }
 })()
 
@@ -57,8 +68,8 @@ const { tsconfig, entryPoints } = await (async () => {
  */
 const markdownOptions = {
   mergeReadme: false,
-  entryFileName: 'index',
-  modulesFileName: 'modules',
+  entryFileName,
+  modulesFileName,
   outputFileStrategy: 'modules',
   excludeScopesInPaths: true,
   useCodeBlocks: true,
@@ -72,7 +83,7 @@ const markdownOptions = {
  * @type {Remark}
  */
 const remarkOptions = {
-  remarkPlugins: ['unified-prettier'],
+  remarkPlugins: ['unified-prettier', './typedoc/markdown-fixes.mjs'],
 }
 
 /**
@@ -117,18 +128,20 @@ const rootTypedocOptions = {
   entryPoints,
   entryPointStrategy: 'packages',
   tsconfig,
+  theme,
   // plugins
   plugin: [
+    './typedoc/theme.mjs',
     'typedoc-plugin-markdown',
     'typedoc-plugin-remark',
     'typedoc-plugin-frontmatter',
-    './scripts/workspace-frontmatter.mjs',
-    './scripts/external-link-plugin.mjs',
+    './typedoc/add-frontmatter.mjs',
+    './typedoc/unresolved-links.mjs',
   ],
   // do not use a readme for the root
   readme: 'none',
   // output options
-  out: `src/content/docs/packages`,
+  out: typedocContentPath,
   cleanOutputDir: true,
   // all of our package options apply to the root also
   ...packageOptions,
