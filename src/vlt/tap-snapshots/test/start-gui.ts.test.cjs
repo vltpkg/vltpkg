@@ -14,8 +14,8 @@ exports[`test/start-gui.ts > TAP > e2e server test > /select-project > should co
 Array [
   "dashboard.json",
   "favicon.ico",
+  "fonts",
   "graph.json",
-  "icons",
   "index.html",
   "index.js",
   "index.js.map",
@@ -109,7 +109,7 @@ exports[`test/start-gui.ts > TAP > e2e server test > /select-project > should wr
 exports[`test/start-gui.ts > TAP > no data to be found > should not create json files if no data was found 1`] = `
 Array [
   "favicon.ico",
-  "icons",
+  "fonts",
   "index.html",
   "index.js",
   "index.js.map",
@@ -402,8 +402,8 @@ exports[`test/start-gui.ts > TAP > starts gui data and server > should copy all 
 Array [
   "dashboard.json",
   "favicon.ico",
+  "fonts",
   "graph.json",
-  "icons",
   "index.html",
   "index.js",
   "index.js.map",
