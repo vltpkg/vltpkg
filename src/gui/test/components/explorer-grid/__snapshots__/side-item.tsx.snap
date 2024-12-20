@@ -21,7 +21,7 @@ exports[`SideItem render as dependency 1`] = `
         </div>
         <div class="flex items-center flex-row justify-between gap-2 flex-wrap px-3 py-2 border-muted-foreground/20 border-t-[1px]">
           <p class="text-sm text-muted-foreground/50">
-            item@
+            item
           </p>
           <div>
             <gui-badge classname="grow-0 border-transparent bg-lime-100 text-neutral-900 hover:bg-lime-100/80">
@@ -59,7 +59,7 @@ exports[`SideItem render as dependency with long name 1`] = `
         </div>
         <div class="flex items-center flex-row justify-between gap-2 flex-wrap px-3 py-2 border-muted-foreground/20 border-t-[1px]">
           <p class="text-sm text-muted-foreground/50">
-            lorem-ipsum-dolor-sit-amet-consectetur-adipiscing-elit-sed-do-eiusmod-tempor-incididunt-ut-labore-et-dolore-magna-aliqua-ut-enim-ad-minim-veniam-quis-nostrud-exercitation@
+            lorem-ipsum-dolor-sit-amet-consectetur-adipiscing-elit-sed-do-eiusmod-tempor-incididunt-ut-labore-et-dolore-magna-aliqua-ut-enim-ad-minim-veniam-quis-nostrud-exercitation
           </p>
           <div>
             <gui-badge classname="grow-0 border-transparent bg-lime-100 text-neutral-900 hover:bg-lime-100/80">
@@ -97,7 +97,7 @@ exports[`SideItem render as dependent 1`] = `
         </div>
         <div class="flex items-center flex-row justify-between gap-2 flex-wrap px-3 py-2 border-muted-foreground/20 border-t-[1px]">
           <p class="text-sm text-muted-foreground/50">
-            item@
+            item
           </p>
           <div>
             <gui-badge classname="grow-0 border-transparent bg-cyan-100 text-neutral-900 hover:bg-cyan-100/80">
@@ -137,7 +137,7 @@ exports[`SideItem render as multi-stacked dependent 1`] = `
         </div>
         <div class="flex items-center flex-row justify-between gap-2 flex-wrap px-3 py-2 border-muted-foreground/20 border-t-[1px]">
           <p class="text-sm text-muted-foreground/50">
-            item@
+            item
           </p>
           <div>
             <gui-badge classname="grow-0 border-transparent bg-cyan-100 text-neutral-900 hover:bg-cyan-100/80">
@@ -173,7 +173,7 @@ exports[`SideItem render as parent 1`] = `
         </div>
         <div class="flex items-center flex-row justify-between gap-2 flex-wrap px-3 py-2 border-muted-foreground/20 border-t-[1px]">
           <p class="text-sm text-muted-foreground/50">
-            item@
+            item
           </p>
           <div>
             <gui-badge classname="grow-0 border-transparent bg-cyan-100 text-neutral-900 hover:bg-cyan-100/80">
@@ -213,7 +213,7 @@ exports[`SideItem render as two-stacked dependent 1`] = `
         </div>
         <div class="flex items-center flex-row justify-between gap-2 flex-wrap px-3 py-2 border-muted-foreground/20 border-t-[1px]">
           <p class="text-sm text-muted-foreground/50">
-            item@
+            item
           </p>
           <div>
             <gui-badge classname="grow-0 border-transparent bg-cyan-100 text-neutral-900 hover:bg-cyan-100/80">
