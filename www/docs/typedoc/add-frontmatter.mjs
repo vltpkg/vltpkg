@@ -5,7 +5,7 @@ import { entryFileName, modulesFileName } from './constants.mjs'
 
 /** @param {import('typedoc-plugin-markdown').MarkdownApplication} app */
 export function load(app) {
-  /** @param {import('typedoc-plugin-markdown').MarkdownPageEvent} page */
+  /** @param {MarkdownPageEvent} page */
   app.renderer.on(MarkdownPageEvent.BEGIN, page => {
     const name = page.model.name
     const parent = page.model.parent?.name
