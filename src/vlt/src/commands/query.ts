@@ -44,11 +44,13 @@ export const usage: CliCommandUsage = () =>
     },
   })
 
-export const view = {
-  json: jsonOutput,
-  mermaid: mermaidOutput,
-  human: humanReadableOutput,
+export const views = {
+  json: { fn: jsonOutput },
+  mermaid: { fn: mermaidOutput },
+  human: { fn: humanReadableOutput },
 }
+
+export const defaultView = process.stdout.isTTY ? 'human' : 'json'
 
 export type CommandResult = {
   importers: Set<Node>
@@ -106,8 +108,6 @@ export const command: CliCommandFn = async (
   }
 
   return {
-    /* c8 ignore next */
-    defaultView: !process.stdout.isTTY ? 'json' : 'human',
     result: {
       importers,
       edges,

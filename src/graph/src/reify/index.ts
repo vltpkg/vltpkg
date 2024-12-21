@@ -25,6 +25,7 @@ import { deleteEdges } from './delete-edges.js'
 import { deleteNodes } from './delete-nodes.js'
 import { rollback } from './rollback.js'
 import { updatePackageJson } from './update-importers-package-json.js'
+import { graphStep } from '@vltpkg/output'
 
 const limit = Math.max(availableParallelism() - 1, 1) * 8
 
@@ -43,6 +44,8 @@ export type ReifyOptions = LoadOptions & {
  * Make the current project match the supplied graph.
  */
 export const reify = async (options: ReifyOptions) => {
+  const done = graphStep('reify')
+
   const { graph, scurry } = options
 
   const actual =
@@ -66,6 +69,8 @@ export const reify = async (options: ReifyOptions) => {
     }
     /* c8 ignore stop */
   }
+
+  done()
 }
 
 const reify_ = async (
