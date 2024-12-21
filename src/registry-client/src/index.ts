@@ -185,50 +185,43 @@ export class RegistryClient {
     )
     options.method = options.method ?? 'GET'
 
-    const result = await new Promise<Dispatcher.ResponseData>(
-      (res, rej) => {
-        /* c8 ignore start - excessive type setting for eslint */
-        this.agent
-          .request(options as Dispatcher.RequestOptions)
-          .then(res)
-          .catch((er: unknown) => rej(er as Error))
-        /* c8 ignore stop */
-      },
-    ).then(resp => {
-      if (handle304Response(resp, entry)) return entry
+    const result = await this.agent
+      .request(options as Dispatcher.RequestOptions)
+      .then(resp => {
+        if (handle304Response(resp, entry)) return entry
 
-      const h: Buffer[] = []
-      for (const [key, value] of Object.entries(resp.headers)) {
-        /* c8 ignore start - theoretical */
-        if (Array.isArray(value)) {
-          h.push(Buffer.from(key), Buffer.from(value.join(', ')))
-          /* c8 ignore stop */
-        } else if (typeof value === 'string') {
-          h.push(Buffer.from(key), Buffer.from(value))
+        const h: Buffer[] = []
+        for (const [key, value] of Object.entries(resp.headers)) {
+          /* c8 ignore start - theoretical */
+          if (Array.isArray(value)) {
+            h.push(Buffer.from(key), Buffer.from(value.join(', ')))
+            /* c8 ignore stop */
+          } else if (typeof value === 'string') {
+            h.push(Buffer.from(key), Buffer.from(value))
+          }
         }
-      }
-      const result = new CacheEntry(
-        /* c8 ignore next - should always have a status code */
-        resp.statusCode || 200,
-        h,
-        options.integrity,
-      )
+        const result = new CacheEntry(
+          /* c8 ignore next - should always have a status code */
+          resp.statusCode || 200,
+          h,
+          options.integrity,
+        )
 
-      if (isRedirect(result)) {
-        resp.body.resume()
-        const [nextURL, nextOptions] = redirect(options, result, u)
-        if (nextOptions && nextURL) {
-          return this.request(nextURL, nextOptions)
+        if (isRedirect(result)) {
+          resp.body.resume()
+          const [nextURL, nextOptions] = redirect(options, result, u)
+          if (nextOptions && nextURL) {
+            return this.request(nextURL, nextOptions)
+          }
+          return result
         }
-        return result
-      }
 
-      resp.body.on('data', (chunk: Buffer) => result.addBody(chunk))
-      return new Promise<CacheEntry>((res, rej) => {
-        resp.body.on('error', rej)
-        resp.body.on('end', () => res(result))
+        resp.body.on('data', (chunk: Buffer) => result.addBody(chunk))
+        return new Promise<CacheEntry>((res, rej) => {
+          resp.body.on('error', rej)
+          resp.body.on('end', () => res(result))
+        })
       })
-    })
 
     this.cache.set(key, result.encode())
     return result
