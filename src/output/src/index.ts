@@ -1,8 +1,14 @@
 import EventEmitter from 'events'
 
 export type Events = {
-  request: { url: URL | string }
-  graphStep: { step: Step; state: 'start' | 'stop' }
+  request: {
+    url: URL | string
+    state: 'start' | 'complete' | '304' | 'cache'
+  }
+  graphStep: {
+    step: 'build' | 'actual' | 'reify'
+    state: 'start' | 'stop'
+  }
 }
 
 class OutputEmitter {
@@ -29,13 +35,14 @@ class OutputEmitter {
 
 export const emitter = new OutputEmitter()
 
-export const logRequest = (url: URL | string) => {
-  emitter.emit('request', { url })
+export const logRequest = (
+  url: URL | string,
+  state: Events['request']['state'],
+) => {
+  emitter.emit('request', { url, state })
 }
 
-export type Step = 'build' | 'actual' | 'reify'
-
-export const graphStep = (step: Step) => {
+export const graphStep = (step: Events['graphStep']['step']) => {
   emitter.emit('graphStep', { step, state: 'start' })
   return () => emitter.emit('graphStep', { step, state: 'stop' })
 }
