@@ -15,25 +15,6 @@ t.test('setting cause about syntax', t => {
   t.end()
 })
 
-t.test('invalid causes cause TS errors', t => {
-  //@ts-expect-error
-  error('x', 'y')
-  //@ts-expect-error
-  error('x', { code: 1 })
-  //@ts-expect-error
-  typeError('x', { code: 123 })
-  //@ts-expect-error
-  typeError('x', { code: 'E_I_AM_SO_CREATIVE' })
-  //@ts-expect-error
-  syntaxError('x', { status: true })
-  //@ts-expect-error
-  error('x', { version: true })
-  //@ts-expect-error
-  error('x', { range: true })
-  t.pass('typechecks passed')
-  t.end()
-})
-
 t.test('stack pruning', t => {
   const foo = () => bar()
   const bar = () => baz()

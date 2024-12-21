@@ -803,7 +803,7 @@ export const getNormalizeFile =
         // invalid URI for other reasons, eg file://x\u0000y/z
         throw error('invalid file:// specifier', {
           spec,
-          cause: er as Error,
+          cause: er,
         })
       }
     }

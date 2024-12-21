@@ -16,7 +16,7 @@ export type ErrorCauseObject = {
    * previously thrown error, if no additional information could be
    * usefully added beyond improving the message.
    */
-  cause?: ErrorCause
+  cause?: unknown
 
   /** the name of something */
   name?: string
@@ -175,6 +175,12 @@ export type DuckTypeManifest = Record<string, any> & {
 
 export type ErrorCause = Error | ErrorCauseObject
 
+const unknownToCause = (er: unknown): ErrorCause =>
+  er instanceof Error ? er
+    // if it is any sort of truthy object, assume its an error cause
+  : !!er && typeof er === 'object' ? er
+  : new Error(String(er) || 'Unknown error')
+
 /**
  * Valid properties for the 'code' field in an Error cause.
  * Add new options to this list as needed.
@@ -209,18 +215,26 @@ const create = (
 
 export const error = (
   message: string,
-  cause?: ErrorCause,
+  cause?: unknown,
   from?: ((...a: any[]) => any) | (new (...a: any[]) => any),
-) => create(Error, error, message, cause, from)
+) => create(Error, error, message, unknownToCause(cause), from)
 
 export const typeError = (
   message: string,
-  cause?: ErrorCause,
+  cause?: unknown,
   from?: ((...a: any[]) => any) | (new (...a: any[]) => any),
-) => create(TypeError, typeError, message, cause, from)
+) =>
+  create(TypeError, typeError, message, unknownToCause(cause), from)
 
 export const syntaxError = (
   message: string,
-  cause?: ErrorCause,
+  cause?: unknown,
   from?: ((...a: any[]) => any) | (new (...a: any[]) => any),
-) => create(SyntaxError, syntaxError, message, cause, from)
+) =>
+  create(
+    SyntaxError,
+    syntaxError,
+    message,
+    unknownToCause(cause),
+    from,
+  )

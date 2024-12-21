@@ -80,7 +80,7 @@ const attr = async (state: ParserState) => {
     )
   } catch (err) {
     throw error('Failed to parse :attr selector', {
-      cause: err as Error,
+      cause: err,
     })
   }
 
