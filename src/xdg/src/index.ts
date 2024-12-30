@@ -56,7 +56,7 @@ const defaults =
         case 'cache':
           return path('.cache')
         case 'data':
-          return path('.local/data')
+          return path('.local/share')
         case 'state':
           return path('.local/state')
         case 'runtime':
