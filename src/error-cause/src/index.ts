@@ -177,10 +177,11 @@ export type DuckTypeManifest = Record<string, any> & {
 
 export type ErrorCause = Error | ErrorCauseObject
 
-const unknownToCause = (er: unknown): ErrorCause =>
+export const asErrorCause = (er: unknown): ErrorCause =>
   er instanceof Error ? er
     // if it is any sort of truthy object, assume its an error cause
   : !!er && typeof er === 'object' ? er
+    // otherwise, make an error of the stringified message
   : new Error(String(er) || 'Unknown error')
 
 /**
@@ -219,24 +220,16 @@ export const error = (
   message: string,
   cause?: ErrorCause,
   from?: ((...a: any[]) => any) | (new (...a: any[]) => any),
-) => create(Error, error, message, unknownToCause(cause), from)
+) => create(Error, error, message, cause, from)
 
 export const typeError = (
   message: string,
   cause?: ErrorCause,
   from?: ((...a: any[]) => any) | (new (...a: any[]) => any),
-) =>
-  create(TypeError, typeError, message, unknownToCause(cause), from)
+) => create(TypeError, typeError, message, cause, from)
 
 export const syntaxError = (
   message: string,
   cause?: ErrorCause,
   from?: ((...a: any[]) => any) | (new (...a: any[]) => any),
-) =>
-  create(
-    SyntaxError,
-    syntaxError,
-    message,
-    unknownToCause(cause),
-    from,
-  )
+) => create(SyntaxError, syntaxError, message, cause, from)
