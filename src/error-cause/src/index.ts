@@ -14,9 +14,11 @@ export type ErrorCauseObject = {
    * always be an `Error` object that was previously thrown. Note
    * that the `cause` on an Error itself might _also_ be a
    * previously thrown error, if no additional information could be
-   * usefully added beyond improving the message.
+   * usefully added beyond improving the message. It is typed as `unknown`
+   * because we use `useUnknownInCatchVariables` so this makes it easier
+   * to rethrow a caught error without recasting it.
    */
-  cause?: unknown
+  cause?: ErrorCause | unknown // eslint-disable-line @typescript-eslint/no-redundant-type-constituents
 
   /** the name of something */
   name?: string
@@ -215,20 +217,20 @@ const create = (
 
 export const error = (
   message: string,
-  cause?: unknown,
+  cause?: ErrorCause,
   from?: ((...a: any[]) => any) | (new (...a: any[]) => any),
 ) => create(Error, error, message, unknownToCause(cause), from)
 
 export const typeError = (
   message: string,
-  cause?: unknown,
+  cause?: ErrorCause,
   from?: ((...a: any[]) => any) | (new (...a: any[]) => any),
 ) =>
   create(TypeError, typeError, message, unknownToCause(cause), from)
 
 export const syntaxError = (
   message: string,
-  cause?: unknown,
+  cause?: ErrorCause,
   from?: ((...a: any[]) => any) | (new (...a: any[]) => any),
 ) =>
   create(
