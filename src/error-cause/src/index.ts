@@ -177,10 +177,32 @@ export type DuckTypeManifest = Record<string, any> & {
 
 export type ErrorCause = Error | ErrorCauseObject
 
+/**
+ * An error with a cause that is a direct error cause object and not another
+ * nested error.
+ */
+export type ErrorWithCauseObject = Error & { cause: ErrorCauseObject }
+
+/**
+ * If it is any sort of plain-ish object, assume its an error cause
+ * because all properties of the cause are optional.
+ */
+export const isErrorCauseObject = (
+  v: unknown,
+): v is ErrorCauseObject =>
+  !!v && typeof v === 'object' && !Array.isArray(v)
+
+/**
+ * Type guard for {@link ErrorWithCauseObject} type
+ */
+export const isErrorRoot = (
+  er: unknown,
+): er is ErrorWithCauseObject =>
+  er instanceof Error && isErrorCauseObject(er.cause)
+
 export const asErrorCause = (er: unknown): ErrorCause =>
   er instanceof Error ? er
-    // if it is any sort of plain-ish object, assume its an error cause
-  : !!er && typeof er === 'object' && !Array.isArray(er) ? er
+  : isErrorCauseObject(er) ? er
     // otherwise, make an error of the stringified message
   : new Error(
       // eslint-disable-next-line @typescript-eslint/no-base-to-string
