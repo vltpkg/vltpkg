@@ -179,10 +179,13 @@ export type ErrorCause = Error | ErrorCauseObject
 
 export const asErrorCause = (er: unknown): ErrorCause =>
   er instanceof Error ? er
-    // if it is any sort of truthy object, assume its an error cause
-  : !!er && typeof er === 'object' ? er
+    // if it is any sort of plain-ish object, assume its an error cause
+  : !!er && typeof er === 'object' && !Array.isArray(er) ? er
     // otherwise, make an error of the stringified message
-  : new Error(String(er) || 'Unknown error')
+  : new Error(
+      // eslint-disable-next-line @typescript-eslint/no-base-to-string
+      er == null ? 'Unknown error' : String(er) || 'Unknown error',
+    )
 
 /**
  * Valid properties for the 'code' field in an Error cause.
