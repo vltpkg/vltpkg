@@ -1,4 +1,4 @@
-import { error, type ErrorCauseObject } from '@vltpkg/error-cause'
+import { error } from '@vltpkg/error-cause'
 import os from 'os'
 import { UnpackRequest } from './unpack-request.js'
 import {
