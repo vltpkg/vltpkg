@@ -2,6 +2,24 @@
 @tailwind components;
 @tailwind utilities;
 
+html {
+  scroll-behavior: smooth !important;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+@font-face {
+  font-family: 'inter';
+  src: url('/fonts/inter.ttf');
+  font-weight: normal;
+}
+
+@font-face {
+  font-family: 'geistMono';
+  src: url('/fonts/geist-mono.ttf');
+  font-weight: normal;
+}
+
 @layer base {
   :root {
     --background: 0 0% 100%;

@@ -1,5 +1,4 @@
 import animate from 'tailwindcss-animate'
-import defaultTheme from 'tailwindcss/defaultTheme.js'
 import { type Config } from 'tailwindcss'
 
 export default {
@@ -61,7 +60,8 @@ export default {
         sm: 'calc(var(--radius) - 4px)',
       },
       fontFamily: {
-        sans: defaultTheme.fontFamily.sans,
+        sans: ['inter', 'sans-serif'],
+        mono: ['geistMono', 'serif'],
       },
       keyframes: {
         'accordion-down': {
