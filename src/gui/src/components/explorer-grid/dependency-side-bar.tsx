@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { GitFork, PlusIcon, X } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { GitFork, Plus } from 'lucide-react'
 import { type DepID } from '@vltpkg/dep-id/browser'
 import { Button } from '@/components/ui/button.jsx'
 import { GridHeader } from '@/components/explorer-grid/header.jsx'
@@ -23,6 +23,7 @@ import {
 import { useToast } from '@/components/hooks/use-toast.js'
 import { type Action } from '@/state/types.js'
 import { useGraphStore } from '@/state/index.js'
+import { useAnimate } from 'framer-motion'
 
 type ChangePackageOptions = {
   operation: 'install' | 'uninstall'
@@ -120,6 +121,7 @@ export const DependencySideBar = ({
   importerId,
   onDependencyClick,
 }: DependencySideBarProps) => {
+  const [scope, animate] = useAnimate()
   const { toast } = useToast()
   const updateStamp = useGraphStore(state => state.updateStamp)
   const updateActiveRoute = useGraphStore(
@@ -134,6 +136,19 @@ export const DependencySideBar = ({
   const [addedDependencies, setAddedDependencies] = useState<
     string[]
   >([])
+
+  useEffect(() => {
+    if (scope.current) {
+      showAddDepPopover ?
+        animate(scope.current, {
+          rotate: -45,
+        })
+      : animate(scope.current, {
+          rotate: 0,
+        })
+    }
+  }, [showAddDepPopover, scope])
+
   const toggleShowAddDepPopover = () => {
     // if there is an error, clear it when opening the popover
     if (showAddDepPopover && error) {
@@ -206,7 +221,9 @@ export const DependencySideBar = ({
         Dependencies
         {importerId ?
           <div className="grow flex justify-end">
-            <Popover open={showAddDepPopover}>
+            <Popover
+              open={showAddDepPopover}
+              onOpenChange={setShowAddDepPopover}>
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
@@ -215,9 +232,7 @@ export const DependencySideBar = ({
                       variant="outline"
                       size="xs"
                       onClick={toggleShowAddDepPopover}>
-                      {showAddDepPopover ?
-                        <X size={16} />
-                      : <PlusIcon size={16} />}
+                      <Plus ref={scope} />
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>

@@ -7,8 +7,7 @@ import { type GridItemData } from '@/components/explorer-grid/types.js'
 
 vi.mock('lucide-react', () => ({
   GitFork: 'gui-git-fork-icon',
-  PlusIcon: 'gui-plus-icon',
-  X: 'gui-x-icon',
+  Plus: 'gui-plus-icon',
 }))
 
 vi.mock('@/components/ui/button.jsx', () => ({
