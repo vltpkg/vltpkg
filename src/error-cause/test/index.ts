@@ -3,6 +3,7 @@ import {
   syntaxError,
   typeError,
   asErrorCause,
+  isErrorRoot,
 } from '../src/index.js'
 import t from 'tap'
 
@@ -63,5 +64,12 @@ t.test('asErrorCause', t => {
   t.match(asErrorCause(null), unknownErr)
   t.match(asErrorCause(undefined), unknownErr)
   t.match(asErrorCause([]), unknownErr)
+  t.end()
+})
+
+t.test('isErrorRoot', t => {
+  t.equal(isErrorRoot(new Error('', { cause: {} })), true)
+  t.equal(isErrorRoot(new Error('')), false)
+  t.equal(isErrorRoot(new Error('', { cause: null })), false)
   t.end()
 })
