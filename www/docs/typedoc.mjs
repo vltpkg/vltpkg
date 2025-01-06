@@ -3,71 +3,112 @@ import { join, relative, resolve } from 'path'
 import { readdirSync } from 'fs'
 import { writeFile } from 'fs/promises'
 import typedocWorkspace from './typedoc.workspace.mjs'
+import { execSync } from 'child_process'
+import {
+  entryFileName,
+  modulesFileName,
+  typedocContentPath,
+  theme,
+} from './typedoc/constants.mjs'
 
-const tsconfig = './tsconfig.typedoc-workspaces.json'
-const entryPoints = readdirSync(
-  resolve(import.meta.dirname, '../../src'),
-  {
-    withFileTypes: true,
-  },
-)
-  .filter(
-    d =>
-      d.isDirectory() && typedocWorkspace(join(d.parentPath, d.name)),
-  )
-  .map(d => relative(import.meta.dirname, join(d.parentPath, d.name)))
+// typedoc requires an origin remote to render source links.
+// there are other typedoc options (sourceLinkTemplate, etc) that
+// can be used but they do not play well with the packages strategy
+// and will not link to the correct workspace.
+if (process.env.VERCEL) {
+  const { VERCEL_GIT_REPO_OWNER: owner, VERCEL_GIT_REPO_SLUG: repo } =
+    process.env
+  const remote = `https://github.com/${owner}/${repo}.git`
+  execSync(`git remote add origin ${remote}`)
+}
 
-await writeFile(
-  resolve(import.meta.dirname, tsconfig),
-  JSON.stringify(
+const { tsconfig, entryPoints } = await (async () => {
+  const srcWorkspaces = readdirSync(
+    resolve(import.meta.dirname, '../../src'),
     {
-      files: [],
-      references: entryPoints.map(path => ({ path })),
+      withFileTypes: true,
     },
-    null,
-    2,
-  ) + '\n',
-)
+  )
+    .filter(
+      d =>
+        d.isDirectory() &&
+        typedocWorkspace(join(d.parentPath, d.name)),
+    )
+    .filter(d => {
+      const wanted = process.env.VLT_TYPEDOC_WORKSPACES?.split(',')
+      return wanted?.length ? wanted.includes(d.name) : true
+    })
+
+  const relWorkspaces = srcWorkspaces.map(d =>
+    relative(import.meta.dirname, join(d.parentPath, d.name)),
+  )
+
+  const generatedTsconfig = './tsconfig.typedoc-workspaces.json'
+  await writeFile(
+    resolve(import.meta.dirname, generatedTsconfig),
+    JSON.stringify(
+      {
+        files: [],
+        references: relWorkspaces.map(path => ({ path })),
+      },
+      null,
+      2,
+    ) + '\n',
+  )
+
+  return {
+    tsconfig: generatedTsconfig,
+    entryPoints: relWorkspaces,
+  }
+})()
 
 /**
- * @type {Partial<
- * import('typedoc').TypeDocOptions &
- * import('typedoc-plugin-markdown').PluginOptions &
- * import('typedoc-plugin-frontmatter').PluginOptions &
- * import('typedoc-plugin-remark').PluginOptions>}
+ * @typedef {Partial<import('typedoc-plugin-markdown').PluginOptions>} Markdown
+ * @type {Markdown}
  */
-export default {
-  entryPoints,
-  tsconfig,
-  plugin: [
-    'typedoc-plugin-markdown',
-    'typedoc-plugin-remark',
-    'typedoc-plugin-frontmatter',
-    './scripts/workspace-frontmatter.mjs',
-    './scripts/external-link-plugin.mjs',
-  ],
-  entryPointStrategy: 'packages',
-  remarkPlugins: ['unified-prettier'],
-  outputFileStrategy: 'modules',
-  modulesFileName: 'modules',
-  entryFileName: 'index',
+const markdownOptions = {
   mergeReadme: false,
-  readme: 'none',
-  out: `src/content/docs/packages`,
-  cleanOutputDir: true,
+  entryFileName,
+  modulesFileName,
+  outputFileStrategy: 'modules',
   excludeScopesInPaths: true,
-  includeVersion: false,
-  disableGit: true,
   useCodeBlocks: true,
   hideBreadcrumbs: true,
   hidePageHeader: true,
   hidePageTitle: true,
-  githubPages: false,
+}
+
+/**
+ * @typedef {Partial<import('typedoc-plugin-remark').PluginOptions>} Remark
+ * @type {Remark}
+ */
+const remarkOptions = {
+  remarkPlugins: ['unified-prettier', './typedoc/markdown-fixes.mjs'],
+}
+
+/**
+ * @typedef {Partial<import('typedoc-plugin-frontmatter').PluginOptions>} Frontmatter
+ * @type {Frontmatter}
+ */
+const frontmatterOptions = {
   frontmatterGlobals: {
     editUrl: false,
     next: false,
     prev: false,
   },
+}
+
+/**
+ * @typedef {Partial<import('typedoc').TypeDocOptions>} PackageOptions
+ * @type {PackageOptions}
+ */
+const packageOptions = {
+  includeVersion: false,
+  githubPages: false,
+  excludeInternal: true,
+  excludeExternals: true,
+  excludePrivate: true,
+  excludeProtected: true,
   externalSymbolLinkMappings: {
     'path-scurry': {
       '*': 'https://isaacs.github.io/path-scurry/',
@@ -76,4 +117,45 @@ export default {
       '*': 'https://isaacs.github.io/node-lru-cache/',
     },
   },
+}
+
+/**
+ * @typedef {Omit<Partial<import('typedoc').TypeDocOptions>, 'packageOptions'>} TypeDoc
+ * @type {TypeDoc}
+ */
+const rootTypedocOptions = {
+  // root options specify to use packages strategy for all workspaces
+  entryPoints,
+  entryPointStrategy: 'packages',
+  tsconfig,
+  theme,
+  // plugins
+  plugin: [
+    './typedoc/theme.mjs',
+    'typedoc-plugin-markdown',
+    'typedoc-plugin-remark',
+    'typedoc-plugin-frontmatter',
+    './typedoc/add-frontmatter.mjs',
+    './typedoc/unresolved-links.mjs',
+  ],
+  // do not use a readme for the root
+  readme: 'none',
+  // output options
+  out: typedocContentPath,
+  cleanOutputDir: true,
+  // all of our package options apply to the root also
+  ...packageOptions,
+}
+
+/**
+ * @type {TypeDoc & Markdown & Frontmatter & Remark & { packageOptions: PackageOptions }}
+ */
+export default {
+  ...rootTypedocOptions,
+  // package options are set for all workspaces
+  packageOptions,
+  // plugins
+  ...markdownOptions,
+  ...frontmatterOptions,
+  ...remarkOptions,
 }

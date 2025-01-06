@@ -5,16 +5,15 @@ exports[`SideItem render as dependency 1`] = `
 <div>
   <div class="group relative z-10">
     <gui-card
-      tabindex="1"
       role="article"
-      classname="transition-all relative my-4   group-hover:border-neutral-400 dark:group-hover:border-neutral-600"
+      classname="transition-all relative my-4  cursor-pointer group-hover:border-neutral-400 dark:group-hover:border-neutral-600"
     >
       <gui-card-header classname="rounded-t-lg relative flex flex-col w-full p-0">
-        <div class="flex items-center justify-between px-3 py-2">
-          <gui-card-title classname="text-sm font-medium flex items-center">
+        <div class="flex items-center px-3 py-2">
+          <gui-card-title classname="text-sm font-medium flex-1 items-center ">
             item
           </gui-card-title>
-          <div class="px-2 py-1 border-[1px] border-solid rounded-full">
+          <div class="px-2 py-1 border-[1px] border-solid rounded-full flex-initial">
             <p class="text-xs">
               1.0.0
             </p>
@@ -22,7 +21,7 @@ exports[`SideItem render as dependency 1`] = `
         </div>
         <div class="flex items-center flex-row justify-between gap-2 flex-wrap px-3 py-2 border-muted-foreground/20 border-t-[1px]">
           <p class="text-sm text-muted-foreground/50">
-            item@
+            item
           </p>
           <div>
             <gui-badge classname="grow-0 border-transparent bg-lime-100 text-neutral-900 hover:bg-lime-100/80">
@@ -44,16 +43,15 @@ exports[`SideItem render as dependency with long name 1`] = `
 <div>
   <div class="group relative z-10">
     <gui-card
-      tabindex="1"
       role="article"
-      classname="transition-all relative my-4   group-hover:border-neutral-400 dark:group-hover:border-neutral-600"
+      classname="transition-all relative my-4  cursor-pointer group-hover:border-neutral-400 dark:group-hover:border-neutral-600"
     >
       <gui-card-header classname="rounded-t-lg relative flex flex-col w-full p-0">
-        <div class="flex items-center justify-between px-3 py-2">
-          <gui-card-title classname="text-sm font-medium flex items-center">
+        <div class="flex items-center px-3 py-2">
+          <gui-card-title classname="text-sm font-medium flex-1 items-center ">
             lorem-ipsum-dolor-sit-amet-consectetur-adipiscing-elit-sed-do-eiusmod-tempor-incididunt-ut-labore-et-dolore-magna-aliqua-ut-enim-ad-minim-veniam-quis-nostrud-exercitation
           </gui-card-title>
-          <div class="px-2 py-1 border-[1px] border-solid rounded-full">
+          <div class="px-2 py-1 border-[1px] border-solid rounded-full flex-initial">
             <p class="text-xs">
               1.0.0
             </p>
@@ -61,7 +59,7 @@ exports[`SideItem render as dependency with long name 1`] = `
         </div>
         <div class="flex items-center flex-row justify-between gap-2 flex-wrap px-3 py-2 border-muted-foreground/20 border-t-[1px]">
           <p class="text-sm text-muted-foreground/50">
-            lorem-ipsum-dolor-sit-amet-consectetur-adipiscing-elit-sed-do-eiusmod-tempor-incididunt-ut-labore-et-dolore-magna-aliqua-ut-enim-ad-minim-veniam-quis-nostrud-exercitation@
+            lorem-ipsum-dolor-sit-amet-consectetur-adipiscing-elit-sed-do-eiusmod-tempor-incididunt-ut-labore-et-dolore-magna-aliqua-ut-enim-ad-minim-veniam-quis-nostrud-exercitation
           </p>
           <div>
             <gui-badge classname="grow-0 border-transparent bg-lime-100 text-neutral-900 hover:bg-lime-100/80">
@@ -83,16 +81,15 @@ exports[`SideItem render as dependent 1`] = `
 <div>
   <div class="group relative z-10">
     <gui-card
-      tabindex="1"
       role="article"
-      classname="transition-all relative my-4   group-hover:border-neutral-400 dark:group-hover:border-neutral-600"
+      classname="transition-all relative my-4  cursor-pointer group-hover:border-neutral-400 dark:group-hover:border-neutral-600"
     >
       <gui-card-header classname="rounded-t-lg relative flex flex-col w-full p-0">
-        <div class="flex items-center justify-between px-3 py-2">
-          <gui-card-title classname="text-sm font-medium flex items-center">
+        <div class="flex items-center px-3 py-2">
+          <gui-card-title classname="text-sm font-medium flex-1 items-center ">
             item
           </gui-card-title>
-          <div class="px-2 py-1 border-[1px] border-solid rounded-full">
+          <div class="px-2 py-1 border-[1px] border-solid rounded-full flex-initial">
             <p class="text-xs">
               1.0.0
             </p>
@@ -100,7 +97,7 @@ exports[`SideItem render as dependent 1`] = `
         </div>
         <div class="flex items-center flex-row justify-between gap-2 flex-wrap px-3 py-2 border-muted-foreground/20 border-t-[1px]">
           <p class="text-sm text-muted-foreground/50">
-            item@
+            item
           </p>
           <div>
             <gui-badge classname="grow-0 border-transparent bg-cyan-100 text-neutral-900 hover:bg-cyan-100/80">
@@ -124,16 +121,15 @@ exports[`SideItem render as multi-stacked dependent 1`] = `
     <div class="transition-all absolute border top-1 left-1 w-[98%] h-full bg-card rounded-lg group-hover:border-neutral-400 dark:group-hover:border-neutral-600">
     </div>
     <gui-card
-      tabindex="1"
       role="article"
-      classname="transition-all relative my-4   group-hover:border-neutral-400 dark:group-hover:border-neutral-600"
+      classname="transition-all relative my-4  cursor-pointer group-hover:border-neutral-400 dark:group-hover:border-neutral-600"
     >
       <gui-card-header classname="rounded-t-lg relative flex flex-col w-full p-0">
-        <div class="flex items-center justify-between px-3 py-2">
-          <gui-card-title classname="text-sm font-medium flex items-center">
+        <div class="flex items-center px-3 py-2">
+          <gui-card-title classname="text-sm font-medium flex-1 items-center ">
             item
           </gui-card-title>
-          <div class="px-2 py-1 border-[1px] border-solid rounded-full">
+          <div class="px-2 py-1 border-[1px] border-solid rounded-full flex-initial">
             <p class="text-xs">
               1.0.0
             </p>
@@ -141,7 +137,7 @@ exports[`SideItem render as multi-stacked dependent 1`] = `
         </div>
         <div class="flex items-center flex-row justify-between gap-2 flex-wrap px-3 py-2 border-muted-foreground/20 border-t-[1px]">
           <p class="text-sm text-muted-foreground/50">
-            item@
+            item
           </p>
           <div>
             <gui-badge classname="grow-0 border-transparent bg-cyan-100 text-neutral-900 hover:bg-cyan-100/80">
@@ -161,16 +157,15 @@ exports[`SideItem render as parent 1`] = `
 <div>
   <div class="group relative z-10">
     <gui-card
-      tabindex="1"
       role="article"
-      classname="transition-all relative my-4 border-foreground  group-hover:border-neutral-400 dark:group-hover:border-neutral-600"
+      classname="transition-all relative my-4 border-foreground cursor-pointer group-hover:border-neutral-400 dark:group-hover:border-neutral-600"
     >
       <gui-card-header classname="rounded-t-lg relative flex flex-col w-full p-0">
-        <div class="flex items-center justify-between px-3 py-2">
-          <gui-card-title classname="text-sm font-medium flex items-center">
+        <div class="flex items-center px-3 py-2">
+          <gui-card-title classname="text-sm font-medium flex-1 items-center ">
             item
           </gui-card-title>
-          <div class="px-2 py-1 border-[1px] border-solid rounded-full">
+          <div class="px-2 py-1 border-[1px] border-solid rounded-full flex-initial">
             <p class="text-xs">
               1.0.0
             </p>
@@ -178,7 +173,7 @@ exports[`SideItem render as parent 1`] = `
         </div>
         <div class="flex items-center flex-row justify-between gap-2 flex-wrap px-3 py-2 border-muted-foreground/20 border-t-[1px]">
           <p class="text-sm text-muted-foreground/50">
-            item@
+            item
           </p>
           <div>
             <gui-badge classname="grow-0 border-transparent bg-cyan-100 text-neutral-900 hover:bg-cyan-100/80">
@@ -202,16 +197,15 @@ exports[`SideItem render as two-stacked dependent 1`] = `
     <div class="transition-all absolute border top-1 left-1 w-[98%] h-full bg-card rounded-lg group-hover:border-neutral-400 dark:group-hover:border-neutral-600">
     </div>
     <gui-card
-      tabindex="1"
       role="article"
-      classname="transition-all relative my-4   group-hover:border-neutral-400 dark:group-hover:border-neutral-600"
+      classname="transition-all relative my-4  cursor-pointer group-hover:border-neutral-400 dark:group-hover:border-neutral-600"
     >
       <gui-card-header classname="rounded-t-lg relative flex flex-col w-full p-0">
-        <div class="flex items-center justify-between px-3 py-2">
-          <gui-card-title classname="text-sm font-medium flex items-center">
+        <div class="flex items-center px-3 py-2">
+          <gui-card-title classname="text-sm font-medium flex-1 items-center ">
             item
           </gui-card-title>
-          <div class="px-2 py-1 border-[1px] border-solid rounded-full">
+          <div class="px-2 py-1 border-[1px] border-solid rounded-full flex-initial">
             <p class="text-xs">
               1.0.0
             </p>
@@ -219,7 +213,7 @@ exports[`SideItem render as two-stacked dependent 1`] = `
         </div>
         <div class="flex items-center flex-row justify-between gap-2 flex-wrap px-3 py-2 border-muted-foreground/20 border-t-[1px]">
           <p class="text-sm text-muted-foreground/50">
-            item@
+            item
           </p>
           <div>
             <gui-badge classname="grow-0 border-transparent bg-cyan-100 text-neutral-900 hover:bg-cyan-100/80">

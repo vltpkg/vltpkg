@@ -81,15 +81,14 @@ exports[`explorer-grid renders workspace with edges in 1`] = `
       <div class="group relative z-10">
         <div
           class="block rounded-lg border bg-card text-card-foreground shadow-sm transition-all relative my-4 border-foreground cursor-pointer group-hover:border-neutral-400 dark:group-hover:border-neutral-600"
-          tabindex="1"
           role="article"
         >
           <div class="rounded-t-lg relative flex flex-col w-full p-0">
-            <div class="flex items-center justify-between px-3 py-2">
-              <h3 class="tracking-tight text-sm font-medium flex items-center">
+            <div class="flex items-center px-3 py-2">
+              <h3 class="tracking-tight text-sm font-medium flex-1 items-center">
                 a
               </h3>
-              <div class="px-2 py-1 border-[1px] border-solid rounded-full">
+              <div class="px-2 py-1 border-[1px] border-solid rounded-full flex-initial">
                 <p class="text-xs">
                   1.0.0
                 </p>
@@ -97,7 +96,7 @@ exports[`explorer-grid renders workspace with edges in 1`] = `
             </div>
             <div class="flex items-center flex-row justify-between gap-2 flex-wrap px-3 py-2 border-muted-foreground/20 border-t-[1px]">
               <p class="text-sm text-muted-foreground/50">
-                a@workspace:*
+                b@workspace:*
               </p>
               <div class="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 grow-0 border-transparent bg-cyan-100 text-neutral-900 hover:bg-cyan-100/80">
                 prod
@@ -229,6 +228,77 @@ exports[`explorer-grid renders workspace with edges in 1`] = `
       </div>
     </div>
     <div class="col-span-2">
+      <div class="pt-6 text-md flex flex-row items-center font-medium">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="22"
+          height="22"
+          viewbox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          class="lucide lucide-git-fork mr-3 rotate-180"
+        >
+          <circle
+            cx="12"
+            cy="18"
+            r="3"
+          >
+          </circle>
+          <circle
+            cx="6"
+            cy="6"
+            r="3"
+          >
+          </circle>
+          <circle
+            cx="18"
+            cy="6"
+            r="3"
+          >
+          </circle>
+          <path d="M18 9v2c0 .6-.4 1-1 1H7c-.6 0-1-.4-1-1V9">
+          </path>
+          <path d="M12 12v3">
+          </path>
+        </svg>
+        Dependencies
+        <div class="grow flex justify-end">
+          <button
+            class="inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&amp;_svg]:pointer-events-none [&amp;_svg]:size-4 [&amp;_svg]:shrink-0 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-6 rounded-sm px-1"
+            role="button"
+            data-state="closed"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              viewbox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              class="lucide lucide-plus"
+            >
+              <path d="M5 12h14">
+              </path>
+              <path d="M12 5v14">
+              </path>
+            </svg>
+          </button>
+          <button
+            type="button"
+            aria-haspopup="dialog"
+            aria-expanded="false"
+            aria-controls="radix-:ra:"
+            data-state="closed"
+          >
+          </button>
+        </div>
+      </div>
     </div>
   </div>
 </div>
