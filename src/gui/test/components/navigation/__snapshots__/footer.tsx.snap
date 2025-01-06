@@ -45,7 +45,7 @@ exports[`Footer Component > renders the copyright text 1`] = `
         href="https://www.vlt.sh/"
         class="no-underline text-sm text-muted-foreground hover:text-foreground transition-all"
       >
-        © 2024 vlt technology inc.
+        © 2025 vlt technology inc.
       </a>
       <div class="flex flex-row gap-4">
         <a
