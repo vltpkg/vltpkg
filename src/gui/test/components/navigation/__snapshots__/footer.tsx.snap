@@ -2,131 +2,66 @@
 
 exports[`Footer Component > renders the copyright text 1`] = `
 
-<footer class="flex border-t-[1px] border-solid h-24 items-center justify-between px-8 w-full">
-  <div class="items-center gap-3 hidden md:flex md:justify-start">
-    <a href="https://www.linkedin.com/company/vltpkg/">
-      <img
-        src="/icons/linkedin.svg"
-        width="20"
-        style="filter: invert(1);"
+<footer class="bg-white dark:bg-black border-t-[1px]">
+  <div class="flex flex-col w-full gap-x-4 gap-y-4 px-6 py-6">
+    <div class="flex w-full items-center justify-between">
+      <div class="flex gap-4">
+        <a
+          href="https://www.linkedin.com/company/vltpkg/"
+          aria-label="linkedin"
+        >
+          <gui-linkedin-icon classname="fill-black dark:fill-white h-5">
+          </gui-linkedin-icon>
+        </a>
+        <a
+          href="https://x.com/vltpkg"
+          aria-label="twitter-x"
+        >
+          <gui-twitter-icon classname="fill-black dark:fill-white h-5">
+          </gui-twitter-icon>
+        </a>
+        <a
+          href="https://github.com/vltpkg"
+          aria-label="github"
+        >
+          <gui-github-icon classname="fill-black dark:fill-white h-5">
+          </gui-github-icon>
+        </a>
+        <a
+          href="https://discord.gg/vltpkg"
+          aria-label="discord"
+        >
+          <gui-discord-icon classname="fill-black dark:fill-white h-5">
+          </gui-discord-icon>
+        </a>
+      </div>
+      <div class="flex">
+        <gui-theme-switcher>
+        </gui-theme-switcher>
+      </div>
+    </div>
+    <div class="flex flex-row w-full items-center justify-between">
+      <a
+        href="https://www.vlt.sh/"
+        class="no-underline text-sm text-muted-foreground hover:text-foreground transition-all"
       >
-    </a>
-    <a href="https://x.com/vltpkg">
-      <img
-        src="/icons/twitter-x.svg"
-        width="20"
-        style="filter: invert(1);"
-      >
-    </a>
-    <a href="https://github.com/vltpkg">
-      <img
-        src="/icons/github.svg"
-        width="20"
-        style="filter: invert(1);"
-      >
-    </a>
-    <a href="https://discord.gg/vltpkg">
-      <img
-        src="/icons/discord.svg"
-        width="20"
-        style="filter: invert(1);"
-      >
-    </a>
-  </div>
-  <div class="flex items-center w-full justify-center">
-    <p class="text-xs text-muted-foreground">
-      © 2024 vlt technology inc.
-    </p>
-  </div>
-  <div class="hidden md:flex">
-  </div>
-</footer>
-
-`;
-
-exports[`Footer Component > renders the social media links for dark theme 1`] = `
-
-<footer class="flex border-t-[1px] border-solid h-24 items-center justify-between px-8 w-full">
-  <div class="items-center gap-3 hidden md:flex md:justify-start">
-    <a href="https://www.linkedin.com/company/vltpkg/">
-      <img
-        src="/icons/linkedin.svg"
-        width="20"
-        style="filter: invert(0);"
-      >
-    </a>
-    <a href="https://x.com/vltpkg">
-      <img
-        src="/icons/twitter-x.svg"
-        width="20"
-        style="filter: invert(0);"
-      >
-    </a>
-    <a href="https://github.com/vltpkg">
-      <img
-        src="/icons/github.svg"
-        width="20"
-        style="filter: invert(0);"
-      >
-    </a>
-    <a href="https://discord.gg/vltpkg">
-      <img
-        src="/icons/discord.svg"
-        width="20"
-        style="filter: invert(0);"
-      >
-    </a>
-  </div>
-  <div class="flex items-center w-full justify-center">
-    <p class="text-xs text-muted-foreground">
-      © 2024 vlt technology inc.
-    </p>
-  </div>
-  <div class="hidden md:flex">
-  </div>
-</footer>
-
-`;
-
-exports[`Footer Component > renders the social media links for light theme 1`] = `
-
-<footer class="flex border-t-[1px] border-solid h-24 items-center justify-between px-8 w-full">
-  <div class="items-center gap-3 hidden md:flex md:justify-start">
-    <a href="https://www.linkedin.com/company/vltpkg/">
-      <img
-        src="/icons/linkedin.svg"
-        width="20"
-        style="filter: invert(1);"
-      >
-    </a>
-    <a href="https://x.com/vltpkg">
-      <img
-        src="/icons/twitter-x.svg"
-        width="20"
-        style="filter: invert(1);"
-      >
-    </a>
-    <a href="https://github.com/vltpkg">
-      <img
-        src="/icons/github.svg"
-        width="20"
-        style="filter: invert(1);"
-      >
-    </a>
-    <a href="https://discord.gg/vltpkg">
-      <img
-        src="/icons/discord.svg"
-        width="20"
-        style="filter: invert(1);"
-      >
-    </a>
-  </div>
-  <div class="flex items-center w-full justify-center">
-    <p class="text-xs text-muted-foreground">
-      © 2024 vlt technology inc.
-    </p>
-  </div>
-  <div class="hidden md:flex">
+        © 2025 vlt technology inc.
+      </a>
+      <div class="flex flex-row gap-4">
+        <a
+          href="https://www.vlt.sh/terms"
+          class="no-underline font-medium text-muted-foreground text-sm hover:text-foreground transition-all"
+        >
+          Terms
+        </a>
+        <a
+          href="https://www.vlt.sh/privacy"
+          class="no-underline font-medium text-muted-foreground text-sm hover:text-foreground transition-all"
+        >
+          Privacy
+        </a>
+      </div>
+    </div>
   </div>
 </footer>
 
