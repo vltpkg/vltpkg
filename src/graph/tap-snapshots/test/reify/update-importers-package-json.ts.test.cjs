@@ -9,7 +9,7 @@ exports[`test/reify/update-importers-package-json.ts > TAP > updatePackageJson >
 Array [
   Object {
     "dependencies": Object {
-      "foo": "^1.0.0",
+      "foo": "1.0.0",
       "git": "github:a/b",
     },
     "devDependencies": Object {
@@ -26,8 +26,25 @@ exports[`test/reify/update-importers-package-json.ts > TAP > updatePackageJson >
 Array [
   Object {
     "dependencies": Object {
-      "foo": "^1.0.0",
+      "foo": "1.0.0",
       "git": "github:a/b",
+    },
+    "name": "root",
+    "version": "1.0.0",
+  },
+]
+`
+
+exports[`test/reify/update-importers-package-json.ts > TAP > updatePackageJson > registry gt range dep > should use provided range in package json save 1`] = `
+Array [
+  Object {
+    "dependencies": Object {
+      "git": "github:a/b",
+    },
+    "devDependencies": Object {
+      "def": "^1.0.0",
+      "gtor": ">=1.1.0 || 2",
+      "range": "~1.1.0",
     },
     "name": "root",
     "version": "1.0.0",
@@ -39,7 +56,7 @@ exports[`test/reify/update-importers-package-json.ts > TAP > updatePackageJson >
 Array [
   Object {
     "dependencies": Object {
-      "foo": "^1.0.0",
+      "foo": "1.0.0",
       "git": "github:a/b",
     },
     "devDependencies": Object {
@@ -71,7 +88,7 @@ exports[`test/reify/update-importers-package-json.ts > TAP > updatePackageJson >
 Array [
   Object {
     "dependencies": Object {
-      "foo": "^1.0.0",
+      "foo": "1.0.0",
     },
     "name": "root",
     "version": "1.0.0",
