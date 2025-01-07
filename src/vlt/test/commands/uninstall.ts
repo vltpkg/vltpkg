@@ -1,62 +1,39 @@
-import { joinDepIDTuple } from '@vltpkg/dep-id'
-import { type BuildIdealOptions } from '@vltpkg/graph'
 import t from 'tap'
 import { type LoadedConfig } from '../../src/config/index.js'
 
-t.cleanSnapshot = s =>
-  s.replace(/^(\s+)"?projectRoot"?: .*$/gm, '$1projectRoot: #')
-
-let reifyOpts: any
-
-class PackageJson {
-  read() {
-    return { name: 'my-project', version: '1.0.0' }
-  }
-}
-
-// eslint-disable-next-line @typescript-eslint/no-extraneous-class
-class PathScurry {}
-
-const options = {
-  projectRoot: t.testdirName,
-  packageJson: new PackageJson(),
-  scurry: new PathScurry(),
-}
-const rootDepID = joinDepIDTuple(['file', '.'])
+const options = {}
+let log = ''
 
 const { usage, command } = await t.mockImport<
   typeof import('../../src/commands/uninstall.js')
 >('../../src/commands/uninstall.js', {
-  '@vltpkg/graph': {
-    ideal: {
-      build: async ({ remove }: BuildIdealOptions) =>
-        `buildideal result removes ${remove?.get(rootDepID)?.size || 0} new package(s)`,
-    },
-    actual: {
-      load: () => 'actual.load result',
-    },
-    reify: async (reifyOptions: any) => {
-      reifyOpts = reifyOptions
+  '../../src/uninstall.js': {
+    async uninstall() {
+      log += 'uninstall\n'
     },
   },
-  '@vltpkg/package-json': {
-    PackageJson,
-  },
-  'path-scurry': {
-    PathScurry,
-    PathScurryDarwin: PathScurry,
-    PathScurryLinux: PathScurry,
-    PathScurryPosix: PathScurry,
-    PathScurryWin32: PathScurry,
+  '../../src/parse-add-remove-args.js': {
+    parseRemoveArgs: (conf: LoadedConfig) => {
+      const items =
+        conf.positionals.length > 0 ?
+          `from ${conf.positionals.join(',')}`
+        : ''
+      const values =
+        Object.keys(conf.values).length > 0 ?
+          `, with values ${Object.entries(conf.values).join('=')}`
+        : ''
+      log += `parse remove args ${items}${values}\n`
+      return { remove: new Map() }
+    },
   },
 })
 t.matchSnapshot(usage().usage(), 'usage')
+
+// removes a package
+log = ''
 await command({
-  positionals: [],
+  positionals: ['abbrev@2'],
   values: {},
   options,
 } as unknown as LoadedConfig)
-t.matchSnapshot(
-  reifyOpts,
-  'should reify uninstalling a new dependency',
-)
+t.matchSnapshot(log, 'should uninstall a dependency')
