@@ -2,7 +2,7 @@
 
 # @vltpkg/cache
 
-The filesystem cache for `@vlt/registry-client`, but also, a general-purpose filesystem-backed [LRUCache](http://npm.im/lru-cache)
+The filesystem cache for `@vltpkg/registry-client`, but also, a general-purpose filesystem-backed [LRUCache](http://npm.im/lru-cache)
 
 **[Usage](#usage)**
 ·
