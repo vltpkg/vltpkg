@@ -1,4 +1,4 @@
-import { type IncomingMessage } from 'http'
+import { type IncomingHttpHeaders, type IncomingMessage } from 'http'
 
 /**
  * Codification of vlt's Error.cause conventions
@@ -105,8 +105,11 @@ export type ErrorCauseObject = {
     | Response
     | {
         statusCode: number
-        headers: Buffer[] | Record<string, string[] | string>
-        text: () => string
+        headers:
+          | Buffer[]
+          | Record<string, string[] | string>
+          | IncomingHttpHeaders
+        text?: () => string
         [k: number | string | symbol]: any
       }
 
