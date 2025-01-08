@@ -38,6 +38,7 @@
     "@vltpkg/package-json": "workspace:*",
     "@vltpkg/promise-spawn": "workspace:*",
     "@vltpkg/query": "workspace:*",
+    "@vltpkg/registry-client": "workspace:*",
     "@vltpkg/run": "workspace:*",
     "@vltpkg/spec": "workspace:*",
     "@vltpkg/types": "workspace:*",
