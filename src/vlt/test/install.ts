@@ -1,9 +1,10 @@
 import t from 'tap'
 import { joinDepIDTuple } from '@vltpkg/dep-id'
 import {
-  type Dependency,
   asDependency,
+  type Dependency,
   type BuildIdealOptions,
+  type AddImportersDependenciesMap,
 } from '@vltpkg/graph'
 import { type LoadedConfig } from '../src/config/index.js'
 import { Spec } from '@vltpkg/spec'
@@ -61,7 +62,7 @@ t.test('install', async t => {
   })
 
   await install({
-    add: new Map(),
+    add: new Map() as AddImportersDependenciesMap,
     conf: {
       options,
     } as unknown as LoadedConfig,
@@ -85,7 +86,7 @@ t.test('install', async t => {
           ],
         ]),
       ],
-    ]),
+    ]) as AddImportersDependenciesMap,
     conf: {
       options,
     } as unknown as LoadedConfig,
