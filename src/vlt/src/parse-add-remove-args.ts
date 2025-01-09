@@ -67,11 +67,26 @@ const getType = (opts: SaveTypes): DependencyTypeShort =>
   : opts['save-optional'] ? 'optional'
   : 'prod'
 
+class AddImportersDependenciesMapImpl
+  extends Map
+  implements AddImportersDependenciesMap
+{
+  modifiedDependencies = false
+}
+
+class RemoveImportersDependenciesMapImpl
+  extends Map
+  implements RemoveImportersDependenciesMap
+{
+  modifiedDependencies = false
+}
+
 export const parseAddArgs = (
   config: LoadedConfig,
   monorepo?: Monorepo,
 ): ParsedAddArgs => {
-  const add: AddImportersDependenciesMap = new Map()
+  const add: AddImportersDependenciesMap =
+    new AddImportersDependenciesMapImpl()
   const items = config.positionals
   const type = getType(config.values)
   const importers = getImporters(config.values, monorepo)
@@ -87,6 +102,7 @@ export const parseAddArgs = (
   for (const item of items) {
     const spec = Spec.parseArgs(item, specOptions)
     newDependencies.set(getName(spec), asDependency({ spec, type }))
+    add.modifiedDependencies = true
   }
 
   for (const importer of importers) {
@@ -102,11 +118,13 @@ export const parseRemoveArgs = (
   config: LoadedConfig,
   monorepo?: Monorepo,
 ): ParsedRemoveArgs => {
-  const remove: RemoveImportersDependenciesMap = new Map()
+  const remove: RemoveImportersDependenciesMap =
+    new RemoveImportersDependenciesMapImpl()
   const importers = getImporters(config.values, monorepo)
 
   for (const importer of importers) {
     remove.set(importer, new Set(config.positionals))
+    remove.modifiedDependencies = true
   }
 
   return {
