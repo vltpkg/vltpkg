@@ -144,7 +144,7 @@ export class RegistryClient {
     url: URL | string,
     options: RegistryClientRequestOptions = {},
   ): Promise<CacheEntry> {
-    logRequest(url)
+    logRequest(url, 'start')
 
     const u = typeof url === 'string' ? new URL(url) : url
     const {

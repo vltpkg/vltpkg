@@ -1,44 +1,66 @@
 import { emitter, type Events } from '@vltpkg/output'
-import React, { useState, useEffect } from 'react'
-import { render, Text, Static } from 'ink'
-
-const steps = ['build', 'actual', 'reify']
+import React, { useState, useLayoutEffect } from 'react'
+import { render, Text, Box } from 'ink'
 
 const App = () => {
   const [counter, setCounter] = useState(0)
 
-  const [steps, setSteps] = useState([])
+  const [steps, setSteps] = useState<
+    Record<
+      Events['graphStep']['step'],
+      {
+        state: 'waiting' | 'in_progress' | 'completed'
+      }
+    >
+  >({
+    build: {
+      state: 'waiting',
+    },
+    actual: {
+      state: 'waiting',
+    },
+    reify: {
+      state: 'waiting',
+    },
+  })
 
-
-    
-  //   {
-  //   build: 'waiting',
-  //   actual: 'waiting',
-  //   reify: 'waiting',
-  // })
-
-  useEffect(() => {
+  useLayoutEffect(() => {
     const update = () => setCounter(p => p + 1)
     emitter.on('request', update)
     return () => emitter.off('request', update)
   }, [])
 
-  useEffect(() => {
-    const update = ({ step }: Events['graphStep']) =>
-      setStep(p => ({ ...p, [step]: }))
+  useLayoutEffect(() => {
+    const update = ({ step, state }: Events['graphStep']) => {
+      setSteps(p => ({
+        ...p,
+        [step]: {
+          ...p[step],
+          state: state === 'start' ? 'in_progress' : 'completed',
+        },
+      }))
+    }
     emitter.on('graphStep', update)
     return () => emitter.off('graphStep', update)
   }, [])
 
   return (
     <>
-      <Static items={steps}>
-				{step => (
-					<Box key={test.id}>
-						<Text color="green">✔ {test.title}</Text>
-					</Box>
-				)}
-			</Static>
+      <Box>
+        {(['build', 'actual', 'reify'] as const).map(step =>
+          steps[step].state === 'waiting' ?
+            <Text key={step} color="gray">
+              {step} -
+            </Text>
+          : steps[step].state === 'in_progress' ?
+            <Text key={step} color="yellow">
+              {step}... -
+            </Text>
+          : <Text key={step} color="green">
+              {step} ✔ -
+            </Text>,
+        )}
+      </Box>
       <Text color="green">{counter} requests made</Text>
     </>
   )

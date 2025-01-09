@@ -33,6 +33,8 @@ class OutputEmitter {
   }
 }
 
+// Exported event emitter to coordinate events.
+// There must be one version of output across the entire CLI.
 export const emitter = new OutputEmitter()
 
 export const logRequest = (
