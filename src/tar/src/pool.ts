@@ -1,4 +1,4 @@
-import { error, type ErrorCauseObject } from '@vltpkg/error-cause'
+import { error } from '@vltpkg/error-cause'
 import os from 'os'
 import { UnpackRequest } from './unpack-request.js'
 import {
@@ -51,11 +51,14 @@ export class Pool {
       ur.resolve()
       /* c8 ignore start - nearly impossible in normal circumstances */
     } else {
-      const er =
+      const message =
         m.error instanceof Error ? m.error.message : String(m.error)
-      const cause: ErrorCauseObject = { found: m }
-      if (m.error instanceof Error) cause.cause = m.error
-      ur.reject(error(er || 'failed without error message', cause))
+      ur.reject(
+        error(message || 'failed without error message', {
+          found: m,
+          cause: m.error,
+        }),
+      )
     }
     /* c8 ignore stop */
     const next = this.queue.shift()

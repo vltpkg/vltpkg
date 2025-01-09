@@ -1,4 +1,10 @@
-import { error, syntaxError, typeError } from '../src/index.js'
+import {
+  error,
+  syntaxError,
+  typeError,
+  asErrorCause,
+  isErrorRoot,
+} from '../src/index.js'
 import t from 'tap'
 
 t.test('setting cause', t => {
@@ -42,5 +48,28 @@ t.test('stack pruning', t => {
     return error('x', undefined, bar)
   }
   t.match(foo().stack, /Error: x\n {4}at foo/)
+  t.end()
+})
+
+t.test('asErrorCause', t => {
+  const err = new Error('an error')
+  t.strictSame(asErrorCause(err), err)
+  const errCause = { code: 'ok' }
+  t.strictSame(asErrorCause(errCause), errCause)
+  t.match(asErrorCause(0), new Error('0'))
+  t.match(asErrorCause(false), new Error('false'))
+  t.match(asErrorCause(true), new Error('true'))
+  const unknownErr = new Error('Unknown error')
+  t.match(asErrorCause(''), unknownErr)
+  t.match(asErrorCause(null), unknownErr)
+  t.match(asErrorCause(undefined), unknownErr)
+  t.match(asErrorCause([]), unknownErr)
+  t.end()
+})
+
+t.test('isErrorRoot', t => {
+  t.equal(isErrorRoot(new Error('', { cause: {} })), true)
+  t.equal(isErrorRoot(new Error('')), false)
+  t.equal(isErrorRoot(new Error('', { cause: null })), false)
   t.end()
 })

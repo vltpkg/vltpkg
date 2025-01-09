@@ -430,7 +430,7 @@ export class Config {
       } catch (er) {
         throw error('failed to load config values from file', {
           path: file,
-          cause: er as Error,
+          cause: er,
         })
       }
     }
@@ -454,7 +454,7 @@ export class Config {
     } catch (er) {
       throw error('failed to parse vlt config file', {
         path: file,
-        cause: er as Error,
+        cause: er,
       })
     }
     this.configFiles[file] = result as ConfigFileData

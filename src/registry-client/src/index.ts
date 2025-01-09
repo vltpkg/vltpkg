@@ -216,19 +216,11 @@ export class RegistryClient {
 
       if (isRedirect(result)) {
         resp.body.resume()
-        try {
-          const [nextURL, nextOptions] = redirect(options, result, u)
-          if (nextOptions && nextURL) {
-            return this.request(nextURL, nextOptions)
-          }
-          return result
-        } catch (er) {
-          /* c8 ignore start */
-          throw er instanceof Error ? er : (
-              new Error(typeof er === 'string' ? er : 'Unknown error')
-            )
-          /* c8 ignore stop */
+        const [nextURL, nextOptions] = redirect(options, result, u)
+        if (nextOptions && nextURL) {
+          return this.request(nextURL, nextOptions)
         }
+        return result
       }
 
       resp.body.on('data', (chunk: Buffer) => result.addBody(chunk))

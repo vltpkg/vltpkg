@@ -14,9 +14,11 @@ export type ErrorCauseObject = {
    * always be an `Error` object that was previously thrown. Note
    * that the `cause` on an Error itself might _also_ be a
    * previously thrown error, if no additional information could be
-   * usefully added beyond improving the message.
+   * usefully added beyond improving the message. It is typed as `unknown`
+   * because we use `useUnknownInCatchVariables` so this makes it easier
+   * to rethrow a caught error without recasting it.
    */
-  cause?: ErrorCause
+  cause?: ErrorCause | unknown // eslint-disable-line @typescript-eslint/no-redundant-type-constituents
 
   /** the name of something */
   name?: string
@@ -174,6 +176,38 @@ export type DuckTypeManifest = Record<string, any> & {
 }
 
 export type ErrorCause = Error | ErrorCauseObject
+
+/**
+ * An error with a cause that is a direct error cause object and not another
+ * nested error.
+ */
+export type ErrorWithCauseObject = Error & { cause: ErrorCauseObject }
+
+/**
+ * If it is any sort of plain-ish object, assume its an error cause
+ * because all properties of the cause are optional.
+ */
+export const isErrorCauseObject = (
+  v: unknown,
+): v is ErrorCauseObject =>
+  !!v && typeof v === 'object' && !Array.isArray(v)
+
+/**
+ * Type guard for {@link ErrorWithCauseObject} type
+ */
+export const isErrorRoot = (
+  er: unknown,
+): er is ErrorWithCauseObject =>
+  er instanceof Error && isErrorCauseObject(er.cause)
+
+export const asErrorCause = (er: unknown): ErrorCause =>
+  er instanceof Error ? er
+  : isErrorCauseObject(er) ? er
+    // otherwise, make an error of the stringified message
+  : new Error(
+      // eslint-disable-next-line @typescript-eslint/no-base-to-string
+      er == null ? 'Unknown error' : String(er) || 'Unknown error',
+    )
 
 /**
  * Valid properties for the 'code' field in an Error cause.
