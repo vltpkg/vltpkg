@@ -8,7 +8,6 @@ import {
   entryFileName,
   modulesFileName,
   typedocContentPath,
-  theme,
 } from './typedoc/constants.mjs'
 
 // typedoc requires an origin remote to render source links.
@@ -128,10 +127,8 @@ const rootTypedocOptions = {
   entryPoints,
   entryPointStrategy: 'packages',
   tsconfig,
-  theme,
   // plugins
   plugin: [
-    './typedoc/theme.mjs',
     'typedoc-plugin-markdown',
     'typedoc-plugin-remark',
     'typedoc-plugin-frontmatter',
