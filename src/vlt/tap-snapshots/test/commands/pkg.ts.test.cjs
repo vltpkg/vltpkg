@@ -33,6 +33,11 @@ Get or manipulate package.json values
 
       ​vlt pkg delete <key> [<key> ...]
 
+    init
+      Create a new package.json file
+
+      ​vlt pkg init [-f|--force]
+
   Examples
 
     Set a value on an object inside an array
