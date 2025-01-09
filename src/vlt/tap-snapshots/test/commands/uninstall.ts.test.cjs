@@ -5,28 +5,10 @@
  * Make sure to inspect the output below.  Do not ignore changes!
  */
 'use strict'
-exports[`test/commands/uninstall.ts > TAP > should reify uninstalling a new dependency 1`] = `
-Object {
-  "actual": "actual.load result",
-  "graph": "buildideal result removes 0 new package(s)",
-  "loadManifests": true,
-  "monorepo": undefined,
-  "packageInfo": PackageInfoClient {
-    "monorepo": undefined,
-    "options": Object {
-      "packageJson": PackageJson {},
-      projectRoot: #
-      "scurry": PathScurry {},
-    },
-    "packageJson": PackageJson {},
-  },
-  "packageJson": PackageJson {},
-  projectRoot: #
-  "remove": Map {
-    "file·." => Set {},
-  },
-  "scurry": PathScurry {},
-}
+exports[`test/commands/uninstall.ts > TAP > should uninstall a dependency 1`] = `
+parse remove args from abbrev@2
+uninstall
+
 `
 
 exports[`test/commands/uninstall.ts > TAP > usage 1`] = `
