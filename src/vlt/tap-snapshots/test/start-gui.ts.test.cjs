@@ -10,19 +10,6 @@ install
 
 `
 
-exports[`test/start-gui.ts > TAP > e2e server test > /select-project > should copy all files to tmp directory 1`] = `
-Array [
-  "dashboard.json",
-  "favicon.ico",
-  "graph.json",
-  "icons",
-  "index.html",
-  "index.js",
-  "index.js.map",
-  "main.css",
-]
-`
-
 exports[`test/start-gui.ts > TAP > e2e server test > /select-project > should log the server start message 1`] = `
 Array [
   "⚡️ vlt GUI running at http://localhost:8017",
@@ -104,17 +91,6 @@ exports[`test/start-gui.ts > TAP > e2e server test > /select-project > should wr
     }
   }
 }
-`
-
-exports[`test/start-gui.ts > TAP > no data to be found > should not create json files if no data was found 1`] = `
-Array [
-  "favicon.ico",
-  "icons",
-  "index.html",
-  "index.js",
-  "index.js.map",
-  "main.css",
-]
 `
 
 exports[`test/start-gui.ts > TAP > parseInstallArgs > multiple item added to root and workspace 1`] = `
@@ -402,8 +378,8 @@ exports[`test/start-gui.ts > TAP > starts gui data and server > should copy all 
 Array [
   "dashboard.json",
   "favicon.ico",
+  "fonts",
   "graph.json",
-  "icons",
   "index.html",
   "index.js",
   "index.js.map",
