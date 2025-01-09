@@ -1,5 +1,5 @@
-const isIterable = <T>(o: unknown): o is Iterable<T> =>
-  !!o && typeof o === 'object' && Symbol.iterator in o
+import { deleteHeader } from './delete-header.js'
+import { isIterable } from './is-iterable.js'
 
 // this does some rude things with types, but not much way around it,
 // since the opts.headers type is so loosey goosey to begin with.
@@ -12,8 +12,10 @@ export const addHeader = <
 >(
   headers: H | null | undefined,
   key: string,
-  value: string,
+  value?: string,
 ): H => {
+  if (!value) return deleteHeader(headers, key)
+
   if (!headers) return { [key]: value } as H
   if (Array.isArray(headers)) {
     if (!headers.length) return [[key, value]] as unknown as H

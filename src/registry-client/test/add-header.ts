@@ -26,3 +26,7 @@ t.strictSame(
     [k, v],
   ],
 )
+
+// adding a falsy value deletes it
+t.strictSame(addHeader({ x: 'y' }, 'x', ''), {})
+t.strictSame(addHeader({ x: 'y' }, 'x'), {})
