@@ -1,6 +1,9 @@
 import t from 'tap'
 import { joinDepIDTuple } from '@vltpkg/dep-id'
-import { type BuildIdealOptions } from '@vltpkg/graph'
+import {
+  type BuildIdealOptions,
+  type RemoveImportersDependenciesMap,
+} from '@vltpkg/graph'
 import { type LoadedConfig } from '../src/config/index.js'
 
 t.cleanSnapshot = s =>
@@ -63,7 +66,9 @@ t.test('uninstall', async t => {
     conf: {
       options,
     } as unknown as LoadedConfig,
-    remove: new Map([[rootDepID, new Set(['abbrev'])]]),
+    remove: new Map([
+      [rootDepID, new Set(['abbrev'])],
+    ]) as RemoveImportersDependenciesMap,
   })
 
   t.matchSnapshot(log, 'should call build removing a dependency')

@@ -14,8 +14,8 @@ exports[`test/start-gui.ts > TAP > e2e server test > /select-project > should co
 Array [
   "dashboard.json",
   "favicon.ico",
-  "fonts",
   "graph.json",
+  "icons",
   "index.html",
   "index.js",
   "index.js.map",
@@ -109,7 +109,7 @@ exports[`test/start-gui.ts > TAP > e2e server test > /select-project > should wr
 exports[`test/start-gui.ts > TAP > no data to be found > should not create json files if no data was found 1`] = `
 Array [
   "favicon.ico",
-  "fonts",
+  "icons",
   "index.html",
   "index.js",
   "index.js.map",
@@ -119,7 +119,7 @@ Array [
 
 exports[`test/start-gui.ts > TAP > parseInstallArgs > multiple item added to root and workspace 1`] = `
 Object {
-  "add": Map {
+  "add": AddImportersDependenciesMapImpl {
     "file·." => Map {
       "abbrev" => Object {
         "spec": Spec {
@@ -275,7 +275,7 @@ Object {
 
 exports[`test/start-gui.ts > TAP > parseInstallArgs > no item added to root 1`] = `
 Object {
-  "add": Map {
+  "add": AddImportersDependenciesMapImpl {
     "file·." => Map {},
   },
   "conf": Object {},
@@ -284,7 +284,7 @@ Object {
 
 exports[`test/start-gui.ts > TAP > parseInstallArgs > single item added to root 1`] = `
 Object {
-  "add": Map {
+  "add": AddImportersDependenciesMapImpl {
     "file·." => Map {
       "abbrev" => Object {
         "spec": Spec {
@@ -342,7 +342,7 @@ Object {
 
 exports[`test/start-gui.ts > TAP > parseInstallArgs > single item added to workspace 1`] = `
 Object {
-  "add": Map {
+  "add": AddImportersDependenciesMapImpl {
     "workspace·packages§a" => Map {
       "abbrev" => Object {
         "spec": Spec {
@@ -402,8 +402,8 @@ exports[`test/start-gui.ts > TAP > starts gui data and server > should copy all 
 Array [
   "dashboard.json",
   "favicon.ico",
-  "fonts",
   "graph.json",
+  "icons",
   "index.html",
   "index.js",
   "index.js.map",
