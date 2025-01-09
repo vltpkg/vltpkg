@@ -7,6 +7,10 @@ import t from 'tap'
 import { build } from '../../src/ideal/build.js'
 import { objectLikeOutput } from '../../src/visualization/object-like-output.js'
 import { type LockfileEdgeKey } from '../../src/index.js'
+import {
+  type AddImportersDependenciesMap,
+  type RemoveImportersDependenciesMap,
+} from '../../src/dependencies.js'
 
 const edgeKey = (from: DepIDTuple, to: string): LockfileEdgeKey =>
   `${joinDepIDTuple(from)} ${to}`
@@ -43,8 +47,10 @@ t.test('build from lockfile', async t => {
     packageJson: new PackageJson(),
     packageInfo: new PackageInfoClient({ projectRoot }),
     projectRoot,
-    add: new Map([[joinDepIDTuple(['file', '.']), new Map()]]),
-    remove: new Map(),
+    add: new Map([
+      [joinDepIDTuple(['file', '.']), new Map()],
+    ]) as AddImportersDependenciesMap,
+    remove: new Map() as RemoveImportersDependenciesMap,
   })
 
   t.matchSnapshot(

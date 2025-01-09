@@ -32,6 +32,10 @@ import {
   fixtureManifest,
   mockPackageInfo,
 } from '../fixtures/reify.js'
+import {
+  type AddImportersDependenciesMap,
+  type RemoveImportersDependenciesMap,
+} from '../../src/dependencies.js'
 
 t.test('super basic reification', async t => {
   const dir = t.testdir({
@@ -50,12 +54,13 @@ t.test('super basic reification', async t => {
     },
   })
   const projectRoot = resolve(dir, 'project')
+  const packageJson = new PackageJson()
   const graph = await ideal.build({
     projectRoot,
     packageInfo: mockPackageInfo,
     monorepo: Monorepo.maybeLoad(projectRoot),
     scurry: new PathScurry(projectRoot),
-    packageJson: new PackageJson(),
+    packageJson,
   })
   await reify({
     projectRoot,
@@ -107,12 +112,8 @@ t.test('super basic reification', async t => {
 
   // decide we want underscore instead, sorry jdd
 
-  graph.mainImporter.manifest = {
-    name: 'x',
-    version: '1.0.0',
-    dependencies: {
-      underscore: '1',
-    },
+  if (graph.mainImporter.manifest?.dependencies) {
+    graph.mainImporter.manifest.dependencies.underscore = '1'
   }
   graph.mainImporter.edgesOut.delete('lodash')
   graph.removeNode(
@@ -160,6 +161,72 @@ t.test('super basic reification', async t => {
   )
   const us = await import(String(pathToFileURL(usPath)))
   t.equal(us.default.VERSION, '1.13.7')
+
+  // verify that updating package.json contents works as intended
+  const abbrevNode = graph.addNode(
+    joinDepIDTuple(['registry', '', 'abbrev@2.0.0']),
+    { name: 'abbrev', version: '2.0.0' },
+    Spec.parse('abbrev@^2.0.0'),
+    'abbrev',
+    '2.0.0',
+  )
+  graph.addEdge(
+    'prod',
+    Spec.parse('abbrev@^2.0.0'),
+    graph.mainImporter,
+    graph.nodes.get(joinDepIDTuple(['registry', '', 'abbrev@2.0.0'])),
+  )
+  const add = new Map([
+    [
+      joinDepIDTuple(['file', '.']),
+      new Map([
+        [
+          'abbrev',
+          { type: 'prod', spec: Spec.parse('abbrev', '^2.0.0') },
+        ],
+      ]),
+    ],
+  ]) as AddImportersDependenciesMap
+  add.modifiedDependencies = true
+  await reify({
+    add,
+    projectRoot,
+    packageInfo: mockPackageInfo,
+    monorepo: Monorepo.maybeLoad(projectRoot),
+    scurry: new PathScurry(projectRoot),
+    packageJson,
+    graph,
+  })
+  t.match(
+    JSON.parse(
+      readFileSync(resolve(projectRoot, 'package.json'), 'utf8'),
+    ).dependencies,
+    { abbrev: '^2.0.0' },
+    'added abbrev to package.json',
+  )
+
+  // now remove it just for fun and coverage
+  graph.removeNode(abbrevNode)
+  const remove = new Map([
+    [joinDepIDTuple(['file', '.']), new Set(['abbrev'])],
+  ]) as RemoveImportersDependenciesMap
+  remove.modifiedDependencies = true
+  await reify({
+    remove,
+    projectRoot,
+    packageInfo: mockPackageInfo,
+    monorepo: Monorepo.maybeLoad(projectRoot),
+    scurry: new PathScurry(projectRoot),
+    packageJson,
+    graph,
+  })
+  t.match(
+    JSON.parse(
+      readFileSync(resolve(projectRoot, 'package.json'), 'utf8'),
+    ).dependencies,
+    { underscore: '1' },
+    'removed abbrev to package.json',
+  )
 })
 
 t.test('reify with a bin', async t => {
