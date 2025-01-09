@@ -6,7 +6,10 @@ import { inspect } from 'node:util'
 import { PathScurry } from 'path-scurry'
 import t from 'tap'
 import { load } from '../../src/actual/load.js'
-import { asDependency } from '../../src/dependencies.js'
+import {
+  asDependency,
+  type AddImportersDependenciesMap,
+} from '../../src/dependencies.js'
 import { Graph } from '../../src/graph.js'
 import { removeSatisfiedSpecs } from '../../src/ideal/remove-satisfied-specs.js'
 
@@ -21,7 +24,7 @@ t.test('empty graph and add parameters', async t => {
     mainManifest: {},
     projectRoot: t.testdirName,
   })
-  const add = new Map()
+  const add = new Map() as AddImportersDependenciesMap
   removeSatisfiedSpecs({ add, graph })
   t.matchSnapshot(add, 'should return an empty map')
 })
@@ -76,7 +79,7 @@ t.test('graph with an actual node', async t => {
           }),
         ),
       ],
-    ])
+    ]) as AddImportersDependenciesMap
     removeSatisfiedSpecs({ add, graph })
     t.matchSnapshot(add, 'should return an empty map')
   })
@@ -100,7 +103,7 @@ t.test('graph with an actual node', async t => {
           }),
         ),
       ],
-    ])
+    ]) as AddImportersDependenciesMap
     removeSatisfiedSpecs({ add, graph })
     t.matchSnapshot(
       inspect(add, { depth: Infinity }),
@@ -127,7 +130,7 @@ t.test('graph with an actual node', async t => {
           }),
         ),
       ],
-    ])
+    ]) as AddImportersDependenciesMap
     removeSatisfiedSpecs({ add, graph })
     t.matchSnapshot(
       inspect(add, { depth: Infinity }),
@@ -154,7 +157,7 @@ t.test('graph with an actual node', async t => {
           }),
         ),
       ],
-    ])
+    ]) as AddImportersDependenciesMap
     removeSatisfiedSpecs({ add, graph })
     t.matchSnapshot(
       inspect(add, { depth: Infinity }),
@@ -180,7 +183,7 @@ t.test('graph with an actual node', async t => {
           }),
         ),
       ],
-    ])
+    ]) as AddImportersDependenciesMap
     t.throws(
       () => removeSatisfiedSpecs({ add, graph }),
       /Referred importer node id could not be found/,

@@ -27,6 +27,14 @@ export const buildIdealFromStartingGraph = async (
   // are going to be pruned from the resulting object.
   const importerSpecs = getImporterSpecs(options)
 
+  // merge modifiedDependencies flags
+  options.add.modifiedDependencies =
+    options.add.modifiedDependencies ||
+    importerSpecs.add.modifiedDependencies
+  options.remove.modifiedDependencies =
+    options.remove.modifiedDependencies ||
+    importerSpecs.remove.modifiedDependencies
+
   // merge values found on importer specs with
   // user-provided values from `options.add`
   for (const [importerId, deps] of importerSpecs.add) {

@@ -6,7 +6,11 @@ import { inspect } from 'node:util'
 import { PathScurry } from 'path-scurry'
 import t from 'tap'
 import { load } from '../../src/actual/load.js'
-import { asDependency } from '../../src/dependencies.js'
+import {
+  asDependency,
+  type AddImportersDependenciesMap,
+  type RemoveImportersDependenciesMap,
+} from '../../src/dependencies.js'
 import { Graph } from '../../src/graph.js'
 import { getImporterSpecs } from '../../src/ideal/get-importer-specs.js'
 
@@ -22,8 +26,8 @@ t.test('empty graph and nothing to add', async t => {
     mainManifest: {},
     monorepo: Monorepo.maybeLoad(t.testdirName),
   })
-  const add = new Map()
-  const remove = new Map()
+  const add = new Map() as AddImportersDependenciesMap
+  const remove = new Map() as RemoveImportersDependenciesMap
   const specs = getImporterSpecs({ add, graph, remove })
   t.strictSame(specs.add.size, 0, 'should have no items to add')
 })
@@ -55,8 +59,8 @@ t.test('empty graph with workspaces and nothing to add', async t => {
     scurry: new PathScurry(projectRoot),
     packageJson: new PackageJson(),
   })
-  const add = new Map()
-  const remove = new Map()
+  const add = new Map() as AddImportersDependenciesMap
+  const remove = new Map() as RemoveImportersDependenciesMap
   const specs = getImporterSpecs({ add, graph, remove })
   t.matchSnapshot(specs.add, 'should have no items to add')
 })
@@ -83,8 +87,8 @@ t.test('empty graph and something to add', async t => {
         }),
       ),
     ],
-  ])
-  const remove = new Map()
+  ]) as AddImportersDependenciesMap
+  const remove = new Map() as RemoveImportersDependenciesMap
   const specs = getImporterSpecs({ add, graph, remove })
   t.matchSnapshot(
     inspect(specs.add, { depth: Infinity }),
@@ -111,8 +115,8 @@ t.test('graph specs and nothing to add', async t => {
     scurry: new PathScurry(projectRoot),
     packageJson: new PackageJson(),
   })
-  const add = new Map()
-  const remove = new Map()
+  const add = new Map() as AddImportersDependenciesMap
+  const remove = new Map() as RemoveImportersDependenciesMap
   const specs = getImporterSpecs({ add, graph, remove })
   t.matchSnapshot(
     inspect(specs.add, { depth: Infinity }),
@@ -152,8 +156,8 @@ t.test('graph specs and new things to add', async t => {
         }),
       ),
     ],
-  ])
-  const remove = new Map()
+  ]) as AddImportersDependenciesMap
+  const remove = new Map() as RemoveImportersDependenciesMap
   const specs = getImporterSpecs({ add, graph, remove })
   t.matchSnapshot(
     inspect(specs.add, { depth: Infinity }),
@@ -189,8 +193,8 @@ t.test('graph specs and something to update', async t => {
         }),
       ),
     ],
-  ])
-  const remove = new Map()
+  ]) as AddImportersDependenciesMap
+  const remove = new Map() as RemoveImportersDependenciesMap
   const specs = getImporterSpecs({ add, graph, remove })
   t.matchSnapshot(
     inspect(specs.add, { depth: Infinity }),
@@ -274,8 +278,8 @@ t.test(
           }),
         ),
       ],
-    ])
-    const remove = new Map()
+    ]) as AddImportersDependenciesMap
+    const remove = new Map() as RemoveImportersDependenciesMap
     const specs = getImporterSpecs({ add, graph, remove })
     t.matchSnapshot(
       inspect(specs.add, { depth: Infinity }),
@@ -303,8 +307,8 @@ t.test('adding to a non existing importer', async t => {
         }),
       ),
     ],
-  ])
-  const remove = new Map()
+  ]) as AddImportersDependenciesMap
+  const remove = new Map() as RemoveImportersDependenciesMap
   t.throws(
     () => getImporterSpecs({ add, graph, remove }),
     /Not an importer/,
@@ -364,8 +368,8 @@ t.test('graph specs and something to remove', async t => {
     scurry: new PathScurry(projectRoot),
     packageJson: new PackageJson(),
   })
-  const add = new Map()
-  const remove = new Map()
+  const add = new Map() as AddImportersDependenciesMap
+  const remove = new Map() as RemoveImportersDependenciesMap
   const specs = getImporterSpecs({ add, graph, remove })
   t.matchSnapshot(
     inspect(specs, { depth: Infinity }),
@@ -453,10 +457,10 @@ t.test(
       packageJson: new PackageJson(),
       monorepo: Monorepo.maybeLoad(projectRoot),
     })
-    const add = new Map()
+    const add = new Map() as AddImportersDependenciesMap
     const remove = new Map([
       [joinDepIDTuple(['workspace', 'packages/b']), new Set(['a'])],
-    ])
+    ]) as RemoveImportersDependenciesMap
     const specs = getImporterSpecs({ add, graph, remove })
     t.matchSnapshot(
       inspect(specs, { depth: Infinity }),

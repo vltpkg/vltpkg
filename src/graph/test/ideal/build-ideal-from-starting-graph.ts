@@ -22,6 +22,10 @@ import {
 } from '../../src/index.js'
 import { load as loadVirtual } from '../../src/lockfile/load.js'
 import { objectLikeOutput } from '../../src/visualization/object-like-output.js'
+import {
+  type AddImportersDependenciesMap,
+  type RemoveImportersDependenciesMap,
+} from '../../src/dependencies.js'
 
 const edgeKey = (from: DepIDTuple, to: string): LockfileEdgeKey =>
   `${joinDepIDTuple(from)} ${to}`
@@ -165,10 +169,10 @@ t.test('build from a virtual graph', async t => {
           ],
         ]),
       ],
-    ]),
+    ]) as AddImportersDependenciesMap,
     remove: new Map([
       [joinDepIDTuple(['file', '.']), new Set(['bar'])],
-    ]),
+    ]) as RemoveImportersDependenciesMap,
   })
 
   t.matchSnapshot(objectLikeOutput(graph))
@@ -211,8 +215,8 @@ t.test('add from manifest file only', async t => {
     packageInfo,
     scurry: new PathScurry(projectRoot),
     graph: virtual,
-    add: new Map(),
-    remove: new Map(),
+    add: new Map() as AddImportersDependenciesMap,
+    remove: new Map() as RemoveImportersDependenciesMap,
   })
 
   t.matchSnapshot(objectLikeOutput(graph))
@@ -277,8 +281,8 @@ t.test('remove from manifest file only', async t => {
     packageInfo,
     scurry: new PathScurry(projectRoot),
     graph: virtual,
-    add: new Map(),
-    remove: new Map(),
+    add: new Map() as AddImportersDependenciesMap,
+    remove: new Map() as RemoveImportersDependenciesMap,
   })
 
   t.matchSnapshot(objectLikeOutput(graph))
@@ -543,10 +547,10 @@ t.test('build from an actual graph', async t => {
           ],
         ]),
       ],
-    ]),
+    ]) as AddImportersDependenciesMap,
     remove: new Map([
       [joinDepIDTuple(['file', '.']), new Set(['bar'])],
-    ]),
+    ]) as RemoveImportersDependenciesMap,
   })
 
   t.matchSnapshot(objectLikeOutput(graph))
