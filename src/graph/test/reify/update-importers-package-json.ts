@@ -6,6 +6,8 @@ import { Graph } from '../../src/graph.js'
 import {
   type Dependency,
   asDependency,
+  type AddImportersDependenciesMap,
+  type RemoveImportersDependenciesMap,
 } from '../../src/dependencies.js'
 import { updatePackageJson } from '../../src/reify/update-importers-package-json.js'
 
@@ -44,7 +46,7 @@ t.test('updatePackageJson', async t => {
         ],
       ]),
     ],
-  ])
+  ]) as AddImportersDependenciesMap
 
   // spies on packageJson.save method to assert behavior
   const retrieveManifestResult = t.capture(packageJson, 'save').args
@@ -114,7 +116,7 @@ t.test('updatePackageJson', async t => {
                 ],
               ]),
             ],
-          ]),
+          ]) as AddImportersDependenciesMap,
         })(),
       /Failed to retrieve dependency type/,
       'should throw a bad dependency type error',
@@ -166,7 +168,7 @@ t.test('updatePackageJson', async t => {
             ],
           ]),
         ],
-      ]),
+      ]) as AddImportersDependenciesMap,
     })()
 
     const res = retrieveManifestResult()
@@ -206,7 +208,7 @@ t.test('updatePackageJson', async t => {
             ],
           ]),
         ],
-      ]),
+      ]) as AddImportersDependenciesMap,
     })()
 
     const res = retrieveManifestResult()
@@ -246,7 +248,7 @@ t.test('updatePackageJson', async t => {
             ],
           ]),
         ],
-      ]),
+      ]) as AddImportersDependenciesMap,
     })()
 
     const res = retrieveManifestResult()
@@ -262,7 +264,9 @@ t.test('updatePackageJson', async t => {
     updatePackageJson({
       packageJson,
       graph,
-      remove: new Map([[rootID, new Set(['foo'])]]),
+      remove: new Map([
+        [rootID, new Set(['foo'])],
+      ]) as RemoveImportersDependenciesMap,
     })()
 
     const res = retrieveManifestResult()
@@ -283,7 +287,9 @@ t.test('updatePackageJson', async t => {
 
   await t.test('no dependencies listed on add map', async t => {
     updatePackageJson({
-      add: new Map([[rootID, new Map()]]),
+      add: new Map([
+        [rootID, new Map()],
+      ]) as AddImportersDependenciesMap,
       packageJson,
       graph,
     })()
@@ -320,7 +326,7 @@ t.test('updatePackageJson', async t => {
             ],
           ]),
         ],
-      ]),
+      ]) as AddImportersDependenciesMap,
     })()
 
     const res = retrieveManifestResult()
