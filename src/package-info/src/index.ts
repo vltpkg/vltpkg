@@ -222,7 +222,7 @@ export class PackageInfoClient {
             spec,
             options,
             'tar unpack failed',
-            { cause: er as Error },
+            { cause: er },
           )
         }
         return r
@@ -247,7 +247,7 @@ export class PackageInfoClient {
               spec,
               options,
               'tar unpack failed',
-              { cause: er as Error },
+              { cause: er },
             )
           }
         } else if (st.isDirectory()) {
@@ -480,7 +480,7 @@ export class PackageInfoClient {
               s,
               options,
               'tar unpack failed',
-              { cause: er as Error },
+              { cause: er },
             )
           }
           return this.packageJson.read(dir)
@@ -504,7 +504,7 @@ export class PackageInfoClient {
               s,
               options,
               'tar unpack failed',
-              { cause: er as Error },
+              { cause: er },
             )
           }
           return this.packageJson.read(dir)

@@ -4,6 +4,7 @@ import {
   type CliCommandResult,
   type LoadedConfig,
 } from './types.js'
+import { isErrorRoot } from '@vltpkg/error-cause'
 
 // TODO: make these have log levels etc
 // eslint-disable-next-line no-console
@@ -53,18 +54,16 @@ export const outputError = (
   { usage }: { usage: string },
 ) => {
   process.exitCode ||= 1
-  if (
-    e instanceof Error &&
-    e.cause &&
-    typeof e.cause === 'object' &&
-    'code' in e.cause
-  ) {
-    if (e.cause.code === 'EUSAGE') {
-      stderr(usage)
-      stderr(`Error: ${e.message}`)
-      return
+  if (isErrorRoot(e)) {
+    switch (e.cause.code) {
+      case 'EUSAGE': {
+        stderr(usage)
+        stderr(`Error: ${e.message}`)
+        return
+      }
     }
   }
+
   // TODO: handle more error codes and causes
   stderr(e)
 }

@@ -21,7 +21,7 @@ const loadCommand = async (
   } catch (e) {
     throw error('Command not implemented', {
       found: command,
-      cause: e as Error,
+      cause: e,
     })
   }
   /* c8 ignore stop */

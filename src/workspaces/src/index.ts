@@ -191,7 +191,7 @@ export class Monorepo {
     } catch (er) {
       throw error('Not in a monorepo, no vlt-workspaces.json found', {
         path: this.projectRoot,
-        cause: er as Error,
+        cause: er,
       })
     }
     let parsed: unknown
@@ -200,7 +200,7 @@ export class Monorepo {
     } catch (er) {
       throw error('Invalid vlt-workspaces.json file', {
         path: this.projectRoot,
-        cause: er as Error,
+        cause: er,
       })
     }
     this.#config = asWSConfig(parsed, file)

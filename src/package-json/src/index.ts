@@ -50,7 +50,7 @@ export class PackageJson {
     } catch (err) {
       const ec: ErrorCauseObject = {
         path: filename,
-        cause: err as Error,
+        cause: err,
       }
       this.#errCache.set(dir, ec)
       throw fail(ec)
@@ -75,7 +75,7 @@ export class PackageJson {
         'Could not write package.json file',
         {
           path: filename,
-          cause: err as Error,
+          cause: err,
         },
         this.write,
       )
