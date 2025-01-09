@@ -108,7 +108,7 @@ const addOrRemoveDeps = (
       dependencies[name] =
         (
           nodeType === 'registry' &&
-          (!dep.spec.semver || dep.spec.range?.isSingle)
+          (!dep.spec.semver || !dep.spec.range)
         ) ?
           `${SAVE_PREFIX}${node.version}`
         : dep.spec.bareSpec
