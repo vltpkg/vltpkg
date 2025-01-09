@@ -68,18 +68,27 @@ export type Dependency = {
  * keys are the dependency names and values are {@link Dependency}. This
  * structure represents dependencies that need to be added to the importer
  * represented by {@link DepID}.
+ *
+ * The `modifiedDependencies` property can be used to indicate that there
+ * are added dependencies to any of the importer nodes.
  */
 export type AddImportersDependenciesMap = Map<
   DepID,
   Map<string, Dependency>
->
+> & { modifiedDependencies: boolean }
 
 /**
  * A `Map` object representing nodes to be removed from the ideal graph.
  * Each {@link DepID} key represents an importer node and the `Set` of
  * dependency names to be removed from its dependency list.
+ *
+ * The `modifiedDependencies` property can be used to indicate that there
+ * are added dependencies to any of the importer nodes.
  */
-export type RemoveImportersDependenciesMap = Map<DepID, Set<string>>
+export type RemoveImportersDependenciesMap = Map<
+  DepID,
+  Set<string>
+> & { modifiedDependencies: boolean }
 
 const isObj = (o: unknown): o is Record<string, unknown> =>
   !!o && typeof o === 'object'

@@ -32,6 +32,20 @@ const hasDepName = (importer: Node, edge: Edge): boolean => {
   return false
 }
 
+class AddImportersDependenciesMapImpl
+  extends Map
+  implements AddImportersDependenciesMap
+{
+  modifiedDependencies = false
+}
+
+class RemoveImportersDependenciesMapImpl
+  extends Map
+  implements RemoveImportersDependenciesMap
+{
+  modifiedDependencies = false
+}
+
 /**
  * Given a {@link Graph} and a list of {@link Dependency}, merges the
  * dependencies info found in the graph importers and returns the add & remove
@@ -42,8 +56,10 @@ export const getImporterSpecs = ({
   graph,
   remove,
 }: GetImporterSpecsOptions) => {
-  const addResult: AddImportersDependenciesMap = new Map()
-  const removeResult: RemoveImportersDependenciesMap = new Map()
+  const addResult: AddImportersDependenciesMap =
+    new AddImportersDependenciesMapImpl()
+  const removeResult: RemoveImportersDependenciesMap =
+    new RemoveImportersDependenciesMapImpl()
 
   // traverse the list of importers in the starting graph
   for (const importer of graph.importers) {
@@ -56,6 +72,7 @@ export const getImporterSpecs = ({
     for (const edge of importer.edgesOut.values()) {
       if (!hasDepName(importer, edge)) {
         removeDeps.add(edge.name)
+        removeResult.modifiedDependencies = true
       }
     }
     // if a dependency is listed in the manifest but not in the graph,
@@ -113,6 +130,15 @@ export const getImporterSpecs = ({
     add: addResult,
     graph,
   })
+
+  // set the modifiedDependencies flag if any
+  // of the importers have modified dependencies
+  for (const addDeps of addResult.values()) {
+    if (addDeps.size > 0) {
+      addResult.modifiedDependencies = true
+      break
+    }
+  }
 
   return {
     add: addResult,
