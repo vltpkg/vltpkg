@@ -17,6 +17,8 @@ export const install = async ({ add, conf }: InstallOptions) => {
     conf.options.projectRoot,
   )
 
+  console.log('install build')
+
   const graph = await ideal.build({
     ...conf.options,
     add,
@@ -37,4 +39,6 @@ export const install = async ({ add, conf }: InstallOptions) => {
     graph,
     loadManifests: true,
   })
+
+  return { graph }
 }
