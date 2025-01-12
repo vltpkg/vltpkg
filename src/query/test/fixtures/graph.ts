@@ -53,6 +53,7 @@ export const newNode =
     resolved: undefined,
     dev: false,
     optional: false,
+    setResolved() {},
   })
 const newEdge = (
   from: NodeLike,
