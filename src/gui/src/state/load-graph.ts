@@ -119,6 +119,7 @@ export const load = (transfered: TransferData): LoadResponse => {
         projectRoot: graph.projectRoot,
         dev: false,
         optional: false,
+        setResolved() {},
       }
       this.nodes.set(node.id, node)
       return node

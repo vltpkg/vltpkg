@@ -17,6 +17,7 @@ exports[`load graph 1`] = `
         projectRoot: '/path/to/project',
         dev: false,
         optional: false,
+        setResolved: [Function: setResolved],
         location: '.',
         integrity: undefined,
         resolved: undefined
@@ -37,6 +38,7 @@ exports[`load graph 1`] = `
           projectRoot: '/path/to/project',
           dev: false,
           optional: false,
+          setResolved: [Function: setResolved],
           location: '.',
           integrity: undefined,
           resolved: undefined
@@ -56,6 +58,7 @@ exports[`load graph 1`] = `
           projectRoot: '/path/to/project',
           dev: true,
           optional: false,
+          setResolved: [Function: setResolved],
           integrity: 'sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ==',
           resolved: undefined,
           location: 'node_modules/.pnpm/foo@1.0.0/node_modules/foo'
@@ -76,6 +79,7 @@ exports[`load graph 1`] = `
           projectRoot: '/path/to/project',
           dev: false,
           optional: false,
+          setResolved: [Function: setResolved],
           location: '.',
           integrity: undefined,
           resolved: undefined
@@ -95,6 +99,7 @@ exports[`load graph 1`] = `
           projectRoot: '/path/to/project',
           dev: false,
           optional: true,
+          setResolved: [Function: setResolved],
           integrity: undefined,
           resolved: 'http://example.com/baz.tgz'
         },
@@ -114,6 +119,7 @@ exports[`load graph 1`] = `
           projectRoot: '/path/to/project',
           dev: true,
           optional: false,
+          setResolved: [Function: setResolved],
           integrity: 'sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ==',
           resolved: undefined,
           location: 'node_modules/.pnpm/foo@1.0.0/node_modules/foo'
@@ -133,6 +139,7 @@ exports[`load graph 1`] = `
           projectRoot: '/path/to/project',
           dev: true,
           optional: true,
+          setResolved: [Function: setResolved],
           integrity: undefined,
           resolved: undefined
         },
@@ -153,6 +160,7 @@ exports[`load graph 1`] = `
         projectRoot: '/path/to/project',
         dev: false,
         optional: false,
+        setResolved: [Function: setResolved],
         location: '.',
         integrity: undefined,
         resolved: undefined
@@ -170,6 +178,7 @@ exports[`load graph 1`] = `
         projectRoot: '/path/to/project',
         dev: true,
         optional: true,
+        setResolved: [Function: setResolved],
         integrity: undefined,
         resolved: undefined
       },
@@ -186,6 +195,7 @@ exports[`load graph 1`] = `
         projectRoot: '/path/to/project',
         dev: true,
         optional: false,
+        setResolved: [Function: setResolved],
         integrity: 'sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ==',
         resolved: undefined,
         location: 'node_modules/.pnpm/foo@1.0.0/node_modules/foo'
@@ -203,6 +213,7 @@ exports[`load graph 1`] = `
         projectRoot: '/path/to/project',
         dev: false,
         optional: true,
+        setResolved: [Function: setResolved],
         integrity: undefined,
         resolved: 'http://example.com/baz.tgz'
       }
@@ -238,6 +249,7 @@ exports[`load graph 1`] = `
       projectRoot: '/path/to/project',
       dev: false,
       optional: false,
+      setResolved: [Function: setResolved],
       location: '.',
       integrity: undefined,
       resolved: undefined
