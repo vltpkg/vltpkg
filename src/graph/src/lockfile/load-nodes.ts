@@ -41,6 +41,7 @@ export const loadNodes = (
     node.optional = optional
     node.integrity = integrity ?? undefined
     node.resolved = resolved ?? undefined
+    if (!node.resolved) node.setResolved()
     if (location) node.location = location
   }
 }

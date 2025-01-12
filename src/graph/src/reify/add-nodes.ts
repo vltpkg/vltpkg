@@ -27,6 +27,7 @@ export const addNodes = (
     const from = scurry.resolve('')
     const spec = hydrate(node.id, manifest.name, options)
     const onErr = optionalFail(diff, node)
+    const { integrity, resolved } = node
     // if it's optional, and we know it isn't for this platform, or it's
     // deprecated, don't install it. if it's not optional, try our best.
     if (
@@ -43,15 +44,17 @@ export const addNodes = (
       continue
     }
     actions.push(() =>
-      remover
-        .rm(target)
-        .then(() =>
-          onErr ?
-            packageInfo
-              .extract(spec, target, { from })
-              .then(x => x, onErr)
-          : packageInfo.extract(spec, target, { from }),
-        ),
+      remover.rm(target).then(() =>
+        onErr ?
+          packageInfo
+            .extract(spec, target, { from, integrity, resolved })
+            .then(x => x, onErr)
+        : packageInfo.extract(spec, target, {
+            from,
+            integrity,
+            resolved,
+          }),
+      ),
     )
   }
   return actions
