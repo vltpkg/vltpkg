@@ -49,4 +49,5 @@ export type NodeLike = {
   dev: boolean
   optional: boolean
   toString(): string
+  setResolved(): void
 }
