@@ -1,6 +1,6 @@
 {
-  "name": "@vltpkg/registry-client",
-  "description": "Fetch package artifacts and metadata from registries",
+  "name": "@vltpkg/url-open",
+  "description": "Open URLs using the system's default web browser",
   "version": "0.0.0-0.1730239248325",
   "tshy": {
     "selfLink": false,
@@ -12,22 +12,11 @@
     ],
     "exports": {
       "./package.json": "./package.json",
-      ".": "./src/index.ts",
-      "./cache-entry": "./src/cache-entry.ts"
+      ".": "./src/index.ts"
     }
   },
   "dependencies": {
-    "@vltpkg/cache": "workspace:*",
-    "@vltpkg/cache-unzip": "workspace:*",
-    "@vltpkg/error-cause": "workspace:*",
-    "@vltpkg/keychain": "workspace:*",
-    "@vltpkg/promise-spawn": "workspace:*",
-    "@vltpkg/types": "workspace:*",
-    "@vltpkg/url-open": "workspace:*",
-    "@vltpkg/xdg": "workspace:*",
-    "cache-control-parser": "^2.0.5",
-    "package-json-from-dist": "catalog:",
-    "undici": "^6.20.0"
+    "@vltpkg/promise-spawn": "workspace:*"
   },
   "devDependencies": {
     "@eslint/js": "catalog:",
@@ -68,13 +57,6 @@
         "@vltpkg/source": "./src/index.ts",
         "types": "./dist/esm/index.d.ts",
         "default": "./dist/esm/index.js"
-      }
-    },
-    "./cache-entry": {
-      "import": {
-        "@vltpkg/source": "./src/cache-entry.ts",
-        "types": "./dist/esm/cache-entry.d.ts",
-        "default": "./dist/esm/cache-entry.js"
       }
     }
   },
