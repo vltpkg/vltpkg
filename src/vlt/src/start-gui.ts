@@ -1,3 +1,15 @@
+import { asDepID } from '@vltpkg/dep-id'
+import {
+  actual,
+  asDependency,
+  type AddImportersDependenciesMap,
+  type Dependency,
+  type DependencyTypeShort,
+  type RemoveImportersDependenciesMap,
+} from '@vltpkg/graph'
+import { Spec } from '@vltpkg/spec'
+import { type Manifest } from '@vltpkg/types'
+import { urlOpen } from '@vltpkg/url-open'
 import {
   cpSync,
   mkdirSync,
@@ -5,32 +17,20 @@ import {
   rmSync,
   writeFileSync,
 } from 'node:fs'
-import { type Server, createServer } from 'node:http'
-import { resolve } from 'node:path'
+import { createServer, type Server } from 'node:http'
 import { tmpdir } from 'node:os'
-import {
-  type Dependency,
-  type DependencyTypeShort,
-  actual,
-  asDependency,
-  type AddImportersDependenciesMap,
-  type RemoveImportersDependenciesMap,
-} from '@vltpkg/graph'
-import handler from 'serve-handler'
-import opener from 'opener'
+import { resolve } from 'node:path'
 import { loadPackageJson } from 'package-json-from-dist'
-import { type PathScurry, type PathBase } from 'path-scurry'
-import { readProjectFolders } from './read-project-folders.js'
-import { asDepID } from '@vltpkg/dep-id'
-import { type Manifest } from '@vltpkg/types'
+import { type PathBase, type PathScurry } from 'path-scurry'
+import handler from 'serve-handler'
 import {
   type ConfigOptions,
   type LoadedConfig,
 } from './config/index.js'
+import { install, type InstallOptions } from './install.js'
 import { stderr, stdout } from './output.js'
-import { type InstallOptions, install } from './install.js'
-import { type UninstallOptions, uninstall } from './uninstall.js'
-import { Spec } from '@vltpkg/spec'
+import { readProjectFolders } from './read-project-folders.js'
+import { uninstall, type UninstallOptions } from './uninstall.js'
 
 const HOST = 'localhost'
 const PORT = 7017
@@ -414,7 +414,7 @@ export const startGUI = async ({
       startingRoute || getDefaultStartingRoute(conf.options)
     server.listen(port, 'localhost', () => {
       stdout(`⚡️ vlt GUI running at http://${HOST}:${port}`)
-      opener(`http://${HOST}:${port}${route}`)
+      void urlOpen(`http://${HOST}:${port}${route}`)
       res(server)
     })
   })

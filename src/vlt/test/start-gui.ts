@@ -1,21 +1,21 @@
-import t from 'tap'
-import { readFileSync, readdirSync } from 'node:fs'
-import { resolve } from 'node:path'
-import { type PathBase, PathScurry } from 'path-scurry'
+import { joinDepIDTuple } from '@vltpkg/dep-id'
+import { type Dependency } from '@vltpkg/graph'
 import { PackageJson } from '@vltpkg/package-json'
 import { type Manifest } from '@vltpkg/types'
-import {
-  inferTools,
-  formatDashboardJson,
-  parseInstallOptions,
-} from '../src/start-gui.js'
+import { readdirSync, readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
+import { PathScurry, type PathBase } from 'path-scurry'
+import t from 'tap'
 import {
   type ConfigOptions,
   type LoadedConfig,
 } from '../src/config/index.js'
+import {
+  formatDashboardJson,
+  inferTools,
+  parseInstallOptions,
+} from '../src/start-gui.js'
 import { actualObject } from './fixtures/actual.js'
-import { type Dependency } from '@vltpkg/graph'
-import { joinDepIDTuple } from '@vltpkg/dep-id'
 
 t.cleanSnapshot = s =>
   s.replace(
@@ -42,7 +42,9 @@ t.test('starts gui data and server', async t => {
   let openPort = 0
   let openHost = ''
   const dir = t.testdirName
-  const { startGUI } = await t.mockImport('../src/start-gui.js', {
+  const { startGUI } = await t.mockImport<
+    typeof import('../src/start-gui.js')
+  >('../src/start-gui.js', {
     'node:http': {
       createServer() {
         return {
@@ -54,8 +56,10 @@ t.test('starts gui data and server', async t => {
         }
       },
     },
-    opener: (url: string) => {
-      openURL = url
+    '@vltpkg/url-open': {
+      urlOpen(url: string) {
+        openURL = url
+      },
     },
     '@vltpkg/graph': {
       actual: {
@@ -98,7 +102,7 @@ t.test('starts gui data and server', async t => {
   const log = t.capture(console, 'log').args
 
   await startGUI({
-    conf: { options },
+    conf: { options } as unknown as LoadedConfig,
     assetsDir,
     tmpDir: dir,
   })
@@ -243,7 +247,7 @@ t.test('e2e server test', async t => {
   let ilog = ''
 
   const { startGUI } = await t.mockImport('../src/start-gui.js', {
-    opener: () => {},
+    '@vltpkg/url-open': { urlOpen() {} },
     '../src/install.js': {
       async install() {
         ilog += 'install\n'
@@ -392,7 +396,7 @@ t.test('e2e server test', async t => {
     }
     // broken install
     const { startGUI } = await t.mockImport('../src/start-gui.js', {
-      opener: () => {},
+      '@vltpkg/url-open': { urlOpen() {} },
       '../src/install.js': {
         async install() {
           throw new Error('ERR')
@@ -510,7 +514,7 @@ t.test('e2e server test', async t => {
     }
     // broken uninstall
     const { startGUI } = await t.mockImport('../src/start-gui.js', {
-      opener: () => {},
+      '@vltpkg/url-open': { urlOpen() {} },
       '../src/uninstall.js': {
         async uninstall() {
           throw new Error('ERR')
@@ -575,8 +579,10 @@ t.test('no data to be found', async t => {
   )
 
   t.capture(console, 'log').args // skip console.log to stdout
-  const { startGUI } = await t.mockImport('../src/start-gui.js', {
-    opener: () => {},
+  const { startGUI } = await t.mockImport<
+    typeof import('../src/start-gui.js')
+  >('../src/start-gui.js', {
+    '@vltpkg/url-open': { urlOpen() {} },
   })
 
   const port = 8017

@@ -16,33 +16,10 @@ Array [
 ]
 `
 
-exports[`test/read-project-folders.ts > TAP > read siblings when dir is a nested in projectRoot > should return sibling folders to project root 1`] = `
-Array [
-  "c",
-  "b",
-  "a",
-]
-`
-
 exports[`test/read-project-folders.ts > TAP > run from a folder with projects using workspaces > should return project folders 1`] = `
 Array [
   "project-foo",
   "project-bar",
-]
-`
-
-exports[`test/read-project-folders.ts > TAP > run from a given project root > should return sibling folders 1`] = `
-Array [
-  "c",
-  "b",
-  "a",
-]
-`
-
-exports[`test/read-project-folders.ts > TAP > run from a workspace dir > should return project folders 1`] = `
-Array [
-  "project-bar",
-  "project-foo",
 ]
 `
 
