@@ -17,8 +17,3 @@ export const isNode = !isDeno && !isBun && 'node' in proc.versions
 export const bun = isBun ? proc.versions.bun : undefined
 export const deno = isDeno ? proc.versions.deno : undefined
 export const node = isNode ? proc.versions.node : undefined
-
-export const engine =
-  isNode || isDeno ? { name: 'v8', version: proc.versions.v8 }
-  : isBun && bun ? { name: 'bun', version: bun }
-  : undefined
