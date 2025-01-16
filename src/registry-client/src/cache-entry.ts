@@ -199,7 +199,7 @@ export class CacheEntry {
     if (this.#isJSON !== undefined) return this.#isJSON
     const ct = this.getHeader('content-type')?.toString()
     // if it says it's json, assume json
-    if (ct) return /\bjson\b/.test(ct)
+    if (ct) return (this.#isJSON = /\bjson\b/.test(ct))
     const text = this.text()
     // don't cache, because we might just not have it yet.
     if (!text) return false

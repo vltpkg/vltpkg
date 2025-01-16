@@ -49,7 +49,7 @@ Array [
     "name": "linked",
     "optional": false,
     "projectRoot": "{ROOT}",
-    "resolved": undefined,
+    "resolved": "linked",
     "version": undefined,
   },
   Object {
@@ -62,7 +62,7 @@ Array [
     "name": "foo",
     "optional": false,
     "projectRoot": "{ROOT}",
-    "resolved": undefined,
+    "resolved": "https://registry.npmjs.org/foo/-/foo-1.0.0.tgz",
     "version": "1.0.0",
   },
   Object {
@@ -88,7 +88,7 @@ Array [
     "name": "baz",
     "optional": false,
     "projectRoot": "{ROOT}",
-    "resolved": undefined,
+    "resolved": "https://registry.npmjs.org/baz/-/baz-1.0.0.tgz",
     "version": "1.0.0",
   },
 ]
@@ -125,7 +125,7 @@ Array [
     "name": "bar",
     "optional": true,
     "projectRoot": "{ROOT}",
-    "resolved": undefined,
+    "resolved": "https://registry.npmjs.org/bar/-/bar-1.0.0.tgz",
     "version": "1.0.0",
   },
   Object {
@@ -144,7 +144,7 @@ Array [
     "name": "foo",
     "optional": false,
     "projectRoot": "{ROOT}",
-    "resolved": undefined,
+    "resolved": "https://registry.npmjs.org/foo/-/foo-1.0.0.tgz",
     "version": "1.0.0",
   },
   Object {

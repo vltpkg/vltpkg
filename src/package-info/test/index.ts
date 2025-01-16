@@ -501,6 +501,18 @@ t.test('extract', async t => {
     resolved: `${defaultRegistry}abbrev/-/abbrev-2.0.0.tgz`,
   })
 
+  t.match(
+    await extract('abbrev@2', dir + '/registry', {
+      ...options,
+      resolved: `${defaultRegistry}abbrev/-/abbrev-2.0.0.tgz`,
+      integrity: pakuAbbrev.versions['2.0.0'].dist.integrity,
+    }),
+    {
+      resolved: `${defaultRegistry}abbrev/-/abbrev-2.0.0.tgz`,
+    },
+    'should use resolved & integrity value when provided',
+  )
+
   t.match(await extract(`abbrev@${pkgDir}`, dir + '/dir', options), {
     resolved: fileURLToPath(pkgDir),
   })
