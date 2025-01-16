@@ -1,10 +1,8 @@
 import { createHash } from 'crypto'
 import t from 'tap'
 import { inspect } from 'util'
-import { serialize } from 'v8'
 import { gzipSync } from 'zlib'
 import { CacheEntry } from '../src/cache-entry.js'
-import { serializedHeader } from '../src/serdes.js'
 
 const toRawHeaders = (h: Record<string, string>): Buffer[] => {
   const r: Buffer[] = []
@@ -87,9 +85,6 @@ t.strictSame(
   ce.buffer(),
   Buffer.from(JSON.stringify({ hello: 'world' })),
 )
-if (typeof serializedHeader !== 'string') {
-  throw new Error('did not get serializedHeader')
-}
 t.strictSame(ce.headers, [
   Buffer.from('key'),
   Buffer.from('value'),
@@ -101,8 +96,6 @@ t.strictSame(ce.headers, [
   Buffer.from(String(ce.buffer().byteLength)),
   Buffer.from('content-type'),
   Buffer.from('text/json'),
-  Buffer.from(serializedHeader),
-  serialize(ce.json()),
 ])
 
 t.strictSame(CacheEntry.decode(enc), ce)
@@ -159,11 +152,7 @@ t.equal(
     4 +
     'content-length'.length +
     4 +
-    String(ce.buffer().byteLength).length +
-    4 +
-    serializedHeader.length +
-    4 +
-    serialize(ce.json()).byteLength,
+    String(ce.buffer().byteLength).length,
 )
 
 t.strictSame(enc.subarray(headLen), ce.buffer())
