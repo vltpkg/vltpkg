@@ -202,7 +202,7 @@ export class CacheEntry {
     if (ser) return (this.#isJSON = true)
     const ct = this.getHeader('content-type')?.toString()
     // if it says it's json, assume json
-    if (ct) return /\bjson\b/.test(ct)
+    if (ct) return (this.#isJSON = /\bjson\b/.test(ct))
     const text = this.text()
     // don't cache, because we might just not have it yet.
     if (!text) return false
@@ -276,6 +276,7 @@ export class CacheEntry {
       /* c8 ignore stop */
     }
     const obj = JSON.parse(this.text()) as JSONObj
+    this.#json = obj
     if (serializedHeader)
       this.setHeader(serializedHeader, serialize(obj))
     return obj
