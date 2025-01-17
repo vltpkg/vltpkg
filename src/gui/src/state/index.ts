@@ -2,10 +2,32 @@ import { create } from 'zustand'
 import {
   type State,
   type Action,
-  type DashboardDataProject,
+  type SavedQuery,
+  type QueryLabel,
 } from './types.js'
 
 export const DEFAULT_QUERY = ':project > *'
+
+const DEFAULT_QUERY_LABELS: QueryLabel[] = [
+  {
+    id: '8c79bb69-164b-420a-813a-c2e5d3b196e6',
+    color: '#06b6d4',
+    name: 'OOD',
+    description: 'Dependencies that are out of date',
+  },
+  {
+    id: '4859e408-3d4c-4773-85c6-87e63ad763cd',
+    color: '#84cc16',
+    name: 'Buggy',
+    description: 'Dependencies that are buggy',
+  },
+  {
+    id: 'c70add9d-989a-49cd-9e58-42e63459764b',
+    color: '#ef4444',
+    name: 'Insecure',
+    description: 'Dependencies with vulnerability issues',
+  },
+]
 
 const newStamp = () => String(Math.random()).slice(2)
 
@@ -26,12 +48,30 @@ const initialState: State = {
   specOptions: undefined,
   stamp: newStamp(),
   theme: localStorage.getItem('vite-ui-theme') as State['theme'],
-  savedProjects: JSON.parse(
-    localStorage.getItem('saved-projects') || '[]',
-  ) as State['savedProjects'],
-  lockSidebar: JSON.parse(
-    localStorage.getItem('lock-sidebar') || 'false',
-  ) as State['lockSidebar'],
+  savedQueries: JSON.parse(
+    localStorage.getItem('saved-queries') || '[]',
+  ) as State['savedQueries'],
+  savedQueryLabels: (() => {
+    const storedLabels = localStorage.getItem('query-labels')
+    if (storedLabels) {
+      try {
+        const parsed = JSON.parse(storedLabels)
+        if (Array.isArray(parsed)) {
+          return parsed as QueryLabel[]
+        }
+      } catch {
+        console.error(
+          'Failed to parse saved query labels from localStorage.',
+        )
+      }
+    }
+    const defaultLabels = [...DEFAULT_QUERY_LABELS]
+    localStorage.setItem(
+      'query-labels',
+      JSON.stringify(defaultLabels),
+    )
+    return defaultLabels
+  })(),
 }
 
 /**
@@ -65,32 +105,128 @@ export const useGraphStore = create<Action & State>((set, get) => {
     updateStamp: () => set(() => ({ stamp: newStamp() })),
     updateTheme: (theme: State['theme']) => set(() => ({ theme })),
     reset: () => set(initialState),
-    updateSavedProjects: (savedProjects: State['savedProjects']) =>
-      set(() => ({ savedProjects })),
-    saveProject: (item: DashboardDataProject) => {
-      const savedProjects = get().savedProjects ?? []
-      let updatedProjects = [...savedProjects]
-      const isProjectSaved = updatedProjects.find(
-        savedProject => savedProject.path === item.path,
+    updateSavedQuery: (updatedItem: SavedQuery) => {
+      const savedQueries = get().savedQueries ?? []
+
+      const updatedQueries = savedQueries.map(savedQuery =>
+        savedQuery.id === updatedItem.id ? updatedItem : savedQuery,
       )
 
-      if (!isProjectSaved) {
-        updatedProjects.push(item)
+      set({ savedQueries: updatedQueries })
+      localStorage.setItem(
+        'saved-queries',
+        JSON.stringify(updatedQueries),
+      )
+    },
+    saveQuery: (item: SavedQuery) => {
+      const savedQueries = get().savedQueries ?? []
+      let updatedQueries = [...savedQueries]
+      const isQuerySaved = updatedQueries.find(
+        savedQuery => savedQuery.id === item.id,
+      )
+
+      if (!isQuerySaved) {
+        updatedQueries.push(item)
       } else {
-        updatedProjects = updatedProjects.filter(
-          savedProject => savedProject.path !== item.path,
+        updatedQueries = updatedQueries.filter(
+          savedQuery => savedQuery.id !== item.id,
         )
       }
 
-      set({ savedProjects: updatedProjects })
+      set({ savedQueries: updatedQueries })
       localStorage.setItem(
-        'saved-projects',
-        JSON.stringify(updatedProjects),
+        'saved-queries',
+        JSON.stringify(updatedQueries),
       )
     },
-    updateLockSidebar: (locked: State['lockSidebar']) => {
-      set({ lockSidebar: locked })
-      localStorage.setItem('lock-sidebar', JSON.stringify(locked))
+    deleteSavedQueries: (queries: SavedQuery[]) => {
+      const savedQueries = get().savedQueries ?? []
+
+      const queryIds = queries.map(query => query.id)
+      const updatedQueries = savedQueries.filter(
+        savedQuery => !queryIds.includes(savedQuery.id),
+      )
+
+      set({ savedQueries: updatedQueries })
+      localStorage.setItem(
+        'saved-queries',
+        JSON.stringify(updatedQueries),
+      )
+    },
+    saveQueryLabel: (queryLabel: QueryLabel) => {
+      const savedQueryLabels = get().savedQueryLabels ?? []
+      let updatedQueryLabels = [...savedQueryLabels]
+      const isQueryLabelSaved = updatedQueryLabels.find(
+        savedQueryLabel => savedQueryLabel.id === queryLabel.id,
+      )
+
+      if (!isQueryLabelSaved) {
+        updatedQueryLabels.push(queryLabel)
+      } else {
+        updatedQueryLabels = updatedQueryLabels.filter(
+          savedQueryLabel => savedQueryLabel.id !== queryLabel.id,
+        )
+      }
+
+      set({ savedQueryLabels: updatedQueryLabels })
+      localStorage.setItem(
+        'query-labels',
+        JSON.stringify(updatedQueryLabels),
+      )
+    },
+    updateSavedQueryLabel: (updatedItem: QueryLabel) => {
+      const savedLabels = get().savedQueryLabels ?? []
+      const savedQueries = get().savedQueries ?? []
+
+      const updatedLabels = savedLabels.map(savedLabel =>
+        savedLabel.id === updatedItem.id ? updatedItem : savedLabel,
+      )
+
+      const updatedQueries = savedQueries.map(savedQuery => {
+        if (savedQuery.labels) {
+          const updatedLabelsForQuery = savedQuery.labels.map(
+            label =>
+              label.id === updatedItem.id ? updatedItem : label,
+          )
+          return {
+            ...savedQuery,
+            labels: updatedLabelsForQuery,
+            dateModified: new Date().toISOString(),
+          }
+        }
+        return savedQuery
+      })
+
+      set({
+        savedQueryLabels: updatedLabels,
+        savedQueries: updatedQueries,
+      })
+
+      localStorage.setItem(
+        'query-labels',
+        JSON.stringify(updatedLabels),
+      )
+      localStorage.setItem(
+        'saved-queries',
+        JSON.stringify(updatedQueries),
+      )
+    },
+    deleteSavedQueryLabels: (queryLabels: QueryLabel[]) => {
+      const savedQueryLabels = get().savedQueryLabels ?? []
+
+      const queryLabelIds = queryLabels.map(
+        queryLabel => queryLabel.id,
+      )
+      const updatedQueryLabels = savedQueryLabels.filter(
+        savedQueryLabel =>
+          !queryLabelIds.includes(savedQueryLabel.id),
+      )
+
+      set({ savedQueryLabels: updatedQueryLabels })
+      localStorage.setItem(
+        'query-labels',
+        JSON.stringify(updatedQueryLabels),
+      )
     },
   }
 
