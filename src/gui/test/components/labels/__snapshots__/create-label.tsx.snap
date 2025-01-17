@@ -1,0 +1,75 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`create-label > should render correctly 1`] = `
+
+<div class="bg-neutral-100 dark:bg-neutral-950 rounded-sm transition-all border border-[1px] border-muted-foreground/25">
+  <div class="flex flex-col px-3 py-3 gap-3">
+    <div>
+      <gui-label-badge
+        name="Label preview"
+        color="#00FF5F"
+      >
+      </gui-label-badge>
+    </div>
+    <div class="flex mt-4 gap-3 w-full">
+      <div class="flex flex-col gap-2">
+        <gui-label classname="text-sm border-none">
+          Name
+        </gui-label>
+        <gui-input
+          type="text"
+          value="Label preview"
+          placeholder="Name"
+        >
+        </gui-input>
+      </div>
+      <div class="flex flex-col gap-2 grow">
+        <gui-label classname="text-sm border-none">
+          Description
+        </gui-label>
+        <gui-input
+          type="text"
+          value
+          placeholder="Description (optional)"
+        >
+        </gui-input>
+      </div>
+      <div class="flex flex-col gap-2">
+        <gui-label classname="text-sm border-none">
+          Color
+        </gui-label>
+        <gui-popover>
+          <gui-popover-trigger aschild="true">
+            <gui-button
+              classname="w-[120px]"
+              variant="outline"
+            >
+              <gui-palette-icon>
+              </gui-palette-icon>
+              <span>
+                #00FF5F
+              </span>
+            </gui-button>
+          </gui-popover-trigger>
+          <gui-popover-content>
+            <gui-color-picker
+              defaultcolor="#00FF5F"
+              defaultinput="#00FF5F"
+            >
+            </gui-color-picker>
+          </gui-popover-content>
+        </gui-popover>
+      </div>
+      <div class="flex items-end justify-end gap-3">
+        <gui-button variant="outline">
+          Cancel
+        </gui-button>
+        <gui-button disabled="false">
+          Create label
+        </gui-button>
+      </div>
+    </div>
+  </div>
+</div>
+
+`;
