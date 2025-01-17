@@ -2,10 +2,12 @@ import { useEffect, useState } from 'react'
 import { useGraphStore } from '@/state/index.js'
 
 const routeNames = new Map<string, string>([
-  ['/', 'Dashboard'],
+  ['/', 'Saved Queries'],
   ['/error', 'Error'],
   ['/explore', 'Explore'],
   ['/dashboard', 'Dashboard'],
+  ['/queries', 'Queries'],
+  ['/labels', 'Labels'],
 ])
 
 const Header = () => {
@@ -25,8 +27,8 @@ const Header = () => {
   }, [route])
 
   return (
-    <div className="flex w-full justify-between px-8 py-3">
-      <h3 className="text-xl font-medium mt-1">{routeName}</h3>
+    <div className="flex w-full justify-between px-8 py-3 bg-white dark:bg-black">
+      <h3 className="text-2xl font-bold mt-1">{routeName}</h3>
     </div>
   )
 }

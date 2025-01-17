@@ -16,10 +16,12 @@ afterEach(() => {
 })
 
 const testCases = new Map<string, string>([
-  ['/', 'Dashboard'],
+  ['/', 'Saved Queries'],
   ['/error', 'Error'],
   ['/explore', 'Explore'],
   ['/dashboard', 'Dashboard'],
+  ['/queries', 'Queries'],
+  ['/labels', 'Labels'],
 ])
 
 test.each([...testCases])(
