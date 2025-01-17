@@ -591,6 +591,9 @@ t.test('no data to be found', async t => {
       resetOptions(newProjectRoot: string) {
         options.projectRoot = newProjectRoot
       },
+      values: {
+        'dashboard-root': [resolve(dir, 'emtpy-dir')],
+      },
     } as LoadedConfig,
     assetsDir,
     port,

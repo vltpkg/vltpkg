@@ -70,6 +70,12 @@ Object {
       "project",
     ],
   },
+  "dashboard-root": Object {
+    "description": "The root directory to use for the dashboard GUI. If not set, the user home directory is used.",
+    "hint": "path",
+    "multiple": true,
+    "type": "string",
+  },
   "editor": Object {
     "description": String(
       The blocking editor to use for \`vlt config edit\` and any other cases where a file should be opened for editing.
