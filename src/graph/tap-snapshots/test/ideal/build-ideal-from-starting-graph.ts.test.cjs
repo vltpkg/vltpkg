@@ -31,11 +31,13 @@ exports[`test/ideal/build-ideal-from-starting-graph.ts > TAP > build from a virt
     edgesOut: [
       Edge spec(linked@file:./linked) -prod-> to: Node {
         id: 'file·linked',
-        location: './node_modules/.vlt/file·linked/node_modules/linked'
+        location: './node_modules/.vlt/file·linked/node_modules/linked',
+        resolved: 'linked'
       },
       Edge spec(foo@^1.0.0) -prod-> to: Node {
         id: '··foo@1.0.0',
         location: './node_modules/.vlt/··foo@1.0.0/node_modules/foo',
+        resolved: 'https://registry.npmjs.org/foo/-/foo-1.0.0.tgz',
         integrity: 'sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ=='
       },
       Edge spec(missing@^1.0.0) -prod-> to: Node {
@@ -45,11 +47,13 @@ exports[`test/ideal/build-ideal-from-starting-graph.ts > TAP > build from a virt
       },
       Edge spec(pnpmdep@1) -prod-> to: Node {
         id: '··pnpmdep@1.0.0',
-        location: './node_modules/.vlt/··pnpmdep@1.0.0/node_modules/pnpmdep'
+        location: './node_modules/.vlt/··pnpmdep@1.0.0/node_modules/pnpmdep',
+        resolved: 'https://registry.npmjs.org/pnpmdep/-/pnpmdep-1.0.0.tgz'
       },
       Edge spec(baz@^1.0.0) -prod-> to: Node {
         id: '··baz@1.0.0',
-        location: './node_modules/.vlt/··baz@1.0.0/node_modules/baz'
+        location: './node_modules/.vlt/··baz@1.0.0/node_modules/baz',
+        resolved: 'https://registry.npmjs.org/baz/-/baz-1.0.0.tgz'
       },
       Edge spec(ipsum@github:lorem/ipsum) -prod-> to: Node {
         id: 'git·github%3Alorem§ipsum·',

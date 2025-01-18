@@ -14,11 +14,13 @@ exports[`test/lockfile/load.ts > TAP > load > must match snapshot 1`] = `
     edgesOut: [
       Edge spec(linked@file:./linked) -prod-> to: Node {
         id: 'file·linked',
-        location: './node_modules/.vlt/file·linked/node_modules/linked'
+        location: './node_modules/.vlt/file·linked/node_modules/linked',
+        resolved: 'linked'
       },
       Edge spec(foo@^1.0.0 || 1.2.3 ||  2.3.4) -prod-> to: Node {
         id: '··foo@1.0.0',
         location: './node_modules/.vlt/··foo@1.0.0/node_modules/foo',
+        resolved: 'https://registry.npmjs.org/foo/-/foo-1.0.0.tgz',
         integrity: 'sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ=='
       },
       Edge spec(bar@^1.0.0) -prod-> to: Node {
@@ -29,7 +31,8 @@ exports[`test/lockfile/load.ts > TAP > load > must match snapshot 1`] = `
         edgesOut: [
           Edge spec(baz@^1.0.0) -prod-> to: Node {
             id: '··baz@1.0.0',
-            location: './node_modules/.pnpm/baz@1.0.0/node_modules/baz'
+            location: './node_modules/.pnpm/baz@1.0.0/node_modules/baz',
+            resolved: 'https://registry.npmjs.org/baz/-/baz-1.0.0.tgz'
           }
         ]
       },
@@ -104,7 +107,8 @@ exports[`test/lockfile/load.ts > TAP > load with custom git hosts > should load 
     edgesOut: [
       Edge spec(foo@example:foo/bar) -prod-> to: Node {
         id: 'git·example%3Afoo§bar·',
-        location: './node_modules/.vlt/git·example%3Afoo§bar·/node_modules/foo'
+        location: './node_modules/.vlt/git·example%3Afoo§bar·/node_modules/foo',
+        resolved: 'example:foo/bar'
       }
     ]
   }
@@ -218,7 +222,8 @@ exports[`test/lockfile/load.ts > TAP > load with custom scope registry > should 
     edgesOut: [
       Edge spec(@myscope/foo@^1.0.0) -prod-> to: Node {
         id: '··@myscope§foo@1.0.0',
-        location: './node_modules/.vlt/··@myscope§foo@1.0.0/node_modules/@myscope/foo'
+        location: './node_modules/.vlt/··@myscope§foo@1.0.0/node_modules/@myscope/foo',
+        resolved: 'https://registry.npmjs.org/@myscope/foo/-/foo-1.0.0.tgz'
       }
     ]
   }
@@ -234,11 +239,13 @@ exports[`test/lockfile/load.ts > TAP > loadHidden > must match snapshot 1`] = `
     edgesOut: [
       Edge spec(linked@file:./linked) -prod-> to: Node {
         id: 'file·linked',
-        location: './node_modules/.vlt/file·linked/node_modules/linked'
+        location: './node_modules/.vlt/file·linked/node_modules/linked',
+        resolved: 'linked'
       },
       Edge spec(foo@^1.0.0 || 1.2.3 ||  2.3.4) -prod-> to: Node {
         id: '··foo@1.0.0',
         location: './node_modules/.vlt/··foo@1.0.0/node_modules/foo',
+        resolved: 'https://registry.npmjs.org/foo/-/foo-1.0.0.tgz',
         integrity: 'sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ=='
       },
       Edge spec(bar@^1.0.0) -prod-> to: Node {
@@ -249,7 +256,8 @@ exports[`test/lockfile/load.ts > TAP > loadHidden > must match snapshot 1`] = `
         edgesOut: [
           Edge spec(baz@^1.0.0) -prod-> to: Node {
             id: '··baz@1.0.0',
-            location: './node_modules/.pnpm/baz@1.0.0/node_modules/baz'
+            location: './node_modules/.pnpm/baz@1.0.0/node_modules/baz',
+            resolved: 'https://registry.npmjs.org/baz/-/baz-1.0.0.tgz'
           }
         ]
       },
@@ -296,6 +304,7 @@ exports[`test/lockfile/load.ts > TAP > workspaces > must match snapshot 1`] = `
       Edge spec(c@^1.0.0) -prod-> to: Node {
         id: '··c@1.0.0',
         location: './node_modules/.vlt/··c@1.0.0/node_modules/c',
+        resolved: 'https://registry.npmjs.org/c/-/c-1.0.0.tgz',
         integrity: 'sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ=='
       }
     ]

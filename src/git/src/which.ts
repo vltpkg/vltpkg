@@ -8,13 +8,13 @@ export const which = (opts: GitOptions = {}) => {
   if (opts.git) {
     return opts.git
   }
-  let whichError: Error | undefined = undefined
+  let whichError: unknown = undefined
   if (opts.git !== false) {
     if (!gitPath) {
       try {
         gitPath = whichSync('git')
       } catch (er) {
-        whichError = er as Error
+        whichError = er
       }
     }
   }

@@ -89,7 +89,7 @@ export class Cache extends LRUCache<
    * Disk cache is unbounded.
    */
   static get defaultMax() {
-    return 1000
+    return 10_000
   }
 
   constructor(options: CacheOptions) {

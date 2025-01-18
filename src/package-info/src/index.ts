@@ -60,8 +60,15 @@ export type PackageInfoClientRequestOptions = PickManifestOptions & {
   from?: string
 }
 
+export type PackageInfoClientExtractOptions =
+  PackageInfoClientRequestOptions & {
+    integrity?: Integrity
+    resolved?: string
+  }
+
 export type PackageInfoClientAllOptions = PackageInfoClientOptions &
-  PackageInfoClientRequestOptions
+  PackageInfoClientRequestOptions &
+  PackageInfoClientExtractOptions
 
 // provide some helper methods at the top level. Re-use the client if
 // the same options are provided.
@@ -151,13 +158,16 @@ export class PackageInfoClient {
   async extract(
     spec: Spec | string,
     target: string,
-    options: PackageInfoClientRequestOptions = {},
+    options: PackageInfoClientExtractOptions = {},
   ): Promise<Resolution> {
     if (typeof spec === 'string')
       spec = Spec.parse(spec, this.options)
+    const { from = this.#projectRoot, integrity, resolved } = options
     const f = spec.final
-    const r = await this.resolve(spec, options)
-    const { from = this.#projectRoot } = options
+    const r =
+      integrity && resolved ?
+        { resolved, integrity, spec }
+      : await this.resolve(spec, options)
     switch (f.type) {
       case 'git': {
         const {
@@ -222,7 +232,7 @@ export class PackageInfoClient {
             spec,
             options,
             'tar unpack failed',
-            { cause: er as Error },
+            { cause: er },
           )
         }
         return r
@@ -247,7 +257,7 @@ export class PackageInfoClient {
               spec,
               options,
               'tar unpack failed',
-              { cause: er as Error },
+              { cause: er },
             )
           }
         } else if (st.isDirectory()) {
@@ -480,7 +490,7 @@ export class PackageInfoClient {
               s,
               options,
               'tar unpack failed',
-              { cause: er as Error },
+              { cause: er },
             )
           }
           return this.packageJson.read(dir)
@@ -504,7 +514,7 @@ export class PackageInfoClient {
               s,
               options,
               'tar unpack failed',
-              { cause: er as Error },
+              { cause: er },
             )
           }
           return this.packageJson.read(dir)

@@ -291,4 +291,44 @@ t.test('updatePackageJson', async t => {
     const res = retrieveManifestResult()
     t.strictSame(res.length, 0, 'should have not been called')
   })
+
+  await t.test('registry gt range dep', async t => {
+    const gtMani = { name: 'gtor', version: '1.0.0' }
+    const gtSpec = Spec.parse('gtor@>=1.1.0 || 2')
+    const gt = graph.addNode(
+      undefined,
+      gtMani,
+      gtSpec,
+      gtMani.name,
+      gtMani.version,
+    )
+    graph.addEdge('prod', gtSpec, root, gt)
+
+    updatePackageJson({
+      packageJson,
+      graph,
+      add: new Map([
+        [
+          rootID,
+          new Map([
+            [
+              'gtor',
+              asDependency({
+                spec: gtSpec,
+                type: 'dev',
+              }),
+            ],
+          ]),
+        ],
+      ]),
+    })()
+
+    const res = retrieveManifestResult()
+    const [mani] = res
+    t.strictSame(res.length, 1, 'should have been called once')
+    t.matchSnapshot(
+      mani,
+      'should use provided range in package json save',
+    )
+  })
 })

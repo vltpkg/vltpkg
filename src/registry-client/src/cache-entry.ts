@@ -26,7 +26,6 @@ import { createHash } from 'crypto'
 import { inspect, type InspectOptions } from 'util'
 import { gunzipSync } from 'zlib'
 import { getRawHeader, setRawHeader } from './raw-header.js'
-import { deserialize, serialize, serializedHeader } from './serdes.js'
 
 type JSONObj = Record<string, JSONField>
 
@@ -198,11 +197,9 @@ export class CacheEntry {
   #isJSON?: boolean
   get isJSON(): boolean {
     if (this.#isJSON !== undefined) return this.#isJSON
-    const ser = serializedHeader && this.getHeader(serializedHeader)
-    if (ser) return (this.#isJSON = true)
     const ct = this.getHeader('content-type')?.toString()
     // if it says it's json, assume json
-    if (ct) return /\bjson\b/.test(ct)
+    if (ct) return (this.#isJSON = /\bjson\b/.test(ct))
     const text = this.text()
     // don't cache, because we might just not have it yet.
     if (!text) return false
@@ -267,17 +264,8 @@ export class CacheEntry {
    */
   json(): JSONObj {
     if (this.#json !== undefined) return this.#json
-    const ser = serializedHeader && this.getHeader(serializedHeader)
-    if (ser) {
-      /* c8 ignore start - very rare, but theoretically possible to throw */
-      try {
-        return (this.#json = deserialize(ser) as JSONObj)
-      } catch {}
-      /* c8 ignore stop */
-    }
     const obj = JSON.parse(this.text()) as JSONObj
-    if (serializedHeader)
-      this.setHeader(serializedHeader, serialize(obj))
+    this.#json = obj
     return obj
   }
 
