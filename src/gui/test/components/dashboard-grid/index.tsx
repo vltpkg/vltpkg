@@ -8,6 +8,21 @@ vi.mock('@/components/ui/card.jsx', () => ({
   CardTitle: 'gui-card-title',
 }))
 
+vi.mock('@/components/ui/tooltip.jsx', () => ({
+  Tooltip: 'gui-tooltip',
+  TooltipContent: 'gui-tooltip-content',
+  TooltipProvider: 'gui-tooltip-provider',
+  TooltipTrigger: 'gui-tooltip-trigger',
+}))
+
+vi.mock('@/components/ui/filter-search.jsx', () => ({
+  FilterSearch: 'gui-filter-search',
+}))
+
+vi.mock('@/components/ui/sorting-toggle.jsx', () => ({
+  SortingToggle: 'gui-sorting-toggle',
+}))
+
 vi.mock('date-fns', () => ({
   format: () => 'November 1st, 2024 | 06:01 PM',
 }))
