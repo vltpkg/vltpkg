@@ -280,6 +280,8 @@ export const startGUI = async ({
       { source: '/error', destination: '/index.html' },
       { source: '/explore', destination: '/index.html' },
       { source: '/dashboard', destination: '/index.html' },
+      { source: '/queries', destination: '/index.html' },
+      { source: '/labels', destination: '/index.html' },
     ],
   }
   const server = createServer((req, res): void => {
