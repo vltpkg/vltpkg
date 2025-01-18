@@ -33,7 +33,7 @@ const SidebarQueryNav = () => {
             <Star />
             <span>Queries</span>
             <SidebarMenuBadge
-              className={`${activeRoute === '/queries' ? 'text-white dark:text-black' : ''}`}>
+              className={activeRoute === '/queries' ? 'text-white dark:text-black' : ''}>
               {queryCount !== 0 ? queryCount : undefined}
             </SidebarMenuBadge>
           </a>

@@ -1,4 +1,4 @@
-import type { SavedQuery } from '@/state/types.js'
+import  { type SavedQuery } from '@/state/types.js'
 import { useEffect, useState } from 'react'
 import { useGraphStore } from '@/state/index.js'
 import {

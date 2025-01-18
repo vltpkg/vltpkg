@@ -7,7 +7,7 @@ import {
   CommandList,
 } from '@/components/ui/command.jsx'
 import { Check, Pencil } from 'lucide-react'
-import type { QueryLabel } from '@/state/types.js'
+import  { type QueryLabel } from '@/state/types.js'
 import { useGraphStore } from '@/state/index.js'
 import { useEffect, useRef, useState } from 'react'
 import { cn } from '@/lib/utils.js'
@@ -46,7 +46,7 @@ const LabelSelect = ({
   /**
    * Manually check for MouseEvents to not close
    * popover until all desired labels have been selected.
-   * */
+   */
   useEffect(() => {
     document.addEventListener('mousedown', handleClick)
 
@@ -76,7 +76,7 @@ const LabelSelect = ({
   }
 
   return (
-    <Command ref={boxRef} className={`${className}`}>
+    <Command ref={boxRef} className={className}>
       <CommandInput
         value={inputText}
         onValueChange={setInputText}

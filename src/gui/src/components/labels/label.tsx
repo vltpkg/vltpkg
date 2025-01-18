@@ -11,7 +11,7 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover.jsx'
 import { ColorPicker } from '@/components/ui/color-picker.jsx'
-import type { QueryLabel } from '@/state/types.js'
+import  { type QueryLabel } from '@/state/types.js'
 import { useGraphStore } from '@/state/index.js'
 import { useToast } from '@/components/hooks/use-toast.js'
 
@@ -54,7 +54,7 @@ const Label = ({ queryLabel, checked, handleSelect }: LabelProps) => {
 
   const navigateToRef = () => {
     window.location.href =
-      '/queries?label=' + encodeURIComponent(`${editName}`)
+      '/queries?label=' + encodeURIComponent(editName)
   }
 
   useEffect(() => {

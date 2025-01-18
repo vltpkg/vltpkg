@@ -1,4 +1,4 @@
-import { SavedQuery } from '@/state/types.js'
+import { type SavedQuery } from '@/state/types.js'
 import { useEffect, useRef, useState } from 'react'
 import { Input } from '@/components/ui/input.jsx'
 import { Kbd } from '@/components/ui/kbd.jsx'
@@ -21,7 +21,7 @@ const FilterSearch = <T, _>({
   /**
    * Initially parse URL params and filter items
    * based on the params.
-   * */
+   */
   useEffect(() => {
     const selectors: { key: string; value: string }[] = []
     const params = new URLSearchParams(window.location.search)
@@ -69,7 +69,7 @@ const FilterSearch = <T, _>({
 
   /**
    * Handle setting the params in the url when filterText changs
-   * */
+   */
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
 
@@ -80,7 +80,7 @@ const FilterSearch = <T, _>({
     }
 
     if (filterText.trim() === '') {
-      setFilteredItems(items as T[])
+      setFilteredItems(items!)
       return
     }
 
@@ -90,7 +90,7 @@ const FilterSearch = <T, _>({
 
   /**
    * Handle the search input accessibility
-   * */
+   */
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       switch (true) {

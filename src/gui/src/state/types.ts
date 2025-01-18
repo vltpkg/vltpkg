@@ -116,7 +116,7 @@ export type State = {
   savedQueries?: SavedQuery[]
   /**
    * Saved labels used for query tags in localStorage.
-   * */
+   */
   savedQueryLabels?: QueryLabel[]
 }
 

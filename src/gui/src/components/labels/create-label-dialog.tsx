@@ -1,7 +1,7 @@
 /**
  * Used in views to quickly create labels
  * and not redirect to the '/manage-labels' route
- **/
+ */
 import { useEffect, useState } from 'react'
 import {
   DialogDescription,
@@ -22,7 +22,7 @@ import { Label } from '@/components/ui/form-label.jsx'
 import { Input } from '@/components/ui/input.jsx'
 import { ColorPicker } from '@/components/ui/color-picker.jsx'
 import { Palette } from 'lucide-react'
-import type { QueryLabel } from '@/state/types.js'
+import  { type QueryLabel } from '@/state/types.js'
 import { useGraphStore } from '@/state/index.js'
 import { v4 as uuidv4 } from 'uuid'
 import { useToast } from '@/components/hooks/use-toast.js'

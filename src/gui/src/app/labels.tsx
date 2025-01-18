@@ -7,7 +7,7 @@ import { SortingToggle } from '@/components/ui/sorting-toggle.jsx'
 import { Checkbox } from '@/components/ui/checkbox.jsx'
 import { DeleteLabel } from '@/components/labels/delete-label.jsx'
 import { CreateLabel } from '@/components/labels/create-label.jsx'
-import type { QueryLabel } from '@/state/types.js'
+import  { type QueryLabel } from '@/state/types.js'
 import { useGraphStore } from '@/state/index.js'
 import { LabelsEmptyState } from '@/components/labels/labels-empty-state.jsx'
 

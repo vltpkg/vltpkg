@@ -11,7 +11,7 @@ import {
   CollapsibleTrigger,
 } from '@/components/ui/collapsible.jsx'
 import { ChevronDown, ChevronRight } from 'lucide-react'
-import { MenuItem } from '@/components/navigation/sidebar/menu.js'
+import { type MenuItem } from '@/components/navigation/sidebar/menu.js'
 import { useGraphStore } from '@/state/index.js'
 
 const SidebarMainNav = () => {
@@ -35,9 +35,9 @@ const SidebarMainNav = () => {
                 className="data-[active=true]:bg-neutral-800 data-[active=true]:text-white data-[active=true]:dark:bg-neutral-100 data-[active=true]:dark:text-black whitespace-nowrap"
                 tooltip={item.title}>
                 {/**
-                 * Urls that do not start with '/' are treated as external links
-                 * and are therefore opened in a new window.
-                 * */}
+                  * Urls that do not start with '/' are treated as external links
+                  * and are therefore opened in a new window.
+                  */}
                 <a
                   href={item.url}
                   target={

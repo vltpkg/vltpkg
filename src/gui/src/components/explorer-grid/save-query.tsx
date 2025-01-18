@@ -18,7 +18,7 @@ import { Label } from '@/components/ui/label.jsx'
 import { Input } from '@/components/ui/input.jsx'
 import { useAnimate } from 'framer-motion'
 import { useGraphStore } from '@/state/index.js'
-import type { QueryLabel, SavedQuery } from '@/state/types.js'
+import { type QueryLabel, type SavedQuery } from '@/state/types.js'
 import { LabelSelect } from '@/components/labels/label-select.jsx'
 import { LabelBadge } from '@/components/labels/label-badge.jsx'
 import { v4 as uuidv4 } from 'uuid'
@@ -120,7 +120,7 @@ const SaveQueryPopover = ({
 
   /**
    * Set the default state of the text inputs
-   * */
+   */
   useEffect(() => {
     // React runs useEffect twice in strict mode during dev
     // This ensures that this useEffect only ever runs once.
@@ -135,12 +135,12 @@ const SaveQueryPopover = ({
 
       // If the query exists, update it.
       if (foundQuery && queryName !== '') {
-        setSelectedLabels(foundQuery?.labels ?? [])
+        setSelectedLabels(foundQuery.labels ?? [])
         setQueryName(
-          foundQuery?.name ?? nodes[0]?.manifest?.name ?? '',
+          foundQuery.name ?? nodes[0]?.manifest?.name ?? '',
         )
         setEditContext(
-          foundQuery?.context ?? nodes[0]?.projectRoot ?? '',
+          foundQuery.context ?? nodes[0]?.projectRoot ?? '',
         )
         const item: SavedQuery = {
           ...foundQuery,
@@ -175,12 +175,12 @@ const SaveQueryPopover = ({
       setSavedQuery(foundQuery ?? null)
 
       if (foundQuery && queryName !== '') {
-        setSelectedLabels(foundQuery?.labels ?? [])
+        setSelectedLabels(foundQuery.labels ?? [])
         setQueryName(
-          foundQuery?.name ?? nodes[0]?.manifest?.name ?? '',
+          foundQuery.name ?? nodes[0]?.manifest?.name ?? '',
         )
         setEditContext(
-          foundQuery?.context ?? nodes[0]?.projectRoot ?? '',
+          foundQuery.context ?? nodes[0]?.projectRoot ?? '',
         )
         const item: SavedQuery = {
           ...foundQuery,
@@ -197,7 +197,7 @@ const SaveQueryPopover = ({
 
   /**
    * Update the UI inputs
-   * */
+   */
   useEffect(() => {
     setSelectedLabels(savedQuery?.labels ?? [])
     setQueryName(savedQuery?.name ?? nodes[0]?.manifest?.name ?? '')

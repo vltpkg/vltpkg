@@ -19,7 +19,7 @@ import { AppSidebarFooter } from '@/components/navigation/sidebar/footer.jsx'
  * within <SidebarProvider>
  *
  * https://ui.shadcn.com/docs/components/sidebar#persisted-state
- * */
+ */
 export const defaultOpen = JSON.parse(
   document.cookie
     .split('; ')
