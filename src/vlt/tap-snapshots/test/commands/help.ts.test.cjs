@@ -228,6 +228,12 @@ More documentation available at <https://docs.vlt.sh>
   --view=<output>      Configures the output format for ls & query commands.
                        Valid options: "human", "json", "mermaid", "gui"
 
+  --dashboard-root=<path>
+                       The root directory to use for the dashboard GUI. If not
+                       set, the user home directory is used.
+
+                       Can be set multiple times
+
   -D --save-dev        Save installed packages to a package.json file as
                        devDependencies
 

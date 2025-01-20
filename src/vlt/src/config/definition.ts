@@ -428,6 +428,14 @@ export const definition = j
     },
   })
 
+  .optList({
+    'dashboard-root': {
+      hint: 'path',
+      description: `The root directory to use for the dashboard GUI.
+                    If not set, the user home directory is used.`,
+    },
+  })
+
   .flag({
     'save-dev': {
       short: 'D',
