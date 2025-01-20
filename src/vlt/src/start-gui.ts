@@ -259,11 +259,20 @@ const updateDashboardData = async (
   return dashboard.projects.length > 0
 }
 
+const getDefaultStartingRoute = (options: ConfigOptions) => {
+  const { projectRoot, scurry } = options
+  const defaultExplore = `/explore?query=${encodeURIComponent(':root')}`
+  const stat = scurry.lstatSync(`${projectRoot}/package.json`)
+  return stat && stat.isFile() && !stat.isSymbolicLink() ?
+      defaultExplore
+    : '/dashboard'
+}
+
 export const startGUI = async ({
   assetsDir,
   conf,
   port = PORT,
-  startingRoute = '/dashboard',
+  startingRoute = undefined,
   tmpDir = tmpdir(),
 }: StartGUIOptions) => {
   const tmp = resolve(tmpDir, 'vltgui')
@@ -399,9 +408,11 @@ export const startGUI = async ({
   })
 
   return new Promise<Server>(res => {
+    const route =
+      startingRoute || getDefaultStartingRoute(conf.options)
     server.listen(port, 'localhost', () => {
       stdout(`⚡️ vlt GUI running at http://${HOST}:${port}`)
-      opener(`http://${HOST}:${port}${startingRoute}`)
+      opener(`http://${HOST}:${port}${route}`)
       res(server)
     })
   })
