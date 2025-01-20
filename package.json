@@ -48,5 +48,9 @@
     "vlx": "./scripts/local-cli vlx"
   },
   "prettier": "./.prettierrc.js",
-  "type": "module"
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/vltpkg/vltpkg"
+  }
 }
