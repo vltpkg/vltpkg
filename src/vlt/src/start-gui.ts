@@ -242,11 +242,17 @@ const updateGraphData = (
 
 const updateDashboardData = async (
   tmp: string,
-  options: ConfigOptions,
+  conf: LoadedConfig,
 ) => {
+  const userDefinedProjectPaths =
+    // eslint-disable-next-line
+    conf.values?.['dashboard-root'] || []
   const dashboard = formatDashboardJson(
-    readProjectFolders(process.cwd(), options),
-    options,
+    readProjectFolders({
+      ...conf.options,
+      userDefinedProjectPaths,
+    }),
+    conf.options,
   )
   const dashboardJson = JSON.stringify(dashboard, null, 2)
   writeFileSync(resolve(tmp, 'dashboard.json'), dashboardJson)
@@ -260,7 +266,6 @@ export const startGUI = async ({
   startingRoute = '/dashboard',
   tmpDir = tmpdir(),
 }: StartGUIOptions) => {
-  const { options } = conf
   const tmp = resolve(tmpDir, 'vltgui')
   rmSync(tmp, { recursive: true, force: true })
   mkdirSync(tmp, { recursive: true })
@@ -274,7 +279,7 @@ export const startGUI = async ({
   // project in order to just explore its graph data
   let hasDashboard = false
   try {
-    hasDashboard = await updateDashboardData(tmp, options)
+    hasDashboard = await updateDashboardData(tmp, conf)
     /* c8 ignore next */
   } catch (_err) {}
   if (!hasDashboard) {
