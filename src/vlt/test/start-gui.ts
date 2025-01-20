@@ -594,7 +594,7 @@ t.test('no data to be found', async t => {
       values: {
         'dashboard-root': [resolve(dir, 'emtpy-dir')],
       },
-    } as LoadedConfig,
+    } as unknown as LoadedConfig,
     assetsDir,
     port,
     tmpDir: resolve(dir, 'assets-dir'),
