@@ -2,7 +2,7 @@ import { vi, expect, afterEach, describe, it } from 'vitest'
 import { cleanup, render } from '@testing-library/react'
 import html from 'diffable-html'
 import { useGraphStore as useStore } from '@/state/index.js'
-import  { type SavedQuery } from '@/state/types.js'
+import { type SavedQuery } from '@/state/types.js'
 import { SavedQueryItem } from '@/components/queries/saved-item.jsx'
 
 vi.mock('@/components/ui/input.jsx', () => ({

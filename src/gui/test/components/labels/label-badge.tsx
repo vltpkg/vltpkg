@@ -2,7 +2,7 @@ import { vi, describe, it, expect, afterEach } from 'vitest'
 import { cleanup, render } from '@testing-library/react'
 import html from 'diffable-html'
 import { LabelBadge } from '@/components/labels/label-badge.jsx'
-import  { type QueryLabel } from '@/state/types.js'
+import { type QueryLabel } from '@/state/types.js'
 
 vi.mock('@/components/ui/badge.jsx', () => ({
   Badge: 'gui-badge',

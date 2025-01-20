@@ -7,7 +7,7 @@ import {
   CommandList,
 } from '@/components/ui/command.jsx'
 import { Check, Pencil } from 'lucide-react'
-import  { type QueryLabel } from '@/state/types.js'
+import { type QueryLabel } from '@/state/types.js'
 import { useGraphStore } from '@/state/index.js'
 import { useEffect, useRef, useState } from 'react'
 import { cn } from '@/lib/utils.js'

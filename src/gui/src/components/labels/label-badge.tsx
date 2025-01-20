@@ -16,7 +16,10 @@ interface LabelBadgeProps {
  *
  */
 const getContrastTextColor = (hex: string, theme: string): string => {
-  if (!hex.startsWith('#') || (hex.length !== 7 && hex.length !== 4)) {
+  if (
+    !hex.startsWith('#') ||
+    (hex.length !== 7 && hex.length !== 4)
+  ) {
     throw new Error(
       'Invalid hex color. Must be in #RRGGBB or #RGB format.',
     )
