@@ -113,9 +113,11 @@ const SavedQueryItem = ({
   }, [item])
 
   useEffect(() => {
-    editName !== '' && editQuery !== '' ?
+    if (editName !== '' && editQuery !== '') {
       setIsValid(true)
-    : setIsValid(false)
+    } else {
+      setIsValid(false)
+    }
   }, [editName, editContext, editQuery])
 
   const handleEdit = () => {
@@ -138,8 +140,8 @@ const SavedQueryItem = ({
     })
   }
 
-  const runQuery = () => {
-    selectQuery({
+  const runQuery = async (): Promise<void> => {
+    await selectQuery({
       updateActiveRoute,
       updateErrorCause,
       updateQuery,
@@ -193,7 +195,7 @@ const SavedQueryItem = ({
               variant="outline"
               className="text-sm px-3 rounded-sm border border-[1px] border-muted-foreground/25 h-[2rem]"
               role="link"
-              onClick={runQuery}>
+              onClick={() => void runQuery()}>
               <span>Run</span>
               <ArrowRight />
             </Button>

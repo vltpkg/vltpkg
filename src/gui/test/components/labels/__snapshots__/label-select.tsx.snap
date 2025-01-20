@@ -28,7 +28,7 @@ exports[`label-select > should render correctly 1`] = `
     </gui-command-empty>
     <gui-command-group>
       <gui-command-item
-        value="OOD"
+        value="Outdated"
         classname="cursor-pointer flex flex-col items-start gap-2"
       >
         <div class="flex items-center gap-3">
@@ -41,7 +41,7 @@ exports[`label-select > should render correctly 1`] = `
             >
             </div>
             <span>
-              OOD
+              Outdated
             </span>
           </div>
         </div>
@@ -52,7 +52,7 @@ exports[`label-select > should render correctly 1`] = `
         </div>
       </gui-command-item>
       <gui-command-item
-        value="Buggy"
+        value="Unstable"
         classname="cursor-pointer flex flex-col items-start gap-2"
       >
         <div class="flex items-center gap-3">
@@ -61,11 +61,11 @@ exports[`label-select > should render correctly 1`] = `
           <div class="flex items-center gap-2">
             <div
               class="h-3 w-3 rounded-full"
-              style="background-color: rgb(132, 204, 22);"
+              style="background-color: rgb(234, 179, 8);"
             >
             </div>
             <span>
-              Buggy
+              Unstable
             </span>
           </div>
         </div>

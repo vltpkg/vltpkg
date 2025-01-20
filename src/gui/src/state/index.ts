@@ -12,13 +12,13 @@ const DEFAULT_QUERY_LABELS: QueryLabel[] = [
   {
     id: '8c79bb69-164b-420a-813a-c2e5d3b196e6',
     color: '#06b6d4',
-    name: 'OOD',
+    name: 'Outdated',
     description: 'Dependencies that are out of date',
   },
   {
     id: '4859e408-3d4c-4773-85c6-87e63ad763cd',
-    color: '#84cc16',
-    name: 'Buggy',
+    color: '#eab308',
+    name: 'Unstable',
     description: 'Dependencies that are buggy',
   },
   {
@@ -54,15 +54,9 @@ const initialState: State = {
   savedQueryLabels: (() => {
     const storedLabels = localStorage.getItem('query-labels')
     if (storedLabels) {
-      try {
-        const parsed = JSON.parse(storedLabels)
-        if (Array.isArray(parsed)) {
-          return parsed as QueryLabel[]
-        }
-      } catch {
-        console.error(
-          'Failed to parse saved query labels from localStorage.',
-        )
+      const parsed = JSON.parse(storedLabels) as QueryLabel[]
+      if (Array.isArray(parsed)) {
+        return parsed
       }
     }
     const defaultLabels = [...DEFAULT_QUERY_LABELS]

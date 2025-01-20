@@ -3,20 +3,20 @@
 exports[`queries-empty-state > labels render default 1`] = `
 
 <div class="flex items-center justify-center h-full w-full bg-white dark:bg-black">
-  <div class="flex flex-col items-center justify-center gap-3 mt-10">
+  <div class="-mt-20 flex flex-col items-center justify-center gap-3 mt-10">
     <div class="relative flex items-center justify-center mb-20">
       <div
-        class="absolute w-[450px] h-[450px] border-[1px] border-neutral-500/10 rounded-full"
+        class="absolute z-[-1] w-[450px] h-[450px] border-[1px] border-neutral-500/10 rounded-full"
         style="opacity: 1;"
       >
       </div>
       <div
-        class="absolute w-[300px] h-[300px] border-[1px] border-neutral-500/15 rounded-full"
+        class="absolute z-[-1] w-[300px] h-[300px] border-[1px] border-neutral-500/15 rounded-full"
         style="opacity: 1;"
       >
       </div>
       <div
-        class="absolute w-[150px] h-[150px] border-[1px] border-neutral-500/20 rounded-full"
+        class="absolute z-[-1] w-[150px] h-[150px] border-[1px] border-neutral-500/20 rounded-full"
         style="opacity: 1;"
       >
       </div>

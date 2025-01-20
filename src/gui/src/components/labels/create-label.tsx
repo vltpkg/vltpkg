@@ -46,9 +46,11 @@ const CreateLabel = ({ closeCreate }: CreateLabelProps) => {
   }
 
   useEffect(() => {
-    labelName !== '' && selectedColor !== '' ?
+    if (labelName !== '' && selectedColor !== '') {
       setIsCreationValid(true)
-    : setIsCreationValid(false)
+    } else {
+      setIsCreationValid(false)
+    }
   }, [labelName, labelDescription, selectedColor])
 
   return (

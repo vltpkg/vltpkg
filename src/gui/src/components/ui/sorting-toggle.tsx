@@ -19,14 +19,14 @@ interface SortingToggleProps<T> {
 }
 
 interface SortToggleButton {
-  icon: (props: LucideProps) => JSX.Element
+  icon: (props: LucideProps) => React.ReactNode
   option: SortOption
   toolTipContent: string
 }
 
 type SortOption = 'ascending' | 'descending'
 
-const SortingToggle = <T, _>({
+const SortingToggle = <T extends {}>({
   sortKey,
   filteredItems,
   setFilteredItems,

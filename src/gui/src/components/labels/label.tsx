@@ -11,7 +11,7 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover.jsx'
 import { ColorPicker } from '@/components/ui/color-picker.jsx'
-import  { type QueryLabel } from '@/state/types.js'
+import { type QueryLabel } from '@/state/types.js'
 import { useGraphStore } from '@/state/index.js'
 import { useToast } from '@/components/hooks/use-toast.js'
 
@@ -163,6 +163,10 @@ const Label = ({ queryLabel, checked, handleSelect }: LabelProps) => {
             </div>
             <div className="flex items-end mb-0.5">
               <Button
+                disabled={
+                  editName.trim() === '' ||
+                  editName === 'Label preview'
+                }
                 onClick={handleSaveChanges}
                 variant="default"
                 size="sm">

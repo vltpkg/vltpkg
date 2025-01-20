@@ -1,4 +1,4 @@
-import  { type SavedQuery } from '@/state/types.js'
+import { type SavedQuery } from '@/state/types.js'
 import { useEffect, useState } from 'react'
 import { useGraphStore } from '@/state/index.js'
 import {
@@ -37,10 +37,10 @@ const QueryMatches = () => {
   return (
     <>
       <LabelTags className="mr-1" queries={matchedQueries} />
-      {matchedQueries.length > 1 && (
+      {matchedQueries.length > 1 && matchedQueries[0] && (
         <Notification
           className="mr-2"
-          query={matchedQueries[0]!.query}
+          query={matchedQueries[0].query}
           numberOfQueries={matchedQueries.length}
         />
       )}
@@ -55,6 +55,11 @@ const LabelTags = ({
   queries: SavedQuery[]
   className?: string
 }) => {
+  const navigateToLabel = (labelName: string) => {
+    window.location.href =
+      '/labels?name=' + encodeURIComponent(labelName)
+  }
+
   return (
     <Popover>
       <PopoverTrigger className="flex items-center justify-center">
@@ -70,7 +75,7 @@ const LabelTags = ({
 
                   return query.labels.map((label, idx) => (
                     <div
-                      className="inline-block size-5 rounded-full ring-muted ring-1"
+                      className="inline-block size-4 rounded-full ring-muted ring-1"
                       key={idx}
                       style={{
                         backgroundColor: label.color,
@@ -93,9 +98,11 @@ const LabelTags = ({
               return null
 
             return query.labels.map((label, idx) => (
-              <a href="/labels" key={idx}>
+              <button
+                onClick={() => navigateToLabel(label.name)}
+                key={idx}>
                 <LabelBadge name={label.name} color={label.color} />
-              </a>
+              </button>
             ))
           })}
         </div>

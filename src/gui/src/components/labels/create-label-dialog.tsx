@@ -22,7 +22,7 @@ import { Label } from '@/components/ui/form-label.jsx'
 import { Input } from '@/components/ui/input.jsx'
 import { ColorPicker } from '@/components/ui/color-picker.jsx'
 import { Palette } from 'lucide-react'
-import  { type QueryLabel } from '@/state/types.js'
+import { type QueryLabel } from '@/state/types.js'
 import { useGraphStore } from '@/state/index.js'
 import { v4 as uuidv4 } from 'uuid'
 import { useToast } from '@/components/hooks/use-toast.js'
@@ -48,13 +48,15 @@ const CreateLabelModal = ({
   }, [label])
 
   useEffect(() => {
-    (
+    if (
       labelName !== '' &&
       labelName !== 'Label Preview' &&
       color !== ''
-    ) ?
+    ) {
       setIsValid(true)
-    : setIsValid(false)
+    } else {
+      setIsValid(false)
+    }
   }, [labelName, color])
 
   const handleSave = () => {
@@ -68,7 +70,9 @@ const CreateLabelModal = ({
     toast({
       title: `${labelName} successfully created`,
     })
-    onClose ? onClose(false) : undefined
+    if (onClose) {
+      onClose(false)
+    }
   }
 
   return (

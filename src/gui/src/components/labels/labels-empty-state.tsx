@@ -15,7 +15,7 @@ const LabelsEmptyState = () => {
             initial={{ opacity: 1 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="flex flex-col gap-3 items-center justify-center">
+            className="-mt-20 flex flex-col gap-3 items-center justify-center">
             <div className="relative flex items-center justify-center mb-20">
               <motion.div
                 initial={{ opacity: 1 }}
@@ -80,9 +80,7 @@ const LabelsEmptyState = () => {
               Labels are a great way to mark your dependencies.
             </p>
             <div className="flex gap-3"></div>
-            <Button
-              className="z-[2]"
-              onClick={() => setIsCreating(true)}>
+            <Button onClick={() => setIsCreating(true)}>
               <span>New Label</span>
               <Plus />
             </Button>

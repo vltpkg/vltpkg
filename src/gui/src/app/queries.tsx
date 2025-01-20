@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useGraphStore } from '@/state/index.js'
-import  { type SavedQuery } from '@/state/types.js'
+import { type SavedQuery } from '@/state/types.js'
 import { SavedQueryItem } from '@/components/queries/saved-item.jsx'
 import { FilterSearch } from '@/components/ui/filter-search.jsx'
 import { DeleteQuery } from '@/components/queries/delete-query.jsx'

@@ -8,86 +8,84 @@ const QueriesEmptyState = () => {
   const [cursorScope, cursorAnimate] = useAnimate<HTMLDivElement>()
 
   useEffect(() => {
-    if (starScope.current && cursorScope.current) {
-      const {
-        x: cursorX,
-        y: cursorY,
-        width: cursorWidth,
-        height: cursorHeight,
-      } = cursorScope.current.getBoundingClientRect()
+    const {
+      x: cursorX,
+      y: cursorY,
+      width: cursorWidth,
+      height: cursorHeight,
+    } = cursorScope.current.getBoundingClientRect()
 
-      const cursorInitialPosition = {
-        centerX: cursorX + cursorWidth / 2,
-        centerY: cursorY + cursorHeight / 2,
-      }
-
-      const {
-        x: starX,
-        y: starY,
-        width: starWidth,
-        height: starHeight,
-      } = starScope.current.getBoundingClientRect()
-
-      const initialStarPosition = {
-        centerX: starX + starWidth,
-        centerY: starY + starHeight,
-      }
-
-      cursorAnimate(
-        cursorScope.current,
-        {
-          x: [
-            0,
-            -(
-              cursorInitialPosition.centerX -
-              initialStarPosition.centerX
-            ),
-            0,
-          ],
-          y: [
-            55,
-            -(
-              cursorInitialPosition.centerY -
-              initialStarPosition.centerY
-            ),
-            0,
-          ],
-        },
-        {
-          duration: 2,
-        },
-      )
-      starAnimate(
-        starScope.current,
-        {
-          scale: [1, 1.2, 1],
-        },
-        {
-          delay: 0.75,
-          duration: 0.5,
-        },
-      )
-      starAnimate(
-        '#icon',
-        {
-          rotate: [0, -71],
-        },
-        {
-          delay: 0.75,
-          duration: 0.5,
-        },
-      )
-      starAnimate(
-        '#icon',
-        {
-          fill: ['', 'currentColor'],
-        },
-        {
-          delay: 0.75,
-          duration: 0.5,
-        },
-      )
+    const cursorInitialPosition = {
+      centerX: cursorX + cursorWidth / 2,
+      centerY: cursorY + cursorHeight / 2,
     }
+
+    const {
+      x: starX,
+      y: starY,
+      width: starWidth,
+      height: starHeight,
+    } = starScope.current.getBoundingClientRect()
+
+    const initialStarPosition = {
+      centerX: starX + starWidth,
+      centerY: starY + starHeight,
+    }
+
+    cursorAnimate(
+      cursorScope.current,
+      {
+        x: [
+          0,
+          -(
+            cursorInitialPosition.centerX -
+            initialStarPosition.centerX
+          ),
+          0,
+        ],
+        y: [
+          55,
+          -(
+            cursorInitialPosition.centerY -
+            initialStarPosition.centerY
+          ),
+          0,
+        ],
+      },
+      {
+        duration: 2,
+      },
+    )
+    starAnimate(
+      starScope.current,
+      {
+        scale: [1, 1.2, 1],
+      },
+      {
+        delay: 0.75,
+        duration: 0.5,
+      },
+    )
+    starAnimate(
+      '#icon',
+      {
+        rotate: [0, -71],
+      },
+      {
+        delay: 0.75,
+        duration: 0.5,
+      },
+    )
+    starAnimate(
+      '#icon',
+      {
+        fill: ['', 'currentColor'],
+      },
+      {
+        delay: 0.75,
+        duration: 0.5,
+      },
+    )
 
     const timeout = setTimeout(() => {
       cursorAnimate(
@@ -112,25 +110,25 @@ const QueriesEmptyState = () => {
 
   return (
     <div className="flex items-center justify-center h-full w-full bg-white dark:bg-black">
-      <div className="flex flex-col items-center justify-center gap-3 mt-10">
+      <div className="-mt-20 flex flex-col items-center justify-center gap-3 mt-10">
         <div className="relative flex items-center justify-center mb-20">
           <motion.div
             initial={{ opacity: 1 }}
             animate={{ opacity: [0, 1, 0] }}
             transition={{ duration: 3, repeat: Infinity, delay: 0.5 }}
-            className="absolute w-[450px] h-[450px] border-[1px] border-neutral-500/10 rounded-full"
+            className="absolute z-[-1] w-[450px] h-[450px] border-[1px] border-neutral-500/10 rounded-full"
           />
           <motion.div
             initial={{ opacity: 1 }}
             animate={{ opacity: [0, 1, 0] }}
             transition={{ duration: 3, repeat: Infinity, delay: 1 }}
-            className="absolute w-[300px] h-[300px] border-[1px] border-neutral-500/15 rounded-full"
+            className="absolute z-[-1] w-[300px] h-[300px] border-[1px] border-neutral-500/15 rounded-full"
           />
           <motion.div
             initial={{ opacity: 1 }}
             animate={{ opacity: [0, 1, 0] }}
             transition={{ duration: 3, repeat: Infinity, delay: 1.5 }}
-            className="absolute w-[150px] h-[150px] border-[1px] border-neutral-500/20 rounded-full"
+            className="absolute z-[-1] w-[150px] h-[150px] border-[1px] border-neutral-500/20 rounded-full"
           />
 
           <div className="absolute flex items-center justify-center h-[50px] w-[400px] bg-gradient-to-r from-white to-neutral-400 dark:from-black dark:to-neutral-800 rounded-[8px]">

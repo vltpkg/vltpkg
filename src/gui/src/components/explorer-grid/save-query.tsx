@@ -48,13 +48,15 @@ const SaveQueryButton = () => {
     setStarColor(
       foundQuery && resolvedTheme === 'dark' ? '#fafafa' : '#212121',
     )
-    showSaveQueryPopover ?
+    if (showSaveQueryPopover) {
       animate(scope.current, {
         rotate: -71.5,
       })
-    : animate(scope.current, {
+    } else {
+      animate(scope.current, {
         rotate: 0,
       })
+    }
   }, [showSaveQueryPopover, savedQueries, activeQuery])
 
   return (
@@ -137,10 +139,10 @@ const SaveQueryPopover = ({
       if (foundQuery && queryName !== '') {
         setSelectedLabels(foundQuery.labels ?? [])
         setQueryName(
-          foundQuery.name ?? nodes[0]?.manifest?.name ?? '',
+          foundQuery.name || nodes[0]?.manifest?.name || '',
         )
         setEditContext(
-          foundQuery.context ?? nodes[0]?.projectRoot ?? '',
+          foundQuery.context || nodes[0]?.projectRoot || '',
         )
         const item: SavedQuery = {
           ...foundQuery,
@@ -177,10 +179,10 @@ const SaveQueryPopover = ({
       if (foundQuery && queryName !== '') {
         setSelectedLabels(foundQuery.labels ?? [])
         setQueryName(
-          foundQuery.name ?? nodes[0]?.manifest?.name ?? '',
+          foundQuery.name || nodes[0]?.manifest?.name || '',
         )
         setEditContext(
-          foundQuery.context ?? nodes[0]?.projectRoot ?? '',
+          foundQuery.context || nodes[0]?.projectRoot || '',
         )
         const item: SavedQuery = {
           ...foundQuery,

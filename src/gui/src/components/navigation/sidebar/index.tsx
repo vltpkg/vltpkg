@@ -20,12 +20,17 @@ import { AppSidebarFooter } from '@/components/navigation/sidebar/footer.jsx'
  *
  * https://ui.shadcn.com/docs/components/sidebar#persisted-state
  */
-export const defaultOpen = JSON.parse(
-  document.cookie
+export const defaultOpen: boolean = (() => {
+  const cookieValue = document.cookie
     .split('; ')
     .find(cookie => cookie.startsWith('sidebar:state='))
-    ?.split('=')[1] ?? 'true',
-)
+    ?.split('=')[1]
+
+  if (cookieValue === 'true') return true
+  if (cookieValue === 'false') return false
+
+  return true
+})()
 
 export function AppSidebar() {
   return (

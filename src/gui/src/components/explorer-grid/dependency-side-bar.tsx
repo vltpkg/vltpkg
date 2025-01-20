@@ -139,13 +139,15 @@ export const DependencySideBar = ({
 
   useEffect(() => {
     if (scope.current) {
-      showAddDepPopover ?
+      if (showAddDepPopover) {
         animate(scope.current, {
           rotate: -45,
         })
-      : animate(scope.current, {
+      } else {
+        animate(scope.current, {
           rotate: 0,
         })
+      }
     }
   }, [showAddDepPopover, scope])
 

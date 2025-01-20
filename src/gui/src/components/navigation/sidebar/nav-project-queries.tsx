@@ -16,7 +16,7 @@ import {
   CollapsibleTrigger,
 } from '@/components/ui/collapsible.jsx'
 import { useGraphStore } from '@/state/index.js'
-import  { type SavedQuery } from '@/state/types.js'
+import { type SavedQuery } from '@/state/types.js'
 import {
   ChevronRight,
   ChevronDown,
@@ -54,8 +54,8 @@ const SidebarQueryProjectNav = () => {
       const filteredGlobalQueries = savedQueries?.filter(query => {
         return query.context.trim() === ''
       })
-      setProjectQueries(filteredQueries || [])
-      setGlobalQueries(filteredGlobalQueries || [])
+      setProjectQueries(filteredQueries ?? [])
+      setGlobalQueries(filteredGlobalQueries ?? [])
     }
   }
 
@@ -63,8 +63,8 @@ const SidebarQueryProjectNav = () => {
     getProjectQueries()
   }, [savedQueries, graph])
 
-  const runQuery = (item: SavedQuery) => {
-    selectQuery({
+  const runQuery = async (item: SavedQuery): Promise<void> => {
+    await selectQuery({
       updateActiveRoute,
       updateErrorCause,
       updateQuery,
@@ -74,8 +74,8 @@ const SidebarQueryProjectNav = () => {
     })
   }
 
-  const runGlobalQuery = (item: SavedQuery) => {
-    selectQuery({
+  const runGlobalQuery = async (item: SavedQuery): Promise<void> => {
+    await selectQuery({
       updateActiveRoute,
       updateErrorCause,
       updateQuery,
@@ -97,7 +97,6 @@ const SidebarQueryProjectNav = () => {
           Queries
         </SidebarGroupLabel>
 
-        {/* global queries */}
         {globalQueries.length !== 0 && (
           <SidebarMenu>
             <Collapsible
@@ -111,7 +110,7 @@ const SidebarQueryProjectNav = () => {
                     {globalQueriesOpen ?
                       <FolderOpen />
                     : <Folder />}
-                    <span>Global Queries</span>
+                    <span>Global</span>
                     {globalQueriesOpen ?
                       <ChevronDown className="ml-auto" />
                     : <ChevronRight className="ml-auto" />}
@@ -123,7 +122,7 @@ const SidebarQueryProjectNav = () => {
                       <SidebarMenuSubItem key={idx}>
                         <SidebarMenuSubButton
                           className="cursor-pointer whitespace-nowrap truncate"
-                          onClick={() => runGlobalQuery(query)}>
+                          onClick={() => void runGlobalQuery(query)}>
                           {query.name}
                         </SidebarMenuSubButton>
                       </SidebarMenuSubItem>
@@ -148,7 +147,7 @@ const SidebarQueryProjectNav = () => {
                     {projectQueriesOpen ?
                       <FolderOpen />
                     : <Folder />}
-                    <span>Project Queries</span>
+                    <span>Project</span>
                     {projectQueriesOpen ?
                       <ChevronDown className="ml-auto" />
                     : <ChevronRight className="ml-auto" />}
@@ -160,7 +159,7 @@ const SidebarQueryProjectNav = () => {
                       <SidebarMenuSubItem key={idx}>
                         <SidebarMenuSubButton
                           className="cursor-pointer whitespace-nowrap truncate"
-                          onClick={() => runQuery(query)}>
+                          onClick={() => void runQuery(query)}>
                           {query.name}
                         </SidebarMenuSubButton>
                       </SidebarMenuSubItem>

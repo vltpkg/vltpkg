@@ -10,7 +10,7 @@ interface FilterSearchProps<T> {
   placeholder: string
 }
 
-const FilterSearch = <T, _>({
+const FilterSearch = <T,>({
   items,
   setFilteredItems,
   placeholder,
@@ -35,36 +35,32 @@ const FilterSearch = <T, _>({
       return
     }
 
-    if (items) {
-      const filteredItems = items.filter(item => {
-        return selectors.every(selector => {
-          if (selector.key === 'filter') {
-            const searchValue = selector.value.toLowerCase()
-            return Object.values(
-              item as Record<string, unknown>,
-            ).some(val =>
-              String(val).toLowerCase().includes(searchValue),
-            )
-          } else if (selector.key === 'label') {
-            const searchValue = selector.value.toLowerCase()
-            const labels = (item as SavedQuery).labels || []
-            return labels.some(label =>
-              label.name.toLowerCase().includes(searchValue),
-            )
-          } else {
-            const itemValue = String(
-              item[selector.key as keyof T] || '',
-            ).toLowerCase()
-            const selectorValue = selector.value.toLowerCase()
-            return itemValue === selectorValue
-          }
-        })
+    const filteredItems = items.filter(item => {
+      return selectors.every(selector => {
+        if (selector.key === 'filter') {
+          const searchValue = selector.value.toLowerCase()
+          return Object.values(item as Record<string, unknown>).some(
+            val => String(val).toLowerCase().includes(searchValue),
+          )
+        } else if (selector.key === 'label') {
+          const searchValue = selector.value.toLowerCase()
+          const labels = (item as SavedQuery).labels ?? []
+          return labels.some(label =>
+            label.name.toLowerCase().includes(searchValue),
+          )
+        } else {
+          const itemValue = String(
+            item[selector.key as keyof T] || '',
+          ).toLowerCase()
+          const selectorValue = selector.value.toLowerCase()
+          return itemValue === selectorValue
+        }
       })
+    })
 
-      setTimeout(() => {
-        setFilteredItems(filteredItems)
-      }, 0)
-    }
+    setTimeout(() => {
+      setFilteredItems(filteredItems)
+    }, 0)
   }, [items, window.location.search])
 
   /**
@@ -80,7 +76,7 @@ const FilterSearch = <T, _>({
     }
 
     if (filterText.trim() === '') {
-      setFilteredItems(items!)
+      setFilteredItems(items ?? [])
       return
     }
 

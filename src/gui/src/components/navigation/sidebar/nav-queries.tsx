@@ -14,9 +14,11 @@ const SidebarQueryNav = () => {
   const [queryCount, setQueryCount] = useState<number>(0)
 
   useEffect(() => {
-    savedQueries ?
+    if (savedQueries) {
       setQueryCount(savedQueries.length)
-    : setQueryCount(0)
+    } else {
+      setQueryCount(0)
+    }
   }, [savedQueries])
 
   return (
@@ -33,7 +35,11 @@ const SidebarQueryNav = () => {
             <Star />
             <span>Queries</span>
             <SidebarMenuBadge
-              className={activeRoute === '/queries' ? 'text-white dark:text-black' : ''}>
+              className={
+                activeRoute === '/queries' ?
+                  'text-white dark:text-black'
+                : ''
+              }>
               {queryCount !== 0 ? queryCount : undefined}
             </SidebarMenuBadge>
           </a>

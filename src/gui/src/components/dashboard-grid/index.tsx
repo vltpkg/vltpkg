@@ -166,7 +166,7 @@ const DashboardGrid = () => {
       <div className="flex gap-2 mb-8">
         <FilterSearch
           placeholder="Filter Projects"
-          items={dashboard?.projects || []}
+          items={dashboard?.projects ?? []}
           setFilteredItems={setFilteredProjects}
         />
         <SortingToggle
