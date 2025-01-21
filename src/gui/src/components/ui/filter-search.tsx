@@ -40,13 +40,18 @@ const FilterSearch = <T,>({
 
     if (filterText.split('=')[0] === 'label') {
       params.forEach((_, key) => params.delete(key))
-      params.set('label', filterText.split('=')[1]!)
+      const label = filterText.split('=')[1]
+      if (label) {
+        params.set('label', label)
+      }
     }
 
     if (itemKeys.some(key => filterText.includes(key))) {
       params.forEach((_, key) => params.delete(key))
       const [key, value] = filterText.split('=')
-      params.set(key!, value!)
+      if (key && value) {
+        params.set(key, value)
+      }
     }
 
     const newUrl = `${window.location.pathname}?${params.toString()}`
@@ -60,20 +65,16 @@ const FilterSearch = <T,>({
     const params = new URLSearchParams(window.location.search)
     const itemKeys = items ? Object.keys(items[0] ?? {}) : []
 
-    if (params && itemKeys) {
-      const paramKeys = Array.from(params.keys())
+    const paramKeys = Array.from(params.keys())
 
-      const matchingKey = paramKeys.find(key =>
-        itemKeys.includes(key),
-      )
+    const matchingKey = paramKeys.find(key => itemKeys.includes(key))
 
-      if (matchingKey) {
-        setFilterText(`${matchingKey}=${params.get(matchingKey)}`)
-      }
+    if (matchingKey) {
+      setFilterText(`${matchingKey}=${params.get(matchingKey)}`)
+    }
 
-      if (params.get('label')) {
-        setFilterText(`label=${params.get('label')?.toLowerCase()}`)
-      }
+    if (params.get('label')) {
+      setFilterText(`label=${params.get('label')?.toLowerCase()}`)
     }
 
     isInitialMount.current = false
