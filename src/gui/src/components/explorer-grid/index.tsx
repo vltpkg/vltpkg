@@ -191,6 +191,14 @@ const getDependencyItems = (node?: NodeLike) => {
   return items
 }
 
+const getItemQuery = (item: GridItemData) => {
+  if (!item.to) return ''
+  const name = item.to.name ? `[name="${item.to.name}"]` : ''
+  const version =
+    item.to.version ? `[version="${item.to.version}"]` : ''
+  return `${name}${version}`
+}
+
 export const ExplorerGrid = () => {
   const updateQuery = useGraphStore(state => state.updateQuery)
   const query = useGraphStore(state => state.query)
@@ -235,14 +243,20 @@ export const ExplorerGrid = () => {
       return undefined
     }
   const dependencyClick = (item: GridItemData) => () => {
-    console.error('dependencyClick')
-    if (!item.to) return
-    let newQuery = ''
-    const name = item.to.name ? `[name="${item.to.name}"]` : ''
-    const version =
-      item.to.version ? `[version="${item.to.version}"]` : ''
-    newQuery = `${query} > ${name}${version}`
-    updateQuery(newQuery)
+    const itemQuery = getItemQuery(item)
+    if (itemQuery) {
+      if (query.includes(itemQuery)) {
+        const newQuery = query
+          .split(itemQuery)
+          .slice(0, -1)
+          .concat([''])
+          .join(itemQuery)
+        updateQuery(newQuery)
+      } else {
+        const newQuery = `${query} > ${itemQuery}`
+        updateQuery(newQuery)
+      }
+    }
     return undefined
   }
   return (
