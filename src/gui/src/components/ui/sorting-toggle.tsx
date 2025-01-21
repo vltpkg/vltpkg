@@ -80,12 +80,12 @@ const SortingToggle = <T extends {}>({
 
   return (
     <div className="flex mx-3">
-      <div className="relative flex gap-1 items-center p-1 h-[2.5rem] bg-white dark:bg-black w-full rounded-sm border border-[1px] border-muted-foreground/25">
+      <div className="relative flex items-center p-1 h-[2.5rem] bg-white dark:bg-black w-full rounded-sm border border-[1px] border-muted-foreground/25">
         {/* the toggle slider */}
         <motion.div
           className="absolute h-[2rem] w-[2rem] rounded-sm bg-muted border border-muted-foreground/20"
           animate={{
-            left: sortToggle === 'ascending' ? 4 : 40,
+            left: sortToggle === 'ascending' ? 4 : 36,
           }}
         />
 

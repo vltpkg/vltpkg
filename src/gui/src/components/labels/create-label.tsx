@@ -46,7 +46,11 @@ const CreateLabel = ({ closeCreate }: CreateLabelProps) => {
   }
 
   useEffect(() => {
-    if (labelName !== '' && selectedColor !== '') {
+    if (
+      labelName.trim() !== '' &&
+      labelName.trim() !== 'Label preview' &&
+      selectedColor !== ''
+    ) {
       setIsCreationValid(true)
     } else {
       setIsCreationValid(false)
