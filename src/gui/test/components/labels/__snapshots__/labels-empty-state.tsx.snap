@@ -23,9 +23,9 @@ exports[`labels-empty-state > should render correctly 1`] = `
         style="opacity: 1;"
       >
       </div>
-      <div class="relative flex items-center justify-center h-[42px] w-[400px] bg-gradient-to-r from-black to-muted-foreground rounded-[8px]">
-        <div class="flex items-center justify-center h-[40px] w-[398px] bg-black rounded-[7px]">
-          <span class="absolute my-auto mr-32 text-sm tracking bg-gradient-to-r from-black to-neutral-500 text-transparent bg-clip-text">
+      <div class="relative flex items-center justify-center h-[42px] w-[400px] bg-gradient-to-r from-white dark:from-black to-muted-foreground dark:to-muted-foreground rounded-[8px]">
+        <div class="flex items-center justify-center h-[40px] w-[398px] bg-white dark:bg-black rounded-[7px]">
+          <span class="absolute my-auto mr-32 text-sm tracking bg-gradient-to-r from-white dark:from-black to-neutral-500 text-transparent bg-clip-text">
             Need to update insecure packages
           </span>
           <div
