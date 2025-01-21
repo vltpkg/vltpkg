@@ -206,20 +206,41 @@ export const useGraphStore = create<Action & State>((set, get) => {
       )
     },
     deleteSavedQueryLabels: (queryLabels: QueryLabel[]) => {
-      const savedQueryLabels = get().savedQueryLabels ?? []
+      const savedLabels = get().savedQueryLabels ?? []
+      const savedQueries = get().savedQueries ?? []
 
-      const queryLabelIds = queryLabels.map(
-        queryLabel => queryLabel.id,
-      )
-      const updatedQueryLabels = savedQueryLabels.filter(
-        savedQueryLabel =>
-          !queryLabelIds.includes(savedQueryLabel.id),
+      const queryLabelIdsToDelete = queryLabels.map(label => label.id)
+
+      const updatedLabels = savedLabels.filter(
+        label => !queryLabelIdsToDelete.includes(label.id),
       )
 
-      set({ savedQueryLabels: updatedQueryLabels })
+      const updatedQueries = savedQueries.map(savedQuery => {
+        if (savedQuery.labels) {
+          const filteredLabels = savedQuery.labels.filter(
+            label => !queryLabelIdsToDelete.includes(label.id),
+          )
+          return {
+            ...savedQuery,
+            labels: filteredLabels,
+            dateModified: new Date().toISOString(),
+          }
+        }
+        return savedQuery
+      })
+
+      set({
+        savedQueryLabels: updatedLabels,
+        savedQueries: updatedQueries,
+      })
+
       localStorage.setItem(
         'query-labels',
-        JSON.stringify(updatedQueryLabels),
+        JSON.stringify(updatedLabels),
+      )
+      localStorage.setItem(
+        'saved-queries',
+        JSON.stringify(updatedQueries),
       )
     },
   }
