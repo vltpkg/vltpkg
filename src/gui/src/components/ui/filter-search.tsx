@@ -17,26 +17,86 @@ const FilterSearch = <T,>({
 }: FilterSearchProps<T>) => {
   const [filterText, setFilterText] = useState<string>('')
   const inputRef = useRef<HTMLInputElement>(null)
+  const isInitialMount = useRef(true)
 
   /**
-   * Initially parse URL params and filter items
-   * based on the params.
+   * Update URL params based on `filterText` after initial load.
    */
   useEffect(() => {
-    const selectors: { key: string; value: string }[] = []
-    const params = new URLSearchParams(window.location.search)
+    if (isInitialMount.current) return
 
-    for (const [key, value] of params.entries()) {
-      selectors.push({ key, value })
+    const params = new URLSearchParams(window.location.search)
+    const itemKeys = items ? Object.keys(items[0] ?? {}) : []
+
+    if (!filterText.trim()) {
+      params.forEach((_, key) => params.delete(key))
+      setFilteredItems(items ?? [])
     }
 
+    if (filterText.trim() !== '') {
+      params.forEach((_, key) => params.delete(key))
+      params.set('filter', filterText)
+    }
+
+    if (filterText.split('=')[0] === 'label') {
+      params.forEach((_, key) => params.delete(key))
+      params.set('label', filterText.split('=')[1]!)
+    }
+
+    if (itemKeys.some(key => filterText.includes(key))) {
+      params.forEach((_, key) => params.delete(key))
+      const [key, value] = filterText.split('=')
+      params.set(key!, value!)
+    }
+
+    const newUrl = `${window.location.pathname}?${params.toString()}`
+    window.history.replaceState({}, '', newUrl)
+  }, [filterText])
+
+  /**
+   * Sync URL params with filtered items on initial load.
+   */
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const itemKeys = items ? Object.keys(items[0] ?? {}) : []
+
+    if (params && itemKeys) {
+      const paramKeys = Array.from(params.keys())
+
+      const matchingKey = paramKeys.find(key =>
+        itemKeys.includes(key),
+      )
+
+      if (matchingKey) {
+        setFilterText(`${matchingKey}=${params.get(matchingKey)}`)
+      }
+
+      if (params.get('label')) {
+        setFilterText(`label=${params.get('label')?.toLowerCase()}`)
+      }
+    }
+
+    isInitialMount.current = false
+  }, [])
+
+  /**
+   * Filter items based on `filterText` or URL params.
+   */
+  useEffect(() => {
     if (!items) {
       setFilteredItems([])
       return
     }
 
-    const filteredItems = items.filter(item => {
-      return selectors.every(selector => {
+    const params = new URLSearchParams(window.location.search)
+    const selectors: { key: string; value: string }[] = []
+
+    for (const [key, value] of params.entries()) {
+      selectors.push({ key, value })
+    }
+
+    const filteredItems = items.filter(item =>
+      selectors.every(selector => {
         if (selector.key === 'filter') {
           const searchValue = selector.value.toLowerCase()
           return Object.values(item as Record<string, unknown>).some(
@@ -55,37 +115,14 @@ const FilterSearch = <T,>({
           const selectorValue = selector.value.toLowerCase()
           return itemValue === selectorValue
         }
-      })
-    })
+      }),
+    )
 
-    setTimeout(() => {
-      setFilteredItems(filteredItems)
-    }, 0)
-  }, [items, window.location.search])
+    setFilteredItems(filteredItems)
+  }, [items, window.location.search, filterText])
 
   /**
-   * Handle setting the params in the url when filterText changs
-   */
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search)
-
-    if (filterText) {
-      params.set('filter', filterText)
-    } else {
-      params.delete('filter')
-    }
-
-    if (filterText.trim() === '') {
-      setFilteredItems(items ?? [])
-      return
-    }
-
-    const newUrl = `${window.location.pathname}?${params.toString()}`
-    window.history.replaceState({}, '', newUrl)
-  }, [filterText])
-
-  /**
-   * Handle the search input accessibility
+   * Handle keyboard shortcuts.
    */
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
