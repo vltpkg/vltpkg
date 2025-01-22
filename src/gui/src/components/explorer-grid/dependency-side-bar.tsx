@@ -223,38 +223,38 @@ export const DependencySideBar = ({
         Dependencies
         {importerId ?
           <div className="grow flex justify-end">
-            <Popover
-              open={showAddDepPopover}
-              onOpenChange={setShowAddDepPopover}>
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      role="button"
-                      variant="outline"
-                      size="xs"
-                      onClick={toggleShowAddDepPopover}>
-                      <Plus ref={scope} />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Add a new dependency</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-              {/* XXX: PopoverTrigger is required even though unused */}
-              <PopoverTrigger></PopoverTrigger>
-              <PopoverContent
-                align="end"
-                className="p-0 w-96 top-0 right-0">
-                <AddDependenciesPopover
-                  error={error}
-                  inProgress={inProgress}
-                  onInstall={onInstall}
-                  onClose={toggleShowAddDepPopover}
-                />
-              </PopoverContent>
-            </Popover>
+            <TooltipProvider>
+              <Popover
+                onOpenChange={setShowAddDepPopover}
+                open={showAddDepPopover}>
+                <PopoverTrigger>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        role="button"
+                        variant="outline"
+                        size="xs"
+                        onClick={toggleShowAddDepPopover}>
+                        <Plus ref={scope} />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Add a new dependency</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </PopoverTrigger>
+                <PopoverContent
+                  align="end"
+                  className="p-0 w-96 top-0 right-0">
+                  <AddDependenciesPopover
+                    error={error}
+                    inProgress={inProgress}
+                    onInstall={onInstall}
+                    onClose={toggleShowAddDepPopover}
+                  />
+                </PopoverContent>
+              </Popover>
+            </TooltipProvider>
           </div>
         : ''}
       </GridHeader>
