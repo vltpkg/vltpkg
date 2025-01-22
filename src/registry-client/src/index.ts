@@ -8,14 +8,23 @@ import { setTimeout } from 'node:timers/promises'
 import { loadPackageJson } from 'package-json-from-dist'
 import { Agent, RetryAgent, type Dispatcher } from 'undici'
 import { addHeader } from './add-header.js'
-import { getToken, kc, setToken, type Token } from './auth.js'
+import {
+  deleteToken,
+  getToken,
+  kc,
+  setToken,
+  type Token,
+} from './auth.js'
 import { CacheEntry } from './cache-entry.js'
 import { bun, deno, node } from './env.js'
 import { handle304Response } from './handle-304-response.js'
 import { otplease } from './otplease.js'
 import { isRedirect, redirect } from './redirect.js'
 import { setCacheHeaders } from './set-cache-headers.js'
-import { isTokenResponse, TokenResponse } from './token-response.js'
+import {
+  isTokenResponse,
+  type TokenResponse,
+} from './token-response.js'
 import {
   isWebAuthChallenge,
   type WebAuthChallenge,
@@ -162,6 +171,66 @@ export class RegistryClient {
         'UND_ERR_SOCKET',
       ],
     })
+  }
+
+  /**
+   * Fetch the entire set of a paginated list of objects
+   */
+  async scroll<T>(
+    url: URL | string,
+    options: RegistryClientRequestOptions = {},
+    seek?: (obj: T) => boolean,
+  ): Promise<T[]> {
+    const resp = await this.request(url, options)
+    const { objects, urls } = resp.json() as {
+      objects: T[]
+      urls: { next?: string }
+    }
+    // if we have more, and haven't found our target, fetch more
+    return urls.next && !(seek && objects.some(seek)) ?
+        objects.concat(await this.scroll<T>(urls.next, options, seek))
+      : objects
+  }
+
+  /**
+   * find a given item in a paginated set
+   */
+  async seek<T>(
+    url: URL | string,
+    seek: (obj: T) => boolean,
+    options: RegistryClientRequestOptions = {},
+  ): Promise<T | undefined> {
+    return (await this.scroll(url, options, seek)).find(seek)
+  }
+
+  /**
+   * Log out from the registry specified, attempting to destroy the
+   * token if the registry supports that endpoint.
+   */
+  async logout(registry: string) {
+    // if we have no token for that registry, nothing to do
+    const tok = await getToken(registry)
+    if (!tok) return
+
+    const s = tok.replace(/^(Bearer|Basic) /i, '')
+
+    const tokensUrl = new URL('-/npm/v1/tokens', registry)
+    const record = await this.seek<{
+      key: string
+      token: string
+    }>(tokensUrl, ({ token }) => s.startsWith(token), {
+      cache: false,
+    }).catch(() => undefined)
+
+    if (record) {
+      const { key } = record
+      await this.request(
+        new URL(`-/npm/v1/tokens/token/${key}`, registry),
+        { cache: false, method: 'DELETE' },
+      )
+    }
+
+    await deleteToken(registry)
   }
 
   /**
