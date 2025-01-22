@@ -6,21 +6,21 @@ exports[`queries-empty-state > labels render default 1`] = `
   <div class="-mt-20 flex flex-col items-center justify-center gap-3 mt-10">
     <div class="relative flex items-center justify-center mb-20">
       <div
-        class="absolute z-[-1] w-[450px] h-[450px] border-[1px] border-neutral-500/10 rounded-full"
+        class="absolute z-[1] w-[450px] h-[450px] border-[1px] border-neutral-500/10 rounded-full"
         style="opacity: 1;"
       >
       </div>
       <div
-        class="absolute z-[-1] w-[300px] h-[300px] border-[1px] border-neutral-500/15 rounded-full"
+        class="absolute z-[1] w-[300px] h-[300px] border-[1px] border-neutral-500/15 rounded-full"
         style="opacity: 1;"
       >
       </div>
       <div
-        class="absolute z-[-1] w-[150px] h-[150px] border-[1px] border-neutral-500/20 rounded-full"
+        class="absolute z-[1] w-[150px] h-[150px] border-[1px] border-neutral-500/20 rounded-full"
         style="opacity: 1;"
       >
       </div>
-      <div class="absolute flex items-center justify-center h-[50px] w-[400px] bg-gradient-to-r from-white to-neutral-400 dark:from-black dark:to-neutral-800 rounded-[8px]">
+      <div class="absolute z-[2] flex items-center justify-center h-[50px] w-[400px] bg-gradient-to-r from-white to-neutral-400 dark:from-black dark:to-neutral-800 rounded-[8px]">
         <div class="relative flex items-center h-[48.25px] w-[398.25px] bg-white dark:bg-black rounded-[6.25px] shadow-2xl">
           <p class="-ml-32 bg-gradient-to-r from-white dark:from-black to-neutral-500 dark:to-neutral-500 text-transparent bg-clip-text absolute whitespace-nowrap">
             [name="my-project"] &gt; :is(:project &gt; *[name="tap"])
@@ -79,7 +79,10 @@ exports[`queries-empty-state > labels render default 1`] = `
     </p>
     <div class="flex gap-3">
     </div>
-    <gui-button aschild="true">
+    <gui-button
+      aschild="true"
+      classname="z-[2]"
+    >
       <a href="/">
         <span>
           Explore Projects
