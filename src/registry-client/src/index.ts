@@ -1,17 +1,27 @@
 import { Cache } from '@vltpkg/cache'
 import { register } from '@vltpkg/cache-unzip'
+import { error } from '@vltpkg/error-cause'
 import { type Integrity } from '@vltpkg/types'
+import { urlOpen } from '@vltpkg/url-open'
 import { XDG } from '@vltpkg/xdg'
+import { setTimeout } from 'node:timers/promises'
 import { loadPackageJson } from 'package-json-from-dist'
 import { Agent, RetryAgent, type Dispatcher } from 'undici'
 import { addHeader } from './add-header.js'
+import { getToken, kc, setToken, type Token } from './auth.js'
 import { CacheEntry } from './cache-entry.js'
 import { bun, deno, node } from './env.js'
 import { handle304Response } from './handle-304-response.js'
+import { otplease } from './otplease.js'
 import { isRedirect, redirect } from './redirect.js'
 import { setCacheHeaders } from './set-cache-headers.js'
-
-export { type CacheEntry }
+import { isTokenResponse, TokenResponse } from './token-response.js'
+import {
+  isWebAuthChallenge,
+  type WebAuthChallenge,
+} from './web-auth-challenge.js'
+export { type CacheEntry, type Token }
+export { kc }
 
 export type RegistryClientOptions = {
   /**
@@ -33,7 +43,7 @@ export type RegistryClientOptions = {
 }
 
 export type RegistryClientRequestOptions = Omit<
-  Dispatcher.DispatchOptions,
+  Dispatcher.RequestOptions,
   'method' | 'path'
 > & {
   /**
@@ -70,6 +80,21 @@ export type RegistryClientRequestOptions = Omit<
    * @internal
    */
   redirections?: Set<string>
+
+  /**
+   * Set to `false` to suppress ANY lookups from cache. This will also
+   * prevent storing the result to the cache.
+   */
+  cache?: false
+
+  /**
+   * Set to pass an `npm-otp` header on the request.
+   *
+   * This should not be set except by the RegistryClient itself, when
+   * we receive a 401 response with an OTP challenge.
+   * @internal
+   */
+  otp?: string
 }
 
 const { version } = loadPackageJson(import.meta.filename) as {
@@ -139,6 +164,94 @@ export class RegistryClient {
     })
   }
 
+  /**
+   * Log into the registry specified
+   *
+   * Does not return the token or expose it, just saves to the auth keychain
+   * and returns void if it worked. Otherwise, error is raised.
+   */
+  async login(registry: string) {
+    // - make POST to '/-/v1/login'
+    // - include a body of {} and npm-auth-type:web
+    // - get a {doneUrl, loginUrl}
+    // - open the loginUrl
+    // - hang on the doneUrl until done
+    //
+    // if that fails: fall back to couchdb login
+    const webLoginURL = new URL('-/v1/login', registry)
+    const response = await this.request(webLoginURL, {
+      method: 'POST',
+      cache: false,
+      headers: {
+        'content-type': 'application/json',
+        'npm-auth-type': 'web',
+      },
+      body: '{}',
+    })
+
+    if (response.statusCode === 200) {
+      const challenge = response.json()
+      if (isWebAuthChallenge(challenge)) {
+        const result = await this.webAuthOpener(challenge)
+        await setToken(registry, `Bearer ${result.token}`)
+        return
+      }
+    }
+    /* c8 ignore start */
+    // TODO: fall back to username/password login, and/or couchdb PUT login
+    throw error('Failed to perform web login', { response })
+  }
+  /* c8 ignore stop */
+
+  /**
+   * Given a {@link WebAuthChallenge}, open the `loginUrl` in a browser and
+   * hang on the `doneUrl` until it returns a {@link TokenResponse} object.
+   */
+  async webAuthOpener({ doneUrl, loginUrl }: WebAuthChallenge) {
+    const ac = new AbortController()
+    const { signal } = ac
+    /* c8 ignore start - race condition */
+    const [result] = await Promise.all([
+      this.#checkLogin(doneUrl, { signal }).then(result => {
+        ac.abort()
+        return result
+      }),
+      urlOpen(loginUrl, { signal }).catch((er: unknown) => {
+        if ((er as Error).name === 'AbortError') return
+        ac.abort()
+        throw er
+      }),
+    ])
+    /* c8 ignore stop */
+    return result
+  }
+
+  async #checkLogin(
+    url: URL | string,
+    options: RegistryClientRequestOptions = {},
+  ): Promise<TokenResponse> {
+    const response = await this.request(url, {
+      ...options,
+      cache: false,
+    })
+    const { signal } = options as { signal?: AbortSignal }
+    if (response.statusCode === 202) {
+      const rt = response.getHeader('retry-after')
+      const retryAfter = rt ? Number(rt.toString()) : -1
+      if (retryAfter > 0) {
+        await setTimeout(retryAfter * 1000, null, { signal })
+      }
+      return await this.#checkLogin(url, options)
+    }
+    if (response.statusCode === 200) {
+      const body = response.json()
+      if (isTokenResponse(body)) return body
+    }
+    throw error('Invalid response from web login endpoint', {
+      response,
+    })
+  }
+
   async request(
     url: URL | string,
     options: RegistryClientRequestOptions = {},
@@ -148,14 +261,20 @@ export class RegistryClient {
       method = 'GET',
       integrity,
       redirections = new Set(),
+      cache = true,
+      signal,
+      otp = (process.env.VLT_OTP ?? '').trim(),
     } = options
+
+    ;(signal as AbortSignal | null)?.throwIfAborted()
 
     // first, try to get from the cache before making any request.
     const { origin, pathname } = u
     const key = JSON.stringify([origin, method, pathname])
-    const buffer = await this.cache.fetch(key, {
-      context: { integrity },
-    })
+    const buffer =
+      cache ?
+        await this.cache.fetch(key, { context: { integrity } })
+      : undefined
 
     const entry = buffer ? CacheEntry.decode(buffer) : undefined
     if (entry?.valid) return entry
@@ -183,54 +302,82 @@ export class RegistryClient {
       'user-agent',
       userAgent,
     )
+    if (otp) {
+      options.headers = addHeader(options.headers, 'npm-otp', otp)
+    }
     options.method = options.method ?? 'GET'
 
-    const result = await new Promise<Dispatcher.ResponseData>(
-      (res, rej) => {
-        /* c8 ignore start - excessive type setting for eslint */
-        this.agent
-          .request(options as Dispatcher.RequestOptions)
-          .then(res)
-          .catch((er: unknown) => rej(er as Error))
+    // will remove if we don't have a token.
+    options.headers = addHeader(
+      options.headers,
+      'authorization',
+      await getToken(origin),
+    )
+
+    const result = await this.#handleResponse(
+      u,
+      options,
+      await this.agent.request(options as Dispatcher.RequestOptions),
+      entry,
+    )
+
+    if (cache) this.cache.set(key, result.encode())
+    return result
+  }
+
+  async #handleResponse(
+    url: URL,
+    options: RegistryClientRequestOptions,
+    response: Dispatcher.ResponseData,
+    entry?: CacheEntry,
+  ): Promise<CacheEntry> {
+    if (handle304Response(response, entry)) return entry
+
+    if (response.statusCode === 401) {
+      const repeatRequest = await otplease(this, options, response)
+      if (repeatRequest) return await this.request(url, repeatRequest)
+    }
+
+    const h: Buffer[] = []
+    for (const [key, value] of Object.entries(response.headers)) {
+      /* c8 ignore start - theoretical */
+      if (Array.isArray(value)) {
+        h.push(Buffer.from(key), Buffer.from(value.join(', ')))
         /* c8 ignore stop */
-      },
-    ).then(resp => {
-      if (handle304Response(resp, entry)) return entry
-
-      const h: Buffer[] = []
-      for (const [key, value] of Object.entries(resp.headers)) {
-        /* c8 ignore start - theoretical */
-        if (Array.isArray(value)) {
-          h.push(Buffer.from(key), Buffer.from(value.join(', ')))
-          /* c8 ignore stop */
-        } else if (typeof value === 'string') {
-          h.push(Buffer.from(key), Buffer.from(value))
-        }
+      } else if (typeof value === 'string') {
+        h.push(Buffer.from(key), Buffer.from(value))
       }
-      const result = new CacheEntry(
-        /* c8 ignore next - should always have a status code */
-        resp.statusCode || 200,
-        h,
-        options.integrity,
-      )
+    }
 
-      if (isRedirect(result)) {
-        resp.body.resume()
-        const [nextURL, nextOptions] = redirect(options, result, u)
+    const result = new CacheEntry(
+      /* c8 ignore next - should always have a status code */
+      response.statusCode || 200,
+      h,
+      options.integrity,
+    )
+
+    if (isRedirect(result)) {
+      response.body.resume()
+      // remove the try/catch once rebasing onto main with Luke's error-cause stuff
+      try {
+        const [nextURL, nextOptions] = redirect(options, result, url)
         if (nextOptions && nextURL) {
-          return this.request(nextURL, nextOptions)
+          return await this.request(nextURL, nextOptions)
         }
         return result
+      } catch (er) {
+        /* c8 ignore start */
+        throw er instanceof Error ? er : (
+            new Error(typeof er === 'string' ? er : 'Unknown error')
+          )
+        /* c8 ignore stop */
       }
+    }
 
-      resp.body.on('data', (chunk: Buffer) => result.addBody(chunk))
-      return new Promise<CacheEntry>((res, rej) => {
-        resp.body.on('error', rej)
-        resp.body.on('end', () => res(result))
-      })
+    response.body.on('data', (chunk: Buffer) => result.addBody(chunk))
+    return await new Promise<CacheEntry>((res, rej) => {
+      response.body.on('error', rej)
+      response.body.on('end', () => res(result))
     })
-
-    this.cache.set(key, result.encode())
-    return result
   }
 }
