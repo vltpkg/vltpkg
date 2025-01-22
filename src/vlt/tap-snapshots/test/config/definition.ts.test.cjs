@@ -20,6 +20,8 @@ Object {
   "install-exec": "install-exec",
   "ix": "install-exec",
   "list": "list",
+  "login": "login",
+  "logout": "logout",
   "ls": "list",
   "pkg": "pkg",
   "query": "query",
@@ -31,6 +33,7 @@ Object {
   "rx": "run-exec",
   "u": "uninstall",
   "uninstall": "uninstall",
+  "whoami": "whoami",
   "x": "exec",
 }
 `
@@ -106,6 +109,8 @@ Object {
       "help",
       "install-exec",
       "install",
+      "login",
+      "logout",
       "list",
       "ls",
       "pkg",
@@ -113,6 +118,7 @@ Object {
       "run-exec",
       "run",
       "uninstall",
+      "whoami",
     ],
   },
   "fetch-retries": Object {
