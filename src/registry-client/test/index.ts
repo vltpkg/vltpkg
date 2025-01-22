@@ -4,7 +4,7 @@ import { createServer } from 'http'
 import { resolve } from 'path'
 import t, { type Test } from 'tap'
 import { gzipSync } from 'zlib'
-import { RegistryClientRequestOptions } from '../src/index.js'
+import { type RegistryClientRequestOptions } from '../src/index.js'
 
 const PORT = (t.childId || 0) + 8080
 
@@ -17,7 +17,10 @@ const date = new Date('2023-01-20')
 let dropConnection = false
 
 // verify that it works even if connections get dropped sometimes
-t.beforeEach(() => (dropConnection = true))
+t.beforeEach(() => {
+  dropConnection = true
+  tokensActions.length = 0
+})
 
 const opened: Record<string, boolean> = {}
 const urlOpenEE = new EventEmitter<{
@@ -26,7 +29,7 @@ const urlOpenEE = new EventEmitter<{
 
 const mockUrlOpen = {
   urlOpen: async (url: string) => {
-    const match = url.match(/[0-9]+$/)
+    const match = /npm_Yy[0-9]+$/.exec(url)
     if (!match) throw new Error('invalid login url')
     opened[match[0]] = true
     urlOpenEE.emit('login', match[0])
@@ -49,16 +52,11 @@ const otplease = async (
   if (!options.otp) return { ...options, otp: 'hello' }
 }
 
-const { RegistryClient, kc } = await t.mockImport<
-  typeof import('../src/index.js')
->('../src/index.js', {
-  '@vltpkg/url-open': mockUrlOpen,
-  '../src/otplease.js': { otplease },
-})
-
 let doneUrlRetry: boolean | string = false
-let doneUrlFail: boolean = false
-let doneUrlInvalid: boolean = false
+let doneUrlFail = false
+let doneUrlInvalid = false
+
+const tokensActions: [string, string][] = []
 
 const registry = createServer((req, res) => {
   if (dropConnection) {
@@ -69,7 +67,45 @@ const registry = createServer((req, res) => {
   res.setHeader('date', new Date().toUTCString())
   const { url = '' } = req
 
-  if (/^\/-\/401/.test(url)) {
+  if (url.startsWith('/-/npm/v1/tokens')) {
+    tokensActions.push([
+      req.method ?? 'wat!?',
+      url.substring('/-/npm/v1/tokens'.length),
+    ])
+    if (req.method === 'GET' && url === '/-/npm/v1/tokens') {
+      return res.end(
+        JSON.stringify({
+          objects: [
+            {
+              token: 'npm_xX',
+              key: 'deadbeefcafebad',
+            },
+          ],
+          urls: {
+            next: String(
+              new URL('/-/npm/v1/tokens/page/2', registryURL),
+            ),
+          },
+        }),
+      )
+    } else if (req.method === 'GET') {
+      return res.end(
+        JSON.stringify({
+          objects: [
+            {
+              token: 'npm_Yy',
+              key: 'this is a key i supoise',
+            },
+          ],
+          urls: {},
+        }),
+      )
+    } else {
+      return res.end('{}')
+    }
+  }
+
+  if (url.startsWith('/-/401')) {
     if (req.headers['npm-otp']) {
       return res.end('{"status":"ok"}')
     } else {
@@ -80,7 +116,8 @@ const registry = createServer((req, res) => {
   }
 
   if (/^\/-\/v1\/login$/.test(url)) {
-    const tok = String(Math.random()).replace(/[^0-9]+/g, '')
+    const tok =
+      'npm_Yy' + String(Math.random()).replace(/[^0-9]+/g, '')
     return res.end(
       JSON.stringify({
         doneUrl: `${registryURL}/-/weblogin-done-url/${tok}`,
@@ -90,7 +127,7 @@ const registry = createServer((req, res) => {
   }
 
   if (/^\/-\/weblogin-done-url\/.*$/.test(url)) {
-    const match = url.match(/[0-9]+$/)
+    const match = /npm_Yy[0-9]+$/.exec(url)
     if (!match) {
       res.statusCode = 403
       return res.end(JSON.stringify({ error: 'invalid login url' }))
@@ -187,11 +224,16 @@ const registry = createServer((req, res) => {
 const registryURL = `http://localhost:${PORT}`
 
 const mockIndex = async (t: Test, mocks?: Record<string, any>) =>
-  t.mockImport('../src/index.js', {
+  t.mockImport<typeof import('../src/index.js')>('../src/index.js', {
     // always get fresh copy of env since it reads globalThis
     '../src/env.js': await t.mockImport('../src/env.js'),
+    '@vltpkg/url-open': mockUrlOpen,
+    '../src/otplease.js': { otplease },
     ...mocks,
   })
+
+// default ones to use for tests that don't need their own mocks
+const { RegistryClient, kc } = await mockIndex(t)
 
 t.teardown(() => registry.close())
 
@@ -433,7 +475,7 @@ t.test('client.login()', async t => {
   t.matchOnlyStrict(
     auths,
     {
-      [new URL(registryURL).origin]: /^Bearer [0-9]+$/,
+      [new URL(registryURL).origin]: /^Bearer npm_Yy[0-9]+$/,
     },
     'saved auth to keychain',
   )
@@ -452,7 +494,7 @@ t.test('client.login() with immediate retry', async t => {
   t.matchOnlyStrict(
     auths,
     {
-      [new URL(registryURL).origin]: /^Bearer [0-9]+$/,
+      [new URL(registryURL).origin]: /^Bearer npm_Yy[0-9]+$/,
     },
     'saved auth to keychain',
   )
@@ -471,9 +513,32 @@ t.test('client.login() with 100ms delayed retry', async t => {
   t.matchOnlyStrict(
     auths,
     {
-      [new URL(registryURL).origin]: /^Bearer [0-9]+$/,
+      [new URL(registryURL).origin]: /^Bearer npm_Yy[0-9]+$/,
     },
     'saved auth to keychain',
+  )
+})
+
+t.test('client.logout()', async t => {
+  dropConnection = false
+  const rc = new RegistryClient({ cache: t.testdir() })
+  await rc.logout(registryURL)
+  await kc.save()
+  // do it again just to hit the 'no token' use case
+  await rc.logout(registryURL)
+  // do it again to hit the 'have token, but not on the server' case
+  kc.set(registryURL, 'Bearer some-invalid-token')
+  await rc.logout(registryURL)
+  t.equal(await kc.get(registryURL), undefined)
+  t.strictSame(
+    new Set(tokensActions),
+    new Set([
+      ['GET', ''],
+      ['GET', '/page/2'],
+      ['DELETE', '/token/this%20is%20a%20key%20i%20supoise'],
+      ['GET', ''],
+      ['GET', '/page/2'],
+    ]),
   )
 })
 
