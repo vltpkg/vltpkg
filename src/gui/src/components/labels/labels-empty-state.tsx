@@ -50,7 +50,7 @@ const LabelsEmptyState = () => {
 
               <div className="relative flex items-center justify-center h-[42px] w-[400px] bg-gradient-to-r from-white dark:from-black to-muted-foreground dark:to-muted-foreground rounded-[8px]">
                 <div className="flex items-center justify-center h-[40px] w-[398px] bg-white dark:bg-black rounded-[7px]">
-                  <span className="absolute my-auto mr-32 text-sm tracking bg-gradient-to-r from-white dark:from-black to-neutral-500 text-transparent bg-clip-text">
+                  <span className="absolute my-auto mr-32 text-sm tracking bg-gradient-to-r from-white dark:from-black dark:to-neutral-500 to-neutral-500 text-transparent bg-clip-text">
                     Need to update insecure packages
                   </span>
                   <motion.div

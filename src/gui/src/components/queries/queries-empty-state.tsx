@@ -116,22 +116,22 @@ const QueriesEmptyState = () => {
             initial={{ opacity: 1 }}
             animate={{ opacity: [0, 1, 0] }}
             transition={{ duration: 3, repeat: Infinity, delay: 0.5 }}
-            className="absolute z-[-1] w-[450px] h-[450px] border-[1px] border-neutral-500/10 rounded-full"
+            className="absolute z-[1] w-[450px] h-[450px] border-[1px] border-neutral-500/10 rounded-full"
           />
           <motion.div
             initial={{ opacity: 1 }}
             animate={{ opacity: [0, 1, 0] }}
             transition={{ duration: 3, repeat: Infinity, delay: 1 }}
-            className="absolute z-[-1] w-[300px] h-[300px] border-[1px] border-neutral-500/15 rounded-full"
+            className="absolute z-[1] w-[300px] h-[300px] border-[1px] border-neutral-500/15 rounded-full"
           />
           <motion.div
             initial={{ opacity: 1 }}
             animate={{ opacity: [0, 1, 0] }}
             transition={{ duration: 3, repeat: Infinity, delay: 1.5 }}
-            className="absolute z-[-1] w-[150px] h-[150px] border-[1px] border-neutral-500/20 rounded-full"
+            className="absolute z-[1] w-[150px] h-[150px] border-[1px] border-neutral-500/20 rounded-full"
           />
 
-          <div className="absolute flex items-center justify-center h-[50px] w-[400px] bg-gradient-to-r from-white to-neutral-400 dark:from-black dark:to-neutral-800 rounded-[8px]">
+          <div className="absolute z-[2] flex items-center justify-center h-[50px] w-[400px] bg-gradient-to-r from-white to-neutral-400 dark:from-black dark:to-neutral-800 rounded-[8px]">
             <div className="relative flex items-center h-[48.25px] w-[398.25px] bg-white dark:bg-black rounded-[6.25px] shadow-2xl">
               <p className="-ml-32 bg-gradient-to-r from-white dark:from-black to-neutral-500 dark:to-neutral-500 text-transparent bg-clip-text absolute whitespace-nowrap">{`[name="my-project"] > :is(:project > *[name="tap"])`}</p>
               <div className="ml-auto flex gap-2 mr-3">
@@ -184,7 +184,7 @@ const QueriesEmptyState = () => {
           explore your Projects to add one!
         </p>
         <div className="flex gap-3"></div>
-        <Button asChild>
+        <Button asChild className="z-[2]">
           <a href="/">
             <span>Explore Projects</span>
             <ArrowRight />
