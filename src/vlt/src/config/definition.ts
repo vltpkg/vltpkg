@@ -8,6 +8,8 @@ const canonicalCommands = {
   help: 'help',
   'install-exec': 'install-exec',
   install: 'install',
+  login: 'login',
+  logout: 'logout',
   list: 'list',
   ls: 'ls',
   pkg: 'pkg',
@@ -15,6 +17,7 @@ const canonicalCommands = {
   'run-exec': 'run-exec',
   run: 'run',
   uninstall: 'uninstall',
+  whoami: 'whoami',
 } as const
 
 const aliases = {
