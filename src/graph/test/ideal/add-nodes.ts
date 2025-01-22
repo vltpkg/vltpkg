@@ -4,6 +4,7 @@ import { kCustomInspect, Spec, type SpecOptions } from '@vltpkg/spec'
 import { PathScurry } from 'path-scurry'
 import t from 'tap'
 import {
+  type AddImportersDependenciesMap,
   type Dependency,
   type DependencyTypeShort,
 } from '../../src/dependencies.js'
@@ -71,7 +72,9 @@ t.test('addNodes', async t => {
   t.matchSnapshot(objectLikeOutput(graph), 'initial graph')
 
   await addNodes({
-    add: new Map([[joinDepIDTuple(['file', '.']), addEntry('foo')]]),
+    add: new Map([
+      [joinDepIDTuple(['file', '.']), addEntry('foo')],
+    ]) as AddImportersDependenciesMap,
     graph,
     packageInfo,
     scurry: new PathScurry(t.testdirName),
@@ -79,7 +82,9 @@ t.test('addNodes', async t => {
   t.matchSnapshot(objectLikeOutput(graph), 'graph with an added foo')
 
   await addNodes({
-    add: new Map([[joinDepIDTuple(['file', '.']), addEntry('foo')]]),
+    add: new Map([
+      [joinDepIDTuple(['file', '.']), addEntry('foo')],
+    ]) as AddImportersDependenciesMap,
     graph,
     scurry: new PathScurry(t.testdirName),
     packageInfo,
@@ -93,7 +98,7 @@ t.test('addNodes', async t => {
     addNodes({
       add: new Map([
         [joinDepIDTuple(['file', 'unknown']), addEntry('foo')],
-      ]),
+      ]) as AddImportersDependenciesMap,
       graph,
       packageInfo,
       scurry: new PathScurry(t.testdirName),
@@ -115,7 +120,9 @@ t.test('addNodes', async t => {
 
   // now it should install the package bar to the main importer
   await addNodes({
-    add: new Map([[joinDepIDTuple(['file', '.']), addEntry('bar')]]),
+    add: new Map([
+      [joinDepIDTuple(['file', '.']), addEntry('bar')],
+    ]) as AddImportersDependenciesMap,
     scurry: new PathScurry(t.testdirName),
     graph,
     packageInfo,

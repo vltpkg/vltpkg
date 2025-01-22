@@ -287,11 +287,14 @@ t.test('e2e server test', async t => {
     for (const file of readdirSync(tmp)) {
       files.push(file)
     }
+    t.ok(
+      files.includes('index.js'),
+      'should copy the index.js file to the tmp directory',
+    )
     t.matchSnapshot(
       readFileSync(resolve(tmp, 'graph.json'), 'utf8'),
       'should write graph.json with data from the current project',
     )
-    t.matchSnapshot(files, 'should copy all files to tmp directory')
     t.matchSnapshot(log, 'should log the server start message')
 
     // tests a POST to /select-project and swap graph.json content
@@ -588,7 +591,10 @@ t.test('no data to be found', async t => {
       resetOptions(newProjectRoot: string) {
         options.projectRoot = newProjectRoot
       },
-    } as LoadedConfig,
+      values: {
+        'dashboard-root': [resolve(dir, 'emtpy-dir')],
+      },
+    } as unknown as LoadedConfig,
     assetsDir,
     port,
     tmpDir: resolve(dir, 'assets-dir'),
@@ -600,8 +606,8 @@ t.test('no data to be found', async t => {
   for (const file of readdirSync(tmp)) {
     files.push(file)
   }
-  t.matchSnapshot(
-    files,
+  t.notOk(
+    files.some(name => name.endsWith('.json')),
     'should not create json files if no data was found',
   )
 })

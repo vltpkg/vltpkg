@@ -73,13 +73,16 @@ const reify_ = async (
   diff: Diff,
   remover: RollbackRemove,
 ) => {
-  const { packageInfo, packageJson, scurry } = options
-  const saveImportersPackageJson = updatePackageJson({
-    add: options.add,
-    remove: options.remove,
-    graph: options.graph,
-    packageJson,
-  })
+  const { add, remove, packageInfo, packageJson, scurry } = options
+  const saveImportersPackageJson =
+    add?.modifiedDependencies || remove?.modifiedDependencies ?
+      updatePackageJson({
+        add,
+        remove,
+        graph: options.graph,
+        packageJson,
+      })
+    : undefined
 
   // before anything else happens, grab the ideal tree as it was resolved
   // so that we can store it in the lockfile. We do this here so that
@@ -131,7 +134,7 @@ const reify_ = async (
   if (rmActions.length) await Promise.all(rmActions)
 
   // updates package.json files if anything was added / removed
-  saveImportersPackageJson()
+  saveImportersPackageJson?.()
 
   // write the ideal graph data to the lockfile
   saveData(lfData, scurry.resolve('vlt-lock.json'), false)

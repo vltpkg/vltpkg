@@ -13,13 +13,15 @@ import {
   type DependencyTypeShort,
   actual,
   asDependency,
+  type AddImportersDependenciesMap,
+  type RemoveImportersDependenciesMap,
 } from '@vltpkg/graph'
 import handler from 'serve-handler'
 import opener from 'opener'
 import { loadPackageJson } from 'package-json-from-dist'
 import { type PathScurry, type PathBase } from 'path-scurry'
 import { readProjectFolders } from './read-project-folders.js'
-import { type DepID, asDepID } from '@vltpkg/dep-id'
+import { asDepID } from '@vltpkg/dep-id'
 import { type Manifest } from '@vltpkg/types'
 import {
   type ConfigOptions,
@@ -76,6 +78,20 @@ export type DashboardDataProject = {
   mtime?: number
 }
 
+class AddImportersDependenciesMapImpl
+  extends Map
+  implements AddImportersDependenciesMap
+{
+  modifiedDependencies = false
+}
+
+class RemoveImportersDependenciesMapImpl
+  extends Map
+  implements RemoveImportersDependenciesMap
+{
+  modifiedDependencies = false
+}
+
 const knownTools = new Map<DashboardTools, string[]>([
   ['vlt', ['vlt-lock.json', 'vlt-workspaces.json']],
   ['node', []],
@@ -102,7 +118,7 @@ export const parseInstallOptions = (
   conf: LoadedConfig,
   args: GUIInstallOptions,
 ): InstallOptions => {
-  const addArgs = new Map<DepID, Map<string, Dependency>>()
+  const addArgs = new AddImportersDependenciesMapImpl()
   for (const [importerId, deps] of Object.entries(args)) {
     const depMap = new Map<string, Dependency>()
     for (const [name, { version, type }] of Object.entries(deps)) {
@@ -113,6 +129,7 @@ export const parseInstallOptions = (
           type,
         }),
       )
+      addArgs.modifiedDependencies = true
     }
     addArgs.set(asDepID(importerId), depMap)
   }
@@ -123,13 +140,14 @@ export const parseUninstallOptions = (
   conf: LoadedConfig,
   args: GUIUninstallOptions,
 ): UninstallOptions => {
-  const removeArgs = new Map<DepID, Set<string>>()
+  const removeArgs = new RemoveImportersDependenciesMapImpl()
   for (const [importerId, deps] of Object.entries(args)) {
     const depMap = new Set<string>()
     for (const name of deps) {
       depMap.add(name)
     }
     removeArgs.set(asDepID(importerId), depMap)
+    removeArgs.modifiedDependencies = true
   }
   return { remove: removeArgs, conf }
 }
@@ -224,25 +242,39 @@ const updateGraphData = (
 
 const updateDashboardData = async (
   tmp: string,
-  options: ConfigOptions,
+  conf: LoadedConfig,
 ) => {
+  const userDefinedProjectPaths =
+    // eslint-disable-next-line
+    conf.values?.['dashboard-root'] || []
   const dashboard = formatDashboardJson(
-    readProjectFolders(process.cwd(), options),
-    options,
+    readProjectFolders({
+      ...conf.options,
+      userDefinedProjectPaths,
+    }),
+    conf.options,
   )
   const dashboardJson = JSON.stringify(dashboard, null, 2)
   writeFileSync(resolve(tmp, 'dashboard.json'), dashboardJson)
   return dashboard.projects.length > 0
 }
 
+const getDefaultStartingRoute = (options: ConfigOptions) => {
+  const { projectRoot, scurry } = options
+  const defaultExplore = `/explore?query=${encodeURIComponent(':root')}`
+  const stat = scurry.lstatSync(`${projectRoot}/package.json`)
+  return stat && stat.isFile() && !stat.isSymbolicLink() ?
+      defaultExplore
+    : '/dashboard'
+}
+
 export const startGUI = async ({
   assetsDir,
   conf,
   port = PORT,
-  startingRoute = '/dashboard',
+  startingRoute = undefined,
   tmpDir = tmpdir(),
 }: StartGUIOptions) => {
-  const { options } = conf
   const tmp = resolve(tmpDir, 'vltgui')
   rmSync(tmp, { recursive: true, force: true })
   mkdirSync(tmp, { recursive: true })
@@ -256,7 +288,7 @@ export const startGUI = async ({
   // project in order to just explore its graph data
   let hasDashboard = false
   try {
-    hasDashboard = await updateDashboardData(tmp, options)
+    hasDashboard = await updateDashboardData(tmp, conf)
     /* c8 ignore next */
   } catch (_err) {}
   if (!hasDashboard) {
@@ -378,9 +410,11 @@ export const startGUI = async ({
   })
 
   return new Promise<Server>(res => {
+    const route =
+      startingRoute || getDefaultStartingRoute(conf.options)
     server.listen(port, 'localhost', () => {
       stdout(`⚡️ vlt GUI running at http://${HOST}:${port}`)
-      opener(`http://${HOST}:${port}${startingRoute}`)
+      opener(`http://${HOST}:${port}${route}`)
       res(server)
     })
   })

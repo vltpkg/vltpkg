@@ -1,14 +1,20 @@
+import os from 'node:os'
 import { type PathBase, type PathScurry } from 'path-scurry'
+import { ignoredHomedirFolderNames } from './ignored-homedir-folder-names.js'
 
 type ProjectFolderOptions = {
   /**
-   * The project root dirname.
+   * The standard path to read from, defaults to the user's home directory.
    */
-  projectRoot: string
+  path?: string
   /**
-   * A {@link PathScurry} object, for use in globs
+   * A {@link PathScurry} object, for use in globs.
    */
   scurry: PathScurry
+  /**
+   * A list of user defined project paths set in the configuration file.
+   */
+  userDefinedProjectPaths: string[]
 }
 
 /**
@@ -20,23 +26,12 @@ type ProjectFolderOptions = {
  * be find, always stopping at the first level where a package.json
  * is present.
  */
-export const readProjectFolders = (
-  dir: string = process.cwd(),
-  { projectRoot, scurry }: ProjectFolderOptions,
-): PathBase[] => {
+export const readProjectFolders = ({
+  path = os.homedir(),
+  scurry,
+  userDefinedProjectPaths,
+}: ProjectFolderOptions): PathBase[] => {
   const result: PathBase[] = []
-
-  // if the given directory is also the project root, we then
-  // proceed to read its siblings instead
-  let cwd = scurry.resolve(dir)
-  if (
-    cwd.startsWith(projectRoot) &&
-    scurry.lstatSync(scurry.resolve(projectRoot, 'package.json'))
-  ) {
-    dir = scurry.resolve(projectRoot, '..')
-    cwd = scurry.resolve(dir)
-  }
-
   const traverse: PathBase[] = []
 
   // collectResult will return true in case it finds a directory that
@@ -47,12 +42,19 @@ export const readProjectFolders = (
     if (
       entry.isDirectory() &&
       !entry.isSymbolicLink() &&
-      entry.name !== 'node_modules'
+      entry.name !== 'node_modules' &&
+      !entry.name.startsWith('.') &&
+      !ignoredHomedirFolderNames.includes(entry.name)
     ) {
-      //traverse.push(entry)
       const resolved = entry.fullpath()
-      const stat = scurry.lstatSync(`${resolved}/package.json`)
-      if (stat && stat.isFile() && !stat.isSymbolicLink()) {
+      const statPackageJson = scurry.lstatSync(
+        `${resolved}/package.json`,
+      )
+      const hasValidPackageJson =
+        statPackageJson &&
+        statPackageJson.isFile() &&
+        !statPackageJson.isSymbolicLink()
+      if (hasValidPackageJson) {
         result.push(entry)
       } else {
         foundDir = true
@@ -61,26 +63,28 @@ export const readProjectFolders = (
     return foundDir
   }
 
-  // read the provided folder to see if packages are present as
-  // direct children items in the directory
-  for (const entry of scurry.readdirSync(cwd, {
-    withFileTypes: true,
-  })) {
-    if (collectResult(entry)) {
-      traverse.push(entry)
+  // read entry point folders to collect which ones
+  // should we recursively traverse to collect project folders
+  const paths =
+    userDefinedProjectPaths.length ? userDefinedProjectPaths : [path]
+  for (const path of paths) {
+    for (const entry of scurry.readdirSync(path, {
+      withFileTypes: true,
+    })) {
+      if (collectResult(entry)) {
+        traverse.push(entry)
+      }
     }
   }
 
-  // traverse nested directories for project folders in case nothing was
-  // found in the first level
-  if (result.length === 0) {
-    for (const entry of traverse) {
-      for (const child of scurry.readdirSync(entry.fullpath(), {
-        withFileTypes: true,
-      })) {
-        if (collectResult(child)) {
-          traverse.push(child)
-        }
+  // traverse nested directories starting
+  // at the entry points previously found
+  for (const entry of traverse) {
+    for (const child of scurry.readdirSync(entry.fullpath(), {
+      withFileTypes: true,
+    })) {
+      if (collectResult(child)) {
+        traverse.push(child)
       }
     }
   }
