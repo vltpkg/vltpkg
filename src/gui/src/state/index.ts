@@ -6,7 +6,7 @@ import {
   type QueryLabel,
 } from './types.js'
 
-export const DEFAULT_QUERY = ':project > *'
+export const DEFAULT_QUERY = ':root'
 
 const DEFAULT_QUERY_LABELS: QueryLabel[] = [
   {
