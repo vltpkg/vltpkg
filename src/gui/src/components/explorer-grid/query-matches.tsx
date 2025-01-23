@@ -22,16 +22,12 @@ const QueryMatches = () => {
   )
 
   useEffect(() => {
-    const checkMatchedQueries = () => {
-      if (savedQueries && savedQueries.length !== 0) {
-        const filteredQueries = savedQueries.filter(
-          query => query.query === activeQuery,
-        )
-        setMatchedQueries(filteredQueries)
-      }
+    if (savedQueries && savedQueries.length !== 0) {
+      const filteredQueries = savedQueries.filter(
+        query => query.query === activeQuery,
+      )
+      setMatchedQueries(filteredQueries)
     }
-
-    checkMatchedQueries()
   }, [savedQueries, activeQuery])
 
   return (
