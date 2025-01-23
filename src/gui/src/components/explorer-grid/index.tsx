@@ -1,5 +1,4 @@
 import {
-  Search,
   GalleryVertical,
   GalleryVerticalEnd,
   GalleryThumbnails,
@@ -18,6 +17,7 @@ import {
 } from '@/components/explorer-grid/types.js'
 import { GridHeader } from '@/components/explorer-grid/header.jsx'
 import { DependencySideBar } from '@/components/explorer-grid/dependency-side-bar.jsx'
+import { EmptyResultsState } from '@/components/explorer-grid/empty-results-state.jsx'
 
 const getItemsData = (edges: EdgeLike[], nodes: NodeLike[]) => {
   const items: GridItemData[] = []
@@ -259,6 +259,9 @@ export const ExplorerGrid = () => {
     }
     return undefined
   }
+
+  if (!items.length) return <EmptyResultsState />
+
   return (
     <div className="grow grid grid-cols-7 gap-4 px-8 bg-secondary dark:bg-black">
       <div className="col-span-2">
@@ -293,12 +296,7 @@ export const ExplorerGrid = () => {
         : ''}
       </div>
       <div className="col-span-3">
-        {items.length === 0 ?
-          <GridHeader>
-            <Search size={22} className="mr-3" />
-            No Results
-          </GridHeader>
-        : items.length > 1 ?
+        {items.length > 1 ?
           <GridHeader className="mb-4">Results</GridHeader>
         : <GridHeader>
             <GalleryVertical size={22} className="mr-3" />
