@@ -15,9 +15,9 @@ afterEach(() => {
   cleanup()
 })
 
-const testCases = new Map<string, string>([
+const testCases = new Map<string, string | null>([
   ['/', 'Dashboard'],
-  ['/error', 'Error'],
+  ['/error', null],
   ['/explore', 'Explore'],
   ['/dashboard', 'Dashboard'],
   ['/queries', 'Queries'],
@@ -34,7 +34,13 @@ test.each([...testCases])(
     }
 
     const { container } = render(<Container />)
-    expect(container.innerHTML).toContain(expectedRouteName)
+
+    if (expectedRouteName === null) {
+      expect(container.innerHTML).not.toContain('Error')
+    } else {
+      expect(container.innerHTML).toContain(expectedRouteName)
+    }
+
     expect(container.innerHTML).toMatchSnapshot()
   },
 )

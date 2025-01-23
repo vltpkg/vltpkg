@@ -4,21 +4,12 @@ import html from 'diffable-html'
 import { useGraphStore as useStore } from '@/state/index.js'
 import { ErrorFound } from '@/app/error-found.jsx'
 
-vi.mock('@/components/ui/logo.jsx', () => ({
-  Logo: 'gui-logo',
-}))
-vi.mock('@/components/ui/title.jsx', () => ({
-  Title: 'gui-title',
-}))
 vi.mock('@/components/ui/button.jsx', () => ({
   Button: 'gui-button',
 }))
-vi.mock('@/components/ui/theme-switcher.jsx', () => ({
-  ThemeSwitcher: 'gui-theme-switcher',
-}))
 vi.mock('lucide-react', () => ({
-  BatteryLow: 'gui-battery-low-icon',
-  LayoutDashboard: 'gui-layout-dashboard-icon',
+  ArrowRight: 'gui-arrow-right-icon',
+  TriangleAlert: 'gui-triangle-alert-icon',
 }))
 
 expect.addSnapshotSerializer({
