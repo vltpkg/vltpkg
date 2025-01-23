@@ -160,3 +160,5 @@ export type DashboardDataProject = {
   tools: DashboardTools[]
   mtime?: number | null
 }
+
+export type Color = `#${string}`

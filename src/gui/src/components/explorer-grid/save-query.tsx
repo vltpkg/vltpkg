@@ -18,13 +18,15 @@ import { Label } from '@/components/ui/label.jsx'
 import { Input } from '@/components/ui/input.jsx'
 import { useAnimate } from 'framer-motion'
 import { useGraphStore } from '@/state/index.js'
-import { type QueryLabel, type SavedQuery } from '@/state/types.js'
+import {
+  type Color,
+  type QueryLabel,
+  type SavedQuery,
+} from '@/state/types.js'
 import { LabelSelect } from '@/components/labels/label-select.jsx'
 import { LabelBadge } from '@/components/labels/label-badge.jsx'
 import { v4 as uuidv4 } from 'uuid'
 import { DeleteQuery } from '@/components/queries/delete-query.jsx'
-
-type Color = '#fafafa' | '#212121'
 
 interface SaveQueryPopoverProps {
   isOpen: boolean
@@ -120,16 +122,12 @@ const SaveQueryPopover = ({
   const savedQueries = useGraphStore(state => state.savedQueries)
   const activeQuery = useGraphStore(state => state.query)
 
-  /**
-   * Set the default state of the text inputs
-   */
   useEffect(() => {
     // React runs useEffect twice in strict mode during dev
     // This ensures that this useEffect only ever runs once.
     if (!hasRun.current) {
       hasRun.current = true
 
-      // Check if query exists
       const foundQuery = savedQueries?.find(
         query => query.query === activeQuery,
       )
@@ -167,9 +165,13 @@ const SaveQueryPopover = ({
           dateModified: new Date().toISOString(),
         })
       }
-      return
     }
+  }, [])
 
+  /**
+   * Set the default state of the text inputs
+   */
+  useEffect(() => {
     if (!isOpen) {
       const foundQuery = savedQueries?.find(
         query => query.query === activeQuery,
