@@ -15,7 +15,7 @@ import {
   setToken,
   type Token,
 } from './auth.js'
-import { CacheEntry } from './cache-entry.js'
+import { CacheEntry, type JSONObj } from './cache-entry.js'
 import { bun, deno, node } from './env.js'
 import { handle304Response } from './handle-304-response.js'
 import { otplease } from './otplease.js'
@@ -29,7 +29,13 @@ import {
   isWebAuthChallenge,
   type WebAuthChallenge,
 } from './web-auth-challenge.js'
-export { type CacheEntry, type Token }
+export {
+  type JSONObj,
+  type CacheEntry,
+  type Token,
+  type WebAuthChallenge,
+  type TokenResponse,
+}
 export { kc }
 
 export type RegistryClientOptions = {
