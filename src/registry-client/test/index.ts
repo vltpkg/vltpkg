@@ -1,7 +1,10 @@
+import EventEmitter from 'events'
+import { readFileSync } from 'fs'
 import { createServer } from 'http'
+import { resolve } from 'path'
 import t, { type Test } from 'tap'
 import { gzipSync } from 'zlib'
-import { RegistryClient } from '../src/index.js'
+import { type RegistryClientRequestOptions } from '../src/index.js'
 
 const PORT = (t.childId || 0) + 8080
 
@@ -14,7 +17,46 @@ const date = new Date('2023-01-20')
 let dropConnection = false
 
 // verify that it works even if connections get dropped sometimes
-t.beforeEach(() => (dropConnection = true))
+t.beforeEach(() => {
+  dropConnection = true
+  tokensActions.length = 0
+})
+
+const opened: Record<string, boolean> = {}
+const urlOpenEE = new EventEmitter<{
+  login: [url: string]
+}>()
+
+const mockUrlOpen = {
+  urlOpen: async (url: string) => {
+    const match = /npm_Yy[0-9]+$/.exec(url)
+    if (!match) throw new Error('invalid login url')
+    opened[match[0]] = true
+    urlOpenEE.emit('login', match[0])
+  },
+}
+
+const dir = t.testdir()
+process.env.XDG_CONFIG_HOME = dir
+process.env.XDG_CACHE_HOME = dir
+process.env.XDG_DATA_HOME = dir
+process.env.XDG_STATE_HOME = dir
+process.env.XDG_RUNTIME_HOME = dir
+
+// mock function, just sets the npm-otp header
+const otplease = async (
+  _client: any,
+  options: RegistryClientRequestOptions,
+  _response: any,
+): Promise<RegistryClientRequestOptions | undefined> => {
+  if (!options.otp) return { ...options, otp: 'hello' }
+}
+
+let doneUrlRetry: boolean | string = false
+let doneUrlFail = false
+let doneUrlInvalid = false
+
+const tokensActions: [string, string][] = []
 
 const registry = createServer((req, res) => {
   if (dropConnection) {
@@ -24,6 +66,107 @@ const registry = createServer((req, res) => {
   res.setHeader('connection', 'close')
   res.setHeader('date', new Date().toUTCString())
   const { url = '' } = req
+
+  if (url.startsWith('/-/put')) {
+    return res.end(
+      '{"ok": true, "method": "' + String(req.method) + '"}',
+    )
+  }
+
+  if (url.startsWith('/-/npm/v1/tokens')) {
+    tokensActions.push([
+      req.method ?? 'wat!?',
+      url.substring('/-/npm/v1/tokens'.length),
+    ])
+    if (req.method === 'GET' && url === '/-/npm/v1/tokens') {
+      return res.end(
+        JSON.stringify({
+          objects: [
+            {
+              token: 'npm_xX',
+              key: 'deadbeefcafebad',
+            },
+          ],
+          urls: {
+            next: String(
+              new URL('/-/npm/v1/tokens/page/2', registryURL),
+            ),
+          },
+        }),
+      )
+    } else if (req.method === 'GET') {
+      return res.end(
+        JSON.stringify({
+          objects: [
+            {
+              token: 'npm_Yy',
+              key: 'this is a key i supoise',
+            },
+          ],
+          urls: {},
+        }),
+      )
+    } else {
+      return res.end('{}')
+    }
+  }
+
+  if (url.startsWith('/-/401')) {
+    if (req.headers['npm-otp']) {
+      return res.end('{"status":"ok"}')
+    } else {
+      res.statusCode = 401
+      res.setHeader('www-authenticate', 'otp')
+      return res.end('{"needs":"otp"}')
+    }
+  }
+
+  if (/^\/-\/v1\/login$/.test(url)) {
+    const tok =
+      'npm_Yy' + String(Math.random()).replace(/[^0-9]+/g, '')
+    return res.end(
+      JSON.stringify({
+        doneUrl: `${registryURL}/-/weblogin-done-url/${tok}`,
+        loginUrl: `${registryURL}/-/weblogin-login-url/${tok}`,
+      }),
+    )
+  }
+
+  if (/^\/-\/weblogin-done-url\/.*$/.test(url)) {
+    const match = /npm_Yy[0-9]+$/.exec(url)
+    if (!match) {
+      res.statusCode = 403
+      return res.end(JSON.stringify({ error: 'invalid login url' }))
+    }
+    if (doneUrlInvalid) {
+      doneUrlInvalid = false
+      res.statusCode = 200
+      return res.end('{"no":"token here"}')
+    }
+    if (doneUrlFail) {
+      doneUrlFail = false
+      res.statusCode = 403
+      return res.end('{"no":"way"}')
+    }
+    if (doneUrlRetry) {
+      res.statusCode = 202
+      if (typeof doneUrlRetry === 'string') {
+        res.setHeader('retry-after', doneUrlRetry)
+      }
+      doneUrlRetry = false
+      return res.end()
+    }
+    const tok = match[0]
+    const handler = (tokenOpened: string) => {
+      if (tokenOpened !== tok) return
+      urlOpenEE.removeListener('login', handler)
+      res.end(JSON.stringify({ token: tok }))
+    }
+    urlOpenEE.on('login', handler)
+    if (opened[tok]) urlOpenEE.emit('login', tok)
+    return
+  }
+
   if (/^\/30[0-9]-redirect/.test(url)) {
     const statusCode = parseInt(url.substring(1, 4), 10)
     const n = parseInt(url.substring('/3xx-redirect'.length), 10)
@@ -33,6 +176,7 @@ const registry = createServer((req, res) => {
     res.setHeader('location', location)
     return res.end(JSON.stringify({ location }))
   }
+
   if (/^\/30[0-9]-cycle/.test(url)) {
     const statusCode = parseInt(url.substring(1, 4), 10)
     const n = parseInt(url.substring('/3xx-cycle'.length), 10)
@@ -86,13 +230,19 @@ const registry = createServer((req, res) => {
 const registryURL = `http://localhost:${PORT}`
 
 const mockIndex = async (t: Test, mocks?: Record<string, any>) =>
-  t.mockImport('../src/index.js', {
+  t.mockImport<typeof import('../src/index.js')>('../src/index.js', {
     // always get fresh copy of env since it reads globalThis
     '../src/env.js': await t.mockImport('../src/env.js'),
+    '@vltpkg/url-open': mockUrlOpen,
+    '../src/otplease.js': { otplease },
     ...mocks,
   })
 
+// default ones to use for tests that don't need their own mocks
+const { RegistryClient, kc } = await mockIndex(t)
+
 t.teardown(() => registry.close())
+
 t.before(
   async () => await new Promise<void>(r => registry.listen(PORT, r)),
 )
@@ -317,4 +467,118 @@ t.test('user-agent', t => {
   })
 
   t.end()
+})
+
+t.test('client.login()', async t => {
+  // login is actually not resilient to dropped connections, by design
+  dropConnection = false
+  const rc = new RegistryClient({ cache: t.testdir() })
+  await rc.login(registryURL)
+  await kc.save()
+  const auths = JSON.parse(
+    readFileSync(resolve(dir, 'vlt/auth/keychain.json'), 'utf8'),
+  )
+  t.matchOnlyStrict(
+    auths,
+    {
+      [new URL(registryURL).origin]: /^Bearer npm_Yy[0-9]+$/,
+    },
+    'saved auth to keychain',
+  )
+})
+
+t.test('client.login() with immediate retry', async t => {
+  // login is actually not resilient to dropped connections, by design
+  dropConnection = false
+  doneUrlRetry = true
+  const rc = new RegistryClient({ cache: t.testdir() })
+  await rc.login(registryURL)
+  await kc.save()
+  const auths = JSON.parse(
+    readFileSync(resolve(dir, 'vlt/auth/keychain.json'), 'utf8'),
+  )
+  t.matchOnlyStrict(
+    auths,
+    {
+      [new URL(registryURL).origin]: /^Bearer npm_Yy[0-9]+$/,
+    },
+    'saved auth to keychain',
+  )
+})
+
+t.test('client.login() with 100ms delayed retry', async t => {
+  // login is actually not resilient to dropped connections, by design
+  dropConnection = false
+  doneUrlRetry = '0.1'
+  const rc = new RegistryClient({ cache: t.testdir() })
+  await rc.login(registryURL)
+  await kc.save()
+  const auths = JSON.parse(
+    readFileSync(resolve(dir, 'vlt/auth/keychain.json'), 'utf8'),
+  )
+  t.matchOnlyStrict(
+    auths,
+    {
+      [new URL(registryURL).origin]: /^Bearer npm_Yy[0-9]+$/,
+    },
+    'saved auth to keychain',
+  )
+})
+
+t.test('client.logout()', async t => {
+  dropConnection = false
+  const rc = new RegistryClient({ cache: t.testdir() })
+  await rc.logout(registryURL)
+  await kc.save()
+  // do it again just to hit the 'no token' use case
+  await rc.logout(registryURL)
+  // do it again to hit the 'have token, but not on the server' case
+  kc.set(registryURL, 'Bearer some-invalid-token')
+  await rc.logout(registryURL)
+  t.equal(await kc.get(registryURL), undefined)
+  t.strictSame(
+    new Set(tokensActions),
+    new Set([
+      ['GET', ''],
+      ['GET', '/page/2'],
+      ['DELETE', '/token/this%20is%20a%20key%20i%20supoise'],
+      ['GET', ''],
+      ['GET', '/page/2'],
+    ]),
+  )
+})
+
+t.test('client.login() with doneUrl invalid response', async t => {
+  // login is actually not resilient to dropped connections, by design
+  dropConnection = false
+  doneUrlInvalid = true
+  const rc = new RegistryClient({ cache: t.testdir() })
+  await t.rejects(rc.login(registryURL))
+})
+
+t.test('client.login() with doneUrl failure status code', async t => {
+  // login is actually not resilient to dropped connections, by design
+  dropConnection = false
+  doneUrlFail = true
+  const rc = new RegistryClient({ cache: t.testdir() })
+  await t.rejects(rc.login(registryURL))
+})
+
+t.test('401 prompting otplease', async t => {
+  dropConnection = false
+  const rc = new RegistryClient({ cache: t.testdir() })
+  const result = await rc.request(
+    new URL('/-/401/yolo', registryURL),
+    { cache: false },
+  )
+  t.match(result, { statusCode: 200 })
+})
+
+t.test('sending request with PUT method', async t => {
+  // this provides coverage for the "no default cache except HEAD/GET" path
+  const rc = new RegistryClient({ cache: t.testdir() })
+  const result = await rc.request(new URL('/-/put', registryURL), {
+    method: 'PUT',
+  })
+  t.strictSame(result.json(), { ok: true, method: 'PUT' })
 })
