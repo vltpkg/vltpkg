@@ -6,5 +6,12 @@
  */
 'use strict'
 exports[`test/commands/whoami.ts > TAP > must match snapshot 1`] = `
-Jack {}
+Usage:
+
+\`\`\`
+vlt whoami
+\`\`\`
+
+Look up the username for the currently active token, when logged into a registry.
+
 `

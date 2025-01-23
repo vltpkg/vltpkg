@@ -6,5 +6,12 @@
  */
 'use strict'
 exports[`test/commands/login.ts > TAP > must match snapshot 1`] = `
-Jack {}
+Usage:
+
+\`\`\`
+vlt login
+\`\`\`
+
+Authenticate against a registry, and store the token in the appropriate config file for later use.
+
 `

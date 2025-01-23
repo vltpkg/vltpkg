@@ -14,7 +14,7 @@ const { usage, command } = await t.mockImport<
   },
 })
 
-t.matchSnapshot(usage())
+t.matchSnapshot(usage().usageMarkdown())
 await command({
   options: { registry: 'registry' },
 } as unknown as LoadedConfig)
