@@ -1,0 +1,31 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`save-query > should render correctly 1`] = `
+
+<gui-popover>
+  <gui-popover-trigger classname="flex items-center justify-center">
+    <gui-tooltip>
+      <gui-tooltip-provider>
+        <gui-tooltip-trigger
+          aschild="true"
+          classname="flex items-center justify-center"
+        >
+          <div class="flex -space-x-2 mr-1">
+          </div>
+        </gui-tooltip-trigger>
+        <gui-tooltip-content>
+          Labels
+        </gui-tooltip-content>
+      </gui-tooltip-provider>
+    </gui-tooltip>
+  </gui-popover-trigger>
+  <gui-popover-content>
+    <p class="font-semibold mb-2">
+      Labels
+    </p>
+    <div class="flex flex-wrap gap-2">
+    </div>
+  </gui-popover-content>
+</gui-popover>
+
+`;

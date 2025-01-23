@@ -1,0 +1,29 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`AppSidebar query nav > renders correctly 1`] = `
+
+<gui-sidebar-menu>
+  <gui-sidebar-menu-item>
+    <gui-sidebar-menu-button
+      isactive="false"
+      aschild="true"
+      tooltip="Saved queries"
+      classname="data-[active=true]:bg-neutral-800 data-[active=true]:text-white data-[active=true]:dark:bg-neutral-100 data-[active=true]:dark:text-black"
+    >
+      <a
+        href="/queries"
+        class="text-foreground "
+      >
+        <gui-star-icon>
+        </gui-star-icon>
+        <span>
+          Queries
+        </span>
+        <gui-sidebar-menu-badge classname>
+        </gui-sidebar-menu-badge>
+      </a>
+    </gui-sidebar-menu-button>
+  </gui-sidebar-menu-item>
+</gui-sidebar-menu>
+
+`;

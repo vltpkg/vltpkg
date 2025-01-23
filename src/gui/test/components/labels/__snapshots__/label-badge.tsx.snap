@@ -1,0 +1,12 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`label-badge > should render correctly 1`] = `
+
+<gui-badge
+  style="background-color: rgb(6, 182, 212); color: black;"
+  classname
+>
+  mock-label-1
+</gui-badge>
+
+`;

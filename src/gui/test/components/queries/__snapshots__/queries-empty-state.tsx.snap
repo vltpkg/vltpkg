@@ -1,0 +1,97 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`queries-empty-state > labels render default 1`] = `
+
+<div class="flex items-center justify-center h-full w-full bg-white dark:bg-black">
+  <div class="-mt-20 flex flex-col items-center justify-center gap-3 mt-10">
+    <div class="relative flex items-center justify-center mb-20">
+      <div
+        class="absolute z-[1] w-[450px] h-[450px] border-[1px] border-neutral-500/10 rounded-full"
+        style="opacity: 1;"
+      >
+      </div>
+      <div
+        class="absolute z-[1] w-[300px] h-[300px] border-[1px] border-neutral-500/15 rounded-full"
+        style="opacity: 1;"
+      >
+      </div>
+      <div
+        class="absolute z-[1] w-[150px] h-[150px] border-[1px] border-neutral-500/20 rounded-full"
+        style="opacity: 1;"
+      >
+      </div>
+      <div class="absolute z-[2] flex items-center justify-center h-[50px] w-[400px] bg-gradient-to-r from-white to-neutral-400 dark:from-black dark:to-neutral-800 rounded-[8px]">
+        <div class="relative flex items-center h-[48.25px] w-[398.25px] bg-white dark:bg-black rounded-[6.25px] shadow-2xl">
+          <p class="-ml-32 bg-gradient-to-r from-white dark:from-black to-neutral-500 dark:to-neutral-500 text-transparent bg-clip-text absolute whitespace-nowrap">
+            [name="my-project"] &gt; :is(:project &gt; *[name="tap"])
+          </p>
+          <div class="ml-auto flex gap-2 mr-3">
+            <div class="flex items-center justify-center h-[24px] w-[24px] rounded-sm border-[1px] bg-neutral-700 dark:bg-neutral-300 border-neutral-800 dark:border-neutral-900">
+              <gui-star-icon
+                id="icon"
+                size="16"
+                classname="text-neutral-100 dark:text-neutral-900"
+              >
+              </gui-star-icon>
+            </div>
+            <div class="flex items-center justify-center gap-1 before:content-[''] before:w-[0.9px] before:h-[14px] before:bg-neutral-400 dark:before:bg-neutral-800 before:rounded-full before:mr-1">
+              <div class="flex items-center justify-center h-[24px] w-[24px] rounded-sm border-[1px] bg-neutral-100 dark:bg-neutral-900 border-neutral-400 dark:border-neutral-800">
+                <gui-command-icon
+                  size="13"
+                  classname="text-neutral-500"
+                >
+                </gui-command-icon>
+              </div>
+              <div class="flex items-center justify-center h-[24px] w-[24px] rounded-sm border-[1px] bg-neutral-100 dark:bg-neutral-900 border-neutral-400 dark:border-neutral-800">
+                <span class="font-mono text-sm text-neutral-500">
+                  k
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="absolute -right-10 top-10">
+          <div class="relative">
+            <svg
+              stroke="currentColor"
+              fill="currentColor"
+              stroke-width="1"
+              viewbox="0 0 16 16"
+              class="h-6 w-6 transform -rotate-[70deg] -translate-x-[12px] -translate-y-[10px] stroke-sky-500 text-sky-400 dark:stroke-sky-500 dark:text-sky-700 "
+              height="1em"
+              width="1em"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path d="M14.082 2.182a.5.5 0 0 1 .103.557L8.528 15.467a.5.5 0 0 1-.917-.007L5.57 10.694.803 8.652a.5.5 0 0 1-.006-.916l12.728-5.657a.5.5 0 0 1 .556.103z">
+              </path>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </div>
+    <h3 class="text-xl font-semibold">
+      No saved Queries yet
+    </h3>
+    <p class="text-sm text-neutral-500 text-center">
+      Looks like you haven't saved any Queries yet,
+      <br>
+      explore your Projects to add one!
+    </p>
+    <div class="flex gap-3">
+    </div>
+    <gui-button
+      aschild="true"
+      classname="z-[2]"
+    >
+      <a href="/">
+        <span>
+          Explore Projects
+        </span>
+        <gui-arrow-right-icon>
+        </gui-arrow-right-icon>
+      </a>
+    </gui-button>
+  </div>
+</div>
+
+`;

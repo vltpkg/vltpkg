@@ -1,0 +1,62 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`delete-label > should render correctly 1`] = `
+
+<div class="flex items-center">
+  <div class="flex items-center">
+    <gui-dialog open="false">
+      <gui-tooltip open="false">
+        <gui-tooltip-provider>
+          <gui-dialog-trigger aschild="true">
+            <gui-button
+              disabled="false"
+              classname="rounded-sm border border-[1px] border-muted-foreground/25"
+              size="icon"
+              variant="ghost"
+            >
+              <gui-trash-icon>
+              </gui-trash-icon>
+            </gui-button>
+          </gui-dialog-trigger>
+          <gui-tooltip-content>
+            Delete Labels
+          </gui-tooltip-content>
+        </gui-tooltip-provider>
+      </gui-tooltip>
+      <gui-dialog-content>
+        <gui-dialog-header>
+          <gui-dialog-title>
+            Delete Labels
+          </gui-dialog-title>
+          <gui-dialog-description>
+          </gui-dialog-description>
+        </gui-dialog-header>
+        <div>
+          You're about to delete:
+          <ul class="my-3 list-none">
+            <li class="font-semibold">
+              mock-label-1
+            </li>
+            <li class="font-semibold">
+              mock-label-2
+            </li>
+            <li class="font-semibold">
+              mock-label-3
+            </li>
+          </ul>
+          This action cannot be undone.
+        </div>
+        <gui-dialog-footer>
+          <gui-button variant="outline">
+            No, Keep It.
+          </gui-button>
+          <gui-button variant="destructive">
+            Yes, Delete!
+          </gui-button>
+        </gui-dialog-footer>
+      </gui-dialog-content>
+    </gui-dialog>
+  </div>
+</div>
+
+`;

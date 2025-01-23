@@ -23,9 +23,12 @@ export type Action = {
   updateStamp: () => void
   updateTheme: (theme: State['theme']) => void
   reset: () => void
-  saveProject: (item: DashboardDataProject) => void
-  updateSavedProjects: (savedProjects: DashboardDataProject[]) => void
-  updateLockSidebar: (locked: State['lockSidebar']) => void
+  saveQuery: (item: SavedQuery) => void
+  updateSavedQuery: (savedQuery: SavedQuery) => void
+  deleteSavedQueries: (savedQueries: SavedQuery[]) => void
+  saveQueryLabel: (queryLabel: QueryLabel) => void
+  updateSavedQueryLabel: (queryLabel: QueryLabel) => void
+  deleteSavedQueryLabels: (queryLabels: QueryLabel[]) => void
 }
 
 /**
@@ -108,13 +111,13 @@ export type State = {
    */
   theme: 'light' | 'dark'
   /**
-   * Saved / pinned projects in localStorage.
+   * Saved queries in localStorage.
    */
-  savedProjects?: DashboardDataProject[]
+  savedQueries?: SavedQuery[]
   /**
-   * Check if the user prefers the sidebar locked or open.
+   * Saved labels used for query tags in localStorage.
    */
-  lockSidebar: boolean
+  savedQueryLabels?: QueryLabel[]
 }
 
 export type DashboardTools =
@@ -133,6 +136,23 @@ export type DashboardData = {
   projects: DashboardDataProject[]
 }
 
+export type QueryLabel = {
+  id: string
+  color: Color
+  name: string
+  description: string
+}
+
+export type SavedQuery = {
+  id: string
+  name: string
+  context: string
+  query: string
+  dateCreated: string
+  dateModified: string
+  labels?: QueryLabel[]
+}
+
 export type DashboardDataProject = {
   name: string
   path: string
@@ -140,3 +160,5 @@ export type DashboardDataProject = {
   tools: DashboardTools[]
   mtime?: number | null
 }
+
+export type Color = `#${string}`

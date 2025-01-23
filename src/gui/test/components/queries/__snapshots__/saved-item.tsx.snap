@@ -1,0 +1,51 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`labels view > labels render default 1`] = `
+
+<div class="bg-neutral-50 dark:bg-neutral-950 rounded-sm flex flex-col transition-all border border-[1px] hover:border-foreground/50 group border-muted-foreground/25 ">
+  <div class="grid grid-cols-12 gap-4 px-3 py-2">
+    <div class="col-span-2 flex items-center gap-3 grow">
+      <gui-checkbox
+        checked="false"
+        classname="border-muted-foreground/25 group-hover:border-muted-foreground/50"
+      >
+      </gui-checkbox>
+      <p class="truncate text-sm font-semibold">
+        mock-saved-query
+      </p>
+    </div>
+    <div class="flex col-span-4 items-center">
+      <p class="text-sm w-[500px] truncate">
+        mock-query
+      </p>
+    </div>
+    <div class="flex col-span-2 items-center gap-2">
+      <p class="text-sm truncate">
+        /mock/context/query
+      </p>
+    </div>
+    <div class="flex col-span-2 items-center gap-2">
+    </div>
+    <div class="col-span-2 flex gap-4 items-center justify-end">
+      <gui-button
+        variant="outline"
+        classname="text-sm px-3 rounded-sm border border-[1px] border-muted-foreground/25 h-[2rem]"
+      >
+        Edit
+      </gui-button>
+      <gui-button
+        variant="outline"
+        classname="text-sm px-3 rounded-sm border border-[1px] border-muted-foreground/25 h-[2rem]"
+        role="link"
+      >
+        <span>
+          Run
+        </span>
+        <gui-arrow-right-icon>
+        </gui-arrow-right-icon>
+      </gui-button>
+    </div>
+  </div>
+</div>
+
+`;

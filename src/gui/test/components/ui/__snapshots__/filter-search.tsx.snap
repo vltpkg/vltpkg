@@ -1,0 +1,32 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`filter-search > should render correctly 1`] = `
+
+<div class="relative flex items-center w-[384px]">
+  <gui-search-icon
+    size="18"
+    classname="absolute left-0 ml-3 text-neutral-500"
+  >
+  </gui-search-icon>
+  <gui-input
+    type="text"
+    classname="pl-9 pr-20"
+    role="search"
+    placeholder="mock-test"
+    value
+  >
+  </gui-input>
+  <div class="flex gap-2 absolute right-0">
+    <div class="items-center hidden md:flex gap-1 mr-3 backdrop-blur-sm">
+      <gui-kbd>
+        <gui-command-icon size="12">
+        </gui-command-icon>
+      </gui-kbd>
+      <gui-kbd classname="text-sm">
+        k
+      </gui-kbd>
+    </div>
+  </div>
+</div>
+
+`;

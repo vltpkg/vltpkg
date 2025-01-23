@@ -1,0 +1,30 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`AppSidebar project queries > renders correctly 1`] = `
+
+<gui-sidebar-footer>
+  <gui-sidebar-menu>
+    <gui-sidebar-menu-item>
+      <gui-sidebar-menu-button aschild="true">
+        <a
+          href="https://docs.vlt.sh"
+          target="_blank"
+        >
+          <gui-library-icon>
+          </gui-library-icon>
+          <span>
+            Documentation
+          </span>
+          <gui-arrow-up-right-icon classname="ml-auto">
+          </gui-arrow-up-right-icon>
+        </a>
+      </gui-sidebar-menu-button>
+    </gui-sidebar-menu-item>
+  </gui-sidebar-menu>
+  <gui-sidebar-separator>
+  </gui-sidebar-separator>
+  <gui-sidebar-trigger>
+  </gui-sidebar-trigger>
+</gui-sidebar-footer>
+
+`;

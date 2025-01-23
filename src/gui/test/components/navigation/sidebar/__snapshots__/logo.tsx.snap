@@ -1,0 +1,33 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`AppSidebar Logo > renders correctly 1`] = `
+
+<gui-sidebar-menu>
+  <gui-sidebar-menu-item>
+    <gui-sidebar-menu-button
+      size="lg"
+      classname="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground whitespace-nowrap"
+      aschild="true"
+    >
+      <a href="/">
+        <div class="flex items-center justify-center aspect-square h-full">
+          <gui-vlt-icon
+            color="white"
+            classname="flex items-center justify-center"
+          >
+          </gui-vlt-icon>
+        </div>
+        <div class="grid flex-1 text-left text-sm leading-tight">
+          <span class="truncate font-semibold">
+            vlt
+            <span class="ml-1 truncate font-light">
+              /volt/
+            </span>
+          </span>
+        </div>
+      </a>
+    </gui-sidebar-menu-button>
+  </gui-sidebar-menu-item>
+</gui-sidebar-menu>
+
+`;

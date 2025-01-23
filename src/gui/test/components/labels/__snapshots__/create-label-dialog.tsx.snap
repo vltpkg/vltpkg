@@ -1,0 +1,79 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`create-label-dialog > should render correctly 1`] = `
+
+<gui-dialog-content>
+  <gui-dialog-header>
+    <gui-dialog-title>
+      Create label
+    </gui-dialog-title>
+    <gui-dialog-description>
+    </gui-dialog-description>
+  </gui-dialog-header>
+  <div class="flex flex-col gap-4">
+    <div class="flex flex-col gap-2">
+      <div class="flex items-center w-fit">
+        <gui-label-badge
+          name="Label Preview"
+          color="#00FF5F"
+        >
+        </gui-label-badge>
+      </div>
+    </div>
+    <div class="flex flex-col gap-2">
+      <gui-form-label>
+        Name
+      </gui-form-label>
+      <gui-input
+        value="Label Preview"
+        placeholder="Name"
+      >
+      </gui-input>
+    </div>
+    <div class="flex flex-col gap-2">
+      <gui-form-label>
+        Description
+      </gui-form-label>
+      <gui-input
+        value
+        placeholder="Description (optional)"
+      >
+      </gui-input>
+    </div>
+    <div class="flex flex-col gap-2">
+      <gui-form-label>
+        Color
+      </gui-form-label>
+      <gui-popover>
+        <gui-popover-trigger aschild="true">
+          <gui-button variant="outline">
+            <gui-palette-icon>
+            </gui-palette-icon>
+            <span>
+              #00FF5F
+            </span>
+          </gui-button>
+        </gui-popover-trigger>
+        <gui-popover-content>
+          <gui-color-picker
+            defaultinput="#00FF5F"
+            defaultcolor="#00FF5F"
+          >
+          </gui-color-picker>
+        </gui-popover-content>
+      </gui-popover>
+    </div>
+  </div>
+  <gui-dialog-footer>
+    <gui-dialog-close aschild="true">
+      <gui-button variant="outline">
+        Cancel
+      </gui-button>
+    </gui-dialog-close>
+    <gui-button disabled="true">
+      Create
+    </gui-button>
+  </gui-dialog-footer>
+</gui-dialog-content>
+
+`;
