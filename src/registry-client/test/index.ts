@@ -67,6 +67,12 @@ const registry = createServer((req, res) => {
   res.setHeader('date', new Date().toUTCString())
   const { url = '' } = req
 
+  if (url.startsWith('/-/put')) {
+    return res.end(
+      '{"ok": true, "method": "' + String(req.method) + '"}',
+    )
+  }
+
   if (url.startsWith('/-/npm/v1/tokens')) {
     tokensActions.push([
       req.method ?? 'wat!?',
@@ -566,4 +572,13 @@ t.test('401 prompting otplease', async t => {
     { cache: false },
   )
   t.match(result, { statusCode: 200 })
+})
+
+t.test('sending request with PUT method', async t => {
+  // this provides coverage for the "no default cache except HEAD/GET" path
+  const rc = new RegistryClient({ cache: t.testdir() })
+  const result = await rc.request(new URL('/-/put', registryURL), {
+    method: 'PUT',
+  })
+  t.strictSame(result.json(), { ok: true, method: 'PUT' })
 })
