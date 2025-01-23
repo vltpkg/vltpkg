@@ -16,7 +16,7 @@ afterEach(() => {
 })
 
 const testCases = new Map<string, string>([
-  ['/', 'Saved Queries'],
+  ['/', 'Dashboard'],
   ['/error', 'Error'],
   ['/explore', 'Explore'],
   ['/dashboard', 'Dashboard'],

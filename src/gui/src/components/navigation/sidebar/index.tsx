@@ -25,7 +25,7 @@ export const defaultOpen: boolean = (() => {
     .split('; ')
     .find(cookie => cookie.startsWith('sidebar:state='))
 
-  const [, value] = cookie?.split('=') || []
+  const [, value] = cookie?.split('=') ?? []
   return value === 'true'
 })()
 
