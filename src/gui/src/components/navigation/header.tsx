@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useGraphStore } from '@/state/index.js'
 
 const routeNames = new Map<string, string>([
-  ['/', 'Saved Queries'],
+  ['/', 'Dashboard'],
   ['/error', 'Error'],
   ['/explore', 'Explore'],
   ['/dashboard', 'Dashboard'],
