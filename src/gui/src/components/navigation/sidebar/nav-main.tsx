@@ -18,7 +18,7 @@ const SidebarMainNav = () => {
 
   const renderItems = (items: MenuItem[]) => {
     return items.map(item => {
-      const hasSubItems = item.items && item.items.length > 0
+      const hasSubItems = item.items?.length
 
       return (
         <Collapsible
