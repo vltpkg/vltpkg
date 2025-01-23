@@ -28,6 +28,8 @@ type SelectQueryOptions = {
   context: string
 }
 
+// TODO: should reuse / share the project select logic from:
+// src/gui/src/components/dashboard-grid/index.tsx
 export const selectQuery = async ({
   updateActiveRoute,
   updateErrorCause,
