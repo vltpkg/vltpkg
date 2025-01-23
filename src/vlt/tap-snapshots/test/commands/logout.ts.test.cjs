@@ -6,5 +6,12 @@
  */
 'use strict'
 exports[`test/commands/logout.ts > TAP > must match snapshot 1`] = `
-Jack {}
+Usage:
+
+\`\`\`
+vlt logout
+\`\`\`
+
+Log out of the default registry, deleting the token from the local keychain, as well as destroying it on the server.
+
 `

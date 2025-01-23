@@ -17,7 +17,7 @@ const { usage, command } = await t.mockImport<
   },
 })
 
-t.matchSnapshot(usage())
+t.matchSnapshot(usage().usageMarkdown())
 const logs = t.capture(console, 'log').args
 await command({
   options: { registry: 'https://registry/' },
