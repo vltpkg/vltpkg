@@ -336,10 +336,11 @@ export class RegistryClient {
       method = 'GET',
       integrity,
       redirections = new Set(),
-      cache = true,
       signal,
       otp = (process.env.VLT_OTP ?? '').trim(),
     } = options
+
+    const { cache = method === 'GET' || method === 'HEAD' } = options
 
     ;(signal as AbortSignal | null)?.throwIfAborted()
 
