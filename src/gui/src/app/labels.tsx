@@ -90,7 +90,7 @@ const Labels = () => {
           </div>
         )}
 
-        {savedLabels?.length !== 0 && (
+        {!!savedLabels?.length && (
           <div className="mt-6 grid grid-cols-8 px-3">
             <div className="col-span-2 flex items-center gap-3">
               <Checkbox
@@ -129,7 +129,7 @@ const Labels = () => {
         </div>
       </div>
 
-      {savedLabels?.length === 0 && <LabelsEmptyState />}
+      {!savedLabels?.length && <LabelsEmptyState />}
     </section>
   )
 }

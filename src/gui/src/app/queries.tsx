@@ -87,7 +87,7 @@ const Queries = () => {
         </div>
 
         <div className="mt-6">
-          {savedQueries && savedQueries.length !== 0 && (
+          {!!savedQueries?.length && (
             <div className="grid grid-cols-12 gap-4">
               <div className="col-span-2 flex items-center gap-3 px-3">
                 <Checkbox
@@ -117,7 +117,7 @@ const Queries = () => {
           )}
 
           <div className="mt-3 flex flex-col gap-3">
-            {savedQueries?.length !== 0 &&
+            {savedQueries &&
               filteredQueries.map((query, idx) => (
                 <SavedQueryItem
                   checked={selectedQueries.some(
@@ -132,7 +132,7 @@ const Queries = () => {
         </div>
       </div>
 
-      {savedQueries?.length === 0 && <QueriesEmptyState />}
+      {!savedQueries?.length && <QueriesEmptyState />}
     </section>
   )
 }
