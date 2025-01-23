@@ -196,7 +196,11 @@ export default tseslint.config(
      * but anywhere else is beneficial. Goal is to at least not
      * have any src/ files in here.
      */
-    files: ['**/test/**/*.{ts,tsx}', '**/infra/**/*.ts'],
+    files: [
+      '**/test/**/*.{ts,tsx}',
+      '**/infra/**/*.ts',
+      '!**/infra/build/src/bin/publish.ts',
+    ],
     rules: {
       '@typescript-eslint/no-unsafe-argument': 'off',
       '@typescript-eslint/no-unsafe-assignment': 'off',
