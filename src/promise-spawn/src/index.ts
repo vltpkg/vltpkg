@@ -186,7 +186,7 @@ export interface SpawnResultStdioBuffers extends SpawnResult {
   stderr: Buffer
 }
 
-type Override<T, R> = Omit<T, keyof R> & R
+export type Override<T, R> = Omit<T, keyof R> & R
 
 export type SpawnResultByOptions<T extends PromiseSpawnOptions> =
   Override<

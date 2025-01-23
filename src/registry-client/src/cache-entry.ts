@@ -27,7 +27,7 @@ import { inspect, type InspectOptions } from 'util'
 import { gunzipSync } from 'zlib'
 import { getRawHeader, setRawHeader } from './raw-header.js'
 
-type JSONObj = Record<string, JSONField>
+export type JSONObj = Record<string, JSONField>
 
 const readSize = (buf: Buffer, offset: number) => {
   const a = buf[offset]
