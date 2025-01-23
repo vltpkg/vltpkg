@@ -225,8 +225,8 @@ const SaveQueryPopover = ({
           role="input"
           placeholder="Name"
           value={queryName}
-          onChange={(e: ChangeEvent) => {
-            const value = (e.currentTarget as HTMLInputElement).value
+          onChange={(e: ChangeEvent<HTMLInputElement>) => {
+            const value = e.currentTarget.value
             setQueryName(value)
           }}
         />
@@ -237,8 +237,8 @@ const SaveQueryPopover = ({
           role="input"
           placeholder="Directory (optional)"
           value={editContext}
-          onChange={(e: ChangeEvent) => {
-            const value = (e.currentTarget as HTMLInputElement).value
+          onChange={(e: ChangeEvent<HTMLInputElement>) => {
+            const value = e.currentTarget.value
             setEditContext(value)
           }}
         />

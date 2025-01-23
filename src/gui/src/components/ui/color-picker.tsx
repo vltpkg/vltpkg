@@ -19,7 +19,7 @@ const DEFAULT_COLORS: Color[] = [
   '#a855f7',
 ]
 
-const DEFAULT_COLOR: Color = '#00FF5F'
+export const DEFAULT_COLOR: Color = '#00FF5F'
 
 export function ColorPicker({
   onChange,

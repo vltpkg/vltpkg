@@ -10,8 +10,11 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover.jsx'
-import { ColorPicker } from '@/components/ui/color-picker.jsx'
-import { type QueryLabel } from '@/state/types.js'
+import {
+  ColorPicker,
+  DEFAULT_COLOR,
+} from '@/components/ui/color-picker.jsx'
+import { type Color, type QueryLabel } from '@/state/types.js'
 import { useGraphStore } from '@/state/index.js'
 import { useToast } from '@/components/hooks/use-toast.js'
 
@@ -25,7 +28,7 @@ const Label = ({ queryLabel, checked, handleSelect }: LabelProps) => {
   const [isExpanded, setIsExpanded] = useState<boolean>(false)
   const [editDescription, setEditDescription] = useState<string>('')
   const [editName, setEditName] = useState<string>('')
-  const [editColor, setEditColor] = useState<string>('')
+  const [editColor, setEditColor] = useState<Color>(DEFAULT_COLOR)
   const updateSavedLabel = useGraphStore(
     state => state.updateSavedQueryLabel,
   )
@@ -33,6 +36,7 @@ const Label = ({ queryLabel, checked, handleSelect }: LabelProps) => {
   const [queriesReferenced, setQueriesReferenced] =
     useState<number>(0)
   const savedQueries = useGraphStore(state => state.savedQueries)
+  const updateRoute = useGraphStore(state => state.updateActiveRoute)
 
   const handleEdit = () => {
     setIsExpanded(!isExpanded)
@@ -53,8 +57,7 @@ const Label = ({ queryLabel, checked, handleSelect }: LabelProps) => {
   }
 
   const navigateToRef = () => {
-    window.location.href =
-      '/queries?label=' + encodeURIComponent(editName)
+    updateRoute(`/queries?label=${encodeURIComponent(editName)}`)
   }
 
   useEffect(() => {

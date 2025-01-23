@@ -138,7 +138,7 @@ export type DashboardData = {
 
 export type QueryLabel = {
   id: string
-  color: string
+  color: Color
   name: string
   description: string
 }

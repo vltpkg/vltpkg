@@ -51,9 +51,10 @@ const LabelTags = ({
   queries: SavedQuery[]
   className?: string
 }) => {
+  const updateRoute = useGraphStore(state => state.updateActiveRoute)
+
   const navigateToLabel = (labelName: string) => {
-    window.location.href =
-      '/labels?name=' + encodeURIComponent(labelName)
+    updateRoute(`/labels?name=${encodeURIComponent(labelName)}`)
   }
 
   return (
@@ -66,8 +67,7 @@ const LabelTags = ({
               className="flex items-center justify-center">
               <div className={`flex -space-x-2 ${className}`}>
                 {queries.map(query => {
-                  if (!query.labels || query.labels.length === 0)
-                    return null
+                  if (!query.labels?.length) return null
 
                   return query.labels.map((label, idx) => (
                     <div
@@ -90,8 +90,7 @@ const LabelTags = ({
         <p className="font-semibold mb-2">Labels</p>
         <div className="flex flex-wrap gap-2">
           {queries.map(query => {
-            if (!query.labels || query.labels.length === 0)
-              return null
+            if (!query.labels?.length) return null
 
             return query.labels.map((label, idx) => (
               <button

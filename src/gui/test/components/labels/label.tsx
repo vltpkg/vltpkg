@@ -38,6 +38,7 @@ vi.mock('@/components/ui/popover.jsx', () => ({
 
 vi.mock('@/components/ui/color-picker.jsx', () => ({
   ColorPicker: 'gui-color-picker',
+  DEFAULT_COLOR: '#00FF5F',
 }))
 
 expect.addSnapshotSerializer({

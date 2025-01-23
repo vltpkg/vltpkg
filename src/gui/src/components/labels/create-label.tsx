@@ -11,6 +11,7 @@ import {
 import { ColorPicker } from '@/components/ui/color-picker.jsx'
 import { Palette } from 'lucide-react'
 import { useGraphStore } from '@/state/index.js'
+import { type Color } from '@/state/types.js'
 import { useToast } from '@/components/hooks/use-toast.js'
 import { v4 as uuidv4 } from 'uuid'
 
@@ -21,8 +22,7 @@ interface CreateLabelProps {
 const CreateLabel = ({ closeCreate }: CreateLabelProps) => {
   const [labelName, setLabelName] = useState<string>('Label preview')
   const [labelDescription, setLabelDescription] = useState<string>('')
-  const [selectedColor, setSelectedColor] =
-    useState<string>('#00FF5F')
+  const [selectedColor, setSelectedColor] = useState<Color>('#00FF5F')
   const [isCreationValid, setIsCreationValid] =
     useState<boolean>(false)
   const saveQueryLabel = useGraphStore(state => state.saveQueryLabel)
@@ -48,8 +48,7 @@ const CreateLabel = ({ closeCreate }: CreateLabelProps) => {
   useEffect(() => {
     if (
       labelName.trim() !== '' &&
-      labelName.trim() !== 'Label preview' &&
-      selectedColor !== ''
+      labelName.trim() !== 'Label preview'
     ) {
       setIsCreationValid(true)
     } else {
