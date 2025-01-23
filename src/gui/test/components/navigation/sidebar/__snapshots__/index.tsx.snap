@@ -1,0 +1,26 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`AppSidebar > renders correctly 1`] = `
+
+<gui-sidebar collapsible="icon">
+  <gui-sidebar-header>
+    <gui-sidebar-logo>
+    </gui-sidebar-logo>
+  </gui-sidebar-header>
+  <gui-sidebar-content>
+    <gui-sidebar-group classname="gap-1">
+      <gui-sidebar-main-nav>
+      </gui-sidebar-main-nav>
+      <gui-sidebar-query-nav>
+      </gui-sidebar-query-nav>
+    </gui-sidebar-group>
+    <gui-sidebar-query-project-nav>
+    </gui-sidebar-query-project-nav>
+  </gui-sidebar-content>
+  <gui-sidebar-footer>
+  </gui-sidebar-footer>
+  <gui-sidebar-rail>
+  </gui-sidebar-rail>
+</gui-sidebar>
+
+`;

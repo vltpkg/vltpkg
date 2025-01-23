@@ -57,7 +57,7 @@ export const Dashboard = () => {
   }, [stamp])
 
   return (
-    <section className="flex grow w-full flex-col min-h-[80svh]">
+    <section className="flex grow w-full flex-col min-h-[80svh] bg-white dark:bg-black">
       <div className="flex items-center justify-between w-full px-8 py-4 border-b-[1px] border-t-[1px] border-solid">
         {dashboard?.cwd ?
           <p className="text-xs font-mono font-light text-muted-foreground">

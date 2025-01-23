@@ -1,0 +1,50 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`save-query > should render correctly 1`] = `
+
+<gui-popover open="false">
+  <gui-popover-trigger>
+    <gui-tooltip-provider>
+      <gui-tooltip>
+        <gui-tooltip-trigger
+          aschild="true"
+          classname="flex rounded-sm items-center justify-center h-[1.5rem] w-[1.5rem] bg-muted border border-muted-foreground/20"
+        >
+          <gui-button
+            role="button"
+            variant="outline"
+            size="icon"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="20"
+              height="20"
+              viewbox="0 0 24 24"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              class="lucide lucide-star"
+              fill="#fafafa"
+            >
+              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2">
+              </polygon>
+            </svg>
+          </gui-button>
+        </gui-tooltip-trigger>
+        <gui-tooltip-content>
+          <p>
+            Save query
+          </p>
+        </gui-tooltip-content>
+      </gui-tooltip>
+    </gui-tooltip-provider>
+  </gui-popover-trigger>
+  <gui-popover-content
+    classname="p-0 w-full"
+    align="end"
+  >
+  </gui-popover-content>
+</gui-popover>
+
+`;

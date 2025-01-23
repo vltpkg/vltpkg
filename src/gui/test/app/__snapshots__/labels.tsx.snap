@@ -1,0 +1,74 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`labels view > labels render default 1`] = `
+
+<section class="flex grow w-full flex-col min-h-[80svh] bg-white dark:bg-black">
+  <div class="flex flex-col px-8 py-4">
+    <div class="flex justify-between">
+      <div class="flex gap-2">
+        <gui-filter-search
+          placeholder="Filter Labels"
+          items="[object Object],[object Object],[object Object]"
+        >
+        </gui-filter-search>
+        <gui-sorting-toggle
+          filtereditems="[object Object],[object Object],[object Object]"
+          sortkey="name"
+        >
+        </gui-sorting-toggle>
+        <gui-delete-label
+          deletedialogopen="false"
+          selectedlabels
+        >
+        </gui-delete-label>
+      </div>
+      <div>
+        <gui-button disabled="false">
+          <span>
+            New Label
+          </span>
+          <gui-plus-icon>
+          </gui-plus-icon>
+        </gui-button>
+      </div>
+    </div>
+    <div class="mt-6 grid grid-cols-8 px-3">
+      <div class="col-span-2 flex items-center gap-3">
+        <gui-checkbox classname="border-muted-foreground/50 hover:border-muted-foreground/75">
+        </gui-checkbox>
+        <p class="text-neutral-500 text-sm font-semibold">
+          Name
+        </p>
+      </div>
+      <div class="col-span-4 flex items-center">
+        <p class="text-neutral-500 text-sm font-semibold">
+          Description
+        </p>
+      </div>
+      <div class="flex items-center justify-center">
+        <p class="text-neutral-500 text-sm font-semibold">
+          References
+        </p>
+      </div>
+    </div>
+    <div class="mt-3 flex flex-col gap-3">
+      <gui-label
+        checked="false"
+        querylabel="[object Object]"
+      >
+      </gui-label>
+      <gui-label
+        checked="false"
+        querylabel="[object Object]"
+      >
+      </gui-label>
+      <gui-label
+        checked="false"
+        querylabel="[object Object]"
+      >
+      </gui-label>
+    </div>
+  </div>
+</section>
+
+`;

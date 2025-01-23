@@ -11,6 +11,8 @@ import {
 import { load } from '@/state/load-graph.js'
 import { Search, Command } from 'lucide-react'
 import { Kbd } from '@/components/ui/kbd.jsx'
+import Save from '@/components/explorer-grid/save-query.jsx'
+import { QueryMatches } from '@/components/explorer-grid/query-matches.jsx'
 
 export type ExplorerOptions = {
   projectRoot?: string
@@ -120,7 +122,7 @@ const ExplorerContent = () => {
   }, [query, q])
 
   return (
-    <section className="flex grow flex-col justify-between">
+    <section className="flex grow flex-col justify-between bg-white dark:bg-black">
       <div className="flex items-center justify-between w-full px-8 pt-4 border-t-[1px]">
         {graph?.projectRoot ?
           <p className="text-xs font-mono font-light text-muted-foreground">
@@ -134,7 +136,7 @@ const ExplorerContent = () => {
         : ''}
       </div>
       <section className="flex items-center px-8 py-4 border-b-[1px] border-solid">
-        <div className="flex flex-col gap-2 w-full">
+        <div className="flex flex-row gap-2 w-full">
           <SearchBar
             tabIndex={0}
             className="w-full bg-muted-foreground/5"
@@ -142,8 +144,10 @@ const ExplorerContent = () => {
               <Search size={20} className="ml-3" color="#a3a3a3" />
             }
             endContent={
-              <div className="hidden md:flex gap-1 mr-3 backdrop-blur-sm">
-                <Kbd>
+              <div className="items-center hidden md:flex gap-1 mr-3 backdrop-blur-sm">
+                <QueryMatches />
+                <Save />
+                <Kbd className='ml-3 relative before:content-[" "] before:-ml-10 before:absolute before:h-[0.75rem] before:w-[1.25px] before:rounded-sm before:bg-neutral-600'>
                   <Command size={12} />
                 </Kbd>
                 <Kbd className="text-sm">k</Kbd>

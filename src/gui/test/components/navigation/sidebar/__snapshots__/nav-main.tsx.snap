@@ -1,0 +1,34 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`AppSidebar main nav > renders correctly 1`] = `
+
+<gui-sidebar-menu>
+  <gui-collapsible
+    aschild="true"
+    classname="group/collapsible"
+  >
+    <gui-sidebar-menu-item>
+      <gui-collapsible-trigger aschild="true">
+        <gui-sidebar-menu-button
+          aschild="true"
+          isactive="false"
+          classname="data-[active=true]:bg-neutral-800 data-[active=true]:text-white data-[active=true]:dark:bg-neutral-100 data-[active=true]:dark:text-black whitespace-nowrap"
+          tooltip="Dashboard"
+        >
+          <a
+            href="/dashboard"
+            target="_top"
+          >
+            <gui-layout-dashboard-icon>
+            </gui-layout-dashboard-icon>
+            <span>
+              Dashboard
+            </span>
+          </a>
+        </gui-sidebar-menu-button>
+      </gui-collapsible-trigger>
+    </gui-sidebar-menu-item>
+  </gui-collapsible>
+</gui-sidebar-menu>
+
+`;

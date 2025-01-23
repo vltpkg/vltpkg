@@ -1,0 +1,47 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`label > should render correctly 1`] = `
+
+<div class="bg-neutral-50/50 dark:bg-neutral-950 rounded-sm transition-all border border-[1px] border-muted-foreground/25 group hover:border-foreground/50">
+  <div class="grid grid-cols-8 flex items-center px-3 py-2">
+    <div class="col-span-2 flex gap-3 items-center">
+      <gui-checkbox
+        checked="false"
+        classname="border-muted-foreground/25 group-hover:border-muted-foreground/50"
+      >
+      </gui-checkbox>
+      <gui-label-badge
+        name="mock-label-1"
+        color="#06b6d4"
+      >
+      </gui-label-badge>
+    </div>
+    <div class="col-span-4 flex items-center">
+      <p class="text-sm truncate">
+        mock label 1
+      </p>
+    </div>
+    <div class="flex items-center justify-center">
+      <gui-button
+        variant="ghost"
+        classname="flex items-center justify-center gap-1"
+      >
+        <span>
+          0
+        </span>
+        <gui-arrow-up-right-icon>
+        </gui-arrow-up-right-icon>
+      </gui-button>
+    </div>
+    <div class="flex items-center justify-end">
+      <gui-button
+        variant="outline"
+        classname="text-sm px-3 rounded-sm border border-[1px] border-muted-foreground/25 h-[2rem]"
+      >
+        Edit
+      </gui-button>
+    </div>
+  </div>
+</div>
+
+`;

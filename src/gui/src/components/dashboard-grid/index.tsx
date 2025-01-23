@@ -1,4 +1,4 @@
-import { useState, useEffect, type MouseEvent } from 'react'
+import { useEffect, useState, type MouseEvent } from 'react'
 import {
   type DashboardDataProject,
   type Action,
@@ -12,8 +12,8 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip.jsx'
-import { Ellipsis } from 'lucide-react'
-import { AnimatePresence, motion } from 'framer-motion'
+import { FilterSearch } from '@/components/ui/filter-search.jsx'
+import { SortingToggle } from '@/components/ui/sorting-toggle.jsx'
 
 type SelectDashboardItemOptions = {
   updateActiveRoute: Action['updateActiveRoute']
@@ -21,30 +21,6 @@ type SelectDashboardItemOptions = {
   updateQuery: Action['updateQuery']
   updateStamp: Action['updateStamp']
   item: DashboardDataProject
-}
-import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuItem,
-} from '@/components/ui/dropdown-menu.jsx'
-
-const itemVariants = {
-  hidden: { opacity: 0 },
-  show: { opacity: 1 },
-  exit: { opacity: 0 },
-}
-
-const pVariants = {
-  hidden: { opacity: 0 },
-  show: { opacity: 1 },
-  exit: { opacity: 0 },
-}
-
-const gridVariants = {
-  hidden: { opacity: 0 },
-  show: { opacity: 1, transition: { staggerChildren: 0.05 } },
-  exit: { opacity: 0 },
 }
 
 const selectDashboardItem = async ({
@@ -103,8 +79,6 @@ export const DashboardItem = ({
   )
   const updateQuery = useGraphStore(state => state.updateQuery)
   const updateStamp = useGraphStore(state => state.updateStamp)
-  const savedProjects = useGraphStore(state => state.savedProjects)
-  const saveProject = useGraphStore(state => state.saveProject)
 
   const onDashboardItemClick = (e: MouseEvent) => {
     e.preventDefault()
@@ -116,69 +90,17 @@ export const DashboardItem = ({
       item,
     }).catch((err: unknown) => console.error(err))
   }
-  const [isHovered, setIsHovered] = useState<boolean>(false)
-  const [isSaved, setIsSaved] = useState<boolean>(false)
-  const [dropdownOpen, setDropdownOpen] = useState<boolean>(false)
-
-  useEffect(() => {
-    if (savedProjects) {
-      const isProjectSaved = savedProjects.some(
-        savedProject => savedProject.path === item.path,
-      )
-      setIsSaved(isProjectSaved)
-    }
-  }, [savedProjects])
-
-  const handleSaveProject = (
-    e: MouseEvent,
-    project: DashboardDataProject,
-  ) => {
-    // prevents click bubbling to the `a` tag
-    e.preventDefault()
-    e.stopPropagation()
-    saveProject(project)
-    setDropdownOpen(false)
-  }
 
   return (
-    <motion.a
+    <a
       href="#"
-      variants={itemVariants}
-      initial="hidden"
-      animate="show"
-      exit="exit"
-      className="border-[1px] rounded-lg w-full md:w-96 hover:border-muted-foreground transition-all duration-250 bg-card"
-      onClick={onDashboardItemClick}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}>
+      className="border-[1px] rounded-lg w-full md:w-96 hover:border-muted-foreground/50 transition-all duration-250 bg-card"
+      onClick={onDashboardItemClick}>
       {/* card header */}
       <div className="flex flex-col items-start h-20 justify-between px-4 py-3">
-        <div className="flex flex-row w-full items-center justify-between">
-          <motion.div
-            animate={{
-              opacity: isHovered ? 1 : 0,
-            }}>
-            <DropdownMenu
-              open={dropdownOpen}
-              onOpenChange={() => setDropdownOpen(!dropdownOpen)}>
-              <DropdownMenuTrigger>
-                <Ellipsis
-                  className="text-muted-foreground"
-                  size={20}
-                />
-              </DropdownMenuTrigger>
-              <DropdownMenuContent
-                className="w-24 ml-24"
-                onCloseAutoFocus={e => e.preventDefault()}>
-                <DropdownMenuItem
-                  onClick={e => handleSaveProject(e, item)}>
-                  {isSaved ? 'Unpin' : 'Pin'} project
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </motion.div>
+        <div className="flex flex-row w-full items-center justify-end">
           {item.mtime ?
-            <div className="text-[0.7rem]">
+            <div className="text-[0.7rem] text-muted-foreground">
               {format(
                 new Date(item.mtime).toJSON(),
                 'LLLL do, yyyy | hh:mm aa',
@@ -219,101 +141,53 @@ export const DashboardItem = ({
           ))}
         </div>
       </div>
-    </motion.a>
+    </a>
   )
 }
 
 const DashboardGrid = () => {
   const dashboard = useGraphStore(state => state.dashboard)
-  const savedProjects = useGraphStore(state => state.savedProjects)
-  const [unsavedProjects, setUnsavedProjects] = useState<
-    DashboardDataProject[] | []
+  const [filteredProjects, setFilteredProjects] = useState<
+    DashboardDataProject[]
   >([])
 
-  /**
-   * Checks the projects that exist in the dashboard:
-   * Sorts them based if they're saved in 'saved-projects' localStorage.
-   */
   useEffect(() => {
-    if (dashboard?.projects && savedProjects) {
-      const filteredProjects = dashboard.projects.filter(
-        project =>
-          !savedProjects.some(saved => saved.path === project.path),
+    if (dashboard) {
+      setFilteredProjects(
+        dashboard.projects.sort((a, b) =>
+          a.name.localeCompare(b.name),
+        ),
       )
-      setUnsavedProjects(filteredProjects)
     }
-  }, [dashboard, savedProjects])
+  }, [dashboard])
 
   return (
-    <AnimatePresence>
-      <div className="flex flex-col grow bg-secondary dark:bg-black px-8 py-8 gap-16">
-        {/* Render unsaved projects */}
-        <div className="flex flex-col gap-4">
-          <DashboardGrid.Header>All Projects</DashboardGrid.Header>
-          <motion.div
-            variants={gridVariants}
-            initial="hidden"
-            animate="show"
-            exit="exit"
-            className="flex flex-row flex-wrap gap-8">
-            {unsavedProjects.length ?
-              unsavedProjects.map((item, index) => (
-                <DashboardItem key={index} item={item} />
-              ))
-            : <motion.p
-                variants={pVariants}
-                initial="hidden"
-                animate="show"
-                exit="exit"
-                className="text-sm text-muted-foreground/50">
-                {savedProjects && savedProjects.length >= 0 ?
-                  'All projects pinned'
-                : 'No projects available'}
-              </motion.p>
-            }
-          </motion.div>
-        </div>
+    <div className="flex flex-col grow bg-secondary dark:bg-black px-8 py-8">
+      <div className="flex gap-2 mb-8">
+        <FilterSearch
+          placeholder="Filter Projects"
+          items={dashboard?.projects ?? []}
+          setFilteredItems={setFilteredProjects}
+        />
+        <SortingToggle
+          filteredItems={filteredProjects}
+          setFilteredItems={setFilteredProjects}
+          sortKey="name"
+        />
+      </div>
 
-        {/* Render pinned projects */}
-        <div className="flex flex-col gap-4">
-          <DashboardGrid.Header>Pinned Projects</DashboardGrid.Header>
-          <motion.div
-            variants={gridVariants}
-            initial="hidden"
-            animate="show"
-            exit="exit"
-            className="flex flex-row flex-wrap gap-8">
-            {savedProjects?.length ?
-              savedProjects.map((item, index) => (
-                <DashboardItem key={index} item={item} />
-              ))
-            : <motion.p
-                variants={pVariants}
-                initial="hidden"
-                animate="show"
-                exit="exit"
-                className="text-sm text-muted-foreground/50">
-                No pinned projects
-              </motion.p>
-            }
-          </motion.div>
+      {/* items */}
+      <div className="flex flex-col">
+        <p className="text-sm font-semibold mb-4">Projects</p>
+        <div className="flex flex-row flex-wrap gap-8">
+          {dashboard?.projects ?
+            filteredProjects.map((item, index) => (
+              <DashboardItem key={index} item={item} />
+            ))
+          : <p>No projects found</p>}
         </div>
       </div>
-    </AnimatePresence>
-  )
-}
-
-DashboardGrid.Header = ({
-  children,
-  className = '',
-}: {
-  children: React.ReactNode
-  className?: string
-}) => {
-  return (
-    <h4 className={`text-sm font-medium tracking-wide ${className}`}>
-      {children}
-    </h4>
+    </div>
   )
 }
 

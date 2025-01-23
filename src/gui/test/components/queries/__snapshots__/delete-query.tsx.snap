@@ -1,0 +1,49 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`delete-query > labels render default 1`] = `
+
+<gui-dialog open="true">
+  <gui-tooltip open="false">
+    <gui-tooltip-provider>
+      <gui-dialog-trigger aschild="true">
+        <gui-button variant="destructive">
+          Delete
+        </gui-button>
+      </gui-dialog-trigger>
+      <gui-tooltip-content>
+        Delete Queries
+      </gui-tooltip-content>
+    </gui-tooltip-provider>
+  </gui-tooltip>
+  <gui-dialog-content>
+    <gui-dialog-header>
+      <gui-dialog-title>
+        Delete Queries
+      </gui-dialog-title>
+      <gui-dialog-description>
+      </gui-dialog-description>
+    </gui-dialog-header>
+    <div>
+      You're about to delete:
+      <ul class="my-3 list-none">
+        <li class="font-semibold">
+          mock-saved-query
+        </li>
+        <li class="font-semibold">
+          mock-saved-query-2
+        </li>
+      </ul>
+      This action cannot be undone.
+    </div>
+    <gui-dialog-footer>
+      <gui-button variant="outline">
+        No, Keep It.
+      </gui-button>
+      <gui-button variant="destructive">
+        Yes, Delete!
+      </gui-button>
+    </gui-dialog-footer>
+  </gui-dialog-content>
+</gui-dialog>
+
+`;

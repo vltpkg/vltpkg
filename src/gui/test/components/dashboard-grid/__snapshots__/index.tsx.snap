@@ -3,36 +3,26 @@
 exports[`dashboard-grid render default 1`] = `
 
 <div>
-  <div class="flex flex-col grow bg-secondary dark:bg-black px-8 py-8 gap-16">
-    <div class="flex flex-col gap-4">
-      <h4 class="text-sm font-medium tracking-wide ">
-        All Projects
-      </h4>
-      <div
-        class="flex flex-row flex-wrap gap-8"
-        style="opacity: 0;"
+  <div class="flex flex-col grow bg-secondary dark:bg-black px-8 py-8">
+    <div class="flex gap-2 mb-8">
+      <gui-filter-search
+        placeholder="Filter Projects"
+        items
       >
-        <p
-          class="text-sm text-muted-foreground/50"
-          style="opacity: 0;"
-        >
-          All projects pinned
-        </p>
-      </div>
+      </gui-filter-search>
+      <gui-sorting-toggle
+        filtereditems
+        sortkey="name"
+      >
+      </gui-sorting-toggle>
     </div>
-    <div class="flex flex-col gap-4">
-      <h4 class="text-sm font-medium tracking-wide ">
-        Pinned Projects
-      </h4>
-      <div
-        class="flex flex-row flex-wrap gap-8"
-        style="opacity: 0;"
-      >
-        <p
-          class="text-sm text-muted-foreground/50"
-          style="opacity: 0;"
-        >
-          No pinned projects
+    <div class="flex flex-col">
+      <p class="text-sm font-semibold mb-4">
+        Projects
+      </p>
+      <div class="flex flex-row flex-wrap gap-8">
+        <p>
+          No projects found
         </p>
       </div>
     </div>
@@ -44,64 +34,71 @@ exports[`dashboard-grid render default 1`] = `
 exports[`dashboard-grid with results 1`] = `
 
 <div>
-  <div class="flex flex-col grow bg-secondary dark:bg-black px-8 py-8 gap-16">
-    <div class="flex flex-col gap-4">
-      <h4 class="text-sm font-medium tracking-wide ">
-        All Projects
-      </h4>
-      <div
-        class="flex flex-row flex-wrap gap-8"
-        style="opacity: 0;"
+  <div class="flex flex-col grow bg-secondary dark:bg-black px-8 py-8">
+    <div class="flex gap-2 mb-8">
+      <gui-filter-search
+        placeholder="Filter Projects"
+        items="[object Object],[object Object]"
       >
+      </gui-filter-search>
+      <gui-sorting-toggle
+        filtereditems="[object Object],[object Object]"
+        sortkey="name"
+      >
+      </gui-sorting-toggle>
+    </div>
+    <div class="flex flex-col">
+      <p class="text-sm font-semibold mb-4">
+        Projects
+      </p>
+      <div class="flex flex-row flex-wrap gap-8">
         <a
           href="#"
-          class="border-[1px] rounded-lg w-full md:w-96 hover:border-muted-foreground transition-all duration-250 bg-card"
-          style="opacity: 0;"
+          class="border-[1px] rounded-lg w-full md:w-96 hover:border-muted-foreground/50 transition-all duration-250 bg-card"
         >
           <div class="flex flex-col items-start h-20 justify-between px-4 py-3">
-            <div class="flex flex-row w-full items-center justify-between">
-              <div>
-                <button
-                  type="button"
-                  id="radix-:r2:"
-                  aria-haspopup="menu"
-                  aria-expanded="false"
-                  data-state="closed"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="20"
-                    height="20"
-                    viewbox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    class="lucide lucide-ellipsis text-muted-foreground"
-                  >
-                    <circle
-                      cx="12"
-                      cy="12"
-                      r="1"
-                    >
-                    </circle>
-                    <circle
-                      cx="19"
-                      cy="12"
-                      r="1"
-                    >
-                    </circle>
-                    <circle
-                      cx="5"
-                      cy="12"
-                      r="1"
-                    >
-                    </circle>
-                  </svg>
-                </button>
+            <div class="flex flex-row w-full items-center justify-end">
+              <div class="text-[0.7rem] text-muted-foreground">
+                November 1st, 2024 | 06:01 PM
               </div>
-              <div class="text-[0.7rem]">
+            </div>
+            <div class="flex">
+              <gui-card-title classname="self-end text-md">
+                project-bar
+              </gui-card-title>
+            </div>
+          </div>
+          <div class="w-full h-12 flex items-center gap-4 justify-between border-t-[1px] px-4 py-3">
+            <gui-tooltip-provider>
+              <div class="flex items-center justify-center rounded-sm border-[1px] px-2 py-1">
+                <gui-tooltip>
+                  <gui-tooltip-trigger>
+                    <p class="text-[0.65rem] text-muted-foreground font-mono truncate w-full m-0 p-0 align-baseline">
+                      /home/user/project-bar
+                    </p>
+                  </gui-tooltip-trigger>
+                  <gui-tooltip-content>
+                    /home/user/project-bar
+                  </gui-tooltip-content>
+                </gui-tooltip>
+              </div>
+            </gui-tooltip-provider>
+            <div class="flex gap-2 overflow-x-scroll">
+              <div class="flex-none bg-secondary rounded-xl px-2 py-1">
+                <p class="text-[0.7rem] font-medium text-primary ">
+                  pnpm
+                </p>
+              </div>
+            </div>
+          </div>
+        </a>
+        <a
+          href="#"
+          class="border-[1px] rounded-lg w-full md:w-96 hover:border-muted-foreground/50 transition-all duration-250 bg-card"
+        >
+          <div class="flex flex-col items-start h-20 justify-between px-4 py-3">
+            <div class="flex flex-row w-full items-center justify-end">
+              <div class="text-[0.7rem] text-muted-foreground">
                 November 1st, 2024 | 06:01 PM
               </div>
             </div>
@@ -112,13 +109,20 @@ exports[`dashboard-grid with results 1`] = `
             </div>
           </div>
           <div class="w-full h-12 flex items-center gap-4 justify-between border-t-[1px] px-4 py-3">
-            <div class="flex items-center justify-center rounded-sm border-[1px] px-2 py-1">
-              <button data-state="closed">
-                <p class="text-[0.65rem] text-muted-foreground font-mono truncate w-full m-0 p-0 align-baseline">
-                  /home/user/project-foo
-                </p>
-              </button>
-            </div>
+            <gui-tooltip-provider>
+              <div class="flex items-center justify-center rounded-sm border-[1px] px-2 py-1">
+                <gui-tooltip>
+                  <gui-tooltip-trigger>
+                    <p class="text-[0.65rem] text-muted-foreground font-mono truncate w-full m-0 p-0 align-baseline">
+                      /home/user/project-foo
+                    </p>
+                  </gui-tooltip-trigger>
+                  <gui-tooltip-content>
+                    /home/user/project-foo
+                  </gui-tooltip-content>
+                </gui-tooltip>
+              </div>
+            </gui-tooltip-provider>
             <div class="flex gap-2 overflow-x-scroll">
               <div class="flex-none bg-secondary rounded-xl px-2 py-1">
                 <p class="text-[0.7rem] font-medium text-primary ">
@@ -133,97 +137,6 @@ exports[`dashboard-grid with results 1`] = `
             </div>
           </div>
         </a>
-        <a
-          href="#"
-          class="border-[1px] rounded-lg w-full md:w-96 hover:border-muted-foreground transition-all duration-250 bg-card"
-          style="opacity: 0;"
-        >
-          <div class="flex flex-col items-start h-20 justify-between px-4 py-3">
-            <div class="flex flex-row w-full items-center justify-between">
-              <div>
-                <button
-                  type="button"
-                  id="radix-:r5:"
-                  aria-haspopup="menu"
-                  aria-expanded="false"
-                  data-state="closed"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="20"
-                    height="20"
-                    viewbox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    class="lucide lucide-ellipsis text-muted-foreground"
-                  >
-                    <circle
-                      cx="12"
-                      cy="12"
-                      r="1"
-                    >
-                    </circle>
-                    <circle
-                      cx="19"
-                      cy="12"
-                      r="1"
-                    >
-                    </circle>
-                    <circle
-                      cx="5"
-                      cy="12"
-                      r="1"
-                    >
-                    </circle>
-                  </svg>
-                </button>
-              </div>
-              <div class="text-[0.7rem]">
-                November 1st, 2024 | 06:01 PM
-              </div>
-            </div>
-            <div class="flex">
-              <gui-card-title classname="self-end text-md">
-                project-bar
-              </gui-card-title>
-            </div>
-          </div>
-          <div class="w-full h-12 flex items-center gap-4 justify-between border-t-[1px] px-4 py-3">
-            <div class="flex items-center justify-center rounded-sm border-[1px] px-2 py-1">
-              <button data-state="closed">
-                <p class="text-[0.65rem] text-muted-foreground font-mono truncate w-full m-0 p-0 align-baseline">
-                  /home/user/project-bar
-                </p>
-              </button>
-            </div>
-            <div class="flex gap-2 overflow-x-scroll">
-              <div class="flex-none bg-secondary rounded-xl px-2 py-1">
-                <p class="text-[0.7rem] font-medium text-primary ">
-                  pnpm
-                </p>
-              </div>
-            </div>
-          </div>
-        </a>
-      </div>
-    </div>
-    <div class="flex flex-col gap-4">
-      <h4 class="text-sm font-medium tracking-wide ">
-        Pinned Projects
-      </h4>
-      <div
-        class="flex flex-row flex-wrap gap-8"
-        style="opacity: 0;"
-      >
-        <p
-          class="text-sm text-muted-foreground/50"
-          style="opacity: 0;"
-        >
-          No pinned projects
-        </p>
       </div>
     </div>
   </div>

@@ -20,6 +20,8 @@ const testCases = new Map<string, string>([
   ['/error', 'Error'],
   ['/explore', 'Explore'],
   ['/dashboard', 'Dashboard'],
+  ['/queries', 'Queries'],
+  ['/labels', 'Labels'],
 ])
 
 test.each([...testCases])(
