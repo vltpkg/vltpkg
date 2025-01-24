@@ -10,6 +10,15 @@ import { defaultConditionNames } from 'eslint-import-resolver-typescript'
 // 'error' to fix, or 'warn' to see
 const BE_EXTRA = process.env.LINT_SUPER_CONSISTENT ?? 'off'
 
+const unsafeRules = value => ({
+  '@typescript-eslint/no-unsafe-argument': value,
+  '@typescript-eslint/no-unsafe-assignment': value,
+  '@typescript-eslint/no-unsafe-call': value,
+  '@typescript-eslint/no-unsafe-member-access': value,
+  '@typescript-eslint/no-explicit-any': value,
+  '@typescript-eslint/no-unsafe-return': value,
+})
+
 export default tseslint.config(
   {
     ignores: [
@@ -192,23 +201,20 @@ export default tseslint.config(
   },
   {
     /**
-     * Allow unsafe code here. Probably not worth fixing in tests
-     * but anywhere else is beneficial. Goal is to at least not
-     * have any src/ files in here.
+     * infra workspaces are non-source build related things. So we
+     * allow some unsafe code here.
      */
-    files: [
-      '**/test/**/*.{ts,tsx}',
-      '**/infra/**/*.ts',
-      '!**/infra/build/src/bin/publish.ts',
-    ],
-    rules: {
-      '@typescript-eslint/no-unsafe-argument': 'off',
-      '@typescript-eslint/no-unsafe-assignment': 'off',
-      '@typescript-eslint/no-unsafe-call': 'off',
-      '@typescript-eslint/no-unsafe-member-access': 'off',
-      '@typescript-eslint/no-explicit-any': 'off',
-      '@typescript-eslint/no-unsafe-return': 'off',
-    },
+    files: ['infra/*/src/*.ts'],
+    rules: unsafeRules('off'),
+  },
+  {
+    /**
+     * Re-enable safety rules for some specific files. This doesn't work
+     * as a negated glob in the above block for some reason. Doing it that
+     * way causes eslint to slow down significantly.
+     */
+    files: ['infra/build/src/bin/publish.ts'],
+    rules: unsafeRules('error'),
   },
   {
     /**
@@ -233,6 +239,7 @@ export default tseslint.config(
           })),
         },
       ],
+      ...unsafeRules('off'),
       // this is helpful and not really dangerous in tests
       '@typescript-eslint/no-non-null-assertion': 'off',
       '@typescript-eslint/no-unused-expressions': 'off',
