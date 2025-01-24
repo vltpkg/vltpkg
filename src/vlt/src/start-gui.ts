@@ -244,9 +244,7 @@ const updateDashboardData = async (
   tmp: string,
   conf: LoadedConfig,
 ) => {
-  const userDefinedProjectPaths =
-    // eslint-disable-next-line
-    conf.values?.['dashboard-root'] || []
+  const userDefinedProjectPaths = conf.values['dashboard-root'] ?? []
   const dashboard = formatDashboardJson(
     readProjectFolders({
       ...conf.options,
