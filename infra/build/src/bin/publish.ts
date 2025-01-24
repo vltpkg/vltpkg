@@ -11,7 +11,7 @@ import generateMatrix, {
 import { Paths } from '../index.js'
 import * as types from '../types.js'
 
-type PackageJsonBase = {
+type Base = {
   name: string
   version: string
   description: string
@@ -20,32 +20,28 @@ type PackageJsonBase = {
   repository: Record<string, string>
 }
 
-type PackageJsonBundle = PackageJsonBase & {
+type Bundle = Base & {
   engines: Record<string, string>
 }
 
-type PackageJsonCompiled = PackageJsonBase & {
+type Compiled = Base & {
   engines: undefined
 }
 
-type PackageJsonCompiledRoot = PackageJsonCompiled & {
+type CompiledRoot = Compiled & {
   scripts: { postinstall: string }
   optionalDependencies: Record<string, string>
 }
 
-type PackageJsonCompiledPlatform = PackageJsonCompiled & {
+type CompiledPlatform = Compiled & {
   bin: undefined
   os: types.Platform[]
   cpu: types.Arch[]
 }
 
-type PackageJson =
-  | PackageJsonBundle
-  | PackageJsonCompiled
-  | PackageJsonCompiledRoot
-  | PackageJsonCompiledPlatform
+type Package = Bundle | Compiled | CompiledRoot | CompiledPlatform
 
-type PublishOptions<T extends PackageJson = PackageJson> = {
+type Publish<T extends Package = Package> = {
   dryRun: boolean
   tag: string
   files: {
@@ -53,7 +49,7 @@ type PublishOptions<T extends PackageJson = PackageJson> = {
     'README.md': string
     'package.json': T
     '.npmrc': string
-  } & (T extends PackageJsonCompiledRoot ?
+  } & (T extends CompiledRoot ?
     {
       [bin in types.Bin]?: string
     } & {
@@ -62,40 +58,27 @@ type PublishOptions<T extends PackageJson = PackageJson> = {
   : unknown)
 }
 
+const uniq = <T>(arr: T[]) => [...new Set<T>(arr)]
+
 const readFile = (path: string) => fs.readFileSync(path, 'utf8')
 
-// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters
-const readPackageJson = <T>(path: string): T =>
-  JSON.parse(readFile(path)) as T
+const readPackageJson = (path: string): unknown =>
+  JSON.parse(readFile(path))
 
 const TOKEN = process.env.VLT_CLI_PUBLISH_TOKEN
 const PRERELEASE_ID = `.${Date.now()}`
 const FILES = {
   README: readFile(join(Paths.CLI, 'README.md')),
   LICENSE: readFile(join(Paths.CLI, 'LICENSE')),
-  PACKAGE_JSON: readPackageJson<PackageJsonBundle>(
+  PACKAGE_JSON: readPackageJson(
     join(Paths.CLI, 'package.json'),
-  ),
+  ) as Bundle,
   POST_INSTALL: readFile(
     join(Paths.BUILD_ROOT, 'src/postinstall.js'),
   ),
   PLACEHOLDER_BIN: readFile(
     join(Paths.BUILD_ROOT, 'src/placeholder-bin.js'),
   ),
-}
-
-const createWriteFiles = (dir: string) => {
-  fs.mkdirSync(dir, { recursive: true })
-  return (files: Record<string, string | object>) => {
-    for (const [name, contents] of Object.entries(files)) {
-      fs.writeFileSync(
-        join(dir, name),
-        typeof contents === 'string' ? contents : (
-          JSON.stringify(contents, null, 2) + '\n'
-        ),
-      )
-    }
-  }
 }
 
 const parseArgs = () => {
@@ -111,17 +94,27 @@ const parseArgs = () => {
   return {
     /* c8 ignore next */
     outdir: resolve(outdir ?? '.publish'),
-    /* c8 ignore next */
     dryRun: !forReal,
     matrix: getMatrix(matrix),
   }
 }
 
-const publish = <T extends PackageJson>(
+const publish = <T extends Package>(
   pkg: { dir: string; format: types.Format },
-  options: PublishOptions<T>,
+  options: Publish<T>,
 ) => {
-  const writeFiles = createWriteFiles(pkg.dir)
+  fs.mkdirSync(pkg.dir, { recursive: true })
+
+  const writeFiles = (files: Record<string, string | object>) => {
+    for (const [name, contents] of Object.entries(files)) {
+      fs.writeFileSync(
+        join(pkg.dir, name),
+        typeof contents === 'string' ? contents : (
+          JSON.stringify(contents, null, 2) + '\n'
+        ),
+      )
+    }
+  }
 
   writeFiles(options.files)
 
@@ -137,13 +130,14 @@ const publish = <T extends PackageJson>(
       return acc
     }, {})
 
+  const noPackageJsonBins =
+    'bin' in options.files['package.json'] &&
+    options.files['package.json'].bin === undefined
+
   writeFiles({
     'package.json': {
       ...options.files['package.json'],
-      bin:
-        'bin' in options.files['package.json'] ?
-          options.files['package.json'].bin
-        : binFiles,
+      bin: noPackageJsonBins ? undefined : binFiles,
       type: pkg.format === types.Formats.Cjs ? 'commonjs' : 'module',
     },
   })
@@ -168,7 +162,7 @@ const publish = <T extends PackageJson>(
   )
 
   return {
-    pkg: readPackageJson<T>(join(pkg.dir, 'package.json')),
+    pkg: readPackageJson(join(pkg.dir, 'package.json')) as T,
     binFiles: Object.keys(binFiles),
   }
 }
@@ -177,9 +171,9 @@ const publishCompiled = (
   outdir: string,
   runtime: types.Runtime,
   compilations: CompilationDir[],
-  baseOptions: PublishOptions,
+  baseOptions: Publish,
 ) => {
-  const options: PublishOptions<PackageJsonCompiled> = {
+  const options: Publish<Compiled> = {
     ...baseOptions,
     files: {
       ...baseOptions.files,
@@ -192,14 +186,16 @@ const publishCompiled = (
   }
 
   const platformPackages = compilations.map(pkg =>
-    publish<PackageJsonCompiledPlatform>(pkg, {
+    publish<CompiledPlatform>(pkg, {
       ...options,
       files: {
         ...options.files,
         'package.json': {
           ...options.files['package.json'],
+          // The format of this package name must stay in sync with the
+          // require.resolve in the postinstall script.
           name: `@vltpkg/cli-${pkg.platform}-${pkg.arch}`,
-          description: `${FILES.PACKAGE_JSON.description} for ${pkg.platform} ${pkg.arch}`,
+          description: `${FILES.PACKAGE_JSON.description} (${pkg.platform}-${pkg.arch})`,
           // platform packaged dont get bins set in package json since those
           // would conflict with the root package. they get moved in place
           // by the postinstall script
@@ -211,29 +207,45 @@ const publishCompiled = (
     }),
   )
 
-  publish<PackageJsonCompiledRoot>(
-    { dir: join(outdir, 'root-compiled'), format: types.Formats.Cjs },
+  // All bin files from from platform packages are written to the root
+  // as placeholders. These will error if postinstall or optional deps
+  // are installed. TODO: a more robust solution will be to have the
+  // bundled JS files called by the placeholder bins that way it works
+  // even with --ignore-scripts or --no-optional. The tradeoff is that
+  // then the CLI can run in two different modes which can make performance
+  // and runtime errors harder to track down.
+  const placeholderBinFiles = Object.fromEntries(
+    uniq(platformPackages.flatMap(({ binFiles }) => binFiles)).map(
+      bin => [bin, FILES.PLACEHOLDER_BIN],
+    ),
+  )
+
+  // Each platform package is an optional dependency of the root package
+  // so that the postinstall script can move the bins into place.
+  // TODO: once we are out of prerelease mode, the pkg.version should
+  // use a semver range
+  const optionalDependencies = Object.fromEntries(
+    platformPackages.map(({ pkg }) => [pkg.name, pkg.version]),
+  )
+
+  publish<CompiledRoot>(
+    {
+      dir: join(outdir, 'root-compiled'),
+      // The root package is commonjs because the postinstall script
+      // is easiest written with require.resolve
+      format: types.Formats.Cjs,
+    },
     {
       ...options,
       tag: runtime,
       files: {
         ...options.files,
-        // all platform packages should have the same bins
-        ...Object.fromEntries(
-          (platformPackages[0]?.binFiles ?? []).map(
-            b => [b, FILES.PLACEHOLDER_BIN] as const,
-          ),
-        ),
+        ...placeholderBinFiles,
         'postinstall.js': FILES.POST_INSTALL,
         'package.json': {
           ...options.files['package.json'],
+          optionalDependencies,
           scripts: { postinstall: 'node postinstall.js' },
-          optionalDependencies: Object.fromEntries(
-            platformPackages.map(({ pkg }) => [
-              pkg.name,
-              pkg.version,
-            ]),
-          ),
         },
       },
     },
@@ -250,7 +262,7 @@ const main = async () => {
 
   fs.rmSync(outdir, { recursive: true, force: true })
 
-  const options: PublishOptions<PackageJsonBundle> = {
+  const options: Publish<Bundle> = {
     dryRun,
     tag: 'latest',
     files: {
@@ -275,24 +287,24 @@ const main = async () => {
     matrix,
     // Only publish the main `vlt` bin if it's a compilation because its probably too
     // big to publish 5 * 80MB bins.
-    bin: matrix.compilations.length ? types.Bins.vlt : undefined,
+    bin: matrix.compilations.length ? [types.Bins.vlt] : undefined,
   })
 
   if (compilations.length) {
-    const runtimes = new Set(matrix.compilations.map(c => c.runtime))
-    const runtime = [...runtimes][0]
+    const runtimes = uniq(matrix.compilations.map(c => c.runtime))
     assert(
-      runtime && runtimes.size === 1,
+      runtimes.length === 1,
       'expected all compilations to have the same runtime',
     )
-    publishCompiled(outdir, runtime, compilations, options)
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    publishCompiled(outdir, [...runtimes][0]!, compilations, options)
   } else {
-    const [pkg] = bundles
     assert(
-      pkg && bundles.length === 1,
+      bundles.length === 1,
       'expected exactly one bundle to publish',
     )
-    publish(pkg, options)
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    publish(bundles[0]!, options)
   }
 }
 
