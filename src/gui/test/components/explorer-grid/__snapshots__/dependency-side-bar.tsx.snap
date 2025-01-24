@@ -13,19 +13,16 @@ exports[`dependency-side-bar 1`] = `
   </div>
   <gui-side-item
     item="[object Object]"
-    idx="0"
     dependencies="true"
   >
   </gui-side-item>
   <gui-side-item
     item="[object Object]"
-    idx="1"
     dependencies="true"
   >
   </gui-side-item>
   <gui-side-item
     item="[object Object]"
-    idx="2"
     dependencies="true"
   >
   </gui-side-item>
