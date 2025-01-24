@@ -60,6 +60,13 @@ type Publish<T extends Package = Package> = {
 
 const uniq = <T>(arr: T[]) => [...new Set<T>(arr)]
 
+const assertOne = <T>(values: T[], msg: string): T => {
+  assert(values.length === 1, msg)
+  const [value] = values
+  assert(value, msg)
+  return value
+}
+
 const readFile = (path: string) => fs.readFileSync(path, 'utf8')
 
 const readPackageJson = (path: string): unknown =>
@@ -168,8 +175,7 @@ const publish = <T extends Package>(
 }
 
 const publishCompiled = (
-  outdir: string,
-  runtime: types.Runtime,
+  { dir, runtime }: { dir: string; runtime: types.Runtime },
   compilations: CompilationDir[],
   baseOptions: Publish,
 ) => {
@@ -230,7 +236,7 @@ const publishCompiled = (
 
   publish<CompiledRoot>(
     {
-      dir: join(outdir, 'root-compiled'),
+      dir,
       // The root package is commonjs because the postinstall script
       // is easiest written with require.resolve
       format: types.Formats.Cjs,
@@ -291,20 +297,22 @@ const main = async () => {
   })
 
   if (compilations.length) {
-    const runtimes = uniq(matrix.compilations.map(c => c.runtime))
-    assert(
-      runtimes.length === 1,
-      'expected all compilations to have the same runtime',
+    publishCompiled(
+      {
+        dir: join(outdir, 'compile-root-package'),
+        runtime: assertOne(
+          uniq(matrix.compilations.map(c => c.runtime)),
+          'expected all compilations to have the same runtime',
+        ),
+      },
+      compilations,
+      options,
     )
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    publishCompiled(outdir, [...runtimes][0]!, compilations, options)
   } else {
-    assert(
-      bundles.length === 1,
-      'expected exactly one bundle to publish',
+    publish(
+      assertOne(bundles, 'expected exactly one bundle to publish'),
+      options,
     )
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    publish(bundles[0]!, options)
   }
 }
 
