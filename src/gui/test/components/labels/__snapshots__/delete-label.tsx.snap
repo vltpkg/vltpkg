@@ -25,7 +25,7 @@ exports[`delete-label > should render correctly 1`] = `
       </gui-tooltip>
       <gui-dialog-content>
         <gui-dialog-header>
-          <gui-dialog-title>
+          <gui-dialog-title classname="font-medium">
             Delete Labels
           </gui-dialog-title>
           <gui-dialog-description>
@@ -34,13 +34,13 @@ exports[`delete-label > should render correctly 1`] = `
         <div>
           You're about to delete:
           <ul class="my-3 list-none">
-            <li class="font-semibold">
+            <li class="font-medium">
               mock-label-1
             </li>
-            <li class="font-semibold">
+            <li class="font-medium">
               mock-label-2
             </li>
-            <li class="font-semibold">
+            <li class="font-medium">
               mock-label-3
             </li>
           </ul>
