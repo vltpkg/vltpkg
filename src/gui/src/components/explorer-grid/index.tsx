@@ -4,8 +4,13 @@ import {
   GalleryVerticalEnd,
   GalleryThumbnails,
 } from 'lucide-react'
-import { type EdgeLike, type NodeLike } from '@vltpkg/graph'
-import { stringifyNode } from '@vltpkg/graph/browser'
+import {
+  type EdgeLike,
+  type NodeLike,
+  longDependencyTypes,
+  shorten,
+  stringifyNode,
+} from '@vltpkg/graph/browser'
 import { type DepID } from '@vltpkg/dep-id'
 import { Spec } from '@vltpkg/spec/browser'
 import { useGraphStore } from '@/state/index.js'
@@ -128,7 +133,7 @@ const getItemsData = (edges: EdgeLike[], nodes: NodeLike[]) => {
     item.version = item.to?.version ? `v${item.to.version}` : ''
   }
 
-  return items
+  return items.sort((a, b) => a.name.localeCompare(b.name, 'en'))
 }
 
 const getParent = (
@@ -172,23 +177,69 @@ const getDependentItems = (node?: NodeLike, parent?: NodeLike) => {
   return items
 }
 
-const getDependencyItems = (node?: NodeLike) => {
+const getDependencyItems = (
+  count: { currIndex: number },
+  node?: NodeLike,
+) => {
   const items: GridItemData[] = []
   if (!node) return items
-  for (const edge of Array.from(node.edgesOut.values())) {
+  for (const edge of Array.from(node.edgesOut.values()).sort((a, b) =>
+    a.name.localeCompare(b.name, 'en'),
+  )) {
+    // skip missing dependencies, they'll be captured by the uninstalled deps
+    if (!edge.to) continue
     const title = `${edge.name}@${edge.spec.bareSpec}`
     items.push({
       ...edge,
-      id: edge.to?.id || title,
+      depIndex: count.currIndex++,
+      id: edge.to.id,
       title,
-      name: edge.to?.name || '',
-      version: edge.to?.version || '',
+      name: edge.to.name || '',
+      version: edge.to.version || '',
       stacked: false,
       size: 1,
       labels: [edge.type],
     })
   }
   return items
+}
+
+const getUninstalledDependencyItems = (
+  count: { currIndex: number },
+  node?: NodeLike,
+) => {
+  const items: GridItemData[] = []
+  const manifest = node?.manifest
+  if (!manifest) return items
+  // collect all dependencies from the manifest into a single map
+  const allManifestDeps = []
+  for (const type of longDependencyTypes) {
+    const deps = manifest[type]
+    if (deps) {
+      for (const [name, version] of Object.entries(deps)) {
+        allManifestDeps.push({ name, version, type })
+      }
+    }
+  }
+  for (const { name, version, type } of allManifestDeps.sort((a, b) =>
+    a.name.localeCompare(b.name, 'en'),
+  )) {
+    // skip installed dependencies
+    const edge = node.edgesOut.get(name)
+    if (edge?.to) continue
+    const title = `${name}@${version}`
+    items.push({
+      depIndex: count.currIndex++,
+      id: `uninstalled-dep:${title}`,
+      title,
+      name: name,
+      version,
+      stacked: false,
+      size: 1,
+      labels: [shorten(type, name, manifest)],
+    })
+  }
+  return items.sort((a, b) => a.name.localeCompare(b.name, 'en'))
 }
 
 const getItemQuery = (item: GridItemData) => {
@@ -215,8 +266,11 @@ export const ExplorerGrid = () => {
   const parentItem = getParent(selectedItem, parent)
   const dependents =
     selected && getDependentItems(selectedItem?.to, parent)
+  const count = { currIndex: 0 }
   const dependencies =
-    selected && getDependencyItems(selectedItem?.to)
+    selected && getDependencyItems(count, selectedItem?.to)
+  const uninstalledDependencies =
+    selected && getUninstalledDependencyItems(count, selectedItem?.to)
   const dependentsClick =
     (item: GridItemData, isParent?: boolean) => () => {
       const selectedName =
@@ -322,6 +376,7 @@ export const ExplorerGrid = () => {
             dependencies={dependencies || []}
             importerId={importerId}
             onDependencyClick={dependencyClick}
+            uninstalledDependencies={uninstalledDependencies || []}
           />
         : ''}
       </div>
