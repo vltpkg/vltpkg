@@ -31,9 +31,9 @@ jobs:
           version: 9
           run_install: false
 
-      - uses: denoland/setup-deno@v1
+      - uses: denoland/setup-deno@v2
         with:
-          deno-version: v1.x
+          deno-version: v2.x
 
       - name: Setup Nodejs
         uses: actions/setup-node@v4
