@@ -54,15 +54,28 @@ afterEach(() => {
   cleanup()
 })
 
+const getGridItemData = (
+  name: string,
+  id: string,
+  depIndex: number,
+) =>
+  ({
+    name,
+    id,
+    depIndex,
+    toString: () => `GridItemData { ${name} }`,
+  }) as GridItemData
+
 test('dependency-side-bar', async () => {
   const dependencies = [
-    { name: 'simple-output', id: '1' } as GridItemData,
-    { name: 'abbrev', id: '2' } as GridItemData,
-    { name: '@vltpkg/semver', id: '3' } as GridItemData,
+    getGridItemData('simple-output', '1', 0),
+    getGridItemData('abbrev', '2', 1),
+    getGridItemData('@vltpkg/semver', '3', 2),
   ]
   render(
     <DependencySideBar
       dependencies={dependencies}
+      uninstalledDependencies={[]}
       onDependencyClick={() => () => {}}
     />,
   )
@@ -74,6 +87,43 @@ test('dependency-side-bar no items', async () => {
   render(
     <DependencySideBar
       dependencies={dependencies}
+      uninstalledDependencies={[]}
+      onDependencyClick={() => () => {}}
+    />,
+  )
+  expect(window.document.body.innerHTML).toMatchSnapshot()
+})
+
+test('dependency-side-bar has uninstalled deps only', async () => {
+  const dependencies = [
+    getGridItemData('simple-output', '1', 0),
+    getGridItemData('abbrev', '2', 1),
+    getGridItemData('@vltpkg/semver', '3', 2),
+  ]
+  render(
+    <DependencySideBar
+      dependencies={[]}
+      uninstalledDependencies={dependencies}
+      onDependencyClick={() => () => {}}
+    />,
+  )
+  expect(window.document.body.innerHTML).toMatchSnapshot()
+})
+
+test('dependency-side-bar has both installed and uninstalled deps', async () => {
+  const dependencies = [
+    getGridItemData('simple-output', '1', 0),
+    getGridItemData('abbrev', '2', 1),
+    getGridItemData('@vltpkg/semver', '3', 2),
+  ]
+  const uninstalledDependencies = [
+    getGridItemData('@ruyadorno/redact', '4', 3),
+    getGridItemData('ntl', '1', 4),
+  ]
+  render(
+    <DependencySideBar
+      dependencies={dependencies}
+      uninstalledDependencies={uninstalledDependencies}
       onDependencyClick={() => () => {}}
     />,
   )
