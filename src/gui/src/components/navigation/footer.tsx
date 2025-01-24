@@ -63,12 +63,12 @@ export const Footer = () => {
           <div className="flex flex-row gap-4">
             <a
               href="https://www.vlt.sh/terms"
-              className="no-underline font-medium text-muted-foreground text-sm hover:text-foreground transition-all">
+              className="no-underline text-muted-foreground text-sm hover:text-foreground transition-all">
               Terms
             </a>
             <a
               href="https://www.vlt.sh/privacy"
-              className="no-underline font-medium text-muted-foreground text-sm hover:text-foreground transition-all">
+              className="no-underline text-muted-foreground text-sm hover:text-foreground transition-all">
               Privacy
             </a>
           </div>

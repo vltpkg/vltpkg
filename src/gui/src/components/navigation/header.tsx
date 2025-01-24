@@ -30,7 +30,7 @@ const Header = () => {
 
   return (
     <div className="flex w-full justify-between px-8 py-3 bg-white dark:bg-black">
-      <h3 className="text-2xl font-bold mt-1">{routeName}</h3>
+      <h3 className="text-2xl font-medium mt-1">{routeName}</h3>
     </div>
   )
 }
