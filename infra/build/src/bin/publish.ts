@@ -93,7 +93,6 @@ const parseArgs = () => {
     options: {
       outdir: { type: 'string' },
       forReal: { type: 'boolean' },
-      tag: { type: 'string' },
       ...matrixConfig,
     },
   }).values
@@ -175,10 +174,15 @@ const publish = <T extends Package>(
 }
 
 const publishCompiled = (
-  { dir, runtime }: { dir: string; runtime: types.Runtime },
+  { dir }: { dir: string },
   compilations: CompilationDir[],
   baseOptions: Publish,
 ) => {
+  assertOne(
+    uniq(compilations.map(c => c.runtime)),
+    'expected all compilations to have the same runtime',
+  )
+
   const options: Publish<Compiled> = {
     ...baseOptions,
     files: {
@@ -243,7 +247,7 @@ const publishCompiled = (
     },
     {
       ...options,
-      tag: runtime,
+      tag: 'compiled',
       files: {
         ...options.files,
         ...placeholderBinFiles,
@@ -298,13 +302,7 @@ const main = async () => {
 
   if (compilations.length) {
     publishCompiled(
-      {
-        dir: join(outdir, 'compile-root-package'),
-        runtime: assertOne(
-          uniq(matrix.compilations.map(c => c.runtime)),
-          'expected all compilations to have the same runtime',
-        ),
-      },
+      { dir: join(outdir, 'compile-root-package') },
       compilations,
       options,
     )
