@@ -81,9 +81,9 @@ const Label = ({ queryLabel, checked, handleSelect }: LabelProps) => {
   }, [queryLabel])
 
   return (
-    <div className="bg-neutral-50/50 dark:bg-neutral-950 rounded-sm transition-all border border-[1px] border-muted-foreground/25 group hover:border-foreground/50">
-      <div className="grid grid-cols-8 flex items-center px-3 py-2">
-        <div className="col-span-2 flex gap-3 items-center">
+    <div className="group rounded-sm border border-[1px] border-muted-foreground/25 bg-neutral-50/50 transition-all hover:border-foreground/50 dark:bg-neutral-950">
+      <div className="flex grid grid-cols-8 items-center px-3 py-2">
+        <div className="col-span-2 flex items-center gap-3">
           <Checkbox
             onCheckedChange={() => handleSelect(queryLabel)}
             checked={checked}
@@ -96,7 +96,7 @@ const Label = ({ queryLabel, checked, handleSelect }: LabelProps) => {
         </div>
         <div className="col-span-4 flex items-center">
           {!isExpanded && (
-            <p className="text-sm truncate">{editDescription}</p>
+            <p className="truncate text-sm">{editDescription}</p>
           )}
         </div>
         <div className="flex items-center justify-center">
@@ -111,7 +111,7 @@ const Label = ({ queryLabel, checked, handleSelect }: LabelProps) => {
         <div className="flex items-center justify-end">
           <Button
             variant="outline"
-            className="text-sm px-3 rounded-sm border border-[1px] border-muted-foreground/25 h-[2rem]"
+            className="h-[2rem] rounded-sm border border-[1px] border-muted-foreground/25 px-3 text-sm"
             onClick={handleEdit}>
             {isExpanded ? 'Close' : 'Edit'}
           </Button>
@@ -120,10 +120,10 @@ const Label = ({ queryLabel, checked, handleSelect }: LabelProps) => {
 
       {/* expanded */}
       {isExpanded && (
-        <div className="pt-6 mb-3 flex flex-col px-3 py-2 border-t-[1px] border-muted-foreground/25">
+        <div className="mb-3 flex flex-col border-t-[1px] border-muted-foreground/25 px-3 py-2 pt-6">
           <div className="flex gap-3">
             <div className="flex flex-col gap-2">
-              <FormLabel className="text-sm border-none">
+              <FormLabel className="border-none text-sm">
                 Name
               </FormLabel>
               <Input
@@ -133,8 +133,8 @@ const Label = ({ queryLabel, checked, handleSelect }: LabelProps) => {
                 placeholder="Name"
               />
             </div>
-            <div className="flex flex-col gap-2 grow">
-              <FormLabel className="text-sm border-none">
+            <div className="flex grow flex-col gap-2">
+              <FormLabel className="border-none text-sm">
                 Description
               </FormLabel>
               <Input
@@ -145,7 +145,7 @@ const Label = ({ queryLabel, checked, handleSelect }: LabelProps) => {
               />
             </div>
             <div className="flex flex-col gap-2">
-              <FormLabel className="text-sm border-none">
+              <FormLabel className="border-none text-sm">
                 Color
               </FormLabel>
               <Popover>
@@ -164,7 +164,7 @@ const Label = ({ queryLabel, checked, handleSelect }: LabelProps) => {
                 </PopoverContent>
               </Popover>
             </div>
-            <div className="flex items-end mb-0.5">
+            <div className="mb-0.5 flex items-end">
               <Button
                 disabled={
                   editName.trim() === '' ||

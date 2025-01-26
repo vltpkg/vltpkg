@@ -2,9 +2,9 @@
 
 exports[`labels view > labels render default 1`] = `
 
-<div class="bg-neutral-50 dark:bg-neutral-950 rounded-sm flex flex-col transition-all border border-[1px] hover:border-foreground/50 group border-muted-foreground/25 ">
+<div class="group flex flex-col rounded-sm border border-[1px] bg-neutral-50 transition-all hover:border-foreground/50 dark:bg-neutral-950 border-muted-foreground/25">
   <div class="grid grid-cols-12 gap-4 px-3 py-2">
-    <div class="col-span-2 flex items-center gap-3 grow">
+    <div class="col-span-2 flex grow items-center gap-3">
       <gui-checkbox
         checked="false"
         classname="border-muted-foreground/25 group-hover:border-muted-foreground/50"
@@ -14,28 +14,28 @@ exports[`labels view > labels render default 1`] = `
         mock-saved-query
       </p>
     </div>
-    <div class="flex col-span-4 items-center">
-      <p class="text-sm w-[500px] truncate">
+    <div class="col-span-4 flex items-center">
+      <p class="w-[500px] truncate text-sm">
         mock-query
       </p>
     </div>
-    <div class="flex col-span-2 items-center gap-2">
-      <p class="text-sm truncate">
+    <div class="col-span-2 flex items-center gap-2">
+      <p class="truncate text-sm">
         /mock/context/query
       </p>
     </div>
-    <div class="flex col-span-2 items-center gap-2">
+    <div class="col-span-2 flex items-center gap-2">
     </div>
-    <div class="col-span-2 flex gap-4 items-center justify-end">
+    <div class="col-span-2 flex items-center justify-end gap-4">
       <gui-button
         variant="outline"
-        classname="text-sm px-3 rounded-sm border border-[1px] border-muted-foreground/25 h-[2rem]"
+        classname="h-[2rem] rounded-sm border border-[1px] border-muted-foreground/25 px-3 text-sm"
       >
         Edit
       </gui-button>
       <gui-button
         variant="outline"
-        classname="text-sm px-3 rounded-sm border border-[1px] border-muted-foreground/25 h-[2rem]"
+        classname="h-[2rem] rounded-sm border border-[1px] border-muted-foreground/25 px-3 text-sm"
         role="link"
       >
         <span>

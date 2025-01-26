@@ -70,7 +70,7 @@ const SaveQueryButton = () => {
           <Tooltip>
             <TooltipTrigger
               asChild
-              className="flex rounded-sm items-center justify-center h-[1.5rem] w-[1.5rem] bg-muted border border-muted-foreground/20">
+              className="flex h-[1.5rem] w-[1.5rem] items-center justify-center rounded-sm border border-muted-foreground/20 bg-muted">
               <Button
                 role="button"
                 variant="outline"
@@ -87,7 +87,7 @@ const SaveQueryButton = () => {
           </Tooltip>
         </TooltipProvider>
       </PopoverTrigger>
-      <PopoverContent className="p-0 w-full" align="end">
+      <PopoverContent className="w-full p-0" align="end">
         <SaveQueryPopover
           isOpen={showSaveQueryPopover}
           setIsOpen={setShowSaveQueryPopover}
@@ -212,13 +212,13 @@ const SaveQueryPopover = ({
   if (!isOpen) return null
 
   return (
-    <div className="flex flex-col w-[325px]">
+    <div className="flex w-[325px] flex-col">
       <CardHeader className="px-6 py-4">
         <CardTitle className="text-lg font-bold">
           {savedQuery ? 'Edit Query' : 'Added Query!'}
         </CardTitle>
       </CardHeader>
-      <div className="flex px-6 py-4 flex-col gap-2 border-muted-foreground/20 border-t-[1px]">
+      <div className="flex flex-col gap-2 border-t-[1px] border-muted-foreground/20 px-6 py-4">
         <Label className="border-none">Name</Label>
         <Input
           type="text"
@@ -230,7 +230,7 @@ const SaveQueryPopover = ({
             setQueryName(value)
           }}
         />
-        <Label className="border-none mt-2">Directory</Label>
+        <Label className="mt-2 border-none">Directory</Label>
         <Input
           id="query-context"
           type="text"
@@ -242,7 +242,7 @@ const SaveQueryPopover = ({
             setEditContext(value)
           }}
         />
-        <Label className="border-none mt-2">Labels</Label>
+        <Label className="mt-2 border-none">Labels</Label>
         {selectedLabels.length !== 0 && (
           <div className="ml-2 flex flex-wrap gap-2">
             {selectedLabels.map((label, idx) => (
@@ -272,7 +272,7 @@ const SaveQueryPopover = ({
             />
           </PopoverContent>
         </Popover>
-        <div className="flex justify-end items-center w-full mt-4 gap-2">
+        <div className="mt-4 flex w-full items-center justify-end gap-2">
           <div className="flex items-center gap-3">
             {savedQuery && (
               <DeleteQuery

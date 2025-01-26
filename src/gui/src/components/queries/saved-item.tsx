@@ -155,9 +155,9 @@ const SavedQueryItem = ({
 
   return (
     <div
-      className={`bg-neutral-50 dark:bg-neutral-950 rounded-sm flex flex-col transition-all border border-[1px] hover:border-foreground/50 group ${isExpanded ? 'border-foreground/50' : 'border-muted-foreground/25 '}`}>
+      className={`group flex flex-col rounded-sm border border-[1px] bg-neutral-50 transition-all hover:border-foreground/50 dark:bg-neutral-950 ${isExpanded ? 'border-foreground/50' : 'border-muted-foreground/25'}`}>
       <div className="grid grid-cols-12 gap-4 px-3 py-2">
-        <div className="col-span-2 flex items-center gap-3 grow">
+        <div className="col-span-2 flex grow items-center gap-3">
           <Checkbox
             checked={checked}
             onCheckedChange={() => handleSelect(item)}
@@ -167,15 +167,15 @@ const SavedQueryItem = ({
             {editName.trim() !== '' ? editName : 'Query Name'}
           </p>
         </div>
-        <div className="flex col-span-4 items-center">
+        <div className="col-span-4 flex items-center">
           {!isExpanded && (
-            <p className="text-sm w-[500px] truncate">{editQuery}</p>
+            <p className="w-[500px] truncate text-sm">{editQuery}</p>
           )}
         </div>
-        <div className="flex col-span-2 items-center gap-2">
-          <p className="text-sm truncate">{item.context}</p>
+        <div className="col-span-2 flex items-center gap-2">
+          <p className="truncate text-sm">{item.context}</p>
         </div>
-        <div className="flex col-span-2 items-center gap-2">
+        <div className="col-span-2 flex items-center gap-2">
           {selectedLabels.map((label, idx) => (
             <LabelBadge
               key={idx}
@@ -185,17 +185,17 @@ const SavedQueryItem = ({
           ))}
         </div>
 
-        <div className="col-span-2 flex gap-4 items-center justify-end">
+        <div className="col-span-2 flex items-center justify-end gap-4">
           <Button
             variant="outline"
-            className="text-sm px-3 rounded-sm border border-[1px] border-muted-foreground/25 h-[2rem]"
+            className="h-[2rem] rounded-sm border border-[1px] border-muted-foreground/25 px-3 text-sm"
             onClick={handleEdit}>
             {isExpanded ? 'Close' : 'Edit'}
           </Button>
           {editContext.trim() !== '' && (
             <Button
               variant="outline"
-              className="text-sm px-3 rounded-sm border border-[1px] border-muted-foreground/25 h-[2rem]"
+              className="h-[2rem] rounded-sm border border-[1px] border-muted-foreground/25 px-3 text-sm"
               role="link"
               onClick={() => void runQuery()}>
               <span>Run</span>
@@ -207,11 +207,11 @@ const SavedQueryItem = ({
 
       {/* expanded */}
       {isExpanded && (
-        <div className="flex flex-col px-3 py-2 border-t-[1px] border-muted-foreground/25">
+        <div className="flex flex-col border-t-[1px] border-muted-foreground/25 px-3 py-2">
           {/* form */}
-          <div className="flex gap-3 my-3 mb-6">
+          <div className="my-3 mb-6 flex gap-3">
             <div className="flex flex-col gap-2">
-              <Label className="text-sm border-none">Name</Label>
+              <Label className="border-none text-sm">Name</Label>
               <Input
                 type="text"
                 value={editName}
@@ -220,7 +220,7 @@ const SavedQueryItem = ({
               />
             </div>
             <div className="flex grow flex-col gap-2">
-              <Label className="text-sm border-none">Query</Label>
+              <Label className="border-none text-sm">Query</Label>
               <Input
                 type="text"
                 placeholder="Query"
@@ -230,7 +230,7 @@ const SavedQueryItem = ({
               />
             </div>
             <div className="flex grow flex-col gap-2">
-              <Label className="text-sm border-none">Directory</Label>
+              <Label className="border-none text-sm">Directory</Label>
               <Input
                 type="text"
                 value={editContext}
@@ -239,7 +239,7 @@ const SavedQueryItem = ({
               />
             </div>
             <div className="flex grow flex-col gap-2">
-              <Label className="text-sm border-none">Labels</Label>
+              <Label className="border-none text-sm">Labels</Label>
               <Popover
                 open={popoverOpen}
                 onOpenChange={setPopoverOpen}>
@@ -265,7 +265,7 @@ const SavedQueryItem = ({
           </div>
 
           {/* footer */}
-          <div className="flex justify-end items-end mb-0.5">
+          <div className="mb-0.5 flex items-end justify-end">
             <Button
               disabled={!isValid}
               onClick={handleSaveChanges}

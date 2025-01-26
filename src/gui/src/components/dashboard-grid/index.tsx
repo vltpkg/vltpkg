@@ -94,11 +94,11 @@ export const DashboardItem = ({
   return (
     <a
       href="#"
-      className="border-[1px] rounded-lg w-full md:w-96 hover:border-muted-foreground/50 transition-all duration-250 bg-card"
+      className="duration-250 w-full rounded-lg border-[1px] bg-card transition-all hover:border-muted-foreground/50 md:w-96"
       onClick={onDashboardItemClick}>
       {/* card header */}
-      <div className="flex flex-col items-start h-20 justify-between px-4 py-3">
-        <div className="flex flex-row w-full items-center justify-end">
+      <div className="flex h-20 flex-col items-start justify-between px-4 py-3">
+        <div className="flex w-full flex-row items-center justify-end">
           {item.mtime ?
             <div className="text-[0.7rem] text-muted-foreground">
               {format(
@@ -109,16 +109,16 @@ export const DashboardItem = ({
           : ''}
         </div>
         <div className="flex">
-          <CardTitle className="self-end text-md">
+          <CardTitle className="text-md self-end">
             {item.name}
           </CardTitle>
         </div>
       </div>
 
-      <div className="w-full h-12 flex items-center gap-4 justify-between border-t-[1px] px-4 py-3">
+      <div className="flex h-12 w-full items-center justify-between gap-4 border-t-[1px] px-4 py-3">
         <TooltipProvider>
           <Tooltip>
-            <TooltipTrigger className="direction-rtl text-left rounded-sm border-[1px] px-2 py-1 text-[0.65rem] text-muted-foreground font-mono m-0 align-baseline truncate text-ellipsis">
+            <TooltipTrigger className="direction-rtl m-0 truncate text-ellipsis rounded-sm border-[1px] px-2 py-1 text-left align-baseline font-mono text-[0.65rem] text-muted-foreground">
               {item.path}
             </TooltipTrigger>
             <TooltipContent>{item.path}</TooltipContent>
@@ -129,8 +129,8 @@ export const DashboardItem = ({
           {item.tools.map((tool, index) => (
             <div
               key={index}
-              className="flex-none bg-secondary rounded-xl px-2 py-1">
-              <p className="text-[0.7rem] font-medium text-primary ">
+              className="flex-none rounded-xl bg-secondary px-2 py-1">
+              <p className="text-[0.7rem] font-medium text-primary">
                 {tool}
               </p>
             </div>
@@ -158,8 +158,8 @@ const DashboardGrid = () => {
   }, [dashboard])
 
   return (
-    <div className="flex flex-col grow bg-secondary dark:bg-black px-8 py-8">
-      <div className="flex gap-2 mb-8">
+    <div className="flex grow flex-col bg-secondary px-8 py-8 dark:bg-black">
+      <div className="mb-8 flex gap-2">
         <FilterSearch
           placeholder="Filter Projects"
           items={dashboard?.projects ?? []}
@@ -174,7 +174,7 @@ const DashboardGrid = () => {
 
       {/* items */}
       <div className="flex flex-col">
-        <p className="text-sm font-semibold mb-4">Projects</p>
+        <p className="mb-4 text-sm font-semibold">Projects</p>
         <div className="flex flex-row flex-wrap gap-8">
           {dashboard?.projects ?
             filteredProjects.map((item, index) => (

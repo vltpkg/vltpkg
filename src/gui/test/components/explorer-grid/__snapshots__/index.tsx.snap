@@ -3,11 +3,11 @@
 exports[`explorer-grid render default 1`] = `
 
 <div>
-  <div class="grow grid grid-cols-7 gap-4 px-8 bg-secondary dark:bg-black">
+  <div class="grid grow grid-cols-7 gap-4 bg-secondary px-8 dark:bg-black">
     <div class="col-span-2">
     </div>
     <div class="col-span-3">
-      <div class="pt-6 text-md flex flex-row items-center font-medium">
+      <div class="text-md flex flex-row items-center pt-6 font-medium">
         <svg
           xmlns="http://www.w3.org/2000/svg"
           width="22"
@@ -44,9 +44,9 @@ exports[`explorer-grid render default 1`] = `
 exports[`explorer-grid renders workspace with edges in 1`] = `
 
 <div>
-  <div class="grow grid grid-cols-7 gap-4 px-8 bg-secondary dark:bg-black">
+  <div class="grid grow grid-cols-7 gap-4 bg-secondary px-8 dark:bg-black">
     <div class="col-span-2">
-      <div class="pt-6 text-md flex flex-row items-center font-medium">
+      <div class="text-md flex flex-row items-center pt-6 font-medium">
         <svg
           xmlns="http://www.w3.org/2000/svg"
           width="22"
@@ -80,21 +80,21 @@ exports[`explorer-grid renders workspace with edges in 1`] = `
       </div>
       <div class="group relative z-10">
         <div
-          class="block rounded-lg border bg-card text-card-foreground shadow-sm transition-all relative my-4 border-foreground cursor-pointer group-hover:border-neutral-400 dark:group-hover:border-neutral-600"
+          class="block rounded-lg border bg-card text-card-foreground shadow-sm relative my-4 transition-all border-foreground cursor-pointer group-hover:border-neutral-400 dark:group-hover:border-neutral-600"
           role="article"
         >
-          <div class="rounded-t-lg relative flex flex-col w-full p-0">
+          <div class="relative flex w-full flex-col rounded-t-lg p-0">
             <div class="flex items-center px-3 py-2">
-              <h3 class="tracking-tight text-sm font-medium flex-1 items-center">
+              <h3 class="tracking-tight flex-1 items-center text-sm font-medium">
                 a
               </h3>
-              <div class="px-2 py-1 border-[1px] border-solid rounded-full flex-initial">
+              <div class="flex-initial rounded-full border-[1px] border-solid px-2 py-1">
                 <p class="text-xs">
                   1.0.0
                 </p>
               </div>
             </div>
-            <div class="flex items-center flex-row justify-between gap-2 flex-wrap px-3 py-2 border-muted-foreground/20 border-t-[1px]">
+            <div class="flex flex-row flex-wrap items-center justify-between gap-2 border-t-[1px] border-muted-foreground/20 px-3 py-2">
               <p class="text-sm text-muted-foreground/50">
                 b@workspace:*
               </p>
@@ -104,12 +104,12 @@ exports[`explorer-grid renders workspace with edges in 1`] = `
             </div>
           </div>
         </div>
-        <div class="absolute border-t border-solid border-muted-foreground w-4 -right-4 top-7">
+        <div class="absolute -right-4 top-7 w-4 border-t border-solid border-muted-foreground">
         </div>
       </div>
     </div>
     <div class="col-span-3">
-      <div class="pt-6 text-md flex flex-row items-center font-medium">
+      <div class="text-md flex flex-row items-center pt-6 font-medium">
         <svg
           xmlns="http://www.w3.org/2000/svg"
           width="22"
@@ -140,8 +140,8 @@ exports[`explorer-grid renders workspace with edges in 1`] = `
       <div class="flex flex-col gap-6">
         <div class="relative">
           <div class="block rounded-lg border bg-card text-card-foreground shadow-sm relative my-4 border-muted-foreground">
-            <div class="p-6 rounded-t-lg relative flex flex-row -m-px py-3 px-4 bg-primary dark:border dark:border-solid dark:border-muted-foreground text-white dark:text-black rounded-b-lg">
-              <h3 class="text-2xl font-semibold leading-none tracking-tight flex items-center w-full justify-between">
+            <div class="p-6 relative -m-px flex flex-row rounded-t-lg bg-primary px-4 py-3 text-white dark:border dark:border-solid dark:border-muted-foreground dark:text-black rounded-b-lg">
+              <h3 class="text-2xl font-semibold leading-none tracking-tight flex w-full items-center justify-between">
                 <div class="flex items-center justify-between">
                   <span class="text-sm font-medium">
                     b
@@ -157,7 +157,7 @@ exports[`explorer-grid renders workspace with edges in 1`] = `
             </div>
             <div class="p-4">
             </div>
-            <div class="px-4 pb-4 w-full">
+            <div class="w-full px-4 pb-4">
               <div
                 dir="ltr"
                 data-orientation="horizontal"
@@ -228,7 +228,7 @@ exports[`explorer-grid renders workspace with edges in 1`] = `
       </div>
     </div>
     <div class="col-span-2">
-      <div class="pt-6 text-md flex flex-row items-center font-medium">
+      <div class="text-md flex flex-row items-center pt-6 font-medium">
         <svg
           xmlns="http://www.w3.org/2000/svg"
           width="22"
@@ -265,7 +265,7 @@ exports[`explorer-grid renders workspace with edges in 1`] = `
           </path>
         </svg>
         Dependencies
-        <div class="grow flex justify-end">
+        <div class="flex grow justify-end">
           <button
             type="button"
             aria-haspopup="dialog"
@@ -308,11 +308,11 @@ exports[`explorer-grid renders workspace with edges in 1`] = `
 exports[`explorer-grid with results 1`] = `
 
 <div>
-  <div class="grow grid grid-cols-7 gap-4 px-8 bg-secondary dark:bg-black">
+  <div class="grid grow grid-cols-7 gap-4 bg-secondary px-8 dark:bg-black">
     <div class="col-span-2">
     </div>
     <div class="col-span-3">
-      <div class="pt-6 text-md flex flex-row items-center font-medium mb-4">
+      <div class="text-md flex flex-row items-center pt-6 font-medium mb-4">
         Results
       </div>
       <div class="flex flex-col gap-6">
@@ -321,7 +321,7 @@ exports[`explorer-grid with results 1`] = `
             href="#"
             class="block rounded-lg border bg-card text-card-foreground shadow-sm relative group-hover:border-neutral-400 dark:group-hover:border-neutral-600 cursor-pointer"
           >
-            <div class="p-6 m-0 px-4 py-3 rounded-t-lg flex flex-row items-center justify-between border-b-[1px]">
+            <div class="p-6 m-0 flex flex-row items-center justify-between rounded-t-lg border-b-[1px] px-4 py-3">
               <button
                 data-state="closed"
                 class="truncate"
@@ -335,7 +335,7 @@ exports[`explorer-grid with results 1`] = `
                   <span>
                     prod
                   </span>
-                  <span class="font-medium px-1 text-muted-foreground">
+                  <span class="px-1 font-medium text-muted-foreground">
                     dep of:
                   </span>
                   <span>
@@ -344,10 +344,10 @@ exports[`explorer-grid with results 1`] = `
                 </p>
               </div>
             </div>
-            <div class="flex flex-row px-3 py-2 items-center justify-between">
+            <div class="flex flex-row items-center justify-between px-3 py-2">
               <div class="flex items-center justify-center rounded-sm border-[1px] px-2 py-1">
                 <button data-state="closed">
-                  <p class="text-[0.65rem] text-muted-foreground font-mono font-medium truncate w-full m-0 p-0 align-baseline">
+                  <p class="m-0 w-full truncate p-0 align-baseline font-mono text-[0.65rem] font-medium text-muted-foreground">
                     npm:a@1.0.0
                   </p>
                 </button>
@@ -362,7 +362,7 @@ exports[`explorer-grid with results 1`] = `
             href="#"
             class="block rounded-lg border bg-card text-card-foreground shadow-sm relative group-hover:border-neutral-400 dark:group-hover:border-neutral-600 cursor-pointer"
           >
-            <div class="p-6 m-0 px-4 py-3 rounded-t-lg flex flex-row items-center justify-between border-b-[1px]">
+            <div class="p-6 m-0 flex flex-row items-center justify-between rounded-t-lg border-b-[1px] px-4 py-3">
               <button
                 data-state="closed"
                 class="truncate"
@@ -376,7 +376,7 @@ exports[`explorer-grid with results 1`] = `
                   <span>
                     dev
                   </span>
-                  <span class="font-medium px-1 text-muted-foreground">
+                  <span class="px-1 font-medium text-muted-foreground">
                     dep of:
                   </span>
                   <span>
@@ -385,10 +385,10 @@ exports[`explorer-grid with results 1`] = `
                 </p>
               </div>
             </div>
-            <div class="flex flex-row px-3 py-2 items-center justify-between">
+            <div class="flex flex-row items-center justify-between px-3 py-2">
               <div class="flex items-center justify-center rounded-sm border-[1px] px-2 py-1">
                 <button data-state="closed">
-                  <p class="text-[0.65rem] text-muted-foreground font-mono font-medium truncate w-full m-0 p-0 align-baseline">
+                  <p class="m-0 w-full truncate p-0 align-baseline font-mono text-[0.65rem] font-medium text-muted-foreground">
                     npm:b@1.0.0
                   </p>
                 </button>
@@ -410,11 +410,11 @@ exports[`explorer-grid with results 1`] = `
 exports[`explorer-grid with stack 1`] = `
 
 <div>
-  <div class="grow grid grid-cols-7 gap-4 px-8 bg-secondary dark:bg-black">
+  <div class="grid grow grid-cols-7 gap-4 bg-secondary px-8 dark:bg-black">
     <div class="col-span-2">
     </div>
     <div class="col-span-3">
-      <div class="pt-6 text-md flex flex-row items-center font-medium mb-4">
+      <div class="text-md flex flex-row items-center pt-6 font-medium mb-4">
         Results
       </div>
       <div class="flex flex-col gap-6">
@@ -423,7 +423,7 @@ exports[`explorer-grid with stack 1`] = `
             href="#"
             class="block rounded-lg border bg-card text-card-foreground shadow-sm relative group-hover:border-neutral-400 dark:group-hover:border-neutral-600 cursor-pointer"
           >
-            <div class="p-6 m-0 px-4 py-3 rounded-t-lg flex flex-row items-center justify-between border-b-[1px]">
+            <div class="p-6 m-0 flex flex-row items-center justify-between rounded-t-lg border-b-[1px] px-4 py-3">
               <button
                 data-state="closed"
                 class="truncate"
@@ -437,7 +437,7 @@ exports[`explorer-grid with stack 1`] = `
                   <span>
                     prod
                   </span>
-                  <span class="font-medium px-1 text-muted-foreground">
+                  <span class="px-1 font-medium text-muted-foreground">
                     dep of:
                   </span>
                   <span>
@@ -446,10 +446,10 @@ exports[`explorer-grid with stack 1`] = `
                 </p>
               </div>
             </div>
-            <div class="flex flex-row px-3 py-2 items-center justify-between">
+            <div class="flex flex-row items-center justify-between px-3 py-2">
               <div class="flex items-center justify-center rounded-sm border-[1px] px-2 py-1">
                 <button data-state="closed">
-                  <p class="text-[0.65rem] text-muted-foreground font-mono font-medium truncate w-full m-0 p-0 align-baseline">
+                  <p class="m-0 w-full truncate p-0 align-baseline font-mono text-[0.65rem] font-medium text-muted-foreground">
                     npm:a@1.0.0
                   </p>
                 </button>
@@ -460,13 +460,13 @@ exports[`explorer-grid with stack 1`] = `
           </a>
         </div>
         <div class="group relative z-10">
-          <div class="transition-all group-hover:border-neutral-400 dark:group-hover:border-neutral-600 absolute border top-1 left-1 w-[99%] h-full bg-card rounded-lg">
+          <div class="absolute left-1 top-1 h-full w-[99%] rounded-lg border bg-card transition-all group-hover:border-neutral-400 dark:group-hover:border-neutral-600">
           </div>
           <a
             href="#"
             class="block rounded-lg border bg-card text-card-foreground shadow-sm relative group-hover:border-neutral-400 dark:group-hover:border-neutral-600 cursor-pointer"
           >
-            <div class="p-6 m-0 px-4 py-3 rounded-t-lg flex flex-row items-center justify-between border-b-[1px]">
+            <div class="p-6 m-0 flex flex-row items-center justify-between rounded-t-lg border-b-[1px] px-4 py-3">
               <button
                 data-state="closed"
                 class="truncate"
@@ -477,7 +477,7 @@ exports[`explorer-grid with stack 1`] = `
               </button>
               <div class="flex items-center justify-center text-pretty rounded-md border-[1px] px-2.5 py-0.5 text-xs text-muted-foreground">
                 <p class="font-semibold">
-                  <span class="font-medium px-1 text-muted-foreground">
+                  <span class="px-1 font-medium text-muted-foreground">
                     dep of:
                   </span>
                   <span>
@@ -486,10 +486,10 @@ exports[`explorer-grid with stack 1`] = `
                 </p>
               </div>
             </div>
-            <div class="flex flex-row px-3 py-2 items-center justify-between">
+            <div class="flex flex-row items-center justify-between px-3 py-2">
               <div class="flex items-center justify-center rounded-sm border-[1px] px-2 py-1">
                 <button data-state="closed">
-                  <p class="text-[0.65rem] text-muted-foreground font-mono font-medium truncate w-full m-0 p-0 align-baseline">
+                  <p class="m-0 w-full truncate p-0 align-baseline font-mono text-[0.65rem] font-medium text-muted-foreground">
                     npm:b@1.0.0
                   </p>
                 </button>

@@ -19,7 +19,7 @@ const PageTitle = ({
 
   return (
     <div className="mt-8">
-      <div className="flex flex-row items-center gap-3 select-none">
+      <div className="flex select-none flex-row items-center gap-3">
         {crumbs.map((crumb, idx) => (
           <React.Fragment key={idx}>
             <a
@@ -28,7 +28,7 @@ const PageTitle = ({
                   accumulatedPath[idx]
                 : undefined
               }
-              className={`no-underline text-sm cursor-pointer ${idx !== crumbs.length - 1 || idx === 0 ? 'text-muted-foreground hover:text-foreground transition-all' : 'text-foreground'}`}>
+              className={`cursor-pointer text-sm no-underline ${idx !== crumbs.length - 1 || idx === 0 ? 'text-muted-foreground transition-all hover:text-foreground' : 'text-foreground'}`}>
               {crumb}
             </a>
             {idx !== crumbs.length - 1 ?
@@ -40,7 +40,7 @@ const PageTitle = ({
           </React.Fragment>
         ))}
       </div>
-      <h1 id="_top" className="text-3xl font-bold mt-8 mb-4">
+      <h1 id="_top" className="mb-4 mt-8 text-3xl font-bold">
         {data.title}
       </h1>
     </div>

@@ -121,7 +121,7 @@ const SidebarQueryProjectNav = () => {
                     {globalQueries.map((query, idx) => (
                       <SidebarMenuSubItem key={idx}>
                         <SidebarMenuSubButton
-                          className="cursor-pointer whitespace-nowrap truncate"
+                          className="cursor-pointer truncate whitespace-nowrap"
                           onClick={() => void runGlobalQuery(query)}>
                           {query.name}
                         </SidebarMenuSubButton>
@@ -158,7 +158,7 @@ const SidebarQueryProjectNav = () => {
                     {projectQueries.map((query, idx) => (
                       <SidebarMenuSubItem key={idx}>
                         <SidebarMenuSubButton
-                          className="cursor-pointer whitespace-nowrap truncate"
+                          className="cursor-pointer truncate whitespace-nowrap"
                           onClick={() => void runQuery(query)}>
                           {query.name}
                         </SidebarMenuSubButton>

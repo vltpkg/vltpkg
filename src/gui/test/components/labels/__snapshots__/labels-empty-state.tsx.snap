@@ -2,34 +2,34 @@
 
 exports[`labels-empty-state > should render correctly 1`] = `
 
-<div class="flex items-center justify-center h-full w-full bg-white dark:bg-black">
+<div class="flex h-full w-full items-center justify-center bg-white dark:bg-black">
   <div
-    class="-mt-20 flex flex-col gap-3 items-center justify-center"
+    class="-mt-20 flex flex-col items-center justify-center gap-3"
     style="opacity: 1;"
   >
-    <div class="relative flex items-center justify-center mb-20">
+    <div class="relative mb-20 flex items-center justify-center">
       <div
-        class="absolute w-[450px] h-[450px] border-[1px] border-neutral-500/10 rounded-full"
+        class="absolute h-[450px] w-[450px] rounded-full border-[1px] border-neutral-500/10"
         style="opacity: 1;"
       >
       </div>
       <div
-        class="absolute w-[300px] h-[300px] border-[1px] border-neutral-500/15 rounded-full"
+        class="absolute h-[300px] w-[300px] rounded-full border-[1px] border-neutral-500/15"
         style="opacity: 1;"
       >
       </div>
       <div
-        class="absolute w-[150px] h-[150px] border-[1px] border-neutral-500/20 rounded-full"
+        class="absolute h-[150px] w-[150px] rounded-full border-[1px] border-neutral-500/20"
         style="opacity: 1;"
       >
       </div>
-      <div class="relative flex items-center justify-center h-[42px] w-[400px] bg-gradient-to-r from-white dark:from-black to-muted-foreground dark:to-muted-foreground rounded-[8px]">
-        <div class="flex items-center justify-center h-[40px] w-[398px] bg-white dark:bg-black rounded-[7px]">
-          <span class="absolute my-auto mr-32 text-sm tracking bg-gradient-to-r from-white dark:from-black dark:to-neutral-500 to-neutral-500 text-transparent bg-clip-text">
+      <div class="relative flex h-[42px] w-[400px] items-center justify-center rounded-[8px] bg-gradient-to-r from-white to-muted-foreground dark:from-black dark:to-muted-foreground">
+        <div class="flex h-[40px] w-[398px] items-center justify-center rounded-[7px] bg-white dark:bg-black">
+          <span class="tracking absolute my-auto mr-32 bg-gradient-to-r from-white to-neutral-500 bg-clip-text text-sm text-transparent dark:from-black dark:to-neutral-500">
             Need to update insecure packages
           </span>
           <div
-            class="absolute flex items-center justify-center my-auto right-3 bg-red-500 h-[24px] w-[80px] rounded-full"
+            class="absolute right-3 my-auto flex h-[24px] w-[80px] items-center justify-center rounded-full bg-red-500"
             style="opacity: 0.5;"
           >
             <span class="text-xs font-semibold tracking-wide">
@@ -39,10 +39,10 @@ exports[`labels-empty-state > should render correctly 1`] = `
         </div>
       </div>
     </div>
-    <h3 class="text-xl z-[2] font-semibold">
+    <h3 class="z-[2] text-xl font-semibold">
       No saved Labels yet
     </h3>
-    <p class="text-sm z-[2] text-neutral-500 text-center">
+    <p class="z-[2] text-center text-sm text-neutral-500">
       Looks like you haven't made any Labels yet,
       <br>
       Labels are a great way to mark your dependencies.

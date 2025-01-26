@@ -5,8 +5,8 @@ exports[`SelectedItem render connection lines 1`] = `
 <div>
   <div class="relative">
     <gui-card classname="relative my-4 border-muted-foreground">
-      <gui-card-header classname="rounded-t-lg relative flex flex-row -m-px py-3 px-4 bg-primary dark:border dark:border-solid dark:border-muted-foreground text-white dark:text-black rounded-b-lg">
-        <gui-card-title classname="flex items-center w-full justify-between">
+      <gui-card-header classname="relative -m-px flex flex-row rounded-t-lg bg-primary px-4 py-3 text-white dark:border dark:border-solid dark:border-muted-foreground dark:text-black rounded-b-lg">
+        <gui-card-title classname="flex w-full items-center justify-between">
           <div class="flex items-center justify-between">
             <span class="text-sm font-medium">
               item
@@ -22,7 +22,7 @@ exports[`SelectedItem render connection lines 1`] = `
       </gui-card-header>
       <div class="p-4">
       </div>
-      <div class="px-4 pb-4 w-full">
+      <div class="w-full px-4 pb-4">
         <gui-tabs>
           <gui-tabs-list classname="grid w-full grid-cols-2">
             <gui-tabs-trigger
@@ -62,7 +62,7 @@ exports[`SelectedItem render connection lines 1`] = `
         </gui-tabs>
       </div>
     </gui-card>
-    <div class="absolute border-t border-solid border-neutral-300 dark:border-neutral-600 rounded-tr-sm w-4 top-7 -right-4">
+    <div class="absolute -right-4 top-7 w-4 rounded-tr-sm border-t border-solid border-neutral-300 dark:border-neutral-600">
     </div>
   </div>
 </div>
@@ -74,8 +74,8 @@ exports[`SelectedItem render with custom registry 1`] = `
 <div>
   <div class="relative">
     <gui-card classname="relative my-4 border-muted-foreground">
-      <gui-card-header classname="rounded-t-lg relative flex flex-row -m-px py-3 px-4 bg-primary dark:border dark:border-solid dark:border-muted-foreground text-white dark:text-black rounded-b-lg">
-        <gui-card-title classname="flex items-center w-full justify-between">
+      <gui-card-header classname="relative -m-px flex flex-row rounded-t-lg bg-primary px-4 py-3 text-white dark:border dark:border-solid dark:border-muted-foreground dark:text-black rounded-b-lg">
+        <gui-card-title classname="flex w-full items-center justify-between">
           <div class="flex items-center justify-between">
             <span class="text-sm font-medium">
               item
@@ -87,14 +87,14 @@ exports[`SelectedItem render with custom registry 1`] = `
               1.0.0
             </span>
           </div>
-          <div class="text-xs px-2 py-1 font-medium border border-solid border-neutral-200 rounded-full dark:border-gray-600">
+          <div class="rounded-full border border-solid border-neutral-200 px-2 py-1 text-xs font-medium dark:border-gray-600">
             https://example.com
           </div>
         </gui-card-title>
       </gui-card-header>
       <div class="p-4">
       </div>
-      <div class="px-4 pb-4 w-full">
+      <div class="w-full px-4 pb-4">
         <gui-tabs>
           <gui-tabs-list classname="grid w-full grid-cols-2">
             <gui-tabs-trigger
@@ -144,8 +144,8 @@ exports[`SelectedItem render with default git host 1`] = `
 <div>
   <div class="relative">
     <gui-card classname="relative my-4 border-muted-foreground">
-      <gui-card-header classname="rounded-t-lg relative flex flex-row -m-px py-3 px-4 bg-primary dark:border dark:border-solid dark:border-muted-foreground text-white dark:text-black rounded-b-lg">
-        <gui-card-title classname="flex items-center w-full justify-between">
+      <gui-card-header classname="relative -m-px flex flex-row rounded-t-lg bg-primary px-4 py-3 text-white dark:border dark:border-solid dark:border-muted-foreground dark:text-black rounded-b-lg">
+        <gui-card-title classname="flex w-full items-center justify-between">
           <div class="flex items-center justify-between">
             <span class="text-sm font-medium">
               item
@@ -157,14 +157,14 @@ exports[`SelectedItem render with default git host 1`] = `
               1.0.0
             </span>
           </div>
-          <div class="text-xs px-2 py-1 font-medium border border-solid border-neutral-200 rounded-full dark:border-gray-600">
+          <div class="rounded-full border border-solid border-neutral-200 px-2 py-1 text-xs font-medium dark:border-gray-600">
             github:a/b
           </div>
         </gui-card-title>
       </gui-card-header>
       <div class="p-4">
       </div>
-      <div class="px-4 pb-4 w-full">
+      <div class="w-full px-4 pb-4">
         <gui-tabs>
           <gui-tabs-list classname="grid w-full grid-cols-2">
             <gui-tabs-trigger
@@ -214,8 +214,8 @@ exports[`SelectedItem render with item 1`] = `
 <div>
   <div class="relative">
     <gui-card classname="relative my-4 border-muted-foreground">
-      <gui-card-header classname="rounded-t-lg relative flex flex-row -m-px py-3 px-4 bg-primary dark:border dark:border-solid dark:border-muted-foreground text-white dark:text-black rounded-b-lg">
-        <gui-card-title classname="flex items-center w-full justify-between">
+      <gui-card-header classname="relative -m-px flex flex-row rounded-t-lg bg-primary px-4 py-3 text-white dark:border dark:border-solid dark:border-muted-foreground dark:text-black rounded-b-lg">
+        <gui-card-title classname="flex w-full items-center justify-between">
           <div class="flex items-center justify-between">
             <span class="text-sm font-medium">
               item
@@ -231,7 +231,7 @@ exports[`SelectedItem render with item 1`] = `
       </gui-card-header>
       <div class="p-4">
       </div>
-      <div class="px-4 pb-4 w-full">
+      <div class="w-full px-4 pb-4">
         <gui-tabs>
           <gui-tabs-list classname="grid w-full grid-cols-2">
             <gui-tabs-trigger
@@ -281,8 +281,8 @@ exports[`SelectedItem render with scoped registry 1`] = `
 <div>
   <div class="relative">
     <gui-card classname="relative my-4 border-muted-foreground">
-      <gui-card-header classname="rounded-t-lg relative flex flex-row -m-px py-3 px-4 bg-primary dark:border dark:border-solid dark:border-muted-foreground text-white dark:text-black rounded-b-lg">
-        <gui-card-title classname="flex items-center w-full justify-between">
+      <gui-card-header classname="relative -m-px flex flex-row rounded-t-lg bg-primary px-4 py-3 text-white dark:border dark:border-solid dark:border-muted-foreground dark:text-black rounded-b-lg">
+        <gui-card-title classname="flex w-full items-center justify-between">
           <div class="flex items-center justify-between">
             <span class="text-sm font-medium">
               item
@@ -294,14 +294,14 @@ exports[`SelectedItem render with scoped registry 1`] = `
               1.0.0
             </span>
           </div>
-          <div class="text-xs px-2 py-1 font-medium border border-solid border-neutral-200 rounded-full dark:border-gray-600">
+          <div class="rounded-full border border-solid border-neutral-200 px-2 py-1 text-xs font-medium dark:border-gray-600">
             http://custom-scope
           </div>
         </gui-card-title>
       </gui-card-header>
       <div class="p-4">
       </div>
-      <div class="px-4 pb-4 w-full">
+      <div class="w-full px-4 pb-4">
         <gui-tabs>
           <gui-tabs-list classname="grid w-full grid-cols-2">
             <gui-tabs-trigger

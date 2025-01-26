@@ -52,7 +52,7 @@ const Labels = () => {
   }, [savedLabels])
 
   return (
-    <section className="flex grow w-full flex-col min-h-[80svh] bg-white dark:bg-black">
+    <section className="flex min-h-[80svh] w-full grow flex-col bg-white dark:bg-black">
       <div className="flex flex-col px-8 py-4">
         <div className="flex justify-between">
           <div className="flex gap-2">
@@ -97,17 +97,17 @@ const Labels = () => {
                 onCheckedChange={handleSelectAll}
                 className="border-muted-foreground/50 hover:border-muted-foreground/75"
               />
-              <p className="text-neutral-500 text-sm font-semibold">
+              <p className="text-sm font-semibold text-neutral-500">
                 Name
               </p>
             </div>
             <div className="col-span-4 flex items-center">
-              <p className="text-neutral-500 text-sm font-semibold">
+              <p className="text-sm font-semibold text-neutral-500">
                 Description
               </p>
             </div>
             <div className="flex items-center justify-center">
-              <p className="text-neutral-500 text-sm font-semibold">
+              <p className="text-sm font-semibold text-neutral-500">
                 References
               </p>
             </div>

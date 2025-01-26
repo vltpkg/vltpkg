@@ -6,20 +6,20 @@ exports[`SideItem render as dependency 1`] = `
   <div class="group relative z-10">
     <gui-card
       role="article"
-      classname="transition-all relative my-4  cursor-pointer group-hover:border-neutral-400 dark:group-hover:border-neutral-600"
+      classname="relative my-4 transition-all  cursor-pointer group-hover:border-neutral-400 dark:group-hover:border-neutral-600"
     >
-      <gui-card-header classname="rounded-t-lg relative flex flex-col w-full p-0">
+      <gui-card-header classname="relative flex w-full flex-col rounded-t-lg p-0">
         <div class="flex items-center px-3 py-2">
-          <gui-card-title classname="text-sm font-medium flex-1 items-center ">
+          <gui-card-title classname="flex-1 items-center text-sm font-medium ">
             item
           </gui-card-title>
-          <div class="px-2 py-1 border-[1px] border-solid rounded-full flex-initial">
+          <div class="flex-initial rounded-full border-[1px] border-solid px-2 py-1">
             <p class="text-xs">
               1.0.0
             </p>
           </div>
         </div>
-        <div class="flex items-center flex-row justify-between gap-2 flex-wrap px-3 py-2 border-muted-foreground/20 border-t-[1px]">
+        <div class="flex flex-row flex-wrap items-center justify-between gap-2 border-t-[1px] border-muted-foreground/20 px-3 py-2">
           <p class="text-sm text-muted-foreground/50">
             item
           </p>
@@ -31,7 +31,7 @@ exports[`SideItem render as dependency 1`] = `
         </div>
       </gui-card-header>
     </gui-card>
-    <div class="absolute border-b border-l border-solid border-neutral-300 dark:border-neutral-700 rounded-bl-sm z-0 w-[9px] -left-[9px] h-[13.35rem] bottom-[62px] group-[&amp;:nth-child(2)]:hidden group-[&amp;:nth-child(3)]:h-24">
+    <div class="absolute -left-[9px] bottom-[62px] z-0 h-[13.35rem] w-[9px] rounded-bl-sm border-b border-l border-solid border-neutral-300 group-[&amp;:nth-child(2)]:hidden group-[&amp;:nth-child(3)]:h-24 dark:border-neutral-700">
     </div>
   </div>
 </div>
@@ -44,20 +44,20 @@ exports[`SideItem render as dependency with long name 1`] = `
   <div class="group relative z-10">
     <gui-card
       role="article"
-      classname="transition-all relative my-4  cursor-pointer group-hover:border-neutral-400 dark:group-hover:border-neutral-600"
+      classname="relative my-4 transition-all  cursor-pointer group-hover:border-neutral-400 dark:group-hover:border-neutral-600"
     >
-      <gui-card-header classname="rounded-t-lg relative flex flex-col w-full p-0">
+      <gui-card-header classname="relative flex w-full flex-col rounded-t-lg p-0">
         <div class="flex items-center px-3 py-2">
-          <gui-card-title classname="text-sm font-medium flex-1 items-center ">
+          <gui-card-title classname="flex-1 items-center text-sm font-medium ">
             lorem-ipsum-dolor-sit-amet-consectetur-adipiscing-elit-sed-do-eiusmod-tempor-incididunt-ut-labore-et-dolore-magna-aliqua-ut-enim-ad-minim-veniam-quis-nostrud-exercitation
           </gui-card-title>
-          <div class="px-2 py-1 border-[1px] border-solid rounded-full flex-initial">
+          <div class="flex-initial rounded-full border-[1px] border-solid px-2 py-1">
             <p class="text-xs">
               1.0.0
             </p>
           </div>
         </div>
-        <div class="flex items-center flex-row justify-between gap-2 flex-wrap px-3 py-2 border-muted-foreground/20 border-t-[1px]">
+        <div class="flex flex-row flex-wrap items-center justify-between gap-2 border-t-[1px] border-muted-foreground/20 px-3 py-2">
           <p class="text-sm text-muted-foreground/50">
             lorem-ipsum-dolor-sit-amet-consectetur-adipiscing-elit-sed-do-eiusmod-tempor-incididunt-ut-labore-et-dolore-magna-aliqua-ut-enim-ad-minim-veniam-quis-nostrud-exercitation
           </p>
@@ -69,7 +69,7 @@ exports[`SideItem render as dependency with long name 1`] = `
         </div>
       </gui-card-header>
     </gui-card>
-    <div class="absolute border-b border-l border-solid border-neutral-300 dark:border-neutral-700 rounded-bl-sm z-0 w-[9px] -left-[9px] h-[13.35rem] bottom-[62px] group-[&amp;:nth-child(2)]:hidden group-[&amp;:nth-child(3)]:h-24">
+    <div class="absolute -left-[9px] bottom-[62px] z-0 h-[13.35rem] w-[9px] rounded-bl-sm border-b border-l border-solid border-neutral-300 group-[&amp;:nth-child(2)]:hidden group-[&amp;:nth-child(3)]:h-24 dark:border-neutral-700">
     </div>
   </div>
 </div>
@@ -82,20 +82,20 @@ exports[`SideItem render as dependent 1`] = `
   <div class="group relative z-10">
     <gui-card
       role="article"
-      classname="transition-all relative my-4  cursor-pointer group-hover:border-neutral-400 dark:group-hover:border-neutral-600"
+      classname="relative my-4 transition-all  cursor-pointer group-hover:border-neutral-400 dark:group-hover:border-neutral-600"
     >
-      <gui-card-header classname="rounded-t-lg relative flex flex-col w-full p-0">
+      <gui-card-header classname="relative flex w-full flex-col rounded-t-lg p-0">
         <div class="flex items-center px-3 py-2">
-          <gui-card-title classname="text-sm font-medium flex-1 items-center ">
+          <gui-card-title classname="flex-1 items-center text-sm font-medium ">
             item
           </gui-card-title>
-          <div class="px-2 py-1 border-[1px] border-solid rounded-full flex-initial">
+          <div class="flex-initial rounded-full border-[1px] border-solid px-2 py-1">
             <p class="text-xs">
               1.0.0
             </p>
           </div>
         </div>
-        <div class="flex items-center flex-row justify-between gap-2 flex-wrap px-3 py-2 border-muted-foreground/20 border-t-[1px]">
+        <div class="flex flex-row flex-wrap items-center justify-between gap-2 border-t-[1px] border-muted-foreground/20 px-3 py-2">
           <p class="text-sm text-muted-foreground/50">
             item
           </p>
@@ -116,26 +116,26 @@ exports[`SideItem render as multi-stacked dependent 1`] = `
 
 <div>
   <div class="group relative z-10">
-    <div class="transition-all absolute border top-2 left-2 w-[96%] h-full bg-card rounded-lg group-hover:border-neutral-400 dark:group-hover:border-neutral-600">
+    <div class="absolute left-2 top-2 h-full w-[96%] rounded-lg border bg-card transition-all group-hover:border-neutral-400 dark:group-hover:border-neutral-600">
     </div>
-    <div class="transition-all absolute border top-1 left-1 w-[98%] h-full bg-card rounded-lg group-hover:border-neutral-400 dark:group-hover:border-neutral-600">
+    <div class="absolute left-1 top-1 h-full w-[98%] rounded-lg border bg-card transition-all group-hover:border-neutral-400 dark:group-hover:border-neutral-600">
     </div>
     <gui-card
       role="article"
-      classname="transition-all relative my-4  cursor-pointer group-hover:border-neutral-400 dark:group-hover:border-neutral-600"
+      classname="relative my-4 transition-all  cursor-pointer group-hover:border-neutral-400 dark:group-hover:border-neutral-600"
     >
-      <gui-card-header classname="rounded-t-lg relative flex flex-col w-full p-0">
+      <gui-card-header classname="relative flex w-full flex-col rounded-t-lg p-0">
         <div class="flex items-center px-3 py-2">
-          <gui-card-title classname="text-sm font-medium flex-1 items-center ">
+          <gui-card-title classname="flex-1 items-center text-sm font-medium ">
             item
           </gui-card-title>
-          <div class="px-2 py-1 border-[1px] border-solid rounded-full flex-initial">
+          <div class="flex-initial rounded-full border-[1px] border-solid px-2 py-1">
             <p class="text-xs">
               1.0.0
             </p>
           </div>
         </div>
-        <div class="flex items-center flex-row justify-between gap-2 flex-wrap px-3 py-2 border-muted-foreground/20 border-t-[1px]">
+        <div class="flex flex-row flex-wrap items-center justify-between gap-2 border-t-[1px] border-muted-foreground/20 px-3 py-2">
           <p class="text-sm text-muted-foreground/50">
             item
           </p>
@@ -158,20 +158,20 @@ exports[`SideItem render as parent 1`] = `
   <div class="group relative z-10">
     <gui-card
       role="article"
-      classname="transition-all relative my-4 border-foreground cursor-pointer group-hover:border-neutral-400 dark:group-hover:border-neutral-600"
+      classname="relative my-4 transition-all border-foreground cursor-pointer group-hover:border-neutral-400 dark:group-hover:border-neutral-600"
     >
-      <gui-card-header classname="rounded-t-lg relative flex flex-col w-full p-0">
+      <gui-card-header classname="relative flex w-full flex-col rounded-t-lg p-0">
         <div class="flex items-center px-3 py-2">
-          <gui-card-title classname="text-sm font-medium flex-1 items-center ">
+          <gui-card-title classname="flex-1 items-center text-sm font-medium ">
             item
           </gui-card-title>
-          <div class="px-2 py-1 border-[1px] border-solid rounded-full flex-initial">
+          <div class="flex-initial rounded-full border-[1px] border-solid px-2 py-1">
             <p class="text-xs">
               1.0.0
             </p>
           </div>
         </div>
-        <div class="flex items-center flex-row justify-between gap-2 flex-wrap px-3 py-2 border-muted-foreground/20 border-t-[1px]">
+        <div class="flex flex-row flex-wrap items-center justify-between gap-2 border-t-[1px] border-muted-foreground/20 px-3 py-2">
           <p class="text-sm text-muted-foreground/50">
             item
           </p>
@@ -183,7 +183,7 @@ exports[`SideItem render as parent 1`] = `
         </div>
       </gui-card-header>
     </gui-card>
-    <div class="absolute border-t border-solid border-muted-foreground w-4 -right-4 top-7">
+    <div class="absolute -right-4 top-7 w-4 border-t border-solid border-muted-foreground">
     </div>
   </div>
 </div>
@@ -194,24 +194,24 @@ exports[`SideItem render as two-stacked dependent 1`] = `
 
 <div>
   <div class="group relative z-10">
-    <div class="transition-all absolute border top-1 left-1 w-[98%] h-full bg-card rounded-lg group-hover:border-neutral-400 dark:group-hover:border-neutral-600">
+    <div class="absolute left-1 top-1 h-full w-[98%] rounded-lg border bg-card transition-all group-hover:border-neutral-400 dark:group-hover:border-neutral-600">
     </div>
     <gui-card
       role="article"
-      classname="transition-all relative my-4  cursor-pointer group-hover:border-neutral-400 dark:group-hover:border-neutral-600"
+      classname="relative my-4 transition-all  cursor-pointer group-hover:border-neutral-400 dark:group-hover:border-neutral-600"
     >
-      <gui-card-header classname="rounded-t-lg relative flex flex-col w-full p-0">
+      <gui-card-header classname="relative flex w-full flex-col rounded-t-lg p-0">
         <div class="flex items-center px-3 py-2">
-          <gui-card-title classname="text-sm font-medium flex-1 items-center ">
+          <gui-card-title classname="flex-1 items-center text-sm font-medium ">
             item
           </gui-card-title>
-          <div class="px-2 py-1 border-[1px] border-solid rounded-full flex-initial">
+          <div class="flex-initial rounded-full border-[1px] border-solid px-2 py-1">
             <p class="text-xs">
               1.0.0
             </p>
           </div>
         </div>
-        <div class="flex items-center flex-row justify-between gap-2 flex-wrap px-3 py-2 border-muted-foreground/20 border-t-[1px]">
+        <div class="flex flex-row flex-wrap items-center justify-between gap-2 border-t-[1px] border-muted-foreground/20 px-3 py-2">
           <p class="text-sm text-muted-foreground/50">
             item
           </p>

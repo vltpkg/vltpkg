@@ -2,36 +2,36 @@
 
 exports[`Footer Component > renders the copyright text 1`] = `
 
-<footer class="bg-white dark:bg-black border-t-[1px]">
-  <div class="flex flex-col w-full gap-x-4 gap-y-4 px-6 py-6">
+<footer class="border-t-[1px] bg-white dark:bg-black">
+  <div class="flex w-full flex-col gap-x-4 gap-y-4 px-6 py-6">
     <div class="flex w-full items-center justify-between">
       <div class="flex gap-4">
         <a
           href="https://www.linkedin.com/company/vltpkg/"
           aria-label="linkedin"
         >
-          <gui-linkedin-icon classname="fill-black dark:fill-white h-5">
+          <gui-linkedin-icon classname="h-5 fill-black dark:fill-white">
           </gui-linkedin-icon>
         </a>
         <a
           href="https://x.com/vltpkg"
           aria-label="twitter-x"
         >
-          <gui-twitter-icon classname="fill-black dark:fill-white h-5">
+          <gui-twitter-icon classname="h-5 fill-black dark:fill-white">
           </gui-twitter-icon>
         </a>
         <a
           href="https://github.com/vltpkg"
           aria-label="github"
         >
-          <gui-github-icon classname="fill-black dark:fill-white h-5">
+          <gui-github-icon classname="h-5 fill-black dark:fill-white">
           </gui-github-icon>
         </a>
         <a
           href="https://discord.gg/vltpkg"
           aria-label="discord"
         >
-          <gui-discord-icon classname="fill-black dark:fill-white h-5">
+          <gui-discord-icon classname="h-5 fill-black dark:fill-white">
           </gui-discord-icon>
         </a>
       </div>
@@ -40,23 +40,23 @@ exports[`Footer Component > renders the copyright text 1`] = `
         </gui-theme-switcher>
       </div>
     </div>
-    <div class="flex flex-row w-full items-center justify-between">
+    <div class="flex w-full flex-row items-center justify-between">
       <a
         href="https://www.vlt.sh/"
-        class="no-underline text-sm text-muted-foreground hover:text-foreground transition-all"
+        class="text-sm text-muted-foreground no-underline transition-all hover:text-foreground"
       >
         © 2025 vlt technology inc.
       </a>
       <div class="flex flex-row gap-4">
         <a
           href="https://www.vlt.sh/terms"
-          class="no-underline font-medium text-muted-foreground text-sm hover:text-foreground transition-all"
+          class="text-sm font-medium text-muted-foreground no-underline transition-all hover:text-foreground"
         >
           Terms
         </a>
         <a
           href="https://www.vlt.sh/privacy"
-          class="no-underline font-medium text-muted-foreground text-sm hover:text-foreground transition-all"
+          class="text-sm font-medium text-muted-foreground no-underline transition-all hover:text-foreground"
         >
           Privacy
         </a>

@@ -3,7 +3,7 @@
 exports[`dependency-side-bar 1`] = `
 
 <div>
-  <div class="pt-6 text-md flex flex-row items-center font-medium">
+  <div class="text-md flex flex-row items-center pt-6 font-medium">
     <gui-git-fork-icon
       size="22"
       classname="mr-3 rotate-180"
@@ -36,7 +36,7 @@ exports[`dependency-side-bar 1`] = `
 exports[`dependency-side-bar no items 1`] = `
 
 <div>
-  <div class="pt-6 text-md flex flex-row items-center font-medium">
+  <div class="text-md flex flex-row items-center pt-6 font-medium">
     <gui-git-fork-icon
       size="22"
       classname="mr-3 rotate-180"

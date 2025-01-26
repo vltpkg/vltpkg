@@ -114,11 +114,11 @@ export const ThemeSwitcher = () => {
   return (
     <>
       {/* large screens */}
-      <div className="hidden sm:flex relative flex-row items-center h-12 justify-center border rounded-full gap-3 px-2 py-2">
+      <div className="relative hidden h-12 flex-row items-center justify-center gap-3 rounded-full border px-2 py-2 sm:flex">
         {/* Sliding background */}
         <div
           ref={sliderRef}
-          className="absolute top-[4.5px] left-0 rounded-md shadow-md"
+          className="absolute left-0 top-[4.5px] rounded-md shadow-md"
           style={{ width: 50 }}
         />
 
@@ -129,7 +129,7 @@ export const ThemeSwitcher = () => {
             ref={(el: HTMLDivElement) => {
               tabRefs.current[idx] = el
             }}
-            className="relative cursor-pointer flex items-center justify-center p-2 offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            className="offset-background relative flex cursor-pointer items-center justify-center p-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             role="button"
             tabIndex={0}
             aria-pressed={theme === setting.mode}

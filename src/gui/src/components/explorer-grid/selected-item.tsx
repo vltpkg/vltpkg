@@ -58,8 +58,8 @@ export const SelectedItem = ({ item }: GridItemOptions) => {
     <div className="relative">
       <Card className="relative my-4 border-muted-foreground">
         <CardHeader
-          className={`rounded-t-lg relative flex flex-row -m-px py-3 px-4 bg-primary dark:border dark:border-solid dark:border-muted-foreground text-white dark:text-black ${item.to?.manifest?.description ? '' : 'rounded-b-lg'}`}>
-          <CardTitle className="flex items-center w-full justify-between">
+          className={`relative -m-px flex flex-row rounded-t-lg bg-primary px-4 py-3 text-white dark:border dark:border-solid dark:border-muted-foreground dark:text-black ${item.to?.manifest?.description ? '' : 'rounded-b-lg'}`}>
+          <CardTitle className="flex w-full items-center justify-between">
             <div className="flex items-center justify-between">
               <span className="text-sm font-medium">
                 {item.title}
@@ -70,7 +70,7 @@ export const SelectedItem = ({ item }: GridItemOptions) => {
               </span>
             </div>
             {origin && origin !== '.' && (
-              <div className="text-xs px-2 py-1 font-medium border border-solid border-neutral-200 rounded-full dark:border-gray-600">
+              <div className="rounded-full border border-solid border-neutral-200 px-2 py-1 text-xs font-medium dark:border-gray-600">
                 {origin}
               </div>
             )}
@@ -83,7 +83,7 @@ export const SelectedItem = ({ item }: GridItemOptions) => {
             </CardDescription>
           : ''}
         </div>
-        <div className="px-4 pb-4 w-full">
+        <div className="w-full px-4 pb-4">
           <Tabs defaultValue="package.json">
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="package.json" className="w-36">
@@ -105,7 +105,7 @@ export const SelectedItem = ({ item }: GridItemOptions) => {
         item.to?.edgesOut && item.to.edgesOut.size > 0 ?
           <div
             className={
-              'absolute border-t border-solid border-neutral-300 dark:border-neutral-600 rounded-tr-sm w-4 top-7 -right-4'
+              'absolute -right-4 top-7 w-4 rounded-tr-sm border-t border-solid border-neutral-300 dark:border-neutral-600'
             }></div>
         : ''
       }

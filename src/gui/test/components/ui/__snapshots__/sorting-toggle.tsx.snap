@@ -2,14 +2,14 @@
 
 exports[`sorting-toggle > should render correctly 1`] = `
 
-<div class="flex mx-3">
-  <div class="relative flex items-center p-1 h-[2.5rem] bg-white dark:bg-black w-full rounded-sm border border-[1px] border-muted-foreground/25">
-    <div class="absolute h-[2rem] w-[2rem] rounded-sm bg-muted border border-muted-foreground/20">
+<div class="mx-3 flex">
+  <div class="relative flex h-[2.5rem] w-full items-center rounded-sm border border-[1px] border-muted-foreground/25 bg-white p-1 dark:bg-black">
+    <div class="absolute h-[2rem] w-[2rem] rounded-sm border border-muted-foreground/20 bg-muted">
     </div>
     <gui-tooltip-provider>
       <gui-tooltip>
         <gui-tooltip-trigger aschild="true">
-          <div class="cursor-pointer h-[2rem] w-[2rem] rounded-sm flex items-center justify-center z-[1]">
+          <div class="z-[1] flex h-[2rem] w-[2rem] cursor-pointer items-center justify-center rounded-sm">
             <gui-arrow-down-az-icon
               size="20"
               classname="text-muted-foreground"
@@ -25,7 +25,7 @@ exports[`sorting-toggle > should render correctly 1`] = `
     <gui-tooltip-provider>
       <gui-tooltip>
         <gui-tooltip-trigger aschild="true">
-          <div class="cursor-pointer h-[2rem] w-[2rem] rounded-sm flex items-center justify-center z-[1]">
+          <div class="z-[1] flex h-[2rem] w-[2rem] cursor-pointer items-center justify-center rounded-sm">
             <gui-arrow-down-za-icon
               size="20"
               classname="text-muted-foreground"

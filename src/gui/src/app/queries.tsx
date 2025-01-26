@@ -52,7 +52,7 @@ const Queries = () => {
   }, [savedQueries])
 
   return (
-    <section className="flex grow w-full flex-col min-h-[80svh] bg-white dark:bg-black">
+    <section className="flex min-h-[80svh] w-full grow flex-col bg-white dark:bg-black">
       <div className="flex flex-col px-8 py-4">
         <div className="flex justify-between">
           <div className="flex gap-2">
@@ -94,22 +94,22 @@ const Queries = () => {
                   onCheckedChange={handleSelectAll}
                   className="border-muted-foreground/50 hover:border-muted-foreground/75"
                 />
-                <p className="text-neutral-500 text-sm font-semibold">
+                <p className="text-sm font-semibold text-neutral-500">
                   Name
                 </p>
               </div>
               <div className="col-span-4 items-center px-1">
-                <p className="text-neutral-500 text-sm font-semibold">
+                <p className="text-sm font-semibold text-neutral-500">
                   Query
                 </p>
               </div>
               <div className="col-span-2 items-center">
-                <p className="text-neutral-500 text-sm font-semibold">
+                <p className="text-sm font-semibold text-neutral-500">
                   Directory
                 </p>
               </div>
               <div className="col-span-4 items-center">
-                <p className="text-neutral-500 text-sm font-semibold">
+                <p className="text-sm font-semibold text-neutral-500">
                   Labels
                 </p>
               </div>

@@ -20,7 +20,7 @@ exports[`save-query > should render correctly 1`] = `
     </gui-tooltip>
   </gui-popover-trigger>
   <gui-popover-content>
-    <p class="font-semibold mb-2">
+    <p class="mb-2 font-semibold">
       Labels
     </p>
     <div class="flex flex-wrap gap-2">

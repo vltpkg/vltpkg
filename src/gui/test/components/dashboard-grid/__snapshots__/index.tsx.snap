@@ -3,8 +3,8 @@
 exports[`dashboard-grid render default 1`] = `
 
 <div>
-  <div class="flex flex-col grow bg-secondary dark:bg-black px-8 py-8">
-    <div class="flex gap-2 mb-8">
+  <div class="flex grow flex-col bg-secondary px-8 py-8 dark:bg-black">
+    <div class="mb-8 flex gap-2">
       <gui-filter-search
         placeholder="Filter Projects"
         items
@@ -17,7 +17,7 @@ exports[`dashboard-grid render default 1`] = `
       </gui-sorting-toggle>
     </div>
     <div class="flex flex-col">
-      <p class="text-sm font-semibold mb-4">
+      <p class="mb-4 text-sm font-semibold">
         Projects
       </p>
       <div class="flex flex-row flex-wrap gap-8">
@@ -34,8 +34,8 @@ exports[`dashboard-grid render default 1`] = `
 exports[`dashboard-grid with results 1`] = `
 
 <div>
-  <div class="flex flex-col grow bg-secondary dark:bg-black px-8 py-8">
-    <div class="flex gap-2 mb-8">
+  <div class="flex grow flex-col bg-secondary px-8 py-8 dark:bg-black">
+    <div class="mb-8 flex gap-2">
       <gui-filter-search
         placeholder="Filter Projects"
         items="[object Object],[object Object]"
@@ -48,30 +48,30 @@ exports[`dashboard-grid with results 1`] = `
       </gui-sorting-toggle>
     </div>
     <div class="flex flex-col">
-      <p class="text-sm font-semibold mb-4">
+      <p class="mb-4 text-sm font-semibold">
         Projects
       </p>
       <div class="flex flex-row flex-wrap gap-8">
         <a
           href="#"
-          class="border-[1px] rounded-lg w-full md:w-96 hover:border-muted-foreground/50 transition-all duration-250 bg-card"
+          class="duration-250 w-full rounded-lg border-[1px] bg-card transition-all hover:border-muted-foreground/50 md:w-96"
         >
-          <div class="flex flex-col items-start h-20 justify-between px-4 py-3">
-            <div class="flex flex-row w-full items-center justify-end">
+          <div class="flex h-20 flex-col items-start justify-between px-4 py-3">
+            <div class="flex w-full flex-row items-center justify-end">
               <div class="text-[0.7rem] text-muted-foreground">
                 November 1st, 2024 | 06:01 PM
               </div>
             </div>
             <div class="flex">
-              <gui-card-title classname="self-end text-md">
+              <gui-card-title classname="text-md self-end">
                 project-bar
               </gui-card-title>
             </div>
           </div>
-          <div class="w-full h-12 flex items-center gap-4 justify-between border-t-[1px] px-4 py-3">
+          <div class="flex h-12 w-full items-center justify-between gap-4 border-t-[1px] px-4 py-3">
             <gui-tooltip-provider>
               <gui-tooltip>
-                <gui-tooltip-trigger classname="direction-rtl text-left rounded-sm border-[1px] px-2 py-1 text-[0.65rem] text-muted-foreground font-mono m-0 align-baseline truncate text-ellipsis">
+                <gui-tooltip-trigger classname="direction-rtl m-0 truncate text-ellipsis rounded-sm border-[1px] px-2 py-1 text-left align-baseline font-mono text-[0.65rem] text-muted-foreground">
                   /home/user/project-bar
                 </gui-tooltip-trigger>
                 <gui-tooltip-content>
@@ -80,8 +80,8 @@ exports[`dashboard-grid with results 1`] = `
               </gui-tooltip>
             </gui-tooltip-provider>
             <div class="flex gap-2">
-              <div class="flex-none bg-secondary rounded-xl px-2 py-1">
-                <p class="text-[0.7rem] font-medium text-primary ">
+              <div class="flex-none rounded-xl bg-secondary px-2 py-1">
+                <p class="text-[0.7rem] font-medium text-primary">
                   pnpm
                 </p>
               </div>
@@ -90,24 +90,24 @@ exports[`dashboard-grid with results 1`] = `
         </a>
         <a
           href="#"
-          class="border-[1px] rounded-lg w-full md:w-96 hover:border-muted-foreground/50 transition-all duration-250 bg-card"
+          class="duration-250 w-full rounded-lg border-[1px] bg-card transition-all hover:border-muted-foreground/50 md:w-96"
         >
-          <div class="flex flex-col items-start h-20 justify-between px-4 py-3">
-            <div class="flex flex-row w-full items-center justify-end">
+          <div class="flex h-20 flex-col items-start justify-between px-4 py-3">
+            <div class="flex w-full flex-row items-center justify-end">
               <div class="text-[0.7rem] text-muted-foreground">
                 November 1st, 2024 | 06:01 PM
               </div>
             </div>
             <div class="flex">
-              <gui-card-title classname="self-end text-md">
+              <gui-card-title classname="text-md self-end">
                 project-foo
               </gui-card-title>
             </div>
           </div>
-          <div class="w-full h-12 flex items-center gap-4 justify-between border-t-[1px] px-4 py-3">
+          <div class="flex h-12 w-full items-center justify-between gap-4 border-t-[1px] px-4 py-3">
             <gui-tooltip-provider>
               <gui-tooltip>
-                <gui-tooltip-trigger classname="direction-rtl text-left rounded-sm border-[1px] px-2 py-1 text-[0.65rem] text-muted-foreground font-mono m-0 align-baseline truncate text-ellipsis">
+                <gui-tooltip-trigger classname="direction-rtl m-0 truncate text-ellipsis rounded-sm border-[1px] px-2 py-1 text-left align-baseline font-mono text-[0.65rem] text-muted-foreground">
                   /home/user/project-foo
                 </gui-tooltip-trigger>
                 <gui-tooltip-content>
@@ -116,13 +116,13 @@ exports[`dashboard-grid with results 1`] = `
               </gui-tooltip>
             </gui-tooltip-provider>
             <div class="flex gap-2">
-              <div class="flex-none bg-secondary rounded-xl px-2 py-1">
-                <p class="text-[0.7rem] font-medium text-primary ">
+              <div class="flex-none rounded-xl bg-secondary px-2 py-1">
+                <p class="text-[0.7rem] font-medium text-primary">
                   node
                 </p>
               </div>
-              <div class="flex-none bg-secondary rounded-xl px-2 py-1">
-                <p class="text-[0.7rem] font-medium text-primary ">
+              <div class="flex-none rounded-xl bg-secondary px-2 py-1">
+                <p class="text-[0.7rem] font-medium text-primary">
                   vlt
                 </p>
               </div>

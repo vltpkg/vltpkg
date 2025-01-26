@@ -222,7 +222,7 @@ export const DependencySideBar = ({
         <GitFork size={22} className="mr-3 rotate-180" />
         Dependencies
         {importerId ?
-          <div className="grow flex justify-end">
+          <div className="flex grow justify-end">
             <TooltipProvider>
               <Popover
                 onOpenChange={setShowAddDepPopover}
@@ -245,7 +245,7 @@ export const DependencySideBar = ({
                 </PopoverTrigger>
                 <PopoverContent
                   align="end"
-                  className="p-0 w-96 top-0 right-0">
+                  className="right-0 top-0 w-96 p-0">
                   <AddDependenciesPopover
                     error={error}
                     inProgress={inProgress}
