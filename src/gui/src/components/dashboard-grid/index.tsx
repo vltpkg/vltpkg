@@ -117,19 +117,15 @@ export const DashboardItem = ({
 
       <div className="w-full h-12 flex items-center gap-4 justify-between border-t-[1px] px-4 py-3">
         <TooltipProvider>
-          <div className="flex items-center justify-center rounded-sm border-[1px] px-2 py-1">
-            <Tooltip>
-              <TooltipTrigger>
-                <p className="text-[0.65rem] text-muted-foreground font-mono truncate w-full m-0 p-0 align-baseline">
-                  {item.path}
-                </p>
-              </TooltipTrigger>
-              <TooltipContent>{item.path}</TooltipContent>
-            </Tooltip>
-          </div>
+          <Tooltip>
+            <TooltipTrigger className="direction-rtl text-left rounded-sm border-[1px] px-2 py-1 text-[0.65rem] text-muted-foreground font-mono m-0 align-baseline truncate text-ellipsis">
+              {item.path}
+            </TooltipTrigger>
+            <TooltipContent>{item.path}</TooltipContent>
+          </Tooltip>
         </TooltipProvider>
 
-        <div className="flex gap-2 overflow-x-scroll">
+        <div className="flex gap-2">
           {item.tools.map((tool, index) => (
             <div
               key={index}

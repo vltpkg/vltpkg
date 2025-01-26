@@ -102,3 +102,7 @@ html {
     @apply bg-background text-foreground;
   }
 }
+
+.direction-rtl {
+  direction: rtl;
+}
