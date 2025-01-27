@@ -57,7 +57,10 @@ const main = async () => {
   const { hyperfine, args, ...o } = parseArgs()
   rmSync(o.outdir, { recursive: true, force: true })
 
-  const { bundles, compilations } = await generateMatrix(o)
+  const { bundles, compilations } = await generateMatrix({
+    ...o,
+    bin: [o.bin],
+  })
 
   const benchmarks = new Set<string>()
   if (o.matrix.bundle) {

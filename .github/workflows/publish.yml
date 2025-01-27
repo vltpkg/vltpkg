@@ -6,6 +6,9 @@ on:
       ref:
         description: 'the GitHub ref to checkout and publish'
         type: string
+      dryRun:
+        description: 'run the publish script in dry-run mode'
+        type: boolean
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -28,6 +31,10 @@ jobs:
           version: 9
           run_install: false
 
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+
       - name: Setup Nodejs
         uses: actions/setup-node@v4
         with:
@@ -37,7 +44,12 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
-      - name: Run Publish
-        run: pnpm -F infra-build exec node dist/esm/bin/publish.js --forReal
+      - name: Publish
+        run: pnpm -F infra-build exec node dist/esm/bin/publish.js ${{ !inputs.dryRun && '--forReal' || '' }}
+        env:
+          VLT_CLI_PUBLISH_TOKEN: ${{ secrets.VLT_CLI_PUBLISH_TOKEN }}
+
+      - name: Publish Deno
+        run: pnpm -F infra-build exec node dist/esm/bin/publish.js --compile=true --runtime=deno --platform=all --arch=all ${{ !inputs.dryRun && '--forReal' || '' }}
         env:
           VLT_CLI_PUBLISH_TOKEN: ${{ secrets.VLT_CLI_PUBLISH_TOKEN }}

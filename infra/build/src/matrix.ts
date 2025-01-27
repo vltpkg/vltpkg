@@ -214,7 +214,7 @@ export const getMatrix = (o: ParseArgs['matrix'] = {}) => {
 export default async (o: {
   outdir: string
   verbose?: boolean
-  bin?: types.Bin
+  bin?: types.Bin[]
   save?: boolean
   matrix: ReturnType<typeof getMatrix>
 }) => {
@@ -244,22 +244,13 @@ export default async (o: {
       if (o.verbose) {
         console.log(`compiling - ${dir}`)
       }
-      if (o.bin) {
+      for (const bin of o.bin ?? types.BinNames) {
         compile({
           ...c,
           source,
-          bin: o.bin,
+          bin,
           outdir: dir,
         })
-      } else {
-        for (const bin of types.BinNames) {
-          compile({
-            ...c,
-            source,
-            bin,
-            outdir: dir,
-          })
-        }
       }
       compilations.push({ dir, ...c })
     }
