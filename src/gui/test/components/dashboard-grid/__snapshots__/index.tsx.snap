@@ -70,20 +70,16 @@ exports[`dashboard-grid with results 1`] = `
           </div>
           <div class="w-full h-12 flex items-center gap-4 justify-between border-t-[1px] px-4 py-3">
             <gui-tooltip-provider>
-              <div class="flex items-center justify-center rounded-sm border-[1px] px-2 py-1">
-                <gui-tooltip>
-                  <gui-tooltip-trigger>
-                    <p class="text-[0.65rem] text-muted-foreground font-mono truncate w-full m-0 p-0 align-baseline">
-                      /home/user/project-bar
-                    </p>
-                  </gui-tooltip-trigger>
-                  <gui-tooltip-content>
-                    /home/user/project-bar
-                  </gui-tooltip-content>
-                </gui-tooltip>
-              </div>
+              <gui-tooltip>
+                <gui-tooltip-trigger classname="rounded-sm border-[1px] px-2 py-1 text-[0.65rem] text-muted-foreground font-mono m-0 align-baseline truncate">
+                  /home/user/project-bar
+                </gui-tooltip-trigger>
+                <gui-tooltip-content>
+                  /home/user/project-bar
+                </gui-tooltip-content>
+              </gui-tooltip>
             </gui-tooltip-provider>
-            <div class="flex gap-2 overflow-x-scroll">
+            <div class="flex gap-2">
               <div class="flex-none bg-secondary rounded-xl px-2 py-1">
                 <p class="text-[0.7rem] font-medium text-primary ">
                   pnpm
@@ -110,20 +106,16 @@ exports[`dashboard-grid with results 1`] = `
           </div>
           <div class="w-full h-12 flex items-center gap-4 justify-between border-t-[1px] px-4 py-3">
             <gui-tooltip-provider>
-              <div class="flex items-center justify-center rounded-sm border-[1px] px-2 py-1">
-                <gui-tooltip>
-                  <gui-tooltip-trigger>
-                    <p class="text-[0.65rem] text-muted-foreground font-mono truncate w-full m-0 p-0 align-baseline">
-                      /home/user/project-foo
-                    </p>
-                  </gui-tooltip-trigger>
-                  <gui-tooltip-content>
-                    /home/user/project-foo
-                  </gui-tooltip-content>
-                </gui-tooltip>
-              </div>
+              <gui-tooltip>
+                <gui-tooltip-trigger classname="rounded-sm border-[1px] px-2 py-1 text-[0.65rem] text-muted-foreground font-mono m-0 align-baseline truncate">
+                  /home/user/project-foo
+                </gui-tooltip-trigger>
+                <gui-tooltip-content>
+                  /home/user/project-foo
+                </gui-tooltip-content>
+              </gui-tooltip>
             </gui-tooltip-provider>
-            <div class="flex gap-2 overflow-x-scroll">
+            <div class="flex gap-2">
               <div class="flex-none bg-secondary rounded-xl px-2 py-1">
                 <p class="text-[0.7rem] font-medium text-primary ">
                   node
