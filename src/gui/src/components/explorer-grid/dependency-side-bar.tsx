@@ -270,10 +270,9 @@ export const DependencySideBar = ({
         ...dependencies
           .filter(item => !addedDependencies.includes(item.name))
           .sort((a, b) => a.name.localeCompare(b.name, 'en')),
-      ].map((item, idx) => (
+      ].map(item => (
         <SideItem
           item={item}
-          idx={idx}
           key={item.id}
           dependencies={true}
           onSelect={onDependencyClick(item)}

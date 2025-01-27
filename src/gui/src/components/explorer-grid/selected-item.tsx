@@ -16,6 +16,7 @@ import {
 } from '@/components/ui/tabs.jsx'
 import { CodeBlock } from '../ui/shiki.jsx'
 import { FileSearch2 } from 'lucide-react'
+import { useEffect, useRef } from 'react'
 
 const getItemOrigin = ({
   item,
@@ -52,7 +53,23 @@ const getItemOrigin = ({
 
 export const SelectedItem = ({ item }: GridItemOptions) => {
   const specOptions = useGraphStore(state => state.specOptions)
+  const updateLinePositionReference = useGraphStore(
+    state => state.updateLinePositionReference,
+  )
   const origin = specOptions && getItemOrigin({ item, specOptions })
+  const linePositionRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const handleResize = () => {
+      const rect = linePositionRef.current?.getBoundingClientRect()
+      if (rect?.top) {
+        updateLinePositionReference(rect.top)
+      }
+    }
+    handleResize()
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  })
 
   return (
     <div className="relative">
@@ -104,8 +121,9 @@ export const SelectedItem = ({ item }: GridItemOptions) => {
         // Draw the connection line between dependencies and the selected item
         item.to?.edgesOut && item.to.edgesOut.size > 0 ?
           <div
+            ref={linePositionRef}
             className={
-              'absolute border-t border-solid border-neutral-300 dark:border-neutral-600 rounded-tr-sm w-4 top-7 -right-4'
+              'absolute border-t border-solid border-neutral-300 dark:border-neutral-600 rounded-tr-sm w-4 top-[44px] -right-4'
             }></div>
         : ''
       }
