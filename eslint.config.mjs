@@ -98,6 +98,13 @@ export default tseslint.config(
           ignoreArrowShorthand: true,
         },
       ],
+      // allow for async functions when return type is void
+      '@typescript-eslint/no-misused-promises': [
+        'error',
+        {
+          checksVoidReturn: false,
+        },
+      ],
       // while (true) is ok
       '@typescript-eslint/no-unnecessary-condition': [
         'error',

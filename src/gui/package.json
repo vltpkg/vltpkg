@@ -70,7 +70,6 @@
     "lint": "eslint . --fix",
     "lint:check": "eslint .",
     "prepare": "node scripts/prepare.js --production",
-    "serve": "node scripts/prepare.js --watch --serve",
     "snap": "vitest --no-watch -u",
     "test": "vitest",
     "posttest": "tsc --noEmit",
