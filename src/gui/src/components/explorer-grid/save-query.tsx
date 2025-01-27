@@ -72,6 +72,7 @@ const SaveQueryButton = () => {
               asChild
               className="flex rounded-sm items-center justify-center h-[1.5rem] w-[1.5rem] bg-muted border border-muted-foreground/20">
               <Button
+                asChild
                 role="button"
                 variant="outline"
                 size="icon"
