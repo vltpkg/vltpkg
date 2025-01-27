@@ -12,20 +12,103 @@ exports[`dependency-side-bar 1`] = `
     Dependencies
   </div>
   <gui-side-item
-    item="[object Object]"
-    idx="0"
+    item="GridItemData { @vltpkg/semver }"
     dependencies="true"
   >
   </gui-side-item>
   <gui-side-item
-    item="[object Object]"
-    idx="1"
+    item="GridItemData { abbrev }"
     dependencies="true"
   >
   </gui-side-item>
   <gui-side-item
-    item="[object Object]"
-    idx="2"
+    item="GridItemData { simple-output }"
+    dependencies="true"
+  >
+  </gui-side-item>
+</div>
+
+`;
+
+exports[`dependency-side-bar has both installed and uninstalled deps 1`] = `
+
+<div>
+  <div class="pt-6 text-md flex flex-row items-center font-medium">
+    <gui-git-fork-icon
+      size="22"
+      classname="mr-3 rotate-180"
+    >
+    </gui-git-fork-icon>
+    Dependencies
+  </div>
+  <gui-side-item
+    item="GridItemData { @vltpkg/semver }"
+    dependencies="true"
+  >
+  </gui-side-item>
+  <gui-side-item
+    item="GridItemData { abbrev }"
+    dependencies="true"
+  >
+  </gui-side-item>
+  <gui-side-item
+    item="GridItemData { simple-output }"
+    dependencies="true"
+  >
+  </gui-side-item>
+  <div class="pt-6 text-md flex flex-row items-center font-medium">
+    <gui-git-fork-icon
+      size="22"
+      classname="mr-3 rotate-180"
+    >
+    </gui-git-fork-icon>
+    Uninstalled Dependencies
+  </div>
+  <gui-side-item
+    item="GridItemData { @ruyadorno/redact }"
+    dependencies="true"
+  >
+  </gui-side-item>
+  <gui-side-item
+    item="GridItemData { ntl }"
+    dependencies="true"
+  >
+  </gui-side-item>
+</div>
+
+`;
+
+exports[`dependency-side-bar has uninstalled deps only 1`] = `
+
+<div>
+  <div class="pt-6 text-md flex flex-row items-center font-medium">
+    <gui-git-fork-icon
+      size="22"
+      classname="mr-3 rotate-180"
+    >
+    </gui-git-fork-icon>
+    Dependencies
+  </div>
+  <div class="pt-6 text-md flex flex-row items-center font-medium">
+    <gui-git-fork-icon
+      size="22"
+      classname="mr-3 rotate-180"
+    >
+    </gui-git-fork-icon>
+    Uninstalled Dependencies
+  </div>
+  <gui-side-item
+    item="GridItemData { @vltpkg/semver }"
+    dependencies="true"
+  >
+  </gui-side-item>
+  <gui-side-item
+    item="GridItemData { abbrev }"
+    dependencies="true"
+  >
+  </gui-side-item>
+  <gui-side-item
+    item="GridItemData { simple-output }"
     dependencies="true"
   >
   </gui-side-item>

@@ -33,11 +33,13 @@ const newStamp = () => String(Math.random()).slice(2)
 
 const initialState: State = {
   activeRoute: location.pathname,
+  previousRoute: '',
   dashboard: undefined,
   graph: undefined,
   edges: [],
   errorCause: '',
   hasDashboard: false,
+  linePositionReference: 258,
   nodes: [],
   query:
     new URL(
@@ -77,10 +79,13 @@ export const useGraphStore = create<Action & State>((set, get) => {
   const store = {
     ...initialState,
     updateActiveRoute: (activeRoute: State['activeRoute']) =>
-      set(() => ({
+      set(state => ({
+        previousRoute: state.activeRoute,
         activeRoute,
         stamp: String(Math.random()).slice(2),
       })),
+    updatePreviousRoute: (previousRoute: State['activeRoute']) =>
+      set(() => ({ previousRoute })),
     updateDashboard: (dashboard: State['dashboard']) =>
       set(() => ({ dashboard })),
     updateGraph: (graph: State['graph']) => set(() => ({ graph })),
@@ -91,6 +96,8 @@ export const useGraphStore = create<Action & State>((set, get) => {
       set(() => ({ errorCause })),
     updateHasDashboard: (hasDashboard: State['hasDashboard']) =>
       set(() => ({ hasDashboard })),
+    updateLinePositionReference: (position: number) =>
+      set(() => ({ linePositionReference: position })),
     updateNodes: (nodes: State['nodes']) => set(() => ({ nodes })),
     updateSelectedNode: (selectedNode: State['selectedNode']) =>
       set(() => ({ selectedNode })),
@@ -256,6 +263,7 @@ export const useGraphStore = create<Action & State>((set, get) => {
       store.updateQuery(query)
     }
     if (route) {
+      store.updatePreviousRoute(store.activeRoute)
       store.updateActiveRoute(route)
     }
   })

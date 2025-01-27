@@ -109,7 +109,7 @@ export const DashboardItem = ({
           : ''}
         </div>
         <div className="flex">
-          <CardTitle className="self-end text-md">
+          <CardTitle className="self-end text-md font-medium">
             {item.name}
           </CardTitle>
         </div>

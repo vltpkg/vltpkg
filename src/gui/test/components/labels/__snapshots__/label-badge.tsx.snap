@@ -4,7 +4,7 @@ exports[`label-badge > should render correctly 1`] = `
 
 <gui-badge
   style="background-color: rgb(6, 182, 212); color: black;"
-  classname
+  classname="font-medium "
 >
   mock-label-1
 </gui-badge>

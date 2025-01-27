@@ -78,7 +78,7 @@ const DeleteQuery = ({
       </Tooltip>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>
+          <DialogTitle className="font-medium">
             Delete {selectedQueries.length <= 1 ? 'Query' : 'Queries'}
           </DialogTitle>
           <DialogDescription />
@@ -87,7 +87,7 @@ const DeleteQuery = ({
           You're about to delete:
           <ul className="my-3 list-none">
             {selectedQueries.map((query, idx) => (
-              <li key={idx} className="font-semibold">
+              <li key={idx} className="font-medium">
                 {query.name}
               </li>
             ))}

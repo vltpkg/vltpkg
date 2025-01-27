@@ -114,12 +114,14 @@ export type DependencySideBarProps = {
   dependencies: GridItemData[]
   importerId?: DepID
   onDependencyClick: (item: GridItemData) => () => undefined
+  uninstalledDependencies: GridItemData[]
 }
 
 export const DependencySideBar = ({
   dependencies,
   importerId,
   onDependencyClick,
+  uninstalledDependencies,
 }: DependencySideBarProps) => {
   const [scope, animate] = useAnimate()
   const { toast } = useToast()
@@ -231,6 +233,7 @@ export const DependencySideBar = ({
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Button
+                        asChild
                         role="button"
                         variant="outline"
                         size="xs"
@@ -259,26 +262,38 @@ export const DependencySideBar = ({
         : ''}
       </GridHeader>
       {[
+        // added dependencies should come first
         ...dependencies
           .filter(item => addedDependencies.includes(item.name))
-          .sort(
-            (a, b) =>
-              addedDependencies.indexOf(a.name) -
-              addedDependencies.indexOf(b.name),
-          ),
+          .sort((a, b) => a.name.localeCompare(b.name, 'en')),
+        // then we display the rest of dependencies, sorted by name
         ...dependencies
           .filter(item => !addedDependencies.includes(item.name))
           .sort((a, b) => a.name.localeCompare(b.name, 'en')),
-      ].map((item, idx) => (
+      ].map(item => (
         <SideItem
           item={item}
-          idx={idx}
           key={item.id}
           dependencies={true}
           onSelect={onDependencyClick(item)}
           onUninstall={onUninstall}
         />
       ))}
+      {uninstalledDependencies.length ?
+        <>
+          <GridHeader>
+            <GitFork size={22} className="mr-3 rotate-180" />
+            Uninstalled Dependencies
+          </GridHeader>
+          {[
+            ...uninstalledDependencies.sort((a, b) =>
+              a.name.localeCompare(b.name, 'en'),
+            ),
+          ].map(item => (
+            <SideItem item={item} key={item.id} dependencies={true} />
+          ))}
+        </>
+      : ''}
     </>
   )
 }

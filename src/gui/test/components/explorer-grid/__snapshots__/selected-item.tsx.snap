@@ -62,7 +62,7 @@ exports[`SelectedItem render connection lines 1`] = `
         </gui-tabs>
       </div>
     </gui-card>
-    <div class="absolute border-t border-solid border-neutral-300 dark:border-neutral-600 rounded-tr-sm w-4 top-7 -right-4">
+    <div class="absolute border-t border-solid border-neutral-300 dark:border-neutral-600 rounded-tr-sm w-4 top-[44px] -right-4">
     </div>
   </div>
 </div>

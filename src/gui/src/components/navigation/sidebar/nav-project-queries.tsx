@@ -93,7 +93,7 @@ const SidebarQueryProjectNav = () => {
       <SidebarSeparator />
 
       <SidebarGroup>
-        <SidebarGroupLabel className="font-bold tracking-wide">
+        <SidebarGroupLabel className="font-medium tracking-wide">
           Queries
         </SidebarGroupLabel>
 
