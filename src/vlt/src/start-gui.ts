@@ -24,7 +24,7 @@ import {
   type ServerResponse,
   type Server,
 } from 'node:http'
-import { tmpdir } from 'node:os'
+import { homedir, tmpdir } from 'node:os'
 import { resolve, relative } from 'node:path'
 import { loadPackageJson } from 'package-json-from-dist'
 import { type PathBase, type PathScurry } from 'path-scurry'
@@ -209,7 +209,7 @@ export const formatDashboardJson = (
     result.projects.push({
       /* c8 ignore next */
       name: manifest.name || folder.name,
-      path: folder.fullpath(),
+      path: folder.fullpath().replace(homedir(), '~'),
       manifest,
       tools: inferTools(manifest, folder, options.scurry),
       mtime: folder.lstatSync()?.mtimeMs,
