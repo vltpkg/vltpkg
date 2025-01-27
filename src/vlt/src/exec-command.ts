@@ -70,6 +70,9 @@ export class ExecCommand<B extends RunnerBG, F extends RunnerFG> {
       if (!arg) return
       const result = await this.fg(arg)
       stdout(result)
+      if (isRunResult(result)) {
+        this.setExitCode(result)
+      }
       return result
     }
     const m = this.monorepo
@@ -123,9 +126,14 @@ export class ExecCommand<B extends RunnerBG, F extends RunnerFG> {
       /* c8 ignore start */
       if (result.stderr) stderr(ansiToAnsi(result.stderr))
       if (result.stdout) stdout(ansiToAnsi(result.stdout))
-      process.exitCode = process.exitCode || (result.status ?? 1)
       /* c8 ignore stop */
+      this.setExitCode(result)
     }
+  }
+
+  setExitCode(result: RunResult) {
+    /* c8 ignore next */
+    process.exitCode = process.exitCode || (result.status ?? 1)
   }
 
   /* c8 ignore start - env specific */
