@@ -10,7 +10,7 @@ export default {
   bracketSameLine: true,
   arrowParens: 'avoid',
   endOfLine: 'lf',
-  plugins: ['prettier-plugin-astro'],
+  plugins: ['prettier-plugin-astro', 'prettier-plugin-tailwindcss'],
   overrides: [
     {
       files: '*.astro',
