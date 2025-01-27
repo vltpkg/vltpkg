@@ -39,6 +39,7 @@ const initialState: State = {
   edges: [],
   errorCause: '',
   hasDashboard: false,
+  linePositionReference: 258,
   nodes: [],
   query:
     new URL(
@@ -95,6 +96,8 @@ export const useGraphStore = create<Action & State>((set, get) => {
       set(() => ({ errorCause })),
     updateHasDashboard: (hasDashboard: State['hasDashboard']) =>
       set(() => ({ hasDashboard })),
+    updateLinePositionReference: (position: number) =>
+      set(() => ({ linePositionReference: position })),
     updateNodes: (nodes: State['nodes']) => set(() => ({ nodes })),
     updateSelectedNode: (selectedNode: State['selectedNode']) =>
       set(() => ({ selectedNode })),

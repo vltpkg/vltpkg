@@ -16,6 +16,11 @@ export type EdgeLoose = Pick<EdgeLike, 'name' | 'to'> & {
  */
 export type GridItemData = EdgeLoose & {
   /**
+   * An index value shared between installed and uninstalled dependencies
+   * to keep track of the order they were added to the UI.
+   */
+  depIndex?: number
+  /**
    * A unique identifier for the item. This will not translate to `node.to.id`
    * but rather concatenate names / ids to create a unique id per item.
    * Used as the unique `key` for React components.
