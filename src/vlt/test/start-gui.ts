@@ -104,7 +104,7 @@ t.test('starts gui data and server', async t => {
   const log = t.capture(console, 'log').args
 
   await startGUI({
-    conf: { options } as unknown as LoadedConfig,
+    conf: { options, values: {} } as unknown as LoadedConfig,
     assetsDir,
     tmpDir: dir,
   })
@@ -281,6 +281,7 @@ t.test('e2e server test', async t => {
         resetOptions(newProjectRoot: string) {
           options.projectRoot = newProjectRoot
         },
+        values: {},
       } as LoadedConfig,
       assetsDir,
       port,
