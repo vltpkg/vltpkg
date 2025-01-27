@@ -17,7 +17,7 @@ exports[`delete-query > labels render default 1`] = `
   </gui-tooltip>
   <gui-dialog-content>
     <gui-dialog-header>
-      <gui-dialog-title>
+      <gui-dialog-title classname="font-medium">
         Delete Queries
       </gui-dialog-title>
       <gui-dialog-description>
@@ -26,10 +26,10 @@ exports[`delete-query > labels render default 1`] = `
     <div>
       You're about to delete:
       <ul class="my-3 list-none">
-        <li class="font-semibold">
+        <li class="font-medium">
           mock-saved-query
         </li>
-        <li class="font-semibold">
+        <li class="font-medium">
           mock-saved-query-2
         </li>
       </ul>

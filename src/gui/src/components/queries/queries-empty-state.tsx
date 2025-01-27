@@ -175,9 +175,7 @@ const QueriesEmptyState = () => {
             </div>
           </div>
         </div>
-        <h3 className="text-xl font-semibold">
-          No saved Queries yet
-        </h3>
+        <h3 className="text-xl font-medium">No saved Queries yet</h3>
         <p className="text-sm text-neutral-500 text-center">
           Looks like you haven't saved any Queries yet,
           <br />
