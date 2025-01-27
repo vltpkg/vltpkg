@@ -231,6 +231,7 @@ export const DependencySideBar = ({
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Button
+                        asChild
                         role="button"
                         variant="outline"
                         size="xs"
