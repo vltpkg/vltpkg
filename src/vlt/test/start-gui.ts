@@ -3,6 +3,7 @@ import { type Dependency } from '@vltpkg/graph'
 import { PackageJson } from '@vltpkg/package-json'
 import { type Manifest } from '@vltpkg/types'
 import { readdirSync, readFileSync } from 'node:fs'
+import http from 'node:http'
 import { resolve } from 'node:path'
 import { PathScurry, type PathBase } from 'path-scurry'
 import t from 'tap'
@@ -46,6 +47,7 @@ t.test('starts gui data and server', async t => {
     typeof import('../src/start-gui.js')
   >('../src/start-gui.js', {
     'node:http': {
+      ...http,
       createServer() {
         return {
           listen(port: number, host: string, cb: () => void) {

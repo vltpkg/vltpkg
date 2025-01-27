@@ -17,9 +17,15 @@ import {
   rmSync,
   writeFileSync,
 } from 'node:fs'
-import { createServer, type Server } from 'node:http'
+import {
+  createServer,
+  type IncomingMessage,
+  request,
+  type ServerResponse,
+  type Server,
+} from 'node:http'
 import { tmpdir } from 'node:os'
-import { resolve } from 'node:path'
+import { resolve, relative } from 'node:path'
 import { loadPackageJson } from 'package-json-from-dist'
 import { type PathBase, type PathScurry } from 'path-scurry'
 import handler from 'serve-handler'
@@ -197,7 +203,7 @@ export const formatDashboardJson = (
     let manifest
     try {
       manifest = options.packageJson.read(folder.fullpath())
-    } catch (_err) {
+    } catch {
       continue
     }
     result.projects.push({
@@ -261,12 +267,104 @@ const updateDashboardData = async (
 
 const getDefaultStartingRoute = (options: ConfigOptions) => {
   const { projectRoot, scurry } = options
-  const defaultExplore = `/explore?query=${encodeURIComponent(':root')}`
   const stat = scurry.lstatSync(`${projectRoot}/package.json`)
-  return stat && stat.isFile() && !stat.isSymbolicLink() ?
-      defaultExplore
+  return stat?.isFile() && !stat.isSymbolicLink() ?
+      `/explore?query=${encodeURIComponent(':root')}`
     : '/dashboard'
 }
+
+/* c8 ignore start */
+const createStaticHandler = ({
+  assetsDir,
+  publicDir,
+}: {
+  assetsDir: string
+  publicDir: string
+}) => {
+  const opts = {
+    cleanUrls: true,
+    public: publicDir,
+    rewrites: [
+      { source: '/', destination: '/index.html' },
+      { source: '/error', destination: '/index.html' },
+      { source: '/explore', destination: '/index.html' },
+      { source: '/dashboard', destination: '/index.html' },
+      { source: '/queries', destination: '/index.html' },
+      { source: '/labels', destination: '/index.html' },
+    ],
+  }
+  const errHandler = (err: unknown, res: ServerResponse) => {
+    stderr(err)
+    res.statusCode = 500
+    res.end('Internal server error')
+  }
+  const staticHandler = (req: IncomingMessage, res: ServerResponse) =>
+    handler(req, res, opts).catch((err: unknown) =>
+      errHandler(err, res),
+    )
+
+  // It's important for this guard to check to not be destructured
+  // because `infra/build` will replace the whole thing with `false`
+  // causing it to be stripped entirely from production builds.
+  if (process.env._VLT_DEV_LIVE_RELOAD) {
+    // Generate a set of routes that should be proxied to the esbuild server
+    const proxyRoutes = new Set(
+      [
+        // `/esbuild` is an SSE endpoint served by esbuild
+        'esbuild',
+        // Also proxy anything that currently exists in the assets dir
+        ...readdirSync(assetsDir, {
+          withFileTypes: true,
+          recursive: true,
+        })
+          .filter(f => f.isFile())
+          .map(f =>
+            relative(assetsDir, resolve(f.parentPath, f.name)),
+          ),
+      ].map(p => `/${p}`),
+    )
+    return (req: IncomingMessage, res: ServerResponse) =>
+      req.url && proxyRoutes.has(req.url) ?
+        void req.pipe(
+          request(
+            {
+              hostname: HOST,
+              port: 7018,
+              path: req.url,
+              method: req.method,
+              headers: req.headers,
+            },
+            proxy => {
+              // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+              res.writeHead(proxy.statusCode!, proxy.headers)
+              proxy.pipe(res, { end: true })
+            },
+          ).on('error', err => {
+            // If we get an ECONNREFUSED error, fallback to the static handler
+            // since the esbuild server is not running
+            if (
+              err instanceof Error &&
+              'code' in err &&
+              err.code === 'ECONNREFUSED'
+            ) {
+              // In this case the /esbuild route is expected to fail so the
+              // EventSource in the browser will be closed
+              if (req.url === '/esbuild') {
+                res.statusCode = 404
+                return res.end()
+              }
+              return staticHandler(req, res)
+            }
+            errHandler(err, res)
+          }),
+          { end: true },
+        )
+      : staticHandler(req, res)
+  }
+
+  return staticHandler
+}
+/* c8 ignore stop */
 
 export const startGUI = async ({
   assetsDir,
@@ -278,11 +376,7 @@ export const startGUI = async ({
   const tmp = resolve(tmpDir, 'vltgui')
   rmSync(tmp, { recursive: true, force: true })
   mkdirSync(tmp, { recursive: true })
-  for (const file of readdirSync(assetsDir)) {
-    cpSync(resolve(assetsDir, file), resolve(tmp, file), {
-      recursive: true,
-    })
-  }
+  cpSync(assetsDir, tmp, { recursive: true })
 
   // dashboard data is optional since the GUI might be started from a
   // project in order to just explore its graph data
@@ -290,7 +384,7 @@ export const startGUI = async ({
   try {
     hasDashboard = await updateDashboardData(tmp, conf)
     /* c8 ignore next */
-  } catch (_err) {}
+  } catch {}
   if (!hasDashboard) {
     rmSync(resolve(tmp, 'dashboard.json'), { force: true })
   }
@@ -300,113 +394,86 @@ export const startGUI = async ({
   // going to render only the dashboard to start with
   try {
     updateGraphData(tmp, conf, hasDashboard)
-  } catch (_err) {
+  } catch {
     rmSync(resolve(tmp, 'graph.json'), { force: true })
   }
 
-  const opts = {
-    cleanUrls: true,
-    public: tmp,
-    rewrites: [
-      { source: '/', destination: '/index.html' },
-      { source: '/error', destination: '/index.html' },
-      { source: '/explore', destination: '/index.html' },
-      { source: '/dashboard', destination: '/index.html' },
-      { source: '/queries', destination: '/index.html' },
-      { source: '/labels', destination: '/index.html' },
-    ],
-  }
-  const server = createServer((req, res): void => {
-    if (req.url === '/select-project') {
-      req.setEncoding('utf8')
-      let json = ''
-      req.on('data', (d: string) => {
-        json += d
+  const staticHandler = createStaticHandler({
+    publicDir: tmp,
+    assetsDir,
+  })
+
+  const server = createServer(async (req, res) => {
+    const json = <T>(): Promise<T> =>
+      new Promise(resolve => {
+        req.setEncoding('utf8')
+        let json = ''
+        req.on('data', (d: string) => (json += d))
+        req.on('end', () => resolve(JSON.parse(json) as T))
       })
-      req.on('end', () => {
-        const data = JSON.parse(json) as { path: unknown }
+    const jsonError = (
+      errType: string,
+      err: unknown,
+      code: number,
+    ) => {
+      stderr(err)
+      res.statusCode = code
+      res.end(JSON.stringify(`${errType}\n${err}`))
+    }
+    const jsonOk = (result: string) => {
+      res.writeHead(200, { 'Content-Type': 'application/json' })
+      res.end(JSON.stringify(result))
+    }
+    switch (`${req.method} ${req.url}`) {
+      case 'POST /select-project': {
+        const data = await json<{ path: unknown }>()
         conf.resetOptions(String(data.path))
         updateGraphData(tmp, conf, hasDashboard)
-        res.writeHead(200, { 'Content-Type': 'application/json' })
-        res.end(JSON.stringify('ok'))
-      })
-    } else if (req.url === '/install' && req.method === 'POST') {
-      req.setEncoding('utf8')
-      let json = ''
-      req.on('data', (d: string) => {
-        json += d
-      })
-      req.on('end', () => {
-        const { add } = JSON.parse(json) as {
-          add?: GUIInstallOptions
-        }
+        return jsonOk('ok')
+      }
+      case `POST /install`: {
+        const { add } = await json<{ add?: GUIInstallOptions }>()
         if (!add) {
-          const err =
-            'GUI install endpoint called without add argument'
-          stderr(err)
-          res.statusCode = 400
-          res.end(JSON.stringify(`Bad request.\n${err}`))
-          return
+          return jsonError(
+            'Bad request.',
+            'GUI install endpoint called without add argument',
+            400,
+          )
         }
-        install(parseInstallOptions(conf, add))
-          .then(() => {
-            conf.resetOptions(conf.options.projectRoot)
-            updateGraphData(tmp, conf, hasDashboard)
-            res.writeHead(200, {
-              'Content-Type': 'application/json',
-            })
-            res.end(JSON.stringify('ok'))
-          })
-          .catch((err: unknown) => {
-            stderr(err)
-            res.statusCode = 500
-            res.end(JSON.stringify(`Install failed.\n${String(err)}`))
-          })
-      })
-    } else if (req.url === '/uninstall' && req.method === 'POST') {
-      req.setEncoding('utf8')
-      let json = ''
-      req.on('data', (d: string) => {
-        json += d
-      })
-      req.on('end', () => {
-        const { remove } = JSON.parse(json) as {
+        try {
+          await install(parseInstallOptions(conf, add))
+          conf.resetOptions(conf.options.projectRoot)
+          updateGraphData(tmp, conf, hasDashboard)
+          return jsonOk('ok')
+        } catch (err) {
+          return jsonError('Install failed', err, 500)
+        }
+      }
+      case `POST /uninstall`: {
+        const { remove } = await json<{
           remove?: GUIUninstallOptions
-        }
+        }>()
         if (!remove) {
-          const err =
-            'GUI uninstall endpoint called with no arguments'
-          stderr(err)
-          res.statusCode = 400
-          res.end(JSON.stringify(`Bad request.\n${err}`))
-          return
+          return jsonError(
+            'Bad request.',
+            'GUI uninstall endpoint called with no arguments',
+            400,
+          )
         }
-        uninstall(parseUninstallOptions(conf, remove))
-          .then(() => {
-            conf.resetOptions(conf.options.projectRoot)
-            updateGraphData(tmp, conf, hasDashboard)
-            res.writeHead(200, {
-              'Content-Type': 'application/json',
-            })
-            res.end(JSON.stringify('ok'))
-          })
-          .catch((err: unknown) => {
-            stderr(err)
-            res.statusCode = 500
-            res.end(
-              JSON.stringify(`Uninstall failed.\n${String(err)}`),
-            )
-          })
-      })
-      /* c8 ignore start */
-    } else {
-      handler(req, res, opts).catch((err: unknown) => {
-        stderr(err)
-        res.statusCode = 500
-        res.end('Internal server error')
-      })
+        try {
+          await uninstall(parseUninstallOptions(conf, remove))
+          conf.resetOptions(conf.options.projectRoot)
+          updateGraphData(tmp, conf, hasDashboard)
+          return jsonOk('ok')
+        } catch (err) {
+          return jsonError('Uninstall failed', err, 500)
+        }
+      }
+      /* c8 ignore next 3 */
+      default: {
+        return staticHandler(req, res)
+      }
     }
-    /* c8 ignore stop */
   })
 
   return new Promise<Server>(res => {

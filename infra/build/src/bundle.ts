@@ -448,15 +448,18 @@ const bundle = async (o: {
     banner: {
       [EXT.slice(1)]: globals.toString(),
     },
-    // The import.meta shims are then globally replaced with our newly defined values
-    define: Object.values(IMPORT_META).reduce(
-      (acc, k) => {
-        acc[k] = globals.get(k)
-        return acc
-      },
-      // eslint-disable-next-line @typescript-eslint/prefer-reduce-type-parameter
-      {} as Record<`import.meta.${keyof ImportMeta}`, string>,
-    ),
+    define: {
+      'process.env._VLT_DEV_LIVE_RELOAD': 'false',
+      // The import.meta shims are then globally replaced with our newly defined values
+      ...Object.values(IMPORT_META).reduce(
+        (acc, k) => {
+          acc[k] = globals.get(k)
+          return acc
+        },
+        // eslint-disable-next-line @typescript-eslint/prefer-reduce-type-parameter
+        {} as Record<`import.meta.${keyof ImportMeta}`, string>,
+      ),
+    },
   })
 
   assert(
