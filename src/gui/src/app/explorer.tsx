@@ -105,6 +105,7 @@ const ExplorerContent = () => {
       const state = history.state as
         | undefined
         | { query: string; route: string }
+      console.log(state)
       if (
         !state ||
         query !== state.query ||

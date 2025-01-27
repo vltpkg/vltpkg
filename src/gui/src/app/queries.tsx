@@ -22,6 +22,7 @@ const Queries = () => {
     SavedQuery[]
   >([])
   const savedLabels = useGraphStore(state => state.savedQueryLabels)
+  const query = useGraphStore(state => state.query)
 
   const handleSelectQuery = (selectedQuery: SavedQuery) => {
     setSelectedQueries(prev => {

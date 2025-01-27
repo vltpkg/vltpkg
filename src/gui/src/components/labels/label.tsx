@@ -57,7 +57,12 @@ const Label = ({ queryLabel, checked, handleSelect }: LabelProps) => {
   }
 
   const navigateToRef = () => {
-    updateRoute(`/queries?label=${encodeURIComponent(editName)}`)
+    updateRoute('/queries')
+    history.pushState(
+      { route: '/queries' },
+      '',
+      `/queries?label=${encodeURIComponent(editName)}`,
+    )
   }
 
   useEffect(() => {
@@ -103,7 +108,9 @@ const Label = ({ queryLabel, checked, handleSelect }: LabelProps) => {
           <Button
             variant="ghost"
             className="flex items-center justify-center gap-1"
-            onClick={navigateToRef}>
+            onClick={() =>
+              queriesReferenced ? navigateToRef() : undefined
+            }>
             <span>{queriesReferenced}</span>
             <ArrowUpRight />
           </Button>
