@@ -3,40 +3,8 @@
 exports[`explorer-grid render default 1`] = `
 
 <div>
-  <div class="grow grid grid-cols-7 gap-4 px-8 bg-secondary dark:bg-black">
-    <div class="col-span-2">
-    </div>
-    <div class="col-span-3">
-      <div class="pt-6 text-md flex flex-row items-center font-medium">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="22"
-          height="22"
-          viewbox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          class="lucide lucide-search mr-3"
-        >
-          <circle
-            cx="11"
-            cy="11"
-            r="8"
-          >
-          </circle>
-          <path d="m21 21-4.3-4.3">
-          </path>
-        </svg>
-        No Results
-      </div>
-      <div class="flex flex-col gap-6">
-      </div>
-    </div>
-    <div class="col-span-2">
-    </div>
-  </div>
+  <gui-empty-results-state>
+  </gui-empty-results-state>
 </div>
 
 `;
