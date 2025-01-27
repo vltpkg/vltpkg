@@ -17,7 +17,7 @@ exports[`label-select > should render correctly 1`] = `
             No labels found.
           </p>
           <gui-dialog-trigger>
-            <gui-button classname="w-full">
+            <gui-button classname="font-normal w-full">
               Create label ""
             </gui-button>
           </gui-dialog-trigger>

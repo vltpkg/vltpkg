@@ -63,7 +63,7 @@ exports[`dashboard-grid with results 1`] = `
               </div>
             </div>
             <div class="flex">
-              <gui-card-title classname="self-end text-md">
+              <gui-card-title classname="self-end text-md font-medium">
                 project-bar
               </gui-card-title>
             </div>
@@ -103,7 +103,7 @@ exports[`dashboard-grid with results 1`] = `
               </div>
             </div>
             <div class="flex">
-              <gui-card-title classname="self-end text-md">
+              <gui-card-title classname="self-end text-md font-medium">
                 project-foo
               </gui-card-title>
             </div>

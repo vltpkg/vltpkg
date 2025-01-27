@@ -10,7 +10,7 @@ exports[`labels view > labels render default 1`] = `
         classname="border-muted-foreground/25 group-hover:border-muted-foreground/50"
       >
       </gui-checkbox>
-      <p class="truncate text-sm font-semibold">
+      <p class="truncate text-sm font-medium">
         mock-saved-query
       </p>
     </div>

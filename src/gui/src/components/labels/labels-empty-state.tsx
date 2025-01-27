@@ -71,7 +71,7 @@ const LabelsEmptyState = () => {
               </div>
             </div>
 
-            <h3 className="text-xl z-[2] font-semibold">
+            <h3 className="text-xl z-[2] font-medium">
               No saved Labels yet
             </h3>
             <p className="text-sm z-[2] text-neutral-500 text-center">

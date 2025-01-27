@@ -4,7 +4,7 @@ exports[`create-label-dialog > should render correctly 1`] = `
 
 <gui-dialog-content>
   <gui-dialog-header>
-    <gui-dialog-title>
+    <gui-dialog-title classname="text-lg font-medium">
       Create label
     </gui-dialog-title>
     <gui-dialog-description>
@@ -21,9 +21,9 @@ exports[`create-label-dialog > should render correctly 1`] = `
       </div>
     </div>
     <div class="flex flex-col gap-2">
-      <gui-form-label>
+      <div class="rounded-md border px-2.5 py-0.5 text-xs border-none font-medium">
         Name
-      </gui-form-label>
+      </div>
       <gui-input
         value="Label Preview"
         placeholder="Name"
@@ -31,9 +31,9 @@ exports[`create-label-dialog > should render correctly 1`] = `
       </gui-input>
     </div>
     <div class="flex flex-col gap-2">
-      <gui-form-label>
+      <div class="rounded-md border px-2.5 py-0.5 text-xs border-none font-medium">
         Description
-      </gui-form-label>
+      </div>
       <gui-input
         value
         placeholder="Description (optional)"
@@ -41,12 +41,15 @@ exports[`create-label-dialog > should render correctly 1`] = `
       </gui-input>
     </div>
     <div class="flex flex-col gap-2">
-      <gui-form-label>
+      <div class="rounded-md border px-2.5 py-0.5 text-xs border-none font-medium">
         Color
-      </gui-form-label>
+      </div>
       <gui-popover>
         <gui-popover-trigger aschild="true">
-          <gui-button variant="outline">
+          <gui-button
+            variant="outline"
+            classname="font-normal"
+          >
             <gui-palette-icon>
             </gui-palette-icon>
             <span>

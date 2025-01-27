@@ -61,7 +61,7 @@ const LabelBadge = ({
         backgroundColor: color,
         color: textColor,
       }}
-      className={className}>
+      className={`font-medium ${className}`}>
       {name}
     </Badge>
   )

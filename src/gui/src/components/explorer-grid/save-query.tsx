@@ -215,12 +215,12 @@ const SaveQueryPopover = ({
   return (
     <div className="flex flex-col w-[325px]">
       <CardHeader className="px-6 py-4">
-        <CardTitle className="text-lg font-bold">
+        <CardTitle className="text-lg font-medium">
           {savedQuery ? 'Edit Query' : 'Added Query!'}
         </CardTitle>
       </CardHeader>
       <div className="flex px-6 py-4 flex-col gap-2 border-muted-foreground/20 border-t-[1px]">
-        <Label className="border-none">Name</Label>
+        <Label className="font-medium border-none">Name</Label>
         <Input
           type="text"
           role="input"
@@ -231,7 +231,9 @@ const SaveQueryPopover = ({
             setQueryName(value)
           }}
         />
-        <Label className="border-none mt-2">Directory</Label>
+        <Label className="font-medium border-none mt-2">
+          Directory
+        </Label>
         <Input
           id="query-context"
           type="text"
@@ -243,7 +245,7 @@ const SaveQueryPopover = ({
             setEditContext(value)
           }}
         />
-        <Label className="border-none mt-2">Labels</Label>
+        <Label className="font-medium border-none mt-2">Labels</Label>
         {selectedLabels.length !== 0 && (
           <div className="ml-2 flex flex-wrap gap-2">
             {selectedLabels.map((label, idx) => (
@@ -260,7 +262,7 @@ const SaveQueryPopover = ({
             <Button
               variant="outline"
               role="combobox"
-              className="w-full justify-between">
+              className="w-full justify-between font-normal">
               Select labels
               <ChevronsUpDown className="opacity-50" />
             </Button>

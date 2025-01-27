@@ -36,17 +36,17 @@ exports[`labels view > labels render default 1`] = `
       <div class="col-span-2 flex items-center gap-3">
         <gui-checkbox classname="border-muted-foreground/50 hover:border-muted-foreground/75">
         </gui-checkbox>
-        <p class="text-neutral-500 text-sm font-semibold">
+        <p class="text-neutral-500 text-sm font-medium">
           Name
         </p>
       </div>
       <div class="col-span-4 flex items-center">
-        <p class="text-neutral-500 text-sm font-semibold">
+        <p class="text-neutral-500 text-sm font-medium">
           Description
         </p>
       </div>
       <div class="flex items-center justify-center">
-        <p class="text-neutral-500 text-sm font-semibold">
+        <p class="text-neutral-500 text-sm font-medium">
           References
         </p>
       </div>

@@ -74,7 +74,7 @@ const DeleteLabel = ({
           </Tooltip>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>
+              <DialogTitle className="font-medium">
                 Delete{' '}
                 {selectedLabels.length <= 1 ? 'Label' : 'Labels'}
               </DialogTitle>
@@ -84,7 +84,7 @@ const DeleteLabel = ({
               You're about to delete:
               <ul className="my-3 list-none">
                 {selectedLabels.map((query, idx) => (
-                  <li key={idx} className="font-semibold">
+                  <li key={idx} className="font-medium">
                     {query.name}
                   </li>
                 ))}

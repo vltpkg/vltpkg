@@ -93,7 +93,7 @@ const LabelSelect = ({
                 No labels found.
               </p>
               <DialogTrigger>
-                <Button className="w-full">
+                <Button className="font-normal w-full">
                   Create label "{inputText}"
                 </Button>
               </DialogTrigger>

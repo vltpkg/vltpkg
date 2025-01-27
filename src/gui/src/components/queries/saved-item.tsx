@@ -163,7 +163,7 @@ const SavedQueryItem = ({
             onCheckedChange={() => handleSelect(item)}
             className="border-muted-foreground/25 group-hover:border-muted-foreground/50"
           />
-          <p className="truncate text-sm font-semibold">
+          <p className="truncate text-sm font-medium">
             {editName.trim() !== '' ? editName : 'Query Name'}
           </p>
         </div>
@@ -211,7 +211,9 @@ const SavedQueryItem = ({
           {/* form */}
           <div className="flex gap-3 my-3 mb-6">
             <div className="flex flex-col gap-2">
-              <Label className="text-sm border-none">Name</Label>
+              <Label className="font-medium text-sm border-none">
+                Name
+              </Label>
               <Input
                 type="text"
                 value={editName}
@@ -220,7 +222,9 @@ const SavedQueryItem = ({
               />
             </div>
             <div className="flex grow flex-col gap-2">
-              <Label className="text-sm border-none">Query</Label>
+              <Label className="font-medium text-sm border-none">
+                Query
+              </Label>
               <Input
                 type="text"
                 placeholder="Query"
@@ -230,7 +234,9 @@ const SavedQueryItem = ({
               />
             </div>
             <div className="flex grow flex-col gap-2">
-              <Label className="text-sm border-none">Directory</Label>
+              <Label className="font-medium text-sm border-none">
+                Directory
+              </Label>
               <Input
                 type="text"
                 value={editContext}

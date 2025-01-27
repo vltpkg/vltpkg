@@ -123,7 +123,7 @@ const Label = ({ queryLabel, checked, handleSelect }: LabelProps) => {
         <div className="pt-6 mb-3 flex flex-col px-3 py-2 border-t-[1px] border-muted-foreground/25">
           <div className="flex gap-3">
             <div className="flex flex-col gap-2">
-              <FormLabel className="text-sm border-none">
+              <FormLabel className="font-medium text-sm border-none">
                 Name
               </FormLabel>
               <Input
@@ -134,7 +134,7 @@ const Label = ({ queryLabel, checked, handleSelect }: LabelProps) => {
               />
             </div>
             <div className="flex flex-col gap-2 grow">
-              <FormLabel className="text-sm border-none">
+              <FormLabel className="font-medium text-sm border-none">
                 Description
               </FormLabel>
               <Input
@@ -145,12 +145,14 @@ const Label = ({ queryLabel, checked, handleSelect }: LabelProps) => {
               />
             </div>
             <div className="flex flex-col gap-2">
-              <FormLabel className="text-sm border-none">
+              <FormLabel className="font-medium text-sm border-none">
                 Color
               </FormLabel>
               <Popover>
                 <PopoverTrigger asChild>
-                  <Button className="w-[120px]" variant="outline">
+                  <Button
+                    className="w-[120px] font-normal"
+                    variant="outline">
                     <Palette />
                     <span>{editColor}</span>
                   </Button>

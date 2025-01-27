@@ -39,7 +39,7 @@ exports[`labels-empty-state > should render correctly 1`] = `
         </div>
       </div>
     </div>
-    <h3 class="text-xl z-[2] font-semibold">
+    <h3 class="text-xl z-[2] font-medium">
       No saved Labels yet
     </h3>
     <p class="text-sm z-[2] text-neutral-500 text-center">

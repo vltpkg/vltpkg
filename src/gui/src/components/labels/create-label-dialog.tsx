@@ -18,7 +18,7 @@ import {
 } from '@/components/ui/popover.jsx'
 import { LabelBadge } from '@/components/labels/label-badge.jsx'
 import { Button } from '@/components/ui/button.jsx'
-import { Label } from '@/components/ui/form-label.jsx'
+import { Label } from '@/components/ui/label.jsx'
 import { Input } from '@/components/ui/input.jsx'
 import { ColorPicker } from '@/components/ui/color-picker.jsx'
 import { Palette } from 'lucide-react'
@@ -74,7 +74,9 @@ const CreateLabelModal = ({
   return (
     <DialogContent>
       <DialogHeader>
-        <DialogTitle>Create label</DialogTitle>
+        <DialogTitle className="text-lg font-medium">
+          Create label
+        </DialogTitle>
         <DialogDescription></DialogDescription>
       </DialogHeader>
       <div className="flex flex-col gap-4">
@@ -89,7 +91,9 @@ const CreateLabelModal = ({
           </div>
         </div>
         <div className="flex flex-col gap-2">
-          <Label>Name</Label>
+          <Label className="text-xs border-none font-medium">
+            Name
+          </Label>
           <Input
             value={labelName}
             onChange={e => setLabelName(e.target.value)}
@@ -97,7 +101,9 @@ const CreateLabelModal = ({
           />
         </div>
         <div className="flex flex-col gap-2">
-          <Label>Description</Label>
+          <Label className="text-xs border-none font-medium">
+            Description
+          </Label>
           <Input
             value={labelDescription}
             onChange={e => setLabelDescription(e.target.value)}
@@ -105,10 +111,12 @@ const CreateLabelModal = ({
           />
         </div>
         <div className="flex flex-col gap-2">
-          <Label>Color</Label>
+          <Label className="text-xs border-none font-medium">
+            Color
+          </Label>
           <Popover>
             <PopoverTrigger asChild>
-              <Button variant="outline">
+              <Button variant="outline" className="font-normal">
                 <Palette />
                 <span>{color}</span>
               </Button>

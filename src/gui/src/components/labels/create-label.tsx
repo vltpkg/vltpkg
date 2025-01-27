@@ -70,7 +70,9 @@ const CreateLabel = ({ closeCreate }: CreateLabelProps) => {
         </div>
         <div className="flex mt-4 gap-3 w-full">
           <div className="flex flex-col gap-2">
-            <Label className="text-sm border-none">Name</Label>
+            <Label className="text-sm font-medium border-none">
+              Name
+            </Label>
             <Input
               type="text"
               value={labelName}
@@ -79,7 +81,9 @@ const CreateLabel = ({ closeCreate }: CreateLabelProps) => {
             />
           </div>
           <div className="flex flex-col gap-2 grow">
-            <Label className="text-sm border-none">Description</Label>
+            <Label className="text-sm font-medium border-none">
+              Description
+            </Label>
             <Input
               type="text"
               value={labelDescription}
@@ -88,7 +92,9 @@ const CreateLabel = ({ closeCreate }: CreateLabelProps) => {
             />
           </div>
           <div className="flex flex-col gap-2">
-            <Label className="text-sm border-none">Color</Label>
+            <Label className="text-sm font-medium border-none">
+              Color
+            </Label>
             <Popover>
               <PopoverTrigger asChild>
                 <Button className="w-[120px]" variant="outline">

@@ -69,7 +69,7 @@ exports[`queries-empty-state > labels render default 1`] = `
         </div>
       </div>
     </div>
-    <h3 class="text-xl font-semibold">
+    <h3 class="text-xl font-medium">
       No saved Queries yet
     </h3>
     <p class="text-sm text-neutral-500 text-center">
