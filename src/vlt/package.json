@@ -66,6 +66,7 @@
     "@types/serve-handler": "^6.1.4",
     "eslint": "catalog:",
     "prettier": "catalog:",
+    "react-devtools-core": "^4.19.1",
     "tap": "catalog:",
     "tshy": "catalog:",
     "typescript": "catalog:",

@@ -21,7 +21,8 @@
     "@yao-pkg/pkg": "^5.15.0",
     "esbuild": "catalog:",
     "jscodeshift": "^17.0.0",
-    "package-json-from-dist": "catalog:"
+    "package-json-from-dist": "catalog:",
+    "yoga-wasm-web": "^0.3.3"
   },
   "devDependencies": {
     "@eslint/js": "catalog:",

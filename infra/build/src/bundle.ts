@@ -5,6 +5,7 @@ import {
   writeFileSync,
   readdirSync,
   cpSync,
+  existsSync,
 } from 'node:fs'
 import {
   join,
@@ -20,11 +21,14 @@ import { readFile } from 'node:fs/promises'
 import * as esbuild from 'esbuild'
 import j from 'jscodeshift'
 import { findPackageJson } from 'package-json-from-dist'
-import { builtinModules } from 'node:module'
+import { builtinModules, createRequire } from 'node:module'
 import assert from 'node:assert'
 import { Bins, Paths } from './index.js'
 import { randomBytes } from 'node:crypto'
 import * as types from './types.js'
+
+const requireResolve = (p: string) =>
+  createRequire(import.meta.url).resolve(p)
 
 const EXT = '.js'
 
@@ -595,6 +599,13 @@ export default async ({
       recursive: true,
     })
   }
+
+  const yogaWasm = requireResolve('yoga-wasm-web/dist/yoga.wasm')
+  assert(
+    existsSync(yogaWasm),
+    `yoga.wasm could not be found at ${yogaWasm}`,
+  )
+  cpSync(yogaWasm, join(outdir, 'yoga.wasm'))
 
   const { inputs, outputs } = files.reduce<esbuild.Metafile>(
     (a, m) => ({

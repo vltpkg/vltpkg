@@ -19,7 +19,7 @@ const loadCommand = async <T>(
     /* LOAD COMMANDS STOP */
     /* c8 ignore start - should not be possible, just a failsafe */
   } catch (e) {
-    throw error('Command not implemented', {
+    throw error('Could not load command', {
       found: command,
       cause: e,
     })
