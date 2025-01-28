@@ -11,8 +11,8 @@ exports[`explorer has project root info 1`] = `
     </div>
     <section class="flex items-center px-8 py-4 border-b-[1px] border-solid">
       <div class="flex flex-row gap-2 w-full">
-        <gui-back-button>
-        </gui-back-button>
+        <gui-root-button>
+        </gui-root-button>
         <gui-search-bar
           tabindex="0"
           classname="w-full bg-muted-foreground/5"
@@ -37,8 +37,8 @@ exports[`render default 1`] = `
     </div>
     <section class="flex items-center px-8 py-4 border-b-[1px] border-solid">
       <div class="flex flex-row gap-2 w-full">
-        <gui-back-button>
-        </gui-back-button>
+        <gui-root-button>
+        </gui-root-button>
         <gui-search-bar
           tabindex="0"
           classname="w-full bg-muted-foreground/5"

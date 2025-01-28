@@ -2,7 +2,7 @@ import { vi, describe, it, expect, afterEach } from 'vitest'
 import { cleanup, render } from '@testing-library/react'
 import html from 'diffable-html'
 import { useGraphStore as useStore } from '@/state/index.js'
-import { BackButton } from '@/components/explorer-grid/back-button.jsx'
+import { RootButton } from '@/components/explorer-grid/root-button.jsx'
 
 vi.mock('@/components/ui/button.jsx', () => ({
   Button: 'gui-button',
@@ -30,10 +30,10 @@ afterEach(() => {
   cleanup()
 })
 
-describe('back-button', () => {
+describe('root-button', () => {
   it('should render correctly', () => {
     const Container = () => {
-      return <BackButton />
+      return <RootButton />
     }
 
     const { container } = render(<Container />)

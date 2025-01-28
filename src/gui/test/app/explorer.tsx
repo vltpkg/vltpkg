@@ -44,8 +44,8 @@ vi.mock('@/components/explorer-grid/index.jsx', () => ({
   ExplorerGrid: 'gui-explorer-grid',
 }))
 
-vi.mock('@/components/explorer-grid/back-button.jsx', () => ({
-  BackButton: 'gui-back-button',
+vi.mock('@/components/explorer-grid/root-button.jsx', () => ({
+  RootButton: 'gui-root-button',
 }))
 
 export const restHandlers = [

@@ -1,6 +1,6 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`back-button > should render correctly 1`] = `
+exports[`root-button > should render correctly 1`] = `
 
 <gui-tooltip-provider>
   <gui-tooltip>
