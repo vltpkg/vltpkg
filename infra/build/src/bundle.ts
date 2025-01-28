@@ -600,6 +600,8 @@ export default async ({
     })
   }
 
+  // yoga.wasm is loaded at runtime by `ink` so we need to copy
+  // that file to the build directory
   const yogaWasm = requireResolve('yoga-wasm-web/dist/yoga.wasm')
   assert(
     existsSync(yogaWasm),
