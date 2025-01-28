@@ -43,16 +43,6 @@ const Labels = () => {
   }
 
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search)
-    history.replaceState(
-      {},
-      '',
-      `${window.location.pathname}?${params.toString()}`,
-    )
-    window.scrollTo?.(0, 0)
-  })
-
-  useEffect(() => {
     if (savedLabels) {
       const sortedLabels = [...savedLabels].sort((a, b) =>
         a.name.localeCompare(b.name),
