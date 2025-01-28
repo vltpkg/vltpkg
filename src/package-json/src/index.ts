@@ -1,5 +1,6 @@
 import { error, type ErrorCauseObject } from '@vltpkg/error-cause'
 import { asManifest, type Manifest } from '@vltpkg/types'
+import { longDependencyTypes } from '@vltpkg/graph/browser'
 import { readFileSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { parse, stringify } from 'polite-json'
@@ -59,6 +60,7 @@ export class PackageJson {
 
   write(dir: string, manifest: Manifest): void {
     const filename = resolve(dir, 'package.json')
+    this.fix(manifest)
 
     try {
       // This assumes kIndent and kNewline are already present on the manifest because we would
@@ -94,5 +96,19 @@ export class PackageJson {
       )
     }
     this.write(dir, manifest)
+  }
+
+  fix(manifest: Manifest): void {
+    for (const depType of longDependencyTypes) {
+      const deps = manifest[depType]
+      if (deps) {
+        // should sort dependencies by name
+        manifest[depType] = Object.fromEntries(
+          Object.entries(deps).sort(([a], [b]) =>
+            a.localeCompare(b, 'en'),
+          ),
+        )
+      }
+    }
   }
 }

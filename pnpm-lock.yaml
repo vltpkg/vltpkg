@@ -913,6 +913,9 @@ importers:
       '@vltpkg/error-cause':
         specifier: workspace:*
         version: link:../error-cause
+      '@vltpkg/graph':
+        specifier: workspace:*
+        version: link:../graph
       '@vltpkg/types':
         specifier: workspace:*
         version: link:../types
