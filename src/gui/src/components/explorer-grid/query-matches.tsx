@@ -54,7 +54,12 @@ const LabelTags = ({
   const updateRoute = useGraphStore(state => state.updateActiveRoute)
 
   const navigateToLabel = (labelName: string) => {
-    updateRoute(`/labels?name=${encodeURIComponent(labelName)}`)
+    updateRoute('/labels')
+    history.pushState(
+      { route: '/labels' },
+      '',
+      `/labels?name=${encodeURIComponent(labelName)}`,
+    )
   }
 
   return (
