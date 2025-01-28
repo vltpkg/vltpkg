@@ -165,6 +165,7 @@ export type SavedQuery = {
 
 export type DashboardDataProject = {
   name: string
+  readablePath: string
   path: string
   manifest: Manifest
   tools: DashboardTools[]

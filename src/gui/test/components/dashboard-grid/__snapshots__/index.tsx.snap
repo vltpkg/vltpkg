@@ -72,10 +72,10 @@ exports[`dashboard-grid with results 1`] = `
             <gui-tooltip-provider>
               <gui-tooltip>
                 <gui-tooltip-trigger classname="rounded-sm border-[1px] px-2 py-1 text-[0.65rem] text-muted-foreground font-mono m-0 align-baseline truncate">
-                  /home/user/project-bar
+                  ~/project-foo
                 </gui-tooltip-trigger>
                 <gui-tooltip-content>
-                  /home/user/project-bar
+                  ~/project-foo
                 </gui-tooltip-content>
               </gui-tooltip>
             </gui-tooltip-provider>
@@ -108,10 +108,10 @@ exports[`dashboard-grid with results 1`] = `
             <gui-tooltip-provider>
               <gui-tooltip>
                 <gui-tooltip-trigger classname="rounded-sm border-[1px] px-2 py-1 text-[0.65rem] text-muted-foreground font-mono m-0 align-baseline truncate">
-                  /home/user/project-foo
+                  ~/project-foo
                 </gui-tooltip-trigger>
                 <gui-tooltip-content>
-                  /home/user/project-foo
+                  ~/project-foo
                 </gui-tooltip-content>
               </gui-tooltip>
             </gui-tooltip-provider>

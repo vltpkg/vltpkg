@@ -119,9 +119,9 @@ export const DashboardItem = ({
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger className="rounded-sm border-[1px] px-2 py-1 text-[0.65rem] text-muted-foreground font-mono m-0 align-baseline truncate">
-              {item.path}
+              {item.readablePath}
             </TooltipTrigger>
-            <TooltipContent>{item.path}</TooltipContent>
+            <TooltipContent>{item.readablePath}</TooltipContent>
           </Tooltip>
         </TooltipProvider>
 
