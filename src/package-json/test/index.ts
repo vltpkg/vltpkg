@@ -199,3 +199,58 @@ t.test(
     })
   },
 )
+
+t.test(
+  'should sort dependencies by name in memory manifest',
+  async t => {
+    const dir = t.testdir({
+      'package.json': JSON.stringify(
+        {
+          name: 'my-project',
+          version: '1.0.0',
+          dependencies: {
+            c: '1.0.0',
+            d: '1.0.0',
+            b: '1.0.0',
+            a: '1.0.0',
+          },
+        },
+        null,
+        8,
+      ),
+    })
+    const pj = new PackageJson()
+    const mani = pj.read(dir)
+    pj.fix(mani)
+    t.matchSnapshot(
+      mani.dependencies,
+      'dependencies should be sorted by name',
+    )
+  },
+)
+
+t.test('should sort dependencies by name when saving', async t => {
+  const dir = t.testdir({
+    'package.json': JSON.stringify(
+      {
+        name: 'my-project',
+        version: '1.0.0',
+        dependencies: {
+          c: '1.0.0',
+          a: '1.0.0',
+          d: '1.0.0',
+          b: '1.0.0',
+        },
+      },
+      null,
+      8,
+    ),
+  })
+  const pj = new PackageJson()
+  const mani = pj.read(dir)
+  pj.save(mani)
+  t.matchSnapshot(
+    readFileSync(join(dir, 'package.json'), 'utf8'),
+    'saved manifest dependencies should be sorted by name',
+  )
+})
