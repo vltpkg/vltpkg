@@ -18,6 +18,12 @@ import {
   PopoverTrigger,
   PopoverContent,
 } from '@/components/ui/popover.jsx'
+import {
+  Tooltip,
+  TooltipProvider,
+  TooltipTrigger,
+  TooltipContent,
+} from '@/components/ui/tooltip.jsx'
 
 type SelectQueryOptions = {
   updateActiveRoute: Action['updateActiveRoute']
@@ -172,8 +178,15 @@ const SavedQueryItem = ({
             <p className="text-sm w-[500px] truncate">{editQuery}</p>
           )}
         </div>
-        <div className="flex col-span-2 items-center gap-2">
-          <p className="text-sm truncate">{item.context}</p>
+        <div className="flex col-span-2 items-center gap-2 w-full">
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger className="w-full text-left">
+                <p className="text-sm truncate">{item.context}</p>
+              </TooltipTrigger>
+              <TooltipContent>{item.context}</TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </div>
         <div className="flex col-span-2 items-center gap-2">
           {selectedLabels.map((label, idx) => (

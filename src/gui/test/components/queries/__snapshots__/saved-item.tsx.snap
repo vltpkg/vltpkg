@@ -19,10 +19,19 @@ exports[`labels view > labels render default 1`] = `
         mock-query
       </p>
     </div>
-    <div class="flex col-span-2 items-center gap-2">
-      <p class="text-sm truncate">
-        /mock/context/query
-      </p>
+    <div class="flex col-span-2 items-center gap-2 w-full">
+      <gui-tooltip-provider>
+        <gui-tooltip>
+          <gui-tooltip-trigger classname="w-full text-left">
+            <p class="text-sm truncate">
+              /mock/context/query
+            </p>
+          </gui-tooltip-trigger>
+          <gui-tooltip-content>
+            /mock/context/query
+          </gui-tooltip-content>
+        </gui-tooltip>
+      </gui-tooltip-provider>
     </div>
     <div class="flex col-span-2 items-center gap-2">
     </div>
