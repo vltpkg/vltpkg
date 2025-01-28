@@ -1,4 +1,4 @@
-import { test, expect, afterEach } from 'vitest'
+import { vi, test, expect, afterEach } from 'vitest'
 import { cleanup, render } from '@testing-library/react'
 import html from 'diffable-html'
 import { useGraphStore as useStore } from '@/state/index.js'
@@ -9,6 +9,10 @@ import { ExplorerGrid } from '@/components/explorer-grid/index.jsx'
 import { load } from '@/state/load-graph.js'
 import { type RawNode } from '@/state/types.js'
 import { Query } from '@vltpkg/query'
+
+vi.mock('@/components/explorer-grid/empty-results-state.jsx', () => ({
+  EmptyResultsState: 'gui-empty-results-state',
+}))
 
 expect.addSnapshotSerializer({
   serialize: v => html(v),
