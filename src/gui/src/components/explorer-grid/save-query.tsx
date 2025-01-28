@@ -59,7 +59,7 @@ const SaveQueryButton = () => {
         rotate: 0,
       })
     }
-  }, [showSaveQueryPopover, savedQueries, activeQuery])
+  }, [showSaveQueryPopover, savedQueries, activeQuery, resolvedTheme])
 
   return (
     <Popover
