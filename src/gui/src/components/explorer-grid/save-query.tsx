@@ -220,7 +220,7 @@ const SaveQueryPopover = ({
         <Label className="font-medium border-none">Name</Label>
         <Input
           type="text"
-          role="input"
+          autoComplete="off"
           placeholder="Name"
           value={queryName}
           onChange={(e: ChangeEvent<HTMLInputElement>) => {
@@ -234,7 +234,7 @@ const SaveQueryPopover = ({
         <Input
           id="query-context"
           type="text"
-          role="input"
+          autoComplete="off"
           placeholder="Directory (optional)"
           value={editContext}
           onChange={(e: ChangeEvent<HTMLInputElement>) => {
