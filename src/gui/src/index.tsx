@@ -16,3 +16,14 @@ if (rootElement) {
     </StrictMode>,
   )
 }
+
+if (process.env.NODE_ENV === 'development') {
+  const sse = new EventSource('/esbuild')
+  sse.addEventListener('change', () => location.reload())
+  sse.addEventListener('error', () => {
+    console.log(
+      'Live reload is not enabled. Start the GUI dev server to enable it.',
+    )
+    sse.close()
+  })
+}

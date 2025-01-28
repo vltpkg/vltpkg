@@ -5,22 +5,14 @@ import { join } from 'path'
 import { parseArgs } from 'util'
 import { which } from '@vltpkg/which'
 
+const PORT = 7018
+
 const { values: argv } = parseArgs({
   options: {
     watch: { type: 'boolean' },
-    serve: { type: 'boolean' },
     production: { type: 'boolean' },
-    graph: { type: 'string' },
   },
 })
-
-if (argv.serve && !argv.graph) {
-  console.log(
-    `when serving the gui locally, you should specify the --graph=./path/to/graph.json ` +
-      `option which will cp that file into place so it can be served in development. otherwise ` +
-      `the gui will have nothing to display`,
-  )
-}
 
 const srcdir = 'src'
 const outdir = 'dist'
@@ -35,9 +27,6 @@ const html = async () => {
   await cp(join(cwd, 'public'), join(cwd, outdir), {
     recursive: true,
   })
-  if (argv.graph) {
-    await cp(join(cwd, argv.graph), join(cwd, outdir, 'graph.json'))
-  }
 }
 
 const js = async () => {
@@ -51,21 +40,14 @@ const js = async () => {
     jsx: 'automatic',
     minify: argv.production,
     logLevel: 'info',
-    define:
-      argv.production ?
-        {
-          'process.env.NODE_ENV': '"production"',
-        }
-      : {},
+    define: {
+      'process.env.NODE_ENV': `"${argv.production ? 'production' : 'development'}"`,
+    },
   }
-  if (argv.watch || argv.serve) {
+  if (argv.watch) {
     const ctx = await esbuild.context(options)
-    if (argv.watch) {
-      await ctx.watch()
-    }
-    if (argv.serve) {
-      await ctx.serve({ servedir: outdir })
-    }
+    await ctx.watch()
+    await ctx.serve({ servedir: outdir, port: PORT })
   } else {
     await esbuild.build(options)
   }
