@@ -65,22 +65,19 @@ const SaveQueryButton = () => {
     <Popover
       open={showSaveQueryPopover}
       onOpenChange={setShowSaveQueryPopover}>
-      <PopoverTrigger>
+      <PopoverTrigger className="flex items-center justify-center">
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger
               asChild
               className="flex rounded-sm items-center justify-center h-[1.5rem] w-[1.5rem] bg-muted border border-muted-foreground/20">
-              <Button
-                asChild
-                role="button"
-                variant="outline"
-                size="icon"
+              <div
                 onClick={() =>
                   setShowSaveQueryPopover(!showSaveQueryPopover)
-                }>
+                }
+                className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-[1.5rem] w-[1.5rem]">
                 <Star ref={scope} size={20} fill={starColor} />
-              </Button>
+              </div>
             </TooltipTrigger>
             <TooltipContent>
               <p>Save query</p>
