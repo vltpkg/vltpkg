@@ -13,6 +13,7 @@ import { Search, Command } from 'lucide-react'
 import { Kbd } from '@/components/ui/kbd.jsx'
 import Save from '@/components/explorer-grid/save-query.jsx'
 import { QueryMatches } from '@/components/explorer-grid/query-matches.jsx'
+import { BackButton } from '@/components/explorer-grid/back-button.jsx'
 
 export type ExplorerOptions = {
   projectRoot?: string
@@ -137,6 +138,7 @@ const ExplorerContent = () => {
       </div>
       <section className="flex items-center px-8 py-4 border-b-[1px] border-solid">
         <div className="flex flex-row gap-2 w-full">
+          <BackButton />
           <SearchBar
             tabIndex={0}
             className="w-full bg-muted-foreground/5"
