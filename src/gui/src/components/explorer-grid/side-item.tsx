@@ -82,7 +82,7 @@ export const SideItem = ({
             </div>
           </div>
           <div className="flex items-center flex-row justify-between gap-2 flex-wrap px-3 py-2 border-muted-foreground/20 border-t-[1px]">
-            <p className="text-sm text-muted-foreground/50">
+            <p className="text-sm text-muted-foreground">
               {item.title}
             </p>
             {item.labels?.map(i => (
