@@ -24,20 +24,28 @@ import { joinDepIDTuple } from '@vltpkg/dep-id/browser'
 vi.mock('@/components/search-bar.jsx', () => ({
   SearchBar: 'gui-search-bar',
 }))
+
 vi.mock('@/components/ui/logo.jsx', () => ({
   Logo: 'gui-logo',
 }))
+
 vi.mock('@/components/ui/title.jsx', () => ({
   Title: 'gui-title',
 }))
+
 vi.mock('@/components/ui/card.jsx', () => ({
   Card: 'gui-card',
   CardDescription: 'gui-card-description',
   CardHeader: 'gui-card-header',
   CardTitle: 'gui-card-title',
 }))
+
 vi.mock('@/components/explorer-grid/index.jsx', () => ({
   ExplorerGrid: 'gui-explorer-grid',
+}))
+
+vi.mock('@/components/explorer-grid/root-button.jsx', () => ({
+  RootButton: 'gui-root-button',
 }))
 
 export const restHandlers = [

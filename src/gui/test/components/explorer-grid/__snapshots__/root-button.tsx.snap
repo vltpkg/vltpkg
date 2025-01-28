@@ -1,0 +1,23 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`root-button > should render correctly 1`] = `
+
+<gui-tooltip-provider>
+  <gui-tooltip>
+    <gui-tooltip-trigger aschild="true">
+      <gui-button
+        disabled="true"
+        size="icon"
+        variant="secondary"
+      >
+        <gui-house-icon>
+        </gui-house-icon>
+      </gui-button>
+    </gui-tooltip-trigger>
+    <gui-tooltip-content>
+      Go to project root
+    </gui-tooltip-content>
+  </gui-tooltip>
+</gui-tooltip-provider>
+
+`;
