@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import { GitFork, Plus } from 'lucide-react'
 import { type DepID } from '@vltpkg/dep-id/browser'
-import { Button } from '@/components/ui/button.jsx'
 import { GridHeader } from '@/components/explorer-grid/header.jsx'
 import { SideItem } from '@/components/explorer-grid/side-item.jsx'
 import { type GridItemData } from '@/components/explorer-grid/types.js'
@@ -232,14 +231,11 @@ export const DependencySideBar = ({
                 <PopoverTrigger>
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <Button
-                        asChild
-                        role="button"
-                        variant="outline"
-                        size="xs"
-                        onClick={toggleShowAddDepPopover}>
+                      <div
+                        onClick={toggleShowAddDepPopover}
+                        className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 border border-input bg-background hover:bg-accent hover:text-accent-foreground size-6">
                         <Plus ref={scope} />
-                      </Button>
+                      </div>
                     </TooltipTrigger>
                     <TooltipContent>
                       <p>Add a new dependency</p>

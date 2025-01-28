@@ -3,19 +3,14 @@
 exports[`save-query > should render correctly 1`] = `
 
 <gui-popover open="false">
-  <gui-popover-trigger>
+  <gui-popover-trigger classname="flex items-center justify-center">
     <gui-tooltip-provider>
       <gui-tooltip>
         <gui-tooltip-trigger
           aschild="true"
           classname="flex rounded-sm items-center justify-center h-[1.5rem] w-[1.5rem] bg-muted border border-muted-foreground/20"
         >
-          <gui-button
-            aschild="true"
-            role="button"
-            variant="outline"
-            size="icon"
-          >
+          <div class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&amp;_svg]:pointer-events-none [&amp;_svg]:size-4 [&amp;_svg]:shrink-0 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-[1.5rem] w-[1.5rem]">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               width="20"
@@ -31,7 +26,7 @@ exports[`save-query > should render correctly 1`] = `
               <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2">
               </polygon>
             </svg>
-          </gui-button>
+          </div>
         </gui-tooltip-trigger>
         <gui-tooltip-content>
           <p>
