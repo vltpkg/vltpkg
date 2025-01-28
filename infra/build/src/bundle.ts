@@ -449,6 +449,7 @@ const bundle = async (o: {
       [EXT.slice(1)]: globals.toString(),
     },
     define: {
+      'process.env.NODE_ENV': '"production"',
       'process.env._VLT_DEV_LIVE_RELOAD': 'false',
       // The import.meta shims are then globally replaced with our newly defined values
       ...Object.values(IMPORT_META).reduce(
