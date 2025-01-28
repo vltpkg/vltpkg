@@ -78,6 +78,7 @@ export type DashboardData = {
 
 export type DashboardDataProject = {
   name: string
+  readablePath: string
   path: string
   manifest: Manifest
   tools: DashboardTools[]
@@ -206,10 +207,12 @@ export const formatDashboardJson = (
     } catch {
       continue
     }
+    const path = folder.fullpath()
     result.projects.push({
       /* c8 ignore next */
       name: manifest.name || folder.name,
-      path: folder.fullpath().replace(homedir(), '~'),
+      readablePath: path.replace(homedir(), '~'),
+      path,
       manifest,
       tools: inferTools(manifest, folder, options.scurry),
       mtime: folder.lstatSync()?.mtimeMs,
