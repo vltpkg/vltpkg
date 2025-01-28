@@ -52,6 +52,7 @@ test('dashboard-grid with results', async () => {
       projects: [
         {
           name: 'project-foo',
+          readablePath: '~/project-foo',
           path: '/home/user/project-foo',
           manifest: { name: 'project-foo', version: '1.0.0' },
           tools: ['node', 'vlt'],
@@ -59,6 +60,7 @@ test('dashboard-grid with results', async () => {
         },
         {
           name: 'project-bar',
+          readablePath: '~/project-foo',
           path: '/home/user/project-bar',
           manifest: { name: 'project-bar', version: '1.0.0' },
           tools: ['pnpm'],
