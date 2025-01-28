@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import { GitFork, Plus } from 'lucide-react'
 import { type DepID } from '@vltpkg/dep-id/browser'
-import { Button } from '@/components/ui/button.jsx'
 import { GridHeader } from '@/components/explorer-grid/header.jsx'
 import { SideItem } from '@/components/explorer-grid/side-item.jsx'
 import { type GridItemData } from '@/components/explorer-grid/types.js'
