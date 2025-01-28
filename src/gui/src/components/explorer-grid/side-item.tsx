@@ -10,11 +10,11 @@ import {
 } from '@/components/ui/dropdown-menu.jsx'
 import { labelClassNamesMap } from './label-helper.js'
 import { type GridItemData, type GridItemOptions } from './types.js'
+import { useGraphStore } from '@/state/index.js'
 
 export type SideItemOptions = GridItemOptions & {
   parent?: boolean
-  idx?: number
-  onSelect: () => undefined
+  onSelect?: () => undefined
   onUninstall?: (item: GridItemData) => void
 }
 
@@ -23,7 +23,6 @@ export const SideItem = ({
   item,
   highlight,
   parent,
-  idx,
   onSelect,
   onUninstall,
 }: SideItemOptions) => {
@@ -32,12 +31,17 @@ export const SideItem = ({
   // a single line, which should be a very rare occasion
   const divRef = useRef<HTMLDivElement>(null)
   const lineRef = useRef<HTMLDivElement>(null)
+  const linePositionReference = useGraphStore(
+    state => state.linePositionReference,
+  )
   useEffect(() => {
-    if (idx === 1) {
-      const rect = divRef.current?.getBoundingClientRect()
-      if (rect && lineRef.current && rect.height > 86) {
-        lineRef.current.style.height = '124px'
-      }
+    const rect = lineRef.current?.getBoundingClientRect()
+    if (rect && lineRef.current) {
+      const height = rect.bottom - linePositionReference
+      lineRef.current.style.height = `${height}px`
+    }
+    if (item.depIndex && divRef.current) {
+      divRef.current.style.zIndex = `${9999 - item.depIndex}`
     }
   })
   const uninstallItem = (e: MouseEvent) => {
@@ -54,14 +58,18 @@ export const SideItem = ({
       {item.stacked ?
         <>
           {item.size > 2 ?
-            <div className="transition-all absolute border top-2 left-2 w-[96%] h-full bg-card rounded-lg group-hover:border-neutral-400 dark:group-hover:border-neutral-600" />
+            <div
+              className={`transition-all absolute border top-2 left-2 w-[96%] h-full bg-card rounded-lg ${onSelect ? 'group-hover:border-neutral-400 dark:group-hover:border-neutral-600' : ''}`}
+            />
           : ''}
-          <div className="transition-all absolute border top-1 left-1 w-[98%] h-full bg-card rounded-lg group-hover:border-neutral-400 dark:group-hover:border-neutral-600" />
+          <div
+            className={`transition-all absolute border top-1 left-1 w-[98%] h-full bg-card rounded-lg ${onSelect ? 'group-hover:border-neutral-400 dark:group-hover:border-neutral-600' : ''}`}
+          />
         </>
       : ''}
       <Card
         role="article"
-        className={`transition-all relative my-4 ${highlight ? 'border-foreground' : ''} cursor-pointer group-hover:border-neutral-400 dark:group-hover:border-neutral-600`}
+        className={`transition-all relative my-4 ${highlight ? 'border-foreground' : ''} ${onSelect ? 'cursor-pointer group-hover:border-neutral-400 dark:group-hover:border-neutral-600' : ''}`}
         onClick={onSelect}>
         <CardHeader className="rounded-t-lg relative flex flex-col w-full p-0">
           <div className="flex items-center px-3 py-2">
@@ -115,10 +123,10 @@ export const SideItem = ({
         <div className="absolute border-t border-solid border-muted-foreground w-4 -right-4 top-7" />
       : dependencies ?
         <div
-          className="absolute border-b border-l border-solid border-neutral-300 dark:border-neutral-700 rounded-bl-sm z-0 w-[9px] -left-[9px] h-[13.35rem] bottom-[62px] group-[&:nth-child(2)]:hidden group-[&:nth-child(3)]:h-24"
+          className={`absolute border-b border-l border-solid border-neutral-300 dark:border-neutral-600 rounded-bl-sm z-0 h-[5px] w-[9px] -left-[9px] h-[13.35rem] bottom-[62px] group-[&:nth-child(2)]:hidden group-[&:nth-child(3)]:h-24`}
           ref={lineRef}
         />
-      : null}
+      : ''}
     </div>
   )
 }

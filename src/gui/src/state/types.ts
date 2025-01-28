@@ -10,6 +10,7 @@ import { type Integrity, type Manifest } from '@vltpkg/types'
 
 export type Action = {
   updateActiveRoute: (route: State['activeRoute']) => void
+  updatePreviousRoute: (route: State['activeRoute']) => void
   updateDashboard: (dashboard: State['dashboard']) => void
   updateGraph: (graph: State['graph']) => void
   updateQ: (q: State['q']) => void
@@ -17,6 +18,7 @@ export type Action = {
   updateEdges: (edges: State['edges']) => void
   updateErrorCause: (errorCause: State['errorCause']) => void
   updateHasDashboard: (hasDashboard: State['hasDashboard']) => void
+  updateLinePositionReference: (position: number) => void
   updateNodes: (nodes: State['nodes']) => void
   updateSelectedNode: (node: State['selectedNode']) => void
   updateSpecOptions: (specOptions: State['specOptions']) => void
@@ -62,6 +64,10 @@ export type State = {
    */
   activeRoute: string
   /**
+   * The last route in the app.
+   */
+  previousRoute: string
+  /**
    * List of projects to be displayed in the dashboard.
    */
   dashboard?: DashboardData
@@ -81,6 +87,10 @@ export type State = {
    * Whether the dashboard is enabled or not.
    */
   hasDashboard: boolean
+  /**
+   * A reference value to properly draw connections between nodes in the graph.
+   */
+  linePositionReference: number
   /**
    * List of selected nodes returned after querying the graph.
    */

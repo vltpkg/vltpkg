@@ -7,7 +7,9 @@ export const ErrorFound = () => {
   const updateActiveRoute = useGraphStore(
     state => state.updateActiveRoute,
   )
+  const previousRoute = useGraphStore(state => state.previousRoute)
   const errorCause = useGraphStore(state => state.errorCause)
+
   useEffect(() => {
     history.pushState({ query: '', route: '/error' }, '', '/error')
     window.scrollTo(0, 0)
@@ -16,6 +18,11 @@ export const ErrorFound = () => {
   const onDashboardButtonClick = (e: MouseEvent) => {
     e.preventDefault()
     updateActiveRoute('/dashboard')
+  }
+
+  const onBackButtonClick = (e: MouseEvent) => {
+    e.preventDefault()
+    updateActiveRoute(previousRoute)
   }
 
   return (
@@ -48,7 +55,7 @@ export const ErrorFound = () => {
             {errorCause ? errorCause : 'An unexpected error occured.'}
           </p>
           <div className="flex gap-3 mt-3 z-[2]">
-            <Button variant="outline" onClick={() => history.back()}>
+            <Button variant="outline" onClick={onBackButtonClick}>
               Back
             </Button>
             <Button onClick={onDashboardButtonClick}>

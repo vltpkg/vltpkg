@@ -31,7 +31,10 @@ exports[`SideItem render as dependency 1`] = `
         </div>
       </gui-card-header>
     </gui-card>
-    <div class="absolute border-b border-l border-solid border-neutral-300 dark:border-neutral-700 rounded-bl-sm z-0 w-[9px] -left-[9px] h-[13.35rem] bottom-[62px] group-[&amp;:nth-child(2)]:hidden group-[&amp;:nth-child(3)]:h-24">
+    <div
+      class="absolute border-b border-l border-solid border-neutral-300 dark:border-neutral-600 rounded-bl-sm z-0 h-[5px] w-[9px] -left-[9px] h-[13.35rem] bottom-[62px] group-[&amp;:nth-child(2)]:hidden group-[&amp;:nth-child(3)]:h-24"
+      style="height: -258px;"
+    >
     </div>
   </div>
 </div>
@@ -69,7 +72,10 @@ exports[`SideItem render as dependency with long name 1`] = `
         </div>
       </gui-card-header>
     </gui-card>
-    <div class="absolute border-b border-l border-solid border-neutral-300 dark:border-neutral-700 rounded-bl-sm z-0 w-[9px] -left-[9px] h-[13.35rem] bottom-[62px] group-[&amp;:nth-child(2)]:hidden group-[&amp;:nth-child(3)]:h-24">
+    <div
+      class="absolute border-b border-l border-solid border-neutral-300 dark:border-neutral-600 rounded-bl-sm z-0 h-[5px] w-[9px] -left-[9px] h-[13.35rem] bottom-[62px] group-[&amp;:nth-child(2)]:hidden group-[&amp;:nth-child(3)]:h-24"
+      style="height: -258px;"
+    >
     </div>
   </div>
 </div>

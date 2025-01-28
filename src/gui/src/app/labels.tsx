@@ -107,17 +107,17 @@ const Labels = () => {
                 onCheckedChange={handleSelectAll}
                 className="border-muted-foreground/50 hover:border-muted-foreground/75"
               />
-              <p className="text-neutral-500 text-sm font-semibold">
+              <p className="text-neutral-500 text-sm font-medium">
                 Name
               </p>
             </div>
             <div className="col-span-4 flex items-center">
-              <p className="text-neutral-500 text-sm font-semibold">
+              <p className="text-neutral-500 text-sm font-medium">
                 Description
               </p>
             </div>
             <div className="flex items-center justify-center">
-              <p className="text-neutral-500 text-sm font-semibold">
+              <p className="text-neutral-500 text-sm font-medium">
                 References
               </p>
             </div>

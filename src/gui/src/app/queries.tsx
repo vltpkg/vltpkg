@@ -95,22 +95,22 @@ const Queries = () => {
                   onCheckedChange={handleSelectAll}
                   className="border-muted-foreground/50 hover:border-muted-foreground/75"
                 />
-                <p className="text-neutral-500 text-sm font-semibold">
+                <p className="text-neutral-500 text-sm font-medium">
                   Name
                 </p>
               </div>
               <div className="col-span-4 items-center px-1">
-                <p className="text-neutral-500 text-sm font-semibold">
+                <p className="text-neutral-500 text-sm font-medium">
                   Query
                 </p>
               </div>
               <div className="col-span-2 items-center">
-                <p className="text-neutral-500 text-sm font-semibold">
+                <p className="text-neutral-500 text-sm font-medium">
                   Directory
                 </p>
               </div>
               <div className="col-span-4 items-center">
-                <p className="text-neutral-500 text-sm font-semibold">
+                <p className="text-neutral-500 text-sm font-medium">
                   Labels
                 </p>
               </div>
