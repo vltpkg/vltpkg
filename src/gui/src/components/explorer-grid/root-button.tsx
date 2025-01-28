@@ -8,7 +8,7 @@ import {
 } from '@/components/ui/tooltip.jsx'
 import { DEFAULT_QUERY, useGraphStore } from '@/state/index.js'
 
-const BackButton = () => {
+const RootButton = () => {
   const updateActiveRoute = useGraphStore(
     state => state.updateActiveRoute,
   )
@@ -38,4 +38,4 @@ const BackButton = () => {
   )
 }
 
-export { BackButton }
+export { RootButton }
