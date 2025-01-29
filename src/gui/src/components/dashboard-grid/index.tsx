@@ -14,6 +14,10 @@ import {
 } from '@/components/ui/tooltip.jsx'
 import { FilterSearch } from '@/components/ui/filter-search.jsx'
 import { SortingToggle } from '@/components/ui/sorting-toggle.jsx'
+import {
+  columns,
+  DataTable,
+} from '@/components/dashboard-grid/table/index.js'
 
 type SelectDashboardItemOptions = {
   updateActiveRoute: Action['updateActiveRoute']
@@ -172,7 +176,9 @@ const DashboardGrid = () => {
         />
       </div>
 
+      <DataTable columns={columns} data={dashboard?.projects ?? []} />
       {/* items */}
+      {/*
       <div className="flex flex-col">
         <p className="text-sm font-semibold mb-4">Projects</p>
         <div className="flex flex-row flex-wrap gap-8">
@@ -183,6 +189,7 @@ const DashboardGrid = () => {
           : <p>No projects found</p>}
         </div>
       </div>
+      */}
     </div>
   )
 }
