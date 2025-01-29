@@ -311,15 +311,14 @@ exports[`explorer-grid with results 1`] = `
                 </p>
               </div>
             </div>
-            <div class="flex flex-row px-3 py-2 items-center justify-between">
-              <div class="flex items-center justify-center rounded-sm border-[1px] px-2 py-1">
-                <button data-state="closed">
-                  <p class="text-[0.65rem] text-muted-foreground font-mono font-medium truncate w-full m-0 p-0 align-baseline">
-                    npm:a@1.0.0
-                  </p>
-                </button>
-              </div>
-              <div class="flex gap-2 overflow-x-scroll">
+            <div class="w-full h-12 flex items-center gap-4 justify-between border-t-[1px] px-4 py-3">
+              <button
+                data-state="closed"
+                class="rounded-sm border-[1px] px-2 py-1 text-[0.65rem] text-muted-foreground font-mono m-0 align-baseline truncate"
+              >
+                npm:a@1.0.0
+              </button>
+              <div class="flex gap-2">
               </div>
             </div>
           </a>
@@ -352,15 +351,14 @@ exports[`explorer-grid with results 1`] = `
                 </p>
               </div>
             </div>
-            <div class="flex flex-row px-3 py-2 items-center justify-between">
-              <div class="flex items-center justify-center rounded-sm border-[1px] px-2 py-1">
-                <button data-state="closed">
-                  <p class="text-[0.65rem] text-muted-foreground font-mono font-medium truncate w-full m-0 p-0 align-baseline">
-                    npm:b@1.0.0
-                  </p>
-                </button>
-              </div>
-              <div class="flex gap-2 overflow-x-scroll">
+            <div class="w-full h-12 flex items-center gap-4 justify-between border-t-[1px] px-4 py-3">
+              <button
+                data-state="closed"
+                class="rounded-sm border-[1px] px-2 py-1 text-[0.65rem] text-muted-foreground font-mono m-0 align-baseline truncate"
+              >
+                npm:b@1.0.0
+              </button>
+              <div class="flex gap-2">
               </div>
             </div>
           </a>
@@ -413,15 +411,14 @@ exports[`explorer-grid with stack 1`] = `
                 </p>
               </div>
             </div>
-            <div class="flex flex-row px-3 py-2 items-center justify-between">
-              <div class="flex items-center justify-center rounded-sm border-[1px] px-2 py-1">
-                <button data-state="closed">
-                  <p class="text-[0.65rem] text-muted-foreground font-mono font-medium truncate w-full m-0 p-0 align-baseline">
-                    npm:a@1.0.0
-                  </p>
-                </button>
-              </div>
-              <div class="flex gap-2 overflow-x-scroll">
+            <div class="w-full h-12 flex items-center gap-4 justify-between border-t-[1px] px-4 py-3">
+              <button
+                data-state="closed"
+                class="rounded-sm border-[1px] px-2 py-1 text-[0.65rem] text-muted-foreground font-mono m-0 align-baseline truncate"
+              >
+                npm:a@1.0.0
+              </button>
+              <div class="flex gap-2">
               </div>
             </div>
           </a>
@@ -453,15 +450,14 @@ exports[`explorer-grid with stack 1`] = `
                 </p>
               </div>
             </div>
-            <div class="flex flex-row px-3 py-2 items-center justify-between">
-              <div class="flex items-center justify-center rounded-sm border-[1px] px-2 py-1">
-                <button data-state="closed">
-                  <p class="text-[0.65rem] text-muted-foreground font-mono font-medium truncate w-full m-0 p-0 align-baseline">
-                    npm:b@1.0.0
-                  </p>
-                </button>
-              </div>
-              <div class="flex gap-2 overflow-x-scroll">
+            <div class="w-full h-12 flex items-center gap-4 justify-between border-t-[1px] px-4 py-3">
+              <button
+                data-state="closed"
+                class="rounded-sm border-[1px] px-2 py-1 text-[0.65rem] text-muted-foreground font-mono m-0 align-baseline truncate"
+              >
+                npm:b@1.0.0
+              </button>
+              <div class="flex gap-2">
               </div>
             </div>
           </a>

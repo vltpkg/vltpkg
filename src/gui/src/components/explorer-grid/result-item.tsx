@@ -100,33 +100,26 @@ export const ResultItem = ({ item }: GridItemOptions) => {
         </CardHeader>
 
         {/* Card Bottom */}
-        <div className="flex flex-row px-3 py-2 items-center justify-between">
+        <div className="w-full h-12 flex items-center gap-4 justify-between border-t-[1px] px-4 py-3">
           {item.version ?
             <TooltipProvider>
-              <div className="flex items-center justify-center rounded-sm border-[1px] px-2 py-1">
-                <Tooltip>
-                  <TooltipTrigger>
-                    <p className="text-[0.65rem] text-muted-foreground font-mono font-medium truncate w-full m-0 p-0 align-baseline">
-                      {item.version}
-                    </p>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>{item.version}</p>
-                  </TooltipContent>
-                </Tooltip>
-              </div>
+              <Tooltip>
+                <TooltipTrigger className="rounded-sm border-[1px] px-2 py-1 text-[0.65rem] text-muted-foreground font-mono m-0 align-baseline truncate">
+                  {item.version}
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>{item.version}</p>
+                </TooltipContent>
+              </Tooltip>
             </TooltipProvider>
           : ''}
-          <div className="flex gap-2 overflow-x-scroll">
+          <div className="flex gap-2">
             {item.labels?.length ?
               item.labels.map(i => (
                 <div key={i}>
-                  {
-                    <Badge
-                      className={labelClassNamesMap.get(i) || ''}>
-                      {i}
-                    </Badge>
-                  }
+                  <Badge className={labelClassNamesMap.get(i) || ''}>
+                    {i}
+                  </Badge>
                 </div>
               ))
             : ''}
