@@ -24,12 +24,11 @@ export type TreeItem = {
   parent: TreeItem | undefined
 }
 
-export type HumanReadableOutputOptions = {
+export type HumanReadableOutputGraph = {
   edges: EdgeLike[]
   importers: Set<NodeLike>
   nodes: NodeLike[]
-  colors?: ChalkInstance
-  highlightSelection: boolean
+  highlightSelection?: boolean
 }
 
 export type EdgeMap = Map<NodeLike | undefined, TreeItem>
@@ -37,7 +36,7 @@ export type EdgeMap = Map<NodeLike | undefined, TreeItem>
 export type TreeMap = Map<EdgeLike | undefined, EdgeMap>
 
 const isSelected = (
-  options: HumanReadableOutputOptions,
+  options: HumanReadableOutputGraph,
   edge?: EdgeLike,
   node?: NodeLike,
 ) =>
@@ -51,7 +50,7 @@ const isSelected = (
  */
 const getTreeItems = (
   initialItems: Set<TreeItem>,
-  options: HumanReadableOutputOptions,
+  options: HumanReadableOutputGraph,
 ) => {
   const seenNodes = new Set<NodeLike>()
   const treeItems: TreeMap = new Map()
@@ -97,9 +96,10 @@ const getTreeItems = (
  * Returns a human-readable output of the graph.
  */
 export function humanReadableOutput(
-  options: HumanReadableOutputOptions,
+  options: HumanReadableOutputGraph,
+  { colors }: { colors?: ChalkInstance },
 ) {
-  const { colors, importers } = options
+  const { importers } = options
   const noop = (s?: string | null) => s
   const {
     dim = noop,

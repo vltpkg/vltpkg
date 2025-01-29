@@ -1,6 +1,6 @@
 import { Test } from 'tap'
 import { join } from 'path'
-import { CliCommand, LoadedConfig } from '../../src/types.js'
+import { type Command, type LoadedConfig } from '../../src/types.js'
 
 export type Testdir = Parameters<Test['testdir']>[0]
 
@@ -48,23 +48,21 @@ export const chtestdir = (
   return dir
 }
 
-export const mockCommandOutput = async (
+export const mockCommandOutput = async <T>(
   t: Test,
-  command: CliCommand,
+  command: Command<T>,
   config: LoadedConfig,
-  extra?: any,
 ) => {
   const { outputCommand } = await t.mockImport<
     typeof import('../../src/output.ts')
   >('../../src/output.ts')
   const logs = t.capture(console, 'log').args
   const errs = t.capture(console, 'error').args
-  const res = await command.command(config, extra)
-  outputCommand(res, config, { view: command.view })
+  await outputCommand(command, config, { start: Date.now() })
   return { logs: logs(), errs: errs() }
 }
 
-export const setupCommand = async <TCommand extends CliCommand>(
+export const setupCommand = async <T>(
   t: Test,
   {
     command: commandName,
@@ -77,7 +75,7 @@ export const setupCommand = async <TCommand extends CliCommand>(
 ) => {
   const dir = chtestdir(t, testdir, chdir)
   const { Config } = await mockConfig(t)
-  const Command = await t.mockImport<TCommand>(
+  const Command = await t.mockImport<Command<T>>(
     join('../../src/commands', `${commandName}.ts`),
   )
   const loadConfig = async (...argv: string[]) => {
@@ -116,23 +114,23 @@ export type CommandResultOptions = {
   options?: Partial<LoadedConfig['options']>
 }
 
-export const commandView = async <TCommand extends CliCommand>(
+export const commandView = async <T>(
   t: Test,
-  command: TCommand,
+  command: Command<T>,
   {
     positionals = [],
     values = {},
     options = {},
   }: CommandResultOptions,
-  // This prevents import.meta.resolve from being called
-  // which causes tap to hang
-  extra: any = '',
 ) => {
   const config = {
     positionals,
     values,
     options,
+    get(k: string) {
+      return values[k as keyof typeof values]
+    },
   } as LoadedConfig
-  const { logs } = await mockCommandOutput(t, command, config, extra)
+  const { logs } = await mockCommandOutput(t, command, config)
   return logs.map(v => v[0]).join('\n')
 }

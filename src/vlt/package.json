@@ -34,6 +34,7 @@
     "@vltpkg/error-cause": "workspace:*",
     "@vltpkg/graph": "workspace:*",
     "@vltpkg/gui": "workspace:*",
+    "@vltpkg/output": "workspace:*",
     "@vltpkg/package-info": "workspace:*",
     "@vltpkg/package-json": "workspace:*",
     "@vltpkg/promise-spawn": "workspace:*",
@@ -47,10 +48,13 @@
     "@vltpkg/xdg": "workspace:*",
     "ansi-to-pre": "^1.0.5",
     "chalk": "catalog:",
+    "ink": "^5.1.0",
+    "ink-spinner": "^5.0.0",
     "jackspeak": "^4.0.2",
     "package-json-from-dist": "catalog:",
     "path-scurry": "catalog:",
     "polite-json": "catalog:",
+    "react": "^18.3.1",
     "serve-handler": "^6.1.5",
     "walk-up-path": "catalog:"
   },
@@ -58,9 +62,11 @@
     "@eslint/js": "catalog:",
     "@types/eslint__js": "catalog:",
     "@types/node": "catalog:",
+    "@types/react": "catalog:",
     "@types/serve-handler": "^6.1.4",
     "eslint": "catalog:",
     "prettier": "catalog:",
+    "react-devtools-core": "^4.19.1",
     "tap": "catalog:",
     "tshy": "catalog:",
     "typescript": "catalog:",
@@ -82,7 +88,10 @@
     "test": "tap"
   },
   "tap": {
-    "extends": "../../tap-config.yaml"
+    "extends": "../../tap-config.yaml",
+    "test-env": [
+      "VLT_TEST_GUI_DIR=/mock-path/to/gui/assets"
+    ]
   },
   "prettier": "../../.prettierrc.js",
   "module": "./dist/esm/index.js",

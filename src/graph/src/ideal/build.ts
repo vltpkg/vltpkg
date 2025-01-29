@@ -12,6 +12,7 @@ import { type Graph } from '../graph.js'
 import { load as loadVirtual } from '../lockfile/load.js'
 import { buildIdealFromStartingGraph } from './build-ideal-from-starting-graph.js'
 import { type DepID } from '@vltpkg/dep-id'
+import { graphStep } from '@vltpkg/output'
 
 const getMap = <T extends Map<any, any>>(m?: T) =>
   m ?? (new Map() as T)
@@ -46,6 +47,8 @@ export type BuildIdealOptions = LoadActualOptions & {
 export const build = async (
   options: BuildIdealOptions,
 ): Promise<Graph> => {
+  const done = graphStep('build')
+
   // Creates the shared instances that are going to be used
   // in both the loader methods and the build graph
   const { packageInfo, packageJson, scurry, monorepo } = options
@@ -66,7 +69,7 @@ export const build = async (
     })
   }
 
-  return buildIdealFromStartingGraph({
+  const res = await buildIdealFromStartingGraph({
     ...options,
     scurry,
     add: getMap(options.add),
@@ -74,4 +77,6 @@ export const build = async (
     packageInfo,
     remove: getMap(options.remove),
   })
+  done()
+  return res
 }

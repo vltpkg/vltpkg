@@ -1,6 +1,6 @@
 {
-  "name": "@vltpkg/graph",
-  "description": "A library that helps understanding & expressing what happens on an install",
+  "name": "@vltpkg/output",
+  "description": "Generate output from the vlt CLI",
   "version": "0.0.0-0.1730239248325",
   "tshy": {
     "selfLink": false,
@@ -12,39 +12,16 @@
     ],
     "exports": {
       "./package.json": "./package.json",
-      ".": "./src/index.ts",
-      "./browser": "./src/browser.ts"
+      ".": "./src/index.ts"
     }
-  },
-  "dependencies": {
-    "@vltpkg/dep-id": "workspace:*",
-    "@vltpkg/error-cause": "workspace:*",
-    "@vltpkg/fast-split": "workspace:*",
-    "@vltpkg/output": "workspace:*",
-    "@vltpkg/package-info": "workspace:*",
-    "@vltpkg/package-json": "workspace:*",
-    "@vltpkg/pick-manifest": "workspace:*",
-    "@vltpkg/registry-client": "workspace:*",
-    "@vltpkg/rollback-remove": "workspace:*",
-    "@vltpkg/run": "workspace:*",
-    "@vltpkg/satisfies": "workspace:*",
-    "@vltpkg/semver": "workspace:*",
-    "@vltpkg/spec": "workspace:*",
-    "@vltpkg/types": "workspace:*",
-    "@vltpkg/workspaces": "workspace:*",
-    "graph-run": "catalog:",
-    "path-scurry": "catalog:",
-    "promise-call-limit": "^3.0.2"
   },
   "devDependencies": {
     "@eslint/js": "catalog:",
     "@types/eslint__js": "catalog:",
     "@types/node": "catalog:",
-    "chalk": "catalog:",
     "eslint": "catalog:",
     "prettier": "catalog:",
     "tap": "catalog:",
-    "tar": "catalog:",
     "tshy": "catalog:",
     "typescript": "catalog:",
     "typescript-eslint": "catalog:"
@@ -77,13 +54,6 @@
         "@vltpkg/source": "./src/index.ts",
         "types": "./dist/esm/index.d.ts",
         "default": "./dist/esm/index.js"
-      }
-    },
-    "./browser": {
-      "import": {
-        "@vltpkg/source": "./src/browser.ts",
-        "types": "./dist/esm/browser.d.ts",
-        "default": "./dist/esm/browser.js"
       }
     }
   },

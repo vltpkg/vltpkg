@@ -17,6 +17,7 @@ import {
 import { Graph } from '../graph.js'
 import { loadHidden } from '../lockfile/load.js'
 import { type Node } from '../node.js'
+import { graphStep } from '@vltpkg/output'
 
 export type LoadOptions = SpecOptions & {
   /**
@@ -334,6 +335,7 @@ const parseDir = (
  * between the dependencies found.
  */
 export const load = (options: LoadOptions): Graph => {
+  const done = graphStep('actual')
   // TODO: once hidden lockfile is more reliable, default to false here
   const {
     skipHiddenLockfile = true,
@@ -384,6 +386,8 @@ export const load = (options: LoadOptions): Graph => {
       path,
     )
   }
+
+  done()
 
   return graph
 }

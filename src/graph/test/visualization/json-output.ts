@@ -6,6 +6,8 @@ import { jsonOutput } from '../../src/visualization/json-output.js'
 import { loadActualGraph } from '../fixtures/actual.js'
 import { joinDepIDTuple } from '@vltpkg/dep-id'
 
+t.formatSnapshot = s => JSON.stringify(s, null, 2)
+
 t.cleanSnapshot = s =>
   s.replace(
     /^(\s+)"projectRoot": ".*"/gm,

@@ -47,6 +47,11 @@ const skipCatalog = ({ name, spec, from, type }) => {
   if (from === '@vltpkg/docs' && type === 'dependencies') {
     return true
   }
+  // prod deps for the gui should not be cataloged since it
+  // is bundled separately and then included in the CLI
+  if (from === '@vltpkg/gui' && type === 'dependencies') {
+    return true
+  }
   return false
 }
 

@@ -37,6 +37,8 @@ import { install, type InstallOptions } from './install.js'
 import { stderr, stdout } from './output.js'
 import { readProjectFolders } from './read-project-folders.js'
 import { uninstall, type UninstallOptions } from './uninstall.js'
+import { fileURLToPath } from 'node:url'
+import assert from 'node:assert'
 
 const HOST = 'localhost'
 const PORT = 7017
@@ -53,7 +55,7 @@ export type GUIInstallOptions = Record<
 export type GUIUninstallOptions = Record<string, Set<string>>
 
 export type StartGUIOptions = {
-  assetsDir: string
+  assetsDir?: string
   conf: LoadedConfig
   port?: number
   startingRoute?: string
@@ -365,11 +367,24 @@ const createStaticHandler = ({
 
   return staticHandler
 }
+
+/* c8 ignore start */
+const getAssetsDir = () => {
+  // workaround for the import.meta.resolve issue not working with tap
+  if (process.env.TAP) {
+    assert(
+      process.env.VLT_TEST_GUI_DIR,
+      'VLT_TEST_GUI_DIR must be set when running tests',
+    )
+    return process.env.VLT_TEST_GUI_DIR
+  }
+  return fileURLToPath(import.meta.resolve('@vltpkg/gui'))
+}
 /* c8 ignore stop */
 
 export const startGUI = async ({
-  assetsDir,
   conf,
+  assetsDir = getAssetsDir(),
   port = PORT,
   startingRoute = undefined,
   tmpDir = tmpdir(),

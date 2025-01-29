@@ -21,6 +21,7 @@ import { handle304Response } from './handle-304-response.js'
 import { otplease } from './otplease.js'
 import { isRedirect, redirect } from './redirect.js'
 import { setCacheHeaders } from './set-cache-headers.js'
+import { logRequest } from '@vltpkg/output'
 import {
   isTokenResponse,
   type TokenResponse,
@@ -331,6 +332,8 @@ export class RegistryClient {
     url: URL | string,
     options: RegistryClientRequestOptions = {},
   ): Promise<CacheEntry> {
+    logRequest(url, 'start')
+
     const u = typeof url === 'string' ? new URL(url) : url
     const {
       method = 'GET',

@@ -8,6 +8,6 @@ t.test('basic', async t => {
   const USAGE = usage().usage()
   t.matchSnapshot(USAGE, 'usage')
   const { Config } = await mockConfig(t)
-  const result = await command(await Config.load())
+  const { result } = await command(await Config.load())
   t.matchSnapshot(result, 'output')
 })
