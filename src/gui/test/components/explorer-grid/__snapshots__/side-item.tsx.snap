@@ -20,7 +20,7 @@ exports[`SideItem render as dependency 1`] = `
           </div>
         </div>
         <div class="flex items-center flex-row justify-between gap-2 flex-wrap px-3 py-2 border-muted-foreground/20 border-t-[1px]">
-          <p class="text-sm text-muted-foreground/50">
+          <p class="text-sm text-muted-foreground">
             item
           </p>
           <div>
@@ -61,7 +61,7 @@ exports[`SideItem render as dependency with long name 1`] = `
           </div>
         </div>
         <div class="flex items-center flex-row justify-between gap-2 flex-wrap px-3 py-2 border-muted-foreground/20 border-t-[1px]">
-          <p class="text-sm text-muted-foreground/50">
+          <p class="text-sm text-muted-foreground">
             lorem-ipsum-dolor-sit-amet-consectetur-adipiscing-elit-sed-do-eiusmod-tempor-incididunt-ut-labore-et-dolore-magna-aliqua-ut-enim-ad-minim-veniam-quis-nostrud-exercitation
           </p>
           <div>
@@ -102,7 +102,7 @@ exports[`SideItem render as dependent 1`] = `
           </div>
         </div>
         <div class="flex items-center flex-row justify-between gap-2 flex-wrap px-3 py-2 border-muted-foreground/20 border-t-[1px]">
-          <p class="text-sm text-muted-foreground/50">
+          <p class="text-sm text-muted-foreground">
             item
           </p>
           <div>
@@ -142,7 +142,7 @@ exports[`SideItem render as multi-stacked dependent 1`] = `
           </div>
         </div>
         <div class="flex items-center flex-row justify-between gap-2 flex-wrap px-3 py-2 border-muted-foreground/20 border-t-[1px]">
-          <p class="text-sm text-muted-foreground/50">
+          <p class="text-sm text-muted-foreground">
             item
           </p>
           <div>
@@ -178,7 +178,7 @@ exports[`SideItem render as parent 1`] = `
           </div>
         </div>
         <div class="flex items-center flex-row justify-between gap-2 flex-wrap px-3 py-2 border-muted-foreground/20 border-t-[1px]">
-          <p class="text-sm text-muted-foreground/50">
+          <p class="text-sm text-muted-foreground">
             item
           </p>
           <div>
@@ -218,7 +218,7 @@ exports[`SideItem render as two-stacked dependent 1`] = `
           </div>
         </div>
         <div class="flex items-center flex-row justify-between gap-2 flex-wrap px-3 py-2 border-muted-foreground/20 border-t-[1px]">
-          <p class="text-sm text-muted-foreground/50">
+          <p class="text-sm text-muted-foreground">
             item
           </p>
           <div>
