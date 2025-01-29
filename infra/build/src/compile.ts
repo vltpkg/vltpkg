@@ -1,5 +1,5 @@
 import assert from 'node:assert'
-import { sep, join, relative, extname, dirname } from 'node:path'
+import { sep, join, relative, dirname } from 'node:path'
 import { spawnSync } from 'node:child_process'
 import { randomBytes } from 'node:crypto'
 import {
@@ -75,18 +75,30 @@ const getCompileOptions = (
   teardown?: () => string[]
 } => {
   const entry = join(o.source, `${o.bin}.js`)
-  // TODO: copy sourcemaps to compiled binaries?
-  const include = readdirSync(o.source, {
+
+  const allFiles = readdirSync(o.source, {
     recursive: true,
     withFileTypes: true,
   })
-    .filter(
-      f =>
-        f.isFile() &&
-        extname(f.name) === '.js' &&
-        relative(o.source, join(f.parentPath, f.name)).includes(sep),
-    )
-    .map(i => join(i.parentPath, i.name))
+    .filter(f => f.isFile())
+    .map(f => ({
+      name: f.name,
+      relativePath: relative(o.source, join(f.parentPath, f.name)),
+      fullPath: join(f.parentPath, f.name),
+    }))
+
+  const include = allFiles
+    .filter(f => {
+      // dont copy root bin files. those are included as the main entry
+      if (
+        !f.relativePath.includes(sep) &&
+        types.BinNames.includes(f.name.split('.')[0] as types.Bin)
+      ) {
+        return false
+      }
+      return true
+    })
+    .map(f => f.fullPath)
 
   if (o.runtime === types.Runtimes.Bun) {
     return {
