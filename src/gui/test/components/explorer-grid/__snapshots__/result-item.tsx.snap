@@ -18,8 +18,8 @@ exports[`ResultItem render missing version and labels 1`] = `
           </h3>
         </button>
       </div>
-      <div class="flex flex-row px-3 py-2 items-center justify-between">
-        <div class="flex gap-2 overflow-x-scroll">
+      <div class="w-full h-12 flex items-center gap-4 justify-between border-t-[1px] px-4 py-3">
+        <div class="flex gap-2">
         </div>
       </div>
     </a>
@@ -50,15 +50,14 @@ exports[`ResultItem render stacked many 1`] = `
           </h3>
         </button>
       </div>
-      <div class="flex flex-row px-3 py-2 items-center justify-between">
-        <div class="flex items-center justify-center rounded-sm border-[1px] px-2 py-1">
-          <button data-state="closed">
-            <p class="text-[0.65rem] text-muted-foreground font-mono font-medium truncate w-full m-0 p-0 align-baseline">
-              1.1.1
-            </p>
-          </button>
-        </div>
-        <div class="flex gap-2 overflow-x-scroll">
+      <div class="w-full h-12 flex items-center gap-4 justify-between border-t-[1px] px-4 py-3">
+        <button
+          data-state="closed"
+          class="rounded-sm border-[1px] px-2 py-1 text-[0.65rem] text-muted-foreground font-mono m-0 align-baseline truncate"
+        >
+          1.1.1
+        </button>
+        <div class="flex gap-2">
           <div>
             <div class="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent bg-lime-100 text-neutral-900 hover:bg-lime-100/80">
               peer
@@ -92,15 +91,14 @@ exports[`ResultItem render stacked two 1`] = `
           </h3>
         </button>
       </div>
-      <div class="flex flex-row px-3 py-2 items-center justify-between">
-        <div class="flex items-center justify-center rounded-sm border-[1px] px-2 py-1">
-          <button data-state="closed">
-            <p class="text-[0.65rem] text-muted-foreground font-mono font-medium truncate w-full m-0 p-0 align-baseline">
-              1.0.0
-            </p>
-          </button>
-        </div>
-        <div class="flex gap-2 overflow-x-scroll">
+      <div class="w-full h-12 flex items-center gap-4 justify-between border-t-[1px] px-4 py-3">
+        <button
+          data-state="closed"
+          class="rounded-sm border-[1px] px-2 py-1 text-[0.65rem] text-muted-foreground font-mono m-0 align-baseline truncate"
+        >
+          1.0.0
+        </button>
+        <div class="flex gap-2">
           <div>
             <div class="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent bg-fuchsia-100 text-neutral-900 hover:bg-fuchsia-100/80">
               dev
@@ -132,15 +130,14 @@ exports[`ResultItem render with item 1`] = `
           </h3>
         </button>
       </div>
-      <div class="flex flex-row px-3 py-2 items-center justify-between">
-        <div class="flex items-center justify-center rounded-sm border-[1px] px-2 py-1">
-          <button data-state="closed">
-            <p class="text-[0.65rem] text-muted-foreground font-mono font-medium truncate w-full m-0 p-0 align-baseline">
-              1.0.0
-            </p>
-          </button>
-        </div>
-        <div class="flex gap-2 overflow-x-scroll">
+      <div class="w-full h-12 flex items-center gap-4 justify-between border-t-[1px] px-4 py-3">
+        <button
+          data-state="closed"
+          class="rounded-sm border-[1px] px-2 py-1 text-[0.65rem] text-muted-foreground font-mono m-0 align-baseline truncate"
+        >
+          1.0.0
+        </button>
+        <div class="flex gap-2">
           <div>
             <div class="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent bg-cyan-100 text-neutral-900 hover:bg-cyan-100/80">
               prod
@@ -185,15 +182,14 @@ exports[`ResultItem render with type 1`] = `
           </p>
         </div>
       </div>
-      <div class="flex flex-row px-3 py-2 items-center justify-between">
-        <div class="flex items-center justify-center rounded-sm border-[1px] px-2 py-1">
-          <button data-state="closed">
-            <p class="text-[0.65rem] text-muted-foreground font-mono font-medium truncate w-full m-0 p-0 align-baseline">
-              1.0.0
-            </p>
-          </button>
-        </div>
-        <div class="flex gap-2 overflow-x-scroll">
+      <div class="w-full h-12 flex items-center gap-4 justify-between border-t-[1px] px-4 py-3">
+        <button
+          data-state="closed"
+          class="rounded-sm border-[1px] px-2 py-1 text-[0.65rem] text-muted-foreground font-mono m-0 align-baseline truncate"
+        >
+          1.0.0
+        </button>
+        <div class="flex gap-2">
           <div>
             <div class="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent bg-cyan-100 text-neutral-900 hover:bg-cyan-100/80">
               prod
