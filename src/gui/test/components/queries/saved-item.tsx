@@ -40,6 +40,13 @@ vi.mock('@/components/ui/popover.jsx', () => ({
   PopoverContent: 'gui-popover-content',
 }))
 
+vi.mock('@/components/ui/tooltip.jsx', () => ({
+  Tooltip: 'gui-tooltip',
+  TooltipProvider: 'gui-tooltip-provider',
+  TooltipTrigger: 'gui-tooltip-trigger',
+  TooltipContent: 'gui-tooltip-content',
+}))
+
 expect.addSnapshotSerializer({
   serialize: v => html(v),
   test: () => true,
