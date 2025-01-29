@@ -22,10 +22,8 @@ exports[`labels view > labels render default 1`] = `
     <div class="flex col-span-2 items-center gap-2 w-full">
       <gui-tooltip-provider>
         <gui-tooltip>
-          <gui-tooltip-trigger classname="w-full text-left">
-            <p class="text-sm truncate">
-              /mock/context/query
-            </p>
+          <gui-tooltip-trigger classname="text-sm truncate w-full text-left">
+            /mock/context/query
           </gui-tooltip-trigger>
           <gui-tooltip-content>
             /mock/context/query

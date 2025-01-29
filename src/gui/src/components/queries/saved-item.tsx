@@ -181,8 +181,8 @@ const SavedQueryItem = ({
         <div className="flex col-span-2 items-center gap-2 w-full">
           <TooltipProvider>
             <Tooltip>
-              <TooltipTrigger className="w-full text-left">
-                <p className="text-sm truncate">{item.context}</p>
+              <TooltipTrigger className="text-sm truncate w-full text-left">
+                {item.context}
               </TooltipTrigger>
               <TooltipContent>{item.context}</TooltipContent>
             </Tooltip>
