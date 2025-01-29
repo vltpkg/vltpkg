@@ -75,7 +75,9 @@ const run = async (
     child_process: t.createMock(CP, { spawnSync }),
   })
   return {
-    result: await cmd.command(conf as unknown as LoadedConfig),
+    result: await cmd
+      .command(conf as unknown as LoadedConfig)
+      .then(r => r?.result),
     conf,
   }
 }
@@ -86,10 +88,7 @@ t.matchSnapshot(USAGE, 'usage')
 
 t.test('help', async t => {
   const { result } = await run(t, ['help'], {})
-  t.match(result, [
-    'Specify one or more options to see information:',
-    String,
-  ])
+  t.match(result, 'Specify one or more options to see information:')
 })
 
 t.test('help <options>', async t => {
@@ -106,26 +105,16 @@ t.test('help <options>', async t => {
     ],
     {},
   )
-  t.matchOnly(result, [
-    '--registry=<url>',
-    '  type: string',
-    String,
-    String,
-    'unknown config field: boof',
-    '--registries=<name=url>',
-    '  type: Record<string, string>',
-    String,
-    '--workspace=<ws>',
-    '  type: string[]',
-    String,
-    '--fetch-retry-maxtimeout=<n>',
-    '  type: number',
-    String,
-    String,
-    '--color',
-    '  type: boolean',
-    String,
-  ])
+  const expected = result as string
+  t.match(expected, `--registry=<url>\n  type: string`)
+  t.match(expected, `unknown config field: boof`)
+  t.match(
+    expected,
+    `--registries=<name=url>\n  type: Record<string, string>`,
+  )
+  t.match(expected, `--workspace=<ws>\n  type: string[]`)
+  t.match(expected, `--fetch-retry-maxtimeout=<n>\n  type: number`)
+  t.match(expected, `--color\n  type: boolean`)
 })
 
 t.test('list', async t => {
@@ -133,9 +122,7 @@ t.test('list', async t => {
     t.test(cmd, async t => {
       const vals = { some: 'options' }
       const { result } = await run(t, [cmd], vals)
-      t.strictSame(result, {
-        result: recordsToPairs(vals),
-      })
+      t.strictSame(result, recordsToPairs(vals))
     })
   }
 })
@@ -165,7 +152,7 @@ t.test('get', async t => {
     const { result } = await run(t, ['get', 'registries'], {
       registries,
     })
-    t.strictSame(result, { result: registries })
+    t.strictSame(result, registries)
   })
   for (const i of [0, 2]) {
     t.test(`${i} keys`, async t => {

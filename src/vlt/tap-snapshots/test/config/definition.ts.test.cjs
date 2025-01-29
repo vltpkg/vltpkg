@@ -296,7 +296,7 @@ Object {
     "type": "boolean",
   },
   "view": Object {
-    "description": "Configures the output format for ls & query commands.",
+    "description": "Configures the output format for commands.",
     "hint": "output",
     "type": "string",
     "validOptions": Array [

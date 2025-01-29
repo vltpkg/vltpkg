@@ -16,22 +16,16 @@ t.test('starts gui data and server', async t => {
 
   t.matchSnapshot(usage().usage(), 'usage')
 
-  // workaround for the import.meta.resolve issue not working with tap atm
-  const assetsDir = '/path/to/assets'
-  await command(
-    {
-      options: {
-        projectRoot: '/path/to/project',
-      },
-    } as LoadedConfig,
-    assetsDir,
-  )
+  await command({
+    options: {
+      projectRoot: '/path/to/project',
+    },
+  } as LoadedConfig)
 
   t.matchStrict(
     startGUIOptions,
     {
       conf: { options: { projectRoot: '/path/to/project' } },
-      assetsDir: '/path/to/assets',
     },
     'should call startGUI with expected options',
   )

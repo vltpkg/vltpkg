@@ -1,10 +1,14 @@
 import chalk from 'chalk'
 import {
-  type CliCommand,
-  type CliCommandResult,
+  type View,
   type LoadedConfig,
+  type Views,
+  type ViewClass,
+  type Command,
+  type CommandResult,
 } from './types.js'
 import { isErrorRoot } from '@vltpkg/error-cause'
+import assert from 'node:assert'
 
 // TODO: make these have log levels etc
 // eslint-disable-next-line no-console
@@ -12,58 +16,98 @@ export const stdout = (...args: unknown[]) => console.log(...args)
 // eslint-disable-next-line no-console
 export const stderr = (...args: unknown[]) => console.error(...args)
 
-export const outputCommand = (
-  commandResult: CliCommandResult,
+const isViewClass = <T>(view: View<T>): view is ViewClass<T> =>
+  typeof view === 'function' &&
+  'prototype' in view &&
+  'start' in view.prototype &&
+  'done' in view.prototype &&
+  'error' in view.prototype
+
+const identity = <T>(x: T): T => x
+
+const getView = <T>(
   conf: LoadedConfig,
-  { view: views }: { view: CliCommand['view'] },
-) => {
-  if (commandResult === undefined) {
-    return
+  views?: Views<T>,
+): { view: View<T>; isJson: boolean } => {
+  const viewName =
+    conf.values.view ??
+    (typeof views === 'object' ? views.defaultView : null)
+
+  const viewFn =
+    views === undefined ? identity
+    : typeof views === 'function' ? views
+    : viewName && views.views ? views.views[viewName]
+    : identity
+
+  assert(viewFn, `No view found for ${viewName}`)
+
+  return {
+    view: viewFn,
+    isJson: viewName === 'json',
   }
-
-  if (typeof commandResult === 'string') {
-    return stdout(commandResult)
-  }
-
-  if (Array.isArray(commandResult)) {
-    return stdout(commandResult.join('\n'))
-  }
-
-  const { result, defaultView } = commandResult
-  const view = conf.values.view ?? defaultView
-
-  if (!view || !views?.[view]) {
-    return stdout(JSON.stringify(result, null, 2))
-  }
-
-  return stdout(
-    views[view](
-      result && typeof result === 'object' ?
-        {
-          colors: conf.values.color ? chalk : undefined,
-          ...result,
-        }
-      : result,
-    ),
-  )
 }
 
-export const outputError = (
-  e: unknown,
-  _conf: LoadedConfig,
-  { usage }: { usage: string },
+export const outputCommand = async <T>(
+  cliCommand: Command<T>,
+  conf: LoadedConfig,
+  { start }: { start?: number } = {},
 ) => {
-  process.exitCode ||= 1
-  if (isErrorRoot(e)) {
-    switch (e.cause.code) {
-      case 'EUSAGE': {
-        stderr(usage)
-        stderr(`Error: ${e.message}`)
+  const { command, views, usage } = cliCommand
+
+  if (conf.get('help')) {
+    return stdout(usage().usage())
+  }
+
+  const { view, isJson } = getView(conf, views)
+  const opts = { colors: conf.values.color ? chalk : undefined }
+
+  let onDone: (result: CommandResult<T>) => void
+  let onError: ((err: unknown) => void) | null = null
+
+  if (isViewClass(view)) {
+    const viewInstance = new view(opts, conf)
+    viewInstance.start()
+    onDone = r =>
+      viewInstance.done(r, { time: start ? Date.now() - start : 0 })
+    onError = err => viewInstance.error(err)
+  } else {
+    onDone = r => {
+      if (r === undefined) {
         return
       }
+      const res = view(r.result, opts, conf)
+      return isJson ? JSON.stringify(res, null, 2) : res
     }
   }
 
-  // TODO: handle more error codes and causes
-  stderr(e)
+  try {
+    const output = onDone(await command(conf))
+    if (output !== undefined) {
+      stdout(output)
+    }
+  } catch (err) {
+    onError?.(err)
+    process.exitCode ||= 1
+
+    if (isErrorRoot(err)) {
+      switch (err.cause.code) {
+        // TODO: handle more error codes and causes
+        case 'EUSAGE': {
+          stderr(usage().usage())
+          stderr(`Error: ${err.message}`)
+          if (err.cause.found) {
+            stderr(`  Found: ${err.cause.found}`)
+          }
+          if (err.cause.validOptions) {
+            stderr(
+              `  Valid options: ${err.cause.validOptions.join(', ')}`,
+            )
+          }
+          return
+        }
+      }
+    }
+
+    stderr(err)
+  }
 }

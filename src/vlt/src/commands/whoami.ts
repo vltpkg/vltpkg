@@ -1,8 +1,8 @@
 import { RegistryClient } from '@vltpkg/registry-client'
 import { commandUsage } from '../config/usage.js'
-import { type CliCommandFn, type CliCommandUsage } from '../types.js'
+import { type CommandFn, type CommandUsage } from '../types.js'
 
-export const usage: CliCommandUsage = () =>
+export const usage: CommandUsage = () =>
   commandUsage({
     command: 'whoami',
     usage: [''],
@@ -10,7 +10,7 @@ export const usage: CliCommandUsage = () =>
                   when logged into a registry.`,
   })
 
-export const command: CliCommandFn = async conf => {
+export const command: CommandFn<void> = async conf => {
   const rc = new RegistryClient(conf.options)
   const response = await rc.request(
     new URL('-/whoami', conf.options.registry),
