@@ -63,7 +63,7 @@ exports[`explorer-grid renders workspace with edges in 1`] = `
               </div>
             </div>
             <div class="flex items-center flex-row justify-between gap-2 flex-wrap px-3 py-2 border-muted-foreground/20 border-t-[1px]">
-              <p class="text-sm text-muted-foreground/50">
+              <p class="text-sm text-muted-foreground">
                 b@workspace:*
               </p>
               <div class="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 grow-0 border-transparent bg-cyan-100 text-neutral-900 hover:bg-cyan-100/80">
