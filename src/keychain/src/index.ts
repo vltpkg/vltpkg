@@ -42,6 +42,10 @@ export class Keychain<V extends string = string> {
     return this.#data?.[key]
   }
 
+  async load() {
+    await this.#load()
+  }
+
   async #load(): Promise<this> {
     if (this.#data) return this
     let ok = false
