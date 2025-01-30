@@ -10,14 +10,14 @@ exports[`label-select > should render correctly 1`] = `
   >
   </gui-command-input>
   <gui-command-list classname="rounded-sm">
-    <gui-command-empty classname="py-2 px-3 my-3 items-center">
+    <gui-command-empty classname="my-3 items-center px-3 py-2">
       <gui-dialog open="false">
-        <div class="flex flex-col gap-3 w-full items-center">
+        <div class="flex w-full flex-col items-center gap-3">
           <p class="text-sm text-neutral-400">
             No labels found.
           </p>
           <gui-dialog-trigger>
-            <gui-button classname="font-normal w-full">
+            <gui-button classname="w-full font-normal">
               Create label ""
             </gui-button>
           </gui-dialog-trigger>
@@ -29,7 +29,7 @@ exports[`label-select > should render correctly 1`] = `
     <gui-command-group>
       <gui-command-item
         value="Outdated"
-        classname="cursor-pointer flex flex-col items-start gap-2"
+        classname="flex cursor-pointer flex-col items-start gap-2"
       >
         <div class="flex items-center gap-3">
           <gui-check-icon classname="transition-opacity opacity-0">
@@ -53,7 +53,7 @@ exports[`label-select > should render correctly 1`] = `
       </gui-command-item>
       <gui-command-item
         value="Unstable"
-        classname="cursor-pointer flex flex-col items-start gap-2"
+        classname="flex cursor-pointer flex-col items-start gap-2"
       >
         <div class="flex items-center gap-3">
           <gui-check-icon classname="transition-opacity opacity-0">
@@ -77,7 +77,7 @@ exports[`label-select > should render correctly 1`] = `
       </gui-command-item>
       <gui-command-item
         value="Insecure"
-        classname="cursor-pointer flex flex-col items-start gap-2"
+        classname="flex cursor-pointer flex-col items-start gap-2"
       >
         <div class="flex items-center gap-3">
           <gui-check-icon classname="transition-opacity opacity-0">
@@ -102,7 +102,7 @@ exports[`label-select > should render correctly 1`] = `
     </gui-command-group>
   </gui-command-list>
   <gui-button
-    classname="border-none text-neutral-500 hover:text-primary hover:bg-background rounded-sm mb-2"
+    classname="mb-2 rounded-sm border-none text-neutral-500 hover:bg-background hover:text-primary"
     variant="outline"
     size="sm"
     aschild="true"

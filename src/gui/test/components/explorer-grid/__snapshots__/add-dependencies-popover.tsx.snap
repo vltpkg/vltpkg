@@ -3,9 +3,9 @@
 exports[`add-dependencies-popover error 1`] = `
 
 <div>
-  <gui-card-header classname="rounded-t-lg relative flex flex-col w-full p-0">
+  <gui-card-header classname="relative flex w-full flex-col rounded-t-lg p-0">
     <div class="flex items-center justify-between px-6 py-4">
-      <gui-card-title classname="text-lg font-medium flex items-center">
+      <gui-card-title classname="flex items-center text-lg font-medium">
         <gui-battery-low-icon
           size="18"
           classname="mr-2"
@@ -15,12 +15,12 @@ exports[`add-dependencies-popover error 1`] = `
       </gui-card-title>
     </div>
   </gui-card-header>
-  <div class="flex items-center flex-row justify-between gap-2 flex-wrap p-6 border-muted-foreground/20 border-t-[1px]">
+  <div class="flex flex-row flex-wrap items-center justify-between gap-2 border-t-[1px] border-muted-foreground/20 p-6">
     <p class="text-sm">
       Failed to install package
     </p>
   </div>
-  <div class="flex justify-end w-full">
+  <div class="flex w-full justify-end">
     <gui-button
       classname="m-2"
       role="cancel"
@@ -37,9 +37,9 @@ exports[`add-dependencies-popover error 1`] = `
 exports[`add-dependencies-popover in progress 1`] = `
 
 <div>
-  <gui-card-header classname="rounded-t-lg relative flex flex-col w-full p-0">
+  <gui-card-header classname="relative flex w-full flex-col rounded-t-lg p-0">
     <div class="flex items-center justify-between px-6 py-4">
-      <gui-card-title classname="text-lg font-medium flex items-center">
+      <gui-card-title classname="flex items-center text-lg font-medium">
         <gui-package-plus-icon
           size="18"
           classname="mr-2"
@@ -49,7 +49,7 @@ exports[`add-dependencies-popover in progress 1`] = `
       </gui-card-title>
     </div>
   </gui-card-header>
-  <div class="flex justify-center items-center h-48">
+  <div class="flex h-48 items-center justify-center">
     <gui-loading-spinner>
     </gui-loading-spinner>
   </div>
@@ -60,9 +60,9 @@ exports[`add-dependencies-popover in progress 1`] = `
 exports[`add-dependencies-popover render default 1`] = `
 
 <div>
-  <gui-card-header classname="rounded-t-lg relative flex flex-col w-full p-0">
+  <gui-card-header classname="relative flex w-full flex-col rounded-t-lg p-0">
     <div class="flex items-center justify-between px-6 py-4">
-      <gui-card-title classname="text-lg font-medium flex items-center">
+      <gui-card-title classname="flex items-center text-lg font-medium">
         <gui-package-plus-icon
           size="18"
           classname="mr-2"
@@ -72,7 +72,7 @@ exports[`add-dependencies-popover render default 1`] = `
       </gui-card-title>
     </div>
   </gui-card-header>
-  <form class="flex items-center flex-row justify-between gap-2 flex-wrap p-6 border-muted-foreground/20 border-t-[1px]">
+  <form class="flex flex-row flex-wrap items-center justify-between gap-2 border-t-[1px] border-muted-foreground/20 p-6">
     <gui-label
       htmlfor="package-name"
       classname="ml-1"
@@ -128,9 +128,9 @@ exports[`add-dependencies-popover render default 1`] = `
         </gui-select-item>
       </gui-select-content>
     </gui-select>
-    <div class="flex justify-end w-full">
+    <div class="flex w-full justify-end">
       <gui-button
-        classname="mt-2 mr-2"
+        classname="mr-2 mt-2"
         role="cancel"
         variant="secondary"
         tabindex="4"

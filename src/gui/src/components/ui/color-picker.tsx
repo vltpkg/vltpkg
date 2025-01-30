@@ -59,7 +59,7 @@ export function ColorPicker({
   }
 
   return (
-    <div className="w-full max-w-md mx-auto px-2 py-1">
+    <div className="mx-auto w-full max-w-md px-2 py-1">
       <div className="relative w-full">
         <Input
           className="w-full"
@@ -69,7 +69,7 @@ export function ColorPicker({
           placeholder="#00FF5F"
         />
         <div
-          className="absolute flex items-center justify-center top-0 bottom-0 my-auto right-2 h-5 w-5 rounded-sm"
+          className="absolute bottom-0 right-2 top-0 my-auto flex h-5 w-5 items-center justify-center rounded-sm"
           style={{
             backgroundColor:
               isValidHex(inputColor) ? inputColor : currentColor,
@@ -81,17 +81,17 @@ export function ColorPicker({
                 onChange(e.target.value)
               }
             }}
-            className="relative cursor-pointer h-[20px] w-[20px] opacity-0"
+            className="relative h-[20px] w-[20px] cursor-pointer opacity-0"
             type="color"
           />
         </div>
       </div>
-      <div className="grid mt-4 grid-cols-8 gap-2">
+      <div className="mt-4 grid grid-cols-8 gap-2">
         {DEFAULT_COLORS.map(color => (
           <button
             key={color}
             onClick={() => handleDefaultColorClick(color)}
-            className="w-full aspect-square rounded-sm border border-[1px] border-muted-foreground/25 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="aspect-square w-full rounded-sm border border-[1px] border-muted-foreground/25 focus:outline-none focus:ring-2 focus:ring-blue-500"
             style={{ backgroundColor: color }}
             aria-label={`Select color ${color}`}
           />

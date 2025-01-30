@@ -60,9 +60,9 @@ export const ResultItem = ({ item }: GridItemOptions) => {
       {item.stacked ?
         <>
           {item.size > 2 ?
-            <div className="transition-all group-hover:border-neutral-400 dark:group-hover:border-neutral-600 absolute border top-2 left-2 w-[97.5%] h-full bg-card rounded-lg"></div>
+            <div className="absolute left-2 top-2 h-full w-[97.5%] rounded-lg border bg-card transition-all group-hover:border-neutral-400 dark:group-hover:border-neutral-600"></div>
           : ''}
-          <div className="transition-all group-hover:border-neutral-400 dark:group-hover:border-neutral-600 absolute border top-1 left-1 w-[99%] h-full bg-card rounded-lg"></div>
+          <div className="absolute left-1 top-1 h-full w-[99%] rounded-lg border bg-card transition-all group-hover:border-neutral-400 dark:group-hover:border-neutral-600"></div>
         </>
       : ''}
 
@@ -71,7 +71,7 @@ export const ResultItem = ({ item }: GridItemOptions) => {
         renderAsLink={true}
         className={`relative group-hover:border-neutral-400 dark:group-hover:border-neutral-600 ${item.to ? 'cursor-pointer' : 'cursor-default'}`}
         onClick={onResultItemClick({ item, query, updateQuery })}>
-        <CardHeader className="m-0 px-4 py-3 rounded-t-lg flex flex-row items-center justify-between border-b-[1px]">
+        <CardHeader className="m-0 flex flex-row items-center justify-between rounded-t-lg border-b-[1px] px-4 py-3">
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger className="truncate">
@@ -88,7 +88,7 @@ export const ResultItem = ({ item }: GridItemOptions) => {
             <div className="flex items-center justify-center text-pretty rounded-md border-[1px] px-2.5 py-0.5 text-xs text-muted-foreground">
               <p className="font-semibold">
                 {item.stacked ? '' : <span>{item.type}</span>}
-                <span className="font-medium px-1 text-muted-foreground">
+                <span className="px-1 font-medium text-muted-foreground">
                   dep of:
                 </span>
                 {item.stacked ?
@@ -100,11 +100,11 @@ export const ResultItem = ({ item }: GridItemOptions) => {
         </CardHeader>
 
         {/* Card Bottom */}
-        <div className="w-full h-12 flex items-center gap-4 justify-between border-t-[1px] px-4 py-3">
+        <div className="flex h-12 w-full items-center justify-between gap-4 border-t-[1px] px-4 py-3">
           {item.version ?
             <TooltipProvider>
               <Tooltip>
-                <TooltipTrigger className="rounded-sm border-[1px] px-2 py-1 text-[0.65rem] text-muted-foreground font-mono m-0 align-baseline truncate">
+                <TooltipTrigger className="m-0 truncate rounded-sm border-[1px] px-2 py-1 align-baseline font-mono text-[0.65rem] text-muted-foreground">
                   {item.version}
                 </TooltipTrigger>
                 <TooltipContent>

@@ -77,9 +77,9 @@ const MobileSidebar = ({ toc }: Props) => {
     ))
 
   return (
-    <div className="px-6 py-3 w-full border-y-[1px] backdrop-blur-md">
+    <div className="w-full border-y-[1px] px-6 py-3 backdrop-blur-md">
       <Drawer open={drawerOpen} onOpenChange={setDrawerOpen}>
-        <div className="bg-transparent flex flex-row items-center gap-6">
+        <div className="flex flex-row items-center gap-6 bg-transparent">
           <Button
             variant="outline"
             onClick={() => setDrawerOpen(true)}>
@@ -134,7 +134,7 @@ MobileSidebar.Link = ({
   return (
     <p
       onClick={() => scrollTo({ slug: href })}
-      className={`border-t-[1px] py-3 no-underline text-md cursor-pointer transition-all ${
+      className={`text-md cursor-pointer border-t-[1px] py-3 no-underline transition-all ${
         isActive ?
           'font-bold text-foreground'
         : 'text-muted-foreground'

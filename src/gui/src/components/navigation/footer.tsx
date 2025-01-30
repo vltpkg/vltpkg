@@ -37,14 +37,14 @@ const socialMediaLinks: SocialMediaLink[] = [
 
 export const Footer = () => {
   return (
-    <footer className="bg-white dark:bg-black border-t-[1px]">
-      <div className="flex flex-col w-full gap-x-4 gap-y-4 px-6 py-6">
+    <footer className="border-t-[1px] bg-white dark:bg-black">
+      <div className="flex w-full flex-col gap-x-4 gap-y-4 px-6 py-6">
         {/* footer links */}
         <div className="flex w-full items-center justify-between">
           <div className="flex gap-4">
             {socialMediaLinks.map((link, idx) => (
               <a href={link.to} key={idx} aria-label={link.name}>
-                <link.component className="fill-black dark:fill-white h-5" />
+                <link.component className="h-5 fill-black dark:fill-white" />
               </a>
             ))}
           </div>
@@ -54,21 +54,21 @@ export const Footer = () => {
         </div>
 
         {/* footer policies */}
-        <div className="flex flex-row w-full items-center justify-between">
+        <div className="flex w-full flex-row items-center justify-between">
           <a
             href="https://www.vlt.sh/"
-            className="no-underline text-sm text-muted-foreground hover:text-foreground transition-all">
+            className="text-sm text-muted-foreground no-underline transition-all hover:text-foreground">
             &copy; {new Date().getFullYear()} vlt technology inc.
           </a>
           <div className="flex flex-row gap-4">
             <a
               href="https://www.vlt.sh/terms"
-              className="no-underline text-muted-foreground text-sm hover:text-foreground transition-all">
+              className="text-sm text-muted-foreground no-underline transition-all hover:text-foreground">
               Terms
             </a>
             <a
               href="https://www.vlt.sh/privacy"
-              className="no-underline text-muted-foreground text-sm hover:text-foreground transition-all">
+              className="text-sm text-muted-foreground no-underline transition-all hover:text-foreground">
               Privacy
             </a>
           </div>

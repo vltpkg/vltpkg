@@ -11,7 +11,7 @@ export const GridHeader = ({
 }) => (
   <div
     className={cn(
-      'pt-6 text-md flex flex-row items-center font-medium',
+      'text-md flex flex-row items-center pt-6 font-medium',
       className,
     )}
     {...props}>
