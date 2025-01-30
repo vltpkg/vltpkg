@@ -10,6 +10,14 @@ class Keychain {
     t.equal(app, 'vlt/auth')
   }
 
+  async load() {
+    this.log.push(['load'])
+  }
+
+  async save() {
+    this.log.push(['save'])
+  }
+
   async delete(reg: string) {
     this.log.push(['delete', reg])
   }
@@ -58,7 +66,12 @@ t.test('deleteToken', async t => {
   >('../src/auth.js', mocks)
   await t.rejects(deleteToken('not a url'))
   await deleteToken('https://x.com/')
-  t.strictSame(checkLog(kc), [['delete', 'https://x.com']])
+  t.strictSame(checkLog(kc), [
+    ['load'],
+    ['load'],
+    ['delete', 'https://x.com'],
+    ['save'],
+  ])
 })
 
 t.test('getToken', async t => {
