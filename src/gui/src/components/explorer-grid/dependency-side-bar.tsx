@@ -223,7 +223,7 @@ export const DependencySideBar = ({
         <GitFork size={22} className="mr-3 rotate-180" />
         Dependencies
         {importerId ?
-          <div className="grow flex justify-end">
+          <div className="flex grow justify-end">
             <TooltipProvider>
               <Popover
                 onOpenChange={setShowAddDepPopover}
@@ -233,7 +233,7 @@ export const DependencySideBar = ({
                     <TooltipTrigger asChild>
                       <div
                         onClick={toggleShowAddDepPopover}
-                        className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 border border-input bg-background hover:bg-accent hover:text-accent-foreground size-6">
+                        className="inline-flex size-6 items-center justify-center gap-2 whitespace-nowrap rounded-md border border-input bg-background text-sm font-medium ring-offset-background transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0">
                         <Plus ref={scope} />
                       </div>
                     </TooltipTrigger>
@@ -244,7 +244,7 @@ export const DependencySideBar = ({
                 </PopoverTrigger>
                 <PopoverContent
                   align="end"
-                  className="p-0 w-96 top-0 right-0">
+                  className="right-0 top-0 w-96 p-0">
                   <AddDependenciesPopover
                     error={error}
                     inProgress={inProgress}

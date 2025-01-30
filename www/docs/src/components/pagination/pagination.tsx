@@ -7,21 +7,21 @@ const Pagination = ({ pagination }: Props) => {
   if (!next || !prev) return null
 
   return (
-    <div className="mt-8 border-t-[1px] pt-8 flex w-full items-center justify-between">
+    <div className="mt-8 flex w-full items-center justify-between border-t-[1px] pt-8">
       <a
         href={prev.href}
-        className="no-underline flex flex-col w-fit cursor-pointer text-right">
+        className="flex w-fit cursor-pointer flex-col text-right no-underline">
         <p className="text-sm text-muted-foreground">Previous</p>
-        <div className="flex flex-row justify-between items-center w-full gap-2 text-foreground">
+        <div className="flex w-full flex-row items-center justify-between gap-2 text-foreground">
           <ChevronLeft size={20} />
           <p>{prev.label}</p>
         </div>
       </a>
       <a
         href={next.href}
-        className="no-underline flex flex-col w-fit cursor-pointer text-left">
+        className="flex w-fit cursor-pointer flex-col text-left no-underline">
         <p className="text-sm text-muted-foreground">Next</p>
-        <div className="flex flex-row justify-between items-center w-full gap-2 text-foreground">
+        <div className="flex w-full flex-row items-center justify-between gap-2 text-foreground">
           <p>{next.label}</p>
           <ChevronRight size={20} />
         </div>

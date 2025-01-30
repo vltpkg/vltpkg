@@ -79,11 +79,11 @@ const SortingToggle = <T extends {}>({
   }
 
   return (
-    <div className="flex mx-3">
-      <div className="relative flex items-center p-1 h-[2.5rem] bg-white dark:bg-black w-full rounded-sm border border-[1px] border-muted-foreground/25">
+    <div className="mx-3 flex">
+      <div className="relative flex h-[2.5rem] w-full items-center rounded-sm border border-[1px] border-muted-foreground/25 bg-white p-1 dark:bg-black">
         {/* the toggle slider */}
         <motion.div
-          className="absolute h-[2rem] w-[2rem] rounded-sm bg-muted border border-muted-foreground/20"
+          className="absolute h-[2rem] w-[2rem] rounded-sm border border-muted-foreground/20 bg-muted"
           animate={{
             left: sortToggle === 'ascending' ? 4 : 36,
           }}
@@ -97,7 +97,7 @@ const SortingToggle = <T extends {}>({
                   onClick={() => {
                     handleSortToggleClick(button.option)
                   }}
-                  className="cursor-pointer h-[2rem] w-[2rem] rounded-sm flex items-center justify-center z-[1]">
+                  className="z-[1] flex h-[2rem] w-[2rem] cursor-pointer items-center justify-center rounded-sm">
                   <button.icon
                     size={20}
                     className="text-muted-foreground"

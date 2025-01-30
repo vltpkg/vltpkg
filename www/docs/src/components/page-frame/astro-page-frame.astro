@@ -4,7 +4,7 @@ import Footer from '@/components/footer/footer.tsx'
 const { hasSidebar } = Astro.props
 ---
 
-<div class="flex flex-col min-h-svh w-full">
+<div class="flex min-h-svh w-full flex-col">
   {/* top */}
   <header>
     <slot name="header" />
@@ -12,7 +12,7 @@ const { hasSidebar } = Astro.props
 
   {/* content */}
   <div
-    class="flex flex-row h-full w-full flex-grow max-w-screen-xl mx-0 md:mx-auto md:px-6">
+    class="mx-0 flex h-full w-full max-w-screen-xl flex-grow flex-row md:mx-auto md:px-6">
     {
       hasSidebar && (
         <aside class="-pr-10">
