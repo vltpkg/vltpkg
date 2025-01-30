@@ -12,6 +12,8 @@ vi.mock('@/components/ui/badge.jsx', () => ({
   Badge: 'gui-badge',
 }))
 vi.mock('lucid-react', () => ({
+  Home: 'gui-lucide-home',
+  Package: 'gui-lucide-package',
   FileSearch2: 'gui-lucid-file-search2',
 }))
 vi.mock('@/components/ui/card.jsx', () => ({
