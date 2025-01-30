@@ -13,6 +13,7 @@ import {
   getToken,
   kc,
   setToken,
+  isToken,
   type Token,
 } from './auth.js'
 import { CacheEntry, type JSONObj } from './cache-entry.js'
@@ -37,7 +38,7 @@ export {
   type WebAuthChallenge,
   type TokenResponse,
 }
-export { kc }
+export { kc, setToken, deleteToken, isToken }
 
 export type RegistryClientOptions = {
   /**
