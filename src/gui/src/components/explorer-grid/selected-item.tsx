@@ -110,7 +110,11 @@ export const SelectedItem = ({ item }: GridItemOptions) => {
             </TabsList>
             <TabsContent value="package.json">
               <CodeBlock
-                code={JSON.stringify(item.to?.manifest, null, 2)}
+                code={
+                  item.to?.manifest ?
+                    JSON.stringify(item.to.manifest, null, 2)
+                  : ''
+                }
                 lang="json"
               />
             </TabsContent>
