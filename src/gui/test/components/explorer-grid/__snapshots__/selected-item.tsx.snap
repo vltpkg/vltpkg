@@ -251,8 +251,8 @@ exports[`SelectedItem render with default git host 1`] = `
                 1.0.0
               </span>
             </div>
-            <div>
-              github:a/b
+            <div class="px-1 py-1 text-xs text-muted-foreground font-mono m-0 align-baseline truncate">
+              git:github:a/b
             </div>
           </div>
         </div>
