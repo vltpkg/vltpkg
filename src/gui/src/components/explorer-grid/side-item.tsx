@@ -109,7 +109,7 @@ export const SideItem = ({
               <Ellipsis className="text-muted-foreground" size={20} />
             </DropdownMenuTrigger>
             <DropdownMenuContent
-              className="w-48 ml-48"
+              className="w-48 ml-48 z-[100000]"
               onCloseAutoFocus={e => e.preventDefault()}>
               <DropdownMenuItem onClick={uninstallItem}>
                 <PackageMinus size={16} />
