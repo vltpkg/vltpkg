@@ -81,5 +81,10 @@
   "exports": {
     "./package.json": "./package.json",
     ".": "./dist"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vltpkg/vltpkg.git",
+    "directory": "src/gui"
   }
 }
