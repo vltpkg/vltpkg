@@ -143,6 +143,10 @@ export type Manifest = {
   type?: 'commonjs' | 'module'
   /** npm puts this on published manifests */
   gypfile?: boolean
+  /** the author of a package */
+  author?: Person
+  /** contributors to the package */
+  contributors?: Person[]
 }
 
 export type ManifestRegistry = Manifest &
