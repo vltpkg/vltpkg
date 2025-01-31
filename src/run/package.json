@@ -2,6 +2,11 @@
   "name": "@vltpkg/run",
   "description": "Run package.json scripts and execute commands",
   "version": "0.0.0-0.1730239248325",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vltpkg/vltpkg.git",
+    "directory": "src/run"
+  },
   "tshy": {
     "selfLink": false,
     "dialects": [

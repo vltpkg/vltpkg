@@ -2,6 +2,10 @@
   "name": "@vltpkg/vltpkg",
   "version": "0.0.0-0",
   "private": true,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vltpkg/vltpkg.git"
+  },
   "dependencies": {
     "@vltpkg/cli": "workspace:*"
   },
@@ -42,9 +46,5 @@
     "test": "pnpm --silent --no-bail --report-summary -r test -- -Rsilent || node scripts/report-test-failures.js"
   },
   "prettier": "./.prettierrc.js",
-  "type": "module",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/vltpkg/vltpkg"
-  }
+  "type": "module"
 }
