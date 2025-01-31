@@ -3,6 +3,40 @@ import { cleanup, render } from '@testing-library/react'
 import html from 'diffable-html'
 import { useGraphStore as useStore } from '@/state/index.js'
 import { DashboardGrid } from '@/components/dashboard-grid/index.jsx'
+import { type DashboardTools } from '@/state/types.js'
+
+vi.mock('@/utils/dashboard-tools.jsx', () => ({
+  getIconSet: vi.fn((tools: DashboardTools[]) => {
+    const mockRuntimes: Partial<Record<DashboardTools, string>> = {
+      node: 'gui-runtime-node-icon',
+      deno: 'gui-runtime-deno-icon',
+      js: 'gui-runtime-js-icon',
+      bun: 'gui-runtime-bun-icon',
+    }
+
+    const mockPackageManagers: Partial<
+      Record<DashboardTools, string>
+    > = {
+      npm: 'gui-package-manager-npm-icon',
+      pnpm: 'gui-package-manager-pnpm-icon',
+      yarn: 'gui-package-manager-yarn-icon',
+      vlt: 'gui-package-manager-vlt-icon',
+    }
+
+    const runtimeKey = tools.find(tool => mockRuntimes[tool] ?? null)
+    const packageManagerKey = tools.find(
+      tool => mockPackageManagers[tool] ?? null,
+    )
+
+    return {
+      runtime: runtimeKey ? mockRuntimes[runtimeKey] : null,
+      packageManager:
+        packageManagerKey ?
+          mockPackageManagers[packageManagerKey]
+        : null,
+    }
+  }),
+}))
 
 vi.mock('@/components/ui/card.jsx', () => ({
   CardTitle: 'gui-card-title',
