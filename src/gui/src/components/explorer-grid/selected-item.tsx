@@ -86,7 +86,11 @@ const SpecOrigin = ({
       case 'workspace':
       case 'file':
       case 'remote': {
-        return <div>{ref}</div>
+        return (
+          <div className="px-1 py-1 text-xs text-muted-foreground font-mono m-0 align-baseline truncate">
+            {depType}:{ref}
+          </div>
+        )
       }
     }
   }
