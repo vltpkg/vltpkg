@@ -17,6 +17,7 @@ const canonicalCommands = {
   query: 'query',
   'run-exec': 'run-exec',
   run: 'run',
+  token: 'token',
   uninstall: 'uninstall',
   whoami: 'whoami',
 } as const
