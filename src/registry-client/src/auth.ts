@@ -9,8 +9,13 @@ export const isToken = (t: any): t is Token =>
   typeof t === 'string' &&
   (t.startsWith('Bearer ') || t.startsWith('Basic '))
 
-export const deleteToken = async (registry: string): Promise<void> =>
+export const deleteToken = async (
+  registry: string,
+): Promise<void> => {
+  await kc.load()
   kc.delete(new URL(registry).origin)
+  await kc.save()
+}
 
 export const setToken = async (
   registry: string,
