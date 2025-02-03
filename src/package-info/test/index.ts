@@ -722,17 +722,23 @@ t.test('file spec must have file', async t => {
 
 t.test('fails on non-200 response', async t => {
   const d = t.testdir()
-  t.rejects(packument('lodash', options))
-  t.rejects(manifest('lodash', options))
-  t.rejects(tarball('lodash', options))
-  t.rejects(resolve('lodash', options))
-  t.rejects(tarball('missing', options))
-  t.rejects(extract('missing', d, options))
+  await t.rejects(packument('lodash', options))
+  await t.rejects(manifest('lodash', options))
+  await t.rejects(tarball('lodash', options))
+  await t.rejects(resolve('lodash', options))
+  await t.rejects(tarball('missing', options))
+  await t.rejects(extract('missing', d, options))
 
-  t.rejects(packument(`lodash@${defaultRegistry}lodash.tgz`, options))
-  t.rejects(manifest(`lodash@${defaultRegistry}lodash.tgz`, options))
-  t.rejects(tarball(`lodash@${defaultRegistry}lodash.tgz`, options))
-  t.rejects(
+  await t.rejects(
+    packument(`lodash@${defaultRegistry}lodash.tgz`, options),
+  )
+  await t.rejects(
+    manifest(`lodash@${defaultRegistry}lodash.tgz`, options),
+  )
+  await t.rejects(
+    tarball(`lodash@${defaultRegistry}lodash.tgz`, options),
+  )
+  await t.rejects(
     extract(`lodash@${defaultRegistry}lodash.tgz`, d, options),
   )
 })
@@ -851,7 +857,7 @@ t.test('path git selector', async t => {
   const spec = `${badSpec}#path:packages/xyz`
 
   let headSha: string | undefined = undefined
-  t.test('create repo', async () => {
+  await t.test('create repo', async () => {
     const git = (...cmd: string[]) => spawnGit(cmd, { cwd: repo })
     const write = (f: string, c: string) =>
       writeFile(`${repo}/${f}`, c)
@@ -869,7 +875,7 @@ t.test('path git selector', async t => {
     headSha = stdout
   })
 
-  t.test('resolve', async t => {
+  await t.test('resolve', async t => {
     const r = await resolve(spec, options)
     t.equal(
       r.resolved,
@@ -878,13 +884,13 @@ t.test('path git selector', async t => {
     t.end()
   })
 
-  t.test('manifest', async t => {
+  await t.test('manifest', async t => {
     const m = await manifest(spec, options)
     t.strictSame(m, pkg)
     t.rejects(() => manifest(badSpec, options))
   })
 
-  t.test('tarball', async t => {
+  await t.test('tarball', async t => {
     const target = t.testdir()
     const pool = new Pool()
     const tarData = await tarball(spec, options)
@@ -902,7 +908,7 @@ t.test('path git selector', async t => {
     )
   })
 
-  t.test('extract', async t => {
+  await t.test('extract', async t => {
     const target = t.testdir()
     await extract(spec, target, options)
     const found = JSON.parse(
