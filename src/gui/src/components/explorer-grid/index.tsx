@@ -168,7 +168,7 @@ const getWorkspaceItems = (
     if (importer === node) continue
 
     const version = importer.version ? `@${importer.version}` : ''
-    const title = `${importer.name}@${version}`
+    const title = `${importer.name}${version}`
 
     items.push({
       to: importer,
