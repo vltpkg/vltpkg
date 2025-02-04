@@ -239,7 +239,7 @@ const mockIndex = async (t: Test, mocks?: Record<string, any>) =>
   })
 
 // default ones to use for tests that don't need their own mocks
-const { RegistryClient, kc } = await mockIndex(t)
+const { RegistryClient, getKC } = await mockIndex(t)
 
 t.teardown(() => registry.close())
 
@@ -474,7 +474,7 @@ t.test('client.login()', async t => {
   dropConnection = false
   const rc = new RegistryClient({ cache: t.testdir() })
   await rc.login(registryURL)
-  await kc.save()
+  await getKC('').save()
   const auths = JSON.parse(
     readFileSync(resolve(dir, 'vlt/auth/keychain.json'), 'utf8'),
   )
@@ -493,7 +493,7 @@ t.test('client.login() with immediate retry', async t => {
   doneUrlRetry = true
   const rc = new RegistryClient({ cache: t.testdir() })
   await rc.login(registryURL)
-  await kc.save()
+  await getKC('').save()
   const auths = JSON.parse(
     readFileSync(resolve(dir, 'vlt/auth/keychain.json'), 'utf8'),
   )
@@ -512,7 +512,7 @@ t.test('client.login() with 100ms delayed retry', async t => {
   doneUrlRetry = '0.1'
   const rc = new RegistryClient({ cache: t.testdir() })
   await rc.login(registryURL)
-  await kc.save()
+  await getKC('').save()
   const auths = JSON.parse(
     readFileSync(resolve(dir, 'vlt/auth/keychain.json'), 'utf8'),
   )
@@ -529,13 +529,13 @@ t.test('client.logout()', async t => {
   dropConnection = false
   const rc = new RegistryClient({ cache: t.testdir() })
   await rc.logout(registryURL)
-  await kc.save()
+  await getKC('').save()
   // do it again just to hit the 'no token' use case
   await rc.logout(registryURL)
   // do it again to hit the 'have token, but not on the server' case
-  kc.set(registryURL, 'Bearer some-invalid-token')
+  getKC('').set(registryURL, 'Bearer some-invalid-token')
   await rc.logout(registryURL)
-  t.equal(await kc.get(registryURL), undefined)
+  t.equal(await getKC('').get(registryURL), undefined)
   t.strictSame(
     new Set(tokensActions),
     new Set([
@@ -581,4 +581,9 @@ t.test('sending request with PUT method', async t => {
     method: 'PUT',
   })
   t.strictSame(result.json(), { ok: true, method: 'PUT' })
+})
+
+t.test('identity', async t => {
+  const rc = new RegistryClient({ identity: 'crisis' })
+  t.equal(rc.identity, 'crisis')
 })

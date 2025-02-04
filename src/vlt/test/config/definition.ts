@@ -40,6 +40,14 @@ t.test(
   },
 )
 
+t.test('identity can only be lowercase alphanum', async t => {
+  t.throws(() => {
+    definition.parse(['-i', 'AS.R#I@HAWXv'])
+  })
+  const { values } = definition.parse(['-i', 'asdf123'])
+  t.equal(values.identity, 'asdf123')
+})
+
 t.test('infer editor from env/platform', async t => {
   const cases: [
     { platform: NodeJS.Platform; EDITOR?: string; VISUAL?: string },

@@ -151,6 +151,18 @@ More documentation available at <https://docs.vlt.sh>
 
   --fetch-retry-maxtimeout=<n>
                        Maximum number of milliseconds between two retries
+  -i<name> --identity=<name>
+                       Provide a string to define an identity for storing auth
+                       information when logging into registries.
+
+                       Authentication tokens will be stored in the XDG data
+                       directory, in \`vlt/auth/\${identity}/keychain.json\`.
+
+                       If no identity is provided, then the default \`''\` will be
+                       used, storing the file at \`vlt/auth/keychain.json\`.
+
+                       May only contain lowercase alphanumeric characters.
+
   -w<ws> --workspace=<ws>
                        Set to limit the spaces being worked on when working on
                        workspaces.

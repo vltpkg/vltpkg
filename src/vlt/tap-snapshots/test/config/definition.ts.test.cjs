@@ -180,6 +180,21 @@ Object {
     "short": "h",
     "type": "boolean",
   },
+  "identity": Object {
+    "description": String(
+      Provide a string to define an identity for storing auth information when logging into registries.
+      
+      Authentication tokens will be stored in the XDG data directory, in \`vlt/auth/\${identity}/keychain.json\`.
+      
+      If no identity is provided, then the default \`''\` will be used, storing the file at \`vlt/auth/keychain.json\`.
+      
+      May only contain lowercase alphanumeric characters.
+    ),
+    "hint": "name",
+    "short": "i",
+    "type": "string",
+    "validate": Function validate(v),
+  },
   "no-bail": Object {
     "description": "When running scripts across multiple workspaces, continue on failure, running the script for all workspaces.",
     "short": "B",
