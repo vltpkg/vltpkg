@@ -318,6 +318,27 @@ export const definition = j
     },
   })
 
+  .opt({
+    identity: {
+      short: 'i',
+      validate: (v: unknown) =>
+        typeof v === 'string' && /^[a-z0-9]*$/.test(v),
+      hint: 'name',
+      default: '',
+      description: `Provide a string to define an identity for storing auth
+                    information when logging into registries.
+
+                    Authentication tokens will be stored in the XDG data
+                    directory, in \`vlt/auth/$\{identity}/keychain.json\`.
+
+                    If no identity is provided, then the default \`''\` will
+                    be used, storing the file at \`vlt/auth/keychain.json\`.
+
+                    May only contain lowercase alphanumeric characters.
+                    `,
+    },
+  })
+
   .optList({
     workspace: {
       hint: 'ws',
