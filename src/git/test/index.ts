@@ -7,6 +7,7 @@ t.matchOnly(
     find: Function,
     isClean: Function,
     is: Function,
+    getUser: Function,
     revs: Function,
     spawn: Function,
     shallowHosts: Set,
