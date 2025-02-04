@@ -17,11 +17,18 @@ import { FilterSearch } from '@/components/ui/filter-search.jsx'
 import { SortingToggle } from '@/components/ui/sorting-toggle.jsx'
 import { DataTable } from '@/components/data-table/data-table.jsx'
 import { TableFilterSearch } from '@/components/data-table/table-filter-search.jsx'
+import { TableViewDropdown } from '@/components/data-table/table-view-dropdown.jsx'
+import { TablePageSelect } from '@/components/data-table/table-page-select.jsx'
+import { TableFilters } from '@/components/data-table/table-filters.jsx'
 import {
   ViewOption,
   ViewToggle,
 } from '@/components/ui/view-toggle.jsx'
 import { dashboardColumns } from '@/components/dashboard-grid/table-columns.jsx'
+import {
+  type VisibilityState,
+  type Table,
+} from '@tanstack/react-table'
 
 type SelectDashboardItemOptions = {
   updateActiveRoute: Action['updateActiveRoute']
@@ -156,6 +163,15 @@ const DashboardGrid = () => {
   const [filteredProjects, setFilteredProjects] = useState<
     DashboardDataProject[]
   >([])
+  const [table, setTable] =
+    useState<Table<DashboardDataProject> | null>(null)
+  const [columnVisibility, setColumnVisibility] =
+    useState<VisibilityState>({
+      type: false,
+      private: false,
+      version: false,
+    })
+  const [pageSize, setPageSize] = useState<number>(10)
 
   useEffect(() => {
     if (dashboard) {
@@ -185,6 +201,27 @@ const DashboardGrid = () => {
           currentView={currentView}
           setCurrentView={setCurrentView}
         />
+        {currentView === 'table' && table && (
+          <>
+            <TableViewDropdown
+              columnVisibility={columnVisibility}
+              setColumnVisibility={setColumnVisibility}
+              table={table}
+            />
+            <TableFilters
+              table={table}
+              filters={[
+                'tools',
+                'manifest.private',
+                'manifest.version',
+              ]}
+            />
+            <TablePageSelect
+              setValue={setPageSize}
+              value={pageSize}
+            />
+          </>
+        )}
         <AnimatePresence>
           {currentView === 'grid' && (
             <motion.div
@@ -209,8 +246,12 @@ const DashboardGrid = () => {
             initial={{ opacity: 0, y: 5 }}
             animate={{ opacity: 1, y: 0 }}>
             <DataTable
+              setTable={setTable}
               filterValue={tableFilterValue}
               columns={dashboardColumns}
+              pageSize={pageSize}
+              columnVisibility={columnVisibility}
+              setColumnVisibility={setColumnVisibility}
               data={dashboard?.projects ?? []}
             />
           </motion.div>
