@@ -13,6 +13,7 @@ import {
 } from '../../src/dependencies.js'
 import { Graph } from '../../src/graph.js'
 import { getImporterSpecs } from '../../src/ideal/get-importer-specs.js'
+import { Edge } from '../../src/edge.js'
 
 Object.assign(Spec.prototype, {
   [kCustomInspect](this: Spec) {
@@ -199,6 +200,45 @@ t.test('graph specs and something to update', async t => {
   t.matchSnapshot(
     inspect(specs.add, { depth: Infinity }),
     'should have the updated root spec',
+  )
+})
+
+t.test('installing over a dangling edge', async t => {
+  const mainManifest = {
+    name: 'my-project',
+    version: '1.0.0',
+  }
+  const projectRoot = t.testdir({
+    'package.json': JSON.stringify(mainManifest),
+  })
+  const graph = load({
+    projectRoot,
+    scurry: new PathScurry(projectRoot),
+    packageJson: new PackageJson(),
+  })
+  // this simulates a dangling edge, representing a missing node
+  graph.mainImporter.edgesOut.set(
+    'foo',
+    new Edge('prod', Spec.parse('foo@^1.0.0'), graph.mainImporter),
+  )
+  const add = new Map([
+    [
+      joinDepIDTuple(['file', '.']),
+      new Map(
+        Object.entries({
+          foo: asDependency({
+            spec: Spec.parse('foo@^1.0.0'),
+            type: 'prod',
+          }),
+        }),
+      ),
+    ],
+  ]) as AddImportersDependenciesMap
+  const remove = new Map() as RemoveImportersDependenciesMap
+  const specs = getImporterSpecs({ add, graph, remove })
+  t.matchSnapshot(
+    inspect(specs, { depth: Infinity }),
+    'should add the missing dep',
   )
 })
 

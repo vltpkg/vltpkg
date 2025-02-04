@@ -70,7 +70,10 @@ export const getImporterSpecs = ({
     // if an edge from the graph is not listed in the manifest,
     // add that edge to the list of dependencies to be removed
     for (const edge of importer.edgesOut.values()) {
-      if (!hasDepName(importer, edge)) {
+      if (
+        !hasDepName(importer, edge) &&
+        !add.get(importer.id)?.has(edge.name)
+      ) {
         removeDeps.add(edge.name)
         removeResult.modifiedDependencies = true
       }
