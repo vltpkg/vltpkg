@@ -151,6 +151,11 @@ This will resolve `true` if the git working dir is clean, or
 `false` if not, and reject if the path is not within a git
 directory or some other error occurs.
 
+### `getUser(opts = {})` -> `Promise<{name, email} | undefined>`
+
+Returns the user.name and user.email from the git config if found.
+If no value is found, it will return `undefined`.
+
 ## Options
 
 - `retry` An object to configure retry behavior for transient network
