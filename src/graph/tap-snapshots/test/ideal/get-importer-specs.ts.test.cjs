@@ -89,3 +89,15 @@ exports[`test/ideal/get-importer-specs.ts > TAP > graph specs with workspaces an
   }
 }
 `
+
+exports[`test/ideal/get-importer-specs.ts > TAP > installing over a dangling edge > should add the missing dep 1`] = `
+{
+  add: AddImportersDependenciesMapImpl(1) [Map] {
+    'file·.' => Map(1) { 'foo' => { spec: Spec {foo@^1.0.0}, type: 'prod' } },
+    modifiedDependencies: true
+  },
+  remove: RemoveImportersDependenciesMapImpl(0) [Map] {
+    modifiedDependencies: false
+  }
+}
+`
