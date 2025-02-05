@@ -9,7 +9,7 @@ import {
 } from '../src/index.js'
 import { resolve } from 'node:path'
 
-t.test('load some workspaces', t => {
+t.test('load some workspaces', async t => {
   const dir = t.testdir({
     'vlt-workspaces.json': JSON.stringify({
       packages: ['./src/*'],
@@ -99,7 +99,7 @@ t.test('load some workspaces', t => {
   t.throws(() => new Monorepo(dir).runSync(() => {}), {
     message: 'No workspaces loaded',
   })
-  t.rejects(
+  await t.rejects(
     new Monorepo(dir).run(() => {}),
     {
       message: 'No workspaces loaded',
@@ -110,7 +110,7 @@ t.test('load some workspaces', t => {
     t.equal(m.get(ws.path), ws)
     t.equal(m.get(ws.name), ws)
   }
-  t.resolveMatch(
+  await t.resolveMatch(
     m.run(ws => ws.name),
     new Map([
       [{ name: 'foo' }, 'foo'],
@@ -186,8 +186,6 @@ t.test('load some workspaces', t => {
     ['src/noname', '@company/bar', 'foo'],
     'should return the selected workspace from a glob pattern match',
   )
-
-  t.end()
 })
 
 t.test('cyclic intra-project ws deps are handled', async t => {

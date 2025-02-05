@@ -290,7 +290,7 @@ t.test('append different type of dependencies', async t => {
     new Set(),
   )
 
-  t.rejects(
+  await t.rejects(
     appendNodes(
       add,
       packageInfo,

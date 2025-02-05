@@ -81,7 +81,7 @@ t.test('windows style', async t => {
     await which('foo', { path, pathExt: '.SH;.CMD' }),
     /foo\.sh$/i,
   )
-  t.rejects(which('foo', { path, pathExt: '.EXE' }))
+  await t.rejects(which('foo', { path, pathExt: '.EXE' }))
 
   t.match(
     await which('foo', {

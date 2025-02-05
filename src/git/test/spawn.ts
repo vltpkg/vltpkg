@@ -5,9 +5,11 @@ import t from 'tap'
 import { type GitOptions } from '../src/index.js'
 import { spawn } from '../src/spawn.js'
 
-t.rejects(spawn(['status'], { git: false }), {
-  message: 'No git binary found in $PATH',
-  cause: { code: 'ENOGIT' },
+t.test('no git', async t => {
+  await t.rejects(spawn(['status'], { git: false }), {
+    message: 'No git binary found in $PATH',
+    cause: { code: 'ENOGIT' },
+  })
 })
 
 const slash = (s: string) => s.replace(/\\/g, '/')
@@ -82,7 +84,7 @@ process.exit(1)
   t.end()
 })
 
-t.test('missing pathspec', t => {
+t.test('missing pathspec', async t => {
   const gitMessage =
     "error: pathspec 'foo' did not match any file(s) known to git"
   const te = resolve(repo, 'pathspec-error.js')
@@ -101,7 +103,7 @@ process.exit(1)
     stdout: '',
     stderr: gitMessage,
   })
-  t.rejects(
+  await t.rejects(
     spawn([te], {
       cwd: repo,
       git: process.execPath,
@@ -110,10 +112,9 @@ process.exit(1)
     }),
     er,
   )
-  t.end()
 })
 
-t.test('unknown git error', t => {
+t.test('unknown git error', async t => {
   const gitMessage = 'error: something really bad happened to git'
   const te = resolve(repo, 'unknown-error.js')
   fs.writeFileSync(
@@ -131,7 +132,7 @@ process.exit(1)
     stdout: '',
     stderr: gitMessage,
   })
-  t.rejects(
+  await t.rejects(
     spawn([te], {
       cwd: repo,
       git: process.execPath,
@@ -140,5 +141,4 @@ process.exit(1)
     }),
     er,
   )
-  t.end()
 })

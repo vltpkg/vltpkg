@@ -333,7 +333,7 @@ t.test('follow redirects', { saveFixture: true }, async t => {
     ]
     t.plan(urls.length)
     for (const u of urls) {
-      t.rejects(rc.request(`${registryURL}/${u}`), {
+      await t.rejects(rc.request(`${registryURL}/${u}`), {
         message: 'Maximum redirections exceeded',
         cause: {
           found: Array,
