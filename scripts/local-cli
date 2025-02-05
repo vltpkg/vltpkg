@@ -1,8 +1,0 @@
-#!/bin/sh
-
-TURBO="$(turbo prepare --output-logs=errors-only 2> /dev/null)"
-if [ "$?" != "0" ]; then
-  echo "$TURBO"
-else
-  ./node_modules/.bin/$1 "${@:2}"
-fi
