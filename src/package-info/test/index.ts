@@ -583,12 +583,12 @@ t.test('extraction failures', async t => {
     ),
   )
   await t.rejects(
-    await manifest(
+    manifest(
       `abbrev@${defaultRegistry}abbrev/-/abbrev-2.0.0.tgz`,
       options,
     ),
   )
-  await t.rejects(await manifest(`abbrev@${tgzFile}`))
+  await t.rejects(manifest(`abbrev@${tgzFile}`))
 
   await t.rejects(
     extract(`abbrev@${tgzFile}`, dir + '/file', options),
@@ -651,9 +651,8 @@ t.test('git spec must have gitRemote', async t => {
     ),
   )
 })
-t.test(
-  'fails on version that is not present',
-  async t => await t.rejects(resolve('abbrev@999', options)),
+t.test('fails on version that is not present', async t =>
+  t.rejects(resolve('abbrev@999', options)),
 )
 
 t.test('remote spec must have remoteURL', async t => {
