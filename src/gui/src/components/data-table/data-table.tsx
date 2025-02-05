@@ -104,13 +104,13 @@ const DataTable = <TData, TValue>({
             ))}
           </TableHeader>
           <TableBody>
-            {table.getRowModel().rows?.length ?
+            {table.getRowModel().rows.length ?
               table.getRowModel().rows.map(row => (
                 <TableRow
                   onClick={() => {
-                    onClickHandler ?
-                      onClickHandler(row.original)
-                    : undefined
+                    return onClickHandler ?
+                        onClickHandler(row.original)
+                      : null
                   }}
                   key={row.id}
                   data-state={row.getIsSelected() && 'selected'}

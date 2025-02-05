@@ -16,7 +16,7 @@ const SortingHeader = ({
   header,
   className = '',
 }: {
-  column: Column<DashboardDataProject, unknown>
+  column: Column<DashboardDataProject>
   header: string
   className?: string
 }) => {

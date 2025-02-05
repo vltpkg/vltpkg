@@ -30,7 +30,7 @@ const TableViewDropdown = <TData,>({
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger asChild className={`${className}`}>
+      <DropdownMenuTrigger asChild className={className}>
         <Button variant="outline" className="text-sm font-normal">
           Columns <ChevronDown />
         </Button>

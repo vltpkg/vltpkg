@@ -5,7 +5,7 @@ import html from 'diffable-html'
 import { useGraphStore as useStore } from '@/state/index.js'
 import { DashboardTable } from '@/components/dashboard-grid/dasboard-table.jsx'
 import { type DashboardDataProject } from '@/state/types.js'
-import { VisibilityState } from '@tanstack/react-table'
+import { type VisibilityState } from '@tanstack/react-table'
 
 vi.mock('@/components/data-table/data-table.jsx', () => ({
   DataTable: 'gui-data-table',
