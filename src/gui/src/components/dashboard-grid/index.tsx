@@ -14,14 +14,14 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip.jsx'
 import { FilterSearch } from '@/components/ui/filter-search.jsx'
-import { SortingToggle } from '@/components/ui/sorting-toggle.jsx'
 import { TableFilterSearch } from '@/components/data-table/table-filter-search.jsx'
 import { TableViewDropdown } from '@/components/data-table/table-view-dropdown.jsx'
 import { DashboardTable } from '@/components/dashboard-grid/dasboard-table.jsx'
+import { DashboardSortToggle } from '@/components/dashboard-grid/dashboard-sort-toggle.jsx'
 import {
-  type ViewOption,
-  ViewToggle,
-} from '@/components/ui/view-toggle.jsx'
+  type View,
+  DashboardViewToggle,
+} from '@/components/dashboard-grid/dashboard-view-toggle.jsx'
 import {
   type VisibilityState,
   type Table,
@@ -155,7 +155,7 @@ export const DashboardItem = ({
 
 const DashboardGrid = () => {
   const dashboard = useGraphStore(state => state.dashboard)
-  const [currentView, setCurrentView] = useState<ViewOption>('grid')
+  const [currentView, setCurrentView] = useState<View>('grid')
   const [tableFilterValue, setTableFilterValue] = useState<string>('')
   const [filteredProjects, setFilteredProjects] = useState<
     DashboardDataProject[]
@@ -193,7 +193,7 @@ const DashboardGrid = () => {
             setFilteredItems={setFilteredProjects}
           />
         }
-        <ViewToggle
+        <DashboardViewToggle
           currentView={currentView}
           setCurrentView={setCurrentView}
         />
@@ -215,7 +215,7 @@ const DashboardGrid = () => {
               exit={{ opacity: 0 }}
               initial={{ opacity: 1 }}
               animate={{ opacity: 1 }}>
-              <SortingToggle
+              <DashboardSortToggle
                 filteredItems={filteredProjects}
                 setFilteredItems={setFilteredProjects}
                 sortKey="name"

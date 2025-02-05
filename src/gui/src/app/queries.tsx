@@ -4,7 +4,10 @@ import { type SavedQuery } from '@/state/types.js'
 import { SavedQueryItem } from '@/components/queries/saved-item.jsx'
 import { FilterSearch } from '@/components/ui/filter-search.jsx'
 import { DeleteQuery } from '@/components/queries/delete-query.jsx'
-import { SortingToggle } from '@/components/ui/sorting-toggle.jsx'
+import {
+  sortAlphabeticallyAscending,
+  QueriesSortToggle,
+} from '@/components/queries/queries-sort-toggle.jsx'
 import { Button } from '@/components/ui/button.jsx'
 import { Tag } from 'lucide-react'
 import { Badge } from '@/components/ui/badge.jsx'
@@ -44,10 +47,11 @@ const Queries = () => {
 
   useEffect(() => {
     if (savedQueries) {
-      const sortedQueries = [...savedQueries].sort((a, b) =>
-        a.name.localeCompare(b.name),
+      sortAlphabeticallyAscending(
+        filteredQueries,
+        'name',
+        setFilteredQueries,
       )
-      setFilteredQueries(sortedQueries)
     }
   }, [savedQueries])
 
@@ -61,7 +65,7 @@ const Queries = () => {
               items={savedQueries}
               setFilteredItems={setFilteredQueries}
             />
-            <SortingToggle
+            <QueriesSortToggle
               filteredItems={filteredQueries}
               setFilteredItems={setFilteredQueries}
               sortKey="name"
