@@ -20,7 +20,6 @@
     "prettier-plugin-astro": "^0.14.1",
     "read": "^4.0.0",
     "semver": "catalog:",
-    "turbo": "^2.3.3",
     "typescript": "catalog:",
     "typescript-eslint": "catalog:",
     "yaml": "^2.6.1"
