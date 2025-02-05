@@ -573,37 +573,39 @@ t.test('extraction failures', async t => {
       },
     },
   )
-  t.rejects(extract('abbrev@2', dir + '/registry', options))
+  await t.rejects(extract('abbrev@2', dir + '/registry', options))
 
-  t.rejects(
+  await t.rejects(
     extract(
       `abbrev@${defaultRegistry}abbrev/-/abbrev-2.0.0.tgz`,
       dir + '/remote',
       options,
     ),
   )
-  t.rejects(
+  await t.rejects(
     manifest(
       `abbrev@${defaultRegistry}abbrev/-/abbrev-2.0.0.tgz`,
       options,
     ),
   )
-  t.rejects(manifest(`abbrev@${tgzFile}`))
+  await t.rejects(manifest(`abbrev@${tgzFile}`))
 
-  t.rejects(extract(`abbrev@${tgzFile}`, dir + '/file', options))
+  await t.rejects(
+    extract(`abbrev@${tgzFile}`, dir + '/file', options),
+  )
 })
 
 t.test('manifest must provide actual dist results', async t => {
-  t.rejects(resolve('deleted@latest', options))
-  t.rejects(resolve('no-tgz@latest', options))
-  t.rejects(resolve('no-dist@latest', options))
-  t.rejects(tarball('deleted@latest', options))
-  t.rejects(tarball('no-tgz@latest', options))
-  t.rejects(tarball('no-dist@latest', options))
+  await t.rejects(resolve('deleted@latest', options))
+  await t.rejects(resolve('no-tgz@latest', options))
+  await t.rejects(resolve('no-dist@latest', options))
+  await t.rejects(tarball('deleted@latest', options))
+  await t.rejects(tarball('no-tgz@latest', options))
+  await t.rejects(tarball('no-dist@latest', options))
 })
 
 t.test('git spec must have gitRemote', async t => {
-  t.rejects(
+  await t.rejects(
     resolve({
       toString: () => 'x',
       final: { type: 'git' },
@@ -613,7 +615,7 @@ t.test('git spec must have gitRemote', async t => {
       cause: { code: 'ERESOLVE' },
     },
   )
-  t.rejects(
+  await t.rejects(
     manifest({
       toString: () => 'x',
       final: { type: 'git' },
@@ -623,7 +625,7 @@ t.test('git spec must have gitRemote', async t => {
       cause: { code: 'ERESOLVE' },
     },
   )
-  t.rejects(
+  await t.rejects(
     packument({
       toString: () => 'x',
       final: { type: 'git' },
@@ -633,13 +635,13 @@ t.test('git spec must have gitRemote', async t => {
       cause: { code: 'ERESOLVE' },
     },
   )
-  t.rejects(
+  await t.rejects(
     tarball({
       toString: () => 'x',
       final: { type: 'git' },
     } as Spec),
   )
-  t.rejects(
+  await t.rejects(
     extract(
       {
         toString: () => 'x',
@@ -654,7 +656,7 @@ t.test('fails on version that is not present', async t =>
 )
 
 t.test('remote spec must have remoteURL', async t => {
-  t.rejects(
+  await t.rejects(
     resolve(
       {
         toString: () => 'x',
@@ -663,7 +665,7 @@ t.test('remote spec must have remoteURL', async t => {
       options,
     ),
   )
-  t.rejects(
+  await t.rejects(
     packument(
       {
         toString: () => 'x',
@@ -672,7 +674,7 @@ t.test('remote spec must have remoteURL', async t => {
       options,
     ),
   )
-  t.rejects(
+  await t.rejects(
     manifest(
       {
         toString: () => 'x',
@@ -681,38 +683,35 @@ t.test('remote spec must have remoteURL', async t => {
       options,
     ),
   )
-  t.rejects(
-    tarball(
-      {
-        toString: () => 'x',
-        final: { type: 'remote' },
-      } as Spec,
-      options,
-    ),
+  await t.rejects(
+    tarball({
+      toString: () => 'x',
+      final: { type: 'remote' },
+    } as Spec),
   )
-  t.rejects(packument(`x@git+${pkgDir}`, options))
+  await t.rejects(packument(`x@git+${pkgDir}`, options))
 })
 
 t.test('file spec must have file', async t => {
-  t.rejects(
+  await t.rejects(
     resolve({
       toString: () => 'x',
       final: { type: 'file' },
     } as Spec),
   )
-  t.rejects(
+  await t.rejects(
     packument({
       toString: () => 'x',
       final: { type: 'file' },
     } as Spec),
   )
-  t.rejects(
+  await t.rejects(
     manifest({
       toString: () => 'x',
       final: { type: 'file' },
     } as Spec),
   )
-  t.rejects(
+  await t.rejects(
     tarball({
       toString: () => 'x',
       final: { type: 'file' },
@@ -887,7 +886,7 @@ t.test('path git selector', async t => {
   await t.test('manifest', async t => {
     const m = await manifest(spec, options)
     t.strictSame(m, pkg)
-    t.rejects(() => manifest(badSpec, options))
+    await t.rejects(() => manifest(badSpec, options))
   })
 
   await t.test('tarball', async t => {

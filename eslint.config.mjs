@@ -236,13 +236,7 @@ export default tseslint.config(
       '@typescript-eslint/no-floating-promises': [
         'error',
         {
-          allowForKnownSafeCalls: [
-            'test',
-            'rejects',
-            'resolveMatch',
-            'resolves',
-            'skip',
-          ].map(name => ({
+          allowForKnownSafeCalls: ['test', 'skip'].map(name => ({
             name,
             from: 'package',
             package: 'tap',

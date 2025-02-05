@@ -174,8 +174,8 @@ t.test('edit', async t => {
     })
   }
   t.test('no editor', async t => {
-    t.rejects(run(t, ['edit'], { editor: '' }))
-    t.rejects(
+    await t.rejects(run(t, ['edit'], { editor: '' }))
+    await t.rejects(
       run(t, ['edit'], { editor: 'BAD_EDITOR --not-good' }, () => ({
         status: 100,
       })),
