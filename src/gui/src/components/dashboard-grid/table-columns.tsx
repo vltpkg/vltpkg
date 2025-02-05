@@ -60,9 +60,7 @@ const dashboardColumns: ColumnDef<DashboardDataProject>[] = [
   },
   {
     accessorKey: 'directory',
-    header: ({ column }) => (
-      <SortingHeader header="Directory" column={column} />
-    ),
+    header: 'Directory',
     cell: ({ row }) => {
       const path = row.original.readablePath
 
@@ -120,9 +118,7 @@ const dashboardColumns: ColumnDef<DashboardDataProject>[] = [
   },
   {
     accessorKey: 'type',
-    header: ({ column }) => (
-      <SortingHeader header="Type" column={column} />
-    ),
+    header: 'type',
     cell: ({ row }) => {
       const type =
         row.original.manifest.type ?
@@ -135,7 +131,6 @@ const dashboardColumns: ColumnDef<DashboardDataProject>[] = [
     maxSize: 200,
     minSize: 300,
     enableHiding: true,
-    enableSorting: true,
   },
   {
     accessorKey: 'private',
@@ -151,12 +146,10 @@ const dashboardColumns: ColumnDef<DashboardDataProject>[] = [
   },
   {
     accessorKey: 'time',
-    header: ({ column }) => (
-      <SortingHeader
-        header="Time"
-        column={column}
-        className="flex w-full items-center text-right justify-end"
-      />
+    header: () => (
+      <p className="flex w-full items-center text-right justify-end">
+        Time
+      </p>
     ),
     cell: ({ row }) => {
       const mtime = row.original.mtime
