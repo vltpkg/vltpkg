@@ -6,6 +6,7 @@ const canonicalCommands = {
   exec: 'exec',
   gui: 'gui',
   help: 'help',
+  init: 'init',
   'install-exec': 'install-exec',
   install: 'install',
   login: 'login',

@@ -14,8 +14,8 @@ More documentation available at <https://docs.vlt.sh>
 
   Subcommands
 
-    ​config, exec, gui, help, install-exec, install, login, logout, list, ls,
-    pkg, query, run-exec, run, uninstall, whoami
+    ​config, exec, gui, help, init, install-exec, install, login, logout, list,
+    ls, pkg, query, run-exec, run, uninstall, whoami
 
     Run \`vlt <cmd> --help\` for more information about a specific command
 
@@ -216,7 +216,7 @@ More documentation available at <https://docs.vlt.sh>
 
 
 
-                       Valid options: "config", "exec", "gui", "help",
+                       Valid options: "config", "exec", "gui", "help", "init",
                        "install-exec", "install", "login", "logout", "list",
                        "ls", "pkg", "query", "run-exec", "run", "uninstall",
                        "whoami"

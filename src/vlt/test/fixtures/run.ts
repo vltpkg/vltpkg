@@ -36,6 +36,7 @@ export type SetupCommand = {
   projectRoot?: string
   argv?: string[]
   reload?: boolean
+  mocks?: Record<string, any>
 }
 
 export const chtestdir = (
@@ -71,12 +72,14 @@ export const setupCommand = async <T>(
     projectRoot = '',
     argv: baseArgv = [],
     reload = true,
+    mocks = {},
   }: SetupCommand,
 ) => {
   const dir = chtestdir(t, testdir, chdir)
   const { Config } = await mockConfig(t)
   const Command = await t.mockImport<Command<T>>(
     join('../../src/commands', `${commandName}.ts`),
+    mocks,
   )
   const loadConfig = async (...argv: string[]) => {
     const conf = await Config.load(

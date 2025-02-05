@@ -3,13 +3,10 @@ import { type LoadedConfig } from '../config/index.js'
 import { type PackageJson } from '@vltpkg/package-json'
 import * as dotProp from '@vltpkg/dot-prop'
 import { type Manifest } from '@vltpkg/types'
-import {
-  type CommandUsage,
-  type CommandFn,
-  type Views,
-} from '../types.js'
+import { type CommandUsage, type CommandFn } from '../types.js'
 import assert from 'assert'
 import { commandUsage } from '../config/usage.js'
+import { init } from '../init.js'
 
 export const usage: CommandUsage = () =>
   commandUsage({
@@ -20,6 +17,11 @@ export const usage: CommandUsage = () =>
       get: {
         usage: '[<key>]',
         description: 'Get a single value',
+      },
+      init: {
+        usage: '',
+        description:
+          'Initialize a new package.json file in the current directory',
       },
       pick: {
         usage: '[<key> [<key> ...]]',
@@ -44,12 +46,24 @@ export const usage: CommandUsage = () =>
     },
   })
 
-export const views: Views<unknown> = {
-  defaultView: 'json',
+export const views = (
+  res: string,
+  _: unknown,
+  conf: LoadedConfig,
+): string => {
+  if (conf.positionals[0] === 'init') {
+    return res
+  } else {
+    return JSON.stringify(res, null, 2)
+  }
 }
 
 export const command: CommandFn<unknown> = async conf => {
   const [sub, ...args] = conf.positionals
+  if (sub === 'init') {
+    return { result: await init() }
+  }
+
   const pkg = conf.options.packageJson
   const mani = pkg.read(conf.projectRoot)
 
