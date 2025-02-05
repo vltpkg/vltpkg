@@ -85,7 +85,8 @@
     "presnap": "tshy",
     "snap": "tap",
     "pretest": "tshy",
-    "test": "tap"
+    "test": "tap",
+    "watch": "tshy --watch"
   },
   "tap": {
     "extends": "../../tap-config.yaml",
