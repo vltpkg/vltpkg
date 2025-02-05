@@ -19,9 +19,31 @@ vi.mock('@/components/ui/filter-search.jsx', () => ({
   FilterSearch: 'gui-filter-search',
 }))
 
-vi.mock('@/components/ui/sorting-toggle.jsx', () => ({
-  SortingToggle: 'gui-sorting-toggle',
+vi.mock('@/components/data-table/table-filter-search.jsx', () => ({
+  TableFilterSearch: 'gui-dashboard-table-filter-search',
 }))
+
+vi.mock('@/components/data-table/table-view-dropdown.jsx', () => ({
+  TableViewDropdown: 'gui-dashboard-table-view-dropdown',
+}))
+
+vi.mock('@/components/dashboard-grid/dasboard-table.jsx', () => ({
+  DashboardTable: 'gui-dashboard-table',
+}))
+
+vi.mock(
+  '@/components/dashboard-grid/dashboard-sort-toggle.jsx',
+  () => ({
+    DashboardSortToggle: 'gui-dashboard-sort-toggle',
+  }),
+)
+
+vi.mock(
+  '@/components/dashboard-grid/dashboard-view-toggle.jsx',
+  () => ({
+    DashboardViewToggle: 'gui-dashboard-view-toggle',
+  }),
+)
 
 vi.mock('date-fns', () => ({
   format: () => 'November 1st, 2024 | 06:01 PM',
