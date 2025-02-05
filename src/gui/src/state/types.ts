@@ -140,10 +140,40 @@ export type DashboardTools =
   | 'yarn'
   | 'js'
 
+export type DashboardLocation = {
+  /**
+   * The file system path to the directory.
+   */
+  path: string
+  /**
+   * A shortened, human readable path to be displayed in the dashboard.
+   */
+  readablePath: string
+}
+
 export type DashboardData = {
+  /**
+   * The reference current working directory.
+   */
   cwd: string
+  /**
+   * The app version.
+   */
   buildVersion: string
+  /**
+   * The default author name to be used when creating new projects.
+   */
+  defaultAuthor: string
+  /**
+   * A list of projects to be displayed in the dashboard.
+   */
   projects: DashboardDataProject[]
+  /**
+   * A list of directories that are read to find projects
+   * to display in the dashboard. New projects can also be created
+   * in these folders.
+   */
+  dashboardProjectLocations: DashboardLocation[]
 }
 
 export type QueryLabel = {

@@ -25,6 +25,8 @@ import {
 import { getIconSet } from '@/utils/dashboard-tools.jsx'
 import { format } from 'date-fns'
 import { requestRouteTransition } from '@/lib/request-route-transition.js'
+import { Button } from '@/components/ui/button.jsx'
+import { Plus } from 'lucide-react'
 
 export const DashboardItem = ({
   item,
@@ -45,12 +47,14 @@ export const DashboardItem = ({
 
   const onDashboardItemClick = (e: MouseEvent) => {
     e.preventDefault()
-    void requestRouteTransition<DashboardDataProject>({
+    void requestRouteTransition<{ path: string }>({
       updateActiveRoute,
       updateErrorCause,
       updateQuery,
       updateStamp,
-      body: item,
+      body: {
+        path: item.path,
+      },
       url: '/select-project',
       destinationRoute: '/explore',
       errorMessage: 'Failed to select project.',
@@ -110,6 +114,9 @@ export const DashboardGrid = () => {
   const dashboard = useGraphStore(state => state.dashboard)
   const [currentView, setCurrentView] = useState<View>('grid')
   const [tableFilterValue, setTableFilterValue] = useState<string>('')
+  const updateActiveRoute = useGraphStore(
+    state => state.updateActiveRoute,
+  )
   const [filteredProjects, setFilteredProjects] = useState<
     DashboardDataProject[]
   >([])
@@ -131,6 +138,10 @@ export const DashboardGrid = () => {
       )
     }
   }, [dashboard])
+
+  const onCreateNewProjectClick = () => {
+    updateActiveRoute('/new-project')
+  }
 
   return (
     <div className="flex grow flex-col bg-secondary px-8 py-8 dark:bg-black">
@@ -176,6 +187,10 @@ export const DashboardGrid = () => {
             </motion.div>
           }
         </AnimatePresence>
+        <Button onClick={onCreateNewProjectClick} className="ml-2">
+          <Plus size={24} />
+          Create New Project
+        </Button>
       </div>
 
       <AnimatePresence mode="wait">

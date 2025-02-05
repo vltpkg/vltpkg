@@ -237,7 +237,7 @@ export const SelectedItem = ({ item }: GridItemOptions) => {
             : ''}
             {details.author?.name ?
               <motion.div
-                className="flex items-center gap-2"
+                className="mt-2 flex items-center gap-2"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}>
                 <span className="text-xs font-medium text-muted-foreground">

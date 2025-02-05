@@ -8,6 +8,7 @@ import {
 import { SidebarProvider } from '@/components/ui/sidebar.jsx'
 
 // routes
+import { CreateNewProject } from '@/app/create-new-project.jsx'
 import { Explorer } from '@/app/explorer.jsx'
 import { ErrorFound } from '@/app/error-found.jsx'
 import { Dashboard } from '@/app/dashboard.jsx'
@@ -27,6 +28,7 @@ const routeMap: Record<string, React.ReactElement> = {
   '/explore': <Explorer />,
   '/queries': <Queries />,
   '/labels': <Labels />,
+  '/new-project': <CreateNewProject />,
 }
 
 const Layout = () => {
