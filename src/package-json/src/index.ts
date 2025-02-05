@@ -58,14 +58,14 @@ export class PackageJson {
     }
   }
 
-  write(dir: string, manifest: Manifest): void {
+  write(dir: string, manifest: Manifest, indent?: number): void {
     const filename = resolve(dir, 'package.json')
     this.fix(manifest)
 
     try {
       // This assumes kIndent and kNewline are already present on the manifest because we would
       // only write a package.json after reading it which will set those properties.
-      writeFileSync(filename, stringify(manifest))
+      writeFileSync(filename, stringify(manifest, undefined, indent))
       this.#cache.set(dir, manifest)
       this.#pathCache.set(manifest, dir)
     } catch (err) {
