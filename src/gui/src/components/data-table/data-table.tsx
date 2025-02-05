@@ -7,6 +7,7 @@ import {
   type VisibilityState,
   type SortingState,
   type Table as ITable,
+  type PaginationState,
   getFilteredRowModel,
   getSortedRowModel,
 } from '@tanstack/react-table'
@@ -20,6 +21,7 @@ import {
 } from '@/components/ui/table.jsx'
 import { Button } from '@/components/ui/button.jsx'
 import { useEffect, useState } from 'react'
+import { TablePageSelect } from '@/components/data-table/table-page-select.jsx'
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
@@ -30,7 +32,7 @@ interface DataTableProps<TData, TValue> {
     React.SetStateAction<VisibilityState>
   >
   columnVisibility: VisibilityState
-  pageSize?: number
+  onClickHandler?: (o: any) => void
 }
 
 const DataTable = <TData, TValue>({
@@ -40,11 +42,14 @@ const DataTable = <TData, TValue>({
   filterValue,
   setColumnVisibility,
   columnVisibility,
-  pageSize = 10,
+  onClickHandler,
 }: DataTableProps<TData, TValue>) => {
   const [sorting, setSorting] = useState<SortingState>([])
   const [globalFilter, setGlobalFilter] = useState<string>('')
-  const [pageIndex, setPageIndex] = useState<number>(0)
+  const [pagination, setPagination] = useState<PaginationState>({
+    pageIndex: 0,
+    pageSize: 10,
+  })
 
   const table = useReactTable({
     data,
@@ -57,21 +62,12 @@ const DataTable = <TData, TValue>({
     getFilteredRowModel: getFilteredRowModel(),
     columnResizeMode: 'onChange',
     onColumnVisibilityChange: setColumnVisibility,
-    onPaginationChange: updater => {
-      const newState =
-        typeof updater === 'function' ?
-          updater(table.getState().pagination)
-        : updater
-      setPageIndex(newState.pageIndex)
-    },
+    onPaginationChange: setPagination,
     state: {
       sorting,
       globalFilter,
       columnVisibility,
-      pagination: {
-        pageIndex,
-        pageSize,
-      },
+      pagination,
     },
   })
 
@@ -111,8 +107,14 @@ const DataTable = <TData, TValue>({
             {table.getRowModel().rows?.length ?
               table.getRowModel().rows.map(row => (
                 <TableRow
+                  onClick={() => {
+                    onClickHandler ?
+                      onClickHandler(row.original)
+                    : undefined
+                  }}
                   key={row.id}
-                  data-state={row.getIsSelected() && 'selected'}>
+                  data-state={row.getIsSelected() && 'selected'}
+                  className={onClickHandler ? 'cursor-pointer' : ''}>
                   {row.getVisibleCells().map(cell => (
                     <TableCell
                       key={cell.id}
@@ -137,7 +139,11 @@ const DataTable = <TData, TValue>({
         </Table>
       </div>
       <div className="flex items-center justify-between mt-4">
-        <div>
+        <div className="flex gap-6">
+          <TablePageSelect
+            pagination={pagination}
+            setPagination={setPagination}
+          />
           <p className="text-xs font-medium text-muted-foreground">
             Page {table.getState().pagination.pageIndex + 1} of{' '}
             {table.getPageCount()}

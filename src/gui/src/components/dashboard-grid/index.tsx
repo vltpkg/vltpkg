@@ -15,16 +15,13 @@ import {
 } from '@/components/ui/tooltip.jsx'
 import { FilterSearch } from '@/components/ui/filter-search.jsx'
 import { SortingToggle } from '@/components/ui/sorting-toggle.jsx'
-import { DataTable } from '@/components/data-table/data-table.jsx'
 import { TableFilterSearch } from '@/components/data-table/table-filter-search.jsx'
 import { TableViewDropdown } from '@/components/data-table/table-view-dropdown.jsx'
-import { TablePageSelect } from '@/components/data-table/table-page-select.jsx'
-import { TableFilters } from '@/components/data-table/table-filters.jsx'
+import { DashboardTable } from '@/components/dashboard-grid/dasboard-table.jsx'
 import {
-  ViewOption,
+  type ViewOption,
   ViewToggle,
 } from '@/components/ui/view-toggle.jsx'
-import { dashboardColumns } from '@/components/dashboard-grid/table-columns.jsx'
 import {
   type VisibilityState,
   type Table,
@@ -171,7 +168,6 @@ const DashboardGrid = () => {
       private: false,
       version: false,
     })
-  const [pageSize, setPageSize] = useState<number>(10)
 
   useEffect(() => {
     if (dashboard) {
@@ -201,30 +197,21 @@ const DashboardGrid = () => {
           currentView={currentView}
           setCurrentView={setCurrentView}
         />
-        {currentView === 'table' && table && (
-          <>
-            <TableViewDropdown
-              columnVisibility={columnVisibility}
-              setColumnVisibility={setColumnVisibility}
-              table={table}
-            />
-            <TableFilters
-              table={table}
-              filters={[
-                'tools',
-                'manifest.private',
-                'manifest.version',
-              ]}
-            />
-            <TablePageSelect
-              setValue={setPageSize}
-              value={pageSize}
-            />
-          </>
-        )}
-        <AnimatePresence>
-          {currentView === 'grid' && (
+        <AnimatePresence mode="wait">
+          {currentView === 'table' ?
             <motion.div
+              key={currentView}
+              initial={{ opacity: 0 }}
+              exit={{ opacity: 0 }}
+              animate={{ opacity: 1 }}>
+              <TableViewDropdown
+                columnVisibility={columnVisibility}
+                setColumnVisibility={setColumnVisibility}
+                table={table}
+              />
+            </motion.div>
+          : <motion.div
+              key={currentView}
               exit={{ opacity: 0 }}
               initial={{ opacity: 1 }}
               animate={{ opacity: 1 }}>
@@ -234,7 +221,7 @@ const DashboardGrid = () => {
                 sortKey="name"
               />
             </motion.div>
-          )}
+          }
         </AnimatePresence>
       </div>
 
@@ -245,14 +232,12 @@ const DashboardGrid = () => {
             exit={{ opacity: 0, y: 5 }}
             initial={{ opacity: 0, y: 5 }}
             animate={{ opacity: 1, y: 0 }}>
-            <DataTable
+            <DashboardTable
+              data={dashboard?.projects ?? []}
               setTable={setTable}
-              filterValue={tableFilterValue}
-              columns={dashboardColumns}
-              pageSize={pageSize}
+              tableFilterValue={tableFilterValue}
               columnVisibility={columnVisibility}
               setColumnVisibility={setColumnVisibility}
-              data={dashboard?.projects ?? []}
             />
           </motion.div>
         : <motion.div
