@@ -2,6 +2,11 @@
   "name": "@vltpkg/url-open",
   "description": "Open URLs using the system's default web browser",
   "version": "0.0.0-0.1730239248325",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vltpkg/vltpkg.git",
+    "directory": "src/url-open"
+  },
   "tshy": {
     "selfLink": false,
     "dialects": [

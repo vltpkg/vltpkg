@@ -2,6 +2,11 @@
   "name": "@vltpkg/docs",
   "version": "0.0.2",
   "private": true,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vltpkg/vltpkg.git",
+    "directory": "www/docs"
+  },
   "dependencies": {
     "@astrojs/check": "^0.9.4",
     "@astrojs/mdx": "^4.0.2",

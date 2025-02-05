@@ -2,6 +2,11 @@
   "name": "@vltpkg/tar",
   "description": "An extremely limited and very fast tar extractor",
   "version": "0.0.0-0.1730239248325",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vltpkg/vltpkg.git",
+    "directory": "src/tar"
+  },
   "tshy": {
     "selfLink": false,
     "dialects": [

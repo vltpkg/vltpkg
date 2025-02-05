@@ -113,6 +113,7 @@ const sortObject = (o, ...args) => {
 const parseWS = path => ({
   isRoot: path === ROOT,
   relDir: `${path == ROOT ? '.' : relative(path, ROOT)}/`,
+  relDirToWorkspace: relative(ROOT, path),
   path: resolve(path, 'package.json'),
   dir: path,
   workspaceDir: basename(dirname(path)),
@@ -362,6 +363,13 @@ const fixLicense = ws => {
 const fixPackage = async (ws, opts) => {
   ws.pj.files = undefined
   ws.pj.engines = { node: '20 || >=22' }
+  ws.pj.repository = {
+    type: 'git',
+    url: 'git+https://github.com/vltpkg/vltpkg.git',
+    ...(ws.relDirToWorkspace ?
+      { directory: ws.relDirToWorkspace }
+    : {}),
+  }
   ws.pj.private =
     (
       ws.isRoot ||
@@ -384,6 +392,7 @@ const fixPackage = async (ws, opts) => {
     'description',
     'version',
     'private',
+    'repository',
     'tshy',
     'bin',
     'dependencies',

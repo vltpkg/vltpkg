@@ -2,6 +2,11 @@
   "name": "@vltpkg/semver",
   "description": "The semantic version parser used by vlt",
   "version": "0.0.0-0.1730239248325",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vltpkg/vltpkg.git",
+    "directory": "src/semver"
+  },
   "tshy": {
     "selfLink": false,
     "dialects": [

@@ -2,6 +2,11 @@
   "name": "@vltpkg/types",
   "description": "definitions for some of vlt's core types",
   "version": "0.0.0-0.1730239248325",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vltpkg/vltpkg.git",
+    "directory": "src/types"
+  },
   "tshy": {
     "selfLink": false,
     "dialects": [
