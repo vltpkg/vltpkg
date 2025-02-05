@@ -33,7 +33,6 @@
     "node": "20 || >=22"
   },
   "scripts": {
-    ".": "./scripts/local-cli vlt",
     "benchmark": "./scripts/benchmark",
     "fix": "pnpm fix:pkg && pnpm lint && pnpm format",
     "fix:pkg": "node scripts/consistent-package-json.js",
@@ -41,9 +40,11 @@
     "format:check": "prettier --check . --ignore-path ./.prettierignore --cache",
     "lint": "eslint . --fix",
     "lint:check": "eslint .",
+    "prepare": "pnpm --recursive --filter \"./src/*\" run prepare",
     "pnpm:devPreinstall": "pnpm --version && node --version && node scripts/make-dist-bins.js",
     "snap": "pnpm --silent --no-bail --report-summary run -r snap &>/dev/null || node scripts/report-test-failures.js",
-    "test": "pnpm --silent --no-bail --report-summary -r test -- -Rsilent || node scripts/report-test-failures.js"
+    "test": "pnpm --silent --no-bail --report-summary -r test -- -Rsilent || node scripts/report-test-failures.js",
+    "watch": "pnpm --parallel --filter \"./src/*\" run watch"
   },
   "prettier": "./.prettierrc.js",
   "type": "module"

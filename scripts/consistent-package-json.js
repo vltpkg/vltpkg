@@ -262,6 +262,7 @@ const fixScripts = async ws => {
         prepare: 'tshy',
         pretest: 'tshy',
         presnap: 'tshy',
+        watch: 'tshy --watch',
       }
     : {},
   )
