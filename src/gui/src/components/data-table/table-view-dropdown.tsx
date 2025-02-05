@@ -12,7 +12,7 @@ import { ChevronDown } from 'lucide-react'
 import { Button } from '@/components/ui/button.jsx'
 
 interface TableViewDropdownProps<TData> {
-  table: Table<TData>
+  table: Table<TData> | null
   className?: string
   columnVisibility: VisibilityState
   setColumnVisibility: React.Dispatch<
@@ -26,6 +26,8 @@ const TableViewDropdown = <TData,>({
   columnVisibility,
   setColumnVisibility,
 }: TableViewDropdownProps<TData>) => {
+  if (!table) return null
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild className={`${className}`}>
