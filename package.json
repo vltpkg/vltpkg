@@ -39,12 +39,7 @@
     "lint:check": "eslint .",
     "pnpm:devPreinstall": "pnpm --version && node --version && node scripts/make-dist-bins.js",
     "snap": "pnpm --silent --no-bail --report-summary run -r snap &>/dev/null || node scripts/report-test-failures.js",
-    "test": "pnpm --silent --no-bail --report-summary -r test -- -Rsilent || node scripts/report-test-failures.js",
-    "vlix": "./scripts/local-cli vlix",
-    "vlr": "./scripts/local-cli vlr",
-    "vlrx": "./scripts/local-cli vlrx",
-    "vlt": "./scripts/local-cli vlt",
-    "vlx": "./scripts/local-cli vlx"
+    "test": "pnpm --silent --no-bail --report-summary -r test -- -Rsilent || node scripts/report-test-failures.js"
   },
   "prettier": "./.prettierrc.js",
   "type": "module",
