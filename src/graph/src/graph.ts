@@ -394,6 +394,7 @@ export class Graph implements GraphLike {
         edge.to = replacement
       } else {
         edge.from.edgesOut.delete(edge.spec.name)
+        this.edges.delete(edge)
       }
     }
   }

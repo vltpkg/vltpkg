@@ -2,6 +2,11 @@
   "name": "@vltpkg/fast-split",
   "description": "A fast way to split small-to-medium sized strings by small string delimiters",
   "version": "0.0.0-0.1730239248325",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vltpkg/vltpkg.git",
+    "directory": "src/fast-split"
+  },
   "tshy": {
     "selfLink": false,
     "dialects": [
@@ -40,7 +45,8 @@
     "presnap": "tshy",
     "snap": "tap",
     "pretest": "tshy",
-    "test": "tap"
+    "test": "tap",
+    "watch": "tshy --watch"
   },
   "tap": {
     "extends": "../../tap-config.yaml"

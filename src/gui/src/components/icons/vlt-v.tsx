@@ -1,4 +1,4 @@
-interface LogoProps extends React.SVGProps<SVGSVGElement> {
+export interface LogoProps extends React.SVGProps<SVGSVGElement> {
   color?: 'white' | 'black'
 }
 

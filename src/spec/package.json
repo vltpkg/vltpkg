@@ -2,6 +2,11 @@
   "name": "@vltpkg/spec",
   "description": "Package specifier library",
   "version": "0.0.0-0.1730239248325",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vltpkg/vltpkg.git",
+    "directory": "src/spec"
+  },
   "tshy": {
     "selfLink": false,
     "dialects": [
@@ -47,7 +52,8 @@
     "presnap": "tshy",
     "snap": "tap",
     "pretest": "tshy",
-    "test": "tap"
+    "test": "tap",
+    "watch": "tshy --watch"
   },
   "tap": {
     "extends": "../../tap-config.yaml"

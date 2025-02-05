@@ -1,0 +1,36 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`npm icon render custom class 1`] = `
+
+<div>
+  <svg
+    class="custom-class"
+    id="a"
+    xmlns="http://www.w3.org/2000/svg"
+    width="256"
+    height="256"
+    viewbox="0 0 256 256"
+  >
+    <path d="M0,0V256H256V0H0ZM213.08,213.1h-42.92V85.82h-42.92v127.28H42.9V42.92H213.08V213.1h0Z">
+    </path>
+  </svg>
+</div>
+
+`;
+
+exports[`npm icon render default 1`] = `
+
+<div>
+  <svg
+    id="a"
+    xmlns="http://www.w3.org/2000/svg"
+    width="256"
+    height="256"
+    viewbox="0 0 256 256"
+  >
+    <path d="M0,0V256H256V0H0ZM213.08,213.1h-42.92V85.82h-42.92v127.28H42.9V42.92H213.08V213.1h0Z">
+    </path>
+  </svg>
+</div>
+
+`;

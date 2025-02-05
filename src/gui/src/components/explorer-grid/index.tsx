@@ -2,6 +2,7 @@ import {
   GalleryVertical,
   GalleryVerticalEnd,
   GalleryThumbnails,
+  Package,
 } from 'lucide-react'
 import {
   type EdgeLike,
@@ -156,6 +157,33 @@ const getParent = (
   }
 }
 
+const getWorkspaceItems = (
+  item?: GridItemData,
+): GridItemData[] | undefined => {
+  const items: GridItemData[] = []
+  const node = item?.to
+  if (!node?.mainImporter) return undefined
+
+  for (const importer of node.graph.importers) {
+    if (importer === node) continue
+
+    const version = importer.version ? `@${importer.version}` : ''
+    const title = `${importer.name}${version}`
+
+    items.push({
+      to: importer,
+      id: importer.id,
+      title,
+      version: importer.version || '',
+      name: importer.name || '',
+      stacked: false,
+      size: 1,
+      labels: undefined,
+    })
+  }
+  return items
+}
+
 const getDependentItems = (node?: NodeLike, parent?: NodeLike) => {
   const items: GridItemData[] = []
   if (!node) return items
@@ -264,6 +292,7 @@ export const ExplorerGrid = () => {
     : undefined
   const parent = selected ? selectedItem?.from : undefined
   const parentItem = getParent(selectedItem, parent)
+  const workspaces = selected && getWorkspaceItems(selectedItem)
   const dependents =
     selected && getDependentItems(selectedItem?.to, parent)
   const count = { currIndex: 0 }
@@ -271,6 +300,13 @@ export const ExplorerGrid = () => {
     selected && getDependencyItems(count, selectedItem?.to)
   const uninstalledDependencies =
     selected && getUninstalledDependencyItems(count, selectedItem?.to)
+  const workspaceClick = (item: GridItemData) => () => {
+    const itemQuery = getItemQuery(item)
+    if (itemQuery) {
+      updateQuery(`:project${itemQuery}`)
+    }
+    return undefined
+  }
   const dependentsClick =
     (item: GridItemData, isParent?: boolean) => () => {
       const selectedName =
@@ -331,6 +367,21 @@ export const ExplorerGrid = () => {
               highlight={true}
               onSelect={dependentsClick(parentItem, true)}
             />
+          </>
+        : ''}
+        {workspaces && workspaces.length > 0 ?
+          <>
+            <GridHeader>
+              <Package size={22} className="mr-3" />
+              Workspaces
+            </GridHeader>
+            {workspaces.map(item => (
+              <SideItem
+                item={item}
+                key={item.id}
+                onSelect={workspaceClick(item)}
+              />
+            ))}
           </>
         : ''}
         {dependents && dependents.length > 0 ?

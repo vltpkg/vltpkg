@@ -2,6 +2,10 @@
   "name": "@vltpkg/vltpkg",
   "version": "0.0.0-0",
   "private": true,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vltpkg/vltpkg.git"
+  },
   "dependencies": {
     "@vltpkg/cli": "workspace:*"
   },
@@ -20,7 +24,6 @@
     "prettier-plugin-astro": "^0.14.1",
     "read": "^4.0.0",
     "semver": "catalog:",
-    "turbo": "^2.3.3",
     "typescript": "catalog:",
     "typescript-eslint": "catalog:",
     "yaml": "^2.6.1"
@@ -30,7 +33,6 @@
     "node": "20 || >=22"
   },
   "scripts": {
-    ".": "./scripts/local-cli vlt",
     "benchmark": "./scripts/benchmark",
     "fix": "pnpm fix:pkg && pnpm lint && pnpm format",
     "fix:pkg": "node scripts/consistent-package-json.js",
@@ -38,19 +40,12 @@
     "format:check": "prettier --check . --ignore-path ./.prettierignore --cache",
     "lint": "eslint . --fix",
     "lint:check": "eslint .",
+    "prepare": "pnpm --recursive --filter \"./src/*\" run prepare",
     "pnpm:devPreinstall": "pnpm --version && node --version && node scripts/make-dist-bins.js",
     "snap": "pnpm --silent --no-bail --report-summary run -r snap &>/dev/null || node scripts/report-test-failures.js",
     "test": "pnpm --silent --no-bail --report-summary -r test -- -Rsilent || node scripts/report-test-failures.js",
-    "vlix": "./scripts/local-cli vlix",
-    "vlr": "./scripts/local-cli vlr",
-    "vlrx": "./scripts/local-cli vlrx",
-    "vlt": "./scripts/local-cli vlt",
-    "vlx": "./scripts/local-cli vlx"
+    "watch": "pnpm --parallel --filter \"./src/*\" run watch"
   },
   "prettier": "./.prettierrc.js",
-  "type": "module",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/vltpkg/vltpkg"
-  }
+  "type": "module"
 }

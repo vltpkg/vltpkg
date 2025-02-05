@@ -108,22 +108,51 @@ exports[`explorer-grid renders workspace with edges in 1`] = `
       <div class="flex flex-col gap-6">
         <div class="relative">
           <div class="block rounded-lg border bg-card text-card-foreground shadow-sm relative my-4 border-muted-foreground">
-            <div class="p-6 rounded-t-lg relative flex flex-row -m-px py-3 px-4 bg-primary dark:border dark:border-solid dark:border-muted-foreground text-white dark:text-black rounded-b-lg">
-              <h3 class="text-2xl font-semibold leading-none tracking-tight flex items-center w-full justify-between">
-                <div class="flex items-center justify-between">
-                  <span class="text-sm font-medium">
-                    b
+            <div class="flex justify-stretch gap-4 w-full p-6">
+              <div
+                class="flex gap-4 grow items-start w-full"
+                style="opacity: 0;"
+              >
+                <span class="relative flex shrink-0 overflow-hidden size-16 rounded-lg border border-solid border-neutral-200">
+                  <span class="flex h-full w-full items-center justify-center bg-muted rounded-lg border-none">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="24"
+                      height="24"
+                      viewbox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      class="lucide lucide-package"
+                    >
+                      <path d="M11 21.73a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73z">
+                      </path>
+                      <path d="M12 22V12">
+                      </path>
+                      <path d="m3.3 7 7.703 4.734a2 2 0 0 0 1.994 0L20.7 7">
+                      </path>
+                      <path d="m7.5 4.27 9 5.15">
+                      </path>
+                    </svg>
                   </span>
-                  <span class="mx-2">
-                    ·
-                  </span>
-                  <span class="text-sm font-light text-muted-foreground">
-                    v1.0.0
-                  </span>
+                </span>
+                <div class="flex flex-col">
+                  <div class="mt-2">
+                    <span class="text-3xl font-medium">
+                      b
+                    </span>
+                    <span class="text-xl font-medium text-muted-foreground mb-[1px]">
+                      v1.0.0
+                    </span>
+                  </div>
                 </div>
-              </h3>
-            </div>
-            <div class="p-4">
+              </div>
+              <div class="flex flex-col justify-end w-full gap-4 mt-4">
+                <div class="flex flex-row-reverse items-center gap-2">
+                </div>
+              </div>
             </div>
             <div class="px-4 pb-4 w-full">
               <div
@@ -311,15 +340,14 @@ exports[`explorer-grid with results 1`] = `
                 </p>
               </div>
             </div>
-            <div class="flex flex-row px-3 py-2 items-center justify-between">
-              <div class="flex items-center justify-center rounded-sm border-[1px] px-2 py-1">
-                <button data-state="closed">
-                  <p class="text-[0.65rem] text-muted-foreground font-mono font-medium truncate w-full m-0 p-0 align-baseline">
-                    npm:a@1.0.0
-                  </p>
-                </button>
-              </div>
-              <div class="flex gap-2 overflow-x-scroll">
+            <div class="w-full h-12 flex items-center gap-4 justify-between border-t-[1px] px-4 py-3">
+              <button
+                data-state="closed"
+                class="rounded-sm border-[1px] px-2 py-1 text-[0.65rem] text-muted-foreground font-mono m-0 align-baseline truncate"
+              >
+                npm:a@1.0.0
+              </button>
+              <div class="flex gap-2">
               </div>
             </div>
           </a>
@@ -352,15 +380,14 @@ exports[`explorer-grid with results 1`] = `
                 </p>
               </div>
             </div>
-            <div class="flex flex-row px-3 py-2 items-center justify-between">
-              <div class="flex items-center justify-center rounded-sm border-[1px] px-2 py-1">
-                <button data-state="closed">
-                  <p class="text-[0.65rem] text-muted-foreground font-mono font-medium truncate w-full m-0 p-0 align-baseline">
-                    npm:b@1.0.0
-                  </p>
-                </button>
-              </div>
-              <div class="flex gap-2 overflow-x-scroll">
+            <div class="w-full h-12 flex items-center gap-4 justify-between border-t-[1px] px-4 py-3">
+              <button
+                data-state="closed"
+                class="rounded-sm border-[1px] px-2 py-1 text-[0.65rem] text-muted-foreground font-mono m-0 align-baseline truncate"
+              >
+                npm:b@1.0.0
+              </button>
+              <div class="flex gap-2">
               </div>
             </div>
           </a>
@@ -413,15 +440,14 @@ exports[`explorer-grid with stack 1`] = `
                 </p>
               </div>
             </div>
-            <div class="flex flex-row px-3 py-2 items-center justify-between">
-              <div class="flex items-center justify-center rounded-sm border-[1px] px-2 py-1">
-                <button data-state="closed">
-                  <p class="text-[0.65rem] text-muted-foreground font-mono font-medium truncate w-full m-0 p-0 align-baseline">
-                    npm:a@1.0.0
-                  </p>
-                </button>
-              </div>
-              <div class="flex gap-2 overflow-x-scroll">
+            <div class="w-full h-12 flex items-center gap-4 justify-between border-t-[1px] px-4 py-3">
+              <button
+                data-state="closed"
+                class="rounded-sm border-[1px] px-2 py-1 text-[0.65rem] text-muted-foreground font-mono m-0 align-baseline truncate"
+              >
+                npm:a@1.0.0
+              </button>
+              <div class="flex gap-2">
               </div>
             </div>
           </a>
@@ -453,15 +479,14 @@ exports[`explorer-grid with stack 1`] = `
                 </p>
               </div>
             </div>
-            <div class="flex flex-row px-3 py-2 items-center justify-between">
-              <div class="flex items-center justify-center rounded-sm border-[1px] px-2 py-1">
-                <button data-state="closed">
-                  <p class="text-[0.65rem] text-muted-foreground font-mono font-medium truncate w-full m-0 p-0 align-baseline">
-                    npm:b@1.0.0
-                  </p>
-                </button>
-              </div>
-              <div class="flex gap-2 overflow-x-scroll">
+            <div class="w-full h-12 flex items-center gap-4 justify-between border-t-[1px] px-4 py-3">
+              <button
+                data-state="closed"
+                class="rounded-sm border-[1px] px-2 py-1 text-[0.65rem] text-muted-foreground font-mono m-0 align-baseline truncate"
+              >
+                npm:b@1.0.0
+              </button>
+              <div class="flex gap-2">
               </div>
             </div>
           </a>

@@ -6,7 +6,6 @@ import {
 } from '@/state/types.js'
 import { CardTitle } from '@/components/ui/card.jsx'
 import { DEFAULT_QUERY, useGraphStore } from '@/state/index.js'
-import { format } from 'date-fns'
 import {
   Tooltip,
   TooltipContent,
@@ -26,6 +25,8 @@ import {
   type VisibilityState,
   type Table,
 } from '@tanstack/react-table'
+import { getIconSet } from '@/utils/dashboard-tools.jsx'
+import { format } from 'date-fns'
 
 type SelectDashboardItemOptions = {
   updateActiveRoute: Action['updateActiveRoute']
@@ -92,6 +93,9 @@ export const DashboardItem = ({
   const updateQuery = useGraphStore(state => state.updateQuery)
   const updateStamp = useGraphStore(state => state.updateStamp)
 
+  const { packageManager: PackageManger, runtime: RunTime } =
+    getIconSet(item.tools)
+
   const onDashboardItemClick = (e: MouseEvent) => {
     e.preventDefault()
     selectDashboardItem({
@@ -106,48 +110,47 @@ export const DashboardItem = ({
   return (
     <a
       href="#"
-      className="border-[1px] rounded-lg w-full md:w-96 hover:border-muted-foreground/50 transition-all duration-250 bg-card"
+      className="relative w-full md:w-96 group"
       onClick={onDashboardItemClick}>
-      {/* card header */}
-      <div className="flex flex-col items-start h-20 justify-between px-4 py-3">
-        <div className="flex flex-row w-full items-center justify-end">
-          {item.mtime ?
-            <div className="text-[0.7rem] text-muted-foreground">
+      {/* top */}
+      <div className="relative transition-all group-hover:border-neutral-400 dark:group-hover:border-neutral-700 flex items-center border-x-[1px] border-t-[1px] bg-card rounded-t-lg h-20 overflow-hidden">
+        <div className="flex px-3 py-2">
+          <CardTitle className="text-md font-medium">
+            {item.name}
+          </CardTitle>
+        </div>
+        <div className="absolute flex flex-row px-3 py-2 backdrop-blur-[1px] rounded-sm top-0 right-0 z-[1]">
+          {item.mtime && (
+            <p className="text-[0.7rem] text-muted-foreground">
               {format(
                 new Date(item.mtime).toJSON(),
                 'LLLL do, yyyy | hh:mm aa',
               )}
-            </div>
-          : ''}
+            </p>
+          )}
         </div>
-        <div className="flex">
-          <CardTitle className="self-end text-md font-medium">
-            {item.name}
-          </CardTitle>
+
+        {/* icons */}
+        <div className="absolute bg-clip-content flex justify-end items-center -inset-4 -right-2 flex-row gap-2">
+          {PackageManger && (
+            <PackageManger className="size-24 dark:fill-neutral-900/80 fill-neutral-200/80" />
+          )}
+          {RunTime && (
+            <RunTime className="size-24 dark:fill-neutral-900/80 fill-neutral-200/80" />
+          )}
         </div>
       </div>
 
-      <div className="w-full h-12 flex items-center gap-4 justify-between border-t-[1px] px-4 py-3">
+      {/* footer */}
+      <div className="flex transition-all group-hover:border-b-neutral-400 dark:group-hover:border-b-neutral-700 group-hover:border-x-neutral-400 dark:group-hover:border-x-neutral-700 border-[1px] bg-card rounded-b-lg items-center py-3 px-3 w-full">
         <TooltipProvider>
           <Tooltip>
-            <TooltipTrigger className="rounded-sm border-[1px] px-2 py-1 text-[0.65rem] text-muted-foreground font-mono m-0 align-baseline truncate">
+            <TooltipTrigger className="text-muted-foreground truncate text-left text-xs">
               {item.readablePath}
             </TooltipTrigger>
             <TooltipContent>{item.readablePath}</TooltipContent>
           </Tooltip>
         </TooltipProvider>
-
-        <div className="flex gap-2">
-          {item.tools.map((tool, index) => (
-            <div
-              key={index}
-              className="flex-none bg-secondary rounded-xl px-2 py-1">
-              <p className="text-[0.7rem] font-medium text-primary ">
-                {tool}
-              </p>
-            </div>
-          ))}
-        </div>
       </div>
     </a>
   )

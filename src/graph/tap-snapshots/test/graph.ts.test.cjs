@@ -26,8 +26,7 @@ exports[`test/graph.ts > TAP > using placePackage > should find and fix nameless
     'file·. missing': 'prod ^1.0.0 MISSING',
     'file·. bar': 'prod ^1.0.0 ··bar@1.0.0',
     'file·. foo': 'prod ^1.0.0 ··foo@1.0.0',
-    'file·. a': 'prod file:./a file·a',
-    '··bar@1.0.0 baz': 'prod ^1.0.0 ··baz@1.0.0'
+    'file·. a': 'prod file:./a file·a'
   }
 }
 `
@@ -47,8 +46,7 @@ exports[`test/graph.ts > TAP > using placePackage > should have removed baz from
   edges: {
     'file·. missing': 'prod ^1.0.0 MISSING',
     'file·. bar': 'prod ^1.0.0 ··bar@1.0.0',
-    'file·. foo': 'prod ^1.0.0 ··foo@1.0.0',
-    '··bar@1.0.0 baz': 'prod ^1.0.0 ··baz@1.0.0'
+    'file·. foo': 'prod ^1.0.0 ··foo@1.0.0'
   }
 }
 `

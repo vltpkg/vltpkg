@@ -3,6 +3,11 @@
   "description": "Build scripts for this monorepo",
   "version": "0.0.0-0",
   "private": true,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vltpkg/vltpkg.git",
+    "directory": "infra/build"
+  },
   "tshy": {
     "selfLink": false,
     "dialects": [
@@ -50,7 +55,8 @@
     "presnap": "tshy",
     "snap": "tap",
     "pretest": "tshy",
-    "test": "tap"
+    "test": "tap",
+    "watch": "tshy --watch"
   },
   "tap": {
     "extends": "../../tap-config.yaml",

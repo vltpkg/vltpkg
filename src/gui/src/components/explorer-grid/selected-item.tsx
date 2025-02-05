@@ -1,11 +1,6 @@
-import { splitDepID } from '@vltpkg/dep-id/browser'
-import { type SpecOptionsFilled } from '@vltpkg/spec/browser'
-import {
-  Card,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card.jsx'
+import { splitDepID, hydrate } from '@vltpkg/dep-id/browser'
+import { Spec, type SpecOptionsFilled } from '@vltpkg/spec/browser'
+import { Card, CardDescription } from '@/components/ui/card.jsx'
 import { useGraphStore } from '@/state/index.js'
 import { type GridItemData, type GridItemOptions } from './types.js'
 import {
@@ -15,17 +10,29 @@ import {
   TabsTrigger,
 } from '@/components/ui/tabs.jsx'
 import { CodeBlock } from '../ui/shiki.jsx'
-import { FileSearch2 } from 'lucide-react'
-import { useEffect, useRef } from 'react'
+import { FileSearch2, Home, Package } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
+import {
+  type DetailsInfo,
+  fetchDetails,
+} from '@/lib/external-info.js'
+import { Avatar, AvatarFallback } from '@/components/ui/avatar.jsx'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip.jsx'
+import { motion } from 'framer-motion'
 
-const getItemOrigin = ({
+const SpecOrigin = ({
   item,
   specOptions,
 }: {
   item: GridItemData
   specOptions: SpecOptionsFilled
-}): string => {
-  if (item.to) {
+}) => {
+  if (item.to && !item.to.mainImporter) {
     const [depType, ref] = splitDepID(item.to.id)
     switch (depType) {
       case 'registry': {
@@ -33,18 +40,57 @@ const getItemOrigin = ({
           specOptions['scope-registries'],
         )) {
           if (item.to.name?.startsWith(scopeKey)) {
-            return String(scopeValue)
+            return (
+              <div>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger className="px-1 py-1 text-xs text-muted-foreground font-mono m-0 align-baseline truncate">
+                      <span>registered-scope</span>
+                      <span>
+                        {item.title}@{item.version}
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      {String(scopeValue)}
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </div>
+            )
           }
         }
-        return ref && specOptions.registries[ref] ?
-            specOptions.registries[ref]
-          : specOptions.registry
+        return (
+          <div>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger className="px-1 py-1 text-xs text-muted-foreground font-mono m-0 align-baseline truncate">
+                  <span>{ref || 'npm'}:</span>
+                  <span>
+                    {item.title}@{item.version}
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent>
+                  {
+                    ref && specOptions.registries[ref] ?
+                      specOptions.registries[ref]
+                      // @ts-expect-error - tsserver is unable to find this exported property
+                    : specOptions.registry || Spec.defaultRegistry
+                  }
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
+        )
       }
       case 'git':
       case 'workspace':
       case 'file':
       case 'remote': {
-        return ref
+        return (
+          <div className="px-1 py-1 text-xs text-muted-foreground font-mono m-0 align-baseline truncate">
+            {depType}:{ref}
+          </div>
+        )
       }
     }
   }
@@ -56,8 +102,10 @@ export const SelectedItem = ({ item }: GridItemOptions) => {
   const updateLinePositionReference = useGraphStore(
     state => state.updateLinePositionReference,
   )
-  const origin = specOptions && getItemOrigin({ item, specOptions })
+  //const origin = specOptions && getItemOrigin({ item, specOptions })
   const linePositionRef = useRef<HTMLDivElement>(null)
+  const [details, setDetails] = useState<DetailsInfo>({})
+  const stamp = useGraphStore(state => state.stamp)
 
   useEffect(() => {
     const handleResize = () => {
@@ -71,35 +119,134 @@ export const SelectedItem = ({ item }: GridItemOptions) => {
     return () => window.removeEventListener('resize', handleResize)
   })
 
+  useEffect(() => {
+    async function retrieveDetails() {
+      if (!item.to?.name) return
+      const depIdSpec = hydrate(item.to.id, item.to.name, specOptions)
+      const manifest = item.to.manifest ?? {}
+      for await (const d of fetchDetails(depIdSpec, manifest)) {
+        setDetails({
+          ...details,
+          ...d,
+        })
+      }
+    }
+    void retrieveDetails()
+  }, [stamp])
+
+  const handlePublisherAvatarError = () => {
+    setDetails({
+      ...details,
+      publisherAvatar: undefined,
+    })
+  }
+
   return (
     <div className="relative">
       <Card className="relative my-4 border-muted-foreground">
-        <CardHeader
-          className={`rounded-t-lg relative flex flex-row -m-px py-3 px-4 bg-primary dark:border dark:border-solid dark:border-muted-foreground text-white dark:text-black ${item.to?.manifest?.description ? '' : 'rounded-b-lg'}`}>
-          <CardTitle className="flex items-center w-full justify-between">
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-medium">
-                {item.title}
-              </span>
-              <span className="mx-2">{'·'}</span>
-              <span className="text-sm font-light text-muted-foreground">
-                {item.version}
-              </span>
-            </div>
-            {origin && origin !== '.' && (
-              <div className="text-xs px-2 py-1 font-medium border border-solid border-neutral-200 rounded-full dark:border-gray-600">
-                {origin}
+        <div className="flex justify-stretch gap-4 w-full p-6">
+          <motion.div
+            className="flex gap-4 grow items-start w-full"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}>
+            <Avatar className="size-16 rounded-lg border border-solid border-neutral-200">
+              {details.favicon ?
+                <motion.img
+                  src={details.favicon.src}
+                  alt={details.favicon.alt}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                />
+              : ''}
+              <AvatarFallback className="rounded-lg border-none">
+                {item.to?.mainImporter ?
+                  <Home size={24} />
+                : <Package size={24} />}
+              </AvatarFallback>
+            </Avatar>
+            <div className="flex flex-col">
+              <div className="mt-2">
+                <span
+                  className={`${
+                    item.title.length < 9 ? 'text-3xl'
+                    : item.title.length < 18 ? 'text-xl'
+                    : 'text-md'
+                  } font-medium`}>
+                  {item.title}{' '}
+                </span>
+                <span
+                  className={`${
+                    item.title.length < 9 ? 'text-xl'
+                    : item.title.length < 18 ? 'text-lg'
+                    : 'text-sm'
+                  } font-medium text-muted-foreground mb-[1px]`}>
+                  {item.version}
+                </span>
               </div>
-            )}
-          </CardTitle>
-        </CardHeader>
-        <div className="p-4">
-          {item.to?.manifest?.description ?
-            <CardDescription className="grow content-center py-2">
-              {item.to.manifest.description}
-            </CardDescription>
-          : ''}
+              {specOptions ?
+                <SpecOrigin item={item} specOptions={specOptions} />
+              : ''}
+            </div>
+          </motion.div>
+          <div className="flex flex-col justify-end w-full gap-4 mt-4">
+            {details.downloads?.weekly ?
+              <motion.div
+                className="flex flex-row-reverse"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}>
+                <span className="text-md font-medium text-muted-foreground text-right">
+                  <span className="text-foreground">
+                    {details.downloads.weekly.toLocaleString()}{' '}
+                    Downloads
+                  </span>{' '}
+                  Last Week
+                </span>
+              </motion.div>
+            : ''}
+            <div className="flex flex-row-reverse items-center gap-2">
+              {details.publisherAvatar?.src ?
+                <motion.img
+                  className="size-8 rounded-full"
+                  src={details.publisherAvatar.src}
+                  alt={details.publisherAvatar.alt}
+                  onError={handlePublisherAvatarError}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                />
+              : ''}
+              {details.publisher?.name ?
+                <motion.div
+                  className="text-sm font-medium"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}>
+                  <span className="text-xs text-muted-foreground mb-[1px]">
+                    Published by:{' '}
+                  </span>
+                  <span>{details.publisher.name}</span>
+                </motion.div>
+              : ''}
+            </div>
+          </div>
         </div>
+        {item.to?.manifest?.description || details.author?.name ?
+          <div className="px-6 pb-6 -mt-6">
+            {item.to?.manifest?.description ?
+              <CardDescription className="grow content-center py-2">
+                {item.to.manifest.description}
+              </CardDescription>
+            : ''}
+            {details.author?.name ?
+              <motion.div
+                className="flex items-center gap-2"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}>
+                <span className="text-xs font-medium text-muted-foreground">
+                  Authored by: {details.author.name}
+                </span>
+              </motion.div>
+            : ''}
+          </div>
+        : ''}
         <div className="px-4 pb-4 w-full">
           <Tabs defaultValue="package.json">
             <TabsList className="grid w-full grid-cols-2">
@@ -110,7 +257,11 @@ export const SelectedItem = ({ item }: GridItemOptions) => {
             </TabsList>
             <TabsContent value="package.json">
               <CodeBlock
-                code={JSON.stringify(item.to?.manifest, null, 2)}
+                code={
+                  item.to?.manifest ?
+                    JSON.stringify(item.to.manifest, null, 2)
+                  : ''
+                }
                 lang="json"
               />
             </TabsContent>

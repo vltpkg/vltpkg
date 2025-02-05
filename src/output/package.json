@@ -2,6 +2,11 @@
   "name": "@vltpkg/output",
   "description": "Generate output from the vlt CLI",
   "version": "0.0.0-0.1730239248325",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vltpkg/vltpkg.git",
+    "directory": "src/output"
+  },
   "tshy": {
     "selfLink": false,
     "dialects": [
@@ -39,7 +44,8 @@
     "presnap": "tshy",
     "snap": "tap",
     "pretest": "tshy",
-    "test": "tap"
+    "test": "tap",
+    "watch": "tshy --watch"
   },
   "tap": {
     "extends": "../../tap-config.yaml"
