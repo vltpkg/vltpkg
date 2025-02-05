@@ -2,6 +2,11 @@
   "name": "@vltpkg/cache",
   "description": "The filesystem cache for `@vlt/registry-client`",
   "version": "0.0.0-0.1730239248325",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vltpkg/vltpkg.git",
+    "directory": "src/cache"
+  },
   "tshy": {
     "selfLink": false,
     "dialects": [

@@ -2,6 +2,11 @@
   "name": "@vltpkg/git-scp-url",
   "description": "Parse scp-style git URLs like `git+ssh://host:some/path`",
   "version": "0.0.0-0.1730239248325",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vltpkg/vltpkg.git",
+    "directory": "src/git-scp-url"
+  },
   "tshy": {
     "selfLink": false,
     "dialects": [

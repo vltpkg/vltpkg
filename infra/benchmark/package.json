@@ -3,6 +3,11 @@
   "description": "Benchmark scripts for this monorepo",
   "version": "0.0.0-0",
   "private": true,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vltpkg/vltpkg.git",
+    "directory": "infra/benchmark"
+  },
   "tshy": {
     "selfLink": false,
     "dialects": [

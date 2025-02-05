@@ -907,7 +907,10 @@ t.test('path git selector', async t => {
     )
   })
 
-  await t.test('extract', async t => {
+  // git-cloning in a resource constrained machine running plenty
+  // of tests in parallel might take a lot more time than usual,
+  // so we have a generous timeout here to satisfy windows CI.
+  await t.test('extract', { timeout: 10_000 }, async t => {
     const target = t.testdir()
     await extract(spec, target, options)
     const found = JSON.parse(

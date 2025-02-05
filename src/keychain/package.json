@@ -2,6 +2,11 @@
   "name": "@vltpkg/keychain",
   "description": "The filesystem keychain for `@vlt/registry-client`",
   "version": "0.0.0-0.1730239248325",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vltpkg/vltpkg.git",
+    "directory": "src/keychain"
+  },
   "tshy": {
     "selfLink": false,
     "dialects": [

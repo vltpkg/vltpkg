@@ -2,6 +2,11 @@
   "name": "@vltpkg/workspaces",
   "description": "Utility for working with vlt workspaces",
   "version": "0.0.0-0.1730239248325",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vltpkg/vltpkg.git",
+    "directory": "src/workspaces"
+  },
   "tshy": {
     "selfLink": false,
     "dialects": [
