@@ -52,7 +52,7 @@ export const usage: CommandUsage = () =>
     },
   })
 
-export const command: CommandFn<unknown> = async conf => {
+export const command: CommandFn = async conf => {
   const sub = conf.positionals[0]
   switch (sub) {
     case 'set':
