@@ -58,7 +58,7 @@ export const views = (
   }
 }
 
-export const command: CommandFn<unknown> = async conf => {
+export const command: CommandFn = async conf => {
   const [sub, ...args] = conf.positionals
   if (sub === 'init') {
     return { result: await init() }
