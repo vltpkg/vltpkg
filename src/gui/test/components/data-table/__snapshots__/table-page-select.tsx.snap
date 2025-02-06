@@ -1,0 +1,33 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`table-page-select > should render correctly 1`] = `
+
+<gui-tooltip-provider>
+  <button
+    type="button"
+    aria-haspopup="dialog"
+    aria-expanded="false"
+    aria-controls="radix-:r0:"
+    data-state="closed"
+  >
+    <gui-tooltip>
+      <gui-tooltip-trigger aschild="true">
+        <div class="flex items-center gap-1">
+          <span class="text-xs text-muted-foreground font-medium">
+            Show 10
+          </span>
+          <lucide-chevron-down-icon
+            classname="text-muted-foreground"
+            size="16"
+          >
+          </lucide-chevron-down-icon>
+        </div>
+      </gui-tooltip-trigger>
+      <gui-tooltip-content>
+        Results per page
+      </gui-tooltip-content>
+    </gui-tooltip>
+  </button>
+</gui-tooltip-provider>
+
+`;
