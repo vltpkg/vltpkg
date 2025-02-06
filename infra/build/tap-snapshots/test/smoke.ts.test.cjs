@@ -30,6 +30,11 @@ Get or manipulate package.json values
 
       ​vlt pkg get [<key>]
 
+    init
+      Initialize a new package.json file in the current directory
+
+      ​vlt pkg init
+
     pick
       Get multiple values or the entire package
 
