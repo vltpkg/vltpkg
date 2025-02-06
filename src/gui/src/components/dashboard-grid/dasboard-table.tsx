@@ -103,7 +103,6 @@ const DashboardTable = ({
     <DataTable
       setTable={setTable}
       onClickHandler={(selectedProject: DashboardDataProject) => {
-        console.log(selectedProject)
         onDashboardItemClick(selectedProject)
       }}
       filterValue={tableFilterValue}

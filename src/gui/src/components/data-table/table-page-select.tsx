@@ -30,10 +30,10 @@ const TablePageSelect = ({
       value: 10,
     },
     {
-      value: 20,
+      value: 25,
     },
     {
-      value: 30,
+      value: 50,
     },
   ]
 
