@@ -27,7 +27,7 @@ import {
   type Server,
 } from 'node:http'
 import { homedir, tmpdir } from 'node:os'
-import { resolve, relative } from 'node:path'
+import { dirname, posix, resolve, relative, win32 } from 'node:path'
 import { loadPackageJson } from 'package-json-from-dist'
 import { type PathBase, type PathScurry } from 'path-scurry'
 import handler from 'serve-handler'
@@ -74,9 +74,15 @@ export type DashboardTools =
   | 'yarn'
   | 'js'
 
+export type DashboardLocation = {
+  path: string
+  readablePath: string
+}
+
 export type DashboardData = {
   cwd: string
   buildVersion: string
+  dashboardProjectLocations: DashboardLocation[]
   projects: DashboardDataProject[]
 }
 
@@ -195,19 +201,49 @@ export const inferTools = (
   return tools
 }
 
+export const getReadablePath = (path: string) =>
+  path.replace(homedir(), '~').replaceAll(win32.sep, posix.sep)
+
 export const formatDashboardJson = (
   projectFolders: PathBase[],
-  options: ConfigOptions,
+  conf: LoadedConfig,
 ) => {
+  const userDefinedProjectPaths = (
+    conf.values['dashboard-root']?.length ?
+      conf.values['dashboard-root']
+    : [homedir()]).map(
+    path =>
+      ({
+        path,
+        readablePath: getReadablePath(path),
+      }) as DashboardLocation,
+  )
   const result: DashboardData = {
     cwd: process.cwd(),
     buildVersion: version,
+    dashboardProjectLocations: projectFolders
+      .map((dir: PathBase) => {
+        const path = dirname(dir.fullpath())
+        const res: DashboardLocation = {
+          path,
+          readablePath: getReadablePath(path),
+        }
+        return res
+      })
+      .concat(userDefinedProjectPaths)
+      .reduce<DashboardLocation[]>((acc, curr) => {
+        if (acc.every(obj => obj.path !== curr.path)) {
+          acc.push(curr)
+        }
+        return acc
+      }, [])
+      .sort((a, b) => a.readablePath.length - b.readablePath.length),
     projects: [],
   }
   for (const folder of projectFolders) {
     let manifest
     try {
-      manifest = options.packageJson.read(folder.fullpath())
+      manifest = conf.options.packageJson.read(folder.fullpath())
     } catch {
       continue
     }
@@ -215,10 +251,10 @@ export const formatDashboardJson = (
     result.projects.push({
       /* c8 ignore next */
       name: manifest.name || folder.name,
-      readablePath: path.replace(homedir(), '~'),
+      readablePath: getReadablePath(path),
       path,
       manifest,
-      tools: inferTools(manifest, folder, options.scurry),
+      tools: inferTools(manifest, folder, conf.options.scurry),
       mtime: folder.lstatSync()?.mtimeMs,
     })
   }
@@ -263,7 +299,7 @@ const updateDashboardData = async (
       ...conf.options,
       userDefinedProjectPaths,
     }),
-    conf.options,
+    conf,
   )
   const dashboardJson = JSON.stringify(dashboard, null, 2)
   writeFileSync(resolve(tmp, 'dashboard.json'), dashboardJson)
@@ -296,6 +332,7 @@ const createStaticHandler = ({
       { source: '/dashboard', destination: '/index.html' },
       { source: '/queries', destination: '/index.html' },
       { source: '/labels', destination: '/index.html' },
+      { source: '/new-project', destination: '/index.html' },
     ],
   }
   const errHandler = (err: unknown, res: ServerResponse) => {
