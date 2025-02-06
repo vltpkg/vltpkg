@@ -14,7 +14,6 @@ const main = () => {
   process.stdin.on('end', () => {
     const paths = Buffer.concat(input)
       .toString()
-      // eslint-disable-next-line no-control-regex
       .replace(/^\u0000+|\u0000+$/, '')
       .split('\u0000')
     if (paths.length) void rimraf(paths)

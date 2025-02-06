@@ -81,6 +81,8 @@ export default tseslint.config(
           destructuring: 'all',
         },
       ],
+      // this is mostly a CLI which needs to match control characters
+      'no-control-regex': 'off',
       // emulate TypeScript behavior of allowing unused prefixed with _
       '@typescript-eslint/no-unused-vars': [
         'error',

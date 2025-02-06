@@ -22,9 +22,7 @@ export const readPassword = async (
       }
 
       input += String(c)
-      //eslint-disable-next-line no-control-regex
       if (/\r|\n|\x04|\x03/.test(input)) {
-        //eslint-disable-next-line no-control-regex
         input = input.replace(/(\r|\n|\x04|\x03)/g, '')
         stdin.setRawMode(false)
         stdin.pause()
