@@ -29,7 +29,6 @@ export const command: CommandFn = async conf => {
     }
 
     default: {
-      //eslint-disable-next-line no-console
       throw error('Invalid token subcommand', {
         found: conf.positionals[0],
         validOptions: ['add', 'rm'],
