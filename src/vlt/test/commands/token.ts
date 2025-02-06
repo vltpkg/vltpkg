@@ -41,13 +41,11 @@ t.strictSame(log, [
 ])
 
 t.test('invalid token sub command', async t => {
-  const exitCode = process.exitCode
-  const logs = t.capture(console, 'error').args
-  await command({
-    options: { registry: 'https://registry.vlt.javascript/' },
-    positionals: ['wat'],
-  } as unknown as LoadedConfig)
-  t.equal(process.exitCode, 1)
-  process.exitCode = exitCode
-  t.strictSame(logs(), [[usage().usage()]])
+  await t.rejects(
+    command({
+      options: { registry: 'https://registry.vlt.javascript/' },
+      positionals: ['wat'],
+    } as unknown as LoadedConfig),
+    { cause: { code: 'EUSAGE' } },
+  )
 })
