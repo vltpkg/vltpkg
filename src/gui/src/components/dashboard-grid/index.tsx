@@ -121,10 +121,10 @@ export const DashboardItem = ({
         {/* icons */}
         <div className="absolute bg-clip-content flex justify-end items-center -inset-4 -right-2 flex-row gap-2">
           {PackageManger && (
-            <PackageManger className="size-24 dark:fill-neutral-900/80 fill-neutral-200/80" />
+            <PackageManger className="size-24 dark:fill-neutral-900/80 fill-neutral-200/40" />
           )}
           {RunTime && (
-            <RunTime className="size-24 dark:fill-neutral-900/80 fill-neutral-200/80" />
+            <RunTime className="size-24 dark:fill-neutral-900/80 fill-neutral-200/40" />
           )}
         </div>
       </div>
