@@ -83,3 +83,27 @@ restricted keychain file, or in the environment. Of course,
 perfect security is often impossible, but it is nevertheless
 important to do our best to make it less likely that passwords
 can be leaked by accident.
+
+## Credential Management
+
+Each "identity" in vlt is a set of authentication tokens for
+known registries.
+
+For example, you could have a `corp` identity with the
+credentials that you use for the work on corporate projects, and
+a `personal` account with your own personal npm registry login
+credentials.
+
+Running `vlt config set identity=corp` will switch into `corp`
+mode. `vlt config set identity=personal` will switch into
+`personal` mode.
+
+This can also be set in a project root with a `vlt.json` config
+file, to make it easier to set per project. For example, you
+could have this in your `vlt.json` in the project root:
+
+```json
+{
+  "identity": "corp"
+}
+```
