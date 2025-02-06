@@ -1,3 +1,4 @@
+import { error } from '@vltpkg/error-cause'
 import { deleteToken, setToken } from '@vltpkg/registry-client'
 import { commandUsage } from '../config/usage.js'
 import { readPassword } from '../read-password.js'
@@ -29,8 +30,11 @@ export const command: CommandFn = async conf => {
 
     default: {
       //eslint-disable-next-line no-console
-      console.error(usage().usage())
-      process.exitCode = 1
+      throw error('Invalid token subcommand', {
+        found: conf.positionals[0],
+        validOptions: ['add', 'rm'],
+        code: 'EUSAGE',
+      })
     }
   }
 }
