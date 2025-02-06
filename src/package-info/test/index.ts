@@ -1,6 +1,7 @@
 import { spawn as spawnGit } from '@vltpkg/git'
 import { Spec } from '@vltpkg/spec'
 import { Pool } from '@vltpkg/tar'
+import { type Manifest } from '@vltpkg/types'
 import { Workspace } from '@vltpkg/workspaces'
 import { lstatSync, readFileSync, readlinkSync } from 'node:fs'
 import { writeFile } from 'node:fs/promises'
@@ -17,7 +18,6 @@ import {
   resolve,
   tarball,
 } from '../src/index.js'
-import { type Manifest } from '@vltpkg/types'
 
 t.saveFixture = true
 
@@ -495,7 +495,8 @@ t.test('tarball', async t => {
   )
 })
 
-t.test('extract', async t => {
+const opts = { saveFixture: process.platform === 'win32' }
+t.test('extract', opts, async t => {
   const dir = t.testdir()
   t.match(await extract('abbrev@2', dir + '/registry', options), {
     resolved: `${defaultRegistry}abbrev/-/abbrev-2.0.0.tgz`,
