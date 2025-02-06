@@ -68,7 +68,7 @@ exports[`dashboard-grid with results 1`] = `
               </p>
             </div>
             <div class="absolute bg-clip-content flex justify-end items-center -inset-4 -right-2 flex-row gap-2">
-              <gui-package-manager-pnpm-icon classname="size-24 dark:fill-neutral-900/80 fill-neutral-200/80">
+              <gui-package-manager-pnpm-icon classname="size-24 dark:fill-neutral-900/80 fill-neutral-200/40">
               </gui-package-manager-pnpm-icon>
             </div>
           </div>
@@ -101,9 +101,9 @@ exports[`dashboard-grid with results 1`] = `
               </p>
             </div>
             <div class="absolute bg-clip-content flex justify-end items-center -inset-4 -right-2 flex-row gap-2">
-              <gui-package-manager-vlt-icon classname="size-24 dark:fill-neutral-900/80 fill-neutral-200/80">
+              <gui-package-manager-vlt-icon classname="size-24 dark:fill-neutral-900/80 fill-neutral-200/40">
               </gui-package-manager-vlt-icon>
-              <gui-runtime-node-icon classname="size-24 dark:fill-neutral-900/80 fill-neutral-200/80">
+              <gui-runtime-node-icon classname="size-24 dark:fill-neutral-900/80 fill-neutral-200/40">
               </gui-runtime-node-icon>
             </div>
           </div>
