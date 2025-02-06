@@ -1,7 +1,7 @@
 import t from 'tap'
-import { type LoadedConfig } from '../../src/types.js'
+import { commandView } from '../fixtures/run.js'
 
-const { usage, command } = await t.mockImport<
+const Command = await t.mockImport<
   typeof import('../../src/commands/whoami.js')
 >('../../src/commands/whoami.js', {
   '@vltpkg/registry-client': {
@@ -17,10 +17,20 @@ const { usage, command } = await t.mockImport<
   },
 })
 
-t.matchSnapshot(usage().usageMarkdown())
-const logs = t.capture(console, 'log').args
-await command({
-  options: { registry: 'https://registry/' },
-} as unknown as LoadedConfig)
+t.matchSnapshot(Command.usage().usageMarkdown())
 
-t.strictSame(logs(), [['username']])
+t.test('human', async t => {
+  const output = await commandView(t, Command, {
+    values: { view: 'human' },
+    options: { registry: 'https://registry/' },
+  })
+  t.strictSame(output, 'username')
+})
+
+t.test('human', async t => {
+  const output = await commandView(t, Command, {
+    values: { view: 'json' },
+    options: { registry: 'https://registry/' },
+  })
+  t.strictSame(JSON.parse(output), { username: 'username' })
+})
