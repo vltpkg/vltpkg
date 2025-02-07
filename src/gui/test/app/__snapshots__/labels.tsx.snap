@@ -11,11 +11,11 @@ exports[`labels view > labels render default 1`] = `
           items="[object Object],[object Object],[object Object]"
         >
         </gui-filter-search>
-        <gui-sorting-toggle
-          filtereditems="[object Object],[object Object],[object Object]"
+        <gui-sort-toggle
+          filtereditems
           sortkey="name"
         >
-        </gui-sorting-toggle>
+        </gui-sort-toggle>
         <gui-delete-label
           deletedialogopen="false"
           selectedlabels
@@ -52,21 +52,6 @@ exports[`labels view > labels render default 1`] = `
       </div>
     </div>
     <div class="mt-3 flex flex-col gap-3">
-      <gui-label
-        checked="false"
-        querylabel="[object Object]"
-      >
-      </gui-label>
-      <gui-label
-        checked="false"
-        querylabel="[object Object]"
-      >
-      </gui-label>
-      <gui-label
-        checked="false"
-        querylabel="[object Object]"
-      >
-      </gui-label>
     </div>
   </div>
 </section>

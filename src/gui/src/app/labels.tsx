@@ -3,7 +3,10 @@ import { Label } from '@/components/labels/label.jsx'
 import { Button } from '@/components/ui/button.jsx'
 import { Plus } from 'lucide-react'
 import { FilterSearch } from '@/components/ui/filter-search.jsx'
-import { SortingToggle } from '@/components/ui/sorting-toggle.jsx'
+import {
+  sortAlphabeticallyAscending,
+  SortToggle,
+} from '@/components/sort-toggle.jsx'
 import { Checkbox } from '@/components/ui/checkbox.jsx'
 import { DeleteLabel } from '@/components/labels/delete-label.jsx'
 import { CreateLabel } from '@/components/labels/create-label.jsx'
@@ -44,10 +47,11 @@ const Labels = () => {
 
   useEffect(() => {
     if (savedLabels) {
-      const sortedLabels = [...savedLabels].sort((a, b) =>
-        a.name.localeCompare(b.name),
+      sortAlphabeticallyAscending(
+        savedLabels,
+        'name',
+        setFilteredLabels,
       )
-      setFilteredLabels(sortedLabels)
     }
   }, [savedLabels])
 
@@ -61,7 +65,7 @@ const Labels = () => {
               items={savedLabels}
               setFilteredItems={setFilteredLabels}
             />
-            <SortingToggle
+            <SortToggle
               filteredItems={filteredLabels}
               setFilteredItems={setFilteredLabels}
               sortKey="name"

@@ -11,11 +11,11 @@ exports[`labels view > labels render default 1`] = `
           items
         >
         </gui-filter-search>
-        <gui-sorting-toggle
+        <gui-sort-toggle
           filtereditems
           sortkey="name"
         >
-        </gui-sorting-toggle>
+        </gui-sort-toggle>
         <div class="flex items-center">
           <div class="flex items-center">
             <gui-delete-query

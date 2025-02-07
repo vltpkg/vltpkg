@@ -10,13 +10,20 @@ exports[`dashboard-grid render default 1`] = `
         items
       >
       </gui-filter-search>
-      <gui-sorting-toggle
-        filtereditems
-        sortkey="name"
-      >
-      </gui-sorting-toggle>
+      <gui-dashboard-view-toggle currentview="grid">
+      </gui-dashboard-view-toggle>
+      <div style="opacity: 1;">
+        <gui-sort-toggle
+          filtereditems
+          sortkey="name"
+        >
+        </gui-sort-toggle>
+      </div>
     </div>
-    <div class="flex flex-col">
+    <div
+      class="flex flex-col"
+      style="opacity: 0; transform: translateY(-5px);"
+    >
       <p class="text-sm font-semibold mb-4">
         Projects
       </p>
@@ -41,13 +48,20 @@ exports[`dashboard-grid with results 1`] = `
         items="[object Object],[object Object]"
       >
       </gui-filter-search>
-      <gui-sorting-toggle
-        filtereditems="[object Object],[object Object]"
-        sortkey="name"
-      >
-      </gui-sorting-toggle>
+      <gui-dashboard-view-toggle currentview="grid">
+      </gui-dashboard-view-toggle>
+      <div style="opacity: 1;">
+        <gui-sort-toggle
+          filtereditems="[object Object],[object Object]"
+          sortkey="name"
+        >
+        </gui-sort-toggle>
+      </div>
     </div>
-    <div class="flex flex-col">
+    <div
+      class="flex flex-col"
+      style="opacity: 0; transform: translateY(-5px);"
+    >
       <p class="text-sm font-semibold mb-4">
         Projects
       </p>

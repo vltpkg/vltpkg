@@ -1,4 +1,4 @@
-import { test, expect, afterEach } from 'vitest'
+import { vi, test, expect, afterEach } from 'vitest'
 import { cleanup, render } from '@testing-library/react'
 import html from 'diffable-html'
 import {
@@ -8,6 +8,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select.jsx'
+
+vi.mock('lucide-react', () => ({
+  ChevronUp: 'gui-chevron-up-icon',
+  ChevronDown: 'gui-chevron-down-icon',
+  Check: 'gui-check-icon',
+}))
 
 expect.addSnapshotSerializer({
   serialize: v => html(v),

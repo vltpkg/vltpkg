@@ -1,0 +1,8 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`queries-sort-toggle > should render correctly 1`] = `
+
+<gui-toggle options="[object Object],[object Object]">
+</gui-toggle>
+
+`;
