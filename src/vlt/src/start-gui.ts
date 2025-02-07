@@ -4,11 +4,13 @@ import {
   asDependency,
   type AddImportersDependenciesMap,
   type Dependency,
-  type DependencyTypeShort,
   type RemoveImportersDependenciesMap,
 } from '@vltpkg/graph'
 import { Spec } from '@vltpkg/spec'
-import { type Manifest } from '@vltpkg/types'
+import {
+  type Manifest,
+  type DependencyTypeShort,
+} from '@vltpkg/types'
 import { urlOpen } from '@vltpkg/url-open'
 import {
   cpSync,

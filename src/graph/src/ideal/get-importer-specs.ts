@@ -1,9 +1,9 @@
 import { error } from '@vltpkg/error-cause'
+import { longDependencyTypes } from '@vltpkg/types'
 import {
   type AddImportersDependenciesMap,
   type Dependency,
   type RemoveImportersDependenciesMap,
-  longDependencyTypes,
   shorten,
   asDependency,
 } from '../dependencies.js'

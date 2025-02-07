@@ -1,7 +1,9 @@
 import { type DepID } from '@vltpkg/dep-id'
-import { type Manifest } from '@vltpkg/types'
+import {
+  type Manifest,
+  type DependencyTypeShort,
+} from '@vltpkg/types'
 import { type Spec, type SpecLikeBase } from '@vltpkg/spec'
-import { type DependencyTypeShort } from './dependencies.js'
 
 export type EdgeLike = {
   name: string
