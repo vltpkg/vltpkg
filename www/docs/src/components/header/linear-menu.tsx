@@ -41,7 +41,7 @@ const LinearMenu = () => {
   ]
 
   return (
-    <nav className="hidden items-center gap-x-2 rounded-[1rem] bg-white/95 p-2 text-[15px] text-neutral-950 shadow-[0_0_0_1px_theme(colors.black/5%)] backdrop-blur-sm dark:bg-neutral-950/75 dark:text-white dark:shadow-[0_0_0_1px_theme(colors.white/10%)] md:flex">
+    <nav className="hidden items-center gap-x-2 rounded-[1rem] bg-white/95 p-2 text-base text-neutral-950 shadow-[0_0_0_1px_theme(colors.black/5%)] backdrop-blur-sm dark:bg-neutral-950/75 dark:text-white dark:shadow-[0_0_0_1px_theme(colors.white/10%)] md:flex">
       {menuData.map(item =>
         item.children ?
           <MenuGroup key={item.title} item={item} />
@@ -60,7 +60,7 @@ const MenuGroup = ({ item }: { item: MenuItem }) => {
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger className="cursor-pointer inline-flex items-center gap-1.5 rounded-[8px] px-4 py-1.5 text-[15px] hover:bg-black/5 bg-transparent dark:hover:bg-white/10">
+      <PopoverTrigger className="cursor-pointer inline-flex items-center gap-1.5 rounded-[8px] px-4 py-1.5 text-base hover:bg-black/5 bg-transparent dark:hover:bg-white/10">
         {item.title}
         <ChevronDown
           size={12}
@@ -95,7 +95,7 @@ const MenuLink = ({
       </span>
     : <a
         href={item.path}
-        className={`no-underline text-foreground group inline-flex items-center gap-x-3 text-nowrap rounded-[8px] px-4 py-1.5 text-15 hover:bg-black/5 dark:hover:bg-white/10 ${className}`}>
+        className={`no-underline text-foreground group inline-flex items-center gap-x-3 text-nowrap rounded-[8px] px-4 py-1.5 text-base hover:bg-black/5 dark:hover:bg-white/10 ${className}`}>
         {item.icon ?
           <MenuLinkIcon item={item} />
         : null}{' '}
