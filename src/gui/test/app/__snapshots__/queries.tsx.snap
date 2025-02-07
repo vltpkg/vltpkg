@@ -2,7 +2,7 @@
 
 exports[`labels view > labels render default 1`] = `
 
-<section class="flex grow w-full flex-col min-h-[80svh] bg-white dark:bg-black">
+<section class="flex min-h-[80svh] w-full grow flex-col bg-white dark:bg-black">
   <div class="flex flex-col px-8 py-4">
     <div class="flex justify-between">
       <div class="flex gap-2">

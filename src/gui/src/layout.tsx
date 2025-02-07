@@ -58,18 +58,18 @@ const Layout = () => {
 
 Layout.Wrapper = ({ children }: { children: React.ReactNode }) => {
   return (
-    <div className="flex flex-col min-h-svh w-full">{children}</div>
+    <div className="flex min-h-svh w-full flex-col">{children}</div>
   )
 }
 
 Layout.Body = ({ children }: { children: React.ReactNode }) => {
   return (
-    <div className="flex flex-row min-h-svh w-full">{children}</div>
+    <div className="flex min-h-svh w-full flex-row">{children}</div>
   )
 }
 
 Layout.Content = ({ children }: LayoutProps) => {
-  return <div className="flex flex-col grow w-full">{children}</div>
+  return <div className="flex w-full grow flex-col">{children}</div>
 }
 
 export default Layout

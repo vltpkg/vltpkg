@@ -6,17 +6,17 @@ const isHero = Astro.url.pathname === '/'
 ---
 
 <div
-  class="flex h-full flex-col lg:flex-row w-full md:justify-between">
+  class="flex h-full w-full flex-col md:justify-between lg:flex-row">
   {
     Astro.props.toc && (
       <>
         {/* desktop */}
-        <div class="hidden lg:flex relative order-2">
+        <div class="relative order-2 hidden lg:flex">
           <slot name="right-sidebar" />
         </div>
 
         {/* mobile */}
-        <div class="flex md:hidden sticky top-0 z-[1000]">
+        <div class="sticky top-0 z-[1000] flex md:hidden">
           <MobileSidebar
             client:load
             {...({ ...Astro.props, labels: undefined } as any)}

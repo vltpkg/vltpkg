@@ -4,13 +4,13 @@ exports[`explorer has project root info 1`] = `
 
 <div>
   <section class="flex grow flex-col justify-between bg-white dark:bg-black">
-    <div class="flex items-center justify-between w-full px-8 pt-4 border-t-[1px]">
-      <p class="text-xs font-mono font-light text-muted-foreground">
+    <div class="flex w-full items-center justify-between border-t-[1px] px-8 pt-4">
+      <p class="font-mono text-xs font-light text-muted-foreground">
         :host-context(file:/path/to/project)
       </p>
     </div>
-    <section class="flex items-center px-8 py-4 border-b-[1px] border-solid">
-      <div class="flex flex-row gap-2 w-full">
+    <section class="flex items-center border-b-[1px] border-solid px-8 py-4">
+      <div class="flex w-full flex-row gap-2">
         <gui-root-button>
         </gui-root-button>
         <gui-search-bar
@@ -33,10 +33,10 @@ exports[`render default 1`] = `
 
 <div>
   <section class="flex grow flex-col justify-between bg-white dark:bg-black">
-    <div class="flex items-center justify-between w-full px-8 pt-4 border-t-[1px]">
+    <div class="flex w-full items-center justify-between border-t-[1px] px-8 pt-4">
     </div>
-    <section class="flex items-center px-8 py-4 border-b-[1px] border-solid">
-      <div class="flex flex-row gap-2 w-full">
+    <section class="flex items-center border-b-[1px] border-solid px-8 py-4">
+      <div class="flex w-full flex-row gap-2">
         <gui-root-button>
         </gui-root-button>
         <gui-search-bar

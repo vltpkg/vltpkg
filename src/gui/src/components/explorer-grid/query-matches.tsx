@@ -76,7 +76,7 @@ const LabelTags = ({
 
                   return query.labels.map((label, idx) => (
                     <div
-                      className="inline-block size-4 rounded-full ring-muted ring-1"
+                      className="inline-block size-4 rounded-full ring-1 ring-muted"
                       key={idx}
                       style={{
                         backgroundColor: label.color,
@@ -92,7 +92,7 @@ const LabelTags = ({
         </Tooltip>
       </PopoverTrigger>
       <PopoverContent>
-        <p className="font-semibold mb-2">Labels</p>
+        <p className="mb-2 font-semibold">Labels</p>
         <div className="flex flex-wrap gap-2">
           {queries.map(query => {
             if (!query.labels?.length) return null
@@ -124,7 +124,7 @@ const Notification = ({
   return (
     <a
       href={`/queries?query=${encodeURIComponent(query)}`}
-      className={`cursor-pointer text-[10px] flex items-center h-[1.5rem] justify-center bg-muted transition-all border border-muted-foreground/20 px-2 py-1 rounded-sm ${className}`}>
+      className={`flex h-[1.5rem] cursor-pointer items-center justify-center rounded-sm border border-muted-foreground/20 bg-muted px-2 py-1 text-[10px] transition-all ${className}`}>
       Matches {numberOfQueries} Queries
     </a>
   )

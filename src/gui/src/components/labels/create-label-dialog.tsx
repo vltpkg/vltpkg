@@ -81,7 +81,7 @@ const CreateLabelModal = ({
       </DialogHeader>
       <div className="flex flex-col gap-4">
         <div className="flex flex-col gap-2">
-          <div className="flex items-center w-fit">
+          <div className="flex w-fit items-center">
             <LabelBadge
               name={
                 labelName.trim() !== '' ? labelName : 'Label preview'
@@ -91,7 +91,7 @@ const CreateLabelModal = ({
           </div>
         </div>
         <div className="flex flex-col gap-2">
-          <Label className="text-xs border-none font-medium">
+          <Label className="border-none text-xs font-medium">
             Name
           </Label>
           <Input
@@ -101,7 +101,7 @@ const CreateLabelModal = ({
           />
         </div>
         <div className="flex flex-col gap-2">
-          <Label className="text-xs border-none font-medium">
+          <Label className="border-none text-xs font-medium">
             Description
           </Label>
           <Input
@@ -111,7 +111,7 @@ const CreateLabelModal = ({
           />
         </div>
         <div className="flex flex-col gap-2">
-          <Label className="text-xs border-none font-medium">
+          <Label className="border-none text-xs font-medium">
             Color
           </Label>
           <Popover>

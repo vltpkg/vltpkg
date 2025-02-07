@@ -6,11 +6,11 @@ exports[`AppSidebar Logo > renders correctly 1`] = `
   <gui-sidebar-menu-item>
     <gui-sidebar-menu-button
       size="lg"
-      classname="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground whitespace-nowrap"
+      classname="whitespace-nowrap data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
       aschild="true"
     >
       <a href="/">
-        <div class="flex items-center justify-center aspect-square h-full">
+        <div class="flex aspect-square h-full items-center justify-center">
           <gui-vlt-icon
             color="white"
             classname="flex items-center justify-center"

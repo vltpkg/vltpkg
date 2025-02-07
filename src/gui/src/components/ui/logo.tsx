@@ -12,10 +12,10 @@ export const Logo = forwardRef<
       className,
     )}>
     <h1 className="flex items-center justify-center">
-      <span className="text-2xl font-semibold leading-none pr-2 tracking-wide">
+      <span className="pr-2 text-2xl font-semibold leading-none tracking-wide">
         vlt
       </span>
-      <span className="text-2xl font-light leading-none text-neutral-500 tracking-wide">
+      <span className="text-2xl font-light leading-none tracking-wide text-neutral-500">
         {'/vōlt/'}
       </span>
     </h1>

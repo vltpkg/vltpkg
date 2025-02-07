@@ -66,7 +66,7 @@ const ThemeSwitcher = () => {
   ]
 
   return (
-    <div className="flex flex-row items-center justify-center w-[114px] h-[38px] border border-neutral-300 dark:border-neutral-800 rounded-full">
+    <div className="flex h-[38px] w-[114px] flex-row items-center justify-center rounded-full border border-neutral-300 dark:border-neutral-800">
       {controls.map((control, idx) => (
         <div
           role="switch"
@@ -74,7 +74,7 @@ const ThemeSwitcher = () => {
           aria-label={control.ariaLabel}
           onClick={() => onThemeChange(control.name)}
           className={clsx(
-            'cursor-pointer flex items-center justify-center rounded-full aspect-square h-[38px] w-[38px] z-[10]',
+            'z-[10] flex aspect-square h-[38px] w-[38px] cursor-pointer items-center justify-center rounded-full',
             {
               'border border-neutral-300 dark:border-neutral-800':
                 theme === control.name,

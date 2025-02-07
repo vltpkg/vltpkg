@@ -68,15 +68,15 @@ export const AddDependenciesPopover = ({
   if (inProgress) {
     return (
       <>
-        <CardHeader className="rounded-t-lg relative flex flex-col w-full p-0">
+        <CardHeader className="relative flex w-full flex-col rounded-t-lg p-0">
           <div className="flex items-center justify-between px-6 py-4">
-            <CardTitle className="text-lg font-medium flex items-center">
+            <CardTitle className="flex items-center text-lg font-medium">
               <PackagePlus size={18} className="mr-2" />
               Add new dependency
             </CardTitle>
           </div>
         </CardHeader>
-        <div className="flex justify-center items-center h-48">
+        <div className="flex h-48 items-center justify-center">
           <LoadingSpinner />
         </div>
       </>
@@ -86,18 +86,18 @@ export const AddDependenciesPopover = ({
   if (error) {
     return (
       <>
-        <CardHeader className="rounded-t-lg relative flex flex-col w-full p-0">
+        <CardHeader className="relative flex w-full flex-col rounded-t-lg p-0">
           <div className="flex items-center justify-between px-6 py-4">
-            <CardTitle className="text-lg font-medium flex items-center">
+            <CardTitle className="flex items-center text-lg font-medium">
               <BatteryLow size={18} className="mr-2" />
               Error
             </CardTitle>
           </div>
         </CardHeader>
-        <div className="flex items-center flex-row justify-between gap-2 flex-wrap p-6 border-muted-foreground/20 border-t-[1px]">
+        <div className="flex flex-row flex-wrap items-center justify-between gap-2 border-t-[1px] border-muted-foreground/20 p-6">
           <p className="text-sm">{error}</p>
         </div>
-        <div className="flex justify-end w-full">
+        <div className="flex w-full justify-end">
           <Button
             className="m-2"
             role="cancel"
@@ -113,16 +113,16 @@ export const AddDependenciesPopover = ({
 
   return (
     <>
-      <CardHeader className="rounded-t-lg relative flex flex-col w-full p-0">
+      <CardHeader className="relative flex w-full flex-col rounded-t-lg p-0">
         <div className="flex items-center justify-between px-6 py-4">
-          <CardTitle className="text-lg font-medium flex items-center">
+          <CardTitle className="flex items-center text-lg font-medium">
             <PackagePlus size={18} className="mr-2" />
             Add new dependency
           </CardTitle>
         </div>
       </CardHeader>
       <form
-        className="flex items-center flex-row justify-between gap-2 flex-wrap p-6 border-muted-foreground/20 border-t-[1px]"
+        className="flex flex-row flex-wrap items-center justify-between gap-2 border-t-[1px] border-muted-foreground/20 p-6"
         onSubmit={formSubmit}
         onKeyDown={keyDown}>
         <Label htmlFor="package-name" className="ml-1">
@@ -172,9 +172,9 @@ export const AddDependenciesPopover = ({
             <SelectItem value="peer">peerDependencies</SelectItem>
           </SelectContent>
         </Select>
-        <div className="flex justify-end w-full">
+        <div className="flex w-full justify-end">
           <Button
-            className="mt-2 mr-2"
+            className="mr-2 mt-2"
             role="cancel"
             variant="secondary"
             tabIndex={4}

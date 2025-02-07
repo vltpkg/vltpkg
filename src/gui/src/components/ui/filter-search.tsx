@@ -151,7 +151,7 @@ const FilterSearch = <T,>({
   }, [])
 
   return (
-    <div className="relative flex items-center w-[384px]">
+    <div className="relative flex w-[384px] items-center">
       <Search
         size={18}
         className="absolute left-0 ml-3 text-neutral-500"
@@ -165,8 +165,8 @@ const FilterSearch = <T,>({
         value={filterText}
         onChange={e => setFilterText(e.target.value)}
       />
-      <div className="flex gap-2 absolute right-0">
-        <div className="items-center hidden md:flex gap-1 mr-3 backdrop-blur-sm">
+      <div className="absolute right-0 flex gap-2">
+        <div className="mr-3 hidden items-center gap-1 backdrop-blur-sm md:flex">
           <Kbd>
             <Command size={12} />
           </Kbd>

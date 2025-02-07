@@ -3,11 +3,11 @@
 exports[`renders Layout for the "/dashboard" view 1`] = `
 
 <gui-sidebar-provider defaultopen="true">
-  <div class="flex flex-col min-h-svh w-full">
-    <div class="flex flex-row min-h-svh w-full">
+  <div class="flex min-h-svh w-full flex-col">
+    <div class="flex min-h-svh w-full flex-row">
       <gui-app-sidebar>
       </gui-app-sidebar>
-      <div class="flex flex-col grow w-full">
+      <div class="flex w-full grow flex-col">
         <gui-nav-header>
         </gui-nav-header>
         <gui-dashboard>
@@ -26,11 +26,11 @@ exports[`renders Layout for the "/dashboard" view 1`] = `
 exports[`renders Layout for the "/error" view 1`] = `
 
 <gui-sidebar-provider defaultopen="true">
-  <div class="flex flex-col min-h-svh w-full">
-    <div class="flex flex-row min-h-svh w-full">
+  <div class="flex min-h-svh w-full flex-col">
+    <div class="flex min-h-svh w-full flex-row">
       <gui-app-sidebar>
       </gui-app-sidebar>
-      <div class="flex flex-col grow w-full">
+      <div class="flex w-full grow flex-col">
         <gui-nav-header>
         </gui-nav-header>
         <gui-error-found>
@@ -49,11 +49,11 @@ exports[`renders Layout for the "/error" view 1`] = `
 exports[`renders Layout for the "/explore" view 1`] = `
 
 <gui-sidebar-provider defaultopen="true">
-  <div class="flex flex-col min-h-svh w-full">
-    <div class="flex flex-row min-h-svh w-full">
+  <div class="flex min-h-svh w-full flex-col">
+    <div class="flex min-h-svh w-full flex-row">
       <gui-app-sidebar>
       </gui-app-sidebar>
-      <div class="flex flex-col grow w-full">
+      <div class="flex w-full grow flex-col">
         <gui-nav-header>
         </gui-nav-header>
         <gui-explorer>
@@ -72,11 +72,11 @@ exports[`renders Layout for the "/explore" view 1`] = `
 exports[`renders Layout for the "/labels" view 1`] = `
 
 <gui-sidebar-provider defaultopen="true">
-  <div class="flex flex-col min-h-svh w-full">
-    <div class="flex flex-row min-h-svh w-full">
+  <div class="flex min-h-svh w-full flex-col">
+    <div class="flex min-h-svh w-full flex-row">
       <gui-app-sidebar>
       </gui-app-sidebar>
-      <div class="flex flex-col grow w-full">
+      <div class="flex w-full grow flex-col">
         <gui-nav-header>
         </gui-nav-header>
         <gui-labels>
@@ -95,11 +95,11 @@ exports[`renders Layout for the "/labels" view 1`] = `
 exports[`renders Layout for the "/queries" view 1`] = `
 
 <gui-sidebar-provider defaultopen="true">
-  <div class="flex flex-col min-h-svh w-full">
-    <div class="flex flex-row min-h-svh w-full">
+  <div class="flex min-h-svh w-full flex-col">
+    <div class="flex min-h-svh w-full flex-row">
       <gui-app-sidebar>
       </gui-app-sidebar>
-      <div class="flex flex-col grow w-full">
+      <div class="flex w-full grow flex-col">
         <gui-nav-header>
         </gui-nav-header>
         <gui-queries>

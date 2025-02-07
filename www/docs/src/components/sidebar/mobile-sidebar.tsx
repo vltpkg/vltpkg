@@ -27,12 +27,12 @@ const MobileSidebar = ({ sidebar }: { sidebar: SidebarEntries }) => {
       <AnimatePresence>
         {open && (
           <motion.div
-            className="fixed flex flex-col h-svh w-full inset-0 backdrop-blur-md bg-white dark:bg-black z-[10000] overflow-y-auto"
+            className="fixed inset-0 z-[10000] flex h-svh w-full flex-col overflow-y-auto bg-white backdrop-blur-md dark:bg-black"
             initial={{ height: 0 }}
             animate={{ height: '100%' }}
             exit={{ height: 0 }}
             transition={{ duration: 0.3 }}>
-            <div className="flex flex-row items-center justify-between px-6 py-6 border-b-[1px]">
+            <div className="flex flex-row items-center justify-between border-b-[1px] px-6 py-6">
               <h3 className="text-2xl">Documentation</h3>
               <Button
                 variant="outline"

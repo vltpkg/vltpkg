@@ -28,7 +28,7 @@ export function CodeBlock({
     <>
       {out ?
         <div
-          className={`text-xs rounded-md overflow-x-scroll border border-solid border-neutral-600 snap-x ${theme === 'light' ? 'bg-white' : 'bg-[#1b1e28]'} p-4`}>
+          className={`snap-x overflow-x-scroll rounded-md border border-solid border-neutral-600 text-xs ${theme === 'light' ? 'bg-white' : 'bg-[#1b1e28]'} p-4`}>
           <div dangerouslySetInnerHTML={{ __html: out }} />
         </div>
       : ''}

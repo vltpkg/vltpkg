@@ -14,10 +14,10 @@ const SidebarLogo = () => {
       <SidebarMenuItem>
         <SidebarMenuButton
           size="lg"
-          className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground whitespace-nowrap"
+          className="whitespace-nowrap data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
           asChild>
           <a href="/">
-            <div className="flex items-center justify-center aspect-square h-full">
+            <div className="flex aspect-square h-full items-center justify-center">
               <VLTV
                 color={theme === 'dark' ? 'white' : 'black'}
                 className="flex items-center justify-center"

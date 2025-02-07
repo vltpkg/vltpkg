@@ -16,7 +16,7 @@ const Hero = ({ entry }: Props) => {
   const tagline = data.hero?.tagline ?? ''
 
   return (
-    <section className="mx-auto flex flex-col grow w-full justify-between max-w-screen-xl gap-x-4 py-6">
+    <section className="mx-auto flex w-full max-w-screen-xl grow flex-col justify-between gap-x-4 py-6">
       <Introduction title={title} tagline={tagline} />
       <Workspaces />
     </section>
@@ -37,7 +37,7 @@ const Introduction = ({
     <section className="py-16">
       {/* background image */}
       <div
-        className={clsx('absolute h-[848px] inset-0 -z-10', {
+        className={clsx('absolute inset-0 -z-10 h-[848px]', {
           'light-wave': theme === 'light',
           'dark-wave': theme === 'dark',
         })}
@@ -49,7 +49,7 @@ const Introduction = ({
           {tagline}
         </p>
       </div>
-      <div className="max-w-lg mx-auto relative flex items-center justify-center py-8">
+      <div className="relative mx-auto flex max-w-lg items-center justify-center py-8">
         <CliInstall />
       </div>
 
@@ -57,14 +57,14 @@ const Introduction = ({
         <a
           href="/cli"
           role="link"
-          className="no-underline text-white dark:text-black cursor-pointer rounded-sm bg-foreground px-8 py-2 hover:bg-foreground/90 transition-all">
+          className="cursor-pointer rounded-sm bg-foreground px-8 py-2 text-white no-underline transition-all hover:bg-foreground/90 dark:text-black">
           Quick Start
         </a>
         <a
           href="https://www.vlt.sh/serverless-registry"
           target="_blank"
           role="link"
-          className="flex items-center gap-1 no-underline text-foreground cursor-pointer rounded-sm bg-white dark:bg-black border-muted-foreground/25 border-[1px] px-8 py-2 hover:bg-muted-foreground/20 transition-all">
+          className="flex cursor-pointer items-center gap-1 rounded-sm border-[1px] border-muted-foreground/25 bg-white px-8 py-2 text-foreground no-underline transition-all hover:bg-muted-foreground/20 dark:bg-black">
           Serverless Registry
           <ArrowUpRight size={20} />
         </a>
@@ -75,17 +75,17 @@ const Introduction = ({
 
 const Workspaces = () => {
   return (
-    <section className="flex flex-col py-4 gap-8">
-      <div className="absolute h-[1px] left-0 right-0 w-full bg-muted-foreground/10" />
+    <section className="flex flex-col gap-8 py-4">
+      <div className="absolute left-0 right-0 h-[1px] w-full bg-muted-foreground/10" />
 
-      <div className="mt-24 mb-10 flex flex-col text-center">
+      <div className="mb-10 mt-24 flex flex-col text-center">
         <p className="text-muted-foreground/50">
           Get started in minutes
         </p>
         <h2 className="text-4xl">Guides and Tutorials</h2>
       </div>
 
-      <div className="flex flex-col items-center md:flex-row flex-wrap gap-10 md:gap-3 justify-between">
+      <div className="flex flex-col flex-wrap items-center justify-between gap-10 md:flex-row md:gap-3">
         <StartedCard
           title="Getting Started"
           subtitle="Quick Start"

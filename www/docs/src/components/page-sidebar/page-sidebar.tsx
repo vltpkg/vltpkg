@@ -66,12 +66,12 @@ const PageSidebar = ({ toc }: Props) => {
     ))
 
   return (
-    <div className="hidden md:flex flex-col items-start sticky top-0 pt-8 pb-8 h-fit md:w-[300px]">
-      <h3 className="flex items-center gap-2 text-sm font-bold mb-3">
+    <div className="sticky top-0 hidden h-fit flex-col items-start pb-8 pt-8 md:flex md:w-[300px]">
+      <h3 className="mb-3 flex items-center gap-2 text-sm font-bold">
         <AlignLeft size={16} />
         On this page
       </h3>
-      <div className="flex flex-col gap-2 -ml-2">
+      <div className="-ml-2 flex flex-col gap-2">
         {renderItems(anchors)}
       </div>
     </div>
@@ -90,7 +90,7 @@ const Link = ({
   return (
     <a
       href={`#${href}`}
-      className={`pl-2 no-underline text-sm cursor-pointer transition-all ${
+      className={`cursor-pointer pl-2 text-sm no-underline transition-all ${
         isActive ?
           'border-l-[2px] border-foreground text-foreground'
         : 'text-muted-foreground'

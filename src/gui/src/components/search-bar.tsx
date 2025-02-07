@@ -45,7 +45,7 @@ export const SearchBar = ({
   }, [])
 
   return (
-    <div className="flex items-center relative grow">
+    <div className="relative flex grow items-center">
       {startContent && (
         <div className="absolute pr-8">{startContent}</div>
       )}
