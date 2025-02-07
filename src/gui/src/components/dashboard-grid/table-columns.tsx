@@ -45,7 +45,7 @@ export const dashboardColumns: ColumnDef<DashboardDataProject>[] = [
       return (
         <TooltipProvider>
           <Tooltip>
-            <TooltipTrigger className="text-left truncate font-medium w-[300px]">
+            <TooltipTrigger className="w-[300px] truncate text-left font-medium">
               {name}
             </TooltipTrigger>
             <TooltipContent align="start">{name}</TooltipContent>
@@ -69,7 +69,7 @@ export const dashboardColumns: ColumnDef<DashboardDataProject>[] = [
       return (
         <TooltipProvider>
           <Tooltip>
-            <TooltipTrigger className="text-left truncate w-[500px]">
+            <TooltipTrigger className="w-[500px] truncate text-left">
               {path}
             </TooltipTrigger>
             <TooltipContent align="start">{path}</TooltipContent>
@@ -148,7 +148,7 @@ export const dashboardColumns: ColumnDef<DashboardDataProject>[] = [
     accessorKey: 'time',
     header: ({ column }) => (
       <SortingHeader
-        className="flex w-full text-right justify-end"
+        className="flex w-full justify-end text-right"
         header="Modified"
         column={column}
       />
@@ -166,7 +166,7 @@ export const dashboardColumns: ColumnDef<DashboardDataProject>[] = [
       return (
         <TooltipProvider>
           <Tooltip>
-            <TooltipTrigger className="text-right w-full">
+            <TooltipTrigger className="w-full text-right">
               {humanMTime}
             </TooltipTrigger>
             <TooltipContent align="end" className="text-nowrap">

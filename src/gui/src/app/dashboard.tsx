@@ -57,15 +57,15 @@ export const Dashboard = () => {
   }, [stamp])
 
   return (
-    <section className="flex grow w-full flex-col min-h-[80svh] bg-white dark:bg-black">
-      <div className="flex items-center justify-between w-full px-8 py-4 border-b-[1px] border-t-[1px] border-solid">
+    <section className="flex min-h-[80svh] w-full grow flex-col bg-white dark:bg-black">
+      <div className="flex w-full items-center justify-between border-b-[1px] border-t-[1px] border-solid px-8 py-4">
         {dashboard?.cwd ?
-          <p className="text-xs font-mono font-light text-muted-foreground">
+          <p className="font-mono text-xs font-light text-muted-foreground">
             Directory: {dashboard.cwd}
           </p>
         : ''}
         {dashboard?.buildVersion ?
-          <p className="text-xs font-mono font-light text-muted-foreground text-right">
+          <p className="text-right font-mono text-xs font-light text-muted-foreground">
             build: v{dashboard.buildVersion}
           </p>
         : ''}

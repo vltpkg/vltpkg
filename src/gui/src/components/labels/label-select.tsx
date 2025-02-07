@@ -84,16 +84,16 @@ const LabelSelect = ({
         placeholder="Search labels"
       />
       <CommandList className="rounded-sm">
-        <CommandEmpty className="py-2 px-3 my-3 items-center">
+        <CommandEmpty className="my-3 items-center px-3 py-2">
           <Dialog
             open={isCreateModalOpen}
             onOpenChange={setIsCreateModalOpen}>
-            <div className="flex flex-col gap-3 w-full items-center">
+            <div className="flex w-full flex-col items-center gap-3">
               <p className="text-sm text-neutral-400">
                 No labels found.
               </p>
               <DialogTrigger>
-                <Button className="font-normal w-full">
+                <Button className="w-full font-normal">
                   Create label "{inputText}"
                 </Button>
               </DialogTrigger>
@@ -114,7 +114,7 @@ const LabelSelect = ({
                 key={label.id}
                 value={label.name}
                 onSelect={handleSelect}
-                className="cursor-pointer flex flex-col items-start gap-2">
+                className="flex cursor-pointer flex-col items-start gap-2">
                 <div className="flex items-center gap-3">
                   <Check
                     className={cn(
@@ -143,7 +143,7 @@ const LabelSelect = ({
         </CommandGroup>
       </CommandList>
       <Button
-        className="border-none text-neutral-500 hover:text-primary hover:bg-background rounded-sm mb-2"
+        className="mb-2 rounded-sm border-none text-neutral-500 hover:bg-background hover:text-primary"
         variant="outline"
         size="sm"
         asChild>

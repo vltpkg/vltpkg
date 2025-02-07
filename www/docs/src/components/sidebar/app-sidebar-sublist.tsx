@@ -53,7 +53,7 @@ const AppSidebarSublist = ({
   return (
     <div
       ref={sidebarRef}
-      className={`flex flex-col mt-8 gap-2 h-full overflow-y-auto ${className}`}>
+      className={`mt-8 flex h-full flex-col gap-2 overflow-y-auto ${className}`}>
       {sidebar.map((entry, idx) => (
         <React.Fragment key={idx}>
           {entry.type === 'group' ?
@@ -100,13 +100,13 @@ const Group = ({ className = '', entry }: SublistProps) => {
   return (
     <div className={`flex flex-col ${className}`}>
       <div
-        className="flex flex-row justify-between cursor-pointer group"
+        className="group flex cursor-pointer flex-row justify-between"
         onClick={() => setExpanded(!expanded)}>
-        <p className="text-sm text-muted-foreground group-hover:text-foreground transition-all">
+        <p className="text-sm text-muted-foreground transition-all group-hover:text-foreground">
           {entry.label}
         </p>
         <motion.div
-          className="flex items-center justify-center text-muted-foreground group-hover:text-foreground transition-all"
+          className="flex items-center justify-center text-muted-foreground transition-all group-hover:text-foreground"
           style={{
             rotateZ: expanded ? 180 : 0,
           }}>
@@ -116,7 +116,7 @@ const Group = ({ className = '', entry }: SublistProps) => {
 
       {/* groups */}
       <motion.div
-        className="flex flex-col pl-4 border-l-[1px] gap-2 mt-2"
+        className="mt-2 flex flex-col gap-2 border-l-[1px] pl-4"
         style={{
           display: expanded ? 'flex' : 'none',
         }}>
@@ -142,14 +142,14 @@ const Item = ({
   return (
     <div className={`relative flex h-fit ${className}`}>
       <div
-        className={`absolute h-full w-[1px] left-0 -ml-[17px] ${
+        className={`absolute left-0 -ml-[17px] h-full w-[1px] ${
           entry.isCurrent ? 'bg-foreground' : 'hidden'
         }`}
       />
       <a
         href={entry.href}
         role="link"
-        className={`cursor-pointer text-sm no-underline text-sm font-medium hover:text-foreground transition-all ${
+        className={`cursor-pointer text-sm font-medium no-underline transition-all hover:text-foreground ${
           entry.isCurrent ? 'text-foreground' : (
             'text-muted-foreground'
           )
