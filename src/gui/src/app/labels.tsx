@@ -5,8 +5,8 @@ import { Plus } from 'lucide-react'
 import { FilterSearch } from '@/components/ui/filter-search.jsx'
 import {
   sortAlphabeticallyAscending,
-  LabelsSortToggle,
-} from '@/components/labels/labels-sort-toggle.jsx'
+  SortToggle,
+} from '@/components/sort-toggle.jsx'
 import { Checkbox } from '@/components/ui/checkbox.jsx'
 import { DeleteLabel } from '@/components/labels/delete-label.jsx'
 import { CreateLabel } from '@/components/labels/create-label.jsx'
@@ -65,7 +65,7 @@ const Labels = () => {
               items={savedLabels}
               setFilteredItems={setFilteredLabels}
             />
-            <LabelsSortToggle
+            <SortToggle
               filteredItems={filteredLabels}
               setFilteredItems={setFilteredLabels}
               sortKey="name"

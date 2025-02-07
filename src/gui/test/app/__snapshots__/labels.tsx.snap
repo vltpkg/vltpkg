@@ -11,11 +11,11 @@ exports[`labels view > labels render default 1`] = `
           items="[object Object],[object Object],[object Object]"
         >
         </gui-filter-search>
-        <gui-labels-sort-toggle
+        <gui-sort-toggle
           filtereditems
           sortkey="name"
         >
-        </gui-labels-sort-toggle>
+        </gui-sort-toggle>
         <gui-delete-label
           deletedialogopen="false"
           selectedlabels

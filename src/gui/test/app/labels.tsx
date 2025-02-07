@@ -20,8 +20,8 @@ vi.mock('@/components/ui/filter-search.jsx', () => ({
   FilterSearch: 'gui-filter-search',
 }))
 
-vi.mock('@/components/labels/labels-sort-toggle.jsx', () => ({
-  LabelsSortToggle: 'gui-labels-sort-toggle',
+vi.mock('@/components/sort-toggle.jsx', () => ({
+  SortToggle: 'gui-sort-toggle',
   sortAlphabeticallyAscending: vi.fn(),
 }))
 

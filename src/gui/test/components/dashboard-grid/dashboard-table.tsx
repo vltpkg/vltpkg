@@ -3,7 +3,7 @@ import { vi, describe, it, expect, afterEach } from 'vitest'
 import { cleanup, render } from '@testing-library/react'
 import html from 'diffable-html'
 import { useGraphStore as useStore } from '@/state/index.js'
-import { DashboardTable } from '@/components/dashboard-grid/dasboard-table.jsx'
+import { DashboardTable } from '@/components/dashboard-grid/dashboard-table.jsx'
 import { type DashboardDataProject } from '@/state/types.js'
 import { type VisibilityState } from '@tanstack/react-table'
 

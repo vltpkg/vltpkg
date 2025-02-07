@@ -6,8 +6,8 @@ import { FilterSearch } from '@/components/ui/filter-search.jsx'
 import { DeleteQuery } from '@/components/queries/delete-query.jsx'
 import {
   sortAlphabeticallyAscending,
-  QueriesSortToggle,
-} from '@/components/queries/queries-sort-toggle.jsx'
+  SortToggle,
+} from '@/components/sort-toggle.jsx'
 import { Button } from '@/components/ui/button.jsx'
 import { Tag } from 'lucide-react'
 import { Badge } from '@/components/ui/badge.jsx'
@@ -65,7 +65,7 @@ const Queries = () => {
               items={savedQueries}
               setFilteredItems={setFilteredQueries}
             />
-            <QueriesSortToggle
+            <SortToggle
               filteredItems={filteredQueries}
               setFilteredItems={setFilteredQueries}
               sortKey="name"

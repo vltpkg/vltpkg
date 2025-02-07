@@ -73,7 +73,7 @@ const selectDashboardItem = async ({
   }
 }
 
-const DashboardTable = ({
+export const DashboardTable = ({
   data,
   setTable,
   tableFilterValue,
@@ -113,5 +113,3 @@ const DashboardTable = ({
     />
   )
 }
-
-export { DashboardTable }

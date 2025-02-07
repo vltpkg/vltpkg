@@ -35,7 +35,7 @@ interface DataTableProps<TData, TValue> {
   onClickHandler?: (o: any) => void
 }
 
-const DataTable = <TData, TValue>({
+export const DataTable = <TData, TValue>({
   columns,
   data,
   setTable,
@@ -169,5 +169,3 @@ const DataTable = <TData, TValue>({
     </>
   )
 }
-
-export { DataTable }

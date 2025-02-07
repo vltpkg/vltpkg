@@ -19,7 +19,7 @@ interface ToggleProps {
   options: [Option, Option]
 }
 
-const Toggle = ({ options }: ToggleProps) => {
+export const Toggle = ({ options }: ToggleProps) => {
   const [activeOption, setActiveOption] = useState<string>(
     options[0].key,
   )
@@ -73,5 +73,3 @@ const Toggle = ({ options }: ToggleProps) => {
     </div>
   )
 }
-
-export { Toggle }

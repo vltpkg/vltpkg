@@ -65,12 +65,9 @@ vi.mock('@/components/dashboard-grid/dasboard-table.jsx', () => ({
   DashboardTable: 'gui-dashboard-table',
 }))
 
-vi.mock(
-  '@/components/dashboard-grid/dashboard-sort-toggle.jsx',
-  () => ({
-    DashboardSortToggle: 'gui-dashboard-sort-toggle',
-  }),
-)
+vi.mock('@/components/sort-toggle.jsx', () => ({
+  SortToggle: 'gui-sort-toggle',
+}))
 
 vi.mock(
   '@/components/dashboard-grid/dashboard-view-toggle.jsx',

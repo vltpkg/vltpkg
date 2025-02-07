@@ -9,7 +9,7 @@ interface TableFilterSearchProps {
   placeholder?: string
 }
 
-const TableFilterSearch = ({
+export const TableFilterSearch = ({
   placeholder = 'Filter Projects',
   filterValue,
   onFilterChange,
@@ -70,5 +70,3 @@ const TableFilterSearch = ({
     </div>
   )
 }
-
-export { TableFilterSearch }

@@ -15,8 +15,8 @@ import {
 import { FilterSearch } from '@/components/ui/filter-search.jsx'
 import { TableFilterSearch } from '@/components/data-table/table-filter-search.jsx'
 import { TableViewDropdown } from '@/components/data-table/table-view-dropdown.jsx'
-import { DashboardTable } from '@/components/dashboard-grid/dasboard-table.jsx'
-import { DashboardSortToggle } from '@/components/dashboard-grid/dashboard-sort-toggle.jsx'
+import { DashboardTable } from '@/components/dashboard-grid/dashboard-table.jsx'
+import { SortToggle } from '@/components/sort-toggle.jsx'
 import {
   type View,
   DashboardViewToggle,
@@ -156,7 +156,7 @@ export const DashboardItem = ({
   )
 }
 
-const DashboardGrid = () => {
+export const DashboardGrid = () => {
   const dashboard = useGraphStore(state => state.dashboard)
   const [currentView, setCurrentView] = useState<View>('grid')
   const [tableFilterValue, setTableFilterValue] = useState<string>('')
@@ -218,7 +218,7 @@ const DashboardGrid = () => {
               exit={{ opacity: 0 }}
               initial={{ opacity: 1 }}
               animate={{ opacity: 1 }}>
-              <DashboardSortToggle
+              <SortToggle
                 filteredItems={filteredProjects}
                 setFilteredItems={setFilteredProjects}
                 sortKey="name"
@@ -263,5 +263,3 @@ const DashboardGrid = () => {
     </div>
   )
 }
-
-export { DashboardGrid }

@@ -16,8 +16,8 @@ vi.mock('@/components/queries/delete-query.jsx', () => ({
   DeleteQuery: 'gui-delete-query',
 }))
 
-vi.mock('@/components/queries/queries-sort-toggle.jsx', () => ({
-  QueriesSortToggle: 'gui-queries-sorting-toggle',
+vi.mock('@/components/sort-toggle.jsx', () => ({
+  SortToggle: 'gui-sort-toggle',
   sortAlphabeticallyAscending: vi.fn(),
 }))
 

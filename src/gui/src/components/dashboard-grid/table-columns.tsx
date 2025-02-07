@@ -33,7 +33,7 @@ const SortingHeader = ({
   )
 }
 
-const dashboardColumns: ColumnDef<DashboardDataProject>[] = [
+export const dashboardColumns: ColumnDef<DashboardDataProject>[] = [
   {
     accessorKey: 'name',
     header: ({ column }) => (
@@ -178,5 +178,3 @@ const dashboardColumns: ColumnDef<DashboardDataProject>[] = [
     enableHiding: true,
   },
 ]
-
-export { dashboardColumns }

@@ -3,7 +3,7 @@ import { ArrowDownAz, ArrowDownZa } from 'lucide-react'
 
 export type SortingOption = 'ascending' | 'descending'
 
-interface LabelsSortToggleProps<T> {
+interface SortToggleProps<T> {
   filteredItems: T[]
   setFilteredItems: (i: T[]) => void
   sortKey: keyof T
@@ -13,7 +13,7 @@ interface SortOption extends Option {
   key: SortingOption
 }
 
-export const sortAlphabeticallyAscending = <T,>(
+export const sortAlphabeticallyAscending = <T extends object>(
   items: T[],
   sortKey: keyof T,
   setItems: (i: T[]) => void,
@@ -24,7 +24,7 @@ export const sortAlphabeticallyAscending = <T,>(
   setItems(sorted)
 }
 
-export const sortAlphabeticallyDescending = <T,>(
+export const sortAlphabeticallyDescending = <T extends object>(
   items: T[],
   sortKey: keyof T,
   setItems: (i: T[]) => void,
@@ -35,11 +35,11 @@ export const sortAlphabeticallyDescending = <T,>(
   setItems(sorted)
 }
 
-const LabelsSortToggle = <T,>({
+export const SortToggle = <T extends object>({
   filteredItems,
   setFilteredItems,
   sortKey,
-}: LabelsSortToggleProps<T>) => {
+}: SortToggleProps<T>) => {
   const options: [SortOption, SortOption] = [
     {
       icon: props => <ArrowDownAz {...props} />,
@@ -67,5 +67,3 @@ const LabelsSortToggle = <T,>({
 
   return <Toggle options={options} />
 }
-
-export { LabelsSortToggle }

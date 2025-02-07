@@ -12,7 +12,7 @@ interface DashboardToggle extends Option {
   key: View
 }
 
-const DashboardViewToggle = ({
+export const DashboardViewToggle = ({
   setCurrentView,
 }: DashboardViewToggleProps) => {
   const options: [DashboardToggle, DashboardToggle] = [
@@ -32,5 +32,3 @@ const DashboardViewToggle = ({
 
   return <Toggle options={options} />
 }
-
-export { DashboardViewToggle }

@@ -13,11 +13,11 @@ exports[`dashboard-grid render default 1`] = `
       <gui-dashboard-view-toggle currentview="grid">
       </gui-dashboard-view-toggle>
       <div style="opacity: 1;">
-        <gui-dashboard-sort-toggle
+        <gui-sort-toggle
           filtereditems
           sortkey="name"
         >
-        </gui-dashboard-sort-toggle>
+        </gui-sort-toggle>
       </div>
     </div>
     <div
@@ -51,11 +51,11 @@ exports[`dashboard-grid with results 1`] = `
       <gui-dashboard-view-toggle currentview="grid">
       </gui-dashboard-view-toggle>
       <div style="opacity: 1;">
-        <gui-dashboard-sort-toggle
+        <gui-sort-toggle
           filtereditems="[object Object],[object Object]"
           sortkey="name"
         >
-        </gui-dashboard-sort-toggle>
+        </gui-sort-toggle>
       </div>
     </div>
     <div

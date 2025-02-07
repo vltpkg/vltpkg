@@ -20,7 +20,7 @@ interface TableViewDropdownProps<TData> {
   >
 }
 
-const TableViewDropdown = <TData,>({
+export const TableViewDropdown = <TData extends object>({
   className = '',
   table,
   columnVisibility,
@@ -61,5 +61,3 @@ const TableViewDropdown = <TData,>({
     </DropdownMenu>
   )
 }
-
-export { TableViewDropdown }

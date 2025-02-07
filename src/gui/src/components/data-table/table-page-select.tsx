@@ -19,7 +19,7 @@ interface TablePageSelectProps {
   setPagination: React.Dispatch<React.SetStateAction<PaginationState>>
 }
 
-const TablePageSelect = ({
+export const TablePageSelect = ({
   pagination,
   setPagination,
 }: TablePageSelectProps) => {
@@ -82,5 +82,3 @@ const TablePageSelect = ({
     </TooltipProvider>
   )
 }
-
-export { TablePageSelect }
