@@ -11,7 +11,7 @@ exports[`select render default 1`] = `
     aria-autocomplete="none"
     dir="ltr"
     data-state="closed"
-    class="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 [&amp;>span]:line-clamp-1"
+    class="flex h-9 w-full items-center justify-between whitespace-nowrap rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50 [&amp;>span]:line-clamp-1"
   >
     <span
       tabindex="3"
@@ -19,22 +19,11 @@ exports[`select render default 1`] = `
     >
       dependencies
     </span>
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewbox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      stroke-width="2"
-      stroke-linecap="round"
-      stroke-linejoin="round"
-      class="lucide lucide-chevron-down h-4 w-4 opacity-50"
+    <gui-chevron-down-icon
+      classname="h-4 w-4 opacity-50"
       aria-hidden="true"
     >
-      <path d="m6 9 6 6 6-6">
-      </path>
-    </svg>
+    </gui-chevron-down-icon>
   </button>
 </div>
 
@@ -62,7 +51,7 @@ exports[`select render open 1`] = `
     aria-autocomplete="none"
     dir="ltr"
     data-state="open"
-    class="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 [&amp;>span]:line-clamp-1"
+    class="flex h-9 w-full items-center justify-between whitespace-nowrap rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50 [&amp;>span]:line-clamp-1"
   >
     <span
       tabindex="3"
@@ -70,22 +59,11 @@ exports[`select render open 1`] = `
     >
       dependencies
     </span>
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewbox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      stroke-width="2"
-      stroke-linecap="round"
-      stroke-linejoin="round"
-      class="lucide lucide-chevron-down h-4 w-4 opacity-50"
+    <gui-chevron-down-icon
+      classname="h-4 w-4 opacity-50"
       aria-hidden="true"
     >
-      <path d="m6 9 6 6 6-6">
-      </path>
-    </svg>
+    </gui-chevron-down-icon>
   </button>
 </div>
 <div
@@ -119,26 +97,13 @@ exports[`select render open 1`] = `
         aria-selected="false"
         data-state="checked"
         tabindex="-1"
-        class="relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
+        class="relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-2 pr-8 text-sm outline-none focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
         data-radix-collection-item
       >
-        <span class="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
+        <span class="absolute right-2 flex h-3.5 w-3.5 items-center justify-center">
           <span aria-hidden="true">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="24"
-              height="24"
-              viewbox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              class="lucide lucide-check h-4 w-4"
-            >
-              <path d="M20 6 9 17l-5-5">
-              </path>
-            </svg>
+            <gui-check-icon classname="h-4 w-4">
+            </gui-check-icon>
           </span>
         </span>
         <span id="radix-:r6:">
@@ -151,10 +116,10 @@ exports[`select render open 1`] = `
         aria-selected="false"
         data-state="unchecked"
         tabindex="-1"
-        class="relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
+        class="relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-2 pr-8 text-sm outline-none focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
         data-radix-collection-item
       >
-        <span class="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
+        <span class="absolute right-2 flex h-3.5 w-3.5 items-center justify-center">
         </span>
         <span id="radix-:r7:">
           devDependencies
@@ -166,10 +131,10 @@ exports[`select render open 1`] = `
         aria-selected="false"
         data-state="unchecked"
         tabindex="-1"
-        class="relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
+        class="relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-2 pr-8 text-sm outline-none focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
         data-radix-collection-item
       >
-        <span class="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
+        <span class="absolute right-2 flex h-3.5 w-3.5 items-center justify-center">
         </span>
         <span id="radix-:r8:">
           optionalDependencies
@@ -181,10 +146,10 @@ exports[`select render open 1`] = `
         aria-selected="false"
         data-state="unchecked"
         tabindex="-1"
-        class="relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
+        class="relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-2 pr-8 text-sm outline-none focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
         data-radix-collection-item
       >
-        <span class="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
+        <span class="absolute right-2 flex h-3.5 w-3.5 items-center justify-center">
         </span>
         <span id="radix-:r9:">
           peerDependencies

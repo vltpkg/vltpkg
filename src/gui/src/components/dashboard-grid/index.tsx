@@ -1,3 +1,4 @@
+import { motion, AnimatePresence } from 'framer-motion'
 import { useEffect, useState, type MouseEvent } from 'react'
 import {
   type DashboardDataProject,
@@ -12,7 +13,18 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip.jsx'
 import { FilterSearch } from '@/components/ui/filter-search.jsx'
-import { SortingToggle } from '@/components/ui/sorting-toggle.jsx'
+import { TableFilterSearch } from '@/components/data-table/table-filter-search.jsx'
+import { TableViewDropdown } from '@/components/data-table/table-view-dropdown.jsx'
+import { DashboardTable } from '@/components/dashboard-grid/dashboard-table.jsx'
+import { SortToggle } from '@/components/sort-toggle.jsx'
+import {
+  type View,
+  DashboardViewToggle,
+} from '@/components/dashboard-grid/dashboard-view-toggle.jsx'
+import {
+  type VisibilityState,
+  type Table,
+} from '@tanstack/react-table'
 import { getIconSet } from '@/utils/dashboard-tools.jsx'
 import { format } from 'date-fns'
 
@@ -144,11 +156,21 @@ export const DashboardItem = ({
   )
 }
 
-const DashboardGrid = () => {
+export const DashboardGrid = () => {
   const dashboard = useGraphStore(state => state.dashboard)
+  const [currentView, setCurrentView] = useState<View>('grid')
+  const [tableFilterValue, setTableFilterValue] = useState<string>('')
   const [filteredProjects, setFilteredProjects] = useState<
     DashboardDataProject[]
   >([])
+  const [table, setTable] =
+    useState<Table<DashboardDataProject> | null>(null)
+  const [columnVisibility, setColumnVisibility] =
+    useState<VisibilityState>({
+      type: false,
+      private: false,
+      version: false,
+    })
 
   useEffect(() => {
     if (dashboard) {
@@ -163,31 +185,81 @@ const DashboardGrid = () => {
   return (
     <div className="flex flex-col grow bg-secondary dark:bg-black px-8 py-8">
       <div className="flex gap-2 mb-8">
-        <FilterSearch
-          placeholder="Filter Projects"
-          items={dashboard?.projects ?? []}
-          setFilteredItems={setFilteredProjects}
+        {currentView === 'table' ?
+          <TableFilterSearch
+            filterValue={tableFilterValue}
+            onFilterChange={setTableFilterValue}
+          />
+        : <FilterSearch
+            placeholder="Filter Projects"
+            items={dashboard?.projects ?? []}
+            setFilteredItems={setFilteredProjects}
+          />
+        }
+        <DashboardViewToggle
+          currentView={currentView}
+          setCurrentView={setCurrentView}
         />
-        <SortingToggle
-          filteredItems={filteredProjects}
-          setFilteredItems={setFilteredProjects}
-          sortKey="name"
-        />
+        <AnimatePresence mode="wait">
+          {currentView === 'table' ?
+            <motion.div
+              key={currentView}
+              initial={{ opacity: 0 }}
+              exit={{ opacity: 0 }}
+              animate={{ opacity: 1 }}>
+              <TableViewDropdown
+                columnVisibility={columnVisibility}
+                setColumnVisibility={setColumnVisibility}
+                table={table}
+              />
+            </motion.div>
+          : <motion.div
+              key={currentView}
+              exit={{ opacity: 0 }}
+              initial={{ opacity: 1 }}
+              animate={{ opacity: 1 }}>
+              <SortToggle
+                filteredItems={filteredProjects}
+                setFilteredItems={setFilteredProjects}
+                sortKey="name"
+              />
+            </motion.div>
+          }
+        </AnimatePresence>
       </div>
 
-      {/* items */}
-      <div className="flex flex-col">
-        <p className="text-sm font-semibold mb-4">Projects</p>
-        <div className="flex flex-row flex-wrap gap-8">
-          {dashboard?.projects ?
-            filteredProjects.map((item, index) => (
-              <DashboardItem key={index} item={item} />
-            ))
-          : <p>No projects found</p>}
-        </div>
-      </div>
+      <AnimatePresence mode="wait">
+        {currentView === 'table' ?
+          <motion.div
+            key={currentView}
+            exit={{ opacity: 0, y: 5 }}
+            initial={{ opacity: 0, y: 5 }}
+            animate={{ opacity: 1, y: 0 }}>
+            <DashboardTable
+              data={dashboard?.projects ?? []}
+              setTable={setTable}
+              tableFilterValue={tableFilterValue}
+              columnVisibility={columnVisibility}
+              setColumnVisibility={setColumnVisibility}
+            />
+          </motion.div>
+        : <motion.div
+            key={currentView}
+            exit={{ opacity: 0, y: -5 }}
+            initial={{ opacity: 0, y: -5 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex flex-col">
+            <p className="text-sm font-semibold mb-4">Projects</p>
+            <div className="flex flex-row flex-wrap gap-8">
+              {dashboard?.projects ?
+                filteredProjects.map((item, index) => (
+                  <DashboardItem key={index} item={item} />
+                ))
+              : <p>No projects found</p>}
+            </div>
+          </motion.div>
+        }
+      </AnimatePresence>
     </div>
   )
 }
-
-export { DashboardGrid }
