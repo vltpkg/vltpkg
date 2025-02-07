@@ -21,7 +21,7 @@ type Base = {
 }
 
 type Bundle = Base & {
-  engines: Record<string, string>
+  engines: { node: string }
 }
 
 type Compiled = Base & {
@@ -77,9 +77,14 @@ const PRERELEASE_ID = `.${Date.now()}`
 const FILES = {
   README: readFile(join(Paths.CLI, 'README.md')),
   LICENSE: readFile(join(Paths.CLI, 'LICENSE')),
-  PACKAGE_JSON: readPackageJson(
-    join(Paths.CLI, 'package.json'),
-  ) as Bundle,
+  PACKAGE_JSON: (() => {
+    const pkg = readPackageJson(
+      join(Paths.CLI, 'package.json'),
+    ) as Bundle
+    // Only keep the node engines for publishing
+    pkg.engines = { node: pkg.engines.node }
+    return pkg
+  })(),
   POST_INSTALL: readFile(
     join(Paths.BUILD_ROOT, 'src/postinstall.js'),
   ),
