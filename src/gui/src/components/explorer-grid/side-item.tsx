@@ -53,6 +53,13 @@ export const SideItem = ({
 
   const uninstallAvailable = !!onUninstall && item.from?.importer
 
+  const parseItem = (title: string) => {
+    const parsed = title.split('@')
+    return parsed.length >= 3 ?
+        parsed.slice(2).join('@')
+      : parsed.slice(1).join('@')
+  }
+
   return (
     <div className="group relative z-10" ref={divRef}>
       {item.stacked ?
@@ -73,17 +80,40 @@ export const SideItem = ({
         onClick={onSelect}>
         <CardHeader className="relative flex w-full flex-col rounded-t-lg p-0">
           <div className="flex items-center px-3 py-2">
-            <CardTitle
-              className={`flex-1 items-center text-sm font-medium ${uninstallAvailable ? 'pl-8' : ''}`}>
-              {item.name}
+            <CardTitle className="flex flex-1 items-center gap-2 text-sm">
+              <span className="font-medium">{item.name}</span>
+              <span className="font-normal text-muted-foreground">
+                v{item.version}
+              </span>
             </CardTitle>
-            <div className="flex-initial rounded-full border-[1px] border-solid px-2 py-1">
-              <p className="text-xs">{item.version}</p>
-            </div>
+            {uninstallAvailable && (
+              <DropdownMenu>
+                <DropdownMenuTrigger>
+                  <Ellipsis
+                    className="text-muted-foreground"
+                    size={20}
+                  />
+                </DropdownMenuTrigger>
+                <DropdownMenuContent
+                  className="z-[100000] ml-48 w-48"
+                  align="end"
+                  onCloseAutoFocus={e => e.preventDefault()}>
+                  <DropdownMenuItem
+                    className="cursor-pointer"
+                    onClick={uninstallItem}>
+                    <PackageMinus size={16} />
+                    Remove dependency
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
           </div>
           <div className="flex flex-row flex-wrap items-center justify-between gap-2 border-t-[1px] border-muted-foreground/20 px-3 py-2">
-            <p className="text-sm text-muted-foreground">
-              {item.title}
+            <p className="flex items-center gap-2 text-sm text-muted-foreground">
+              Spec:{' '}
+              <span className="flex items-center justify-center rounded-sm bg-neutral-700/50 px-2 py-1 font-[courier] text-xs">
+                {parseItem(item.title)}
+              </span>
             </p>
             {item.labels?.map(i => (
               <div key={i}>
@@ -102,23 +132,6 @@ export const SideItem = ({
           </div>
         </CardHeader>
       </Card>
-      {uninstallAvailable ?
-        <div className="absolute left-3 top-3">
-          <DropdownMenu>
-            <DropdownMenuTrigger className="w-8 flex-none">
-              <Ellipsis className="text-muted-foreground" size={20} />
-            </DropdownMenuTrigger>
-            <DropdownMenuContent
-              className="z-[100000] ml-48 w-48"
-              onCloseAutoFocus={e => e.preventDefault()}>
-              <DropdownMenuItem onClick={uninstallItem}>
-                <PackageMinus size={16} />
-                Remove dependency
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-      : ''}
       {highlight ?
         <div className="absolute -right-4 top-7 w-4 border-t border-solid border-muted-foreground" />
       : dependencies ?

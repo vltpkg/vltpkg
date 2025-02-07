@@ -53,18 +53,21 @@ exports[`explorer-grid renders workspace with edges in 1`] = `
         >
           <div class="relative flex w-full flex-col rounded-t-lg p-0">
             <div class="flex items-center px-3 py-2">
-              <h3 class="tracking-tight flex-1 items-center text-sm font-medium">
-                a
+              <h3 class="font-semibold tracking-tight flex flex-1 items-center gap-2 text-sm">
+                <span class="font-medium">
+                  a
+                </span>
+                <span class="font-normal text-muted-foreground">
+                  v1.0.0
+                </span>
               </h3>
-              <div class="flex-initial rounded-full border-[1px] border-solid px-2 py-1">
-                <p class="text-xs">
-                  1.0.0
-                </p>
-              </div>
             </div>
             <div class="flex flex-row flex-wrap items-center justify-between gap-2 border-t-[1px] border-muted-foreground/20 px-3 py-2">
-              <p class="text-sm text-muted-foreground">
-                b@workspace:*
+              <p class="flex items-center gap-2 text-sm text-muted-foreground">
+                Spec:
+                <span class="flex items-center justify-center rounded-sm bg-neutral-700/50 px-2 py-1 font-[courier] text-xs">
+                  workspace:*
+                </span>
               </p>
               <div class="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 grow-0 border-transparent bg-cyan-100 text-neutral-900 hover:bg-cyan-100/80">
                 prod
