@@ -3,48 +3,51 @@ import { relative } from 'node:path'
 import subset from 'semver/ranges/subset.js'
 import { ROOT, readPkgJson as getPkg } from './utils.js'
 
+const walk = (dep, ancestors = []) => [
+  { path: dep.path, ancestors },
+  ...Object.values(dep.dependencies ?? {}).flatMap(d =>
+    walk(d, [...ancestors, dep.from ?? dep.name]),
+  ),
+]
+
 const getAllProdDeps = async () => {
-  const deps = []
-  const walk = (dep, from = []) => {
-    deps.push({ path: dep.path, from })
-    for (const child of Object.values(dep.dependencies ?? {})) {
-      walk(child, [...from, dep.from ?? dep.name])
-    }
-  }
-  walk(
-    await new Promise((res, rej) => {
-      // TODO: make this a `vlt query`
-      const proc = spawn(
-        'pnpm',
-        [
-          '--filter',
-          '"./src/**"',
-          'list',
-          '--depth=Infinity',
-          '--json',
-          '--prod',
-        ],
-        {
-          cwd: ROOT,
-          shell: true,
-        },
-      )
-      let output = ''
-      proc.stdout.on('data', data => (output += data.toString()))
-      proc
-        .on('close', () => res(JSON.parse(output)[0]))
-        .on('error', rej)
-    }),
-  )
+  const workspaces = await new Promise((res, rej) => {
+    const proc = spawn(
+      'pnpm',
+      [
+        '--filter',
+        '"./src/**"',
+        'list',
+        '--depth=Infinity',
+        '--json',
+        '--prod',
+        // Optional deps might not be present on the current
+        // platform so we ignore them because we cant read their
+        // package.json. This could mean we miss a license or engine
+        // check but the risk is low.
+        '--no-optional',
+      ],
+      {
+        cwd: ROOT,
+        shell: true,
+      },
+    )
+    let output = ''
+    proc.stdout.on('data', data => (output += data.toString()))
+    proc.on('close', () => res(JSON.parse(output))).on('error', rej)
+  })
   return Array.from(
-    deps
+    workspaces
+      .flatMap(workspace => walk(workspace))
       .reduce((acc, d) => {
         const c = acc.get(d.path) ?? {}
         acc.set(d.path, {
           ...c,
           path: d.path,
           pkg: getPkg(d.path),
-          from: [...(c.from ?? []), d.from],
+          ancestors: [
+            ...new Set([...(c.ancestors ?? []), d.ancestors]),
+          ],
         })
         return acc
       }, new Map())
@@ -53,7 +56,7 @@ const getAllProdDeps = async () => {
 }
 
 const check = (key, packages, value, ok) => {
-  const problems = packages.filter(d => !ok(value(d)))
+  const problems = packages.filter(d => !ok(value(d), d.pkg))
   if (problems.length) {
     const indent = (n = 0) => `\n${' '.repeat(n)}`
     return (
@@ -64,7 +67,7 @@ const check = (key, packages, value, ok) => {
             `${indent(2)}${d.pkg.name}@${d.pkg.version}` +
             `${indent(4)}${key}: ${value(d)}` +
             `${indent(4)}path: ${relative(ROOT, d.path)}` +
-            `${indent(4)}from: ${d.from.map(f => f.join(' > ')).join(indent(4 + 'from: '.length))}`,
+            `${indent(4)}from: ${d.ancestors.map(f => f.join(' > ')).join(indent(4 + 'from: '.length))}`,
         )
         .join(indent())
     )
@@ -85,6 +88,11 @@ const main = async () => {
     'ISC',
     'BSD-2-Clause-Patent',
     'BlueOak-1.0.0',
+    'Apache-2.0',
+    '0BSD',
+    'BSD-3-Clause',
+    '(WTFPL OR MIT)',
+    '(MIT OR CC0-1.0)',
   ])
   const checkLicenses = check(
     'license',
