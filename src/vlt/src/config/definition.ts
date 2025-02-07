@@ -6,6 +6,7 @@ const canonicalCommands = {
   exec: 'exec',
   gui: 'gui',
   help: 'help',
+  init: 'init',
   'install-exec': 'install-exec',
   install: 'install',
   login: 'login',
@@ -16,6 +17,7 @@ const canonicalCommands = {
   query: 'query',
   'run-exec': 'run-exec',
   run: 'run',
+  token: 'token',
   uninstall: 'uninstall',
   whoami: 'whoami',
 } as const
@@ -314,6 +316,27 @@ export const definition = j
       hint: 'n',
       description: `Maximum number of milliseconds between two retries`,
       default: 30_000,
+    },
+  })
+
+  .opt({
+    identity: {
+      short: 'i',
+      validate: (v: unknown) =>
+        typeof v === 'string' && /^[a-z0-9]*$/.test(v),
+      hint: 'name',
+      default: '',
+      description: `Provide a string to define an identity for storing auth
+                    information when logging into registries.
+
+                    Authentication tokens will be stored in the XDG data
+                    directory, in \`vlt/auth/$\{identity}/keychain.json\`.
+
+                    If no identity is provided, then the default \`''\` will
+                    be used, storing the file at \`vlt/auth/keychain.json\`.
+
+                    May only contain lowercase alphanumeric characters.
+                    `,
     },
   })
 

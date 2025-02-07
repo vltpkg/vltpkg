@@ -3,11 +3,22 @@ import { isToken } from '../src/auth.js'
 
 const checkLog = (kc: any) => (kc as Keychain).log
 
+let expectKeychainApp = 'vlt/auth'
 class Keychain {
   log: string[][] = []
+  file: string
 
   constructor(app: string) {
-    t.equal(app, 'vlt/auth')
+    t.equal(app, expectKeychainApp)
+    this.file = app + '/keychain.json'
+  }
+
+  async load() {
+    this.log.push(['load'])
+  }
+
+  async save() {
+    this.log.push(['save'])
   }
 
   async delete(reg: string) {
@@ -37,12 +48,12 @@ t.test('isToken', t => {
 })
 
 t.test('setToken', async t => {
-  const { setToken, kc } = await t.mockImport<
+  const { setToken, getKC } = await t.mockImport<
     typeof import('../src/auth.js')
   >('../src/auth.js', mocks)
-  await t.rejects(setToken('not a url', 'Bearer token'))
-  await setToken('https://x.com/', 'Bearer token')
-  t.strictSame(checkLog(kc), [
+  await t.rejects(setToken('not a url', 'Bearer token', ''))
+  await setToken('https://x.com/', 'Bearer token', '')
+  t.strictSame(checkLog(getKC('')), [
     ['set', 'https://x.com', 'Bearer token'],
   ])
   function typeChecks() {
@@ -53,27 +64,45 @@ t.test('setToken', async t => {
 })
 
 t.test('deleteToken', async t => {
-  const { deleteToken, kc } = await t.mockImport<
+  const { deleteToken, getKC } = await t.mockImport<
     typeof import('../src/auth.js')
   >('../src/auth.js', mocks)
-  await t.rejects(deleteToken('not a url'))
-  await deleteToken('https://x.com/')
-  t.strictSame(checkLog(kc), [['delete', 'https://x.com']])
+  await t.rejects(deleteToken('not a url', ''))
+  await deleteToken('https://x.com/', '')
+  t.strictSame(checkLog(getKC('')), [
+    ['load'],
+    ['load'],
+    ['delete', 'https://x.com'],
+    ['save'],
+  ])
 })
 
 t.test('getToken', async t => {
-  const { getToken, kc } = await t.mockImport<
+  const { getToken, getKC } = await t.mockImport<
     typeof import('../src/auth.js')
   >('../src/auth.js', mocks)
-  await t.rejects(getToken('not a url'))
-  t.equal(await getToken('https://x.com/'), 'Bearer stokenboken')
-  t.strictSame(checkLog(kc), [['get', 'https://x.com']])
+  await t.rejects(getToken('not a url', ''))
+  t.equal(await getToken('https://x.com/', ''), 'Bearer stokenboken')
+  t.strictSame(checkLog(getKC('')), [['get', 'https://x.com']])
   process.env.VLT_TOKEN = 'fromenv'
   process.env.VLT_REGISTRY = 'https://asdf.com/'
-  t.strictSame(await getToken('https://asdf.com'), 'Bearer fromenv')
+  t.strictSame(
+    await getToken('https://asdf.com', ''),
+    'Bearer fromenv',
+  )
   process.env.VLT_TOKEN_https_foo_com_8080 = 'foofromenv'
   t.strictSame(
-    await getToken('https://foo.com:8080/'),
+    await getToken('https://foo.com:8080/', ''),
     'Bearer foofromenv',
   )
+})
+
+t.test('get a KC with a different identity', async t => {
+  const { getKC } = await t.mockImport<
+    typeof import('../src/auth.js')
+  >('../src/auth.js', mocks)
+  expectKeychainApp = 'vlt/auth/politics'
+  const kc = getKC('politics')
+  t.equal(kc.file, 'vlt/auth/politics/keychain.json')
+  t.end()
 })

@@ -42,6 +42,31 @@ t.test('basic', async t => {
   t.equal(process.exitCode, 1)
 })
 
+t.test('init', async t => {
+  const setup = await setupCommand<typeof Command>(t, {
+    command: 'pkg',
+    argv: ['init'],
+    testdir: {},
+    mocks: {
+      '../../src/init.js': await t.mockImport('../../src/init.js', {
+        '@vltpkg/git': {
+          async getUser() {
+            return {
+              name: 'Ruy',
+              email: 'ruy@example.com',
+            }
+          },
+        },
+      }),
+    },
+  })
+  await setup.runCommand()
+  t.matchSnapshot(
+    readFileSync(join(setup.dir, 'package.json'), 'utf8'),
+    'should init a new package.json file',
+  )
+})
+
 t.test('get', async t => {
   const pkg = {
     name: 'package-name',

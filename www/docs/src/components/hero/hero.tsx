@@ -57,8 +57,7 @@ const Introduction = ({
         <a
           href="/cli"
           role="link"
-          className="no-underline text-white dark:text-black cursor-pointer rounded-sm bg-foreground px-8 py-2 hover:bg-foreground/90 transition-all"
-          target="_blank">
+          className="no-underline text-white dark:text-black cursor-pointer rounded-sm bg-foreground px-8 py-2 hover:bg-foreground/90 transition-all">
           Quick Start
         </a>
         <a
