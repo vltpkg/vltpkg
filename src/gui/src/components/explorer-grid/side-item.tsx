@@ -16,6 +16,7 @@ export type SideItemOptions = GridItemOptions & {
   parent?: boolean
   onSelect?: () => undefined
   onUninstall?: (item: GridItemData) => void
+  isWorkspace?: boolean
 }
 
 export const SideItem = ({
@@ -24,6 +25,7 @@ export const SideItem = ({
   highlight,
   parent,
   onSelect,
+  isWorkspace,
   onUninstall,
 }: SideItemOptions) => {
   // These refs and the code in useEffect are used to fix the line connection
@@ -108,28 +110,31 @@ export const SideItem = ({
               </DropdownMenu>
             )}
           </div>
-          <div className="flex flex-row flex-wrap items-center justify-between gap-2 border-t-[1px] border-muted-foreground/20 px-3 py-2">
-            <p className="flex items-center gap-2 text-sm text-muted-foreground">
-              Spec:{' '}
-              <span className="flex items-center justify-center rounded-sm bg-neutral-700/50 px-2 py-1 font-[courier] text-xs">
-                {parseItem(item.title)}
-              </span>
-            </p>
-            {item.labels?.map(i => (
-              <div key={i}>
+
+          {!isWorkspace && (
+            <div className="flex flex-row flex-wrap items-center justify-between gap-2 border-t-[1px] border-muted-foreground/20 px-3 py-2">
+              <p className="flex items-center gap-2 text-sm text-muted-foreground">
+                Spec:{' '}
+                <span className="flex items-center justify-center rounded-sm bg-neutral-700/50 px-2 py-1 font-[courier] text-xs">
+                  {parseItem(item.title)}
+                </span>
+              </p>
+              {item.labels?.map(i => (
+                <div key={i}>
+                  <Badge
+                    className={`grow-0 ${labelClassNamesMap.get(i) || ''}`}>
+                    {i}
+                  </Badge>
+                </div>
+              ))}
+              {parent && (
                 <Badge
-                  className={`grow-0 ${labelClassNamesMap.get(i) || ''}`}>
-                  {i}
+                  className={`grow-0 ${labelClassNamesMap.get(item.type) || ''}`}>
+                  {item.type}
                 </Badge>
-              </div>
-            ))}
-            {parent && (
-              <Badge
-                className={`grow-0 ${labelClassNamesMap.get(item.type) || ''}`}>
-                {item.type}
-              </Badge>
-            )}
-          </div>
+              )}
+            </div>
+          )}
         </CardHeader>
       </Card>
       {highlight ?

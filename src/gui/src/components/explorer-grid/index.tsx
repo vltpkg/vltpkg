@@ -379,6 +379,7 @@ export const ExplorerGrid = () => {
             {workspaces.map(item => (
               <SideItem
                 item={item}
+                isWorkspace
                 key={item.id}
                 onSelect={workspaceClick(item)}
               />
