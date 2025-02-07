@@ -5,7 +5,7 @@ exports[`table-page-select > should render correctly 1`] = `
 <gui-select>
   <gui-select-trigger classname="w-[110px]">
     <gui-select-value
-      classname="placeholder:text-muted-foreground placeholder:font-normal placeholder:text-sm"
+      classname="placeholder:text-sm placeholder:font-normal placeholder:text-muted-foreground"
       placeholder="Show 10"
     >
     </gui-select-value>

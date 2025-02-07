@@ -3,8 +3,8 @@
 exports[`dashboard-grid render default 1`] = `
 
 <div>
-  <div class="flex flex-col grow bg-secondary dark:bg-black px-8 py-8">
-    <div class="flex gap-2 mb-8">
+  <div class="flex grow flex-col bg-secondary px-8 py-8 dark:bg-black">
+    <div class="mb-8 flex gap-2">
       <gui-filter-search
         placeholder="Filter Projects"
         items
@@ -24,7 +24,7 @@ exports[`dashboard-grid render default 1`] = `
       class="flex flex-col"
       style="opacity: 0; transform: translateY(-5px);"
     >
-      <p class="text-sm font-semibold mb-4">
+      <p class="mb-4 text-sm font-semibold">
         Projects
       </p>
       <div class="flex flex-row flex-wrap gap-8">
@@ -41,8 +41,8 @@ exports[`dashboard-grid render default 1`] = `
 exports[`dashboard-grid with results 1`] = `
 
 <div>
-  <div class="flex flex-col grow bg-secondary dark:bg-black px-8 py-8">
-    <div class="flex gap-2 mb-8">
+  <div class="flex grow flex-col bg-secondary px-8 py-8 dark:bg-black">
+    <div class="mb-8 flex gap-2">
       <gui-filter-search
         placeholder="Filter Projects"
         items="[object Object],[object Object]"
@@ -62,34 +62,34 @@ exports[`dashboard-grid with results 1`] = `
       class="flex flex-col"
       style="opacity: 0; transform: translateY(-5px);"
     >
-      <p class="text-sm font-semibold mb-4">
+      <p class="mb-4 text-sm font-semibold">
         Projects
       </p>
       <div class="flex flex-row flex-wrap gap-8">
         <a
           href="#"
-          class="relative w-full md:w-96 group"
+          class="group relative w-full md:w-96"
         >
-          <div class="relative transition-all group-hover:border-neutral-400 dark:group-hover:border-neutral-700 flex items-center border-x-[1px] border-t-[1px] bg-card rounded-t-lg h-20 overflow-hidden">
+          <div class="relative flex h-20 items-center overflow-hidden rounded-t-lg border-x-[1px] border-t-[1px] bg-card transition-all group-hover:border-neutral-400 dark:group-hover:border-neutral-700">
             <div class="flex px-3 py-2">
               <gui-card-title classname="text-md font-medium">
                 project-bar
               </gui-card-title>
             </div>
-            <div class="absolute flex flex-row px-3 py-2 backdrop-blur-[1px] rounded-sm top-0 right-0 z-[1]">
+            <div class="absolute right-0 top-0 z-[1] flex flex-row rounded-sm px-3 py-2 backdrop-blur-[1px]">
               <p class="text-[0.7rem] text-muted-foreground">
                 November 1st, 2024 | 06:01 PM
               </p>
             </div>
-            <div class="absolute bg-clip-content flex justify-end items-center -inset-4 -right-2 flex-row gap-2">
-              <gui-package-manager-pnpm-icon classname="size-24 dark:fill-neutral-900/80 fill-neutral-200/40">
+            <div class="absolute -inset-4 -right-2 flex flex-row items-center justify-end gap-2 bg-clip-content">
+              <gui-package-manager-pnpm-icon classname="size-24 fill-neutral-200/40 dark:fill-neutral-900/80">
               </gui-package-manager-pnpm-icon>
             </div>
           </div>
-          <div class="flex transition-all group-hover:border-b-neutral-400 dark:group-hover:border-b-neutral-700 group-hover:border-x-neutral-400 dark:group-hover:border-x-neutral-700 border-[1px] bg-card rounded-b-lg items-center py-3 px-3 w-full">
+          <div class="flex w-full items-center rounded-b-lg border-[1px] bg-card px-3 py-3 transition-all group-hover:border-x-neutral-400 group-hover:border-b-neutral-400 dark:group-hover:border-x-neutral-700 dark:group-hover:border-b-neutral-700">
             <gui-tooltip-provider>
               <gui-tooltip>
-                <gui-tooltip-trigger classname="text-muted-foreground truncate text-left text-xs">
+                <gui-tooltip-trigger classname="truncate text-left text-xs text-muted-foreground">
                   ~/project-foo
                 </gui-tooltip-trigger>
                 <gui-tooltip-content>
@@ -101,30 +101,30 @@ exports[`dashboard-grid with results 1`] = `
         </a>
         <a
           href="#"
-          class="relative w-full md:w-96 group"
+          class="group relative w-full md:w-96"
         >
-          <div class="relative transition-all group-hover:border-neutral-400 dark:group-hover:border-neutral-700 flex items-center border-x-[1px] border-t-[1px] bg-card rounded-t-lg h-20 overflow-hidden">
+          <div class="relative flex h-20 items-center overflow-hidden rounded-t-lg border-x-[1px] border-t-[1px] bg-card transition-all group-hover:border-neutral-400 dark:group-hover:border-neutral-700">
             <div class="flex px-3 py-2">
               <gui-card-title classname="text-md font-medium">
                 project-foo
               </gui-card-title>
             </div>
-            <div class="absolute flex flex-row px-3 py-2 backdrop-blur-[1px] rounded-sm top-0 right-0 z-[1]">
+            <div class="absolute right-0 top-0 z-[1] flex flex-row rounded-sm px-3 py-2 backdrop-blur-[1px]">
               <p class="text-[0.7rem] text-muted-foreground">
                 November 1st, 2024 | 06:01 PM
               </p>
             </div>
-            <div class="absolute bg-clip-content flex justify-end items-center -inset-4 -right-2 flex-row gap-2">
-              <gui-package-manager-vlt-icon classname="size-24 dark:fill-neutral-900/80 fill-neutral-200/40">
+            <div class="absolute -inset-4 -right-2 flex flex-row items-center justify-end gap-2 bg-clip-content">
+              <gui-package-manager-vlt-icon classname="size-24 fill-neutral-200/40 dark:fill-neutral-900/80">
               </gui-package-manager-vlt-icon>
-              <gui-runtime-node-icon classname="size-24 dark:fill-neutral-900/80 fill-neutral-200/40">
+              <gui-runtime-node-icon classname="size-24 fill-neutral-200/40 dark:fill-neutral-900/80">
               </gui-runtime-node-icon>
             </div>
           </div>
-          <div class="flex transition-all group-hover:border-b-neutral-400 dark:group-hover:border-b-neutral-700 group-hover:border-x-neutral-400 dark:group-hover:border-x-neutral-700 border-[1px] bg-card rounded-b-lg items-center py-3 px-3 w-full">
+          <div class="flex w-full items-center rounded-b-lg border-[1px] bg-card px-3 py-3 transition-all group-hover:border-x-neutral-400 group-hover:border-b-neutral-400 dark:group-hover:border-x-neutral-700 dark:group-hover:border-b-neutral-700">
             <gui-tooltip-provider>
               <gui-tooltip>
-                <gui-tooltip-trigger classname="text-muted-foreground truncate text-left text-xs">
+                <gui-tooltip-trigger classname="truncate text-left text-xs text-muted-foreground">
                   ~/project-foo
                 </gui-tooltip-trigger>
                 <gui-tooltip-content>

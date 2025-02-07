@@ -110,16 +110,16 @@ export const DashboardItem = ({
   return (
     <a
       href="#"
-      className="relative w-full md:w-96 group"
+      className="group relative w-full md:w-96"
       onClick={onDashboardItemClick}>
       {/* top */}
-      <div className="relative transition-all group-hover:border-neutral-400 dark:group-hover:border-neutral-700 flex items-center border-x-[1px] border-t-[1px] bg-card rounded-t-lg h-20 overflow-hidden">
+      <div className="relative flex h-20 items-center overflow-hidden rounded-t-lg border-x-[1px] border-t-[1px] bg-card transition-all group-hover:border-neutral-400 dark:group-hover:border-neutral-700">
         <div className="flex px-3 py-2">
           <CardTitle className="text-md font-medium">
             {item.name}
           </CardTitle>
         </div>
-        <div className="absolute flex flex-row px-3 py-2 backdrop-blur-[1px] rounded-sm top-0 right-0 z-[1]">
+        <div className="absolute right-0 top-0 z-[1] flex flex-row rounded-sm px-3 py-2 backdrop-blur-[1px]">
           {item.mtime && (
             <p className="text-[0.7rem] text-muted-foreground">
               {format(
@@ -131,21 +131,21 @@ export const DashboardItem = ({
         </div>
 
         {/* icons */}
-        <div className="absolute bg-clip-content flex justify-end items-center -inset-4 -right-2 flex-row gap-2">
+        <div className="absolute -inset-4 -right-2 flex flex-row items-center justify-end gap-2 bg-clip-content">
           {PackageManger && (
-            <PackageManger className="size-24 dark:fill-neutral-900/80 fill-neutral-200/40" />
+            <PackageManger className="size-24 fill-neutral-200/40 dark:fill-neutral-900/80" />
           )}
           {RunTime && (
-            <RunTime className="size-24 dark:fill-neutral-900/80 fill-neutral-200/40" />
+            <RunTime className="size-24 fill-neutral-200/40 dark:fill-neutral-900/80" />
           )}
         </div>
       </div>
 
       {/* footer */}
-      <div className="flex transition-all group-hover:border-b-neutral-400 dark:group-hover:border-b-neutral-700 group-hover:border-x-neutral-400 dark:group-hover:border-x-neutral-700 border-[1px] bg-card rounded-b-lg items-center py-3 px-3 w-full">
+      <div className="flex w-full items-center rounded-b-lg border-[1px] bg-card px-3 py-3 transition-all group-hover:border-x-neutral-400 group-hover:border-b-neutral-400 dark:group-hover:border-x-neutral-700 dark:group-hover:border-b-neutral-700">
         <TooltipProvider>
           <Tooltip>
-            <TooltipTrigger className="text-muted-foreground truncate text-left text-xs">
+            <TooltipTrigger className="truncate text-left text-xs text-muted-foreground">
               {item.readablePath}
             </TooltipTrigger>
             <TooltipContent>{item.readablePath}</TooltipContent>
@@ -183,8 +183,8 @@ export const DashboardGrid = () => {
   }, [dashboard])
 
   return (
-    <div className="flex flex-col grow bg-secondary dark:bg-black px-8 py-8">
-      <div className="flex gap-2 mb-8">
+    <div className="flex grow flex-col bg-secondary px-8 py-8 dark:bg-black">
+      <div className="mb-8 flex gap-2">
         {currentView === 'table' ?
           <TableFilterSearch
             filterValue={tableFilterValue}
@@ -249,7 +249,7 @@ export const DashboardGrid = () => {
             initial={{ opacity: 0, y: -5 }}
             animate={{ opacity: 1, y: 0 }}
             className="flex flex-col">
-            <p className="text-sm font-semibold mb-4">Projects</p>
+            <p className="mb-4 text-sm font-semibold">Projects</p>
             <div className="flex flex-row flex-wrap gap-8">
               {dashboard?.projects ?
                 filteredProjects.map((item, index) => (

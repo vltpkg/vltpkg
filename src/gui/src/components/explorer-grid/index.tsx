@@ -354,7 +354,7 @@ export const ExplorerGrid = () => {
   if (!items.length) return <EmptyResultsState />
 
   return (
-    <div className="grow grid grid-cols-7 gap-4 px-8 bg-secondary dark:bg-black mb-8">
+    <div className="mb-8 grid grow grid-cols-7 gap-4 bg-secondary px-8 dark:bg-black">
       <div className="col-span-2">
         {parentItem ?
           <>
