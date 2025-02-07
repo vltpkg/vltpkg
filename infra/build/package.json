@@ -42,7 +42,8 @@
   },
   "license": "BSD-2-Clause-Patent",
   "engines": {
-    "node": "20 || >=22"
+    "node": "20 || >=22",
+    "pnpm": "9"
   },
   "scripts": {
     "build:deno": "node dist/esm/bin.js --deno",
