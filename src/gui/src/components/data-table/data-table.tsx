@@ -15,6 +15,7 @@ import {
   Table,
   TableBody,
   TableCell,
+  TableFooter,
   TableHead,
   TableHeader,
   TableRow,
@@ -136,35 +137,40 @@ export const DataTable = <TData, TValue>({
               </TableRow>
             }
           </TableBody>
+          <TableFooter>
+            <TableRow>
+              <TableCell
+                colSpan={table.getVisibleFlatColumns().length - 1}>
+                <TablePageSelect
+                  pagination={pagination}
+                  setPagination={setPagination}
+                />
+              </TableCell>
+              <TableCell className="flex items-center justify-end">
+                <p className="text-xs font-medium text-muted-foreground mr-3">
+                  {table.getState().pagination.pageIndex + 1} of{' '}
+                  {table.getPageCount()}
+                </p>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => table.previousPage()}
+                    disabled={!table.getCanPreviousPage()}>
+                    Previous
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => table.nextPage()}
+                    disabled={!table.getCanNextPage()}>
+                    Next
+                  </Button>
+                </div>
+              </TableCell>
+            </TableRow>
+          </TableFooter>
         </Table>
-      </div>
-      <div className="flex items-center justify-between mt-4">
-        <div className="flex gap-6">
-          <TablePageSelect
-            pagination={pagination}
-            setPagination={setPagination}
-          />
-          <p className="text-xs font-medium text-muted-foreground">
-            Page {table.getState().pagination.pageIndex + 1} of{' '}
-            {table.getPageCount()}
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => table.previousPage()}
-            disabled={!table.getCanPreviousPage()}>
-            Previous
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => table.nextPage()}
-            disabled={!table.getCanNextPage()}>
-            Next
-          </Button>
-        </div>
       </div>
     </>
   )

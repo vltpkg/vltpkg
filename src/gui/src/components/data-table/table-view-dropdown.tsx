@@ -44,6 +44,7 @@ export const TableViewDropdown = <TData extends object>({
               <DropdownMenuCheckboxItem
                 key={column.id}
                 className="capitalize cursor-pointer"
+                onSelect={e => e.preventDefault()}
                 checked={
                   columnVisibility[column.id] ?? column.getIsVisible()
                 }

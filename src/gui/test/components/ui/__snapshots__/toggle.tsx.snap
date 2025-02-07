@@ -2,9 +2,9 @@
 
 exports[`toggle > should render correctly 1`] = `
 
-<div class="flex mx-3">
-  <div class="relative flex items-center p-1 h-[2.5rem] bg-white dark:bg-black w-full rounded-sm border border-[1px] border-muted-foreground/25">
-    <div class="absolute h-[2rem] w-[2rem] rounded-sm bg-muted border border-muted-foreground/20">
+<div class="flex">
+  <div class="relative flex items-center p-1 h-[2.5rem] bg-white dark:bg-black w-full rounded-md border border-[1px] border-muted-foreground/25">
+    <div class="absolute h-[2rem] w-[2rem] rounded-[4px] bg-muted border border-muted-foreground/20">
     </div>
     <div
       class="cursor-pointer h-[2rem] w-[2rem] rounded-sm flex items-center justify-center z-[1]"

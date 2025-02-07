@@ -1,18 +1,13 @@
-import { useState } from 'react'
-import { Button } from '@/components/ui/button.jsx'
-import { ChevronDown } from 'lucide-react'
-import {
-  Tooltip,
-  TooltipProvider,
-  TooltipContent,
-  TooltipTrigger,
-} from '@/components/ui/tooltip.jsx'
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover.jsx'
 import { type PaginationState } from '@tanstack/react-table'
+
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select.jsx'
 
 interface TablePageSelectProps {
   pagination: PaginationState
@@ -23,8 +18,6 @@ export const TablePageSelect = ({
   pagination,
   setPagination,
 }: TablePageSelectProps) => {
-  const [isOpen, setIsOpen] = useState<boolean>(false)
-
   const options: { value: number }[] = [
     {
       value: 10,
@@ -38,7 +31,6 @@ export const TablePageSelect = ({
   ]
 
   const setSelectedValue = (selectedValue: number) => {
-    setIsOpen(false)
     setPagination(prev => ({
       ...prev,
       pageSize: selectedValue,
@@ -46,39 +38,25 @@ export const TablePageSelect = ({
   }
 
   return (
-    <TooltipProvider>
-      <Popover open={isOpen} onOpenChange={setIsOpen}>
-        <PopoverTrigger>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <div className="flex items-center gap-1">
-                <span className="text-xs text-muted-foreground font-medium">
-                  Show {pagination.pageSize}
-                </span>
-                <ChevronDown
-                  className="text-muted-foreground"
-                  size={16}
-                />
-              </div>
-            </TooltipTrigger>
-            <TooltipContent>Results per page</TooltipContent>
-          </Tooltip>
-        </PopoverTrigger>
-        <PopoverContent align="start" className="w-[100px] flex p-0">
-          <div className="flex flex-col w-full">
-            {options.map((option, idx) => (
-              <Button
-                onClick={() => setSelectedValue(option.value)}
-                className="text-xs font-normal text-foreground p-0 py-0 w-full"
-                variant="ghost"
-                key={idx}>
-                {option.value}
-                <span>results</span>
-              </Button>
-            ))}
-          </div>
-        </PopoverContent>
-      </Popover>
-    </TooltipProvider>
+    <Select onValueChange={v => setSelectedValue(Number(v))}>
+      <SelectTrigger className="w-[110px]">
+        <SelectValue
+          className="placeholder:text-muted-foreground placeholder:font-normal placeholder:text-sm"
+          placeholder={`Show ${pagination.pageSize}`}
+        />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectGroup>
+          {options.map((option, idx) => (
+            <SelectItem
+              className="text-sm"
+              key={idx}
+              value={option.value.toString()}>
+              Show {option.value}
+            </SelectItem>
+          ))}
+        </SelectGroup>
+      </SelectContent>
+    </Select>
   )
 }

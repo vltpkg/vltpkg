@@ -4,7 +4,7 @@ exports[`dashboard-table > should render correctly 1`] = `
 
 <gui-data-table
   filtervalue
-  columns="[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object]"
+  columns="[object Object],[object Object],[object Object],[object Object],[object Object],[object Object]"
   columnvisibility="[object Object]"
   data="[object Object],[object Object]"
 >

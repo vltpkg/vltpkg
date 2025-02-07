@@ -60,7 +60,9 @@ export const dashboardColumns: ColumnDef<DashboardDataProject>[] = [
   },
   {
     accessorKey: 'directory',
-    header: 'Directory',
+    header: ({ column }) => (
+      <SortingHeader header="Directory" column={column} />
+    ),
     cell: ({ row }) => {
       const path = row.original.readablePath
 
@@ -78,6 +80,10 @@ export const dashboardColumns: ColumnDef<DashboardDataProject>[] = [
     size: 500,
     maxSize: 500,
     minSize: 500,
+    enableSorting: true,
+    sortingFn: (a, b) => {
+      return a.original.path.localeCompare(b.original.path)
+    },
     enableHiding: true,
   },
   {
@@ -106,7 +112,9 @@ export const dashboardColumns: ColumnDef<DashboardDataProject>[] = [
   },
   {
     accessorKey: 'version',
-    header: 'Version',
+    header: ({ column }) => (
+      <SortingHeader header="Version" column={column} />
+    ),
     cell: ({ row }) => {
       const x = row.original.manifest.version
       return <p>{x}</p>
@@ -114,16 +122,20 @@ export const dashboardColumns: ColumnDef<DashboardDataProject>[] = [
     size: 100,
     maxSize: 100,
     minSize: 100,
+    enableSorting: true,
+    sortingFn: (a, b) => {
+      const aVersion = a.original.manifest.version ?? '0.0.0'
+      const bVersion = b.original.manifest.version ?? '0.0.0'
+      return aVersion.localeCompare(bVersion)
+    },
     enableHiding: true,
   },
   {
     accessorKey: 'type',
-    header: 'type',
+    header: 'Modified',
     cell: ({ row }) => {
       const type =
-        row.original.manifest.type ?
-          row.original.manifest.type
-        : 'N/A'
+        row.original.manifest.type ? row.original.manifest.type : null
 
       return <p>{type}</p>
     },
@@ -133,23 +145,13 @@ export const dashboardColumns: ColumnDef<DashboardDataProject>[] = [
     enableHiding: true,
   },
   {
-    accessorKey: 'private',
-    header: 'Private / Public',
-    cell: ({ row }) => {
-      const isPrivate = row.original.manifest.private
-      return <p>{isPrivate ? 'Private' : 'Public'}</p>
-    },
-    size: 200,
-    maxSize: 200,
-    minSize: 200,
-    enableHiding: true,
-  },
-  {
     accessorKey: 'time',
-    header: () => (
-      <p className="flex w-full items-center text-right justify-end">
-        Time
-      </p>
+    header: ({ column }) => (
+      <SortingHeader
+        className="flex w-full text-right justify-end"
+        header="Modified"
+        column={column}
+      />
     ),
     cell: ({ row }) => {
       const mtime = row.original.mtime
@@ -167,7 +169,9 @@ export const dashboardColumns: ColumnDef<DashboardDataProject>[] = [
             <TooltipTrigger className="text-right w-full">
               {humanMTime}
             </TooltipTrigger>
-            <TooltipContent align="end">{fullMTime}</TooltipContent>
+            <TooltipContent align="end" className="text-nowrap">
+              {fullMTime}
+            </TooltipContent>
           </Tooltip>
         </TooltipProvider>
       )
@@ -175,6 +179,12 @@ export const dashboardColumns: ColumnDef<DashboardDataProject>[] = [
     size: 200,
     maxSize: 200,
     minSize: 200,
+    sortingFn: (a, b) => {
+      const aTime = a.original.mtime ?? 0
+      const bTime = b.original.mtime ?? 0
+      return aTime - bTime
+    },
+    enableSorting: true,
     enableHiding: true,
   },
 ]
