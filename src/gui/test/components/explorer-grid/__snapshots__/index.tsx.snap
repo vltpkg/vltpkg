@@ -12,7 +12,7 @@ exports[`explorer-grid render default 1`] = `
 exports[`explorer-grid renders workspace with edges in 1`] = `
 
 <div>
-  <div class="grow grid grid-cols-7 gap-4 px-8 bg-secondary dark:bg-black">
+  <div class="grow grid grid-cols-7 gap-4 px-8 bg-secondary dark:bg-black mb-8">
     <div class="col-span-2">
       <div class="pt-6 text-md flex flex-row items-center font-medium">
         <svg
@@ -304,12 +304,17 @@ exports[`explorer-grid renders workspace with edges in 1`] = `
 exports[`explorer-grid with results 1`] = `
 
 <div>
-  <div class="grow grid grid-cols-7 gap-4 px-8 bg-secondary dark:bg-black">
+  <div class="grow grid grid-cols-7 gap-4 px-8 bg-secondary dark:bg-black mb-8">
     <div class="col-span-2">
     </div>
     <div class="col-span-3">
-      <div class="pt-6 text-md flex flex-row items-center font-medium mb-4">
-        Results
+      <div class="flex items-center gap-3">
+        <div class="pt-6 text-md flex flex-row items-center font-medium mb-4">
+          Results
+        </div>
+        <div class="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent bg-primary text-primary-foreground hover:bg-primary/80 mt-2">
+          2
+        </div>
       </div>
       <div class="flex flex-col gap-6">
         <div class="group relative z-10">
@@ -404,12 +409,17 @@ exports[`explorer-grid with results 1`] = `
 exports[`explorer-grid with stack 1`] = `
 
 <div>
-  <div class="grow grid grid-cols-7 gap-4 px-8 bg-secondary dark:bg-black">
+  <div class="grow grid grid-cols-7 gap-4 px-8 bg-secondary dark:bg-black mb-8">
     <div class="col-span-2">
     </div>
     <div class="col-span-3">
-      <div class="pt-6 text-md flex flex-row items-center font-medium mb-4">
-        Results
+      <div class="flex items-center gap-3">
+        <div class="pt-6 text-md flex flex-row items-center font-medium mb-4">
+          Results
+        </div>
+        <div class="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent bg-primary text-primary-foreground hover:bg-primary/80 mt-2">
+          2
+        </div>
       </div>
       <div class="flex flex-col gap-6">
         <div class="group relative z-10">
