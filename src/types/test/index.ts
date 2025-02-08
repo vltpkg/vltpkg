@@ -28,6 +28,8 @@ import {
   type PeerDependenciesMetaValue,
   type Person,
   type Repository,
+  dependencyTypes,
+  longDependencyTypes,
 } from '../src/index.js'
 
 import t from 'tap'
@@ -279,5 +281,17 @@ t.test('type checks', t => {
   r = { type: 'git' }
 
   t.pass('all typechecks passed')
+  t.end()
+})
+
+t.test('dependency types', t => {
+  t.test('dependencyTypes', async t => {
+    t.strictSame(
+      [...longDependencyTypes],
+      [...dependencyTypes.keys()],
+      'should have the exact same long dependency types as keys of long types map',
+    )
+  })
+
   t.end()
 })

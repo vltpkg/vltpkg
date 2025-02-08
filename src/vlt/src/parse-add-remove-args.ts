@@ -1,8 +1,8 @@
 import { type DepID, joinDepIDTuple } from '@vltpkg/dep-id'
+import { type DependencyTypeShort } from '@vltpkg/types'
 import {
   type AddImportersDependenciesMap,
   type Dependency,
-  type DependencyTypeShort,
   type RemoveImportersDependenciesMap,
   asDependency,
 } from '@vltpkg/graph'

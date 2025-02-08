@@ -1,7 +1,7 @@
 import { satisfies } from '@vltpkg/satisfies'
 import { type Spec } from '@vltpkg/spec'
 import { inspect, type InspectOptions } from 'util'
-import { type DependencyTypeShort } from './dependencies.js'
+import { type DependencyTypeShort } from '@vltpkg/types'
 import { type Node } from './node.js'
 import { type EdgeLike } from './types.js'
 

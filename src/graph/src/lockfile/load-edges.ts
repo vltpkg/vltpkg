@@ -2,10 +2,8 @@ import { asDepID } from '@vltpkg/dep-id/browser'
 import { error } from '@vltpkg/error-cause'
 import { fastSplit } from '@vltpkg/fast-split'
 import { Spec, type SpecOptions } from '@vltpkg/spec/browser'
-import {
-  isDependencyTypeShort,
-  longDependencyTypes,
-} from '../dependencies.js'
+import { longDependencyTypes } from '@vltpkg/types'
+import { isDependencyTypeShort } from '../dependencies.js'
 import { type GraphLike } from '../types.js'
 import {
   type LockfileData,

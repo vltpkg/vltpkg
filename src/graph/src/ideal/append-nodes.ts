@@ -2,13 +2,15 @@ import { joinDepIDTuple, type DepID } from '@vltpkg/dep-id'
 import { error } from '@vltpkg/error-cause'
 import { type PackageInfoClient } from '@vltpkg/package-info'
 import { Spec, type SpecOptions } from '@vltpkg/spec'
+import {
+  longDependencyTypes,
+  type DependencyTypeLong,
+} from '@vltpkg/types'
 import { type PathScurry } from 'path-scurry'
 import {
   asDependency,
-  longDependencyTypes,
   shorten,
   type Dependency,
-  type DependencyTypeLong,
 } from '../dependencies.js'
 import { type Graph } from '../graph.js'
 import { type Node } from '../node.js'
