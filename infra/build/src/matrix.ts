@@ -1,9 +1,9 @@
 import { join } from 'node:path'
 import { rmSync } from 'node:fs'
-import bundle from './bundle.js'
-import compile from './compile.js'
-import * as types from './types.js'
-import { defaultMatrix, fullMatrix } from './index.js'
+import bundle from './bundle.ts'
+import compile from './compile.ts'
+import * as types from './types.ts'
+import { defaultMatrix, fullMatrix } from './index.ts'
 
 export type Bundle = types.BundleFactors & {
   bundleId: string

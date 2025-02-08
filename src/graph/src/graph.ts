@@ -8,10 +8,10 @@ import {
 } from '@vltpkg/types'
 import { type Monorepo } from '@vltpkg/workspaces'
 import { inspect, type InspectOptions } from 'util'
-import { type Edge } from './edge.js'
-import { lockfileData } from './lockfile/save.js'
-import { Node, type NodeOptions } from './node.js'
-import { type GraphLike, type NodeLike } from './types.js'
+import { type Edge } from './edge.ts'
+import { lockfileData } from './lockfile/save.ts'
+import { Node, type NodeOptions } from './node.ts'
+import { type GraphLike, type NodeLike } from './types.ts'
 
 const kCustomInspect = Symbol.for('nodejs.util.inspect.custom')
 

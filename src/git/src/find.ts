@@ -1,5 +1,5 @@
 import { dirname } from 'path'
-import { is } from './is.js'
+import { is } from './is.ts'
 
 export type FindOpts = {
   cwd?: string

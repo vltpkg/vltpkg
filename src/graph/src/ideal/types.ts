@@ -2,8 +2,8 @@ import {
   type AddImportersDependenciesMap,
   type RemoveImportersDependenciesMap,
   Dependency,
-} from '../dependencies.js'
-import { type Graph } from '../graph.js'
+} from '../dependencies.ts'
+import { type Graph } from '../graph.ts'
 import { type PackageInfoClient } from '@vltpkg/package-info'
 import { type DepID } from '@vltpkg/dep-id'
 

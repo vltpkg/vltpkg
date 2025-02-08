@@ -1,12 +1,12 @@
 import { error } from '@vltpkg/error-cause'
-import { type LoadedConfig } from '../config/index.js'
+import { type LoadedConfig } from '../config/index.ts'
 import { type PackageJson } from '@vltpkg/package-json'
 import * as dotProp from '@vltpkg/dot-prop'
 import { type Manifest } from '@vltpkg/types'
-import { type CommandUsage, type CommandFn } from '../types.js'
+import { type CommandUsage, type CommandFn } from '../types.ts'
 import assert from 'assert'
-import { commandUsage } from '../config/usage.js'
-import { init } from '../init.js'
+import { commandUsage } from '../config/usage.ts'
+import { init } from '../init.ts'
 
 export const usage: CommandUsage = () =>
   commandUsage({

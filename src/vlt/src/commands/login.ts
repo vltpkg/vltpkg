@@ -1,6 +1,6 @@
 import { RegistryClient } from '@vltpkg/registry-client'
-import { commandUsage } from '../config/usage.js'
-import { type CommandFn, type CommandUsage } from '../types.js'
+import { commandUsage } from '../config/usage.ts'
+import { type CommandFn, type CommandUsage } from '../types.ts'
 
 export const usage: CommandUsage = () =>
   commandUsage({
