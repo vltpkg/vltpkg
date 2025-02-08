@@ -67,8 +67,8 @@ catalogs:
       specifier: ^3.0.2
       version: 3.0.2
     typescript:
-      specifier: 5.5.4
-      version: 5.5.4
+      specifier: 5.7.3
+      version: 5.7.3
     typescript-eslint:
       specifier: ^8.23.0
       version: 8.23.0
@@ -131,10 +131,10 @@ importers:
         version: 7.7.1
       typescript:
         specifier: 'catalog:'
-        version: 5.5.4
+        version: 5.7.3
       typescript-eslint:
         specifier: 'catalog:'
-        version: 8.23.0(eslint@9.20.0(jiti@1.21.6))(typescript@5.5.4)
+        version: 8.23.0(eslint@9.20.0(jiti@1.21.6))(typescript@5.7.3)
       yaml:
         specifier: ^2.7.0
         version: 2.7.0
@@ -165,16 +165,16 @@ importers:
         version: 3.4.2
       tap:
         specifier: 'catalog:'
-        version: 21.0.1(@types/node@22.13.1)(@types/react@18.3.18)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4)
+        version: 21.0.1(@types/node@22.13.1)(@types/react@18.3.18)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.7.3)
       tshy:
         specifier: 'catalog:'
         version: 3.0.2
       typescript:
         specifier: 'catalog:'
-        version: 5.5.4
+        version: 5.7.3
       typescript-eslint:
         specifier: 'catalog:'
-        version: 8.23.0(eslint@9.20.0(jiti@1.21.6))(typescript@5.5.4)
+        version: 8.23.0(eslint@9.20.0(jiti@1.21.6))(typescript@5.7.3)
 
   infra/build:
     dependencies:
@@ -214,16 +214,16 @@ importers:
         version: 3.4.2
       tap:
         specifier: 'catalog:'
-        version: 21.0.1(@types/node@22.13.1)(@types/react@18.3.18)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4)
+        version: 21.0.1(@types/node@22.13.1)(@types/react@18.3.18)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.7.3)
       tshy:
         specifier: 'catalog:'
         version: 3.0.2
       typescript:
         specifier: 'catalog:'
-        version: 5.5.4
+        version: 5.7.3
       typescript-eslint:
         specifier: 'catalog:'
-        version: 8.23.0(eslint@9.20.0(jiti@1.21.6))(typescript@5.5.4)
+        version: 8.23.0(eslint@9.20.0(jiti@1.21.6))(typescript@5.7.3)
 
   src/cache:
     dependencies:
@@ -260,16 +260,16 @@ importers:
         version: 3.4.2
       tap:
         specifier: 'catalog:'
-        version: 21.0.1(@types/node@22.13.1)(@types/react@18.3.18)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4)
+        version: 21.0.1(@types/node@22.13.1)(@types/react@18.3.18)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.7.3)
       tshy:
         specifier: 'catalog:'
         version: 3.0.2
       typescript:
         specifier: 'catalog:'
-        version: 5.5.4
+        version: 5.7.3
       typescript-eslint:
         specifier: 'catalog:'
-        version: 8.23.0(eslint@9.20.0(jiti@1.21.6))(typescript@5.5.4)
+        version: 8.23.0(eslint@9.20.0(jiti@1.21.6))(typescript@5.7.3)
 
   src/cache-unzip:
     dependencies:
@@ -297,16 +297,16 @@ importers:
         version: 3.4.2
       tap:
         specifier: 'catalog:'
-        version: 21.0.1(@types/node@22.13.1)(@types/react@18.3.18)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4)
+        version: 21.0.1(@types/node@22.13.1)(@types/react@18.3.18)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.7.3)
       tshy:
         specifier: 'catalog:'
         version: 3.0.2
       typescript:
         specifier: 'catalog:'
-        version: 5.5.4
+        version: 5.7.3
       typescript-eslint:
         specifier: 'catalog:'
-        version: 8.23.0(eslint@9.20.0(jiti@1.21.6))(typescript@5.5.4)
+        version: 8.23.0(eslint@9.20.0(jiti@1.21.6))(typescript@5.7.3)
 
   src/dep-id:
     dependencies:
@@ -337,16 +337,16 @@ importers:
         version: 3.4.2
       tap:
         specifier: 'catalog:'
-        version: 21.0.1(@types/node@22.13.1)(@types/react@18.3.18)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4)
+        version: 21.0.1(@types/node@22.13.1)(@types/react@18.3.18)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.7.3)
       tshy:
         specifier: 'catalog:'
         version: 3.0.2
       typescript:
         specifier: 'catalog:'
-        version: 5.5.4
+        version: 5.7.3
       typescript-eslint:
         specifier: 'catalog:'
-        version: 8.23.0(eslint@9.20.0(jiti@1.21.6))(typescript@5.5.4)
+        version: 8.23.0(eslint@9.20.0(jiti@1.21.6))(typescript@5.7.3)
 
   src/dot-prop:
     devDependencies:
@@ -367,16 +367,16 @@ importers:
         version: 3.4.2
       tap:
         specifier: 'catalog:'
-        version: 21.0.1(@types/node@22.13.1)(@types/react@18.3.18)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4)
+        version: 21.0.1(@types/node@22.13.1)(@types/react@18.3.18)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.7.3)
       tshy:
         specifier: 'catalog:'
         version: 3.0.2
       typescript:
         specifier: 'catalog:'
-        version: 5.5.4
+        version: 5.7.3
       typescript-eslint:
         specifier: 'catalog:'
-        version: 8.23.0(eslint@9.20.0(jiti@1.21.6))(typescript@5.5.4)
+        version: 8.23.0(eslint@9.20.0(jiti@1.21.6))(typescript@5.7.3)
 
   src/error-cause:
     devDependencies:
@@ -397,16 +397,16 @@ importers:
         version: 3.4.2
       tap:
         specifier: 'catalog:'
-        version: 21.0.1(@types/node@22.13.1)(@types/react@18.3.18)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4)
+        version: 21.0.1(@types/node@22.13.1)(@types/react@18.3.18)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.7.3)
       tshy:
         specifier: 'catalog:'
         version: 3.0.2
       typescript:
         specifier: 'catalog:'
-        version: 5.5.4
+        version: 5.7.3
       typescript-eslint:
         specifier: 'catalog:'
-        version: 8.23.0(eslint@9.20.0(jiti@1.21.6))(typescript@5.5.4)
+        version: 8.23.0(eslint@9.20.0(jiti@1.21.6))(typescript@5.7.3)
 
   src/fast-split:
     devDependencies:
@@ -427,16 +427,16 @@ importers:
         version: 3.4.2
       tap:
         specifier: 'catalog:'
-        version: 21.0.1(@types/node@22.13.1)(@types/react@18.3.18)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4)
+        version: 21.0.1(@types/node@22.13.1)(@types/react@18.3.18)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.7.3)
       tshy:
         specifier: 'catalog:'
         version: 3.0.2
       typescript:
         specifier: 'catalog:'
-        version: 5.5.4
+        version: 5.7.3
       typescript-eslint:
         specifier: 'catalog:'
-        version: 8.23.0(eslint@9.20.0(jiti@1.21.6))(typescript@5.5.4)
+        version: 8.23.0(eslint@9.20.0(jiti@1.21.6))(typescript@5.7.3)
 
   src/git:
     dependencies:
@@ -497,16 +497,16 @@ importers:
         version: 3.4.2
       tap:
         specifier: 'catalog:'
-        version: 21.0.1(@types/node@22.13.1)(@types/react@18.3.18)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4)
+        version: 21.0.1(@types/node@22.13.1)(@types/react@18.3.18)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.7.3)
       tshy:
         specifier: 'catalog:'
         version: 3.0.2
       typescript:
         specifier: 'catalog:'
-        version: 5.5.4
+        version: 5.7.3
       typescript-eslint:
         specifier: 'catalog:'
-        version: 8.23.0(eslint@9.20.0(jiti@1.21.6))(typescript@5.5.4)
+        version: 8.23.0(eslint@9.20.0(jiti@1.21.6))(typescript@5.7.3)
 
   src/git-scp-url:
     devDependencies:
@@ -527,16 +527,16 @@ importers:
         version: 3.4.2
       tap:
         specifier: 'catalog:'
-        version: 21.0.1(@types/node@22.13.1)(@types/react@18.3.18)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4)
+        version: 21.0.1(@types/node@22.13.1)(@types/react@18.3.18)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.7.3)
       tshy:
         specifier: 'catalog:'
         version: 3.0.2
       typescript:
         specifier: 'catalog:'
-        version: 5.5.4
+        version: 5.7.3
       typescript-eslint:
         specifier: 'catalog:'
-        version: 8.23.0(eslint@9.20.0(jiti@1.21.6))(typescript@5.5.4)
+        version: 8.23.0(eslint@9.20.0(jiti@1.21.6))(typescript@5.7.3)
 
   src/graph:
     dependencies:
@@ -615,7 +615,7 @@ importers:
         version: 3.4.2
       tap:
         specifier: 'catalog:'
-        version: 21.0.1(@types/node@22.13.1)(@types/react@18.3.18)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4)
+        version: 21.0.1(@types/node@22.13.1)(@types/react@18.3.18)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.7.3)
       tar:
         specifier: 'catalog:'
         version: 7.4.3
@@ -624,10 +624,10 @@ importers:
         version: 3.0.2
       typescript:
         specifier: 'catalog:'
-        version: 5.5.4
+        version: 5.7.3
       typescript-eslint:
         specifier: 'catalog:'
-        version: 8.23.0(eslint@9.20.0(jiti@1.21.6))(typescript@5.5.4)
+        version: 8.23.0(eslint@9.20.0(jiti@1.21.6))(typescript@5.7.3)
 
   src/gui:
     dependencies:
@@ -781,19 +781,19 @@ importers:
         version: 25.0.1
       msw:
         specifier: ^2.7.0
-        version: 2.7.0(@types/node@22.13.1)(typescript@5.5.4)
+        version: 2.7.0(@types/node@22.13.1)(typescript@5.7.3)
       prettier:
         specifier: 'catalog:'
         version: 3.4.2
       typescript:
         specifier: 'catalog:'
-        version: 5.5.4
+        version: 5.7.3
       typescript-eslint:
         specifier: 'catalog:'
-        version: 8.23.0(eslint@9.20.0(jiti@1.21.6))(typescript@5.5.4)
+        version: 8.23.0(eslint@9.20.0(jiti@1.21.6))(typescript@5.7.3)
       vitest:
         specifier: ^2.1.9
-        version: 2.1.9(@types/node@22.13.1)(jsdom@25.0.1)(msw@2.7.0(@types/node@22.13.1)(typescript@5.5.4))
+        version: 2.1.9(@types/node@22.13.1)(jsdom@25.0.1)(msw@2.7.0(@types/node@22.13.1)(typescript@5.7.3))
 
   src/keychain:
     dependencies:
@@ -830,16 +830,16 @@ importers:
         version: 3.4.2
       tap:
         specifier: 'catalog:'
-        version: 21.0.1(@types/node@22.13.1)(@types/react@18.3.18)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4)
+        version: 21.0.1(@types/node@22.13.1)(@types/react@18.3.18)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.7.3)
       tshy:
         specifier: 'catalog:'
         version: 3.0.2
       typescript:
         specifier: 'catalog:'
-        version: 5.5.4
+        version: 5.7.3
       typescript-eslint:
         specifier: 'catalog:'
-        version: 8.23.0(eslint@9.20.0(jiti@1.21.6))(typescript@5.5.4)
+        version: 8.23.0(eslint@9.20.0(jiti@1.21.6))(typescript@5.7.3)
 
   src/output:
     devDependencies:
@@ -860,16 +860,16 @@ importers:
         version: 3.4.2
       tap:
         specifier: 'catalog:'
-        version: 21.0.1(@types/node@22.13.1)(@types/react@18.3.18)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4)
+        version: 21.0.1(@types/node@22.13.1)(@types/react@18.3.18)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.7.3)
       tshy:
         specifier: 'catalog:'
         version: 3.0.2
       typescript:
         specifier: 'catalog:'
-        version: 5.5.4
+        version: 5.7.3
       typescript-eslint:
         specifier: 'catalog:'
-        version: 8.23.0(eslint@9.20.0(jiti@1.21.6))(typescript@5.5.4)
+        version: 8.23.0(eslint@9.20.0(jiti@1.21.6))(typescript@5.7.3)
 
   src/package-info:
     dependencies:
@@ -933,16 +933,16 @@ importers:
         version: 3.4.2
       tap:
         specifier: 'catalog:'
-        version: 21.0.1(@types/node@22.13.1)(@types/react@18.3.18)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4)
+        version: 21.0.1(@types/node@22.13.1)(@types/react@18.3.18)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.7.3)
       tshy:
         specifier: 'catalog:'
         version: 3.0.2
       typescript:
         specifier: 'catalog:'
-        version: 5.5.4
+        version: 5.7.3
       typescript-eslint:
         specifier: 'catalog:'
-        version: 8.23.0(eslint@9.20.0(jiti@1.21.6))(typescript@5.5.4)
+        version: 8.23.0(eslint@9.20.0(jiti@1.21.6))(typescript@5.7.3)
 
   src/package-json:
     dependencies:
@@ -973,16 +973,16 @@ importers:
         version: 3.4.2
       tap:
         specifier: 'catalog:'
-        version: 21.0.1(@types/node@22.13.1)(@types/react@18.3.18)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4)
+        version: 21.0.1(@types/node@22.13.1)(@types/react@18.3.18)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.7.3)
       tshy:
         specifier: 'catalog:'
         version: 3.0.2
       typescript:
         specifier: 'catalog:'
-        version: 5.5.4
+        version: 5.7.3
       typescript-eslint:
         specifier: 'catalog:'
-        version: 8.23.0(eslint@9.20.0(jiti@1.21.6))(typescript@5.5.4)
+        version: 8.23.0(eslint@9.20.0(jiti@1.21.6))(typescript@5.7.3)
 
   src/pick-manifest:
     dependencies:
@@ -1022,16 +1022,16 @@ importers:
         version: 3.4.2
       tap:
         specifier: 'catalog:'
-        version: 21.0.1(@types/node@22.13.1)(@types/react@18.3.18)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4)
+        version: 21.0.1(@types/node@22.13.1)(@types/react@18.3.18)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.7.3)
       tshy:
         specifier: 'catalog:'
         version: 3.0.2
       typescript:
         specifier: 'catalog:'
-        version: 5.5.4
+        version: 5.7.3
       typescript-eslint:
         specifier: 'catalog:'
-        version: 8.23.0(eslint@9.20.0(jiti@1.21.6))(typescript@5.5.4)
+        version: 8.23.0(eslint@9.20.0(jiti@1.21.6))(typescript@5.7.3)
 
   src/promise-spawn:
     dependencies:
@@ -1059,16 +1059,16 @@ importers:
         version: 1.8.2
       tap:
         specifier: 'catalog:'
-        version: 21.0.1(@types/node@22.13.1)(@types/react@18.3.18)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4)
+        version: 21.0.1(@types/node@22.13.1)(@types/react@18.3.18)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.7.3)
       tshy:
         specifier: 'catalog:'
         version: 3.0.2
       typescript:
         specifier: 'catalog:'
-        version: 5.5.4
+        version: 5.7.3
       typescript-eslint:
         specifier: 'catalog:'
-        version: 8.23.0(eslint@9.20.0(jiti@1.21.6))(typescript@5.5.4)
+        version: 8.23.0(eslint@9.20.0(jiti@1.21.6))(typescript@5.7.3)
 
   src/query:
     dependencies:
@@ -1108,16 +1108,16 @@ importers:
         version: 3.4.2
       tap:
         specifier: 'catalog:'
-        version: 21.0.1(@types/node@22.13.1)(@types/react@18.3.18)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4)
+        version: 21.0.1(@types/node@22.13.1)(@types/react@18.3.18)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.7.3)
       tshy:
         specifier: 'catalog:'
         version: 3.0.2
       typescript:
         specifier: 'catalog:'
-        version: 5.5.4
+        version: 5.7.3
       typescript-eslint:
         specifier: 'catalog:'
-        version: 8.23.0(eslint@9.20.0(jiti@1.21.6))(typescript@5.5.4)
+        version: 8.23.0(eslint@9.20.0(jiti@1.21.6))(typescript@5.7.3)
 
   src/registry-client:
     dependencies:
@@ -1175,16 +1175,16 @@ importers:
         version: 3.4.2
       tap:
         specifier: 'catalog:'
-        version: 21.0.1(@types/node@22.13.1)(@types/react@18.3.18)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4)
+        version: 21.0.1(@types/node@22.13.1)(@types/react@18.3.18)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.7.3)
       tshy:
         specifier: 'catalog:'
         version: 3.0.2
       typescript:
         specifier: 'catalog:'
-        version: 5.5.4
+        version: 5.7.3
       typescript-eslint:
         specifier: 'catalog:'
-        version: 8.23.0(eslint@9.20.0(jiti@1.21.6))(typescript@5.5.4)
+        version: 8.23.0(eslint@9.20.0(jiti@1.21.6))(typescript@5.7.3)
 
   src/rollback-remove:
     dependencies:
@@ -1212,16 +1212,16 @@ importers:
         version: 3.4.2
       tap:
         specifier: 'catalog:'
-        version: 21.0.1(@types/node@22.13.1)(@types/react@18.3.18)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4)
+        version: 21.0.1(@types/node@22.13.1)(@types/react@18.3.18)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.7.3)
       tshy:
         specifier: 'catalog:'
         version: 3.0.2
       typescript:
         specifier: 'catalog:'
-        version: 5.5.4
+        version: 5.7.3
       typescript-eslint:
         specifier: 'catalog:'
-        version: 8.23.0(eslint@9.20.0(jiti@1.21.6))(typescript@5.5.4)
+        version: 8.23.0(eslint@9.20.0(jiti@1.21.6))(typescript@5.7.3)
 
   src/run:
     dependencies:
@@ -1261,16 +1261,16 @@ importers:
         version: 3.4.2
       tap:
         specifier: 'catalog:'
-        version: 21.0.1(@types/node@22.13.1)(@types/react@18.3.18)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4)
+        version: 21.0.1(@types/node@22.13.1)(@types/react@18.3.18)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.7.3)
       tshy:
         specifier: 'catalog:'
         version: 3.0.2
       typescript:
         specifier: 'catalog:'
-        version: 5.5.4
+        version: 5.7.3
       typescript-eslint:
         specifier: 'catalog:'
-        version: 8.23.0(eslint@9.20.0(jiti@1.21.6))(typescript@5.5.4)
+        version: 8.23.0(eslint@9.20.0(jiti@1.21.6))(typescript@5.7.3)
 
   src/satisfies:
     dependencies:
@@ -1307,16 +1307,16 @@ importers:
         version: 3.4.2
       tap:
         specifier: 'catalog:'
-        version: 21.0.1(@types/node@22.13.1)(@types/react@18.3.18)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4)
+        version: 21.0.1(@types/node@22.13.1)(@types/react@18.3.18)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.7.3)
       tshy:
         specifier: 'catalog:'
         version: 3.0.2
       typescript:
         specifier: 'catalog:'
-        version: 5.5.4
+        version: 5.7.3
       typescript-eslint:
         specifier: 'catalog:'
-        version: 8.23.0(eslint@9.20.0(jiti@1.21.6))(typescript@5.5.4)
+        version: 8.23.0(eslint@9.20.0(jiti@1.21.6))(typescript@5.7.3)
 
   src/semver:
     dependencies:
@@ -1353,16 +1353,16 @@ importers:
         version: 7.7.1
       tap:
         specifier: 'catalog:'
-        version: 21.0.1(@types/node@22.13.1)(@types/react@18.3.18)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4)
+        version: 21.0.1(@types/node@22.13.1)(@types/react@18.3.18)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.7.3)
       tshy:
         specifier: 'catalog:'
         version: 3.0.2
       typescript:
         specifier: 'catalog:'
-        version: 5.5.4
+        version: 5.7.3
       typescript-eslint:
         specifier: 'catalog:'
-        version: 8.23.0(eslint@9.20.0(jiti@1.21.6))(typescript@5.5.4)
+        version: 8.23.0(eslint@9.20.0(jiti@1.21.6))(typescript@5.7.3)
 
   src/spec:
     dependencies:
@@ -1396,16 +1396,16 @@ importers:
         version: 3.4.2
       tap:
         specifier: 'catalog:'
-        version: 21.0.1(@types/node@22.13.1)(@types/react@18.3.18)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4)
+        version: 21.0.1(@types/node@22.13.1)(@types/react@18.3.18)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.7.3)
       tshy:
         specifier: 'catalog:'
         version: 3.0.2
       typescript:
         specifier: 'catalog:'
-        version: 5.5.4
+        version: 5.7.3
       typescript-eslint:
         specifier: 'catalog:'
-        version: 8.23.0(eslint@9.20.0(jiti@1.21.6))(typescript@5.5.4)
+        version: 8.23.0(eslint@9.20.0(jiti@1.21.6))(typescript@5.7.3)
 
   src/tar:
     dependencies:
@@ -1448,16 +1448,16 @@ importers:
         version: 3.4.2
       tap:
         specifier: 'catalog:'
-        version: 21.0.1(@types/node@22.13.1)(@types/react@18.3.18)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4)
+        version: 21.0.1(@types/node@22.13.1)(@types/react@18.3.18)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.7.3)
       tshy:
         specifier: 'catalog:'
         version: 3.0.2
       typescript:
         specifier: 'catalog:'
-        version: 5.5.4
+        version: 5.7.3
       typescript-eslint:
         specifier: 'catalog:'
-        version: 8.23.0(eslint@9.20.0(jiti@1.21.6))(typescript@5.5.4)
+        version: 8.23.0(eslint@9.20.0(jiti@1.21.6))(typescript@5.7.3)
 
   src/types:
     dependencies:
@@ -1482,16 +1482,16 @@ importers:
         version: 3.4.2
       tap:
         specifier: 'catalog:'
-        version: 21.0.1(@types/node@22.13.1)(@types/react@18.3.18)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4)
+        version: 21.0.1(@types/node@22.13.1)(@types/react@18.3.18)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.7.3)
       tshy:
         specifier: 'catalog:'
         version: 3.0.2
       typescript:
         specifier: 'catalog:'
-        version: 5.5.4
+        version: 5.7.3
       typescript-eslint:
         specifier: 'catalog:'
-        version: 8.23.0(eslint@9.20.0(jiti@1.21.6))(typescript@5.5.4)
+        version: 8.23.0(eslint@9.20.0(jiti@1.21.6))(typescript@5.7.3)
 
   src/url-open:
     dependencies:
@@ -1516,16 +1516,16 @@ importers:
         version: 3.4.2
       tap:
         specifier: 'catalog:'
-        version: 21.0.1(@types/node@22.13.1)(@types/react@18.3.18)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4)
+        version: 21.0.1(@types/node@22.13.1)(@types/react@18.3.18)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.7.3)
       tshy:
         specifier: 'catalog:'
         version: 3.0.2
       typescript:
         specifier: 'catalog:'
-        version: 5.5.4
+        version: 5.7.3
       typescript-eslint:
         specifier: 'catalog:'
-        version: 8.23.0(eslint@9.20.0(jiti@1.21.6))(typescript@5.5.4)
+        version: 8.23.0(eslint@9.20.0(jiti@1.21.6))(typescript@5.7.3)
 
   src/vlt:
     dependencies:
@@ -1643,16 +1643,16 @@ importers:
         version: 4.28.5
       tap:
         specifier: 'catalog:'
-        version: 21.0.1(@types/node@22.13.1)(@types/react@18.3.18)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4)
+        version: 21.0.1(@types/node@22.13.1)(@types/react@18.3.18)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.7.3)
       tshy:
         specifier: 'catalog:'
         version: 3.0.2
       typescript:
         specifier: 'catalog:'
-        version: 5.5.4
+        version: 5.7.3
       typescript-eslint:
         specifier: 'catalog:'
-        version: 8.23.0(eslint@9.20.0(jiti@1.21.6))(typescript@5.5.4)
+        version: 8.23.0(eslint@9.20.0(jiti@1.21.6))(typescript@5.7.3)
 
   src/which:
     dependencies:
@@ -1677,16 +1677,16 @@ importers:
         version: 3.4.2
       tap:
         specifier: 'catalog:'
-        version: 21.0.1(@types/node@22.13.1)(@types/react@18.3.18)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4)
+        version: 21.0.1(@types/node@22.13.1)(@types/react@18.3.18)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.7.3)
       tshy:
         specifier: 'catalog:'
         version: 3.0.2
       typescript:
         specifier: 'catalog:'
-        version: 5.5.4
+        version: 5.7.3
       typescript-eslint:
         specifier: 'catalog:'
-        version: 8.23.0(eslint@9.20.0(jiti@1.21.6))(typescript@5.5.4)
+        version: 8.23.0(eslint@9.20.0(jiti@1.21.6))(typescript@5.7.3)
 
   src/workspaces:
     dependencies:
@@ -1738,16 +1738,16 @@ importers:
         version: 3.4.2
       tap:
         specifier: 'catalog:'
-        version: 21.0.1(@types/node@22.13.1)(@types/react@18.3.18)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4)
+        version: 21.0.1(@types/node@22.13.1)(@types/react@18.3.18)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.7.3)
       tshy:
         specifier: 'catalog:'
         version: 3.0.2
       typescript:
         specifier: 'catalog:'
-        version: 5.5.4
+        version: 5.7.3
       typescript-eslint:
         specifier: 'catalog:'
-        version: 8.23.0(eslint@9.20.0(jiti@1.21.6))(typescript@5.5.4)
+        version: 8.23.0(eslint@9.20.0(jiti@1.21.6))(typescript@5.7.3)
 
   src/xdg:
     devDependencies:
@@ -1768,37 +1768,37 @@ importers:
         version: 3.4.2
       tap:
         specifier: 'catalog:'
-        version: 21.0.1(@types/node@22.13.1)(@types/react@18.3.18)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4)
+        version: 21.0.1(@types/node@22.13.1)(@types/react@18.3.18)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.7.3)
       tshy:
         specifier: 'catalog:'
         version: 3.0.2
       typescript:
         specifier: 'catalog:'
-        version: 5.5.4
+        version: 5.7.3
       typescript-eslint:
         specifier: 'catalog:'
-        version: 8.23.0(eslint@9.20.0(jiti@1.21.6))(typescript@5.5.4)
+        version: 8.23.0(eslint@9.20.0(jiti@1.21.6))(typescript@5.7.3)
 
   www/docs:
     dependencies:
       '@astrojs/check':
         specifier: ^0.9.4
-        version: 0.9.4(prettier-plugin-astro@0.14.1)(prettier@3.4.2)(typescript@5.5.4)
+        version: 0.9.4(prettier-plugin-astro@0.14.1)(prettier@3.4.2)(typescript@5.7.3)
       '@astrojs/mdx':
         specifier: ^4.0.2
-        version: 4.0.2(astro@5.0.5(@types/node@22.13.1)(jiti@1.21.6)(rollup@4.24.0)(tsx@4.19.2)(typescript@5.5.4)(yaml@2.7.0))
+        version: 4.0.2(astro@5.0.5(@types/node@22.13.1)(jiti@1.21.6)(rollup@4.24.0)(tsx@4.19.2)(typescript@5.7.3)(yaml@2.7.0))
       '@astrojs/react':
         specifier: ^4.1.0
         version: 4.1.0(@types/node@22.13.1)(@types/react-dom@18.3.1)(@types/react@18.3.11)(jiti@1.21.6)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(tsx@4.19.2)(yaml@2.7.0)
       '@astrojs/starlight':
         specifier: ^0.30.1
-        version: 0.30.1(astro@5.0.5(@types/node@22.13.1)(jiti@1.21.6)(rollup@4.24.0)(tsx@4.19.2)(typescript@5.5.4)(yaml@2.7.0))
+        version: 0.30.1(astro@5.0.5(@types/node@22.13.1)(jiti@1.21.6)(rollup@4.24.0)(tsx@4.19.2)(typescript@5.7.3)(yaml@2.7.0))
       '@astrojs/tailwind':
         specifier: ^5.1.3
-        version: 5.1.3(astro@5.0.5(@types/node@22.13.1)(jiti@1.21.6)(rollup@4.24.0)(tsx@4.19.2)(typescript@5.5.4)(yaml@2.7.0))(tailwindcss@3.4.14)
+        version: 5.1.3(astro@5.0.5(@types/node@22.13.1)(jiti@1.21.6)(rollup@4.24.0)(tsx@4.19.2)(typescript@5.7.3)(yaml@2.7.0))(tailwindcss@3.4.14)
       '@astrojs/vercel':
         specifier: ^8.0.1
-        version: 8.0.1(astro@5.0.5(@types/node@22.13.1)(jiti@1.21.6)(rollup@4.24.0)(tsx@4.19.2)(typescript@5.5.4)(yaml@2.7.0))(encoding@0.1.13)(react@18.3.1)(rollup@4.24.0)
+        version: 8.0.1(astro@5.0.5(@types/node@22.13.1)(jiti@1.21.6)(rollup@4.24.0)(tsx@4.19.2)(typescript@5.7.3)(yaml@2.7.0))(encoding@0.1.13)(react@18.3.1)(rollup@4.24.0)
       '@radix-ui/react-collapsible':
         specifier: ^1.1.1
         version: 1.1.1(@types/react-dom@18.3.1)(@types/react@18.3.11)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -1834,7 +1834,7 @@ importers:
         version: link:../../src/vlt
       astro:
         specifier: ^5.0.5
-        version: 5.0.5(@types/node@22.13.1)(jiti@1.21.6)(rollup@4.24.0)(tsx@4.19.2)(typescript@5.5.4)(yaml@2.7.0)
+        version: 5.0.5(@types/node@22.13.1)(jiti@1.21.6)(rollup@4.24.0)(tsx@4.19.2)(typescript@5.7.3)(yaml@2.7.0)
       class-variance-authority:
         specifier: ^0.7.0
         version: 0.7.0
@@ -1870,7 +1870,7 @@ importers:
         version: 1.7.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       starlight-links-validator:
         specifier: ^0.14.0
-        version: 0.14.0(@astrojs/starlight@0.30.1(astro@5.0.5(@types/node@22.13.1)(jiti@1.21.6)(rollup@4.24.0)(tsx@4.19.2)(typescript@5.5.4)(yaml@2.7.0)))
+        version: 0.14.0(@astrojs/starlight@0.30.1(astro@5.0.5(@types/node@22.13.1)(jiti@1.21.6)(rollup@4.24.0)(tsx@4.19.2)(typescript@5.7.3)(yaml@2.7.0)))
       tailwind-merge:
         specifier: ^2.5.2
         version: 2.5.4
@@ -1882,16 +1882,16 @@ importers:
         version: 1.0.7(tailwindcss@3.4.14)
       typedoc:
         specifier: ^0.27.6
-        version: 0.27.6(typescript@5.5.4)
+        version: 0.27.6(typescript@5.7.3)
       typedoc-plugin-frontmatter:
         specifier: ^1.1.2
-        version: 1.1.2(typedoc-plugin-markdown@4.4.0(typedoc@0.27.6(typescript@5.5.4)))
+        version: 1.1.2(typedoc-plugin-markdown@4.4.0(typedoc@0.27.6(typescript@5.7.3)))
       typedoc-plugin-markdown:
         specifier: ^4.4.0
-        version: 4.4.0(typedoc@0.27.6(typescript@5.5.4))
+        version: 4.4.0(typedoc@0.27.6(typescript@5.7.3))
       typedoc-plugin-remark:
         specifier: ^1.2.2
-        version: 1.2.2(typedoc-plugin-markdown@4.4.0(typedoc@0.27.6(typescript@5.5.4)))
+        version: 1.2.2(typedoc-plugin-markdown@4.4.0(typedoc@0.27.6(typescript@5.7.3)))
       vaul:
         specifier: ^1.1.1
         version: 1.1.1(@types/react-dom@18.3.1)(@types/react@18.3.11)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -1934,10 +1934,10 @@ importers:
         version: 3.4.2
       typescript:
         specifier: 'catalog:'
-        version: 5.5.4
+        version: 5.7.3
       typescript-eslint:
         specifier: 'catalog:'
-        version: 8.23.0(eslint@9.20.0(jiti@1.21.6))(typescript@5.5.4)
+        version: 8.23.0(eslint@9.20.0(jiti@1.21.6))(typescript@5.7.3)
       unified:
         specifier: ^11.0.5
         version: 11.0.5
@@ -7833,8 +7833,8 @@ packages:
     engines: {node: '>=14.17'}
     hasBin: true
 
-  typescript@5.7.2:
-    resolution: {integrity: sha512-i5t66RHxDvVN40HfDd1PsEThGNnlMCMT3jMUuoh9/0TaqWevNontacunWyN02LA9/fIbEWlcHZcgTKb9QoaLfg==}
+  typescript@5.7.3:
+    resolution: {integrity: sha512-84MVSjMEHP+FQRPy3pX9sTVV/INIex71s9TL2Gm5FG/WG1SqXeKyZ0k7/blY/4FdOzI12CBy1vGc4og/eus0fw==}
     engines: {node: '>=14.17'}
     hasBin: true
 
@@ -8454,12 +8454,12 @@ snapshots:
       '@jridgewell/gen-mapping': 0.3.5
       '@jridgewell/trace-mapping': 0.3.25
 
-  '@astrojs/check@0.9.4(prettier-plugin-astro@0.14.1)(prettier@3.4.2)(typescript@5.5.4)':
+  '@astrojs/check@0.9.4(prettier-plugin-astro@0.14.1)(prettier@3.4.2)(typescript@5.7.3)':
     dependencies:
-      '@astrojs/language-server': 2.15.3(prettier-plugin-astro@0.14.1)(prettier@3.4.2)(typescript@5.5.4)
+      '@astrojs/language-server': 2.15.3(prettier-plugin-astro@0.14.1)(prettier@3.4.2)(typescript@5.7.3)
       chokidar: 4.0.1
       kleur: 4.1.5
-      typescript: 5.5.4
+      typescript: 5.7.3
       yargs: 17.7.2
     transitivePeerDependencies:
       - prettier
@@ -8469,12 +8469,12 @@ snapshots:
 
   '@astrojs/internal-helpers@0.4.2': {}
 
-  '@astrojs/language-server@2.15.3(prettier-plugin-astro@0.14.1)(prettier@3.4.2)(typescript@5.5.4)':
+  '@astrojs/language-server@2.15.3(prettier-plugin-astro@0.14.1)(prettier@3.4.2)(typescript@5.7.3)':
     dependencies:
       '@astrojs/compiler': 2.10.3
       '@astrojs/yaml2ts': 0.2.1
       '@jridgewell/sourcemap-codec': 1.5.0
-      '@volar/kit': 2.4.6(typescript@5.5.4)
+      '@volar/kit': 2.4.6(typescript@5.7.3)
       '@volar/language-core': 2.4.6
       '@volar/language-server': 2.4.6
       '@volar/language-service': 2.4.6
@@ -8519,12 +8519,12 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@astrojs/mdx@4.0.2(astro@5.0.5(@types/node@22.13.1)(jiti@1.21.6)(rollup@4.24.0)(tsx@4.19.2)(typescript@5.5.4)(yaml@2.7.0))':
+  '@astrojs/mdx@4.0.2(astro@5.0.5(@types/node@22.13.1)(jiti@1.21.6)(rollup@4.24.0)(tsx@4.19.2)(typescript@5.7.3)(yaml@2.7.0))':
     dependencies:
       '@astrojs/markdown-remark': 6.0.1
       '@mdx-js/mdx': 3.1.0(acorn@8.14.0)
       acorn: 8.14.0
-      astro: 5.0.5(@types/node@22.13.1)(jiti@1.21.6)(rollup@4.24.0)(tsx@4.19.2)(typescript@5.5.4)(yaml@2.7.0)
+      astro: 5.0.5(@types/node@22.13.1)(jiti@1.21.6)(rollup@4.24.0)(tsx@4.19.2)(typescript@5.7.3)(yaml@2.7.0)
       es-module-lexer: 1.5.4
       estree-util-visit: 2.0.0
       hast-util-to-html: 9.0.3
@@ -8571,16 +8571,16 @@ snapshots:
       stream-replace-string: 2.0.0
       zod: 3.23.8
 
-  '@astrojs/starlight@0.30.1(astro@5.0.5(@types/node@22.13.1)(jiti@1.21.6)(rollup@4.24.0)(tsx@4.19.2)(typescript@5.5.4)(yaml@2.7.0))':
+  '@astrojs/starlight@0.30.1(astro@5.0.5(@types/node@22.13.1)(jiti@1.21.6)(rollup@4.24.0)(tsx@4.19.2)(typescript@5.7.3)(yaml@2.7.0))':
     dependencies:
-      '@astrojs/mdx': 4.0.2(astro@5.0.5(@types/node@22.13.1)(jiti@1.21.6)(rollup@4.24.0)(tsx@4.19.2)(typescript@5.5.4)(yaml@2.7.0))
+      '@astrojs/mdx': 4.0.2(astro@5.0.5(@types/node@22.13.1)(jiti@1.21.6)(rollup@4.24.0)(tsx@4.19.2)(typescript@5.7.3)(yaml@2.7.0))
       '@astrojs/sitemap': 3.2.1
       '@pagefind/default-ui': 1.1.1
       '@types/hast': 3.0.4
       '@types/js-yaml': 4.0.9
       '@types/mdast': 4.0.4
-      astro: 5.0.5(@types/node@22.13.1)(jiti@1.21.6)(rollup@4.24.0)(tsx@4.19.2)(typescript@5.5.4)(yaml@2.7.0)
-      astro-expressive-code: 0.38.3(astro@5.0.5(@types/node@22.13.1)(jiti@1.21.6)(rollup@4.24.0)(tsx@4.19.2)(typescript@5.5.4)(yaml@2.7.0))
+      astro: 5.0.5(@types/node@22.13.1)(jiti@1.21.6)(rollup@4.24.0)(tsx@4.19.2)(typescript@5.7.3)(yaml@2.7.0)
+      astro-expressive-code: 0.38.3(astro@5.0.5(@types/node@22.13.1)(jiti@1.21.6)(rollup@4.24.0)(tsx@4.19.2)(typescript@5.7.3)(yaml@2.7.0))
       bcp-47: 2.1.0
       hast-util-from-html: 2.0.3
       hast-util-select: 6.0.3
@@ -8601,9 +8601,9 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@astrojs/tailwind@5.1.3(astro@5.0.5(@types/node@22.13.1)(jiti@1.21.6)(rollup@4.24.0)(tsx@4.19.2)(typescript@5.5.4)(yaml@2.7.0))(tailwindcss@3.4.14)':
+  '@astrojs/tailwind@5.1.3(astro@5.0.5(@types/node@22.13.1)(jiti@1.21.6)(rollup@4.24.0)(tsx@4.19.2)(typescript@5.7.3)(yaml@2.7.0))(tailwindcss@3.4.14)':
     dependencies:
-      astro: 5.0.5(@types/node@22.13.1)(jiti@1.21.6)(rollup@4.24.0)(tsx@4.19.2)(typescript@5.5.4)(yaml@2.7.0)
+      astro: 5.0.5(@types/node@22.13.1)(jiti@1.21.6)(rollup@4.24.0)(tsx@4.19.2)(typescript@5.7.3)(yaml@2.7.0)
       autoprefixer: 10.4.20(postcss@8.4.49)
       postcss: 8.4.49
       postcss-load-config: 4.0.2(postcss@8.4.49)
@@ -8623,13 +8623,13 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@astrojs/vercel@8.0.1(astro@5.0.5(@types/node@22.13.1)(jiti@1.21.6)(rollup@4.24.0)(tsx@4.19.2)(typescript@5.5.4)(yaml@2.7.0))(encoding@0.1.13)(react@18.3.1)(rollup@4.24.0)':
+  '@astrojs/vercel@8.0.1(astro@5.0.5(@types/node@22.13.1)(jiti@1.21.6)(rollup@4.24.0)(tsx@4.19.2)(typescript@5.7.3)(yaml@2.7.0))(encoding@0.1.13)(react@18.3.1)(rollup@4.24.0)':
     dependencies:
       '@astrojs/internal-helpers': 0.4.2
       '@vercel/analytics': 1.4.1(react@18.3.1)
       '@vercel/edge': 1.1.4
       '@vercel/nft': 0.27.9(encoding@0.1.13)(rollup@4.24.0)
-      astro: 5.0.5(@types/node@22.13.1)(jiti@1.21.6)(rollup@4.24.0)(tsx@4.19.2)(typescript@5.5.4)(yaml@2.7.0)
+      astro: 5.0.5(@types/node@22.13.1)(jiti@1.21.6)(rollup@4.24.0)(tsx@4.19.2)(typescript@5.7.3)(yaml@2.7.0)
       esbuild: 0.24.0
       fast-glob: 3.3.2
     transitivePeerDependencies:
@@ -9553,6 +9553,22 @@ snapshots:
       typescript: 5.5.4
       v8-compile-cache-lib: 3.0.1
 
+  '@isaacs/ts-node-temp-fork-for-pr-2009@10.9.7(@types/node@22.13.1)(typescript@5.7.3)':
+    dependencies:
+      '@cspotcode/source-map-support': 0.8.1
+      '@tsconfig/node14': 14.1.2
+      '@tsconfig/node16': 16.1.3
+      '@tsconfig/node18': 18.2.4
+      '@tsconfig/node20': 20.1.4
+      '@types/node': 22.13.1
+      acorn: 8.14.0
+      acorn-walk: 8.3.3
+      arg: 4.1.3
+      diff: 4.0.2
+      make-error: 1.3.6
+      typescript: 5.7.3
+      v8-compile-cache-lib: 3.0.1
+
   '@istanbuljs/schema@0.1.3': {}
 
   '@jest/schemas@29.6.3':
@@ -9590,7 +9606,7 @@ snapshots:
       https-proxy-agent: 7.0.5
       node-fetch: 2.7.0(encoding@0.1.13)
       nopt: 8.0.0
-      semver: 7.6.3
+      semver: 7.7.1
       tar: 7.4.3
     transitivePeerDependencies:
       - encoding
@@ -9661,7 +9677,7 @@ snapshots:
 
   '@npmcli/fs@3.1.1':
     dependencies:
-      semver: 7.6.3
+      semver: 7.7.1
 
   '@npmcli/git@5.0.8':
     dependencies:
@@ -9672,7 +9688,7 @@ snapshots:
       proc-log: 4.2.0
       promise-inflight: 1.0.1
       promise-retry: 2.0.1
-      semver: 7.6.3
+      semver: 7.7.1
       which: 4.0.0
     transitivePeerDependencies:
       - bluebird
@@ -9692,7 +9708,7 @@ snapshots:
       json-parse-even-better-errors: 3.0.2
       normalize-package-data: 6.0.2
       proc-log: 4.2.0
-      semver: 7.6.3
+      semver: 7.7.1
     transitivePeerDependencies:
       - bluebird
 
@@ -10849,7 +10865,7 @@ snapshots:
       path-scurry: 2.0.0
       resolve-import: 2.0.0
       rimraf: 6.0.1
-      semver: 7.6.3
+      semver: 7.7.1
       signal-exit: 4.1.0
       tap-parser: 18.0.0
       tap-yaml: 4.0.0
@@ -10931,6 +10947,16 @@ snapshots:
   '@tapjs/typescript@3.0.0(@tapjs/core@4.0.0(@types/node@22.13.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@types/node@22.13.1)(typescript@5.5.4)':
     dependencies:
       '@isaacs/ts-node-temp-fork-for-pr-2009': 10.9.7(@types/node@22.13.1)(typescript@5.5.4)
+      '@tapjs/core': 4.0.0(@types/node@22.13.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+    transitivePeerDependencies:
+      - '@swc/core'
+      - '@swc/wasm'
+      - '@types/node'
+      - typescript
+
+  '@tapjs/typescript@3.0.0(@tapjs/core@4.0.0(@types/node@22.13.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@types/node@22.13.1)(typescript@5.7.3)':
+    dependencies:
+      '@isaacs/ts-node-temp-fork-for-pr-2009': 10.9.7(@types/node@22.13.1)(typescript@5.7.3)
       '@tapjs/core': 4.0.0(@types/node@22.13.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
     transitivePeerDependencies:
       - '@swc/core'
@@ -11146,32 +11172,32 @@ snapshots:
 
   '@types/unist@3.0.3': {}
 
-  '@typescript-eslint/eslint-plugin@8.23.0(@typescript-eslint/parser@8.23.0(eslint@9.20.0(jiti@1.21.6))(typescript@5.5.4))(eslint@9.20.0(jiti@1.21.6))(typescript@5.5.4)':
+  '@typescript-eslint/eslint-plugin@8.23.0(@typescript-eslint/parser@8.23.0(eslint@9.20.0(jiti@1.21.6))(typescript@5.7.3))(eslint@9.20.0(jiti@1.21.6))(typescript@5.7.3)':
     dependencies:
       '@eslint-community/regexpp': 4.12.1
-      '@typescript-eslint/parser': 8.23.0(eslint@9.20.0(jiti@1.21.6))(typescript@5.5.4)
+      '@typescript-eslint/parser': 8.23.0(eslint@9.20.0(jiti@1.21.6))(typescript@5.7.3)
       '@typescript-eslint/scope-manager': 8.23.0
-      '@typescript-eslint/type-utils': 8.23.0(eslint@9.20.0(jiti@1.21.6))(typescript@5.5.4)
-      '@typescript-eslint/utils': 8.23.0(eslint@9.20.0(jiti@1.21.6))(typescript@5.5.4)
+      '@typescript-eslint/type-utils': 8.23.0(eslint@9.20.0(jiti@1.21.6))(typescript@5.7.3)
+      '@typescript-eslint/utils': 8.23.0(eslint@9.20.0(jiti@1.21.6))(typescript@5.7.3)
       '@typescript-eslint/visitor-keys': 8.23.0
       eslint: 9.20.0(jiti@1.21.6)
       graphemer: 1.4.0
       ignore: 5.3.2
       natural-compare: 1.4.0
-      ts-api-utils: 2.0.1(typescript@5.5.4)
-      typescript: 5.5.4
+      ts-api-utils: 2.0.1(typescript@5.7.3)
+      typescript: 5.7.3
     transitivePeerDependencies:
       - supports-color
 
-  '@typescript-eslint/parser@8.23.0(eslint@9.20.0(jiti@1.21.6))(typescript@5.5.4)':
+  '@typescript-eslint/parser@8.23.0(eslint@9.20.0(jiti@1.21.6))(typescript@5.7.3)':
     dependencies:
       '@typescript-eslint/scope-manager': 8.23.0
       '@typescript-eslint/types': 8.23.0
-      '@typescript-eslint/typescript-estree': 8.23.0(typescript@5.5.4)
+      '@typescript-eslint/typescript-estree': 8.23.0(typescript@5.7.3)
       '@typescript-eslint/visitor-keys': 8.23.0
       debug: 4.3.7
       eslint: 9.20.0(jiti@1.21.6)
-      typescript: 5.5.4
+      typescript: 5.7.3
     transitivePeerDependencies:
       - supports-color
 
@@ -11180,20 +11206,20 @@ snapshots:
       '@typescript-eslint/types': 8.23.0
       '@typescript-eslint/visitor-keys': 8.23.0
 
-  '@typescript-eslint/type-utils@8.23.0(eslint@9.20.0(jiti@1.21.6))(typescript@5.5.4)':
+  '@typescript-eslint/type-utils@8.23.0(eslint@9.20.0(jiti@1.21.6))(typescript@5.7.3)':
     dependencies:
-      '@typescript-eslint/typescript-estree': 8.23.0(typescript@5.5.4)
-      '@typescript-eslint/utils': 8.23.0(eslint@9.20.0(jiti@1.21.6))(typescript@5.5.4)
+      '@typescript-eslint/typescript-estree': 8.23.0(typescript@5.7.3)
+      '@typescript-eslint/utils': 8.23.0(eslint@9.20.0(jiti@1.21.6))(typescript@5.7.3)
       debug: 4.3.7
       eslint: 9.20.0(jiti@1.21.6)
-      ts-api-utils: 2.0.1(typescript@5.5.4)
-      typescript: 5.5.4
+      ts-api-utils: 2.0.1(typescript@5.7.3)
+      typescript: 5.7.3
     transitivePeerDependencies:
       - supports-color
 
   '@typescript-eslint/types@8.23.0': {}
 
-  '@typescript-eslint/typescript-estree@8.23.0(typescript@5.5.4)':
+  '@typescript-eslint/typescript-estree@8.23.0(typescript@5.7.3)':
     dependencies:
       '@typescript-eslint/types': 8.23.0
       '@typescript-eslint/visitor-keys': 8.23.0
@@ -11201,20 +11227,20 @@ snapshots:
       fast-glob: 3.3.2
       is-glob: 4.0.3
       minimatch: 9.0.5
-      semver: 7.6.3
-      ts-api-utils: 2.0.1(typescript@5.5.4)
-      typescript: 5.5.4
+      semver: 7.7.1
+      ts-api-utils: 2.0.1(typescript@5.7.3)
+      typescript: 5.7.3
     transitivePeerDependencies:
       - supports-color
 
-  '@typescript-eslint/utils@8.23.0(eslint@9.20.0(jiti@1.21.6))(typescript@5.5.4)':
+  '@typescript-eslint/utils@8.23.0(eslint@9.20.0(jiti@1.21.6))(typescript@5.7.3)':
     dependencies:
       '@eslint-community/eslint-utils': 4.4.0(eslint@9.20.0(jiti@1.21.6))
       '@typescript-eslint/scope-manager': 8.23.0
       '@typescript-eslint/types': 8.23.0
-      '@typescript-eslint/typescript-estree': 8.23.0(typescript@5.5.4)
+      '@typescript-eslint/typescript-estree': 8.23.0(typescript@5.7.3)
       eslint: 9.20.0(jiti@1.21.6)
-      typescript: 5.5.4
+      typescript: 5.7.3
     transitivePeerDependencies:
       - supports-color
 
@@ -11279,13 +11305,13 @@ snapshots:
       chai: 5.1.2
       tinyrainbow: 1.2.0
 
-  '@vitest/mocker@2.1.9(msw@2.7.0(@types/node@22.13.1)(typescript@5.5.4))(vite@5.4.14(@types/node@22.13.1))':
+  '@vitest/mocker@2.1.9(msw@2.7.0(@types/node@22.13.1)(typescript@5.7.3))(vite@5.4.14(@types/node@22.13.1))':
     dependencies:
       '@vitest/spy': 2.1.9
       estree-walker: 3.0.3
       magic-string: 0.30.15
     optionalDependencies:
-      msw: 2.7.0(@types/node@22.13.1)(typescript@5.5.4)
+      msw: 2.7.0(@types/node@22.13.1)(typescript@5.7.3)
       vite: 5.4.14(@types/node@22.13.1)
 
   '@vitest/pretty-format@2.1.9':
@@ -11313,12 +11339,12 @@ snapshots:
       loupe: 3.1.2
       tinyrainbow: 1.2.0
 
-  '@volar/kit@2.4.6(typescript@5.5.4)':
+  '@volar/kit@2.4.6(typescript@5.7.3)':
     dependencies:
       '@volar/language-service': 2.4.6
       '@volar/typescript': 2.4.6
       typesafe-path: 0.2.2
-      typescript: 5.5.4
+      typescript: 5.7.3
       vscode-languageserver-textdocument: 1.0.12
       vscode-uri: 3.0.8
 
@@ -11370,7 +11396,7 @@ snapshots:
       https-proxy-agent: 5.0.1
       node-fetch: 2.7.0(encoding@0.1.13)
       progress: 2.0.3
-      semver: 7.6.3
+      semver: 7.7.1
       tar-fs: 2.1.1
       yargs: 16.2.0
     transitivePeerDependencies:
@@ -11570,12 +11596,12 @@ snapshots:
 
   astring@1.9.0: {}
 
-  astro-expressive-code@0.38.3(astro@5.0.5(@types/node@22.13.1)(jiti@1.21.6)(rollup@4.24.0)(tsx@4.19.2)(typescript@5.5.4)(yaml@2.7.0)):
+  astro-expressive-code@0.38.3(astro@5.0.5(@types/node@22.13.1)(jiti@1.21.6)(rollup@4.24.0)(tsx@4.19.2)(typescript@5.7.3)(yaml@2.7.0)):
     dependencies:
-      astro: 5.0.5(@types/node@22.13.1)(jiti@1.21.6)(rollup@4.24.0)(tsx@4.19.2)(typescript@5.5.4)(yaml@2.7.0)
+      astro: 5.0.5(@types/node@22.13.1)(jiti@1.21.6)(rollup@4.24.0)(tsx@4.19.2)(typescript@5.7.3)(yaml@2.7.0)
       rehype-expressive-code: 0.38.3
 
-  astro@5.0.5(@types/node@22.13.1)(jiti@1.21.6)(rollup@4.24.0)(tsx@4.19.2)(typescript@5.5.4)(yaml@2.7.0):
+  astro@5.0.5(@types/node@22.13.1)(jiti@1.21.6)(rollup@4.24.0)(tsx@4.19.2)(typescript@5.7.3)(yaml@2.7.0):
     dependencies:
       '@astrojs/compiler': 2.10.3
       '@astrojs/internal-helpers': 0.4.2
@@ -11619,10 +11645,10 @@ snapshots:
       preferred-pm: 4.0.0
       prompts: 2.4.2
       rehype: 13.0.2
-      semver: 7.6.3
+      semver: 7.7.1
       shiki: 1.24.2
       tinyexec: 0.3.1
-      tsconfck: 3.1.4(typescript@5.5.4)
+      tsconfck: 3.1.4(typescript@5.7.3)
       ultrahtml: 1.5.3
       unist-util-visit: 5.0.0
       vfile: 6.0.3
@@ -11634,7 +11660,7 @@ snapshots:
       yocto-spinner: 0.1.2
       zod: 3.23.8
       zod-to-json-schema: 3.23.5(zod@3.23.8)
-      zod-to-ts: 1.2.0(typescript@5.5.4)(zod@3.23.8)
+      zod-to-ts: 1.2.0(typescript@5.7.3)(zod@3.23.8)
     optionalDependencies:
       sharp: 0.33.5
     transitivePeerDependencies:
@@ -13528,7 +13554,7 @@ snapshots:
 
   make-dir@4.0.0:
     dependencies:
-      semver: 7.6.3
+      semver: 7.7.1
 
   make-error@1.3.6: {}
 
@@ -14146,7 +14172,7 @@ snapshots:
 
   ms@2.1.3: {}
 
-  msw@2.7.0(@types/node@22.13.1)(typescript@5.5.4):
+  msw@2.7.0(@types/node@22.13.1)(typescript@5.7.3):
     dependencies:
       '@bundled-es-modules/cookie': 2.0.1
       '@bundled-es-modules/statuses': 1.0.1
@@ -14167,7 +14193,7 @@ snapshots:
       type-fest: 4.30.0
       yargs: 17.7.2
     optionalDependencies:
-      typescript: 5.5.4
+      typescript: 5.7.3
     transitivePeerDependencies:
       - '@types/node'
 
@@ -14211,7 +14237,7 @@ snapshots:
 
   node-abi@3.68.0:
     dependencies:
-      semver: 7.6.3
+      semver: 7.7.1
 
   node-fetch@2.7.0(encoding@0.1.13):
     dependencies:
@@ -14230,7 +14256,7 @@ snapshots:
       make-fetch-happen: 13.0.1
       nopt: 7.2.1
       proc-log: 4.2.0
-      semver: 7.6.3
+      semver: 7.7.1
       tar: 6.2.1
       which: 4.0.0
     transitivePeerDependencies:
@@ -14249,7 +14275,7 @@ snapshots:
   normalize-package-data@6.0.2:
     dependencies:
       hosted-git-info: 7.0.2
-      semver: 7.6.3
+      semver: 7.7.1
       validate-npm-package-license: 3.0.4
 
   normalize-path@3.0.0: {}
@@ -14264,7 +14290,7 @@ snapshots:
 
   npm-install-checks@6.3.0:
     dependencies:
-      semver: 7.6.3
+      semver: 7.7.1
 
   npm-normalize-package-bin@3.0.1: {}
 
@@ -14272,7 +14298,7 @@ snapshots:
     dependencies:
       hosted-git-info: 7.0.2
       proc-log: 4.2.0
-      semver: 7.6.3
+      semver: 7.7.1
       validate-npm-package-name: 5.0.1
 
   npm-packlist@8.0.2:
@@ -15207,7 +15233,7 @@ snapshots:
     dependencies:
       color: 4.2.3
       detect-libc: 2.0.3
-      semver: 7.6.3
+      semver: 7.7.1
     optionalDependencies:
       '@img/sharp-darwin-arm64': 0.33.5
       '@img/sharp-darwin-x64': 0.33.5
@@ -15384,9 +15410,9 @@ snapshots:
 
   stackback@0.0.2: {}
 
-  starlight-links-validator@0.14.0(@astrojs/starlight@0.30.1(astro@5.0.5(@types/node@22.13.1)(jiti@1.21.6)(rollup@4.24.0)(tsx@4.19.2)(typescript@5.5.4)(yaml@2.7.0))):
+  starlight-links-validator@0.14.0(@astrojs/starlight@0.30.1(astro@5.0.5(@types/node@22.13.1)(jiti@1.21.6)(rollup@4.24.0)(tsx@4.19.2)(typescript@5.7.3)(yaml@2.7.0))):
     dependencies:
-      '@astrojs/starlight': 0.30.1(astro@5.0.5(@types/node@22.13.1)(jiti@1.21.6)(rollup@4.24.0)(tsx@4.19.2)(typescript@5.5.4)(yaml@2.7.0))
+      '@astrojs/starlight': 0.30.1(astro@5.0.5(@types/node@22.13.1)(jiti@1.21.6)(rollup@4.24.0)(tsx@4.19.2)(typescript@5.7.3)(yaml@2.7.0))
       '@types/picomatch': 3.0.1
       github-slugger: 2.0.0
       hast-util-from-html: 2.0.3
@@ -15600,7 +15626,7 @@ snapshots:
       yaml: 2.7.0
       yaml-types: 0.4.0(yaml@2.7.0)
 
-  tap@21.0.1(@types/node@22.13.1)(@types/react@18.3.18)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4):
+  tap@21.0.1(@types/node@22.13.1)(@types/react@18.3.18)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.7.3):
     dependencies:
       '@tapjs/after': 3.0.0(@tapjs/core@4.0.0(@types/node@22.13.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
       '@tapjs/after-each': 4.0.0(@tapjs/core@4.0.0(@types/node@22.13.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
@@ -15619,7 +15645,7 @@ snapshots:
       '@tapjs/spawn': 4.0.0(@tapjs/core@4.0.0(@types/node@22.13.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
       '@tapjs/stdin': 4.0.0(@tapjs/core@4.0.0(@types/node@22.13.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
       '@tapjs/test': 4.0.0(@tapjs/core@4.0.0(@types/node@22.13.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@types/node@22.13.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      '@tapjs/typescript': 3.0.0(@tapjs/core@4.0.0(@types/node@22.13.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@types/node@22.13.1)(typescript@5.5.4)
+      '@tapjs/typescript': 3.0.0(@tapjs/core@4.0.0(@types/node@22.13.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@types/node@22.13.1)(typescript@5.7.3)
       '@tapjs/worker': 4.0.0(@tapjs/core@4.0.0(@types/node@22.13.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
       resolve-import: 2.0.0
     transitivePeerDependencies:
@@ -15750,15 +15776,15 @@ snapshots:
 
   trough@2.2.0: {}
 
-  ts-api-utils@2.0.1(typescript@5.5.4):
+  ts-api-utils@2.0.1(typescript@5.7.3):
     dependencies:
-      typescript: 5.5.4
+      typescript: 5.7.3
 
   ts-interface-checker@0.1.13: {}
 
-  tsconfck@3.1.4(typescript@5.5.4):
+  tsconfck@3.1.4(typescript@5.7.3):
     optionalDependencies:
-      typescript: 5.5.4
+      typescript: 5.7.3
 
   tsconfig-paths@3.15.0:
     dependencies:
@@ -15778,7 +15804,7 @@ snapshots:
       resolve-import: 2.0.0
       rimraf: 6.0.1
       sync-content: 2.0.1
-      typescript: 5.7.2
+      typescript: 5.7.3
       walk-up-path: 4.0.0
 
   tslib@2.7.0: {}
@@ -15843,55 +15869,55 @@ snapshots:
       is-typed-array: 1.1.13
       possible-typed-array-names: 1.0.0
 
-  typedoc-plugin-frontmatter@1.1.2(typedoc-plugin-markdown@4.4.0(typedoc@0.27.6(typescript@5.5.4))):
+  typedoc-plugin-frontmatter@1.1.2(typedoc-plugin-markdown@4.4.0(typedoc@0.27.6(typescript@5.7.3))):
     dependencies:
-      typedoc-plugin-markdown: 4.4.0(typedoc@0.27.6(typescript@5.5.4))
+      typedoc-plugin-markdown: 4.4.0(typedoc@0.27.6(typescript@5.7.3))
       yaml: 2.6.1
 
-  typedoc-plugin-markdown@4.4.0(typedoc@0.27.6(typescript@5.5.4)):
+  typedoc-plugin-markdown@4.4.0(typedoc@0.27.6(typescript@5.7.3)):
     dependencies:
-      typedoc: 0.27.6(typescript@5.5.4)
+      typedoc: 0.27.6(typescript@5.7.3)
 
-  typedoc-plugin-remark@1.2.2(typedoc-plugin-markdown@4.4.0(typedoc@0.27.6(typescript@5.5.4))):
+  typedoc-plugin-remark@1.2.2(typedoc-plugin-markdown@4.4.0(typedoc@0.27.6(typescript@5.7.3))):
     dependencies:
       remark: 15.0.1
       remark-frontmatter: 5.0.0
       remark-gfm: 4.0.0
       remark-mdx: 3.1.0
       to-vfile: 8.0.0
-      typedoc-plugin-markdown: 4.4.0(typedoc@0.27.6(typescript@5.5.4))
+      typedoc-plugin-markdown: 4.4.0(typedoc@0.27.6(typescript@5.7.3))
       unist-util-visit: 5.0.0
     transitivePeerDependencies:
       - supports-color
 
-  typedoc@0.27.6(typescript@5.5.4):
+  typedoc@0.27.6(typescript@5.7.3):
     dependencies:
       '@gerrit0/mini-shiki': 1.24.2
       lunr: 2.3.9
       markdown-it: 14.1.0
       minimatch: 9.0.5
-      typescript: 5.5.4
+      typescript: 5.7.3
       yaml: 2.6.1
 
   typesafe-path@0.2.2: {}
 
   typescript-auto-import-cache@0.3.3:
     dependencies:
-      semver: 7.6.3
+      semver: 7.7.1
 
-  typescript-eslint@8.23.0(eslint@9.20.0(jiti@1.21.6))(typescript@5.5.4):
+  typescript-eslint@8.23.0(eslint@9.20.0(jiti@1.21.6))(typescript@5.7.3):
     dependencies:
-      '@typescript-eslint/eslint-plugin': 8.23.0(@typescript-eslint/parser@8.23.0(eslint@9.20.0(jiti@1.21.6))(typescript@5.5.4))(eslint@9.20.0(jiti@1.21.6))(typescript@5.5.4)
-      '@typescript-eslint/parser': 8.23.0(eslint@9.20.0(jiti@1.21.6))(typescript@5.5.4)
-      '@typescript-eslint/utils': 8.23.0(eslint@9.20.0(jiti@1.21.6))(typescript@5.5.4)
+      '@typescript-eslint/eslint-plugin': 8.23.0(@typescript-eslint/parser@8.23.0(eslint@9.20.0(jiti@1.21.6))(typescript@5.7.3))(eslint@9.20.0(jiti@1.21.6))(typescript@5.7.3)
+      '@typescript-eslint/parser': 8.23.0(eslint@9.20.0(jiti@1.21.6))(typescript@5.7.3)
+      '@typescript-eslint/utils': 8.23.0(eslint@9.20.0(jiti@1.21.6))(typescript@5.7.3)
       eslint: 9.20.0(jiti@1.21.6)
-      typescript: 5.5.4
+      typescript: 5.7.3
     transitivePeerDependencies:
       - supports-color
 
   typescript@5.5.4: {}
 
-  typescript@5.7.2: {}
+  typescript@5.7.3: {}
 
   uc.micro@2.1.0: {}
 
@@ -16118,10 +16144,10 @@ snapshots:
     optionalDependencies:
       vite: 6.0.3(@types/node@22.13.1)(jiti@1.21.6)(tsx@4.19.2)(yaml@2.7.0)
 
-  vitest@2.1.9(@types/node@22.13.1)(jsdom@25.0.1)(msw@2.7.0(@types/node@22.13.1)(typescript@5.5.4)):
+  vitest@2.1.9(@types/node@22.13.1)(jsdom@25.0.1)(msw@2.7.0(@types/node@22.13.1)(typescript@5.7.3)):
     dependencies:
       '@vitest/expect': 2.1.9
-      '@vitest/mocker': 2.1.9(msw@2.7.0(@types/node@22.13.1)(typescript@5.5.4))(vite@5.4.14(@types/node@22.13.1))
+      '@vitest/mocker': 2.1.9(msw@2.7.0(@types/node@22.13.1)(typescript@5.7.3))(vite@5.4.14(@types/node@22.13.1))
       '@vitest/pretty-format': 2.1.9
       '@vitest/runner': 2.1.9
       '@vitest/snapshot': 2.1.9
@@ -16195,7 +16221,7 @@ snapshots:
   volar-service-typescript@0.0.61(@volar/language-service@2.4.6):
     dependencies:
       path-browserify: 1.0.1
-      semver: 7.6.3
+      semver: 7.7.1
       typescript-auto-import-cache: 0.3.3
       vscode-languageserver-textdocument: 1.0.12
       vscode-nls: 5.2.0
@@ -16451,9 +16477,9 @@ snapshots:
     dependencies:
       zod: 3.23.8
 
-  zod-to-ts@1.2.0(typescript@5.5.4)(zod@3.23.8):
+  zod-to-ts@1.2.0(typescript@5.7.3)(zod@3.23.8):
     dependencies:
-      typescript: 5.5.4
+      typescript: 5.7.3
       zod: 3.23.8
 
   zod@3.23.8: {}
