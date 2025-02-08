@@ -115,7 +115,7 @@ export const SideItem = ({
             <div className="flex flex-row flex-wrap items-center justify-between gap-2 border-t-[1px] border-muted-foreground/20 px-3 py-2">
               <p className="flex items-center gap-2 text-sm text-muted-foreground">
                 Spec:{' '}
-                <span className="flex items-center justify-center rounded-sm bg-neutral-700/50 px-2 py-1 font-[courier] text-xs">
+                <span className="flex items-center justify-center rounded-sm bg-neutral-700/5 px-2 py-1 font-[courier] text-xs dark:bg-neutral-700/50">
                   {parseItem(item.title)}
                 </span>
               </p>
