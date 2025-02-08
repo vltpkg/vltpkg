@@ -380,6 +380,7 @@ t.test('failure of optional node just deletes it', async t => {
     scurry: new PathScurry(projectRoot),
     packageJson: new PackageJson(),
     packageInfo: {
+      // eslint-disable-next-line @typescript-eslint/no-misused-spread
       ...mockPackageInfo,
       async extract(
         spec: Spec | string,
