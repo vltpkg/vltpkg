@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs'
 import { resolve, join, dirname } from 'node:path'
 import { findPackageJson } from 'package-json-from-dist'
 import * as os from 'node:os'
-import * as types from './types.js'
+import * as types from './types.ts'
 import assert from 'node:assert'
 
 const BUILD_ROOT = dirname(findPackageJson(import.meta.filename))

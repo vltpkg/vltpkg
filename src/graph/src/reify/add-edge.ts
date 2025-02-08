@@ -3,8 +3,8 @@ import { type Manifest } from '@vltpkg/types'
 import { mkdir, symlink } from 'fs/promises'
 import { dirname, relative } from 'path'
 import { type PathScurry } from 'path-scurry'
-import { type Edge } from '../edge.js'
-import { binPaths } from './bin-paths.js'
+import { type Edge } from '../edge.ts'
+import { binPaths } from './bin-paths.ts'
 
 const clobberSymlink = async (
   target: string,

@@ -3,7 +3,7 @@ import {
   type EdgeLike,
   type GraphLike,
   type NodeLike,
-} from '../types.js'
+} from '../types.ts'
 
 const addInspect = (o: unknown, fn: () => string) =>
   ((o as { [K in typeof inspect.custom]: () => string })[

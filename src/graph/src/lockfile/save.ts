@@ -9,9 +9,9 @@ import {
 } from '@vltpkg/spec'
 import { mkdirSync, writeFileSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
-import { type Edge } from '../edge.js'
-import { type Graph } from '../graph.js'
-import { type Node } from '../node.js'
+import { type Edge } from '../edge.ts'
+import { type Graph } from '../graph.ts'
+import { type Node } from '../node.ts'
 import {
   getFlagNumFromNode,
   type LockfileData,
@@ -19,7 +19,7 @@ import {
   type LockfileEdges,
   type LockfileEdgeValue,
   type LockfileNode,
-} from './types.js'
+} from './types.ts'
 
 export type SaveOptions = SpecOptions & {
   /**

@@ -1,5 +1,5 @@
-import { type UnpackRequest } from './unpack-request.js'
-import { unpack } from './unpack.js'
+import { type UnpackRequest } from './unpack-request.ts'
+import { unpack } from './unpack.ts'
 
 export type ResponseError = { id: number; error: unknown }
 export type ResponseOK = { id: number; ok: true }

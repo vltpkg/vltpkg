@@ -19,7 +19,7 @@ import {
   type SpecOptionsFilled,
   type Spec,
 } from '@vltpkg/spec/browser'
-import { type TransferData } from './types.js'
+import { type TransferData } from './types.ts'
 
 const loadSpecOptions = (
   lockfile: LockfileData,

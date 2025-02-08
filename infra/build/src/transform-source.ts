@@ -4,9 +4,9 @@ import { readFile } from 'node:fs/promises'
 import type * as esbuild from 'esbuild'
 import j from 'jscodeshift'
 import assert from 'node:assert'
-import { Paths } from './index.js'
+import { Paths } from './index.ts'
 import { randomBytes } from 'node:crypto'
-import * as types from './types.js'
+import * as types from './types.ts'
 import { EOL } from 'node:os'
 
 export const ident = (pre = '') =>

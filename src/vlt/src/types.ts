@@ -1,8 +1,8 @@
-import { type LoadedConfig } from './config/index.js'
+import { type LoadedConfig } from './config/index.ts'
 import { type Jack } from 'jackspeak'
 import { type ChalkInstance } from 'chalk'
 
-export type * from './config/index.js'
+export type * from './config/index.ts'
 
 export type CommandUsage = () => Jack
 

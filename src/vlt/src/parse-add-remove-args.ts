@@ -6,7 +6,7 @@ import {
   type RemoveImportersDependenciesMap,
   asDependency,
 } from '@vltpkg/graph'
-import { type LoadedConfig } from './config/index.js'
+import { type LoadedConfig } from './config/index.ts'
 import { Spec, type SpecOptions } from '@vltpkg/spec'
 import { type Monorepo } from '@vltpkg/workspaces'
 

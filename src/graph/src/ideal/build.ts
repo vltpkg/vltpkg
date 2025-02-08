@@ -2,15 +2,15 @@ import { type PackageInfoClient } from '@vltpkg/package-info'
 import {
   load as loadActual,
   type LoadOptions as LoadActualOptions,
-} from '../actual/load.js'
+} from '../actual/load.ts'
 import {
   type AddImportersDependenciesMap,
   type RemoveImportersDependenciesMap,
   type Dependency,
-} from '../dependencies.js'
-import { type Graph } from '../graph.js'
-import { load as loadVirtual } from '../lockfile/load.js'
-import { buildIdealFromStartingGraph } from './build-ideal-from-starting-graph.js'
+} from '../dependencies.ts'
+import { type Graph } from '../graph.ts'
+import { load as loadVirtual } from '../lockfile/load.ts'
+import { buildIdealFromStartingGraph } from './build-ideal-from-starting-graph.ts'
 import { type DepID } from '@vltpkg/dep-id'
 import { graphStep } from '@vltpkg/output'
 

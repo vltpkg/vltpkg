@@ -17,8 +17,8 @@ import * as esbuild from 'esbuild'
 import { findPackageJson } from 'package-json-from-dist'
 import { builtinModules, createRequire } from 'node:module'
 import assert from 'node:assert'
-import { Bins, Paths } from './index.js'
-import * as types from './types.js'
+import { Bins, Paths } from './index.ts'
+import * as types from './types.ts'
 import {
   transformSourcePlugin,
   Globals,
@@ -27,7 +27,7 @@ import {
   readJson,
   readPkg,
   getSrcPath,
-} from './transform-source.js'
+} from './transform-source.ts'
 
 const EXT = '.js'
 

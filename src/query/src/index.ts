@@ -5,11 +5,11 @@ import {
   type NodeLike,
 } from '@vltpkg/graph'
 import postcssSelectorParser from 'postcss-selector-parser'
-import { attribute } from './attribute.js'
-import { classFn } from './class.js'
-import { combinator } from './combinator.js'
-import { id } from './id.js'
-import { pseudo } from './pseudo.js'
+import { attribute } from './attribute.ts'
+import { classFn } from './class.ts'
+import { combinator } from './combinator.ts'
+import { id } from './id.ts'
+import { pseudo } from './pseudo.ts'
 import {
   type PostcssNodeWithChildren,
   type ParserState,
@@ -18,9 +18,9 @@ import {
   asPostcssNodeWithChildren,
   isSelectorNode,
   type QueryResponse,
-} from './types.js'
+} from './types.ts'
 
-export * from './types.js'
+export * from './types.ts'
 
 const noopFn = async (state: ParserState) => state
 

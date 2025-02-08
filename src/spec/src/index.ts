@@ -17,7 +17,7 @@ import {
   kCustomInspect,
   Spec as BrowserSpec,
   type SpecLike,
-} from './browser.js'
+} from './browser.ts'
 
 export {
   defaultRegistry,
@@ -29,7 +29,7 @@ export {
   gitHostWebsites,
   kCustomInspect,
 }
-export * from './types.js'
+export * from './types.ts'
 
 export class Spec extends BrowserSpec implements SpecLike<Spec> {
   [kCustomInspect](
