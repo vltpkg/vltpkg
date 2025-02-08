@@ -5,26 +5,26 @@ import { callLimit } from 'promise-call-limit'
 import {
   load as loadActual,
   type LoadOptions,
-} from '../actual/load.js'
+} from '../actual/load.ts'
 import {
   type AddImportersDependenciesMap,
   type RemoveImportersDependenciesMap,
-} from '../dependencies.js'
-import { Diff } from '../diff.js'
-import { type Graph } from '../graph.js'
-import { lockfile } from '../index.js'
+} from '../dependencies.ts'
+import { Diff } from '../diff.ts'
+import { type Graph } from '../graph.ts'
+import { lockfile } from '../index.ts'
 import {
   lockfileData,
   saveData,
   saveHidden,
-} from '../lockfile/save.js'
-import { addEdges } from './add-edges.js'
-import { addNodes } from './add-nodes.js'
-import { build } from './build.js'
-import { deleteEdges } from './delete-edges.js'
-import { deleteNodes } from './delete-nodes.js'
-import { rollback } from './rollback.js'
-import { updatePackageJson } from './update-importers-package-json.js'
+} from '../lockfile/save.ts'
+import { addEdges } from './add-edges.ts'
+import { addNodes } from './add-nodes.ts'
+import { build } from './build.ts'
+import { deleteEdges } from './delete-edges.ts'
+import { deleteNodes } from './delete-nodes.ts'
+import { rollback } from './rollback.ts'
+import { updatePackageJson } from './update-importers-package-json.ts'
 import { graphStep } from '@vltpkg/output'
 
 const limit = Math.max(availableParallelism() - 1, 1) * 8

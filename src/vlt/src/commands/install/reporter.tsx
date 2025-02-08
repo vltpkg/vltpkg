@@ -2,8 +2,8 @@ import { emitter, type Events } from '@vltpkg/output'
 import React, { useState, useLayoutEffect } from 'react'
 import { render, Text, Box, type Instance } from 'ink'
 import Spinner from 'ink-spinner'
-import { type ViewInstance } from '../../types.js'
-import { stdout } from '../../output.js'
+import { type ViewInstance } from '../../types.ts'
+import { stdout } from '../../output.ts'
 
 type Step = {
   state: 'waiting' | 'in_progress' | 'completed'

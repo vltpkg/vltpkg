@@ -11,10 +11,10 @@ import {
   asDependency,
   shorten,
   type Dependency,
-} from '../dependencies.js'
-import { type Graph } from '../graph.js'
-import { type Node } from '../node.js'
-import { removeOptionalSubgraph } from '../remove-optional-subgraph.js'
+} from '../dependencies.ts'
+import { type Graph } from '../graph.ts'
+import { type Node } from '../node.ts'
+import { removeOptionalSubgraph } from '../remove-optional-subgraph.ts'
 
 type FileTypeInfo = {
   id: DepID

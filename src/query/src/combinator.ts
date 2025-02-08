@@ -3,7 +3,7 @@ import {
   type ParserState,
   type ParserFn,
   asCombinatorNode,
-} from './types.js'
+} from './types.ts'
 
 /**
  * Returns a new set of nodes, containing all direct dependencies

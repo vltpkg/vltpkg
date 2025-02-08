@@ -1,7 +1,7 @@
 import { type RevDoc } from '@vltpkg/types'
 import { pickManifest } from '@vltpkg/pick-manifest'
-import { type GitOptions } from './index.js'
-import { revs } from './revs.js'
+import { type GitOptions } from './index.ts'
+import { revs } from './revs.ts'
 
 /**
  * Given a repo and either a ref or a git specifier Spec object, resolve the

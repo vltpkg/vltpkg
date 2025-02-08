@@ -1,10 +1,10 @@
-import { Range } from './range.js'
-import { type IncrementType, Version } from './version.js'
+import { Range } from './range.ts'
+import { type IncrementType, Version } from './version.ts'
 import { syntaxError } from '@vltpkg/error-cause'
 
-export * from './comparator.js'
-export * from './range.js'
-export * from './version.js'
+export * from './comparator.ts'
+export * from './range.ts'
+export * from './version.ts'
 
 /** Return the parsed version string, or `undefined` if invalid */
 export const parse = (version: Version | string) => {

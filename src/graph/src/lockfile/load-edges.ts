@@ -3,13 +3,13 @@ import { error } from '@vltpkg/error-cause'
 import { fastSplit } from '@vltpkg/fast-split'
 import { Spec, type SpecOptions } from '@vltpkg/spec/browser'
 import { longDependencyTypes } from '@vltpkg/types'
-import { isDependencyTypeShort } from '../dependencies.js'
-import { type GraphLike } from '../types.js'
+import { isDependencyTypeShort } from '../dependencies.ts'
+import { type GraphLike } from '../types.ts'
 import {
   type LockfileData,
   type LockfileEdgeKey,
   type LockfileEdgeValue,
-} from './types.js'
+} from './types.ts'
 
 export const loadEdges = (
   graph: GraphLike,

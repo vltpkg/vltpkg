@@ -1,4 +1,4 @@
 #!/usr/bin/env node
 process.argv.splice(2, 0, 'run')
-import run from '../index.js'
+import run from '../index.ts'
 await run()

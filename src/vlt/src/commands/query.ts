@@ -9,13 +9,13 @@ import {
   type Node,
 } from '@vltpkg/graph'
 import { Query } from '@vltpkg/query'
-import { commandUsage } from '../config/usage.js'
+import { commandUsage } from '../config/usage.ts'
 import {
   type CommandUsage,
   type CommandFn,
   type Views,
-} from '../types.js'
-import { startGUI } from '../start-gui.js'
+} from '../types.ts'
+import { startGUI } from '../start-gui.ts'
 
 export const usage: CommandUsage = () =>
   commandUsage({

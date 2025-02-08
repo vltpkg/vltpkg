@@ -34,11 +34,11 @@ import handler from 'serve-handler'
 import {
   type ConfigOptions,
   type LoadedConfig,
-} from './config/index.js'
-import { install, type InstallOptions } from './install.js'
-import { stderr, stdout } from './output.js'
-import { readProjectFolders } from './read-project-folders.js'
-import { uninstall, type UninstallOptions } from './uninstall.js'
+} from './config/index.ts'
+import { install, type InstallOptions } from './install.ts'
+import { stderr, stdout } from './output.ts'
+import { readProjectFolders } from './read-project-folders.ts'
+import { uninstall, type UninstallOptions } from './uninstall.ts'
 import { fileURLToPath } from 'node:url'
 import assert from 'node:assert'
 
