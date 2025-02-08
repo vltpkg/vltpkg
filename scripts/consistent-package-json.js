@@ -248,13 +248,13 @@ const fixScripts = async ws => {
       {
         test: 'tap',
         snap: 'tap',
+        posttest: 'tsc --project tsconfig.test.json',
       }
     : ws.pj.devDependencies.vitest ?
       {
         test: 'vitest',
         snap: 'vitest --no-watch -u',
-        posttest:
-          ws.pj.name !== '@vltpkg/docs' ? 'tsc --noEmit' : undefined,
+        posttest: 'tsc --project tsconfig.test.json',
       }
     : {},
     ws.pj.devDependencies.tshy ?
@@ -314,6 +314,21 @@ const fixTools = async ws => {
       },
       ['extends'],
     )
+  }
+  if (ws.pj.devDependencies.vitest || ws.pj.devDependencies.tap) {
+    writeJson(resolve(ws.dir, 'tsconfig.test.json'), {
+      extends: './tsconfig.json',
+      include: [
+        './test/**/*.ts',
+        './test/**/*.mts',
+        './test/**/*.tsx',
+        './test/**/*.json',
+      ],
+      compilerOptions: {
+        noEmit: true,
+        incremental: false,
+      },
+    })
   }
   if (ws.pj.devDependencies.prettier) {
     ws.pj.prettier = `${ws.relDir}.prettierrc.js`

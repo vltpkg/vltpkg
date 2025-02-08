@@ -51,6 +51,7 @@
     "snap": "tap",
     "pretest": "tshy",
     "test": "tap",
+    "posttest": "tsc --project tsconfig.test.json",
     "watch": "tshy --watch"
   },
   "tap": {
