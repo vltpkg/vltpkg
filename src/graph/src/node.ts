@@ -13,9 +13,9 @@ import {
   type Manifest,
   type DependencyTypeShort,
 } from '@vltpkg/types'
-import { Edge } from './edge.js'
-import { type GraphLike, type NodeLike } from './types.js'
-import { stringifyNode } from './stringify-node.js'
+import { Edge } from './edge.ts'
+import { type GraphLike, type NodeLike } from './types.ts'
+import { stringifyNode } from './stringify-node.ts'
 import { type PackageInfoClient } from '@vltpkg/package-info'
 
 export type NodeOptions = SpecOptions & {

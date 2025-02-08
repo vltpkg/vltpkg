@@ -3,8 +3,8 @@ import { type Dispatcher } from 'undici'
 import {
   type RegistryClient,
   type RegistryClientRequestOptions,
-} from './index.js'
-import { isWebAuthChallenge } from './web-auth-challenge.js'
+} from './index.ts'
+import { isWebAuthChallenge } from './web-auth-challenge.ts'
 
 import { urlOpen } from '@vltpkg/url-open'
 import { createInterface } from 'node:readline/promises'

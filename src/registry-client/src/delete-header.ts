@@ -1,4 +1,4 @@
-import { isIterable } from './is-iterable.js'
+import { isIterable } from './is-iterable.ts'
 
 export const deleteHeader = <
   H extends

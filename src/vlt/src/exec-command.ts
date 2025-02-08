@@ -19,8 +19,8 @@ import {
 import { Monorepo, type Workspace } from '@vltpkg/workspaces'
 import { ansiToAnsi } from 'ansi-to-pre'
 import chalk from 'chalk'
-import { type LoadedConfig } from './config/index.js'
-import { stdout, stderr } from './output.js'
+import { type LoadedConfig } from './config/index.ts'
+import { stdout, stderr } from './output.ts'
 import { type SpawnResultNoStdio } from '@vltpkg/promise-spawn'
 
 export type RunnerBG = typeof exec | typeof run | typeof runExec

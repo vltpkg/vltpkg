@@ -1,8 +1,8 @@
 import { error } from '@vltpkg/error-cause'
 import { loadPackageJson } from 'package-json-from-dist'
-import { Config } from './config/index.js'
-import { type Command, type Commands } from './types.js'
-import { stdout, outputCommand } from './output.js'
+import { Config } from './config/index.ts'
+import { type Command, type Commands } from './types.ts'
+import { stdout, outputCommand } from './output.ts'
 
 const { version } = loadPackageJson(import.meta.filename) as {
   version: string
@@ -15,7 +15,7 @@ const loadCommand = async <T>(
     // Be careful the line between the LOAD COMMANDS comment.
     // infra-build relies on this to work around esbuild bundling dynamic imports
     /* LOAD COMMANDS START */
-    return (await import(`./commands/${command}.js`)) as Command<T>
+    return (await import(`./commands/${command}.ts`)) as Command<T>
     /* LOAD COMMANDS STOP */
     /* c8 ignore start - should not be possible, just a failsafe */
   } catch (e) {

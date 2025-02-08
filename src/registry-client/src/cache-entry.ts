@@ -25,7 +25,7 @@ import ccp from 'cache-control-parser'
 import { createHash } from 'crypto'
 import { inspect, type InspectOptions } from 'util'
 import { gunzipSync } from 'zlib'
-import { getRawHeader, setRawHeader } from './raw-header.js'
+import { getRawHeader, setRawHeader } from './raw-header.ts'
 
 export type JSONObj = Record<string, JSONField>
 

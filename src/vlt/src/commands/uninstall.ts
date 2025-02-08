@@ -1,7 +1,7 @@
-import { parseRemoveArgs } from '../parse-add-remove-args.js'
-import { type CommandFn, type CommandUsage } from '../types.js'
-import { commandUsage } from '../config/usage.js'
-import { uninstall } from '../uninstall.js'
+import { parseRemoveArgs } from '../parse-add-remove-args.ts'
+import { type CommandFn, type CommandUsage } from '../types.ts'
+import { commandUsage } from '../config/usage.ts'
+import { uninstall } from '../uninstall.ts'
 
 export const usage: CommandUsage = () =>
   commandUsage({

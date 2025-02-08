@@ -5,7 +5,7 @@ import {
   type Manifest,
   type DependencyTypeShort,
 } from '@vltpkg/types'
-import { type Graph } from '../graph.js'
+import { type Graph } from '../graph.ts'
 
 /**
  * This is the main type definition for the contents of the

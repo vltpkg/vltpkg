@@ -3,11 +3,11 @@ import { error } from '@vltpkg/error-cause'
 import { type PackageInfoClient } from '@vltpkg/package-info'
 import { type SpecOptions } from '@vltpkg/spec'
 import { type PathScurry } from 'path-scurry'
-import { appendNodes } from './append-nodes.js'
+import { appendNodes } from './append-nodes.ts'
 import {
   type BuildIdealAddOptions,
   type BuildIdealFromGraphOptions,
-} from './types.js'
+} from './types.ts'
 
 export type AddNodesOptions = BuildIdealAddOptions &
   BuildIdealFromGraphOptions &

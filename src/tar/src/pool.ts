@@ -1,14 +1,14 @@
 import { error } from '@vltpkg/error-cause'
 import os from 'os'
-import { UnpackRequest } from './unpack-request.js'
+import { UnpackRequest } from './unpack-request.ts'
 import {
   isResponseOK,
   type ResponseError,
   type ResponseOK,
   Worker,
-} from './worker.js'
+} from './worker.ts'
 
-export * from './worker.js'
+export * from './worker.ts'
 
 /**
  * Automatically expanding/contracting set of workers to maximize parallelism

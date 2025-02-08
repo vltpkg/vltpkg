@@ -5,10 +5,10 @@ import { type SpecOptions } from '@vltpkg/spec'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { type PathScurry } from 'path-scurry'
-import { loadEdges } from './load-edges.js'
-import { loadNodes } from './load-nodes.js'
-import { Graph } from '../graph.js'
-import { type LockfileData } from './types.js'
+import { loadEdges } from './load-edges.ts'
+import { loadNodes } from './load-nodes.ts'
+import { Graph } from '../graph.ts'
+import { type LockfileData } from './types.ts'
 
 export type LoadOptions = SpecOptions & {
   /**

@@ -1,7 +1,7 @@
 import {
   type BuildIdealFromGraphOptions,
   type BuildIdealRemoveOptions,
-} from './types.js'
+} from './types.ts'
 import { error } from '@vltpkg/error-cause'
 
 export type RemoveNodesOptions = BuildIdealFromGraphOptions &

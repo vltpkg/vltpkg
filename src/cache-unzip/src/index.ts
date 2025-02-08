@@ -1,5 +1,5 @@
 import { spawn } from 'child_process'
-import { __CODE_SPLIT_SCRIPT_NAME } from './unzip.js'
+import { __CODE_SPLIT_SCRIPT_NAME } from './unzip.ts'
 
 let didProcessBeforeExitHook = false
 const registered = new Map<string, Set<string>>()

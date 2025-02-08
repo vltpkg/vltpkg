@@ -1,7 +1,7 @@
 import { error } from '@vltpkg/error-cause'
 import { type NodeLike } from '@vltpkg/graph'
 import { type JSONField, type Manifest } from '@vltpkg/types'
-import { asAttributeNode, type ParserState } from './types.js'
+import { asAttributeNode, type ParserState } from './types.ts'
 
 export type ComparatorFn = (attr: string, value?: string) => boolean
 

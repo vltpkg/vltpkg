@@ -7,9 +7,9 @@ import generateMatrix, {
   getMatrix,
   matrixConfig,
   type CompilationDir,
-} from '../matrix.js'
-import { Paths } from '../index.js'
-import * as types from '../types.js'
+} from '../matrix.ts'
+import { Paths } from '../index.ts'
+import * as types from '../types.ts'
 
 type Base = {
   name: string

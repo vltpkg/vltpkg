@@ -2,7 +2,7 @@ import { spawn } from 'child_process'
 import { rename } from 'fs/promises'
 import { basename, dirname } from 'path'
 import { rimraf } from 'rimraf'
-import { __CODE_SPLIT_SCRIPT_NAME } from './remove.js'
+import { __CODE_SPLIT_SCRIPT_NAME } from './remove.ts'
 
 export class RollbackRemove {
   #key = String(Math.random()).substring(2)

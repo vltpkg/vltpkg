@@ -7,7 +7,7 @@ import { XDG } from '@vltpkg/xdg'
 import { setTimeout } from 'node:timers/promises'
 import { loadPackageJson } from 'package-json-from-dist'
 import { Agent, RetryAgent, type Dispatcher } from 'undici'
-import { addHeader } from './add-header.js'
+import { addHeader } from './add-header.ts'
 import {
   deleteToken,
   getKC,
@@ -16,22 +16,22 @@ import {
   keychains,
   setToken,
   type Token,
-} from './auth.js'
-import { CacheEntry, type JSONObj } from './cache-entry.js'
-import { bun, deno, node } from './env.js'
-import { handle304Response } from './handle-304-response.js'
-import { otplease } from './otplease.js'
-import { isRedirect, redirect } from './redirect.js'
-import { setCacheHeaders } from './set-cache-headers.js'
+} from './auth.ts'
+import { CacheEntry, type JSONObj } from './cache-entry.ts'
+import { bun, deno, node } from './env.ts'
+import { handle304Response } from './handle-304-response.ts'
+import { otplease } from './otplease.ts'
+import { isRedirect, redirect } from './redirect.ts'
+import { setCacheHeaders } from './set-cache-headers.ts'
 import { logRequest } from '@vltpkg/output'
 import {
   isTokenResponse,
   type TokenResponse,
-} from './token-response.js'
+} from './token-response.ts'
 import {
   isWebAuthChallenge,
   type WebAuthChallenge,
-} from './web-auth-challenge.js'
+} from './web-auth-challenge.ts'
 export {
   type JSONObj,
   type CacheEntry,

@@ -5,7 +5,7 @@ import { asManifest } from '@vltpkg/types'
 import {
   attributeSelectorsMap,
   filterAttributes,
-} from './attribute.js'
+} from './attribute.ts'
 import {
   asAttributeNode,
   asPostcssNodeWithChildren,
@@ -15,7 +15,7 @@ import {
   type ParserFn,
   type ParserState,
   type PostcssNode,
-} from './types.js'
+} from './types.ts'
 
 export type AttrInternals = {
   attribute: string

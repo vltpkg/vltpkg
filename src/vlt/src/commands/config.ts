@@ -7,9 +7,9 @@ import {
   type LoadedConfig,
   pairsToRecords,
   recordsToPairs,
-} from '../config/index.js'
-import { commandUsage } from '../config/usage.js'
-import { type CommandFn, type CommandUsage } from '../types.js'
+} from '../config/index.ts'
+import { commandUsage } from '../config/usage.ts'
+import { type CommandFn, type CommandUsage } from '../types.ts'
 
 export const usage: CommandUsage = () =>
   commandUsage({

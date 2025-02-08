@@ -6,7 +6,7 @@ import {
   type ViewClass,
   type Command,
   type CommandResult,
-} from './types.js'
+} from './types.ts'
 import { isErrorRoot } from '@vltpkg/error-cause'
 import assert from 'node:assert'
 

@@ -5,10 +5,10 @@ import {
 } from '@vltpkg/promise-spawn'
 import promiseRetry from 'promise-retry'
 import { type WrapOptions } from 'retry'
-import { type GitOptions } from './index.js'
-import { makeError } from './make-error.js'
-import { opts as makeOpts } from './opts.js'
-import { which } from './which.js'
+import { type GitOptions } from './index.ts'
+import { makeError } from './make-error.ts'
+import { opts as makeOpts } from './opts.ts'
+import { which } from './which.ts'
 
 export const spawn = async (
   gitArgs: string[],

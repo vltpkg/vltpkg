@@ -5,7 +5,7 @@ import {
   reify,
 } from '@vltpkg/graph'
 import { PackageInfoClient } from '@vltpkg/package-info'
-import { type LoadedConfig } from './types.js'
+import { type LoadedConfig } from './types.ts'
 
 export type UninstallOptions = {
   conf: LoadedConfig

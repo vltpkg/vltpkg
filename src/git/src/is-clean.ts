@@ -1,5 +1,5 @@
 import { error } from '@vltpkg/error-cause'
-import { spawn } from './spawn.js'
+import { spawn } from './spawn.ts'
 
 export const isClean = async (opts = {}) => {
   const result = await spawn(

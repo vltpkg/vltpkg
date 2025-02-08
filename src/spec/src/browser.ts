@@ -4,14 +4,14 @@ import {
   typeError,
 } from '@vltpkg/error-cause'
 import { parseRange, type Range } from '@vltpkg/semver'
-export * from './types.js'
+export * from './types.ts'
 import {
   type GitSelectorParsed,
   type Scope,
   type SpecLike,
   type SpecOptions,
   type SpecOptionsFilled,
-} from './types.js'
+} from './types.ts'
 
 export const kCustomInspect = Symbol.for('nodejs.util.inspect.custom')
 

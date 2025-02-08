@@ -1,6 +1,6 @@
 import os from 'node:os'
 import { type PathBase, type PathScurry } from 'path-scurry'
-import { ignoredHomedirFolderNames } from './ignored-homedir-folder-names.js'
+import { ignoredHomedirFolderNames } from './ignored-homedir-folder-names.ts'
 
 type ProjectFolderOptions = {
   /**

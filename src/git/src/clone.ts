@@ -9,11 +9,11 @@ import { gitScpURL } from '@vltpkg/git-scp-url'
 import { mkdir, stat } from 'fs/promises'
 import { basename, resolve } from 'path'
 import { fileURLToPath } from 'url'
-import { type GitOptions } from './index.js'
-import { isWindows } from './is-windows.js'
-import { resolveRef } from './resolve.js'
-import { revs as getRevs } from './revs.js'
-import { spawn } from './spawn.js'
+import { type GitOptions } from './index.ts'
+import { isWindows } from './is-windows.ts'
+import { resolveRef } from './resolve.ts'
+import { revs as getRevs } from './revs.ts'
+import { spawn } from './spawn.ts'
 
 /**
  * Only these whitelisted hosts get shallow cloning. Many hosts (including GHE)

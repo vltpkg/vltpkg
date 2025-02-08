@@ -3,14 +3,14 @@ import { type Spec } from '@vltpkg/spec'
 import { type SpawnOptions } from 'child_process'
 import { type WrapOptions } from 'retry'
 
-export * from './clone.js'
-export * from './find.js'
-export * from './is-clean.js'
-export * from './is.js'
-export * from './resolve.js'
-export * from './revs.js'
-export * from './spawn.js'
-export * from './user.js'
+export * from './clone.ts'
+export * from './find.ts'
+export * from './is-clean.ts'
+export * from './is.ts'
+export * from './resolve.ts'
+export * from './revs.ts'
+export * from './spawn.ts'
+export * from './user.ts'
 
 /**
  * This extends all options that can be passed to spawn() or pickManifest.

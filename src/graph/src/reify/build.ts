@@ -8,11 +8,11 @@ import { statSync } from 'fs'
 import { chmod } from 'fs/promises'
 import { graphRun } from 'graph-run'
 import { type PathScurry } from 'path-scurry'
-import { type Diff } from '../diff.js'
-import { type Node } from '../node.js'
-import { nonEmptyList } from '../non-empty-list.js'
-import { binPaths } from './bin-paths.js'
-import { optionalFail } from './optional-fail.js'
+import { type Diff } from '../diff.ts'
+import { type Node } from '../node.ts'
+import { nonEmptyList } from '../non-empty-list.ts'
+import { binPaths } from './bin-paths.ts'
+import { optionalFail } from './optional-fail.ts'
 
 export const build = async (
   diff: Diff,

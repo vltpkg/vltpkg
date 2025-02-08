@@ -4,7 +4,7 @@ import {
   type Action,
   type SavedQuery,
   type QueryLabel,
-} from './types.js'
+} from './types.ts'
 
 export const DEFAULT_QUERY = ':root'
 

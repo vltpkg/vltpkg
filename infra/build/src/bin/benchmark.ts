@@ -2,8 +2,8 @@ import { join, resolve } from 'node:path'
 import { rmSync } from 'node:fs'
 import { parseArgs as nodeParseArgs } from 'node:util'
 import { spawnSync } from 'node:child_process'
-import generateMatrix, { matrixConfig, getMatrix } from '../matrix.js'
-import * as types from '../types.js'
+import generateMatrix, { matrixConfig, getMatrix } from '../matrix.ts'
+import * as types from '../types.ts'
 import assert from 'node:assert'
 
 const parseArgs = () => {

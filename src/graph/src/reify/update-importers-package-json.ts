@@ -7,12 +7,12 @@ import {
   type DependencyTypeShort,
   longDependencyTypes,
 } from '@vltpkg/types'
-import { type Graph } from '../graph.js'
+import { type Graph } from '../graph.ts'
 import {
   type AddImportersDependenciesMap,
   type RemoveImportersDependenciesMap,
   type Dependency,
-} from '../dependencies.js'
+} from '../dependencies.ts'
 
 const SAVE_PREFIX = '^'
 

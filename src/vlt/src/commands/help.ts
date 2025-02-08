@@ -1,8 +1,8 @@
-import { commandUsage } from '../config/usage.js'
+import { commandUsage } from '../config/usage.ts'
 import {
   type CommandUsage,
   type CommandFnResultOnly,
-} from '../types.js'
+} from '../types.ts'
 
 export const usage: CommandUsage = () =>
   commandUsage({

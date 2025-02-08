@@ -6,7 +6,7 @@ import { rimraf } from 'rimraf'
 import { Header, type HeaderData } from 'tar/header'
 import { Pax } from 'tar/pax'
 import { unzip as unzipCB } from 'zlib'
-import { findTarDir } from './find-tar-dir.js'
+import { findTarDir } from './find-tar-dir.ts'
 
 const unzip = async (input: Buffer) =>
   new Promise<Buffer>(

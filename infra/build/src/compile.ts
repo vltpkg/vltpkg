@@ -8,8 +8,8 @@ import {
   rmSync,
   writeFileSync,
 } from 'node:fs'
-import * as types from './types.js'
-import { Paths } from './index.js'
+import * as types from './types.ts'
+import { Paths } from './index.ts'
 
 export type CompileOptions = types.CompileFactors & {
   source: string

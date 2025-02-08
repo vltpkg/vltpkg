@@ -1,6 +1,6 @@
-import { startGUI } from '../start-gui.js'
-import { commandUsage } from '../config/usage.js'
-import { type CommandUsage, type CommandFn } from '../types.js'
+import { startGUI } from '../start-gui.ts'
+import { commandUsage } from '../config/usage.ts'
+import { type CommandUsage, type CommandFn } from '../types.ts'
 
 export const usage: CommandUsage = () =>
   commandUsage({
