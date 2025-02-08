@@ -79,7 +79,7 @@
     "prepare": "node scripts/prepare.js --production",
     "snap": "vitest --no-watch -u",
     "test": "vitest",
-    "posttest": "tsc --noEmit",
+    "posttest": "tsc --project tsconfig.test.json",
     "watch": "node scripts/prepare.js --watch"
   },
   "prettier": "../../.prettierrc.js",
