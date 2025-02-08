@@ -122,7 +122,6 @@ const bundle = async (o: {
           acc[k] = globals.get(k)
           return acc
         },
-        // eslint-disable-next-line @typescript-eslint/prefer-reduce-type-parameter
         {} as Record<`import.meta.${keyof ImportMeta}`, string>,
       ),
     },

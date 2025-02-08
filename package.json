@@ -17,17 +17,17 @@
     "eslint": "catalog:",
     "eslint-import-resolver-typescript": "^3.7.0",
     "eslint-plugin-import": "^2.31.0",
-    "eslint-plugin-jsdoc": "^50.6.1",
-    "globals": "^15.13.0",
-    "npm-check-updates": "^17.1.11",
+    "eslint-plugin-jsdoc": "^50.6.3",
+    "globals": "^15.14.0",
+    "npm-check-updates": "^17.1.14",
     "prettier": "catalog:",
     "prettier-plugin-astro": "^0.14.1",
     "prettier-plugin-tailwindcss": "^0.6.11",
-    "read": "^4.0.0",
+    "read": "^4.1.0",
     "semver": "catalog:",
     "typescript": "catalog:",
     "typescript-eslint": "catalog:",
-    "yaml": "^2.6.1"
+    "yaml": "^2.7.0"
   },
   "license": "BSD-2-Clause-Patent",
   "engines": {

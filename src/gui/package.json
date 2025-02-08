@@ -39,6 +39,7 @@
     "react-dom": "^18.3.1",
     "shiki": "^1.22.2",
     "tailwind-merge": "^2.5.2",
+    "tailwindcss": "^3.4.17",
     "tailwindcss-animate": "^1.0.7",
     "uuid": "^11.0.5",
     "zustand": "^4.5.4"
@@ -46,7 +47,7 @@
   "devDependencies": {
     "@eslint/js": "catalog:",
     "@testing-library/dom": "^10.4.0",
-    "@testing-library/react": "^16.1.0",
+    "@testing-library/react": "^16.2.0",
     "@types/diffable-html": "^5.0.2",
     "@types/eslint__js": "catalog:",
     "@types/jsdom": "^21.1.7",
@@ -59,12 +60,11 @@
     "esbuild": "catalog:",
     "eslint": "catalog:",
     "jsdom": "^25.0.1",
-    "msw": "^2.6.8",
+    "msw": "^2.7.0",
     "prettier": "catalog:",
-    "tailwindcss": "^3.4.16",
     "typescript": "catalog:",
     "typescript-eslint": "catalog:",
-    "vitest": "^2.1.3"
+    "vitest": "^2.1.9"
   },
   "license": "BSD-2-Clause-Patent",
   "engines": {
