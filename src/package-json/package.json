@@ -22,7 +22,6 @@
   },
   "dependencies": {
     "@vltpkg/error-cause": "workspace:*",
-    "@vltpkg/graph": "workspace:*",
     "@vltpkg/types": "workspace:*",
     "polite-json": "catalog:"
   },

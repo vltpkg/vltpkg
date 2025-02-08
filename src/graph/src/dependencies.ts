@@ -1,26 +1,14 @@
 import { type DepID } from '@vltpkg/dep-id'
 import { error } from '@vltpkg/error-cause'
 import { type Spec } from '@vltpkg/spec'
-import { type Manifest } from '@vltpkg/types'
-
-/**
- * Name of the package.json keys used to define different types of dependencies.
- */
-export type DependencyTypeLong =
-  | 'dependencies'
-  | 'devDependencies'
-  | 'optionalDependencies'
-  | 'peerDependencies'
-
-/**
- * Unique keys that define different types of dependencies relationship.
- */
-export type DependencyTypeShort =
-  | 'dev'
-  | 'optional'
-  | 'peer'
-  | 'peerOptional'
-  | 'prod'
+import {
+  type Manifest,
+  type DependencyTypeLong,
+  type DependencyTypeShort,
+  longDependencyTypes,
+  shortDependencyTypes,
+  dependencyTypes,
+} from '@vltpkg/types'
 
 export const isDependencyTypeShort = (
   obj: unknown,
@@ -107,42 +95,6 @@ export const asDependency = (obj: unknown): Dependency => {
   }
   return obj
 }
-
-/**
- * A set of the possible long dependency type names,
- * as used in `package.json` files.
- */
-export const longDependencyTypes = new Set<DependencyTypeLong>([
-  'dependencies',
-  'devDependencies',
-  'peerDependencies',
-  'optionalDependencies',
-])
-
-/**
- * A set of the short type keys used to represent dependency relationships.
- */
-export const shortDependencyTypes = new Set<DependencyTypeShort>([
-  'prod',
-  'dev',
-  'peer',
-  'optional',
-  'peerOptional',
-])
-
-/**
- * Maps between long form names usually used in `package.json` files
- * to a corresponding short form name, used in lockfiles.
- */
-export const dependencyTypes = new Map<
-  DependencyTypeLong,
-  DependencyTypeShort
->([
-  ['dependencies', 'prod'],
-  ['devDependencies', 'dev'],
-  ['peerDependencies', 'peer'],
-  ['optionalDependencies', 'optional'],
-])
 
 /**
  * Get the {@link DependencyTypeShort} from a {@link DependencyTypeLong}.

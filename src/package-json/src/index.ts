@@ -1,6 +1,9 @@
 import { error, type ErrorCauseObject } from '@vltpkg/error-cause'
-import { asManifest, type Manifest } from '@vltpkg/types'
-import { longDependencyTypes } from '@vltpkg/graph/browser'
+import {
+  asManifest,
+  type Manifest,
+  longDependencyTypes,
+} from '@vltpkg/types'
 import { readFileSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { parse, stringify } from 'polite-json'

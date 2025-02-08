@@ -1,23 +1,13 @@
 import t from 'tap'
 import {
-  type DependencyTypeLong,
   asDependency,
   asDependencyTypeShort,
-  dependencyTypes,
   isDependency,
   isDependencyTypeShort,
-  longDependencyTypes,
   shorten,
 } from '../src/dependencies.js'
 import { Spec } from '@vltpkg/spec'
-
-t.test('dependencyTypes', async t => {
-  t.strictSame(
-    [...longDependencyTypes],
-    [...dependencyTypes.keys()],
-    'should have the exact same long dependency types as keys of long types map',
-  )
-})
+import { type DependencyTypeLong } from '@vltpkg/types'
 
 t.test('shorten', async t => {
   t.strictSame(

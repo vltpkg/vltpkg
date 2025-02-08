@@ -6,14 +6,10 @@ import {
 } from '@vltpkg/dep-id'
 import { type PackageJson } from '@vltpkg/package-json'
 import { Spec, type SpecOptions } from '@vltpkg/spec'
-import { type Manifest } from '@vltpkg/types'
+import { type Manifest, longDependencyTypes } from '@vltpkg/types'
 import { type Monorepo } from '@vltpkg/workspaces'
 import { type Path, type PathScurry } from 'path-scurry'
-import {
-  longDependencyTypes,
-  type RawDependency,
-  shorten,
-} from '../dependencies.js'
+import { type RawDependency, shorten } from '../dependencies.js'
 import { Graph } from '../graph.js'
 import { loadHidden } from '../lockfile/load.js'
 import { type Node } from '../node.js'

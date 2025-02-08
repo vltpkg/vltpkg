@@ -1,15 +1,14 @@
 import { joinDepIDTuple } from '@vltpkg/dep-id'
-import type {
-  DependencyTypeShort,
-  GraphLike,
-  NodeLike,
-} from '@vltpkg/graph'
+import type { GraphLike, NodeLike } from '@vltpkg/graph'
 import {
   Spec,
   type SpecLike,
   type SpecOptions,
 } from '@vltpkg/spec/browser'
-import { Manifest } from '@vltpkg/types'
+import {
+  type Manifest,
+  type DependencyTypeShort,
+} from '@vltpkg/types'
 
 const specOptions = {
   registries: {

@@ -1,14 +1,16 @@
 import { type DepID, splitDepID } from '@vltpkg/dep-id'
 import { error } from '@vltpkg/error-cause'
 import { type PackageJson } from '@vltpkg/package-json'
-import { type Manifest } from '@vltpkg/types'
+import {
+  type Manifest,
+  type DependencyTypeLong,
+  type DependencyTypeShort,
+  longDependencyTypes,
+} from '@vltpkg/types'
 import { type Graph } from '../graph.js'
 import {
   type AddImportersDependenciesMap,
   type RemoveImportersDependenciesMap,
-  type DependencyTypeLong,
-  type DependencyTypeShort,
-  longDependencyTypes,
   type Dependency,
 } from '../dependencies.js'
 

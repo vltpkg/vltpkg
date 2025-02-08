@@ -1,8 +1,5 @@
-import {
-  asDependencyTypeShort,
-  longDependencyTypes,
-  shorten,
-} from './dependencies.js'
+import { longDependencyTypes } from '@vltpkg/types'
+import { asDependencyTypeShort, shorten } from './dependencies.js'
 import { getBooleanFlagsFromNum } from './lockfile/types.js'
 import { stringifyNode } from './stringify-node.js'
 import { loadEdges } from './lockfile/load-edges.js'
