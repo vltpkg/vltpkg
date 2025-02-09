@@ -2,10 +2,7 @@ import { Cache } from '@vltpkg/cache'
 import { error } from '@vltpkg/error-cause'
 import { gunzipSync } from 'zlib'
 
-export const __CODE_SPLIT_SCRIPT_NAME = import.meta.filename.replace(
-  /\.ts$/,
-  '.js',
-)
+export const __CODE_SPLIT_SCRIPT_NAME = import.meta.filename
 
 export const main = async (
   path: undefined | string,
