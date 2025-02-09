@@ -6,7 +6,7 @@ import j from 'jscodeshift'
 import assert from 'node:assert'
 import { Paths } from './index.js'
 import { randomBytes } from 'node:crypto'
-import * as types from './types.js'
+import type * as types from './types.js'
 import { EOL } from 'node:os'
 
 export const ident = (pre = '') =>
@@ -58,16 +58,15 @@ const EXTERNAL_COMMANDS = {
   replaceCommand: (
     line: string,
     {
-      format,
       externalCommands,
-    }: Pick<types.BundleFactors, 'externalCommands' | 'format'>,
+    }: Pick<types.BundleFactors, 'externalCommands'>,
   ) => {
     const m =
       /^(?<ws>\s+)(?<ret>return \()(?<load>await import\()(?<path>.*?)(?<end>\)\);?)$/.exec(
         line,
       )?.groups
     assert(m, `load commands code does not match expected: ${line}`)
-    const load = format === types.Formats.Cjs ? 'require(' : m.load
+    const load = m.load
     const pathVar = ident('commandPath')
     const path = externalCommands ? pathVar : m.path
     const prefix =
@@ -77,9 +76,8 @@ const EXTERNAL_COMMANDS = {
 }
 
 export const transformSourcePlugin = ({
-  format,
   externalCommands,
-}: Pick<types.BundleFactors, 'externalCommands' | 'format'>): {
+}: Pick<types.BundleFactors, 'externalCommands'>): {
   paths: {
     codeSplit: () => string[]
     readPackageJson: () => string[]
@@ -219,23 +217,12 @@ export const transformSourcePlugin = ({
                   }
                   return insideBlock ?
                       EXTERNAL_COMMANDS.replaceCommand(l, {
-                        format,
                         externalCommands,
                       })
                     : l
                 })
                 .filter(l => l !== null)
                 .join(EOL)
-            }
-
-            if (
-              source.includes('await import(') &&
-              format === types.Formats.Cjs
-            ) {
-              source = source.replaceAll(
-                'await import(',
-                'void import(',
-              )
             }
 
             return { contents: source }
@@ -249,24 +236,17 @@ export const transformSourcePlugin = ({
 export class Globals {
   #ids = new Map<string, string>()
   #items = new Map<string, string>()
-  #format: types.Format
 
   static quote = (v: string) => `"${v}"`
 
   static var = (name: string, value: string) =>
     `var ${name} = ${value}`
 
-  static import = (
-    f: types.BundleFactors['format'],
-    name: string | string[],
-    path: string,
-  ) => {
+  static import = (name: string | string[], path: string) => {
     const mod = Globals.quote(`node:${path}`)
     const imports =
       Array.isArray(name) ? `{${name.join(', ')}}` : name
-    return f === types.Formats.Cjs ?
-        Globals.var(imports, `require(${mod})`)
-      : `import ${imports} from ${mod}`
+    return `import ${imports} from ${mod}`
   }
 
   toString() {
@@ -274,7 +254,6 @@ export class Globals {
   }
 
   constructor(
-    { format }: Pick<types.BundleFactors, 'format'>,
     ...args: (
       | false
       | string
@@ -282,7 +261,6 @@ export class Globals {
       | Record<string, (id: string, b: Globals) => string>
     )[]
   ) {
-    this.#format = format
     for (const [k, v] of args.flatMap(arg => {
       if (typeof arg === 'object') {
         return Object.entries(arg).map(([k, v]) => {
@@ -320,10 +298,7 @@ export class Globals {
     const id = this.#id(fn)
     const [mod, name] = fn.split('.')
     assert(name && mod)
-    this.#items.set(
-      id,
-      Globals.import(this.#format, [`${name} as ${id}`], mod),
-    )
+    this.#items.set(id, Globals.import([`${name} as ${id}`], mod))
     return `${id}(${args.join(', ')})`
   }
 }
