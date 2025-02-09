@@ -4,10 +4,10 @@ import { Spec } from '@vltpkg/spec'
 import { resolve } from 'path'
 import { PathScurry } from 'path-scurry'
 import t from 'tap'
-import { type Diff } from '../../src/diff.js'
-import { Edge } from '../../src/edge.js'
-import { Node } from '../../src/node.js'
-import { type GraphLike } from '../../src/types.js'
+import { type Diff } from '../../src/diff.ts'
+import { Edge } from '../../src/edge.ts'
+import { Node } from '../../src/node.ts'
+import { type GraphLike } from '../../src/types.ts'
 
 // verify that we delete the deleted edges, but skip the ones
 // that are coming from something in the store being deleted,
@@ -16,8 +16,8 @@ import { type GraphLike } from '../../src/types.js'
 const deleted: Edge[] = []
 
 const { deleteEdges } = await t.mockImport<
-  typeof import('../../src/reify/delete-edges.js')
->('../../src/reify/delete-edges.js', {
+  typeof import('../../src/reify/delete-edges.ts')
+>('../../src/reify/delete-edges.ts', {
   '../../src/reify/delete-edge.js': {
     deleteEdge: async (
       edge: Edge,

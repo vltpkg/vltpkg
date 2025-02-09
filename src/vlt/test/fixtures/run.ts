@@ -1,6 +1,6 @@
 import { Test } from 'tap'
 import { join } from 'path'
-import { type Command, type LoadedConfig } from '../../src/types.js'
+import { type Command, type LoadedConfig } from '../../src/types.ts'
 
 export type Testdir = Parameters<Test['testdir']>[0]
 
@@ -18,13 +18,13 @@ export const setupEnv = (t: Test) => {
 }
 
 export const mockConfig = async (t: Test) =>
-  t.mockImport<typeof import('../../src/config/index.js')>(
-    '../../src/config/index.js',
+  t.mockImport<typeof import('../../src/config/index.ts')>(
+    '../../src/config/index.ts',
     // jackspeak definitions keep state so if we want a clean
     // config, we need a clean definitions file too
     {
       '../../src/config/definition.js': await t.mockImport(
-        '../../src/config/definition.js',
+        '../../src/config/definition.ts',
       ),
     },
   )

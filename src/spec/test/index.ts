@@ -8,10 +8,10 @@ import {
   type Scope,
   type SpecOptions,
   type Spec as SpecType,
-} from '../src/index.js'
+} from '../src/index.ts'
 
-const { Spec } = await t.mockImport<typeof import('../src/index.js')>(
-  '../src/index.js',
+const { Spec } = await t.mockImport<typeof import('../src/index.ts')>(
+  '../src/index.ts',
   {
     'node:path': { ...posix, posix, win32 },
     'node:os': { ...os, homedir: () => '/mock/home' },

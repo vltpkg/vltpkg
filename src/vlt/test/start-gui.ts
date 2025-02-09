@@ -10,13 +10,13 @@ import t from 'tap'
 import {
   type ConfigOptions,
   type LoadedConfig,
-} from '../src/config/index.js'
+} from '../src/config/index.ts'
 import {
   formatDashboardJson,
   inferTools,
   parseInstallOptions,
-} from '../src/start-gui.js'
-import { actualObject } from './fixtures/actual.js'
+} from '../src/start-gui.ts'
+import { actualObject } from './fixtures/actual.ts'
 
 t.cleanSnapshot = s =>
   s.replace(
@@ -44,8 +44,8 @@ t.test('starts gui data and server', async t => {
   let openHost = ''
   const dir = t.testdirName
   const { startGUI } = await t.mockImport<
-    typeof import('../src/start-gui.js')
-  >('../src/start-gui.js', {
+    typeof import('../src/start-gui.ts')
+  >('../src/start-gui.ts', {
     'node:http': {
       ...http,
       createServer() {
@@ -248,7 +248,7 @@ t.test('e2e server test', async t => {
   const log: string[] = []
   let ilog = ''
 
-  const { startGUI } = await t.mockImport('../src/start-gui.js', {
+  const { startGUI } = await t.mockImport('../src/start-gui.ts', {
     '@vltpkg/url-open': { urlOpen() {} },
     '../src/install.js': {
       async install() {
@@ -398,7 +398,7 @@ t.test('e2e server test', async t => {
       scurry: new PathScurry(dir),
     }
     // broken install
-    const { startGUI } = await t.mockImport('../src/start-gui.js', {
+    const { startGUI } = await t.mockImport('../src/start-gui.ts', {
       '@vltpkg/url-open': { urlOpen() {} },
       '../src/install.js': {
         async install() {
@@ -516,7 +516,7 @@ t.test('e2e server test', async t => {
       scurry: new PathScurry(dir),
     }
     // broken uninstall
-    const { startGUI } = await t.mockImport('../src/start-gui.js', {
+    const { startGUI } = await t.mockImport('../src/start-gui.ts', {
       '@vltpkg/url-open': { urlOpen() {} },
       '../src/uninstall.js': {
         async uninstall() {
@@ -583,8 +583,8 @@ t.test('no data to be found', async t => {
 
   t.capture(console, 'log').args // skip console.log to stdout
   const { startGUI } = await t.mockImport<
-    typeof import('../src/start-gui.js')
-  >('../src/start-gui.js', {
+    typeof import('../src/start-gui.ts')
+  >('../src/start-gui.ts', {
     '@vltpkg/url-open': { urlOpen() {} },
   })
 

@@ -1,8 +1,8 @@
 import fs from 'fs'
 import t from 'tap'
 import { pathToFileURL } from 'url'
-import { revs } from '../src/revs.js'
-import { spawn } from '../src/spawn.js'
+import { revs } from '../src/revs.ts'
+import { spawn } from '../src/spawn.ts'
 
 const repo = t.testdir()
 const repoUrl = pathToFileURL(repo)

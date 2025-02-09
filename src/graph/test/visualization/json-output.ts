@@ -1,9 +1,9 @@
 import t from 'tap'
 import { Spec, type SpecOptions } from '@vltpkg/spec'
 import { Monorepo } from '@vltpkg/workspaces'
-import { Graph } from '../../src/graph.js'
-import { jsonOutput } from '../../src/visualization/json-output.js'
-import { loadActualGraph } from '../fixtures/actual.js'
+import { Graph } from '../../src/graph.ts'
+import { jsonOutput } from '../../src/visualization/json-output.ts'
+import { loadActualGraph } from '../fixtures/actual.ts'
 import { joinDepIDTuple } from '@vltpkg/dep-id'
 
 t.formatSnapshot = s => JSON.stringify(s, null, 2)

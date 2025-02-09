@@ -1,5 +1,5 @@
 import t from 'tap'
-import * as B from '../src/index.js'
+import * as B from '../src/index.ts'
 import timers from 'timers/promises'
 
 t.test('basic', async t => {

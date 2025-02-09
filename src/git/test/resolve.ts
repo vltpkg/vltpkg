@@ -2,9 +2,9 @@ import { Spec } from '@vltpkg/spec'
 import fs from 'fs'
 import t from 'tap'
 import { pathToFileURL } from 'url'
-import { resolve, resolveRef } from '../src/resolve.js'
-import { revs } from '../src/revs.js'
-import { spawn } from '../src/spawn.js'
+import { resolve, resolveRef } from '../src/resolve.ts'
+import { revs } from '../src/revs.ts'
+import { spawn } from '../src/spawn.ts'
 
 t.cleanSnapshot = s => s.replace(/"[0-9a-f]{40}"/g, '"{SHA}"')
 const repo = t.testdir()

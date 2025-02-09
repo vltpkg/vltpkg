@@ -1,5 +1,5 @@
 import t from 'tap'
-import { findTarDir } from '../src/find-tar-dir.js'
+import { findTarDir } from '../src/find-tar-dir.ts'
 
 t.equal(findTarDir('x', undefined), undefined)
 t.equal(findTarDir('x/', undefined), 'x/')
