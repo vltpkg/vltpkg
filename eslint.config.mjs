@@ -284,6 +284,18 @@ export default tseslint.config(
     },
   },
   {
+    files: ['infra/build/test/**/*.ts', 'src/vlt/test/**/*/*.ts'],
+    rules: {
+      'no-restricted-syntax': [
+        'warn',
+        ...['log', 'error'].map(method => ({
+          selector: `CallExpression[callee.object.name='console'][callee.property.name='${method}']`,
+          message: `\`console.${method}\` is often captured in these tests so calling it might not show anything. Use another method like \`console.info\` or \`t.comment\` instead.`,
+        })),
+      ],
+    },
+  },
+  {
     /**
      * Plain JS code.
      * TODO: there is a way to get typechecking with tseslint for
