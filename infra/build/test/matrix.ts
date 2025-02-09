@@ -69,9 +69,10 @@ t.test('compile matrix', async t => {
     platform: ['linux'],
     arch: ['arm64'],
     compile: [true],
+    runtime: ['deno'],
   })
   t.matchSnapshot(
-    bundles.map(b => b.format),
+    bundles.map(b => b.bundleId),
     'bundles',
   )
   t.matchSnapshot(
@@ -86,6 +87,7 @@ t.test('single bin', async t => {
     platform: ['linux'],
     arch: ['arm64'],
     compile: [true],
+    runtime: ['deno'],
   })
   t.equal(compiles.length, 1)
 })

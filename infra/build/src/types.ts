@@ -55,20 +55,10 @@ export type Runtime = (typeof Runtimes)[keyof typeof Runtimes]
 export const isRuntime = (v: unknown): v is Runtime =>
   RuntimeValues.includes(v as Runtime)
 
-export const Formats = {
-  Cjs: 'cjs',
-  Esm: 'esm',
-} as const
-export const FormatValues = Object.values(Formats)
-export type Format = (typeof Formats)[keyof typeof Formats]
-export const isFormat = (v: unknown): v is Format =>
-  FormatValues.includes(v as Format)
-
 export type Factors = {
   arch: Arch
   compile: boolean
   externalCommands: boolean
-  format: Format
   minify: boolean
   platform: Platform
   runtime: Runtime
@@ -88,7 +78,6 @@ export const pickMatrix = (
 ): Omit<FactorSets, MetaKeys> => ({
   arch: m.arch,
   externalCommands: m.externalCommands,
-  format: m.format,
   minify: m.minify,
   platform: m.platform,
   runtime: m.runtime,
@@ -104,7 +93,6 @@ export type FactorArrays = {
 }
 
 export const bundleKeys = [
-  'format',
   'externalCommands',
   'minify',
   'sourcemap',
@@ -113,7 +101,6 @@ export const bundleKeys = [
 export type BundleFactors = Pick<Factors, (typeof bundleKeys)[number]>
 
 export const pickBundle = (m: Matrix): BundleFactors => ({
-  format: m.format,
   externalCommands: m.externalCommands,
   minify: m.minify,
   sourcemap: m.sourcemap,
@@ -135,7 +122,6 @@ export const pickCompilation = (m: Matrix): CompileFactors => ({
   platform: m.platform,
   arch: m.arch,
   runtime: m.runtime,
-  format: m.format,
   externalCommands: m.externalCommands,
   minify: m.minify,
   sourcemap: m.sourcemap,

@@ -35,7 +35,7 @@ const testCompile = async (
 }
 
 t.test('runtimes', async t => {
-  await t.resolves(
+  await t.rejects(
     testCompile(t, {
       runtime: types.Runtimes.Node,
     }),

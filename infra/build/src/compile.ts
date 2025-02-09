@@ -47,21 +47,9 @@ const getTarget = (o: types.CompileFactors) => {
       }[o.platform],
     ].join('-')
   }
-  // yao-pkg/pkg can only do node 20 for now
   // XXX: we should evaluate other tools or fork/contribute node22+
   // compatability to pkg if we decide to use node compilation long-term
-  return [
-    'node20',
-    {
-      [types.Platforms.Linux]: 'linux',
-      [types.Platforms.Win]: 'win',
-      [types.Platforms.Mac]: 'macos',
-    }[o.platform],
-    {
-      [types.Archs.arm64]: 'arm64',
-      [types.Archs.x64]: 'x64',
-    }[o.arch],
-  ].join('-')
+  throw new Error(`unsupported runtime for compilation: ${o.runtime}`)
 }
 
 const getCompileOptions = (

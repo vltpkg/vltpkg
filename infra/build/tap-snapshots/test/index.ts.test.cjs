@@ -19,10 +19,6 @@ Object {
     true,
     false,
   ],
-  "format": Array [
-    "cjs",
-    "esm",
-  ],
   "minify": Array [
     true,
     false,
@@ -49,7 +45,6 @@ Object {
   "arch": "arm64",
   "compile": false,
   "externalCommands": true,
-  "format": "esm",
   "minify": false,
   "platform": "darwin",
   "runtime": "node",
@@ -67,9 +62,6 @@ Object {
   ],
   "externalCommands": Array [
     true,
-  ],
-  "format": Array [
-    "esm",
   ],
   "minify": Array [
     false,
