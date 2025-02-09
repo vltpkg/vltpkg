@@ -1,9 +1,6 @@
 import { rimraf } from 'rimraf'
 
-export const __CODE_SPLIT_SCRIPT_NAME = import.meta.filename.replace(
-  /\.ts$/,
-  '.js',
-)
+export const __CODE_SPLIT_SCRIPT_NAME = import.meta.filename
 
 // This is run as a background process, and all the paths to
 // be removed written into stdin. We can't pass on argv, because

@@ -20,7 +20,7 @@ t.test('registering the beforeExit event', async t => {
       ) => {
         t.equal(cmd, process.execPath)
         t.equal(args.length, 2)
-        t.match(args[0], /unzip\.js$/)
+        t.match(args[0], /unzip\.ts$/)
         t.equal(args[1], t.testdirName)
         t.strictSame(opts, {
           detached: true,

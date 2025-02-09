@@ -80,7 +80,7 @@ t.test('delete some stuff', async t => {
   t.matchStrict(spawns, [
     {
       cmd: process.execPath,
-      args: [/[\\/]remove\.js$/],
+      args: [/[\\/]remove\.ts$/],
       options: { detached: true },
       written: [
         /^a[\\/]\.VLT\.DELETE\.[0-9]+\.b\x00$/,
