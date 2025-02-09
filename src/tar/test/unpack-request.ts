@@ -1,5 +1,5 @@
 import t from 'tap'
-import { UnpackRequest } from '../dist/esm/unpack-request.js'
+import { UnpackRequest } from '../dist/esm/unpack-request.ts'
 
 t.test('rejects', async t => {
   t.plan(2)

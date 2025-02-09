@@ -4,7 +4,7 @@ import { createServer } from 'http'
 import { resolve } from 'path'
 import t, { type Test } from 'tap'
 import { gzipSync } from 'zlib'
-import { type RegistryClientRequestOptions } from '../src/index.js'
+import { type RegistryClientRequestOptions } from '../src/index.ts'
 
 const PORT = (t.childId || 0) + 8080
 
@@ -230,9 +230,9 @@ const registry = createServer((req, res) => {
 const registryURL = `http://localhost:${PORT}`
 
 const mockIndex = async (t: Test, mocks?: Record<string, any>) =>
-  t.mockImport<typeof import('../src/index.js')>('../src/index.js', {
+  t.mockImport<typeof import('../src/index.ts')>('../src/index.ts', {
     // always get fresh copy of env since it reads globalThis
-    '../src/env.js': await t.mockImport('../src/env.js'),
+    '../src/env.js': await t.mockImport('../src/env.ts'),
     '@vltpkg/url-open': mockUrlOpen,
     '../src/otplease.js': { otplease },
     ...mocks,

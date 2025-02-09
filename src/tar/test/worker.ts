@@ -1,5 +1,5 @@
 import t from 'tap'
-import { isResponseOK } from '../src/worker.js'
+import { isResponseOK } from '../src/worker.ts'
 
 t.equal(isResponseOK({ id: 1, ok: true }), true)
 t.equal(isResponseOK({ id: 1, ok: false }), false)
@@ -8,8 +8,8 @@ t.equal(isResponseOK({ id: 1, error: 'nope' }), false)
 let unpackCalled = false
 let unpackThrow = false
 const { Worker } = await t.mockImport<
-  typeof import('../src/worker.js')
->('../src/worker.js', {
+  typeof import('../src/worker.ts')
+>('../src/worker.ts', {
   '../src/unpack.js': {
     unpack: async () => {
       unpackCalled = true

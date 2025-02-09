@@ -1,10 +1,10 @@
 import t from 'tap'
-import { Comparator } from '../src/comparator.js'
+import { Comparator } from '../src/comparator.ts'
 
 // version tests cover most of the comparator code paths
-import { Version } from '../src/version.js'
-import './range.js'
-import './version.js'
+import { Version } from '../src/version.ts'
+import './range.ts'
+import './version.ts'
 
 t.test('invalid comparators', t => {
   const invalid = [

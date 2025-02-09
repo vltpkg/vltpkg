@@ -4,7 +4,7 @@ import t from 'tap'
 
 t.cleanSnapshot = (str: string) => str.replaceAll(/\\/g, '/')
 
-const { init } = await t.mockImport('../src/init.js', {
+const { init } = await t.mockImport('../src/init.ts', {
   '@vltpkg/git': {
     async getUser() {
       return { name: 'User', email: 'foo@bar.ca' }
@@ -43,7 +43,7 @@ t.test('init existing', async t => {
 })
 
 t.test('unknown error reading package.json file', async t => {
-  const { init } = await t.mockImport('../src/init.js', {
+  const { init } = await t.mockImport('../src/init.ts', {
     '@vltpkg/git': {
       async getUser() {
         return { name: 'User', email: 'foo@bar.ca' }
@@ -72,7 +72,7 @@ t.test('unknown error reading package.json file', async t => {
 })
 
 t.test('missing user info', async t => {
-  const { init } = await t.mockImport('../src/init.js', {
+  const { init } = await t.mockImport('../src/init.ts', {
     '@vltpkg/git': {
       async getUser() {
         return undefined

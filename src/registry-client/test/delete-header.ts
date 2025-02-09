@@ -1,5 +1,5 @@
 import t from 'tap'
-import { deleteHeader } from '../src/delete-header.js'
+import { deleteHeader } from '../src/delete-header.ts'
 
 const k = 'key'
 const v = 'value'

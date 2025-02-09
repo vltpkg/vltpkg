@@ -1,11 +1,11 @@
 import t from 'tap'
-import { isResponseOK } from '../src/worker.js'
-import { Pool } from '../src/pool.js'
+import { isResponseOK } from '../src/worker.ts'
+import { Pool } from '../src/pool.ts'
 
 import { lstatSync } from 'fs'
 import { availableParallelism } from 'os'
 import { resolve } from 'path'
-import { makeTar } from './fixtures/make-tar.js'
+import { makeTar } from './fixtures/make-tar.ts'
 
 const p = new Pool()
 t.equal(p.jobs, 8 * (Math.max(availableParallelism(), 2) - 1))

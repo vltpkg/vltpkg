@@ -2,8 +2,8 @@ import { promiseSpawn } from '@vltpkg/promise-spawn'
 import { type Manifest } from '@vltpkg/types'
 import { resolve } from 'path'
 import t from 'tap'
-import { isRunResult, run } from '../src/index.js'
-import { tsTestdir } from './fixtures/testdir-ts.js'
+import { isRunResult, run } from '../src/index.ts'
+import { tsTestdir } from './fixtures/testdir-ts.ts'
 
 const fixture = resolve(
   tsTestdir(t, resolve(import.meta.dirname, 'fixtures/script')),

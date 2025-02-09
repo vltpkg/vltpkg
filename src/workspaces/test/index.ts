@@ -6,7 +6,7 @@ import {
   asWSConfig,
   Monorepo,
   type Workspace,
-} from '../src/index.js'
+} from '../src/index.ts'
 import { resolve } from 'node:path'
 
 t.test('load some workspaces', async t => {

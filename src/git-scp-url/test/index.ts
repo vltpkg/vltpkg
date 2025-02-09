@@ -1,4 +1,4 @@
-import { gitScpURL } from '../src/index.js'
+import { gitScpURL } from '../src/index.ts'
 import t from 'tap'
 
 const urls = [

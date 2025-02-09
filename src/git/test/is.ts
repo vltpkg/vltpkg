@@ -1,6 +1,6 @@
 import { tmpdir } from 'os'
 import t from 'tap'
-import { is as isGit } from '../src/is.js'
+import { is as isGit } from '../src/is.ts'
 
 t.test('a git index is git', t =>
   t.resolveMatch(

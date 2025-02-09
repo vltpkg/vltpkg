@@ -1,5 +1,5 @@
 import t from 'tap'
-import { binPaths } from '../../src/reify/bin-paths.js'
+import { binPaths } from '../../src/reify/bin-paths.ts'
 
 t.strictSame(
   binPaths({

@@ -8,13 +8,13 @@ import { PackageJson } from '@vltpkg/package-json'
 import { Spec, type SpecOptions } from '@vltpkg/spec'
 import { PathScurry } from 'path-scurry'
 import t, { type Test } from 'tap'
-import { type LoadedConfig } from '../../src/types.js'
+import { type LoadedConfig } from '../../src/types.ts'
 import { Monorepo } from '@vltpkg/workspaces'
-import { type StartGUIOptions } from '../../src/start-gui.js'
+import { type StartGUIOptions } from '../../src/start-gui.ts'
 import {
   commandView,
   type CommandResultOptions,
-} from '../fixtures/run.js'
+} from '../fixtures/run.ts'
 
 t.cleanSnapshot = s =>
   s.replace(
@@ -100,8 +100,8 @@ const mockQuery = async (
   t: Test,
   { graph: g = graph, ...mocks }: Record<string, any> = {},
 ) =>
-  t.mockImport<typeof import('../../src/commands/query.js')>(
-    '../../src/commands/query.js',
+  t.mockImport<typeof import('../../src/commands/query.ts')>(
+    '../../src/commands/query.ts',
     {
       '@vltpkg/graph': {
         actual: {

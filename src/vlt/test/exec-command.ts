@@ -1,11 +1,11 @@
 import t from 'tap'
-import './commands/exec.js'
-import './commands/run-exec.js'
-import './commands/run.js'
+import './commands/exec.ts'
+import './commands/run-exec.ts'
+import './commands/run.ts'
 
 import { exec, execFG } from '@vltpkg/run'
-import { type LoadedConfig } from '../src/config/index.js'
-import { ExecCommand } from '../src/exec-command.js'
+import { type LoadedConfig } from '../src/config/index.ts'
+import { ExecCommand } from '../src/exec-command.ts'
 
 const e = new ExecCommand(
   {

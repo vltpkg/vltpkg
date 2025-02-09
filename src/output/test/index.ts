@@ -3,7 +3,7 @@ import {
   logRequest,
   graphStep,
   type Events,
-} from '../src/index.js'
+} from '../src/index.ts'
 
 import t from 'tap'
 

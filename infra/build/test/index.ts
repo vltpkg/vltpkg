@@ -1,7 +1,7 @@
 import t from 'tap'
 
-const mock = await t.mockImport<typeof import('../src/index.js')>(
-  '../src/index.js',
+const mock = await t.mockImport<typeof import('../src/index.ts')>(
+  '../src/index.ts',
   {
     'node:os': {
       platform: () => 'darwin',
@@ -43,8 +43,8 @@ t.test('format', async t => {
 
 t.test('unsupported', async t => {
   const unsupported = await t.mockImport<
-    typeof import('../src/index.js')
-  >('../src/index.js', {
+    typeof import('../src/index.ts')
+  >('../src/index.ts', {
     'node:os': {
       platform: () => 'unsupported platform',
       arch: () => 'unsupported arch',

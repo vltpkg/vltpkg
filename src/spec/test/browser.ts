@@ -6,7 +6,7 @@ import {
   type Scope,
   type SpecOptions,
   Spec,
-} from '../src/browser.js'
+} from '../src/browser.ts'
 
 Object.assign(Spec.prototype, {
   [kCustomInspect](

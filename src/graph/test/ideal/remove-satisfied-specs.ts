@@ -5,13 +5,13 @@ import { Monorepo } from '@vltpkg/workspaces'
 import { inspect } from 'node:util'
 import { PathScurry } from 'path-scurry'
 import t from 'tap'
-import { load } from '../../src/actual/load.js'
+import { load } from '../../src/actual/load.ts'
 import {
   asDependency,
   type AddImportersDependenciesMap,
-} from '../../src/dependencies.js'
-import { Graph } from '../../src/graph.js'
-import { removeSatisfiedSpecs } from '../../src/ideal/remove-satisfied-specs.js'
+} from '../../src/dependencies.ts'
+import { Graph } from '../../src/graph.ts'
+import { removeSatisfiedSpecs } from '../../src/ideal/remove-satisfied-specs.ts'
 
 Object.assign(Spec.prototype, {
   [kCustomInspect](this: Spec) {

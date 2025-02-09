@@ -8,11 +8,11 @@ const build = async (t: Test, ...argv: string[]) => {
   })
   let compiled = 0
   let bundled = 0
-  await t.mockImport<typeof import('../../src/bin/build.js')>(
-    '../../src/bin/build.js',
+  await t.mockImport<typeof import('../../src/bin/build.ts')>(
+    '../../src/bin/build.ts',
     {
       '../../src/matrix.js': await t.mockImport(
-        '../../src/matrix.js',
+        '../../src/matrix.ts',
         {
           '../../src/compile.js': {
             default: () => {

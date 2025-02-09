@@ -2,7 +2,7 @@ import { createHash } from 'crypto'
 import t from 'tap'
 import { inspect } from 'util'
 import { gzipSync } from 'zlib'
-import { CacheEntry } from '../src/cache-entry.js'
+import { CacheEntry } from '../src/cache-entry.ts'
 
 const toRawHeaders = (h: Record<string, string>): Buffer[] => {
   const r: Buffer[] = []

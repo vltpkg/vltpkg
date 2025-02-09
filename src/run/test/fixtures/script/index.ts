@@ -9,7 +9,7 @@ import {
   runExec,
   runExecFG,
   runFG,
-} from '../../../dist/esm/index.js'
+} from '../../../dist/esm/index.ts'
 const node =
   process.execPath.includes(' ') ?
     '"' + process.execPath + '"'

@@ -43,8 +43,8 @@ const mockSpawn = (
 
 t.test('delete some stuff', async t => {
   const { RollbackRemove } = await t.mockImport<
-    typeof import('../src/index.js')
-  >('../src/index.js', {
+    typeof import('../src/index.ts')
+  >('../src/index.ts', {
     child_process: {
       spawn: mockSpawn,
     },
@@ -94,8 +94,8 @@ t.test('delete some stuff', async t => {
 
 t.test('do not delete some stuff', async t => {
   const { RollbackRemove } = await t.mockImport<
-    typeof import('../src/index.js')
-  >('../src/index.js', {
+    typeof import('../src/index.ts')
+  >('../src/index.ts', {
     child_process: {
       spawn: mockSpawn,
     },

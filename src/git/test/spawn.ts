@@ -2,8 +2,8 @@ import { error } from '@vltpkg/error-cause'
 import fs from 'fs'
 import { resolve } from 'path'
 import t from 'tap'
-import { type GitOptions } from '../src/index.js'
-import { spawn } from '../src/spawn.js'
+import { type GitOptions } from '../src/index.ts'
+import { spawn } from '../src/spawn.ts'
 
 t.test('no git', async t => {
   await t.rejects(spawn(['status'], { git: false }), {
@@ -32,7 +32,7 @@ t.test('argument test for allowReplace', async t => {
   // for our purposes.  This just tests that the argument is added
   // by default.
   const { spawn: mockedSpawn } = await t.mockImport(
-    '../src/spawn.js',
+    '../src/spawn.ts',
     {
       '@vltpkg/promise-spawn': {
         promiseSpawn: async (_: string, args: string[]) => args,

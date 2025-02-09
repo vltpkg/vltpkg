@@ -1,8 +1,8 @@
 import t, { type Test } from 'tap'
 import { relative, sep, join } from 'path'
-import * as types from '../src/types.js'
-import { defaultOptions } from '../src/index.js'
-import bundle from '../src/bundle.js'
+import * as types from '../src/types.ts'
+import { defaultOptions } from '../src/index.ts'
+import bundle from '../src/bundle.ts'
 
 const testBundle = async (
   t: Test,

@@ -2,7 +2,7 @@ import { Cache } from '@vltpkg/cache'
 import { spawnSync } from 'child_process'
 import t from 'tap'
 import { gzipSync } from 'zlib'
-import { __CODE_SPLIT_SCRIPT_NAME } from '../dist/esm/unzip.js'
+import { __CODE_SPLIT_SCRIPT_NAME } from '../dist/esm/unzip.ts'
 
 t.test('validate args', async t => {
   t.match(

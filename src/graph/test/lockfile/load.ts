@@ -5,19 +5,19 @@ import {
 } from '@vltpkg/dep-id'
 import { type SpecOptions } from '@vltpkg/spec'
 import t from 'tap'
-import { type LockfileNode } from '../../dist/esm/index.js'
+import { type LockfileNode } from '../../dist/esm/index.ts'
 import {
   load,
   loadHidden,
   loadObject,
-} from '../../src/lockfile/load.js'
+} from '../../src/lockfile/load.ts'
 import {
   type LockfileData,
   type LockfileEdgeKey,
   type LockfileEdges,
   type LockfileEdgeValue,
-} from '../../src/lockfile/types.js'
-import { objectLikeOutput } from '../../src/visualization/object-like-output.js'
+} from '../../src/lockfile/types.ts'
+import { objectLikeOutput } from '../../src/visualization/object-like-output.ts'
 
 t.cleanSnapshot = s =>
   s.replace(
