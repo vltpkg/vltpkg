@@ -105,19 +105,10 @@ await t.skip('compile', async t => {
   t.ok(hasBins.every(Boolean))
 })
 
-await t.test('format', async t => {
-  t.skip('cjs', async t => {
-    const { dirs } = await publish(t, ['--format=cjs'])
-    const pkg = JSON.parse(
-      readFileSync(join(dirs[0] ?? '', 'package.json'), 'utf8'),
-    )
-    t.equal(pkg.type, 'commonjs')
-  })
-  t.test('esm', async t => {
-    const { dirs } = await publish(t, ['--format=esm'])
-    const pkg = JSON.parse(
-      readFileSync(join(dirs[0] ?? '', 'package.json'), 'utf8'),
-    )
-    t.equal(pkg.type, 'module')
-  })
+t.test('publisj', async t => {
+  const { dirs } = await publish(t)
+  const pkg = JSON.parse(
+    readFileSync(join(dirs[0] ?? '', 'package.json'), 'utf8'),
+  )
+  t.equal(pkg.type, 'module')
 })
