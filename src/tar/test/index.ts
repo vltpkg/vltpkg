@@ -1,8 +1,8 @@
 import t from 'tap'
-import * as unpack from '../src/unpack.js'
-import * as pool from '../src/pool.js'
-import * as unpackRequest from '../src/unpack-request.js'
-import * as index from '../src/index.js'
+import * as unpack from '../src/unpack.ts'
+import * as pool from '../src/pool.ts'
+import * as unpackRequest from '../src/unpack-request.ts'
+import * as index from '../src/index.ts'
 
 t.strictSame(
   index,

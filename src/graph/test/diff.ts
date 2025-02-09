@@ -5,14 +5,14 @@ import {
 } from '@vltpkg/dep-id'
 import t from 'tap'
 import { inspect } from 'util'
-import { Diff } from '../src/diff.js'
+import { Diff } from '../src/diff.ts'
 import {
   type Graph,
   type LockfileEdgeKey,
   type LockfileEdges,
   type LockfileNode,
-} from '../src/index.js'
-import { loadObject } from '../src/lockfile/load.js'
+} from '../src/index.ts'
+import { loadObject } from '../src/lockfile/load.ts'
 
 const edgeKey = (from: DepIDTuple, to: string): LockfileEdgeKey =>
   (joinDepIDTuple(from) + ' ' + to) as LockfileEdgeKey

@@ -1,10 +1,10 @@
 import t from 'tap'
-import { Version, Range } from '../src/index.js'
-import increments from './fixtures/increments.js'
-import comparisons from './fixtures/comparisons.js'
-import equality from './fixtures/equality.js'
-import invalidVersions from './fixtures/invalid-versions.js'
-import { includes, excludes } from './fixtures/ranges.js'
+import { Version, Range } from '../src/index.ts'
+import increments from './fixtures/increments.ts'
+import comparisons from './fixtures/comparisons.ts'
+import equality from './fixtures/equality.ts'
+import invalidVersions from './fixtures/invalid-versions.ts'
+import { includes, excludes } from './fixtures/ranges.ts'
 
 t.test('Version.parse', t => {
   for (const [v] of increments) {

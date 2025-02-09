@@ -3,15 +3,15 @@ import { type RollbackRemove } from '@vltpkg/rollback-remove'
 import { type Manifest } from '@vltpkg/types'
 import { PathScurry } from 'path-scurry'
 import t from 'tap'
-import { type Diff } from '../../src/diff.js'
-import { type Edge } from '../../src/edge.js'
+import { type Diff } from '../../src/diff.ts'
+import { type Edge } from '../../src/edge.ts'
 
 t.test('add some edges', async t => {
   const projectRoot = t.testdirName
   const reified: Edge[] = []
   const { addEdges } = await t.mockImport<
-    typeof import('../../src/reify/add-edges.js')
-  >('../../src/reify/add-edges.js', {
+    typeof import('../../src/reify/add-edges.ts')
+  >('../../src/reify/add-edges.ts', {
     '../../src/reify/add-edge.js': {
       addEdge: async (
         edge: Edge,

@@ -1,7 +1,7 @@
 import t from 'tap'
 import { type Dispatcher } from 'undici'
-import { type RegistryClient } from '../src/index.js'
-import { type WebAuthChallenge } from '../src/web-auth-challenge.js'
+import { type RegistryClient } from '../src/index.ts'
+import { type WebAuthChallenge } from '../src/web-auth-challenge.ts'
 
 const urlsOpened: string[] = []
 const mockUrlOpen = async (url: string) => {
@@ -30,8 +30,8 @@ const mockClient = {
 } as unknown as RegistryClient
 
 const { otplease } = await t.mockImport<
-  typeof import('../src/otplease.js')
->('../src/otplease.js', {
+  typeof import('../src/otplease.ts')
+>('../src/otplease.ts', {
   '@vltpkg/url-open': {
     urlOpen: mockUrlOpen,
   },

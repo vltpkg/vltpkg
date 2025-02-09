@@ -5,7 +5,7 @@ import {
   isDependency,
   isDependencyTypeShort,
   shorten,
-} from '../src/dependencies.js'
+} from '../src/dependencies.ts'
 import { Spec } from '@vltpkg/spec'
 import { type DependencyTypeLong } from '@vltpkg/types'
 

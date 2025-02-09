@@ -1,5 +1,5 @@
 import t from 'tap'
-import { isWebAuthChallenge } from '../src/web-auth-challenge.js'
+import { isWebAuthChallenge } from '../src/web-auth-challenge.ts'
 
 t.equal(
   isWebAuthChallenge({ doneUrl: 'asdf', loginUrl: 'asdf' }),

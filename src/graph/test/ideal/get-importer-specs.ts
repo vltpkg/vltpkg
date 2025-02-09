@@ -5,15 +5,15 @@ import { Monorepo } from '@vltpkg/workspaces'
 import { inspect } from 'node:util'
 import { PathScurry } from 'path-scurry'
 import t from 'tap'
-import { load } from '../../src/actual/load.js'
+import { load } from '../../src/actual/load.ts'
 import {
   asDependency,
   type AddImportersDependenciesMap,
   type RemoveImportersDependenciesMap,
-} from '../../src/dependencies.js'
-import { Graph } from '../../src/graph.js'
-import { getImporterSpecs } from '../../src/ideal/get-importer-specs.js'
-import { Edge } from '../../src/edge.js'
+} from '../../src/dependencies.ts'
+import { Graph } from '../../src/graph.ts'
+import { getImporterSpecs } from '../../src/ideal/get-importer-specs.ts'
+import { Edge } from '../../src/edge.ts'
 
 Object.assign(Spec.prototype, {
   [kCustomInspect](this: Spec) {

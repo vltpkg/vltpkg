@@ -1,5 +1,5 @@
 import t from 'tap'
-import { isTokenResponse } from '../src/token-response.js'
+import { isTokenResponse } from '../src/token-response.ts'
 
 t.equal(isTokenResponse({ token: 'hello' }), true)
 

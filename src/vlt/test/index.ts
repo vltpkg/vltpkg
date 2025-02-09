@@ -5,7 +5,7 @@ import {
   mockConfig,
   type Testdir,
   chtestdir,
-} from './fixtures/run.js'
+} from './fixtures/run.ts'
 import { error } from '@vltpkg/error-cause'
 
 setupEnv(t)

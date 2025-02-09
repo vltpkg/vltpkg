@@ -1,12 +1,12 @@
 import t from 'tap'
-import { Query, walk } from '../src/index.js'
+import { Query, walk } from '../src/index.ts'
 import {
   getCycleGraph,
   getSimpleGraph,
   getSingleWorkspaceGraph,
-} from './fixtures/graph.js'
-import { type ParserState, type PostcssNode } from '../src/types.js'
-import { copyGraphSelectionState } from './fixtures/selector.js'
+} from './fixtures/graph.ts'
+import { type ParserState, type PostcssNode } from '../src/types.ts'
+import { copyGraphSelectionState } from './fixtures/selector.ts'
 
 type TestCase = [string, string[]]
 

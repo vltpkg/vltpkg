@@ -1,10 +1,10 @@
 import t from 'tap'
-import { mockConfig } from '../fixtures/run.js'
+import { mockConfig } from '../fixtures/run.ts'
 
 t.test('basic', async t => {
   const { usage, command } = await t.mockImport<
-    typeof import('../../src/commands/help.js')
-  >('../../src/commands/help.js')
+    typeof import('../../src/commands/help.ts')
+  >('../../src/commands/help.ts')
   const USAGE = usage().usage()
   t.matchSnapshot(USAGE, 'usage')
   const { Config } = await mockConfig(t)

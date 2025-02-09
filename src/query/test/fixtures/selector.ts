@@ -4,9 +4,9 @@ import {
   GraphSelectionState,
   ParserState,
   PostcssNode,
-} from '../../src/types.js'
-import { walk } from '../../src/index.js'
-import { ParserFn } from '../../src/types.js'
+} from '../../src/types.ts'
+import { walk } from '../../src/index.ts'
+import { ParserFn } from '../../src/types.ts'
 import { joinDepIDTuple } from '@vltpkg/dep-id'
 
 export type FixtureResult = {

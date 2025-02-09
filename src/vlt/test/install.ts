@@ -6,7 +6,7 @@ import {
   type BuildIdealOptions,
   type AddImportersDependenciesMap,
 } from '@vltpkg/graph'
-import { type LoadedConfig } from '../src/config/index.js'
+import { type LoadedConfig } from '../src/config/index.ts'
 import { Spec } from '@vltpkg/spec'
 
 t.cleanSnapshot = s =>
@@ -32,8 +32,8 @@ t.test('install', async t => {
   const rootDepID = joinDepIDTuple(['file', '.'])
 
   const { install } = await t.mockImport<
-    typeof import('../src/install.js')
-  >('../src/install.js', {
+    typeof import('../src/install.ts')
+  >('../src/install.ts', {
     '@vltpkg/graph': {
       ideal: {
         build: async ({ add }: BuildIdealOptions) => {

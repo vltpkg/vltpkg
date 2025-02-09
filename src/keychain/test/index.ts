@@ -22,8 +22,8 @@ const getKC = async (t: Test) => {
     },
   })
   const { Keychain } =
-    await t.mockImport<typeof import('../src/index.js')>(
-      '../src/index.js',
+    await t.mockImport<typeof import('../src/index.ts')>(
+      '../src/index.ts',
     )
   // nerf the autosave because tap will tear down the folder
   return {

@@ -4,7 +4,7 @@ import {
   typeError,
   asErrorCause,
   isErrorRoot,
-} from '../src/index.js'
+} from '../src/index.ts'
 import t from 'tap'
 
 t.test('setting cause', t => {

@@ -1,6 +1,6 @@
 import { posix } from 'node:path'
 import t from 'tap'
-import { type XDG } from '../src/index.js'
+import { type XDG } from '../src/index.ts'
 
 const mocks = {
   os: { homedir: () => '/home', tmpdir: () => '/tmp' },
@@ -40,22 +40,22 @@ t.test('win32', t => {
       value: { APPDATA: '/appdata', LOCALAPPDATA: '/localappdata' },
     })
     const { XDG } = await t.mockImport<
-      typeof import('../src/index.js')
-    >('../src/index.js', mocks)
+      typeof import('../src/index.ts')
+    >('../src/index.ts', mocks)
     t.matchSnapshot(f(new XDG('app')))
   })
   t.test('with no envs set', async t => {
     t.intercept(process, 'env', { value: {} })
     const { XDG } = await t.mockImport<
-      typeof import('../src/index.js')
-    >('../src/index.js', mocks)
+      typeof import('../src/index.ts')
+    >('../src/index.ts', mocks)
     t.matchSnapshot(f(new XDG('app')))
   })
   t.test('with XDG envs set', async t => {
     t.intercept(process, 'env', { value: xdgEnvs })
     const { XDG } = await t.mockImport<
-      typeof import('../src/index.js')
-    >('../src/index.js', mocks)
+      typeof import('../src/index.ts')
+    >('../src/index.ts', mocks)
     t.matchSnapshot(f(new XDG('app')))
   })
   t.end()
@@ -66,15 +66,15 @@ t.test('darwin', t => {
   t.test('with xdg envs', async t => {
     t.intercept(process, 'env', { value: xdgEnvs })
     const { XDG } = await t.mockImport<
-      typeof import('../src/index.js')
-    >('../src/index.js', mocks)
+      typeof import('../src/index.ts')
+    >('../src/index.ts', mocks)
     t.matchSnapshot(f(new XDG('app')))
   })
   t.test('defaults', async t => {
     t.intercept(process, 'env', { value: {} })
     const { XDG } = await t.mockImport<
-      typeof import('../src/index.js')
-    >('../src/index.js', mocks)
+      typeof import('../src/index.ts')
+    >('../src/index.ts', mocks)
     t.matchSnapshot(f(new XDG('app')))
   })
   t.end()
@@ -89,8 +89,8 @@ t.test('others', t => {
       t.test(p, async t => {
         t.intercept(process, 'platform', { value: p })
         const { XDG } = await t.mockImport<
-          typeof import('../src/index.js')
-        >('../src/index.js', mocks)
+          typeof import('../src/index.ts')
+        >('../src/index.ts', mocks)
         if (!found) {
           found = new XDG('app')
           t.matchSnapshot(f(found))
@@ -108,8 +108,8 @@ t.test('others', t => {
       t.test(p, async t => {
         t.intercept(process, 'platform', { value: p })
         const { XDG } = await t.mockImport<
-          typeof import('../src/index.js')
-        >('../src/index.js', mocks)
+          typeof import('../src/index.ts')
+        >('../src/index.ts', mocks)
         if (!found) {
           found = new XDG('app')
           t.matchSnapshot(f(found))

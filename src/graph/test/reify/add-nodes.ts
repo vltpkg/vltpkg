@@ -5,9 +5,9 @@ import { Spec } from '@vltpkg/spec'
 import { resolve } from 'path'
 import { PathScurry } from 'path-scurry'
 import t from 'tap'
-import { type Diff } from '../../src/diff.js'
+import { type Diff } from '../../src/diff.ts'
 
-import { addNodes } from '../../src/reify/add-nodes.js'
+import { addNodes } from '../../src/reify/add-nodes.ts'
 
 const removed: string[] = []
 const mockRemover = {

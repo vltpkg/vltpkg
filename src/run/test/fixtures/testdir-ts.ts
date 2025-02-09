@@ -25,6 +25,10 @@ export const tsTestdir = (t: Test, dir: string) => {
         (acc, p) => (
           (acc[p.name] = readFileSync(resolve(p.parentPath, p.name))
             .toString()
+            .replaceAll(
+              posix.join(relDir, 'src'),
+              posix.join(relOut, 'dist/esm'),
+            )
             .replaceAll(relDir, relOut)),
           acc
         ),

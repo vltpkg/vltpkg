@@ -13,14 +13,14 @@ const benchmark = async (t: Test, ...argv: string[]) => {
     ],
   })
   let args: string[] = []
-  await t.mockImport<typeof import('../../src/bin/benchmark.js')>(
-    '../../src/bin/benchmark.js',
+  await t.mockImport<typeof import('../../src/bin/benchmark.ts')>(
+    '../../src/bin/benchmark.ts',
     {
       'node:child_process': {
         spawnSync: (_: any, a: string[]) => (args = a),
       },
       '../../src/matrix.js': await t.mockImport(
-        '../../src/matrix.js',
+        '../../src/matrix.ts',
         {
           '../../src/compile.js': {
             default: () => {},

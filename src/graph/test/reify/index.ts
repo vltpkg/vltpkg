@@ -27,15 +27,15 @@ import {
   type LockfileEdges,
   type LockfileNode,
   reify,
-} from '../../src/index.js'
+} from '../../src/index.ts'
 import {
   fixtureManifest,
   mockPackageInfo,
-} from '../fixtures/reify.js'
+} from '../fixtures/reify.ts'
 import {
   type AddImportersDependenciesMap,
   type RemoveImportersDependenciesMap,
-} from '../../src/dependencies.js'
+} from '../../src/dependencies.ts'
 
 t.test('super basic reification', async t => {
   const dir = t.testdir({
@@ -303,7 +303,7 @@ t.test('failure rolls back', async t => {
     scurry: new PathScurry(projectRoot),
     packageJson: new PackageJson(),
   })
-  const { reify } = await t.mockImport('../../src/reify/index.js', {
+  const { reify } = await t.mockImport('../../src/reify/index.ts', {
     '../../src/reify/build.js': {
       build: () =>
         Promise.reject(new Error('expected failure, roll back')),

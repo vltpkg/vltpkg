@@ -7,10 +7,10 @@ import t from 'tap'
 import {
   type AddImportersDependenciesMap,
   type Dependency,
-} from '../../src/dependencies.js'
-import { Graph } from '../../src/graph.js'
-import { addNodes } from '../../src/ideal/add-nodes.js'
-import { objectLikeOutput } from '../../src/visualization/object-like-output.js'
+} from '../../src/dependencies.ts'
+import { Graph } from '../../src/graph.ts'
+import { addNodes } from '../../src/ideal/add-nodes.ts'
+import { objectLikeOutput } from '../../src/visualization/object-like-output.ts'
 
 Object.assign(Spec.prototype, {
   [kCustomInspect](this: Spec) {

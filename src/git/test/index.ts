@@ -1,4 +1,4 @@
-import * as git from '../src/index.js'
+import * as git from '../src/index.ts'
 import t from 'tap'
 t.matchOnly(
   git,

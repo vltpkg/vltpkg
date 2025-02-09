@@ -1,6 +1,6 @@
 #!/usr/bin/env -S tap -Rtap --disable-coverage --allow-empty-coverage
 import t from 'tap'
-import { fastSplit } from '../../src/index.js'
+import { fastSplit } from '../../src/index.ts'
 
 const str = '1.2.3-asdf+foo'
 

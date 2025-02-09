@@ -1,5 +1,5 @@
 import t from 'tap'
-import { PackageJson } from '../src/index.js'
+import { PackageJson } from '../src/index.ts'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
@@ -129,8 +129,8 @@ t.test('fails on fs errors during write', async t => {
     }),
   })
   const { PackageJson: MockedPackageJson } = await t.mockImport<
-    typeof import('../src/index.js')
-  >('../src/index.js', {
+    typeof import('../src/index.ts')
+  >('../src/index.ts', {
     'node:fs': {
       ...(await import('node:fs')),
       writeFileSync: () => {

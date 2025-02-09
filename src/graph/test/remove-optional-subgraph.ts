@@ -5,13 +5,13 @@ import {
   type DependencyTypeShort,
 } from '@vltpkg/types'
 import t from 'tap'
-import { Edge } from '../src/edge.js'
-import { Graph } from '../src/graph.js'
-import { type Node } from '../src/node.js'
+import { Edge } from '../src/edge.ts'
+import { Graph } from '../src/graph.ts'
+import { type Node } from '../src/node.ts'
 import {
   findOptionalSubgraph,
   removeOptionalSubgraph,
-} from '../src/remove-optional-subgraph.js'
+} from '../src/remove-optional-subgraph.ts'
 
 const pp = (
   graph: Graph,

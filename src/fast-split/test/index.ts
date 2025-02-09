@@ -1,5 +1,5 @@
 import t from 'tap'
-import { fastSplit } from '../src/index.js'
+import { fastSplit } from '../src/index.ts'
 
 t.strictSame(fastSplit('a.b.c.d', '.'), ['a', 'b', 'c', 'd'])
 t.strictSame(fastSplit('a.b.c.d', '.', 2), ['a', 'b.c.d'])

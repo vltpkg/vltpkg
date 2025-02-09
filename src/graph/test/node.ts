@@ -2,9 +2,9 @@ import { delimiter, getId, joinDepIDTuple } from '@vltpkg/dep-id'
 import { Spec, type SpecOptions } from '@vltpkg/spec'
 import { inspect } from 'node:util'
 import t from 'tap'
-import { Edge } from '../src/edge.js'
-import { Node } from '../src/node.js'
-import { type GraphLike } from '../src/types.js'
+import { Edge } from '../src/edge.ts'
+import { Node } from '../src/node.ts'
+import { type GraphLike } from '../src/types.ts'
 import { PathScurry } from 'path-scurry'
 
 t.cleanSnapshot = s =>

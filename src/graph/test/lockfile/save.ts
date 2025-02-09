@@ -4,13 +4,13 @@ import { Monorepo } from '@vltpkg/workspaces'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import t from 'tap'
-import { Edge } from '../../src/edge.js'
-import { Graph } from '../../src/graph.js'
+import { Edge } from '../../src/edge.ts'
+import { Graph } from '../../src/graph.ts'
 import {
   lockfileData,
   save,
   saveHidden,
-} from '../../src/lockfile/save.js'
+} from '../../src/lockfile/save.ts'
 
 const configData = {
   registry: 'https://registry.npmjs.org/',

@@ -12,7 +12,7 @@ import {
   isDepID,
   joinDepIDTuple,
   splitDepID,
-} from '../src/index.js'
+} from '../src/index.ts'
 
 const mani: Manifest = { name: 'manifest-name', version: '1.2.3' }
 t.test('valid specs', t => {

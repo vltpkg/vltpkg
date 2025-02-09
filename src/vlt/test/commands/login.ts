@@ -1,10 +1,10 @@
 import t from 'tap'
-import { type LoadedConfig } from '../../src/types.js'
+import { type LoadedConfig } from '../../src/types.ts'
 let loginCalled = ''
 
 const { usage, command } = await t.mockImport<
-  typeof import('../../src/commands/login.js')
->('../../src/commands/login.js', {
+  typeof import('../../src/commands/login.ts')
+>('../../src/commands/login.ts', {
   '@vltpkg/registry-client': {
     RegistryClient: class {
       async login(registry: string) {

@@ -1,11 +1,11 @@
 import { type Token } from '@vltpkg/registry-client'
 import t from 'tap'
-import { type LoadedConfig } from '../../src/types.js'
+import { type LoadedConfig } from '../../src/types.ts'
 
 const log: string[][] = []
 const { usage, command } = await t.mockImport<
-  typeof import('../../src/commands/token.js')
->('../../src/commands/token.js', {
+  typeof import('../../src/commands/token.ts')
+>('../../src/commands/token.ts', {
   '@vltpkg/registry-client': {
     async setToken(reg: string, tok: Token) {
       log.push(['add', reg, tok])

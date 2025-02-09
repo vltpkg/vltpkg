@@ -1,5 +1,5 @@
 import t from 'tap'
-import { merge } from '../../src/config/merge.js'
+import { merge } from '../../src/config/merge.ts'
 
 t.strictSame(merge({ array: [1, 2, 3] }, { array: [2, 4, 3] }), {
   array: [1, 2, 3, 4],

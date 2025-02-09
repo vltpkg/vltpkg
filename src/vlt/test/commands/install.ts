@@ -1,14 +1,14 @@
 import t from 'tap'
-import { type LoadedConfig } from '../../src/config/index.js'
-import { commandView } from '../fixtures/run.js'
+import { type LoadedConfig } from '../../src/config/index.ts'
+import { commandView } from '../fixtures/run.ts'
 
 const options = {}
 let log = ''
 t.afterEach(() => (log = ''))
 
 const Command = await t.mockImport<
-  typeof import('../../src/commands/install.js')
->('../../src/commands/install.js', {
+  typeof import('../../src/commands/install.ts')
+>('../../src/commands/install.ts', {
   '../../src/install.js': {
     async install() {
       log += 'install\n'

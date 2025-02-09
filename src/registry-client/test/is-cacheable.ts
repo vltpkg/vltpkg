@@ -1,5 +1,5 @@
 import t from 'tap'
-import { isCacheable } from '../src/is-cacheable.js'
+import { isCacheable } from '../src/is-cacheable.ts'
 
 t.equal(isCacheable(200), true)
 t.equal(isCacheable(299), true)

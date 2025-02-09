@@ -1,8 +1,8 @@
 import t from 'tap'
-import { loadNodes } from '../../src/lockfile/load-nodes.js'
-import { Graph } from '../../src/graph.js'
+import { loadNodes } from '../../src/lockfile/load-nodes.ts'
+import { Graph } from '../../src/graph.ts'
 import { joinDepIDTuple } from '@vltpkg/dep-id'
-import { type LockfileData } from '../../src/index.js'
+import { type LockfileData } from '../../src/index.ts'
 
 t.cleanSnapshot = s =>
   s.replace(

@@ -9,12 +9,12 @@ import { Spec, type SpecOptions } from '@vltpkg/spec'
 import { Monorepo } from '@vltpkg/workspaces'
 import { PathScurry } from 'path-scurry'
 import t, { type Test } from 'tap'
-import { type LoadedConfig } from '../../src/types.js'
-import { type StartGUIOptions } from '../../src/start-gui.js'
+import { type LoadedConfig } from '../../src/types.ts'
+import { type StartGUIOptions } from '../../src/start-gui.ts'
 import {
   commandView,
   type CommandResultOptions,
-} from '../fixtures/run.js'
+} from '../fixtures/run.ts'
 
 t.cleanSnapshot = s =>
   s.replace(
@@ -100,8 +100,8 @@ const mockList = async (
   t: Test,
   { graph: g = graph, ...mocks }: Record<string, any> = {},
 ) =>
-  t.mockImport<typeof import('../../src/commands/list.js')>(
-    '../../src/commands/list.js',
+  t.mockImport<typeof import('../../src/commands/list.ts')>(
+    '../../src/commands/list.ts',
     {
       '@vltpkg/graph': {
         actual: {

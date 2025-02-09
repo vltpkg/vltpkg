@@ -4,7 +4,7 @@ import {
   set as setProperty,
   del as deleteProperty,
   has as hasProperty,
-} from '../src/index.js'
+} from '../src/index.ts'
 
 t.test('getProperty', async t => {
   const fixture1: any = { foo: { bar: 1 } }

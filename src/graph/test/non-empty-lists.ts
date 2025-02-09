@@ -2,7 +2,7 @@ import t from 'tap'
 import {
   nonEmptyList,
   isNonEmptyList,
-} from '../src/non-empty-list.js'
+} from '../src/non-empty-list.ts'
 
 t.equal(isNonEmptyList([]), false)
 t.equal(isNonEmptyList([1]), true)

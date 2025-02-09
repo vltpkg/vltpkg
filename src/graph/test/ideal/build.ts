@@ -4,13 +4,13 @@ import { PackageJson } from '@vltpkg/package-json'
 import { Monorepo } from '@vltpkg/workspaces'
 import { PathScurry } from 'path-scurry'
 import t from 'tap'
-import { build } from '../../src/ideal/build.js'
-import { objectLikeOutput } from '../../src/visualization/object-like-output.js'
-import { type LockfileEdgeKey } from '../../src/index.js'
+import { build } from '../../src/ideal/build.ts'
+import { objectLikeOutput } from '../../src/visualization/object-like-output.ts'
+import { type LockfileEdgeKey } from '../../src/index.ts'
 import {
   type AddImportersDependenciesMap,
   type RemoveImportersDependenciesMap,
-} from '../../src/dependencies.js'
+} from '../../src/dependencies.ts'
 
 const edgeKey = (from: DepIDTuple, to: string): LockfileEdgeKey =>
   `${joinDepIDTuple(from)} ${to}`

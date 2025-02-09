@@ -1,18 +1,18 @@
 import t from 'tap'
-import { classFn } from '../src/class.js'
+import { classFn } from '../src/class.ts'
 import {
   getCycleGraph,
   getMissingNodeGraph,
   getSimpleGraph,
   getSingleWorkspaceGraph,
-} from './fixtures/graph.js'
+} from './fixtures/graph.ts'
 import {
   copyGraphSelectionState,
   getGraphSelectionState,
   selectorFixture,
-} from './fixtures/selector.js'
-import { type TestCase } from './fixtures/types.js'
-import { type GraphSelectionState } from '../src/types.js'
+} from './fixtures/selector.ts'
+import { type TestCase } from './fixtures/types.ts'
+import { type GraphSelectionState } from '../src/types.ts'
 import { type EdgeLike, type NodeLike } from '@vltpkg/graph'
 
 const testClass = selectorFixture(classFn)

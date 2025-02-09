@@ -6,8 +6,8 @@ import * as FSP from 'node:fs/promises'
 import { resolve } from 'node:path'
 import { PathScurry } from 'path-scurry'
 import t from 'tap'
-import { Diff } from '../../src/diff.js'
-import { actual } from '../../src/index.js'
+import { Diff } from '../../src/diff.ts'
+import { actual } from '../../src/index.ts'
 
 const runs: RunOptions[] = []
 t.beforeEach(() => (runs.length = 0))
@@ -25,8 +25,8 @@ const mockFSP = t.createMock(FSP, {
 })
 
 const { build } = await t.mockImport<
-  typeof import('../../src/reify/build.js')
->('../../src/reify/build.js', {
+  typeof import('../../src/reify/build.ts')
+>('../../src/reify/build.ts', {
   '@vltpkg/run': { run: mockRun },
   'node:fs/promises': mockFSP,
 })

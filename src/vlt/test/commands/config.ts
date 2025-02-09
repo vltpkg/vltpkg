@@ -3,15 +3,15 @@ import {
   definition,
   type LoadedConfig,
   recordsToPairs,
-} from '../../src/config/index.js'
+} from '../../src/config/index.ts'
 import { PackageJson } from '@vltpkg/package-json'
 import * as CP from 'node:child_process'
 import { type SpawnOptions } from 'node:child_process'
 import { PathScurry } from 'path-scurry'
 
 const mockCommand = (t: Test, mocks?: Record<string, any>) =>
-  t.mockImport<typeof import('../../src/commands/config.js')>(
-    '../../src/commands/config.js',
+  t.mockImport<typeof import('../../src/commands/config.ts')>(
+    '../../src/commands/config.ts',
     mocks,
   )
 

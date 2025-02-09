@@ -17,7 +17,7 @@ import {
   packument,
   resolve,
   tarball,
-} from '../src/index.js'
+} from '../src/index.ts'
 
 t.saveFixture = true
 
@@ -563,7 +563,7 @@ t.test('extract', opts, async t => {
 t.test('extraction failures', async t => {
   const dir = t.testdir()
   const { extract, manifest } = await t.mockImport(
-    '../src/index.js',
+    '../src/index.ts',
     {
       '@vltpkg/tar': {
         Pool: class Pool {

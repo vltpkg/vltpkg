@@ -4,7 +4,7 @@ import {
   type BuildIdealOptions,
   type RemoveImportersDependenciesMap,
 } from '@vltpkg/graph'
-import { type LoadedConfig } from '../src/config/index.js'
+import { type LoadedConfig } from '../src/config/index.ts'
 
 t.cleanSnapshot = s =>
   s.replace(/^(\s+)"?projectRoot"?: .*$/gm, '$1projectRoot: #')
@@ -34,8 +34,8 @@ t.test('uninstall', async t => {
   const rootDepID = joinDepIDTuple(['file', '.'])
 
   const { uninstall } = await t.mockImport<
-    typeof import('../src/uninstall.js')
-  >('../src/uninstall.js', {
+    typeof import('../src/uninstall.ts')
+  >('../src/uninstall.ts', {
     '@vltpkg/graph': {
       ideal: {
         build: async ({ remove }: BuildIdealOptions) =>

@@ -1,5 +1,5 @@
 import t from 'tap'
-import { isToken } from '../src/auth.js'
+import { isToken } from '../src/auth.ts'
 
 const checkLog = (kc: any) => (kc as Keychain).log
 
@@ -49,8 +49,8 @@ t.test('isToken', t => {
 
 t.test('setToken', async t => {
   const { setToken, getKC } = await t.mockImport<
-    typeof import('../src/auth.js')
-  >('../src/auth.js', mocks)
+    typeof import('../src/auth.ts')
+  >('../src/auth.ts', mocks)
   await t.rejects(setToken('not a url', 'Bearer token', ''))
   await setToken('https://x.com/', 'Bearer token', '')
   t.strictSame(checkLog(getKC('')), [
@@ -65,8 +65,8 @@ t.test('setToken', async t => {
 
 t.test('deleteToken', async t => {
   const { deleteToken, getKC } = await t.mockImport<
-    typeof import('../src/auth.js')
-  >('../src/auth.js', mocks)
+    typeof import('../src/auth.ts')
+  >('../src/auth.ts', mocks)
   await t.rejects(deleteToken('not a url', ''))
   await deleteToken('https://x.com/', '')
   t.strictSame(checkLog(getKC('')), [
@@ -79,8 +79,8 @@ t.test('deleteToken', async t => {
 
 t.test('getToken', async t => {
   const { getToken, getKC } = await t.mockImport<
-    typeof import('../src/auth.js')
-  >('../src/auth.js', mocks)
+    typeof import('../src/auth.ts')
+  >('../src/auth.ts', mocks)
   await t.rejects(getToken('not a url', ''))
   t.equal(await getToken('https://x.com/', ''), 'Bearer stokenboken')
   t.strictSame(checkLog(getKC('')), [['get', 'https://x.com']])
@@ -99,8 +99,8 @@ t.test('getToken', async t => {
 
 t.test('get a KC with a different identity', async t => {
   const { getKC } = await t.mockImport<
-    typeof import('../src/auth.js')
-  >('../src/auth.js', mocks)
+    typeof import('../src/auth.ts')
+  >('../src/auth.ts', mocks)
   expectKeychainApp = 'vlt/auth/politics'
   const kc = getKC('politics')
   t.equal(kc.file, 'vlt/auth/politics/keychain.json')

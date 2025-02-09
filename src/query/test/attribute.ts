@@ -7,21 +7,21 @@ import {
   attribute,
   filterAttributes,
   getManifestPropertyValues,
-} from '../src/attribute.js'
+} from '../src/attribute.ts'
 import {
   getMissingNodeGraph,
   getSimpleGraph,
-} from './fixtures/graph.js'
+} from './fixtures/graph.ts'
 import {
   copyGraphSelectionState,
   getGraphSelectionState,
   selectorFixture,
-} from './fixtures/selector.js'
-import { type TestCase } from './fixtures/types.js'
+} from './fixtures/selector.ts'
+import { type TestCase } from './fixtures/types.ts'
 import {
   type GraphSelectionState,
   type ParserState,
-} from '../src/types.js'
+} from '../src/types.ts'
 
 const testAttr = selectorFixture(attribute)
 

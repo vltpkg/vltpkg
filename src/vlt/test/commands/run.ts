@@ -1,8 +1,8 @@
 import { joinDepIDTuple } from '@vltpkg/dep-id'
 import { resolve } from 'path'
 import t from 'tap'
-import { command, usage } from '../../src/commands/run.js'
-import { setupEnv } from '../fixtures/run.js'
+import { command, usage } from '../../src/commands/run.ts'
+import { setupEnv } from '../fixtures/run.ts'
 
 setupEnv(t)
 
@@ -25,8 +25,8 @@ t.test('run script in a project', async t => {
   })
   t.chdir(dir)
   const { Config } = await t.mockImport<
-    typeof import('../../src/config/index.js')
-  >('../../src/config/index.js')
+    typeof import('../../src/config/index.ts')
+  >('../../src/config/index.ts')
   const conf = await Config.load(t.testdirName, ['hello'])
   conf.projectRoot = dir
   const logs = t.capture(console, 'log').args
@@ -63,8 +63,8 @@ t.test('run script in a single workspace', async t => {
   })
   t.chdir(dir + '/src/ws')
   const { Config } = await t.mockImport<
-    typeof import('../../src/config/index.js')
-  >('../../src/config/index.js')
+    typeof import('../../src/config/index.ts')
+  >('../../src/config/index.ts')
   const conf = await Config.load(t.testdirName, ['hello'])
   conf.values.workspace = ['src/ws']
   conf.projectRoot = dir
@@ -109,8 +109,8 @@ t.test('run script across several workspaces', async t => {
   })
   t.chdir(dir)
   const { Config } = await t.mockImport<
-    typeof import('../../src/config/index.js')
-  >('../../src/config/index.js')
+    typeof import('../../src/config/index.ts')
+  >('../../src/config/index.ts')
   const conf = await Config.load(t.testdirName, ['hello'])
   conf.values.workspace = ['src/a', 'src/b']
   conf.projectRoot = dir
@@ -176,8 +176,8 @@ t.test('run script across no workspaces', async t => {
   })
   t.chdir(dir)
   const { Config } = await t.mockImport<
-    typeof import('../../src/config/index.js')
-  >('../../src/config/index.js')
+    typeof import('../../src/config/index.ts')
+  >('../../src/config/index.ts')
   const conf = await Config.load(t.testdirName, ['hello'])
   conf.values.workspace = ['src/c']
   conf.projectRoot = dir
@@ -221,8 +221,8 @@ t.test('one ws fails, with bail', async t => {
   })
   t.chdir(dir)
   const { Config } = await t.mockImport<
-    typeof import('../../src/config/index.js')
-  >('../../src/config/index.js')
+    typeof import('../../src/config/index.ts')
+  >('../../src/config/index.ts')
   const conf = await Config.load(t.testdirName, ['hello'])
   conf.values['workspace-group'] = ['packages']
   conf.projectRoot = dir
@@ -302,8 +302,8 @@ t.test('one ws fails, without bail', async t => {
   })
   t.chdir(dir)
   const { Config } = await t.mockImport<
-    typeof import('../../src/config/index.js')
-  >('../../src/config/index.js')
+    typeof import('../../src/config/index.ts')
+  >('../../src/config/index.ts')
   const conf = await Config.load(t.testdirName, ['hello'])
   conf.values.bail = false
   conf.values.recursive = true
@@ -364,8 +364,8 @@ t.test('show scripts if no event specified', async t => {
   })
   t.chdir(dir)
   const { Config } = await t.mockImport<
-    typeof import('../../src/config/index.js')
-  >('../../src/config/index.js')
+    typeof import('../../src/config/index.ts')
+  >('../../src/config/index.ts')
   const conf = await Config.load(t.testdirName, [])
   conf.projectRoot = dir
   conf.values.recursive = false
@@ -398,8 +398,8 @@ t.test('show scripts if no event specified, single ws', async t => {
   })
   t.chdir(dir + '/src/ws')
   const { Config } = await t.mockImport<
-    typeof import('../../src/config/index.js')
-  >('../../src/config/index.js')
+    typeof import('../../src/config/index.ts')
+  >('../../src/config/index.ts')
   const conf = await Config.load(t.testdirName, [])
   conf.projectRoot = dir
   conf.values.workspace = ['src/ws']
@@ -438,8 +438,8 @@ t.test('show scripts across several workspaces', async t => {
   })
   t.chdir(dir)
   const { Config } = await t.mockImport<
-    typeof import('../../src/config/index.js')
-  >('../../src/config/index.js')
+    typeof import('../../src/config/index.ts')
+  >('../../src/config/index.ts')
   const conf = await Config.load(t.testdirName, [])
   conf.values.workspace = ['src/a', 'src/b']
   conf.projectRoot = dir

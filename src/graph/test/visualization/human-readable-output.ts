@@ -1,9 +1,9 @@
 import t from 'tap'
 import { Spec, type SpecOptions } from '@vltpkg/spec'
 import { Monorepo } from '@vltpkg/workspaces'
-import { Graph } from '../../src/graph.js'
-import { humanReadableOutput } from '../../src/visualization/human-readable-output.js'
-import { loadActualGraph } from '../fixtures/actual.js'
+import { Graph } from '../../src/graph.ts'
+import { humanReadableOutput } from '../../src/visualization/human-readable-output.ts'
+import { loadActualGraph } from '../fixtures/actual.ts'
 import chalk, { type ChalkInstance } from 'chalk'
 import { joinDepIDTuple } from '@vltpkg/dep-id'
 chalk.level = 1
