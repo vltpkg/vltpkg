@@ -1,15 +1,15 @@
 import t from 'tap'
-import { combinator } from '../src/combinator.js'
-import { walk } from '../src/index.js'
-import { getCycleGraph, getSimpleGraph } from './fixtures/graph.js'
+import { combinator } from '../src/combinator.ts'
+import { walk } from '../src/index.ts'
+import { getCycleGraph, getSimpleGraph } from './fixtures/graph.ts'
 import {
   copyGraphSelectionState,
   getGraphSelectionState,
   selectorFixture,
-} from './fixtures/selector.js'
-import { type TestCase } from './fixtures/types.js'
+} from './fixtures/selector.ts'
+import { type TestCase } from './fixtures/types.ts'
 import { type EdgeLike, type NodeLike } from '@vltpkg/graph'
-import { type GraphSelectionState } from '../src/types.js'
+import { type GraphSelectionState } from '../src/types.ts'
 
 const testCombinator = selectorFixture(combinator)
 

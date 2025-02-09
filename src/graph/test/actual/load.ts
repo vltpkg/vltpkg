@@ -4,9 +4,9 @@ import { type SpecOptions } from '@vltpkg/spec'
 import { Monorepo } from '@vltpkg/workspaces'
 import { PathScurry } from 'path-scurry'
 import t from 'tap'
-import { load } from '../../src/actual/load.js'
-import { objectLikeOutput } from '../../src/visualization/object-like-output.js'
-import { actualGraph } from '../fixtures/actual.js'
+import { load } from '../../src/actual/load.ts'
+import { objectLikeOutput } from '../../src/visualization/object-like-output.ts'
+import { actualGraph } from '../fixtures/actual.ts'
 
 const configData = {
   registry: 'https://registry.npmjs.org/',

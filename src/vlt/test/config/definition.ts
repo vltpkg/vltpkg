@@ -5,8 +5,8 @@ import {
   isRecordField,
   recordFields,
   getCommand,
-} from '../../src/config/definition.js'
-import { setupEnv } from '../fixtures/run.js'
+} from '../../src/config/definition.ts'
+import { setupEnv } from '../fixtures/run.ts'
 
 t.matchSnapshot(commands, 'commands')
 const defObj = definition.toJSON()
@@ -83,8 +83,8 @@ t.test('infer editor from env/platform', async t => {
       })
       t.intercept(process, 'platform', { value: platform })
       const { definition } = await t.mockImport<
-        typeof import('../../src/config/definition.js')
-      >('../../src/config/definition.js')
+        typeof import('../../src/config/definition.ts')
+      >('../../src/config/definition.ts')
       t.match(definition.parse().values.editor, expect)
     })
   }

@@ -5,9 +5,9 @@ import { statSync } from 'fs'
 import { rm } from 'fs/promises'
 import { PathScurry } from 'path-scurry'
 import t, { type Test } from 'tap'
-import { Edge } from '../../src/edge.js'
-import { Node } from '../../src/node.js'
-import { type GraphLike } from '../../src/types.js'
+import { Edge } from '../../src/edge.ts'
+import { Node } from '../../src/node.ts'
+import { type GraphLike } from '../../src/types.ts'
 
 const fooManifest = {
   name: 'foo',
@@ -82,8 +82,8 @@ t.test('posix', async t => {
   t.intercept(process, 'platform', { value: 'linux' })
 
   const { deleteEdge } = await t.mockImport<
-    typeof import('../../src/reify/delete-edge.js')
-  >('../../src/reify/delete-edge.js')
+    typeof import('../../src/reify/delete-edge.ts')
+  >('../../src/reify/delete-edge.ts')
 
   const projectRoot = vltInstallFixture(t)
   const opts = {
@@ -135,8 +135,8 @@ t.test('win32', async t => {
   t.intercept(process, 'platform', { value: 'win32' })
 
   const { deleteEdge } = await t.mockImport<
-    typeof import('../../src/reify/delete-edge.js')
-  >('../../src/reify/delete-edge.js')
+    typeof import('../../src/reify/delete-edge.ts')
+  >('../../src/reify/delete-edge.ts')
 
   const projectRoot = vltInstallFixture(t)
   // gutcheck

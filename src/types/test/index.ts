@@ -30,7 +30,7 @@ import {
   type Repository,
   dependencyTypes,
   longDependencyTypes,
-} from '../src/index.js'
+} from '../src/index.ts'
 
 import t from 'tap'
 

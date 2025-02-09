@@ -2,14 +2,14 @@ import t from 'tap'
 import { PackageJson } from '@vltpkg/package-json'
 import { type DepID } from '@vltpkg/dep-id'
 import { Spec } from '@vltpkg/spec'
-import { Graph } from '../../src/graph.js'
+import { Graph } from '../../src/graph.ts'
 import {
   type Dependency,
   asDependency,
   type AddImportersDependenciesMap,
   type RemoveImportersDependenciesMap,
-} from '../../src/dependencies.js'
-import { updatePackageJson } from '../../src/reify/update-importers-package-json.js'
+} from '../../src/dependencies.ts'
+import { updatePackageJson } from '../../src/reify/update-importers-package-json.ts'
 
 t.test('updatePackageJson', async t => {
   const rootMani = {

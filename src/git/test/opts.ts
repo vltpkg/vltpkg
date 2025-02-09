@@ -1,5 +1,5 @@
 import t from 'tap'
-import { opts as gitOpts } from '../src/opts.js'
+import { opts as gitOpts } from '../src/opts.ts'
 
 t.test('defaults', t => {
   const { GIT_ASKPASS, GIT_SSH_COMMAND } = process.env

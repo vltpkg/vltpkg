@@ -1,5 +1,5 @@
 import t from 'tap'
-import { getHeader } from '../src/get-header.js'
+import { getHeader } from '../src/get-header.ts'
 
 t.equal(getHeader(undefined, 'x'), undefined)
 t.equal(getHeader(null, 'x'), undefined)
