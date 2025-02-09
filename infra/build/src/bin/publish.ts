@@ -18,6 +18,7 @@ type Base = {
   license: string
   keywords: string[]
   repository: Record<string, string>
+  type: string
 }
 
 type Bundle = Base & {
@@ -111,7 +112,7 @@ const parseArgs = () => {
 }
 
 const publish = <T extends Package>(
-  pkg: { dir: string; format: types.Format },
+  pkg: { dir: string },
   options: Publish<T>,
 ) => {
   fs.mkdirSync(pkg.dir, { recursive: true })
@@ -149,7 +150,7 @@ const publish = <T extends Package>(
     'package.json': {
       ...options.files['package.json'],
       bin: noPackageJsonBins ? undefined : binFiles,
-      type: pkg.format === types.Formats.Cjs ? 'commonjs' : 'module',
+      type: 'module',
     },
   })
 
@@ -246,9 +247,6 @@ const publishCompiled = (
   publish<CompiledRoot>(
     {
       dir,
-      // The root package is commonjs because the postinstall script
-      // is easiest written with require.resolve
-      format: types.Formats.Cjs,
     },
     {
       ...options,
@@ -259,6 +257,9 @@ const publishCompiled = (
         'postinstall.js': FILES.POST_INSTALL,
         'package.json': {
           ...options.files['package.json'],
+          // The root package is commonjs because the postinstall script
+          // is easiest written with require.resolve
+          type: 'commonjs',
           optionalDependencies,
           scripts: { postinstall: 'node postinstall.js' },
         },
@@ -292,6 +293,7 @@ const main = async () => {
         keywords: FILES.PACKAGE_JSON.keywords,
         repository: FILES.PACKAGE_JSON.repository,
         engines: FILES.PACKAGE_JSON.engines,
+        type: FILES.PACKAGE_JSON.type,
       },
     },
   }

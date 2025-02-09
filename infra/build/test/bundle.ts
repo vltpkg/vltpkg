@@ -1,6 +1,6 @@
 import t, { type Test } from 'tap'
 import { relative, sep, join } from 'path'
-import * as types from '../src/types.ts'
+import type * as types from '../src/types.ts'
 import { defaultOptions } from '../src/index.ts'
 import bundle from '../src/bundle.ts'
 
@@ -24,14 +24,6 @@ const testBundle = async (
     files: Object.keys(outputs).map(p => relative(outdir, p)),
   }
 }
-
-t.skip('cjs', async t => {
-  await t.resolves(
-    testBundle(t, {
-      format: types.Formats.Cjs,
-    }),
-  )
-})
 
 t.test('no external commands', async t => {
   const { files: noCommands } = await testBundle(t, {

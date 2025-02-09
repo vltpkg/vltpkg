@@ -46,14 +46,12 @@ t.test('basic', async t => {
   t.ok(args.find(a => /^node.*vlt\.js$/.exec(a)))
   t.ok(args.find(a => /^bun.*vlt\.js$/.exec(a)))
   t.ok(args.find(a => /^deno run -A.*vlt\.js$/.exec(a)))
-  t.ok(args.find(a => /compile-.*node.*vlt$/.exec(a)))
   t.ok(args.find(a => /compile-.*deno.*vlt$/.exec(a)))
   t.ok(args.find(a => /compile-.*bun.*vlt$/.exec(a)))
 })
 
 t.test('nothing', async t => {
-  await t.rejects(
-    benchmark(t, '--runtime=node', '--compile=true', '--format=esm'),
-    { message: 'no benchmark matrix generated for supplied options' },
-  )
+  await t.rejects(benchmark(t, '--runtime=node', '--compile=true'), {
+    message: 'no benchmark matrix generated for supplied options',
+  })
 })

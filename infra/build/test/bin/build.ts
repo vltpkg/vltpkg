@@ -41,10 +41,3 @@ t.test('basic', async t => {
   t.equal(r.compiled, 0)
   t.equal(r.bundled, 1)
 })
-
-t.test('runtime', async t => {
-  const r = await build(t, '--format=esm,cjs')
-  t.equal(r.res.length, 2)
-  t.equal(r.compiled, 0)
-  t.equal(r.bundled, 2)
-})
