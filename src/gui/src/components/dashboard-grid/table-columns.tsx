@@ -132,7 +132,7 @@ export const dashboardColumns: ColumnDef<DashboardDataProject>[] = [
   },
   {
     accessorKey: 'type',
-    header: 'Modified',
+    header: 'Type',
     cell: ({ row }) => {
       const type =
         row.original.manifest.type ? row.original.manifest.type : null
@@ -145,7 +145,7 @@ export const dashboardColumns: ColumnDef<DashboardDataProject>[] = [
     enableHiding: true,
   },
   {
-    accessorKey: 'time',
+    accessorKey: 'modified',
     header: ({ column }) => (
       <SortingHeader
         className="flex w-full justify-end text-right"
