@@ -7,6 +7,9 @@ import jsdoc from 'eslint-plugin-jsdoc'
 import importPlugin from 'eslint-plugin-import'
 import { defaultConditionNames } from 'eslint-import-resolver-typescript'
 
+const MONO_ROOT = import.meta.dirname
+const CWD = process.cwd()
+
 // 'error' to fix, or 'warn' to see
 const BE_EXTRA = process.env.LINT_SUPER_CONSISTENT ?? 'off'
 
@@ -22,7 +25,7 @@ const unsafeRules = value => ({
 export default tseslint.config(
   {
     ignores: [
-      ...readFileSync(resolve(import.meta.dirname, '.prettierignore'))
+      ...readFileSync(resolve(MONO_ROOT, '.prettierignore'))
         .toString()
         .trim()
         .split('\n')
@@ -58,11 +61,16 @@ export default tseslint.config(
             '@vltpkg/source',
             ...defaultConditionNames,
           ],
-          project: [
-            'src/*/tsconfig.json',
-            'infra/*/tsconfig.json',
-            'www/*/tsconfig.json',
-          ],
+          project:
+            // If run from the root specify glob patterns to all ts projects
+            // otherwise just use the tsconfig.json in the current directory
+            CWD === MONO_ROOT ?
+              [
+                'src/*/tsconfig.json',
+                'infra/*/tsconfig.json',
+                'www/*/tsconfig.json',
+              ]
+            : ['tsconfig.json'],
         },
         node: true,
       },
