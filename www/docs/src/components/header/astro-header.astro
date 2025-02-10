@@ -9,7 +9,7 @@ const { sidebar } = Astro.props
 ---
 
 <nav
-  class="mb-4 flex w-full items-center justify-between max-w-screen-xl mx-auto justify-between px-6 py-6 -mt-1">
+  class="mb-4 flex w-full items-center justify-between max-w-screen-xl mx-auto justify-between px-10 md:px-6 py-6 -mt-1">
   <a
     href="https://www.vlt.sh/"
     class="h-[52px] w-[104px] flex items-center ml-[5px] -mt-[1px]">
@@ -21,12 +21,12 @@ const { sidebar } = Astro.props
 
   <div
     class="flex items-center justify-items-end justify-end w-full gap-4">
+    <Search {...Astro.props} />
     <MobileSidebar
       client:load
       sidebar={sidebar}
       {...{ ...Astro.props, labels: undefined } as any}
     />
-    <Search {...Astro.props} />
     <LinearMenu
       client:only="react"
       {...{ ...Astro.props, labels: undefined } as any}
