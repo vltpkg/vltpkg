@@ -1,6 +1,6 @@
 import t, { type Test } from 'tap'
 import { spawn } from 'node:child_process'
-import { Bins, defaultOptions } from '../src/index.ts'
+import { Paths, defaultOptions } from '../src/index.ts'
 import bundle from '../src/bundle.ts'
 import { join } from 'node:path'
 import * as types from '../src/types.ts'
@@ -197,6 +197,8 @@ t.test('commands', async t => {
     vlrx: [{ args: ['some-script'], output: 'script output' }],
   }
 
+  console.log(Paths.BINS)
+
   for (const [bin, commands] of Object.entries(snapshots)) {
     assert(types.isBin(bin))
     await t[bin === 'vlt' ? 'test' : 'skip'](bin, async t => {
@@ -210,7 +212,7 @@ t.test('commands', async t => {
               await testCommand(t, {
                 bin,
                 command,
-                source: Bins.DIR,
+                source: Paths.BINS,
                 outdir,
                 testCase: c,
               })
