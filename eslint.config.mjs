@@ -209,6 +209,7 @@ export default tseslint.config(
       // eslint-plugin-import
       'import/no-named-as-default': 0,
       'import/no-named-as-default-member': 0,
+      'import/extensions': [2, 'ignorePackages'],
       // eslint-plugin-jsdoc
       'jsdoc/no-undefined-types': 2,
       'jsdoc/require-param': 0,
@@ -268,6 +269,38 @@ export default tseslint.config(
     files: ['{src/gui,www/docs}/src/components/ui/*.{tsx,ts}'],
     rules: {
       '@typescript-eslint/no-empty-object-type': 'off',
+    },
+  },
+  {
+    /**
+     * TypeScript files must import TypeScript extensions
+     */
+    files: ['**/*.{ts,mts,tsx}'],
+    rules: {
+      'import/extensions': [
+        'error',
+        'always',
+        {
+          ignorePackages: true,
+          pattern: {
+            js: 'never',
+            mjs: 'never',
+            jsx: 'never',
+          },
+        },
+      ],
+    },
+  },
+  {
+    /**
+     * These workspaces use path aliases which are difficult to
+     * configure with import/extensions and these workspaces are run
+     * in the browser primarily so they don't need have the strict need
+     * to enforce .ts extensions for use with rewriteRelativeImportExtensions.
+     */
+    files: ['{src/gui,www/docs}/**/*.{ts,tsx,mts}'],
+    rules: {
+      'import/extensions': 'off',
     },
   },
   {
