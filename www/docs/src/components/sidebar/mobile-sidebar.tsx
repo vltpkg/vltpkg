@@ -14,6 +14,7 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from '@/components/ui/drawer'
+import { ScrollArea } from '@/components/ui/scroll-area'
 
 interface MobileSidebarProps {
   sidebar: SidebarEntries
@@ -31,8 +32,8 @@ const MobileSidebar = ({ sidebar }: MobileSidebarProps) => {
           Menu
         </Button>
       </DrawerTrigger>
-      <DrawerContent className="max-h-screen mx-1 border border-white/20 bg-gradient-to-br from-neutral-100 to-neutral-200 pb-12 dark:from-neutral-900 dark:to-neutral-950">
-        <DrawerHeader className="flex items-stretch justify-between gap-x-4 border-b border-black/5 px-2 py-2 dark:border-white/10">
+      <DrawerContent className="max-h-[70svh] mx-1 border border-white/20 bg-gradient-to-br from-neutral-100 to-neutral-200 pb-12 dark:from-neutral-900 dark:to-neutral-950">
+        <DrawerHeader className="flex items-stretch justify-between gap-x-4 border-b border-black/5 px-1 py-0.5 dark:border-white/10">
           <DrawerTitle className="flex items-center justify-start px-3 text-sm text-neutral-700 dark:text-neutral-400">
             Menu
           </DrawerTitle>
@@ -48,9 +49,11 @@ const MobileSidebar = ({ sidebar }: MobileSidebarProps) => {
             </Button>
           </DrawerClose>
         </DrawerHeader>
-        <div className="divide-y divide-border">
-          {renderMenu(sidebar, 0)}
-        </div>
+        <ScrollArea className="max-h-[calc(70svh-3rem)] overflow-y-auto">
+          <div className="divide-y divide-border">
+            {renderMenu(sidebar, 0)}
+          </div>
+        </ScrollArea>
       </DrawerContent>
     </Drawer>
   )
@@ -83,11 +86,11 @@ const Group = ({ entry, children }: GroupProps) => {
   }
 
   return (
-    <div className="flex flex-col w-full py-2 max-h-screen overflow-y-auto">
+    <div className="flex flex-col w-full py-1 h-full overflow-y-scroll">
       <Button
         onClick={toggle}
         variant="ghost"
-        className="cursor-pointer justify-between items-center bg-transparent w-full">
+        className="cursor-pointer justify-between items-center hover:bg-transparent bg-transparent w-full">
         <span className="capitalize font-medium">{entry.label}</span>
         {expanded ?
           <ChevronDown className="size-4" />
@@ -113,7 +116,7 @@ const Item = ({ entry }: ItemProps) => {
   return (
     <Button
       asChild
-      className="capitalize w-full cursor-pointer justify-start items-center bg-transparent"
+      className="capitalize w-full cursor-pointer justify-start items-center hover:bg-transparent bg-transparent"
       variant="ghost">
       <a
         href={entry.href}
