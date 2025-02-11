@@ -295,14 +295,28 @@ t.test('formatDashboardJson dashboardProjectLocations', async t => {
       },
     },
   )
-  t.matchSnapshot(
-    formatDashboardJson(projectFolders, {
+  const { dashboardProjectLocations } = formatDashboardJson(
+    projectFolders,
+    {
       options: {
         packageJson,
         scurry,
       } as ConfigOptions,
       values: {},
-    } as LoadedConfig).dashboardProjectLocations,
+    } as LoadedConfig,
+  )
+
+  // needs to clean up the string before snapshotting due to the fact
+  // that windows paths are tweaked by the implementation here and thus
+  // will fail to match the default clean up from @tapjs/snapshot
+  const cleanedup = JSON.stringify(
+    dashboardProjectLocations,
+    null,
+    2,
+  ).replace(dir, '{HOMEDIR}')
+
+  t.matchSnapshot(
+    cleanedup,
     'should return the expected dashboard project locations',
   )
 })
