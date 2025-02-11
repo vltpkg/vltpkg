@@ -47,6 +47,7 @@ export const SideItem = ({
     }
   })
   const uninstallItem = (e: MouseEvent) => {
+    e.stopPropagation()
     e.preventDefault()
     if (onUninstall) {
       onUninstall(item)
