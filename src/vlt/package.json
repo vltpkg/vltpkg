@@ -54,6 +54,7 @@
     "polite-json": "catalog:",
     "promise-call-limit": "catalog:",
     "react": "^18.3.1",
+    "react-devtools-core": "^4.28.5",
     "serve-handler": "^6.1.5",
     "walk-up-path": "catalog:"
   },
@@ -65,7 +66,6 @@
     "@types/serve-handler": "^6.1.4",
     "eslint": "catalog:",
     "prettier": "catalog:",
-    "react-devtools-core": "^4.28.5",
     "tap": "catalog:",
     "tshy": "catalog:",
     "typescript": "catalog:",
@@ -90,7 +90,7 @@
   "tap": {
     "extends": "../../tap-config.yaml",
     "test-env": [
-      "VLT_TEST_GUI_DIR=/mock-path/to/gui/assets"
+      "_VLT_GUI_ASSETS_DIR=/mock-path/to/gui/assets"
     ]
   },
   "prettier": "../../.prettierrc.js",

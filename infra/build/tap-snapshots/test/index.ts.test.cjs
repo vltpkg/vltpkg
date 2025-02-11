@@ -15,10 +15,6 @@ Object {
     true,
     false,
   ],
-  "externalCommands": Array [
-    true,
-    false,
-  ],
   "minify": Array [
     true,
     false,
@@ -37,6 +33,10 @@ Object {
     true,
     false,
   ],
+  "splitting": Array [
+    true,
+    false,
+  ],
 }
 `
 
@@ -44,11 +44,11 @@ exports[`test/index.ts > TAP > defaults > default options 1`] = `
 Object {
   "arch": "arm64",
   "compile": false,
-  "externalCommands": true,
   "minify": false,
   "platform": "darwin",
   "runtime": "node",
   "sourcemap": true,
+  "splitting": true,
 }
 `
 
@@ -60,9 +60,6 @@ Object {
   "compile": Array [
     false,
   ],
-  "externalCommands": Array [
-    true,
-  ],
   "minify": Array [
     false,
   ],
@@ -73,6 +70,9 @@ Object {
     "node",
   ],
   "sourcemap": Array [
+    true,
+  ],
+  "splitting": Array [
     true,
   ],
 }

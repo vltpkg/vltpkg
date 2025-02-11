@@ -58,7 +58,7 @@ export const isRuntime = (v: unknown): v is Runtime =>
 export type Factors = {
   arch: Arch
   compile: boolean
-  externalCommands: boolean
+  splitting: boolean
   minify: boolean
   platform: Platform
   runtime: Runtime
@@ -77,7 +77,7 @@ export const pickMatrix = (
   m: FactorSets,
 ): Omit<FactorSets, MetaKeys> => ({
   arch: m.arch,
-  externalCommands: m.externalCommands,
+  splitting: m.splitting,
   minify: m.minify,
   platform: m.platform,
   runtime: m.runtime,
@@ -93,7 +93,7 @@ export type FactorArrays = {
 }
 
 export const bundleKeys = [
-  'externalCommands',
+  'splitting',
   'minify',
   'sourcemap',
 ] as const
@@ -101,7 +101,7 @@ export const bundleKeys = [
 export type BundleFactors = Pick<Factors, (typeof bundleKeys)[number]>
 
 export const pickBundle = (m: Matrix): BundleFactors => ({
-  externalCommands: m.externalCommands,
+  splitting: m.splitting,
   minify: m.minify,
   sourcemap: m.sourcemap,
 })
@@ -122,7 +122,7 @@ export const pickCompilation = (m: Matrix): CompileFactors => ({
   platform: m.platform,
   arch: m.arch,
   runtime: m.runtime,
-  externalCommands: m.externalCommands,
+  splitting: m.splitting,
   minify: m.minify,
   sourcemap: m.sourcemap,
 })

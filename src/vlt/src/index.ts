@@ -22,7 +22,10 @@ export type Command<T> = {
   views: Views<T>
 }
 
-const { version } = loadPackageJson(import.meta.filename) as {
+const { version } = loadPackageJson(
+  import.meta.filename,
+  process.env._VLT_CLI_PACKAGE_JSON,
+) as {
   version: string
 }
 
@@ -30,11 +33,7 @@ const loadCommand = async <T>(
   command: Commands[keyof Commands] | undefined,
 ): Promise<Command<T>> => {
   try {
-    // Be careful the line between the LOAD COMMANDS comment.
-    // infra-build relies on this to work around esbuild bundling dynamic imports
-    /* LOAD COMMANDS START */
     return (await import(`./commands/${command}.ts`)) as Command<T>
-    /* LOAD COMMANDS STOP */
     /* c8 ignore start - should not be possible, just a failsafe */
   } catch (e) {
     throw error('Could not load command', {
