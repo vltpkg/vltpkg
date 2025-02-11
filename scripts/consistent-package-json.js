@@ -378,7 +378,7 @@ const fixLicense = ws => {
 
 const fixPackage = async (ws, opts) => {
   ws.pj.files = undefined
-  ws.pj.engines = { node: '20 || >=22', pnpm: '9' }
+  ws.pj.engines = { node: '>=22', pnpm: '9' }
   ws.pj.repository = {
     type: 'git',
     url: 'git+https://github.com/vltpkg/vltpkg.git',
