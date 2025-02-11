@@ -93,6 +93,35 @@ exports[`test/start-gui.ts > TAP > e2e server test > /select-project > should wr
 }
 `
 
+exports[`test/start-gui.ts > TAP > formatDashboardJson dashboardProjectLocations > should return the expected dashboard project locations 1`] = `
+Array [
+  Object {
+    "path": "{CWD}/.tap/fixtures/test-start-gui.ts-formatDashboardJson-dashboardProjectLocations",
+    "readablePath": "~",
+  },
+  Object {
+    "path": "{CWD}/.tap/fixtures/test-start-gui.ts-formatDashboardJson-dashboardProjectLocations/projects",
+    "readablePath": "~/projects",
+  },
+  Object {
+    "path": "{CWD}/.tap/fixtures/test-start-gui.ts-formatDashboardJson-dashboardProjectLocations/drafts/more",
+    "readablePath": "~/drafts/more",
+  },
+  Object {
+    "path": "{CWD}/.tap/fixtures/test-start-gui.ts-formatDashboardJson-dashboardProjectLocations/drafts/recent",
+    "readablePath": "~/drafts/recent",
+  },
+  Object {
+    "path": "{CWD}/.tap/fixtures/test-start-gui.ts-formatDashboardJson-dashboardProjectLocations/drafts/previous",
+    "readablePath": "~/drafts/previous",
+  },
+  Object {
+    "path": "{CWD}/.tap/fixtures/test-start-gui.ts-formatDashboardJson-dashboardProjectLocations/drafts/more/util/extra",
+    "readablePath": "~/drafts/more/util/extra",
+  },
+]
+`
+
 exports[`test/start-gui.ts > TAP > parseInstallArgs > multiple item added to root and workspace 1`] = `
 Object {
   "add": AddImportersDependenciesMapImpl {

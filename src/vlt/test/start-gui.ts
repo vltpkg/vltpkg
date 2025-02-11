@@ -19,10 +19,12 @@ import {
 import { actualObject } from './fixtures/actual.ts'
 
 t.cleanSnapshot = s =>
-  s.replace(
-    /^(\s+)"projectRoot": ".*"/gm,
-    '$1"projectRoot": "{ROOT}"',
-  )
+  s
+    .replace(
+      /^(\s+)"projectRoot": ".*"/gm,
+      '$1"projectRoot": "{ROOT}"',
+    )
+    .replace(/\\\\/g, '/')
 
 t.test('starts gui data and server', async t => {
   class PackageJson {
@@ -211,13 +213,97 @@ t.test('formatDashboardJson', async t => {
   const scurry = new PathScurry(t.testdirName)
   t.strictSame(
     formatDashboardJson(scurry.readdirSync(dir), {
-      packageJson,
-      scurry,
-    } as ConfigOptions).projects.map(
+      options: {
+        packageJson,
+        scurry,
+      } as ConfigOptions,
+      values: {},
+    } as LoadedConfig).projects.map(
       ({ name }: { name: string }) => name,
     ),
     ['b'],
     'should skip folders without package.json',
+  )
+})
+
+t.test('formatDashboardJson dashboardProjectLocations', async t => {
+  const dir = t.testdir({
+    foo: {
+      'package.json': JSON.stringify({ name: 'foo' }),
+    },
+    projects: {
+      a: {
+        'package.json': JSON.stringify({ name: 'a' }),
+      },
+      b: {
+        'package.json': JSON.stringify({ name: 'b' }),
+      },
+    },
+    drafts: {
+      recent: {
+        c: {
+          'package.json': JSON.stringify({ name: 'c' }),
+        },
+      },
+      previous: {
+        d: {
+          'package.json': JSON.stringify({ name: 'd' }),
+        },
+        e: {
+          'package.json': JSON.stringify({ name: 'e' }),
+        },
+        f: {
+          'package.json': JSON.stringify({ name: 'f' }),
+        },
+      },
+      more: {
+        util: {
+          extra: {
+            g: {
+              'package.json': JSON.stringify({ name: 'g' }),
+            },
+          },
+        },
+        h: {
+          'package.json': JSON.stringify({ name: 'h' }),
+        },
+      },
+      tmp: {},
+    },
+  })
+  const scurry = new PathScurry(t.testdirName)
+  const projectFolders = [
+    scurry.lstatSync(resolve(dir, 'foo')),
+    scurry.lstatSync(resolve(dir, 'projects/a')),
+    scurry.lstatSync(resolve(dir, 'projects/b')),
+    scurry.lstatSync(resolve(dir, 'drafts/recent/c')),
+    scurry.lstatSync(resolve(dir, 'drafts/previous/d')),
+    scurry.lstatSync(resolve(dir, 'drafts/previous/e')),
+    scurry.lstatSync(resolve(dir, 'drafts/previous/f')),
+    scurry.lstatSync(resolve(dir, 'drafts/more/util/extra/g')),
+    scurry.lstatSync(resolve(dir, 'drafts/more/h')),
+  ]
+  const packageJson = new PackageJson()
+  const { formatDashboardJson } = await t.mockImport(
+    '../src/start-gui.ts',
+    {
+      'node:os': {
+        ...(await import('node:os')),
+        homedir() {
+          return dir
+        },
+      },
+    },
+  )
+  t.matchSnapshot(
+    formatDashboardJson(projectFolders, {
+      options: {
+        packageJson,
+        scurry,
+      } as ConfigOptions,
+      values: {},
+    } as LoadedConfig).dashboardProjectLocations,
+    'should return the expected dashboard project locations',
   )
 })
 
@@ -661,4 +747,63 @@ t.test('parseInstallArgs', async t => {
     }),
     'multiple item added to root and workspace',
   )
+})
+
+t.test('getReadablePath', async t => {
+  await t.test('posix', async t => {
+    const { getReadablePath } = await t.mockImport(
+      '../src/start-gui.js',
+      {
+        'node:os': {
+          ...(await import('node:os')),
+          homedir() {
+            return '/home/user'
+          },
+        },
+      },
+    )
+    const from = [
+      '/home/user/foo',
+      '/home/user/foo/projects/lorem/node_modules/ipsum',
+      '/path/to/project/node_modules/a/node_modules/b',
+    ]
+    const to = [
+      '~/foo',
+      '~/foo/projects/lorem/node_modules/ipsum',
+      '/path/to/project/node_modules/a/node_modules/b',
+    ]
+    t.strictSame(
+      from.map(f => getReadablePath(f)),
+      to,
+      'should return the correct posix readable path',
+    )
+  })
+  await t.test('windows', async t => {
+    const { getReadablePath } = await t.mockImport(
+      '../src/start-gui.js',
+      {
+        'node:os': {
+          ...(await import('node:os')),
+          homedir() {
+            return 'C:\\Users\\username'
+          },
+        },
+      },
+    )
+    const from = [
+      'C:\\Users\\username',
+      'C:\\Users\\username\\projects\\lorem\\node_modules\\ipsum',
+      'C:\\path\\to\\project\\node_modules\\a\\node_modules\\b',
+    ]
+    const to = [
+      '~',
+      '~\\projects\\lorem\\node_modules\\ipsum',
+      'C:\\path\\to\\project\\node_modules\\a\\node_modules\\b',
+    ]
+    t.strictSame(
+      from.map(f => getReadablePath(f)),
+      to,
+      'should return the correct windows readable path',
+    )
+  })
 })
