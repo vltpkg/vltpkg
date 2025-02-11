@@ -27,7 +27,7 @@ import {
   type Server,
 } from 'node:http'
 import { homedir, tmpdir } from 'node:os'
-import { dirname, posix, resolve, relative, win32 } from 'node:path'
+import { dirname, resolve, relative } from 'node:path'
 import { loadPackageJson } from 'package-json-from-dist'
 import { type PathBase, type PathScurry } from 'path-scurry'
 import handler from 'serve-handler'
@@ -202,7 +202,7 @@ export const inferTools = (
 }
 
 export const getReadablePath = (path: string) =>
-  path.replace(homedir(), '~').replaceAll(win32.sep, posix.sep)
+  path.replace(homedir(), '~')
 
 export const formatDashboardJson = (
   projectFolders: PathBase[],

@@ -295,28 +295,14 @@ t.test('formatDashboardJson dashboardProjectLocations', async t => {
       },
     },
   )
-  const { dashboardProjectLocations } = formatDashboardJson(
-    projectFolders,
-    {
+  t.matchSnapshot(
+    formatDashboardJson(projectFolders, {
       options: {
         packageJson,
         scurry,
       } as ConfigOptions,
       values: {},
-    } as LoadedConfig,
-  )
-
-  // needs to clean up the string before snapshotting due to the fact
-  // that windows paths are tweaked by the implementation here and thus
-  // will fail to match the default clean up from @tapjs/snapshot
-  const cleanedup = JSON.stringify(
-    dashboardProjectLocations,
-    null,
-    2,
-  ).replace(dir, '{HOMEDIR}')
-
-  t.matchSnapshot(
-    cleanedup,
+    } as LoadedConfig).dashboardProjectLocations,
     'should return the expected dashboard project locations',
   )
 })
@@ -811,8 +797,8 @@ t.test('getReadablePath', async t => {
     ]
     const to = [
       '~',
-      '~/projects/lorem/node_modules/ipsum',
-      'C:/path/to/project/node_modules/a/node_modules/b',
+      '~\\projects\\lorem\\node_modules\\ipsum',
+      'C:\\path\\to\\project\\node_modules\\a\\node_modules\\b',
     ]
     t.strictSame(
       from.map(f => getReadablePath(f)),
