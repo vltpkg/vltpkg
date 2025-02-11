@@ -2,7 +2,6 @@
  * A list of folder names that are ignored when reading the user's home dir.
  */
 export const ignoredHomedirFolderNames = [
-  'Desktop',
   'Downloads',
   'Movies',
   'Music',
