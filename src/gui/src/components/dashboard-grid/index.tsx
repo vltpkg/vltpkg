@@ -1,11 +1,8 @@
 import { motion, AnimatePresence } from 'framer-motion'
 import { useEffect, useState, type MouseEvent } from 'react'
-import {
-  type DashboardDataProject,
-  type Action,
-} from '@/state/types.js'
+import { type DashboardDataProject } from '@/state/types.js'
 import { CardTitle } from '@/components/ui/card.jsx'
-import { DEFAULT_QUERY, useGraphStore } from '@/state/index.js'
+import { useGraphStore } from '@/state/index.js'
 import {
   Tooltip,
   TooltipContent,
@@ -27,57 +24,7 @@ import {
 } from '@tanstack/react-table'
 import { getIconSet } from '@/utils/dashboard-tools.jsx'
 import { format } from 'date-fns'
-
-type SelectDashboardItemOptions = {
-  updateActiveRoute: Action['updateActiveRoute']
-  updateErrorCause: Action['updateErrorCause']
-  updateQuery: Action['updateQuery']
-  updateStamp: Action['updateStamp']
-  item: DashboardDataProject
-}
-
-const selectDashboardItem = async ({
-  updateActiveRoute,
-  updateErrorCause,
-  updateQuery,
-  updateStamp,
-  item,
-}: SelectDashboardItemOptions) => {
-  let req
-  try {
-    req = await fetch('/select-project', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        path: item.path,
-      }),
-    })
-  } catch (err) {
-    console.error(err)
-    updateActiveRoute('/error')
-    updateErrorCause('Failed to request project selection.')
-    return
-  }
-
-  let projectSelected = false
-  try {
-    projectSelected = (await req.json()) === 'ok'
-  } catch (err) {
-    console.error(err)
-  }
-
-  if (projectSelected) {
-    window.scrollTo(0, 0)
-    updateQuery(DEFAULT_QUERY)
-    updateActiveRoute('/explore')
-    updateStamp()
-  } else {
-    updateActiveRoute('/error')
-    updateErrorCause('Failed to select project.')
-  }
-}
+import { requestRouteTransition } from '@/lib/request-route-transition.js'
 
 export const DashboardItem = ({
   item,
@@ -98,12 +45,15 @@ export const DashboardItem = ({
 
   const onDashboardItemClick = (e: MouseEvent) => {
     e.preventDefault()
-    selectDashboardItem({
+    void requestRouteTransition<DashboardDataProject>({
       updateActiveRoute,
       updateErrorCause,
       updateQuery,
       updateStamp,
-      item,
+      body: item,
+      url: '/select-project',
+      destinationRoute: '/explore',
+      errorMessage: 'Failed to select project.',
     }).catch((err: unknown) => console.error(err))
   }
 
