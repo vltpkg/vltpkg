@@ -24,7 +24,7 @@ t.cleanSnapshot = s =>
       /^(\s+)"projectRoot": ".*"/gm,
       '$1"projectRoot": "{ROOT}"',
     )
-    .replace(/\\/g, '/')
+    .replace(/\\\\/g, '/')
 
 t.test('starts gui data and server', async t => {
   class PackageJson {
