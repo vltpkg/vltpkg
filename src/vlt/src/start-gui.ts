@@ -48,7 +48,10 @@ import type { DashboardProjectData } from './project-info.ts'
 const HOST = 'localhost'
 const PORT = 7017
 
-const { version } = loadPackageJson(import.meta.filename) as {
+const { version } = loadPackageJson(
+  import.meta.filename,
+  process.env._VLT_CLI_PACKAGE_JSON,
+) as {
   version: string
 }
 
@@ -330,13 +333,16 @@ const createStaticHandler = ({
 
 /* c8 ignore start */
 const getAssetsDir = () => {
+  const fromEnv = process.env._VLT_GUI_ASSETS_DIR
   // workaround for the import.meta.resolve issue not working with tap
   if (process.env.TAP) {
     assert(
-      process.env.VLT_TEST_GUI_DIR,
-      'VLT_TEST_GUI_DIR must be set when running tests',
+      fromEnv,
+      '_VLT_GUI_ASSETS_DIR must be set when running tests',
     )
-    return process.env.VLT_TEST_GUI_DIR
+  }
+  if (fromEnv) {
+    return resolve(import.meta.dirname, fromEnv)
   }
   return fileURLToPath(import.meta.resolve('@vltpkg/gui'))
 }
