@@ -96,7 +96,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [20.x, 22.x]
+        node-version: [22.x]
         platform:
           - name: Ubuntu
             os: ubuntu-latest
@@ -114,7 +114,6 @@ jobs:
             os: windows-latest
             shell: powershell
         exclude:
-          - node-version: ${{ github.event_name == 'pull_request' && '22.x' }}
           - platform: ${{ fromJSON(github.event_name == 'pull_request' && '{"name":"macOS","os":"macos-latest","shell":"bash"}') }}
           - platform: ${{ fromJSON(github.event_name == 'pull_request' && '{"name":"macOS Intel","os":"macos-13","shell":"bash"}') }}
           - platform: ${{ fromJSON(github.event_name == 'pull_request' && '{"name":"Windows Powershell","os":"windows-latest","shell":"powershell"}') }}

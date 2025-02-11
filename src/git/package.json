@@ -48,7 +48,7 @@
   },
   "license": "ISC",
   "engines": {
-    "node": "20 || >=22",
+    "node": ">=22",
     "pnpm": "9"
   },
   "scripts": {
