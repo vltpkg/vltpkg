@@ -19,10 +19,12 @@ import {
 import { actualObject } from './fixtures/actual.ts'
 
 t.cleanSnapshot = s =>
-  s.replace(
-    /^(\s+)"projectRoot": ".*"/gm,
-    '$1"projectRoot": "{ROOT}"',
-  )
+  s
+    .replace(
+      /^(\s+)"projectRoot": ".*"/gm,
+      '$1"projectRoot": "{ROOT}"',
+    )
+    .replace(/\\/g, '/')
 
 t.test('starts gui data and server', async t => {
   class PackageJson {
