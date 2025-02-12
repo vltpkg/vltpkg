@@ -5,6 +5,43 @@
  * Make sure to inspect the output below.  Do not ignore changes!
  */
 'use strict'
+exports[`test/start-gui.ts > TAP > e2e server test > /create-project > should log the server start message 1`] = `
+Array [
+  "⚡️ vlt GUI running at http://localhost:8017",
+  "⚡️ vlt GUI running at http://localhost:8022",
+]
+`
+
+exports[`test/start-gui.ts > TAP > e2e server test > /create-project > standard request > should update graph.json with new project data 1`] = `
+{
+  "hasDashboard": true,
+  "importers": [
+    {
+      "id": "file·.",
+      "name": "new-project",
+      "version": "1.0.0",
+      "location": ".",
+      "importer": true,
+      "manifest": {
+        "name": "new-project",
+        "version": "1.0.0",
+        "description": "",
+        "main": "index.js",
+        "author": "Ruy Adorno"
+      },
+      "projectRoot": "{ROOT}",
+      "dev": false,
+      "optional": false
+    }
+  ],
+  "lockfile": {
+    "options": {},
+    "nodes": {},
+    "edges": {}
+  }
+}
+`
+
 exports[`test/start-gui.ts > TAP > e2e server test > /install > should install dependencies 1`] = `
 install
 
