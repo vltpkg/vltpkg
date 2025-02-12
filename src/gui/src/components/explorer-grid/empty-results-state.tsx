@@ -15,7 +15,7 @@ const EmptyResultsState = () => {
 
   return (
     <section className="flex h-full min-h-[70svh] w-full flex-col items-center justify-center px-8 pt-4">
-      <div className="relative -mt-10 mb-8 flex h-fit w-fit flex-col items-center justify-center">
+      <div className="relative -mt-10 flex h-fit w-fit flex-col items-center justify-center pb-8">
         <MiniQuery className="-mb-6 h-[64px] w-[275px] opacity-30" />
         <MiniQuery className="z-[1] shadow-lg" />
         <MiniQuery className="-mt-6 h-[64px] w-[275px] opacity-30" />

@@ -4,7 +4,7 @@ exports[`dashboard-grid render default 1`] = `
 
 <div>
   <div class="flex grow flex-col bg-secondary px-8 py-8 dark:bg-black">
-    <div class="mb-8 flex gap-2">
+    <div class="flex gap-2 pb-8">
       <gui-filter-search
         placeholder="Filter Projects"
         items
@@ -49,7 +49,7 @@ exports[`dashboard-grid with results 1`] = `
 
 <div>
   <div class="flex grow flex-col bg-secondary px-8 py-8 dark:bg-black">
-    <div class="mb-8 flex gap-2">
+    <div class="flex gap-2 pb-8">
       <gui-filter-search
         placeholder="Filter Projects"
         items="[object Object],[object Object]"
