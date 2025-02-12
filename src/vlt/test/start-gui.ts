@@ -2,7 +2,7 @@ import { joinDepIDTuple } from '@vltpkg/dep-id'
 import { type Dependency } from '@vltpkg/graph'
 import { PackageJson } from '@vltpkg/package-json'
 import { type Manifest } from '@vltpkg/types'
-import { readdirSync, readFileSync } from 'node:fs'
+import { existsSync, readdirSync, readFileSync } from 'node:fs'
 import http from 'node:http'
 import { resolve } from 'node:path'
 import { PathScurry, type PathBase } from 'path-scurry'
@@ -212,15 +212,15 @@ t.test('formatDashboardJson', async t => {
   const packageJson = new PackageJson()
   const scurry = new PathScurry(t.testdirName)
   t.strictSame(
-    formatDashboardJson(scurry.readdirSync(dir), {
-      options: {
-        packageJson,
-        scurry,
-      } as ConfigOptions,
-      values: {},
-    } as LoadedConfig).projects.map(
-      ({ name }: { name: string }) => name,
-    ),
+    (
+      await formatDashboardJson(scurry.readdirSync(dir), {
+        options: {
+          packageJson,
+          scurry,
+        } as ConfigOptions,
+        values: {},
+      } as LoadedConfig)
+    ).projects.map(({ name }: { name: string }) => name),
     ['b'],
     'should skip folders without package.json',
   )
@@ -296,13 +296,15 @@ t.test('formatDashboardJson dashboardProjectLocations', async t => {
     },
   )
   t.matchSnapshot(
-    formatDashboardJson(projectFolders, {
-      options: {
-        packageJson,
-        scurry,
-      } as ConfigOptions,
-      values: {},
-    } as LoadedConfig).dashboardProjectLocations,
+    (
+      await formatDashboardJson(projectFolders, {
+        options: {
+          packageJson,
+          scurry,
+        } as ConfigOptions,
+        values: {},
+      } as LoadedConfig)
+    ).dashboardProjectLocations,
     'should return the expected dashboard project locations',
   )
 })
@@ -333,8 +335,7 @@ t.test('e2e server test', async t => {
   )
   const log: string[] = []
   let ilog = ''
-
-  const { startGUI } = await t.mockImport('../src/start-gui.ts', {
+  const mocks = {
     '@vltpkg/url-open': { urlOpen() {} },
     '../src/install.js': {
       async install() {
@@ -352,7 +353,12 @@ t.test('e2e server test', async t => {
         log.push(str)
       },
     },
-  })
+  }
+
+  const { startGUI } = await t.mockImport(
+    '../src/start-gui.ts',
+    mocks,
+  )
 
   await t.test('/select-project', async t => {
     const port = 8017
@@ -410,6 +416,192 @@ t.test('e2e server test', async t => {
       readFileSync(resolve(tmp, 'graph.json'), 'utf8'),
       'should update graph.json with new data',
     )
+  })
+
+  await t.test('/create-project', async t => {
+    const port = 8022
+    const options = {
+      projectRoot: resolve(dir, 'projects/my-project'),
+      packageJson: new PackageJson(),
+      scurry: new PathScurry(dir),
+    }
+    const server = await startGUI({
+      conf: {
+        options,
+        resetOptions(newProjectRoot: string) {
+          options.projectRoot = newProjectRoot
+        },
+        values: {},
+      } as LoadedConfig,
+      assetsDir,
+      port,
+      tmpDir: resolve(dir, 'assets-dir'),
+    })
+    t.teardown(() => server.close())
+
+    const tmp = resolve(dir, 'assets-dir/vltgui')
+    const files: string[] = []
+    for (const file of readdirSync(tmp)) {
+      files.push(file)
+    }
+    t.matchSnapshot(log, 'should log the server start message')
+
+    await t.test('standard request', async t => {
+      // tests a POST to /create-project
+      const reqSelectProject = await fetch(
+        `http://localhost:${port}/create-project`,
+        {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          method: 'POST',
+          body: JSON.stringify({
+            path: resolve(dir, 'projects'),
+            name: 'new-project',
+            author: 'Ruy Adorno',
+          }),
+        },
+      )
+      const resSelectProject = await reqSelectProject.json()
+      t.strictSame(resSelectProject, 'ok', 'should respond with ok')
+
+      t.ok(existsSync(resolve(dir, 'projects/new-project')))
+
+      t.matchSnapshot(
+        readFileSync(resolve(tmp, 'graph.json'), 'utf8'),
+        'should update graph.json with new project data',
+      )
+    })
+
+    await t.test('invalid name', async t => {
+      // tests an invalid name POST to /create-project
+      const reqSelectProject = await fetch(
+        `http://localhost:${port}/create-project`,
+        {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          method: 'POST',
+          body: JSON.stringify({
+            path: resolve(dir, 'projects'),
+            name: 'B0RK$$$',
+            author: 'Ruy Adorno',
+          }),
+        },
+      )
+      const resSelectProject = await reqSelectProject.json()
+      t.strictSame(
+        resSelectProject,
+        'Bad request.\nProject name must be lowercase, alphanumeric, and may contain hyphens',
+        'should respond with validation error message',
+      )
+      t.notOk(existsSync(resolve(dir, 'projects/B0RK$$$')))
+    })
+
+    await t.test('invalid long name', async t => {
+      // tests an invalid name POST to /create-project
+      const reqSelectProject = await fetch(
+        `http://localhost:${port}/create-project`,
+        {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          method: 'POST',
+          body: JSON.stringify({
+            path: resolve(dir, 'projects'),
+            name: 'this-is-a-very-long-project-name-that-should-not-be-allowed-to-exist-in-the-filesystem-because-it-is-too-long-and-will-cause-problems',
+            author: 'Ruy Adorno',
+          }),
+        },
+      )
+      const resSelectProject = await reqSelectProject.json()
+      t.strictSame(
+        resSelectProject,
+        'Bad request.\nProject name must be lowercase, alphanumeric, and may contain hyphens',
+        'should respond with validation error message',
+      )
+      t.notOk(existsSync(resolve(dir, 'projects/B0RK$$$')))
+    })
+
+    await t.test('invalid path', async t => {
+      // tests an invalid path POST to /create-project
+      const reqSelectProject = await fetch(
+        `http://localhost:${port}/create-project`,
+        {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          method: 'POST',
+          body: JSON.stringify({
+            path: 1234,
+            name: 'another-new-project',
+            author: 'Ruy Adorno',
+          }),
+        },
+      )
+      const resSelectProject = await reqSelectProject.json()
+      t.strictSame(
+        resSelectProject,
+        'Bad request.\nProject path must be a string',
+        'should respond with path validation error message',
+      )
+      t.notOk(
+        existsSync(resolve(dir, 'projects/another-new-project')),
+      )
+    })
+
+    await t.test('cli error', async t => {
+      const stderr = console.error
+      const port = 8023
+
+      console.error = () => {}
+      const { startGUI } = await t.mockImport('../src/start-gui.ts', {
+        ...mocks,
+        '../src/init.js': {
+          async init() {
+            throw new Error('ERR')
+          },
+        },
+      })
+      const server = await startGUI({
+        conf: {
+          options,
+          resetOptions(newProjectRoot: string) {
+            options.projectRoot = newProjectRoot
+          },
+          values: {},
+        } as LoadedConfig,
+        assetsDir,
+        port,
+        tmpDir: resolve(dir, 'assets-dir'),
+      })
+      t.teardown(() => {
+        console.error = stderr
+        server.close()
+      })
+
+      // tests a failed POST to /create-project
+      const reqSelectProject = await fetch(
+        `http://localhost:${port}/create-project`,
+        {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          method: 'POST',
+          body: JSON.stringify({
+            path: resolve(dir, 'projects'),
+            name: 'new-project',
+            author: 'Ruy Adorno',
+          }),
+        },
+      )
+      const resSelectProject = await reqSelectProject.json()
+      t.strictSame(
+        resSelectProject,
+        'CLI Error\nERR',
+        'should respond with cli error message',
+      )
+    })
   })
 
   await t.test('/install', async t => {
