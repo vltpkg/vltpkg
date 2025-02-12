@@ -6,7 +6,7 @@ const inited: string[] = []
 const { usage, command, views } = await t.mockImport<
   typeof import('../../src/commands/init.ts')
 >('../../src/commands/init.ts', {
-  '../../src/init.js': {
+  '../../src/init.ts': {
     init: async ({ cwd }: { cwd: string }) => {
       inited.push(cwd)
     },
