@@ -1,11 +1,10 @@
 import { joinDepIDTuple } from '@vltpkg/dep-id'
 import { type Dependency } from '@vltpkg/graph'
 import { PackageJson } from '@vltpkg/package-json'
-import { type Manifest } from '@vltpkg/types'
 import { existsSync, readdirSync, readFileSync } from 'node:fs'
 import http from 'node:http'
 import { resolve } from 'node:path'
-import { PathScurry, type PathBase } from 'path-scurry'
+import { PathScurry } from 'path-scurry'
 import t from 'tap'
 import {
   type ConfigOptions,
@@ -13,7 +12,6 @@ import {
 } from '../src/config/index.ts'
 import {
   formatDashboardJson,
-  inferTools,
   parseInstallOptions,
 } from '../src/start-gui.ts'
 import { actualObject } from './fixtures/actual.ts'
@@ -27,16 +25,14 @@ t.cleanSnapshot = s =>
     .replace(/\\\\/g, '/')
 
 t.test('starts gui data and server', async t => {
+  const dir = t.testdir({})
   class PackageJson {
     read() {
       return { name: 'my-project', version: '1.0.0' }
     }
   }
-  class PathScurry {
-    lstatSync() {}
-  }
   const options = {
-    projectRoot: t.testdirName,
+    projectRoot: dir,
     packageJson: new PackageJson(),
     scurry: new PathScurry(),
   }
@@ -44,7 +40,6 @@ t.test('starts gui data and server', async t => {
   let openURL = ''
   let openPort = 0
   let openHost = ''
-  const dir = t.testdirName
   const { startGUI } = await t.mockImport<
     typeof import('../src/start-gui.ts')
   >('../src/start-gui.ts', {
@@ -131,74 +126,6 @@ t.test('starts gui data and server', async t => {
     openURL,
     'http://localhost:7017/dashboard',
     'should open the correct browser URL',
-  )
-})
-
-t.test('inferTools', async t => {
-  const dir = t.testdir({
-    'with-engines': {
-      'package.json': JSON.stringify({
-        name: 'manifest-with-engines',
-        engines: {
-          node: '>=20',
-          npm: '>=10',
-        },
-      }),
-    },
-    empty: {
-      'package.json': JSON.stringify({
-        name: 'empty-manifest',
-      }),
-    },
-    'with-config-props': {
-      'package.json': JSON.stringify({
-        name: 'manifest-with-config-props',
-        pnpm: {
-          hooks: {
-            readPackage: 'echo "Hello"',
-          },
-        },
-      }),
-    },
-    'with-pnpm-lockfile': {
-      'package.json': JSON.stringify({
-        name: 'manifest-with-pnpm-lockfile',
-      }),
-      'pnpm-lock.yaml': '',
-    },
-  })
-  const packageJson = new PackageJson()
-  const scurry = new PathScurry(t.testdirName)
-  const folders = new Map<string, PathBase>()
-  const manis = new Map<string, Manifest>()
-  for (const entry of scurry.readdirSync(dir)) {
-    folders.set(entry.name, entry)
-    manis.set(entry.name, packageJson.read(entry.fullpath()))
-  }
-
-  const mainWithEnginesFolder = folders.get('with-engines')!
-  const mainWithEnginesMani = manis.get('with-engines')!
-  t.strictSame(
-    inferTools(mainWithEnginesMani, mainWithEnginesFolder, scurry),
-    ['node', 'npm'],
-  )
-
-  const emptyFolder = folders.get('empty')!
-  const emptyMani = manis.get('empty')!
-  t.strictSame(inferTools(emptyMani, emptyFolder, scurry), ['js'])
-
-  const withConfigPropsFolder = folders.get('with-config-props')!
-  const withConfigPropsMani = manis.get('with-config-props')!
-  t.strictSame(
-    inferTools(withConfigPropsMani, withConfigPropsFolder, scurry),
-    ['pnpm'],
-  )
-
-  const withPnpmLockfileFolder = folders.get('with-pnpm-lockfile')!
-  const withPnpmLockfileMani = manis.get('with-pnpm-lockfile')!
-  t.strictSame(
-    inferTools(withPnpmLockfileMani, withPnpmLockfileFolder, scurry),
-    ['pnpm'],
   )
 })
 
@@ -292,6 +219,10 @@ t.test('formatDashboardJson dashboardProjectLocations', async t => {
         homedir() {
           return dir
         },
+      },
+      '../src/project-info.js': {
+        ...(await import('../src/project-info.ts')),
+        getReadablePath: (path: string) => path.replace(dir, '~'),
       },
     },
   )
@@ -939,63 +870,4 @@ t.test('parseInstallArgs', async t => {
     }),
     'multiple item added to root and workspace',
   )
-})
-
-t.test('getReadablePath', async t => {
-  await t.test('posix', async t => {
-    const { getReadablePath } = await t.mockImport(
-      '../src/start-gui.js',
-      {
-        'node:os': {
-          ...(await import('node:os')),
-          homedir() {
-            return '/home/user'
-          },
-        },
-      },
-    )
-    const from = [
-      '/home/user/foo',
-      '/home/user/foo/projects/lorem/node_modules/ipsum',
-      '/path/to/project/node_modules/a/node_modules/b',
-    ]
-    const to = [
-      '~/foo',
-      '~/foo/projects/lorem/node_modules/ipsum',
-      '/path/to/project/node_modules/a/node_modules/b',
-    ]
-    t.strictSame(
-      from.map(f => getReadablePath(f)),
-      to,
-      'should return the correct posix readable path',
-    )
-  })
-  await t.test('windows', async t => {
-    const { getReadablePath } = await t.mockImport(
-      '../src/start-gui.js',
-      {
-        'node:os': {
-          ...(await import('node:os')),
-          homedir() {
-            return 'C:\\Users\\username'
-          },
-        },
-      },
-    )
-    const from = [
-      'C:\\Users\\username',
-      'C:\\Users\\username\\projects\\lorem\\node_modules\\ipsum',
-      'C:\\path\\to\\project\\node_modules\\a\\node_modules\\b',
-    ]
-    const to = [
-      '~',
-      '~\\projects\\lorem\\node_modules\\ipsum',
-      'C:\\path\\to\\project\\node_modules\\a\\node_modules\\b',
-    ]
-    t.strictSame(
-      from.map(f => getReadablePath(f)),
-      to,
-      'should return the correct windows readable path',
-    )
-  })
 })

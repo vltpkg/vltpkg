@@ -7,10 +7,7 @@ import {
   type RemoveImportersDependenciesMap,
 } from '@vltpkg/graph'
 import { Spec } from '@vltpkg/spec'
-import {
-  type Manifest,
-  type DependencyTypeShort,
-} from '@vltpkg/types'
+import { type DependencyTypeShort } from '@vltpkg/types'
 import { urlOpen } from '@vltpkg/url-open'
 import { getUser } from '@vltpkg/git'
 import {
@@ -32,7 +29,7 @@ import { dirname, resolve, relative } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import assert from 'node:assert'
 import { loadPackageJson } from 'package-json-from-dist'
-import { type PathBase, type PathScurry } from 'path-scurry'
+import { type PathBase } from 'path-scurry'
 import handler from 'serve-handler'
 import {
   type ConfigOptions,
@@ -44,6 +41,12 @@ import { readProjectFolders } from './read-project-folders.ts'
 import { uninstall, type UninstallOptions } from './uninstall.ts'
 import { init } from './init.ts'
 import { getAuthorFromGitUser } from './get-author-from-git-user.ts'
+import {
+  type DashboardProjectData,
+  getDashboardProjectData,
+  getReadablePath,
+  getGraphProjectData,
+} from './project-info.ts'
 
 const HOST = 'localhost'
 const PORT = 7017
@@ -67,16 +70,6 @@ export type StartGUIOptions = {
   tmpDir?: string
 }
 
-export type DashboardTools =
-  | 'vlt'
-  | 'node'
-  | 'deno'
-  | 'bun'
-  | 'npm'
-  | 'pnpm'
-  | 'yarn'
-  | 'js'
-
 export type DashboardLocation = {
   path: string
   readablePath: string
@@ -87,16 +80,7 @@ export type DashboardData = {
   buildVersion: string
   dashboardProjectLocations: DashboardLocation[]
   defaultAuthor: string
-  projects: DashboardDataProject[]
-}
-
-export type DashboardDataProject = {
-  name: string
-  readablePath: string
-  path: string
-  manifest: Manifest
-  tools: DashboardTools[]
-  mtime?: number
+  projects: DashboardProjectData[]
 }
 
 class AddImportersDependenciesMapImpl
@@ -111,28 +95,6 @@ class RemoveImportersDependenciesMapImpl
   implements RemoveImportersDependenciesMap
 {
   modifiedDependencies = false
-}
-
-const knownTools = new Map<DashboardTools, string[]>([
-  ['vlt', ['vlt-lock.json', 'vlt-workspaces.json']],
-  ['node', []],
-  ['deno', ['deno.json']],
-  ['bun', ['bun.lockb', 'bunfig.toml']],
-  ['npm', ['package-lock.json']],
-  ['pnpm', ['pnpm-lock.yaml', 'pnpm-workspace.yaml']],
-  ['yarn', ['yarn.lock']],
-])
-
-const isDashboardTools = (str: string): str is DashboardTools =>
-  knownTools.has(str as DashboardTools)
-
-const asDashboardTools = (str: string): DashboardTools => {
-  /* c8 ignore start */
-  if (!isDashboardTools(str)) {
-    throw new Error(`Invalid dashboard tool: ${str}`)
-  }
-  /* c8 ignore stop */
-  return str
 }
 
 export const parseInstallOptions = (
@@ -172,41 +134,6 @@ export const parseUninstallOptions = (
   }
   return { remove: removeArgs, conf }
 }
-
-export const inferTools = (
-  manifest: Manifest,
-  folder: PathBase,
-  scurry: PathScurry,
-) => {
-  const tools: DashboardTools[] = []
-  // check if known tools names are found in the manifest file
-  for (const knownName of knownTools.keys()) {
-    if (
-      Object.hasOwn(manifest, knownName) ||
-      (manifest.engines && Object.hasOwn(manifest.engines, knownName))
-    ) {
-      tools.push(asDashboardTools(knownName))
-    }
-  }
-
-  for (const [knownName, files] of knownTools) {
-    for (const file of files) {
-      if (scurry.lstatSync(folder.resolve(file))) {
-        tools.push(asDashboardTools(knownName))
-        break
-      }
-    }
-  }
-
-  // defaults to js if no tools are found
-  if (tools.length === 0) {
-    tools.push('js')
-  }
-  return tools
-}
-
-export const getReadablePath = (path: string) =>
-  path.replace(homedir(), '~')
 
 export const formatDashboardJson = async (
   projectFolders: PathBase[],
@@ -248,22 +175,10 @@ export const formatDashboardJson = async (
     projects: [],
   }
   for (const folder of projectFolders) {
-    let manifest
-    try {
-      manifest = conf.options.packageJson.read(folder.fullpath())
-    } catch {
-      continue
+    const projectData = getDashboardProjectData(folder, conf)
+    if (projectData) {
+      result.projects.push(projectData)
     }
-    const path = folder.fullpath()
-    result.projects.push({
-      /* c8 ignore next */
-      name: manifest.name || folder.name,
-      readablePath: getReadablePath(path),
-      path,
-      manifest,
-      tools: inferTools(manifest, folder, conf.options.scurry),
-      mtime: folder.lstatSync()?.mtimeMs,
-    })
   }
   return result
 }
@@ -274,8 +189,8 @@ const updateGraphData = (
   hasDashboard: boolean,
 ) => {
   const { options } = conf
-  const monorepo = options.monorepo
-  const mainManifest = options.packageJson.read(options.projectRoot)
+  const { monorepo, packageJson, projectRoot, scurry } = options
+  const mainManifest = packageJson.read(projectRoot)
   const graph = actual.load({
     ...options,
     mainManifest,
@@ -283,11 +198,13 @@ const updateGraphData = (
     loadManifests: true,
   })
   const importers = [...graph.importers]
+  const folder = scurry.lstatSync(projectRoot)
   const graphJson = JSON.stringify(
     {
       hasDashboard,
       importers,
       lockfile: graph,
+      projectInfo: getGraphProjectData(conf, folder),
     },
     null,
     2,
