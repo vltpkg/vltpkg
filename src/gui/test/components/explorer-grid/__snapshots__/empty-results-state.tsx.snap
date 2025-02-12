@@ -3,7 +3,7 @@
 exports[`render default 1`] = `
 
 <section class="flex h-full min-h-[70svh] w-full flex-col items-center justify-center px-8 pt-4">
-  <div class="relative -mt-10 mb-8 flex h-fit w-fit flex-col items-center justify-center">
+  <div class="relative -mt-10 flex h-fit w-fit flex-col items-center justify-center pb-8">
     <div class="flex h-[70px] w-[300px] flex-col rounded-sm border-[1px] border-neutral-200 bg-muted dark:border-neutral-800 dark:bg-black -mb-6 h-[64px] w-[275px] opacity-30">
       <div class="flex items-center justify-between border-b-[1px] border-neutral-200 p-2 dark:border-neutral-800">
         <div class="h-[18px] w-[80px] rounded-sm border-[1px] border-neutral-300 bg-neutral-200 dark:border-neutral-800 dark:bg-neutral-950">
