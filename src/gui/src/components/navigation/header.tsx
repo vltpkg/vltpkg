@@ -6,6 +6,7 @@ const routeNames = new Map<string, string>([
   ['/error', 'Error'],
   ['/explore', 'Explore'],
   ['/dashboard', 'Dashboard'],
+  ['/new-project', 'New Project'],
   ['/queries', 'Queries'],
   ['/labels', 'Labels'],
 ])

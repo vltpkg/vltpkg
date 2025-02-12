@@ -42,6 +42,10 @@ vi.mock('@/components/ui/card.jsx', () => ({
   CardTitle: 'gui-card-title',
 }))
 
+vi.mock('@/components/ui/button.jsx', () => ({
+  Button: 'gui-button',
+}))
+
 vi.mock('@/components/ui/tooltip.jsx', () => ({
   Tooltip: 'gui-tooltip',
   TooltipContent: 'gui-tooltip-content',
@@ -80,6 +84,10 @@ vi.mock('date-fns', () => ({
   format: () => 'November 1st, 2024 | 06:01 PM',
 }))
 
+vi.mock('lucide-react', () => ({
+  Plus: 'gui-plus-icon',
+}))
+
 expect.addSnapshotSerializer({
   serialize: v => html(v),
   test: () => true,
@@ -102,6 +110,10 @@ test('dashboard-grid with results', async () => {
     updateDashboard({
       buildVersion: '1.0.0',
       cwd: '/path/to/cwd',
+      defaultAuthor: 'John Doe',
+      dashboardProjectLocations: [
+        { path: '/home/user', readablePath: '~' },
+      ],
       projects: [
         {
           name: 'project-foo',

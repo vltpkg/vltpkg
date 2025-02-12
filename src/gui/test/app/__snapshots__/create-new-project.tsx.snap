@@ -1,0 +1,14 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`render default 1`] = `
+
+<div>
+  <section class="flex min-h-[80svh] w-full grow flex-col bg-white dark:bg-black">
+    <div class="flex w-full items-center justify-between border-b-[1px] border-t-[1px] border-solid px-8 py-4">
+    </div>
+    <gui-create-new-project-content>
+    </gui-create-new-project-content>
+  </section>
+</div>
+
+`;
