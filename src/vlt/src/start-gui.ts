@@ -495,8 +495,8 @@ export const startGUI = async ({
       case 'POST /select-project': {
         const data = await json<{ path: unknown }>()
         conf.resetOptions(String(data.path))
-        updateGraphData(tmp, conf, hasDashboard)
         await updateDashboard()
+        updateGraphData(tmp, conf, hasDashboard)
         return jsonOk('ok')
       }
       case 'POST /create-project': {
@@ -530,8 +530,8 @@ export const startGUI = async ({
           mkdirSync(cwd, { recursive: true })
           await init({ cwd, author })
           conf.resetOptions(cwd)
-          updateGraphData(tmp, conf, hasDashboard)
           await updateDashboard()
+          updateGraphData(tmp, conf, hasDashboard)
         } catch (err) {
           // eslint-disable-next-line no-console
           console.error(err)
