@@ -145,7 +145,7 @@ export const DashboardGrid = () => {
 
   return (
     <div className="flex grow flex-col bg-secondary px-8 py-8 dark:bg-black">
-      <div className="mb-8 flex gap-2">
+      <div className="flex gap-2 pb-8">
         {currentView === 'table' ?
           <TableFilterSearch
             filterValue={tableFilterValue}
