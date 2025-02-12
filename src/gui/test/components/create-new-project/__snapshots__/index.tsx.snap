@@ -1,0 +1,124 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`create-new-project-content render default 1`] = `
+
+<div>
+  <div class="flex grow flex-col bg-secondary px-8 py-8 dark:bg-black">
+    <gui-card classname="container mx-auto w-full px-8 py-8 lg:w-[1024px]">
+      <h1 class="mb-2 text-3xl font-bold">
+        Create a new project
+      </h1>
+      <p class="mb-6 text-gray-600">
+        A project is represented by a folder containing a package.json file.
+      </p>
+      <form class="space-y-6">
+        <div class="flex space-x-4">
+          <div class="w-1/2">
+            <gui-label htmlfor="location">
+              Location *
+            </gui-label>
+            <gui-select>
+              <gui-select-trigger id="location">
+                <gui-select-value placeholder="Select location">
+                </gui-select-value>
+              </gui-select-trigger>
+              <gui-select-content>
+              </gui-select-content>
+            </gui-select>
+          </div>
+          <div class="w-1/2">
+            <gui-label htmlfor="projectName">
+              Project Name *
+            </gui-label>
+            <gui-input
+              id="projectName"
+              value
+              classname
+            >
+            </gui-input>
+          </div>
+        </div>
+        <div>
+          <gui-label htmlfor="author">
+            Author
+          </gui-label>
+          <gui-input
+            id="author"
+            value
+          >
+          </gui-input>
+        </div>
+        <div class="flex justify-end">
+          <gui-button type="submit">
+            Create New Project
+          </gui-button>
+        </div>
+      </form>
+    </gui-card>
+  </div>
+</div>
+
+`;
+
+exports[`create-new-project-content with results 1`] = `
+
+<div>
+  <div class="flex grow flex-col bg-secondary px-8 py-8 dark:bg-black">
+    <gui-card classname="container mx-auto w-full px-8 py-8 lg:w-[1024px]">
+      <h1 class="mb-2 text-3xl font-bold">
+        Create a new project
+      </h1>
+      <p class="mb-6 text-gray-600">
+        A project is represented by a folder containing a package.json file.
+      </p>
+      <form class="space-y-6">
+        <div class="flex space-x-4">
+          <div class="w-1/2">
+            <gui-label htmlfor="location">
+              Location *
+            </gui-label>
+            <gui-select>
+              <gui-select-trigger id="location">
+                <gui-select-value placeholder="Select location">
+                </gui-select-value>
+              </gui-select-trigger>
+              <gui-select-content>
+                <gui-select-item value="/home/user">
+                  ~
+                </gui-select-item>
+              </gui-select-content>
+            </gui-select>
+          </div>
+          <div class="w-1/2">
+            <gui-label htmlfor="projectName">
+              Project Name *
+            </gui-label>
+            <gui-input
+              id="projectName"
+              value
+              classname
+            >
+            </gui-input>
+          </div>
+        </div>
+        <div>
+          <gui-label htmlfor="author">
+            Author
+          </gui-label>
+          <gui-input
+            id="author"
+            value="Ruy Adorno"
+          >
+          </gui-input>
+        </div>
+        <div class="flex justify-end">
+          <gui-button type="submit">
+            Create New Project
+          </gui-button>
+        </div>
+      </form>
+    </gui-card>
+  </div>
+</div>
+
+`;
