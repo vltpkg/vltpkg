@@ -18,7 +18,7 @@ const deleted: Edge[] = []
 const { deleteEdges } = await t.mockImport<
   typeof import('../../src/reify/delete-edges.ts')
 >('../../src/reify/delete-edges.ts', {
-  '../../src/reify/delete-edge.js': {
+  '../../src/reify/delete-edge.ts': {
     deleteEdge: async (
       edge: Edge,
       _scurry: PathScurry,

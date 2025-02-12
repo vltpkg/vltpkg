@@ -7,7 +7,7 @@ t.test('starts gui data and server', async t => {
   const { usage, command, views } = await t.mockImport<
     typeof import('../../src/commands/gui.ts')
   >('../../src/commands/gui.ts', {
-    '../../src/start-gui.js': {
+    '../../src/start-gui.ts': {
       startGUI: async (options: StartGUIOptions) => {
         startGUIOptions = options
       },

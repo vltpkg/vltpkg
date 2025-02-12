@@ -7,12 +7,12 @@ let log = ''
 const { usage, command } = await t.mockImport<
   typeof import('../../src/commands/uninstall.ts')
 >('../../src/commands/uninstall.ts', {
-  '../../src/uninstall.js': {
+  '../../src/uninstall.ts': {
     async uninstall() {
       log += 'uninstall\n'
     },
   },
-  '../../src/parse-add-remove-args.js': {
+  '../../src/parse-add-remove-args.ts': {
     parseRemoveArgs: (conf: LoadedConfig) => {
       const items =
         conf.positionals.length > 0 ?

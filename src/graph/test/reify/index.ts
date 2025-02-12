@@ -303,7 +303,7 @@ t.test('failure rolls back', async t => {
     packageJson: new PackageJson(),
   })
   const { reify } = await t.mockImport('../../src/reify/index.ts', {
-    '../../src/reify/build.js': {
+    '../../src/reify/build.ts': {
       build: () =>
         Promise.reject(new Error('expected failure, roll back')),
     },
