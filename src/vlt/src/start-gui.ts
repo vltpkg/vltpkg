@@ -443,13 +443,18 @@ export const startGUI = async ({
   // dashboard data is optional since the GUI might be started from a
   // project in order to just explore its graph data
   let hasDashboard = false
-  try {
-    hasDashboard = await updateDashboardData(tmp, conf)
-    /* c8 ignore next */
-  } catch {}
-  if (!hasDashboard) {
-    rmSync(resolve(tmp, 'dashboard.json'), { force: true })
+
+  const updateDashboard = async () => {
+    try {
+      hasDashboard = await updateDashboardData(tmp, conf)
+      /* c8 ignore next */
+    } catch {}
+    if (!hasDashboard) {
+      rmSync(resolve(tmp, 'dashboard.json'), { force: true })
+    }
   }
+
+  await updateDashboard()
 
   // reading graph data is optional since the command might be run from a
   // parend directory of any given project root, in which case the GUI is
@@ -490,6 +495,7 @@ export const startGUI = async ({
       case 'POST /select-project': {
         const data = await json<{ path: unknown }>()
         conf.resetOptions(String(data.path))
+        await updateDashboard()
         updateGraphData(tmp, conf, hasDashboard)
         return jsonOk('ok')
       }
@@ -524,6 +530,7 @@ export const startGUI = async ({
           mkdirSync(cwd, { recursive: true })
           await init({ cwd, author })
           conf.resetOptions(cwd)
+          await updateDashboard()
           updateGraphData(tmp, conf, hasDashboard)
         } catch (err) {
           // eslint-disable-next-line no-console
