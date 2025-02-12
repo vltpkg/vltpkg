@@ -1,30 +1,22 @@
 import { basename, resolve } from 'node:path'
 import { PackageJson } from '@vltpkg/package-json'
-import { getUser, type GitUser } from '@vltpkg/git'
+import { getUser } from '@vltpkg/git'
 import { type Manifest } from '@vltpkg/types'
+import { getAuthorFromGitUser } from './get-author-from-git-user.ts'
 
 export type InitOptions = {
   cwd?: string
+  author?: string
 }
 
 export type CustomizableInitOptions = {
   name: string
-  author?: GitUser
+  author: string
 }
 
 export type InitResult =
   | `Wrote to ${string}`
   | 'package.json already exists'
-
-const renderUser = ({ name, email }: GitUser) => {
-  let res = ''
-  if (name) res += name
-  if (email) {
-    if (name) res += ' '
-    res += `<${email}>`
-  }
-  return res
-}
 
 const template = ({
   name,
@@ -34,11 +26,12 @@ const template = ({
   version: '1.0.0',
   description: '',
   main: 'index.js',
-  ...(author ? { author: renderUser(author) } : undefined),
+  ...(author ? { author } : undefined),
 })
 
 export const init = async ({
   cwd = process.cwd(),
+  author,
 }: InitOptions = {}): Promise<InitResult> => {
   const packageJson = new PackageJson()
   try {
@@ -50,8 +43,14 @@ export const init = async ({
       (err as Error).message === 'Could not read package.json file'
     ) {
       const name = basename(cwd)
-      const author = await getUser().catch(() => undefined)
-      const value = template({ name, author })
+      const value = template({
+        name,
+        author:
+          author ??
+          getAuthorFromGitUser(
+            await getUser().catch(() => undefined),
+          ),
+      })
       const indent = 2
       packageJson.write(cwd, value, indent)
       return `Wrote to ${resolve(cwd, 'package.json')}:

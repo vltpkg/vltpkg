@@ -12,6 +12,7 @@ import {
   type DependencyTypeShort,
 } from '@vltpkg/types'
 import { urlOpen } from '@vltpkg/url-open'
+import { getUser } from '@vltpkg/git'
 import {
   cpSync,
   mkdirSync,
@@ -28,6 +29,8 @@ import {
 } from 'node:http'
 import { homedir, tmpdir } from 'node:os'
 import { dirname, resolve, relative } from 'node:path'
+import { fileURLToPath } from 'node:url'
+import assert from 'node:assert'
 import { loadPackageJson } from 'package-json-from-dist'
 import { type PathBase, type PathScurry } from 'path-scurry'
 import handler from 'serve-handler'
@@ -39,8 +42,8 @@ import { install, type InstallOptions } from './install.ts'
 import { stderr, stdout } from './output.ts'
 import { readProjectFolders } from './read-project-folders.ts'
 import { uninstall, type UninstallOptions } from './uninstall.ts'
-import { fileURLToPath } from 'node:url'
-import assert from 'node:assert'
+import { init } from './init.ts'
+import { getAuthorFromGitUser } from './get-author-from-git-user.ts'
 
 const HOST = 'localhost'
 const PORT = 7017
@@ -83,6 +86,7 @@ export type DashboardData = {
   cwd: string
   buildVersion: string
   dashboardProjectLocations: DashboardLocation[]
+  defaultAuthor: string
   projects: DashboardDataProject[]
 }
 
@@ -204,7 +208,7 @@ export const inferTools = (
 export const getReadablePath = (path: string) =>
   path.replace(homedir(), '~')
 
-export const formatDashboardJson = (
+export const formatDashboardJson = async (
   projectFolders: PathBase[],
   conf: LoadedConfig,
 ) => {
@@ -238,6 +242,9 @@ export const formatDashboardJson = (
         return acc
       }, [])
       .sort((a, b) => a.readablePath.length - b.readablePath.length),
+    defaultAuthor: getAuthorFromGitUser(
+      await getUser().catch(() => undefined),
+    ),
     projects: [],
   }
   for (const folder of projectFolders) {
@@ -294,7 +301,7 @@ const updateDashboardData = async (
   conf: LoadedConfig,
 ) => {
   const userDefinedProjectPaths = conf.values['dashboard-root'] ?? []
-  const dashboard = formatDashboardJson(
+  const dashboard = await formatDashboardJson(
     readProjectFolders({
       ...conf.options,
       userDefinedProjectPaths,
@@ -484,6 +491,45 @@ export const startGUI = async ({
         const data = await json<{ path: unknown }>()
         conf.resetOptions(String(data.path))
         updateGraphData(tmp, conf, hasDashboard)
+        return jsonOk('ok')
+      }
+      case 'POST /create-project': {
+        const data = await json<{
+          path: unknown
+          name: unknown
+          author: unknown
+        }>()
+        if (typeof data.path !== 'string') {
+          return jsonError(
+            'Bad request.',
+            'Project path must be a string',
+            400,
+          )
+        }
+        if (
+          !/^[a-z0-9-]+$/.test(String(data.name)) ||
+          String(data.name).length > 128
+        ) {
+          return jsonError(
+            'Bad request.',
+            'Project name must be lowercase, alphanumeric, and may contain hyphens',
+            400,
+          )
+        }
+        const path = String(data.path)
+        const name = String(data.name)
+        const author = String(data.author)
+        try {
+          const cwd = resolve(path, name)
+          mkdirSync(cwd, { recursive: true })
+          await init({ cwd, author })
+          conf.resetOptions(cwd)
+          updateGraphData(tmp, conf, hasDashboard)
+        } catch (err) {
+          // eslint-disable-next-line no-console
+          console.error(err)
+          return jsonError('CLI Error', (err as Error).message, 500)
+        }
         return jsonOk('ok')
       }
       case `POST /install`: {
