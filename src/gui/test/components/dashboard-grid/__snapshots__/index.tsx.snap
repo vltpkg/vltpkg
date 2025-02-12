@@ -19,11 +19,13 @@ exports[`dashboard-grid render default 1`] = `
         >
         </gui-sort-toggle>
       </div>
-      <gui-button classname="ml-2">
-        <gui-plus-icon size="24">
-        </gui-plus-icon>
-        Create New Project
-      </gui-button>
+      <div class="flex grow flex-row-reverse">
+        <gui-button classname="ml-2">
+          <gui-plus-icon size="24">
+          </gui-plus-icon>
+          Create New Project
+        </gui-button>
+      </div>
     </div>
     <div
       class="flex flex-col"
@@ -62,11 +64,13 @@ exports[`dashboard-grid with results 1`] = `
         >
         </gui-sort-toggle>
       </div>
-      <gui-button classname="ml-2">
-        <gui-plus-icon size="24">
-        </gui-plus-icon>
-        Create New Project
-      </gui-button>
+      <div class="flex grow flex-row-reverse">
+        <gui-button classname="ml-2">
+          <gui-plus-icon size="24">
+          </gui-plus-icon>
+          Create New Project
+        </gui-button>
+      </div>
     </div>
     <div
       class="flex flex-col"

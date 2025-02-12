@@ -187,10 +187,12 @@ export const DashboardGrid = () => {
             </motion.div>
           }
         </AnimatePresence>
-        <Button onClick={onCreateNewProjectClick} className="ml-2">
-          <Plus size={24} />
-          Create New Project
-        </Button>
+        <div className="flex grow flex-row-reverse">
+          <Button onClick={onCreateNewProjectClick} className="ml-2">
+            <Plus size={24} />
+            Create New Project
+          </Button>
+        </div>
       </div>
 
       <AnimatePresence mode="wait">

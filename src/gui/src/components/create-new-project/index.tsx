@@ -39,7 +39,7 @@ export const CreateNewProjectContent = () => {
 
   const validateProjectName = (name: string) => {
     const regex = /^[a-z0-9-]+$/
-    return regex.test(name)
+    return regex.test(name) && name.length < 128
   }
 
   const handleProjectNameChange = (
