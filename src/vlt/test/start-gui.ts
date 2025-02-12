@@ -61,6 +61,8 @@ t.test('starts gui data and server', async t => {
       },
     },
     '@vltpkg/graph': {
+      ideal: {},
+      reify: {},
       actual: {
         load() {
           return {
@@ -78,7 +80,7 @@ t.test('starts gui data and server', async t => {
     '@vltpkg/package-json': {
       PackageJson,
     },
-    '../src/read-project-folders.js': {
+    '../src/read-project-folders.ts': {
       readProjectFolders() {
         return [
           {
@@ -268,17 +270,17 @@ t.test('e2e server test', async t => {
   let ilog = ''
   const mocks = {
     '@vltpkg/url-open': { urlOpen() {} },
-    '../src/install.js': {
+    '../src/install.ts': {
       async install() {
         ilog += 'install\n'
       },
     },
-    '../src/uninstall.js': {
+    '../src/uninstall.ts': {
       async uninstall() {
         ilog += 'uninstall\n'
       },
     },
-    '../src/output.js': {
+    '../src/output.ts': {
       stderr: () => {},
       stdout: (str: string) => {
         log.push(str)
@@ -494,7 +496,7 @@ t.test('e2e server test', async t => {
       console.error = () => {}
       const { startGUI } = await t.mockImport('../src/start-gui.ts', {
         ...mocks,
-        '../src/init.js': {
+        '../src/init.ts': {
           async init() {
             throw new Error('ERR')
           },
@@ -616,12 +618,12 @@ t.test('e2e server test', async t => {
     // broken install
     const { startGUI } = await t.mockImport('../src/start-gui.ts', {
       '@vltpkg/url-open': { urlOpen() {} },
-      '../src/install.js': {
+      '../src/install.ts': {
         async install() {
           throw new Error('ERR')
         },
       },
-      '../src/output.js': {
+      '../src/output.ts': {
         stderr: () => {},
         stdout: () => {},
       },
@@ -734,12 +736,12 @@ t.test('e2e server test', async t => {
     // broken uninstall
     const { startGUI } = await t.mockImport('../src/start-gui.ts', {
       '@vltpkg/url-open': { urlOpen() {} },
-      '../src/uninstall.js': {
+      '../src/uninstall.ts': {
         async uninstall() {
           throw new Error('ERR')
         },
       },
-      '../src/output.js': {
+      '../src/output.ts': {
         stderr: () => {},
         stdout: () => {},
       },

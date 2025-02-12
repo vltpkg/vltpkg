@@ -1,6 +1,6 @@
 import { Test } from 'tap'
 import { joinDepIDTuple } from '@vltpkg/dep-id'
-import { SpecOptions } from '@vltpkg/spec'
+import { type SpecOptions } from '@vltpkg/spec'
 import { load } from '../../src/actual/load.ts'
 import { Graph } from '../../src/graph.ts'
 import { PathScurry } from 'path-scurry'

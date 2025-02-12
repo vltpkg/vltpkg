@@ -14,7 +14,7 @@ const { usage, command } = await t.mockImport<
       log.push(['delete', reg])
     },
   },
-  '../../src/read-password.js': {
+  '../../src/read-password.ts': {
     async readPassword(prompt: string) {
       log.push(['readPassword', prompt])
       return 'result'

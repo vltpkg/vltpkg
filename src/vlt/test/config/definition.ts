@@ -1,12 +1,15 @@
 import t from 'tap'
-import {
+import { setupEnv } from '../fixtures/run.ts'
+
+const {
   commands,
   definition,
   isRecordField,
   recordFields,
   getCommand,
-} from '../../src/config/definition.ts'
-import { setupEnv } from '../fixtures/run.ts'
+} = await t.mockImport<
+  typeof import('../../src/config/definition.ts')
+>('../../src/config/definition.ts')
 
 t.matchSnapshot(commands, 'commands')
 const defObj = definition.toJSON()

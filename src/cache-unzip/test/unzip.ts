@@ -2,10 +2,12 @@ import { Cache } from '@vltpkg/cache'
 import { spawnSync } from 'child_process'
 import t from 'tap'
 import { gzipSync } from 'zlib'
-// Needs to be the path to the dist file with .js extension
-// so that it can be spawned by node.
-// eslint-disable-next-line import/extensions, import/no-unresolved
-import { __CODE_SPLIT_SCRIPT_NAME } from '../dist/esm/unzip.js'
+import { __CODE_SPLIT_SCRIPT_NAME } from '../src/unzip.ts'
+
+const ENV = {
+  NODE_OPTIONS:
+    '--no-warnings --experimental-strip-types --conditions=@vltpkg/source',
+}
 
 t.test('validate args', async t => {
   t.match(
@@ -13,6 +15,7 @@ t.test('validate args', async t => {
       input: '',
       stdio: ['pipe', 'inherit', 'inherit'],
       encoding: 'utf8',
+      env: ENV,
     }),
     {
       status: 1,
@@ -21,6 +24,7 @@ t.test('validate args', async t => {
   t.match(
     spawnSync(process.execPath, [__CODE_SPLIT_SCRIPT_NAME, 'path'], {
       input: '',
+      env: ENV,
     }),
     {
       status: 1,
@@ -32,6 +36,7 @@ t.test('validate args', async t => {
       [__CODE_SPLIT_SCRIPT_NAME, t.testdir()],
       {
         input: 'nope\0not valid\0no valid keys\0',
+        env: ENV,
       },
     ),
     { status: 1 },
@@ -82,6 +87,7 @@ t.test('unzip some stuff in the cache', async t => {
     {
       input: 'gz1\0gz2\0plain1\0bogus\0',
       stdio: ['pipe', 'inherit', 'inherit'],
+      env: ENV,
     },
   )
   t.matchOnlyStrict(res, {
@@ -170,7 +176,11 @@ t.test('unzip an entry that had headers', async t => {
   const res = spawnSync(
     process.execPath,
     [__CODE_SPLIT_SCRIPT_NAME, t.testdirName],
-    { stdio: ['pipe', 'inherit', 'inherit'], input: 'gz1\0' },
+    {
+      stdio: ['pipe', 'inherit', 'inherit'],
+      input: 'gz1\0',
+      env: ENV,
+    },
   )
   t.matchOnlyStrict(res, {
     status: 0,

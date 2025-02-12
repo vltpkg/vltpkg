@@ -16,12 +16,12 @@ const testGenerateMatrix = async (
   const { default: generateMatrix } = await t.mockImport(
     '../src/matrix.ts',
     {
-      '../src/compile.js': {
+      '../src/compile.ts': {
         default: (a: any) => {
           compiles.push(a)
         },
       },
-      '../src/bundle.js': {
+      '../src/bundle.ts': {
         default: (a: any) => {
           bundles.push(a)
         },

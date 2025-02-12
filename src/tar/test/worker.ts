@@ -10,7 +10,7 @@ let unpackThrow = false
 const { Worker } = await t.mockImport<
   typeof import('../src/worker.ts')
 >('../src/worker.ts', {
-  '../src/unpack.js': {
+  '../src/unpack.ts': {
     unpack: async () => {
       unpackCalled = true
       if (unpackThrow) throw new Error('unpack fail')

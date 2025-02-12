@@ -110,6 +110,9 @@ const mockList = async (
         humanReadableOutput,
         jsonOutput,
         mermaidOutput,
+        reify: {},
+        ideal: {},
+        asDependency: () => {},
       },
       ...mocks,
     },
@@ -289,7 +292,7 @@ t.test('list', async t => {
 
     let startGUIOptions: StartGUIOptions | undefined
     const { command } = await mockList(t, {
-      '../../src/start-gui.js': {
+      '../../src/start-gui.ts': {
         startGUI: async (options: StartGUIOptions) => {
           startGUIOptions = options
         },

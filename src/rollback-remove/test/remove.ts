@@ -2,10 +2,7 @@ import { spawnSync } from 'child_process'
 import t from 'tap'
 import { join } from 'node:path'
 import { readdirSync } from 'fs'
-// Needs to be the path to the dist file with .js extension
-// so that it can be spawned by node.
-// eslint-disable-next-line import/extensions, import/no-unresolved
-import { __CODE_SPLIT_SCRIPT_NAME } from '../dist/esm/remove.js'
+import { __CODE_SPLIT_SCRIPT_NAME } from '../src/remove.ts'
 
 t.test('run the remover', async t => {
   const dir = t.testdir({
@@ -39,6 +36,10 @@ t.test('run the remover', async t => {
   spawnSync(process.execPath, [__CODE_SPLIT_SCRIPT_NAME], {
     // verify that it works if it's all chunked weird
     input: Buffer.from('a/b\x00./d\x00'),
+    env: {
+      ...process.env,
+      NODE_OPTIONS: '--no-warnings --experimental-strip-types',
+    },
   })
 
   t.strictSame(readDirs(), [join(dir, 'a/c')])
