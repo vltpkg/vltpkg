@@ -1,13 +1,13 @@
 import t from 'tap'
 import { PackageJson } from '@vltpkg/package-json'
-import { type DepID } from '@vltpkg/dep-id'
+import type { DepID } from '@vltpkg/dep-id'
 import { Spec } from '@vltpkg/spec'
 import { Graph } from '../../src/graph.ts'
-import {
-  type Dependency,
-  asDependency,
-  type AddImportersDependenciesMap,
-  type RemoveImportersDependenciesMap,
+import { asDependency } from '../../src/dependencies.ts'
+import type {
+  Dependency,
+  AddImportersDependenciesMap,
+  RemoveImportersDependenciesMap,
 } from '../../src/dependencies.ts'
 import { updatePackageJson } from '../../src/reify/update-importers-package-json.ts'
 

@@ -3,11 +3,8 @@ import assert from 'node:assert'
 import { spawnSync } from 'node:child_process'
 import { parseArgs as nodeParseArgs } from 'node:util'
 import fs from 'node:fs'
-import generateMatrix, {
-  getMatrix,
-  matrixConfig,
-  type CompilationDir,
-} from '../matrix.ts'
+import generateMatrix, { getMatrix, matrixConfig } from '../matrix.ts'
+import type { CompilationDir } from '../matrix.ts'
 import { Paths } from '../index.ts'
 import * as types from '../types.ts'
 

@@ -1,6 +1,7 @@
 import { motion, AnimatePresence } from 'framer-motion'
-import { useEffect, useState, type MouseEvent } from 'react'
-import { type DashboardDataProject } from '@/state/types.js'
+import { useEffect, useState } from 'react'
+import type { MouseEvent } from 'react'
+import type { DashboardDataProject } from '@/state/types.js'
 import { CardTitle } from '@/components/ui/card.jsx'
 import { useGraphStore } from '@/state/index.js'
 import {
@@ -14,14 +15,9 @@ import { TableFilterSearch } from '@/components/data-table/table-filter-search.j
 import { TableViewDropdown } from '@/components/data-table/table-view-dropdown.jsx'
 import { DashboardTable } from '@/components/dashboard-grid/dashboard-table.jsx'
 import { SortToggle } from '@/components/sort-toggle.jsx'
-import {
-  type View,
-  DashboardViewToggle,
-} from '@/components/dashboard-grid/dashboard-view-toggle.jsx'
-import {
-  type VisibilityState,
-  type Table,
-} from '@tanstack/react-table'
+import { DashboardViewToggle } from '@/components/dashboard-grid/dashboard-view-toggle.jsx'
+import type { View } from '@/components/dashboard-grid/dashboard-view-toggle.jsx'
+import type { VisibilityState, Table } from '@tanstack/react-table'
 import { getIconSet } from '@/utils/dashboard-tools.jsx'
 import { format } from 'date-fns'
 import { requestRouteTransition } from '@/lib/request-route-transition.js'

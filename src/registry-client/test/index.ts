@@ -2,9 +2,10 @@ import EventEmitter from 'events'
 import { readFileSync } from 'fs'
 import { createServer } from 'http'
 import { resolve } from 'path'
-import t, { type Test } from 'tap'
+import t from 'tap'
+import type { Test } from 'tap'
 import { gzipSync } from 'zlib'
-import { type RegistryClientRequestOptions } from '../src/index.ts'
+import type { RegistryClientRequestOptions } from '../src/index.ts'
 
 const PORT = (t.childId || 0) + 8080
 
@@ -232,9 +233,9 @@ const registryURL = `http://localhost:${PORT}`
 const mockIndex = async (t: Test, mocks?: Record<string, any>) =>
   t.mockImport<typeof import('../src/index.ts')>('../src/index.ts', {
     // always get fresh copy of env since it reads globalThis
-    '../src/env.js': await t.mockImport('../src/env.ts'),
+    '../src/env.ts': await t.mockImport('../src/env.ts'),
     '@vltpkg/url-open': mockUrlOpen,
-    '../src/otplease.js': { otplease },
+    '../src/otplease.ts': { otplease },
     ...mocks,
   })
 

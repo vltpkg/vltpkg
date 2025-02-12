@@ -20,9 +20,6 @@
       ".": "./src/index.ts"
     }
   },
-  "bin": {
-    "vlt-cache-unzip": "./dist/esm/unzip.js"
-  },
   "dependencies": {
     "@vltpkg/cache": "workspace:*",
     "@vltpkg/error-cause": "workspace:*"
@@ -49,9 +46,7 @@
     "lint": "eslint . --fix",
     "lint:check": "eslint .",
     "prepare": "tshy",
-    "presnap": "tshy",
     "snap": "tap",
-    "pretest": "tshy",
     "test": "tap",
     "posttest": "tsc --project tsconfig.test.json",
     "watch": "tshy --watch"

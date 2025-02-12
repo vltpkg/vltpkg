@@ -1,5 +1,5 @@
 import { ChevronRight, ChevronLeft } from 'lucide-react'
-import { type Props } from '@astrojs/starlight/props'
+import type { Props } from '@astrojs/starlight/props'
 
 const Pagination = ({ pagination }: Props) => {
   const { next, prev } = pagination

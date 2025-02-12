@@ -1,19 +1,16 @@
-import { joinDepIDTuple, type DepID } from '@vltpkg/dep-id'
+import { joinDepIDTuple } from '@vltpkg/dep-id'
+import type { DepID } from '@vltpkg/dep-id'
 import { error } from '@vltpkg/error-cause'
-import { type PackageInfoClient } from '@vltpkg/package-info'
-import { Spec, type SpecOptions } from '@vltpkg/spec'
-import {
-  longDependencyTypes,
-  type DependencyTypeLong,
-} from '@vltpkg/types'
-import { type PathScurry } from 'path-scurry'
-import {
-  asDependency,
-  shorten,
-  type Dependency,
-} from '../dependencies.ts'
-import { type Graph } from '../graph.ts'
-import { type Node } from '../node.ts'
+import type { PackageInfoClient } from '@vltpkg/package-info'
+import { Spec } from '@vltpkg/spec'
+import type { SpecOptions } from '@vltpkg/spec'
+import { longDependencyTypes } from '@vltpkg/types'
+import type { DependencyTypeLong } from '@vltpkg/types'
+import type { PathScurry } from 'path-scurry'
+import { asDependency, shorten } from '../dependencies.ts'
+import type { Dependency } from '../dependencies.ts'
+import type { Graph } from '../graph.ts'
+import type { Node } from '../node.ts'
 import { removeOptionalSubgraph } from '../remove-optional-subgraph.ts'
 
 type FileTypeInfo = {

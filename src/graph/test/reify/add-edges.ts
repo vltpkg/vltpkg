@@ -1,10 +1,10 @@
-import { type PackageJson } from '@vltpkg/package-json'
-import { type RollbackRemove } from '@vltpkg/rollback-remove'
-import { type Manifest } from '@vltpkg/types'
+import type { PackageJson } from '@vltpkg/package-json'
+import type { RollbackRemove } from '@vltpkg/rollback-remove'
+import type { Manifest } from '@vltpkg/types'
 import { PathScurry } from 'path-scurry'
 import t from 'tap'
-import { type Diff } from '../../src/diff.ts'
-import { type Edge } from '../../src/edge.ts'
+import type { Diff } from '../../src/diff.ts'
+import type { Edge } from '../../src/edge.ts'
 
 t.test('add some edges', async t => {
   const projectRoot = t.testdirName
@@ -12,7 +12,7 @@ t.test('add some edges', async t => {
   const { addEdges } = await t.mockImport<
     typeof import('../../src/reify/add-edges.ts')
   >('../../src/reify/add-edges.ts', {
-    '../../src/reify/add-edge.js': {
+    '../../src/reify/add-edge.ts': {
       addEdge: async (
         edge: Edge,
         _mani: Manifest,

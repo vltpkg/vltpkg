@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react'
 import { GitFork, Plus } from 'lucide-react'
-import { type DepID } from '@vltpkg/dep-id/browser'
+import type { DepID } from '@vltpkg/dep-id/browser'
 import { GridHeader } from '@/components/explorer-grid/header.jsx'
 import { SideItem } from '@/components/explorer-grid/side-item.jsx'
-import { type GridItemData } from '@/components/explorer-grid/types.js'
+import type { GridItemData } from '@/components/explorer-grid/types.js'
 import {
   Tooltip,
   TooltipContent,
@@ -15,12 +15,10 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover.jsx'
-import {
-  AddDependenciesPopover,
-  type InstallOptions,
-} from '@/components/explorer-grid/add-dependencies-popover.jsx'
+import { AddDependenciesPopover } from '@/components/explorer-grid/add-dependencies-popover.jsx'
+import type { InstallOptions } from '@/components/explorer-grid/add-dependencies-popover.jsx'
 import { useToast } from '@/components/hooks/use-toast.js'
-import { type Action } from '@/state/types.js'
+import type { Action } from '@/state/types.js'
 import { useGraphStore } from '@/state/index.js'
 import { useAnimate } from 'framer-motion'
 

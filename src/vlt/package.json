@@ -89,9 +89,7 @@
     "lint": "eslint . --fix",
     "lint:check": "eslint .",
     "prepare": "tshy",
-    "presnap": "tshy",
     "snap": "tap",
-    "pretest": "tshy",
     "test": "tap",
     "posttest": "tsc --project tsconfig.test.json",
     "watch": "tshy --watch"

@@ -46,15 +46,13 @@
   },
   "scripts": {
     "prebenchmark": "pnpm vlt-benchmark-download-fixtures",
-    "benchmark": "node scripts/benchmark.js",
+    "benchmark": "node --no-warnings --experimental-transform-types --conditions=@vltpkg/source scripts/benchmark.js",
     "format": "prettier --write . --log-level warn --ignore-path ../../.prettierignore --cache",
     "format:check": "prettier --check . --ignore-path ../../.prettierignore --cache",
     "lint": "eslint . --fix",
     "lint:check": "eslint .",
     "prepare": "tshy",
-    "presnap": "tshy",
     "snap": "tap",
-    "pretest": "tshy",
     "test": "tap",
     "posttest": "tsc --project tsconfig.test.json",
     "watch": "tshy --watch"

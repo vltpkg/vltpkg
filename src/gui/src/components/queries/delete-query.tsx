@@ -14,7 +14,7 @@ import {
   TooltipProvider,
 } from '@/components/ui/tooltip.jsx'
 import { Button } from '@/components/ui/button.jsx'
-import { type SavedQuery } from '@/state/types.js'
+import type { SavedQuery } from '@/state/types.js'
 import { Trash } from 'lucide-react'
 import { useToast } from '@/components/hooks/use-toast.js'
 import { useGraphStore } from '@/state/index.js'

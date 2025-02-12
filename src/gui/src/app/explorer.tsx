@@ -3,11 +3,7 @@ import { Query } from '@vltpkg/query'
 import { SearchBar } from '@/components/search-bar.jsx'
 import { ExplorerGrid } from '@/components/explorer-grid/index.jsx'
 import { useGraphStore } from '@/state/index.js'
-import {
-  type TransferData,
-  type Action,
-  type State,
-} from '@/state/types.js'
+import type { TransferData, Action, State } from '@/state/types.js'
 import { load } from '@/state/load-graph.js'
 import { Search, Command } from 'lucide-react'
 import { Kbd } from '@/components/ui/kbd.jsx'

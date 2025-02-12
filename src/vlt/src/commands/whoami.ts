@@ -1,11 +1,11 @@
 import { RegistryClient } from '@vltpkg/registry-client'
 import { commandUsage } from '../config/usage.ts'
-import {
-  type CommandFnResultOnly,
-  type CommandUsage,
-  type Views,
+import type {
+  CommandFnResultOnly,
+  CommandUsage,
+  Views,
 } from '../types.ts'
-import { type JSONField } from '@vltpkg/types'
+import type { JSONField } from '@vltpkg/types'
 
 export const usage: CommandUsage = () =>
   commandUsage({

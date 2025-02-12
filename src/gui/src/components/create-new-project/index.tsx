@@ -1,4 +1,5 @@
-import { type SyntheticEvent, useState } from 'react'
+import { useState } from 'react'
+import type { SyntheticEvent } from 'react'
 import { useGraphStore } from '@/state/index.js'
 import {
   Select,

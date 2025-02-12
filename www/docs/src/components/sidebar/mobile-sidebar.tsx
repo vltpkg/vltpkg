@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button'
 import { AlignLeft, X as CloseIcon } from 'lucide-react'
 import { AnimatePresence, motion } from 'motion/react'
 import AppSidebarSublist from '@/components/sidebar/app-sidebar-sublist'
-import { type SidebarEntries } from '@/components/sidebar/app-sidebar'
+import type { SidebarEntries } from '@/components/sidebar/app-sidebar'
 import clsx from 'clsx'
 
 const MobileSidebar = ({ sidebar }: { sidebar: SidebarEntries }) => {

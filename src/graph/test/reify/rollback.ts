@@ -1,9 +1,9 @@
 import { joinDepIDTuple } from '@vltpkg/dep-id'
-import { type RollbackRemove } from '@vltpkg/rollback-remove'
+import type { RollbackRemove } from '@vltpkg/rollback-remove'
 import { PathScurry } from 'path-scurry'
 import t from 'tap'
-import { type Diff } from '../../src/diff.ts'
-import { type Edge } from '../../src/edge.ts'
+import type { Diff } from '../../src/diff.ts'
+import type { Edge } from '../../src/edge.ts'
 
 const fooId = joinDepIDTuple(['registry', '', 'foo@1.2.3'])
 const diff = {
@@ -34,7 +34,7 @@ const { rollback } = await t.mockImport<
   '@vltpkg/rollback-remove': {
     RollbackRemove: MockRollbackRemove,
   },
-  '../../src/reify/delete-edge.js': {
+  '../../src/reify/delete-edge.ts': {
     deleteEdge: (edge: Edge) => {
       deletedEdges.push(edge)
     },

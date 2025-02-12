@@ -22,7 +22,7 @@
     }
   },
   "bin": {
-    "vlt-benchmark-download-fixtures": "./dist/esm/download.js"
+    "vlt-benchmark-download-fixtures": "./src/download.ts"
   },
   "dependencies": {
     "pacote": "catalog:"
@@ -50,9 +50,7 @@
     "lint": "eslint . --fix",
     "lint:check": "eslint .",
     "prepare": "tshy",
-    "presnap": "tshy",
     "snap": "tap",
-    "pretest": "tshy",
     "test": "tap",
     "posttest": "tsc --project tsconfig.test.json",
     "watch": "tshy --watch"

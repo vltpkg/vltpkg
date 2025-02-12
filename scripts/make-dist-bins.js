@@ -11,7 +11,7 @@ import {
 
 // Manually add any dirs that have package.json#bin scripts that get
 // linked to built dist/ files.
-const DIRS = ['infra/benchmark', 'src/cache-unzip', 'src/vlt']
+const DIRS = ['src/vlt']
 
 for (const [pkgdir, { bin = {} }] of DIRS.map(d => {
   const dir = resolve(import.meta.dirname, '..', d)

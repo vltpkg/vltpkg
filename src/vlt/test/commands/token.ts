@@ -1,6 +1,6 @@
-import { type Token } from '@vltpkg/registry-client'
+import type { Token } from '@vltpkg/registry-client'
 import t from 'tap'
-import { type LoadedConfig } from '../../src/types.ts'
+import type { LoadedConfig } from '../../src/types.ts'
 
 const log: string[][] = []
 const { usage, command } = await t.mockImport<
@@ -14,7 +14,7 @@ const { usage, command } = await t.mockImport<
       log.push(['delete', reg])
     },
   },
-  '../../src/read-password.js': {
+  '../../src/read-password.ts': {
     async readPassword(prompt: string) {
       log.push(['readPassword', prompt])
       return 'result'

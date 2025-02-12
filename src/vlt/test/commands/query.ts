@@ -5,16 +5,16 @@ import {
   mermaidOutput,
 } from '@vltpkg/graph'
 import { PackageJson } from '@vltpkg/package-json'
-import { Spec, type SpecOptions } from '@vltpkg/spec'
+import { Spec } from '@vltpkg/spec'
+import type { SpecOptions } from '@vltpkg/spec'
 import { PathScurry } from 'path-scurry'
-import t, { type Test } from 'tap'
-import { type LoadedConfig } from '../../src/types.ts'
+import t from 'tap'
+import type { Test } from 'tap'
+import type { LoadedConfig } from '../../src/types.ts'
 import { Monorepo } from '@vltpkg/workspaces'
-import { type StartGUIOptions } from '../../src/start-gui.ts'
-import {
-  commandView,
-  type CommandResultOptions,
-} from '../fixtures/run.ts'
+import type { StartGUIOptions } from '../../src/start-gui.ts'
+import { commandView } from '../fixtures/run.ts'
+import type { CommandResultOptions } from '../fixtures/run.ts'
 
 t.cleanSnapshot = s =>
   s.replace(
@@ -110,6 +110,9 @@ const mockQuery = async (
         humanReadableOutput,
         jsonOutput,
         mermaidOutput,
+        reify: {},
+        ideal: {},
+        asDependency: () => {},
       },
       ...mocks,
     },
@@ -265,7 +268,7 @@ t.test('query', async t => {
 
     let startGUIOptions: StartGUIOptions | undefined
     const { command } = await mockQuery(t, {
-      '../../src/start-gui.js': {
+      '../../src/start-gui.ts': {
         startGUI: async (options: StartGUIOptions) => {
           startGUIOptions = options
         },

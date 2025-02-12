@@ -1,10 +1,9 @@
 import { Spec } from '@vltpkg/spec'
-import { type Manifest } from '@vltpkg/types'
+import type { Manifest } from '@vltpkg/types'
 import t from 'tap'
 import {
   asDepID,
   delimiter,
-  type DepID,
   getId,
   getTuple,
   hydrate,
@@ -13,6 +12,7 @@ import {
   joinDepIDTuple,
   splitDepID,
 } from '../src/index.ts'
+import type { DepID } from '../src/index.ts'
 
 const mani: Manifest = { name: 'manifest-name', version: '1.2.3' }
 t.test('valid specs', t => {

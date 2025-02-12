@@ -1,11 +1,11 @@
 import chalk from 'chalk'
-import {
-  type View,
-  type LoadedConfig,
-  type Views,
-  type ViewClass,
-  type Command,
-  type CommandResult,
+import type {
+  View,
+  LoadedConfig,
+  Views,
+  ViewClass,
+  Command,
+  CommandResult,
 } from './types.ts'
 import { isErrorRoot } from '@vltpkg/error-cause'
 import assert from 'node:assert'

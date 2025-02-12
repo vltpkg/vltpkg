@@ -3,7 +3,7 @@ import { cleanup, render } from '@testing-library/react'
 import html from 'diffable-html'
 import { useGraphStore as useStore } from '@/state/index.js'
 import { DependencySideBar } from '@/components/explorer-grid/dependency-side-bar.jsx'
-import { type GridItemData } from '@/components/explorer-grid/types.js'
+import type { GridItemData } from '@/components/explorer-grid/types.js'
 
 vi.mock('lucide-react', () => ({
   GitFork: 'gui-git-fork-icon',

@@ -13,20 +13,8 @@ export const randomPackages = (count?: number) => {
 export const randomize = <T>(arr: T[]): T[] =>
   [...arr].sort(() => Math.random() - 0.5)
 
-// TODO: make these not enums
-// eslint-disable-next-line no-restricted-syntax
-export enum EXT {
-  tgz = 'tgz',
-  json = 'json',
-}
-
-// eslint-disable-next-line no-restricted-syntax
-export enum UNIT {
-  ns = 'ns',
-  us = 'us',
-  ms = 'ms',
-  s = 's',
-}
+export type EXT = 'tgz' | 'json'
+export type UNIT = 'ns' | 'us' | 'ms' | 's'
 
 export const SOURCE = resolve(import.meta.dirname, '..', '.artifacts')
 
@@ -50,10 +38,10 @@ export const timePromises = async <T>(
 
 export const convertNs = (ns: number, unit?: UNIT) => {
   const c = {
-    s: () => [ns * 1e-9, UNIT.s],
-    ms: () => [ns * 1e-6, UNIT.ms],
-    us: () => [ns * 1e-3, UNIT.us],
-    ns: () => [ns, UNIT.ns],
+    s: () => [ns * 1e-9, 's'],
+    ms: () => [ns * 1e-6, 'ms'],
+    us: () => [ns * 1e-3, 'us'],
+    ns: () => [ns, 'ns'],
   }
   return (
     unit ? c[unit]()
@@ -111,9 +99,9 @@ const copyFixtures = (targetDir: string, ext: EXT) => {
   }
   return randomize(readdirSync(targetDir, { withFileTypes: true }))
 }
-export const copyTarballs = (d: string) => copyFixtures(d, EXT.tgz)
+export const copyTarballs = (d: string) => copyFixtures(d, 'tgz')
 
-export const copyPackuments = (d: string) => copyFixtures(d, EXT.json)
+export const copyPackuments = (d: string) => copyFixtures(d, 'json')
 
 export const resetDir = (...dirs: string[]) => {
   for (const dir of dirs) {

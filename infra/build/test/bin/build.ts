@@ -1,25 +1,26 @@
-import t, { type Test } from 'tap'
+import t from 'tap'
+import type { Test } from 'tap'
 
 const build = async (t: Test, ...argv: string[]) => {
   const dir = t.testdir()
   const logs = t.capture(console, 'log').args
   t.intercept(process, 'argv', {
-    value: [process.execPath, 'build.js', `--outdir=${dir}`, ...argv],
+    value: [process.execPath, 'build.ts', `--outdir=${dir}`, ...argv],
   })
   let compiled = 0
   let bundled = 0
   await t.mockImport<typeof import('../../src/bin/build.ts')>(
     '../../src/bin/build.ts',
     {
-      '../../src/matrix.js': await t.mockImport(
+      '../../src/matrix.ts': await t.mockImport(
         '../../src/matrix.ts',
         {
-          '../../src/compile.js': {
+          '../../src/compile.ts': {
             default: () => {
               compiled++
             },
           },
-          '../../src/bundle.js': {
+          '../../src/bundle.ts': {
             default: () => {
               bundled++
             },

@@ -1,5 +1,6 @@
 import assert from 'node:assert'
-import t, { type Test } from 'tap'
+import t from 'tap'
+import type { Test } from 'tap'
 
 const benchmark = async (t: Test, ...argv: string[]) => {
   const dir = t.testdir()
@@ -7,7 +8,7 @@ const benchmark = async (t: Test, ...argv: string[]) => {
   t.intercept(process, 'argv', {
     value: [
       process.execPath,
-      'benchmark.js',
+      'benchmark.ts',
       `--outdir=${dir}`,
       ...argv,
     ],
@@ -19,13 +20,13 @@ const benchmark = async (t: Test, ...argv: string[]) => {
       'node:child_process': {
         spawnSync: (_: any, a: string[]) => (args = a),
       },
-      '../../src/matrix.js': await t.mockImport(
+      '../../src/matrix.ts': await t.mockImport(
         '../../src/matrix.ts',
         {
-          '../../src/compile.js': {
+          '../../src/compile.ts': {
             default: () => {},
           },
-          '../../src/bundle.js': {
+          '../../src/bundle.ts': {
             default: () => {},
           },
         },

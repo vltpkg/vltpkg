@@ -1,9 +1,5 @@
 import { error } from '@vltpkg/error-cause'
-import {
-  type EdgeLike,
-  type GraphLike,
-  type NodeLike,
-} from '@vltpkg/graph'
+import type { EdgeLike, GraphLike, NodeLike } from '@vltpkg/graph'
 import postcssSelectorParser from 'postcss-selector-parser'
 import { attribute } from './attribute.ts'
 import { classFn } from './class.ts'
@@ -11,13 +7,15 @@ import { combinator } from './combinator.ts'
 import { id } from './id.ts'
 import { pseudo } from './pseudo.ts'
 import {
-  type PostcssNodeWithChildren,
-  type ParserState,
-  type ParserFn,
   isPostcssNodeWithChildren,
   asPostcssNodeWithChildren,
   isSelectorNode,
-  type QueryResponse,
+} from './types.ts'
+import type {
+  PostcssNodeWithChildren,
+  ParserState,
+  ParserFn,
+  QueryResponse,
 } from './types.ts'
 
 export * from './types.ts'

@@ -1,7 +1,7 @@
 import { error } from '@vltpkg/error-cause'
 import { loadPackageJson } from 'package-json-from-dist'
 import { Config } from './config/index.ts'
-import { type Command, type Commands } from './types.ts'
+import type { Command, Commands } from './types.ts'
 import { stdout, outputCommand } from './output.ts'
 
 const { version } = loadPackageJson(import.meta.filename) as {

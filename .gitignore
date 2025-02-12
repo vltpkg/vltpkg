@@ -23,6 +23,7 @@
 /infra/*/docs
 /infra/*/node_modules
 /infra/*/scripts/fixtures/
+/infra/benchmark/.artifacts/
 
 /www/*/.tap
 /www/*/.astro

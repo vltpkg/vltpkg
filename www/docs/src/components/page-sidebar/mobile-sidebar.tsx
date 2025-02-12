@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { type Props } from '@astrojs/starlight/props'
+import type { Props } from '@astrojs/starlight/props'
 import {
   Drawer,
   DrawerContent,

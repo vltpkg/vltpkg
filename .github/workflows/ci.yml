@@ -34,6 +34,7 @@ jobs:
         with:
           node-version-file: '.nvmrc'
           cache: pnpm
+          check-latest: true
 
       - name: Install dependencies
         run: pnpm install
@@ -150,6 +151,7 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
           cache: pnpm
+          check-latest: true
 
       - name: Set run-script filters
         id: filters
@@ -166,7 +168,4 @@ jobs:
 
       - name: Run Tests
         if: steps.filters.outputs.test
-        run: |
-          pnpm config set enable-pre-post-scripts false --location=project
-          pnpm ${{ steps.filters.outputs.test }} --no-bail --aggregate-output test
-          pnpm ${{ steps.filters.outputs.test }} --no-bail --aggregate-output posttest
+        run: pnpm ${{ steps.filters.outputs.test }} --no-bail --aggregate-output test

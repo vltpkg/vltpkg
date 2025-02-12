@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { AlignLeft } from 'lucide-react'
-import { type Props } from '@astrojs/starlight/props'
+import type { Props } from '@astrojs/starlight/props'
 
 const PageSidebar = ({ toc }: Props) => {
   const [activeAnchor, setActiveAnchor] = useState<string | null>(

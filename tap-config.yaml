@@ -7,3 +7,8 @@ timeout: 600 # 10 minutes
 exclude:
   - 'scripts/**'
   - 'test/fixtures/**'
+
+node-arg:
+  - '--experimental-strip-types'
+  - '--no-warnings'
+  - '--conditions=@vltpkg/source'

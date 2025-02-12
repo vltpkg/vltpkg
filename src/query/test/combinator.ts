@@ -7,9 +7,9 @@ import {
   getGraphSelectionState,
   selectorFixture,
 } from './fixtures/selector.ts'
-import { type TestCase } from './fixtures/types.ts'
-import { type EdgeLike, type NodeLike } from '@vltpkg/graph'
-import { type GraphSelectionState } from '../src/types.ts'
+import type { TestCase } from './fixtures/types.ts'
+import type { EdgeLike, NodeLike } from '@vltpkg/graph'
+import type { GraphSelectionState } from '../src/types.ts'
 
 const testCombinator = selectorFixture(combinator)
 

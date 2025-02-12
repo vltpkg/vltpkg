@@ -1,4 +1,5 @@
-import menuItems, { type MenuItem } from './menu.js'
+import menuItems from './menu.js'
+import type { MenuItem } from './menu.js'
 import {
   SidebarMenuSub,
   SidebarMenu,

@@ -1,8 +1,9 @@
 import { splitDepID, hydrate } from '@vltpkg/dep-id/browser'
-import { Spec, type SpecOptionsFilled } from '@vltpkg/spec/browser'
+import { Spec } from '@vltpkg/spec/browser'
+import type { SpecOptionsFilled } from '@vltpkg/spec/browser'
 import { Card, CardDescription } from '@/components/ui/card.jsx'
 import { useGraphStore } from '@/state/index.js'
-import { type GridItemData, type GridItemOptions } from './types.js'
+import type { GridItemData, GridItemOptions } from './types.js'
 import {
   Tabs,
   TabsContent,
@@ -12,10 +13,8 @@ import {
 import { CodeBlock } from '../ui/shiki.jsx'
 import { FileSearch2, Home, Package } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
-import {
-  type DetailsInfo,
-  fetchDetails,
-} from '@/lib/external-info.js'
+import { fetchDetails } from '@/lib/external-info.js'
+import type { DetailsInfo } from '@/lib/external-info.js'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar.jsx'
 import {
   Tooltip,
