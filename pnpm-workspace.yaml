@@ -21,7 +21,7 @@ catalog:
   promise-call-limit: ^3.0.2
   rimraf: ^6.0.1
   semver: ^7.7.1
-  tap: ^21.0.2
+  tap: ^21.1.0
   tar: ^7.4.3
   tshy: ^3.0.2
   typescript: 5.7.3

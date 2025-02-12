@@ -5,7 +5,7 @@ t.intercept(process.stdout, 'isTTY', { value: false })
 import type { Jack } from 'jackspeak'
 import type { LoadedConfig } from '../src/config/index.ts'
 import type { Command } from '../src/index.ts'
-import { ViewClass } from '../src/view.ts'
+import { ViewClass, isViewClass } from '../src/view.ts'
 import type { Views, ViewFn, ViewOptions } from '../src/view.ts'
 
 // make sure these are loaded after the isTTY intercept
@@ -13,10 +13,14 @@ const { outputCommand, startView, getView, stderr, stdout } =
   await t.mockImport<typeof import('../src/output.ts')>(
     '../src/output.ts',
     {
-      '../src/print-err.js': {
+      '../src/print-err.ts': {
         printErr(err: unknown) {
           errsPrinted.push(err)
         },
+      },
+      '../src/view.ts': {
+        ViewClass,
+        isViewClass,
       },
     },
   )

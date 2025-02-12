@@ -65,6 +65,8 @@ t.test('starts gui data and server', async t => {
       },
     },
     '@vltpkg/graph': {
+      ideal: {},
+      reify: {},
       actual: {
         load() {
           return {
@@ -82,7 +84,7 @@ t.test('starts gui data and server', async t => {
     '@vltpkg/package-json': {
       PackageJson,
     },
-    '../src/read-project-folders.js': {
+    '../src/read-project-folders.ts': {
       readProjectFolders() {
         return [
           {
@@ -239,7 +241,7 @@ t.test('formatDashboardJson dashboardProjectLocations', async t => {
         return dir
       },
     },
-    '../src/project-info.js': {
+    '../src/project-info.ts': {
       ...(await import('../src/project-info.ts')),
       getReadablePath: (path: string) => path.replace(dir, '~'),
     },
@@ -295,17 +297,17 @@ t.test('e2e server test', async t => {
       },
     },
     '@vltpkg/url-open': { urlOpen() {} },
-    '../src/install.js': {
+    '../src/install.ts': {
       async install() {
         ilog += 'install\n'
       },
     },
-    '../src/uninstall.js': {
+    '../src/uninstall.ts': {
       async uninstall() {
         ilog += 'uninstall\n'
       },
     },
-    '../src/output.js': {
+    '../src/output.ts': {
       stderr: () => {},
       stdout: (str: string) => {
         log.push(str)
@@ -546,7 +548,7 @@ t.test('e2e server test', async t => {
         typeof import('../src/start-gui.ts')
       >('../src/start-gui.ts', {
         ...mocks,
-        '../src/init.js': {
+        '../src/init.ts': {
           async init() {
             throw new Error('ERR')
           },
@@ -676,12 +678,12 @@ t.test('e2e server test', async t => {
         },
       },
       '@vltpkg/url-open': { urlOpen() {} },
-      '../src/install.js': {
+      '../src/install.ts': {
         async install() {
           throw new Error('ERR')
         },
       },
-      '../src/output.js': {
+      '../src/output.ts': {
         stderr: () => {},
         stdout: () => {},
       },
@@ -814,12 +816,12 @@ t.test('e2e server test', async t => {
         },
       },
       '@vltpkg/url-open': { urlOpen() {} },
-      '../src/uninstall.js': {
+      '../src/uninstall.ts': {
         async uninstall() {
           throw new Error('ERR')
         },
       },
-      '../src/output.js': {
+      '../src/output.ts': {
         stderr: () => {},
         stdout: () => {},
       },

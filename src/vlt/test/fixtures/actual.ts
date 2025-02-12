@@ -1,6 +1,6 @@
 import { Test } from 'tap'
 import { joinDepIDTuple } from '@vltpkg/dep-id'
-import { SpecOptions } from '@vltpkg/spec'
+import type { SpecOptions } from '@vltpkg/spec'
 import { Graph, actual } from '@vltpkg/graph'
 import { PathScurry } from 'path-scurry'
 import { PackageJson } from '@vltpkg/package-json'

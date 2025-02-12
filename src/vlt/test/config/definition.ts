@@ -1,11 +1,13 @@
 import t from 'tap'
-import {
+const {
   commands,
   definition,
   getCommand,
   isRecordField,
   recordFields,
-} from '../../src/config/definition.ts'
+} = await t.mockImport<
+  typeof import('../../src/config/definition.ts')
+>('../../src/config/definition.ts')
 import { setupEnv } from '../fixtures/run.ts'
 
 t.matchSnapshot(commands, 'commands')

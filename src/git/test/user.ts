@@ -2,7 +2,7 @@ import t from 'tap'
 
 t.test('find both name and email', async t => {
   const { getUser } = await t.mockImport('../src/user.ts', {
-    '../src/spawn.js': {
+    '../src/spawn.ts': {
       spawn: async (args: string[]) => {
         if (args[2] === 'user.name') return { stdout: 'Ruy Adorno' }
         if (args[2] === 'user.email')
@@ -26,7 +26,7 @@ t.test('find both name and email', async t => {
 
 t.test('find both name and email from fallback', async t => {
   const { getUser } = await t.mockImport('../src/user.ts', {
-    '../src/spawn.js': {
+    '../src/spawn.ts': {
       spawn: async (args: string[]) => {
         if (args[1] === '--get') return { status: 1 }
         if (args[2] === 'user.name') return { stdout: 'Ruy Adorno' }
@@ -51,7 +51,7 @@ t.test('find both name and email from fallback', async t => {
 
 t.test('find name only', async t => {
   const { getUser } = await t.mockImport('../src/user.ts', {
-    '../src/spawn.js': {
+    '../src/spawn.ts': {
       spawn: async (args: string[]) => {
         if (args[2] === 'user.name') return { stdout: 'Ruy Adorno' }
         else
@@ -73,7 +73,7 @@ t.test('find name only', async t => {
 
 t.test('find email only', async t => {
   const { getUser } = await t.mockImport('../src/user.ts', {
-    '../src/spawn.js': {
+    '../src/spawn.ts': {
       spawn: async (args: string[]) => {
         if (args[2] === 'user.email')
           return { stdout: 'ruy@example.com' }
@@ -96,7 +96,7 @@ t.test('find email only', async t => {
 
 t.test('find email only signal', async t => {
   const { getUser } = await t.mockImport('../src/user.ts', {
-    '../src/spawn.js': {
+    '../src/spawn.ts': {
       spawn: async (args: string[]) => {
         if (args[2] === 'user.email')
           return { stdout: 'ruy@example.com' }
@@ -119,7 +119,7 @@ t.test('find email only signal', async t => {
 
 t.test('find nothing', async t => {
   const { getUser } = await t.mockImport('../src/user.ts', {
-    '../src/spawn.js': {
+    '../src/spawn.ts': {
       spawn: async () => {
         return {
           status: 1,

@@ -1,4 +1,5 @@
-import { Header, HeaderData } from 'tar'
+import { Header } from 'tar'
+import type { HeaderData } from 'tar'
 export const makeTar = (chunks: (string | Buffer | HeaderData)[]) => {
   let dataLen = 0
   return Buffer.concat(
