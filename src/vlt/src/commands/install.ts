@@ -7,7 +7,7 @@ import {
 } from '../types.ts'
 import { commandUsage } from '../config/usage.ts'
 import { install } from '../install.ts'
-import { InstallReporter } from './install/reporter.tsx'
+import { InstallReporter } from './install/reporter.ts'
 
 export const usage: CommandUsage = () =>
   commandUsage({
