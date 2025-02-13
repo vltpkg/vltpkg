@@ -8,13 +8,13 @@ import {
 import * as OS from 'os'
 import { resolve } from 'path'
 import t from 'tap'
-import { type ConfigData } from '../../src/types.js'
+import { type ConfigData } from '../../src/types.ts'
 
 process.env.XDG_CONFIG_HOME = t.testdir()
 
 const { Config } = await t.mockImport<
-  typeof import('../../src/config/index.js')
->('../../src/config/index.js')
+  typeof import('../../src/config/index.ts')
+>('../../src/config/index.ts')
 
 const clearEnv = () => {
   for (const k of Object.keys(process.env)) {
@@ -88,8 +88,8 @@ t.test('read and write a user config', async t => {
     a: { b: {} },
   })
   const { Config } = await t.mockImport<
-    typeof import('../../src/config/index.js')
-  >('../../src/config/index.js', {
+    typeof import('../../src/config/index.ts')
+  >('../../src/config/index.ts', {
     '@vltpkg/xdg': {
       XDG: class XDG {
         config() {
@@ -162,8 +162,8 @@ t.test(
       a: { b: {} },
     })
     const { Config } = await t.mockImport<
-      typeof import('../../src/config/index.js')
-    >('../../src/config/index.js', {
+      typeof import('../../src/config/index.ts')
+    >('../../src/config/index.ts', {
       '@vltpkg/xdg': {
         XDG: class XDG {
           config() {
@@ -269,7 +269,7 @@ t.test('enable/disable color output', async t => {
     t.intercept(process, 'env', { value: env })
     const chalk = { default: { level: 3 } }
     const { Config } = await t.mockImport(
-      '../../src/config/index.js',
+      '../../src/config/index.ts',
       {
         chalk,
         '@vltpkg/xdg': mockXDG,
@@ -287,7 +287,7 @@ t.test('enable/disable color output', async t => {
     t.intercept(process, 'env', { value: env })
     const chalk = { default: { level: 3 } }
     const { Config } = await t.mockImport(
-      '../../src/config/index.js',
+      '../../src/config/index.ts',
       {
         chalk,
         '@vltpkg/xdg': mockXDG,
@@ -306,7 +306,7 @@ t.test('enable/disable color output', async t => {
     t.intercept(process, 'env', { value: env })
     const chalk = { default: { level: 0 } }
     const { Config } = await t.mockImport(
-      '../../src/config/index.js',
+      '../../src/config/index.ts',
       {
         chalk,
         '@vltpkg/xdg': mockXDG,
@@ -325,7 +325,7 @@ t.test('enable/disable color output', async t => {
     t.intercept(process, 'env', { value: env })
     const chalk = { default: { level: 3 } }
     const { Config } = await t.mockImport(
-      '../../src/config/index.js',
+      '../../src/config/index.ts',
       {
         chalk,
         '@vltpkg/xdg': mockXDG,
@@ -346,7 +346,7 @@ t.test('enable/disable color output', async t => {
       t.intercept(process, 'env', { value: env })
       const chalk = { default: { level: 0 } }
       const { Config } = await t.mockImport(
-        '../../src/config/index.js',
+        '../../src/config/index.ts',
         {
           chalk,
           '@vltpkg/xdg': mockXDG,
@@ -537,8 +537,8 @@ t.test('do not walk to home dir', async t => {
     a: { b: { node_modules: {} } },
   })
   const { Config } = await t.mockImport<
-    typeof import('../../src/config/index.js')
-  >('../../src/config/index.js', {
+    typeof import('../../src/config/index.ts')
+  >('../../src/config/index.ts', {
     os: {
       ...OS,
       homedir: () => dir,
@@ -565,8 +565,8 @@ t.test('do not walk past xdg config dir', async t => {
     },
   }
   const { Config } = await t.mockImport<
-    typeof import('../../src/config/index.js')
-  >('../../src/config/index.js', {
+    typeof import('../../src/config/index.ts')
+  >('../../src/config/index.ts', {
     '@vltpkg/xdg': mockXDG,
   })
   const c = await Config.load(dir + '/a/b')

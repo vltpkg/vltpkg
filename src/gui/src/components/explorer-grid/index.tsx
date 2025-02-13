@@ -24,6 +24,7 @@ import {
 import { GridHeader } from '@/components/explorer-grid/header.jsx'
 import { DependencySideBar } from '@/components/explorer-grid/dependency-side-bar.jsx'
 import { EmptyResultsState } from '@/components/explorer-grid/empty-results-state.jsx'
+import { Badge } from '@/components/ui/badge.jsx'
 
 const getItemsData = (edges: EdgeLike[], nodes: NodeLike[]) => {
   const items: GridItemData[] = []
@@ -353,7 +354,7 @@ export const ExplorerGrid = () => {
   if (!items.length) return <EmptyResultsState />
 
   return (
-    <div className="grow grid grid-cols-7 gap-4 px-8 bg-secondary dark:bg-black">
+    <div className="grid grow grid-cols-7 gap-4 bg-secondary px-8 pb-8 dark:bg-black">
       <div className="col-span-2">
         {parentItem ?
           <>
@@ -378,6 +379,7 @@ export const ExplorerGrid = () => {
             {workspaces.map(item => (
               <SideItem
                 item={item}
+                isWorkspace
                 key={item.id}
                 onSelect={workspaceClick(item)}
               />
@@ -402,7 +404,12 @@ export const ExplorerGrid = () => {
       </div>
       <div className="col-span-3">
         {items.length > 1 ?
-          <GridHeader className="mb-4">Results</GridHeader>
+          <div className="flex items-center gap-3">
+            <GridHeader className="mb-4">Results</GridHeader>
+            <Badge className="mt-2" variant="default">
+              {items.length}
+            </Badge>
+          </div>
         : <GridHeader>
             <GalleryVertical size={22} className="mr-3" />
             Selected Item

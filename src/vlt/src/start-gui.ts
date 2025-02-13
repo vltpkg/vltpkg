@@ -4,12 +4,12 @@ import {
   asDependency,
   type AddImportersDependenciesMap,
   type Dependency,
-  type DependencyTypeShort,
   type RemoveImportersDependenciesMap,
 } from '@vltpkg/graph'
 import { Spec } from '@vltpkg/spec'
-import { type Manifest } from '@vltpkg/types'
+import { type DependencyTypeShort } from '@vltpkg/types'
 import { urlOpen } from '@vltpkg/url-open'
+import { getUser } from '@vltpkg/git'
 import {
   cpSync,
   mkdirSync,
@@ -25,20 +25,28 @@ import {
   type Server,
 } from 'node:http'
 import { homedir, tmpdir } from 'node:os'
-import { resolve, relative } from 'node:path'
+import { dirname, resolve, relative } from 'node:path'
+import { fileURLToPath } from 'node:url'
+import assert from 'node:assert'
 import { loadPackageJson } from 'package-json-from-dist'
-import { type PathBase, type PathScurry } from 'path-scurry'
+import { type PathBase } from 'path-scurry'
 import handler from 'serve-handler'
 import {
   type ConfigOptions,
   type LoadedConfig,
-} from './config/index.js'
-import { install, type InstallOptions } from './install.js'
-import { stderr, stdout } from './output.js'
-import { readProjectFolders } from './read-project-folders.js'
-import { uninstall, type UninstallOptions } from './uninstall.js'
-import { fileURLToPath } from 'node:url'
-import assert from 'node:assert'
+} from './config/index.ts'
+import { install, type InstallOptions } from './install.ts'
+import { stderr, stdout } from './output.ts'
+import { readProjectFolders } from './read-project-folders.ts'
+import { uninstall, type UninstallOptions } from './uninstall.ts'
+import { init } from './init.ts'
+import { getAuthorFromGitUser } from './get-author-from-git-user.ts'
+import {
+  type DashboardProjectData,
+  getDashboardProjectData,
+  getReadablePath,
+  getGraphProjectData,
+} from './project-info.ts'
 
 const HOST = 'localhost'
 const PORT = 7017
@@ -62,29 +70,17 @@ export type StartGUIOptions = {
   tmpDir?: string
 }
 
-export type DashboardTools =
-  | 'vlt'
-  | 'node'
-  | 'deno'
-  | 'bun'
-  | 'npm'
-  | 'pnpm'
-  | 'yarn'
-  | 'js'
+export type DashboardLocation = {
+  path: string
+  readablePath: string
+}
 
 export type DashboardData = {
   cwd: string
   buildVersion: string
-  projects: DashboardDataProject[]
-}
-
-export type DashboardDataProject = {
-  name: string
-  readablePath: string
-  path: string
-  manifest: Manifest
-  tools: DashboardTools[]
-  mtime?: number
+  dashboardProjectLocations: DashboardLocation[]
+  defaultAuthor: string
+  projects: DashboardProjectData[]
 }
 
 class AddImportersDependenciesMapImpl
@@ -99,28 +95,6 @@ class RemoveImportersDependenciesMapImpl
   implements RemoveImportersDependenciesMap
 {
   modifiedDependencies = false
-}
-
-const knownTools = new Map<DashboardTools, string[]>([
-  ['vlt', ['vlt-lock.json', 'vlt-workspaces.json']],
-  ['node', []],
-  ['deno', ['deno.json']],
-  ['bun', ['bun.lockb', 'bunfig.toml']],
-  ['npm', ['package-lock.json']],
-  ['pnpm', ['pnpm-lock.yaml', 'pnpm-workspace.yaml']],
-  ['yarn', ['yarn.lock']],
-])
-
-const isDashboardTools = (str: string): str is DashboardTools =>
-  knownTools.has(str as DashboardTools)
-
-const asDashboardTools = (str: string): DashboardTools => {
-  /* c8 ignore start */
-  if (!isDashboardTools(str)) {
-    throw new Error(`Invalid dashboard tool: ${str}`)
-  }
-  /* c8 ignore stop */
-  return str
 }
 
 export const parseInstallOptions = (
@@ -161,64 +135,50 @@ export const parseUninstallOptions = (
   return { remove: removeArgs, conf }
 }
 
-export const inferTools = (
-  manifest: Manifest,
-  folder: PathBase,
-  scurry: PathScurry,
-) => {
-  const tools: DashboardTools[] = []
-  // check if known tools names are found in the manifest file
-  for (const knownName of knownTools.keys()) {
-    if (
-      Object.hasOwn(manifest, knownName) ||
-      (manifest.engines && Object.hasOwn(manifest.engines, knownName))
-    ) {
-      tools.push(asDashboardTools(knownName))
-    }
-  }
-
-  for (const [knownName, files] of knownTools) {
-    for (const file of files) {
-      if (scurry.lstatSync(folder.resolve(file))) {
-        tools.push(asDashboardTools(knownName))
-        break
-      }
-    }
-  }
-
-  // defaults to js if no tools are found
-  if (tools.length === 0) {
-    tools.push('js')
-  }
-  return tools
-}
-
-export const formatDashboardJson = (
+export const formatDashboardJson = async (
   projectFolders: PathBase[],
-  options: ConfigOptions,
+  conf: LoadedConfig,
 ) => {
+  const userDefinedProjectPaths = (
+    conf.values['dashboard-root']?.length ?
+      conf.values['dashboard-root']
+    : [homedir()]).map(
+    path =>
+      ({
+        path,
+        readablePath: getReadablePath(path),
+      }) as DashboardLocation,
+  )
   const result: DashboardData = {
     cwd: process.cwd(),
     buildVersion: version,
+    dashboardProjectLocations: projectFolders
+      .map((dir: PathBase) => {
+        const path = dirname(dir.fullpath())
+        const res: DashboardLocation = {
+          path,
+          readablePath: getReadablePath(path),
+        }
+        return res
+      })
+      .concat(userDefinedProjectPaths)
+      .reduce<DashboardLocation[]>((acc, curr) => {
+        if (acc.every(obj => obj.path !== curr.path)) {
+          acc.push(curr)
+        }
+        return acc
+      }, [])
+      .sort((a, b) => a.readablePath.length - b.readablePath.length),
+    defaultAuthor: getAuthorFromGitUser(
+      await getUser().catch(() => undefined),
+    ),
     projects: [],
   }
   for (const folder of projectFolders) {
-    let manifest
-    try {
-      manifest = options.packageJson.read(folder.fullpath())
-    } catch {
-      continue
+    const projectData = getDashboardProjectData(folder, conf)
+    if (projectData) {
+      result.projects.push(projectData)
     }
-    const path = folder.fullpath()
-    result.projects.push({
-      /* c8 ignore next */
-      name: manifest.name || folder.name,
-      readablePath: path.replace(homedir(), '~'),
-      path,
-      manifest,
-      tools: inferTools(manifest, folder, options.scurry),
-      mtime: folder.lstatSync()?.mtimeMs,
-    })
   }
   return result
 }
@@ -229,8 +189,8 @@ const updateGraphData = (
   hasDashboard: boolean,
 ) => {
   const { options } = conf
-  const monorepo = options.monorepo
-  const mainManifest = options.packageJson.read(options.projectRoot)
+  const { monorepo, packageJson, projectRoot, scurry } = options
+  const mainManifest = packageJson.read(projectRoot)
   const graph = actual.load({
     ...options,
     mainManifest,
@@ -238,11 +198,13 @@ const updateGraphData = (
     loadManifests: true,
   })
   const importers = [...graph.importers]
+  const folder = scurry.lstatSync(projectRoot)
   const graphJson = JSON.stringify(
     {
       hasDashboard,
       importers,
       lockfile: graph,
+      projectInfo: getGraphProjectData(conf, folder),
     },
     null,
     2,
@@ -256,12 +218,12 @@ const updateDashboardData = async (
   conf: LoadedConfig,
 ) => {
   const userDefinedProjectPaths = conf.values['dashboard-root'] ?? []
-  const dashboard = formatDashboardJson(
+  const dashboard = await formatDashboardJson(
     readProjectFolders({
       ...conf.options,
       userDefinedProjectPaths,
     }),
-    conf.options,
+    conf,
   )
   const dashboardJson = JSON.stringify(dashboard, null, 2)
   writeFileSync(resolve(tmp, 'dashboard.json'), dashboardJson)
@@ -294,6 +256,7 @@ const createStaticHandler = ({
       { source: '/dashboard', destination: '/index.html' },
       { source: '/queries', destination: '/index.html' },
       { source: '/labels', destination: '/index.html' },
+      { source: '/new-project', destination: '/index.html' },
     ],
   }
   const errHandler = (err: unknown, res: ServerResponse) => {
@@ -397,13 +360,18 @@ export const startGUI = async ({
   // dashboard data is optional since the GUI might be started from a
   // project in order to just explore its graph data
   let hasDashboard = false
-  try {
-    hasDashboard = await updateDashboardData(tmp, conf)
-    /* c8 ignore next */
-  } catch {}
-  if (!hasDashboard) {
-    rmSync(resolve(tmp, 'dashboard.json'), { force: true })
+
+  const updateDashboard = async () => {
+    try {
+      hasDashboard = await updateDashboardData(tmp, conf)
+      /* c8 ignore next */
+    } catch {}
+    if (!hasDashboard) {
+      rmSync(resolve(tmp, 'dashboard.json'), { force: true })
+    }
   }
+
+  await updateDashboard()
 
   // reading graph data is optional since the command might be run from a
   // parend directory of any given project root, in which case the GUI is
@@ -444,7 +412,48 @@ export const startGUI = async ({
       case 'POST /select-project': {
         const data = await json<{ path: unknown }>()
         conf.resetOptions(String(data.path))
+        await updateDashboard()
         updateGraphData(tmp, conf, hasDashboard)
+        return jsonOk('ok')
+      }
+      case 'POST /create-project': {
+        const data = await json<{
+          path: unknown
+          name: unknown
+          author: unknown
+        }>()
+        if (typeof data.path !== 'string') {
+          return jsonError(
+            'Bad request.',
+            'Project path must be a string',
+            400,
+          )
+        }
+        if (
+          !/^[a-z0-9-]+$/.test(String(data.name)) ||
+          String(data.name).length > 128
+        ) {
+          return jsonError(
+            'Bad request.',
+            'Project name must be lowercase, alphanumeric, and may contain hyphens',
+            400,
+          )
+        }
+        const path = String(data.path)
+        const name = String(data.name)
+        const author = String(data.author)
+        try {
+          const cwd = resolve(path, name)
+          mkdirSync(cwd, { recursive: true })
+          await init({ cwd, author })
+          conf.resetOptions(cwd)
+          await updateDashboard()
+          updateGraphData(tmp, conf, hasDashboard)
+        } catch (err) {
+          // eslint-disable-next-line no-console
+          console.error(err)
+          return jsonError('CLI Error', (err as Error).message, 500)
+        }
         return jsonOk('ok')
       }
       case `POST /install`: {

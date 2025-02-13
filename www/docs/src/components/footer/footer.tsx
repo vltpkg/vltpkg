@@ -7,14 +7,14 @@ const Footer = (_props: Props) => {
   return (
     <footer className="border-t-[1px]">
       {/* footer links */}
-      <div className="mx-auto flex flex-col w-full max-w-screen-xl gap-x-4 gap-y-4 px-6 py-6">
-        <div className="flex flex-row w-full items-center justify-between">
+      <div className="mx-auto flex w-full max-w-screen-xl flex-col gap-x-4 gap-y-4 px-6 py-6">
+        <div className="flex w-full flex-row items-center justify-between">
           <FooterSocials />
           <div className="flex items-center gap-2">
             <a
               href="https://www.vlt.sh/join"
-              className="no-underline text-foreground pl-3 pr-1 inline-flex gap-3 items-center rounded-[12px] group transition-all">
-              <span className="text-left bg-gradient-to-b from-neutral-50 to-neutral-100 dark:to-black dark:from-neutral-900 dark:group-hover:from-neutral-800/80 rounded-[7px] border border-neutral-300 group-hover:border-neutral-400 dark:border-neutral-800 dark:group-hover:border-neutral-700 px-3 py-1 text-15 font-medium">
+              className="group inline-flex items-center gap-3 rounded-[12px] pl-3 pr-1 text-foreground no-underline transition-all">
+              <span className="text-15 rounded-[7px] border border-neutral-300 bg-gradient-to-b from-neutral-50 to-neutral-100 px-3 py-1 text-left font-medium group-hover:border-neutral-400 dark:border-neutral-800 dark:from-neutral-900 dark:to-black dark:group-hover:border-neutral-700 dark:group-hover:from-neutral-800/80">
                 Join waitlist
               </span>
             </a>
@@ -23,21 +23,21 @@ const Footer = (_props: Props) => {
         </div>
 
         {/* footer policies */}
-        <div className="flex flex-row w-full items-center justify-between">
+        <div className="flex w-full flex-row items-center justify-between">
           <a
             href="https://www.vlt.sh/"
-            className="no-underline text-sm font-medium text-muted-foreground hover:text-foreground transition-all">
+            className="text-sm font-medium text-muted-foreground no-underline transition-all hover:text-foreground">
             &copy; {new Date().getFullYear()} vlt technology inc.
           </a>
           <div className="flex flex-row gap-4">
             <a
               href="https://www.vlt.sh/terms"
-              className="no-underline text-muted-foreground text-sm font-medium hover:text-foreground transition-all">
+              className="text-sm font-medium text-muted-foreground no-underline transition-all hover:text-foreground">
               Terms
             </a>
             <a
               href="https://www.vlt.sh/privacy"
-              className="no-underline text-muted-foreground text-sm font-medium hover:text-foreground transition-all">
+              className="text-sm font-medium text-muted-foreground no-underline transition-all hover:text-foreground">
               Privacy
             </a>
           </div>

@@ -1,9 +1,6 @@
 import { rimraf } from 'rimraf'
 
-export const __CODE_SPLIT_SCRIPT_NAME = import.meta.filename.replace(
-  /\.ts$/,
-  '.js',
-)
+export const __CODE_SPLIT_SCRIPT_NAME = import.meta.filename
 
 // This is run as a background process, and all the paths to
 // be removed written into stdin. We can't pass on argv, because
@@ -14,7 +11,6 @@ const main = () => {
   process.stdin.on('end', () => {
     const paths = Buffer.concat(input)
       .toString()
-      // eslint-disable-next-line no-control-regex
       .replace(/^\u0000+|\u0000+$/, '')
       .split('\u0000')
     if (paths.length) void rimraf(paths)

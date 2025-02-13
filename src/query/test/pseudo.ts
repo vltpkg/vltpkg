@@ -1,5 +1,5 @@
 import t from 'tap'
-import { pseudo } from '../src/pseudo.js'
+import { pseudo } from '../src/pseudo.ts'
 import {
   getCycleGraph,
   getMissingManifestsGraph,
@@ -7,14 +7,14 @@ import {
   getMultiWorkspaceGraph,
   getSimpleGraph,
   getSingleWorkspaceGraph,
-} from './fixtures/graph.js'
+} from './fixtures/graph.ts'
 import {
   copyGraphSelectionState,
   getGraphSelectionState,
   selectorFixture,
-} from './fixtures/selector.js'
-import { type TestCase } from './fixtures/types.js'
-import { type GraphSelectionState } from '../src/types.js'
+} from './fixtures/selector.ts'
+import { type TestCase } from './fixtures/types.ts'
+import { type GraphSelectionState } from '../src/types.ts'
 
 const testPseudo = selectorFixture(pseudo)
 

@@ -1,12 +1,12 @@
 import cp from 'child_process'
 import spawk from 'spawk'
 import t from 'tap'
-import type * as PS from '../src/index.js'
+import type * as PS from '../src/index.ts'
 const mockCP = { ...cp }
 // make spawk play nice with ESM
 const { promiseSpawn } = await t.mockImport<
-  typeof import('../src/index.js')
->('../src/index.js', {
+  typeof import('../src/index.ts')
+>('../src/index.ts', {
   child_process: mockCP,
   spawk: await t.mockImport('spawk', { child_process: mockCP }),
 })

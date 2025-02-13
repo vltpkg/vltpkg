@@ -1,12 +1,12 @@
 import { type DepID, joinDepIDTuple } from '@vltpkg/dep-id'
+import { type DependencyTypeShort } from '@vltpkg/types'
 import {
   type AddImportersDependenciesMap,
   type Dependency,
-  type DependencyTypeShort,
   type RemoveImportersDependenciesMap,
   asDependency,
 } from '@vltpkg/graph'
-import { type LoadedConfig } from './config/index.js'
+import { type LoadedConfig } from './config/index.ts'
 import { Spec, type SpecOptions } from '@vltpkg/spec'
 import { type Monorepo } from '@vltpkg/workspaces'
 

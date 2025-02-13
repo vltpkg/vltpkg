@@ -17,8 +17,8 @@ import * as esbuild from 'esbuild'
 import { findPackageJson } from 'package-json-from-dist'
 import { builtinModules, createRequire } from 'node:module'
 import assert from 'node:assert'
-import { Bins, Paths } from './index.js'
-import * as types from './types.js'
+import { Bins, Paths } from './index.ts'
+import type * as types from './types.ts'
 import {
   transformSourcePlugin,
   Globals,
@@ -27,7 +27,7 @@ import {
   readJson,
   readPkg,
   getSrcPath,
-} from './transform-source.js'
+} from './transform-source.ts'
 
 const EXT = '.js'
 
@@ -36,30 +36,22 @@ const bundle = async (o: {
   sourcemap: esbuild.BuildOptions['sourcemap']
   minify: esbuild.BuildOptions['minify']
   outdir: string
-  format: types.Format
   in: string
   out: string
 }) => {
-  const cjs = o.format === types.Formats.Cjs
-
   const globals = new Globals(
-    { format: o.format },
     // These are globals that are needed to run in all runtimes
     Globals.var('global', 'globalThis'),
-    Globals.import(o.format, 'process', 'process'),
-    Globals.import(o.format, ['Buffer'], 'buffer'),
-    Globals.import(
-      o.format,
-      ['setImmediate', 'clearImmediate'],
-      'timers',
-    ),
+    Globals.import('process', 'process'),
+    Globals.import(['Buffer'], 'buffer'),
+    Globals.import(['setImmediate', 'clearImmediate'], 'timers'),
     // These are to shim import.meta properties
     {
       [IMPORT_META.Dirname]: (id, { fn }) =>
         Globals.var(
           id,
           fn('path.resolve', [
-            cjs ? '__dirname' : IMPORT_META.Dirname,
+            IMPORT_META.Dirname,
             Globals.quote(
               relative(resolve(o.outdir, dirname(o.out)), o.outdir),
             ),
@@ -88,12 +80,11 @@ const bundle = async (o: {
         )
       },
     },
-    !cjs &&
-      (({ fn, get }) =>
-        Globals.var(
-          'require',
-          fn('module.createRequire', [get(IMPORT_META.Filename)]),
-        )),
+    ({ fn, get }) =>
+      Globals.var(
+        'require',
+        fn('module.createRequire', [get(IMPORT_META.Filename)]),
+      ),
   )
 
   const { errors, warnings, metafile } = await esbuild.build({
@@ -102,7 +93,7 @@ const bundle = async (o: {
     sourcemap: o.sourcemap,
     minify: o.minify,
     outdir: o.outdir,
-    format: o.format,
+    format: 'esm',
     metafile: true,
     bundle: true,
     platform: 'node',
@@ -122,7 +113,6 @@ const bundle = async (o: {
           acc[k] = globals.get(k)
           return acc
         },
-        // eslint-disable-next-line @typescript-eslint/prefer-reduce-type-parameter
         {} as Record<`import.meta.${keyof ImportMeta}`, string>,
       ),
     },
@@ -146,7 +136,6 @@ const createWorkspace = (base: string, source: string) => {
 export default async ({
   outdir,
   minify,
-  format,
   externalCommands,
   sourcemap,
 }: types.BundleFactors & { outdir: string }): Promise<
@@ -157,7 +146,6 @@ export default async ({
 
   const transformSource = transformSourcePlugin({
     externalCommands,
-    format,
   })
 
   const nodeImports: esbuild.Plugin = {
@@ -190,7 +178,6 @@ export default async ({
           ...b,
           plugins: [transformSource.plugin, nodeImports],
           sourcemap,
-          format,
           minify,
           outdir,
         }),
@@ -272,7 +259,7 @@ export default async ({
   writeFileSync(
     join(outdir, 'package.json'),
     JSON.stringify({
-      type: format === types.Formats.Cjs ? 'commonjs' : 'module',
+      type: 'module',
     }),
   )
 

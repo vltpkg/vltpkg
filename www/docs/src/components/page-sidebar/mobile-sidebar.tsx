@@ -17,16 +17,16 @@ const MobileSidebar = ({ toc }: Props) => {
   const [drawerOpen, setDrawerOpen] = useState<boolean>(false)
 
   return (
-    <div className="px-6 py-3 w-full border-y-[1px] backdrop-blur-md">
+    <div className="w-full border-y-[1px] px-6 py-3 backdrop-blur-md">
       <Drawer open={drawerOpen} onOpenChange={setDrawerOpen}>
-        <div className="bg-transparent flex flex-row items-center gap-6">
+        <div className="flex flex-row items-center gap-6 bg-transparent">
           <Button
             variant="outline"
             onClick={() => setDrawerOpen(true)}>
             On this page <ChevronRight size={16} />
           </Button>
         </div>
-        <DrawerContent className="max-h-[70svh] mx-1 border border-white/20 bg-gradient-to-br from-neutral-100 to-neutral-200 pb-12 dark:from-neutral-900 dark:to-neutral-950">
+        <DrawerContent className="mx-1 max-h-[70svh] border border-white/20 bg-gradient-to-br from-neutral-100 to-neutral-200 pb-12 dark:from-neutral-900 dark:to-neutral-950">
           <DrawerDescription></DrawerDescription>
           <DrawerHeader className="flex items-stretch justify-between gap-x-4 border-b border-black/5 px-1 py-0.5 dark:border-white/10">
             <DrawerTitle className="flex items-center justify-start px-3 text-sm text-neutral-700 dark:text-neutral-400">
@@ -36,7 +36,7 @@ const MobileSidebar = ({ toc }: Props) => {
               <Button
                 size="icon"
                 variant="ghost"
-                className="bg-transparent cursor-pointer">
+                className="cursor-pointer bg-transparent">
                 <X
                   size={16}
                   className="text-neutral-950 dark:text-white"
@@ -83,18 +83,18 @@ const Group = ({ item, children }: GroupProps) => {
   }
 
   return (
-    <div className="flex flex-col w-full py-1 h-full overflow-y-scroll">
+    <div className="flex h-full w-full flex-col overflow-y-scroll py-1">
       <Button
         onClick={toggle}
         variant="ghost"
-        className="cursor-pointer justify-between items-center hover:bg-transparent bg-transparent w-full">
-        <span className="capitalize font-medium">{item.text}</span>
+        className="w-full cursor-pointer items-center justify-between bg-transparent hover:bg-transparent">
+        <span className="font-medium capitalize">{item.text}</span>
         {expanded ?
           <ChevronDown className="size-4" />
         : <ChevronRight className="size-4" />}
       </Button>
       {expanded && (
-        <div className="ml-4 border-l border-border flex flex-col">
+        <div className="ml-4 flex flex-col border-l border-border">
           {children}
         </div>
       )}
@@ -111,11 +111,11 @@ const Item = ({ item, closeDrawer }: ItemProps) => {
   return (
     <Button
       asChild
-      className="capitalize w-full cursor-pointer justify-start items-center hover:bg-transparent bg-transparent">
+      className="w-full cursor-pointer items-center justify-start bg-transparent capitalize hover:bg-transparent">
       <a
         href={`#${item.slug}`}
         onClick={closeDrawer}
-        className="no-underline text-black dark:text-white font-medium">
+        className="font-medium text-black no-underline dark:text-white">
         {item.text}
       </a>
     </Button>

@@ -10,8 +10,8 @@ t.test('registering the beforeExit event', async t => {
   })
   let unrefCalled = false
   const { register } = await t.mockImport<
-    typeof import('../src/index.js')
-  >('../src/index.js', {
+    typeof import('../src/index.ts')
+  >('../src/index.ts', {
     child_process: {
       spawn: (
         cmd: string,
@@ -20,7 +20,7 @@ t.test('registering the beforeExit event', async t => {
       ) => {
         t.equal(cmd, process.execPath)
         t.equal(args.length, 2)
-        t.match(args[0], /unzip\.js$/)
+        t.match(args[0], /unzip\.ts$/)
         t.equal(args[1], t.testdirName)
         t.strictSame(opts, {
           detached: true,

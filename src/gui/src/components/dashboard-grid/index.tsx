@@ -1,10 +1,8 @@
+import { motion, AnimatePresence } from 'framer-motion'
 import { useEffect, useState, type MouseEvent } from 'react'
-import {
-  type DashboardDataProject,
-  type Action,
-} from '@/state/types.js'
+import { type DashboardDataProject } from '@/state/types.js'
 import { CardTitle } from '@/components/ui/card.jsx'
-import { DEFAULT_QUERY, useGraphStore } from '@/state/index.js'
+import { useGraphStore } from '@/state/index.js'
 import {
   Tooltip,
   TooltipContent,
@@ -12,60 +10,23 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip.jsx'
 import { FilterSearch } from '@/components/ui/filter-search.jsx'
-import { SortingToggle } from '@/components/ui/sorting-toggle.jsx'
+import { TableFilterSearch } from '@/components/data-table/table-filter-search.jsx'
+import { TableViewDropdown } from '@/components/data-table/table-view-dropdown.jsx'
+import { DashboardTable } from '@/components/dashboard-grid/dashboard-table.jsx'
+import { SortToggle } from '@/components/sort-toggle.jsx'
+import {
+  type View,
+  DashboardViewToggle,
+} from '@/components/dashboard-grid/dashboard-view-toggle.jsx'
+import {
+  type VisibilityState,
+  type Table,
+} from '@tanstack/react-table'
 import { getIconSet } from '@/utils/dashboard-tools.jsx'
 import { format } from 'date-fns'
-
-type SelectDashboardItemOptions = {
-  updateActiveRoute: Action['updateActiveRoute']
-  updateErrorCause: Action['updateErrorCause']
-  updateQuery: Action['updateQuery']
-  updateStamp: Action['updateStamp']
-  item: DashboardDataProject
-}
-
-const selectDashboardItem = async ({
-  updateActiveRoute,
-  updateErrorCause,
-  updateQuery,
-  updateStamp,
-  item,
-}: SelectDashboardItemOptions) => {
-  let req
-  try {
-    req = await fetch('/select-project', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        path: item.path,
-      }),
-    })
-  } catch (err) {
-    console.error(err)
-    updateActiveRoute('/error')
-    updateErrorCause('Failed to request project selection.')
-    return
-  }
-
-  let projectSelected = false
-  try {
-    projectSelected = (await req.json()) === 'ok'
-  } catch (err) {
-    console.error(err)
-  }
-
-  if (projectSelected) {
-    window.scrollTo(0, 0)
-    updateQuery(DEFAULT_QUERY)
-    updateActiveRoute('/explore')
-    updateStamp()
-  } else {
-    updateActiveRoute('/error')
-    updateErrorCause('Failed to select project.')
-  }
-}
+import { requestRouteTransition } from '@/lib/request-route-transition.js'
+import { Button } from '@/components/ui/button.jsx'
+import { Plus } from 'lucide-react'
 
 export const DashboardItem = ({
   item,
@@ -86,28 +47,33 @@ export const DashboardItem = ({
 
   const onDashboardItemClick = (e: MouseEvent) => {
     e.preventDefault()
-    selectDashboardItem({
+    void requestRouteTransition<{ path: string }>({
       updateActiveRoute,
       updateErrorCause,
       updateQuery,
       updateStamp,
-      item,
+      body: {
+        path: item.path,
+      },
+      url: '/select-project',
+      destinationRoute: '/explore',
+      errorMessage: 'Failed to select project.',
     }).catch((err: unknown) => console.error(err))
   }
 
   return (
     <a
       href="#"
-      className="relative w-full md:w-96 group"
+      className="group relative w-full md:w-96"
       onClick={onDashboardItemClick}>
       {/* top */}
-      <div className="relative transition-all group-hover:border-neutral-400 dark:group-hover:border-neutral-700 flex items-center border-x-[1px] border-t-[1px] bg-card rounded-t-lg h-20 overflow-hidden">
+      <div className="relative flex h-20 items-center overflow-hidden rounded-t-lg border-x-[1px] border-t-[1px] bg-card transition-all group-hover:border-neutral-400 dark:group-hover:border-neutral-700">
         <div className="flex px-3 py-2">
           <CardTitle className="text-md font-medium">
             {item.name}
           </CardTitle>
         </div>
-        <div className="absolute flex flex-row px-3 py-2 backdrop-blur-[1px] rounded-sm top-0 right-0 z-[1]">
+        <div className="absolute right-0 top-0 z-[1] flex flex-row rounded-sm px-3 py-2 backdrop-blur-[1px]">
           {item.mtime && (
             <p className="text-[0.7rem] text-muted-foreground">
               {format(
@@ -119,21 +85,21 @@ export const DashboardItem = ({
         </div>
 
         {/* icons */}
-        <div className="absolute bg-clip-content flex justify-end items-center -inset-4 -right-2 flex-row gap-2">
+        <div className="absolute -inset-4 -right-2 flex flex-row items-center justify-end gap-2 bg-clip-content">
           {PackageManger && (
-            <PackageManger className="size-24 dark:fill-neutral-900/80 fill-neutral-200/40" />
+            <PackageManger className="size-24 fill-neutral-200/40 dark:fill-neutral-900/80" />
           )}
           {RunTime && (
-            <RunTime className="size-24 dark:fill-neutral-900/80 fill-neutral-200/40" />
+            <RunTime className="size-24 fill-neutral-200/40 dark:fill-neutral-900/80" />
           )}
         </div>
       </div>
 
       {/* footer */}
-      <div className="flex transition-all group-hover:border-b-neutral-400 dark:group-hover:border-b-neutral-700 group-hover:border-x-neutral-400 dark:group-hover:border-x-neutral-700 border-[1px] bg-card rounded-b-lg items-center py-3 px-3 w-full">
+      <div className="flex w-full items-center rounded-b-lg border-[1px] bg-card px-3 py-3 transition-all group-hover:border-x-neutral-400 group-hover:border-b-neutral-400 dark:group-hover:border-x-neutral-700 dark:group-hover:border-b-neutral-700">
         <TooltipProvider>
           <Tooltip>
-            <TooltipTrigger className="text-muted-foreground truncate text-left text-xs">
+            <TooltipTrigger className="truncate text-left text-xs text-muted-foreground">
               {item.readablePath}
             </TooltipTrigger>
             <TooltipContent>{item.readablePath}</TooltipContent>
@@ -144,11 +110,24 @@ export const DashboardItem = ({
   )
 }
 
-const DashboardGrid = () => {
+export const DashboardGrid = () => {
   const dashboard = useGraphStore(state => state.dashboard)
+  const [currentView, setCurrentView] = useState<View>('grid')
+  const [tableFilterValue, setTableFilterValue] = useState<string>('')
+  const updateActiveRoute = useGraphStore(
+    state => state.updateActiveRoute,
+  )
   const [filteredProjects, setFilteredProjects] = useState<
     DashboardDataProject[]
   >([])
+  const [table, setTable] =
+    useState<Table<DashboardDataProject> | null>(null)
+  const [columnVisibility, setColumnVisibility] =
+    useState<VisibilityState>({
+      type: false,
+      private: false,
+      version: false,
+    })
 
   useEffect(() => {
     if (dashboard) {
@@ -160,34 +139,94 @@ const DashboardGrid = () => {
     }
   }, [dashboard])
 
-  return (
-    <div className="flex flex-col grow bg-secondary dark:bg-black px-8 py-8">
-      <div className="flex gap-2 mb-8">
-        <FilterSearch
-          placeholder="Filter Projects"
-          items={dashboard?.projects ?? []}
-          setFilteredItems={setFilteredProjects}
-        />
-        <SortingToggle
-          filteredItems={filteredProjects}
-          setFilteredItems={setFilteredProjects}
-          sortKey="name"
-        />
-      </div>
+  const onCreateNewProjectClick = () => {
+    updateActiveRoute('/new-project')
+  }
 
-      {/* items */}
-      <div className="flex flex-col">
-        <p className="text-sm font-semibold mb-4">Projects</p>
-        <div className="flex flex-row flex-wrap gap-8">
-          {dashboard?.projects ?
-            filteredProjects.map((item, index) => (
-              <DashboardItem key={index} item={item} />
-            ))
-          : <p>No projects found</p>}
+  return (
+    <div className="flex grow flex-col bg-secondary px-8 py-8 dark:bg-black">
+      <div className="flex gap-2 pb-8">
+        {currentView === 'table' ?
+          <TableFilterSearch
+            filterValue={tableFilterValue}
+            onFilterChange={setTableFilterValue}
+          />
+        : <FilterSearch
+            placeholder="Filter Projects"
+            items={dashboard?.projects ?? []}
+            setFilteredItems={setFilteredProjects}
+          />
+        }
+        <DashboardViewToggle
+          currentView={currentView}
+          setCurrentView={setCurrentView}
+        />
+        <AnimatePresence mode="wait">
+          {currentView === 'table' ?
+            <motion.div
+              key={currentView}
+              initial={{ opacity: 0 }}
+              exit={{ opacity: 0 }}
+              animate={{ opacity: 1 }}>
+              <TableViewDropdown
+                columnVisibility={columnVisibility}
+                setColumnVisibility={setColumnVisibility}
+                table={table}
+              />
+            </motion.div>
+          : <motion.div
+              key={currentView}
+              exit={{ opacity: 0 }}
+              initial={{ opacity: 1 }}
+              animate={{ opacity: 1 }}>
+              <SortToggle
+                filteredItems={filteredProjects}
+                setFilteredItems={setFilteredProjects}
+                sortKey="name"
+              />
+            </motion.div>
+          }
+        </AnimatePresence>
+        <div className="flex grow flex-row-reverse">
+          <Button onClick={onCreateNewProjectClick} className="ml-2">
+            <Plus size={24} />
+            Create New Project
+          </Button>
         </div>
       </div>
+
+      <AnimatePresence mode="wait">
+        {currentView === 'table' ?
+          <motion.div
+            key={currentView}
+            exit={{ opacity: 0, y: 5 }}
+            initial={{ opacity: 0, y: 5 }}
+            animate={{ opacity: 1, y: 0 }}>
+            <DashboardTable
+              data={dashboard?.projects ?? []}
+              setTable={setTable}
+              tableFilterValue={tableFilterValue}
+              columnVisibility={columnVisibility}
+              setColumnVisibility={setColumnVisibility}
+            />
+          </motion.div>
+        : <motion.div
+            key={currentView}
+            exit={{ opacity: 0, y: -5 }}
+            initial={{ opacity: 0, y: -5 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex flex-col">
+            <p className="mb-4 text-sm font-semibold">Projects</p>
+            <div className="flex flex-row flex-wrap gap-8">
+              {dashboard?.projects ?
+                filteredProjects.map((item, index) => (
+                  <DashboardItem key={index} item={item} />
+                ))
+              : <p>No projects found</p>}
+            </div>
+          </motion.div>
+        }
+      </AnimatePresence>
     </div>
   )
 }
-
-export { DashboardGrid }

@@ -2,7 +2,7 @@ import { type DepID, joinDepIDTuple } from '@vltpkg/dep-id'
 import { Spec } from '@vltpkg/spec'
 import { Monorepo } from '@vltpkg/workspaces'
 import t from 'tap'
-import { satisfies } from '../src/index.js'
+import { satisfies } from '../src/index.ts'
 
 const projectRoot = t.testdir({
   'vlt-workspaces.json': JSON.stringify('src/*'),

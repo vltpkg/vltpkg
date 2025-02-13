@@ -1,4 +1,7 @@
-import { type Manifest } from '@vltpkg/types'
+import {
+  type Manifest,
+  type DependencyTypeShort,
+} from '@vltpkg/types'
 import { lockfile } from '@vltpkg/graph/browser'
 import { type DepID } from '@vltpkg/dep-id/browser'
 import {
@@ -6,7 +9,6 @@ import {
   type LockfileData,
   type GraphLike,
   type NodeLike,
-  type DependencyTypeShort,
 } from '@vltpkg/graph'
 import {
   defaultRegistry,
@@ -17,7 +19,7 @@ import {
   type SpecOptionsFilled,
   type Spec,
 } from '@vltpkg/spec/browser'
-import { type TransferData } from './types.js'
+import { type TransferData } from './types.ts'
 
 const loadSpecOptions = (
   lockfile: LockfileData,

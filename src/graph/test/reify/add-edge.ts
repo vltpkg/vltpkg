@@ -5,10 +5,10 @@ import { statSync } from 'fs'
 import { rm } from 'fs/promises'
 import { PathScurry } from 'path-scurry'
 import t from 'tap'
-import { Edge } from '../../src/edge.js'
-import { Node } from '../../src/node.js'
-import { addEdge } from '../../src/reify/add-edge.js'
-import { type GraphLike } from '../../src/types.js'
+import { Edge } from '../../src/edge.ts'
+import { Node } from '../../src/node.ts'
+import { addEdge } from '../../src/reify/add-edge.ts'
+import { type GraphLike } from '../../src/types.ts'
 
 const mockRemover = {
   rm: (path: string) => rm(path, { recursive: true, force: true }),

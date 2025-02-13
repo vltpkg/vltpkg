@@ -1,8 +1,11 @@
 import { spawnSync } from 'child_process'
 import t from 'tap'
 import { join } from 'node:path'
-import { __CODE_SPLIT_SCRIPT_NAME } from '../dist/esm/remove.js'
 import { readdirSync } from 'fs'
+// Needs to be the path to the dist file with .js extension
+// so that it can be spawned by node.
+// eslint-disable-next-line import/extensions
+import { __CODE_SPLIT_SCRIPT_NAME } from '../dist/esm/remove.js'
 
 t.test('run the remover', async t => {
   const dir = t.testdir({

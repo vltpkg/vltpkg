@@ -3,7 +3,7 @@ import { satisfies } from '@vltpkg/satisfies'
 import {
   type BuildIdealAddOptions,
   type BuildIdealFromGraphOptions,
-} from './types.js'
+} from './types.ts'
 
 export type RemoveSatisfiedSpecsOptions = BuildIdealAddOptions &
   BuildIdealFromGraphOptions

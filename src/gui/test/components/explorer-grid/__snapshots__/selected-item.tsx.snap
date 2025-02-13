@@ -5,9 +5,9 @@ exports[`SelectedItem render connection lines 1`] = `
 <div>
   <div class="relative">
     <gui-card classname="relative my-4 border-muted-foreground">
-      <div class="flex justify-stretch gap-4 w-full p-6">
+      <div class="flex w-full justify-stretch gap-4 p-6">
         <div
-          class="flex gap-4 grow items-start w-full"
+          class="flex w-full grow items-start gap-4"
           style="opacity: 0;"
         >
           <span class="relative flex shrink-0 overflow-hidden size-16 rounded-lg border border-solid border-neutral-200">
@@ -40,18 +40,18 @@ exports[`SelectedItem render connection lines 1`] = `
               <span class="text-3xl font-medium">
                 item
               </span>
-              <span class="text-xl font-medium text-muted-foreground mb-[1px]">
+              <span class="text-xl mb-[1px] font-medium text-muted-foreground">
                 1.0.0
               </span>
             </div>
           </div>
         </div>
-        <div class="flex flex-col justify-end w-full gap-4 mt-4">
+        <div class="mt-4 flex w-full flex-col justify-end gap-4">
           <div class="flex flex-row-reverse items-center gap-2">
           </div>
         </div>
       </div>
-      <div class="px-4 pb-4 w-full">
+      <div class="w-full px-4 pb-4">
         <gui-tabs>
           <gui-tabs-list classname="grid w-full grid-cols-2">
             <gui-tabs-trigger
@@ -91,7 +91,7 @@ exports[`SelectedItem render connection lines 1`] = `
         </gui-tabs>
       </div>
     </gui-card>
-    <div class="absolute border-t border-solid border-neutral-300 dark:border-neutral-600 rounded-tr-sm w-4 top-[44px] -right-4">
+    <div class="absolute -right-4 top-[44px] w-4 rounded-tr-sm border-t border-solid border-neutral-300 dark:border-neutral-600">
     </div>
   </div>
 </div>
@@ -103,9 +103,9 @@ exports[`SelectedItem render with custom registry 1`] = `
 <div>
   <div class="relative">
     <gui-card classname="relative my-4 border-muted-foreground">
-      <div class="flex justify-stretch gap-4 w-full p-6">
+      <div class="flex w-full justify-stretch gap-4 p-6">
         <div
-          class="flex gap-4 grow items-start w-full"
+          class="flex w-full grow items-start gap-4"
           style="opacity: 0;"
         >
           <span class="relative flex shrink-0 overflow-hidden size-16 rounded-lg border border-solid border-neutral-200">
@@ -138,14 +138,14 @@ exports[`SelectedItem render with custom registry 1`] = `
               <span class="text-3xl font-medium">
                 item
               </span>
-              <span class="text-xl font-medium text-muted-foreground mb-[1px]">
+              <span class="text-xl mb-[1px] font-medium text-muted-foreground">
                 1.0.0
               </span>
             </div>
             <div>
               <button
                 data-state="closed"
-                class="px-1 py-1 text-xs text-muted-foreground font-mono m-0 align-baseline truncate"
+                class="m-0 truncate px-1 py-1 align-baseline font-mono text-xs text-muted-foreground"
               >
                 <span>
                   custom:
@@ -157,12 +157,12 @@ exports[`SelectedItem render with custom registry 1`] = `
             </div>
           </div>
         </div>
-        <div class="flex flex-col justify-end w-full gap-4 mt-4">
+        <div class="mt-4 flex w-full flex-col justify-end gap-4">
           <div class="flex flex-row-reverse items-center gap-2">
           </div>
         </div>
       </div>
-      <div class="px-4 pb-4 w-full">
+      <div class="w-full px-4 pb-4">
         <gui-tabs>
           <gui-tabs-list classname="grid w-full grid-cols-2">
             <gui-tabs-trigger
@@ -212,9 +212,9 @@ exports[`SelectedItem render with default git host 1`] = `
 <div>
   <div class="relative">
     <gui-card classname="relative my-4 border-muted-foreground">
-      <div class="flex justify-stretch gap-4 w-full p-6">
+      <div class="flex w-full justify-stretch gap-4 p-6">
         <div
-          class="flex gap-4 grow items-start w-full"
+          class="flex w-full grow items-start gap-4"
           style="opacity: 0;"
         >
           <span class="relative flex shrink-0 overflow-hidden size-16 rounded-lg border border-solid border-neutral-200">
@@ -247,21 +247,21 @@ exports[`SelectedItem render with default git host 1`] = `
               <span class="text-3xl font-medium">
                 item
               </span>
-              <span class="text-xl font-medium text-muted-foreground mb-[1px]">
+              <span class="text-xl mb-[1px] font-medium text-muted-foreground">
                 1.0.0
               </span>
             </div>
-            <div class="px-1 py-1 text-xs text-muted-foreground font-mono m-0 align-baseline truncate">
+            <div class="m-0 truncate px-1 py-1 align-baseline font-mono text-xs text-muted-foreground">
               git:github:a/b
             </div>
           </div>
         </div>
-        <div class="flex flex-col justify-end w-full gap-4 mt-4">
+        <div class="mt-4 flex w-full flex-col justify-end gap-4">
           <div class="flex flex-row-reverse items-center gap-2">
           </div>
         </div>
       </div>
-      <div class="px-4 pb-4 w-full">
+      <div class="w-full px-4 pb-4">
         <gui-tabs>
           <gui-tabs-list classname="grid w-full grid-cols-2">
             <gui-tabs-trigger
@@ -311,9 +311,9 @@ exports[`SelectedItem render with item 1`] = `
 <div>
   <div class="relative">
     <gui-card classname="relative my-4 border-muted-foreground">
-      <div class="flex justify-stretch gap-4 w-full p-6">
+      <div class="flex w-full justify-stretch gap-4 p-6">
         <div
-          class="flex gap-4 grow items-start w-full"
+          class="flex w-full grow items-start gap-4"
           style="opacity: 0;"
         >
           <span class="relative flex shrink-0 overflow-hidden size-16 rounded-lg border border-solid border-neutral-200">
@@ -346,18 +346,18 @@ exports[`SelectedItem render with item 1`] = `
               <span class="text-3xl font-medium">
                 item
               </span>
-              <span class="text-xl font-medium text-muted-foreground mb-[1px]">
+              <span class="text-xl mb-[1px] font-medium text-muted-foreground">
                 1.0.0
               </span>
             </div>
           </div>
         </div>
-        <div class="flex flex-col justify-end w-full gap-4 mt-4">
+        <div class="mt-4 flex w-full flex-col justify-end gap-4">
           <div class="flex flex-row-reverse items-center gap-2">
           </div>
         </div>
       </div>
-      <div class="px-4 pb-4 w-full">
+      <div class="w-full px-4 pb-4">
         <gui-tabs>
           <gui-tabs-list classname="grid w-full grid-cols-2">
             <gui-tabs-trigger
@@ -407,9 +407,9 @@ exports[`SelectedItem render with scoped registry 1`] = `
 <div>
   <div class="relative">
     <gui-card classname="relative my-4 border-muted-foreground">
-      <div class="flex justify-stretch gap-4 w-full p-6">
+      <div class="flex w-full justify-stretch gap-4 p-6">
         <div
-          class="flex gap-4 grow items-start w-full"
+          class="flex w-full grow items-start gap-4"
           style="opacity: 0;"
         >
           <span class="relative flex shrink-0 overflow-hidden size-16 rounded-lg border border-solid border-neutral-200">
@@ -442,14 +442,14 @@ exports[`SelectedItem render with scoped registry 1`] = `
               <span class="text-3xl font-medium">
                 item
               </span>
-              <span class="text-xl font-medium text-muted-foreground mb-[1px]">
+              <span class="text-xl mb-[1px] font-medium text-muted-foreground">
                 1.0.0
               </span>
             </div>
             <div>
               <button
                 data-state="closed"
-                class="px-1 py-1 text-xs text-muted-foreground font-mono m-0 align-baseline truncate"
+                class="m-0 truncate px-1 py-1 align-baseline font-mono text-xs text-muted-foreground"
               >
                 <span>
                   registered-scope
@@ -461,12 +461,12 @@ exports[`SelectedItem render with scoped registry 1`] = `
             </div>
           </div>
         </div>
-        <div class="flex flex-col justify-end w-full gap-4 mt-4">
+        <div class="mt-4 flex w-full flex-col justify-end gap-4">
           <div class="flex flex-row-reverse items-center gap-2">
           </div>
         </div>
       </div>
-      <div class="px-4 pb-4 w-full">
+      <div class="w-full px-4 pb-4">
         <gui-tabs>
           <gui-tabs-list classname="grid w-full grid-cols-2">
             <gui-tabs-trigger

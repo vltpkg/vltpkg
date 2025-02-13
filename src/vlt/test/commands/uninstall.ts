@@ -1,12 +1,12 @@
 import t from 'tap'
-import { type LoadedConfig } from '../../src/config/index.js'
+import { type LoadedConfig } from '../../src/config/index.ts'
 
 const options = {}
 let log = ''
 
 const { usage, command } = await t.mockImport<
-  typeof import('../../src/commands/uninstall.js')
->('../../src/commands/uninstall.js', {
+  typeof import('../../src/commands/uninstall.ts')
+>('../../src/commands/uninstall.ts', {
   '../../src/uninstall.js': {
     async uninstall() {
       log += 'uninstall\n'

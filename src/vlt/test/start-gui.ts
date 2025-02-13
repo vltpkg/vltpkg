@@ -1,40 +1,38 @@
 import { joinDepIDTuple } from '@vltpkg/dep-id'
 import { type Dependency } from '@vltpkg/graph'
 import { PackageJson } from '@vltpkg/package-json'
-import { type Manifest } from '@vltpkg/types'
-import { readdirSync, readFileSync } from 'node:fs'
+import { existsSync, readdirSync, readFileSync } from 'node:fs'
 import http from 'node:http'
 import { resolve } from 'node:path'
-import { PathScurry, type PathBase } from 'path-scurry'
+import { PathScurry } from 'path-scurry'
 import t from 'tap'
 import {
   type ConfigOptions,
   type LoadedConfig,
-} from '../src/config/index.js'
+} from '../src/config/index.ts'
 import {
   formatDashboardJson,
-  inferTools,
   parseInstallOptions,
-} from '../src/start-gui.js'
-import { actualObject } from './fixtures/actual.js'
+} from '../src/start-gui.ts'
+import { actualObject } from './fixtures/actual.ts'
 
 t.cleanSnapshot = s =>
-  s.replace(
-    /^(\s+)"projectRoot": ".*"/gm,
-    '$1"projectRoot": "{ROOT}"',
-  )
+  s
+    .replace(
+      /^(\s+)"projectRoot": ".*"/gm,
+      '$1"projectRoot": "{ROOT}"',
+    )
+    .replace(/\\\\/g, '/')
 
 t.test('starts gui data and server', async t => {
+  const dir = t.testdir({})
   class PackageJson {
     read() {
       return { name: 'my-project', version: '1.0.0' }
     }
   }
-  class PathScurry {
-    lstatSync() {}
-  }
   const options = {
-    projectRoot: t.testdirName,
+    projectRoot: dir,
     packageJson: new PackageJson(),
     scurry: new PathScurry(),
   }
@@ -42,10 +40,9 @@ t.test('starts gui data and server', async t => {
   let openURL = ''
   let openPort = 0
   let openHost = ''
-  const dir = t.testdirName
   const { startGUI } = await t.mockImport<
-    typeof import('../src/start-gui.js')
-  >('../src/start-gui.js', {
+    typeof import('../src/start-gui.ts')
+  >('../src/start-gui.ts', {
     'node:http': {
       ...http,
       createServer() {
@@ -132,74 +129,6 @@ t.test('starts gui data and server', async t => {
   )
 })
 
-t.test('inferTools', async t => {
-  const dir = t.testdir({
-    'with-engines': {
-      'package.json': JSON.stringify({
-        name: 'manifest-with-engines',
-        engines: {
-          node: '>=20',
-          npm: '>=10',
-        },
-      }),
-    },
-    empty: {
-      'package.json': JSON.stringify({
-        name: 'empty-manifest',
-      }),
-    },
-    'with-config-props': {
-      'package.json': JSON.stringify({
-        name: 'manifest-with-config-props',
-        pnpm: {
-          hooks: {
-            readPackage: 'echo "Hello"',
-          },
-        },
-      }),
-    },
-    'with-pnpm-lockfile': {
-      'package.json': JSON.stringify({
-        name: 'manifest-with-pnpm-lockfile',
-      }),
-      'pnpm-lock.yaml': '',
-    },
-  })
-  const packageJson = new PackageJson()
-  const scurry = new PathScurry(t.testdirName)
-  const folders = new Map<string, PathBase>()
-  const manis = new Map<string, Manifest>()
-  for (const entry of scurry.readdirSync(dir)) {
-    folders.set(entry.name, entry)
-    manis.set(entry.name, packageJson.read(entry.fullpath()))
-  }
-
-  const mainWithEnginesFolder = folders.get('with-engines')!
-  const mainWithEnginesMani = manis.get('with-engines')!
-  t.strictSame(
-    inferTools(mainWithEnginesMani, mainWithEnginesFolder, scurry),
-    ['node', 'npm'],
-  )
-
-  const emptyFolder = folders.get('empty')!
-  const emptyMani = manis.get('empty')!
-  t.strictSame(inferTools(emptyMani, emptyFolder, scurry), ['js'])
-
-  const withConfigPropsFolder = folders.get('with-config-props')!
-  const withConfigPropsMani = manis.get('with-config-props')!
-  t.strictSame(
-    inferTools(withConfigPropsMani, withConfigPropsFolder, scurry),
-    ['pnpm'],
-  )
-
-  const withPnpmLockfileFolder = folders.get('with-pnpm-lockfile')!
-  const withPnpmLockfileMani = manis.get('with-pnpm-lockfile')!
-  t.strictSame(
-    inferTools(withPnpmLockfileMani, withPnpmLockfileFolder, scurry),
-    ['pnpm'],
-  )
-})
-
 t.test('formatDashboardJson', async t => {
   const dir = t.testdir({
     a: {},
@@ -210,14 +139,104 @@ t.test('formatDashboardJson', async t => {
   const packageJson = new PackageJson()
   const scurry = new PathScurry(t.testdirName)
   t.strictSame(
-    formatDashboardJson(scurry.readdirSync(dir), {
-      packageJson,
-      scurry,
-    } as ConfigOptions).projects.map(
-      ({ name }: { name: string }) => name,
-    ),
+    (
+      await formatDashboardJson(scurry.readdirSync(dir), {
+        options: {
+          packageJson,
+          scurry,
+        } as ConfigOptions,
+        values: {},
+      } as LoadedConfig)
+    ).projects.map(({ name }: { name: string }) => name),
     ['b'],
     'should skip folders without package.json',
+  )
+})
+
+t.test('formatDashboardJson dashboardProjectLocations', async t => {
+  const dir = t.testdir({
+    foo: {
+      'package.json': JSON.stringify({ name: 'foo' }),
+    },
+    projects: {
+      a: {
+        'package.json': JSON.stringify({ name: 'a' }),
+      },
+      b: {
+        'package.json': JSON.stringify({ name: 'b' }),
+      },
+    },
+    drafts: {
+      recent: {
+        c: {
+          'package.json': JSON.stringify({ name: 'c' }),
+        },
+      },
+      previous: {
+        d: {
+          'package.json': JSON.stringify({ name: 'd' }),
+        },
+        e: {
+          'package.json': JSON.stringify({ name: 'e' }),
+        },
+        f: {
+          'package.json': JSON.stringify({ name: 'f' }),
+        },
+      },
+      more: {
+        util: {
+          extra: {
+            g: {
+              'package.json': JSON.stringify({ name: 'g' }),
+            },
+          },
+        },
+        h: {
+          'package.json': JSON.stringify({ name: 'h' }),
+        },
+      },
+      tmp: {},
+    },
+  })
+  const scurry = new PathScurry(t.testdirName)
+  const projectFolders = [
+    scurry.lstatSync(resolve(dir, 'foo')),
+    scurry.lstatSync(resolve(dir, 'projects/a')),
+    scurry.lstatSync(resolve(dir, 'projects/b')),
+    scurry.lstatSync(resolve(dir, 'drafts/recent/c')),
+    scurry.lstatSync(resolve(dir, 'drafts/previous/d')),
+    scurry.lstatSync(resolve(dir, 'drafts/previous/e')),
+    scurry.lstatSync(resolve(dir, 'drafts/previous/f')),
+    scurry.lstatSync(resolve(dir, 'drafts/more/util/extra/g')),
+    scurry.lstatSync(resolve(dir, 'drafts/more/h')),
+  ]
+  const packageJson = new PackageJson()
+  const { formatDashboardJson } = await t.mockImport(
+    '../src/start-gui.ts',
+    {
+      'node:os': {
+        ...(await import('node:os')),
+        homedir() {
+          return dir
+        },
+      },
+      '../src/project-info.js': {
+        ...(await import('../src/project-info.ts')),
+        getReadablePath: (path: string) => path.replace(dir, '~'),
+      },
+    },
+  )
+  t.matchSnapshot(
+    (
+      await formatDashboardJson(projectFolders, {
+        options: {
+          packageJson,
+          scurry,
+        } as ConfigOptions,
+        values: {},
+      } as LoadedConfig)
+    ).dashboardProjectLocations,
+    'should return the expected dashboard project locations',
   )
 })
 
@@ -247,8 +266,7 @@ t.test('e2e server test', async t => {
   )
   const log: string[] = []
   let ilog = ''
-
-  const { startGUI } = await t.mockImport('../src/start-gui.js', {
+  const mocks = {
     '@vltpkg/url-open': { urlOpen() {} },
     '../src/install.js': {
       async install() {
@@ -266,7 +284,12 @@ t.test('e2e server test', async t => {
         log.push(str)
       },
     },
-  })
+  }
+
+  const { startGUI } = await t.mockImport(
+    '../src/start-gui.ts',
+    mocks,
+  )
 
   await t.test('/select-project', async t => {
     const port = 8017
@@ -324,6 +347,192 @@ t.test('e2e server test', async t => {
       readFileSync(resolve(tmp, 'graph.json'), 'utf8'),
       'should update graph.json with new data',
     )
+  })
+
+  await t.test('/create-project', async t => {
+    const port = 8022
+    const options = {
+      projectRoot: resolve(dir, 'projects/my-project'),
+      packageJson: new PackageJson(),
+      scurry: new PathScurry(dir),
+    }
+    const server = await startGUI({
+      conf: {
+        options,
+        resetOptions(newProjectRoot: string) {
+          options.projectRoot = newProjectRoot
+        },
+        values: {},
+      } as LoadedConfig,
+      assetsDir,
+      port,
+      tmpDir: resolve(dir, 'assets-dir'),
+    })
+    t.teardown(() => server.close())
+
+    const tmp = resolve(dir, 'assets-dir/vltgui')
+    const files: string[] = []
+    for (const file of readdirSync(tmp)) {
+      files.push(file)
+    }
+    t.matchSnapshot(log, 'should log the server start message')
+
+    await t.test('standard request', async t => {
+      // tests a POST to /create-project
+      const reqSelectProject = await fetch(
+        `http://localhost:${port}/create-project`,
+        {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          method: 'POST',
+          body: JSON.stringify({
+            path: resolve(dir, 'projects'),
+            name: 'new-project',
+            author: 'Ruy Adorno',
+          }),
+        },
+      )
+      const resSelectProject = await reqSelectProject.json()
+      t.strictSame(resSelectProject, 'ok', 'should respond with ok')
+
+      t.ok(existsSync(resolve(dir, 'projects/new-project')))
+
+      t.matchSnapshot(
+        readFileSync(resolve(tmp, 'graph.json'), 'utf8'),
+        'should update graph.json with new project data',
+      )
+    })
+
+    await t.test('invalid name', async t => {
+      // tests an invalid name POST to /create-project
+      const reqSelectProject = await fetch(
+        `http://localhost:${port}/create-project`,
+        {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          method: 'POST',
+          body: JSON.stringify({
+            path: resolve(dir, 'projects'),
+            name: 'B0RK$$$',
+            author: 'Ruy Adorno',
+          }),
+        },
+      )
+      const resSelectProject = await reqSelectProject.json()
+      t.strictSame(
+        resSelectProject,
+        'Bad request.\nProject name must be lowercase, alphanumeric, and may contain hyphens',
+        'should respond with validation error message',
+      )
+      t.notOk(existsSync(resolve(dir, 'projects/B0RK$$$')))
+    })
+
+    await t.test('invalid long name', async t => {
+      // tests an invalid name POST to /create-project
+      const reqSelectProject = await fetch(
+        `http://localhost:${port}/create-project`,
+        {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          method: 'POST',
+          body: JSON.stringify({
+            path: resolve(dir, 'projects'),
+            name: 'this-is-a-very-long-project-name-that-should-not-be-allowed-to-exist-in-the-filesystem-because-it-is-too-long-and-will-cause-problems',
+            author: 'Ruy Adorno',
+          }),
+        },
+      )
+      const resSelectProject = await reqSelectProject.json()
+      t.strictSame(
+        resSelectProject,
+        'Bad request.\nProject name must be lowercase, alphanumeric, and may contain hyphens',
+        'should respond with validation error message',
+      )
+      t.notOk(existsSync(resolve(dir, 'projects/B0RK$$$')))
+    })
+
+    await t.test('invalid path', async t => {
+      // tests an invalid path POST to /create-project
+      const reqSelectProject = await fetch(
+        `http://localhost:${port}/create-project`,
+        {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          method: 'POST',
+          body: JSON.stringify({
+            path: 1234,
+            name: 'another-new-project',
+            author: 'Ruy Adorno',
+          }),
+        },
+      )
+      const resSelectProject = await reqSelectProject.json()
+      t.strictSame(
+        resSelectProject,
+        'Bad request.\nProject path must be a string',
+        'should respond with path validation error message',
+      )
+      t.notOk(
+        existsSync(resolve(dir, 'projects/another-new-project')),
+      )
+    })
+
+    await t.test('cli error', async t => {
+      const stderr = console.error
+      const port = 8023
+
+      console.error = () => {}
+      const { startGUI } = await t.mockImport('../src/start-gui.ts', {
+        ...mocks,
+        '../src/init.js': {
+          async init() {
+            throw new Error('ERR')
+          },
+        },
+      })
+      const server = await startGUI({
+        conf: {
+          options,
+          resetOptions(newProjectRoot: string) {
+            options.projectRoot = newProjectRoot
+          },
+          values: {},
+        } as LoadedConfig,
+        assetsDir,
+        port,
+        tmpDir: resolve(dir, 'assets-dir'),
+      })
+      t.teardown(() => {
+        console.error = stderr
+        server.close()
+      })
+
+      // tests a failed POST to /create-project
+      const reqSelectProject = await fetch(
+        `http://localhost:${port}/create-project`,
+        {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          method: 'POST',
+          body: JSON.stringify({
+            path: resolve(dir, 'projects'),
+            name: 'new-project',
+            author: 'Ruy Adorno',
+          }),
+        },
+      )
+      const resSelectProject = await reqSelectProject.json()
+      t.strictSame(
+        resSelectProject,
+        'CLI Error\nERR',
+        'should respond with cli error message',
+      )
+    })
   })
 
   await t.test('/install', async t => {
@@ -398,7 +607,7 @@ t.test('e2e server test', async t => {
       scurry: new PathScurry(dir),
     }
     // broken install
-    const { startGUI } = await t.mockImport('../src/start-gui.js', {
+    const { startGUI } = await t.mockImport('../src/start-gui.ts', {
       '@vltpkg/url-open': { urlOpen() {} },
       '../src/install.js': {
         async install() {
@@ -516,7 +725,7 @@ t.test('e2e server test', async t => {
       scurry: new PathScurry(dir),
     }
     // broken uninstall
-    const { startGUI } = await t.mockImport('../src/start-gui.js', {
+    const { startGUI } = await t.mockImport('../src/start-gui.ts', {
       '@vltpkg/url-open': { urlOpen() {} },
       '../src/uninstall.js': {
         async uninstall() {
@@ -583,8 +792,8 @@ t.test('no data to be found', async t => {
 
   t.capture(console, 'log').args // skip console.log to stdout
   const { startGUI } = await t.mockImport<
-    typeof import('../src/start-gui.js')
-  >('../src/start-gui.js', {
+    typeof import('../src/start-gui.ts')
+  >('../src/start-gui.ts', {
     '@vltpkg/url-open': { urlOpen() {} },
   })
 

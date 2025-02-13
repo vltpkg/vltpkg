@@ -1,9 +1,9 @@
 import { error } from '@vltpkg/error-cause'
-import { asIdentifierNode, type ParserState } from './types.js'
+import { asIdentifierNode, type ParserState } from './types.ts'
 import {
   attributeSelectorsMap,
   filterAttributes,
-} from './attribute.js'
+} from './attribute.ts'
 
 /**
  * Parse ids, e.g: `#foo`

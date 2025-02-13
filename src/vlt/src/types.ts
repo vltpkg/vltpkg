@@ -1,8 +1,8 @@
-import { type LoadedConfig } from './config/index.js'
+import { type LoadedConfig } from './config/index.ts'
 import { type Jack } from 'jackspeak'
 import { type ChalkInstance } from 'chalk'
 
-export type * from './config/index.js'
+export type * from './config/index.ts'
 
 export type CommandUsage = () => Jack
 
@@ -22,15 +22,15 @@ export interface ViewInstance<T = unknown> {
   error: (err: unknown) => void
 }
 
-export type ViewFn<T> = (
+export type ViewFn<T = unknown> = (
   result: T,
   options: ViewOptions,
   conf: LoadedConfig,
 ) => unknown
 
-export type View<T> = ViewFn<T> | ViewClass<T>
+export type View<T = unknown> = ViewFn<T> | ViewClass<T>
 
-export type Views<T> =
+export type Views<T = unknown> =
   | View<T>
   | {
       defaultView: string
@@ -42,7 +42,7 @@ export type Views<T> =
  * If the result is void, the command will not be displayed in the output.
  * Use @link {CommandFnResultOnly} if the command must return a result.
  */
-export type CommandFn<T> = (
+export type CommandFn<T = unknown> = (
   conf: LoadedConfig,
 ) => Promise<CommandResult<T>>
 

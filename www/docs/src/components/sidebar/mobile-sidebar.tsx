@@ -28,12 +28,12 @@ const MobileSidebar = ({ sidebar }: MobileSidebarProps) => {
     <Drawer open={open} onOpenChange={setOpen}>
       <DrawerTrigger asChild>
         <Button
-          className="md:hidden flex cursor-pointer"
+          className="flex cursor-pointer md:hidden"
           variant="outline">
           Menu
         </Button>
       </DrawerTrigger>
-      <DrawerContent className="max-h-[70svh] mx-1 border border-white/20 bg-gradient-to-br from-neutral-100 to-neutral-200 pb-12 dark:from-neutral-900 dark:to-neutral-950">
+      <DrawerContent className="mx-1 max-h-[70svh] border border-white/20 bg-gradient-to-br from-neutral-100 to-neutral-200 pb-12 dark:from-neutral-900 dark:to-neutral-950">
         <DrawerDescription></DrawerDescription>
         <DrawerHeader className="flex items-stretch justify-between gap-x-4 border-b border-black/5 px-1 py-0.5 dark:border-white/10">
           <DrawerTitle className="flex items-center justify-start px-3 text-sm text-neutral-700 dark:text-neutral-400">
@@ -43,7 +43,7 @@ const MobileSidebar = ({ sidebar }: MobileSidebarProps) => {
             <Button
               size="icon"
               variant="ghost"
-              className="bg-transparent cursor-pointer">
+              className="cursor-pointer bg-transparent">
               <X
                 size={16}
                 className="text-neutral-950 dark:text-white"
@@ -88,18 +88,18 @@ const Group = ({ entry, children }: GroupProps) => {
   }
 
   return (
-    <div className="flex flex-col w-full py-1 h-full overflow-y-scroll">
+    <div className="flex h-full w-full flex-col overflow-y-scroll py-1">
       <Button
         onClick={toggle}
         variant="ghost"
-        className="cursor-pointer justify-between items-center hover:bg-transparent bg-transparent w-full">
-        <span className="capitalize font-medium">{entry.label}</span>
+        className="w-full cursor-pointer items-center justify-between bg-transparent hover:bg-transparent">
+        <span className="font-medium capitalize">{entry.label}</span>
         {expanded ?
           <ChevronDown className="size-4" />
         : <ChevronRight className="size-4" />}
       </Button>
       {expanded && (
-        <div className="ml-4 border-l border-border flex flex-col">
+        <div className="ml-4 flex flex-col border-l border-border">
           {children}
         </div>
       )}
@@ -118,11 +118,11 @@ const Item = ({ entry }: ItemProps) => {
   return (
     <Button
       asChild
-      className="capitalize w-full cursor-pointer justify-start items-center hover:bg-transparent bg-transparent"
+      className="w-full cursor-pointer items-center justify-start bg-transparent capitalize hover:bg-transparent"
       variant="ghost">
       <a
         href={entry.href}
-        className="no-underline text-primary font-medium">
+        className="font-medium text-primary no-underline">
         {entry.label}
       </a>
     </Button>

@@ -1,14 +1,14 @@
 import t, { type Test } from 'tap'
 import { join } from 'path'
-import { defaultOptions } from '../src/index.js'
-import * as types from '../src/types.js'
+import { defaultOptions } from '../src/index.ts'
+import * as types from '../src/types.ts'
 
 const testCompile = async (
   t: Test,
   options: Partial<types.Factors>,
 ) => {
   const { default: compile } = await t.mockImport(
-    '../src/compile.js',
+    '../src/compile.ts',
     {
       'node:child_process': {
         spawnSync: () => ({ status: 0 }),
@@ -35,7 +35,7 @@ const testCompile = async (
 }
 
 t.test('runtimes', async t => {
-  await t.resolves(
+  await t.rejects(
     testCompile(t, {
       runtime: types.Runtimes.Node,
     }),

@@ -6,6 +6,7 @@ const routeNames = new Map<string, string>([
   ['/error', 'Error'],
   ['/explore', 'Explore'],
   ['/dashboard', 'Dashboard'],
+  ['/new-project', 'New Project'],
   ['/queries', 'Queries'],
   ['/labels', 'Labels'],
 ])
@@ -29,8 +30,8 @@ const Header = () => {
   if (route.includes('error')) return null
 
   return (
-    <div className="flex w-full justify-between px-8 py-3 bg-white dark:bg-black">
-      <h3 className="text-2xl font-medium mt-1">{routeName}</h3>
+    <div className="flex w-full justify-between bg-white px-8 py-3 dark:bg-black">
+      <h3 className="mt-1 text-2xl font-medium">{routeName}</h3>
     </div>
   )
 }

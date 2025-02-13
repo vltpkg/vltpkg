@@ -1,0 +1,13 @@
+{
+  "extends": "./tsconfig.json",
+  "include": [
+    "./test/**/*.ts",
+    "./test/**/*.mts",
+    "./test/**/*.tsx",
+    "./test/**/*.json"
+  ],
+  "compilerOptions": {
+    "noEmit": true,
+    "incremental": false
+  }
+}

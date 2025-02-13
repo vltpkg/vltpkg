@@ -8,7 +8,7 @@ interface KbdProps {
 export const Kbd = ({ children, className = '' }: KbdProps) => {
   return (
     <kbd
-      className={`flex items-center justify-center rounded-sm h-[1.5rem] w-[1.5rem] text-xs font-mono text-foreground bg-muted border border-muted-foreground/20 ${className}`}>
+      className={`flex h-[1.5rem] w-[1.5rem] items-center justify-center rounded-sm border border-muted-foreground/20 bg-muted font-mono text-xs text-foreground ${className}`}>
       {children}
     </kbd>
   )

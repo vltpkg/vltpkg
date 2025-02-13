@@ -1,6 +1,6 @@
 import t, { type Test } from 'tap'
-import { setupCommand, setupEnv } from '../fixtures/run.js'
-import * as Command from '../../src/commands/pkg.js'
+import { setupCommand, setupEnv } from '../fixtures/run.ts'
+import * as Command from '../../src/commands/pkg.ts'
 import { readFileSync } from 'fs'
 import { join } from 'path'
 
@@ -48,7 +48,7 @@ t.test('init', async t => {
     argv: ['init'],
     testdir: {},
     mocks: {
-      '../../src/init.js': await t.mockImport('../../src/init.js', {
+      '../../src/init.js': await t.mockImport('../../src/init.ts', {
         '@vltpkg/git': {
           async getUser() {
             return {

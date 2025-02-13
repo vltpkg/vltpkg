@@ -3,8 +3,8 @@ import { resolve } from 'path'
 import t, { type Test } from 'tap'
 import { Pax } from 'tar'
 import { gzipSync } from 'zlib'
-import { unpack } from '../dist/esm/unpack.js'
-import { makeTar } from './fixtures/make-tar.js'
+import { unpack } from '../src/unpack.ts'
+import { makeTar } from './fixtures/make-tar.ts'
 
 const pj = JSON.stringify({
   name: 'some-package',
@@ -135,8 +135,8 @@ t.test('unpack into a dir', t => {
     const FSP = await import('node:fs/promises')
     const poop = new Error('poop')
     const { unpack } = await t.mockImport<
-      typeof import('../src/unpack.js')
-    >('../src/unpack.js', {
+      typeof import('../src/unpack.ts')
+    >('../src/unpack.ts', {
       'node:fs/promises': t.createMock(FSP, {
         writeFile: async () => {
           throw poop

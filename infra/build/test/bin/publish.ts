@@ -1,7 +1,7 @@
 import { join } from 'node:path'
 import t, { type Test } from 'tap'
 import { spawnSync, type SpawnSyncOptions } from 'node:child_process'
-import { type Bin, BinNames } from '../../src/types.js'
+import { type Bin, BinNames } from '../../src/types.ts'
 import { readdirSync, readFileSync } from 'node:fs'
 
 type SpawnRes = { stderr: string[]; stdout: string[] }
@@ -33,14 +33,14 @@ const publish = async (t: Test, argv: string[] = []) => {
     ],
   })
   const res: SpawnRes[] = []
-  await t.mockImport<typeof import('../../src/bin/publish.js')>(
-    '../../src/bin/publish.js',
+  await t.mockImport<typeof import('../../src/bin/publish.ts')>(
+    '../../src/bin/publish.ts',
     {
       '../../src/matrix.js': await t.mockImport(
-        '../../src/matrix.js',
+        '../../src/matrix.ts',
         {
           '../../src/compile.js': await t.mockImport(
-            '../../src/compile.js',
+            '../../src/compile.ts',
             {
               'node:child_process': {
                 spawnSync: () => ({
@@ -105,19 +105,10 @@ await t.skip('compile', async t => {
   t.ok(hasBins.every(Boolean))
 })
 
-await t.test('format', async t => {
-  t.skip('cjs', async t => {
-    const { dirs } = await publish(t, ['--format=cjs'])
-    const pkg = JSON.parse(
-      readFileSync(join(dirs[0] ?? '', 'package.json'), 'utf8'),
-    )
-    t.equal(pkg.type, 'commonjs')
-  })
-  t.test('esm', async t => {
-    const { dirs } = await publish(t, ['--format=esm'])
-    const pkg = JSON.parse(
-      readFileSync(join(dirs[0] ?? '', 'package.json'), 'utf8'),
-    )
-    t.equal(pkg.type, 'module')
-  })
+t.test('publisj', async t => {
+  const { dirs } = await publish(t)
+  const pkg = JSON.parse(
+    readFileSync(join(dirs[0] ?? '', 'package.json'), 'utf8'),
+  )
+  t.equal(pkg.type, 'module')
 })

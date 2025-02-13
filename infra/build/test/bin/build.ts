@@ -8,11 +8,11 @@ const build = async (t: Test, ...argv: string[]) => {
   })
   let compiled = 0
   let bundled = 0
-  await t.mockImport<typeof import('../../src/bin/build.js')>(
-    '../../src/bin/build.js',
+  await t.mockImport<typeof import('../../src/bin/build.ts')>(
+    '../../src/bin/build.ts',
     {
       '../../src/matrix.js': await t.mockImport(
-        '../../src/matrix.js',
+        '../../src/matrix.ts',
         {
           '../../src/compile.js': {
             default: () => {
@@ -40,11 +40,4 @@ t.test('basic', async t => {
   t.equal(r.res.length, 1)
   t.equal(r.compiled, 0)
   t.equal(r.bundled, 1)
-})
-
-t.test('runtime', async t => {
-  const r = await build(t, '--format=esm,cjs')
-  t.equal(r.res.length, 2)
-  t.equal(r.compiled, 0)
-  t.equal(r.bundled, 2)
 })

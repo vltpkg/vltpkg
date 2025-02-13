@@ -22,8 +22,8 @@ const getKC = async (t: Test) => {
     },
   })
   const { Keychain } =
-    await t.mockImport<typeof import('../src/index.js')>(
-      '../src/index.js',
+    await t.mockImport<typeof import('../src/index.ts')>(
+      '../src/index.ts',
     )
   // nerf the autosave because tap will tear down the folder
   return {
@@ -44,6 +44,7 @@ t.test('basic behavior', async t => {
   t.equal(await kc.has('x'), false)
   t.equal(await kc.get('x'), undefined)
   kc.set('x', 'y')
+  kc.set('a', 'b')
   t.equal(await kc.get('x'), 'y')
   t.equal(kc.getSync('x'), 'y')
   t.equal(await kc.has('z'), false)
@@ -53,6 +54,9 @@ t.test('basic behavior', async t => {
   await kc.save()
   t.equal(kc.dirty, false)
   kc.delete('x')
+  const kc2 = new Keychain('test/basic')
+  await kc2.load()
+  t.equal(kc2.getSync('a'), 'b')
   t.equal(kc.dirty, true)
   t.equal(kc.getSync('x'), undefined)
 })

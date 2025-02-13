@@ -8,9 +8,9 @@ exports[`save-query > should render correctly 1`] = `
       <gui-tooltip>
         <gui-tooltip-trigger
           aschild="true"
-          classname="flex rounded-sm items-center justify-center h-[1.5rem] w-[1.5rem] bg-muted border border-muted-foreground/20"
+          classname="flex h-[1.5rem] w-[1.5rem] items-center justify-center rounded-sm border border-muted-foreground/20 bg-muted"
         >
-          <div class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&amp;_svg]:pointer-events-none [&amp;_svg]:size-4 [&amp;_svg]:shrink-0 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-[1.5rem] w-[1.5rem]">
+          <div class="inline-flex h-[1.5rem] w-[1.5rem] items-center justify-center gap-2 whitespace-nowrap rounded-md border border-input bg-background text-sm font-medium ring-offset-background transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&amp;_svg]:pointer-events-none [&amp;_svg]:size-4 [&amp;_svg]:shrink-0">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               width="20"
@@ -37,7 +37,7 @@ exports[`save-query > should render correctly 1`] = `
     </gui-tooltip-provider>
   </gui-popover-trigger>
   <gui-popover-content
-    classname="p-0 w-full"
+    classname="w-full p-0"
     align="end"
   >
   </gui-popover-content>

@@ -7,7 +7,7 @@ import pathModule, {
   sep,
 } from 'path'
 import t, { type Test } from 'tap'
-import { type WhichOptions } from '../src/index.js'
+import { type WhichOptions } from '../src/index.ts'
 
 import { posix as isexePosix, win32 as isexeWin } from 'isexe'
 
@@ -31,7 +31,7 @@ const runTest = async (
       if (!isWindows)
         t.intercept(process, 'platform', { value: platform })
       const { which, whichSync } = await t.mockImport(
-        '../src/index.js',
+        '../src/index.ts',
         {
           isexe: isWindows ? isexeWin : isexePosix,
         },
@@ -67,7 +67,7 @@ t.test('windows style', async t => {
     'foo.txt': 'bare file',
   })
   t.intercept(process, 'platform', { value: 'win32' })
-  const { which, whichSync } = await t.mockImport('../src/index.js', {
+  const { which, whichSync } = await t.mockImport('../src/index.ts', {
     isexe: isexeWin,
     path: { ...pathModule, delimiter: pathModule.win32.delimiter },
   })

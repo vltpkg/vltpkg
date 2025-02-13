@@ -1,7 +1,7 @@
 import { type RollbackRemove } from '@vltpkg/rollback-remove'
 import { type PathScurry } from 'path-scurry'
-import { type Edge } from '../edge.js'
-import { binPaths } from './bin-paths.js'
+import { type Edge } from '../edge.ts'
+import { binPaths } from './bin-paths.ts'
 
 const rmBinPosix = (remover: RollbackRemove, bin: string) => {
   return [remover.rm(bin)]

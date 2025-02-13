@@ -12,20 +12,20 @@ import { Spec, type SpecOptions } from '@vltpkg/spec'
 import { Monorepo } from '@vltpkg/workspaces'
 import { PathScurry } from 'path-scurry'
 import t from 'tap'
-import { load as loadActual } from '../../src/actual/load.js'
-import { buildIdealFromStartingGraph } from '../../src/ideal/build-ideal-from-starting-graph.js'
+import { load as loadActual } from '../../src/actual/load.ts'
+import { buildIdealFromStartingGraph } from '../../src/ideal/build-ideal-from-starting-graph.ts'
 import {
   type LockfileData,
   type LockfileEdgeKey,
   type LockfileEdges,
   type LockfileNode,
-} from '../../src/index.js'
-import { load as loadVirtual } from '../../src/lockfile/load.js'
-import { objectLikeOutput } from '../../src/visualization/object-like-output.js'
+} from '../../src/index.ts'
+import { load as loadVirtual } from '../../src/lockfile/load.ts'
+import { objectLikeOutput } from '../../src/visualization/object-like-output.ts'
 import {
   type AddImportersDependenciesMap,
   type RemoveImportersDependenciesMap,
-} from '../../src/dependencies.js'
+} from '../../src/dependencies.ts'
 
 const edgeKey = (from: DepIDTuple, to: string): LockfileEdgeKey =>
   `${joinDepIDTuple(from)} ${to}`

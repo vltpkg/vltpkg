@@ -7,6 +7,9 @@ import jsdoc from 'eslint-plugin-jsdoc'
 import importPlugin from 'eslint-plugin-import'
 import { defaultConditionNames } from 'eslint-import-resolver-typescript'
 
+const MONO_ROOT = import.meta.dirname
+const CWD = process.cwd()
+
 // 'error' to fix, or 'warn' to see
 const BE_EXTRA = process.env.LINT_SUPER_CONSISTENT ?? 'off'
 
@@ -22,7 +25,7 @@ const unsafeRules = value => ({
 export default tseslint.config(
   {
     ignores: [
-      ...readFileSync(resolve(import.meta.dirname, '.prettierignore'))
+      ...readFileSync(resolve(MONO_ROOT, '.prettierignore'))
         .toString()
         .trim()
         .split('\n')
@@ -58,11 +61,16 @@ export default tseslint.config(
             '@vltpkg/source',
             ...defaultConditionNames,
           ],
-          project: [
-            'src/*/tsconfig.json',
-            'infra/*/tsconfig.json',
-            'www/*/tsconfig.json',
-          ],
+          project:
+            // If run from the root specify glob patterns to all ts projects
+            // otherwise just use the tsconfig.json in the current directory
+            CWD === MONO_ROOT ?
+              [
+                'src/*/tsconfig.json',
+                'infra/*/tsconfig.json',
+                'www/*/tsconfig.json',
+              ]
+            : ['tsconfig.json'],
         },
         node: true,
       },
@@ -81,6 +89,8 @@ export default tseslint.config(
           destructuring: 'all',
         },
       ],
+      // this is mostly a CLI which needs to match control characters
+      'no-control-regex': 'off',
       // emulate TypeScript behavior of allowing unused prefixed with _
       '@typescript-eslint/no-unused-vars': [
         'error',
@@ -199,6 +209,7 @@ export default tseslint.config(
       // eslint-plugin-import
       'import/no-named-as-default': 0,
       'import/no-named-as-default-member': 0,
+      'import/extensions': [2, 'ignorePackages'],
       // eslint-plugin-jsdoc
       'jsdoc/no-undefined-types': 2,
       'jsdoc/require-param': 0,
@@ -262,6 +273,38 @@ export default tseslint.config(
   },
   {
     /**
+     * TypeScript files must import TypeScript extensions
+     */
+    files: ['**/*.{ts,mts,tsx}'],
+    rules: {
+      'import/extensions': [
+        'error',
+        'always',
+        {
+          ignorePackages: true,
+          pattern: {
+            js: 'never',
+            mjs: 'never',
+            jsx: 'never',
+          },
+        },
+      ],
+    },
+  },
+  {
+    /**
+     * These workspaces use path aliases which are difficult to
+     * configure with import/extensions and these workspaces are run
+     * in the browser primarily so they don't need have the strict need
+     * to enforce .ts extensions for use with rewriteRelativeImportExtensions.
+     */
+    files: ['{src/gui,www/docs}/**/*.{ts,tsx,mts}'],
+    rules: {
+      'import/extensions': 'off',
+    },
+  },
+  {
+    /**
      * Astro
      */
     files: ['www/docs/**/*.{ts,tsx}'],
@@ -279,6 +322,18 @@ export default tseslint.config(
     files: ['src/*/src/**/*.ts'],
     rules: {
       'no-console': 2,
+    },
+  },
+  {
+    files: ['infra/build/test/**/*.ts', 'src/vlt/test/**/*/*.ts'],
+    rules: {
+      'no-restricted-syntax': [
+        'warn',
+        ...['log', 'error'].map(method => ({
+          selector: `CallExpression[callee.object.name='console'][callee.property.name='${method}']`,
+          message: `\`console.${method}\` is often captured in these tests so calling it might not show anything. Use another method like \`console.info\` or \`t.comment\` instead.`,
+        })),
+      ],
     },
   },
   {

@@ -1,6 +1,6 @@
 import { whichSync } from '@vltpkg/which'
 import t from 'tap'
-import { which as whichGit } from '../src/which.js'
+import { which as whichGit } from '../src/which.ts'
 
 const mungePath = process.argv[2] === 'mungePath'
 
@@ -18,5 +18,5 @@ t.equal(whichGit({ git: 'foo' }), 'foo')
 t.equal(whichGit(), whichSync('git'))
 t.match(whichGit({ git: false }), er)
 process.env.PATH = import.meta.dirname
-const { which: whichMunged } = await t.mockImport('../src/which.js')
+const { which: whichMunged } = await t.mockImport('../src/which.ts')
 t.match(whichMunged(), er)

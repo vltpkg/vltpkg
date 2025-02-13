@@ -1,9 +1,9 @@
 import { join } from 'node:path'
 import { rmSync } from 'node:fs'
-import bundle from './bundle.js'
-import compile from './compile.js'
-import * as types from './types.js'
-import { defaultMatrix, fullMatrix } from './index.js'
+import bundle from './bundle.ts'
+import compile from './compile.ts'
+import * as types from './types.ts'
+import { defaultMatrix, fullMatrix } from './index.ts'
 
 export type Bundle = types.BundleFactors & {
   bundleId: string
@@ -43,7 +43,6 @@ export const matrixConfig: Record<
   externalCommands: { type: 'string', multiple: true },
   compile: { type: 'string', multiple: true },
   runtime: { type: 'string', multiple: true },
-  format: { type: 'string', multiple: true },
   platform: { type: 'string', multiple: true },
   arch: { type: 'string', multiple: true },
 } as const
@@ -99,14 +98,10 @@ const parseArgs = (
   // compile and runtime can affect other args
   const compile = parseBoolean('compile', o)
   const runtime = parseArg('runtime', o, types.isRuntime)
-  o.defaults = defaultMatrix({
-    compile,
-    runtime,
-  })
+  o.defaults = defaultMatrix()
   return {
     compile,
     runtime,
-    format: parseArg('format', o, types.isFormat),
     minify: parseBoolean('minify', o),
     sourcemap: parseBoolean('sourcemap', o),
     externalCommands: parseBoolean('externalCommands', o),
@@ -139,7 +134,7 @@ const isBundleSupported = (o: types.Matrix) => {
     o.runtime === types.Runtimes.Bun
   ) {
     // bun+deno must use esm
-    return o.format === types.Formats.Esm
+    return true
   }
   return true
 }
@@ -156,7 +151,7 @@ const isCompileSupported = (o: types.Matrix) => {
   }
   if (o.runtime === types.Runtimes.Node) {
     // node must use cjs to compile
-    return o.format === types.Formats.Cjs
+    return false
   }
   // bun+deno must use esm
   return true

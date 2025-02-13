@@ -1,0 +1,32 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`toggle > should render correctly 1`] = `
+
+<div class="flex">
+  <div class="relative flex h-[2.5rem] w-full items-center rounded-md border border-[1px] border-muted-foreground/25 bg-white p-1 dark:bg-black">
+    <div class="absolute h-[2rem] w-[2rem] rounded-[4px] border border-muted-foreground/20 bg-muted">
+    </div>
+    <div
+      class="z-[1] flex h-[2rem] w-[2rem] cursor-pointer items-center justify-center rounded-sm"
+      data-state="closed"
+    >
+      <gui-smile-icon
+        size="20"
+        classname="text-muted-foreground"
+      >
+      </gui-smile-icon>
+    </div>
+    <div
+      class="z-[1] flex h-[2rem] w-[2rem] cursor-pointer items-center justify-center rounded-sm"
+      data-state="closed"
+    >
+      <gui-frown-icon
+        size="20"
+        classname="text-muted-foreground"
+      >
+      </gui-frown-icon>
+    </div>
+  </div>
+</div>
+
+`;

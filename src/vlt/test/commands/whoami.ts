@@ -1,9 +1,9 @@
 import t from 'tap'
-import { commandView } from '../fixtures/run.js'
+import { commandView } from '../fixtures/run.ts'
 
 const Command = await t.mockImport<
-  typeof import('../../src/commands/whoami.js')
->('../../src/commands/whoami.js', {
+  typeof import('../../src/commands/whoami.ts')
+>('../../src/commands/whoami.ts', {
   '@vltpkg/registry-client': {
     RegistryClient: class {
       async request(url: string | URL, config: { cache: false }) {

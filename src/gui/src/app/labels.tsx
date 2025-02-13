@@ -3,7 +3,10 @@ import { Label } from '@/components/labels/label.jsx'
 import { Button } from '@/components/ui/button.jsx'
 import { Plus } from 'lucide-react'
 import { FilterSearch } from '@/components/ui/filter-search.jsx'
-import { SortingToggle } from '@/components/ui/sorting-toggle.jsx'
+import {
+  sortAlphabeticallyAscending,
+  SortToggle,
+} from '@/components/sort-toggle.jsx'
 import { Checkbox } from '@/components/ui/checkbox.jsx'
 import { DeleteLabel } from '@/components/labels/delete-label.jsx'
 import { CreateLabel } from '@/components/labels/create-label.jsx'
@@ -44,15 +47,16 @@ const Labels = () => {
 
   useEffect(() => {
     if (savedLabels) {
-      const sortedLabels = [...savedLabels].sort((a, b) =>
-        a.name.localeCompare(b.name),
+      sortAlphabeticallyAscending(
+        savedLabels,
+        'name',
+        setFilteredLabels,
       )
-      setFilteredLabels(sortedLabels)
     }
   }, [savedLabels])
 
   return (
-    <section className="flex grow w-full flex-col min-h-[80svh] bg-white dark:bg-black">
+    <section className="flex min-h-[80svh] w-full grow flex-col bg-white dark:bg-black">
       <div className="flex flex-col px-8 py-4">
         <div className="flex justify-between">
           <div className="flex gap-2">
@@ -61,7 +65,7 @@ const Labels = () => {
               items={savedLabels}
               setFilteredItems={setFilteredLabels}
             />
-            <SortingToggle
+            <SortToggle
               filteredItems={filteredLabels}
               setFilteredItems={setFilteredLabels}
               sortKey="name"
@@ -97,17 +101,17 @@ const Labels = () => {
                 onCheckedChange={handleSelectAll}
                 className="border-muted-foreground/50 hover:border-muted-foreground/75"
               />
-              <p className="text-neutral-500 text-sm font-medium">
+              <p className="text-sm font-medium text-neutral-500">
                 Name
               </p>
             </div>
             <div className="col-span-4 flex items-center">
-              <p className="text-neutral-500 text-sm font-medium">
+              <p className="text-sm font-medium text-neutral-500">
                 Description
               </p>
             </div>
             <div className="flex items-center justify-center">
-              <p className="text-neutral-500 text-sm font-medium">
+              <p className="text-sm font-medium text-neutral-500">
                 References
               </p>
             </div>

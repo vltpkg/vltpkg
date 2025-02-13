@@ -42,6 +42,10 @@ vi.mock('@/components/ui/card.jsx', () => ({
   CardTitle: 'gui-card-title',
 }))
 
+vi.mock('@/components/ui/button.jsx', () => ({
+  Button: 'gui-button',
+}))
+
 vi.mock('@/components/ui/tooltip.jsx', () => ({
   Tooltip: 'gui-tooltip',
   TooltipContent: 'gui-tooltip-content',
@@ -53,12 +57,35 @@ vi.mock('@/components/ui/filter-search.jsx', () => ({
   FilterSearch: 'gui-filter-search',
 }))
 
-vi.mock('@/components/ui/sorting-toggle.jsx', () => ({
-  SortingToggle: 'gui-sorting-toggle',
+vi.mock('@/components/data-table/table-filter-search.jsx', () => ({
+  TableFilterSearch: 'gui-dashboard-table-filter-search',
 }))
+
+vi.mock('@/components/data-table/table-view-dropdown.jsx', () => ({
+  TableViewDropdown: 'gui-dashboard-table-view-dropdown',
+}))
+
+vi.mock('@/components/dashboard-grid/dasboard-table.jsx', () => ({
+  DashboardTable: 'gui-dashboard-table',
+}))
+
+vi.mock('@/components/sort-toggle.jsx', () => ({
+  SortToggle: 'gui-sort-toggle',
+}))
+
+vi.mock(
+  '@/components/dashboard-grid/dashboard-view-toggle.jsx',
+  () => ({
+    DashboardViewToggle: 'gui-dashboard-view-toggle',
+  }),
+)
 
 vi.mock('date-fns', () => ({
   format: () => 'November 1st, 2024 | 06:01 PM',
+}))
+
+vi.mock('lucide-react', () => ({
+  Plus: 'gui-plus-icon',
 }))
 
 expect.addSnapshotSerializer({
@@ -83,6 +110,10 @@ test('dashboard-grid with results', async () => {
     updateDashboard({
       buildVersion: '1.0.0',
       cwd: '/path/to/cwd',
+      defaultAuthor: 'John Doe',
+      dashboardProjectLocations: [
+        { path: '/home/user', readablePath: '~' },
+      ],
       projects: [
         {
           name: 'project-foo',

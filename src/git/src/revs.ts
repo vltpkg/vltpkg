@@ -5,10 +5,10 @@ import {
 } from '@vltpkg/promise-spawn'
 import { LRUCache } from 'lru-cache'
 import { fileURLToPath } from 'url'
-import { type GitOptions } from './index.js'
-import { linesToRevs } from './lines-to-revs.js'
+import { type GitOptions } from './index.ts'
+import { linesToRevs } from './lines-to-revs.ts'
 import { type RevDoc } from '@vltpkg/types'
-import { spawn } from './spawn.js'
+import { spawn } from './spawn.ts'
 
 const fetchMethod = async (
   repo: string,

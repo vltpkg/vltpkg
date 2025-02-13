@@ -44,7 +44,7 @@ const SpecOrigin = ({
               <div>
                 <TooltipProvider>
                   <Tooltip>
-                    <TooltipTrigger className="px-1 py-1 text-xs text-muted-foreground font-mono m-0 align-baseline truncate">
+                    <TooltipTrigger className="m-0 truncate px-1 py-1 align-baseline font-mono text-xs text-muted-foreground">
                       <span>registered-scope</span>
                       <span>
                         {item.title}@{item.version}
@@ -63,7 +63,7 @@ const SpecOrigin = ({
           <div>
             <TooltipProvider>
               <Tooltip>
-                <TooltipTrigger className="px-1 py-1 text-xs text-muted-foreground font-mono m-0 align-baseline truncate">
+                <TooltipTrigger className="m-0 truncate px-1 py-1 align-baseline font-mono text-xs text-muted-foreground">
                   <span>{ref || 'npm'}:</span>
                   <span>
                     {item.title}@{item.version}
@@ -87,7 +87,7 @@ const SpecOrigin = ({
       case 'file':
       case 'remote': {
         return (
-          <div className="px-1 py-1 text-xs text-muted-foreground font-mono m-0 align-baseline truncate">
+          <div className="m-0 truncate px-1 py-1 align-baseline font-mono text-xs text-muted-foreground">
             {depType}:{ref}
           </div>
         )
@@ -144,9 +144,9 @@ export const SelectedItem = ({ item }: GridItemOptions) => {
   return (
     <div className="relative">
       <Card className="relative my-4 border-muted-foreground">
-        <div className="flex justify-stretch gap-4 w-full p-6">
+        <div className="flex w-full justify-stretch gap-4 p-6">
           <motion.div
-            className="flex gap-4 grow items-start w-full"
+            className="flex w-full grow items-start gap-4"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}>
             <Avatar className="size-16 rounded-lg border border-solid border-neutral-200">
@@ -179,7 +179,7 @@ export const SelectedItem = ({ item }: GridItemOptions) => {
                     item.title.length < 9 ? 'text-xl'
                     : item.title.length < 18 ? 'text-lg'
                     : 'text-sm'
-                  } font-medium text-muted-foreground mb-[1px]`}>
+                  } mb-[1px] font-medium text-muted-foreground`}>
                   {item.version}
                 </span>
               </div>
@@ -188,13 +188,13 @@ export const SelectedItem = ({ item }: GridItemOptions) => {
               : ''}
             </div>
           </motion.div>
-          <div className="flex flex-col justify-end w-full gap-4 mt-4">
+          <div className="mt-4 flex w-full flex-col justify-end gap-4">
             {details.downloads?.weekly ?
               <motion.div
                 className="flex flex-row-reverse"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}>
-                <span className="text-md font-medium text-muted-foreground text-right">
+                <span className="text-md text-right font-medium text-muted-foreground">
                   <span className="text-foreground">
                     {details.downloads.weekly.toLocaleString()}{' '}
                     Downloads
@@ -219,7 +219,7 @@ export const SelectedItem = ({ item }: GridItemOptions) => {
                   className="text-sm font-medium"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}>
-                  <span className="text-xs text-muted-foreground mb-[1px]">
+                  <span className="mb-[1px] text-xs text-muted-foreground">
                     Published by:{' '}
                   </span>
                   <span>{details.publisher.name}</span>
@@ -229,7 +229,7 @@ export const SelectedItem = ({ item }: GridItemOptions) => {
           </div>
         </div>
         {item.to?.manifest?.description || details.author?.name ?
-          <div className="px-6 pb-6 -mt-6">
+          <div className="-mt-6 px-6 pb-6">
             {item.to?.manifest?.description ?
               <CardDescription className="grow content-center py-2">
                 {item.to.manifest.description}
@@ -237,7 +237,7 @@ export const SelectedItem = ({ item }: GridItemOptions) => {
             : ''}
             {details.author?.name ?
               <motion.div
-                className="flex items-center gap-2"
+                className="mt-2 flex items-center gap-2"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}>
                 <span className="text-xs font-medium text-muted-foreground">
@@ -247,7 +247,7 @@ export const SelectedItem = ({ item }: GridItemOptions) => {
             : ''}
           </div>
         : ''}
-        <div className="px-4 pb-4 w-full">
+        <div className="w-full px-4 pb-4">
           <Tabs defaultValue="package.json">
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="package.json" className="w-36">
@@ -274,7 +274,7 @@ export const SelectedItem = ({ item }: GridItemOptions) => {
           <div
             ref={linePositionRef}
             className={
-              'absolute border-t border-solid border-neutral-300 dark:border-neutral-600 rounded-tr-sm w-4 top-[44px] -right-4'
+              'absolute -right-4 top-[44px] w-4 rounded-tr-sm border-t border-solid border-neutral-300 dark:border-neutral-600'
             }></div>
         : ''
       }
