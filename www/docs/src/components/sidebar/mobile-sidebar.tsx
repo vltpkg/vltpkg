@@ -10,6 +10,7 @@ import {
   Drawer,
   DrawerClose,
   DrawerContent,
+  DrawerDescription,
   DrawerHeader,
   DrawerTitle,
   DrawerTrigger,
@@ -33,6 +34,7 @@ const MobileSidebar = ({ sidebar }: MobileSidebarProps) => {
         </Button>
       </DrawerTrigger>
       <DrawerContent className="max-h-[70svh] mx-1 border border-white/20 bg-gradient-to-br from-neutral-100 to-neutral-200 pb-12 dark:from-neutral-900 dark:to-neutral-950">
+        <DrawerDescription></DrawerDescription>
         <DrawerHeader className="flex items-stretch justify-between gap-x-4 border-b border-black/5 px-1 py-0.5 dark:border-white/10">
           <DrawerTitle className="flex items-center justify-start px-3 text-sm text-neutral-700 dark:text-neutral-400">
             Menu
