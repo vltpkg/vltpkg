@@ -2,7 +2,7 @@
 
 exports[`filter-search > should render correctly 1`] = `
 
-<div class="relative flex items-center w-[384px]">
+<div class="relative flex w-[384px] items-center">
   <gui-search-icon
     size="18"
     classname="absolute left-0 ml-3 text-neutral-500"
@@ -16,8 +16,8 @@ exports[`filter-search > should render correctly 1`] = `
     value
   >
   </gui-input>
-  <div class="flex gap-2 absolute right-0">
-    <div class="items-center hidden md:flex gap-1 mr-3 backdrop-blur-sm">
+  <div class="absolute right-0 flex gap-2">
+    <div class="mr-3 hidden items-center gap-1 backdrop-blur-sm md:flex">
       <gui-kbd>
         <gui-command-icon size="12">
         </gui-command-icon>

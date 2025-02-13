@@ -40,7 +40,8 @@
   },
   "license": "BSD-2-Clause-Patent",
   "engines": {
-    "node": "20 || >=22"
+    "node": ">=22",
+    "pnpm": "9"
   },
   "scripts": {
     "benchmark": "./test/fixtures/vs-node-semver.ts",
@@ -55,6 +56,7 @@
     "snap": "tap",
     "pretest": "tshy",
     "test": "tap",
+    "posttest": "tsc --project tsconfig.test.json",
     "watch": "tshy --watch"
   },
   "tap": {

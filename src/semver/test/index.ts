@@ -33,9 +33,9 @@ import {
   valid,
   validRange,
   Version,
-} from '../src/index.js'
-import increments from './fixtures/increments.js'
-import { excludes, includes } from './fixtures/ranges.js'
+} from '../src/index.ts'
+import increments from './fixtures/increments.ts'
+import { excludes, includes } from './fixtures/ranges.ts'
 
 t.test('parse, valid', t => {
   const v = Version.parse('1.2.3')

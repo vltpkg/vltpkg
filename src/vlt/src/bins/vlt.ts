@@ -1,2 +1,3 @@
 #!/usr/bin/env node
-void import('../index.js').then(r => r.default())
+import run from '../index.ts'
+await run()

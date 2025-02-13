@@ -7,29 +7,31 @@ import { XDG } from '@vltpkg/xdg'
 import { setTimeout } from 'node:timers/promises'
 import { loadPackageJson } from 'package-json-from-dist'
 import { Agent, RetryAgent, type Dispatcher } from 'undici'
-import { addHeader } from './add-header.js'
+import { addHeader } from './add-header.ts'
 import {
   deleteToken,
+  getKC,
   getToken,
-  kc,
+  isToken,
+  keychains,
   setToken,
   type Token,
-} from './auth.js'
-import { CacheEntry, type JSONObj } from './cache-entry.js'
-import { bun, deno, node } from './env.js'
-import { handle304Response } from './handle-304-response.js'
-import { otplease } from './otplease.js'
-import { isRedirect, redirect } from './redirect.js'
-import { setCacheHeaders } from './set-cache-headers.js'
+} from './auth.ts'
+import { CacheEntry, type JSONObj } from './cache-entry.ts'
+import { bun, deno, node } from './env.ts'
+import { handle304Response } from './handle-304-response.ts'
+import { otplease } from './otplease.ts'
+import { isRedirect, redirect } from './redirect.ts'
+import { setCacheHeaders } from './set-cache-headers.ts'
 import { logRequest } from '@vltpkg/output'
 import {
   isTokenResponse,
   type TokenResponse,
-} from './token-response.js'
+} from './token-response.ts'
 import {
   isWebAuthChallenge,
   type WebAuthChallenge,
-} from './web-auth-challenge.js'
+} from './web-auth-challenge.ts'
 export {
   type JSONObj,
   type CacheEntry,
@@ -37,7 +39,7 @@ export {
   type WebAuthChallenge,
   type TokenResponse,
 }
-export { kc }
+export { keychains, getKC, setToken, deleteToken, isToken }
 
 export type RegistryClientOptions = {
   /**
@@ -56,6 +58,9 @@ export type RegistryClientOptions = {
   'fetch-retry-mintimeout'?: number
   /** Maximum number of milliseconds between two retries */
   'fetch-retry-maxtimeout'?: number
+
+  /** the identity to use for storing auth tokens */
+  identity?: string
 }
 
 export type RegistryClientRequestOptions = Omit<
@@ -145,6 +150,7 @@ const xdg = new XDG('vlt')
 export class RegistryClient {
   agent: RetryAgent
   cache: Cache
+  identity: string
 
   constructor(options: RegistryClientOptions) {
     const {
@@ -153,7 +159,9 @@ export class RegistryClient {
       'fetch-retry-mintimeout': minTimeout = 0,
       'fetch-retry-maxtimeout': maxTimeout = 30_000,
       'fetch-retries': maxRetries = 3,
+      identity = '',
     } = options
+    this.identity = identity
     this.cache = new Cache({
       path: cache,
       onDiskWrite(_path, key, data) {
@@ -216,7 +224,7 @@ export class RegistryClient {
    */
   async logout(registry: string) {
     // if we have no token for that registry, nothing to do
-    const tok = await getToken(registry)
+    const tok = await getToken(registry, this.identity)
     if (!tok) return
 
     const s = tok.replace(/^(Bearer|Basic) /i, '')
@@ -237,7 +245,7 @@ export class RegistryClient {
       )
     }
 
-    await deleteToken(registry)
+    await deleteToken(registry, this.identity)
   }
 
   /**
@@ -269,7 +277,11 @@ export class RegistryClient {
       const challenge = response.json()
       if (isWebAuthChallenge(challenge)) {
         const result = await this.webAuthOpener(challenge)
-        await setToken(registry, `Bearer ${result.token}`)
+        await setToken(
+          registry,
+          `Bearer ${result.token}`,
+          this.identity,
+        )
         return
       }
     }
@@ -390,7 +402,7 @@ export class RegistryClient {
     options.headers = addHeader(
       options.headers,
       'authorization',
-      await getToken(origin),
+      await getToken(origin, this.identity),
     )
 
     const result = await this.#handleResponse(

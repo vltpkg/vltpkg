@@ -57,8 +57,8 @@ const CreateLabel = ({ closeCreate }: CreateLabelProps) => {
   }, [labelName, labelDescription, selectedColor])
 
   return (
-    <div className="bg-neutral-100 dark:bg-neutral-950 rounded-sm transition-all border border-[1px] border-muted-foreground/25">
-      <div className="flex flex-col px-3 py-3 gap-3">
+    <div className="rounded-sm border border-[1px] border-muted-foreground/25 bg-neutral-100 transition-all dark:bg-neutral-950">
+      <div className="flex flex-col gap-3 px-3 py-3">
         {/* label preview */}
         <div>
           <LabelBadge
@@ -68,9 +68,9 @@ const CreateLabel = ({ closeCreate }: CreateLabelProps) => {
             color={selectedColor}
           />
         </div>
-        <div className="flex mt-4 gap-3 w-full">
+        <div className="mt-4 flex w-full gap-3">
           <div className="flex flex-col gap-2">
-            <Label className="text-sm font-medium border-none">
+            <Label className="border-none text-sm font-medium">
               Name
             </Label>
             <Input
@@ -80,8 +80,8 @@ const CreateLabel = ({ closeCreate }: CreateLabelProps) => {
               placeholder="Name"
             />
           </div>
-          <div className="flex flex-col gap-2 grow">
-            <Label className="text-sm font-medium border-none">
+          <div className="flex grow flex-col gap-2">
+            <Label className="border-none text-sm font-medium">
               Description
             </Label>
             <Input
@@ -92,7 +92,7 @@ const CreateLabel = ({ closeCreate }: CreateLabelProps) => {
             />
           </div>
           <div className="flex flex-col gap-2">
-            <Label className="text-sm font-medium border-none">
+            <Label className="border-none text-sm font-medium">
               Color
             </Label>
             <Popover>

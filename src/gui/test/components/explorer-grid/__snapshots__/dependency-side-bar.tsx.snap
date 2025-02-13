@@ -3,7 +3,7 @@
 exports[`dependency-side-bar 1`] = `
 
 <div>
-  <div class="pt-6 text-md flex flex-row items-center font-medium">
+  <div class="text-md flex flex-row items-center pt-6 font-medium">
     <gui-git-fork-icon
       size="22"
       classname="mr-3 rotate-180"
@@ -33,7 +33,7 @@ exports[`dependency-side-bar 1`] = `
 exports[`dependency-side-bar has both installed and uninstalled deps 1`] = `
 
 <div>
-  <div class="pt-6 text-md flex flex-row items-center font-medium">
+  <div class="text-md flex flex-row items-center pt-6 font-medium">
     <gui-git-fork-icon
       size="22"
       classname="mr-3 rotate-180"
@@ -56,7 +56,7 @@ exports[`dependency-side-bar has both installed and uninstalled deps 1`] = `
     dependencies="true"
   >
   </gui-side-item>
-  <div class="pt-6 text-md flex flex-row items-center font-medium">
+  <div class="text-md flex flex-row items-center pt-6 font-medium">
     <gui-git-fork-icon
       size="22"
       classname="mr-3 rotate-180"
@@ -81,7 +81,7 @@ exports[`dependency-side-bar has both installed and uninstalled deps 1`] = `
 exports[`dependency-side-bar has uninstalled deps only 1`] = `
 
 <div>
-  <div class="pt-6 text-md flex flex-row items-center font-medium">
+  <div class="text-md flex flex-row items-center pt-6 font-medium">
     <gui-git-fork-icon
       size="22"
       classname="mr-3 rotate-180"
@@ -89,7 +89,7 @@ exports[`dependency-side-bar has uninstalled deps only 1`] = `
     </gui-git-fork-icon>
     Dependencies
   </div>
-  <div class="pt-6 text-md flex flex-row items-center font-medium">
+  <div class="text-md flex flex-row items-center pt-6 font-medium">
     <gui-git-fork-icon
       size="22"
       classname="mr-3 rotate-180"
@@ -119,7 +119,7 @@ exports[`dependency-side-bar has uninstalled deps only 1`] = `
 exports[`dependency-side-bar no items 1`] = `
 
 <div>
-  <div class="pt-6 text-md flex flex-row items-center font-medium">
+  <div class="text-md flex flex-row items-center pt-6 font-medium">
     <gui-git-fork-icon
       size="22"
       classname="mr-3 rotate-180"

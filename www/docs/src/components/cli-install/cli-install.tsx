@@ -47,12 +47,12 @@ const CliInstall = () => {
   }, [])
 
   return (
-    <div className="border-[1px] w-full md:w-[600px] h-[300px] px-3 py-3 rounded-sm backdrop-blur-sm bg-white/50 dark:bg-black/50 z-[10]">
+    <div className="z-[10] h-[300px] w-full rounded-sm border-[1px] bg-white/50 px-3 py-3 backdrop-blur-sm dark:bg-black/50 md:w-[600px]">
       <div className="flex gap-x-[0.5rem]">
         {terminalButtons.map((button, idx) => (
           <div
             key={idx}
-            className="h-[12px] w-[12px] !m-0 !p-0 rounded-full"
+            className="!m-0 h-[12px] w-[12px] rounded-full !p-0"
             style={{
               backgroundColor: button.color,
             }}
@@ -81,7 +81,7 @@ const CliInstall = () => {
 }
 
 const TerminalUser = () => (
-  <p className="flex gap-2 items-center font-mono font-medium">
+  <p className="flex items-center gap-2 font-mono font-medium">
     <span>⚡︎</span>
     <span>~</span>
   </p>
@@ -92,7 +92,7 @@ const TerminalUser = () => (
  */
 export const Cursor = ({ position }: { position: number }) => (
   <span
-    className="animate-blink bg-[#c7359c] select-none h-[2.25ch] w-[1ch] rounded-[1px]"
+    className="h-[2.25ch] w-[1ch] animate-blink select-none rounded-[1px] bg-[#c7359c]"
     style={{
       position: 'absolute',
       left: `${position}ch`,
@@ -134,7 +134,7 @@ const TextEffect = ({
       {wordsArray.map((chars, idx) => (
         <p
           key={`word-${idx}`}
-          className="text-sm font-medium font-mono inline-block !m-0">
+          className="!m-0 inline-block font-mono text-sm font-medium">
           {chars.map((char, charIdx) => (
             <motion.span
               key={`char-${idx}-${charIdx}`}

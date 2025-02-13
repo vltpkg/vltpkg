@@ -70,12 +70,12 @@ const SaveQueryButton = () => {
           <Tooltip>
             <TooltipTrigger
               asChild
-              className="flex rounded-sm items-center justify-center h-[1.5rem] w-[1.5rem] bg-muted border border-muted-foreground/20">
+              className="flex h-[1.5rem] w-[1.5rem] items-center justify-center rounded-sm border border-muted-foreground/20 bg-muted">
               <div
                 onClick={() =>
                   setShowSaveQueryPopover(!showSaveQueryPopover)
                 }
-                className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-[1.5rem] w-[1.5rem]">
+                className="inline-flex h-[1.5rem] w-[1.5rem] items-center justify-center gap-2 whitespace-nowrap rounded-md border border-input bg-background text-sm font-medium ring-offset-background transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0">
                 <Star ref={scope} size={20} fill={starColor} />
               </div>
             </TooltipTrigger>
@@ -85,7 +85,7 @@ const SaveQueryButton = () => {
           </Tooltip>
         </TooltipProvider>
       </PopoverTrigger>
-      <PopoverContent className="p-0 w-full" align="end">
+      <PopoverContent className="w-full p-0" align="end">
         <SaveQueryPopover
           isOpen={showSaveQueryPopover}
           setIsOpen={setShowSaveQueryPopover}
@@ -210,14 +210,14 @@ const SaveQueryPopover = ({
   if (!isOpen) return null
 
   return (
-    <div className="flex flex-col w-[325px]">
+    <div className="flex w-[325px] flex-col">
       <CardHeader className="px-6 py-4">
         <CardTitle className="text-lg font-medium">
           {savedQuery ? 'Edit Query' : 'Added Query!'}
         </CardTitle>
       </CardHeader>
-      <div className="flex px-6 py-4 flex-col gap-2 border-muted-foreground/20 border-t-[1px]">
-        <Label className="font-medium border-none">Name</Label>
+      <div className="flex flex-col gap-2 border-t-[1px] border-muted-foreground/20 px-6 py-4">
+        <Label className="border-none font-medium">Name</Label>
         <Input
           type="text"
           autoComplete="off"
@@ -228,7 +228,7 @@ const SaveQueryPopover = ({
             setQueryName(value)
           }}
         />
-        <Label className="font-medium border-none mt-2">
+        <Label className="mt-2 border-none font-medium">
           Directory
         </Label>
         <Input
@@ -242,7 +242,7 @@ const SaveQueryPopover = ({
             setEditContext(value)
           }}
         />
-        <Label className="font-medium border-none mt-2">Labels</Label>
+        <Label className="mt-2 border-none font-medium">Labels</Label>
         {selectedLabels.length !== 0 && (
           <div className="ml-2 flex flex-wrap gap-2">
             {selectedLabels.map((label, idx) => (
@@ -272,7 +272,7 @@ const SaveQueryPopover = ({
             />
           </PopoverContent>
         </Popover>
-        <div className="flex justify-end items-center w-full mt-4 gap-2">
+        <div className="mt-4 flex w-full items-center justify-end gap-2">
           <div className="flex items-center gap-3">
             {savedQuery && (
               <DeleteQuery

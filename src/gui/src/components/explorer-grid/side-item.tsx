@@ -16,6 +16,7 @@ export type SideItemOptions = GridItemOptions & {
   parent?: boolean
   onSelect?: () => undefined
   onUninstall?: (item: GridItemData) => void
+  isWorkspace?: boolean
 }
 
 export const SideItem = ({
@@ -24,6 +25,7 @@ export const SideItem = ({
   highlight,
   parent,
   onSelect,
+  isWorkspace,
   onUninstall,
 }: SideItemOptions) => {
   // These refs and the code in useEffect are used to fix the line connection
@@ -45,6 +47,7 @@ export const SideItem = ({
     }
   })
   const uninstallItem = (e: MouseEvent) => {
+    e.stopPropagation()
     e.preventDefault()
     if (onUninstall) {
       onUninstall(item)
@@ -53,77 +56,93 @@ export const SideItem = ({
 
   const uninstallAvailable = !!onUninstall && item.from?.importer
 
+  const parseItem = (title: string) => {
+    const parsed = title.split('@')
+    return parsed.length >= 3 ?
+        parsed.slice(2).join('@')
+      : parsed.slice(1).join('@')
+  }
+
   return (
     <div className="group relative z-10" ref={divRef}>
       {item.stacked ?
         <>
           {item.size > 2 ?
             <div
-              className={`transition-all absolute border top-2 left-2 w-[96%] h-full bg-card rounded-lg ${onSelect ? 'group-hover:border-neutral-400 dark:group-hover:border-neutral-600' : ''}`}
+              className={`absolute left-2 top-2 h-full w-[96%] rounded-lg border bg-card transition-all ${onSelect ? 'group-hover:border-neutral-400 dark:group-hover:border-neutral-600' : ''}`}
             />
           : ''}
           <div
-            className={`transition-all absolute border top-1 left-1 w-[98%] h-full bg-card rounded-lg ${onSelect ? 'group-hover:border-neutral-400 dark:group-hover:border-neutral-600' : ''}`}
+            className={`absolute left-1 top-1 h-full w-[98%] rounded-lg border bg-card transition-all ${onSelect ? 'group-hover:border-neutral-400 dark:group-hover:border-neutral-600' : ''}`}
           />
         </>
       : ''}
       <Card
         role="article"
-        className={`transition-all relative my-4 ${highlight ? 'border-foreground' : ''} ${onSelect ? 'cursor-pointer group-hover:border-neutral-400 dark:group-hover:border-neutral-600' : ''}`}
+        className={`relative my-4 transition-all ${highlight ? 'border-foreground' : ''} ${onSelect ? 'cursor-pointer group-hover:border-neutral-400 dark:group-hover:border-neutral-600' : ''}`}
         onClick={onSelect}>
-        <CardHeader className="rounded-t-lg relative flex flex-col w-full p-0">
+        <CardHeader className="relative flex w-full flex-col rounded-t-lg p-0">
           <div className="flex items-center px-3 py-2">
-            <CardTitle
-              className={`text-sm font-medium flex-1 items-center ${uninstallAvailable ? 'pl-8' : ''}`}>
-              {item.name}
+            <CardTitle className="flex flex-1 items-center gap-2 text-sm">
+              <span className="font-medium">{item.name}</span>
+              <span className="font-normal text-muted-foreground">
+                v{item.version}
+              </span>
             </CardTitle>
-            <div className="px-2 py-1 border-[1px] border-solid rounded-full flex-initial">
-              <p className="text-xs">{item.version}</p>
-            </div>
-          </div>
-          <div className="flex items-center flex-row justify-between gap-2 flex-wrap px-3 py-2 border-muted-foreground/20 border-t-[1px]">
-            <p className="text-sm text-muted-foreground">
-              {item.title}
-            </p>
-            {item.labels?.map(i => (
-              <div key={i}>
-                <Badge
-                  className={`grow-0 ${labelClassNamesMap.get(i) || ''}`}>
-                  {i}
-                </Badge>
-              </div>
-            ))}
-            {parent && (
-              <Badge
-                className={`grow-0 ${labelClassNamesMap.get(item.type) || ''}`}>
-                {item.type}
-              </Badge>
+            {uninstallAvailable && (
+              <DropdownMenu>
+                <DropdownMenuTrigger>
+                  <Ellipsis
+                    className="text-muted-foreground"
+                    size={20}
+                  />
+                </DropdownMenuTrigger>
+                <DropdownMenuContent
+                  className="z-[100000] ml-48 w-48"
+                  align="end"
+                  onCloseAutoFocus={e => e.preventDefault()}>
+                  <DropdownMenuItem
+                    className="cursor-pointer"
+                    onClick={uninstallItem}>
+                    <PackageMinus size={16} />
+                    Remove dependency
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             )}
           </div>
+
+          {!isWorkspace && (
+            <div className="flex flex-row flex-wrap items-center justify-between gap-2 border-t-[1px] border-muted-foreground/20 px-3 py-2">
+              <p className="flex items-center gap-2 text-sm text-muted-foreground">
+                Spec:{' '}
+                <span className="flex items-center justify-center rounded-sm bg-neutral-700/5 px-2 py-1 font-[courier] text-xs dark:bg-neutral-700/50">
+                  {parseItem(item.title)}
+                </span>
+              </p>
+              {item.labels?.map(i => (
+                <div key={i}>
+                  <Badge
+                    className={`grow-0 ${labelClassNamesMap.get(i) || ''}`}>
+                    {i}
+                  </Badge>
+                </div>
+              ))}
+              {parent && (
+                <Badge
+                  className={`grow-0 ${labelClassNamesMap.get(item.type) || ''}`}>
+                  {item.type}
+                </Badge>
+              )}
+            </div>
+          )}
         </CardHeader>
       </Card>
-      {uninstallAvailable ?
-        <div className="absolute top-3 left-3">
-          <DropdownMenu>
-            <DropdownMenuTrigger className="w-8 flex-none">
-              <Ellipsis className="text-muted-foreground" size={20} />
-            </DropdownMenuTrigger>
-            <DropdownMenuContent
-              className="w-48 ml-48 z-[100000]"
-              onCloseAutoFocus={e => e.preventDefault()}>
-              <DropdownMenuItem onClick={uninstallItem}>
-                <PackageMinus size={16} />
-                Remove dependency
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-      : ''}
       {highlight ?
-        <div className="absolute border-t border-solid border-muted-foreground w-4 -right-4 top-7" />
+        <div className="absolute -right-4 top-7 w-4 border-t border-solid border-muted-foreground" />
       : dependencies ?
         <div
-          className={`absolute border-b border-l border-solid border-neutral-300 dark:border-neutral-600 rounded-bl-sm z-0 h-[5px] w-[9px] -left-[9px] h-[13.35rem] bottom-[62px] group-[&:nth-child(2)]:hidden group-[&:nth-child(3)]:h-24`}
+          className={`absolute -left-[9px] bottom-[62px] z-0 h-[13.35rem] h-[5px] w-[9px] rounded-bl-sm border-b border-l border-solid border-neutral-300 group-[&:nth-child(2)]:hidden group-[&:nth-child(3)]:h-24 dark:border-neutral-600`}
           ref={lineRef}
         />
       : ''}

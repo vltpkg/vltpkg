@@ -1,7 +1,7 @@
 import { resolve } from 'path'
 import t from 'tap'
-import { command, usage } from '../../src/commands/exec.js'
-import { setupEnv } from '../fixtures/run.js'
+import { command, usage } from '../../src/commands/exec.ts'
+import { setupEnv } from '../fixtures/run.ts'
 
 setupEnv(t)
 
@@ -23,8 +23,8 @@ t.test('run script in a project', async t => {
   })
   t.chdir(dir)
   const { Config } = await t.mockImport<
-    typeof import('../../src/config/index.js')
-  >('../../src/config/index.js')
+    typeof import('../../src/config/index.ts')
+  >('../../src/config/index.ts')
   const conf = await Config.load(t.testdirName, ['echo'])
   conf.projectRoot = dir
   const logs = t.capture(console, 'log').args
@@ -60,8 +60,8 @@ t.test('run script in a single workspace', async t => {
   })
   t.chdir(dir + '/src/ws')
   const { Config } = await t.mockImport<
-    typeof import('../../src/config/index.js')
-  >('../../src/config/index.js')
+    typeof import('../../src/config/index.ts')
+  >('../../src/config/index.ts')
   const conf = await Config.load(t.testdirName, ['echo'])
   conf.values.workspace = ['src/ws']
   conf.projectRoot = dir
@@ -101,8 +101,8 @@ t.test('run script across several workspaces', async t => {
   })
   t.chdir(dir)
   const { Config } = await t.mockImport<
-    typeof import('../../src/config/index.js')
-  >('../../src/config/index.js')
+    typeof import('../../src/config/index.ts')
+  >('../../src/config/index.ts')
   const conf = await Config.load(t.testdirName, ['echo', 'ok'])
   conf.values.workspace = ['src/a', 'src/b']
   conf.projectRoot = dir

@@ -2,7 +2,7 @@ import { createHash } from 'crypto'
 import { readdirSync } from 'fs'
 import { resolve } from 'path'
 import t from 'tap'
-import { Cache } from '../dist/esm/index.js'
+import { Cache } from '../src/index.ts'
 
 t.test('basic cache operation', async t => {
   let odwCalled = false

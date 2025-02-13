@@ -7,9 +7,9 @@ import generateMatrix, {
   getMatrix,
   matrixConfig,
   type CompilationDir,
-} from '../matrix.js'
-import { Paths } from '../index.js'
-import * as types from '../types.js'
+} from '../matrix.ts'
+import { Paths } from '../index.ts'
+import * as types from '../types.ts'
 
 type Base = {
   name: string
@@ -18,10 +18,11 @@ type Base = {
   license: string
   keywords: string[]
   repository: Record<string, string>
+  type: string
 }
 
 type Bundle = Base & {
-  engines: Record<string, string>
+  engines: { node: string }
 }
 
 type Compiled = Base & {
@@ -77,9 +78,14 @@ const PRERELEASE_ID = `.${Date.now()}`
 const FILES = {
   README: readFile(join(Paths.CLI, 'README.md')),
   LICENSE: readFile(join(Paths.CLI, 'LICENSE')),
-  PACKAGE_JSON: readPackageJson(
-    join(Paths.CLI, 'package.json'),
-  ) as Bundle,
+  PACKAGE_JSON: (() => {
+    const pkg = readPackageJson(
+      join(Paths.CLI, 'package.json'),
+    ) as Bundle
+    // Only keep the node engines for publishing
+    pkg.engines = { node: pkg.engines.node }
+    return pkg
+  })(),
   POST_INSTALL: readFile(
     join(Paths.BUILD_ROOT, 'src/postinstall.js'),
   ),
@@ -106,7 +112,7 @@ const parseArgs = () => {
 }
 
 const publish = <T extends Package>(
-  pkg: { dir: string; format: types.Format },
+  pkg: { dir: string },
   options: Publish<T>,
 ) => {
   fs.mkdirSync(pkg.dir, { recursive: true })
@@ -144,7 +150,7 @@ const publish = <T extends Package>(
     'package.json': {
       ...options.files['package.json'],
       bin: noPackageJsonBins ? undefined : binFiles,
-      type: pkg.format === types.Formats.Cjs ? 'commonjs' : 'module',
+      type: 'module',
     },
   })
 
@@ -241,9 +247,6 @@ const publishCompiled = (
   publish<CompiledRoot>(
     {
       dir,
-      // The root package is commonjs because the postinstall script
-      // is easiest written with require.resolve
-      format: types.Formats.Cjs,
     },
     {
       ...options,
@@ -254,6 +257,9 @@ const publishCompiled = (
         'postinstall.js': FILES.POST_INSTALL,
         'package.json': {
           ...options.files['package.json'],
+          // The root package is commonjs because the postinstall script
+          // is easiest written with require.resolve
+          type: 'commonjs',
           optionalDependencies,
           scripts: { postinstall: 'node postinstall.js' },
         },
@@ -287,6 +293,7 @@ const main = async () => {
         keywords: FILES.PACKAGE_JSON.keywords,
         repository: FILES.PACKAGE_JSON.repository,
         engines: FILES.PACKAGE_JSON.engines,
+        type: FILES.PACKAGE_JSON.type,
       },
     },
   }

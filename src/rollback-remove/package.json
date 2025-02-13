@@ -25,23 +25,32 @@
     "rimraf": "catalog:"
   },
   "devDependencies": {
+    "@eslint/js": "catalog:",
+    "@types/eslint__js": "catalog:",
     "@types/node": "catalog:",
+    "eslint": "catalog:",
     "prettier": "catalog:",
     "tap": "catalog:",
-    "tshy": "catalog:"
+    "tshy": "catalog:",
+    "typescript": "catalog:",
+    "typescript-eslint": "catalog:"
   },
   "license": "BSD-2-Clause-Patent",
   "engines": {
-    "node": "20 || >=22"
+    "node": ">=22",
+    "pnpm": "9"
   },
   "scripts": {
     "format": "prettier --write . --log-level warn --ignore-path ../../.prettierignore --cache",
     "format:check": "prettier --check . --ignore-path ../../.prettierignore --cache",
+    "lint": "eslint . --fix",
+    "lint:check": "eslint .",
     "prepare": "tshy",
     "presnap": "tshy",
     "snap": "tap",
     "pretest": "tshy",
     "test": "tap",
+    "posttest": "tsc --project tsconfig.test.json",
     "watch": "tshy --watch"
   },
   "tap": {

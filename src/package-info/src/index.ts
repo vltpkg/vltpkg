@@ -28,7 +28,7 @@ import {
   resolve as pathResolve,
 } from 'path'
 import { create as tarC } from 'tar'
-import { rename } from './rename.js'
+import { rename } from './rename.ts'
 
 const xdg = new XDG('vlt')
 

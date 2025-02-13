@@ -1,5 +1,5 @@
 import t from 'tap'
-import { getRawHeader, setRawHeader } from '../src/raw-header.js'
+import { getRawHeader, setRawHeader } from '../src/raw-header.ts'
 
 t.strictSame(
   getRawHeader([Buffer.from('x'), Buffer.from('y')], 'asdf'),

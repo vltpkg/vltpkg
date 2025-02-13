@@ -1,0 +1,13 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`dashboard-table > should render correctly 1`] = `
+
+<gui-data-table
+  filtervalue
+  columns="[object Object],[object Object],[object Object],[object Object],[object Object],[object Object]"
+  columnvisibility="[object Object]"
+  data="[object Object],[object Object]"
+>
+</gui-data-table>
+
+`;

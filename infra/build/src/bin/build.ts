@@ -1,5 +1,5 @@
 import { parseArgs as nodeParseArgs } from 'node:util'
-import generateMatrix, { getMatrix, matrixConfig } from '../matrix.js'
+import generateMatrix, { getMatrix, matrixConfig } from '../matrix.ts'
 import { rmSync } from 'node:fs'
 import { resolve } from 'node:path'
 

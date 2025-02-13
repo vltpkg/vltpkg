@@ -30,8 +30,8 @@ const runTests = (t: Test) => {
       const logs = t.capture(console, 'error').args
       t.intercept(process, 'platform', { value: platform })
       const { urlOpen } = await t.mockImport<
-        typeof import('../src/index.js')
-      >('../src/index.js', mocks)
+        typeof import('../src/index.ts')
+      >('../src/index.ts', mocks)
       await urlOpen('https://example.com/')
       t.matchSnapshot(SPAWNS, 'spawns executed')
       t.matchSnapshot(logs(), 'logs printed')
@@ -42,8 +42,8 @@ const runTests = (t: Test) => {
     t.intercept(process, 'platform', { value: 'linux' })
     RELEASE = 'microsoft windows'
     const { urlOpen } = await t.mockImport<
-      typeof import('../src/index.js')
-    >('../src/index.js', mocks)
+      typeof import('../src/index.ts')
+    >('../src/index.ts', mocks)
     await urlOpen('https://example.com/')
     t.matchSnapshot(SPAWNS, 'spawns executed')
     t.matchSnapshot(logs(), 'logs printed')

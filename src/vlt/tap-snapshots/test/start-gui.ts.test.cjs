@@ -5,6 +5,49 @@
  * Make sure to inspect the output below.  Do not ignore changes!
  */
 'use strict'
+exports[`test/start-gui.ts > TAP > e2e server test > /create-project > should log the server start message 1`] = `
+Array [
+  "⚡️ vlt GUI running at http://localhost:8017",
+  "⚡️ vlt GUI running at http://localhost:8022",
+]
+`
+
+exports[`test/start-gui.ts > TAP > e2e server test > /create-project > standard request > should update graph.json with new project data 1`] = `
+{
+  "hasDashboard": true,
+  "importers": [
+    {
+      "id": "file·.",
+      "name": "new-project",
+      "version": "1.0.0",
+      "location": ".",
+      "importer": true,
+      "manifest": {
+        "name": "new-project",
+        "version": "1.0.0",
+        "description": "",
+        "main": "index.js",
+        "author": "Ruy Adorno"
+      },
+      "projectRoot": "{ROOT}",
+      "dev": false,
+      "optional": false
+    }
+  ],
+  "lockfile": {
+    "options": {},
+    "nodes": {},
+    "edges": {}
+  },
+  "projectInfo": {
+    "tools": [
+      "js"
+    ],
+    "vltInstalled": false
+  }
+}
+`
+
 exports[`test/start-gui.ts > TAP > e2e server test > /install > should install dependencies 1`] = `
 install
 
@@ -37,6 +80,12 @@ exports[`test/start-gui.ts > TAP > e2e server test > /select-project > should up
     "options": {},
     "nodes": {},
     "edges": {}
+  },
+  "projectInfo": {
+    "tools": [
+      "pnpm"
+    ],
+    "vltInstalled": false
   }
 }
 `
@@ -89,8 +138,43 @@ exports[`test/start-gui.ts > TAP > e2e server test > /select-project > should wr
       "file·. link": "prod file:./linked MISSING",
       "file·. missing": "prod ^1.0.0 MISSING"
     }
+  },
+  "projectInfo": {
+    "tools": [
+      "vlt"
+    ],
+    "vltInstalled": true
   }
 }
+`
+
+exports[`test/start-gui.ts > TAP > formatDashboardJson dashboardProjectLocations > should return the expected dashboard project locations 1`] = `
+Array [
+  Object {
+    "path": "{CWD}/.tap/fixtures/test-start-gui.ts-formatDashboardJson-dashboardProjectLocations",
+    "readablePath": "~",
+  },
+  Object {
+    "path": "{CWD}/.tap/fixtures/test-start-gui.ts-formatDashboardJson-dashboardProjectLocations/projects",
+    "readablePath": "~/projects",
+  },
+  Object {
+    "path": "{CWD}/.tap/fixtures/test-start-gui.ts-formatDashboardJson-dashboardProjectLocations/drafts/more",
+    "readablePath": "~/drafts/more",
+  },
+  Object {
+    "path": "{CWD}/.tap/fixtures/test-start-gui.ts-formatDashboardJson-dashboardProjectLocations/drafts/recent",
+    "readablePath": "~/drafts/recent",
+  },
+  Object {
+    "path": "{CWD}/.tap/fixtures/test-start-gui.ts-formatDashboardJson-dashboardProjectLocations/drafts/previous",
+    "readablePath": "~/drafts/previous",
+  },
+  Object {
+    "path": "{CWD}/.tap/fixtures/test-start-gui.ts-formatDashboardJson-dashboardProjectLocations/drafts/more/util/extra",
+    "readablePath": "~/drafts/more/util/extra",
+  },
+]
 `
 
 exports[`test/start-gui.ts > TAP > parseInstallArgs > multiple item added to root and workspace 1`] = `
@@ -402,6 +486,12 @@ Object {
     "importers": Array [],
     "nodes": Object {},
     "options": Object {},
+  },
+  "projectInfo": Object {
+    "tools": Array [
+      "js",
+    ],
+    "vltInstalled": false,
   },
 }
 `

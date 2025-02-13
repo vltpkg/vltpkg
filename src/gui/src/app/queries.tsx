@@ -4,7 +4,10 @@ import { type SavedQuery } from '@/state/types.js'
 import { SavedQueryItem } from '@/components/queries/saved-item.jsx'
 import { FilterSearch } from '@/components/ui/filter-search.jsx'
 import { DeleteQuery } from '@/components/queries/delete-query.jsx'
-import { SortingToggle } from '@/components/ui/sorting-toggle.jsx'
+import {
+  sortAlphabeticallyAscending,
+  SortToggle,
+} from '@/components/sort-toggle.jsx'
 import { Button } from '@/components/ui/button.jsx'
 import { Tag } from 'lucide-react'
 import { Badge } from '@/components/ui/badge.jsx'
@@ -44,15 +47,16 @@ const Queries = () => {
 
   useEffect(() => {
     if (savedQueries) {
-      const sortedQueries = [...savedQueries].sort((a, b) =>
-        a.name.localeCompare(b.name),
+      sortAlphabeticallyAscending(
+        filteredQueries,
+        'name',
+        setFilteredQueries,
       )
-      setFilteredQueries(sortedQueries)
     }
   }, [savedQueries])
 
   return (
-    <section className="flex grow w-full flex-col min-h-[80svh] bg-white dark:bg-black">
+    <section className="flex min-h-[80svh] w-full grow flex-col bg-white dark:bg-black">
       <div className="flex flex-col px-8 py-4">
         <div className="flex justify-between">
           <div className="flex gap-2">
@@ -61,7 +65,7 @@ const Queries = () => {
               items={savedQueries}
               setFilteredItems={setFilteredQueries}
             />
-            <SortingToggle
+            <SortToggle
               filteredItems={filteredQueries}
               setFilteredItems={setFilteredQueries}
               sortKey="name"
@@ -94,22 +98,22 @@ const Queries = () => {
                   onCheckedChange={handleSelectAll}
                   className="border-muted-foreground/50 hover:border-muted-foreground/75"
                 />
-                <p className="text-neutral-500 text-sm font-medium">
+                <p className="text-sm font-medium text-neutral-500">
                   Name
                 </p>
               </div>
               <div className="col-span-4 items-center px-1">
-                <p className="text-neutral-500 text-sm font-medium">
+                <p className="text-sm font-medium text-neutral-500">
                   Query
                 </p>
               </div>
               <div className="col-span-2 items-center">
-                <p className="text-neutral-500 text-sm font-medium">
+                <p className="text-sm font-medium text-neutral-500">
                   Directory
                 </p>
               </div>
               <div className="col-span-4 items-center">
-                <p className="text-neutral-500 text-sm font-medium">
+                <p className="text-sm font-medium text-neutral-500">
                   Labels
                 </p>
               </div>

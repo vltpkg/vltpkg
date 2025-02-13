@@ -1,11 +1,11 @@
+import { type DepID } from '@vltpkg/dep-id'
+import { type PackageInfoClient } from '@vltpkg/package-info'
 import {
   type AddImportersDependenciesMap,
+  type Dependency,
   type RemoveImportersDependenciesMap,
-  Dependency,
-} from '../dependencies.js'
-import { type Graph } from '../graph.js'
-import { type PackageInfoClient } from '@vltpkg/package-info'
-import { type DepID } from '@vltpkg/dep-id'
+} from '../dependencies.ts'
+import { type Graph } from '../graph.ts'
 
 export type BuildIdealAddOptions = {
   /**

@@ -51,10 +51,10 @@ import {
   recordFields,
   type Commands,
   type RecordField,
-} from './definition.js'
-import { merge } from './merge.js'
+} from './definition.ts'
+import { merge } from './merge.ts'
 export { recordFields, isRecordField }
-export { definition, commands, Commands }
+export { definition, commands, type Commands }
 
 type RecordPairs = Record<string, unknown>
 type RecordString = Record<string, string>

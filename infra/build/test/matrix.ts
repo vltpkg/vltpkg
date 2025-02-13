@@ -1,6 +1,6 @@
 import t, { type Test } from 'tap'
-import { getMatrix, type ParseArgs } from '../src/matrix.js'
-import { type Bin, Bins } from '../src/types.js'
+import { getMatrix, type ParseArgs } from '../src/matrix.ts'
+import { type Bin, Bins } from '../src/types.ts'
 
 const testGenerateMatrix = async (
   t: Test,
@@ -11,7 +11,7 @@ const testGenerateMatrix = async (
   const bundles: any[] = []
   const compiles: any[] = []
   const { default: generateMatrix } = await t.mockImport(
-    '../src/matrix.js',
+    '../src/matrix.ts',
     {
       '../src/compile.js': {
         default: (a: any) => {
@@ -69,9 +69,10 @@ t.test('compile matrix', async t => {
     platform: ['linux'],
     arch: ['arm64'],
     compile: [true],
+    runtime: ['deno'],
   })
   t.matchSnapshot(
-    bundles.map(b => b.format),
+    bundles.map(b => b.bundleId),
     'bundles',
   )
   t.matchSnapshot(
@@ -86,6 +87,7 @@ t.test('single bin', async t => {
     platform: ['linux'],
     arch: ['arm64'],
     compile: [true],
+    runtime: ['deno'],
   })
   t.equal(compiles.length, 1)
 })

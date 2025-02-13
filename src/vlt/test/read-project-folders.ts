@@ -1,7 +1,7 @@
 import { resolve } from 'node:path'
 import t from 'tap'
 import { PathScurry } from 'path-scurry'
-import { readProjectFolders } from '../src/read-project-folders.js'
+import { readProjectFolders } from '../src/read-project-folders.ts'
 
 t.test('run from folder with project folders on it', async t => {
   const dir = t.testdir({

@@ -1,13 +1,13 @@
 import t from 'tap'
-import { id } from '../src/id.js'
-import { getSimpleGraph } from './fixtures/graph.js'
+import { id } from '../src/id.ts'
+import { getSimpleGraph } from './fixtures/graph.ts'
 import {
   copyGraphSelectionState,
   getGraphSelectionState,
   selectorFixture,
-} from './fixtures/selector.js'
-import { type TestCase } from './fixtures/types.js'
-import { type GraphSelectionState } from '../src/types.js'
+} from './fixtures/selector.ts'
+import { type TestCase } from './fixtures/types.ts'
+import { type GraphSelectionState } from '../src/types.ts'
 import { type EdgeLike, type NodeLike } from '@vltpkg/graph'
 
 const testId = selectorFixture(id)

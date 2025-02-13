@@ -1,12 +1,12 @@
 import { joinDepIDTuple } from '@vltpkg/dep-id'
 import { Spec } from '@vltpkg/spec'
 import t from 'tap'
-import { Diff } from '../../src/diff.js'
-import { Edge } from '../../src/edge.js'
-import { Graph } from '../../src/graph.js'
-import { lockfileData } from '../../src/lockfile/save.js'
-import { Node } from '../../src/node.js'
-import { optionalFail } from '../../src/reify/optional-fail.js'
+import { Diff } from '../../src/diff.ts'
+import { Edge } from '../../src/edge.ts'
+import { Graph } from '../../src/graph.ts'
+import { lockfileData } from '../../src/lockfile/save.ts'
+import { Node } from '../../src/node.ts'
+import { optionalFail } from '../../src/reify/optional-fail.ts'
 
 t.formatSnapshot = (obj: any) => {
   if (!!obj && obj instanceof Graph) {

@@ -22,7 +22,6 @@
   },
   "dependencies": {
     "@vltpkg/error-cause": "workspace:*",
-    "@vltpkg/graph": "workspace:*",
     "@vltpkg/types": "workspace:*",
     "polite-json": "catalog:"
   },
@@ -39,7 +38,8 @@
   },
   "license": "BSD-2-Clause-Patent",
   "engines": {
-    "node": "20 || >=22"
+    "node": ">=22",
+    "pnpm": "9"
   },
   "scripts": {
     "format": "prettier --write . --log-level warn --ignore-path ../../.prettierignore --cache",
@@ -51,6 +51,7 @@
     "snap": "tap",
     "pretest": "tshy",
     "test": "tap",
+    "posttest": "tsc --project tsconfig.test.json",
     "watch": "tshy --watch"
   },
   "tap": {

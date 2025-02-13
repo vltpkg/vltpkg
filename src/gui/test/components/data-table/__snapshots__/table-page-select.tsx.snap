@@ -1,0 +1,37 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`table-page-select > should render correctly 1`] = `
+
+<gui-select>
+  <gui-select-trigger classname="w-[110px]">
+    <gui-select-value
+      classname="placeholder:text-sm placeholder:font-normal placeholder:text-muted-foreground"
+      placeholder="Show 10"
+    >
+    </gui-select-value>
+  </gui-select-trigger>
+  <gui-select-content>
+    <gui-select-group>
+      <gui-select-item
+        classname="text-sm"
+        value="10"
+      >
+        Show 10
+      </gui-select-item>
+      <gui-select-item
+        classname="text-sm"
+        value="25"
+      >
+        Show 25
+      </gui-select-item>
+      <gui-select-item
+        classname="text-sm"
+        value="50"
+      >
+        Show 50
+      </gui-select-item>
+    </gui-select-group>
+  </gui-select-content>
+</gui-select>
+
+`;

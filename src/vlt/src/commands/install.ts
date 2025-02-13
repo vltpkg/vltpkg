@@ -1,13 +1,13 @@
 import { type Graph } from '@vltpkg/graph'
-import { parseAddArgs } from '../parse-add-remove-args.js'
+import { parseAddArgs } from '../parse-add-remove-args.ts'
 import {
   type CommandUsage,
   type Views,
   type CommandFnResultOnly,
-} from '../types.js'
-import { commandUsage } from '../config/usage.js'
-import { install } from '../install.js'
-import { InstallReporter } from './install/reporter.js'
+} from '../types.ts'
+import { commandUsage } from '../config/usage.ts'
+import { install } from '../install.ts'
+import { InstallReporter } from './install/reporter.ts'
 
 export const usage: CommandUsage = () =>
   commandUsage({

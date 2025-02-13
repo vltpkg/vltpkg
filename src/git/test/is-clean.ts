@@ -1,8 +1,8 @@
 import { writeFile } from 'fs/promises'
 import { resolve } from 'path'
 import t from 'tap'
-import { isClean } from '../src/is-clean.js'
-import { spawn } from '../src/spawn.js'
+import { isClean } from '../src/is-clean.ts'
+import { spawn } from '../src/spawn.ts'
 
 const repo = t.testdir()
 const o = { cwd: repo }
@@ -20,7 +20,7 @@ t.test('create git repo', async () => {
 })
 
 t.test('fail if spawned process fails', async t => {
-  const { isClean } = await t.mockImport('../src/is-clean.js', {
+  const { isClean } = await t.mockImport('../src/is-clean.ts', {
     '../src/spawn.js': {
       spawn: async () => ({ status: 1, hello: 'world' }),
     },

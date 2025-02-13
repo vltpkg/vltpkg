@@ -1,5 +1,5 @@
 import t from 'tap'
-import { setRawHeader } from '../src/set-raw-header.js'
+import { setRawHeader } from '../src/set-raw-header.ts'
 
 const h: Buffer[] = []
 

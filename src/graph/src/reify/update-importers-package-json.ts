@@ -1,16 +1,18 @@
 import { type DepID, splitDepID } from '@vltpkg/dep-id'
 import { error } from '@vltpkg/error-cause'
 import { type PackageJson } from '@vltpkg/package-json'
-import { type Manifest } from '@vltpkg/types'
-import { type Graph } from '../graph.js'
 import {
-  type AddImportersDependenciesMap,
-  type RemoveImportersDependenciesMap,
+  type Manifest,
   type DependencyTypeLong,
   type DependencyTypeShort,
   longDependencyTypes,
+} from '@vltpkg/types'
+import { type Graph } from '../graph.ts'
+import {
+  type AddImportersDependenciesMap,
+  type RemoveImportersDependenciesMap,
   type Dependency,
-} from '../dependencies.js'
+} from '../dependencies.ts'
 
 const SAVE_PREFIX = '^'
 
