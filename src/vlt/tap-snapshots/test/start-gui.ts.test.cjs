@@ -38,6 +38,12 @@ exports[`test/start-gui.ts > TAP > e2e server test > /create-project > standard 
     "options": {},
     "nodes": {},
     "edges": {}
+  },
+  "projectInfo": {
+    "tools": [
+      "js"
+    ],
+    "vltInstalled": false
   }
 }
 `
@@ -74,6 +80,12 @@ exports[`test/start-gui.ts > TAP > e2e server test > /select-project > should up
     "options": {},
     "nodes": {},
     "edges": {}
+  },
+  "projectInfo": {
+    "tools": [
+      "pnpm"
+    ],
+    "vltInstalled": false
   }
 }
 `
@@ -126,6 +138,12 @@ exports[`test/start-gui.ts > TAP > e2e server test > /select-project > should wr
       "file·. link": "prod file:./linked MISSING",
       "file·. missing": "prod ^1.0.0 MISSING"
     }
+  },
+  "projectInfo": {
+    "tools": [
+      "vlt"
+    ],
+    "vltInstalled": true
   }
 }
 `
@@ -468,6 +486,12 @@ Object {
     "importers": Array [],
     "nodes": Object {},
     "options": Object {},
+  },
+  "projectInfo": Object {
+    "tools": Array [
+      "js",
+    ],
+    "vltInstalled": false,
   },
 }
 `
