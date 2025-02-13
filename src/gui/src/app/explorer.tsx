@@ -14,6 +14,7 @@ import { Kbd } from '@/components/ui/kbd.jsx'
 import Save from '@/components/explorer-grid/save-query.jsx'
 import { QueryMatches } from '@/components/explorer-grid/query-matches.jsx'
 import { RootButton } from '@/components/explorer-grid/root-button.jsx'
+import { SetupProject } from '@/components/explorer-grid/setup-project.jsx'
 
 export type ExplorerOptions = {
   projectRoot?: string
@@ -22,6 +23,7 @@ export type ExplorerOptions = {
 type StartGraphData = {
   updateHasDashboard: Action['updateHasDashboard']
   updateGraph: Action['updateGraph']
+  updateProjectInfo: Action['updateProjectInfo']
   updateQ: Action['updateQ']
   updateSpecOptions: Action['updateSpecOptions']
   stamp: State['stamp']
@@ -30,6 +32,7 @@ type StartGraphData = {
 const startGraphData = async ({
   updateHasDashboard,
   updateGraph,
+  updateProjectInfo,
   updateQ,
   updateSpecOptions,
   stamp,
@@ -43,6 +46,7 @@ const startGraphData = async ({
 
   updateHasDashboard(data.hasDashboard)
   updateGraph(graph)
+  updateProjectInfo(data.projectInfo)
   updateSpecOptions(specOptions)
   updateQ(q)
 }
@@ -58,6 +62,9 @@ export const Explorer = () => {
     state => state.updateHasDashboard,
   )
   const updateGraph = useGraphStore(state => state.updateGraph)
+  const updateProjectInfo = useGraphStore(
+    state => state.updateProjectInfo,
+  )
   const updateQ = useGraphStore(state => state.updateQ)
   const updateSpecOptions = useGraphStore(
     state => state.updateSpecOptions,
@@ -70,6 +77,7 @@ export const Explorer = () => {
     startGraphData({
       updateHasDashboard,
       updateGraph,
+      updateProjectInfo,
       updateQ,
       updateSpecOptions,
       stamp,
@@ -88,6 +96,7 @@ const ExplorerContent = () => {
   const updateEdges = useGraphStore(state => state.updateEdges)
   const updateNodes = useGraphStore(state => state.updateNodes)
   const graph = useGraphStore(state => state.graph)
+  const projectInfo = useGraphStore(state => state.projectInfo)
   const query = useGraphStore(state => state.query)
   const q = useGraphStore(state => state.q)
 
@@ -122,10 +131,20 @@ const ExplorerContent = () => {
     updateQueryData().catch((err: unknown) => console.error(err))
   }, [query, q])
 
+  // avoids flash of content
+  if (!graph) {
+    return undefined
+  }
+
+  // intentional check for `false` in order to avoid flashing content
+  if (projectInfo.vltInstalled === false) {
+    return <SetupProject />
+  }
+
   return (
     <section className="flex grow flex-col justify-between bg-white dark:bg-black">
       <div className="flex w-full items-center justify-between border-t-[1px] px-8 pt-4">
-        {graph?.projectRoot ?
+        {graph.projectRoot ?
           <p className="font-mono text-xs font-light text-muted-foreground">
             :host-context(file:{graph.projectRoot})
           </p>

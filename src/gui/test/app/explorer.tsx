@@ -44,6 +44,10 @@ vi.mock('@/components/explorer-grid/index.jsx', () => ({
   ExplorerGrid: 'gui-explorer-grid',
 }))
 
+vi.mock('@/components/explorer-grid/setup-project.jsx', () => ({
+  SetupProject: 'gui-setup-project',
+}))
+
 vi.mock('@/components/explorer-grid/root-button.jsx', () => ({
   RootButton: 'gui-root-button',
 }))
@@ -88,13 +92,24 @@ afterEach(() => {
 afterAll(() => server.close())
 
 test('render default', async () => {
-  render(<Explorer />)
+  const Container = () => {
+    const updateProjectInfo = useStore(
+      state => state.updateProjectInfo,
+    )
+    updateProjectInfo({ tools: ['vlt'], vltInstalled: true })
+    return <Explorer />
+  }
+  render(<Container />)
   expect(window.document.body.innerHTML).toMatchSnapshot()
 })
 
 test('explorer has project root info', async () => {
   const Container = () => {
+    const updateProjectInfo = useStore(
+      state => state.updateProjectInfo,
+    )
     const updateGraph = useStore(state => state.updateGraph)
+    updateProjectInfo({ tools: ['vlt'], vltInstalled: true })
     updateGraph({ projectRoot: '/path/to/project' } as GraphLike)
     return <Explorer />
   }
@@ -103,8 +118,6 @@ test('explorer has project root info', async () => {
 })
 
 test('update nodes and edges info on query change', async () => {
-  render(<Explorer />)
-
   const nodes: NodeLike[] = []
   const edges: EdgeLike[] = []
   const q = {
@@ -114,8 +127,14 @@ test('update nodes and edges info on query change', async () => {
   }
 
   const Container = () => {
+    const updateGraph = useStore(state => state.updateGraph)
+    const updateProjectInfo = useStore(
+      state => state.updateProjectInfo,
+    )
     const updateQ = useStore(state => state.updateQ)
     const updateQuery = useStore(state => state.updateQuery)
+    updateGraph({ projectRoot: '/path/to/project' } as GraphLike)
+    updateProjectInfo({ tools: ['vlt'], vltInstalled: true })
     updateQ(q as unknown as Query)
     updateQuery('#foo')
     return <Explorer />
@@ -141,4 +160,18 @@ test('update nodes and edges info on query change', async () => {
     nodes,
     'should update nodes with result from query',
   )
+})
+
+test('explorer not vlt installed', async () => {
+  const Container = () => {
+    const updateGraph = useStore(state => state.updateGraph)
+    const updateProjectInfo = useStore(
+      state => state.updateProjectInfo,
+    )
+    updateGraph({ projectRoot: '/path/to/project' } as GraphLike)
+    updateProjectInfo({ tools: [], vltInstalled: false })
+    return <Explorer />
+  }
+  render(<Container />)
+  expect(window.document.body.innerHTML).toMatchSnapshot()
 })
