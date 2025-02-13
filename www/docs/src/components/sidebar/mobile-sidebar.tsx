@@ -63,7 +63,7 @@ const MobileSidebar = ({ sidebar }: MobileSidebarProps) => {
 
 const renderMenu = (items: SidebarEntries, depth: number) => {
   return items.map((entry, index) => {
-    if (entry.type === 'group' && entry.entries) {
+    if (entry.type === 'group') {
       return (
         <Group key={index} entry={entry} depth={depth}>
           {renderMenu(entry.entries, depth + 1)}
