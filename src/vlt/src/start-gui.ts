@@ -447,6 +447,8 @@ export const startGUI = async ({
           mkdirSync(cwd, { recursive: true })
           await init({ cwd, author })
           conf.resetOptions(cwd)
+          await install({ conf })
+          conf.resetOptions(conf.options.projectRoot)
           await updateDashboard()
           updateGraphData(tmp, conf, hasDashboard)
         } catch (err) {

@@ -350,6 +350,7 @@ t.test('e2e server test', async t => {
   })
 
   await t.test('/create-project', async t => {
+    ilog = ''
     const port = 8022
     const options = {
       projectRoot: resolve(dir, 'projects/my-project'),
@@ -378,6 +379,7 @@ t.test('e2e server test', async t => {
     t.matchSnapshot(log, 'should log the server start message')
 
     await t.test('standard request', async t => {
+      ilog = ''
       // tests a POST to /create-project
       const reqSelectProject = await fetch(
         `http://localhost:${port}/create-project`,
@@ -405,6 +407,7 @@ t.test('e2e server test', async t => {
     })
 
     await t.test('invalid name', async t => {
+      ilog = ''
       // tests an invalid name POST to /create-project
       const reqSelectProject = await fetch(
         `http://localhost:${port}/create-project`,
@@ -430,6 +433,7 @@ t.test('e2e server test', async t => {
     })
 
     await t.test('invalid long name', async t => {
+      ilog = ''
       // tests an invalid name POST to /create-project
       const reqSelectProject = await fetch(
         `http://localhost:${port}/create-project`,
@@ -455,6 +459,7 @@ t.test('e2e server test', async t => {
     })
 
     await t.test('invalid path', async t => {
+      ilog = ''
       // tests an invalid path POST to /create-project
       const reqSelectProject = await fetch(
         `http://localhost:${port}/create-project`,
@@ -482,6 +487,7 @@ t.test('e2e server test', async t => {
     })
 
     await t.test('cli error', async t => {
+      ilog = ''
       const stderr = console.error
       const port = 8023
 
@@ -536,6 +542,7 @@ t.test('e2e server test', async t => {
   })
 
   await t.test('/install', async t => {
+    ilog = ''
     const port = 8018
     const options = {
       projectRoot: resolve(dir, 'projects/my-project'),

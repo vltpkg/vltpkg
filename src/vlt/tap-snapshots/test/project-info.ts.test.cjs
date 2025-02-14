@@ -93,3 +93,12 @@ Object {
   "vltInstalled": true,
 }
 `
+
+exports[`test/project-info.ts > TAP > getGraphProjectData empty vlt-installed project > should return vltInstalled: true for an empty but installed project 1`] = `
+Object {
+  "tools": Array [
+    "vlt",
+  ],
+  "vltInstalled": true,
+}
+`
