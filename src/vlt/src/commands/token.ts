@@ -2,7 +2,7 @@ import { error } from '@vltpkg/error-cause'
 import { deleteToken, setToken } from '@vltpkg/registry-client'
 import { commandUsage } from '../config/usage.ts'
 import { readPassword } from '../read-password.ts'
-import { type CommandFn, type CommandUsage } from '../index.ts'
+import type { CommandFn, CommandUsage } from '../index.ts'
 
 export const usage: CommandUsage = () =>
   commandUsage({

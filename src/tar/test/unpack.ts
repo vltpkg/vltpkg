@@ -1,6 +1,7 @@
 import { lstatSync, readFileSync } from 'fs'
 import { resolve } from 'path'
-import t, { type Test } from 'tap'
+import t from 'tap'
+import type { Test } from 'tap'
 import { Pax } from 'tar'
 import { gzipSync } from 'zlib'
 import { unpack } from '../src/unpack.ts'

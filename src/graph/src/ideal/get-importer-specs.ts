@@ -1,22 +1,21 @@
 import { error } from '@vltpkg/error-cause'
 import { longDependencyTypes } from '@vltpkg/types'
-import {
-  type AddImportersDependenciesMap,
-  type Dependency,
-  type RemoveImportersDependenciesMap,
-  shorten,
-  asDependency,
+import { shorten, asDependency } from '../dependencies.ts'
+import type {
+  AddImportersDependenciesMap,
+  Dependency,
+  RemoveImportersDependenciesMap,
 } from '../dependencies.ts'
 import { removeSatisfiedSpecs } from './remove-satisfied-specs.ts'
-import {
-  type BuildIdealAddOptions,
-  type BuildIdealFromGraphOptions,
-  type BuildIdealRemoveOptions,
+import type {
+  BuildIdealAddOptions,
+  BuildIdealFromGraphOptions,
+  BuildIdealRemoveOptions,
 } from './types.ts'
-import { type Edge } from '../edge.ts'
-import { type Node } from '../node.ts'
-import { type Graph } from '../graph.ts'
-import { type DepID } from '@vltpkg/dep-id'
+import type { Edge } from '../edge.ts'
+import type { Node } from '../node.ts'
+import type { Graph } from '../graph.ts'
+import type { DepID } from '@vltpkg/dep-id'
 import { Spec } from '@vltpkg/spec'
 
 export type GetImporterSpecsOptions = BuildIdealAddOptions &

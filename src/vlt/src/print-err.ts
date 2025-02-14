@@ -1,9 +1,7 @@
-import {
-  type ErrorWithCauseObject,
-  isErrorRoot,
-} from '@vltpkg/error-cause'
-import { type CommandUsage } from './index.ts'
-import { type Spec } from '@vltpkg/spec'
+import { isErrorRoot } from '@vltpkg/error-cause'
+import type { ErrorWithCauseObject } from '@vltpkg/error-cause'
+import type { CommandUsage } from './index.ts'
+import type { Spec } from '@vltpkg/spec'
 
 // returns true if error was printed nicely already
 export const printErr = (

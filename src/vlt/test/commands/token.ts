@@ -1,6 +1,6 @@
-import { type Token } from '@vltpkg/registry-client'
+import type { Token } from '@vltpkg/registry-client'
 import t from 'tap'
-import { type LoadedConfig } from '../../src/config/index.ts'
+import type { LoadedConfig } from '../../src/config/index.ts'
 
 const log: string[][] = []
 const { usage, command } = await t.mockImport<

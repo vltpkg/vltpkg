@@ -1,4 +1,4 @@
-import { type Manifest } from '@vltpkg/types'
+import type { Manifest } from '@vltpkg/types'
 
 const parseScope = (scoped: string): [string | undefined, string] => {
   if (scoped.startsWith('@')) {

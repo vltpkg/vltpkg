@@ -1,16 +1,18 @@
 import { error } from '@vltpkg/error-cause'
 import { spawnSync } from 'child_process'
 import {
-  type ConfigDefinitions,
   definition,
   isRecordField,
-  type LoadedConfig,
   pairsToRecords,
-  type RecordPairs,
   recordsToPairs,
 } from '../config/index.ts'
+import type {
+  ConfigDefinitions,
+  LoadedConfig,
+  RecordPairs,
+} from '../config/index.ts'
 import { commandUsage } from '../config/usage.ts'
-import { type CommandFn, type CommandUsage } from '../index.ts'
+import type { CommandFn, CommandUsage } from '../index.ts'
 
 export const usage: CommandUsage = () =>
   commandUsage({

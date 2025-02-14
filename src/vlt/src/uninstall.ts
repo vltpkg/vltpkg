@@ -1,11 +1,7 @@
-import {
-  type RemoveImportersDependenciesMap,
-  actual,
-  ideal,
-  reify,
-} from '@vltpkg/graph'
+import { actual, ideal, reify } from '@vltpkg/graph'
+import type { RemoveImportersDependenciesMap } from '@vltpkg/graph'
 import { PackageInfoClient } from '@vltpkg/package-info'
-import { type LoadedConfig } from './config/index.ts'
+import type { LoadedConfig } from './config/index.ts'
 
 export type UninstallOptions = {
   conf: LoadedConfig

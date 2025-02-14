@@ -1,6 +1,6 @@
-import {
-  type SpawnResultStderr,
-  type SpawnResultString,
+import type {
+  SpawnResultStderr,
+  SpawnResultString,
 } from '@vltpkg/promise-spawn'
 
 import { error } from '@vltpkg/error-cause'

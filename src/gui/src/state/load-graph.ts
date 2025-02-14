@@ -1,14 +1,11 @@
-import {
-  type Manifest,
-  type DependencyTypeShort,
-} from '@vltpkg/types'
+import type { Manifest, DependencyTypeShort } from '@vltpkg/types'
 import { lockfile } from '@vltpkg/graph/browser'
-import { type DepID } from '@vltpkg/dep-id/browser'
-import {
-  type EdgeLike,
-  type LockfileData,
-  type GraphLike,
-  type NodeLike,
+import type { DepID } from '@vltpkg/dep-id/browser'
+import type {
+  EdgeLike,
+  LockfileData,
+  GraphLike,
+  NodeLike,
 } from '@vltpkg/graph'
 import {
   defaultRegistry,
@@ -16,10 +13,9 @@ import {
   defaultGitHosts,
   defaultGitHostArchives,
   defaultScopeRegistries,
-  type SpecOptionsFilled,
-  type Spec,
 } from '@vltpkg/spec/browser'
-import { type TransferData } from './types.ts'
+import type { SpecOptionsFilled, Spec } from '@vltpkg/spec/browser'
+import type { TransferData } from './types.ts'
 
 const loadSpecOptions = (
   lockfile: LockfileData,

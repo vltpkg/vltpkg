@@ -1,9 +1,10 @@
 import { readFileSync } from 'fs'
 import { join } from 'path'
-import t, { type Test } from 'tap'
+import t from 'tap'
+import type { Test } from 'tap'
 import * as Command from '../../src/commands/pkg.ts'
-import { type LoadedConfig } from '../../src/config/index.ts'
-import { type ViewOptions } from '../../src/view.ts'
+import type { LoadedConfig } from '../../src/config/index.ts'
+import type { ViewOptions } from '../../src/view.ts'
 import { setupCommand, setupEnv } from '../fixtures/run.ts'
 
 t.matchSnapshot(Command.usage().usage(), 'usage')

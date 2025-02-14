@@ -20,10 +20,11 @@
 // of the file.
 
 import { error } from '@vltpkg/error-cause'
-import { type Integrity, type JSONField } from '@vltpkg/types'
+import type { Integrity, JSONField } from '@vltpkg/types'
 import ccp from 'cache-control-parser'
 import { createHash } from 'crypto'
-import { inspect, type InspectOptions } from 'util'
+import { inspect } from 'util'
+import type { InspectOptions } from 'util'
 import { gunzipSync } from 'zlib'
 import { getRawHeader, setRawHeader } from './raw-header.ts'
 

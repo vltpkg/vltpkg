@@ -1,6 +1,7 @@
 import { PassThrough } from 'stream'
 import t from 'tap'
-import { readPassword, type Streams } from '../src/read-password.ts'
+import { readPassword } from '../src/read-password.ts'
+import type { Streams } from '../src/read-password.ts'
 
 type TestStreams = Streams & {
   stdin: PassThrough

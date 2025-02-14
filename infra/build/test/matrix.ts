@@ -1,6 +1,9 @@
-import t, { type Test } from 'tap'
-import { getMatrix, type ParseArgs } from '../src/matrix.ts'
-import { type Bin, Bins } from '../src/types.ts'
+import t from 'tap'
+import type { Test } from 'tap'
+import { getMatrix } from '../src/matrix.ts'
+import type { ParseArgs } from '../src/matrix.ts'
+import { Bins } from '../src/types.ts'
+import type { Bin } from '../src/types.ts'
 
 const testGenerateMatrix = async (
   t: Test,

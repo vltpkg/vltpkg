@@ -1,9 +1,5 @@
-import {
-  emitter,
-  logRequest,
-  graphStep,
-  type Events,
-} from '../src/index.ts'
+import { emitter, logRequest, graphStep } from '../src/index.ts'
+import type { Events } from '../src/index.ts'
 
 import t from 'tap'
 
