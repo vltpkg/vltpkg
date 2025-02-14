@@ -5,7 +5,7 @@ import {
   reify,
 } from '@vltpkg/graph'
 import { PackageInfoClient } from '@vltpkg/package-info'
-import { type LoadedConfig } from './types.ts'
+import { type LoadedConfig } from './config/index.ts'
 
 export type InstallOptions = {
   conf: LoadedConfig

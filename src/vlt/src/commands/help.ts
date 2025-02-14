@@ -1,8 +1,5 @@
 import { commandUsage } from '../config/usage.ts'
-import {
-  type CommandUsage,
-  type CommandFnResultOnly,
-} from '../types.ts'
+import { type CommandFn, type CommandUsage } from '../index.ts'
 
 export const usage: CommandUsage = () =>
   commandUsage({
@@ -11,6 +8,6 @@ export const usage: CommandUsage = () =>
     description: 'Print the full help output for the CLI',
   })
 
-export const command: CommandFnResultOnly<string> = async conf => {
-  return { result: conf.jack.usage() }
+export const command: CommandFn<string> = async conf => {
+  return conf.jack.usage()
 }

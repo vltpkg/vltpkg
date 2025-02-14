@@ -1,6 +1,7 @@
 import { Test } from 'tap'
 import { join } from 'path'
-import { type Command, type LoadedConfig } from '../../src/types.ts'
+import { type LoadedConfig } from '../../src/config/index.ts'
+import { type Command } from '../../src/index.ts'
 
 export type Testdir = Parameters<Test['testdir']>[0]
 

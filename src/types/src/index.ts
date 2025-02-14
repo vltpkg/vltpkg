@@ -8,6 +8,7 @@ export type JSONField =
   | string
   | { [k: string]: JSONField }
   | null
+  | undefined
 
 /** sha512 SRI string */
 export type Integrity = `sha512-${string}`

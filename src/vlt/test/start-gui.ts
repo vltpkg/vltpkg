@@ -4,7 +4,7 @@ import { PackageJson } from '@vltpkg/package-json'
 import { existsSync, readdirSync, readFileSync } from 'node:fs'
 import http from 'node:http'
 import { resolve } from 'node:path'
-import { PathScurry } from 'path-scurry'
+import { type PathBase, PathScurry } from 'path-scurry'
 import t from 'tap'
 import {
   type ConfigOptions,
@@ -211,30 +211,32 @@ t.test('formatDashboardJson dashboardProjectLocations', async t => {
     scurry.lstatSync(resolve(dir, 'drafts/more/h')),
   ]
   const packageJson = new PackageJson()
-  const { formatDashboardJson } = await t.mockImport(
-    '../src/start-gui.ts',
-    {
-      'node:os': {
-        ...(await import('node:os')),
-        homedir() {
-          return dir
-        },
-      },
-      '../src/project-info.js': {
-        ...(await import('../src/project-info.ts')),
-        getReadablePath: (path: string) => path.replace(dir, '~'),
+  const { formatDashboardJson } = await t.mockImport<
+    typeof import('../src/start-gui.ts')
+  >('../src/start-gui.ts', {
+    'node:os': {
+      ...(await import('node:os')),
+      homedir() {
+        return dir
       },
     },
-  )
+    '../src/project-info.js': {
+      ...(await import('../src/project-info.ts')),
+      getReadablePath: (path: string) => path.replace(dir, '~'),
+    },
+  })
   t.matchSnapshot(
     (
-      await formatDashboardJson(projectFolders, {
-        options: {
-          packageJson,
-          scurry,
-        } as ConfigOptions,
-        values: {},
-      } as LoadedConfig)
+      await formatDashboardJson(
+        projectFolders as PathBase[],
+        {
+          options: {
+            packageJson,
+            scurry,
+          } as ConfigOptions,
+          values: {},
+        } as LoadedConfig,
+      )
     ).dashboardProjectLocations,
     'should return the expected dashboard project locations',
   )
@@ -286,10 +288,9 @@ t.test('e2e server test', async t => {
     },
   }
 
-  const { startGUI } = await t.mockImport(
-    '../src/start-gui.ts',
-    mocks,
-  )
+  const { startGUI } = await t.mockImport<
+    typeof import('../src/start-gui.ts')
+  >('../src/start-gui.ts', mocks)
 
   await t.test('/select-project', async t => {
     const port = 8017
@@ -492,7 +493,9 @@ t.test('e2e server test', async t => {
       const port = 8023
 
       console.error = () => {}
-      const { startGUI } = await t.mockImport('../src/start-gui.ts', {
+      const { startGUI } = await t.mockImport<
+        typeof import('../src/start-gui.ts')
+      >('../src/start-gui.ts', {
         ...mocks,
         '../src/init.js': {
           async init() {
@@ -614,7 +617,9 @@ t.test('e2e server test', async t => {
       scurry: new PathScurry(dir),
     }
     // broken install
-    const { startGUI } = await t.mockImport('../src/start-gui.ts', {
+    const { startGUI } = await t.mockImport<
+      typeof import('../src/start-gui.ts')
+    >('../src/start-gui.ts', {
       '@vltpkg/url-open': { urlOpen() {} },
       '../src/install.js': {
         async install() {
@@ -732,7 +737,9 @@ t.test('e2e server test', async t => {
       scurry: new PathScurry(dir),
     }
     // broken uninstall
-    const { startGUI } = await t.mockImport('../src/start-gui.ts', {
+    const { startGUI } = await t.mockImport<
+      typeof import('../src/start-gui.ts')
+    >('../src/start-gui.ts', {
       '@vltpkg/url-open': { urlOpen() {} },
       '../src/uninstall.js': {
         async uninstall() {

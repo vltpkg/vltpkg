@@ -121,6 +121,8 @@ t.test('print version', async t => {
 })
 
 t.test('print EUSAGE error', async t => {
+  const { exitCode } = process
+  const exits = t.capture(process, 'exit').args
   const { logs, errs } = await run(t, {
     commandName: 'config',
     argv: ['ls'],
@@ -153,6 +155,7 @@ t.test('print EUSAGE error', async t => {
       'Error: there was a problem',
     ],
   )
+  t.strictSame(exits(), [[1]])
   t.equal(process.exitCode, 1)
-  process.exitCode = undefined
+  if (t.passing()) process.exitCode = exitCode
 })

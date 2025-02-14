@@ -1,14 +1,10 @@
 import chalk from 'chalk'
-import {
-  type View,
-  type LoadedConfig,
-  type Views,
-  type ViewClass,
-  type Command,
-  type CommandResult,
-} from './types.ts'
-import { isErrorRoot } from '@vltpkg/error-cause'
-import assert from 'node:assert'
+import { formatWithOptions } from 'node:util'
+import { defaultView } from './config/definition.ts'
+import { type LoadedConfig } from './config/index.ts'
+import { type Command } from './index.ts'
+import { printErr } from './print-err.ts'
+import { isViewClass, type View, type Views } from './view.ts'
 
 // TODO: make these have log levels etc
 // eslint-disable-next-line no-console
@@ -16,69 +12,89 @@ export const stdout = (...args: unknown[]) => console.log(...args)
 // eslint-disable-next-line no-console
 export const stderr = (...args: unknown[]) => console.error(...args)
 
-const isViewClass = <T>(view: View<T>): view is ViewClass<T> =>
-  typeof view === 'function' &&
-  'prototype' in view &&
-  'start' in view.prototype &&
-  'done' in view.prototype &&
-  'error' in view.prototype
-
 const identity = <T>(x: T): T => x
-
-const getView = <T>(
+export const getView = <T>(
   conf: LoadedConfig,
   views?: Views<T>,
-): { view: View<T>; isJson: boolean } => {
-  const viewName =
-    conf.values.view ??
-    (typeof views === 'object' ? views.defaultView : null)
+): View<T> => {
+  const viewName = conf.values.view
 
   const viewFn =
-    views === undefined ? identity
+    viewName === 'inspect' ? identity
     : typeof views === 'function' ? views
-    : viewName && views.views ? views.views[viewName]
+    : views && typeof views === 'object' ? views[viewName]
     : identity
 
-  assert(viewFn, `No view found for ${viewName}`)
+  // if the user specified a view that doesn't exist,
+  // then set it back to the default, and try again.
+  // This will fall back to identity if it's also missing.
+  if (!viewFn && conf.values.view !== defaultView) {
+    conf.values.view = defaultView
+    process.env.VLT_VIEW = defaultView
+    return getView(conf, views)
+  }
 
-  return {
-    view: viewFn,
-    isJson: viewName === 'json',
+  return viewFn ?? identity
+}
+
+/**
+ * If the view is a View class, then instantiate and start it.
+ * If it's a view function, then just define the onDone method.
+ */
+export const startView = <T>(
+  conf: LoadedConfig,
+  views?: Views<T>,
+  { start }: { start: number } = { start: Date.now() },
+): {
+  onDone: (result: T) => string | undefined
+  onError?: (err: unknown) => void
+} => {
+  const View = getView<T>(conf, views)
+  const opts = { colors: conf.values.color ? chalk : undefined }
+  if (isViewClass(View)) {
+    const view = new View(opts, conf)
+    view.start()
+    return {
+      onDone(r) {
+        return view.done(r, { time: Date.now() - start })
+      },
+      onError(err) {
+        view.error(err)
+      },
+    }
+  } else {
+    return {
+      onDone(r): string | undefined {
+        if (r === undefined && r !== null) return
+        const res = View(r, opts, conf)
+        return conf.values.view === 'json' ?
+            JSON.stringify(res, null, 2)
+          : formatWithOptions(
+              {
+                colors: conf.values.color,
+              },
+              res,
+            )
+      },
+    }
   }
 }
 
+/**
+ * Main export. Run the command appropriately, displaying output using
+ * the user-requested view, or the default if the user requested a view
+ * that is not defined for this command.
+ */
 export const outputCommand = async <T>(
   cliCommand: Command<T>,
   conf: LoadedConfig,
-  { start }: { start?: number } = {},
+  { start }: { start: number } = { start: Date.now() },
 ) => {
-  const { command, views, usage } = cliCommand
-
+  const { usage, views, command } = cliCommand
   if (conf.get('help')) {
     return stdout(usage().usage())
   }
-
-  const { view, isJson } = getView(conf, views)
-  const opts = { colors: conf.values.color ? chalk : undefined }
-
-  let onDone: (result: CommandResult<T>) => void
-  let onError: ((err: unknown) => void) | null = null
-
-  if (isViewClass(view)) {
-    const viewInstance = new view(opts, conf)
-    viewInstance.start()
-    onDone = r =>
-      viewInstance.done(r, { time: start ? Date.now() - start : 0 })
-    onError = err => viewInstance.error(err)
-  } else {
-    onDone = r => {
-      if (r === undefined) {
-        return
-      }
-      const res = view(r.result, opts, conf)
-      return isJson ? JSON.stringify(res, null, 2) : res
-    }
-  }
+  const { onDone, onError } = startView(conf, views, { start })
 
   try {
     const output = onDone(await command(conf))
@@ -89,25 +105,8 @@ export const outputCommand = async <T>(
     onError?.(err)
     process.exitCode ||= 1
 
-    if (isErrorRoot(err)) {
-      switch (err.cause.code) {
-        // TODO: handle more error codes and causes
-        case 'EUSAGE': {
-          stderr(usage().usage())
-          stderr(`Error: ${err.message}`)
-          if (err.cause.found) {
-            stderr(`  Found: ${err.cause.found}`)
-          }
-          if (err.cause.validOptions) {
-            stderr(
-              `  Valid options: ${err.cause.validOptions.join(', ')}`,
-            )
-          }
-          return
-        }
-      }
-    }
+    printErr(err, usage, stderr)
 
-    stderr(err)
+    process.exit(process.exitCode)
   }
 }

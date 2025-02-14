@@ -4,7 +4,7 @@ import { cacheEntries } from './utils'
 import { mkdir, readdir, writeFile } from 'fs/promises'
 import { fileURLToPath } from 'url'
 import { resolve as metaResolve } from 'import-meta-resolve'
-import { type Command } from '@vltpkg/cli/types'
+import { type Command } from '@vltpkg/cli'
 import { Config } from '@vltpkg/cli/config'
 import matter from 'gray-matter'
 

@@ -8,7 +8,7 @@ import {
 import * as OS from 'os'
 import { resolve } from 'path'
 import t from 'tap'
-import { type ConfigData } from '../../src/types.ts'
+import { type ConfigData } from '../../src/config/index.ts'
 
 process.env.XDG_CONFIG_HOME = t.testdir()
 

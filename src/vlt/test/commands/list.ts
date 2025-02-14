@@ -9,7 +9,7 @@ import { Spec, type SpecOptions } from '@vltpkg/spec'
 import { Monorepo } from '@vltpkg/workspaces'
 import { PathScurry } from 'path-scurry'
 import t, { type Test } from 'tap'
-import { type LoadedConfig } from '../../src/types.ts'
+import { type LoadedConfig } from '../../src/config/index.ts'
 import { type StartGUIOptions } from '../../src/start-gui.ts'
 import {
   commandView,
@@ -288,7 +288,7 @@ t.test('list', async t => {
     }
 
     let startGUIOptions: StartGUIOptions | undefined
-    const { command } = await mockList(t, {
+    const { command, views } = await mockList(t, {
       '../../src/start-gui.js': {
         startGUI: async (options: StartGUIOptions) => {
           startGUIOptions = options
@@ -296,14 +296,15 @@ t.test('list', async t => {
       },
     })
 
-    await command({
+    const conf = {
       positionals: [],
       values: {
         workspace: [],
         view: 'gui',
       },
       options,
-    } as unknown as LoadedConfig)
+    } as unknown as LoadedConfig
+    await views.gui(await command(conf), {}, conf)
 
     t.matchStrict(
       startGUIOptions,

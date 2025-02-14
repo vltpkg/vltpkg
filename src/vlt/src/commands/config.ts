@@ -6,25 +6,29 @@ import {
   isRecordField,
   type LoadedConfig,
   pairsToRecords,
+  type RecordPairs,
   recordsToPairs,
 } from '../config/index.ts'
 import { commandUsage } from '../config/usage.ts'
-import { type CommandFn, type CommandUsage } from '../types.ts'
+import { type CommandFn, type CommandUsage } from '../index.ts'
 
 export const usage: CommandUsage = () =>
   commandUsage({
     command: 'config',
     usage: '<command> [flags]',
     description: 'Work with vlt configuration',
+
     subcommands: {
       get: {
         usage: '<key> [<key> ...]',
         description: 'Print the named config value',
       },
+
       list: {
         description:
           'Print all configuration settings currently in effect',
       },
+
       set: {
         usage:
           '<key>=<value> [<key>=<value> ...] [--config=<user | project>]',
@@ -33,41 +37,53 @@ export const usage: CommandUsage = () =>
                       in the root of the project. To set things for all
                       projects, run with \`--config=user\``,
       },
+
       del: {
         usage: '<key> [<key> ...] [--config=<user | project>]',
-        description: `Delete the named config fields. If no values remain in the config file,
-                      delete the file as well. By default, operates on the \`vlt.json\` file
-                      in the root of the current project. To delete a config field from the
-                      user config file, specify \`--config=user\`.`,
+        description: `Delete the named config fields. If no values remain in
+                      the config file, delete the file as well. By default,
+                      operates on the \`vlt.json\` file in the root of the
+                      current project. To delete a config field from the user
+                      config file, specify \`--config=user\`.`,
       },
+
       edit: {
         usage: '[--config=<user | project>]',
         description: 'Edit the configuration file',
       },
+
       help: {
         usage: '[field ...]',
-        description:
-          'Get information about a config field, or show a list of known config field names.',
+        description: `Get information about a config field, or show a list
+                      of known config field names.`,
       },
     },
   })
 
-export const command: CommandFn = async conf => {
+export const command: CommandFn<
+  string | number | boolean | void | string[] | RecordPairs
+> = async conf => {
   const sub = conf.positionals[0]
   switch (sub) {
     case 'set':
       return set(conf)
+
     case 'get':
       return get(conf)
+
     case 'ls':
     case 'list':
       return list(conf)
+
     case 'edit':
       return edit(conf)
+
     case 'help':
       return help(conf)
+
     case 'del':
       return del(conf)
+
     default: {
       throw error('Unrecognized config command', {
         code: 'EUSAGE',
@@ -82,15 +98,14 @@ const help = (conf: LoadedConfig) => {
   const j = definition.toJSON()
   const fields = conf.positionals.slice(1)
   if (!fields.length) {
-    return {
-      result: [
-        'Specify one or more options to see information:',
-        ...Object.keys(j)
-          .sort((a, b) => a.localeCompare(b, 'en'))
-          .map(c => `  ${c}`),
-      ].join('\n'),
-    }
+    return [
+      'Specify one or more options to see information:',
+      ...Object.keys(j)
+        .sort((a, b) => a.localeCompare(b, 'en'))
+        .map(c => `  ${c}`),
+    ].join('\n')
   }
+
   // TODO: some kind of fuzzy search?
   const res: string[] = []
   for (const f of fields) {
@@ -114,11 +129,11 @@ const help = (conf: LoadedConfig) => {
       }
     }
   }
-  return { result: res.join('\n') }
+  return res.join('\n')
 }
 
 const list = (conf: LoadedConfig) => {
-  return { result: recordsToPairs(conf.options) }
+  return recordsToPairs(conf.options)
 }
 
 const del = async (conf: LoadedConfig) => {
@@ -139,9 +154,7 @@ const get = async (conf: LoadedConfig) => {
       code: 'EUSAGE',
     })
   }
-  return {
-    result: conf.get(k as keyof ConfigDefinitions),
-  }
+  return conf.get(k as keyof ConfigDefinitions)
 }
 
 const edit = async (conf: LoadedConfig) => {

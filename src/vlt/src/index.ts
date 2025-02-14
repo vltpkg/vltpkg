@@ -1,8 +1,29 @@
 import { error } from '@vltpkg/error-cause'
+import { type Jack } from 'jackspeak'
 import { loadPackageJson } from 'package-json-from-dist'
-import { Config } from './config/index.ts'
-import { type Command, type Commands } from './types.ts'
-import { stdout, outputCommand } from './output.ts'
+import {
+  Config,
+  type LoadedConfig,
+  type Commands,
+} from './config/index.ts'
+import { outputCommand, stdout } from './output.ts'
+import { type Views } from './view.ts'
+
+export type CommandUsage = () => Jack
+
+/**
+ * A command function that may return a result of `T`.
+ * If the result is `undefined`, no final output will be displayed by default.
+ */
+export type CommandFn<T = unknown> = (
+  conf: LoadedConfig,
+) => Promise<T>
+
+export type Command<T> = {
+  command: CommandFn<T>
+  usage: CommandUsage
+  views: Views<T>
+}
 
 const { version } = loadPackageJson(import.meta.filename) as {
   version: string
