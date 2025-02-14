@@ -20,6 +20,7 @@ export type Action = {
   updateHasDashboard: (hasDashboard: State['hasDashboard']) => void
   updateLinePositionReference: (position: number) => void
   updateNodes: (nodes: State['nodes']) => void
+  updateProjectInfo: (projectInfo: State['projectInfo']) => void
   updateSelectedNode: (node: State['selectedNode']) => void
   updateSpecOptions: (specOptions: State['specOptions']) => void
   updateStamp: () => void
@@ -34,11 +35,27 @@ export type Action = {
 }
 
 /**
+ * Project information present in the transfer data object.
+ */
+export type ProjectInfo = {
+  /**
+   * Other tools used by this project, such as runtime and package mangager.
+   */
+  tools: DashboardTools[]
+  /**
+   * `true` if this package node_modules folder was installed
+   * using the vlt client.
+   */
+  vltInstalled?: boolean
+}
+
+/**
  * Transfer data object used to send data from the cli.
  */
 export type TransferData = {
   importers: RawNode[]
   lockfile: LockfileData
+  projectInfo: ProjectInfo
 }
 
 export type RawNode = {
@@ -95,6 +112,10 @@ export type State = {
    * List of selected nodes returned after querying the graph.
    */
   nodes: NodeLike[]
+  /**
+   * Information about the current project being explored.
+   */
+  projectInfo: ProjectInfo
   /**
    * Holds the reference to the {@link Query} instance object.
    */

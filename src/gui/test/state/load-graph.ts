@@ -82,6 +82,10 @@ const transferData: TransferData = {
       '··foo@1.0.0 bar': 'prod ^1.0.0 ··bar@1.0.0',
     },
   },
+  projectInfo: {
+    tools: ['vlt'],
+    vltInstalled: true,
+  },
 }
 
 test('load graph', () => {

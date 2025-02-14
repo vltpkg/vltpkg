@@ -29,28 +29,18 @@ exports[`explorer has project root info 1`] = `
 
 `;
 
+exports[`explorer not vlt installed 1`] = `
+
+<div>
+  <gui-setup-project>
+  </gui-setup-project>
+</div>
+
+`;
+
 exports[`render default 1`] = `
 
 <div>
-  <section class="flex grow flex-col justify-between bg-white dark:bg-black">
-    <div class="flex w-full items-center justify-between border-t-[1px] px-8 pt-4">
-    </div>
-    <section class="flex items-center border-b-[1px] border-solid px-8 py-4">
-      <div class="flex w-full flex-row gap-2">
-        <gui-root-button>
-        </gui-root-button>
-        <gui-search-bar
-          tabindex="0"
-          classname="w-full bg-muted-foreground/5"
-          startcontent="[object Object]"
-          endcontent="[object Object]"
-        >
-        </gui-search-bar>
-      </div>
-    </section>
-    <gui-explorer-grid>
-    </gui-explorer-grid>
-  </section>
 </div>
 
 `;

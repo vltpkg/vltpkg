@@ -1,0 +1,29 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`setup-project 1`] = `
+
+<div class="flex grow flex-col bg-secondary px-8 py-8 dark:bg-black">
+  <gui-card classname="container mx-auto w-full px-8 py-8 lg:w-[1024px]">
+    <h1 class="mb-2 text-3xl font-bold">
+      Setup Project
+    </h1>
+    <p class="mb-6 text-gray-600">
+      Initializing your project with the
+      <strong>
+        vlt
+      </strong>
+      client will replace your
+      <code class="rounded-md bg-gray-200 px-1 dark:bg-gray-900">
+        node_modules
+      </code>
+      folder with a fully compatible install managed by volt.
+    </p>
+    <gui-button>
+      <gui-download size="16">
+      </gui-download>
+      Install dependencies
+    </gui-button>
+  </gui-card>
+</div>
+
+`;

@@ -41,6 +41,10 @@ const initialState: State = {
   hasDashboard: false,
   linePositionReference: 258,
   nodes: [],
+  projectInfo: {
+    tools: [],
+    vltInstalled: undefined,
+  },
   query:
     new URL(
       window.location.href || 'http://localhost',
@@ -99,6 +103,8 @@ export const useGraphStore = create<Action & State>((set, get) => {
     updateLinePositionReference: (position: number) =>
       set(() => ({ linePositionReference: position })),
     updateNodes: (nodes: State['nodes']) => set(() => ({ nodes })),
+    updateProjectInfo: (projectInfo: State['projectInfo']) =>
+      set(() => ({ projectInfo })),
     updateSelectedNode: (selectedNode: State['selectedNode']) =>
       set(() => ({ selectedNode })),
     updateSpecOptions: (specOptions: State['specOptions']) =>
