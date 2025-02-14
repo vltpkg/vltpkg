@@ -1595,8 +1595,8 @@ importers:
         specifier: ^5.0.0
         version: 5.0.0(ink@5.1.0(@types/react@18.3.18)(react-devtools-core@4.28.5)(react@18.3.1))(react@18.3.1)
       jackspeak:
-        specifier: ^4.0.2
-        version: 4.0.2
+        specifier: ^4.0.3
+        version: 4.0.3
       package-json-from-dist:
         specifier: 'catalog:'
         version: 1.0.1
@@ -5817,8 +5817,8 @@ packages:
   jackspeak@3.4.3:
     resolution: {integrity: sha512-OGlZQpz2yfahA/Rd1Y8Cd9SIEsqvXkLVoSw/cgwhnhFMDbsQFeZYoJJ7bIZBS9BcamUW96asq/npPWugM+RQBw==}
 
-  jackspeak@4.0.2:
-    resolution: {integrity: sha512-bZsjR/iRjl1Nk1UkjGpAzLNfQtzuijhn2g+pbZb98HQ1Gk8vM9hfbxeMBP+M2/UUdwj0RqGG3mlvk2MsAqwvEw==}
+  jackspeak@4.0.3:
+    resolution: {integrity: sha512-oSwM7q8PTHQWuZAlp995iPpPJ4Vkl7qT0ZRD+9duL9j2oBy6KcTfyxc8mEuHJYC+z/kbps80aJLkaNzTOrf/kw==}
     engines: {node: 20 || >=22}
 
   jest-diff@29.7.0:
@@ -10610,7 +10610,7 @@ snapshots:
       '@tapjs/core': 4.0.0(@types/node@22.13.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@tapjs/test': 4.0.0(@tapjs/core@4.0.0(@types/node@22.13.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@types/node@22.13.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       chalk: 5.3.0
-      jackspeak: 4.0.2
+      jackspeak: 4.0.3
       polite-json: 5.0.0
       tap-yaml: 4.0.0
       walk-up-path: 4.0.0
@@ -10787,7 +10787,7 @@ snapshots:
       '@tapjs/typescript': 3.0.0(@tapjs/core@4.0.0(@types/node@22.13.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@types/node@22.13.1)(typescript@5.5.4)
       '@tapjs/worker': 4.0.0(@tapjs/core@4.0.0(@types/node@22.13.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
       glob: 11.0.0
-      jackspeak: 4.0.2
+      jackspeak: 4.0.3
       mkdirp: 3.0.1
       package-json-from-dist: 1.0.1
       resolve-import: 2.0.0
@@ -12529,7 +12529,7 @@ snapshots:
   glob@11.0.0:
     dependencies:
       foreground-child: 3.3.0
-      jackspeak: 4.0.2
+      jackspeak: 4.0.3
       minimatch: 10.0.1
       minipass: 7.1.2
       package-json-from-dist: 1.0.1
@@ -13086,7 +13086,7 @@ snapshots:
     optionalDependencies:
       '@pkgjs/parseargs': 0.11.0
 
-  jackspeak@4.0.2:
+  jackspeak@4.0.3:
     dependencies:
       '@isaacs/cliui': 8.0.2
 
