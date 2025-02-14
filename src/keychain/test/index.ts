@@ -1,6 +1,7 @@
 import { writeFileSync } from 'fs'
 import { resolve } from 'path'
-import t, { type Test } from 'tap'
+import t from 'tap'
+import type { Test } from 'tap'
 
 const getKC = async (t: Test) => {
   t.intercept(process, 'platform', { value: 'linux' })

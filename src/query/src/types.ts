@@ -1,18 +1,18 @@
 import { error } from '@vltpkg/error-cause'
-import { type EdgeLike, type NodeLike } from '@vltpkg/graph'
-import {
-  type Tag,
-  type String,
-  type Selector,
-  type Root,
-  type Pseudo,
-  type Nesting,
-  type Identifier,
-  type Comment,
-  type Combinator,
-  type ClassName,
-  type Attribute,
-  type Universal,
+import type { EdgeLike, NodeLike } from '@vltpkg/graph'
+import type {
+  Tag,
+  String,
+  Selector,
+  Root,
+  Pseudo,
+  Nesting,
+  Identifier,
+  Comment,
+  Combinator,
+  ClassName,
+  Attribute,
+  Universal,
 } from 'postcss-selector-parser'
 
 export type PostcssNode =

@@ -1,11 +1,9 @@
-import {
-  type DepID,
-  type DepIDTuple,
-  splitDepID,
-} from '@vltpkg/dep-id'
+import { splitDepID } from '@vltpkg/dep-id'
+import type { DepID, DepIDTuple } from '@vltpkg/dep-id'
 import { error } from '@vltpkg/error-cause'
 import { parse, Version } from '@vltpkg/semver'
-import { type GitSelectorParsed, Spec } from '@vltpkg/spec'
+import { Spec } from '@vltpkg/spec'
+import type { GitSelectorParsed } from '@vltpkg/spec'
 import { Monorepo } from '@vltpkg/workspaces'
 import { relative, resolve } from 'path'
 

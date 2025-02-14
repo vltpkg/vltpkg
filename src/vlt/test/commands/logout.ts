@@ -1,5 +1,5 @@
 import t from 'tap'
-import { type LoadedConfig } from '../../src/types.ts'
+import type { LoadedConfig } from '../../src/types.ts'
 let logoutCalled = ''
 
 const { usage, command } = await t.mockImport<

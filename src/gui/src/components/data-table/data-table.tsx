@@ -1,15 +1,17 @@
 import {
-  type ColumnDef,
   flexRender,
   getCoreRowModel,
   useReactTable,
   getPaginationRowModel,
-  type VisibilityState,
-  type SortingState,
-  type Table as ITable,
-  type PaginationState,
   getFilteredRowModel,
   getSortedRowModel,
+} from '@tanstack/react-table'
+import type {
+  ColumnDef,
+  VisibilityState,
+  SortingState,
+  Table as ITable,
+  PaginationState,
 } from '@tanstack/react-table'
 import {
   Table,

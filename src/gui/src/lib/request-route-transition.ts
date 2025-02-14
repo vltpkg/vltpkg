@@ -1,4 +1,4 @@
-import { type Action } from '@/state/types.js'
+import type { Action } from '@/state/types.js'
 import { DEFAULT_QUERY } from '@/state/index.js'
 
 export type RequestRouteTransitionOptions<T> = {

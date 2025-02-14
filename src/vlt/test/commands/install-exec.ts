@@ -1,5 +1,5 @@
 import t from 'tap'
-import { type LoadedConfig } from '../../src/config/index.ts'
+import type { LoadedConfig } from '../../src/config/index.ts'
 
 t.test('basic', async t => {
   const { usage, command } = await t.mockImport<

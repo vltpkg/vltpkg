@@ -1,5 +1,6 @@
 import t from 'tap'
-import { Spec, type SpecOptions } from '@vltpkg/spec'
+import { Spec } from '@vltpkg/spec'
+import type { SpecOptions } from '@vltpkg/spec'
 import { Monorepo } from '@vltpkg/workspaces'
 import { Graph } from '../../src/graph.ts'
 import { jsonOutput } from '../../src/visualization/json-output.ts'

@@ -2,9 +2,10 @@ import EventEmitter from 'events'
 import { readFileSync } from 'fs'
 import { createServer } from 'http'
 import { resolve } from 'path'
-import t, { type Test } from 'tap'
+import t from 'tap'
+import type { Test } from 'tap'
 import { gzipSync } from 'zlib'
-import { type RegistryClientRequestOptions } from '../src/index.ts'
+import type { RegistryClientRequestOptions } from '../src/index.ts'
 
 const PORT = (t.childId || 0) + 8080
 

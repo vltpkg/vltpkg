@@ -1,12 +1,12 @@
-import {
-  type LockfileData,
-  type GraphLike,
-  type NodeLike,
-  type EdgeLike,
+import type {
+  LockfileData,
+  GraphLike,
+  NodeLike,
+  EdgeLike,
 } from '@vltpkg/graph'
-import { type Query } from '@vltpkg/query'
-import { type SpecOptionsFilled } from '@vltpkg/spec/browser'
-import { type Integrity, type Manifest } from '@vltpkg/types'
+import type { Query } from '@vltpkg/query'
+import type { SpecOptionsFilled } from '@vltpkg/spec/browser'
+import type { Integrity, Manifest } from '@vltpkg/types'
 
 export type Action = {
   updateActiveRoute: (route: State['activeRoute']) => void

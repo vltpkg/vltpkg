@@ -1,4 +1,4 @@
-import { type SavedQuery } from '@/state/types.js'
+import type { SavedQuery } from '@/state/types.js'
 import { useEffect, useRef, useState } from 'react'
 import { Input } from '@/components/ui/input.jsx'
 import { Kbd } from '@/components/ui/kbd.jsx'

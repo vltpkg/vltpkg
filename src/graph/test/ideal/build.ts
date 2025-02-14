@@ -1,4 +1,5 @@
-import { type DepIDTuple, joinDepIDTuple } from '@vltpkg/dep-id'
+import { joinDepIDTuple } from '@vltpkg/dep-id'
+import type { DepIDTuple } from '@vltpkg/dep-id'
 import { PackageInfoClient } from '@vltpkg/package-info'
 import { PackageJson } from '@vltpkg/package-json'
 import { Monorepo } from '@vltpkg/workspaces'
@@ -6,10 +7,10 @@ import { PathScurry } from 'path-scurry'
 import t from 'tap'
 import { build } from '../../src/ideal/build.ts'
 import { objectLikeOutput } from '../../src/visualization/object-like-output.ts'
-import { type LockfileEdgeKey } from '../../src/index.ts'
-import {
-  type AddImportersDependenciesMap,
-  type RemoveImportersDependenciesMap,
+import type { LockfileEdgeKey } from '../../src/index.ts'
+import type {
+  AddImportersDependenciesMap,
+  RemoveImportersDependenciesMap,
 } from '../../src/dependencies.ts'
 
 const edgeKey = (from: DepIDTuple, to: string): LockfileEdgeKey =>
