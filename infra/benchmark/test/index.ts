@@ -8,13 +8,13 @@ t.test('basic', async t => {
   t.equal(B.randomPackages().length, 1000)
   t.equal(B.randomPackages(10).length, 10)
 
-  t.strictSame(B.convertNs(1_000_000_000), [1, B.UNIT.s])
-  t.strictSame(B.convertNs(1_000_000), [1, B.UNIT.ms])
-  t.strictSame(B.convertNs(1_000), [1, B.UNIT.us])
-  t.strictSame(B.convertNs(1), [1, B.UNIT.ns])
-  t.strictSame(B.convertNs(1_000_000_000, B.UNIT.ns), [
+  t.strictSame(B.convertNs(1_000_000_000), [1, 's'])
+  t.strictSame(B.convertNs(1_000_000), [1, 'ms'])
+  t.strictSame(B.convertNs(1_000), [1, 'us'])
+  t.strictSame(B.convertNs(1), [1, 'ns'])
+  t.strictSame(B.convertNs(1_000_000_000, 'ns'), [
     1_000_000_000,
-    B.UNIT.ns,
+    'ns',
   ])
 
   t.equal(B.numToFixed(1), '1.00')

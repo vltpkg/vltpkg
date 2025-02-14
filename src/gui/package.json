@@ -76,11 +76,11 @@
     "format:check": "prettier --check . --ignore-path ../../.prettierignore --cache",
     "lint": "eslint . --fix",
     "lint:check": "eslint .",
-    "prepare": "node scripts/prepare.js --production",
+    "prepare": "node --no-warnings --experimental-transform-types --conditions=@vltpkg/source scripts/prepare.js --production",
     "snap": "vitest --no-watch -u",
     "test": "vitest",
     "posttest": "tsc --project tsconfig.test.json",
-    "watch": "node scripts/prepare.js --watch"
+    "watch": "node --no-warnings --experimental-transform-types --conditions=@vltpkg/source scripts/prepare.js --watch"
   },
   "prettier": "../../.prettierrc.js",
   "type": "module",

@@ -1,3 +1,5 @@
+#!/usr/bin/env -S node --experimental-strip-types --no-warnings --conditions=@vltpkg/source
+
 // run this script as many times in parallel as necessary
 // it'll randomize and skip any it's already downloaded.
 
@@ -6,10 +8,10 @@ import { mkdirSync, writeFileSync, existsSync, renameSync } from 'fs'
 import pacote from 'pacote'
 import { resolve } from 'path'
 import { gunzipSync } from 'zlib'
-import { EXT, randomize, packages, SOURCE } from './index.ts'
+import { type EXT, randomize, packages, SOURCE } from './index.ts'
 
 const download = async (spec: string, ext: EXT) => {
-  if (ext === EXT.tgz) return gunzipSync(await pacote.tarball(spec))
+  if (ext === 'tgz') return gunzipSync(await pacote.tarball(spec))
   return JSON.stringify(await pacote.packument(spec))
 }
 
@@ -20,8 +22,8 @@ const main = async () => {
 
   const names = randomize(
     packages.flatMap(name => [
-      { name, ext: EXT.tgz },
-      { name, ext: EXT.json },
+      { name, ext: 'tgz' } as const,
+      { name, ext: 'json' } as const,
     ]),
   )
 

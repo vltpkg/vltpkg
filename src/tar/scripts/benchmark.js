@@ -1,7 +1,7 @@
 import { readFileSync } from 'fs'
 import pacote from 'pacote'
 import { resolve } from 'path'
-import { Pool } from '../dist/esm/pool.js'
+import { Pool } from '../src/pool.ts'
 import {
   convertNs,
   copyTarballs,
@@ -9,7 +9,7 @@ import {
   numToFixed,
   timePromises,
 } from '@vltpkg/benchmark'
-import { unpack } from '../dist/esm/unpack.js'
+import { unpack } from '../src/unpack.ts'
 
 const DIRS = {
   source: resolve(import.meta.dirname, 'fixtures/artifacts'),

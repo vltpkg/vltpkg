@@ -1,6 +1,6 @@
 import { readFileSync } from 'fs'
 import npmPickManifest from 'npm-pick-manifest'
-import { pickManifest } from '../dist/esm/index.js'
+import { pickManifest } from '../src/index.ts'
 import { resolve } from 'path'
 import {
   copyPackuments,

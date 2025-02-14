@@ -1,5 +1,5 @@
 import npa from 'npm-package-arg'
-import { Spec } from '../dist/esm/index.js'
+import { Spec } from '../src/index.ts'
 import { numToFixed, runFor } from '@vltpkg/benchmark'
 
 const versions = [

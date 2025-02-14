@@ -1,7 +1,7 @@
 import pacote from 'pacote'
 import { resolve, join } from 'path'
 import { parseArgs } from 'util'
-import { PackageInfoClient } from '../dist/esm/index.js'
+import { PackageInfoClient } from '../src/index.ts'
 import {
   randomPackages,
   convertNs,

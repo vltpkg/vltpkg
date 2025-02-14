@@ -5,12 +5,8 @@ import {
   existsSync,
 } from 'node:fs'
 import { relative, resolve, basename, dirname, join } from 'node:path'
-import {
-  gt,
-  satisfies,
-  validRange,
-} from '../src/semver/dist/esm/index.js'
-import { Spec } from '../src/spec/dist/esm/index.js'
+import { gt, satisfies, validRange } from '@vltpkg/semver'
+import { Spec } from '@vltpkg/spec'
 import minVersion from 'semver/ranges/min-version.js'
 import {
   ROOT,
