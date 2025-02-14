@@ -16,7 +16,7 @@ const isHero = Astro.url.pathname === '/'
         </div>
 
         {/* mobile */}
-        <div class="sticky top-0 z-[1000] flex md:hidden">
+        <div class="sticky top-0 z-[10] flex md:hidden">
           <MobileSidebar
             client:load
             {...({ ...Astro.props, labels: undefined } as any)}

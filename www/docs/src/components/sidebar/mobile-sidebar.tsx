@@ -1,54 +1,131 @@
-import { useState } from 'react'
+import React, { useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { AlignLeft, X as CloseIcon } from 'lucide-react'
-import { AnimatePresence, motion } from 'motion/react'
-import AppSidebarSublist from '@/components/sidebar/app-sidebar-sublist'
-import { type SidebarEntries } from '@/components/sidebar/app-sidebar'
-import clsx from 'clsx'
+import { X, ChevronDown, ChevronRight } from 'lucide-react'
+import {
+  type SidebarEntry,
+  type Group,
+  type SidebarEntries,
+} from '@/components/sidebar/app-sidebar'
+import {
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerDescription,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from '@/components/ui/drawer'
+import { ScrollArea } from '@/components/ui/scroll-area'
 
-const MobileSidebar = ({ sidebar }: { sidebar: SidebarEntries }) => {
+interface MobileSidebarProps {
+  sidebar: SidebarEntries
+}
+
+const MobileSidebar = ({ sidebar }: MobileSidebarProps) => {
   const [open, setOpen] = useState<boolean>(false)
 
   return (
-    <>
-      <div
-        className={clsx('order-2 md:hidden', {
-          'overflow-hidden': open,
-        })}>
+    <Drawer open={open} onOpenChange={setOpen}>
+      <DrawerTrigger asChild>
         <Button
-          variant="outline"
-          size="icon"
-          onClick={() => setOpen(true)}>
-          <AlignLeft size={20} />
+          className="flex cursor-pointer md:hidden"
+          variant="outline">
+          Menu
         </Button>
-      </div>
+      </DrawerTrigger>
+      <DrawerContent className="mx-1 max-h-[70svh] border border-white/20 bg-gradient-to-br from-neutral-100 to-neutral-200 pb-12 dark:from-neutral-900 dark:to-neutral-950">
+        <DrawerDescription></DrawerDescription>
+        <DrawerHeader className="flex items-stretch justify-between gap-x-4 border-b border-black/5 px-1 py-0.5 dark:border-white/10">
+          <DrawerTitle className="flex items-center justify-start px-3 text-sm text-neutral-700 dark:text-neutral-400">
+            Menu
+          </DrawerTitle>
+          <DrawerClose asChild>
+            <Button
+              size="icon"
+              variant="ghost"
+              className="cursor-pointer bg-transparent">
+              <X
+                size={16}
+                className="text-neutral-950 dark:text-white"
+              />
+            </Button>
+          </DrawerClose>
+        </DrawerHeader>
+        <ScrollArea className="max-h-[calc(70svh-3rem)] overflow-y-auto">
+          <div className="divide-y divide-border">
+            {renderMenu(sidebar, 0)}
+          </div>
+        </ScrollArea>
+      </DrawerContent>
+    </Drawer>
+  )
+}
 
-      {/* modal */}
-      <AnimatePresence>
-        {open && (
-          <motion.div
-            className="fixed inset-0 z-[10000] flex h-svh w-full flex-col overflow-y-auto bg-white backdrop-blur-md dark:bg-black"
-            initial={{ height: 0 }}
-            animate={{ height: '100%' }}
-            exit={{ height: 0 }}
-            transition={{ duration: 0.3 }}>
-            <div className="flex flex-row items-center justify-between border-b-[1px] px-6 py-6">
-              <h3 className="text-2xl">Documentation</h3>
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={() => setOpen(false)}>
-                <CloseIcon size={20} />
-              </Button>
-            </div>
-            <AppSidebarSublist
-              sidebar={sidebar}
-              className="-ml-4 -mt-0 p-6"
-            />
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </>
+const renderMenu = (items: SidebarEntries, depth: number) => {
+  return items.map((entry, index) => {
+    if (entry.type === 'group') {
+      return (
+        <Group key={index} entry={entry} depth={depth}>
+          {renderMenu(entry.entries, depth + 1)}
+        </Group>
+      )
+    }
+    return <Item key={index} entry={entry} depth={depth} />
+  })
+}
+
+interface GroupProps {
+  entry: Group
+  depth?: number
+  children: React.ReactNode
+}
+
+const Group = ({ entry, children }: GroupProps) => {
+  const [expanded, setExpanded] = useState<boolean>(false)
+
+  const toggle = () => {
+    setExpanded(!expanded)
+  }
+
+  return (
+    <div className="flex h-full w-full flex-col overflow-y-scroll py-1">
+      <Button
+        onClick={toggle}
+        variant="ghost"
+        className="w-full cursor-pointer items-center justify-between bg-transparent hover:bg-transparent">
+        <span className="font-medium capitalize">{entry.label}</span>
+        {expanded ?
+          <ChevronDown className="size-4" />
+        : <ChevronRight className="size-4" />}
+      </Button>
+      {expanded && (
+        <div className="ml-4 flex flex-col border-l border-border">
+          {children}
+        </div>
+      )}
+    </div>
+  )
+}
+
+interface ItemProps {
+  entry: SidebarEntry
+  depth?: number
+}
+
+const Item = ({ entry }: ItemProps) => {
+  if (entry.type !== 'link') return
+
+  return (
+    <Button
+      asChild
+      className="w-full cursor-pointer items-center justify-start bg-transparent capitalize hover:bg-transparent"
+      variant="ghost">
+      <a
+        href={entry.href}
+        className="font-medium text-primary no-underline">
+        {entry.label}
+      </a>
+    </Button>
   )
 }
 

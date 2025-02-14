@@ -56,7 +56,7 @@ button[aria-label='Search'] {
 
 @media (min-width: 800px) {
   button[aria-label='Search'] {
-    width: 235px;
+    width: 300px;
   }
 }
 
@@ -73,6 +73,12 @@ button[aria-label='Search'] {
   }
 }
 
+@media (max-width: 768px) {
+  &[data-theme='dark'] button[aria-label='Search'] {
+    background-color: #000;
+  }
+}
+
 &[data-theme='light'] {
   button[aria-label='Search'] {
     border-color: rgb(242, 242, 242);
@@ -83,6 +89,18 @@ button[aria-label='Search'] {
   button[aria-label='Search'] kbd {
     background-color: #fff;
     color: var(--secondary-foreground);
+  }
+}
+
+&[data-theme='light'] {
+  dialog {
+    background-color: #fff;
+  }
+}
+
+&[data-theme='dark'] {
+  dialog {
+    background-color: #000;
   }
 }
 
