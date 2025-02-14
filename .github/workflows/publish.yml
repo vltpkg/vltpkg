@@ -40,16 +40,17 @@ jobs:
         with:
           node-version-file: '.nvmrc'
           cache: pnpm
+          check-latest: true
 
       - name: Install dependencies
         run: pnpm install
 
       - name: Publish
-        run: pnpm -F infra-build exec node dist/esm/bin/publish.js ${{ !inputs.dryRun && '--forReal' || '' }}
+        run: pnpm -F infra-build exec node --no-warnings --experimental-transform-types --conditions=@vltpkg/source src/bin/publish.ts ${{ !inputs.dryRun && '--forReal' || '' }}
         env:
           VLT_CLI_PUBLISH_TOKEN: ${{ secrets.VLT_CLI_PUBLISH_TOKEN }}
 
       - name: Publish Deno
-        run: pnpm -F infra-build exec node dist/esm/bin/publish.js --compile=true --runtime=deno --platform=all --arch=all ${{ !inputs.dryRun && '--forReal' || '' }}
+        run: pnpm -F infra-build exec node --no-warnings --experimental-transform-types --conditions=@vltpkg/source src/bin/publish.ts --compile=true --runtime=deno --platform=all --arch=all ${{ !inputs.dryRun && '--forReal' || '' }}
         env:
           VLT_CLI_PUBLISH_TOKEN: ${{ secrets.VLT_CLI_PUBLISH_TOKEN }}

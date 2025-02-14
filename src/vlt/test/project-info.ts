@@ -274,7 +274,7 @@ t.test('getGraphProjectData', async t => {
     },
   })
   const packageJson = new PackageJson()
-  const scurry = new PathScurry(t.testdirName)
+  const scurry = new PathScurry(dir)
   const conf: LoadedConfig = {
     options: {
       packageJson,
@@ -318,5 +318,48 @@ t.test('getGraphProjectData', async t => {
   t.matchSnapshot(
     getGraphProjectData(conf),
     'should return emtpy response on missing folder',
+  )
+})
+
+t.test('getGraphProjectData empty vlt-installed project', async t => {
+  const dir = t.testdir({
+    home: {
+      user: {
+        projects: {
+          'my-project': {
+            'package.json': JSON.stringify({
+              name: 'my-project',
+              version: '1.0.0',
+              author: 'Ruy Adorno <ruy@example.com>',
+            }),
+            node_modules: {
+              '.vlt-lock.json': JSON.stringify({
+                nodes: [],
+                edges: [],
+              }),
+            },
+          },
+        },
+      },
+    },
+  })
+  const packageJson = new PackageJson()
+  const scurry = new PathScurry(dir)
+  const conf: LoadedConfig = {
+    options: {
+      packageJson,
+      scurry,
+    } as ConfigOptions,
+  } as LoadedConfig
+
+  const myProject = scurry.lstatSync(
+    resolve(dir, 'home', 'user', 'projects', 'my-project'),
+  )
+  if (!myProject) {
+    throw new Error('my-project is not a valid path')
+  }
+  t.matchSnapshot(
+    getGraphProjectData(conf, myProject),
+    'should return vltInstalled: true for an empty but installed project',
   )
 })

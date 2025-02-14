@@ -22,7 +22,7 @@
     }
   },
   "bin": {
-    "vlt-benchmark-download-fixtures": "./dist/esm/download.js"
+    "vlt-benchmark-download-fixtures": "./src/download.ts"
   },
   "dependencies": {
     "pacote": "catalog:"

@@ -169,6 +169,10 @@ test('explorer-grid renders workspace with edges in', async () => {
         optional: false,
       } as RawNode,
     ],
+    projectInfo: {
+      tools: ['vlt'],
+      vltInstalled: true,
+    },
   })
   const q = new Query({ graph })
   const result = await q.search(':project[name=b]')
