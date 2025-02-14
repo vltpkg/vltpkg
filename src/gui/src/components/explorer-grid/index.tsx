@@ -276,7 +276,7 @@ const getItemQuery = (item: GridItemData) => {
   const name = item.to.name ? `[name="${item.to.name}"]` : ''
   const version =
     item.to.version ? `[version="${item.to.version}"]` : ''
-  return `${name}${version}`
+  return `${name}${version}`.trim()
 }
 
 export const ExplorerGrid = () => {
@@ -323,13 +323,13 @@ export const ExplorerGrid = () => {
         query.endsWith(`> ${selectedName}${selectedVersion}`) &&
         query.slice(0, query.lastIndexOf('>'))
       if (newQuery) {
-        updateQuery(newQuery)
+        updateQuery(newQuery.trim())
       } else {
         const name =
           item.from?.name ? `[name="${item.from.name}"]` : ''
         const version =
           item.from?.version ? `[version="${item.from.version}"]` : ''
-        updateQuery(`${name}${version}`)
+        updateQuery(`${name}${version}`.trim())
       }
       return undefined
     }
