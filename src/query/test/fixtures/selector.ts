@@ -78,6 +78,7 @@ export const selectorFixture =
     }
     if (!current) throw new Error('missing selector?')
     const state: ParserState = {
+      cancellable: async () => {},
       collect: {
         edges: new Set(),
         nodes: new Set(),

@@ -122,6 +122,8 @@ const classSelectorsMap = new Map<string, ParserFn>(
  * Parse classes, e.g: `.prod`, `.dev`, `.optional`, etc
  */
 export const classFn = async (state: ParserState) => {
+  await state.cancellable()
+
   const curr = asClassNode(state.current)
   const comparatorFn = curr.value && classSelectorsMap.get(curr.value)
   if (!comparatorFn) {
