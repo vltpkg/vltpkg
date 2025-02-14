@@ -35,6 +35,7 @@ const knownTools = new Map<ProjectTools, string[]>([
       'vlt-workspaces.json',
       'vlt.json',
       'node_modules/.vlt',
+      'node_modules/.vlt-lock.json',
     ],
   ],
   ['node', []],
@@ -134,8 +135,12 @@ export const getGraphProjectData = (
       folder,
       scurry,
     ),
-    vltInstalled: !!scurry
-      .lstatSync(folder.resolve('node_modules/.vlt'))
-      ?.isDirectory(),
+    vltInstalled:
+      !!scurry
+        .lstatSync(folder.resolve('node_modules/.vlt'))
+        ?.isDirectory() ||
+      !!scurry
+        .lstatSync(folder.resolve('node_modules/.vlt-lock.json'))
+        ?.isFile(),
   }
 }
