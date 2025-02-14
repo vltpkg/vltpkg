@@ -27,38 +27,23 @@ import { format } from 'date-fns'
 import { requestRouteTransition } from '@/lib/request-route-transition.js'
 import { Button } from '@/components/ui/button.jsx'
 import { Plus } from 'lucide-react'
+import { LoadingSpinner } from '@/components/ui/loading-spinner.jsx'
+
+export type DashboardItemOptions = {
+  item: DashboardDataProject
+  onItemClick: (selectedProject: DashboardDataProject) => void
+}
 
 export const DashboardItem = ({
   item,
-}: {
-  item: DashboardDataProject
-}) => {
-  const updateActiveRoute = useGraphStore(
-    state => state.updateActiveRoute,
-  )
-  const updateErrorCause = useGraphStore(
-    state => state.updateErrorCause,
-  )
-  const updateQuery = useGraphStore(state => state.updateQuery)
-  const updateStamp = useGraphStore(state => state.updateStamp)
-
+  onItemClick,
+}: DashboardItemOptions) => {
   const { packageManager: PackageManger, runtime: RunTime } =
     getIconSet(item.tools)
 
   const onDashboardItemClick = (e: MouseEvent) => {
     e.preventDefault()
-    void requestRouteTransition<{ path: string }>({
-      updateActiveRoute,
-      updateErrorCause,
-      updateQuery,
-      updateStamp,
-      body: {
-        path: item.path,
-      },
-      url: '/select-project',
-      destinationRoute: '/explore',
-      errorMessage: 'Failed to select project.',
-    }).catch((err: unknown) => console.error(err))
+    onItemClick(item)
   }
 
   return (
@@ -112,11 +97,17 @@ export const DashboardItem = ({
 
 export const DashboardGrid = () => {
   const dashboard = useGraphStore(state => state.dashboard)
-  const [currentView, setCurrentView] = useState<View>('grid')
-  const [tableFilterValue, setTableFilterValue] = useState<string>('')
   const updateActiveRoute = useGraphStore(
     state => state.updateActiveRoute,
   )
+  const updateErrorCause = useGraphStore(
+    state => state.updateErrorCause,
+  )
+  const updateQuery = useGraphStore(state => state.updateQuery)
+  const updateStamp = useGraphStore(state => state.updateStamp)
+
+  const [currentView, setCurrentView] = useState<View>('grid')
+  const [tableFilterValue, setTableFilterValue] = useState<string>('')
   const [filteredProjects, setFilteredProjects] = useState<
     DashboardDataProject[]
   >([])
@@ -128,6 +119,24 @@ export const DashboardGrid = () => {
       private: false,
       version: false,
     })
+  const [inProgress, setInProgress] = useState<boolean>(false)
+  const onItemClick = (selectedProject: DashboardDataProject) => {
+    if (inProgress) return
+    setInProgress(true)
+
+    void requestRouteTransition<{ path: string }>({
+      updateActiveRoute,
+      updateErrorCause,
+      updateQuery,
+      updateStamp,
+      body: {
+        path: selectedProject.path,
+      },
+      url: '/select-project',
+      destinationRoute: '/explore',
+      errorMessage: 'Failed to select project.',
+    }).catch((err: unknown) => console.error(err))
+  }
 
   useEffect(() => {
     if (dashboard) {
@@ -141,6 +150,14 @@ export const DashboardGrid = () => {
 
   const onCreateNewProjectClick = () => {
     updateActiveRoute('/new-project')
+  }
+
+  if (inProgress) {
+    return (
+      <div className="flex h-96 w-full items-center justify-center">
+        <LoadingSpinner />
+      </div>
+    )
   }
 
   return (
@@ -208,6 +225,7 @@ export const DashboardGrid = () => {
               tableFilterValue={tableFilterValue}
               columnVisibility={columnVisibility}
               setColumnVisibility={setColumnVisibility}
+              onItemClick={onItemClick}
             />
           </motion.div>
         : <motion.div
@@ -220,7 +238,11 @@ export const DashboardGrid = () => {
             <div className="flex flex-row flex-wrap gap-8">
               {dashboard?.projects ?
                 filteredProjects.map((item, index) => (
-                  <DashboardItem key={index} item={item} />
+                  <DashboardItem
+                    key={index}
+                    item={item}
+                    onItemClick={onItemClick}
+                  />
                 ))
               : <p>No projects found</p>}
             </div>
