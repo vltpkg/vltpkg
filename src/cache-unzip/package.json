@@ -20,9 +20,6 @@
       ".": "./src/index.ts"
     }
   },
-  "bin": {
-    "vlt-cache-unzip": "./dist/esm/unzip.js"
-  },
   "dependencies": {
     "@vltpkg/cache": "workspace:*",
     "@vltpkg/error-cause": "workspace:*"
