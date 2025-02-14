@@ -1,13 +1,13 @@
+import { PackageJson } from '@vltpkg/package-json'
+import * as CP from 'node:child_process'
+import { type SpawnOptions } from 'node:child_process'
+import { PathScurry } from 'path-scurry'
 import t, { type Test } from 'tap'
 import {
   definition,
   type LoadedConfig,
   recordsToPairs,
 } from '../../src/config/index.ts'
-import { PackageJson } from '@vltpkg/package-json'
-import * as CP from 'node:child_process'
-import { type SpawnOptions } from 'node:child_process'
-import { PathScurry } from 'path-scurry'
 
 const mockCommand = (t: Test, mocks?: Record<string, any>) =>
   t.mockImport<typeof import('../../src/commands/config.ts')>(
@@ -75,9 +75,7 @@ const run = async (
     child_process: t.createMock(CP, { spawnSync }),
   })
   return {
-    result: await cmd
-      .command(conf as unknown as LoadedConfig)
-      .then(r => r?.result),
+    result: await cmd.command(conf as unknown as LoadedConfig),
     conf,
   }
 }

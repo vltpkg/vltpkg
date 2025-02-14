@@ -14,7 +14,7 @@ import {
 import {
   type ConfigOptions,
   type LoadedConfig,
-} from '../src/types.ts'
+} from '../src/config/index.ts'
 
 t.cleanSnapshot = s => s.replace(/\\\\/g, '/')
 

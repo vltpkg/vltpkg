@@ -1,14 +1,24 @@
-import t, { type Test } from 'tap'
-import { setupCommand, setupEnv } from '../fixtures/run.ts'
-import * as Command from '../../src/commands/pkg.ts'
 import { readFileSync } from 'fs'
 import { join } from 'path'
+import t, { type Test } from 'tap'
+import * as Command from '../../src/commands/pkg.ts'
+import { type LoadedConfig } from '../../src/config/index.ts'
+import { type ViewOptions } from '../../src/view.ts'
+import { setupCommand, setupEnv } from '../fixtures/run.ts'
 
 t.matchSnapshot(Command.usage().usage(), 'usage')
 
 setupEnv(t)
 
-t.afterEach(() => (process.exitCode = 0))
+t.beforeEach(t => {
+  t.context.exitCode = process.exitCode
+})
+
+t.afterEach(t => {
+  // only reset it if the test is still passing, otherwise
+  // it was set to 1 intentionally
+  if (t.passing()) process.exitCode = t.context.exitCode
+})
 
 const parseLogs = (r: { logs: string }) => JSON.parse(r.logs)
 const parseError = (r: { errs: string }) => r.errs
@@ -34,12 +44,13 @@ const setupPkg = async (
 }
 
 t.test('basic', async t => {
+  const exits = t.capture(process, 'exit').args
   const { runCommand } = await setupPkg(t)
   const error = await runCommand(['gett']).then(parseError)
   t.match(error, 'Error: Unrecognized pkg command')
   t.match(error, 'Found: gett')
   t.match(error, 'Valid options: get, set, rm')
-  t.equal(process.exitCode, 1)
+  t.strictSame(exits(), [[1]])
 })
 
 t.test('init', async t => {
@@ -68,6 +79,7 @@ t.test('init', async t => {
 })
 
 t.test('get', async t => {
+  const exits = t.capture(process, 'exit').args
   const pkg = {
     name: 'package-name',
     version: '1.0.0',
@@ -88,6 +100,7 @@ t.test('get', async t => {
     error,
     'Error: get requires not more than 1 argument. use `pick` to get more than 1.',
   )
+  t.strictSame(exits(), [[1]])
 })
 
 t.test('pick', async t => {
@@ -130,6 +143,7 @@ t.test('pick', async t => {
 })
 
 t.test('set', async t => {
+  const exits = t.capture(process, 'exit').args
   const { runCommand, readPackageJson } = await setupPkg(t, 'set', {
     name: 'package-name',
     version: '1.0.0',
@@ -152,9 +166,11 @@ t.test('set', async t => {
     await runCommand(['name']).then(parseError),
     'set arguments must contain `=`',
   )
+  t.strictSame(exits(), [[1], [1]])
 })
 
 t.test('delete', async t => {
+  const exits = t.capture(process, 'exit').args
   const { runCommand, readPackageJson } = await setupPkg(t, 'rm', {
     name: 'package-name',
     version: '1.0.0',
@@ -182,4 +198,34 @@ t.test('delete', async t => {
     await runCommand().then(parseError),
     'rm requires arguments',
   )
+  t.strictSame(exits(), [[1]])
+})
+
+t.test('human output for init subcommand', t => {
+  t.matchSnapshot(
+    Command.views.human(
+      {
+        manifest: {
+          path: '/some/path',
+          data: { name: 'myproject' },
+        },
+      },
+      {} as unknown as ViewOptions,
+      {
+        positionals: ['init'],
+      } as unknown as LoadedConfig,
+    ),
+  )
+  const res = {}
+  t.equal(
+    Command.views.human(
+      res,
+      {} as unknown as ViewOptions,
+      {
+        positionals: ['not', 'init'],
+      } as unknown as LoadedConfig,
+    ),
+    res,
+  )
+  t.end()
 })
