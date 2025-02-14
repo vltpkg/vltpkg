@@ -60,6 +60,7 @@ describe('dashboard-table', () => {
           tableFilterValue=""
           setTable={mockSetTable}
           data={mockData}
+          onItemClick={() => {}}
         />
       )
     }
