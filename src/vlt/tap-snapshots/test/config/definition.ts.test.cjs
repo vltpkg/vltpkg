@@ -315,7 +315,19 @@ Object {
     "type": "boolean",
   },
   "view": Object {
-    "description": "Configures the output format for commands.",
+    "description": String(
+      Configures the output format for commands.
+      
+      Defaults to \`human\` if stdout is a TTY, or \`json\` if it is not.
+      
+      - human: Maximally ergonomic output reporting for human consumption.
+      - json: Parseable JSON output for machines.
+      - inspect: Output results with \`util.inspect\`.
+      - gui: Start a local web server and opens a browser to explore the results. (Only relevant for certain commands.)
+      - mermaid: Output mermaid diagramming syntax. (Only relevant for certain commands.)
+      
+      If the requested view format is not supported for the current command, or if no option is provided, then it will fall back to the default.
+    ),
     "hint": "output",
     "type": "string",
     "validOptions": Array [
@@ -323,6 +335,7 @@ Object {
       "json",
       "mermaid",
       "gui",
+      "inspect",
     ],
   },
   "workspace": Object {

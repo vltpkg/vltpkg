@@ -10,12 +10,9 @@ import {
 } from '@vltpkg/graph'
 import { Query } from '@vltpkg/query'
 import { commandUsage } from '../config/usage.ts'
-import {
-  type CommandUsage,
-  type CommandFn,
-  type Views,
-} from '../types.ts'
+import { type CommandFn, type CommandUsage } from '../index.ts'
 import { startGUI } from '../start-gui.ts'
+import { type Views } from '../view.ts'
 
 export const usage: CommandUsage = () =>
   commandUsage({
@@ -50,17 +47,20 @@ export const usage: CommandUsage = () =>
 
 type QueryResult = JSONOutputGraph &
   MermaidOutputGraph &
-  HumanReadableOutputGraph
+  HumanReadableOutputGraph & { queryString: string }
 
-export const views: Views<QueryResult> = {
-  /* c8 ignore next */
-  defaultView: process.stdout.isTTY ? 'human' : 'json',
-  views: {
-    json: jsonOutput,
-    mermaid: mermaidOutput,
-    human: humanReadableOutput,
+export const views = {
+  json: jsonOutput,
+  mermaid: mermaidOutput,
+  human: humanReadableOutput,
+  gui: async ({ queryString }, _, conf) => {
+    await startGUI({
+      conf,
+      startingRoute:
+        '/explore?query=' + encodeURIComponent(queryString),
+    })
   },
-}
+} as const satisfies Views<QueryResult>
 
 export const command: CommandFn<QueryResult> = async conf => {
   const monorepo = conf.options.monorepo
@@ -94,22 +94,11 @@ export const command: CommandFn<QueryResult> = async conf => {
     }
   }
 
-  if (conf.values.view === 'gui') {
-    await startGUI({
-      conf,
-      startingRoute:
-        '/explore?query=' +
-        encodeURIComponent(queryString || defaultQueryString),
-    })
-    return
-  }
-
   return {
-    result: {
-      importers,
-      edges,
-      nodes,
-      highlightSelection: !!queryString,
-    },
+    importers,
+    edges,
+    nodes,
+    highlightSelection: !!queryString,
+    queryString: queryString || defaultQueryString,
   }
 }

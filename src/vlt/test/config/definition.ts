@@ -2,9 +2,9 @@ import t from 'tap'
 import {
   commands,
   definition,
+  getCommand,
   isRecordField,
   recordFields,
-  getCommand,
 } from '../../src/config/definition.ts'
 import { setupEnv } from '../fixtures/run.ts'
 
@@ -46,6 +46,30 @@ t.test('identity can only be lowercase alphanum', async t => {
   })
   const { values } = definition.parse(['-i', 'asdf123'])
   t.equal(values.identity, 'asdf123')
+})
+
+t.test('default view depends on stdout TTY status', t => {
+  t.test('tty true', async t => {
+    delete process.env.VLT_VIEW
+    t.intercept(process.stdout, 'isTTY', { value: true })
+    const { definition } = await t.mockImport<
+      typeof import('../../src/config/definition.ts')
+    >('../../src/config/definition.ts')
+    const { values } = definition.parse([])
+    t.equal(values.view, 'human')
+    t.end()
+  })
+  t.test('tty false', async t => {
+    delete process.env.VLT_VIEW
+    t.intercept(process.stdout, 'isTTY', { value: false })
+    const { definition } = await t.mockImport<
+      typeof import('../../src/config/definition.ts')
+    >('../../src/config/definition.ts')
+    const { values } = definition.parse([])
+    t.equal(values.view, 'json')
+    t.end()
+  })
+  t.end()
 })
 
 t.test('infer editor from env/platform', async t => {

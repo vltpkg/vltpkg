@@ -56,9 +56,9 @@ import { merge } from './merge.ts'
 export { recordFields, isRecordField }
 export { definition, commands, type Commands }
 
-type RecordPairs = Record<string, unknown>
-type RecordString = Record<string, string>
-type ConfigFiles = Record<string, ConfigFileData>
+export type RecordPairs = Record<string, unknown>
+export type RecordString = Record<string, string>
+export type ConfigFiles = Record<string, ConfigFileData>
 
 // turn a set of pairs into a Record object.
 // if a kv pair doesn't have a = character, set to `''`

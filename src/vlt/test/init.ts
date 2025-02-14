@@ -2,25 +2,34 @@ import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import t from 'tap'
 
-t.cleanSnapshot = (str: string) => str.replaceAll(/\\/g, '/')
+t.cleanSnapshot = (str: string) => str.replaceAll(/\\+/g, '/')
 
-const { init } = await t.mockImport('../src/init.ts', {
-  '@vltpkg/git': {
-    async getUser() {
-      return { name: 'User', email: 'foo@bar.ca' }
+const { init } = await t.mockImport<typeof import('../src/init.ts')>(
+  '../src/init.ts',
+  {
+    '@vltpkg/git': {
+      async getUser() {
+        return { name: 'User', email: 'foo@bar.ca' }
+      },
     },
   },
-})
+)
 
 t.test('init', async t => {
   const dir = t.testdir({
     'my-project': {},
   })
+  const logs: unknown[][] = []
 
   t.matchSnapshot(
-    await init({ cwd: resolve(dir, 'my-project') }),
-    'should output expected message',
+    await init({
+      cwd: resolve(dir, 'my-project'),
+      logger: (...a: unknown[]) => logs.push(a),
+    }),
+    'should initialize the data',
   )
+
+  t.matchSnapshot(logs, 'should output expected logs')
 
   t.matchSnapshot(
     readFileSync(resolve(dir, 'my-project', 'package.json'), 'utf8'),
@@ -34,16 +43,17 @@ t.test('init existing', async t => {
       'package.json': JSON.stringify({ name: 'my-project' }),
     },
   })
+  const logs: unknown[][] = []
+  const logger = (...a: unknown[]) => logs.push(a)
 
-  t.strictSame(
-    await init({ cwd: resolve(dir, 'my-project') }),
-    'package.json already exists',
-    'should not init over an existing package.json file',
-  )
+  await init({ cwd: resolve(dir, 'my-project'), logger })
+  t.strictSame(logs, [['package.json already exists']])
 })
 
 t.test('unknown error reading package.json file', async t => {
-  const { init } = await t.mockImport('../src/init.ts', {
+  const { init } = await t.mockImport<
+    typeof import('../src/init.ts')
+  >('../src/init.ts', {
     '@vltpkg/git': {
       async getUser() {
         return { name: 'User', email: 'foo@bar.ca' }
@@ -72,7 +82,9 @@ t.test('unknown error reading package.json file', async t => {
 })
 
 t.test('missing user info', async t => {
-  const { init } = await t.mockImport('../src/init.ts', {
+  const { init } = await t.mockImport<
+    typeof import('../src/init.ts')
+  >('../src/init.ts', {
     '@vltpkg/git': {
       async getUser() {
         return undefined
@@ -84,8 +96,17 @@ t.test('missing user info', async t => {
     'my-project': {},
   })
 
+  const logs: unknown[][] = []
+
   t.matchSnapshot(
-    await init({ cwd: resolve(dir, 'my-project') }),
+    await init({
+      cwd: resolve(dir, 'my-project'),
+      logger: (...a: unknown[]) => logs.push(a),
+    }),
+    'should initialize with data',
+  )
+  t.matchSnapshot(
+    logs,
     'should output expected message when no user info is found',
   )
 

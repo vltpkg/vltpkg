@@ -2,7 +2,7 @@ import { error } from '@vltpkg/error-cause'
 import { deleteToken, setToken } from '@vltpkg/registry-client'
 import { commandUsage } from '../config/usage.ts'
 import { readPassword } from '../read-password.ts'
-import { type CommandFn, type CommandUsage } from '../types.ts'
+import { type CommandFn, type CommandUsage } from '../index.ts'
 
 export const usage: CommandUsage = () =>
   commandUsage({
@@ -11,7 +11,7 @@ export const usage: CommandUsage = () =>
     description: `Explicitly add or remove tokens in the vlt keychain`,
   })
 
-export const command: CommandFn = async conf => {
+export const command: CommandFn<void> = async conf => {
   const reg = new URL(conf.options.registry).origin
   switch (conf.positionals[0]) {
     case 'add': {

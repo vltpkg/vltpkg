@@ -1,8 +1,5 @@
 import { commandUsage } from '../config/usage.ts'
-import {
-  type CommandUsage,
-  type CommandFnResultOnly,
-} from '../types.ts'
+import { type CommandFn, type CommandUsage } from '../index.ts'
 
 export const usage: CommandUsage = () =>
   commandUsage({
@@ -12,11 +9,9 @@ export const usage: CommandUsage = () =>
       'Run a command defined by a package, installing it if necessary',
   })
 
-export const command: CommandFnResultOnly<string> = async conf => {
-  return {
-    result: [
-      'TODO: exec, but install if not present',
-      ...conf.positionals,
-    ].join('\n'),
-  }
+export const command: CommandFn<string> = async conf => {
+  return [
+    'TODO: exec, but install if not present',
+    ...conf.positionals,
+  ].join('\n')
 }

@@ -1,6 +1,8 @@
 import { XDG } from '@vltpkg/xdg'
 import { jack } from 'jackspeak'
 
+export const defaultView = process.stdout.isTTY ? 'human' : 'json'
+
 const canonicalCommands = {
   config: 'config',
   exec: 'exec',
@@ -449,8 +451,33 @@ export const definition = j
   .opt({
     view: {
       hint: 'output',
-      description: `Configures the output format for commands.`,
-      validOptions: ['human', 'json', 'mermaid', 'gui'] as const,
+      default: defaultView,
+      description: `Configures the output format for commands.
+
+                    Defaults to \`human\` if stdout is a TTY, or \`json\`
+                    if it is not.
+
+                    - human: Maximally ergonomic output reporting for human
+                      consumption.
+                    - json: Parseable JSON output for machines.
+                    - inspect: Output results with \`util.inspect\`.
+                    - gui: Start a local web server and opens a browser to
+                      explore the results. (Only relevant for certain
+                      commands.)
+                    - mermaid: Output mermaid diagramming syntax. (Only
+                      relevant for certain commands.)
+
+                    If the requested view format is not supported for the
+                    current command, or if no option is provided, then it
+                    will fall back to the default.
+      `,
+      validOptions: [
+        'human',
+        'json',
+        'mermaid',
+        'gui',
+        'inspect',
+      ] as const,
     },
   })
 

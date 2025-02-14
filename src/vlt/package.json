@@ -22,8 +22,7 @@
       "./commands": "./src/commands",
       "./commands/*": "./src/commands/*.ts",
       "./config": "./src/config/index.ts",
-      "./config/definition": "./src/config/definition.ts",
-      "./types": "./src/types.ts"
+      "./config/definition": "./src/config/definition.ts"
     }
   },
   "dependencies": {
@@ -133,13 +132,6 @@
         "@vltpkg/source": "./src/config/definition.ts",
         "types": "./dist/esm/config/definition.d.ts",
         "default": "./dist/esm/config/definition.js"
-      }
-    },
-    "./types": {
-      "import": {
-        "@vltpkg/source": "./src/types.ts",
-        "types": "./dist/esm/types.d.ts",
-        "default": "./dist/esm/types.js"
       }
     }
   },

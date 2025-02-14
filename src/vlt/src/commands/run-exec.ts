@@ -1,10 +1,7 @@
 import { runExec, runExecFG } from '@vltpkg/run'
-import { ExecCommand, type ExecResult } from '../exec-command.ts'
 import { commandUsage } from '../config/usage.ts'
-import {
-  type CommandUsage,
-  type CommandFnResultOnly,
-} from '../types.ts'
+import { ExecCommand, type ExecResult } from '../exec-command.ts'
+import { type CommandFn, type CommandUsage } from '../index.ts'
 
 export const usage: CommandUsage = () =>
   commandUsage({
@@ -16,10 +13,5 @@ export const usage: CommandUsage = () =>
                   If not, then this is equivalent to \`vlt exec\`.`,
   })
 
-export const command: CommandFnResultOnly<
-  ExecResult
-> = async conf => {
-  return {
-    result: await new ExecCommand(conf, runExec, runExecFG).run(),
-  }
-}
+export const command: CommandFn<ExecResult> = async conf =>
+  await new ExecCommand(conf, runExec, runExecFG).run()

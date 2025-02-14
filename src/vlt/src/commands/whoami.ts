@@ -1,11 +1,8 @@
 import { RegistryClient } from '@vltpkg/registry-client'
-import { commandUsage } from '../config/usage.ts'
-import {
-  type CommandFnResultOnly,
-  type CommandUsage,
-  type Views,
-} from '../types.ts'
 import { type JSONField } from '@vltpkg/types'
+import { commandUsage } from '../config/usage.ts'
+import { type CommandFn, type CommandUsage } from '../index.ts'
+import { type Views } from '../view.ts'
 
 export const usage: CommandUsage = () =>
   commandUsage({
@@ -20,23 +17,16 @@ type CommandResult = {
 }
 
 export const views: Views<CommandResult> = {
-  defaultView: 'human',
-  views: {
-    human: r => r.username,
-    json: r => r,
-  },
+  human: r => r.username,
+  json: r => r,
 }
 
-export const command: CommandFnResultOnly<
-  CommandResult
-> = async conf => {
+export const command: CommandFn<CommandResult> = async conf => {
   const rc = new RegistryClient(conf.options)
   const response = await rc.request(
     new URL('-/whoami', conf.options.registry),
     { cache: false },
   )
   const { username } = response.json()
-  return {
-    result: { username },
-  }
+  return { username }
 }
