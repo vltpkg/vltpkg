@@ -187,6 +187,11 @@ export type ErrorCause = Error | ErrorCauseObject
 export type ErrorWithCauseObject = Error & { cause: ErrorCauseObject }
 
 /**
+ * A TypeError with a cause that is a direct error cause object and not
+ * another nested error
+ */
+
+/**
  * If it is any sort of plain-ish object, assume its an error cause
  * because all properties of the cause are optional.
  */
@@ -229,35 +234,140 @@ export type Codes =
   | 'EUNKNOWN'
   | 'EUSAGE'
 
-const create = (
-  cls: typeof Error,
+type ErrorCtor<T extends Error> = new (
+  message: string,
+  options?: { cause: ErrorCause },
+) => T
+
+function create<T extends Error>(
+  cls: ErrorCtor<T>,
+  defaultFrom: ((...a: any[]) => any) | (new (...a: any[]) => any),
+  message: string,
+  cause?: undefined,
+  from?: From,
+): T
+function create<T extends Error>(
+  cls: ErrorCtor<T>,
+  defaultFrom: ((...a: any[]) => any) | (new (...a: any[]) => any),
+  message: string,
+  cause?: ErrorCauseObject,
+  from?: From,
+): T & { cause: ErrorCauseObject }
+function create<T extends Error>(
+  cls: ErrorCtor<T>,
+  defaultFrom: ((...a: any[]) => any) | (new (...a: any[]) => any),
+  message: string,
+  cause?: Error,
+  from?: From,
+): T & { cause: Error }
+function create<T extends Error>(
+  cls: ErrorCtor<T>,
   defaultFrom: ((...a: any[]) => any) | (new (...a: any[]) => any),
   message: string,
   cause?: ErrorCause,
-  from:
-    | ((...a: any[]) => any)
-    | (new (...a: any[]) => any) = defaultFrom,
-) => {
+  from?: From,
+): T & { cause: ErrorCause }
+function create<T extends Error>(
+  cls: ErrorCtor<T>,
+  defaultFrom: ((...a: any[]) => any) | (new (...a: any[]) => any),
+  message: string,
+  cause?: ErrorCause,
+  from: From = defaultFrom,
+) {
   const er = new cls(message, cause ? { cause } : undefined)
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   Error.captureStackTrace?.(er, from)
   return er
 }
 
-export const error = (
-  message: string,
-  cause?: ErrorCause,
-  from?: ((...a: any[]) => any) | (new (...a: any[]) => any),
-) => create(Error, error, message, cause, from)
+export type From = ((...a: any[]) => any) | (new (...a: any[]) => any)
 
-export const typeError = (
+export function error(
+  message: string,
+  cause?: undefined,
+  from?: From,
+): Error
+export function error(
+  message: string,
+  cause: ErrorCauseObject,
+  from?: From,
+): Error & { cause: ErrorCauseObject }
+export function error(
+  message: string,
+  cause: Error,
+  from?: From,
+): Error & { cause: Error }
+export function error(
+  message: string,
+  cause: ErrorCause,
+  from?: From,
+): Error & { cause: ErrorCause }
+export function error(
   message: string,
   cause?: ErrorCause,
-  from?: ((...a: any[]) => any) | (new (...a: any[]) => any),
-) => create(TypeError, typeError, message, cause, from)
+  from?: From,
+) {
+  return create(Error, error, message, cause, from)
+}
 
-export const syntaxError = (
+export function typeError(
+  message: string,
+  cause?: undefined,
+  from?: From,
+): TypeError
+export function typeError(
+  message: string,
+  cause: ErrorCauseObject,
+  from?: From,
+): TypeError & { cause: ErrorCauseObject }
+export function typeError(
+  message: string,
+  cause: Error,
+  from?: From,
+): TypeError & { cause: Error }
+export function typeError(
+  message: string,
+  cause: ErrorCause,
+  from?: From,
+): TypeError & { cause: ErrorCause }
+export function typeError(
   message: string,
   cause?: ErrorCause,
-  from?: ((...a: any[]) => any) | (new (...a: any[]) => any),
-) => create(SyntaxError, syntaxError, message, cause, from)
+  from?: From,
+) {
+  return create<TypeError>(TypeError, typeError, message, cause, from)
+}
+
+export function syntaxError(
+  message: string,
+  cause?: undefined,
+  from?: From,
+): SyntaxError
+export function syntaxError(
+  message: string,
+  cause: ErrorCauseObject,
+  from?: From,
+): SyntaxError & { cause: ErrorCauseObject }
+export function syntaxError(
+  message: string,
+  cause: Error,
+  from?: From,
+): SyntaxError & { cause: Error }
+export function syntaxError(
+  message: string,
+  cause: ErrorCause,
+  from?: From,
+): SyntaxError & { cause: ErrorCause }
+export function syntaxError(
+  message: string,
+  cause?: ErrorCause,
+  from?: From,
+) {
+  return create<SyntaxError>(
+    SyntaxError,
+    syntaxError,
+    message,
+    cause,
+    from,
+  )
+}
