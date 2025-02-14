@@ -34,6 +34,7 @@ jobs:
         with:
           node-version-file: '.nvmrc'
           cache: pnpm
+          check-latest: true
 
       - name: Install dependencies
         run: pnpm install
@@ -150,6 +151,7 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
           cache: pnpm
+          check-latest: true
 
       - name: Set run-script filters
         id: filters
