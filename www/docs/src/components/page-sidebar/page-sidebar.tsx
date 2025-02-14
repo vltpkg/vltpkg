@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { AlignLeft } from 'lucide-react'
 import { type Props } from '@astrojs/starlight/props'
+import { ScrollArea } from '@/components/ui/scroll-area'
 
 const PageSidebar = ({ toc }: Props) => {
   const [activeAnchor, setActiveAnchor] = useState<string | null>(
@@ -71,9 +72,11 @@ const PageSidebar = ({ toc }: Props) => {
         <AlignLeft size={16} />
         On this page
       </h3>
-      <div className="-ml-2 flex flex-col gap-2">
-        {renderItems(anchors)}
-      </div>
+      <ScrollArea className="max-h-[90svh] overflow-y-auto">
+        <div className="-ml-2 flex flex-col gap-2 pr-4">
+          {renderItems(anchors)}
+        </div>
+      </ScrollArea>
     </div>
   )
 }

@@ -1,80 +1,20 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { type Props } from '@astrojs/starlight/props'
+import { type TocItem } from 'node_modules/@astrojs/starlight/utils/generateToC'
 import {
   Drawer,
   DrawerContent,
   DrawerTitle,
+  DrawerHeader,
+  DrawerClose,
   DrawerDescription,
 } from '@/components/ui/drawer'
 import { Button } from '@/components/ui/button'
-import { ChevronRight } from 'lucide-react'
+import { X, ChevronDown, ChevronRight } from 'lucide-react'
+import { ScrollArea } from '@/components/ui/scroll-area'
 
 const MobileSidebar = ({ toc }: Props) => {
-  const [activeAnchor, setActiveAnchor] = useState<string | null>(
-    null,
-  )
   const [drawerOpen, setDrawerOpen] = useState<boolean>(false)
-
-  const anchors = toc?.items ?? []
-
-  const flattenAnchors = (
-    items: typeof anchors,
-  ): { slug: string; text: string }[] => {
-    return items.reduce<{ slug: string; text: string }[]>(
-      (acc, item) => {
-        acc.push({ slug: item.slug, text: item.text })
-        acc.push(...flattenAnchors(item.children))
-        return acc
-      },
-      [],
-    )
-  }
-
-  const flattenedAnchors = flattenAnchors(anchors)
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      entries => {
-        let lastVisible: string | null = null
-
-        entries.forEach(entry => {
-          if (entry.isIntersecting) {
-            lastVisible = entry.target.id
-          }
-        })
-        setActiveAnchor(lastVisible)
-      },
-      {
-        threshold: 0.5,
-        rootMargin: '-50px 0px -50px 0px',
-      },
-    )
-
-    flattenedAnchors.forEach(item => {
-      const anchor = document.getElementById(item.slug)
-      if (anchor) observer.observe(anchor)
-    })
-
-    return () => {
-      flattenedAnchors.forEach(item => {
-        const anchor = document.getElementById(item.slug)
-        if (anchor) observer.unobserve(anchor)
-      })
-    }
-  }, [flattenedAnchors])
-
-  const renderItems = (items: typeof anchors) =>
-    items.map((item, idx) => (
-      <div key={idx} className="flex flex-col">
-        <MobileSidebar.Link
-          isActive={activeAnchor === item.slug}
-          href={item.slug}
-          setDrawerOpen={setDrawerOpen}>
-          {item.text}
-        </MobileSidebar.Link>
-        <div className="pl-4">{renderItems(item.children)}</div>
-      </div>
-    ))
 
   return (
     <div className="w-full border-y-[1px] px-6 py-3 backdrop-blur-md">
@@ -85,62 +25,100 @@ const MobileSidebar = ({ toc }: Props) => {
             onClick={() => setDrawerOpen(true)}>
             On this page <ChevronRight size={16} />
           </Button>
-          <p className="text-md text-muted-foreground">
-            {activeAnchor}
-          </p>
         </div>
-        <DrawerContent>
-          <div className="flex flex-col px-6 py-8">
-            <DrawerTitle className="mb-6">On this page</DrawerTitle>
-            <DrawerDescription></DrawerDescription>
-            {renderItems(anchors)}
-          </div>
+        <DrawerContent className="mx-1 max-h-[70svh] border border-white/20 bg-gradient-to-br from-neutral-100 to-neutral-200 pb-12 dark:from-neutral-900 dark:to-neutral-950">
+          <DrawerDescription></DrawerDescription>
+          <DrawerHeader className="flex items-stretch justify-between gap-x-4 border-b border-black/5 px-1 py-0.5 dark:border-white/10">
+            <DrawerTitle className="flex items-center justify-start px-3 text-sm text-neutral-700 dark:text-neutral-400">
+              On this page
+            </DrawerTitle>
+            <DrawerClose asChild>
+              <Button
+                size="icon"
+                variant="ghost"
+                className="cursor-pointer bg-transparent">
+                <X
+                  size={16}
+                  className="text-neutral-950 dark:text-white"
+                />
+              </Button>
+            </DrawerClose>
+          </DrawerHeader>
+          <ScrollArea className="max-h-[calc(70svh-3rem)] overflow-y-auto">
+            <div className="divide-y divide-border">
+              {renderMenu(toc?.items ?? [], () =>
+                setDrawerOpen(false),
+              )}
+            </div>
+          </ScrollArea>
         </DrawerContent>
       </Drawer>
     </div>
   )
 }
 
-MobileSidebar.Link = ({
-  href,
-  children,
-  setDrawerOpen,
-  isActive,
-}: {
-  href: string
-  children: React.ReactNode
-  isActive: boolean
-  setDrawerOpen: React.Dispatch<React.SetStateAction<boolean>>
-}) => {
-  const scrollTo = ({ slug }: { slug: string }) => {
-    setDrawerOpen(false)
-    if (slug === '_top') {
-      window.scrollTo({
-        top: 0,
-        behavior: 'smooth',
-      })
-    } else {
-      const el = document.getElementById(slug)
-      if (el) {
-        const elPos = el.offsetTop
-        window.scrollTo({
-          top: elPos - 50,
-          behavior: 'smooth',
-        })
-      }
+const renderMenu = (items: TocItem[], closeDrawer: () => void) => {
+  return items.map((item, idx) => {
+    if (item.children.length > 0) {
+      return (
+        <Group key={idx} item={item}>
+          {renderMenu(item.children, closeDrawer)}
+        </Group>
+      )
     }
+    return <Item key={idx} item={item} closeDrawer={closeDrawer} />
+  })
+}
+
+interface GroupProps {
+  item: TocItem
+  children: React.ReactNode
+}
+
+const Group = ({ item, children }: GroupProps) => {
+  const [expanded, setExpanded] = useState<boolean>(false)
+
+  const toggle = () => {
+    setExpanded(!expanded)
   }
 
   return (
-    <p
-      onClick={() => scrollTo({ slug: href })}
-      className={`text-md cursor-pointer border-t-[1px] py-3 no-underline transition-all ${
-        isActive ?
-          'font-bold text-foreground'
-        : 'text-muted-foreground'
-      }`}>
-      {children}
-    </p>
+    <div className="flex h-full w-full flex-col overflow-y-scroll py-1">
+      <Button
+        onClick={toggle}
+        variant="ghost"
+        className="w-full cursor-pointer items-center justify-between bg-transparent hover:bg-transparent">
+        <span className="font-medium capitalize">{item.text}</span>
+        {expanded ?
+          <ChevronDown className="size-4" />
+        : <ChevronRight className="size-4" />}
+      </Button>
+      {expanded && (
+        <div className="ml-4 flex flex-col border-l border-border">
+          {children}
+        </div>
+      )}
+    </div>
+  )
+}
+
+interface ItemProps {
+  item: TocItem
+  closeDrawer: () => void
+}
+
+const Item = ({ item, closeDrawer }: ItemProps) => {
+  return (
+    <Button
+      asChild
+      className="w-full cursor-pointer items-center justify-start bg-transparent capitalize text-primary hover:bg-transparent">
+      <a
+        href={`#${item.slug}`}
+        onClick={closeDrawer}
+        className="font-medium no-underline">
+        {item.text}
+      </a>
+    </Button>
   )
 }
 

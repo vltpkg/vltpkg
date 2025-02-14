@@ -9,8 +9,10 @@ const { sidebar } = Astro.props
 ---
 
 <nav
-  class="mx-auto mb-4 flex w-full max-w-screen-xl items-center justify-between gap-x-4 px-6 py-6">
-  <a href="https://www.vlt.sh/" class="h-[43px] w-[94px]">
+  class="mx-auto -mt-1 mb-4 flex w-full max-w-screen-xl items-center justify-between px-10 py-6 md:px-6">
+  <a
+    href="https://www.vlt.sh/"
+    class="-mt-[1px] ml-[5px] flex h-[52px] w-[104px] items-center">
     <Logo
       client:only="react"
       {...{ ...Astro.props, labels: undefined } as any}
@@ -18,7 +20,8 @@ const { sidebar } = Astro.props
   </a>
 
   <div
-    class="flex w-full items-center justify-end justify-items-end gap-2">
+    class="flex w-full items-center justify-end justify-items-end gap-4">
+    <Search {...Astro.props} />
     <MobileSidebar
       client:load
       sidebar={sidebar}
@@ -28,6 +31,5 @@ const { sidebar } = Astro.props
       client:only="react"
       {...{ ...Astro.props, labels: undefined } as any}
     />
-    <Search {...Astro.props} />
   </div>
 </nav>

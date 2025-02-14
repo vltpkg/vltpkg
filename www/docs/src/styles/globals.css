@@ -11,11 +11,9 @@
 }
 
 .dark-wave {
-  background-image: linear-gradient(
-      to bottom,
+  background-image: linear-gradient(to bottom,
       #000000,
-      rgba(0, 0, 0, 0.5)
-    ),
+      rgba(0, 0, 0, 0.5)),
     linear-gradient(to right, #000000, rgba(0, 0, 0, 0)),
     url('/images/wave-dark.png');
   background-position: bottom right !important;
@@ -26,11 +24,9 @@
 }
 
 .light-wave {
-  background-image: linear-gradient(
-      to bottom,
+  background-image: linear-gradient(to bottom,
       #ffffff,
-      rgba(255, 255, 255, 0)
-    ),
+      rgba(255, 255, 255, 0)),
     linear-gradient(to right, #ffffff, rgba(255, 255, 255, 0)),
     url('/images/wave-light.png');
   background-position: bottom right !important;
@@ -56,7 +52,7 @@ button[aria-label='Search'] {
 
 @media (min-width: 800px) {
   button[aria-label='Search'] {
-    width: 235px;
+    width: 300px;
   }
 }
 
@@ -73,6 +69,12 @@ button[aria-label='Search'] {
   }
 }
 
+@media (max-width: 768px) {
+  &[data-theme='dark'] button[aria-label='Search'] {
+    background-color: #000;
+  }
+}
+
 &[data-theme='light'] {
   button[aria-label='Search'] {
     border-color: rgb(242, 242, 242);
@@ -83,6 +85,18 @@ button[aria-label='Search'] {
   button[aria-label='Search'] kbd {
     background-color: #fff;
     color: var(--secondary-foreground);
+  }
+}
+
+&[data-theme='light'] {
+  dialog {
+    background-color: #fff;
+  }
+}
+
+&[data-theme='dark'] {
+  dialog {
+    background-color: #000;
   }
 }
 
