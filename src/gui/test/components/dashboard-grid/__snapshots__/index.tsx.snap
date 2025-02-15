@@ -4,37 +4,36 @@ exports[`dashboard-grid render default 1`] = `
 
 <div>
   <div class="flex grow flex-col bg-secondary px-8 py-8 dark:bg-black">
-    <div class="flex gap-2 pb-8">
+    <div class="mx-auto flex w-full max-w-7xl gap-2 pb-8">
       <gui-filter-search
         placeholder="Filter Projects"
         items
+        classname="w-[100%]"
       >
       </gui-filter-search>
       <gui-dashboard-view-toggle currentview="grid">
       </gui-dashboard-view-toggle>
       <div style="opacity: 1;">
-        <gui-sort-toggle
-          filtereditems
+        <gui-sort-dropdown
+          items
           sortkey="name"
         >
-        </gui-sort-toggle>
+        </gui-sort-dropdown>
       </div>
-      <div class="flex grow flex-row-reverse">
-        <gui-button classname="ml-2">
-          <gui-plus-icon size="24">
-          </gui-plus-icon>
-          Create New Project
-        </gui-button>
-      </div>
+      <gui-button>
+        <gui-plus-icon size="24">
+        </gui-plus-icon>
+        Create New Project
+      </gui-button>
     </div>
     <div
-      class="flex flex-col"
+      class="mx-auto flex w-full max-w-7xl flex-col"
       style="opacity: 0; transform: translateY(-5px);"
     >
       <p class="mb-4 text-sm font-semibold">
         Projects
       </p>
-      <div class="flex flex-row flex-wrap gap-8">
+      <div class="grid grid-cols-1 gap-x-6 gap-y-6 sm:grid-cols-2 md:grid-cols-3">
         <p>
           No projects found
         </p>
@@ -49,42 +48,41 @@ exports[`dashboard-grid with results 1`] = `
 
 <div>
   <div class="flex grow flex-col bg-secondary px-8 py-8 dark:bg-black">
-    <div class="flex gap-2 pb-8">
+    <div class="mx-auto flex w-full max-w-7xl gap-2 pb-8">
       <gui-filter-search
         placeholder="Filter Projects"
         items="[object Object],[object Object]"
+        classname="w-[100%]"
       >
       </gui-filter-search>
       <gui-dashboard-view-toggle currentview="grid">
       </gui-dashboard-view-toggle>
       <div style="opacity: 1;">
-        <gui-sort-toggle
-          filtereditems="[object Object],[object Object]"
+        <gui-sort-dropdown
+          items="[object Object],[object Object]"
           sortkey="name"
         >
-        </gui-sort-toggle>
+        </gui-sort-dropdown>
       </div>
-      <div class="flex grow flex-row-reverse">
-        <gui-button classname="ml-2">
-          <gui-plus-icon size="24">
-          </gui-plus-icon>
-          Create New Project
-        </gui-button>
-      </div>
+      <gui-button>
+        <gui-plus-icon size="24">
+        </gui-plus-icon>
+        Create New Project
+      </gui-button>
     </div>
     <div
-      class="flex flex-col"
+      class="mx-auto flex w-full max-w-7xl flex-col"
       style="opacity: 0; transform: translateY(-5px);"
     >
       <p class="mb-4 text-sm font-semibold">
         Projects
       </p>
-      <div class="flex flex-row flex-wrap gap-8">
+      <div class="grid grid-cols-1 gap-x-6 gap-y-6 sm:grid-cols-2 md:grid-cols-3">
         <a
           href="#"
-          class="group relative w-full md:w-96"
+          class="group relative w-full"
         >
-          <div class="relative flex h-20 items-center overflow-hidden rounded-t-lg border-x-[1px] border-t-[1px] bg-card transition-all group-hover:border-neutral-400 dark:group-hover:border-neutral-700">
+          <div class="relative flex h-24 items-center overflow-hidden rounded-t-lg border-x-[1px] border-t-[1px] bg-card transition-all group-hover:border-neutral-400 dark:group-hover:border-neutral-700">
             <div class="flex px-3 py-2">
               <gui-card-title classname="text-md font-medium">
                 project-bar
@@ -115,9 +113,9 @@ exports[`dashboard-grid with results 1`] = `
         </a>
         <a
           href="#"
-          class="group relative w-full md:w-96"
+          class="group relative w-full"
         >
-          <div class="relative flex h-20 items-center overflow-hidden rounded-t-lg border-x-[1px] border-t-[1px] bg-card transition-all group-hover:border-neutral-400 dark:group-hover:border-neutral-700">
+          <div class="relative flex h-24 items-center overflow-hidden rounded-t-lg border-x-[1px] border-t-[1px] bg-card transition-all group-hover:border-neutral-400 dark:group-hover:border-neutral-700">
             <div class="flex px-3 py-2">
               <gui-card-title classname="text-md font-medium">
                 project-foo

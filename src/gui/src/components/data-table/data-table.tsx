@@ -85,7 +85,7 @@ export const DataTable = <TData, TValue>({
   return (
     <>
       <div className="rounded-md border bg-white dark:bg-black">
-        <Table className="">
+        <Table className="w-full">
           <TableHeader>
             {table.getHeaderGroups().map(headerGroup => (
               <TableRow key={headerGroup.id}>
