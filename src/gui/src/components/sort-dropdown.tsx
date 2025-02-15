@@ -9,7 +9,7 @@ import { ChevronDown } from 'lucide-react'
 import {
   sortAlphabeticallyAscending,
   sortAlphabeticallyDescending,
-  SortingOption,
+  type SortingOption,
 } from '@/components/sort-toggle.jsx'
 import { useState } from 'react'
 
