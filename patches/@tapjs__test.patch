@@ -1,0 +1,31 @@
+diff --git a/test-built/dist/esm/index.js b/test-built/dist/esm/index.js
+index c5a42fa44cd757d5b29731a13579e0cb0d85d2c8..ae5b7725aeaa5d0a28fcd02e1ebb21eb7ea467c3 100644
+--- a/test-built/dist/esm/index.js
++++ b/test-built/dist/esm/index.js
+@@ -194,10 +194,8 @@ export const config = (jack) => {
+ // // these are added with --loader, only if --import is unavailable
+ // export const loaderFallbacks = []
+ const preloaders = new Set([
+-    "@isaacs/ts-node-temp-fork-for-pr-2009/esm"
+ ]);
+ const preimports = new Set([
+-    "@isaacs/ts-node-temp-fork-for-pr-2009/import"
+ ]);
+ /**
+  * The set of `loader` strings exported by plugins. If a plugin exports
+@@ -213,7 +211,6 @@ export const loaders = [].sort((a, b) => preloaders.has(a) && !preloaders.has(b)
+  */
+ export const importLoaders = [
+     "@tapjs/mock/import",
+-    "@isaacs/ts-node-temp-fork-for-pr-2009/import"
+ ].sort((a, b) => preimports.has(a) && !preimports.has(b) ? -1
+     : !preimports.has(a) && preimports.has(b) ? 1
+         : 0);
+@@ -223,7 +220,6 @@ export const importLoaders = [
+  */
+ export const loaderFallbacks = [
+     "@tapjs/mock/loader",
+-    "@isaacs/ts-node-temp-fork-for-pr-2009/esm"
+ ].sort((a, b) => preloaders.has(a) && !preloaders.has(b) ? -1
+     : !preloaders.has(a) && preloaders.has(b) ? 1
+         : 0);

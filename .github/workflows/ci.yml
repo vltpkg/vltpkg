@@ -168,7 +168,4 @@ jobs:
 
       - name: Run Tests
         if: steps.filters.outputs.test
-        run: |
-          pnpm config set enable-pre-post-scripts false --location=project
-          pnpm ${{ steps.filters.outputs.test }} --no-bail --aggregate-output test
-          pnpm ${{ steps.filters.outputs.test }} --no-bail --aggregate-output posttest
+        run: pnpm ${{ steps.filters.outputs.test }} --no-bail --aggregate-output test

@@ -8,13 +8,12 @@
 
 import { Spec } from '@vltpkg/spec'
 import t from 'tap'
-
-import {
-  PackageInfoClient,
+import { PackageInfoClient } from '@vltpkg/package-info'
+import type {
   PackageInfoClientRequestOptions,
   Resolution,
 } from '@vltpkg/package-info'
-import { Manifest } from '@vltpkg/types'
+import type { Manifest } from '@vltpkg/types'
 import {
   existsSync,
   lstatSync,

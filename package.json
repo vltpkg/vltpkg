@@ -55,5 +55,11 @@
     "watch": "pnpm --parallel --filter \"./src/*\" run watch"
   },
   "prettier": "./.prettierrc.js",
-  "type": "module"
+  "type": "module",
+  "pnpm": {
+    "patchedDependencies": {
+      "@tapjs/typescript": "patches/@tapjs__typescript.patch",
+      "@tapjs/test": "patches/@tapjs__test.patch"
+    }
+  }
 }

@@ -1,12 +1,12 @@
 import postcssSelectorParser from 'postcss-selector-parser'
-import { EdgeLike, GraphLike, NodeLike } from '@vltpkg/graph'
-import {
+import type { EdgeLike, GraphLike, NodeLike } from '@vltpkg/graph'
+import type {
   GraphSelectionState,
   ParserState,
   PostcssNode,
 } from '../../src/types.ts'
 import { walk } from '../../src/index.ts'
-import { ParserFn } from '../../src/types.ts'
+import type { ParserFn } from '../../src/types.ts'
 import { joinDepIDTuple } from '@vltpkg/dep-id'
 
 export type FixtureResult = {

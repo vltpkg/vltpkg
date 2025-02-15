@@ -29,17 +29,17 @@ export const run = async (
 ) => {
   chtestdir(t, testdir, chdir)
   t.intercept(process, 'argv', {
-    value: [process.execPath, 'index.js', commandName, ...argv],
+    value: [process.execPath, 'index.ts', commandName, ...argv],
   })
   const logs: any[] = []
   const errs: any[] = []
   t.capture(console, 'log', (...msg: any[]) => logs.push(msg))
   t.capture(console, 'error', (...msg: any[]) => errs.push(msg))
   const Config = await mockConfig(t)
-  const index = await t.mockImport(`../src/index.js`, {
-    '../src/config/index.js': Config,
+  const index = await t.mockImport('../src/index.ts', {
+    '../src/config/index.ts': Config,
     ...(command ?
-      { [`../src/commands/${commandName}.js`]: command }
+      { [`../src/commands/${commandName}.ts`]: command }
     : {}),
   })
   await index.default()

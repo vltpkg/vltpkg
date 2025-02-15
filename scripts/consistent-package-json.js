@@ -256,8 +256,6 @@ const fixScripts = async ws => {
     ws.pj.devDependencies.tshy ?
       {
         prepare: 'tshy',
-        pretest: 'tshy',
-        presnap: 'tshy',
         watch: 'tshy --watch',
       }
     : {},

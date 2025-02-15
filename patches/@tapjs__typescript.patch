@@ -1,0 +1,16 @@
+diff --git a/dist/esm/index.js b/dist/esm/index.js
+index b002d91f4892b5098e102fb0e86d1b90addf1de2..62ff2b6bd7fd106b65f5d344a692955bca3bf3d2 100644
+--- a/dist/esm/index.js
++++ b/dist/esm/index.js
+@@ -1,11 +1,6 @@
+ import { env } from '@tapjs/core';
+ import { statSync } from 'node:fs';
+ import { resolve } from 'node:path';
+-// This just adds the ts-node/esm loader
+-// appease the import-deps test
+-// import('@isaacs/ts-node-temp-fork-for-pr-2009')
+-export const loader = '@isaacs/ts-node-temp-fork-for-pr-2009/esm';
+-export const importLoader = '@isaacs/ts-node-temp-fork-for-pr-2009/import';
+ // ts-node/esm should come AHEAD of other loaders in the args list,
+ // otherwise any other resolve()'s won't be run
+ export const preload = true;

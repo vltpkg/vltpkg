@@ -34,7 +34,7 @@ const { rollback } = await t.mockImport<
   '@vltpkg/rollback-remove': {
     RollbackRemove: MockRollbackRemove,
   },
-  '../../src/reify/delete-edge.js': {
+  '../../src/reify/delete-edge.ts': {
     deleteEdge: (edge: Edge) => {
       deletedEdges.push(edge)
     },

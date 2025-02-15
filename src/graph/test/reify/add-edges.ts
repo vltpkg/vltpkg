@@ -12,7 +12,7 @@ t.test('add some edges', async t => {
   const { addEdges } = await t.mockImport<
     typeof import('../../src/reify/add-edges.ts')
   >('../../src/reify/add-edges.ts', {
-    '../../src/reify/add-edge.js': {
+    '../../src/reify/add-edge.ts': {
       addEdge: async (
         edge: Edge,
         _mani: Manifest,
