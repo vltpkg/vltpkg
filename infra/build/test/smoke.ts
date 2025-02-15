@@ -120,7 +120,7 @@ const testCommand = async (
               HOME: cwd,
               USERPROFILE: cwd,
               NODE_OPTIONS:
-                '--no-warnings --experimental-strip-types --conditions=@vltpkg/source',
+                '--no-warnings --experimental-strip-types',
             },
           },
         )

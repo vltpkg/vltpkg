@@ -9,11 +9,9 @@
   },
   "tshy": {
     "selfLink": false,
+    "liveDev": true,
     "dialects": [
       "esm"
-    ],
-    "sourceDialects": [
-      "@vltpkg/source"
     ],
     "exports": {
       "./package.json": "./package.json",
@@ -50,7 +48,7 @@
   },
   "scripts": {
     "prebenchmark": "pnpm vlt-benchmark-download-fixtures",
-    "benchmark": "node --no-warnings --experimental-transform-types --conditions=@vltpkg/source scripts/benchmark.js",
+    "benchmark": "node --no-warnings --experimental-transform-types scripts/benchmark.js",
     "format": "prettier --write . --log-level warn --ignore-path ../../.prettierignore --cache",
     "format:check": "prettier --check . --ignore-path ../../.prettierignore --cache",
     "lint": "eslint . --fix",
@@ -65,36 +63,28 @@
     "extends": "../../tap-config.yaml"
   },
   "prettier": "../../.prettierrc.js",
-  "module": "./dist/esm/index.js",
+  "module": "./src/index.ts",
   "type": "module",
   "exports": {
     "./package.json": "./package.json",
     ".": {
       "import": {
-        "@vltpkg/source": "./src/index.ts",
-        "types": "./dist/esm/index.d.ts",
-        "default": "./dist/esm/index.js"
+        "default": "./src/index.ts"
       }
     },
     "./pool": {
       "import": {
-        "@vltpkg/source": "./src/pool.ts",
-        "types": "./dist/esm/pool.d.ts",
-        "default": "./dist/esm/pool.js"
+        "default": "./src/pool.ts"
       }
     },
     "./unpack": {
       "import": {
-        "@vltpkg/source": "./src/unpack.ts",
-        "types": "./dist/esm/unpack.d.ts",
-        "default": "./dist/esm/unpack.js"
+        "default": "./src/unpack.ts"
       }
     },
     "./unpack-request": {
       "import": {
-        "@vltpkg/source": "./src/unpack-request.ts",
-        "types": "./dist/esm/unpack-request.d.ts",
-        "default": "./dist/esm/unpack-request.js"
+        "default": "./src/unpack-request.ts"
       }
     }
   },

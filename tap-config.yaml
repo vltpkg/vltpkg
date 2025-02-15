@@ -11,4 +11,3 @@ exclude:
 node-arg:
   - '--experimental-strip-types'
   - '--no-warnings'
-  - '--conditions=@vltpkg/source'

@@ -10,11 +10,9 @@
   },
   "tshy": {
     "selfLink": false,
+    "liveDev": true,
     "dialects": [
       "esm"
-    ],
-    "sourceDialects": [
-      "@vltpkg/source"
     ],
     "exports": {
       "./package.json": "./package.json",
@@ -61,15 +59,13 @@
     "timeout": 600
   },
   "prettier": "../../.prettierrc.js",
-  "module": "./dist/esm/index.js",
+  "module": "./src/index.ts",
   "type": "module",
   "exports": {
     "./package.json": "./package.json",
     ".": {
       "import": {
-        "@vltpkg/source": "./src/index.ts",
-        "types": "./dist/esm/index.d.ts",
-        "default": "./dist/esm/index.js"
+        "default": "./src/index.ts"
       }
     }
   }

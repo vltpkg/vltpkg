@@ -116,7 +116,6 @@ const esbuildBuild = async (
     metafile: true,
     bundle: true,
     platform: 'node',
-    conditions: ['@vltpkg/source'],
     // esbuild will error if this isn't installed but it cant be called
     // at runtime so we mark it as external to remove it from the build
     external: ['react-devtools-core'],
