@@ -5,8 +5,7 @@ import { gzipSync } from 'zlib'
 import { __CODE_SPLIT_SCRIPT_NAME } from '../src/unzip.ts'
 
 const ENV = {
-  NODE_OPTIONS:
-    '--no-warnings --experimental-strip-types --conditions=@vltpkg/source',
+  NODE_OPTIONS: '--no-warnings --experimental-strip-types',
 }
 
 t.test('validate args', async t => {

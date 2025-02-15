@@ -1,1 +1,1 @@
-export NODE_OPTIONS="--conditions=@vltpkg/source"
+export NODE_OPTIONS=""

@@ -1,0 +1,26 @@
+diff --git a/dist/esm/build.js b/dist/esm/build.js
+index e24191c85d299041bcf179ff30b6180a35272cbc..c6ed1bf3cc61cb73055413f62977867791ee6349 100644
+--- a/dist/esm/build.js
++++ b/dist/esm/build.js
+@@ -23,7 +23,7 @@ export default async () => {
+         process.env.npm_command !== 'pack';
+     const esm = liveDev ? buildLiveESM : buildESM;
+     const commonjs = liveDev ? buildLiveCommonJS : buildCommonJS;
+-    if (dialects.includes('esm'))
++    if (!liveDev && dialects.includes('esm'))
+         esm();
+     if (dialects.includes('commonjs'))
+         commonjs();
+diff --git a/dist/esm/exports.js b/dist/esm/exports.js
+index ec713fcb969284601d6d8253eff2f60013a5b3a5..7549e92b3c4ed13409baaee7e5282c24d2d97162 100644
+--- a/dist/esm/exports.js
++++ b/dist/esm/exports.js
+@@ -21,7 +21,7 @@ const getTargetForDialectCondition = (s, dialect, condition, type, polyfills = n
+         const rel = relative(resolve('./src'), resolve(polyfills.get(pf)?.map.get(s) ?? s));
+         const target = liveDev ? rel : rel.replace(/\.([mc]?)tsx?$/, '.$1js');
+         return (!s || !s.startsWith('./src/') ? s
+-            : dialects.includes(type) ? `./dist/${dialect}/${target}`
++            : dialects.includes(type) ? liveDev ? `./src/${target}` : `./dist/${dialect}/${target}`
+                 : undefined);
+     }
+     return resolveExport(s, [condition]);

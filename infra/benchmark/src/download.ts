@@ -1,4 +1,4 @@
-#!/usr/bin/env -S node --experimental-strip-types --no-warnings --conditions=@vltpkg/source
+#!/usr/bin/env -S node --experimental-strip-types --no-warnings
 
 // run this script as many times in parallel as necessary
 // it'll randomize and skip any it's already downloaded.

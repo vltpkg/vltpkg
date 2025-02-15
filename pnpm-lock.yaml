@@ -79,6 +79,11 @@ catalogs:
       specifier: ^4.0.0
       version: 4.0.0
 
+patchedDependencies:
+  tshy:
+    hash: nn5gj4wshdx7c2chh4frit2bve
+    path: patches/tshy.patch
+
 importers:
 
   .:
@@ -173,7 +178,7 @@ importers:
         version: 21.1.0(@types/node@22.13.1)(@types/react@18.3.18)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.7.3)
       tshy:
         specifier: 'catalog:'
-        version: 3.0.2
+        version: 3.0.2(patch_hash=nn5gj4wshdx7c2chh4frit2bve)
       typescript:
         specifier: 'catalog:'
         version: 5.7.3
@@ -219,7 +224,7 @@ importers:
         version: 21.1.0(@types/node@22.13.1)(@types/react@18.3.18)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.7.3)
       tshy:
         specifier: 'catalog:'
-        version: 3.0.2
+        version: 3.0.2(patch_hash=nn5gj4wshdx7c2chh4frit2bve)
       typescript:
         specifier: 'catalog:'
         version: 5.7.3
@@ -265,7 +270,7 @@ importers:
         version: 21.1.0(@types/node@22.13.1)(@types/react@18.3.18)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.7.3)
       tshy:
         specifier: 'catalog:'
-        version: 3.0.2
+        version: 3.0.2(patch_hash=nn5gj4wshdx7c2chh4frit2bve)
       typescript:
         specifier: 'catalog:'
         version: 5.7.3
@@ -302,7 +307,7 @@ importers:
         version: 21.1.0(@types/node@22.13.1)(@types/react@18.3.18)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.7.3)
       tshy:
         specifier: 'catalog:'
-        version: 3.0.2
+        version: 3.0.2(patch_hash=nn5gj4wshdx7c2chh4frit2bve)
       typescript:
         specifier: 'catalog:'
         version: 5.7.3
@@ -342,7 +347,7 @@ importers:
         version: 21.1.0(@types/node@22.13.1)(@types/react@18.3.18)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.7.3)
       tshy:
         specifier: 'catalog:'
-        version: 3.0.2
+        version: 3.0.2(patch_hash=nn5gj4wshdx7c2chh4frit2bve)
       typescript:
         specifier: 'catalog:'
         version: 5.7.3
@@ -372,7 +377,7 @@ importers:
         version: 21.1.0(@types/node@22.13.1)(@types/react@18.3.18)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.7.3)
       tshy:
         specifier: 'catalog:'
-        version: 3.0.2
+        version: 3.0.2(patch_hash=nn5gj4wshdx7c2chh4frit2bve)
       typescript:
         specifier: 'catalog:'
         version: 5.7.3
@@ -402,7 +407,7 @@ importers:
         version: 21.1.0(@types/node@22.13.1)(@types/react@18.3.18)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.7.3)
       tshy:
         specifier: 'catalog:'
-        version: 3.0.2
+        version: 3.0.2(patch_hash=nn5gj4wshdx7c2chh4frit2bve)
       typescript:
         specifier: 'catalog:'
         version: 5.7.3
@@ -432,7 +437,7 @@ importers:
         version: 21.1.0(@types/node@22.13.1)(@types/react@18.3.18)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.7.3)
       tshy:
         specifier: 'catalog:'
-        version: 3.0.2
+        version: 3.0.2(patch_hash=nn5gj4wshdx7c2chh4frit2bve)
       typescript:
         specifier: 'catalog:'
         version: 5.7.3
@@ -502,7 +507,7 @@ importers:
         version: 21.1.0(@types/node@22.13.1)(@types/react@18.3.18)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.7.3)
       tshy:
         specifier: 'catalog:'
-        version: 3.0.2
+        version: 3.0.2(patch_hash=nn5gj4wshdx7c2chh4frit2bve)
       typescript:
         specifier: 'catalog:'
         version: 5.7.3
@@ -532,7 +537,7 @@ importers:
         version: 21.1.0(@types/node@22.13.1)(@types/react@18.3.18)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.7.3)
       tshy:
         specifier: 'catalog:'
-        version: 3.0.2
+        version: 3.0.2(patch_hash=nn5gj4wshdx7c2chh4frit2bve)
       typescript:
         specifier: 'catalog:'
         version: 5.7.3
@@ -623,7 +628,7 @@ importers:
         version: 7.4.3
       tshy:
         specifier: 'catalog:'
-        version: 3.0.2
+        version: 3.0.2(patch_hash=nn5gj4wshdx7c2chh4frit2bve)
       typescript:
         specifier: 'catalog:'
         version: 5.7.3
@@ -835,7 +840,7 @@ importers:
         version: 21.1.0(@types/node@22.13.1)(@types/react@18.3.18)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.7.3)
       tshy:
         specifier: 'catalog:'
-        version: 3.0.2
+        version: 3.0.2(patch_hash=nn5gj4wshdx7c2chh4frit2bve)
       typescript:
         specifier: 'catalog:'
         version: 5.7.3
@@ -865,7 +870,7 @@ importers:
         version: 21.1.0(@types/node@22.13.1)(@types/react@18.3.18)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.7.3)
       tshy:
         specifier: 'catalog:'
-        version: 3.0.2
+        version: 3.0.2(patch_hash=nn5gj4wshdx7c2chh4frit2bve)
       typescript:
         specifier: 'catalog:'
         version: 5.7.3
@@ -938,7 +943,7 @@ importers:
         version: 21.1.0(@types/node@22.13.1)(@types/react@18.3.18)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.7.3)
       tshy:
         specifier: 'catalog:'
-        version: 3.0.2
+        version: 3.0.2(patch_hash=nn5gj4wshdx7c2chh4frit2bve)
       typescript:
         specifier: 'catalog:'
         version: 5.7.3
@@ -978,7 +983,7 @@ importers:
         version: 21.1.0(@types/node@22.13.1)(@types/react@18.3.18)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.7.3)
       tshy:
         specifier: 'catalog:'
-        version: 3.0.2
+        version: 3.0.2(patch_hash=nn5gj4wshdx7c2chh4frit2bve)
       typescript:
         specifier: 'catalog:'
         version: 5.7.3
@@ -1027,7 +1032,7 @@ importers:
         version: 21.1.0(@types/node@22.13.1)(@types/react@18.3.18)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.7.3)
       tshy:
         specifier: 'catalog:'
-        version: 3.0.2
+        version: 3.0.2(patch_hash=nn5gj4wshdx7c2chh4frit2bve)
       typescript:
         specifier: 'catalog:'
         version: 5.7.3
@@ -1064,7 +1069,7 @@ importers:
         version: 21.1.0(@types/node@22.13.1)(@types/react@18.3.18)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.7.3)
       tshy:
         specifier: 'catalog:'
-        version: 3.0.2
+        version: 3.0.2(patch_hash=nn5gj4wshdx7c2chh4frit2bve)
       typescript:
         specifier: 'catalog:'
         version: 5.7.3
@@ -1113,7 +1118,7 @@ importers:
         version: 21.1.0(@types/node@22.13.1)(@types/react@18.3.18)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.7.3)
       tshy:
         specifier: 'catalog:'
-        version: 3.0.2
+        version: 3.0.2(patch_hash=nn5gj4wshdx7c2chh4frit2bve)
       typescript:
         specifier: 'catalog:'
         version: 5.7.3
@@ -1180,7 +1185,7 @@ importers:
         version: 21.1.0(@types/node@22.13.1)(@types/react@18.3.18)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.7.3)
       tshy:
         specifier: 'catalog:'
-        version: 3.0.2
+        version: 3.0.2(patch_hash=nn5gj4wshdx7c2chh4frit2bve)
       typescript:
         specifier: 'catalog:'
         version: 5.7.3
@@ -1217,7 +1222,7 @@ importers:
         version: 21.1.0(@types/node@22.13.1)(@types/react@18.3.18)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.7.3)
       tshy:
         specifier: 'catalog:'
-        version: 3.0.2
+        version: 3.0.2(patch_hash=nn5gj4wshdx7c2chh4frit2bve)
       typescript:
         specifier: 'catalog:'
         version: 5.7.3
@@ -1266,7 +1271,7 @@ importers:
         version: 21.1.0(@types/node@22.13.1)(@types/react@18.3.18)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.7.3)
       tshy:
         specifier: 'catalog:'
-        version: 3.0.2
+        version: 3.0.2(patch_hash=nn5gj4wshdx7c2chh4frit2bve)
       typescript:
         specifier: 'catalog:'
         version: 5.7.3
@@ -1312,7 +1317,7 @@ importers:
         version: 21.1.0(@types/node@22.13.1)(@types/react@18.3.18)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.7.3)
       tshy:
         specifier: 'catalog:'
-        version: 3.0.2
+        version: 3.0.2(patch_hash=nn5gj4wshdx7c2chh4frit2bve)
       typescript:
         specifier: 'catalog:'
         version: 5.7.3
@@ -1358,7 +1363,7 @@ importers:
         version: 21.1.0(@types/node@22.13.1)(@types/react@18.3.18)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.7.3)
       tshy:
         specifier: 'catalog:'
-        version: 3.0.2
+        version: 3.0.2(patch_hash=nn5gj4wshdx7c2chh4frit2bve)
       typescript:
         specifier: 'catalog:'
         version: 5.7.3
@@ -1401,7 +1406,7 @@ importers:
         version: 21.1.0(@types/node@22.13.1)(@types/react@18.3.18)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.7.3)
       tshy:
         specifier: 'catalog:'
-        version: 3.0.2
+        version: 3.0.2(patch_hash=nn5gj4wshdx7c2chh4frit2bve)
       typescript:
         specifier: 'catalog:'
         version: 5.7.3
@@ -1453,7 +1458,7 @@ importers:
         version: 21.1.0(@types/node@22.13.1)(@types/react@18.3.18)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.7.3)
       tshy:
         specifier: 'catalog:'
-        version: 3.0.2
+        version: 3.0.2(patch_hash=nn5gj4wshdx7c2chh4frit2bve)
       typescript:
         specifier: 'catalog:'
         version: 5.7.3
@@ -1487,7 +1492,7 @@ importers:
         version: 21.1.0(@types/node@22.13.1)(@types/react@18.3.18)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.7.3)
       tshy:
         specifier: 'catalog:'
-        version: 3.0.2
+        version: 3.0.2(patch_hash=nn5gj4wshdx7c2chh4frit2bve)
       typescript:
         specifier: 'catalog:'
         version: 5.7.3
@@ -1521,7 +1526,7 @@ importers:
         version: 21.1.0(@types/node@22.13.1)(@types/react@18.3.18)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.7.3)
       tshy:
         specifier: 'catalog:'
-        version: 3.0.2
+        version: 3.0.2(patch_hash=nn5gj4wshdx7c2chh4frit2bve)
       typescript:
         specifier: 'catalog:'
         version: 5.7.3
@@ -1651,7 +1656,7 @@ importers:
         version: 21.1.0(@types/node@22.13.1)(@types/react@18.3.18)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.7.3)
       tshy:
         specifier: 'catalog:'
-        version: 3.0.2
+        version: 3.0.2(patch_hash=nn5gj4wshdx7c2chh4frit2bve)
       typescript:
         specifier: 'catalog:'
         version: 5.7.3
@@ -1685,7 +1690,7 @@ importers:
         version: 21.1.0(@types/node@22.13.1)(@types/react@18.3.18)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.7.3)
       tshy:
         specifier: 'catalog:'
-        version: 3.0.2
+        version: 3.0.2(patch_hash=nn5gj4wshdx7c2chh4frit2bve)
       typescript:
         specifier: 'catalog:'
         version: 5.7.3
@@ -1746,7 +1751,7 @@ importers:
         version: 21.1.0(@types/node@22.13.1)(@types/react@18.3.18)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.7.3)
       tshy:
         specifier: 'catalog:'
-        version: 3.0.2
+        version: 3.0.2(patch_hash=nn5gj4wshdx7c2chh4frit2bve)
       typescript:
         specifier: 'catalog:'
         version: 5.7.3
@@ -1776,7 +1781,7 @@ importers:
         version: 21.1.0(@types/node@22.13.1)(@types/react@18.3.18)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.7.3)
       tshy:
         specifier: 'catalog:'
-        version: 3.0.2
+        version: 3.0.2(patch_hash=nn5gj4wshdx7c2chh4frit2bve)
       typescript:
         specifier: 'catalog:'
         version: 5.7.3
@@ -1928,9 +1933,6 @@ importers:
       github-slugger:
         specifier: ^2.0.0
         version: 2.0.0
-      import-meta-resolve:
-        specifier: ^4.1.0
-        version: 4.1.0
       jest-diff:
         specifier: ^29.7.0
         version: 29.7.0
@@ -10800,7 +10802,7 @@ snapshots:
       rimraf: 6.0.1
       sync-content: 2.0.1
       tap-parser: 18.0.0
-      tshy: 3.0.2
+      tshy: 3.0.2(patch_hash=nn5gj4wshdx7c2chh4frit2bve)
       typescript: 5.5.4
       walk-up-path: 4.0.0
     transitivePeerDependencies:
@@ -15194,7 +15196,7 @@ snapshots:
       mkdirp: 3.0.1
       path-scurry: 2.0.0
       rimraf: 6.0.1
-      tshy: 3.0.2
+      tshy: 3.0.2(patch_hash=nn5gj4wshdx7c2chh4frit2bve)
 
   synckit@0.9.2:
     dependencies:
@@ -15427,7 +15429,7 @@ snapshots:
       minimist: 1.2.8
       strip-bom: 3.0.0
 
-  tshy@3.0.2:
+  tshy@3.0.2(patch_hash=nn5gj4wshdx7c2chh4frit2bve):
     dependencies:
       chalk: 5.3.0
       chokidar: 3.6.0
