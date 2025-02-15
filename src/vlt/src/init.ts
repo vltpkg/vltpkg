@@ -1,7 +1,7 @@
 import { basename, resolve } from 'node:path'
 import { PackageJson } from '@vltpkg/package-json'
 import { getUser } from '@vltpkg/git'
-import { type Manifest } from '@vltpkg/types'
+import type { Manifest } from '@vltpkg/types'
 import { getAuthorFromGitUser } from './get-author-from-git-user.ts'
 
 export type InitOptions = {

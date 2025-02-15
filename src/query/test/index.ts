@@ -5,7 +5,7 @@ import {
   getSimpleGraph,
   getSingleWorkspaceGraph,
 } from './fixtures/graph.ts'
-import { type ParserState, type PostcssNode } from '../src/types.ts'
+import type { ParserState, PostcssNode } from '../src/types.ts'
 import { copyGraphSelectionState } from './fixtures/selector.ts'
 
 type TestCase = [string, string[]]

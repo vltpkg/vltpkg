@@ -1,12 +1,12 @@
 import t from 'tap'
 import { joinDepIDTuple } from '@vltpkg/dep-id'
-import {
-  asDependency,
-  type Dependency,
-  type BuildIdealOptions,
-  type AddImportersDependenciesMap,
+import { asDependency } from '@vltpkg/graph'
+import type {
+  Dependency,
+  BuildIdealOptions,
+  AddImportersDependenciesMap,
 } from '@vltpkg/graph'
-import { type LoadedConfig } from '../src/config/index.ts'
+import type { LoadedConfig } from '../src/config/index.ts'
 import { Spec } from '@vltpkg/spec'
 
 t.cleanSnapshot = s =>

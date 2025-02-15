@@ -1,13 +1,15 @@
-import { emitter, type Events } from '@vltpkg/output'
+import { emitter } from '@vltpkg/output'
+import type { Events } from '@vltpkg/output'
 import {
   Fragment,
   createElement as $,
   useState,
   useLayoutEffect,
 } from 'react'
-import { render, Text, Box, type Instance } from 'ink'
+import { render, Text, Box } from 'ink'
+import type { Instance } from 'ink'
 import Spinner from 'ink-spinner'
-import { type ViewInstance } from '../../types.ts'
+import type { ViewInstance } from '../../types.ts'
 import { stdout } from '../../output.ts'
 
 type Step = {

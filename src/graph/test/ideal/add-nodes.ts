@@ -1,12 +1,13 @@
 import { joinDepIDTuple } from '@vltpkg/dep-id'
-import { type DependencyTypeShort } from '@vltpkg/types'
-import { type PackageInfoClient } from '@vltpkg/package-info'
-import { kCustomInspect, Spec, type SpecOptions } from '@vltpkg/spec'
+import type { DependencyTypeShort } from '@vltpkg/types'
+import type { PackageInfoClient } from '@vltpkg/package-info'
+import { kCustomInspect, Spec } from '@vltpkg/spec'
+import type { SpecOptions } from '@vltpkg/spec'
 import { PathScurry } from 'path-scurry'
 import t from 'tap'
-import {
-  type AddImportersDependenciesMap,
-  type Dependency,
+import type {
+  AddImportersDependenciesMap,
+  Dependency,
 } from '../../src/dependencies.ts'
 import { Graph } from '../../src/graph.ts'
 import { addNodes } from '../../src/ideal/add-nodes.ts'

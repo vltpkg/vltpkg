@@ -1,10 +1,12 @@
 import t from 'tap'
-import { Spec, type SpecOptions } from '@vltpkg/spec'
+import { Spec } from '@vltpkg/spec'
+import type { SpecOptions } from '@vltpkg/spec'
 import { Monorepo } from '@vltpkg/workspaces'
 import { Graph } from '../../src/graph.ts'
 import { humanReadableOutput } from '../../src/visualization/human-readable-output.ts'
 import { loadActualGraph } from '../fixtures/actual.ts'
-import chalk, { type ChalkInstance } from 'chalk'
+import chalk from 'chalk'
+import type { ChalkInstance } from 'chalk'
 import { joinDepIDTuple } from '@vltpkg/dep-id'
 chalk.level = 1
 

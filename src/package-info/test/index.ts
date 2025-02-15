@@ -1,7 +1,7 @@
 import { spawn as spawnGit } from '@vltpkg/git'
 import { Spec } from '@vltpkg/spec'
 import { Pool } from '@vltpkg/tar'
-import { type Manifest } from '@vltpkg/types'
+import type { Manifest } from '@vltpkg/types'
 import { Workspace } from '@vltpkg/workspaces'
 import { lstatSync, readFileSync, readlinkSync } from 'node:fs'
 import { writeFile } from 'node:fs/promises'

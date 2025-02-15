@@ -1,6 +1,6 @@
 import { useState } from 'react'
-import { type Props } from '@astrojs/starlight/props'
-import { type TocItem } from 'node_modules/@astrojs/starlight/utils/generateToC'
+import type { Props } from '@astrojs/starlight/props'
+import type { TocItem } from 'node_modules/@astrojs/starlight/utils/generateToC'
 import {
   Drawer,
   DrawerContent,

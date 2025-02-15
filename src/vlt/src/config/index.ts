@@ -27,11 +27,7 @@ import { Monorepo } from '@vltpkg/workspaces'
 import { XDG } from '@vltpkg/xdg'
 import { readFileSync, rmSync, writeFileSync } from 'fs'
 import { lstat, mkdir, readFile, writeFile } from 'fs/promises'
-import {
-  type Jack,
-  type OptionsResults,
-  type Unwrap,
-} from 'jackspeak'
+import type { Jack, OptionsResults, Unwrap } from 'jackspeak'
 import { homedir } from 'os'
 import { dirname, resolve } from 'path'
 import { PathScurry } from 'path-scurry'
@@ -40,8 +36,8 @@ import {
   kNewline,
   parse as jsonParse,
   stringify as jsonStringify,
-  type JSONResult,
 } from 'polite-json'
+import type { JSONResult } from 'polite-json'
 import { walkUp } from 'walk-up-path'
 import {
   commands,
@@ -49,9 +45,8 @@ import {
   getCommand,
   isRecordField,
   recordFields,
-  type Commands,
-  type RecordField,
 } from './definition.ts'
+import type { Commands, RecordField } from './definition.ts'
 import { merge } from './merge.ts'
 export { recordFields, isRecordField }
 export { definition, commands, type Commands }

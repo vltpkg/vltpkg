@@ -13,7 +13,7 @@
  * @module
  */
 const { platform } = process
-import { type PathLike } from 'node:fs'
+import type { PathLike } from 'node:fs'
 import { rename as fsRename, rm } from 'node:fs/promises'
 export const rename =
   platform !== 'win32' ? fsRename : (

@@ -4,7 +4,7 @@ import t from 'tap'
 import { gzipSync } from 'zlib'
 // Needs to be the path to the dist file with .js extension
 // so that it can be spawned by node.
-// eslint-disable-next-line import/extensions
+// eslint-disable-next-line import/extensions, import/no-unresolved
 import { __CODE_SPLIT_SCRIPT_NAME } from '../dist/esm/unzip.js'
 
 t.test('validate args', async t => {

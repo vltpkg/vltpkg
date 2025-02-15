@@ -1,11 +1,7 @@
 import React, { useRef, useEffect, useState } from 'react'
 import { motion } from 'motion/react'
 import { ChevronUp } from 'lucide-react'
-import {
-  type SidebarEntries,
-  type Link,
-  type Group,
-} from './app-sidebar'
+import type { SidebarEntries, Link, Group } from './app-sidebar'
 
 const AppSidebarSublist = ({
   sidebar,

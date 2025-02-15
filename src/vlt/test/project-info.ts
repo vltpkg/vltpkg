@@ -1,20 +1,20 @@
 import { resolve } from 'node:path'
 import t from 'tap'
-import { type PathBase, PathScurry } from 'path-scurry'
+import { PathScurry } from 'path-scurry'
+import type { PathBase } from 'path-scurry'
 import { PackageJson } from '@vltpkg/package-json'
-import { type Manifest } from '@vltpkg/types'
+import type { Manifest } from '@vltpkg/types'
 import {
   asProjectTools,
   isProjectTools,
   inferTools,
-  type ProjectTools,
-  type DashboardProjectData,
   getGraphProjectData,
 } from '../src/project-info.ts'
-import {
-  type ConfigOptions,
-  type LoadedConfig,
-} from '../src/types.ts'
+import type {
+  ProjectTools,
+  DashboardProjectData,
+} from '../src/project-info.ts'
+import type { ConfigOptions, LoadedConfig } from '../src/types.ts'
 
 t.cleanSnapshot = s => s.replace(/\\\\/g, '/')
 

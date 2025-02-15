@@ -1,10 +1,10 @@
 import React, { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { X, ChevronDown, ChevronRight } from 'lucide-react'
-import {
-  type SidebarEntry,
-  type Group,
-  type SidebarEntries,
+import type {
+  SidebarEntry,
+  Group,
+  SidebarEntries,
 } from '@/components/sidebar/app-sidebar'
 import {
   Drawer,

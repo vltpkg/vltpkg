@@ -1,12 +1,13 @@
 import { Cache } from '@vltpkg/cache'
 import { register } from '@vltpkg/cache-unzip'
 import { error } from '@vltpkg/error-cause'
-import { type Integrity } from '@vltpkg/types'
+import type { Integrity } from '@vltpkg/types'
 import { urlOpen } from '@vltpkg/url-open'
 import { XDG } from '@vltpkg/xdg'
 import { setTimeout } from 'node:timers/promises'
 import { loadPackageJson } from 'package-json-from-dist'
-import { Agent, RetryAgent, type Dispatcher } from 'undici'
+import { Agent, RetryAgent } from 'undici'
+import type { Dispatcher } from 'undici'
 import { addHeader } from './add-header.ts'
 import {
   deleteToken,
@@ -15,23 +16,20 @@ import {
   isToken,
   keychains,
   setToken,
-  type Token,
 } from './auth.ts'
-import { CacheEntry, type JSONObj } from './cache-entry.ts'
+import type { Token } from './auth.ts'
+import { CacheEntry } from './cache-entry.ts'
+import type { JSONObj } from './cache-entry.ts'
 import { bun, deno, node } from './env.ts'
 import { handle304Response } from './handle-304-response.ts'
 import { otplease } from './otplease.ts'
 import { isRedirect, redirect } from './redirect.ts'
 import { setCacheHeaders } from './set-cache-headers.ts'
 import { logRequest } from '@vltpkg/output'
-import {
-  isTokenResponse,
-  type TokenResponse,
-} from './token-response.ts'
-import {
-  isWebAuthChallenge,
-  type WebAuthChallenge,
-} from './web-auth-challenge.ts'
+import { isTokenResponse } from './token-response.ts'
+import type { TokenResponse } from './token-response.ts'
+import { isWebAuthChallenge } from './web-auth-challenge.ts'
+import type { WebAuthChallenge } from './web-auth-challenge.ts'
 export {
   type JSONObj,
   type CacheEntry,

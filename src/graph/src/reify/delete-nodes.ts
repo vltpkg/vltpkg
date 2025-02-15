@@ -1,6 +1,6 @@
-import { type RollbackRemove } from '@vltpkg/rollback-remove'
-import { type PathScurry } from 'path-scurry'
-import { type Diff } from '../diff.ts'
+import type { RollbackRemove } from '@vltpkg/rollback-remove'
+import type { PathScurry } from 'path-scurry'
+import type { Diff } from '../diff.ts'
 
 export const deleteNodes = (
   diff: Diff,

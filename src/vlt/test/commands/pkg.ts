@@ -1,4 +1,5 @@
-import t, { type Test } from 'tap'
+import t from 'tap'
+import type { Test } from 'tap'
 import { setupCommand, setupEnv } from '../fixtures/run.ts'
 import * as Command from '../../src/commands/pkg.ts'
 import { readFileSync } from 'fs'

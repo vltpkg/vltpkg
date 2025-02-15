@@ -1,12 +1,10 @@
 import { PackageJson } from '@vltpkg/package-json'
 import { run, runFG } from '@vltpkg/run'
-import { type LoadedConfig } from '../config/index.ts'
-import { ExecCommand, type ExecResult } from '../exec-command.ts'
+import type { LoadedConfig } from '../config/index.ts'
+import { ExecCommand } from '../exec-command.ts'
+import type { ExecResult } from '../exec-command.ts'
 import { commandUsage } from '../config/usage.ts'
-import {
-  type CommandUsage,
-  type CommandFnResultOnly,
-} from '../types.ts'
+import type { CommandUsage, CommandFnResultOnly } from '../types.ts'
 import { stdout } from '../output.ts'
 
 export const usage: CommandUsage = () =>

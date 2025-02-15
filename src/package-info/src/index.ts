@@ -1,22 +1,16 @@
-import { error, type ErrorCauseObject } from '@vltpkg/error-cause'
+import { error } from '@vltpkg/error-cause'
+import type { ErrorCauseObject } from '@vltpkg/error-cause'
 import { clone, resolve as gitResolve, revs } from '@vltpkg/git'
 import { PackageJson } from '@vltpkg/package-json'
-import {
-  pickManifest,
-  type PickManifestOptions,
-} from '@vltpkg/pick-manifest'
-import {
-  RegistryClient,
-  type RegistryClientOptions,
-} from '@vltpkg/registry-client'
-import { Spec, type SpecOptions } from '@vltpkg/spec'
+import { pickManifest } from '@vltpkg/pick-manifest'
+import type { PickManifestOptions } from '@vltpkg/pick-manifest'
+import { RegistryClient } from '@vltpkg/registry-client'
+import type { RegistryClientOptions } from '@vltpkg/registry-client'
+import { Spec } from '@vltpkg/spec'
+import type { SpecOptions } from '@vltpkg/spec'
 import { Pool } from '@vltpkg/tar'
-import {
-  asPackument,
-  type Integrity,
-  type Manifest,
-  type Packument,
-} from '@vltpkg/types'
+import { asPackument } from '@vltpkg/types'
+import type { Integrity, Manifest, Packument } from '@vltpkg/types'
 import { Monorepo } from '@vltpkg/workspaces'
 import { XDG } from '@vltpkg/xdg'
 import { randomBytes } from 'crypto'

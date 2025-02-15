@@ -1,7 +1,7 @@
 import { vi, describe, it, expect, afterEach } from 'vitest'
 import { cleanup, render } from '@testing-library/react'
 import html from 'diffable-html'
-import { type QueryLabel } from '@/state/types.js'
+import type { QueryLabel } from '@/state/types.js'
 import { LabelSelect } from '@/components/labels/label-select.jsx'
 import { useGraphStore as useStore } from '@/state/index.js'
 

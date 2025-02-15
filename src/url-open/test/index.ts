@@ -1,6 +1,7 @@
-import { type PromiseSpawnOptions } from '@vltpkg/promise-spawn'
+import type { PromiseSpawnOptions } from '@vltpkg/promise-spawn'
 import { release } from 'os'
-import t, { type Test } from 'tap'
+import t from 'tap'
+import type { Test } from 'tap'
 
 let RELEASE: string = release()
 const SPAWNS: [string, string[], PromiseSpawnOptions][] = []

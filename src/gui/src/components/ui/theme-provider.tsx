@@ -1,5 +1,5 @@
 import { useGraphStore } from '@/state/index.js'
-import { type State } from '@/state/types.js'
+import type { State } from '@/state/types.js'
 import { createContext, useContext, useEffect, useState } from 'react'
 
 /** The possible states of theme */

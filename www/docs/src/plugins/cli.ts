@@ -1,10 +1,10 @@
 import { basename, join, relative } from 'path'
-import { type AstroIntegrationLogger } from 'astro'
+import type { AstroIntegrationLogger } from 'astro'
 import { cacheEntries } from './utils'
 import { mkdir, readdir, writeFile } from 'fs/promises'
 import { fileURLToPath } from 'url'
 import { resolve as metaResolve } from 'import-meta-resolve'
-import { type Command } from '@vltpkg/cli/types'
+import type { Command } from '@vltpkg/cli/types'
 import { Config } from '@vltpkg/cli/config'
 import matter from 'gray-matter'
 

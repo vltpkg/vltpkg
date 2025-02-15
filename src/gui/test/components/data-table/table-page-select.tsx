@@ -3,7 +3,7 @@ import { vi, describe, it, expect, afterEach } from 'vitest'
 import { cleanup, render } from '@testing-library/react'
 import html from 'diffable-html'
 import { TablePageSelect } from '@/components/data-table/table-page-select.jsx'
-import { type PaginationState } from '@tanstack/react-table'
+import type { PaginationState } from '@tanstack/react-table'
 
 vi.mock('@/components/ui/select.jsx', () => ({
   Select: 'gui-select',

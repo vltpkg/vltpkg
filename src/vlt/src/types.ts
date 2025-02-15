@@ -1,6 +1,6 @@
-import { type LoadedConfig } from './config/index.ts'
-import { type Jack } from 'jackspeak'
-import { type ChalkInstance } from 'chalk'
+import type { LoadedConfig } from './config/index.ts'
+import type { Jack } from 'jackspeak'
+import type { ChalkInstance } from 'chalk'
 
 export type * from './config/index.ts'
 

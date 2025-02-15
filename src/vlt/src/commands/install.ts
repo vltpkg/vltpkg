@@ -1,9 +1,9 @@
-import { type Graph } from '@vltpkg/graph'
+import type { Graph } from '@vltpkg/graph'
 import { parseAddArgs } from '../parse-add-remove-args.ts'
-import {
-  type CommandUsage,
-  type Views,
-  type CommandFnResultOnly,
+import type {
+  CommandUsage,
+  Views,
+  CommandFnResultOnly,
 } from '../types.ts'
 import { commandUsage } from '../config/usage.ts'
 import { install } from '../install.ts'

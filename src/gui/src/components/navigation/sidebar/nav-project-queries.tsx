@@ -16,7 +16,7 @@ import {
   CollapsibleTrigger,
 } from '@/components/ui/collapsible.jsx'
 import { useGraphStore } from '@/state/index.js'
-import { type SavedQuery } from '@/state/types.js'
+import type { SavedQuery } from '@/state/types.js'
 import {
   ChevronRight,
   ChevronDown,

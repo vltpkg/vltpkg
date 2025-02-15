@@ -2,8 +2,8 @@
 // based on what we know from a CacheEntry
 
 import { addHeader } from './add-header.ts'
-import { type CacheEntry } from './cache-entry.ts'
-import { type RegistryClientRequestOptions } from './index.ts'
+import type { CacheEntry } from './cache-entry.ts'
+import type { RegistryClientRequestOptions } from './index.ts'
 
 export const setCacheHeaders = (
   options: RegistryClientRequestOptions,

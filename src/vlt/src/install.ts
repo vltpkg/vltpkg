@@ -1,11 +1,7 @@
-import {
-  type AddImportersDependenciesMap,
-  actual,
-  ideal,
-  reify,
-} from '@vltpkg/graph'
+import { actual, ideal, reify } from '@vltpkg/graph'
+import type { AddImportersDependenciesMap } from '@vltpkg/graph'
 import { PackageInfoClient } from '@vltpkg/package-info'
-import { type LoadedConfig } from './types.ts'
+import type { LoadedConfig } from './types.ts'
 
 export type InstallOptions = {
   conf: LoadedConfig

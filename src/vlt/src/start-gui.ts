@@ -1,13 +1,12 @@
 import { asDepID } from '@vltpkg/dep-id'
-import {
-  actual,
-  asDependency,
-  type AddImportersDependenciesMap,
-  type Dependency,
-  type RemoveImportersDependenciesMap,
+import { actual, asDependency } from '@vltpkg/graph'
+import type {
+  AddImportersDependenciesMap,
+  Dependency,
+  RemoveImportersDependenciesMap,
 } from '@vltpkg/graph'
 import { Spec } from '@vltpkg/spec'
-import { type DependencyTypeShort } from '@vltpkg/types'
+import type { DependencyTypeShort } from '@vltpkg/types'
 import { urlOpen } from '@vltpkg/url-open'
 import { getUser } from '@vltpkg/git'
 import {
@@ -17,36 +16,34 @@ import {
   rmSync,
   writeFileSync,
 } from 'node:fs'
-import {
-  createServer,
-  type IncomingMessage,
-  request,
-  type ServerResponse,
-  type Server,
+import { createServer, request } from 'node:http'
+import type {
+  IncomingMessage,
+  ServerResponse,
+  Server,
 } from 'node:http'
 import { homedir, tmpdir } from 'node:os'
 import { dirname, resolve, relative } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import assert from 'node:assert'
 import { loadPackageJson } from 'package-json-from-dist'
-import { type PathBase } from 'path-scurry'
+import type { PathBase } from 'path-scurry'
 import handler from 'serve-handler'
-import {
-  type ConfigOptions,
-  type LoadedConfig,
-} from './config/index.ts'
-import { install, type InstallOptions } from './install.ts'
+import type { ConfigOptions, LoadedConfig } from './config/index.ts'
+import { install } from './install.ts'
+import type { InstallOptions } from './install.ts'
 import { stderr, stdout } from './output.ts'
 import { readProjectFolders } from './read-project-folders.ts'
-import { uninstall, type UninstallOptions } from './uninstall.ts'
+import { uninstall } from './uninstall.ts'
+import type { UninstallOptions } from './uninstall.ts'
 import { init } from './init.ts'
 import { getAuthorFromGitUser } from './get-author-from-git-user.ts'
 import {
-  type DashboardProjectData,
   getDashboardProjectData,
   getReadablePath,
   getGraphProjectData,
 } from './project-info.ts'
+import type { DashboardProjectData } from './project-info.ts'
 
 const HOST = 'localhost'
 const PORT = 7017

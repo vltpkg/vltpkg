@@ -1,30 +1,26 @@
-import {
-  type DepID,
-  type DepIDTuple,
-  joinDepIDTuple,
-} from '@vltpkg/dep-id'
-import {
-  manifest,
-  type PackageInfoClient,
-} from '@vltpkg/package-info'
+import { joinDepIDTuple } from '@vltpkg/dep-id'
+import type { DepID, DepIDTuple } from '@vltpkg/dep-id'
+import { manifest } from '@vltpkg/package-info'
+import type { PackageInfoClient } from '@vltpkg/package-info'
 import { PackageJson } from '@vltpkg/package-json'
-import { Spec, type SpecOptions } from '@vltpkg/spec'
+import { Spec } from '@vltpkg/spec'
+import type { SpecOptions } from '@vltpkg/spec'
 import { Monorepo } from '@vltpkg/workspaces'
 import { PathScurry } from 'path-scurry'
 import t from 'tap'
 import { load as loadActual } from '../../src/actual/load.ts'
 import { buildIdealFromStartingGraph } from '../../src/ideal/build-ideal-from-starting-graph.ts'
-import {
-  type LockfileData,
-  type LockfileEdgeKey,
-  type LockfileEdges,
-  type LockfileNode,
+import type {
+  LockfileData,
+  LockfileEdgeKey,
+  LockfileEdges,
+  LockfileNode,
 } from '../../src/index.ts'
 import { load as loadVirtual } from '../../src/lockfile/load.ts'
 import { objectLikeOutput } from '../../src/visualization/object-like-output.ts'
-import {
-  type AddImportersDependenciesMap,
-  type RemoveImportersDependenciesMap,
+import type {
+  AddImportersDependenciesMap,
+  RemoveImportersDependenciesMap,
 } from '../../src/dependencies.ts'
 
 const edgeKey = (from: DepIDTuple, to: string): LockfileEdgeKey =>

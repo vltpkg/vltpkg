@@ -1,5 +1,5 @@
 import { spawn } from 'child_process'
-import { type AstroIntegrationLogger } from 'astro'
+import type { AstroIntegrationLogger } from 'astro'
 import { cacheEntries } from './utils'
 import { typedocBasePath } from '../../typedoc/constants.mjs'
 

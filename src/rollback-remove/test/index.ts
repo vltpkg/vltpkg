@@ -1,4 +1,4 @@
-import { type SpawnOptions } from 'child_process'
+import type { SpawnOptions } from 'child_process'
 import { readdirSync } from 'fs'
 import t from 'tap'
 

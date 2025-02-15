@@ -1,6 +1,6 @@
 import t from 'tap'
-import { type Dispatcher } from 'undici'
-import { type CacheEntry } from '../src/cache-entry.ts'
+import type { Dispatcher } from 'undici'
+import type { CacheEntry } from '../src/cache-entry.ts'
 import { handle304Response } from '../src/handle-304-response.ts'
 
 t.equal(

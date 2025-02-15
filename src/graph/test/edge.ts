@@ -1,9 +1,10 @@
-import { Spec, type SpecOptions, kCustomInspect } from '@vltpkg/spec'
+import { Spec, kCustomInspect } from '@vltpkg/spec'
+import type { SpecOptions } from '@vltpkg/spec'
 import { inspect } from 'node:util'
 import t from 'tap'
 import { Edge } from '../src/edge.ts'
 import { Node } from '../src/node.ts'
-import { type GraphLike } from '../src/types.ts'
+import type { GraphLike } from '../src/types.ts'
 
 t.cleanSnapshot = s =>
   s.replace(/^(\s+)projectRoot: .*$/gm, '$1projectRoot: #')
