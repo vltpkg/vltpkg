@@ -1,4 +1,4 @@
-import { join, resolve } from 'node:path'
+import { dirname, join, resolve } from 'node:path'
 import assert from 'node:assert'
 import { spawnSync } from 'node:child_process'
 import { parseArgs as nodeParseArgs } from 'node:util'
@@ -10,6 +10,8 @@ import generateMatrix, {
 } from '../matrix.ts'
 import { Paths } from '../index.ts'
 import * as types from '../types.ts'
+
+type Action = 'build' | 'publish' | 'pack'
 
 type Base = {
   name: string
@@ -43,6 +45,7 @@ type CompiledPlatform = Compiled & {
 type Package = Bundle | Compiled | CompiledRoot | CompiledPlatform
 
 type Publish<T extends Package = Package> = {
+  action: Action
   dryRun: boolean
   tag: string
   files: {
@@ -95,18 +98,34 @@ const FILES = {
 }
 
 const parseArgs = () => {
-  const { outdir, forReal, ...matrix } = nodeParseArgs({
+  const {
+    outdir,
+    forReal,
+    action = 'build',
+    quiet,
+    ...matrix
+  } = nodeParseArgs({
     options: {
       outdir: { type: 'string' },
       forReal: { type: 'boolean' },
+      action: { type: 'string' },
+      quiet: { type: 'boolean' },
       ...matrixConfig,
     },
   }).values
 
+  assert(
+    ['build', 'publish', 'pack'].includes(action),
+    'expected action to be build, publish, or pack',
+  )
+
   return {
     /* c8 ignore next */
     outdir: resolve(outdir ?? '.publish'),
+    // Make publish explicit
     dryRun: !forReal,
+    action: action as Action,
+    verbose: !quiet,
     matrix: getMatrix(matrix),
   }
 }
@@ -154,15 +173,18 @@ const publish = <T extends Package>(
     },
   })
 
-  spawnSync(
-    'npm',
-    [
-      'publish',
-      '--access=public',
-      `--tag=${options.tag}`,
-      options.dryRun ? '--dry-run' : null,
-    ].filter(v => v !== null),
-    {
+  if (options.action === 'pack' || options.action === 'publish') {
+    const args =
+      options.action === 'pack' ?
+        ['pack', '.', `--pack-destination=${dirname(pkg.dir)}`]
+      : [
+          'publish',
+          '--access=public',
+          `--tag=${options.tag}`,
+          options.dryRun ? '--dry-run' : null,
+        ].filter(v => v !== null)
+
+    spawnSync('npm', args, {
       cwd: pkg.dir,
       stdio: 'inherit',
       shell: true,
@@ -170,8 +192,8 @@ const publish = <T extends Package>(
         ...process.env,
         NPM_PUBLISH_TOKEN: TOKEN,
       },
-    },
-  )
+    })
+  }
 
   return {
     pkg: readPackageJson(join(pkg.dir, 'package.json')) as T,
@@ -269,10 +291,10 @@ const publishCompiled = (
 }
 
 const main = async () => {
-  const { outdir, matrix, dryRun } = parseArgs()
+  const { outdir, matrix, dryRun, action, verbose } = parseArgs()
 
   assert(
-    dryRun || TOKEN,
+    action === 'publish' && !dryRun ? TOKEN : true,
     'expected VLT_CLI_PUBLISH_TOKEN to be set in non-dry-run mode',
   )
 
@@ -280,6 +302,7 @@ const main = async () => {
 
   const options: Publish<Bundle> = {
     dryRun,
+    action,
     tag: 'latest',
     files: {
       'README.md': FILES.README.replaceAll('# @vltpkg/vlt', '# vlt'),
@@ -300,7 +323,7 @@ const main = async () => {
 
   const { bundles, compilations } = await generateMatrix({
     outdir,
-    verbose: true,
+    verbose,
     matrix,
     // Only publish the main `vlt` bin if it's a compilation because its probably too
     // big to publish 5 * 80MB bins.

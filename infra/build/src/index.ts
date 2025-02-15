@@ -1,9 +1,18 @@
-import { readFileSync } from 'node:fs'
-import { resolve, join, dirname } from 'node:path'
+import { readdirSync } from 'node:fs'
+import {
+  resolve,
+  join,
+  dirname,
+  basename,
+  extname,
+  relative,
+} from 'node:path'
 import { findPackageJson } from 'package-json-from-dist'
 import * as os from 'node:os'
 import * as types from './types.ts'
 import assert from 'node:assert'
+
+export const EXT = '.js'
 
 const BUILD_ROOT = dirname(findPackageJson(import.meta.filename))
 const MONO_ROOT = resolve(BUILD_ROOT, '../..')
@@ -13,6 +22,7 @@ const CLI = join(SRC, 'vlt')
 // to be changed to a src path to get proper sourcemaps
 // https://github.com/vltpkg/vltpkg/issues/150
 const COMMANDS = join(CLI, 'dist/esm/commands')
+const BINS = join(CLI, 'dist/esm/bins')
 
 export const Paths = {
   BUILD_ROOT,
@@ -20,29 +30,32 @@ export const Paths = {
   SRC,
   CLI,
   COMMANDS,
+  BINS,
 }
 
 export const Bins = (() => {
-  const { bin } = JSON.parse(
-    readFileSync(join(CLI, 'package.json'), 'utf8'),
-  )
+  const bin = readdirSync(BINS, {
+    withFileTypes: true,
+  })
+    .filter(d => extname(d.name) === EXT)
+    .reduce<Record<string, string>>((acc, b) => {
+      acc[basename(b.name, extname(b.name))] = relative(
+        CLI,
+        join(b.parentPath, b.name),
+      )
+      return acc
+    }, {})
   assert(
     [...types.BinNames].sort().join() ===
       Object.keys(bin).sort().join(),
-    new Error(`bin field in ${CLI} must match types`),
+    new Error(`${BINS} files must match types`),
   )
   const paths = Object.values<string>(bin)
   assert(
     paths[0],
     new Error(`bin field in ${CLI} must be an object of paths`),
   )
-  return {
-    PATHS: paths,
-    // TODO(source-maps): this is a ./dist/ path which might need
-    // to be changed to a src path to get proper sourcemaps
-    // https://github.com/vltpkg/vltpkg/issues/150
-    DIR: join(CLI, dirname(paths[0])),
-  }
+  return paths
 })()
 
 export const fullMatrix = (): Readonly<types.FactorArrays> => {
