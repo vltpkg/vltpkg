@@ -26,13 +26,6 @@
       "./types": "./src/types.ts"
     }
   },
-  "bin": {
-    "vlt": "./dist/esm/bins/vlt.js",
-    "vlr": "./dist/esm/bins/vlr.js",
-    "vlx": "./dist/esm/bins/vlx.js",
-    "vlrx": "./dist/esm/bins/vlrx.js",
-    "vlix": "./dist/esm/bins/vlix.js"
-  },
   "dependencies": {
     "@vltpkg/dep-id": "workspace:*",
     "@vltpkg/dot-prop": "workspace:*",

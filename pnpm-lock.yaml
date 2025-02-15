@@ -79,10 +79,6 @@ catalogs:
 importers:
 
   .:
-    dependencies:
-      '@vltpkg/cli':
-        specifier: workspace:*
-        version: link:src/vlt
     devDependencies:
       '@eslint/js':
         specifier: 'catalog:'

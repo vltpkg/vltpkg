@@ -17,7 +17,7 @@ import * as esbuild from 'esbuild'
 import { findPackageJson } from 'package-json-from-dist'
 import { builtinModules, createRequire } from 'node:module'
 import assert from 'node:assert'
-import { Bins, Paths } from './index.ts'
+import { Bins, Paths, EXT } from './index.ts'
 import type * as types from './types.ts'
 import {
   transformSourcePlugin,
@@ -28,8 +28,6 @@ import {
   readPkg,
   getSrcPath,
 } from './transform-source.ts'
-
-const EXT = '.js'
 
 const bundle = async (o: {
   plugins: esbuild.BuildOptions['plugins']
@@ -186,7 +184,7 @@ export default async ({
   }
 
   await bundleFiles(
-    Bins.PATHS.map(bin => ({
+    Bins.map(bin => ({
       in: join(Paths.CLI, bin),
       out: basename(bin, extname(bin)),
     })),

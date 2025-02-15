@@ -1,6 +1,6 @@
 import t, { type Test } from 'tap'
 import { spawn } from 'node:child_process'
-import { Bins, defaultOptions } from '../src/index.ts'
+import { Paths, defaultOptions } from '../src/index.ts'
 import bundle from '../src/bundle.ts'
 import { join } from 'node:path'
 import * as types from '../src/types.ts'
@@ -210,7 +210,7 @@ t.test('commands', async t => {
               await testCommand(t, {
                 bin,
                 command,
-                source: Bins.DIR,
+                source: Paths.BINS,
                 outdir,
                 testCase: c,
               })

@@ -1,25 +1,12 @@
-import { join } from 'node:path'
 import t, { type Test } from 'tap'
-import { spawnSync, type SpawnSyncOptions } from 'node:child_process'
-import { type Bin, BinNames } from '../../src/types.ts'
-import { readdirSync, readFileSync } from 'node:fs'
+import { type SpawnSyncOptions } from 'node:child_process'
+import { readdirSync } from 'node:fs'
 
-type SpawnRes = { stderr: string[]; stdout: string[] }
-
-const hasBinFile = (
-  r: SpawnRes | undefined,
-  bin: Bin,
-  compiled = false,
-) =>
-  r?.stderr.find(v =>
-    new RegExp(`${bin}${compiled ? '' : '\\.js'}$`).exec(v),
-  )
-
-const parseOutput = (s: string) =>
-  s
-    .split('\n')
-    .map(v => v.replace(/^npm notice ?/, ''))
-    .filter(Boolean)
+type NpmRes = {
+  command: string
+  args: string[]
+  options: SpawnSyncOptions
+}
 
 const publish = async (t: Test, argv: string[] = []) => {
   const dir = t.testdir()
@@ -32,7 +19,7 @@ const publish = async (t: Test, argv: string[] = []) => {
       ...argv,
     ],
   })
-  const res: SpawnRes[] = []
+  const npm: NpmRes[] = []
   await t.mockImport<typeof import('../../src/bin/publish.ts')>(
     '../../src/bin/publish.ts',
     {
@@ -57,58 +44,46 @@ const publish = async (t: Test, argv: string[] = []) => {
           args: string[],
           options: SpawnSyncOptions,
         ) => {
-          switch (command) {
-            case 'op': {
-              const id = 'TOKENS'
-              return {
-                stdout: JSON.stringify({
-                  sections: [{ label: 'tokens', id }],
-                  fields: BinNames.map(label => ({
-                    section: { id },
-                    label,
-                    value: `npm_${label}-token`,
-                  })),
-                }),
-              }
-            }
-            case 'npm': {
-              const r = spawnSync(command, args, {
-                ...options,
-                stdio: 'pipe',
-                encoding: 'utf8',
-              })
-              res.push({
-                stderr: parseOutput(r.stderr),
-                stdout: parseOutput(r.stdout),
-              })
-              return
-            }
-            default:
-              throw new Error('unexpected spawnSync call')
-          }
+          npm.push({ command, args, options })
         },
       },
     },
   )
   return {
-    res,
-    dirs: readdirSync(dir, { withFileTypes: true })
-      .filter(f => f.isDirectory())
-      .map(f => join(dir, f.name)),
+    npm,
+    dir,
   }
 }
 
-await t.skip('compile', async t => {
-  const { res } = await publish(t, ['--compile=true'])
-  t.equal(res.length, 1)
-  const hasBins = BinNames.map(bin => hasBinFile(res[0], bin, true))
-  t.ok(hasBins.every(Boolean))
+t.test('basic', async t => {
+  const { npm, dir } = await publish(t)
+  const contents = readdirSync(dir, {
+    recursive: true,
+    withFileTypes: true,
+  })
+  t.equal(npm.length, 0)
+  t.ok(contents.find(f => f.name.endsWith('vlt.js')))
 })
 
-t.test('publisj', async t => {
-  const { dirs } = await publish(t)
-  const pkg = JSON.parse(
-    readFileSync(join(dirs[0] ?? '', 'package.json'), 'utf8'),
-  )
-  t.equal(pkg.type, 'module')
+t.test('pack', async t => {
+  const { npm } = await publish(t, ['--action=pack'])
+  t.equal(npm[0]!.args[0], 'pack')
+})
+
+t.test('publish', async t => {
+  const { npm } = await publish(t, ['--action=publish'])
+  t.equal(npm[0]!.args[0], 'publish')
+  t.ok(npm[0]!.args.includes('--dry-run'))
+})
+
+t.test('live publish', async t => {
+  t.intercept(process, 'env', {
+    value: {
+      ...process.env,
+      VLT_CLI_PUBLISH_TOKEN: 'mytoken',
+    },
+  })
+  const { npm } = await publish(t, ['--action=publish', '--forReal'])
+  t.equal(npm[0]!.args[0], 'publish')
+  t.notOk(npm[0]!.args.includes('--dry-run'))
 })

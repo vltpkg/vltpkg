@@ -6,9 +6,6 @@
     "type": "git",
     "url": "git+https://github.com/vltpkg/vltpkg.git"
   },
-  "dependencies": {
-    "@vltpkg/cli": "workspace:*"
-  },
   "devDependencies": {
     "@eslint/js": "catalog:",
     "@types/eslint__js": "catalog:",
@@ -38,6 +35,8 @@
   },
   "scripts": {
     "benchmark": "./scripts/benchmark",
+    "build:bundle": "NODE_OPTIONS=\"--conditions=@vltpkg/source --no-warnings --experimental-strip-types\" node ./infra/build/src/bin/publish.ts --outdir=.build-bundle",
+    "build:compile": "NODE_OPTIONS=\"--conditions=@vltpkg/source --no-warnings --experimental-strip-types\" node ./infra/build/src/bin/publish.ts --outdir=.build-compile --compile=true --runtime=deno",
     "fix": "pnpm fix:pkg && pnpm lint && pnpm format",
     "fix:pkg": "node --no-warnings --experimental-transform-types --conditions=@vltpkg/source scripts/consistent-package-json.js",
     "format": "prettier --write . --log-level warn --ignore-path ./.prettierignore --cache",
@@ -48,6 +47,11 @@
     "pnpm:devPreinstall": "pnpm --version && node --version && node scripts/make-dist-bins.js",
     "snap": "pnpm --silent --no-bail --report-summary run -r snap &>/dev/null || node scripts/report-test-failures.js",
     "test": "pnpm --silent --no-bail --report-summary -r test -- -Rsilent || node scripts/report-test-failures.js",
+    "vlix": "NODE_OPTIONS=\"--conditions=@vltpkg/source --no-warnings --experimental-strip-types\" node ./src/vlt/src/bins/vlix.ts",
+    "vlr": "NODE_OPTIONS=\"--conditions=@vltpkg/source --no-warnings --experimental-strip-types\" node ./src/vlt/src/bins/vlr.ts",
+    "vlrx": "NODE_OPTIONS=\"--conditions=@vltpkg/source --no-warnings --experimental-strip-types\" node ./src/vlt/src/bins/vlrx.ts",
+    "vlt": "NODE_OPTIONS=\"--conditions=@vltpkg/source --no-warnings --experimental-strip-types\" node ./src/vlt/src/bins/vlt.ts",
+    "vlx": "NODE_OPTIONS=\"--conditions=@vltpkg/source --no-warnings --experimental-strip-types\" node ./src/vlt/src/bins/vlx.ts",
     "watch": "pnpm --parallel --filter \"./src/*\" run watch"
   },
   "prettier": "./.prettierrc.js",
