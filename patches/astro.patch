@@ -1,0 +1,15 @@
+diff --git a/dist/core/config/vite-load.js b/dist/core/config/vite-load.js
+index 372821b59f00d96e4e2ba684d6f3fd7d89a5ff83..86f13178bdeb2f8c08b416c69f7d3c9bf3d97a31 100644
+--- a/dist/core/config/vite-load.js
++++ b/dist/core/config/vite-load.js
+@@ -8,8 +8,8 @@ async function createViteServer(root, fs) {
+     server: { middlewareMode: true, hmr: false, watch: null, ws: false },
+     optimizeDeps: { noDiscovery: true },
+     clearScreen: false,
+-    appType: "custom",
+-    ssr: { external: true },
++    resolve: { conditions: ["@vltpkg/source"] },
++    ssr: { external: true, resolve: { conditions: ['@vltpkg/source'] } },
+     plugins: [loadFallbackPlugin({ fs, root: pathToFileURL(root) })]
+   });
+   return viteServer;

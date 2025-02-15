@@ -1,9 +1,7 @@
-import { basename, join, relative } from 'path'
-import type { AstroIntegrationLogger } from 'astro'
+import { basename, join, relative, resolve } from 'path'
 import { cacheEntries } from './utils'
+import type { PluginOptions } from './utils'
 import { mkdir, readdir, writeFile } from 'fs/promises'
-import { fileURLToPath } from 'url'
-import { resolve as metaResolve } from 'import-meta-resolve'
 import type { Command } from '@vltpkg/cli/types'
 import { Config } from '@vltpkg/cli/config'
 import matter from 'gray-matter'
@@ -14,7 +12,7 @@ const loadedConfig = await Config.load()
 
 const commands: { id: string; command: Command<unknown> }[] = []
 for (const c of await readdir(
-  fileURLToPath(metaResolve('@vltpkg/cli/commands', import.meta.url)),
+  resolve(import.meta.dirname, '../../../../src/vlt/src/commands'),
   { withFileTypes: true },
 )) {
   if (!c.name.endsWith('.js')) continue
@@ -30,7 +28,7 @@ export const directory = 'cli'
 export const plugin = {
   name: directory,
   hooks: {
-    async setup({ logger }: { logger: AstroIntegrationLogger }) {
+    async setup(o: PluginOptions) {
       const commandPath = `${directory}/commands`
       const entries = cacheEntries(
         {
@@ -39,11 +37,11 @@ export const plugin = {
           configuring: `${directory}/configuring.md`,
         },
         directory,
-        logger,
+        o,
       )
       if (!entries) return
 
-      logger.info(`writing ${rel(entries.commandsIndex)}`)
+      o.logger.info(`writing ${rel(entries.commandsIndex)}`)
       await writeFile(
         entries.commandsIndex,
         matter.stringify(
@@ -54,7 +52,7 @@ export const plugin = {
         ),
       )
 
-      logger.info(`writing ${rel(entries.configuring)}`)
+      o.logger.info(`writing ${rel(entries.configuring)}`)
       await writeFile(
         entries.configuring,
         matter.stringify(
@@ -69,7 +67,7 @@ export const plugin = {
         ),
       )
 
-      logger.info(`writing ${rel(entries.commandsDir)}`)
+      o.logger.info(`writing ${rel(entries.commandsDir)}`)
       await mkdir(entries.commandsDir, { recursive: true })
       for (const c of commands) {
         await writeFile(
