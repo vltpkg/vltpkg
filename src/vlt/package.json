@@ -90,7 +90,7 @@
   "tap": {
     "extends": "../../tap-config.yaml",
     "test-env": [
-      "VLT_TEST_GUI_DIR=/mock-path/to/gui/assets"
+      "_VLT_GUI_ASSETS_DIR=/mock-path/to/gui/assets"
     ]
   },
   "prettier": "../../.prettierrc.js",
