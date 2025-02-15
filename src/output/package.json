@@ -41,11 +41,11 @@
     "format:check": "prettier --check . --ignore-path ../../.prettierignore --cache",
     "lint": "eslint . --fix",
     "lint:check": "eslint .",
-    "prepare": "tshy",
+    "prepack": "tshy",
     "snap": "tap",
     "test": "tap",
     "posttest": "tsc --project tsconfig.test.json",
-    "watch": "tshy --watch"
+    "typecheck": "tsc --noEmit --project .tshy/esm.json"
   },
   "tap": {
     "extends": "../../tap-config.yaml"

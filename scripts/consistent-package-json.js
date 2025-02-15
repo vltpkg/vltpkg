@@ -255,8 +255,16 @@ const fixScripts = async ws => {
     : {},
     ws.pj.devDependencies.tshy ?
       {
-        prepare: 'tshy',
-        watch: 'tshy --watch',
+        prepack: 'tshy',
+        typecheck: 'tsc --noEmit --project .tshy/esm.json',
+      }
+    : ws.pj.dependencies?.astro ?
+      {
+        typecheck: 'astro check',
+      }
+    : ws.pj.devDependencies.typescript && !ws.isRoot ?
+      {
+        typecheck: 'tsc --noEmit',
       }
     : {},
   )

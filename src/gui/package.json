@@ -80,6 +80,7 @@
     "snap": "vitest --no-watch -u",
     "test": "vitest",
     "posttest": "tsc --project tsconfig.test.json",
+    "typecheck": "tsc --noEmit",
     "watch": "node --no-warnings --experimental-transform-types --conditions=@vltpkg/source scripts/prepare.js --watch"
   },
   "prettier": "../../.prettierrc.js",
