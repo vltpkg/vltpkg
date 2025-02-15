@@ -40,7 +40,6 @@ const js = async () => {
     jsx: 'automatic',
     minify: argv.production,
     logLevel: 'info',
-    conditions: ['@vltpkg/source'],
     define: {
       'process.env.NODE_ENV': `"${argv.production ? 'production' : 'development'}"`,
     },

@@ -16,7 +16,6 @@
     "sourceMap": true,
     "strict": true,
     "target": "es2022",
-    "customConditions": ["@vltpkg/source"],
     "rewriteRelativeImportExtensions": true
   }
 }
