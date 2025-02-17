@@ -8,12 +8,14 @@ interface FilterSearchProps<T> {
   items: T[] | undefined
   setFilteredItems: (i: T[]) => void
   placeholder: string
+  className?: string
 }
 
 const FilterSearch = <T,>({
   items,
   setFilteredItems,
   placeholder,
+  className = '',
 }: FilterSearchProps<T>) => {
   const [filterText, setFilterText] = useState<string>('')
   const inputRef = useRef<HTMLInputElement>(null)
@@ -151,7 +153,8 @@ const FilterSearch = <T,>({
   }, [])
 
   return (
-    <div className="relative flex w-[384px] items-center">
+    <div
+      className={`relative flex w-[384px] items-center ${className}`}>
       <Search
         size={18}
         className="absolute left-0 ml-3 text-neutral-500"
