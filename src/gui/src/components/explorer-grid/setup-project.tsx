@@ -1,10 +1,9 @@
 import { type SyntheticEvent, useState } from 'react'
 import { useGraphStore } from '@/state/index.js'
 import { Button } from '@/components/ui/button.jsx'
-import { Card } from '@/components/ui/card.jsx'
 import { requestRouteTransition } from '@/lib/request-route-transition.js'
-import { Download } from 'lucide-react'
 import { LoadingSpinner } from '@/components/ui/loading-spinner.jsx'
+import { InlineCode } from '@/components/ui/inline-code.jsx'
 
 export const SetupProject = () => {
   const updateActiveRoute = useGraphStore(
@@ -16,6 +15,11 @@ export const SetupProject = () => {
   const updateQuery = useGraphStore(state => state.updateQuery)
   const updateStamp = useGraphStore(state => state.updateStamp)
   const [inProgress, setInProgress] = useState<boolean>(false)
+
+  const onDashboardClick = (e: SyntheticEvent) => {
+    e.preventDefault()
+    updateActiveRoute('/')
+  }
 
   const onInstallClick = (e: SyntheticEvent) => {
     e.stopPropagation()
@@ -44,22 +48,29 @@ export const SetupProject = () => {
   }
 
   return (
-    <div className="flex grow flex-col bg-secondary px-8 py-8 dark:bg-black">
-      <Card className="container mx-auto w-full px-8 py-8 lg:w-[1024px]">
-        <h1 className="mb-2 text-3xl font-bold">Setup Project</h1>
-        <p className="mb-6 text-gray-600">
-          Initializing your project with the <strong>vlt</strong>{' '}
-          client will replace your{' '}
-          <code className="rounded-md bg-gray-200 px-1 dark:bg-gray-900">
-            node_modules
-          </code>{' '}
-          folder with a fully compatible install managed by volt.
-        </p>
-        <Button onClick={onInstallClick}>
-          <Download size={16} />
-          Install dependencies
-        </Button>
-      </Card>
+    <div className="relative flex h-full flex-col items-center justify-center gap-8 bg-secondary dark:bg-black">
+      <div className="absolute inset-0 bg-secondary bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:32px_32px] [mask-image:radial-gradient(ellipse_50%_50%_at_50%_50%,#fff%,transparent_100%)] dark:bg-black dark:[mask-image:radial-gradient(ellipse_50%_50%_at_50%_50%,#000_60%,transparent_100%)]" />
+      <div className="z-[4] flex w-full max-w-lg flex-col items-center justify-center gap-4 rounded-lg border-[1.6px] border-dashed bg-white px-4 py-6 text-center shadow-lg dark:bg-black">
+        <h3 className="text-xl font-medium">Initialize Project?</h3>
+        <div>
+          <p className="text-pretty text-sm leading-7">
+            Initializing this Project with the <strong>vlt</strong>{' '}
+            client will replace the{' '}
+            <InlineCode>node_modules</InlineCode> folder with a fully
+            compatible install managed by <strong>vlt</strong>.{' '}
+          </p>
+        </div>
+        <div
+          className="flex items-center gap-3"
+          onClick={onDashboardClick}>
+          <Button className="w-fit" variant="outline">
+            Dashboard
+          </Button>
+          <Button className="w-fit" onClick={onInstallClick}>
+            Initialize
+          </Button>
+        </div>
+      </div>
     </div>
   )
 }

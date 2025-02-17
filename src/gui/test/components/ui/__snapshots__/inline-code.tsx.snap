@@ -1,0 +1,9 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`inline-code > renders 1`] = `
+
+<span class="mx-1 rounded-sm border-[1px] border-border bg-white px-1.5 py-1 font-mono text-xs font-normal dark:bg-black text-pink-500">
+  node_modules
+</span>
+
+`;
