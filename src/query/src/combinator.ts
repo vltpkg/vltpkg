@@ -116,6 +116,8 @@ const combinatorSelectorsMap = new Map<string, ParserFn>(
  * Parse css-style combinators, e.g: `>`, `~` and ` `
  */
 export const combinator = async (state: ParserState) => {
+  await state.cancellable()
+
   const curr = asCombinatorNode(state.current)
   const parserFn =
     curr.value && combinatorSelectorsMap.get(curr.value)

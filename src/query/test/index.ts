@@ -18,6 +18,7 @@ const testBrokenState = (): ParserState => {
   }
   const current = { type: 'bork' } as unknown as PostcssNode
   const state: ParserState = {
+    cancellable: async () => {},
     collect: {
       nodes: new Set(),
       edges: new Set(),
@@ -158,5 +159,27 @@ t.test('trying to use string selectors', async t => {
     new Query({ graph: getSimpleGraph() }).search('"foo"'),
     /Unsupported selector/,
     'should throw an unsupported selector error',
+  )
+})
+
+t.test('cancellable search', async t => {
+  const graph = getSingleWorkspaceGraph()
+  const query = new Query({ graph })
+  const ac = new AbortController()
+  const q = ':root > * > *'
+  await t.rejects(
+    new Promise((_, reject) => {
+      void query.search(q, ac.signal).catch(err => {
+        reject(err as Error)
+      })
+      ac.abort(new Error('query aborted'))
+      // the set timeout bellow should never be called since
+      // the search should throw the abort error before
+      setTimeout(() => {
+        reject(new Error('ERR'))
+      }, 1000)
+    }),
+    /query aborted/,
+    'should reject with abort error',
   )
 })

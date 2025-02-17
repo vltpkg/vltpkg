@@ -56,6 +56,8 @@ const selectorsMap = new Map<string, ParserFn>(
 export const walk = async (
   state: ParserState,
 ): Promise<ParserState> => {
+  await state.cancellable()
+
   const parserFn = selectorsMap.get(state.current.type)
 
   if (!parserFn) {
@@ -119,7 +121,10 @@ export class Query {
     this.#graph = graph
   }
 
-  async search(query: string): Promise<QueryResponse> {
+  async search(
+    query: string,
+    signal?: AbortSignal,
+  ): Promise<QueryResponse> {
     if (typeof query !== 'string') {
       throw new TypeError(
         'Query search argument needs to be a string',
@@ -141,6 +146,12 @@ export class Query {
     // builds initial state and walks over it,
     // retrieving the collected result
     const { collect } = await walk({
+      cancellable: async () => {
+        await new Promise(resolve => {
+          setTimeout(resolve, 0)
+        })
+        signal?.throwIfAborted()
+      },
       current: postcssSelectorParser().astSync(query),
       initial: {
         nodes: new Set(nodes),
@@ -151,6 +162,7 @@ export class Query {
         edges: new Set<EdgeLike>(),
       },
       partial: { nodes, edges },
+      signal,
       walk,
     })
 

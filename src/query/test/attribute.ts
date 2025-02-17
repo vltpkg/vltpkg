@@ -229,6 +229,7 @@ t.test('filterAttributes', async t => {
     nodes: new Set<NodeLike>(simpleGraph.nodes.values()),
   }
   const state = {
+    cancellable: async () => {},
     collect: {
       edges: new Set<EdgeLike>(),
       nodes: new Set<NodeLike>(),

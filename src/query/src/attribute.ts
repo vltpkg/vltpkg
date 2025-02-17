@@ -164,6 +164,8 @@ export const attributeSelectorsMap = new Map<string, ComparatorFn>(
 export const attribute = async (
   state: ParserState,
 ): Promise<ParserState> => {
+  await state.cancellable()
+
   const curr = asAttributeNode(state.current)
   const operatorFn = attributeSelectorsMap.get(String(curr.operator))
   if (!operatorFn) {

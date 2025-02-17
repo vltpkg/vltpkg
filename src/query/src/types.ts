@@ -37,6 +37,7 @@ export type GraphSelectionState = {
 }
 
 export type ParserState = {
+  cancellable: () => Promise<void>
   collect: GraphSelectionState
   current: PostcssNode
   initial: GraphSelectionState
@@ -44,6 +45,7 @@ export type ParserState = {
   next?: PostcssNode
   prev?: PostcssNode
   result?: NodeLike[]
+  signal?: AbortSignal
   walk: ParserFn
   partial: GraphSelectionState
 }

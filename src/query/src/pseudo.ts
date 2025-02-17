@@ -126,6 +126,7 @@ const has = async (state: ParserState) => {
   for (const node of top.nodes) {
     if (isSelectorNode(node)) {
       const nestedState = await state.walk({
+        cancellable: state.cancellable,
         initial: {
           edges: new Set(state.initial.edges),
           nodes: new Set(state.initial.nodes),
@@ -207,6 +208,7 @@ const is = async (state: ParserState) => {
   for (const node of top.nodes) {
     if (isSelectorNode(node)) {
       const nestedState = await state.walk({
+        cancellable: state.cancellable,
         collect: {
           edges: new Set(),
           nodes: new Set(),
@@ -258,6 +260,7 @@ const not = async (state: ParserState) => {
   for (const node of top.nodes) {
     if (isSelectorNode(node)) {
       const nestedState = await state.walk({
+        cancellable: state.cancellable,
         collect: {
           edges: new Set(),
           nodes: new Set(),
@@ -415,6 +418,8 @@ const pseudoSelectors = new Map<string, ParserFn>(
  * Parsers the `pseudo` node types.
  */
 export const pseudo = async (state: ParserState) => {
+  await state.cancellable()
+
   const curr = asPseudoNode(state.current)
   const parserFn =
     curr.value && pseudoSelectors.get(curr.value.slice(1))
