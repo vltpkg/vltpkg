@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { Query } from '@vltpkg/query'
 import { SearchBar } from '@/components/search-bar.jsx'
 import { ExplorerGrid } from '@/components/explorer-grid/index.jsx'
@@ -99,6 +99,7 @@ const ExplorerContent = () => {
   const projectInfo = useGraphStore(state => state.projectInfo)
   const query = useGraphStore(state => state.query)
   const q = useGraphStore(state => state.q)
+  const ac = useRef<AbortController>(new AbortController())
 
   // updates the query response state anytime the query changes
   // by defining query and q as dependencies of `useEffect` we
@@ -106,7 +107,9 @@ const ExplorerContent = () => {
   useEffect(() => {
     async function updateQueryData() {
       if (!q) return
-      const queryResponse = await q.search(query)
+      ac.current.abort(new Error('Query changed'))
+      ac.current = new AbortController()
+      const queryResponse = await q.search(query, ac.current.signal)
 
       updateEdges(queryResponse.edges)
       updateNodes(queryResponse.nodes)
@@ -128,7 +131,7 @@ const ExplorerContent = () => {
         window.scrollTo(0, 0)
       }
     }
-    updateQueryData().catch((err: unknown) => console.error(err))
+    void updateQueryData().catch(() => {})
   }, [query, q])
 
   // avoids flash of content
