@@ -3,9 +3,10 @@ import starlight from '@astrojs/starlight'
 import react from '@astrojs/react'
 import tailwind from '@astrojs/tailwind'
 import vercel from '@astrojs/vercel'
+import { ExpressiveCodeTheme } from '@astrojs/starlight/expressive-code'
 import * as TypedocPlugin from './src/plugins/typedoc'
-import * as CliPlugin from './src/plugins/cli'
-import { cpSync } from 'fs'
+import { cpSync, readFileSync } from 'node:fs'
+
 import starlightLinksValidator from 'starlight-links-validator'
 
 if (process.env.CI && process.env.RUNNER_OS === 'Windows') {
@@ -16,6 +17,12 @@ if (process.env.CI && process.env.RUNNER_OS === 'Windows') {
 }
 
 const MIXPANEL_TOKEN = '7853b372fb0f20e238be6d11e53f60fe'
+
+const jsoncString = readFileSync(
+  new URL(`./src/styles/custom-syntax-theme.json`, import.meta.url),
+  'utf-8',
+)
+const customTheme = ExpressiveCodeTheme.fromJSONString(jsoncString)
 
 export default defineConfig({
   site: 'https://docs.vlt.sh',
@@ -35,7 +42,13 @@ export default defineConfig({
         },
       ],
       expressiveCode: {
-        themes: ['aurora-x', 'catppuccin-latte'],
+        themes: [customTheme],
+        styleOverrides: {
+          frames: {
+            terminalTitlebarDotsForeground: '#FFFFFF',
+            terminalTitlebarDotsOpacity: '0.3',
+          },
+        },
         defaultProps: {
           wrap: true,
           preserveIndent: true,
@@ -75,7 +88,6 @@ export default defineConfig({
       },
       plugins: [
         TypedocPlugin.plugin,
-        CliPlugin.plugin,
         starlightLinksValidator({
           // work around bug in the link validator that strips
           // the index off of the last segment. Remove when this PR lands:
@@ -86,7 +98,8 @@ export default defineConfig({
       sidebar: [
         {
           label: 'CLI',
-          autogenerate: { directory: CliPlugin.directory },
+          collapsed: true,
+          autogenerate: { directory: 'cli' },
         },
         {
           label: 'Packages',

@@ -5,6 +5,8 @@ sidebar:
   order: 2
 ---
 
+import { Code } from '@astrojs/starlight/components'
+
 The vlt client supports logging into multiple different
 registries.
 
@@ -15,16 +17,16 @@ the public npm registry, use the `vlt login` command.
 
 For example, to log into the default registry:
 
-```bash
-vlt login
-```
+<Code code="$ vlt login" title="Terminal" lang="bash" />
 
 To log into a custom registry that supports npm web login, run
 the same command, specifying the registry to log into:
 
-```bash
-vlt login --registry=https://my-custom-registry.mycompany.local/
-```
+<Code
+  code="$ vlt login --registry=https://my-custom-registry.mycompany.local/"
+  title="Terminal"
+  lang="bash"
+/>
 
 To remove your authorization to a given registry, including
 attempting to destroy the token on the server side, use the `vlt
