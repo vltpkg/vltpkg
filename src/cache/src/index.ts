@@ -49,7 +49,6 @@ export type CacheOptions = {
   onDiskDelete?: (path: string, key: string, deleted: boolean) => any
 }
 
-// eslint-disable-next-line @typescript-eslint/no-invalid-void-type
 export type BooleanOrVoid = boolean | void
 
 const hash = (s: string) =>

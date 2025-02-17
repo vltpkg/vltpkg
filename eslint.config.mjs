@@ -104,6 +104,8 @@ export default tseslint.config(
           ignoreRestSiblings: true,
         },
       ],
+      // allow void in generic type arguments
+      '@typescript-eslint/no-invalid-void-type': 'off',
       // allow void arrow functions to not need to be wrapped in braces
       '@typescript-eslint/no-confusing-void-expression': [
         'off',
