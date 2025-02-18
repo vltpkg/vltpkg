@@ -5,6 +5,18 @@
  * Make sure to inspect the output below.  Do not ignore changes!
  */
 'use strict'
+exports[`test/commands/pkg.ts > TAP > human output for init subcommand > must match snapshot 1`] = `
+Wrote manifest to /some/path:
+
+{
+  "name": "myproject"
+}
+
+Modify/add properties using \`vlt pkg\`. For example:
+
+  vlt pkg set "description=My new project"
+`
+
 exports[`test/commands/pkg.ts > TAP > init > should init a new package.json file 1`] = `
 {
   "name": "test-commands-pkg.ts-init",

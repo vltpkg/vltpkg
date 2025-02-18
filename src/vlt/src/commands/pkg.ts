@@ -1,12 +1,29 @@
-import { error } from '@vltpkg/error-cause'
-import { type LoadedConfig } from '../config/index.ts'
-import { type PackageJson } from '@vltpkg/package-json'
 import * as dotProp from '@vltpkg/dot-prop'
+import { error } from '@vltpkg/error-cause'
+import { type PackageJson } from '@vltpkg/package-json'
 import { type Manifest } from '@vltpkg/types'
-import { type CommandUsage, type CommandFn } from '../types.ts'
 import assert from 'assert'
+import { type LoadedConfig } from '../config/index.ts'
 import { commandUsage } from '../config/usage.ts'
-import { init } from '../init.ts'
+import { type CommandFn, type CommandUsage } from '../index.ts'
+import { init, type InitFileResults } from '../init.ts'
+import { type ViewFn, type Views } from '../view.ts'
+import { views as initViews } from './init.ts'
+
+export const views: Views & { human: ViewFn } = {
+  human: (results, options, config) => {
+    // `vlt pkg init` is an alias for `vlt init`
+    // use the same output handling
+    if (config.positionals[0] === 'init') {
+      return initViews.human(
+        results as InitFileResults,
+        options,
+        config,
+      )
+    }
+    return results
+  },
+}
 
 export const usage: CommandUsage = () =>
   commandUsage({
@@ -46,22 +63,10 @@ export const usage: CommandUsage = () =>
     },
   })
 
-export const views = (
-  res: string,
-  _: unknown,
-  conf: LoadedConfig,
-): string => {
-  if (conf.positionals[0] === 'init') {
-    return res
-  } else {
-    return JSON.stringify(res, null, 2)
-  }
-}
-
 export const command: CommandFn = async conf => {
   const [sub, ...args] = conf.positionals
   if (sub === 'init') {
-    return { result: await init() }
+    return await init({ cwd: process.cwd() })
   }
 
   const pkg = conf.options.packageJson
@@ -103,21 +108,16 @@ const get = (mani: Manifest, args: string[]) => {
     return pick(mani, args)
   }
   assert(args[0], noArg())
-  return {
-    result: dotProp.get(mani, args[0]),
-  }
+  return dotProp.get(mani, args[0])
 }
 
 const pick = (mani: Manifest, args: string[]) => {
-  return {
-    result:
-      args.length ?
-        args.reduce(
-          (acc, key) => dotProp.set(acc, key, dotProp.get(mani, key)),
-          {},
-        )
-      : mani,
-  }
+  return args.length ?
+      args.reduce(
+        (acc, key) => dotProp.set(acc, key, dotProp.get(mani, key)),
+        {},
+      )
+    : mani
 }
 
 const set = (
