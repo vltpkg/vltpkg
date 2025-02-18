@@ -28,6 +28,7 @@ const Header = () => {
   }, [route])
 
   if (route.includes('error')) return null
+  if (route === '/new-project') return null
 
   return (
     <div className="flex w-full justify-between bg-white px-8 py-3 dark:bg-black">
