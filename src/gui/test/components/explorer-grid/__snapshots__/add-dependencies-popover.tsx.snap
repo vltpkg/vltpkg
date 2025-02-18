@@ -113,7 +113,7 @@ exports[`add-dependencies-popover render default 1`] = `
         <gui-select-value tabindex="3">
         </gui-select-value>
       </gui-select-trigger>
-      <gui-select-content>
+      <gui-select-content classname="z-[10001]">
         <gui-select-item value="prod">
           dependencies
         </gui-select-item>

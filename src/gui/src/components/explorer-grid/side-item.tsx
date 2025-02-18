@@ -98,7 +98,7 @@ export const SideItem = ({
                   />
                 </DropdownMenuTrigger>
                 <DropdownMenuContent
-                  className="z-[100000] ml-48 w-48"
+                  className="z-[10000] ml-48 w-48"
                   align="end"
                   onCloseAutoFocus={e => e.preventDefault()}>
                   <DropdownMenuItem
