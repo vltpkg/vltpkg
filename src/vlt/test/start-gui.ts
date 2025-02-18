@@ -10,10 +10,7 @@ import {
   type ConfigOptions,
   type LoadedConfig,
 } from '../src/config/index.ts'
-import {
-  formatDashboardJson,
-  parseInstallOptions,
-} from '../src/start-gui.ts'
+import { parseInstallOptions } from '../src/start-gui.ts'
 import { actualObject } from './fixtures/actual.ts'
 
 t.cleanSnapshot = s =>
@@ -43,6 +40,12 @@ t.test('starts gui data and server', async t => {
   const { startGUI } = await t.mockImport<
     typeof import('../src/start-gui.ts')
   >('../src/start-gui.ts', {
+    'node:os': {
+      ...(await import('node:os')),
+      homedir() {
+        return dir
+      },
+    },
     'node:http': {
       ...http,
       createServer() {
@@ -138,6 +141,21 @@ t.test('formatDashboardJson', async t => {
   })
   const packageJson = new PackageJson()
   const scurry = new PathScurry(t.testdirName)
+  const { formatDashboardJson } = await t.mockImport(
+    '../src/start-gui.ts',
+    {
+      'node:os': {
+        ...(await import('node:os')),
+        homedir() {
+          return dir
+        },
+      },
+      '../src/project-info.js': {
+        ...(await import('../src/project-info.ts')),
+        getReadablePath: (path: string) => path.replace(dir, '~'),
+      },
+    },
+  )
   t.strictSame(
     (
       await formatDashboardJson(scurry.readdirSync(dir), {
@@ -269,6 +287,12 @@ t.test('e2e server test', async t => {
   const log: string[] = []
   let ilog = ''
   const mocks = {
+    'node:os': {
+      ...(await import('node:os')),
+      homedir() {
+        return dir
+      },
+    },
     '@vltpkg/url-open': { urlOpen() {} },
     '../src/install.js': {
       async install() {
@@ -284,6 +308,30 @@ t.test('e2e server test', async t => {
       stderr: () => {},
       stdout: (str: string) => {
         log.push(str)
+      },
+    },
+    '../src/read-project-folders.js': {
+      readProjectFolders() {
+        return [
+          {
+            name: 'my-project',
+            fullpath: () => resolve(dir, 'projects/my-project'),
+            lstatSync: () => ({ mtimeMs: 1 }),
+            resolve: () => resolve(dir, 'projects/my-project'),
+          },
+          {
+            name: 'other-project',
+            fullpath: () => resolve(dir, 'projects/other-project'),
+            lstatSync: () => ({ mtimeMs: 1 }),
+            resolve: () => resolve(dir, 'projects/other-project'),
+          },
+          {
+            name: 'node-project',
+            fullpath: () => resolve(dir, 'projects/node-project'),
+            lstatSync: () => ({ mtimeMs: 1 }),
+            resolve: () => resolve(dir, 'projects/node-project'),
+          },
+        ]
       },
     },
   }
@@ -620,6 +668,12 @@ t.test('e2e server test', async t => {
     const { startGUI } = await t.mockImport<
       typeof import('../src/start-gui.ts')
     >('../src/start-gui.ts', {
+      'node:os': {
+        ...(await import('node:os')),
+        homedir() {
+          return dir
+        },
+      },
       '@vltpkg/url-open': { urlOpen() {} },
       '../src/install.js': {
         async install() {
@@ -629,6 +683,18 @@ t.test('e2e server test', async t => {
       '../src/output.js': {
         stderr: () => {},
         stdout: () => {},
+      },
+      '../src/read-project-folders.js': {
+        readProjectFolders() {
+          return [
+            {
+              name: 'my-project',
+              fullpath: () => '/path/to/my-project',
+              lstatSync: () => ({ mtimeMs: Date.now() }),
+              resolve: () => '/path/to/my-project',
+            },
+          ]
+        },
       },
     })
     const server = await startGUI({
@@ -740,6 +806,12 @@ t.test('e2e server test', async t => {
     const { startGUI } = await t.mockImport<
       typeof import('../src/start-gui.ts')
     >('../src/start-gui.ts', {
+      'node:os': {
+        ...(await import('node:os')),
+        homedir() {
+          return dir
+        },
+      },
       '@vltpkg/url-open': { urlOpen() {} },
       '../src/uninstall.js': {
         async uninstall() {
@@ -749,6 +821,18 @@ t.test('e2e server test', async t => {
       '../src/output.js': {
         stderr: () => {},
         stdout: () => {},
+      },
+      '../src/read-project-folders.js': {
+        readProjectFolders() {
+          return [
+            {
+              name: 'my-project',
+              fullpath: () => '/path/to/my-project',
+              lstatSync: () => ({ mtimeMs: Date.now() }),
+              resolve: () => '/path/to/my-project',
+            },
+          ]
+        },
       },
     })
     const server = await startGUI({
@@ -808,7 +892,25 @@ t.test('no data to be found', async t => {
   const { startGUI } = await t.mockImport<
     typeof import('../src/start-gui.ts')
   >('../src/start-gui.ts', {
+    'node:os': {
+      ...(await import('node:os')),
+      homedir() {
+        return dir
+      },
+    },
     '@vltpkg/url-open': { urlOpen() {} },
+    '../src/read-project-folders.js': {
+      readProjectFolders() {
+        return [
+          {
+            name: 'my-project',
+            fullpath: () => '/path/to/my-project',
+            lstatSync: () => ({ mtimeMs: Date.now() }),
+            resolve: () => '/path/to/my-project',
+          },
+        ]
+      },
+    },
   })
 
   const port = 8017
