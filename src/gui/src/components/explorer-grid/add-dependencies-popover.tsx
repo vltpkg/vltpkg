@@ -163,7 +163,7 @@ export const AddDependenciesPopover = ({
           <SelectTrigger>
             <SelectValue tabIndex={3} />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="z-[10001]">
             <SelectItem value="prod">dependencies</SelectItem>
             <SelectItem value="dev">devDependencies</SelectItem>
             <SelectItem value="optional">
