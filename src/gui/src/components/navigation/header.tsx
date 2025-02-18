@@ -29,6 +29,7 @@ const Header = () => {
   }, [route])
 
   if (route.includes('error')) return null
+  if (route === '/new-project') return null
 
   if (projectInfo.vltInstalled === false) return null
 
