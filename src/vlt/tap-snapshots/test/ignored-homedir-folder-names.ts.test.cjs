@@ -7,38 +7,54 @@
 'use strict'
 exports[`test/ignored-homedir-folder-names.ts > TAP > darwin > must match snapshot 1`] = `
 Array [
-  "Downloads",
-  "Library",
-  "Movies",
-  "Music",
-  "Pictures",
-  "Public",
+  "applications",
+  "applications (parallels)",
+  "desktop",
+  "downloads",
+  "dropbox",
+  "library",
+  "movies",
+  "music",
+  "pictures",
+  "private",
+  "private",
+  "public",
+  "sites",
+  "sync",
 ]
 `
 
 exports[`test/ignored-homedir-folder-names.ts > TAP > linux > must match snapshot 1`] = `
 Array [
-  "Downloads",
-  "Movies",
-  "Music",
-  "Pictures",
-  "Public",
-  "Videos",
+  "desktop",
+  "downloads",
+  "dropbox",
+  "library",
+  "movies",
+  "music",
+  "pictures",
+  "private",
+  "public",
+  "videos",
 ]
 `
 
 exports[`test/ignored-homedir-folder-names.ts > TAP > win32 > must match snapshot 1`] = `
 Array [
-  "AppData",
-  "Application Data",
-  "Contacts",
-  "Downloads",
-  "Favorites",
-  "Links",
-  "Movies",
-  "Music",
-  "Pictures",
-  "Searches",
-  "Videos",
+  "appdata",
+  "application data",
+  "contacts",
+  "desktop",
+  "downloads",
+  "dropbox",
+  "favorites",
+  "library",
+  "links",
+  "movies",
+  "music",
+  "pictures",
+  "private",
+  "searches",
+  "videos",
 ]
 `
