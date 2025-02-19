@@ -47,8 +47,7 @@ export const TableFilterSearch = ({
   }, [])
 
   return (
-    <div
-      className={`relative flex w-[384px] items-center ${className}`}>
+    <div className={`relative flex w-96 items-center ${className}`}>
       <Search
         size={18}
         className="absolute left-0 ml-3 text-neutral-500"

@@ -163,13 +163,13 @@ export const DashboardGrid = () => {
           <TableFilterSearch
             filterValue={tableFilterValue}
             onFilterChange={setTableFilterValue}
-            className="w-[100%]"
+            className="w-full"
           />
         : <FilterSearch
             placeholder="Filter Projects"
             items={dashboard?.projects ?? []}
             setFilteredItems={setFilteredProjects}
-            className="w-[100%]"
+            className="w-full"
           />
         }
         <DashboardViewToggle

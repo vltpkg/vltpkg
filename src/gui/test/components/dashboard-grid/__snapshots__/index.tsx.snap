@@ -8,7 +8,7 @@ exports[`dashboard-grid render default 1`] = `
       <gui-filter-search
         placeholder="Filter Projects"
         items
-        classname="w-[100%]"
+        classname="w-full"
       >
       </gui-filter-search>
       <gui-dashboard-view-toggle currentview="grid">
@@ -52,7 +52,7 @@ exports[`dashboard-grid with results 1`] = `
       <gui-filter-search
         placeholder="Filter Projects"
         items="[object Object],[object Object]"
-        classname="w-[100%]"
+        classname="w-full"
       >
       </gui-filter-search>
       <gui-dashboard-view-toggle currentview="grid">
