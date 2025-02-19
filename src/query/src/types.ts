@@ -185,3 +185,21 @@ export const asTagNode = (node?: PostcssNode): Tag => {
 
   return node
 }
+
+export const isStringNode = (node: unknown): node is String =>
+  isObj(node) && !!node.value && node.type === 'string'
+
+export const asStringNode = (node?: PostcssNode): String => {
+  if (!node) {
+    throw error('Expected a query node')
+  }
+
+  if (!isStringNode(node)) {
+    throw error('Mismatching query node', {
+      wanted: 'string',
+      found: node.type,
+    })
+  }
+
+  return node
+}

@@ -1,5 +1,6 @@
 import postcssSelectorParser from 'postcss-selector-parser'
 import type { EdgeLike, GraphLike, NodeLike } from '@vltpkg/graph'
+import { joinDepIDTuple } from '@vltpkg/dep-id'
 import type {
   GraphSelectionState,
   ParserState,
@@ -7,7 +8,6 @@ import type {
   ParserFn,
 } from '../../src/types.ts'
 import { walk } from '../../src/index.ts'
-import { joinDepIDTuple } from '@vltpkg/dep-id'
 
 export type FixtureResult = {
   edges: EdgeLike[]

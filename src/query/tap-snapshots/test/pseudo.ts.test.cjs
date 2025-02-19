@@ -994,6 +994,28 @@ Object {
 }
 `
 
+exports[`test/pseudo.ts > TAP > pseudo > query > ":semver(^2)" 1`] = `
+Object {
+  "edges": Array [
+    "b",
+  ],
+  "nodes": Array [
+    "b",
+  ],
+}
+`
+
+exports[`test/pseudo.ts > TAP > pseudo > query > ":semver(=2.0.0)" 1`] = `
+Object {
+  "edges": Array [
+    "b",
+  ],
+  "nodes": Array [
+    "b",
+  ],
+}
+`
+
 exports[`test/pseudo.ts > TAP > pseudo > query > ":type(file)" 1`] = `
 Object {
   "edges": Array [
