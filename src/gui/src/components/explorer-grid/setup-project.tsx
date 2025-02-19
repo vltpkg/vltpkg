@@ -64,7 +64,7 @@ export const SetupProject = () => {
           className="flex items-center gap-3"
           onClick={onDashboardClick}>
           <Button className="w-fit" variant="outline">
-            Dashboard
+            Cancel
           </Button>
           <Button className="w-fit" onClick={onInstallClick}>
             Initialize

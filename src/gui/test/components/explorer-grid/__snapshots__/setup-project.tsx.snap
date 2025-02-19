@@ -31,7 +31,7 @@ exports[`setup-project 1`] = `
         classname="w-fit"
         variant="outline"
       >
-        Dashboard
+        Cancel
       </gui-button>
       <gui-button classname="w-fit">
         Initialize
