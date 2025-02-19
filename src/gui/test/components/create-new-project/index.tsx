@@ -4,18 +4,6 @@ import html from 'diffable-html'
 import { useGraphStore as useStore } from '@/state/index.js'
 import { CreateNewProjectContent } from '@/components/create-new-project/index.jsx'
 
-vi.mock('@/components/ui/card.jsx', () => ({
-  Card: 'gui-card',
-}))
-
-vi.mock('@/components/ui/select.jsx', () => ({
-  Select: 'gui-select',
-  SelectContent: 'gui-select-content',
-  SelectItem: 'gui-select-item',
-  SelectTrigger: 'gui-select-trigger',
-  SelectValue: 'gui-select-value',
-}))
-
 vi.mock('@/components/ui/input.jsx', () => ({
   Input: 'gui-input',
 }))
@@ -26,6 +14,43 @@ vi.mock('@/components/ui/button.jsx', () => ({
 
 vi.mock('@/components/ui/form-label.jsx', () => ({
   Label: 'gui-label',
+}))
+
+vi.mock('@/components/ui/command.jsx', () => ({
+  Command: 'gui-command',
+  CommandEmpty: 'gui-command-empty',
+  CommandGroup: 'gui-command-group',
+  CommandInput: 'gui-command-input',
+  CommandItem: 'gui-command-item',
+  CommandList: 'gui-command-list',
+}))
+
+vi.mock('lucide-react', () => ({
+  ChevronDown: 'gui-chevron-down-icon',
+  Check: 'gui-check-icon',
+}))
+
+vi.mock('@/components/ui/popover.jsx', () => ({
+  Popover: 'gui-popover',
+  PopoverContent: 'gui-popover-content',
+  PopoverTrigger: 'gui-popover-trigger',
+}))
+
+vi.mock('@/components/grid/grid.jsx', () => ({
+  Grid: 'gui-grid',
+  System: 'gui-grid-system',
+  Cell: 'gui-grid-cell',
+}))
+
+vi.mock('@/components/icons/index.js', () => ({
+  Next: 'gui-next-icon',
+  Vercel: 'gui-vercel-icon',
+  Nuxt: 'gui-nuxt-icon',
+  Node: 'gui-node-icon',
+}))
+
+vi.mock('@/components/animated-beam.jsx', () => ({
+  AnimatedBeam: 'gui-animated-beam',
 }))
 
 expect.addSnapshotSerializer({

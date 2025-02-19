@@ -20,13 +20,9 @@ import {
 } from '@/components/ui/popover.jsx'
 import { motion, AnimatePresence } from 'framer-motion'
 import { cn } from '@/lib/utils.js'
-import { Grid } from '@/components/grid/grid.jsx'
-import { Next } from '@/components/icons/next.jsx'
-import { Vercel } from '../icons/vercel.tsx'
-import { React } from '../icons/react.tsx'
-import { Nuxt } from '../icons/nuxt.tsx'
+import { Grid, System, Cell } from '@/components/grid/grid.jsx'
+import { Next, Vercel, Nuxt, Node } from '@/components/icons/index.js'
 import { AnimatedBeam } from '@/components/animated-beam.jsx'
-import { Node } from '../icons/node.tsx'
 
 export type NewProjectItem = {
   path: string
@@ -220,41 +216,41 @@ export const CreateNewProjectContent = () => {
 
       <div className="relative h-full w-1/2">
         <div className="absolute inset-0 z-[10] h-full w-full bg-gradient-radial from-card/20 to-card/80 dark:from-neutral-950/20 dark:to-neutral-950/80" />
-        <Grid.System className="h-full w-full">
+        <System className="h-full w-full">
           <Grid rows={7} columns={7} ref={containerRef}>
-            <Grid.Cell column={2} row={2} ref={nextRef}>
+            <Cell column={2} row={2} ref={nextRef}>
               <div className="relative z-[2] flex h-full w-full items-center justify-center border-b-[1px] border-r-[1px] border-dashed border-border bg-white dark:bg-neutral-950/80">
                 <div className="flex items-center justify-center shadow-inner">
                   <Next className="size-12 text-muted-foreground/80" />
                 </div>
               </div>
-            </Grid.Cell>
+            </Cell>
 
-            <Grid.Cell column={6} row={2} ref={nuxtRef}>
+            <Cell column={6} row={2} ref={nuxtRef}>
               <div className="relative z-[2] flex h-full w-full items-center justify-center border-b-[1px] border-r-[1px] border-dashed border-border bg-white dark:bg-neutral-950/80">
                 <div className="flex items-center justify-center shadow-inner">
                   <Nuxt className="size-12 text-muted-foreground/80" />
                 </div>
               </div>
-            </Grid.Cell>
+            </Cell>
 
-            <Grid.Cell column={2} row={6} ref={vercelRef}>
+            <Cell column={2} row={6} ref={vercelRef}>
               <div className="relative z-[2] flex h-full w-full items-center justify-center border-b-[1px] border-r-[1px] border-dashed border-border bg-white dark:bg-neutral-950/80">
                 <div className="flex items-center justify-center shadow-inner">
                   <Vercel className="size-12 text-muted-foreground/80" />
                 </div>
               </div>
-            </Grid.Cell>
+            </Cell>
 
-            <Grid.Cell column={6} row={6} ref={nodeRef}>
+            <Cell column={6} row={6} ref={nodeRef}>
               <div className="relative z-[2] flex h-full w-full items-center justify-center border-b-[1px] border-r-[1px] border-dashed border-border bg-white dark:bg-neutral-950/80">
                 <div className="flex h-full w-full items-center justify-center shadow-inner">
                   <Node className="size-12 fill-muted-foreground/80" />
                 </div>
               </div>
-            </Grid.Cell>
+            </Cell>
 
-            <Grid.Cell column={4} row={4} ref={vltRef}>
+            <Cell column={4} row={4} ref={vltRef}>
               <div className="relative z-[2] flex h-full w-full items-center justify-center border-b-[1px] border-r-[1px] border-dashed border-border bg-white p-2 shadow-inner dark:bg-neutral-950">
                 <div className="flex items-center justify-center">
                   <svg
@@ -273,7 +269,7 @@ export const CreateNewProjectContent = () => {
                   </svg>
                 </div>
               </div>
-            </Grid.Cell>
+            </Cell>
 
             <AnimatedBeam
               containerRef={containerRef}
@@ -303,7 +299,7 @@ export const CreateNewProjectContent = () => {
               toRef={vltRef}
             />
           </Grid>
-        </Grid.System>
+        </System>
       </div>
     </div>
   )

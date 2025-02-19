@@ -9,7 +9,7 @@ interface GridProps {
   children: React.ReactNode
 }
 
-const Grid = forwardRef<HTMLDivElement, GridProps>(
+export const Grid = forwardRef<HTMLDivElement, GridProps>(
   ({ rows, columns, children }, ref) => (
     <div
       ref={ref}
@@ -45,7 +45,7 @@ const Grid = forwardRef<HTMLDivElement, GridProps>(
 
 interface GridSystemProps extends React.HTMLProps<HTMLDivElement> {}
 
-Grid.System = forwardRef<HTMLDivElement, GridSystemProps>(
+export const System = forwardRef<HTMLDivElement, GridSystemProps>(
   ({ className = '', children }, ref) => {
     const gridVariants = cva('')
 
@@ -63,7 +63,7 @@ interface CellProps {
   children: React.ReactNode
 }
 
-Grid.Cell = forwardRef<HTMLDivElement, CellProps>(
+export const Cell = forwardRef<HTMLDivElement, CellProps>(
   ({ row = 'auto', column, children }, ref) => (
     <div
       ref={ref}
@@ -79,7 +79,7 @@ interface CrossProps {
   column: number
 }
 
-Grid.Cross = forwardRef<HTMLDivElement, CrossProps>(
+export const Cross = forwardRef<HTMLDivElement, CrossProps>(
   ({ row, column }, ref) => (
     <div
       ref={ref}
@@ -106,5 +106,3 @@ Grid.Cross = forwardRef<HTMLDivElement, CrossProps>(
     </div>
   ),
 )
-
-export { Grid }
