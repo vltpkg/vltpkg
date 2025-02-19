@@ -6,7 +6,7 @@
 /pnpm-lock.yaml
 /scripts/fixtures
 /tap-snapshots
-/test/**/fixtures
+/test/fixtures/**/*.json
 
 /src/*/.*/
 /src/*/dist
@@ -16,8 +16,7 @@
 /src/*/package.json
 /src/*/scripts/fixtures
 /src/*/tap-snapshots
-/src/*/test/**/fixtures/**
-!/src/*/test/**/fixtures/*.ts
+/src/*/test/fixtures/**/*.json
 
 /infra/*/.*/
 /infra/*/dist
@@ -27,8 +26,7 @@
 /infra/*/package.json
 /infra/*/scripts/fixtures
 /infra/*/tap-snapshots
-/infra/*/test/**/fixtures/**
-!/infra/*/test/**/fixtures/*.ts
+/infra/*/test/fixtures/**/*.json
 
 /www/*/.*/
 /www/*/dist
@@ -38,8 +36,7 @@
 /www/*/package.json
 /www/*/scripts/fixtures
 /www/*/tap-snapshots
-/www/*/test/**/fixtures/**
-!/www/*/test/**/fixtures/*.ts
+/www/*/test/fixtures/**/*.json
 
 /www/docs/src/content/docs/packages/
 /www/docs/src/content/docs/cli/commands/
