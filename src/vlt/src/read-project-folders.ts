@@ -44,12 +44,13 @@ export const readProjectFolders = ({
       !entry.isSymbolicLink() &&
       entry.name !== 'node_modules' &&
       !entry.name.startsWith('.') &&
-      !ignoredHomedirFolderNames.includes(entry.name)
+      !ignoredHomedirFolderNames.includes(entry.name.toLowerCase())
     ) {
       const resolved = entry.fullpath()
       const statPackageJson = scurry.lstatSync(
         `${resolved}/package.json`,
       )
+      const hasDotGit = scurry.lstatSync(`${resolved}/.git`)
       const hasValidPackageJson =
         statPackageJson &&
         statPackageJson.isFile() &&
@@ -57,7 +58,10 @@ export const readProjectFolders = ({
       if (hasValidPackageJson) {
         result.push(entry)
       } else {
-        foundDir = true
+        // do not descend if we're in a root of a git project or C project
+        // TODO: make this more consistent with how we determine
+        // "project-root-ness" in the walk up the folder tree.
+        foundDir = !hasDotGit
       }
     }
     return foundDir
