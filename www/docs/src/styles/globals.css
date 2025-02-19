@@ -2,6 +2,14 @@
 @tailwind components;
 @tailwind utilities;
 
+*,
+*::before,
+*::after {
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: subpixel-antialiased;
+  font-smooth: auto;
+}
+
 .sl-markdown-content h2 {
   font-size: 1.25rem;
 }
@@ -203,4 +211,123 @@ html {
   body {
     @apply bg-background text-foreground;
   }
+}
+
+/* 
+blame astro/starlight for this...
+https://github.com/withastro/starlight/discussions/972
+*/
+[data-name='commands'] > .group > p {
+  text-transform: capitalize;
+}
+
+/* 
+style code snippets
+*/
+body .expressive-code .frame {
+  box-shadow: none;
+  background: #000000;
+  border-radius: 8px;
+  overflow: hidden;
+  outline: none !important;
+  padding: 0 !important;
+}
+
+body .expressive-code .frame.is-terminal {
+  border: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+body .expressive-code .frame figcaption.header,
+body .expressive-code .frame.is-terminal figcaption.header {
+  background: none;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+body .expressive-code .frame pre {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+body .expressive-code .frame pre code {
+  font-family: 'geistMono', monospace !important;
+  font-weight: bold !important;
+}
+
+body .expressive-code .frame pre code span {
+  font-weight: normal;
+  font-size: 13px;
+  line-height: 20px;
+}
+
+body .expressive-code .header {
+  height: 40px;
+}
+
+body .expressive-code .header::before,
+body .expressive-code .header::after,
+body .expressive-code .header .title::before {
+  box-sizing: border-box !important;
+  border: none !important;
+  overflow: hidden !important;
+  -webkit-mask-image: none !important;
+  mask-image: none !important;
+  width: 8px !important;
+  height: 8px !important;
+  max-width: auto !important;
+  max-height: auto !important;
+  position: absolute !important;
+  top: 14px !important;
+  left: 15px !important;
+  bottom: auto !important;
+  right: auto !important;
+  display: block !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  background: rgb(255, 59, 25) !important;
+  opacity: 1 !important;
+  border-radius: 50% !important;
+  line-height: 100% !important;
+}
+
+body .expressive-code .header:after {
+  left: 28px !important;
+  background: rgb(255, 213, 0) !important;
+}
+
+body .expressive-code .header .title::before {
+  content: '';
+  left: 41px !important;
+  background: rgb(20, 191, 23) !important;
+}
+
+body .expressive-code .frame .copy button {
+  background: none !important;
+  opacity: 1 !important;
+}
+
+body .expressive-code .frame .title {
+  font-family: 'geistMono', monospace !important;
+  font-size: 11px;
+  font-weight: bold;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+body .expressive-code .frame .copy button:after {
+  mask: unset !important;
+  background: url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIGNsYXNzPSJsdWNpZGUgbHVjaWRlLWNvcHkiPjxyZWN0IHdpZHRoPSIxNCIgaGVpZ2h0PSIxNCIgeD0iOCIgeT0iOCIgcng9IjIiIHJ5PSIyIi8+PHBhdGggZD0iTTQgMTZjLTEuMSAwLTItLjktMi0yVjRjMC0xLjEuOS0yIDItMmgxMGMxLjEgMCAyIC45IDIgMiIvPjwvc3ZnPg==);
+  width: 16px;
+  height: 16px;
+  opacity: 0.5;
+  background-size: contain;
+  color: white;
+  fill: white;
+  filter: invert(1);
+}
+
+body .expressive-code .frame .copy button::before,
+body .expressive-code .frame .copy button::after {
+  border: none !important;
+}
+
+body .expressive-code .frame.is-terminal .copy {
+  margin-top: 6px !important;
 }

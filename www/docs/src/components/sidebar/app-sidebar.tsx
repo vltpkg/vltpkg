@@ -24,9 +24,7 @@ export const AppSidebarDesktop = ({
   children: React.ReactNode
 }) => {
   return (
-    <div className="hidden h-[100vh] w-[200px] pb-8 md:block">
-      {children}
-    </div>
+    <div className="hidden w-[200px] pb-8 md:block">{children}</div>
   )
 }
 

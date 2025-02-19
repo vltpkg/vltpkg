@@ -1,0 +1,55 @@
+---
+title: vlt pkg
+sidebar:
+  label: pkg
+---
+
+import { Code } from '@astrojs/starlight/components'
+
+Usage:
+
+<Code code="$ vlt pkg [<command>] [<args>]" title="Terminal" lang="bash" />
+
+Get or manipulate package.json values
+
+## Subcommands
+
+### get
+
+Get a single value
+
+<Code code="$ vlt pkg get [<key>]" title="Terminal" lang="bash" />
+
+### init
+
+Initialize a new package.json file in the current directory
+
+<Code code="$ vlt pkg init" title="Terminal" lang="bash" />
+
+### pick
+
+Get multiple values or the entire package
+
+<Code code="$ vlt pkg pick [<key> [<key> ...]]" title="Terminal" lang="bash" />
+
+### set
+
+Set one or more key value pairs
+
+<Code code="$ vlt pkg set <key>=<value> [<key>=<value> ...]" title="Terminal" lang="bash" />
+
+### delete
+
+Delete one or more keys from the package
+
+<Code code="$ vlt pkg delete <key> [<key> ...]" title="Terminal" lang="bash" />
+
+## Examples
+
+Set a value on an object inside an array
+
+<Code code={`$ vlt pkg set "array[1].key=value"`} title="Terminal" lang="bash" />
+
+Append a value to an array
+
+<Code code={`$ vlt pkg set "array[]=value"`} title="Terminal" lang="bash" />
