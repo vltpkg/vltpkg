@@ -1,0 +1,57 @@
+---
+title: vlt config
+sidebar:
+  label: config
+---
+
+import { Code } from '@astrojs/starlight/components'
+
+Usage:
+
+<Code code="$ vlt config <command> [flags]" title="Terminal" lang="bash" />
+
+Work with vlt configuration
+
+## Aliases
+
+```
+conf
+```
+
+## Subcommands
+
+### get
+
+Print the named config value
+
+<Code code="$ vlt config get <key> [<key> ...]" title="Terminal" lang="bash" />
+
+### list
+
+Print all configuration settings currently in effect
+
+<Code code="$ vlt config list" title="Terminal" lang="bash" />
+
+### set
+
+Set config values. By default, these are written to the project config file, `vlt.json` in the root of the project. To set things for all projects, run with `--config=user`
+
+<Code code="$ vlt config set <key>=<value> [<key>=<value> ...] [--config=<user | project>]" title="Terminal" lang="bash" />
+
+### del
+
+Delete the named config fields. If no values remain in the config file, delete the file as well. By default, operates on the `vlt.json` file in the root of the current project. To delete a config field from the user config file, specify `--config=user`.
+
+<Code code="$ vlt config del <key> [<key> ...] [--config=<user | project>]" title="Terminal" lang="bash" />
+
+### edit
+
+Edit the configuration file
+
+<Code code="$ vlt config edit [--config=<user | project>]" title="Terminal" lang="bash" />
+
+### help
+
+Get information about a config field, or show a list of known config field names.
+
+<Code code="$ vlt config help [field ...]" title="Terminal" lang="bash" />

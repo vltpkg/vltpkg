@@ -1,0 +1,46 @@
+---
+title: vlt list
+sidebar:
+  label: list
+---
+
+import { Code } from '@astrojs/starlight/components'
+
+Usage:
+
+<Code code="$ vlt ls
+$ vlt ls <query> --view=[human | json | mermaid | gui]" title="Terminal" lang="bash" />
+
+List installed dependencies matching the provided query. Defaults to listing direct dependencies of a project and any configured workspace.
+
+## Examples
+
+List direct dependencies of the current project / workspace
+
+<Code code="$ vlt ls" title="Terminal" lang="bash" />
+
+List all dependencies for the current project / workspace
+
+<Code code="$ vlt ls *" title="Terminal" lang="bash" />
+
+List all dependencies named 'foo', 'bar', or 'baz'
+
+<Code code="$ vlt ls foo bar baz" title="Terminal" lang="bash" />
+
+Lists direct dependencies of a specific package
+
+<Code code={`$ vlt ls '[name="@scoped/package"] > *'`} title="Terminal" lang="bash" />
+
+List all peer dependencies of all workspaces
+
+<Code code={`$ vlt ls '*.workspace > *.peer'`} title="Terminal" lang="bash" />
+
+## Options
+
+### view
+
+Output format. Defaults to human-readable or json if no tty.
+
+```
+--view=[human | json | mermaid | gui]
+```

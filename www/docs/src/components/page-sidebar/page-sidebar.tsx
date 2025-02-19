@@ -28,14 +28,11 @@ const PageSidebar = ({ toc }: Props) => {
   useEffect(() => {
     const observer = new IntersectionObserver(
       entries => {
-        let lastVisible: string | null = null
-
-        entries.forEach(entry => {
-          if (entry.isIntersecting) {
-            lastVisible = entry.target.id
-          }
+        const visible = entries.filter(entry => {
+          return entry.isIntersecting
         })
-        setActiveAnchor(lastVisible)
+        const firstVisible = visible[0]?.target?.id || null
+        setActiveAnchor(firstVisible)
       },
       {
         threshold: [0.25, 0.5, 0.75],
@@ -58,7 +55,7 @@ const PageSidebar = ({ toc }: Props) => {
 
   const renderItems = (items: typeof anchors) =>
     items.map((item, idx) => (
-      <div key={idx} className="flex flex-col gap-1">
+      <div key={idx} className="flex flex-col gap-1 pb-1">
         <Link href={item.slug} isActive={activeAnchor === item.slug}>
           {item.text}
         </Link>
@@ -95,8 +92,8 @@ const Link = ({
       href={`#${href}`}
       className={`cursor-pointer pl-2 text-sm no-underline transition-all ${
         isActive ?
-          'border-l-[2px] border-foreground text-foreground'
-        : 'text-muted-foreground'
+          'border-l-[2px] border-foreground font-bold text-foreground'
+        : 'font-medium text-muted-foreground'
       } hover:text-foreground`}>
       {children}
     </a>

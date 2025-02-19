@@ -1,0 +1,19 @@
+---
+title: vlt run
+sidebar:
+  label: run
+---
+
+import { Code } from '@astrojs/starlight/components'
+
+Usage:
+
+<Code code="$ vlt run <script> [args ...]" title="Terminal" lang="bash" />
+
+Run a script defined in 'package.json', passing along any extra arguments. Note that vlt config values must be specified *before* the script name, because everything after that is handed off to the script process.
+
+## Aliases
+
+```
+r, run-script
+```
