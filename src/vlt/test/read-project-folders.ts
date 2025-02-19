@@ -1,6 +1,7 @@
+import { availableParallelism } from 'node:os'
 import { resolve } from 'node:path'
-import t from 'tap'
 import { PathScurry } from 'path-scurry'
+import t from 'tap'
 import { readProjectFolders } from '../src/read-project-folders.ts'
 
 t.test('run from folder with project folders on it', async t => {
@@ -41,7 +42,7 @@ t.test('run from folder with project folders on it', async t => {
   const userDefinedPath = resolve(dir, 'projects')
   const projectRoot = userDefinedPath
   const scurry = new PathScurry(projectRoot)
-  const projectFolders = readProjectFolders({
+  const projectFolders = await readProjectFolders({
     scurry,
     userDefinedProjectPaths: [userDefinedPath],
   })
@@ -56,6 +57,11 @@ t.test(
   async t => {
     const dir = t.testdir({
       home: {
+        downloads: {
+          'ignore-this-always': {
+            'package.json': JSON.stringify({}),
+          },
+        },
         projects: {
           a: {
             'package.json': JSON.stringify({
@@ -120,17 +126,42 @@ t.test(
         },
       },
     })
+
     const homedir = resolve(dir, 'home')
     const scurry = new PathScurry(homedir)
-    const projectFolders = readProjectFolders({
-      path: homedir,
-      scurry,
-      userDefinedProjectPaths: [],
+    const { readProjectFolders } = await t.mockImport<
+      typeof import('../src/read-project-folders.ts')
+    >('../src/read-project-folders.ts', {
+      'node:os': {
+        availableParallelism,
+        homedir: () => homedir,
+      },
     })
-    t.matchSnapshot(
-      projectFolders.map(i => i.name),
-      'should nested found folders',
-    )
+
+    t.test('with path specified', async t => {
+      const projectFolders = await readProjectFolders({
+        path: homedir,
+        scurry,
+        userDefinedProjectPaths: [],
+      })
+
+      t.matchSnapshot(
+        projectFolders.map(i => i.name),
+        'should nested found folders',
+      )
+    })
+
+    t.test('defaulting to home', async t => {
+      const projectFolders = await readProjectFolders({
+        scurry,
+        userDefinedProjectPaths: [],
+      })
+
+      t.matchSnapshot(
+        projectFolders.map(i => i.name),
+        'should nested found folders',
+      )
+    })
   },
 )
 
@@ -182,7 +213,7 @@ t.test(
     })
     const userDefinedPath = resolve(dir, 'projects')
     const scurry = new PathScurry(userDefinedPath)
-    const projectFolders = readProjectFolders({
+    const projectFolders = await readProjectFolders({
       scurry,
       userDefinedProjectPaths: [userDefinedPath],
     })
