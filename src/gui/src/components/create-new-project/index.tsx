@@ -1,4 +1,4 @@
-import { type SyntheticEvent, useState } from 'react'
+import { type SyntheticEvent, useRef, useState } from 'react'
 import { useGraphStore } from '@/state/index.js'
 import { Input } from '@/components/ui/input.jsx'
 import { Button } from '@/components/ui/button.jsx'
@@ -20,6 +20,13 @@ import {
 } from '@/components/ui/popover.jsx'
 import { motion, AnimatePresence } from 'framer-motion'
 import { cn } from '@/lib/utils.js'
+import { Grid } from '@/components/grid/grid.jsx'
+import { Next } from '@/components/icons/next.jsx'
+import { Vercel } from '../icons/vercel.tsx'
+import { React } from '../icons/react.tsx'
+import { Nuxt } from '../icons/nuxt.tsx'
+import { AnimatedBeam } from '@/components/animated-beam.jsx'
+import { Node } from '../icons/node.tsx'
 
 export type NewProjectItem = {
   path: string
@@ -44,6 +51,12 @@ export const CreateNewProjectContent = () => {
     dashboard?.defaultAuthor ?? '',
   )
   const [isProjectNameValid, setIsProjectNameValid] = useState(true)
+  const containerRef = useRef<HTMLDivElement>(null)
+  const nextRef = useRef<HTMLDivElement>(null)
+  const vltRef = useRef<HTMLDivElement>(null)
+  const nodeRef = useRef<HTMLDivElement>(null)
+  const nuxtRef = useRef<HTMLDivElement>(null)
+  const vercelRef = useRef<HTMLDivElement>(null)
 
   const validateProjectName = (name: string) => {
     const regex = /^[a-z0-9-]+$/
@@ -84,16 +97,17 @@ export const CreateNewProjectContent = () => {
   }
 
   return (
-    <div className="z-[3] flex w-full flex-col rounded-md border-[1px] border-dashed bg-card/50">
-      <div className="flex flex-col gap-2 px-8 py-8">
-        <h5 className="text-xl font-medium">Project details</h5>
-        <p className="text-sm italic text-muted-foreground/50">
-          Required fields are marked with an asterisk (*).
-        </p>
-      </div>
-
-      <form className="space-y-6" onSubmit={formSubmit}>
-        <div className="flex w-1/2 flex-col gap-2 px-8">
+    <div className="z-[3] flex w-full rounded-md border-[1px] border-dashed bg-card dark:bg-neutral-950">
+      <form
+        className="relative w-1/2 space-y-6 border-r-[1px] border-solid border-dashed"
+        onSubmit={formSubmit}>
+        <div className="mb-12 flex flex-col gap-2 px-8 pt-8">
+          <h5 className="text-xl font-medium">Project details</h5>
+          <p className="text-sm italic text-muted-foreground/50">
+            Required fields are marked with an asterisk (*).
+          </p>
+        </div>
+        <div className="flex flex-col gap-2 px-8">
           <Label htmlFor="projectName">Project Name *</Label>
           <Input
             id="projectName"
@@ -131,14 +145,14 @@ export const CreateNewProjectContent = () => {
             duration: 0.2,
             ease: [0.45, 0, 0.55, 1],
           }}
-          className="flex w-1/2 flex-col gap-6 px-8">
-          <div className="flex flex-col gap-2">
+          className="flex flex-col gap-6">
+          <div className="flex flex-col gap-2 px-8">
             <Label htmlFor="location">Location *</Label>
             <Popover>
               <PopoverTrigger asChild>
-                <Button className="group flex h-[40px] w-full items-center justify-between border-[1px] border-border bg-background text-muted-foreground shadow-none transition-all duration-300 hover:bg-muted-foreground/20">
+                <Button className="group flex h-[40px] w-full items-center justify-between border-[1px] border-border bg-background text-muted-foreground shadow-none hover:bg-muted-foreground/10">
                   {pathName || '~'}
-                  <ChevronDown className="text-foreground opacity-50 transition-all duration-300 group-data-[state=open]:-rotate-180" />
+                  <ChevronDown className="text-foreground opacity-50 duration-300 group-data-[state=open]:-rotate-180" />
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="max-h-[--radix-popover-content-available-height] w-[--radix-popover-trigger-width] p-0">
@@ -179,7 +193,7 @@ export const CreateNewProjectContent = () => {
             </Popover>
           </div>
 
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-2 px-8">
             <Label htmlFor="author">Author</Label>
             <Input
               placeholder="John Doe <johndoe@acme.com>"
@@ -190,7 +204,7 @@ export const CreateNewProjectContent = () => {
           </div>
         </motion.div>
 
-        <div className="flex justify-end border-t-[1px] border-dashed px-4 py-4">
+        <div className="absolute bottom-0 flex w-full justify-end border-t-[1px] border-dashed px-8 py-4">
           <Button
             className="font-medium"
             disabled={
@@ -203,6 +217,94 @@ export const CreateNewProjectContent = () => {
           </Button>
         </div>
       </form>
+
+      <div className="relative h-full w-1/2">
+        <div className="absolute inset-0 z-[10] h-full w-full bg-gradient-radial from-card/20 to-card/80 dark:from-neutral-950/20 dark:to-neutral-950/80" />
+        <Grid.System className="h-full w-full">
+          <Grid rows={7} columns={7} ref={containerRef}>
+            <Grid.Cell column={2} row={2} ref={nextRef}>
+              <div className="relative z-[2] flex h-full w-full items-center justify-center border-b-[1px] border-r-[1px] border-dashed border-border bg-white dark:bg-neutral-950/80">
+                <div className="flex items-center justify-center shadow-inner">
+                  <Next className="size-12 text-muted-foreground/80" />
+                </div>
+              </div>
+            </Grid.Cell>
+
+            <Grid.Cell column={6} row={2} ref={nuxtRef}>
+              <div className="relative z-[2] flex h-full w-full items-center justify-center border-b-[1px] border-r-[1px] border-dashed border-border bg-white dark:bg-neutral-950/80">
+                <div className="flex items-center justify-center shadow-inner">
+                  <Nuxt className="size-12 text-muted-foreground/80" />
+                </div>
+              </div>
+            </Grid.Cell>
+
+            <Grid.Cell column={2} row={6} ref={vercelRef}>
+              <div className="relative z-[2] flex h-full w-full items-center justify-center border-b-[1px] border-r-[1px] border-dashed border-border bg-white dark:bg-neutral-950/80">
+                <div className="flex items-center justify-center shadow-inner">
+                  <Vercel className="size-12 text-muted-foreground/80" />
+                </div>
+              </div>
+            </Grid.Cell>
+
+            <Grid.Cell column={6} row={6} ref={nodeRef}>
+              <div className="relative z-[2] flex h-full w-full items-center justify-center border-b-[1px] border-r-[1px] border-dashed border-border bg-white dark:bg-neutral-950/80">
+                <div className="flex h-full w-full items-center justify-center shadow-inner">
+                  <Node className="size-12 fill-muted-foreground/80" />
+                </div>
+              </div>
+            </Grid.Cell>
+
+            <Grid.Cell column={4} row={4} ref={vltRef}>
+              <div className="relative z-[2] flex h-full w-full items-center justify-center border-b-[1px] border-r-[1px] border-dashed border-border bg-white p-2 shadow-inner dark:bg-neutral-950">
+                <div className="flex items-center justify-center">
+                  <svg
+                    width="24"
+                    className="size-16 text-muted-foreground"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg">
+                    <path
+                      fillRule="evenodd"
+                      clipRule="evenodd"
+                      d="M6.54545 17.4601C6.54545 20.4686 8.9945 22.9201 12 22.9201C15.0055 22.9201 17.4545 20.4686 17.4545 17.4601C17.4545 16.6302 17.2691 15.8275 16.9145 15.0959L18.7745 11.9947C21.6764 11.8745 24 9.54858 24 6.54008C24 3.53157 21.551 1.08008 18.5455 1.08008C15.54 1.08008 13.0909 3.53157 13.0909 6.54008C13.0909 7.37 13.2764 8.17266 13.631 8.90421L12 11.6234L10.369 8.90421C10.7236 8.17808 10.9091 7.37 10.9091 6.54008C10.9091 3.53157 8.46004 1.08008 5.45455 1.08008C2.44909 1.08008 0 3.6081 0 6.54008C0 9.47205 2.32364 11.8745 5.22545 11.9947L7.0855 15.0959C6.73091 15.8221 6.54545 16.6302 6.54545 17.4601ZM15.2727 6.54008C15.2727 4.73277 16.74 3.26408 18.5455 3.26408C20.351 3.26408 21.8182 4.73277 21.8182 6.54008C21.8182 8.34738 20.351 9.81608 18.5455 9.81608C18.2236 9.81608 17.9127 9.76698 17.6182 9.67962L14.3291 15.1615C14.9127 15.7566 15.2727 16.5646 15.2727 17.4601C15.2727 19.2674 13.8055 20.7361 12 20.7361C10.1945 20.7361 8.72727 19.2674 8.72727 17.4601C8.72727 16.5646 9.08727 15.7511 9.67087 15.1615L6.38182 9.67962C6.08727 9.76698 5.77641 9.81608 5.45455 9.81608C3.64905 9.81608 2.18182 8.34738 2.18182 6.54008C2.18182 4.73277 3.64905 3.26408 5.45455 3.26408C7.26004 3.26408 8.72727 4.73277 8.72727 6.54008C8.72727 7.43552 8.36727 8.24901 7.78368 8.83869L11.0727 14.3205C11.3673 14.2332 11.6781 14.1841 12 14.1841C12.3219 14.1841 12.6327 14.2332 12.9273 14.3205L16.2163 8.83869C15.6327 8.2436 15.2727 7.43552 15.2727 6.54008Z"
+                      fill="currentColor"
+                    />
+                  </svg>
+                </div>
+              </div>
+            </Grid.Cell>
+
+            <AnimatedBeam
+              containerRef={containerRef}
+              fromRef={nextRef}
+              delay={0.5}
+              toRef={vltRef}
+            />
+            <AnimatedBeam
+              containerRef={containerRef}
+              fromRef={nuxtRef}
+              delay={1}
+              reverse={true}
+              toRef={vltRef}
+            />
+            <AnimatedBeam
+              containerRef={containerRef}
+              fromRef={vercelRef}
+              delay={1.5}
+              toRef={vltRef}
+            />
+
+            <AnimatedBeam
+              containerRef={containerRef}
+              delay={2}
+              reverse={true}
+              fromRef={nodeRef}
+              toRef={vltRef}
+            />
+          </Grid>
+        </Grid.System>
+      </div>
     </div>
   )
 }
