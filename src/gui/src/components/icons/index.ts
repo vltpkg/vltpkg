@@ -16,3 +16,9 @@ export * from './npm.jsx'
 export * from './pnpm.jsx'
 export * from './yarn.jsx'
 export * from './vlt.jsx'
+
+// frameworks
+export * from './next.jsx'
+export * from './react.jsx'
+export * from './vercel.jsx'
+export * from './vue.jsx'
