@@ -1,6 +1,13 @@
 import { commandUsage } from '../config/usage.ts'
 import { type CommandFn, type CommandUsage } from '../index.ts'
 import { startGUI } from '../start-gui.ts'
+import { ViewFn } from '../view.ts'
+
+// this command is only a view, it doesn't actually do anything at this time
+export const views: ViewFn<null> = async (_, __, conf) => {
+  await startGUI({ conf })
+  return ''
+}
 
 export const usage: CommandUsage = () =>
   commandUsage({
@@ -9,6 +16,4 @@ export const usage: CommandUsage = () =>
     description: 'Launch a graphical user interface in a browser',
   })
 
-export const command: CommandFn<void> = async conf => {
-  await startGUI({ conf })
-}
+export const command: CommandFn = async () => null
