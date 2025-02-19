@@ -124,7 +124,7 @@ export const CreateNewProjectContent = () => {
                 animate={{ height: 'auto', opacity: 1 }}>
                 <p
                   className="text-sm text-red-500"
-                  style={{ marginTop: !isProjectNameValid ? 10 : 0 }}>
+                  style={{ marginTop: 10 }}>
                   Project name can only contain lowercase letters and
                   hyphens
                 </p>

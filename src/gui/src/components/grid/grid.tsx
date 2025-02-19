@@ -1,5 +1,4 @@
-import { forwardRef } from 'react'
-import { CSSProperties } from 'react'
+import { forwardRef, type CSSProperties } from 'react'
 import { cva } from 'class-variance-authority'
 import { cn } from '@/lib/utils.js'
 
@@ -9,6 +8,7 @@ interface GridProps {
   children: React.ReactNode
 }
 
+/* eslint-disable-next-line */
 export const Grid = forwardRef<HTMLDivElement, GridProps>(
   ({ rows, columns, children }, ref) => (
     <div
@@ -43,7 +43,10 @@ export const Grid = forwardRef<HTMLDivElement, GridProps>(
   ),
 ) as any
 
-interface GridSystemProps extends React.HTMLProps<HTMLDivElement> {}
+interface GridSystemProps extends React.HTMLProps<HTMLDivElement> {
+  className?: string
+  children: React.ReactNode
+}
 
 export const System = forwardRef<HTMLDivElement, GridSystemProps>(
   ({ className = '', children }, ref) => {
