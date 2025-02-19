@@ -1,13 +1,10 @@
 import { error } from '@vltpkg/error-cause'
-import { type Jack } from 'jackspeak'
+import type { Jack } from 'jackspeak'
 import { loadPackageJson } from 'package-json-from-dist'
-import {
-  Config,
-  type LoadedConfig,
-  type Commands,
-} from './config/index.ts'
+import { Config } from './config/index.ts'
+import type { LoadedConfig, Commands } from './config/index.ts'
 import { outputCommand, stdout } from './output.ts'
-import { type Views } from './view.ts'
+import type { Views } from './view.ts'
 
 export type CommandUsage = () => Jack
 

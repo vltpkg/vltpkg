@@ -1,12 +1,8 @@
 import { useEffect } from 'react'
 import { useStore } from '@/state'
-import { type State } from '@/state/types'
-import {
-  SunMedium,
-  Moon,
-  LaptopMinimal,
-  type LucideIcon,
-} from 'lucide-react'
+import type { State } from '@/state/types'
+import { SunMedium, Moon, LaptopMinimal } from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
 import clsx from 'clsx'
 
 interface Control {

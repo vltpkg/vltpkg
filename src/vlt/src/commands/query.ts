@@ -1,18 +1,20 @@
 import {
   actual,
   humanReadableOutput,
-  type HumanReadableOutputGraph,
   jsonOutput,
-  type JSONOutputGraph,
   mermaidOutput,
-  type MermaidOutputGraph,
-  type Node,
+} from '@vltpkg/graph'
+import type {
+  HumanReadableOutputGraph,
+  JSONOutputGraph,
+  MermaidOutputGraph,
+  Node,
 } from '@vltpkg/graph'
 import { Query } from '@vltpkg/query'
 import { commandUsage } from '../config/usage.ts'
-import { type CommandFn, type CommandUsage } from '../index.ts'
+import type { CommandFn, CommandUsage } from '../index.ts'
 import { startGUI } from '../start-gui.ts'
-import { type Views } from '../view.ts'
+import type { Views } from '../view.ts'
 
 export const usage: CommandUsage = () =>
   commandUsage({

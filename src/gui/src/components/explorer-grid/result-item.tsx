@@ -1,4 +1,4 @@
-import { type MouseEvent } from 'react'
+import type { MouseEvent } from 'react'
 import { stringifyNode } from '@vltpkg/graph/browser'
 import { useGraphStore } from '@/state/index.js'
 import { Badge } from '@/components/ui/badge.jsx'
@@ -10,7 +10,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip.jsx'
 import { labelClassNamesMap } from './label-helper.js'
-import { type GridItemData, type GridItemOptions } from './types.js'
+import type { GridItemData, GridItemOptions } from './types.js'
 
 export type ResultItemClickOptions = {
   item: GridItemData

@@ -9,12 +9,8 @@ import {
 } from 'vitest'
 import { setupServer } from 'msw/node'
 import { http, HttpResponse } from 'msw'
-import { type Query } from '@vltpkg/query'
-import {
-  type EdgeLike,
-  type GraphLike,
-  type NodeLike,
-} from '@vltpkg/graph'
+import type { Query } from '@vltpkg/query'
+import type { EdgeLike, GraphLike, NodeLike } from '@vltpkg/graph'
 import { cleanup, render } from '@testing-library/react'
 import html from 'diffable-html'
 import { useGraphStore as useStore } from '@/state/index.js'

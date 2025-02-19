@@ -2,7 +2,7 @@ import t from 'tap'
 import { loadNodes } from '../../src/lockfile/load-nodes.ts'
 import { Graph } from '../../src/graph.ts'
 import { joinDepIDTuple } from '@vltpkg/dep-id'
-import { type LockfileData } from '../../src/index.ts'
+import type { LockfileData } from '../../src/index.ts'
 
 t.cleanSnapshot = s =>
   s.replace(

@@ -1,24 +1,24 @@
-import { type DepID } from '@vltpkg/dep-id'
+import type { DepID } from '@vltpkg/dep-id'
 import {
   defaultRegistry,
   defaultRegistries,
   defaultGitHosts,
   defaultGitHostArchives,
   defaultScopeRegistries,
-  type SpecOptions,
 } from '@vltpkg/spec'
+import type { SpecOptions } from '@vltpkg/spec'
 import { mkdirSync, writeFileSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
-import { type Edge } from '../edge.ts'
-import { type Graph } from '../graph.ts'
-import { type Node } from '../node.ts'
-import {
-  getFlagNumFromNode,
-  type LockfileData,
-  type LockfileEdgeKey,
-  type LockfileEdges,
-  type LockfileEdgeValue,
-  type LockfileNode,
+import type { Edge } from '../edge.ts'
+import type { Graph } from '../graph.ts'
+import type { Node } from '../node.ts'
+import { getFlagNumFromNode } from './types.ts'
+import type {
+  LockfileData,
+  LockfileEdgeKey,
+  LockfileEdges,
+  LockfileEdgeValue,
+  LockfileNode,
 } from './types.ts'
 
 export type SaveOptions = SpecOptions & {

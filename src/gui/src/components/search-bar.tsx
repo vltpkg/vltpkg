@@ -1,4 +1,5 @@
-import { useEffect, useRef, type ChangeEvent } from 'react'
+import { useEffect, useRef } from 'react'
+import type { ChangeEvent } from 'react'
 import { Input } from '@/components/ui/input.jsx'
 import { useGraphStore } from '@/state/index.js'
 

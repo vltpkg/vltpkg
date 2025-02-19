@@ -1,14 +1,15 @@
 import { joinDepIDTuple } from '@vltpkg/dep-id'
-import { type Dependency } from '@vltpkg/graph'
+import type { Dependency } from '@vltpkg/graph'
 import { PackageJson } from '@vltpkg/package-json'
 import { existsSync, readdirSync, readFileSync } from 'node:fs'
 import http from 'node:http'
 import { resolve } from 'node:path'
-import { type PathBase, PathScurry } from 'path-scurry'
+import { PathScurry } from 'path-scurry'
+import type { PathBase } from 'path-scurry'
 import t from 'tap'
-import {
-  type ConfigOptions,
-  type LoadedConfig,
+import type {
+  ConfigOptions,
+  LoadedConfig,
 } from '../src/config/index.ts'
 import { parseInstallOptions } from '../src/start-gui.ts'
 import { actualObject } from './fixtures/actual.ts'

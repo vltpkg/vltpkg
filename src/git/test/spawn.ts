@@ -2,7 +2,7 @@ import { error } from '@vltpkg/error-cause'
 import fs from 'fs'
 import { resolve } from 'path'
 import t from 'tap'
-import { type GitOptions } from '../src/index.ts'
+import type { GitOptions } from '../src/index.ts'
 import { spawn } from '../src/spawn.ts'
 
 t.test('no git', async t => {

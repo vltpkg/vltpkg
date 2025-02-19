@@ -1,11 +1,8 @@
 import { splitDepID } from '@vltpkg/dep-id/browser'
-import {
-  type LockfileData,
-  getBooleanFlagsFromNum,
-  type LockfileNode,
-} from './types.ts'
-import { type DepID } from '@vltpkg/dep-id'
-import { type GraphLike } from '../types.ts'
+import { getBooleanFlagsFromNum } from './types.ts'
+import type { LockfileData, LockfileNode } from './types.ts'
+import type { DepID } from '@vltpkg/dep-id'
+import type { GraphLike } from '../types.ts'
 
 export const loadNodes = (
   graph: GraphLike,

@@ -1,7 +1,8 @@
 import { commandUsage } from '../config/usage.ts'
-import { type CommandFn, type CommandUsage } from '../index.ts'
-import { init, type InitFileResults } from '../init.ts'
-import { type ViewFn, type Views } from '../view.ts'
+import type { CommandFn, CommandUsage } from '../index.ts'
+import { init } from '../init.ts'
+import type { InitFileResults } from '../init.ts'
+import type { ViewFn, Views } from '../view.ts'
 
 export const usage: CommandUsage = () =>
   commandUsage({

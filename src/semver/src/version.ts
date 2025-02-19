@@ -1,6 +1,6 @@
 import { syntaxError, typeError } from '@vltpkg/error-cause'
 import { fastSplit } from '@vltpkg/fast-split'
-import { type Range } from './range.ts'
+import type { Range } from './range.ts'
 
 const maybeNumber = (s: string): number | string => {
   if (!/^[0-9]+$/.test(s)) return s

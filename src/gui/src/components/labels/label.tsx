@@ -14,7 +14,7 @@ import {
   ColorPicker,
   DEFAULT_COLOR,
 } from '@/components/ui/color-picker.jsx'
-import { type Color, type QueryLabel } from '@/state/types.js'
+import type { Color, QueryLabel } from '@/state/types.js'
 import { useGraphStore } from '@/state/index.js'
 import { useToast } from '@/components/hooks/use-toast.js'
 

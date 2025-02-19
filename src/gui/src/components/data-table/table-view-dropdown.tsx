@@ -4,10 +4,7 @@ import {
   DropdownMenuCheckboxItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu.jsx'
-import {
-  type Table,
-  type VisibilityState,
-} from '@tanstack/react-table'
+import type { Table, VisibilityState } from '@tanstack/react-table'
 import { ChevronDown } from 'lucide-react'
 import { Button } from '@/components/ui/button.jsx'
 

@@ -1,5 +1,6 @@
 import { Range } from './range.ts'
-import { type IncrementType, Version } from './version.ts'
+import { Version } from './version.ts'
+import type { IncrementType } from './version.ts'
 import { syntaxError } from '@vltpkg/error-cause'
 
 export * from './comparator.ts'

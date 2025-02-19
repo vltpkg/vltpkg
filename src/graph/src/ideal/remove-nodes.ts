@@ -1,6 +1,6 @@
-import {
-  type BuildIdealFromGraphOptions,
-  type BuildIdealRemoveOptions,
+import type {
+  BuildIdealFromGraphOptions,
+  BuildIdealRemoveOptions,
 } from './types.ts'
 import { error } from '@vltpkg/error-cause'
 

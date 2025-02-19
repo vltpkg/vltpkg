@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { type LucideProps, type LucideIcon } from 'lucide-react'
+import type { LucideProps, LucideIcon } from 'lucide-react'
 import {
   Tooltip,
   TooltipContent,

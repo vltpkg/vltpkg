@@ -1,9 +1,5 @@
 import { useEffect, useState } from 'react'
-import {
-  type SavedQuery,
-  type Action,
-  type QueryLabel,
-} from '@/state/types.js'
+import type { SavedQuery, Action, QueryLabel } from '@/state/types.js'
 import { useGraphStore } from '@/state/index.js'
 import { Input } from '@/components/ui/input.jsx'
 import { Button } from '@/components/ui/button.jsx'

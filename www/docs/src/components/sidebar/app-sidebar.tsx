@@ -1,4 +1,4 @@
-import { type Props } from '@astrojs/starlight/props'
+import type { Props } from '@astrojs/starlight/props'
 
 export type SidebarEntries = Props['sidebar']
 export type SidebarEntry = SidebarEntries[0]

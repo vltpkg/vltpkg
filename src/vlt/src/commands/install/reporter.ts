@@ -1,5 +1,7 @@
-import { emitter, type Events } from '@vltpkg/output'
-import { Box, render, Text, type Instance } from 'ink'
+import { emitter } from '@vltpkg/output'
+import type { Events } from '@vltpkg/output'
+import { Box, render, Text } from 'ink'
+import type { Instance } from 'ink'
 import Spinner from 'ink-spinner'
 import {
   createElement as $,

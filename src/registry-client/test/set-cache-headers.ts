@@ -1,7 +1,7 @@
 import t from 'tap'
-import {
-  type CacheEntry,
-  type RegistryClientRequestOptions,
+import type {
+  CacheEntry,
+  RegistryClientRequestOptions,
 } from '../src/index.ts'
 import { setCacheHeaders } from '../src/set-cache-headers.ts'
 

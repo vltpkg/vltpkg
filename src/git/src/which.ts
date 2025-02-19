@@ -1,6 +1,6 @@
 import { error } from '@vltpkg/error-cause'
 import { whichSync } from '@vltpkg/which'
-import { type GitOptions } from './index.ts'
+import type { GitOptions } from './index.ts'
 
 let gitPath: string | undefined = undefined
 

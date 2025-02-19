@@ -1,6 +1,6 @@
 import t from 'tap'
-import { type LoadedConfig } from '../../src/config/index.ts'
-import { type ViewOptions } from '../../src/view.ts'
+import type { LoadedConfig } from '../../src/config/index.ts'
+import type { ViewOptions } from '../../src/view.ts'
 
 const inited: string[] = []
 const { usage, command, views } = await t.mockImport<

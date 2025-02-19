@@ -1,4 +1,5 @@
-import { type Option, Toggle } from '@/components/ui/toggle.jsx'
+import { Toggle } from '@/components/ui/toggle.jsx'
+import type { Option } from '@/components/ui/toggle.jsx'
 import { LayoutGrid, Sheet } from 'lucide-react'
 
 export type View = 'table' | 'grid'

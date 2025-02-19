@@ -6,10 +6,10 @@ import { inspect } from 'node:util'
 import { PathScurry } from 'path-scurry'
 import t from 'tap'
 import { load } from '../../src/actual/load.ts'
-import {
-  asDependency,
-  type AddImportersDependenciesMap,
-  type RemoveImportersDependenciesMap,
+import { asDependency } from '../../src/dependencies.ts'
+import type {
+  AddImportersDependenciesMap,
+  RemoveImportersDependenciesMap,
 } from '../../src/dependencies.ts'
 import { Graph } from '../../src/graph.ts'
 import { getImporterSpecs } from '../../src/ideal/get-importer-specs.ts'

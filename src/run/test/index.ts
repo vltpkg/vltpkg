@@ -1,5 +1,5 @@
 import { promiseSpawn } from '@vltpkg/promise-spawn'
-import { type Manifest } from '@vltpkg/types'
+import type { Manifest } from '@vltpkg/types'
 import { resolve } from 'path'
 import t from 'tap'
 import { isRunResult, run } from '../src/index.ts'

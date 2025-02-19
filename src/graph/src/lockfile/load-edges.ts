@@ -1,14 +1,15 @@
 import { asDepID } from '@vltpkg/dep-id/browser'
 import { error } from '@vltpkg/error-cause'
 import { fastSplit } from '@vltpkg/fast-split'
-import { Spec, type SpecOptions } from '@vltpkg/spec/browser'
+import { Spec } from '@vltpkg/spec/browser'
+import type { SpecOptions } from '@vltpkg/spec/browser'
 import { longDependencyTypes } from '@vltpkg/types'
 import { isDependencyTypeShort } from '../dependencies.ts'
-import { type GraphLike } from '../types.ts'
-import {
-  type LockfileData,
-  type LockfileEdgeKey,
-  type LockfileEdgeValue,
+import type { GraphLike } from '../types.ts'
+import type {
+  LockfileData,
+  LockfileEdgeKey,
+  LockfileEdgeValue,
 } from './types.ts'
 
 export const loadEdges = (

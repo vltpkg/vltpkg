@@ -1,4 +1,4 @@
-import { type PaginationState } from '@tanstack/react-table'
+import type { PaginationState } from '@tanstack/react-table'
 
 import {
   Select,

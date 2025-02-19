@@ -3,7 +3,7 @@ import { cleanup, render } from '@testing-library/react'
 import html from 'diffable-html'
 import { useGraphStore as useStore } from '@/state/index.js'
 import { DashboardGrid } from '@/components/dashboard-grid/index.jsx'
-import { type DashboardTools } from '@/state/types.js'
+import type { DashboardTools } from '@/state/types.js'
 
 vi.mock('@/utils/dashboard-tools.jsx', () => ({
   getIconSet: vi.fn((tools: DashboardTools[]) => {

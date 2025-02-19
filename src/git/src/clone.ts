@@ -4,12 +4,12 @@
 // Every method ends up with the checked out working dir
 // at the specified ref, and resolves with the git sha.
 
-import { type RevDoc, type RevDocEntry } from '@vltpkg/types'
+import type { RevDoc, RevDocEntry } from '@vltpkg/types'
 import { gitScpURL } from '@vltpkg/git-scp-url'
 import { mkdir, stat } from 'fs/promises'
 import { basename, resolve } from 'path'
 import { fileURLToPath } from 'url'
-import { type GitOptions } from './index.ts'
+import type { GitOptions } from './index.ts'
 import { isWindows } from './is-windows.ts'
 import { resolveRef } from './resolve.ts'
 import { revs as getRevs } from './revs.ts'

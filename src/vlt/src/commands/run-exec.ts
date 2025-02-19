@@ -1,7 +1,8 @@
 import { runExec, runExecFG } from '@vltpkg/run'
 import { commandUsage } from '../config/usage.ts'
-import { ExecCommand, type ExecResult } from '../exec-command.ts'
-import { type CommandFn, type CommandUsage } from '../index.ts'
+import { ExecCommand } from '../exec-command.ts'
+import type { ExecResult } from '../exec-command.ts'
+import type { CommandFn, CommandUsage } from '../index.ts'
 
 export const usage: CommandUsage = () =>
   commandUsage({

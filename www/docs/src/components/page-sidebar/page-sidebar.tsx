@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { AlignLeft } from 'lucide-react'
-import { type Props } from '@astrojs/starlight/props'
+import type { Props } from '@astrojs/starlight/props'
 import { ScrollArea } from '@/components/ui/scroll-area'
 
 const PageSidebar = ({ toc }: Props) => {

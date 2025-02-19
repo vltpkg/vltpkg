@@ -1,4 +1,4 @@
-import { type DashboardTools } from '@/state/types.js'
+import type { DashboardTools } from '@/state/types.js'
 import {
   Bun,
   Deno,

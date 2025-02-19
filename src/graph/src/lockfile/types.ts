@@ -1,11 +1,11 @@
-import { type DepID } from '@vltpkg/dep-id'
-import { type Spec, type SpecOptions } from '@vltpkg/spec'
-import {
-  type Integrity,
-  type Manifest,
-  type DependencyTypeShort,
+import type { DepID } from '@vltpkg/dep-id'
+import type { Spec, SpecOptions } from '@vltpkg/spec'
+import type {
+  Integrity,
+  Manifest,
+  DependencyTypeShort,
 } from '@vltpkg/types'
-import { type Graph } from '../graph.ts'
+import type { Graph } from '../graph.ts'
 
 /**
  * This is the main type definition for the contents of the

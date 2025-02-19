@@ -206,8 +206,11 @@ export default tseslint.config(
           fixStyle: 'inline-type-imports',
         },
       ],
-      'import/no-duplicates': ['error', { 'prefer-inline': true }],
-      'import/consistent-type-specifier-style': [2, 'prefer-inline'],
+      'import/no-duplicates': ['error', { 'prefer-inline': false }],
+      'import/consistent-type-specifier-style': [
+        2,
+        'prefer-top-level',
+      ],
       // eslint-plugin-import
       'import/no-named-as-default': 0,
       'import/no-named-as-default-member': 0,

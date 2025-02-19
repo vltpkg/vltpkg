@@ -4,7 +4,7 @@ import { cleanup, render } from '@testing-library/react'
 import html from 'diffable-html'
 import { useGraphStore as useStore } from '@/state/index.js'
 import { DeleteLabel } from '@/components/labels/delete-label.jsx'
-import { type QueryLabel } from '@/state/types.js'
+import type { QueryLabel } from '@/state/types.js'
 
 vi.mock('@/components/ui/dialog.jsx', () => ({
   Dialog: 'gui-dialog',

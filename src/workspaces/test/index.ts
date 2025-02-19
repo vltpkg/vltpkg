@@ -1,12 +1,8 @@
 import { mkdirSync, rmdirSync, writeFileSync } from 'fs'
-import { type DepResults } from 'graph-run'
+import type { DepResults } from 'graph-run'
 import t from 'tap'
-import {
-  assertWSConfig,
-  asWSConfig,
-  Monorepo,
-  type Workspace,
-} from '../src/index.ts'
+import { assertWSConfig, asWSConfig, Monorepo } from '../src/index.ts'
+import type { Workspace } from '../src/index.ts'
 import { resolve } from 'node:path'
 
 t.test('load some workspaces', async t => {

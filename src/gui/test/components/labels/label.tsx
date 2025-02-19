@@ -1,7 +1,7 @@
 import { vi, describe, it, expect, afterEach } from 'vitest'
 import { cleanup, render } from '@testing-library/react'
 import html from 'diffable-html'
-import { type QueryLabel } from '@/state/types.js'
+import type { QueryLabel } from '@/state/types.js'
 import { Label } from '@/components/labels/label.jsx'
 
 vi.mock('@/components/ui/checkbox.jsx', () => ({

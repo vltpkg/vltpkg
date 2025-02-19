@@ -1,4 +1,4 @@
-import { type UnpackRequest } from './unpack-request.ts'
+import type { UnpackRequest } from './unpack-request.ts'
 import { unpack } from './unpack.ts'
 
 export type ResponseError = { id: number; error: unknown }

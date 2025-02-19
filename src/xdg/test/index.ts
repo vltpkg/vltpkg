@@ -1,6 +1,6 @@
 import { posix } from 'node:path'
 import t from 'tap'
-import { type XDG } from '../src/index.ts'
+import type { XDG } from '../src/index.ts'
 
 const mocks = {
   os: { homedir: () => '/home', tmpdir: () => '/tmp' },

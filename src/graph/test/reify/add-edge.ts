@@ -1,5 +1,5 @@
 import { joinDepIDTuple } from '@vltpkg/dep-id'
-import { type RollbackRemove } from '@vltpkg/rollback-remove'
+import type { RollbackRemove } from '@vltpkg/rollback-remove'
 import { Spec } from '@vltpkg/spec'
 import { statSync } from 'fs'
 import { rm } from 'fs/promises'
@@ -8,7 +8,7 @@ import t from 'tap'
 import { Edge } from '../../src/edge.ts'
 import { Node } from '../../src/node.ts'
 import { addEdge } from '../../src/reify/add-edge.ts'
-import { type GraphLike } from '../../src/types.ts'
+import type { GraphLike } from '../../src/types.ts'
 
 const mockRemover = {
   rm: (path: string) => rm(path, { recursive: true, force: true }),

@@ -1,4 +1,5 @@
-import t, { type Test } from 'tap'
+import t from 'tap'
+import type { Test } from 'tap'
 import { join } from 'path'
 import { defaultOptions } from '../src/index.ts'
 import * as types from '../src/types.ts'

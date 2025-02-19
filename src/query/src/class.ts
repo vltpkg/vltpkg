@@ -1,8 +1,5 @@
-import {
-  type ParserFn,
-  asClassNode,
-  type ParserState,
-} from './types.ts'
+import { asClassNode } from './types.ts'
+import type { ParserFn, ParserState } from './types.ts'
 
 const classSelectors: Record<string, ParserFn> = {
   prod: async (state: ParserState) => {

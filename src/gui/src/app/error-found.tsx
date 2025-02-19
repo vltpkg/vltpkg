@@ -1,4 +1,5 @@
-import { useEffect, type MouseEvent } from 'react'
+import { useEffect } from 'react'
+import type { MouseEvent } from 'react'
 import { useGraphStore } from '@/state/index.js'
 import { Button } from '@/components/ui/button.jsx'
 import { ArrowRight, TriangleAlert } from 'lucide-react'

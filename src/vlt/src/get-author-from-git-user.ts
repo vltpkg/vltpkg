@@ -1,4 +1,4 @@
-import { type GitUser } from '@vltpkg/git'
+import type { GitUser } from '@vltpkg/git'
 
 export const getAuthorFromGitUser = (user?: GitUser): string => {
   if (!user) return ''

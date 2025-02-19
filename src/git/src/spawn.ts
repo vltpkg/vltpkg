@@ -1,11 +1,11 @@
-import {
-  promiseSpawn,
-  type SpawnResultStderrString,
-  type SpawnResultStdoutString,
+import { promiseSpawn } from '@vltpkg/promise-spawn'
+import type {
+  SpawnResultStderrString,
+  SpawnResultStdoutString,
 } from '@vltpkg/promise-spawn'
 import promiseRetry from 'promise-retry'
-import { type WrapOptions } from 'retry'
-import { type GitOptions } from './index.ts'
+import type { WrapOptions } from 'retry'
+import type { GitOptions } from './index.ts'
 import { makeError } from './make-error.ts'
 import { opts as makeOpts } from './opts.ts'
 import { which } from './which.ts'

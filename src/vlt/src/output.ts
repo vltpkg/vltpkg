@@ -1,10 +1,11 @@
 import chalk from 'chalk'
 import { formatWithOptions } from 'node:util'
 import { defaultView } from './config/definition.ts'
-import { type LoadedConfig } from './config/index.ts'
-import { type Command } from './index.ts'
+import type { LoadedConfig } from './config/index.ts'
+import type { Command } from './index.ts'
 import { printErr } from './print-err.ts'
-import { isViewClass, type View, type Views } from './view.ts'
+import { isViewClass } from './view.ts'
+import type { View, Views } from './view.ts'
 
 // TODO: make these have log levels etc
 // eslint-disable-next-line no-console

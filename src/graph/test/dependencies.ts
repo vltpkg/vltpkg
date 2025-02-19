@@ -7,7 +7,7 @@ import {
   shorten,
 } from '../src/dependencies.ts'
 import { Spec } from '@vltpkg/spec'
-import { type DependencyTypeLong } from '@vltpkg/types'
+import type { DependencyTypeLong } from '@vltpkg/types'
 
 t.test('shorten', async t => {
   t.strictSame(

@@ -1,17 +1,15 @@
-import { type PackageInfoClient } from '@vltpkg/package-info'
-import {
-  load as loadActual,
-  type LoadOptions as LoadActualOptions,
-} from '../actual/load.ts'
-import {
-  type AddImportersDependenciesMap,
-  type RemoveImportersDependenciesMap,
-  type Dependency,
+import type { PackageInfoClient } from '@vltpkg/package-info'
+import { load as loadActual } from '../actual/load.ts'
+import type { LoadOptions as LoadActualOptions } from '../actual/load.ts'
+import type {
+  AddImportersDependenciesMap,
+  RemoveImportersDependenciesMap,
+  Dependency,
 } from '../dependencies.ts'
-import { type Graph } from '../graph.ts'
+import type { Graph } from '../graph.ts'
 import { load as loadVirtual } from '../lockfile/load.ts'
 import { buildIdealFromStartingGraph } from './build-ideal-from-starting-graph.ts'
-import { type DepID } from '@vltpkg/dep-id'
+import type { DepID } from '@vltpkg/dep-id'
 import { graphStep } from '@vltpkg/output'
 
 const getMap = <T extends Map<any, any>>(m?: T) =>

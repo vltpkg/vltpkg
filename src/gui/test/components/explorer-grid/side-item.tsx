@@ -2,7 +2,7 @@ import { test, expect, vi, afterEach } from 'vitest'
 import { cleanup, render } from '@testing-library/react'
 import html from 'diffable-html'
 import { useGraphStore as useStore } from '@/state/index.js'
-import { type GridItemData } from '@/components/explorer-grid/types.js'
+import type { GridItemData } from '@/components/explorer-grid/types.js'
 import { SideItem } from '@/components/explorer-grid/side-item.jsx'
 
 vi.mock('@/components/ui/badge.jsx', () => ({

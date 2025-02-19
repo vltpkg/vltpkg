@@ -1,12 +1,8 @@
 import { error } from '@vltpkg/error-cause'
 import os from 'os'
 import { UnpackRequest } from './unpack-request.ts'
-import {
-  isResponseOK,
-  type ResponseError,
-  type ResponseOK,
-  Worker,
-} from './worker.ts'
+import { isResponseOK, Worker } from './worker.ts'
+import type { ResponseError, ResponseOK } from './worker.ts'
 
 export * from './worker.ts'
 

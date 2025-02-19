@@ -1,5 +1,5 @@
 import { commandUsage } from '../config/usage.ts'
-import { type CommandFn, type CommandUsage } from '../index.ts'
+import type { CommandFn, CommandUsage } from '../index.ts'
 
 export const usage: CommandUsage = () =>
   commandUsage({

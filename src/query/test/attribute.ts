@@ -1,7 +1,7 @@
 import { joinDepIDTuple } from '@vltpkg/dep-id'
-import { type EdgeLike, type NodeLike } from '@vltpkg/graph'
-import { type Manifest } from '@vltpkg/types'
-import { type Attribute } from 'postcss-selector-parser'
+import type { EdgeLike, NodeLike } from '@vltpkg/graph'
+import type { Manifest } from '@vltpkg/types'
+import type { Attribute } from 'postcss-selector-parser'
 import t from 'tap'
 import {
   attribute,
@@ -17,10 +17,10 @@ import {
   getGraphSelectionState,
   selectorFixture,
 } from './fixtures/selector.ts'
-import { type TestCase } from './fixtures/types.ts'
-import {
-  type GraphSelectionState,
-  type ParserState,
+import type { TestCase } from './fixtures/types.ts'
+import type {
+  GraphSelectionState,
+  ParserState,
 } from '../src/types.ts'
 
 const testAttr = selectorFixture(attribute)

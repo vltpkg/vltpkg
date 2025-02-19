@@ -5,21 +5,20 @@ import {
   Package,
 } from 'lucide-react'
 import {
-  type EdgeLike,
-  type NodeLike,
   longDependencyTypes,
   shorten,
   stringifyNode,
 } from '@vltpkg/graph/browser'
-import { type DepID } from '@vltpkg/dep-id'
+import type { EdgeLike, NodeLike } from '@vltpkg/graph/browser'
+import type { DepID } from '@vltpkg/dep-id'
 import { Spec } from '@vltpkg/spec/browser'
 import { useGraphStore } from '@/state/index.js'
 import { ResultItem } from '@/components/explorer-grid/result-item.jsx'
 import { SideItem } from '@/components/explorer-grid/side-item.jsx'
 import { SelectedItem } from '@/components/explorer-grid/selected-item.jsx'
-import {
-  type EdgeLoose,
-  type GridItemData,
+import type {
+  EdgeLoose,
+  GridItemData,
 } from '@/components/explorer-grid/types.js'
 import { GridHeader } from '@/components/explorer-grid/header.jsx'
 import { DependencySideBar } from '@/components/explorer-grid/dependency-side-bar.jsx'

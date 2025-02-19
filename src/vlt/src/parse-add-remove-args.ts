@@ -1,14 +1,16 @@
-import { type DepID, joinDepIDTuple } from '@vltpkg/dep-id'
-import { type DependencyTypeShort } from '@vltpkg/types'
-import {
-  type AddImportersDependenciesMap,
-  type Dependency,
-  type RemoveImportersDependenciesMap,
-  asDependency,
+import { joinDepIDTuple } from '@vltpkg/dep-id'
+import type { DepID } from '@vltpkg/dep-id'
+import type { DependencyTypeShort } from '@vltpkg/types'
+import { asDependency } from '@vltpkg/graph'
+import type {
+  AddImportersDependenciesMap,
+  Dependency,
+  RemoveImportersDependenciesMap,
 } from '@vltpkg/graph'
-import { type LoadedConfig } from './config/index.ts'
-import { Spec, type SpecOptions } from '@vltpkg/spec'
-import { type Monorepo } from '@vltpkg/workspaces'
+import type { LoadedConfig } from './config/index.ts'
+import { Spec } from '@vltpkg/spec'
+import type { SpecOptions } from '@vltpkg/spec'
+import type { Monorepo } from '@vltpkg/workspaces'
 
 export type ParsedAddArgs = {
   add: AddImportersDependenciesMap

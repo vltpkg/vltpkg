@@ -4,10 +4,10 @@ import { Spec } from '@vltpkg/spec'
 import { resolve } from 'path'
 import { PathScurry } from 'path-scurry'
 import t from 'tap'
-import { type Diff } from '../../src/diff.ts'
+import type { Diff } from '../../src/diff.ts'
 import { Edge } from '../../src/edge.ts'
 import { Node } from '../../src/node.ts'
-import { type GraphLike } from '../../src/types.ts'
+import type { GraphLike } from '../../src/types.ts'
 
 // verify that we delete the deleted edges, but skip the ones
 // that are coming from something in the store being deleted,

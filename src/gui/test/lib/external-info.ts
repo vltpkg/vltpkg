@@ -3,11 +3,11 @@ import { test, expect, vi } from 'vitest'
 import { Spec } from '@vltpkg/spec/browser'
 import {
   fetchDetails,
-  type DetailsInfo,
   readAuthor,
   readRepository,
   retrieveGitHubAPIUrl,
 } from '@/lib/external-info.js'
+import type { DetailsInfo } from '@/lib/external-info.js'
 
 const sleep = (time: number) =>
   new Promise<void>(resolve => {

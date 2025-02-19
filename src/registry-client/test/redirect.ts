@@ -1,10 +1,7 @@
 import t from 'tap'
 import { CacheEntry } from '../src/cache-entry.ts'
-import {
-  isRedirect,
-  redirect,
-  type RedirectResponse,
-} from '../src/redirect.ts'
+import { isRedirect, redirect } from '../src/redirect.ts'
+import type { RedirectResponse } from '../src/redirect.ts'
 
 t.compareOptions = { includeGetters: true }
 

@@ -1,8 +1,9 @@
 import { error } from '@vltpkg/error-cause'
-import { type Integrity } from '@vltpkg/types'
+import type { Integrity } from '@vltpkg/types'
 import { XDG } from '@vltpkg/xdg'
 import { createHash, randomBytes } from 'crypto'
-import { type Dirent, opendirSync, readFileSync } from 'fs'
+import { opendirSync, readFileSync } from 'fs'
+import type { Dirent } from 'fs'
 import {
   link,
   mkdir,

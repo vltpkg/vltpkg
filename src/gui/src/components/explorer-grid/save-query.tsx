@@ -1,4 +1,5 @@
-import { type ChangeEvent, useEffect, useState, useRef } from 'react'
+import { useEffect, useState, useRef } from 'react'
+import type { ChangeEvent } from 'react'
 import { Star, ChevronsUpDown } from 'lucide-react'
 import { CardHeader, CardTitle } from '@/components/ui/card.jsx'
 import { useTheme } from '@/components/ui/theme-provider.jsx'
@@ -18,11 +19,7 @@ import { Label } from '@/components/ui/label.jsx'
 import { Input } from '@/components/ui/input.jsx'
 import { useAnimate } from 'framer-motion'
 import { useGraphStore } from '@/state/index.js'
-import {
-  type Color,
-  type QueryLabel,
-  type SavedQuery,
-} from '@/state/types.js'
+import type { Color, QueryLabel, SavedQuery } from '@/state/types.js'
 import { LabelSelect } from '@/components/labels/label-select.jsx'
 import { LabelBadge } from '@/components/labels/label-badge.jsx'
 import { v4 as uuidv4 } from 'uuid'
