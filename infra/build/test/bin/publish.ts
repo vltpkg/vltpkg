@@ -1,5 +1,6 @@
-import t, { type Test } from 'tap'
-import { type SpawnSyncOptions } from 'node:child_process'
+import t from 'tap'
+import type { Test } from 'tap'
+import type { SpawnSyncOptions } from 'node:child_process'
 import { readdirSync } from 'node:fs'
 
 type NpmRes = {

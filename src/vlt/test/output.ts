@@ -2,15 +2,11 @@ import t from 'tap'
 
 t.intercept(process.stdout, 'isTTY', { value: false })
 
-import { type Jack } from 'jackspeak'
-import { type LoadedConfig } from '../src/config/index.ts'
-import { type Command } from '../src/index.ts'
-import {
-  ViewClass,
-  type Views,
-  type ViewFn,
-  type ViewOptions,
-} from '../src/view.ts'
+import type { Jack } from 'jackspeak'
+import type { LoadedConfig } from '../src/config/index.ts'
+import type { Command } from '../src/index.ts'
+import { ViewClass } from '../src/view.ts'
+import type { Views, ViewFn, ViewOptions } from '../src/view.ts'
 
 // make sure these are loaded after the isTTY intercept
 const { outputCommand, startView, getView, stderr, stdout } =

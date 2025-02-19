@@ -1,7 +1,7 @@
 import t from 'tap'
 
 import { error } from '@vltpkg/error-cause'
-import { type CommandUsage } from '../src/index.ts'
+import type { CommandUsage } from '../src/index.ts'
 import { printErr } from '../src/print-err.ts'
 
 const printed: unknown[][] = []

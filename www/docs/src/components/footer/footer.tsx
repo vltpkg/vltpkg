@@ -1,4 +1,4 @@
-import { type Props } from '@astrojs/starlight/props'
+import type { Props } from '@astrojs/starlight/props'
 import config from 'virtual:starlight/user-config'
 import ThemeSelect from '@/components/theme-select/theme-select'
 import { useStore } from '@/state'

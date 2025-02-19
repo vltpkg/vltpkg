@@ -8,7 +8,8 @@ import { mkdirSync, writeFileSync, existsSync, renameSync } from 'fs'
 import pacote from 'pacote'
 import { resolve } from 'path'
 import { gunzipSync } from 'zlib'
-import { type EXT, randomize, packages, SOURCE } from './index.ts'
+import { randomize, packages, SOURCE } from './index.ts'
+import type { EXT } from './index.ts'
 
 const download = async (spec: string, ext: EXT) => {
   if (ext === 'tgz') return gunzipSync(await pacote.tarball(spec))

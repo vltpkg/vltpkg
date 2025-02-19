@@ -1,5 +1,6 @@
 import { error } from '@vltpkg/error-cause'
-import { Spec, type SpecOptions } from '@vltpkg/spec/browser'
+import { Spec } from '@vltpkg/spec/browser'
+import type { SpecOptions } from '@vltpkg/spec/browser'
 
 export const delimiter: Delimiter = '·'
 export type Delimiter = '·'

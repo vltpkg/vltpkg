@@ -1,5 +1,6 @@
 import assert from 'node:assert'
-import t, { type Test } from 'tap'
+import t from 'tap'
+import type { Test } from 'tap'
 
 const benchmark = async (t: Test, ...argv: string[]) => {
   const dir = t.testdir()

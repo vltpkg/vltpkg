@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { type Color } from '@/state/types.js'
+import type { Color } from '@/state/types.js'
 import { Input } from '@/components/ui/input.jsx'
 
 interface ColorPickerProps {

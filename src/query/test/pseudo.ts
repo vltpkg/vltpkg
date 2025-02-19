@@ -13,8 +13,8 @@ import {
   getGraphSelectionState,
   selectorFixture,
 } from './fixtures/selector.ts'
-import { type TestCase } from './fixtures/types.ts'
-import { type GraphSelectionState } from '../src/types.ts'
+import type { TestCase } from './fixtures/types.ts'
+import type { GraphSelectionState } from '../src/types.ts'
 
 const testPseudo = selectorFixture(pseudo)
 

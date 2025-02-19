@@ -1,5 +1,5 @@
 import { commandUsage } from '../config/usage.ts'
-import { type CommandFn, type CommandUsage } from '../index.ts'
+import type { CommandFn, CommandUsage } from '../index.ts'
 import { parseRemoveArgs } from '../parse-add-remove-args.ts'
 import { uninstall } from '../uninstall.ts'
 

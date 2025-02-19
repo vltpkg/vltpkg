@@ -1,10 +1,7 @@
 import t from 'tap'
-import {
-  ViewClass,
-  type ViewOptions,
-  isViewClass,
-} from '../src/view.ts'
-import { type LoadedConfig } from '../src/config/index.ts'
+import { ViewClass, isViewClass } from '../src/view.ts'
+import type { ViewOptions } from '../src/view.ts'
+import type { LoadedConfig } from '../src/config/index.ts'
 
 t.equal(
   isViewClass({} as unknown as typeof ViewClass<unknown>),

@@ -1,22 +1,17 @@
-import { type PathScurry } from 'path-scurry'
-import {
-  type DepID,
-  type DepIDTuple,
-  getId,
-  hydrateTuple,
-  splitDepID,
-} from '@vltpkg/dep-id'
+import type { PathScurry } from 'path-scurry'
+import { getId, hydrateTuple, splitDepID } from '@vltpkg/dep-id'
+import type { DepID, DepIDTuple } from '@vltpkg/dep-id'
 import { typeError } from '@vltpkg/error-cause'
-import { type Spec, type SpecOptions } from '@vltpkg/spec'
-import {
-  type Integrity,
-  type Manifest,
-  type DependencyTypeShort,
+import type { Spec, SpecOptions } from '@vltpkg/spec'
+import type {
+  Integrity,
+  Manifest,
+  DependencyTypeShort,
 } from '@vltpkg/types'
 import { Edge } from './edge.ts'
-import { type GraphLike, type NodeLike } from './types.ts'
+import type { GraphLike, NodeLike } from './types.ts'
 import { stringifyNode } from './stringify-node.ts'
-import { type PackageInfoClient } from '@vltpkg/package-info'
+import type { PackageInfoClient } from '@vltpkg/package-info'
 
 export type NodeOptions = SpecOptions & {
   projectRoot: string

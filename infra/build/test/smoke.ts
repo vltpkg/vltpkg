@@ -1,4 +1,5 @@
-import t, { type Test } from 'tap'
+import t from 'tap'
+import type { Test } from 'tap'
 import { spawn } from 'node:child_process'
 import { Paths, defaultOptions } from '../src/index.ts'
 import bundle from '../src/bundle.ts'

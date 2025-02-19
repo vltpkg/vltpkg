@@ -1,6 +1,6 @@
-import { type RevDoc } from '@vltpkg/types'
+import type { RevDoc } from '@vltpkg/types'
 import { pickManifest } from '@vltpkg/pick-manifest'
-import { type GitOptions } from './index.ts'
+import type { GitOptions } from './index.ts'
 import { revs } from './revs.ts'
 
 /**

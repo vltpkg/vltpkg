@@ -1,6 +1,6 @@
 import { existsSync, rmSync } from 'fs'
 import { resolve } from 'path'
-import { type AstroIntegrationLogger } from 'astro'
+import type { AstroIntegrationLogger } from 'astro'
 
 const rebuild = (key: string) => {
   const { VLT_DOCS_REBUILD } = process.env

@@ -1,5 +1,5 @@
-import { type Column, type ColumnDef } from '@tanstack/react-table'
-import { type DashboardDataProject } from '@/state/types.js'
+import type { Column, ColumnDef } from '@tanstack/react-table'
+import type { DashboardDataProject } from '@/state/types.js'
 import { ArrowUpDown } from 'lucide-react'
 import { Button } from '@/components/ui/button.jsx'
 import { format } from 'date-fns'

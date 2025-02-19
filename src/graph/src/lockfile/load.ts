@@ -1,14 +1,14 @@
 import { PackageJson } from '@vltpkg/package-json'
-import { type Manifest } from '@vltpkg/types'
+import type { Manifest } from '@vltpkg/types'
 import { Monorepo } from '@vltpkg/workspaces'
-import { type SpecOptions } from '@vltpkg/spec'
+import type { SpecOptions } from '@vltpkg/spec'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
-import { type PathScurry } from 'path-scurry'
+import type { PathScurry } from 'path-scurry'
 import { loadEdges } from './load-edges.ts'
 import { loadNodes } from './load-nodes.ts'
 import { Graph } from '../graph.ts'
-import { type LockfileData } from './types.ts'
+import type { LockfileData } from './types.ts'
 
 export type LoadOptions = SpecOptions & {
   /**

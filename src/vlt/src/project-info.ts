@@ -1,7 +1,7 @@
 import { homedir } from 'node:os'
-import { type PathBase, type PathScurry } from 'path-scurry'
-import { type LoadedConfig } from './config/index.ts'
-import { type Manifest } from '@vltpkg/types'
+import type { PathBase, PathScurry } from 'path-scurry'
+import type { LoadedConfig } from './config/index.ts'
+import type { Manifest } from '@vltpkg/types'
 
 export type ProjectTools =
   | 'vlt'

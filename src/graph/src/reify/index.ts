@@ -1,17 +1,15 @@
-import { type PackageInfoClient } from '@vltpkg/package-info'
+import type { PackageInfoClient } from '@vltpkg/package-info'
 import { RollbackRemove } from '@vltpkg/rollback-remove'
 import { availableParallelism } from 'node:os'
 import { callLimit } from 'promise-call-limit'
-import {
-  load as loadActual,
-  type LoadOptions,
-} from '../actual/load.ts'
-import {
-  type AddImportersDependenciesMap,
-  type RemoveImportersDependenciesMap,
+import { load as loadActual } from '../actual/load.ts'
+import type { LoadOptions } from '../actual/load.ts'
+import type {
+  AddImportersDependenciesMap,
+  RemoveImportersDependenciesMap,
 } from '../dependencies.ts'
 import { Diff } from '../diff.ts'
-import { type Graph } from '../graph.ts'
+import type { Graph } from '../graph.ts'
 import { lockfile } from '../index.ts'
 import {
   lockfileData,

@@ -1,9 +1,9 @@
-import { type Graph } from '@vltpkg/graph'
+import type { Graph } from '@vltpkg/graph'
 import { commandUsage } from '../config/usage.ts'
-import { type CommandFn, type CommandUsage } from '../index.ts'
+import type { CommandFn, CommandUsage } from '../index.ts'
 import { install } from '../install.ts'
 import { parseAddArgs } from '../parse-add-remove-args.ts'
-import { type Views } from '../view.ts'
+import type { Views } from '../view.ts'
 import { InstallReporter } from './install/reporter.ts'
 
 export const usage: CommandUsage = () =>

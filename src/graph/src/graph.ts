@@ -1,17 +1,18 @@
-import { getId, joinDepIDTuple, type DepID } from '@vltpkg/dep-id'
+import { getId, joinDepIDTuple } from '@vltpkg/dep-id'
+import type { DepID } from '@vltpkg/dep-id'
 import { error } from '@vltpkg/error-cause'
 import { satisfies } from '@vltpkg/satisfies'
-import { Spec, type SpecOptions } from '@vltpkg/spec'
-import {
-  type Manifest,
-  type DependencyTypeShort,
-} from '@vltpkg/types'
-import { type Monorepo } from '@vltpkg/workspaces'
-import { inspect, type InspectOptions } from 'util'
-import { type Edge } from './edge.ts'
+import { Spec } from '@vltpkg/spec'
+import type { SpecOptions } from '@vltpkg/spec'
+import type { Manifest, DependencyTypeShort } from '@vltpkg/types'
+import type { Monorepo } from '@vltpkg/workspaces'
+import { inspect } from 'util'
+import type { InspectOptions } from 'util'
+import type { Edge } from './edge.ts'
 import { lockfileData } from './lockfile/save.ts'
-import { Node, type NodeOptions } from './node.ts'
-import { type GraphLike, type NodeLike } from './types.ts'
+import { Node } from './node.ts'
+import type { NodeOptions } from './node.ts'
+import type { GraphLike, NodeLike } from './types.ts'
 
 const kCustomInspect = Symbol.for('nodejs.util.inspect.custom')
 
