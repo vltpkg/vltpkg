@@ -2,104 +2,17 @@ import { splitDepID } from '@vltpkg/dep-id/browser'
 import { error } from '@vltpkg/error-cause'
 import type { EdgeLike, NodeLike } from '@vltpkg/graph'
 import { asManifest } from '@vltpkg/types'
+import { attr } from './pseudo/attr.ts'
+import { semverParser as semver } from './pseudo/semver.ts'
+import { removeDanglingEdges, removeNode } from './pseudo/helpers.ts'
 import {
-  attributeSelectorsMap,
-  filterAttributes,
-} from './attribute.ts'
-import {
-  asAttributeNode,
   asPostcssNodeWithChildren,
   asPseudoNode,
   asTagNode,
   isSelectorNode,
 } from './types.ts'
-import type { ParserFn, ParserState, PostcssNode } from './types.ts'
+import type { ParserFn, ParserState } from './types.ts'
 
-export type AttrInternals = {
-  attribute: string
-  insensitive: boolean
-  operator?: string
-  value?: string
-  properties: string[]
-}
-
-const removeNode = (state: ParserState, node: NodeLike) => {
-  for (const edge of node.edgesIn) {
-    state.partial.edges.delete(edge)
-  }
-  state.partial.nodes.delete(node)
-}
-
-const removeDanglingEdges = (state: ParserState) => {
-  for (const edge of state.partial.edges) {
-    if (!edge.to) {
-      state.partial.edges.delete(edge)
-    }
-  }
-}
-
-/**
- * Parses the internal / nested selectors of a `:attr` selector.
- */
-const parseAttrInternals = (nodes: PostcssNode[]): AttrInternals => {
-  // the last part is the attribute selector
-  const attributeSelector = asAttributeNode(
-    asPostcssNodeWithChildren(nodes.pop()).nodes[0],
-  )
-  // all preppending selectors are naming nested properties
-  const properties: string[] = []
-  for (const selector of nodes) {
-    properties.push(
-      asTagNode(asPostcssNodeWithChildren(selector).nodes[0]).value,
-    )
-  }
-  // include the attribute selector as the last part of the property lookup
-  properties.push(attributeSelector.attribute)
-
-  return {
-    attribute: attributeSelector.attribute,
-    insensitive: attributeSelector.insensitive || false,
-    operator: attributeSelector.operator,
-    value: attributeSelector.value,
-    properties,
-  }
-}
-
-/**
- * :attr Pseudo-Selector, allows for retrieving nodes based on nested
- * properties of the `package.json` metadata.
- */
-const attr = async (state: ParserState) => {
-  // Parses and retrieves the values for the nested selectors
-  let internals
-  try {
-    internals = parseAttrInternals(
-      asPostcssNodeWithChildren(state.current).nodes,
-    )
-  } catch (err) {
-    throw error('Failed to parse :attr selector', {
-      cause: err,
-    })
-  }
-
-  // reuses the attribute selector logic to filter the nodes
-  const comparator =
-    internals.operator ?
-      attributeSelectorsMap.get(internals.operator)
-    : undefined
-  const value = internals.value || ''
-  const propertyName = internals.attribute
-  const insensitive = internals.insensitive
-  const prefixProperties = internals.properties
-  return filterAttributes(
-    state,
-    comparator,
-    value,
-    propertyName,
-    insensitive,
-    prefixProperties,
-  )
-}
 /**
  * :empty Pseudo-Selector, matches only nodes that have no children.
  */
@@ -407,7 +320,7 @@ const pseudoSelectors = new Map<string, ParserFn>(
     root,
     scope,
     type: typeFn,
-    // TODO: semver
+    semver,
     // TODO: outdated
   }),
 )

@@ -140,6 +140,13 @@ t.test('pseudo', async t => {
     [':private', d, ['d']], // single :private item
     [':private', b, []], // single not :private item
     [':private', empty, []], // no items to filter
+    [':semver(^2)', all, ['b']], // semver selector
+    [':semver(=2.0.0)', all, ['b']], // semver selector
+    [
+      ':semver("<2.0.0")',
+      all,
+      ['my-project', 'a', 'c', 'd', 'e', 'f', '@x/y'],
+    ], // quoted semver selector
     [':type(file)', all, ['my-project', '@x/y']], // type selector
     [':type(git)', all, []], // type selector, no matches
     [':type(registry)', all, ['a', 'b', 'c', 'd', 'e', 'f']], // type selector, no matches
