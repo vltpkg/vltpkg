@@ -1,0 +1,43 @@
+---
+title: vlt query
+sidebar:
+  label: query
+---
+
+import { Code } from '@astrojs/starlight/components'
+
+Usage:
+
+<Code code="$ vlt query
+$ vlt query <query> --view=[human | json | mermaid | gui]
+" title="Terminal" lang="bash" />
+
+List installed dependencies matching the provided query.
+
+## Examples
+
+Query packages with the name "foo"
+
+<Code code="$ vlt query '#foo'" title="Terminal" lang="bash" />
+
+Query all peer dependencies of workspaces
+
+<Code code="$ vlt query '*.workspace > *.peer'" title="Terminal" lang="bash" />
+
+Query all direct project dependencies with a "build" script
+
+<Code code="$ vlt query ':project > *:attr(scripts, [build])'" title="Terminal" lang="bash" />
+
+Query packages with names starting with "@vltpkg"
+
+<Code code={`$ vlt query '[name^="@vltpkg"]'`} title="Terminal" lang="bash" />
+
+## Options
+
+### view
+
+Output format. Defaults to human-readable or json if no tty.
+
+```
+--view=[human | json | mermaid | gui]
+```

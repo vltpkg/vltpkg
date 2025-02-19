@@ -98,17 +98,19 @@ const Group = ({ className = '', entry }: SublistProps) => {
   }, [expanded, entry.label])
 
   return (
-    <div className={`flex flex-col ${className}`}>
+    <div
+      data-name={entry.label.toLowerCase()}
+      className={`flex flex-col ${className}`}>
       <div
         className="group flex cursor-pointer flex-row justify-between"
         onClick={() => setExpanded(!expanded)}>
-        <p className="text-sm text-muted-foreground transition-all group-hover:text-foreground">
+        <p className="text-sm font-medium text-muted-foreground transition-all group-hover:text-foreground">
           {entry.label}
         </p>
         <motion.div
           className="flex items-center justify-center text-muted-foreground transition-all group-hover:text-foreground"
           style={{
-            rotateZ: expanded ? 180 : 0,
+            rotateZ: expanded ? 0 : 180,
           }}>
           <ChevronUp size={16} />
         </motion.div>
@@ -140,7 +142,9 @@ const Item = ({
   entry: Link
 }) => {
   return (
-    <div className={`relative flex h-fit ${className}`}>
+    <div
+      data-name={entry.label.toLowerCase()}
+      className={`relative flex h-fit ${className}`}>
       <div
         className={`absolute left-0 -ml-[17px] h-full w-[1px] ${
           entry.isCurrent ? 'bg-foreground' : 'hidden'
@@ -149,10 +153,10 @@ const Item = ({
       <a
         href={entry.href}
         role="link"
-        className={`cursor-pointer text-sm font-medium no-underline transition-all hover:text-foreground ${
-          entry.isCurrent ? 'text-foreground' : (
-            'text-muted-foreground'
-          )
+        className={`cursor-pointer text-sm no-underline transition-all hover:text-foreground ${
+          entry.isCurrent ?
+            'font-bold text-foreground'
+          : 'font-medium text-muted-foreground'
         }`}>
         {entry.label}
       </a>
