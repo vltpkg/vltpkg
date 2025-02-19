@@ -39,7 +39,7 @@
     "@vltpkg/workspaces": "workspace:*",
     "graph-run": "catalog:",
     "path-scurry": "catalog:",
-    "promise-call-limit": "^3.0.2"
+    "promise-call-limit": "catalog:"
   },
   "devDependencies": {
     "@eslint/js": "catalog:",

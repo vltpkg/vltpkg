@@ -219,7 +219,7 @@ const updateDashboardData = async (
 ) => {
   const userDefinedProjectPaths = conf.values['dashboard-root'] ?? []
   const dashboard = await formatDashboardJson(
-    readProjectFolders({
+    await readProjectFolders({
       ...conf.options,
       userDefinedProjectPaths,
     }),
