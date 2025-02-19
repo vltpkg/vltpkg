@@ -5,7 +5,18 @@
  * Make sure to inspect the output below.  Do not ignore changes!
  */
 'use strict'
-exports[`test/read-project-folders.ts > TAP > read nested dirs if nothing is found at first level > should nested found folders 1`] = `
+exports[`test/read-project-folders.ts > TAP > read nested dirs if nothing is found at first level > defaulting to home > should nested found folders 1`] = `
+Array [
+  "c",
+  "b",
+  "a",
+  "d",
+  "foo",
+  "bar",
+]
+`
+
+exports[`test/read-project-folders.ts > TAP > read nested dirs if nothing is found at first level > with path specified > should nested found folders 1`] = `
 Array [
   "c",
   "b",

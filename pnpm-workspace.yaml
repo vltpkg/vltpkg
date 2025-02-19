@@ -18,6 +18,7 @@ catalog:
   path-scurry: ^2.0.0
   polite-json: ^5.0.0
   prettier: ^3.4.2
+  promise-call-limit: ^3.0.2
   rimraf: ^6.0.1
   semver: ^7.7.1
   tap: ^21.0.2

@@ -51,6 +51,9 @@ catalogs:
     prettier:
       specifier: ^3.4.2
       version: 3.4.2
+    promise-call-limit:
+      specifier: ^3.0.2
+      version: 3.0.2
     rimraf:
       specifier: ^6.0.1
       version: 6.0.1
@@ -591,7 +594,7 @@ importers:
         specifier: 'catalog:'
         version: 2.0.0
       promise-call-limit:
-        specifier: ^3.0.2
+        specifier: 'catalog:'
         version: 3.0.2
     devDependencies:
       '@eslint/js':
@@ -1606,6 +1609,9 @@ importers:
       polite-json:
         specifier: 'catalog:'
         version: 5.0.0
+      promise-call-limit:
+        specifier: 'catalog:'
+        version: 3.0.2
       react:
         specifier: ^18.3.1
         version: 18.3.1
@@ -12170,7 +12176,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  eslint-module-utils@2.12.0(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.7.0)(eslint@9.20.0(jiti@1.21.6)):
+  eslint-module-utils@2.12.0(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.7.0(eslint-plugin-import@2.31.0)(eslint@9.20.0(jiti@1.21.6)))(eslint@9.20.0(jiti@1.21.6)):
     dependencies:
       debug: 3.2.7
     optionalDependencies:
@@ -12191,7 +12197,7 @@ snapshots:
       doctrine: 2.1.0
       eslint: 9.20.0(jiti@1.21.6)
       eslint-import-resolver-node: 0.3.9
-      eslint-module-utils: 2.12.0(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.7.0)(eslint@9.20.0(jiti@1.21.6))
+      eslint-module-utils: 2.12.0(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.7.0(eslint-plugin-import@2.31.0)(eslint@9.20.0(jiti@1.21.6)))(eslint@9.20.0(jiti@1.21.6))
       hasown: 2.0.2
       is-core-module: 2.15.1
       is-glob: 4.0.3

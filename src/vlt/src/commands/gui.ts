@@ -1,7 +1,7 @@
 import { commandUsage } from '../config/usage.ts'
 import { type CommandFn, type CommandUsage } from '../index.ts'
 import { startGUI } from '../start-gui.ts'
-import { ViewFn } from '../view.ts'
+import { type ViewFn } from '../view.ts'
 
 // this command is only a view, it doesn't actually do anything at this time
 export const views: ViewFn<null> = async (_, __, conf) => {
