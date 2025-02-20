@@ -69,7 +69,7 @@ export const dashboardColumns: ColumnDef<DashboardDataProject>[] = [
       return (
         <TooltipProvider>
           <Tooltip>
-            <TooltipTrigger className="w-[500px] truncate text-left">
+            <TooltipTrigger className="w-[300px] truncate text-left">
               {path}
             </TooltipTrigger>
             <TooltipContent align="start">{path}</TooltipContent>
@@ -77,9 +77,9 @@ export const dashboardColumns: ColumnDef<DashboardDataProject>[] = [
         </TooltipProvider>
       )
     },
-    size: 500,
-    maxSize: 500,
-    minSize: 500,
+    size: 300,
+    maxSize: 300,
+    minSize: 300,
     enableSorting: true,
     sortingFn: (a, b) => {
       return a.original.path.localeCompare(b.original.path)

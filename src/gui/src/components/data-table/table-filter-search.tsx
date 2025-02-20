@@ -7,12 +7,14 @@ interface TableFilterSearchProps {
   filterValue: string
   onFilterChange: (value: string) => void
   placeholder?: string
+  className?: string
 }
 
 export const TableFilterSearch = ({
   placeholder = 'Filter Projects',
   filterValue,
   onFilterChange,
+  className = '',
 }: TableFilterSearchProps) => {
   const inputRef = useRef<HTMLInputElement>(null)
 
@@ -45,7 +47,7 @@ export const TableFilterSearch = ({
   }, [])
 
   return (
-    <div className="relative flex w-[384px] items-center">
+    <div className={`relative flex w-96 items-center ${className}`}>
       <Search
         size={18}
         className="absolute left-0 ml-3 text-neutral-500"

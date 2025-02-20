@@ -14,7 +14,6 @@ import { FilterSearch } from '@/components/ui/filter-search.jsx'
 import { TableFilterSearch } from '@/components/data-table/table-filter-search.jsx'
 import { TableViewDropdown } from '@/components/data-table/table-view-dropdown.jsx'
 import { DashboardTable } from '@/components/dashboard-grid/dashboard-table.jsx'
-import { SortToggle } from '@/components/sort-toggle.jsx'
 import { DashboardViewToggle } from '@/components/dashboard-grid/dashboard-view-toggle.jsx'
 import type { View } from '@/components/dashboard-grid/dashboard-view-toggle.jsx'
 import type { VisibilityState, Table } from '@tanstack/react-table'
@@ -24,6 +23,7 @@ import { requestRouteTransition } from '@/lib/request-route-transition.js'
 import { Button } from '@/components/ui/button.jsx'
 import { Plus } from 'lucide-react'
 import { LoadingSpinner } from '@/components/ui/loading-spinner.jsx'
+import { SortDropdown } from '@/components/sort-dropdown.jsx'
 
 export type DashboardItemOptions = {
   item: DashboardDataProject
@@ -45,10 +45,10 @@ export const DashboardItem = ({
   return (
     <a
       href="#"
-      className="group relative w-full md:w-96"
+      className="group relative w-full"
       onClick={onDashboardItemClick}>
       {/* top */}
-      <div className="relative flex h-20 items-center overflow-hidden rounded-t-lg border-x-[1px] border-t-[1px] bg-card transition-all group-hover:border-neutral-400 dark:group-hover:border-neutral-700">
+      <div className="relative flex h-24 items-center overflow-hidden rounded-t-lg border-x-[1px] border-t-[1px] bg-card transition-all group-hover:border-neutral-400 dark:group-hover:border-neutral-700">
         <div className="flex px-3 py-2">
           <CardTitle className="text-md font-medium">
             {item.name}
@@ -158,54 +158,53 @@ export const DashboardGrid = () => {
 
   return (
     <div className="flex grow flex-col bg-secondary px-8 py-8 dark:bg-black">
-      <div className="flex gap-2 pb-8">
+      <div className="mx-auto flex w-full max-w-7xl gap-2 pb-8">
         {currentView === 'table' ?
           <TableFilterSearch
             filterValue={tableFilterValue}
             onFilterChange={setTableFilterValue}
+            className="w-full"
           />
         : <FilterSearch
             placeholder="Filter Projects"
             items={dashboard?.projects ?? []}
             setFilteredItems={setFilteredProjects}
+            className="w-full"
           />
         }
         <DashboardViewToggle
           currentView={currentView}
           setCurrentView={setCurrentView}
         />
-        <AnimatePresence mode="wait">
-          {currentView === 'table' ?
-            <motion.div
-              key={currentView}
-              initial={{ opacity: 0 }}
-              exit={{ opacity: 0 }}
-              animate={{ opacity: 1 }}>
-              <TableViewDropdown
-                columnVisibility={columnVisibility}
-                setColumnVisibility={setColumnVisibility}
-                table={table}
-              />
-            </motion.div>
-          : <motion.div
-              key={currentView}
-              exit={{ opacity: 0 }}
-              initial={{ opacity: 1 }}
-              animate={{ opacity: 1 }}>
-              <SortToggle
-                filteredItems={filteredProjects}
-                setFilteredItems={setFilteredProjects}
-                sortKey="name"
-              />
-            </motion.div>
-          }
-        </AnimatePresence>
-        <div className="flex grow flex-row-reverse">
-          <Button onClick={onCreateNewProjectClick} className="ml-2">
-            <Plus size={24} />
-            Create New Project
-          </Button>
-        </div>
+        {currentView === 'table' ?
+          <motion.div
+            key={currentView}
+            initial={{ opacity: 0 }}
+            exit={{ opacity: 0 }}
+            animate={{ opacity: 1 }}>
+            <TableViewDropdown
+              columnVisibility={columnVisibility}
+              setColumnVisibility={setColumnVisibility}
+              table={table}
+              className="w-[120px]"
+            />
+          </motion.div>
+        : <motion.div
+            key={currentView}
+            exit={{ opacity: 0 }}
+            initial={{ opacity: 1 }}
+            animate={{ opacity: 1 }}>
+            <SortDropdown
+              items={filteredProjects}
+              setFilteredItems={setFilteredProjects}
+              sortKey="name"
+            />
+          </motion.div>
+        }
+        <Button onClick={onCreateNewProjectClick}>
+          <Plus size={24} />
+          Create New Project
+        </Button>
       </div>
 
       <AnimatePresence mode="wait">
@@ -214,7 +213,8 @@ export const DashboardGrid = () => {
             key={currentView}
             exit={{ opacity: 0, y: 5 }}
             initial={{ opacity: 0, y: 5 }}
-            animate={{ opacity: 1, y: 0 }}>
+            animate={{ opacity: 1, y: 0 }}
+            className="mx-auto flex w-full max-w-7xl flex-col">
             <DashboardTable
               data={dashboard?.projects ?? []}
               setTable={setTable}
@@ -229,9 +229,9 @@ export const DashboardGrid = () => {
             exit={{ opacity: 0, y: -5 }}
             initial={{ opacity: 0, y: -5 }}
             animate={{ opacity: 1, y: 0 }}
-            className="flex flex-col">
+            className="mx-auto flex w-full max-w-7xl flex-col">
             <p className="mb-4 text-sm font-semibold">Projects</p>
-            <div className="flex flex-row flex-wrap gap-8">
+            <div className="grid grid-cols-1 gap-x-6 gap-y-6 sm:grid-cols-2 md:grid-cols-3">
               {dashboard?.projects ?
                 filteredProjects.map((item, index) => (
                   <DashboardItem

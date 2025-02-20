@@ -7,6 +7,7 @@ import {
 import type { Table, VisibilityState } from '@tanstack/react-table'
 import { ChevronDown } from 'lucide-react'
 import { Button } from '@/components/ui/button.jsx'
+import { Skeleton } from '@/components/ui/skeleton.jsx'
 
 interface TableViewDropdownProps<TData> {
   table: Table<TData> | null
@@ -23,7 +24,7 @@ export const TableViewDropdown = <TData extends object>({
   columnVisibility,
   setColumnVisibility,
 }: TableViewDropdownProps<TData>) => {
-  if (!table) return null
+  if (!table) return <Skeleton className={`h-full ${className}`} />
 
   return (
     <DropdownMenu>
