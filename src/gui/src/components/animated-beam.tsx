@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion'
-import { type RefObject, useEffect, useId, useState } from 'react'
+import { useEffect, useId, useState } from 'react'
+import type { RefObject } from 'react'
 
 import { cn } from '@/lib/utils.js'
 
