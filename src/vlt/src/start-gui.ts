@@ -50,7 +50,7 @@ const PORT = 7017
 
 const { version } = loadPackageJson(
   import.meta.filename,
-  process.env._VLT_CLI_PACKAGE_JSON,
+  process.env.__VLT_INTERNAL_CLI_PACKAGE_JSON,
 ) as {
   version: string
 }
@@ -272,7 +272,7 @@ const createStaticHandler = ({
   // It's important for this guard to check to not be destructured
   // because `infra/build` will replace the whole thing with `false`
   // causing it to be stripped entirely from production builds.
-  if (process.env._VLT_DEV_LIVE_RELOAD) {
+  if (process.env.__VLT_INTERNAL_LIVE_RELOAD) {
     // Generate a set of routes that should be proxied to the esbuild server
     const proxyRoutes = new Set(
       [
@@ -333,12 +333,12 @@ const createStaticHandler = ({
 
 /* c8 ignore start */
 const getAssetsDir = () => {
-  const fromEnv = process.env._VLT_GUI_ASSETS_DIR
+  const fromEnv = process.env.__VLT_INTERNAL_GUI_ASSETS_DIR
   // workaround for the import.meta.resolve issue not working with tap
   if (process.env.TAP) {
     assert(
       fromEnv,
-      '_VLT_GUI_ASSETS_DIR must be set when running tests',
+      'assets dir must be set from environment variable when running tests',
     )
   }
   if (fromEnv) {
