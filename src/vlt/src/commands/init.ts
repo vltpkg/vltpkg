@@ -1,7 +1,7 @@
 import { commandUsage } from '../config/usage.ts'
 import type { CommandFn, CommandUsage } from '../index.ts'
-import { init } from '../init.ts'
-import type { InitFileResults } from '../init.ts'
+import { init } from '@vltpkg/init'
+import type { InitFileResults } from '@vltpkg/init'
 import type { ViewFn, Views } from '../view.ts'
 
 export const usage: CommandUsage = () =>

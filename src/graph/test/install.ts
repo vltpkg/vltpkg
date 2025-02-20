@@ -36,7 +36,7 @@ t.test('install', async t => {
   >('../src/install.ts', {
     '../src/ideal/build.ts': {
       build: async ({ add }: BuildIdealAddOptions) => {
-        log += `buildideal result adds ${add?.get(rootDepID)?.size || 0} new package(s)\n`
+        log += `buildideal result adds ${add.get(rootDepID)?.size || 0} new package(s)\n`
       },
     },
     '../src/actual/load.ts': {

@@ -1,5 +1,6 @@
 import { joinDepIDTuple } from '@vltpkg/dep-id'
 import type { Dependency } from '@vltpkg/graph'
+import * as GRAPH from '@vltpkg/graph'
 import { PackageJson } from '@vltpkg/package-json'
 import { existsSync, readdirSync, readFileSync } from 'node:fs'
 import http from 'node:http'
@@ -13,7 +14,6 @@ import type {
 } from '../src/config/index.ts'
 import { parseInstallOptions } from '../src/start-gui.ts'
 import { actualObject } from './fixtures/actual.ts'
-import * as GRAPH from '@vltpkg/graph'
 
 t.cleanSnapshot = s =>
   s
@@ -549,7 +549,8 @@ t.test('e2e server test', async t => {
         typeof import('../src/start-gui.ts')
       >('../src/start-gui.ts', {
         ...mocks,
-        '../src/init.ts': {
+        '@vltpkg/init': {
+          getAuthorFromGitUser: () => '',
           async init() {
             throw new Error('ERR')
           },
