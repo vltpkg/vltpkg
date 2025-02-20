@@ -104,6 +104,55 @@ html {
   }
 }
 
+.grid-system {
+  display: grid;
+  grid-template-columns: repeat(var(--columns), 1fr);
+  grid-template-rows: repeat(var(--rows), 1fr);
+  border-width: 1px;
+  border-style: dashed;
+  @apply border-border;
+  border-right: none;
+  border-bottom: none;
+  position: relative;
+}
+
+.grid-system-guides {
+  display: contents;
+}
+
+.grid-system-guide {
+  inset: 0px;
+  position: absolute;
+  grid-column-start: var(--x);
+  grid-column-end: span 1;
+  grid-row-start: var(--y);
+  grid-row-end: span 1;
+  border-width: 1px;
+  border-style: dashed;
+  @apply border-border;
+  border-left: none;
+  border-top: none;
+}
+
+.grid-system-cross {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  svg {
+    transform: translate(-51.5%, -51.5%);
+    transform-origin: 50% 50%;
+  }
+}
+
+.grid-system-cell {
+  aspect-ratio: 1;
+  width: 100%;
+}
+
 @layer base {
   * {
     @apply border-border;
