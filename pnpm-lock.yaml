@@ -1801,8 +1801,8 @@ importers:
         specifier: ^5.1.3
         version: 5.1.3(astro@5.0.5(@types/node@22.13.1)(jiti@1.21.6)(rollup@4.24.0)(tsx@4.19.2)(typescript@5.7.3)(yaml@2.7.0))(tailwindcss@3.4.14)
       '@astrojs/vercel':
-        specifier: ^8.0.1
-        version: 8.0.1(astro@5.0.5(@types/node@22.13.1)(jiti@1.21.6)(rollup@4.24.0)(tsx@4.19.2)(typescript@5.7.3)(yaml@2.7.0))(encoding@0.1.13)(react@18.3.1)(rollup@4.24.0)
+        specifier: ^8.0.7
+        version: 8.0.7(astro@5.0.5(@types/node@22.13.1)(jiti@1.21.6)(rollup@4.24.0)(tsx@4.19.2)(typescript@5.7.3)(yaml@2.7.0))(encoding@0.1.13)(react@18.3.1)(rollup@4.24.0)
       '@radix-ui/react-collapsible':
         specifier: ^1.1.1
         version: 1.1.1(@types/react-dom@18.3.1)(@types/react@18.3.11)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -1978,6 +1978,9 @@ packages:
   '@astrojs/internal-helpers@0.4.2':
     resolution: {integrity: sha512-EdDWkC3JJVcpGpqJAU/5hSk2LKXyG3mNGkzGoAuyK+xoPHbaVdSuIWoN1QTnmK3N/gGfaaAfM8gO2KDCAW7S3w==}
 
+  '@astrojs/internal-helpers@0.5.1':
+    resolution: {integrity: sha512-M7rAge1n2+aOSxNvKUFa0u/KFn0W+sZy7EW91KOSERotm2Ti8qs+1K0xx3zbOxtAVrmJb5/J98eohVvvEqtNkw==}
+
   '@astrojs/language-server@2.15.3':
     resolution: {integrity: sha512-2qYkHkiqduB2F6OY+zAikd2hZP1xq5LqB0RqLCMoT7KLbfspnx6qtxOueF2n1P4+YUXRHUJVfLA4FoJCEfoMDg==}
     hasBin: true
@@ -2030,8 +2033,8 @@ packages:
     resolution: {integrity: sha512-wxhSKRfKugLwLlr4OFfcqovk+LIFtKwLyGPqMsv+9/ibqqnW3Gv7tBhtKEb0gAyUAC4G9BTVQeQahqnQAhd6IQ==}
     engines: {node: ^18.17.1 || ^20.3.0 || >=22.0.0}
 
-  '@astrojs/vercel@8.0.1':
-    resolution: {integrity: sha512-0TgXOlT8HpZNyLpbFuw2tAvo5Azdz/PlRg8/Oak7Skj3uivhSePR9ftt0uq93ofgzHtF7Gzs9BKcH+BsAwff9Q==}
+  '@astrojs/vercel@8.0.7':
+    resolution: {integrity: sha512-2DPqPGZ/Et4afpJt8CAoIql2S649rzEmLBNJPHUGBysP0JklMaZ05HhQVKr+qEhZSm3NrVccxpkiIG/eLW3nPg==}
     peerDependencies:
       astro: ^5.0.0
 
@@ -2877,8 +2880,8 @@ packages:
   '@jsr/std__semver@1.0.3':
     resolution: {integrity: sha512-d1uBT0Muxhd3yBIw9ZE1Q/4N1Y0td0EJe1AqwM3hP05IMwaWQV/miksQOPR3rup3bVovuIvqBm7WJcoUripdQA==, tarball: https://npm.jsr.io/~/11/@jsr/std__semver/1.0.3.tgz}
 
-  '@mapbox/node-pre-gyp@2.0.0-rc.0':
-    resolution: {integrity: sha512-nhSMNprz3WmeRvd8iUs5JqkKr0Ncx46JtPxM3AhXes84XpSJfmIwKeWXRpsr53S7kqPkQfPhzrMFUxSNb23qSA==}
+  '@mapbox/node-pre-gyp@2.0.0':
+    resolution: {integrity: sha512-llMXd39jtP0HpQLVI37Bf1m2ADlEb35GYSh1SDSLsBhR+5iCxiNGlT31yqbNtVHygHAtMy6dWFERpU2JgufhPg==}
     engines: {node: '>=18'}
     hasBin: true
 
@@ -4060,13 +4063,16 @@ packages:
       vue-router:
         optional: true
 
-  '@vercel/edge@1.1.4':
-    resolution: {integrity: sha512-mCe+KKmYphgWaO6NSxzkxskv4eZOuuRDqBQX/LhOizj5o1+4u/fwjN+WZDpAyVH8WU8+7EueijoT6wbTKlauOA==}
+  '@vercel/edge@1.2.1':
+    resolution: {integrity: sha512-1++yncEyIAi68D3UEOlytYb1IUcIulMWdoSzX2h9LuSeeyR7JtaIgR8DcTQ6+DmYOQn+5MCh6LY+UmK6QBByNA==}
 
-  '@vercel/nft@0.27.9':
-    resolution: {integrity: sha512-pTs7OchHQmSYJPR0puVQCWw/NqzuvAtnAhBurz21lq4Y4KqWoMpYKqmikkETG5r1bHNCM/hQMZ5JiRr9mhOkyg==}
-    engines: {node: '>=16'}
+  '@vercel/nft@0.29.1':
+    resolution: {integrity: sha512-6239JJM1V9b3OjvZIjbe+47/hGxMr44FEzlbTErrqzebCaoKAHK+yvahn3gdNacybDUbTxVF8Zuh0vqaeM8aKQ==}
+    engines: {node: '>=18'}
     hasBin: true
+
+  '@vercel/routing-utils@5.0.4':
+    resolution: {integrity: sha512-4ke67zkXVi2fRZdoYckABcsSkRC9CnrdadOGxoS/Bk22+ObHjGQWvUHExRSXh339anwu9YY7ZacNSGH4gUnTQA==}
 
   '@vitejs/plugin-react@4.3.4':
     resolution: {integrity: sha512-SCCPBJtYLdE8PX/7ZQAs1QAZ8Jqwih+0VBLum1EGqmCCQal+MIUqLCzj3ZUy8ufbC0cAM4LRlSTm7IQJwWT4ug==}
@@ -5003,6 +5009,10 @@ packages:
 
   fast-glob@3.3.2:
     resolution: {integrity: sha512-oX2ruAFQwf/Orj8m737Y5adxDQO0LAB7/S5MnxCdTNDd4p6BsyIVsv9JQsATbTSq8KHRpLwIHbVlUNatxd+1Ow==}
+    engines: {node: '>=8.6.0'}
+
+  fast-glob@3.3.3:
+    resolution: {integrity: sha512-7MptL8U0cqcFdzIzwOTHoilX9x5BrNqye7Z/LuC7kCMRio1EMSyqRK3BEAUD7sXRq4iT4AzTVuZdhgQ2TCvYLg==}
     engines: {node: '>=8.6.0'}
 
   fast-json-stable-stringify@2.1.0:
@@ -6371,6 +6381,9 @@ packages:
 
   path-to-regexp@3.3.0:
     resolution: {integrity: sha512-qyCH421YQPS2WFDxDjftfc1ZR5WKQzVzqsp4n9M2kQhVOo/ByahFoUNJfl58kOcEGfQ//7weFTDhm+ss8Ecxgw==}
+
+  path-to-regexp@6.1.0:
+    resolution: {integrity: sha512-h9DqehX3zZZDCEm+xbfU0ZmwCGFCAAraPJWMXJ4+v32NjZJilVg3k1TcKsRgIb8IQ/izZSaydDc1OhJCZvs2Dw==}
 
   path-to-regexp@6.3.0:
     resolution: {integrity: sha512-Yhpw4T9C6hPpgPeA28us07OJeqZ5EzQTkbfwuhsUg0c237RomFoETJgmp2sa3F/41gfLE6G5cqcYwznmeEeOlQ==}
@@ -7999,6 +8012,8 @@ snapshots:
 
   '@astrojs/internal-helpers@0.4.2': {}
 
+  '@astrojs/internal-helpers@0.5.1': {}
+
   '@astrojs/language-server@2.15.3(prettier-plugin-astro@0.14.1)(prettier@3.4.2)(typescript@5.7.3)':
     dependencies:
       '@astrojs/compiler': 2.10.3
@@ -8153,15 +8168,16 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@astrojs/vercel@8.0.1(astro@5.0.5(@types/node@22.13.1)(jiti@1.21.6)(rollup@4.24.0)(tsx@4.19.2)(typescript@5.7.3)(yaml@2.7.0))(encoding@0.1.13)(react@18.3.1)(rollup@4.24.0)':
+  '@astrojs/vercel@8.0.7(astro@5.0.5(@types/node@22.13.1)(jiti@1.21.6)(rollup@4.24.0)(tsx@4.19.2)(typescript@5.7.3)(yaml@2.7.0))(encoding@0.1.13)(react@18.3.1)(rollup@4.24.0)':
     dependencies:
-      '@astrojs/internal-helpers': 0.4.2
+      '@astrojs/internal-helpers': 0.5.1
       '@vercel/analytics': 1.4.1(react@18.3.1)
-      '@vercel/edge': 1.1.4
-      '@vercel/nft': 0.27.9(encoding@0.1.13)(rollup@4.24.0)
+      '@vercel/edge': 1.2.1
+      '@vercel/nft': 0.29.1(encoding@0.1.13)(rollup@4.24.0)
+      '@vercel/routing-utils': 5.0.4
       astro: 5.0.5(@types/node@22.13.1)(jiti@1.21.6)(rollup@4.24.0)(tsx@4.19.2)(typescript@5.7.3)(yaml@2.7.0)
       esbuild: 0.24.0
-      fast-glob: 3.3.2
+      fast-glob: 3.3.3
     transitivePeerDependencies:
       - '@remix-run/react'
       - '@sveltejs/kit'
@@ -8859,7 +8875,7 @@ snapshots:
 
   '@jsr/std__semver@1.0.3': {}
 
-  '@mapbox/node-pre-gyp@2.0.0-rc.0(encoding@0.1.13)':
+  '@mapbox/node-pre-gyp@2.0.0(encoding@0.1.13)':
     dependencies:
       consola: 3.2.3
       detect-libc: 2.0.3
@@ -10559,11 +10575,11 @@ snapshots:
     optionalDependencies:
       react: 18.3.1
 
-  '@vercel/edge@1.1.4': {}
+  '@vercel/edge@1.2.1': {}
 
-  '@vercel/nft@0.27.9(encoding@0.1.13)(rollup@4.24.0)':
+  '@vercel/nft@0.29.1(encoding@0.1.13)(rollup@4.24.0)':
     dependencies:
-      '@mapbox/node-pre-gyp': 2.0.0-rc.0(encoding@0.1.13)
+      '@mapbox/node-pre-gyp': 2.0.0(encoding@0.1.13)
       '@rollup/pluginutils': 5.1.3(rollup@4.24.0)
       acorn: 8.14.0
       acorn-import-attributes: 1.9.5(acorn@8.14.0)
@@ -10579,6 +10595,13 @@ snapshots:
       - encoding
       - rollup
       - supports-color
+
+  '@vercel/routing-utils@5.0.4':
+    dependencies:
+      path-to-regexp: 6.1.0
+      path-to-regexp-updated: path-to-regexp@6.3.0
+    optionalDependencies:
+      ajv: 6.12.6
 
   '@vitejs/plugin-react@4.3.4(vite@5.4.14(@types/node@22.13.1))':
     dependencies:
@@ -11779,6 +11802,14 @@ snapshots:
   fast-deep-equal@3.1.3: {}
 
   fast-glob@3.3.2:
+    dependencies:
+      '@nodelib/fs.stat': 2.0.5
+      '@nodelib/fs.walk': 1.2.8
+      glob-parent: 5.1.2
+      merge2: 1.4.1
+      micromatch: 4.0.8
+
+  fast-glob@3.3.3:
     dependencies:
       '@nodelib/fs.stat': 2.0.5
       '@nodelib/fs.walk': 1.2.8
@@ -13599,6 +13630,8 @@ snapshots:
       minipass: 7.1.2
 
   path-to-regexp@3.3.0: {}
+
+  path-to-regexp@6.1.0: {}
 
   path-to-regexp@6.3.0: {}
 
