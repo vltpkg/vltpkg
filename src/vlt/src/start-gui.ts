@@ -10,9 +10,9 @@ import type { DependencyTypeShort } from '@vltpkg/types'
 import { urlOpen } from '@vltpkg/url-open'
 import { getUser } from '@vltpkg/git'
 import {
-  cpSync,
   mkdirSync,
   readdirSync,
+  readFileSync,
   rmSync,
   writeFileSync,
 } from 'node:fs'
@@ -358,7 +358,18 @@ export const startGUI = async ({
   const tmp = resolve(tmpDir, 'vltgui')
   rmSync(tmp, { recursive: true, force: true })
   mkdirSync(tmp, { recursive: true })
-  cpSync(assetsDir, tmp, { recursive: true })
+  // This is the same as `cpSync(assetsDir, tmp, { recursive: true })`
+  // but that does not work in Deno yet (https://github.com/denoland/deno/issues/27494).
+  for (const asset of readdirSync(assetsDir, {
+    withFileTypes: true,
+    recursive: true,
+  })) {
+    if (!asset.isFile()) continue
+    const source = resolve(asset.parentPath, asset.name)
+    const target = resolve(tmp, relative(assetsDir, source))
+    mkdirSync(dirname(target), { recursive: true })
+    writeFileSync(target, readFileSync(source))
+  }
 
   // dashboard data is optional since the GUI might be started from a
   // project in order to just explore its graph data
