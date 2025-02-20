@@ -24,7 +24,7 @@ export type Command<T> = {
 
 const { version } = loadPackageJson(
   import.meta.filename,
-  process.env._VLT_CLI_PACKAGE_JSON,
+  process.env.__VLT_INTERNAL_CLI_PACKAGE_JSON,
 ) as {
   version: string
 }

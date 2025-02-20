@@ -129,7 +129,6 @@ var require = _vlt_createRequire(import.meta.filename);`,
     define: {
       'process.env.NODE_ENV': '"production"',
       'process.env.TAP': 'false',
-      'process.env._VLT_DEV_LIVE_RELOAD': 'false',
       ...o.define,
     },
   })
@@ -173,6 +172,7 @@ export default async ({
     GUI_ASSETS_DIR: 'gui-assets',
     CLI_PACKAGE_JSON: 'cli-package.json',
     REGISTRY_CLIENT_PACKAGE_JSON: 'registry-client-package.json',
+    LIVE_RELOAD: false,
   }
 
   const { bundle, getBundles } = createBundler({
@@ -183,8 +183,10 @@ export default async ({
     plugins: [nodeImports],
     define: Object.fromEntries(
       Object.entries(define).map(([k, v]) => [
-        `process.env._VLT_${k}`,
-        `"${v}"`,
+        `process.env.__VLT_INTERNAL_${k}`,
+        // wraps strings in double quotes since the values
+        // are replaced inline in the built code
+        JSON.stringify(v),
       ]),
     ),
   })

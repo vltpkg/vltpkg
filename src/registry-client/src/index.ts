@@ -118,7 +118,7 @@ export type RegistryClientRequestOptions = Omit<
 
 const { version } = loadPackageJson(
   import.meta.filename,
-  process.env._VLT_REGISTRY_CLIENT_PACKAGE_JSON,
+  process.env.__VLT_INTERNAL_REGISTRY_CLIENT_PACKAGE_JSON,
 ) as {
   version: string
 }

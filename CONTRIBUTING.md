@@ -70,7 +70,7 @@ context of this project.
 This root of this repo has scripts for each named bin that
 can be run via `pnpm` for testing locally.
 
-These scripts set the corret `NODE_OPTIONS` to run the TypeScript
+These scripts set the correct `NODE_OPTIONS` to run the TypeScript
 source directly.
 
 In order to silence all the output from `pnpm` and only see the `vlt`
@@ -80,6 +80,27 @@ output, it is helpful to pass the `-s` flag to `pnpm`.
 $ pnpm -s vlt --version
 0.0.0-0
 ```
+
+## GUI Live Reload
+
+When run locally the GUI can be set to use live reload so that any changes to GUI source
+code will cause the browser to reload. To enable this set `__VLT_INTERNAL_LIVE_RELOAD=1`
+when running the GUI:
+
+```bash
+__VLT_INTERNAL_LIVE_RELOAD=1 node ~/path/to/vltpkg/vltpkg/src/vlt/bins/vlt.ts gui
+```
+
+## Bundling Caveats
+
+When publishing, all of the source code is first bundled and code-split with esbuild.
+
+There are some values in the source code that aren't statically analyzed by esbuild,
+and instead are read from environment variables. This is to make it explicit and
+because previous attempts to parse the AST and detect those values were slow and brittle.
+
+All the environment variables follow the pattern `__VLT_INTERNAL_*` in order to distinguish
+them from the `VLT_*` environment variables that are set by the CLI's config system.
 
 ## Testing Builds
 
