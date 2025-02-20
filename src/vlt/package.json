@@ -30,6 +30,7 @@
     "@vltpkg/git": "workspace:*",
     "@vltpkg/graph": "workspace:*",
     "@vltpkg/gui": "workspace:*",
+    "@vltpkg/init": "workspace:*",
     "@vltpkg/output": "workspace:*",
     "@vltpkg/package-info": "workspace:*",
     "@vltpkg/package-json": "workspace:*",

@@ -1,9 +1,16 @@
 import { asDepID } from '@vltpkg/dep-id'
-import { actual, asDependency } from '@vltpkg/graph'
+import {
+  actual,
+  asDependency,
+  install,
+  uninstall,
+} from '@vltpkg/graph'
 import type {
   AddImportersDependenciesMap,
   Dependency,
   RemoveImportersDependenciesMap,
+  InstallOptions,
+  UninstallOptions,
 } from '@vltpkg/graph'
 import { Spec } from '@vltpkg/spec'
 import type { DependencyTypeShort } from '@vltpkg/types'
@@ -30,12 +37,9 @@ import { loadPackageJson } from 'package-json-from-dist'
 import type { PathBase } from 'path-scurry'
 import handler from 'serve-handler'
 import type { ConfigOptions, LoadedConfig } from './config/index.ts'
-import { install, uninstall } from '@vltpkg/graph'
-import type { InstallOptions, UninstallOptions } from '@vltpkg/graph'
 import { stderr, stdout } from './output.ts'
 import { readProjectFolders } from './read-project-folders.ts'
-import { init } from './init.ts'
-import { getAuthorFromGitUser } from './get-author-from-git-user.ts'
+import { init, getAuthorFromGitUser } from '@vltpkg/init'
 import {
   getDashboardProjectData,
   getReadablePath,
@@ -130,7 +134,7 @@ export const parseUninstallOptions = (
     removeArgs.set(asDepID(importerId), depMap)
     removeArgs.modifiedDependencies = true
   }
-  return [conf.options,  removeArgs ]
+  return [conf.options, removeArgs]
 }
 
 export const formatDashboardJson = async (
