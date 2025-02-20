@@ -97,7 +97,7 @@ t.test('startView', async t => {
     mermaid: (x: true) => ({ underthesea: x }),
   }
 
-  t.test('using view class', t => {
+  t.test('using view class', async t => {
     const { onDone, onError } = startView(
       confHuman as unknown as LoadedConfig,
       views,
@@ -106,7 +106,7 @@ t.test('startView', async t => {
     t.equal(startCalled, true)
     t.equal(doneCalled, false)
     t.equal(errCalled, false)
-    onDone(true)
+    await onDone(true)
     t.equal(doneCalled, true)
     t.equal(errCalled, false)
     const p = new Error('poop')
@@ -115,25 +115,25 @@ t.test('startView', async t => {
     t.end()
   })
 
-  t.test('using a view function for JSON', t => {
+  t.test('using a view function for JSON', async t => {
     const { onDone, onError } = startView(
       confJson as unknown as LoadedConfig,
       views,
     )
     t.equal(onError, undefined)
-    t.equal(onDone(true), 'true')
-    t.equal(onDone(undefined as unknown as true), undefined)
+    t.equal(await onDone(true), 'true')
+    t.equal(await onDone(undefined as unknown as true), undefined)
     t.end()
   })
 
-  t.test('using a view function not json', t => {
+  t.test('using a view function not json', async t => {
     const { onDone, onError } = startView(
       confMermaid as unknown as LoadedConfig,
       views,
     )
     t.equal(onError, undefined)
-    t.equal(onDone(true), '{ underthesea: true }')
-    t.equal(onDone(undefined as unknown as true), undefined)
+    t.equal(await onDone(true), '{ underthesea: true }')
+    t.equal(await onDone(undefined as unknown as true), undefined)
     t.end()
   })
 })
