@@ -4,8 +4,8 @@ import { PackageJson } from '@vltpkg/package-json'
 import { existsSync, readdirSync, readFileSync } from 'node:fs'
 import http from 'node:http'
 import { resolve } from 'node:path'
-import { PathScurry } from 'path-scurry'
 import type { PathBase } from 'path-scurry'
+import { PathScurry } from 'path-scurry'
 import t from 'tap'
 import type {
   ConfigOptions,
@@ -13,6 +13,7 @@ import type {
 } from '../src/config/index.ts'
 import { parseInstallOptions } from '../src/start-gui.ts'
 import { actualObject } from './fixtures/actual.ts'
+import * as GRAPH from '@vltpkg/graph'
 
 t.cleanSnapshot = s =>
   s
@@ -64,9 +65,11 @@ t.test('starts gui data and server', async t => {
         openURL = url
       },
     },
-    '@vltpkg/graph': {
+    '@vltpkg/graph': t.createMock(GRAPH, {
       ideal: {},
       reify: {},
+      install: () => {},
+      uninstall: () => {},
       actual: {
         load() {
           return {
@@ -80,7 +83,7 @@ t.test('starts gui data and server', async t => {
       asDependency(item: any): Dependency {
         return item as Dependency
       },
-    },
+    }),
     '@vltpkg/package-json': {
       PackageJson,
     },
@@ -297,16 +300,14 @@ t.test('e2e server test', async t => {
       },
     },
     '@vltpkg/url-open': { urlOpen() {} },
-    '../src/install.ts': {
+    '@vltpkg/graph': t.createMock(GRAPH, {
       async install() {
         ilog += 'install\n'
       },
-    },
-    '../src/uninstall.ts': {
       async uninstall() {
         ilog += 'uninstall\n'
       },
-    },
+    }),
     '../src/output.ts': {
       stderr: () => {},
       stdout: (str: string) => {

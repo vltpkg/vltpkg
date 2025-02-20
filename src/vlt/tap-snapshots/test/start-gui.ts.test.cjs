@@ -178,8 +178,9 @@ Array [
 `
 
 exports[`test/start-gui.ts > TAP > parseInstallArgs > multiple item added to root and workspace 1`] = `
-Object {
-  "add": AddImportersDependenciesMapImpl {
+Array [
+  undefined,
+  AddImportersDependenciesMapImpl {
     "file·." => Map {
       "abbrev" => Object {
         "spec": Spec {
@@ -329,22 +330,22 @@ Object {
       },
     },
   },
-  "conf": Object {},
-}
+]
 `
 
 exports[`test/start-gui.ts > TAP > parseInstallArgs > no item added to root 1`] = `
-Object {
-  "add": AddImportersDependenciesMapImpl {
+Array [
+  undefined,
+  AddImportersDependenciesMapImpl {
     "file·." => Map {},
   },
-  "conf": Object {},
-}
+]
 `
 
 exports[`test/start-gui.ts > TAP > parseInstallArgs > single item added to root 1`] = `
-Object {
-  "add": AddImportersDependenciesMapImpl {
+Array [
+  undefined,
+  AddImportersDependenciesMapImpl {
     "file·." => Map {
       "abbrev" => Object {
         "spec": Spec {
@@ -396,13 +397,13 @@ Object {
       },
     },
   },
-  "conf": Object {},
-}
+]
 `
 
 exports[`test/start-gui.ts > TAP > parseInstallArgs > single item added to workspace 1`] = `
-Object {
-  "add": AddImportersDependenciesMapImpl {
+Array [
+  undefined,
+  AddImportersDependenciesMapImpl {
     "workspace·packages§a" => Map {
       "abbrev" => Object {
         "spec": Spec {
@@ -454,8 +455,7 @@ Object {
       },
     },
   },
-  "conf": Object {},
-}
+]
 `
 
 exports[`test/start-gui.ts > TAP > starts gui data and server > should copy all files to tmp directory 1`] = `

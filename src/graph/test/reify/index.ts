@@ -324,7 +324,11 @@ t.test('failure rolls back', async t => {
     packageJson: new PackageJson(),
   })
 
-  t.strictSame(before, after, 'no changes to actual graph')
+  t.strictSame(
+    before.toJSON(),
+    after.toJSON(),
+    'no changes to actual graph',
+  )
 
   t.throws(
     // note: not lstat, since this is going to be a shim on windows,

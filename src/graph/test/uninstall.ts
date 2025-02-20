@@ -1,10 +1,8 @@
-import t from 'tap'
 import { joinDepIDTuple } from '@vltpkg/dep-id'
-import type {
-  BuildIdealOptions,
-  RemoveImportersDependenciesMap,
-} from '@vltpkg/graph'
-import type { LoadedConfig } from '../src/config/index.ts'
+import t from 'tap'
+import type { RemoveImportersDependenciesMap } from '../src/dependencies.ts'
+import type { BuildIdealRemoveOptions } from '../src/ideal/types.ts'
+import type { UninstallOptions } from '../src/uninstall.ts'
 
 t.cleanSnapshot = s =>
   s.replace(/^(\s+)"?projectRoot"?: .*$/gm, '$1projectRoot: #')
@@ -36,16 +34,16 @@ t.test('uninstall', async t => {
   const { uninstall } = await t.mockImport<
     typeof import('../src/uninstall.ts')
   >('../src/uninstall.ts', {
-    '@vltpkg/graph': {
-      ideal: {
-        build: async ({ remove }: BuildIdealOptions) =>
+    '../src/ideal/build.ts': {
+        build: async ({ remove }: BuildIdealRemoveOptions) =>
           (log += `buildideal result removes ${remove?.get(rootDepID)?.size || 0} new package(s)\n`),
-      },
-      actual: {
+    },
+    '../src/actual/load.ts': {
         load: () => {
           log += 'actual.load\n'
         },
       },
+    '../src/reify/index.ts': {
       reify: async () => {
         log += 'reify\n'
       },
@@ -62,14 +60,12 @@ t.test('uninstall', async t => {
     },
   })
 
-  await uninstall({
-    conf: {
-      options,
-    } as unknown as LoadedConfig,
-    remove: new Map([
+  await uninstall(
+    options as unknown as UninstallOptions,
+    new Map([
       [rootDepID, new Set(['abbrev'])],
     ]) as RemoveImportersDependenciesMap,
-  })
+  )
 
   t.matchSnapshot(log, 'should call build removing a dependency')
 })
