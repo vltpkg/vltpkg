@@ -14,6 +14,7 @@ const routeNames = new Map<string, string>([
 const Header = () => {
   const [routeName, setRouteName] = useState<string>('')
   const route = useGraphStore(state => state.activeRoute)
+  const projectInfo = useGraphStore(state => state.projectInfo)
 
   useEffect(() => {
     /**
@@ -28,6 +29,8 @@ const Header = () => {
   }, [route])
 
   if (route.includes('error')) return null
+
+  if (projectInfo.vltInstalled === false) return null
 
   return (
     <div className="flex w-full justify-between bg-white px-8 py-3 dark:bg-black">
