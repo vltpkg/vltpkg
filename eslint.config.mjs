@@ -5,7 +5,6 @@ import { readFileSync } from 'fs'
 import { resolve } from 'path'
 import jsdoc from 'eslint-plugin-jsdoc'
 import importPlugin from 'eslint-plugin-import'
-import { defaultConditionNames } from 'eslint-import-resolver-typescript'
 
 const MONO_ROOT = import.meta.dirname
 const CWD = process.cwd()
@@ -57,10 +56,6 @@ export default tseslint.config(
       'import/resolver': {
         typescript: {
           alwaysTryTypes: true,
-          conditionNames: [
-            '@vltpkg/source',
-            ...defaultConditionNames,
-          ],
           project:
             // If run from the root specify glob patterns to all ts projects
             // otherwise just use the tsconfig.json in the current directory

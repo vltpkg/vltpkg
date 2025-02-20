@@ -8,7 +8,6 @@ export default defineConfig({
     alias: {
       '@': resolve(import.meta.dirname, './src'),
     },
-    conditions: ['@vltpkg/source'],
   },
   test: {
     environment: 'jsdom',

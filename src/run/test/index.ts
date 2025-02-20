@@ -6,8 +6,7 @@ import { isRunResult, run } from '../src/index.ts'
 
 const fixture = resolve(import.meta.dirname, 'fixtures/script.ts')
 
-const NODE_OPTIONS =
-  '--no-warnings --experimental-strip-types --conditions=@vltpkg/source'
+const NODE_OPTIONS = '--no-warnings --experimental-strip-types'
 
 const node =
   process.execPath.includes(' ') ?

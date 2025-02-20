@@ -33,11 +33,15 @@ and to attempt to fix them.
 ## Running TypeScript Directly
 
 If you are on the latest version of Node, you can run TypeScript
-files directly using `node --conditions=@vltpkg/source
-./path/to/file.ts`.
+files directly using `node ./path/to/file.ts`.
+
+If you are on Node 22, you can use `node --experimental-strip-types`.
+
+For both of those options you will see a warning. If that bothers you
+then you can run with `--no-warnings` as well.
 
 In order to make this work for all places where we might spawn a
-node process, run `export NODE_OPTIONS=--conditions=@vltpkg/source` to
+node process, run `export NODE_OPTIONS=--experimental-strip-types --no-warnings` to
 set this in the environment, rather than on each command.
 
 ## `nave` Conveniences

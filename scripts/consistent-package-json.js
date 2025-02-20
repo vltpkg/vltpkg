@@ -255,8 +255,16 @@ const fixScripts = async ws => {
     : {},
     ws.pj.devDependencies.tshy ?
       {
-        prepare: 'tshy',
-        watch: 'tshy --watch',
+        prepack: 'tshy',
+        typecheck: 'tsc --noEmit --project .tshy/esm.json',
+      }
+    : ws.pj.dependencies?.astro ?
+      {
+        typecheck: 'astro check',
+      }
+    : ws.pj.devDependencies.typescript && !ws.isRoot ?
+      {
+        typecheck: 'tsc --noEmit',
       }
     : {},
   )
@@ -280,8 +288,8 @@ const fixTools = async ws => {
       {
         ...ws.pj.tshy,
         selfLink: false,
+        liveDev: true,
         dialects: ['esm'],
-        sourceDialects: ['@vltpkg/source'],
         exports: sortObject(
           {
             ...ws.pj.tshy.exports,
@@ -291,7 +299,7 @@ const fixTools = async ws => {
           ['./package.json', '.'],
         ),
       },
-      ['selfLink', 'dialects', 'sourceDialects'],
+      ['selfLink', 'liveDev', 'dialects'],
     )
     mergeJson(resolve(ws.dir, 'tsconfig.json'), d =>
       sortObject({
