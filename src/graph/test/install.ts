@@ -1,13 +1,13 @@
-import t from 'tap'
 import { joinDepIDTuple } from '@vltpkg/dep-id'
-import { asDependency } from '@vltpkg/graph'
-import type {
-  Dependency,
-  BuildIdealOptions,
-  AddImportersDependenciesMap,
-} from '@vltpkg/graph'
-import type { LoadedConfig } from '../src/config/index.ts'
 import { Spec } from '@vltpkg/spec'
+import t from 'tap'
+import type {
+  AddImportersDependenciesMap,
+  Dependency,
+} from '../src/dependencies.ts'
+import { asDependency } from '../src/dependencies.ts'
+import type { BuildIdealAddOptions } from '../src/ideal/types.ts'
+import type { InstallOptions } from '../src/install.ts'
 
 t.cleanSnapshot = s =>
   s.replace(/^(\s+)"?projectRoot"?: .*$/gm, '$1projectRoot: #')
@@ -34,17 +34,17 @@ t.test('install', async t => {
   const { install } = await t.mockImport<
     typeof import('../src/install.ts')
   >('../src/install.ts', {
-    '@vltpkg/graph': {
-      ideal: {
-        build: async ({ add }: BuildIdealOptions) => {
-          log += `buildideal result adds ${add?.get(rootDepID)?.size || 0} new package(s)\n`
-        },
+    '../src/ideal/build.ts': {
+      build: async ({ add }: BuildIdealAddOptions) => {
+        log += `buildideal result adds ${add?.get(rootDepID)?.size || 0} new package(s)\n`
       },
-      actual: {
-        load: () => {
-          log += 'actual.load\n'
-        },
+    },
+    '../src/actual/load.ts': {
+      load: () => {
+        log += 'actual.load\n'
       },
+    },
+    '../src/reify/index.ts': {
       reify: async () => {
         log += 'reify\n'
       },
@@ -61,19 +61,18 @@ t.test('install', async t => {
     },
   })
 
-  await install({
-    add: new Map() as AddImportersDependenciesMap,
-    conf: {
-      options,
-    } as unknown as LoadedConfig,
-  })
+  await install(
+    options as unknown as InstallOptions,
+    new Map() as AddImportersDependenciesMap,
+  )
 
   t.matchSnapshot(log, 'should call build -> actual.load -> reify')
 
   // adding a new dependency
   log = ''
-  await install({
-    add: new Map([
+  await install(
+    options as unknown as InstallOptions,
+    new Map([
       [
         rootDepID,
         new Map<string, Dependency>([
@@ -87,10 +86,7 @@ t.test('install', async t => {
         ]),
       ],
     ]) as AddImportersDependenciesMap,
-    conf: {
-      options,
-    } as unknown as LoadedConfig,
-  })
+  )
 
   t.matchSnapshot(log, 'should call build adding new dependency')
 })

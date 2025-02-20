@@ -7,7 +7,7 @@ let log = ''
 const { usage, command } = await t.mockImport<
   typeof import('../../src/commands/uninstall.ts')
 >('../../src/commands/uninstall.ts', {
-  '../../src/uninstall.ts': {
+  '@vltpkg/graph': {
     async uninstall() {
       log += 'uninstall\n'
     },

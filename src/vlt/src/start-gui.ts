@@ -30,12 +30,10 @@ import { loadPackageJson } from 'package-json-from-dist'
 import type { PathBase } from 'path-scurry'
 import handler from 'serve-handler'
 import type { ConfigOptions, LoadedConfig } from './config/index.ts'
-import { install } from './install.ts'
-import type { InstallOptions } from './install.ts'
+import { install, uninstall } from '@vltpkg/graph'
+import type { InstallOptions, UninstallOptions } from '@vltpkg/graph'
 import { stderr, stdout } from './output.ts'
 import { readProjectFolders } from './read-project-folders.ts'
-import { uninstall } from './uninstall.ts'
-import type { UninstallOptions } from './uninstall.ts'
 import { init } from './init.ts'
 import { getAuthorFromGitUser } from './get-author-from-git-user.ts'
 import {
@@ -100,7 +98,7 @@ class RemoveImportersDependenciesMapImpl
 export const parseInstallOptions = (
   conf: LoadedConfig,
   args: GUIInstallOptions,
-): InstallOptions => {
+): [InstallOptions, AddImportersDependenciesMap] => {
   const addArgs = new AddImportersDependenciesMapImpl()
   for (const [importerId, deps] of Object.entries(args)) {
     const depMap = new Map<string, Dependency>()
@@ -116,13 +114,13 @@ export const parseInstallOptions = (
     }
     addArgs.set(asDepID(importerId), depMap)
   }
-  return { add: addArgs, conf }
+  return [conf.options, addArgs]
 }
 
 export const parseUninstallOptions = (
   conf: LoadedConfig,
   args: GUIUninstallOptions,
-): UninstallOptions => {
+): [UninstallOptions, RemoveImportersDependenciesMap] => {
   const removeArgs = new RemoveImportersDependenciesMapImpl()
   for (const [importerId, deps] of Object.entries(args)) {
     const depMap = new Set<string>()
@@ -132,7 +130,7 @@ export const parseUninstallOptions = (
     removeArgs.set(asDepID(importerId), depMap)
     removeArgs.modifiedDependencies = true
   }
-  return { remove: removeArgs, conf }
+  return [conf.options,  removeArgs ]
 }
 
 export const formatDashboardJson = async (
@@ -461,7 +459,7 @@ export const startGUI = async ({
           mkdirSync(cwd, { recursive: true })
           await init({ cwd, author })
           conf.resetOptions(cwd)
-          await install({ conf })
+          await install(conf.options)
           conf.resetOptions(conf.options.projectRoot)
           await updateDashboard()
           updateGraphData(tmp, conf, hasDashboard)
@@ -482,7 +480,7 @@ export const startGUI = async ({
           )
         }
         try {
-          await install(parseInstallOptions(conf, add))
+          await install(...parseInstallOptions(conf, add))
           conf.resetOptions(conf.options.projectRoot)
           updateGraphData(tmp, conf, hasDashboard)
           return jsonOk('ok')
@@ -502,7 +500,7 @@ export const startGUI = async ({
           )
         }
         try {
-          await uninstall(parseUninstallOptions(conf, remove))
+          await uninstall(...parseUninstallOptions(conf, remove))
           conf.resetOptions(conf.options.projectRoot)
           updateGraphData(tmp, conf, hasDashboard)
           return jsonOk('ok')

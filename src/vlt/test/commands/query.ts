@@ -107,6 +107,8 @@ const mockQuery = async (
         actual: {
           load: () => g,
         },
+        install: () => {},
+        uninstall: () => {},
         humanReadableOutput,
         jsonOutput,
         mermaidOutput,

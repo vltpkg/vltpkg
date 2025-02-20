@@ -107,6 +107,8 @@ const mockList = async (
         actual: {
           load: () => g,
         },
+        install: () => {},
+        uninstall: () => {},
         humanReadableOutput,
         jsonOutput,
         mermaidOutput,

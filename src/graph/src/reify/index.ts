@@ -69,6 +69,8 @@ export const reify = async (options: ReifyOptions) => {
   }
 
   done()
+
+  return diff
 }
 
 const reify_ = async (
