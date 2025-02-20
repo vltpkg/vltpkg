@@ -47,7 +47,9 @@ export const startView = <T>(
   views?: Views<T>,
   { start }: { start: number } = { start: Date.now() },
 ): {
-  onDone: (result: T) => string | undefined
+  onDone: (
+    result: T,
+  ) => Promise<string | undefined> | string | undefined
   onError?: (err: unknown) => void
 } => {
   const View = getView<T>(conf, views)
@@ -65,9 +67,9 @@ export const startView = <T>(
     }
   } else {
     return {
-      onDone(r): string | undefined {
+      async onDone(r): Promise<string | undefined> {
         if (r === undefined && r !== null) return
-        const res = View(r, opts, conf)
+        const res = await View(r, opts, conf)
         return conf.values.view === 'json' ?
             JSON.stringify(res, null, 2)
           : formatWithOptions(
@@ -98,7 +100,7 @@ export const outputCommand = async <T>(
   const { onDone, onError } = startView(conf, views, { start })
 
   try {
-    const output = onDone(await command(conf))
+    const output = await onDone(await command(conf))
     if (output !== undefined) {
       stdout(output)
     }
