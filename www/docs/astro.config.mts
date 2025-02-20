@@ -86,15 +86,7 @@ export default defineConfig({
         minHeadingLevel: 2,
         maxHeadingLevel: 5,
       },
-      plugins: [
-        TypedocPlugin.plugin,
-        starlightLinksValidator({
-          // work around bug in the link validator that strips
-          // the index off of the last segment. Remove when this PR lands:
-          // https://github.com/HiDeoo/starlight-links-validator/pull/80
-          exclude: ['/packages/*/module_index?(#*)'],
-        }),
-      ],
+      plugins: [TypedocPlugin.plugin, starlightLinksValidator()],
       sidebar: [
         {
           label: 'CLI',
