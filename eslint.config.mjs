@@ -338,6 +338,17 @@ export default tseslint.config(
   },
   {
     /**
+     * Benchmarks must be run against dist code and the import/no-unresolved
+     * looks at the state of the filesystem so these files could fail intermittently
+     * based on what has been built which is no good. So we turn it off.
+     */
+    files: ['src/semver/benchmarks/this.js'],
+    rules: {
+      'import/no-unresolved': 'off',
+    },
+  },
+  {
+    /**
      * Plain JS code.
      * TODO: there is a way to get typechecking with tseslint for
      * JS code but I couldn't get it configured right. Might be worth
