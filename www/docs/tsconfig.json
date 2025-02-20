@@ -6,7 +6,6 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"]
-    },
-    "customConditions": ["@vltpkg/source"]
+    }
   }
 }

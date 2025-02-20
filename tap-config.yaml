@@ -9,6 +9,3 @@ exclude:
   - 'test/fixtures/**'
 
 type-strip-only: true
-
-node-arg:
-  - '--conditions=@vltpkg/source'

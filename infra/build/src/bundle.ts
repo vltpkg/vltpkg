@@ -116,7 +116,6 @@ const esbuildBuild = async (
     metafile: true,
     bundle: true,
     platform: 'node',
-    conditions: ['@vltpkg/source'],
     target: JSON.parse(
       readFileSync(join(Paths.MONO_ROOT, 'tsconfig.json'), 'utf8'),
     ).compilerOptions.target,

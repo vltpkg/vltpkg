@@ -13,13 +13,23 @@ const rebuild = (key: string) => {
   return VLT_DOCS_REBUILD.split(',').includes(key)
 }
 
+export type PluginOptions = {
+  logger: AstroIntegrationLogger
+  command: string
+}
+
 export const cacheEntries = <
   T extends Record<string, string> | string,
 >(
   entries: T,
   rebuildKey: string,
-  logger: AstroIntegrationLogger,
+  { command, logger }: PluginOptions,
 ): T | null => {
+  if (command === 'sync' || command === 'check') {
+    logger.info(`skipping due to command=${command}`)
+    return null
+  }
+
   if (process.env.NODE_ENV === 'test') {
     logger.warn(`skipping due to NODE_ENV=test`)
     return null
