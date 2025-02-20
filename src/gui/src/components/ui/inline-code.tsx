@@ -1,5 +1,7 @@
 import { cva } from 'class-variance-authority'
 import type { VariantProps } from 'class-variance-authority'
+import { cn } from '@/lib/utils.js'
+import { forwardRef } from 'react'
 
 type Color = 'pink' | 'blue' | 'green' | 'yellow' | 'red' | 'purple'
 
@@ -29,14 +31,18 @@ const variants = cva(
   },
 )
 
-export const InlineCode: React.FC<InlineCodeProps> = ({
-  children,
-  color,
-  ...rest
-}) => {
+export const InlineCode = forwardRef<
+  HTMLSpanElement,
+  InlineCodeProps
+>(({ children, className, color, ...rest }, ref) => {
   return (
-    <span {...rest} className={variants({ color })}>
+    <span
+      ref={ref}
+      className={cn(variants({ color, className }))}
+      {...rest}>
       {children}
     </span>
   )
-}
+})
+
+InlineCode.displayName = 'InlineCode'

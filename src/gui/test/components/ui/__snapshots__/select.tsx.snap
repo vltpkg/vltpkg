@@ -11,7 +11,7 @@ exports[`select render default 1`] = `
     aria-autocomplete="none"
     dir="ltr"
     data-state="closed"
-    class="flex h-9 w-full items-center justify-between whitespace-nowrap rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50 [&amp;>span]:line-clamp-1"
+    class="group flex h-9 w-full items-center justify-between whitespace-nowrap rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50 [&amp;>span]:line-clamp-1"
   >
     <span
       tabindex="3"
@@ -20,7 +20,7 @@ exports[`select render default 1`] = `
       dependencies
     </span>
     <gui-chevron-down-icon
-      classname="h-4 w-4 opacity-50"
+      classname="h-4 w-4 opacity-50 transition-all duration-300 group-data-[state=open]:-rotate-180"
       aria-hidden="true"
     >
     </gui-chevron-down-icon>
@@ -51,7 +51,7 @@ exports[`select render open 1`] = `
     aria-autocomplete="none"
     dir="ltr"
     data-state="open"
-    class="flex h-9 w-full items-center justify-between whitespace-nowrap rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50 [&amp;>span]:line-clamp-1"
+    class="group flex h-9 w-full items-center justify-between whitespace-nowrap rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50 [&amp;>span]:line-clamp-1"
   >
     <span
       tabindex="3"
@@ -60,7 +60,7 @@ exports[`select render open 1`] = `
       dependencies
     </span>
     <gui-chevron-down-icon
-      classname="h-4 w-4 opacity-50"
+      classname="h-4 w-4 opacity-50 transition-all duration-300 group-data-[state=open]:-rotate-180"
       aria-hidden="true"
     >
     </gui-chevron-down-icon>
