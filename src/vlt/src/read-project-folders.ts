@@ -83,7 +83,8 @@ const collectResult = (
     entry.isSymbolicLink() ||
     entry.name === 'node_modules' ||
     (fromHome &&
-      ignoredHomedirFolderNames.includes(entry.name.toLowerCase()))
+      ignoredHomedirFolderNames.includes(entry.name.toLowerCase())) ||
+    entry.name.startsWith('.')
   ) {
     return false
   }

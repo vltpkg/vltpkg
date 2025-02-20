@@ -7,6 +7,18 @@ import { readProjectFolders } from '../src/read-project-folders.ts'
 t.test('run from folder with project folders on it', async t => {
   const dir = t.testdir({
     projects: {
+      '.junk': {
+        'package.json': JSON.stringify({
+          name: 'this should be ignored',
+        }),
+      },
+      '.trash': {
+        ignorethis: {
+          'package.json': JSON.stringify({
+            name: 'this should be ignored',
+          }),
+        },
+      },
       a: {
         'package.json': JSON.stringify({
           name: 'a',
