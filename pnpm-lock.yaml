@@ -1615,6 +1615,9 @@ importers:
       react:
         specifier: ^18.3.1
         version: 18.3.1
+      react-devtools-core:
+        specifier: ^4.28.5
+        version: 4.28.5
       serve-handler:
         specifier: ^6.1.5
         version: 6.1.6
@@ -1643,9 +1646,6 @@ importers:
       prettier:
         specifier: 'catalog:'
         version: 3.4.2
-      react-devtools-core:
-        specifier: ^4.28.5
-        version: 4.28.5
       tap:
         specifier: 'catalog:'
         version: 21.1.0(@types/node@22.13.1)(@types/react@18.3.18)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.7.3)

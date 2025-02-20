@@ -40,7 +40,7 @@ export const matrixConfig: Record<
   all: { type: 'boolean' },
   minify: { type: 'string', multiple: true },
   sourcemap: { type: 'string', multiple: true },
-  externalCommands: { type: 'string', multiple: true },
+  splitting: { type: 'string', multiple: true },
   compile: { type: 'string', multiple: true },
   runtime: { type: 'string', multiple: true },
   platform: { type: 'string', multiple: true },
@@ -104,7 +104,7 @@ const parseArgs = (
     runtime,
     minify: parseBoolean('minify', o),
     sourcemap: parseBoolean('sourcemap', o),
-    externalCommands: parseBoolean('externalCommands', o),
+    splitting: parseBoolean('splitting', o),
     platform: parseArg('platform', o, types.isPlatform),
     arch: parseArg('arch', o, types.isArch),
   }
