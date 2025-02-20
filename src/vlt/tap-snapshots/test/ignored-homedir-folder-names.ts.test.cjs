@@ -7,6 +7,10 @@
 'use strict'
 exports[`test/ignored-homedir-folder-names.ts > TAP > darwin > must match snapshot 1`] = `
 Array [
+  ".cache",
+  ".config",
+  ".trash",
+  ".vscode",
   "applications",
   "applications (parallels)",
   "desktop",
@@ -26,6 +30,9 @@ Array [
 
 exports[`test/ignored-homedir-folder-names.ts > TAP > linux > must match snapshot 1`] = `
 Array [
+  ".cache",
+  ".config",
+  ".vscode",
   "desktop",
   "downloads",
   "dropbox",
@@ -41,6 +48,9 @@ Array [
 
 exports[`test/ignored-homedir-folder-names.ts > TAP > win32 > must match snapshot 1`] = `
 Array [
+  ".cache",
+  ".config",
+  ".vscode",
   "appdata",
   "application data",
   "contacts",

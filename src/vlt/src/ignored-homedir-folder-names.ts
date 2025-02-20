@@ -12,6 +12,9 @@ export const ignoredHomedirFolderNames = [
   'library',
   'desktop',
   'dropbox',
+  '.config',
+  '.cache',
+  '.vscode',
 ].concat(
   process.platform === 'darwin' ?
     [
@@ -21,6 +24,7 @@ export const ignoredHomedirFolderNames = [
       'applications (parallels)',
       'sites',
       'sync',
+      '.trash',
     ]
   : process.platform === 'win32' ?
     [
