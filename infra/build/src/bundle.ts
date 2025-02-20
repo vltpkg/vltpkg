@@ -2,117 +2,136 @@ import {
   rmSync,
   mkdirSync,
   writeFileSync,
-  readdirSync,
   cpSync,
+  readFileSync,
 } from 'node:fs'
 import {
   join,
   relative,
   dirname,
+  sep,
   basename,
   extname,
-  resolve,
 } from 'node:path'
+import { readFile } from 'node:fs/promises'
 import * as esbuild from 'esbuild'
-import { findPackageJson } from 'package-json-from-dist'
 import { builtinModules, createRequire } from 'node:module'
 import assert from 'node:assert'
-import { Bins, Paths, EXT } from './index.ts'
+import { Bins, Paths } from './index.ts'
 import type * as types from './types.ts'
-import {
-  transformSourcePlugin,
-  Globals,
-  IMPORT_META,
-  ident,
-  readJson,
-  readPkg,
-  getSrcPath,
-} from './transform-source.ts'
 
-const bundle = async (o: {
-  plugins: esbuild.BuildOptions['plugins']
-  sourcemap: esbuild.BuildOptions['sourcemap']
-  minify: esbuild.BuildOptions['minify']
-  outdir: string
-  in: string
-  out: string
-}) => {
-  const globals = new Globals(
-    // These are globals that are needed to run in all runtimes
-    Globals.var('global', 'globalThis'),
-    Globals.import('process', 'process'),
-    Globals.import(['Buffer'], 'buffer'),
-    Globals.import(['setImmediate', 'clearImmediate'], 'timers'),
-    // These are to shim import.meta properties
-    {
-      [IMPORT_META.Dirname]: (id, { fn }) =>
-        Globals.var(
-          id,
-          fn('path.resolve', [
-            IMPORT_META.Dirname,
-            Globals.quote(
-              relative(resolve(o.outdir, dirname(o.out)), o.outdir),
-            ),
-          ]),
-        ),
-      [IMPORT_META.Filename]: (id, { fn, get }) =>
-        Globals.var(
-          id,
-          fn('path.resolve', [
-            get(IMPORT_META.Dirname),
-            Globals.quote(basename(o.out) + EXT),
-          ]),
-        ),
-      [IMPORT_META.Url]: (id, { fn, get }) =>
-        Globals.var(
-          id,
-          `${fn('url.pathToFileURL', [get(IMPORT_META.Filename)])}.toString()`,
-        ),
-      [IMPORT_META.Resolve]: (id, { fn, get }) => {
-        const arg = ident()
-        return Globals.var(
-          id,
-          `(${arg}) => ${fn('url.pathToFileURL', [
-            fn('path.resolve', [get(IMPORT_META.Dirname), arg]),
-          ])}`,
+const stripExtension = (p: string) =>
+  join(dirname(p), basename(p, extname(p)))
+
+const escapeRegExpPath = (r: string) =>
+  new RegExp(
+    join(r).replaceAll(sep, `\\${sep}`).replaceAll('.', '\\.'),
+  )
+
+const nodeImports: esbuild.Plugin = {
+  name: 'node-imports',
+  setup({ onResolve }) {
+    onResolve({ filter: /()/, namespace: 'file' }, args => {
+      if (
+        builtinModules.includes(args.path) &&
+        !args.path.startsWith('node:')
+      ) {
+        return {
+          path: `node:${args.path}`,
+          external: true,
+        }
+      }
+    })
+  },
+}
+
+const codeSplitPlugin = (): {
+  paths: () => { source: string; out: string }[]
+  plugin: esbuild.Plugin
+} => {
+  const codeSplitIdentifier =
+    'export const __CODE_SPLIT_SCRIPT_NAME ='
+  const found = new Set<{ source: string; out: string }>()
+
+  const fn = async (o: esbuild.OnLoadArgs) => {
+    const source = await readFile(o.path, 'utf8')
+    if (source.includes(codeSplitIdentifier)) {
+      const out = stripExtension(
+        relative(Paths.SRC, o.path),
+      ).replaceAll(sep, '-')
+      found.add({ source: o.path, out })
+      return {
+        // keep this as a single line because it could affect source maps
+        contents: `import {resolve} from 'node:path';${codeSplitIdentifier} resolve(import.meta.dirname, '${out}.js')`,
+        loader: 'ts' as esbuild.Loader,
+      }
+    }
+  }
+
+  // All files that will be code split into external scripts
+  // export __CODE_SPLIT_SCRIPT_NAME which we change to a path
+  // to that external script instead
+  return {
+    paths: () => [...found],
+    plugin: {
+      name: 'code-split-plugin',
+      setup({ onLoad }) {
+        onLoad(
+          {
+            filter: escapeRegExpPath(`^${Paths.SRC}`),
+            namespace: 'file',
+          },
+          fn,
         )
       },
     },
-    ({ fn, get }) =>
-      Globals.var(
-        'require',
-        fn('module.createRequire', [get(IMPORT_META.Filename)]),
-      ),
-  )
+  }
+}
 
+type CreateBundleOptions = {
+  plugins: Exclude<esbuild.BuildOptions['plugins'], undefined>
+  sourcemap: Exclude<esbuild.BuildOptions['sourcemap'], undefined>
+  minify: Exclude<esbuild.BuildOptions['minify'], undefined>
+  splitting: Exclude<esbuild.BuildOptions['splitting'], undefined>
+  outdir: string
+  define: Record<string, string>
+}
+
+type BundleOptions = {
+  entryPoints: Exclude<esbuild.BuildOptions['entryPoints'], undefined>
+  plugins?: esbuild.BuildOptions['plugins']
+}
+
+const esbuildBuild = async (
+  o: CreateBundleOptions & BundleOptions,
+) => {
   const { errors, warnings, metafile } = await esbuild.build({
-    entryPoints: [{ in: o.in, out: o.out }],
+    entryPoints: o.entryPoints,
     plugins: o.plugins,
     sourcemap: o.sourcemap,
     minify: o.minify,
     outdir: o.outdir,
+    splitting: o.splitting,
     format: 'esm',
     metafile: true,
     bundle: true,
     platform: 'node',
-    target: readJson(join(Paths.MONO_ROOT, 'tsconfig.json'))
-      .compilerOptions.target,
-    // Define global variables that are required for our deps and testing
-    // runtime support
+    conditions: ['@vltpkg/source'],
+    target: JSON.parse(
+      readFileSync(join(Paths.MONO_ROOT, 'tsconfig.json'), 'utf8'),
+    ).compilerOptions.target,
     banner: {
-      [EXT.slice(1)]: globals.toString(),
+      js: `var global = globalThis;
+import {Buffer} from "node:buffer";
+import {setImmediate, clearImmediate} from "node:timers";
+import {createRequire as _vlt_createRequire} from 'node:module';
+var require = _vlt_createRequire(import.meta.filename);`,
     },
     define: {
       'process.env.NODE_ENV': '"production"',
+      'process.env.TAP': 'false',
       'process.env._VLT_DEV_LIVE_RELOAD': 'false',
-      // The import.meta shims are then globally replaced with our newly defined values
-      ...Object.values(IMPORT_META).reduce(
-        (acc, k) => {
-          acc[k] = globals.get(k)
-          return acc
-        },
-        {} as Record<`import.meta.${keyof ImportMeta}`, string>,
-      ),
+      ...o.define,
     },
   })
 
@@ -124,17 +143,26 @@ const bundle = async (o: {
   return metafile
 }
 
-const createWorkspace = (base: string, source: string) => {
-  const pkg = readPkg(source)
-  const dest = join(base, basename(source))
-  mkdirSync(dest, { recursive: true })
-  return { pkg, dest }
+const createBundler = (o: CreateBundleOptions) => {
+  const bundles: esbuild.Metafile[] = []
+  return {
+    bundle: async (b: BundleOptions) => {
+      bundles.push(
+        await esbuildBuild({
+          ...o,
+          ...b,
+          plugins: [...o.plugins, ...(b.plugins ?? [])],
+        }),
+      )
+    },
+    getBundles: () => bundles,
+  }
 }
 
 export default async ({
   outdir,
   minify,
-  externalCommands,
+  splitting,
   sourcemap,
 }: types.BundleFactors & { outdir: string }): Promise<
   esbuild.Metafile & { outdir: string }
@@ -142,100 +170,61 @@ export default async ({
   rmSync(outdir, { recursive: true, force: true })
   mkdirSync(outdir, { recursive: true })
 
-  const transformSource = transformSourcePlugin({
-    externalCommands,
+  const define = {
+    GUI_ASSETS_DIR: 'gui-assets',
+    CLI_PACKAGE_JSON: 'cli-package.json',
+    REGISTRY_CLIENT_PACKAGE_JSON: 'registry-client-package.json',
+  }
+
+  const { bundle, getBundles } = createBundler({
+    minify,
+    sourcemap,
+    splitting,
+    outdir,
+    plugins: [nodeImports],
+    define: Object.fromEntries(
+      Object.entries(define).map(([k, v]) => [
+        `process.env._VLT_${k}`,
+        `"${v}"`,
+      ]),
+    ),
   })
 
-  const nodeImports: esbuild.Plugin = {
-    name: 'node-imports',
-    setup({ onResolve }) {
-      onResolve({ filter: /()/, namespace: 'file' }, args => {
-        if (
-          builtinModules.includes(args.path) &&
-          !args.path.startsWith('node:')
-        ) {
-          return {
-            path: `node:${args.path}`,
-            external: true,
-          }
-        }
-      })
-    },
-  }
+  const codeSplit = codeSplitPlugin()
 
-  const files: esbuild.Metafile[] = []
-  const bundleFiles = async (
-    bundles: {
-      in: string
-      out: string
-    }[],
-  ) => {
-    for (const b of bundles) {
-      files.push(
-        await bundle({
-          ...b,
-          plugins: [transformSource.plugin, nodeImports],
-          sourcemap,
-          minify,
-          outdir,
-        }),
-      )
-    }
-  }
-
-  await bundleFiles(
-    Bins.map(bin => ({
+  await bundle({
+    entryPoints: Bins.map(bin => ({
       in: join(Paths.CLI, bin),
       out: basename(bin, extname(bin)),
     })),
-  )
+    plugins: [nodeImports, codeSplit.plugin],
+  })
 
-  if (externalCommands) {
-    await bundleFiles(
-      readdirSync(Paths.COMMANDS, {
-        withFileTypes: true,
-      })
-        .filter(p => p.isFile() && extname(p.name) === '.js')
-        .map(c => ({
-          in: join(c.parentPath, c.name),
-          out: `commands/${basename(c.name, extname(c.name))}`,
-        })),
-    )
-  }
-
-  await bundleFiles(
-    transformSource.paths.codeSplit().map(p => ({
-      in: p,
-      out: getSrcPath(p).replaceAll(EXT, ''),
-    })),
-  )
-
-  for (const file of transformSource.paths.readPackageJson()) {
-    const { pkg, dest } = createWorkspace(
-      outdir,
-      dirname(findPackageJson(file)),
-    )
-    writeFileSync(
-      join(dest, 'package.json'),
-      JSON.stringify(
-        {
-          name: pkg.name,
-          version: pkg.version,
-        },
-        null,
-        2,
-      ),
-    )
-  }
-
-  for (const dir of transformSource.paths.metaResolve()) {
-    const { pkg, dest } = createWorkspace(outdir, dir)
-    const main = pkg.exports['.']
-    assert(typeof main === 'string')
-    cpSync(join(dir, main), join(dest), {
-      recursive: true,
+  // bundle manually code split files determined from the
+  // transform souce plugin. these are scripts that are exec'd
+  // at runtime by the CLI
+  for (const { source, out } of codeSplit.paths()) {
+    await bundle({
+      entryPoints: [{ in: source, out }],
     })
   }
+
+  // copy package jsons that get read at runtime
+  cpSync(
+    join(Paths.MONO_ROOT, 'src/registry-client/package.json'),
+    join(outdir, define.REGISTRY_CLIENT_PACKAGE_JSON),
+  )
+  cpSync(
+    join(Paths.MONO_ROOT, 'src/vlt/package.json'),
+    join(outdir, define.CLI_PACKAGE_JSON),
+  )
+
+  // copy built gui assets
+  cpSync(
+    join(Paths.MONO_ROOT, 'src/gui/dist'),
+    join(outdir, define.GUI_ASSETS_DIR),
+    { recursive: true },
+  )
 
   // yoga.wasm is loaded at runtime by `ink` so we need to copy
   // that file to the build directory
@@ -246,7 +235,7 @@ export default async ({
     join(outdir, 'yoga.wasm'),
   )
 
-  const { inputs, outputs } = files.reduce<esbuild.Metafile>(
+  const { inputs, outputs } = getBundles().reduce<esbuild.Metafile>(
     (a, m) => ({
       inputs: { ...a.inputs, ...m.inputs },
       outputs: { ...a.outputs, ...m.outputs },
