@@ -42,7 +42,7 @@ export const SetupProject = () => {
 
   if (inProgress) {
     return (
-      <div className="flex h-96 items-center justify-center">
+      <div className="flex grow items-center justify-center">
         <LoadingSpinner />
       </div>
     )
