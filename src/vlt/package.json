@@ -10,11 +10,9 @@
   },
   "tshy": {
     "selfLink": false,
+    "liveDev": true,
     "dialects": [
       "esm"
-    ],
-    "sourceDialects": [
-      "@vltpkg/source"
     ],
     "exports": {
       "./package.json": "./package.json",
@@ -22,8 +20,7 @@
       "./commands": "./src/commands",
       "./commands/*": "./src/commands/*.ts",
       "./config": "./src/config/index.ts",
-      "./config/definition": "./src/config/definition.ts",
-      "./types": "./src/types.ts"
+      "./config/definition": "./src/config/definition.ts"
     }
   },
   "dependencies": {
@@ -49,11 +46,13 @@
     "chalk": "catalog:",
     "ink": "^5.1.0",
     "ink-spinner": "^5.0.0",
-    "jackspeak": "^4.0.2",
+    "jackspeak": "^4.0.3",
     "package-json-from-dist": "catalog:",
     "path-scurry": "catalog:",
     "polite-json": "catalog:",
+    "promise-call-limit": "catalog:",
     "react": "^18.3.1",
+    "react-devtools-core": "^4.28.5",
     "serve-handler": "^6.1.5",
     "walk-up-path": "catalog:"
   },
@@ -65,7 +64,6 @@
     "@types/serve-handler": "^6.1.4",
     "eslint": "catalog:",
     "prettier": "catalog:",
-    "react-devtools-core": "^4.28.5",
     "tap": "catalog:",
     "tshy": "catalog:",
     "typescript": "catalog:",
@@ -81,65 +79,46 @@
     "format:check": "prettier --check . --ignore-path ../../.prettierignore --cache",
     "lint": "eslint . --fix",
     "lint:check": "eslint .",
-    "prepare": "tshy",
-    "presnap": "tshy",
+    "prepack": "tshy",
     "snap": "tap",
-    "pretest": "tshy",
     "test": "tap",
     "posttest": "tsc --project tsconfig.test.json",
-    "watch": "tshy --watch"
+    "typecheck": "tsc --noEmit --project .tshy/esm.json"
   },
   "tap": {
     "extends": "../../tap-config.yaml",
     "test-env": [
-      "VLT_TEST_GUI_DIR=/mock-path/to/gui/assets"
+      "__VLT_INTERNAL_GUI_ASSETS_DIR=/mock-path/to/gui/assets"
     ]
   },
   "prettier": "../../.prettierrc.js",
-  "module": "./dist/esm/index.js",
+  "module": "./src/index.ts",
   "type": "module",
   "exports": {
     "./package.json": "./package.json",
     ".": {
       "import": {
-        "@vltpkg/source": "./src/index.ts",
-        "types": "./dist/esm/index.d.ts",
-        "default": "./dist/esm/index.js"
+        "default": "./src/index.ts"
       }
     },
     "./commands": {
       "import": {
-        "@vltpkg/source": "./src/commands",
-        "types": "./dist/esm/commands",
-        "default": "./dist/esm/commands"
+        "default": "./src/commands"
       }
     },
     "./commands/*": {
       "import": {
-        "@vltpkg/source": "./src/commands/*.ts",
-        "types": "./dist/esm/commands/*.d.ts",
-        "default": "./dist/esm/commands/*.js"
+        "default": "./src/commands/*.ts"
       }
     },
     "./config": {
       "import": {
-        "@vltpkg/source": "./src/config/index.ts",
-        "types": "./dist/esm/config/index.d.ts",
-        "default": "./dist/esm/config/index.js"
+        "default": "./src/config/index.ts"
       }
     },
     "./config/definition": {
       "import": {
-        "@vltpkg/source": "./src/config/definition.ts",
-        "types": "./dist/esm/config/definition.d.ts",
-        "default": "./dist/esm/config/definition.js"
-      }
-    },
-    "./types": {
-      "import": {
-        "@vltpkg/source": "./src/types.ts",
-        "types": "./dist/esm/types.d.ts",
-        "default": "./dist/esm/types.js"
+        "default": "./src/config/definition.ts"
       }
     }
   },

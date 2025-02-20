@@ -1,5 +1,5 @@
-import { type Diff } from '../diff.ts'
-import { type Node } from '../node.ts'
+import type { Diff } from '../diff.ts'
+import type { Node } from '../node.ts'
 import { removeOptionalSubgraph } from '../remove-optional-subgraph.ts'
 
 /**

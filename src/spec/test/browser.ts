@@ -1,12 +1,9 @@
 import { Range } from '@vltpkg/semver'
-import { type InspectOptions, inspect } from 'node:util'
+import { inspect } from 'node:util'
+import type { InspectOptions } from 'node:util'
 import t from 'tap'
-import {
-  kCustomInspect,
-  type Scope,
-  type SpecOptions,
-  Spec,
-} from '../src/browser.ts'
+import { kCustomInspect, Spec } from '../src/browser.ts'
+import type { Scope, SpecOptions } from '../src/browser.ts'
 
 Object.assign(Spec.prototype, {
   [kCustomInspect](

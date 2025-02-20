@@ -1,10 +1,10 @@
 import { error } from '@vltpkg/error-cause'
-import {
-  type ChildProcess,
-  type IOType,
-  spawn,
-  type SpawnOptions,
-  type StdioOptions,
+import { spawn } from 'child_process'
+import type {
+  ChildProcess,
+  IOType,
+  SpawnOptions,
+  StdioOptions,
 } from 'child_process'
 
 const isPipe = (

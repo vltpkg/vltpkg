@@ -1,12 +1,10 @@
 import { PackageJson } from '@vltpkg/package-json'
 import { run, runFG } from '@vltpkg/run'
-import { type LoadedConfig } from '../config/index.ts'
-import { ExecCommand, type ExecResult } from '../exec-command.ts'
+import type { LoadedConfig } from '../config/index.ts'
 import { commandUsage } from '../config/usage.ts'
-import {
-  type CommandUsage,
-  type CommandFnResultOnly,
-} from '../types.ts'
+import { ExecCommand } from '../exec-command.ts'
+import type { ExecResult } from '../exec-command.ts'
+import type { CommandFn, CommandUsage } from '../index.ts'
 import { stdout } from '../output.ts'
 
 export const usage: CommandUsage = () =>
@@ -49,10 +47,5 @@ class RunCommand extends ExecCommand<typeof run, typeof runFG> {
   }
 }
 
-export const command: CommandFnResultOnly<
-  ExecResult
-> = async conf => {
-  return {
-    result: await new RunCommand(conf).run(),
-  }
-}
+export const command: CommandFn<ExecResult> = async conf =>
+  await new RunCommand(conf).run()

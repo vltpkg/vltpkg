@@ -1,10 +1,10 @@
 import t from 'tap'
 import { joinDepIDTuple } from '@vltpkg/dep-id'
-import {
-  type BuildIdealOptions,
-  type RemoveImportersDependenciesMap,
+import type {
+  BuildIdealOptions,
+  RemoveImportersDependenciesMap,
 } from '@vltpkg/graph'
-import { type LoadedConfig } from '../src/config/index.ts'
+import type { LoadedConfig } from '../src/config/index.ts'
 
 t.cleanSnapshot = s =>
   s.replace(/^(\s+)"?projectRoot"?: .*$/gm, '$1projectRoot: #')

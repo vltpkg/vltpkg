@@ -1,13 +1,7 @@
-import {
-  type Theme,
-  useTheme,
-} from '@/components/ui/theme-provider.jsx'
-import {
-  type LucideIcon,
-  SunMedium,
-  Moon,
-  LaptopMinimal,
-} from 'lucide-react'
+import { useTheme } from '@/components/ui/theme-provider.jsx'
+import type { Theme } from '@/components/ui/theme-provider.jsx'
+import { SunMedium, Moon, LaptopMinimal } from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
 import clsx from 'clsx'
 
 interface Control {

@@ -1,4 +1,4 @@
-import { type Range } from '@vltpkg/semver'
+import type { Range } from '@vltpkg/semver'
 
 export type SpecOptions = {
   [k in keyof SpecOptionsFilled]?: SpecOptionsFilled[k]

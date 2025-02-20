@@ -5,7 +5,6 @@ import { readFileSync } from 'fs'
 import { resolve } from 'path'
 import jsdoc from 'eslint-plugin-jsdoc'
 import importPlugin from 'eslint-plugin-import'
-import { defaultConditionNames } from 'eslint-import-resolver-typescript'
 
 const MONO_ROOT = import.meta.dirname
 const CWD = process.cwd()
@@ -57,10 +56,6 @@ export default tseslint.config(
       'import/resolver': {
         typescript: {
           alwaysTryTypes: true,
-          conditionNames: [
-            '@vltpkg/source',
-            ...defaultConditionNames,
-          ],
           project:
             // If run from the root specify glob patterns to all ts projects
             // otherwise just use the tsconfig.json in the current directory
@@ -104,6 +99,8 @@ export default tseslint.config(
           ignoreRestSiblings: true,
         },
       ],
+      // allow void in generic type arguments
+      '@typescript-eslint/no-invalid-void-type': 'off',
       // allow void arrow functions to not need to be wrapped in braces
       '@typescript-eslint/no-confusing-void-expression': [
         'off',
@@ -204,8 +201,11 @@ export default tseslint.config(
           fixStyle: 'inline-type-imports',
         },
       ],
-      'import/no-duplicates': ['error', { 'prefer-inline': true }],
-      'import/consistent-type-specifier-style': [2, 'prefer-inline'],
+      'import/no-duplicates': ['error', { 'prefer-inline': false }],
+      'import/consistent-type-specifier-style': [
+        2,
+        'prefer-top-level',
+      ],
       // eslint-plugin-import
       'import/no-named-as-default': 0,
       'import/no-named-as-default-member': 0,

@@ -1,9 +1,9 @@
 import { create } from 'zustand'
-import {
-  type State,
-  type Action,
-  type SavedQuery,
-  type QueryLabel,
+import type {
+  State,
+  Action,
+  SavedQuery,
+  QueryLabel,
 } from './types.ts'
 
 export const DEFAULT_QUERY = ':root'

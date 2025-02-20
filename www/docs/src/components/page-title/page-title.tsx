@@ -1,6 +1,6 @@
 import React from 'react'
 import { ChevronRight } from 'lucide-react'
-import { type Props } from '@astrojs/starlight/props'
+import type { Props } from '@astrojs/starlight/props'
 
 const PageTitle = ({
   entry,

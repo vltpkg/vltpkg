@@ -1,4 +1,4 @@
-import { type Props } from '@astrojs/starlight/props'
+import type { Props } from '@astrojs/starlight/props'
 import CliInstall from '@/components/cli-install/cli-install'
 import { ArrowUpRight } from 'lucide-react'
 import clsx from 'clsx'

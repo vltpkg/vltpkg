@@ -1,0 +1,29 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`sort dropdown > should render correctly 1`] = `
+
+<gui-dropdown-menu>
+  <gui-dropdown-menu-trigger
+    aschild="true"
+    classname="w-[120px]"
+  >
+    <gui-button
+      variant="outline"
+      classname="text-sm font-normal"
+    >
+      Sort by
+      <gui-chevron-down size="16">
+      </gui-chevron-down>
+    </gui-button>
+  </gui-dropdown-menu-trigger>
+  <gui-dropdown-menu-content>
+    <gui-dropdown-menu-checkbox-item checked="true">
+      Ascending
+    </gui-dropdown-menu-checkbox-item>
+    <gui-dropdown-menu-checkbox-item checked="false">
+      Descending
+    </gui-dropdown-menu-checkbox-item>
+  </gui-dropdown-menu-content>
+</gui-dropdown-menu>
+
+`;

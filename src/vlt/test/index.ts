@@ -1,11 +1,9 @@
-import t, { type Test } from 'tap'
-import { type Jack, jack } from 'jackspeak'
-import {
-  setupEnv,
-  mockConfig,
-  type Testdir,
-  chtestdir,
-} from './fixtures/run.ts'
+import t from 'tap'
+import type { Test } from 'tap'
+import { jack } from 'jackspeak'
+import type { Jack } from 'jackspeak'
+import { setupEnv, mockConfig, chtestdir } from './fixtures/run.ts'
+import type { Testdir } from './fixtures/run.ts'
 import { error } from '@vltpkg/error-cause'
 
 setupEnv(t)
@@ -31,17 +29,17 @@ export const run = async (
 ) => {
   chtestdir(t, testdir, chdir)
   t.intercept(process, 'argv', {
-    value: [process.execPath, 'index.js', commandName, ...argv],
+    value: [process.execPath, 'index.ts', commandName, ...argv],
   })
   const logs: any[] = []
   const errs: any[] = []
   t.capture(console, 'log', (...msg: any[]) => logs.push(msg))
   t.capture(console, 'error', (...msg: any[]) => errs.push(msg))
   const Config = await mockConfig(t)
-  const index = await t.mockImport(`../src/index.js`, {
-    '../src/config/index.js': Config,
+  const index = await t.mockImport('../src/index.ts', {
+    '../src/config/index.ts': Config,
     ...(command ?
-      { [`../src/commands/${commandName}.js`]: command }
+      { [`../src/commands/${commandName}.ts`]: command }
     : {}),
   })
   await index.default()
@@ -121,6 +119,8 @@ t.test('print version', async t => {
 })
 
 t.test('print EUSAGE error', async t => {
+  const { exitCode } = process
+  const exits = t.capture(process, 'exit').args
   const { logs, errs } = await run(t, {
     commandName: 'config',
     argv: ['ls'],
@@ -153,6 +153,7 @@ t.test('print EUSAGE error', async t => {
       'Error: there was a problem',
     ],
   )
+  t.strictSame(exits(), [[1]])
   t.equal(process.exitCode, 1)
-  process.exitCode = undefined
+  if (t.passing()) process.exitCode = exitCode
 })

@@ -1,6 +1,6 @@
 import { joinDepIDTuple } from '@vltpkg/dep-id'
 import { PackageJson } from '@vltpkg/package-json'
-import { type RunOptions } from '@vltpkg/run'
+import type { RunOptions } from '@vltpkg/run'
 import { Monorepo } from '@vltpkg/workspaces'
 import * as FSP from 'node:fs/promises'
 import { resolve } from 'node:path'

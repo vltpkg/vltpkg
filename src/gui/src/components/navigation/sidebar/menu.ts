@@ -1,4 +1,5 @@
-import { LayoutDashboard, type LucideIcon } from 'lucide-react'
+import { LayoutDashboard } from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
 
 export interface Item {
   title: string

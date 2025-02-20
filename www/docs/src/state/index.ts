@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { type State, type Action } from './types'
+import type { State, Action } from './types'
 
 const initialState: State = {
   theme:

@@ -1,15 +1,17 @@
 import {
-  type ColumnDef,
   flexRender,
   getCoreRowModel,
   useReactTable,
   getPaginationRowModel,
-  type VisibilityState,
-  type SortingState,
-  type Table as ITable,
-  type PaginationState,
   getFilteredRowModel,
   getSortedRowModel,
+} from '@tanstack/react-table'
+import type {
+  ColumnDef,
+  VisibilityState,
+  SortingState,
+  Table as ITable,
+  PaginationState,
 } from '@tanstack/react-table'
 import {
   Table,
@@ -83,7 +85,7 @@ export const DataTable = <TData, TValue>({
   return (
     <>
       <div className="rounded-md border bg-white dark:bg-black">
-        <Table className="">
+        <Table className="w-full">
           <TableHeader>
             {table.getHeaderGroups().map(headerGroup => (
               <TableRow key={headerGroup.id}>

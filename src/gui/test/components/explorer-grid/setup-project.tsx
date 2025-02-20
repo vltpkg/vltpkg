@@ -9,16 +9,12 @@ vi.mock('@/components/ui/button.jsx', () => ({
   Button: 'gui-button',
 }))
 
-vi.mock('@/components/ui/card.jsx', () => ({
-  Card: 'gui-card',
-}))
-
 vi.mock('@/components/ui/loading-spinner.jsx', () => ({
   LoadingSpinner: 'gui-loading-spinner',
 }))
 
-vi.mock('lucide-react', () => ({
-  Download: 'gui-download',
+vi.mock('@/components/ui/inline-code.jsx', () => ({
+  InlineCode: 'gui-inline-code',
 }))
 
 expect.addSnapshotSerializer({

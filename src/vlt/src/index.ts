@@ -1,10 +1,31 @@
 import { error } from '@vltpkg/error-cause'
+import type { Jack } from 'jackspeak'
 import { loadPackageJson } from 'package-json-from-dist'
 import { Config } from './config/index.ts'
-import { type Command, type Commands } from './types.ts'
-import { stdout, outputCommand } from './output.ts'
+import type { LoadedConfig, Commands } from './config/index.ts'
+import { outputCommand, stdout } from './output.ts'
+import type { Views } from './view.ts'
 
-const { version } = loadPackageJson(import.meta.filename) as {
+export type CommandUsage = () => Jack
+
+/**
+ * A command function that may return a result of `T`.
+ * If the result is `undefined`, no final output will be displayed by default.
+ */
+export type CommandFn<T = unknown> = (
+  conf: LoadedConfig,
+) => Promise<T>
+
+export type Command<T> = {
+  command: CommandFn<T>
+  usage: CommandUsage
+  views: Views<T>
+}
+
+const { version } = loadPackageJson(
+  import.meta.filename,
+  process.env.__VLT_INTERNAL_CLI_PACKAGE_JSON,
+) as {
   version: string
 }
 
@@ -12,11 +33,7 @@ const loadCommand = async <T>(
   command: Commands[keyof Commands] | undefined,
 ): Promise<Command<T>> => {
   try {
-    // Be careful the line between the LOAD COMMANDS comment.
-    // infra-build relies on this to work around esbuild bundling dynamic imports
-    /* LOAD COMMANDS START */
     return (await import(`./commands/${command}.ts`)) as Command<T>
-    /* LOAD COMMANDS STOP */
     /* c8 ignore start - should not be possible, just a failsafe */
   } catch (e) {
     throw error('Could not load command', {

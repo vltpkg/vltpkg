@@ -21,7 +21,7 @@ t.test('create git repo', async () => {
 
 t.test('fail if spawned process fails', async t => {
   const { isClean } = await t.mockImport('../src/is-clean.ts', {
-    '../src/spawn.js': {
+    '../src/spawn.ts': {
       spawn: async () => ({ status: 1, hello: 'world' }),
     },
   })

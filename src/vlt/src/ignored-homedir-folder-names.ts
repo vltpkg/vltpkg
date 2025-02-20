@@ -1,22 +1,36 @@
 /**
  * A list of folder names that are ignored when reading the user's home dir.
+ *
+ * Note: these are lower-case, must be compared case-insensitively.
  */
 export const ignoredHomedirFolderNames = [
-  'Downloads',
-  'Movies',
-  'Music',
-  'Pictures',
+  'downloads',
+  'movies',
+  'music',
+  'pictures',
+  'private',
+  'library',
+  'desktop',
+  'dropbox',
 ].concat(
-  process.platform === 'darwin' ? ['Library', 'Public']
+  process.platform === 'darwin' ?
+    [
+      'public',
+      'private',
+      'applications',
+      'applications (parallels)',
+      'sites',
+      'sync',
+    ]
   : process.platform === 'win32' ?
     [
-      'AppData',
-      'Application Data',
-      'Favorites',
-      'Links',
-      'Videos',
-      'Contacts',
-      'Searches',
+      'appdata',
+      'application data',
+      'favorites',
+      'links',
+      'videos',
+      'contacts',
+      'searches',
     ]
-  : ['Videos', 'Public'],
+  : ['videos', 'public'],
 )

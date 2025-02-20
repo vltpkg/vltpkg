@@ -1,4 +1,5 @@
-import t, { type Test } from 'tap'
+import t from 'tap'
+import type { Test } from 'tap'
 import { spawn } from 'node:child_process'
 import { Paths, defaultOptions } from '../src/index.ts'
 import bundle from '../src/bundle.ts'
@@ -86,7 +87,10 @@ const testCommand = async (
       t: Test,
       dir: string,
     ): Promise<CommandResult> => {
-      const binPath = join(dir, `${bin}.js`)
+      const binPath = join(
+        dir,
+        `${bin}.${dir === source ? 'ts' : 'js'}`,
+      )
       const cwd = t.testdir(testdir)
       // Remove env vars that might cause trouble for tests since
       // we might be be using vlt or another tool to run these tests.
@@ -115,6 +119,8 @@ const testCommand = async (
               // own monorepo root
               HOME: cwd,
               USERPROFILE: cwd,
+              NODE_OPTIONS:
+                '--no-warnings --experimental-strip-types',
             },
           },
         )
@@ -172,30 +178,21 @@ t.test('commands', async t => {
   const outdir = t.testdir()
   await bundle({ outdir, ...defaultOptions() })
 
-  const snapshots: Record<'vlt', { [command: string]: TestCase[] }> &
-    Record<Exclude<types.Bin, 'vlt' | 'vlix'>, TestCase[]> = {
-    vlt: {
-      pkg: [
-        { args: ['get'], snapshot: true },
-        { args: ['get', 'name'], snapshot: true },
-        {
-          args: ['get', 'name', 'version'],
-          status: 1,
-          snapshot: true,
-        },
-      ],
-      install: [{}, { args: ['--help'] }],
-    },
-    vlx: [
-      {
-        args: ['missing-command'],
-        output: 'missing-command',
-        status: 0,
+  const snapshots: Record<'vlt', { [command: string]: TestCase[] }> =
+    {
+      vlt: {
+        pkg: [
+          { args: ['get'], snapshot: true },
+          { args: ['get', 'name'], snapshot: true },
+          {
+            args: ['get', 'name', 'version'],
+            status: 1,
+            snapshot: true,
+          },
+        ],
+        install: [{}, { args: ['--help'] }],
       },
-    ],
-    vlr: [{ args: ['some-script'], output: 'script output' }],
-    vlrx: [{ args: ['some-script'], output: 'script output' }],
-  }
+    }
 
   for (const [bin, commands] of Object.entries(snapshots)) {
     assert(types.isBin(bin))

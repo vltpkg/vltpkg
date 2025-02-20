@@ -1,14 +1,16 @@
-import { emitter, type Events } from '@vltpkg/output'
-import {
-  Fragment,
-  createElement as $,
-  useState,
-  useLayoutEffect,
-} from 'react'
-import { render, Text, Box, type Instance } from 'ink'
+import { emitter } from '@vltpkg/output'
+import type { Events } from '@vltpkg/output'
+import { Box, render, Text } from 'ink'
+import type { Instance } from 'ink'
 import Spinner from 'ink-spinner'
-import { type ViewInstance } from '../../types.ts'
+import {
+  createElement as $,
+  Fragment,
+  useLayoutEffect,
+  useState,
+} from 'react'
 import { stdout } from '../../output.ts'
+import { ViewClass } from '../../view.ts'
 
 type Step = {
   state: 'waiting' | 'in_progress' | 'completed'
@@ -88,12 +90,8 @@ const App = () => {
   )
 }
 
-export class InstallReporter implements ViewInstance {
-  #instance: Instance | null
-
-  constructor() {
-    this.#instance = null
-  }
+export class InstallReporter extends ViewClass {
+  #instance: Instance | null = null
 
   start() {
     this.#instance = render($(App))
@@ -102,6 +100,7 @@ export class InstallReporter implements ViewInstance {
   done(_result: unknown, { time }: { time: number }) {
     this.#instance?.unmount()
     stdout(`Done in ${time}ms`)
+    return undefined
   }
 
   error(err: unknown) {

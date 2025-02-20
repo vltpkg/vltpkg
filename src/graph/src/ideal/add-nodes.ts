@@ -1,12 +1,12 @@
-import { type DepID } from '@vltpkg/dep-id'
+import type { DepID } from '@vltpkg/dep-id'
 import { error } from '@vltpkg/error-cause'
-import { type PackageInfoClient } from '@vltpkg/package-info'
-import { type SpecOptions } from '@vltpkg/spec'
-import { type PathScurry } from 'path-scurry'
+import type { PackageInfoClient } from '@vltpkg/package-info'
+import type { SpecOptions } from '@vltpkg/spec'
+import type { PathScurry } from 'path-scurry'
 import { appendNodes } from './append-nodes.ts'
-import {
-  type BuildIdealAddOptions,
-  type BuildIdealFromGraphOptions,
+import type {
+  BuildIdealAddOptions,
+  BuildIdealFromGraphOptions,
 } from './types.ts'
 
 export type AddNodesOptions = BuildIdealAddOptions &

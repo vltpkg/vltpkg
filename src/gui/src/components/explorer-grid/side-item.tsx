@@ -1,4 +1,5 @@
-import { useRef, useEffect, type MouseEvent } from 'react'
+import { useRef, useEffect } from 'react'
+import type { MouseEvent } from 'react'
 import { Ellipsis, PackageMinus } from 'lucide-react'
 import { Badge } from '@/components/ui/badge.jsx'
 import { Card, CardHeader, CardTitle } from '@/components/ui/card.jsx'
@@ -9,7 +10,7 @@ import {
   DropdownMenuItem,
 } from '@/components/ui/dropdown-menu.jsx'
 import { labelClassNamesMap } from './label-helper.js'
-import { type GridItemData, type GridItemOptions } from './types.js'
+import type { GridItemData, GridItemOptions } from './types.js'
 import { useGraphStore } from '@/state/index.js'
 
 export type SideItemOptions = GridItemOptions & {
@@ -98,7 +99,7 @@ export const SideItem = ({
                   />
                 </DropdownMenuTrigger>
                 <DropdownMenuContent
-                  className="z-[100000] ml-48 w-48"
+                  className="z-[10000] ml-48 w-48"
                   align="end"
                   onCloseAutoFocus={e => e.preventDefault()}>
                   <DropdownMenuItem

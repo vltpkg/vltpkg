@@ -1,57 +1,57 @@
 import { asDepID } from '@vltpkg/dep-id'
-import {
-  actual,
-  asDependency,
-  type AddImportersDependenciesMap,
-  type Dependency,
-  type RemoveImportersDependenciesMap,
+import { actual, asDependency } from '@vltpkg/graph'
+import type {
+  AddImportersDependenciesMap,
+  Dependency,
+  RemoveImportersDependenciesMap,
 } from '@vltpkg/graph'
 import { Spec } from '@vltpkg/spec'
-import { type DependencyTypeShort } from '@vltpkg/types'
+import type { DependencyTypeShort } from '@vltpkg/types'
 import { urlOpen } from '@vltpkg/url-open'
 import { getUser } from '@vltpkg/git'
 import {
-  cpSync,
   mkdirSync,
   readdirSync,
+  readFileSync,
   rmSync,
   writeFileSync,
 } from 'node:fs'
-import {
-  createServer,
-  type IncomingMessage,
-  request,
-  type ServerResponse,
-  type Server,
+import { createServer, request } from 'node:http'
+import type {
+  IncomingMessage,
+  ServerResponse,
+  Server,
 } from 'node:http'
 import { homedir, tmpdir } from 'node:os'
 import { dirname, resolve, relative } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import assert from 'node:assert'
 import { loadPackageJson } from 'package-json-from-dist'
-import { type PathBase } from 'path-scurry'
+import type { PathBase } from 'path-scurry'
 import handler from 'serve-handler'
-import {
-  type ConfigOptions,
-  type LoadedConfig,
-} from './config/index.ts'
-import { install, type InstallOptions } from './install.ts'
+import type { ConfigOptions, LoadedConfig } from './config/index.ts'
+import { install } from './install.ts'
+import type { InstallOptions } from './install.ts'
 import { stderr, stdout } from './output.ts'
 import { readProjectFolders } from './read-project-folders.ts'
-import { uninstall, type UninstallOptions } from './uninstall.ts'
+import { uninstall } from './uninstall.ts'
+import type { UninstallOptions } from './uninstall.ts'
 import { init } from './init.ts'
 import { getAuthorFromGitUser } from './get-author-from-git-user.ts'
 import {
-  type DashboardProjectData,
   getDashboardProjectData,
   getReadablePath,
   getGraphProjectData,
 } from './project-info.ts'
+import type { DashboardProjectData } from './project-info.ts'
 
 const HOST = 'localhost'
 const PORT = 7017
 
-const { version } = loadPackageJson(import.meta.filename) as {
+const { version } = loadPackageJson(
+  import.meta.filename,
+  process.env.__VLT_INTERNAL_CLI_PACKAGE_JSON,
+) as {
   version: string
 }
 
@@ -219,7 +219,7 @@ const updateDashboardData = async (
 ) => {
   const userDefinedProjectPaths = conf.values['dashboard-root'] ?? []
   const dashboard = await formatDashboardJson(
-    readProjectFolders({
+    await readProjectFolders({
       ...conf.options,
       userDefinedProjectPaths,
     }),
@@ -272,7 +272,7 @@ const createStaticHandler = ({
   // It's important for this guard to check to not be destructured
   // because `infra/build` will replace the whole thing with `false`
   // causing it to be stripped entirely from production builds.
-  if (process.env._VLT_DEV_LIVE_RELOAD) {
+  if (process.env.__VLT_INTERNAL_LIVE_RELOAD) {
     // Generate a set of routes that should be proxied to the esbuild server
     const proxyRoutes = new Set(
       [
@@ -333,13 +333,16 @@ const createStaticHandler = ({
 
 /* c8 ignore start */
 const getAssetsDir = () => {
+  const fromEnv = process.env.__VLT_INTERNAL_GUI_ASSETS_DIR
   // workaround for the import.meta.resolve issue not working with tap
   if (process.env.TAP) {
     assert(
-      process.env.VLT_TEST_GUI_DIR,
-      'VLT_TEST_GUI_DIR must be set when running tests',
+      fromEnv,
+      'assets dir must be set from environment variable when running tests',
     )
-    return process.env.VLT_TEST_GUI_DIR
+  }
+  if (fromEnv) {
+    return resolve(import.meta.dirname, fromEnv)
   }
   return fileURLToPath(import.meta.resolve('@vltpkg/gui'))
 }
@@ -355,7 +358,18 @@ export const startGUI = async ({
   const tmp = resolve(tmpDir, 'vltgui')
   rmSync(tmp, { recursive: true, force: true })
   mkdirSync(tmp, { recursive: true })
-  cpSync(assetsDir, tmp, { recursive: true })
+  // This is the same as `cpSync(assetsDir, tmp, { recursive: true })`
+  // but that does not work in Deno yet (https://github.com/denoland/deno/issues/27494).
+  for (const asset of readdirSync(assetsDir, {
+    withFileTypes: true,
+    recursive: true,
+  })) {
+    if (!asset.isFile()) continue
+    const source = resolve(asset.parentPath, asset.name)
+    const target = resolve(tmp, relative(assetsDir, source))
+    mkdirSync(dirname(target), { recursive: true })
+    writeFileSync(target, readFileSync(source))
+  }
 
   // dashboard data is optional since the GUI might be started from a
   // project in order to just explore its graph data

@@ -1,5 +1,6 @@
 import { error } from '@vltpkg/error-cause'
-import { asIdentifierNode, type ParserState } from './types.ts'
+import { asIdentifierNode } from './types.ts'
+import type { ParserState } from './types.ts'
 import {
   attributeSelectorsMap,
   filterAttributes,

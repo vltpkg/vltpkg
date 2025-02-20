@@ -1,8 +1,8 @@
 import { error } from '@vltpkg/error-cause'
-import { type Dispatcher } from 'undici'
-import {
-  type RegistryClient,
-  type RegistryClientRequestOptions,
+import type { Dispatcher } from 'undici'
+import type {
+  RegistryClient,
+  RegistryClientRequestOptions,
 } from './index.ts'
 import { isWebAuthChallenge } from './web-auth-challenge.ts'
 

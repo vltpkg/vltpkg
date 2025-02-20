@@ -1,13 +1,15 @@
-import { type DepID } from '@vltpkg/dep-id'
+import type { DepID } from '@vltpkg/dep-id'
 import { error } from '@vltpkg/error-cause'
-import { type Spec } from '@vltpkg/spec'
+import type { Spec } from '@vltpkg/spec'
 import {
-  type Manifest,
-  type DependencyTypeLong,
-  type DependencyTypeShort,
   longDependencyTypes,
   shortDependencyTypes,
   dependencyTypes,
+} from '@vltpkg/types'
+import type {
+  Manifest,
+  DependencyTypeLong,
+  DependencyTypeShort,
 } from '@vltpkg/types'
 
 export const isDependencyTypeShort = (

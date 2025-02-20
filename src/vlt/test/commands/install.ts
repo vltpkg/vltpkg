@@ -1,5 +1,5 @@
 import t from 'tap'
-import { type LoadedConfig } from '../../src/config/index.ts'
+import type { LoadedConfig } from '../../src/config/index.ts'
 import { commandView } from '../fixtures/run.ts'
 
 const options = {}
@@ -9,7 +9,7 @@ t.afterEach(() => (log = ''))
 const Command = await t.mockImport<
   typeof import('../../src/commands/install.ts')
 >('../../src/commands/install.ts', {
-  '../../src/install.js': {
+  '../../src/install.ts': {
     async install() {
       log += 'install\n'
       return {
@@ -19,7 +19,7 @@ const Command = await t.mockImport<
       }
     },
   },
-  '../../src/parse-add-remove-args.js': {
+  '../../src/parse-add-remove-args.ts': {
     parseAddArgs: (conf: LoadedConfig) => {
       const items =
         conf.positionals.length > 0 ?

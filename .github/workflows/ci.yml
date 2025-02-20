@@ -54,7 +54,7 @@ jobs:
         continue-on-error: true
 
       - name: Dependencies
-        run: node ./scripts/check-deps.js
+        run: pnpm run deps:check
         id: deps
         continue-on-error: true
 
@@ -65,7 +65,7 @@ jobs:
 
       - name: Consistent Workspaces
         run: |
-          node ./scripts/consistent-package-json.js
+          pnpm run fix:pkg
           if [ -n "$(git status --porcelain)" ]; then
             git diff
             exit 1
@@ -166,9 +166,10 @@ jobs:
         if: steps.filters.outputs.prepare
         run: pnpm ${{ steps.filters.outputs.prepare }} prepare
 
+      - name: Typecheck
+        if: steps.filters.outputs.test
+        run: pnpm ${{ steps.filters.outputs.test }} typecheck
+
       - name: Run Tests
         if: steps.filters.outputs.test
-        run: |
-          pnpm config set enable-pre-post-scripts false --location=project
-          pnpm ${{ steps.filters.outputs.test }} --no-bail --aggregate-output test
-          pnpm ${{ steps.filters.outputs.test }} --no-bail --aggregate-output posttest
+        run: pnpm ${{ steps.filters.outputs.test }} --no-bail --aggregate-output test

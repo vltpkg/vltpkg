@@ -1,4 +1,4 @@
-import { type Repository, type Manifest } from '@vltpkg/types'
+import type { Repository, Manifest } from '@vltpkg/types'
 import { Spec } from '@vltpkg/spec/browser'
 
 export type Semver = `${number}.${number}.${number}`

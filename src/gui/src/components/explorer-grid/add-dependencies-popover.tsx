@@ -1,9 +1,9 @@
-import {
-  type ChangeEvent,
-  useState,
-  type SyntheticEvent,
-  type KeyboardEvent,
-  type MouseEvent,
+import { useState } from 'react'
+import type {
+  ChangeEvent,
+  SyntheticEvent,
+  KeyboardEvent,
+  MouseEvent,
 } from 'react'
 import { BatteryLow, PackageCheck, PackagePlus } from 'lucide-react'
 import { Button } from '@/components/ui/button.jsx'
@@ -163,7 +163,7 @@ export const AddDependenciesPopover = ({
           <SelectTrigger>
             <SelectValue tabIndex={3} />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="z-[10001]">
             <SelectItem value="prod">dependencies</SelectItem>
             <SelectItem value="dev">devDependencies</SelectItem>
             <SelectItem value="optional">

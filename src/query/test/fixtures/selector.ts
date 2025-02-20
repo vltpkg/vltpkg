@@ -1,12 +1,12 @@
 import postcssSelectorParser from 'postcss-selector-parser'
-import { EdgeLike, GraphLike, NodeLike } from '@vltpkg/graph'
-import {
+import type { EdgeLike, GraphLike, NodeLike } from '@vltpkg/graph'
+import type {
   GraphSelectionState,
   ParserState,
   PostcssNode,
+  ParserFn,
 } from '../../src/types.ts'
 import { walk } from '../../src/index.ts'
-import { ParserFn } from '../../src/types.ts'
 import { joinDepIDTuple } from '@vltpkg/dep-id'
 
 export type FixtureResult = {
@@ -71,12 +71,11 @@ export const selectorFixture =
       // css ast then just use that instead
       current =
         testFn === walk ? ast : (
-          (ast.nodes?.[0]?.nodes[0] as PostcssNode)
+          (ast.nodes[0]?.nodes[0] as PostcssNode)
         )
     } else {
       current = query as PostcssNode
     }
-    if (!current) throw new Error('missing selector?')
     const state: ParserState = {
       cancellable: async () => {},
       collect: {

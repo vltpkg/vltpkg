@@ -1,7 +1,7 @@
 import t from 'tap'
-import { type Dispatcher } from 'undici'
-import { type RegistryClient } from '../src/index.ts'
-import { type WebAuthChallenge } from '../src/web-auth-challenge.ts'
+import type { Dispatcher } from 'undici'
+import type { RegistryClient } from '../src/index.ts'
+import type { WebAuthChallenge } from '../src/web-auth-challenge.ts'
 
 const urlsOpened: string[] = []
 const mockUrlOpen = async (url: string) => {

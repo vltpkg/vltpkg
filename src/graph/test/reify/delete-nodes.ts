@@ -1,8 +1,8 @@
 import { joinDepIDTuple } from '@vltpkg/dep-id'
-import { type RollbackRemove } from '@vltpkg/rollback-remove'
+import type { RollbackRemove } from '@vltpkg/rollback-remove'
 import { PathScurry } from 'path-scurry'
 import t from 'tap'
-import { type Diff } from '../../src/diff.ts'
+import type { Diff } from '../../src/diff.ts'
 import { deleteNodes } from '../../src/reify/delete-nodes.ts'
 
 const removed: string[] = []

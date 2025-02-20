@@ -1,14 +1,12 @@
 import { promiseSpawn } from '@vltpkg/promise-spawn'
-import { type Manifest } from '@vltpkg/types'
+import type { Manifest } from '@vltpkg/types'
 import { resolve } from 'path'
 import t from 'tap'
 import { isRunResult, run } from '../src/index.ts'
-import { tsTestdir } from './fixtures/testdir-ts.ts'
 
-const fixture = resolve(
-  tsTestdir(t, resolve(import.meta.dirname, 'fixtures/script')),
-  'index.js',
-)
+const fixture = resolve(import.meta.dirname, 'fixtures/script.ts')
+
+const NODE_OPTIONS = '--no-warnings --experimental-strip-types'
 
 const node =
   process.execPath.includes(' ') ?
@@ -64,7 +62,7 @@ t.test('run', async t => {
     const result = await promiseSpawn(
       process.execPath,
       [fixture, 'parent', 'run', cwd, projectRoot, 'bg'],
-      { env: {} },
+      { env: { NODE_OPTIONS } },
     )
     const command =
       `${node} "${fixture}" child run ` + `${cwd} ${projectRoot} bg`
@@ -95,7 +93,7 @@ t.test('run', async t => {
     const result = await promiseSpawn(
       process.execPath,
       [fixture, 'parent', 'runFG', cwd, projectRoot, 'fg'],
-      { env: {} },
+      { env: { NODE_OPTIONS } },
     )
     const command =
       `${node} "${fixture}" child runFG ` + `${cwd} ${projectRoot} fg`
@@ -129,7 +127,7 @@ t.test('run', async t => {
     const result = await promiseSpawn(
       process.execPath,
       [fixture, 'parent', 'run', cwd, projectRoot, 'failpre'],
-      { acceptFail: true, env: {} },
+      { acceptFail: true, env: { NODE_OPTIONS } },
     )
     t.strictSame(JSON.parse(result.stdout), {
       command: fail,
@@ -146,7 +144,7 @@ t.test('run', async t => {
     const result = await promiseSpawn(
       process.execPath,
       [fixture, 'parent', 'run', cwd, projectRoot, 'failpost'],
-      { acceptFail: true, env: {} },
+      { acceptFail: true, env: { NODE_OPTIONS } },
     )
     t.strictSame(JSON.parse(result.stdout), {
       command: 'echo {}',
@@ -172,7 +170,7 @@ t.test('run', async t => {
     const result = await promiseSpawn(
       process.execPath,
       [fixture, 'parent', 'run', cwd, projectRoot, 'passprefailmain'],
-      { acceptFail: true, env: {} },
+      { acceptFail: true, env: { NODE_OPTIONS } },
     )
     const command =
       node +
@@ -201,7 +199,7 @@ t.test('run', async t => {
     const result = await promiseSpawn(
       process.execPath,
       [fixture, 'parent', 'run', cwd, projectRoot, 'ignoremissing'],
-      { acceptFail: true, env: {} },
+      { acceptFail: true, env: { NODE_OPTIONS } },
     )
     const command = ''
     t.strictSame(JSON.parse(result.stdout), {
@@ -219,7 +217,7 @@ t.test('run', async t => {
     const result = await promiseSpawn(
       process.execPath,
       [fixture, 'parent', 'runFG', cwd, projectRoot, 'ignoremissing'],
-      { acceptFail: true, env: {} },
+      { acceptFail: true, env: { NODE_OPTIONS } },
     )
     const command = ''
     t.strictSame(JSON.parse(result.stdout), [
@@ -240,7 +238,7 @@ t.test('run', async t => {
     const result = await promiseSpawn(
       process.execPath,
       [fixture, 'parent', 'run', cwd, projectRoot, 'missing'],
-      { acceptFail: true, env: {} },
+      { acceptFail: true, env: { NODE_OPTIONS } },
     )
     t.match(result, {
       status: 1,
@@ -253,7 +251,7 @@ t.test('run', async t => {
     const result = await promiseSpawn(
       process.execPath,
       [fixture, 'parent', 'run', cwd, projectRoot, 'passprepost'],
-      { acceptFail: true, env: {} },
+      { acceptFail: true, env: { NODE_OPTIONS } },
     )
 
     const command =
@@ -316,7 +314,7 @@ t.test('exec', async t => {
     const result = await promiseSpawn(
       process.execPath,
       [fixture, 'parent', 'exec', cwd, projectRoot],
-      { env: {} },
+      { env: { NODE_OPTIONS } },
     )
     t.hasStrict(result, { status: 0, signal: null })
     t.strictSame(JSON.parse(result.stdout), {
@@ -341,7 +339,7 @@ t.test('exec', async t => {
     const result = await promiseSpawn(
       process.execPath,
       [fixture, 'parent', 'exec', cwd, projectRoot, 'a', 'b', 'c'],
-      { env: {} },
+      { env: { NODE_OPTIONS } },
     )
     t.hasStrict(result, { status: 0, signal: null })
     t.strictSame(JSON.parse(result.stdout), {
@@ -375,7 +373,7 @@ t.test('exec', async t => {
     const result = await promiseSpawn(
       process.execPath,
       [fixture, 'parent', 'execFG', cwd, projectRoot],
-      { env: {} },
+      { env: { NODE_OPTIONS } },
     )
     t.strictSame(JSON.parse(result.stdout), [
       {
@@ -402,7 +400,7 @@ t.test('exec', async t => {
     const result = await promiseSpawn(
       process.execPath,
       [fixture, 'parent', 'execFG', cwd, projectRoot, 'a', 'b', 'c'],
-      { env: {} },
+      { env: { NODE_OPTIONS } },
     )
     t.strictSame(JSON.parse(result.stdout), [
       {
@@ -456,7 +454,7 @@ t.test('runExec (exec)', async t => {
     const result = await promiseSpawn(
       process.execPath,
       [fixture, 'parent', 'runExec', cwd, projectRoot],
-      { env: {} },
+      { env: { NODE_OPTIONS } },
     )
     t.hasStrict(result, { status: 0, signal: null })
     t.strictSame(JSON.parse(result.stdout), {
@@ -491,7 +489,7 @@ t.test('runExec (exec)', async t => {
         'b',
         'c',
       ],
-      { env: {} },
+      { env: { NODE_OPTIONS } },
     )
     t.hasStrict(result, { status: 0, signal: null })
     t.strictSame(JSON.parse(result.stdout), {
@@ -525,7 +523,7 @@ t.test('runExec (exec)', async t => {
     const result = await promiseSpawn(
       process.execPath,
       [fixture, 'parent', 'runExecFG', cwd, projectRoot],
-      { env: {} },
+      { env: { NODE_OPTIONS } },
     )
     t.strictSame(JSON.parse(result.stdout), [
       {
@@ -562,7 +560,7 @@ t.test('runExec (exec)', async t => {
         'b',
         'c',
       ],
-      { env: {} },
+      { env: { NODE_OPTIONS } },
     )
     t.strictSame(JSON.parse(result.stdout), [
       {
@@ -626,6 +624,7 @@ t.test('runExec (run)', async t => {
           npm_package_json: resolve(cwd, 'package.json'),
           npm_lifecycle_event: 'node-package-json-script',
           npm_lifecycle_script: node,
+          NODE_OPTIONS,
         },
       },
     )
@@ -666,7 +665,7 @@ t.test('runExec (run)', async t => {
         'b',
         'c',
       ],
-      { env: {} },
+      { env: { NODE_OPTIONS } },
     )
     t.hasStrict(result, { status: 0, signal: null })
     t.strictSame(JSON.parse(result.stdout), {
@@ -711,7 +710,7 @@ t.test('runExec (run)', async t => {
         projectRoot,
         'node-package-json-script',
       ],
-      { env: {} },
+      { env: { NODE_OPTIONS } },
     )
     t.strictSame(JSON.parse(result.stdout), [
       {
@@ -755,10 +754,9 @@ t.test('runExec (run)', async t => {
       {
         env: {
           npm_package_json: resolve(cwd, 'package.json'),
-
           npm_lifecycle_event: 'node-package-json-script',
-
           npm_lifecycle_script: node,
+          NODE_OPTIONS,
         },
       },
     )

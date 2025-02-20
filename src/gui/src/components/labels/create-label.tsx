@@ -11,7 +11,7 @@ import {
 import { ColorPicker } from '@/components/ui/color-picker.jsx'
 import { Palette } from 'lucide-react'
 import { useGraphStore } from '@/state/index.js'
-import { type Color } from '@/state/types.js'
+import type { Color } from '@/state/types.js'
 import { useToast } from '@/components/hooks/use-toast.js'
 import { v4 as uuidv4 } from 'uuid'
 

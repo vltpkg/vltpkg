@@ -1,6 +1,6 @@
 import { splitDepID } from '@vltpkg/dep-id/browser'
 import { error } from '@vltpkg/error-cause'
-import { type EdgeLike, type NodeLike } from '@vltpkg/graph'
+import type { EdgeLike, NodeLike } from '@vltpkg/graph'
 import { asManifest } from '@vltpkg/types'
 import {
   attributeSelectorsMap,
@@ -12,10 +12,8 @@ import {
   asPseudoNode,
   asTagNode,
   isSelectorNode,
-  type ParserFn,
-  type ParserState,
-  type PostcssNode,
 } from './types.ts'
+import type { ParserFn, ParserState, PostcssNode } from './types.ts'
 
 export type AttrInternals = {
   attribute: string

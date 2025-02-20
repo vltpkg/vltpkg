@@ -7,3 +7,5 @@ timeout: 600 # 10 minutes
 exclude:
   - 'scripts/**'
   - 'test/fixtures/**'
+
+type-strip-only: true

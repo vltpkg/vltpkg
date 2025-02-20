@@ -1,5 +1,6 @@
-import t, { type Test } from 'tap'
-import { type SpawnSyncOptions } from 'node:child_process'
+import t from 'tap'
+import type { Test } from 'tap'
+import type { SpawnSyncOptions } from 'node:child_process'
 import { readdirSync } from 'node:fs'
 
 type NpmRes = {
@@ -14,7 +15,7 @@ const publish = async (t: Test, argv: string[] = []) => {
   t.intercept(process, 'argv', {
     value: [
       process.execPath,
-      'publish.js',
+      'publish.ts',
       `--outdir=${dir}`,
       ...argv,
     ],
@@ -23,10 +24,10 @@ const publish = async (t: Test, argv: string[] = []) => {
   await t.mockImport<typeof import('../../src/bin/publish.ts')>(
     '../../src/bin/publish.ts',
     {
-      '../../src/matrix.js': await t.mockImport(
+      '../../src/matrix.ts': await t.mockImport(
         '../../src/matrix.ts',
         {
-          '../../src/compile.js': await t.mockImport(
+          '../../src/compile.ts': await t.mockImport(
             '../../src/compile.ts',
             {
               'node:child_process': {
