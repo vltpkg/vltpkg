@@ -796,6 +796,55 @@ importers:
         specifier: ^2.1.9
         version: 2.1.9(@types/node@22.13.1)(jsdom@25.0.1)(msw@2.7.0(@types/node@22.13.1)(typescript@5.7.3))
 
+  src/init:
+    dependencies:
+      '@vltpkg/error-cause':
+        specifier: workspace:*
+        version: link:../error-cause
+      '@vltpkg/git':
+        specifier: workspace:*
+        version: link:../git
+      '@vltpkg/package-json':
+        specifier: workspace:*
+        version: link:../package-json
+      '@vltpkg/registry-client':
+        specifier: workspace:*
+        version: link:../registry-client
+      '@vltpkg/types':
+        specifier: workspace:*
+        version: link:../types
+      '@vltpkg/xdg':
+        specifier: workspace:*
+        version: link:../xdg
+    devDependencies:
+      '@eslint/js':
+        specifier: 'catalog:'
+        version: 9.20.0
+      '@types/eslint__js':
+        specifier: 'catalog:'
+        version: 8.42.3
+      '@types/node':
+        specifier: 'catalog:'
+        version: 22.13.1
+      eslint:
+        specifier: 'catalog:'
+        version: 9.20.0(jiti@1.21.6)
+      prettier:
+        specifier: 'catalog:'
+        version: 3.4.2
+      tap:
+        specifier: 'catalog:'
+        version: 21.1.0(@types/node@22.13.1)(@types/react@18.3.18)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.7.3)
+      tshy:
+        specifier: 'catalog:'
+        version: 3.0.2(patch_hash=nn5gj4wshdx7c2chh4frit2bve)
+      typescript:
+        specifier: 'catalog:'
+        version: 5.7.3
+      typescript-eslint:
+        specifier: 'catalog:'
+        version: 8.23.0(eslint@9.20.0(jiti@1.21.6))(typescript@5.7.3)
+
   src/keychain:
     dependencies:
       '@vltpkg/error-cause':
@@ -1551,6 +1600,9 @@ importers:
       '@vltpkg/gui':
         specifier: workspace:*
         version: link:../gui
+      '@vltpkg/init':
+        specifier: workspace:*
+        version: link:../init
       '@vltpkg/output':
         specifier: workspace:*
         version: link:../output

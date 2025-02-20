@@ -1,0 +1,73 @@
+{
+  "name": "@vltpkg/init",
+  "description": "vlt project intialization logic",
+  "version": "0.0.0-0.1730239248325",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vltpkg/vltpkg.git",
+    "directory": "src/init"
+  },
+  "tshy": {
+    "selfLink": false,
+    "liveDev": true,
+    "dialects": [
+      "esm"
+    ],
+    "exports": {
+      "./package.json": "./package.json",
+      ".": "./src/index.ts"
+    }
+  },
+  "dependencies": {
+    "@vltpkg/error-cause": "workspace:*",
+    "@vltpkg/git": "workspace:*",
+    "@vltpkg/package-json": "workspace:*",
+    "@vltpkg/registry-client": "workspace:*",
+    "@vltpkg/types": "workspace:*",
+    "@vltpkg/xdg": "workspace:*"
+  },
+  "devDependencies": {
+    "@eslint/js": "catalog:",
+    "@types/eslint__js": "catalog:",
+    "@types/node": "catalog:",
+    "eslint": "catalog:",
+    "prettier": "catalog:",
+    "tap": "catalog:",
+    "tshy": "catalog:",
+    "typescript": "catalog:",
+    "typescript-eslint": "catalog:"
+  },
+  "license": "BSD-2-Clause-Patent",
+  "engines": {
+    "node": ">=22",
+    "pnpm": "9"
+  },
+  "scripts": {
+    "format": "prettier --write . --log-level warn --ignore-path ../../.prettierignore --cache",
+    "format:check": "prettier --check . --ignore-path ../../.prettierignore --cache",
+    "lint": "eslint . --fix",
+    "lint:check": "eslint .",
+    "prepack": "tshy",
+    "snap": "tap",
+    "test": "tap",
+    "posttest": "tsc --project tsconfig.test.json",
+    "typecheck": "tsc --noEmit --project .tshy/esm.json"
+  },
+  "tap": {
+    "extends": "../../tap-config.yaml"
+  },
+  "prettier": "../../.prettierrc.js",
+  "module": "./src/index.ts",
+  "type": "module",
+  "exports": {
+    "./package.json": "./package.json",
+    ".": {
+      "import": {
+        "default": "./src/index.ts"
+      }
+    }
+  },
+  "files": [
+    "dist"
+  ]
+}

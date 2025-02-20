@@ -60,7 +60,7 @@ t.test('init', async t => {
     argv: ['init'],
     testdir: {},
     mocks: {
-      '../../src/init.ts': await t.mockImport('../../src/init.ts', {
+      '@vltpkg/init': await t.mockImport('@vltpkg/init', {
         '@vltpkg/git': {
           async getUser() {
             return {

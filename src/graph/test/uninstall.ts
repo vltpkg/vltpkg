@@ -35,14 +35,14 @@ t.test('uninstall', async t => {
     typeof import('../src/uninstall.ts')
   >('../src/uninstall.ts', {
     '../src/ideal/build.ts': {
-        build: async ({ remove }: BuildIdealRemoveOptions) =>
-          (log += `buildideal result removes ${remove?.get(rootDepID)?.size || 0} new package(s)\n`),
+      build: async ({ remove }: BuildIdealRemoveOptions) =>
+        (log += `buildideal result removes ${remove.get(rootDepID)?.size || 0} new package(s)\n`),
     },
     '../src/actual/load.ts': {
-        load: () => {
-          log += 'actual.load\n'
-        },
+      load: () => {
+        log += 'actual.load\n'
       },
+    },
     '../src/reify/index.ts': {
       reify: async () => {
         log += 'reify\n'
