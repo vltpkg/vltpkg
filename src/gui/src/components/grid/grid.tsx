@@ -1,4 +1,5 @@
-import { forwardRef, type CSSProperties } from 'react'
+import { forwardRef } from 'react'
+import type { CSSProperties } from 'react'
 import { cva } from 'class-variance-authority'
 import { cn } from '@/lib/utils.js'
 
