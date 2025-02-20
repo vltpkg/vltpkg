@@ -9,6 +9,7 @@ exports[`Footer Component > renders the copyright text 1`] = `
         <a
           href="https://www.linkedin.com/company/vltpkg/"
           aria-label="linkedin"
+          target="_blank"
         >
           <gui-linkedin-icon classname="h-5 fill-black dark:fill-white">
           </gui-linkedin-icon>
@@ -16,6 +17,7 @@ exports[`Footer Component > renders the copyright text 1`] = `
         <a
           href="https://x.com/vltpkg"
           aria-label="twitter-x"
+          target="_blank"
         >
           <gui-twitter-icon classname="h-5 fill-black dark:fill-white">
           </gui-twitter-icon>
@@ -23,6 +25,7 @@ exports[`Footer Component > renders the copyright text 1`] = `
         <a
           href="https://github.com/vltpkg"
           aria-label="github"
+          target="_blank"
         >
           <gui-github-icon classname="h-5 fill-black dark:fill-white">
           </gui-github-icon>
@@ -30,6 +33,7 @@ exports[`Footer Component > renders the copyright text 1`] = `
         <a
           href="https://discord.gg/vltpkg"
           aria-label="discord"
+          target="_blank"
         >
           <gui-discord-icon classname="h-5 fill-black dark:fill-white">
           </gui-discord-icon>
