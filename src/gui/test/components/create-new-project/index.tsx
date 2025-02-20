@@ -65,11 +65,22 @@ afterEach(() => {
 })
 
 test('create-new-project-content render default', async () => {
-  render(<CreateNewProjectContent />)
+  const mockSetInProgress = vi.fn()
+  const mockInProgress = false
+
+  render(
+    <CreateNewProjectContent
+      setInProgress={mockSetInProgress}
+      inProgress={mockInProgress}
+    />,
+  )
   expect(window.document.body.innerHTML).toMatchSnapshot()
 })
 
 test('create-new-project-content with results', async () => {
+  const mockSetInProgress = vi.fn()
+  const mockInProgress = false
+
   const Container = () => {
     const updateDashboard = useStore(state => state.updateDashboard)
     updateDashboard({
@@ -98,7 +109,12 @@ test('create-new-project-content with results', async () => {
         },
       ],
     })
-    return <CreateNewProjectContent />
+    return (
+      <CreateNewProjectContent
+        setInProgress={mockSetInProgress}
+        inProgress={mockInProgress}
+      />
+    )
   }
   render(<Container />)
   expect(window.document.body.innerHTML).toMatchSnapshot()

@@ -1,9 +1,10 @@
-import { useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { useGraphStore } from '@/state/index.js'
 import { CreateNewProjectContent } from '@/components/create-new-project/index.jsx'
 import { startDashboardData } from '@/lib/start-dashboard-data.js'
 import { InlineCode } from '@/components/ui/inline-code.jsx'
 import { motion } from 'framer-motion'
+import { LoadingSpinner } from '@/components/ui/loading-spinner.jsx'
 
 export const CreateNewProject = () => {
   const updateActiveRoute = useGraphStore(
@@ -16,6 +17,8 @@ export const CreateNewProject = () => {
     state => state.updateErrorCause,
   )
   const stamp = useGraphStore(state => state.stamp)
+
+  const [inProgress, setInProgress] = useState<boolean>(false)
 
   useEffect(() => {
     startDashboardData({
@@ -32,6 +35,13 @@ export const CreateNewProject = () => {
     )
     window.scrollTo(0, 0)
   }, [stamp])
+
+  if (inProgress)
+    return (
+      <section className="flex h-full w-full grow items-center justify-center bg-white dark:bg-black">
+        <LoadingSpinner />
+      </section>
+    )
 
   return (
     <section className="flex h-full w-full grow flex-col bg-white dark:bg-black">
@@ -53,7 +63,10 @@ export const CreateNewProject = () => {
         initial={{ opacity: 0 }}
         className="relative mx-auto flex h-full w-full max-w-7xl items-center justify-center px-16 py-8">
         <div className="absolute inset-0 z-[1] bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:32px_32px] [mask-image:radial-gradient(ellipse_50%_50%_at_50%_50%,#fff_70%,transparent_100%)] dark:[mask-image:radial-gradient(ellipse_50%_50%_at_50%_50%,#000_60%,transparent_100%)]" />
-        <CreateNewProjectContent />
+        <CreateNewProjectContent
+          inProgress={inProgress}
+          setInProgress={setInProgress}
+        />
       </motion.div>
     </section>
   )

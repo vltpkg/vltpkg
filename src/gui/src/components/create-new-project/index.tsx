@@ -30,7 +30,15 @@ export type NewProjectItem = {
   author: string
 }
 
-export const CreateNewProjectContent = () => {
+interface CreateNewProjectContentProps {
+  inProgress: boolean
+  setInProgress: (inProgress: boolean) => void
+}
+
+export const CreateNewProjectContent = ({
+  inProgress,
+  setInProgress,
+}: CreateNewProjectContentProps) => {
   const dashboard = useGraphStore(state => state.dashboard)
   const updateActiveRoute = useGraphStore(
     state => state.updateActiveRoute,
@@ -47,6 +55,7 @@ export const CreateNewProjectContent = () => {
     dashboard?.defaultAuthor ?? '',
   )
   const [isProjectNameValid, setIsProjectNameValid] = useState(true)
+
   const containerRef = useRef<HTMLDivElement>(null)
   const nextRef = useRef<HTMLDivElement>(null)
   const vltRef = useRef<HTMLDivElement>(null)
@@ -76,6 +85,8 @@ export const CreateNewProjectContent = () => {
   const formSubmit = (e: SyntheticEvent) => {
     e.stopPropagation()
     e.preventDefault()
+    if (inProgress) return
+    setInProgress(true)
     void requestRouteTransition<NewProjectItem>({
       updateActiveRoute,
       updateErrorCause,

@@ -12,6 +12,10 @@ vi.mock('@/components/ui/inline-code.jsx', () => ({
   InlineCode: 'gui-inline-code',
 }))
 
+vi.mock('@/components/ui/loading-spinner.jsx', () => ({
+  LoadingSpinner: 'gui-loading-spinner',
+}))
+
 vi.mock('@/lib/start-dashboard-data.js', () => ({
   startDashboardData: vi.fn(),
 }))
