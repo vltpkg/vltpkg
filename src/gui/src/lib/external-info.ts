@@ -1,4 +1,5 @@
-import type { Repository, Manifest } from '@vltpkg/types'
+import type { Repository, Manifest, Packument } from '@vltpkg/types'
+import { compare, gt } from '@vltpkg/semver'
 import { Spec } from '@vltpkg/spec/browser'
 
 export type Semver = `${number}.${number}.${number}`
@@ -35,6 +36,8 @@ export type DetailsInfo = {
   favicon?: ImageInfo
   publisher?: AuthorInfo
   publisherAvatar?: ImageInfo
+  versions?: string[]
+  greaterVersions?: string[]
 }
 
 export const readAuthor = (
@@ -271,6 +274,32 @@ export async function* fetchDetails(
             ...(mani._npmUser && {
               publisher: readAuthor(mani._npmUser),
             }),
+          }
+        })
+        .catch(() => ({})),
+    )
+
+    const packumentURL = new URL(spec.registry)
+    packumentURL.pathname = spec.name
+    trackPromise(
+      fetch(String(packumentURL), {
+        headers: {
+          Accept: 'application/vnd.npm.install-v1+json',
+        },
+      })
+        .then(res => res.json())
+        .then((packu: Packument) => {
+          const versions = Object.keys(packu.versions).sort(compare)
+          return {
+            ...(manifest?.version && versions.length ?
+              {
+                versions,
+                greaterVersions: versions.filter(
+                  (version: string) =>
+                    manifest.version && gt(version, manifest.version),
+                ),
+              }
+            : {}),
           }
         })
         .catch(() => ({})),

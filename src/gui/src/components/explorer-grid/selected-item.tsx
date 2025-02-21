@@ -11,7 +11,7 @@ import {
   TabsTrigger,
 } from '@/components/ui/tabs.jsx'
 import { CodeBlock } from '../ui/shiki.jsx'
-import { FileSearch2, Home, Package } from 'lucide-react'
+import { FileSearch2, Home, Package, Info } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { fetchDetails } from '@/lib/external-info.js'
 import type { DetailsInfo } from '@/lib/external-info.js'
@@ -245,6 +245,28 @@ export const SelectedItem = ({ item }: GridItemOptions) => {
               </motion.div>
             : ''}
           </div>
+        : ''}
+        {details.greaterVersions?.length ?
+          <motion.div
+            className="flex items-center p-6"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger className="flex w-full flex-row text-xs font-medium text-muted-foreground">
+                  <Info className="mr-2" size={16} />
+                  Newer versions available.
+                </TooltipTrigger>
+                <TooltipContent>
+                  <ul>
+                    {details.greaterVersions.map((version, i) => (
+                      <li key={i}>{version}</li>
+                    ))}
+                  </ul>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </motion.div>
         : ''}
         <div className="w-full px-4 pb-4">
           <Tabs defaultValue="package.json">
