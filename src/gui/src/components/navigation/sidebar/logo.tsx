@@ -21,40 +21,44 @@ const SidebarLogo = () => {
 
   return (
     <SidebarMenu>
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger>
-            <SidebarMenuItem
-              onClick={
-                state === 'expanded' ? undefined : toggleSidebar
-              }
-              className="peer flex h-[56px] w-full items-center overflow-hidden pl-[5px] [&>svg]:shrink-0">
-              <VLTV color={theme === 'dark' ? 'white' : 'black'} />
-              {state === 'expanded' && (
-                <Button
-                  size="icon"
-                  variant="ghost"
-                  onClick={toggleSidebar}
-                  className="ml-auto p-0">
-                  <PanelLeft size={24} />
-                </Button>
-              )}
-            </SidebarMenuItem>
-          </TooltipTrigger>
-          <TooltipContent
-            className="flex items-center gap-3"
-            align="start"
-            side="right">
-            Toggle sidebar
-            <span className="flex gap-1">
-              <Kbd>
-                <Command size={12} />
-              </Kbd>
-              <Kbd>B</Kbd>
-            </span>
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
+      <SidebarMenuItem
+        onClick={state === 'expanded' ? undefined : toggleSidebar}
+        className="peer flex h-[56px] w-full items-center overflow-hidden pl-[5px] [&>svg]:shrink-0">
+        <>
+          <VLTV
+            className="cursor-pointer"
+            color={theme === 'dark' ? 'white' : 'black'}
+          />
+          {state === 'expanded' && (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    onClick={toggleSidebar}
+                    className="ml-auto p-0">
+                    <PanelLeft size={24} />
+                  </Button>
+                </TooltipTrigger>
+
+                <TooltipContent
+                  className="flex items-center gap-3"
+                  align="start"
+                  side="right">
+                  Toggle sidebar
+                  <span className="flex gap-1">
+                    <Kbd>
+                      <Command size={12} />
+                    </Kbd>
+                    <Kbd>B</Kbd>
+                  </span>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )}
+        </>
+      </SidebarMenuItem>
     </SidebarMenu>
   )
 }

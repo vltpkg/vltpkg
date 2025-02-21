@@ -3,32 +3,13 @@
 exports[`AppSidebar Logo > renders correctly 1`] = `
 
 <gui-sidebar-menu>
-  <gui-tooltip-provider>
-    <gui-tooltip>
-      <gui-tooltip-trigger>
-        <gui-sidebar-menu-item classname="peer flex h-[56px] w-full items-center overflow-hidden pl-[5px] [&amp;>svg]:shrink-0">
-          <gui-vlt-icon color="white">
-          </gui-vlt-icon>
-        </gui-sidebar-menu-item>
-      </gui-tooltip-trigger>
-      <gui-tooltip-content
-        classname="flex items-center gap-3"
-        align="start"
-        side="right"
-      >
-        Toggle sidebar
-        <span class="flex gap-1">
-          <gui-kbd>
-            <gui-command-icon size="12">
-            </gui-command-icon>
-          </gui-kbd>
-          <gui-kbd>
-            B
-          </gui-kbd>
-        </span>
-      </gui-tooltip-content>
-    </gui-tooltip>
-  </gui-tooltip-provider>
+  <gui-sidebar-menu-item classname="peer flex h-[56px] w-full items-center overflow-hidden pl-[5px] [&amp;>svg]:shrink-0">
+    <gui-vlt-icon
+      classname="cursor-pointer"
+      color="white"
+    >
+    </gui-vlt-icon>
+  </gui-sidebar-menu-item>
 </gui-sidebar-menu>
 
 `;
