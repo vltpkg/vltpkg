@@ -3,7 +3,7 @@
 exports[`queries-empty-state > labels render default 1`] = `
 
 <div class="flex h-full w-full items-center justify-center bg-white dark:bg-black">
-  <div class="-mt-20 mt-10 flex flex-col items-center justify-center gap-3">
+  <div class="-mt-20 flex flex-col items-center justify-center gap-3">
     <div class="relative mb-20 flex items-center justify-center">
       <div
         class="absolute z-[1] h-[450px] w-[450px] rounded-full border-[1px] border-neutral-500/10"

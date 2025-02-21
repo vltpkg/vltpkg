@@ -2,7 +2,10 @@
 
 exports[`AppSidebar > renders correctly 1`] = `
 
-<gui-sidebar collapsible="icon">
+<gui-sidebar
+  collapsible="icon"
+  variant="inset"
+>
   <gui-sidebar-header>
     <gui-sidebar-logo>
     </gui-sidebar-logo>
@@ -19,7 +22,7 @@ exports[`AppSidebar > renders correctly 1`] = `
   </gui-sidebar-content>
   <gui-sidebar-footer>
   </gui-sidebar-footer>
-  <gui-sidebar-rail>
+  <gui-sidebar-rail classname="hover:after:bg-transparent group-data-[state=collapsed]:-translate-x-[0.65rem]">
   </gui-sidebar-rail>
 </gui-sidebar>
 

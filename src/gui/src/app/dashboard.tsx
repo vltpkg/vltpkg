@@ -34,18 +34,20 @@ export const Dashboard = () => {
   }, [stamp])
 
   return (
-    <section className="flex min-h-[80svh] w-full grow flex-col bg-white dark:bg-black">
-      <div className="flex w-full items-center justify-between border-b-[1px] border-t-[1px] border-solid px-8 py-4">
-        {dashboard?.cwd ?
-          <p className="font-mono text-xs font-light text-muted-foreground">
-            Directory: {dashboard.cwd}
-          </p>
-        : ''}
-        {dashboard?.buildVersion ?
-          <p className="text-right font-mono text-xs font-light text-muted-foreground">
-            build: v{dashboard.buildVersion}
-          </p>
-        : ''}
+    <section className="flex h-full w-full flex-col rounded-b-lg border-x-[1px] border-b-[1px] bg-white dark:bg-black">
+      <div className="flex w-full border-y-[1px] px-8 py-4">
+        <div className="mx-auto flex w-full max-w-7xl items-center justify-between">
+          {dashboard?.cwd ?
+            <p className="font-mono text-xs font-light text-muted-foreground">
+              Directory: {dashboard.cwd}
+            </p>
+          : ''}
+          {dashboard?.buildVersion ?
+            <p className="hidden text-right font-mono text-xs font-light text-muted-foreground md:inline-flex">
+              build: v{dashboard.buildVersion}
+            </p>
+          : ''}
+        </div>
       </div>
       <DashboardContent />
     </section>

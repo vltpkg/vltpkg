@@ -353,87 +353,89 @@ export const ExplorerGrid = () => {
   if (!items.length) return <EmptyResultsState />
 
   return (
-    <div className="grid grow grid-cols-7 gap-4 bg-secondary px-8 pb-8 dark:bg-black">
-      <div className="col-span-2">
-        {parentItem ?
-          <>
-            <GridHeader>
-              <GalleryThumbnails size={22} className="mr-3" />
-              Parent
-            </GridHeader>
-            <SideItem
-              parent={true}
-              item={parentItem}
-              highlight={true}
-              onSelect={dependentsClick(parentItem, true)}
-            />
-          </>
-        : ''}
-        {workspaces && workspaces.length > 0 ?
-          <>
-            <GridHeader>
-              <Package size={22} className="mr-3" />
-              Workspaces
-            </GridHeader>
-            {workspaces.map(item => (
+    <div className="w-full grow rounded-b-lg border-x-[1px] border-b-[1px] bg-white px-8 pb-8 dark:bg-black">
+      <div className="mx-auto grid w-full max-w-7xl grid-cols-7 gap-4">
+        <div className="col-span-2">
+          {parentItem ?
+            <>
+              <GridHeader>
+                <GalleryThumbnails size={22} className="mr-3" />
+                Parent
+              </GridHeader>
               <SideItem
-                item={item}
-                isWorkspace
-                key={item.id}
-                onSelect={workspaceClick(item)}
+                parent={true}
+                item={parentItem}
+                highlight={true}
+                onSelect={dependentsClick(parentItem, true)}
               />
-            ))}
-          </>
-        : ''}
-        {dependents && dependents.length > 0 ?
-          <>
-            <GridHeader>
-              <GalleryVerticalEnd size={22} className="mr-3" />
-              Dependents
-            </GridHeader>
-            {dependents.map(item => (
-              <SideItem
-                item={item}
-                key={item.id}
-                onSelect={dependentsClick(item)}
-              />
-            ))}
-          </>
-        : ''}
-      </div>
-      <div className="col-span-3">
-        {items.length > 1 ?
-          <div className="flex items-center gap-3">
-            <GridHeader className="mb-4">Results</GridHeader>
-            <Badge className="mt-2" variant="default">
-              {items.length}
-            </Badge>
-          </div>
-        : <GridHeader>
-            <GalleryVertical size={22} className="mr-3" />
-            Selected Item
-          </GridHeader>
-        }
-        <div className="flex flex-col gap-6">
-          {items.map(item =>
-            selected ?
-              <SelectedItem item={item} key={item.id} />
-            : <ResultItem item={item} key={item.id} />,
-          )}
+            </>
+          : ''}
+          {workspaces && workspaces.length > 0 ?
+            <>
+              <GridHeader>
+                <Package size={22} className="mr-3" />
+                Workspaces
+              </GridHeader>
+              {workspaces.map(item => (
+                <SideItem
+                  item={item}
+                  isWorkspace
+                  key={item.id}
+                  onSelect={workspaceClick(item)}
+                />
+              ))}
+            </>
+          : ''}
+          {dependents && dependents.length > 0 ?
+            <>
+              <GridHeader>
+                <GalleryVerticalEnd size={22} className="mr-3" />
+                Dependents
+              </GridHeader>
+              {dependents.map(item => (
+                <SideItem
+                  item={item}
+                  key={item.id}
+                  onSelect={dependentsClick(item)}
+                />
+              ))}
+            </>
+          : ''}
         </div>
-      </div>
-      <div className="col-span-2">
-        {(
-          (dependencies && dependencies.length > 0) ||
-          selectedItem?.to?.importer
-        ) ?
-          <DependencySideBar
-            dependencies={dependencies || []}
-            importerId={importerId}
-            onDependencyClick={dependencyClick}
-            uninstalledDependencies={uninstalledDependencies || []}
-          />
-        : ''}
+        <div className="col-span-3">
+          {items.length > 1 ?
+            <div className="flex items-center gap-3">
+              <GridHeader className="mb-4">Results</GridHeader>
+              <Badge className="mt-2" variant="default">
+                {items.length}
+              </Badge>
+            </div>
+          : <GridHeader>
+              <GalleryVertical size={22} className="mr-3" />
+              Selected Item
+            </GridHeader>
+          }
+          <div className="flex flex-col gap-6">
+            {items.map(item =>
+              selected ?
+                <SelectedItem item={item} key={item.id} />
+              : <ResultItem item={item} key={item.id} />,
+            )}
+          </div>
+        </div>
+        <div className="col-span-2">
+          {(
+            (dependencies && dependencies.length > 0) ||
+            selectedItem?.to?.importer
+          ) ?
+            <DependencySideBar
+              dependencies={dependencies || []}
+              importerId={importerId}
+              onDependencyClick={dependencyClick}
+              uninstalledDependencies={uninstalledDependencies || []}
+            />
+          : ''}
+        </div>
       </div>
     </div>
   )

@@ -3,7 +3,7 @@
 exports[`error-found has a cause 1`] = `
 
 <div>
-  <section class="flex min-h-[80svh] grow flex-col items-center justify-center bg-white dark:bg-black">
+  <section class="flex h-full flex-col items-center justify-center rounded-lg border-[1px] bg-white dark:bg-black">
     <div class="relative -mt-32 flex flex-col items-center justify-center">
       <div class="relative flex flex-col gap-8">
         <div class="absolute inset-0 z-[2] bg-gradient-radial from-white/0 via-transparent to-white dark:from-black/0 dark:to-black">
@@ -411,7 +411,7 @@ exports[`error-found has a cause 1`] = `
 exports[`render default 1`] = `
 
 <div>
-  <section class="flex min-h-[80svh] grow flex-col items-center justify-center bg-white dark:bg-black">
+  <section class="flex h-full flex-col items-center justify-center rounded-lg border-[1px] bg-white dark:bg-black">
     <div class="relative -mt-32 flex flex-col items-center justify-center">
       <div class="relative flex flex-col gap-8">
         <div class="absolute inset-0 z-[2] bg-gradient-radial from-white/0 via-transparent to-white dark:from-black/0 dark:to-black">
