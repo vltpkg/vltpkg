@@ -88,6 +88,13 @@ e.g: `#foo` is the same as `[name=foo]`
 - `:has(<selector-list>)` Matches only packages that have valid results for the selector expression used. As an example, here is a query that matches all packages that have a peer dependency on `react`: `:has(.peer[name=react])`
 - `:is(<forgiving-selector-list>)` Useful for writing large selectors in a more compact form, the `:is()` pseudo-class takes a selector list as its arguments and selects any element that can be selected by one of the selectors in that list. As an example, let's say I want to select packages named `a` & `b` that are direct dependencies of my project root: `:root > [name=a], :root > [name=b]` using the `:is()` pseudo-class, that same expression can be shortened to: `:root > :is([name=a], [name=b])`. Similar to the css pseudo-class of the same name, this selector has a forgiving behavior regarding its nested selector list ignoring any usage of non-existing ids, classes, combinators, operators and pseudo-selectors.
 - `:not(<selector-list>)` Negation pseudo-class, select packages that do not match a list of selectors.
+- `:outdated(<type>)` Matches packages that are outdated, the type parameter is optional and can be one of the following:
+  - `any` (default) a version exists that is greater than the current one
+  - `in-range` a version exists that is greater than the current one, and satisfies at least one if its parent's dependencies
+  - `out-of-range` a version exists that is greater than the current one, does not satisfy at least one of its parent's dependencies
+  - `major` a version exists that is a semver major greater than the current one
+  - `minor` a version exists that is a semver minor greater than the current one
+  - `patch` a version exists that is a semver patch greater than the current one
 - `:private` Matches packages that have the property `private` set on their `package.json` file.
 - `:semver(<value>, <function>, <custom-attribute-selector>)` Matches packages based on a semver value, e.g, to retrieve all packages that have a `version` satisfied by the semver value `^1.0.0`: `:semver(^1.0.0)`. It's also possible to define the type of semver comparison function to use by defining a second parameter, e.g: `:semver(^1.0.0, eq)` for an exact match, valid comparison types are: `eq`, `neq`, `gt`, `gte`, `lt`, `lte`, `satisfies` (default). A third parameter allows for specifying a different `package.json` property to use for the comparison, e.g: `:semver(^22, satisfies, :attr(engines, [node]))` for comparing the value of `engines.node`.
 - `:type(registry|file|git|remote|workspace)` Matches packages based on their type, e.g, to retrieve all git dependencies: `:type(git)`.

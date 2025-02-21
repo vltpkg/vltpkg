@@ -3,6 +3,7 @@ import { error } from '@vltpkg/error-cause'
 import type { EdgeLike, NodeLike } from '@vltpkg/graph'
 import { asManifest } from '@vltpkg/types'
 import { attr } from './pseudo/attr.ts'
+import { outdated } from './pseudo/outdated.ts'
 import { semverParser as semver } from './pseudo/semver.ts'
 import { removeDanglingEdges, removeNode } from './pseudo/helpers.ts'
 import {
@@ -52,6 +53,7 @@ const has = async (state: ParserState) => {
           edges: new Set(state.partial.edges),
           nodes: new Set(state.partial.nodes),
         },
+        specOptions: state.specOptions,
       })
       for (const n of nestedState.collect.nodes) {
         collectNodes.add(n)
@@ -132,6 +134,7 @@ const is = async (state: ParserState) => {
           edges: new Set(state.partial.edges),
         },
         walk: state.walk,
+        specOptions: state.specOptions,
       })
       for (const n of nestedState.collect.nodes) {
         collect.add(n)
@@ -183,6 +186,7 @@ const not = async (state: ParserState) => {
           edges: new Set(state.partial.edges),
         },
         walk: state.walk,
+        specOptions: state.specOptions,
       })
       for (const n of nestedState.collect.nodes) {
         collect.add(n)
@@ -321,7 +325,7 @@ const pseudoSelectors = new Map<string, ParserFn>(
     scope,
     type: typeFn,
     semver,
-    // TODO: outdated
+    outdated,
   }),
 )
 

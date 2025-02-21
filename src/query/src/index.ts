@@ -1,5 +1,6 @@
 import { error } from '@vltpkg/error-cause'
 import type { EdgeLike, GraphLike, NodeLike } from '@vltpkg/graph'
+import type { SpecOptions } from '@vltpkg/spec/browser'
 import postcssSelectorParser from 'postcss-selector-parser'
 import { attribute } from './attribute.ts'
 import { classFn } from './class.ts'
@@ -108,15 +109,18 @@ export const walk = async (
 
 export type QueryOptions = {
   graph: GraphLike
+  specOptions: SpecOptions
 }
 
 export class Query {
   #cache: Map<string, QueryResponse>
   #graph: GraphLike
+  #specOptions: SpecOptions
 
-  constructor({ graph }: QueryOptions) {
+  constructor({ graph, specOptions }: QueryOptions) {
     this.#cache = new Map()
     this.#graph = graph
+    this.#specOptions = specOptions
   }
 
   async search(
@@ -161,6 +165,7 @@ export class Query {
       },
       partial: { nodes, edges },
       signal,
+      specOptions: this.#specOptions,
       walk,
     })
 
