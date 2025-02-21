@@ -50,13 +50,13 @@ export const DashboardItem = ({
       {/* top */}
       <div className="relative flex h-24 items-center overflow-hidden rounded-t-lg border-x-[1px] border-t-[1px] bg-card transition-all group-hover:border-neutral-400 dark:group-hover:border-neutral-700">
         <div className="flex px-3 py-2">
-          <CardTitle className="text-md font-medium">
+          <CardTitle className="text-md z-[1] font-medium">
             {item.name}
           </CardTitle>
         </div>
         <div className="absolute right-0 top-0 z-[1] flex flex-row rounded-sm px-3 py-2 backdrop-blur-[1px]">
           {item.mtime && (
-            <p className="text-[0.7rem] text-muted-foreground">
+            <p className="z-[1] text-[0.7rem] text-muted-foreground">
               {format(
                 new Date(item.mtime).toJSON(),
                 'LLLL do, yyyy | hh:mm aa',
@@ -157,54 +157,58 @@ export const DashboardGrid = () => {
   }
 
   return (
-    <div className="flex grow flex-col bg-secondary px-8 py-8 dark:bg-black">
-      <div className="mx-auto flex w-full max-w-7xl gap-2 pb-8">
+    <div className="flex grow flex-col px-8 py-8">
+      <div className="mx-auto grid w-full max-w-7xl grid-cols-3 gap-2 pb-8 md:flex">
         {currentView === 'table' ?
           <TableFilterSearch
             filterValue={tableFilterValue}
             onFilterChange={setTableFilterValue}
-            className="w-full"
+            className="col-span-3 w-full"
           />
         : <FilterSearch
             placeholder="Filter Projects"
             items={dashboard?.projects ?? []}
             setFilteredItems={setFilteredProjects}
-            className="w-full"
+            className="col-span-3 w-full"
           />
         }
-        <DashboardViewToggle
-          currentView={currentView}
-          setCurrentView={setCurrentView}
-        />
-        {currentView === 'table' ?
-          <motion.div
-            key={currentView}
-            initial={{ opacity: 0 }}
-            exit={{ opacity: 0 }}
-            animate={{ opacity: 1 }}>
-            <TableViewDropdown
-              columnVisibility={columnVisibility}
-              setColumnVisibility={setColumnVisibility}
-              table={table}
-              className="w-[120px]"
-            />
-          </motion.div>
-        : <motion.div
-            key={currentView}
-            exit={{ opacity: 0 }}
-            initial={{ opacity: 1 }}
-            animate={{ opacity: 1 }}>
-            <SortDropdown
-              items={filteredProjects}
-              setFilteredItems={setFilteredProjects}
-              sortKey="name"
-            />
-          </motion.div>
-        }
-        <Button onClick={onCreateNewProjectClick}>
-          <Plus size={24} />
-          Create New Project
-        </Button>
+        <div className="col-span-3 flex gap-2">
+          <DashboardViewToggle
+            currentView={currentView}
+            setCurrentView={setCurrentView}
+          />
+          {currentView === 'table' ?
+            <motion.div
+              key={currentView}
+              initial={{ opacity: 0 }}
+              exit={{ opacity: 0 }}
+              animate={{ opacity: 1 }}>
+              <TableViewDropdown
+                columnVisibility={columnVisibility}
+                setColumnVisibility={setColumnVisibility}
+                table={table}
+                className="w-[120px]"
+              />
+            </motion.div>
+          : <motion.div
+              key={currentView}
+              exit={{ opacity: 0 }}
+              initial={{ opacity: 1 }}
+              animate={{ opacity: 1 }}>
+              <SortDropdown
+                items={filteredProjects}
+                setFilteredItems={setFilteredProjects}
+                sortKey="name"
+              />
+            </motion.div>
+          }
+          <Button
+            onClick={onCreateNewProjectClick}
+            className="ml-auto">
+            <Plus size={24} />
+            Create New Project
+          </Button>
+        </div>
       </div>
 
       <AnimatePresence mode="wait">
@@ -231,7 +235,7 @@ export const DashboardGrid = () => {
             animate={{ opacity: 1, y: 0 }}
             className="mx-auto flex w-full max-w-7xl flex-col">
             <p className="mb-4 text-sm font-semibold">Projects</p>
-            <div className="grid grid-cols-1 gap-x-6 gap-y-6 sm:grid-cols-2 md:grid-cols-3">
+            <div className="grid grid-cols-1 gap-x-6 gap-y-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {dashboard?.projects ?
                 filteredProjects.map((item, index) => (
                   <DashboardItem

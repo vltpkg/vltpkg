@@ -3,31 +3,32 @@
 exports[`AppSidebar Logo > renders correctly 1`] = `
 
 <gui-sidebar-menu>
-  <gui-sidebar-menu-item>
-    <gui-sidebar-menu-button
-      size="lg"
-      classname="whitespace-nowrap data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
-      aschild="true"
-    >
-      <a href="/">
-        <div class="flex aspect-square h-full items-center justify-center">
-          <gui-vlt-icon
-            color="white"
-            classname="flex items-center justify-center"
-          >
+  <gui-tooltip-provider>
+    <gui-tooltip>
+      <gui-tooltip-trigger>
+        <gui-sidebar-menu-item classname="peer flex h-[56px] w-full items-center overflow-hidden pl-[5px] [&amp;>svg]:shrink-0">
+          <gui-vlt-icon color="white">
           </gui-vlt-icon>
-        </div>
-        <div class="grid flex-1 text-left text-sm leading-tight">
-          <span class="truncate font-semibold">
-            vlt
-            <span class="ml-1 truncate font-light">
-              /volt/
-            </span>
-          </span>
-        </div>
-      </a>
-    </gui-sidebar-menu-button>
-  </gui-sidebar-menu-item>
+        </gui-sidebar-menu-item>
+      </gui-tooltip-trigger>
+      <gui-tooltip-content
+        classname="flex items-center gap-3"
+        align="start"
+        side="right"
+      >
+        Toggle sidebar
+        <span class="flex gap-1">
+          <gui-kbd>
+            <gui-command-icon size="12">
+            </gui-command-icon>
+          </gui-kbd>
+          <gui-kbd>
+            B
+          </gui-kbd>
+        </span>
+      </gui-tooltip-content>
+    </gui-tooltip>
+  </gui-tooltip-provider>
 </gui-sidebar-menu>
 
 `;

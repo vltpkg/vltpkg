@@ -44,8 +44,8 @@ export const CreateNewProject = () => {
     )
 
   return (
-    <section className="flex h-full w-full grow flex-col bg-white dark:bg-black">
-      <div className="h-1/5 border-b-[1px] border-border bg-white dark:bg-black">
+    <section className="flex h-full w-full flex-col rounded-lg border-[1px] bg-white dark:bg-black">
+      <div className="h-1/5 rounded-t-lg border-b-[1px] border-border bg-white dark:bg-black">
         <div className="mx-auto flex h-full max-w-7xl flex-col justify-end gap-2 px-16 py-8">
           <h4 className="text-2xl font-medium">
             Create a new Project

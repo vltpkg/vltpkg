@@ -37,7 +37,7 @@ const socialMediaLinks: SocialMediaLink[] = [
 
 export const Footer = () => {
   return (
-    <footer className="border-t-[1px] bg-white dark:bg-black">
+    <footer>
       <div className="flex w-full flex-col gap-x-4 gap-y-4 px-6 py-6">
         {/* footer links */}
         <div className="flex w-full items-center justify-between">

@@ -3,14 +3,16 @@
 exports[`explorer has project root info 1`] = `
 
 <div>
-  <section class="flex grow flex-col justify-between bg-white dark:bg-black">
-    <div class="flex w-full items-center justify-between border-t-[1px] px-8 pt-4">
-      <p class="font-mono text-xs font-light text-muted-foreground">
-        :host-context(file:/path/to/project)
-      </p>
+  <section class="flex w-full grow flex-col justify-between rounded-lg bg-white dark:bg-black">
+    <div class="flex w-full border-[1px] px-8 py-4">
+      <div class="mx-auto flex w-full max-w-7xl items-center justify-between">
+        <p class="font-mono text-xs font-light text-muted-foreground">
+          :host-context(file:/path/to/project)
+        </p>
+      </div>
     </div>
-    <section class="flex items-center border-b-[1px] border-solid px-8 py-4">
-      <div class="flex w-full flex-row gap-2">
+    <section class="flex w-full items-center border-x-[1px] px-8 py-4">
+      <div class="mx-auto flex w-full max-w-7xl flex-row items-center gap-2">
         <gui-root-button>
         </gui-root-button>
         <gui-search-bar

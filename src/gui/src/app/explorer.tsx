@@ -141,21 +141,23 @@ const ExplorerContent = () => {
   }
 
   return (
-    <section className="flex grow flex-col justify-between bg-white dark:bg-black">
-      <div className="flex w-full items-center justify-between border-t-[1px] px-8 pt-4">
-        {graph.projectRoot ?
-          <p className="font-mono text-xs font-light text-muted-foreground">
-            :host-context(file:{graph.projectRoot})
-          </p>
-        : ''}
-        {dashboard?.buildVersion ?
-          <p className="text-right font-mono text-xs font-light text-muted-foreground">
-            build: v{dashboard.buildVersion}
-          </p>
-        : ''}
+    <section className="flex w-full grow flex-col justify-between rounded-lg bg-white dark:bg-black">
+      <div className="flex w-full border-[1px] px-8 py-4">
+        <div className="mx-auto flex w-full max-w-7xl items-center justify-between">
+          {graph.projectRoot ?
+            <p className="font-mono text-xs font-light text-muted-foreground">
+              :host-context(file:{graph.projectRoot})
+            </p>
+          : ''}
+          {dashboard?.buildVersion ?
+            <p className="text-right font-mono text-xs font-light text-muted-foreground">
+              build: v{dashboard.buildVersion}
+            </p>
+          : ''}
+        </div>
       </div>
-      <section className="flex items-center border-b-[1px] border-solid px-8 py-4">
-        <div className="flex w-full flex-row gap-2">
+      <section className="flex w-full items-center border-x-[1px] px-8 py-4">
+        <div className="mx-auto flex w-full max-w-7xl flex-row items-center gap-2">
           <RootButton />
           <SearchBar
             tabIndex={0}

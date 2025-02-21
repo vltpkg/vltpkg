@@ -28,18 +28,13 @@ const SidebarQueryNav = () => {
           isActive={activeRoute === '/queries'}
           asChild
           tooltip="Saved queries"
-          className="data-[active=true]:bg-neutral-800 data-[active=true]:text-white data-[active=true]:dark:bg-neutral-100 data-[active=true]:dark:text-black">
+          className="whitespace-nowrap data-[active=true]:bg-neutral-200/80 data-[active=true]:text-foreground data-[active=true]:dark:bg-neutral-700/80 data-[active=true]:dark:text-foreground">
           <a
             href="/queries"
             className={`text-foreground ${activeRoute === '/queries' ? '' : ''}`}>
             <Star />
             <span>Queries</span>
-            <SidebarMenuBadge
-              className={
-                activeRoute === '/queries' ?
-                  'text-white dark:text-black'
-                : ''
-              }>
+            <SidebarMenuBadge>
               {queryCount !== 0 ? queryCount : undefined}
             </SidebarMenuBadge>
           </a>

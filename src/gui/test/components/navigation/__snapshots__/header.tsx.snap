@@ -2,20 +2,24 @@
 
 exports[`renders Header for route / with expected name Dashboard 1`] = `
 
-<div class="flex w-full justify-between bg-white px-8 py-3 dark:bg-black">
-  <h3 class="mt-1 text-2xl font-medium">
-    Dashboard
-  </h3>
+<div class="flex w-full items-center rounded-t-lg border-x-[1px] border-t-[1px] bg-white px-8 py-3 dark:bg-black">
+  <div class="mx-auto flex w-full max-w-7xl items-center">
+    <h3 class="mt-1 text-2xl font-medium">
+      Dashboard
+    </h3>
+  </div>
 </div>
 
 `;
 
 exports[`renders Header for route /dashboard with expected name Dashboard 1`] = `
 
-<div class="flex w-full justify-between bg-white px-8 py-3 dark:bg-black">
-  <h3 class="mt-1 text-2xl font-medium">
-    Dashboard
-  </h3>
+<div class="flex w-full items-center rounded-t-lg border-x-[1px] border-t-[1px] bg-white px-8 py-3 dark:bg-black">
+  <div class="mx-auto flex w-full max-w-7xl items-center">
+    <h3 class="mt-1 text-2xl font-medium">
+      Dashboard
+    </h3>
+  </div>
 </div>
 
 `;
@@ -27,30 +31,36 @@ exports[`renders Header for route /error with expected name null 1`] = `
 
 exports[`renders Header for route /explore with expected name Explore 1`] = `
 
-<div class="flex w-full justify-between bg-white px-8 py-3 dark:bg-black">
-  <h3 class="mt-1 text-2xl font-medium">
-    Explore
-  </h3>
+<div class="flex w-full items-center rounded-t-lg border-x-[1px] border-t-[1px] bg-white px-8 py-3 dark:bg-black">
+  <div class="mx-auto flex w-full max-w-7xl items-center">
+    <h3 class="mt-1 text-2xl font-medium">
+      Explore
+    </h3>
+  </div>
 </div>
 
 `;
 
 exports[`renders Header for route /labels with expected name Labels 1`] = `
 
-<div class="flex w-full justify-between bg-white px-8 py-3 dark:bg-black">
-  <h3 class="mt-1 text-2xl font-medium">
-    Labels
-  </h3>
+<div class="flex w-full items-center rounded-t-lg border-x-[1px] border-t-[1px] bg-white px-8 py-3 dark:bg-black">
+  <div class="mx-auto flex w-full max-w-7xl items-center">
+    <h3 class="mt-1 text-2xl font-medium">
+      Labels
+    </h3>
+  </div>
 </div>
 
 `;
 
 exports[`renders Header for route /queries with expected name Queries 1`] = `
 
-<div class="flex w-full justify-between bg-white px-8 py-3 dark:bg-black">
-  <h3 class="mt-1 text-2xl font-medium">
-    Queries
-  </h3>
+<div class="flex w-full items-center rounded-t-lg border-x-[1px] border-t-[1px] bg-white px-8 py-3 dark:bg-black">
+  <div class="mx-auto flex w-full max-w-7xl items-center">
+    <h3 class="mt-1 text-2xl font-medium">
+      Queries
+    </h3>
+  </div>
 </div>
 
 `;

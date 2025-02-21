@@ -16,8 +16,12 @@ vi.mock('@/components/navigation/sidebar/index.jsx', () => ({
 }))
 vi.mock('@/components/ui/sidebar.jsx', () => ({
   SidebarProvider: 'gui-sidebar-provider',
+  SidebarInset: 'gui-sidebar-inset',
 }))
 
+vi.mock('@/app/create-new-project.jsx', () => ({
+  CreateNewProject: 'gui-create-new-project',
+}))
 vi.mock('@/app/explorer.jsx', () => ({
   Explorer: 'gui-explorer',
 }))
@@ -47,6 +51,17 @@ afterEach(() => {
   const CleanUp = () => (useStore(state => state.reset)(), '')
   render(<CleanUp />)
   cleanup()
+})
+
+test('renders Layout for the "/new-project" view', () => {
+  const Container = () => {
+    const setRoute = useStore(state => state.updateActiveRoute)
+    setRoute('/new-project')
+    return <Layout />
+  }
+
+  const { container } = render(<Container />)
+  expect(container.innerHTML).toMatchSnapshot()
 })
 
 test('renders Layout for the "/dashboard" view', () => {

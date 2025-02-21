@@ -1,39 +1,60 @@
 import {
   SidebarMenu,
-  SidebarMenuButton,
   SidebarMenuItem,
+  useSidebar,
 } from '@/components/ui/sidebar.jsx'
-import { VLTV } from '@/components/icons/vlt-v.jsx'
+import {
+  Tooltip,
+  TooltipProvider,
+  TooltipTrigger,
+  TooltipContent,
+} from '@/components/ui/tooltip.jsx'
+import { VLTV } from '@/components/icons/index.js'
 import { useTheme } from '@/components/ui/theme-provider.jsx'
+import { PanelLeft, Command } from 'lucide-react'
+import { Button } from '@/components/ui/button.jsx'
+import { Kbd } from '@/components/ui/kbd.jsx'
 
 const SidebarLogo = () => {
   const { resolvedTheme: theme } = useTheme()
+  const { state, toggleSidebar } = useSidebar()
 
   return (
     <SidebarMenu>
-      <SidebarMenuItem>
-        <SidebarMenuButton
-          size="lg"
-          className="whitespace-nowrap data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
-          asChild>
-          <a href="/">
-            <div className="flex aspect-square h-full items-center justify-center">
-              <VLTV
-                color={theme === 'dark' ? 'white' : 'black'}
-                className="flex items-center justify-center"
-              />
-            </div>
-            <div className="grid flex-1 text-left text-sm leading-tight">
-              <span className="truncate font-semibold">
-                vlt
-                <span className="ml-1 truncate font-light">
-                  /volt/
-                </span>
-              </span>
-            </div>
-          </a>
-        </SidebarMenuButton>
-      </SidebarMenuItem>
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger>
+            <SidebarMenuItem
+              onClick={
+                state === 'expanded' ? undefined : toggleSidebar
+              }
+              className="peer flex h-[56px] w-full items-center overflow-hidden pl-[5px] [&>svg]:shrink-0">
+              <VLTV color={theme === 'dark' ? 'white' : 'black'} />
+              {state === 'expanded' && (
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  onClick={toggleSidebar}
+                  className="ml-auto p-0">
+                  <PanelLeft size={24} />
+                </Button>
+              )}
+            </SidebarMenuItem>
+          </TooltipTrigger>
+          <TooltipContent
+            className="flex items-center gap-3"
+            align="start"
+            side="right">
+            Toggle sidebar
+            <span className="flex gap-1">
+              <Kbd>
+                <Command size={12} />
+              </Kbd>
+              <Kbd>B</Kbd>
+            </span>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
     </SidebarMenu>
   )
 }

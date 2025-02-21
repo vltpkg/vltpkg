@@ -42,7 +42,7 @@ export const Toggle = ({ options }: ToggleProps) => {
   }
 
   return (
-    <div className="flex">
+    <div className="flex w-fit">
       <div className="relative flex h-[2.5rem] w-full items-center rounded-md border border-[1px] border-muted-foreground/25 bg-white p-1 dark:bg-black">
         {/* the toggle slider */}
         <motion.div

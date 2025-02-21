@@ -31,7 +31,7 @@ export const defaultOpen: boolean = (() => {
 
 export function AppSidebar() {
   return (
-    <Sidebar collapsible="icon">
+    <Sidebar collapsible="icon" variant="inset">
       <SidebarHeader>
         <SidebarLogo />
       </SidebarHeader>
@@ -43,7 +43,7 @@ export function AppSidebar() {
         <SidebarQueryProjectNav />
       </SidebarContent>
       <AppSidebarFooter />
-      <SidebarRail />
+      <SidebarRail className="hover:after:bg-transparent group-data-[state=collapsed]:-translate-x-[0.65rem]" />
     </Sidebar>
   )
 }

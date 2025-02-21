@@ -56,9 +56,9 @@ const Labels = () => {
   }, [savedLabels])
 
   return (
-    <section className="flex min-h-[80svh] w-full grow flex-col bg-white dark:bg-black">
-      <div className="flex flex-col px-8 py-4">
-        <div className="flex justify-between">
+    <section className="flex h-full w-full flex-col rounded-b-lg border-[1px] bg-white px-8 dark:bg-black">
+      <div className="mx-auto flex w-full max-w-7xl flex-col">
+        <div className="my-4 flex justify-between">
           <div className="flex gap-2">
             <FilterSearch
               placeholder="Filter Labels"

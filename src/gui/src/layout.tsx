@@ -5,7 +5,10 @@ import {
   defaultOpen,
   AppSidebar,
 } from '@/components/navigation/sidebar/index.jsx'
-import { SidebarProvider } from '@/components/ui/sidebar.jsx'
+import {
+  SidebarProvider,
+  SidebarInset,
+} from '@/components/ui/sidebar.jsx'
 
 // routes
 import { CreateNewProject } from '@/app/create-new-project.jsx'
@@ -17,10 +20,6 @@ import { Labels } from '@/app/labels.jsx'
 
 import { useGraphStore } from '@/state/index.js'
 import { Toaster } from '@/components/ui/toaster.jsx'
-
-interface LayoutProps {
-  children: React.ReactNode
-}
 
 const routeMap: Record<string, React.ReactElement> = {
   '/dashboard': <Dashboard />,
@@ -41,37 +40,19 @@ const Layout = () => {
 
   return (
     <SidebarProvider defaultOpen={defaultOpen}>
-      <Layout.Wrapper>
-        <Layout.Body>
-          <AppSidebar />
-          <Layout.Content>
-            <Header />
-            {matchedComponent ?
-              routeMap[matchedComponent]
-            : defaultComponent}
-            <Footer />
-          </Layout.Content>
-        </Layout.Body>
-        <Toaster />
-      </Layout.Wrapper>
+      <AppSidebar />
+      <div className="sidebar-inset-wrapper">
+        <SidebarInset className="grow md:mr-3">
+          <Header />
+          {matchedComponent ?
+            routeMap[matchedComponent]
+          : defaultComponent}
+        </SidebarInset>
+        <Footer />
+      </div>
+      <Toaster />
     </SidebarProvider>
   )
-}
-
-Layout.Wrapper = ({ children }: { children: React.ReactNode }) => {
-  return (
-    <div className="flex min-h-svh w-full flex-col">{children}</div>
-  )
-}
-
-Layout.Body = ({ children }: { children: React.ReactNode }) => {
-  return (
-    <div className="flex min-h-svh w-full flex-row">{children}</div>
-  )
-}
-
-Layout.Content = ({ children }: LayoutProps) => {
-  return <div className="flex w-full grow flex-col">{children}</div>
 }
 
 export default Layout

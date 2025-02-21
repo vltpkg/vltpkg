@@ -2,19 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-html {
-  scroll-behavior: smooth !important;
-  text-rendering: optimizeLegibility;
-  -moz-osx-font-smoothing: grayscale;
-  font-smooth: auto;
-}
-
-@supports (-webkit-font-smoothing: subpixel-antialiased) {
-  html {
-    -webkit-font-smoothing: subpixel-antialiased;
-  }
-}
-
 @font-face {
   font-family: 'inter';
   src: url('/fonts/inter.ttf') format('truetype');
@@ -151,6 +138,31 @@ html {
 .grid-system-cell {
   aspect-ratio: 1;
   width: 100%;
+}
+
+.sidebar-inset-wrapper {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  margin: 0 0 0 0;
+
+  @media (min-width: 768px) {
+    margin: 0.75rem 0.75rem 0.75rem 0;
+  }
+}
+
+html {
+  scroll-behavior: smooth !important;
+  text-rendering: optimizeLegibility;
+  -moz-osx-font-smoothing: grayscale;
+  font-smooth: auto;
+  background-color: hsl(var(--sidebar-background));
+}
+
+@supports (-webkit-font-smoothing: subpixel-antialiased) {
+  html {
+    -webkit-font-smoothing: subpixel-antialiased;
+  }
 }
 
 @layer base {

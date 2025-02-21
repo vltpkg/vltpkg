@@ -12,7 +12,7 @@ exports[`AppSidebar main nav > renders correctly 1`] = `
         <gui-sidebar-menu-button
           aschild="true"
           isactive="false"
-          classname="whitespace-nowrap data-[active=true]:bg-neutral-800 data-[active=true]:text-white data-[active=true]:dark:bg-neutral-100 data-[active=true]:dark:text-black"
+          classname="whitespace-nowrap data-[active=true]:bg-neutral-200/80 data-[active=true]:text-foreground data-[active=true]:dark:bg-neutral-700/80 data-[active=true]:dark:text-foreground"
           tooltip="Dashboard"
         >
           <a
