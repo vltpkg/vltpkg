@@ -87,6 +87,7 @@ export const selectorFixture =
       initial,
       partial,
       walk,
+      specOptions: {},
     }
     const res = await testFn(state)
     return {

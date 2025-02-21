@@ -1,5 +1,6 @@
 import { error } from '@vltpkg/error-cause'
 import type { EdgeLike, NodeLike } from '@vltpkg/graph'
+import type { SpecOptions } from '@vltpkg/spec/browser'
 import type {
   Tag,
   String,
@@ -48,6 +49,7 @@ export type ParserState = {
   signal?: AbortSignal
   walk: ParserFn
   partial: GraphSelectionState
+  specOptions: SpecOptions
 }
 
 export type QueryResponse = {

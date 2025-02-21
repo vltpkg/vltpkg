@@ -10,6 +10,13 @@ import { copyGraphSelectionState } from './fixtures/selector.ts'
 
 type TestCase = [string, string[]]
 
+const specOptions = {
+  registry: 'https://registry.npmjs.org',
+  registries: {
+    custom: 'http://example.com',
+  },
+}
+
 const testBrokenState = (): ParserState => {
   const graph = getSimpleGraph()
   const initial = {
@@ -27,6 +34,7 @@ const testBrokenState = (): ParserState => {
     initial: copyGraphSelectionState(initial),
     partial: copyGraphSelectionState(initial),
     walk,
+    specOptions,
   }
   return state
 }
@@ -70,7 +78,7 @@ t.test('simple graph', async t => {
     ['#a', ['a']], // identifier
   ])
 
-  const query = new Query({ graph })
+  const query = new Query({ graph, specOptions })
   for (const [q, expected] of queryToExpected) {
     t.strictSame(
       (await query.search(q)).nodes.map(i => i.name),
@@ -90,7 +98,7 @@ t.test('workspace', async t => {
     [':root > :root', ['ws']], // :root always places a ref to root
     ['/* do something */ [name^=w]', ['ws', 'w']], // support comments
   ])
-  const query = new Query({ graph })
+  const query = new Query({ graph, specOptions })
   for (const [q, expected] of queryToExpected) {
     t.strictSame(
       (await query.search(q)).nodes.map(i => i.name),
@@ -111,7 +119,7 @@ t.test('cycle', async t => {
     ['/* do something */ [name^=a]', ['a']], // support comments
     [':root > :root > .prod > *', ['b']], // mixed selectors
   ])
-  const query = new Query({ graph })
+  const query = new Query({ graph, specOptions })
   for (const [q, expected] of queryToExpected) {
     t.strictSame(
       (await query.search(q)).nodes.map(i => i.name),
@@ -123,7 +131,7 @@ t.test('cycle', async t => {
 
 t.test('bad search argument', async t => {
   const graph = getSimpleGraph()
-  const query = new Query({ graph })
+  const query = new Query({ graph, specOptions })
   await t.rejects(
     query.search(null as unknown as string),
     /Query search argument needs to be a string/,
@@ -148,7 +156,7 @@ t.test('bad selector type [loose mode]', async t => {
 
 t.test('trying to use tag selectors', async t => {
   await t.rejects(
-    new Query({ graph: getSimpleGraph() }).search('foo'),
+    new Query({ graph: getSimpleGraph(), specOptions }).search('foo'),
     /Unsupported selector/,
     'should throw an unsupported selector error',
   )
@@ -156,7 +164,9 @@ t.test('trying to use tag selectors', async t => {
 
 t.test('trying to use string selectors', async t => {
   await t.rejects(
-    new Query({ graph: getSimpleGraph() }).search('"foo"'),
+    new Query({ graph: getSimpleGraph(), specOptions }).search(
+      '"foo"',
+    ),
     /Unsupported selector/,
     'should throw an unsupported selector error',
   )
@@ -164,7 +174,7 @@ t.test('trying to use string selectors', async t => {
 
 t.test('cancellable search', async t => {
   const graph = getSingleWorkspaceGraph()
-  const query = new Query({ graph })
+  const query = new Query({ graph, specOptions })
   const ac = new AbortController()
   const q = ':root > * > *'
   await t.rejects(
