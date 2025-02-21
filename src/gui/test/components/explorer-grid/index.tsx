@@ -174,7 +174,7 @@ test('explorer-grid renders workspace with edges in', async () => {
       vltInstalled: true,
     },
   })
-  const q = new Query({ graph })
+  const q = new Query({ graph, specOptions: {} })
   const result = await q.search(':project[name=b]')
 
   const Container = () => {

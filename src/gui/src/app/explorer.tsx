@@ -38,7 +38,7 @@ const startGraphData = async ({
     hasDashboard: boolean
   }
   const { graph, specOptions } = load(data)
-  const q = new Query({ graph })
+  const q = new Query({ graph, specOptions })
 
   updateHasDashboard(data.hasDashboard)
   updateGraph(graph)
