@@ -62,6 +62,19 @@ const newEdge = (
   from.graph.edges.add(edge)
 }
 
+const updateNodeVersion = (
+  node: NodeLike,
+  version: string,
+  protocol = '',
+) => {
+  node.version = version
+  node.id = joinDepIDTuple([
+    'registry',
+    protocol,
+    `${node.name}@${version}`,
+  ])
+}
+
 // Returns a graph that looks like:
 //
 // my-project (#a.prod, #b.dev, #e.prod, #@x/y.dev)
@@ -370,12 +383,12 @@ export const getSemverRichGraph = (): GraphLike => {
       e: '<=120',
     },
   }
-  a.version = '1.0.1'
+  updateNodeVersion(a, '1.0.1')
   a.manifest = {
     ...a.manifest,
     version: '1.0.1',
   }
-  b.version = '2.2.1'
+  updateNodeVersion(b, '2.2.1')
   b.manifest = {
     ...b.manifest,
     version: '2.2.1',
@@ -387,7 +400,7 @@ export const getSemverRichGraph = (): GraphLike => {
       node: '>=10',
     },
   }
-  c.version = '3.4.0'
+  updateNodeVersion(c, '3.4.0', 'custom')
   c.manifest = {
     ...c.manifest,
     engines: {
@@ -395,7 +408,7 @@ export const getSemverRichGraph = (): GraphLike => {
     },
     version: '3.4.0',
   }
-  d.version = '2.3.4'
+  updateNodeVersion(d, '2.3.4')
   d.manifest = {
     ...d.manifest,
     version: '2.3.4',
@@ -404,7 +417,7 @@ export const getSemverRichGraph = (): GraphLike => {
       f: '4.x.x',
     },
   }
-  e.version = '120.0.0'
+  updateNodeVersion(e, '120.0.0')
   e.manifest = {
     ...e.manifest,
     version: '120.0.0',
@@ -417,13 +430,13 @@ export const getSemverRichGraph = (): GraphLike => {
     'prod',
     e2,
   )
-  f.version = '4.5.6'
+  updateNodeVersion(f, '4.5.6')
   f.manifest = {
     ...f.manifest,
     version: '4.5.6',
     arbitrarySemverValue: '2.0.0',
   } as Manifest
-  g.version = '1.2.3-rc.1+rev.2'
+  updateNodeVersion(g, '1.2.3-rc.1+rev.2')
   g.manifest = {
     ...g.manifest,
     version: '1.2.3-rc.1+rev.2',
