@@ -78,7 +78,7 @@ export const command: CommandFn<QueryResult> = async conf => {
 
   const defaultQueryString = '*'
   const queryString = conf.positionals[0]
-  const query = new Query({ graph })
+  const query = new Query({ graph, specOptions: conf.options })
   const { edges, nodes } = await query.search(
     queryString || defaultQueryString,
   )
