@@ -29,19 +29,19 @@ export const newGraph = (rootName: string): GraphLike => {
 }
 export const newNode =
   (graph: GraphLike) =>
-  (name: string): NodeLike => ({
+  (name: string, version = '1.0.0'): NodeLike => ({
     projectRoot,
     edgesIn: new Set(),
     edgesOut: new Map(),
     importer: false,
     mainImporter: false,
     graph,
-    id: joinDepIDTuple(['registry', '', `${name}@1.0.0`]),
+    id: joinDepIDTuple(['registry', '', `${name}@${version}`]),
     name,
-    version: '1.0.0',
+    version,
     location:
-      'node_modules/.vlt/;;${name}@1.0.0/node_modules/${name}',
-    manifest: { name, version: '1.0.0' },
+      'node_modules/.vlt/;;${name}@${version}/node_modules/${name}',
+    manifest: { name, version },
     integrity: 'sha512-deadbeef',
     resolved: undefined,
     dev: false,
@@ -85,7 +85,7 @@ export const getSimpleGraph = (): GraphLike => {
     'e',
     'f',
     '@x/y',
-  ].map(addNode) as [
+  ].map(i => addNode(i)) as [
     NodeLike,
     NodeLike,
     NodeLike,
@@ -210,13 +210,9 @@ export const getMultiWorkspaceGraph = (): GraphLike => {
   graph.nodes.set(c.id, c)
   graph.importers.add(c)
   c.importer = true
-  const [d, e, f, y] = ['d', 'e', 'f', '@x/y'].map(addNode) as [
-    NodeLike,
-    NodeLike,
-    NodeLike,
-    NodeLike,
-    NodeLike,
-  ]
+  const [d, e, f, y] = ['d', 'e', 'f', '@x/y'].map(i =>
+    addNode(i),
+  ) as [NodeLike, NodeLike, NodeLike, NodeLike, NodeLike]
 
   newEdge(b, Spec.parse('a', 'workspace:*', specOptions), 'prod', a)
   newEdge(b, Spec.parse('d', '^1.0.0', specOptions), 'prod', d)
@@ -313,5 +309,124 @@ export const getMissingNodeGraph = (): GraphLike => {
     Spec.parse('b', '^1.0.0', specOptions),
     'dev',
   )
+  return graph
+}
+
+export const getSemverRichGraph = (): GraphLike => {
+  const graph = newGraph('semver-rich-project')
+  const addNode = newNode(graph)
+  const [a, b, c, d, e, f, g] = [
+    'a',
+    'b',
+    'c',
+    'd',
+    'e',
+    'f',
+    'g',
+  ].map(i => addNode(i)) as [
+    NodeLike,
+    NodeLike,
+    NodeLike,
+    NodeLike,
+    NodeLike,
+    NodeLike,
+    NodeLike,
+  ]
+  ;[a, b, c, d, e, f, g].forEach(i => {
+    graph.nodes.set(i.id, i)
+  })
+  newEdge(
+    graph.mainImporter,
+    Spec.parse('a', '^1.0.0', specOptions),
+    'prod',
+    a,
+  )
+  newEdge(
+    graph.mainImporter,
+    Spec.parse('b', '~2.2.0', specOptions),
+    'prod',
+    b,
+  )
+  newEdge(b, Spec.parse('c', '3 || 4 || 5', specOptions), 'prod', c)
+  newEdge(b, Spec.parse('d', '1.2 - 2.3.4', specOptions), 'prod', d)
+  newEdge(
+    graph.mainImporter,
+    Spec.parse('e', '<=120', specOptions),
+    'prod',
+    e,
+  )
+  newEdge(d, Spec.parse('f', '4.x.x', specOptions), 'prod', f)
+  newEdge(
+    graph.mainImporter,
+    Spec.parse('g', '1.2.3-rc.1+rev.2', specOptions),
+    'prod',
+    g,
+  )
+  graph.mainImporter.manifest = {
+    ...graph.mainImporter.manifest,
+    dependencies: {
+      a: '^1.0.0',
+      b: '~2.2.0',
+      e: '<=120',
+    },
+  }
+  a.version = '1.0.1'
+  a.manifest = {
+    ...a.manifest,
+    version: '1.0.1',
+  }
+  b.version = '2.2.1'
+  b.manifest = {
+    ...b.manifest,
+    version: '2.2.1',
+    dependencies: {
+      c: '3 || 4 || 5',
+      d: '1.2 - 2.3.4',
+    },
+    engines: {
+      node: '>=10',
+    },
+  }
+  c.version = '3.4.0'
+  c.manifest = {
+    ...c.manifest,
+    engines: {
+      node: '>=24',
+    },
+    version: '3.4.0',
+  }
+  d.version = '2.3.4'
+  d.manifest = {
+    ...d.manifest,
+    version: '2.3.4',
+    dependencies: {
+      e: '1.3.4-beta.1',
+      f: '4.x.x',
+    },
+  }
+  e.version = '120.0.0'
+  e.manifest = {
+    ...e.manifest,
+    version: '120.0.0',
+  }
+  const e2 = addNode('e', '1.3.4-beta.1')
+  graph.nodes.set(e2.id, e2)
+  newEdge(
+    d,
+    Spec.parse('e', '=1.3.4-beta.1', specOptions),
+    'prod',
+    e2,
+  )
+  f.version = '4.5.6'
+  f.manifest = {
+    ...f.manifest,
+    version: '4.5.6',
+    arbitrarySemverValue: '2.0.0',
+  } as Manifest
+  g.version = '1.2.3-rc.1+rev.2'
+  g.manifest = {
+    ...g.manifest,
+    version: '1.2.3-rc.1+rev.2',
+  }
   return graph
 }
