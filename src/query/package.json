@@ -22,6 +22,7 @@
     "@vltpkg/dep-id": "workspace:*",
     "@vltpkg/error-cause": "workspace:*",
     "@vltpkg/graph": "workspace:*",
+    "@vltpkg/semver": "workspace:*",
     "@vltpkg/types": "workspace:*",
     "postcss-selector-parser": "^6.1.2"
   },
