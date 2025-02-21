@@ -84,7 +84,7 @@ export const command: CommandFn<ListResult> = async conf => {
   const queryString = conf.positionals
     .map(k => (/^[@\w-]/.test(k) ? `#${k.replace(/\//, '\\/')}` : k))
     .join(', ')
-  const query = new Query({ graph })
+  const query = new Query({ graph, specOptions: conf.options })
   const projectQueryString = ':project, :project > *'
   const selectImporters: string[] = []
 
