@@ -3,22 +3,20 @@
 exports[`renders Layout for the "/dashboard" view 1`] = `
 
 <gui-sidebar-provider defaultopen="true">
-  <div class="flex min-h-svh w-full flex-col">
-    <div class="flex min-h-svh w-full flex-row">
-      <gui-app-sidebar>
-      </gui-app-sidebar>
-      <div class="flex w-full grow flex-col">
-        <gui-nav-header>
-        </gui-nav-header>
-        <gui-dashboard>
-        </gui-dashboard>
-        <gui-nav-footer>
-        </gui-nav-footer>
-      </div>
-    </div>
-    <gui-toaster>
-    </gui-toaster>
+  <gui-app-sidebar>
+  </gui-app-sidebar>
+  <div class="sidebar-inset-wrapper">
+    <gui-sidebar-inset classname="grow md:mr-3">
+      <gui-nav-header>
+      </gui-nav-header>
+      <gui-dashboard>
+      </gui-dashboard>
+    </gui-sidebar-inset>
+    <gui-nav-footer>
+    </gui-nav-footer>
   </div>
+  <gui-toaster>
+  </gui-toaster>
 </gui-sidebar-provider>
 
 `;
@@ -26,22 +24,20 @@ exports[`renders Layout for the "/dashboard" view 1`] = `
 exports[`renders Layout for the "/error" view 1`] = `
 
 <gui-sidebar-provider defaultopen="true">
-  <div class="flex min-h-svh w-full flex-col">
-    <div class="flex min-h-svh w-full flex-row">
-      <gui-app-sidebar>
-      </gui-app-sidebar>
-      <div class="flex w-full grow flex-col">
-        <gui-nav-header>
-        </gui-nav-header>
-        <gui-error-found>
-        </gui-error-found>
-        <gui-nav-footer>
-        </gui-nav-footer>
-      </div>
-    </div>
-    <gui-toaster>
-    </gui-toaster>
+  <gui-app-sidebar>
+  </gui-app-sidebar>
+  <div class="sidebar-inset-wrapper">
+    <gui-sidebar-inset classname="grow md:mr-3">
+      <gui-nav-header>
+      </gui-nav-header>
+      <gui-error-found>
+      </gui-error-found>
+    </gui-sidebar-inset>
+    <gui-nav-footer>
+    </gui-nav-footer>
   </div>
+  <gui-toaster>
+  </gui-toaster>
 </gui-sidebar-provider>
 
 `;
@@ -49,22 +45,20 @@ exports[`renders Layout for the "/error" view 1`] = `
 exports[`renders Layout for the "/explore" view 1`] = `
 
 <gui-sidebar-provider defaultopen="true">
-  <div class="flex min-h-svh w-full flex-col">
-    <div class="flex min-h-svh w-full flex-row">
-      <gui-app-sidebar>
-      </gui-app-sidebar>
-      <div class="flex w-full grow flex-col">
-        <gui-nav-header>
-        </gui-nav-header>
-        <gui-explorer>
-        </gui-explorer>
-        <gui-nav-footer>
-        </gui-nav-footer>
-      </div>
-    </div>
-    <gui-toaster>
-    </gui-toaster>
+  <gui-app-sidebar>
+  </gui-app-sidebar>
+  <div class="sidebar-inset-wrapper">
+    <gui-sidebar-inset classname="grow md:mr-3">
+      <gui-nav-header>
+      </gui-nav-header>
+      <gui-explorer>
+      </gui-explorer>
+    </gui-sidebar-inset>
+    <gui-nav-footer>
+    </gui-nav-footer>
   </div>
+  <gui-toaster>
+  </gui-toaster>
 </gui-sidebar-provider>
 
 `;
@@ -72,22 +66,41 @@ exports[`renders Layout for the "/explore" view 1`] = `
 exports[`renders Layout for the "/labels" view 1`] = `
 
 <gui-sidebar-provider defaultopen="true">
-  <div class="flex min-h-svh w-full flex-col">
-    <div class="flex min-h-svh w-full flex-row">
-      <gui-app-sidebar>
-      </gui-app-sidebar>
-      <div class="flex w-full grow flex-col">
-        <gui-nav-header>
-        </gui-nav-header>
-        <gui-labels>
-        </gui-labels>
-        <gui-nav-footer>
-        </gui-nav-footer>
-      </div>
-    </div>
-    <gui-toaster>
-    </gui-toaster>
+  <gui-app-sidebar>
+  </gui-app-sidebar>
+  <div class="sidebar-inset-wrapper">
+    <gui-sidebar-inset classname="grow md:mr-3">
+      <gui-nav-header>
+      </gui-nav-header>
+      <gui-labels>
+      </gui-labels>
+    </gui-sidebar-inset>
+    <gui-nav-footer>
+    </gui-nav-footer>
   </div>
+  <gui-toaster>
+  </gui-toaster>
+</gui-sidebar-provider>
+
+`;
+
+exports[`renders Layout for the "/new-project" view 1`] = `
+
+<gui-sidebar-provider defaultopen="true">
+  <gui-app-sidebar>
+  </gui-app-sidebar>
+  <div class="sidebar-inset-wrapper">
+    <gui-sidebar-inset classname="grow md:mr-3">
+      <gui-nav-header>
+      </gui-nav-header>
+      <gui-create-new-project>
+      </gui-create-new-project>
+    </gui-sidebar-inset>
+    <gui-nav-footer>
+    </gui-nav-footer>
+  </div>
+  <gui-toaster>
+  </gui-toaster>
 </gui-sidebar-provider>
 
 `;
@@ -95,22 +108,20 @@ exports[`renders Layout for the "/labels" view 1`] = `
 exports[`renders Layout for the "/queries" view 1`] = `
 
 <gui-sidebar-provider defaultopen="true">
-  <div class="flex min-h-svh w-full flex-col">
-    <div class="flex min-h-svh w-full flex-row">
-      <gui-app-sidebar>
-      </gui-app-sidebar>
-      <div class="flex w-full grow flex-col">
-        <gui-nav-header>
-        </gui-nav-header>
-        <gui-queries>
-        </gui-queries>
-        <gui-nav-footer>
-        </gui-nav-footer>
-      </div>
-    </div>
-    <gui-toaster>
-    </gui-toaster>
+  <gui-app-sidebar>
+  </gui-app-sidebar>
+  <div class="sidebar-inset-wrapper">
+    <gui-sidebar-inset classname="grow md:mr-3">
+      <gui-nav-header>
+      </gui-nav-header>
+      <gui-queries>
+      </gui-queries>
+    </gui-sidebar-inset>
+    <gui-nav-footer>
+    </gui-nav-footer>
   </div>
+  <gui-toaster>
+  </gui-toaster>
 </gui-sidebar-provider>
 
 `;

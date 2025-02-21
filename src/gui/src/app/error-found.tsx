@@ -27,7 +27,7 @@ export const ErrorFound = () => {
   }
 
   return (
-    <section className="flex min-h-[80svh] grow flex-col items-center justify-center bg-white dark:bg-black">
+    <section className="flex h-full flex-col items-center justify-center rounded-lg border-[1px] bg-white dark:bg-black">
       <div className="relative -mt-32 flex flex-col items-center justify-center">
         <div className="relative flex flex-col gap-8">
           <div className="absolute inset-0 z-[2] bg-gradient-radial from-white/0 via-transparent to-white dark:from-black/0 dark:to-black" />

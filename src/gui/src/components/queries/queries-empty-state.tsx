@@ -110,7 +110,7 @@ const QueriesEmptyState = () => {
 
   return (
     <div className="flex h-full w-full items-center justify-center bg-white dark:bg-black">
-      <div className="-mt-20 mt-10 flex flex-col items-center justify-center gap-3">
+      <div className="-mt-20 flex flex-col items-center justify-center gap-3">
         <div className="relative mb-20 flex items-center justify-center">
           <motion.div
             initial={{ opacity: 1 }}

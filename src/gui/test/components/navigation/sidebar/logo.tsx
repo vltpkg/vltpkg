@@ -4,14 +4,39 @@ import html from 'diffable-html'
 import { useGraphStore as useStore } from '@/state/index.js'
 import { SidebarLogo } from '@/components/navigation/sidebar/logo.jsx'
 
+const toggleSidebarMock = vi.fn()
+
 vi.mock('@/components/ui/sidebar.jsx', () => ({
   SidebarMenu: 'gui-sidebar-menu',
   SidebarMenuButton: 'gui-sidebar-menu-button',
   SidebarMenuItem: 'gui-sidebar-menu-item',
+  useSidebar: vi.fn(() => ({
+    toggleSidebar: toggleSidebarMock,
+  })),
 }))
 
-vi.mock('@/components/icons/vlt-v.jsx', () => ({
+vi.mock('@/components/ui/tooltip.jsx', () => ({
+  Tooltip: 'gui-tooltip',
+  TooltipProvider: 'gui-tooltip-provider',
+  TooltipTrigger: 'gui-tooltip-trigger',
+  TooltipContent: 'gui-tooltip-content',
+}))
+
+vi.mock('@/components/icons/index.js', () => ({
   VLTV: 'gui-vlt-icon',
+}))
+
+vi.mock('lucide-react', () => ({
+  PanelLeft: 'gui-panel-left-icon',
+  Command: 'gui-command-icon',
+}))
+
+vi.mock('@/components/ui/button.jsx', () => ({
+  Button: 'gui-button',
+}))
+
+vi.mock('@/components/ui/kbd.jsx', () => ({
+  Kbd: 'gui-kbd',
 }))
 
 expect.addSnapshotSerializer({

@@ -3,28 +3,30 @@
 exports[`dashboard-grid render default 1`] = `
 
 <div>
-  <div class="flex grow flex-col bg-secondary px-8 py-8 dark:bg-black">
-    <div class="mx-auto flex w-full max-w-7xl gap-2 pb-8">
+  <div class="flex grow flex-col px-8 py-8">
+    <div class="mx-auto grid w-full max-w-7xl grid-cols-3 gap-2 pb-8 md:flex">
       <gui-filter-search
         placeholder="Filter Projects"
         items
-        classname="w-full"
+        classname="col-span-3 w-full"
       >
       </gui-filter-search>
-      <gui-dashboard-view-toggle currentview="grid">
-      </gui-dashboard-view-toggle>
-      <div style="opacity: 1;">
-        <gui-sort-dropdown
-          items
-          sortkey="name"
-        >
-        </gui-sort-dropdown>
+      <div class="col-span-3 flex gap-2">
+        <gui-dashboard-view-toggle currentview="grid">
+        </gui-dashboard-view-toggle>
+        <div style="opacity: 1;">
+          <gui-sort-dropdown
+            items
+            sortkey="name"
+          >
+          </gui-sort-dropdown>
+        </div>
+        <gui-button classname="ml-auto">
+          <gui-plus-icon size="24">
+          </gui-plus-icon>
+          Create New Project
+        </gui-button>
       </div>
-      <gui-button>
-        <gui-plus-icon size="24">
-        </gui-plus-icon>
-        Create New Project
-      </gui-button>
     </div>
     <div
       class="mx-auto flex w-full max-w-7xl flex-col"
@@ -33,7 +35,7 @@ exports[`dashboard-grid render default 1`] = `
       <p class="mb-4 text-sm font-semibold">
         Projects
       </p>
-      <div class="grid grid-cols-1 gap-x-6 gap-y-6 sm:grid-cols-2 md:grid-cols-3">
+      <div class="grid grid-cols-1 gap-x-6 gap-y-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         <p>
           No projects found
         </p>
@@ -47,28 +49,30 @@ exports[`dashboard-grid render default 1`] = `
 exports[`dashboard-grid with results 1`] = `
 
 <div>
-  <div class="flex grow flex-col bg-secondary px-8 py-8 dark:bg-black">
-    <div class="mx-auto flex w-full max-w-7xl gap-2 pb-8">
+  <div class="flex grow flex-col px-8 py-8">
+    <div class="mx-auto grid w-full max-w-7xl grid-cols-3 gap-2 pb-8 md:flex">
       <gui-filter-search
         placeholder="Filter Projects"
         items="[object Object],[object Object]"
-        classname="w-full"
+        classname="col-span-3 w-full"
       >
       </gui-filter-search>
-      <gui-dashboard-view-toggle currentview="grid">
-      </gui-dashboard-view-toggle>
-      <div style="opacity: 1;">
-        <gui-sort-dropdown
-          items="[object Object],[object Object]"
-          sortkey="name"
-        >
-        </gui-sort-dropdown>
+      <div class="col-span-3 flex gap-2">
+        <gui-dashboard-view-toggle currentview="grid">
+        </gui-dashboard-view-toggle>
+        <div style="opacity: 1;">
+          <gui-sort-dropdown
+            items="[object Object],[object Object]"
+            sortkey="name"
+          >
+          </gui-sort-dropdown>
+        </div>
+        <gui-button classname="ml-auto">
+          <gui-plus-icon size="24">
+          </gui-plus-icon>
+          Create New Project
+        </gui-button>
       </div>
-      <gui-button>
-        <gui-plus-icon size="24">
-        </gui-plus-icon>
-        Create New Project
-      </gui-button>
     </div>
     <div
       class="mx-auto flex w-full max-w-7xl flex-col"
@@ -77,19 +81,19 @@ exports[`dashboard-grid with results 1`] = `
       <p class="mb-4 text-sm font-semibold">
         Projects
       </p>
-      <div class="grid grid-cols-1 gap-x-6 gap-y-6 sm:grid-cols-2 md:grid-cols-3">
+      <div class="grid grid-cols-1 gap-x-6 gap-y-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         <a
           href="#"
           class="group relative w-full"
         >
           <div class="relative flex h-24 items-center overflow-hidden rounded-t-lg border-x-[1px] border-t-[1px] bg-card transition-all group-hover:border-neutral-400 dark:group-hover:border-neutral-700">
             <div class="flex px-3 py-2">
-              <gui-card-title classname="text-md font-medium">
+              <gui-card-title classname="text-md z-[1] font-medium">
                 project-bar
               </gui-card-title>
             </div>
             <div class="absolute right-0 top-0 z-[1] flex flex-row rounded-sm px-3 py-2 backdrop-blur-[1px]">
-              <p class="text-[0.7rem] text-muted-foreground">
+              <p class="z-[1] text-[0.7rem] text-muted-foreground">
                 November 1st, 2024 | 06:01 PM
               </p>
             </div>
@@ -117,12 +121,12 @@ exports[`dashboard-grid with results 1`] = `
         >
           <div class="relative flex h-24 items-center overflow-hidden rounded-t-lg border-x-[1px] border-t-[1px] bg-card transition-all group-hover:border-neutral-400 dark:group-hover:border-neutral-700">
             <div class="flex px-3 py-2">
-              <gui-card-title classname="text-md font-medium">
+              <gui-card-title classname="text-md z-[1] font-medium">
                 project-foo
               </gui-card-title>
             </div>
             <div class="absolute right-0 top-0 z-[1] flex flex-row rounded-sm px-3 py-2 backdrop-blur-[1px]">
-              <p class="text-[0.7rem] text-muted-foreground">
+              <p class="z-[1] text-[0.7rem] text-muted-foreground">
                 November 1st, 2024 | 06:01 PM
               </p>
             </div>

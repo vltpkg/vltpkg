@@ -2,9 +2,9 @@
 
 exports[`labels view > labels render default 1`] = `
 
-<section class="flex min-h-[80svh] w-full grow flex-col bg-white dark:bg-black">
-  <div class="flex flex-col px-8 py-4">
-    <div class="flex justify-between">
+<section class="flex h-full w-full flex-col rounded-b-lg border-[1px] bg-white px-8 dark:bg-black">
+  <div class="mx-auto flex w-full max-w-7xl flex-col">
+    <div class="my-4 flex justify-between">
       <div class="flex gap-2">
         <gui-filter-search
           placeholder="Filter Queries"
