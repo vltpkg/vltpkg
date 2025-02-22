@@ -8,10 +8,7 @@ import { resolve } from 'node:path'
 import type { PathBase } from 'path-scurry'
 import { PathScurry } from 'path-scurry'
 import t from 'tap'
-import type {
-  ConfigOptions,
-  LoadedConfig,
-} from '../src/config/index.ts'
+import type { LoadedConfig } from '../src/config/index.ts'
 import { parseInstallOptions } from '../src/start-gui.ts'
 import { actualObject } from './fixtures/actual.ts'
 
@@ -147,30 +144,25 @@ t.test('formatDashboardJson', async t => {
   })
   const packageJson = new PackageJson()
   const scurry = new PathScurry(t.testdirName)
-  const { formatDashboardJson } = await t.mockImport(
-    '../src/start-gui.ts',
-    {
-      'node:os': {
-        ...(await import('node:os')),
-        homedir() {
-          return dir
-        },
-      },
-      '../src/project-info.js': {
-        ...(await import('../src/project-info.ts')),
-        getReadablePath: (path: string) => path.replace(dir, '~'),
-      },
-    },
-  )
+  const { formatDashboardJson } = await t.mockImport<
+    typeof import('../src/start-gui.ts')
+  >('../src/start-gui.ts', {
+    'node:os': t.createMock(await import('node:os'), {
+      homedir: () => dir,
+    }),
+    '../src/project-info.js': t.createMock(
+      await import('../src/project-info.ts'),
+      { getReadablePath: (path: string) => path.replace(dir, '~') },
+    ),
+  })
   t.strictSame(
     (
-      await formatDashboardJson(scurry.readdirSync(dir), {
-        options: {
-          packageJson,
-          scurry,
-        } as ConfigOptions,
-        values: {},
-      } as LoadedConfig)
+      await formatDashboardJson(
+        scurry.readdirSync(dir),
+        [t.testdirName],
+        scurry,
+        packageJson,
+      )
     ).projects.map(({ name }: { name: string }) => name),
     ['b'],
     'should skip folders without package.json',
@@ -253,13 +245,9 @@ t.test('formatDashboardJson dashboardProjectLocations', async t => {
     (
       await formatDashboardJson(
         projectFolders as PathBase[],
-        {
-          options: {
-            packageJson,
-            scurry,
-          } as ConfigOptions,
-          values: {},
-        } as LoadedConfig,
+        [],
+        scurry,
+        packageJson,
       )
     ).dashboardProjectLocations,
     'should return the expected dashboard project locations',
@@ -955,14 +943,14 @@ t.test('parseInstallArgs', async t => {
   const rootDepID = joinDepIDTuple(['file', '.'])
   const wsADepID = joinDepIDTuple(['workspace', 'packages/a'])
   t.matchSnapshot(
-    parseInstallOptions({} as LoadedConfig, {
+    parseInstallOptions({} as GRAPH.InstallOptions, {
       [rootDepID]: {},
     }),
     'no item added to root',
   )
 
   t.matchSnapshot(
-    parseInstallOptions({} as LoadedConfig, {
+    parseInstallOptions({} as GRAPH.InstallOptions, {
       [rootDepID]: {
         abbrev: { version: 'latest', type: 'dev' },
       },
@@ -971,7 +959,7 @@ t.test('parseInstallArgs', async t => {
   )
 
   t.matchSnapshot(
-    parseInstallOptions({} as LoadedConfig, {
+    parseInstallOptions({} as GRAPH.InstallOptions, {
       [wsADepID]: {
         abbrev: { version: 'latest', type: 'optional' },
       },
@@ -980,7 +968,7 @@ t.test('parseInstallArgs', async t => {
   )
 
   t.matchSnapshot(
-    parseInstallOptions({} as LoadedConfig, {
+    parseInstallOptions({} as GRAPH.InstallOptions, {
       [rootDepID]: {
         abbrev: { version: 'latest', type: 'dev' },
       },
