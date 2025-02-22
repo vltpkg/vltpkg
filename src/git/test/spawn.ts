@@ -31,14 +31,13 @@ t.test('argument test for allowReplace', async t => {
   // test/clone.js, since it covers the use case that is relevant
   // for our purposes.  This just tests that the argument is added
   // by default.
-  const { spawn: mockedSpawn } = await t.mockImport(
-    '../src/spawn.ts',
-    {
-      '@vltpkg/promise-spawn': {
-        promiseSpawn: async (_: string, args: string[]) => args,
-      },
+  const { spawn: mockedSpawn } = await t.mockImport<
+    typeof import('../src/spawn.ts')
+  >('../src/spawn.ts', {
+    '@vltpkg/promise-spawn': {
+      promiseSpawn: async (_: string, args: string[]) => args,
     },
-  )
+  })
   const result = await mockedSpawn(['a', 'b', 'c'])
   t.same(
     result,

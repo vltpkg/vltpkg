@@ -1,7 +1,7 @@
-import t from 'tap'
-import type { Test } from 'tap'
 import type { SpawnSyncOptions } from 'node:child_process'
 import { readdirSync } from 'node:fs'
+import type { Test } from 'tap'
+import t from 'tap'
 
 type NpmRes = {
   command: string
@@ -24,21 +24,20 @@ const publish = async (t: Test, argv: string[] = []) => {
   await t.mockImport<typeof import('../../src/bin/publish.ts')>(
     '../../src/bin/publish.ts',
     {
-      '../../src/matrix.ts': await t.mockImport(
-        '../../src/matrix.ts',
-        {
-          '../../src/compile.ts': await t.mockImport(
-            '../../src/compile.ts',
-            {
-              'node:child_process': {
-                spawnSync: () => ({
-                  status: 0,
-                }),
-              },
+      '../../src/matrix.ts': await t.mockImport<
+        typeof import('../../src/matrix.ts')
+      >('../../src/matrix.ts', {
+        '../../src/compile.ts': await t.mockImport(
+          '../../src/compile.ts',
+          {
+            'node:child_process': {
+              spawnSync: () => ({
+                status: 0,
+              }),
             },
-          ),
-        },
-      ),
+          },
+        ),
+      }),
       'node:child_process': {
         spawnSync: (
           command: string,

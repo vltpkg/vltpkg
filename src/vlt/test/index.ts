@@ -36,12 +36,15 @@ export const run = async (
   t.capture(console, 'log', (...msg: any[]) => logs.push(msg))
   t.capture(console, 'error', (...msg: any[]) => errs.push(msg))
   const Config = await mockConfig(t)
-  const index = await t.mockImport('../src/index.ts', {
-    '../src/config/index.ts': Config,
-    ...(command ?
-      { [`../src/commands/${commandName}.ts`]: command }
-    : {}),
-  })
+  const index = await t.mockImport<typeof import('../src/index.ts')>(
+    '../src/index.ts',
+    {
+      '../src/config/index.ts': Config,
+      ...(command ?
+        { [`../src/commands/${commandName}.ts`]: command }
+      : {}),
+    },
+  )
   await index.default()
   return {
     config: await Config.Config.load(),

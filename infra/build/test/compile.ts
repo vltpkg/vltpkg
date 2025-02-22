@@ -8,14 +8,13 @@ const testCompile = async (
   t: Test,
   options: Partial<types.Factors>,
 ) => {
-  const { default: compile } = await t.mockImport(
-    '../src/compile.ts',
-    {
-      'node:child_process': {
-        spawnSync: () => ({ status: 0 }),
-      },
+  const { default: compile } = await t.mockImport<
+    typeof import('../src/compile.ts')
+  >('../src/compile.ts', {
+    'node:child_process': {
+      spawnSync: () => ({ status: 0 }),
     },
-  )
+  })
   const dir = t.testdir({
     source: {
       nested: {

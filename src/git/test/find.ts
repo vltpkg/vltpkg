@@ -61,7 +61,9 @@ t.test('mock is', async t => {
 
   const mockFind = async (t: Test, opts?: GitOptions) => {
     const seen: (string | undefined)[] = []
-    const { find: mocked } = await t.mockImport('../src/find.ts', {
+    const { find: mocked } = await t.mockImport<
+      typeof import('../src/find.ts')
+    >('../src/find.ts', {
       '../src/is.ts': {
         is: async (o: GitOptions) => {
           seen.push(o.cwd)

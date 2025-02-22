@@ -18,5 +18,8 @@ t.equal(whichGit({ git: 'foo' }), 'foo')
 t.equal(whichGit(), whichSync('git'))
 t.match(whichGit({ git: false }), er)
 process.env.PATH = import.meta.dirname
-const { which: whichMunged } = await t.mockImport('../src/which.ts')
+const { which: whichMunged } =
+  await t.mockImport<typeof import('../src/which.ts')>(
+    '../src/which.ts',
+  )
 t.match(whichMunged(), er)

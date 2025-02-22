@@ -31,18 +31,21 @@ const runTest = async (
       const opt = Object.keys(_opt).length ? { ..._opt } : undefined
       if (!isWindows)
         t.intercept(process, 'platform', { value: platform })
-      const { which, whichSync } = await t.mockImport(
-        '../src/index.ts',
-        {
-          isexe: isWindows ? isexeWin : isexePosix,
-        },
-      )
+      const { which, whichSync } = await t.mockImport<
+        typeof import('../src/index.ts')
+      >('../src/index.ts', {
+        isexe: isWindows ? isexeWin : isexePosix,
+      })
       const er = expect as { code: string } | null
       if (er?.code) {
-        await t.rejects(() => which(exec, opt), er, 'async rejects')
+        await t.rejects(
+          () => which(exec, opt ?? {}),
+          er,
+          'async rejects',
+        )
         t.throws(() => whichSync(exec, opt), er, 'sync throws')
       } else {
-        t.strictSame(await which(exec, opt), expect, 'async')
+        t.strictSame(await which(exec, opt ?? {}), expect, 'async')
         t.strictSame(whichSync(exec, opt), expect, 'sync')
       }
     })
@@ -68,7 +71,9 @@ t.test('windows style', async t => {
     'foo.txt': 'bare file',
   })
   t.intercept(process, 'platform', { value: 'win32' })
-  const { which, whichSync } = await t.mockImport('../src/index.ts', {
+  const { which, whichSync } = await t.mockImport<
+    typeof import('../src/index.ts')
+  >('../src/index.ts', {
     isexe: isexeWin,
     path: { ...pathModule, delimiter: pathModule.win32.delimiter },
   })
