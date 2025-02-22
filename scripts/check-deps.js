@@ -85,6 +85,7 @@ const main = async () => {
   )
   const allowedLicenes = new Set([
     'MIT',
+    'MIT AND ISC',
     'ISC',
     'BSD-2-Clause-Patent',
     'BlueOak-1.0.0',

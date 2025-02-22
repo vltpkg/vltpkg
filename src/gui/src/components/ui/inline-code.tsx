@@ -13,7 +13,7 @@ interface InlineCodeProps
 }
 
 const variants = cva(
-  'mx-1 rounded-sm border-[1px] border-border bg-white px-1.5 py-1 font-mono text-xs font-normal dark:bg-black',
+  'mx-1 rounded-sm px-1.5 py-1 text-xs font-normal',
   {
     variants: {
       color: {
@@ -24,9 +24,15 @@ const variants = cva(
         red: 'text-red-500',
         purple: 'text-purple-500',
       },
+      variant: {
+        mono: 'font-[courier] text-muted-foreground dark:bg-neutral-700/50 bg-neutral-700/5 border-none',
+        default:
+          'border-[1px] font-mono border-border bg-white dark:bg-black',
+      },
     },
     defaultVariants: {
       color: 'pink',
+      variant: 'default',
     },
   },
 )
@@ -34,11 +40,11 @@ const variants = cva(
 export const InlineCode = forwardRef<
   HTMLSpanElement,
   InlineCodeProps
->(({ children, className, color, ...rest }, ref) => {
+>(({ children, className, variant, color, ...rest }, ref) => {
   return (
     <span
       ref={ref}
-      className={cn(variants({ color, className }))}
+      className={cn(variants({ color, variant, className }))}
       {...rest}>
       {children}
     </span>
