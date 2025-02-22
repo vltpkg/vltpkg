@@ -11,11 +11,15 @@ import {
   TabsTrigger,
 } from '@/components/ui/tabs.jsx'
 import { CodeBlock } from '../ui/shiki.jsx'
-import { FileSearch2, Home, Package } from 'lucide-react'
+import { Home, Package } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { fetchDetails } from '@/lib/external-info.js'
 import type { DetailsInfo } from '@/lib/external-info.js'
-import { Avatar, AvatarFallback } from '@/components/ui/avatar.jsx'
+import {
+  Avatar,
+  AvatarImage,
+  AvatarFallback,
+} from '@radix-ui/react-avatar'
 import {
   Tooltip,
   TooltipContent,
@@ -23,6 +27,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip.jsx'
 import { motion } from 'framer-motion'
+import { InlineCode } from '@/components/ui/inline-code.jsx'
 
 const SpecOrigin = ({
   item,
@@ -40,45 +45,39 @@ const SpecOrigin = ({
         )) {
           if (item.to.name?.startsWith(scopeKey)) {
             return (
-              <div>
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger className="m-0 truncate px-1 py-1 align-baseline font-mono text-xs text-muted-foreground">
-                      <span>registered-scope</span>
-                      <span>
-                        {item.title}@{item.version}
-                      </span>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      {String(scopeValue)}
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              </div>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger className="w-fit">
+                    <InlineCode className="mx-0">
+                      {`${item.title}@${item.version}`}
+                    </InlineCode>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    {String(scopeValue)}
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             )
           }
         }
         return (
-          <div>
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger className="m-0 truncate px-1 py-1 align-baseline font-mono text-xs text-muted-foreground">
-                  <span>{ref || 'npm'}:</span>
-                  <span>
-                    {item.title}@{item.version}
-                  </span>
-                </TooltipTrigger>
-                <TooltipContent>
-                  {
-                    ref && specOptions.registries[ref] ?
-                      specOptions.registries[ref]
-                      // @ts-expect-error - tsserver is unable to find this exported property
-                    : specOptions.registry || Spec.defaultRegistry
-                  }
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          </div>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger className="w-fit">
+                <InlineCode className="mx-0">
+                  {`${ref || 'npm'}:${item.title}@${item.version}`}
+                </InlineCode>
+              </TooltipTrigger>
+              <TooltipContent>
+                {
+                  ref && specOptions.registries[ref] ?
+                    specOptions.registries[ref]
+                    // @ts-expect-error - tsserver is unable to find this exported property
+                  : specOptions.registry || Spec.defaultRegistry
+                }
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         )
       }
       case 'git':
@@ -86,9 +85,7 @@ const SpecOrigin = ({
       case 'file':
       case 'remote': {
         return (
-          <div className="m-0 truncate px-1 py-1 align-baseline font-mono text-xs text-muted-foreground">
-            {depType}:{ref}
-          </div>
+          <InlineCode className="mx-0">{`${depType}:{ref}`}</InlineCode>
         )
       }
     }
@@ -143,118 +140,121 @@ export const SelectedItem = ({ item }: GridItemOptions) => {
   return (
     <div className="relative">
       <Card className="relative my-4 border-muted-foreground">
-        <div className="flex w-full justify-stretch gap-4 p-6">
+        <div className="flex w-full gap-4 p-6">
           <motion.div
-            className="flex w-full grow items-start gap-4"
+            className="flex w-full items-start gap-4"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}>
-            <Avatar className="size-16 rounded-lg border border-solid border-neutral-200">
-              {details.favicon ?
-                <motion.img
+            <Avatar className="size-24">
+              {details.favicon && (
+                <AvatarImage
+                  className="rounded-md border-[1px] object-cover"
                   src={details.favicon.src}
                   alt={details.favicon.alt}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
                 />
-              : ''}
-              <AvatarFallback className="rounded-lg border-none">
+              )}
+              <AvatarFallback className="rounded-md border-[1px]">
                 {item.to?.mainImporter ?
                   <Home size={24} />
                 : <Package size={24} />}
               </AvatarFallback>
             </Avatar>
-            <div className="flex flex-col">
-              <div className="mt-2">
-                <span
-                  className={`${
-                    item.title.length < 9 ? 'text-3xl'
-                    : item.title.length < 18 ? 'text-xl'
-                    : 'text-md'
-                  } font-medium`}>
+
+            <div className="flex h-full flex-col justify-between">
+              <div className="flex flex-col gap-0.5">
+                <h3 className="text-baseline truncate text-lg font-medium">
                   {item.title}{' '}
-                </span>
-                <span
-                  className={`${
-                    item.title.length < 9 ? 'text-xl'
-                    : item.title.length < 18 ? 'text-lg'
-                    : 'text-sm'
-                  } mb-[1px] font-medium text-muted-foreground`}>
-                  {item.version}
-                </span>
+                  <span className="text-sm font-normal text-muted-foreground">
+                    {item.version}
+                  </span>
+                </h3>
+
+                {specOptions ?
+                  <SpecOrigin item={item} specOptions={specOptions} />
+                : ''}
               </div>
-              {specOptions ?
-                <SpecOrigin item={item} specOptions={specOptions} />
-              : ''}
+
+              <div className="flex items-center gap-2">
+                {details.publisherAvatar?.src ?
+                  <motion.img
+                    className="size-5 rounded-full outline outline-[1px] outline-border"
+                    src={details.publisherAvatar.src}
+                    alt={details.publisherAvatar.alt}
+                    onError={handlePublisherAvatarError}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                  />
+                : ''}
+                {details.publisher?.name ?
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}>
+                    <p className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
+                      Published by:
+                      <span className="text-foreground">
+                        {details.publisher.name}
+                      </span>
+                    </p>
+                  </motion.div>
+                : ''}
+              </div>
             </div>
           </motion.div>
-          <div className="mt-4 flex w-full flex-col justify-end gap-4">
-            {details.downloads?.weekly ?
-              <motion.div
-                className="flex flex-row-reverse"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}>
-                <span className="text-md text-right font-medium text-muted-foreground">
-                  <span className="text-foreground">
-                    {details.downloads.weekly.toLocaleString()}{' '}
-                    Downloads
-                  </span>{' '}
-                  Last Week
-                </span>
-              </motion.div>
-            : ''}
-            <div className="flex flex-row-reverse items-center gap-2">
-              {details.publisherAvatar?.src ?
-                <motion.img
-                  className="size-8 rounded-full"
-                  src={details.publisherAvatar.src}
-                  alt={details.publisherAvatar.alt}
-                  onError={handlePublisherAvatarError}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                />
-              : ''}
-              {details.publisher?.name ?
-                <motion.div
-                  className="text-sm font-medium"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}>
-                  <span className="mb-[1px] text-xs text-muted-foreground">
-                    Published by:{' '}
-                  </span>
-                  <span>{details.publisher.name}</span>
-                </motion.div>
-              : ''}
-            </div>
-          </div>
+
+          {details.downloads?.weekly && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="flex w-full flex-col">
+              <div className="flex w-fit flex-col self-end text-right">
+                <p className="text-md text-baseline w-full self-end font-medium text-foreground">
+                  {details.downloads.weekly.toLocaleString()}
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  Weekly Downloads
+                </p>
+              </div>
+            </motion.div>
+          )}
         </div>
-        {item.to?.manifest?.description || details.author?.name ?
-          <div className="-mt-6 px-6 pb-6">
-            {item.to?.manifest?.description ?
-              <CardDescription className="grow content-center py-2">
-                {item.to.manifest.description}
-              </CardDescription>
-            : ''}
-            {details.author?.name ?
-              <motion.div
-                className="mt-2 flex items-center gap-2"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}>
-                <span className="text-xs font-medium text-muted-foreground">
-                  Authored by: {details.author.name}
-                </span>
-              </motion.div>
-            : ''}
-          </div>
-        : ''}
-        <div className="w-full px-4 pb-4">
+
+        <div className="w-full">
           <Tabs defaultValue="package.json">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="package.json" className="w-36">
-                <FileSearch2 size={16} className="mr-2" />
-                package.json
+            <TabsList variant="outline" className="w-full px-6">
+              <TabsTrigger
+                variant="outline"
+                value="overview"
+                className="w-fit px-2">
+                Overview
+              </TabsTrigger>
+              <TabsTrigger
+                variant="outline"
+                value="package.json"
+                className="w-fit px-2">
+                Manifest
               </TabsTrigger>
             </TabsList>
-            <TabsContent value="package.json">
+            <TabsContent value="overview" className="px-6 py-2">
+              {item.to?.manifest?.description && (
+                <CardDescription className="text-sm text-muted-foreground">
+                  {item.to.manifest.description}
+                </CardDescription>
+              )}
+              {details.author?.name && (
+                <motion.div
+                  className="mt-2 flex items-center gap-2"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}>
+                  <p className="text-baseline text-sm text-muted-foreground">
+                    Authored by:{' '}
+                    <span className="font-medium text-foreground">
+                      {details.author.name}
+                    </span>
+                  </p>
+                </motion.div>
+              )}
+            </TabsContent>
+            <TabsContent value="package.json" className="px-6 py-2">
               <CodeBlock
                 code={
                   item.to?.manifest ?
