@@ -179,7 +179,7 @@ Array [
 
 exports[`test/start-gui.ts > TAP > parseInstallArgs > multiple item added to root and workspace 1`] = `
 Array [
-  undefined,
+  Object {},
   AddImportersDependenciesMapImpl {
     "file·." => Map {
       "abbrev" => Object {
@@ -335,7 +335,7 @@ Array [
 
 exports[`test/start-gui.ts > TAP > parseInstallArgs > no item added to root 1`] = `
 Array [
-  undefined,
+  Object {},
   AddImportersDependenciesMapImpl {
     "file·." => Map {},
   },
@@ -344,7 +344,7 @@ Array [
 
 exports[`test/start-gui.ts > TAP > parseInstallArgs > single item added to root 1`] = `
 Array [
-  undefined,
+  Object {},
   AddImportersDependenciesMapImpl {
     "file·." => Map {
       "abbrev" => Object {
@@ -402,7 +402,7 @@ Array [
 
 exports[`test/start-gui.ts > TAP > parseInstallArgs > single item added to workspace 1`] = `
 Array [
-  undefined,
+  Object {},
   AddImportersDependenciesMapImpl {
     "workspace·packages§a" => Map {
       "abbrev" => Object {

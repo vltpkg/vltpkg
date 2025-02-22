@@ -1,23 +1,23 @@
-import { resolve } from 'node:path'
-import t from 'tap'
-import { PathScurry } from 'path-scurry'
-import type { PathBase } from 'path-scurry'
 import { PackageJson } from '@vltpkg/package-json'
 import type { Manifest } from '@vltpkg/types'
-import {
-  asProjectTools,
-  isProjectTools,
-  inferTools,
-  getGraphProjectData,
-} from '../src/project-info.ts'
-import type {
-  ProjectTools,
-  DashboardProjectData,
-} from '../src/project-info.ts'
+import { resolve } from 'node:path'
+import type { PathBase } from 'path-scurry'
+import { PathScurry } from 'path-scurry'
+import t from 'tap'
 import type {
   ConfigOptions,
   LoadedConfig,
 } from '../src/config/index.ts'
+import type {
+  DashboardProjectData,
+  ProjectTools,
+} from '../src/project-info.ts'
+import {
+  asProjectTools,
+  getGraphProjectData,
+  inferTools,
+  isProjectTools,
+} from '../src/project-info.ts'
 
 t.cleanSnapshot = s => s.replace(/\\\\/g, '/')
 
@@ -109,16 +109,15 @@ t.test('inferTools', async t => {
 
 t.test('getReadablePath', async t => {
   await t.test('posix', async t => {
-    const { getReadablePath } = await t.mockImport(
-      '../src/project-info.ts',
-      {
-        'node:os': {
-          homedir() {
-            return '/home/user'
-          },
+    const { getReadablePath } = await t.mockImport<
+      typeof import('../src/project-info.ts')
+    >('../src/project-info.ts', {
+      'node:os': {
+        homedir() {
+          return '/home/user'
         },
       },
-    )
+    })
     const from = [
       '/home/user/foo',
       '/home/user/foo/projects/lorem/node_modules/ipsum',
@@ -136,16 +135,15 @@ t.test('getReadablePath', async t => {
     )
   })
   await t.test('windows', async t => {
-    const { getReadablePath } = await t.mockImport(
-      '../src/project-info.ts',
-      {
-        'node:os': {
-          homedir() {
-            return 'C:\\Users\\username'
-          },
+    const { getReadablePath } = await t.mockImport<
+      typeof import('../src/project-info.ts')
+    >('../src/project-info.ts', {
+      'node:os': {
+        homedir() {
+          return 'C:\\Users\\username'
         },
       },
-    )
+    })
     const from = [
       'C:\\Users\\username',
       'C:\\Users\\username\\projects\\lorem\\node_modules\\ipsum',
@@ -197,16 +195,15 @@ t.test('getDashboardProjectData', async t => {
       },
     },
   })
-  const { getDashboardProjectData } = await t.mockImport(
-    '../src/project-info.ts',
-    {
-      'node:os': {
-        homedir() {
-          return resolve(dir, 'home', 'user')
-        },
+  const { getDashboardProjectData } = await t.mockImport<
+    typeof import('../src/project-info.ts')
+  >('../src/project-info.ts', {
+    'node:os': {
+      homedir() {
+        return resolve(dir, 'home', 'user')
       },
     },
-  )
+  })
   const packageJson = new PackageJson()
   const scurry = new PathScurry(t.testdirName)
   const folders: PathBase[] = []
@@ -230,7 +227,7 @@ t.test('getDashboardProjectData', async t => {
     folder.lstatSync = () => ({ mtimeMs: 1 }) as any
 
     // collect dashboard project data
-    const data = getDashboardProjectData(folder, conf)
+    const data = getDashboardProjectData(folder, conf.options)
     if (data) {
       res.push(data)
     }
@@ -292,7 +289,7 @@ t.test('getGraphProjectData', async t => {
     throw new Error('a is not a valid path')
   }
   t.matchSnapshot(
-    getGraphProjectData(conf, a),
+    getGraphProjectData(conf.options, a),
     'should return the correct graph project data for a node+npm project',
   )
 
@@ -303,7 +300,7 @@ t.test('getGraphProjectData', async t => {
     throw new Error('b is not a valid path')
   }
   t.matchSnapshot(
-    getGraphProjectData(conf, b),
+    getGraphProjectData(conf.options, b),
     'should return the correct graph project data for a vlt project',
   )
 
@@ -314,12 +311,12 @@ t.test('getGraphProjectData', async t => {
     throw new Error('c is not a valid path')
   }
   t.matchSnapshot(
-    getGraphProjectData(conf, c),
+    getGraphProjectData(conf.options, c),
     'should return the correct graph project data for a non-installed vlt project',
   )
 
   t.matchSnapshot(
-    getGraphProjectData(conf),
+    getGraphProjectData(conf.options),
     'should return emtpy response on missing folder',
   )
 })
@@ -362,7 +359,7 @@ t.test('getGraphProjectData empty vlt-installed project', async t => {
     throw new Error('my-project is not a valid path')
   }
   t.matchSnapshot(
-    getGraphProjectData(conf, myProject),
+    getGraphProjectData(conf.options, myProject),
     'should return vltInstalled: true for an empty but installed project',
   )
 })
