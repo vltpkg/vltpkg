@@ -1,21 +1,26 @@
 import { asDepID } from '@vltpkg/dep-id'
+import { getUser } from '@vltpkg/git'
+import type {
+  ActualLoadOptions,
+  AddImportersDependenciesMap,
+  Dependency,
+  InstallOptions,
+  RemoveImportersDependenciesMap,
+  UninstallOptions,
+} from '@vltpkg/graph'
 import {
   actual,
   asDependency,
   install,
   uninstall,
 } from '@vltpkg/graph'
-import type {
-  AddImportersDependenciesMap,
-  Dependency,
-  RemoveImportersDependenciesMap,
-  InstallOptions,
-  UninstallOptions,
-} from '@vltpkg/graph'
+import { getAuthorFromGitUser, init } from '@vltpkg/init'
+import type { PackageJson } from '@vltpkg/package-json'
+import type { SpecOptions } from '@vltpkg/spec'
 import { Spec } from '@vltpkg/spec'
 import type { DependencyTypeShort } from '@vltpkg/types'
 import { urlOpen } from '@vltpkg/url-open'
-import { getUser } from '@vltpkg/git'
+import assert from 'node:assert'
 import {
   mkdirSync,
   readdirSync,
@@ -23,29 +28,27 @@ import {
   rmSync,
   writeFileSync,
 } from 'node:fs'
-import { createServer, request } from 'node:http'
 import type {
   IncomingMessage,
-  ServerResponse,
   Server,
+  ServerResponse,
 } from 'node:http'
+import { createServer, request } from 'node:http'
 import { homedir, tmpdir } from 'node:os'
-import { dirname, resolve, relative } from 'node:path'
+import { dirname, relative, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import assert from 'node:assert'
 import { loadPackageJson } from 'package-json-from-dist'
-import type { PathBase } from 'path-scurry'
+import type { PathBase, PathScurry } from 'path-scurry'
 import handler from 'serve-handler'
-import type { ConfigOptions, LoadedConfig } from './config/index.ts'
+import type { LoadedConfig } from './config/index.ts'
 import { stderr, stdout } from './output.ts'
-import { readProjectFolders } from './read-project-folders.ts'
-import { init, getAuthorFromGitUser } from '@vltpkg/init'
+import type { DashboardProjectData } from './project-info.ts'
 import {
   getDashboardProjectData,
-  getReadablePath,
   getGraphProjectData,
+  getReadablePath,
 } from './project-info.ts'
-import type { DashboardProjectData } from './project-info.ts'
+import { readProjectFolders } from './read-project-folders.ts'
 
 const HOST = 'localhost'
 const PORT = 7017
@@ -100,7 +103,7 @@ class RemoveImportersDependenciesMapImpl
 }
 
 export const parseInstallOptions = (
-  conf: LoadedConfig,
+  options: InstallOptions & SpecOptions,
   args: GUIInstallOptions,
 ): [InstallOptions, AddImportersDependenciesMap] => {
   const addArgs = new AddImportersDependenciesMapImpl()
@@ -110,7 +113,7 @@ export const parseInstallOptions = (
       depMap.set(
         name,
         asDependency({
-          spec: Spec.parse(name, version, conf.options),
+          spec: Spec.parse(name, version, options),
           type,
         }),
       )
@@ -118,11 +121,11 @@ export const parseInstallOptions = (
     }
     addArgs.set(asDepID(importerId), depMap)
   }
-  return [conf.options, addArgs]
+  return [options, addArgs]
 }
 
 export const parseUninstallOptions = (
-  conf: LoadedConfig,
+  options: UninstallOptions,
   args: GUIUninstallOptions,
 ): [UninstallOptions, RemoveImportersDependenciesMap] => {
   const removeArgs = new RemoveImportersDependenciesMapImpl()
@@ -134,17 +137,17 @@ export const parseUninstallOptions = (
     removeArgs.set(asDepID(importerId), depMap)
     removeArgs.modifiedDependencies = true
   }
-  return [conf.options, removeArgs]
+  return [options, removeArgs]
 }
 
 export const formatDashboardJson = async (
   projectFolders: PathBase[],
-  conf: LoadedConfig,
+  dashboardRoot: string[],
+  scurry: PathScurry,
+  packageJson: PackageJson,
 ) => {
   const userDefinedProjectPaths = (
-    conf.values['dashboard-root']?.length ?
-      conf.values['dashboard-root']
-    : [homedir()]).map(
+    dashboardRoot.length ? dashboardRoot : [homedir()]).map(
     path =>
       ({
         path,
@@ -177,7 +180,10 @@ export const formatDashboardJson = async (
     projects: [],
   }
   for (const folder of projectFolders) {
-    const projectData = getDashboardProjectData(folder, conf)
+    const projectData = getDashboardProjectData(folder, {
+      scurry,
+      packageJson,
+    })
     if (projectData) {
       result.projects.push(projectData)
     }
@@ -187,16 +193,14 @@ export const formatDashboardJson = async (
 
 const updateGraphData = (
   tmp: string,
-  conf: LoadedConfig,
+  options: ActualLoadOptions,
   hasDashboard: boolean,
 ) => {
-  const { options } = conf
-  const { monorepo, packageJson, projectRoot, scurry } = options
+  const { packageJson, projectRoot, scurry } = options
   const mainManifest = packageJson.read(projectRoot)
   const graph = actual.load({
     ...options,
     mainManifest,
-    monorepo,
     loadManifests: true,
   })
   const importers = [...graph.importers]
@@ -206,7 +210,10 @@ const updateGraphData = (
       hasDashboard,
       importers,
       lockfile: graph,
-      projectInfo: getGraphProjectData(conf, folder),
+      projectInfo: getGraphProjectData(
+        { packageJson, scurry },
+        folder,
+      ),
     },
     null,
     2,
@@ -217,22 +224,35 @@ const updateGraphData = (
 
 const updateDashboardData = async (
   tmp: string,
-  conf: LoadedConfig,
+  options: {
+    scurry: PathScurry
+    'dashboard-root'?: string[]
+    packageJson: PackageJson
+  },
 ) => {
-  const userDefinedProjectPaths = conf.values['dashboard-root'] ?? []
+  const {
+    'dashboard-root': userDefinedProjectPaths = [],
+    scurry,
+    packageJson,
+  } = options
   const dashboard = await formatDashboardJson(
     await readProjectFolders({
-      ...conf.options,
+      scurry,
       userDefinedProjectPaths,
     }),
-    conf,
+    userDefinedProjectPaths,
+    scurry,
+    packageJson,
   )
   const dashboardJson = JSON.stringify(dashboard, null, 2)
   writeFileSync(resolve(tmp, 'dashboard.json'), dashboardJson)
   return dashboard.projects.length > 0
 }
 
-const getDefaultStartingRoute = (options: ConfigOptions) => {
+const getDefaultStartingRoute = (options: {
+  projectRoot: string
+  scurry: PathScurry
+}) => {
   const { projectRoot, scurry } = options
   const stat = scurry.lstatSync(`${projectRoot}/package.json`)
   return stat?.isFile() && !stat.isSymbolicLink() ?
@@ -377,9 +397,19 @@ export const startGUI = async ({
   // project in order to just explore its graph data
   let hasDashboard = false
 
+  const {
+    scurry,
+    'dashboard-root': dashboardRoot,
+    packageJson,
+  } = conf.options
+
   const updateDashboard = async () => {
     try {
-      hasDashboard = await updateDashboardData(tmp, conf)
+      hasDashboard = await updateDashboardData(tmp, {
+        scurry,
+        'dashboard-root': dashboardRoot,
+        packageJson,
+      })
       /* c8 ignore next */
     } catch {}
     if (!hasDashboard) {
@@ -393,7 +423,7 @@ export const startGUI = async ({
   // parend directory of any given project root, in which case the GUI is
   // going to render only the dashboard to start with
   try {
-    updateGraphData(tmp, conf, hasDashboard)
+    updateGraphData(tmp, conf.options, hasDashboard)
   } catch {
     rmSync(resolve(tmp, 'graph.json'), { force: true })
   }
@@ -429,7 +459,7 @@ export const startGUI = async ({
         const data = await json<{ path: unknown }>()
         conf.resetOptions(String(data.path))
         await updateDashboard()
-        updateGraphData(tmp, conf, hasDashboard)
+        updateGraphData(tmp, conf.options, hasDashboard)
         return jsonOk('ok')
       }
       case 'POST /create-project': {
@@ -466,7 +496,7 @@ export const startGUI = async ({
           await install(conf.options)
           conf.resetOptions(conf.options.projectRoot)
           await updateDashboard()
-          updateGraphData(tmp, conf, hasDashboard)
+          updateGraphData(tmp, conf.options, hasDashboard)
         } catch (err) {
           // eslint-disable-next-line no-console
           console.error(err)
@@ -484,9 +514,9 @@ export const startGUI = async ({
           )
         }
         try {
-          await install(...parseInstallOptions(conf, add))
+          await install(...parseInstallOptions(conf.options, add))
           conf.resetOptions(conf.options.projectRoot)
-          updateGraphData(tmp, conf, hasDashboard)
+          updateGraphData(tmp, conf.options, hasDashboard)
           return jsonOk('ok')
         } catch (err) {
           return jsonError('Install failed', err, 500)
@@ -504,9 +534,11 @@ export const startGUI = async ({
           )
         }
         try {
-          await uninstall(...parseUninstallOptions(conf, remove))
+          await uninstall(
+            ...parseUninstallOptions(conf.options, remove),
+          )
           conf.resetOptions(conf.options.projectRoot)
-          updateGraphData(tmp, conf, hasDashboard)
+          updateGraphData(tmp, conf.options, hasDashboard)
           return jsonOk('ok')
         } catch (err) {
           return jsonError('Uninstall failed', err, 500)
