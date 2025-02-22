@@ -4,7 +4,10 @@ t.test('deno', async t => {
   const g = globalThis as typeof globalThis & { Deno: any }
   t.intercept(g, 'Deno', { value: {} })
   t.intercept(process.versions, 'deno', { value: '7.8.9' })
-  const env = await t.mockImport('../src/env.ts')
+  const env =
+    await t.mockImport<typeof import('../src/env.ts')>(
+      '../src/env.ts',
+    )
   t.strictSame(
     env,
     Object.assign(Object.create(null), {
@@ -22,7 +25,10 @@ t.test('bun', async t => {
   const g = globalThis as typeof globalThis & { Bun: any }
   t.intercept(g, 'Bun', { value: {} })
   t.intercept(process.versions, 'bun', { value: '7.8.9' })
-  const env = await t.mockImport('../src/env.ts')
+  const env =
+    await t.mockImport<typeof import('../src/env.ts')>(
+      '../src/env.ts',
+    )
   t.strictSame(
     env,
     Object.assign(Object.create(null), {
@@ -37,7 +43,10 @@ t.test('bun', async t => {
 })
 
 t.test('node', async t => {
-  const env = await t.mockImport('../src/env.ts')
+  const env =
+    await t.mockImport<typeof import('../src/env.ts')>(
+      '../src/env.ts',
+    )
   t.strictSame(
     env,
     Object.assign(Object.create(null), {

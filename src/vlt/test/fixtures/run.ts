@@ -24,9 +24,9 @@ export const mockConfig = async (t: Test) =>
     // jackspeak definitions keep state so if we want a clean
     // config, we need a clean definitions file too
     {
-      '../../src/config/definition.ts': await t.mockImport(
-        '../../src/config/definition.ts',
-      ),
+      '../../src/config/definition.ts': await t.mockImport<
+        typeof import('../../src/config/definition.ts')
+      >('../../src/config/definition.ts'),
     },
   )
 
