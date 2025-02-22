@@ -1,7 +1,7 @@
+import { uninstall } from '@vltpkg/graph'
 import { commandUsage } from '../config/usage.ts'
 import type { CommandFn, CommandUsage } from '../index.ts'
 import { parseRemoveArgs } from '../parse-add-remove-args.ts'
-import { uninstall } from '../uninstall.ts'
 
 export const usage: CommandUsage = () =>
   commandUsage({
@@ -14,5 +14,5 @@ export const usage: CommandUsage = () =>
 export const command: CommandFn<void> = async conf => {
   const monorepo = conf.options.monorepo
   const { remove } = parseRemoveArgs(conf, monorepo)
-  await uninstall({ remove, conf })
+  await uninstall(conf.options, remove)
 }

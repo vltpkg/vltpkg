@@ -1,11 +1,11 @@
 {
-  "name": "@vltpkg/keychain",
-  "description": "The filesystem keychain for `@vltpkg/registry-client`",
+  "name": "@vltpkg/init",
+  "description": "vlt project intialization logic",
   "version": "0.0.0-0.1730239248325",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/vltpkg/vltpkg.git",
-    "directory": "src/keychain"
+    "directory": "src/init"
   },
   "tshy": {
     "selfLink": false,
@@ -20,10 +20,11 @@
   },
   "dependencies": {
     "@vltpkg/error-cause": "workspace:*",
+    "@vltpkg/git": "workspace:*",
+    "@vltpkg/package-json": "workspace:*",
+    "@vltpkg/registry-client": "workspace:*",
     "@vltpkg/types": "workspace:*",
-    "@vltpkg/xdg": "workspace:*",
-    "lru-cache": "catalog:",
-    "rimraf": "catalog:"
+    "@vltpkg/xdg": "workspace:*"
   },
   "devDependencies": {
     "@eslint/js": "catalog:",

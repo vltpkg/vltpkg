@@ -9,7 +9,7 @@ t.afterEach(() => (log = ''))
 const Command = await t.mockImport<
   typeof import('../../src/commands/install.ts')
 >('../../src/commands/install.ts', {
-  '../../src/install.ts': {
+  '@vltpkg/graph': {
     async install() {
       log += 'install\n'
       return {

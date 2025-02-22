@@ -8,7 +8,9 @@ const { promiseSpawn } = await t.mockImport<
   typeof import('../src/index.ts')
 >('../src/index.ts', {
   child_process: mockCP,
-  spawk: await t.mockImport('spawk', { child_process: mockCP }),
+  spawk: await t.mockImport<typeof import('spawk')>('spawk', {
+    child_process: mockCP,
+  }),
 })
 
 spawk.preventUnmatched()
@@ -17,7 +19,7 @@ t.afterEach(() => {
 })
 
 t.test('types', async () => {
-  /* eslint-disable @typescript-eslint/no-unnecessary-type-parameters, @typescript-eslint/no-unused-vars */
+  /* eslint-disable @typescript-eslint/no-unnecessary-type-parameters */
   // https://www.totaltypescript.com/how-to-test-your-types#rolling-your-own
   type Expect<T extends true> = T
   type Equal<X, Y> =
@@ -31,11 +33,17 @@ t.test('types', async () => {
       PS.PromiseSpawnOptionsStdoutString
   >
   type a = Expect<Equal<StringResult['stderr'], string>>
+  const _a: a = true
+  _a
   type b = Expect<Equal<StringResult['stdout'], string>>
+  const _b: b = true
+  _b
   type c = Expect<
     Equal<PS.SpawnResultString['stdout'], string | null>
   >
-  /* eslint-enable @typescript-eslint/no-unnecessary-type-parameters, @typescript-eslint/no-unused-vars */
+  const _c: c = true
+  _c
+  /* eslint-enable @typescript-eslint/no-unnecessary-type-parameters */
 })
 
 t.test('defaults to returning strings', async t => {

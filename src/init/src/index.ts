@@ -4,7 +4,10 @@ import type { JSONObj } from '@vltpkg/registry-client'
 import type { Manifest } from '@vltpkg/types'
 import { basename, resolve } from 'node:path'
 import { getAuthorFromGitUser } from './get-author-from-git-user.ts'
-import { stderr } from './output.ts'
+export { getAuthorFromGitUser }
+
+// eslint-disable-next-line no-console
+const stderr: (...a: unknown[]) => void = console.error
 
 export type InitOptions = {
   cwd?: string

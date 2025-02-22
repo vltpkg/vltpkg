@@ -1,7 +1,7 @@
+import type { PackageJson } from '@vltpkg/package-json'
+import type { Manifest } from '@vltpkg/types'
 import { homedir } from 'node:os'
 import type { PathBase, PathScurry } from 'path-scurry'
-import type { LoadedConfig } from './config/index.ts'
-import type { Manifest } from '@vltpkg/types'
 
 export type ProjectTools =
   | 'vlt'
@@ -97,9 +97,11 @@ export const getReadablePath = (path: string) =>
 
 export const getDashboardProjectData = (
   folder: PathBase,
-  conf: LoadedConfig,
+  {
+    packageJson,
+    scurry,
+  }: { packageJson: PackageJson; scurry: PathScurry },
 ): DashboardProjectData | undefined => {
-  const { packageJson, scurry } = conf.options
   let manifest
   try {
     manifest = packageJson.read(folder.fullpath())
@@ -118,7 +120,10 @@ export const getDashboardProjectData = (
 }
 
 export const getGraphProjectData = (
-  conf: LoadedConfig,
+  {
+    packageJson,
+    scurry,
+  }: { packageJson: PackageJson; scurry: PathScurry },
   folder?: PathBase,
 ) => {
   if (!folder) {
@@ -128,7 +133,6 @@ export const getGraphProjectData = (
     }
   }
 
-  const { packageJson, scurry } = conf.options
   return {
     tools: inferTools(
       packageJson.read(folder.fullpath()),

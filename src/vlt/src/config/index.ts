@@ -235,7 +235,6 @@ export class Config {
         }),
       },
     )
-
     return this.#options
   }
 
