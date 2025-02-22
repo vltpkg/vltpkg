@@ -233,7 +233,10 @@ const registryURL = `http://localhost:${PORT}`
 const mockIndex = async (t: Test, mocks?: Record<string, any>) =>
   t.mockImport<typeof import('../src/index.ts')>('../src/index.ts', {
     // always get fresh copy of env since it reads globalThis
-    '../src/env.ts': await t.mockImport('../src/env.ts'),
+    '../src/env.ts':
+      await t.mockImport<typeof import('../src/env.ts')>(
+        '../src/env.ts',
+      ),
     '@vltpkg/url-open': mockUrlOpen,
     '../src/otplease.ts': { otplease },
     ...mocks,

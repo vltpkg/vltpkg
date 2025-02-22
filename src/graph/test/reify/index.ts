@@ -1,5 +1,5 @@
-import { joinDepIDTuple } from '@vltpkg/dep-id'
 import type { DepID } from '@vltpkg/dep-id'
+import { joinDepIDTuple } from '@vltpkg/dep-id'
 import type {
   PackageInfoClient,
   PackageInfoClientRequestOptions,
@@ -21,20 +21,20 @@ import { resolve } from 'path'
 import { PathScurry } from 'path-scurry'
 import t from 'tap'
 import { inspect } from 'util'
-import { actual, ideal, reify } from '../../src/index.ts'
+import type {
+  AddImportersDependenciesMap,
+  RemoveImportersDependenciesMap,
+} from '../../src/dependencies.ts'
 import type {
   LockfileData,
   LockfileEdges,
   LockfileNode,
 } from '../../src/index.ts'
+import { actual, ideal, reify } from '../../src/index.ts'
 import {
   fixtureManifest,
   mockPackageInfo,
 } from '../fixtures/reify.ts'
-import type {
-  AddImportersDependenciesMap,
-  RemoveImportersDependenciesMap,
-} from '../../src/dependencies.ts'
 
 t.test('super basic reification', async t => {
   const dir = t.testdir({
@@ -302,7 +302,9 @@ t.test('failure rolls back', async t => {
     scurry: new PathScurry(projectRoot),
     packageJson: new PackageJson(),
   })
-  const { reify } = await t.mockImport('../../src/reify/index.ts', {
+  const { reify } = await t.mockImport<
+    typeof import('../../src/reify/index.ts')
+  >('../../src/reify/index.ts', {
     '../../src/reify/build.ts': {
       build: () =>
         Promise.reject(new Error('expected failure, roll back')),
@@ -314,6 +316,8 @@ t.test('failure rolls back', async t => {
       projectRoot,
       packageInfo: mockPackageInfo,
       graph,
+      packageJson: new PackageJson(),
+      scurry: new PathScurry(projectRoot),
     }),
   )
 

@@ -562,18 +562,17 @@ t.test('extract', opts, async t => {
 
 t.test('extraction failures', async t => {
   const dir = t.testdir()
-  const { extract, manifest } = await t.mockImport(
-    '../src/index.ts',
-    {
-      '@vltpkg/tar': {
-        Pool: class Pool {
-          async unpack() {
-            throw new Error('no tar for you')
-          }
-        },
+  const { extract, manifest } = await t.mockImport<
+    typeof import('../src/index.ts')
+  >('../src/index.ts', {
+    '@vltpkg/tar': {
+      Pool: class Pool {
+        async unpack() {
+          throw new Error('no tar for you')
+        }
       },
     },
-  )
+  })
   await t.rejects(extract('abbrev@2', dir + '/registry', options))
 
   await t.rejects(

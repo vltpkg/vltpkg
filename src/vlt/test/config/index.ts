@@ -268,13 +268,12 @@ t.test('enable/disable color output', async t => {
     const env: Record<string, string> = { NO_COLOR: '0' }
     t.intercept(process, 'env', { value: env })
     const chalk = { default: { level: 3 } }
-    const { Config } = await t.mockImport(
-      '../../src/config/index.ts',
-      {
-        chalk,
-        '@vltpkg/xdg': mockXDG,
-      },
-    )
+    const { Config } = await t.mockImport<
+      typeof import('../../src/config/index.ts')
+    >('../../src/config/index.ts', {
+      chalk,
+      '@vltpkg/xdg': mockXDG,
+    })
     const c = await Config.load(dir)
     t.equal(c.get('color'), true)
     t.equal(env.FORCE_COLOR, '3')
@@ -286,13 +285,12 @@ t.test('enable/disable color output', async t => {
     const env: Record<string, string> = { NO_COLOR: '1' }
     t.intercept(process, 'env', { value: env })
     const chalk = { default: { level: 3 } }
-    const { Config } = await t.mockImport(
-      '../../src/config/index.ts',
-      {
-        chalk,
-        '@vltpkg/xdg': mockXDG,
-      },
-    )
+    const { Config } = await t.mockImport<
+      typeof import('../../src/config/index.ts')
+    >('../../src/config/index.ts', {
+      chalk,
+      '@vltpkg/xdg': mockXDG,
+    })
     const c = await Config.load(dir)
     t.equal(c.get('color'), false)
     t.equal(env.FORCE_COLOR, '0')
@@ -305,13 +303,12 @@ t.test('enable/disable color output', async t => {
     const env: Record<string, string> = {}
     t.intercept(process, 'env', { value: env })
     const chalk = { default: { level: 0 } }
-    const { Config } = await t.mockImport(
-      '../../src/config/index.ts',
-      {
-        chalk,
-        '@vltpkg/xdg': mockXDG,
-      },
-    )
+    const { Config } = await t.mockImport<
+      typeof import('../../src/config/index.ts')
+    >('../../src/config/index.ts', {
+      chalk,
+      '@vltpkg/xdg': mockXDG,
+    })
     const c = await Config.load(dir)
     t.equal(c.get('color'), true)
     t.equal(env.FORCE_COLOR, '1')
@@ -324,13 +321,12 @@ t.test('enable/disable color output', async t => {
     const env: Record<string, string> = { NO_COLOR: '0' }
     t.intercept(process, 'env', { value: env })
     const chalk = { default: { level: 3 } }
-    const { Config } = await t.mockImport(
-      '../../src/config/index.ts',
-      {
-        chalk,
-        '@vltpkg/xdg': mockXDG,
-      },
-    )
+    const { Config } = await t.mockImport<
+      typeof import('../../src/config/index.ts')
+    >('../../src/config/index.ts', {
+      chalk,
+      '@vltpkg/xdg': mockXDG,
+    })
     const c = await Config.load(dir)
     t.equal(c.get('color'), false)
     t.equal(env.FORCE_COLOR, '0')
@@ -345,13 +341,12 @@ t.test('enable/disable color output', async t => {
       const env: Record<string, string> = { NO_COLOR: '0' }
       t.intercept(process, 'env', { value: env })
       const chalk = { default: { level: 0 } }
-      const { Config } = await t.mockImport(
-        '../../src/config/index.ts',
-        {
-          chalk,
-          '@vltpkg/xdg': mockXDG,
-        },
-      )
+      const { Config } = await t.mockImport<
+        typeof import('../../src/config/index.ts')
+      >('../../src/config/index.ts', {
+        chalk,
+        '@vltpkg/xdg': mockXDG,
+      })
       const c = await Config.load(dir)
       t.equal(c.get('color'), true)
       t.equal(env.FORCE_COLOR, '1')

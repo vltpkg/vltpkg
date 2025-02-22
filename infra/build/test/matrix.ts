@@ -13,21 +13,20 @@ const testGenerateMatrix = async (
   t.capture(console, 'log')
   const bundles: any[] = []
   const compiles: any[] = []
-  const { default: generateMatrix } = await t.mockImport(
-    '../src/matrix.ts',
-    {
-      '../src/compile.ts': {
-        default: (a: any) => {
-          compiles.push(a)
-        },
-      },
-      '../src/bundle.ts': {
-        default: (a: any) => {
-          bundles.push(a)
-        },
+  const { default: generateMatrix } = await t.mockImport<
+    typeof import('../src/matrix.ts')
+  >('../src/matrix.ts', {
+    '../src/compile.ts': {
+      default: (a: any) => {
+        compiles.push(a)
       },
     },
-  )
+    '../src/bundle.ts': {
+      default: (a: any) => {
+        bundles.push(a)
+      },
+    },
+  })
   await t.resolves(
     generateMatrix({
       outdir: dir,
