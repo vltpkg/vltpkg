@@ -40,72 +40,73 @@ export type DetailsInfo = {
   greaterVersions?: string[]
 }
 
+export type DetailsResponse = DetailsInfo | void
+
 export const readAuthor = (
-  author: string | AuthorInfo,
+  author: string | AuthorInfo | undefined,
 ): AuthorInfo | undefined => {
-  if (typeof author === 'string') {
-    const name = /^([^(<]+)/.exec(author)?.[0].trim() || ''
-    const url = /\(([^()]+)\)/.exec(author)?.[1] || ''
-    const email = /<([^<>]+)>/.exec(author)?.[1] || ''
-    const res = {
-      name,
-      ...(email ? { email } : undefined),
-      ...(url ? { url } : undefined),
-    }
-    return res.name ? res : undefined
-  } else {
-    if (!author.name) return
-    const url = author.web || author.url || ''
-    const email = author.mail || author.email || ''
-    return {
-      name: author.name,
-      ...(email ? { email } : undefined),
-      ...(url ? { url } : undefined),
-    }
+  const { name, url, email } =
+    typeof author === 'string' ?
+      {
+        name: /^([^(<]+)/.exec(author)?.[0].trim(),
+        url: /\(([^()]+)\)/.exec(author)?.[1],
+        email: /<([^<>]+)>/.exec(author)?.[1],
+      }
+    : {
+        name: author?.name,
+        url: author?.web || author?.url,
+        email: author?.mail || author?.email,
+      }
+
+  if (!name) return
+
+  return {
+    name,
+    ...(email ? { email } : undefined),
+    ...(url ? { url } : undefined),
   }
 }
 
 export const readRepository = (
-  repository: string | Repository,
+  repository: string | Repository | undefined,
 ): string | undefined => {
   if (typeof repository === 'string') {
     return repository
   }
-  if (repository.url) {
+  if (repository?.url) {
     return repository.url
   }
 }
 
 export const retrieveGitHubAPIUrl = (
-  maybeGitHubURL: string,
-): string | undefined => {
-  let url: URL
-  try {
-    // try to retrieve the url host from a potentially valid url
-    url = new URL(maybeGitHubURL)
-  } catch {
+  maybeGitHubURL: string | undefined,
+): URL | undefined => {
+  if (!maybeGitHubURL) return
+
+  // try to retrieve the url host from a potentially valid url
+  let url =
+    URL.canParse(maybeGitHubURL) ? new URL(maybeGitHubURL) : null
+
+  if (!url) {
     const parsed = Spec.parse('name', maybeGitHubURL)
     if (
       parsed.type === 'git' &&
       parsed.namedGitHost === 'github' &&
       parsed.namedGitHostPath
     ) {
-      url = new URL(`https://github.com/${parsed.namedGitHostPath}`)
-    } else {
-      return
+      url = new URL(parsed.namedGitHostPath, 'https://github.com')
     }
   }
-  if (url.hostname === 'github.com') {
-    const api = new URL('https://api.github.com')
-    const pathname = url.pathname.replace(/\.git$/, '')
-    api.pathname = `/repos${pathname}`
-    return String(api)
-  }
+
+  if (url?.hostname !== 'github.com') return
+
+  return new URL(
+    `/repos${url.pathname.replace(/\.git$/, '')}`,
+    'https://api.github.com',
+  )
 }
 
-export const retrieveAvatar = async (
-  email: string,
-): Promise<string> => {
+export const retrieveAvatar = async (email: string): Promise<URL> => {
   const cleaned = email.trim().toLowerCase()
   const encoder = new TextEncoder()
   const data = encoder.encode(cleaned)
@@ -114,126 +115,90 @@ export const retrieveAvatar = async (
   const hash = hashArray
     .map(b => b.toString(16).padStart(2, '0'))
     .join('')
-
-  return `https://gravatar.com/avatar/${hash}?d=404`
+  return new URL(`avatar/${hash}?d=404`, 'https://gravatar.com')
 }
 
 export async function* fetchDetails(
   s: Spec,
   manifest?: Manifest,
-): AsyncGenerator<DetailsInfo> {
+): AsyncGenerator<DetailsResponse> {
   const spec = s.final
-  const promisesQueue: Promise<DetailsInfo>[] = []
-  const fulfilledPromises: Promise<DetailsInfo>[] = []
-  let githubAPI: string | undefined
+  const promisesQueue: Promise<DetailsResponse>[] = []
+  const fulfilledPromises: Promise<DetailsResponse>[] = []
+  // let githubAPI: URL | undefined
   let maniAuthor: AuthorInfo | undefined
 
   // helper function to make sure that the yield-as-soon-as-ready
   // pattern works with concurrent requests as intended
-  function trackPromise(p: Promise<DetailsInfo>) {
-    void p.then(() => {
-      void promisesQueue.splice(promisesQueue.indexOf(p), 1)
-      fulfilledPromises.push(p)
-    })
+  function trackPromise(p: Promise<DetailsResponse> | undefined) {
+    if (!p) return
+    void p
+      .catch(() => {})
+      .then(() => {
+        void promisesQueue.splice(promisesQueue.indexOf(p), 1)
+        fulfilledPromises.push(p)
+      })
     promisesQueue.push(p)
   }
-
-  const fetchDownloads = (): Promise<DetailsInfo> =>
-    fetch(
-      `https://api.npmjs.org/versions/${encodeURIComponent(spec.name)}/last-week`,
-    )
-      .then(res => res.json())
-      .then((res: { downloads: Record<Semver, number> }) => {
-        const version = asSemver(spec.bareSpec)
-        const weekly = res.downloads[version]
-        if (weekly != null) {
-          return { downloads: { weekly } }
-        } else {
-          return {}
-        }
-      })
-      .catch(() => ({}))
 
   // favicon requests have a guard against duplicate requests
   // since we retry once we fetch the manifest from the registry
   const seenFavIconRequests = new Set<string>()
   const fetchFavIcon = (
-    githubAPI: string,
-  ): Promise<DetailsInfo> | undefined => {
-    if (seenFavIconRequests.has(githubAPI)) return
+    url: URL | undefined,
+  ): Promise<DetailsResponse> | undefined => {
+    if (!url || seenFavIconRequests.has(String(url))) return
 
-    return fetch(githubAPI)
-      .then(res => res.json())
+    return fetch(url)
       .then(
-        (repo: {
-          owner?: { avatar_url?: string; login?: string }
-        }) => {
-          if (repo.owner?.avatar_url) {
-            return {
-              favicon: {
-                src: repo.owner.avatar_url,
-                alt:
-                  repo.owner.login ?
-                    `${repo.owner.login}'s avatar`
-                  : 'avatar',
-              },
-            }
-          } else {
-            return {}
-          }
-        },
-      )
-      .catch(() => {
-        // fallback to a generic org avatar if the api request fails
-        const orgName = githubAPI.split('/').slice(-2)[0]
-        const avatarFallbackURL = new URL('https://github.com')
-        avatarFallbackURL.pathname = `/${orgName}.png`
-        avatarFallbackURL.search = 'size=128'
-        return {
-          favicon: {
-            src: String(avatarFallbackURL),
-            alt: 'avatar',
+        res =>
+          res.json() as {
+            owner?: { avatar_url?: string; login?: string }
           },
+      )
+      .then(repo => {
+        if (repo.owner?.avatar_url) {
+          return {
+            favicon: {
+              src: repo.owner.avatar_url,
+              alt:
+                repo.owner.login ?
+                  `${repo.owner.login}'s avatar`
+                : 'avatar',
+            },
+          }
         }
       })
+      .catch(() => ({
+        // fallback to a generic org avatar if the api request fails
+        favicon: {
+          src: new URL(
+            `/${url.pathname.split('/')[1]}.png?size=128`,
+            'https://github.com',
+          ).toString(),
+          alt: 'avatar',
+        },
+      }))
   }
 
   // tries to retrieve author info from the in-memory manifest
-  if (manifest?.author) {
-    maniAuthor = readAuthor(manifest.author)
-    if (maniAuthor) {
-      trackPromise(Promise.resolve({ author: maniAuthor }))
-    }
-  }
+  const author = readAuthor(manifest?.author)
+  trackPromise(author ? Promise.resolve({ author }) : undefined)
 
   // if the spec is a git spec, use its remote as the repository url reference
-  if (spec.gitRemote) {
-    githubAPI = retrieveGitHubAPIUrl(spec.gitRemote)
-  }
-
   // lookup manifest for a repository field
-  if (!githubAPI && manifest?.repository) {
-    const repo = readRepository(manifest.repository)
-    if (repo) {
-      githubAPI = retrieveGitHubAPIUrl(repo)
-    }
-  }
+  let githubAPI =
+    retrieveGitHubAPIUrl(spec.gitRemote) ??
+    retrieveGitHubAPIUrl(readRepository(manifest?.repository))
 
   // if a value was found, fetch the repository info from the GitHub API
-  if (githubAPI) {
-    const faviconPromise = fetchFavIcon(githubAPI)
-    if (faviconPromise) {
-      trackPromise(faviconPromise)
-    }
-  }
+  trackPromise(fetchFavIcon(githubAPI))
 
   // if the local manifest doesn't have author info,
   // tries to retrieve it from the registry manifest
   if (spec.registry) {
-    const url = new URL(spec.registry)
-    url.pathname = `${spec.name}/${spec.bareSpec}`
     trackPromise(
-      fetch(String(url))
+      fetch(new URL(`${spec.name}/${spec.bareSpec}`, spec.registry))
         .then(res => res.json())
         .then((mani: Manifest & { _npmUser?: AuthorInfo }) => {
           // retries favicon retrieval in case it wasn't found before
@@ -255,17 +220,15 @@ export async function* fetchDetails(
           // then retrieve the user avatar from gravatar
           if (remoteAuthor?.email) {
             trackPromise(
-              retrieveAvatar(remoteAuthor.email || '')
-                .then(src => ({
-                  publisherAvatar: {
-                    src,
-                    alt:
-                      remoteAuthor.name ?
-                        `${remoteAuthor.name}'s avatar`
-                      : 'avatar',
-                  },
-                }))
-                .catch(() => ({})),
+              retrieveAvatar(remoteAuthor.email || '').then(src => ({
+                publisherAvatar: {
+                  src: src.toString(),
+                  alt:
+                    remoteAuthor.name ?
+                      `${remoteAuthor.name}'s avatar`
+                    : 'avatar',
+                },
+              })),
             )
           }
           return {
@@ -275,14 +238,11 @@ export async function* fetchDetails(
               publisher: readAuthor(mani._npmUser),
             }),
           }
-        })
-        .catch(() => ({})),
+        }),
     )
 
-    const packumentURL = new URL(spec.registry)
-    packumentURL.pathname = spec.name
     trackPromise(
-      fetch(String(packumentURL), {
+      fetch(new URL(spec.name, spec.registry), {
         headers: {
           Accept: 'application/vnd.npm.install-v1+json',
         },
@@ -290,24 +250,33 @@ export async function* fetchDetails(
         .then(res => res.json())
         .then((packu: Packument) => {
           const versions = Object.keys(packu.versions).sort(compare)
-          return {
-            ...(manifest?.version && versions.length ?
-              {
-                versions,
-                greaterVersions: versions.filter(
-                  (version: string) =>
-                    manifest.version && gt(version, manifest.version),
-                ),
-              }
-            : {}),
+          if (manifest?.version && versions.length) {
+            return {
+              versions,
+              greaterVersions: versions.filter(
+                (version: string) =>
+                  manifest.version && gt(version, manifest.version),
+              ),
+            }
           }
-        })
-        .catch(() => ({})),
+        }),
     )
   }
 
   // retrieve download info from the registry
-  trackPromise(fetchDownloads())
+  trackPromise(
+    fetch(
+      `https://api.npmjs.org/versions/${encodeURIComponent(spec.name)}/last-week`,
+    )
+      .then(res => res.json())
+      .then((res: { downloads: Record<Semver, number> }) => {
+        const version = asSemver(spec.bareSpec)
+        const weekly = res.downloads[version]
+        if (weekly != null) {
+          return { downloads: { weekly } }
+        }
+      }),
+  )
 
   // asynchronously yield results from promisesQueue as soon as they're ready
   while (true) {
@@ -317,6 +286,7 @@ export async function* fetchDetails(
     if (promisesQueue.length === 0) {
       let res: DetailsInfo = {}
       for (const p of await Promise.all(fulfilledPromises)) {
+        if (!p) continue
         for (const key of Object.keys(p)) {
           res = { ...res, [key]: p[key as keyof DetailsInfo] }
         }

@@ -206,7 +206,7 @@ export const SelectedItem = ({ item }: GridItemOptions) => {
               {details.publisherAvatar?.src ?
                 <motion.img
                   className="size-8 rounded-full"
-                  src={details.publisherAvatar.src}
+                  src={new URL(details.publisherAvatar.src)}
                   alt={details.publisherAvatar.alt}
                   onError={handlePublisherAvatarError}
                   initial={{ opacity: 0 }}
