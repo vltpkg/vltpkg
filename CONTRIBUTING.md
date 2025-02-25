@@ -4,6 +4,10 @@
 
 The workspaces are divided among a few top-level directories.
 
+Be sure to check out the `CONTRIBUTING.md` file in the workspace
+where changes are being made, as this may provide contribution
+guidance specific to that component.
+
 ### [`src`](./src/)
 
 These workspaces are all are direct dependencies of the `vlt`
