@@ -135,3 +135,45 @@ To generate compiled builds for other platforms use the `--platform` and `--arch
 # create bins for all platform/arch combinations
 pnpm build:compile --platform=all --arch=all
 ```
+
+## FAQ
+
+### Test coverage is failing but it shouldn't be
+
+If you are testing a file that has side effects when imported, such as reading from `process.platform`
+to run different code, then this file can't be imported with a static import and instead must use
+`t.mockImport` for all instances.
+
+Even though this code is valid and the tests will pass, coverage will most likely fail depending
+on the implementation.
+
+```ts
+// ❌ dont do this
+import { getEnvValue } from '../src/index.ts'
+
+t.test('default', async t => {
+  t.equal(getEnvValue(), 'DEFAULT_VALUE')
+})
+
+t.test('other case', async t => {
+  t.intercept(process, 'env', { value: { MY_VALUE: 'MY_VALUE' } })
+  const { getEnvValue } = await t.mockImport('../src/index.ts')
+  t.equal(getEnvValue(), 'MY_VALUE')
+})
+```
+
+Instead, all instances of the import must come from `t.mockImport`:
+
+```ts
+// ✅ Do this
+t.test('default', async t => {
+  const { getEnvValue } = await t.mockImport('../src/index.ts')
+  t.equal(getEnvValue(), 'DEFAULT_VALUE')
+})
+
+t.test('other case', async t => {
+  t.intercept(process, 'env', { value: { MY_VALUE: 'MY_VALUE' } })
+  const { getEnvValue } = await t.mockImport('../src/index.ts')
+  t.equal(getEnvValue(), 'MY_VALUE')
+})
+```
