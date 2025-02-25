@@ -13,7 +13,7 @@ const AppSidebarSublist = ({
   const sidebarRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    const savedScrollPosition = localStorage.getItem(
+    const savedScrollPosition = sessionStorage.getItem(
       'sidebar-scroll-position',
     )
     if (savedScrollPosition && sidebarRef.current) {
@@ -31,7 +31,7 @@ const AppSidebarSublist = ({
   useEffect(() => {
     const handleScroll = () => {
       if (sidebarRef.current) {
-        localStorage.setItem(
+        sessionStorage.setItem(
           'sidebar-scroll-position',
           sidebarRef.current.scrollTop.toString(),
         )
@@ -72,7 +72,7 @@ interface SidebarState {
 
 const Group = ({ className = '', entry }: SublistProps) => {
   const storedState: SidebarState = JSON.parse(
-    localStorage.getItem('sidebar-state') || '{}',
+    sessionStorage.getItem('sidebar-state') || '{}',
   ) as SidebarState
   const initialExpanded = storedState[entry.label] ?? !entry.collapsed
   const [expanded, setExpanded] = useState<boolean>(initialExpanded)
@@ -87,10 +87,13 @@ const Group = ({ className = '', entry }: SublistProps) => {
    */
   useEffect(() => {
     const storedState = JSON.parse(
-      localStorage.getItem('sidebar-state') || '{}',
+      sessionStorage.getItem('sidebar-state') || '{}',
     ) as SidebarState
     storedState[entry.label] = expanded
-    localStorage.setItem('sidebar-state', JSON.stringify(storedState))
+    sessionStorage.setItem(
+      'sidebar-state',
+      JSON.stringify(storedState),
+    )
   }, [expanded, entry.label])
 
   return (
