@@ -8,6 +8,14 @@ import type { CompilationDir } from '../matrix.ts'
 import { Paths } from '../index.ts'
 import * as types from '../types.ts'
 
+type LogLevel = 'info' | 'debug' | 'quiet'
+
+const LogLevels: Record<LogLevel, string> = {
+  info: 'info',
+  debug: 'debug',
+  quiet: 'quiet',
+} as const
+
 type Action = 'build' | 'publish' | 'pack'
 
 type Base = {
@@ -48,6 +56,7 @@ type Publish<T extends Package = Package> = {
   dryRun: boolean
   tag: string
   binSuffix?: string
+  loglevel: LogLevel
   files: {
     LICENSE: string
     'README.md': string
@@ -103,6 +112,7 @@ const parseArgs = () => {
     forReal,
     action = 'build',
     quiet,
+    debug,
     appendTimestamp,
     binSuffix,
     ...matrix
@@ -112,6 +122,7 @@ const parseArgs = () => {
       forReal: { type: 'boolean' },
       action: { type: 'string' },
       quiet: { type: 'boolean' },
+      debug: { type: 'boolean' },
       appendTimestamp: { type: 'boolean' },
       binSuffix: { type: 'string' },
       ...matrixConfig,
@@ -129,7 +140,9 @@ const parseArgs = () => {
     // Make publish explicit
     dryRun: !forReal,
     action: action as Action,
-    verbose: !quiet,
+    loglevel: (quiet ? LogLevels.quiet
+    : debug ? LogLevels.debug
+    : LogLevels.info) as LogLevel,
     appendTimestamp,
     binSuffix,
     matrix: getMatrix(matrix),
@@ -141,6 +154,10 @@ const publish = <T extends Package>(
   options: Publish<T>,
 ) => {
   fs.mkdirSync(pkg.dir, { recursive: true })
+
+  if (options.loglevel === LogLevels.debug) {
+    console.log(JSON.stringify(options, null, 2))
+  }
 
   const writeFiles = (files: Record<string, string | object>) => {
     for (const [name, contents] of Object.entries(files)) {
@@ -313,7 +330,7 @@ const main = async () => {
     matrix,
     dryRun,
     action,
-    verbose,
+    loglevel,
     appendTimestamp,
     binSuffix,
   } = parseArgs()
@@ -329,6 +346,7 @@ const main = async () => {
     dryRun,
     action,
     tag: 'latest',
+    loglevel,
     binSuffix,
     files: {
       'README.md': FILES.README.replaceAll('# @vltpkg/vlt', '# vlt'),
@@ -349,7 +367,7 @@ const main = async () => {
 
   const { bundles, compilations } = await generateMatrix({
     outdir,
-    verbose,
+    verbose: loglevel !== LogLevels.quiet,
     matrix,
     // Only publish the main `vlt` bin if it's a compilation because its probably too
     // big to publish 5 * 80MB bins.

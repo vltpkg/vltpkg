@@ -88,7 +88,7 @@ jobs:
 
       - name: Pack
         run: |
-          pnpm run build:bundle --action=pack --outdir=build-tarballs
+          pnpm run build:bundle --action=pack --outdir=build-tarballs --debug
           ls -lha build-tarballs
 
       - name: Upload JS Artifacts
@@ -100,7 +100,7 @@ jobs:
           path: build-tarballs/vlt-${{ steps.version.outputs.value }}.tgz
 
       - name: Pack Compiled
-        run: pnpm run build:compile --action=pack --outdir=compile-tarballs
+        run: pnpm run build:compile --action=pack --outdir=compile-tarballs --debug
 
       - name: Upload Compiled Artifacts
         uses: actions/upload-artifact@v4
