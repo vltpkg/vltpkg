@@ -86,11 +86,11 @@ jobs:
           labels: 'release'
           base: main
 
-      - name: Dry Run Publish
-        run: |
-          pnpm run build:bundle --action=pack
-          ls -lha .build-bundle
-          ls -lha .build-bundle/*.tgz
+      - name: Pack
+        run: pnpm run build:bundle --action=pack --outdir=build-tarballs
+
+      - name: Pack Compiled
+        run: pnpm run build:compile --action=pack --outdir=compile-tarballs
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
@@ -99,7 +99,8 @@ jobs:
           compression-level: 0
           if-no-files-found: error
           path: |
-            .build-bundle/*.tgz
+            build-tarballs/*.tgz
+            compile-tarballs/*.tgz
 
       - name: Find Comment
         uses: peter-evans/find-comment@v3
