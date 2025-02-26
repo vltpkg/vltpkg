@@ -69,8 +69,8 @@ jobs:
         run: pnpm -F cli exec npm version prerelease --no-git-tag-version
 
       - name: Get Version Number
-        id: get-version
-        run: echo "version=$(jq -r .version ./src/vlt/package.json)" >> $GITHUB_OUTPUT
+        id: version
+        run: echo "value=$(jq -r .version ./src/vlt/package.json)" >> $GITHUB_OUTPUT
 
       - name: Create or Update PR
         id: pr
@@ -78,9 +78,9 @@ jobs:
         with:
           token: ${{ secrets.RELEASE_WORKFLOW_TOKEN }}
           branch: release
-          title: 'Release v${{ steps.get-version.outputs.version }}'
-          body: 'Merge this PR to release vlt@${{ steps.get-version.outputs.version }}'
-          commit-message: 'Release v${{ steps.get-version.outputs.version }}'
+          title: 'Release v${{ steps.version.outputs.value }}'
+          body: 'Merge this PR to release vlt@${{ steps.version.outputs.value }}'
+          commit-message: 'Release v${{ steps.version.outputs.value }}'
           author: 'vltops <vltops@users.noreply.github.com>'
           committer: 'vltops <vltops@users.noreply.github.com>'
           labels: 'release'
@@ -91,10 +91,31 @@ jobs:
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
+        id: tarballs
         with:
           compression-level: 0
+          if-no-files-found: error
           path: |
-            .build-bundle/vlt-*.tgz
+            .build-bundle/*.tgz
+
+      - name: Find Comment
+        uses: peter-evans/find-comment@v3
+        id: comment
+        with:
+          issue-number: ${{ steps.pr.outputs.pull-request-number }}
+          comment-author: 'vltops'
+          body-includes: Release Tarballs
+
+      - name: Create or update comment
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          comment-id: ${{ steps.comment.outputs.comment-id }}
+          issue-number: ${{ steps.pr.outputs.pull-request-number  }}
+          body: |
+            Release Tarballs
+            ${{ steps.tarballs.outputs.artifact-url }}
+            ${{ toJSON(steps.tarballs.outputs) }}
+          edit-mode: replace
 
   publish:
     name: Publish
