@@ -51,12 +51,19 @@ jobs:
           version: 9
           run_install: false
 
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+
       - name: Setup Nodejs
         uses: actions/setup-node@v4
         with:
           node-version-file: '.nvmrc'
           cache: pnpm
           check-latest: true
+
+      - name: Install dependencies
+        run: pnpm install
 
       - name: Increment Version
         run: pnpm -F cli exec npm version prerelease --no-git-tag-version
@@ -72,7 +79,7 @@ jobs:
           token: ${{ secrets.RELEASE_WORKFLOW_TOKEN }}
           branch: release
           title: 'Release v${{ steps.get-version.outputs.version }}'
-          body: 'This PR was created automatically to publish the package.'
+          body: 'Merge this PR to release vlt@${{ steps.get-version.outputs.version }}'
           commit-message: 'Release v${{ steps.get-version.outputs.version }}'
           author: 'vltops <vltops@users.noreply.github.com>'
           committer: 'vltops <vltops@users.noreply.github.com>'
