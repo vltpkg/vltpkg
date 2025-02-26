@@ -69,7 +69,7 @@ jobs:
         id: pr
         uses: peter-evans/create-pull-request@v7
         with:
-          token: ${{ secrets.RELEASE_WORKFLOW_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
           branch: release
           title: 'Release v${{ steps.get-version.outputs.version }}'
           body: 'This PR was created automatically to publish the package.'
