@@ -46,11 +46,11 @@ jobs:
         run: pnpm install
 
       - name: Publish
-        run: pnpm run build:bundle --action=publish ${{ !inputs.dryRun && '--forReal' || '' }}
+        run: pnpm run build:bundle --action=publish --appendTimestamp ${{ !inputs.dryRun && '--forReal' || '' }}
         env:
           VLT_CLI_PUBLISH_TOKEN: ${{ secrets.VLT_CLI_PUBLISH_TOKEN }}
 
       - name: Publish Compiled
-        run: pnpm run build:compile --action=publish --platform=all --arch=all ${{ !inputs.dryRun && '--forReal' || '' }}
+        run: pnpm run build:compile --action=publish --platform=all --arch=all --appendTimestamp ${{ !inputs.dryRun && '--forReal' || '' }}
         env:
           VLT_CLI_PUBLISH_TOKEN: ${{ secrets.VLT_CLI_PUBLISH_TOKEN }}
