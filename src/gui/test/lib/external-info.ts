@@ -1,4 +1,3 @@
-// write vitest tests for the external-info module
 import { test, expect, vi } from 'vitest'
 import { Spec } from '@vltpkg/spec/browser'
 import {
@@ -89,6 +88,16 @@ global.fetch = vi.fn(async url => ({
               'https//example.com/favicon-repo-in-remote-manifest.jpg',
             login: 'ruyadorno',
           },
+        }
+      }
+      case 'https://api.npmjs.org/downloads/range/last-year/my-package': {
+        return {
+          start: '2023-01-01',
+          end: '2023-01-31',
+          downloads: [
+            { downloads: 100, day: '2023-01-01' },
+            { downloads: 150, day: '2023-01-02' },
+          ],
         }
       }
       default: {
@@ -220,7 +229,7 @@ test('retrieveGitHubAPIUrl from https-git-style url', () => {
   )
 })
 
-test('fetchDetails returns the correct details', async () => {
+test('fetchDetails returns the correct details including downloadsRange', async () => {
   const mani = {
     name: 'my-package',
     version: '1.0.0',
@@ -241,6 +250,14 @@ test('fetchDetails returns the correct details', async () => {
     },
     downloads: {
       weekly: 100,
+    },
+    downloadsRange: {
+      start: '2023-01-01',
+      end: '2023-01-31',
+      downloads: [
+        { downloads: 100, day: '2023-01-01' },
+        { downloads: 150, day: '2023-01-02' },
+      ],
     },
     publisher: {
       name: 'Ruy Adorno',

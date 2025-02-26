@@ -464,6 +464,7 @@ Array [
   "favicon.ico",
   "fonts",
   "graph.json",
+  "images",
   "index.html",
   "index.js",
   "index.js.map",

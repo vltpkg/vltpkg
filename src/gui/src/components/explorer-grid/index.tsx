@@ -354,7 +354,7 @@ export const ExplorerGrid = () => {
 
   return (
     <div className="w-full grow rounded-b-lg border-x-[1px] border-b-[1px] bg-white px-8 pb-8 dark:bg-black">
-      <div className="mx-auto grid w-full max-w-7xl grid-cols-7 gap-4">
+      <div className="mx-auto grid w-full max-w-7xl grid-cols-8 gap-4">
         <div className="col-span-2">
           {parentItem ?
             <>
@@ -402,7 +402,7 @@ export const ExplorerGrid = () => {
             </>
           : ''}
         </div>
-        <div className="col-span-3">
+        <div className="col-span-4">
           {items.length > 1 ?
             <div className="flex items-center gap-3">
               <GridHeader className="mb-4">Results</GridHeader>

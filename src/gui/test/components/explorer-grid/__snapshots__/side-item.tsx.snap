@@ -172,7 +172,7 @@ exports[`SideItem render as parent 1`] = `
   <div class="group relative z-10">
     <gui-card
       role="article"
-      classname="relative my-4 transition-all border-foreground cursor-pointer group-hover:border-neutral-400 dark:group-hover:border-neutral-600"
+      classname="relative my-4 transition-all border-muted-foreground cursor-pointer group-hover:border-neutral-400 dark:group-hover:border-neutral-600"
     >
       <gui-card-header classname="relative flex w-full flex-col rounded-t-lg p-0">
         <div class="flex items-center px-3 py-2">
