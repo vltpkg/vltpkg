@@ -12,6 +12,7 @@
     "@astrojs/mdx": "^4.0.2",
     "@astrojs/react": "^4.1.0",
     "@astrojs/starlight": "^0.30.1",
+    "@astrojs/starlight-tailwind": "^3.0.0",
     "@astrojs/tailwind": "^5.1.3",
     "@astrojs/vercel": "^8.0.7",
     "@radix-ui/react-collapsible": "^1.1.1",
@@ -47,8 +48,7 @@
     "typedoc-plugin-markdown": "^4.4.0",
     "typedoc-plugin-remark": "^1.2.2",
     "vaul": "^1.1.2",
-    "vite": "^6.0.3",
-    "zustand": "^4.5.4"
+    "vite": "^6.0.3"
   },
   "devDependencies": {
     "@eslint/js": "catalog:",
