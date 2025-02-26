@@ -89,18 +89,24 @@ jobs:
       - name: Pack
         run: pnpm run build:bundle --action=pack --outdir=build-tarballs
 
-      - name: Pack Compiled
-        run: pnpm run build:compile --action=pack --outdir=compile-tarballs
-
-      - name: Upload Artifacts
+      - name: Upload JS Artifacts
         uses: actions/upload-artifact@v4
-        id: tarballs
+        id: build-tarballs
         with:
           compression-level: 0
           if-no-files-found: error
-          path: |
-            build-tarballs/*.tgz
-            compile-tarballs/*.tgz
+          path: build-tarballs/vlt-${{ steps.version.outputs.value }}.tgz
+
+      - name: Pack Compiled
+        run: pnpm run build:compile --action=pack --outdir=compile-tarballs
+
+      - name: Upload Compiled Artifacts
+        uses: actions/upload-artifact@v4
+        id: compile-tarballs
+        with:
+          compression-level: 0
+          if-no-files-found: error
+          path: compile-tarballs/vlt-*.tgz
 
       - name: Find Comment
         uses: peter-evans/find-comment@v3
@@ -108,7 +114,8 @@ jobs:
         with:
           issue-number: ${{ steps.pr.outputs.pull-request-number }}
           comment-author: 'vltops'
-          body-includes: Release Tarballs
+          body-includes: |
+            ## Release Tarballs
 
       - name: Create or update comment
         uses: peter-evans/create-or-update-comment@v4
@@ -117,9 +124,9 @@ jobs:
           comment-id: ${{ steps.comment.outputs.comment-id }}
           issue-number: ${{ steps.pr.outputs.pull-request-number  }}
           body: |
-            Release Tarballs
-            ${{ steps.tarballs.outputs.artifact-url }}
-            ${{ toJSON(steps.tarballs.outputs) }}
+            ## Release Tarballs
+            - Bundled tarball: ${{ steps.build-tarballs.outputs.artifact-url }}
+            - Compiled tarballs: ${{ steps.compile-tarballs.outputs.artifact-url }}
           edit-mode: replace
 
   publish:
