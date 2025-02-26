@@ -87,7 +87,9 @@ jobs:
           base: main
 
       - name: Pack
-        run: pnpm run build:bundle --action=pack --outdir=build-tarballs
+        run: |
+          pnpm run build:bundle --action=pack --outdir=build-tarballs
+          ls -lha build-tarballs
 
       - name: Upload JS Artifacts
         uses: actions/upload-artifact@v4
