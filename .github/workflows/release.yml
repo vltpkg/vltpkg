@@ -5,9 +5,13 @@ on:
     branches:
       - main
   workflow_dispatch:
+    inputs:
+      ref:
+        description: 'the GitHub ref to checkout and publish'
+        type: string
 
 concurrency:
-  group: ${{ github.workflow }}-main
+  group: ${{ github.workflow }}-${{ inputs.ref || 'main' }}
   cancel-in-progress: true
 
 jobs:
@@ -20,7 +24,7 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
         with:
-          ref: main
+          ref: ${{ inputs.ref || 'main' }}
 
       - name: Get Commit Message
         id: message
@@ -44,7 +48,7 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
         with:
-          ref: main
+          ref: ${{ inputs.ref || 'main' }}
 
       - uses: pnpm/action-setup@v4
         with:
@@ -140,7 +144,7 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
         with:
-          ref: main
+          ref: ${{ inputs.ref || 'main' }}
 
       - uses: pnpm/action-setup@v4
         with:
