@@ -100,6 +100,7 @@ const parseArgs = () => {
     forReal,
     action = 'build',
     quiet,
+    appendTimestamp,
     ...matrix
   } = nodeParseArgs({
     options: {
@@ -107,6 +108,7 @@ const parseArgs = () => {
       forReal: { type: 'boolean' },
       action: { type: 'string' },
       quiet: { type: 'boolean' },
+      appendTimestamp: { type: 'boolean' },
       ...matrixConfig,
     },
   }).values
@@ -123,6 +125,7 @@ const parseArgs = () => {
     dryRun: !forReal,
     action: action as Action,
     verbose: !quiet,
+    appendTimestamp,
     matrix: getMatrix(matrix),
   }
 }
@@ -288,7 +291,8 @@ const publishCompiled = (
 }
 
 const main = async () => {
-  const { outdir, matrix, dryRun, action, verbose } = parseArgs()
+  const { outdir, matrix, dryRun, action, verbose, appendTimestamp } =
+    parseArgs()
 
   assert(
     action === 'publish' && !dryRun ? TOKEN : true,
@@ -307,7 +311,7 @@ const main = async () => {
       '.npmrc': `//registry.npmjs.org/:_authToken=\${NPM_PUBLISH_TOKEN}`,
       'package.json': {
         name: 'vlt',
-        version: `${FILES.PACKAGE_JSON.version}${PRERELEASE_ID}`,
+        version: `${FILES.PACKAGE_JSON.version}${appendTimestamp ? PRERELEASE_ID : ''}`,
         description: FILES.PACKAGE_JSON.description,
         license: FILES.PACKAGE_JSON.license,
         keywords: FILES.PACKAGE_JSON.keywords,

@@ -1,0 +1,126 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  detect-action:
+    name: Detect Release Action
+    runs-on: ubuntu-latest
+    outputs:
+      action: ${{ steps.determine-action.outputs.action }}
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Get Commit Message
+        id: get-message
+        run: echo "msg=$(git log -1 --pretty=%B)" >> $GITHUB_ENV
+
+      - name: Determine Action
+        id: determine-action
+        run: |
+          if [[ "$msg" == *"Release v"* ]]; then
+            echo "action=publish" >> $GITHUB_OUTPUT
+          else
+            echo "action=pr" >> $GITHUB_OUTPUT
+          fi
+
+  pr:
+    name: Release PR
+    runs-on: ubuntu-latest
+    needs: detect-action
+    if: needs.detect-action.outputs.action == 'pr'
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+          run_install: false
+
+      - name: Setup Nodejs
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: pnpm
+          check-latest: true
+
+      - name: Increment Version
+        run: pnpm -F cli exec npm version prerelease --no-git-tag-version
+
+      - name: Get Version Number
+        id: get-version
+        run: echo "version=$(jq -r .version ./src/vlt/package.json)" >> $GITHUB_ENV
+
+      - name: Create or Update PR
+        id: pr
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ secrets.RELEASE_WORKFLOW_TOKEN }}
+          branch: release
+          title: 'Release v${{ steps.get-version.outputs.version }}'
+          body: 'This PR was created automatically to publish the package.'
+          commit-message: 'Release v${{ steps.get-version.outputs.version }}'
+          author: 'vltops <vltops@users.noreply.github.com>'
+          committer: 'vltops <vltops@users.noreply.github.com>'
+          labels: 'release'
+          base: main
+
+      - name: Dry Run Publish
+        run: pnpm run build:bundle --action=pack
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dry-run-publish-artifacts
+          path: |
+            .build-bundle/vlt-*.tgz
+
+  publish:
+    name: Publish
+    runs-on: ubuntu-latest
+    needs: detect-action
+    if: needs.detect-action.outputs.action == 'publish'
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          ref: release
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+          run_install: false
+
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+
+      - name: Setup Nodejs
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: pnpm
+          check-latest: true
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Publish
+        run: pnpm run build:bundle --action=publish ${{ github.event_name == 'push' && '--forReal' || '' }}
+        env:
+          VLT_CLI_PUBLISH_TOKEN: ${{ secrets.VLT_CLI_PUBLISH_TOKEN }}
+
+      - name: Publish Compiled
+        run: pnpm run build:compile --action=publish --platform=all --arch=all ${{ github.event_name == 'push' && '--forReal' || '' }}
+        env:
+          VLT_CLI_PUBLISH_TOKEN: ${{ secrets.VLT_CLI_PUBLISH_TOKEN }}
