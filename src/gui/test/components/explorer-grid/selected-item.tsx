@@ -8,25 +8,52 @@ import { useGraphStore as useStore } from '@/state/index.js'
 import type { GridItemData } from '@/components/explorer-grid/types.js'
 import { SelectedItem } from '@/components/explorer-grid/selected-item.jsx'
 
-vi.mock('@/components/ui/badge.jsx', () => ({
-  Badge: 'gui-badge',
-}))
-vi.mock('lucid-react', () => ({
-  Home: 'gui-lucide-home',
-  Package: 'gui-lucide-package',
-  FileSearch2: 'gui-lucid-file-search2',
-}))
 vi.mock('@/components/ui/card.jsx', () => ({
   Card: 'gui-card',
-  CardDescription: 'gui-card-description',
-  CardHeader: 'gui-card-header',
-  CardTitle: 'gui-card-title',
 }))
+
 vi.mock('@/components/ui/tabs.jsx', () => ({
   Tabs: 'gui-tabs',
   TabsContent: 'gui-tabs-content',
   TabsList: 'gui-tabs-list',
   TabsTrigger: 'gui-tabs-trigger',
+}))
+
+vi.mock('@/components/ui/shiki.jsx', () => ({
+  CodeBlock: 'gui-code-block',
+}))
+
+vi.mock('lucid-react', () => ({
+  Info: 'gui-info-icon',
+}))
+
+vi.mock('@radix-ui/react-avatar', () => ({
+  Avatar: 'gui-avatar',
+  AvatarImage: 'gui-avatar-image',
+  AvatarFallback: 'gui-avatar-fallback',
+}))
+
+vi.mock('@/components/ui/tooltip.jsx', () => ({
+  Tooltip: 'gui-tooltip',
+  TooltipContent: 'gui-tooltip-content',
+  TooltipTrigger: 'gui-tooltip-trigger',
+  TooltipProvider: 'gui-tooltip-provider',
+}))
+
+vi.mock('@/components/ui/inline-code.jsx', () => ({
+  InlineCode: 'gui-inline-code',
+}))
+
+vi.mock('@/components/ui/spark-chart.jsx', () => ({
+  SparkAreaChart: 'gui-spark-area-chart',
+}))
+
+vi.mock('@/components/ui/badge.jsx', () => ({
+  Badge: 'gui-badge',
+}))
+
+vi.mock('@/components/ui/skeleton.jsx', () => ({
+  Skeleton: 'gui-skeleton',
 }))
 
 const specOptions = getOptions({

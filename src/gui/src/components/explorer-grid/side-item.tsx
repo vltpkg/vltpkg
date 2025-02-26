@@ -80,7 +80,7 @@ export const SideItem = ({
       : ''}
       <Card
         role="article"
-        className={`relative my-4 transition-all ${highlight ? 'border-foreground' : ''} ${onSelect ? 'cursor-pointer group-hover:border-neutral-400 dark:group-hover:border-neutral-600' : ''}`}
+        className={`relative my-4 transition-all ${highlight ? 'border-muted-foreground' : ''} ${onSelect ? 'cursor-pointer group-hover:border-neutral-400 dark:group-hover:border-neutral-600' : ''}`}
         onClick={onSelect}>
         <CardHeader className="relative flex w-full flex-col rounded-t-lg p-0">
           <div className="flex items-center px-3 py-2">

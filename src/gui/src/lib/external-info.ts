@@ -13,6 +13,12 @@ const asSemver = (s: string): Semver => {
   throw new Error(`Invalid Semver: ${s}`)
 }
 
+export type DownloadsRange = {
+  start: string
+  end: string
+  downloads: { downloads: number; day: string }[]
+}
+
 export type AuthorInfo = {
   name: string
   mail?: string
@@ -38,6 +44,7 @@ export type DetailsInfo = {
   publisherAvatar?: ImageInfo
   versions?: string[]
   greaterVersions?: string[]
+  downloadsRange?: DownloadsRange
 }
 
 export const readAuthor = (
@@ -137,6 +144,31 @@ export async function* fetchDetails(
     })
     promisesQueue.push(p)
   }
+
+  const fetchDownloadsRange = (): Promise<DetailsInfo> =>
+    fetch(
+      `https://api.npmjs.org/downloads/range/last-year/${encodeURIComponent(spec.name)}`,
+    )
+      .then(res => res.json())
+      .then(
+        (data: {
+          start: string
+          end: string
+          downloads: { downloads: number; day: string }[]
+        }) => ({
+          downloadsRange: {
+            start: data.start,
+            end: data.end,
+            downloads: data.downloads.map(
+              (download: { downloads: number; day: string }) => ({
+                downloads: download.downloads,
+                day: download.day,
+              }),
+            ),
+          },
+        }),
+      )
+      .catch(() => ({}))
 
   const fetchDownloads = (): Promise<DetailsInfo> =>
     fetch(
@@ -308,6 +340,9 @@ export async function* fetchDetails(
 
   // retrieve download info from the registry
   trackPromise(fetchDownloads())
+
+  // retrieve download range info from the registry
+  trackPromise(fetchDownloadsRange())
 
   // asynchronously yield results from promisesQueue as soon as they're ready
   while (true) {

@@ -1,7 +1,8 @@
 import { splitDepID, hydrate } from '@vltpkg/dep-id/browser'
 import { Spec } from '@vltpkg/spec/browser'
+import { rcompare } from '@vltpkg/semver'
 import type { SpecOptionsFilled } from '@vltpkg/spec/browser'
-import { Card, CardDescription } from '@/components/ui/card.jsx'
+import { Card } from '@/components/ui/card.jsx'
 import { useGraphStore } from '@/state/index.js'
 import type { GridItemData, GridItemOptions } from './types.js'
 import {
@@ -10,12 +11,16 @@ import {
   TabsList,
   TabsTrigger,
 } from '@/components/ui/tabs.jsx'
-import { CodeBlock } from '../ui/shiki.jsx'
-import { FileSearch2, Home, Package, Info } from 'lucide-react'
+import { CodeBlock } from '@/components/ui/shiki.jsx'
+import { Info } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { fetchDetails } from '@/lib/external-info.js'
 import type { DetailsInfo } from '@/lib/external-info.js'
-import { Avatar, AvatarFallback } from '@/components/ui/avatar.jsx'
+import {
+  Avatar,
+  AvatarImage,
+  AvatarFallback,
+} from '@radix-ui/react-avatar'
 import {
   Tooltip,
   TooltipContent,
@@ -23,6 +28,11 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip.jsx'
 import { motion } from 'framer-motion'
+import { InlineCode } from '@/components/ui/inline-code.jsx'
+import { SparkAreaChart } from '@/components/ui/spark-chart.jsx'
+import { transformToWeeklyDownloads } from '@/utils/transform-weekly-downloads.js'
+import { Badge } from '@/components/ui/badge.jsx'
+import { Skeleton } from '@/components/ui/skeleton.jsx'
 
 const SpecOrigin = ({
   item,
@@ -40,45 +50,41 @@ const SpecOrigin = ({
         )) {
           if (item.to.name?.startsWith(scopeKey)) {
             return (
-              <div>
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger className="m-0 truncate px-1 py-1 align-baseline font-mono text-xs text-muted-foreground">
-                      <span>registered-scope</span>
-                      <span>
-                        {item.title}@{item.version}
-                      </span>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      {String(scopeValue)}
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              </div>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger className="flex h-full w-full cursor-default items-center justify-start overflow-hidden">
+                    <InlineCode
+                      variant="mono"
+                      className="mx-0 truncate">
+                      {`${item.title}@${item.version}`}
+                    </InlineCode>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    {String(scopeValue)}
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             )
           }
         }
         return (
-          <div>
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger className="m-0 truncate px-1 py-1 align-baseline font-mono text-xs text-muted-foreground">
-                  <span>{ref || 'npm'}:</span>
-                  <span>
-                    {item.title}@{item.version}
-                  </span>
-                </TooltipTrigger>
-                <TooltipContent>
-                  {
-                    ref && specOptions.registries[ref] ?
-                      specOptions.registries[ref]
-                      // @ts-expect-error - tsserver is unable to find this exported property
-                    : specOptions.registry || Spec.defaultRegistry
-                  }
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          </div>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger className="flex h-full w-full cursor-default items-center justify-start overflow-hidden">
+                <InlineCode variant="mono" className="mx-0 truncate">
+                  {`${ref || 'npm'}:${item.title}@${item.version}`}
+                </InlineCode>
+              </TooltipTrigger>
+              <TooltipContent>
+                {
+                  ref && specOptions.registries[ref] ?
+                    specOptions.registries[ref]
+                    // @ts-expect-error - tsserver is unable to find this exported property
+                  : specOptions.registry || Spec.defaultRegistry
+                }
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         )
       }
       case 'git':
@@ -86,9 +92,7 @@ const SpecOrigin = ({
       case 'file':
       case 'remote': {
         return (
-          <div className="m-0 truncate px-1 py-1 align-baseline font-mono text-xs text-muted-foreground">
-            {depType}:{ref}
-          </div>
+          <InlineCode className="mx-0">{`${depType}:{ref}`}</InlineCode>
         )
       }
     }
@@ -104,6 +108,7 @@ export const SelectedItem = ({ item }: GridItemOptions) => {
   //const origin = specOptions && getItemOrigin({ item, specOptions })
   const linePositionRef = useRef<HTMLDivElement>(null)
   const [details, setDetails] = useState<DetailsInfo>({})
+  const [activeTab, setActiveTab] = useState<string>('overview')
   const stamp = useGraphStore(state => state.stamp)
 
   useEffect(() => {
@@ -140,142 +145,190 @@ export const SelectedItem = ({ item }: GridItemOptions) => {
     })
   }
 
+  const handleTabChange = (value: string) => {
+    setActiveTab(value)
+  }
+
   return (
     <div className="relative">
       <Card className="relative my-4 border-muted-foreground">
-        <div className="flex w-full justify-stretch gap-4 p-6">
-          <motion.div
-            className="flex w-full grow items-start gap-4"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}>
-            <Avatar className="size-16 rounded-lg border border-solid border-neutral-200">
-              {details.favicon ?
-                <motion.img
+        <motion.div
+          animate={{ opacity: 1 }}
+          initial={{ opacity: 0 }}
+          className="flex w-full justify-between gap-4 p-6">
+          <div className="flex gap-4">
+            <Avatar className="size-24">
+              {details.favicon && (
+                <AvatarImage
+                  className="rounded-md border-[1px] bg-secondary object-cover"
                   src={details.favicon.src}
                   alt={details.favicon.alt}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
                 />
-              : ''}
-              <AvatarFallback className="rounded-lg border-none">
+              )}
+              <AvatarFallback className="flex h-full w-full items-center justify-center rounded-md border-[1px]">
                 {item.to?.mainImporter ?
-                  <Home size={24} />
-                : <Package size={24} />}
+                  <div className="flex h-full w-full items-center justify-center rounded-md bg-white p-4 dark:bg-black">
+                    <img
+                      src="/images/folder.png"
+                      alt="project folder image"
+                    />
+                  </div>
+                : <div className="to:to-neutral-400 h-full w-full rounded-md bg-gradient-to-t from-neutral-100 dark:from-neutral-500 dark:to-neutral-800" />
+                }
               </AvatarFallback>
             </Avatar>
-            <div className="flex flex-col">
-              <div className="mt-2">
-                <span
-                  className={`${
-                    item.title.length < 9 ? 'text-3xl'
-                    : item.title.length < 18 ? 'text-xl'
-                    : 'text-md'
-                  } font-medium`}>
-                  {item.title}{' '}
-                </span>
-                <span
-                  className={`${
-                    item.title.length < 9 ? 'text-xl'
-                    : item.title.length < 18 ? 'text-lg'
-                    : 'text-sm'
-                  } mb-[1px] font-medium text-muted-foreground`}>
-                  {item.version}
-                </span>
+
+            <div className="flex h-full max-w-[250px] flex-col justify-between">
+              <div className="flex flex-col gap-0.5">
+                <div className="flex items-center gap-2">
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger className="text-baseline cursor-default truncate text-lg font-medium">
+                        {item.title}{' '}
+                        <span className="text-sm font-normal text-muted-foreground">
+                          {item.version}
+                        </span>
+                      </TooltipTrigger>
+                      <TooltipContent className="text-baseline text-sm font-medium">
+                        {item.title}{' '}
+                        <span className="font-normal text-muted-foreground">
+                          {item.version}
+                        </span>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+
+                  {details.greaterVersions &&
+                    details.greaterVersions.length > 0 && (
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger
+                            onClick={() => setActiveTab('versions')}
+                            className="flex items-center justify-center">
+                            <Badge
+                              variant="outline"
+                              className="cursor-pointer bg-secondary p-0.5 outline-[1px] outline-border">
+                              <Info
+                                className="text-muted-foreground"
+                                size={16}
+                              />
+                            </Badge>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            Newer versions available
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    )}
+                </div>
+
+                {specOptions && (
+                  <SpecOrigin item={item} specOptions={specOptions} />
+                )}
               </div>
-              {specOptions ?
-                <SpecOrigin item={item} specOptions={specOptions} />
-              : ''}
+
+              <div className="flex items-center gap-2">
+                {details.publisherAvatar?.src && (
+                  <img
+                    className="size-5 rounded-full outline outline-[1px] outline-border"
+                    src={details.publisherAvatar.src}
+                    alt={details.publisherAvatar.alt}
+                    onError={handlePublisherAvatarError}
+                  />
+                )}
+                {details.publisher &&
+                  !details.publisherAvatar?.src && (
+                    <div className="flex size-5 items-center justify-center rounded-full bg-secondary bg-gradient-to-t from-neutral-100 to-neutral-400 p-0.5 outline outline-[1px] outline-border dark:from-neutral-500 dark:to-neutral-800" />
+                  )}
+                {details.publisher?.name && (
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger className="text-baseline cursor-default text-xs font-medium text-muted-foreground">
+                        Published by:{' '}
+                        <span className="text-foreground">
+                          {details.publisher.name}
+                        </span>
+                      </TooltipTrigger>
+                      <TooltipContent align="start">
+                        {details.publisher.name}{' '}
+                        {details.publisher.email}
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                )}
+              </div>
             </div>
-          </motion.div>
-          <div className="mt-4 flex w-full flex-col justify-end gap-4">
-            {details.downloads?.weekly ?
-              <motion.div
-                className="flex flex-row-reverse"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}>
-                <span className="text-md text-right font-medium text-muted-foreground">
-                  <span className="text-foreground">
-                    {details.downloads.weekly.toLocaleString()}{' '}
-                    Downloads
-                  </span>{' '}
-                  Last Week
-                </span>
-              </motion.div>
-            : ''}
-            <div className="flex flex-row-reverse items-center gap-2">
-              {details.publisherAvatar?.src ?
-                <motion.img
-                  className="size-8 rounded-full"
-                  src={details.publisherAvatar.src}
-                  alt={details.publisherAvatar.alt}
-                  onError={handlePublisherAvatarError}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                />
-              : ''}
-              {details.publisher?.name ?
-                <motion.div
-                  className="text-sm font-medium"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}>
-                  <span className="mb-[1px] text-xs text-muted-foreground">
-                    Published by:{' '}
+          </div>
+
+          {details.downloads && (
+            <motion.div
+              animate={{ opacity: 1 }}
+              initial={{ opacity: 0 }}
+              className="flex w-fit flex-col">
+              <div className="flex w-fit flex-col items-end self-end text-right">
+                {details.downloadsRange ?
+                  <SparkAreaChart
+                    data={
+                      transformToWeeklyDownloads(
+                        details.downloadsRange,
+                      ).downloads
+                    }
+                    categories={['downloads']}
+                    index={'day'}
+                    colors={['emerald']}
+                    className="w-full"
+                  />
+                : <Skeleton className="h-12 w-full rounded-sm" />}
+                <p className="text-baseline mt-1 w-full self-end whitespace-nowrap text-sm font-medium text-foreground">
+                  {details.downloads.weekly.toLocaleString()}{' '}
+                  <span className="text-muted-foreground">
+                    Weekly Downloads
                   </span>
-                  <span>{details.publisher.name}</span>
-                </motion.div>
-              : ''}
-            </div>
-          </div>
-        </div>
-        {item.to?.manifest?.description || details.author?.name ?
-          <div className="-mt-6 px-6 pb-6">
-            {item.to?.manifest?.description ?
-              <CardDescription className="grow content-center py-2">
-                {item.to.manifest.description}
-              </CardDescription>
-            : ''}
-            {details.author?.name ?
-              <motion.div
-                className="mt-2 flex items-center gap-2"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}>
-                <span className="text-xs font-medium text-muted-foreground">
-                  Authored by: {details.author.name}
-                </span>
-              </motion.div>
-            : ''}
-          </div>
-        : ''}
-        {details.greaterVersions?.length ?
-          <motion.div
-            className="flex items-center p-6"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}>
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger className="flex w-full flex-row text-xs font-medium text-muted-foreground">
-                  <Info className="mr-2" size={16} />
-                  Newer versions available.
-                </TooltipTrigger>
-                <TooltipContent>
-                  <ul>
-                    {details.greaterVersions.map((version, i) => (
-                      <li key={i}>{version}</li>
-                    ))}
-                  </ul>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          </motion.div>
-        : ''}
-        <div className="w-full px-4 pb-4">
-          <Tabs defaultValue="package.json">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="package.json" className="w-36">
-                <FileSearch2 size={16} className="mr-2" />
-                package.json
+                </p>
+              </div>
+            </motion.div>
+          )}
+        </motion.div>
+        <div className="w-full">
+          <Tabs onValueChange={handleTabChange} value={activeTab}>
+            <TabsList variant="outline" className="w-full gap-2 px-6">
+              <TabsTrigger
+                variant="outline"
+                value="overview"
+                className="w-fit px-2">
+                Overview
+              </TabsTrigger>
+              <TabsTrigger
+                variant="outline"
+                value="package.json"
+                className="w-fit px-2">
+                Manifest
+              </TabsTrigger>
+              <TabsTrigger
+                variant="outline"
+                value="versions"
+                disabled={
+                  !details.versions || details.versions.length <= 0
+                }
+                className="w-fit px-2">
+                Versions
               </TabsTrigger>
             </TabsList>
+            <TabsContent value="overview" className="px-6 py-4">
+              {item.to?.manifest?.description && (
+                <p className="text-pretty text-sm">
+                  {item.to.manifest.description}
+                </p>
+              )}
+              {details.author?.name && (
+                <p className="text-baseline mt-2 text-sm text-muted-foreground">
+                  Authored by:{' '}
+                  <span className="font-medium text-foreground">
+                    {details.author.name}
+                  </span>
+                </p>
+              )}
+            </TabsContent>
             <TabsContent value="package.json">
               <CodeBlock
                 code={
@@ -285,6 +338,48 @@ export const SelectedItem = ({ item }: GridItemOptions) => {
                 }
                 lang="json"
               />
+            </TabsContent>
+            <TabsContent value="versions" className="px-6 py-4">
+              <section className="flex flex-col gap-4">
+                {details.greaterVersions &&
+                  details.greaterVersions.length > 0 && (
+                    <div className="flex flex-col gap-2">
+                      <p className="text-sm font-medium text-muted-foreground">
+                        Greater Versions
+                      </p>
+                      <ul className="flex flex-col divide-y-[1px] divide-border">
+                        {details.greaterVersions
+                          .sort((a, b) => rcompare(a, b))
+                          .map((version, idx) => (
+                            <li
+                              key={idx}
+                              className="py-1.5 font-mono text-sm">
+                              {version}
+                            </li>
+                          ))}
+                      </ul>
+                    </div>
+                  )}
+
+                {details.versions && details.versions.length > 0 && (
+                  <div className="flex flex-col gap-2">
+                    <p className="text-sm font-medium text-muted-foreground">
+                      All Versions
+                    </p>
+                    <ul className="flex flex-col divide-y-[1px] divide-border">
+                      {details.versions
+                        .sort((a, b) => rcompare(a, b))
+                        .map((version, idx) => (
+                          <li
+                            key={idx}
+                            className="py-1.5 font-mono text-sm">
+                            {version}
+                          </li>
+                        ))}
+                    </ul>
+                  </div>
+                )}
+              </section>
             </TabsContent>
           </Tabs>
         </div>

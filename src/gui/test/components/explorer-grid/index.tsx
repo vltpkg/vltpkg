@@ -10,8 +10,39 @@ import { load } from '@/state/load-graph.js'
 import type { RawNode } from '@/state/types.js'
 import { Query } from '@vltpkg/query'
 
+vi.mock('lucide-react', () => ({
+  GalleryVertical: 'gui-gallery-vertical-icon',
+  GalleryVerticalEnd: 'gui-gallery-vertical-end-icon',
+  GalleryThumbnails: 'gui-gallery-thumbnails-icon',
+  Package: 'gui-package-icon',
+}))
+
+vi.mock('@/components/explorer-grid/result-item.jsx', () => ({
+  ResultItem: 'gui-result-item',
+}))
+
+vi.mock('@/components/explorer-grid/side-item.jsx', () => ({
+  SideItem: 'gui-side-item',
+}))
+
+vi.mock('@/components/explorer-grid/selected-item.jsx', () => ({
+  SelectedItem: 'gui-selected-item',
+}))
+
+vi.mock('@/components/explorer-grid/header.jsx', () => ({
+  GridHeader: 'gui-grid-header',
+}))
+
+vi.mock('@/components/explorer-grid/dependency-side-bar.jsx', () => ({
+  DependencySideBar: 'gui-dependency-side-bar',
+}))
+
 vi.mock('@/components/explorer-grid/empty-results-state.jsx', () => ({
   EmptyResultsState: 'gui-empty-results-state',
+}))
+
+vi.mock('@/components/ui/badge.jsx', () => ({
+  Badge: 'gui-badge',
 }))
 
 expect.addSnapshotSerializer({
