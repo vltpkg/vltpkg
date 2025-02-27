@@ -77,64 +77,70 @@ jobs:
         run: echo "value=$(jq -r .version ./src/vlt/package.json)" >> $GITHUB_OUTPUT
 
       - name: Pack Bundled
-        run: pnpm run build:bundle --action=pack --outdir=build-tarballs --debug
+        run: pnpm run build:bundle --action=pack --debug
 
       - name: Upload JS Artifacts
         uses: actions/upload-artifact@v4
-        id: build-tarballs
+        id: bundle
         with:
           name: vlt-${{ steps.version.outputs.value }}
           compression-level: 0
           if-no-files-found: error
-          path: build-tarballs/vlt-${{ steps.version.outputs.value }}.tgz
+          hidden-files: true
+          path: ./.build-bundle/vlt-${{ steps.version.outputs.value }}.tgz
 
       - name: Pack Compiled
-        run: pnpm run build:compile --action=pack --outdir=compile-tarballs --platform=all --arch=all --debug
+        run: pnpm run build:compile --action=pack --platform=all --arch=all --debug
 
       - name: Upload Compiled Artifact darwin-arm64
         uses: actions/upload-artifact@v4
-        id: compile-tarballs-darwin-arm64
+        id: compile-darwin-arm64
         with:
           name: vltpkg-cli-darwin-arm64-${{ steps.version.outputs.value }}
           compression-level: 0
           if-no-files-found: error
-          path: compile-tarballs/vltpkg-cli-darwin-arm64-${{ steps.version.outputs.value }}.tgz
+          hidden-files: true
+          path: ./.build-compile/vltpkg-cli-darwin-arm64-${{ steps.version.outputs.value }}.tgz
 
       - name: Upload Compiled Artifact darwin-x64
         uses: actions/upload-artifact@v4
-        id: compile-tarballs-darwin-x64
+        id: compile-darwin-x64
         with:
           name: vltpkg-cli-darwin-x64-${{ steps.version.outputs.value }}
           compression-level: 0
           if-no-files-found: error
-          path: compile-tarballs/vltpkg-cli-darwin-x64-${{ steps.version.outputs.value }}.tgz
+          hidden-files: true
+          path: ./.build-compile/vltpkg-cli-darwin-x64-${{ steps.version.outputs.value }}.tgz
 
       - name: Upload Compiled Artifact linux-arm64
         uses: actions/upload-artifact@v4
-        id: compile-tarballs-linux-arm64
+        id: compile-linux-arm64
         with:
           name: vltpkg-cli-linux-arm64-${{ steps.version.outputs.value }}
           compression-level: 0
           if-no-files-found: error
-          path: compile-tarballs/vltpkg-cli-linux-arm64-${{ steps.version.outputs.value }}.tgz
+          hidden-files: true
+          path: ./.build-compile/vltpkg-cli-linux-arm64-${{ steps.version.outputs.value }}.tgz
 
       - name: Upload Compiled Artifact linux-x64
         uses: actions/upload-artifact@v4
-        id: compile-tarballs-linux-x64
+        id: compile-linux-x64
         with:
           name: vltpkg-cli-linux-x64-${{ steps.version.outputs.value }}
           compression-level: 0
           if-no-files-found: error
-          path: compile-tarballs/vltpkg-cli-linux-x64-${{ steps.version.outputs.value }}.tgz
+          hidden-files: true
+          path: ./.build-compile/vltpkg-cli-linux-x64-${{ steps.version.outputs.value }}.tgz
 
       - name: Upload Compiled Artifact win32-x64
         uses: actions/upload-artifact@v4
-        id: compile-tarballs-win32-x64
+        id: compile-win32-x64
         with:
           name: vltpkg-cli-win32-x64-${{ steps.version.outputs.value }}
           compression-level: 0
           if-no-files-found: error
-          path: compile-tarballs/vltpkg-cli-win32-x64-${{ steps.version.outputs.value }}.tgz
+          hidden-files: true
+          path: ./.build-compile/vltpkg-cli-win32-x64-${{ steps.version.outputs.value }}.tgz
 
       - name: Create or Update PR
         id: pr
@@ -154,12 +160,12 @@ jobs:
             Merge this PR to release `vlt@${{ steps.version.outputs.value }}`
 
             ### Release Tarballs
-            - bundle: ${{ steps.build-tarballs.outputs.artifact-url }}
-            - darwin-arm64: ${{ steps.compile-tarballs-darwin-arm64.outputs.artifact-url }}
-            - darwin-x64: ${{ steps.compile-tarballs-darwin-x64.outputs.artifact-url }}
-            - linux-arm64: ${{ steps.compile-tarballs-linux-arm64.outputs.artifact-url }}
-            - linux-x64: ${{ steps.compile-tarballs-linux-x64.outputs.artifact-url }}
-            - win32-x64: ${{ steps.compile-tarballs-win32-arm64.outputs.artifact-url }}
+            - bundle: ${{ steps.bundle.outputs.artifact-url }}
+            - darwin-arm64: ${{ steps.compile-darwin-arm64.outputs.artifact-url }}
+            - darwin-x64: ${{ steps.compile-darwin-x64.outputs.artifact-url }}
+            - linux-arm64: ${{ steps.compile-linux-arm64.outputs.artifact-url }}
+            - linux-x64: ${{ steps.compile-linux-x64.outputs.artifact-url }}
+            - win32-x64: ${{ steps.compile-win32-arm64.outputs.artifact-url }}
 
   publish:
     name: Publish
