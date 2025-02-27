@@ -1,7 +1,6 @@
 import type { Props } from '@astrojs/starlight/props'
 import config from 'virtual:starlight/user-config'
 import ThemeSelect from '@/components/theme-select/theme-select'
-import { useStore } from '@/state'
 
 const Footer = (_props: Props) => {
   return (
@@ -48,9 +47,6 @@ const Footer = (_props: Props) => {
 }
 
 const FooterSocials = () => {
-  const { getResolvedTheme } = useStore()
-  const theme = getResolvedTheme()
-
   const socialLinks = Object.entries(config.social ?? {}).map(
     ([platform, value]) => ({
       platform,
@@ -64,10 +60,7 @@ const FooterSocials = () => {
         <a href={link.url} key={idx}>
           <img
             src={`/icons/${link.platform}.svg`}
-            className="h-5"
-            style={{
-              filter: theme === 'dark' ? 'invert(0)' : 'invert(1)',
-            }}
+            className="h-5 invert filter dark:filter-none"
           />
         </a>
       ))}

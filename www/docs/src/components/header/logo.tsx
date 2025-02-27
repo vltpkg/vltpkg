@@ -1,19 +1,20 @@
-import { useStore } from '@/state'
-
 const Logo = () => {
-  const { getResolvedTheme } = useStore()
-  const theme = getResolvedTheme()
-
   return (
-    <img
-      src={
-        theme === 'dark' ?
-          '/logos/vlt-logo-light.png'
-        : '/logos/vlt-logo-dark.png'
-      }
-      height={43}
-      width={94}
-    />
+    <>
+      <img
+        className="hidden dark:block"
+        src="/logos/vlt-logo-light.png"
+        height={43}
+        width={94}
+      />
+
+      <img
+        className="block dark:hidden"
+        src="/logos/vlt-logo-dark.png"
+        height={43}
+        width={94}
+      />
+    </>
   )
 }
 
