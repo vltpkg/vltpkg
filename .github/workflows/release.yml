@@ -86,7 +86,7 @@ jobs:
           name: vlt-${{ steps.version.outputs.value }}
           compression-level: 0
           if-no-files-found: error
-          hidden-files: true
+          include-hidden-files: true
           path: ./.build-bundle/vlt-${{ steps.version.outputs.value }}.tgz
 
       - name: Pack Compiled
@@ -99,7 +99,7 @@ jobs:
           name: vltpkg-cli-darwin-arm64-${{ steps.version.outputs.value }}
           compression-level: 0
           if-no-files-found: error
-          hidden-files: true
+          include-hidden-files: true
           path: ./.build-compile/vltpkg-cli-darwin-arm64-${{ steps.version.outputs.value }}.tgz
 
       - name: Upload Compiled Artifact darwin-x64
@@ -109,7 +109,7 @@ jobs:
           name: vltpkg-cli-darwin-x64-${{ steps.version.outputs.value }}
           compression-level: 0
           if-no-files-found: error
-          hidden-files: true
+          include-hidden-files: true
           path: ./.build-compile/vltpkg-cli-darwin-x64-${{ steps.version.outputs.value }}.tgz
 
       - name: Upload Compiled Artifact linux-arm64
@@ -119,7 +119,7 @@ jobs:
           name: vltpkg-cli-linux-arm64-${{ steps.version.outputs.value }}
           compression-level: 0
           if-no-files-found: error
-          hidden-files: true
+          include-hidden-files: true
           path: ./.build-compile/vltpkg-cli-linux-arm64-${{ steps.version.outputs.value }}.tgz
 
       - name: Upload Compiled Artifact linux-x64
@@ -129,7 +129,7 @@ jobs:
           name: vltpkg-cli-linux-x64-${{ steps.version.outputs.value }}
           compression-level: 0
           if-no-files-found: error
-          hidden-files: true
+          include-hidden-files: true
           path: ./.build-compile/vltpkg-cli-linux-x64-${{ steps.version.outputs.value }}.tgz
 
       - name: Upload Compiled Artifact win32-x64
@@ -139,7 +139,7 @@ jobs:
           name: vltpkg-cli-win32-x64-${{ steps.version.outputs.value }}
           compression-level: 0
           if-no-files-found: error
-          hidden-files: true
+          include-hidden-files: true
           path: ./.build-compile/vltpkg-cli-win32-x64-${{ steps.version.outputs.value }}.tgz
 
       - name: Create or Update PR
