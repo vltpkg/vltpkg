@@ -165,7 +165,7 @@ jobs:
             - darwin-x64: ${{ steps.compile-darwin-x64.outputs.artifact-url }}
             - linux-arm64: ${{ steps.compile-linux-arm64.outputs.artifact-url }}
             - linux-x64: ${{ steps.compile-linux-x64.outputs.artifact-url }}
-            - win32-x64: ${{ steps.compile-win32-arm64.outputs.artifact-url }}
+            - win32-x64: ${{ steps.compile-win32-x64.outputs.artifact-url }}
 
   publish:
     name: Publish
