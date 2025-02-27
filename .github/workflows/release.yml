@@ -175,9 +175,9 @@ jobs:
       - name: Update PR Body
         uses: actions/github-script@v7
         if: steps.pr.outputs.pull-request-number
+        env:
+          PR_NUMBER: ${{ steps.pr.outputs.pull-request-number }}
         with:
-          env:
-            PR_NUMBER: steps.pr.outputs.pull-request-number
           script: |
             const { PR_NUMBER } = process.env
             const pr = await github.rest.pulls.get({
