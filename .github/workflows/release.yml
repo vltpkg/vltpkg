@@ -83,6 +83,7 @@ jobs:
         uses: actions/upload-artifact@v4
         id: build-tarballs
         with:
+          name: vlt-${{ steps.version.outputs.value }}
           compression-level: 0
           if-no-files-found: error
           path: build-tarballs/vlt-${{ steps.version.outputs.value }}.tgz
@@ -94,6 +95,7 @@ jobs:
         uses: actions/upload-artifact@v4
         id: compile-tarballs-darwin-arm64
         with:
+          name: vltpkg-cli-darwin-arm64-${{ steps.version.outputs.value }}
           compression-level: 0
           if-no-files-found: error
           path: compile-tarballs/vltpkg-cli-darwin-arm64-${{ steps.version.outputs.value }}.tgz
@@ -102,6 +104,7 @@ jobs:
         uses: actions/upload-artifact@v4
         id: compile-tarballs-darwin-x64
         with:
+          name: vltpkg-cli-darwin-x64-${{ steps.version.outputs.value }}
           compression-level: 0
           if-no-files-found: error
           path: compile-tarballs/vltpkg-cli-darwin-x64-${{ steps.version.outputs.value }}.tgz
@@ -110,6 +113,7 @@ jobs:
         uses: actions/upload-artifact@v4
         id: compile-tarballs-linux-arm64
         with:
+          name: vltpkg-cli-linux-arm64-${{ steps.version.outputs.value }}
           compression-level: 0
           if-no-files-found: error
           path: compile-tarballs/vltpkg-cli-linux-arm64-${{ steps.version.outputs.value }}.tgz
@@ -118,6 +122,7 @@ jobs:
         uses: actions/upload-artifact@v4
         id: compile-tarballs-linux-x64
         with:
+          name: vltpkg-cli-linux-x64-${{ steps.version.outputs.value }}
           compression-level: 0
           if-no-files-found: error
           path: compile-tarballs/vltpkg-cli-linux-x64-${{ steps.version.outputs.value }}.tgz
@@ -126,6 +131,7 @@ jobs:
         uses: actions/upload-artifact@v4
         id: compile-tarballs-win32-x64
         with:
+          name: vltpkg-cli-win32-x64-${{ steps.version.outputs.value }}
           compression-level: 0
           if-no-files-found: error
           path: compile-tarballs/vltpkg-cli-win32-x64-${{ steps.version.outputs.value }}.tgz
