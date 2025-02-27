@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: ${{ github.workflow }}-main
   cancel-in-progress: true
 
 jobs:
@@ -15,22 +15,24 @@ jobs:
     name: Detect Release Action
     runs-on: ubuntu-latest
     outputs:
-      action: ${{ steps.determine-action.outputs.action }}
+      action: ${{ steps.action.outputs.value }}
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
+        with:
+          ref: main
 
       - name: Get Commit Message
-        id: get-message
-        run: echo "msg=$(git log -1 --pretty=%B)" >> $GITHUB_ENV
+        id: message
+        run: echo "value=$(git log -1 --pretty=%B)" >> $GITHUB_OUTPUT
 
       - name: Determine Action
-        id: determine-action
+        id: action
         run: |
-          if [[ "$msg" == *"Release v"* ]]; then
-            echo "action=publish" >> $GITHUB_OUTPUT
+          if [[ "${{ startsWith(steps.message.outputs.value, 'Release v') }}" == "true" ]]; then
+            echo "value=publish" >> $GITHUB_OUTPUT
           else
-            echo "action=pr" >> $GITHUB_OUTPUT
+            echo "value=pr" >> $GITHUB_OUTPUT
           fi
 
   pr:
@@ -41,11 +43,17 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
+        with:
+          ref: main
 
       - uses: pnpm/action-setup@v4
         with:
           version: 9
           run_install: false
+
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
 
       - name: Setup Nodejs
         uses: actions/setup-node@v4
@@ -54,36 +62,132 @@ jobs:
           cache: pnpm
           check-latest: true
 
+      - name: Install dependencies
+        run: pnpm install
+
       - name: Increment Version
         run: pnpm -F cli exec npm version prerelease --no-git-tag-version
 
       - name: Get Version Number
-        id: get-version
-        run: echo "version=$(jq -r .version ./src/vlt/package.json)" >> $GITHUB_ENV
+        id: version
+        run: echo "value=$(jq -r .version ./src/vlt/package.json)" >> $GITHUB_OUTPUT
+
+      - name: Pack Bundled
+        run: pnpm run build:bundle --action=pack --debug
+
+      - name: Upload JS Artifacts
+        uses: actions/upload-artifact@v4
+        id: bundle
+        with:
+          name: vlt-${{ steps.version.outputs.value }}
+          compression-level: 0
+          if-no-files-found: error
+          include-hidden-files: true
+          path: ./.build-bundle/vlt-${{ steps.version.outputs.value }}.tgz
+
+      - name: Pack Compiled
+        run: pnpm run build:compile --action=pack --platform=all --arch=all --debug
+
+      - name: Upload Compiled Artifact darwin-arm64
+        uses: actions/upload-artifact@v4
+        id: compile-darwin-arm64
+        with:
+          name: vltpkg-cli-darwin-arm64-${{ steps.version.outputs.value }}
+          compression-level: 0
+          if-no-files-found: error
+          include-hidden-files: true
+          path: ./.build-compile/vltpkg-cli-darwin-arm64-${{ steps.version.outputs.value }}.tgz
+
+      - name: Upload Compiled Artifact darwin-x64
+        uses: actions/upload-artifact@v4
+        id: compile-darwin-x64
+        with:
+          name: vltpkg-cli-darwin-x64-${{ steps.version.outputs.value }}
+          compression-level: 0
+          if-no-files-found: error
+          include-hidden-files: true
+          path: ./.build-compile/vltpkg-cli-darwin-x64-${{ steps.version.outputs.value }}.tgz
+
+      - name: Upload Compiled Artifact linux-arm64
+        uses: actions/upload-artifact@v4
+        id: compile-linux-arm64
+        with:
+          name: vltpkg-cli-linux-arm64-${{ steps.version.outputs.value }}
+          compression-level: 0
+          if-no-files-found: error
+          include-hidden-files: true
+          path: ./.build-compile/vltpkg-cli-linux-arm64-${{ steps.version.outputs.value }}.tgz
+
+      - name: Upload Compiled Artifact linux-x64
+        uses: actions/upload-artifact@v4
+        id: compile-linux-x64
+        with:
+          name: vltpkg-cli-linux-x64-${{ steps.version.outputs.value }}
+          compression-level: 0
+          if-no-files-found: error
+          include-hidden-files: true
+          path: ./.build-compile/vltpkg-cli-linux-x64-${{ steps.version.outputs.value }}.tgz
+
+      - name: Upload Compiled Artifact win32-x64
+        uses: actions/upload-artifact@v4
+        id: compile-win32-x64
+        with:
+          name: vltpkg-cli-win32-x64-${{ steps.version.outputs.value }}
+          compression-level: 0
+          if-no-files-found: error
+          include-hidden-files: true
+          path: ./.build-compile/vltpkg-cli-win32-x64-${{ steps.version.outputs.value }}.tgz
 
       - name: Create or Update PR
         id: pr
         uses: peter-evans/create-pull-request@v7
         with:
-          token: ${{ secrets.RELEASE_WORKFLOW_TOKEN }}
+          title: 'Release v${{ steps.version.outputs.value }}'
+          commit-message: 'Release v${{ steps.version.outputs.value }}'
           branch: release
-          title: 'Release v${{ steps.get-version.outputs.version }}'
-          body: 'This PR was created automatically to publish the package.'
-          commit-message: 'Release v${{ steps.get-version.outputs.version }}'
+          base: main
+          labels: 'release'
           author: 'vltops <vltops@users.noreply.github.com>'
           committer: 'vltops <vltops@users.noreply.github.com>'
-          labels: 'release'
-          base: main
+          token: ${{ secrets.RELEASE_WORKFLOW_TOKEN }}
+          body: |
+            ## Release v${{ steps.version.outputs.value }}
 
-      - name: Dry Run Publish
-        run: pnpm run build:bundle --action=pack
+            :rotating_light: Merging this PR will publish `vlt@${{ steps.version.outputs.value }}` :rotating_light:
 
-      - name: Upload Artifacts
-        uses: actions/upload-artifact@v4
+            Steps to merge:
+
+            1. [ ] `gh pr review -R vltpkg/vltpkg --approve {{ PR_NUMBER }}`
+            2. [ ] `gh pr merge -R vltpkg/vltpkg --rebase {{ PR_NUMBER }}`
+
+            ### Release Tarballs
+            - bundle: ${{ steps.bundle.outputs.artifact-url }}
+            - darwin-arm64: ${{ steps.compile-darwin-arm64.outputs.artifact-url }}
+            - darwin-x64: ${{ steps.compile-darwin-x64.outputs.artifact-url }}
+            - linux-arm64: ${{ steps.compile-linux-arm64.outputs.artifact-url }}
+            - linux-x64: ${{ steps.compile-linux-x64.outputs.artifact-url }}
+            - win32-x64: ${{ steps.compile-win32-x64.outputs.artifact-url }}
+
+      - name: Update PR Body
+        uses: actions/github-script@v7
+        if: steps.pr.outputs.pull-request-number
+        env:
+          PR_NUMBER: ${{ steps.pr.outputs.pull-request-number }}
         with:
-          name: dry-run-publish-artifacts
-          path: |
-            .build-bundle/vlt-*.tgz
+          github-token: ${{ secrets.RELEASE_WORKFLOW_TOKEN }}
+          script: |
+            const { PR_NUMBER } = process.env
+            const { data: pr } = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: PR_NUMBER
+            });
+            await github.rest.pulls.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: PR_NUMBER,
+              body: pr.body.replaceAll('{{ PR_NUMBER }}', PR_NUMBER)
+            });
 
   publish:
     name: Publish
@@ -94,7 +198,7 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
         with:
-          ref: release
+          ref: main
 
       - uses: pnpm/action-setup@v4
         with:
