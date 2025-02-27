@@ -157,7 +157,12 @@ jobs:
           body: |
             ## Release v${{ steps.version.outputs.value }}
 
-            Merge this PR to release `vlt@${{ steps.version.outputs.value }}`
+            :rotating_light: Merging this PR will publish `vlt@${{ steps.version.outputs.value }}` :rotating_light:
+
+            Steps to merge:
+
+            1. [ ] `gh pr review -R vltpkg/vltpkg --approve {{ PR_NUMBER }}`
+            2. [ ] `gh pr merge -R vltpkg/vltpkg --rebase {{ PR_NUMBER }}`
 
             ### Release Tarballs
             - bundle: ${{ steps.bundle.outputs.artifact-url }}
@@ -166,6 +171,27 @@ jobs:
             - linux-arm64: ${{ steps.compile-linux-arm64.outputs.artifact-url }}
             - linux-x64: ${{ steps.compile-linux-x64.outputs.artifact-url }}
             - win32-x64: ${{ steps.compile-win32-x64.outputs.artifact-url }}
+
+      - name: Update PR Body
+        uses: actions/github-script@v7
+        if: steps.pr.outputs.pull-request-number
+        with:
+          env:
+            PR_NUMBER: steps.pr.outputs.pull-request-number
+          script: |
+            const { PR_NUMBER } = process.env
+            const pr = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: PR_NUMBER
+            });
+            console.log(pr)
+            await github.rest.pulls.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: PR_NUMBER,
+              body: pr.data.body.replaceAll('{{ PR_NUMBER }}', PR_NUMBER)
+            });
 
   publish:
     name: Publish
