@@ -17,5 +17,6 @@
     "strict": true,
     "target": "es2022",
     "rewriteRelativeImportExtensions": true
-  }
+  },
+  "exclude": ["dist"]
 }

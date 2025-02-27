@@ -42,8 +42,8 @@
     "prepack": "tshy",
     "snap": "tap",
     "test": "tap",
-    "posttest": "tsc --project tsconfig.test.json",
-    "typecheck": "tsc --noEmit --project .tshy/esm.json"
+    "posttest": "tsc --noEmit",
+    "typecheck": "tsc --noEmit"
   },
   "tap": {
     "extends": "../../tap-config.yaml"

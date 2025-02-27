@@ -226,49 +226,57 @@ const fixDeps = async (ws, { catalog }) => {
 }
 
 const fixScripts = async ws => {
-  Object.assign(
+  const scripts = Object.assign(
     ws.pj.scripts,
+    !ws.isRoot ?
+      {
+        typecheck: 'tsc --noEmit',
+      }
+    : {},
+    // prettier
     ws.pj.devDependencies.prettier ?
       {
         format: `prettier --write . --log-level warn --ignore-path ${ws.relDir}.prettierignore --cache`,
         'format:check': `prettier --check . --ignore-path ${ws.relDir}.prettierignore --cache`,
       }
     : {},
+    // eslint
     ws.pj.devDependencies.eslint ?
       {
         lint: 'eslint . --fix',
         'lint:check': 'eslint .',
       }
     : {},
+    // testing
     ws.pj.devDependencies.tap ?
       {
         test: 'tap',
         snap: 'tap',
-        posttest: 'tsc --project tsconfig.test.json',
       }
     : ws.pj.devDependencies.vitest ?
       {
         test: 'vitest',
         snap: 'vitest --no-watch -u',
-        posttest: 'tsc --project tsconfig.test.json',
       }
     : {},
+    // typescript/tshy
     ws.pj.devDependencies.tshy ?
       {
         prepack: 'tshy',
-        typecheck: 'tsc --noEmit --project .tshy/esm.json',
       }
-    : ws.pj.dependencies?.astro ?
+    : {},
+    // docs workspace
+    ws.pj.dependencies?.astro ?
       {
         typecheck: 'astro check',
       }
-    : ws.pj.devDependencies.typescript && !ws.isRoot ?
-      {
-        typecheck: 'tsc --noEmit',
-      }
     : {},
   )
-  ws.pj.scripts = sortObject(ws.pj.scripts, (a, b) => {
+  // always run typecheck after tests
+  if (scripts.typecheck) {
+    scripts.posttest = scripts.typecheck
+  }
+  ws.pj.scripts = sortObject(scripts, (a, b) => {
     const aName = a.replace(/^(pre|post)/, '')
     const bName = b.replace(/^(pre|post)/, '')
     if (aName === bName) {
@@ -316,21 +324,6 @@ const fixTools = async ws => {
       },
       ['extends'],
     )
-  }
-  if (ws.pj.devDependencies.vitest || ws.pj.devDependencies.tap) {
-    writeJson(resolve(ws.dir, 'tsconfig.test.json'), {
-      extends: './tsconfig.json',
-      include: [
-        './test/**/*.ts',
-        './test/**/*.mts',
-        './test/**/*.tsx',
-        './test/**/*.json',
-      ],
-      compilerOptions: {
-        noEmit: true,
-        incremental: false,
-      },
-    })
   }
   if (ws.pj.devDependencies.prettier) {
     ws.pj.prettier = `${ws.relDir}.prettierrc.js`
