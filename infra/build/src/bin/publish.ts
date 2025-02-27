@@ -8,6 +8,14 @@ import type { CompilationDir } from '../matrix.ts'
 import { Paths } from '../index.ts'
 import * as types from '../types.ts'
 
+type LogLevel = 'info' | 'debug' | 'quiet'
+
+const LogLevels: Record<LogLevel, string> = {
+  info: 'info',
+  debug: 'debug',
+  quiet: 'quiet',
+} as const
+
 type Action = 'build' | 'publish' | 'pack'
 
 type Base = {
@@ -34,17 +42,21 @@ type CompiledRoot = Compiled & {
 }
 
 type CompiledPlatform = Compiled & {
-  bin: undefined
+  bin: boolean
   os: types.Platform[]
   cpu: types.Arch[]
 }
 
 type Package = Bundle | Compiled | CompiledRoot | CompiledPlatform
 
+type BinKey = types.Bin | `${types.Bin}_${string}`
+
 type Publish<T extends Package = Package> = {
   action: Action
   dryRun: boolean
   tag: string
+  binSuffix?: string
+  loglevel: LogLevel
   files: {
     LICENSE: string
     'README.md': string
@@ -52,7 +64,7 @@ type Publish<T extends Package = Package> = {
     '.npmrc': string
   } & (T extends CompiledRoot ?
     {
-      [bin in types.Bin]?: string
+      [bin in BinKey]?: string
     } & {
       'postinstall.js': string
     }
@@ -100,7 +112,9 @@ const parseArgs = () => {
     forReal,
     action = 'build',
     quiet,
+    debug,
     appendTimestamp,
+    binSuffix,
     ...matrix
   } = nodeParseArgs({
     options: {
@@ -108,7 +122,9 @@ const parseArgs = () => {
       forReal: { type: 'boolean' },
       action: { type: 'string' },
       quiet: { type: 'boolean' },
+      debug: { type: 'boolean' },
       appendTimestamp: { type: 'boolean' },
+      binSuffix: { type: 'string' },
       ...matrixConfig,
     },
   }).values
@@ -124,8 +140,11 @@ const parseArgs = () => {
     // Make publish explicit
     dryRun: !forReal,
     action: action as Action,
-    verbose: !quiet,
+    loglevel: (quiet ? LogLevels.quiet
+    : debug ? LogLevels.debug
+    : LogLevels.info) as LogLevel,
     appendTimestamp,
+    binSuffix,
     matrix: getMatrix(matrix),
   }
 }
@@ -135,6 +154,10 @@ const publish = <T extends Package>(
   options: Publish<T>,
 ) => {
   fs.mkdirSync(pkg.dir, { recursive: true })
+
+  if (options.loglevel === LogLevels.debug) {
+    console.log(JSON.stringify(options, null, 2))
+  }
 
   const writeFiles = (files: Record<string, string | object>) => {
     for (const [name, contents] of Object.entries(files)) {
@@ -151,19 +174,23 @@ const publish = <T extends Package>(
 
   const binFiles = fs
     .readdirSync(pkg.dir)
-    .reduce<Partial<Record<types.Bin, string>>>((acc, f) => {
+    .reduce<Partial<Record<BinKey, string>>>((acc, f) => {
       const bin = types.BinNames.find(b =>
         [b, `${b}.js`, `${b}.exe`].includes(f),
       )
       if (bin) {
-        acc[bin] = f
+        const binKey = (
+          options.binSuffix ?
+            `${bin}_${options.binSuffix}`
+          : bin) as BinKey
+        acc[binKey] = f
       }
       return acc
     }, {})
 
   const noPackageJsonBins =
     'bin' in options.files['package.json'] &&
-    options.files['package.json'].bin === undefined
+    options.files['package.json'].bin === false
 
   writeFiles({
     'package.json': {
@@ -234,16 +261,23 @@ const publishCompiled = (
           // require.resolve in the postinstall script.
           name: `@vltpkg/cli-${pkg.platform}-${pkg.arch}`,
           description: `${FILES.PACKAGE_JSON.description} (${pkg.platform}-${pkg.arch})`,
-          // platform packaged dont get bins set in package json since those
-          // would conflict with the root package. they get moved in place
-          // by the postinstall script
-          bin: undefined,
+          // Except when packing, platform packaged dont get bins set in package
+          // json since those would conflict with the root package. they get
+          // moved in place by the postinstall script.
+          bin: options.action !== 'publish',
           os: [pkg.platform],
           cpu: [pkg.arch],
         },
       },
     }),
   )
+
+  if (options.action !== 'publish') {
+    // Dont compile the root package if only packing since it won't
+    // do anything when installed because it references packages that aren't
+    // published yet. Instead in this case each platform package will have its bins set.
+    return
+  }
 
   // All bin files from from platform packages are written to the root
   // as placeholders. These will error if postinstall or optional deps
@@ -291,8 +325,15 @@ const publishCompiled = (
 }
 
 const main = async () => {
-  const { outdir, matrix, dryRun, action, verbose, appendTimestamp } =
-    parseArgs()
+  const {
+    outdir,
+    matrix,
+    dryRun,
+    action,
+    loglevel,
+    appendTimestamp,
+    binSuffix,
+  } = parseArgs()
 
   assert(
     action === 'publish' && !dryRun ? TOKEN : true,
@@ -305,6 +346,8 @@ const main = async () => {
     dryRun,
     action,
     tag: 'latest',
+    loglevel,
+    binSuffix,
     files: {
       'README.md': FILES.README.replaceAll('# @vltpkg/vlt', '# vlt'),
       LICENSE: FILES.LICENSE,
@@ -324,7 +367,7 @@ const main = async () => {
 
   const { bundles, compilations } = await generateMatrix({
     outdir,
-    verbose,
+    verbose: loglevel !== LogLevels.quiet,
     matrix,
     // Only publish the main `vlt` bin if it's a compilation because its probably too
     // big to publish 5 * 80MB bins.
