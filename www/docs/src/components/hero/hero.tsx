@@ -1,8 +1,6 @@
 import type { Props } from '@astrojs/starlight/props'
 import CliInstall from '@/components/cli-install/cli-install'
 import { ArrowUpRight } from 'lucide-react'
-import clsx from 'clsx'
-import { useStore } from '@/state'
 import {
   WorkspacesCard,
   VSRCard,
@@ -16,7 +14,7 @@ const Hero = ({ entry }: Props) => {
   const tagline = data.hero?.tagline ?? ''
 
   return (
-    <section className="mx-auto flex w-full max-w-screen-xl grow flex-col justify-between gap-x-4 py-6">
+    <section className="flex flex-col">
       <Introduction title={title} tagline={tagline} />
       <Workspaces />
     </section>
@@ -30,18 +28,13 @@ const Introduction = ({
   title: string
   tagline: string
 }) => {
-  const { getResolvedTheme } = useStore()
-  const theme = getResolvedTheme()
-
   return (
-    <section className="py-16">
-      {/* background image */}
-      <div
-        className={clsx('absolute inset-0 -z-10 h-[848px]', {
-          'light-wave': theme === 'light',
-          'dark-wave': theme === 'dark',
-        })}
-      />
+    <section className="mx-auto flex w-full max-w-screen-xl flex-col items-center justify-center py-16">
+      {/* background */}
+      <>
+        <div className="absolute inset-0 z-[-10] hidden h-[850px] w-full bg-light-wave bg-cover bg-right-bottom dark:bg-dark-wave md:flex" />
+        <div className="absolute inset-0 z-[-9] hidden h-[850px] w-full border-b-[1px] bg-gradient-to-b from-white to-white/0 dark:from-black dark:to-black/0 md:flex" />
+      </>
 
       <div className="flex flex-col items-center justify-center gap-4 text-center">
         <h1 className="text-5xl">{title}</h1>
@@ -57,14 +50,14 @@ const Introduction = ({
         <a
           href="/cli"
           role="link"
-          className="cursor-pointer rounded-sm bg-foreground px-8 py-2 text-white no-underline transition-all hover:bg-foreground/90 dark:text-black">
+          className="cursor-pointer text-nowrap rounded-sm bg-foreground px-8 py-2 text-white no-underline transition-all hover:bg-foreground/90 dark:text-black">
           Quick Start
         </a>
         <a
           href="https://www.vlt.sh/serverless-registry"
           target="_blank"
           role="link"
-          className="flex cursor-pointer items-center gap-1 rounded-sm border-[1px] border-muted-foreground/25 bg-white px-8 py-2 text-foreground no-underline transition-all hover:bg-muted-foreground/20 dark:bg-black">
+          className="flex cursor-pointer items-center gap-1 text-nowrap rounded-sm border-[1px] border-muted-foreground/25 bg-white px-8 py-2 text-foreground no-underline transition-all hover:bg-muted-foreground/20 dark:bg-black">
           Serverless Registry
           <ArrowUpRight size={20} />
         </a>
@@ -75,9 +68,7 @@ const Introduction = ({
 
 const Workspaces = () => {
   return (
-    <section className="flex flex-col gap-8 py-4">
-      <div className="absolute left-0 right-0 h-[1px] w-full bg-muted-foreground/10" />
-
+    <section className="mx-auto flex h-full w-full max-w-screen-xl flex-col items-center justify-center gap-8 py-4">
       <div className="mb-10 mt-24 flex flex-col text-center">
         <p className="text-muted-foreground/50">
           Get started in minutes
