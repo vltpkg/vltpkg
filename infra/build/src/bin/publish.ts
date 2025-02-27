@@ -86,7 +86,6 @@ const readPackageJson = (path: string): unknown =>
   JSON.parse(readFile(path))
 
 const TOKEN = process.env.VLT_CLI_PUBLISH_TOKEN
-const PRERELEASE_ID = `.${Date.now()}`
 const FILES = {
   README: readFile(join(Paths.CLI, 'README.md')),
   LICENSE: readFile(join(Paths.CLI, 'LICENSE')),
@@ -113,7 +112,6 @@ const parseArgs = () => {
     action = 'build',
     quiet,
     debug,
-    appendTimestamp,
     binSuffix,
     ...matrix
   } = nodeParseArgs({
@@ -123,7 +121,6 @@ const parseArgs = () => {
       action: { type: 'string' },
       quiet: { type: 'boolean' },
       debug: { type: 'boolean' },
-      appendTimestamp: { type: 'boolean' },
       binSuffix: { type: 'string' },
       ...matrixConfig,
     },
@@ -143,7 +140,6 @@ const parseArgs = () => {
     loglevel: (quiet ? LogLevels.quiet
     : debug ? LogLevels.debug
     : LogLevels.info) as LogLevel,
-    appendTimestamp,
     binSuffix,
     matrix: getMatrix(matrix),
   }
@@ -325,15 +321,8 @@ const publishCompiled = (
 }
 
 const main = async () => {
-  const {
-    outdir,
-    matrix,
-    dryRun,
-    action,
-    loglevel,
-    appendTimestamp,
-    binSuffix,
-  } = parseArgs()
+  const { outdir, matrix, dryRun, action, loglevel, binSuffix } =
+    parseArgs()
 
   assert(
     action === 'publish' && !dryRun ? TOKEN : true,
@@ -354,7 +343,7 @@ const main = async () => {
       '.npmrc': `//registry.npmjs.org/:_authToken=\${NPM_PUBLISH_TOKEN}`,
       'package.json': {
         name: 'vlt',
-        version: `${FILES.PACKAGE_JSON.version}${appendTimestamp ? PRERELEASE_ID : ''}`,
+        version: FILES.PACKAGE_JSON.version,
         description: FILES.PACKAGE_JSON.description,
         license: FILES.PACKAGE_JSON.license,
         keywords: FILES.PACKAGE_JSON.keywords,
