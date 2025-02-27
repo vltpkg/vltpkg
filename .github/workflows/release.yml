@@ -178,19 +178,19 @@ jobs:
         env:
           PR_NUMBER: ${{ steps.pr.outputs.pull-request-number }}
         with:
+          github-token: ${{ secrets.RELEASE_WORKFLOW_TOKEN }}
           script: |
             const { PR_NUMBER } = process.env
-            const pr = await github.rest.pulls.get({
+            const { data: pr } = await github.rest.pulls.get({
               owner: context.repo.owner,
               repo: context.repo.repo,
               pull_number: PR_NUMBER
             });
-            console.log(pr)
             await github.rest.pulls.update({
               owner: context.repo.owner,
               repo: context.repo.repo,
               pull_number: PR_NUMBER,
-              body: pr.data.body.replaceAll('{{ PR_NUMBER }}', PR_NUMBER)
+              body: pr.body.replaceAll('{{ PR_NUMBER }}', PR_NUMBER)
             });
 
   publish:
