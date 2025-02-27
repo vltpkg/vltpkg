@@ -140,13 +140,18 @@ jobs:
         id: pr
         uses: peter-evans/create-pull-request@v7
         with:
-          token: ${{ secrets.RELEASE_WORKFLOW_TOKEN }}
-          branch: release
           title: 'Release v${{ steps.version.outputs.value }}'
+          commit-message: 'Release v${{ steps.version.outputs.value }}'
+          branch: release
+          base: main
+          labels: 'release'
+          author: 'vltops <vltops@users.noreply.github.com>'
+          committer: 'vltops <vltops@users.noreply.github.com>'
+          token: ${{ secrets.RELEASE_WORKFLOW_TOKEN }}
           body: |
             ## Release v${{ steps.version.outputs.value }}
 
-            Merge this PR to release vlt@${{ steps.version.outputs.value }}'
+            Merge this PR to release `vlt@${{ steps.version.outputs.value }}`
 
             ### Release Tarballs
             - bundle: ${{ steps.build-tarballs.outputs.artifact-url }}
@@ -155,30 +160,6 @@ jobs:
             - linux-arm64: ${{ steps.compile-tarballs-linux-arm64.outputs.artifact-url }}
             - linux-x64: ${{ steps.compile-tarballs-linux-x64.outputs.artifact-url }}
             - win32-x64: ${{ steps.compile-tarballs-win32-arm64.outputs.artifact-url }}
-          commit-message: 'Release v${{ steps.version.outputs.value }}'
-          author: 'vltops <vltops@users.noreply.github.com>'
-          committer: 'vltops <vltops@users.noreply.github.com>'
-          labels: 'release'
-          base: main
-
-      - name: Find Comment
-        uses: peter-evans/find-comment@v3
-        id: comment
-        with:
-          issue-number: ${{ steps.pr.outputs.pull-request-number }}
-          comment-author: 'vltops'
-          body-includes: |
-            ## Release Tarballs
-
-      - name: Create or update comment
-        uses: peter-evans/create-or-update-comment@v4
-        with:
-          token: ${{ secrets.RELEASE_WORKFLOW_TOKEN }}
-          comment-id: ${{ steps.comment.outputs.comment-id }}
-          issue-number: ${{ steps.pr.outputs.pull-request-number  }}
-          body: |
-
-          edit-mode: replace
 
   publish:
     name: Publish
