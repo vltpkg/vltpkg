@@ -22,14 +22,11 @@ jobs:
         with:
           ref: main
 
-      - name: Get Commit Message
-        id: message
-        run: echo "value=$(git log -1 --pretty=%B)" >> $GITHUB_OUTPUT
-
       - name: Determine Action
         id: action
         run: |
-          if [[ "${{ startsWith(steps.message.outputs.value, 'Release v') }}" == "true" ]]; then
+          MESSAGE=$(git log -1 --pretty=%B | head -n 1)
+          if [[ "$MESSAGE" =~ ^Release\ v ]]; then
             echo "value=publish" >> $GITHUB_OUTPUT
           else
             echo "value=pr" >> $GITHUB_OUTPUT
