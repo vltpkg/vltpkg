@@ -81,7 +81,7 @@
     "prepare": "node --no-warnings --experimental-transform-types scripts/prepare.js --production",
     "snap": "vitest --no-watch -u",
     "test": "vitest",
-    "posttest": "tsc --project tsconfig.test.json",
+    "posttest": "tsc --noEmit",
     "typecheck": "tsc --noEmit",
     "watch": "node --no-warnings --experimental-transform-types scripts/prepare.js --watch"
   },
