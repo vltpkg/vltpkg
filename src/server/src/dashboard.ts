@@ -64,10 +64,6 @@ export class Dashboard {
   publicDir: string
   version = version
 
-  #lastUpdated = Date.now()
-  #lastData?: DashboardData
-
-
   constructor(options: DashboardOptions) {
     const { dashboardRoot, scurry, packageJson, publicDir } = options
     this.packageJson = packageJson
@@ -79,7 +75,8 @@ export class Dashboard {
 
   async update() {
     // TODO: projectFolders should be set once, not every time
-    // or at least cached for some specified amount of time?
+    // Store the mtime for every folder that we find, and only update
+    // the ones that are actually modified.
     const dashboard = await this.format(
       await readProjectFolders({
         scurry: this.scurry,

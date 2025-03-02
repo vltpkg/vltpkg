@@ -30,8 +30,6 @@ type ProjectFolderOptions = {
  * be find, always stopping at the first level where a package.json
  * is present.
  */
-// TODO: set a max depth for traversal, like 10 folders deep or something
-// to prevent unbounded FS operations
 export const readProjectFolders = async (
   {
     path = home,
@@ -48,24 +46,22 @@ export const readProjectFolders = async (
   const paths =
     userDefinedProjectPaths.length ? userDefinedProjectPaths : [path]
 
-  const step =
-    (entry: PathBase, depth: number) =>
-    async () => {
-      for (const child of await entry.readdir()) {
-        if (
-          collectResult(
-            child,
-            result,
-            scurry,
-            entry === homeEntry,
-            depth,
-            maxDepth,
-          )
-        ) {
-          traverse.push(step(child, depth + 1))
-        }
+  const step = (entry: PathBase, depth: number) => async () => {
+    for (const child of await entry.readdir()) {
+      if (
+        await collectResult(
+          child,
+          result,
+          scurry,
+          entry === homeEntry,
+          depth,
+          maxDepth,
+        )
+      ) {
+        traverse.push(step(child, depth + 1))
       }
     }
+  }
 
   let traverse = (
     await Promise.all(paths.map(path => scurry.lstat(path)))
@@ -88,14 +84,14 @@ export const readProjectFolders = async (
 // collectResult will return true in case it finds a directory that
 // has no package.json file in it but that can still be potentially
 // recursive traversed in the future
-const collectResult = (
+const collectResult = async (
   entry: PathBase,
   result: PathBase[],
   scurry: PathScurry,
   fromHome: boolean,
   depth: number,
   maxDepth: number,
-): boolean => {
+): Promise<boolean> => {
   if (
     !entry.isDirectory() ||
     entry.isSymbolicLink() ||
@@ -109,8 +105,7 @@ const collectResult = (
   }
 
   const resolved = entry.fullpath()
-  const statPackageJson = scurry.lstatSync(`${resolved}/package.json`)
-  const hasDotGit = scurry.lstatSync(`${resolved}/.git`)
+  const statPackageJson = await scurry.lstat(`${resolved}/package.json`)
   const hasValidPackageJson =
     statPackageJson &&
     statPackageJson.isFile() &&
@@ -118,8 +113,5 @@ const collectResult = (
 
   if (hasValidPackageJson) result.push(entry)
 
-  // do not descend if we're in a root of a git project or C project
-  // TODO: make this more consistent with how we determine
-  // "project-root-ness" in the walk up the folder tree.
-  return !hasDotGit && !hasValidPackageJson
+  return !hasValidPackageJson
 }

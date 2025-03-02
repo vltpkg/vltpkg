@@ -3,9 +3,9 @@ import { actual } from '@vltpkg/graph'
 import type { PackageJson } from '@vltpkg/package-json'
 import { rmSync, writeFileSync } from 'fs'
 import { resolve } from 'path'
-import type { PathBase, PathScurry } from 'path-scurry'
-import { inferTools } from './project-tools.ts'
+import type { Path, PathBase, PathScurry } from 'path-scurry'
 import type { ProjectTools } from './project-tools.ts'
+import { inferTools } from './project-tools.ts'
 
 export type GraphDataOptions = ActualLoadOptions
 
@@ -19,6 +19,31 @@ export const updateGraphData = (
   tmp: string,
   hasDashboard: boolean,
 ) => {
+  const { projectRoot, scurry } = options
+  const folder = scurry.lstatSync(projectRoot)
+  const result =
+    folder ?
+      getGraphData(options, hasDashboard, folder)
+    : {
+        hasDashboard,
+        importers: [],
+        lockfile: {},
+        projectInfo: {
+          tools: [],
+          vltInstalled: false,
+        },
+      }
+
+  const graphJson = JSON.stringify(result, null, 2)
+  rmSync(resolve(tmp, 'graph.json'), { force: true })
+  writeFileSync(resolve(tmp, 'graph.json'), graphJson)
+}
+
+const getGraphData = (
+  options: ActualLoadOptions,
+  hasDashboard: boolean,
+  folder: Path,
+) => {
   const { packageJson, projectRoot, scurry } = options
   const mainManifest = packageJson.read(projectRoot)
   const graph = actual.load({
@@ -27,21 +52,13 @@ export const updateGraphData = (
     loadManifests: true,
   })
   const importers = [...graph.importers]
-  const graphJson = JSON.stringify(
-    {
-      hasDashboard,
-      importers,
-      lockfile: graph,
-      projectInfo: getProjectData(
-        { packageJson, scurry },
-        scurry.lstatSync(projectRoot),
-      ),
-    },
-    null,
-    2,
-  )
-  rmSync(resolve(tmp, 'graph.json'), { force: true })
-  writeFileSync(resolve(tmp, 'graph.json'), graphJson)
+
+  return {
+    hasDashboard,
+    importers,
+    lockfile: graph,
+    projectInfo: getProjectData({ packageJson, scurry }, folder),
+  }
 }
 
 const getProjectData = (
@@ -49,15 +66,8 @@ const getProjectData = (
     packageJson,
     scurry,
   }: { packageJson: PackageJson; scurry: PathScurry },
-  folder?: PathBase,
+  folder: PathBase,
 ) => {
-  if (!folder) {
-    return {
-      tools: [],
-      vltInstalled: false,
-    }
-  }
-
   return {
     tools: inferTools(
       packageJson.read(folder.fullpath()),
@@ -65,11 +75,13 @@ const getProjectData = (
       scurry,
     ),
     vltInstalled:
-      !!scurry
-        .lstatSync(folder.resolve('node_modules/.vlt'))
+      !!folder
+        .resolve('node_modules/.vlt')
+        .lstatSync()
         ?.isDirectory() ||
-      !!scurry
-        .lstatSync(folder.resolve('node_modules/.vlt-lock.json'))
+      !!folder
+        .resolve('node_modules/.vlt-lock.json')
+        .lstatSync()
         ?.isFile(),
   }
 }

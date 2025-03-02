@@ -10,10 +10,10 @@ import { Server } from 'node:http'
 export const listenCarefully = async (
   server: Server,
   start: number,
-  end = start + 10,
+  end = 1000,
 ): Promise<number> => {
   let port = start
-  return await new Promise<number>((res, rej) => {
+  return new Promise<number>((res, rej) => {
     server.once('listening', () => {
       server.removeListener('error', onerr)
       res(port)
@@ -21,13 +21,14 @@ export const listenCarefully = async (
 
     const onerr = (er: unknown) => {
       if (
-        port >= end ||
+        port >= start + end ||
         !er ||
         typeof er !== 'object' ||
         !(er instanceof Error) ||
         (er as NodeJS.ErrnoException).code !== 'EADDRINUSE'
       ) {
         rej(er)
+        return
       }
       port ++
       server.listen(port)

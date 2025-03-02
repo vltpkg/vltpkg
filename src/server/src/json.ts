@@ -20,6 +20,6 @@ export const error = (
 }
 
 export const ok = (res: ServerResponse, result: string) => {
-  res.writeHead(200, { 'Content-Type': 'application/json' })
+  res.writeHead(200, { 'content-type': 'application/json' })
   res.end(JSON.stringify(result))
 }

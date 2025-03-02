@@ -32,7 +32,8 @@ export type VltServerOptions = InstallOptions &
   ActualLoadOptions & {
     // TODO: this should not be in the options object, because they're not
     // configurable, really.
-    // They should be fixed predictable locations in XDG somewhere.
+    // They should be fixed predictable locations in XDG somewhere, and then
+    // removed from here.
     assetsDir?: string
     publicDir?: string
     'dashboard-root'?: string[]

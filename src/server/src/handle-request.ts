@@ -8,7 +8,7 @@ import { handleStatic } from './handle-static.ts'
 import * as json from './json.ts'
 import { parseInstallOptions } from './parse-install-options.ts'
 import { parseUninstallOptions } from './parse-uninstall-options.ts'
-import type { VltServerListening } from './vlt-server.ts'
+import type { VltServerListening } from './index.ts'
 
 export type GUIInstallOptions = Record<
   string,
