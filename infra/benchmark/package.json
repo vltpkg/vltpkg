@@ -8,17 +8,6 @@
     "url": "git+https://github.com/vltpkg/vltpkg.git",
     "directory": "infra/benchmark"
   },
-  "tshy": {
-    "selfLink": false,
-    "liveDev": true,
-    "dialects": [
-      "esm"
-    ],
-    "exports": {
-      "./package.json": "./package.json",
-      ".": "./src/index.ts"
-    }
-  },
   "bin": {
     "vlt-benchmark-download-fixtures": "./src/download.ts"
   },
@@ -33,7 +22,6 @@
     "eslint": "catalog:",
     "prettier": "catalog:",
     "tap": "catalog:",
-    "tshy": "catalog:",
     "typescript": "catalog:",
     "typescript-eslint": "catalog:"
   },
@@ -47,11 +35,10 @@
     "format:check": "prettier --check . --ignore-path ../../.prettierignore --cache",
     "lint": "eslint . --fix",
     "lint:check": "eslint .",
-    "prepack": "tshy",
     "snap": "tap",
     "test": "tap",
-    "posttest": "tsc --project tsconfig.test.json",
-    "typecheck": "tsc --noEmit --project .tshy/esm.json"
+    "posttest": "tsc --noEmit",
+    "typecheck": "tsc --noEmit"
   },
   "tap": {
     "extends": "../../tap-config.yaml"

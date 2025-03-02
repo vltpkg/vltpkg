@@ -166,10 +166,6 @@ jobs:
         if: steps.filters.outputs.prepare
         run: pnpm ${{ steps.filters.outputs.prepare }} prepare
 
-      - name: Typecheck
-        if: steps.filters.outputs.test
-        run: pnpm ${{ steps.filters.outputs.test }} typecheck
-
       - name: Run Tests
         if: steps.filters.outputs.test
         run: pnpm ${{ steps.filters.outputs.test }} --no-bail --aggregate-output test
