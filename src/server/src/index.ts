@@ -80,7 +80,7 @@ export class VltServer extends EventEmitter<{
     this.dashboardRoot = options['dashboard-root'] ?? []
     this.server = createHttpServer((req, res) => {
       // it must be listening if we got a request, of course
-      handleRequest(this as VltServerListening, req, res)
+      handleRequest(req, res, this as VltServerListening)
     })
   }
 

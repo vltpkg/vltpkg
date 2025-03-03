@@ -10,8 +10,8 @@ const options = {
   scurry: new PathScurry(t.testdirName),
 }
 const result = parseUninstallOptions(options, {
-  [joinDepIDTuple(['file', '.'])]: new Set(['a', 'b']),
-  [joinDepIDTuple(['file', './src/foo'])]: new Set(['x', 'y']),
+  [joinDepIDTuple(['file', '.'])]: ['a', 'b'],
+  [joinDepIDTuple(['file', './src/foo'])]: ['x', 'y'],
 })
 t.equal(result[0], options)
 
