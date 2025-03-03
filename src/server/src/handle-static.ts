@@ -82,13 +82,12 @@ export const handleStatic = async (
         res.writeHead(proxy.statusCode!, proxy.headers)
         proxy.pipe(res, { end: true })
       },
-    ).on('error', err => {
+    ).on('error', (err: unknown) => {
       // If we get an ECONNREFUSED error, fallback to the static handler
       // since the esbuild server is not running
       if (
-        err instanceof Error &&
-        'code' in err &&
-        err.code === 'ECONNREFUSED'
+        !!err &&
+        (err as NodeJS.ErrnoException).code === 'ECONNREFUSED'
       ) {
         // In this case the /esbuild route is expected to fail so the
         // EventSource in the browser will be closed

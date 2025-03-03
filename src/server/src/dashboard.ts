@@ -35,7 +35,7 @@ export type DashboardProjectData = {
 }
 
 export type DashboardOptions = {
-  dashboardRoot: string[]
+  'dashboard-root': string[]
   scurry: PathScurry
   packageJson: PackageJson
   publicDir: string
@@ -65,7 +65,12 @@ export class Dashboard {
   version = version
 
   constructor(options: DashboardOptions) {
-    const { dashboardRoot, scurry, packageJson, publicDir } = options
+    const {
+      'dashboard-root': dashboardRoot,
+      scurry,
+      packageJson,
+      publicDir,
+    } = options
     this.packageJson = packageJson
     this.dashboardRoot = dashboardRoot
     if (!this.dashboardRoot.length) this.dashboardRoot = [homedir()]

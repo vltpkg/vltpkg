@@ -144,7 +144,7 @@ export class VltServer extends EventEmitter<{
     // project in order to just explore its graph data
     this.dashboard = new Dashboard({
       ...this.options,
-      dashboardRoot: this.dashboardRoot,
+      'dashboard-root': this.dashboardRoot,
       publicDir: this.publicDir,
     })
     this.hasDashboard = await this.dashboard.update()
