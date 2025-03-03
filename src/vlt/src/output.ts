@@ -4,8 +4,8 @@ import { defaultView } from './config/definition.ts'
 import type { LoadedConfig } from './config/index.ts'
 import type { Command } from './index.ts'
 import { printErr } from './print-err.ts'
-import { isViewClass } from './view.ts'
 import type { View, Views } from './view.ts'
+import { isViewClass } from './view.ts'
 
 // TODO: make these have log levels etc
 // eslint-disable-next-line no-console
@@ -68,8 +68,9 @@ export const startView = <T>(
   } else {
     return {
       async onDone(r): Promise<string | undefined> {
-        if (r === undefined && r !== null) return
+        if (r === undefined) return
         const res = await View(r, opts, conf)
+        if (res === undefined) return
         return conf.values.view === 'json' ?
             JSON.stringify(res, null, 2)
           : formatWithOptions(

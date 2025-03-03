@@ -5,8 +5,7 @@ import type { ViewFn } from '../view.ts'
 
 // this command is only a view, it doesn't actually do anything at this time
 export const views: ViewFn<null> = async (_, __, conf) => {
-  await startGUI({ conf })
-  return ''
+  await startGUI(conf)
 }
 
 export const usage: CommandUsage = () =>

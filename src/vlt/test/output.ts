@@ -5,8 +5,8 @@ t.intercept(process.stdout, 'isTTY', { value: false })
 import type { Jack } from 'jackspeak'
 import type { LoadedConfig } from '../src/config/index.ts'
 import type { Command } from '../src/index.ts'
+import type { ViewFn, ViewOptions, Views } from '../src/view.ts'
 import { ViewClass, isViewClass } from '../src/view.ts'
-import type { Views, ViewFn, ViewOptions } from '../src/view.ts'
 
 // make sure these are loaded after the isTTY intercept
 const { outputCommand, startView, getView, stderr, stdout } =
@@ -75,6 +75,9 @@ t.test('startView', async t => {
   const confMermaid = {
     values: { view: 'mermaid' },
   } as unknown as LoadedConfig
+  const confGui = {
+    values: { view: 'gui' },
+  } as unknown as LoadedConfig
 
   let startCalled = false
   let doneCalled = false
@@ -95,6 +98,7 @@ t.test('startView', async t => {
   const views: Views<true> = {
     human: MyView,
     mermaid: (x: true) => ({ underthesea: x }),
+    gui: () => {},
   }
 
   t.test('using view class', async t => {
@@ -134,6 +138,16 @@ t.test('startView', async t => {
     t.equal(onError, undefined)
     t.equal(await onDone(true), '{ underthesea: true }')
     t.equal(await onDone(undefined as unknown as true), undefined)
+    t.end()
+  })
+
+  t.test('using a view that returns undefined', async t => {
+    const { onDone, onError } = startView(
+      confGui as unknown as LoadedConfig,
+      views,
+    )
+    t.equal(onError, undefined)
+    t.equal(typeof (await onDone(true)), 'undefined')
     t.end()
   })
 })

@@ -1,14 +1,14 @@
-import {
-  actual,
-  humanReadableOutput,
-  jsonOutput,
-  mermaidOutput,
-} from '@vltpkg/graph'
 import type {
   HumanReadableOutputGraph,
   JSONOutputGraph,
   MermaidOutputGraph,
   Node,
+} from '@vltpkg/graph'
+import {
+  actual,
+  humanReadableOutput,
+  jsonOutput,
+  mermaidOutput,
 } from '@vltpkg/graph'
 import { Query } from '@vltpkg/query'
 import { commandUsage } from '../config/usage.ts'
@@ -61,11 +61,10 @@ export const views = {
   mermaid: mermaidOutput,
   human: humanReadableOutput,
   gui: async ({ queryString }, _, conf) => {
-    await startGUI({
+    await startGUI(
       conf,
-      startingRoute:
-        '/explore?query=' + encodeURIComponent(queryString),
-    })
+      '/explore?query=' + encodeURIComponent(queryString),
+    )
   },
 } as const satisfies Views<ListResult>
 
