@@ -10,7 +10,7 @@ import type {
 
 const MOCKS = {
   '../src/handle-request.ts': {
-    handleRequest: (_: unknown, __: unknown, res: ServerResponse) =>
+    handleRequest: (_: unknown, res: ServerResponse, __: unknown) =>
       res.end('ok'),
   },
   '../src/graph-data.ts': {
