@@ -1,15 +1,14 @@
 import t from 'tap'
 import type { LoadedConfig } from '../../src/config/index.ts'
-import type { StartGUIOptions } from '../../src/start-gui.ts'
 
 t.test('starts gui data and server', async t => {
-  let startGUIOptions: StartGUIOptions | undefined
+  let guiConfig: LoadedConfig | undefined
   const { usage, command, views } = await t.mockImport<
     typeof import('../../src/commands/gui.ts')
   >('../../src/commands/gui.ts', {
     '../../src/start-gui.ts': {
-      startGUI: async (options: StartGUIOptions) => {
-        startGUIOptions = options
+      startGUI: async (conf: LoadedConfig) => {
+        guiConfig = conf
       },
     },
   })
@@ -25,15 +24,13 @@ t.test('starts gui data and server', async t => {
   t.equal(res, null)
   t.equal(
     await views(res as null, {}, conf),
-    '',
+    undefined,
     'prints nothing on completion',
   )
 
   t.matchStrict(
-    startGUIOptions,
-    {
-      conf: { options: { projectRoot: '/path/to/project' } },
-    },
+    guiConfig,
+    { options: { projectRoot: '/path/to/project' } },
     'should call startGUI with expected options',
   )
 })

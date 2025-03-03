@@ -33,6 +33,7 @@
     "@vltpkg/query": "workspace:*",
     "@vltpkg/registry-client": "workspace:*",
     "@vltpkg/run": "workspace:*",
+    "@vltpkg/server": "workspace:*",
     "@vltpkg/spec": "workspace:*",
     "@vltpkg/types": "workspace:*",
     "@vltpkg/url-open": "workspace:*",
@@ -49,7 +50,7 @@
     "promise-call-limit": "catalog:",
     "react": "^18.3.1",
     "react-devtools-core": "^4.28.5",
-    "serve-handler": "^6.1.5",
+    "serve-handler": "catalog:",
     "walk-up-path": "catalog:"
   },
   "devDependencies": {
@@ -57,7 +58,7 @@
     "@types/eslint__js": "catalog:",
     "@types/node": "catalog:",
     "@types/react": "catalog:",
-    "@types/serve-handler": "^6.1.4",
+    "@types/serve-handler": "catalog:",
     "eslint": "catalog:",
     "prettier": "catalog:",
     "tap": "catalog:",

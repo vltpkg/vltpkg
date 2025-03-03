@@ -5,16 +5,15 @@ import {
   mermaidOutput,
 } from '@vltpkg/graph'
 import { PackageJson } from '@vltpkg/package-json'
-import { Spec } from '@vltpkg/spec'
 import type { SpecOptions } from '@vltpkg/spec'
+import { Spec } from '@vltpkg/spec'
 import { Monorepo } from '@vltpkg/workspaces'
 import { PathScurry } from 'path-scurry'
-import t from 'tap'
 import type { Test } from 'tap'
+import t from 'tap'
 import type { LoadedConfig } from '../../src/config/index.ts'
-import type { StartGUIOptions } from '../../src/start-gui.ts'
-import { commandView } from '../fixtures/run.ts'
 import type { CommandResultOptions } from '../fixtures/run.ts'
+import { commandView } from '../fixtures/run.ts'
 
 t.cleanSnapshot = s =>
   s.replace(
@@ -292,11 +291,11 @@ t.test('list', async t => {
       projectRoot: t.testdirName,
     }
 
-    let startGUIOptions: StartGUIOptions | undefined
+    let vltServerOptions: LoadedConfig | undefined = undefined
     const { command, views } = await mockList(t, {
       '../../src/start-gui.ts': {
-        startGUI: async (options: StartGUIOptions) => {
-          startGUIOptions = options
+        startGUI: async (conf: LoadedConfig) => {
+          vltServerOptions = conf
         },
       },
     })
@@ -312,10 +311,8 @@ t.test('list', async t => {
     await views.gui(await command(conf), {}, conf)
 
     t.matchStrict(
-      startGUIOptions,
-      {
-        conf: { options: { projectRoot: t.testdirName } },
-      },
+      vltServerOptions,
+      { options: { projectRoot: t.testdirName } },
       'should call startGUI with expected options',
     )
   })

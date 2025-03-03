@@ -1882,6 +1882,9 @@ importers:
       '@vltpkg/run':
         specifier: workspace:*
         version: link:../run
+      '@vltpkg/server':
+        specifier: workspace:*
+        version: link:../server
       '@vltpkg/spec':
         specifier: workspace:*
         version: link:../spec
@@ -1931,7 +1934,7 @@ importers:
         specifier: ^4.28.5
         version: 4.28.5
       serve-handler:
-        specifier: ^6.1.5
+        specifier: 'catalog:'
         version: 6.1.6
       walk-up-path:
         specifier: 'catalog:'
@@ -1950,7 +1953,7 @@ importers:
         specifier: 'catalog:'
         version: 18.3.18
       '@types/serve-handler':
-        specifier: ^6.1.4
+        specifier: 'catalog:'
         version: 6.1.4
       eslint:
         specifier: 'catalog:'
