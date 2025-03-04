@@ -114,10 +114,10 @@ There are some root level scripts that can be run to generate these
 builds for testing locally.
 
 ```bash
-# creates a directory at .build-bundle with all the bundled JS
+# creates a directory with all the bundled JS
 pnpm build:bundle
 
-# creates a directory at .build-compile with the compiled binaries
+# creates a directory with the compiled binaries
 # for the current os and cpu
 pnpm build:compile
 ```
@@ -136,8 +136,7 @@ and registry. If you really want to do the real thing use the `--forReal` flag
 To generate compiled builds for other platforms use the `--platform` and `--arch` flags.
 
 ```bash
-# create bins for all platform/arch combinations
-pnpm build:compile --platform=all --arch=all
+pnpm build:compile --platform=win32 --arch=x64
 ```
 
 ## FAQ

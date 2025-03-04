@@ -26,10 +26,13 @@ function has_changes() {
   return $STATUS
 }
 
-if [ "$1" == "pull_request" ]; then
+if [ "$1" == "since" ]; then
   FILTER="[origin/$2]"
   FILTER_FLAG="--filter"
-elif [ "$1" == "workflow_dispatch" ] && [ "$2" != "" ]; then
+elif [ "$1" == "filter" ]; then
+  if [ -z "$2" ]; then
+    exit_with_output "--recursive"
+  fi
   FILTER="$2"
   FILTER_FLAG="--filter"
 else

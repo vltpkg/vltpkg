@@ -49,6 +49,7 @@
     "tap": "catalog:",
     "tar": "catalog:",
     "tshy": "catalog:",
+    "typedoc": "catalog:",
     "typescript": "catalog:",
     "typescript-eslint": "catalog:"
   },
