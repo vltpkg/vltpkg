@@ -451,7 +451,7 @@ const fixCliVariants = async ws => {
   }
   await writeFormatted(
     resolve(ws.dir, 'README.md'),
-    cliReadme.replace('# @vltpkg/cli', `# ${ws.pj.name}`),
+    cliReadme.replace('# @vltpkg/cli-sdk', `# ${ws.pj.name}`),
   )
 }
 
