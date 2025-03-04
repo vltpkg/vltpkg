@@ -10,6 +10,14 @@ t.test('basic', async t => {
     stdio: 'pipe',
   })
   const contents = readdirSync(res.outdir)
-  t.ok(contents.includes('vlt'))
-  t.notOk(contents.includes('vlr'))
+  t.ok(
+    contents.includes(
+      `vlt${process.platform === 'win32' ? '.exe' : ''}`,
+    ),
+  )
+  t.notOk(
+    contents.includes(
+      `vlr${process.platform === 'win32' ? '.exe' : ''}`,
+    ),
+  )
 })
