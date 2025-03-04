@@ -1,0 +1,48 @@
+{
+  "name": "@vltpkg/smoke-test",
+  "description": "Smoke tests for the CLI",
+  "version": "0.0.0",
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vltpkg/vltpkg.git",
+    "directory": "infra/smoke-test"
+  },
+  "dependencies": {
+    "@vltpkg/infra-build": "workspace:*"
+  },
+  "devDependencies": {
+    "@eslint/js": "catalog:",
+    "@types/eslint__js": "catalog:",
+    "@types/node": "catalog:",
+    "eslint": "catalog:",
+    "prettier": "catalog:",
+    "tap": "catalog:",
+    "typescript": "catalog:",
+    "typescript-eslint": "catalog:"
+  },
+  "license": "BSD-2-Clause-Patent",
+  "engines": {
+    "node": ">=22",
+    "pnpm": "9"
+  },
+  "scripts": {
+    "format": "prettier --write . --log-level warn --ignore-path ../../.prettierignore --cache",
+    "format:check": "prettier --check . --ignore-path ../../.prettierignore --cache",
+    "lint": "eslint . --fix",
+    "lint:check": "eslint .",
+    "presnap": "vlt-build --action=bundle --outdir=.build-bundle --bins=vlt &> /dev/null && vlt-build --action=compile --outdir=.build-compile --bins=vlt &> /dev/null",
+    "snap": "tap",
+    "pretest": "vlt-build --action=bundle --outdir=.build-bundle --bins=vlt &> /dev/null && vlt-build --action=compile --outdir=.build-compile --bins=vlt &> /dev/null",
+    "test": "tap",
+    "posttest": "tsc --noEmit",
+    "typecheck": "tsc --noEmit"
+  },
+  "tap": {
+    "extends": "../../tap-config.yaml",
+    "disable-coverage": true
+  },
+  "prettier": "../../.prettierrc.js",
+  "module": "./src/index.ts",
+  "type": "module"
+}

@@ -113,6 +113,7 @@ const parseWS = path => ({
   path: resolve(path, 'package.json'),
   dir: path,
   workspaceDir: basename(dirname(path)),
+  workspaceBasename: basename(path),
   pj: readJson(resolve(path, 'package.json')),
 })
 
@@ -227,40 +228,40 @@ const fixDeps = async (ws, { catalog }) => {
 
 const fixScripts = async ws => {
   const scripts = Object.assign(
-    ws.pj.scripts,
-    !ws.isRoot ?
+    ws.pj.scripts ?? {},
+    !ws.isRoot && ws.pj.devDependencies?.typescript ?
       {
         typecheck: 'tsc --noEmit',
       }
     : {},
     // prettier
-    ws.pj.devDependencies.prettier ?
+    ws.pj.devDependencies?.prettier ?
       {
         format: `prettier --write . --log-level warn --ignore-path ${ws.relDir}.prettierignore --cache`,
         'format:check': `prettier --check . --ignore-path ${ws.relDir}.prettierignore --cache`,
       }
     : {},
     // eslint
-    ws.pj.devDependencies.eslint ?
+    ws.pj.devDependencies?.eslint ?
       {
         lint: 'eslint . --fix',
         'lint:check': 'eslint .',
       }
     : {},
     // testing
-    ws.pj.devDependencies.tap ?
+    ws.pj.devDependencies?.tap ?
       {
         test: 'tap',
         snap: 'tap',
       }
-    : ws.pj.devDependencies.vitest ?
+    : ws.pj.devDependencies?.vitest ?
       {
         test: 'vitest',
         snap: 'vitest --no-watch -u',
       }
     : {},
     // typescript/tshy
-    ws.pj.devDependencies.tshy ?
+    ws.pj.devDependencies?.tshy ?
       {
         prepack: 'tshy',
       }
@@ -292,6 +293,7 @@ const fixScripts = async ws => {
 
 const fixTools = async ws => {
   if (ws.pj.tshy) {
+    ws.pj.files = ['dist']
     ws.pj.tshy = sortObject(
       {
         ...ws.pj.tshy,
@@ -316,7 +318,7 @@ const fixTools = async ws => {
       }),
     )
   }
-  if (ws.pj.devDependencies.tap) {
+  if (ws.pj.devDependencies?.tap) {
     ws.pj.tap = sortObject(
       {
         ...ws.pj.tap,
@@ -325,10 +327,10 @@ const fixTools = async ws => {
       ['extends'],
     )
   }
-  if (ws.pj.devDependencies.prettier) {
+  if (ws.pj.devDependencies?.prettier) {
     ws.pj.prettier = `${ws.relDir}.prettierrc.js`
   }
-  if (!ws.pj.private) {
+  if (ws.pj.devDependencies?.typedoc) {
     await writeFormatted(
       resolve(ws.dir, 'typedoc.mjs'),
       [
@@ -371,8 +373,89 @@ const fixLicense = ws => {
   }
 }
 
+const fixCliVariants = async ws => {
+  if (ws.workspaceDir !== 'infra') {
+    return
+  }
+  if (!ws.workspaceBasename.startsWith('cli')) {
+    return
+  }
+  const cliType =
+    ws.workspaceBasename === 'cli' ? 'default'
+    : ws.workspaceBasename === 'cli-compiled' ? 'compiled-root'
+    : 'platform'
+  let cliReadme = readFileSync(
+    resolve(import.meta.dirname, '../src/vlt/README.md'),
+    'utf8',
+  )
+
+  ws.pj.devDependencies = {
+    '@vltpkg/infra-build': 'workspace:*',
+  }
+  ws.pj.scripts = {
+    prepack: 'vlt-build',
+  }
+  ws.pj.publishConfig = {
+    directory: './.build-publish',
+  }
+
+  switch (cliType) {
+    case 'default':
+      ws.pj.name = 'vlt'
+      ws.pj.description = 'The vlt CLI'
+      ws.pj.publishConfig.bin = {
+        vlt: './vlt.js',
+        vlr: './vlr.js',
+        vlx: './vlx.js',
+        vlrx: './vlrx.js',
+        vlix: './vlix.js',
+      }
+      break
+    case 'compiled-root':
+      ws.pj.name = `@vltpkg/${ws.workspaceBasename}`
+      ws.pj.description = 'The vlt CLI (compiled)'
+      cliReadme = cliReadme.replace('`vlt`', `\`vlt\` (compiled)`)
+      ws.pj.publishConfig.bin = {
+        vlt: './placeholder-bin.js',
+      }
+      ws.pj.publishConfig.optionalDependencies = {
+        '@vltpkg/cli-linux-x64': 'workspace:*',
+        '@vltpkg/cli-linux-arm64': 'workspace:*',
+        '@vltpkg/cli-darwin-x64': 'workspace:*',
+        '@vltpkg/cli-darwin-arm64': 'workspace:*',
+        '@vltpkg/cli-win32-x64': 'workspace:*',
+      }
+      ws.pj.publishConfig.scripts = {
+        postinstall: 'node postinstall.cjs',
+      }
+      delete ws.pj.engines.node
+      break
+    case 'platform': {
+      const [platform, arch] = ws.workspaceBasename
+        .split('-')
+        .splice(1)
+      ws.pj.publishConfig.os = [platform]
+      ws.pj.publishConfig.cpu = [arch]
+      ws.pj.publishConfig.bin = {
+        vlt: './vlt',
+      }
+      ws.pj.name = `@vltpkg/${ws.workspaceBasename}`
+      ws.pj.description = `The vlt CLI (${platform}-${arch})`
+      delete ws.pj.engines.node
+      cliReadme = cliReadme.replace(
+        '`vlt`',
+        `\`vlt\` (${platform}-${arch})`,
+      )
+      break
+    }
+  }
+  await writeFormatted(
+    resolve(ws.dir, 'README.md'),
+    cliReadme.replace('# @vltpkg/cli-sdk', `# ${ws.pj.name}`),
+  )
+}
+
 const fixPackage = async (ws, opts) => {
-  ws.pj.files = undefined
   ws.pj.engines = { node: '>=22', pnpm: '9' }
   ws.pj.repository = {
     type: 'git',
@@ -381,23 +464,14 @@ const fixPackage = async (ws, opts) => {
       { directory: ws.relDirToWorkspace }
     : {}),
   }
-  ws.pj.private =
-    (
-      ws.isRoot ||
-      ws.pj.name === '@vltpkg/gui' ||
-      ws.pj.name === '@vltpkg/cli' ||
-      ws.workspaceDir === 'infra' ||
-      ws.workspaceDir === 'www'
-    ) ?
-      true
-    : undefined
-  if (!ws.pj.private) {
-    ws.pj.files = ['dist']
-  }
   await fixDeps(ws, opts)
   await fixScripts(ws, opts)
   await fixTools(ws, opts)
   await fixLicense(ws, opts)
+  await fixCliVariants(ws, opts)
+  if (Object.keys(ws.pj.engines).length === 0) {
+    delete ws.pj.engines
+  }
   return sortObject(ws.pj, [
     'name',
     'description',
@@ -419,7 +493,11 @@ const fixPackage = async (ws, opts) => {
     'type',
     'exports',
     'files',
+    'os',
+    'cpu',
+    'keywords',
     'pnpm',
+    'publishConfig',
   ])
 }
 

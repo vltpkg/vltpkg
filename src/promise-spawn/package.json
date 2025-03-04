@@ -30,6 +30,7 @@
     "spawk": "^1.8.2",
     "tap": "catalog:",
     "tshy": "catalog:",
+    "typedoc": "catalog:",
     "typescript": "catalog:",
     "typescript-eslint": "catalog:"
   },

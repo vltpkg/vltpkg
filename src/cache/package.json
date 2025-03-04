@@ -33,6 +33,7 @@
     "prettier": "catalog:",
     "tap": "catalog:",
     "tshy": "catalog:",
+    "typedoc": "catalog:",
     "typescript": "catalog:",
     "typescript-eslint": "catalog:"
   },
