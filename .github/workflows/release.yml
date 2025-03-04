@@ -104,7 +104,9 @@ jobs:
       - name: Get Packages to Publish
         id: packages
         run: |
-          echo "name-version=$(pnpm --shell-mode --filter="[$(git rev-parse HEAD~1)]" exec "cat package.json | jq -r '\"\(.name)@\(.version)\"'" | sort)" >> $GITHUB_OUTPUT
+          VERSIONS=$(pnpm --shell-mode --filter="[$(git rev-parse HEAD~1)]" exec "cat package.json | jq -r '\"\(.name)@\(.version)\"'" | sort)
+          echo $VERSIONS
+          echo "name-version=$VERSIONS" >> $GITHUB_OUTPUT
 
       - name: Dry Run Publish
         run: |
