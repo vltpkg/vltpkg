@@ -1,0 +1,40 @@
+{
+  "name": "@vltpkg/cli-compiled",
+  "description": "The vlt CLI (compiled)",
+  "version": "0.0.0-1",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vltpkg/vltpkg.git",
+    "directory": "infra/cli-compiled"
+  },
+  "devDependencies": {
+    "@vltpkg/infra-build": "workspace:*"
+  },
+  "license": "BSD-2-Clause-Patent",
+  "engines": {
+    "pnpm": "9"
+  },
+  "scripts": {
+    "prepack": "vlt-build"
+  },
+  "type": "module",
+  "keywords": [
+    "vltpkg"
+  ],
+  "publishConfig": {
+    "directory": "./.build-publish",
+    "bin": {
+      "vlt": "./placeholder-bin.js"
+    },
+    "optionalDependencies": {
+      "@vltpkg/cli-linux-x64": "workspace:*",
+      "@vltpkg/cli-linux-arm64": "workspace:*",
+      "@vltpkg/cli-darwin-x64": "workspace:*",
+      "@vltpkg/cli-darwin-arm64": "workspace:*",
+      "@vltpkg/cli-win32-x64": "workspace:*"
+    },
+    "scripts": {
+      "postinstall": "node postinstall.cjs"
+    }
+  }
+}

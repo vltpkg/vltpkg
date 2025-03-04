@@ -1,0 +1,36 @@
+{
+  "name": "@vltpkg/cli-linux-x64",
+  "description": "The vlt CLI (linux-x64)",
+  "version": "0.0.0-1",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vltpkg/vltpkg.git",
+    "directory": "infra/cli-linux-x64"
+  },
+  "devDependencies": {
+    "@vltpkg/infra-build": "workspace:*"
+  },
+  "license": "BSD-2-Clause-Patent",
+  "engines": {
+    "pnpm": "9"
+  },
+  "scripts": {
+    "prepack": "vlt-build"
+  },
+  "type": "module",
+  "keywords": [
+    "vltpkg"
+  ],
+  "publishConfig": {
+    "directory": "./.build-publish",
+    "os": [
+      "linux"
+    ],
+    "cpu": [
+      "x64"
+    ],
+    "bin": {
+      "vlt": "./vlt"
+    }
+  }
+}
