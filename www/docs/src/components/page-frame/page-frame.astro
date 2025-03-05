@@ -1,0 +1,110 @@
+---
+import config from 'virtual:starlight/user-config'
+import type { Props } from '@astrojs/starlight/props'
+
+import Footer from '@/components/footer/footer.tsx'
+import ThemeSelect from '@/components/theme-select/theme-select.tsx'
+import AppSidebar from '@/components/sidebar/sidebar.tsx'
+
+import Search from '@astrojs/starlight/components/Search.astro'
+import Logo from '@/components/header/logo.tsx'
+import MobileSidebar from '@/components/sidebar/mobile-sidebar.tsx'
+import LinearMenu from '@/components/header/linear-menu.tsx'
+
+const { sidebar, hasSidebar } = Astro.props
+
+const shouldRenderSearch =
+  config.pagefind ||
+  config.components.Search !==
+    '@astrojs/starlight/components/Search.astro'
+---
+
+<div class="flex h-full w-full grow flex-col">
+  <header
+    class="sticky top-0 z-[1000] border-b-[1px] border-border/50 backdrop-blur-sm">
+    <nav
+      class="mx-auto -mt-1 flex w-full max-w-8xl items-center justify-between px-10 py-6 md:px-6">
+      <a
+        href="https://www.vlt.sh/"
+        class="-mt-[1px] ml-[5px] flex h-[52px] w-[104px] items-center">
+        <Logo />
+      </a>
+
+      <div
+        class="flex w-full items-center justify-end justify-items-end gap-4">
+        {shouldRenderSearch && <Search {...Astro.props} />}
+        <MobileSidebar client:load sidebar={sidebar} />
+        <LinearMenu client:load />
+      </div>
+    </nav>
+  </header>
+
+  <div class="relative mx-auto flex h-full w-full max-w-8xl">
+    {hasSidebar && <AppSidebar sidebar={sidebar} />}
+    <script src="../sidebar/sidebar-states.ts"></script>
+
+    {
+      /*
+        Script is intentionally inlined to restore sidebar state as soon as possible
+      */
+    }
+    <script is:inline>
+      ;(() => {
+        try {
+          if (!matchMedia('(min-width: 50em)').matches) return
+          const STORAGE_KEY = 'sidebar-state'
+          const SCROLL_KEY = 'sidebar-scroll-position'
+          const sidebar = document.getElementById('sidebar')
+          if (!sidebar) return
+
+          const state = JSON.parse(
+            sessionStorage.getItem(STORAGE_KEY) || '{}',
+          )
+
+          Object.entries(state).forEach(([group, value]) => {
+            const groupElement = document.querySelector(
+              `[data-name="${group}"] [data-state]`,
+            )
+            if (groupElement) {
+              groupElement.setAttribute('data-state', value)
+            }
+          })
+
+          const scrollArea = document.getElementById(
+            'sidebar-scroll-area',
+          )
+          if (scrollArea) {
+            const savedScrollPosition =
+              sessionStorage.getItem(SCROLL_KEY)
+            if (savedScrollPosition) {
+              scrollArea.scrollTop = Math.round(savedScrollPosition)
+            }
+
+            const handleScroll = () => {
+              sessionStorage.setItem(
+                SCROLL_KEY,
+                scrollArea.scrollTop.toString(),
+              )
+            }
+
+            scrollArea.addEventListener('scroll', handleScroll)
+            window.addEventListener('beforeunload', () => {
+              sessionStorage.setItem(
+                SCROLL_KEY,
+                scrollArea.scrollTop.toString(),
+              )
+            })
+          }
+        } catch {}
+      })()
+    </script>
+
+    <div class="w-full">
+      <slot />
+    </div>
+  </div>
+
+  <Footer>
+    <ThemeSelect client:only="react" />
+  </Footer>
+</div>

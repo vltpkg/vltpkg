@@ -8,6 +8,12 @@ export default {
   ],
   theme: {
     extend: {
+      maxWidth: {
+        '8xl': '92rem',
+      },
+      screens: {
+        '8xl': '92rem',
+      },
       backgroundImage: {
         'light-wave': "url('/images/wave-light.png')",
         'dark-wave': "url('/images/wave-dark.png')",
