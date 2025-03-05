@@ -78,7 +78,7 @@ sidebar?.addEventListener('click', e => {
       /**
        * If the group is closed, and the user selects the group, we want to automatically
        * navigate to the first link in the group for convenience.
-       * */
+       */
       if (
         group
           .querySelector('[data-state]')
