@@ -1,9 +1,9 @@
 ---
-import PageTitle from './page-title.tsx'
 import type { Props } from '@astrojs/starlight/props'
+import { PageTitle as ReactPageTitle } from './page-title.tsx'
 ---
 
-<PageTitle
+<ReactPageTitle
   crumbs={Astro.url.pathname.replace(/^\/|\/$/g, '').split('/')}
   {...Astro.props}
 />

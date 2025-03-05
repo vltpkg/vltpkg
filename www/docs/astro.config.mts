@@ -62,22 +62,16 @@ export default defineConfig({
         discord: 'https://discord.gg/vltpkg',
       },
       components: {
-        Header: './src/components/header/astro-header.astro',
-        Sidebar: './src/components/sidebar/astro-app-sidebar.astro',
-        PageFrame:
-          './src/components/page-frame/astro-page-frame.astro',
+        PageFrame: './src/components/page-frame/page-frame.astro',
         ContentPanel:
-          './src/components/content-panel/astro-content-panel.astro',
-        PageTitle:
-          './src/components/page-title/astro-page-title.astro',
-        Pagination:
-          './src/components/pagination/astro-pagination.astro',
+          './src/components/content-panel/content-panel.astro',
+        PageTitle: './src/components/page-title/page-title.astro',
+        Pagination: './src/components/pagination/pagination.astro',
         PageSidebar:
-          './src/components/page-sidebar/astro-page-sidebar.astro',
+          './src/components/page-sidebar/page-sidebar.astro',
         TwoColumnContent:
-          './src/components/two-column-layout/astro-two-column-layout.astro',
-        Hero: './src/components/hero/astro-hero.astro',
-        Footer: './src/components/footer/astro-footer.astro',
+          './src/components/two-column-layout/two-column-layout.astro',
+        Footer: './src/components/footer/footer.astro',
         ThemeProvider:
           './src/components/theme-select/theme-provider.astro',
       },
@@ -90,17 +84,13 @@ export default defineConfig({
       sidebar: [
         {
           label: 'CLI',
-          collapsed: true,
+          collapsed: false,
           autogenerate: { directory: 'cli' },
         },
         {
           label: 'Packages',
           collapsed: true,
           autogenerate: { directory: TypedocPlugin.directory },
-        },
-        {
-          label: 'Serverless Registry',
-          link: 'https://www.vlt.sh/serverless-registry',
         },
       ],
     }),

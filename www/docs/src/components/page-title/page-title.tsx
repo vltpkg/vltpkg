@@ -2,7 +2,7 @@ import React from 'react'
 import { ChevronRight } from 'lucide-react'
 import type { Props } from '@astrojs/starlight/props'
 
-const PageTitle = ({
+export const PageTitle = ({
   entry,
   crumbs,
 }: Props & { crumbs: string[] }) => {
@@ -16,6 +16,8 @@ const PageTitle = ({
     },
     [],
   )
+
+  if (accumulatedPath.join() == '/') return <div className="mt-4" />
 
   return (
     <div className="mt-8">
@@ -46,5 +48,3 @@ const PageTitle = ({
     </div>
   )
 }
-
-export default PageTitle

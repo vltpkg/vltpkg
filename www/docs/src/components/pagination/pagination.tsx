@@ -1,33 +1,38 @@
-import { ChevronRight, ChevronLeft } from 'lucide-react'
 import type { Props } from '@astrojs/starlight/props'
+import { Button } from '@/components/ui/button.tsx'
 
-const Pagination = ({ pagination }: Props) => {
+export const Pagination = ({ pagination }: Props) => {
   const { next, prev } = pagination
 
   if (!next || !prev) return null
 
   return (
-    <div className="mt-8 flex w-full items-center justify-between border-t-[1px] pt-8">
-      <a
-        href={prev.href}
-        className="flex w-fit cursor-pointer flex-col text-right no-underline">
-        <p className="text-sm text-muted-foreground">Previous</p>
-        <div className="flex w-full flex-row items-center justify-between gap-2 text-foreground">
-          <ChevronLeft size={20} />
-          <p>{prev.label}</p>
-        </div>
-      </a>
-      <a
-        href={next.href}
-        className="flex w-fit cursor-pointer flex-col text-left no-underline">
-        <p className="text-sm text-muted-foreground">Next</p>
-        <div className="flex w-full flex-row items-center justify-between gap-2 text-foreground">
-          <p>{next.label}</p>
-          <ChevronRight size={20} />
-        </div>
-      </a>
+    <div className="mt-8 grid h-full w-full grid-cols-2 items-center gap-2 pt-8">
+      <Button
+        variant="outline"
+        className="duration-250 group h-20 w-full cursor-pointer items-start hover:text-foreground"
+        asChild>
+        <a
+          href={prev.href}
+          className="flex flex-col gap-2 text-sm text-neutral-700 no-underline dark:text-muted-foreground">
+          <span className="inline-flex items-center gap-1">
+            Previous
+          </span>
+          <span>{prev.label}</span>
+        </a>
+      </Button>
+
+      <Button
+        variant="outline"
+        className="duration-250 group h-20 w-full cursor-pointer items-end hover:text-foreground"
+        asChild>
+        <a
+          href={prev.href}
+          className="flex flex-col gap-2 text-sm text-neutral-700 no-underline dark:text-muted-foreground">
+          <span className="inline-flex items-center gap-1">Next</span>
+          <span>{next.label}</span>
+        </a>
+      </Button>
     </div>
   )
 }
-
-export default Pagination
