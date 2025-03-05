@@ -10,6 +10,8 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
+        sidebar:
+          'cursor-pointer justify-start text-left w-full bg-background text-muted-foreground hover:bg-secondary text-sm no-underline transition-all',
         default:
           'bg-primary text-primary-foreground hover:bg-primary/90',
         destructive:
@@ -26,6 +28,7 @@ const buttonVariants = cva(
         sm: 'h-9 px-3',
         lg: 'h-11 px-8',
         icon: 'h-10 w-10',
+        sidebar: 'h-8 px-3',
       },
       rounded: {
         default: 'rounded-md',

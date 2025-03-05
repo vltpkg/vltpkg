@@ -1,11 +1,11 @@
 import React, { useState } from 'react'
-import { Button } from '@/components/ui/button'
+import { Button } from '@/components/ui/button.tsx'
 import { X, ChevronDown, ChevronRight } from 'lucide-react'
 import type {
   SidebarEntry,
   Group,
   SidebarEntries,
-} from '@/components/sidebar/app-sidebar'
+} from '@/components/sidebar/sidebar.tsx'
 import {
   Drawer,
   DrawerClose,
@@ -14,8 +14,8 @@ import {
   DrawerHeader,
   DrawerTitle,
   DrawerTrigger,
-} from '@/components/ui/drawer'
-import { ScrollArea } from '@/components/ui/scroll-area'
+} from '@/components/ui/drawer.tsx'
+import { ScrollArea } from '@/components/ui/scroll-area.tsx'
 
 interface MobileSidebarProps {
   sidebar: SidebarEntries
