@@ -1,12 +1,10 @@
-import type { Props } from '@astrojs/starlight/props'
 import config from 'virtual:starlight/user-config'
-import ThemeSelect from '@/components/theme-select/theme-select'
 
-const Footer = (_props: Props) => {
+const Footer = ({ children }: { children: React.ReactNode }) => {
   return (
     <footer className="border-t-[1px]">
       {/* footer links */}
-      <div className="mx-auto flex w-full max-w-screen-xl flex-col gap-x-4 gap-y-4 px-6 py-6">
+      <div className="mx-auto flex w-full max-w-8xl flex-col gap-x-4 gap-y-4 px-6 py-6">
         <div className="flex w-full flex-row items-center justify-between">
           <FooterSocials />
           <div className="flex items-center gap-2">
@@ -17,7 +15,7 @@ const Footer = (_props: Props) => {
                 Join waitlist
               </span>
             </a>
-            <ThemeSelect />
+            {children}
           </div>
         </div>
 
