@@ -66,7 +66,7 @@ const Group = ({
         variant="sidebar"
         className="bg-background [&_svg]:has-[+div[data-state=open]]:rotate-90">
         <span
-          className={`${entry.label === 'commands' ? 'capitalize' : ''}`}>
+          className={entry.label === 'commands' ? 'capitalize' : ''}>
           {entry.label}
         </span>
         <ChevronRight
@@ -104,7 +104,9 @@ const Item = ({ entry, depth }: { entry: Link; depth: number }) => {
         asChild
         size="sidebar"
         variant="sidebar"
-        className={`${entry.isCurrent ? 'bg-secondary text-foreground' : ''}`}>
+        className={
+          entry.isCurrent ? 'bg-secondary text-foreground' : ''
+        }>
         <a href={entry.href} role="link">
           {entry.label}
         </a>

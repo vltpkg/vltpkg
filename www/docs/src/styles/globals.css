@@ -210,18 +210,18 @@ html {
 }
 
 .sl-markdown-content a {
-  @apply text-foreground transition-all duration-200
+  @apply text-foreground transition-all duration-200;
 }
 
 .sl-markdown-content code {
-  @apply border-[1px] border-border rounded-sm bg-background text-foreground px-1 whitespace-nowrap overflow-x-auto font-medium
+  @apply overflow-x-auto whitespace-nowrap rounded-sm border-[1px] border-border bg-background px-1 font-medium text-foreground;
 }
 
 /* ***************************************************** */
 /*                    EXPRESSIVE CODE                    */
 /* ***************************************************** */
 body .expressive-code figure code {
-  @apply text-foreground
+  @apply text-foreground;
 }
 
 body .expressive-code .frame {
