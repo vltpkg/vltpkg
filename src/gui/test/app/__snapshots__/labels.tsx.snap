@@ -32,26 +32,31 @@ exports[`labels view > labels render default 1`] = `
         </gui-button>
       </div>
     </div>
-    <div class="mt-6 grid grid-cols-8 px-3">
-      <div class="col-span-2 flex items-center gap-3">
-        <gui-checkbox classname="border-muted-foreground/50 hover:border-muted-foreground/75">
-        </gui-checkbox>
-        <p class="text-sm font-medium text-neutral-500">
-          Name
-        </p>
+    <div class="mt-6">
+      <div
+        class="grid grid-cols-8 px-3"
+        style="opacity: 1;"
+      >
+        <div class="col-span-2 flex items-center gap-3">
+          <gui-checkbox classname="border-muted-foreground/50 hover:border-muted-foreground/75">
+          </gui-checkbox>
+          <p class="text-sm font-medium text-neutral-500">
+            Name
+          </p>
+        </div>
+        <div class="col-span-4 flex items-center">
+          <p class="text-sm font-medium text-neutral-500">
+            Description
+          </p>
+        </div>
+        <div class="flex items-center justify-center">
+          <p class="text-sm font-medium text-neutral-500">
+            References
+          </p>
+        </div>
       </div>
-      <div class="col-span-4 flex items-center">
-        <p class="text-sm font-medium text-neutral-500">
-          Description
-        </p>
+      <div class="mt-3 flex flex-col gap-3">
       </div>
-      <div class="flex items-center justify-center">
-        <p class="text-sm font-medium text-neutral-500">
-          References
-        </p>
-      </div>
-    </div>
-    <div class="mt-3 flex flex-col gap-3">
     </div>
   </div>
 </section>

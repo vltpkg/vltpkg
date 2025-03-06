@@ -39,23 +39,25 @@ exports[`labels-empty-state > should render correctly 1`] = `
         </div>
       </div>
     </div>
-    <h3 class="z-[2] text-xl font-medium">
-      No saved Labels yet
-    </h3>
-    <p class="z-[2] text-center text-sm text-neutral-500">
-      Looks like you haven't made any Labels yet,
-      <br>
-      Labels are a great way to mark your dependencies.
-    </p>
-    <div class="flex gap-3">
+    <div class="flex flex-col items-center justify-center gap-3 text-center">
+      <h3 class="z-[2] text-xl font-medium">
+        No saved Labels yet
+      </h3>
+      <p class="z-[2] text-center text-sm text-neutral-500">
+        Looks like you haven't made any Labels yet,
+        <br>
+        Labels are a great way to mark your dependencies.
+      </p>
+      <div class="z-[2] flex items-center gap-3 text-center">
+        <gui-button>
+          <span>
+            New Label
+          </span>
+          <gui-plus-icon>
+          </gui-plus-icon>
+        </gui-button>
+      </div>
     </div>
-    <gui-button>
-      <span>
-        New Label
-      </span>
-      <gui-plus-icon>
-      </gui-plus-icon>
-    </gui-button>
   </div>
 </div>
 
