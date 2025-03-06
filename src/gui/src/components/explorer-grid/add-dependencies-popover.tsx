@@ -160,7 +160,7 @@ export const AddDependenciesPopover = ({
         <Select
           defaultValue={packageType}
           onValueChange={setPackageType}>
-          <SelectTrigger>
+          <SelectTrigger className="cursor-default">
             <SelectValue tabIndex={3} />
           </SelectTrigger>
           <SelectContent className="z-[10001]">

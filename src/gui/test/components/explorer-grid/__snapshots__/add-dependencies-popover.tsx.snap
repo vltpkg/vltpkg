@@ -109,7 +109,7 @@ exports[`add-dependencies-popover render default 1`] = `
       Type
     </gui-label>
     <gui-select>
-      <gui-select-trigger>
+      <gui-select-trigger classname="cursor-default">
         <gui-select-value tabindex="3">
         </gui-select-value>
       </gui-select-trigger>

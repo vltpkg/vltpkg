@@ -105,8 +105,8 @@ const SidebarQueryProjectNav = () => {
               <SidebarMenuItem>
                 <CollapsibleTrigger asChild>
                   <SidebarMenuButton
-                    tooltip="Project queries"
-                    className="whitespace-nowrap">
+                    tooltip="Global queries"
+                    className="cursor-default whitespace-nowrap">
                     {globalQueriesOpen ?
                       <FolderOpen />
                     : <Folder />}
@@ -121,7 +121,7 @@ const SidebarQueryProjectNav = () => {
                     {globalQueries.map((query, idx) => (
                       <SidebarMenuSubItem key={idx}>
                         <SidebarMenuSubButton
-                          className="cursor-pointer truncate whitespace-nowrap"
+                          className="cursor-default truncate whitespace-nowrap"
                           onClick={() => void runGlobalQuery(query)}>
                           {query.name}
                         </SidebarMenuSubButton>
@@ -143,7 +143,7 @@ const SidebarQueryProjectNav = () => {
                 <CollapsibleTrigger asChild>
                   <SidebarMenuButton
                     tooltip="Project queries"
-                    className="whitespace-nowrap">
+                    className="cursor-default whitespace-nowrap">
                     {projectQueriesOpen ?
                       <FolderOpen />
                     : <Folder />}
@@ -158,7 +158,7 @@ const SidebarQueryProjectNav = () => {
                     {projectQueries.map((query, idx) => (
                       <SidebarMenuSubItem key={idx}>
                         <SidebarMenuSubButton
-                          className="cursor-pointer truncate whitespace-nowrap"
+                          className="cursor-default truncate whitespace-nowrap"
                           onClick={() => void runQuery(query)}>
                           {query.name}
                         </SidebarMenuSubButton>
