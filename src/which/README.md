@@ -4,15 +4,16 @@
 
 Like the unix `which` utility.
 
-**[Usage](#usage)**
-·
-**[Options](#options)**
+**[Usage](#usage)** · **[Options](#options)**
 
 ## Overview
 
-Finds the first instance of a specified executable in the PATH environment variable. Does not cache the results, so `hash -r` is not needed when the PATH changes.
+Finds the first instance of a specified executable in the PATH
+environment variable. Does not cache the results, so `hash -r` is not
+needed when the PATH changes.
 
-Port of the [`which`](http://npm.im/which) to a TypeScript hybrid module.
+Port of the [`which`](http://npm.im/which) to a TypeScript hybrid
+module.
 
 ## Usage
 

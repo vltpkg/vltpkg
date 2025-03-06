@@ -2,7 +2,8 @@
 
 # @vltpkg/git-scp-url
 
-Utility function for parsing git "scp-style" URLs, like `git:git@github.com:user/repo` or `git+ssh://github.com:user/repo`.
+Utility function for parsing git "scp-style" URLs, like
+`git:git@github.com:user/repo` or `git+ssh://github.com:user/repo`.
 
 ## Usage
 
