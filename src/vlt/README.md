@@ -18,3 +18,6 @@ process.chdir('/some/vlt/project')
 process.argv.splice(2, 0, 'install')
 await vlt()
 ```
+
+Visit [docs.vlt.sh](https://docs.vlt.sh) to see the full
+documentation.

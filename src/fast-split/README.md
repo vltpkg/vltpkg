@@ -2,17 +2,21 @@
 
 # @vltpkg/fast-split
 
-This is a very fast alternative to `String.split()`, which can be used to quickly parse a small-to-medium sized string by a given delimiter.
+This is a very fast alternative to `String.split()`, which can be used
+to quickly parse a small-to-medium sized string by a given delimiter.
 
-**[It's fast](#how-fast-is-it)**
-·
-**[Usage](#usage)**
+**[It's fast](#how-fast-is-it)** · **[Usage](#usage)**
 
 ## How Fast Is It!?
 
-This is about 10% faster for splitting short strings by a short delimiter. When we have to walk the resulting list for any reason, or limit the number of items returned, it's an even bigger difference.
+This is about 10% faster for splitting short strings by a short
+delimiter. When we have to walk the resulting list for any reason, or
+limit the number of items returned, it's an even bigger difference.
 
-2024 M1 macbook pro, using node 20.11.0, v8 version 11.3.244.8-node.17 Counts are operations per ms, splitting the string '1.2.3-asdf+foo' by the delimiter '.', transforms calling part.toUpperCase(), and limits at 2 items
+2024 M1 macbook pro, using node 20.11.0, v8 version 11.3.244.8-node.17
+Counts are operations per ms, splitting the string '1.2.3-asdf+foo' by
+the delimiter '.', transforms calling part.toUpperCase(), and limits
+at 2 items
 
 ```
               split 10385.779

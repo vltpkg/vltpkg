@@ -2,4 +2,5 @@
 
 # @vltpkg/pick-manifest
 
-Selects the most appropriate version of a package’s manifest from a packument.
+Selects the most appropriate version of a package’s manifest from a
+packument.

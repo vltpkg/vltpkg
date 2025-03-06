@@ -2,7 +2,9 @@
 
 # @vltpkg/xdg
 
-Get appropriate data, cache, and config directories following the [XDG spec](https://wiki.archlinux.org/title/XDG_Base_Directory), namespaced to a specific app-name subfolder.
+Get appropriate data, cache, and config directories following the
+[XDG spec](https://wiki.archlinux.org/title/XDG_Base_Directory),
+namespaced to a specific app-name subfolder.
 
 ## Usage
 

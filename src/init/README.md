@@ -6,8 +6,8 @@ Project initialization logic for `vlt`.
 
 ## Overview
 
-This is a tool that provides the project initialization logic
-used by the vlt cli and gui.
+This is a tool that provides the project initialization logic used by
+the vlt cli and gui.
 
 ## Usage
 

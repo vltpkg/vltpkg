@@ -2,7 +2,9 @@
 
 # @vltpkg/run
 
-Run a script defined in a `package.json` file (eg, `vlt run` and lifecycle scripts), or an arbitrary command as if it was (eg, `vlt exec`).
+Run a script defined in a `package.json` file (eg, `vlt run` and
+lifecycle scripts), or an arbitrary command as if it was (eg,
+`vlt exec`).
 
 ## Usage
 

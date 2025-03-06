@@ -10,11 +10,13 @@
 
 **Develop. Run. Distribute.**
 
-This is the source monorepo for the [vlt](https://www.vlt.sh) package manager.
+This is the source monorepo for the [vlt](https://www.vlt.sh) package
+manager.
 
 ### Documentation
 
-Full documentation, startup guides & API references can be found at [docs.vlt.sh](https://docs.vlt.sh).
+Full documentation, startup guides & API references can be found at
+[docs.vlt.sh](https://docs.vlt.sh).
 
 #### Development
 
@@ -30,7 +32,8 @@ pnpm install
 pnpm vlt # OR ./node_modules/.bin/vlt
 ```
 
-See the [contributing guide](./CONTRIBUTING.md) for more information on how to build and develop the various workspaces.
+See the [contributing guide](./CONTRIBUTING.md) for more information
+on how to build and develop the various workspaces.
 
 ### License
 

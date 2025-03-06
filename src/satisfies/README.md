@@ -2,7 +2,8 @@
 
 # @vltpkg/satisfies
 
-Give it a DepID and a Spec, and it'll tell you whether that dep satisfies the spec.
+Give it a DepID and a Spec, and it'll tell you whether that dep
+satisfies the spec.
 
 ## Usage
 
