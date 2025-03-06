@@ -18,7 +18,6 @@
       ".": "./src/index.ts"
     }
   },
-  "dependencies": {},
   "devDependencies": {
     "@eslint/js": "catalog:",
     "@types/eslint__js": "catalog:",
@@ -27,13 +26,13 @@
     "prettier": "catalog:",
     "tap": "catalog:",
     "tshy": "catalog:",
+    "typedoc": "catalog:",
     "typescript": "catalog:",
     "typescript-eslint": "catalog:"
   },
   "license": "MIT",
   "engines": {
-    "node": ">=22",
-    "pnpm": "9"
+    "node": ">=22"
   },
   "scripts": {
     "format": "prettier --write . --log-level warn --ignore-path ../../.prettierignore --cache",
