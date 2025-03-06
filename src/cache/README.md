@@ -2,17 +2,16 @@
 
 # @vltpkg/cache
 
-The filesystem cache for `@vltpkg/registry-client`, but also, a general-purpose filesystem-backed [LRUCache](http://npm.im/lru-cache)
+The filesystem cache for `@vltpkg/registry-client`, but also, a
+general-purpose filesystem-backed [LRUCache](http://npm.im/lru-cache)
 
-**[Usage](#usage)**
-·
-**[Note](#note)**
+**[Usage](#usage)** · **[Note](#note)**
 
 ## Overview
 
-This is very minimal on features, because it has a very narrow use case, but if you want to have a persistently fs-backed LRU
-memory cache of Buffers using strings as keys, then this is the
-thing to use.
+This is very minimal on features, because it has a very narrow use
+case, but if you want to have a persistently fs-backed LRU memory
+cache of Buffers using strings as keys, then this is the thing to use.
 
 ## Usage
 
@@ -68,5 +67,7 @@ const otherValue = await cache.fetch(otherKey, {
 
 ## Note
 
-- The key type must be a string. It gets sha512 hashed to determine the file on disk.
-- The value must be a Buffer, so that it can be written to a file and read from it without having to convert anything.
+- The key type must be a string. It gets sha512 hashed to determine
+  the file on disk.
+- The value must be a Buffer, so that it can be written to a file and
+  read from it without having to convert anything.
