@@ -2,7 +2,8 @@
 
 # @vltpkg/types
 
-A module for a handful of core types that are used throughout vlt extensively, and don't belong to any one particular implementation.
+A module for a handful of core types that are used throughout vlt
+extensively, and don't belong to any one particular implementation.
 
 ## Usage
 

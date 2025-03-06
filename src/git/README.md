@@ -4,11 +4,7 @@
 
 A utility for spawning git from npm CLI contexts.
 
-**[Usage](#usage)**
-·
-**[API](#api)**
-·
-**[Options](#options)**
+**[Usage](#usage)** · **[API](#api)** · **[Options](#options)**
 
 ## Overview
 
@@ -49,23 +45,23 @@ All the other functions call this one at some point.
 Processes are launched using
 [`@vltpkg/promise-spawn`](http://npm.im/@vltpkg/promise-spawn).
 
-Return value is a `SpawnPromise` that resolves to a result object
-with `{cmd, args, code, signal, stdout, stderr}` members, or
-rejects with an error with the same fields, passed back from
+Return value is a `SpawnPromise` that resolves to a result object with
+`{cmd, args, code, signal, stdout, stderr}` members, or rejects with
+an error with the same fields, passed back from
 [`@vltpkg/promise-spawn`](http://npm.im/@vltpkg/promise-spawn).
 
 ### `clone(repo, ref = 'HEAD', target = null, opts = {})` -> `Promise<sha string>`
 
-Clone the repository into `target` path (or the default path for the name
-of the repository), checking out `ref`.
+Clone the repository into `target` path (or the default path for the
+name of the repository), checking out `ref`.
 
 Return value is the sha of the current HEAD in the locally cloned
 repository.
 
-In lieu of a specific `ref`, you may also pass in a `spec` option, which is
-a [`npm-package-arg`](http://npm.im/npm-package-arg) object for a `git`
-package dependency reference. In this way, you can select SemVer tags
-within a range, or any git committish value. For example:
+In lieu of a specific `ref`, you may also pass in a `spec` option,
+which is a [`npm-package-arg`](http://npm.im/npm-package-arg) object
+for a `git` package dependency reference. In this way, you can select
+SemVer tags within a range, or any git committish value. For example:
 
 ```js
 import { Spec } from '@vltpkg/spec'
@@ -75,17 +71,16 @@ clone('git@github.com:npm/git.git', '', null, {
 })
 ```
 
-This will automatically do a shallow `--depth=1` clone on any hosts that
-are known to support it. To force a shallow or deep clone, you can set the
-`gitShallow` option to `true` or `false` respectively.
+This will automatically do a shallow `--depth=1` clone on any hosts
+that are known to support it. To force a shallow or deep clone, you
+can set the `gitShallow` option to `true` or `false` respectively.
 
 ### `revs(repo, opts = {})` -> `Promise<rev doc Object>`
 
 Fetch a representation of all of the named references in a given
 repository. The resulting doc is intentionally somewhat
-packument-like, so that git semver ranges can be applied using
-the same
-[`@vltpkg/pick-manifest`](http://npm.im/@vltpkg/pick-manifest)
+packument-like, so that git semver ranges can be applied using the
+same [`@vltpkg/pick-manifest`](http://npm.im/@vltpkg/pick-manifest)
 logic.
 
 The resulting object looks like:
@@ -131,30 +126,30 @@ revs = {
 Resolve to `true` if the `cwd` option refers to the root of a git
 repository.
 
-It does this by looking for a file or folder at `${path}/.git`,
-which is not an airtight indicator, but usually pretty reliable.
+It does this by looking for a file or folder at `${path}/.git`, which
+is not an airtight indicator, but usually pretty reliable.
 
 ### `git.find(opts)` -> `Promise<string | undefined>`
 
-Given a path, walk up the file system tree until a git repo
-working directory is found. Since this calls `stat` a bunch of
-times, it's probably best to only call it if you're reasonably
-sure you're likely to be in a git project somewhere. Pass in
-`opts.root` to stop checking at that directory.
+Given a path, walk up the file system tree until a git repo working
+directory is found. Since this calls `stat` a bunch of times, it's
+probably best to only call it if you're reasonably sure you're likely
+to be in a git project somewhere. Pass in `opts.root` to stop checking
+at that directory.
 
 Resolves to `undefined` if not in a git project.
 
 ### `isClean(opts = {})` -> `Promise<boolean>`
 
-Return true if in a git dir, and that git dir is free of changes.
-This will resolve `true` if the git working dir is clean, or
-`false` if not, and reject if the path is not within a git
-directory or some other error occurs.
+Return true if in a git dir, and that git dir is free of changes. This
+will resolve `true` if the git working dir is clean, or `false` if
+not, and reject if the path is not within a git directory or some
+other error occurs.
 
 ### `getUser(opts = {})` -> `Promise<{name, email} | undefined>`
 
-Returns the user.name and user.email from the git config if found.
-If no value is found, it will return `undefined`.
+Returns the user.name and user.email from the git config if found. If
+no value is found, it will return `undefined`.
 
 ## Options
 
@@ -164,15 +159,15 @@ If no value is found, it will return `undefined`.
   - `factor`: Defaults to `opts.fetchRetryFactor` or 10
   - `maxTimeout`: Defaults to `opts.fetchRetryMaxtimeout` or 60000
   - `minTimeout`: Defaults to `opts.fetchRetryMintimeout` or 1000
-- `git` Path to the `git` binary to use. Will look up the first `git` in
-  the `PATH` if not specified.
-- `spec` The [`@vltpkg/spec`](http://npm.im/@vltpkg/spec)
-  specifier object for the thing being fetched (if relevant).
-- `fakePlatform` set to a fake value of `process.platform` to use. (Just
-  for testing `win32` behavior on Unix, and vice versa.)
+- `git` Path to the `git` binary to use. Will look up the first `git`
+  in the `PATH` if not specified.
+- `spec` The [`@vltpkg/spec`](http://npm.im/@vltpkg/spec) specifier
+  object for the thing being fetched (if relevant).
+- `fakePlatform` set to a fake value of `process.platform` to use.
+  (Just for testing `win32` behavior on Unix, and vice versa.)
 - `cwd` The current working dir for the git command. Particularly for
-  `find` and `is` and `isClean`, it's good to know that this defaults to
-  `process.cwd()`, as one might expect.
+  `find` and `is` and `isClean`, it's good to know that this defaults
+  to `process.cwd()`, as one might expect.
 - Any other options that can be passed to
   [`@vltpkg/promise-spawn`](http://npm.im/@vltpkg/promise-spawn), or
   `child_process.spawn()`.

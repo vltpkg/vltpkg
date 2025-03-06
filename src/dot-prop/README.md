@@ -2,7 +2,9 @@
 
 # @vltpkg/dot-prop
 
-A library that allows you to easily access, set, delete, and check deeply nested properties in objects and arrays using string-based paths.
+A library that allows you to easily access, set, delete, and check
+deeply nested properties in objects and arrays using string-based
+paths.
 
 ## Usage
 

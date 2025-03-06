@@ -1,7 +1,8 @@
 # @vltpkg/graph.lockfile
 
-A library that stores `@vltpkg/graph.Graph` information into a lockfile and
-reads information from stored lockfiles to rebuild a virtual `Graph`.
+A library that stores `@vltpkg/graph.Graph` information into a
+lockfile and reads information from stored lockfiles to rebuild a
+virtual `Graph`.
 
 ## USAGE
 
