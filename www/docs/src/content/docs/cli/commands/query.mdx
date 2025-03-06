@@ -8,9 +8,13 @@ import { Code } from '@astrojs/starlight/components'
 
 Usage:
 
-<Code code="$ vlt query
+<Code
+  code="$ vlt query
 $ vlt query <query> --view=[human | json | mermaid | gui]
-" title="Terminal" lang="bash" />
+"
+  title="Terminal"
+  lang="bash"
+/>
 
 List installed dependencies matching the provided query.
 
@@ -22,15 +26,27 @@ Query packages with the name "foo"
 
 Query all peer dependencies of workspaces
 
-<Code code="$ vlt query '*.workspace > *.peer'" title="Terminal" lang="bash" />
+<Code
+  code="$ vlt query '*.workspace > *.peer'"
+  title="Terminal"
+  lang="bash"
+/>
 
 Query all direct project dependencies with a "build" script
 
-<Code code="$ vlt query ':project > *:attr(scripts, [build])'" title="Terminal" lang="bash" />
+<Code
+  code="$ vlt query ':project > *:attr(scripts, [build])'"
+  title="Terminal"
+  lang="bash"
+/>
 
 Query packages with names starting with "@vltpkg"
 
-<Code code={`$ vlt query '[name^="@vltpkg"]'`} title="Terminal" lang="bash" />
+<Code
+  code={`$ vlt query '[name^="@vltpkg"]'`}
+  title="Terminal"
+  lang="bash"
+/>
 
 ## Options
 

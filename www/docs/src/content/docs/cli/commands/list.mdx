@@ -8,8 +8,12 @@ import { Code } from '@astrojs/starlight/components'
 
 Usage:
 
-<Code code="$ vlt ls
-$ vlt ls <query> --view=[human | json | mermaid | gui]" title="Terminal" lang="bash" />
+<Code
+  code="$ vlt ls
+$ vlt ls <query> --view=[human | json | mermaid | gui]"
+  title="Terminal"
+  lang="bash"
+/>
 
 List installed dependencies matching the provided query. Defaults to listing direct dependencies of a project and any configured workspace.
 
@@ -29,11 +33,19 @@ List all dependencies named 'foo', 'bar', or 'baz'
 
 Lists direct dependencies of a specific package
 
-<Code code={`$ vlt ls '[name="@scoped/package"] > *'`} title="Terminal" lang="bash" />
+<Code
+  code={`$ vlt ls '[name="@scoped/package"] > *'`}
+  title="Terminal"
+  lang="bash"
+/>
 
 List all peer dependencies of all workspaces
 
-<Code code={`$ vlt ls '*.workspace > *.peer'`} title="Terminal" lang="bash" />
+<Code
+  code={`$ vlt ls '*.workspace > *.peer'`}
+  title="Terminal"
+  lang="bash"
+/>
 
 ## Options
 
