@@ -1,0 +1,27 @@
+{
+  "name": "vlt",
+  "description": "The vlt CLI",
+  "version": "0.0.0-1",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vltpkg/vltpkg.git",
+    "directory": "infra/cli"
+  },
+  "devDependencies": {
+    "@vltpkg/infra-build": "workspace:*"
+  },
+  "license": "BSD-2-Clause-Patent",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "prepack": "vlt-build-prepack"
+  },
+  "type": "module",
+  "keywords": [
+    "vltpkg"
+  ],
+  "publishConfig": {
+    "directory": "./.build-publish"
+  }
+}
