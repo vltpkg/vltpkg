@@ -5,6 +5,60 @@
  * Make sure to inspect the output below.  Do not ignore changes!
  */
 'use strict'
+exports[`test/reify/update-importers-package-json.ts > TAP > updatePackageJson > aliased install > should use provided aliased in package json save 1`] = `
+Array [
+  Object {
+    "dependencies": Object {
+      "b": "npm:a@1.0.0",
+      "git": "github:a/b",
+    },
+    "devDependencies": Object {
+      "def": "^1.0.0",
+      "gtor": ">=1.1.0 || 2",
+      "range": "~1.1.0",
+    },
+    "name": "root",
+    "version": "1.0.0",
+  },
+]
+`
+
+exports[`test/reify/update-importers-package-json.ts > TAP > updatePackageJson > aliased install from dist-tag > should use resolved version in package json save 1`] = `
+Array [
+  Object {
+    "dependencies": Object {
+      "b": "npm:a@^1.0.0",
+      "git": "github:a/b",
+    },
+    "devDependencies": Object {
+      "def": "^1.0.0",
+      "gtor": ">=1.1.0 || 2",
+      "range": "~1.1.0",
+    },
+    "name": "root",
+    "version": "1.0.0",
+  },
+]
+`
+
+exports[`test/reify/update-importers-package-json.ts > TAP > updatePackageJson > custom aliased install > should use custom aliased registry in package json save 1`] = `
+Array [
+  Object {
+    "dependencies": Object {
+      "b": "custom:a@^1.0.0",
+      "git": "github:a/b",
+    },
+    "devDependencies": Object {
+      "def": "^1.0.0",
+      "gtor": ">=1.1.0 || 2",
+      "range": "~1.1.0",
+    },
+    "name": "root",
+    "version": "1.0.0",
+  },
+]
+`
+
 exports[`test/reify/update-importers-package-json.ts > TAP > updatePackageJson > no semver dep > should use provided def in package json save 1`] = `
 Array [
   Object {

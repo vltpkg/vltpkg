@@ -111,9 +111,11 @@ const addOrRemoveDeps = (
       dependencies[name] =
         (
           nodeType === 'registry' &&
-          (!dep.spec.semver || !dep.spec.range)
+          (!dep.spec.final.semver || !dep.spec.final.range)
         ) ?
-          `${SAVE_PREFIX}${node.version}`
+          dep.spec.subspec && dep.spec.namedRegistry ?
+            `${dep.spec.final.namedRegistry}:${dep.spec.final.name}@${SAVE_PREFIX}${node.version}`
+          : `${SAVE_PREFIX}${node.version}`
         : dep.spec.bareSpec
       manifestChanged = true
     }
