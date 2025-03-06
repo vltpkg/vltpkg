@@ -38,13 +38,13 @@
     "prettier": "catalog:",
     "tap": "catalog:",
     "tshy": "catalog:",
+    "typedoc": "catalog:",
     "typescript": "catalog:",
     "typescript-eslint": "catalog:"
   },
   "license": "BSD-2-Clause-Patent",
   "engines": {
-    "node": ">=22",
-    "pnpm": "9"
+    "node": ">=22"
   },
   "scripts": {
     "prebenchmark": "pnpm vlt-benchmark-download-fixtures",

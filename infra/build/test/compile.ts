@@ -1,53 +1,23 @@
+import { compile } from '../src/compile.ts'
 import t from 'tap'
-import type { Test } from 'tap'
-import { join } from 'path'
-import { defaultOptions } from '../src/index.ts'
-import * as types from '../src/types.ts'
+import { readdirSync } from 'node:fs'
 
-const testCompile = async (
-  t: Test,
-  options: Partial<types.Factors>,
-) => {
-  const { default: compile } = await t.mockImport<
-    typeof import('../src/compile.ts')
-  >('../src/compile.ts', {
-    'node:child_process': {
-      spawnSync: () => ({ status: 0 }),
-    },
+t.test('basic', async t => {
+  const dir = t.testdir()
+  const res = await compile({
+    outdir: dir,
+    bins: ['vlt'],
+    stdio: 'pipe',
   })
-  const dir = t.testdir({
-    source: {
-      nested: {
-        file: '',
-      },
-      'some-file.js': '',
-    },
-    compile: {},
-  })
-  const def = defaultOptions()
-  compile({
-    source: join(dir, 'source'),
-    outdir: join(dir, 'compile'),
-    bin: types.Bins.vlt,
-    ...def,
-    ...options,
-  })
-}
-
-t.test('runtimes', async t => {
-  await t.rejects(
-    testCompile(t, {
-      runtime: types.Runtimes.Node,
-    }),
+  const contents = readdirSync(res.outdir)
+  t.ok(
+    contents.includes(
+      `vlt${process.platform === 'win32' ? '.exe' : ''}`,
+    ),
   )
-  await t.resolves(
-    testCompile(t, {
-      runtime: types.Runtimes.Deno,
-    }),
-  )
-  await t.resolves(
-    testCompile(t, {
-      runtime: types.Runtimes.Bun,
-    }),
+  t.notOk(
+    contents.includes(
+      `vlr${process.platform === 'win32' ? '.exe' : ''}`,
+    ),
   )
 })

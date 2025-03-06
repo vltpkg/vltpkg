@@ -85,6 +85,58 @@ $ pnpm -s vlt --version
 0.0.0-0
 ```
 
+## Running the CLI from Other Directories
+
+A directory of `sh` executables is located at `./scripts/bins`. These call the TypeScript
+source bin files with the correct `NODE_OPTIONS`. This directory is designed to be put at
+the beginning of your path temporarily to make running of `vlt` and its related CLIs run
+directly from source.
+
+```bash
+export PATH=~/projects/vltpkg/vltpkg/scripts/bins:$PATH
+vlt --version
+```
+
+## Publishing
+
+All workspace directories are designed so `pnpm publish` can be run from that directory.
+
+On all pushes to `main` a GitHub Actions workflow will run to create a release PR. That
+PR will be updated for all subsequent pushes. The PR will contain any release related
+commits, usually just the bumping of `package.json` version numbers.
+
+When that PR is merged the same workflow will then publish the bumped packages.
+
+## Release Manager
+
+The weekly release manager's role is to merge the release PR. Pretty simple :smile:
+
+The release PR will be created as a `draft`. When it is time to release, merging other
+PRs should be temporarily paused and the release PR should be:
+
+1. Marked as ready for review
+1. Approved
+1. Merged
+
+### Published CLI Packages
+
+The following packages are published as part of the CLI:
+
+- `vlt` This is currently the bundled JS version of the CLI
+- `@vltpkg/cli-compiled` The is the compiled version of the CLI that we are testing
+  so it can be made the default in the future. This package only has placeholder bins
+  that are swapped out in a postinstall for one of the platform variants below.
+- `@vltpkg/cli-darmin-arm64`
+- `@vltpkg/cli-darmin-x64`
+- `@vltpkg/cli-linux-arm64`
+- `@vltpkg/cli-linux-x64`
+- `@vltpkg/cli-win32-x64`
+
+Note that the platform specific variants do not have any `package.json#bin` entries
+because that is incompatible with the postinstall strategy of the parent `@vltpkg/cli-compiled`
+package. If you need to install one of those directly, you will need to move/run
+the included `vlt` executable manually.
+
 ## GUI Live Reload
 
 When run locally the GUI can be set to use live reload so that any changes to GUI source
@@ -114,31 +166,21 @@ There are some root level scripts that can be run to generate these
 builds for testing locally.
 
 ```bash
-# creates a directory at .build-bundle with all the bundled JS
+# creates a directory with all the bundled JS
 pnpm build:bundle
-
-# creates a directory at .build-compile with the compiled binaries
+# creates a directory with the compiled binaries
 # for the current os and cpu
 pnpm build:compile
 ```
 
-Both of those commands take an `--action` flag which can be set to `pack` or `publish`.
-
-Setting it to `pack` will additionally run `npm pack` on the built directories to
-generate a `.tgz` file.
-
-Setting it to `publish` will run `npm publish --dry-run` on the built directories.
-Use this to see which packages would be published and with what access, tag,
-and registry. If you really want to do the real thing use the `--forReal` flag
-
-### Other Platforms
-
 To generate compiled builds for other platforms use the `--platform` and `--arch` flags.
 
 ```bash
-# create bins for all platform/arch combinations
-pnpm build:compile --platform=all --arch=all
+pnpm build:compile --platform=win32 --arch=x64
 ```
+
+You can also run `pnpm pack` in any of the `./infra/cli*` directories to generate a tarball
+of the build.
 
 ## FAQ
 
