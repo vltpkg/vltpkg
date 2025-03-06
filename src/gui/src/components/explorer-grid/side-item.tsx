@@ -80,7 +80,7 @@ export const SideItem = ({
       : ''}
       <Card
         role="article"
-        className={`relative my-4 transition-all ${highlight ? 'border-muted-foreground' : ''} ${onSelect ? 'cursor-pointer group-hover:border-neutral-400 dark:group-hover:border-neutral-600' : ''}`}
+        className={`relative my-4 transition-all ${highlight ? 'border-muted-foreground' : ''} ${onSelect ? 'group-hover:border-neutral-400 dark:group-hover:border-neutral-600' : ''}`}
         onClick={onSelect}>
         <CardHeader className="relative flex w-full flex-col rounded-t-lg p-0">
           <div className="flex items-center px-3 py-2">
@@ -92,7 +92,7 @@ export const SideItem = ({
             </CardTitle>
             {uninstallAvailable && (
               <DropdownMenu>
-                <DropdownMenuTrigger>
+                <DropdownMenuTrigger className="cursor-default">
                   <Ellipsis
                     className="text-muted-foreground"
                     size={20}
@@ -102,9 +102,7 @@ export const SideItem = ({
                   className="z-[10000] ml-48 w-48"
                   align="end"
                   onCloseAutoFocus={e => e.preventDefault()}>
-                  <DropdownMenuItem
-                    className="cursor-pointer"
-                    onClick={uninstallItem}>
+                  <DropdownMenuItem onClick={uninstallItem}>
                     <PackageMinus size={16} />
                     Remove dependency
                   </DropdownMenuItem>

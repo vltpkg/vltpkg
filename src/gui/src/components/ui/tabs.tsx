@@ -20,7 +20,7 @@ const tabsListVariants = cva('inline-flex ', {
   },
 })
 const tabsTriggerVariants = cva(
-  'inline-flex items-center justify-center',
+  'cursor-default inline-flex items-center justify-center',
   {
     variants: {
       variant: {

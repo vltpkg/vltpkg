@@ -14,12 +14,17 @@ import { useGraphStore } from '@/state/index.js'
 import type { Color } from '@/state/types.js'
 import { useToast } from '@/components/hooks/use-toast.js'
 import { v4 as uuidv4 } from 'uuid'
+import { cn } from '@/lib/utils.js'
 
 interface CreateLabelProps {
   closeCreate: () => void
+  className?: string
 }
 
-const CreateLabel = ({ closeCreate }: CreateLabelProps) => {
+const CreateLabel = ({
+  className,
+  closeCreate,
+}: CreateLabelProps) => {
   const [labelName, setLabelName] = useState<string>('Label preview')
   const [labelDescription, setLabelDescription] = useState<string>('')
   const [selectedColor, setSelectedColor] = useState<Color>('#00FF5F')
@@ -57,7 +62,11 @@ const CreateLabel = ({ closeCreate }: CreateLabelProps) => {
   }, [labelName, labelDescription, selectedColor])
 
   return (
-    <div className="rounded-sm border border-[1px] border-muted-foreground/25 bg-neutral-100 transition-all dark:bg-neutral-950">
+    <div
+      className={cn(
+        'rounded-sm border border-[1px] border-muted-foreground/25 bg-neutral-100 transition-all dark:bg-neutral-950',
+        className,
+      )}>
       <div className="flex flex-col gap-3 px-3 py-3">
         {/* label preview */}
         <div>

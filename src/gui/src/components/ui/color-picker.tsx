@@ -81,7 +81,7 @@ export function ColorPicker({
                 onChange(e.target.value)
               }
             }}
-            className="relative h-[20px] w-[20px] cursor-pointer opacity-0"
+            className="relative h-[20px] w-[20px] cursor-default opacity-0"
             type="color"
           />
         </div>
@@ -91,7 +91,7 @@ export function ColorPicker({
           <button
             key={color}
             onClick={() => handleDefaultColorClick(color)}
-            className="aspect-square w-full rounded-sm border border-[1px] border-muted-foreground/25 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="aspect-square w-full cursor-default rounded-sm border border-[1px] border-muted-foreground/25 focus:outline-none focus:ring-2 focus:ring-blue-500"
             style={{ backgroundColor: color }}
             aria-label={`Select color ${color}`}
           />

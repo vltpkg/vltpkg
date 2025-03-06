@@ -9,7 +9,7 @@ exports[`AppSidebar project queries > renders correctly 1`] = `
         <a
           href="https://docs.vlt.sh"
           target="_blank"
-          class="duration-250 group/footer-button text-muted-foreground transition-all"
+          class="duration-250 group/footer-button cursor-default text-muted-foreground transition-all"
         >
           <gui-library-icon>
           </gui-library-icon>

@@ -2,7 +2,7 @@
 
 exports[`create-label > should render correctly 1`] = `
 
-<div class="rounded-sm border border-[1px] border-muted-foreground/25 bg-neutral-100 transition-all dark:bg-neutral-950">
+<div class="rounded-sm border-[1px] border-muted-foreground/25 bg-neutral-100 transition-all dark:bg-neutral-950">
   <div class="flex flex-col gap-3 px-3 py-3">
     <div>
       <gui-label-badge

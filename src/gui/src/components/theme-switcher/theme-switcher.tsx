@@ -40,7 +40,7 @@ const ThemeSwitcher = () => {
           aria-label={control.ariaLabel}
           onClick={() => setTheme(control.name)}
           className={clsx(
-            'z-[10] flex aspect-square h-[38px] w-[38px] cursor-pointer items-center justify-center rounded-full',
+            'z-[10] flex aspect-square h-[38px] w-[38px] cursor-default items-center justify-center rounded-full',
             {
               'border border-neutral-300 dark:border-neutral-800':
                 theme === control.name,

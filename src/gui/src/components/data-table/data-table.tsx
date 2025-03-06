@@ -116,8 +116,7 @@ export const DataTable = <TData, TValue>({
                       : null
                   }}
                   key={row.id}
-                  data-state={row.getIsSelected() && 'selected'}
-                  className={onClickHandler ? 'cursor-pointer' : ''}>
+                  data-state={row.getIsSelected() && 'selected'}>
                   {row.getVisibleCells().map(cell => (
                     <TableCell
                       key={cell.id}

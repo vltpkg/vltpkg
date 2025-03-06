@@ -92,7 +92,7 @@ const LabelSelect = ({
               <p className="text-sm text-neutral-400">
                 No labels found.
               </p>
-              <DialogTrigger>
+              <DialogTrigger asChild>
                 <Button className="w-full font-normal">
                   Create label "{inputText}"
                 </Button>
@@ -114,7 +114,7 @@ const LabelSelect = ({
                 key={label.id}
                 value={label.name}
                 onSelect={handleSelect}
-                className="flex cursor-pointer flex-col items-start gap-2">
+                className="flex flex-col items-start gap-2">
                 <div className="flex items-center gap-3">
                   <Check
                     className={cn(

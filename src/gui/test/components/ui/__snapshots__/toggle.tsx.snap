@@ -7,7 +7,7 @@ exports[`toggle > should render correctly 1`] = `
     <div class="absolute h-[2rem] w-[2rem] rounded-[4px] border border-muted-foreground/20 bg-muted">
     </div>
     <div
-      class="z-[1] flex h-[2rem] w-[2rem] cursor-pointer items-center justify-center rounded-sm"
+      class="z-[1] flex h-[2rem] w-[2rem] cursor-default items-center justify-center rounded-sm"
       data-state="closed"
     >
       <gui-smile-icon
@@ -17,7 +17,7 @@ exports[`toggle > should render correctly 1`] = `
       </gui-smile-icon>
     </div>
     <div
-      class="z-[1] flex h-[2rem] w-[2rem] cursor-pointer items-center justify-center rounded-sm"
+      class="z-[1] flex h-[2rem] w-[2rem] cursor-default items-center justify-center rounded-sm"
       data-state="closed"
     >
       <gui-frown-icon

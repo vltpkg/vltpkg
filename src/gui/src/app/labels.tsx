@@ -13,6 +13,7 @@ import { CreateLabel } from '@/components/labels/create-label.jsx'
 import type { QueryLabel } from '@/state/types.js'
 import { useGraphStore } from '@/state/index.js'
 import { LabelsEmptyState } from '@/components/labels/labels-empty-state.jsx'
+import { AnimatePresence, LayoutGroup, motion } from 'framer-motion'
 
 const Labels = () => {
   const [deleteDialogOpen, setDeleteDialogOpen] =
@@ -88,49 +89,75 @@ const Labels = () => {
           </div>
         </div>
 
-        {isCreating && (
-          <div className="mt-6">
-            <CreateLabel closeCreate={() => setIsCreating(false)} />
-          </div>
-        )}
+        <LayoutGroup>
+          <AnimatePresence mode="popLayout" initial={false}>
+            {isCreating && (
+              <motion.div
+                layout="preserve-aspect"
+                key="create-label"
+                initial={{ height: 0, opacity: 0, scale: 0.8 }}
+                animate={{ height: 'auto', opacity: 1, scale: 1 }}
+                transition={{
+                  duration: 0.75,
+                  ease: [0.16, 1, 0.3, 1],
+                }}
+                exit={{ height: 0, opacity: 0, scale: 0.8 }}
+                className="mt-6">
+                <CreateLabel
+                  closeCreate={() => setIsCreating(false)}
+                />
+              </motion.div>
+            )}
+          </AnimatePresence>
 
-        {!!savedLabels?.length && (
-          <div className="mt-6 grid grid-cols-8 px-3">
-            <div className="col-span-2 flex items-center gap-3">
-              <Checkbox
-                onCheckedChange={handleSelectAll}
-                className="border-muted-foreground/50 hover:border-muted-foreground/75"
-              />
-              <p className="text-sm font-medium text-neutral-500">
-                Name
-              </p>
-            </div>
-            <div className="col-span-4 flex items-center">
-              <p className="text-sm font-medium text-neutral-500">
-                Description
-              </p>
-            </div>
-            <div className="flex items-center justify-center">
-              <p className="text-sm font-medium text-neutral-500">
-                References
-              </p>
-            </div>
-          </div>
-        )}
+          <motion.div layout="position" className="mt-6">
+            {!!savedLabels?.length && (
+              <motion.div
+                initial={{ opacity: 1 }}
+                animate={{ opacity: isCreating ? 0 : 1 }}
+                exit={{ opacity: 1 }}
+                transition={{
+                  duration: 0.75,
+                  ease: [0.16, 1, 0.3, 1],
+                }}
+                className="grid grid-cols-8 px-3">
+                <div className="col-span-2 flex items-center gap-3">
+                  <Checkbox
+                    onCheckedChange={handleSelectAll}
+                    className="border-muted-foreground/50 hover:border-muted-foreground/75"
+                  />
+                  <p className="text-sm font-medium text-neutral-500">
+                    Name
+                  </p>
+                </div>
+                <div className="col-span-4 flex items-center">
+                  <p className="text-sm font-medium text-neutral-500">
+                    Description
+                  </p>
+                </div>
+                <div className="flex items-center justify-center">
+                  <p className="text-sm font-medium text-neutral-500">
+                    References
+                  </p>
+                </div>
+              </motion.div>
+            )}
 
-        <div className="mt-3 flex flex-col gap-3">
-          {savedLabels &&
-            filteredLabels.map((label, idx) => (
-              <Label
-                checked={selectedLabels.some(
-                  selected => selected.id === label.id,
-                )}
-                handleSelect={handleSelectLabel}
-                queryLabel={label}
-                key={idx}
-              />
-            ))}
-        </div>
+            <div className="mt-3 flex flex-col gap-3">
+              {savedLabels &&
+                filteredLabels.map(label => (
+                  <Label
+                    checked={selectedLabels.some(
+                      selected => selected.id === label.id,
+                    )}
+                    handleSelect={handleSelectLabel}
+                    queryLabel={label}
+                    key={label.id}
+                  />
+                ))}
+            </div>
+          </motion.div>
+        </LayoutGroup>
       </div>
 
       {!savedLabels?.length && <LabelsEmptyState />}

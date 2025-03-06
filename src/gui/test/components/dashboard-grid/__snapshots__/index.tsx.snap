@@ -84,7 +84,7 @@ exports[`dashboard-grid with results 1`] = `
       <div class="grid grid-cols-1 gap-x-6 gap-y-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         <a
           href="#"
-          class="group relative w-full"
+          class="group relative w-full cursor-default"
         >
           <div class="relative flex h-24 items-center overflow-hidden rounded-t-lg border-x-[1px] border-t-[1px] bg-card transition-all group-hover:border-neutral-400 dark:group-hover:border-neutral-700">
             <div class="flex px-3 py-2">
@@ -117,7 +117,7 @@ exports[`dashboard-grid with results 1`] = `
         </a>
         <a
           href="#"
-          class="group relative w-full"
+          class="group relative w-full cursor-default"
         >
           <div class="relative flex h-24 items-center overflow-hidden rounded-t-lg border-x-[1px] border-t-[1px] bg-card transition-all group-hover:border-neutral-400 dark:group-hover:border-neutral-700">
             <div class="flex px-3 py-2">

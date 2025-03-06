@@ -207,7 +207,7 @@ export const SelectedItem = ({ item }: GridItemOptions) => {
                             className="flex items-center justify-center">
                             <Badge
                               variant="outline"
-                              className="cursor-pointer bg-secondary p-0.5 outline-[1px] outline-border">
+                              className="cursor-default bg-secondary p-0.5 outline-[1px] outline-border">
                               <Info
                                 className="text-muted-foreground"
                                 size={16}

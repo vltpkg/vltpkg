@@ -16,7 +16,7 @@ exports[`label-select > should render correctly 1`] = `
           <p class="text-sm text-neutral-400">
             No labels found.
           </p>
-          <gui-dialog-trigger>
+          <gui-dialog-trigger aschild="true">
             <gui-button classname="w-full font-normal">
               Create label ""
             </gui-button>
@@ -29,7 +29,7 @@ exports[`label-select > should render correctly 1`] = `
     <gui-command-group>
       <gui-command-item
         value="Outdated"
-        classname="flex cursor-pointer flex-col items-start gap-2"
+        classname="flex flex-col items-start gap-2"
       >
         <div class="flex items-center gap-3">
           <gui-check-icon classname="transition-opacity opacity-0">
@@ -53,7 +53,7 @@ exports[`label-select > should render correctly 1`] = `
       </gui-command-item>
       <gui-command-item
         value="Unstable"
-        classname="flex cursor-pointer flex-col items-start gap-2"
+        classname="flex flex-col items-start gap-2"
       >
         <div class="flex items-center gap-3">
           <gui-check-icon classname="transition-opacity opacity-0">
@@ -77,7 +77,7 @@ exports[`label-select > should render correctly 1`] = `
       </gui-command-item>
       <gui-command-item
         value="Insecure"
-        classname="flex cursor-pointer flex-col items-start gap-2"
+        classname="flex flex-col items-start gap-2"
       >
         <div class="flex items-center gap-3">
           <gui-check-icon classname="transition-opacity opacity-0">

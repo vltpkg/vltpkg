@@ -3,7 +3,10 @@
 exports[`queries-empty-state > labels render default 1`] = `
 
 <div class="flex h-full w-full items-center justify-center bg-white dark:bg-black">
-  <div class="-mt-20 flex flex-col items-center justify-center gap-3">
+  <div
+    class="-mt-20 flex flex-col items-center justify-center gap-3"
+    style="opacity: 1;"
+  >
     <div class="relative mb-20 flex items-center justify-center">
       <div
         class="absolute z-[1] h-[450px] w-[450px] rounded-full border-[1px] border-neutral-500/10"
@@ -69,28 +72,33 @@ exports[`queries-empty-state > labels render default 1`] = `
         </div>
       </div>
     </div>
-    <h3 class="text-xl font-medium">
-      No saved Queries yet
-    </h3>
-    <p class="text-center text-sm text-neutral-500">
-      Looks like you haven't saved any Queries yet,
-      <br>
-      explore your Projects to add one!
-    </p>
-    <div class="flex gap-3">
+    <div class="flex flex-col items-center justify-center gap-3 text-center">
+      <h3 class="text-xl font-medium">
+        No saved Queries yet
+      </h3>
+      <p class="text-center text-sm text-neutral-500">
+        Looks like you haven't saved any Queries yet,
+        <br>
+        explore your Projects to add one!
+      </p>
+      <div class="z-[2] flex items-center justify-center gap-3 text-center">
+        <gui-button
+          aschild="true"
+          variant="outline"
+        >
+          <a href="/">
+            Explore Projects
+          </a>
+        </gui-button>
+        <gui-button>
+          <span>
+            New Query
+          </span>
+          <gui-plus-icon>
+          </gui-plus-icon>
+        </gui-button>
+      </div>
     </div>
-    <gui-button
-      aschild="true"
-      classname="z-[2]"
-    >
-      <a href="/">
-        <span>
-          Explore Projects
-        </span>
-        <gui-arrow-right-icon>
-        </gui-arrow-right-icon>
-      </a>
-    </gui-button>
   </div>
 </div>
 

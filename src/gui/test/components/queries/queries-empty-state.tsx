@@ -9,9 +9,13 @@ vi.mock('@/components/ui/button.jsx', () => ({
 }))
 
 vi.mock('lucide-react', () => ({
-  ArrowRight: 'gui-arrow-right-icon',
   Command: 'gui-command-icon',
+  Plus: 'gui-plus-icon',
   Star: 'gui-star-icon',
+}))
+
+vi.mock('@/components/queries/create-query.jsx', () => ({
+  CreateQuery: 'gui-create-query',
 }))
 
 expect.addSnapshotSerializer({
