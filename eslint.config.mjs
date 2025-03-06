@@ -222,23 +222,6 @@ export default tseslint.config(
   },
   {
     /**
-     * infra workspaces are non-source build related things. So we
-     * allow some unsafe code here.
-     */
-    files: ['infra/*/src/*.ts'],
-    rules: unsafeRules('off'),
-  },
-  {
-    /**
-     * Re-enable safety rules for some specific files. This doesn't work
-     * as a negated glob in the above block for some reason. Doing it that
-     * way causes eslint to slow down significantly.
-     */
-    files: ['infra/build/src/bin/publish.ts'],
-    rules: unsafeRules('error'),
-  },
-  {
-    /**
      * Tests
      */
     files: ['**/test/**/*.{ts,tsx}'],
@@ -325,7 +308,7 @@ export default tseslint.config(
     },
   },
   {
-    files: ['infra/build/test/**/*.ts', 'src/vlt/test/**/*/*.ts'],
+    files: ['src/vlt/test/**/*/*.ts'],
     rules: {
       'no-restricted-syntax': [
         'warn',
@@ -354,7 +337,7 @@ export default tseslint.config(
      * JS code but I couldn't get it configured right. Might be worth
      * looking in to for our JS scripts.
      */
-    files: ['**/*.{js,mjs}'],
+    files: ['**/*.{js,mjs,cjs}'],
     ...eslint.configs.recommended,
     ...tseslint.configs.disableTypeChecked,
     rules: {

@@ -1,28 +1,20 @@
 {
   "name": "@vltpkg/infra-build",
-  "description": "Build scripts for this monorepo",
-  "version": "0.0.0-0",
+  "description": "Scripts for bundling/publishing the CLI in this monorepo",
+  "version": "0.0.0",
   "private": true,
   "repository": {
     "type": "git",
     "url": "git+https://github.com/vltpkg/vltpkg.git",
     "directory": "infra/build"
   },
-  "tshy": {
-    "selfLink": false,
-    "liveDev": true,
-    "dialects": [
-      "esm"
-    ],
-    "exports": {
-      "./package.json": "./package.json",
-      ".": "./src/index.ts"
-    }
+  "bin": {
+    "vlt-build": "./src/cli.ts",
+    "vlt-build-prepack": "./src/prepack.ts"
   },
   "dependencies": {
-    "@vltpkg/cli": "workspace:*",
-    "esbuild": "catalog:",
-    "package-json-from-dist": "catalog:"
+    "@vltpkg/cli-sdk": "workspace:*",
+    "esbuild": "catalog:"
   },
   "devDependencies": {
     "@eslint/js": "catalog:",
@@ -36,8 +28,7 @@
   },
   "license": "BSD-2-Clause-Patent",
   "engines": {
-    "node": ">=22",
-    "pnpm": "9"
+    "node": ">=22"
   },
   "scripts": {
     "format": "prettier --write . --log-level warn --ignore-path ../../.prettierignore --cache",
@@ -50,9 +41,7 @@
     "typecheck": "tsc --noEmit"
   },
   "tap": {
-    "extends": "../../tap-config.yaml",
-    "disable-coverage": true,
-    "timeout": 600
+    "extends": "../../tap-config.yaml"
   },
   "prettier": "../../.prettierrc.js",
   "module": "./src/index.ts",
