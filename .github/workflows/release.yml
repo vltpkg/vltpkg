@@ -80,7 +80,7 @@ jobs:
         run: pnpm install
 
       - name: Version CLI Packages
-        run: pnpm --filter "./infra/cli*" exec npm version prerelease --no-git-tag-version
+        run: pnpm --filter="./infra/cli*" exec npm version prerelease --no-git-tag-version
 
       - name: Get CLI Version Number
         id: version
@@ -98,30 +98,38 @@ jobs:
           git commit -m "Release v${{ steps.version.outputs.value }}"
 
       - name: Pack
-        run: pnpm --filter "[$(git rev-parse HEAD~1)]" exec pnpm pack
+        run: pnpm --filter="[$(git rev-parse HEAD~1)]" --workspace-concurrency=1 exec pnpm pack
 
       - name: List Packages
         id: packages
         run: |
-          packages=$(pnpm --shell-mode --filter="[$(git rev-parse HEAD~1)]" exec "cat package.json | jq -r '\"\(.name)@\(.version)\"'" | sort)
           delimiter="$(openssl rand -hex 8)"
-          echo "name-version<<${delimiter}" >> "${GITHUB_OUTPUT}"
-          echo $packages >> "${GITHUB_OUTPUT}"
-          echo "${delimiter}" >> "${GITHUB_OUTPUT}"
+          commit="$(git rev-parse HEAD~1)"
 
-      - name: Dry Run Publish
-        run: |
-          pnpm publish \
-            --filter="[$(git rev-parse HEAD~1)]" \
-            --access=public \
-            --no-git-checks \
-            --dry-run
+          format() {
+            local name="$1"
+            local filter="$2"
+            local sort_flags="${3:-}"
+
+            local packages=$(pnpm --shell-mode --filter="{./$filter/}[$commit]" exec \
+              "cat package.json | jq -r '\"\(.name)@\(.version)\"'" | sort $sort_flags)
+
+            echo "$packages"
+            {
+              echo "${name}<<${delimiter}"
+              echo "$packages" | sed 's/^/`/;s/$/`/' | sed 's/^/- /'
+              echo "${delimiter}"
+            } >> "${GITHUB_OUTPUT}"
+          }
+
+          format "clis" "infra" "-t@ -k1,1r"
+          format "workspaces" "src"
 
       - name: Undo Pack Local Changes
         run: |
           git status
           git diff
-          git checkout -- .
+          git checkout -- 'src/*/package.json'
 
       - name: Create or Update PR
         id: pr
@@ -140,16 +148,29 @@ jobs:
           body: |
             ## Release v${{ steps.version.outputs.value }}
 
-            :rotating_light: Merging this PR will publish the following packages :rotating_light:
+            :rotating_light: Merging this PR will publish these packages :rotating_light:
 
-            ```
-            ${{ steps.packages.outputs.name-version }}
-            ```
+            ### CLI
+            ${{ steps.packages.outputs.clis }}
+
+            ### Workspaces
+            ${{ steps.packages.outputs.workspaces }}
+
+            ---
 
             Steps to merge:
 
-            1. [ ] `gh pr review -R vltpkg/vltpkg --approve {{ PR_NUMBER }}`
-            2. [ ] `gh pr merge -R vltpkg/vltpkg --rebase {{ PR_NUMBER }}`
+            ```bash
+            gh pr ready -R vltpkg/vltpkg {{ PR_NUMBER }}
+            ```
+
+            ```bash
+            gh pr review -R vltpkg/vltpkg --approve {{ PR_NUMBER }}
+            ```
+
+            ```bash
+            gh pr merge -R vltpkg/vltpkg --rebase {{ PR_NUMBER }}
+            ````
 
       - name: Update PR Body
         uses: actions/github-script@v7
@@ -201,7 +222,7 @@ jobs:
         run: pnpm install
 
       - name: List Packages to Publish
-        run: pnpm --shell-mode --filter="[$(git rev-parse HEAD~1)]" exec "cat package.json | jq -r '\"\(.name)@\(.version)\"'" | sort
+        run: pnpm --shell-mode --filter="[$(git rev-parse HEAD~1)]" exec "cat package.json | jq -r '\"\(.name)@\(.version)\"'"
 
       - name: Publish
         run: |

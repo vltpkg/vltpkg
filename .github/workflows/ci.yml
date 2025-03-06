@@ -30,7 +30,6 @@ jobs:
 
       - name: Set run-script filters
         id: filters
-        shell: bash
         run: |
           BRANCH="${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}"
 
