@@ -34,7 +34,7 @@ const Header = () => {
   if (projectInfo.vltInstalled === false) return null
 
   return (
-    <div className="flex w-full items-center rounded-t-lg border-x-[1px] border-t-[1px] bg-white px-8 py-3 dark:bg-black">
+    <div className="flex h-[65px] w-full items-center rounded-t-lg border-x-[1px] border-t-[1px] bg-white px-8 py-3 dark:bg-black">
       <div className="mx-auto flex w-full max-w-7xl items-center">
         <h3 className="mt-1 text-2xl font-medium">{routeName}</h3>
       </div>
