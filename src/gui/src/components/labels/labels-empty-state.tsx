@@ -71,19 +71,22 @@ const LabelsEmptyState = () => {
               </div>
             </div>
 
-            <h3 className="z-[2] text-xl font-medium">
-              No saved Labels yet
-            </h3>
-            <p className="z-[2] text-center text-sm text-neutral-500">
-              Looks like you haven't made any Labels yet,
-              <br />
-              Labels are a great way to mark your dependencies.
-            </p>
-            <div className="flex gap-3"></div>
-            <Button onClick={() => setIsCreating(true)}>
-              <span>New Label</span>
-              <Plus />
-            </Button>
+            <div className="flex flex-col items-center justify-center gap-3 text-center">
+              <h3 className="z-[2] text-xl font-medium">
+                No saved Labels yet
+              </h3>
+              <p className="z-[2] text-center text-sm text-neutral-500">
+                Looks like you haven't made any Labels yet,
+                <br />
+                Labels are a great way to mark your dependencies.
+              </p>
+              <div className="z-[2] flex items-center gap-3 text-center">
+                <Button onClick={() => setIsCreating(true)}>
+                  <span>New Label</span>
+                  <Plus />
+                </Button>
+              </div>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
@@ -91,11 +94,14 @@ const LabelsEmptyState = () => {
       <AnimatePresence>
         {isCreating && (
           <motion.div
-            className="absolute"
+            className="absolute -mt-20 w-full"
             exit={{ opacity: 0, y: 10 }}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}>
-            <CreateLabel closeCreate={() => setIsCreating(false)} />
+            <CreateLabel
+              className="relative mx-auto w-3/5"
+              closeCreate={() => setIsCreating(false)}
+            />
           </motion.div>
         )}
       </AnimatePresence>

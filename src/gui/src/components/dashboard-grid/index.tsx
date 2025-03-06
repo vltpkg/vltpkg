@@ -45,7 +45,7 @@ export const DashboardItem = ({
   return (
     <a
       href="#"
-      className="group relative w-full"
+      className="group relative w-full cursor-default"
       onClick={onDashboardItemClick}>
       {/* top */}
       <div className="relative flex h-24 items-center overflow-hidden rounded-t-lg border-x-[1px] border-t-[1px] bg-card transition-all group-hover:border-neutral-400 dark:group-hover:border-neutral-700">

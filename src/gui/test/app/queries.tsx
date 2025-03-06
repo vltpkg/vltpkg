@@ -26,6 +26,7 @@ vi.mock('@/components/ui/button.jsx', () => ({
 }))
 
 vi.mock('lucide-react', () => ({
+  Plus: 'gui-plus-icon',
   Tag: 'gui-tag-icon',
 }))
 
@@ -39,6 +40,10 @@ vi.mock('@/components/ui/checkbox.jsx', () => ({
 
 vi.mock('@/components/queries/queries-empty-state.jsx', () => ({
   QueriesEmptyState: 'gui-queries-empty-state',
+}))
+
+vi.mock('@/components/queries/create-query.jsx', () => ({
+  CreateQuery: 'gui-create-query',
 }))
 
 expect.addSnapshotSerializer({

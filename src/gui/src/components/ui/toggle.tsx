@@ -58,7 +58,7 @@ export const Toggle = ({ options }: ToggleProps) => {
               <TooltipTrigger asChild>
                 <div
                   onClick={() => optionClickHandler(option.key)}
-                  className="z-[1] flex h-[2rem] w-[2rem] cursor-pointer items-center justify-center rounded-sm">
+                  className="z-[1] flex h-[2rem] w-[2rem] cursor-default items-center justify-center rounded-sm">
                   <option.icon
                     size={20}
                     className="text-muted-foreground"
