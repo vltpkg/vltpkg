@@ -11,6 +11,13 @@ import type {
 } from '../../src/dependencies.ts'
 import { updatePackageJson } from '../../src/reify/update-importers-package-json.ts'
 
+const specOptions = {
+  registry: 'https://registry.npmjs.org',
+  registries: {
+    custom: 'http://example.com',
+  },
+}
+
 t.test('updatePackageJson', async t => {
   const rootMani = {
     name: 'root',
@@ -335,6 +342,130 @@ t.test('updatePackageJson', async t => {
     t.matchSnapshot(
       mani,
       'should use provided range in package json save',
+    )
+  })
+
+  await t.test('aliased install', async t => {
+    const aliasedMani = { name: 'a', version: '1.0.0' }
+    const aliasedSpec = Spec.parse('b', 'npm:a@1.0.0')
+    const aliased = graph.addNode(
+      undefined,
+      aliasedMani,
+      aliasedSpec,
+      aliasedMani.name,
+      aliasedMani.version,
+    )
+    graph.addEdge('prod', aliasedSpec, root, aliased)
+
+    updatePackageJson({
+      packageJson,
+      graph,
+      add: new Map([
+        [
+          rootID,
+          new Map([
+            [
+              'b',
+              asDependency({
+                spec: aliasedSpec,
+                type: 'prod',
+              }),
+            ],
+          ]),
+        ],
+      ]) as AddImportersDependenciesMap,
+    })()
+
+    const res = retrieveManifestResult()
+    const [mani] = res
+    t.strictSame(res.length, 1, 'should have been called once')
+    t.matchSnapshot(
+      mani,
+      'should use provided aliased in package json save',
+    )
+  })
+
+  await t.test('aliased install from dist-tag', async t => {
+    const aliasedMani = { name: 'a', version: '1.0.0' }
+    const aliasedSpec = Spec.parse('b', 'npm:a@latest')
+    const aliased = graph.addNode(
+      undefined,
+      aliasedMani,
+      aliasedSpec,
+      aliasedMani.name,
+      aliasedMani.version,
+    )
+    graph.addEdge('prod', aliasedSpec, root, aliased)
+
+    updatePackageJson({
+      packageJson,
+      graph,
+      add: new Map([
+        [
+          rootID,
+          new Map([
+            [
+              'b',
+              asDependency({
+                spec: aliasedSpec,
+                type: 'prod',
+              }),
+            ],
+          ]),
+        ],
+      ]) as AddImportersDependenciesMap,
+    })()
+
+    const res = retrieveManifestResult()
+    const [mani] = res
+    t.strictSame(res.length, 1, 'should have been called once')
+    t.matchSnapshot(
+      mani,
+      'should use resolved version in package json save',
+    )
+  })
+
+  await t.test('custom aliased install', async t => {
+    const aliasedMani = { name: 'a', version: '1.0.0' }
+    const aliasedSpec = Spec.parse(
+      'b',
+      'custom:a@latest',
+      specOptions,
+    )
+    const aliased = graph.addNode(
+      undefined,
+      aliasedMani,
+      aliasedSpec,
+      aliasedMani.name,
+      aliasedMani.version,
+    )
+    graph.addEdge('prod', aliasedSpec, root, aliased)
+
+    updatePackageJson({
+      packageJson,
+      graph,
+      add: new Map([
+        [
+          rootID,
+          new Map([
+            [
+              'b',
+              asDependency({
+                spec: aliasedSpec,
+                type: 'prod',
+              }),
+            ],
+          ]),
+        ],
+      ]) as AddImportersDependenciesMap,
+    })()
+
+    const res = retrieveManifestResult()
+    const [mani] = res
+    t.strictSame(res.length, 1, 'should have been called once')
+    t.matchSnapshot(
+      mani,
+      'should use custom aliased registry in package json save',
     )
   })
 })
