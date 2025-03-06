@@ -41,34 +41,35 @@ It's possible to configure the vlt client to install packages from a
 vsr instance.
 
 There are two possible ways to configure a vsr instance. For direct
-dependencies we recommend configuring private registries using a custom
-registry protocol that allows for fine grained and explicit control of
-registry sources per package. The other possible method is to configure your
-vsr instance as the default registry.
+dependencies we recommend configuring private registries using a
+custom registry protocol that allows for fine grained and explicit
+control of registry sources per package. The other possible method is
+to configure your vsr instance as the default registry.
 
-This guide will show you how to set up a VSR instance using both methods.
-You'll need to choose which method serves your specific workflow best and
-depending on the choice you may only setup that specific method and ignore
-the other one.
+This guide will show you how to set up a VSR instance using both
+methods. You'll need to choose which method serves your specific
+workflow best and depending on the choice you may only setup that
+specific method and ignore the other one.
 
 ### Getting started with VSR
 
-For this example we're going to use a local-running vsr instance. Here's how
-to start one:
+For this example we're going to use a local-running vsr instance.
+Here's how to start one:
 
 <Code code="$ npx -y vltpkg/vsr" title="Terminal" lang="bash" />
 
-You can consult the [VSR Quickstart](https://github.com/vltpkg/vsr?tab=readme-ov-file#quick-starts)
+You can consult the
+[VSR Quickstart](https://github.com/vltpkg/vsr?tab=readme-ov-file#quick-starts)
 for more information on how to get started.
 
 Please note, in the rest of this guide you may need to replace
-`http://localhost:1337` with the correct url in case you decide to use your
-VSR instance from an environment other than local-run.
+`http://localhost:1337` with the correct url in case you decide to use
+your VSR instance from an environment other than local-run.
 
-Log in to your VSR instance. In case you already have a custom user token
-configured than you should just use that. If you're just getting started and
-want to test using the default `admin` profile you may just use the default
-token: `xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx`.
+Log in to your VSR instance. In case you already have a custom user
+token configured than you should just use that. If you're just getting
+started and want to test using the default `admin` profile you may
+just use the default token: `xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx`.
 
 <Code
   code="$ vlt token --registry=http://localhost:1337 add"
@@ -76,22 +77,23 @@ token: `xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx`.
   lang="bash"
 />
 
-The `token` subcommand is going to open a prompt allowing you to input the
-user token.
+The `token` subcommand is going to open a prompt allowing you to input
+the user token.
 
-Please note that the default admin token is not suitable for regular usage,
-do not use it outside of just a simple experimental test setup.
+Please note that the default admin token is not suitable for regular
+usage, do not use it outside of just a simple experimental test setup.
 
 ### Set up a VSR instance using a custom registry protocol
 
-Edit your config file to set the local VSR instance as a valid custom registry
-protocol:
+Edit your config file to set the local VSR instance as a valid custom
+registry protocol:
 
 <Code code={customProtocolJsonExample} title="vlt.json" lang="json" />
 
-It's now possible to install specific packages from your VSR instance using
-`vsr:` as a package alias. In the following example we're going to install a
-package named `foo` that was published to our custom VSR instance:
+It's now possible to install specific packages from your VSR instance
+using `vsr:` as a package alias. In the following example we're going
+to install a package named `foo` that was published to our custom VSR
+instance:
 
 <Code
   code="$ vlt install foo@vsr:foo@latest"
@@ -121,5 +123,5 @@ Alternatively, you can also edit your config file:
   lang="json"
 />
 
-Using the default registry setup, each `vlt install <pkg>` will fetch assets
-from your VSR instance.
+Using the default registry setup, each `vlt install <pkg>` will fetch
+assets from your VSR instance.

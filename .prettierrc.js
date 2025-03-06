@@ -24,5 +24,11 @@ export default {
         proseWrap: 'always',
       },
     },
+    {
+      files: '*.mdx',
+      options: {
+        proseWrap: 'always',
+      },
+    },
   ],
 }
