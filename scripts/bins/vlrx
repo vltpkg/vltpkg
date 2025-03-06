@@ -1,0 +1,4 @@
+#!/bin/sh
+
+SCRIPT_DIR="$(cd "$(dirname "$0")" && cd "../../" && pwd)"
+NODE_OPTIONS="--no-warnings --experimental-strip-types" node $SCRIPT_DIR/infra/build/src/bins/vlrx.ts "$@"
