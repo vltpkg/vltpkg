@@ -6,4 +6,5 @@ The command line interface for `vlt` (darwin-arm64).
 
 ## Documentation
 
-Visit [docs.vlt.sh](https://docs.vlt.sh) to see the full documentation.
+Visit [docs.vlt.sh](https://docs.vlt.sh) to see the full
+documentation.

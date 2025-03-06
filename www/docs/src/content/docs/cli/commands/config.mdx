@@ -42,7 +42,9 @@ Print all configuration settings currently in effect
 
 ### set
 
-Set config values. By default, these are written to the project config file, `vlt.json` in the root of the project. To set things for all projects, run with `--config=user`
+Set config values. By default, these are written to the project config
+file, `vlt.json` in the root of the project. To set things for all
+projects, run with `--config=user`
 
 <Code
   code="$ vlt config set <key>=<value> [<key>=<value> ...] [--config=<user | project>]"
@@ -52,7 +54,10 @@ Set config values. By default, these are written to the project config file, `vl
 
 ### del
 
-Delete the named config fields. If no values remain in the config file, delete the file as well. By default, operates on the `vlt.json` file in the root of the current project. To delete a config field from the user config file, specify `--config=user`.
+Delete the named config fields. If no values remain in the config
+file, delete the file as well. By default, operates on the `vlt.json`
+file in the root of the current project. To delete a config field from
+the user config file, specify `--config=user`.
 
 <Code
   code="$ vlt config del <key> [<key> ...] [--config=<user | project>]"
@@ -72,7 +77,8 @@ Edit the configuration file
 
 ### help
 
-Get information about a config field, or show a list of known config field names.
+Get information about a config field, or show a list of known config
+field names.
 
 <Code
   code="$ vlt config help [field ...]"
