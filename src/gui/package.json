@@ -1,7 +1,7 @@
 {
   "name": "@vltpkg/gui",
   "description": "Look under the hood of a vlt install in HD",
-  "version": "0.0.0-0",
+  "version": "0.0.0-1",
   "private": true,
   "repository": {
     "type": "git",
@@ -70,14 +70,14 @@
   },
   "license": "BSD-2-Clause-Patent",
   "engines": {
-    "node": ">=22",
-    "pnpm": "9"
+    "node": ">=22"
   },
   "scripts": {
     "format": "prettier --write . --log-level warn --ignore-path ../../.prettierignore --cache",
     "format:check": "prettier --check . --ignore-path ../../.prettierignore --cache",
     "lint": "eslint . --fix",
     "lint:check": "eslint .",
+    "prepack": "node --no-warnings --experimental-transform-types scripts/prepare.js --production",
     "prepare": "node --no-warnings --experimental-transform-types scripts/prepare.js --production",
     "snap": "vitest --no-watch -u",
     "test": "vitest",
