@@ -5,9 +5,19 @@ on:
     branches:
       - main
   workflow_dispatch:
+    inputs:
+      action:
+        description: 'Override action to take instead of reading from latest commit'
+        type: choice
+        options:
+          - pr
+          - publish
+      dryRun:
+        description: 'Dry run the PR creation or release'
+        type: boolean
 
 concurrency:
-  group: ${{ github.workflow }}-main
+  group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -16,15 +26,24 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       action: ${{ steps.action.outputs.value }}
+      dry-run: ${{ steps.dry-run.outputs.value }}
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
-        with:
-          ref: main
+
+      - name: Determine Dry run
+        id: dry-run
+        run: echo "value=${{ inputs.dryRun }}" >> $GITHUB_OUTPUT
 
       - name: Determine Action
         id: action
         run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            if [[ -n "${{ inputs.action }}" ]]; then
+              echo "value=${{ inputs.action }}" >> $GITHUB_OUTPUT
+              exit 0
+            fi
+          fi
           MESSAGE=$(git log -1 --pretty=%B | head -n 1)
           if [[ "$MESSAGE" =~ ^Release\ v ]]; then
             echo "value=publish" >> $GITHUB_OUTPUT
@@ -40,8 +59,6 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
-        with:
-          ref: main
 
       - uses: pnpm/action-setup@v4
         with:
@@ -62,108 +79,77 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
-      - name: Increment Version
-        run: pnpm -F cli exec npm version prerelease --no-git-tag-version
+      - name: Version CLI Packages
+        run: pnpm --filter "./infra/cli*" exec npm version prerelease --no-git-tag-version
 
-      - name: Get Version Number
+      - name: Get CLI Version Number
         id: version
-        run: echo "value=$(jq -r .version ./src/vlt/package.json)" >> $GITHUB_OUTPUT
+        run: echo "value=$(jq -r .version ./infra/cli/package.json)" >> $GITHUB_OUTPUT
 
-      - name: Pack Bundled
-        run: pnpm run build:bundle --action=pack --debug
+      # TODO: use git history to determine other packages to bump
+      - name: Version Workspaces
+        run: pnpm --filter "./src/*" exec npm version ${{ steps.version.outputs.value }} --no-git-tag-version
 
-      - name: Upload JS Artifacts
-        uses: actions/upload-artifact@v4
-        id: bundle
-        with:
-          name: vlt-${{ steps.version.outputs.value }}
-          compression-level: 0
-          if-no-files-found: error
-          include-hidden-files: true
-          path: ./.build-bundle/vlt-${{ steps.version.outputs.value }}.tgz
+      - name: Commit Version Bumps
+        run: |
+          git config --global user.email "vltops@users.noreply.github.com"
+          git config --global user.name "vltops"
+          git add -A
+          git commit -m "Release v${{ steps.version.outputs.value }}"
 
-      - name: Pack Compiled
-        run: pnpm run build:compile --action=pack --platform=all --arch=all --debug
+      - name: Pack
+        run: pnpm --filter "[$(git rev-parse HEAD~1)]" exec pnpm pack
 
-      - name: Upload Compiled Artifact darwin-arm64
-        uses: actions/upload-artifact@v4
-        id: compile-darwin-arm64
-        with:
-          name: vltpkg-cli-darwin-arm64-${{ steps.version.outputs.value }}
-          compression-level: 0
-          if-no-files-found: error
-          include-hidden-files: true
-          path: ./.build-compile/vltpkg-cli-darwin-arm64-${{ steps.version.outputs.value }}.tgz
+      - name: List Packages
+        id: packages
+        run: |
+          packages=$(pnpm --shell-mode --filter="[$(git rev-parse HEAD~1)]" exec "cat package.json | jq -r '\"\(.name)@\(.version)\"'" | sort)
+          delimiter="$(openssl rand -hex 8)"
+          echo "name-version<<${delimiter}" >> "${GITHUB_OUTPUT}"
+          echo $packages >> "${GITHUB_OUTPUT}"
+          echo "${delimiter}" >> "${GITHUB_OUTPUT}"
 
-      - name: Upload Compiled Artifact darwin-x64
-        uses: actions/upload-artifact@v4
-        id: compile-darwin-x64
-        with:
-          name: vltpkg-cli-darwin-x64-${{ steps.version.outputs.value }}
-          compression-level: 0
-          if-no-files-found: error
-          include-hidden-files: true
-          path: ./.build-compile/vltpkg-cli-darwin-x64-${{ steps.version.outputs.value }}.tgz
+      - name: Dry Run Publish
+        run: |
+          pnpm publish \
+            --filter="[$(git rev-parse HEAD~1)]" \
+            --access=public \
+            --no-git-checks \
+            --dry-run
 
-      - name: Upload Compiled Artifact linux-arm64
-        uses: actions/upload-artifact@v4
-        id: compile-linux-arm64
-        with:
-          name: vltpkg-cli-linux-arm64-${{ steps.version.outputs.value }}
-          compression-level: 0
-          if-no-files-found: error
-          include-hidden-files: true
-          path: ./.build-compile/vltpkg-cli-linux-arm64-${{ steps.version.outputs.value }}.tgz
-
-      - name: Upload Compiled Artifact linux-x64
-        uses: actions/upload-artifact@v4
-        id: compile-linux-x64
-        with:
-          name: vltpkg-cli-linux-x64-${{ steps.version.outputs.value }}
-          compression-level: 0
-          if-no-files-found: error
-          include-hidden-files: true
-          path: ./.build-compile/vltpkg-cli-linux-x64-${{ steps.version.outputs.value }}.tgz
-
-      - name: Upload Compiled Artifact win32-x64
-        uses: actions/upload-artifact@v4
-        id: compile-win32-x64
-        with:
-          name: vltpkg-cli-win32-x64-${{ steps.version.outputs.value }}
-          compression-level: 0
-          if-no-files-found: error
-          include-hidden-files: true
-          path: ./.build-compile/vltpkg-cli-win32-x64-${{ steps.version.outputs.value }}.tgz
+      - name: Undo Pack Local Changes
+        run: |
+          git status
+          git diff
+          git checkout -- .
 
       - name: Create or Update PR
         id: pr
+        if: needs.detect-action.outputs.dry-run != 'true'
         uses: peter-evans/create-pull-request@v7
         with:
           title: 'Release v${{ steps.version.outputs.value }}'
           commit-message: 'Release v${{ steps.version.outputs.value }}'
           branch: release
           base: main
-          labels: 'release'
+          labels: release
           author: 'vltops <vltops@users.noreply.github.com>'
           committer: 'vltops <vltops@users.noreply.github.com>'
           token: ${{ secrets.RELEASE_WORKFLOW_TOKEN }}
+          draft: always-true
           body: |
             ## Release v${{ steps.version.outputs.value }}
 
-            :rotating_light: Merging this PR will publish `vlt@${{ steps.version.outputs.value }}` :rotating_light:
+            :rotating_light: Merging this PR will publish the following packages :rotating_light:
+
+            ```
+            ${{ steps.packages.outputs.name-version }}
+            ```
 
             Steps to merge:
 
             1. [ ] `gh pr review -R vltpkg/vltpkg --approve {{ PR_NUMBER }}`
             2. [ ] `gh pr merge -R vltpkg/vltpkg --rebase {{ PR_NUMBER }}`
-
-            ### Release Tarballs
-            - bundle: ${{ steps.bundle.outputs.artifact-url }}
-            - darwin-arm64: ${{ steps.compile-darwin-arm64.outputs.artifact-url }}
-            - darwin-x64: ${{ steps.compile-darwin-x64.outputs.artifact-url }}
-            - linux-arm64: ${{ steps.compile-linux-arm64.outputs.artifact-url }}
-            - linux-x64: ${{ steps.compile-linux-x64.outputs.artifact-url }}
-            - win32-x64: ${{ steps.compile-win32-x64.outputs.artifact-url }}
 
       - name: Update PR Body
         uses: actions/github-script@v7
@@ -194,8 +180,6 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
-        with:
-          ref: main
 
       - uses: pnpm/action-setup@v4
         with:
@@ -216,12 +200,16 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
-      - name: Publish
-        run: pnpm run build:bundle --action=publish ${{ github.event_name == 'push' && '--forReal' || '' }}
-        env:
-          VLT_CLI_PUBLISH_TOKEN: ${{ secrets.VLT_CLI_PUBLISH_TOKEN }}
+      - name: List Packages to Publish
+        run: pnpm --shell-mode --filter="[$(git rev-parse HEAD~1)]" exec "cat package.json | jq -r '\"\(.name)@\(.version)\"'" | sort
 
-      - name: Publish Compiled
-        run: pnpm run build:compile --action=publish --platform=all --arch=all ${{ github.event_name == 'push' && '--forReal' || '' }}
+      - name: Publish
+        run: |
+          pnpm publish \
+            --filter="[$(git rev-parse HEAD~1)]" \
+            --access=public \
+            --no-git-checks \
+            --publish-branch="${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" \
+            ${{ needs.detect-action.outputs.dry-run == 'true' && '--dry-run' }}
         env:
-          VLT_CLI_PUBLISH_TOKEN: ${{ secrets.VLT_CLI_PUBLISH_TOKEN }}
+          npm_config__authtoken: ${{ secrets.VLT_CLI_PUBLISH_TOKEN }}

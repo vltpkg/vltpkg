@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       filter:
-        description: 'run-script filter for tests'
+        description: 'A pnpm filter to run only a subset of tests. Leave blank to run all tests.'
   push:
     branches:
       - main
@@ -15,11 +15,59 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  detect-filter:
+    name: Detect Filter
+    runs-on: ubuntu-latest
+    outputs:
+      changed: ${{ steps.filters.outputs.changed }}
+      dependent: ${{ steps.filters.outputs.dependent }}
+      related: ${{ steps.filters.outputs.related }}
+      matrix: ${{ steps.filters.outputs.matrix }}
+      git-ref: ${{ steps.filters.outputs.git-ref }}
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set run-script filters
+        id: filters
+        shell: bash
+        run: |
+          BRANCH="${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}"
+
+          # Non release PRs run only changes from main and the smaller matrix
+          if [[ "${{ github.event_name }}" == "pull_request" ]] && [[ "$BRANCH" != "release" ]]; then
+            filter="[origin/${{ github.base_ref }}]"
+            echo "changed=--filter \"$filter\"" >> "$GITHUB_OUTPUT"
+            echo "dependent=--filter \"...$filter\"" >> "$GITHUB_OUTPUT"
+            echo "related=--filter \"...$filter...\"" >> "$GITHUB_OUTPUT"
+            echo "matrix=limited" >> "$GITHUB_OUTPUT"
+            echo "git-ref=${{ github.base_ref }}" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          # Dispatched workflows only run the filter that is passed in and the smaller matrix
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]] && ; then
+            filter="${{ inputs.filter }}"
+            if [[ -n "$filter" ]]; then              
+              echo "changed=--filter \"$filter\"" >> "$GITHUB_OUTPUT"
+              echo "dependent=--filter \"...$filter\"" >> "$GITHUB_OUTPUT"
+              echo "related=--filter \"...$filter...\"" >> "$GITHUB_OUTPUT"
+              echo "matrix=limited" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+          fi
+
+          # Default is the full matrix of all tests
+          echo "changed=--recursive" >> "$GITHUB_OUTPUT"
+          echo "dependent=--recursive" >> "$GITHUB_OUTPUT"
+          echo "related=--recursive" >> "$GITHUB_OUTPUT"
+          echo "matrix=full" >> "$GITHUB_OUTPUT"
+
   lint:
     name: Lint
-
+    # TODO: use filters to run a subset of lint/format
+    # needs: detect-filter
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -39,10 +87,6 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
-      # TODO: if the lint job starts to take too long, it can be sped up
-      # by making any of the steps operate on only changed workspaces.
-      # For now any steps that dont use filters are run from the root
-      # on all workspaces.
       - name: Formatting
         run: pnpm run format:check
         id: format
@@ -59,7 +103,7 @@ jobs:
         continue-on-error: true
 
       - name: Docs
-        run: pnpm -F docs typedoc:check
+        run: pnpm --filter docs typedoc:check
         id: docs
         continue-on-error: true
 
@@ -94,7 +138,11 @@ jobs:
 
   test:
     name: Test - ${{ matrix.platform.name }} - ${{ matrix.node-version }}
-
+    needs: detect-filter
+    runs-on: ${{ matrix.platform.os }}
+    defaults:
+      run:
+        shell: ${{ matrix.platform.shell }}
     strategy:
       matrix:
         node-version: [22.x]
@@ -115,27 +163,18 @@ jobs:
             os: windows-latest
             shell: powershell
         exclude:
-          - platform: ${{ fromJSON(github.event_name == 'pull_request' && '{"name":"macOS","os":"macos-latest","shell":"bash"}') }}
-          - platform: ${{ fromJSON(github.event_name == 'pull_request' && '{"name":"macOS Intel","os":"macos-13","shell":"bash"}') }}
-          - platform: ${{ fromJSON(github.event_name == 'pull_request' && '{"name":"Windows Powershell","os":"windows-latest","shell":"powershell"}') }}
+          - platform: ${{ fromJSON(needs.detect-filter.outputs.matrix == 'limited' && '{"name":"macOS","os":"macos-latest","shell":"bash"}') }}
+          - platform: ${{ fromJSON(needs.detect-filter.outputs.matrix == 'limited' && '{"name":"macOS Intel","os":"macos-13","shell":"bash"}') }}
+          - platform: ${{ fromJSON(needs.detect-filter.outputs.matrix == 'limited' && '{"name":"Windows Powershell","os":"windows-latest","shell":"powershell"}') }}
       fail-fast: false
-
-    runs-on: ${{ matrix.platform.os }}
-    defaults:
-      run:
-        shell: ${{ matrix.platform.shell }}
 
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Fetch base ref
-        if: github.event_name == 'pull_request'
-        run: git fetch --no-tags --prune --depth=1 origin +refs/heads/${{ github.base_ref }}:refs/remotes/origin/${{ github.base_ref }}
-
-      - uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: latest
+      - name: Fetch Git Ref to Compare
+        if: needs.detect-filter.outputs.git-ref
+        run: git fetch --no-tags --prune --depth=1 origin +refs/heads/${{ needs.detect-filter.outputs.git-ref }}:refs/remotes/origin/${{ needs.detect-filter.outputs.git-ref }}
 
       - uses: denoland/setup-deno@v2
         with:
@@ -153,19 +192,15 @@ jobs:
           cache: pnpm
           check-latest: true
 
-      - name: Set run-script filters
-        id: filters
-        shell: bash
-        run: ./scripts/run-script-filter "${{ github.event_name }}" "${{ inputs.filter || github.base_ref }}"
-
       - name: Install dependencies
-        if: steps.filters.outputs.prepare
-        run: pnpm ${{ steps.filters.outputs.prepare }} install --ignore-scripts
+        run: pnpm ${{ needs.detect-filter.outputs.related }} install --ignore-scripts
 
       - name: Prepare
-        if: steps.filters.outputs.prepare
-        run: pnpm ${{ steps.filters.outputs.prepare }} prepare
+        run: pnpm ${{ needs.detect-filter.outputs.related }} prepare
 
       - name: Run Tests
-        if: steps.filters.outputs.test
-        run: pnpm ${{ steps.filters.outputs.test }} --no-bail --aggregate-output test
+        run: pnpm ${{ needs.detect-filter.outputs.dependent }} --no-bail --aggregate-output test
+
+      - name: Smoke Tests
+        if: needs.detect-filter.outputs.matrix == 'full'
+        run: pnpm --filter smoke-test test

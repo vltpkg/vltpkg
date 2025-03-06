@@ -17,6 +17,7 @@ tsconfig.tsbuildinfo
 /src/*/docs
 /src/*/node_modules
 /src/*/scripts/fixtures/
+/src/*/vltpkg-*.tgz
 
 /infra/*/.tap
 /infra/*/.tshy-build
