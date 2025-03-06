@@ -2,11 +2,10 @@
 
 # @vltpkg/dep-id
 
-A library for serializing dependencies into terse string identifiers, and turning those serialized identifiers back into `Spec` objects.
+A library for serializing dependencies into terse string identifiers,
+and turning those serialized identifiers back into `Spec` objects.
 
-**[Usage](#usage)**
-·
-**[Note](#note)**
+**[Usage](#usage)** · **[Note](#note)**
 
 ## Usage
 
@@ -50,12 +49,12 @@ const spec = hydrate('git;github:a/b;branch', 'x') // x@github:a/b#branch
 
 ### Note
 
-multiple different spec/manifest combinations _can_ result
-in the same identifier. For example, the specifiers
-`x@npm:y@latest` and `asdf@npm:y@1.x` might both ultimately
-resolve to the same package, so they only need to appear in the
-store once.
+multiple different spec/manifest combinations _can_ result in the same
+identifier. For example, the specifiers `x@npm:y@latest` and
+`asdf@npm:y@1.x` might both ultimately resolve to the same package, so
+they only need to appear in the store once.
 
 ## BROWSER API
 
-An isomorphic API `@vltpkg/dep-id/browser` is provided for use in the browser.
+An isomorphic API `@vltpkg/dep-id/browser` is provided for use in the
+browser.

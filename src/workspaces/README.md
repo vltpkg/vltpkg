@@ -4,9 +4,7 @@
 
 Utilities for working with vlt workspaces.
 
-**[Usage](#usage)**
-·
-**[Run Order](#run-order)**
+**[Usage](#usage)** · **[Run Order](#run-order)**
 
 ## Usage
 
@@ -71,9 +69,8 @@ for (const path of m.paths()) {
 }
 ```
 
-Configuration is stored in the project root at
-`vlt-workspaces.json`. The type of the object in the file must
-be:
+Configuration is stored in the project root at `vlt-workspaces.json`.
+The type of the object in the file must be:
 
 ```ts
 type WorkspaceConfiguration =
@@ -82,17 +79,16 @@ type WorkspaceConfiguration =
   | { [group: string]: string | string[] }
 ```
 
-If it's an object, each key is a group name, and each value is a
-path, glob, or array of paths and globs, which specify the
-location of the workspace projects. Glob matches are only
-considered if they are a directory containing a `package.json`
-file.
+If it's an object, each key is a group name, and each value is a path,
+glob, or array of paths and globs, which specify the location of the
+workspace projects. Glob matches are only considered if they are a
+directory containing a `package.json` file.
 
 A `string` or `string[]` in the file is interpreted as
 `{"packages": <value>}`. Ie, the default group is `packages`.
 
-Workspaces are allowed to be in multiple groups, so something
-like this is fine:
+Workspaces are allowed to be in multiple groups, so something like
+this is fine:
 
 ```json
 {
@@ -102,14 +98,13 @@ like this is fine:
 }
 ```
 
-If the glob patterns result in a situation where one workspace
-folder is contained within another workspace folder, an error
-will be raised.
+If the glob patterns result in a situation where one workspace folder
+is contained within another workspace folder, an error will be raised.
 
 ## Run Order
 
-The `monorepo.run` method can run an async function for each
-workspace in the project, visiting each exactly once.
+The `monorepo.run` method can run an async function for each workspace
+in the project, visiting each exactly once.
 
 When workspaces depend on one another, it will walk dependencies
 before dependents, _unless_ there is a cycle, as that would be
