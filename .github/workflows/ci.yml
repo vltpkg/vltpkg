@@ -46,7 +46,7 @@ jobs:
           fi
 
           # Dispatched workflows only run the filter that is passed in and the smaller matrix
-          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]] && ; then
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
             filter="${{ inputs.filter }}"
             if [[ -n "$filter" ]]; then              
               echo "changed=--filter \"$filter\"" >> "$GITHUB_OUTPUT"
