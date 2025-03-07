@@ -70,6 +70,7 @@ export const startView = <T>(
       async onDone(r): Promise<string | undefined> {
         if (r === undefined && r !== null) return
         const res = await View(r, opts, conf)
+        if (res === undefined) return
         return conf.values.view === 'json' ?
             JSON.stringify(res, null, 2)
           : formatWithOptions(

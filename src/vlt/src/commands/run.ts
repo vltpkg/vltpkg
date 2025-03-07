@@ -6,6 +6,7 @@ import { ExecCommand } from '../exec-command.ts'
 import type { ExecResult } from '../exec-command.ts'
 import type { CommandFn, CommandUsage } from '../index.ts'
 import { stdout } from '../output.ts'
+import type { Views } from '../view.ts'
 
 export const usage: CommandUsage = () =>
   commandUsage({
@@ -16,6 +17,17 @@ export const usage: CommandUsage = () =>
                   the script name, because everything after that is handed off to
                   the script process.`,
   })
+
+export const views: Views<ExecResult> = {
+  json: g => g,
+  human: (res, _, conf) => {
+    if (conf.positionals.length === 0) {
+      return `Scripts available:\n  ${Object.entries(res ?? {})
+        .map(([k, v]) => `${k}: ${v}`)
+        .join('\n  ')}`
+    }
+  },
+}
 
 class RunCommand extends ExecCommand<typeof run, typeof runFG> {
   constructor(conf: LoadedConfig) {
@@ -29,8 +41,9 @@ class RunCommand extends ExecCommand<typeof run, typeof runFG> {
     const packageJson =
       this.monorepo?.packageJson ?? new PackageJson()
     const mani = packageJson.read(cwd)
-    stdout('Scripts available:', mani.scripts)
-    return undefined
+    return mani.scripts
+    // stdout('Scripts available:', mani.scripts)
+    // return undefined
   }
 
   noArgsMulti(): void {
@@ -47,5 +60,14 @@ class RunCommand extends ExecCommand<typeof run, typeof runFG> {
   }
 }
 
-export const command: CommandFn<ExecResult> = async conf =>
-  await new RunCommand(conf).run()
+export const command: CommandFn<ExecResult> = async conf => {
+  if (conf.positionals.length === 0) {
+    const ws = conf.options.monorepo?.values().next().value
+    const cwd = ws?.fullpath ?? conf.projectRoot
+    const packageJson =
+      conf.options.monorepo?.packageJson ?? new PackageJson()
+    const mani = packageJson.read(cwd)
+    return mani.scripts
+  }
+  return new RunCommand(conf).run()
+}

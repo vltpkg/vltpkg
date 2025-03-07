@@ -3,6 +3,7 @@ import { commandUsage } from '../config/usage.ts'
 import { ExecCommand } from '../exec-command.ts'
 import type { ExecResult } from '../exec-command.ts'
 import type { CommandFn, CommandUsage } from '../index.ts'
+import type { Views } from '../view.ts'
 
 export const usage: CommandUsage = () =>
   commandUsage({
@@ -20,6 +21,11 @@ export const usage: CommandUsage = () =>
                   command, as the remainder of the command line options are
                   provided to the exec process.`,
   })
+
+export const views: Views<ExecResult> = {
+  json: g => g,
+  human: () => null,
+}
 
 export const command: CommandFn<ExecResult> = async conf => {
   return await new ExecCommand(conf, exec, execFG).run()
