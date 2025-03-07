@@ -228,6 +228,8 @@ jobs:
     runs-on: ubuntu-latest
     needs: detect-action
     if: needs.detect-action.outputs.action == 'publish'
+    permissions:
+      contents: write
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -272,5 +274,7 @@ jobs:
         if: needs.detect-action.outputs.dry-run != 'true'
         run: |
           VERSION=$(jq -r .version ./infra/cli/package.json)
+          git config --global user.email "vltops@users.noreply.github.com"
+          git config --global user.name "vltops"
           git tag -a "v$VERSION" -m "Release v$VERSION"
           git push origin "v$VERSION"
