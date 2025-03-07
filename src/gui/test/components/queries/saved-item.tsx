@@ -47,6 +47,10 @@ vi.mock('@/components/ui/tooltip.jsx', () => ({
   TooltipContent: 'gui-tooltip-content',
 }))
 
+vi.mock('@/components/directory-select.jsx', () => ({
+  DirectorySelect: 'gui-directory-select',
+}))
+
 expect.addSnapshotSerializer({
   serialize: v => html(v),
   test: () => true,

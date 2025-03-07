@@ -20,6 +20,8 @@ import {
   TooltipTrigger,
   TooltipContent,
 } from '@/components/ui/tooltip.jsx'
+import type { DashboardData } from '@/state/types.js'
+import { DirectorySelect } from '@/components/directory-select.jsx'
 
 type SelectQueryOptions = {
   updateActiveRoute: Action['updateActiveRoute']
@@ -80,10 +82,12 @@ const SavedQueryItem = ({
   item,
   handleSelect,
   checked,
+  dashboard,
 }: {
   item: SavedQuery
   handleSelect: (item: SavedQuery) => void
   checked: boolean
+  dashboard?: DashboardData
 }) => {
   const { toast } = useToast()
   const [isExpanded, setIsExpanded] = useState<boolean>(false)
@@ -244,13 +248,12 @@ const SavedQueryItem = ({
             </div>
             <div className="flex grow flex-col gap-2">
               <Label className="border-none text-sm font-medium">
-                Directory
+                Directory (optional)
               </Label>
-              <Input
-                type="text"
-                value={editContext}
-                onChange={e => setEditContext(e.target.value)}
-                placeholder="Directory (optional)"
+              <DirectorySelect
+                dashboard={dashboard}
+                setDirectory={setEditContext}
+                directory={editContext}
               />
             </div>
             <div className="flex grow flex-col gap-2">
