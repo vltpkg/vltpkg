@@ -11,6 +11,7 @@ import assert from 'node:assert'
 import { resolve } from 'node:path'
 import { bundle } from './bundle.ts'
 import { compile } from './compile.ts'
+import { BINS } from './bins.ts'
 
 const { __VLT_INTERNAL_LOCAL_OPTIONAL_DEPS } = process.env
 
@@ -79,7 +80,17 @@ const main = async () => {
   // The default CLI
   if (pkg.name === 'vlt') {
     await bundle({ outdir })
-    writeFiles({ outdir, pkg })
+    writeFiles({
+      outdir,
+      pkg,
+      pkgExtra: {
+        bin: BINS.reduce<Record<string, string>>((acc, bin) => {
+          acc[bin] = `./${bin}.js`
+          return acc
+        }, {}),
+      },
+    })
+
     return
   }
 
