@@ -35,6 +35,10 @@ vi.mock('lucide-react', () => ({
   ChevronsUpDown: 'gui-chevron-icon',
 }))
 
+vi.mock('@/components/directory-select.jsx', () => ({
+  DirectorySelect: 'gui-directory-select',
+}))
+
 expect.addSnapshotSerializer({
   serialize: v => html(v),
   test: () => true,

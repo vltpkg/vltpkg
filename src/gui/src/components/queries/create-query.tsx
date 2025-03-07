@@ -15,10 +15,13 @@ import {
 } from '@/components/ui/popover.jsx'
 import { ChevronsUpDown } from 'lucide-react'
 import { cn } from '@/lib/utils.js'
+import { DirectorySelect } from '@/components/directory-select.jsx'
+import type { DashboardData } from '@/state/types.js'
 
 interface CreateQueryProps {
   onClose: () => void
   className?: string
+  dashboard?: DashboardData
 }
 
 export const CreateQuery = ({
@@ -37,6 +40,7 @@ export const CreateQuery = ({
 
   const { toast } = useToast()
   const saveQuery = useGraphStore(state => state.saveQuery)
+  const dashboard = useGraphStore(state => state.dashboard)
 
   useEffect(() => {
     if (queryName.trim() !== '' && query.trim() !== '') {
@@ -111,19 +115,18 @@ export const CreateQuery = ({
             />
           </div>
 
-          <div className="flex grow flex-col gap-2">
+          <div className="flex w-[300px] flex-col gap-2">
             <Label className="border-none text-sm font-medium">
-              Directory
+              Directory (optional)
             </Label>
-            <Input
-              type="text"
-              value={directory}
-              onChange={e => setDirectory(e.target.value)}
-              placeholder="Directory (optional)"
+            <DirectorySelect
+              directory={directory}
+              setDirectory={setDirectory}
+              dashboard={dashboard}
             />
           </div>
 
-          <div className="flex grow flex-col gap-2">
+          <div className="flex w-[175px] flex-col gap-2">
             <Label className="border-none text-sm font-medium">
               Labels
             </Label>

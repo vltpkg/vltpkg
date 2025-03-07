@@ -34,18 +34,14 @@ exports[`create-query > should render correctly 1`] = `
         >
         </gui-input>
       </div>
-      <div class="flex grow flex-col gap-2">
+      <div class="flex w-[300px] flex-col gap-2">
         <gui-label classname="border-none text-sm font-medium">
-          Directory
+          Directory (optional)
         </gui-label>
-        <gui-input
-          type="text"
-          value
-          placeholder="Directory (optional)"
-        >
-        </gui-input>
+        <gui-directory-select directory>
+        </gui-directory-select>
       </div>
-      <div class="flex grow flex-col gap-2">
+      <div class="flex w-[175px] flex-col gap-2">
         <gui-label classname="border-none text-sm font-medium">
           Labels
         </gui-label>
