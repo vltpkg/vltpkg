@@ -195,6 +195,7 @@ html {
 
 .sl-markdown-content h3 {
   font-size: 1rem;
+  padding-top: 1rem;
 }
 
 .sl-markdown-content p {
@@ -233,7 +234,11 @@ body .expressive-code .frame {
   padding: 0 !important;
 }
 
-body .expressive-code .frame.is-terminal {
+body .expressive-code .frame:not(.is-terminal) {
+  line-height: 1.5rem;
+}
+
+body .expressive-code .frame {
   border: 1px solid rgba(255, 255, 255, 0.25);
 }
 
@@ -288,12 +293,12 @@ body .expressive-code .header .title::before {
   line-height: 100% !important;
 }
 
-body .expressive-code .header:after {
+body .expressive-code .frame.is-terminal .header:after {
   left: 28px !important;
   background: rgb(255, 213, 0) !important;
 }
 
-body .expressive-code .header .title::before {
+body .expressive-code .frame.is-terminal .header .title::before {
   content: '';
   left: 41px !important;
   background: rgb(20, 191, 23) !important;
