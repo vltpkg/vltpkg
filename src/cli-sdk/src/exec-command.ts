@@ -70,7 +70,6 @@ export class ExecCommand<B extends RunnerBG, F extends RunnerFG> {
       const arg = this.fgArg()
       if (!arg) return
       const result = await this.fg(arg)
-      stdout(result)
       if (isRunResult(result)) {
         this.setExitCode(result)
       }
