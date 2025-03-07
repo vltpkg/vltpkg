@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button.jsx'
 import { Input } from '@/components/ui/input.jsx'
 import { useGraphStore } from '@/state/index.js'
 import { v4 as uuidv4 } from 'uuid'
-import type { QueryLabel } from '@/state/types.js'
+import type { QueryLabel, DashboardData } from '@/state/types.js'
 import { LabelSelect } from '@/components/labels/label-select.jsx'
 import { LabelBadge } from '@/components/labels/label-badge.jsx'
 import { useToast } from '@/components/hooks/use-toast.js'
@@ -16,7 +16,6 @@ import {
 import { ChevronsUpDown } from 'lucide-react'
 import { cn } from '@/lib/utils.js'
 import { DirectorySelect } from '@/components/directory-select.jsx'
-import type { DashboardData } from '@/state/types.js'
 
 interface CreateQueryProps {
   onClose: () => void

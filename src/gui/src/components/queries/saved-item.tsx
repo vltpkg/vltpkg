@@ -1,5 +1,10 @@
 import { useEffect, useState } from 'react'
-import type { SavedQuery, Action, QueryLabel } from '@/state/types.js'
+import type {
+  SavedQuery,
+  Action,
+  QueryLabel,
+  DashboardData,
+} from '@/state/types.js'
 import { useGraphStore } from '@/state/index.js'
 import { Input } from '@/components/ui/input.jsx'
 import { Button } from '@/components/ui/button.jsx'
@@ -20,7 +25,6 @@ import {
   TooltipTrigger,
   TooltipContent,
 } from '@/components/ui/tooltip.jsx'
-import type { DashboardData } from '@/state/types.js'
 import { DirectorySelect } from '@/components/directory-select.jsx'
 
 type SelectQueryOptions = {

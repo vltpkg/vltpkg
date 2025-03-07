@@ -3,7 +3,7 @@ import { cleanup, render } from '@testing-library/react'
 import html from 'diffable-html'
 import { useGraphStore as useStore } from '@/state/index.js'
 import { DirectorySelect } from '@/components/directory-select.jsx'
-import { DashboardData } from '@/state/types.js'
+import type { DashboardData } from '@/state/types.js'
 
 vi.mock('@/components/ui/popover.jsx', () => ({
   Popover: 'gui-popover',
