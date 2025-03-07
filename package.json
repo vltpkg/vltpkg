@@ -24,6 +24,7 @@
     "prettier-plugin-astro": "^0.14.1",
     "prettier-plugin-tailwindcss": "^0.6.11",
     "semver": "catalog:",
+    "ssri": "^12.0.0",
     "typescript": "catalog:",
     "typescript-eslint": "catalog:",
     "yaml": "^2.7.0"
