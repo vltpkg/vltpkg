@@ -1,11 +1,44 @@
-import { PackageJson } from '@vltpkg/package-json'
-import { run, runFG } from '@vltpkg/run'
-import type { LoadedConfig } from '../config/index.ts'
 import { commandUsage } from '../config/usage.ts'
-import { ExecCommand } from '../exec-command.ts'
-import type { ExecResult } from '../exec-command.ts'
 import type { CommandFn, CommandUsage } from '../index.ts'
-import { stdout } from '../output.ts'
+import type { Views } from '../view.ts'
+import { ViewClass } from '../view.ts'
+import { error } from '@vltpkg/error-cause'
+import { isRunResult, run, runFG } from '@vltpkg/run'
+import type { RunFGResult, RunResult } from '@vltpkg/run'
+import { Monorepo } from '@vltpkg/workspaces'
+import type { Workspace } from '@vltpkg/workspaces'
+import { Box, render, Text } from 'ink'
+import type { Instance } from 'ink'
+import Spinner from 'ink-spinner'
+import {
+  createElement as $,
+  Fragment,
+  useLayoutEffect,
+  useState,
+} from 'react'
+
+const App = () => {
+  useLayoutEffect(() => {}, [])
+
+  return $(Box, null, $(Text, null, 'ok'))
+}
+
+export class RunReporter extends ViewClass {
+  #instance: Instance | null = null
+
+  start() {
+    this.#instance = render($(App))
+  }
+
+  done() {
+    this.#instance?.unmount()
+    return undefined
+  }
+
+  error(err: unknown) {
+    this.#instance?.unmount(err as Error)
+  }
+}
 
 export const usage: CommandUsage = () =>
   commandUsage({
@@ -17,35 +50,73 @@ export const usage: CommandUsage = () =>
                   the script process.`,
   })
 
-class RunCommand extends ExecCommand<typeof run, typeof runFG> {
-  constructor(conf: LoadedConfig) {
-    super(conf, run, runFG)
-  }
-
-  defaultArg0(): string | undefined {
-    // called when there's no arg0, with a single workspace or root
-    const ws = this.monorepo?.values().next().value
-    const cwd = ws?.fullpath ?? this.projectRoot
-    const packageJson =
-      this.monorepo?.packageJson ?? new PackageJson()
-    const mani = packageJson.read(cwd)
-    stdout('Scripts available:', mani.scripts)
-    return undefined
-  }
-
-  noArgsMulti(): void {
-    const m = this.monorepo
-    /* c8 ignore next - already guarded */
-    if (!m) return
-
-    stdout('Scripts available:')
-    for (const [ws, scripts] of m.runSync(
-      ws => ws.manifest.scripts,
-    )) {
-      stdout(ws.path, scripts)
-    }
-  }
+const setExitCode = (result: RunResult) => {
+  process.exitCode = process.exitCode || (result.status ?? 1)
 }
 
-export const command: CommandFn<ExecResult> = async conf =>
-  await new RunCommand(conf).run()
+type CommandResult =
+  | Record<string, string>
+  | Map<Workspace, Record<string, string>>
+  | RunFGResult
+  | Map<Workspace, RunResult>
+
+export const views: Views<CommandResult> = {
+  json: g => g,
+  human: RunReporter,
+}
+
+export const command: CommandFn<CommandResult> = async conf => {
+  const [arg0, ...args] = conf.positionals
+  const { projectRoot, packageJson } = conf.options
+
+  const paths = conf.get('workspace')
+  const groups = conf.get('workspace-group')
+  const monorepo =
+    paths?.length || groups?.length || conf.get('recursive') ?
+      Monorepo.load(projectRoot, { load: { paths, groups } })
+    : undefined
+
+  if (!arg0) {
+    return monorepo ?
+        monorepo.runSync(ws => ws.manifest.scripts ?? {})
+      : (packageJson.read(projectRoot).scripts ?? {})
+  }
+
+  const spaces = monorepo?.size ?? 1
+
+  if (!monorepo || spaces === 0) {
+    throw error('no matching workspaces found', {
+      validOptions: [...(monorepo?.load().paths() ?? [])],
+    })
+  }
+
+  if (spaces === 1) {
+    const ws = monorepo.values().next().value
+    const cwd = ws?.fullpath ?? projectRoot
+    const result = await runFG({
+      cwd,
+      arg0,
+      args,
+      projectRoot,
+      packageJson,
+      'script-shell': arg0 ? conf.get('script-shell') : false,
+    })
+    if (isRunResult(result)) {
+      setExitCode(result)
+    }
+    return result
+  }
+
+  return monorepo.run(ws =>
+    run({
+      cwd: ws.fullpath,
+      acceptFail: !conf.get('bail'),
+      ignoreMissing: true,
+      arg0,
+      args,
+      projectRoot,
+      packageJson,
+      'script-shell': conf.get('script-shell'),
+    }),
+  )
+}
