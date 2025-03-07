@@ -104,7 +104,7 @@ jobs:
       - name: Pack
         run: pnpm --filter="[$(git rev-parse HEAD~1)]" --workspace-concurrency=1 exec pnpm pack
 
-      - name: List integrity
+      - name: Full integrity
         id: integrity
         run: |
           delimiter="$(openssl rand -hex 8)"
@@ -126,20 +126,25 @@ jobs:
           format() {
             local name="$1"
             local filter="$2"
-            local sort_flags="${3:-}"
 
-            local packages=$(pnpm --shell-mode --filter="{./$filter/}[$commit]" exec \
-              "cat package.json | jq -r '\"\(.name)@\(.version)\"'" | sort $sort_flags)
+            local packages
+            packages=$(pnpm --shell-mode --filter="{./$filter/}[$commit]" exec "pwd" | sort)
 
             echo "$packages"
             {
               echo "${name}<<${delimiter}"
-              echo "$packages" | sed 's/^/`/;s/$/`/' | sed 's/^/- /'
+              while IFS= read -r package_dir; do
+                local package_json="$package_dir/package.json"
+                local package_name=$(jq -r '.name' "$package_json")
+                local package_version=$(jq -r '.version' "$package_json")
+                local integrity=$(node ./scripts/tgz-ssri.js "$package_dir")
+                echo "- \`$package_name@$package_version\` (\`${integrity:0:20}...\`)"
+              done <<< "$packages"
               echo "${delimiter}"
             } >> "${GITHUB_OUTPUT}"
           }
 
-          format "clis" "infra" "-t@ -k1,1r"
+          format "clis" "infra"
           format "workspaces" "src"
 
       - name: Undo Pack Local Changes
@@ -167,7 +172,7 @@ jobs:
 
             :rotating_light: Merging this PR will publish these packages :rotating_light:
 
-            [Compare to v${{ steps.previous-version.outputs.value }}](https://github.com/vltpkg/vltpkg/compare/v${{ steps.previous-version.outputs.value }}...{{ SHA }})
+            [Compare to v${{ steps.previous-version.outputs.value }}](https://github.com/vltpkg/vltpkg/compare/v${{ steps.previous-version.outputs.value }}...release)
 
             ### CLI
             ${{ steps.packages.outputs.clis }}
@@ -190,38 +195,16 @@ jobs:
             Steps to merge:
 
             ```bash
-            gh pr ready -R vltpkg/vltpkg {{ PR_NUMBER }}
+            gh pr ready -R vltpkg/vltpkg release
             ```
 
             ```bash
-            gh pr review -R vltpkg/vltpkg --approve {{ PR_NUMBER }}
+            gh pr review -R vltpkg/vltpkg --approve release
             ```
 
             ```bash
-            gh pr merge -R vltpkg/vltpkg --rebase {{ PR_NUMBER }}
+            gh pr merge -R vltpkg/vltpkg --rebase release
             ````
-
-      - name: Update PR Body
-        uses: actions/github-script@v7
-        if: steps.pr.outputs.pull-request-number
-        env:
-          PR_NUMBER: ${{ steps.pr.outputs.pull-request-number }}
-          SHA: ${{ steps.pr.outputs.pull-request-head-sha}}
-        with:
-          github-token: ${{ secrets.RELEASE_WORKFLOW_TOKEN }}
-          script: |
-            const { PR_NUMBER, SHA } = process.env
-            const { data: pr } = await github.rest.pulls.get({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              pull_number: PR_NUMBER
-            });
-            await github.rest.pulls.update({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              pull_number: PR_NUMBER,
-              body: pr.body.replaceAll('{{ PR_NUMBER }}', PR_NUMBER).replaceAll('{{ SHA }}', SHA)
-            });
 
   publish:
     name: Publish
