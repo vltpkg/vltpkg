@@ -1,6 +1,6 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`labels view > labels render default 1`] = `
+exports[`queries view > queries render default 1`] = `
 
 <section class="flex h-full w-full flex-col rounded-b-lg border-[1px] bg-white px-8 dark:bg-black">
   <div class="mx-auto flex w-full max-w-7xl flex-col">
