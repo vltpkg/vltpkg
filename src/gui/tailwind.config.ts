@@ -19,6 +19,15 @@ export default {
       },
     },
     extend: {
+      fontSize: {
+        sm: '0.813rem',
+      },
+      maxWidth: {
+        '8xl': '92rem',
+      },
+      screens: {
+        '8xl': '92rem',
+      },
       backgroundImage: {
         'gradient-radial':
           'radial-gradient(circle, var(--tw-gradient-stops))',
@@ -68,6 +77,7 @@ export default {
         card: {
           DEFAULT: 'hsl(var(--card))',
           foreground: 'hsl(var(--card-foreground))',
+          accent: 'hsl(var(--card-accent))',
         },
       },
       borderRadius: {

@@ -28,7 +28,8 @@ const RootButton = () => {
             disabled={query === DEFAULT_QUERY}
             onClick={onClick}
             size="icon"
-            variant="secondary">
+            variant="ghost"
+            className="rounded-md">
             <House />
           </Button>
         </TooltipTrigger>

@@ -105,7 +105,7 @@ export const CreateNewProjectContent = ({
   }
 
   return (
-    <div className="z-[3] flex w-full rounded-md border-[1px] border-dashed bg-card dark:bg-neutral-950">
+    <div className="z-[3] flex w-full rounded-md border-[1px] border-dashed bg-card">
       <form
         className="relative w-1/2 space-y-6 border-r-[1px] border-solid border-dashed"
         onSubmit={formSubmit}>
@@ -158,7 +158,7 @@ export const CreateNewProjectContent = ({
             <Label htmlFor="location">Location *</Label>
             <Popover>
               <PopoverTrigger asChild>
-                <Button className="group flex h-[40px] w-full items-center justify-between border-[1px] border-border bg-background text-muted-foreground shadow-none hover:bg-muted-foreground/10">
+                <Button className="group flex h-[40px] w-full items-center justify-between border-[1px] border-muted bg-white text-muted-foreground shadow-none hover:bg-accent dark:bg-muted-foreground/5 dark:hover:bg-muted-foreground/10">
                   {pathName || '~'}
                   <ChevronDown className="text-foreground opacity-50 duration-300 group-data-[state=open]:-rotate-180" />
                 </Button>
@@ -174,7 +174,6 @@ export const CreateNewProjectContent = ({
                           <CommandItem
                             key={location.path}
                             value={location.path}
-                            className="cursor-pointer"
                             onSelect={currentValue => {
                               setPathName(
                                 currentValue === pathName ? '' : (
@@ -227,11 +226,11 @@ export const CreateNewProjectContent = ({
       </form>
 
       <div className="relative h-full w-1/2">
-        <div className="absolute inset-0 z-[10] h-full w-full bg-gradient-radial from-card/20 to-card/80 dark:from-neutral-950/20 dark:to-neutral-950/80" />
+        <div className="absolute inset-0 z-[10] h-full w-full bg-gradient-radial from-card/20 to-card/80" />
         <System className="h-full w-full">
           <Grid rows={7} columns={7} ref={containerRef}>
             <Cell column={2} row={2} ref={nextRef}>
-              <div className="relative z-[2] flex h-full w-full items-center justify-center border-b-[1px] border-r-[1px] border-dashed border-border bg-white dark:bg-neutral-950/80">
+              <div className="/80 relative z-[2] flex h-full w-full items-center justify-center border-b-[1px] border-r-[1px] border-dashed border-muted bg-card">
                 <div className="flex items-center justify-center shadow-inner">
                   <Next className="size-12 text-muted-foreground/80" />
                 </div>
@@ -239,7 +238,7 @@ export const CreateNewProjectContent = ({
             </Cell>
 
             <Cell column={6} row={2} ref={nuxtRef}>
-              <div className="relative z-[2] flex h-full w-full items-center justify-center border-b-[1px] border-r-[1px] border-dashed border-border bg-white dark:bg-neutral-950/80">
+              <div className="/80 relative z-[2] flex h-full w-full items-center justify-center border-b-[1px] border-r-[1px] border-dashed border-muted bg-card">
                 <div className="flex items-center justify-center shadow-inner">
                   <Nuxt className="size-12 text-muted-foreground/80" />
                 </div>
@@ -247,7 +246,7 @@ export const CreateNewProjectContent = ({
             </Cell>
 
             <Cell column={2} row={6} ref={vercelRef}>
-              <div className="relative z-[2] flex h-full w-full items-center justify-center border-b-[1px] border-r-[1px] border-dashed border-border bg-white dark:bg-neutral-950/80">
+              <div className="/80 relative z-[2] flex h-full w-full items-center justify-center border-b-[1px] border-r-[1px] border-dashed border-muted bg-card">
                 <div className="flex items-center justify-center shadow-inner">
                   <Vercel className="size-12 text-muted-foreground/80" />
                 </div>
@@ -255,7 +254,7 @@ export const CreateNewProjectContent = ({
             </Cell>
 
             <Cell column={6} row={6} ref={nodeRef}>
-              <div className="relative z-[2] flex h-full w-full items-center justify-center border-b-[1px] border-r-[1px] border-dashed border-border bg-white dark:bg-neutral-950/80">
+              <div className="/80 relative z-[2] flex h-full w-full items-center justify-center border-b-[1px] border-r-[1px] border-dashed border-muted bg-card">
                 <div className="flex h-full w-full items-center justify-center shadow-inner">
                   <Node className="size-12 fill-muted-foreground/80" />
                 </div>
@@ -263,7 +262,7 @@ export const CreateNewProjectContent = ({
             </Cell>
 
             <Cell column={4} row={4} ref={vltRef}>
-              <div className="relative z-[2] flex h-full w-full items-center justify-center border-b-[1px] border-r-[1px] border-dashed border-border bg-white p-2 shadow-inner dark:bg-neutral-950">
+              <div className="relative z-[2] flex h-full w-full items-center justify-center border-b-[1px] border-r-[1px] border-dashed border-muted bg-card p-2 shadow-inner">
                 <div className="flex items-center justify-center">
                   <svg
                     width="24"

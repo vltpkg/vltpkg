@@ -28,7 +28,7 @@ const SidebarQueryNav = () => {
           isActive={activeRoute === '/queries'}
           asChild
           tooltip="Saved queries"
-          className="cursor-default whitespace-nowrap data-[active=true]:bg-neutral-200/80 data-[active=true]:text-foreground data-[active=true]:dark:bg-neutral-700/80 data-[active=true]:dark:text-foreground">
+          className="cursor-default whitespace-nowrap data-[active=true]:bg-neutral-200/80 data-[active=true]:text-foreground data-[active=true]:dark:bg-neutral-800 data-[active=true]:dark:text-foreground">
           <a
             href="/queries"
             className={`text-foreground ${activeRoute === '/queries' ? '' : ''}`}>

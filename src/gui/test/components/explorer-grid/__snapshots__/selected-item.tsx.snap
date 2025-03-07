@@ -4,7 +4,7 @@ exports[`SelectedItem render connection lines 1`] = `
 
 <div>
   <div class="relative">
-    <gui-card classname="relative my-4 border-muted-foreground">
+    <gui-card classname="relative my-4 border-muted">
       <div
         class="flex w-full justify-between gap-4 p-6"
         style="opacity: 0;"
@@ -76,7 +76,10 @@ exports[`SelectedItem render connection lines 1`] = `
             classname="px-6 py-4"
           >
           </gui-tabs-content>
-          <gui-tabs-content value="package.json">
+          <gui-tabs-content
+            value="package.json"
+            classname="rounded-b-lg bg-white dark:bg-black"
+          >
             <gui-code-block
               code
               lang="json"
@@ -93,7 +96,7 @@ exports[`SelectedItem render connection lines 1`] = `
         </gui-tabs>
       </div>
     </gui-card>
-    <div class="absolute -right-4 top-[44px] w-4 rounded-tr-sm border-t border-solid border-neutral-300 dark:border-neutral-600">
+    <div class="absolute -right-4 top-[44px] w-4 rounded-tr-sm border-t border-muted">
     </div>
   </div>
 </div>
@@ -104,7 +107,7 @@ exports[`SelectedItem render with custom registry 1`] = `
 
 <div>
   <div class="relative">
-    <gui-card classname="relative my-4 border-muted-foreground">
+    <gui-card classname="relative my-4 border-muted">
       <div
         class="flex w-full justify-between gap-4 p-6"
         style="opacity: 0;"
@@ -191,7 +194,10 @@ exports[`SelectedItem render with custom registry 1`] = `
             classname="px-6 py-4"
           >
           </gui-tabs-content>
-          <gui-tabs-content value="package.json">
+          <gui-tabs-content
+            value="package.json"
+            classname="rounded-b-lg bg-white dark:bg-black"
+          >
             <gui-code-block
               code
               lang="json"
@@ -217,7 +223,7 @@ exports[`SelectedItem render with default git host 1`] = `
 
 <div>
   <div class="relative">
-    <gui-card classname="relative my-4 border-muted-foreground">
+    <gui-card classname="relative my-4 border-muted">
       <div
         class="flex w-full justify-between gap-4 p-6"
         style="opacity: 0;"
@@ -292,7 +298,10 @@ exports[`SelectedItem render with default git host 1`] = `
             classname="px-6 py-4"
           >
           </gui-tabs-content>
-          <gui-tabs-content value="package.json">
+          <gui-tabs-content
+            value="package.json"
+            classname="rounded-b-lg bg-white dark:bg-black"
+          >
             <gui-code-block
               code
               lang="json"
@@ -318,7 +327,7 @@ exports[`SelectedItem render with item 1`] = `
 
 <div>
   <div class="relative">
-    <gui-card classname="relative my-4 border-muted-foreground">
+    <gui-card classname="relative my-4 border-muted">
       <div
         class="flex w-full justify-between gap-4 p-6"
         style="opacity: 0;"
@@ -390,7 +399,10 @@ exports[`SelectedItem render with item 1`] = `
             classname="px-6 py-4"
           >
           </gui-tabs-content>
-          <gui-tabs-content value="package.json">
+          <gui-tabs-content
+            value="package.json"
+            classname="rounded-b-lg bg-white dark:bg-black"
+          >
             <gui-code-block
               code
               lang="json"
@@ -416,7 +428,7 @@ exports[`SelectedItem render with scoped registry 1`] = `
 
 <div>
   <div class="relative">
-    <gui-card classname="relative my-4 border-muted-foreground">
+    <gui-card classname="relative my-4 border-muted">
       <div
         class="flex w-full justify-between gap-4 p-6"
         style="opacity: 0;"
@@ -503,7 +515,10 @@ exports[`SelectedItem render with scoped registry 1`] = `
             classname="px-6 py-4"
           >
           </gui-tabs-content>
-          <gui-tabs-content value="package.json">
+          <gui-tabs-content
+            value="package.json"
+            classname="rounded-b-lg bg-white dark:bg-black"
+          >
             <gui-code-block
               code
               lang="json"

@@ -3,8 +3,8 @@
 exports[`dashboard-grid render default 1`] = `
 
 <div>
-  <div class="flex grow flex-col px-8 py-8">
-    <div class="mx-auto grid w-full max-w-7xl grid-cols-3 gap-2 pb-8 md:flex">
+  <div class="flex h-full max-h-[calc(100svh-65px-50px-2px-16px)] flex-col overflow-y-scroll px-8 py-8">
+    <div class="grid w-full max-w-8xl grid-cols-3 gap-2 pb-8 md:flex">
       <gui-filter-search
         placeholder="Filter Projects"
         items
@@ -29,7 +29,7 @@ exports[`dashboard-grid render default 1`] = `
       </div>
     </div>
     <div
-      class="mx-auto flex w-full max-w-7xl flex-col"
+      class="flex w-full max-w-8xl flex-col"
       style="opacity: 0; transform: translateY(-5px);"
     >
       <p class="mb-4 text-sm font-semibold">
@@ -49,8 +49,8 @@ exports[`dashboard-grid render default 1`] = `
 exports[`dashboard-grid with results 1`] = `
 
 <div>
-  <div class="flex grow flex-col px-8 py-8">
-    <div class="mx-auto grid w-full max-w-7xl grid-cols-3 gap-2 pb-8 md:flex">
+  <div class="flex h-full max-h-[calc(100svh-65px-50px-2px-16px)] flex-col overflow-y-scroll px-8 py-8">
+    <div class="grid w-full max-w-8xl grid-cols-3 gap-2 pb-8 md:flex">
       <gui-filter-search
         placeholder="Filter Projects"
         items="[object Object],[object Object]"
@@ -75,7 +75,7 @@ exports[`dashboard-grid with results 1`] = `
       </div>
     </div>
     <div
-      class="mx-auto flex w-full max-w-7xl flex-col"
+      class="flex w-full max-w-8xl flex-col"
       style="opacity: 0; transform: translateY(-5px);"
     >
       <p class="mb-4 text-sm font-semibold">
@@ -86,7 +86,7 @@ exports[`dashboard-grid with results 1`] = `
           href="#"
           class="group relative w-full cursor-default"
         >
-          <div class="relative flex h-24 items-center overflow-hidden rounded-t-lg border-x-[1px] border-t-[1px] bg-card transition-all group-hover:border-neutral-400 dark:group-hover:border-neutral-700">
+          <div class="relative flex h-24 items-center overflow-hidden rounded-t-lg border-x-[1px] border-t-[1px] border-muted bg-card transition-all group-hover:bg-card-accent">
             <div class="flex px-3 py-2">
               <gui-card-title classname="text-md z-[1] font-medium">
                 project-bar
@@ -98,11 +98,11 @@ exports[`dashboard-grid with results 1`] = `
               </p>
             </div>
             <div class="absolute -inset-4 -right-2 flex flex-row items-center justify-end gap-2 bg-clip-content">
-              <gui-package-manager-pnpm-icon classname="size-24 fill-neutral-200/40 dark:fill-neutral-900/80">
+              <gui-package-manager-pnpm-icon classname="size-24 fill-neutral-200/80 dark:fill-neutral-800/40">
               </gui-package-manager-pnpm-icon>
             </div>
           </div>
-          <div class="flex w-full items-center rounded-b-lg border-[1px] bg-card px-3 py-3 transition-all group-hover:border-x-neutral-400 group-hover:border-b-neutral-400 dark:group-hover:border-x-neutral-700 dark:group-hover:border-b-neutral-700">
+          <div class="flex w-full items-center rounded-b-lg border-[1px] border-muted bg-card px-3 py-3 transition-all group-hover:bg-card-accent">
             <gui-tooltip-provider>
               <gui-tooltip>
                 <gui-tooltip-trigger classname="truncate text-left text-xs text-muted-foreground">
@@ -119,7 +119,7 @@ exports[`dashboard-grid with results 1`] = `
           href="#"
           class="group relative w-full cursor-default"
         >
-          <div class="relative flex h-24 items-center overflow-hidden rounded-t-lg border-x-[1px] border-t-[1px] bg-card transition-all group-hover:border-neutral-400 dark:group-hover:border-neutral-700">
+          <div class="relative flex h-24 items-center overflow-hidden rounded-t-lg border-x-[1px] border-t-[1px] border-muted bg-card transition-all group-hover:bg-card-accent">
             <div class="flex px-3 py-2">
               <gui-card-title classname="text-md z-[1] font-medium">
                 project-foo
@@ -131,13 +131,13 @@ exports[`dashboard-grid with results 1`] = `
               </p>
             </div>
             <div class="absolute -inset-4 -right-2 flex flex-row items-center justify-end gap-2 bg-clip-content">
-              <gui-package-manager-vlt-icon classname="size-24 fill-neutral-200/40 dark:fill-neutral-900/80">
+              <gui-package-manager-vlt-icon classname="size-24 fill-neutral-200/80 dark:fill-neutral-800/40">
               </gui-package-manager-vlt-icon>
-              <gui-runtime-node-icon classname="size-24 fill-neutral-200/40 dark:fill-neutral-900/80">
+              <gui-runtime-node-icon classname="size-24 fill-neutral-200/80 dark:fill-neutral-800/40">
               </gui-runtime-node-icon>
             </div>
           </div>
-          <div class="flex w-full items-center rounded-b-lg border-[1px] bg-card px-3 py-3 transition-all group-hover:border-x-neutral-400 group-hover:border-b-neutral-400 dark:group-hover:border-x-neutral-700 dark:group-hover:border-b-neutral-700">
+          <div class="flex w-full items-center rounded-b-lg border-[1px] border-muted bg-card px-3 py-3 transition-all group-hover:bg-card-accent">
             <gui-tooltip-provider>
               <gui-tooltip>
                 <gui-tooltip-trigger classname="truncate text-left text-xs text-muted-foreground">

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { GitFork, Plus } from 'lucide-react'
+import { Plus } from 'lucide-react'
 import type { DepID } from '@vltpkg/dep-id/browser'
 import { GridHeader } from '@/components/explorer-grid/header.jsx'
 import { SideItem } from '@/components/explorer-grid/side-item.jsx'
@@ -217,8 +217,7 @@ export const DependencySideBar = ({
 
   return (
     <>
-      <GridHeader>
-        <GitFork size={22} className="mr-3 rotate-180" />
+      <GridHeader className="h-[48px]">
         Dependencies
         {importerId ?
           <div className="flex grow justify-end">
@@ -275,10 +274,7 @@ export const DependencySideBar = ({
       ))}
       {uninstalledDependencies.length ?
         <>
-          <GridHeader>
-            <GitFork size={22} className="mr-3 rotate-180" />
-            Uninstalled Dependencies
-          </GridHeader>
+          <GridHeader>Uninstalled Dependencies</GridHeader>
           {[
             ...uninstalledDependencies.sort((a, b) =>
               a.name.localeCompare(b.name, 'en'),

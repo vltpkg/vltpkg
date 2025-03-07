@@ -67,7 +67,7 @@ const SaveQueryButton = () => {
           <Tooltip>
             <TooltipTrigger
               asChild
-              className="flex h-[1.5rem] w-[1.5rem] cursor-default items-center justify-center rounded-sm border border-muted-foreground/20 bg-muted">
+              className="flex h-[1.5rem] w-[1.5rem] cursor-default items-center justify-center rounded-sm bg-input transition-colors hover:bg-neutral-300 dark:hover:bg-neutral-700">
               <div
                 onClick={() =>
                   setShowSaveQueryPopover(!showSaveQueryPopover)

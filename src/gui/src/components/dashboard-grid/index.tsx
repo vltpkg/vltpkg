@@ -48,7 +48,7 @@ export const DashboardItem = ({
       className="group relative w-full cursor-default"
       onClick={onDashboardItemClick}>
       {/* top */}
-      <div className="relative flex h-24 items-center overflow-hidden rounded-t-lg border-x-[1px] border-t-[1px] bg-card transition-all group-hover:border-neutral-400 dark:group-hover:border-neutral-700">
+      <div className="relative flex h-24 items-center overflow-hidden rounded-t-lg border-x-[1px] border-t-[1px] border-muted bg-card transition-all group-hover:bg-card-accent">
         <div className="flex px-3 py-2">
           <CardTitle className="text-md z-[1] font-medium">
             {item.name}
@@ -57,10 +57,7 @@ export const DashboardItem = ({
         <div className="absolute right-0 top-0 z-[1] flex flex-row rounded-sm px-3 py-2 backdrop-blur-[1px]">
           {item.mtime && (
             <p className="z-[1] text-[0.7rem] text-muted-foreground">
-              {format(
-                new Date(item.mtime).toJSON(),
-                'LLLL do, yyyy | hh:mm aa',
-              )}
+              {format(new Date(item.mtime).toJSON(), 'LLLL do, yyyy')}
             </p>
           )}
         </div>
@@ -68,16 +65,16 @@ export const DashboardItem = ({
         {/* icons */}
         <div className="absolute -inset-4 -right-2 flex flex-row items-center justify-end gap-2 bg-clip-content">
           {PackageManger && (
-            <PackageManger className="size-24 fill-neutral-200/40 dark:fill-neutral-900/80" />
+            <PackageManger className="size-24 fill-neutral-200/80 dark:fill-neutral-800/40" />
           )}
           {RunTime && (
-            <RunTime className="size-24 fill-neutral-200/40 dark:fill-neutral-900/80" />
+            <RunTime className="size-24 fill-neutral-200/80 dark:fill-neutral-800/40" />
           )}
         </div>
       </div>
 
       {/* footer */}
-      <div className="flex w-full items-center rounded-b-lg border-[1px] bg-card px-3 py-3 transition-all group-hover:border-x-neutral-400 group-hover:border-b-neutral-400 dark:group-hover:border-x-neutral-700 dark:group-hover:border-b-neutral-700">
+      <div className="flex w-full items-center rounded-b-lg border-[1px] border-muted bg-card px-3 py-3 transition-all group-hover:bg-card-accent">
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger className="truncate text-left text-xs text-muted-foreground">
@@ -157,8 +154,8 @@ export const DashboardGrid = () => {
   }
 
   return (
-    <div className="flex grow flex-col px-8 py-8">
-      <div className="mx-auto grid w-full max-w-7xl grid-cols-3 gap-2 pb-8 md:flex">
+    <div className="flex h-full max-h-[calc(100svh-65px-50px-2px-16px)] flex-col overflow-y-scroll px-8 py-8">
+      <div className="grid w-full max-w-8xl grid-cols-3 gap-2 pb-8 md:flex">
         {currentView === 'table' ?
           <TableFilterSearch
             filterValue={tableFilterValue}
@@ -218,7 +215,7 @@ export const DashboardGrid = () => {
             exit={{ opacity: 0, y: 5 }}
             initial={{ opacity: 0, y: 5 }}
             animate={{ opacity: 1, y: 0 }}
-            className="mx-auto flex w-full max-w-7xl flex-col">
+            className="flex w-full max-w-8xl flex-col">
             <DashboardTable
               data={dashboard?.projects ?? []}
               setTable={setTable}
@@ -233,7 +230,7 @@ export const DashboardGrid = () => {
             exit={{ opacity: 0, y: -5 }}
             initial={{ opacity: 0, y: -5 }}
             animate={{ opacity: 1, y: 0 }}
-            className="mx-auto flex w-full max-w-7xl flex-col">
+            className="flex w-full max-w-8xl flex-col">
             <p className="mb-4 text-sm font-semibold">Projects</p>
             <div className="grid grid-cols-1 gap-x-6 gap-y-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {dashboard?.projects ?

@@ -2,8 +2,8 @@
 
 exports[`labels view > labels render default 1`] = `
 
-<section class="flex h-full w-full flex-col rounded-b-lg border-[1px] bg-white px-8 dark:bg-black">
-  <div class="mx-auto flex w-full max-w-7xl flex-col">
+<section class="flex h-full max-h-[calc(100svh-65px-16px)] w-full grow flex-col overflow-y-scroll rounded-b-lg border-[1px] px-8">
+  <div class="flex w-full max-w-8xl flex-col">
     <div class="my-4 flex justify-between">
       <div class="flex gap-2">
         <gui-filter-search
@@ -46,7 +46,7 @@ exports[`labels view > labels render default 1`] = `
       </div>
     </div>
     <div class="mt-6">
-      <div class="mt-3 flex flex-col gap-3">
+      <div class="mt-3 flex h-full flex-col gap-3">
       </div>
     </div>
   </div>

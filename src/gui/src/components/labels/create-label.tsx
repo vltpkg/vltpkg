@@ -64,7 +64,7 @@ const CreateLabel = ({
   return (
     <div
       className={cn(
-        'rounded-sm border border-[1px] border-muted-foreground/25 bg-neutral-100 transition-all dark:bg-neutral-950',
+        'rounded-sm border border-[1px] border-muted-foreground/25 bg-card transition-all',
         className,
       )}>
       <div className="flex flex-col gap-3 px-3 py-3">
