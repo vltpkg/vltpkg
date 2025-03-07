@@ -26,6 +26,7 @@ vi.mock('@/components/labels/label-badge.jsx', () => ({
 }))
 
 vi.mock('lucide-react', () => ({
+  CircleHelp: 'gui-circle-help-icon',
   ArrowRight: 'gui-arrow-right-icon',
   ChevronsUpDown: 'gui-chevrons-up-down-icon',
 }))

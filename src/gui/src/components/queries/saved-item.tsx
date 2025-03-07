@@ -12,7 +12,7 @@ import { useToast } from '@/components/hooks/use-toast.js'
 import { Checkbox } from '@/components/ui/checkbox.jsx'
 import { Label } from '@/components/ui/label.jsx'
 import { LabelBadge } from '@/components/labels/label-badge.jsx'
-import { ArrowRight, ChevronsUpDown } from 'lucide-react'
+import { CircleHelp, ArrowRight, ChevronsUpDown } from 'lucide-react'
 import { LabelSelect } from '@/components/labels/label-select.jsx'
 import {
   Popover,
@@ -251,9 +251,22 @@ const SavedQueryItem = ({
               />
             </div>
             <div className="flex grow flex-col gap-2">
-              <Label className="border-none text-sm font-medium">
-                Directory (optional)
-              </Label>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger className="inline-flex cursor-default items-center">
+                    <Label className="border-none text-sm font-medium">
+                      Directory (optional)
+                    </Label>
+                    <CircleHelp
+                      className="text-muted-foreground"
+                      size={18}
+                    />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    Leave directory empty to reuse globally
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
               <DirectorySelect
                 dashboard={dashboard}
                 setDirectory={setEditContext}

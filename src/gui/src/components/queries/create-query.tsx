@@ -13,7 +13,13 @@ import {
   PopoverTrigger,
   PopoverContent,
 } from '@/components/ui/popover.jsx'
-import { ChevronsUpDown } from 'lucide-react'
+import {
+  Tooltip,
+  TooltipProvider,
+  TooltipTrigger,
+  TooltipContent,
+} from '@/components/ui/tooltip.jsx'
+import { ChevronsUpDown, CircleHelp } from 'lucide-react'
 import { cn } from '@/lib/utils.js'
 import { DirectorySelect } from '@/components/directory-select.jsx'
 
@@ -115,9 +121,22 @@ export const CreateQuery = ({
           </div>
 
           <div className="flex w-[300px] flex-col gap-2">
-            <Label className="border-none text-sm font-medium">
-              Directory (optional)
-            </Label>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger className="inline-flex cursor-default items-center">
+                  <Label className="border-none text-sm font-medium">
+                    Directory (optional)
+                  </Label>
+                  <CircleHelp
+                    className="text-muted-foreground"
+                    size={18}
+                  />
+                </TooltipTrigger>
+                <TooltipContent>
+                  Leave directory empty to reuse globally
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
             <DirectorySelect
               directory={directory}
               setDirectory={setDirectory}
