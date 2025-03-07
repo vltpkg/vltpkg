@@ -3,11 +3,41 @@ import { Button } from '@/components/ui/button.jsx'
 import { Command, Plus, Star } from 'lucide-react'
 import { AnimatePresence, motion, useAnimate } from 'framer-motion'
 import { CreateQuery } from '@/components/queries/create-query.jsx'
+import { useGraphStore } from '@/state/index.js'
+import { startDashboardData } from '@/lib/start-dashboard-data.js'
 
 const QueriesEmptyState = () => {
   const [starScope, starAnimate] = useAnimate<HTMLDivElement>()
   const [cursorScope, cursorAnimate] = useAnimate<HTMLDivElement>()
   const [isCreating, setIsCreating] = useState<boolean>(false)
+
+  const dashboard = useGraphStore(state => state.dashboard)
+  const updateActiveRoute = useGraphStore(
+    state => state.updateActiveRoute,
+  )
+  const updateDashboard = useGraphStore(
+    state => state.updateDashboard,
+  )
+  const updateErrorCause = useGraphStore(
+    state => state.updateErrorCause,
+  )
+  const stamp = useGraphStore(state => state.stamp)
+
+  useEffect(() => {
+    startDashboardData({
+      updateActiveRoute,
+      updateDashboard,
+      updateErrorCause,
+      stamp,
+    })
+
+    history.pushState(
+      { query: '', route: '/queries' },
+      '',
+      '/queries',
+    )
+    window.scrollTo(0, 0)
+  }, [stamp])
 
   useEffect(() => {
     const {
@@ -230,7 +260,8 @@ const QueriesEmptyState = () => {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}>
             <CreateQuery
-              className="relative mx-auto w-3/5"
+              dashboard={dashboard}
+              className="relative mx-auto w-full max-w-6xl"
               onClose={() => setIsCreating(false)}
             />
           </motion.div>
