@@ -57,8 +57,8 @@ afterEach(() => {
   cleanup()
 })
 
-describe('labels view', () => {
-  it('labels render default', () => {
+describe('queries view', () => {
+  it('queries render default', () => {
     const Container = () => {
       return <Queries />
     }

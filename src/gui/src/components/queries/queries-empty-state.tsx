@@ -3,8 +3,13 @@ import { Button } from '@/components/ui/button.jsx'
 import { Command, Plus, Star } from 'lucide-react'
 import { AnimatePresence, motion, useAnimate } from 'framer-motion'
 import { CreateQuery } from '@/components/queries/create-query.jsx'
+import type { DashboardData } from '@/state/types.js'
 
-const QueriesEmptyState = () => {
+interface QueriesEmptyStateProps {
+  dashboard?: DashboardData
+}
+
+const QueriesEmptyState = ({ dashboard }: QueriesEmptyStateProps) => {
   const [starScope, starAnimate] = useAnimate<HTMLDivElement>()
   const [cursorScope, cursorAnimate] = useAnimate<HTMLDivElement>()
   const [isCreating, setIsCreating] = useState<boolean>(false)
@@ -230,7 +235,8 @@ const QueriesEmptyState = () => {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}>
             <CreateQuery
-              className="relative mx-auto w-3/5"
+              dashboard={dashboard}
+              className="relative mx-auto w-full max-w-6xl"
               onClose={() => setIsCreating(false)}
             />
           </motion.div>

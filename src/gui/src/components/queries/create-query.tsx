@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button.jsx'
 import { Input } from '@/components/ui/input.jsx'
 import { useGraphStore } from '@/state/index.js'
 import { v4 as uuidv4 } from 'uuid'
-import type { QueryLabel } from '@/state/types.js'
+import type { QueryLabel, DashboardData } from '@/state/types.js'
 import { LabelSelect } from '@/components/labels/label-select.jsx'
 import { LabelBadge } from '@/components/labels/label-badge.jsx'
 import { useToast } from '@/components/hooks/use-toast.js'
@@ -13,17 +13,26 @@ import {
   PopoverTrigger,
   PopoverContent,
 } from '@/components/ui/popover.jsx'
-import { ChevronsUpDown } from 'lucide-react'
+import {
+  Tooltip,
+  TooltipProvider,
+  TooltipTrigger,
+  TooltipContent,
+} from '@/components/ui/tooltip.jsx'
+import { ChevronsUpDown, CircleHelp } from 'lucide-react'
 import { cn } from '@/lib/utils.js'
+import { DirectorySelect } from '@/components/directory-select.jsx'
 
 interface CreateQueryProps {
   onClose: () => void
   className?: string
+  dashboard?: DashboardData
 }
 
 export const CreateQuery = ({
   className,
   onClose,
+  dashboard,
 }: CreateQueryProps) => {
   const [queryName, setQueryName] = useState<string>('')
   const [query, setQuery] = useState<string>('')
@@ -111,19 +120,32 @@ export const CreateQuery = ({
             />
           </div>
 
-          <div className="flex grow flex-col gap-2">
-            <Label className="border-none text-sm font-medium">
-              Directory
-            </Label>
-            <Input
-              type="text"
-              value={directory}
-              onChange={e => setDirectory(e.target.value)}
-              placeholder="Directory (optional)"
+          <div className="flex w-[300px] flex-col gap-2">
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger className="inline-flex cursor-default items-center">
+                  <Label className="border-none text-sm font-medium">
+                    Directory (optional)
+                  </Label>
+                  <CircleHelp
+                    className="text-muted-foreground"
+                    size={18}
+                  />
+                </TooltipTrigger>
+                <TooltipContent>
+                  Set directory to 'Global' to reuse across all
+                  projects.
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+            <DirectorySelect
+              directory={directory}
+              setDirectory={setDirectory}
+              dashboard={dashboard}
             />
           </div>
 
-          <div className="flex grow flex-col gap-2">
+          <div className="flex w-[175px] flex-col gap-2">
             <Label className="border-none text-sm font-medium">
               Labels
             </Label>

@@ -1,0 +1,36 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`directory select > renders correctly 1`] = `
+
+<gui-popover>
+  <gui-popover-trigger aschild="true">
+    <gui-button classname="group flex h-[40px] w-full items-center justify-between border-[1px] border-muted bg-white text-muted-foreground shadow-none hover:bg-accent dark:bg-muted-foreground/5 dark:hover:bg-muted-foreground/10">
+      Global
+      <gui-chevron-down-icon classname="text-foreground opacity-50 duration-300 group-data-[state=open]:-rotate-180">
+      </gui-chevron-down-icon>
+    </gui-button>
+  </gui-popover-trigger>
+  <gui-popover-content classname="max-h-[--radix-popover-content-available-height] w-[--radix-popover-trigger-width] p-0">
+    <gui-command>
+      <gui-command-input placeholder="Directory">
+      </gui-command-input>
+      <gui-command-list>
+        <gui-command-empty>
+          Directory not found.
+        </gui-command-empty>
+        <gui-command-group>
+          <gui-command-item
+            value
+            classname="hover:bg-accent"
+          >
+            <gui-check-icon classname="mr-2 size-4 opacity-100">
+            </gui-check-icon>
+            Global
+          </gui-command-item>
+        </gui-command-group>
+      </gui-command-list>
+    </gui-command>
+  </gui-popover-content>
+</gui-popover>
+
+`;
