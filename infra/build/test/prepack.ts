@@ -97,6 +97,13 @@ t.test('default vlt CLI', async t => {
     keywords: ['hi'],
     type: 'module',
     license: 'MIT',
+    bin: {
+      vlix: './vlix.js',
+      vlr: './vlr.js',
+      vlrx: './vlrx.js',
+      vlt: './vlt.js',
+      vlx: './vlx.js',
+    },
   })
   t.strictSame(
     readOutdir(dir),
