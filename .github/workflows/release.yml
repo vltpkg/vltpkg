@@ -79,6 +79,10 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
+      - name: Get Previous CLI Version Number
+        id: previous-version
+        run: echo "value=$(jq -r .version ./infra/cli/package.json)" >> $GITHUB_OUTPUT
+
       - name: Version CLI Packages
         run: pnpm --filter="./infra/cli*" exec npm version prerelease --no-git-tag-version
 
@@ -150,6 +154,8 @@ jobs:
 
             :rotating_light: Merging this PR will publish these packages :rotating_light:
 
+            [Compare to v${{ steps.previous-version.outputs.value }}](https://github.com/vltpkg/vltpkg/compare/v${{ steps.previous-version.outputs.value }}...{{ SHA }})
+
             ### CLI
             ${{ steps.packages.outputs.clis }}
 
@@ -177,10 +183,11 @@ jobs:
         if: steps.pr.outputs.pull-request-number
         env:
           PR_NUMBER: ${{ steps.pr.outputs.pull-request-number }}
+          SHA: ${{ steps.pr.outputs.pull-request-head-sha}}
         with:
           github-token: ${{ secrets.RELEASE_WORKFLOW_TOKEN }}
           script: |
-            const { PR_NUMBER } = process.env
+            const { PR_NUMBER, SHA } = process.env
             const { data: pr } = await github.rest.pulls.get({
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -190,7 +197,7 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               pull_number: PR_NUMBER,
-              body: pr.body.replaceAll('{{ PR_NUMBER }}', PR_NUMBER)
+              body: pr.body.replaceAll('{{ PR_NUMBER }}', PR_NUMBER).replaceAll('{{ SHA }}', SHA)
             });
 
   publish:
@@ -237,3 +244,10 @@ jobs:
             ${{ needs.detect-action.outputs.dry-run == 'true' && '--dry-run' }}
         env:
           NPM_AUTH_TOKEN: ${{ secrets.VLT_CLI_PUBLISH_TOKEN }}
+
+      - name: Create Git Tag
+        if: needs.detect-action.outputs.dry-run != 'true'
+        run: |
+          VERSION=$(jq -r .version ./infra/cli/package.json)
+          git tag -a "v$VERSION" -m "Release v$VERSION"
+          git push origin "v$VERSION"
