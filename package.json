@@ -46,11 +46,11 @@
     "lint:check": "eslint .",
     "snap": "pnpm --silent --no-bail --report-summary run -r snap &>/dev/null || node scripts/report-test-failures.js",
     "test": "pnpm --silent --no-bail --report-summary -r test -- -Rsilent || node scripts/report-test-failures.js",
-    "vlix": "./scripts/bins/vlix.ts",
-    "vlr": "./scripts/bins/vlr.ts",
-    "vlrx": "./scripts/bins/vlrx.ts",
-    "vlt": "./scripts/bins/vlt.ts",
-    "vlx": "./scripts/bins/vlx.ts"
+    "vlix": "./scripts/bins/vlix",
+    "vlr": "./scripts/bins/vlr",
+    "vlrx": "./scripts/bins/vlrx",
+    "vlt": "./scripts/bins/vlt",
+    "vlx": "./scripts/bins/vlx"
   },
   "prettier": "./.prettierrc.js",
   "type": "module",
