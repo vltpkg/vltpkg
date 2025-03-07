@@ -104,6 +104,19 @@ jobs:
       - name: Pack
         run: pnpm --filter="[$(git rev-parse HEAD~1)]" --workspace-concurrency=1 exec pnpm pack
 
+      - name: List integrity
+        id: integrity
+        run: |
+          delimiter="$(openssl rand -hex 8)"
+          integrity=$(node ./scripts/tgz-ssri.js)
+
+          echo "$integrity"
+          {
+            echo "value<<${delimiter}"
+            echo "$integrity"
+            echo "${delimiter}"
+          } >> "${GITHUB_OUTPUT}"
+
       - name: List Packages
         id: packages
         run: |
@@ -161,6 +174,16 @@ jobs:
 
             ### Workspaces
             ${{ steps.packages.outputs.workspaces }}
+
+            <details><summary>Integrity</summary>
+            <p>
+
+            ```
+            ${{ steps.integrity.outputs.value }}
+            ```
+
+            </p>
+            </details>
 
             ---
 
@@ -231,7 +254,7 @@ jobs:
         run: pnpm install
 
       - name: List Packages to Publish
-        run: pnpm --shell-mode --filter="[$(git rev-parse HEAD~1)]" exec "cat package.json | jq -r '\"\(.name)@\(.version)\"'"
+        run: pnpm --shell-mode --filter="[$(git rev-parse HEAD~1)]" exec "cat package.json | jq -r '\"\(.name)@\(.version)\"'" | sort
 
       - name: Publish
         run: |
