@@ -10,21 +10,15 @@ exports[`AppSidebar main nav > renders correctly 1`] = `
     <gui-sidebar-menu-item>
       <gui-collapsible-trigger aschild="true">
         <gui-sidebar-menu-button
-          aschild="true"
           isactive="false"
-          classname="whitespace-nowrap data-[active=true]:bg-neutral-200/80 data-[active=true]:text-foreground data-[active=true]:dark:bg-neutral-700/80 data-[active=true]:dark:text-foreground"
+          classname="whitespace-nowrap data-[active=true]:bg-neutral-200 data-[active=true]:text-foreground data-[active=true]:dark:bg-neutral-800 data-[active=true]:dark:text-foreground"
           tooltip="Dashboard"
         >
-          <a
-            href="/dashboard"
-            target="_top"
-          >
-            <gui-layout-dashboard-icon>
-            </gui-layout-dashboard-icon>
-            <span>
-              Dashboard
-            </span>
-          </a>
+          <gui-layout-dashboard-icon>
+          </gui-layout-dashboard-icon>
+          <span>
+            Dashboard
+          </span>
         </gui-sidebar-menu-button>
       </gui-collapsible-trigger>
     </gui-sidebar-menu-item>

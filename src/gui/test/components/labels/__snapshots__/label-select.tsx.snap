@@ -102,7 +102,7 @@ exports[`label-select > should render correctly 1`] = `
     </gui-command-group>
   </gui-command-list>
   <gui-button
-    classname="mb-2 rounded-sm border-none text-neutral-500 hover:bg-background hover:text-primary"
+    classname="rounded-[7px] border-none text-neutral-500 hover:text-primary"
     variant="outline"
     size="sm"
     aschild="true"

@@ -8,7 +8,7 @@ exports[`AppSidebar query nav > renders correctly 1`] = `
       isactive="false"
       aschild="true"
       tooltip="Saved queries"
-      classname="cursor-default whitespace-nowrap data-[active=true]:bg-neutral-200/80 data-[active=true]:text-foreground data-[active=true]:dark:bg-neutral-700/80 data-[active=true]:dark:text-foreground"
+      classname="cursor-default whitespace-nowrap data-[active=true]:bg-neutral-200/80 data-[active=true]:text-foreground data-[active=true]:dark:bg-neutral-800 data-[active=true]:dark:text-foreground"
     >
       <a
         href="/queries"

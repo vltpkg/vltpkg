@@ -12,15 +12,10 @@ exports[`explorer-grid render default 1`] = `
 exports[`explorer-grid renders workspace with edges in 1`] = `
 
 <div>
-  <div class="w-full grow rounded-b-lg border-x-[1px] border-b-[1px] bg-white px-8 pb-8 dark:bg-black">
-    <div class="mx-auto grid w-full max-w-7xl grid-cols-8 gap-4">
+  <div class="h-full w-full grow px-8 pb-8">
+    <div class="grid w-full max-w-8xl grid-cols-8 gap-4">
       <div class="col-span-2">
         <gui-grid-header>
-          <gui-gallery-thumbnails-icon
-            size="22"
-            classname="mr-3"
-          >
-          </gui-gallery-thumbnails-icon>
           Parent
         </gui-grid-header>
         <gui-side-item
@@ -32,11 +27,6 @@ exports[`explorer-grid renders workspace with edges in 1`] = `
       </div>
       <div class="col-span-4">
         <gui-grid-header>
-          <gui-gallery-vertical-icon
-            size="22"
-            classname="mr-3"
-          >
-          </gui-gallery-vertical-icon>
           Selected Item
         </gui-grid-header>
         <div class="flex flex-col gap-6">
@@ -61,8 +51,8 @@ exports[`explorer-grid renders workspace with edges in 1`] = `
 exports[`explorer-grid with results 1`] = `
 
 <div>
-  <div class="w-full grow rounded-b-lg border-x-[1px] border-b-[1px] bg-white px-8 pb-8 dark:bg-black">
-    <div class="mx-auto grid w-full max-w-7xl grid-cols-8 gap-4">
+  <div class="h-full w-full grow px-8 pb-8">
+    <div class="grid w-full max-w-8xl grid-cols-8 gap-4">
       <div class="col-span-2">
       </div>
       <div class="col-span-4">
@@ -95,8 +85,8 @@ exports[`explorer-grid with results 1`] = `
 exports[`explorer-grid with stack 1`] = `
 
 <div>
-  <div class="w-full grow rounded-b-lg border-x-[1px] border-b-[1px] bg-white px-8 pb-8 dark:bg-black">
-    <div class="mx-auto grid w-full max-w-7xl grid-cols-8 gap-4">
+  <div class="h-full w-full grow px-8 pb-8">
+    <div class="grid w-full max-w-8xl grid-cols-8 gap-4">
       <div class="col-span-2">
       </div>
       <div class="col-span-4">

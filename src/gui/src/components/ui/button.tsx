@@ -6,7 +6,7 @@ import type { VariantProps } from 'class-variance-authority'
 import { cn } from '@/lib/utils.js'
 
 const buttonVariants = cva(
-  'cursor-default inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0',
+  'cursor-default inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 transition-all',
   {
     variants: {
       variant: {
@@ -15,10 +15,11 @@ const buttonVariants = cva(
         destructive:
           'bg-destructive dark:bg-red-600 text-destructive-foreground hover:bg-destructive/90',
         outline:
-          'border border-input bg-background hover:bg-accent hover:text-accent-foreground',
+          'border border-input bg-white dark:bg-muted-foreground/5 hover:bg-accent hover:text-accent-foreground',
         secondary:
           'bg-secondary text-secondary-foreground hover:bg-secondary/80',
-        ghost: 'hover:bg-accent hover:text-accent-foreground',
+        ghost:
+          'bg-background dark:bg-secondary dark:border-none border border-muted hover:bg-accent dark:hover:bg-neutral-700/50 hover:text-accent-foreground',
         link: 'text-primary underline-offset-4 hover:underline',
       },
       size: {
@@ -26,7 +27,7 @@ const buttonVariants = cva(
         xs: 'h-6 rounded-sm px-1',
         sm: 'h-9 rounded-md px-3',
         lg: 'h-11 rounded-md px-8',
-        icon: 'h-10 w-10',
+        icon: 'h-10 w-10 rounded-xl',
       },
     },
     defaultVariants: {

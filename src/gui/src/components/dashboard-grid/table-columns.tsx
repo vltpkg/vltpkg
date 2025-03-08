@@ -22,8 +22,7 @@ const SortingHeader = ({
 }) => {
   return (
     <Button
-      className={`px-0 py-0 hover:bg-transparent ${className}`}
-      variant="ghost"
+      className={`bg-transparent px-0 py-0 text-foreground hover:bg-transparent ${className}`}
       onClick={() =>
         column.toggleSorting(column.getIsSorted() === 'asc')
       }>

@@ -10,7 +10,7 @@ exports[`filter-search > should render correctly 1`] = `
   </gui-search-icon>
   <gui-input
     type="text"
-    classname="pl-9 pr-20"
+    classname="bg-white pl-9 pr-20 dark:bg-muted-foreground/5"
     role="search"
     placeholder="mock-test"
     value

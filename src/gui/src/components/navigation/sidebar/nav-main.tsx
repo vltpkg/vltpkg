@@ -16,6 +16,9 @@ import { useGraphStore } from '@/state/index.js'
 
 const SidebarMainNav = () => {
   const activeRoute = useGraphStore(state => state.activeRoute)
+  const updateActiveRoute = useGraphStore(
+    state => state.updateActiveRoute,
+  )
 
   const renderItems = (items: MenuItem[]) => {
     return items.map(item => {
@@ -30,24 +33,18 @@ const SidebarMainNav = () => {
           <SidebarMenuItem>
             <CollapsibleTrigger asChild>
               <SidebarMenuButton
-                asChild
                 isActive={activeRoute === item.url}
-                className="whitespace-nowrap data-[active=true]:bg-neutral-200/80 data-[active=true]:text-foreground data-[active=true]:dark:bg-neutral-700/80 data-[active=true]:dark:text-foreground"
+                onClick={() => updateActiveRoute(item.url)}
+                className="whitespace-nowrap data-[active=true]:bg-neutral-200 data-[active=true]:text-foreground data-[active=true]:dark:bg-neutral-800 data-[active=true]:dark:text-foreground"
                 tooltip={item.title}>
-                <a
-                  href={item.url}
-                  target={
-                    item.url.split('')[0] === '/' ? '_top' : '_blank'
-                  }>
-                  {item.icon && <item.icon />}
-                  <span>{item.title}</span>
-                  {hasSubItems && (
-                    <>
-                      <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:hidden" />
-                      <ChevronDown className="ml-auto transition-transform duration-200 group-data-[state=closed]/collapsible:hidden" />
-                    </>
-                  )}
-                </a>
+                {item.icon && <item.icon />}
+                <span>{item.title}</span>
+                {hasSubItems && (
+                  <>
+                    <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:hidden" />
+                    <ChevronDown className="ml-auto transition-transform duration-200 group-data-[state=closed]/collapsible:hidden" />
+                  </>
+                )}
               </SidebarMenuButton>
             </CollapsibleTrigger>
             {item.items && hasSubItems && (

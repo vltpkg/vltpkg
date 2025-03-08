@@ -11,9 +11,6 @@ import type { RawNode } from '@/state/types.js'
 import { Query } from '@vltpkg/query'
 
 vi.mock('lucide-react', () => ({
-  GalleryVertical: 'gui-gallery-vertical-icon',
-  GalleryVerticalEnd: 'gui-gallery-vertical-end-icon',
-  GalleryThumbnails: 'gui-gallery-thumbnails-icon',
   Package: 'gui-package-icon',
 }))
 

@@ -84,7 +84,7 @@ export const DataTable = <TData, TValue>({
 
   return (
     <>
-      <div className="rounded-md border bg-white dark:bg-black">
+      <div className="rounded-md border border-muted bg-card">
         <Table className="w-full">
           <TableHeader>
             {table.getHeaderGroups().map(headerGroup => (
@@ -93,6 +93,7 @@ export const DataTable = <TData, TValue>({
                   return (
                     <TableHead
                       key={header.id}
+                      className="text-foreground"
                       style={{ width: `${header.getSize()}px` }}>
                       {header.isPlaceholder ? null : (
                         flexRender(
@@ -138,7 +139,7 @@ export const DataTable = <TData, TValue>({
               </TableRow>
             }
           </TableBody>
-          <TableFooter>
+          <TableFooter className="bg-sidebar-background">
             <TableRow>
               <TableCell
                 colSpan={table.getVisibleFlatColumns().length - 1}>

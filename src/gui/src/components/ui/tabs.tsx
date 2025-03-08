@@ -12,7 +12,7 @@ const tabsListVariants = cva('inline-flex ', {
     variant: {
       default:
         'items-center justify-center h-10 rounded-md bg-muted p-1 text-muted-foreground',
-      outline: 'border-b-[1px] w-full',
+      outline: 'border-b-[1px] border-muted w-full',
     },
   },
   defaultVariants: {

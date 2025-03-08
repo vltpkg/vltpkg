@@ -2,12 +2,12 @@
 
 exports[`labels view > labels render default 1`] = `
 
-<div class="group flex flex-col rounded-sm border border-[1px] bg-neutral-50 transition-all hover:border-foreground/50 dark:bg-neutral-950 border-muted-foreground/25">
+<div class="group flex flex-col rounded-sm border border-[1px] bg-card transition-all hover:bg-card-accent border-muted">
   <div class="grid grid-cols-12 gap-4 px-3 py-2">
     <div class="col-span-2 flex grow items-center gap-3">
       <gui-checkbox
         checked="false"
-        classname="border-muted-foreground/25 group-hover:border-muted-foreground/50"
+        classname="border-muted-foreground/25 opacity-0 group-hover:border-muted-foreground/50 group-hover:opacity-100 "
       >
       </gui-checkbox>
       <p class="truncate text-sm font-medium">

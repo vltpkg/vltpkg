@@ -55,7 +55,7 @@ export const TableFilterSearch = ({
       <Input
         type="text"
         ref={inputRef}
-        className="pl-9 pr-20"
+        className="bg-white pl-9 pr-20 dark:bg-muted-foreground/5"
         role="search"
         placeholder={placeholder}
         value={filterValue}
