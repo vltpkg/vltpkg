@@ -1,7 +1,10 @@
 import { uninstall } from '@vltpkg/graph'
+import type { Graph } from '@vltpkg/graph'
 import { commandUsage } from '../config/usage.ts'
 import type { CommandFn, CommandUsage } from '../index.ts'
 import { parseRemoveArgs } from '../parse-add-remove-args.ts'
+import { InstallReporter } from './install/reporter.ts'
+import type { Views } from '../view.ts'
 
 export const usage: CommandUsage = () =>
   commandUsage({
@@ -11,8 +14,14 @@ export const usage: CommandUsage = () =>
                   vlt-lock.json and package.json appropriately.`,
   })
 
-export const command: CommandFn<void> = async conf => {
+export const views: Views<Graph> = {
+  json: g => g.toJSON(),
+  human: InstallReporter,
+}
+
+export const command: CommandFn<Graph> = async conf => {
   const monorepo = conf.options.monorepo
   const { remove } = parseRemoveArgs(conf, monorepo)
-  await uninstall(conf.options, remove)
+  const { graph } = await uninstall(conf.options, remove)
+  return graph
 }
