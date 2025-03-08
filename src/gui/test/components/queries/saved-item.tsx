@@ -26,6 +26,7 @@ vi.mock('@/components/labels/label-badge.jsx', () => ({
 }))
 
 vi.mock('lucide-react', () => ({
+  CircleHelp: 'gui-circle-help-icon',
   ArrowRight: 'gui-arrow-right-icon',
   ChevronsUpDown: 'gui-chevrons-up-down-icon',
 }))
@@ -45,6 +46,10 @@ vi.mock('@/components/ui/tooltip.jsx', () => ({
   TooltipProvider: 'gui-tooltip-provider',
   TooltipTrigger: 'gui-tooltip-trigger',
   TooltipContent: 'gui-tooltip-content',
+}))
+
+vi.mock('@/components/directory-select.jsx', () => ({
+  DirectorySelect: 'gui-directory-select',
 }))
 
 expect.addSnapshotSerializer({
