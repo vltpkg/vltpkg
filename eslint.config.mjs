@@ -5,6 +5,7 @@ import { readFileSync } from 'fs'
 import { resolve } from 'path'
 import jsdoc from 'eslint-plugin-jsdoc'
 import importPlugin from 'eslint-plugin-import'
+import enforceMockImportTypes from './scripts/eslint-enforce-mock-import-types.js'
 
 const MONO_ROOT = import.meta.dirname
 const CWD = process.cwd()
@@ -39,7 +40,14 @@ export default tseslint.config(
   importPlugin.flatConfigs.recommended,
   importPlugin.flatConfigs.typescript,
   {
-    plugins: { jsdoc },
+    plugins: {
+      jsdoc,
+      vltpkg: {
+        rules: {
+          'enforce-mock-import-types': enforceMockImportTypes,
+        },
+      },
+    },
     languageOptions: {
       parserOptions: {
         projectService: true,
@@ -218,6 +226,8 @@ export default tseslint.config(
       'jsdoc/require-param-description': 0,
       'jsdoc/require-returns-description': 0,
       'jsdoc/require-jsdoc': 0,
+      // custom
+      'vltpkg/enforce-mock-import-types': 'error',
     },
   },
   {
