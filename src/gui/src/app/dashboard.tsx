@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router'
 import { useEffect } from 'react'
 import { DashboardGrid } from '@/components/dashboard-grid/index.jsx'
 import { useGraphStore } from '@/state/index.js'
@@ -5,9 +6,7 @@ import { startDashboardData } from '@/lib/start-dashboard-data.js'
 
 export const Dashboard = () => {
   const dashboard = useGraphStore(state => state.dashboard)
-  const updateActiveRoute = useGraphStore(
-    state => state.updateActiveRoute,
-  )
+  const navigate = useNavigate()
   const updateDashboard = useGraphStore(
     state => state.updateDashboard,
   )
@@ -18,19 +17,11 @@ export const Dashboard = () => {
 
   useEffect(() => {
     startDashboardData({
-      updateActiveRoute,
+      navigate,
       updateErrorCause,
       updateDashboard,
       stamp,
     })
-
-    history.pushState(
-      { query: '', route: '/dashboard' },
-      '',
-      '/dashboard',
-    )
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    window.scrollTo?.(0, 0)
   }, [stamp])
 
   return (

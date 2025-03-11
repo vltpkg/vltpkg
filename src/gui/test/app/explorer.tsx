@@ -17,6 +17,10 @@ import { useGraphStore as useStore } from '@/state/index.js'
 import { Explorer } from '@/app/explorer.jsx'
 import { joinDepIDTuple } from '@vltpkg/dep-id/browser'
 
+vi.mock('react-router', () => ({
+  useNavigate: vi.fn(),
+}))
+
 vi.mock('@/components/search-bar.jsx', () => ({
   SearchBar: 'gui-search-bar',
 }))

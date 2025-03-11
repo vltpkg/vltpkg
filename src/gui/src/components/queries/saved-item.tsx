@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router'
 import { useEffect, useState } from 'react'
 import type {
   SavedQuery,
@@ -28,7 +29,7 @@ import {
 import { DirectorySelect } from '@/components/directory-select.jsx'
 
 type SelectQueryOptions = {
-  updateActiveRoute: Action['updateActiveRoute']
+  navigate: (route: string) => void
   updateErrorCause: Action['updateErrorCause']
   updateQuery: Action['updateQuery']
   updateStamp: Action['updateStamp']
@@ -39,7 +40,7 @@ type SelectQueryOptions = {
 // TODO: should reuse / share the project select logic from:
 // src/gui/src/components/dashboard-grid/index.tsx
 export const selectQuery = async ({
-  updateActiveRoute,
+  navigate,
   updateErrorCause,
   updateQuery,
   updateStamp,
@@ -59,7 +60,7 @@ export const selectQuery = async ({
     })
   } catch (err) {
     console.error(err)
-    updateActiveRoute('/error')
+    navigate('/error')
     updateErrorCause('Failed to request project selection.')
     return
   }
@@ -74,10 +75,10 @@ export const selectQuery = async ({
   if (projectSelected) {
     window.scrollTo(0, 0)
     updateQuery(item.query)
-    updateActiveRoute('/explore')
+    navigate('/explore')
     updateStamp()
   } else {
-    updateActiveRoute('/error')
+    navigate('/error')
     updateErrorCause('Failed to select project.')
   }
 }
@@ -93,6 +94,7 @@ const SavedQueryItem = ({
   checked: boolean
   dashboard?: DashboardData
 }) => {
+  const navigate = useNavigate()
   const { toast } = useToast()
   const [isExpanded, setIsExpanded] = useState<boolean>(false)
   const [editName, setEditName] = useState<string>('')
@@ -107,9 +109,6 @@ const SavedQueryItem = ({
   const [isValid, setIsValid] = useState<boolean>(false)
   const updateSavedQuery = useGraphStore(
     state => state.updateSavedQuery,
-  )
-  const updateActiveRoute = useGraphStore(
-    state => state.updateActiveRoute,
   )
   const updateErrorCause = useGraphStore(
     state => state.updateErrorCause,
@@ -154,7 +153,7 @@ const SavedQueryItem = ({
 
   const runQuery = async (): Promise<void> => {
     await selectQuery({
-      updateActiveRoute,
+      navigate,
       updateErrorCause,
       updateQuery,
       updateStamp,

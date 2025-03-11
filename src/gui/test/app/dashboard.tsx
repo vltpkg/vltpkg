@@ -13,14 +13,8 @@ import html from 'diffable-html'
 import { useGraphStore as useStore } from '@/state/index.js'
 import { Dashboard } from '@/app/dashboard.jsx'
 
-vi.mock('@/components/ui/logo.jsx', () => ({
-  Logo: 'gui-logo',
-}))
-vi.mock('@/components/ui/title.jsx', () => ({
-  Title: 'gui-title',
-}))
-vi.mock('@/components/ui/theme-switcher.jsx', () => ({
-  ThemeSwitcher: 'gui-theme-switcher',
+vi.mock('react-router', () => ({
+  useNavigate: vi.fn(),
 }))
 vi.mock('@/components/dashboard-grid/index.jsx', () => ({
   DashboardGrid: 'gui-dashboard-grid',

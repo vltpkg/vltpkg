@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router'
 import { useState, useEffect } from 'react'
 import { useGraphStore } from '@/state/index.js'
 import { CreateNewProjectContent } from '@/components/create-new-project/index.jsx'
@@ -6,9 +7,7 @@ import { InlineCode } from '@/components/ui/inline-code.jsx'
 import { LoadingSpinner } from '@/components/ui/loading-spinner.jsx'
 
 export const CreateNewProject = () => {
-  const updateActiveRoute = useGraphStore(
-    state => state.updateActiveRoute,
-  )
+  const navigate = useNavigate()
   const updateDashboard = useGraphStore(
     state => state.updateDashboard,
   )
@@ -21,18 +20,11 @@ export const CreateNewProject = () => {
 
   useEffect(() => {
     startDashboardData({
-      updateActiveRoute,
+      navigate,
       updateDashboard,
       updateErrorCause,
       stamp,
     })
-
-    history.pushState(
-      { query: '', route: '/new-project' },
-      '',
-      '/new-project',
-    )
-    window.scrollTo(0, 0)
   }, [stamp])
 
   if (inProgress)

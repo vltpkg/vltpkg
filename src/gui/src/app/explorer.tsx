@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router'
 import { useEffect, useRef } from 'react'
 import { Query } from '@vltpkg/query'
 import { SearchBar } from '@/components/search-bar.jsx'
@@ -48,9 +49,7 @@ const startGraphData = async ({
 }
 
 export const Explorer = () => {
-  const updateActiveRoute = useGraphStore(
-    state => state.updateActiveRoute,
-  )
+  const navigate = useNavigate()
   const updateErrorCause = useGraphStore(
     state => state.updateErrorCause,
   )
@@ -79,7 +78,7 @@ export const Explorer = () => {
       stamp,
     }).catch((err: unknown) => {
       console.error(err)
-      updateActiveRoute('/error')
+      void navigate('/error')
       updateErrorCause('Failed to initialize explorer.')
     })
   }, [stamp])

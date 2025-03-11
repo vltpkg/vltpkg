@@ -5,6 +5,11 @@ import html from 'diffable-html'
 import { useGraphStore as useStore } from '@/state/index.js'
 import { QueryMatches } from '@/components/explorer-grid/query-matches.jsx'
 
+vi.mock('react-router', () => ({
+  NavLink: 'gui-nav-link',
+  useNavigate: vi.fn(),
+}))
+
 vi.mock('@/components/ui/popover.jsx', () => ({
   Popover: 'gui-popover',
   PopoverContent: 'gui-popover-content',

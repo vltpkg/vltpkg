@@ -1,15 +1,14 @@
+import { useNavigate } from 'react-router'
 import { Button } from '@/components/ui/button.jsx'
 import { ArrowRight } from 'lucide-react'
 import { useGraphStore } from '@/state/index.js'
 
 const EmptyResultsState = () => {
-  const updateActiveRoute = useGraphStore(
-    state => state.updateActiveRoute,
-  )
+  const navigate = useNavigate()
   const updateQuery = useGraphStore(state => state.updateQuery)
 
   const navigateToRoot = () => {
-    updateActiveRoute('/explore')
+    void navigate('/explore')
     updateQuery(':root')
   }
 

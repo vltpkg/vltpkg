@@ -21,10 +21,15 @@ exports[`dashboard-grid render default 1`] = `
           >
           </gui-sort-dropdown>
         </div>
-        <gui-button classname="ml-auto">
-          <gui-plus-icon size="24">
-          </gui-plus-icon>
-          Create New Project
+        <gui-button
+          aschild="true"
+          classname="ml-auto"
+        >
+          <gui-nav-link to="/create-new-project">
+            <gui-plus-icon size="24">
+            </gui-plus-icon>
+            Create New Project
+          </gui-nav-link>
         </gui-button>
       </div>
     </div>
@@ -67,10 +72,15 @@ exports[`dashboard-grid with results 1`] = `
           >
           </gui-sort-dropdown>
         </div>
-        <gui-button classname="ml-auto">
-          <gui-plus-icon size="24">
-          </gui-plus-icon>
-          Create New Project
+        <gui-button
+          aschild="true"
+          classname="ml-auto"
+        >
+          <gui-nav-link to="/create-new-project">
+            <gui-plus-icon size="24">
+            </gui-plus-icon>
+            Create New Project
+          </gui-nav-link>
         </gui-button>
       </div>
     </div>
@@ -82,8 +92,8 @@ exports[`dashboard-grid with results 1`] = `
         Projects
       </p>
       <div class="grid grid-cols-1 gap-x-6 gap-y-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        <a
-          href="#"
+        <div
+          role="link"
           class="group relative w-full cursor-default"
         >
           <div class="relative flex h-24 items-center overflow-hidden rounded-t-lg border-x-[1px] border-t-[1px] border-muted bg-card transition-all group-hover:bg-card-accent">
@@ -114,9 +124,9 @@ exports[`dashboard-grid with results 1`] = `
               </gui-tooltip>
             </gui-tooltip-provider>
           </div>
-        </a>
-        <a
-          href="#"
+        </div>
+        <div
+          role="link"
           class="group relative w-full cursor-default"
         >
           <div class="relative flex h-24 items-center overflow-hidden rounded-t-lg border-x-[1px] border-t-[1px] border-muted bg-card transition-all group-hover:bg-card-accent">
@@ -149,7 +159,7 @@ exports[`dashboard-grid with results 1`] = `
               </gui-tooltip>
             </gui-tooltip-provider>
           </div>
-        </a>
+        </div>
       </div>
     </div>
   </div>
