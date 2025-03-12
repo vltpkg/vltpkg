@@ -166,7 +166,7 @@ export class RegistryClient {
     this.cache = new Cache({
       path: cache,
       onDiskWrite(_path, key, data) {
-        if (CacheEntry.decode(data).isGzip) register(cache, key)
+        if (CacheEntry.isGzipEntry(data)) register(cache, key)
       },
     })
     const dispatch = new Agent(agentOptions)
