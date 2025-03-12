@@ -1,16 +1,16 @@
-import { error } from '@vltpkg/error-cause'
 import type { ErrorCauseObject } from '@vltpkg/error-cause'
+import { error } from '@vltpkg/error-cause'
 import { clone, resolve as gitResolve, revs } from '@vltpkg/git'
 import { PackageJson } from '@vltpkg/package-json'
-import { pickManifest } from '@vltpkg/pick-manifest'
 import type { PickManifestOptions } from '@vltpkg/pick-manifest'
-import { RegistryClient } from '@vltpkg/registry-client'
+import { pickManifest } from '@vltpkg/pick-manifest'
 import type { RegistryClientOptions } from '@vltpkg/registry-client'
-import { Spec } from '@vltpkg/spec'
+import { RegistryClient } from '@vltpkg/registry-client'
 import type { SpecOptions } from '@vltpkg/spec'
+import { Spec } from '@vltpkg/spec'
 import { Pool } from '@vltpkg/tar'
-import { asPackument } from '@vltpkg/types'
 import type { Integrity, Manifest, Packument } from '@vltpkg/types'
+import { asPackument } from '@vltpkg/types'
 import { Monorepo } from '@vltpkg/workspaces'
 import { XDG } from '@vltpkg/xdg'
 import { randomBytes } from 'crypto'
@@ -18,8 +18,8 @@ import { readFile, rm, stat, symlink } from 'fs/promises'
 import {
   basename,
   dirname,
-  relative,
   resolve as pathResolve,
+  relative,
 } from 'path'
 import { create as tarC } from 'tar'
 import { rename } from './rename.ts'
@@ -59,56 +59,6 @@ export type PackageInfoClientExtractOptions =
     integrity?: Integrity
     resolved?: string
   }
-
-export type PackageInfoClientAllOptions = PackageInfoClientOptions &
-  PackageInfoClientRequestOptions &
-  PackageInfoClientExtractOptions
-
-// provide some helper methods at the top level. Re-use the client if
-// the same options are provided.
-const clients = new Map<string, PackageInfoClient>()
-const client = (o: PackageInfoClientAllOptions = {}) => {
-  const {
-    from: _from,
-    packageJson: _packageJson,
-    workspace: _workspace,
-    'workspace-group': _workspaceGroup,
-    ...opts
-  } = o
-  const key = JSON.stringify(
-    Object.entries(opts).sort(([a], [b]) => a.localeCompare(b, 'en')),
-  )
-  const c = clients.get(key) ?? new PackageInfoClient(opts)
-  clients.set(key, c)
-  return c
-}
-
-export const packument = async (
-  spec: Spec | string,
-  options: PackageInfoClientAllOptions = {},
-): Promise<Packument> => client(options).packument(spec, options)
-
-export const manifest = async (
-  spec: Spec | string,
-  options: PackageInfoClientAllOptions = {},
-): Promise<Manifest> => client(options).manifest(spec, options)
-
-export const resolve = async (
-  spec: Spec | string,
-  options: PackageInfoClientAllOptions = {},
-): Promise<Resolution> => client(options).resolve(spec, options)
-
-export const tarball = async (
-  spec: Spec | string,
-  options: PackageInfoClientAllOptions = {},
-): Promise<Buffer> => client(options).tarball(spec, options)
-
-export const extract = async (
-  spec: Spec | string,
-  target: string,
-  options: PackageInfoClientAllOptions = {},
-): Promise<Resolution> =>
-  client(options).extract(spec, target, options)
 
 export class PackageInfoClient {
   #registryClient?: RegistryClient
@@ -162,6 +112,7 @@ export class PackageInfoClient {
       integrity && resolved ?
         { resolved, integrity, spec }
       : await this.resolve(spec, options)
+
     switch (f.type) {
       case 'git': {
         const {
@@ -200,6 +151,7 @@ export class PackageInfoClient {
         }
         // fallthrough if a remote tarball url present
       }
+
       case 'registry':
       case 'remote': {
         const response = await this.registryClient.request(
@@ -219,6 +171,16 @@ export class PackageInfoClient {
             },
           )
         }
+
+        if (
+          !!r.integrity &&
+          f.type === 'registry' &&
+          new URL(r.resolved).origin !==
+            new URL(String(f.registry)).origin
+        ) {
+          response.checkIntegrity()
+        }
+
         try {
           await this.tarPool.unpack(response.buffer(), target)
         } catch (er) {
@@ -306,6 +268,7 @@ export class PackageInfoClient {
     if (typeof spec === 'string')
       spec = Spec.parse(spec, this.options)
     const f = spec.final
+
     switch (f.type) {
       case 'registry': {
         const { dist } = await this.manifest(spec, options)
@@ -334,8 +297,16 @@ export class PackageInfoClient {
             { response, url: tarball },
           )
         }
+        if (
+          !!integrity &&
+          new URL(tarball).origin !==
+            new URL(String(f.registry)).origin
+        ) {
+          response.checkIntegrity()
+        }
         return response.buffer()
       }
+
       case 'git': {
         const {
           remoteURL,
@@ -374,6 +345,7 @@ export class PackageInfoClient {
         }
         // fallthrough if remoteURL set
       }
+
       case 'remote': {
         const { remoteURL } = f
         if (!remoteURL) {
@@ -390,6 +362,7 @@ export class PackageInfoClient {
         }
         return response.buffer()
       }
+
       case 'file': {
         const { file } = f
         if (file === undefined)
@@ -405,6 +378,7 @@ export class PackageInfoClient {
         }
         return readFile(path)
       }
+
       case 'workspace': {
         // TODO: Pack properly, ignore stuff, bundleDeps, etc
         const ws = this.#getWS(spec, options)
@@ -434,6 +408,7 @@ export class PackageInfoClient {
         if (!mani) throw this.#resolveError(spec, options)
         return mani
       }
+
       case 'git': {
         const {
           gitRemote,
@@ -455,6 +430,7 @@ export class PackageInfoClient {
         }
         // fallthrough to remote
       }
+
       case 'remote': {
         const { remoteURL } = f
         if (!remoteURL) {
@@ -490,6 +466,7 @@ export class PackageInfoClient {
           return this.packageJson.read(dir)
         })
       }
+
       case 'file': {
         const { file } = f
         if (file === undefined)
@@ -514,6 +491,7 @@ export class PackageInfoClient {
           return this.packageJson.read(dir)
         })
       }
+
       case 'workspace': {
         return this.#getWS(spec, options).manifest
       }
@@ -544,6 +522,7 @@ export class PackageInfoClient {
         if (!revDoc) throw this.#resolveError(spec, options)
         return asPackument(revDoc)
       }
+
       // these are all faked packuments
       case 'file':
       case 'workspace':
@@ -559,6 +538,7 @@ export class PackageInfoClient {
           },
         }
       }
+
       case 'registry': {
         const { registry, name } = f
         const pakuURL = new URL(name, registry)
@@ -590,9 +570,11 @@ export class PackageInfoClient {
     const memoKey = String(spec)
     if (typeof spec === 'string')
       spec = Spec.parse(spec, this.options)
+
     const memo = this.#resolutions.get(memoKey)
     if (memo) return memo
     const f = spec.final
+
     switch (f.type) {
       case 'file': {
         const { file } = f

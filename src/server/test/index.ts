@@ -1,3 +1,4 @@
+import { PackageInfoClient } from '@vltpkg/package-info'
 import { PackageJson } from '@vltpkg/package-json'
 import type { ServerResponse } from 'node:http'
 import { resolve } from 'node:path'
@@ -55,6 +56,7 @@ t.test('start listening', async t => {
     packageJson: new PackageJson(),
     projectRoot: resolve(dir, 'projects/x'),
     scurry: new PathScurry(dir),
+    packageInfo: new PackageInfoClient(),
   }
 
   const s1 = createServer({

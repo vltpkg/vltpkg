@@ -216,7 +216,7 @@ t.test(
       ],
     } as ConfigData
     const opts = conf.options
-    const { scurry, packageJson, monorepo, ...o } = opts
+    const { packageInfo, scurry, packageJson, monorepo, ...o } = opts
     t.strictSame(o, {
       projectRoot: t.testdirName,
       'git-hosts': {
@@ -228,6 +228,7 @@ t.test(
     // so tap sees a different class.
     t.ok(scurry, 'always includes a scurry')
     t.ok(packageJson, 'always includes a packageJson')
+    t.ok(packageInfo, 'always includes a packageInfo')
     t.equal(conf.options, opts, 'memoized')
 
     await conf.writeConfigFile('project', {
