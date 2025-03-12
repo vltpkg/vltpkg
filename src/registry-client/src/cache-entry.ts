@@ -277,11 +277,11 @@ export class CacheEntry {
    */
   static decode(buffer: Buffer): CacheEntry {
     if (buffer.length < 4) {
-      return new CacheEntry(0, [])
+      return emptyCacheEntry
     }
     const headSize = readSize(buffer, 0)
     if (buffer.length < headSize) {
-      return new CacheEntry(0, [])
+      return emptyCacheEntry
     }
     const statusCode = Number(buffer.subarray(4, 7).toString())
     const headersBuffer = buffer.subarray(7, headSize)
@@ -302,10 +302,17 @@ export class CacheEntry {
       try {
         c.json()
       } catch {
-        return new CacheEntry(0, [])
+        return emptyCacheEntry
       }
     }
     return c
+  }
+
+  static isGzipEntry(buffer: Buffer): boolean {
+    if (buffer.length < 4) return false
+    const headSize = readSize(buffer, 0)
+    const gzipBytes = buffer.subarray(headSize, headSize + 2)
+    return gzipBytes[0] === 0x1f && gzipBytes[1] === 0x8b
   }
 
   /**
@@ -350,3 +357,5 @@ export class CacheEntry {
     return Buffer.concat(chunks, headLength + this.#bodyLength)
   }
 }
+
+const emptyCacheEntry = new CacheEntry(0, [])
