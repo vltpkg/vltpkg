@@ -1,7 +1,6 @@
 import { joinDepIDTuple } from '@vltpkg/dep-id'
 import type { DepID, DepIDTuple } from '@vltpkg/dep-id'
-import { manifest } from '@vltpkg/package-info'
-import type { PackageInfoClient } from '@vltpkg/package-info'
+import { PackageInfoClient } from '@vltpkg/package-info'
 import { PackageJson } from '@vltpkg/package-json'
 import { Spec } from '@vltpkg/spec'
 import type { SpecOptions } from '@vltpkg/spec'
@@ -70,7 +69,7 @@ const packageInfo = {
         return missingManifest
       case 'linked':
       case 'link':
-        return manifest(spec, options)
+        return new PackageInfoClient(options).manifest(spec, options)
       default:
         return null
     }

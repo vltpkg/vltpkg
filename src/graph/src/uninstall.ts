@@ -1,5 +1,4 @@
-import type { PackageInfoClientOptions } from '@vltpkg/package-info'
-import { PackageInfoClient } from '@vltpkg/package-info'
+import type { PackageInfoClient } from '@vltpkg/package-info'
 import type { PackageJson } from '@vltpkg/package-json'
 import type { LoadOptions } from './actual/load.ts'
 import { load as actualLoad } from './actual/load.ts'
@@ -7,11 +6,11 @@ import type { RemoveImportersDependenciesMap } from './dependencies.ts'
 import { build as idealBuild } from './ideal/build.ts'
 import { reify } from './reify/index.ts'
 
-export type UninstallOptions = PackageInfoClientOptions &
-  LoadOptions & {
-    projectRoot: string
-    packageJson: PackageJson
-  }
+export type UninstallOptions = LoadOptions & {
+  projectRoot: string
+  packageJson: PackageJson
+  packageInfo: PackageInfoClient
+}
 
 export const uninstall = async (
   options: UninstallOptions,
@@ -21,7 +20,6 @@ export const uninstall = async (
 
   const graph = await idealBuild({
     ...options,
-    packageInfo: new PackageInfoClient(options),
     remove,
     mainManifest,
     loadManifests: true,
@@ -33,7 +31,6 @@ export const uninstall = async (
   })
   const diff = await reify({
     ...options,
-    packageInfo: new PackageInfoClient(options),
     remove,
     actual: act,
     graph,

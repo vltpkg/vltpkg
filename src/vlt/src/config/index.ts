@@ -22,6 +22,7 @@
  */
 
 import { error } from '@vltpkg/error-cause'
+import { PackageInfoClient } from '@vltpkg/package-info'
 import { PackageJson } from '@vltpkg/package-json'
 import { Monorepo } from '@vltpkg/workspaces'
 import { XDG } from '@vltpkg/xdg'
@@ -31,14 +32,15 @@ import type { Jack, OptionsResults, Unwrap } from 'jackspeak'
 import { homedir } from 'os'
 import { dirname, resolve } from 'path'
 import { PathScurry } from 'path-scurry'
+import type { JSONResult } from 'polite-json'
 import {
-  kIndent,
-  kNewline,
   parse as jsonParse,
   stringify as jsonStringify,
+  kIndent,
+  kNewline,
 } from 'polite-json'
-import type { JSONResult } from 'polite-json'
 import { walkUp } from 'walk-up-path'
+import type { Commands, RecordField } from './definition.ts'
 import {
   commands,
   definition,
@@ -46,10 +48,14 @@ import {
   isRecordField,
   recordFields,
 } from './definition.ts'
-import type { Commands, RecordField } from './definition.ts'
 import { merge } from './merge.ts'
-export { recordFields, isRecordField }
-export { definition, commands, type Commands }
+export {
+  commands,
+  definition,
+  isRecordField,
+  recordFields,
+  type Commands,
+}
 
 export type RecordPairs = Record<string, unknown>
 export type RecordString = Record<string, string>
@@ -79,7 +85,11 @@ const isRecordFieldValue = (k: string, v: unknown): v is string[] =>
 
 export type PairsAsRecords = Omit<
   ConfigOptions,
-  'projectRoot' | 'scurry' | 'packageJson' | 'monorepo'
+  | 'projectRoot'
+  | 'scurry'
+  | 'packageJson'
+  | 'monorepo'
+  | 'packageInfo'
 > & {
   command?: Record<string, ConfigOptions>
 }
@@ -113,7 +123,8 @@ export const recordsToPairs = (obj: RecordPairs): RecordPairs => {
             k === 'scurry' ||
             k === 'packageJson' ||
             k === 'monorepo' ||
-            k === 'projectRoot'
+            k === 'projectRoot' ||
+            k === 'packageInfo'
           ),
       )
       .map(([k, v]) => [
@@ -170,6 +181,7 @@ export type ConfigOptions = {
   scurry: PathScurry
   projectRoot: string
   monorepo?: Monorepo
+  packageInfo: PackageInfoClient
 }
 
 /**
@@ -223,18 +235,23 @@ export class Config {
     if (this.#options) return this.#options
     const scurry = new PathScurry(this.projectRoot)
     const packageJson = new PackageJson()
-    this.#options = Object.assign(
-      pairsToRecords(this.parse().values),
-      {
-        projectRoot: this.projectRoot,
+    const asRecords = pairsToRecords(this.parse().values)
+    const extras = {
+      projectRoot: this.projectRoot,
+      scurry,
+      packageJson,
+      monorepo: Monorepo.maybeLoad(this.projectRoot, {
         scurry,
         packageJson,
-        monorepo: Monorepo.maybeLoad(this.projectRoot, {
-          scurry,
-          packageJson,
-        }),
-      },
+      }),
+    }
+    const options: Omit<ConfigOptions, 'packageInfo'> = Object.assign(
+      asRecords,
+      extras,
     )
+    this.#options = Object.assign(options, {
+      packageInfo: new PackageInfoClient(options),
+    })
     return this.#options
   }
 
