@@ -10,16 +10,48 @@ import { resolve as pathResolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import t from 'tap'
 import { x as tarX } from 'tar'
-import {
-  extract,
-  manifest,
-  PackageInfoClient,
-  packument,
-  resolve,
-  tarball,
+import type {
+  PackageInfoClientExtractOptions,
+  PackageInfoClientOptions,
+  PackageInfoClientRequestOptions,
 } from '../src/index.ts'
+import { PackageInfoClient } from '../src/index.ts'
 
 t.saveFixture = true
+
+// helper methods only for test
+const extract = (
+  spec: string | Spec,
+  dir: string,
+  options?: PackageInfoClientOptions &
+    PackageInfoClientExtractOptions,
+) => {
+  return new PackageInfoClient(options).extract(spec, dir, options)
+}
+
+const resolve = (
+  spec: string | Spec,
+  options?: PackageInfoClientOptions &
+    PackageInfoClientRequestOptions,
+) => {
+  return new PackageInfoClient(options).resolve(spec, options)
+}
+
+const packument = (
+  spec: string | Spec,
+  options?: PackageInfoClientOptions &
+    PackageInfoClientRequestOptions,
+) => {
+  return new PackageInfoClient(options).packument(spec, options)
+}
+
+const manifest = (
+  spec: string | Spec,
+  options?: PackageInfoClientOptions &
+    PackageInfoClientRequestOptions,
+) => {
+  return new PackageInfoClient(options).manifest(spec, options)
+}
 
 const fixtures = pathResolve(import.meta.dirname, 'fixtures')
 const pakuAbbrev = JSON.parse(
@@ -466,6 +498,14 @@ t.test('resolve', async t => {
   )
 })
 
+const tarball = (
+  spec: string | Spec,
+  options?: PackageInfoClientOptions &
+    PackageInfoClientRequestOptions,
+) => {
+  return new PackageInfoClient(options).tarball(spec, options)
+}
+
 t.test('tarball', async t => {
   t.strictSame(await tarball('abbrev@2', options), tgzAbbrev)
 
@@ -562,7 +602,7 @@ t.test('extract', opts, async t => {
 
 t.test('extraction failures', async t => {
   const dir = t.testdir()
-  const { extract, manifest } = await t.mockImport<
+  const { PackageInfoClient } = await t.mockImport<
     typeof import('../src/index.ts')
   >('../src/index.ts', {
     '@vltpkg/tar': {
@@ -573,6 +613,22 @@ t.test('extraction failures', async t => {
       },
     },
   })
+  const extract = (
+    spec: string,
+    dir: string,
+    options: PackageInfoClientOptions &
+      PackageInfoClientExtractOptions,
+  ) => {
+    return new PackageInfoClient(options).extract(spec, dir, options)
+  }
+  const manifest = (
+    spec: string,
+    options?: PackageInfoClientOptions &
+      PackageInfoClientRequestOptions,
+  ) => {
+    return new PackageInfoClient(options).manifest(spec, options)
+  }
+
   await t.rejects(extract('abbrev@2', dir + '/registry', options))
 
   await t.rejects(
