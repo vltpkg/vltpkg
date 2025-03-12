@@ -1,0 +1,76 @@
+{
+  "name": "@vltpkg/security-archive",
+  "description": "A database of security information of packages",
+  "version": "0.0.0-3",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vltpkg/vltpkg.git",
+    "directory": "src/security-archive"
+  },
+  "tshy": {
+    "selfLink": false,
+    "liveDev": true,
+    "dialects": [
+      "esm"
+    ],
+    "exports": {
+      "./package.json": "./package.json",
+      ".": "./src/index.ts"
+    }
+  },
+  "dependencies": {
+    "@vltpkg/dep-id": "workspace:*",
+    "@vltpkg/error-cause": "workspace:*",
+    "@vltpkg/graph": "workspace:*",
+    "@vltpkg/spec": "workspace:*",
+    "@vltpkg/types": "workspace:*",
+    "@vltpkg/xdg": "workspace:*",
+    "lru-cache": "catalog:",
+    "p-retry": "catalog:",
+    "package-json-from-dist": "catalog:"
+  },
+  "devDependencies": {
+    "@eslint/js": "catalog:",
+    "@types/eslint__js": "catalog:",
+    "@types/node": "catalog:",
+    "eslint": "catalog:",
+    "prettier": "catalog:",
+    "tap": "catalog:",
+    "tshy": "catalog:",
+    "typedoc": "catalog:",
+    "typescript": "catalog:",
+    "typescript-eslint": "catalog:"
+  },
+  "license": "BSD-2-Clause-Patent",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "format": "prettier --write . --log-level warn --ignore-path ../../.prettierignore --cache",
+    "format:check": "prettier --check . --ignore-path ../../.prettierignore --cache",
+    "lint": "eslint . --fix",
+    "lint:check": "eslint .",
+    "prepack": "tshy",
+    "snap": "tap",
+    "test": "tap",
+    "posttest": "tsc --noEmit",
+    "typecheck": "tsc --noEmit"
+  },
+  "tap": {
+    "extends": "../../tap-config.yaml"
+  },
+  "prettier": "../../.prettierrc.js",
+  "module": "./src/index.ts",
+  "type": "module",
+  "exports": {
+    "./package.json": "./package.json",
+    ".": {
+      "import": {
+        "default": "./src/index.ts"
+      }
+    }
+  },
+  "files": [
+    "dist"
+  ]
+}

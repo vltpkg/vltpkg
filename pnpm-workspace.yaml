@@ -14,6 +14,7 @@ catalog:
   eslint: ^9.20.0
   graph-run: ^1.0.4
   lru-cache: ^11.0.2
+  p-retry: ^6.2.1
   package-json-from-dist: ^1.0.0
   pacote: ^18.0.6
   path-scurry: ^2.0.0
