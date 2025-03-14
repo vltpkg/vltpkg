@@ -291,21 +291,22 @@ export const SelectedItem = ({ item }: GridItemOptions) => {
         </motion.div>
         <div className="w-full">
           <Tabs onValueChange={handleTabChange} value={activeTab}>
-            <TabsList variant="outline" className="w-full gap-2 px-6">
+            <TabsList variant="ghost" className="w-full gap-2 px-6">
               <TabsTrigger
-                variant="outline"
+                variant="ghost"
                 value="overview"
                 className="w-fit px-2">
                 Overview
               </TabsTrigger>
               <TabsTrigger
-                variant="outline"
+                variant="ghost"
                 value="package.json"
+                disabled={!item.to?.manifest}
                 className="w-fit px-2">
                 Manifest
               </TabsTrigger>
               <TabsTrigger
-                variant="outline"
+                variant="ghost"
                 value="versions"
                 disabled={
                   !details.versions || details.versions.length <= 0
@@ -331,15 +332,13 @@ export const SelectedItem = ({ item }: GridItemOptions) => {
             </TabsContent>
             <TabsContent
               value="package.json"
-              className="rounded-b-lg bg-white dark:bg-black">
-              <CodeBlock
-                code={
-                  item.to?.manifest ?
-                    JSON.stringify(item.to.manifest, null, 2)
-                  : ''
-                }
-                lang="json"
-              />
+              className="h-full rounded-b-lg bg-white dark:bg-black">
+              {item.to?.manifest && (
+                <CodeBlock
+                  code={JSON.stringify(item.to.manifest, null, 2)}
+                  lang="json"
+                />
+              )}
             </TabsContent>
             <TabsContent value="versions" className="px-6 py-4">
               <section className="flex flex-col gap-4">

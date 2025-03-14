@@ -45,25 +45,26 @@ exports[`SelectedItem render connection lines 1`] = `
       <div class="w-full">
         <gui-tabs value="overview">
           <gui-tabs-list
-            variant="outline"
+            variant="ghost"
             classname="w-full gap-2 px-6"
           >
             <gui-tabs-trigger
-              variant="outline"
+              variant="ghost"
               value="overview"
               classname="w-fit px-2"
             >
               Overview
             </gui-tabs-trigger>
             <gui-tabs-trigger
-              variant="outline"
+              variant="ghost"
               value="package.json"
+              disabled="true"
               classname="w-fit px-2"
             >
               Manifest
             </gui-tabs-trigger>
             <gui-tabs-trigger
-              variant="outline"
+              variant="ghost"
               value="versions"
               disabled="true"
               classname="w-fit px-2"
@@ -78,13 +79,8 @@ exports[`SelectedItem render connection lines 1`] = `
           </gui-tabs-content>
           <gui-tabs-content
             value="package.json"
-            classname="rounded-b-lg bg-white dark:bg-black"
+            classname="h-full rounded-b-lg bg-white dark:bg-black"
           >
-            <gui-code-block
-              code
-              lang="json"
-            >
-            </gui-code-block>
           </gui-tabs-content>
           <gui-tabs-content
             value="versions"
@@ -163,25 +159,26 @@ exports[`SelectedItem render with custom registry 1`] = `
       <div class="w-full">
         <gui-tabs value="overview">
           <gui-tabs-list
-            variant="outline"
+            variant="ghost"
             classname="w-full gap-2 px-6"
           >
             <gui-tabs-trigger
-              variant="outline"
+              variant="ghost"
               value="overview"
               classname="w-fit px-2"
             >
               Overview
             </gui-tabs-trigger>
             <gui-tabs-trigger
-              variant="outline"
+              variant="ghost"
               value="package.json"
+              disabled="true"
               classname="w-fit px-2"
             >
               Manifest
             </gui-tabs-trigger>
             <gui-tabs-trigger
-              variant="outline"
+              variant="ghost"
               value="versions"
               disabled="true"
               classname="w-fit px-2"
@@ -196,13 +193,8 @@ exports[`SelectedItem render with custom registry 1`] = `
           </gui-tabs-content>
           <gui-tabs-content
             value="package.json"
-            classname="rounded-b-lg bg-white dark:bg-black"
+            classname="h-full rounded-b-lg bg-white dark:bg-black"
           >
-            <gui-code-block
-              code
-              lang="json"
-            >
-            </gui-code-block>
           </gui-tabs-content>
           <gui-tabs-content
             value="versions"
@@ -267,25 +259,26 @@ exports[`SelectedItem render with default git host 1`] = `
       <div class="w-full">
         <gui-tabs value="overview">
           <gui-tabs-list
-            variant="outline"
+            variant="ghost"
             classname="w-full gap-2 px-6"
           >
             <gui-tabs-trigger
-              variant="outline"
+              variant="ghost"
               value="overview"
               classname="w-fit px-2"
             >
               Overview
             </gui-tabs-trigger>
             <gui-tabs-trigger
-              variant="outline"
+              variant="ghost"
               value="package.json"
+              disabled="true"
               classname="w-fit px-2"
             >
               Manifest
             </gui-tabs-trigger>
             <gui-tabs-trigger
-              variant="outline"
+              variant="ghost"
               value="versions"
               disabled="true"
               classname="w-fit px-2"
@@ -300,13 +293,8 @@ exports[`SelectedItem render with default git host 1`] = `
           </gui-tabs-content>
           <gui-tabs-content
             value="package.json"
-            classname="rounded-b-lg bg-white dark:bg-black"
+            classname="h-full rounded-b-lg bg-white dark:bg-black"
           >
-            <gui-code-block
-              code
-              lang="json"
-            >
-            </gui-code-block>
           </gui-tabs-content>
           <gui-tabs-content
             value="versions"
@@ -368,25 +356,26 @@ exports[`SelectedItem render with item 1`] = `
       <div class="w-full">
         <gui-tabs value="overview">
           <gui-tabs-list
-            variant="outline"
+            variant="ghost"
             classname="w-full gap-2 px-6"
           >
             <gui-tabs-trigger
-              variant="outline"
+              variant="ghost"
               value="overview"
               classname="w-fit px-2"
             >
               Overview
             </gui-tabs-trigger>
             <gui-tabs-trigger
-              variant="outline"
+              variant="ghost"
               value="package.json"
+              disabled="true"
               classname="w-fit px-2"
             >
               Manifest
             </gui-tabs-trigger>
             <gui-tabs-trigger
-              variant="outline"
+              variant="ghost"
               value="versions"
               disabled="true"
               classname="w-fit px-2"
@@ -401,13 +390,8 @@ exports[`SelectedItem render with item 1`] = `
           </gui-tabs-content>
           <gui-tabs-content
             value="package.json"
-            classname="rounded-b-lg bg-white dark:bg-black"
+            classname="h-full rounded-b-lg bg-white dark:bg-black"
           >
-            <gui-code-block
-              code
-              lang="json"
-            >
-            </gui-code-block>
           </gui-tabs-content>
           <gui-tabs-content
             value="versions"
@@ -484,25 +468,26 @@ exports[`SelectedItem render with scoped registry 1`] = `
       <div class="w-full">
         <gui-tabs value="overview">
           <gui-tabs-list
-            variant="outline"
+            variant="ghost"
             classname="w-full gap-2 px-6"
           >
             <gui-tabs-trigger
-              variant="outline"
+              variant="ghost"
               value="overview"
               classname="w-fit px-2"
             >
               Overview
             </gui-tabs-trigger>
             <gui-tabs-trigger
-              variant="outline"
+              variant="ghost"
               value="package.json"
+              disabled="true"
               classname="w-fit px-2"
             >
               Manifest
             </gui-tabs-trigger>
             <gui-tabs-trigger
-              variant="outline"
+              variant="ghost"
               value="versions"
               disabled="true"
               classname="w-fit px-2"
@@ -517,13 +502,8 @@ exports[`SelectedItem render with scoped registry 1`] = `
           </gui-tabs-content>
           <gui-tabs-content
             value="package.json"
-            classname="rounded-b-lg bg-white dark:bg-black"
+            classname="h-full rounded-b-lg bg-white dark:bg-black"
           >
-            <gui-code-block
-              code
-              lang="json"
-            >
-            </gui-code-block>
           </gui-tabs-content>
           <gui-tabs-content
             value="versions"
