@@ -1,4 +1,5 @@
 import type { SavedQuery } from '@/state/types.js'
+import { useSearchParams } from 'react-router'
 import { useEffect, useRef, useState } from 'react'
 import { Input } from '@/components/ui/input.jsx'
 import { Kbd } from '@/components/ui/kbd.jsx'
@@ -20,6 +21,7 @@ const FilterSearch = <T,>({
   const [filterText, setFilterText] = useState<string>('')
   const inputRef = useRef<HTMLInputElement>(null)
   const isInitialMount = useRef(true)
+  const [searchParams, setSearchParams] = useSearchParams()
 
   /**
    * Update URL params based on `filterText` after initial load.
@@ -27,7 +29,7 @@ const FilterSearch = <T,>({
   useEffect(() => {
     if (isInitialMount.current) return
 
-    const params = new URLSearchParams(window.location.search)
+    const params = new URLSearchParams(searchParams)
     const itemKeys = items ? Object.keys(items[0] ?? {}) : []
 
     if (!filterText.trim()) {
@@ -56,15 +58,14 @@ const FilterSearch = <T,>({
       }
     }
 
-    const newUrl = `${window.location.pathname}?${params.toString()}`
-    window.history.replaceState({}, '', newUrl)
+    setSearchParams(params)
   }, [filterText])
 
   /**
    * Sync URL params with filtered items on initial load.
    */
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search)
+    const params = new URLSearchParams(searchParams)
     const itemKeys = items ? Object.keys(items[0] ?? {}) : []
 
     const paramKeys = Array.from(params.keys())
@@ -91,7 +92,7 @@ const FilterSearch = <T,>({
       return
     }
 
-    const params = new URLSearchParams(window.location.search)
+    const params = new URLSearchParams(searchParams)
     const selectors: { key: string; value: string }[] = []
 
     for (const [key, value] of params.entries()) {
@@ -122,7 +123,7 @@ const FilterSearch = <T,>({
     )
 
     setFilteredItems(filteredItems)
-  }, [items, window.location.search, filterText])
+  }, [items, searchParams, filterText])
 
   /**
    * Handle keyboard shortcuts.

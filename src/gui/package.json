@@ -38,6 +38,7 @@
     "lucide-react": "^0.453.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+    "react-router": "^7.3.0",
     "recharts": "^2.15.1",
     "shiki": "^1.22.2",
     "tailwind-merge": "^2.5.2",

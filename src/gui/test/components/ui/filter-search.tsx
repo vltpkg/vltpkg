@@ -4,6 +4,10 @@ import { cleanup, render } from '@testing-library/react'
 import html from 'diffable-html'
 import { FilterSearch } from '@/components/ui/filter-search.jsx'
 
+vi.mock('react-router', () => ({
+  useSearchParams: vi.fn().mockReturnValue(['', vi.fn()]),
+}))
+
 vi.mock('@/components/ui/input.jsx', () => ({
   Input: 'gui-input',
 }))

@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router'
 import { useEffect, useState } from 'react'
 import { Checkbox } from '@/components/ui/checkbox.jsx'
 import { Button } from '@/components/ui/button.jsx'
@@ -25,6 +26,7 @@ interface LabelProps {
 }
 
 const Label = ({ queryLabel, checked, handleSelect }: LabelProps) => {
+  const navigate = useNavigate()
   const [isExpanded, setIsExpanded] = useState<boolean>(false)
   const [editDescription, setEditDescription] = useState<string>('')
   const [editName, setEditName] = useState<string>('')
@@ -36,7 +38,6 @@ const Label = ({ queryLabel, checked, handleSelect }: LabelProps) => {
   const [queriesReferenced, setQueriesReferenced] =
     useState<number>(0)
   const savedQueries = useGraphStore(state => state.savedQueries)
-  const updateRoute = useGraphStore(state => state.updateActiveRoute)
 
   const handleEdit = () => {
     setIsExpanded(!isExpanded)
@@ -57,12 +58,7 @@ const Label = ({ queryLabel, checked, handleSelect }: LabelProps) => {
   }
 
   const navigateToRef = () => {
-    updateRoute('/queries')
-    history.pushState(
-      { route: '/queries' },
-      '',
-      `/queries?label=${encodeURIComponent(editName)}`,
-    )
+    void navigate(`/queries?label=${encodeURIComponent(editName)}`)
   }
 
   useEffect(() => {

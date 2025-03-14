@@ -25,15 +25,7 @@ export const handleStatic = async (
   const opts = {
     cleanUrls: true,
     public: publicDir,
-    rewrites: [
-      { source: '/', destination: '/index.html' },
-      { source: '/error', destination: '/index.html' },
-      { source: '/explore', destination: '/index.html' },
-      { source: '/dashboard', destination: '/index.html' },
-      { source: '/queries', destination: '/index.html' },
-      { source: '/labels', destination: '/index.html' },
-      { source: '/new-project', destination: '/index.html' },
-    ],
+    rewrites: [{ source: '**', destination: '/index.html' }],
   }
 
   const handle = () =>

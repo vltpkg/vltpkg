@@ -4,6 +4,9 @@ import html from 'diffable-html'
 import { useGraphStore as useStore } from '@/state/index.js'
 import { ErrorFound } from '@/app/error-found.jsx'
 
+vi.mock('react-router', () => ({
+  useNavigate: vi.fn(),
+}))
 vi.mock('@/components/ui/button.jsx', () => ({
   Button: 'gui-button',
 }))

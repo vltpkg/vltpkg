@@ -4,6 +4,10 @@ import html from 'diffable-html'
 import type { QueryLabel } from '@/state/types.js'
 import { Label } from '@/components/labels/label.jsx'
 
+vi.mock('react-router', () => ({
+  useNavigate: vi.fn(),
+}))
+
 vi.mock('@/components/ui/checkbox.jsx', () => ({
   Checkbox: 'gui-checkbox',
 }))

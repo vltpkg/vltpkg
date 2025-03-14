@@ -1,3 +1,4 @@
+import { useLocation } from 'react-router'
 import { useEffect, useState } from 'react'
 import { useGraphStore } from '@/state/index.js'
 
@@ -5,31 +6,29 @@ const routeNames = new Map<string, string>([
   ['/', 'Dashboard'],
   ['/error', 'Error'],
   ['/explore', 'Explore'],
-  ['/dashboard', 'Dashboard'],
-  ['/new-project', 'New Project'],
   ['/queries', 'Queries'],
   ['/labels', 'Labels'],
 ])
 
 const Header = () => {
   const [routeName, setRouteName] = useState<string>('')
-  const route = useGraphStore(state => state.activeRoute)
+  const { pathname } = useLocation()
   const projectInfo = useGraphStore(state => state.projectInfo)
 
   useEffect(() => {
     /**
      * Set a clean route on the state for display
      */
-    const mappedName = routeNames.get(route)
+    const mappedName = routeNames.get(pathname)
     if (mappedName) {
       setRouteName(mappedName)
     } else {
       setRouteName('VLT /vōlt/')
     }
-  }, [route])
+  }, [pathname])
 
-  if (route.includes('error')) return null
-  if (route === '/new-project') return null
+  if (pathname.includes('error')) return null
+  if (pathname === '/create-new-project') return null
 
   if (projectInfo.vltInstalled === false) return null
 

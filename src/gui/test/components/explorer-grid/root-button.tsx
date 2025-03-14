@@ -4,6 +4,10 @@ import html from 'diffable-html'
 import { useGraphStore as useStore } from '@/state/index.js'
 import { RootButton } from '@/components/explorer-grid/root-button.jsx'
 
+vi.mock('react-router', () => ({
+  useNavigate: vi.fn(),
+}))
+
 vi.mock('@/components/ui/button.jsx', () => ({
   Button: 'gui-button',
 }))

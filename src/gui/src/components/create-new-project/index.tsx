@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router'
 import { useState, useRef } from 'react'
 import type { SyntheticEvent } from 'react'
 import { useGraphStore } from '@/state/index.js'
@@ -26,10 +27,8 @@ export const CreateNewProjectContent = ({
   inProgress,
   setInProgress,
 }: CreateNewProjectContentProps) => {
+  const navigate = useNavigate()
   const dashboard = useGraphStore(state => state.dashboard)
-  const updateActiveRoute = useGraphStore(
-    state => state.updateActiveRoute,
-  )
   const updateErrorCause = useGraphStore(
     state => state.updateErrorCause,
   )
@@ -75,7 +74,7 @@ export const CreateNewProjectContent = ({
     if (inProgress) return
     setInProgress(true)
     void requestRouteTransition<NewProjectItem>({
-      updateActiveRoute,
+      navigate,
       updateErrorCause,
       updateQuery,
       updateStamp,

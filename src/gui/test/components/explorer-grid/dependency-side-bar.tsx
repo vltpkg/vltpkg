@@ -5,6 +5,10 @@ import { useGraphStore as useStore } from '@/state/index.js'
 import { DependencySideBar } from '@/components/explorer-grid/dependency-side-bar.jsx'
 import type { GridItemData } from '@/components/explorer-grid/types.js'
 
+vi.mock('react-router', () => ({
+  useNavigate: vi.fn(),
+}))
+
 vi.mock('lucide-react', () => ({
   Plus: 'gui-plus-icon',
 }))

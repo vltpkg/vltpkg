@@ -4,6 +4,10 @@ import html from 'diffable-html'
 import { useGraphStore as useStore } from '@/state/index.js'
 import { QueriesEmptyState } from '@/components/queries/queries-empty-state.jsx'
 
+vi.mock('react-router', () => ({
+  NavLink: 'gui-nav-link',
+}))
+
 vi.mock('@/components/ui/button.jsx', () => ({
   Button: 'gui-button',
 }))

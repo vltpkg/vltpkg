@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router'
 import { useEffect, useState } from 'react'
 import { Plus } from 'lucide-react'
 import type { DepID } from '@vltpkg/dep-id/browser'
@@ -120,12 +121,10 @@ export const DependencySideBar = ({
   onDependencyClick,
   uninstalledDependencies,
 }: DependencySideBarProps) => {
+  const navigate = useNavigate()
   const [scope, animate] = useAnimate()
   const { toast } = useToast()
   const updateStamp = useGraphStore(state => state.updateStamp)
-  const updateActiveRoute = useGraphStore(
-    state => state.updateActiveRoute,
-  )
   const updateErrorCause = useGraphStore(
     state => state.updateErrorCause,
   )
@@ -185,7 +184,7 @@ export const DependencySideBar = ({
       onSuccessful: onSuccessfulInstall,
     }).catch((err: unknown) => {
       console.error(err)
-      updateActiveRoute('/error')
+      void navigate('/error')
       updateErrorCause(
         'Unexpected error trying to install dependency.',
       )
@@ -208,7 +207,7 @@ export const DependencySideBar = ({
       onSuccessful: onSuccessfulUninstall,
     }).catch((err: unknown) => {
       console.error(err)
-      updateActiveRoute('/error')
+      void navigate('/error')
       updateErrorCause(
         'Unexpected error trying to uninstall dependency.',
       )

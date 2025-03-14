@@ -86,9 +86,9 @@ exports[`queries-empty-state > labels render default 1`] = `
           aschild="true"
           variant="outline"
         >
-          <a href="/">
+          <gui-nav-link to="/">
             Explore Projects
-          </a>
+          </gui-nav-link>
         </gui-button>
         <gui-button>
           <span>
