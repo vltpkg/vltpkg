@@ -15,6 +15,9 @@ vi.mock('@/components/ui/sidebar.jsx', () => ({
 vi.mock('lucide-react', () => ({
   Library: 'gui-library-icon',
   ArrowUpRight: 'gui-arrow-up-right-icon',
+  LaptopMinimal: 'gui-laptop-minimal-icon',
+  SunMedium: 'gui-sun-medium-icon',
+  Moon: 'gui-moon-icon',
 }))
 
 vi.mock('@/components/navigation/sidebar/trigger.jsx', () => ({

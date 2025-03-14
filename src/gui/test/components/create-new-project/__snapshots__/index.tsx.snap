@@ -3,7 +3,7 @@
 exports[`create-new-project-content render default 1`] = `
 
 <div>
-  <div class="z-[3] flex w-full rounded-md border-[1px] border-dashed bg-card dark:bg-neutral-950">
+  <div class="z-[3] flex w-full rounded-md border-[1px] border-dashed bg-card">
     <form class="relative w-1/2 space-y-6 border-r-[1px] border-solid border-dashed">
       <div class="mb-12 flex flex-col gap-2 px-8 pt-8">
         <h5 class="text-xl font-medium">
@@ -35,7 +35,7 @@ exports[`create-new-project-content render default 1`] = `
           </gui-label>
           <gui-popover>
             <gui-popover-trigger aschild="true">
-              <gui-button classname="group flex h-[40px] w-full items-center justify-between border-[1px] border-border bg-background text-muted-foreground shadow-none hover:bg-muted-foreground/10">
+              <gui-button classname="group flex h-[40px] w-full items-center justify-between border-[1px] border-muted bg-white text-muted-foreground shadow-none hover:bg-accent dark:bg-muted-foreground/5 dark:hover:bg-muted-foreground/10">
                 ~
                 <gui-chevron-down-icon classname="text-foreground opacity-50 duration-300 group-data-[state=open]:-rotate-180">
                 </gui-chevron-down-icon>
@@ -79,7 +79,7 @@ exports[`create-new-project-content render default 1`] = `
       </div>
     </form>
     <div class="relative h-full w-1/2">
-      <div class="absolute inset-0 z-[10] h-full w-full bg-gradient-radial from-card/20 to-card/80 dark:from-neutral-950/20 dark:to-neutral-950/80">
+      <div class="absolute inset-0 z-[10] h-full w-full bg-gradient-radial from-card/20 to-card/80">
       </div>
       <gui-grid-system classname="h-full w-full">
         <gui-grid
@@ -90,7 +90,7 @@ exports[`create-new-project-content render default 1`] = `
             column="2"
             row="2"
           >
-            <div class="relative z-[2] flex h-full w-full items-center justify-center border-b-[1px] border-r-[1px] border-dashed border-border bg-white dark:bg-neutral-950/80">
+            <div class="/80 relative z-[2] flex h-full w-full items-center justify-center border-b-[1px] border-r-[1px] border-dashed border-muted bg-card">
               <div class="flex items-center justify-center shadow-inner">
                 <gui-next-icon classname="size-12 text-muted-foreground/80">
                 </gui-next-icon>
@@ -101,7 +101,7 @@ exports[`create-new-project-content render default 1`] = `
             column="6"
             row="2"
           >
-            <div class="relative z-[2] flex h-full w-full items-center justify-center border-b-[1px] border-r-[1px] border-dashed border-border bg-white dark:bg-neutral-950/80">
+            <div class="/80 relative z-[2] flex h-full w-full items-center justify-center border-b-[1px] border-r-[1px] border-dashed border-muted bg-card">
               <div class="flex items-center justify-center shadow-inner">
                 <gui-nuxt-icon classname="size-12 text-muted-foreground/80">
                 </gui-nuxt-icon>
@@ -112,7 +112,7 @@ exports[`create-new-project-content render default 1`] = `
             column="2"
             row="6"
           >
-            <div class="relative z-[2] flex h-full w-full items-center justify-center border-b-[1px] border-r-[1px] border-dashed border-border bg-white dark:bg-neutral-950/80">
+            <div class="/80 relative z-[2] flex h-full w-full items-center justify-center border-b-[1px] border-r-[1px] border-dashed border-muted bg-card">
               <div class="flex items-center justify-center shadow-inner">
                 <gui-vercel-icon classname="size-12 text-muted-foreground/80">
                 </gui-vercel-icon>
@@ -123,7 +123,7 @@ exports[`create-new-project-content render default 1`] = `
             column="6"
             row="6"
           >
-            <div class="relative z-[2] flex h-full w-full items-center justify-center border-b-[1px] border-r-[1px] border-dashed border-border bg-white dark:bg-neutral-950/80">
+            <div class="/80 relative z-[2] flex h-full w-full items-center justify-center border-b-[1px] border-r-[1px] border-dashed border-muted bg-card">
               <div class="flex h-full w-full items-center justify-center shadow-inner">
                 <gui-node-icon classname="size-12 fill-muted-foreground/80">
                 </gui-node-icon>
@@ -134,7 +134,7 @@ exports[`create-new-project-content render default 1`] = `
             column="4"
             row="4"
           >
-            <div class="relative z-[2] flex h-full w-full items-center justify-center border-b-[1px] border-r-[1px] border-dashed border-border bg-white p-2 shadow-inner dark:bg-neutral-950">
+            <div class="relative z-[2] flex h-full w-full items-center justify-center border-b-[1px] border-r-[1px] border-dashed border-muted bg-card p-2 shadow-inner">
               <div class="flex items-center justify-center">
                 <svg
                   width="24"
@@ -196,7 +196,7 @@ exports[`create-new-project-content render default 1`] = `
 exports[`create-new-project-content with results 1`] = `
 
 <div>
-  <div class="z-[3] flex w-full rounded-md border-[1px] border-dashed bg-card dark:bg-neutral-950">
+  <div class="z-[3] flex w-full rounded-md border-[1px] border-dashed bg-card">
     <form class="relative w-1/2 space-y-6 border-r-[1px] border-solid border-dashed">
       <div class="mb-12 flex flex-col gap-2 px-8 pt-8">
         <h5 class="text-xl font-medium">
@@ -228,7 +228,7 @@ exports[`create-new-project-content with results 1`] = `
           </gui-label>
           <gui-popover>
             <gui-popover-trigger aschild="true">
-              <gui-button classname="group flex h-[40px] w-full items-center justify-between border-[1px] border-border bg-background text-muted-foreground shadow-none hover:bg-muted-foreground/10">
+              <gui-button classname="group flex h-[40px] w-full items-center justify-between border-[1px] border-muted bg-white text-muted-foreground shadow-none hover:bg-accent dark:bg-muted-foreground/5 dark:hover:bg-muted-foreground/10">
                 ~
                 <gui-chevron-down-icon classname="text-foreground opacity-50 duration-300 group-data-[state=open]:-rotate-180">
                 </gui-chevron-down-icon>
@@ -243,10 +243,7 @@ exports[`create-new-project-content with results 1`] = `
                     Location not found.
                   </gui-command-empty>
                   <gui-command-group>
-                    <gui-command-item
-                      value="/home/user"
-                      classname="cursor-pointer"
-                    >
+                    <gui-command-item value="/home/user">
                       <gui-check-icon classname="mr-2 size-4 opacity-0">
                       </gui-check-icon>
                       ~
@@ -280,7 +277,7 @@ exports[`create-new-project-content with results 1`] = `
       </div>
     </form>
     <div class="relative h-full w-1/2">
-      <div class="absolute inset-0 z-[10] h-full w-full bg-gradient-radial from-card/20 to-card/80 dark:from-neutral-950/20 dark:to-neutral-950/80">
+      <div class="absolute inset-0 z-[10] h-full w-full bg-gradient-radial from-card/20 to-card/80">
       </div>
       <gui-grid-system classname="h-full w-full">
         <gui-grid
@@ -291,7 +288,7 @@ exports[`create-new-project-content with results 1`] = `
             column="2"
             row="2"
           >
-            <div class="relative z-[2] flex h-full w-full items-center justify-center border-b-[1px] border-r-[1px] border-dashed border-border bg-white dark:bg-neutral-950/80">
+            <div class="/80 relative z-[2] flex h-full w-full items-center justify-center border-b-[1px] border-r-[1px] border-dashed border-muted bg-card">
               <div class="flex items-center justify-center shadow-inner">
                 <gui-next-icon classname="size-12 text-muted-foreground/80">
                 </gui-next-icon>
@@ -302,7 +299,7 @@ exports[`create-new-project-content with results 1`] = `
             column="6"
             row="2"
           >
-            <div class="relative z-[2] flex h-full w-full items-center justify-center border-b-[1px] border-r-[1px] border-dashed border-border bg-white dark:bg-neutral-950/80">
+            <div class="/80 relative z-[2] flex h-full w-full items-center justify-center border-b-[1px] border-r-[1px] border-dashed border-muted bg-card">
               <div class="flex items-center justify-center shadow-inner">
                 <gui-nuxt-icon classname="size-12 text-muted-foreground/80">
                 </gui-nuxt-icon>
@@ -313,7 +310,7 @@ exports[`create-new-project-content with results 1`] = `
             column="2"
             row="6"
           >
-            <div class="relative z-[2] flex h-full w-full items-center justify-center border-b-[1px] border-r-[1px] border-dashed border-border bg-white dark:bg-neutral-950/80">
+            <div class="/80 relative z-[2] flex h-full w-full items-center justify-center border-b-[1px] border-r-[1px] border-dashed border-muted bg-card">
               <div class="flex items-center justify-center shadow-inner">
                 <gui-vercel-icon classname="size-12 text-muted-foreground/80">
                 </gui-vercel-icon>
@@ -324,7 +321,7 @@ exports[`create-new-project-content with results 1`] = `
             column="6"
             row="6"
           >
-            <div class="relative z-[2] flex h-full w-full items-center justify-center border-b-[1px] border-r-[1px] border-dashed border-border bg-white dark:bg-neutral-950/80">
+            <div class="/80 relative z-[2] flex h-full w-full items-center justify-center border-b-[1px] border-r-[1px] border-dashed border-muted bg-card">
               <div class="flex h-full w-full items-center justify-center shadow-inner">
                 <gui-node-icon classname="size-12 fill-muted-foreground/80">
                 </gui-node-icon>
@@ -335,7 +332,7 @@ exports[`create-new-project-content with results 1`] = `
             column="4"
             row="4"
           >
-            <div class="relative z-[2] flex h-full w-full items-center justify-center border-b-[1px] border-r-[1px] border-dashed border-border bg-white p-2 shadow-inner dark:bg-neutral-950">
+            <div class="relative z-[2] flex h-full w-full items-center justify-center border-b-[1px] border-r-[1px] border-dashed border-muted bg-card p-2 shadow-inner">
               <div class="flex items-center justify-center">
                 <svg
                   width="24"

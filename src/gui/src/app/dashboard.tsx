@@ -34,9 +34,9 @@ export const Dashboard = () => {
   }, [stamp])
 
   return (
-    <section className="flex h-full w-full flex-col rounded-b-lg border-x-[1px] border-b-[1px] bg-white dark:bg-black">
-      <div className="flex w-full border-y-[1px] px-8 py-4">
-        <div className="mx-auto flex w-full max-w-7xl items-center justify-between">
+    <section className="flex h-full w-full flex-col rounded-b-lg border-x-[1px] border-b-[1px]">
+      <div className="flex h-[50px] w-full border-y-[1px] px-8 py-4">
+        <div className="flex w-full max-w-8xl items-center justify-between">
           {dashboard?.cwd ?
             <p className="font-mono text-xs font-light text-muted-foreground">
               Directory: {dashboard.cwd}

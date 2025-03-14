@@ -5,16 +5,12 @@ exports[`renders Layout for the "/dashboard" view 1`] = `
 <gui-sidebar-provider defaultopen="true">
   <gui-app-sidebar>
   </gui-app-sidebar>
-  <div class="sidebar-inset-wrapper">
-    <gui-sidebar-inset classname="grow md:mr-3">
-      <gui-nav-header>
-      </gui-nav-header>
-      <gui-dashboard>
-      </gui-dashboard>
-    </gui-sidebar-inset>
-    <gui-nav-footer>
-    </gui-nav-footer>
-  </div>
+  <gui-sidebar-inset>
+    <gui-nav-header>
+    </gui-nav-header>
+    <gui-dashboard>
+    </gui-dashboard>
+  </gui-sidebar-inset>
   <gui-toaster>
   </gui-toaster>
 </gui-sidebar-provider>
@@ -26,16 +22,12 @@ exports[`renders Layout for the "/error" view 1`] = `
 <gui-sidebar-provider defaultopen="true">
   <gui-app-sidebar>
   </gui-app-sidebar>
-  <div class="sidebar-inset-wrapper">
-    <gui-sidebar-inset classname="grow md:mr-3">
-      <gui-nav-header>
-      </gui-nav-header>
-      <gui-error-found>
-      </gui-error-found>
-    </gui-sidebar-inset>
-    <gui-nav-footer>
-    </gui-nav-footer>
-  </div>
+  <gui-sidebar-inset>
+    <gui-nav-header>
+    </gui-nav-header>
+    <gui-error-found>
+    </gui-error-found>
+  </gui-sidebar-inset>
   <gui-toaster>
   </gui-toaster>
 </gui-sidebar-provider>
@@ -47,16 +39,12 @@ exports[`renders Layout for the "/explore" view 1`] = `
 <gui-sidebar-provider defaultopen="true">
   <gui-app-sidebar>
   </gui-app-sidebar>
-  <div class="sidebar-inset-wrapper">
-    <gui-sidebar-inset classname="grow md:mr-3">
-      <gui-nav-header>
-      </gui-nav-header>
-      <gui-explorer>
-      </gui-explorer>
-    </gui-sidebar-inset>
-    <gui-nav-footer>
-    </gui-nav-footer>
-  </div>
+  <gui-sidebar-inset>
+    <gui-nav-header>
+    </gui-nav-header>
+    <gui-explorer>
+    </gui-explorer>
+  </gui-sidebar-inset>
   <gui-toaster>
   </gui-toaster>
 </gui-sidebar-provider>
@@ -68,16 +56,12 @@ exports[`renders Layout for the "/labels" view 1`] = `
 <gui-sidebar-provider defaultopen="true">
   <gui-app-sidebar>
   </gui-app-sidebar>
-  <div class="sidebar-inset-wrapper">
-    <gui-sidebar-inset classname="grow md:mr-3">
-      <gui-nav-header>
-      </gui-nav-header>
-      <gui-labels>
-      </gui-labels>
-    </gui-sidebar-inset>
-    <gui-nav-footer>
-    </gui-nav-footer>
-  </div>
+  <gui-sidebar-inset>
+    <gui-nav-header>
+    </gui-nav-header>
+    <gui-labels>
+    </gui-labels>
+  </gui-sidebar-inset>
   <gui-toaster>
   </gui-toaster>
 </gui-sidebar-provider>
@@ -89,16 +73,12 @@ exports[`renders Layout for the "/new-project" view 1`] = `
 <gui-sidebar-provider defaultopen="true">
   <gui-app-sidebar>
   </gui-app-sidebar>
-  <div class="sidebar-inset-wrapper">
-    <gui-sidebar-inset classname="grow md:mr-3">
-      <gui-nav-header>
-      </gui-nav-header>
-      <gui-create-new-project>
-      </gui-create-new-project>
-    </gui-sidebar-inset>
-    <gui-nav-footer>
-    </gui-nav-footer>
-  </div>
+  <gui-sidebar-inset>
+    <gui-nav-header>
+    </gui-nav-header>
+    <gui-create-new-project>
+    </gui-create-new-project>
+  </gui-sidebar-inset>
   <gui-toaster>
   </gui-toaster>
 </gui-sidebar-provider>
@@ -110,16 +90,12 @@ exports[`renders Layout for the "/queries" view 1`] = `
 <gui-sidebar-provider defaultopen="true">
   <gui-app-sidebar>
   </gui-app-sidebar>
-  <div class="sidebar-inset-wrapper">
-    <gui-sidebar-inset classname="grow md:mr-3">
-      <gui-nav-header>
-      </gui-nav-header>
-      <gui-queries>
-      </gui-queries>
-    </gui-sidebar-inset>
-    <gui-nav-footer>
-    </gui-nav-footer>
-  </div>
+  <gui-sidebar-inset>
+    <gui-nav-header>
+    </gui-nav-header>
+    <gui-queries>
+    </gui-queries>
+  </gui-sidebar-inset>
   <gui-toaster>
   </gui-toaster>
 </gui-sidebar-provider>

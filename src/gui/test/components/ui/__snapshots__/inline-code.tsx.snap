@@ -2,7 +2,7 @@
 
 exports[`inline-code > renders 1`] = `
 
-<span class="mx-1 rounded-sm px-1.5 py-1 text-xs font-normal text-pink-500 border-[1px] font-mono border-border bg-white dark:bg-black">
+<span class="mx-1 rounded-sm px-1.5 py-1 text-xs font-normal text-pink-500 border-[1px] font-mono border-muted bg-white dark:bg-black">
   node_modules
 </span>
 

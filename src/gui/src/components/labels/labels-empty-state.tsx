@@ -8,7 +8,7 @@ const LabelsEmptyState = () => {
   const [isCreating, setIsCreating] = useState<boolean>(false)
 
   return (
-    <div className="flex h-full w-full items-center justify-center bg-white dark:bg-black">
+    <div className="flex h-full w-full items-center justify-center">
       <AnimatePresence>
         {!isCreating && (
           <motion.div
@@ -45,12 +45,12 @@ const LabelsEmptyState = () => {
                   repeat: Infinity,
                   delay: 1.5,
                 }}
-                className="absolute h-[150px] w-[150px] rounded-full border-[1px] border-neutral-500/20"
+                className="absolute h-[150px] w-[150px] rounded-full border-[1px] border-muted"
               />
 
-              <div className="relative flex h-[42px] w-[400px] items-center justify-center rounded-[8px] bg-gradient-to-r from-white to-muted-foreground dark:from-black dark:to-muted-foreground">
-                <div className="flex h-[40px] w-[398px] items-center justify-center rounded-[7px] bg-white dark:bg-black">
-                  <span className="tracking absolute my-auto mr-32 bg-gradient-to-r from-white to-neutral-500 bg-clip-text text-sm text-transparent dark:from-black dark:to-neutral-500">
+              <div className="absolute z-[2] flex h-[42px] w-[400px] items-center justify-center rounded-[8px] bg-gradient-to-r from-white to-card dark:from-card/0 dark:to-card/100">
+                <div className="flex h-[40px] w-[398px] items-center justify-center rounded-[7px]">
+                  <span className="tracking absolute my-auto mr-32 bg-gradient-to-r from-white to-neutral-500 bg-clip-text text-sm text-transparent dark:from-card dark:to-neutral-500">
                     Need to update insecure packages
                   </span>
                   <motion.div
@@ -63,7 +63,7 @@ const LabelsEmptyState = () => {
                       repeatType: 'loop',
                     }}
                     className="absolute right-3 my-auto flex h-[24px] w-[80px] items-center justify-center rounded-full bg-red-500">
-                    <span className="text-xs font-semibold tracking-wide">
+                    <span className="text-xs font-semibold tracking-wide text-white">
                       Insecure
                     </span>
                   </motion.div>

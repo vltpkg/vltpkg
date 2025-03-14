@@ -1,6 +1,5 @@
 // navigation
 import { Header } from '@/components/navigation/header.jsx'
-import { Footer } from '@/components/navigation/footer.jsx'
 import {
   defaultOpen,
   AppSidebar,
@@ -41,15 +40,12 @@ const Layout = () => {
   return (
     <SidebarProvider defaultOpen={defaultOpen}>
       <AppSidebar />
-      <div className="sidebar-inset-wrapper">
-        <SidebarInset className="grow md:mr-3">
-          <Header />
-          {matchedComponent ?
-            routeMap[matchedComponent]
-          : defaultComponent}
-        </SidebarInset>
-        <Footer />
-      </div>
+      <SidebarInset>
+        <Header />
+        {matchedComponent ?
+          routeMap[matchedComponent]
+        : defaultComponent}
+      </SidebarInset>
       <Toaster />
     </SidebarProvider>
   )

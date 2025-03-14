@@ -59,8 +59,8 @@ const Queries = () => {
   }, [savedQueries])
 
   return (
-    <section className="flex h-full w-full flex-col rounded-b-lg border-[1px] bg-white px-8 dark:bg-black">
-      <div className="mx-auto flex w-full max-w-7xl flex-col">
+    <section className="flex h-full max-h-[calc(100svh-65px-16px)] w-full grow flex-col overflow-y-scroll rounded-b-lg border-[1px] px-8">
+      <div className="flex w-full max-w-8xl flex-col">
         <div className="my-4 flex justify-between">
           <div className="flex gap-2">
             <FilterSearch
@@ -162,7 +162,7 @@ const Queries = () => {
               </motion.div>
             )}
 
-            <motion.div className="mt-3 flex flex-col gap-3">
+            <motion.div className="mt-3 flex h-full flex-col gap-3">
               {savedQueries &&
                 filteredQueries.map(query => (
                   <SavedQueryItem

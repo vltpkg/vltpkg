@@ -27,7 +27,7 @@ const variants = cva(
       variant: {
         mono: 'font-[courier] text-muted-foreground dark:bg-neutral-700/50 bg-neutral-700/5 border-none',
         default:
-          'border-[1px] font-mono border-border bg-white dark:bg-black',
+          'border-[1px] font-mono border-muted bg-white dark:bg-black',
       },
     },
     defaultVariants: {

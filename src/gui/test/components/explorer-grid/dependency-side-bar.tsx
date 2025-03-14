@@ -6,7 +6,6 @@ import { DependencySideBar } from '@/components/explorer-grid/dependency-side-ba
 import type { GridItemData } from '@/components/explorer-grid/types.js'
 
 vi.mock('lucide-react', () => ({
-  GitFork: 'gui-git-fork-icon',
   Plus: 'gui-plus-icon',
 }))
 

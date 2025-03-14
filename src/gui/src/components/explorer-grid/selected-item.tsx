@@ -12,7 +12,7 @@ import {
   TabsTrigger,
 } from '@/components/ui/tabs.jsx'
 import { CodeBlock } from '@/components/ui/shiki.jsx'
-import { Info } from 'lucide-react'
+import { Home, Info } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { fetchDetails } from '@/lib/external-info.js'
 import type { DetailsInfo } from '@/lib/external-info.js'
@@ -151,7 +151,7 @@ export const SelectedItem = ({ item }: GridItemOptions) => {
 
   return (
     <div className="relative">
-      <Card className="relative my-4 border-muted-foreground">
+      <Card className="relative my-4 border-muted">
         <motion.div
           animate={{ opacity: 1 }}
           initial={{ opacity: 0 }}
@@ -167,10 +167,10 @@ export const SelectedItem = ({ item }: GridItemOptions) => {
               )}
               <AvatarFallback className="flex h-full w-full items-center justify-center rounded-md border-[1px]">
                 {item.to?.mainImporter ?
-                  <div className="flex h-full w-full items-center justify-center rounded-md bg-white p-4 dark:bg-black">
-                    <img
-                      src="/images/folder.png"
-                      alt="project folder image"
+                  <div className="flex h-full w-full items-center justify-center rounded-md bg-muted p-4">
+                    <Home
+                      size={32}
+                      className="text-muted-foreground"
                     />
                   </div>
                 : <div className="to:to-neutral-400 h-full w-full rounded-md bg-gradient-to-t from-neutral-100 dark:from-neutral-500 dark:to-neutral-800" />
@@ -329,7 +329,9 @@ export const SelectedItem = ({ item }: GridItemOptions) => {
                 </p>
               )}
             </TabsContent>
-            <TabsContent value="package.json">
+            <TabsContent
+              value="package.json"
+              className="rounded-b-lg bg-white dark:bg-black">
               <CodeBlock
                 code={
                   item.to?.manifest ?
@@ -390,7 +392,7 @@ export const SelectedItem = ({ item }: GridItemOptions) => {
           <div
             ref={linePositionRef}
             className={
-              'absolute -right-4 top-[44px] w-4 rounded-tr-sm border-t border-solid border-neutral-300 dark:border-neutral-600'
+              'absolute -right-4 top-[44px] w-4 rounded-tr-sm border-t border-muted'
             }></div>
         : ''
       }

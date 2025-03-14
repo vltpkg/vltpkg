@@ -157,13 +157,13 @@ const SavedQueryItem = ({
 
   return (
     <div
-      className={`group flex flex-col rounded-sm border border-[1px] bg-neutral-50 transition-all hover:border-foreground/50 dark:bg-neutral-950 ${isExpanded ? 'border-foreground/50' : 'border-muted-foreground/25'}`}>
+      className={`group flex flex-col rounded-sm border border-[1px] bg-card transition-all hover:bg-card-accent ${isExpanded ? 'border-muted-foreground' : 'border-muted'}`}>
       <div className="grid grid-cols-12 gap-4 px-3 py-2">
         <div className="col-span-2 flex grow items-center gap-3">
           <Checkbox
             checked={checked}
             onCheckedChange={() => handleSelect(item)}
-            className="border-muted-foreground/25 group-hover:border-muted-foreground/50"
+            className={`border-muted-foreground/25 opacity-0 group-hover:border-muted-foreground/50 group-hover:opacity-100 ${checked ? 'opacity-100' : ''}`}
           />
           <p className="truncate text-sm font-medium">
             {editName.trim() !== '' ? editName : 'Query Name'}
