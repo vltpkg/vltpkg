@@ -34,18 +34,28 @@ exports[`create-query > should render correctly 1`] = `
         >
         </gui-input>
       </div>
-      <div class="flex grow flex-col gap-2">
-        <gui-label classname="border-none text-sm font-medium">
-          Directory
-        </gui-label>
-        <gui-input
-          type="text"
-          value
-          placeholder="Directory (optional)"
-        >
-        </gui-input>
+      <div class="flex w-[300px] flex-col gap-2">
+        <gui-tooltip-provider>
+          <gui-tooltip>
+            <gui-tooltip-trigger classname="inline-flex cursor-default items-center">
+              <gui-label classname="border-none text-sm font-medium">
+                Directory (optional)
+              </gui-label>
+              <gui-circle-help-icon
+                classname="text-muted-foreground"
+                size="18"
+              >
+              </gui-circle-help-icon>
+            </gui-tooltip-trigger>
+            <gui-tooltip-content>
+              Set directory to 'Global' to reuse across all projects.
+            </gui-tooltip-content>
+          </gui-tooltip>
+        </gui-tooltip-provider>
+        <gui-directory-select directory>
+        </gui-directory-select>
       </div>
-      <div class="flex grow flex-col gap-2">
+      <div class="flex w-[175px] flex-col gap-2">
         <gui-label classname="border-none text-sm font-medium">
           Labels
         </gui-label>

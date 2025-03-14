@@ -15,6 +15,7 @@ import { Checkbox } from '@/components/ui/checkbox.jsx'
 import { QueriesEmptyState } from '@/components/queries/queries-empty-state.jsx'
 import { CreateQuery } from '@/components/queries/create-query.jsx'
 import { AnimatePresence, LayoutGroup, motion } from 'framer-motion'
+import { startDashboardData } from '@/lib/start-dashboard-data.js'
 
 const Queries = () => {
   const savedQueries = useGraphStore(state => state.savedQueries)
@@ -28,6 +29,17 @@ const Queries = () => {
   >([])
   const savedLabels = useGraphStore(state => state.savedQueryLabels)
   const [isCreating, setIsCreating] = useState<boolean>(false)
+  const dashboard = useGraphStore(state => state.dashboard)
+  const updateActiveRoute = useGraphStore(
+    state => state.updateActiveRoute,
+  )
+  const updateDashboard = useGraphStore(
+    state => state.updateDashboard,
+  )
+  const updateErrorCause = useGraphStore(
+    state => state.updateErrorCause,
+  )
+  const stamp = useGraphStore(state => state.stamp)
 
   const handleSelectQuery = (selectedQuery: SavedQuery) => {
     setSelectedQueries(prev => {
@@ -47,6 +59,22 @@ const Queries = () => {
       setSelectedQueries(filteredQueries)
     }
   }
+
+  useEffect(() => {
+    startDashboardData({
+      updateActiveRoute,
+      updateDashboard,
+      updateErrorCause,
+      stamp,
+    })
+
+    history.pushState(
+      { query: '', route: '/queries' },
+      '',
+      '/queries',
+    )
+    window.scrollTo(0, 0)
+  }, [stamp])
 
   useEffect(() => {
     if (savedQueries) {
@@ -119,7 +147,10 @@ const Queries = () => {
                 }}
                 exit={{ height: 0, opacity: 0, scale: 0.8 }}
                 className="mt-6">
-                <CreateQuery onClose={() => setIsCreating(false)} />
+                <CreateQuery
+                  dashboard={dashboard}
+                  onClose={() => setIsCreating(false)}
+                />
               </motion.div>
             )}
           </AnimatePresence>
@@ -169,6 +200,7 @@ const Queries = () => {
                     checked={selectedQueries.some(
                       selected => selected.id === query.id,
                     )}
+                    dashboard={dashboard}
                     handleSelect={handleSelectQuery}
                     key={query.id}
                     item={query}
@@ -179,7 +211,9 @@ const Queries = () => {
         </LayoutGroup>
       </div>
 
-      {!savedQueries?.length && <QueriesEmptyState />}
+      {!savedQueries?.length && (
+        <QueriesEmptyState dashboard={dashboard} />
+      )}
     </section>
   )
 }
