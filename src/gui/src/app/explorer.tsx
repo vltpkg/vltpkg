@@ -141,9 +141,9 @@ const ExplorerContent = () => {
   }
 
   return (
-    <section className="flex w-full grow flex-col justify-between rounded-lg bg-white dark:bg-black">
-      <div className="flex w-full border-[1px] px-8 py-4">
-        <div className="mx-auto flex w-full max-w-7xl items-center justify-between">
+    <section className="flex h-full max-h-[calc(100svh-65px-16px)] w-full grow flex-col justify-between overflow-y-auto rounded-b-lg border-[1px]">
+      <div className="flex h-[50px] w-full border-b-[1px] px-8 py-4">
+        <div className="flex w-full max-w-8xl items-center justify-between">
           {graph.projectRoot ?
             <p className="font-mono text-xs font-light text-muted-foreground">
               :host-context(file:{graph.projectRoot})
@@ -156,14 +156,14 @@ const ExplorerContent = () => {
           : ''}
         </div>
       </div>
-      <section className="flex w-full items-center border-x-[1px] px-8 py-4">
-        <div className="mx-auto flex w-full max-w-7xl flex-row items-center gap-2">
+      <section className="flex w-full items-center px-8 py-4">
+        <div className="flex w-full max-w-8xl flex-row items-center gap-2">
           <RootButton />
           <SearchBar
             tabIndex={0}
-            className="w-full bg-muted-foreground/5"
+            className="relative w-full bg-white dark:bg-muted-foreground/5"
             startContent={
-              <Search size={20} className="ml-3" color="#a3a3a3" />
+              <Search size={20} className="ml-3 text-neutral-500" />
             }
             endContent={
               <div className="mr-3 hidden items-center gap-1 backdrop-blur-sm md:flex">

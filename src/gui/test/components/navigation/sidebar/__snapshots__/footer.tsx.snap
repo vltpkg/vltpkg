@@ -21,6 +21,15 @@ exports[`AppSidebar project queries > renders correctly 1`] = `
         </a>
       </gui-sidebar-menu-button>
     </gui-sidebar-menu-item>
+    <gui-sidebar-menu-item>
+      <gui-sidebar-menu-button>
+        <gui-laptop-minimal-icon>
+        </gui-laptop-minimal-icon>
+        <span>
+          System
+        </span>
+      </gui-sidebar-menu-button>
+    </gui-sidebar-menu-item>
   </gui-sidebar-menu>
 </gui-sidebar-footer>
 

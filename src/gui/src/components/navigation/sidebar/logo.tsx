@@ -37,7 +37,7 @@ const SidebarLogo = () => {
                     size="icon"
                     variant="ghost"
                     onClick={toggleSidebar}
-                    className="ml-auto p-0">
+                    className="ml-auto size-8 p-0">
                     <PanelLeft size={24} />
                   </Button>
                 </TooltipTrigger>

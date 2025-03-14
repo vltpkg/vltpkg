@@ -57,8 +57,8 @@ const Labels = () => {
   }, [savedLabels])
 
   return (
-    <section className="flex h-full w-full flex-col rounded-b-lg border-[1px] bg-white px-8 dark:bg-black">
-      <div className="mx-auto flex w-full max-w-7xl flex-col">
+    <section className="flex h-full max-h-[calc(100svh-65px-16px)] w-full flex-col overflow-y-scroll rounded-b-lg border-[1px] px-8">
+      <div className="flex w-full max-w-8xl flex-col">
         <div className="my-4 flex justify-between">
           <div className="flex gap-2">
             <FilterSearch
@@ -143,7 +143,7 @@ const Labels = () => {
               </motion.div>
             )}
 
-            <div className="mt-3 flex flex-col gap-3">
+            <div className="mt-3 flex h-full flex-col gap-3">
               {savedLabels &&
                 filteredLabels.map(label => (
                   <Label

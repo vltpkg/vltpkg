@@ -3,9 +3,9 @@
 exports[`render default 1`] = `
 
 <div>
-  <section class="flex h-full w-full flex-col rounded-b-lg border-x-[1px] border-b-[1px] bg-white dark:bg-black">
-    <div class="flex w-full border-y-[1px] px-8 py-4">
-      <div class="mx-auto flex w-full max-w-7xl items-center justify-between">
+  <section class="flex h-full w-full flex-col rounded-b-lg border-x-[1px] border-b-[1px]">
+    <div class="flex h-[50px] w-full border-y-[1px] px-8 py-4">
+      <div class="flex w-full max-w-8xl items-center justify-between">
       </div>
     </div>
     <gui-dashboard-grid>

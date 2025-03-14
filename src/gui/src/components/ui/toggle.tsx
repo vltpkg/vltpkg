@@ -43,10 +43,10 @@ export const Toggle = ({ options }: ToggleProps) => {
 
   return (
     <div className="flex w-fit">
-      <div className="relative flex h-[2.5rem] w-full items-center rounded-md border border-[1px] border-muted-foreground/25 bg-white p-1 dark:bg-black">
+      <div className="relative flex h-[2.5rem] w-full items-center rounded-md border border-[1px] border-muted bg-white p-1 dark:bg-muted-foreground/5">
         {/* the toggle slider */}
         <motion.div
-          className="absolute h-[2rem] w-[2rem] rounded-[4px] border border-muted-foreground/20 bg-muted"
+          className="absolute h-[2rem] w-[2rem] rounded-[4px] bg-muted"
           animate={{
             left: activeOption === options[0].key ? 4 : 36,
           }}

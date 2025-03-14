@@ -7,9 +7,6 @@ import Layout from '@/layout.jsx'
 vi.mock('@/components/navigation/header.jsx', () => ({
   Header: 'gui-nav-header',
 }))
-vi.mock('@/components/navigation/footer.jsx', () => ({
-  Footer: 'gui-nav-footer',
-}))
 vi.mock('@/components/navigation/sidebar/index.jsx', () => ({
   AppSidebar: 'gui-app-sidebar',
   defaultOpen: true,

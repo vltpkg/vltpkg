@@ -70,17 +70,17 @@ export const SideItem = ({
         <>
           {item.size > 2 ?
             <div
-              className={`absolute left-2 top-2 h-full w-[96%] rounded-lg border bg-card transition-all ${onSelect ? 'group-hover:border-neutral-400 dark:group-hover:border-neutral-600' : ''}`}
+              className={`absolute left-2 top-2 h-full w-[96%] rounded-lg border bg-card transition-all ${onSelect ? 'group-hover:bg-card-accent' : ''}`}
             />
           : ''}
           <div
-            className={`absolute left-1 top-1 h-full w-[98%] rounded-lg border bg-card transition-all ${onSelect ? 'group-hover:border-neutral-400 dark:group-hover:border-neutral-600' : ''}`}
+            className={`absolute left-1 top-1 h-full w-[98%] rounded-lg border bg-card transition-all ${onSelect ? 'group-hover:bg-card-accent' : ''}`}
           />
         </>
       : ''}
       <Card
         role="article"
-        className={`relative my-4 transition-all ${highlight ? 'border-muted-foreground' : ''} ${onSelect ? 'group-hover:border-neutral-400 dark:group-hover:border-neutral-600' : ''}`}
+        className={`relative my-4 transition-all ${highlight ? 'border-muted' : ''} ${onSelect ? 'group-hover:bg-card-accent' : ''}`}
         onClick={onSelect}>
         <CardHeader className="relative flex w-full flex-col rounded-t-lg p-0">
           <div className="flex items-center px-3 py-2">
@@ -112,7 +112,7 @@ export const SideItem = ({
           </div>
 
           {!isWorkspace && (
-            <div className="flex flex-row flex-wrap items-center justify-between gap-2 border-t-[1px] border-muted-foreground/20 px-3 py-2">
+            <div className="flex flex-row flex-wrap items-center justify-between gap-2 border-t-[1px] border-muted px-3 py-2">
               <p className="flex items-center gap-2 text-sm text-muted-foreground">
                 Spec:{' '}
                 <span className="flex items-center justify-center rounded-sm bg-neutral-700/5 px-2 py-1 font-[courier] text-xs dark:bg-neutral-700/50">
@@ -138,10 +138,10 @@ export const SideItem = ({
         </CardHeader>
       </Card>
       {highlight ?
-        <div className="absolute -right-4 top-7 w-4 border-t border-solid border-muted-foreground" />
+        <div className="absolute -right-4 top-7 w-4 border-t border-muted" />
       : dependencies ?
         <div
-          className={`absolute -left-[9px] bottom-[62px] z-0 h-[13.35rem] h-[5px] w-[9px] rounded-bl-sm border-b border-l border-solid border-neutral-300 group-[&:nth-child(2)]:hidden group-[&:nth-child(3)]:h-24 dark:border-neutral-600`}
+          className={`absolute -left-[9px] bottom-[62px] z-0 h-[13.35rem] h-[5px] w-[9px] rounded-bl-sm border-b border-l border-solid border-muted group-[&:nth-child(2)]:hidden group-[&:nth-child(3)]:h-24`}
           ref={lineRef}
         />
       : ''}

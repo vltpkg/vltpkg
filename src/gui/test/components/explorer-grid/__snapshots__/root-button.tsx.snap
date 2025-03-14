@@ -8,7 +8,8 @@ exports[`root-button > should render correctly 1`] = `
       <gui-button
         disabled="true"
         size="icon"
-        variant="secondary"
+        variant="ghost"
+        classname="rounded-md"
       >
         <gui-house-icon>
         </gui-house-icon>

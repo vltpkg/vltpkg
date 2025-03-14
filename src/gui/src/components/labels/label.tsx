@@ -86,13 +86,14 @@ const Label = ({ queryLabel, checked, handleSelect }: LabelProps) => {
   }, [queryLabel])
 
   return (
-    <div className="group rounded-sm border border-[1px] border-muted-foreground/25 bg-neutral-50/50 transition-all hover:border-foreground/50 dark:bg-neutral-950">
+    <div
+      className={`group rounded-sm border border-[1px] bg-card transition-all hover:bg-card-accent ${isExpanded ? 'border-muted-foreground' : 'border-muted'}`}>
       <div className="flex grid grid-cols-8 items-center px-3 py-2">
         <div className="col-span-2 flex items-center gap-3">
           <Checkbox
             onCheckedChange={() => handleSelect(queryLabel)}
             checked={checked}
-            className="border-muted-foreground/25 group-hover:border-muted-foreground/50"
+            className={`border-muted-foreground/25 opacity-0 group-hover:border-muted-foreground/50 group-hover:opacity-100 ${checked ? 'opacity-100' : 'opacity-0'}`}
           />
           <LabelBadge
             name={editName.trim() !== '' ? editName : 'Label preview'}

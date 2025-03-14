@@ -111,7 +111,7 @@ const QueriesEmptyState = () => {
   }, [starScope, cursorScope])
 
   return (
-    <div className="flex h-full w-full items-center justify-center bg-white dark:bg-black">
+    <div className="flex h-full w-full items-center justify-center">
       <AnimatePresence mode="sync">
         {!isCreating && (
           <motion.div
@@ -151,8 +151,8 @@ const QueriesEmptyState = () => {
                 className="absolute z-[1] h-[150px] w-[150px] rounded-full border-[1px] border-neutral-500/20"
               />
 
-              <div className="absolute z-[2] flex h-[50px] w-[400px] items-center justify-center rounded-[8px] bg-gradient-to-r from-white to-neutral-400 dark:from-black dark:to-neutral-800">
-                <div className="relative flex h-[48.25px] w-[398.25px] items-center rounded-[6.25px] bg-white shadow-2xl dark:bg-black">
+              <div className="absolute z-[2] flex h-[50px] w-[400px] items-center justify-center rounded-[8px] bg-gradient-to-r from-white to-card dark:from-card/0 dark:to-card/100">
+                <div className="relative flex h-[48.25px] w-[398.25px] items-center overflow-hidden rounded-[6.25px] shadow-2xl">
                   <p className="absolute -ml-32 whitespace-nowrap bg-gradient-to-r from-white to-neutral-500 bg-clip-text text-transparent dark:from-black dark:to-neutral-500">{`[name="my-project"] > :is(:project > *[name="tap"])`}</p>
                   <div className="ml-auto mr-3 flex gap-2">
                     <div

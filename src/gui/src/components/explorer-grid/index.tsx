@@ -1,10 +1,4 @@
 import {
-  GalleryVertical,
-  GalleryVerticalEnd,
-  GalleryThumbnails,
-  Package,
-} from 'lucide-react'
-import {
   longDependencyTypes,
   shorten,
   stringifyNode,
@@ -353,15 +347,12 @@ export const ExplorerGrid = () => {
   if (!items.length) return <EmptyResultsState />
 
   return (
-    <div className="w-full grow rounded-b-lg border-x-[1px] border-b-[1px] bg-white px-8 pb-8 dark:bg-black">
-      <div className="mx-auto grid w-full max-w-7xl grid-cols-8 gap-4">
+    <div className="h-full w-full grow px-8 pb-8">
+      <div className="grid w-full max-w-8xl grid-cols-8 gap-4">
         <div className="col-span-2">
           {parentItem ?
             <>
-              <GridHeader>
-                <GalleryThumbnails size={22} className="mr-3" />
-                Parent
-              </GridHeader>
+              <GridHeader>Parent</GridHeader>
               <SideItem
                 parent={true}
                 item={parentItem}
@@ -372,10 +363,7 @@ export const ExplorerGrid = () => {
           : ''}
           {workspaces && workspaces.length > 0 ?
             <>
-              <GridHeader>
-                <Package size={22} className="mr-3" />
-                Workspaces
-              </GridHeader>
+              <GridHeader>Workspaces</GridHeader>
               {workspaces.map(item => (
                 <SideItem
                   item={item}
@@ -388,10 +376,7 @@ export const ExplorerGrid = () => {
           : ''}
           {dependents && dependents.length > 0 ?
             <>
-              <GridHeader>
-                <GalleryVerticalEnd size={22} className="mr-3" />
-                Dependents
-              </GridHeader>
+              <GridHeader>Dependents</GridHeader>
               {dependents.map(item => (
                 <SideItem
                   item={item}
@@ -410,11 +395,7 @@ export const ExplorerGrid = () => {
                 {items.length}
               </Badge>
             </div>
-          : <GridHeader>
-              <GalleryVertical size={22} className="mr-3" />
-              Selected Item
-            </GridHeader>
-          }
+          : <GridHeader>Selected Item</GridHeader>}
           <div className="flex flex-col gap-6">
             {items.map(item =>
               selected ?
