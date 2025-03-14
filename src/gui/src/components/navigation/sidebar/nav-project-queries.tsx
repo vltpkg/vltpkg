@@ -10,6 +10,7 @@ import {
   SidebarMenuSubItem,
   SidebarMenuSubButton,
   SidebarGroupLabel,
+  useSidebar,
 } from '@/components/ui/sidebar.jsx'
 import {
   Collapsible,
@@ -28,6 +29,7 @@ import { selectQuery } from '@/components/queries/saved-item.jsx'
 
 const SidebarQueryProjectNav = () => {
   const navigate = useNavigate()
+  const { open: sidebarOpen, setOpen: setSidebarOpen } = useSidebar()
   const savedQueries = useGraphStore(state => state.savedQueries)
   const [projectQueries, setProjectQueries] = useState<SavedQuery[]>(
     [],
@@ -84,6 +86,13 @@ const SidebarQueryProjectNav = () => {
     })
   }
 
+  useEffect(() => {
+    if (!sidebarOpen) {
+      setProjectQueriesOpen(false)
+      setGlobalQueriesOpen(false)
+    }
+  }, [sidebarOpen])
+
   if (globalQueries.length === 0 && projectQueries.length === 0)
     return null
 
@@ -105,7 +114,12 @@ const SidebarQueryProjectNav = () => {
                 <CollapsibleTrigger asChild>
                   <SidebarMenuButton
                     tooltip="Global queries"
-                    className="cursor-default whitespace-nowrap">
+                    className="cursor-default whitespace-nowrap"
+                    onClick={
+                      !sidebarOpen ?
+                        () => setSidebarOpen(true)
+                      : undefined
+                    }>
                     {globalQueriesOpen ?
                       <FolderOpen />
                     : <Folder />}
@@ -142,7 +156,12 @@ const SidebarQueryProjectNav = () => {
                 <CollapsibleTrigger asChild>
                   <SidebarMenuButton
                     tooltip="Project queries"
-                    className="cursor-default whitespace-nowrap">
+                    className="cursor-default whitespace-nowrap"
+                    onClick={
+                      !sidebarOpen ?
+                        () => setSidebarOpen(true)
+                      : undefined
+                    }>
                     {projectQueriesOpen ?
                       <FolderOpen />
                     : <Folder />}
