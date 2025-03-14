@@ -1,17 +1,14 @@
-import { useNavigate } from 'react-router'
+import { useLocation, NavLink, useNavigate } from 'react-router'
 import type { MouseEvent } from 'react'
 import { useGraphStore } from '@/state/index.js'
 import { Button } from '@/components/ui/button.jsx'
 import { ArrowRight, TriangleAlert } from 'lucide-react'
+import { cn } from '@/lib/utils.js'
 
 export const ErrorFound = () => {
   const navigate = useNavigate()
+  const { pathname } = useLocation()
   const errorCause = useGraphStore(state => state.errorCause)
-
-  const onDashboardButtonClick = (e: MouseEvent) => {
-    e.preventDefault()
-    void navigate('/dashboard')
-  }
 
   const onBackButtonClick = (e: MouseEvent) => {
     e.preventDefault()
@@ -19,7 +16,11 @@ export const ErrorFound = () => {
   }
 
   return (
-    <section className="flex h-full flex-col items-center justify-center rounded-lg border-[1px] bg-white dark:bg-black">
+    <section
+      className={cn(
+        'flex flex-col items-center justify-center rounded-lg border-[1px] bg-white dark:bg-black',
+        pathname === '/error' ? 'h-full' : 'h-screen',
+      )}>
       <div className="relative -mt-32 flex flex-col items-center justify-center">
         <div className="relative flex flex-col gap-8">
           <div className="absolute inset-0 z-[2] bg-gradient-radial from-white/0 via-transparent to-white dark:from-black/0 dark:to-black" />
@@ -51,9 +52,11 @@ export const ErrorFound = () => {
             <Button variant="outline" onClick={onBackButtonClick}>
               Back
             </Button>
-            <Button onClick={onDashboardButtonClick}>
-              <span>Dashboard</span>
-              <ArrowRight />
+            <Button asChild>
+              <NavLink to="/">
+                <span>Dashboard</span>
+                <ArrowRight />
+              </NavLink>
             </Button>
           </div>
         </div>

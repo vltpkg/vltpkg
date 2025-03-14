@@ -6,6 +6,8 @@ import { ErrorFound } from '@/app/error-found.jsx'
 
 vi.mock('react-router', () => ({
   useNavigate: vi.fn(),
+  useLocation: vi.fn(() => ({ pathname: '/error' })),
+  NavLink: 'gui-nav-link',
 }))
 vi.mock('@/components/ui/button.jsx', () => ({
   Button: 'gui-button',

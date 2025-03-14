@@ -3,7 +3,7 @@
 exports[`error-found has a cause 1`] = `
 
 <div>
-  <section class="flex h-full flex-col items-center justify-center rounded-lg border-[1px] bg-white dark:bg-black">
+  <section class="flex flex-col items-center justify-center rounded-lg border-[1px] bg-white dark:bg-black h-full">
     <div class="relative -mt-32 flex flex-col items-center justify-center">
       <div class="relative flex flex-col gap-8">
         <div class="absolute inset-0 z-[2] bg-gradient-radial from-white/0 via-transparent to-white dark:from-black/0 dark:to-black">
@@ -391,12 +391,14 @@ exports[`error-found has a cause 1`] = `
           <gui-button variant="outline">
             Back
           </gui-button>
-          <gui-button>
-            <span>
-              Dashboard
-            </span>
-            <gui-arrow-right-icon>
-            </gui-arrow-right-icon>
+          <gui-button aschild="true">
+            <gui-nav-link to="/">
+              <span>
+                Dashboard
+              </span>
+              <gui-arrow-right-icon>
+              </gui-arrow-right-icon>
+            </gui-nav-link>
           </gui-button>
         </div>
       </div>
@@ -411,7 +413,7 @@ exports[`error-found has a cause 1`] = `
 exports[`render default 1`] = `
 
 <div>
-  <section class="flex h-full flex-col items-center justify-center rounded-lg border-[1px] bg-white dark:bg-black">
+  <section class="flex flex-col items-center justify-center rounded-lg border-[1px] bg-white dark:bg-black h-full">
     <div class="relative -mt-32 flex flex-col items-center justify-center">
       <div class="relative flex flex-col gap-8">
         <div class="absolute inset-0 z-[2] bg-gradient-radial from-white/0 via-transparent to-white dark:from-black/0 dark:to-black">
@@ -799,12 +801,14 @@ exports[`render default 1`] = `
           <gui-button variant="outline">
             Back
           </gui-button>
-          <gui-button>
-            <span>
-              Dashboard
-            </span>
-            <gui-arrow-right-icon>
-            </gui-arrow-right-icon>
+          <gui-button aschild="true">
+            <gui-nav-link to="/">
+              <span>
+                Dashboard
+              </span>
+              <gui-arrow-right-icon>
+              </gui-arrow-right-icon>
+            </gui-nav-link>
           </gui-button>
         </div>
       </div>
