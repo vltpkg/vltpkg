@@ -4,6 +4,11 @@ import html from 'diffable-html'
 import { SidebarQueryNav } from '@/components/navigation/sidebar/nav-queries.jsx'
 import { useGraphStore as useStore } from '@/state/index.js'
 
+vi.mock('react-router', () => ({
+  useLocation: vi.fn().mockReturnValue({ pathname: '/dashboard' }),
+  NavLink: 'gui-nav-link',
+}))
+
 vi.mock('@/components/ui/sidebar.jsx', () => ({
   SidebarMenu: 'gui-sidebar-menu',
   SidebarMenuButton: 'gui-sidebar-menu-button',

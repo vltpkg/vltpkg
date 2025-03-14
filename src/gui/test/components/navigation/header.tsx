@@ -1,8 +1,14 @@
-import { test, expect, afterEach } from 'vitest'
+import { vi, test, expect, afterEach } from 'vitest'
 import { render, cleanup } from '@testing-library/react'
 import html from 'diffable-html'
 import { useGraphStore as useStore } from '@/state/index.js'
 import { Header } from '@/components/navigation/header.jsx'
+import { useLocation } from 'react-router'
+import type { Location } from 'react-router'
+
+vi.mock('react-router', () => ({
+  useLocation: vi.fn(),
+}))
 
 expect.addSnapshotSerializer({
   serialize: v => html(v),
@@ -13,30 +19,28 @@ afterEach(() => {
   const CleanUp = () => (useStore(state => state.reset)(), '')
   render(<CleanUp />)
   cleanup()
+  vi.clearAllMocks()
 })
 
-const testCases = new Map<string, string | null>([
+const testCases = [
   ['/', 'Dashboard'],
   ['/error', null],
+  ['/create-new-project', null],
   ['/explore', 'Explore'],
-  ['/dashboard', 'Dashboard'],
   ['/queries', 'Queries'],
   ['/labels', 'Labels'],
-])
+]
 
-test.each([...testCases])(
+test.each(testCases)(
   'renders Header for route %s with expected name %s',
   (routeName, expectedRouteName) => {
-    const Container = () => {
-      const setRoute = useStore(state => state.updateActiveRoute)
-      setRoute(routeName)
-      return <Header />
-    }
-
-    const { container } = render(<Container />)
+    vi.mocked(useLocation).mockReturnValue({
+      pathname: routeName,
+    } as Location)
+    const { container } = render(<Header />)
 
     if (expectedRouteName === null) {
-      expect(container.innerHTML).not.toContain('Error')
+      expect(container.innerHTML).toBe('')
     } else {
       expect(container.innerHTML).toContain(expectedRouteName)
     }

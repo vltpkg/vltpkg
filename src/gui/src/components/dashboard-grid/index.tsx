@@ -1,4 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion'
+import { useNavigate, NavLink } from 'react-router'
 import { useEffect, useState } from 'react'
 import type { MouseEvent } from 'react'
 import type { DashboardDataProject } from '@/state/types.js'
@@ -43,8 +44,8 @@ export const DashboardItem = ({
   }
 
   return (
-    <a
-      href="#"
+    <div
+      role="link"
       className="group relative w-full cursor-default"
       onClick={onDashboardItemClick}>
       {/* top */}
@@ -84,15 +85,13 @@ export const DashboardItem = ({
           </Tooltip>
         </TooltipProvider>
       </div>
-    </a>
+    </div>
   )
 }
 
 export const DashboardGrid = () => {
+  const navigate = useNavigate()
   const dashboard = useGraphStore(state => state.dashboard)
-  const updateActiveRoute = useGraphStore(
-    state => state.updateActiveRoute,
-  )
   const updateErrorCause = useGraphStore(
     state => state.updateErrorCause,
   )
@@ -118,7 +117,7 @@ export const DashboardGrid = () => {
     setInProgress(true)
 
     void requestRouteTransition<{ path: string }>({
-      updateActiveRoute,
+      navigate,
       updateErrorCause,
       updateQuery,
       updateStamp,
@@ -140,10 +139,6 @@ export const DashboardGrid = () => {
       )
     }
   }, [dashboard])
-
-  const onCreateNewProjectClick = () => {
-    updateActiveRoute('/new-project')
-  }
 
   if (inProgress) {
     return (
@@ -199,11 +194,11 @@ export const DashboardGrid = () => {
               />
             </motion.div>
           }
-          <Button
-            onClick={onCreateNewProjectClick}
-            className="ml-auto">
-            <Plus size={24} />
-            Create New Project
+          <Button asChild className="ml-auto">
+            <NavLink to="/create-new-project">
+              <Plus size={24} />
+              Create New Project
+            </NavLink>
           </Button>
         </div>
       </div>

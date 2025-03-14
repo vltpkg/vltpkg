@@ -5,7 +5,7 @@ export type RequestDashboardDataOptions = {
 }
 
 export type StartDashboardDataOptions = {
-  updateActiveRoute: Action['updateActiveRoute']
+  navigate: (route: string) => void
   updateDashboard: Action['updateDashboard']
   updateErrorCause: Action['updateErrorCause']
   stamp: State['stamp']
@@ -20,7 +20,7 @@ export const requestDashboardData = async ({
 }
 
 export const startDashboardData = ({
-  updateActiveRoute,
+  navigate,
   updateDashboard,
   updateErrorCause,
   stamp,
@@ -35,7 +35,7 @@ export const startDashboardData = ({
   void _startDashboard().catch((err: unknown) => {
     // eslint-disable-next-line no-console
     console.error(err)
-    updateActiveRoute('/error')
+    navigate('/error')
     updateErrorCause('Failed to initialize dashboard.')
   })
 }

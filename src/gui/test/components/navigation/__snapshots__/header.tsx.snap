@@ -12,15 +12,8 @@ exports[`renders Header for route / with expected name Dashboard 1`] = `
 
 `;
 
-exports[`renders Header for route /dashboard with expected name Dashboard 1`] = `
+exports[`renders Header for route /create-new-project with expected name null 1`] = `
 
-<div class="flex h-[65px] w-full items-center rounded-t-lg border-x-[1px] border-t-[1px] px-8 py-3">
-  <div class="flex w-full max-w-8xl items-center">
-    <h3 class="mt-1 text-lg font-medium">
-      Dashboard
-    </h3>
-  </div>
-</div>
 
 `;
 

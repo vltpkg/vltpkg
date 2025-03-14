@@ -36,12 +36,12 @@ beforeEach(() => {
 })
 
 test('requestRouteTransition success', async () => {
-  const updateActiveRoute = vi.fn()
+  const navigate = vi.fn()
   const updateErrorCause = vi.fn()
   const updateQuery = vi.fn()
   const updateStamp = vi.fn()
   await requestRouteTransition({
-    updateActiveRoute,
+    navigate,
     updateErrorCause,
     updateQuery,
     updateStamp,
@@ -51,17 +51,17 @@ test('requestRouteTransition success', async () => {
     errorMessage: 'Unexpected error.',
   })
   expect(updateErrorCause).not.toHaveBeenCalled()
-  expect(updateActiveRoute).toHaveBeenCalledWith('/next-route')
+  expect(navigate).toHaveBeenCalledWith('/next-route')
   expect(updateStamp).toHaveBeenCalled()
 })
 
 test('requestRouteTransition failure', async () => {
-  const updateActiveRoute = vi.fn()
+  const navigate = vi.fn()
   const updateErrorCause = vi.fn()
   const updateQuery = vi.fn()
   const updateStamp = vi.fn()
   await requestRouteTransition({
-    updateActiveRoute,
+    navigate,
     updateErrorCause,
     updateQuery,
     updateStamp,
@@ -70,19 +70,19 @@ test('requestRouteTransition failure', async () => {
     destinationRoute: '/next-route',
     errorMessage: 'Failed.',
   })
-  expect(updateActiveRoute).toHaveBeenCalledWith('/error')
+  expect(navigate).toHaveBeenCalledWith('/error')
   expect(updateErrorCause).toHaveBeenCalledWith('Failed.')
   expect(updateStamp).not.toHaveBeenCalled()
 })
 
 test('requestRouteTransition 404', async () => {
   console.error = vi.fn()
-  const updateActiveRoute = vi.fn()
+  const navigate = vi.fn()
   const updateErrorCause = vi.fn()
   const updateQuery = vi.fn()
   const updateStamp = vi.fn()
   await requestRouteTransition({
-    updateActiveRoute,
+    navigate,
     updateErrorCause,
     updateQuery,
     updateStamp,
@@ -92,19 +92,19 @@ test('requestRouteTransition 404', async () => {
     errorMessage: 'Failed.',
   })
   expect(console.error).toHaveBeenCalled()
-  expect(updateActiveRoute).toHaveBeenCalledWith('/error')
+  expect(navigate).toHaveBeenCalledWith('/error')
   expect(updateErrorCause).toHaveBeenCalledWith('Failed.')
   expect(updateStamp).not.toHaveBeenCalled()
 })
 
 test('requestRouteTransition throw', async () => {
   console.error = vi.fn()
-  const updateActiveRoute = vi.fn()
+  const navigate = vi.fn()
   const updateErrorCause = vi.fn()
   const updateQuery = vi.fn()
   const updateStamp = vi.fn()
   await requestRouteTransition({
-    updateActiveRoute,
+    navigate,
     updateErrorCause,
     updateQuery,
     updateStamp,
@@ -114,7 +114,7 @@ test('requestRouteTransition throw', async () => {
     errorMessage: 'Failed.',
   })
   expect(console.error).toHaveBeenCalled()
-  expect(updateActiveRoute).toHaveBeenCalledWith('/error')
+  expect(navigate).toHaveBeenCalledWith('/error')
   expect(updateErrorCause).toHaveBeenCalledWith(
     'Failed to submit request.',
   )

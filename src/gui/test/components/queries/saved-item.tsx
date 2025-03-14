@@ -5,6 +5,10 @@ import { useGraphStore as useStore } from '@/state/index.js'
 import type { SavedQuery } from '@/state/types.js'
 import { SavedQueryItem } from '@/components/queries/saved-item.jsx'
 
+vi.mock('react-router', () => ({
+  useNavigate: vi.fn(),
+}))
+
 vi.mock('@/components/ui/input.jsx', () => ({
   Input: 'gui-label',
 }))

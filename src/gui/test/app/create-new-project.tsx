@@ -4,6 +4,10 @@ import html from 'diffable-html'
 import { useGraphStore as useStore } from '@/state/index.js'
 import { CreateNewProject } from '@/app/create-new-project.jsx'
 
+vi.mock('react-router', () => ({
+  useNavigate: vi.fn(),
+}))
+
 vi.mock('@/components/create-new-project/index.jsx', () => ({
   CreateNewProjectContent: 'gui-create-new-project-content',
 }))
@@ -32,6 +36,6 @@ afterEach(() => {
 })
 
 test('render default', async () => {
-  render(<CreateNewProject />)
-  expect(window.document.body.innerHTML).toMatchSnapshot()
+  const { container } = render(<CreateNewProject />)
+  expect(container.innerHTML).toMatchSnapshot()
 })

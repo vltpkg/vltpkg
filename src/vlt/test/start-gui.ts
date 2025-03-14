@@ -28,14 +28,14 @@ t.test('getDefaultStartingRoute', async t => {
       scurry,
       projectRoot: resolve(dir, 'linky'),
     }),
-    `/dashboard`,
+    `/`,
   )
   t.equal(
     await getDefaultStartingRoute({
       scurry,
       projectRoot: dir,
     }),
-    `/dashboard`,
+    `/`,
   )
   t.equal(
     await getDefaultStartingRoute({
@@ -96,7 +96,7 @@ t.test('startGUI()', async t => {
     '@vltpkg/url-open': {
       urlOpen: (url: string) => {
         urlOpened = true
-        t.equal(url, 'server-address/dashboard')
+        t.equal(url, 'server-address/')
       },
     },
   })

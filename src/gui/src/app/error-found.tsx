@@ -1,29 +1,21 @@
-import { useEffect } from 'react'
+import { useNavigate } from 'react-router'
 import type { MouseEvent } from 'react'
 import { useGraphStore } from '@/state/index.js'
 import { Button } from '@/components/ui/button.jsx'
 import { ArrowRight, TriangleAlert } from 'lucide-react'
 
 export const ErrorFound = () => {
-  const updateActiveRoute = useGraphStore(
-    state => state.updateActiveRoute,
-  )
-  const previousRoute = useGraphStore(state => state.previousRoute)
+  const navigate = useNavigate()
   const errorCause = useGraphStore(state => state.errorCause)
-
-  useEffect(() => {
-    history.pushState({ query: '', route: '/error' }, '', '/error')
-    window.scrollTo(0, 0)
-  })
 
   const onDashboardButtonClick = (e: MouseEvent) => {
     e.preventDefault()
-    updateActiveRoute('/dashboard')
+    void navigate('/dashboard')
   }
 
   const onBackButtonClick = (e: MouseEvent) => {
     e.preventDefault()
-    updateActiveRoute(previousRoute)
+    void navigate(-1)
   }
 
   return (

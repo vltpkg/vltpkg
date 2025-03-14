@@ -9,8 +9,6 @@ import type { SpecOptionsFilled } from '@vltpkg/spec/browser'
 import type { Integrity, Manifest } from '@vltpkg/types'
 
 export type Action = {
-  updateActiveRoute: (route: State['activeRoute']) => void
-  updatePreviousRoute: (route: State['activeRoute']) => void
   updateDashboard: (dashboard: State['dashboard']) => void
   updateGraph: (graph: State['graph']) => void
   updateQ: (q: State['q']) => void
@@ -76,14 +74,6 @@ export type RawNode = {
  * The main state object for the graph explorer.
  */
 export type State = {
-  /**
-   * The current location.pathname (e.g. route) in the app.
-   */
-  activeRoute: string
-  /**
-   * The last route in the app.
-   */
-  previousRoute: string
   /**
    * List of projects to be displayed in the dashboard.
    */

@@ -1,3 +1,4 @@
+import { NavLink } from 'react-router'
 import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button.jsx'
 import { Command, Plus, Star } from 'lucide-react'
@@ -215,7 +216,7 @@ const QueriesEmptyState = ({ dashboard }: QueriesEmptyStateProps) => {
               </p>
               <div className="z-[2] flex items-center justify-center gap-3 text-center">
                 <Button asChild variant="outline">
-                  <a href="/">Explore Projects</a>
+                  <NavLink to="/">Explore Projects</NavLink>
                 </Button>
                 <Button onClick={() => setIsCreating(true)}>
                   <span>New Query</span>

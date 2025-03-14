@@ -15,7 +15,7 @@ export const getDefaultStartingRoute = async (options: {
   const stat = await scurry.lstat(`${projectRoot}/package.json`)
   return stat?.isFile() && !stat.isSymbolicLink() ?
       `/explore?query=${encodeURIComponent(':root')}`
-    : '/dashboard'
+    : '/'
 }
 
 export const startGUI = async (

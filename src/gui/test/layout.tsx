@@ -4,6 +4,10 @@ import html from 'diffable-html'
 import { useGraphStore as useStore } from '@/state/index.js'
 import Layout from '@/layout.jsx'
 
+vi.mock('react-router', () => ({
+  Outlet: 'gui-router-outlet',
+}))
+
 vi.mock('@/components/navigation/header.jsx', () => ({
   Header: 'gui-nav-header',
 }))
@@ -15,26 +19,6 @@ vi.mock('@/components/ui/sidebar.jsx', () => ({
   SidebarProvider: 'gui-sidebar-provider',
   SidebarInset: 'gui-sidebar-inset',
 }))
-
-vi.mock('@/app/create-new-project.jsx', () => ({
-  CreateNewProject: 'gui-create-new-project',
-}))
-vi.mock('@/app/explorer.jsx', () => ({
-  Explorer: 'gui-explorer',
-}))
-vi.mock('@/app/error-found.jsx', () => ({
-  ErrorFound: 'gui-error-found',
-}))
-vi.mock('@/app/dashboard.jsx', () => ({
-  Dashboard: 'gui-dashboard',
-}))
-vi.mock('@/app/queries.jsx', () => ({
-  Queries: 'gui-queries',
-}))
-vi.mock('@/app/labels.jsx', () => ({
-  Labels: 'gui-labels',
-}))
-
 vi.mock('@/components/ui/toaster.jsx', () => ({
   Toaster: 'gui-toaster',
 }))
@@ -50,68 +34,7 @@ afterEach(() => {
   cleanup()
 })
 
-test('renders Layout for the "/new-project" view', () => {
-  const Container = () => {
-    const setRoute = useStore(state => state.updateActiveRoute)
-    setRoute('/new-project')
-    return <Layout />
-  }
-
-  const { container } = render(<Container />)
-  expect(container.innerHTML).toMatchSnapshot()
-})
-
-test('renders Layout for the "/dashboard" view', () => {
-  const Container = () => {
-    const setRoute = useStore(state => state.updateActiveRoute)
-    setRoute('/dashboard')
-    return <Layout />
-  }
-
-  const { container } = render(<Container />)
-  expect(container.innerHTML).toMatchSnapshot()
-})
-
-test('renders Layout for the "/explore" view', () => {
-  const Container = () => {
-    const setRoute = useStore(state => state.updateActiveRoute)
-    setRoute('/explore')
-    return <Layout />
-  }
-
-  const { container } = render(<Container />)
-  expect(container.innerHTML).toMatchSnapshot()
-})
-
-test('renders Layout for the "/queries" view', () => {
-  const Container = () => {
-    const setRoute = useStore(state => state.updateActiveRoute)
-    setRoute('/queries')
-    return <Layout />
-  }
-
-  const { container } = render(<Container />)
-  expect(container.innerHTML).toMatchSnapshot()
-})
-
-test('renders Layout for the "/labels" view', () => {
-  const Container = () => {
-    const setRoute = useStore(state => state.updateActiveRoute)
-    setRoute('/labels')
-    return <Layout />
-  }
-
-  const { container } = render(<Container />)
-  expect(container.innerHTML).toMatchSnapshot()
-})
-
-test('renders Layout for the "/error" view', () => {
-  const Container = () => {
-    const setRoute = useStore(state => state.updateActiveRoute)
-    setRoute('/error')
-    return <Layout />
-  }
-
-  const { container } = render(<Container />)
+test('renders Layout with an outlet', () => {
+  const { container } = render(<Layout />)
   expect(container.innerHTML).toMatchSnapshot()
 })

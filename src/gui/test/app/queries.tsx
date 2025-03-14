@@ -4,6 +4,15 @@ import html from 'diffable-html'
 import { useGraphStore as useStore } from '@/state/index.js'
 import { Queries } from '@/app/queries.jsx'
 
+vi.mock('@/lib/start-dashboard-data.js', () => ({
+  startDashboardData: vi.fn(),
+}))
+
+vi.mock('react-router', () => ({
+  NavLink: 'gui-nav-link',
+  useNavigate: vi.fn(),
+}))
+
 vi.mock('@/components/queries/saved-item.jsx', () => ({
   SavedQueryItem: 'gui-saved-query-item',
 }))

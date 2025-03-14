@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router'
 import { useState } from 'react'
 import type { SyntheticEvent } from 'react'
 import { useGraphStore } from '@/state/index.js'
@@ -7,9 +8,7 @@ import { LoadingSpinner } from '@/components/ui/loading-spinner.jsx'
 import { InlineCode } from '@/components/ui/inline-code.jsx'
 
 export const SetupProject = () => {
-  const updateActiveRoute = useGraphStore(
-    state => state.updateActiveRoute,
-  )
+  const navigate = useNavigate()
   const updateErrorCause = useGraphStore(
     state => state.updateErrorCause,
   )
@@ -19,7 +18,7 @@ export const SetupProject = () => {
 
   const onDashboardClick = (e: SyntheticEvent) => {
     e.preventDefault()
-    updateActiveRoute('/')
+    void navigate('/')
   }
 
   const onInstallClick = (e: SyntheticEvent) => {
@@ -27,7 +26,7 @@ export const SetupProject = () => {
     e.preventDefault()
     setInProgress(true)
     void requestRouteTransition<{ add: Record<string, string>[] }>({
-      updateActiveRoute,
+      navigate,
       updateErrorCause,
       updateQuery,
       updateStamp,

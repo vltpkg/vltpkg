@@ -5,6 +5,11 @@ import { useGraphStore as useStore } from '@/state/index.js'
 import { DashboardGrid } from '@/components/dashboard-grid/index.jsx'
 import type { DashboardTools } from '@/state/types.js'
 
+vi.mock('react-router', () => ({
+  useNavigate: vi.fn(),
+  NavLink: 'gui-nav-link',
+}))
+
 vi.mock('@/utils/dashboard-tools.jsx', () => ({
   getIconSet: vi.fn((tools: DashboardTools[]) => {
     const mockRuntimes: Partial<Record<DashboardTools, string>> = {

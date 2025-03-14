@@ -91,15 +91,7 @@ t.test('/handle-it', async t => {
       t.strictSame(opts, {
         cleanUrls: true,
         public: context.options.publicDir,
-        rewrites: [
-          { source: '/', destination: '/index.html' },
-          { source: '/error', destination: '/index.html' },
-          { source: '/explore', destination: '/index.html' },
-          { source: '/dashboard', destination: '/index.html' },
-          { source: '/queries', destination: '/index.html' },
-          { source: '/labels', destination: '/index.html' },
-          { source: '/new-project', destination: '/index.html' },
-        ],
+        rewrites: [{ source: '**', destination: '/index.html' }],
       })
     },
   })
@@ -126,15 +118,7 @@ t.test('/handle-it not proxied', async t => {
       t.strictSame(opts, {
         cleanUrls: true,
         public: context.options.publicDir,
-        rewrites: [
-          { source: '/', destination: '/index.html' },
-          { source: '/error', destination: '/index.html' },
-          { source: '/explore', destination: '/index.html' },
-          { source: '/dashboard', destination: '/index.html' },
-          { source: '/queries', destination: '/index.html' },
-          { source: '/labels', destination: '/index.html' },
-          { source: '/new-project', destination: '/index.html' },
-        ],
+        rewrites: [{ source: '**', destination: '/index.html' }],
       })
     },
   })
@@ -194,15 +178,7 @@ t.test('/esbuild is proxied', async t => {
       t.strictSame(opts, {
         cleanUrls: true,
         public: context.options.publicDir,
-        rewrites: [
-          { source: '/', destination: '/index.html' },
-          { source: '/error', destination: '/index.html' },
-          { source: '/explore', destination: '/index.html' },
-          { source: '/dashboard', destination: '/index.html' },
-          { source: '/queries', destination: '/index.html' },
-          { source: '/labels', destination: '/index.html' },
-          { source: '/new-project', destination: '/index.html' },
-        ],
+        rewrites: [{ source: '**', destination: '/index.html' }],
       })
     },
   })
@@ -278,15 +254,7 @@ t.test('/handle-it is proxied, has an error', async t => {
       t.strictSame(opts, {
         cleanUrls: true,
         public: context.options.publicDir,
-        rewrites: [
-          { source: '/', destination: '/index.html' },
-          { source: '/error', destination: '/index.html' },
-          { source: '/explore', destination: '/index.html' },
-          { source: '/dashboard', destination: '/index.html' },
-          { source: '/queries', destination: '/index.html' },
-          { source: '/labels', destination: '/index.html' },
-          { source: '/new-project', destination: '/index.html' },
-        ],
+        rewrites: [{ source: '**', destination: '/index.html' }],
       })
     },
   })
@@ -374,15 +342,7 @@ t.test(
         t.strictSame(opts, {
           cleanUrls: true,
           public: context.options.publicDir,
-          rewrites: [
-            { source: '/', destination: '/index.html' },
-            { source: '/error', destination: '/index.html' },
-            { source: '/explore', destination: '/index.html' },
-            { source: '/dashboard', destination: '/index.html' },
-            { source: '/queries', destination: '/index.html' },
-            { source: '/labels', destination: '/index.html' },
-            { source: '/new-project', destination: '/index.html' },
-          ],
+          rewrites: [{ source: '**', destination: '/index.html' }],
         })
       },
     })
@@ -465,15 +425,7 @@ t.test('/esbuild has an ECONNREFUSED error', async t => {
       t.strictSame(opts, {
         cleanUrls: true,
         public: context.options.publicDir,
-        rewrites: [
-          { source: '/', destination: '/index.html' },
-          { source: '/error', destination: '/index.html' },
-          { source: '/explore', destination: '/index.html' },
-          { source: '/dashboard', destination: '/index.html' },
-          { source: '/queries', destination: '/index.html' },
-          { source: '/labels', destination: '/index.html' },
-          { source: '/new-project', destination: '/index.html' },
-        ],
+        rewrites: [{ source: '**', destination: '/index.html' }],
       })
     },
   })

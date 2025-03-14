@@ -1,3 +1,4 @@
+import { useNavigate, NavLink } from 'react-router'
 import { useEffect, useState } from 'react'
 import { useGraphStore } from '@/state/index.js'
 import type { SavedQuery } from '@/state/types.js'
@@ -18,6 +19,7 @@ import { AnimatePresence, LayoutGroup, motion } from 'framer-motion'
 import { startDashboardData } from '@/lib/start-dashboard-data.js'
 
 const Queries = () => {
+  const navigate = useNavigate()
   const savedQueries = useGraphStore(state => state.savedQueries)
   const [filteredQueries, setFilteredQueries] = useState<
     SavedQuery[]
@@ -30,9 +32,6 @@ const Queries = () => {
   const savedLabels = useGraphStore(state => state.savedQueryLabels)
   const [isCreating, setIsCreating] = useState<boolean>(false)
   const dashboard = useGraphStore(state => state.dashboard)
-  const updateActiveRoute = useGraphStore(
-    state => state.updateActiveRoute,
-  )
   const updateDashboard = useGraphStore(
     state => state.updateDashboard,
   )
@@ -62,18 +61,11 @@ const Queries = () => {
 
   useEffect(() => {
     startDashboardData({
-      updateActiveRoute,
+      navigate,
       updateDashboard,
       updateErrorCause,
       stamp,
     })
-
-    history.pushState(
-      { query: '', route: '/queries' },
-      '',
-      '/queries',
-    )
-    window.scrollTo(0, 0)
   }, [stamp])
 
   useEffect(() => {
@@ -122,13 +114,13 @@ const Queries = () => {
               </Button>
             )}
             <Button asChild variant="outline">
-              <a href="/labels">
+              <NavLink to="/labels">
                 <Tag />
                 <span>Labels</span>
                 <Badge variant="secondary">
                   {savedLabels?.length}
                 </Badge>
-              </a>
+              </NavLink>
             </Button>
           </div>
         </div>

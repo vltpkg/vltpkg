@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router'
 import { useEffect, useState } from 'react'
 import {
   SidebarMenuSub,
@@ -26,6 +27,7 @@ import {
 import { selectQuery } from '@/components/queries/saved-item.jsx'
 
 const SidebarQueryProjectNav = () => {
+  const navigate = useNavigate()
   const savedQueries = useGraphStore(state => state.savedQueries)
   const [projectQueries, setProjectQueries] = useState<SavedQuery[]>(
     [],
@@ -36,9 +38,6 @@ const SidebarQueryProjectNav = () => {
     useState<boolean>(false)
   const [globalQueriesOpen, setGlobalQueriesOpen] =
     useState<boolean>(false)
-  const updateActiveRoute = useGraphStore(
-    state => state.updateActiveRoute,
-  )
   const updateErrorCause = useGraphStore(
     state => state.updateErrorCause,
   )
@@ -65,7 +64,7 @@ const SidebarQueryProjectNav = () => {
 
   const runQuery = async (item: SavedQuery): Promise<void> => {
     await selectQuery({
-      updateActiveRoute,
+      navigate,
       updateErrorCause,
       updateQuery,
       updateStamp,
@@ -76,7 +75,7 @@ const SidebarQueryProjectNav = () => {
 
   const runGlobalQuery = async (item: SavedQuery): Promise<void> => {
     await selectQuery({
-      updateActiveRoute,
+      navigate,
       updateErrorCause,
       updateQuery,
       updateStamp,
