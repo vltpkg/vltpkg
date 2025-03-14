@@ -12,6 +12,7 @@ vi.mock('@/components/ui/sidebar.jsx', () => ({
   SidebarSeparator: 'gui-sidebar-separator',
   SidebarMenuSubItem: 'gui-sidebar-menu-sub-item',
   SidebarMenuSubButton: 'gui-sidebar-menu-sub-button',
+  useSidebar: vi.fn(),
 }))
 
 vi.mock('@/components/ui/collapsible.jsx', () => ({
