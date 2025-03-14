@@ -31,8 +31,20 @@ vi.mock('@/components/ui/popover.jsx', () => ({
   PopoverTrigger: 'gui-popover-trigger',
 }))
 
+vi.mock('@/components/ui/tooltip.jsx', () => ({
+  Tooltip: 'gui-tooltip',
+  TooltipContent: 'gui-tooltip-content',
+  TooltipProvider: 'gui-tooltip-provider',
+  TooltipTrigger: 'gui-tooltip-trigger',
+}))
+
 vi.mock('lucide-react', () => ({
   ChevronsUpDown: 'gui-chevron-icon',
+  CircleHelp: 'gui-circle-help-icon',
+}))
+
+vi.mock('@/components/directory-select.jsx', () => ({
+  DirectorySelect: 'gui-directory-select',
 }))
 
 expect.addSnapshotSerializer({

@@ -16,26 +16,6 @@ vi.mock('@/components/ui/form-label.jsx', () => ({
   Label: 'gui-label',
 }))
 
-vi.mock('@/components/ui/command.jsx', () => ({
-  Command: 'gui-command',
-  CommandEmpty: 'gui-command-empty',
-  CommandGroup: 'gui-command-group',
-  CommandInput: 'gui-command-input',
-  CommandItem: 'gui-command-item',
-  CommandList: 'gui-command-list',
-}))
-
-vi.mock('lucide-react', () => ({
-  ChevronDown: 'gui-chevron-down-icon',
-  Check: 'gui-check-icon',
-}))
-
-vi.mock('@/components/ui/popover.jsx', () => ({
-  Popover: 'gui-popover',
-  PopoverContent: 'gui-popover-content',
-  PopoverTrigger: 'gui-popover-trigger',
-}))
-
 vi.mock('@/components/grid/grid.jsx', () => ({
   Grid: 'gui-grid',
   System: 'gui-grid-system',
@@ -51,6 +31,10 @@ vi.mock('@/components/icons/index.js', () => ({
 
 vi.mock('@/components/animated-beam.jsx', () => ({
   AnimatedBeam: 'gui-animated-beam',
+}))
+
+vi.mock('@/components/directory-select.jsx', () => ({
+  DirectorySelect: 'gui-directory-select',
 }))
 
 expect.addSnapshotSerializer({

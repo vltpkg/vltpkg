@@ -5,25 +5,11 @@ import { Input } from '@/components/ui/input.jsx'
 import { Button } from '@/components/ui/button.jsx'
 import { Label } from '@/components/ui/form-label.jsx'
 import { requestRouteTransition } from '@/lib/request-route-transition.js'
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from '@/components/ui/command.jsx'
-import { ChevronDown, Check } from 'lucide-react'
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover.jsx'
 import { motion, AnimatePresence } from 'framer-motion'
-import { cn } from '@/lib/utils.js'
 import { Grid, System, Cell } from '@/components/grid/grid.jsx'
 import { Next, Vercel, Nuxt, Node } from '@/components/icons/index.js'
 import { AnimatedBeam } from '@/components/animated-beam.jsx'
+import { DirectorySelect } from '@/components/directory-select.jsx'
 
 export type NewProjectItem = {
   path: string
@@ -156,48 +142,12 @@ export const CreateNewProjectContent = ({
           className="flex flex-col gap-6">
           <div className="flex flex-col gap-2 px-8">
             <Label htmlFor="location">Location *</Label>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button className="group flex h-[40px] w-full items-center justify-between border-[1px] border-muted bg-white text-muted-foreground shadow-none hover:bg-accent dark:bg-muted-foreground/5 dark:hover:bg-muted-foreground/10">
-                  {pathName || '~'}
-                  <ChevronDown className="text-foreground opacity-50 duration-300 group-data-[state=open]:-rotate-180" />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="max-h-[--radix-popover-content-available-height] w-[--radix-popover-trigger-width] p-0">
-                <Command>
-                  <CommandInput placeholder="Select location" />
-                  <CommandList>
-                    <CommandEmpty>Location not found.</CommandEmpty>
-                    <CommandGroup>
-                      {dashboard?.dashboardProjectLocations.map(
-                        location => (
-                          <CommandItem
-                            key={location.path}
-                            value={location.path}
-                            onSelect={currentValue => {
-                              setPathName(
-                                currentValue === pathName ? '' : (
-                                  currentValue
-                                ),
-                              )
-                            }}>
-                            <Check
-                              className={cn(
-                                'mr-2 size-4',
-                                pathName === location.path ?
-                                  'opacity-100'
-                                : 'opacity-0',
-                              )}
-                            />
-                            {location.readablePath}
-                          </CommandItem>
-                        ),
-                      )}
-                    </CommandGroup>
-                  </CommandList>
-                </Command>
-              </PopoverContent>
-            </Popover>
+            <DirectorySelect
+              acceptsGlobal={false}
+              dashboard={dashboard}
+              setDirectory={setPathName}
+              directory={pathName}
+            />
           </div>
 
           <div className="flex flex-col gap-2 px-8">

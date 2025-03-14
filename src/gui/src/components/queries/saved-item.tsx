@@ -1,5 +1,10 @@
 import { useEffect, useState } from 'react'
-import type { SavedQuery, Action, QueryLabel } from '@/state/types.js'
+import type {
+  SavedQuery,
+  Action,
+  QueryLabel,
+  DashboardData,
+} from '@/state/types.js'
 import { useGraphStore } from '@/state/index.js'
 import { Input } from '@/components/ui/input.jsx'
 import { Button } from '@/components/ui/button.jsx'
@@ -7,7 +12,7 @@ import { useToast } from '@/components/hooks/use-toast.js'
 import { Checkbox } from '@/components/ui/checkbox.jsx'
 import { Label } from '@/components/ui/label.jsx'
 import { LabelBadge } from '@/components/labels/label-badge.jsx'
-import { ArrowRight, ChevronsUpDown } from 'lucide-react'
+import { CircleHelp, ArrowRight, ChevronsUpDown } from 'lucide-react'
 import { LabelSelect } from '@/components/labels/label-select.jsx'
 import {
   Popover,
@@ -20,6 +25,7 @@ import {
   TooltipTrigger,
   TooltipContent,
 } from '@/components/ui/tooltip.jsx'
+import { DirectorySelect } from '@/components/directory-select.jsx'
 
 type SelectQueryOptions = {
   updateActiveRoute: Action['updateActiveRoute']
@@ -80,10 +86,12 @@ const SavedQueryItem = ({
   item,
   handleSelect,
   checked,
+  dashboard,
 }: {
   item: SavedQuery
   handleSelect: (item: SavedQuery) => void
   checked: boolean
+  dashboard?: DashboardData
 }) => {
   const { toast } = useToast()
   const [isExpanded, setIsExpanded] = useState<boolean>(false)
@@ -243,14 +251,27 @@ const SavedQueryItem = ({
               />
             </div>
             <div className="flex grow flex-col gap-2">
-              <Label className="border-none text-sm font-medium">
-                Directory
-              </Label>
-              <Input
-                type="text"
-                value={editContext}
-                onChange={e => setEditContext(e.target.value)}
-                placeholder="Directory (optional)"
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger className="inline-flex cursor-default items-center">
+                    <Label className="border-none text-sm font-medium">
+                      Directory (optional)
+                    </Label>
+                    <CircleHelp
+                      className="text-muted-foreground"
+                      size={18}
+                    />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    Set directory to 'Global' to reuse across all
+                    projects.
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+              <DirectorySelect
+                dashboard={dashboard}
+                setDirectory={setEditContext}
+                directory={editContext}
               />
             </div>
             <div className="flex grow flex-col gap-2">
