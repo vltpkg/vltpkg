@@ -12,7 +12,7 @@ The **vlt** query syntax engine.
 ```js
 import { Query } from '@vltpkg/query'
 
-const query = new Query({ nodes })
+const query = new Query({ nodes, specOptions, securityArchive })
 query.search(':root > *')
 ```
 
@@ -160,3 +160,12 @@ e.g: `#foo` is the same as `[name=foo]`
 - `:root` Returns the root node, that represents the package defined
   at the top-level `package.json` of your project folder.
 - `:scope` Returns the current scope of a given selector
+
+### Security Selectors
+
+The following pseudo-selectors rely on security data provided by
+[Socket](https://socket.dev/), the usage of any of these selectors is
+going to require a network call to hydrate package report data. Keep
+in mind that this is going to slow down end-user query usage since
+the security data needs to be fetched prior to a `Query`
+instantiation.

@@ -1283,6 +1283,9 @@ importers:
       '@vltpkg/graph':
         specifier: workspace:*
         version: link:../graph
+      '@vltpkg/security-archive':
+        specifier: workspace:*
+        version: link:../security-archive
       '@vltpkg/semver':
         specifier: workspace:*
         version: link:../semver
