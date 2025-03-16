@@ -11,6 +11,7 @@ import {
   mermaidOutput,
 } from '@vltpkg/graph'
 import { Query } from '@vltpkg/query'
+import { SecurityArchive } from '@vltpkg/security-archive'
 import { commandUsage } from '../config/usage.ts'
 import type { CommandFn, CommandUsage } from '../index.ts'
 import { startGUI } from '../start-gui.ts'
@@ -83,7 +84,17 @@ export const command: CommandFn<ListResult> = async conf => {
   const queryString = conf.positionals
     .map(k => (/^[@\w-]/.test(k) ? `#${k.replace(/\//, '\\/')}` : k))
     .join(', ')
-  const query = new Query({ graph, specOptions: conf.options })
+  const archive = await SecurityArchive.start({
+    graph,
+    specOptions: conf.options,
+  })
+  /* c8 ignore next */
+  const securityArchive = archive.ok ? archive : undefined
+  const query = new Query({
+    graph,
+    specOptions: conf.options,
+    securityArchive,
+  })
   const projectQueryString = ':project, :project > *'
   const selectImporters: string[] = []
 

@@ -1958,6 +1958,9 @@ importers:
       '@vltpkg/run':
         specifier: workspace:*
         version: link:../run
+      '@vltpkg/security-archive':
+        specifier: workspace:*
+        version: link:../security-archive
       '@vltpkg/server':
         specifier: workspace:*
         version: link:../server
