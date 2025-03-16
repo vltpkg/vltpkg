@@ -115,6 +115,15 @@ const mockQuery = async (
         ideal: {},
         asDependency: () => {},
       },
+      '@vltpkg/security-archive': {
+        SecurityArchive: {
+          async start() {
+            return {
+              ok: false,
+            }
+          },
+        },
+      },
       ...mocks,
     },
   )

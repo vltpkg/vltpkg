@@ -11,6 +11,7 @@ import {
   mermaidOutput,
 } from '@vltpkg/graph'
 import { Query } from '@vltpkg/query'
+import { SecurityArchive } from '@vltpkg/security-archive'
 import { commandUsage } from '../config/usage.ts'
 import type { CommandFn, CommandUsage } from '../index.ts'
 import { startGUI } from '../start-gui.ts'
@@ -77,7 +78,18 @@ export const command: CommandFn<QueryResult> = async conf => {
 
   const defaultQueryString = '*'
   const queryString = conf.positionals[0]
-  const query = new Query({ graph, specOptions: conf.options })
+  const archive = await SecurityArchive.start({
+    graph,
+    specOptions: conf.options,
+  })
+  /* c8 ignore next */
+  const securityArchive = archive.ok ? archive : undefined
+  const query = new Query({
+    graph,
+    specOptions: conf.options,
+    securityArchive,
+  })
+
   const { edges, nodes } = await query.search(
     queryString || defaultQueryString,
   )

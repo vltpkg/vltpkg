@@ -33,6 +33,7 @@
     "@vltpkg/query": "workspace:*",
     "@vltpkg/registry-client": "workspace:*",
     "@vltpkg/run": "workspace:*",
+    "@vltpkg/security-archive": "workspace:*",
     "@vltpkg/server": "workspace:*",
     "@vltpkg/spec": "workspace:*",
     "@vltpkg/types": "workspace:*",
