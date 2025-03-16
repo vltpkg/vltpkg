@@ -1,6 +1,7 @@
 import { error } from '@vltpkg/error-cause'
 import type { EdgeLike, GraphLike, NodeLike } from '@vltpkg/graph'
 import type { SpecOptions } from '@vltpkg/spec/browser'
+import type { SecurityArchiveLike } from '@vltpkg/security-archive'
 import postcssSelectorParser from 'postcss-selector-parser'
 import { attribute } from './attribute.ts'
 import { classFn } from './class.ts'
@@ -110,17 +111,24 @@ export const walk = async (
 export type QueryOptions = {
   graph: GraphLike
   specOptions: SpecOptions
+  securityArchive: SecurityArchiveLike | undefined
 }
 
 export class Query {
   #cache: Map<string, QueryResponse>
   #graph: GraphLike
   #specOptions: SpecOptions
+  #securityArchive: SecurityArchiveLike | undefined
 
-  constructor({ graph, specOptions }: QueryOptions) {
+  constructor({
+    graph,
+    specOptions,
+    securityArchive
+  }: QueryOptions) {
     this.#cache = new Map()
     this.#graph = graph
     this.#specOptions = specOptions
+    this.#securityArchive = securityArchive
   }
 
   async search(
@@ -165,6 +173,7 @@ export class Query {
       },
       partial: { nodes, edges },
       signal,
+      securityArchive: this.#securityArchive,
       specOptions: this.#specOptions,
       walk,
     })

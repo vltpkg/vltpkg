@@ -123,6 +123,7 @@ const getState = (query: string, graph = getSemverRichGraph()) => {
     },
     cancellable: async () => {},
     walk: async i => i,
+    securityArchive: undefined,
     specOptions,
   }
   return state

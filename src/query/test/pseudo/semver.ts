@@ -33,6 +33,7 @@ t.test('select from semver definition', async t => {
       },
       cancellable: async () => {},
       walk: async i => i,
+      securityArchive: undefined,
       specOptions: {},
     }
     return state
