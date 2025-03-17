@@ -16,6 +16,7 @@ import type { ParserFn, ParserState } from './types.ts'
 import { abandoned } from './pseudo/abandoned.ts'
 import { attr } from './pseudo/attr.ts'
 import { confused } from './pseudo/confused.ts'
+import { debug } from './pseudo/debug.ts'
 import { deprecated } from './pseudo/deprecated.ts'
 import { evalParser } from './pseudo/eval.ts'
 import { nativeParser } from './pseudo/native.ts'
@@ -338,6 +339,7 @@ const pseudoSelectors = new Map<string, ParserFn>(
     abandoned,
     attr,
     confused,
+    debug,
     deprecated,
     eval: evalParser,
     empty,
