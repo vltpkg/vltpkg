@@ -16,6 +16,7 @@ import type { ParserFn, ParserState } from './types.ts'
 import { abandoned } from './pseudo/abandoned.ts'
 import { attr } from './pseudo/attr.ts'
 import { deprecated } from './pseudo/deprecated.ts'
+import { obfuscated } from './pseudo/obfuscated.ts'
 import { outdated } from './pseudo/outdated.ts'
 import { semverParser as semver } from './pseudo/semver.ts'
 import { shrinkwrap } from './pseudo/shrinkwrap.ts'
@@ -336,6 +337,7 @@ const pseudoSelectors = new Map<string, ParserFn>(
     // TODO: link
     missing,
     not,
+    obfuscated,
     outdated,
     // TODO: overridden
     private: privateFn,
