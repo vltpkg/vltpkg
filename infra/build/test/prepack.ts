@@ -8,30 +8,36 @@ import * as Compile from '../src/compile.ts'
 const mockCli = async (
   t: Test,
   {
+    workspaceName,
     argv = [],
     pkg,
   }: {
+    workspaceName: string
     argv?: string[]
     pkg?: Record<string, string | object>
   },
 ) => {
-  const dir = t.testdir({
-    'package.json': JSON.stringify({
-      version: '1.2.3',
-      description: 'hi',
-      repository: 'my-repo',
-      keywords: ['hi'],
-      type: 'module',
-      license: 'MIT',
-      scripts: { dont_copy_this: 'hi' },
-      devDependencies: { dont_copy_this: 'hi' },
-      ...pkg,
-    }),
-    'README.md': 'hi',
-    LICENSE: 'hi',
-    'postinstall.cjs': 'hi',
-    'placeholder-bin.js': 'hi',
+  const testdir = t.testdir({
+    [workspaceName]: {
+      'package.json': JSON.stringify({
+        name: 'my-published-package',
+        version: '1.2.3',
+        description: 'hi',
+        repository: 'my-repo',
+        keywords: ['hi'],
+        type: 'module',
+        license: 'MIT',
+        scripts: { dont_copy_this: 'hi' },
+        devDependencies: { dont_copy_this: 'hi' },
+        ...pkg,
+      }),
+      'README.md': 'hi',
+      LICENSE: 'hi',
+      'postinstall.cjs': 'hi',
+      'placeholder-bin.js': 'hi',
+    },
   })
+  const dir = join(testdir, workspaceName)
 
   t.chdir(dir)
   t.intercept(process, 'argv', {
@@ -74,23 +80,24 @@ const mockCli = async (
 t.test('invalid name', async t => {
   await t.rejects(
     mockCli(t, {
-      pkg: { name: 'bad-name', publishConfig: { directory: 'ok' } },
+      workspaceName: 'bad-name',
+      pkg: { publishConfig: { directory: 'ok' } },
     }),
   )
 })
 
-t.test('default vlt CLI', async t => {
+t.test('bundled CLI', async t => {
   const dir = 'outdir'
   const { readPkg, readOutdir } = await mockCli(t, {
+    workspaceName: 'cli-bundled',
     pkg: {
-      name: 'vlt',
       publishConfig: {
         directory: dir,
       },
     },
   })
   t.strictSame(readPkg(dir), {
-    name: 'vlt',
+    name: 'my-published-package',
     version: '1.2.3',
     description: 'hi',
     repository: 'my-repo',
@@ -115,8 +122,8 @@ t.test('root compiled bin', async t => {
   const dir = 'outdir'
   const mockRootBin = (t: Test) =>
     mockCli(t, {
+      workspaceName: 'cli-compiled',
       pkg: {
-        name: '@vltpkg/cli-compiled',
         publishConfig: {
           directory: dir,
         },
@@ -132,7 +139,7 @@ t.test('root compiled bin', async t => {
     })
     const { readOutdir, readPkg } = await mockRootBin(t)
     t.strictSame(readPkg(dir), {
-      name: '@vltpkg/cli-compiled',
+      name: 'my-published-package',
       version: '1.2.3',
       description: 'hi',
       repository: 'my-repo',
@@ -140,7 +147,11 @@ t.test('root compiled bin', async t => {
       type: 'module',
       license: 'MIT',
       bin: {
+        vlix: './vlix',
+        vlr: './vlr',
+        vlrx: './vlrx',
         vlt: './vlt',
+        vlx: './vlx',
       },
       optionalDependencies: {
         '@vltpkg/cli-linux-x64':
@@ -164,16 +175,26 @@ t.test('root compiled bin', async t => {
         'LICENSE',
         'README.md',
         'package.json',
+        'vlix',
+        'vlr',
+        'vlrx',
         'vlt',
+        'vlx',
         'postinstall.cjs',
       ].sort(),
     )
   })
 
-  t.test('publish', async t => {
+  t.test('limit which bins to create', async t => {
+    t.intercept(process, 'env', {
+      value: {
+        ...process.env,
+        __VLT_INTERNAL_COMPILED_BINS: 'vlt,vlr',
+      },
+    })
     const { readOutdir, readPkg } = await mockRootBin(t)
     t.strictSame(readPkg(dir), {
-      name: '@vltpkg/cli-compiled',
+      name: 'my-published-package',
       version: '1.2.3',
       description: 'hi',
       repository: 'my-repo',
@@ -181,6 +202,7 @@ t.test('root compiled bin', async t => {
       type: 'module',
       license: 'MIT',
       bin: {
+        vlr: './vlr',
         vlt: './vlt',
       },
       optionalDependencies: {
@@ -200,7 +222,52 @@ t.test('root compiled bin', async t => {
         'LICENSE',
         'README.md',
         'package.json',
+        'vlr',
         'vlt',
+        'postinstall.cjs',
+      ].sort(),
+    )
+  })
+
+  t.test('publish', async t => {
+    const { readOutdir, readPkg } = await mockRootBin(t)
+    t.strictSame(readPkg(dir), {
+      name: 'my-published-package',
+      version: '1.2.3',
+      description: 'hi',
+      repository: 'my-repo',
+      keywords: ['hi'],
+      type: 'module',
+      license: 'MIT',
+      bin: {
+        vlix: './vlix',
+        vlr: './vlr',
+        vlrx: './vlrx',
+        vlt: './vlt',
+        vlx: './vlx',
+      },
+      optionalDependencies: {
+        '@vltpkg/cli-linux-x64': '1.2.3',
+        '@vltpkg/cli-linux-arm64': '1.2.3',
+        '@vltpkg/cli-darwin-x64': '1.2.3',
+        '@vltpkg/cli-darwin-arm64': '1.2.3',
+        '@vltpkg/cli-win32-x64': '1.2.3',
+      },
+      scripts: {
+        postinstall: 'node postinstall.cjs',
+      },
+    })
+    t.strictSame(
+      readOutdir(dir),
+      [
+        'LICENSE',
+        'README.md',
+        'package.json',
+        'vlix',
+        'vlr',
+        'vlrx',
+        'vlt',
+        'vlx',
         'postinstall.cjs',
       ].sort(),
     )
@@ -211,6 +278,7 @@ t.test('platform bin', async t => {
   const dir = 'outdir'
   const mockPlatformBin = (t: Test) =>
     mockCli(t, {
+      workspaceName: 'cli-darwin-x64',
       pkg: {
         name: '@vltpkg/cli-darwin-x64',
         publishConfig: {

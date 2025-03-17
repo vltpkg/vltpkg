@@ -24,6 +24,8 @@ building, bundling, and benchmarking the other workspaces.
 These are internal and highly coupled to our monorepo setup, so they
 are not published to any registry.
 
+This directory also contains all the `cli-*` variants.
+
 ### [`www`](./www/)
 
 These are websites that get deployed. Currently only
@@ -129,11 +131,9 @@ release PR should be:
 
 The following packages are published as part of the CLI:
 
-- `vlt` This is currently the bundled JS version of the CLI
-- `@vltpkg/cli-compiled` The is the compiled version of the CLI that
-  we are testing so it can be made the default in the future. This
-  package only has placeholder bins that are swapped out in a
-  postinstall for one of the platform variants below.
+- `vlt` The is the compiled variant of the CLI. This package only has
+  placeholder bins that are swapped out in a postinstall for one of
+  the platform variants below.
 - `@vltpkg/cli-darmin-arm64`
 - `@vltpkg/cli-darmin-x64`
 - `@vltpkg/cli-linux-arm64`
@@ -142,9 +142,15 @@ The following packages are published as part of the CLI:
 
 Note that the platform specific variants do not have any
 `package.json#bin` entries because that is incompatible with the
-postinstall strategy of the parent `@vltpkg/cli-compiled` package. If
-you need to install one of those directly, you will need to move/run
-the included `vlt` executable manually.
+postinstall strategy of the parent package. If you need to install one
+of those directly, you will need to move/run/link the included `vlt`
+executable manually.
+
+The bundled JS variant of the CLI still exists in the
+`infra/cli-bundled` directory, but is marked `private` so it wont get
+published. It exists because it is an intermediary of the compiled
+CLI, so it gets tested in `smoke-tests` to help debug the build
+pipeline of `TS source` -> `esbuild bundled JS` -> `compiled Deno`.
 
 ## GUI Live Reload
 
@@ -193,7 +199,7 @@ and `--arch` flags.
 pnpm build:compile --platform=win32 --arch=x64
 ```
 
-You can also run `pnpm pack` in any of the `./infra/cli*` directories
+You can also run `pnpm pack` in any of the `./infra/cli-*` directories
 to generate a tarball of the build.
 
 ## FAQ

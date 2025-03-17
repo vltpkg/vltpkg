@@ -1,11 +1,12 @@
 {
-  "name": "vlt",
+  "name": "@vltpkg/cli-bundled",
   "description": "The vlt CLI",
   "version": "0.0.0-3",
+  "private": true,
   "repository": {
     "type": "git",
     "url": "git+https://github.com/vltpkg/vltpkg.git",
-    "directory": "infra/cli"
+    "directory": "infra/cli-bundled"
   },
   "devDependencies": {
     "@vltpkg/infra-build": "workspace:*"
