@@ -18,6 +18,7 @@ import { attr } from './pseudo/attr.ts'
 import { confused } from './pseudo/confused.ts'
 import { debug } from './pseudo/debug.ts'
 import { deprecated } from './pseudo/deprecated.ts'
+import { dynamic } from './pseudo/dynamic.ts'
 import { evalParser } from './pseudo/eval.ts'
 import { nativeParser } from './pseudo/native.ts'
 import { network } from './pseudo/network.ts'
@@ -341,6 +342,7 @@ const pseudoSelectors = new Map<string, ParserFn>(
     confused,
     debug,
     deprecated,
+    dynamic,
     eval: evalParser,
     empty,
     has,
