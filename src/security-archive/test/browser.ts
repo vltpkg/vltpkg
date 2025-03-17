@@ -73,6 +73,9 @@ const json = {
 
 t.test('SecurityArchive.load', async t => {
   const archive = SecurityArchive.load(json)
+  if (!archive) {
+    throw new Error('expected archive to be loaded')
+  }
   t.strictSame(
     archive.get(
       joinDepIDTuple(['registry', '', 'english-days@1.0.0']),
@@ -83,8 +86,16 @@ t.test('SecurityArchive.load', async t => {
 
   await t.test('empty archive', async t => {
     const archive = SecurityArchive.load({})
+    if (!archive) {
+      throw new Error('expected archive to be loaded')
+    }
     t.strictSame(archive.size, 0, 'should have an empty archive')
   })
+})
+
+t.test('no archive', async t => {
+  const archive = SecurityArchive.load(undefined)
+  t.strictSame(archive, undefined, 'should return undefined')
 })
 
 t.test('load bad data', async t => {

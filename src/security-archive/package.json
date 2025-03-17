@@ -15,7 +15,8 @@
     ],
     "exports": {
       "./package.json": "./package.json",
-      ".": "./src/index.ts"
+      ".": "./src/index.ts",
+      "./browser": "./src/browser.ts"
     }
   },
   "dependencies": {
@@ -67,6 +68,11 @@
     ".": {
       "import": {
         "default": "./src/index.ts"
+      }
+    },
+    "./browser": {
+      "import": {
+        "default": "./src/browser.ts"
       }
     }
   },
