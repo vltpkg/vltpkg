@@ -12,6 +12,7 @@ import { basename, resolve } from 'node:path'
 import { bundle } from './bundle.ts'
 import { compile } from './compile.ts'
 import { BINS } from './bins.ts'
+import type { Bin } from './bins.ts'
 
 const {
   __VLT_INTERNAL_LOCAL_OPTIONAL_DEPS,
@@ -147,7 +148,7 @@ const main = async () => {
       outdir,
       platform,
       arch,
-      bins: ['vlt'],
+      bins: COMPILED_BINS as Bin[],
     })
     writeFiles({
       outdir,
