@@ -6,6 +6,7 @@ import { attr } from './pseudo/attr.ts'
 import { outdated } from './pseudo/outdated.ts'
 import { semverParser as semver } from './pseudo/semver.ts'
 import { suspicious } from './pseudo/suspicious.ts'
+import { trivial } from './pseudo/trivial.ts'
 import { undesirable } from './pseudo/undesirable.ts'
 import { unmaintained } from './pseudo/unmaintained.ts'
 import { abandoned } from './pseudo/abandoned.ts'
@@ -319,6 +320,7 @@ const typeFn = async (state: ParserState) => {
 
 const pseudoSelectors = new Map<string, ParserFn>(
   Object.entries({
+    abandoned,
     attr,
     empty,
     has,
@@ -332,13 +334,13 @@ const pseudoSelectors = new Map<string, ParserFn>(
     project,
     root,
     scope,
-    type: typeFn,
     semver,
     suspicious,
+    trivial,
+    type: typeFn,
     undesirable,
-    abandoned,
-    unstable,
     unmaintained,
+    unstable,
   }),
 )
 
