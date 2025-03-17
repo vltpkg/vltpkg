@@ -119,6 +119,7 @@ const securitySelectors = new Set([
   ':deprecated',
   ':eval',
   ':obfuscated',
+  ':native',
   ':scripts',
   ':shell',
   ':shrinkwrap',
