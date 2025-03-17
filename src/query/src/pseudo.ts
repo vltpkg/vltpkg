@@ -20,6 +20,7 @@ import { debug } from './pseudo/debug.ts'
 import { deprecated } from './pseudo/deprecated.ts'
 import { dynamic } from './pseudo/dynamic.ts'
 import { entropic } from './pseudo/entropic.ts'
+import { env } from './pseudo/env.ts'
 import { evalParser } from './pseudo/eval.ts'
 import { fs } from './pseudo/fs.ts'
 import { nativeParser } from './pseudo/native.ts'
@@ -348,6 +349,7 @@ const pseudoSelectors = new Map<string, ParserFn>(
     eval: evalParser,
     empty,
     entropic,
+    env,
     fs,
     has,
     is,
