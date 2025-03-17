@@ -27,3 +27,32 @@ export const removeDanglingEdges = (state: ParserState) => {
  */
 export const removeQuotes = (value: string) =>
   value.replace(/^"(.*?)"$/, '$1')
+
+/**
+ * Reusable security selector alert filter.
+ */
+export const createSecuritySelectorFilter = (
+  name: string,
+  type: string,
+) => {
+  return async (state: ParserState) => {
+    if (!state.securityArchive) {
+      throw new Error(
+        `Missing security archive while trying to parse the :${name} security selector`,
+      )
+    }
+
+    for (const node of state.partial.nodes) {
+      const report = state.securityArchive.get(node.id)
+      const exclude =
+        !report?.alerts.some(alert => alert.type === type)
+      if (exclude) {
+        removeNode(state, node)
+      }
+    }
+
+    removeDanglingEdges(state)
+
+    return state
+  }
+}
