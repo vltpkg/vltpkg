@@ -19,6 +19,7 @@ import { deprecated } from './pseudo/deprecated.ts'
 import { evalParser } from './pseudo/eval.ts'
 import { obfuscated } from './pseudo/obfuscated.ts'
 import { outdated } from './pseudo/outdated.ts'
+import { scripts } from './pseudo/scripts.ts'
 import { semverParser as semver } from './pseudo/semver.ts'
 import { shrinkwrap } from './pseudo/shrinkwrap.ts'
 import { suspicious } from './pseudo/suspicious.ts'
@@ -347,6 +348,7 @@ const pseudoSelectors = new Map<string, ParserFn>(
     project,
     root,
     scope,
+    scripts,
     semver,
     shrinkwrap,
     suspicious,
