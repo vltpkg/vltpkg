@@ -121,6 +121,7 @@ const securitySelectors = new Set([
   ':deprecated',
   ':dynamic',
   ':eval',
+  ':fs',
   ':obfuscated',
   ':native',
   ':network',
