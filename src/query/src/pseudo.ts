@@ -8,6 +8,7 @@ import { semverParser as semver } from './pseudo/semver.ts'
 import { suspicious } from './pseudo/suspicious.ts'
 import { undesirable } from './pseudo/undesirable.ts'
 import { unmaintained } from './pseudo/unmaintained.ts'
+import { abandoned } from './pseudo/abandoned.ts'
 import { unstable } from './pseudo/unstable.ts'
 import { removeDanglingEdges, removeNode } from './pseudo/helpers.ts'
 import {
@@ -335,6 +336,7 @@ const pseudoSelectors = new Map<string, ParserFn>(
     semver,
     suspicious,
     undesirable,
+    abandoned,
     unstable,
     unmaintained,
   }),
