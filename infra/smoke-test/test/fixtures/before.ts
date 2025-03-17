@@ -2,7 +2,7 @@ import { bundle, compile } from '@vltpkg/infra-build'
 import { BUNDLE_DIR, COMPILE_DIR, ROOT_COMPILE_DIR } from './run.ts'
 import { spawnSync } from 'node:child_process'
 import { mkdirSync, rmSync, cpSync, writeFileSync } from 'node:fs'
-import { basename, join, resolve } from 'node:path'
+import { basename, join, resolve, sep } from 'node:path'
 import assert from 'node:assert'
 import t from 'tap'
 
@@ -30,6 +30,7 @@ if (process.env.__VLT_INTERNAL_SMOKE_TEST?.includes('rootCompile')) {
       env: {
         ...process.env,
         __VLT_INTERNAL_LOCAL_OPTIONAL_DEPS: '1',
+        __VLT_INTERNAL_COMPILED_BINS: bins.join(','),
       },
     },
   )
@@ -38,9 +39,10 @@ if (process.env.__VLT_INTERNAL_SMOKE_TEST?.includes('rootCompile')) {
     .filter(l => l.includes('.tgz'))
     .map(l => ({ path: l, name: basename(l) }))
   const rootTarball = tarballs.find(t =>
-    t.name.startsWith('vltpkg-cli-compiled'),
+    t.path.includes(`${sep}cli-compiled${sep}`),
   )
   assert(rootTarball, 'root tarball not found')
+  rmSync(ROOT_COMPILE_DIR, { recursive: true, force: true })
   mkdirSync(ROOT_COMPILE_DIR, { recursive: true })
   for (const tarball of tarballs) {
     cpSync(
@@ -60,11 +62,20 @@ if (process.env.__VLT_INTERNAL_SMOKE_TEST?.includes('rootCompile')) {
       2,
     ),
   )
-  spawnSync('npm', ['install', `./${rootTarball.name}`], {
-    cwd: ROOT_COMPILE_DIR,
-    stdio: 'pipe',
-    encoding: 'utf8',
-  })
+  const install = spawnSync(
+    'npm',
+    ['install', `./${rootTarball.name}`],
+    {
+      cwd: ROOT_COMPILE_DIR,
+      stdio: 'pipe',
+      encoding: 'utf8',
+    },
+  )
+  if (install.status !== 0) {
+    throw new Error(`Failed to install root tarball`, {
+      cause: install,
+    })
+  }
 }
 
 t.comment('done')

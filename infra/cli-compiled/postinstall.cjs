@@ -36,12 +36,15 @@ const atomicCopySync = (source, target) => {
   } catch (err) {
     try {
       fs.unlinkSync(tmp)
-    } catch (err2) {
-      throw new Error(`Could not unlink tmp platform bin`, {
-        cause: err2,
-      })
-    }
-    throw new Error(`Could not copy platform bin`, { cause: err })
+    } catch {}
+    throw new Error(`Could not copy platform bin`, {
+      cause: {
+        source,
+        target,
+        tmp,
+        err,
+      },
+    })
   }
 }
 

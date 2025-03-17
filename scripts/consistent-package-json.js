@@ -380,7 +380,6 @@ const fixCliVariants = async ws => {
   if (!ws.workspaceBasename.startsWith('cli')) {
     return
   }
-  let readme = readFileSync(resolve(ws.dir, 'README.md'), 'utf8')
 
   ws.pj.devDependencies = {
     '@vltpkg/infra-build': 'workspace:*',
@@ -392,42 +391,37 @@ const fixCliVariants = async ws => {
     directory: './.build-publish',
   }
 
-  const cliType =
-    ws.workspaceBasename === 'cli' ? 'default'
-    : ws.workspaceBasename === 'cli-compiled' ? 'compiled-root'
-    : 'platform'
-  switch (cliType) {
-    case 'default':
-      ws.pj.name = 'vlt'
-      ws.pj.description = 'The vlt CLI'
+  let descriptionExtra = ''
+
+  switch (ws.workspaceBasename) {
+    case 'cli-bundled':
+      ws.pj.name = '@vltpkg/cli-bundled'
+      // Bundled variant of the CLI is not published but still exists
+      // for testing since the bundled JS is an intermediary step of
+      // the compiled variant.
+      ws.pj.private = true
       break
-    case 'compiled-root':
-      ws.pj.name = `@vltpkg/${ws.workspaceBasename}`
-      ws.pj.description = 'The vlt CLI (compiled)'
+    case 'cli-compiled':
+      ws.pj.name = `vlt`
       ws.pj.engines = undefined
-      readme = readme.replaceAll(
-        /`vlt`( \(.*\))/g,
-        `\`vlt\` (compiled)`,
-      )
       break
-    case 'platform': {
+    default: {
       const [platform, arch] = ws.workspaceBasename
         .split('-')
         .splice(1)
-      ws.pj.name = `@vltpkg/${ws.workspaceBasename}`
-      ws.pj.description = `The vlt CLI (${platform}-${arch})`
+      descriptionExtra += ` (${platform}-${arch})`
+      ws.pj.name = `@vltpkg/cli-${platform}-${arch}`
       ws.pj.engines = undefined
-      readme = readme.replaceAll(
-        /`vlt`( \(.*\))/g,
-        `\`vlt\` (${platform}-${arch})`,
-      )
       break
     }
   }
 
+  ws.pj.description = `The vlt CLI${descriptionExtra}`
   await writeFormatted(
     resolve(ws.dir, 'README.md'),
-    readme.replaceAll(/^# @vltpkg\/.*$/gm, `# ${ws.pj.name}`),
+    readFileSync(resolve(ws.dir, 'README.md'), 'utf8')
+      .replaceAll(/`vlt`( \(.*\))?/g, `\`vlt\`${descriptionExtra}`)
+      .replaceAll(/^# .*$/gm, `# ${ws.pj.name}`),
   )
 }
 

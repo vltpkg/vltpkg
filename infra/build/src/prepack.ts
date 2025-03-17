@@ -8,14 +8,17 @@ import {
   writeFileSync,
 } from 'node:fs'
 import assert from 'node:assert'
-import { resolve } from 'node:path'
+import { basename, resolve } from 'node:path'
 import { bundle } from './bundle.ts'
 import { compile } from './compile.ts'
 import { BINS } from './bins.ts'
 
-const { __VLT_INTERNAL_LOCAL_OPTIONAL_DEPS } = process.env
+const {
+  __VLT_INTERNAL_LOCAL_OPTIONAL_DEPS,
+  __VLT_INTERNAL_COMPILED_BINS,
+} = process.env
 
-const COMPILED_BINS = ['vlt']
+const COMPILED_BINS = __VLT_INTERNAL_COMPILED_BINS?.split(',') ?? BINS
 
 const OPTIONAL_DEPS = [
   '@vltpkg/cli-linux-x64',
@@ -67,18 +70,22 @@ const parsePackage = () => {
   const outdir = rawPkg.publishConfig?.directory
   assert(outdir, 'missing publishConfig.directory')
 
-  // Omit from the package.json that gets written to the publish dir
-  return { outdir, pkg: omit(rawPkg, OMIT_PKG_KEYS) }
+  return {
+    outdir,
+    // Omit from the package.json that gets written to the publish dir
+    pkg: omit(rawPkg, OMIT_PKG_KEYS),
+    workspaceName: basename(process.cwd()),
+  }
 }
 
 const main = async () => {
-  const { outdir, pkg } = parsePackage()
+  const { outdir, pkg, workspaceName } = parsePackage()
 
   rmSync(outdir, { recursive: true, force: true })
   mkdirSync(outdir, { recursive: true })
 
-  // The default CLI
-  if (pkg.name === 'vlt') {
+  // The bundled CLI
+  if (workspaceName === 'cli-bundled') {
     await bundle({ outdir })
     writeFiles({
       outdir,
@@ -95,7 +102,7 @@ const main = async () => {
   }
 
   // The compiled root CLI with optional deps
-  if (pkg.name === '@vltpkg/cli-compiled') {
+  if (workspaceName === 'cli-compiled') {
     for (const bin of COMPILED_BINS) {
       cpSync('./placeholder-bin.js', resolve(outdir, bin))
     }
@@ -132,7 +139,7 @@ const main = async () => {
   }
 
   // The platform specific CLIs
-  if (/^@vltpkg\/cli-(.+)-(.+)/.exec(pkg.name)) {
+  if (/^cli-.+-.+/.exec(workspaceName)) {
     const [, platform, arch] = pkg.name.split('-')
     assert(platform, 'invalid platform in package name')
     assert(arch, 'invalid arch in package name')
