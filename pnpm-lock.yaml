@@ -90,6 +90,9 @@ catalogs:
     typescript-eslint:
       specifier: ^8.23.0
       version: 8.23.0
+    walk-up-path:
+      specifier: ^4.0.0
+      version: 4.0.0
 
 patchedDependencies:
   tshy:
@@ -232,7 +235,7 @@ importers:
         specifier: 'catalog:'
         version: 8.23.0(eslint@9.20.0(jiti@1.21.6))(typescript@5.7.3)
 
-  infra/cli:
+  infra/cli-bundled:
     devDependencies:
       '@vltpkg/infra-build':
         specifier: workspace:*
@@ -12542,7 +12545,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  eslint-module-utils@2.12.0(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.7.0(eslint-plugin-import@2.31.0)(eslint@9.20.0(jiti@1.21.6)))(eslint@9.20.0(jiti@1.21.6)):
+  eslint-module-utils@2.12.0(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.7.0)(eslint@9.20.0(jiti@1.21.6)):
     dependencies:
       debug: 3.2.7
     optionalDependencies:
@@ -12563,7 +12566,7 @@ snapshots:
       doctrine: 2.1.0
       eslint: 9.20.0(jiti@1.21.6)
       eslint-import-resolver-node: 0.3.9
-      eslint-module-utils: 2.12.0(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.7.0(eslint-plugin-import@2.31.0)(eslint@9.20.0(jiti@1.21.6)))(eslint@9.20.0(jiti@1.21.6))
+      eslint-module-utils: 2.12.0(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.7.0)(eslint@9.20.0(jiti@1.21.6))
       hasown: 2.0.2
       is-core-module: 2.15.1
       is-glob: 4.0.3

@@ -81,14 +81,14 @@ jobs:
 
       - name: Get Previous CLI Version Number
         id: previous-version
-        run: echo "value=$(jq -r .version ./infra/cli/package.json)" >> $GITHUB_OUTPUT
+        run: echo "value=$(jq -r .version ./infra/cli-compiled/package.json)" >> $GITHUB_OUTPUT
 
       - name: Version CLI Packages
-        run: pnpm --filter="./infra/cli*" exec npm version prerelease --no-git-tag-version
+        run: pnpm --filter="./infra/cli-*" exec npm version prerelease --no-git-tag-version
 
       - name: Get CLI Version Number
         id: version
-        run: echo "value=$(jq -r .version ./infra/cli/package.json)" >> $GITHUB_OUTPUT
+        run: echo "value=$(jq -r .version ./infra/cli-compiled/package.json)" >> $GITHUB_OUTPUT
 
       # TODO: use git history to determine other packages to bump
       - name: Version Workspaces
@@ -256,7 +256,7 @@ jobs:
       - name: Create Git Tag
         if: needs.detect-action.outputs.dry-run != 'true'
         run: |
-          VERSION=$(jq -r .version ./infra/cli/package.json)
+          VERSION=$(jq -r .version ./infra/cli-compiled/package.json)
           git config --global user.email "vltops@users.noreply.github.com"
           git config --global user.name "vltops"
           git tag -a "v$VERSION" -m "Release v$VERSION"
