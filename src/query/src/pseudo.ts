@@ -16,6 +16,7 @@ import type { ParserFn, ParserState } from './types.ts'
 import { abandoned } from './pseudo/abandoned.ts'
 import { attr } from './pseudo/attr.ts'
 import { deprecated } from './pseudo/deprecated.ts'
+import { evalParser } from './pseudo/eval.ts'
 import { obfuscated } from './pseudo/obfuscated.ts'
 import { outdated } from './pseudo/outdated.ts'
 import { semverParser as semver } from './pseudo/semver.ts'
@@ -332,6 +333,7 @@ const pseudoSelectors = new Map<string, ParserFn>(
     abandoned,
     attr,
     deprecated,
+    eval: evalParser,
     empty,
     has,
     is,
