@@ -120,6 +120,7 @@ const securitySelectors = new Set([
   ':eval',
   ':obfuscated',
   ':scripts',
+  ':shell',
   ':shrinkwrap',
   ':suspicious',
   ':tracker',
