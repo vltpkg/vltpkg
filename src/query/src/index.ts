@@ -116,6 +116,7 @@ export type QueryOptions = {
 
 const securitySelectors = new Set([
   ':unmaintained',
+  ':unstable',
   ':suspicious',
   ':undesirable',
 ])
