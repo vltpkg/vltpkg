@@ -114,6 +114,8 @@ export type QueryOptions = {
   securityArchive: SecurityArchiveLike | undefined
 }
 
+// A list of known security selectors that rely on
+// data from the security-archive in order to work
 const securitySelectors = new Set([
   ':abandoned',
   ':confused',
@@ -147,6 +149,11 @@ export class Query {
   #specOptions: SpecOptions
   #securityArchive: SecurityArchiveLike | undefined
 
+  /**
+   * Helper method to determine if a given query string is using any of
+   * the known security selectors. This is useful so that operations can
+   * skip hydrating the security archive if it's not needed.
+   */
   static hasSecuritySelectors(query: string): boolean {
     for (const selector of securitySelectors) {
       if (query.includes(selector)) {
@@ -163,6 +170,9 @@ export class Query {
     this.#securityArchive = securityArchive
   }
 
+  /**
+   * Search the graph for nodes and edges that match the given query.
+   */
   async search(
     query: string,
     signal?: AbortSignal,
