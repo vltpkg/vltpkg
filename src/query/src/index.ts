@@ -114,17 +114,24 @@ export type QueryOptions = {
   securityArchive: SecurityArchiveLike | undefined
 }
 
+const securitySelectors = new Set([':unmaintained'])
+
 export class Query {
   #cache: Map<string, QueryResponse>
   #graph: GraphLike
   #specOptions: SpecOptions
   #securityArchive: SecurityArchiveLike | undefined
 
-  constructor({
-    graph,
-    specOptions,
-    securityArchive
-  }: QueryOptions) {
+  static hasSecuritySelectors(query: string): boolean {
+    for (const selector of securitySelectors) {
+      if (query.includes(selector)) {
+        return true
+      }
+    }
+    return false
+  }
+
+  constructor({ graph, specOptions, securityArchive }: QueryOptions) {
     this.#cache = new Map()
     this.#graph = graph
     this.#specOptions = specOptions
