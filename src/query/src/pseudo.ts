@@ -19,6 +19,7 @@ import { confused } from './pseudo/confused.ts'
 import { deprecated } from './pseudo/deprecated.ts'
 import { evalParser } from './pseudo/eval.ts'
 import { nativeParser } from './pseudo/native.ts'
+import { network } from './pseudo/network.ts'
 import { obfuscated } from './pseudo/obfuscated.ts'
 import { outdated } from './pseudo/outdated.ts'
 import { scripts } from './pseudo/scripts.ts'
@@ -345,6 +346,7 @@ const pseudoSelectors = new Map<string, ParserFn>(
     // TODO: link
     missing,
     native: nativeParser,
+    network,
     not,
     obfuscated,
     outdated,
