@@ -18,6 +18,7 @@ import { attr } from './pseudo/attr.ts'
 import { deprecated } from './pseudo/deprecated.ts'
 import { outdated } from './pseudo/outdated.ts'
 import { semverParser as semver } from './pseudo/semver.ts'
+import { shrinkwrap } from './pseudo/shrinkwrap.ts'
 import { suspicious } from './pseudo/suspicious.ts'
 import { trivial } from './pseudo/trivial.ts'
 import { undesirable } from './pseudo/undesirable.ts'
@@ -342,6 +343,7 @@ const pseudoSelectors = new Map<string, ParserFn>(
     root,
     scope,
     semver,
+    shrinkwrap,
     suspicious,
     trivial,
     type: typeFn,
