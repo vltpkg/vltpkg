@@ -21,6 +21,7 @@ import { outdated } from './pseudo/outdated.ts'
 import { semverParser as semver } from './pseudo/semver.ts'
 import { shrinkwrap } from './pseudo/shrinkwrap.ts'
 import { suspicious } from './pseudo/suspicious.ts'
+import { tracker } from './pseudo/tracker.ts'
 import { trivial } from './pseudo/trivial.ts'
 import { undesirable } from './pseudo/undesirable.ts'
 import { unknown } from './pseudo/unknown.ts'
@@ -347,6 +348,7 @@ const pseudoSelectors = new Map<string, ParserFn>(
     semver,
     shrinkwrap,
     suspicious,
+    tracker,
     trivial,
     type: typeFn,
     undesirable,
