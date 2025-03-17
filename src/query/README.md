@@ -169,5 +169,62 @@ going to require a network call to hydrate package report data. Keep
 in mind that this is going to slow down end-user query usage since the
 security data needs to be fetched prior to a `Query` instantiation.
 
+- `:abandoned` Matches packages that were published by an npm account
+  that no longer exists.
+- `:confused` Matches packages affected by manifest confusion. This
+  could be malicious or caused by an error when publishing the
+  package.
+- `:debug` Matches packages that use debug, reflection and dynamic
+  code execution features.
+- `:deprecated` Matches packages marked as deprecated. This could
+  indicate that a single version should not be used, or that the
+  package is no longer maintained and any new vulnerabilities will not
+  be fixed.
+- `:dynamic` Matches packages that uses dynamic imports.
+- `:entropic` Matches packages that contains high entropic strings.
+  This could be a sign of encrypted data, leaked secrets or obfuscated
+  code.
+- `:env` Matches packages that accesses environment variables, which
+  may be a sign of credential stuffing or data theft.
+- `:eval` Matches packages that use dynamic code execution (e.g.,
+  eval()), which is a dangerous practice. This can prevent the code
+  from running in certain environments and increases the risk that the
+  code may contain exploits or malicious behavior.
+- `:fs` Matches packages that accesses the file system, and could
+  potentially read sensitive data.
+- `:obfuscated` Matches packages that use obfuscated files,
+  intentionally packed to hide their behavior. This could be a sign of
+  malware.
+- `:minified` Matches packages that contain minified code. This may be
+  harmless in some cases where minified code is included in packaged
+  libraries.
+- `:native` Matches packages that contain native code (e.g., compiled
+  binaries or shared libraries). Including native code can obscure
+  malicious behavior.
+- `:network` Matches packages that access the network.
+- `:scripts` Matches packages that have scripts that are run when the
+  package is installed. The majority of malware in npm is hidden in
+  install scripts.
+- `:shell` Matches packages that accesses the system shell. Accessing
+  the system shell increases the risk of executing arbitrary code.
+- `:shrinkwrap` Matches packages that contains a shrinkwrap file. This
+  may allow the package to bypass normal install procedures.
+- `:suspicious` Matches packages that may have its GitHub repository
+  artificially inflated with stars (from bots, crowdsourcing, etc.).
+- `:tracker` Matches packages that contains telemetry which tracks how
+  it is used.
+- `:trivial` Matches packages that have less than 10 lines of code.
+  These packages are easily copied into your own project and may not
+  warrant the additional supply chain risk of an external dependency.
+- `:undesirable` Matches packages that are a joke, parody, or includes
+  undocumented or hidden behavior unrelated to its primary function.
+- `:unknown` Matches packages that have a new npm collaborator
+  publishing a version of the package for the first time. New
+  collaborators are usually benign additions to a project, but do
+  indicate a change to the security surface area of a package.
 - `:unmaintained` Matches packages that have not been updated in more
   than 5 years and may be unmaintained.
+- `:unpopular` Matches packages that are not very popular.
+- `:unstable` Matches packages with unstable ownership. This indicates
+  a new collaborator has begun publishing package versions. Package
+  stability and security risk may be elevated.
