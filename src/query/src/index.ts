@@ -114,7 +114,7 @@ export type QueryOptions = {
   securityArchive: SecurityArchiveLike | undefined
 }
 
-const securitySelectors = new Set([':unmaintained'])
+const securitySelectors = new Set([':unmaintained', ':suspicious'])
 
 export class Query {
   #cache: Map<string, QueryResponse>

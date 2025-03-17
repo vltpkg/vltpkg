@@ -5,6 +5,7 @@ import { asManifest } from '@vltpkg/types'
 import { attr } from './pseudo/attr.ts'
 import { outdated } from './pseudo/outdated.ts'
 import { semverParser as semver } from './pseudo/semver.ts'
+import { suspicious } from './pseudo/suspicious.ts'
 import { unmaintained } from './pseudo/unmaintained.ts'
 import { removeDanglingEdges, removeNode } from './pseudo/helpers.ts'
 import {
@@ -330,6 +331,7 @@ const pseudoSelectors = new Map<string, ParserFn>(
     scope,
     type: typeFn,
     semver,
+    suspicious,
     unmaintained,
   }),
 )
