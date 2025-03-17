@@ -48,20 +48,26 @@ const mockCli = async (
     ],
   })
 
-  const calls = { bundle: 0, compile: 0 }
+  const calls: {
+    bundle: Bundle.Options[]
+    compile: Compile.Options[]
+  } = {
+    bundle: [],
+    compile: [],
+  }
 
   await t.mockImport<typeof import('../src/prepack.ts')>(
     '../src/prepack.ts',
     {
       '../src/bundle.ts': t.createMock(Bundle, {
-        bundle: async (o: unknown) => {
-          calls.bundle++
+        bundle: async (o: Bundle.Options) => {
+          calls.bundle.push(o)
           return o
         },
       }),
       '../src/compile.ts': t.createMock(Compile, {
-        compile: async (o: unknown) => {
-          calls.compile++
+        compile: async (o: Compile.Options) => {
+          calls.compile.push(o)
           return o
         },
       }),
@@ -287,8 +293,41 @@ t.test('platform bin', async t => {
       },
     })
 
+  t.test('limit which bins to create', async t => {
+    t.intercept(process, 'env', {
+      value: {
+        ...process.env,
+        __VLT_INTERNAL_COMPILED_BINS: 'vlt,vlr',
+      },
+    })
+    const { readOutdir, readPkg, calls } = await mockPlatformBin(t)
+    t.strictSame(calls.compile[0]?.bins, ['vlt', 'vlr'])
+    t.strictSame(readPkg(dir), {
+      name: '@vltpkg/cli-darwin-x64',
+      version: '1.2.3',
+      description: 'hi',
+      repository: 'my-repo',
+      keywords: ['hi'],
+      type: 'module',
+      license: 'MIT',
+      os: ['darwin'],
+      cpu: ['x64'],
+    })
+    t.strictSame(
+      readOutdir(dir),
+      ['LICENSE', 'README.md', 'package.json'].sort(),
+    )
+  })
+
   t.test('publish', async t => {
-    const { readOutdir, readPkg } = await mockPlatformBin(t)
+    const { readOutdir, readPkg, calls } = await mockPlatformBin(t)
+    t.strictSame(calls.compile[0]?.bins, [
+      'vlix',
+      'vlr',
+      'vlrx',
+      'vlt',
+      'vlx',
+    ])
     t.strictSame(readPkg(dir), {
       name: '@vltpkg/cli-darwin-x64',
       version: '1.2.3',
