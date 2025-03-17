@@ -41,6 +41,8 @@ export class SecurityArchive
    * Loads a security archive from a valid JSON dump.
    */
   static load(dump: unknown) {
+    if (dump === undefined) return undefined
+
     const archive = new SecurityArchive()
     const json = asSecurityArchiveJSON(dump)
     for (const [key, value] of Object.entries(json)) {
