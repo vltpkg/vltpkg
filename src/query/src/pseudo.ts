@@ -2,15 +2,7 @@ import { splitDepID } from '@vltpkg/dep-id/browser'
 import { error } from '@vltpkg/error-cause'
 import type { EdgeLike, NodeLike } from '@vltpkg/graph'
 import { asManifest } from '@vltpkg/types'
-import { attr } from './pseudo/attr.ts'
-import { outdated } from './pseudo/outdated.ts'
-import { semverParser as semver } from './pseudo/semver.ts'
-import { suspicious } from './pseudo/suspicious.ts'
-import { trivial } from './pseudo/trivial.ts'
-import { undesirable } from './pseudo/undesirable.ts'
-import { unmaintained } from './pseudo/unmaintained.ts'
-import { abandoned } from './pseudo/abandoned.ts'
-import { unstable } from './pseudo/unstable.ts'
+
 import { removeDanglingEdges, removeNode } from './pseudo/helpers.ts'
 import {
   asPostcssNodeWithChildren,
@@ -19,6 +11,18 @@ import {
   isSelectorNode,
 } from './types.ts'
 import type { ParserFn, ParserState } from './types.ts'
+
+// imported pseudo selectors
+import { abandoned } from './pseudo/abandoned.ts'
+import { attr } from './pseudo/attr.ts'
+import { outdated } from './pseudo/outdated.ts'
+import { semverParser as semver } from './pseudo/semver.ts'
+import { suspicious } from './pseudo/suspicious.ts'
+import { trivial } from './pseudo/trivial.ts'
+import { undesirable } from './pseudo/undesirable.ts'
+import { unknown } from './pseudo/unknown.ts'
+import { unmaintained } from './pseudo/unmaintained.ts'
+import { unstable } from './pseudo/unstable.ts'
 
 /**
  * :empty Pseudo-Selector, matches only nodes that have no children.
@@ -339,6 +343,7 @@ const pseudoSelectors = new Map<string, ParserFn>(
     trivial,
     type: typeFn,
     undesirable,
+    unknown,
     unmaintained,
     unstable,
   }),
