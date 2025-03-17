@@ -121,6 +121,7 @@ const securitySelectors = new Set([
   ':undesirable',
   ':unknown',
   ':unmaintained',
+  ':unpopular',
   ':unstable',
 ])
 

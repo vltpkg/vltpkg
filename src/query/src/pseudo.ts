@@ -22,6 +22,7 @@ import { trivial } from './pseudo/trivial.ts'
 import { undesirable } from './pseudo/undesirable.ts'
 import { unknown } from './pseudo/unknown.ts'
 import { unmaintained } from './pseudo/unmaintained.ts'
+import { unpopular } from './pseudo/unpopular.ts'
 import { unstable } from './pseudo/unstable.ts'
 
 /**
@@ -345,6 +346,7 @@ const pseudoSelectors = new Map<string, ParserFn>(
     undesirable,
     unknown,
     unmaintained,
+    unpopular,
     unstable,
   }),
 )
