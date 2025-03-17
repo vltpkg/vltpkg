@@ -120,6 +120,7 @@ const securitySelectors = new Set([
   ':debug',
   ':deprecated',
   ':dynamic',
+  ':entropic',
   ':eval',
   ':fs',
   ':obfuscated',
