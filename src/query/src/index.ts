@@ -119,6 +119,7 @@ const securitySelectors = new Set([
   ':confused',
   ':debug',
   ':deprecated',
+  ':dynamic',
   ':eval',
   ':obfuscated',
   ':native',
