@@ -23,6 +23,7 @@ import { entropic } from './pseudo/entropic.ts'
 import { env } from './pseudo/env.ts'
 import { evalParser } from './pseudo/eval.ts'
 import { fs } from './pseudo/fs.ts'
+import { minified } from './pseudo/minified.ts'
 import { nativeParser } from './pseudo/native.ts'
 import { network } from './pseudo/network.ts'
 import { obfuscated } from './pseudo/obfuscated.ts'
@@ -354,6 +355,7 @@ const pseudoSelectors = new Map<string, ParserFn>(
     has,
     is,
     // TODO: link
+    minified,
     missing,
     native: nativeParser,
     network,
