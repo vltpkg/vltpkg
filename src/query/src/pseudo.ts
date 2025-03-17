@@ -20,6 +20,7 @@ import { debug } from './pseudo/debug.ts'
 import { deprecated } from './pseudo/deprecated.ts'
 import { dynamic } from './pseudo/dynamic.ts'
 import { evalParser } from './pseudo/eval.ts'
+import { fs } from './pseudo/fs.ts'
 import { nativeParser } from './pseudo/native.ts'
 import { network } from './pseudo/network.ts'
 import { obfuscated } from './pseudo/obfuscated.ts'
@@ -345,6 +346,7 @@ const pseudoSelectors = new Map<string, ParserFn>(
     dynamic,
     eval: evalParser,
     empty,
+    fs,
     has,
     is,
     // TODO: link
