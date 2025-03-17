@@ -44,8 +44,9 @@ export const createSecuritySelectorFilter = (
 
     for (const node of state.partial.nodes) {
       const report = state.securityArchive.get(node.id)
-      const exclude =
-        !report?.alerts.some(alert => alert.type === type)
+      const exclude = !report?.alerts.some(
+        alert => alert.type === type,
+      )
       if (exclude) {
         removeNode(state, node)
       }
