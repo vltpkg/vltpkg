@@ -147,7 +147,7 @@ t.test('bad search argument', async t => {
   const query = new Query({
     graph,
     securityArchive: undefined,
-    specOptions
+    specOptions,
   })
   await t.rejects(
     query.search(null as unknown as string),
@@ -188,10 +188,8 @@ t.test('trying to use string selectors', async t => {
     new Query({
       graph: getSimpleGraph(),
       securityArchive: undefined,
-      specOptions
-    }).search(
-      '"foo"',
-    ),
+      specOptions,
+    }).search('"foo"'),
     /Unsupported selector/,
     'should throw an unsupported selector error',
   )
@@ -221,4 +219,21 @@ t.test('cancellable search', async t => {
     /query aborted/,
     'should reject with abort error',
   )
+})
+
+t.test('Query.hasSecuritySelectors', async t => {
+  t.ok(
+    Query.hasSecuritySelectors(':root > *:unmaintained'),
+    'should return true',
+  )
+  t.ok(
+    Query.hasSecuritySelectors(':root > *:has(:unmaintained)'),
+    'should return true',
+  )
+  t.ok(
+    Query.hasSecuritySelectors(':unmaintained'),
+    'should return true',
+  )
+  t.notOk(Query.hasSecuritySelectors(':foo'), 'should return false')
+  t.notOk(Query.hasSecuritySelectors(':has'), 'should return false')
 })

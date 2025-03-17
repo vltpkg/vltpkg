@@ -5,6 +5,7 @@ import { asManifest } from '@vltpkg/types'
 import { attr } from './pseudo/attr.ts'
 import { outdated } from './pseudo/outdated.ts'
 import { semverParser as semver } from './pseudo/semver.ts'
+import { unmaintained } from './pseudo/unmaintained.ts'
 import { removeDanglingEdges, removeNode } from './pseudo/helpers.ts'
 import {
   asPostcssNodeWithChildren,
@@ -321,6 +322,7 @@ const pseudoSelectors = new Map<string, ParserFn>(
     // TODO: link
     missing,
     not,
+    outdated,
     // TODO: overridden
     private: privateFn,
     project,
@@ -328,7 +330,7 @@ const pseudoSelectors = new Map<string, ParserFn>(
     scope,
     type: typeFn,
     semver,
-    outdated,
+    unmaintained,
   }),
 )
 
