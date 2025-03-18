@@ -284,6 +284,23 @@ t.test('Node', async t => {
     version: '1.0.0',
   })
   t.matchSnapshot(String(wsMani), 'should stringify workspace node')
+
+  const prefixedVersionMani = {
+    name: 'prefixed-version',
+    version: 'v1.0.0',
+  }
+  const prefixedVersionSpec = Spec.parse('foo@^1.0.0')
+  const prefixedVersionNode = new Node(
+    opts,
+    undefined,
+    prefixedVersionMani,
+    prefixedVersionSpec,
+  )
+  t.strictSame(
+    prefixedVersionNode.version,
+    '1.0.0',
+    'should return a normalized version value',
+  )
 })
 
 t.test('nodeModules path and inVltStore flag', t => {
