@@ -9,7 +9,6 @@ exports[`test/ignored-homedir-folder-names.ts > TAP > darwin > must match snapsh
 Array [
   "applications",
   "applications (parallels)",
-  "desktop",
   "downloads",
   "dropbox",
   "library",
@@ -26,7 +25,6 @@ Array [
 
 exports[`test/ignored-homedir-folder-names.ts > TAP > linux > must match snapshot 1`] = `
 Array [
-  "desktop",
   "downloads",
   "dropbox",
   "library",
@@ -44,7 +42,6 @@ Array [
   "appdata",
   "application data",
   "contacts",
-  "desktop",
   "downloads",
   "dropbox",
   "favorites",

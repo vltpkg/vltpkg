@@ -10,7 +10,6 @@ export const ignoredHomedirFolderNames = [
   'pictures',
   'private',
   'library',
-  'desktop',
   'dropbox',
 ].concat(
   process.platform === 'darwin' ?
