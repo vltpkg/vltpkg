@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router'
+import { useLocation, useNavigate } from 'react-router'
 import { useEffect, useState } from 'react'
 import {
   SidebarMenuSub,
@@ -29,6 +29,7 @@ import { selectQuery } from '@/components/queries/saved-item.jsx'
 
 const SidebarQueryProjectNav = () => {
   const navigate = useNavigate()
+  const { pathname } = useLocation()
   const { open: sidebarOpen, setOpen: setSidebarOpen } = useSidebar()
   const savedQueries = useGraphStore(state => state.savedQueries)
   const [projectQueries, setProjectQueries] = useState<SavedQuery[]>(
@@ -92,6 +93,8 @@ const SidebarQueryProjectNav = () => {
       setGlobalQueriesOpen(false)
     }
   }, [sidebarOpen])
+
+  if (!pathname.includes('/explore')) return null
 
   if (globalQueries.length === 0 && projectQueries.length === 0)
     return null
