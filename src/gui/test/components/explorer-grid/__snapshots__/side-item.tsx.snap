@@ -10,11 +10,11 @@ exports[`SideItem render as dependency 1`] = `
     >
       <gui-card-header classname="relative flex w-full flex-col rounded-t-lg p-0">
         <div class="flex items-center px-3 py-2">
-          <gui-card-title classname="flex flex-1 items-center gap-2 text-sm">
+          <gui-card-title classname="align-baseline text-sm">
             <span class="font-medium">
               item
             </span>
-            <span class="font-normal text-muted-foreground">
+            <span class="mx-1 rounded-sm px-1.5 py-1 pt-1.5 text-xs font-normal font-courier text-muted-foreground bg-transparent">
               v1.0.0
             </span>
           </gui-card-title>
@@ -22,7 +22,7 @@ exports[`SideItem render as dependency 1`] = `
         <div class="flex flex-row flex-wrap items-center justify-between gap-2 border-t-[1px] border-muted px-3 py-2">
           <p class="flex items-center gap-2 text-sm text-muted-foreground">
             Spec:
-            <span class="flex items-center justify-center rounded-sm bg-neutral-700/5 px-2 py-1 font-[courier] text-xs dark:bg-neutral-700/50">
+            <span class="mx-1 rounded-sm px-1.5 py-1 pt-1.5 text-xs font-normal font-courier text-muted-foreground dark:bg-neutral-700/50 bg-neutral-700/5 border-none">
             </span>
           </p>
           <div>
@@ -53,11 +53,11 @@ exports[`SideItem render as dependency with long name 1`] = `
     >
       <gui-card-header classname="relative flex w-full flex-col rounded-t-lg p-0">
         <div class="flex items-center px-3 py-2">
-          <gui-card-title classname="flex flex-1 items-center gap-2 text-sm">
+          <gui-card-title classname="align-baseline text-sm">
             <span class="font-medium">
               lorem-ipsum-dolor-sit-amet-consectetur-adipiscing-elit-sed-do-eiusmod-tempor-incididunt-ut-labore-et-dolore-magna-aliqua-ut-enim-ad-minim-veniam-quis-nostrud-exercitation
             </span>
-            <span class="font-normal text-muted-foreground">
+            <span class="mx-1 rounded-sm px-1.5 py-1 pt-1.5 text-xs font-normal font-courier text-muted-foreground bg-transparent">
               v1.0.0
             </span>
           </gui-card-title>
@@ -65,7 +65,7 @@ exports[`SideItem render as dependency with long name 1`] = `
         <div class="flex flex-row flex-wrap items-center justify-between gap-2 border-t-[1px] border-muted px-3 py-2">
           <p class="flex items-center gap-2 text-sm text-muted-foreground">
             Spec:
-            <span class="flex items-center justify-center rounded-sm bg-neutral-700/5 px-2 py-1 font-[courier] text-xs dark:bg-neutral-700/50">
+            <span class="mx-1 rounded-sm px-1.5 py-1 pt-1.5 text-xs font-normal font-courier text-muted-foreground dark:bg-neutral-700/50 bg-neutral-700/5 border-none">
             </span>
           </p>
           <div>
@@ -96,11 +96,11 @@ exports[`SideItem render as dependent 1`] = `
     >
       <gui-card-header classname="relative flex w-full flex-col rounded-t-lg p-0">
         <div class="flex items-center px-3 py-2">
-          <gui-card-title classname="flex flex-1 items-center gap-2 text-sm">
+          <gui-card-title classname="align-baseline text-sm">
             <span class="font-medium">
               item
             </span>
-            <span class="font-normal text-muted-foreground">
+            <span class="mx-1 rounded-sm px-1.5 py-1 pt-1.5 text-xs font-normal font-courier text-muted-foreground bg-transparent">
               v1.0.0
             </span>
           </gui-card-title>
@@ -108,7 +108,7 @@ exports[`SideItem render as dependent 1`] = `
         <div class="flex flex-row flex-wrap items-center justify-between gap-2 border-t-[1px] border-muted px-3 py-2">
           <p class="flex items-center gap-2 text-sm text-muted-foreground">
             Spec:
-            <span class="flex items-center justify-center rounded-sm bg-neutral-700/5 px-2 py-1 font-[courier] text-xs dark:bg-neutral-700/50">
+            <span class="mx-1 rounded-sm px-1.5 py-1 pt-1.5 text-xs font-normal font-courier text-muted-foreground dark:bg-neutral-700/50 bg-neutral-700/5 border-none">
             </span>
           </p>
           <div>
@@ -138,11 +138,11 @@ exports[`SideItem render as multi-stacked dependent 1`] = `
     >
       <gui-card-header classname="relative flex w-full flex-col rounded-t-lg p-0">
         <div class="flex items-center px-3 py-2">
-          <gui-card-title classname="flex flex-1 items-center gap-2 text-sm">
+          <gui-card-title classname="align-baseline text-sm">
             <span class="font-medium">
               item
             </span>
-            <span class="font-normal text-muted-foreground">
+            <span class="mx-1 rounded-sm px-1.5 py-1 pt-1.5 text-xs font-normal font-courier text-muted-foreground bg-transparent">
               v1.0.0
             </span>
           </gui-card-title>
@@ -150,7 +150,7 @@ exports[`SideItem render as multi-stacked dependent 1`] = `
         <div class="flex flex-row flex-wrap items-center justify-between gap-2 border-t-[1px] border-muted px-3 py-2">
           <p class="flex items-center gap-2 text-sm text-muted-foreground">
             Spec:
-            <span class="flex items-center justify-center rounded-sm bg-neutral-700/5 px-2 py-1 font-[courier] text-xs dark:bg-neutral-700/50">
+            <span class="mx-1 rounded-sm px-1.5 py-1 pt-1.5 text-xs font-normal font-courier text-muted-foreground dark:bg-neutral-700/50 bg-neutral-700/5 border-none">
             </span>
           </p>
           <div>
@@ -176,11 +176,11 @@ exports[`SideItem render as parent 1`] = `
     >
       <gui-card-header classname="relative flex w-full flex-col rounded-t-lg p-0">
         <div class="flex items-center px-3 py-2">
-          <gui-card-title classname="flex flex-1 items-center gap-2 text-sm">
+          <gui-card-title classname="align-baseline text-sm">
             <span class="font-medium">
               item
             </span>
-            <span class="font-normal text-muted-foreground">
+            <span class="mx-1 rounded-sm px-1.5 py-1 pt-1.5 text-xs font-normal font-courier text-muted-foreground bg-transparent">
               v1.0.0
             </span>
           </gui-card-title>
@@ -188,7 +188,7 @@ exports[`SideItem render as parent 1`] = `
         <div class="flex flex-row flex-wrap items-center justify-between gap-2 border-t-[1px] border-muted px-3 py-2">
           <p class="flex items-center gap-2 text-sm text-muted-foreground">
             Spec:
-            <span class="flex items-center justify-center rounded-sm bg-neutral-700/5 px-2 py-1 font-[courier] text-xs dark:bg-neutral-700/50">
+            <span class="mx-1 rounded-sm px-1.5 py-1 pt-1.5 text-xs font-normal font-courier text-muted-foreground dark:bg-neutral-700/50 bg-neutral-700/5 border-none">
             </span>
           </p>
           <div>
@@ -218,11 +218,11 @@ exports[`SideItem render as two-stacked dependent 1`] = `
     >
       <gui-card-header classname="relative flex w-full flex-col rounded-t-lg p-0">
         <div class="flex items-center px-3 py-2">
-          <gui-card-title classname="flex flex-1 items-center gap-2 text-sm">
+          <gui-card-title classname="align-baseline text-sm">
             <span class="font-medium">
               item
             </span>
-            <span class="font-normal text-muted-foreground">
+            <span class="mx-1 rounded-sm px-1.5 py-1 pt-1.5 text-xs font-normal font-courier text-muted-foreground bg-transparent">
               v1.0.0
             </span>
           </gui-card-title>
@@ -230,7 +230,7 @@ exports[`SideItem render as two-stacked dependent 1`] = `
         <div class="flex flex-row flex-wrap items-center justify-between gap-2 border-t-[1px] border-muted px-3 py-2">
           <p class="flex items-center gap-2 text-sm text-muted-foreground">
             Spec:
-            <span class="flex items-center justify-center rounded-sm bg-neutral-700/5 px-2 py-1 font-[courier] text-xs dark:bg-neutral-700/50">
+            <span class="mx-1 rounded-sm px-1.5 py-1 pt-1.5 text-xs font-normal font-courier text-muted-foreground dark:bg-neutral-700/50 bg-neutral-700/5 border-none">
             </span>
           </p>
           <div>
