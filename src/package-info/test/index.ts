@@ -86,6 +86,10 @@ const server = createServer((req, res) => {
     case '/abbrev/-/abbrev-2.0.0.tgz': {
       res.setHeader('content-type', 'application/octet-stream')
       res.setHeader('content-length', tgzAbbrev.byteLength)
+      res.setHeader(
+        'integrity',
+        pakuAbbrev.versions['2.0.0'].dist.integrity,
+      )
       return res.end(tgzAbbrev)
     }
     case '/deleted': {
@@ -161,7 +165,6 @@ const notFoundURLs: string[] = []
 
 const defaultRegistry = `http://localhost:${PORT}/`
 const options = {
-  defaultRegistry,
   registry: defaultRegistry,
   cache,
 }
@@ -440,12 +443,36 @@ t.test('manifest', async t => {
 })
 
 t.test('resolve', async t => {
+  // do this with a consistent client so that we cover the memoizing paths
+  const pi = new PackageInfoClient({
+    ...options,
+    'git-hosts': { fakey: `git+${pathToFileURL(repo)}#committish` },
+    'git-host-archives': {
+      fakey: `${defaultRegistry}abbrev/-/abbrev-2.0.0.tgz`,
+    },
+  })
+  const resolve = (
+    spec: string | Spec,
+    options: PackageInfoClientOptions &
+      PackageInfoClientRequestOptions = {},
+  ) => pi.resolve(spec, options)
+
   t.matchOnly(await resolve('abbrev@2', options), {
     resolved: pakuAbbrev.versions['2.0.0'].dist.tarball,
     integrity: pakuAbbrev.versions['2.0.0'].dist.integrity,
     signatures: pakuAbbrev.versions['2.0.0'].dist.signatures,
     spec: Spec,
   })
+  t.matchOnly(
+    await resolve('abbrev@2', options),
+    {
+      resolved: pakuAbbrev.versions['2.0.0'].dist.tarball,
+      integrity: pakuAbbrev.versions['2.0.0'].dist.integrity,
+      signatures: pakuAbbrev.versions['2.0.0'].dist.signatures,
+      spec: Spec,
+    },
+    'again, for memoizing',
+  )
 
   t.matchOnly(
     await resolve(
@@ -484,30 +511,51 @@ t.test('resolve', async t => {
       spec: Spec,
     },
   )
-  t.matchOnly(
-    await resolve('x@fakey:abbrev-2.0.0.tgz', {
-      'git-hosts': { fakey: `git+${pathToFileURL(repo)}#committish` },
-      'git-host-archives': {
-        fakey: `${defaultRegistry}abbrev/-/abbrev-2.0.0.tgz`,
-      },
-    }),
-    {
-      resolved: `${defaultRegistry}abbrev/-/abbrev-2.0.0.tgz`,
-      spec: Spec,
-    },
-  )
+  t.matchOnly(await resolve('x@fakey:abbrev-2.0.0.tgz'), {
+    resolved: `${defaultRegistry}abbrev/-/abbrev-2.0.0.tgz`,
+    spec: Spec,
+  })
 })
 
 const tarball = (
   spec: string | Spec,
   options?: PackageInfoClientOptions &
-    PackageInfoClientRequestOptions,
+    PackageInfoClientExtractOptions,
 ) => {
   return new PackageInfoClient(options).tarball(spec, options)
 }
 
 t.test('tarball', async t => {
   t.strictSame(await tarball('abbrev@2', options), tgzAbbrev)
+
+  t.strictSame(
+    await tarball('abbrev@2', {
+      ...options,
+      // different registry host so it's not trusted
+      registry: defaultRegistry.replace(/localhost/, '127.0.0.1'),
+      integrity: pakuAbbrev.versions['2.0.0'].dist.integrity,
+    }),
+    tgzAbbrev,
+  )
+
+  t.strictSame(
+    await tarball('abbrev@2', {
+      ...options,
+      registry: defaultRegistry.replace(/localhost/, '127.0.0.1'),
+    }),
+    tgzAbbrev,
+  )
+
+  t.strictSame(
+    await tarball(
+      'abbrev@' + String(pakuAbbrev.versions['2.0.0'].dist.tarball),
+      {
+        ...options,
+        integrity: pakuAbbrev.versions['2.0.0'].dist.integrity,
+      },
+    ),
+    tgzAbbrev,
+  )
 
   t.strictSame(
     await tarball(
@@ -552,6 +600,16 @@ t.test('extract', opts, async t => {
       resolved: `${defaultRegistry}abbrev/-/abbrev-2.0.0.tgz`,
     },
     'should use resolved & integrity value when provided',
+  )
+
+  await t.rejects(
+    extract('abbrev@2', dir + '/registry-bad-int', {
+      ...options,
+      resolved: `${defaultRegistry.replace(/localhost/, '127.0.0.1')}abbrev/-/abbrev-2.0.0.tgz`,
+      integrity:
+        'sha512-00000000000000000000000000000000000000000000000000000000000000000000000000000000000000==',
+    }),
+    { cause: { code: 'EINTEGRITY' } },
   )
 
   t.match(await extract(`abbrev@${pkgDir}`, dir + '/dir', options), {

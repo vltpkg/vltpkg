@@ -19,12 +19,13 @@
 // From there, the body can be of any indeterminate length, and is the rest
 // of the file.
 
+import type { ErrorCauseObject } from '@vltpkg/error-cause'
 import { error } from '@vltpkg/error-cause'
 import type { Integrity, JSONField } from '@vltpkg/types'
 import ccp from 'cache-control-parser'
 import { createHash } from 'crypto'
-import { inspect } from 'util'
 import type { InspectOptions } from 'util'
+import { inspect } from 'util'
 import { gunzipSync } from 'zlib'
 import { getRawHeader, setRawHeader } from './raw-header.ts'
 
@@ -55,6 +56,22 @@ const readSize = (buf: Buffer, offset: number) => {
 
 const kCustomInspect = Symbol.for('nodejs.util.inspect.custom')
 
+export type CacheEntryOptions = {
+  /**
+   * The expected integrity value for this response body
+   */
+  integrity?: Integrity
+  /**
+   * Whether to trust the integrity, or calculate the actual value.
+   *
+   * This indicates that we just accept whatever the integrity is as the actual
+   * integrity for saving back to the cache, because it's coming directly from
+   * the registry that we fetched a packument from, and is an initial gzipped
+   * artifact request.
+   */
+  trustIntegrity?: boolean
+}
+
 export class CacheEntry {
   #statusCode: number
   #headers: Buffer[]
@@ -63,15 +80,17 @@ export class CacheEntry {
   #integrity?: Integrity
   #integrityActual?: Integrity
   #json?: JSONObj
+  #trustIntegrity
 
   constructor(
     statusCode: number,
     headers: Buffer[],
-    integrity?: Integrity,
+    { integrity, trustIntegrity = false }: CacheEntryOptions = {},
   ) {
-    this.#integrity = integrity
-    this.#statusCode = statusCode
     this.#headers = headers
+    this.#statusCode = statusCode
+    this.#trustIntegrity = trustIntegrity
+    if (integrity) this.integrity = integrity
   }
 
   get #headersAsObject(): [string, string][] {
@@ -85,11 +104,19 @@ export class CacheEntry {
   }
 
   [kCustomInspect](depth: number, options: InspectOptions): string {
+    const raw = this.text()
+    const isBinary = raw.includes('\x00')
+    const show = isBinary ? '[binary data]' : raw.substring(0, 512)
+    const text =
+      !isBinary && show.length < raw.length ? raw + '…' : show
     const str = inspect(
       {
         statusCode: this.statusCode,
         headers: this.#headersAsObject,
-        text: this.text(),
+        // we know that gzip and tar data will always include at least
+        // one \x00, and json never will, so this is fine for our purpose,
+        // to avoid dumping bells and whatnot to the terminal.
+        text,
       },
       {
         depth,
@@ -140,24 +167,53 @@ export class CacheEntry {
   }
 
   /**
-   * check that the sri integrity string that was provided to the ctor
+   * Check that the sri integrity string that was provided to the ctor
    * matches the body that we actually received. This should only be called
    * AFTER the entire body has been completely downloaded.
+   *
+   * This method **will throw** if the integrity values do not match.
    *
    * Note that this will *usually* not be true if the value is coming out of
    * the cache, because the cache entries are un-gzipped in place. It should
    * _only_ be called for artifacts that come from an actual http response.
+   *
+   * Returns true if anything was actually verified.
    */
-  checkIntegrity(): boolean {
+  checkIntegrity(
+    context: ErrorCauseObject = {},
+  ): this is CacheEntry & { integrity: Integrity } {
     if (!this.#integrity) return false
-    return this.integrityActual === this.#integrity
+    if (this.integrityActual !== this.#integrity) {
+      throw error('Integrity check failure', {
+        code: 'EINTEGRITY',
+        response: this,
+        wanted: this.#integrity,
+        found: this.integrityActual,
+        ...context,
+      })
+    }
+    return true
   }
+
   get integrityActual(): Integrity {
     if (this.#integrityActual) return this.#integrityActual
     const hash = createHash('sha512')
     for (const buf of this.#body) hash.update(buf)
-    this.#integrityActual = `sha512-${hash.digest('base64')}`
-    return this.#integrityActual
+    const i: Integrity = `sha512-${hash.digest('base64')}`
+    this.integrityActual = i
+    return i
+  }
+
+  set integrityActual(i: Integrity) {
+    this.#integrityActual = i
+    this.setHeader('integrity', i)
+  }
+
+  set integrity(i: Integrity | undefined) {
+    if (!this.#integrity && i) {
+      this.#integrity = i
+      if (this.#trustIntegrity) this.integrityActual = i
+    }
   }
   get integrity() {
     return this.#integrity
@@ -288,16 +344,37 @@ export class CacheEntry {
     // walk through the headers array, building up the rawHeaders Buffer[]
     const headers: Buffer[] = []
     let i = 0
+    let integrity: Integrity | undefined = undefined
     while (i < headersBuffer.length - 4) {
       const size = readSize(headersBuffer, i)
-      headers.push(headersBuffer.subarray(i + 4, i + size))
+      const val = headersBuffer.subarray(i + 4, i + size)
+      // if the last one was the key integrity, then this one is the value
+      if (
+        headers.length % 2 === 1 &&
+        String(headers[headers.length - 1]) === 'integrity'
+      ) {
+        integrity = String(val) as Integrity
+      }
+      headers.push(val)
       i += size
     }
-    const c = new CacheEntry(statusCode, headers)
     const body = buffer.subarray(headSize)
+
+    const c = new CacheEntry(
+      statusCode,
+      setRawHeader(
+        headers,
+        'content-length',
+        String(body.byteLength),
+      ),
+      {
+        integrity,
+        trustIntegrity: true,
+      },
+    )
+
     c.#body = [body]
     c.#bodyLength = body.byteLength
-    c.setHeader('content-length', String(c.#bodyLength))
     if (c.isJSON) {
       try {
         c.json()
@@ -321,7 +398,6 @@ export class CacheEntry {
   // TODO: should this maybe not concat, and just return Buffer[]?
   // Then we can writev it to the cache file and save the memory copy
   encode(): Buffer {
-    // store json results as a serialized object.
     if (this.isJSON) this.json()
     const sb = Buffer.from(String(this.#statusCode))
     const chunks: Buffer[] = [sb]
