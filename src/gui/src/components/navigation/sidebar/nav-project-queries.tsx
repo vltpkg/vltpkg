@@ -19,13 +19,29 @@ import {
 } from '@/components/ui/collapsible.jsx'
 import { useGraphStore } from '@/state/index.js'
 import type { SavedQuery } from '@/state/types.js'
-import {
-  ChevronRight,
-  ChevronDown,
-  Folder,
-  FolderOpen,
-} from 'lucide-react'
+import { ChevronRight, Folder, FolderOpen } from 'lucide-react'
 import { selectQuery } from '@/components/queries/saved-item.jsx'
+import { motion } from 'framer-motion'
+import type { Variants } from 'framer-motion'
+
+const sublistVariants: Variants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.05,
+    },
+  },
+}
+
+const sublistItemVariants: Variants = {
+  hidden: { opacity: 0, y: -1 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.1, ease: 'easeInOut' },
+  },
+}
 
 const SidebarQueryProjectNav = () => {
   const navigate = useNavigate()
@@ -117,7 +133,7 @@ const SidebarQueryProjectNav = () => {
                 <CollapsibleTrigger asChild>
                   <SidebarMenuButton
                     tooltip="Global queries"
-                    className="cursor-default whitespace-nowrap"
+                    className="group cursor-default whitespace-nowrap"
                     onClick={
                       !sidebarOpen ?
                         () => setSidebarOpen(true)
@@ -127,22 +143,35 @@ const SidebarQueryProjectNav = () => {
                       <FolderOpen />
                     : <Folder />}
                     <span>Global</span>
-                    {globalQueriesOpen ?
-                      <ChevronDown className="ml-auto" />
-                    : <ChevronRight className="ml-auto" />}
+                    <ChevronRight
+                      className="ml-auto transition-all duration-300 group-data-[state=open]:rotate-90"
+                      size={16}
+                    />
                   </SidebarMenuButton>
                 </CollapsibleTrigger>
                 <CollapsibleContent>
                   <SidebarMenuSub>
-                    {globalQueries.map((query, idx) => (
-                      <SidebarMenuSubItem key={idx}>
-                        <SidebarMenuSubButton
-                          className="cursor-default truncate whitespace-nowrap"
-                          onClick={() => void runGlobalQuery(query)}>
-                          {query.name}
-                        </SidebarMenuSubButton>
-                      </SidebarMenuSubItem>
-                    ))}
+                    <motion.div
+                      initial="hidden"
+                      animate="visible"
+                      exit="hidden"
+                      variants={sublistVariants}>
+                      {globalQueries.map((query, idx) => (
+                        <motion.div
+                          key={idx}
+                          variants={sublistItemVariants}>
+                          <SidebarMenuSubItem>
+                            <SidebarMenuSubButton
+                              className="cursor-default truncate whitespace-nowrap"
+                              onClick={() =>
+                                void runGlobalQuery(query)
+                              }>
+                              {query.name}
+                            </SidebarMenuSubButton>
+                          </SidebarMenuSubItem>
+                        </motion.div>
+                      ))}
+                    </motion.div>
                   </SidebarMenuSub>
                 </CollapsibleContent>
               </SidebarMenuItem>
@@ -159,7 +188,7 @@ const SidebarQueryProjectNav = () => {
                 <CollapsibleTrigger asChild>
                   <SidebarMenuButton
                     tooltip="Project queries"
-                    className="cursor-default whitespace-nowrap"
+                    className="group cursor-default whitespace-nowrap"
                     onClick={
                       !sidebarOpen ?
                         () => setSidebarOpen(true)
@@ -169,22 +198,33 @@ const SidebarQueryProjectNav = () => {
                       <FolderOpen />
                     : <Folder />}
                     <span>Project</span>
-                    {projectQueriesOpen ?
-                      <ChevronDown className="ml-auto" />
-                    : <ChevronRight className="ml-auto" />}
+                    <ChevronRight
+                      className="ml-auto transition-all duration-300 group-data-[state=open]:rotate-90"
+                      size={16}
+                    />
                   </SidebarMenuButton>
                 </CollapsibleTrigger>
                 <CollapsibleContent>
                   <SidebarMenuSub>
-                    {projectQueries.map((query, idx) => (
-                      <SidebarMenuSubItem key={idx}>
-                        <SidebarMenuSubButton
-                          className="cursor-default truncate whitespace-nowrap"
-                          onClick={() => void runQuery(query)}>
-                          {query.name}
-                        </SidebarMenuSubButton>
-                      </SidebarMenuSubItem>
-                    ))}
+                    <motion.div
+                      initial="hidden"
+                      animate="visible"
+                      exit="hidden"
+                      variants={sublistVariants}>
+                      {projectQueries.map((query, idx) => (
+                        <motion.div
+                          key={idx}
+                          variants={sublistItemVariants}>
+                          <SidebarMenuSubItem>
+                            <SidebarMenuSubButton
+                              className="cursor-default truncate whitespace-nowrap"
+                              onClick={() => void runQuery(query)}>
+                              {query.name}
+                            </SidebarMenuSubButton>
+                          </SidebarMenuSubItem>
+                        </motion.div>
+                      ))}
+                    </motion.div>
                   </SidebarMenuSub>
                 </CollapsibleContent>
               </SidebarMenuItem>
