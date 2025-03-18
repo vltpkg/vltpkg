@@ -5,6 +5,7 @@ import { logRequest } from '@vltpkg/output'
 import type { Integrity } from '@vltpkg/types'
 import { urlOpen } from '@vltpkg/url-open'
 import { XDG } from '@vltpkg/xdg'
+import { resolve } from 'node:path'
 import { setTimeout } from 'node:timers/promises'
 import { loadPackageJson } from 'package-json-from-dist'
 import type { Dispatcher } from 'undici'
@@ -166,7 +167,7 @@ export class RegistryClient {
 
   constructor(options: RegistryClientOptions) {
     const {
-      cache = xdg.cache('registry-client'),
+      cache = xdg.cache(),
       'fetch-retry-factor': timeoutFactor = 2,
       'fetch-retry-mintimeout': minTimeout = 0,
       'fetch-retry-maxtimeout': maxTimeout = 30_000,
@@ -175,7 +176,7 @@ export class RegistryClient {
     } = options
     this.identity = identity
     this.cache = new Cache({
-      path: cache,
+      path: resolve(cache, 'registry-client'),
       onDiskWrite(_path, key, data) {
         if (CacheEntry.isGzipEntry(data)) register(cache, key)
       },
