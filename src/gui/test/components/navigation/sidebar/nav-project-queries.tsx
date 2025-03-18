@@ -3,6 +3,11 @@ import { cleanup, render } from '@testing-library/react'
 import html from 'diffable-html'
 import { useGraphStore as useStore } from '@/state/index.js'
 
+vi.mock('react-router', () => ({
+  useLocation: vi.fn().mockReturnValue({ pathname: '/explore' }),
+  useNavigate: vi.fn(),
+}))
+
 vi.mock('@/components/ui/sidebar.jsx', () => ({
   SidebarMenuSub: 'gui-sidebar-menu-sub',
   SidebarMenu: 'gui-sidebar-menu',

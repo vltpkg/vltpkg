@@ -248,5 +248,16 @@ export const useGraphStore = create<Action & State>((set, get) => {
     },
   }
 
+  /** update the `query` state based on the state stored in the history entry */
+  window.addEventListener('popstate', (e: PopStateEvent): void => {
+    if (!e.state) return
+    const { query } = e.state as {
+      query?: string
+    }
+    if (query != null) {
+      store.updateQuery(query)
+    }
+  })
+
   return store
 })
