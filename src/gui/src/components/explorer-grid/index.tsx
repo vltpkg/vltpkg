@@ -277,9 +277,12 @@ export const ExplorerGrid = () => {
   const query = useGraphStore(state => state.query)
   const edges = useGraphStore(state => state.edges)
   const nodes = useGraphStore(state => state.nodes)
+  const stamp = useGraphStore(state => state.stamp)
   const items = getItemsData(edges, nodes)
   const selected = items.length === 1
   const [selectedItem] = items
+  const uniqueSelectedItemKey =
+    String(selectedItem?.id) + String(selectedItem?.name) + stamp
   const importerId =
     selected && selectedItem?.to?.importer ?
       selectedItem.to.id
@@ -399,7 +402,10 @@ export const ExplorerGrid = () => {
           <div className="flex flex-col gap-6">
             {items.map(item =>
               selected ?
-                <SelectedItem item={item} key={item.id} />
+                <SelectedItem
+                  item={item}
+                  key={uniqueSelectedItemKey}
+                />
               : <ResultItem item={item} key={item.id} />,
             )}
           </div>
