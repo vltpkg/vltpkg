@@ -13,7 +13,7 @@ interface InlineCodeProps
 }
 
 const variants = cva(
-  'mx-1 rounded-sm px-1.5 py-1 text-xs font-normal',
+  'mx-1 rounded-sm px-1.5 py-1 pt-1.5 text-xs font-normal',
   {
     variants: {
       color: {
@@ -25,7 +25,9 @@ const variants = cva(
         purple: 'text-purple-500',
       },
       variant: {
-        mono: 'font-[courier] text-muted-foreground dark:bg-neutral-700/50 bg-neutral-700/5 border-none',
+        mono: 'font-courier text-muted-foreground dark:bg-neutral-700/50 bg-neutral-700/5 border-none',
+        monoGhost:
+          'font-courier text-muted-foreground bg-transparent',
         default:
           'border-[1px] font-mono border-muted bg-white dark:bg-black',
       },

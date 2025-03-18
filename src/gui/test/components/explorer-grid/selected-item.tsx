@@ -23,8 +23,11 @@ vi.mock('@/components/ui/shiki.jsx', () => ({
   CodeBlock: 'gui-code-block',
 }))
 
-vi.mock('lucid-react', () => ({
+vi.mock('lucide-react', () => ({
+  FileText: 'gui-file-text-icon',
+  Home: 'gui-home-icon',
   Info: 'gui-info-icon',
+  RectangleHorizontal: 'gui-rectangle-horizontal-icon',
 }))
 
 vi.mock('@radix-ui/react-avatar', () => ({
@@ -54,6 +57,10 @@ vi.mock('@/components/ui/badge.jsx', () => ({
 
 vi.mock('@/components/ui/skeleton.jsx', () => ({
   Skeleton: 'gui-skeleton',
+}))
+
+vi.mock('react-markdown', () => ({
+  Markdown: 'gui-markdown',
 }))
 
 const specOptions = getOptions({

@@ -38,6 +38,7 @@
     "lucide-react": "^0.453.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+    "react-markdown": "^9",
     "react-router": "^7.3.0",
     "recharts": "^2.15.1",
     "shiki": "^1.22.2",
@@ -49,6 +50,7 @@
   },
   "devDependencies": {
     "@eslint/js": "catalog:",
+    "@tailwindcss/typography": "^0.5.16",
     "@testing-library/dom": "^10.4.0",
     "@testing-library/react": "^16.2.0",
     "@types/diffable-html": "^5.0.2",

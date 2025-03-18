@@ -12,6 +12,7 @@ import {
 import { labelClassNamesMap } from './label-helper.js'
 import type { GridItemData, GridItemOptions } from './types.js'
 import { useGraphStore } from '@/state/index.js'
+import { InlineCode } from '../ui/inline-code.tsx'
 
 export type SideItemOptions = GridItemOptions & {
   parent?: boolean
@@ -84,15 +85,15 @@ export const SideItem = ({
         onClick={onSelect}>
         <CardHeader className="relative flex w-full flex-col rounded-t-lg p-0">
           <div className="flex items-center px-3 py-2">
-            <CardTitle className="flex flex-1 items-center gap-2 text-sm">
+            <CardTitle className="align-baseline text-sm">
               <span className="font-medium">{item.name}</span>
-              <span className="font-normal text-muted-foreground">
-                v{item.version}
-              </span>
+              <InlineCode variant="monoGhost">
+                {`v${item.version}`}
+              </InlineCode>
             </CardTitle>
             {uninstallAvailable && (
               <DropdownMenu>
-                <DropdownMenuTrigger className="cursor-default">
+                <DropdownMenuTrigger className="ml-auto cursor-default">
                   <Ellipsis
                     className="text-muted-foreground"
                     size={20}
@@ -115,9 +116,9 @@ export const SideItem = ({
             <div className="flex flex-row flex-wrap items-center justify-between gap-2 border-t-[1px] border-muted px-3 py-2">
               <p className="flex items-center gap-2 text-sm text-muted-foreground">
                 Spec:{' '}
-                <span className="flex items-center justify-center rounded-sm bg-neutral-700/5 px-2 py-1 font-[courier] text-xs dark:bg-neutral-700/50">
+                <InlineCode variant="mono">
                   {parseItem(item.title)}
-                </span>
+                </InlineCode>
               </p>
               {item.labels?.map(i => (
                 <div key={i}>
