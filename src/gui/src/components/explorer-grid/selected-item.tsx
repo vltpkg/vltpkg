@@ -183,11 +183,13 @@ export const SelectedItem = ({ item }: GridItemOptions) => {
                 <div className="flex items-center gap-2">
                   <TooltipProvider>
                     <Tooltip>
-                      <TooltipTrigger className="text-baseline cursor-default truncate text-lg font-medium">
-                        {item.title}{' '}
-                        <span className="text-sm font-normal text-muted-foreground">
+                      <TooltipTrigger className="cursor-default truncate align-baseline text-lg font-medium">
+                        {item.title}
+                        <InlineCode
+                          variant="monoGhost"
+                          className="text-sm">
                           {item.version}
-                        </span>
+                        </InlineCode>
                       </TooltipTrigger>
                       <TooltipContent className="text-baseline text-sm font-medium">
                         {item.title}{' '}
