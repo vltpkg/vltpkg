@@ -71,71 +71,21 @@ exports[`SelectedItem render connection lines 1`] = `
             <div class="flex h-64 w-full items-center justify-center px-6 py-4">
               <div class="flex flex-col items-center justify-center gap-3 text-center">
                 <div class="relative flex size-32 items-center justify-center rounded-full bg-secondary/60">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="24"
-                    height="24"
-                    viewbox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="1.25"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    class="lucide lucide-rectangle-horizontal absolute z-[2] mt-3 size-9 -translate-x-4 -rotate-[calc(90deg+30deg)] fill-secondary text-muted-foreground/50"
+                  <gui-rectangle-horizontal-icon
+                    classname="absolute z-[2] mt-3 size-9 -translate-x-4 -rotate-[calc(90deg+30deg)] fill-secondary text-muted-foreground/50"
+                    strokewidth="1.25"
                   >
-                    <rect
-                      width="20"
-                      height="12"
-                      x="2"
-                      y="6"
-                      rx="2"
-                    >
-                    </rect>
-                  </svg>
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="24"
-                    height="24"
-                    viewbox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="1"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    class="lucide lucide-file-text absolute z-[3] size-14 fill-secondary text-neutral-500"
+                  </gui-rectangle-horizontal-icon>
+                  <gui-file-text-icon
+                    classname="absolute z-[3] size-14 fill-secondary text-neutral-500"
+                    strokewidth="1"
                   >
-                    <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z">
-                    </path>
-                    <path d="M14 2v4a2 2 0 0 0 2 2h4">
-                    </path>
-                    <path d="M10 9H8">
-                    </path>
-                    <path d="M16 13H8">
-                    </path>
-                    <path d="M16 17H8">
-                    </path>
-                  </svg>
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="24"
-                    height="24"
-                    viewbox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="1.25"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    class="lucide lucide-rectangle-horizontal absolute z-[2] mt-3 size-9 translate-x-4 rotate-[calc(90deg+30deg)] fill-secondary text-muted-foreground/50"
+                  </gui-file-text-icon>
+                  <gui-rectangle-horizontal-icon
+                    classname="absolute z-[2] mt-3 size-9 translate-x-4 rotate-[calc(90deg+30deg)] fill-secondary text-muted-foreground/50"
+                    strokewidth="1.25"
                   >
-                    <rect
-                      width="20"
-                      height="12"
-                      x="2"
-                      y="6"
-                      rx="2"
-                    >
-                    </rect>
-                  </svg>
+                  </gui-rectangle-horizontal-icon>
                 </div>
                 <p class="w-2/3 text-pretty text-sm text-muted-foreground">
                   We couldn't find a description for this project
@@ -251,71 +201,21 @@ exports[`SelectedItem render with custom registry 1`] = `
             <div class="flex h-64 w-full items-center justify-center px-6 py-4">
               <div class="flex flex-col items-center justify-center gap-3 text-center">
                 <div class="relative flex size-32 items-center justify-center rounded-full bg-secondary/60">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="24"
-                    height="24"
-                    viewbox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="1.25"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    class="lucide lucide-rectangle-horizontal absolute z-[2] mt-3 size-9 -translate-x-4 -rotate-[calc(90deg+30deg)] fill-secondary text-muted-foreground/50"
+                  <gui-rectangle-horizontal-icon
+                    classname="absolute z-[2] mt-3 size-9 -translate-x-4 -rotate-[calc(90deg+30deg)] fill-secondary text-muted-foreground/50"
+                    strokewidth="1.25"
                   >
-                    <rect
-                      width="20"
-                      height="12"
-                      x="2"
-                      y="6"
-                      rx="2"
-                    >
-                    </rect>
-                  </svg>
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="24"
-                    height="24"
-                    viewbox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="1"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    class="lucide lucide-file-text absolute z-[3] size-14 fill-secondary text-neutral-500"
+                  </gui-rectangle-horizontal-icon>
+                  <gui-file-text-icon
+                    classname="absolute z-[3] size-14 fill-secondary text-neutral-500"
+                    strokewidth="1"
                   >
-                    <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z">
-                    </path>
-                    <path d="M14 2v4a2 2 0 0 0 2 2h4">
-                    </path>
-                    <path d="M10 9H8">
-                    </path>
-                    <path d="M16 13H8">
-                    </path>
-                    <path d="M16 17H8">
-                    </path>
-                  </svg>
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="24"
-                    height="24"
-                    viewbox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="1.25"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    class="lucide lucide-rectangle-horizontal absolute z-[2] mt-3 size-9 translate-x-4 rotate-[calc(90deg+30deg)] fill-secondary text-muted-foreground/50"
+                  </gui-file-text-icon>
+                  <gui-rectangle-horizontal-icon
+                    classname="absolute z-[2] mt-3 size-9 translate-x-4 rotate-[calc(90deg+30deg)] fill-secondary text-muted-foreground/50"
+                    strokewidth="1.25"
                   >
-                    <rect
-                      width="20"
-                      height="12"
-                      x="2"
-                      y="6"
-                      rx="2"
-                    >
-                    </rect>
-                  </svg>
+                  </gui-rectangle-horizontal-icon>
                 </div>
                 <p class="w-2/3 text-pretty text-sm text-muted-foreground">
                   We couldn't find a description for this project
@@ -417,71 +317,21 @@ exports[`SelectedItem render with default git host 1`] = `
             <div class="flex h-64 w-full items-center justify-center px-6 py-4">
               <div class="flex flex-col items-center justify-center gap-3 text-center">
                 <div class="relative flex size-32 items-center justify-center rounded-full bg-secondary/60">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="24"
-                    height="24"
-                    viewbox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="1.25"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    class="lucide lucide-rectangle-horizontal absolute z-[2] mt-3 size-9 -translate-x-4 -rotate-[calc(90deg+30deg)] fill-secondary text-muted-foreground/50"
+                  <gui-rectangle-horizontal-icon
+                    classname="absolute z-[2] mt-3 size-9 -translate-x-4 -rotate-[calc(90deg+30deg)] fill-secondary text-muted-foreground/50"
+                    strokewidth="1.25"
                   >
-                    <rect
-                      width="20"
-                      height="12"
-                      x="2"
-                      y="6"
-                      rx="2"
-                    >
-                    </rect>
-                  </svg>
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="24"
-                    height="24"
-                    viewbox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="1"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    class="lucide lucide-file-text absolute z-[3] size-14 fill-secondary text-neutral-500"
+                  </gui-rectangle-horizontal-icon>
+                  <gui-file-text-icon
+                    classname="absolute z-[3] size-14 fill-secondary text-neutral-500"
+                    strokewidth="1"
                   >
-                    <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z">
-                    </path>
-                    <path d="M14 2v4a2 2 0 0 0 2 2h4">
-                    </path>
-                    <path d="M10 9H8">
-                    </path>
-                    <path d="M16 13H8">
-                    </path>
-                    <path d="M16 17H8">
-                    </path>
-                  </svg>
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="24"
-                    height="24"
-                    viewbox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="1.25"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    class="lucide lucide-rectangle-horizontal absolute z-[2] mt-3 size-9 translate-x-4 rotate-[calc(90deg+30deg)] fill-secondary text-muted-foreground/50"
+                  </gui-file-text-icon>
+                  <gui-rectangle-horizontal-icon
+                    classname="absolute z-[2] mt-3 size-9 translate-x-4 rotate-[calc(90deg+30deg)] fill-secondary text-muted-foreground/50"
+                    strokewidth="1.25"
                   >
-                    <rect
-                      width="20"
-                      height="12"
-                      x="2"
-                      y="6"
-                      rx="2"
-                    >
-                    </rect>
-                  </svg>
+                  </gui-rectangle-horizontal-icon>
                 </div>
                 <p class="w-2/3 text-pretty text-sm text-muted-foreground">
                   We couldn't find a description for this project
@@ -580,71 +430,21 @@ exports[`SelectedItem render with item 1`] = `
             <div class="flex h-64 w-full items-center justify-center px-6 py-4">
               <div class="flex flex-col items-center justify-center gap-3 text-center">
                 <div class="relative flex size-32 items-center justify-center rounded-full bg-secondary/60">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="24"
-                    height="24"
-                    viewbox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="1.25"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    class="lucide lucide-rectangle-horizontal absolute z-[2] mt-3 size-9 -translate-x-4 -rotate-[calc(90deg+30deg)] fill-secondary text-muted-foreground/50"
+                  <gui-rectangle-horizontal-icon
+                    classname="absolute z-[2] mt-3 size-9 -translate-x-4 -rotate-[calc(90deg+30deg)] fill-secondary text-muted-foreground/50"
+                    strokewidth="1.25"
                   >
-                    <rect
-                      width="20"
-                      height="12"
-                      x="2"
-                      y="6"
-                      rx="2"
-                    >
-                    </rect>
-                  </svg>
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="24"
-                    height="24"
-                    viewbox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="1"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    class="lucide lucide-file-text absolute z-[3] size-14 fill-secondary text-neutral-500"
+                  </gui-rectangle-horizontal-icon>
+                  <gui-file-text-icon
+                    classname="absolute z-[3] size-14 fill-secondary text-neutral-500"
+                    strokewidth="1"
                   >
-                    <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z">
-                    </path>
-                    <path d="M14 2v4a2 2 0 0 0 2 2h4">
-                    </path>
-                    <path d="M10 9H8">
-                    </path>
-                    <path d="M16 13H8">
-                    </path>
-                    <path d="M16 17H8">
-                    </path>
-                  </svg>
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="24"
-                    height="24"
-                    viewbox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="1.25"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    class="lucide lucide-rectangle-horizontal absolute z-[2] mt-3 size-9 translate-x-4 rotate-[calc(90deg+30deg)] fill-secondary text-muted-foreground/50"
+                  </gui-file-text-icon>
+                  <gui-rectangle-horizontal-icon
+                    classname="absolute z-[2] mt-3 size-9 translate-x-4 rotate-[calc(90deg+30deg)] fill-secondary text-muted-foreground/50"
+                    strokewidth="1.25"
                   >
-                    <rect
-                      width="20"
-                      height="12"
-                      x="2"
-                      y="6"
-                      rx="2"
-                    >
-                    </rect>
-                  </svg>
+                  </gui-rectangle-horizontal-icon>
                 </div>
                 <p class="w-2/3 text-pretty text-sm text-muted-foreground">
                   We couldn't find a description for this project
@@ -758,71 +558,21 @@ exports[`SelectedItem render with scoped registry 1`] = `
             <div class="flex h-64 w-full items-center justify-center px-6 py-4">
               <div class="flex flex-col items-center justify-center gap-3 text-center">
                 <div class="relative flex size-32 items-center justify-center rounded-full bg-secondary/60">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="24"
-                    height="24"
-                    viewbox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="1.25"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    class="lucide lucide-rectangle-horizontal absolute z-[2] mt-3 size-9 -translate-x-4 -rotate-[calc(90deg+30deg)] fill-secondary text-muted-foreground/50"
+                  <gui-rectangle-horizontal-icon
+                    classname="absolute z-[2] mt-3 size-9 -translate-x-4 -rotate-[calc(90deg+30deg)] fill-secondary text-muted-foreground/50"
+                    strokewidth="1.25"
                   >
-                    <rect
-                      width="20"
-                      height="12"
-                      x="2"
-                      y="6"
-                      rx="2"
-                    >
-                    </rect>
-                  </svg>
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="24"
-                    height="24"
-                    viewbox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="1"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    class="lucide lucide-file-text absolute z-[3] size-14 fill-secondary text-neutral-500"
+                  </gui-rectangle-horizontal-icon>
+                  <gui-file-text-icon
+                    classname="absolute z-[3] size-14 fill-secondary text-neutral-500"
+                    strokewidth="1"
                   >
-                    <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z">
-                    </path>
-                    <path d="M14 2v4a2 2 0 0 0 2 2h4">
-                    </path>
-                    <path d="M10 9H8">
-                    </path>
-                    <path d="M16 13H8">
-                    </path>
-                    <path d="M16 17H8">
-                    </path>
-                  </svg>
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="24"
-                    height="24"
-                    viewbox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="1.25"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    class="lucide lucide-rectangle-horizontal absolute z-[2] mt-3 size-9 translate-x-4 rotate-[calc(90deg+30deg)] fill-secondary text-muted-foreground/50"
+                  </gui-file-text-icon>
+                  <gui-rectangle-horizontal-icon
+                    classname="absolute z-[2] mt-3 size-9 translate-x-4 rotate-[calc(90deg+30deg)] fill-secondary text-muted-foreground/50"
+                    strokewidth="1.25"
                   >
-                    <rect
-                      width="20"
-                      height="12"
-                      x="2"
-                      y="6"
-                      rx="2"
-                    >
-                    </rect>
-                  </svg>
+                  </gui-rectangle-horizontal-icon>
                 </div>
                 <p class="w-2/3 text-pretty text-sm text-muted-foreground">
                   We couldn't find a description for this project

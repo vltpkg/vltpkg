@@ -23,7 +23,7 @@ vi.mock('@/components/ui/shiki.jsx', () => ({
   CodeBlock: 'gui-code-block',
 }))
 
-vi.mock('lucid-react', () => ({
+vi.mock('lucide-react', () => ({
   FileText: 'gui-file-text-icon',
   Home: 'gui-home-icon',
   Info: 'gui-info-icon',
