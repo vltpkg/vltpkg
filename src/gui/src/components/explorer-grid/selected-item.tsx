@@ -38,6 +38,7 @@ import { SparkAreaChart } from '@/components/ui/spark-chart.jsx'
 import { transformToWeeklyDownloads } from '@/utils/transform-weekly-downloads.js'
 import { Badge } from '@/components/ui/badge.jsx'
 import { Skeleton } from '@/components/ui/skeleton.jsx'
+import Markdown from 'react-markdown'
 
 const SpecOrigin = ({
   item,
@@ -325,9 +326,9 @@ export const SelectedItem = ({ item }: GridItemOptions) => {
             <TabsContent value="overview">
               {item.to?.manifest?.description ?
                 <div className="px-6 py-4">
-                  <p className="text-pretty text-sm">
+                  <Markdown className="prose-sm prose-neutral max-w-none text-sm">
                     {item.to.manifest.description}
-                  </p>
+                  </Markdown>
                 </div>
               : <div className="flex h-64 w-full items-center justify-center px-6 py-4">
                   <div className="flex flex-col items-center justify-center gap-3 text-center">

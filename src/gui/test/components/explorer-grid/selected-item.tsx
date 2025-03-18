@@ -59,6 +59,10 @@ vi.mock('@/components/ui/skeleton.jsx', () => ({
   Skeleton: 'gui-skeleton',
 }))
 
+vi.mock('react-markdown', () => ({
+  Markdown: 'gui-markdown',
+}))
+
 const specOptions = getOptions({
   registries: {
     custom: 'https://example.com',
