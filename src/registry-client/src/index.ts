@@ -1,14 +1,16 @@
 import { Cache } from '@vltpkg/cache'
 import { register } from '@vltpkg/cache-unzip'
 import { error } from '@vltpkg/error-cause'
+import { logRequest } from '@vltpkg/output'
 import type { Integrity } from '@vltpkg/types'
 import { urlOpen } from '@vltpkg/url-open'
 import { XDG } from '@vltpkg/xdg'
 import { setTimeout } from 'node:timers/promises'
 import { loadPackageJson } from 'package-json-from-dist'
-import { Agent, RetryAgent } from 'undici'
 import type { Dispatcher } from 'undici'
+import { Agent, RetryAgent } from 'undici'
 import { addHeader } from './add-header.ts'
+import type { Token } from './auth.ts'
 import {
   deleteToken,
   getKC,
@@ -17,27 +19,29 @@ import {
   keychains,
   setToken,
 } from './auth.ts'
-import type { Token } from './auth.ts'
-import { CacheEntry } from './cache-entry.ts'
 import type { JSONObj } from './cache-entry.ts'
+import { CacheEntry } from './cache-entry.ts'
 import { bun, deno, node } from './env.ts'
 import { handle304Response } from './handle-304-response.ts'
 import { otplease } from './otplease.ts'
 import { isRedirect, redirect } from './redirect.ts'
 import { setCacheHeaders } from './set-cache-headers.ts'
-import { logRequest } from '@vltpkg/output'
-import { isTokenResponse } from './token-response.ts'
 import type { TokenResponse } from './token-response.ts'
-import { isWebAuthChallenge } from './web-auth-challenge.ts'
+import { isTokenResponse } from './token-response.ts'
 import type { WebAuthChallenge } from './web-auth-challenge.ts'
+import { isWebAuthChallenge } from './web-auth-challenge.ts'
 export {
-  type JSONObj,
+  deleteToken,
+  getKC,
+  isToken,
+  keychains,
+  setToken,
   type CacheEntry,
+  type JSONObj,
   type Token,
-  type WebAuthChallenge,
   type TokenResponse,
+  type WebAuthChallenge,
 }
-export { keychains, getKC, setToken, deleteToken, isToken }
 
 export type RegistryClientOptions = {
   /**
@@ -84,6 +88,13 @@ export type RegistryClientRequestOptions = Omit<
    * the local disk cache, items are assumed to be trustworthy.
    */
   integrity?: Integrity
+
+  /**
+   * Set to true if the integrity should be trusted implicitly without
+   * a recalculation, for example if it comes from a trusted registry that
+   * also serves the tarball itself.
+   */
+  trustIntegrity?: boolean
 
   /**
    * Follow up to 10 redirections by default. Set this to 0 to just return
@@ -369,7 +380,9 @@ export class RegistryClient {
       : undefined
 
     const entry = buffer ? CacheEntry.decode(buffer) : undefined
-    if (entry?.valid) return entry
+    if (entry?.valid) {
+      return entry
+    }
     // TODO: stale-while-revalidate timeout, say 1 day, where we'll
     // use the cached response even if it's invalid, and validate
     // in the background without waiting for it.
@@ -396,6 +409,13 @@ export class RegistryClient {
     )
     if (otp) {
       options.headers = addHeader(options.headers, 'npm-otp', otp)
+    }
+    if (integrity) {
+      options.headers = addHeader(
+        options.headers,
+        'accept-integrity',
+        integrity,
+      )
     }
     options.method = options.method ?? 'GET'
 
@@ -441,11 +461,12 @@ export class RegistryClient {
       }
     }
 
+    const { integrity, trustIntegrity } = options
     const result = new CacheEntry(
       /* c8 ignore next - should always have a status code */
       response.statusCode || 200,
       h,
-      options.integrity,
+      { integrity, trustIntegrity },
     )
 
     if (isRedirect(result)) {

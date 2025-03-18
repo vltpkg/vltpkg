@@ -49,7 +49,9 @@ const ce = new CacheEntry(
     key: 'value',
     x: 'y',
   }),
-  `sha512-${createHash('sha512').update(z).digest('base64')}`,
+  {
+    integrity: `sha512-${createHash('sha512').update(z).digest('base64')}`,
+  },
 )
 
 t.matchSnapshot(
@@ -57,15 +59,46 @@ t.matchSnapshot(
   'inspect value (should include color codes for displayed object)',
 )
 
+const ceBinary = new CacheEntry(200, [])
+ceBinary.addBody(Buffer.from([0, 0, 0, 0, 0, 0]))
+t.matchSnapshot(
+  inspect(ceBinary, { colors: false, depth: Infinity }),
+  'inspect value should not dump noisy binary data',
+)
+
+const ceBigBody = new CacheEntry(200, [])
+ceBigBody.addBody(Buffer.allocUnsafe(1024).fill('a'))
+t.matchSnapshot(
+  inspect(ceBigBody, { colors: false, depth: Infinity }),
+  'inspect value should not dump excessively large body text',
+)
+
 t.equal(ce.statusCode, 200)
 t.equal(ce.getHeader('x')?.toString(), 'y')
 t.equal(ce.getHeader('key')?.toString(), 'value')
 t.equal(ce.isGzip, false, 'not gzip without content')
-t.equal(CacheEntry.isGzipEntry(Buffer.alloc(1)), false, 'too short to be gzip')
-t.equal(CacheEntry.isGzipEntry(ce.encode()), false, 'not gzip without content')
+t.equal(
+  CacheEntry.isGzipEntry(Buffer.alloc(1)),
+  false,
+  'too short to be gzip',
+)
+t.equal(
+  CacheEntry.isGzipEntry(ce.encode()),
+  false,
+  'not gzip without content',
+)
 ce.addBody(z.subarray(0, z.length / 2))
 ce.addBody(z.subarray(z.length / 2))
-t.equal(ce.checkIntegrity(), true)
+t.doesNotThrow(() => ce.checkIntegrity())
+const badIntegrity = new CacheEntry(
+  200,
+  toRawHeaders({ key: 'value' }),
+  { integrity: ce.integrityActual },
+)
+badIntegrity.addBody(ce.buffer())
+badIntegrity.addBody(Buffer.from('some noise'))
+t.throws(() => badIntegrity.checkIntegrity())
+
 t.equal(
   ce.integrity,
   `sha512-${createHash('sha512').update(z).digest('base64')}`,
@@ -92,6 +125,8 @@ t.strictSame(ce.headers, [
   Buffer.from('value'),
   Buffer.from('x'),
   Buffer.from('y'),
+  Buffer.from('integrity'),
+  Buffer.from(ce.integrityActual),
   Buffer.from('content-encoding'),
   Buffer.from('identity'),
   Buffer.from('content-length'),
@@ -144,6 +179,10 @@ t.equal(
     4 +
     'y'.length +
     4 +
+    'integrity'.length +
+    4 +
+    ce.integrityActual.length +
+    4 +
     'content-encoding'.length +
     4 +
     'identity'.length +
@@ -192,16 +231,16 @@ t.equal(
   true,
 )
 
-t.equal(
-  new CacheEntry(
-    200,
-    toRawHeaders({
-      date: new Date('2020-01-20').toUTCString(),
-      'cache-control': 'immutable',
-    }),
-  ).checkIntegrity(),
-  false,
-  'no integrity to check, so it must be false',
+t.doesNotThrow(
+  () =>
+    new CacheEntry(
+      200,
+      toRawHeaders({
+        date: new Date('2020-01-20').toUTCString(),
+        'cache-control': 'immutable',
+      }),
+    ).checkIntegrity(),
+  'no integrity to check, so pass',
 )
 
 t.equal(
