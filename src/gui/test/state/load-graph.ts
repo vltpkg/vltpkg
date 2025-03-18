@@ -86,6 +86,7 @@ const transferData: TransferData = {
     tools: ['vlt'],
     vltInstalled: true,
   },
+  securityArchive: undefined,
 }
 
 test('load graph', () => {

@@ -805,6 +805,9 @@ importers:
       '@vltpkg/query':
         specifier: workspace:*
         version: link:../query
+      '@vltpkg/security-archive':
+        specifier: workspace:*
+        version: link:../security-archive
       '@vltpkg/spec':
         specifier: workspace:*
         version: link:../spec
