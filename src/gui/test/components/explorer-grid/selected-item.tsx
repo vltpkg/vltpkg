@@ -24,7 +24,10 @@ vi.mock('@/components/ui/shiki.jsx', () => ({
 }))
 
 vi.mock('lucid-react', () => ({
+  FileText: 'gui-file-text-icon',
+  Home: 'gui-home-icon',
   Info: 'gui-info-icon',
+  RectangleHorizontal: 'gui-rectangle-horizontal-icon',
 }))
 
 vi.mock('@radix-ui/react-avatar', () => ({
