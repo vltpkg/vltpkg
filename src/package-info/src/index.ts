@@ -10,7 +10,7 @@ import type { SpecOptions } from '@vltpkg/spec'
 import { Spec } from '@vltpkg/spec'
 import { Pool } from '@vltpkg/tar'
 import type { Integrity, Manifest, Packument } from '@vltpkg/types'
-import { asPackument } from '@vltpkg/types'
+import { asPackument, isIntegrity } from '@vltpkg/types'
 import { Monorepo } from '@vltpkg/workspaces'
 import { XDG } from '@vltpkg/xdg'
 import { randomBytes } from 'crypto'
@@ -68,6 +68,7 @@ export class PackageInfoClient {
   #resolutions = new Map<string, Resolution>()
   packageJson: PackageJson
   monorepo?: Monorepo
+  #trustedIntegrities = new Map<string, Integrity>()
 
   get registryClient() {
     if (!this.#registryClient) {
@@ -154,12 +155,17 @@ export class PackageInfoClient {
 
       case 'registry':
       case 'remote': {
+        const trustIntegrity =
+          this.#trustedIntegrities.get(r.resolved) === r.integrity
+
         const response = await this.registryClient.request(
           r.resolved,
           {
             integrity: r.integrity,
+            trustIntegrity,
           },
         )
+
         if (response.statusCode !== 200) {
           throw this.#resolveError(
             spec,
@@ -172,13 +178,12 @@ export class PackageInfoClient {
           )
         }
 
+        // if it's not trusted already, but valid, start trusting
         if (
-          !!r.integrity &&
-          f.type === 'registry' &&
-          new URL(r.resolved).origin !==
-            new URL(String(f.registry)).origin
+          !trustIntegrity &&
+          response.checkIntegrity({ spec, url: resolved })
         ) {
-          response.checkIntegrity()
+          this.#trustedIntegrities.set(r.resolved, response.integrity)
         }
 
         try {
@@ -263,7 +268,7 @@ export class PackageInfoClient {
 
   async tarball(
     spec: Spec | string,
-    options: PackageInfoClientRequestOptions = {},
+    options: PackageInfoClientExtractOptions = {},
   ): Promise<Buffer> {
     if (typeof spec === 'string')
       spec = Spec.parse(spec, this.options)
@@ -278,16 +283,22 @@ export class PackageInfoClient {
             options,
             'no dist object found in manifest',
           )
-        //TODO: handle signatures as well as integrity
+
         const { tarball, integrity } = dist
-        if (!tarball)
+        if (!tarball) {
           throw this.#resolveError(
             spec,
             options,
             'no tarball found in manifest.dist',
           )
+        }
+
+        const trustIntegrity =
+          this.#trustedIntegrities.get(tarball) === integrity
+
         const response = await this.registryClient.request(tarball, {
           integrity,
+          trustIntegrity,
         })
         if (response.statusCode !== 200) {
           throw this.#resolveError(
@@ -297,13 +308,15 @@ export class PackageInfoClient {
             { response, url: tarball },
           )
         }
+
+        // if we don't already trust it, but it's valid, start trusting it
         if (
-          !!integrity &&
-          new URL(tarball).origin !==
-            new URL(String(f.registry)).origin
+          !trustIntegrity &&
+          response.checkIntegrity({ spec, url: tarball })
         ) {
-          response.checkIntegrity()
+          this.#trustedIntegrities.set(tarball, response.integrity)
         }
+
         return response.buffer()
       }
 
@@ -406,6 +419,15 @@ export class PackageInfoClient {
           options,
         )
         if (!mani) throw this.#resolveError(spec, options)
+        const { integrity, tarball } = mani.dist ?? {}
+        if (isIntegrity(integrity) && tarball) {
+          const registryOrigin = new URL(String(spec.registry)).origin
+          const tgzOrigin = new URL(tarball).origin
+          // if it comes from the same origin, trust the integrity
+          if (tgzOrigin === registryOrigin) {
+            this.#trustedIntegrities.set(tarball, integrity)
+          }
+        }
         return mani
       }
 
