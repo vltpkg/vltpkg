@@ -88,6 +88,7 @@ export default {
       fontFamily: {
         sans: ['inter', 'sans-serif'],
         mono: ['geistMono', 'serif'],
+        courier: ['courier', 'monospace'],
       },
       keyframes: {
         'accordion-down': {
