@@ -1,12 +1,5 @@
-import type { Manifest, DependencyTypeShort } from '@vltpkg/types'
 import { lockfile } from '@vltpkg/graph/browser'
-import type { DepID } from '@vltpkg/dep-id/browser'
-import type {
-  EdgeLike,
-  LockfileData,
-  GraphLike,
-  NodeLike,
-} from '@vltpkg/graph'
+import { SecurityArchive } from '@vltpkg/security-archive/browser'
 import {
   defaultRegistry,
   defaultRegistries,
@@ -14,6 +7,14 @@ import {
   defaultGitHostArchives,
   defaultScopeRegistries,
 } from '@vltpkg/spec/browser'
+import type { Manifest, DependencyTypeShort } from '@vltpkg/types'
+import type { DepID } from '@vltpkg/dep-id/browser'
+import type {
+  EdgeLike,
+  LockfileData,
+  GraphLike,
+  NodeLike,
+} from '@vltpkg/graph'
 import type { SpecOptionsFilled, Spec } from '@vltpkg/spec/browser'
 import type { TransferData } from './types.ts'
 
@@ -57,6 +58,7 @@ type MaybeGraphLike = Pick<
 export type LoadResponse = {
   graph: GraphLike
   specOptions: SpecOptionsFilled
+  securityArchive: SecurityArchive | undefined
 }
 
 export const load = (transfered: TransferData): LoadResponse => {
@@ -148,9 +150,13 @@ export const load = (transfered: TransferData): LoadResponse => {
   lockfile.loadNodes(graph, transfered.lockfile.nodes)
   const specOptions = loadSpecOptions(transfered.lockfile)
   lockfile.loadEdges(graph, transfered.lockfile.edges, specOptions)
+  const securityArchive = SecurityArchive.load(
+    transfered.securityArchive,
+  )
 
   return {
     graph,
     specOptions,
+    securityArchive,
   }
 }

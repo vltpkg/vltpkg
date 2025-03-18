@@ -48,12 +48,18 @@ export type ProjectInfo = {
 }
 
 /**
+ * Transfer data JSON object used to send security data from the backend.
+ */
+export type SecurityArchiveTransfer = Record<string, any> | undefined
+
+/**
  * Transfer data object used to send data from the cli.
  */
 export type TransferData = {
   importers: RawNode[]
   lockfile: LockfileData
   projectInfo: ProjectInfo
+  securityArchive: SecurityArchiveTransfer
 }
 
 export type RawNode = {
