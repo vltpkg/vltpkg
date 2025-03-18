@@ -1,10 +1,10 @@
+import { CacheEntry } from '@vltpkg/registry-client/cache-entry'
+import { readdirSync, readFileSync } from 'node:fs'
+import { join } from 'node:path'
+import { setTimeout } from 'node:timers/promises'
 import t from 'tap'
 import { runMultiple } from './fixtures/run.ts'
 import { defaultVariants } from './fixtures/variants.ts'
-import { setTimeout } from 'node:timers/promises'
-import { readdirSync, readFileSync } from 'node:fs'
-import { join } from 'node:path'
-import { CacheEntry } from '@vltpkg/registry-client/cache-entry'
 
 t.test(
   'unzips all cache entries after a successful install',
@@ -16,9 +16,12 @@ t.test(
         // time but should be enough for a small install.
         await setTimeout(1000)
 
-        const cacheEntries = readdirSync(join(dirs.cache, 'vlt'), {
-          withFileTypes: true,
-        })
+        const cacheEntries = readdirSync(
+          join(dirs.cache, 'vlt/registry-client'),
+          {
+            withFileTypes: true,
+          },
+        )
           .filter(f => !f.name.endsWith('.key'))
           .map(f =>
             CacheEntry.isGzipEntry(
