@@ -1,6 +1,7 @@
 import type { ActualLoadOptions } from '@vltpkg/graph'
 import { actual } from '@vltpkg/graph'
 import type { PackageJson } from '@vltpkg/package-json'
+import { SecurityArchive } from '@vltpkg/security-archive'
 import { rmSync, writeFileSync } from 'fs'
 import { resolve } from 'path'
 import type { Path, PathBase, PathScurry } from 'path-scurry'
@@ -14,7 +15,7 @@ export type GraphProjectData = {
   vltInstalled: boolean
 }
 
-export const updateGraphData = (
+export const updateGraphData = async (
   options: ActualLoadOptions,
   tmp: string,
   hasDashboard: boolean,
@@ -23,7 +24,7 @@ export const updateGraphData = (
   const folder = scurry.lstatSync(projectRoot)
   const result =
     folder ?
-      getGraphData(options, hasDashboard, folder)
+      await getGraphData(options, hasDashboard, folder)
     : {
         hasDashboard,
         importers: [],
@@ -32,6 +33,7 @@ export const updateGraphData = (
           tools: [],
           vltInstalled: false,
         },
+        securityArchive: undefined,
       }
 
   const graphJson = JSON.stringify(result, null, 2)
@@ -39,7 +41,7 @@ export const updateGraphData = (
   writeFileSync(resolve(tmp, 'graph.json'), graphJson)
 }
 
-const getGraphData = (
+const getGraphData = async (
   options: ActualLoadOptions,
   hasDashboard: boolean,
   folder: Path,
@@ -52,12 +54,17 @@ const getGraphData = (
     loadManifests: true,
   })
   const importers = [...graph.importers]
+  const securityArchive = await SecurityArchive.start({
+    graph,
+    specOptions: options,
+  })
 
   return {
     hasDashboard,
     importers,
     lockfile: graph,
     projectInfo: getProjectData({ packageJson, scurry }, folder),
+    securityArchive: securityArchive.ok ? securityArchive : undefined,
   }
 }
 

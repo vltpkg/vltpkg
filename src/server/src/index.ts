@@ -1,4 +1,5 @@
 import { error } from '@vltpkg/error-cause'
+import type { SecurityArchive } from '@vltpkg/security-archive'
 import type {
   ActualLoadOptions,
   InstallOptions,
@@ -72,6 +73,7 @@ export class VltServer extends EventEmitter<{
   publicDir?: string
   dashboardRoot: string[]
   assetsDir?: string
+  securityArchive: SecurityArchive | undefined
 
   constructor(options: VltServerOptions) {
     super()
@@ -137,8 +139,12 @@ export class VltServer extends EventEmitter<{
     await this.update()
   }
 
-  updateGraph(this: VltServerListening) {
-    updateGraphData(this.options, this.publicDir, this.hasDashboard)
+  async updateGraph(this: VltServerListening) {
+    await updateGraphData(
+      this.options,
+      this.publicDir,
+      this.hasDashboard,
+    )
   }
 
   updateOptions(options: VltServerOptions) {
@@ -154,7 +160,7 @@ export class VltServer extends EventEmitter<{
       publicDir: this.publicDir,
     })
     this.hasDashboard = await this.dashboard.update()
-    this.updateGraph()
+    await this.updateGraph()
   }
 
   async close() {

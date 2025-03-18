@@ -1,12 +1,44 @@
+import t from 'tap'
 import { joinDepIDTuple } from '@vltpkg/dep-id'
 import { PackageJson } from '@vltpkg/package-json'
 import { readFileSync } from 'fs'
 import { resolve } from 'path'
 import { PathScurry } from 'path-scurry'
-import t from 'tap'
-import { updateGraphData } from '../src/graph-data.ts'
+
+const { updateGraphData } = await t.mockImport<
+  typeof import('../src/graph-data.ts')
+>('../src/graph-data.ts', {
+  '@vltpkg/security-archive': {
+    SecurityArchive: {
+      start: async () => ({
+        ok: false,
+      }),
+    },
+  },
+})
 
 t.test('graph data for vlt project', async t => {
+  const { updateGraphData } = await t.mockImport<
+    typeof import('../src/graph-data.ts')
+  >('../src/graph-data.ts', {
+    '@vltpkg/security-archive': {
+      SecurityArchive: {
+        start: async () => ({
+          [joinDepIDTuple(['registry', '', 'abbrev'])]: {
+            id: '99923218962',
+            author: ['npm'],
+            size: 13003,
+            type: 'npm',
+            name: 'abbrev',
+            version: '1.0.0',
+            alerts: [],
+          },
+          ok: true,
+        }),
+      },
+    },
+  })
+
   const abbrevDepID = joinDepIDTuple(['registry', '', 'abbrev'])
   const dir = t.testdir({
     tmp: {
@@ -36,7 +68,7 @@ t.test('graph data for vlt project', async t => {
   })
   const projectRoot = resolve(dir, 'project')
   const tmp = resolve(dir, 'tmp')
-  updateGraphData(
+  await updateGraphData(
     {
       projectRoot,
       packageJson: new PackageJson(),
@@ -85,6 +117,18 @@ t.test('graph data for vlt project', async t => {
       },
     },
     projectInfo: { tools: ['vlt'], vltInstalled: true },
+    securityArchive: {
+      [joinDepIDTuple(['registry', '', 'abbrev'])]: {
+        id: '99923218962',
+        author: ['npm'],
+        size: 13003,
+        type: 'npm',
+        name: 'abbrev',
+        version: '1.0.0',
+        alerts: [],
+      },
+      ok: true,
+    },
   })
 })
 
@@ -107,7 +151,7 @@ t.test('graph data for depless vlt project', async t => {
   })
   const projectRoot = resolve(dir, 'project')
   const tmp = resolve(dir, 'tmp')
-  updateGraphData(
+  await updateGraphData(
     {
       projectRoot,
       packageJson: new PackageJson(),
@@ -152,7 +196,7 @@ t.test('graph data for missing project', async t => {
   })
   const projectRoot = resolve(dir, 'project')
   const tmp = resolve(dir, 'tmp')
-  updateGraphData(
+  await updateGraphData(
     {
       projectRoot,
       packageJson: new PackageJson(),

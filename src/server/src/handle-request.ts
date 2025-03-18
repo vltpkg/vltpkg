@@ -123,7 +123,7 @@ export const handleRequest = async (
       try {
         await install(...parseInstallOptions(server.options, add))
         server.emit('needConfigUpdate', server.options.projectRoot)
-        server.updateGraph()
+        await server.updateGraph()
         return json.ok(res, 'ok')
       } catch (err) {
         return json.error(res, 'Install failed', err, 500)
@@ -147,7 +147,7 @@ export const handleRequest = async (
           ...parseUninstallOptions(server.options, remove),
         )
         server.emit('needConfigUpdate', server.options.projectRoot)
-        server.updateGraph()
+        await server.updateGraph()
         return json.ok(res, 'ok')
       } catch (err) {
         return json.error(res, 'Uninstall failed', err, 500)
