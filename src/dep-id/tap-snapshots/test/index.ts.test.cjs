@@ -209,6 +209,17 @@ Array [
 ]
 `
 
+exports[`test/index.ts > TAP > valid specs > must match snapshot 1`] = `
+Array [
+  "··manifest-name@1.2.3",
+  Array [
+    "registry",
+    "",
+    "manifest-name@1.2.3",
+  ],
+]
+`
+
 exports[`test/index.ts > TAP > valid specs > x@1 > hydrated 1`] = `
 x@npm:manifest-name@1.2.3
 `
