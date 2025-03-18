@@ -38,8 +38,8 @@ const startGraphData = async ({
   const data = (await res.json()) as TransferData & {
     hasDashboard: boolean
   }
-  const { graph, specOptions } = load(data)
-  const q = new Query({ graph, specOptions })
+  const { graph, specOptions, securityArchive } = load(data)
+  const q = new Query({ graph, specOptions, securityArchive })
 
   updateHasDashboard(data.hasDashboard)
   updateGraph(graph)

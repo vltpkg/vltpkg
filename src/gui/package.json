@@ -28,6 +28,7 @@
     "@vltpkg/fast-split": "workspace:*",
     "@vltpkg/graph": "workspace:*",
     "@vltpkg/query": "workspace:*",
+    "@vltpkg/security-archive": "workspace:*",
     "@vltpkg/spec": "workspace:*",
     "@vltpkg/types": "workspace:*",
     "class-variance-authority": "^0.7.0",
