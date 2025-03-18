@@ -27,6 +27,7 @@
     "@vltpkg/init": "workspace:*",
     "@vltpkg/package-info": "workspace:*",
     "@vltpkg/package-json": "workspace:*",
+    "@vltpkg/security-archive": "workspace:*",
     "@vltpkg/spec": "workspace:*",
     "@vltpkg/types": "workspace:*",
     "@vltpkg/xdg": "workspace:*",
