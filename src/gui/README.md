@@ -24,7 +24,7 @@ $ pnpm -F gui watch
 In a separate terminal, run the app:
 
 ```bash
-$ node --experimental-strip-types --no-warnings ./infra/build/src/bins/vlt.ts gui
+$ ./scripts/bins/vlt gui
 ```
 
 Changes to `src/gui` will cause open browser windows to `reload()`.
