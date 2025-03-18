@@ -97,6 +97,15 @@ t.test('valid specs', t => {
     })
   }
 
+  const prefixedVersionManifest = {
+    name: 'manifest-name',
+    version: 'v1.2.3',
+  }
+  const pSpec = Spec.parse('manifest-name@^1.0.0')
+  const pTuple = getTuple(pSpec, prefixedVersionManifest)
+  const pId = getId(pSpec, prefixedVersionManifest)
+  t.matchSnapshot([pId, pTuple])
+
   t.end()
 })
 
