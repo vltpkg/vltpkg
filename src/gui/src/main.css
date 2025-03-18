@@ -3,6 +3,30 @@
 @tailwind utilities;
 
 @font-face {
+  font-family: 'courier';
+  src: url('/fonts/courier-regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'courier';
+  src: url('/fonts/courier-bold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'courier';
+  src: url('/fonts/courier-bold-italic.ttf') format('truetype');
+  font-weight: 700;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
   font-family: 'inter';
   src: url('/fonts/inter.ttf') format('truetype');
   font-weight: 100 900;

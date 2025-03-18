@@ -12,7 +12,12 @@ import {
   TabsTrigger,
 } from '@/components/ui/tabs.jsx'
 import { CodeBlock } from '@/components/ui/shiki.jsx'
-import { Home, Info } from 'lucide-react'
+import {
+  FileText,
+  Home,
+  Info,
+  RectangleHorizontal,
+} from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { fetchDetails } from '@/lib/external-info.js'
 import type { DetailsInfo } from '@/lib/external-info.js'
@@ -33,6 +38,7 @@ import { SparkAreaChart } from '@/components/ui/spark-chart.jsx'
 import { transformToWeeklyDownloads } from '@/utils/transform-weekly-downloads.js'
 import { Badge } from '@/components/ui/badge.jsx'
 import { Skeleton } from '@/components/ui/skeleton.jsx'
+import Markdown from 'react-markdown'
 
 const SpecOrigin = ({
   item,
@@ -170,6 +176,7 @@ export const SelectedItem = ({ item }: GridItemOptions) => {
                   <div className="flex h-full w-full items-center justify-center rounded-md bg-muted p-4">
                     <Home
                       size={32}
+                      strokeWidth={1.25}
                       className="text-muted-foreground"
                     />
                   </div>
@@ -183,11 +190,13 @@ export const SelectedItem = ({ item }: GridItemOptions) => {
                 <div className="flex items-center gap-2">
                   <TooltipProvider>
                     <Tooltip>
-                      <TooltipTrigger className="text-baseline cursor-default truncate text-lg font-medium">
-                        {item.title}{' '}
-                        <span className="text-sm font-normal text-muted-foreground">
+                      <TooltipTrigger className="cursor-default truncate align-baseline text-lg font-medium">
+                        {item.title}
+                        <InlineCode
+                          variant="monoGhost"
+                          className="text-sm">
                           {item.version}
-                        </span>
+                        </InlineCode>
                       </TooltipTrigger>
                       <TooltipContent className="text-baseline text-sm font-medium">
                         {item.title}{' '}
@@ -305,29 +314,53 @@ export const SelectedItem = ({ item }: GridItemOptions) => {
                 className="w-fit px-2">
                 Manifest
               </TabsTrigger>
-              <TabsTrigger
-                variant="ghost"
-                value="versions"
-                disabled={
-                  !details.versions || details.versions.length <= 0
-                }
-                className="w-fit px-2">
-                Versions
-              </TabsTrigger>
-            </TabsList>
-            <TabsContent value="overview" className="px-6 py-4">
-              {item.to?.manifest?.description && (
-                <p className="text-pretty text-sm">
-                  {item.to.manifest.description}
-                </p>
+              {details.versions && details.versions.length > 0 && (
+                <TabsTrigger
+                  variant="ghost"
+                  value="versions"
+                  className="w-fit px-2">
+                  Versions
+                </TabsTrigger>
               )}
+            </TabsList>
+            <TabsContent value="overview">
+              {item.to?.manifest?.description ?
+                <div className="px-6 py-4">
+                  <Markdown className="prose-sm prose-neutral max-w-none text-sm">
+                    {item.to.manifest.description}
+                  </Markdown>
+                </div>
+              : <div className="flex h-64 w-full items-center justify-center px-6 py-4">
+                  <div className="flex flex-col items-center justify-center gap-3 text-center">
+                    <div className="relative flex size-32 items-center justify-center rounded-full bg-secondary/60">
+                      <RectangleHorizontal
+                        className="absolute z-[2] mt-3 size-9 -translate-x-4 -rotate-[calc(90deg+30deg)] fill-secondary text-muted-foreground/50"
+                        strokeWidth={1.25}
+                      />
+                      <FileText
+                        className="absolute z-[3] size-14 fill-secondary text-neutral-500"
+                        strokeWidth={1}
+                      />
+                      <RectangleHorizontal
+                        className="absolute z-[2] mt-3 size-9 translate-x-4 rotate-[calc(90deg+30deg)] fill-secondary text-muted-foreground/50"
+                        strokeWidth={1.25}
+                      />
+                    </div>
+                    <p className="w-2/3 text-pretty text-sm text-muted-foreground">
+                      We couldn't find a description for this project
+                    </p>
+                  </div>
+                </div>
+              }
               {details.author?.name && (
-                <p className="text-baseline mt-2 text-sm text-muted-foreground">
-                  Authored by:{' '}
-                  <span className="font-medium text-foreground">
-                    {details.author.name}
-                  </span>
-                </p>
+                <div className="border-t-[1px] border-secondary px-6 py-4">
+                  <p className="text-sm text-muted-foreground">
+                    Authored by:{' '}
+                    <span className="font-medium text-foreground">
+                      {details.author.name}
+                    </span>
+                  </p>
+                </div>
               )}
             </TabsContent>
             <TabsContent
