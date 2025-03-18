@@ -272,10 +272,16 @@ export const getTuple = (spec: Spec, mani: Manifest): DepIDTuple => {
           }
         }
       }
+      const version =
+        mani.version ?
+          mani.version.startsWith('v') ?
+            mani.version.slice(1)
+          : mani.version
+        : f.bareSpec
       return [
         f.type,
         f.namedRegistry ?? reg,
-        `${mani.name ?? spec.name}@${mani.version ?? spec.bareSpec}`,
+        `${mani.name ?? f.name}@${version}`,
       ]
     }
     case 'git': {
