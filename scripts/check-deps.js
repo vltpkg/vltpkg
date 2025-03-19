@@ -3,7 +3,7 @@
 import { spawn } from 'node:child_process'
 import { relative } from 'node:path'
 import subset from 'semver/ranges/subset.js'
-import { ROOT, readPkgJson as getPkg } from './utils.js'
+import { ROOT, readPkgJson as getPkg } from './utils.ts'
 
 const walk = (dep, ancestors = []) => [
   { path: dep.path, ancestors },

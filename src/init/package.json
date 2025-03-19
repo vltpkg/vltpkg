@@ -19,12 +19,10 @@
     }
   },
   "dependencies": {
-    "@vltpkg/error-cause": "workspace:*",
     "@vltpkg/git": "workspace:*",
     "@vltpkg/package-json": "workspace:*",
     "@vltpkg/registry-client": "workspace:*",
-    "@vltpkg/types": "workspace:*",
-    "@vltpkg/xdg": "workspace:*"
+    "@vltpkg/types": "workspace:*"
   },
   "devDependencies": {
     "@eslint/js": "catalog:",

@@ -18,7 +18,7 @@ import {
   writeYaml,
   format,
   writeJson,
-} from './utils.js'
+} from './utils.ts'
 
 const parseRangeFromSpec = spec => {
   let range = validRange(spec) ? spec : null

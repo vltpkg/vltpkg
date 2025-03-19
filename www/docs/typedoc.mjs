@@ -9,6 +9,7 @@ import {
   modulesFileName,
   typedocContentPath,
 } from './typedoc/constants.mjs'
+import { fileURLToPath } from 'url'
 
 // typedoc requires an origin remote to render source links.
 // there are other typedoc options (sourceLinkTemplate, etc) that
@@ -82,7 +83,10 @@ const markdownOptions = {
  * @type {Remark}
  */
 const remarkOptions = {
-  remarkPlugins: ['unified-prettier', './typedoc/markdown-fixes.mjs'],
+  remarkPlugins: [
+    import.meta.resolve('unified-prettier'),
+    import.meta.resolve('./typedoc/markdown-fixes.mjs'),
+  ],
 }
 
 /**
@@ -132,8 +136,12 @@ const rootTypedocOptions = {
     'typedoc-plugin-markdown',
     'typedoc-plugin-remark',
     'typedoc-plugin-frontmatter',
-    './typedoc/add-frontmatter.mjs',
-    './typedoc/unresolved-links.mjs',
+    fileURLToPath(
+      import.meta.resolve('./typedoc/add-frontmatter.mjs'),
+    ),
+    fileURLToPath(
+      import.meta.resolve('./typedoc/unresolved-links.mjs'),
+    ),
   ],
   // do not use a readme for the root
   readme: 'none',

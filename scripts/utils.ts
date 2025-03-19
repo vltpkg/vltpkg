@@ -8,27 +8,29 @@ export const ROOT = resolve(import.meta.dirname, '..')
 export const configPath = resolve(ROOT, 'pnpm-workspace.yaml')
 
 export const getConfig = () => {
-  return yaml.parse(readFileSync(configPath, 'utf8'))
+  return yaml.parse(readFileSync(configPath, 'utf8')) as {
+    packages: string[]
+    catalog: Record<string, string>
+  }
 }
 
-export const format = async (source, filepath) =>
+export const format = async (source: string, filepath: string) =>
   prettier(source, {
     ...(await resolveConfig(filepath)),
     filepath,
   })
 
-export const writeYaml = async (p, data) =>
+export const writeYaml = async (p: string, data: unknown) =>
   writeFileSync(p, await format(yaml.stringify(data), p))
 
-export const readPkgJson = path =>
-  JSON.parse(readFileSync(resolve(path, 'package.json'), 'utf8'))
+export const readPkgJson = (path: string) =>
+  JSON.parse(
+    readFileSync(resolve(path, 'package.json'), 'utf8'),
+  ) as Record<string, unknown>
 
-export const writeJson = (p, data) =>
+export const writeJson = (p: string, data: unknown) =>
   writeFileSync(p, JSON.stringify(data, null, 2) + '\n')
 
-/**
- * @returns {string[]}
- */
 export const getWorkspaces = () => [
   ROOT,
   ...getConfig().packages.flatMap(p =>

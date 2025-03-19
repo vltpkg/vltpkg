@@ -25,7 +25,6 @@
     "@vltpkg/error-cause": "workspace:*",
     "@vltpkg/keychain": "workspace:*",
     "@vltpkg/output": "workspace:*",
-    "@vltpkg/promise-spawn": "workspace:*",
     "@vltpkg/types": "workspace:*",
     "@vltpkg/url-open": "workspace:*",
     "@vltpkg/xdg": "workspace:*",

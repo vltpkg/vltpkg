@@ -108,7 +108,7 @@ jobs:
         id: integrity
         run: |
           delimiter="$(openssl rand -hex 8)"
-          integrity=$(node ./scripts/tgz-ssri.js)
+          integrity=$(./scripts/tgz-ssri.js)
 
           echo "$integrity"
           {
@@ -137,7 +137,7 @@ jobs:
                 local package_json="$package_dir/package.json"
                 local package_name=$(jq -r '.name' "$package_json")
                 local package_version=$(jq -r '.version' "$package_json")
-                local integrity=$(node ./scripts/tgz-ssri.js "$package_dir")
+                local integrity=$(./scripts/tgz-ssri.js "$package_dir")
                 echo "- \`$package_name@$package_version\` (\`${integrity:0:20}...\`)"
               done <<< "$packages"
               echo "${delimiter}"

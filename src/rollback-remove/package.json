@@ -19,7 +19,6 @@
     }
   },
   "dependencies": {
-    "@vltpkg/error-cause": "workspace:*",
     "rimraf": "catalog:"
   },
   "devDependencies": {
