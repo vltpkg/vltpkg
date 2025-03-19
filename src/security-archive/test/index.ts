@@ -1,5 +1,4 @@
 import { resolve } from 'node:path'
-// eslint-disable-next-line import/no-unresolved
 import { DatabaseSync } from 'node:sqlite'
 import t from 'tap'
 import { joinDepIDTuple } from '@vltpkg/dep-id'

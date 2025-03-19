@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/no-unresolved
 import { DatabaseSync } from 'node:sqlite'
 import { LRUCache } from 'lru-cache'
 import pRetry, { AbortError } from 'p-retry'
