@@ -19,11 +19,7 @@
     }
   },
   "dependencies": {
-    "@vltpkg/error-cause": "workspace:*",
-    "@vltpkg/types": "workspace:*",
-    "@vltpkg/xdg": "workspace:*",
-    "lru-cache": "catalog:",
-    "rimraf": "catalog:"
+    "@vltpkg/xdg": "workspace:*"
   },
   "devDependencies": {
     "@eslint/js": "catalog:",

@@ -218,6 +218,20 @@ pnpm build:compile --platform=win32 --arch=x64
 You can also run `pnpm pack` in any of the `./infra/cli-*` directories
 to generate a tarball of the build.
 
+## Finding Unused Code and Deps with Knip
+
+`knip` is installed and configured in the root of the monorepo and can
+be run with:
+
+```sh
+pnpm knip
+```
+
+It is not currently turned on in CI but can be helpful to run locally
+after a refactor or moving/creating/deleting workspaces.
+
+False positives can be ignored in the `knip.ts` config file.
+
 ## FAQ
 
 ### Test coverage is failing but it shouldn't be
