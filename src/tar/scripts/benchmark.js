@@ -1,3 +1,5 @@
+#!/usr/bin/env -S node --experimental-strip-types --no-warnings
+
 import { readFileSync } from 'fs'
 import pacote from 'pacote'
 import { resolve } from 'path'

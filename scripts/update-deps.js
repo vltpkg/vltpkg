@@ -1,3 +1,5 @@
+#!/usr/bin/env -S node --experimental-strip-types --no-warnings
+
 import { spawn, execSync } from 'node:child_process'
 import { readFileSync } from 'node:fs'
 import { relative, resolve } from 'node:path'
