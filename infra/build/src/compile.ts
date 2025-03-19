@@ -47,6 +47,8 @@ const spawnCompile = ({
       '--no-npm',
       '--no-check',
       '--no-lock',
+      '--unstable-node-globals',
+      '--unstable-bare-node-builtins',
       `--output=${outfile}`,
       `--target=${[
         {
