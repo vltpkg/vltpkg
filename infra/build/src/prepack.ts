@@ -86,7 +86,7 @@ const main = async () => {
   mkdirSync(outdir, { recursive: true })
 
   // The bundled CLI
-  if (workspaceName === 'cli-bundled') {
+  if (workspaceName === 'cli-js') {
     await bundle({ outdir })
     writeFiles({
       outdir,

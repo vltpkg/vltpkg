@@ -162,11 +162,11 @@ postinstall strategy of the parent package. If you need to install one
 of those directly, you will need to move/run/link the included `vlt`
 executable manually.
 
-The bundled JS variant of the CLI still exists in the
-`infra/cli-bundled` directory, but is marked `private` so it wont get
-published. It exists because it is an intermediary of the compiled
-CLI, so it gets tested in `smoke-tests` to help debug the build
-pipeline of `TS source` -> `esbuild bundled JS` -> `compiled Deno`.
+The bundled JS variant of the CLI still exists in the `infra/cli-js`
+directory. It exists because it is still published for manual testing
+and comparisons and it is an intermediary of the compiled CLI, so it
+gets tested in `smoke-tests` to help debug the build pipeline of
+`TS source` -> `esbuild bundled JS` -> `compiled Deno`.
 
 ## GUI Live Reload
 

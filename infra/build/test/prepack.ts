@@ -95,7 +95,7 @@ t.test('invalid name', async t => {
 t.test('bundled CLI', async t => {
   const dir = 'outdir'
   const { readPkg, readOutdir } = await mockCli(t, {
-    workspaceName: 'cli-bundled',
+    workspaceName: 'cli-js',
     pkg: {
       publishConfig: {
         directory: dir,
