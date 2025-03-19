@@ -51,7 +51,7 @@ process, run
 `export NODE_OPTIONS=--experimental-strip-types --no-warnings` to set
 this in the environment, rather than on each command.
 
-## `nave` Conveniences
+## Using `nave`
 
 If you use [nave](https://npm.im/nave) then you can enable `nave auto`
 behavior in your bash profile by adding something like this:
@@ -71,6 +71,22 @@ export PROMPT_COMMAND="__nave_prompt_command || true; ${PROMPT_COMMAND}"
 Then, the appropriate node version and `NODE_OPTIONS` flags will be
 set to be able to always run TypeScript files directly in the context
 of this project.
+
+## Using NVM
+
+If you use [`nvm`](https://github.com/nvm-sh/nvm), a compatible
+version of `node` should be automatically installed & used as defined
+in our project's root `.nvmrc` file. Notably, there are known issues
+in `node` versions `<22.14` and unknown compatibility for `>=23`. If
+you are using a version outside of the known-good range set you are
+likely to experience errors when developing and should install an
+in-range version.
+
+## Using `setup-node` in CI
+
+Our CI uses the `setup-node` action and is explictely configured to
+use the "latest", known-good version of `node` (`^22.14.0`) available.
+You can find this configuration in `.github/workflows/*.yml`.
 
 ## Root Level Scripts
 
