@@ -1,6 +1,6 @@
 import { existsSync, readFileSync, readdirSync } from 'node:fs'
 import ssri from 'ssri'
-import { getWorkspaces, readPkgJson } from './utils.js'
+import { getWorkspaces, readPkgJson } from './utils.ts'
 import { join } from 'node:path'
 
 const findTgz = dir => {
