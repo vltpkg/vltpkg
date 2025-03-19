@@ -180,7 +180,7 @@ export class SecurityArchive
         `(SELECT UNIXEPOCH('subsecond')) as now ` +
         'FROM cache ' +
         `WHERE depID IN (${depIDs.join(',')}) ` +
-        'GROUP BY depID HAVING SUM(start + ttl) > now',
+        '  AND (start + ttl) > now',
     )
     for (const entry of dbRead.all() as DBReadEntry[]) {
       const { depID, report, start, ttl } = entry
