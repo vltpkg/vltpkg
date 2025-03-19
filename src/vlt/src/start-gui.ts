@@ -4,6 +4,7 @@ import { urlOpen } from '@vltpkg/url-open'
 import type { PathScurry } from 'path-scurry'
 import type { LoadedConfig } from './config/index.ts'
 import { stdout } from './output.ts'
+import { resolve } from 'node:path'
 
 export const getDefaultStartingRoute = async (options: {
   startingRoute?: string
@@ -18,11 +19,25 @@ export const getDefaultStartingRoute = async (options: {
     : '/'
 }
 
+const getAssetsDir = () => {
+  /* c8 ignore start */
+  if (process.env.__VLT_INTERNAL_GUI_ASSETS_DIR) {
+    return resolve(
+      import.meta.dirname,
+      process.env.__VLT_INTERNAL_GUI_ASSETS_DIR,
+    )
+  }
+  /* c8 ignore stop */
+}
+
 export const startGUI = async (
   conf: LoadedConfig,
   startingRoute?: string,
 ) => {
-  const server = createServer(conf.options)
+  const server = createServer({
+    ...conf.options,
+    assetsDir: getAssetsDir(),
+  })
   server.on('needConfigUpdate', dir => {
     conf.resetOptions(dir)
     ;(server as VltServerListening).updateOptions(conf.options)

@@ -88,7 +88,10 @@ t.test('startGUI()', async t => {
     },
     '@vltpkg/server': {
       createServer: (options: unknown) => {
-        t.equal(options, conf.options)
+        t.strictSame(options, {
+          ...conf.options,
+          assetsDir: undefined,
+        })
         serverCreated = true
         return mockServer
       },
