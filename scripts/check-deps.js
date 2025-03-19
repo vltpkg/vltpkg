@@ -1,3 +1,5 @@
+#!/usr/bin/env -S node --experimental-strip-types --no-warnings
+
 import { spawn } from 'node:child_process'
 import { relative } from 'node:path'
 import subset from 'semver/ranges/subset.js'
