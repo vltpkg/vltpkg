@@ -1,3 +1,5 @@
+#!/usr/bin/env -S node --experimental-strip-types --no-warnings
+
 import pacote from 'pacote'
 import { resolve, join } from 'path'
 import { parseArgs } from 'util'

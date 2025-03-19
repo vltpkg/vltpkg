@@ -1,3 +1,5 @@
+#!/usr/bin/env -S node --experimental-strip-types --no-warnings
+
 import npa from 'npm-package-arg'
 import { Spec } from '../src/index.ts'
 import { numToFixed, runFor } from '@vltpkg/benchmark'

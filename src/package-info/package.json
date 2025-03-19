@@ -51,7 +51,7 @@
     "node": ">=22"
   },
   "scripts": {
-    "benchmark": "node --no-warnings --experimental-strip-types scripts/benchmark.js",
+    "benchmark": "./scripts/benchmark.js",
     "format": "prettier --write . --log-level warn --ignore-path ../../.prettierignore --cache",
     "format:check": "prettier --check . --ignore-path ../../.prettierignore --cache",
     "lint": "eslint . --fix",
