@@ -1,3 +1,5 @@
+#!/usr/bin/env -S node --experimental-strip-types --no-warnings
+
 import { existsSync, readFileSync, readdirSync } from 'node:fs'
 import ssri from 'ssri'
 import { getWorkspaces, readPkgJson } from './utils.ts'
