@@ -396,12 +396,8 @@ const fixCliVariants = async ws => {
   let descriptionExtra = ''
 
   switch (ws.workspaceBasename) {
-    case 'cli-bundled':
-      ws.pj.name = '@vltpkg/cli-bundled'
-      // Bundled variant of the CLI is not published but still exists
-      // for testing since the bundled JS is an intermediary step of
-      // the compiled variant.
-      ws.pj.private = true
+    case 'cli-js':
+      ws.pj.name = '@vltpkg/cli-js'
       break
     case 'cli-compiled':
       ws.pj.name = `vlt`
