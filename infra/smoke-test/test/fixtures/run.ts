@@ -1,8 +1,9 @@
 import type { Test } from 'tap'
 import { spawn } from 'node:child_process'
 import assert from 'node:assert'
-import { Variants } from './variants.ts'
+import { publishedVariant, Variants } from './variants.ts'
 import type { Variant, VariantType } from './variants.ts'
+import { stripVTControlCharacters } from 'node:util'
 
 const DEFAULT_VARIANTS = Object.values(Variants)
   .filter(v => v.default)
@@ -11,10 +12,7 @@ const DEFAULT_VARIANTS = Object.values(Variants)
 export type CommandOptions = {
   testdir?: Parameters<Test['testdir']>[0]
   env?: NodeJS.ProcessEnv
-}
-
-export type RunOptions = CommandOptions & {
-  variants?: VariantType[]
+  stripAnsi?: boolean
 }
 
 export type CommandResult = {
@@ -50,7 +48,7 @@ const runBase = async (
   t: Test,
   bin = 'vlt',
   args: string[] = [],
-  { env = {}, testdir = {} }: CommandOptions = {},
+  { env = {}, testdir = {}, stripAnsi }: CommandOptions = {},
 ) => {
   const cwd = t.testdir(testdir)
   const { dir } = variant
@@ -97,15 +95,19 @@ const runBase = async (
     })
     proc
       .on('close', code => {
-        const replace = (s: string) =>
-          s
+        const clean = (s: string) => {
+          const cleaned = s
             .replaceAll(/\\+/g, '\\')
             .replaceAll(t.testdirName, '{{DIR_NAME}}')
             .trim()
+          return stripAnsi ?
+              stripVTControlCharacters(cleaned)
+            : cleaned
+        }
         res({
-          stdout: replace(stdout),
-          stderr: replace(stderr),
-          output: replace(output),
+          stdout: clean(stdout),
+          stderr: clean(stderr),
+          output: clean(output),
           status: code,
         })
       })
@@ -128,15 +130,20 @@ export const rootCompile: Command = (...args) =>
 export const rootCompileNoScripts: Command = (...args) =>
   runBase(Variants.rootCompileNoScripts, ...args)
 
-export const run = async (
+// The default run command will use whatever is configured as
+// the published variant
+export const run: Command = (...args) =>
+  runBase(Variants[publishedVariant], ...args)
+
+export const runMatch = async (
   t: Test,
   bin: string,
   args?: string[],
-  { variants = DEFAULT_VARIANTS, ...options }: RunOptions = {},
+  options: CommandOptions = {},
 ) => {
   const ranVariants: [VariantType, CommandResult][] = []
 
-  for (const variant of variants) {
+  for (const variant of DEFAULT_VARIANTS) {
     await t.test(variant, async t => {
       ranVariants.push([
         variant,
@@ -145,7 +152,11 @@ export const run = async (
     })
   }
 
-  t.equal(ranVariants.length, variants.length, 'ran all variants')
+  t.equal(
+    ranVariants.length,
+    DEFAULT_VARIANTS.length,
+    'ran all variants',
+  )
 
   // treat bundle as the default result for other tests
   const defaultResult = (ranVariants.find(([k]) => k === 'bundle') ??
