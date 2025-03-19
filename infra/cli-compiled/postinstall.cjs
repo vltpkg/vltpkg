@@ -7,10 +7,17 @@ const fs = require('fs')
 const execMode = 0o777 & ~process.umask()
 const platform = os.platform()
 const arch = os.arch()
+const isWindows = platform === 'win32'
 const rootPackage = __dirname
-const bins = Object.values(
-  require(join(rootPackage, 'package.json')).bin,
+const pkg = JSON.parse(
+  fs.readFileSync(join(rootPackage, 'package.json'), 'utf8'),
 )
+
+const unlinkSyncSafe = file => {
+  try {
+    fs.unlinkSync(file)
+  } catch {}
+}
 
 const platformPkg = (() => {
   try {
@@ -34,9 +41,7 @@ const atomicCopySync = (source, target) => {
     fs.renameSync(tmp, target)
     fs.chmodSync(target, execMode)
   } catch (err) {
-    try {
-      fs.unlinkSync(tmp)
-    } catch {}
+    unlinkSyncSafe(tmp)
     throw new Error(`Could not copy platform bin`, {
       cause: {
         source,
@@ -48,9 +53,13 @@ const atomicCopySync = (source, target) => {
   }
 }
 
-for (const binPath of bins) {
+for (const binPath of Object.values(pkg.bin)) {
+  const platformBinPath = `${binPath}${isWindows ? '.exe' : ''}`
   atomicCopySync(
-    join(platformPkg, binPath + `${os === 'win32' ? '.exe' : ''}`),
-    join(rootPackage, binPath),
+    join(platformPkg, platformBinPath),
+    join(rootPackage, platformBinPath),
   )
+  if (platformBinPath !== binPath) {
+    unlinkSyncSafe(join(rootPackage, binPath))
+  }
 }

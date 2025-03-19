@@ -1,37 +1,12 @@
 import type { Test } from 'tap'
 import { spawn } from 'node:child_process'
-import { join, resolve } from 'node:path'
-import { existsSync, readdirSync } from 'node:fs'
 import assert from 'node:assert'
-import { BINS_DIR as SOURCE_DIR } from '@vltpkg/infra-build'
+import { Variants } from './variants.ts'
+import type { Variant, VariantType } from './variants.ts'
 
-export const BUNDLE_DIR = resolve(
-  import.meta.dirname,
-  '../../.build-bundle',
-)
-
-export const COMPILE_DIR = resolve(
-  import.meta.dirname,
-  '../../.build-compile',
-)
-
-export const ROOT_COMPILE_DIR = resolve(
-  import.meta.dirname,
-  '../../.build-compile-root',
-)
-
-export type Variants = 'src' | 'bundle' | 'compile' | 'rootCompile'
-
-const DEFAULT_VARIANTS: Variants[] = ['src']
-if (existsSync(BUNDLE_DIR)) {
-  DEFAULT_VARIANTS.push('bundle')
-}
-if (existsSync(COMPILE_DIR)) {
-  DEFAULT_VARIANTS.push('compile')
-}
-if (existsSync(ROOT_COMPILE_DIR)) {
-  DEFAULT_VARIANTS.push('rootCompile')
-}
+const DEFAULT_VARIANTS = Object.values(Variants)
+  .filter(v => v.default)
+  .map(v => v.type)
 
 export type CommandOptions = {
   testdir?: Parameters<Test['testdir']>[0]
@@ -39,7 +14,7 @@ export type CommandOptions = {
 }
 
 export type RunOptions = CommandOptions & {
-  variants?: Variants[]
+  variants?: VariantType[]
 }
 
 export type CommandResult = {
@@ -51,8 +26,8 @@ export type CommandResult = {
 
 export type Command = (
   t: Test,
-  bin: string,
-  args: string[],
+  bin?: string,
+  args?: string[],
   options?: CommandOptions,
 ) => Promise<CommandResult>
 
@@ -70,35 +45,23 @@ const ENV = Object.entries(process.env).reduce<NodeJS.Process['env']>(
   {},
 )
 
-const findBin = (dir: string, bin: string) => {
-  const contents = readdirSync(dir)
-  const maybeBins = ['', '.exe', '.js', '.ts'].map(
-    ext => `${bin}${ext}`,
-  )
-  const binToRun = contents.find(f => maybeBins.includes(f))
-  assert(binToRun, `could not find bin: ${bin}`)
-  return join(dir, binToRun)
-}
-
 const runBase = async (
+  variant: Variant,
   t: Test,
-  dir: string,
-  bin: string,
-  args: string[],
+  bin = 'vlt',
+  args: string[] = [],
   { env = {}, testdir = {} }: CommandOptions = {},
 ) => {
   const cwd = t.testdir(testdir)
-  const binToRun = findBin(
-    dir === ROOT_COMPILE_DIR ?
-      join(ROOT_COMPILE_DIR, 'node_modules', '.bin')
-    : dir,
-    bin,
-  )
+  const { dir } = variant
 
-  const [command, commandArgs] =
-    dir === COMPILE_DIR || dir === ROOT_COMPILE_DIR ?
-      [binToRun, args]
-    : [process.execPath, [binToRun, ...args]]
+  const command =
+    typeof variant.command === 'function' ?
+      variant.command({ bin })
+    : variant.command
+
+  const commandArgs =
+    variant.arg0 ? [variant.arg0({ dir, bin }), ...args] : args
 
   return new Promise<CommandResult>((res, rej) => {
     const proc = spawn(command, commandArgs, {
@@ -107,12 +70,18 @@ const runBase = async (
       windowsHide: true,
       env: {
         ...ENV,
+        ...variant.env,
         ...env,
         // Config will always stop at $HOME so override that one
         // level about the testdir so we dont go back up to our
         // own monorepo root
         HOME: cwd,
         USERPROFILE: cwd,
+        // PATH is only set to what the variant needs
+        PATH:
+          typeof variant.path === 'function' ?
+            variant.path({ dir })
+          : variant.path,
       },
     })
     let stdout = ''
@@ -144,80 +113,34 @@ const runBase = async (
   })
 }
 
-export const src = (
-  t: Test,
-  bin: string,
-  args: string[],
-  options?: CommandOptions,
-) =>
-  runBase(t, SOURCE_DIR, bin, args, {
-    ...options,
-    env: {
-      ...options?.env,
-      NODE_OPTIONS: '--no-warnings --experimental-strip-types',
-    },
-  })
+export const src: Command = (...args) =>
+  runBase(Variants.source, ...args)
 
-export const bundle = (
-  t: Test,
-  bin: string,
-  args: string[],
-  options?: CommandOptions,
-) => runBase(t, BUNDLE_DIR, bin, args, options)
+export const bundle: Command = (...args) =>
+  runBase(Variants.bundle, ...args)
 
-export const compile = (
-  t: Test,
-  bin: string,
-  args: string[],
-  options?: CommandOptions,
-) => runBase(t, COMPILE_DIR, bin, args, options)
+export const compile: Command = (...args) =>
+  runBase(Variants.compile, ...args)
 
-export const rootCompile = (
-  t: Test,
-  bin: string,
-  args: string[],
-  options?: CommandOptions,
-) => runBase(t, ROOT_COMPILE_DIR, bin, args, options)
+export const rootCompile: Command = (...args) =>
+  runBase(Variants.rootCompile, ...args)
+
+export const rootCompileNoScripts: Command = (...args) =>
+  runBase(Variants.rootCompileNoScripts, ...args)
 
 export const run = async (
   t: Test,
   bin: string,
-  args: string[],
+  args?: string[],
   { variants = DEFAULT_VARIANTS, ...options }: RunOptions = {},
 ) => {
-  const ranVariants: [Variants, CommandResult][] = []
+  const ranVariants: [VariantType, CommandResult][] = []
 
-  t.comment(variants.join(', '))
-
-  if (variants.includes('src')) {
-    await t.test('src', async t => {
-      ranVariants.push(['src', await src(t, bin, args, options)])
-    })
-  }
-
-  if (variants.includes('bundle')) {
-    await t.test('bundle', async t => {
+  for (const variant of variants) {
+    await t.test(variant, async t => {
       ranVariants.push([
-        'bundle',
-        await bundle(t, bin, args, options),
-      ])
-    })
-  }
-
-  if (variants.includes('compile')) {
-    await t.test('compile', async t => {
-      ranVariants.push([
-        'compile',
-        await compile(t, bin, args, options),
-      ])
-    })
-  }
-
-  if (variants.includes('rootCompile')) {
-    await t.test('root compile', async t => {
-      ranVariants.push([
-        'rootCompile',
-        await rootCompile(t, bin, args, options),
+        variant,
+        await runBase(Variants[variant], t, bin, args, options),
       ])
     })
   }

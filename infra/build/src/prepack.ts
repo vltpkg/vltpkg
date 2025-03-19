@@ -105,7 +105,10 @@ const main = async () => {
   // The compiled root CLI with optional deps
   if (workspaceName === 'cli-compiled') {
     for (const bin of COMPILED_BINS) {
-      cpSync('./placeholder-bin.js', resolve(outdir, bin))
+      writeFileSync(
+        resolve(outdir, bin),
+        '"If this file exists, the postinstall script failed to run."',
+      )
     }
     cpSync('./postinstall.cjs', resolve(outdir, 'postinstall.cjs'))
 
