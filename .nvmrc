@@ -1,1 +1,5 @@
-^22.14.0
+lts/jod 
+# "jod" is the 22.x node release line
+# there are known issues with <22.14 & unknown compat for >=23
+# configuration is intended explicitely for local environments
+# configuration for CI/`setup-node` can be found in .github/workflows/*.yml 
