@@ -15,7 +15,7 @@ export type VariantType =
 
 export type Variant = {
   type: VariantType
-  default?: boolean
+  default: boolean
   dir: string
   command: string | ((opts: { bin: string }) => string)
   path: string | (({ dir }: { dir: string }) => string)
@@ -25,6 +25,8 @@ export type Variant = {
     | ((opts: { dir: string }) => Promise<unknown>)
     | ((opts: { dir: string }) => unknown)
 }
+
+export const publishedVariant: VariantType = 'compile'
 
 export const Variants: Record<VariantType, Variant> = {
   source: {
