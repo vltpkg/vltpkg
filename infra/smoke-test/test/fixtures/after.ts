@@ -1,6 +1,11 @@
+import t from 'tap'
 import { rmSync } from 'node:fs'
-import { BUNDLE_DIR, COMPILE_DIR, ROOT_COMPILE_DIR } from './run.ts'
+import { Variants } from './variants.ts'
 
-rmSync(BUNDLE_DIR, { recursive: true, force: true })
-rmSync(COMPILE_DIR, { recursive: true, force: true })
-rmSync(ROOT_COMPILE_DIR, { recursive: true, force: true })
+if (!t.saveFixture) {
+  for (const variant of Object.values(Variants)) {
+    if (variant.setup) {
+      rmSync(variant.dir, { recursive: true, force: true })
+    }
+  }
+}
