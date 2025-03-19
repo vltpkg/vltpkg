@@ -84,10 +84,7 @@
     "typecheck": "tsc --noEmit"
   },
   "tap": {
-    "extends": "../../tap-config.yaml",
-    "test-env": [
-      "__VLT_INTERNAL_GUI_ASSETS_DIR=/mock-path/to/gui/assets"
-    ]
+    "extends": "../../tap-config.yaml"
   },
   "prettier": "../../.prettierrc.js",
   "module": "./src/index.ts",
