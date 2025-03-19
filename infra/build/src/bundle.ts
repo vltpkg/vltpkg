@@ -10,7 +10,7 @@ import {
 } from 'node:path'
 import { readFile } from 'node:fs/promises'
 import * as esbuild from 'esbuild'
-import { builtinModules, createRequire } from 'node:module'
+import { createRequire } from 'node:module'
 import assert from 'node:assert'
 import { BINS_DIR, BINS } from './bins.ts'
 import type { Bin } from './bins.ts'
@@ -35,23 +35,6 @@ export const findEntryBins = (dir: string, names?: readonly Bin[]) =>
     .map(b => join(dir, b))
     .flatMap(b => [b, `${b}.js`, `${b}.ts`])
     .filter(b => existsSync(b))
-
-const nodeImports: esbuild.Plugin = {
-  name: 'node-imports',
-  setup({ onResolve }) {
-    onResolve({ filter: /()/, namespace: 'file' }, args => {
-      if (
-        builtinModules.includes(args.path) &&
-        !args.path.startsWith('node:')
-      ) {
-        return {
-          path: `node:${args.path}`,
-          external: true,
-        }
-      }
-    })
-  },
-}
 
 const codeSplitPlugin = (): {
   paths: () => { source: string; out: string }[]
@@ -103,7 +86,6 @@ const codeSplitPlugin = (): {
 }
 
 type CreateBundleOptions = {
-  plugins: Exclude<esbuild.BuildOptions['plugins'], undefined>
   sourcemap: Exclude<esbuild.BuildOptions['sourcemap'], undefined>
   minify: Exclude<esbuild.BuildOptions['minify'], undefined>
   splitting: Exclude<esbuild.BuildOptions['splitting'], undefined>
@@ -131,10 +113,7 @@ const bundleEntryPoints = async (
     platform: 'node',
     target: 'es2022',
     banner: {
-      js: `var global = globalThis;
-import {Buffer} from "node:buffer";
-import {setImmediate, clearImmediate} from "node:timers";
-import {createRequire as _vlt_createRequire} from 'node:module';
+      js: `import {createRequire as _vlt_createRequire} from 'node:module';
 var require = _vlt_createRequire(import.meta.filename);`,
     },
     define: {
@@ -155,7 +134,6 @@ const createBundler =
     bundleEntryPoints({
       ...o,
       ...b,
-      plugins: [...o.plugins, ...(b.plugins ?? [])],
     })
 
 export type Options = {
@@ -187,7 +165,6 @@ export const bundle = async ({
     sourcemap,
     splitting,
     outdir,
-    plugins: [nodeImports],
     define: Object.fromEntries(
       Object.entries(define).map(([k, v]) => [
         `process.env.__VLT_INTERNAL_${k}`,
@@ -209,7 +186,7 @@ export const bundle = async ({
       in: file,
       out: basenameWithoutExtension(file),
     })),
-    plugins: [nodeImports, codeSplit.plugin],
+    plugins: [codeSplit.plugin],
   })
 
   // bundle manually code split files determined from the
