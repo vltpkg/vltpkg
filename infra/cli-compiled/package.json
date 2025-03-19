@@ -1,7 +1,7 @@
 {
   "name": "vlt",
   "description": "The vlt CLI",
-  "version": "0.0.0-5",
+  "version": "0.0.0-6",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/vltpkg/vltpkg.git",
