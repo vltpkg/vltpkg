@@ -15,6 +15,7 @@
     "@eslint/js": "catalog:",
     "@types/eslint__js": "catalog:",
     "@types/node": "catalog:",
+    "@vltpkg/which": "workspace:*",
     "eslint": "catalog:",
     "prettier": "catalog:",
     "tap": "catalog:",

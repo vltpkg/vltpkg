@@ -3,11 +3,9 @@ import { runMatch } from './fixtures/run.ts'
 
 t.test('get', async t => {
   const { stdout } = await runMatch(t, 'vlt', ['pkg', 'get'], {
-    testdir: {
-      'package.json': JSON.stringify({
-        name: 'hi',
-        version: '1.0.0',
-      }),
+    packageJson: {
+      name: 'hi',
+      version: '1.0.0',
     },
   })
   t.equal(JSON.parse(stdout).name, 'hi')
@@ -20,11 +18,9 @@ t.test('get name', async t => {
     'vlt',
     ['pkg', 'get', 'name'],
     {
-      testdir: {
-        'package.json': JSON.stringify({
-          name: 'hi',
-          version: '1.0.0',
-        }),
+      packageJson: {
+        name: 'hi',
+        version: '1.0.0',
       },
     },
   )
@@ -37,11 +33,9 @@ t.test('get name version', async t => {
     'vlt',
     ['pkg', 'get', 'name', 'version'],
     {
-      testdir: {
-        'package.json': JSON.stringify({
-          name: 'hi',
-          version: '1.0.0',
-        }),
+      packageJson: {
+        name: 'hi',
+        version: '1.0.0',
       },
     },
   )

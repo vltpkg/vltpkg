@@ -1,6 +1,7 @@
 import { join, resolve, dirname } from 'node:path'
 import { bundle, compile, BINS_DIR } from '@vltpkg/infra-build'
 import { rootCompile } from './root-compile.ts'
+import { whichSync } from '@vltpkg/which'
 
 // only bundle/compile the vlt binary since that is all we test
 // this makes the tests run faster
@@ -8,18 +9,20 @@ const BINS = ['vlt'] as const
 
 export type VariantType =
   | 'source'
+  | 'denoSource'
   | 'bundle'
+  | 'denoBundle'
   | 'compile'
   | 'rootCompile'
   | 'rootCompileNoScripts'
 
 export type Variant = {
   type: VariantType
-  default: boolean
+  default?: boolean
   dir: string
   command: string | ((opts: { bin: string }) => string)
   path: string | (({ dir }: { dir: string }) => string)
-  arg0?: (opts: { dir: string; bin: string }) => string
+  args?: (opts: { dir: string; bin: string }) => string[]
   env?: NodeJS.ProcessEnv
   setup?:
     | ((opts: { dir: string }) => Promise<unknown>)
@@ -35,10 +38,22 @@ export const Variants: Record<VariantType, Variant> = {
     dir: BINS_DIR,
     command: process.execPath,
     path: dirname(process.execPath),
-    arg0: ({ dir, bin }) => join(dir, `${bin}.ts`),
+    args: ({ dir, bin }) => [join(dir, `${bin}.ts`)],
     env: {
       NODE_OPTIONS: '--no-warnings --experimental-strip-types',
     },
+  },
+  denoSource: {
+    type: 'denoSource',
+    dir: BINS_DIR,
+    command: whichSync('deno'),
+    path: '',
+    args: ({ dir, bin }) => [
+      '-A',
+      '--unstable-node-globals',
+      '--unstable-bare-node-builtins',
+      join(dir, `${bin}.ts`),
+    ],
   },
   bundle: {
     type: 'bundle',
@@ -46,8 +61,21 @@ export const Variants: Record<VariantType, Variant> = {
     dir: resolve(process.cwd(), '.build-bundle'),
     command: process.execPath,
     path: dirname(process.execPath),
-    arg0: ({ dir, bin }) => join(dir, `${bin}.js`),
+    args: ({ dir, bin }) => [join(dir, `${bin}.js`)],
     setup: ({ dir }) => bundle({ outdir: dir, bins: BINS }),
+  },
+  denoBundle: {
+    type: 'denoBundle',
+    // Uses the same bundle directory as the regular bundle
+    dir: resolve(process.cwd(), '.build-bundle'),
+    command: whichSync('deno'),
+    path: '',
+    args: ({ dir, bin }) => [
+      '-A',
+      '--unstable-node-globals',
+      '--unstable-bare-node-builtins',
+      join(dir, `${bin}.js`),
+    ],
   },
   compile: {
     type: 'compile',
@@ -56,11 +84,10 @@ export const Variants: Record<VariantType, Variant> = {
     command: ({ bin }) => bin,
     path: ({ dir }) => dir,
     setup: ({ dir }) =>
-      compile({ outdir: dir, bins: BINS, stdio: 'pipe' }),
+      compile({ outdir: dir, bins: BINS, quiet: true }),
   },
   rootCompile: {
     type: 'rootCompile',
-    default: false,
     dir: resolve(process.cwd(), '.build-compile-root'),
     command: ({ bin }) => bin,
     path: ({ dir }) => join(dir, 'node_modules', '.bin'),
@@ -68,7 +95,6 @@ export const Variants: Record<VariantType, Variant> = {
   },
   rootCompileNoScripts: {
     type: 'rootCompileNoScripts',
-    default: false,
     dir: resolve(process.cwd(), '.build-compile-root-no-scripts'),
     command: ({ bin }) => bin,
     path: ({ dir }) => join(dir, 'node_modules', '.bin'),
