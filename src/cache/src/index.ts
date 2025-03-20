@@ -1,9 +1,9 @@
 import { error } from '@vltpkg/error-cause'
 import type { Integrity } from '@vltpkg/types'
 import { XDG } from '@vltpkg/xdg'
-import { createHash, randomBytes } from 'crypto'
-import { opendirSync, readFileSync } from 'fs'
-import type { Dirent } from 'fs'
+import { createHash, randomBytes } from 'node:crypto'
+import { opendirSync, readFileSync } from 'node:fs'
+import type { Dirent } from 'node:fs'
 import {
   link,
   mkdir,
@@ -11,10 +11,9 @@ import {
   readFile,
   rename,
   writeFile,
-} from 'fs/promises'
+} from 'node:fs/promises'
 import { LRUCache } from 'lru-cache'
-import { resolve } from 'node:path'
-import { basename, dirname } from 'path'
+import { resolve, basename, dirname } from 'node:path'
 import { rimraf } from 'rimraf'
 
 export type CacheFetchContext =

@@ -1,5 +1,5 @@
-import { existsSync, rmSync } from 'fs'
-import { resolve } from 'path'
+import { existsSync, rmSync } from 'node:fs'
+import { resolve } from 'node:path'
 import type { AstroIntegrationLogger } from 'astro'
 
 const rebuild = (key: string) => {

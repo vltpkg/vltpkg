@@ -1,8 +1,8 @@
 #!/usr/bin/env -S node --experimental-strip-types --no-warnings
 
-import { readFileSync } from 'fs'
+import { readFileSync } from 'node:fs'
 import pacote from 'pacote'
-import { resolve } from 'path'
+import { resolve } from 'node:path'
 import { Pool } from '../src/pool.ts'
 import {
   convertNs,

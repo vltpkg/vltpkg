@@ -1,7 +1,7 @@
 import { Cache } from '@vltpkg/cache'
-import { spawnSync } from 'child_process'
+import { spawnSync } from 'node:child_process'
 import t from 'tap'
-import { gzipSync } from 'zlib'
+import { gzipSync } from 'node:zlib'
 import { __CODE_SPLIT_SCRIPT_NAME } from '../src/unzip.ts'
 
 const ENV = {

@@ -2,9 +2,9 @@ import t from 'tap'
 import { isResponseOK } from '../src/worker.ts'
 import { Pool } from '../src/pool.ts'
 
-import { lstatSync } from 'fs'
-import { availableParallelism } from 'os'
-import { resolve } from 'path'
+import { lstatSync } from 'node:fs'
+import { availableParallelism } from 'node:os'
+import { resolve } from 'node:path'
 import { makeTar } from './fixtures/make-tar.ts'
 
 const p = new Pool()

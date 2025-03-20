@@ -1,8 +1,8 @@
 #!/usr/bin/env -S node --experimental-strip-types --no-warnings
 
 import pacote from 'pacote'
-import { resolve, join } from 'path'
-import { parseArgs } from 'util'
+import { resolve, join } from 'node:path'
+import { parseArgs } from 'node:util'
 import { PackageInfoClient } from '../src/index.ts'
 import {
   randomPackages,
@@ -11,10 +11,10 @@ import {
   resetDir,
   timePromises,
 } from '@vltpkg/benchmark'
-import { readdirSync, readFileSync } from 'fs'
-import { tmpdir } from 'os'
+import { readdirSync, readFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
 import { unzip } from '@vltpkg/cache-unzip'
-import EventEmitter from 'events'
+import EventEmitter from 'node:events'
 
 const { values } = parseArgs({
   allowNegative: true,

@@ -1,6 +1,6 @@
 import type { VltServerListening } from '@vltpkg/server'
-import EventEmitter from 'events'
-import { resolve } from 'path'
+import EventEmitter from 'node:events'
+import { resolve } from 'node:path'
 import { PathScurry } from 'path-scurry'
 import t from 'tap'
 import type { LoadedConfig } from '../src/config/index.ts'

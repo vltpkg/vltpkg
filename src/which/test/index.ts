@@ -1,11 +1,11 @@
-import fs from 'fs'
+import fs from 'node:fs'
 import pathModule, {
   basename,
   delimiter,
   join,
   relative,
   sep,
-} from 'path'
+} from 'node:path'
 import t from 'tap'
 import type { Test } from 'tap'
 import type { WhichOptions } from '../src/index.ts'

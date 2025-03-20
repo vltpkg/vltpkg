@@ -4,8 +4,8 @@
 
 import type { PackageJson } from '@vltpkg/package-json'
 import { run } from '@vltpkg/run'
-import { statSync } from 'fs'
-import { chmod } from 'fs/promises'
+import { statSync } from 'node:fs'
+import { chmod } from 'node:fs/promises'
 import { graphRun } from 'graph-run'
 import type { PathScurry } from 'path-scurry'
 import type { Diff } from '../diff.ts'

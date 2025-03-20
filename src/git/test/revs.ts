@@ -1,6 +1,6 @@
-import fs from 'fs'
+import fs from 'node:fs'
 import t from 'tap'
-import { pathToFileURL } from 'url'
+import { pathToFileURL } from 'node:url'
 import { revs } from '../src/revs.ts'
 import { spawn } from '../src/spawn.ts'
 

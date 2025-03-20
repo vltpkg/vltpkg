@@ -1,8 +1,8 @@
 import t from 'tap'
 import { joinDepIDTuple } from '@vltpkg/dep-id'
 import { PackageJson } from '@vltpkg/package-json'
-import { readFileSync } from 'fs'
-import { resolve } from 'path'
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import { PathScurry } from 'path-scurry'
 
 const { updateGraphData } = await t.mockImport<

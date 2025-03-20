@@ -21,9 +21,9 @@ import {
   readFileSync,
   symlinkSync,
   writeFileSync,
-} from 'fs'
-import { statSync } from 'node:fs'
-import { basename, resolve } from 'path'
+  statSync,
+} from 'node:fs'
+import { basename, resolve } from 'node:path'
 import { extract } from 'tar'
 
 const realPackageInfo = new PackageInfoClient({})

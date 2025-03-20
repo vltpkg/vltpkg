@@ -1,6 +1,6 @@
-import { createHash } from 'crypto'
-import { readdirSync } from 'fs'
-import { resolve } from 'path'
+import { createHash } from 'node:crypto'
+import { readdirSync } from 'node:fs'
+import { resolve } from 'node:path'
 import t from 'tap'
 import { Cache } from '../src/index.ts'
 

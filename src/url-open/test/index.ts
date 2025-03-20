@@ -1,5 +1,5 @@
 import type { PromiseSpawnOptions } from '@vltpkg/promise-spawn'
-import { release } from 'os'
+import { release } from 'node:os'
 import t from 'tap'
 import type { Test } from 'tap'
 

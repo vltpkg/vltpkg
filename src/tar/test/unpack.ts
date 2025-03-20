@@ -1,9 +1,9 @@
-import { lstatSync, readFileSync } from 'fs'
-import { resolve } from 'path'
+import { lstatSync, readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import t from 'tap'
 import type { Test } from 'tap'
 import { Pax } from 'tar'
-import { gzipSync } from 'zlib'
+import { gzipSync } from 'node:zlib'
 import { unpack } from '../src/unpack.ts'
 import { makeTar } from './fixtures/make-tar.ts'
 

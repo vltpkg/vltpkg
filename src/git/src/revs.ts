@@ -4,7 +4,7 @@ import type {
   SpawnResultStdoutString,
 } from '@vltpkg/promise-spawn'
 import { LRUCache } from 'lru-cache'
-import { fileURLToPath } from 'url'
+import { fileURLToPath } from 'node:url'
 import type { GitOptions } from './index.ts'
 import { linesToRevs } from './lines-to-revs.ts'
 import type { RevDoc } from '@vltpkg/types'

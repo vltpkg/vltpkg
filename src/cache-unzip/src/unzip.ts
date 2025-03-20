@@ -1,6 +1,6 @@
 import { Cache } from '@vltpkg/cache'
 import { error } from '@vltpkg/error-cause'
-import { gunzipSync } from 'zlib'
+import { gunzipSync } from 'node:zlib'
 
 export const __CODE_SPLIT_SCRIPT_NAME = import.meta.filename
 

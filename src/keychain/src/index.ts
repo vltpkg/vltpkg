@@ -2,8 +2,8 @@
 // only the keychain file. Any other source of auth data should be
 // handled before or instead of this utility.
 import { XDG } from '@vltpkg/xdg'
-import { mkdir, readFile, rename, writeFile } from 'fs/promises'
-import { dirname } from 'path'
+import { mkdir, readFile, rename, writeFile } from 'node:fs/promises'
+import { dirname } from 'node:path'
 
 const writeFileAtomic = async (path: string, data: string) => {
   const p = path + String(Math.random())

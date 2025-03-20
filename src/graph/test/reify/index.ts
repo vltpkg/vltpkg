@@ -14,13 +14,13 @@ import {
   readFileSync,
   unlinkSync,
   writeFileSync,
-} from 'fs'
-import { statSync } from 'node:fs'
+  statSync,
+} from 'node:fs'
 import { pathToFileURL } from 'node:url'
-import { resolve } from 'path'
+import { resolve } from 'node:path'
 import { PathScurry } from 'path-scurry'
 import t from 'tap'
-import { inspect } from 'util'
+import { inspect } from 'node:util'
 import type {
   AddImportersDependenciesMap,
   RemoveImportersDependenciesMap,

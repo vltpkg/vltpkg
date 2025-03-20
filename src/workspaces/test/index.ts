@@ -1,4 +1,4 @@
-import { mkdirSync, rmdirSync, writeFileSync } from 'fs'
+import { mkdirSync, rmdirSync, writeFileSync } from 'node:fs'
 import type { DepResults } from 'graph-run'
 import t from 'tap'
 import { assertWSConfig, asWSConfig, Monorepo } from '../src/index.ts'

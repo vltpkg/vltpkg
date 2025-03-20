@@ -1,7 +1,7 @@
 // node script.js <parent|child> <fn> <cwd> <projectRoot> [<event>] [args...]
 // event and args only relevant for run/runFG
 
-import { delimiter, isAbsolute, relative } from 'path'
+import { delimiter, isAbsolute, relative } from 'node:path'
 import {
   exec,
   execFG,

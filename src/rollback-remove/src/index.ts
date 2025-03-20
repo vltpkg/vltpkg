@@ -1,6 +1,6 @@
-import { spawn } from 'child_process'
-import { rename } from 'fs/promises'
-import { basename, dirname } from 'path'
+import { spawn } from 'node:child_process'
+import { rename } from 'node:fs/promises'
+import { basename, dirname } from 'node:path'
 import { rimraf } from 'rimraf'
 import { __CODE_SPLIT_SCRIPT_NAME } from './remove.ts'
 

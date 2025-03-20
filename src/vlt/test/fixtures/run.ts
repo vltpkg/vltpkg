@@ -1,5 +1,5 @@
 import type { Test } from 'tap'
-import { join } from 'path'
+import { join } from 'node:path'
 import type { LoadedConfig } from '../../src/config/index.ts'
 import type { Command } from '../../src/index.ts'
 

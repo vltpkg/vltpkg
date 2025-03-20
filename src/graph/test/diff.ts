@@ -1,7 +1,7 @@
 import { joinDepIDTuple } from '@vltpkg/dep-id'
 import type { DepID, DepIDTuple } from '@vltpkg/dep-id'
 import t from 'tap'
-import { inspect } from 'util'
+import { inspect } from 'node:util'
 import { Diff } from '../src/diff.ts'
 import type {
   Graph,
