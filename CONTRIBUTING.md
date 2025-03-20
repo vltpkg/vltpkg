@@ -12,8 +12,7 @@ specific to that component.
 
 These workspaces are all are direct dependencies of the `vlt` CLI.
 
-The actual CLI is also a workspace in
-[`src/cli-sdk`](./src/cli-sdk/).
+The actual CLI is also a workspace in [`src/cli-sdk`](./src/cli-sdk/).
 
 Most of these are also published separately under the `@vltpkg` scope.
 

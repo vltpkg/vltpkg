@@ -9,7 +9,10 @@ t.test('--version', async t => {
     stdout,
     JSON.parse(
       readFileSync(
-        resolve(import.meta.dirname, '../../../src/cli-sdk/package.json'),
+        resolve(
+          import.meta.dirname,
+          '../../../src/cli-sdk/package.json',
+        ),
         'utf-8',
       ),
     ).version,
