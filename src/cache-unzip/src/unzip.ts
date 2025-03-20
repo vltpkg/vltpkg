@@ -4,7 +4,7 @@ import { gunzipSync } from 'node:zlib'
 
 export const __CODE_SPLIT_SCRIPT_NAME = import.meta.filename
 
-export const main = async (
+const main = async (
   path: undefined | string,
   input = process.stdin,
 ) => {
@@ -151,7 +151,18 @@ export const main = async (
   if (!didSomething) process.exit(1)
 }
 
-if (process.argv[1] === import.meta.filename) {
+if (
+  /* c8 ignore next */
+  (process.env.__VLT_INTERNAL_MAIN ?? process.argv[1]) ===
+  __CODE_SPLIT_SCRIPT_NAME
+) {
   process.title = 'vlt-cache-unzip'
-  void main(process.argv[2], process.stdin)
+
+  void main(
+    // When compiled there can be other leading args supplied by Deno
+    // so always use the last arg unless there are only two which means
+    // no path was supplied.
+    process.argv.length === 2 ? undefined : process.argv.at(-1),
+    process.stdin,
+  )
 }

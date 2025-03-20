@@ -209,6 +209,7 @@ export type Options = {
   splitting?: boolean
   sourcemap?: boolean
   hashbang?: boolean
+  internalDefine?: { [key: string]: string }
 }
 
 export const bundle = async ({
@@ -218,6 +219,7 @@ export const bundle = async ({
   splitting = true,
   sourcemap = true,
   hashbang = false,
+  internalDefine,
 }: Options) => {
   mkdirSync(outdir, { recursive: true })
 
@@ -226,6 +228,7 @@ export const bundle = async ({
     CLI_PACKAGE_JSON: 'cli-package.json',
     REGISTRY_CLIENT_PACKAGE_JSON: 'registry-client-package.json',
     LIVE_RELOAD: false,
+    ...internalDefine,
   }
 
   const esbuildBundle = createBundler({

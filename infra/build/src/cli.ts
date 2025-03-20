@@ -43,8 +43,6 @@ const main = async () => {
     case 'bundle':
       return bundle(opts)
     // Compile the binary version of the CLI
-    // optionally specifying the source directory
-    // and default to a newly bundled version.
     case 'compile':
       return compile(opts)
     /* c8 ignore next 2 */

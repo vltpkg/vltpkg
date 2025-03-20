@@ -1,7 +1,11 @@
 import type { Test } from 'tap'
 import { spawn } from 'node:child_process'
 import assert from 'node:assert'
-import { publishedVariant, Variants } from './variants.ts'
+import {
+  publishedVariant,
+  defaultVariants,
+  Variants,
+} from './variants.ts'
 import type { Variant, VariantType } from './variants.ts'
 import { stripVTControlCharacters } from 'node:util'
 import { join } from 'node:path'
@@ -170,9 +174,7 @@ export const runMatch = async (
   args?: string[],
   {
     test,
-    variants = Object.values(Variants)
-      .filter(v => v.default)
-      .map(v => v.type),
+    variants = defaultVariants,
     ...options
   }: CommandOptions & {
     variants?: VariantType[]
