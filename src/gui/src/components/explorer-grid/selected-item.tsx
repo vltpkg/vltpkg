@@ -115,7 +115,6 @@ export const SelectedItem = ({ item }: GridItemOptions) => {
   const linePositionRef = useRef<HTMLDivElement>(null)
   const [details, setDetails] = useState<DetailsInfo>({})
   const [activeTab, setActiveTab] = useState<string>('overview')
-  const stamp = useGraphStore(state => state.stamp)
 
   useEffect(() => {
     const handleResize = () => {
@@ -130,11 +129,17 @@ export const SelectedItem = ({ item }: GridItemOptions) => {
   })
 
   useEffect(() => {
+    const abortController = new AbortController()
     async function retrieveDetails() {
       if (!item.to?.name) return
       const depIdSpec = hydrate(item.to.id, item.to.name, specOptions)
       const manifest = item.to.manifest ?? {}
-      for await (const d of fetchDetails(depIdSpec, manifest)) {
+
+      for await (const d of fetchDetails(
+        depIdSpec,
+        abortController.signal,
+        manifest,
+      )) {
         setDetails({
           ...details,
           ...d,
@@ -142,7 +147,11 @@ export const SelectedItem = ({ item }: GridItemOptions) => {
       }
     }
     void retrieveDetails()
-  }, [stamp])
+
+    return () => {
+      abortController.abort()
+    }
+  }, [])
 
   const handlePublisherAvatarError = () => {
     setDetails({

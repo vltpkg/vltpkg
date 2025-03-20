@@ -239,7 +239,9 @@ test('fetchDetails returns the correct details including downloadsRange', async 
   }
   const spec = Spec.parse('my-package', '1.0.0')
   const res: any = {}
-  for await (const details of fetchDetails(spec, mani)) {
+  const abortController = new AbortController()
+  const signal = abortController.signal
+  for await (const details of fetchDetails(spec, signal, mani)) {
     for (const key of Object.keys(details)) {
       res[key] = details[key as keyof DetailsInfo]
     }
@@ -273,8 +275,10 @@ test('fetchDetails returns the correct details including downloadsRange', async 
 test('fetchDetails from various async requests', async () => {
   const mani = { name: 'async-request', version: '1.0.0' }
   const spec = Spec.parse('async-request', '1.0.0')
+  const abortController = new AbortController()
+  const signal = abortController.signal
   const res: any = {}
-  for await (const details of fetchDetails(spec, mani)) {
+  for await (const details of fetchDetails(spec, signal, mani)) {
     for (const key of Object.keys(details)) {
       res[key] = details[key as keyof DetailsInfo]
     }
@@ -305,8 +309,10 @@ test('unable to fetch remote details', async () => {
     author: 'Ruy',
   }
   const spec = Spec.parse('missing-info', '1.0.0')
+  const abortController = new AbortController()
+  const signal = abortController.signal
   const res: any = {}
-  for await (const details of fetchDetails(spec, mani)) {
+  for await (const details of fetchDetails(spec, signal, mani)) {
     for (const key of Object.keys(details)) {
       res[key] = details[key as keyof DetailsInfo]
     }
@@ -319,8 +325,10 @@ test('unable to fetch remote details', async () => {
 test('no info to retrieve from details', async () => {
   const mani = { name: 'missing-info', version: '1.0.0' }
   const spec = Spec.parse('missing-info', '1.0.0')
+  const abortController = new AbortController()
+  const signal = abortController.signal
   const res: any = {}
-  for await (const details of fetchDetails(spec, mani)) {
+  for await (const details of fetchDetails(spec, signal, mani)) {
     for (const key of Object.keys(details)) {
       res[key] = details[key as keyof DetailsInfo]
     }
@@ -331,8 +339,10 @@ test('no info to retrieve from details', async () => {
 test('fetchDetails with missing downloads', async () => {
   const mani = { name: 'missing-downloads', version: '1.0.0' }
   const spec = Spec.parse('missing-downloads', '1.0.0')
+  const abortController = new AbortController()
+  const signal = abortController.signal
   const res: any = {}
-  for await (const details of fetchDetails(spec, mani)) {
+  for await (const details of fetchDetails(spec, signal, mani)) {
     for (const key of Object.keys(details)) {
       res[key] = details[key as keyof DetailsInfo]
     }
@@ -359,8 +369,10 @@ test('fetchDetails with repository info in local manifest', async () => {
     },
   }
   const spec = Spec.parse('favicon-repo-in-local-manifest', '1.0.0')
+  const abortController = new AbortController()
+  const signal = abortController.signal
   const res: any = {}
-  for await (const details of fetchDetails(spec, mani)) {
+  for await (const details of fetchDetails(spec, signal, mani)) {
     for (const key of Object.keys(details)) {
       res[key] = details[key as keyof DetailsInfo]
     }
@@ -387,8 +399,10 @@ test('fetchDetails with repository info in remote manifest', async () => {
     version: '1.0.0',
   }
   const spec = Spec.parse('favicon-repo-in-remote-manifest', '1.0.0')
+  const abortController = new AbortController()
+  const signal = abortController.signal
   const res: any = {}
-  for await (const details of fetchDetails(spec, mani)) {
+  for await (const details of fetchDetails(spec, signal, mani)) {
     for (const key of Object.keys(details)) {
       res[key] = details[key as keyof DetailsInfo]
     }
@@ -411,8 +425,10 @@ test('fetchDetails favicon defaults to img shortcut', async () => {
     },
   }
   const spec = Spec.parse('favicon-fallback', '1.0.0')
+  const abortController = new AbortController()
+  const signal = abortController.signal
   const res: any = {}
-  for await (const details of fetchDetails(spec, mani)) {
+  for await (const details of fetchDetails(spec, signal, mani)) {
     for (const key of Object.keys(details)) {
       res[key] = details[key as keyof DetailsInfo]
     }

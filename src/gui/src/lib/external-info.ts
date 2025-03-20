@@ -127,6 +127,7 @@ export const retrieveAvatar = async (
 
 export async function* fetchDetails(
   s: Spec,
+  signal: AbortSignal,
   manifest?: Manifest,
 ): AsyncGenerator<DetailsInfo> {
   const spec = s.final
@@ -148,6 +149,9 @@ export async function* fetchDetails(
   const fetchDownloadsRange = (): Promise<DetailsInfo> =>
     fetch(
       `https://api.npmjs.org/downloads/range/last-year/${encodeURIComponent(spec.name)}`,
+      {
+        signal,
+      },
     )
       .then(res => res.json())
       .then(
@@ -173,6 +177,7 @@ export async function* fetchDetails(
   const fetchDownloads = (): Promise<DetailsInfo> =>
     fetch(
       `https://api.npmjs.org/versions/${encodeURIComponent(spec.name)}/last-week`,
+      { signal },
     )
       .then(res => res.json())
       .then((res: { downloads: Record<Semver, number> }) => {
@@ -194,7 +199,7 @@ export async function* fetchDetails(
   ): Promise<DetailsInfo> | undefined => {
     if (seenFavIconRequests.has(githubAPI)) return
 
-    return fetch(githubAPI)
+    return fetch(githubAPI, { signal })
       .then(res => res.json())
       .then(
         (repo: {
@@ -265,7 +270,7 @@ export async function* fetchDetails(
     const url = new URL(spec.registry)
     url.pathname = `${spec.name}/${spec.bareSpec}`
     trackPromise(
-      fetch(String(url))
+      fetch(String(url), { signal })
         .then(res => res.json())
         .then((mani: Manifest & { _npmUser?: AuthorInfo }) => {
           // retries favicon retrieval in case it wasn't found before
@@ -318,6 +323,7 @@ export async function* fetchDetails(
         headers: {
           Accept: 'application/vnd.npm.install-v1+json',
         },
+        signal,
       })
         .then(res => res.json())
         .then((packu: Packument) => {
