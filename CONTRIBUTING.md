@@ -12,7 +12,8 @@ specific to that component.
 
 These workspaces are all are direct dependencies of the `vlt` CLI.
 
-The actual CLI is also a workspace in [`src/vlt`](./src/vlt/).
+The actual CLI is also a workspace in
+[`src/cli-sdk`](./src/cli-sdk/).
 
 Most of these are also published separately under the `@vltpkg` scope.
 
@@ -175,7 +176,7 @@ changes to GUI source code will cause the browser to reload. To enable
 this set `__VLT_INTERNAL_LIVE_RELOAD=1` when running the GUI:
 
 ```bash
-__VLT_INTERNAL_LIVE_RELOAD=1 node ~/path/to/vltpkg/vltpkg/src/vlt/bins/vlt.ts gui
+__VLT_INTERNAL_LIVE_RELOAD=1 ./scripts/bins/vlt gui
 ```
 
 ## Bundling Caveats
