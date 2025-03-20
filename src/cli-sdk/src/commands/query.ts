@@ -78,12 +78,15 @@ export const command: CommandFn<QueryResult> = async conf => {
 
   const defaultQueryString = '*'
   const queryString = conf.positionals[0]
-  const archive = await SecurityArchive.start({
-    graph,
-    specOptions: conf.options,
-  })
+  const archive =
+    queryString && Query.hasSecuritySelectors(queryString) ?
+      await SecurityArchive.start({
+        graph,
+        specOptions: conf.options,
+      })
+    : undefined
   /* c8 ignore next */
-  const securityArchive = archive.ok ? archive : undefined
+  const securityArchive = archive?.ok ? archive : undefined
   const query = new Query({
     graph,
     specOptions: conf.options,

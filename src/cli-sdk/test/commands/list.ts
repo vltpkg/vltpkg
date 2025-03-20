@@ -196,6 +196,16 @@ t.test('list', async t => {
     'should list all pkgs in mermaid format',
   )
 
+  await t.rejects(
+    Command.command({
+      positionals: ['*:malware'],
+      values: { view: 'human' },
+      options,
+    } as LoadedConfig),
+    /Missing security archive/,
+    'should fail to run with no security archive',
+  )
+
   t.matchSnapshot(
     await runCommand(t, {
       positionals: ['@foo/bazz', 'bar'],
