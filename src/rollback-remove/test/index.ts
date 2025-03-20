@@ -1,5 +1,5 @@
-import type { SpawnOptions } from 'child_process'
-import { readdirSync } from 'fs'
+import type { SpawnOptions } from 'node:child_process'
+import { readdirSync } from 'node:fs'
 import t from 'tap'
 
 const spawns: MockSpawn[] = []

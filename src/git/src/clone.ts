@@ -6,9 +6,9 @@
 
 import type { RevDoc, RevDocEntry } from '@vltpkg/types'
 import { gitScpURL } from '@vltpkg/git-scp-url'
-import { mkdir, stat } from 'fs/promises'
-import { basename, resolve } from 'path'
-import { fileURLToPath } from 'url'
+import { mkdir, stat } from 'node:fs/promises'
+import { basename, resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import type { GitOptions } from './index.ts'
 import { isWindows } from './is-windows.ts'
 import { resolveRef } from './resolve.ts'

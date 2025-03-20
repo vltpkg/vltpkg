@@ -1,5 +1,5 @@
 import { test, expect } from 'vitest'
-import { inspect } from 'util'
+import { inspect } from 'node:util'
 import { joinDepIDTuple } from '@vltpkg/dep-id'
 import { load } from '@/state/load-graph.js'
 import type { TransferData } from '@/state/types.js'

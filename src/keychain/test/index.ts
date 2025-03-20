@@ -1,5 +1,5 @@
-import { writeFileSync } from 'fs'
-import { resolve } from 'path'
+import { writeFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import t from 'tap'
 import type { Test } from 'tap'
 

@@ -1,12 +1,12 @@
 import { error } from '@vltpkg/error-cause'
-import { randomBytes } from 'crypto'
-import { lstat, mkdir, rename, writeFile } from 'fs/promises'
-import { basename, dirname, parse, resolve } from 'path'
+import { randomBytes } from 'node:crypto'
+import { lstat, mkdir, rename, writeFile } from 'node:fs/promises'
+import { basename, dirname, parse, resolve } from 'node:path'
 import { rimraf } from 'rimraf'
 import { Header } from 'tar/header'
 import type { HeaderData } from 'tar/header'
 import { Pax } from 'tar/pax'
-import { unzip as unzipCB } from 'zlib'
+import { unzip as unzipCB } from 'node:zlib'
 import { findTarDir } from './find-tar-dir.ts'
 
 const unzip = async (input: Buffer) =>

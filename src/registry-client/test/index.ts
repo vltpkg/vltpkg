@@ -1,10 +1,10 @@
-import EventEmitter from 'events'
-import { readFileSync } from 'fs'
+import EventEmitter from 'node:events'
+import { readFileSync } from 'node:fs'
 import { createServer } from 'http'
-import { resolve } from 'path'
+import { resolve } from 'node:path'
 import type { Test } from 'tap'
 import t from 'tap'
-import { gzipSync } from 'zlib'
+import { gzipSync } from 'node:zlib'
 import type {
   RegistryClient,
   RegistryClientRequestOptions,

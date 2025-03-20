@@ -4,7 +4,7 @@ import type {
   PromiseSpawnOptionsStderrString,
   PromiseSpawnOptionsStdoutString,
 } from '@vltpkg/promise-spawn'
-import type { SpawnOptions } from 'child_process'
+import type { SpawnOptions } from 'node:child_process'
 
 // This defaults to accepting new ssh host key fingerprints
 const gitEnv = {

@@ -4,9 +4,9 @@ import {
   statSync,
   unlinkSync,
   writeFileSync,
-} from 'fs'
-import * as OS from 'os'
-import { resolve } from 'path'
+} from 'node:fs'
+import * as OS from 'node:os'
+import { resolve } from 'node:path'
 import t from 'tap'
 import type { ConfigData } from '../../src/config/index.ts'
 

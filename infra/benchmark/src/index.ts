@@ -1,5 +1,5 @@
-import { mkdirSync, readdirSync, copyFileSync, rmSync } from 'fs'
-import { resolve, extname } from 'path'
+import { mkdirSync, readdirSync, copyFileSync, rmSync } from 'node:fs'
+import { resolve, extname } from 'node:path'
 import { hrtime } from 'node:process'
 import rawPackages from './1000-most-depended-packages-2019.ts'
 

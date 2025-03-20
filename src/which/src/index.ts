@@ -1,5 +1,5 @@
 import { isexe, sync as isexeSync } from 'isexe'
-import { delimiter, join, sep } from 'path'
+import { delimiter, join, sep } from 'node:path'
 
 const isWindows = process.platform === 'win32'
 

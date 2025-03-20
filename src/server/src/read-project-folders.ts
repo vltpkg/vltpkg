@@ -1,4 +1,4 @@
-import { availableParallelism, homedir } from 'os'
+import { availableParallelism, homedir } from 'node:os'
 import type { PathBase, PathScurry } from 'path-scurry'
 import { callLimit } from 'promise-call-limit'
 import { ignoredHomedirFolderNames } from './ignored-homedir-folder-names.ts'

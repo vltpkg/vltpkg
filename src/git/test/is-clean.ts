@@ -1,5 +1,5 @@
-import { writeFile } from 'fs/promises'
-import { resolve } from 'path'
+import { writeFile } from 'node:fs/promises'
+import { resolve } from 'node:path'
 import t from 'tap'
 import { isClean } from '../src/is-clean.ts'
 import { spawn } from '../src/spawn.ts'

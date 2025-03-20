@@ -1,6 +1,6 @@
 import { error } from '@vltpkg/error-cause'
-import fs from 'fs'
-import { resolve } from 'path'
+import fs from 'node:fs'
+import { resolve } from 'node:path'
 import t from 'tap'
 import type { GitOptions } from '../src/index.ts'
 import { spawn } from '../src/spawn.ts'

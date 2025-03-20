@@ -1,4 +1,4 @@
-import { tmpdir } from 'os'
+import { tmpdir } from 'node:os'
 import t from 'tap'
 import { is as isGit } from '../src/is.ts'
 
