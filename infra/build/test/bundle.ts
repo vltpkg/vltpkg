@@ -49,3 +49,14 @@ t.test('bins', async t => {
   t.notOk(contents.includes('vlt.js'))
   t.ok(contents.includes('vlr.js'))
 })
+
+t.test('hashbangs', async t => {
+  const dir = t.testdir()
+  const res = await bundle({
+    outdir: dir,
+    bins: ['vlt'],
+    hashbang: true,
+  })
+  const contents = readFileSync(join(res.outdir, 'vlt.js'), 'utf8')
+  t.ok(contents.startsWith('#!/usr/bin/env node'))
+})
