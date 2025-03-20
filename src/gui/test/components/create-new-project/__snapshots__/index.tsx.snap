@@ -34,6 +34,7 @@ exports[`create-new-project-content render default 1`] = `
             Location *
           </gui-label>
           <gui-directory-select
+            usedashboardprojectlocations="true"
             acceptsglobal="false"
             directory
           >
@@ -210,6 +211,7 @@ exports[`create-new-project-content with results 1`] = `
             Location *
           </gui-label>
           <gui-directory-select
+            usedashboardprojectlocations="true"
             acceptsglobal="false"
             dashboard="[object Object]"
             directory
