@@ -177,7 +177,7 @@ export class SecurityArchive
     // and only include entries that have a valid TTL value
     const dbRead = db.prepare(
       'SELECT depID, report, start, ttl, ' +
-        `(SELECT UNIXEPOCH('subsecond')) as now ` +
+        `(SELECT UNIXEPOCH('subsecond') * 1000) as now ` +
         'FROM cache ' +
         `WHERE depID IN (${depIDs.join(',')}) ` +
         '  AND (start + ttl) > now',
