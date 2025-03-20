@@ -18,7 +18,6 @@ export type VariantType =
 
 export type Variant = {
   type: VariantType
-  default?: boolean
   dir: string
   command: string | ((opts: { bin: string }) => string)
   path: string | (({ dir }: { dir: string }) => string)
@@ -31,10 +30,15 @@ export type Variant = {
 
 export const publishedVariant: VariantType = 'compile'
 
+export const defaultVariants: VariantType[] = [
+  'source',
+  'bundle',
+  'compile',
+]
+
 export const Variants: Record<VariantType, Variant> = {
   source: {
     type: 'source',
-    default: true,
     dir: BINS_DIR,
     command: process.execPath,
     path: dirname(process.execPath),
@@ -57,7 +61,6 @@ export const Variants: Record<VariantType, Variant> = {
   },
   bundle: {
     type: 'bundle',
-    default: true,
     dir: resolve(process.cwd(), '.build-bundle'),
     command: process.execPath,
     path: dirname(process.execPath),
@@ -79,7 +82,6 @@ export const Variants: Record<VariantType, Variant> = {
   },
   compile: {
     type: 'compile',
-    default: true,
     dir: resolve(process.cwd(), '.build-compile'),
     command: ({ bin }) => bin,
     path: ({ dir }) => dir,

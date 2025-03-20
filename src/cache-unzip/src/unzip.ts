@@ -4,11 +4,12 @@ import { gunzipSync } from 'node:zlib'
 
 export const __CODE_SPLIT_SCRIPT_NAME = import.meta.filename
 
-export const main = async (
+const main = async (
   path: undefined | string,
   input = process.stdin,
 ) => {
   if (!path) process.exit(1)
+
   const keys = await new Promise<string[]>(res => {
     const chunks: Buffer[] = []
     let chunkLen = 0
@@ -54,13 +55,10 @@ export const main = async (
     return (a << 24) | (b << 16) | (c << 8) | d
   }
 
-  let didSomething = false
-  await Promise.all(
+  const didSomething = await Promise.all(
     keys.map(async key => {
       const buffer = await cache.fetch(key)
-      /* c8 ignore next - should never happen */
-      if (!buffer || buffer.length < 4) return
-      didSomething = true
+      if (!buffer || buffer.length < 4) return false
       const headSizeOriginal = readSize(buffer, 0)
       const body = buffer.subarray(headSizeOriginal)
       if (body[0] === 0x1f && body[1] === 0x8b) {
@@ -143,15 +141,24 @@ export const main = async (
         chunks.push(unz)
         cache.set(key, Buffer.concat(chunks, headLength + unz.length))
       }
+      return true
     }),
   )
   await cache.promise()
-  // TS mistakenly things didSomething is always false
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-  if (!didSomething) process.exit(1)
+  if (!didSomething.some(Boolean)) process.exit(1)
 }
 
-if (process.argv[1] === import.meta.filename) {
+if (
+  /* c8 ignore next */
+  (process.env.__VLT_INTERNAL_MAIN ?? process.argv[1]) ===
+  __CODE_SPLIT_SCRIPT_NAME
+) {
   process.title = 'vlt-cache-unzip'
-  void main(process.argv[2], process.stdin)
+  void main(
+    // When compiled there can be other leading args supplied by Deno
+    // so always use the last arg unless there are only two which means
+    // no path was supplied.
+    process.argv.length === 2 ? undefined : process.argv.at(-1),
+    process.stdin,
+  )
 }
