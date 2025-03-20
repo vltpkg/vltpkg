@@ -127,6 +127,7 @@ const securitySelectors = new Set([
   ':eval',
   ':fs',
   ':license',
+  ':malware',
   ':minified',
   ':native',
   ':network',
