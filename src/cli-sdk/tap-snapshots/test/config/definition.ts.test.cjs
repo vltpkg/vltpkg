@@ -305,6 +305,19 @@ Object {
     "hint": "program",
     "type": "string",
   },
+  "stale-while-revalidate-factor": Object {
+    "description": String(
+      If the server does not serve a \`stale-while-revalidate\` value in the \`cache-control\` header, then this multiplier is applied to the \`max-age\` or \`s-maxage\` values.
+      
+      By default, this is \`60\`, so for example a response that is cacheable for 5 minutes will allow a stale response while revalidating for up to 5 hours.
+      
+      If the server *does* provide a \`stale-while-revalidate\` value, then that is always used.
+      
+      Set to 0 to prevent any \`stale-while-revalidate\` behavior unless explicitly allowed by the server's \`cache-control\` header.
+    ),
+    "hint": "n",
+    "type": "number",
+  },
   "tag": Object {
     "description": "Default \`dist-tag\` to install",
     "type": "string",

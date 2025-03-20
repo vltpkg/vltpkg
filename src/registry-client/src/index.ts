@@ -1,5 +1,5 @@
 import { Cache } from '@vltpkg/cache'
-import { register } from '@vltpkg/cache-unzip'
+import { register as cacheUnzipRegister } from '@vltpkg/cache-unzip'
 import { error } from '@vltpkg/error-cause'
 import { logRequest } from '@vltpkg/output'
 import type { Integrity } from '@vltpkg/types'
@@ -22,6 +22,7 @@ import {
 } from './auth.ts'
 import type { JSONObj } from './cache-entry.ts'
 import { CacheEntry } from './cache-entry.ts'
+import { register } from './cache-revalidate.ts'
 import { bun, deno, node } from './env.ts'
 import { handle304Response } from './handle-304-response.ts'
 import { otplease } from './otplease.ts'
@@ -44,10 +45,15 @@ export {
   type WebAuthChallenge,
 }
 
+export type CacheableMethod = 'GET' | 'HEAD'
+export const isCacheableMethod = (m: unknown): m is CacheableMethod =>
+  m === 'GET' || m === 'HEAD'
+
 export type RegistryClientOptions = {
   /**
    * Path on disk where the cache should be stored
-   * @default `$HOME/.config/vlt/cache`
+   *
+   * Defaults to the XDG cache folder for `vlt/registry-client`
    */
   cache?: string
   /**
@@ -64,6 +70,23 @@ export type RegistryClientOptions = {
 
   /** the identity to use for storing auth tokens */
   identity?: string
+
+  /**
+   * If the server does not serve a `stale-while-revalidate` value in the
+   * `cache-control` header, then this multiplier is applied to the `max-age`
+   * or `s-maxage` values.
+   *
+   * By default, this is `60`, so for example a response that is cacheable for
+   * 5 minutes will allow a stale response while revalidating for up to 5
+   * hours.
+   *
+   * If the server *does* provide a `stale-while-revalidate` value, then that
+   * is always used.
+   *
+   * Set to 0 to prevent any `stale-while-revalidate` behavior unless
+   * explicitly allowed by the server's `cache-control` header.
+   */
+  'stale-while-revalidate-factor'?: number
 }
 
 export type RegistryClientRequestOptions = Omit<
@@ -126,6 +149,13 @@ export type RegistryClientRequestOptions = Omit<
    * @internal
    */
   otp?: string
+
+  /**
+   * Set to false to explicitly prevent `stale-while-revalidate` behavior,
+   * for use in revalidating while stale.
+   * @internal
+   */
+  staleWhileRevalidate?: false
 }
 
 const { version } = loadPackageJson(
@@ -134,12 +164,14 @@ const { version } = loadPackageJson(
 ) as {
   version: string
 }
+/* c8 ignore start - we do test this, but coverage fails */
 const nua =
   (globalThis.navigator as Navigator | undefined)?.userAgent ??
   (bun ? `Bun/${bun}`
   : deno ? `Deno/${deno}`
   : node ? `Node.js/${node}`
   : '(unknown platform)')
+/* c8 ignore stop */
 export const userAgent = `@vltpkg/registry-client/${version} ${nua}`
 
 const agentOptions: Agent.Options = {
@@ -164,6 +196,7 @@ export class RegistryClient {
   agent: RetryAgent
   cache: Cache
   identity: string
+  staleWhileRevalidateFactor: number
 
   constructor(options: RegistryClientOptions) {
     const {
@@ -173,12 +206,17 @@ export class RegistryClient {
       'fetch-retry-maxtimeout': maxTimeout = 30_000,
       'fetch-retries': maxRetries = 3,
       identity = '',
+      'stale-while-revalidate-factor':
+        staleWhileRevalidateFactor = 60,
     } = options
     this.identity = identity
+    this.staleWhileRevalidateFactor = staleWhileRevalidateFactor
+    const path = resolve(cache, 'registry-client')
     this.cache = new Cache({
-      path: resolve(cache, 'registry-client'),
+      path,
       onDiskWrite(_path, key, data) {
-        if (CacheEntry.isGzipEntry(data)) register(cache, key)
+        if (CacheEntry.isGzipEntry(data))
+          cacheUnzipRegister(path, key)
       },
     })
     const dispatch = new Agent(agentOptions)
@@ -366,9 +404,11 @@ export class RegistryClient {
       redirections = new Set(),
       signal,
       otp = (process.env.VLT_OTP ?? '').trim(),
+      staleWhileRevalidate = true,
     } = options
 
-    const { cache = method === 'GET' || method === 'HEAD' } = options
+    const m = isCacheableMethod(method) ? method : undefined
+    const { cache = !!m } = options
 
     ;(signal as AbortSignal | null)?.throwIfAborted()
 
@@ -384,11 +424,14 @@ export class RegistryClient {
     if (entry?.valid) {
       return entry
     }
-    // TODO: stale-while-revalidate timeout, say 1 day, where we'll
-    // use the cached response even if it's invalid, and validate
-    // in the background without waiting for it.
 
-    // either no cache entry, or need to revalidate it.
+    if (staleWhileRevalidate && entry?.staleWhileRevalidate && m) {
+      // revalidate while returning the stale entry
+      register(this.cache.path(), m, url)
+      return entry
+    }
+
+    // either no cache entry, or need to revalidate before use.
     setCacheHeaders(options, entry)
 
     redirections.add(String(url))
@@ -467,7 +510,12 @@ export class RegistryClient {
       /* c8 ignore next - should always have a status code */
       response.statusCode || 200,
       h,
-      { integrity, trustIntegrity },
+      {
+        integrity,
+        trustIntegrity,
+        'stale-while-revalidate-factor':
+          this.staleWhileRevalidateFactor,
+      },
     )
 
     if (isRedirect(result)) {
