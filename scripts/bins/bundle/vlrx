@@ -1,0 +1,4 @@
+#!/bin/sh
+
+SCRIPT_DIR="$(cd "$(dirname "$0")" && cd "../../../" && pwd)"
+NODE_OPTIONS="--enable-source-maps" node $SCRIPT_DIR/.build-bundle/vlrx.js "$@"

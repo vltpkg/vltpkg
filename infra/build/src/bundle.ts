@@ -10,7 +10,7 @@ import {
 } from 'node:path'
 import { readFile } from 'node:fs/promises'
 import * as esbuild from 'esbuild'
-import { createRequire } from 'node:module'
+import { builtinModules, createRequire } from 'node:module'
 import assert from 'node:assert'
 import { BINS_DIR, BINS } from './bins.ts'
 import type { Bin } from './bins.ts'
@@ -35,6 +35,42 @@ export const findEntryBins = (dir: string, names?: readonly Bin[]) =>
     .map(b => join(dir, b))
     .flatMap(b => [b, `${b}.js`, `${b}.ts`])
     .filter(b => existsSync(b))
+
+const nodeImports: esbuild.Plugin = {
+  name: 'node-imports',
+  setup({ onResolve }) {
+    onResolve({ filter: /()/, namespace: 'file' }, args => {
+      if (
+        builtinModules.includes(args.path) &&
+        !args.path.startsWith('node:')
+      ) {
+        return {
+          path: `node:${args.path}`,
+          external: true,
+        }
+      }
+    })
+  },
+}
+
+const addBinHashbangs: esbuild.Plugin = {
+  name: 'hashbangs',
+  setup({ onLoad }) {
+    onLoad(
+      {
+        filter: new RegExp(`src/bins/(${BINS.join('|')}).ts$`),
+        namespace: 'file',
+      },
+      async args => {
+        const contents = await readFile(args.path, 'utf8')
+        return {
+          contents: `#!/usr/bin/env node\n${contents}`,
+          loader: 'ts' as esbuild.Loader,
+        }
+      },
+    )
+  },
+}
 
 const codeSplitPlugin = (): {
   paths: () => { source: string; out: string }[]
@@ -103,7 +139,7 @@ const bundleEntryPoints = async (
 ) => {
   const { errors, warnings } = await esbuild.build({
     entryPoints: o.entryPoints,
-    plugins: o.plugins,
+    plugins: [nodeImports, ...(o.plugins ?? [])],
     sourcemap: o.sourcemap,
     minify: o.minify,
     outdir: o.outdir,
@@ -131,10 +167,7 @@ var require = _vlt_createRequire(import.meta.filename);`,
 
 const createBundler =
   (o: CreateBundleOptions) => (b: BundleOptions) =>
-    bundleEntryPoints({
-      ...o,
-      ...b,
-    })
+    bundleEntryPoints({ ...o, ...b })
 
 export type Options = {
   outdir: string
@@ -142,6 +175,7 @@ export type Options = {
   minify?: boolean
   splitting?: boolean
   sourcemap?: boolean
+  hashbang?: boolean
 }
 
 export const bundle = async ({
@@ -150,6 +184,7 @@ export const bundle = async ({
   minify = false,
   splitting = true,
   sourcemap = true,
+  hashbang = false,
 }: Options) => {
   mkdirSync(outdir, { recursive: true })
 
@@ -186,7 +221,10 @@ export const bundle = async ({
       in: file,
       out: basenameWithoutExtension(file),
     })),
-    plugins: [codeSplit.plugin],
+    plugins: [
+      codeSplit.plugin,
+      hashbang ? addBinHashbangs : null,
+    ].filter(v => v !== null),
   })
 
   // bundle manually code split files determined from the
