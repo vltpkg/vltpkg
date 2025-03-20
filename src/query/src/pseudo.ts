@@ -33,6 +33,7 @@ import { outdated } from './pseudo/outdated.ts'
 import { scripts } from './pseudo/scripts.ts'
 import { shell } from './pseudo/shell.ts'
 import { semverParser as semver } from './pseudo/semver.ts'
+import { severity } from './pseudo/severity.ts'
 import { shrinkwrap } from './pseudo/shrinkwrap.ts'
 import { suspicious } from './pseudo/suspicious.ts'
 import { tracker } from './pseudo/tracker.ts'
@@ -373,6 +374,8 @@ const pseudoSelectors = new Map<string, ParserFn>(
     scope,
     scripts,
     semver,
+    sev: severity,
+    severity,
     shell,
     shrinkwrap,
     suspicious,

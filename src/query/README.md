@@ -224,6 +224,13 @@ security data needs to be fetched prior to a `Query` instantiation.
 - `:scripts` Matches packages that have scripts that are run when the
   package is installed. The majority of malware in npm is hidden in
   install scripts.
+- `:severity` Matches packages based of the severity level of any
+  attached CVE. The type paremeter is required and can be one of the
+  following:
+  - `critical` or `0`
+  - `high` or `1`
+  - `medium` or `2`
+  - `low` or `3`
 - `:shell` Matches packages that accesses the system shell. Accessing
   the system shell increases the risk of executing arbitrary code.
 - `:shrinkwrap` Matches packages that contains a shrinkwrap file. This
