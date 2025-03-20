@@ -37,7 +37,7 @@
   "scripts": {
     "benchmark": "./scripts/benchmark",
     "build:bundle": "vlt-build --outdir=.build-bundle bundle",
-    "build:compile": "vlt-build --outdir=.build-compile compile",
+    "build:compile": "vlt-build --outdir=.build-compile --quiet compile",
     "deps:check": "./scripts/check-deps.js",
     "fix": "pnpm fix:pkg && pnpm lint && pnpm format",
     "fix:pkg": "./scripts/consistent-package-json.js",
