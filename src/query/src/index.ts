@@ -137,6 +137,7 @@ const securitySelectors = new Set([
   ':severity',
   ':shell',
   ':shrinkwrap',
+  ':squat',
   ':suspicious',
   ':tracker',
   ':trivial',
