@@ -81,7 +81,7 @@ export const DirectorySelect = ({
    *
    * It is a useLayoutEffect to prevent layout shift on initial mount,
    * as it will run before initial paint.
-   * */
+   */
   useLayoutEffect(() => {
     if (mounted.current) return
     mounted.current = true
