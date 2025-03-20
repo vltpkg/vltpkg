@@ -1,0 +1,4 @@
+#!/bin/sh
+
+SCRIPT_DIR="$(cd "$(dirname "$0")" && cd "../../../" && pwd)"
+deno -A --unstable-bare-node-builtins --unstable-node-globals $SCRIPT_DIR/.build-bundle/vlrx.js "$@"

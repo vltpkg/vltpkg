@@ -87,7 +87,7 @@ const main = async () => {
 
   // The bundled CLI
   if (workspaceName === 'cli-js') {
-    await bundle({ outdir })
+    await bundle({ outdir, hashbang: true })
     writeFiles({
       outdir,
       pkg,
