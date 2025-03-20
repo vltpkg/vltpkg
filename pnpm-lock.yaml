@@ -299,6 +299,9 @@ importers:
       '@types/node':
         specifier: 'catalog:'
         version: 22.13.1
+      '@vltpkg/which':
+        specifier: workspace:*
+        version: link:../../src/which
       eslint:
         specifier: 'catalog:'
         version: 9.20.0(jiti@1.21.6)
