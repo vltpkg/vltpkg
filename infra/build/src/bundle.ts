@@ -277,7 +277,7 @@ export const bundle = async ({
     join(outdir, define.REGISTRY_CLIENT_PACKAGE_JSON),
   )
   cpSync(
-    join(WORKSPACE_DIR, 'vlt/package.json'),
+    join(CLI, 'package.json'),
     join(outdir, define.CLI_PACKAGE_JSON),
   )
 

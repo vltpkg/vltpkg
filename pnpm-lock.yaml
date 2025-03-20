@@ -217,7 +217,7 @@ importers:
     dependencies:
       '@vltpkg/cli-sdk':
         specifier: workspace:*
-        version: link:../../src/vlt
+        version: link:../../src/cli-sdk
       esbuild:
         specifier: 'catalog:'
         version: 0.25.0
@@ -1887,7 +1887,7 @@ importers:
         specifier: 'catalog:'
         version: 8.23.0(eslint@9.20.0(jiti@2.4.2))(typescript@5.7.3)
 
-  src/vlt:
+  src/cli-sdk:
     dependencies:
       '@vltpkg/dep-id':
         specifier: workspace:*

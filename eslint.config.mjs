@@ -320,7 +320,7 @@ export default tseslint.config(
     },
   },
   {
-    files: ['src/vlt/test/**/*/*.ts'],
+    files: ['src/cli-sdk/test/**/*/*.ts'],
     rules: {
       'no-restricted-syntax': [
         'warn',

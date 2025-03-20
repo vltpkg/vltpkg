@@ -17,7 +17,7 @@ const workspaces: KnipConfig['workspaces'] = {
     ignoreDependencies: ['@vltpkg/benchmark'],
     ignore: ['coverage-map.js'],
   },
-  'src/vlt': {
+  'src/cli-sdk': {
     entry: [...entry, 'src/commands/*.ts'],
   },
   'src/server': {
