@@ -22,6 +22,7 @@ t.test('basic cache operation', async t => {
       t.same(data, Buffer.from('hello, world'))
     },
   })
+  t.equal(c.path(), t.testdirName)
   t.equal(c.max, Cache.defaultMax)
   c.set('xyz', Buffer.from('hello, world'))
   await c.promise()

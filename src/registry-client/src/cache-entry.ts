@@ -70,6 +70,23 @@ export type CacheEntryOptions = {
    * artifact request.
    */
   trustIntegrity?: boolean
+
+  /**
+   * If the server does not serve a `stale-while-revalidate` value in the
+   * `cache-control` header, then this multiplier is applied to the `max-age`
+   * or `s-maxage` values.
+   *
+   * By default, this is `60`, so for example a response that is cacheable for
+   * 5 minutes will allow a stale response while revalidating for up to 5
+   * hours.
+   *
+   * If the server *does* provide a `stale-while-revalidate` value, then that
+   * is always used.
+   *
+   * Set to 0 to prevent any `stale-while-revalidate` behavior unless
+   * explicitly allowed by the server's `cache-control` header.
+   */
+  'stale-while-revalidate-factor'?: number
 }
 
 export class CacheEntry {
@@ -81,15 +98,22 @@ export class CacheEntry {
   #integrityActual?: Integrity
   #json?: JSONObj
   #trustIntegrity
+  #staleWhileRevalidateFactor
 
   constructor(
     statusCode: number,
     headers: Buffer[],
-    { integrity, trustIntegrity = false }: CacheEntryOptions = {},
+    {
+      integrity,
+      trustIntegrity = false,
+      'stale-while-revalidate-factor':
+        staleWhileRevalidateFactor = 60,
+    }: CacheEntryOptions = {},
   ) {
     this.#headers = headers
     this.#statusCode = statusCode
     this.#trustIntegrity = trustIntegrity
+    this.#staleWhileRevalidateFactor = staleWhileRevalidateFactor
     if (integrity) this.integrity = integrity
   }
 
@@ -109,6 +133,19 @@ export class CacheEntry {
     const show = isBinary ? '[binary data]' : raw.substring(0, 512)
     const text =
       !isBinary && show.length < raw.length ? raw + '…' : show
+    const {
+      valid,
+      staleWhileRevalidate,
+      cacheControl,
+      date,
+      contentType,
+    } = this
+    /* c8 ignore start */
+    const age =
+      date ?
+        Math.floor((Date.now() - date.getTime()) / 1000)
+      : undefined
+    /* c8 ignore end */
     const str = inspect(
       {
         statusCode: this.statusCode,
@@ -117,6 +154,12 @@ export class CacheEntry {
         // one \x00, and json never will, so this is fine for our purpose,
         // to avoid dumping bells and whatnot to the terminal.
         text,
+        contentType,
+        date,
+        cacheControl,
+        valid,
+        staleWhileRevalidate,
+        age,
       },
       {
         depth,
@@ -126,32 +169,79 @@ export class CacheEntry {
     return `@vltpkg/registry-client.CacheEntry ${str}`
   }
 
+  #date?: Date
+  get date(): Date | undefined {
+    if (this.#date) return this.#date
+    const dh = this.getHeader('date')?.toString()
+    if (dh) this.#date = new Date(dh)
+    return this.#date
+  }
+
+  #maxAge?: number
+  get maxAge(): number {
+    if (this.#maxAge !== undefined) return this.#maxAge
+    // see if the max-age has not yet been crossed
+    // default to 5m if maxage is not set, as some registries
+    // do not set a cache control header at all.
+    const cc = this.cacheControl
+    this.#maxAge = cc['max-age'] || cc['s-maxage'] || 300
+    return this.#maxAge
+  }
+
+  #cacheControl?: ccp.CacheControl
+  get cacheControl(): ccp.CacheControl {
+    if (this.#cacheControl) return this.#cacheControl
+    const cc = this.getHeader('cache-control')?.toString()
+    this.#cacheControl = cc ? ccp.parse(cc) : {}
+    return this.#cacheControl
+  }
+
+  #staleWhileRevalidate?: boolean
+  get staleWhileRevalidate(): boolean {
+    if (this.#staleWhileRevalidate !== undefined)
+      return this.#staleWhileRevalidate
+    if (this.valid || !this.date) return true
+    const swv =
+      this.cacheControl['stale-while-revalidate'] ??
+      this.maxAge * this.#staleWhileRevalidateFactor
+
+    this.#staleWhileRevalidate =
+      this.date.getTime() + swv * 1000 > Date.now()
+    return this.#staleWhileRevalidate
+  }
+
+  #contentType?: string
+  get contentType() {
+    if (this.#contentType !== undefined) return this.#contentType
+    this.#contentType =
+      this.getHeader('content-type')?.toString() ?? ''
+    return this.#contentType
+  }
+
   /**
    * `true` if the entry represents a cached response that is still
    * valid to use.
    */
+  #valid?: boolean
   get valid(): boolean {
-    const cc_ = this.getHeader('cache-control')?.toString()
-    const cc = cc_ ? ccp.parse(cc_) : {}
-    const ct = this.getHeader('content-type')?.toString() ?? ''
-    const dh = this.getHeader('date')?.toString()
+    if (this.#valid !== undefined) return this.#valid
 
     // immutable = never changes
-    if (cc.immutable) return true
+    if (this.cacheControl.immutable) return (this.#valid = true)
 
     // some registries do text/json, some do application/json,
     // some do application/vnd.npm.install-v1+json
     // If it's NOT json, it's an immutable tarball
-    if (ct !== '' && !/\bjson\b/.test(ct)) return true
+    const ct = this.contentType
+    if (ct && !/\bjson\b/.test(ct)) return (this.#valid = true)
 
     // see if the max-age has not yet been crossed
     // default to 5m if maxage is not set, as some registries
     // do not set a cache control header at all.
-    const ma = cc['max-age'] || cc['s-maxage'] || 300
-    if (ma && dh) {
-      return Date.parse(dh) + ma * 1000 > Date.now()
-    }
-    return false
+    if (!this.date) return (this.#valid = false)
+    this.#valid =
+      this.date.getTime() + this.maxAge * 1000 > Date.now()
+    return this.#valid
   }
 
   addBody(b: Buffer) {

@@ -273,8 +273,8 @@ export class Cache extends LRUCache<
   /**
    * given a key, figure out the path on disk where it lives
    */
-  path(key: string) {
-    return resolve(this.#path, hash(key))
+  path(key?: string) {
+    return key ? resolve(this.#path, hash(key)) : this.#path
   }
   /**
    * given an SRI sha512 integrity string, get the path on disk that

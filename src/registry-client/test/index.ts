@@ -1,19 +1,22 @@
+import type { Cache } from '@vltpkg/cache'
+import { createServer } from 'http'
 import EventEmitter from 'node:events'
 import { readFileSync } from 'node:fs'
-import { createServer } from 'http'
 import { resolve } from 'node:path'
+import { gzipSync } from 'node:zlib'
 import type { Test } from 'tap'
 import t from 'tap'
-import { gzipSync } from 'node:zlib'
+import { CacheEntry } from '../src/cache-entry.ts'
 import type {
   RegistryClient,
   RegistryClientRequestOptions,
 } from '../src/index.ts'
+import { toRawHeaders } from './fixtures/to-raw-headers.ts'
 
 const PORT = (t.childId || 0) + 8080
 
 const etag = '"an etag is a gate in reverse, think about it"'
-const date = new Date('2023-01-20')
+const date = new Date(Date.now() - 1000 * 10 * 60)
 let dropConnection = false
 
 const opened: Record<string, boolean> = {}
@@ -57,6 +60,7 @@ const registry = createServer((req, res) => {
     dropConnection = false
     return setTimeout(() => req.socket.destroy())
   }
+  // console.error(req.method, req.url)
   res.setHeader('connection', 'close')
   res.setHeader('date', new Date().toUTCString())
   const { url = '' } = req
@@ -187,6 +191,7 @@ const registry = createServer((req, res) => {
     res.statusCode = 304
     return res.end('not modified (and this is not valid json)')
   }
+
   const ifs = req.headers['if-modified-since']
   if (ifs) {
     const difs = new Date(ifs)
@@ -244,12 +249,19 @@ const registry = createServer((req, res) => {
 
 const registryURL = `http://localhost:${PORT}`
 
-const registered: [string, string][] = []
-const register = (path: string, key: string) =>
-  registered.push([path, key])
+const unzipRegistered: [string, string][] = []
+const unzipRegister = (path: string, key: string) =>
+  unzipRegistered.push([path, key])
+
+const revalRegistered: [string, 'GET' | 'HEAD', string | URL][] = []
+const revalRegister = (
+  path: string,
+  method: 'GET' | 'HEAD',
+  url: string | URL,
+) => revalRegistered.push([path, method, url])
 
 t.beforeEach(t => {
-  registered.length = 0
+  unzipRegistered.length = 0
   // verify that it works even if connections get dropped sometimes
   dropConnection = true
   tokensActions.length = 0
@@ -262,7 +274,8 @@ t.afterEach(async t => {
   await (t.context.rc as RegistryClient).cache.promise()
 })
 
-const mockCacheUnzip = { register }
+const mockCacheUnzip = { register: unzipRegister }
+const mockCacheReval = { register: revalRegister }
 
 const mockIndex = async (t: Test, mocks?: Record<string, any>) =>
   t.mockImport<typeof import('../src/index.ts')>('../src/index.ts', {
@@ -272,6 +285,7 @@ const mockIndex = async (t: Test, mocks?: Record<string, any>) =>
         '../src/env.ts',
       ),
     '@vltpkg/cache-unzip': mockCacheUnzip,
+    '../src/cache-revalidate.ts': mockCacheReval,
     '@vltpkg/url-open': mockUrlOpen,
     '../src/otplease.ts': { otplease },
     ...mocks,
@@ -317,9 +331,9 @@ t.test('register unzipping for gzip responses', async t => {
   t.equal(res.isGzip, true)
   // only registers AFTER it's been written fully to the cache
   await rc.cache.promise()
-  t.strictSame(registered, [
+  t.strictSame(unzipRegistered, [
     [
-      t.testdirName,
+      resolve(t.testdirName, 'registry-client'),
       JSON.stringify([registryURL, 'GET', '/some/tarball']),
     ],
   ])
@@ -639,4 +653,53 @@ t.test('sending request with PUT method', async t => {
 t.test('identity', async t => {
   const rc = new RC({ identity: 'crisis' })
   t.equal(rc.identity, 'crisis')
+})
+
+t.test('staleWhileRevalidate', async t => {
+  const rc = t.context.rc as RegistryClient
+  // got the entry 10 minutes ago, no strictly valid, but swv ok
+  const date = String(new Date(Date.now() - 100 * 60 * 1000))
+  const swvEntry = new CacheEntry(
+    200,
+    toRawHeaders({
+      date,
+      'cache-control': 'maxage=300',
+      'content-type': 'application/json',
+    }),
+  )
+  swvEntry.addBody(Buffer.from('{"ok":true}'))
+
+  const cache = rc.cache
+  const staleCache = {
+    path: () => cache.path(),
+    fetch: async () => {
+      // rc.cache = cache
+      return swvEntry.encode()
+    },
+    promise: async () => {},
+    set: () => {},
+  } as unknown as Cache
+  rc.cache = staleCache
+
+  const stale = await rc.request(new URL('/abbrev', registryURL))
+  t.strictSame(stale.body, { ok: true })
+  t.equal(stale.staleWhileRevalidate, true)
+  t.equal(stale.valid, false)
+  t.strictSame(revalRegistered, [
+    [cache.path(), 'GET', new URL('/abbrev', registryURL)],
+  ])
+
+  rc.cache = staleCache
+  const refreshNow = await rc.request(
+    new URL('/abbrev', registryURL),
+    {
+      staleWhileRevalidate: false,
+    },
+  )
+  t.strictSame(
+    refreshNow.body,
+    { hello: 'world' },
+    'revalidated, got fresh response',
+  )
+  await cache.promise()
 })

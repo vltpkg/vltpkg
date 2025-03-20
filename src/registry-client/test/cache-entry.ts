@@ -1,16 +1,9 @@
 import { createHash } from 'node:crypto'
-import t from 'tap'
 import { inspect } from 'node:util'
 import { gzipSync } from 'node:zlib'
+import t from 'tap'
 import { CacheEntry } from '../src/cache-entry.ts'
-
-const toRawHeaders = (h: Record<string, string>): Buffer[] => {
-  const r: Buffer[] = []
-  for (const [k, v] of Object.entries(h)) {
-    r.push(Buffer.from(k), Buffer.from(v))
-  }
-  return r
-}
+import { toRawHeaders } from './fixtures/to-raw-headers.ts'
 
 const toLenBuf = (b: Buffer): Buffer => {
   const bl = b.byteLength + 4
@@ -140,13 +133,13 @@ t.strictSame(CacheEntry.decode(enc).encode(), enc)
 t.strictSame(CacheEntry.decode(enc).json(), ce.json())
 
 t.equal(ce.isJSON, true)
-t.equal(
-  new CacheEntry(200, [
-    Buffer.from('content-tyPe'),
-    Buffer.from('application/json'),
-  ]).isJSON,
-  true,
-)
+const json = new CacheEntry(200, [
+  Buffer.from('content-tyPe'),
+  Buffer.from('application/json'),
+])
+t.equal(json.isJSON, true)
+t.equal(json.contentType, 'application/json', 'content-type header')
+t.equal(json.contentType, 'application/json', 'memoized')
 t.equal(
   new CacheEntry(200, [
     Buffer.from('CONTENT-TYPE'),
@@ -220,16 +213,15 @@ t.equal(unzipped.valid, false)
 t.equal(unzipped.isJSON, true)
 
 // test if it's a valid cache entry
-t.equal(
-  new CacheEntry(
-    200,
-    toRawHeaders({
-      date: new Date('2020-01-20').toUTCString(),
-      'cache-control': 'immutable',
-    }),
-  ).valid,
-  true,
+const imm = new CacheEntry(
+  200,
+  toRawHeaders({
+    date: new Date('2020-01-20').toUTCString(),
+    'cache-control': 'immutable',
+  }),
 )
+t.equal(imm.valid, true)
+t.equal(imm.valid, true, 'memoized')
 
 t.doesNotThrow(
   () =>
@@ -338,4 +330,88 @@ t.test('treat bad json as cache miss', t => {
     body: Buffer.allocUnsafe(0),
   })
   t.end()
+})
+
+t.test('stale while revalidate', async t => {
+  t.equal(
+    new CacheEntry(
+      200,
+      toRawHeaders({
+        date: new Date('2020-01-20').toUTCString(),
+        'cache-control': 'immutable',
+      }),
+    ).staleWhileRevalidate,
+    true,
+    'stale entry is valid, because cache entry is still valid',
+  )
+
+  t.equal(
+    new CacheEntry(
+      200,
+      toRawHeaders({
+        'cache-control': 'max-age=300',
+      }),
+    ).staleWhileRevalidate,
+    true,
+    'valid to use stale and revalidate, because no date header',
+  )
+
+  t.equal(
+    new CacheEntry(
+      200,
+      toRawHeaders({
+        'cache-control': 'max-age=300',
+        date: new Date(
+          new Date().getTime() - 10 * 300 * 1000,
+        ).toUTCString(),
+      }),
+    ).staleWhileRevalidate,
+    true,
+    'valid to revalidate, because younger than max-age * 60',
+  )
+
+  const tooStale = new CacheEntry(
+    200,
+    toRawHeaders({
+      'cache-control': 'max-age=300',
+      date: new Date(
+        new Date().getTime() - 100 * 300 * 1000,
+      ).toUTCString(),
+    }),
+  )
+
+  t.equal(
+    tooStale.staleWhileRevalidate,
+    false,
+    'cannot use stale entry, because older than max-age * 60',
+  )
+  t.equal(
+    tooStale.staleWhileRevalidate,
+    false,
+    'memoized, still false',
+  )
+})
+
+t.test('maxAge', async t => {
+  const ma = new CacheEntry(
+    200,
+    toRawHeaders({
+      'cache-control': 'max-age=100',
+    }),
+  )
+  t.equal(ma.maxAge, 100)
+  t.equal(ma.maxAge, 100, 'memoized')
+
+  const sma = new CacheEntry(
+    200,
+    toRawHeaders({
+      'cache-control': 's-maxage=100',
+    }),
+  )
+  t.equal(sma.maxAge, 100)
+  t.equal(sma.maxAge, 100, 'memoized')
+
+  const nma = new CacheEntry(200, toRawHeaders({}))
+  t.equal(nma.maxAge, 300)
+  t.equal(nma.maxAge, 300, 'memoized')
 })
