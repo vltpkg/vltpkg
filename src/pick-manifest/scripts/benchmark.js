@@ -1,9 +1,9 @@
 #!/usr/bin/env -S node --experimental-strip-types --no-warnings
 
-import { readFileSync } from 'fs'
+import { readFileSync } from 'node:fs'
 import npmPickManifest from 'npm-pick-manifest'
 import { pickManifest } from '../src/index.ts'
-import { resolve } from 'path'
+import { resolve } from 'node:path'
 import {
   copyPackuments,
   numToFixed,

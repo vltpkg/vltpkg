@@ -1,6 +1,6 @@
 import type { PickManifestOptions } from '@vltpkg/pick-manifest'
 import type { Spec } from '@vltpkg/spec'
-import type { SpawnOptions } from 'child_process'
+import type { SpawnOptions } from 'node:child_process'
 import type { WrapOptions } from 'retry'
 
 export * from './clone.ts'

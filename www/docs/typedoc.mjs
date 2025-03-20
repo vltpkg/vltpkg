@@ -1,9 +1,9 @@
 // @ts-check
-import { join, relative, resolve } from 'path'
-import { readdirSync } from 'fs'
-import { writeFile } from 'fs/promises'
+import { join, relative, resolve } from 'node:path'
+import { readdirSync } from 'node:fs'
+import { writeFile } from 'node:fs/promises'
 import typedocWorkspace from './typedoc.workspace.mjs'
-import { execSync } from 'child_process'
+import { execSync } from 'node:child_process'
 import {
   entryFileName,
   modulesFileName,

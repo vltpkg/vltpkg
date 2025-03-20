@@ -1,5 +1,5 @@
-import { readFileSync } from 'fs'
-import { join } from 'path'
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
 import t from 'tap'
 import type { Test } from 'tap'
 import * as Command from '../../src/commands/pkg.ts'

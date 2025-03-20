@@ -1,5 +1,5 @@
-import { homedir, tmpdir } from 'os'
-import { resolve } from 'path'
+import { homedir, tmpdir } from 'node:os'
+import { resolve } from 'node:path'
 
 const root = homedir()
 const path = (p: string) => resolve(root, p)

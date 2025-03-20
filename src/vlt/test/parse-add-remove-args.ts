@@ -1,4 +1,4 @@
-import { inspect } from 'util'
+import { inspect } from 'node:util'
 import t from 'tap'
 import { Spec, kCustomInspect } from '@vltpkg/spec'
 import { Monorepo } from '@vltpkg/workspaces'

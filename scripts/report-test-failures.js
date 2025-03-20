@@ -1,6 +1,6 @@
-import { spawnSync } from 'child_process'
-import { readFileSync } from 'fs'
-import { join, relative, resolve } from 'path'
+import { spawnSync } from 'node:child_process'
+import { readFileSync } from 'node:fs'
+import { join, relative, resolve } from 'node:path'
 import chalk from 'chalk'
 
 const summary = resolve(

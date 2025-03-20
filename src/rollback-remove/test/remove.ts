@@ -1,7 +1,7 @@
-import { spawnSync } from 'child_process'
+import { spawnSync } from 'node:child_process'
 import t from 'tap'
 import { join } from 'node:path'
-import { readdirSync } from 'fs'
+import { readdirSync } from 'node:fs'
 import { __CODE_SPLIT_SCRIPT_NAME } from '../src/remove.ts'
 
 t.test('run the remover', async t => {

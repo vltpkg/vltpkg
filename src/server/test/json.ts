@@ -1,4 +1,4 @@
-import EventEmitter from 'events'
+import EventEmitter from 'node:events'
 import type { IncomingMessage, ServerResponse } from 'http'
 import t from 'tap'
 import * as json from '../src/json.ts'

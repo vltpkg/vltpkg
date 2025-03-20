@@ -13,14 +13,14 @@ import type { Integrity, Manifest, Packument } from '@vltpkg/types'
 import { asPackument, isIntegrity } from '@vltpkg/types'
 import { Monorepo } from '@vltpkg/workspaces'
 import { XDG } from '@vltpkg/xdg'
-import { randomBytes } from 'crypto'
-import { readFile, rm, stat, symlink } from 'fs/promises'
+import { randomBytes } from 'node:crypto'
+import { readFile, rm, stat, symlink } from 'node:fs/promises'
 import {
   basename,
   dirname,
   resolve as pathResolve,
   relative,
-} from 'path'
+} from 'node:path'
 import { create as tarC } from 'tar'
 import { rename } from './rename.ts'
 

@@ -1,4 +1,4 @@
-import { spawn } from 'child_process'
+import { spawn } from 'node:child_process'
 import { __CODE_SPLIT_SCRIPT_NAME } from './unzip.ts'
 
 let didProcessBeforeExitHook = false

@@ -5,7 +5,7 @@ import { parse, Version } from '@vltpkg/semver'
 import { Spec } from '@vltpkg/spec'
 import type { GitSelectorParsed } from '@vltpkg/spec'
 import { Monorepo } from '@vltpkg/workspaces'
-import { relative, resolve } from 'path'
+import { relative, resolve } from 'node:path'
 
 /**
  * Return true if the node referenced by this DepID would satisfy the

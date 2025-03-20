@@ -1,8 +1,8 @@
-import { spawn } from 'child_process'
+import { spawn } from 'node:child_process'
 import * as esbuild from 'esbuild'
-import { rm, mkdir, cp } from 'fs/promises'
-import { join } from 'path'
-import { parseArgs } from 'util'
+import { rm, mkdir, cp } from 'node:fs/promises'
+import { join } from 'node:path'
+import { parseArgs } from 'node:util'
 import { which } from '@vltpkg/which'
 
 const PORT = 7018

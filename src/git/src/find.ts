@@ -1,4 +1,4 @@
-import { dirname } from 'path'
+import { dirname } from 'node:path'
 import { is } from './is.ts'
 
 export type FindOpts = {
