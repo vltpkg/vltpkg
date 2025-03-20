@@ -14,7 +14,7 @@ import type { Bin } from './bins.ts'
 const spawnCompile = ({
   source,
   outdir,
-  stdio,
+  quiet,
   entry,
   exclude,
   arch,
@@ -22,7 +22,7 @@ const spawnCompile = ({
 }: {
   source: string
   outdir: string
-  stdio: 'inherit' | 'pipe'
+  quiet?: boolean
   entry: string
   exclude: string[]
   arch: string
@@ -49,6 +49,7 @@ const spawnCompile = ({
       '--no-lock',
       '--unstable-node-globals',
       '--unstable-bare-node-builtins',
+      quiet ? '--quiet' : '',
       `--output=${outfile}`,
       `--target=${[
         {
@@ -73,7 +74,7 @@ const spawnCompile = ({
   const res = spawnSync(spawnOptions.command, spawnOptions.args, {
     shell: true,
     encoding: 'utf8',
-    stdio,
+    stdio: 'inherit',
   })
   assert(
     res.status === 0,
@@ -97,7 +98,7 @@ const spawnCompile = ({
 export type Options = {
   outdir: string
   source?: string
-  stdio?: 'inherit' | 'pipe'
+  quiet?: boolean
   bins?: readonly Bin[]
   arch?: string
   platform?: string
@@ -106,7 +107,7 @@ export type Options = {
 export const compile = async ({
   outdir,
   source,
-  stdio = 'inherit',
+  quiet,
   bins,
   arch = os.arch(),
   platform = os.platform(),
@@ -133,7 +134,7 @@ export const compile = async ({
       spawnCompile({
         source,
         outdir,
-        stdio,
+        quiet,
         entry,
         exclude: entries
           .filter(b => b !== entry)

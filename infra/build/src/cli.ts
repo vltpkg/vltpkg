@@ -10,7 +10,7 @@ import { isBin } from './bins.ts'
 
 const parseOptions = () => {
   const {
-    values: { outdir, platform, arch, bins },
+    values: { outdir, platform, arch, bins, quiet },
     positionals: [action = 'bundle'],
   } = parseArgs({
     allowPositionals: true,
@@ -19,6 +19,7 @@ const parseOptions = () => {
       platform: { type: 'string' },
       arch: { type: 'string' },
       bins: { type: 'string', multiple: true },
+      quiet: { type: 'boolean' },
     },
   })
 
@@ -27,7 +28,7 @@ const parseOptions = () => {
 
   return [
     action,
-    { outdir: resolve(outdir), platform, arch, bins },
+    { outdir: resolve(outdir), platform, arch, bins, quiet },
   ] as const
 }
 
