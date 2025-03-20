@@ -235,6 +235,11 @@ security data needs to be fetched prior to a `Query` instantiation.
   the system shell increases the risk of executing arbitrary code.
 - `:shrinkwrap` Matches packages that contains a shrinkwrap file. This
   may allow the package to bypass normal install procedures.
+- `:squat(<type>)` Matches packages with names similar to other
+  popular packages and may not be the package you want. The type
+  parameter is required and can be one of the following:
+  - `critical` or `0`
+  - `medium` or `2`
 - `:suspicious` Matches packages that may have its GitHub repository
   artificially inflated with stars (from bots, crowdsourcing, etc.).
 - `:tracker` Matches packages that contains telemetry which tracks how
