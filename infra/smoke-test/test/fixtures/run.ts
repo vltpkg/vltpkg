@@ -159,8 +159,9 @@ export const runMatch = async (
   )
 
   // treat bundle as the default result for other tests
-  const defaultResult = (ranVariants.find(([k]) => k === 'bundle') ??
-    ranVariants[0])?.[1]
+  const defaultResult = (ranVariants.find(
+    ([k]) => k === publishedVariant,
+  ) ?? ranVariants[0])?.[1]
   assert(defaultResult, 'no default variant')
 
   // all commands should return the same output. this could get tricky
