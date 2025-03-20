@@ -1,13 +1,18 @@
 import t from 'tap'
-import { runMatch, run } from './fixtures/run.ts'
+import { runMatch } from './fixtures/run.ts'
 
 t.test('help', async t => {
   const { status } = await runMatch(t, 'vlt', ['install', '--help'])
   t.equal(status, 0)
 })
 
-t.todo('eslint', async t => {
-  const { status } = await run(t, 'vlt', ['install', 'eslint'], {
+t.test('install a package', async t => {
+  if (process.platform === 'win32') {
+    // In CI Windows fails with 'EBUSY: resource busy or locked' when cleaning up
+    t.comment('skipping on windows')
+    return
+  }
+  const { status } = await runMatch(t, 'vlt', ['install', 'eslint'], {
     stripAnsi: true,
     testdir: {
       'package.json': JSON.stringify({

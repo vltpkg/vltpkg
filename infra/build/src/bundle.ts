@@ -1,4 +1,4 @@
-import { mkdirSync, cpSync, existsSync } from 'node:fs'
+import { mkdirSync, cpSync, existsSync, readdirSync } from 'node:fs'
 import {
   join,
   relative,
@@ -14,13 +14,18 @@ import { builtinModules, createRequire } from 'node:module'
 import assert from 'node:assert'
 import { BINS_DIR, BINS } from './bins.ts'
 import type { Bin } from './bins.ts'
+import { EOL } from 'node:os'
 
 export const CLI = dirname(
   createRequire(import.meta.url).resolve(
     '@vltpkg/cli-sdk/package.json',
   ),
 )
-const SRC_WORKSPACES = resolve(CLI, '..')
+
+const WORKSPACE_DIR = resolve(CLI, '..')
+
+const filterRegex = (...parts: string[]) =>
+  new RegExp(`\\${sep}${parts.join(`\\${sep}`)}$`)
 
 const toPosix = (p: string) => p.replaceAll(sep, '/')
 
@@ -58,13 +63,19 @@ const addBinHashbangs: esbuild.Plugin = {
   setup({ onLoad }) {
     onLoad(
       {
-        filter: new RegExp(`src/bins/(${BINS.join('|')}).ts$`),
+        filter: filterRegex(
+          'infra',
+          'build',
+          'src',
+          'bins',
+          `(${BINS.join('|')})\\.ts$`,
+        ),
         namespace: 'file',
       },
       async args => {
         const contents = await readFile(args.path, 'utf8')
         return {
-          contents: `#!/usr/bin/env node\n${contents}`,
+          contents: ['#!/usr/bin/env node', contents].join(EOL),
           loader: 'ts' as esbuild.Loader,
         }
       },
@@ -81,23 +92,30 @@ const codeSplitPlugin = (): {
   const found = new Set<{ source: string; out: string }>()
 
   const fn = async (o: esbuild.OnLoadArgs) => {
-    /* c8 ignore next - make sure we dont match any 3rd party files */
-    if (!o.path.startsWith(SRC_WORKSPACES)) return
     const source = await readFile(o.path, 'utf8')
     if (source.includes(codeSplitIdentifier)) {
       const out = withoutExtension(
-        relative(SRC_WORKSPACES, o.path),
+        relative(WORKSPACE_DIR, o.path),
       ).replaceAll(sep, '-')
       found.add({ source: o.path, out })
       return {
         // keep this as a single line because it could affect source maps
-        contents:
-          `import {resolve} from 'node:path';\n` +
-          `${codeSplitIdentifier} resolve(import.meta.dirname, '${toPosix(out)}.js')`,
+        contents: [
+          'import {resolve} from "node:path"',
+          `${codeSplitIdentifier} resolve(import.meta.dirname, "${toPosix(out)}.js")`,
+        ]
+          .map(l => `${l};`)
+          .join(EOL),
         loader: 'ts' as esbuild.Loader,
       }
     }
   }
+
+  const workspaceNames = readdirSync(WORKSPACE_DIR, {
+    withFileTypes: true,
+  })
+    .filter(dirent => dirent.isDirectory())
+    .map(dirent => dirent.name)
 
   // All files that will be code split into external scripts
   // export __CODE_SPLIT_SCRIPT_NAME which we change to a path
@@ -109,9 +127,12 @@ const codeSplitPlugin = (): {
       setup({ onLoad }) {
         onLoad(
           {
-            // this has to be a valid goland regex so to keep it simple
-            // just filter on .ts files since that is all we write
-            filter: /\.ts$/,
+            filter: filterRegex(
+              'src',
+              `(${workspaceNames.join('|')})`,
+              'src',
+              `.*\\.ts$`,
+            ),
             namespace: 'file',
           },
           fn,
@@ -149,8 +170,20 @@ const bundleEntryPoints = async (
     platform: 'node',
     target: 'es2022',
     banner: {
-      js: `import {createRequire as _vlt_createRequire} from 'node:module';
-var require = _vlt_createRequire(import.meta.filename);`,
+      // Create globals for 3rd party code
+      js: [
+        // alias globalThis to global for Deno compat
+        'var global = globalThis',
+        // Explicitly set all global timers to the Node.js timers
+        // otherwise Deno might use its web timers which have a different signature.
+        // https://docs.deno.com/api/web/~/setTimeout
+        `import {setTimeout,clearTimeout,setImmediate,clearImmediate,setInterval,clearInterval} from "node:timers"`,
+        // Create a require function since we are bundling to ESM
+        'import {createRequire as _vlt_createRequire} from "node:module"',
+        'var require = _vlt_createRequire(import.meta.filename)',
+      ]
+        .map(l => `${l};`)
+        .join(EOL),
     },
     define: {
       'process.env.NODE_ENV': '"production"',
@@ -240,17 +273,17 @@ export const bundle = async ({
 
   // copy package jsons that get read at runtime
   cpSync(
-    join(SRC_WORKSPACES, 'registry-client/package.json'),
+    join(WORKSPACE_DIR, 'registry-client/package.json'),
     join(outdir, define.REGISTRY_CLIENT_PACKAGE_JSON),
   )
   cpSync(
-    join(SRC_WORKSPACES, 'vlt/package.json'),
+    join(WORKSPACE_DIR, 'vlt/package.json'),
     join(outdir, define.CLI_PACKAGE_JSON),
   )
 
   // copy built gui assets
   cpSync(
-    join(SRC_WORKSPACES, 'gui/dist'),
+    join(WORKSPACE_DIR, 'gui/dist'),
     join(outdir, define.GUI_ASSETS_DIR),
     { recursive: true },
   )
