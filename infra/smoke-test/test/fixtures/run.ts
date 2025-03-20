@@ -4,13 +4,17 @@ import assert from 'node:assert'
 import { publishedVariant, Variants } from './variants.ts'
 import type { Variant, VariantType } from './variants.ts'
 import { stripVTControlCharacters } from 'node:util'
+import { join } from 'node:path'
 
-const DEFAULT_VARIANTS = Object.values(Variants)
-  .filter(v => v.default)
-  .map(v => v.type)
+type FixtureDirContent = string | FixtureDir
+interface FixtureDir {
+  [entry: string]: FixtureDirContent
+}
 
 export type CommandOptions = {
-  testdir?: Parameters<Test['testdir']>[0]
+  project?: FixtureDir
+  testdir?: FixtureDir
+  packageJson?: Record<string, unknown>
   env?: NodeJS.ProcessEnv
   stripAnsi?: boolean
 }
@@ -20,6 +24,8 @@ export type CommandResult = {
   stdout: string
   stderr: string
   output: string
+  project: string
+  dir: string
 }
 
 export type Command = (
@@ -43,14 +49,33 @@ const ENV = Object.entries(process.env).reduce<NodeJS.Process['env']>(
   {},
 )
 
-const runBase = async (
+export const runBase = async (
   variant: Variant,
   t: Test,
   bin = 'vlt',
   args: string[] = [],
-  { env = {}, testdir = {}, stripAnsi }: CommandOptions = {},
+  {
+    env = {},
+    packageJson,
+    project,
+    testdir: testdirContents,
+    stripAnsi,
+  }: CommandOptions = {},
 ) => {
-  const cwd = t.testdir(testdir)
+  const testdir = t.testdir({
+    home: {},
+    cache: {},
+    data: {},
+    state: {},
+    runtime: {},
+    project: {
+      ...(packageJson ?
+        { 'package.json': JSON.stringify(packageJson) }
+      : {}),
+      ...project,
+    },
+    ...testdirContents,
+  })
   const { dir } = variant
 
   const command =
@@ -59,11 +84,11 @@ const runBase = async (
     : variant.command
 
   const commandArgs =
-    variant.arg0 ? [variant.arg0({ dir, bin }), ...args] : args
+    variant.args ? [...variant.args({ dir, bin }), ...args] : args
 
   return new Promise<CommandResult>((res, rej) => {
     const proc = spawn(command, commandArgs, {
-      cwd: cwd,
+      cwd: join(testdir, 'project'),
       shell: true,
       windowsHide: true,
       env: {
@@ -73,8 +98,14 @@ const runBase = async (
         // Config will always stop at $HOME so override that one
         // level about the testdir so we dont go back up to our
         // own monorepo root
-        HOME: cwd,
-        USERPROFILE: cwd,
+        HOME: testdir,
+        USERPROFILE: testdir,
+        // Make sure tests are isolated
+        XDG_CONFIG_HOME: join(testdir, 'home'),
+        XDG_CACHE_HOME: join(testdir, 'cache'),
+        XDG_DATA_HOME: join(testdir, 'data'),
+        XDG_STATE_HOME: join(testdir, 'state'),
+        XDG_RUNTIME_DIR: join(testdir, 'runtime'),
         // PATH is only set to what the variant needs
         PATH:
           typeof variant.path === 'function' ?
@@ -109,26 +140,24 @@ const runBase = async (
           stderr: clean(stderr),
           output: clean(output),
           status: code,
+          dir: testdir,
+          project: join(testdir, 'project'),
         })
       })
       .on('error', err => rej(err))
   })
 }
 
-export const src: Command = (...args) =>
-  runBase(Variants.source, ...args)
-
-export const bundle: Command = (...args) =>
-  runBase(Variants.bundle, ...args)
-
-export const compile: Command = (...args) =>
-  runBase(Variants.compile, ...args)
-
-export const rootCompile: Command = (...args) =>
-  runBase(Variants.rootCompile, ...args)
-
-export const rootCompileNoScripts: Command = (...args) =>
-  runBase(Variants.rootCompileNoScripts, ...args)
+export const runVariant: Record<
+  Exclude<VariantType, 'rootCompile' | 'rootCompileNoScripts'>,
+  Command
+> = {
+  source: (...args) => runBase(Variants.source, ...args),
+  denoSource: (...args) => runBase(Variants.denoSource, ...args),
+  bundle: (...args) => runBase(Variants.bundle, ...args),
+  denoBundle: (...args) => runBase(Variants.denoBundle, ...args),
+  compile: (...args) => runBase(Variants.compile, ...args),
+}
 
 // The default run command will use whatever is configured as
 // the published variant
@@ -139,26 +168,40 @@ export const runMatch = async (
   t: Test,
   bin: string,
   args?: string[],
-  options: CommandOptions = {},
+  {
+    test,
+    variants = Object.values(Variants)
+      .filter(v => v.default)
+      .map(v => v.type),
+    ...options
+  }: CommandOptions & {
+    variants?: VariantType[]
+    test?: (
+      t: Test,
+      result: CommandResult & { variant: VariantType },
+    ) => Promise<void>
+  } = {},
 ) => {
   const ranVariants: [VariantType, CommandResult][] = []
 
-  for (const variant of DEFAULT_VARIANTS) {
+  for (const variant of variants) {
     await t.test(variant, async t => {
-      ranVariants.push([
-        variant,
-        await runBase(Variants[variant], t, bin, args, options),
-      ])
+      const result = await runBase(
+        Variants[variant],
+        t,
+        bin,
+        args,
+        options,
+      )
+      await test?.(t, { ...result, variant })
+      ranVariants.push([variant, result])
     })
   }
 
-  t.equal(
-    ranVariants.length,
-    DEFAULT_VARIANTS.length,
-    'ran all variants',
-  )
+  t.equal(ranVariants.length, variants.length, 'ran all variants')
 
-  // treat bundle as the default result for other tests
+  // treat published variant as the default result for other tests
+  // if it exists, otherwise just the first one
   const defaultResult = (ranVariants.find(
     ([k]) => k === publishedVariant,
   ) ?? ranVariants[0])?.[1]
@@ -170,11 +213,14 @@ export const runMatch = async (
   // make this check optional
   for (const [variant, res] of ranVariants) {
     t.strictSame(
-      res,
-      defaultResult,
+      { status: res.status, output: res.output },
+      { status: defaultResult.status, output: defaultResult.output },
       `output for ${variant} matches default`,
     )
   }
 
-  return defaultResult
+  return {
+    ...defaultResult,
+    variants: Object.fromEntries(ranVariants),
+  }
 }
