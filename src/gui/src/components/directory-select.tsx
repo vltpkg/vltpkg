@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useLayoutEffect, useRef, useState } from 'react'
 import {
   Popover,
   PopoverTrigger,
@@ -22,6 +22,8 @@ interface DirectorySelectProps {
   setDirectory: (directory: string) => void
   dashboard?: DashboardData
   acceptsGlobal?: boolean
+  useDashboardProjectLocations?: boolean
+  className?: string
 }
 
 export const DirectorySelect = ({
@@ -29,16 +31,72 @@ export const DirectorySelect = ({
   setDirectory,
   dashboard,
   acceptsGlobal = true,
+  useDashboardProjectLocations = false,
+  className,
 }: DirectorySelectProps) => {
-  const [displayPath, setDisplayPath] = useState<string>(
-    acceptsGlobal ? 'Global' : '',
-  )
+  const [displayPath, setDisplayPath] = useState<string>('')
+  const mounted = useRef<boolean>(false)
+
+  const directoryLocations =
+    useDashboardProjectLocations ?
+      dashboard?.dashboardProjectLocations
+    : dashboard?.projects
+
+  const setInitialDisplayPath = () => {
+    // query saved item case
+    if (
+      acceptsGlobal &&
+      directory !== '' &&
+      !useDashboardProjectLocations
+    ) {
+      setDisplayPath(
+        directoryLocations?.find(
+          location => location.path === directory,
+        )?.readablePath ?? '',
+      )
+    }
+
+    // query creation case
+    else if (
+      acceptsGlobal &&
+      directory === '' &&
+      !useDashboardProjectLocations
+    ) {
+      setDisplayPath('Global')
+    }
+
+    // creating a new project case
+    else if (
+      !acceptsGlobal &&
+      useDashboardProjectLocations &&
+      directory === ''
+    ) {
+      setDisplayPath('Select a directory')
+    }
+  }
+
+  /**
+   * The use a ref is to ensure that the initial display path is only set once.
+   * This is because react will run useEffects twice in development mode.
+   *
+   * It is a useLayoutEffect to prevent layout shift on initial mount,
+   * as it will run before initial paint.
+   * */
+  useLayoutEffect(() => {
+    if (mounted.current) return
+    mounted.current = true
+    setInitialDisplayPath()
+  }, [])
 
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button className="group flex h-[40px] w-full items-center justify-between border-[1px] border-muted bg-white text-muted-foreground shadow-none hover:bg-accent dark:bg-muted-foreground/5 dark:hover:bg-muted-foreground/10">
-          {displayPath || 'Select a directory'}
+        <Button
+          className={cn(
+            'group flex h-[40px] w-full items-center justify-between border-[1px] border-muted bg-white text-muted-foreground shadow-none hover:bg-accent dark:bg-muted-foreground/5 dark:hover:bg-muted-foreground/10',
+            className,
+          )}>
+          {displayPath}
           <ChevronDown className="text-foreground opacity-50 duration-300 group-data-[state=open]:-rotate-180" />
         </Button>
       </PopoverTrigger>
@@ -48,7 +106,7 @@ export const DirectorySelect = ({
           <CommandList>
             <CommandEmpty>Directory not found.</CommandEmpty>
             <CommandGroup>
-              {dashboard?.dashboardProjectLocations.map(location =>
+              {directoryLocations?.map(location =>
                 location.readablePath === '~' && acceptsGlobal ?
                   <CommandItem
                     key={location.path}
