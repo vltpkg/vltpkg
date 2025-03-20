@@ -192,9 +192,25 @@ security data needs to be fetched prior to a `Query` instantiation.
   code may contain exploits or malicious behavior.
 - `:fs` Matches packages that accesses the file system, and could
   potentially read sensitive data.
-- `:obfuscated` Matches packages that use obfuscated files,
-  intentionally packed to hide their behavior. This could be a sign of
-  malware.
+- `:license(<type>)` Matches packages based on different potential
+  license issues:
+  - `:license(unlicensed)` Matches packages with no license.
+  - `:license(misc)` Matches packages with fine-grained problems.
+  - `:license(restricted)` Matches packages with a license that is not
+    permissive.
+  - `:license(ambiguous)` Matches packages with ambiguous licensing.
+  - `:license(copyleft)` Matches packages with a copyleft license.
+  - `:license(unknown)` Matches packages that have potential license
+    data but its type could not be determined.
+  - `:license(none)` Matches packages that have no license data.
+  - `:license(exception)` Matches packages that have SPDX license
+    exception.
+- `:malware(<type>)` Matches packages that may contain malware. The
+  type parameter is required and can be one of the following:
+  - `critical` or `0`
+  - `high` or `1`
+  - `medium` or `2`
+  - `low` or `3`
 - `:minified` Matches packages that contain minified code. This may be
   harmless in some cases where minified code is included in packaged
   libraries.
@@ -202,6 +218,9 @@ security data needs to be fetched prior to a `Query` instantiation.
   binaries or shared libraries). Including native code can obscure
   malicious behavior.
 - `:network` Matches packages that access the network.
+- `:obfuscated` Matches packages that use obfuscated files,
+  intentionally packed to hide their behavior. This could be a sign of
+  malware.
 - `:scripts` Matches packages that have scripts that are run when the
   package is installed. The majority of malware in npm is hidden in
   install scripts.
