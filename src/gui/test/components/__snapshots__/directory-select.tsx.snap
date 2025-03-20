@@ -19,13 +19,15 @@ exports[`directory select > renders correctly 1`] = `
           Directory not found.
         </gui-command-empty>
         <gui-command-group>
-          <gui-command-item
-            value
-            classname="hover:bg-accent"
-          >
-            <gui-check-icon classname="mr-2 size-4 opacity-100">
+          <gui-command-item value="/home/user/project-foo">
+            <gui-check-icon classname="mr-2 size-4 opacity-0">
             </gui-check-icon>
-            Global
+            ~/project-foo
+          </gui-command-item>
+          <gui-command-item value="/home/user/project-bar">
+            <gui-check-icon classname="mr-2 size-4 opacity-0">
+            </gui-check-icon>
+            ~/project-foo
           </gui-command-item>
         </gui-command-group>
       </gui-command-list>

@@ -142,6 +142,7 @@ export const CreateNewProjectContent = ({
           <div className="flex flex-col gap-2 px-8">
             <Label htmlFor="location">Location *</Label>
             <DirectorySelect
+              useDashboardProjectLocations
               acceptsGlobal={false}
               dashboard={dashboard}
               setDirectory={setPathName}

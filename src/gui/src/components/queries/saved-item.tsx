@@ -185,7 +185,7 @@ const SavedQueryItem = ({
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger className="w-full truncate text-left text-sm">
-                {item.context}
+                {item.context.trim() === '' ? 'Global' : item.context}
               </TooltipTrigger>
               <TooltipContent>{item.context}</TooltipContent>
             </Tooltip>
