@@ -96,15 +96,15 @@ const ThemeSwitcher = () => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild className="group">
-        <button className="[&>svg]:duration-250 duration-250 inline-flex w-[90px] cursor-default items-center gap-2 rounded-md bg-transparent px-2 py-1 text-sm font-medium text-neutral-500 ring-offset-background transition-all hover:bg-neutral-200 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 data-[state=open]:bg-neutral-200 data-[state=open]:text-foreground dark:hover:bg-secondary dark:data-[state=open]:bg-secondary [&>svg]:fill-neutral-500 [&>svg]:stroke-neutral-500 [&>svg]:transition-all [&>svg]:hover:fill-foreground [&>svg]:hover:stroke-foreground [&>svg]:data-[state=open]:fill-foreground [&>svg]:data-[state=open]:stroke-foreground">
+        <button className="[&>svg]:duration-250 duration-250 inline-flex justify-center w-[90px] cursor-default items-center gap-2 rounded-md bg-transparent px-2 py-1 text-sm font-medium text-neutral-500 ring-offset-background transition-all hover:bg-neutral-200 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 data-[state=open]:bg-neutral-200 data-[state=open]:text-foreground dark:hover:bg-secondary dark:data-[state=open]:bg-secondary [&>svg]:fill-neutral-500 [&>svg]:stroke-neutral-500 [&>svg]:transition-all [&>svg]:hover:fill-foreground [&>svg]:hover:stroke-foreground [&>svg]:data-[state=open]:fill-foreground [&>svg]:data-[state=open]:stroke-foreground">
           {renderIcon()}
-          <span>{theme}</span>
+          <span className='capitalize'>{theme}</span>
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent
         side="top"
         align="center"
-        onCloseAutoFocus={e => e.preventDefault()}>
+        onCloseAutoFocus={(e: Event) => e.preventDefault()}>
         {themes.map(t => (
           <DropdownMenuItem
             onClick={() => {
