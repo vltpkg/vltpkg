@@ -178,6 +178,16 @@ t.test('query', async t => {
     'should list mermaid in json format',
   )
 
+  await t.rejects(
+    Command.command({
+      positionals: ['*:malware'],
+      values: { view: 'human' },
+      options,
+    } as LoadedConfig),
+    /Missing security archive/,
+    'should fail to run with no security archive',
+  )
+
   await t.test('workspaces', async t => {
     const mainManifest = {
       name: 'my-project',
