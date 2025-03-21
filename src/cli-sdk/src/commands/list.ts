@@ -84,12 +84,15 @@ export const command: CommandFn<ListResult> = async conf => {
   const queryString = conf.positionals
     .map(k => (/^[@\w-]/.test(k) ? `#${k.replace(/\//, '\\/')}` : k))
     .join(', ')
-  const archive = await SecurityArchive.start({
-    graph,
-    specOptions: conf.options,
-  })
+  const archive =
+    Query.hasSecuritySelectors(queryString) ?
+      await SecurityArchive.start({
+        graph,
+        specOptions: conf.options,
+      })
+    : undefined
   /* c8 ignore next */
-  const securityArchive = archive.ok ? archive : undefined
+  const securityArchive = archive?.ok ? archive : undefined
   const query = new Query({
     graph,
     specOptions: conf.options,
