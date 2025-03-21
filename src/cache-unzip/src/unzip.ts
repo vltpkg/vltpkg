@@ -148,17 +148,17 @@ const main = async (
   if (!didSomething.some(Boolean)) process.exit(1)
 }
 
-if (
-  /* c8 ignore next */
-  (process.env.__VLT_INTERNAL_MAIN ?? process.argv[1]) ===
-  __CODE_SPLIT_SCRIPT_NAME
-) {
+const g = globalThis as typeof globalThis & {
+  __VLT_INTERNAL_MAIN?: string
+}
+
+const file = g.__VLT_INTERNAL_MAIN ?? process.argv[1]
+if (file === __CODE_SPLIT_SCRIPT_NAME) {
   process.title = 'vlt-cache-unzip'
-  void main(
-    // When compiled there can be other leading args supplied by Deno
-    // so always use the last arg unless there are only two which means
-    // no path was supplied.
-    process.argv.length === 2 ? undefined : process.argv.at(-1),
-    process.stdin,
-  )
+  // When compiled there can be other leading args supplied by Deno
+  // so always use the last arg unless there are only two which means
+  // no path was supplied.
+  const path =
+    process.argv.length === 2 ? undefined : process.argv.at(-1)
+  void main(path, process.stdin)
 }

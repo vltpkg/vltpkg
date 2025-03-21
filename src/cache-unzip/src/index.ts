@@ -1,9 +1,8 @@
 import { spawn } from 'node:child_process'
 import { __CODE_SPLIT_SCRIPT_NAME } from './unzip.ts'
 
-const isDeno = Boolean(
-  (globalThis as typeof globalThis & { Deno?: any }).Deno,
-)
+const isDeno =
+  (globalThis as typeof globalThis & { Deno?: any }).Deno != undefined
 
 let didProcessBeforeExitHook = false
 const registered = new Map<string, Set<string>>()
@@ -34,7 +33,7 @@ const handleBeforeExit = () => {
       // If we are running deno from source we need to add the
       // unstable flags we need. The '-A' flag does not need
       // to be passed in as Deno supplies that automatically.
-      if ((globalThis as typeof globalThis & { Deno?: any }).Deno) {
+      if (isDeno) {
         args.push(
           '--unstable-node-globals',
           '--unstable-bare-node-builtins',
