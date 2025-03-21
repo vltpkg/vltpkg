@@ -6,7 +6,7 @@ export const PageTitle = ({
   entry,
   crumbs,
 }: Props & { crumbs: string[] }) => {
-  const data = entry.data
+  const { title } = entry.data as { title: string }
 
   const accumulatedPath = crumbs.reduce<string[]>(
     (acc, crumb, idx) => {
@@ -43,7 +43,7 @@ export const PageTitle = ({
         ))}
       </div>
       <h1 id="_top" className="mb-4 mt-8 text-3xl font-bold">
-        {data.title}
+        {title}
       </h1>
     </div>
   )
