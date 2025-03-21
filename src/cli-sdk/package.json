@@ -15,7 +15,10 @@
     ],
     "exports": {
       "./package.json": "./package.json",
-      ".": "./src/index.ts"
+      ".": "./src/index.ts",
+      "./config": "./src/config/index.ts",
+      "./definition": "./src/config/definition.ts",
+      "./view": "./src/view.ts"
     }
   },
   "dependencies": {
