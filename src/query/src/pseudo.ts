@@ -17,6 +17,7 @@ import { abandoned } from './pseudo/abandoned.ts'
 import { attr } from './pseudo/attr.ts'
 import { confused } from './pseudo/confused.ts'
 import { cve } from './pseudo/cve.ts'
+import { cwe } from './pseudo/cwe.ts'
 import { debug } from './pseudo/debug.ts'
 import { deprecated } from './pseudo/deprecated.ts'
 import { dynamic } from './pseudo/dynamic.ts'
@@ -350,6 +351,7 @@ const pseudoSelectors = new Map<string, ParserFn>(
     attr,
     confused,
     cve,
+    cwe,
     debug,
     deprecated,
     dynamic,
