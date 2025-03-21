@@ -40,7 +40,7 @@ const workspaces: KnipConfig['workspaces'] = {
       'src/components/page-sidebar/page-sidebar.astro',
       'src/components/two-column-layout/two-column-layout.astro',
       'src/components/footer/footer.astro',
-      'src/components/theme-select/theme-provider.astro',
+      'src/components/theme-provider/theme-provider.astro',
     ],
     // TODO: audit if these really need to be hoisted
     ignoreDependencies: ['@astrojs/mdx', 'sharp', 'vite'],
