@@ -119,6 +119,7 @@ export type QueryOptions = {
 const securitySelectors = new Set([
   ':abandoned',
   ':confused',
+  ':cve',
   ':debug',
   ':deprecated',
   ':dynamic',
