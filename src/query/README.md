@@ -174,6 +174,10 @@ security data needs to be fetched prior to a `Query` instantiation.
 - `:confused` Matches packages affected by manifest confusion. This
   could be malicious or caused by an error when publishing the
   package.
+- `:cve(<id>)` Matches packages that have a CVE alert with the
+  specified CVE ID. The ID parameter is required and should be a valid
+  CVE identifier (e.g., `CVE-2023-1234`). This selector can be used to
+  find packages affected by specific known vulnerabilities.
 - `:debug` Matches packages that use debug, reflection and dynamic
   code execution features.
 - `:deprecated` Matches packages marked as deprecated. This could
