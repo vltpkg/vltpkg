@@ -202,7 +202,7 @@ t.test('list', async t => {
       values: { view: 'human' },
       options,
     } as LoadedConfig),
-    /Missing security archive/,
+    /Failed to parse :malware selector/,
     'should fail to run with no security archive',
   )
 
