@@ -1,8 +1,13 @@
 import { Cache } from '@vltpkg/cache'
 import { error } from '@vltpkg/error-cause'
+import { pathToFileURL } from 'node:url'
 import { gunzipSync } from 'node:zlib'
 
 export const __CODE_SPLIT_SCRIPT_NAME = import.meta.filename
+
+const isMain = (path?: string) =>
+  path === __CODE_SPLIT_SCRIPT_NAME ||
+  path === pathToFileURL(__CODE_SPLIT_SCRIPT_NAME).toString()
 
 const main = async (
   path: undefined | string,
@@ -152,8 +157,7 @@ const g = globalThis as typeof globalThis & {
   __VLT_INTERNAL_MAIN?: string
 }
 
-const file = g.__VLT_INTERNAL_MAIN ?? process.argv[1]
-if (file === __CODE_SPLIT_SCRIPT_NAME) {
+if (isMain(g.__VLT_INTERNAL_MAIN ?? process.argv[1])) {
   process.title = 'vlt-cache-unzip'
   // When compiled there can be other leading args supplied by Deno
   // so always use the last arg unless there are only two which means

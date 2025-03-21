@@ -1,5 +1,6 @@
 import { spawn } from 'node:child_process'
 import { __CODE_SPLIT_SCRIPT_NAME } from './unzip.ts'
+import { pathToFileURL } from 'node:url'
 
 const isDeno =
   (globalThis as typeof globalThis & { Deno?: any }).Deno != undefined
@@ -27,7 +28,9 @@ const handleBeforeExit = () => {
     // When compiled the script to be run is passed as an
     // environment variable and then routed by the main entry point
     if (process.env.__VLT_INTERNAL_COMPILED) {
-      env.__VLT_INTERNAL_MAIN = __CODE_SPLIT_SCRIPT_NAME
+      env.__VLT_INTERNAL_MAIN = pathToFileURL(
+        __CODE_SPLIT_SCRIPT_NAME,
+      ).toString()
       args.push(path)
     } else {
       // If we are running deno from source we need to add the
