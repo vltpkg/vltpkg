@@ -1,2 +1,2 @@
-import vlt from '@vltpkg/cli-sdk'
-await vlt()
+import { run } from '../bins.ts'
+await run()

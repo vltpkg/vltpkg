@@ -25,6 +25,7 @@ t.test('registering the beforeExit event', async t => {
         t.strictSame(opts, {
           detached: true,
           stdio: ['pipe', 'ignore', 'ignore'],
+          env: { ...process.env },
         })
         const written: string[] = []
         return {
@@ -32,6 +33,7 @@ t.test('registering the beforeExit event', async t => {
             write: (arg: string) => {
               written.push(arg)
             },
+            end: () => {},
           },
           unref: () => {
             unrefCalled = true
