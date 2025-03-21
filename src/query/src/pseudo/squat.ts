@@ -7,7 +7,11 @@ import {
   isTagNode,
 } from '../types.ts'
 import type { ParserState, PostcssNode } from '../types.ts'
-import { removeNode, removeQuotes } from './helpers.ts'
+import {
+  removeDanglingEdges,
+  removeNode,
+  removeQuotes,
+} from './helpers.ts'
 
 export type SquatKinds = '0' | '2' | 'critical' | 'medium' | undefined
 
@@ -89,6 +93,8 @@ export const squat = async (state: ParserState) => {
       removeNode(state, node)
     }
   }
+
+  removeDanglingEdges(state)
 
   return state
 }
