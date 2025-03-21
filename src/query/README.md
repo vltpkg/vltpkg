@@ -178,6 +178,9 @@ security data needs to be fetched prior to a `Query` instantiation.
   specified CVE ID. The ID parameter is required and should be a valid
   CVE identifier (e.g., `CVE-2023-1234`). This selector can be used to
   find packages affected by specific known vulnerabilities.
+- `:cwe(<id>)` Matches packages that have a CWE alert with the
+  specified CWE ID. The ID parameter is required and should be a valid
+  CWE identifier (e.g., `CWE-79`).
 - `:debug` Matches packages that use debug, reflection and dynamic
   code execution features.
 - `:deprecated` Matches packages marked as deprecated. This could
