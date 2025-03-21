@@ -97,7 +97,6 @@ const spawnCompile = ({
 
 export type Options = {
   outdir: string
-  source?: string
   quiet?: boolean
   bins?: readonly Bin[]
   arch?: string
@@ -106,7 +105,6 @@ export type Options = {
 
 export const compile = async ({
   outdir,
-  source,
   quiet,
   bins,
   arch = os.arch(),
@@ -114,14 +112,15 @@ export const compile = async ({
 }: Options) => {
   mkdirSync(outdir, { recursive: true })
 
-  if (!source) {
-    source = await bundle({
-      outdir: resolve(
-        tmpdir(),
-        `vlt-bundle-${Math.random().toString().slice(2, 10)}`,
-      ),
-    }).then(r => r.outdir)
-  }
+  const { outdir: source } = await bundle({
+    outdir: resolve(
+      tmpdir(),
+      `vlt-bundle-${Math.random().toString().slice(2, 10)}`,
+    ),
+    internalDefine: {
+      COMPILED: 'true',
+    },
+  })
 
   assert(source, 'source is required')
 
