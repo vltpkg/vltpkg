@@ -31,7 +31,7 @@ t.test('selects packages with an undesirable alert', async t => {
           joinDepIDTuple(['registry', '', 'e@1.0.0']),
           { alerts: [{ type: 'troll' }] },
         ],
-      ]) as SecurityArchiveLike,
+      ]) as unknown as SecurityArchiveLike,
       specOptions: {},
     }
     return state

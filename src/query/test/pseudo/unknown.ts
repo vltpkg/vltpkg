@@ -31,7 +31,7 @@ t.test('selects packages with an unknown alert', async t => {
           joinDepIDTuple(['registry', '', 'e@1.0.0']),
           { alerts: [{ type: 'newAuthor' }] },
         ],
-      ]) as SecurityArchiveLike,
+      ]) as unknown as SecurityArchiveLike,
       specOptions: {},
     }
     return state

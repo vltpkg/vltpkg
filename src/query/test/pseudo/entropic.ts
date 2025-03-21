@@ -33,7 +33,7 @@ t.test(
             joinDepIDTuple(['registry', '', 'e@1.0.0']),
             { alerts: [{ type: 'highEntropyStrings' }] },
           ],
-        ]) as SecurityArchiveLike,
+        ]) as unknown as SecurityArchiveLike,
         specOptions: {},
       }
       return state

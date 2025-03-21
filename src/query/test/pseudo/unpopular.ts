@@ -31,7 +31,7 @@ t.test('selects packages with an unpopular alert', async t => {
           joinDepIDTuple(['registry', '', 'e@1.0.0']),
           { alerts: [{ type: 'unpopularPackage' }] },
         ],
-      ]) as SecurityArchiveLike,
+      ]) as unknown as SecurityArchiveLike,
       specOptions: {},
     }
     return state
