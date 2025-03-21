@@ -15,7 +15,9 @@
     ],
     "exports": {
       "./package.json": "./package.json",
-      ".": "./src/index.ts"
+      ".": "./src/index.ts",
+      "./dashboard": "./src/dashboard.ts",
+      "./project-tools": "./src/project-tools.ts"
     }
   },
   "dependencies": {

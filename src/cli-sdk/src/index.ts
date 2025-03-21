@@ -6,8 +6,6 @@ import { Config } from './config/index.ts'
 import { outputCommand, stdout } from './output.ts'
 import type { Views } from './view.ts'
 
-export type { Views }
-
 export type CommandUsage = () => Jack
 
 /**
