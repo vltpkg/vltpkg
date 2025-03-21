@@ -1,0 +1,61 @@
+{/* This is intentionally inlined to avoid FOUC. */}
+<script is:inline>
+  const getCookiesAsCollection = function (rawCookie) {
+    const cookies = {}
+    rawCookie &&
+      rawCookie.split(';').forEach(function (cookie) {
+        const parts = cookie.match(/(.*?)=(.*)$/)
+        if (parts && parts.length) {
+          cookies[parts[1].trim()] = (parts[2] || '').trim()
+        }
+      })
+
+    return cookies
+  }
+
+  const getCookie = (name, rawCookie) => {
+    const cookies = getCookiesAsCollection(rawCookie)
+
+    if (cookies[name]) {
+      return cookies[name]
+    }
+
+    return null
+  }
+
+  const getThemePreference = () => {
+    const cookie =
+      document.cookie ?
+        getCookie('theme', document.cookie) || 'system+dark'
+      : 'system+dark'
+    const [userTheme, _] = cookie.split('+')
+    return userTheme
+  }
+
+  const applyTheme = theme => {
+    let resolvedTheme = theme
+
+    switch (theme) {
+      case 'system':
+        resolvedTheme =
+          window.matchMedia('(prefers-color-scheme: dark)').matches ?
+            'dark'
+          : 'light'
+        break
+      case 'dark':
+        resolvedTheme = 'dark'
+        break
+      case 'light':
+        resolvedTheme = 'light'
+        break
+    }
+
+    document.documentElement.setAttribute(
+      'data-theme',
+      resolvedTheme === 'dark' ? 'dark' : 'light',
+    )
+  }
+
+  const theme = getThemePreference()
+  applyTheme(theme)
+</script>
