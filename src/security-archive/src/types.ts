@@ -35,6 +35,7 @@ export interface SecurityArchiveLike {
 export type PackageAlertProps = {
   lastPublish: string
   cveId: `CVE-${string}`
+  cwes: { id: `CWE-${string}` }[]
 }
 
 /**
