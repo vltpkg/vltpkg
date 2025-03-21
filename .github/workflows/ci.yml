@@ -198,8 +198,21 @@ jobs:
         run: pnpm ${{ needs.detect-filter.outputs.related }} prepare
 
       - name: Run Tests
-        run: pnpm ${{ needs.detect-filter.outputs.dependent }} --no-bail --aggregate-output test
+        run: pnpm ${{ needs.detect-filter.outputs.dependent }} --filter="!smoke-test" --no-bail --aggregate-output test
+
+      - name: Needs Smoke Test
+        id: smoke-test
+        run: |
+          if [[ "${{ needs.detect-filter.outputs.matrix }}" == "full" ]]; then
+            echo "value=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          if pnpm ${{ needs.detect-filter.outputs.changed }} exec pwd | grep "smoke-test"; then
+            echo "value=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "value=false" >> "$GITHUB_OUTPUT"
 
       - name: Smoke Tests
-        if: needs.detect-filter.outputs.matrix == 'full'
+        if: steps.smoke-test.outputs.value == 'true'
         run: pnpm --filter smoke-test test
