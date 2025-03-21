@@ -2,7 +2,6 @@
   "name": "@vltpkg/gui",
   "description": "Look under the hood of a vlt install in HD",
   "version": "0.0.0-6",
-  "private": true,
   "repository": {
     "type": "git",
     "url": "git+https://github.com/vltpkg/vltpkg.git",
@@ -90,7 +89,9 @@
   "prettier": "../../.prettierrc.js",
   "type": "module",
   "exports": {
-    "./package.json": "./package.json",
-    ".": "./dist"
-  }
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist"
+  ]
 }
