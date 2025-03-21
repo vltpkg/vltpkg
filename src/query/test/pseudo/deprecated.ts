@@ -31,7 +31,7 @@ t.test('selects packages with a deprecated alert', async t => {
           joinDepIDTuple(['registry', '', 'e@1.0.0']),
           { alerts: [{ type: 'deprecated' }] },
         ],
-      ]) as SecurityArchiveLike,
+      ]) as unknown as SecurityArchiveLike,
       specOptions: {},
     }
     return state

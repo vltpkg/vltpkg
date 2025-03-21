@@ -133,6 +133,7 @@ const securitySelectors = new Set([
   ':native',
   ':network',
   ':obfuscated',
+  ':scanned',
   ':scripts',
   ':sev',
   ':severity',

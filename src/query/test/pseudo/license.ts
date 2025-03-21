@@ -45,7 +45,7 @@ t.test('selects packages with a specific license kind', async t => {
             alerts: [{ type: 'miscLicenseIssues' }],
           },
         ],
-      ]) as SecurityArchiveLike,
+      ]) as unknown as SecurityArchiveLike,
       specOptions: {},
     }
     return state

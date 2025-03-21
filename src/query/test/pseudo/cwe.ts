@@ -58,7 +58,7 @@ t.test('selects packages with a CWE alert', async t => {
             ],
           } as PackageReportData,
         ],
-      ]) as SecurityArchiveLike,
+      ]) as unknown as SecurityArchiveLike,
       specOptions: {},
     }
     return state
@@ -163,7 +163,7 @@ t.test('missing CWE ID', async t => {
       },
       cancellable: async () => {},
       walk: async i => i,
-      securityArchive: new Map(),
+      securityArchive: new Map() as unknown as SecurityArchiveLike,
       specOptions: {},
     }
     return state
