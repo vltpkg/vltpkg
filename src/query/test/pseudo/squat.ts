@@ -45,7 +45,7 @@ t.test('selects packages with a specific squat kind', async t => {
             alerts: [{ type: 'gptDidYouMean' }],
           },
         ],
-      ]) as SecurityArchiveLike,
+      ]) as unknown as SecurityArchiveLike,
       specOptions: {},
     }
     return state
