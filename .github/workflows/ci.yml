@@ -202,6 +202,7 @@ jobs:
 
       - name: Needs Smoke Test
         id: smoke-test
+        shell: bash
         run: |
           if [[ "${{ needs.detect-filter.outputs.matrix }}" == "full" ]]; then
             echo "value=true" >> "$GITHUB_OUTPUT"
