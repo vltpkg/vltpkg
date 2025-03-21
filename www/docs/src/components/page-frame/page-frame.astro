@@ -3,7 +3,6 @@ import config from 'virtual:starlight/user-config'
 import type { Props } from '@astrojs/starlight/props'
 
 import Footer from '@/components/footer/footer.tsx'
-import ThemeSelect from '@/components/theme-select/theme-select.tsx'
 import AppSidebar from '@/components/sidebar/sidebar.tsx'
 
 import Search from '@astrojs/starlight/components/Search.astro'
@@ -104,7 +103,5 @@ const shouldRenderSearch =
     </div>
   </div>
 
-  <Footer>
-    <ThemeSelect client:only="react" />
-  </Footer>
+  <Footer client:only="react" />
 </div>

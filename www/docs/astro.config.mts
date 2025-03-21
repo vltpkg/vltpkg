@@ -73,7 +73,7 @@ export default defineConfig({
           './src/components/two-column-layout/two-column-layout.astro',
         Footer: './src/components/footer/footer.astro',
         ThemeProvider:
-          './src/components/theme-select/theme-provider.astro',
+          './src/components/theme-provider/theme-provider.astro',
       },
       customCss: ['./src/styles/globals.css'],
       tableOfContents: {
