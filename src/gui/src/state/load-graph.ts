@@ -154,6 +154,17 @@ export const load = (transfered: TransferData): LoadResponse => {
     transfered.securityArchive,
   )
 
+  // validates that all nodes have a security archive entry
+  if (securityArchive) {
+    securityArchive.ok = true
+    for (const node of graph.nodes.values()) {
+      if (!securityArchive.has(node.id)) {
+        securityArchive.ok = false
+        break
+      }
+    }
+  }
+
   return {
     graph,
     specOptions,
