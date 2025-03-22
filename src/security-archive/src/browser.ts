@@ -38,6 +38,11 @@ export class SecurityArchive
   implements SecurityArchiveLike
 {
   /**
+   * Whether the security archive is valid.
+   */
+  ok = false
+
+  /**
    * Loads a security archive from a valid JSON dump.
    */
   static load(dump: unknown) {

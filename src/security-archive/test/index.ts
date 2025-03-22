@@ -205,14 +205,6 @@ ${JSON.stringify(englishDaysReport)}
     'should have removed the borked entry from the database',
   )
 
-  // check that the toJSON method returns undefined
-  // when the archive is in an invalid state (archive.ok=false)
-  t.strictSame(
-    archive.toJSON(),
-    undefined,
-    'should output undefined when the archive is in an invalid state',
-  )
-
   db.close()
 
   await t.test('extraneous package in API response', async t => {

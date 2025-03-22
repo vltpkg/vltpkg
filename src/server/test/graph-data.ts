@@ -183,6 +183,7 @@ t.test('graph data for depless vlt project', async t => {
       edges: {},
     },
     projectInfo: { tools: ['vlt'], vltInstalled: true },
+    securityArchive: { ok: false },
   })
 })
 

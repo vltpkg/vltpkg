@@ -45,7 +45,7 @@ t.test('selects packages with a specific severity kind', async t => {
             alerts: [{ type: 'cve' }],
           },
         ],
-      ]) as SecurityArchiveLike,
+      ]) as unknown as SecurityArchiveLike,
       specOptions: {},
     }
     return state

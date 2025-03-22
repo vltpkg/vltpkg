@@ -27,6 +27,7 @@ export interface SecurityArchiveLike {
   delete: (depId: DepID) => void
   has: (depId: DepID) => boolean
   clear: () => void
+  ok: boolean
 }
 
 /**

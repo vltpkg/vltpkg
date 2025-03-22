@@ -54,7 +54,7 @@ t.test('selects packages with a CVE alert', async t => {
             ],
           } as unknown as PackageReportData,
         ],
-      ]) as SecurityArchiveLike,
+      ]) as unknown as SecurityArchiveLike,
       specOptions: {},
     }
     return state
@@ -159,7 +159,7 @@ t.test('missing CVE ID', async t => {
       },
       cancellable: async () => {},
       walk: async i => i,
-      securityArchive: new Map(),
+      securityArchive: new Map() as unknown as SecurityArchiveLike,
       specOptions: {},
     }
     return state

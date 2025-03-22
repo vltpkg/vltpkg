@@ -373,8 +373,6 @@ export class SecurityArchive
    * Outputs the current in-memory cache as a JSON object.
    */
   toJSON() {
-    if (!this.ok) return undefined
-
     const obj: Record<DepID, PackageReportData> = {}
     for (const [key, value] of this.dump()) {
       obj[key] = value.value
