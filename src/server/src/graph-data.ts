@@ -64,7 +64,7 @@ const getGraphData = async (
     importers,
     lockfile: graph,
     projectInfo: getProjectData({ packageJson, scurry }, folder),
-    securityArchive: securityArchive.ok ? securityArchive : undefined,
+    securityArchive,
   }
 }
 
