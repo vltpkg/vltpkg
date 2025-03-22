@@ -10,9 +10,11 @@ export const printErr = (
   stderr: (...a: unknown[]) => void,
 ) => {
   if (!isErrorRoot(err)) {
-    // TODO: print _something_ here, but we're in weird broken territory
-    // don't just dump it and flood the terminal, though, maybe sniff for code
-    // message, stack, etc?
+    // generic error handling, any errors without a cause will stop here
+    const msg = (err as { message: string }).message
+    if (msg) {
+      stderr(`Error: ${msg}`)
+    }
     return
   }
   if (isErrorRoot(err) && print(err, usage, stderr)) return

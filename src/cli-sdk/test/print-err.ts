@@ -15,9 +15,15 @@ const usage = (() => ({
   usage: () => 'usage',
 })) as unknown as CommandUsage
 
-t.test('if not root error, print nothing', t => {
+t.test('if not an error, print nothing', t => {
   printErr(false, usage, stderr)
   t.strictSame(printed, [])
+  t.end()
+})
+
+t.test('print message for errors with no cause', t => {
+  printErr(new Error('foo bar'), usage, stderr)
+  t.strictSame(printed, [['Error: foo bar']])
   t.end()
 })
 
