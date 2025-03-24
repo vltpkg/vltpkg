@@ -1,4 +1,8 @@
 #!/bin/sh
 
-SCRIPT_DIR="$(cd "$(dirname "$0")" && cd "../../../" && pwd)"
+SCRIPT_DIR="$(cd "$(dirname "$0")/../../../" && pwd)"
+if [ ! -d "$SCRIPT_DIR/.build-bundle" ]; then
+  echo "Run 'pnpm run build:bundle' first."
+  exit 1
+fi
 NODE_OPTIONS="--enable-source-maps" node $SCRIPT_DIR/.build-bundle/vlr.js "$@"

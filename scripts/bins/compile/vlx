@@ -1,4 +1,8 @@
 #!/bin/sh
 
-SCRIPT_DIR="$(cd "$(dirname "$0")" && cd "../../../" && pwd)"
+SCRIPT_DIR="$(cd "$(dirname "$0")/../../../" && pwd)"
+if [ ! -d "$SCRIPT_DIR/.build-compile" ]; then
+  echo "Run 'pnpm run build:compile' first."
+  exit 1
+fi
 $SCRIPT_DIR/.build-compile/vlx "$@"
