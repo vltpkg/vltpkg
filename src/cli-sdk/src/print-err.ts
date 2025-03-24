@@ -3,29 +3,27 @@ import type { ErrorWithCauseObject } from '@vltpkg/error-cause'
 import type { CommandUsage } from './index.ts'
 import type { Spec } from '@vltpkg/spec'
 
-// returns true if error was printed nicely already
 export const printErr = (
   err: unknown,
   usage: CommandUsage,
   stderr: (...a: unknown[]) => void,
 ) => {
-  if (!isErrorRoot(err)) {
-    // generic error handling, any errors without a cause will stop here
-    const msg = (err as { message: string }).message
-    if (msg) {
-      stderr(`Error: ${msg}`)
-    }
-    return
+  if (isErrorRoot(err)) {
+    return print(err, usage, stderr)
   }
-  if (isErrorRoot(err) && print(err, usage, stderr)) return
-  stderr(err)
+  // We don't know exactly what this is but we need to print something to help
+  // us debug unknown unknown errors especially in the compiled/bundled
+  // versions. The word "Unknown" is a signal that this is different than the
+  // generic handled errors that are printed.
+  const msg = err instanceof Error ? err.message : ''
+  stderr(`Unknown Error${msg ? `: ${msg}` : ''}`)
 }
 
 const print = (
   err: ErrorWithCauseObject,
   usage: CommandUsage,
   stderr: (...a: unknown[]) => void,
-): boolean => {
+) => {
   switch (err.cause.code) {
     case 'EUSAGE': {
       stderr(usage().usage())
@@ -38,7 +36,7 @@ const print = (
           `  Valid options: ${err.cause.validOptions.join(', ')}`,
         )
       }
-      return true
+      return
     }
 
     case 'ERESOLVE': {
@@ -56,9 +54,16 @@ const print = (
       if (response) {
         stderr('Response:', response)
       }
-      return true
+      return
+    }
+
+    default: {
+      // We know it is one of our errors but the cause could be large so we
+      // don't dump the whole thing to the terminal. Codes should be added as
+      // cases above to specifically handle causes that can be really long.
+      const code = err.cause.code ? `${err.cause.code} ` : ''
+      stderr(`${code}Error: ${err.message}`)
+      return
     }
   }
-
-  return false
 }

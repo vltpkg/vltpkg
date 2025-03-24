@@ -1,6 +1,7 @@
 import t from 'tap'
 
 import { error } from '@vltpkg/error-cause'
+import type { Codes } from '@vltpkg/error-cause'
 import type { CommandUsage } from '../src/index.ts'
 import { printErr } from '../src/print-err.ts'
 
@@ -15,19 +16,19 @@ const usage = (() => ({
   usage: () => 'usage',
 })) as unknown as CommandUsage
 
-t.test('if not an error, print nothing', t => {
-  printErr(false, usage, stderr)
-  t.strictSame(printed, [])
+t.test('not an error', t => {
+  printErr({ something: 'this is not an error' }, usage, stderr)
+  t.strictSame(printed, [['Unknown Error']])
   t.end()
 })
 
-t.test('print message for errors with no cause', t => {
+t.test('error with no cause', t => {
   printErr(new Error('foo bar'), usage, stderr)
-  t.strictSame(printed, [['Error: foo bar']])
+  t.strictSame(printed, [['Unknown Error: foo bar']])
   t.end()
 })
 
-t.test('print usage if a usage error', t => {
+t.test('EUSAGE', t => {
   const er = error('bloopy doop', { code: 'EUSAGE' })
   printErr(er, usage, stderr)
   t.strictSame(printed, [['usage'], ['Error: bloopy doop']])
@@ -44,7 +45,7 @@ t.test('print usage if a usage error', t => {
   t.end()
 })
 
-t.test('print helpful info for ERESOLVE', t => {
+t.test('ERESOLVE', t => {
   const er = error('bloopy doop', { code: 'ERESOLVE' })
   printErr(er, usage, stderr)
   t.strictSame(printed, [['Resolve Error: bloopy doop']])
@@ -66,9 +67,21 @@ t.test('print helpful info for ERESOLVE', t => {
   t.end()
 })
 
-t.test('unknown error', t => {
-  const er = error('unknown', { found: 'wat' })
+t.test('error with an unknown code', t => {
+  const er = error('this is an error', {
+    found: 'wat',
+    code: 'ENOTACODEWEKNOWABOUT' as Codes,
+  })
   printErr(er, usage, stderr)
-  t.strictSame(printed, [[er]])
+  t.strictSame(printed, [
+    [`ENOTACODEWEKNOWABOUT Error: this is an error`],
+  ])
+  t.end()
+})
+
+t.test('error with a missing code', t => {
+  const er = error('this is an error', { found: 'wat' })
+  printErr(er, usage, stderr)
+  t.strictSame(printed, [[`Error: this is an error`]])
   t.end()
 })
