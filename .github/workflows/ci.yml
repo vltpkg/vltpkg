@@ -4,7 +4,10 @@ on:
   workflow_dispatch:
     inputs:
       filter:
-        description: 'A pnpm filter to run only a subset of tests. Leave blank to run all tests.'
+        description: 'An optional filter to run a subset of workspaces. This will be passed directly to pnpm --filter.'
+      full-matrix:
+        description: 'Whether to run the full matrix of environments for testing.'
+        type: boolean
   push:
     branches:
       - main
@@ -22,7 +25,7 @@ jobs:
       changed: ${{ steps.filters.outputs.changed }}
       dependent: ${{ steps.filters.outputs.dependent }}
       related: ${{ steps.filters.outputs.related }}
-      matrix: ${{ steps.filters.outputs.matrix }}
+      full-matrix: ${{ steps.filters.outputs.full-matrix }}
       git-ref: ${{ steps.filters.outputs.git-ref }}
     steps:
       - name: Checkout Code
@@ -39,28 +42,32 @@ jobs:
             echo "changed=--filter \"$filter\"" >> "$GITHUB_OUTPUT"
             echo "dependent=--filter \"...$filter\"" >> "$GITHUB_OUTPUT"
             echo "related=--filter \"...$filter...\"" >> "$GITHUB_OUTPUT"
-            echo "matrix=limited" >> "$GITHUB_OUTPUT"
+            echo "full-matrix=false" >> "$GITHUB_OUTPUT"
             echo "git-ref=${{ github.base_ref }}" >> "$GITHUB_OUTPUT"
             exit 0
           fi
 
-          # Dispatched workflows only run the filter that is passed in and the smaller matrix
-          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
-            filter="${{ inputs.filter }}"
-            if [[ -n "$filter" ]]; then              
-              echo "changed=--filter \"$filter\"" >> "$GITHUB_OUTPUT"
-              echo "dependent=--filter \"...$filter\"" >> "$GITHUB_OUTPUT"
-              echo "related=--filter \"...$filter...\"" >> "$GITHUB_OUTPUT"
-              echo "matrix=limited" >> "$GITHUB_OUTPUT"
-              exit 0
-            fi
+          # Use the passed in filter otherwise default to running everything
+          filter="${{ inputs.filter }}"
+          if [[ -n "$filter" ]]; then              
+            echo "changed=--filter \"$filter\"" >> "$GITHUB_OUTPUT"
+            echo "dependent=--filter \"...$filter\"" >> "$GITHUB_OUTPUT"
+            echo "related=--filter \"...$filter...\"" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=--recursive" >> "$GITHUB_OUTPUT"
+            echo "dependent=--recursive" >> "$GITHUB_OUTPUT"
+            echo "related=--recursive" >> "$GITHUB_OUTPUT"
           fi
 
-          # Default is the full matrix of all tests
-          echo "changed=--recursive" >> "$GITHUB_OUTPUT"
-          echo "dependent=--recursive" >> "$GITHUB_OUTPUT"
-          echo "related=--recursive" >> "$GITHUB_OUTPUT"
-          echo "matrix=full" >> "$GITHUB_OUTPUT"
+          # Run the full matrix is explicitly requested. Other workflow_dispatch events
+          # will not run the full matrix. Everything else will run the full matrix.
+          if [[ "${{ inputs.full-matrix }}" == "true" ]]; then
+            echo "full-matrix=true" >> "$GITHUB_OUTPUT"
+          elif [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            echo "full-matrix=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "full-matrix=true" >> "$GITHUB_OUTPUT"
+          fi
 
   lint:
     name: Lint
@@ -162,9 +169,9 @@ jobs:
             os: windows-latest
             shell: powershell
         exclude:
-          - platform: ${{ fromJSON(needs.detect-filter.outputs.matrix == 'limited' && '{"name":"macOS","os":"macos-latest","shell":"bash"}') }}
-          - platform: ${{ fromJSON(needs.detect-filter.outputs.matrix == 'limited' && '{"name":"macOS Intel","os":"macos-13","shell":"bash"}') }}
-          - platform: ${{ fromJSON(needs.detect-filter.outputs.matrix == 'limited' && '{"name":"Windows Powershell","os":"windows-latest","shell":"powershell"}') }}
+          - platform: ${{ fromJSON(needs.detect-filter.outputs.full-matrix == 'false' && '{"name":"macOS","os":"macos-latest","shell":"bash"}') }}
+          - platform: ${{ fromJSON(needs.detect-filter.outputs.full-matrix == 'false' && '{"name":"macOS Intel","os":"macos-13","shell":"bash"}') }}
+          - platform: ${{ fromJSON(needs.detect-filter.outputs.full-matrix == 'false' && '{"name":"Windows Powershell","os":"windows-latest","shell":"powershell"}') }}
       fail-fast: false
 
     steps:
@@ -204,7 +211,7 @@ jobs:
         id: smoke-test
         shell: bash
         run: |
-          if [[ "${{ needs.detect-filter.outputs.matrix }}" == "full" ]]; then
+          if [[ "${{ needs.detect-filter.outputs.full-matrix }}" == "true" ]]; then
             echo "value=true" >> "$GITHUB_OUTPUT"
             exit 0
           fi
