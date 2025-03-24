@@ -24,7 +24,10 @@ const handleBeforeExit = () => {
     if (!r.size) return
     const env = { ...process.env }
     const args = []
-    /* c8 ignore start */
+    // Deno on Windows does not support detached processes
+    // https://github.com/denoland/deno/issues/25867
+    // TODO: figure out something better to do here?
+    const detached = !(isDeno && process.platform === 'win32')
     // When compiled the script to be run is passed as an
     // environment variable and then routed by the main entry point
     if (process.env.__VLT_INTERNAL_COMPILED) {
@@ -42,15 +45,9 @@ const handleBeforeExit = () => {
           '--unstable-bare-node-builtins',
         )
       }
-      /* c8 ignore stop */
       args.push(__CODE_SPLIT_SCRIPT_NAME, path)
     }
     registered.delete(path)
-    // Deno on Windows does not support detached processes
-    // https://github.com/denoland/deno/issues/25867
-    // TODO: figure out something better to do here?
-    /* c8 ignore next */
-    const detached = !(isDeno && process.platform === 'win32')
     const proc = spawn(process.execPath, args, {
       detached,
       stdio: ['pipe', 'ignore', 'ignore'],
