@@ -1,6 +1,11 @@
+import { pathToFileURL } from 'node:url'
 import { rimraf } from 'rimraf'
 
 export const __CODE_SPLIT_SCRIPT_NAME = import.meta.filename
+
+const isMain = (path?: string) =>
+  path === __CODE_SPLIT_SCRIPT_NAME ||
+  path === pathToFileURL(__CODE_SPLIT_SCRIPT_NAME).toString()
 
 // This is run as a background process, and all the paths to
 // be removed written into stdin. We can't pass on argv, because
@@ -17,6 +22,10 @@ const main = () => {
   })
 }
 
-if (process.argv[1] === import.meta.filename) {
+const g = globalThis as typeof globalThis & {
+  __VLT_INTERNAL_MAIN?: string
+}
+
+if (isMain(g.__VLT_INTERNAL_MAIN ?? process.argv[1])) {
   main()
 }
