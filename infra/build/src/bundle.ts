@@ -172,8 +172,10 @@ const bundleEntryPoints = async (
     banner: {
       // Create globals for 3rd party code
       js: [
-        // alias globalThis to global for Deno compat
+        // alias globalThis to global for Deno compat and make Buffer a global
+        // https://docs.deno.com/runtime/reference/cli/unstable_flags/#--unstable-node-globals
         'var global = globalThis',
+        `import {Buffer} from "node:buffer"`,
         // Explicitly set all global timers to the Node.js timers
         // otherwise Deno might use its web timers which have a different signature.
         // https://docs.deno.com/api/web/~/setTimeout

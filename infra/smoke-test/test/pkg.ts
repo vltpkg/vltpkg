@@ -1,8 +1,8 @@
 import t from 'tap'
-import { runMatch } from './fixtures/run.ts'
+import { runMultiple } from './fixtures/run.ts'
 
 t.test('get', async t => {
-  const { stdout } = await runMatch(t, 'vlt', ['pkg', 'get'], {
+  const { stdout } = await runMultiple(t, ['pkg', 'get'], {
     packageJson: {
       name: 'hi',
       version: '1.0.0',
@@ -13,24 +13,18 @@ t.test('get', async t => {
 })
 
 t.test('get name', async t => {
-  const { stdout } = await runMatch(
-    t,
-    'vlt',
-    ['pkg', 'get', 'name'],
-    {
-      packageJson: {
-        name: 'hi',
-        version: '1.0.0',
-      },
+  const { stdout } = await runMultiple(t, ['pkg', 'get', 'name'], {
+    packageJson: {
+      name: 'hi',
+      version: '1.0.0',
     },
-  )
+  })
   t.equal(JSON.parse(stdout), 'hi')
 })
 
 t.test('get name version', async t => {
-  const { status } = await runMatch(
+  const { status } = await runMultiple(
     t,
-    'vlt',
     ['pkg', 'get', 'name', 'version'],
     {
       packageJson: {

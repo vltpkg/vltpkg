@@ -9,6 +9,7 @@
     "directory": "infra/smoke-test"
   },
   "dependencies": {
+    "@vltpkg/cli-sdk": "workspace:*",
     "@vltpkg/infra-build": "workspace:*"
   },
   "devDependencies": {

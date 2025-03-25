@@ -1,11 +1,37 @@
-import { join, resolve, dirname } from 'node:path'
+import { join, resolve } from 'node:path'
+import { realpathSync, rmSync } from 'node:fs'
 import { bundle, compile, BINS_DIR } from '@vltpkg/infra-build'
-import { rootCompile } from './root-compile.ts'
+import type { Bin } from '@vltpkg/infra-build'
 import { whichSync } from '@vltpkg/which'
+
+const Node = realpathSync(whichSync('node'))
+
+const Deno = realpathSync(whichSync('deno'))
+
+const Source = {
+  dir: BINS_DIR,
+  bin(bin: Bin) {
+    return join(this.dir, `${bin}.ts`)
+  },
+} as const
+
+const Bundle = {
+  dir: resolve(process.cwd(), '.build-bundle'),
+  bin(bin: Bin) {
+    return join(this.dir, `${bin}.js`)
+  },
+} as const
+
+const Compile = {
+  dir: resolve(process.cwd(), '.build-compile'),
+  bin(bin: Bin) {
+    return join(this.dir, bin)
+  },
+} as const
 
 // only bundle/compile the vlt binary since that is all we test
 // this makes the tests run faster
-const BINS = ['vlt'] as const
+export const Bins = ['vlt'] as const
 
 export type VariantType =
   | 'source'
@@ -13,19 +39,13 @@ export type VariantType =
   | 'bundle'
   | 'denoBundle'
   | 'compile'
-  | 'rootCompile'
-  | 'rootCompileNoScripts'
 
 export type Variant = {
-  type: VariantType
-  dir: string
-  command: string | ((opts: { bin: string }) => string)
-  path: string | (({ dir }: { dir: string }) => string)
-  args?: (opts: { dir: string; bin: string }) => string[]
+  spawn: (bin: Bin) => [string] | [string, string[]]
+  PATH?: string
   env?: NodeJS.ProcessEnv
-  setup?:
-    | ((opts: { dir: string }) => Promise<unknown>)
-    | ((opts: { dir: string }) => unknown)
+  setup?: () => Promise<unknown>
+  cleanup?: () => void
 }
 
 export const publishedVariant: VariantType = 'compile'
@@ -38,69 +58,37 @@ export const defaultVariants: VariantType[] = [
 
 export const Variants: Record<VariantType, Variant> = {
   source: {
-    type: 'source',
-    dir: BINS_DIR,
-    command: process.execPath,
-    path: dirname(process.execPath),
-    args: ({ dir, bin }) => [join(dir, `${bin}.ts`)],
+    spawn: bin => [Node, [Source.bin(bin)]],
     env: {
       NODE_OPTIONS: '--no-warnings --experimental-strip-types',
     },
   },
   denoSource: {
-    type: 'denoSource',
-    dir: BINS_DIR,
-    command: whichSync('deno'),
-    path: '',
-    args: ({ dir, bin }) => [
-      '-A',
-      '--unstable-node-globals',
-      '--unstable-bare-node-builtins',
-      join(dir, `${bin}.ts`),
+    spawn: bin => [
+      Deno,
+      [
+        '-A',
+        '--unstable-node-globals',
+        '--unstable-bare-node-builtins',
+        Source.bin(bin),
+      ],
     ],
   },
   bundle: {
-    type: 'bundle',
-    dir: resolve(process.cwd(), '.build-bundle'),
-    command: process.execPath,
-    path: dirname(process.execPath),
-    args: ({ dir, bin }) => [join(dir, `${bin}.js`)],
-    setup: ({ dir }) => bundle({ outdir: dir, bins: BINS }),
+    spawn: bin => [Node, [Bundle.bin(bin)]],
+    setup: () => bundle({ outdir: Bundle.dir, bins: Bins }),
+    cleanup: () =>
+      rmSync(Bundle.dir, { recursive: true, force: true }),
   },
   denoBundle: {
-    type: 'denoBundle',
-    // Uses the same bundle directory as the regular bundle
-    dir: resolve(process.cwd(), '.build-bundle'),
-    command: whichSync('deno'),
-    path: '',
-    args: ({ dir, bin }) => [
-      '-A',
-      '--unstable-node-globals',
-      '--unstable-bare-node-builtins',
-      join(dir, `${bin}.js`),
-    ],
+    spawn: bin => [Deno, ['-A', Bundle.bin(bin)]],
   },
   compile: {
-    type: 'compile',
-    dir: resolve(process.cwd(), '.build-compile'),
-    command: ({ bin }) => bin,
-    path: ({ dir }) => dir,
-    setup: ({ dir }) =>
-      compile({ outdir: dir, bins: BINS, quiet: true }),
-  },
-  rootCompile: {
-    type: 'rootCompile',
-    dir: resolve(process.cwd(), '.build-compile-root'),
-    command: ({ bin }) => bin,
-    path: ({ dir }) => join(dir, 'node_modules', '.bin'),
-    setup: ({ dir }) => rootCompile({ outdir: dir, bins: BINS }),
-  },
-  rootCompileNoScripts: {
-    type: 'rootCompileNoScripts',
-    dir: resolve(process.cwd(), '.build-compile-root-no-scripts'),
-    command: ({ bin }) => bin,
-    path: ({ dir }) => join(dir, 'node_modules', '.bin'),
-    setup: ({ dir }) =>
-      rootCompile({ outdir: dir, bins: BINS, noScripts: true }),
+    spawn: bin => [Compile.bin(bin)],
+    PATH: Compile.dir,
+    setup: () =>
+      compile({ outdir: Compile.dir, bins: Bins, quiet: true }),
+    cleanup: () =>
+      rmSync(Compile.dir, { recursive: true, force: true }),
   },
 }
