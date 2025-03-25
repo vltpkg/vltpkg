@@ -22,6 +22,7 @@ type StartGraphData = {
   updateGraph: Action['updateGraph']
   updateProjectInfo: Action['updateProjectInfo']
   updateQ: Action['updateQ']
+  updateSecurityArchive: Action['updateSecurityArchive']
   updateSpecOptions: Action['updateSpecOptions']
   stamp: State['stamp']
 }
@@ -31,6 +32,7 @@ const startGraphData = async ({
   updateGraph,
   updateProjectInfo,
   updateQ,
+  updateSecurityArchive,
   updateSpecOptions,
   stamp,
 }: StartGraphData) => {
@@ -46,6 +48,7 @@ const startGraphData = async ({
   updateProjectInfo(data.projectInfo)
   updateSpecOptions(specOptions)
   updateQ(q)
+  updateSecurityArchive(securityArchive)
 }
 
 export const Explorer = () => {
@@ -61,6 +64,9 @@ export const Explorer = () => {
     state => state.updateProjectInfo,
   )
   const updateQ = useGraphStore(state => state.updateQ)
+  const updateSecurityArchive = useGraphStore(
+    state => state.updateSecurityArchive,
+  )
   const updateSpecOptions = useGraphStore(
     state => state.updateSpecOptions,
   )
@@ -74,6 +80,7 @@ export const Explorer = () => {
       updateGraph,
       updateProjectInfo,
       updateQ,
+      updateSecurityArchive,
       updateSpecOptions,
       stamp,
     }).catch((err: unknown) => {
