@@ -1,10 +1,8 @@
 import t from 'tap'
 import postcssSelectorParser from 'postcss-selector-parser'
 import { joinDepIDTuple } from '@vltpkg/dep-id'
-import type {
-  SecurityArchiveLike,
-  PackageReportData,
-} from '@vltpkg/security-archive'
+import { asSecurityArchiveLike } from '@vltpkg/security-archive'
+import type { PackageReportData } from '@vltpkg/security-archive'
 import { getSimpleGraph } from '../fixtures/graph.ts'
 import type { ParserState } from '../../src/types.ts'
 import { cwe } from '../../src/pseudo/cwe.ts'
@@ -29,36 +27,38 @@ t.test('selects packages with a CWE alert', async t => {
       },
       cancellable: async () => {},
       walk: async i => i,
-      securityArchive: new Map([
-        [
-          joinDepIDTuple(['registry', '', 'e@1.0.0']),
-          {
-            id: 'e@1.0.0',
-            author: [],
-            size: 0,
-            type: 'npm',
-            name: 'e',
-            version: '1.0.0',
-            license: 'MIT',
-            alerts: [
-              {
-                key: '12314320948130',
-                type: 'cve',
-                severity: 'high',
-                category: 'security',
-                props: {
-                  lastPublish: '2023-01-01',
-                  cveId: 'CVE-2023-1234' as const,
-                  cwes: [
-                    { id: 'CWE-79' as const },
-                    { id: 'CWE-89' as const },
-                  ],
+      securityArchive: asSecurityArchiveLike(
+        new Map([
+          [
+            joinDepIDTuple(['registry', '', 'e@1.0.0']),
+            {
+              id: 'e@1.0.0',
+              author: [],
+              size: 0,
+              type: 'npm',
+              name: 'e',
+              version: '1.0.0',
+              license: 'MIT',
+              alerts: [
+                {
+                  key: '12314320948130',
+                  type: 'cve',
+                  severity: 'high',
+                  category: 'security',
+                  props: {
+                    lastPublish: '2023-01-01',
+                    cveId: 'CVE-2023-1234' as const,
+                    cwes: [
+                      { id: 'CWE-79' as const },
+                      { id: 'CWE-89' as const },
+                    ],
+                  },
                 },
-              },
-            ],
-          } as PackageReportData,
-        ],
-      ]) as unknown as SecurityArchiveLike,
+              ],
+            } as PackageReportData,
+          ],
+        ]),
+      ),
       specOptions: {},
     }
     return state
@@ -163,7 +163,7 @@ t.test('missing CWE ID', async t => {
       },
       cancellable: async () => {},
       walk: async i => i,
-      securityArchive: new Map() as unknown as SecurityArchiveLike,
+      securityArchive: asSecurityArchiveLike(new Map()),
       specOptions: {},
     }
     return state

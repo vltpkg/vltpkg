@@ -8,6 +8,7 @@ import {
 } from '../types.ts'
 import type { ParserState, PostcssNode } from '../types.ts'
 import {
+  assertSecurityArchive,
   removeDanglingEdges,
   removeNode,
   removeQuotes,
@@ -86,12 +87,7 @@ export const parseInternals = (
 }
 
 export const license = async (state: ParserState) => {
-  if (!state.securityArchive) {
-    throw new Error(
-      'Missing security archive while trying to parse ' +
-        'the :license security selector',
-    )
-  }
+  assertSecurityArchive(state.securityArchive, 'license')
 
   let internals
   try {

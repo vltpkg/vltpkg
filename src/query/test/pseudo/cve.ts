@@ -1,9 +1,9 @@
 import t from 'tap'
 import postcssSelectorParser from 'postcss-selector-parser'
 import { joinDepIDTuple } from '@vltpkg/dep-id'
-import type {
-  SecurityArchiveLike,
-  PackageReportData,
+import {
+  asPackageReportData,
+  asSecurityArchiveLike,
 } from '@vltpkg/security-archive'
 import { getSimpleGraph } from '../fixtures/graph.ts'
 import type { ParserState } from '../../src/types.ts'
@@ -29,32 +29,34 @@ t.test('selects packages with a CVE alert', async t => {
       },
       cancellable: async () => {},
       walk: async i => i,
-      securityArchive: new Map([
-        [
-          joinDepIDTuple(['registry', '', 'e@1.0.0']),
-          {
-            id: 'e@1.0.0',
-            author: [],
-            size: 0,
-            type: 'npm',
-            name: 'e',
-            version: '1.0.0',
-            license: 'MIT',
-            alerts: [
-              {
-                key: '12314320948130',
-                type: 'npm',
-                severity: 'high',
-                category: 'security',
-                props: {
-                  cveId: 'CVE-2023-1234',
-                  lastPublish: '2023-01-01',
+      securityArchive: asSecurityArchiveLike(
+        new Map([
+          [
+            joinDepIDTuple(['registry', '', 'e@1.0.0']),
+            asPackageReportData({
+              id: 'e@1.0.0',
+              author: [],
+              size: 0,
+              type: 'npm',
+              name: 'e',
+              version: '1.0.0',
+              license: 'MIT',
+              alerts: [
+                {
+                  key: '12314320948130',
+                  type: 'npm',
+                  severity: 'high',
+                  category: 'security',
+                  props: {
+                    cveId: 'CVE-2023-1234',
+                    lastPublish: '2023-01-01',
+                  },
                 },
-              },
-            ],
-          } as unknown as PackageReportData,
-        ],
-      ]) as unknown as SecurityArchiveLike,
+              ],
+            }),
+          ],
+        ]),
+      ),
       specOptions: {},
     }
     return state
@@ -159,7 +161,7 @@ t.test('missing CVE ID', async t => {
       },
       cancellable: async () => {},
       walk: async i => i,
-      securityArchive: new Map() as unknown as SecurityArchiveLike,
+      securityArchive: asSecurityArchiveLike(new Map()),
       specOptions: {},
     }
     return state

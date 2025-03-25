@@ -23,14 +23,13 @@ const testBrokenState = (): ParserState => {
     nodes: new Set(graph.nodes.values()),
     edges: new Set(graph.edges.values()),
   }
-  const current = { type: 'bork' } as unknown as PostcssNode
   const state: ParserState = {
     cancellable: async () => {},
     collect: {
       nodes: new Set(),
       edges: new Set(),
     },
-    current,
+    current: { type: 'bork' } as unknown as PostcssNode,
     initial: copyGraphSelectionState(initial),
     partial: copyGraphSelectionState(initial),
     walk,
@@ -140,20 +139,6 @@ t.test('cycle', async t => {
       `query > "${q}"`,
     )
   }
-})
-
-t.test('bad search argument', async t => {
-  const graph = getSimpleGraph()
-  const query = new Query({
-    graph,
-    securityArchive: undefined,
-    specOptions,
-  })
-  await t.rejects(
-    query.search(null as unknown as string),
-    /Query search argument needs to be a string/,
-    'should throw a type error',
-  )
 })
 
 t.test('bad selector type', async t => {

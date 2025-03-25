@@ -184,12 +184,6 @@ export class Query {
     query: string,
     signal?: AbortSignal,
   ): Promise<QueryResponse> {
-    if (typeof query !== 'string') {
-      throw new TypeError(
-        'Query search argument needs to be a string',
-      )
-    }
-
     if (!query) return { edges: [], nodes: [] }
 
     const cachedResult = this.#cache.get(query)
