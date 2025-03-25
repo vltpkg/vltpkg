@@ -7,37 +7,75 @@ import {
   Variants,
 } from './variants.ts'
 import type { Variant, VariantType } from './variants.ts'
-import { stripVTControlCharacters } from 'node:util'
 import { join } from 'node:path'
+import type { Bin } from '@vltpkg/infra-build'
 
-type FixtureDirContent = string | FixtureDir
-interface FixtureDir {
+export type FixtureDirContent = string | FixtureDir
+
+export interface FixtureDir {
   [entry: string]: FixtureDirContent
 }
 
-export type CommandOptions = {
-  project?: FixtureDir
-  testdir?: FixtureDir
-  packageJson?: Record<string, unknown>
+export type FixtureName =
+  | 'root'
+  | 'project'
+  | 'config'
+  | 'cache'
+  | 'data'
+  | 'state'
+  | 'runtime'
+
+export type Fixtures = Record<FixtureName, FixtureDir>
+
+export type SpawnCommandOptions = {
+  dirs: Record<FixtureName, string>
+  bin?: Bin
   env?: NodeJS.ProcessEnv
-  stripAnsi?: boolean
+  debug?: boolean
 }
+
+export type SpawnCommandResult = {
+  status: number | null
+  stdout: string
+  stderr: string
+  output: string
+}
+
+export type CommandOptions = {
+  bin?: Bin
+  packageJson?: boolean | Record<string, unknown>
+  env?: NodeJS.ProcessEnv
+  debug?: boolean
+} & Partial<Record<FixtureName, FixtureDir>>
 
 export type CommandResult = {
   status: number | null
   stdout: string
   stderr: string
   output: string
-  project: string
-  dir: string
+  normalizedOutput: string
+  dirs: Record<FixtureName, string>
 }
 
 export type Command = (
   t: Test,
-  bin?: string,
   args?: string[],
   options?: CommandOptions,
 ) => Promise<CommandResult>
+
+export type MultipleCommandOptions = CommandOptions & {
+  test?: (
+    t: Test,
+    result: CommandResult & {
+      variant: VariantType
+      run: (
+        args?: string[],
+        options?: Omit<SpawnCommandOptions, 'dirs'>,
+      ) => Promise<SpawnCommandResult>
+    },
+  ) => Promise<void>
+  variants?: VariantType[]
+}
 
 // Remove env vars that might cause trouble for tests since
 // we might be be using vlt or another tool to run these tests.
@@ -53,149 +91,169 @@ const ENV = Object.entries(process.env).reduce<NodeJS.Process['env']>(
   {},
 )
 
-export const runBase = async (
-  variant: Variant,
+const spawnCommand = async (
   t: Test,
-  bin = 'vlt',
+  variant: Variant,
   args: string[] = [],
-  {
-    env = {},
-    packageJson,
-    project,
-    testdir: testdirContents,
-    stripAnsi,
-  }: CommandOptions = {},
+  { dirs, env, debug, bin = 'vlt' }: SpawnCommandOptions,
 ) => {
-  const testdir = t.testdir({
-    home: {},
-    cache: {},
-    data: {},
-    state: {},
-    runtime: {},
-    project: {
-      ...(packageJson ?
-        { 'package.json': JSON.stringify(packageJson) }
-      : {}),
-      ...project,
-    },
-    ...testdirContents,
-  })
-  const { dir } = variant
-
-  const command =
-    typeof variant.command === 'function' ?
-      variant.command({ bin })
-    : variant.command
-
-  const commandArgs =
-    variant.args ? [...variant.args({ dir, bin }), ...args] : args
-
-  return new Promise<CommandResult>((res, rej) => {
-    const proc = spawn(command, commandArgs, {
-      cwd: join(testdir, 'project'),
+  const [command, commandArgs = []] = variant.spawn(bin)
+  return new Promise<SpawnCommandResult>((res, rej) => {
+    const proc = spawn(command, [...commandArgs, ...args], {
+      cwd: dirs.project,
       shell: true,
       windowsHide: true,
       env: {
         ...ENV,
         ...variant.env,
         ...env,
-        // Config will always stop at $HOME so override that one
-        // level about the testdir so we dont go back up to our
-        // own monorepo root
-        HOME: testdir,
-        USERPROFILE: testdir,
-        // Make sure tests are isolated
-        XDG_CONFIG_HOME: join(testdir, 'home'),
-        XDG_CACHE_HOME: join(testdir, 'cache'),
-        XDG_DATA_HOME: join(testdir, 'data'),
-        XDG_STATE_HOME: join(testdir, 'state'),
-        XDG_RUNTIME_DIR: join(testdir, 'runtime'),
+        // We stop walking to find config at $HOME so set that to the root
+        // testdir that was created to ensure we never walk up to our own
+        // project root.
+        HOME: dirs.root,
+        USERPROFILE: dirs.root,
+        // Make sure tests are isolated by locking all XDG dirs to the testdir
+        XDG_CONFIG_HOME: dirs.config,
+        XDG_CACHE_HOME: dirs.cache,
+        XDG_DATA_HOME: dirs.data,
+        XDG_STATE_HOME: dirs.state,
+        XDG_RUNTIME_DIR: dirs.runtime,
         // PATH is only set to what the variant needs
-        PATH:
-          typeof variant.path === 'function' ?
-            variant.path({ dir })
-          : variant.path,
+        PATH: variant.PATH ?? '',
       },
     })
     let stdout = ''
     let stderr = ''
     let output = ''
     proc.stdout.on('data', d => {
-      stdout += `${d.toString()}`
-      output += `${d.toString()}`
+      const chunk = `${d.toString()}`
+      stdout += chunk
+      output += chunk
+      if (debug) t.comment(chunk)
     })
     proc.stderr.on('data', d => {
-      stderr += `${d.toString()}`
-      output += `${d.toString()}`
+      const chunk = `${d.toString()}`
+      stderr += chunk
+      output += chunk
+      if (debug) t.comment(chunk)
     })
     proc
       .on('close', code => {
-        const clean = (s: string) => {
-          const cleaned = s
-            .replaceAll(/\\+/g, '\\')
-            .replaceAll(t.testdirName, '{{DIR_NAME}}')
-            .trim()
-          return stripAnsi ?
-              stripVTControlCharacters(cleaned)
-            : cleaned
-        }
         res({
-          stdout: clean(stdout),
-          stderr: clean(stderr),
-          output: clean(output),
+          stdout: stdout.trim(),
+          stderr: stderr.trim(),
+          output: output.trim(),
           status: code,
-          dir: testdir,
-          project: join(testdir, 'project'),
         })
       })
       .on('error', err => rej(err))
   })
 }
 
-export const runVariant: Record<
-  Exclude<VariantType, 'rootCompile' | 'rootCompileNoScripts'>,
-  Command
-> = {
-  source: (...args) => runBase(Variants.source, ...args),
-  denoSource: (...args) => runBase(Variants.denoSource, ...args),
-  bundle: (...args) => runBase(Variants.bundle, ...args),
-  denoBundle: (...args) => runBase(Variants.denoBundle, ...args),
-  compile: (...args) => runBase(Variants.compile, ...args),
+export const runVariant = async (
+  variant: Variant,
+  t: Test,
+  args?: string[],
+  { packageJson = true, ...options }: CommandOptions = {},
+): Promise<CommandResult> => {
+  const cwd = t.testdir({
+    project: {
+      ...(packageJson ?
+        {
+          'package.json': JSON.stringify(
+            packageJson === true ? { name: t.fullname } : packageJson,
+            null,
+            2,
+          ),
+        }
+      : undefined),
+      ...options.project,
+    },
+    config: { ...options.config },
+    cache: { ...options.cache },
+    data: { ...options.data },
+    state: { ...options.state },
+    runtime: { ...options.runtime },
+    ...options.root,
+  } satisfies Omit<Fixtures, 'root'>)
+
+  const dirs: Record<FixtureName, string> = {
+    root: cwd,
+    project: join(cwd, 'project'),
+    config: join(cwd, 'config'),
+    cache: join(cwd, 'cache'),
+    data: join(cwd, 'data'),
+    state: join(cwd, 'state'),
+    runtime: join(cwd, 'runtime'),
+  }
+
+  const result = await spawnCommand(t, variant, args, {
+    dirs,
+    ...options,
+  })
+
+  return {
+    ...result,
+    dirs,
+    // `normalizedOutput` is used by t.strictSame to ensure variants produce
+    // the same output, so we need to normalize the dir names.
+    normalizedOutput: result.output.replaceAll(
+      t.testdirName,
+      '{{DIR_NAME}}',
+    ),
+  }
 }
 
-// The default run command will use whatever is configured as
-// the published variant
-export const run: Command = (...args) =>
-  runBase(Variants[publishedVariant], ...args)
+// Export all variants as individual commands
+export const source: Command = (...args) =>
+  runVariant(Variants.source, ...args)
 
-export const runMatch = async (
+export const denoSource: Command = (...args) =>
+  runVariant(Variants.denoSource, ...args)
+
+export const bundle: Command = (...args) =>
+  runVariant(Variants.bundle, ...args)
+
+export const denoBundle: Command = (...args) =>
+  runVariant(Variants.denoBundle, ...args)
+
+export const compile: Command = (...args) =>
+  runVariant(Variants.compile, ...args)
+
+// And export whatever is the currently published variant
+export const runPublished: Command = (...args) =>
+  runVariant(Variants[publishedVariant], ...args)
+
+export const runMultiple = async (
   t: Test,
-  bin: string,
   args?: string[],
   {
     test,
     variants = defaultVariants,
     ...options
-  }: CommandOptions & {
-    variants?: VariantType[]
-    test?: (
-      t: Test,
-      result: CommandResult & { variant: VariantType },
-    ) => Promise<void>
-  } = {},
+  }: MultipleCommandOptions = {},
 ) => {
   const ranVariants: [VariantType, CommandResult][] = []
 
   for (const variant of variants) {
     await t.test(variant, async t => {
-      const result = await runBase(
+      const result = await runVariant(
         Variants[variant],
         t,
-        bin,
         args,
         options,
       )
-      await test?.(t, { ...result, variant })
+      await test?.(t, {
+        ...result,
+        variant,
+        // allow tests to run followup commands for each variant
+        run: (args, runOptions) =>
+          spawnCommand(t, Variants[variant], args, {
+            dirs: result.dirs,
+            ...options,
+            ...runOptions,
+          }),
+      })
       ranVariants.push([variant, result])
     })
   }
@@ -204,25 +262,31 @@ export const runMatch = async (
 
   // treat published variant as the default result for other tests
   // if it exists, otherwise just the first one
-  const defaultResult = (ranVariants.find(
-    ([k]) => k === publishedVariant,
-  ) ?? ranVariants[0])?.[1]
-  assert(defaultResult, 'no default variant')
+  const defaultResult =
+    ranVariants.find(([v]) => v === publishedVariant) ??
+    ranVariants[0]
+
+  assert(defaultResult, 'no default result')
 
   // all commands should return the same output. this could get tricky
   // when testing commands that should error since stack traces, etc
   // will be different. if we want to test those in the future we can
   // make this check optional
-  for (const [variant, res] of ranVariants) {
-    t.strictSame(
-      { status: res.status, output: res.output },
-      { status: defaultResult.status, output: defaultResult.output },
-      `output for ${variant} matches default`,
+  for (const [variant, result] of ranVariants) {
+    t.equal(
+      result.status,
+      defaultResult[1].status,
+      `status for ${variant} matches ${defaultResult[0]}`,
+    )
+    t.equal(
+      result.normalizedOutput,
+      defaultResult[1].normalizedOutput,
+      `normalized output for ${variant} matches ${defaultResult[0]}`,
     )
   }
 
   return {
-    ...defaultResult,
+    ...defaultResult[1],
     variants: Object.fromEntries(ranVariants),
   }
 }
