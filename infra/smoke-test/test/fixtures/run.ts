@@ -9,6 +9,7 @@ import {
 import type { Variant, VariantType } from './variants.ts'
 import { join } from 'node:path'
 import type { Bin } from '@vltpkg/infra-build'
+import { rmSync } from 'node:fs'
 
 export type FixtureDirContent = string | FixtureDir
 
@@ -186,6 +187,17 @@ export const runVariant = async (
     state: join(cwd, 'state'),
     runtime: join(cwd, 'runtime'),
   }
+
+  // This should not be necessary but the smoke-tests can be flaky with EBUSY or
+  // ENOTEMPTY errors when tap does its cleanup. I don't _think_ this points to
+  // any real bug in the vlt CLI so this explicit teardown function is a way to
+  // help with the cleanup to make it less flaky.
+  t.teardown(() => {
+    for (const [key, dir] of Object.entries(dirs)) {
+      if (key === 'root') continue
+      rmSync(dir, { force: true, recursive: true })
+    }
+  })
 
   const result = await spawnCommand(t, variant, args, {
     dirs,
