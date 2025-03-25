@@ -23,7 +23,7 @@
     "@vltpkg/package-json": "workspace:*",
     "@vltpkg/promise-spawn": "workspace:*",
     "@vltpkg/types": "workspace:*",
-    "foreground-child": "^3.2.0",
+    "foreground-child": "^3.3.1",
     "walk-up-path": "catalog:"
   },
   "devDependencies": {
