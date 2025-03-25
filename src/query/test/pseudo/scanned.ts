@@ -1,10 +1,8 @@
 import t from 'tap'
 import postcssSelectorParser from 'postcss-selector-parser'
 import { joinDepIDTuple } from '@vltpkg/dep-id'
-import type {
-  SecurityArchiveLike,
-  PackageReportData,
-} from '@vltpkg/security-archive'
+import { asSecurityArchiveLike } from '@vltpkg/security-archive'
+import type { PackageReportData } from '@vltpkg/security-archive'
 import { scanned } from '../../src/pseudo/scanned.ts'
 import { getSimpleGraph } from '../fixtures/graph.ts'
 import type { ParserState } from '../../src/types.ts'
@@ -15,25 +13,27 @@ t.test('scanned selector', async t => {
     const ast = postcssSelectorParser().astSync(':scanned')
     const current = ast.first.first
     const testId = joinDepIDTuple(['registry', '', 'e@1.0.0'])
-    const securityArchive = new Map<string, PackageReportData>(
-      hasSecurityData ?
-        [
+    const securityArchive = asSecurityArchiveLike(
+      new Map<string, PackageReportData>(
+        hasSecurityData ?
           [
-            testId,
-            {
-              id: 'e@1.0.0',
-              author: [],
-              size: 0,
-              type: 'npm',
-              name: 'e',
-              version: '1.0.0',
-              license: 'MIT',
-              alerts: [],
-            },
-          ],
-        ]
-      : [],
-    ) as unknown as SecurityArchiveLike
+            [
+              testId,
+              {
+                id: 'e@1.0.0',
+                author: [],
+                size: 0,
+                type: 'npm',
+                name: 'e',
+                version: '1.0.0',
+                license: 'MIT',
+                alerts: [],
+              },
+            ],
+          ]
+        : [],
+      ),
+    )
     securityArchive.ok = hasSecurityData
     const state: ParserState = {
       current,

@@ -1,6 +1,6 @@
 import t from 'tap'
 import postcssSelectorParser from 'postcss-selector-parser'
-import type { SecurityArchiveLike } from '@vltpkg/security-archive'
+import { asSecurityArchiveLike } from '@vltpkg/security-archive'
 import {
   createSecuritySelectorFilter,
   removeDanglingEdges,
@@ -134,12 +134,14 @@ t.test('selects packages with an unmaintained alert', async t => {
       },
       cancellable: async () => {},
       walk: async i => i,
-      securityArchive: new Map([
-        [
-          joinDepIDTuple(['registry', '', 'e@1.0.0']),
-          { alerts: [{ type: 'unmaintained' }] },
-        ],
-      ]) as unknown as SecurityArchiveLike,
+      securityArchive: asSecurityArchiveLike(
+        new Map([
+          [
+            joinDepIDTuple(['registry', '', 'e@1.0.0']),
+            { alerts: [{ type: 'unmaintained' }] },
+          ],
+        ]),
+      ),
       specOptions: {},
     }
     return state

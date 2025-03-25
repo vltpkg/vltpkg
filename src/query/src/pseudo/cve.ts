@@ -8,6 +8,7 @@ import {
 } from '../types.ts'
 import type { ParserState, PostcssNode } from '../types.ts'
 import {
+  assertSecurityArchive,
   removeDanglingEdges,
   removeNode,
   removeQuotes,
@@ -48,12 +49,7 @@ export const parseInternals = (
  * Filters out any node that does not have a CVE alert with the specified CVE ID.
  */
 export const cve = async (state: ParserState) => {
-  if (!state.securityArchive) {
-    throw new Error(
-      'Missing security archive while trying to parse ' +
-        'the :cve security selector',
-    )
-  }
+  assertSecurityArchive(state.securityArchive, 'cve')
 
   let internals
   try {
