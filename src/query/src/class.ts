@@ -1,3 +1,4 @@
+import { error } from '@vltpkg/error-cause'
 import { asClassNode } from './types.ts'
 import type { ParserFn, ParserState } from './types.ts'
 
@@ -128,7 +129,9 @@ export const classFn = async (state: ParserState) => {
       return state
     }
 
-    throw new Error(`Unsupported class: ${state.current.value}`)
+    throw error(`Unsupported class: ${state.current.value}`, {
+      found: state.current,
+    })
   }
   return comparatorFn(state)
 }

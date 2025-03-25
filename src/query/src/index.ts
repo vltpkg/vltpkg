@@ -65,8 +65,11 @@ export const walk = async (
       return state
     }
 
-    throw new Error(
+    throw error(
       `Missing parser for query node: ${state.current.type}`,
+      {
+        found: state.current,
+      },
     )
   }
   state = await parserFn(state)

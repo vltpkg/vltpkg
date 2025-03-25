@@ -413,9 +413,9 @@ export const pseudo = async (state: ParserState) => {
       return state
     }
 
-    throw new Error(
-      `Unsupported pseudo-class: ${state.current.value}`,
-    )
+    throw error(`Unsupported pseudo-class: ${state.current.value}`, {
+      found: state.current,
+    })
   }
   return parserFn(state)
 }

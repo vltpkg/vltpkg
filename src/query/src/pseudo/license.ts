@@ -87,7 +87,7 @@ export const parseInternals = (
 }
 
 export const license = async (state: ParserState) => {
-  assertSecurityArchive(state.securityArchive, 'license')
+  assertSecurityArchive(state, 'license')
 
   let internals
   try {

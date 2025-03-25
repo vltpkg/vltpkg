@@ -1,5 +1,6 @@
 import type { NodeLike } from '@vltpkg/graph'
 import type { ParserState } from '../types.js'
+import { error } from '@vltpkg/error-cause'
 
 /**
  * Removes a node and its incoming edges from the results.
@@ -32,12 +33,15 @@ export const removeQuotes = (value: string) =>
  * Asserts that the security archive is present.
  */
 export const assertSecurityArchive: (
-  securityArchive: ParserState['securityArchive'],
+  state: ParserState,
   name: string,
-) => asserts securityArchive = (securityArchive, name) => {
-  if (!securityArchive) {
-    throw new Error(
+) => asserts state is ParserState & {
+  securityArchive: NonNullable<ParserState['securityArchive']>
+} = (state, name) => {
+  if (!state.securityArchive) {
+    throw error(
       `Missing security archive while trying to parse the :${name} selector`,
+      { found: state },
     )
   }
 }
@@ -50,7 +54,7 @@ export const createSecuritySelectorFilter = (
   type: string,
 ) => {
   return async (state: ParserState) => {
-    assertSecurityArchive(state.securityArchive, name)
+    assertSecurityArchive(state, name)
 
     for (const node of state.partial.nodes) {
       const report = state.securityArchive.get(node.id)

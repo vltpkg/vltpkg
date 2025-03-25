@@ -67,7 +67,7 @@ export const parseInternals = (
 }
 
 export const squat = async (state: ParserState) => {
-  assertSecurityArchive(state.securityArchive, 'squat')
+  assertSecurityArchive(state, 'squat')
 
   let internals
   try {

@@ -1,6 +1,7 @@
 import type { EdgeLike, NodeLike } from '@vltpkg/graph'
 import { asCombinatorNode } from './types.ts'
 import type { ParserState, ParserFn } from './types.ts'
+import { error } from '@vltpkg/error-cause'
 
 /**
  * Returns a new set of nodes, containing all direct dependencies
@@ -123,7 +124,9 @@ export const combinator = async (state: ParserState) => {
       return state
     }
 
-    throw new Error(`Unsupported combinator: ${state.current.value}`)
+    throw error(`Unsupported combinator: ${state.current.value}`, {
+      found: state.current,
+    })
   }
   return parserFn(state)
 }
