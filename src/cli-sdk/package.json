@@ -43,7 +43,7 @@
     "@vltpkg/xdg": "workspace:*",
     "ansi-to-pre": "^1.0.5",
     "chalk": "catalog:",
-    "ink": "^5.1.0",
+    "ink": "^5.2.0",
     "ink-spinner": "^5.0.0",
     "jackspeak": "^4.0.3",
     "package-json-from-dist": "catalog:",
