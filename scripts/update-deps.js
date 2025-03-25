@@ -37,7 +37,7 @@ const parseOptions = () => {
 
   const options = {
     ...npmCheckUpdatesOptions,
-    root: includeWorkspaceRoot,
+    root: includeWorkspaceRoot ?? !filter,
     workspaces: true,
   }
 
