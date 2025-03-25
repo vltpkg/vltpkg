@@ -9,11 +9,6 @@ t.test('help', async t => {
 })
 
 t.test('install a package', async t => {
-  if (process.platform === 'win32') {
-    // In CI Windows fails with 'EBUSY: resource busy or locked' when cleaning up
-    t.comment('skipping on windows')
-    return
-  }
   const { status } = await runMultiple(t, ['install', 'eslint'], {
     test: async (t, { dirs }) => {
       const lock = JSON.parse(
