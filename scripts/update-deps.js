@@ -17,7 +17,7 @@ import { fileURLToPath } from 'node:url'
 const parseOptions = () => {
   const {
     'include-workspace-root': includeWorkspaceRoot,
-    filter,
+    'workspace-filter': filter,
     ...npmCheckUpdatesOptions
   } = parseArgs({
     // Not strict because extra args are passed to npm-check-updates
@@ -27,7 +27,7 @@ const parseOptions = () => {
       'include-workspace-root': {
         type: 'boolean',
       },
-      filter: {
+      'workspace-filter': {
         short: 'F',
         type: 'string',
         multiple: true,
