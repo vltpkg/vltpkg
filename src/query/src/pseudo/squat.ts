@@ -8,6 +8,7 @@ import {
 } from '../types.ts'
 import type { ParserState, PostcssNode } from '../types.ts'
 import {
+  assertSecurityArchive,
   removeDanglingEdges,
   removeNode,
   removeQuotes,
@@ -66,12 +67,7 @@ export const parseInternals = (
 }
 
 export const squat = async (state: ParserState) => {
-  if (!state.securityArchive) {
-    throw new Error(
-      'Missing security archive while trying to parse ' +
-        'the :squat security selector',
-    )
-  }
+  assertSecurityArchive(state.securityArchive, 'squat')
 
   let internals
   try {

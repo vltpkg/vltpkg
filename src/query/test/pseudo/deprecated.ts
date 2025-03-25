@@ -1,7 +1,7 @@
 import t from 'tap'
 import postcssSelectorParser from 'postcss-selector-parser'
 import { joinDepIDTuple } from '@vltpkg/dep-id'
-import type { SecurityArchiveLike } from '@vltpkg/security-archive'
+import { asSecurityArchiveLike } from '@vltpkg/security-archive'
 import { getSimpleGraph } from '../fixtures/graph.ts'
 import type { ParserState } from '../../src/types.ts'
 import { deprecated } from '../../src/pseudo/deprecated.ts'
@@ -26,12 +26,14 @@ t.test('selects packages with a deprecated alert', async t => {
       },
       cancellable: async () => {},
       walk: async i => i,
-      securityArchive: new Map([
-        [
-          joinDepIDTuple(['registry', '', 'e@1.0.0']),
-          { alerts: [{ type: 'deprecated' }] },
-        ],
-      ]) as unknown as SecurityArchiveLike,
+      securityArchive: asSecurityArchiveLike(
+        new Map([
+          [
+            joinDepIDTuple(['registry', '', 'e@1.0.0']),
+            { alerts: [{ type: 'deprecated' }] },
+          ],
+        ]),
+      ),
       specOptions: {},
     }
     return state

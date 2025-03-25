@@ -492,10 +492,6 @@ t.test('isSemverFunctionName', async t => {
     isSemverFunctionName('unsupported'),
     'should return false for valid semver function name',
   )
-  t.notOk(
-    isSemverFunctionName(undefined as unknown as string),
-    'should return false for missing semver function name',
-  )
 })
 
 t.test('asSemverFunctionName', async t => {

@@ -29,6 +29,20 @@ export const removeQuotes = (value: string) =>
   value.replace(/^"(.*?)"$/, '$1')
 
 /**
+ * Asserts that the security archive is present.
+ */
+export const assertSecurityArchive: (
+  securityArchive: ParserState['securityArchive'],
+  name: string,
+) => asserts securityArchive = (securityArchive, name) => {
+  if (!securityArchive) {
+    throw new Error(
+      `Missing security archive while trying to parse the :${name} selector`,
+    )
+  }
+}
+
+/**
  * Reusable security selector alert filter.
  */
 export const createSecuritySelectorFilter = (
@@ -36,11 +50,7 @@ export const createSecuritySelectorFilter = (
   type: string,
 ) => {
   return async (state: ParserState) => {
-    if (!state.securityArchive) {
-      throw new Error(
-        `Missing security archive while trying to parse the :${name} security selector`,
-      )
-    }
+    assertSecurityArchive(state.securityArchive, name)
 
     for (const node of state.partial.nodes) {
       const report = state.securityArchive.get(node.id)
