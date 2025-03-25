@@ -293,14 +293,5 @@ export const bundle = async ({
     { recursive: true },
   )
 
-  // yoga.wasm is loaded at runtime by `ink` so we need to copy
-  // that file to the build directory
-  cpSync(
-    createRequire(
-      createRequire(join(CLI, 'node_modules')).resolve('ink'),
-    ).resolve('yoga-wasm-web/dist/yoga.wasm'),
-    join(outdir, 'yoga.wasm'),
-  )
-
   return { outdir }
 }
