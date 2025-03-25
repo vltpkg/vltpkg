@@ -1,0 +1,601 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`SelectedItem render connection lines 1`] = `
+
+<div>
+  <div class="relative">
+    <gui-card classname="relative my-4 border-muted">
+      <div
+        class="flex w-full justify-between gap-4 p-6"
+        style="opacity: 0;"
+      >
+        <div class="flex gap-4">
+          <gui-avatar classname="size-24">
+            <gui-avatar-fallback classname="flex h-full w-full items-center justify-center rounded-md border-[1px]">
+              <div class="to:to-neutral-400 h-full w-full rounded-md bg-gradient-to-t from-neutral-100 dark:from-neutral-500 dark:to-neutral-800">
+              </div>
+            </gui-avatar-fallback>
+          </gui-avatar>
+          <div class="flex h-full max-w-[250px] flex-col justify-between">
+            <div class="flex flex-col gap-0.5">
+              <div class="flex items-center gap-2">
+                <gui-tooltip-provider>
+                  <gui-tooltip>
+                    <gui-tooltip-trigger classname="cursor-default truncate align-baseline text-lg font-medium">
+                      item
+                      <gui-inline-code
+                        variant="monoGhost"
+                        classname="text-sm"
+                      >
+                        1.0.0
+                      </gui-inline-code>
+                    </gui-tooltip-trigger>
+                    <gui-tooltip-content classname="text-baseline text-sm font-medium">
+                      item
+                      <span class="font-normal text-muted-foreground">
+                        1.0.0
+                      </span>
+                    </gui-tooltip-content>
+                  </gui-tooltip>
+                </gui-tooltip-provider>
+              </div>
+            </div>
+            <div class="flex items-center gap-2">
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="w-full">
+        <gui-tabs value="overview">
+          <gui-tabs-list
+            variant="ghost"
+            classname="w-full gap-2 px-6"
+          >
+            <gui-tabs-trigger
+              variant="ghost"
+              value="overview"
+              classname="w-fit px-2"
+            >
+              Overview
+            </gui-tabs-trigger>
+            <gui-tabs-trigger
+              variant="ghost"
+              value="package.json"
+              disabled="true"
+              classname="w-fit px-2"
+            >
+              Manifest
+            </gui-tabs-trigger>
+          </gui-tabs-list>
+          <gui-tabs-content value="overview">
+            <div class="flex h-64 w-full items-center justify-center px-6 py-4">
+              <div class="flex flex-col items-center justify-center gap-3 text-center">
+                <div class="relative flex size-32 items-center justify-center rounded-full bg-secondary/60">
+                  <gui-rectangle-horizontal-icon
+                    classname="absolute z-[2] mt-3 size-9 -translate-x-4 -rotate-[calc(90deg+30deg)] fill-secondary text-muted-foreground/50"
+                    strokewidth="1.25"
+                  >
+                  </gui-rectangle-horizontal-icon>
+                  <gui-file-text-icon
+                    classname="absolute z-[3] size-14 fill-secondary text-neutral-500"
+                    strokewidth="1"
+                  >
+                  </gui-file-text-icon>
+                  <gui-rectangle-horizontal-icon
+                    classname="absolute z-[2] mt-3 size-9 translate-x-4 rotate-[calc(90deg+30deg)] fill-secondary text-muted-foreground/50"
+                    strokewidth="1.25"
+                  >
+                  </gui-rectangle-horizontal-icon>
+                </div>
+                <p class="w-2/3 text-pretty text-sm text-muted-foreground">
+                  We couldn't find a description for this project
+                </p>
+              </div>
+            </div>
+          </gui-tabs-content>
+          <gui-tabs-content
+            value="package.json"
+            classname="h-full rounded-b-lg bg-white dark:bg-black"
+          >
+          </gui-tabs-content>
+          <gui-tabs-content
+            value="versions"
+            classname="px-6 py-4"
+          >
+            <section class="flex flex-col gap-4">
+            </section>
+          </gui-tabs-content>
+        </gui-tabs>
+      </div>
+    </gui-card>
+    <div class="absolute -right-4 top-[44px] w-4 rounded-tr-sm border-t border-muted">
+    </div>
+  </div>
+</div>
+
+`;
+
+exports[`SelectedItem render with custom registry 1`] = `
+
+<div>
+  <div class="relative">
+    <gui-card classname="relative my-4 border-muted">
+      <div
+        class="flex w-full justify-between gap-4 p-6"
+        style="opacity: 0;"
+      >
+        <div class="flex gap-4">
+          <gui-avatar classname="size-24">
+            <gui-avatar-fallback classname="flex h-full w-full items-center justify-center rounded-md border-[1px]">
+              <div class="to:to-neutral-400 h-full w-full rounded-md bg-gradient-to-t from-neutral-100 dark:from-neutral-500 dark:to-neutral-800">
+              </div>
+            </gui-avatar-fallback>
+          </gui-avatar>
+          <div class="flex h-full max-w-[250px] flex-col justify-between">
+            <div class="flex flex-col gap-0.5">
+              <div class="flex items-center gap-2">
+                <gui-tooltip-provider>
+                  <gui-tooltip>
+                    <gui-tooltip-trigger classname="cursor-default truncate align-baseline text-lg font-medium">
+                      item
+                      <gui-inline-code
+                        variant="monoGhost"
+                        classname="text-sm"
+                      >
+                        1.0.0
+                      </gui-inline-code>
+                    </gui-tooltip-trigger>
+                    <gui-tooltip-content classname="text-baseline text-sm font-medium">
+                      item
+                      <span class="font-normal text-muted-foreground">
+                        1.0.0
+                      </span>
+                    </gui-tooltip-content>
+                  </gui-tooltip>
+                </gui-tooltip-provider>
+              </div>
+              <gui-tooltip-provider>
+                <gui-tooltip>
+                  <gui-tooltip-trigger classname="flex h-full w-full cursor-default items-center justify-start overflow-hidden">
+                    <gui-inline-code
+                      variant="mono"
+                      classname="mx-0 truncate"
+                    >
+                      custom:item@1.0.0
+                    </gui-inline-code>
+                  </gui-tooltip-trigger>
+                  <gui-tooltip-content>
+                    https://example.com
+                  </gui-tooltip-content>
+                </gui-tooltip>
+              </gui-tooltip-provider>
+            </div>
+            <div class="flex items-center gap-2">
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="w-full">
+        <gui-tabs value="overview">
+          <gui-tabs-list
+            variant="ghost"
+            classname="w-full gap-2 px-6"
+          >
+            <gui-tabs-trigger
+              variant="ghost"
+              value="overview"
+              classname="w-fit px-2"
+            >
+              Overview
+            </gui-tabs-trigger>
+            <gui-tabs-trigger
+              variant="ghost"
+              value="package.json"
+              disabled="true"
+              classname="w-fit px-2"
+            >
+              Manifest
+            </gui-tabs-trigger>
+          </gui-tabs-list>
+          <gui-tabs-content value="overview">
+            <div class="flex h-64 w-full items-center justify-center px-6 py-4">
+              <div class="flex flex-col items-center justify-center gap-3 text-center">
+                <div class="relative flex size-32 items-center justify-center rounded-full bg-secondary/60">
+                  <gui-rectangle-horizontal-icon
+                    classname="absolute z-[2] mt-3 size-9 -translate-x-4 -rotate-[calc(90deg+30deg)] fill-secondary text-muted-foreground/50"
+                    strokewidth="1.25"
+                  >
+                  </gui-rectangle-horizontal-icon>
+                  <gui-file-text-icon
+                    classname="absolute z-[3] size-14 fill-secondary text-neutral-500"
+                    strokewidth="1"
+                  >
+                  </gui-file-text-icon>
+                  <gui-rectangle-horizontal-icon
+                    classname="absolute z-[2] mt-3 size-9 translate-x-4 rotate-[calc(90deg+30deg)] fill-secondary text-muted-foreground/50"
+                    strokewidth="1.25"
+                  >
+                  </gui-rectangle-horizontal-icon>
+                </div>
+                <p class="w-2/3 text-pretty text-sm text-muted-foreground">
+                  We couldn't find a description for this project
+                </p>
+              </div>
+            </div>
+          </gui-tabs-content>
+          <gui-tabs-content
+            value="package.json"
+            classname="h-full rounded-b-lg bg-white dark:bg-black"
+          >
+          </gui-tabs-content>
+          <gui-tabs-content
+            value="versions"
+            classname="px-6 py-4"
+          >
+            <section class="flex flex-col gap-4">
+            </section>
+          </gui-tabs-content>
+        </gui-tabs>
+      </div>
+    </gui-card>
+  </div>
+</div>
+
+`;
+
+exports[`SelectedItem render with default git host 1`] = `
+
+<div>
+  <div class="relative">
+    <gui-card classname="relative my-4 border-muted">
+      <div
+        class="flex w-full justify-between gap-4 p-6"
+        style="opacity: 0;"
+      >
+        <div class="flex gap-4">
+          <gui-avatar classname="size-24">
+            <gui-avatar-fallback classname="flex h-full w-full items-center justify-center rounded-md border-[1px]">
+              <div class="to:to-neutral-400 h-full w-full rounded-md bg-gradient-to-t from-neutral-100 dark:from-neutral-500 dark:to-neutral-800">
+              </div>
+            </gui-avatar-fallback>
+          </gui-avatar>
+          <div class="flex h-full max-w-[250px] flex-col justify-between">
+            <div class="flex flex-col gap-0.5">
+              <div class="flex items-center gap-2">
+                <gui-tooltip-provider>
+                  <gui-tooltip>
+                    <gui-tooltip-trigger classname="cursor-default truncate align-baseline text-lg font-medium">
+                      item
+                      <gui-inline-code
+                        variant="monoGhost"
+                        classname="text-sm"
+                      >
+                        1.0.0
+                      </gui-inline-code>
+                    </gui-tooltip-trigger>
+                    <gui-tooltip-content classname="text-baseline text-sm font-medium">
+                      item
+                      <span class="font-normal text-muted-foreground">
+                        1.0.0
+                      </span>
+                    </gui-tooltip-content>
+                  </gui-tooltip>
+                </gui-tooltip-provider>
+              </div>
+              <gui-inline-code classname="mx-0">
+                git:{ref}
+              </gui-inline-code>
+            </div>
+            <div class="flex items-center gap-2">
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="w-full">
+        <gui-tabs value="overview">
+          <gui-tabs-list
+            variant="ghost"
+            classname="w-full gap-2 px-6"
+          >
+            <gui-tabs-trigger
+              variant="ghost"
+              value="overview"
+              classname="w-fit px-2"
+            >
+              Overview
+            </gui-tabs-trigger>
+            <gui-tabs-trigger
+              variant="ghost"
+              value="package.json"
+              disabled="true"
+              classname="w-fit px-2"
+            >
+              Manifest
+            </gui-tabs-trigger>
+          </gui-tabs-list>
+          <gui-tabs-content value="overview">
+            <div class="flex h-64 w-full items-center justify-center px-6 py-4">
+              <div class="flex flex-col items-center justify-center gap-3 text-center">
+                <div class="relative flex size-32 items-center justify-center rounded-full bg-secondary/60">
+                  <gui-rectangle-horizontal-icon
+                    classname="absolute z-[2] mt-3 size-9 -translate-x-4 -rotate-[calc(90deg+30deg)] fill-secondary text-muted-foreground/50"
+                    strokewidth="1.25"
+                  >
+                  </gui-rectangle-horizontal-icon>
+                  <gui-file-text-icon
+                    classname="absolute z-[3] size-14 fill-secondary text-neutral-500"
+                    strokewidth="1"
+                  >
+                  </gui-file-text-icon>
+                  <gui-rectangle-horizontal-icon
+                    classname="absolute z-[2] mt-3 size-9 translate-x-4 rotate-[calc(90deg+30deg)] fill-secondary text-muted-foreground/50"
+                    strokewidth="1.25"
+                  >
+                  </gui-rectangle-horizontal-icon>
+                </div>
+                <p class="w-2/3 text-pretty text-sm text-muted-foreground">
+                  We couldn't find a description for this project
+                </p>
+              </div>
+            </div>
+          </gui-tabs-content>
+          <gui-tabs-content
+            value="package.json"
+            classname="h-full rounded-b-lg bg-white dark:bg-black"
+          >
+          </gui-tabs-content>
+          <gui-tabs-content
+            value="versions"
+            classname="px-6 py-4"
+          >
+            <section class="flex flex-col gap-4">
+            </section>
+          </gui-tabs-content>
+        </gui-tabs>
+      </div>
+    </gui-card>
+  </div>
+</div>
+
+`;
+
+exports[`SelectedItem render with item 1`] = `
+
+<div>
+  <div class="relative">
+    <gui-card classname="relative my-4 border-muted">
+      <div
+        class="flex w-full justify-between gap-4 p-6"
+        style="opacity: 0;"
+      >
+        <div class="flex gap-4">
+          <gui-avatar classname="size-24">
+            <gui-avatar-fallback classname="flex h-full w-full items-center justify-center rounded-md border-[1px]">
+              <div class="to:to-neutral-400 h-full w-full rounded-md bg-gradient-to-t from-neutral-100 dark:from-neutral-500 dark:to-neutral-800">
+              </div>
+            </gui-avatar-fallback>
+          </gui-avatar>
+          <div class="flex h-full max-w-[250px] flex-col justify-between">
+            <div class="flex flex-col gap-0.5">
+              <div class="flex items-center gap-2">
+                <gui-tooltip-provider>
+                  <gui-tooltip>
+                    <gui-tooltip-trigger classname="cursor-default truncate align-baseline text-lg font-medium">
+                      item
+                      <gui-inline-code
+                        variant="monoGhost"
+                        classname="text-sm"
+                      >
+                        1.0.0
+                      </gui-inline-code>
+                    </gui-tooltip-trigger>
+                    <gui-tooltip-content classname="text-baseline text-sm font-medium">
+                      item
+                      <span class="font-normal text-muted-foreground">
+                        1.0.0
+                      </span>
+                    </gui-tooltip-content>
+                  </gui-tooltip>
+                </gui-tooltip-provider>
+              </div>
+            </div>
+            <div class="flex items-center gap-2">
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="w-full">
+        <gui-tabs value="overview">
+          <gui-tabs-list
+            variant="ghost"
+            classname="w-full gap-2 px-6"
+          >
+            <gui-tabs-trigger
+              variant="ghost"
+              value="overview"
+              classname="w-fit px-2"
+            >
+              Overview
+            </gui-tabs-trigger>
+            <gui-tabs-trigger
+              variant="ghost"
+              value="package.json"
+              disabled="true"
+              classname="w-fit px-2"
+            >
+              Manifest
+            </gui-tabs-trigger>
+          </gui-tabs-list>
+          <gui-tabs-content value="overview">
+            <div class="flex h-64 w-full items-center justify-center px-6 py-4">
+              <div class="flex flex-col items-center justify-center gap-3 text-center">
+                <div class="relative flex size-32 items-center justify-center rounded-full bg-secondary/60">
+                  <gui-rectangle-horizontal-icon
+                    classname="absolute z-[2] mt-3 size-9 -translate-x-4 -rotate-[calc(90deg+30deg)] fill-secondary text-muted-foreground/50"
+                    strokewidth="1.25"
+                  >
+                  </gui-rectangle-horizontal-icon>
+                  <gui-file-text-icon
+                    classname="absolute z-[3] size-14 fill-secondary text-neutral-500"
+                    strokewidth="1"
+                  >
+                  </gui-file-text-icon>
+                  <gui-rectangle-horizontal-icon
+                    classname="absolute z-[2] mt-3 size-9 translate-x-4 rotate-[calc(90deg+30deg)] fill-secondary text-muted-foreground/50"
+                    strokewidth="1.25"
+                  >
+                  </gui-rectangle-horizontal-icon>
+                </div>
+                <p class="w-2/3 text-pretty text-sm text-muted-foreground">
+                  We couldn't find a description for this project
+                </p>
+              </div>
+            </div>
+          </gui-tabs-content>
+          <gui-tabs-content
+            value="package.json"
+            classname="h-full rounded-b-lg bg-white dark:bg-black"
+          >
+          </gui-tabs-content>
+          <gui-tabs-content
+            value="versions"
+            classname="px-6 py-4"
+          >
+            <section class="flex flex-col gap-4">
+            </section>
+          </gui-tabs-content>
+        </gui-tabs>
+      </div>
+    </gui-card>
+  </div>
+</div>
+
+`;
+
+exports[`SelectedItem render with scoped registry 1`] = `
+
+<div>
+  <div class="relative">
+    <gui-card classname="relative my-4 border-muted">
+      <div
+        class="flex w-full justify-between gap-4 p-6"
+        style="opacity: 0;"
+      >
+        <div class="flex gap-4">
+          <gui-avatar classname="size-24">
+            <gui-avatar-fallback classname="flex h-full w-full items-center justify-center rounded-md border-[1px]">
+              <div class="to:to-neutral-400 h-full w-full rounded-md bg-gradient-to-t from-neutral-100 dark:from-neutral-500 dark:to-neutral-800">
+              </div>
+            </gui-avatar-fallback>
+          </gui-avatar>
+          <div class="flex h-full max-w-[250px] flex-col justify-between">
+            <div class="flex flex-col gap-0.5">
+              <div class="flex items-center gap-2">
+                <gui-tooltip-provider>
+                  <gui-tooltip>
+                    <gui-tooltip-trigger classname="cursor-default truncate align-baseline text-lg font-medium">
+                      item
+                      <gui-inline-code
+                        variant="monoGhost"
+                        classname="text-sm"
+                      >
+                        1.0.0
+                      </gui-inline-code>
+                    </gui-tooltip-trigger>
+                    <gui-tooltip-content classname="text-baseline text-sm font-medium">
+                      item
+                      <span class="font-normal text-muted-foreground">
+                        1.0.0
+                      </span>
+                    </gui-tooltip-content>
+                  </gui-tooltip>
+                </gui-tooltip-provider>
+              </div>
+              <gui-tooltip-provider>
+                <gui-tooltip>
+                  <gui-tooltip-trigger classname="flex h-full w-full cursor-default items-center justify-start overflow-hidden">
+                    <gui-inline-code
+                      variant="mono"
+                      classname="mx-0 truncate"
+                    >
+                      item@1.0.0
+                    </gui-inline-code>
+                  </gui-tooltip-trigger>
+                  <gui-tooltip-content>
+                    http://custom-scope
+                  </gui-tooltip-content>
+                </gui-tooltip>
+              </gui-tooltip-provider>
+            </div>
+            <div class="flex items-center gap-2">
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="w-full">
+        <gui-tabs value="overview">
+          <gui-tabs-list
+            variant="ghost"
+            classname="w-full gap-2 px-6"
+          >
+            <gui-tabs-trigger
+              variant="ghost"
+              value="overview"
+              classname="w-fit px-2"
+            >
+              Overview
+            </gui-tabs-trigger>
+            <gui-tabs-trigger
+              variant="ghost"
+              value="package.json"
+              disabled="true"
+              classname="w-fit px-2"
+            >
+              Manifest
+            </gui-tabs-trigger>
+          </gui-tabs-list>
+          <gui-tabs-content value="overview">
+            <div class="flex h-64 w-full items-center justify-center px-6 py-4">
+              <div class="flex flex-col items-center justify-center gap-3 text-center">
+                <div class="relative flex size-32 items-center justify-center rounded-full bg-secondary/60">
+                  <gui-rectangle-horizontal-icon
+                    classname="absolute z-[2] mt-3 size-9 -translate-x-4 -rotate-[calc(90deg+30deg)] fill-secondary text-muted-foreground/50"
+                    strokewidth="1.25"
+                  >
+                  </gui-rectangle-horizontal-icon>
+                  <gui-file-text-icon
+                    classname="absolute z-[3] size-14 fill-secondary text-neutral-500"
+                    strokewidth="1"
+                  >
+                  </gui-file-text-icon>
+                  <gui-rectangle-horizontal-icon
+                    classname="absolute z-[2] mt-3 size-9 translate-x-4 rotate-[calc(90deg+30deg)] fill-secondary text-muted-foreground/50"
+                    strokewidth="1.25"
+                  >
+                  </gui-rectangle-horizontal-icon>
+                </div>
+                <p class="w-2/3 text-pretty text-sm text-muted-foreground">
+                  We couldn't find a description for this project
+                </p>
+              </div>
+            </div>
+          </gui-tabs-content>
+          <gui-tabs-content
+            value="package.json"
+            classname="h-full rounded-b-lg bg-white dark:bg-black"
+          >
+          </gui-tabs-content>
+          <gui-tabs-content
+            value="versions"
+            classname="px-6 py-4"
+          >
+            <section class="flex flex-col gap-4">
+            </section>
+          </gui-tabs-content>
+        </gui-tabs>
+      </div>
+    </gui-card>
+  </div>
+</div>
+
+`;

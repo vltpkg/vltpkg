@@ -6,7 +6,7 @@ import { joinDepIDTuple } from '@vltpkg/dep-id'
 import type { NodeLike } from '@vltpkg/graph'
 import { useGraphStore as useStore } from '@/state/index.js'
 import type { GridItemData } from '@/components/explorer-grid/types.js'
-import { SelectedItem } from '@/components/explorer-grid/selected-item.jsx'
+import { SelectedItem } from '@/components/explorer-grid/selected-item/index.jsx'
 
 vi.mock('@/components/ui/card.jsx', () => ({
   Card: 'gui-card',

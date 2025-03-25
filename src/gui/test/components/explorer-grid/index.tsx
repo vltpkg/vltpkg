@@ -22,7 +22,7 @@ vi.mock('@/components/explorer-grid/side-item.jsx', () => ({
   SideItem: 'gui-side-item',
 }))
 
-vi.mock('@/components/explorer-grid/selected-item.jsx', () => ({
+vi.mock('@/components/explorer-grid/selected-item/index.jsx', () => ({
   SelectedItem: 'gui-selected-item',
 }))
 
