@@ -82,7 +82,7 @@ export const parseInternals = (
 }
 
 export const severity = async (state: ParserState) => {
-  assertSecurityArchive(state.securityArchive, 'severity')
+  assertSecurityArchive(state, 'severity')
 
   let internals
   try {

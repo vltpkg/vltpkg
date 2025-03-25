@@ -49,7 +49,7 @@ export const parseInternals = (
  * Filters out any node that does not have a CWE alert with the specified CWE ID.
  */
 export const cwe = async (state: ParserState) => {
-  assertSecurityArchive(state.securityArchive, 'cwe')
+  assertSecurityArchive(state, 'cwe')
 
   let internals
   try {

@@ -174,9 +174,9 @@ export const attribute = async (
       return state
     }
 
-    throw new Error(
-      `Unsupported attribute operator: ${curr.operator}`,
-    )
+    throw error(`Unsupported attribute operator: ${curr.operator}`, {
+      found: state.current,
+    })
   }
 
   const value = curr.value || ''
