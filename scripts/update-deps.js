@@ -9,6 +9,65 @@ import resetCatalogVersions from './consistent-package-json.js'
 import { run as ncu } from 'npm-check-updates'
 import { fileURLToPath } from 'node:url'
 
+/**
+ * This script wraps npm-check-updates with support for pnpm catalogs
+ * and filtering using pnpm syntax.
+ */
+
+const parseOptions = () => {
+  const {
+    'include-workspace-root': includeWorkspaceRoot,
+    filter,
+    ...npmCheckUpdatesOptions
+  } = parseArgs({
+    // Not strict because extra args are passed to npm-check-updates
+    strict: false,
+    options: {
+      // Mimic pnpm options for consistency with other scripts
+      'include-workspace-root': {
+        type: 'boolean',
+      },
+      filter: {
+        short: 'F',
+        type: 'string',
+        multiple: true,
+      },
+    },
+  }).values
+
+  const options = {
+    ...npmCheckUpdatesOptions,
+    root: includeWorkspaceRoot,
+    workspaces: true,
+  }
+
+  if (filter) {
+    const output = execSync(
+      `pnpm ${filter.map(f => `--filter="${f}"`).join(' ')} exec pwd`,
+      {
+        encoding: 'utf-8',
+      },
+    ).trim()
+    options.workspaces = false
+    options.workspace = output.split('\n').map(path => {
+      try {
+        return JSON.parse(
+          readFileSync(resolve(path, 'package.json'), 'utf-8'),
+        ).name
+      } catch (e) {
+        throw new Error(`Error parsing filter`, {
+          cause: {
+            output,
+            error: e,
+          },
+        })
+      }
+    })
+  }
+
+  return options
+}
+
 const removeCatalogVersions = () => {
   const { catalog } = getConfig()
 
@@ -42,12 +101,9 @@ const removeCatalogVersions = () => {
   return res
 }
 
-const npmCheckUpdates = async (
-  current,
-  { workspace, omitWorkspace, noRoot, ...cliOpts },
-) => {
+const npmCheckUpdates = async (current, options) => {
   // make help output work by calling CLI directly
-  if (cliOpts.help) {
+  if (options.help) {
     return new Promise((res, rej) => {
       const proc = spawn(
         process.execPath,
@@ -70,27 +126,7 @@ const npmCheckUpdates = async (
     })
   }
 
-  /**
-   * @type {import('npm-check-updates').RunOptions}
-   */
-  const defaultOptions = {
-    jsonUpgraded: true,
-    root: noRoot ? false : true,
-    workspaces: omitWorkspace || workspace ? false : true,
-    workspace:
-      omitWorkspace ?
-        execSync('pnpm -r exec npm pkg get name', {
-          encoding: 'utf-8',
-        })
-          .trim()
-          .split('\n')
-          .map(p => JSON.parse(p))
-          .filter(p => !omitWorkspace.includes(p))
-      : workspace ? workspace
-      : undefined,
-  }
-
-  const upgraded = await ncu({ ...defaultOptions, ...cliOpts })
+  const upgraded = await ncu({ jsonUpgraded: true, ...options })
 
   const noQuotes = v => ({
     [Symbol.for('nodejs.util.inspect.custom')]: () => v,
@@ -124,29 +160,10 @@ const npmCheckUpdates = async (
   }
 }
 
-const main = async opts => {
+const main = async () => {
   const current = removeCatalogVersions()
-  await npmCheckUpdates(current, opts)
+  await npmCheckUpdates(current, parseOptions())
   await resetCatalogVersions()
 }
 
-main(
-  parseArgs({
-    strict: false,
-    options: {
-      noRoot: {
-        type: 'boolean',
-      },
-      workspace: {
-        short: 'w',
-        type: 'string',
-        multiple: true,
-      },
-      omitWorkspace: {
-        short: 'o',
-        type: 'string',
-        multiple: true,
-      },
-    },
-  }).values,
-)
+main()
