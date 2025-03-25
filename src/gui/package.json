@@ -59,15 +59,15 @@
     "@types/react-dom": "catalog:",
     "@vitejs/plugin-react": "^4.3.4",
     "@vltpkg/which": "workspace:*",
-    "diffable-html": "^5.0.0",
+    "diffable-html": "^6.0.1",
     "esbuild": "catalog:",
     "eslint": "catalog:",
-    "jsdom": "^25.0.1",
-    "msw": "^2.7.0",
+    "jsdom": "^26.0.0",
+    "msw": "^2.7.3",
     "prettier": "catalog:",
     "typescript": "catalog:",
     "typescript-eslint": "catalog:",
-    "vitest": "^2.1.9"
+    "vitest": "^3.0.9"
   },
   "license": "BSD-2-Clause-Patent",
   "engines": {
