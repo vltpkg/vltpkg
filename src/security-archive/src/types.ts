@@ -27,7 +27,27 @@ export interface SecurityArchiveLike {
   delete: (depId: DepID) => void
   has: (depId: DepID) => boolean
   clear: () => void
-  ok: boolean
+  ok?: boolean
+}
+
+export const isSecurityArchiveLike = (
+  o: unknown,
+): o is SecurityArchiveLike =>
+  typeof o === 'object' &&
+  o != null &&
+  'get' in o &&
+  'set' in o &&
+  'delete' in o &&
+  'has' in o &&
+  'clear' in o
+
+export const asSecurityArchiveLike = (
+  o: unknown,
+): SecurityArchiveLike => {
+  if (!isSecurityArchiveLike(o)) {
+    throw error('Invalid security archive like', { found: o })
+  }
+  return o
 }
 
 /**

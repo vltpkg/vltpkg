@@ -15,7 +15,7 @@ import type {
   SecurityArchiveRefreshOptions,
 } from './types.ts'
 
-export type * from './types.ts'
+export * from './types.ts'
 
 const SOCKET_API_V0_URL = 'https://api.socket.dev/v0/purl?alerts=true'
 const SOCKET_PUBLIC_API_TOKEN =
