@@ -298,6 +298,9 @@ importers:
 
   infra/smoke-test:
     dependencies:
+      '@vltpkg/cli-sdk':
+        specifier: workspace:*
+        version: link:../../src/cli-sdk
       '@vltpkg/infra-build':
         specifier: workspace:*
         version: link:../build
