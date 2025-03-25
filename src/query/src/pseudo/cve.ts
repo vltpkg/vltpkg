@@ -49,7 +49,7 @@ export const parseInternals = (
  * Filters out any node that does not have a CVE alert with the specified CVE ID.
  */
 export const cve = async (state: ParserState) => {
-  assertSecurityArchive(state.securityArchive, 'cve')
+  assertSecurityArchive(state, 'cve')
 
   let internals
   try {
