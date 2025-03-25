@@ -38,6 +38,10 @@ export const getView = <T>(
   return viewFn ?? identity
 }
 
+export type OnDone<T> =
+  | ((result: T) => Promise<unknown>)
+  | ((result: T) => unknown)
+
 /**
  * If the view is a View class, then instantiate and start it.
  * If it's a view function, then just define the onDone method.
@@ -47,9 +51,7 @@ export const startView = <T>(
   views?: Views<T>,
   { start }: { start: number } = { start: Date.now() },
 ): {
-  onDone: (
-    result: T,
-  ) => Promise<string | undefined> | string | undefined
+  onDone: OnDone<T>
   onError?: (err: unknown) => void
 } => {
   const View = getView<T>(conf, views)
@@ -67,18 +69,10 @@ export const startView = <T>(
     }
   } else {
     return {
-      async onDone(r): Promise<string | undefined> {
+      async onDone(r) {
         if (r === undefined) return
         const res = await View(r, opts, conf)
-        if (res === undefined) return
-        return conf.values.view === 'json' ?
-            JSON.stringify(res, null, 2)
-          : formatWithOptions(
-              {
-                colors: conf.values.color,
-              },
-              res,
-            )
+        return res
       },
     }
   }
@@ -98,18 +92,27 @@ export const outputCommand = async <T>(
   if (conf.get('help')) {
     return stdout(usage().usage())
   }
+
+  const formatOptions = {
+    colors: conf.values.color,
+  }
+
   const { onDone, onError } = startView(conf, views, { start })
 
   try {
     const output = await onDone(await command(conf))
     if (output !== undefined) {
-      stdout(output)
+      stdout(
+        conf.values.view === 'json' ?
+          JSON.stringify(output, null, 2)
+        : formatWithOptions(formatOptions, output),
+      )
     }
   } catch (err) {
     onError?.(err)
     process.exitCode ||= 1
 
-    printErr(err, usage, stderr)
+    printErr(err, usage, stderr, formatOptions)
 
     process.exit(process.exitCode)
   }
