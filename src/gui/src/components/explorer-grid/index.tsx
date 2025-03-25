@@ -9,7 +9,7 @@ import { Spec } from '@vltpkg/spec/browser'
 import { useGraphStore } from '@/state/index.js'
 import { ResultItem } from '@/components/explorer-grid/result-item.jsx'
 import { SideItem } from '@/components/explorer-grid/side-item.jsx'
-import { SelectedItem } from '@/components/explorer-grid/selected-item.jsx'
+import { SelectedItem } from '@/components/explorer-grid/selected-item/index.jsx'
 import type {
   EdgeLoose,
   GridItemData,

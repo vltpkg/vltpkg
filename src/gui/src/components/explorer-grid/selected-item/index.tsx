@@ -4,7 +4,7 @@ import { rcompare } from '@vltpkg/semver'
 import type { SpecOptionsFilled } from '@vltpkg/spec/browser'
 import { Card } from '@/components/ui/card.jsx'
 import { useGraphStore } from '@/state/index.js'
-import type { GridItemData, GridItemOptions } from './types.js'
+import type { GridItemData, GridItemOptions } from '../types.js'
 import {
   Tabs,
   TabsContent,
@@ -403,7 +403,6 @@ export const SelectedItem = ({ item }: GridItemOptions) => {
                       </ul>
                     </div>
                   )}
-
                 {details.versions && details.versions.length > 0 && (
                   <div className="flex flex-col gap-2">
                     <p className="text-sm font-medium text-muted-foreground">
