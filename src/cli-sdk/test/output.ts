@@ -27,6 +27,8 @@ const { outputCommand, startView, getView, stderr, stdout } =
 
 const errsPrinted: unknown[] = []
 
+t.beforeEach(() => (errsPrinted.length = 0))
+
 t.test('stdout, stderr', t => {
   const logs = t.capture(console, 'log').args
   const errs = t.capture(console, 'error').args
@@ -41,7 +43,7 @@ t.test('getView', async t => {
   const json = (x: unknown) => x
   const human = (x: unknown) => x
   const x = {}
-  const options = {} as ViewOptions
+  const options: ViewOptions = {}
   const confJson = {
     values: { view: 'json' },
   } as LoadedConfig
@@ -120,16 +122,18 @@ t.test('startView', async t => {
   t.test('using a view function for JSON', async t => {
     const { onDone, onError } = startView(confJson, views)
     t.equal(onError, undefined)
-    t.equal(await onDone(true), 'true')
-    t.equal(await onDone(undefined as unknown as true), undefined)
+    t.equal(await onDone(true), true)
+    // @ts-expect-error - testing error case
+    t.equal(await onDone(undefined), undefined)
     t.end()
   })
 
   t.test('using a view function not json', async t => {
     const { onDone, onError } = startView(confMermaid, views)
     t.equal(onError, undefined)
-    t.equal(await onDone(true), '{ underthesea: true }')
-    t.equal(await onDone(undefined as unknown as true), undefined)
+    t.strictSame(await onDone(true), { underthesea: true })
+    // @ts-expect-error - testing error case
+    t.equal(await onDone(undefined), undefined)
     t.end()
   })
 
@@ -144,20 +148,20 @@ t.test('startView', async t => {
 t.test('outputCommand', async t => {
   const confJson = {
     values: { view: 'json' },
-    get: () => false,
-  } as unknown as LoadedConfig
+    get: (_k: 'color') => false,
+  } as LoadedConfig
   const confHuman = {
     values: { view: 'human' },
-    get: () => false,
-  } as unknown as LoadedConfig
+    get: (_k: 'color') => false,
+  } as LoadedConfig
   const confInspect = {
     values: { view: 'inspect' },
-    get: () => false,
-  } as unknown as LoadedConfig
+    get: (_k: 'color') => false,
+  } as LoadedConfig
   const confHelp = {
     values: { help: true },
-    get: () => true,
-  } as unknown as LoadedConfig
+    get: (_k: 'color') => true,
+  } as LoadedConfig
 
   const cliCommand: Command<true> = {
     async command() {
@@ -189,7 +193,6 @@ t.test('outputCommand', async t => {
   })
 
   t.test('fail output', async t => {
-    errsPrinted.length = 0
     const { exitCode = 0 } = process
     const exits = t.capture(process, 'exit').args
     t.teardown(() => {
@@ -205,7 +208,6 @@ t.test('outputCommand', async t => {
   })
 
   t.test('fail output with onError method', async t => {
-    errsPrinted.length = 0
     const { exitCode = 0 } = process
     t.teardown(() => {
       if (t.passing()) process.exitCode = exitCode
