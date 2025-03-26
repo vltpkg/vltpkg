@@ -41,13 +41,13 @@ t.test('getView', async t => {
   const json = (x: unknown) => x
   const human = (x: unknown) => x
   const x = {}
-  const options = {} as unknown as ViewOptions
+  const options: ViewOptions = {}
   const confJson = {
     values: { view: 'json' },
-  } as unknown as LoadedConfig
+  } as LoadedConfig
   const confHuman = {
     values: { view: 'human' },
-  } as unknown as LoadedConfig
+  } as LoadedConfig
   t.equal(getView(confJson, { json, human }), json)
   const id = getView(confHuman) as ViewFn
   const xx = id(x, options, confHuman)
@@ -55,12 +55,12 @@ t.test('getView', async t => {
 
   const confGui = {
     values: { view: 'gui' },
-  } as unknown as LoadedConfig
+  } as LoadedConfig
   process.env.VLT_VIEW = 'gui'
   const gui = getView(confGui, { json, human })
   t.equal(gui, json, 'json view was returned for unknown view name')
   t.equal(process.env.VLT_VIEW, 'json', 'set view config to default')
-  const viewFn = (() => {}) as unknown as ViewFn<true>
+  const viewFn = (() => {}) as ViewFn<true>
   t.equal(getView(confHuman, viewFn), viewFn)
   t.end()
 })
@@ -68,16 +68,16 @@ t.test('getView', async t => {
 t.test('startView', async t => {
   const confJson = {
     values: { view: 'json', color: false },
-  } as unknown as LoadedConfig
+  } as LoadedConfig
   const confHuman = {
     values: { view: 'human', color: true },
-  } as unknown as LoadedConfig
+  } as LoadedConfig
   const confMermaid = {
     values: { view: 'mermaid' },
-  } as unknown as LoadedConfig
+  } as LoadedConfig
   const confGui = {
     values: { view: 'gui' },
-  } as unknown as LoadedConfig
+  } as LoadedConfig
 
   let startCalled = false
   let doneCalled = false
@@ -102,11 +102,9 @@ t.test('startView', async t => {
   }
 
   t.test('using view class', async t => {
-    const { onDone, onError } = startView(
-      confHuman as unknown as LoadedConfig,
-      views,
-      { start: 100 },
-    )
+    const { onDone, onError } = startView(confHuman, views, {
+      start: 100,
+    })
     t.equal(startCalled, true)
     t.equal(doneCalled, false)
     t.equal(errCalled, false)
@@ -120,32 +118,25 @@ t.test('startView', async t => {
   })
 
   t.test('using a view function for JSON', async t => {
-    const { onDone, onError } = startView(
-      confJson as unknown as LoadedConfig,
-      views,
-    )
+    const { onDone, onError } = startView(confJson, views)
     t.equal(onError, undefined)
-    t.equal(await onDone(true), 'true')
-    t.equal(await onDone(undefined as unknown as true), undefined)
+    t.equal(await onDone(true), true)
+    // @ts-expect-error - testing error case
+    t.equal(await onDone(undefined), undefined)
     t.end()
   })
 
   t.test('using a view function not json', async t => {
-    const { onDone, onError } = startView(
-      confMermaid as unknown as LoadedConfig,
-      views,
-    )
+    const { onDone, onError } = startView(confMermaid, views)
     t.equal(onError, undefined)
-    t.equal(await onDone(true), '{ underthesea: true }')
-    t.equal(await onDone(undefined as unknown as true), undefined)
+    t.strictSame(await onDone(true), { underthesea: true })
+    // @ts-expect-error - testing error case
+    t.equal(await onDone(undefined), undefined)
     t.end()
   })
 
   t.test('using a view that returns undefined', async t => {
-    const { onDone, onError } = startView(
-      confGui as unknown as LoadedConfig,
-      views,
-    )
+    const { onDone, onError } = startView(confGui, views)
     t.equal(onError, undefined)
     t.equal(typeof (await onDone(true)), 'undefined')
     t.end()
@@ -155,26 +146,26 @@ t.test('startView', async t => {
 t.test('outputCommand', async t => {
   const confJson = {
     values: { view: 'json' },
-    get: () => false,
-  } as unknown as LoadedConfig
+    get: (_k: 'color') => false,
+  } as LoadedConfig
   const confHuman = {
     values: { view: 'human' },
-    get: () => false,
-  } as unknown as LoadedConfig
+    get: (_k: 'color') => false,
+  } as LoadedConfig
   const confInspect = {
     values: { view: 'inspect' },
-    get: () => false,
-  } as unknown as LoadedConfig
+    get: (_k: 'color') => false,
+  } as LoadedConfig
   const confHelp = {
     values: { help: true },
-    get: () => true,
-  } as unknown as LoadedConfig
+    get: (_k: 'color') => true,
+  } as LoadedConfig
 
   const cliCommand: Command<true> = {
     async command() {
       return true
     },
-    usage: () => ({ usage: () => 'usage' }) as unknown as Jack,
+    usage: () => ({ usage: () => 'usage' }) as Jack,
     views: {
       json: x => x,
       human: x => ({ ohthehumanity: x }),

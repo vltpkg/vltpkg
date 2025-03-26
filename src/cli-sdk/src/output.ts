@@ -14,6 +14,7 @@ export const stdout = (...args: unknown[]) => console.log(...args)
 export const stderr = (...args: unknown[]) => console.error(...args)
 
 const identity = <T>(x: T): T => x
+
 export const getView = <T>(
   conf: LoadedConfig,
   views?: Views<T>,
@@ -55,7 +56,11 @@ export const startView = <T>(
   onError?: (err: unknown) => void
 } => {
   const View = getView<T>(conf, views)
-  const opts = { colors: conf.values.color ? chalk : undefined }
+
+  const opts = {
+    colors: conf.values.color ? chalk : undefined,
+  }
+
   if (isViewClass(View)) {
     const view = new View(opts, conf)
     view.start()
@@ -67,14 +72,13 @@ export const startView = <T>(
         view.error(err)
       },
     }
-  } else {
-    return {
-      async onDone(r) {
-        if (r === undefined) return
-        const res = await View(r, opts, conf)
-        return res
-      },
-    }
+  }
+
+  return {
+    async onDone(r) {
+      if (r === undefined) return
+      return View(r, opts, conf)
+    },
   }
 }
 
