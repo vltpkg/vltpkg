@@ -57,7 +57,7 @@ export const cwe = async (state: ParserState) => {
       asPostcssNodeWithChildren(state.current).nodes,
     )
   } catch (err) {
-    throw error('Failed to parse :cwe selector', { cause: err })
+    throw error('Failed to parse :cwe selector', { error: err })
   }
 
   const { cweId } = internals

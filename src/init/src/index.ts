@@ -1,4 +1,5 @@
 import { getUser } from '@vltpkg/git'
+import { asError } from '@vltpkg/error-cause'
 import { PackageJson } from '@vltpkg/package-json'
 import type { JSONObj } from '@vltpkg/registry-client'
 import type { Manifest } from '@vltpkg/types'

@@ -59,7 +59,7 @@ test('standard dashboard response', async () => {
         stamp: 'standard',
       })
     } catch (err) {
-      rej(err as Error)
+      rej(err)
     }
   })
 })
@@ -80,7 +80,7 @@ test('missing dashboard response', async () => {
         stamp: 'missing',
       })
     } catch (err) {
-      rej(err as Error)
+      rej(err)
     }
   })
 })

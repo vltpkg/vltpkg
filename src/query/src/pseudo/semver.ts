@@ -212,7 +212,7 @@ export const semverParser = async (state: ParserState) => {
     )
   } catch (err) {
     throw error('Failed to parse :semver selector', {
-      cause: err,
+      error: err,
     })
   }
 

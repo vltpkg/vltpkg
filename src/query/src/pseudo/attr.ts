@@ -59,9 +59,7 @@ export const attr = async (state: ParserState) => {
       asPostcssNodeWithChildren(state.current).nodes,
     )
   } catch (err) {
-    throw error('Failed to parse :attr selector', {
-      cause: err,
-    })
+    throw error('Failed to parse :attr selector', { error: err })
   }
 
   // reuses the attribute selector logic to filter the nodes

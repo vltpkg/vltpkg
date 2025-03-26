@@ -90,7 +90,7 @@ export const severity = async (state: ParserState) => {
       asPostcssNodeWithChildren(state.current).nodes,
     )
   } catch (err) {
-    throw error('Failed to parse :severity selector', { cause: err })
+    throw error('Failed to parse :severity selector', { error: err })
   }
 
   const { kind } = internals

@@ -168,7 +168,7 @@ export const queueNode = async (
     console.warn(
       error('Could not retrieve registry versions', {
         name: String(node.name),
-        cause: err,
+        error: err,
       }),
     )
     versions = []
@@ -274,7 +274,7 @@ export const outdated = async (state: ParserState) => {
     )
   } catch (err) {
     throw error('Failed to parse :outdated selector', {
-      cause: err,
+      error: err,
     })
   }
 

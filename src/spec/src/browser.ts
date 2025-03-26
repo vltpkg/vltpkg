@@ -1,7 +1,7 @@
-import type { ErrorCauseObject } from '@vltpkg/error-cause'
+import type { ErrorCause } from '@vltpkg/error-cause'
 import { error, typeError } from '@vltpkg/error-cause'
-import type { Range } from '@vltpkg/semver'
 import { parseRange } from '@vltpkg/semver'
+import type { Range } from '@vltpkg/semver'
 import type {
   GitSelectorParsed,
   Scope,
@@ -600,7 +600,7 @@ export class Spec implements SpecLike<Spec> {
     return this.subspec
   }
 
-  #error(message: string, extra: ErrorCauseObject = {}) {
+  #error(message: string, extra: ErrorCause = {}) {
     return error(message, { spec: this.spec, ...extra }, this.#error)
   }
 
@@ -801,7 +801,7 @@ export const getNormalizeFile =
         // invalid URI for other reasons, eg file://x\u0000y/z
         throw error('invalid file:// specifier', {
           spec,
-          cause: er,
+          error: er,
         })
       }
     }

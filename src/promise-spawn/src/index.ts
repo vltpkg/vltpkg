@@ -273,7 +273,7 @@ export class SpawnPromise<
           cwd: opts.cwd?.toString() ?? process.cwd(),
         }
         if (er !== undefined) {
-          errorResult.cause = er
+          errorResult.error = er
         }
         if (status !== undefined) {
           errorResult.status = status

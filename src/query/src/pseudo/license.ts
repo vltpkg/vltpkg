@@ -95,7 +95,7 @@ export const license = async (state: ParserState) => {
       asPostcssNodeWithChildren(state.current).nodes,
     )
   } catch (err) {
-    throw error('Failed to parse :license selector', { cause: err })
+    throw error('Failed to parse :license selector', { error: err })
   }
 
   const { kind } = internals
