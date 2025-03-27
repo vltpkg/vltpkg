@@ -15,7 +15,8 @@
     ],
     "exports": {
       "./package.json": "./package.json",
-      ".": "./src/index.ts"
+      ".": "./src/index.ts",
+      "./log": "./src/log.ts"
     }
   },
   "devDependencies": {
@@ -56,6 +57,11 @@
     ".": {
       "import": {
         "default": "./src/index.ts"
+      }
+    },
+    "./log": {
+      "import": {
+        "default": "./src/log.ts"
       }
     }
   },

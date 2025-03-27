@@ -6,6 +6,7 @@ import type { Command } from './index.ts'
 import { printErr } from './print-err.ts'
 import type { View, Views } from './view.ts'
 import { isViewClass } from './view.ts'
+import { debug } from '@vltpkg/output/log'
 
 // TODO: make these have log levels etc
 // eslint-disable-next-line no-console
@@ -54,6 +55,7 @@ export const startView = <T>(
 } => {
   const View = getView<T>(conf, views)
   const opts = { colors: conf.values.color ? chalk : undefined }
+
   if (isViewClass(View)) {
     const view = new View(opts, conf)
     view.start()
@@ -95,13 +97,18 @@ export const outputCommand = async <T>(
   { start }: { start: number } = { start: Date.now() },
 ) => {
   const { usage, views, command } = cliCommand
+
   if (conf.get('help')) {
     return stdout(usage().usage())
   }
+
   const { onDone, onError } = startView(conf, views, { start })
 
   try {
-    const output = await onDone(await command(conf))
+    debug('cli-sdk', 'Starting command with view', conf.values.view)
+    const res = await command(conf)
+    debug('cli-sdk', 'Command done')
+    const output = await onDone(res)
     if (output !== undefined) {
       stdout(output)
     }
