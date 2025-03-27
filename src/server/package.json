@@ -78,6 +78,16 @@
       "import": {
         "default": "./src/index.ts"
       }
+    },
+    "./dashboard": {
+      "import": {
+        "default": "./src/dashboard.ts"
+      }
+    },
+    "./project-tools": {
+      "import": {
+        "default": "./src/project-tools.ts"
+      }
     }
   },
   "files": [
