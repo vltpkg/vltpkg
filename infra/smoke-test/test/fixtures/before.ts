@@ -1,6 +1,5 @@
-import { Variants } from './variants.ts'
+import { Artifacts } from './variants.ts'
 
-for (const variant of Object.values(Variants)) {
-  variant.cleanup?.()
-  await variant.setup?.()
+for (const artifact of Object.values(Artifacts)) {
+  await artifact.prepare()
 }
