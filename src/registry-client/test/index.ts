@@ -60,7 +60,6 @@ const registry = createServer((req, res) => {
     dropConnection = false
     return setTimeout(() => req.socket.destroy())
   }
-  // console.error(req.method, req.url)
   res.setHeader('connection', 'close')
   res.setHeader('date', new Date().toUTCString())
   const { url = '' } = req

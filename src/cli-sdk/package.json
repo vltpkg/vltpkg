@@ -93,6 +93,21 @@
       "import": {
         "default": "./src/index.ts"
       }
+    },
+    "./config": {
+      "import": {
+        "default": "./src/config/index.ts"
+      }
+    },
+    "./definition": {
+      "import": {
+        "default": "./src/config/definition.ts"
+      }
+    },
+    "./view": {
+      "import": {
+        "default": "./src/view.ts"
+      }
     }
   },
   "files": [
