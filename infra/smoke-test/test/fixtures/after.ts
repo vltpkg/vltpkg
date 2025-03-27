@@ -1,8 +1,5 @@
-import t from 'tap'
-import { Variants } from './variants.ts'
+import { Artifacts } from './variants.ts'
 
-if (!t.saveFixture) {
-  for (const variant of Object.values(Variants)) {
-    variant.cleanup?.()
-  }
+for (const artifact of Object.values(Artifacts)) {
+  artifact.cleanup()
 }

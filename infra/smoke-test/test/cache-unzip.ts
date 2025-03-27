@@ -4,13 +4,13 @@ import { join } from 'node:path'
 import { setTimeout } from 'node:timers/promises'
 import t from 'tap'
 import { runMultiple } from './fixtures/run.ts'
-import { defaultVariants } from './fixtures/variants.ts'
+import { allVariants } from './fixtures/variants.ts'
 
 t.test(
   'unzips all cache entries after a successful install',
   async t => {
-    const { status } = await runMultiple(t, ['install', 'abbrev'], {
-      variants: [...defaultVariants, 'denoBundle', 'denoSource'],
+    const { status } = await runMultiple(t, ['i', 'abbrev'], {
+      variants: allVariants,
       test: async (t, { dirs }) => {
         // wait for unref'd process to finish. this is an arbitrary amount of
         // time but should be enough for a small install.

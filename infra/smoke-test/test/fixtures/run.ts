@@ -1,23 +1,19 @@
+import type t from 'tap'
 import type { Test } from 'tap'
 import { spawn } from 'node:child_process'
+import { join } from 'node:path'
 import assert from 'node:assert'
+import type { Bin } from '@vltpkg/infra-build'
 import {
   publishedVariant,
   defaultVariants,
   Variants,
 } from './variants.ts'
 import type { Variant, VariantType } from './variants.ts'
-import { join } from 'node:path'
-import type { Bin } from '@vltpkg/infra-build'
-import { rmSync } from 'node:fs'
 
-export type FixtureDirContent = string | FixtureDir
+export type FixtureDir = Parameters<typeof t.fixture<'dir'>>[1]
 
-export interface FixtureDir {
-  [entry: string]: FixtureDirContent
-}
-
-export type FixtureName =
+export type CommandFixtureDirectory =
   | 'root'
   | 'project'
   | 'config'
@@ -26,10 +22,13 @@ export type FixtureName =
   | 'state'
   | 'runtime'
 
-export type Fixtures = Record<FixtureName, FixtureDir>
+export type CommandFixtures = Record<
+  CommandFixtureDirectory,
+  FixtureDir
+>
 
 export type SpawnCommandOptions = {
-  dirs: Record<FixtureName, string>
+  dirs: Record<CommandFixtureDirectory, string>
   bin?: Bin
   env?: NodeJS.ProcessEnv
   debug?: boolean
@@ -47,15 +46,14 @@ export type CommandOptions = {
   packageJson?: boolean | Record<string, unknown>
   env?: NodeJS.ProcessEnv
   debug?: boolean
-} & Partial<Record<FixtureName, FixtureDir>>
+} & Partial<Record<CommandFixtureDirectory, FixtureDir>>
 
 export type CommandResult = {
   status: number | null
   stdout: string
   stderr: string
   output: string
-  normalizedOutput: string
-  dirs: Record<FixtureName, string>
+  dirs: Record<CommandFixtureDirectory, string>
 }
 
 export type Command = (
@@ -65,6 +63,8 @@ export type Command = (
 ) => Promise<CommandResult>
 
 export type MultipleCommandOptions = CommandOptions & {
+  variants?: readonly VariantType[]
+  match?: false | Exclude<keyof CommandResult, 'dirs'>[]
   test?: (
     t: Test,
     result: CommandResult & {
@@ -75,37 +75,70 @@ export type MultipleCommandOptions = CommandOptions & {
       ) => Promise<SpawnCommandResult>
     },
   ) => Promise<void>
-  variants?: VariantType[]
 }
 
-// Remove env vars that might cause trouble for tests since
-// we might be be using vlt or another tool to run these tests.
-// Not all of these have been proven to cause problems but it
-// errs on the side of removing more for a cleaner test environment.
-const ENV = Object.entries(process.env).reduce<NodeJS.Process['env']>(
-  (acc, [k, v]) => {
-    if (!/^_?(tapjs|tap|npm|vlt|node|ts_node)(_|$)/i.test(k)) {
-      acc[k] = v
-    }
-    return acc
-  },
-  {},
-)
+const cleanCommandResult = (
+  result: CommandResult,
+  key: Exclude<keyof CommandResult, 'dirs'>,
+) => {
+  if (key === 'status') return result[key]
+  return result[key].replaceAll(result.dirs.root, '{{CWD}}')
+}
 
 const spawnCommand = async (
   t: Test,
   variant: Variant,
   args: string[] = [],
-  { dirs, env, debug, bin = 'vlt' }: SpawnCommandOptions,
+  {
+    dirs,
+    env,
+    debug = !!process.env.CI,
+    bin = 'vlt',
+  }: SpawnCommandOptions,
 ) => {
-  const [command, commandArgs = []] = variant.spawn(bin)
+  const [command, ...commandArgs] = variant.args(bin)
+  assert(command, 'no command')
+
+  // When debugging the spawned command will write to stderr to help triage
+  // timeouts or other command errors. Each log line will be prefixed with some
+  // distinct info about the test since tests can be run in parallel. The logs
+  // will also be truncated after a certain number of lines because we don't
+  // need to see all the output, just whether it happened or not.
+  let debugLog = (..._: string[]) => {}
+  if (debug) {
+    const tapPrefix = t.fullname
+      .split(' > ')
+      .filter(r => r !== 'TAP')
+      .map(v => v.replace(/^test[\\/](.*?)\.ts$/, '$1'))
+    const type = tapPrefix.pop()
+    const testPrefix = [
+      tapPrefix.join('_'),
+      // The last part is the variant name so make it more prominent
+      type,
+      [bin, ...args].join('_'),
+    ]
+    debugLog = (msg: string, logPrefix?: string) => {
+      const lines = msg.trim().split('\n')
+      const length = lines.length
+      if (length > 20) {
+        lines.length = 20
+        lines.push(`__${length - 20} more lines__`)
+      }
+      const prefixParts = [...testPrefix, logPrefix]
+        .filter(v => v != null)
+        .map(v => v.replace(/\s+/g, '-'))
+      const prefix = `[${prefixParts.join('][')}] `
+      console.error(prefix + lines.join(`\n${prefix}`))
+    }
+  }
+
   return new Promise<SpawnCommandResult>((res, rej) => {
+    debugLog('__START__')
     const proc = spawn(command, [...commandArgs, ...args], {
       cwd: dirs.project,
       shell: true,
       windowsHide: true,
       env: {
-        ...ENV,
         ...variant.env,
         ...env,
         // We stop walking to find config at $HOME so set that to the root
@@ -130,16 +163,17 @@ const spawnCommand = async (
       const chunk = `${d.toString()}`
       stdout += chunk
       output += chunk
-      if (debug) t.comment(chunk)
+      debugLog(chunk, 'stdout')
     })
     proc.stderr.on('data', d => {
       const chunk = `${d.toString()}`
       stderr += chunk
       output += chunk
-      if (debug) t.comment(chunk)
+      debugLog(chunk, 'stderr')
     })
     proc
       .on('close', code => {
+        debugLog('__CLOSE__')
         res({
           stdout: stdout.trim(),
           stderr: stderr.trim(),
@@ -147,7 +181,10 @@ const spawnCommand = async (
           status: code,
         })
       })
-      .on('error', err => rej(err))
+      .on('error', err => {
+        debugLog('__ERROR__')
+        rej(err)
+      })
   })
 }
 
@@ -157,7 +194,7 @@ export const runVariant = async (
   args?: string[],
   { packageJson = true, ...options }: CommandOptions = {},
 ): Promise<CommandResult> => {
-  const cwd = t.testdir({
+  const root = t.testdir({
     project: {
       ...(packageJson ?
         {
@@ -176,43 +213,24 @@ export const runVariant = async (
     state: { ...options.state },
     runtime: { ...options.runtime },
     ...options.root,
-  } satisfies Omit<Fixtures, 'root'>)
+  } satisfies Omit<CommandFixtures, 'root'>)
 
-  const dirs: Record<FixtureName, string> = {
-    root: cwd,
-    project: join(cwd, 'project'),
-    config: join(cwd, 'config'),
-    cache: join(cwd, 'cache'),
-    data: join(cwd, 'data'),
-    state: join(cwd, 'state'),
-    runtime: join(cwd, 'runtime'),
+  const dirs: Record<CommandFixtureDirectory, string> = {
+    root,
+    project: join(root, 'project'),
+    config: join(root, 'config'),
+    cache: join(root, 'cache'),
+    data: join(root, 'data'),
+    state: join(root, 'state'),
+    runtime: join(root, 'runtime'),
   }
 
-  // This should not be necessary but the smoke-tests can be flaky with EBUSY or
-  // ENOTEMPTY errors when tap does its cleanup. I don't _think_ this points to
-  // any real bug in the vlt CLI so this explicit teardown function is a way to
-  // help with the cleanup to make it less flaky.
-  t.teardown(() => {
-    for (const [key, dir] of Object.entries(dirs)) {
-      if (key === 'root') continue
-      rmSync(dir, { force: true, recursive: true })
-    }
-  })
-
-  const result = await spawnCommand(t, variant, args, {
-    dirs,
-    ...options,
-  })
-
   return {
-    ...result,
+    ...(await spawnCommand(t, variant, args, {
+      dirs,
+      ...options,
+    })),
     dirs,
-    // `normalizedOutput` is used by t.strictSame to ensure variants produce
-    // the same output, so we need to normalize the dir names.
-    normalizedOutput: result.output.replaceAll(
-      t.testdirName,
-      '{{DIR_NAME}}',
-    ),
   }
 }
 
@@ -242,63 +260,64 @@ export const runMultiple = async (
   {
     test,
     variants = defaultVariants,
+    match = ['status', 'stdout', 'stderr'],
     ...options
   }: MultipleCommandOptions = {},
 ) => {
-  const ranVariants: [VariantType, CommandResult][] = []
+  const variantResults: [VariantType, CommandResult][] =
+    await Promise.all(
+      variants.map(async variant => {
+        let result = {} as CommandResult
+        await t.test(variant, async t => {
+          result = await runVariant(
+            Variants[variant],
+            t,
+            args,
+            options,
+          )
+          await test?.(t, {
+            ...result,
+            variant,
+            // allow tests to run followup commands for each variant
+            run: (args, runOptions) =>
+              spawnCommand(t, Variants[variant], args, {
+                dirs: result.dirs,
+                ...options,
+                ...runOptions,
+              }),
+          })
+        })
+        return [variant, result]
+      }),
+    )
 
-  for (const variant of variants) {
-    await t.test(variant, async t => {
-      const result = await runVariant(
-        Variants[variant],
-        t,
-        args,
-        options,
-      )
-      await test?.(t, {
-        ...result,
-        variant,
-        // allow tests to run followup commands for each variant
-        run: (args, runOptions) =>
-          spawnCommand(t, Variants[variant], args, {
-            dirs: result.dirs,
-            ...options,
-            ...runOptions,
-          }),
-      })
-      ranVariants.push([variant, result])
-    })
-  }
-
-  t.equal(ranVariants.length, variants.length, 'ran all variants')
+  t.equal(variantResults.length, variants.length, 'ran all variants')
 
   // treat published variant as the default result for other tests
   // if it exists, otherwise just the first one
-  const defaultResult =
-    ranVariants.find(([v]) => v === publishedVariant) ??
-    ranVariants[0]
+  const defaultVariant =
+    variantResults.find(([v]) => v === publishedVariant) ??
+    variantResults[0]
 
-  assert(defaultResult, 'no default result')
+  assert(defaultVariant, 'no default result')
 
-  // all commands should return the same output. this could get tricky
-  // when testing commands that should error since stack traces, etc
-  // will be different. if we want to test those in the future we can
-  // make this check optional
-  for (const [variant, result] of ranVariants) {
-    t.equal(
-      result.status,
-      defaultResult[1].status,
-      `status for ${variant} matches ${defaultResult[0]}`,
-    )
-    t.equal(
-      result.normalizedOutput,
-      defaultResult[1].normalizedOutput,
-      `normalized output for ${variant} matches ${defaultResult[0]}`,
-    )
+  const [defaultType, defaultResult] = defaultVariant
+
+  if (match) {
+    for (const [type, result] of variantResults) {
+      if (type === defaultType) continue
+      for (const key of match) {
+        t.equal(
+          cleanCommandResult(result, key),
+          cleanCommandResult(defaultResult, key),
+          `${type}.${key} === ${defaultType}.${key}`,
+        )
+      }
+    }
   }
 
   return {
-    ...defaultResult[1],
-    variants: Object.fromEntries(ranVariants),
+    ...defaultResult,
+    variants: Object.fromEntries(variantResults),
   }
 }

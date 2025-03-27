@@ -3,50 +3,21 @@ import { realpathSync, rmSync } from 'node:fs'
 import { bundle, compile, BINS_DIR } from '@vltpkg/infra-build'
 import type { Bin } from '@vltpkg/infra-build'
 import { whichSync } from '@vltpkg/which'
-
-const Node = realpathSync(whichSync('node'))
-
-const Deno = realpathSync(whichSync('deno'))
-
-const Source = {
-  dir: BINS_DIR,
-  bin(bin: Bin) {
-    return join(this.dir, `${bin}.ts`)
-  },
-} as const
-
-const Bundle = {
-  dir: resolve(process.cwd(), '.build-bundle'),
-  bin(bin: Bin) {
-    return join(this.dir, `${bin}.js`)
-  },
-} as const
-
-const Compile = {
-  dir: resolve(process.cwd(), '.build-compile'),
-  bin(bin: Bin) {
-    return join(this.dir, bin)
-  },
-} as const
+import t from 'tap'
 
 // only bundle/compile the vlt binary since that is all we test
 // this makes the tests run faster
 export const Bins = ['vlt'] as const
 
-export type VariantType =
-  | 'source'
-  | 'denoSource'
-  | 'bundle'
-  | 'denoBundle'
-  | 'compile'
+export const allVariants = [
+  'source',
+  'denoSource',
+  'bundle',
+  'denoBundle',
+  'compile',
+] as const
 
-export type Variant = {
-  spawn: (bin: Bin) => [string] | [string, string[]]
-  PATH?: string
-  env?: NodeJS.ProcessEnv
-  setup?: () => Promise<unknown>
-  cleanup?: () => void
-}
+export type VariantType = (typeof allVariants)[number]
 
 export const publishedVariant: VariantType = 'compile'
 
@@ -54,41 +25,106 @@ export const defaultVariants: VariantType[] = [
   'source',
   'bundle',
   'compile',
-]
+] as const
+
+export type Variant = {
+  args: (bin: Bin) => string[]
+  PATH?: string
+  env?: NodeJS.ProcessEnv
+  artifact?: Artifact
+}
+
+export type PrepareFn = (opts: {
+  outdir: string
+  bins: typeof Bins
+}) => Promise<unknown>
+
+class Artifact {
+  #dir: string
+  #bin: (bin: Bin) => string
+  #prepare?: PrepareFn
+
+  constructor(opts: {
+    dir: string
+    bin: (bin: Bin) => string
+    prepare?: PrepareFn
+  }) {
+    this.#dir = opts.dir
+    this.#bin = opts.bin
+    this.#prepare = opts.prepare
+  }
+
+  get dir() {
+    return this.#dir
+  }
+
+  bin(bin: Bin) {
+    return join(this.#dir, this.#bin(bin))
+  }
+
+  async prepare() {
+    if (this.#prepare) {
+      rmSync(this.#dir, { recursive: true, force: true })
+      await this.#prepare({ outdir: this.#dir, bins: Bins })
+    }
+  }
+
+  cleanup() {
+    if (this.#prepare && !t.saveFixture) {
+      rmSync(this.#dir, { recursive: true, force: true })
+    }
+  }
+}
+
+export const Artifacts: Record<
+  Exclude<VariantType, `deno${string}`>,
+  Artifact
+> = {
+  source: new Artifact({
+    dir: BINS_DIR,
+    bin: bin => `${bin}.ts`,
+  }),
+  bundle: new Artifact({
+    dir: resolve(process.cwd(), '.build-bundle'),
+    bin: bin => `${bin}.js`,
+    prepare: bundle,
+  }),
+  compile: new Artifact({
+    dir: resolve(process.cwd(), '.build-compile'),
+    bin: bin => (process.platform === 'win32' ? `${bin}.exe` : bin),
+    prepare: opts => compile({ ...opts, quiet: true }),
+  }),
+}
+
+export const Runtimes = {
+  node: realpathSync(whichSync('node')),
+  deno: realpathSync(whichSync('deno')),
+}
 
 export const Variants: Record<VariantType, Variant> = {
   source: {
-    spawn: bin => [Node, [Source.bin(bin)]],
+    args: bin => [Runtimes.node, Artifacts.source.bin(bin)],
     env: {
       NODE_OPTIONS: '--no-warnings --experimental-strip-types',
     },
   },
   denoSource: {
-    spawn: bin => [
-      Deno,
-      [
-        '-A',
-        '--unstable-node-globals',
-        '--unstable-bare-node-builtins',
-        Source.bin(bin),
-      ],
+    args: bin => [
+      Runtimes.deno,
+      '-A',
+      '--unstable-node-globals',
+      '--unstable-bare-node-builtins',
+      Artifacts.source.bin(bin),
     ],
   },
   bundle: {
-    spawn: bin => [Node, [Bundle.bin(bin)]],
-    setup: () => bundle({ outdir: Bundle.dir, bins: Bins }),
-    cleanup: () =>
-      rmSync(Bundle.dir, { recursive: true, force: true }),
+    args: bin => [Runtimes.node, Artifacts.bundle.bin(bin)],
   },
   denoBundle: {
-    spawn: bin => [Deno, ['-A', Bundle.bin(bin)]],
+    args: bin => [Runtimes.deno, '-A', Artifacts.bundle.bin(bin)],
   },
   compile: {
-    spawn: bin => [Compile.bin(bin)],
-    PATH: Compile.dir,
-    setup: () =>
-      compile({ outdir: Compile.dir, bins: Bins, quiet: true }),
-    cleanup: () =>
-      rmSync(Compile.dir, { recursive: true, force: true }),
+    args: bin => [Artifacts.compile.bin(bin)],
+    PATH: Artifacts.compile.dir,
   },
 }
