@@ -14,9 +14,7 @@ concurrency:
 jobs:
   lint:
     name: Benchmark
-
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4

@@ -1,0 +1,88 @@
+name: Smoke Test
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  pre-check:
+    name: Pre-Check
+    runs-on: ubuntu-latest
+    outputs:
+      smoke-test: ${{ steps.smoke-test.outputs.value }}
+    steps:
+      - name: Smoke Test
+        id: smoke-test
+        run: |
+          if [[ "${{ github.event_name }}" == "pull_request" && "${{ github.head_ref }}" != "release" ]]; then
+            echo "value=false" >> $GITHUB_OUTPUT
+          else
+            echo "value=true" >> $GITHUB_OUTPUT
+          fi
+
+  test:
+    name: Test - ${{ matrix.platform.name }} - ${{ matrix.node-version }}
+    needs: pre-check
+    if: needs.pre-check.outputs.smoke-test == 'true'
+    runs-on: ${{ matrix.platform.os }}
+    defaults:
+      run:
+        shell: ${{ matrix.platform.shell }}
+    strategy:
+      matrix:
+        node-version: [22.x]
+        platform:
+          - name: Ubuntu
+            os: ubuntu-latest
+            shell: bash
+          - name: macOS
+            os: macos-latest
+            shell: bash
+          - name: macOS Intel
+            os: macos-13
+            shell: bash
+          - name: Windows
+            os: windows-latest
+            shell: bash
+          - name: Windows Powershell
+            os: windows-latest
+            shell: powershell
+      fail-fast: false
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+          run_install: false
+
+      - name: Use Nodejs ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: pnpm
+          check-latest: true
+
+      - name: Install Dependencies
+        run: pnpm --filter="...smoke-test..." install --ignore-scripts
+
+      - name: Prepare
+        run: pnpm --filter="...smoke-test..." prepare
+
+      - name: Run Tests
+        run: pnpm --filter=smoke-test test
+        env:
+          TAP_JOBS: 1

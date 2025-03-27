@@ -1,6 +1,10 @@
 name: CI
 
 on:
+  push:
+    branches:
+      - main
+  pull_request:
   workflow_dispatch:
     inputs:
       filter:
@@ -8,71 +12,82 @@ on:
       full-matrix:
         description: 'Whether to run the full matrix of environments for testing.'
         type: boolean
-  push:
-    branches:
-      - main
-  pull_request:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  detect-filter:
-    name: Detect Filter
+  pre-check:
+    name: Pre-Check
     runs-on: ubuntu-latest
     outputs:
       changed: ${{ steps.filters.outputs.changed }}
       dependent: ${{ steps.filters.outputs.dependent }}
       related: ${{ steps.filters.outputs.related }}
-      full-matrix: ${{ steps.filters.outputs.full-matrix }}
-      git-ref: ${{ steps.filters.outputs.git-ref }}
+      base-ref: ${{ steps.filters.outputs.base-ref }}
+      full-matrix: ${{ steps.full-matrix.outputs.value }}
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
-      - name: Set run-script filters
-        id: filters
+      - name: Release PR
+        id: release-pr
         run: |
-          BRANCH="${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}"
-
-          # Non release PRs run only changes from main and the smaller matrix
-          if [[ "${{ github.event_name }}" == "pull_request" ]] && [[ "$BRANCH" != "release" ]]; then
-            filter="[origin/${{ github.base_ref }}]"
-            echo "changed=--filter \"$filter\"" >> "$GITHUB_OUTPUT"
-            echo "dependent=--filter \"...$filter\"" >> "$GITHUB_OUTPUT"
-            echo "related=--filter \"...$filter...\"" >> "$GITHUB_OUTPUT"
-            echo "full-matrix=false" >> "$GITHUB_OUTPUT"
-            echo "git-ref=${{ github.base_ref }}" >> "$GITHUB_OUTPUT"
-            exit 0
+          if [[ "${{ github.event_name }}" == "pull_request" && "${{ github.head_ref }}" == "release" ]]; then
+            echo "value=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "value=false" >> "$GITHUB_OUTPUT"
           fi
 
-          # Use the passed in filter otherwise default to running everything
-          filter="${{ inputs.filter }}"
-          if [[ -n "$filter" ]]; then              
-            echo "changed=--filter \"$filter\"" >> "$GITHUB_OUTPUT"
-            echo "dependent=--filter \"...$filter\"" >> "$GITHUB_OUTPUT"
-            echo "related=--filter \"...$filter...\"" >> "$GITHUB_OUTPUT"
+      - name: Recursive
+        id: recursive
+        run: |
+          if [[
+            "${{ steps.release-pr.outputs.value }}" == "true" ||
+            "${{ github.event_name }}" == "push" ||
+            ("${{ github.event_name }}" == "workflow_dispatch" && -z "${{ inputs.filter }}")
+          ]]; then
+            echo "value=true" >> "$GITHUB_OUTPUT"
           else
+            echo "value=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Filters
+        id: filters
+        run: |
+          if [[ "${{ steps.recursive.outputs.value }}" == "true" ]]; then
             echo "changed=--recursive" >> "$GITHUB_OUTPUT"
             echo "dependent=--recursive" >> "$GITHUB_OUTPUT"
             echo "related=--recursive" >> "$GITHUB_OUTPUT"
+            exit 0
           fi
 
-          # Run the full matrix is explicitly requested. Other workflow_dispatch events
-          # will not run the full matrix. Everything else will run the full matrix.
-          if [[ "${{ inputs.full-matrix }}" == "true" ]]; then
-            echo "full-matrix=true" >> "$GITHUB_OUTPUT"
-          elif [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
-            echo "full-matrix=false" >> "$GITHUB_OUTPUT"
+          if [[ -n "${{ inputs.filter}}" ]]; then
+            filter="${{ inputs.filter }}"
           else
-            echo "full-matrix=true" >> "$GITHUB_OUTPUT"
+            filter="[origin/${{ github.base_ref }}]"
+            echo "base-ref=${{ github.base_ref }}" >> "$GITHUB_OUTPUT"
+          fi
+
+          echo "changed=--filter \"$filter\"" >> "$GITHUB_OUTPUT"
+          echo "dependent=--filter \"...$filter\"" >> "$GITHUB_OUTPUT"
+          echo "related=--filter \"...$filter...\"" >> "$GITHUB_OUTPUT"
+
+      - name: Matrix
+        id: full-matrix
+        run: |
+          if [[
+            "${{ github.event_name }}" == "push" ||
+            "${{ steps.release-pr.outputs.value }}" == "true" ||
+            "${{ inputs.full-matrix }}" == "true"
+          ]]; then
+            echo "value=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "value=false" >> "$GITHUB_OUTPUT"
           fi
 
   lint:
     name: Lint
     # TODO: use filters to run a subset of lint/format
-    # needs: detect-filter
+    needs: pre-check
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
@@ -90,7 +105,7 @@ jobs:
           cache: pnpm
           check-latest: true
 
-      - name: Install dependencies
+      - name: Install Dependencies
         run: pnpm install
 
       - name: Formatting
@@ -144,7 +159,7 @@ jobs:
 
   test:
     name: Test - ${{ matrix.platform.name }} - ${{ matrix.node-version }}
-    needs: detect-filter
+    needs: pre-check
     runs-on: ${{ matrix.platform.os }}
     defaults:
       run:
@@ -169,18 +184,14 @@ jobs:
             os: windows-latest
             shell: powershell
         exclude:
-          - platform: ${{ fromJSON(needs.detect-filter.outputs.full-matrix == 'false' && '{"name":"macOS","os":"macos-latest","shell":"bash"}') }}
-          - platform: ${{ fromJSON(needs.detect-filter.outputs.full-matrix == 'false' && '{"name":"macOS Intel","os":"macos-13","shell":"bash"}') }}
-          - platform: ${{ fromJSON(needs.detect-filter.outputs.full-matrix == 'false' && '{"name":"Windows Powershell","os":"windows-latest","shell":"powershell"}') }}
+          - platform: ${{ fromJSON(needs.pre-check.outputs.full-matrix == 'false' && '{"name":"macOS","os":"macos-latest","shell":"bash"}') }}
+          - platform: ${{ fromJSON(needs.pre-check.outputs.full-matrix == 'false' && '{"name":"macOS Intel","os":"macos-13","shell":"bash"}') }}
+          - platform: ${{ fromJSON(needs.pre-check.outputs.full-matrix == 'false' && '{"name":"Windows Powershell","os":"windows-latest","shell":"powershell"}') }}
       fail-fast: false
 
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
-
-      - name: Fetch Git Ref to Compare
-        if: needs.detect-filter.outputs.git-ref
-        run: git fetch --no-tags --prune --depth=1 origin +refs/heads/${{ needs.detect-filter.outputs.git-ref }}:refs/remotes/origin/${{ needs.detect-filter.outputs.git-ref }}
 
       - uses: denoland/setup-deno@v2
         with:
@@ -198,29 +209,15 @@ jobs:
           cache: pnpm
           check-latest: true
 
-      - name: Install dependencies
-        run: pnpm ${{ needs.detect-filter.outputs.related }} install --ignore-scripts
+      - name: Fetch Git Ref to Compare
+        if: needs.pre-check.outputs.base-ref
+        run: git fetch --no-tags --prune --depth=1 origin +refs/heads/${{ needs.pre-check.outputs.base-ref }}:refs/remotes/origin/${{ needs.pre-check.outputs.base-ref }}
+
+      - name: Install Dependencies
+        run: pnpm ${{ needs.pre-check.outputs.related }} --filter="!smoke-test" install --ignore-scripts
 
       - name: Prepare
-        run: pnpm ${{ needs.detect-filter.outputs.related }} prepare
+        run: pnpm ${{ needs.pre-check.outputs.related }} --filter="!smoke-test" prepare
 
       - name: Run Tests
-        run: pnpm ${{ needs.detect-filter.outputs.dependent }} --filter="!smoke-test" --no-bail --aggregate-output test
-
-      - name: Needs Smoke Test
-        id: smoke-test
-        shell: bash
-        run: |
-          if [[ "${{ needs.detect-filter.outputs.full-matrix }}" == "true" ]]; then
-            echo "value=true" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-          if pnpm ${{ needs.detect-filter.outputs.changed }} exec pwd | grep "smoke-test"; then
-            echo "value=true" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-          echo "value=false" >> "$GITHUB_OUTPUT"
-
-      - name: Smoke Tests
-        if: steps.smoke-test.outputs.value == 'true'
-        run: pnpm --filter smoke-test test
+        run: pnpm ${{ needs.pre-check.outputs.dependent }} --filter="!smoke-test" --no-bail --aggregate-output test

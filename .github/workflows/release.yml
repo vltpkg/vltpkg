@@ -12,7 +12,7 @@ on:
         options:
           - pr
           - publish
-      dryRun:
+      dry-run:
         description: 'Dry run the PR creation or release'
         type: boolean
 
@@ -21,31 +21,25 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  detect-action:
-    name: Detect Release Action
+  pre-check:
+    name: Pre-Check
     runs-on: ubuntu-latest
     outputs:
-      action: ${{ steps.action.outputs.value }}
+      action: ${{ steps.action.outputs.value }}g
       dry-run: ${{ steps.dry-run.outputs.value }}
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
-      - name: Determine Dry run
+      - name: Dry Run
         id: dry-run
-        run: echo "value=${{ inputs.dryRun }}" >> $GITHUB_OUTPUT
+        run: echo "value=${{ inputs.dry-run }}" >> $GITHUB_OUTPUT
 
-      - name: Determine Action
+      - name: Action
         id: action
         run: |
-          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
-            if [[ -n "${{ inputs.action }}" ]]; then
-              echo "value=${{ inputs.action }}" >> $GITHUB_OUTPUT
-              exit 0
-            fi
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" && -n "${{ inputs.action }}" ]]; then
+            echo "value=${{ inputs.action }}" >> $GITHUB_OUTPUT
+            exit 0
           fi
-          MESSAGE=$(git log -1 --pretty=%B | head -n 1)
-          if [[ "$MESSAGE" =~ ^Release\ v ]]; then
+          if [[ "$(git log -1 --pretty=%B | head -n 1)" =~ ^Release\ v ]]; then
             echo "value=publish" >> $GITHUB_OUTPUT
           else
             echo "value=pr" >> $GITHUB_OUTPUT
@@ -54,8 +48,8 @@ jobs:
   pr:
     name: Release PR
     runs-on: ubuntu-latest
-    needs: detect-action
-    if: needs.detect-action.outputs.action == 'pr'
+    needs: pre-check
+    if: needs.pre-check.outputs.action == 'pr'
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -155,7 +149,7 @@ jobs:
 
       - name: Create or Update PR
         id: pr
-        if: needs.detect-action.outputs.dry-run != 'true'
+        if: needs.pre-check.outputs.dry-run != 'true'
         uses: peter-evans/create-pull-request@v7
         with:
           title: 'Release v${{ steps.version.outputs.value }}'
@@ -209,8 +203,8 @@ jobs:
   publish:
     name: Publish
     runs-on: ubuntu-latest
-    needs: detect-action
-    if: needs.detect-action.outputs.action == 'publish'
+    needs: pre-check
+    if: needs.pre-check.outputs.action == 'publish'
     permissions:
       contents: write
     steps:
@@ -249,12 +243,12 @@ jobs:
             --access=public \
             --no-git-checks \
             --publish-branch="${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" \
-            ${{ needs.detect-action.outputs.dry-run == 'true' && '--dry-run' }}
+            ${{ needs.pre-check.outputs.dry-run == 'true' && '--dry-run' }}
         env:
           NPM_AUTH_TOKEN: ${{ secrets.VLT_CLI_PUBLISH_TOKEN }}
 
       - name: Create Git Tag
-        if: needs.detect-action.outputs.dry-run != 'true'
+        if: needs.pre-check.outputs.dry-run != 'true'
         run: |
           VERSION=$(jq -r .version ./infra/cli-compiled/package.json)
           git config --global user.email "vltops@users.noreply.github.com"
