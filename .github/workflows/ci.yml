@@ -224,3 +224,31 @@ jobs:
       - name: Smoke Tests
         if: steps.smoke-test.outputs.value == 'true'
         run: pnpm --filter smoke-test test
+
+      - name: Smoke Tests 2
+        if: steps.smoke-test.outputs.value == 'true'
+        run: pnpm --filter smoke-test test
+      - name: Smoke Tests 3
+        if: steps.smoke-test.outputs.value == 'true'
+        run: pnpm --filter smoke-test test
+      - name: Smoke Tests 4
+        if: steps.smoke-test.outputs.value == 'true'
+        run: pnpm --filter smoke-test test
+      - name: Smoke Tests 5
+        if: steps.smoke-test.outputs.value == 'true'
+        run: pnpm --filter smoke-test test
+      - name: Smoke Tests 6
+        if: steps.smoke-test.outputs.value == 'true'
+        run: pnpm --filter smoke-test test
+      - name: Smoke Tests 7
+        if: steps.smoke-test.outputs.value == 'true'
+        run: pnpm --filter smoke-test test
+      - name: Smoke Tests 8
+        if: steps.smoke-test.outputs.value == 'true'
+        run: pnpm --filter smoke-test test
+      - name: Smoke Tests 9
+        if: steps.smoke-test.outputs.value == 'true'
+        run: pnpm --filter smoke-test test
+      - name: Smoke Tests 10
+        if: steps.smoke-test.outputs.value == 'true'
+        run: pnpm --filter smoke-test test
