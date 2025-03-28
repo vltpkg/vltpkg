@@ -42,8 +42,7 @@
     "extends": "../../tap-config.yaml",
     "after": "./test/fixtures/after.ts",
     "before": "./test/fixtures/before.ts",
-    "disable-coverage": true,
-    "save-fixture": true
+    "disable-coverage": true
   },
   "prettier": "../../.prettierrc.js",
   "module": "./src/index.ts",
