@@ -27,12 +27,12 @@ t.matchSnapshot(usage().usageMarkdown())
 await command({
   options: { registry: 'https://registry.vlt.javascript/' },
   positionals: ['add'],
-} as unknown as LoadedConfig)
+} as LoadedConfig)
 
 await command({
   options: { registry: 'https://registry.vlt.javascript/' },
   positionals: ['rm'],
-} as unknown as LoadedConfig)
+} as LoadedConfig)
 
 t.strictSame(log, [
   ['readPassword', 'Paste bearer token: '],
@@ -45,7 +45,7 @@ t.test('invalid token sub command', async t => {
     command({
       options: { registry: 'https://registry.vlt.javascript/' },
       positionals: ['wat'],
-    } as unknown as LoadedConfig),
+    } as LoadedConfig),
     { cause: { code: 'EUSAGE' } },
   )
 })

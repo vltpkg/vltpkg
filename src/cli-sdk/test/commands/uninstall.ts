@@ -1,6 +1,6 @@
 import t from 'tap'
 import type { LoadedConfig } from '../../src/config/index.ts'
-import { commandView } from '../fixtures/run.ts'
+import type { Graph } from '@vltpkg/graph'
 
 const options = {}
 let log = ''
@@ -12,9 +12,7 @@ const Command = await t.mockImport<
     async uninstall() {
       log += 'uninstall\n'
       return {
-        graph: {
-          toJSON: () => ({ uninstall: true }),
-        },
+        graph: {},
       }
     },
   },
@@ -41,12 +39,12 @@ await Command.command({
   positionals: ['abbrev@2'],
   values: {},
   options,
-} as unknown as LoadedConfig)
+} as LoadedConfig)
 t.matchSnapshot(log, 'should uninstall a dependency')
 
-t.test('json', async t => {
-  const output = await commandView(t, Command, {
-    values: { view: 'json' },
-  })
-  t.strictSame(JSON.parse(output), { uninstall: true })
-})
+t.strictSame(
+  Command.views.json({
+    toJSON: () => ({ install: true }),
+  } as unknown as Graph),
+  { install: true },
+)
