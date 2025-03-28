@@ -28,6 +28,9 @@ jobs:
       action: ${{ steps.action.outputs.value }}g
       dry-run: ${{ steps.dry-run.outputs.value }}
     steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
       - name: Dry Run
         id: dry-run
         run: echo "value=${{ inputs.dry-run }}" >> $GITHUB_OUTPUT
