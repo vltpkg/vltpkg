@@ -130,7 +130,7 @@ will contain any release related commits, usually just the bumping of
 When that PR is merged the same workflow will then publish the bumped
 packages.
 
-## Release Manager
+### Release Manager
 
 The weekly release manager's role is to merge the release PR. Pretty
 simple :smile:
@@ -142,6 +142,44 @@ release PR should be:
 1. Marked as ready for review
 1. Approved
 1. Merged
+
+#### Release PR
+
+The release PR will run additional checks not run on normal PRs. Those
+include:
+
+- Running all workspace tests
+- Running workspace tests in additional environments
+- Running the smoke-tests
+
+If these status checks fail unexpectedly, it could be because its
+flaky or its a real bug. You should check the workflow logs to
+determine which case it is.
+
+**View the latest release run**
+
+```sh
+gh run view $(gh run list -w "ci.yml" -b release -L 1 --json databaseId -q ".[].databaseId") -w
+```
+
+**Rerun the failed jobs**
+
+```sh
+gh run rerun $(gh run list -w "ci.yml" -b release -L 1 --json databaseId -q ".[].databaseId") --failed
+```
+
+#### Publish Workflow
+
+Once the release PR is merged, a publish will be triggered from CI. If
+this workflow fails (due to network, auth, etc issues) it can be
+safely rerun. It will only attempt to publish workspaces which have
+not had their current version published.
+
+**Rerun the publish job**
+
+```sh
+gh workflow run release.yml --ref=main -f action=publish
+```
 
 ### Published CLI Packages
 
