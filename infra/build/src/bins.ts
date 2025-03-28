@@ -1,4 +1,5 @@
 import { resolve } from 'node:path'
+import type { Commands } from '@vltpkg/cli-sdk/definition'
 
 export const BINS_DIR = resolve(import.meta.dirname, 'bins')
 
@@ -9,7 +10,7 @@ export type Bin = (typeof BINS)[number]
 export const isBin = (value: unknown): value is Bin =>
   BINS.includes(value as Bin)
 
-export const run = async (command?: string) => {
+export const run = async (command?: keyof Commands) => {
   if (process.env.__VLT_INTERNAL_MAIN) {
     // When compiled, spawned processes are run as scripts at specific paths
     // within the bin and set as an environment variable. So we read from the
