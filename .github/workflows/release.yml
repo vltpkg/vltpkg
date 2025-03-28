@@ -16,10 +16,6 @@ on:
         description: 'Dry run the PR creation or release'
         type: boolean
 
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
-
 jobs:
   pre-check:
     name: Pre-Check
