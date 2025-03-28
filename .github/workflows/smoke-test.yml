@@ -85,4 +85,10 @@ jobs:
       - name: Run Tests
         run: pnpm --filter=smoke-test test
         env:
+          # The smoke tests can be flaky in CI when run in parallel and
+          # when attempting to clean up fixtures. The issue with flakes
+          # when running in parallel could point to a real bug so future
+          # investigation is needed. For now, we will run the smoke tests
+          # in a single job to avoid flakes and ensure consistent results.
           TAP_JOBS: 1
+          TAP_SAVE_FIXTURE: 1
