@@ -46,13 +46,13 @@ const loadCommand = async <T>(
 
 const run = async () => {
   const start = Date.now()
-  const vlt = await Config.load(process.cwd(), process.argv)
+  const cwd = process.cwd()
+  const vlt = await Config.load(cwd, process.argv)
 
   if (vlt.get('version')) {
     return stdout(version)
   }
 
-  const cwd = process.cwd()
   const { monorepo } = vlt.options
 
   // Infer the workspace by being in that directory.

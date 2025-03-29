@@ -2,7 +2,7 @@ import { joinDepIDTuple } from '@vltpkg/dep-id'
 import { resolve } from 'node:path'
 import t from 'tap'
 import { command, usage } from '../../src/commands/run.ts'
-import { setupEnv } from '../fixtures/run.ts'
+import { setupEnv } from '../fixtures/util.ts'
 
 setupEnv(t)
 

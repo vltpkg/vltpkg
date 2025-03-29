@@ -14,10 +14,10 @@ export const usage: CommandUsage = () =>
                   vlt-lock.json and package.json appropriately.`,
   })
 
-export const views: Views<Graph> = {
+export const views = {
   json: g => g.toJSON(),
   human: InstallReporter,
-}
+} as const satisfies Views<Graph>
 
 export const command: CommandFn<Graph> = async conf => {
   const monorepo = conf.options.monorepo

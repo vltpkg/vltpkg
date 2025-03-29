@@ -1,9 +1,4 @@
-import {
-  Graph,
-  humanReadableOutput,
-  jsonOutput,
-  mermaidOutput,
-} from '@vltpkg/graph'
+import * as Graph from '@vltpkg/graph'
 import { PackageJson } from '@vltpkg/package-json'
 import type { SpecOptions } from '@vltpkg/spec'
 import { Spec } from '@vltpkg/spec'
@@ -12,8 +7,6 @@ import { PathScurry } from 'path-scurry'
 import type { Test } from 'tap'
 import t from 'tap'
 import type { LoadedConfig } from '../../src/config/index.ts'
-import type { CommandResultOptions } from '../fixtures/run.ts'
-import { commandView } from '../fixtures/run.ts'
 
 t.cleanSnapshot = s =>
   s.replace(
@@ -34,7 +27,7 @@ const sharedOptions = {
   packageJson: new PackageJson(),
 }
 
-const graph = new Graph({
+const graph = new Graph.Graph({
   projectRoot: t.testdirName,
   ...specOptions,
   mainManifest: {
@@ -102,19 +95,16 @@ const mockQuery = async (
   t.mockImport<typeof import('../../src/commands/query.ts')>(
     '../../src/commands/query.ts',
     {
-      '@vltpkg/graph': {
+      '@vltpkg/graph': t.createMock(Graph, {
         actual: {
           load: () => g,
         },
         install: () => {},
         uninstall: () => {},
-        humanReadableOutput,
-        jsonOutput,
-        mermaidOutput,
         reify: {},
         ideal: {},
         asDependency: () => {},
-      },
+      }),
       '@vltpkg/security-archive': {
         SecurityArchive: {
           async start() {
@@ -131,10 +121,36 @@ const mockQuery = async (
 const Command = await mockQuery(t)
 
 const runCommand = async (
-  t: Test,
-  o: CommandResultOptions,
-  cmd: typeof Command = Command,
-) => commandView(t, cmd, o)
+  {
+    options = {},
+    positionals = [],
+    values,
+  }: {
+    options?: object
+    positionals?: string[]
+    values: Partial<LoadedConfig['values']> & {
+      view: Exclude<LoadedConfig['values']['view'], 'inspect'>
+    }
+  },
+  cmd = Command,
+) => {
+  const config = {
+    options,
+    positionals,
+    values,
+  } as LoadedConfig
+  const res = await cmd.command(config)
+  const output = cmd.views[values.view](
+    res,
+    values.color ?
+      { colors: await import('chalk').then(r => r.default) }
+    : {},
+    config,
+  )
+  return values.view === 'json' ?
+      JSON.stringify(output, null, 2)
+    : output
+}
 
 t.test('query', async t => {
   t.matchSnapshot(Command.usage().usage(), 'should have usage')
@@ -146,7 +162,7 @@ t.test('query', async t => {
   }
 
   t.matchSnapshot(
-    await runCommand(t, {
+    await runCommand({
       positionals: [],
       values: {
         view: 'human',
@@ -157,7 +173,7 @@ t.test('query', async t => {
   )
 
   t.matchSnapshot(
-    await runCommand(t, {
+    await runCommand({
       positionals: [],
       values: {
         view: 'json',
@@ -168,7 +184,7 @@ t.test('query', async t => {
   )
 
   t.matchSnapshot(
-    await runCommand(t, {
+    await runCommand({
       positionals: [],
       values: {
         view: 'mermaid',
@@ -215,7 +231,7 @@ t.test('query', async t => {
     })
 
     const monorepo = Monorepo.load(dir)
-    const graph = new Graph({
+    const graph = new Graph.Graph({
       ...specOptions,
       projectRoot: dir,
       mainManifest,
@@ -233,7 +249,6 @@ t.test('query', async t => {
 
     t.matchSnapshot(
       await runCommand(
-        t,
         {
           positionals: [],
           values: {
@@ -248,7 +263,6 @@ t.test('query', async t => {
 
     t.matchSnapshot(
       await runCommand(
-        t,
         {
           positionals: [],
           values: {
@@ -263,7 +277,6 @@ t.test('query', async t => {
 
     t.matchSnapshot(
       await runCommand(
-        t,
         {
           positionals: [],
           values: {
@@ -320,7 +333,6 @@ t.test('query', async t => {
 
     t.matchSnapshot(
       await runCommand(
-        t,
         {
           positionals: [],
           values: {

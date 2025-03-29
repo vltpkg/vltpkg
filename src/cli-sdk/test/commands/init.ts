@@ -20,7 +20,7 @@ t.matchSnapshot(usage().usageMarkdown())
 
 t.test('test command', async t => {
   t.chdir(t.testdir())
-  await command({} as unknown as LoadedConfig)
+  await command({} as LoadedConfig)
   t.strictSame(inited, [t.testdirName])
 })
 
@@ -33,8 +33,8 @@ t.test('human output', t => {
           data: { name: 'myproject' },
         },
       },
-      {} as unknown as ViewOptions,
-      {} as unknown as LoadedConfig,
+      {} as ViewOptions,
+      {} as LoadedConfig,
     ),
   )
   t.end()
