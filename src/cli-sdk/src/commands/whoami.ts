@@ -16,10 +16,10 @@ type CommandResult = {
   username?: JSONField
 }
 
-export const views: Views<CommandResult> = {
+export const views = {
   human: r => r.username,
   json: r => r,
-}
+} as const satisfies Views<CommandResult>
 
 export const command: CommandFn<CommandResult> = async conf => {
   const rc = new RegistryClient(conf.options)

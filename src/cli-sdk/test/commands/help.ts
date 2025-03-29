@@ -1,5 +1,5 @@
 import t from 'tap'
-import { mockConfig } from '../fixtures/run.ts'
+import type { LoadedConfig } from '../../src/config/index.ts'
 
 t.test('basic', async t => {
   const { usage, command } = await t.mockImport<
@@ -7,7 +7,8 @@ t.test('basic', async t => {
   >('../../src/commands/help.ts')
   const USAGE = usage().usage()
   t.matchSnapshot(USAGE, 'usage')
-  const { Config } = await mockConfig(t)
-  const result = await command(await Config.load())
-  t.matchSnapshot(result, 'output')
+  const result = await command({
+    jack: { usage: () => 'usage' },
+  } as LoadedConfig)
+  t.equal(result, 'usage')
 })

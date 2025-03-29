@@ -1,68 +1,49 @@
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
+import { PackageJson } from '@vltpkg/package-json'
 import t from 'tap'
-import type { Test } from 'tap'
 import * as Command from '../../src/commands/pkg.ts'
 import type { LoadedConfig } from '../../src/config/index.ts'
 import type { ViewOptions } from '../../src/view.ts'
-import { setupCommand, setupEnv } from '../fixtures/run.ts'
+import { setupEnv } from '../fixtures/util.ts'
+import { kNewline, kIndent } from 'polite-json'
 
-t.matchSnapshot(Command.usage().usage(), 'usage')
+const readPackageJson = (dir: string) =>
+  readFileSync(join(dir, 'package.json'), 'utf8')
 
 setupEnv(t)
 
-t.beforeEach(t => {
-  t.context.exitCode = process.exitCode
-})
-
-t.afterEach(t => {
-  // only reset it if the test is still passing, otherwise
-  // it was set to 1 intentionally
-  if (t.passing()) process.exitCode = t.context.exitCode
-})
-
-const parseLogs = (r: { logs: string }) => JSON.parse(r.logs)
-const parseError = (r: { errs: string }) => r.errs
-
-const setupPkg = async (
-  t: Test,
-  method?: string,
-  packageJson: object = {},
-  { indent = 2 } = {},
-) => {
-  const setup = await setupCommand<typeof Command>(t, {
-    command: 'pkg',
-    argv: method ? [method] : [],
-    testdir: {
-      'package.json': JSON.stringify(packageJson, null, indent),
-    },
-  })
-  return {
-    ...setup,
-    readPackageJson: () =>
-      readFileSync(join(setup.dir, 'package.json'), 'utf8'),
-  }
-}
+t.matchSnapshot(Command.usage().usage(), 'usage')
 
 t.test('basic', async t => {
-  const exits = t.capture(process, 'exit').args
-  const { runCommand } = await setupPkg(t)
-  const error = await runCommand(['gett']).then(parseError)
-  t.match(error, 'Error: Unrecognized pkg command')
-  t.match(error, 'Found: gett')
-  t.match(error, 'Valid options: get, set, rm')
-  t.strictSame(exits(), [[1]])
+  const dir = t.testdir({
+    'vlt-workspaces.json': '[]',
+    'package.json': JSON.stringify({}),
+  })
+  const config = {
+    projectRoot: dir,
+    options: { packageJson: new PackageJson() },
+    positionals: ['gett'],
+  } as LoadedConfig
+  await t.rejects(Command.command(config), {
+    cause: {
+      code: 'EUSAGE',
+      found: 'gett',
+      validOptions: ['get', 'set', 'rm'],
+    },
+  })
 })
 
 t.test('init', async t => {
-  const setup = await setupCommand<typeof Command>(t, {
-    command: 'pkg',
-    argv: ['init'],
-    testdir: {},
-    mocks: {
-      '@vltpkg/init': await t.mockImport<
-        typeof import('@vltpkg/init')
-      >('@vltpkg/init', {
+  const dir = t.testdir()
+  t.chdir(dir)
+
+  const C = await t.mockImport<
+    typeof import('../../src/commands/pkg.ts')
+  >('../../src/commands/pkg.ts', {
+    '@vltpkg/init': await t.mockImport<typeof import('@vltpkg/init')>(
+      '@vltpkg/init',
+      {
         '@vltpkg/git': {
           async getUser() {
             return {
@@ -71,18 +52,22 @@ t.test('init', async t => {
             }
           },
         },
-      }),
-    },
+      },
+    ),
   })
-  await setup.runCommand()
+
+  await C.command({
+    projectRoot: dir,
+    options: { packageJson: new PackageJson() },
+    positionals: ['init'],
+  } as LoadedConfig)
   t.matchSnapshot(
-    readFileSync(join(setup.dir, 'package.json'), 'utf8'),
+    readPackageJson(dir),
     'should init a new package.json file',
   )
 })
 
 t.test('get', async t => {
-  const exits = t.capture(process, 'exit').args
   const pkg = {
     name: 'package-name',
     version: '1.0.0',
@@ -91,19 +76,47 @@ t.test('get', async t => {
       keywords: ['one', 'two', 'last', { obj: ['more', 'arrays'] }],
     },
   }
-  const { runCommand } = await setupPkg(t, 'get', pkg)
-  t.strictSame(await runCommand().then(parseLogs), pkg)
-  t.strictSame(await runCommand(['name']).then(parseLogs), pkg.name)
+  const dir = t.testdir({
+    'vlt-workspaces.json': '[]',
+    'package.json': JSON.stringify(pkg),
+  })
+
+  const config = {
+    projectRoot: dir,
+    options: { packageJson: new PackageJson() },
+  }
+
   t.strictSame(
-    await runCommand(['nested.keywords[3].obj[1]']).then(parseLogs),
-    (pkg.nested.keywords[3] as { obj: string[] }).obj[1],
+    await Command.command({
+      ...config,
+      positionals: ['get'],
+    } as LoadedConfig),
+    { ...pkg, [kNewline]: '', [kIndent]: '' },
   )
-  const error = await runCommand(['name', 'version']).then(parseError)
-  t.match(
-    error,
-    'Error: get requires not more than 1 argument. use `pick` to get more than 1.',
+
+  t.strictSame(
+    await Command.command({
+      ...config,
+      positionals: ['get', 'name'],
+    } as LoadedConfig),
+    'package-name',
   )
-  t.strictSame(exits(), [[1]])
+
+  t.strictSame(
+    await Command.command({
+      ...config,
+      positionals: ['get', 'nested.keywords[3].obj[1]'],
+    } as LoadedConfig),
+    'arrays',
+  )
+
+  await t.rejects(
+    Command.command({
+      ...config,
+      positionals: ['get', 'name', 'version'],
+    } as LoadedConfig),
+    { cause: { code: 'EUSAGE' } },
+  )
 })
 
 t.test('pick', async t => {
@@ -115,29 +128,62 @@ t.test('pick', async t => {
       keywords: ['one', 'two', 'last', { obj: ['more', 'arrays'] }],
     },
   }
-  const { runCommand } = await setupPkg(t, 'pick', pkg)
-  t.strictSame(await runCommand().then(parseLogs), pkg)
-  t.strictSame(await runCommand(['name']).then(parseLogs), {
-    name: pkg.name,
+
+  const dir = t.testdir({
+    'vlt-workspaces.json': '[]',
+    'package.json': JSON.stringify(pkg),
   })
+
+  const config = {
+    projectRoot: dir,
+    options: { packageJson: new PackageJson() },
+  }
+
   t.strictSame(
-    await runCommand(['nested.keywords[3].obj[1]']).then(parseLogs),
+    await Command.command({
+      ...config,
+      positionals: ['pick'],
+    } as LoadedConfig),
+    { ...pkg, [kNewline]: '', [kIndent]: '' },
+  )
+
+  t.strictSame(
+    await Command.command({
+      ...config,
+      positionals: ['pick', 'name'],
+    } as LoadedConfig),
+    { name: 'package-name' },
+  )
+
+  t.strictSame(
+    await Command.command({
+      ...config,
+      positionals: ['pick', 'nested.keywords[3].obj[1]'],
+    } as LoadedConfig),
     {
       nested: {
         keywords: [null, null, null, { obj: [null, 'arrays'] }],
       },
     },
   )
+
   t.strictSame(
-    await runCommand(['nested.keywords']).then(parseLogs),
+    await Command.command({
+      ...config,
+      positionals: ['pick', 'nested.keywords'],
+    } as LoadedConfig),
     {
       nested: {
         keywords: ['one', 'two', 'last', { obj: ['more', 'arrays'] }],
       },
     },
   )
+
   t.strictSame(
-    await runCommand(['name', 'version']).then(parseLogs),
+    await Command.command({
+      ...config,
+      positionals: ['pick', 'name', 'version'],
+    } as LoadedConfig),
     {
       name: pkg.name,
       version: pkg.version,
@@ -146,62 +192,94 @@ t.test('pick', async t => {
 })
 
 t.test('set', async t => {
-  const exits = t.capture(process, 'exit').args
-  const { runCommand, readPackageJson } = await setupPkg(t, 'set', {
+  const pkg = {
     name: 'package-name',
     version: '1.0.0',
     description: 'This is the desc',
+  }
+
+  const dir = t.testdir({
+    'vlt-workspaces.json': '[]',
+    'package.json': JSON.stringify(pkg),
   })
-  t.strictSame(await runCommand(['name=new-package-name']), {
-    errs: '',
-    logs: '',
-  })
-  t.strictSame(JSON.parse(readPackageJson()), {
+
+  const config = {
+    projectRoot: dir,
+    options: { packageJson: new PackageJson() },
+  }
+
+  await Command.command({
+    ...config,
+    positionals: ['set', 'name=new-package-name'],
+  } as LoadedConfig)
+  t.strictSame(JSON.parse(readPackageJson(dir)), {
     name: 'new-package-name',
     version: '1.0.0',
     description: 'This is the desc',
   })
-  t.match(
-    await runCommand().then(parseError),
-    'set requires arguments',
+
+  await t.rejects(
+    Command.command({
+      ...config,
+      positionals: ['set'],
+    } as LoadedConfig),
+    { cause: { code: 'EUSAGE' } },
   )
-  t.match(
-    await runCommand(['name']).then(parseError),
-    'set arguments must contain `=`',
+
+  await t.rejects(
+    Command.command({
+      ...config,
+      positionals: ['set', 'name'],
+    } as LoadedConfig),
+    { cause: { code: 'EUSAGE' } },
   )
-  t.strictSame(exits(), [[1], [1]])
 })
 
 t.test('delete', async t => {
-  const exits = t.capture(process, 'exit').args
-  const { runCommand, readPackageJson } = await setupPkg(t, 'rm', {
+  const pkg = {
     name: 'package-name',
     version: '1.0.0',
     description: 'This is the desc',
     nested: {
       keywords: ['one', 'two', 'last', { obj: ['more', 'arrays'] }],
     },
+  }
+
+  const dir = t.testdir({
+    'vlt-workspaces.json': '[]',
+    'package.json': JSON.stringify(pkg),
   })
-  t.strictSame(await runCommand(['name']), {
-    errs: '',
-    logs: '',
-  })
-  t.strictSame(await runCommand(['nested.keywords[3].obj[0]']), {
-    errs: '',
-    logs: '',
-  })
-  t.strictSame(JSON.parse(readPackageJson()), {
+
+  const config = {
+    projectRoot: dir,
+    options: { packageJson: new PackageJson() },
+  }
+
+  await Command.command({
+    ...config,
+    positionals: ['rm', 'name'],
+  } as LoadedConfig)
+
+  await Command.command({
+    ...config,
+    positionals: ['rm', 'nested.keywords[3].obj[0]'],
+  } as LoadedConfig)
+
+  t.strictSame(JSON.parse(readPackageJson(dir)), {
     version: '1.0.0',
     description: 'This is the desc',
     nested: {
       keywords: ['one', 'two', 'last', { obj: ['arrays'] }],
     },
   })
-  t.match(
-    await runCommand().then(parseError),
-    'rm requires arguments',
+
+  await t.rejects(
+    Command.command({
+      ...config,
+      positionals: ['rm'],
+    } as LoadedConfig),
+    { cause: { code: 'EUSAGE' } },
   )
-  t.strictSame(exits(), [[1]])
 })
 
 t.test('human output for init subcommand', t => {
@@ -213,20 +291,20 @@ t.test('human output for init subcommand', t => {
           data: { name: 'myproject' },
         },
       },
-      {} as unknown as ViewOptions,
+      {} as ViewOptions,
       {
         positionals: ['init'],
-      } as unknown as LoadedConfig,
+      } as LoadedConfig,
     ),
   )
   const res = {}
   t.equal(
     Command.views.human(
       res,
-      {} as unknown as ViewOptions,
+      {} as ViewOptions,
       {
         positionals: ['not', 'init'],
-      } as unknown as LoadedConfig,
+      } as LoadedConfig,
     ),
     res,
   )

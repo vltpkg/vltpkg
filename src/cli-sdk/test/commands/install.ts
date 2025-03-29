@@ -1,6 +1,6 @@
 import t from 'tap'
 import type { LoadedConfig } from '../../src/config/index.ts'
-import { commandView } from '../fixtures/run.ts'
+import type { Graph } from '@vltpkg/graph'
 
 const options = {}
 let log = ''
@@ -13,9 +13,7 @@ const Command = await t.mockImport<
     async install() {
       log += 'install\n'
       return {
-        graph: {
-          toJSON: () => ({ install: true }),
-        },
+        graph: {},
       }
     },
   },
@@ -52,9 +50,9 @@ await Command.command({
 } as unknown as LoadedConfig)
 t.matchSnapshot(log, 'should install adding a new dependency')
 
-t.test('json', async t => {
-  const output = await commandView(t, Command, {
-    values: { view: 'json' },
-  })
-  t.strictSame(JSON.parse(output), { install: true })
-})
+t.strictSame(
+  Command.views.json({
+    toJSON: () => ({ install: true }),
+  } as unknown as Graph),
+  { install: true },
+)

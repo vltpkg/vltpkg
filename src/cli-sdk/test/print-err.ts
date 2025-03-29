@@ -13,7 +13,7 @@ t.beforeEach(() => (printed.length = 0))
 
 const usage = (() => ({
   usage: () => 'usage',
-})) as unknown as CommandUsage
+})) as CommandUsage
 
 t.test('if not root error, print nothing', t => {
   printErr(false, usage, stderr)

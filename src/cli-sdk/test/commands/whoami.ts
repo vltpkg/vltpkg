@@ -1,5 +1,5 @@
 import t from 'tap'
-import { commandView } from '../fixtures/run.ts'
+import type { LoadedConfig } from '../../src/config/index.ts'
 
 const Command = await t.mockImport<
   typeof import('../../src/commands/whoami.ts')
@@ -19,18 +19,16 @@ const Command = await t.mockImport<
 
 t.matchSnapshot(Command.usage().usageMarkdown())
 
-t.test('human', async t => {
-  const output = await commandView(t, Command, {
-    values: { view: 'human' },
-    options: { registry: 'https://registry/' },
-  })
-  t.strictSame(output, 'username')
-})
+const config = {
+  options: {
+    registry: 'https://registry',
+  },
+} as LoadedConfig
 
-t.test('human', async t => {
-  const output = await commandView(t, Command, {
-    values: { view: 'json' },
-    options: { registry: 'https://registry/' },
-  })
-  t.strictSame(JSON.parse(output), { username: 'username' })
-})
+t.strictSame(await Command.command(config), { username: 'username' })
+
+t.strictSame(Command.views.json({}), {})
+t.strictSame(
+  Command.views.human({ username: 'username' }),
+  'username',
+)

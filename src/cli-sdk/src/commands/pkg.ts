@@ -8,10 +8,10 @@ import { commandUsage } from '../config/usage.ts'
 import type { CommandFn, CommandUsage } from '../index.ts'
 import { init } from '@vltpkg/init'
 import type { InitFileResults } from '@vltpkg/init'
-import type { ViewFn, Views } from '../view.ts'
+import type { Views } from '../view.ts'
 import { views as initViews } from './init.ts'
 
-export const views: Views & { human: ViewFn } = {
+export const views = {
   human: (results, options, config) => {
     // `vlt pkg init` is an alias for `vlt init`
     // use the same output handling
@@ -24,7 +24,7 @@ export const views: Views & { human: ViewFn } = {
     }
     return results
   },
-}
+} as const satisfies Views
 
 export const usage: CommandUsage = () =>
   commandUsage({

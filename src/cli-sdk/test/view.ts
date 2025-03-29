@@ -3,14 +3,11 @@ import { ViewClass, isViewClass } from '../src/view.ts'
 import type { ViewOptions } from '../src/view.ts'
 import type { LoadedConfig } from '../src/config/index.ts'
 
-t.equal(
-  isViewClass({} as unknown as typeof ViewClass<unknown>),
-  false,
-)
+t.equal(isViewClass({} as typeof ViewClass<unknown>), false)
 
 // just for coverage, really, you'd never instantiate one of these
 const options: ViewOptions = {}
-const config: LoadedConfig = {} as unknown as LoadedConfig
+const config: LoadedConfig = {} as LoadedConfig
 const vc = new ViewClass<true>(options, config)
 t.equal(vc.options, options, 'has options')
 t.equal(vc.config, config, 'has config')

@@ -8,7 +8,7 @@ const {
 } = await t.mockImport<
   typeof import('../../src/config/definition.ts')
 >('../../src/config/definition.ts')
-import { setupEnv } from '../fixtures/run.ts'
+import { setupEnv } from '../fixtures/util.ts'
 
 t.matchSnapshot(commands, 'commands')
 const defObj = definition.toJSON()

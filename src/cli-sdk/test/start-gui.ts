@@ -75,7 +75,7 @@ t.test('startGUI()', async t => {
       },
       address: (route = '') => `server-address${route}`,
     },
-  ) as unknown as VltServerListening
+  ) as VltServerListening
 
   let serverCreated = false
   let urlOpened = false
