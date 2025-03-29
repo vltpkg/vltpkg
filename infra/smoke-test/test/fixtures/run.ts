@@ -10,6 +10,9 @@ import {
   Variants,
 } from './variants.ts'
 import type { Variant, VariantType } from './variants.ts'
+import { spawn as spawnPty } from 'node-pty'
+import { ansiToAnsi } from 'ansi-to-pre'
+import { stripVTControlCharacters } from 'node:util'
 
 export type FixtureDir = Parameters<typeof t.fixture<'dir'>>[1]
 
@@ -27,11 +30,17 @@ export type CommandFixtures = Record<
   FixtureDir
 >
 
-export type SpawnCommandOptions = {
-  dirs: Record<CommandFixtureDirectory, string>
+export type SharedCommandOptions = {
   bin?: Bin
+  packageJson?: boolean | Record<string, unknown>
   env?: NodeJS.ProcessEnv
   debug?: boolean
+  tty?: boolean
+  cleanOutput?: (output: string) => string
+}
+
+export type SpawnCommandOptions = SharedCommandOptions & {
+  dirs: Record<CommandFixtureDirectory, string>
 }
 
 export type SpawnCommandResult = {
@@ -41,18 +50,19 @@ export type SpawnCommandResult = {
   output: string
 }
 
-export type CommandOptions = {
-  bin?: Bin
-  packageJson?: boolean | Record<string, unknown>
-  env?: NodeJS.ProcessEnv
-  debug?: boolean
-} & Partial<Record<CommandFixtureDirectory, FixtureDir>>
+export type CommandOptions = SharedCommandOptions &
+  Partial<Record<CommandFixtureDirectory, FixtureDir>>
 
 export type CommandResult = {
   status: number | null
   stdout: string
   stderr: string
   output: string
+  raw: {
+    stdout: string
+    stderr: string
+    output: string
+  }
   dirs: Record<CommandFixtureDirectory, string>
 }
 
@@ -77,14 +87,6 @@ export type MultipleCommandOptions = CommandOptions & {
   ) => Promise<void>
 }
 
-const cleanCommandResult = (
-  result: CommandResult,
-  key: Exclude<keyof CommandResult, 'dirs'>,
-) => {
-  if (key === 'status') return result[key]
-  return result[key].replaceAll(result.dirs.root, '{{CWD}}')
-}
-
 const spawnCommand = async (
   t: Test,
   variant: Variant,
@@ -94,6 +96,8 @@ const spawnCommand = async (
     env,
     debug = !!process.env.CI,
     bin = 'vlt',
+    tty = false,
+    cleanOutput = v => v,
   }: SpawnCommandOptions,
 ) => {
   const [command, ...commandArgs] = variant.args(bin)
@@ -131,14 +135,17 @@ const spawnCommand = async (
       console.error(prefix + lines.join(`\n${prefix}`))
     }
   }
+  debugLog('__START__')
 
-  return new Promise<SpawnCommandResult>((res, rej) => {
-    debugLog('__START__')
-    const proc = spawn(command, [...commandArgs, ...args], {
-      cwd: dirs.project,
-      shell: true,
-      windowsHide: true,
-      env: {
+  const { stdout, stderr, output, ...res } =
+    await new Promise<SpawnCommandResult>(res => {
+      const outputs = {
+        stdout: '',
+        stderr: '',
+        output: '',
+      }
+
+      const spawnEnv = {
         ...variant.env,
         ...env,
         // We stop walking to find config at $HOME so set that to the root
@@ -154,38 +161,70 @@ const spawnCommand = async (
         XDG_RUNTIME_DIR: dirs.runtime,
         // PATH is only set to what the variant needs
         PATH: variant.PATH ?? '',
-      },
-    })
-    let stdout = ''
-    let stderr = ''
-    let output = ''
-    proc.stdout.on('data', d => {
-      const chunk = `${d.toString()}`
-      stdout += chunk
-      output += chunk
-      debugLog(chunk, 'stdout')
-    })
-    proc.stderr.on('data', d => {
-      const chunk = `${d.toString()}`
-      stderr += chunk
-      output += chunk
-      debugLog(chunk, 'stderr')
-    })
-    proc
-      .on('close', code => {
-        debugLog('__CLOSE__')
-        res({
-          stdout: stdout.trim(),
-          stderr: stderr.trim(),
-          output: output.trim(),
-          status: code,
+      }
+
+      if (tty) {
+        const ttyProc = spawnPty(command, [...commandArgs, ...args], {
+          cwd: dirs.project,
+          env: spawnEnv,
         })
-      })
-      .on('error', err => {
-        debugLog('__ERROR__')
-        rej(err)
-      })
-  })
+        ttyProc.onData(data => {
+          // node-pty does not allow for separating stdout and stderr so we have
+          // to treat all data as both stdout and stderr. This means we can't
+          // use tty:true in smoke tests to test what is on stdout vs stderr.
+          outputs.stdout += data
+          outputs.stderr += data
+          outputs.output += data
+          // This is only used for debugging so we resolve all ansi control
+          // sequences and then strip colors to make it easier to read the logs.
+          debugLog(stripVTControlCharacters(ansiToAnsi(data)), 'tty')
+        })
+        ttyProc.onExit(({ exitCode }) =>
+          res({
+            ...outputs,
+            status: exitCode,
+          }),
+        )
+      } else {
+        const proc = spawn(command, [...commandArgs, ...args], {
+          cwd: dirs.project,
+          shell: true,
+          windowsHide: true,
+          env: spawnEnv,
+        })
+        proc.stdout.on('data', d => {
+          const chunk = `${d.toString()}`
+          outputs.stdout += chunk
+          outputs.output += chunk
+          debugLog(chunk, 'stdout')
+        })
+        proc.stderr.on('data', d => {
+          const chunk = `${d.toString()}`
+          outputs.stderr += chunk
+          outputs.output += chunk
+          debugLog(chunk, 'stderr')
+        })
+        proc.on('exit', code =>
+          res({
+            ...outputs,
+            status: code,
+          }),
+        )
+      }
+    })
+
+  debugLog('__CLOSE__')
+
+  const defaultClean = (output: string) =>
+    output.trim().replaceAll(dirs.root, '{{CWD}}')
+
+  return {
+    ...res,
+    raw: { stdout, stderr, output },
+    stdout: cleanOutput(defaultClean(stdout)),
+    stderr: cleanOutput(defaultClean(stderr)),
+    output: cleanOutput(defaultClean(output)),
+  }
 }
 
 export const runVariant = async (
@@ -305,11 +344,14 @@ export const runMultiple = async (
 
   if (match) {
     for (const [type, result] of variantResults) {
-      if (type === defaultType) continue
+      if (type === defaultType) {
+        continue
+      }
+
       for (const key of match) {
         t.equal(
-          cleanCommandResult(result, key),
-          cleanCommandResult(defaultResult, key),
+          result[key],
+          defaultResult[key],
           `${type}.${key} === ${defaultType}.${key}`,
         )
       }

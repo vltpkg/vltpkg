@@ -79,6 +79,10 @@ jobs:
       - name: Install Dependencies
         run: pnpm --filter="...smoke-test..." install --ignore-scripts
 
+      - name: Build Native Dependencies
+        if: runner.os != 'Windows'
+        run: pnpm --filter="smoke-test" rebuild node-pty
+
       - name: Prepare
         run: pnpm --filter="...smoke-test..." prepare
 

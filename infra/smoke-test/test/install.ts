@@ -2,6 +2,8 @@ import t from 'tap'
 import { runMultiple } from './fixtures/run.ts'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
+import { stripVTControlCharacters } from 'node:util'
+import { ansiToAnsi } from 'ansi-to-pre'
 
 t.test('help', async t => {
   const { status } = await runMultiple(t, ['install', '--help'])
@@ -20,5 +22,21 @@ t.test('install a package', async t => {
       )
     },
   })
+  t.equal(status, 0)
+})
+
+t.test('tty', { skip: process.platform === 'win32' }, async t => {
+  const { status, output } = await runMultiple(t, ['i', 'abbrev'], {
+    tty: true,
+    cleanOutput: v =>
+      stripVTControlCharacters(ansiToAnsi(v))
+        .replace(/\d+(ms)/, '{{TIME}}$1')
+        .replace(/\d+( requests)/, '{{REQUESTS}}$1'),
+  })
+  t.match(output, '{{REQUESTS}}')
+  t.match(output, '{{TIME}}')
+  t.match(output, 'build')
+  t.match(output, 'actual')
+  t.match(output, 'reify')
   t.equal(status, 0)
 })
