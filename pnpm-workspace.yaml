@@ -9,6 +9,7 @@ catalog:
   '@types/react': ^18.3.18
   '@types/react-dom': ^18.3.1
   '@types/serve-handler': ^6.1.4
+  ansi-to-pre: ^1.0.5
   chalk: ^5.3.0
   esbuild: ^0.25.0
   eslint: ^9.20.0
