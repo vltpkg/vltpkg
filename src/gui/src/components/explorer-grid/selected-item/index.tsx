@@ -9,6 +9,11 @@ import type { DetailsInfo } from '@/lib/external-info.js'
 import type { Tab } from '@/components/explorer-grid/selected-item/context.jsx'
 import { SelectedItemProvider } from '@/components/explorer-grid/selected-item/context.jsx'
 import {
+  InsightTabButton,
+  InsightTabContent,
+} from '@/components/explorer-grid/selected-item/tabs-insight.jsx'
+import { Insights } from '@/components/explorer-grid/selected-item/insights.jsx'
+import {
   OverviewTabButton,
   OverviewTabContent,
 } from '@/components/explorer-grid/selected-item/tabs-overview.jsx'
@@ -78,6 +83,7 @@ export const SelectedItem = ({ item }: GridItemOptions) => {
       <div className="relative">
         <Card className="relative my-4 border-muted">
           <ItemHeader />
+          <Insights />
           <div className="w-full">
             <Tabs
               onValueChange={setActiveTab as (tab: string) => void}
@@ -85,10 +91,12 @@ export const SelectedItem = ({ item }: GridItemOptions) => {
               <TabsList variant="ghost" className="w-full gap-2 px-6">
                 <OverviewTabButton />
                 <TabsManifestButton />
+                <InsightTabButton />
                 <VersionsTabButton />
               </TabsList>
               <OverviewTabContent />
               <TabsManifestContent />
+              <InsightTabContent />
               <VersionsTabContent />
             </Tabs>
           </div>
