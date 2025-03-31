@@ -3,7 +3,10 @@ import { cleanup, render } from '@testing-library/react'
 import html from 'diffable-html'
 import { useGraphStore as useStore } from '@/state/index.js'
 import { useSelectedItem } from '@/components/explorer-grid/selected-item/context.jsx'
-import { VersionsTabButton, VersionsTabContent } from '@/components/explorer-grid/selected-item/tabs-versions.jsx'
+import {
+  VersionsTabButton,
+  VersionsTabContent,
+} from '@/components/explorer-grid/selected-item/tabs-versions.jsx'
 import {
   SELECTED_ITEM,
   SELECTED_ITEM_DETAILS,
@@ -68,7 +71,7 @@ test('VersionsTabButton does not render when any verions are not available', () 
   })
 
   const { container } = render(<VersionsTabButton />)
-  expect(container.innerHTML).toBe("")
+  expect(container.innerHTML).toBe('')
 })
 
 test('VersionsTabContent renders default', () => {
@@ -101,5 +104,5 @@ test('VersionsTabContent does not render when any versions are not available', (
   })
 
   const { container } = render(<VersionsTabContent />)
-  expect(container.innerHTML).toBe("")
+  expect(container.innerHTML).toBe('')
 })

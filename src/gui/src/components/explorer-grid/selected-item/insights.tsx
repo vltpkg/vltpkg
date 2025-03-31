@@ -3,10 +3,8 @@ import {
   getAlertColor,
   InsightBadge,
 } from '@/components/explorer-grid/selected-item/insight-badge.jsx'
-import {
-  type SocketSecurityDetails,
-  SOCKET_SECURITY_DETAILS,
-} from '@/lib/constants/index.js'
+import { SOCKET_SECURITY_DETAILS } from '@/lib/constants/index.js'
+import type { SocketSecurityDetails } from '@/lib/constants/index.js'
 import type { State } from '@/state/types.js'
 import type { GridItemData } from '@/components/explorer-grid/types.js'
 
@@ -16,7 +14,7 @@ export const getSecurityAlerts = (
 ): SocketSecurityDetails[] | undefined => {
   if (!securityArchive) return
 
-  const securityAlerts: Map<string, SocketSecurityDetails> = new Map()
+  const securityAlerts = new Map<string, SocketSecurityDetails>()
   const depId = item.to?.id
   if (depId) {
     const depAlerts = securityArchive.get(depId)?.alerts

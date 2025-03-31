@@ -8,8 +8,8 @@ import {
   SELECTED_ITEM,
   SELECTED_ITEM_DETAILS,
 } from './__fixtures__/item.ts'
-import { NodeLike } from '@vltpkg/graph'
-import {
+import type { NodeLike } from '@vltpkg/graph'
+import type {
   PackageAlert,
   PackageReportData,
 } from '@vltpkg/security-archive'
