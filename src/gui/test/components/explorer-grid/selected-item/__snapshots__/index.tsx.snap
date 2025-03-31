@@ -11,6 +11,8 @@ exports[`SelectedItem renders connection lines 1`] = `
     <gui-card classname="relative my-4 border-muted">
       <gui-item-header>
       </gui-item-header>
+      <gui-insights>
+      </gui-insights>
       <div class="w-full">
         <gui-tabs value="overview">
           <gui-tabs-list
@@ -21,6 +23,8 @@ exports[`SelectedItem renders connection lines 1`] = `
             </gui-overview-tab-button>
             <gui-manifest-tab-button>
             </gui-manifest-tab-button>
+            <gui-insight-tab-button>
+            </gui-insight-tab-button>
             <gui-versions-tab-button>
             </gui-versions-tab-button>
           </gui-tabs-list>
@@ -28,6 +32,8 @@ exports[`SelectedItem renders connection lines 1`] = `
           </gui-overview-tab-content>
           <gui-manifest-tab-content>
           </gui-manifest-tab-content>
+          <gui-insight-tab-content>
+          </gui-insight-tab-content>
           <gui-versions-tab-content>
           </gui-versions-tab-content>
         </gui-tabs>
@@ -51,6 +57,8 @@ exports[`SelectedItem renders with the default structure 1`] = `
     <gui-card classname="relative my-4 border-muted">
       <gui-item-header>
       </gui-item-header>
+      <gui-insights>
+      </gui-insights>
       <div class="w-full">
         <gui-tabs value="overview">
           <gui-tabs-list
@@ -61,6 +69,8 @@ exports[`SelectedItem renders with the default structure 1`] = `
             </gui-overview-tab-button>
             <gui-manifest-tab-button>
             </gui-manifest-tab-button>
+            <gui-insight-tab-button>
+            </gui-insight-tab-button>
             <gui-versions-tab-button>
             </gui-versions-tab-button>
           </gui-tabs-list>
@@ -68,6 +78,8 @@ exports[`SelectedItem renders with the default structure 1`] = `
           </gui-overview-tab-content>
           <gui-manifest-tab-content>
           </gui-manifest-tab-content>
+          <gui-insight-tab-content>
+          </gui-insight-tab-content>
           <gui-versions-tab-content>
           </gui-versions-tab-content>
         </gui-tabs>

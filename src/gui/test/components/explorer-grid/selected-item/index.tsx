@@ -33,6 +33,13 @@ vi.mock(
 )
 
 vi.mock(
+  '@/components/explorer-grid/selected-item/insights.jsx',
+  () => ({
+    Insights: 'gui-insights',
+  }),
+)
+
+vi.mock(
   '@/components/explorer-grid/selected-item/tabs-overview.jsx',
   () => ({
     OverviewTabButton: 'gui-overview-tab-button',

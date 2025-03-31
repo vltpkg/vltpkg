@@ -1,0 +1,16 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`InsightBadge renders as a marker 1`] = `
+
+<span class="inline-flex items-center justify-center size-3 p-0 rounded-full text-foreground bg-red-500/70">
+</span>
+
+`;
+
+exports[`InsightBadge renders default 1`] = `
+
+<span class="inline-flex items-center justify-center rounded-full px-3 py-0.5 pt-1 text-xs font-courier font-normal text-foreground bg-red-500/70">
+  :mock-selector
+</span>
+
+`;
