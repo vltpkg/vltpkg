@@ -44,7 +44,7 @@ t.test('selects packages with a CVE alert', async t => {
               alerts: [
                 {
                   key: '12314320948130',
-                  type: 'npm',
+                  type: 'cve',
                   severity: 'high',
                   category: 'security',
                   props: {
