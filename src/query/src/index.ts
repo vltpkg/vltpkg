@@ -18,6 +18,7 @@ import type {
   ParserState,
   ParserFn,
   QueryResponse,
+  QueryResponseNode,
 } from './types.ts'
 
 export * from './types.ts'
@@ -181,6 +182,175 @@ export class Query {
     this.#securityArchive = securityArchive
   }
 
+  #getQueryResponseNodes(_nodes: Set<NodeLike>): QueryResponseNode[] {
+    const nodes = Array.from(_nodes) as QueryResponseNode[]
+    for (const node of nodes) {
+      const securityArchiveEntry = this.#securityArchive?.get(node.id)
+
+      // if a security archive entry is not found then the insights object
+      // should just be empty with scanned=false
+      if (!securityArchiveEntry) {
+        node.insights = {
+          scanned: false,
+        }
+        continue
+      }
+
+      // if a security archive entry is found then we can populate the insights
+      node.insights = {
+        scanned: true,
+        abandoned: securityArchiveEntry.alerts.some(
+          i => i.type === 'missingAuthor',
+        ),
+        confused: securityArchiveEntry.alerts.some(
+          i => i.type === 'manifestConfusion',
+        ),
+        cve: securityArchiveEntry.alerts
+          .filter(i => i.props.cveId)
+          // can not be undefined because of the filter above
+          // but TS doesn't know that
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          .map(i => i.props.cveId!),
+        cwe: Array.from(
+          new Set(
+            securityArchiveEntry.alerts
+              .filter(i => i.props.cveId)
+              .flatMap(i => i.props.cwes?.map(j => j.id)),
+          ),
+        ) as `CWE-${string}`[],
+        debug: securityArchiveEntry.alerts.some(
+          i => i.type === 'debugAccess',
+        ),
+        deprecated: securityArchiveEntry.alerts.some(
+          i => i.type === 'deprecated',
+        ),
+        dynamic: securityArchiveEntry.alerts.some(
+          i => i.type === 'dynamicRequire',
+        ),
+        entropic: securityArchiveEntry.alerts.some(
+          i => i.type === 'highEntropyStrings',
+        ),
+        env: securityArchiveEntry.alerts.some(
+          i => i.type === 'envVars',
+        ),
+        eval: securityArchiveEntry.alerts.some(
+          i => i.type === 'usesEval',
+        ),
+        fs: securityArchiveEntry.alerts.some(
+          i => i.type === 'filesystemAccess',
+        ),
+        license: {
+          unlicensed: securityArchiveEntry.alerts.some(
+            i => i.type === 'explicitlyUnlicensedItem',
+          ),
+          misc: securityArchiveEntry.alerts.some(
+            i => i.type === 'miscLicenseIssues',
+          ),
+          restricted: securityArchiveEntry.alerts.some(
+            i => i.type === 'nonpermissiveLicense',
+          ),
+          ambiguous: securityArchiveEntry.alerts.some(
+            i => i.type === 'ambiguousClassifier',
+          ),
+          copyleft: securityArchiveEntry.alerts.some(
+            i => i.type === 'copyleftLicense',
+          ),
+          unknown: securityArchiveEntry.alerts.some(
+            i => i.type === 'unidentifiedLicense',
+          ),
+          none: securityArchiveEntry.alerts.some(
+            i => i.type === 'noLicenseFound',
+          ),
+          exception: securityArchiveEntry.alerts.some(
+            i => i.type === 'licenseException',
+          ),
+        },
+        malware: {
+          low: securityArchiveEntry.alerts.some(
+            i => i.type === 'gptAnomaly',
+          ),
+          medium: securityArchiveEntry.alerts.some(
+            i => i.type === 'gptSecurity',
+          ),
+          high: securityArchiveEntry.alerts.some(
+            i => i.type === 'gptMalware',
+          ),
+          critical: securityArchiveEntry.alerts.some(
+            i => i.type === 'malware',
+          ),
+        },
+        minified: securityArchiveEntry.alerts.some(
+          i => i.type === 'minifiedFile',
+        ),
+        native: securityArchiveEntry.alerts.some(
+          i => i.type === 'hasNativeCode',
+        ),
+        network: securityArchiveEntry.alerts.some(
+          i => i.type === 'networkAccess',
+        ),
+        obfuscated: securityArchiveEntry.alerts.some(
+          i => i.type === 'obfuscatedFile',
+        ),
+        scripts: securityArchiveEntry.alerts.some(
+          i => i.type === 'installScripts',
+        ),
+        severity: {
+          low: securityArchiveEntry.alerts.some(
+            i => i.type === 'mildCVE',
+          ),
+          medium: securityArchiveEntry.alerts.some(
+            i => i.type === 'potentialVulnerability',
+          ),
+          high: securityArchiveEntry.alerts.some(
+            i => i.type === 'cve',
+          ),
+          critical: securityArchiveEntry.alerts.some(
+            i => i.type === 'criticalCVE',
+          ),
+        },
+        shell: securityArchiveEntry.alerts.some(
+          i => i.type === 'shellAccess',
+        ),
+        shrinkwrap: securityArchiveEntry.alerts.some(
+          i => i.type === 'shrinkwrap',
+        ),
+        squat: {
+          medium: securityArchiveEntry.alerts.some(
+            i => i.type === 'gptDidYouMean',
+          ),
+          critical: securityArchiveEntry.alerts.some(
+            i => i.type === 'didYouMean',
+          ),
+        },
+        suspicious: securityArchiveEntry.alerts.some(
+          i => i.type === 'suspiciousStarActivity',
+        ),
+        tracker: securityArchiveEntry.alerts.some(
+          i => i.type === 'telemetry',
+        ),
+        trivial: securityArchiveEntry.alerts.some(
+          i => i.type === 'trivialPackage',
+        ),
+        undesirable: securityArchiveEntry.alerts.some(
+          i => i.type === 'troll',
+        ),
+        unknown: securityArchiveEntry.alerts.some(
+          i => i.type === 'newAuthor',
+        ),
+        unmaintained: securityArchiveEntry.alerts.some(
+          i => i.type === 'unmaintained',
+        ),
+        unpopular: securityArchiveEntry.alerts.some(
+          i => i.type === 'unpopularPackage',
+        ),
+        unstable: securityArchiveEntry.alerts.some(
+          i => i.type === 'unstableOwnership',
+        ),
+      }
+    }
+    return nodes
+  }
+
   /**
    * Search the graph for nodes and edges that match the given query.
    */
@@ -227,7 +397,7 @@ export class Query {
 
     const res: QueryResponse = {
       edges: Array.from(collect.edges),
-      nodes: Array.from(collect.nodes),
+      nodes: this.#getQueryResponseNodes(collect.nodes),
     }
     this.#cache.set(query, res)
     return res
