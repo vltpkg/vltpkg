@@ -1,3 +1,4 @@
+import { useLocation } from 'react-router'
 import {
   SidebarMenu,
   SidebarMenuItem,
@@ -16,8 +17,11 @@ import { Button } from '@/components/ui/button.jsx'
 import { Kbd } from '@/components/ui/kbd.jsx'
 
 const SidebarLogo = () => {
+  const { pathname } = useLocation()
   const { resolvedTheme: theme } = useTheme()
   const { state, toggleSidebar } = useSidebar()
+
+  if (pathname.includes('/help')) return null
 
   return (
     <SidebarMenu>

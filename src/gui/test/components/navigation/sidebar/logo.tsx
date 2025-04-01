@@ -6,6 +6,10 @@ import { SidebarLogo } from '@/components/navigation/sidebar/logo.jsx'
 
 const toggleSidebarMock = vi.fn()
 
+vi.mock('react-router', () => ({
+  useLocation: vi.fn(() => ({ pathname: '/' })),
+}))
+
 vi.mock('@/components/ui/sidebar.jsx', () => ({
   SidebarMenu: 'gui-sidebar-menu',
   SidebarMenuButton: 'gui-sidebar-menu-button',
