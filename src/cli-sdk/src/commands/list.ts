@@ -29,7 +29,7 @@ export const usage: CommandUsage = () =>
         description:
           'List direct dependencies of the current project / workspace',
       },
-      '*': {
+      '"*"': {
         description:
           'List all dependencies for the current project / workspace',
       },

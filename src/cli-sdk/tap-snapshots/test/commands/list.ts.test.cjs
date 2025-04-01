@@ -31,7 +31,7 @@ direct dependencies of a project and any configured workspace.
 
     List all dependencies for the current project / workspace
 
-    ​vlt ls *
+    ​vlt ls "*"
 
     List all dependencies named 'foo', 'bar', or 'baz'
 
