@@ -8,33 +8,28 @@ import { getSimpleGraph } from '../fixtures/graph.ts'
 import type { ParserState } from '../../src/types.ts'
 
 t.test('scanned selector', async t => {
-  const getState = (hasSecurityData: boolean) => {
+  const getState = () => {
     const graph = getSimpleGraph()
     const ast = postcssSelectorParser().astSync(':scanned')
     const current = ast.first.first
     const testId = joinDepIDTuple(['registry', '', 'e@1.0.0'])
     const securityArchive = asSecurityArchiveLike(
-      new Map<string, PackageReportData>(
-        hasSecurityData ?
-          [
-            [
-              testId,
-              {
-                id: 'e@1.0.0',
-                author: [],
-                size: 0,
-                type: 'npm',
-                name: 'e',
-                version: '1.0.0',
-                license: 'MIT',
-                alerts: [],
-              },
-            ],
-          ]
-        : [],
-      ),
+      new Map<string, PackageReportData>([
+        [
+          testId,
+          {
+            id: 'e@1.0.0',
+            author: [],
+            size: 0,
+            type: 'npm',
+            name: 'e',
+            version: '1.0.0',
+            license: 'MIT',
+            alerts: [],
+          },
+        ],
+      ]),
     )
-    securityArchive.ok = hasSecurityData
     const state: ParserState = {
       current,
       initial: {
@@ -57,28 +52,15 @@ t.test('scanned selector', async t => {
     return state
   }
 
-  await t.test(
-    'should throw when security archive is not available',
-    async t => {
-      const state = getState(false)
-      await t.rejects(
-        scanned(state),
-        /Security report data missing/,
-        'should throw when security archive is not available',
-      )
+  const state = getState()
+  const result = await scanned(state)
+  t.matchSnapshot(
+    {
+      nodes: [...result.partial.nodes].map(n => n.id),
+      edges: [...result.partial.edges].map(
+        e => `${e.from.id}->${e.to?.id}`,
+      ),
     },
-  )
-
-  await t.test(
-    'should return state when security archive is available',
-    async t => {
-      const state = getState(true)
-      const result = await scanned(state)
-      t.strictSame(
-        result,
-        state,
-        'should passthrough if security archive data is available',
-      )
-    },
+    'should return only nodes with security archive data available',
   )
 })

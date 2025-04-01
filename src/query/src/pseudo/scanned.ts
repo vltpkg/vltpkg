@@ -1,13 +1,20 @@
-import { error } from '@vltpkg/error-cause'
+import { removeDanglingEdges, removeNode } from './helpers.ts'
 import type { ParserState } from '../types.ts'
 
 /**
- * Ensures that security report data is available for all packages in the current graph.
- * Throws an error if security data is not available.
+ * :scanned pseudo selector.
+ *
+ * Remove all nodes that do not have available metadata
+ * in the security archive.
  */
 export const scanned = async (state: ParserState) => {
-  if (!state.securityArchive?.ok) {
-    throw error('Security report data missing')
+  for (const node of state.partial.nodes) {
+    if (!state.securityArchive?.has(node.id)) {
+      removeNode(state, node)
+    }
   }
+
+  removeDanglingEdges(state)
+
   return state
 }
