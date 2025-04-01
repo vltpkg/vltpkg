@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react'
 import { createContext, useContext } from 'react'
 import { useGraphStore } from '@/state/index.js'
 
@@ -26,7 +27,7 @@ export const SelectedItemProvider = ({
   activeTab,
   setActiveTab,
 }: {
-  children: React.ReactNode
+  children: ReactNode
   selectedItem: GridItemData
   details: DetailsInfo
   activeTab: Tab
