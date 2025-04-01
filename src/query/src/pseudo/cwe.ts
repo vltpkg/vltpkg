@@ -64,7 +64,7 @@ export const cwe = async (state: ParserState) => {
   for (const node of state.partial.nodes) {
     const report = state.securityArchive.get(node.id)
     const exclude = !report?.alerts.some(alert =>
-      alert.props.cwes.some(
+      alert.props.cwes?.some(
         cwe =>
           cwe.id.trim().toLowerCase() === cweId.trim().toLowerCase(),
       ),
