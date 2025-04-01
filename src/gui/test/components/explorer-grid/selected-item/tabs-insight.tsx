@@ -29,6 +29,10 @@ vi.mock(
   }),
 )
 
+vi.mock('react-router', () => ({
+  Link: 'gui-link',
+}))
+
 vi.mock('@/components/ui/tabs.jsx', () => ({
   TabsTrigger: 'gui-tabs-trigger',
   TabsContent: 'gui-tabs-content',

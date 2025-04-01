@@ -82,7 +82,7 @@ test('Insights renders with security alerts', () => {
         alerts: [
           {
             key: '001',
-            type: 'abandoned',
+            type: 'missingAuthor',
             severity: 'middle',
             category: 'supplyChain',
           } as unknown as PackageAlert,

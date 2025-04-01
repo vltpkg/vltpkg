@@ -1,4 +1,4 @@
-import { motion, AnimatePresence } from 'framer-motion'
+import { Link } from 'react-router'
 import { useState } from 'react'
 import { TabsTrigger, TabsContent } from '@/components/ui/tabs.jsx'
 import { useSelectedItem } from '@/components/explorer-grid/selected-item/context.jsx'
@@ -7,7 +7,6 @@ import {
   getAlertColor,
 } from '@/components/explorer-grid/selected-item/insight-badge.jsx'
 import { getSecurityAlerts } from '@/components/explorer-grid/selected-item/insights.jsx'
-import { SOCKET_SECURITY_DETAILS } from '@/lib/constants/index.js'
 import type { SocketSecurityDetails } from '@/lib/constants/index.js'
 import type { PackageAlert } from '@vltpkg/security-archive'
 import { ArrowUpDown } from 'lucide-react'
@@ -124,19 +123,11 @@ const InsightItem = ({
 }
 
 export const InsightTabContent = () => {
-  const [insightsExpanded, setInsightsExpanded] =
-    useState<boolean>(false)
+  useState<boolean>(false)
   const { selectedItem, securityArchive } = useSelectedItem()
-  const [allPotentialInsights, setAllPotentialInsights] = useState<
-    SocketSecurityDetails[]
-  >(() => Object.values(SOCKET_SECURITY_DETAILS))
   const [securityAlerts, setSecurityAlerts] = useState<
     SocketSecurityDetails[] | undefined
   >(() => getSecurityAlerts(selectedItem, securityArchive))
-
-  const toggleInsights = () => {
-    setInsightsExpanded(prev => !prev)
-  }
 
   return (
     <TabsContent value="insights">
@@ -163,40 +154,12 @@ export const InsightTabContent = () => {
         )}
       </section>
 
-      <AnimatePresence>
-        {insightsExpanded && (
-          <motion.section
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="border-t-[2px] border-muted px-6 py-4">
-            <div className="mt-6 flex flex-col">
-              <p className="mb-6 w-full text-base font-medium">
-                All Potential Insights
-              </p>
-              <InsightHeader
-                items={allPotentialInsights}
-                setItems={setAllPotentialInsights}
-              />
-
-              <div className="flex flex-col divide-y-[1px] divide-muted">
-                {allPotentialInsights.map((insight, idx) => (
-                  <InsightItem key={idx} {...insight} />
-                ))}
-              </div>
-            </div>
-          </motion.section>
-        )}
-      </AnimatePresence>
-
       <div className="w-full px-6 py-4">
-        <button
-          onClick={toggleInsights}
+        <Link
+          to="/help/selectors"
           className="group relative z-[1] inline-flex w-fit cursor-default items-center justify-center text-sm text-muted-foreground transition-all duration-300 after:absolute after:left-[-0.75rem] after:z-[-1] after:h-[calc(100%+0.5rem)] after:w-[calc(100%+1.5rem)] after:rounded-sm after:bg-transparent after:content-[''] hover:text-foreground hover:after:bg-muted">
-          {insightsExpanded ?
-            'See Fewer Insights'
-          : 'See all potential Insights'}
-        </button>
+          See all Selectors & Insights
+        </Link>
       </div>
     </TabsContent>
   )
