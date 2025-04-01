@@ -28,6 +28,7 @@ t.test('install a package', async t => {
 t.test('tty', { skip: process.platform === 'win32' }, async t => {
   const { status, output } = await runMultiple(t, ['i', 'abbrev'], {
     tty: true,
+    match: ['status'],
     cleanOutput: v =>
       stripVTControlCharacters(ansiToAnsi(v))
         .replace(/\d+(ms)/, '{{TIME}}$1')
