@@ -7,6 +7,11 @@ import {
 } from './fixtures/graph.ts'
 import type { ParserState, PostcssNode } from '../src/types.ts'
 import { copyGraphSelectionState } from './fixtures/selector.ts'
+import { joinDepIDTuple } from '@vltpkg/dep-id'
+import {
+  asPackageReportData,
+  asSecurityArchiveLike,
+} from '@vltpkg/security-archive'
 
 type TestCase = [string, string[]]
 
@@ -130,6 +135,55 @@ t.test('cycle', async t => {
   const query = new Query({
     graph,
     securityArchive: undefined,
+    specOptions,
+  })
+  for (const [q, expected] of queryToExpected) {
+    t.strictSame(
+      (await query.search(q)).nodes.map(i => i.name),
+      expected,
+      `query > "${q}"`,
+    )
+  }
+})
+
+t.test('insights', async t => {
+  const graph = getSimpleGraph()
+  const queryToExpected = new Set<TestCase>([
+    ['*', ['my-project', 'a', 'b', 'c', 'd', 'e', 'f', '@x/y']], // universal
+    ['*:severity(high)', ['e']], // universal with severity filter
+    ['*:cve(CVE-2023-1234)', ['e']], // match cve by id
+  ])
+  const query = new Query({
+    graph,
+    securityArchive: asSecurityArchiveLike(
+      new Map([
+        [
+          joinDepIDTuple(['registry', '', 'e@1.0.0']),
+          asPackageReportData({
+            id: 'e@1.0.0',
+            author: [],
+            size: 0,
+            type: 'npm',
+            name: 'e',
+            version: '1.0.0',
+            license: 'MIT',
+            alerts: [
+              {
+                key: '12314320948130',
+                type: 'cve',
+                severity: 'high',
+                category: 'security',
+                props: {
+                  cveId: 'CVE-2023-1234',
+                  lastPublish: '2023-01-01',
+                  cwes: [{ id: 'CWE-1234' }],
+                },
+              },
+            ],
+          }),
+        ],
+      ]),
+    ),
     specOptions,
   })
   for (const [q, expected] of queryToExpected) {

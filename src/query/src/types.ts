@@ -56,7 +56,71 @@ export type ParserState = {
 
 export type QueryResponse = {
   edges: EdgeLike[]
-  nodes: NodeLike[]
+  nodes: QueryResponseNode[]
+}
+
+export type QueryResponseNode = {
+  insights: Insights
+} & NodeLike
+
+export type Insights = {
+  abandoned?: boolean
+  confused?: boolean
+  cve?: `CVE-${string}`[]
+  cwe?: `CWE-${string}`[]
+  debug?: boolean
+  deprecated?: boolean
+  dynamic?: boolean
+  entropic?: boolean
+  env?: boolean
+  eval?: boolean
+  fs?: boolean
+  license?: LicenseInsights
+  malware?: MalwareInsights
+  minified?: boolean
+  native?: boolean
+  network?: boolean
+  obfuscated?: boolean
+  scanned: boolean
+  scripts?: boolean
+  severity?: SeverityInsights
+  shell?: boolean
+  shrinkwrap?: boolean
+  squat?: SquatInsights
+  suspicious?: boolean
+  tracker?: boolean
+  trivial?: boolean
+  undesirable?: boolean
+  unknown?: boolean
+  unmaintained?: boolean
+  unpopular?: boolean
+  unstable?: boolean
+}
+
+export type LicenseInsights = {
+  unlicensed: boolean
+  misc: boolean
+  restricted: boolean
+  ambiguous: boolean
+  copyleft: boolean
+  unknown: boolean
+  none: boolean
+  exception: boolean
+}
+
+export type LeveledInsights = {
+  low: boolean
+  medium: boolean
+  high: boolean
+  critical: boolean
+}
+
+export type MalwareInsights = LeveledInsights
+export type SeverityInsights = LeveledInsights
+
+export type SquatInsights = {
+  medium: boolean
+  critical: boolean
 }
 
 export type ParserFn = (opt: ParserState) => Promise<ParserState>
