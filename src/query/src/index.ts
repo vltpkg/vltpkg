@@ -123,6 +123,7 @@ const securitySelectors = new Set([
   ':abandoned',
   ':confused',
   ':cve',
+  ':cwe',
   ':debug',
   ':deprecated',
   ':dynamic',
