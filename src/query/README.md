@@ -228,12 +228,7 @@ security data needs to be fetched prior to a `Query` instantiation.
 - `:obfuscated` Matches packages that use obfuscated files,
   intentionally packed to hide their behavior. This could be a sign of
   malware.
-- `:scanned` Ensures that security report data is available for all
-  packages in the current graph. This selector is useful for
-  validating that security data has been properly loaded before
-  running other security-related selectors. Make sure to prefix your
-  queries with `:scanned` to make sure all currently known package
-  alerts were checked.
+- `:scanned` Matches packages that have insight security metadata.
 - `:scripts` Matches packages that have scripts that are run when the
   package is installed. The majority of malware in npm is hidden in
   install scripts.
