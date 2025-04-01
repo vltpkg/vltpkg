@@ -1,14 +1,23 @@
-import { createBrowserRouter, RouterProvider } from 'react-router'
+import {
+  Outlet,
+  Navigate,
+  createBrowserRouter,
+  RouterProvider,
+} from 'react-router'
 import type { RouteObject } from 'react-router'
 
 import Layout from '@/layout.jsx'
 
+/** Root pages */
 import { CreateNewProject } from '@/app/create-new-project.jsx'
 import { Dashboard } from '@/app/dashboard.jsx'
 import { ErrorFound } from '@/app/error-found.jsx'
 import { Explorer } from '@/app/explorer.jsx'
 import { Labels } from '@/app/labels.jsx'
 import { Queries } from '@/app/queries.jsx'
+
+/** Help pages */
+import { HelpSelectors } from '@/app/help/help-selectors.jsx'
 
 export const routes: RouteObject[] = [
   {
@@ -40,11 +49,25 @@ export const routes: RouteObject[] = [
         path: 'queries',
         element: <Queries />,
       },
+      {
+        path: 'help',
+        element: <Outlet />,
+        children: [
+          {
+            index: true,
+            element: <Navigate to="selectors" replace />,
+          },
+          {
+            path: 'selectors',
+            element: <HelpSelectors />,
+          },
+        ],
+      },
     ],
   },
 ]
 
-const router = createBrowserRouter(routes)
+const router = createBrowserRouter(routes, { basename: '/' })
 
 export const Router = () => {
   return <RouterProvider router={router} />
