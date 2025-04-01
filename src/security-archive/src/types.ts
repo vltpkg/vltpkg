@@ -55,8 +55,8 @@ export const asSecurityArchiveLike = (
  */
 export type PackageAlertProps = {
   lastPublish: string
-  cveId: `CVE-${string}`
-  cwes: { id: `CWE-${string}` }[]
+  cveId?: `CVE-${string}`
+  cwes?: { id: `CWE-${string}` }[]
 }
 
 /**
