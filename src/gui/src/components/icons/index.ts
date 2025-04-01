@@ -1,9 +1,12 @@
+// vlt icons
+export * from './vlt-v.jsx'
+export * from './query.jsx'
+
 // general
 export * from './github.jsx'
 export * from './discord.jsx'
 export * from './linkedin.jsx'
 export * from './twitterx.jsx'
-export * from './vlt-v.jsx'
 
 // runtimes
 export * from './bun.jsx'
