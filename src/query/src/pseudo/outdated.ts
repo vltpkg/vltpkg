@@ -111,13 +111,12 @@ export const retrieveRemoteVersions = async (
     const packument: Packument = await response.json()
     return Object.keys(packument.versions).sort(compare)
   } catch (e) {
-    const err = e as Error
     // eslint-disable-next-line no-console
     console.warn(
       error('Could not retrieve registry versions', {
         name: String(node.name),
         spec,
-        cause: err,
+        error: e,
       }),
     )
     return []
@@ -268,7 +267,7 @@ export const outdated = async (state: ParserState) => {
     )
   } catch (err) {
     throw error('Failed to parse :outdated selector', {
-      cause: err,
+      error: err,
     })
   }
 

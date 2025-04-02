@@ -23,9 +23,25 @@ t.test('not an error', t => {
   t.end()
 })
 
-t.test('error with no cause', t => {
+t.test('regular error with no cause', t => {
   printErr(new Error('foo bar'), usage, stderr, formatter)
   t.match(printed, ['Unknown Error: foo bar', 'Stack:', /^\s{2}/])
+  t.end()
+})
+
+t.test('regular error with cause', t => {
+  printErr(
+    new Error('foo bar', { cause: { this_is_why_i_errored: true } }),
+    usage,
+    stderr,
+    formatter,
+  )
+  t.match(printed, [
+    'Unknown Error: foo bar',
+    'Cause: { this_is_why_i_errored: true }',
+    'Stack:',
+    /^\s{2}/,
+  ])
   t.end()
 })
 
@@ -82,12 +98,12 @@ t.test('error with an unknown code', t => {
   t.matchStrict(printed, [
     'Error: this is an error',
     '  Code: ENOTACODEWEKNOWABOUT',
-    `  Cause: {
-    __0__: 0,
-    __1__: 1,
-    __2__: 2,
-    __3__: 3,
-  ... 97 lines hidden ...`,
+    `Cause: {
+  __0__: 0,
+  __1__: 1,
+  __2__: 2,
+  __3__: 3,
+... 97 lines hidden ...`,
     'Stack:',
     /^\s{2}/,
   ])
@@ -99,7 +115,7 @@ t.test('error with a missing code', t => {
   printErr(er, usage, stderr, formatter)
   t.matchStrict(printed, [
     'Error: this is an error',
-    "  Cause: { found: 'wat' }",
+    "Cause: { found: 'wat' }",
     'Stack:',
     /^\s{2}/,
   ])

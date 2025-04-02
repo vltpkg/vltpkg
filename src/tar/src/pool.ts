@@ -52,7 +52,7 @@ export class Pool {
       ur.reject(
         error(message || 'failed without error message', {
           found: m,
-          cause: m.error,
+          error: m.error,
         }),
       )
     }

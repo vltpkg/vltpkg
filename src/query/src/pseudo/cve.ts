@@ -57,7 +57,7 @@ export const cve = async (state: ParserState) => {
       asPostcssNodeWithChildren(state.current).nodes,
     )
   } catch (err) {
-    throw error('Failed to parse :cve selector', { cause: err })
+    throw error('Failed to parse :cve selector', { error: err })
   }
 
   const { cveId } = internals

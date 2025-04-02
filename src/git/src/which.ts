@@ -23,7 +23,7 @@ export const which = (opts: GitOptions = {}) => {
       'No git binary found in $PATH',
       {
         code: 'ENOGIT',
-        cause: whichError,
+        error: whichError,
       },
       which,
     )

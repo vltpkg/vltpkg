@@ -1,5 +1,5 @@
-import { isErrorRoot } from '@vltpkg/error-cause'
-import type { ErrorWithCauseObject } from '@vltpkg/error-cause'
+import { isErrorWithCause } from '@vltpkg/error-cause'
+import type { ErrorWithCause } from '@vltpkg/error-cause'
 import type { CommandUsage } from './index.ts'
 import type { InspectOptions } from 'node:util'
 import { formatWithOptions } from 'node:util'
@@ -42,11 +42,8 @@ export const printErr = (
   stderr: (...a: string[]) => void,
   baseOpts?: ErrorFormatOptions,
 ) => {
-  const format: Formatter = (arg: unknown, options) => {
-    const { maxLines = 200, ...rest } = {
-      ...baseOpts,
-      ...options,
-    }
+  const format: Formatter = (arg: unknown, opts) => {
+    const { maxLines = 200, ...rest } = { ...baseOpts, ...opts }
     const lines = formatWithOptions(rest, arg).split('\n')
     const totalLines = lines.length
     if (totalLines > maxLines) {
@@ -58,14 +55,17 @@ export const printErr = (
 
   // This is an error thrown by us with an error cause object
   // that we can use to print a more informative error message.
-  if (isErrorRoot(err)) {
+  if (isErrorWithCause(err)) {
     return print(err, usage, stderr, format)
   }
 
   // We have an error but it's not one we know about.
-  // Just print it as best we can.
+  // Just print the standard error properties as best we can.
   if (err instanceof Error) {
     stderr(`Unknown ${err.name}: ${err.message}`)
+    if (err.cause) {
+      stderr(`Cause: ${format(err.cause)}`)
+    }
     const stack = trimStack(err)
     if (stack) {
       stderr(`Stack:`)
@@ -79,7 +79,7 @@ export const printErr = (
 }
 
 const print = (
-  err: ErrorWithCauseObject,
+  err: ErrorWithCause,
   usage: CommandUsage,
   stderr: (...a: string[]) => void,
   format: Formatter,
@@ -124,13 +124,15 @@ const print = (
     // If we have not written a formatter for this error code yet,
     // do our best to print some relevant information from it for
     // debugging without showing too much since the cause could
-    // be nested and large.
+    // be nested and large. Also note that some errors thrown won't
+    // have a code so we could make some common cause properties
+    // have special handling by default.
     default: {
       stderr(`${name}: ${message}`)
       if (code) {
         stderr(indent(`Code: ${code}`))
       }
-      stderr(indent(`Cause: ${format(omit(cause, 'code'))}`))
+      stderr(`Cause: ${format(omit(cause, 'code'))}`)
       const stack = trimStack(err)
       if (stack) {
         stderr(`Stack:`)

@@ -29,11 +29,7 @@ t.test('fails on missing package.json file', async t => {
       pj.read(dir)
       t.fail('expected to throw')
     } catch (er2) {
-      t.equal(
-        (er as Error).cause,
-        (er2 as Error).cause,
-        'error was cached',
-      )
+      t.matchOnlyStrict(er, er2, 'error was cached')
     }
   }
   t.throws(
@@ -42,7 +38,7 @@ t.test('fails on missing package.json file', async t => {
       message: 'Could not read package.json file',
       cause: {
         path: join(dir, 'package.json'),
-        cause: { code: 'ENOENT' },
+        error: { code: 'ENOENT' },
       },
     },
     'should throw ENOENT error on missing package.json file',
@@ -60,7 +56,7 @@ t.test('fails on malformed package.json file', async t => {
       message: 'Could not read package.json file',
       cause: {
         path: join(dir, 'package.json'),
-        cause: { name: 'JSONParseError' },
+        error: { name: 'JSONParseError' },
       },
     },
     'should throw JSON parser error on malformed package.json file',
@@ -144,7 +140,7 @@ t.test('fails on fs errors during write', async t => {
     message: 'Could not write package.json file',
     cause: {
       path: join(dir, 'package.json'),
-      cause: { message: 'yikes!' },
+      error: { message: 'yikes!' },
     },
   })
 })
