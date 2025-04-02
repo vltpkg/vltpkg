@@ -191,7 +191,7 @@ t.test('cancellable search', async t => {
   const q = ':root > * > *'
   await t.rejects(
     new Promise((_, reject) => {
-      void query.search(q, ac.signal).catch(err => {
+      void query.search(q, ac.signal).catch((err: unknown) => {
         reject(err)
       })
       ac.abort(new Error('query aborted'))
