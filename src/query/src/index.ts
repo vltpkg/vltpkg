@@ -206,16 +206,15 @@ export class Query {
           i => i.type === 'manifestConfusion',
         ),
         cve: securityArchiveEntry.alerts
-          .filter(i => i.props.cveId)
-          // can not be undefined because of the filter above
-          // but TS doesn't know that
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          .map(i => i.props.cveId!),
+          .filter(i => i.props?.cveId)
+          // can not be undefined because of the filter above but TS doesn't know that
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-non-null-asserted-optional-chain
+          .map(i => i.props?.cveId!),
         cwe: Array.from(
           new Set(
             securityArchiveEntry.alerts
-              .filter(i => i.props.cveId)
-              .flatMap(i => i.props.cwes?.map(j => j.id)),
+              .filter(i => i.props?.cveId)
+              .flatMap(i => i.props?.cwes?.map(j => j.id)),
           ),
         ) as `CWE-${string}`[],
         debug: securityArchiveEntry.alerts.some(

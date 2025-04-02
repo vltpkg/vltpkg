@@ -65,7 +65,7 @@ export const cve = async (state: ParserState) => {
     const report = state.securityArchive.get(node.id)
     const exclude = !report?.alerts.some(
       alert =>
-        alert.props.cveId?.trim().toLowerCase() ===
+        alert.props?.cveId?.trim().toLowerCase() ===
         cveId.trim().toLowerCase(),
     )
     if (exclude) {
