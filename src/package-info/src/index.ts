@@ -1,4 +1,4 @@
-import type { ErrorCauseObject } from '@vltpkg/error-cause'
+import type { ErrorCause } from '@vltpkg/error-cause'
 import { error } from '@vltpkg/error-cause'
 import { clone, resolve as gitResolve, revs } from '@vltpkg/git'
 import { PackageJson } from '@vltpkg/package-json'
@@ -193,7 +193,7 @@ export class PackageInfoClient {
             spec,
             options,
             'tar unpack failed',
-            { cause: er },
+            { error: er },
           )
         }
         return r
@@ -218,7 +218,7 @@ export class PackageInfoClient {
               spec,
               options,
               'tar unpack failed',
-              { cause: er },
+              { error: er },
             )
           }
         } else if (st.isDirectory()) {
@@ -482,7 +482,7 @@ export class PackageInfoClient {
               s,
               options,
               'tar unpack failed',
-              { cause: er },
+              { error: er },
             )
           }
           return this.packageJson.read(dir)
@@ -507,7 +507,7 @@ export class PackageInfoClient {
               s,
               options,
               'tar unpack failed',
-              { cause: er },
+              { error: er },
             )
           }
           return this.packageJson.read(dir)
@@ -723,7 +723,7 @@ export class PackageInfoClient {
     spec?: Spec,
     options: PackageInfoClientRequestOptions = {},
     message = 'Could not resolve',
-    extra: ErrorCauseObject = {},
+    extra: ErrorCause = {},
   ) {
     const { from = this.#projectRoot } = options
     const er = error(

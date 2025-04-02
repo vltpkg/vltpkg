@@ -75,7 +75,7 @@ export const squat = async (state: ParserState) => {
       asPostcssNodeWithChildren(state.current).nodes,
     )
   } catch (err) {
-    throw error('Failed to parse :squat selector', { cause: err })
+    throw error('Failed to parse :squat selector', { error: err })
   }
 
   const { kind } = internals

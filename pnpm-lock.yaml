@@ -1077,6 +1077,9 @@ importers:
 
   src/init:
     dependencies:
+      '@vltpkg/error-cause':
+        specifier: workspace:*
+        version: link:../error-cause
       '@vltpkg/git':
         specifier: workspace:*
         version: link:../git

@@ -156,6 +156,13 @@ export default tseslint.config(
           'ts-expect-error': false,
         },
       ],
+      'prefer-promise-reject-errors': 'off',
+      '@typescript-eslint/prefer-promise-reject-errors': [
+        'error',
+        {
+          allowThrowingUnknown: true,
+        },
+      ],
       // no enums because they mix types/values
       'no-restricted-syntax': [
         'error',
