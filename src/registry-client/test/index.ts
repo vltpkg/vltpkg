@@ -314,8 +314,7 @@ t.test('make a request', { saveFixture: true }, async t => {
 
   // make it look like an old cache entry that's an etag match
   res2.setHeader('date', new Date('2020-01-01').toISOString())
-  const { origin, pathname } = new URL(`${registryURL}/abbrev`)
-  const key = JSON.stringify([origin, 'GET', pathname])
+  const key = `${registryURL}/abbrev`
   rc.cache.set(key, res2.encode())
 
   // make a cache hit request
@@ -333,7 +332,7 @@ t.test('register unzipping for gzip responses', async t => {
   t.strictSame(unzipRegistered, [
     [
       resolve(t.testdirName, 'registry-client'),
-      JSON.stringify([registryURL, 'GET', '/some/tarball']),
+      String(new URL('/some/tarball', registryURL)),
     ],
   ])
 })
@@ -635,7 +634,7 @@ t.test('401 prompting otplease', async t => {
   const rc = t.context.rc as RegistryClient
   const result = await rc.request(
     new URL('/-/401/yolo', registryURL),
-    { cache: false },
+    { useCache: false },
   )
   t.match(result, { statusCode: 200 })
 })

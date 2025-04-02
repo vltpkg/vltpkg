@@ -4,6 +4,7 @@ import { jack } from 'jackspeak'
 export const defaultView = process.stdout.isTTY ? 'human' : 'json'
 
 const canonicalCommands = {
+  cache: 'cache',
   config: 'config',
   exec: 'exec',
   gui: 'gui',

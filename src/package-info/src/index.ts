@@ -4,7 +4,10 @@ import { clone, resolve as gitResolve, revs } from '@vltpkg/git'
 import { PackageJson } from '@vltpkg/package-json'
 import type { PickManifestOptions } from '@vltpkg/pick-manifest'
 import { pickManifest } from '@vltpkg/pick-manifest'
-import type { RegistryClientOptions } from '@vltpkg/registry-client'
+import type {
+  RegistryClientOptions,
+  RegistryClientRequestOptions,
+} from '@vltpkg/registry-client'
 import { RegistryClient } from '@vltpkg/registry-client'
 import type { SpecOptions } from '@vltpkg/spec'
 import { Spec } from '@vltpkg/spec'
@@ -49,10 +52,11 @@ export type PackageInfoClientOptions = RegistryClientOptions &
     workspace?: string[]
   }
 
-export type PackageInfoClientRequestOptions = PickManifestOptions & {
-  /** dir to resolve `file://` specifiers against. Defaults to projectRoot. */
-  from?: string
-}
+export type PackageInfoClientRequestOptions = PickManifestOptions &
+  RegistryClientRequestOptions & {
+    /** dir to resolve `file://` specifiers against. Defaults to projectRoot. */
+    from?: string
+  }
 
 export type PackageInfoClientExtractOptions =
   PackageInfoClientRequestOptions & {
@@ -297,6 +301,7 @@ export class PackageInfoClient {
           this.#trustedIntegrities.get(tarball) === integrity
 
         const response = await this.registryClient.request(tarball, {
+          ...options,
           integrity,
           trustIntegrity,
         })

@@ -201,12 +201,17 @@ export class Cache extends LRUCache<
    * Pass `true` as second argument to delete not just from the in-memory
    * cache, but the disk backing as well.
    */
-  delete(key: string, fromDisk = false): boolean {
+  delete(
+    key: string,
+    fromDisk = false,
+    integrity?: Integrity,
+  ): boolean {
     const ret = super.delete(key)
     if (fromDisk) {
       const path = this.path(key)
-      const p: Promise<void> = this.#diskDelete(path).then(deleted =>
-        this.#unpend(p, this.onDiskDelete, path, key, deleted),
+      const p: Promise<void> = this.#diskDelete(path, integrity).then(
+        deleted =>
+          this.#unpend(p, this.onDiskDelete, path, key, deleted),
       )
       this.#pend(p)
     }
@@ -327,8 +332,14 @@ export class Cache extends LRUCache<
   /**
    * Delete path and path + '.key'
    */
-  async #diskDelete(path: string): Promise<boolean> {
-    return rimraf([path, path + '.key'])
+  async #diskDelete(
+    path: string,
+    integrity?: Integrity,
+  ): Promise<boolean> {
+    const intPath = this.#maybeIntegrityPath(integrity)
+    const paths = [path, path + '.key']
+    if (intPath) paths.push(intPath)
+    return await rimraf(paths)
   }
 
   #maybeIntegrityPath(i?: Integrity) {

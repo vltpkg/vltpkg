@@ -33,12 +33,12 @@ import { isTokenResponse } from './token-response.ts'
 import type { WebAuthChallenge } from './web-auth-challenge.ts'
 import { isWebAuthChallenge } from './web-auth-challenge.ts'
 export {
+  CacheEntry,
   deleteToken,
   getKC,
   isToken,
   keychains,
   setToken,
-  type CacheEntry,
   type JSONObj,
   type Token,
   type TokenResponse,
@@ -139,7 +139,7 @@ export type RegistryClientRequestOptions = Omit<
    * Set to `false` to suppress ANY lookups from cache. This will also
    * prevent storing the result to the cache.
    */
-  cache?: false
+  useCache?: false
 
   /**
    * Set to pass an `npm-otp` header on the request.
@@ -215,8 +215,9 @@ export class RegistryClient {
     this.cache = new Cache({
       path,
       onDiskWrite(_path, key, data) {
-        if (CacheEntry.isGzipEntry(data))
+        if (CacheEntry.isGzipEntry(data)) {
           cacheUnzipRegister(path, key)
+        }
       },
     })
     const dispatch = new Agent(agentOptions)
@@ -285,14 +286,14 @@ export class RegistryClient {
       key: string
       token: string
     }>(tokensUrl, ({ token }) => s.startsWith(token), {
-      cache: false,
+      useCache: false,
     }).catch(() => undefined)
 
     if (record) {
       const { key } = record
       await this.request(
         new URL(`-/npm/v1/tokens/token/${key}`, registry),
-        { cache: false, method: 'DELETE' },
+        { useCache: false, method: 'DELETE' },
       )
     }
 
@@ -316,7 +317,7 @@ export class RegistryClient {
     const webLoginURL = new URL('-/v1/login', registry)
     const response = await this.request(webLoginURL, {
       method: 'POST',
-      cache: false,
+      useCache: false,
       headers: {
         'content-type': 'application/json',
         'npm-auth-type': 'web',
@@ -371,7 +372,7 @@ export class RegistryClient {
   ): Promise<TokenResponse> {
     const response = await this.request(url, {
       ...options,
-      cache: false,
+      useCache: false,
     })
     const { signal } = options as { signal?: AbortSignal }
     if (response.statusCode === 202) {
@@ -406,17 +407,18 @@ export class RegistryClient {
       otp = (process.env.VLT_OTP ?? '').trim(),
       staleWhileRevalidate = true,
     } = options
+    let { trustIntegrity } = options
 
     const m = isCacheableMethod(method) ? method : undefined
-    const { cache = !!m } = options
+    const { useCache = !!m } = options
 
     ;(signal as AbortSignal | null)?.throwIfAborted()
 
     // first, try to get from the cache before making any request.
-    const { origin, pathname } = u
-    const key = JSON.stringify([origin, method, pathname])
+    const { origin } = u
+    const key = `${method !== 'GET' ? method + ' ' : ''}${u}`
     const buffer =
-      cache ?
+      useCache ?
         await this.cache.fetch(key, { context: { integrity } })
       : undefined
 
@@ -477,7 +479,18 @@ export class RegistryClient {
       entry,
     )
 
-    if (cache) this.cache.set(key, result.encode())
+    if (result.getHeader('integrity')) {
+      trustIntegrity = true
+    }
+
+    if (result.isGzip && !trustIntegrity) {
+      result.checkIntegrity({ url })
+    }
+    if (useCache) {
+      this.cache.set(key, result.encode(), {
+        integrity: result.integrity,
+      })
+    }
     return result
   }
 
