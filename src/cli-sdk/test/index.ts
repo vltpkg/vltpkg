@@ -26,6 +26,7 @@ export const run = async (
     {
       '../src/output.ts': {
         stdout: (v: string) => state.logs.push(v),
+        stderr: (v: string) => state.logs.push(v),
         outputCommand: (_: unknown, conf: LoadedConfig) =>
           (state.config = conf),
       },

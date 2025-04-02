@@ -108,7 +108,11 @@ t.test('delete from disk', async t => {
     '4a3ed8147e37876adc8f76328e5abcc1b470e6acfc18efea0135f983604953a5' +
       '8e183c1a6086e91ba3e821d926f5fdeb37761c7ca0328a963f5e92870675b728.key',
   ])
-  c.delete('xyz', true)
+  c.delete(
+    'xyz',
+    true,
+    `sha512-${createHash('sha512').update('hello, world').digest('base64')}`,
+  )
   await c.promise()
   t.equal(oddCalled, true, 'diskDelete has now been called')
   t.strictSame(readdirSync(t.testdirName), [])

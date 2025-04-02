@@ -9,14 +9,7 @@ const code = (v: string) => [v, { pre: true }] as const
 const join = (args: (string | undefined)[], joiner = ' ') =>
   args.filter(Boolean).join(joiner)
 
-export const commandUsage = ({
-  command,
-  usage,
-  description,
-  subcommands,
-  examples,
-  options,
-}: {
+export type CommandUsageDefinition = {
   command: string
   usage: string | string[]
   description: string
@@ -26,7 +19,16 @@ export const commandUsage = ({
   >
   examples?: Record<string, { description: string }>
   options?: Record<string, { value?: string; description: string }>
-}): ReturnType<CommandUsage> => {
+}
+
+export const commandUsage = ({
+  command,
+  usage,
+  description,
+  subcommands,
+  examples,
+  options,
+}: CommandUsageDefinition): ReturnType<CommandUsage> => {
   const vlt = (s?: string) => join([`vlt`, command, s])
 
   const joinUsage = (usages?: string | string[]) =>

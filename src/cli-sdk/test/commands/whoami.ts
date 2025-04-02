@@ -6,9 +6,9 @@ const Command = await t.mockImport<
 >('../../src/commands/whoami.ts', {
   '@vltpkg/registry-client': {
     RegistryClient: class {
-      async request(url: string | URL, config: { cache: false }) {
+      async request(url: string | URL, config: { useCache: false }) {
         t.equal(String(url), 'https://registry/-/whoami')
-        t.strictSame(config, { cache: false })
+        t.strictSame(config, { useCache: false })
         return {
           json: () => ({ username: 'username' }),
         }
