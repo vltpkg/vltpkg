@@ -67,7 +67,7 @@ export type PackageAlert = {
   type: string
   severity: 'low' | 'medium' | 'high' | 'critical'
   category: string
-  props: PackageAlertProps
+  props?: PackageAlertProps
 }
 
 /**
