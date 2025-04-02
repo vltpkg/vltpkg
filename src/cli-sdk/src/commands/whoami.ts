@@ -25,7 +25,7 @@ export const command: CommandFn<CommandResult> = async conf => {
   const rc = new RegistryClient(conf.options)
   const response = await rc.request(
     new URL('-/whoami', conf.options.registry),
-    { cache: false },
+    { useCache: false },
   )
   const { username } = response.json()
   return { username }

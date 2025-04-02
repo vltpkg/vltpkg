@@ -36,6 +36,8 @@ const toRawEntry = (
 }
 
 const z = gzipSync(Buffer.from('{"hello":"world"}'))
+// make this portable by removing the OS indicator that zlib inserts
+z[9] = 255
 const ce = new CacheEntry(
   200,
   toRawHeaders({
@@ -44,6 +46,7 @@ const ce = new CacheEntry(
   }),
   {
     integrity: `sha512-${createHash('sha512').update(z).digest('base64')}`,
+    trustIntegrity: true,
   },
 )
 
@@ -108,6 +111,11 @@ t.equal(ce.isGzip, false, 'no longer gzipped after encode')
 t.equal(ce.text(), '{"hello":"world"}')
 t.equal(ce.isGzip, false, 'unzipped to read json')
 t.strictSame(ce.json(), { hello: 'world' })
+t.strictSame(
+  new CacheEntry(200, []).json(),
+  {},
+  'empty entry has empty json body, but does not throw',
+)
 t.strictSame(ce.body, { hello: 'world' })
 t.strictSame(
   ce.buffer(),

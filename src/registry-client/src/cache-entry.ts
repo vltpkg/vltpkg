@@ -127,45 +127,51 @@ export class CacheEntry {
     return ret
   }
 
-  [kCustomInspect](depth: number, options: InspectOptions): string {
-    const raw = this.text()
-    const isBinary = raw.includes('\x00')
-    const show = isBinary ? '[binary data]' : raw.substring(0, 512)
-    const text =
-      !isBinary && show.length < raw.length ? raw + '…' : show
+  toJSON() {
     const {
+      statusCode,
       valid,
       staleWhileRevalidate,
       cacheControl,
       date,
       contentType,
+      integrity,
+      maxAge,
+      isGzip,
+      isJSON,
     } = this
     /* c8 ignore start */
     const age =
       date ?
         Math.floor((Date.now() - date.getTime()) / 1000)
       : undefined
+    const expires =
+      date ? new Date(date.getTime() + this.maxAge * 1000) : undefined
     /* c8 ignore end */
-    const str = inspect(
-      {
-        statusCode: this.statusCode,
+    return Object.fromEntries(
+      Object.entries({
+        statusCode,
         headers: this.#headersAsObject,
-        // we know that gzip and tar data will always include at least
-        // one \x00, and json never will, so this is fine for our purpose,
-        // to avoid dumping bells and whatnot to the terminal.
-        text,
         contentType,
+        integrity,
         date,
+        expires,
         cacheControl,
         valid,
         staleWhileRevalidate,
         age,
-      },
-      {
-        depth,
-        ...options,
-      },
+        maxAge,
+        isGzip,
+        isJSON,
+      }).filter(([_, v]) => v !== undefined),
     )
+  }
+
+  [kCustomInspect](depth: number, options: InspectOptions): string {
+    const str = inspect(this.toJSON(), {
+      depth,
+      ...options,
+    })
     return `@vltpkg/registry-client.CacheEntry ${str}`
   }
 
@@ -411,7 +417,8 @@ export class CacheEntry {
    */
   json(): JSONObj {
     if (this.#json !== undefined) return this.#json
-    const obj = JSON.parse(this.text()) as JSONObj
+    const text = this.text()
+    const obj = JSON.parse(text || '{}') as JSONObj
     this.#json = obj
     return obj
   }
