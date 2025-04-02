@@ -87,6 +87,7 @@ export const selectorFixture =
       initial,
       partial,
       walk,
+      retries: 0,
       securityArchive: undefined,
       specOptions: {},
     }
