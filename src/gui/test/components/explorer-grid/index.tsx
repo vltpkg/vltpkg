@@ -4,7 +4,8 @@ import html from 'diffable-html'
 import { useGraphStore as useStore } from '@/state/index.js'
 import { joinDepIDTuple } from '@vltpkg/dep-id'
 import { Spec } from '@vltpkg/spec/browser'
-import type { EdgeLike, NodeLike } from '@vltpkg/graph'
+import type { EdgeLike } from '@vltpkg/graph'
+import type { QueryResponseNode } from '@vltpkg/query'
 import { ExplorerGrid } from '@/components/explorer-grid/index.jsx'
 import { load } from '@/state/load-graph.js'
 import type { RawNode } from '@/state/types.js'
@@ -66,17 +67,20 @@ test('explorer-grid with results', async () => {
       id: joinDepIDTuple(['file', '.']),
       name: 'root',
       version: '1.0.0',
-    } as NodeLike
+      insights: {},
+    } as QueryResponseNode
     const aNode = {
       id: joinDepIDTuple(['registry', '', 'a@1.0.0']),
       name: 'a',
       version: '1.0.0',
-    } as NodeLike
+      insights: {},
+    } as QueryResponseNode
     const bNode = {
       id: joinDepIDTuple(['registry', '', 'b@1.0.0']),
       name: 'b',
       version: '1.0.0',
-    } as NodeLike
+      insights: {},
+    } as QueryResponseNode
     const nodes = [rootNode, aNode, bNode]
     const edges = [
       {
@@ -110,17 +114,20 @@ test('explorer-grid with stack', async () => {
       id: joinDepIDTuple(['file', '.']),
       name: 'root',
       version: '1.0.0',
-    } as NodeLike
+      insights: {},
+    } as QueryResponseNode
     const aNode = {
       id: joinDepIDTuple(['registry', '', 'a@1.0.0']),
       name: 'a',
       version: '1.0.0',
-    } as NodeLike
+      insights: {},
+    } as QueryResponseNode
     const bNode = {
       id: joinDepIDTuple(['registry', '', 'b@1.0.0']),
       name: 'b',
       version: '1.0.0',
-    } as NodeLike
+      insights: {},
+    } as QueryResponseNode
     const nodes = [rootNode, aNode, bNode]
     const edges = [
       {
