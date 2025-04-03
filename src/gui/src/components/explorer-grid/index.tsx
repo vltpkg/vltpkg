@@ -18,12 +18,21 @@ import { GridHeader } from '@/components/explorer-grid/header.jsx'
 import { DependencySideBar } from '@/components/explorer-grid/dependency-side-bar.jsx'
 import { EmptyResultsState } from '@/components/explorer-grid/empty-results-state.jsx'
 import { Badge } from '@/components/ui/badge.jsx'
+import type { QueryResponseNode } from '@vltpkg/query'
 
-const getItemsData = (edges: EdgeLike[], nodes: NodeLike[]) => {
+const getItemsData = (
+  edges: EdgeLike[],
+  nodes: QueryResponseNode[],
+) => {
   const items: GridItemData[] = []
   const seenEdges = new Map<DepID, Set<EdgeLoose>>()
   const seenItems = new Map<DepID, GridItemData>()
-  const allEdges: EdgeLoose[] = [...edges]
+  const allEdges: EdgeLoose[] = [
+    ...edges.map(edge => ({
+      ...edge,
+      to: edge.to as QueryResponseNode | undefined,
+    })),
+  ]
 
   // creates empty edge references for importer nodes
   for (const node of nodes) {
@@ -165,7 +174,6 @@ const getWorkspaceItems = (
     const title = `${importer.name}${version}`
 
     items.push({
-      to: importer,
       id: importer.id,
       title,
       version: importer.version || '',
@@ -194,6 +202,7 @@ const getDependentItems = (node?: NodeLike, parent?: NodeLike) => {
       stacked: edge.from.edgesIn.size > 1,
       size: edge.from.edgesIn.size,
       labels: undefined,
+      to: edge.to as QueryResponseNode | undefined,
     })
   }
   return items
@@ -221,6 +230,7 @@ const getDependencyItems = (
       stacked: false,
       size: 1,
       labels: [edge.type],
+      to: edge.to as QueryResponseNode | undefined,
     })
   }
   return items
