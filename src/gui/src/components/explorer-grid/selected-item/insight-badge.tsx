@@ -16,7 +16,7 @@ export const getAlertColor = (
   switch (severity) {
     case 'low':
       return 'gray'
-    case 'middle':
+    case 'medium':
       return 'yellow'
     case 'high':
       return 'orange'
