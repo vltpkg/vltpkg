@@ -4,18 +4,14 @@ import type {
   NodeLike,
   EdgeLike,
 } from '@vltpkg/graph'
-import type { Query } from '@vltpkg/query'
+import type { Query, QueryResponseNode } from '@vltpkg/query'
 import type { SpecOptionsFilled } from '@vltpkg/spec/browser'
 import type { Integrity, Manifest } from '@vltpkg/types'
-import type { SecurityArchiveLike } from '@vltpkg/security-archive'
 
 export type Action = {
   updateDashboard: (dashboard: State['dashboard']) => void
   updateGraph: (graph: State['graph']) => void
   updateQ: (q: State['q']) => void
-  updateSecurityArchive: (
-    securityArchive: State['securityArchive'],
-  ) => void
   updateQuery: (query: State['query']) => void
   updateEdges: (edges: State['edges']) => void
   updateErrorCause: (errorCause: State['errorCause']) => void
@@ -111,7 +107,7 @@ export type State = {
   /**
    * List of selected nodes returned after querying the graph.
    */
-  nodes: NodeLike[]
+  nodes: QueryResponseNode[]
   /**
    * Information about the current project being explored.
    */
@@ -120,10 +116,6 @@ export type State = {
    * Holds the reference to the {@link Query} instance object.
    */
   q?: Query
-  /**
-   * The interface for interacting with the security archive.
-   */
-  securityArchive?: SecurityArchiveLike
   /**
    * The query string typed by the user in the interface.
    */

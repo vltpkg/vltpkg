@@ -48,7 +48,6 @@ const initialState: State = {
       window.location.href || 'http://localhost',
     ).searchParams.get('query') ?? DEFAULT_QUERY,
   q: undefined,
-  securityArchive: undefined,
   selectedNode: undefined,
   specOptions: undefined,
   stamp: newStamp(),
@@ -85,9 +84,6 @@ export const useGraphStore = create<Action & State>((set, get) => {
       set(() => ({ dashboard })),
     updateGraph: (graph: State['graph']) => set(() => ({ graph })),
     updateQ: (q: State['q']) => set(() => ({ q })),
-    updateSecurityArchive: (
-      securityArchive: State['securityArchive'],
-    ) => set(() => ({ securityArchive })),
     updateQuery: (query: State['query']) => set(() => ({ query })),
     updateEdges: (edges: State['edges']) => set(() => ({ edges })),
     updateErrorCause: (errorCause: State['errorCause']) =>
