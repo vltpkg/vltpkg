@@ -46,6 +46,7 @@ export const selectorColumns: ColumnDef<SocketSecurityDetails>[] = [
         </InsightBadge>
       )
     },
+    size: 100,
     maxSize: 100,
     minSize: 100,
     enableHiding: false,
@@ -60,6 +61,7 @@ export const selectorColumns: ColumnDef<SocketSecurityDetails>[] = [
 
       return <p className="text-sm">{category}</p>
     },
+    size: 100,
     maxSize: 100,
     minSize: 100,
     enableHiding: true,
@@ -82,6 +84,7 @@ export const selectorColumns: ColumnDef<SocketSecurityDetails>[] = [
         </p>
       )
     },
+    size: 50,
     maxSize: 50,
     minSize: 50,
     enableHiding: true,
@@ -94,6 +97,7 @@ export const selectorColumns: ColumnDef<SocketSecurityDetails>[] = [
 
       return <p className="text-sm">{description}</p>
     },
+    size: 200,
     minSize: 200,
     maxSize: 200,
     enableHiding: true,
