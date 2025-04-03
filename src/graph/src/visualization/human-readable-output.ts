@@ -128,11 +128,7 @@ export function humanReadableOutput(
     let header = ''
     let content = ''
 
-    const depIdTuple = item.node?.id && splitDepID(item.node.id)
-    const hasCustomReg =
-      depIdTuple?.[0] === 'registry' && depIdTuple[1]
-    const name =
-      hasCustomReg ? `${depIdTuple[1]}:${item.name}` : item.name
+    const name = item.name
     const decoratedName =
       (
         options.highlightSelection &&
@@ -164,17 +160,26 @@ export function humanReadableOutput(
         const parent = item
         const isLast =
           includedItems.indexOf(nextItem) === includedItems.length - 1
+
+        // prefixes the node name with the registry name
+        // if a custom registry name is found
+        const depIdTuple =
+          nextItem.node?.id && splitDepID(nextItem.node.id)
+        const hasCustomReg =
+          depIdTuple?.[0] === 'registry' && depIdTuple[1]
+        const nodeName =
+          hasCustomReg ?
+            `${depIdTuple[1]}:${nextItem.node?.name}`
+          : nextItem.node?.name
+
         const toName =
           nextItem.node?.version ?
-            `${nextItem.node.name}@${nextItem.node.version}`
-          : nextItem.node?.name
+            `${nodeName}@${nextItem.node.version}`
+          : nodeName
         const nextChar = isLast ? 'last-child' : 'middle-child'
 
         nextItem.name =
-          (
-            nextItem.node?.name &&
-            nextItem.edge?.name !== nextItem.edge?.to?.name
-          ) ?
+          nextItem.node?.name && nextItem.edge?.name !== nodeName ?
             `${nextItem.edge?.name} (${toName})`
           : `${nextItem.edge?.name}@${nextItem.node?.version || nextItem.edge?.spec.bareSpec}`
         nextItem.padding =
