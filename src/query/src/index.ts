@@ -12,8 +12,15 @@ import {
   isPostcssNodeWithChildren,
   asPostcssNodeWithChildren,
   isSelectorNode,
+  isAttributeNode,
+  isClassNode,
+  isCombinatorNode,
+  isIdentifierNode,
+  isPseudoNode,
 } from './types.ts'
 import type {
+  PostcssNode,
+  ParsedSelectorToken,
   PostcssNodeWithChildren,
   ParserState,
   ParserFn,
@@ -416,5 +423,63 @@ export class Query {
     }
     this.#cache.set(query, res)
     return res
+  }
+
+  /**
+   * Parses a query into an array of tokens
+   */
+  parse(query: string): ParsedSelectorToken[] {
+    if (!query) return []
+
+    const tokens: ParsedSelectorToken[] = []
+    const ast = postcssSelectorParser().astSync(query)
+
+    const processNode = (node: PostcssNode) => {
+      if (isAttributeNode(node)) {
+        // Always quote the value if it exists
+        const value = node.value || ''
+        const quotedValue = value ? `"${value}"` : ''
+        tokens.push({
+          token: `[${node.attribute}${node.operator || ''}${quotedValue}]`,
+          type: 'attribute',
+          key: node.attribute,
+          value: node.value,
+        })
+      } else if (isClassNode(node)) {
+        tokens.push({
+          token: `.${node.value}`,
+          type: 'class',
+          value: node.value,
+        })
+      } else if (isCombinatorNode(node)) {
+        // Skip whitespace combinators
+        if (node.value.trim() === '') return
+        tokens.push({
+          token: node.value,
+          type: 'combinator',
+        })
+      } else if (isIdentifierNode(node)) {
+        tokens.push({
+          token: `#${node.value}`,
+          type: 'id',
+          value: node.value,
+        })
+      } else if (isPseudoNode(node)) {
+        tokens.push({
+          token: `${node.value}`,
+          type: 'pseudo',
+          value: node.value,
+        })
+      }
+
+      if (isPostcssNodeWithChildren(node)) {
+        for (const child of node.nodes) {
+          processNode(child)
+        }
+      }
+    }
+
+    processNode(ast)
+    return tokens
   }
 }
