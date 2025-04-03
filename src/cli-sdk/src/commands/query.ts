@@ -26,7 +26,7 @@ export const usage: CommandUsage = () =>
     usage: [
       '',
       '<query> --view=[human | json | mermaid | gui]',
-      '<query> --expected-results=[number | boolean | string]',
+      '<query> --expect=[number | boolean | string]',
     ],
     description:
       'List installed dependencies matching the provided query.',
