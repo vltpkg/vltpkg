@@ -70,7 +70,7 @@ test('ItemHeader renders with default item', () => {
   vi.mocked(useSelectedItem).mockReturnValue({
     selectedItem: SELECTED_ITEM,
     selectedItemDetails: SELECTED_ITEM_DETAILS,
-    securityArchive: undefined,
+    insights: undefined,
     activeTab: 'overview',
     setActiveTab: vi.fn(),
   })
@@ -87,7 +87,7 @@ test('ItemHeader renders with custom registry item', () => {
   vi.mocked(useSelectedItem).mockReturnValue({
     selectedItem: SELECTED_ITEM_CUSTOM_REGISTRY,
     selectedItemDetails: SELECTED_ITEM_DETAILS,
-    securityArchive: undefined,
+    insights: undefined,
     activeTab: 'overview',
     setActiveTab: vi.fn(),
   })
@@ -110,7 +110,7 @@ test('ItemHeader renders with scoped registry item', () => {
   vi.mocked(useSelectedItem).mockReturnValue({
     selectedItem: SELECTED_ITEM_SCOPED_REGISTRY,
     selectedItemDetails: SELECTED_ITEM_DETAILS,
-    securityArchive: undefined,
+    insights: undefined,
     activeTab: 'overview',
     setActiveTab: vi.fn(),
   })
@@ -138,7 +138,7 @@ test('ItemHeader renders with default git host item', () => {
   vi.mocked(useSelectedItem).mockReturnValue({
     selectedItem: SELECTED_ITEM_DEFAULT_GIT_HOST,
     selectedItemDetails: SELECTED_ITEM_DETAILS,
-    securityArchive: undefined,
+    insights: undefined,
     activeTab: 'overview',
     setActiveTab: vi.fn(),
   })

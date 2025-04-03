@@ -2,13 +2,6 @@
 
 exports[`InsightTabButton renders default 1`] = `
 
-<gui-tabs-trigger
-  variant="ghost"
-  value="insights"
-  classname="w-fit px-2"
->
-  Insights
-</gui-tabs-trigger>
 
 `;
 
@@ -63,7 +56,7 @@ exports[`InsightTabContent renders with insights 1`] = `
         <div class="col-span-3 flex w-full items-start">
           <gui-insight-badge
             color="yellow"
-            tooltipcontent="middle"
+            tooltipcontent="medium"
           >
             :mock-selector
           </gui-insight-badge>
@@ -75,7 +68,7 @@ exports[`InsightTabContent renders with insights 1`] = `
         </div>
         <div class="col-span-5 flex">
           <p class="text-pretty text-sm">
-            A mock selector
+            Packages that are missing an author field
           </p>
         </div>
       </div>

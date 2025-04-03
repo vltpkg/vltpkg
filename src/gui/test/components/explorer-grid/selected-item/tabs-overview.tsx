@@ -47,7 +47,7 @@ beforeEach(() => {
   vi.mocked(useSelectedItem).mockReturnValue({
     selectedItem: SELECTED_ITEM,
     selectedItemDetails: SELECTED_ITEM_DETAILS,
-    securityArchive: undefined,
+    insights: undefined,
     activeTab: 'overview',
     setActiveTab: vi.fn(),
   })
@@ -105,7 +105,7 @@ test('OverviewTabContent renders with content', () => {
   vi.mocked(useSelectedItem).mockReturnValue({
     selectedItem: ITEM_WITH_DESCRIPTION,
     selectedItemDetails: ITEM_DETAILS_WITH_AUTHOR,
-    securityArchive: undefined,
+    insights: undefined,
     activeTab: 'overview',
     setActiveTab: vi.fn(),
   })

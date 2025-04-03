@@ -3,7 +3,6 @@ import { cleanup, render } from '@testing-library/react'
 import html from 'diffable-html'
 import { useGraphStore as useStore } from '@/state/index.js'
 import { useSelectedItem } from '@/components/explorer-grid/selected-item/context.jsx'
-import { getSecurityAlerts } from '@/components/explorer-grid/selected-item/insights.jsx'
 import {
   InsightTabButton,
   InsightTabContent,
@@ -66,7 +65,7 @@ beforeEach(() => {
   vi.mocked(useSelectedItem).mockReturnValue({
     selectedItem: SELECTED_ITEM,
     selectedItemDetails: SELECTED_ITEM_DETAILS,
-    securityArchive: undefined,
+    insights: undefined,
     activeTab: 'insight',
     setActiveTab: vi.fn(),
   })
@@ -88,14 +87,22 @@ test('InsightTabContent renders default', () => {
 })
 
 test('InsightTabContent renders with insights', () => {
-  vi.mocked(getSecurityAlerts).mockReturnValue([
+  const mockedInsights: SocketSecurityDetails[] = [
     {
       selector: ':mock-selector',
-      description: 'A mock selector',
-      severity: 'middle',
+      description: 'Packages that are missing an author field',
       category: 'Supply Chain',
-    } as SocketSecurityDetails,
-  ])
+      severity: 'medium',
+    },
+  ]
+
+  vi.mocked(useSelectedItem).mockReturnValue({
+    selectedItem: SELECTED_ITEM,
+    selectedItemDetails: SELECTED_ITEM_DETAILS,
+    insights: mockedInsights,
+    activeTab: 'insight',
+    setActiveTab: vi.fn(),
+  })
 
   const Container = () => {
     return <InsightTabContent />

@@ -8,11 +8,7 @@ import {
   SELECTED_ITEM,
   SELECTED_ITEM_DETAILS,
 } from './__fixtures__/item.ts'
-import type { NodeLike } from '@vltpkg/graph'
-import type {
-  PackageAlert,
-  PackageReportData,
-} from '@vltpkg/security-archive'
+import { SocketSecurityDetails } from '@/lib/constants/socket.js'
 
 vi.mock(
   '@/components/explorer-grid/selected-item/context.jsx',
@@ -45,7 +41,7 @@ beforeEach(() => {
   vi.mocked(useSelectedItem).mockReturnValue({
     selectedItem: SELECTED_ITEM,
     selectedItemDetails: SELECTED_ITEM_DETAILS,
-    securityArchive: undefined,
+    insights: undefined,
     activeTab: 'insight',
     setActiveTab: vi.fn(),
   })
@@ -66,41 +62,20 @@ test('Insights renders default', () => {
   expect(container.innerHTML).toBe('')
 })
 
-test('Insights renders with security alerts', () => {
-  const mockSecurityArchive = new Map<string, PackageReportData>([
-    [
-      'test-dep-id',
-      {
-        id: 'test-dep-id',
-        author: ['John doe'],
-        size: 100,
-        type: 'npm',
-        namespace: '@test',
-        name: 'test-dep',
-        version: '1.0.0',
-        license: 'MIT',
-        alerts: [
-          {
-            key: '001',
-            type: 'missingAuthor',
-            severity: 'middle',
-            category: 'supplyChain',
-          } as unknown as PackageAlert,
-        ],
-      },
-    ],
-  ])
+test('Insights renders with socket insights', () => {
+  const mockInsights: SocketSecurityDetails[] = [
+    {
+      selector: ':mock-selector',
+      description: 'Mock description',
+      category: 'Supply Chain',
+      severity: 'medium',
+    },
+  ]
 
   vi.mocked(useSelectedItem).mockReturnValue({
-    selectedItem: {
-      ...SELECTED_ITEM,
-      to: {
-        id: 'test-dep-id',
-        edgesOut: true,
-      } as unknown as NodeLike,
-    },
+    selectedItem: SELECTED_ITEM,
     selectedItemDetails: SELECTED_ITEM_DETAILS,
-    securityArchive: mockSecurityArchive,
+    insights: mockInsights,
     activeTab: 'insight',
     setActiveTab: vi.fn(),
   })

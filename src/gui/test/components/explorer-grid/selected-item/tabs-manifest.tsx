@@ -50,7 +50,7 @@ test('TabsManifestButton does not render when manifest is not available', () => 
   vi.mocked(useSelectedItem).mockReturnValue({
     selectedItem: SELECTED_ITEM,
     selectedItemDetails: SELECTED_ITEM_DETAILS,
-    securityArchive: undefined,
+    insights: undefined,
     activeTab: 'manifest',
     setActiveTab: vi.fn(),
   })
@@ -87,7 +87,7 @@ test('TabsManifestButton renders default', () => {
   vi.mocked(useSelectedItem).mockReturnValue({
     selectedItem: ITEM_WITH_MANIFEST,
     selectedItemDetails: SELECTED_ITEM_DETAILS,
-    securityArchive: undefined,
+    insights: undefined,
     activeTab: 'manifest',
     setActiveTab: vi.fn(),
   })
@@ -104,7 +104,7 @@ test('TabsManifestContent does not render when manifest is not available', () =>
   vi.mocked(useSelectedItem).mockReturnValue({
     selectedItem: SELECTED_ITEM,
     selectedItemDetails: SELECTED_ITEM_DETAILS,
-    securityArchive: undefined,
+    insights: undefined,
     activeTab: 'manifest',
     setActiveTab: vi.fn(),
   })
@@ -141,7 +141,7 @@ test('TabsManifestContent renders default', () => {
   vi.mocked(useSelectedItem).mockReturnValue({
     selectedItem: ITEM_WITH_MANIFEST,
     selectedItemDetails: SELECTED_ITEM_DETAILS,
-    securityArchive: undefined,
+    insights: undefined,
     activeTab: 'manifest',
     setActiveTab: vi.fn(),
   })

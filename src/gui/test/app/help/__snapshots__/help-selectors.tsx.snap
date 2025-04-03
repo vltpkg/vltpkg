@@ -14,7 +14,7 @@ Selectors provide a powerful way to analyze your project’s dependencies using 
 
 For more information about our Selectors, see the [Selectors documentation](https://docs.vlt.sh/cli/selectors)
     </gui-react-markdown>
-    <div class="flex h-full w-full flex-col gap-8 overflow-y-scroll px-8 mt-8">
+    <div class="flex h-full w-full flex-col gap-8 overflow-y-scroll px-8 pt-8">
       <div class="flex gap-2">
         <gui-input
           placeholder="Filter Selectors"
@@ -25,7 +25,7 @@ For more information about our Selectors, see the [Selectors documentation](http
         </gui-table-view-dropdown>
       </div>
       <gui-data-table
-        data="[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object]"
+        data="[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object],[object Object]"
         filtervalue
         columns="[object Object],[object Object],[object Object],[object Object]"
         columnvisibility="[object Object]"

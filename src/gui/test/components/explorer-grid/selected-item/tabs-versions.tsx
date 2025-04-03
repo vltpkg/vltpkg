@@ -48,7 +48,7 @@ test('VersionsTabButton renders default', () => {
       ...SELECTED_ITEM_DETAILS,
       versions: ['1.0.0', '1.0.1', '1.0.2'],
     } as DetailsInfo,
-    securityArchive: undefined,
+    insights: undefined,
     activeTab: 'versions',
     setActiveTab: vi.fn(),
   })
@@ -65,7 +65,7 @@ test('VersionsTabButton does not render when any verions are not available', () 
       greaterVersions: undefined,
       versions: undefined,
     } as DetailsInfo,
-    securityArchive: undefined,
+    insights: undefined,
     activeTab: 'versions',
     setActiveTab: vi.fn(),
   })
@@ -81,7 +81,7 @@ test('VersionsTabContent renders default', () => {
       ...SELECTED_ITEM_DETAILS,
       versions: ['1.0.0', '1.0.1', '1.0.2'],
     } as DetailsInfo,
-    securityArchive: undefined,
+    insights: undefined,
     activeTab: 'versions',
     setActiveTab: vi.fn(),
   })
@@ -98,7 +98,7 @@ test('VersionsTabContent does not render when any versions are not available', (
       greaterVersions: undefined,
       versions: undefined,
     } as DetailsInfo,
-    securityArchive: undefined,
+    insights: undefined,
     activeTab: 'versions',
     setActiveTab: vi.fn(),
   })

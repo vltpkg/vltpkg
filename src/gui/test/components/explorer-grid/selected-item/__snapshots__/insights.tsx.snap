@@ -1,13 +1,13 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`Insights renders with security alerts 1`] = `
+exports[`Insights renders with socket insights 1`] = `
 
 <section class="flex w-full flex-wrap gap-3 px-6 pb-6">
   <gui-insight-badge
     color="yellow"
-    tooltipcontent="middle severity"
+    tooltipcontent="medium severity"
   >
-    :abandoned
+    :mock-selector
   </gui-insight-badge>
 </section>
 
