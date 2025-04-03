@@ -19,6 +19,7 @@ import type {
   ParserFn,
   QueryResponse,
   QueryResponseNode,
+  QueryResponseEdge,
 } from './types.ts'
 
 export * from './types.ts'
@@ -180,6 +181,10 @@ export class Query {
     this.#graph = graph
     this.#specOptions = specOptions
     this.#securityArchive = securityArchive
+  }
+
+  #getQueryResponseEdges(_edges: Set<EdgeLike>): QueryResponseEdge[] {
+    return Array.from(_edges) as QueryResponseEdge[]
   }
 
   #getQueryResponseNodes(_nodes: Set<NodeLike>): QueryResponseNode[] {
@@ -395,7 +400,7 @@ export class Query {
     })
 
     const res: QueryResponse = {
-      edges: Array.from(collect.edges),
+      edges: this.#getQueryResponseEdges(collect.edges),
       nodes: this.#getQueryResponseNodes(collect.nodes),
     }
     this.#cache.set(query, res)

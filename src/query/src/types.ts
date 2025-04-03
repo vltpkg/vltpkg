@@ -59,9 +59,16 @@ export type QueryResponse = {
   nodes: QueryResponseNode[]
 }
 
-export type QueryResponseNode = {
+export type QueryResponseEdge = EdgeLike & {
+  from: QueryResponseNode
+  to?: QueryResponseNode
+}
+
+export type QueryResponseNode = NodeLike & {
+  edgesIn: Set<QueryResponseEdge>
+  edgesOut: Map<string, QueryResponseEdge>
   insights: Insights
-} & NodeLike
+}
 
 export type Insights = {
   abandoned?: boolean
