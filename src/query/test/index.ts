@@ -12,6 +12,8 @@ import {
   asPackageReportData,
   asSecurityArchiveLike,
 } from '@vltpkg/security-archive'
+import type { GraphLike } from '@vltpkg/graph'
+import type { SpecOptions } from '@vltpkg/spec/browser'
 
 type TestCase = [string, string[]]
 
@@ -300,4 +302,161 @@ t.test('Query.hasSecuritySelectors', async t => {
   )
   t.notOk(Query.hasSecuritySelectors(':foo'), 'should return false')
   t.notOk(Query.hasSecuritySelectors(':has'), 'should return false')
+})
+
+t.test('parse', t => {
+  const graph = getSimpleGraph()
+  const query = new Query({
+    graph,
+    securityArchive: undefined,
+    specOptions,
+  })
+
+  t.test('should parse empty query', t => {
+    t.strictSame(query.parse(''), [])
+    t.end()
+  })
+
+  t.test('should parse pseudo selector', t => {
+    t.strictSame(query.parse(':root'), [
+      {
+        token: ':root',
+        type: 'pseudo',
+        value: ':root',
+      },
+    ])
+    t.end()
+  })
+
+  t.test('should parse attribute selector', t => {
+    t.test('with value', t => {
+      t.strictSame(query.parse('[name="react"]'), [
+        {
+          token: '[name="react"]',
+          type: 'attribute',
+          key: 'name',
+          value: 'react',
+        },
+      ])
+      t.end()
+    })
+
+    t.test('with operator', t => {
+      t.strictSame(query.parse('[name^="react"]'), [
+        {
+          token: '[name^="react"]',
+          type: 'attribute',
+          key: 'name',
+          value: 'react',
+        },
+      ])
+      t.end()
+    })
+
+    t.test('without value', t => {
+      t.strictSame(query.parse('[name]'), [
+        {
+          token: '[name]',
+          type: 'attribute',
+          key: 'name',
+          value: undefined,
+        },
+      ])
+      t.end()
+    })
+    t.end()
+  })
+
+  t.test('should parse class selector', t => {
+    t.strictSame(query.parse('.container'), [
+      {
+        token: '.container',
+        type: 'class',
+        value: 'container',
+      },
+    ])
+    t.end()
+  })
+
+  t.test('should parse id selector', t => {
+    t.strictSame(query.parse('#main'), [
+      {
+        token: '#main',
+        type: 'id',
+        value: 'main',
+      },
+    ])
+    t.end()
+  })
+
+  t.test('should parse combinator', t => {
+    t.test('non-whitespace', t => {
+      t.strictSame(query.parse('>'), [
+        {
+          token: '>',
+          type: 'combinator',
+        },
+      ])
+      t.end()
+    })
+
+    t.test('whitespace', t => {
+      t.strictSame(query.parse(' '), [])
+      t.end()
+    })
+    t.end()
+  })
+
+  t.test('should parse complex selector', t => {
+    t.test('with nested selectors', t => {
+      t.strictSame(query.parse(':root > [name="react"] .container'), [
+        {
+          token: ':root',
+          type: 'pseudo',
+          value: ':root',
+        },
+        {
+          token: ' > ',
+          type: 'combinator',
+        },
+        {
+          token: '[name="react"]',
+          type: 'attribute',
+          key: 'name',
+          value: 'react',
+        },
+        {
+          token: ' ',
+          type: 'combinator',
+        },
+        {
+          token: '.container',
+          type: 'class',
+          value: 'container',
+        },
+      ])
+      t.end()
+    })
+
+    t.test('with multiple attributes', t => {
+      t.strictSame(query.parse('[name="react"][version="18"]'), [
+        {
+          token: '[name="react"]',
+          type: 'attribute',
+          key: 'name',
+          value: 'react',
+        },
+        {
+          token: '[version="18"]',
+          type: 'attribute',
+          key: 'version',
+          value: '18',
+        },
+      ])
+      t.end()
+    })
+    t.end()
+  })
+
+  t.end()
 })

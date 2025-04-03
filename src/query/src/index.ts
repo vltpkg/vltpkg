@@ -440,33 +440,31 @@ export class Query {
         const value = node.value || ''
         const quotedValue = value ? `"${value}"` : ''
         tokens.push({
-          token: `[${node.attribute}${node.operator || ''}${quotedValue}]`,
+          token: `${node.spaces.before}[${node.attribute}${node.operator || ''}${quotedValue}]${node.spaces.after}`,
           type: 'attribute',
           key: node.attribute,
           value: node.value,
         })
       } else if (isClassNode(node)) {
         tokens.push({
-          token: `.${node.value}`,
+          token: `${node.spaces.before}.${node.value}${node.spaces.after}`,
           type: 'class',
           value: node.value,
         })
       } else if (isCombinatorNode(node)) {
-        // Skip whitespace combinators
-        if (node.value.trim() === '') return
         tokens.push({
-          token: node.value,
+          token: `${node.spaces.before}${node.value}${node.spaces.after}`,
           type: 'combinator',
         })
       } else if (isIdentifierNode(node)) {
         tokens.push({
-          token: `#${node.value}`,
+          token: `${node.spaces.before}#${node.value}${node.spaces.after}`,
           type: 'id',
           value: node.value,
         })
       } else if (isPseudoNode(node)) {
         tokens.push({
-          token: `${node.value}`,
+          token: `${node.spaces.before}${node.value}${node.spaces.after}`,
           type: 'pseudo',
           value: node.value,
         })
