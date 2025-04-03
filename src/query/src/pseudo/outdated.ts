@@ -1,3 +1,4 @@
+import pRetry, { AbortError } from 'p-retry'
 import { hydrate, splitDepID } from '@vltpkg/dep-id/browser'
 import { error } from '@vltpkg/error-cause'
 import type { NodeLike } from '@vltpkg/graph'
@@ -90,38 +91,25 @@ export const retrieveRemoteVersions = async (
   const url = new URL(spec.registry)
   url.pathname = `/${node.name}`
 
-  try {
-    const response = await fetch(String(url), {
-      headers: {
-        Accept: 'application/vnd.npm.install-v1+json',
-      },
-    })
-    if (!response.ok) {
-      // eslint-disable-next-line no-console
-      console.warn(
-        error('Failed to fetch packument', {
-          name: String(node.name),
-          spec,
-          response,
-        }),
-      )
-      return []
-    }
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    const packument: Packument = await response.json()
-    return Object.keys(packument.versions).sort(compare)
-  } catch (e) {
-    const err = e as Error
-    // eslint-disable-next-line no-console
-    console.warn(
-      error('Could not retrieve registry versions', {
-        name: String(node.name),
-        spec,
-        cause: err,
-      }),
-    )
-    return []
+  const response = await fetch(String(url), {
+    headers: {
+      Accept: 'application/vnd.npm.install-v1+json',
+    },
+  })
+  // on missing valid auth or API, it should abort the retry logic
+  if (response.status === 404) {
+    throw new AbortError('Missing API')
   }
+  if (!response.ok) {
+    throw error('Failed to fetch packument', {
+      name: String(node.name),
+      spec,
+      response,
+    })
+  }
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+  const packument: Packument = await response.json()
+  return Object.keys(packument.versions).sort(compare)
 }
 
 /**
@@ -163,10 +151,24 @@ export const queueNode = async (
   }
 
   const nodeVersion: string = node.version
-  const versions = await retrieveRemoteVersions(
-    node,
-    state.specOptions,
-  )
+  let versions: string[]
+  try {
+    versions = await pRetry(
+      () => retrieveRemoteVersions(node, state.specOptions),
+      {
+        retries: state.retries,
+      },
+    )
+  } catch (err) {
+    // eslint-disable-next-line no-console
+    console.warn(
+      error('Could not retrieve registry versions', {
+        name: String(node.name),
+        cause: err,
+      }),
+    )
+    versions = []
+  }
 
   const greaterVersions = versions.filter((version: string) =>
     gt(version, nodeVersion),

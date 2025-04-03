@@ -239,6 +239,7 @@ t.test('filterAttributes', async t => {
     partial: all,
     loose: false,
     walk: async (state: ParserState) => state,
+    retries: 0,
     securityArchive: undefined,
     specOptions: {},
   }

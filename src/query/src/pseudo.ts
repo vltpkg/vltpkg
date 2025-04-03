@@ -87,6 +87,7 @@ const has = async (state: ParserState) => {
           edges: new Set(state.partial.edges),
           nodes: new Set(state.partial.nodes),
         },
+        retries: state.retries,
         securityArchive: state.securityArchive,
         specOptions: state.specOptions,
       })
@@ -169,6 +170,7 @@ const is = async (state: ParserState) => {
           edges: new Set(state.partial.edges),
         },
         walk: state.walk,
+        retries: state.retries,
         securityArchive: state.securityArchive,
         specOptions: state.specOptions,
       })
@@ -222,6 +224,7 @@ const not = async (state: ParserState) => {
           edges: new Set(state.partial.edges),
         },
         walk: state.walk,
+        retries: state.retries,
         securityArchive: state.securityArchive,
         specOptions: state.specOptions,
       })

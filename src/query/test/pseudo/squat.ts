@@ -49,6 +49,7 @@ t.test('selects packages with a specific squat kind', async t => {
         ]),
       ),
       specOptions: {},
+      retries: 0,
     }
     return state
   }
@@ -126,6 +127,7 @@ t.test('missing security archive', async t => {
       walk: async i => i,
       securityArchive: undefined,
       specOptions: {},
+      retries: 0,
     }
     return state
   }

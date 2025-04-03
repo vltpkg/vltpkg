@@ -27,6 +27,7 @@ t.test('selects packages with a CWE alert', async t => {
       },
       cancellable: async () => {},
       walk: async i => i,
+      retries: 0,
       securityArchive: asSecurityArchiveLike(
         new Map([
           [
@@ -130,6 +131,7 @@ t.test('missing security archive', async t => {
       },
       cancellable: async () => {},
       walk: async i => i,
+      retries: 0,
       securityArchive: undefined,
       specOptions: {},
     }
@@ -163,6 +165,7 @@ t.test('missing CWE ID', async t => {
       },
       cancellable: async () => {},
       walk: async i => i,
+      retries: 0,
       securityArchive: asSecurityArchiveLike(new Map()),
       specOptions: {},
     }

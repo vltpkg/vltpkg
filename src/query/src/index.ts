@@ -115,6 +115,7 @@ export const walk = async (
 
 export type QueryOptions = {
   graph: GraphLike
+  retries?: number
   specOptions: SpecOptions
   securityArchive: SecurityArchiveLike | undefined
 }
@@ -159,6 +160,7 @@ const securitySelectors = new Set([
 export class Query {
   #cache: Map<string, QueryResponse>
   #graph: GraphLike
+  #retries: number
   #specOptions: SpecOptions
   #securityArchive: SecurityArchiveLike | undefined
 
@@ -176,9 +178,15 @@ export class Query {
     return false
   }
 
-  constructor({ graph, specOptions, securityArchive }: QueryOptions) {
+  constructor({
+    graph,
+    retries,
+    specOptions,
+    securityArchive,
+  }: QueryOptions) {
     this.#cache = new Map()
     this.#graph = graph
+    this.#retries = retries ?? 3
     this.#specOptions = specOptions
     this.#securityArchive = securityArchive
   }
@@ -393,6 +401,7 @@ export class Query {
         edges: new Set<EdgeLike>(),
       },
       partial: { nodes, edges },
+      retries: this.#retries,
       signal,
       securityArchive: this.#securityArchive,
       specOptions: this.#specOptions,
