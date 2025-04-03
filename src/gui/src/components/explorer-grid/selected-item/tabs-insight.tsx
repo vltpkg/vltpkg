@@ -6,19 +6,14 @@ import {
   InsightBadge,
   getAlertColor,
 } from '@/components/explorer-grid/selected-item/insight-badge.jsx'
-import { getSecurityAlerts } from '@/components/explorer-grid/selected-item/insights.jsx'
 import type { SocketSecurityDetails } from '@/lib/constants/index.js'
 import type { PackageAlert } from '@vltpkg/security-archive'
 import { ArrowUpDown } from 'lucide-react'
 
 export const InsightTabButton = () => {
-  const { selectedItem, securityArchive } = useSelectedItem()
-  const securityAlerts = getSecurityAlerts(
-    selectedItem,
-    securityArchive,
-  )
+  const { insights } = useSelectedItem()
 
-  if (!securityAlerts || securityAlerts.length === 0) return null
+  if (!insights || insights.length === 0) return null
 
   return (
     <TabsTrigger
@@ -123,30 +118,29 @@ const InsightItem = ({
 }
 
 export const InsightTabContent = () => {
-  useState<boolean>(false)
-  const { selectedItem, securityArchive } = useSelectedItem()
-  const [securityAlerts, setSecurityAlerts] = useState<
+  const { insights } = useSelectedItem()
+  const [filteredInsights, setFilteredInsights] = useState<
     SocketSecurityDetails[] | undefined
-  >(() => getSecurityAlerts(selectedItem, securityArchive))
+  >(insights)
 
   return (
     <TabsContent value="insights">
       <section className="mt-2 flex flex-col px-6 py-4">
-        {securityAlerts && securityAlerts.length > 0 && (
+        {filteredInsights && filteredInsights.length > 0 && (
           <>
             <InsightHeader
-              items={securityAlerts}
-              setItems={setSecurityAlerts}
+              items={filteredInsights}
+              setItems={setFilteredInsights}
             />
 
             <div className="flex flex-col divide-y-[1px] divide-muted">
-              {securityAlerts.map((alert, idx) => (
+              {filteredInsights.map((insight, idx) => (
                 <InsightItem
                   key={idx}
-                  selector={alert.selector}
-                  severity={alert.severity}
-                  description={alert.description}
-                  category={alert.category}
+                  selector={insight.selector}
+                  severity={insight.severity}
+                  description={insight.description}
+                  category={insight.category}
                 />
               ))}
             </div>
