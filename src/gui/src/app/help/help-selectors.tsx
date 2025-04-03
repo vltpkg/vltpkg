@@ -1,6 +1,9 @@
 import { useState } from 'react'
 import type { Table, VisibilityState } from '@tanstack/react-table'
-import type { SocketSecurityDetails, SocketSecurityRecord } from '@/lib/constants/socket.js'
+import type {
+  SocketSecurityDetails,
+  SocketSecurityRecord,
+} from '@/lib/constants/socket.js'
 import { SOCKET_SECURITY_DETAILS } from '@/lib/constants/socket.js'
 import { DataTable } from '@/components/data-table/data-table.jsx'
 import { TableViewDropdown } from '@/components/data-table/table-view-dropdown.jsx'
@@ -26,17 +29,29 @@ export const HelpSelectors = () => {
   )
 }
 
-const isSecurityDetails = (value: SocketSecurityRecord | SocketSecurityDetails): value is SocketSecurityDetails => {
-  return 'selector' in value && 'description' in value && 'category' in value && 'severity' in value
+const isSecurityDetails = (
+  value: SocketSecurityRecord | SocketSecurityDetails,
+): value is SocketSecurityDetails => {
+  return (
+    'selector' in value &&
+    'description' in value &&
+    'category' in value &&
+    'severity' in value
+  )
 }
 
-const flattenSecurityDetails = (record: SocketSecurityRecord): SocketSecurityDetails[] => {
-  return Object.values(record).reduce<SocketSecurityDetails[]>((acc, value) => {
-    if (isSecurityDetails(value)) {
-      return [...acc, value]
-    }
-    return [...acc, ...flattenSecurityDetails(value)]
-  }, [])
+const flattenSecurityDetails = (
+  record: SocketSecurityRecord,
+): SocketSecurityDetails[] => {
+  return Object.values(record).reduce<SocketSecurityDetails[]>(
+    (acc, value) => {
+      if (isSecurityDetails(value)) {
+        return [...acc, value]
+      }
+      return [...acc, ...flattenSecurityDetails(value)]
+    },
+    [],
+  )
 }
 
 const SelectorsTable = ({ className }: { className?: string }) => {

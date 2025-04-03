@@ -8,7 +8,7 @@ import {
   SELECTED_ITEM,
   SELECTED_ITEM_DETAILS,
 } from './__fixtures__/item.ts'
-import { SocketSecurityDetails } from '@/lib/constants/socket.js'
+import type { SocketSecurityDetails } from '@/lib/constants/socket.js'
 
 vi.mock(
   '@/components/explorer-grid/selected-item/context.jsx',
