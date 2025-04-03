@@ -12,8 +12,8 @@ exports[`test/visualization/human-readable-output.ts > TAP > actual graph > colo
 [0m├── extraneous@1.0.0[0m
 [0m├─┬ bar@1.0.0[0m
 [0m│ ├── blooo@1.0.0[0m
-[0m│ └── custom:baz@1.0.0[0m
-[0m├── custom:aliased (foo@1.0.0)[0m
+[0m│ └── baz (custom:baz@1.0.0)[0m
+[0m├── aliased (custom:foo@1.0.0)[0m
 [0m├─┬ @scoped/b@1.0.0[0m
 [0m│ └── @scoped/c@1.0.0[0m
 [0m├── @scoped/a@1.0.0[0m
@@ -29,7 +29,7 @@ exports[`test/visualization/human-readable-output.ts > TAP > actual graph > colo
 exports[`test/visualization/human-readable-output.ts > TAP > actual graph > selected packages > should print selected packages 1`] = `
 my-project
 └─┬ bar@1.0.0
-  └── custom:baz@1.0.0
+  └── baz (custom:baz@1.0.0)
 
 `
 
@@ -40,8 +40,8 @@ my-project
 ├── extraneous@1.0.0
 ├─┬ bar@1.0.0
 │ ├── blooo@1.0.0
-│ └── custom:baz@1.0.0
-├── custom:aliased (foo@1.0.0)
+│ └── baz (custom:baz@1.0.0)
+├── aliased (custom:foo@1.0.0)
 ├─┬ @scoped/b@1.0.0
 │ └── @scoped/c@1.0.0
 ├── @scoped/a@1.0.0
@@ -56,7 +56,7 @@ workspace-a
 
 exports[`test/visualization/human-readable-output.ts > TAP > aliased package > should print both edge and node names 1`] = `
 my-project
-└── a (@myscope/foo@1.0.0)
+└── a (npm:@myscope/foo@1.0.0)
 
 `
 
@@ -72,7 +72,7 @@ exports[`test/visualization/human-readable-output.ts > TAP > human-readable-outp
 my-project
 ├── foo@1.0.0
 ├─┬ bar@1.0.0
-│ ├─┬ custom:baz@1.0.0
+│ ├─┬ baz (custom:baz@1.0.0)
 │ │ └── foo@1.0.0 (deduped)
 │ └── extraneous@1.0.0
 └── missing@^1.0.0 (missing)
