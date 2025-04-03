@@ -1,4 +1,5 @@
 import type {
+  EdgeLike,
   HumanReadableOutputGraph,
   JSONOutputGraph,
   MermaidOutputGraph,
@@ -10,17 +11,23 @@ import {
   jsonOutput,
   mermaidOutput,
 } from '@vltpkg/graph'
+import { error } from '@vltpkg/error-cause'
 import { Query } from '@vltpkg/query'
 import { SecurityArchive } from '@vltpkg/security-archive'
 import { commandUsage } from '../config/usage.ts'
 import type { CommandFn, CommandUsage } from '../index.ts'
 import { startGUI } from '../start-gui.ts'
 import type { Views } from '../view.ts'
+import type { LoadedConfig } from '../config/index.js'
 
 export const usage: CommandUsage = () =>
   commandUsage({
     command: 'query',
-    usage: ['', '<query> --view=[human | json | mermaid | gui]'],
+    usage: [
+      '',
+      '<query> --view=[human | json | mermaid | gui]',
+      '<query> --expected-results=[number | boolean | string]',
+    ],
     description:
       'List installed dependencies matching the provided query.',
     examples: {
@@ -38,8 +45,16 @@ export const usage: CommandUsage = () =>
         description:
           'Query packages with names starting with "@vltpkg"',
       },
+      [`'*:license(copyleft) --expect-results=0'`]: {
+        description: 'Errors if a copyleft licensed package is found',
+      },
     },
     options: {
+      'expect-results': {
+        value: '[number | boolean | string]',
+        description:
+          'Sets an expected number of resulting items. Errors if the number of resulting items does not match the set value. Accepts a specific numeric value, "true" (same as "> 0"), "false" (same as 0) or a string value starting with either ">", "<", ">=" or "<=" followed by a numeric value to be compared.',
+      },
       view: {
         value: '[human | json | mermaid | gui]',
         description:
@@ -51,6 +66,29 @@ export const usage: CommandUsage = () =>
 type QueryResult = JSONOutputGraph &
   MermaidOutputGraph &
   HumanReadableOutputGraph & { queryString: string }
+
+const validateExpectedResult = (
+  conf: LoadedConfig,
+  edges: EdgeLike[],
+): boolean => {
+  const expectResults = conf.values['expect-results']
+  if (expectResults?.startsWith('>=')) {
+    return edges.length >= parseInt(expectResults.slice(2).trim(), 10)
+  } else if (expectResults?.startsWith('<=')) {
+    return edges.length <= parseInt(expectResults.slice(2).trim(), 10)
+  } else if (expectResults?.startsWith('>')) {
+    return edges.length > parseInt(expectResults.slice(1).trim(), 10)
+  } else if (expectResults?.startsWith('<')) {
+    return edges.length < parseInt(expectResults.slice(1).trim(), 10)
+  } else if (expectResults === 'true') {
+    return edges.length > 0
+  } else if (expectResults === 'false') {
+    return edges.length === 0
+  } else if (expectResults) {
+    return edges.length === parseInt(expectResults.trim(), 10)
+  }
+  return true
+}
 
 export const views = {
   json: jsonOutput,
@@ -106,6 +144,18 @@ export const command: CommandFn<QueryResult> = async conf => {
     for (const importer of graph.importers) {
       importers.add(importer)
     }
+  }
+
+  if (!validateExpectedResult(conf, edges)) {
+    const expectResults = conf.values['expect-results']
+    const wanted =
+      expectResults === 'true' ? '> 0'
+      : expectResults === 'false' ? 0
+      : expectResults
+    throw error('Unexpected number of items', {
+      found: edges.length,
+      wanted,
+    })
   }
 
   return {
