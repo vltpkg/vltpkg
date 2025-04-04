@@ -55,8 +55,9 @@ const flattenSecurityDetails = (
 }
 
 const SelectorsTable = ({ className }: { className?: string }) => {
-  const [table, setTable] =
-    useState<Table<SocketSecurityDetails> | null>(null)
+  const [table, setTable] = useState<
+    Table<SocketSecurityDetails> | undefined
+  >(undefined)
   const [columnVisibility, setColumnVisibility] =
     useState<VisibilityState>({})
   const [search, setSearch] = useState<string>('')

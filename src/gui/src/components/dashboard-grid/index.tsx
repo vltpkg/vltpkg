@@ -103,8 +103,9 @@ export const DashboardGrid = () => {
   const [filteredProjects, setFilteredProjects] = useState<
     DashboardDataProject[]
   >([])
-  const [table, setTable] =
-    useState<Table<DashboardDataProject> | null>(null)
+  const [table, setTable] = useState<
+    Table<DashboardDataProject> | undefined
+  >(undefined)
   const [columnVisibility, setColumnVisibility] =
     useState<VisibilityState>({
       type: false,
