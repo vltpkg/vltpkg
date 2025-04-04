@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router'
 import { useEffect, useRef } from 'react'
 import { Query } from '@vltpkg/query'
-import { SearchBar } from '@/components/search-bar.jsx'
+import { QueryBar } from '@/components/query-bar/index.jsx'
 import { ExplorerGrid } from '@/components/explorer-grid/index.jsx'
 import { useGraphStore } from '@/state/index.js'
 import type { TransferData, Action, State } from '@/state/types.js'
@@ -158,7 +158,7 @@ const ExplorerContent = () => {
       <section className="flex w-full items-center px-8 py-4">
         <div className="flex w-full max-w-8xl flex-row items-center gap-2">
           <RootButton />
-          <SearchBar
+          <QueryBar
             tabIndex={0}
             className="relative w-full bg-white dark:bg-muted-foreground/5"
             startContent={
