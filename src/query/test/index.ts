@@ -12,8 +12,6 @@ import {
   asPackageReportData,
   asSecurityArchiveLike,
 } from '@vltpkg/security-archive'
-import type { GraphLike } from '@vltpkg/graph'
-import type { SpecOptions } from '@vltpkg/spec/browser'
 
 type TestCase = [string, string[]]
 

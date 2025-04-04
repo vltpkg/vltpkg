@@ -39,6 +39,7 @@ export const QueryBar = ({
       setParsedTokens(tokens)
       lastValidTokensRef.current = tokens
     } catch (error) {
+      console.error(`Error parsing query: ${error}`)
       // Only use cached tokens if their total length doesn't exceed current query length
       const totalCachedLength = lastValidTokensRef.current.reduce(
         (sum, token) => sum + token.token.length,
