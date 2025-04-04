@@ -9,7 +9,7 @@ exports[`test/commands/list.ts > TAP > list > colors > should use colors when se
 [0m[33mmy-project[39m[0m
 [0m├── [33m@foo/bazz@1.0.0[39m[0m
 [0m├─┬ [33mbar@1.0.0[39m[0m
-[0m│ └─┬ [33mcustom:baz@1.0.0[39m[0m
+[0m│ └─┬ [33mbaz (custom:baz@1.0.0)[39m[0m
 [0m│   └── [33m@foo/bazz@1.0.0[39m [2m(deduped)[22m[0m
 [0m└── [33mmissing@^1.0.0[39m [31m(missing)[39m[0m
 [0m[0m
@@ -58,7 +58,7 @@ exports[`test/commands/list.ts > TAP > list > should list all pkgs in human form
 my-project
 ├── @foo/bazz@1.0.0
 └─┬ bar@1.0.0
-  └─┬ custom:baz@1.0.0
+  └─┬ baz (custom:baz@1.0.0)
     └── @foo/bazz@1.0.0 (deduped)
 
 `
@@ -67,7 +67,7 @@ exports[`test/commands/list.ts > TAP > list > should list all pkgs in human read
 my-project
 ├── @foo/bazz@1.0.0
 ├─┬ bar@1.0.0
-│ └─┬ custom:baz@1.0.0
+│ └─┬ baz (custom:baz@1.0.0)
 │   └── @foo/bazz@1.0.0 (deduped)
 └── missing@^1.0.0 (missing)
 
