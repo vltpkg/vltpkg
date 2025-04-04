@@ -9,7 +9,7 @@ exports[`test/commands/query.ts > TAP > query > colors > should use colors when 
 [0mmy-project[0m
 [0m├── foo@1.0.0[0m
 [0m├─┬ bar@1.0.0[0m
-[0m│ └─┬ custom:baz@1.0.0[0m
+[0m│ └─┬ baz (custom:baz@1.0.0)[0m
 [0m│   └── foo@1.0.0 [2m(deduped)[22m[0m
 [0m└── missing@^1.0.0 [31m(missing)[39m[0m
 [0m[0m
@@ -68,7 +68,7 @@ exports[`test/commands/query.ts > TAP > query > should list pkgs in human readab
 my-project
 ├── foo@1.0.0
 ├─┬ bar@1.0.0
-│ └─┬ custom:baz@1.0.0
+│ └─┬ baz (custom:baz@1.0.0)
 │   └── foo@1.0.0 (deduped)
 └── missing@^1.0.0 (missing)
 
