@@ -17,8 +17,8 @@ export const VersionsTabButton = () => {
 export const VersionsTabContent = () => {
   const { selectedItemDetails } = useSelectedItem()
 
-  const versions = selectedItemDetails.versions || []
-  const greaterVersions = selectedItemDetails.greaterVersions || []
+  const versions = selectedItemDetails.versions ?? []
+  const greaterVersions = selectedItemDetails.greaterVersions ?? []
 
   const isEmpty =
     versions.length === 0 && greaterVersions.length === 0
