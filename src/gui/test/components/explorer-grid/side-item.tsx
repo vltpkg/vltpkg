@@ -15,6 +15,19 @@ vi.mock('@/components/ui/card.jsx', () => ({
   CardHeader: 'gui-card-header',
   CardTitle: 'gui-card-title',
 }))
+vi.mock('@/components/ui/dropdown-menu.jsx', () => ({
+  DropdownMenu: 'gui-dropdown-menu',
+  DropdownMenuTrigger: 'gui-dropdown-menu-trigger',
+  DropdownMenuContent: 'gui-dropdown-menu-content',
+  DropdownMenuItem: 'gui-dropdown-menu-item',
+}))
+vi.mock('@/components/ui/inline-code.jsx', () => ({
+  InlineCode: 'gui-inline-code',
+}))
+vi.mock('lucide-react', async () => ({
+  Ellipsis: 'gui-ellipsis',
+  PackageMinus: 'gui-package-minus',
+}))
 
 expect.addSnapshotSerializer({
   serialize: v => html(v),

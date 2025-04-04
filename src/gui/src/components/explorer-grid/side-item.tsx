@@ -9,10 +9,10 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
 } from '@/components/ui/dropdown-menu.jsx'
+import { InlineCode } from '@/components/ui/inline-code.jsx'
 import { labelClassNamesMap } from './label-helper.js'
 import type { GridItemData, GridItemOptions } from './types.js'
 import { useGraphStore } from '@/state/index.js'
-import { InlineCode } from '../ui/inline-code.tsx'
 
 export type SideItemOptions = GridItemOptions & {
   parent?: boolean
