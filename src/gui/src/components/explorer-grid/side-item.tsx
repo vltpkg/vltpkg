@@ -88,9 +88,11 @@ export const SideItem = ({
                 </span>
               )}
               <span className="font-medium">{item.name}</span>
-              <InlineCode variant="monoGhost">
-                {`v${item.version}`}
-              </InlineCode>
+              {!item.id.startsWith('uninstalled-dep:') && (
+                <InlineCode variant="monoGhost">
+                  {`v${item.version}`}
+                </InlineCode>
+              )}
             </CardTitle>
             {uninstallAvailable && (
               <DropdownMenu>
