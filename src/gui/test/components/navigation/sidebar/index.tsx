@@ -13,27 +13,30 @@ vi.mock('@/components/ui/sidebar.jsx', () => ({
   SidebarRail: 'gui-sidebar-rail',
 }))
 
-vi.mock('@/components/navigation/sidebar/nav-main.jsx', () => ({
-  SidebarMainNav: 'gui-sidebar-main-nav',
-}))
-
 vi.mock('@/components/navigation/sidebar/logo.jsx', () => ({
   SidebarLogo: 'gui-sidebar-logo',
 }))
+vi.mock('@/components/navigation/sidebar/return-to-app.jsx', () => ({
+  ReturnToApp: 'gui-return-to-app',
+}))
 
+vi.mock('@/components/navigation/sidebar/nav-main.jsx', () => ({
+  SidebarMainNav: 'gui-sidebar-main-nav',
+}))
 vi.mock('@/components/navigation/sidebar/nav-queries.jsx', () => ({
   SidebarQueryNav: 'gui-sidebar-query-nav',
 }))
-
 vi.mock(
   '@/components/navigation/sidebar/nav-project-queries.jsx',
   () => ({
     SidebarQueryProjectNav: 'gui-sidebar-query-project-nav',
   }),
 )
-
 vi.mock('@/components/navigation/sidebar/footer.jsx', () => ({
   AppSidebarFooter: 'gui-sidebar-footer',
+}))
+vi.mock('@/components/navigation/sidebar/nav-help.jsx', () => ({
+  HelpNav: 'gui-help-nav',
 }))
 
 expect.addSnapshotSerializer({

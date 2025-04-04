@@ -6,7 +6,7 @@ import type { VisibilityState, Table } from '@tanstack/react-table'
 interface DashboardTableProps {
   data: DashboardDataProject[]
   setTable: React.Dispatch<
-    React.SetStateAction<Table<DashboardDataProject> | null>
+    React.SetStateAction<Table<DashboardDataProject> | undefined>
   >
   tableFilterValue: string
   columnVisibility: VisibilityState

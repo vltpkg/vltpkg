@@ -3,13 +3,12 @@ import {
   shorten,
   stringifyNode,
 } from '@vltpkg/graph/browser'
-import type { EdgeLike, NodeLike } from '@vltpkg/graph/browser'
 import type { DepID } from '@vltpkg/dep-id'
 import { Spec } from '@vltpkg/spec/browser'
 import { useGraphStore } from '@/state/index.js'
 import { ResultItem } from '@/components/explorer-grid/result-item.jsx'
 import { SideItem } from '@/components/explorer-grid/side-item.jsx'
-import { SelectedItem } from '@/components/explorer-grid/selected-item.jsx'
+import { SelectedItem } from '@/components/explorer-grid/selected-item/index.jsx'
 import type {
   EdgeLoose,
   GridItemData,
@@ -18,8 +17,15 @@ import { GridHeader } from '@/components/explorer-grid/header.jsx'
 import { DependencySideBar } from '@/components/explorer-grid/dependency-side-bar.jsx'
 import { EmptyResultsState } from '@/components/explorer-grid/empty-results-state.jsx'
 import { Badge } from '@/components/ui/badge.jsx'
+import type {
+  QueryResponseEdge,
+  QueryResponseNode,
+} from '@vltpkg/query'
 
-const getItemsData = (edges: EdgeLike[], nodes: NodeLike[]) => {
+const getItemsData = (
+  edges: QueryResponseEdge[],
+  nodes: QueryResponseNode[],
+) => {
   const items: GridItemData[] = []
   const seenEdges = new Map<DepID, Set<EdgeLoose>>()
   const seenItems = new Map<DepID, GridItemData>()
@@ -133,7 +139,7 @@ const getItemsData = (edges: EdgeLike[], nodes: NodeLike[]) => {
 
 const getParent = (
   edge?: GridItemData,
-  node?: NodeLike,
+  node?: QueryResponseNode,
 ): GridItemData | undefined => {
   if (!node) return undefined
   const edgeVersion =
@@ -165,7 +171,6 @@ const getWorkspaceItems = (
     const title = `${importer.name}${version}`
 
     items.push({
-      to: importer,
       id: importer.id,
       title,
       version: importer.version || '',
@@ -178,7 +183,10 @@ const getWorkspaceItems = (
   return items
 }
 
-const getDependentItems = (node?: NodeLike, parent?: NodeLike) => {
+const getDependentItems = (
+  node?: QueryResponseNode,
+  parent?: QueryResponseNode,
+) => {
   const items: GridItemData[] = []
   if (!node) return items
   for (const edge of Array.from(node.edgesIn)) {
@@ -201,7 +209,7 @@ const getDependentItems = (node?: NodeLike, parent?: NodeLike) => {
 
 const getDependencyItems = (
   count: { currIndex: number },
-  node?: NodeLike,
+  node?: QueryResponseNode,
 ) => {
   const items: GridItemData[] = []
   if (!node) return items
@@ -228,7 +236,7 @@ const getDependencyItems = (
 
 const getUninstalledDependencyItems = (
   count: { currIndex: number },
-  node?: NodeLike,
+  node?: QueryResponseNode,
 ) => {
   const items: GridItemData[] = []
   const manifest = node?.manifest

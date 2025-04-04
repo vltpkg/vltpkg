@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button.jsx'
 import { Skeleton } from '@/components/ui/skeleton.jsx'
 
 interface TableViewDropdownProps<TData> {
-  table: Table<TData> | null
+  table: Table<TData> | undefined
   className?: string
   columnVisibility: VisibilityState
   setColumnVisibility: React.Dispatch<

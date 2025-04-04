@@ -6,7 +6,7 @@ export default {
   darkMode: ['class'],
   content: [
     'src/index.tsx',
-    'src/app/*.{ts,tsx}',
+    'src/app/**/*.{ts,tsx}',
     'src/components/**/*.{ts,tsx}',
     'src/lib/**/*.{ts,tsx}',
   ],

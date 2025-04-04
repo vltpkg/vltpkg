@@ -12,6 +12,11 @@ export default defineConfig({
   test: {
     environment: 'jsdom',
     include: ['test/**/*.?(c|m)[jt]s?(x)'],
+    exclude: [
+      '**/node_modules/**',
+      '**/__fixtures__/**',
+      '**/__mocks__/**',
+    ],
     setupFiles: ['./scripts/browser-globals.js'],
   },
 })

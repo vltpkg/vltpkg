@@ -29,6 +29,8 @@ const testCases = [
   ['/explore', 'Explore'],
   ['/queries', 'Queries'],
   ['/labels', 'Labels'],
+  ['/help', 'Help'],
+  ['/help/selectors', 'Help'],
 ]
 
 test.each(testCases)(

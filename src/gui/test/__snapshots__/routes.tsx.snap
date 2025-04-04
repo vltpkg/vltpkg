@@ -76,6 +76,44 @@ exports[`renders Layout for the "/explore" view 1`] = `
 
 `;
 
+exports[`renders Layout for the "/help" view 1`] = `
+
+<gui-layout>
+  <gui-sidebar-provider defaultopen="true">
+    <gui-app-sidebar>
+    </gui-app-sidebar>
+    <gui-sidebar-inset>
+      <gui-header>
+      </gui-header>
+      <gui-help-selectors>
+      </gui-help-selectors>
+    </gui-sidebar-inset>
+    <gui-toaster>
+    </gui-toaster>
+  </gui-sidebar-provider>
+</gui-layout>
+
+`;
+
+exports[`renders Layout for the "/help/selectors" view 1`] = `
+
+<gui-layout>
+  <gui-sidebar-provider defaultopen="true">
+    <gui-app-sidebar>
+    </gui-app-sidebar>
+    <gui-sidebar-inset>
+      <gui-header>
+      </gui-header>
+      <gui-help-selectors>
+      </gui-help-selectors>
+    </gui-sidebar-inset>
+    <gui-toaster>
+    </gui-toaster>
+  </gui-sidebar-provider>
+</gui-layout>
+
+`;
+
 exports[`renders Layout for the "/labels" view 1`] = `
 
 <gui-layout>

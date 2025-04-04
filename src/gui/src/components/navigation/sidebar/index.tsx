@@ -5,11 +5,15 @@ import {
   SidebarHeader,
   SidebarRail,
 } from '@/components/ui/sidebar.jsx'
-import { SidebarMainNav } from '@/components/navigation/sidebar/nav-main.jsx'
+
 import { SidebarLogo } from '@/components/navigation/sidebar/logo.jsx'
+import { ReturnToApp } from '@/components/navigation/sidebar/return-to-app.jsx'
+
+import { SidebarMainNav } from '@/components/navigation/sidebar/nav-main.jsx'
 import { SidebarQueryNav } from '@/components/navigation/sidebar/nav-queries.jsx'
 import { SidebarQueryProjectNav } from '@/components/navigation/sidebar/nav-project-queries.jsx'
 import { AppSidebarFooter } from '@/components/navigation/sidebar/footer.jsx'
+import { HelpNav } from '@/components/navigation/sidebar/nav-help.jsx'
 
 /**
  * Sidebar creates a cookie 'sidebar:state' automatically
@@ -33,12 +37,14 @@ export function AppSidebar() {
   return (
     <Sidebar collapsible="icon" variant="inset">
       <SidebarHeader>
+        <ReturnToApp />
         <SidebarLogo />
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup className="gap-1">
           <SidebarMainNav />
           <SidebarQueryNav />
+          <HelpNav />
         </SidebarGroup>
         <SidebarQueryProjectNav />
       </SidebarContent>

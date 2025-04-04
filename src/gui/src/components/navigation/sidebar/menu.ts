@@ -1,3 +1,4 @@
+import { Query } from '@/components/icons/query.jsx'
 import { LayoutDashboard } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 
@@ -9,12 +10,14 @@ export interface Item {
 export interface MenuItem {
   title: string
   url: string
-  icon?: LucideIcon
+  icon?:
+    | LucideIcon
+    | React.ComponentType<React.SVGProps<SVGSVGElement>>
   isActive?: boolean
   items?: Item[]
 }
 
-const menuItems: MenuItem[] = [
+export const mainMenuItems: MenuItem[] = [
   {
     title: 'Dashboard',
     url: '/',
@@ -22,4 +25,10 @@ const menuItems: MenuItem[] = [
   },
 ]
 
-export default menuItems
+export const helpMenuItems: MenuItem[] = [
+  {
+    title: 'Selectors',
+    url: '/help/selectors',
+    icon: Query,
+  },
+]

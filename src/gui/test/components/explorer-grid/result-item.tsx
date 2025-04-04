@@ -7,7 +7,7 @@ import {
 } from '@testing-library/react'
 import html from 'diffable-html'
 import { joinDepIDTuple } from '@vltpkg/dep-id'
-import type { NodeLike } from '@vltpkg/graph'
+import type { QueryResponseNode } from '@vltpkg/query'
 import { useGraphStore as useStore } from '@/state/index.js'
 import { ResultItem } from '@/components/explorer-grid/result-item.jsx'
 import type { GridItemData } from '@/components/explorer-grid/types.js'
@@ -43,12 +43,15 @@ test('ResultItem render with type', async () => {
     id: '1',
     labels: ['prod'],
     type: 'prod',
-    to: {} as NodeLike,
+    to: {
+      insights: {},
+    } as QueryResponseNode,
     from: {
       name: 'from',
       version: '1.0.0',
       id: joinDepIDTuple(['registry', '', 'from@1.0.0']),
-    } as NodeLike,
+      insights: {},
+    } as QueryResponseNode,
     name: 'item',
     title: 'item',
     version: '1.0.0',
@@ -117,7 +120,8 @@ describe('ResultItem updates query store value', () => {
       to: {
         name: 'item',
         version: '1.0.0',
-      } as NodeLike,
+        insights: {},
+      } as QueryResponseNode,
     } satisfies GridItemData
     render(<ResultItem item={item} />)
 
@@ -150,7 +154,8 @@ describe('ResultItem updates query store value', () => {
         name: 'my-item',
         version: '1.0.0',
         importer: true,
-      } as NodeLike,
+        insights: {},
+      } as QueryResponseNode,
     } satisfies GridItemData
     render(<ResultItem item={item} />)
 
@@ -179,11 +184,14 @@ describe('ResultItem updates query store value', () => {
       sameItems: false,
       stacked: false,
       size: 1,
-      to: {} as NodeLike,
+      to: {
+        insights: {},
+      } as QueryResponseNode,
       from: {
         name: 'parent',
         version: '1.0.0',
-      } as NodeLike,
+        insights: {},
+      } as QueryResponseNode,
     } satisfies GridItemData
     render(<ResultItem item={item} />)
 
@@ -215,7 +223,8 @@ describe('ResultItem updates query store value', () => {
       to: {
         name: 'item',
         version: '1.0.0',
-      } as NodeLike,
+        insights: {},
+      } as QueryResponseNode,
     } satisfies GridItemData
     render(<ResultItem item={item} />)
 
