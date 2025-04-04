@@ -229,7 +229,7 @@ const getDependencyItems = (
       stacked: false,
       size: 1,
       labels: [edge.type],
-    } as GridItemData)
+    })
   }
   return items
 }
