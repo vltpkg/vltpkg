@@ -13,6 +13,10 @@ import {
 } from './__fixtures__/item.ts'
 import type { DetailsInfo } from '@/lib/external-info.js'
 
+vi.mock('lucide-react', () => ({
+  History: 'gui-history-icon',
+}))
+
 vi.mock(
   '@/components/explorer-grid/selected-item/context.jsx',
   () => ({
@@ -57,24 +61,7 @@ test('VersionsTabButton renders default', () => {
   expect(container.innerHTML).toMatchSnapshot()
 })
 
-test('VersionsTabButton does not render when any verions are not available', () => {
-  vi.mocked(useSelectedItem).mockReturnValue({
-    selectedItem: SELECTED_ITEM,
-    selectedItemDetails: {
-      ...SELECTED_ITEM_DETAILS,
-      greaterVersions: undefined,
-      versions: undefined,
-    } as DetailsInfo,
-    insights: undefined,
-    activeTab: 'versions',
-    setActiveTab: vi.fn(),
-  })
-
-  const { container } = render(<VersionsTabButton />)
-  expect(container.innerHTML).toBe('')
-})
-
-test('VersionsTabContent renders default', () => {
+test('VersionsTabContent renders with versions', () => {
   vi.mocked(useSelectedItem).mockReturnValue({
     selectedItem: SELECTED_ITEM,
     selectedItemDetails: {
@@ -90,7 +77,7 @@ test('VersionsTabContent renders default', () => {
   expect(container.innerHTML).toMatchSnapshot()
 })
 
-test('VersionsTabContent does not render when any versions are not available', () => {
+test('VersionsTabContent renders an empty state', () => {
   vi.mocked(useSelectedItem).mockReturnValue({
     selectedItem: SELECTED_ITEM,
     selectedItemDetails: {
@@ -104,5 +91,5 @@ test('VersionsTabContent does not render when any versions are not available', (
   })
 
   const { container } = render(<VersionsTabContent />)
-  expect(container.innerHTML).toBe('')
+  expect(container.innerHTML).toMatchSnapshot()
 })
