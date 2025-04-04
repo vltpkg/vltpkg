@@ -52,6 +52,7 @@ vi.mock(
 
 vi.mock('lucide-react', () => ({
   ArrowUpDown: 'gui-arrow-up-down-icon',
+  BadgeInfo: 'gui-badge-info-icon',
 }))
 
 expect.addSnapshotSerializer({
@@ -77,7 +78,7 @@ afterEach(() => {
   cleanup()
 })
 
-test('InsightTabContent renders default', () => {
+test('InsightTabContent renders an empty state', () => {
   const Container = () => {
     return <InsightTabContent />
   }
