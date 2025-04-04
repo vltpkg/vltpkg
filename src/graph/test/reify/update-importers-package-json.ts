@@ -22,7 +22,15 @@ t.test('updatePackageJson', async t => {
   const rootMani = {
     name: 'root',
     version: '1.0.0',
+    peerDependencies: {
+      pdep: '1.2.3',
+      becomeprod: '1.2.3',
+    },
+    peerDependenciesMeta: {
+      becomeprod: { optional: true },
+    },
   }
+
   const graph = new Graph({
     mainManifest: rootMani,
     projectRoot: t.testdirName,
@@ -39,7 +47,42 @@ t.test('updatePackageJson', async t => {
     fooMani.name,
     fooMani.version,
   )
+
+  const newPeerOptionalSpec = Spec.parse('newpeeroptional@1.0.0')
+  const newPeerOptionalMani = {
+    name: 'newpeeroptional',
+    version: '1.0.0',
+  }
+  const newPeerOptional = graph.addNode(
+    undefined,
+    newPeerOptionalMani,
+    newPeerOptionalSpec,
+    newPeerOptionalMani.name,
+    newPeerOptionalMani.version,
+  )
+
+  const becomeProdSpec = Spec.parse('becomeprod@1.0.0')
+  const becomeProdMani = {
+    name: 'newpeeroptional',
+    version: '1.0.0',
+  }
+  const becomeProd = graph.addNode(
+    undefined,
+    becomeProdMani,
+    becomeProdSpec,
+    becomeProdMani.name,
+    becomeProdMani.version,
+  )
+
   graph.addEdge('prod', fooSpec, root, foo)
+  graph.addEdge(
+    'peerOptional',
+    newPeerOptionalSpec,
+    root,
+    newPeerOptional,
+  )
+  graph.addEdge('prod', becomeProdSpec, root, becomeProd)
+
   const add = new Map<DepID, Map<string, Dependency>>([
     [
       rootID,
@@ -48,6 +91,20 @@ t.test('updatePackageJson', async t => {
           'foo',
           asDependency({
             spec: fooSpec,
+            type: 'prod',
+          }),
+        ],
+        [
+          'newpeeroptional',
+          asDependency({
+            spec: newPeerOptionalSpec,
+            type: 'peerOptional',
+          }),
+        ],
+        [
+          'becomeprod',
+          asDependency({
+            spec: becomeProdSpec,
             type: 'prod',
           }),
         ],
@@ -272,7 +329,7 @@ t.test('updatePackageJson', async t => {
       packageJson,
       graph,
       remove: new Map([
-        [rootID, new Set(['foo'])],
+        [rootID, new Set(['foo', 'newpeeroptional'])],
       ]) as RemoveImportersDependenciesMap,
     })()
 

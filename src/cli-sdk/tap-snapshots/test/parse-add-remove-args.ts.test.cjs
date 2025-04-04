@@ -56,11 +56,11 @@ exports[`test/parse-add-remove-args.ts > TAP > parseAddArgs > multiple items > s
 {
   add: AddImportersDependenciesMapImpl(1) [Map] {
     'file·.' => Map(5) {
-      'foo' => { spec: Spec {foo@^1}, type: 'prod' },
-      'bar' => { spec: Spec {bar@latest}, type: 'prod' },
-      'baz' => { spec: Spec {baz@1.0.0}, type: 'prod' },
-      '(unknown)@github:a/b' => { spec: Spec {(unknown)@github:a/b}, type: 'prod' },
-      '(unknown)@file:./a' => { spec: Spec {(unknown)@file:./a}, type: 'prod' }
+      'foo' => { spec: Spec {foo@^1}, type: 'implicit' },
+      'bar' => { spec: Spec {bar@latest}, type: 'implicit' },
+      'baz' => { spec: Spec {baz@1.0.0}, type: 'implicit' },
+      '(unknown)@github:a/b' => { spec: Spec {(unknown)@github:a/b}, type: 'implicit' },
+      '(unknown)@file:./a' => { spec: Spec {(unknown)@file:./a}, type: 'implicit' }
     },
     modifiedDependencies: true
   }
@@ -79,7 +79,7 @@ exports[`test/parse-add-remove-args.ts > TAP > parseAddArgs > no item > should r
 exports[`test/parse-add-remove-args.ts > TAP > parseAddArgs > single item > should return a single dependency item 1`] = `
 {
   add: AddImportersDependenciesMapImpl(1) [Map] {
-    'file·.' => Map(1) { 'foo' => { spec: Spec {foo@}, type: 'prod' } },
+    'file·.' => Map(1) { 'foo' => { spec: Spec {foo@}, type: 'implicit' } },
     modifiedDependencies: true
   }
 }
@@ -89,11 +89,11 @@ exports[`test/parse-add-remove-args.ts > TAP > parseAddArgs > workspaces > defin
 {
   add: AddImportersDependenciesMapImpl(1) [Map] {
     'workspace·utils§c' => Map(5) {
-      'foo' => { spec: Spec {foo@^1}, type: 'prod' },
-      'bar' => { spec: Spec {bar@latest}, type: 'prod' },
-      'baz' => { spec: Spec {baz@1.0.0}, type: 'prod' },
-      '(unknown)@github:a/b' => { spec: Spec {(unknown)@github:a/b}, type: 'prod' },
-      '(unknown)@file:./a' => { spec: Spec {(unknown)@file:./a}, type: 'prod' }
+      'foo' => { spec: Spec {foo@^1}, type: 'implicit' },
+      'bar' => { spec: Spec {bar@latest}, type: 'implicit' },
+      'baz' => { spec: Spec {baz@1.0.0}, type: 'implicit' },
+      '(unknown)@github:a/b' => { spec: Spec {(unknown)@github:a/b}, type: 'implicit' },
+      '(unknown)@file:./a' => { spec: Spec {(unknown)@file:./a}, type: 'implicit' }
     },
     modifiedDependencies: true
   }
@@ -104,25 +104,25 @@ exports[`test/parse-add-remove-args.ts > TAP > parseAddArgs > workspaces > defin
 {
   add: AddImportersDependenciesMapImpl(3) [Map] {
     'workspace·utils§c' => Map(5) {
-      'foo' => { spec: Spec {foo@^1}, type: 'prod' },
-      'bar' => { spec: Spec {bar@latest}, type: 'prod' },
-      'baz' => { spec: Spec {baz@1.0.0}, type: 'prod' },
-      '(unknown)@github:a/b' => { spec: Spec {(unknown)@github:a/b}, type: 'prod' },
-      '(unknown)@file:./a' => { spec: Spec {(unknown)@file:./a}, type: 'prod' }
+      'foo' => { spec: Spec {foo@^1}, type: 'implicit' },
+      'bar' => { spec: Spec {bar@latest}, type: 'implicit' },
+      'baz' => { spec: Spec {baz@1.0.0}, type: 'implicit' },
+      '(unknown)@github:a/b' => { spec: Spec {(unknown)@github:a/b}, type: 'implicit' },
+      '(unknown)@file:./a' => { spec: Spec {(unknown)@file:./a}, type: 'implicit' }
     },
     'workspace·foo' => Map(5) {
-      'foo' => { spec: Spec {foo@^1}, type: 'prod' },
-      'bar' => { spec: Spec {bar@latest}, type: 'prod' },
-      'baz' => { spec: Spec {baz@1.0.0}, type: 'prod' },
-      '(unknown)@github:a/b' => { spec: Spec {(unknown)@github:a/b}, type: 'prod' },
-      '(unknown)@file:./a' => { spec: Spec {(unknown)@file:./a}, type: 'prod' }
+      'foo' => { spec: Spec {foo@^1}, type: 'implicit' },
+      'bar' => { spec: Spec {bar@latest}, type: 'implicit' },
+      'baz' => { spec: Spec {baz@1.0.0}, type: 'implicit' },
+      '(unknown)@github:a/b' => { spec: Spec {(unknown)@github:a/b}, type: 'implicit' },
+      '(unknown)@file:./a' => { spec: Spec {(unknown)@file:./a}, type: 'implicit' }
     },
     'workspace·bar' => Map(5) {
-      'foo' => { spec: Spec {foo@^1}, type: 'prod' },
-      'bar' => { spec: Spec {bar@latest}, type: 'prod' },
-      'baz' => { spec: Spec {baz@1.0.0}, type: 'prod' },
-      '(unknown)@github:a/b' => { spec: Spec {(unknown)@github:a/b}, type: 'prod' },
-      '(unknown)@file:./a' => { spec: Spec {(unknown)@file:./a}, type: 'prod' }
+      'foo' => { spec: Spec {foo@^1}, type: 'implicit' },
+      'bar' => { spec: Spec {bar@latest}, type: 'implicit' },
+      'baz' => { spec: Spec {baz@1.0.0}, type: 'implicit' },
+      '(unknown)@github:a/b' => { spec: Spec {(unknown)@github:a/b}, type: 'implicit' },
+      '(unknown)@file:./a' => { spec: Spec {(unknown)@file:./a}, type: 'implicit' }
     },
     modifiedDependencies: true
   }
@@ -133,25 +133,25 @@ exports[`test/parse-add-remove-args.ts > TAP > parseAddArgs > workspaces > defin
 {
   add: AddImportersDependenciesMapImpl(3) [Map] {
     'workspace·app§b' => Map(5) {
-      'foo' => { spec: Spec {foo@^1}, type: 'prod' },
-      'bar' => { spec: Spec {bar@latest}, type: 'prod' },
-      'baz' => { spec: Spec {baz@1.0.0}, type: 'prod' },
-      '(unknown)@github:a/b' => { spec: Spec {(unknown)@github:a/b}, type: 'prod' },
-      '(unknown)@file:./a' => { spec: Spec {(unknown)@file:./a}, type: 'prod' }
+      'foo' => { spec: Spec {foo@^1}, type: 'implicit' },
+      'bar' => { spec: Spec {bar@latest}, type: 'implicit' },
+      'baz' => { spec: Spec {baz@1.0.0}, type: 'implicit' },
+      '(unknown)@github:a/b' => { spec: Spec {(unknown)@github:a/b}, type: 'implicit' },
+      '(unknown)@file:./a' => { spec: Spec {(unknown)@file:./a}, type: 'implicit' }
     },
     'workspace·app§a' => Map(5) {
-      'foo' => { spec: Spec {foo@^1}, type: 'prod' },
-      'bar' => { spec: Spec {bar@latest}, type: 'prod' },
-      'baz' => { spec: Spec {baz@1.0.0}, type: 'prod' },
-      '(unknown)@github:a/b' => { spec: Spec {(unknown)@github:a/b}, type: 'prod' },
-      '(unknown)@file:./a' => { spec: Spec {(unknown)@file:./a}, type: 'prod' }
+      'foo' => { spec: Spec {foo@^1}, type: 'implicit' },
+      'bar' => { spec: Spec {bar@latest}, type: 'implicit' },
+      'baz' => { spec: Spec {baz@1.0.0}, type: 'implicit' },
+      '(unknown)@github:a/b' => { spec: Spec {(unknown)@github:a/b}, type: 'implicit' },
+      '(unknown)@file:./a' => { spec: Spec {(unknown)@file:./a}, type: 'implicit' }
     },
     'workspace·utils§c' => Map(5) {
-      'foo' => { spec: Spec {foo@^1}, type: 'prod' },
-      'bar' => { spec: Spec {bar@latest}, type: 'prod' },
-      'baz' => { spec: Spec {baz@1.0.0}, type: 'prod' },
-      '(unknown)@github:a/b' => { spec: Spec {(unknown)@github:a/b}, type: 'prod' },
-      '(unknown)@file:./a' => { spec: Spec {(unknown)@file:./a}, type: 'prod' }
+      'foo' => { spec: Spec {foo@^1}, type: 'implicit' },
+      'bar' => { spec: Spec {bar@latest}, type: 'implicit' },
+      'baz' => { spec: Spec {baz@1.0.0}, type: 'implicit' },
+      '(unknown)@github:a/b' => { spec: Spec {(unknown)@github:a/b}, type: 'implicit' },
+      '(unknown)@file:./a' => { spec: Spec {(unknown)@file:./a}, type: 'implicit' }
     },
     modifiedDependencies: true
   }
@@ -161,7 +161,7 @@ exports[`test/parse-add-remove-args.ts > TAP > parseAddArgs > workspaces > defin
 exports[`test/parse-add-remove-args.ts > TAP > parseAddArgs > workspaces > define root dep if no workspace config defined > should return dependency of root 1`] = `
 {
   add: AddImportersDependenciesMapImpl(1) [Map] {
-    'file·.' => Map(1) { 'foo' => { spec: Spec {foo@}, type: 'prod' } },
+    'file·.' => Map(1) { 'foo' => { spec: Spec {foo@}, type: 'implicit' } },
     modifiedDependencies: true
   }
 }
@@ -170,7 +170,7 @@ exports[`test/parse-add-remove-args.ts > TAP > parseAddArgs > workspaces > defin
 exports[`test/parse-add-remove-args.ts > TAP > parseAddArgs > workspaces > define single dep of a single workspace > should return dependency of a workspace 1`] = `
 {
   add: AddImportersDependenciesMapImpl(1) [Map] {
-    'workspace·app§a' => Map(1) { 'foo' => { spec: Spec {foo@}, type: 'prod' } },
+    'workspace·app§a' => Map(1) { 'foo' => { spec: Spec {foo@}, type: 'implicit' } },
     modifiedDependencies: true
   }
 }
@@ -179,8 +179,8 @@ exports[`test/parse-add-remove-args.ts > TAP > parseAddArgs > workspaces > defin
 exports[`test/parse-add-remove-args.ts > TAP > parseAddArgs > workspaces > define single dep to a group of workspaces > should return dependency to a group of workspaces 1`] = `
 {
   add: AddImportersDependenciesMapImpl(2) [Map] {
-    'workspace·foo' => Map(1) { 'foo' => { spec: Spec {foo@}, type: 'prod' } },
-    'workspace·bar' => Map(1) { 'foo' => { spec: Spec {foo@}, type: 'prod' } },
+    'workspace·foo' => Map(1) { 'foo' => { spec: Spec {foo@}, type: 'implicit' } },
+    'workspace·bar' => Map(1) { 'foo' => { spec: Spec {foo@}, type: 'implicit' } },
     modifiedDependencies: true
   }
 }
@@ -189,9 +189,9 @@ exports[`test/parse-add-remove-args.ts > TAP > parseAddArgs > workspaces > defin
 exports[`test/parse-add-remove-args.ts > TAP > parseAddArgs > workspaces > define single dep to multiple groups of workspaces > should return dependency to many groups of workspaces 1`] = `
 {
   add: AddImportersDependenciesMapImpl(3) [Map] {
-    'workspace·utils§c' => Map(1) { 'foo' => { spec: Spec {foo@}, type: 'prod' } },
-    'workspace·foo' => Map(1) { 'foo' => { spec: Spec {foo@}, type: 'prod' } },
-    'workspace·bar' => Map(1) { 'foo' => { spec: Spec {foo@}, type: 'prod' } },
+    'workspace·utils§c' => Map(1) { 'foo' => { spec: Spec {foo@}, type: 'implicit' } },
+    'workspace·foo' => Map(1) { 'foo' => { spec: Spec {foo@}, type: 'implicit' } },
+    'workspace·bar' => Map(1) { 'foo' => { spec: Spec {foo@}, type: 'implicit' } },
     modifiedDependencies: true
   }
 }
