@@ -30,6 +30,14 @@ t.test('id', async t => {
     ['#a', b, []], // missing from partial
     ['#b', b, ['b']], // exact match from partial
     ['#a', empty, []], // no partial
+    ['#a@1\\.0\\.0', all, ['a']], // name and version
+    ['#b@=2\\.0\\.0', all, ['b']], // name and exact version
+    ['#@x\\/y@1\\.0\\.0', all, ['@x/y']], // scoped name and version
+    ['#@x\\/y', all, ['@x/y']], // scoped name only
+    ['#b@^2\\.0\\.0', all, ['b']], // name and semver
+    ['#b@~2\\.0\\.0', all, ['b']], // name and moar semver
+    ['#b@\\>=2\\.0\\.0', all, ['b']], // woah even moar semver
+    ['#b@1\\ \\|\\|\\ 2', all, ['b']], // holly cow
   ])
   const initial = copyGraphSelectionState(all)
   for (const [query, partial, expected] of queryToExpected) {

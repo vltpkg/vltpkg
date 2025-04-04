@@ -31,8 +31,8 @@ import { removeNode, removeQuotes } from './helpers.ts'
 
 export type SemverInternals = {
   semverValue: string
-  semverFunction: SemverComparatorFn
-  compareAttribute: SemverCompareAttribute
+  semverFunction?: SemverComparatorFn
+  compareAttribute?: SemverCompareAttribute
 }
 
 export type SemverFunctionNames =
@@ -205,21 +205,17 @@ export const parseInternals = (
   }
 }
 
-export const semverParser = async (state: ParserState) => {
-  let internals
-  try {
-    internals = parseInternals(
-      asPostcssNodeWithChildren(state.current).nodes,
-      !!state.loose,
-    )
-  } catch (err) {
-    throw error('Failed to parse :semver selector', {
-      cause: err,
-    })
-  }
-
-  const { semverValue, semverFunction, compareAttribute } = internals
-
+export const semverFilter = (
+  state: ParserState,
+  {
+    semverValue,
+    // defines a sane default from the map defined above
+    // typescript doesn't know the map.get will always return a value
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    semverFunction = semverFunctions.get('satisfies')!,
+    compareAttribute,
+  }: SemverInternals,
+) => {
   for (const node of state.partial.nodes) {
     if (compareAttribute) {
       const compareValues = getManifestPropertyValues(
@@ -262,4 +258,20 @@ export const semverParser = async (state: ParserState) => {
   }
 
   return state
+}
+
+export const semverParser = async (state: ParserState) => {
+  let internals
+  try {
+    internals = parseInternals(
+      asPostcssNodeWithChildren(state.current).nodes,
+      !!state.loose,
+    )
+  } catch (err) {
+    throw error('Failed to parse :semver selector', {
+      cause: err,
+    })
+  }
+
+  return semverFilter(state, internals)
 }
