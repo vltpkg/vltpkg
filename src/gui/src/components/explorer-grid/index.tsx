@@ -340,7 +340,7 @@ export const ExplorerGrid = () => {
           .join(itemQuery)
         updateQuery(newQuery)
       } else {
-        const newQuery = `${query} > ${itemQuery}`
+        const newQuery = `${query}>${itemQuery}`
         updateQuery(newQuery)
       }
     }
