@@ -22,6 +22,8 @@ const SidebarQueryNav = () => {
     }
   }, [savedQueries])
 
+  if (pathname.includes('/help')) return null
+
   return (
     <SidebarMenu>
       <SidebarMenuItem>

@@ -69,6 +69,9 @@ vi.mock('@/app/labels.jsx', () => ({
 vi.mock('@/app/queries.jsx', () => ({
   Queries: 'gui-queries',
 }))
+vi.mock('@/app/help/help-selectors.jsx', () => ({
+  HelpSelectors: 'gui-help-selectors',
+}))
 
 expect.addSnapshotSerializer({
   serialize: v => html(v),
@@ -131,5 +134,15 @@ test('renders Layout for the "/labels" view', () => {
 
 test('renders Layout for the "/error" view', () => {
   const { container } = renderWithRouter('/error')
+  expect(container.innerHTML).toMatchSnapshot()
+})
+
+test('renders Layout for the "/help" view', () => {
+  const { container } = renderWithRouter('/help')
+  expect(container.innerHTML).toMatchSnapshot()
+})
+
+test('renders Layout for the "/help/selectors" view', () => {
+  const { container } = renderWithRouter('/help/selectors')
   expect(container.innerHTML).toMatchSnapshot()
 })

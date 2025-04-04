@@ -1,10 +1,9 @@
+import type { LockfileData, GraphLike } from '@vltpkg/graph'
 import type {
-  LockfileData,
-  GraphLike,
-  NodeLike,
-  EdgeLike,
-} from '@vltpkg/graph'
-import type { Query } from '@vltpkg/query'
+  Query,
+  QueryResponseEdge,
+  QueryResponseNode,
+} from '@vltpkg/query'
 import type { SpecOptionsFilled } from '@vltpkg/spec/browser'
 import type { Integrity, Manifest } from '@vltpkg/types'
 
@@ -91,7 +90,7 @@ export type State = {
   /**
    * List of selected edges returned after querying the graph.
    */
-  edges: EdgeLike[]
+  edges: QueryResponseEdge[]
   /**
    * An informative message to be displayed when an error occurs.
    */
@@ -107,7 +106,7 @@ export type State = {
   /**
    * List of selected nodes returned after querying the graph.
    */
-  nodes: NodeLike[]
+  nodes: QueryResponseNode[]
   /**
    * Information about the current project being explored.
    */
@@ -124,7 +123,7 @@ export type State = {
   /**
    * Reference to a currently selected node.
    */
-  selectedNode?: NodeLike
+  selectedNode?: QueryResponseNode
   /**
    * Spec options used for the current graph.
    */

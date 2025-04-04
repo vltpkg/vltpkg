@@ -4,7 +4,10 @@ import html from 'diffable-html'
 import { useGraphStore as useStore } from '@/state/index.js'
 import { joinDepIDTuple } from '@vltpkg/dep-id'
 import { Spec } from '@vltpkg/spec/browser'
-import type { EdgeLike, NodeLike } from '@vltpkg/graph'
+import type {
+  QueryResponseEdge,
+  QueryResponseNode,
+} from '@vltpkg/query'
 import { ExplorerGrid } from '@/components/explorer-grid/index.jsx'
 import { load } from '@/state/load-graph.js'
 import type { RawNode } from '@/state/types.js'
@@ -22,7 +25,7 @@ vi.mock('@/components/explorer-grid/side-item.jsx', () => ({
   SideItem: 'gui-side-item',
 }))
 
-vi.mock('@/components/explorer-grid/selected-item.jsx', () => ({
+vi.mock('@/components/explorer-grid/selected-item/index.jsx', () => ({
   SelectedItem: 'gui-selected-item',
 }))
 
@@ -66,33 +69,36 @@ test('explorer-grid with results', async () => {
       id: joinDepIDTuple(['file', '.']),
       name: 'root',
       version: '1.0.0',
-    } as NodeLike
+      insights: {},
+    } as QueryResponseNode
     const aNode = {
       id: joinDepIDTuple(['registry', '', 'a@1.0.0']),
       name: 'a',
       version: '1.0.0',
-    } as NodeLike
+      insights: {},
+    } as QueryResponseNode
     const bNode = {
       id: joinDepIDTuple(['registry', '', 'b@1.0.0']),
       name: 'b',
       version: '1.0.0',
-    } as NodeLike
+      insights: {},
+    } as QueryResponseNode
     const nodes = [rootNode, aNode, bNode]
-    const edges = [
+    const edges: QueryResponseEdge[] = [
       {
         from: rootNode,
         to: aNode,
         type: 'prod',
         spec: Spec.parse('a', '^1.0.0'),
         name: 'a',
-      } as EdgeLike,
+      },
       {
         from: rootNode,
         to: bNode,
         type: 'dev',
         spec: Spec.parse('b', '^1.0.0'),
         name: 'b',
-      } as EdgeLike,
+      },
     ]
     updateEdges(edges)
     updateNodes(nodes)
@@ -110,40 +116,43 @@ test('explorer-grid with stack', async () => {
       id: joinDepIDTuple(['file', '.']),
       name: 'root',
       version: '1.0.0',
-    } as NodeLike
+      insights: {},
+    } as QueryResponseNode
     const aNode = {
       id: joinDepIDTuple(['registry', '', 'a@1.0.0']),
       name: 'a',
       version: '1.0.0',
-    } as NodeLike
+      insights: {},
+    } as QueryResponseNode
     const bNode = {
       id: joinDepIDTuple(['registry', '', 'b@1.0.0']),
       name: 'b',
       version: '1.0.0',
-    } as NodeLike
+      insights: {},
+    } as QueryResponseNode
     const nodes = [rootNode, aNode, bNode]
-    const edges = [
+    const edges: QueryResponseEdge[] = [
       {
         from: rootNode,
         to: aNode,
         type: 'prod',
         spec: Spec.parse('a', '^1.0.0'),
         name: 'a',
-      } as EdgeLike,
+      },
       {
         from: rootNode,
         to: bNode,
         type: 'dev',
         spec: Spec.parse('b', '^1.0.0'),
         name: 'b',
-      } as EdgeLike,
+      },
       {
         from: aNode,
         to: bNode,
         type: 'prod',
         spec: Spec.parse('b', '^1.0.0'),
         name: 'b',
-      } as EdgeLike,
+      },
     ]
     updateEdges(edges)
     updateNodes(nodes)

@@ -1,5 +1,5 @@
 import { useLocation, NavLink } from 'react-router'
-import menuItems from './menu.js'
+import { mainMenuItems } from './menu.js'
 import type { MenuItem } from './menu.js'
 import {
   SidebarMenuSub,
@@ -59,7 +59,9 @@ const SidebarMainNav = () => {
     })
   }
 
-  return <SidebarMenu>{renderItems(menuItems)}</SidebarMenu>
+  if (pathname.includes('/help')) return null
+
+  return <SidebarMenu>{renderItems(mainMenuItems)}</SidebarMenu>
 }
 
 export { SidebarMainNav }
