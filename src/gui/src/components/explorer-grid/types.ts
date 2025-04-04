@@ -1,15 +1,14 @@
-import type { EdgeLike } from '@vltpkg/graph'
-import type { QueryResponseNode } from '@vltpkg/query'
+import type { QueryResponseEdge } from '@vltpkg/query'
 
 /**
  * A looser representation of an edge, it contains optional properties that
  * are meant to be used alongside importer nodes where they might be missing.
  */
-export type EdgeLoose = Pick<EdgeLike, 'name'> & {
-  type?: EdgeLike['type']
-  spec?: EdgeLike['spec']
-  from?: EdgeLike['from']
-  to?: QueryResponseNode
+export type EdgeLoose = Pick<QueryResponseEdge, 'name'> & {
+  type?: QueryResponseEdge['type']
+  spec?: QueryResponseEdge['spec']
+  from?: QueryResponseEdge['from']
+  to?: QueryResponseEdge['to']
 }
 
 /**

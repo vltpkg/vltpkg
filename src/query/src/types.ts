@@ -55,7 +55,7 @@ export type ParserState = {
 }
 
 export type QueryResponse = {
-  edges: EdgeLike[]
+  edges: QueryResponseEdge[]
   nodes: QueryResponseNode[]
 }
 

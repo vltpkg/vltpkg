@@ -4,8 +4,10 @@ import html from 'diffable-html'
 import { useGraphStore as useStore } from '@/state/index.js'
 import { joinDepIDTuple } from '@vltpkg/dep-id'
 import { Spec } from '@vltpkg/spec/browser'
-import type { EdgeLike } from '@vltpkg/graph'
-import type { QueryResponseNode } from '@vltpkg/query'
+import type {
+  QueryResponseEdge,
+  QueryResponseNode,
+} from '@vltpkg/query'
 import { ExplorerGrid } from '@/components/explorer-grid/index.jsx'
 import { load } from '@/state/load-graph.js'
 import type { RawNode } from '@/state/types.js'
@@ -82,21 +84,21 @@ test('explorer-grid with results', async () => {
       insights: {},
     } as QueryResponseNode
     const nodes = [rootNode, aNode, bNode]
-    const edges = [
+    const edges: QueryResponseEdge[] = [
       {
         from: rootNode,
         to: aNode,
         type: 'prod',
         spec: Spec.parse('a', '^1.0.0'),
         name: 'a',
-      } as EdgeLike,
+      },
       {
         from: rootNode,
         to: bNode,
         type: 'dev',
         spec: Spec.parse('b', '^1.0.0'),
         name: 'b',
-      } as EdgeLike,
+      },
     ]
     updateEdges(edges)
     updateNodes(nodes)
@@ -129,28 +131,28 @@ test('explorer-grid with stack', async () => {
       insights: {},
     } as QueryResponseNode
     const nodes = [rootNode, aNode, bNode]
-    const edges = [
+    const edges: QueryResponseEdge[] = [
       {
         from: rootNode,
         to: aNode,
         type: 'prod',
         spec: Spec.parse('a', '^1.0.0'),
         name: 'a',
-      } as EdgeLike,
+      },
       {
         from: rootNode,
         to: bNode,
         type: 'dev',
         spec: Spec.parse('b', '^1.0.0'),
         name: 'b',
-      } as EdgeLike,
+      },
       {
         from: aNode,
         to: bNode,
         type: 'prod',
         spec: Spec.parse('b', '^1.0.0'),
         name: 'b',
-      } as EdgeLike,
+      },
     ]
     updateEdges(edges)
     updateNodes(nodes)
