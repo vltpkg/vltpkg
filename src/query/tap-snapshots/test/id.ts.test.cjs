@@ -5,6 +5,28 @@
  * Make sure to inspect the output below.  Do not ignore changes!
  */
 'use strict'
+exports[`test/id.ts > TAP > id > query > "#@x\\/y" 1`] = `
+Object {
+  "edges": Array [
+    "@x/y",
+  ],
+  "nodes": Array [
+    "@x/y",
+  ],
+}
+`
+
+exports[`test/id.ts > TAP > id > query > "#@x\\/y@1\\.0\\.0" 1`] = `
+Object {
+  "edges": Array [
+    "@x/y",
+  ],
+  "nodes": Array [
+    "@x/y",
+  ],
+}
+`
+
 exports[`test/id.ts > TAP > id > query > "#a" 1`] = `
 Object {
   "edges": Array [
@@ -30,7 +52,73 @@ Object {
 }
 `
 
+exports[`test/id.ts > TAP > id > query > "#a@1\\.0\\.0" 1`] = `
+Object {
+  "edges": Array [
+    "a",
+  ],
+  "nodes": Array [
+    "a",
+  ],
+}
+`
+
 exports[`test/id.ts > TAP > id > query > "#b" 1`] = `
+Object {
+  "edges": Array [
+    "b",
+  ],
+  "nodes": Array [
+    "b",
+  ],
+}
+`
+
+exports[`test/id.ts > TAP > id > query > "#b@\\>=2\\.0\\.0" 1`] = `
+Object {
+  "edges": Array [
+    "b",
+  ],
+  "nodes": Array [
+    "b",
+  ],
+}
+`
+
+exports[`test/id.ts > TAP > id > query > "#b@^2\\.0\\.0" 1`] = `
+Object {
+  "edges": Array [
+    "b",
+  ],
+  "nodes": Array [
+    "b",
+  ],
+}
+`
+
+exports[`test/id.ts > TAP > id > query > "#b@=2\\.0\\.0" 1`] = `
+Object {
+  "edges": Array [
+    "b",
+  ],
+  "nodes": Array [
+    "b",
+  ],
+}
+`
+
+exports[`test/id.ts > TAP > id > query > "#b@~2\\.0\\.0" 1`] = `
+Object {
+  "edges": Array [
+    "b",
+  ],
+  "nodes": Array [
+    "b",
+  ],
+}
+`
+
+exports[`test/id.ts > TAP > id > query > "#b@1\\ \\|\\|\\ 2" 1`] = `
 Object {
   "edges": Array [
     "b",
