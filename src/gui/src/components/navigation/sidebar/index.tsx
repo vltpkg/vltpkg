@@ -1,19 +1,23 @@
+/* sidebar primitives */
 import {
   Sidebar,
   SidebarContent,
-  SidebarGroup,
-  SidebarHeader,
+  SidebarMenu,
   SidebarRail,
+  SidebarFooter,
 } from '@/components/ui/sidebar.jsx'
 
-import { SidebarLogo } from '@/components/navigation/sidebar/logo.jsx'
-import { ReturnToApp } from '@/components/navigation/sidebar/return-to-app.jsx'
+/* sidebar components */
+import { SidebarHeader } from '@/components/navigation/sidebar/sidebar-header.jsx'
+import { SidebarThemeSwitcher } from '@/components/navigation/sidebar/sidebar-theme-switcher.jsx'
+import { SidebarMenuLink } from '@/components/navigation/sidebar/sidebar-menu-link.jsx'
 
-import { SidebarMainNav } from '@/components/navigation/sidebar/nav-main.jsx'
-import { SidebarQueryNav } from '@/components/navigation/sidebar/nav-queries.jsx'
-import { SidebarQueryProjectNav } from '@/components/navigation/sidebar/nav-project-queries.jsx'
-import { AppSidebarFooter } from '@/components/navigation/sidebar/footer.jsx'
-import { HelpNav } from '@/components/navigation/sidebar/nav-help.jsx'
+/* sidebar nav menus */
+import { SidebarMainNav } from '@/components/navigation/sidebar/sidebar-main-nav.jsx'
+import { SidebarQueryNav } from '@/components/navigation/sidebar/sidebar-query-nav.jsx'
+import { SidebarHelpNav } from '@/components/navigation/sidebar/sidebar-help-nav.jsx'
+
+import { footerMenuItems } from '@/components/navigation/sidebar/menu.js'
 
 /**
  * Sidebar creates a cookie 'sidebar:state' automatically
@@ -33,22 +37,21 @@ export const defaultOpen: boolean = (() => {
   return value === 'true'
 })()
 
-export function AppSidebar() {
+export const AppSidebar = () => {
   return (
     <Sidebar collapsible="icon" variant="inset">
-      <SidebarHeader>
-        <ReturnToApp />
-        <SidebarLogo />
-      </SidebarHeader>
+      <SidebarHeader />
       <SidebarContent>
-        <SidebarGroup className="gap-1">
-          <SidebarMainNav />
-          <SidebarQueryNav />
-          <HelpNav />
-        </SidebarGroup>
-        <SidebarQueryProjectNav />
+        <SidebarMainNav />
+        <SidebarQueryNav />
+        <SidebarHelpNav />
       </SidebarContent>
-      <AppSidebarFooter />
+      <SidebarFooter className="mb-[0.875px]">
+        <SidebarMenu>
+          <SidebarMenuLink items={footerMenuItems} />
+          <SidebarThemeSwitcher />
+        </SidebarMenu>
+      </SidebarFooter>
       <SidebarRail className="hover:after:bg-transparent group-data-[state=collapsed]:-translate-x-[0.65rem]" />
     </Sidebar>
   )
