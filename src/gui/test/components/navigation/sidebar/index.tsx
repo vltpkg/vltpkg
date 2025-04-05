@@ -1,43 +1,51 @@
-import { vi, expect, afterEach, describe, it } from 'vitest'
+import { vi, expect, afterEach, test } from 'vitest'
 import { render, cleanup } from '@testing-library/react'
 import html from 'diffable-html'
-import { AppSidebar } from '@/components/navigation/sidebar/index.jsx'
 import { useGraphStore as useStore } from '@/state/index.js'
+import { AppSidebar } from '@/components/navigation/sidebar/index.jsx'
 
 vi.mock('@/components/ui/sidebar.jsx', () => ({
   Sidebar: 'gui-sidebar',
   SidebarContent: 'gui-sidebar-content',
-  SidebarFooter: 'gui-sidebar-footer',
-  SidebarGroup: 'gui-sidebar-group',
-  SidebarHeader: 'gui-sidebar-header',
+  SidebarMenu: 'gui-sidebar-menu',
   SidebarRail: 'gui-sidebar-rail',
+  SidebarFooter: 'gui-sidebar-footer',
 }))
 
-vi.mock('@/components/navigation/sidebar/logo.jsx', () => ({
-  SidebarLogo: 'gui-sidebar-logo',
-}))
-vi.mock('@/components/navigation/sidebar/return-to-app.jsx', () => ({
-  ReturnToApp: 'gui-return-to-app',
-}))
-
-vi.mock('@/components/navigation/sidebar/nav-main.jsx', () => ({
-  SidebarMainNav: 'gui-sidebar-main-nav',
-}))
-vi.mock('@/components/navigation/sidebar/nav-queries.jsx', () => ({
-  SidebarQueryNav: 'gui-sidebar-query-nav',
+vi.mock('@/components/navigation/sidebar/sidebar-header.jsx', () => ({
+  SidebarHeader: 'gui-sidebar-header',
 }))
 vi.mock(
-  '@/components/navigation/sidebar/nav-project-queries.jsx',
+  '@/components/navigation/sidebar/sidebar-theme-switcher.jsx',
   () => ({
-    SidebarQueryProjectNav: 'gui-sidebar-query-project-nav',
+    SidebarThemeSwitcher: 'gui-sidebar-theme-switcher',
   }),
 )
-vi.mock('@/components/navigation/sidebar/footer.jsx', () => ({
-  AppSidebarFooter: 'gui-sidebar-footer',
-}))
-vi.mock('@/components/navigation/sidebar/nav-help.jsx', () => ({
-  HelpNav: 'gui-help-nav',
-}))
+vi.mock(
+  '@/components/navigation/sidebar/sidebar-menu-link.jsx',
+  () => ({
+    SidebarMenuLink: 'gui-sidebar-menu-link',
+  }),
+)
+
+vi.mock(
+  '@/components/navigation/sidebar/sidebar-main-nav.jsx',
+  () => ({
+    SidebarMainNav: 'gui-sidebar-main-nav',
+  }),
+)
+vi.mock(
+  '@/components/navigation/sidebar/sidebar-query-nav.jsx',
+  () => ({
+    SidebarQueryNav: 'gui-sidebar-query-nav',
+  }),
+)
+vi.mock(
+  '@/components/navigation/sidebar/sidebar-help-nav.jsx',
+  () => ({
+    SidebarHelpNav: 'gui-sidebar-help-nav',
+  }),
+)
 
 expect.addSnapshotSerializer({
   serialize: v => html(v),
@@ -50,13 +58,11 @@ afterEach(() => {
   cleanup()
 })
 
-describe('AppSidebar', () => {
-  it('renders correctly', () => {
-    const Container = () => {
-      return <AppSidebar />
-    }
+test('AppSidebar renders with the correct structure', () => {
+  const Container = () => {
+    return <AppSidebar />
+  }
 
-    const { container } = render(<Container />)
-    expect(container.innerHTML).toMatchSnapshot()
-  })
+  const { container } = render(<Container />)
+  expect(container.innerHTML).toMatchSnapshot()
 })
