@@ -7,10 +7,10 @@ const canonicalCommands = {
   cache: 'cache',
   config: 'config',
   exec: 'exec',
+  'exec-local': 'exec-local',
   gui: 'gui',
   help: 'help',
   init: 'init',
-  'install-exec': 'install-exec',
   install: 'install',
   login: 'login',
   logout: 'logout',
@@ -34,10 +34,10 @@ const aliases = {
   'run-script': 'run',
   rx: 'run-exec',
   x: 'exec',
+  xl: 'exec-local',
   h: 'help',
   '?': 'help',
   conf: 'config',
-  ix: 'install-exec',
   ls: 'list',
 } as const
 
@@ -93,8 +93,8 @@ export const isRecordField = (s: string): s is RecordField =>
 const stopParsingCommands: Commands[keyof Commands][] = [
   'run',
   'run-exec',
+  'exec-local',
   'exec',
-  'install-exec',
 ]
 
 let stopParsing: boolean | undefined = undefined
@@ -461,10 +461,10 @@ export const definition = j
   .opt({
     package: {
       hint: 'p',
-      description: `When running \`vlt install-exec\`, this allows you to
-                    explicitly set the package to search for bins. If not
-                    provided, then vlt will interpret the first argument as
-                    the package, and attempt to run the default executable.`,
+      description: `When running \`vlt exec\`, this allows you to explicitly
+                    set the package to search for bins. If not provided, then
+                    vlt will interpret the first argument as the package, and
+                    attempt to run the default executable.`,
     },
   })
 

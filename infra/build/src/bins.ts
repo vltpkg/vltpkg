@@ -3,7 +3,7 @@ import type { Commands } from '@vltpkg/cli-sdk/definition'
 
 export const BINS_DIR = resolve(import.meta.dirname, 'bins')
 
-export const BINS = ['vlix', 'vlr', 'vlrx', 'vlt', 'vlx'] as const
+export const BINS = ['vlxl', 'vlr', 'vlrx', 'vlt', 'vlx'] as const
 
 export type Bin = (typeof BINS)[number]
 

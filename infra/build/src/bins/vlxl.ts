@@ -1,2 +1,2 @@
 import { run } from '../bins.ts'
-await run('install-exec')
+await run('exec-local')
