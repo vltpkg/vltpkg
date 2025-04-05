@@ -317,7 +317,7 @@ t.test('rejects when spawn errors', async t => {
       stderr: '',
       command: 'notfound',
       args: [],
-      cause: new Error('command not found'),
+      error: new Error('command not found'),
     },
   })
 
@@ -336,8 +336,8 @@ t.test('spawn error includes extra', async t => {
       cause: {
         stdout: '',
         stderr: '',
-        extra: 'property',
-        cause: new Error('command not found'),
+        spawnExtra: { extra: 'property' },
+        error: new Error('command not found'),
       },
     },
   )
@@ -357,7 +357,7 @@ t.test('spawn error respects stdioString', async t => {
       cause: {
         stdout: Buffer.from(''),
         stderr: Buffer.from(''),
-        cause: new Error('command not found'),
+        error: new Error('command not found'),
       },
     },
   )
@@ -377,7 +377,7 @@ t.test('spawn error respects stdio as inherit', async t => {
       cause: {
         stdout: null,
         stderr: null,
-        cause: new Error('command not found'),
+        error: new Error('command not found'),
       },
     },
   )
@@ -442,7 +442,7 @@ t.test('failed command returns extra', async t => {
         status: 1,
         stdout: '',
         stderr: 'Error!',
-        extra: 'property',
+        spawnExtra: { extra: 'property' },
       },
     },
   )
@@ -529,7 +529,7 @@ t.test('signal death includes extra', async t => {
         signal: null,
         stdout: '',
         stderr: '',
-        extra: 'property',
+        spawnExtra: { extra: 'property' },
       },
     })
   } else {
@@ -540,7 +540,7 @@ t.test('signal death includes extra', async t => {
         signal: 'SIGFAKE',
         stdout: '',
         stderr: '',
-        extra: 'property',
+        spawnExtra: { extra: 'property' },
       },
     })
   }
@@ -626,7 +626,7 @@ t.test('rejects when stdout errors', async t => {
         args: [],
         stdout: '',
         stderr: '',
-        cause: new Error('stdout err'),
+        error: new Error('stdout err'),
       },
     }),
   )
@@ -650,7 +650,7 @@ t.test('rejects when stderr errors', async t => {
         args: [],
         stdout: '',
         stderr: '',
-        cause: new Error('stderr err'),
+        error: new Error('stderr err'),
       },
     }),
   )

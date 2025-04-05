@@ -1,4 +1,5 @@
 import { error } from '@vltpkg/error-cause'
+import type { ErrorCause } from '@vltpkg/error-cause'
 import { spawn } from 'node:child_process'
 import type {
   ChildProcess,
@@ -261,10 +262,11 @@ export class SpawnPromise<
           error('command failed', {
             command,
             args,
-            cwd: opts.cwd ?? process.cwd(),
+            /* c8 ignore next - types say it could be URL but never is */
+            cwd: opts.cwd?.toString() ?? process.cwd(),
+            error: er,
+            spawnExtra: extra,
             ...stdioResult(stdout, stderr, opts),
-            ...extra,
-            cause: er,
           }),
         )
       proc.on('error', reject)
@@ -279,19 +281,23 @@ export class SpawnPromise<
           .on('error', er => reject(er))
       }
       proc.on('close', (status, signal) => {
-        const result = {
+        const result: SpawnResultByOptions<O> | ErrorCause = {
           command,
           args,
-          cwd: opts.cwd ?? process.cwd(),
+          /* c8 ignore next - types say it could be URL but never is */
+          cwd: opts.cwd?.toString() ?? process.cwd(),
           /* c8 ignore next 2 - because windows */
           status: status ?? null,
           signal: signal ?? null,
           ...stdioResult(stdout, stderr, opts),
-          ...extra,
-        } as SpawnResultByOptions<O> & T
-        if ((status || signal) && !opts.acceptFail)
-          rej(error('command failed', result))
-        else res(result)
+        }
+        if ((status || signal) && !opts.acceptFail) {
+          rej(
+            error('command failed', { ...result, spawnExtra: extra }),
+          )
+        } else {
+          res({ ...result, ...extra } as SpawnResultByOptions<O> & T)
+        }
       })
     })
     this.process = proc
