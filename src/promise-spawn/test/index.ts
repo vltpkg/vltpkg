@@ -2,6 +2,7 @@ import cp from 'node:child_process'
 import spawk from 'spawk'
 import t from 'tap'
 import type * as PS from '../src/index.ts'
+import { pathToFileURL } from 'node:url'
 const mockCP = { ...cp }
 // make spawk play nice with ESM
 const { promiseSpawn } = await t.mockImport<
@@ -656,4 +657,44 @@ t.test('rejects when stderr errors', async t => {
   )
 
   t.ok(proc.called)
+})
+
+t.test('cwd can be a url', async t => {
+  const cwd = pathToFileURL(process.cwd())
+
+  t.test('success', async t => {
+    const proc = spawk
+      .spawn('pass', [], { cwd })
+      .stdout(Buffer.from('OK\n'))
+
+    const result = await promiseSpawn('pass', [], { cwd })
+    t.hasStrict(result, {
+      status: 0,
+      signal: null,
+      stdout: 'OK',
+      stderr: '',
+      cwd: cwd.toString(),
+    })
+
+    t.ok(proc.called)
+  })
+
+  t.test('rejects', async t => {
+    const proc = spawk
+      .spawn('fail', [], { cwd })
+      .stderr(Buffer.from('Error!\n'))
+      .exit(1)
+
+    await t.rejects(promiseSpawn('fail', [], { cwd }), {
+      message: 'command failed',
+      cause: {
+        status: 1,
+        stdout: '',
+        stderr: 'Error!',
+        cwd: cwd.toString(),
+      },
+    })
+
+    t.ok(proc.called)
+  })
 })
