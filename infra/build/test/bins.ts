@@ -11,7 +11,7 @@ const mockBins = (t: Test, mocks?: Record<string, any>) =>
 t.test('basic', async t => {
   const { BINS, BINS_DIR, isBin } = await mockBins(t)
   t.type(BINS_DIR, 'string')
-  t.strictSame(BINS, ['vlix', 'vlr', 'vlrx', 'vlt', 'vlx'])
+  t.strictSame(BINS, ['vlxl', 'vlr', 'vlrx', 'vlt', 'vlx'])
 
   t.ok(isBin('vlt'))
   t.notOk(isBin('vltt'))
@@ -22,8 +22,8 @@ t.test('changes argv', async t => {
   const runFn = () => true
   const cliSdk = t.captureFn(runFn)
   const { run } = await mockBins(t, { '@vltpkg/cli-sdk': cliSdk })
-  await run('install-exec')
-  t.strictSame(process.argv, ['a', 'b', 'install-exec', 'c', 'd'])
+  await run('exec')
+  t.strictSame(process.argv, ['a', 'b', 'exec', 'c', 'd'])
   t.strictSame(cliSdk.args(), [[]])
 })
 

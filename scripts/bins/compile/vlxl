@@ -5,4 +5,4 @@ if [ ! -d "$SCRIPT_DIR/.build-compile" ]; then
   echo "Run 'pnpm run build:compile' first."
   exit 1
 fi
-$SCRIPT_DIR/.build-compile/vlix "$@"
+$SCRIPT_DIR/.build-compile/vlxl "$@"

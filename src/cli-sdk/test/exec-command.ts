@@ -1,5 +1,5 @@
 import t from 'tap'
-import './commands/exec.ts'
+import './commands/exec-local.ts'
 import './commands/run-exec.ts'
 import './commands/run.ts'
 
