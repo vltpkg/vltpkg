@@ -9,10 +9,10 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
 } from '@/components/ui/dropdown-menu.jsx'
+import { InlineCode } from '@/components/ui/inline-code.jsx'
 import { labelClassNamesMap } from './label-helper.js'
 import type { GridItemData, GridItemOptions } from './types.js'
 import { useGraphStore } from '@/state/index.js'
-import { InlineCode } from '../ui/inline-code.tsx'
 
 export type SideItemOptions = GridItemOptions & {
   parent?: boolean
@@ -58,13 +58,6 @@ export const SideItem = ({
 
   const uninstallAvailable = !!onUninstall && item.from?.importer
 
-  const parseItem = (title: string) => {
-    const parsed = title.split('@')
-    return parsed.length >= 3 ?
-        parsed.slice(2).join('@')
-      : parsed.slice(1).join('@')
-  }
-
   return (
     <div className="group relative z-10" ref={divRef}>
       {item.stacked ?
@@ -86,10 +79,20 @@ export const SideItem = ({
         <CardHeader className="relative flex w-full flex-col rounded-t-lg p-0">
           <div className="flex items-center px-3 py-2">
             <CardTitle className="align-baseline text-sm">
+              {item.depName && item.depName !== item.name && (
+                <span className="font-light">
+                  <InlineCode variant="mono" className="-mx-1">
+                    {item.depName}
+                  </InlineCode>
+                  <InlineCode variant="monoGhost">as</InlineCode>
+                </span>
+              )}
               <span className="font-medium">{item.name}</span>
-              <InlineCode variant="monoGhost">
-                {`v${item.version}`}
-              </InlineCode>
+              {!item.id.startsWith('uninstalled-dep:') && (
+                <InlineCode variant="monoGhost">
+                  {`v${item.version}`}
+                </InlineCode>
+              )}
             </CardTitle>
             {uninstallAvailable && (
               <DropdownMenu>
@@ -114,12 +117,22 @@ export const SideItem = ({
 
           {!isWorkspace && (
             <div className="flex flex-row flex-wrap items-center justify-between gap-2 border-t-[1px] border-muted px-3 py-2">
-              <p className="flex items-center gap-2 text-sm text-muted-foreground">
-                Spec:{' '}
-                <InlineCode variant="mono">
-                  {parseItem(item.title)}
-                </InlineCode>
-              </p>
+              {item.spec?.bareSpec && (
+                <p className="flex items-center gap-2 text-sm text-muted-foreground">
+                  Spec:{' '}
+                  <InlineCode variant="mono">
+                    {(
+                      item.spec.type === 'registry' &&
+                      item.spec.semver
+                    ) ?
+                      item.spec.semver
+                    : item.spec.bareSpec}
+                  </InlineCode>
+                  {item.size > 1 && (
+                    <span>and {item.size - 1} more.</span>
+                  )}
+                </p>
+              )}
               {item.labels?.map(i => (
                 <div key={i}>
                   <Badge
