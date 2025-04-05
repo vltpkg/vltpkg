@@ -1,0 +1,21 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`SidebarQueryNav render with saved queries 1`] = `
+
+<gui-sidebar-separator>
+</gui-sidebar-separator>
+<gui-sidebar-group>
+  <gui-sidebar-group-label classname="font-medium tracking-wide">
+    Queries
+  </gui-sidebar-group-label>
+  <gui-sidebar-menu>
+    <gui-sidebar-menu-link items="[object Object]">
+    </gui-sidebar-menu-link>
+  </gui-sidebar-menu>
+  <gui-sidebar-menu>
+    <gui-sidebar-menu-link items="[object Object]">
+    </gui-sidebar-menu-link>
+  </gui-sidebar-menu>
+</gui-sidebar-group>
+
+`;

@@ -1,30 +1,28 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`AppSidebar > renders correctly 1`] = `
+exports[`AppSidebar renders with the correct structure 1`] = `
 
 <gui-sidebar
   collapsible="icon"
   variant="inset"
 >
   <gui-sidebar-header>
-    <gui-return-to-app>
-    </gui-return-to-app>
-    <gui-sidebar-logo>
-    </gui-sidebar-logo>
   </gui-sidebar-header>
   <gui-sidebar-content>
-    <gui-sidebar-group classname="gap-1">
-      <gui-sidebar-main-nav>
-      </gui-sidebar-main-nav>
-      <gui-sidebar-query-nav>
-      </gui-sidebar-query-nav>
-      <gui-help-nav>
-      </gui-help-nav>
-    </gui-sidebar-group>
-    <gui-sidebar-query-project-nav>
-    </gui-sidebar-query-project-nav>
+    <gui-sidebar-main-nav>
+    </gui-sidebar-main-nav>
+    <gui-sidebar-query-nav>
+    </gui-sidebar-query-nav>
+    <gui-sidebar-help-nav>
+    </gui-sidebar-help-nav>
   </gui-sidebar-content>
-  <gui-sidebar-footer>
+  <gui-sidebar-footer classname="mb-[0.875px]">
+    <gui-sidebar-menu>
+      <gui-sidebar-menu-link items="[object Object]">
+      </gui-sidebar-menu-link>
+      <gui-sidebar-theme-switcher>
+      </gui-sidebar-theme-switcher>
+    </gui-sidebar-menu>
   </gui-sidebar-footer>
   <gui-sidebar-rail classname="hover:after:bg-transparent group-data-[state=collapsed]:-translate-x-[0.65rem]">
   </gui-sidebar-rail>
