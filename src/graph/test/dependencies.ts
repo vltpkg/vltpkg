@@ -4,6 +4,7 @@ import {
   asDependencyTypeShort,
   isDependency,
   isDependencyTypeShort,
+  isDependencySaveType,
   shorten,
 } from '../src/dependencies.ts'
 import { Spec } from '@vltpkg/spec'
@@ -105,6 +106,21 @@ t.test('isDependencyTypeShort', async t => {
   )
   t.notOk(
     isDependencyTypeShort('unknown'),
+    'should not be ok if type is not a valid short type',
+  )
+})
+
+t.test('isDependencySaveType', async t => {
+  t.ok(
+    isDependencySaveType('prod'),
+    'should be ok if type is a valid save type',
+  )
+  t.ok(
+    isDependencySaveType('implicit'),
+    'should be ok if type is a valid save type',
+  )
+  t.notOk(
+    isDependencySaveType('unknown'),
     'should not be ok if type is not a valid short type',
   )
 })

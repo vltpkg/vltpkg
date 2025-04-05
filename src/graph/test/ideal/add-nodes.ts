@@ -1,8 +1,8 @@
 import { joinDepIDTuple } from '@vltpkg/dep-id'
-import type { DependencyTypeShort } from '@vltpkg/types'
 import type { PackageInfoClient } from '@vltpkg/package-info'
-import { kCustomInspect, Spec } from '@vltpkg/spec'
 import type { SpecOptions } from '@vltpkg/spec'
+import { kCustomInspect, Spec } from '@vltpkg/spec'
+import type { DependencySaveType } from '@vltpkg/types'
 import { PathScurry } from 'path-scurry'
 import t from 'tap'
 import type {
@@ -59,7 +59,7 @@ t.test('addNodes', async t => {
   } as PackageInfoClient
   const addEntry = (
     name: string,
-    type: DependencyTypeShort = 'prod',
+    type: DependencySaveType = 'implicit',
   ) =>
     new Map(
       Object.entries({
@@ -122,7 +122,7 @@ t.test('addNodes', async t => {
   // now it should install the package bar to the main importer
   await addNodes({
     add: new Map([
-      [joinDepIDTuple(['file', '.']), addEntry('bar')],
+      [joinDepIDTuple(['file', '.']), addEntry('bar', 'dev')],
     ]) as AddImportersDependenciesMap,
     scurry: new PathScurry(t.testdirName),
     graph,
