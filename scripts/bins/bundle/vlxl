@@ -5,4 +5,4 @@ if [ ! -d "$SCRIPT_DIR/.build-bundle" ]; then
   echo "Run 'pnpm run build:bundle' first."
   exit 1
 fi
-NODE_OPTIONS="--enable-source-maps" node $SCRIPT_DIR/.build-bundle/vlix.js "$@"
+NODE_OPTIONS="--enable-source-maps" node $SCRIPT_DIR/.build-bundle/vlxl.js "$@"

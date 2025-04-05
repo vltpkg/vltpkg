@@ -5,4 +5,4 @@ if [ ! -d "$SCRIPT_DIR/.build-bundle" ]; then
   echo "Run 'pnpm run build:bundle' first."
   exit 1
 fi
-deno -A --unstable-bare-node-builtins --unstable-node-globals $SCRIPT_DIR/.build-bundle/vlix.js "$@"
+deno -A --unstable-bare-node-builtins --unstable-node-globals $SCRIPT_DIR/.build-bundle/vlxl.js "$@"
