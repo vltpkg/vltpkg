@@ -111,7 +111,7 @@ t.test('bundled CLI', async t => {
     type: 'module',
     license: 'MIT',
     bin: {
-      vlix: './vlix.js',
+      vlxl: './vlxl.js',
       vlr: './vlr.js',
       vlrx: './vlrx.js',
       vlt: './vlt.js',
@@ -153,7 +153,7 @@ t.test('root compiled bin', async t => {
       type: 'module',
       license: 'MIT',
       bin: {
-        vlix: './vlix',
+        vlxl: './vlxl',
         vlr: './vlr',
         vlrx: './vlrx',
         vlt: './vlt',
@@ -181,7 +181,7 @@ t.test('root compiled bin', async t => {
         'LICENSE',
         'README.md',
         'package.json',
-        'vlix',
+        'vlxl',
         'vlr',
         'vlrx',
         'vlt',
@@ -246,7 +246,7 @@ t.test('root compiled bin', async t => {
       type: 'module',
       license: 'MIT',
       bin: {
-        vlix: './vlix',
+        vlxl: './vlxl',
         vlr: './vlr',
         vlrx: './vlrx',
         vlt: './vlt',
@@ -269,7 +269,7 @@ t.test('root compiled bin', async t => {
         'LICENSE',
         'README.md',
         'package.json',
-        'vlix',
+        'vlxl',
         'vlr',
         'vlrx',
         'vlt',
@@ -322,7 +322,7 @@ t.test('platform bin', async t => {
   t.test('publish', async t => {
     const { readOutdir, readPkg, calls } = await mockPlatformBin(t)
     t.strictSame(calls.compile[0]?.bins, [
-      'vlix',
+      'vlxl',
       'vlr',
       'vlrx',
       'vlt',
