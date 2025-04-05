@@ -1,20 +1,19 @@
 import { Query } from '@/components/icons/query.jsx'
-import { LayoutDashboard } from 'lucide-react'
+import { LayoutDashboard, Library } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
-
-export interface Item {
-  title: string
-  url: string
-}
 
 export interface MenuItem {
   title: string
-  url: string
+  url?: string
   icon?:
     | LucideIcon
     | React.ComponentType<React.SVGProps<SVGSVGElement>>
+  vltIcon?: boolean
   isActive?: boolean
-  items?: Item[]
+  items?: MenuItem[]
+  external?: boolean
+  badge?: string
+  onClick?: () => void
 }
 
 export const mainMenuItems: MenuItem[] = [
@@ -23,12 +22,28 @@ export const mainMenuItems: MenuItem[] = [
     url: '/',
     icon: LayoutDashboard,
   },
+  {
+    title: 'Queries',
+    url: '/queries',
+    icon: Query,
+    vltIcon: true,
+  },
 ]
 
 export const helpMenuItems: MenuItem[] = [
   {
     title: 'Selectors',
     url: '/help/selectors',
+    vltIcon: true,
     icon: Query,
+  },
+]
+
+export const footerMenuItems: MenuItem[] = [
+  {
+    title: 'Documentation',
+    url: 'https://docs.vlt.sh',
+    icon: Library,
+    external: true,
   },
 ]
