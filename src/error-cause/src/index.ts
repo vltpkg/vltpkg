@@ -78,6 +78,9 @@ export type ErrorCause = {
   /** standard error from a process */
   stderr?: Buffer | string | null
 
+  /** extra properties from a process */
+  spawnExtra?: unknown
+
   /**
    * Array of valid options when something is not a valid option.
    * (For use in `did you mean X?` output.)
@@ -208,8 +211,11 @@ export const isErrorWithCause = (er: unknown): er is ErrorWithCause =>
 /**
  * Helper util to convert unknown to a plain error
  */
-export const asError = (er: unknown): Error =>
-  er instanceof Error ? er : new Error(String(er) || 'Unknown error')
+export const asError = (
+  er: unknown,
+  fallbackMessage = 'Unknown error',
+): Error =>
+  er instanceof Error ? er : new Error(String(er) || fallbackMessage)
 
 /**
  * Valid properties for the 'code' field in an Error cause.
