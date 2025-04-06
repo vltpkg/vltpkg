@@ -1,0 +1,21 @@
+/* IMPORTANT
+ * This snapshot file is auto-generated, but designed for humans.
+ * It should be checked into source control and tracked carefully.
+ * Re-generate by setting TAP_SNAPSHOT=1 and running tests.
+ * Make sure to inspect the output below.  Do not ignore changes!
+ */
+'use strict'
+exports[`test/paths.ts > TAP > unix paths > must match snapshot 1`] = `
+Array [
+  "some-path",
+]
+`
+
+exports[`test/paths.ts > TAP > windows paths > must match snapshot 1`] = `
+Array [
+  "some-path.cmd",
+  "some-path.ps1",
+  "some-path",
+  "some-path.pwsh",
+]
+`

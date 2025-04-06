@@ -11,7 +11,7 @@ const rmBinWin32 = (remover: RollbackRemove, bin: string) => {
   return [
     remover.rm(bin),
     remover.rm(bin + '.cmd'),
-    remover.rm(bin + '.pwsh'),
+    remover.rm(bin + '.ps1'),
   ]
 }
 
