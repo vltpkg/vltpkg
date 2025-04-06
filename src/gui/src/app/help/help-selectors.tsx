@@ -16,8 +16,8 @@ import { cn } from '@/lib/utils.js'
 
 export const HelpSelectors = () => {
   return (
-    <section className="flex h-full w-full flex-col rounded-b-lg border-x-[1px] border-b-[1px]">
-      <div className="flex h-full max-h-[calc(100svh-65px-2px-16px)] w-full max-w-8xl flex-col">
+    <section className="flex h-full max-h-[calc(100svh-65px-2px-16px)] w-full flex-col rounded-b-lg border-x-[1px] border-b-[1px]">
+      <div className="flex max-w-8xl flex-col">
         <Markdown
           className="prose-sm prose-neutral mt-8 w-full max-w-none px-8 md:w-2/3"
           components={markdownComponents}>
@@ -65,11 +65,7 @@ const SelectorsTable = ({ className }: { className?: string }) => {
   const selectorData = flattenSecurityDetails(SOCKET_SECURITY_DETAILS)
 
   return (
-    <div
-      className={cn(
-        'flex h-full w-full flex-col gap-8 overflow-y-scroll px-8',
-        className,
-      )}>
+    <div className={cn('flex flex-col gap-8 px-8', className)}>
       <div className="flex gap-2">
         <Input
           placeholder="Filter Selectors"
