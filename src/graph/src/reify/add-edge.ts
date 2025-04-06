@@ -57,7 +57,7 @@ export const addEdge = async (
   for (const [key, val] of Object.entries(bp)) {
     const link = scurry.resolve(binRoot, key)
     const target = relative(binRoot, scurry.resolve(path, val))
-    // TODO: bash/cmd/pwsh shims on Windows
+    // TODO: bash/cmd/ps1 shims on Windows
     promises.push(clobberSymlink(target, link, remover))
   }
   await Promise.all(promises)
