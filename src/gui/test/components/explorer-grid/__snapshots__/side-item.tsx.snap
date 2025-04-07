@@ -1,5 +1,60 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
+exports[`SideItem render as aliased dependency 1`] = `
+
+<div>
+  <div class="group relative z-10">
+    <gui-card
+      role="article"
+      classname="relative my-4 transition-all  group-hover:bg-card-accent"
+    >
+      <gui-card-header classname="relative flex w-full flex-col rounded-t-lg p-0">
+        <div class="flex items-center px-3 py-2">
+          <gui-card-title classname="align-baseline text-sm">
+            <span class="font-light">
+              <gui-inline-code
+                variant="mono"
+                classname="-mx-1"
+              >
+                aliased-item
+              </gui-inline-code>
+              <gui-inline-code variant="monoGhost">
+                as
+              </gui-inline-code>
+            </span>
+            <span class="font-medium">
+              item
+            </span>
+            <gui-inline-code variant="monoGhost">
+              v1.0.0
+            </gui-inline-code>
+          </gui-card-title>
+        </div>
+        <div class="flex flex-row flex-wrap items-center justify-between gap-2 border-t-[1px] border-muted px-3 py-2">
+          <p class="flex items-center gap-2 text-sm text-muted-foreground">
+            Spec:
+            <gui-inline-code variant="mono">
+              npm:item@^1.0.0
+            </gui-inline-code>
+          </p>
+          <div>
+            <gui-badge classname="grow-0 border-transparent bg-cyan-100 text-neutral-900 hover:bg-cyan-100/80">
+              prod
+            </gui-badge>
+          </div>
+        </div>
+      </gui-card-header>
+    </gui-card>
+    <div
+      class="absolute -left-[9px] bottom-[62px] z-0 h-[13.35rem] h-[5px] w-[9px] rounded-bl-sm border-b border-l border-solid border-muted group-[&amp;:nth-child(2)]:hidden group-[&amp;:nth-child(3)]:h-24"
+      style="height: -258px;"
+    >
+    </div>
+  </div>
+</div>
+
+`;
+
 exports[`SideItem render as dependency 1`] = `
 
 <div>
@@ -14,16 +69,17 @@ exports[`SideItem render as dependency 1`] = `
             <span class="font-medium">
               item
             </span>
-            <span class="mx-1 rounded-sm px-1.5 py-1 pt-1.5 text-xs font-normal font-courier text-muted-foreground bg-transparent">
+            <gui-inline-code variant="monoGhost">
               v1.0.0
-            </span>
+            </gui-inline-code>
           </gui-card-title>
         </div>
         <div class="flex flex-row flex-wrap items-center justify-between gap-2 border-t-[1px] border-muted px-3 py-2">
           <p class="flex items-center gap-2 text-sm text-muted-foreground">
             Spec:
-            <span class="mx-1 rounded-sm px-1.5 py-1 pt-1.5 text-xs font-normal font-courier text-muted-foreground dark:bg-neutral-700/50 bg-neutral-700/5 border-none">
-            </span>
+            <gui-inline-code variant="mono">
+              ^1.0.0
+            </gui-inline-code>
           </p>
           <div>
             <gui-badge classname="grow-0 border-transparent bg-lime-100 text-neutral-900 hover:bg-lime-100/80">
@@ -57,16 +113,17 @@ exports[`SideItem render as dependency with long name 1`] = `
             <span class="font-medium">
               lorem-ipsum-dolor-sit-amet-consectetur-adipiscing-elit-sed-do-eiusmod-tempor-incididunt-ut-labore-et-dolore-magna-aliqua-ut-enim-ad-minim-veniam-quis-nostrud-exercitation
             </span>
-            <span class="mx-1 rounded-sm px-1.5 py-1 pt-1.5 text-xs font-normal font-courier text-muted-foreground bg-transparent">
+            <gui-inline-code variant="monoGhost">
               v1.0.0
-            </span>
+            </gui-inline-code>
           </gui-card-title>
         </div>
         <div class="flex flex-row flex-wrap items-center justify-between gap-2 border-t-[1px] border-muted px-3 py-2">
           <p class="flex items-center gap-2 text-sm text-muted-foreground">
             Spec:
-            <span class="mx-1 rounded-sm px-1.5 py-1 pt-1.5 text-xs font-normal font-courier text-muted-foreground dark:bg-neutral-700/50 bg-neutral-700/5 border-none">
-            </span>
+            <gui-inline-code variant="mono">
+              ^1.0.0
+            </gui-inline-code>
           </p>
           <div>
             <gui-badge classname="grow-0 border-transparent bg-lime-100 text-neutral-900 hover:bg-lime-100/80">
@@ -100,16 +157,17 @@ exports[`SideItem render as dependent 1`] = `
             <span class="font-medium">
               item
             </span>
-            <span class="mx-1 rounded-sm px-1.5 py-1 pt-1.5 text-xs font-normal font-courier text-muted-foreground bg-transparent">
+            <gui-inline-code variant="monoGhost">
               v1.0.0
-            </span>
+            </gui-inline-code>
           </gui-card-title>
         </div>
         <div class="flex flex-row flex-wrap items-center justify-between gap-2 border-t-[1px] border-muted px-3 py-2">
           <p class="flex items-center gap-2 text-sm text-muted-foreground">
             Spec:
-            <span class="mx-1 rounded-sm px-1.5 py-1 pt-1.5 text-xs font-normal font-courier text-muted-foreground dark:bg-neutral-700/50 bg-neutral-700/5 border-none">
-            </span>
+            <gui-inline-code variant="mono">
+              ^1.0.0
+            </gui-inline-code>
           </p>
           <div>
             <gui-badge classname="grow-0 border-transparent bg-cyan-100 text-neutral-900 hover:bg-cyan-100/80">
@@ -119,6 +177,50 @@ exports[`SideItem render as dependent 1`] = `
         </div>
       </gui-card-header>
     </gui-card>
+  </div>
+</div>
+
+`;
+
+exports[`SideItem render as git dependency 1`] = `
+
+<div>
+  <div class="group relative z-10">
+    <gui-card
+      role="article"
+      classname="relative my-4 transition-all  group-hover:bg-card-accent"
+    >
+      <gui-card-header classname="relative flex w-full flex-col rounded-t-lg p-0">
+        <div class="flex items-center px-3 py-2">
+          <gui-card-title classname="align-baseline text-sm">
+            <span class="font-medium">
+              item
+            </span>
+            <gui-inline-code variant="monoGhost">
+              v1.0.0
+            </gui-inline-code>
+          </gui-card-title>
+        </div>
+        <div class="flex flex-row flex-wrap items-center justify-between gap-2 border-t-[1px] border-muted px-3 py-2">
+          <p class="flex items-center gap-2 text-sm text-muted-foreground">
+            Spec:
+            <gui-inline-code variant="mono">
+              github:vltpkg/item
+            </gui-inline-code>
+          </p>
+          <div>
+            <gui-badge classname="grow-0 border-transparent bg-cyan-100 text-neutral-900 hover:bg-cyan-100/80">
+              prod
+            </gui-badge>
+          </div>
+        </div>
+      </gui-card-header>
+    </gui-card>
+    <div
+      class="absolute -left-[9px] bottom-[62px] z-0 h-[13.35rem] h-[5px] w-[9px] rounded-bl-sm border-b border-l border-solid border-muted group-[&amp;:nth-child(2)]:hidden group-[&amp;:nth-child(3)]:h-24"
+      style="height: -258px;"
+    >
+    </div>
   </div>
 </div>
 
@@ -142,15 +244,19 @@ exports[`SideItem render as multi-stacked dependent 1`] = `
             <span class="font-medium">
               item
             </span>
-            <span class="mx-1 rounded-sm px-1.5 py-1 pt-1.5 text-xs font-normal font-courier text-muted-foreground bg-transparent">
+            <gui-inline-code variant="monoGhost">
               v1.0.0
-            </span>
+            </gui-inline-code>
           </gui-card-title>
         </div>
         <div class="flex flex-row flex-wrap items-center justify-between gap-2 border-t-[1px] border-muted px-3 py-2">
           <p class="flex items-center gap-2 text-sm text-muted-foreground">
             Spec:
-            <span class="mx-1 rounded-sm px-1.5 py-1 pt-1.5 text-xs font-normal font-courier text-muted-foreground dark:bg-neutral-700/50 bg-neutral-700/5 border-none">
+            <gui-inline-code variant="mono">
+              ^1.0.0
+            </gui-inline-code>
+            <span>
+              and 4 more.
             </span>
           </p>
           <div>
@@ -180,16 +286,17 @@ exports[`SideItem render as parent 1`] = `
             <span class="font-medium">
               item
             </span>
-            <span class="mx-1 rounded-sm px-1.5 py-1 pt-1.5 text-xs font-normal font-courier text-muted-foreground bg-transparent">
+            <gui-inline-code variant="monoGhost">
               v1.0.0
-            </span>
+            </gui-inline-code>
           </gui-card-title>
         </div>
         <div class="flex flex-row flex-wrap items-center justify-between gap-2 border-t-[1px] border-muted px-3 py-2">
           <p class="flex items-center gap-2 text-sm text-muted-foreground">
             Spec:
-            <span class="mx-1 rounded-sm px-1.5 py-1 pt-1.5 text-xs font-normal font-courier text-muted-foreground dark:bg-neutral-700/50 bg-neutral-700/5 border-none">
-            </span>
+            <gui-inline-code variant="mono">
+              ^1.0.0
+            </gui-inline-code>
           </p>
           <div>
             <gui-badge classname="grow-0 border-transparent bg-cyan-100 text-neutral-900 hover:bg-cyan-100/80">
@@ -222,15 +329,19 @@ exports[`SideItem render as two-stacked dependent 1`] = `
             <span class="font-medium">
               item
             </span>
-            <span class="mx-1 rounded-sm px-1.5 py-1 pt-1.5 text-xs font-normal font-courier text-muted-foreground bg-transparent">
+            <gui-inline-code variant="monoGhost">
               v1.0.0
-            </span>
+            </gui-inline-code>
           </gui-card-title>
         </div>
         <div class="flex flex-row flex-wrap items-center justify-between gap-2 border-t-[1px] border-muted px-3 py-2">
           <p class="flex items-center gap-2 text-sm text-muted-foreground">
             Spec:
-            <span class="mx-1 rounded-sm px-1.5 py-1 pt-1.5 text-xs font-normal font-courier text-muted-foreground dark:bg-neutral-700/50 bg-neutral-700/5 border-none">
+            <gui-inline-code variant="mono">
+              ^1.0.0
+            </gui-inline-code>
+            <span>
+              and 1 more.
             </span>
           </p>
           <div>

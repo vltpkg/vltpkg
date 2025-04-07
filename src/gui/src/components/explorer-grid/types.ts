@@ -17,6 +17,10 @@ export type EdgeLoose = Pick<QueryResponseEdge, 'name'> & {
  */
 export type GridItemData = EdgeLoose & {
   /**
+   * The original dependency name as defined in its parent manifest.
+   */
+  depName?: string
+  /**
    * An index value shared between installed and uninstalled dependencies
    * to keep track of the order they were added to the UI.
    */
