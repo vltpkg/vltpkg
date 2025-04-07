@@ -51,7 +51,7 @@ export type OnDone<T> =
 export const startView = <T>(
   conf: LoadedConfig,
   views?: Views<T>,
-  { start }: { start: number } = { start: Date.now() },
+  { start = Date.now() }: { start?: number } = {},
 ): {
   onDone: OnDone<T>
   onError?: (err: unknown) => void
