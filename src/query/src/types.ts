@@ -74,7 +74,6 @@ export type QueryResponseNode = Omit<
   edgesIn: Set<QueryResponseEdge>
   edgesOut: Map<string, QueryResponseEdge>
   insights: Insights
-  score: PackageScore
 }
 
 export type Insights = {
@@ -96,6 +95,7 @@ export type Insights = {
   network?: boolean
   obfuscated?: boolean
   scanned: boolean
+  score?: PackageScore
   scripts?: boolean
   severity?: SeverityInsights
   shell?: boolean

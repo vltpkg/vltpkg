@@ -204,7 +204,7 @@ t.test('insights', async t => {
     const nodeE = result.nodes.find(n => n.name === 'e')
     if (nodeE) {
       t.strictSame(
-        nodeE.score,
+        nodeE.insights.score,
         {
           overall: 0.5,
           security: 0.3,
