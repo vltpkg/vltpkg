@@ -1,7 +1,10 @@
 import { error } from '@vltpkg/error-cause'
 import type { EdgeLike, NodeLike } from '@vltpkg/graph'
 import type { SpecOptions } from '@vltpkg/spec/browser'
-import type { SecurityArchiveLike } from '@vltpkg/security-archive'
+import type {
+  SecurityArchiveLike,
+  PackageScore,
+} from '@vltpkg/security-archive'
 import type {
   Tag,
   String,
@@ -71,6 +74,7 @@ export type QueryResponseNode = Omit<
   edgesIn: Set<QueryResponseEdge>
   edgesOut: Map<string, QueryResponseEdge>
   insights: Insights
+  score: PackageScore
 }
 
 export type Insights = {
