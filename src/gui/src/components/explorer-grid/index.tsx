@@ -221,6 +221,7 @@ const getDependencyItems = (
     const title = `${edge.name}@${edge.spec.bareSpec}`
     items.push({
       ...edge,
+      depName: edge.name,
       depIndex: count.currIndex++,
       id: edge.to.id,
       title,
@@ -259,6 +260,8 @@ const getUninstalledDependencyItems = (
     if (edge?.to) continue
     const title = `${name}@${version}`
     items.push({
+      spec: Spec.parse(name, version),
+      depName: edge?.name,
       depIndex: count.currIndex++,
       id: `uninstalled-dep:${title}`,
       title,
