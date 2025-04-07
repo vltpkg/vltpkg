@@ -95,6 +95,7 @@ const ExplorerContent = () => {
   const query = useGraphStore(state => state.query)
   const q = useGraphStore(state => state.q)
   const ac = useRef<AbortController>(new AbortController())
+  const navigate = useNavigate()
 
   // updates the query response state anytime the query changes
   // by defining query and q as dependencies of `useEffect` we
@@ -118,12 +119,7 @@ const ExplorerContent = () => {
         query !== state.query ||
         state.route !== '/explore'
       ) {
-        history.pushState(
-          { query, route: '/explore' },
-          '',
-          '/explore?query=' + encodeURIComponent(query),
-        )
-        window.scrollTo(0, 0)
+        void navigate('/explore?query=' + encodeURIComponent(query))
       }
     }
     void updateQueryData().catch(() => {})
