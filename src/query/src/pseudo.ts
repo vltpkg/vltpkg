@@ -395,6 +395,7 @@ const pseudoSelectors = new Map<string, ParserFn>(
     unmaintained,
     unpopular,
     unstable,
+    v: semver,
   }),
 )
 
