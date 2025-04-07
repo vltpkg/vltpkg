@@ -167,6 +167,12 @@ t.test('insights', async t => {
             name: 'e',
             version: '1.0.0',
             license: 'MIT',
+            score: {
+              overall: 0.5,
+              security: 0.3,
+              maintenance: 0.7,
+              popularity: 0.6,
+            },
             alerts: [
               {
                 key: '12314320948130',
@@ -187,11 +193,27 @@ t.test('insights', async t => {
     specOptions,
   })
   for (const [q, expected] of queryToExpected) {
+    const result = await query.search(q)
     t.strictSame(
-      (await query.search(q)).nodes.map(i => i.name),
+      result.nodes.map(i => i.name),
       expected,
       `query > "${q}"`,
     )
+
+    // Verify score values for node 'e'
+    const nodeE = result.nodes.find(n => n.name === 'e')
+    if (nodeE) {
+      t.strictSame(
+        nodeE.score,
+        {
+          overall: 0.5,
+          security: 0.3,
+          maintenance: 0.7,
+          popularity: 0.6,
+        },
+        'node e should have correct score values',
+      )
+    }
   }
 })
 

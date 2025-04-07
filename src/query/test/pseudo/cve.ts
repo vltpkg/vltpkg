@@ -41,6 +41,14 @@ t.test('selects packages with a CVE alert', async t => {
               name: 'e',
               version: '1.0.0',
               license: 'MIT',
+              score: {
+                overall: 0,
+                license: 0,
+                maintenance: 0,
+                quality: 0,
+                supplyChain: 0,
+                vulnerability: 0,
+              },
               alerts: [
                 {
                   key: '12314320948130',
