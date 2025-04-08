@@ -8,6 +8,7 @@ import type {
   BuildIdealAddOptions,
   BuildIdealFromGraphOptions,
 } from './types.ts'
+import { resolveSaveType } from '../resolve-save-type.ts'
 
 export type AddNodesOptions = BuildIdealAddOptions &
   BuildIdealFromGraphOptions &
@@ -45,8 +46,11 @@ export const addNodes = async ({
     // Removes any edges and nodes that are currently part of the
     // graph but are also in the list of dependencies to be installed
     const deps = [...dependencies.values()]
-    for (const { spec } of deps) {
-      const node = importer.edgesOut.get(spec.name)?.to
+    for (const dep of deps) {
+      const { spec } = dep
+      const existingEdge = importer.edgesOut.get(spec.name)
+      dep.type = resolveSaveType(importer, spec.name, dep.type)
+      const node = existingEdge?.to
       if (node) graph.removeNode(node)
     }
 

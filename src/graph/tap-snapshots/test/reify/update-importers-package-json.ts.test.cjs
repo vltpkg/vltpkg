@@ -10,6 +10,7 @@ Array [
   Object {
     "dependencies": Object {
       "b": "npm:a@1.0.0",
+      "becomeprod": "1.0.0",
       "git": "github:a/b",
     },
     "devDependencies": Object {
@@ -18,6 +19,10 @@ Array [
       "range": "~1.1.0",
     },
     "name": "root",
+    "peerDependencies": Object {
+      "pdep": "1.2.3",
+    },
+    "peerDependenciesMeta": Object {},
     "version": "1.0.0",
   },
 ]
@@ -28,6 +33,7 @@ Array [
   Object {
     "dependencies": Object {
       "b": "npm:a@^1.0.0",
+      "becomeprod": "1.0.0",
       "git": "github:a/b",
     },
     "devDependencies": Object {
@@ -36,6 +42,10 @@ Array [
       "range": "~1.1.0",
     },
     "name": "root",
+    "peerDependencies": Object {
+      "pdep": "1.2.3",
+    },
+    "peerDependenciesMeta": Object {},
     "version": "1.0.0",
   },
 ]
@@ -46,6 +56,7 @@ Array [
   Object {
     "dependencies": Object {
       "b": "custom:a@^1.0.0",
+      "becomeprod": "1.0.0",
       "git": "github:a/b",
     },
     "devDependencies": Object {
@@ -54,6 +65,10 @@ Array [
       "range": "~1.1.0",
     },
     "name": "root",
+    "peerDependencies": Object {
+      "pdep": "1.2.3",
+    },
+    "peerDependenciesMeta": Object {},
     "version": "1.0.0",
   },
 ]
@@ -63,6 +78,7 @@ exports[`test/reify/update-importers-package-json.ts > TAP > updatePackageJson >
 Array [
   Object {
     "dependencies": Object {
+      "becomeprod": "1.0.0",
       "foo": "1.0.0",
       "git": "github:a/b",
     },
@@ -71,6 +87,15 @@ Array [
       "range": "~1.1.0",
     },
     "name": "root",
+    "peerDependencies": Object {
+      "newpeeroptional": "1.0.0",
+      "pdep": "1.2.3",
+    },
+    "peerDependenciesMeta": Object {
+      "newpeeroptional": Object {
+        "optional": true,
+      },
+    },
     "version": "1.0.0",
   },
 ]
@@ -80,10 +105,20 @@ exports[`test/reify/update-importers-package-json.ts > TAP > updatePackageJson >
 Array [
   Object {
     "dependencies": Object {
+      "becomeprod": "1.0.0",
       "foo": "1.0.0",
       "git": "github:a/b",
     },
     "name": "root",
+    "peerDependencies": Object {
+      "newpeeroptional": "1.0.0",
+      "pdep": "1.2.3",
+    },
+    "peerDependenciesMeta": Object {
+      "newpeeroptional": Object {
+        "optional": true,
+      },
+    },
     "version": "1.0.0",
   },
 ]
@@ -93,6 +128,7 @@ exports[`test/reify/update-importers-package-json.ts > TAP > updatePackageJson >
 Array [
   Object {
     "dependencies": Object {
+      "becomeprod": "1.0.0",
       "git": "github:a/b",
     },
     "devDependencies": Object {
@@ -101,6 +137,10 @@ Array [
       "range": "~1.1.0",
     },
     "name": "root",
+    "peerDependencies": Object {
+      "pdep": "1.2.3",
+    },
+    "peerDependenciesMeta": Object {},
     "version": "1.0.0",
   },
 ]
@@ -110,6 +150,7 @@ exports[`test/reify/update-importers-package-json.ts > TAP > updatePackageJson >
 Array [
   Object {
     "dependencies": Object {
+      "becomeprod": "1.0.0",
       "foo": "1.0.0",
       "git": "github:a/b",
     },
@@ -117,6 +158,15 @@ Array [
       "range": "~1.1.0",
     },
     "name": "root",
+    "peerDependencies": Object {
+      "newpeeroptional": "1.0.0",
+      "pdep": "1.2.3",
+    },
+    "peerDependenciesMeta": Object {
+      "newpeeroptional": Object {
+        "optional": true,
+      },
+    },
     "version": "1.0.0",
   },
 ]
@@ -126,6 +176,7 @@ exports[`test/reify/update-importers-package-json.ts > TAP > updatePackageJson >
 Array [
   Object {
     "dependencies": Object {
+      "becomeprod": "1.0.0",
       "git": "github:a/b",
     },
     "devDependencies": Object {
@@ -133,6 +184,10 @@ Array [
       "range": "~1.1.0",
     },
     "name": "root",
+    "peerDependencies": Object {
+      "pdep": "1.2.3",
+    },
+    "peerDependenciesMeta": Object {},
     "version": "1.0.0",
   },
 ]
@@ -142,9 +197,19 @@ exports[`test/reify/update-importers-package-json.ts > TAP > updatePackageJson >
 Array [
   Object {
     "dependencies": Object {
+      "becomeprod": "1.0.0",
       "foo": "1.0.0",
     },
     "name": "root",
+    "peerDependencies": Object {
+      "newpeeroptional": "1.0.0",
+      "pdep": "1.2.3",
+    },
+    "peerDependenciesMeta": Object {
+      "newpeeroptional": Object {
+        "optional": true,
+      },
+    },
     "version": "1.0.0",
   },
 ]

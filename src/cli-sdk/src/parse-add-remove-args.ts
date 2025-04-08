@@ -1,16 +1,16 @@
-import { joinDepIDTuple } from '@vltpkg/dep-id'
 import type { DepID } from '@vltpkg/dep-id'
-import type { DependencyTypeShort } from '@vltpkg/types'
-import { asDependency } from '@vltpkg/graph'
+import { joinDepIDTuple } from '@vltpkg/dep-id'
 import type {
   AddImportersDependenciesMap,
   Dependency,
   RemoveImportersDependenciesMap,
 } from '@vltpkg/graph'
-import type { LoadedConfig } from './config/index.ts'
-import { Spec } from '@vltpkg/spec'
+import { asDependency } from '@vltpkg/graph'
 import type { SpecOptions } from '@vltpkg/spec'
+import { Spec } from '@vltpkg/spec'
+import type { DependencySaveType } from '@vltpkg/types'
 import type { Monorepo } from '@vltpkg/workspaces'
+import type { LoadedConfig } from './config/index.ts'
 
 export type ParsedAddArgs = {
   add: AddImportersDependenciesMap
@@ -59,7 +59,7 @@ const getImporters = (
   return res
 }
 
-const getType = (opts: SaveTypes): DependencyTypeShort =>
+const getType = (opts: SaveTypes): DependencySaveType =>
   opts['save-prod'] ? 'prod'
   : opts['save-dev'] ? 'dev'
   : opts['save-peer'] ?
@@ -67,7 +67,7 @@ const getType = (opts: SaveTypes): DependencyTypeShort =>
       'peerOptional'
     : 'peer'
   : opts['save-optional'] ? 'optional'
-  : 'prod'
+  : 'implicit'
 
 class AddImportersDependenciesMapImpl
   extends Map
