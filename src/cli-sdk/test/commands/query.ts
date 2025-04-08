@@ -204,6 +204,97 @@ t.test('query', async t => {
     'should fail to run with no security archive',
   )
 
+  await t.test('expect-results option', async t => {
+    t.matchSnapshot(
+      await runCommand({
+        positionals: ['*'],
+        values: {
+          'expect-results': '>0',
+          view: 'human',
+        },
+        options,
+      }),
+      'should return items when expect-results check passes',
+    )
+
+    t.ok(
+      await runCommand({
+        positionals: ['*'],
+        values: {
+          'expect-results': '>=  5',
+          view: 'human',
+        },
+        options,
+      }),
+      'should pass gte checks',
+    )
+
+    await t.rejects(
+      Command.command({
+        positionals: ['[version="2.0.0"]'],
+        values: {
+          'expect-results': '>1',
+          view: 'human',
+        },
+        options,
+      } as LoadedConfig),
+      /Unexpected number of items/,
+      'should fail validation for gt check',
+    )
+
+    await t.rejects(
+      Command.command({
+        positionals: ['*'],
+        values: {
+          'expect-results': '>=1000',
+          view: 'human',
+        },
+        options,
+      } as LoadedConfig),
+      /Unexpected number of items/,
+      'should fail validation for gte check',
+    )
+
+    await t.rejects(
+      Command.command({
+        positionals: ['*'],
+        values: {
+          'expect-results': '<3',
+          view: 'human',
+        },
+        options,
+      } as LoadedConfig),
+      /Unexpected number of items/,
+      'should fail validation for lt check',
+    )
+
+    await t.rejects(
+      Command.command({
+        positionals: ['*'],
+        values: {
+          'expect-results': '<=1',
+          view: 'human',
+        },
+        options,
+      } as LoadedConfig),
+      /Unexpected number of items/,
+      'should fail validation for lte check',
+    )
+
+    await t.rejects(
+      Command.command({
+        positionals: ['*'],
+        values: {
+          'expect-results': '500',
+          view: 'human',
+        },
+        options,
+      } as LoadedConfig),
+      /Unexpected number of items/,
+      'should fail validation for exact numeric value check',
+    )
+  })
+
   await t.test('workspaces', async t => {
     const mainManifest = {
       name: 'my-project',

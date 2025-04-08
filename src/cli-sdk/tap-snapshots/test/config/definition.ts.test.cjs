@@ -91,6 +91,18 @@ Object {
     "hint": "program",
     "type": "string",
   },
+  "expect-results": Object {
+    "description": String(
+      When running \`vlt query\`, this option allows you to set a expected number of resulting items.
+      
+      Accepted values are numbers and strings.
+      
+      Strings starting with \`>\`, \`<\`, \`>=\` or \`<=\` followed by a number can be used to check if the result is greater than or less than a specific number.
+    ),
+    "hint": "value",
+    "type": "string",
+    "validate": Function validate(v),
+  },
   "fallback-command": Object {
     "description": String(
       The command to run when the first argument doesn't match any known commands.
