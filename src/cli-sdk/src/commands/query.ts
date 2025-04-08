@@ -25,7 +25,7 @@ export const usage: CommandUsage = () =>
     command: 'query',
     usage: [
       '',
-      '<query> --view=[human | json | mermaid | gui]',
+      '<query> --view=<human | json | mermaid | gui>',
       '<query> --expect-results=<comparison string>',
     ],
     description:
