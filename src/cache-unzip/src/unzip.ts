@@ -85,7 +85,7 @@ const main = async (
             i += size
             continue
           } else {
-            if (i % 2 === 0) {
+            if (headers.length % 2 === 0) {
               // it's a key
               if (h.toString().toLowerCase() === 'content-length') {
                 isContentLength = true
