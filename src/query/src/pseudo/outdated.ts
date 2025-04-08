@@ -82,6 +82,7 @@ export const asOutdatedKind = (value: string): OutdatedKinds => {
 export const retrieveRemoteVersions = async (
   node: NodeLike,
   specOptions: SpecOptions,
+  signal?: AbortSignal,
 ): Promise<string[]> => {
   const spec = hydrate(node.id, String(node.name), specOptions)
   if (!spec.registry || !node.name) {
@@ -95,6 +96,7 @@ export const retrieveRemoteVersions = async (
     headers: {
       Accept: 'application/vnd.npm.install-v1+json',
     },
+    signal,
   })
   // on missing valid auth or API, it should abort the retry logic
   if (response.status === 404) {
@@ -154,9 +156,11 @@ export const queueNode = async (
   let versions: string[]
   try {
     versions = await pRetry(
-      () => retrieveRemoteVersions(node, state.specOptions),
+      () =>
+        retrieveRemoteVersions(node, state.specOptions, state.signal),
       {
         retries: state.retries,
+        signal: state.signal,
       },
     )
   } catch (err) {
