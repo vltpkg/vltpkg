@@ -12,15 +12,15 @@ import {
   lstatSync,
   readdirSync,
   readFileSync,
+  statSync,
   unlinkSync,
   writeFileSync,
-  statSync,
 } from 'node:fs'
-import { pathToFileURL } from 'node:url'
 import { resolve } from 'node:path'
+import { pathToFileURL } from 'node:url'
+import { inspect } from 'node:util'
 import { PathScurry } from 'path-scurry'
 import t from 'tap'
-import { inspect } from 'node:util'
 import type {
   AddImportersDependenciesMap,
   RemoveImportersDependenciesMap,
@@ -417,9 +417,13 @@ t.test('failure of optional node just deletes it', async t => {
     'ultimately no changes to actual graph',
   )
 
-  t.throws(
-    // note: not lstat, since this is going to be a shim on windows,
-    // but a symlink on posix
-    () => statSync(resolve(projectRoot, 'node_modules/.bin/glob')),
-  )
+  const expectGone = [
+    'node_modules/.bin/glob',
+    'node_modules/.bin/glob.cmd',
+    'node_modules/.bin/glob.ps1',
+    'node_modules/glob',
+  ]
+  for (const path of expectGone) {
+    t.throws(() => lstatSync(resolve(projectRoot, path)))
+  }
 })
