@@ -1,3 +1,4 @@
+import { cmdShimIfExists } from '@vltpkg/cmd-shim'
 import type { RollbackRemove } from '@vltpkg/rollback-remove'
 import type { Manifest } from '@vltpkg/types'
 import { mkdir, symlink } from 'node:fs/promises'
@@ -52,13 +53,18 @@ export const addEdge = async (
     dirname(path),
     edge.to.resolvedLocation(scurry),
   )
-  promises.push(clobberSymlink(target, path, remover, 'dir'))
+  await clobberSymlink(target, path, remover, 'dir')
   const bp = binPaths(manifest)
   for (const [key, val] of Object.entries(bp)) {
     const link = scurry.resolve(binRoot, key)
-    const target = relative(binRoot, scurry.resolve(path, val))
+    const absTarget = scurry.resolve(path, val)
+    const target = relative(binRoot, absTarget)
     // TODO: bash/cmd/ps1 shims on Windows
-    promises.push(clobberSymlink(target, link, remover))
+    promises.push(
+      process.platform === 'win32' ?
+        cmdShimIfExists(absTarget, link, remover)
+      : clobberSymlink(target, link, remover),
+    )
   }
-  await Promise.all(promises)
+  if (promises.length) await Promise.all(promises)
 }
