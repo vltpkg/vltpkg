@@ -81,6 +81,8 @@ t.test('simple graph', async t => {
       ['a', 'b', 'e', '@x/y', 'my-project', 'd'],
     ],
     ['#a', ['a']], // identifier
+    ['#a:v(1)', ['a']], // matches identifier + semver
+    ['#a:v(2)', []], // fails to match identifier + semver
   ])
 
   const query = new Query({
