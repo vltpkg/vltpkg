@@ -19,7 +19,7 @@ exports[`test/commands/query.ts > TAP > query > expect-results option > should r
 my-project
 ├── foo@1.0.0
 ├─┬ bar@1.0.0
-│ └─┬ custom:baz@1.0.0
+│ └─┬ baz (custom:baz@1.0.0)
 │   └── foo@1.0.0 (deduped)
 └── missing@^1.0.0 (missing)
 
