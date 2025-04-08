@@ -71,6 +71,36 @@ export type PackageAlert = {
 }
 
 /**
+ * The scores for a given package
+ */
+export type PackageScore = {
+  /**
+   * The average of all score factors. (0-1)
+   */
+  overall: number
+  /**
+   * Score factors relating to package licensing (0-1)
+   */
+  license: number
+  /**
+   * Score factors relating to package maintenance (0-1)
+   */
+  maintenance: number
+  /**
+   * Score factors relating to code quality (0-1)
+   */
+  quality: number
+  /**
+   * Score factors relating to supply chain security (0-1)
+   */
+  supplyChain: number
+  /**
+   * Score factors relating to package vulnerabilities (0-1)
+   */
+  vulnerability: number
+}
+
+/**
  * The report data for a given package.
  */
 export type PackageReportData = {
@@ -83,6 +113,7 @@ export type PackageReportData = {
   version: string
   license: string
   alerts: PackageAlert[]
+  score: PackageScore
 }
 
 export const isPackageReportData = (
@@ -95,6 +126,7 @@ export const isPackageReportData = (
   'name' in o &&
   'version' in o &&
   'alerts' in o &&
+  'score' in o &&
   o.type === 'npm'
 
 export const asPackageReportData = (
