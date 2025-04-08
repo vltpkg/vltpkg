@@ -204,9 +204,7 @@ export class Query {
       // if a security archive entry is found then we can populate the insights
       node.insights = {
         scanned: true,
-        score: {
-          ...securityArchiveEntry.score,
-        },
+        score: securityArchiveEntry.score,
         abandoned: securityArchiveEntry.alerts.some(
           i => i.type === 'missingAuthor',
         ),
