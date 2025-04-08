@@ -28,8 +28,8 @@ my-project
 exports[`test/commands/query.ts > TAP > query > should have usage 1`] = `
 Usage:
   vlt query
-  vlt query <query> --view=[human | json | mermaid | gui]
-  vlt query <query> --expect-results=[number | string]
+  vlt query <query> --view=<human | json | mermaid | gui>
+  vlt query <query> --expect-results=<comparison string>
 
 List installed dependencies matching the provided query.
 
