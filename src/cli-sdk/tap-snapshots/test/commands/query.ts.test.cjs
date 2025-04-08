@@ -60,9 +60,8 @@ List installed dependencies matching the provided query.
     expect-results
       Sets an expected number of resulting items. Errors if the number of
       resulting items does not match the set value. Accepts a specific numeric
-      value, "true" (same as "> 0"), "false" (same as 0) or a string value
-      starting with either ">", "<", ">=" or "<=" followed by a numeric value to
-      be compared.
+      value or a string value starting with either ">", "<", ">=" or "<="
+      followed by a numeric value to be compared.
 
       ​--expect-results=[number | string]
 
