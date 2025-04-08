@@ -29,7 +29,7 @@ exports[`test/commands/query.ts > TAP > query > should have usage 1`] = `
 Usage:
   vlt query
   vlt query <query> --view=[human | json | mermaid | gui]
-  vlt query <query> --expect=[number | boolean | string]
+  vlt query <query> --expect-results=[number | string]
 
 List installed dependencies matching the provided query.
 
@@ -64,7 +64,7 @@ List installed dependencies matching the provided query.
       starting with either ">", "<", ">=" or "<=" followed by a numeric value to
       be compared.
 
-      ​--expect-results=[number | boolean | string]
+      ​--expect-results=[number | string]
 
     view
       Output format. Defaults to human-readable or json if no tty.

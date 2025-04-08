@@ -209,7 +209,7 @@ t.test('query', async t => {
       await runCommand({
         positionals: ['*'],
         values: {
-          'expect-results': 'true',
+          'expect-results': '>0',
           view: 'human',
         },
         options,
@@ -227,37 +227,6 @@ t.test('query', async t => {
         options,
       }),
       'should pass gte checks',
-    )
-
-    await t.rejects(
-      Command.command({
-        positionals: ['*'],
-        values: {
-          'expect-results': 'false',
-          view: 'human',
-        },
-        options,
-      } as LoadedConfig),
-      /Unexpected number of items/,
-      'should fail validation for boolean check',
-    )
-
-    await t.rejects(
-      Command.command({
-        positionals: ['*[version="2.0.0"]'],
-        values: {
-          'expect-results': 'true',
-          view: 'human',
-        },
-        options,
-      } as LoadedConfig),
-      {
-        cause: {
-          found: 0,
-          wanted: '> 0',
-        },
-      },
-      'should convert wanted values from boolean check',
     )
 
     await t.rejects(

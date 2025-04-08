@@ -26,7 +26,7 @@ export const usage: CommandUsage = () =>
     usage: [
       '',
       '<query> --view=[human | json | mermaid | gui]',
-      '<query> --expect=[number | boolean | string]',
+      '<query> --expect-results=[number | string]',
     ],
     description:
       'List installed dependencies matching the provided query.',
@@ -51,7 +51,7 @@ export const usage: CommandUsage = () =>
     },
     options: {
       'expect-results': {
-        value: '[number | boolean | string]',
+        value: '[number | string]',
         description:
           'Sets an expected number of resulting items. Errors if the number of resulting items does not match the set value. Accepts a specific numeric value, "true" (same as "> 0"), "false" (same as 0) or a string value starting with either ">", "<", ">=" or "<=" followed by a numeric value to be compared.',
       },
@@ -80,10 +80,6 @@ const validateExpectedResult = (
     return edges.length > parseInt(expectResults.slice(1).trim(), 10)
   } else if (expectResults?.startsWith('<')) {
     return edges.length < parseInt(expectResults.slice(1).trim(), 10)
-  } else if (expectResults === 'true') {
-    return edges.length > 0
-  } else if (expectResults === 'false') {
-    return edges.length === 0
   } else if (expectResults) {
     return edges.length === parseInt(expectResults.trim(), 10)
   }
@@ -147,14 +143,9 @@ export const command: CommandFn<QueryResult> = async conf => {
   }
 
   if (!validateExpectedResult(conf, edges)) {
-    const expectResults = conf.values['expect-results']
-    const wanted =
-      expectResults === 'true' ? '> 0'
-      : expectResults === 'false' ? 0
-      : expectResults
     throw error('Unexpected number of items', {
       found: edges.length,
-      wanted,
+      wanted: conf.values['expect-results'],
     })
   }
 

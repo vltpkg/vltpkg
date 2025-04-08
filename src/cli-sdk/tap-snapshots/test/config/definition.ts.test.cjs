@@ -95,12 +95,13 @@ Object {
     "description": String(
       When running \`vlt query\`, this option allows you to set a expected number of resulting items.
       
-      Accepted values are numbers, booleans: true (to expect at least one result), false (to expect no results) and strings.
+      Accepted values are numbers and strings.
       
       Strings starting with \`>\`, \`<\`, \`>=\` or \`<=\` followed by a number can be used to check if the result is greater than or less than a specific number.
     ),
     "hint": "value",
     "type": "string",
+    "validate": Function validate(v),
   },
   "fallback-command": Object {
     "description": String(

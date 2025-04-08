@@ -550,12 +550,12 @@ export const definition = j
   .opt({
     'expect-results': {
       hint: 'value',
+      validate: (v: unknown) =>
+        typeof v === 'string' && /^([<>]=?)?[0-9]+$/.test(v),
       description: `When running \`vlt query\`, this option allows you to
                     set a expected number of resulting items.
 
-                    Accepted values are numbers, booleans: true (to expect at
-                    least one result), false (to expect no results) and
-                    strings.
+                    Accepted values are numbers and strings.
 
                     Strings starting with \`>\`, \`<\`, \`>=\` or \`<=\`
                     followed by a number can be used to check if the result
