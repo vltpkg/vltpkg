@@ -11,7 +11,10 @@ import {
 } from '../../src/pseudo/outdated.ts'
 import { asPostcssNodeWithChildren } from '../../src/types.ts'
 import type { ParserState } from '../../src/types.ts'
-import { getSemverRichGraph } from '../fixtures/graph.ts'
+import {
+  getSemverRichGraph,
+  getSimpleGraph,
+} from '../fixtures/graph.ts'
 
 const specOptions = {
   registry: 'https://registry.npmjs.org',
@@ -27,6 +30,11 @@ global.fetch = (async (url: string) => {
     }
   } else if (url === 'https://registry.npmjs.org/i') {
     throw new Error('ERR')
+  } else if (url === 'https://registry.npmjs.org/c') {
+    return {
+      status: 404,
+      ok: false,
+    }
   }
   return {
     ok: true,
@@ -123,6 +131,7 @@ const getState = (query: string, graph = getSemverRichGraph()) => {
     },
     cancellable: async () => {},
     walk: async i => i,
+    retries: 0,
     securityArchive: undefined,
     specOptions,
   }
@@ -215,6 +224,24 @@ t.test('select from outdated definition', async t => {
       'should throw an error for invalid pseudo selector usage',
     )
   })
+
+  await t.test('missing package response', async t => {
+    const log = t.capture(console, 'warn').args
+    const res = await outdated(
+      getState(':outdated(any)', getSimpleGraph()),
+    )
+    // mind this is a different graph that is being asserted,
+    // as manifests differs so are the results here
+    t.strictSame(
+      [...res.partial.nodes].map(n => n.name),
+      ['a', 'b', 'e', 'f'],
+      'should have expected results still',
+    )
+    t.matchSnapshot(
+      log(),
+      'should log a warning for missing package response',
+    )
+  })
 })
 
 t.test('parseInternals', async t => {
@@ -257,10 +284,10 @@ t.test('retrieveRemoveVersions', async t => {
       name: 'h',
       id: joinDepIDTuple(['registry', '', 'h@1.0.0']),
     } as NodeLike
-    t.strictSame(
-      await retrieveRemoteVersions(missingName, specOptions),
-      [],
-      'should return an empty array if registry has no response',
+    await t.rejects(
+      retrieveRemoteVersions(missingName, specOptions),
+      /Failed to fetch packument/,
+      'should throw an internal error so that it may be retried',
     )
   })
 
@@ -269,10 +296,10 @@ t.test('retrieveRemoveVersions', async t => {
       name: 'i',
       id: joinDepIDTuple(['registry', '', 'i@1.0.0']),
     } as NodeLike
-    t.strictSame(
-      await retrieveRemoteVersions(missingName, specOptions),
-      [],
-      'should return an empty array if fetch throws',
+    await t.rejects(
+      retrieveRemoteVersions(missingName, specOptions),
+      /ERR/,
+      'should throw the original error that will be retried',
     )
   })
 })

@@ -30,6 +30,7 @@ t.test('selects packages with a specific license kind', async t => {
       },
       cancellable: async () => {},
       walk: async i => i,
+      retries: 0,
       securityArchive: asSecurityArchiveLike(
         new Map([
           [
@@ -111,6 +112,7 @@ t.test('missing security archive', async t => {
       },
       cancellable: async () => {},
       walk: async i => i,
+      retries: 0,
       securityArchive: undefined,
       specOptions: {},
     }
