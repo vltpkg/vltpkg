@@ -1,6 +1,7 @@
 import type { RollbackRemove } from '@vltpkg/rollback-remove'
 import type { PathScurry } from 'path-scurry'
 import type { Diff } from '../diff.ts'
+import { deleteEdge } from './delete-edge.ts'
 
 export const deleteNodes = (
   diff: Diff,
@@ -13,6 +14,9 @@ export const deleteNodes = (
     // do not delete workspaces or link targets
     if (!node.inVltStore()) continue
     rmActions.push(remover.rm(scurry.resolve(store, node.id)))
+    for (const edge of node.edgesIn) {
+      rmActions.push(deleteEdge(edge, scurry, remover))
+    }
   }
   return rmActions
 }
