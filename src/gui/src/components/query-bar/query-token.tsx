@@ -8,26 +8,30 @@ type TokenType = ParsedSelectorToken['type']
 
 export const tokenVariantClasses = {
   pseudo: {
-    light: 'text-purple-700 after:bg-purple-600/10',
+    light: 'text-purple-800 after:bg-purple-600/20',
     dark: 'dark:text-purple-400 after:dark:bg-purple-600/20',
   },
   attribute: {
-    light: 'text-blue-700 after:bg-blue-600/10',
+    light: 'text-blue-800 after:bg-blue-600/20',
     dark: 'dark:text-blue-400 after:dark:bg-blue-600/15',
   },
   class: {
-    light: 'text-green-700 after:bg-green-600/10',
+    light: 'text-green-800 after:bg-green-600/20',
     dark: 'dark:text-green-400 after:dark:bg-green-600/15',
   },
   id: {
-    light: 'text-pink-700 after:bg-pink-600/10',
+    light: 'text-pink-800 after:bg-pink-600/20',
     dark: 'dark:text-pink-400 after:dark:bg-pink-600/15',
   },
   combinator: {
-    light: 'text-gray-700 after:bg-gray-600/10',
-    dark: 'dark:text-gray-400 after:dark:bg-gray-600/20',
+    light: 'text-gray-800 after:bg-gray-500/20',
+    dark: 'dark:text-gray-300 after:dark:bg-gray-500/20',
   },
-} satisfies Record<TokenType, { light: string; dark: string }>
+  universal: {
+    light: 'text-fuchsia-800 after:bg-fuchsia-600/20',
+    dark: 'dark:text-fuchsia-400 after:dark:bg-fuchsia-600/20',
+  },
+}
 
 const variantMap: Record<TokenType, string> = Object.fromEntries(
   Object.entries(tokenVariantClasses).map(([key, value]) => [

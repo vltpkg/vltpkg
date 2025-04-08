@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import type { ChangeEvent } from 'react'
 import { Input } from '@/components/ui/input.jsx'
 import { useGraphStore } from '@/state/index.js'
-import type { ParsedSelectorToken } from '@vltpkg/query'
+import { Query, type ParsedSelectorToken } from '@vltpkg/query'
 import { QueryHighlighter } from '@/components/query-bar/query-highlighter.jsx'
 
 interface QueryBar {
@@ -25,49 +25,28 @@ export const QueryBar = ({
   const [parsedTokens, setParsedTokens] = useState<
     ParsedSelectorToken[]
   >([])
-  const lastValidTokensRef = useRef<ParsedSelectorToken[]>([])
 
   useEffect(() => {
     if (!q || !query) {
       setParsedTokens([])
-      lastValidTokensRef.current = []
       return
     }
     try {
-      const tokens = q.parse(query)
-      console.log(tokens)
+      const tokens = Query.parse(query)
       setParsedTokens(tokens)
-      lastValidTokensRef.current = tokens
     } catch (error) {
       console.error(`Error parsing query: ${error}`)
-      // Only use cached tokens if their total length doesn't exceed current query length
-      const totalCachedLength = lastValidTokensRef.current.reduce(
-        (sum, token) => sum + token.token.length,
-        0,
-      )
-      if (totalCachedLength <= query.length) {
-        setParsedTokens(lastValidTokensRef.current)
-      } else {
-        setParsedTokens([])
-      }
     }
   }, [query, q])
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      switch (true) {
-        case (event.metaKey || event.ctrlKey) && event.key === 'k':
-          event.preventDefault()
-          inputRef.current?.focus()
-          break
-
-        case event.key === 'Escape':
-          event.preventDefault()
-          inputRef.current?.blur()
-          break
-
-        default:
-          break
+      if ((event.metaKey || event.ctrlKey) && event.key === 'k') {
+        event.preventDefault()
+        inputRef.current?.focus()
+      } else if (event.key === 'Escape') {
+        event.preventDefault()
+        inputRef.current?.blur()
       }
     }
 

@@ -12,10 +12,6 @@ import {
   isPostcssNodeWithChildren,
   asPostcssNodeWithChildren,
   isSelectorNode,
-  isAttributeNode,
-  isClassNode,
-  isCombinatorNode,
-  isIdentifierNode,
   isPseudoNode,
 } from './types.ts'
 import type {
@@ -428,56 +424,63 @@ export class Query {
   /**
    * Parses a query into an array of tokens
    */
-  parse(query: string): ParsedSelectorToken[] {
+  static parse(query: string): ParsedSelectorToken[] {
     if (!query) return []
 
     const tokens: ParsedSelectorToken[] = []
-    const ast = postcssSelectorParser().astSync(query)
 
-    const processNode = (node: PostcssNode) => {
-      if (isAttributeNode(node)) {
-        // Always quote the value if it exists
-        const value = node.value || ''
-        const quotedValue = value ? `"${value}"` : ''
-        tokens.push({
-          token: `${node.spaces.before}[${node.attribute}${node.operator || ''}${quotedValue}]${node.spaces.after}`,
-          type: 'attribute',
-          key: node.attribute,
-          value: node.value,
-        })
-      } else if (isClassNode(node)) {
-        tokens.push({
-          token: `${node.spaces.before}.${node.value}${node.spaces.after}`,
-          type: 'class',
-          value: node.value,
-        })
-      } else if (isCombinatorNode(node)) {
-        tokens.push({
-          token: `${node.spaces.before}${node.value}${node.spaces.after}`,
-          type: 'combinator',
-        })
-      } else if (isIdentifierNode(node)) {
-        tokens.push({
-          token: `${node.spaces.before}#${node.value}${node.spaces.after}`,
-          type: 'id',
-          value: node.value,
-        })
-      } else if (isPseudoNode(node)) {
-        tokens.push({
-          token: `${node.spaces.before}${node.value}${node.spaces.after}`,
-          type: 'pseudo',
-          value: node.value,
-        })
+    const ast = (q: string) => {
+      try {
+        return postcssSelectorParser().astSync(q)
+      } catch (e) {
+        return ast(q.slice(0, -1))
       }
+    }
 
+    const processNode = (node?: PostcssNode) => {
+      if (!node) return
+      for (const key of selectorsMap.keys()) {
+        if (
+          node.type === key &&
+          node.type !== 'root' &&
+          node.type !== 'selector'
+        ) {
+          let token = String(
+            node.source?.start?.column &&
+              node.source.end?.column &&
+              `${node.spaces.before}${query.slice(node.source.start.column - 1, node.source.end.column)}${node.spaces.after}`,
+          )
+
+          if (
+            isPostcssNodeWithChildren(node) &&
+            isPseudoNode(node) &&
+            node.nodes.length
+          ) {
+            token = token.split('(')[0] || token
+            token += '('
+          }
+
+          tokens.push({
+            ...node,
+            token,
+          } as ParsedSelectorToken)
+        }
+      }
       if (isPostcssNodeWithChildren(node)) {
         for (const child of node.nodes) {
           processNode(child)
         }
+        if (isPseudoNode(node) && node.nodes.length) {
+          tokens.push({
+            ...node,
+            token: ')',
+            type: 'pseudo',
+          } as ParsedSelectorToken)
+        }
       }
     }
 
-    processNode(ast)
+    processNode(ast(query))
     return tokens
   }
 }

@@ -10,66 +10,44 @@ export const QueryHighlighter = ({
 }) => {
   if (!query) return null
 
-  // Create a map of token positions
-  const tokenMap = new Map<number, ParsedSelectorToken>()
-  parsedTokens.forEach(token => {
-    let pos = 0
-    while ((pos = query.indexOf(token.token, pos)) !== -1) {
-      for (let i = pos; i < pos + token.token.length; i++) {
-        tokenMap.set(i, token)
+  let q = query
+  let curr = 0
+  const result = []
+  while (q) {
+    const astItem = parsedTokens[curr]
+    const token = astItem?.token
+    const type = astItem?.type
+
+    if (!token) {
+      const segment = {
+        type: 'text' as ParsedSelectorToken['type'],
+        token: q,
       }
-      pos += token.token.length
+      result.push(segment)
+      break
     }
-  })
 
-  // Process the query string character by character
-  const segments: {
-    text: string
-    isIdentified: boolean
-    token?: ParsedSelectorToken
-  }[] = []
-  let currentSegment: {
-    text: string
-    isIdentified: boolean
-    token?: ParsedSelectorToken
-  } | null = null
-
-  for (let i = 0; i < query.length; i++) {
-    const char = query.charAt(i)
-    const token = tokenMap.get(i)
-    const isIdentified = token !== undefined
-
-    // If we don't have a segment yet, or if the identification status changes
-    if (
-      !currentSegment ||
-      currentSegment.isIdentified !== isIdentified ||
-      (isIdentified && currentSegment.token !== token)
-    ) {
-      if (currentSegment) {
-        segments.push(currentSegment)
+    if (q.startsWith(token)) {
+      const segment = {
+        type,
+        token,
       }
-      currentSegment = {
-        text: char,
-        isIdentified,
-        ...(token && { token }),
-      }
+
+      result.push(segment)
+
+      q = q.slice(token.length)
+      curr++
     } else {
-      // Append to the current segment
-      currentSegment.text += char
+      break
     }
-  }
-
-  // Push the last segment if it exists
-  if (currentSegment) {
-    segments.push(currentSegment)
   }
 
   return (
     <div className="pointer-events-none absolute inset-0 left-[2.556rem] top-[0.01rem] flex items-center">
       <div className="flex w-full">
-        {segments.map((segment, idx) => (
-          <QueryToken variant={segment.token?.type} key={idx}>
-            {segment.text}
+        {result.map((segment, idx) => (
+          <QueryToken variant={segment.type} key={idx}>
+            {segment.token}
           </QueryToken>
         ))}
       </div>

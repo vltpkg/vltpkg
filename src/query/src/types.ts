@@ -140,11 +140,8 @@ export type SquatInsights = {
 
 export type ParserFn = (opt: ParserState) => Promise<ParserState>
 
-export type ParsedSelectorToken = {
+export type ParsedSelectorToken = PostcssNode & {
   token: string
-  type: 'pseudo' | 'attribute' | 'class' | 'combinator' | 'id'
-  key?: string
-  value?: string
 }
 
 export const isPostcssNodeWithChildren = (
