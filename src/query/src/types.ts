@@ -50,6 +50,7 @@ export type ParserState = {
   signal?: AbortSignal
   walk: ParserFn
   partial: GraphSelectionState
+  retries: number
   securityArchive: SecurityArchiveLike | undefined
   specOptions: SpecOptions
 }

@@ -48,6 +48,7 @@ t.test('scanned selector', async t => {
       walk: async i => i,
       securityArchive,
       specOptions: {},
+      retries: 0,
     }
     return state
   }

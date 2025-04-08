@@ -38,6 +38,7 @@ const testBrokenState = (): ParserState => {
     initial: copyGraphSelectionState(initial),
     partial: copyGraphSelectionState(initial),
     walk,
+    retries: 0,
     securityArchive: undefined,
     specOptions,
   }

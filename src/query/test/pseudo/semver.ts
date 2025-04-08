@@ -31,6 +31,7 @@ t.test('select from semver definition', async t => {
         edges: new Set(),
         nodes: new Set(),
       },
+      retries: 0,
       cancellable: async () => {},
       walk: async i => i,
       securityArchive: undefined,
