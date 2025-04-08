@@ -390,6 +390,17 @@ export type DependencyTypeShort =
   | 'prod'
 
 /**
+ * Unique keys that indicate how a new or updated dependency should be saved
+ * back to a manifest.
+ *
+ * `'implicit'` is used to indicate that a dependency should be saved as
+ * whatever type it already exists as. If the dependency does not exist,
+ * then `'implicit'` is equivalent to `'prod'`, as that is the default
+ * save type.
+ */
+export type DependencySaveType = DependencyTypeShort | 'implicit'
+
+/**
  * A set of the possible long dependency type names,
  * as used in `package.json` files.
  */

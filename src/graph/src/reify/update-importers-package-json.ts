@@ -1,19 +1,20 @@
-import { splitDepID } from '@vltpkg/dep-id'
 import type { DepID } from '@vltpkg/dep-id'
+import { splitDepID } from '@vltpkg/dep-id'
 import { error } from '@vltpkg/error-cause'
 import type { PackageJson } from '@vltpkg/package-json'
-import { longDependencyTypes } from '@vltpkg/types'
 import type {
-  Manifest,
   DependencyTypeLong,
   DependencyTypeShort,
+  Manifest,
 } from '@vltpkg/types'
-import type { Graph } from '../graph.ts'
+import { longDependencyTypes } from '@vltpkg/types'
 import type {
   AddImportersDependenciesMap,
-  RemoveImportersDependenciesMap,
   Dependency,
+  RemoveImportersDependenciesMap,
 } from '../dependencies.ts'
+import type { Graph } from '../graph.ts'
+import { resolveSaveType } from '../resolve-save-type.ts'
 
 const SAVE_PREFIX = '^'
 
@@ -84,17 +85,21 @@ const addOrRemoveDeps = (
   for (const deleteNameOrAddItem of deps) {
     if (typeof deleteNameOrAddItem === 'string') {
       const name = deleteNameOrAddItem
-      // TODO: needs to also remove any possible peerDependenciesMeta
       for (const depType of longDependencyTypes) {
         if (manifest[depType]?.[name]) {
           delete manifest[depType][name]
           manifestChanged = true
         }
       }
+      if (manifest.peerDependenciesMeta?.[name]) {
+        delete manifest.peerDependenciesMeta[name]
+        manifestChanged = true
+      }
     } else {
       const [name, dep] = deleteNameOrAddItem
-      // TODO: peerOptional also needs to add peerDependenciesMeta entry
-      const depType = depTypesMap.get(dep.type)
+      // peerOptional also needs to add peerDependenciesMeta entry
+      const depTypeShort = resolveSaveType(importer, name, dep.type)
+      const depType = depTypesMap.get(depTypeShort)
       if (!depType) {
         throw error('Failed to retrieve dependency type', {
           validOptions: [...depTypesMap.keys()],
@@ -106,6 +111,18 @@ const addOrRemoveDeps = (
         throw error('Dependency node could not be found')
       }
       const [nodeType] = splitDepID(node.id)
+
+      for (const dtype of longDependencyTypes) {
+        if (dtype === depType || !manifest[dtype]) continue
+        delete manifest[dtype][name]
+      }
+      if (depTypeShort === 'peerOptional') {
+        manifest.peerDependenciesMeta ??= {}
+        manifest.peerDependenciesMeta[name] = { optional: true }
+      } else if (manifest.peerDependenciesMeta?.[name]) {
+        delete manifest.peerDependenciesMeta[name]
+      }
+
       const dependencies =
         manifest[depType] ?? (manifest[depType] = {})
       dependencies[name] =

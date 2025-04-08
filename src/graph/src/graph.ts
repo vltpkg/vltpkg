@@ -4,7 +4,7 @@ import { error } from '@vltpkg/error-cause'
 import { satisfies } from '@vltpkg/satisfies'
 import { Spec } from '@vltpkg/spec'
 import type { SpecOptions } from '@vltpkg/spec'
-import type { Manifest, DependencyTypeShort } from '@vltpkg/types'
+import type { Manifest, DependencySaveType } from '@vltpkg/types'
 import type { Monorepo } from '@vltpkg/workspaces'
 import { inspect } from 'node:util'
 import type { InspectOptions } from 'node:util'
@@ -13,6 +13,7 @@ import { lockfileData } from './lockfile/save.ts'
 import { Node } from './node.ts'
 import type { NodeOptions } from './node.ts'
 import type { GraphLike, NodeLike } from './types.ts'
+import { resolveSaveType } from './resolve-save-type.ts'
 
 const kCustomInspect = Symbol.for('nodejs.util.inspect.custom')
 
@@ -191,7 +192,7 @@ export class Graph implements GraphLike {
    * pointing to nothing will be created to represent that missing dependency.
    */
   addEdge(
-    type: DependencyTypeShort,
+    type: DependencySaveType,
     spec: Spec,
     from: NodeLike,
     to?: NodeLike,
@@ -224,7 +225,11 @@ export class Graph implements GraphLike {
       this.edges.delete(edge)
     }
     const f = from as Node
-    const edgeOut = f.addEdgesTo(type, spec, to as Node | undefined)
+    const edgeOut = f.addEdgesTo(
+      resolveSaveType(from, spec.name, type),
+      spec,
+      to as Node | undefined,
+    )
     this.edges.add(edgeOut)
     return edgeOut
   }
@@ -309,7 +314,7 @@ export class Graph implements GraphLike {
    */
   placePackage(
     fromNode: Node,
-    depType: DependencyTypeShort,
+    depType: DependencySaveType,
     spec: Spec,
     manifest?: Manifest,
     id?: DepID,

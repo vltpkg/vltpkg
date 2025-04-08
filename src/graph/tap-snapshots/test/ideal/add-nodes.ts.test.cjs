@@ -24,7 +24,7 @@ exports[`test/ideal/add-nodes.ts > TAP > addNodes > graph after adding a previou
           }
         ]
       },
-      Edge spec(bar@^1.0.0) -prod-> to: Node { ref: '··bar@1.0.0' }
+      Edge spec(bar@^1.0.0) -dev-> to: Node { ref: '··bar@1.0.0' }
     ]
   }
 ]

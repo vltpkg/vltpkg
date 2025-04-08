@@ -1,6 +1,6 @@
 import { hydrate, joinDepIDTuple } from '@vltpkg/dep-id'
-import { kCustomInspect, Spec } from '@vltpkg/spec'
 import type { SpecOptions } from '@vltpkg/spec'
+import { kCustomInspect, Spec } from '@vltpkg/spec'
 import { Monorepo } from '@vltpkg/workspaces'
 import { inspect } from 'node:util'
 import t from 'tap'
@@ -122,23 +122,49 @@ t.test('Graph', async t => {
   t.same(graph.nodesByName.get('foo'), new Set([newNode, fooTwo]))
 
   graph.addEdge(
-    'prod',
+    'implicit',
     Spec.parse('foo', '^1.0.0 || 2'),
     graph.mainImporter,
     newNode,
   )
-  t.strictSame(
+  t.equal(
     graph.mainImporter.edgesOut.size,
     1,
     'should add edge to the list of edgesOut in its origin node',
   )
-  graph.addEdge(
+  t.equal(
+    graph.mainImporter.edgesOut.get('foo')?.type,
     'prod',
+    '"implicit" type is saved as prod if not already existing',
+  )
+  graph.addEdge(
+    'dev',
     Spec.parse('foo@^1.0.0'),
     graph.mainImporter,
     newNode,
   )
-  t.strictSame(
+  t.equal(
+    graph.mainImporter.edgesOut.get('foo')?.type,
+    'dev',
+    'saving as dev moves prod dep to dev',
+  )
+  graph.addEdge(
+    'implicit',
+    Spec.parse('foo@^1.0.1'),
+    graph.mainImporter,
+    newNode,
+  )
+  t.equal(
+    graph.mainImporter.edgesOut.get('foo')?.type,
+    'dev',
+    'saving as "implicit" leaves dep as dev',
+  )
+  t.equal(
+    String(graph.mainImporter.edgesOut.get('foo')?.spec),
+    'foo@^1.0.1',
+    'version was updated',
+  )
+  t.equal(
     graph.mainImporter.edgesOut.size,
     1,
     'should not allow for adding new edges between same nodes',

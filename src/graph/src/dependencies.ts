@@ -1,21 +1,28 @@
 import type { DepID } from '@vltpkg/dep-id'
 import { error } from '@vltpkg/error-cause'
 import type { Spec } from '@vltpkg/spec'
-import {
-  longDependencyTypes,
-  shortDependencyTypes,
-  dependencyTypes,
-} from '@vltpkg/types'
 import type {
-  Manifest,
+  DependencySaveType,
   DependencyTypeLong,
   DependencyTypeShort,
+  Manifest,
+} from '@vltpkg/types'
+import {
+  dependencyTypes,
+  longDependencyTypes,
+  shortDependencyTypes,
 } from '@vltpkg/types'
 
 export const isDependencyTypeShort = (
   obj: unknown,
 ): obj is DependencyTypeShort =>
   shortDependencyTypes.has(obj as DependencyTypeShort)
+
+export const isDependencySaveType = (
+  obj: unknown,
+): obj is DependencyTypeShort =>
+  shortDependencyTypes.has(obj as DependencyTypeShort) ||
+  obj === 'implicit'
 
 export const asDependencyTypeShort = (
   obj: unknown,
@@ -48,9 +55,10 @@ export type Dependency = {
    */
   spec: Spec
   /**
-   * The {@link DependencyTypeShort}, describing the type of dependency.
+   * The {@link DependencySaveType}, describing the way this dependency should
+   * be saved back to the manifest.
    */
-  type: DependencyTypeShort
+  type: DependencySaveType
 }
 
 /**
@@ -89,7 +97,7 @@ export const isDependency = (o: unknown): o is Dependency =>
   isObj(o) &&
   isObj(o.spec) &&
   !!o.spec.type &&
-  isDependencyTypeShort(o.type)
+  isDependencySaveType(o.type)
 
 export const asDependency = (obj: unknown): Dependency => {
   if (!isDependency(obj)) {
