@@ -133,6 +133,10 @@ t.test('unzip an entry that had headers', async t => {
   const unz = '{"hello":"world"}'
   const z = gzipSync(unz)
   const zheaders = Buffer.concat([
+    Buffer.from([0, 0, 0, 'even'.length + 4]),
+    Buffer.from('even'),
+    Buffer.from([0, 0, 0, 'odd'.length + 4]),
+    Buffer.from('odd'),
     Buffer.from([0, 0, 0, 'content-encoding'.length + 4]),
     Buffer.from('content-encoding'),
     Buffer.from([0, 0, 0, 'gzip'.length + 4]),
@@ -149,6 +153,10 @@ t.test('unzip an entry that had headers', async t => {
   )
 
   const resultHead = Buffer.concat([
+    Buffer.from([0, 0, 0, 'even'.length + 4]),
+    Buffer.from('even'),
+    Buffer.from([0, 0, 0, 'odd'.length + 4]),
+    Buffer.from('odd'),
     Buffer.from([0, 0, 0, 'content-encoding'.length + 4]),
     Buffer.from('content-encoding'),
     Buffer.from([0, 0, 0, 'identity'.length + 4]),
