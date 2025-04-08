@@ -15,10 +15,21 @@ exports[`test/commands/query.ts > TAP > query > colors > should use colors when 
 [0m[0m
 `
 
+exports[`test/commands/query.ts > TAP > query > expect-results option > should return items when expect-results check passes 1`] = `
+my-project
+├── foo@1.0.0
+├─┬ bar@1.0.0
+│ └─┬ baz (custom:baz@1.0.0)
+│   └── foo@1.0.0 (deduped)
+└── missing@^1.0.0 (missing)
+
+`
+
 exports[`test/commands/query.ts > TAP > query > should have usage 1`] = `
 Usage:
   vlt query
-  vlt query <query> --view=[human | json | mermaid | gui]
+  vlt query <query> --view=<human | json | mermaid | gui>
+  vlt query <query> --expect-results=<comparison string>
 
 List installed dependencies matching the provided query.
 
@@ -40,7 +51,19 @@ List installed dependencies matching the provided query.
 
     ​vlt query '[name^="@vltpkg"]'
 
+    Errors if a copyleft licensed package is found
+
+    ​vlt query '*:license(copyleft) --expect-results=0'
+
   Options
+
+    expect-results
+      Sets an expected number of resulting items. Errors if the number of
+      resulting items does not match the set value. Accepts a specific numeric
+      value or a string value starting with either ">", "<", ">=" or "<="
+      followed by a numeric value to be compared.
+
+      ​--expect-results=[number | string]
 
     view
       Output format. Defaults to human-readable or json if no tty.

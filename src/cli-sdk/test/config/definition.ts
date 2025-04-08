@@ -50,6 +50,14 @@ t.test('identity can only be lowercase alphanum', async t => {
   t.equal(values.identity, 'asdf123')
 })
 
+t.test('expect-results validation', async t => {
+  t.throws(() => {
+    definition.parse(['--expect-results', 'foobar'])
+  })
+  const { values } = definition.parse(['--expect-results', '>=5000'])
+  t.equal(values['expect-results'], '>=5000')
+})
+
 t.test('default view depends on stdout TTY status', t => {
   t.test('tty true', async t => {
     delete process.env.VLT_VIEW
