@@ -34,6 +34,7 @@ import { obfuscated } from './pseudo/obfuscated.ts'
 import { outdated } from './pseudo/outdated.ts'
 import { published } from './pseudo/published.ts'
 import { scanned } from './pseudo/scanned.ts'
+import { score } from './pseudo/score.ts'
 import { scripts } from './pseudo/scripts.ts'
 import { shell } from './pseudo/shell.ts'
 import { semverParser as semver } from './pseudo/semver.ts'
@@ -384,6 +385,7 @@ const pseudoSelectors = new Map<string, ParserFn>(
     root,
     scanned,
     scope,
+    score,
     scripts,
     semver,
     sev: severity,

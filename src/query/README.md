@@ -240,6 +240,18 @@ security data needs to be fetched prior to a `Query` instantiation.
   intentionally packed to hide their behavior. This could be a sign of
   malware.
 - `:scanned` Matches packages that have insight security metadata.
+- `:score(<rate>, <kind>)` Matches packages based on their security
+  score. The rate parameter is required and should be a value between
+  0 and 100 (or 0 and 1). The rate parameter can be prefixed with a
+  comparator (`>`, `<`, `>=`, `<=`). If no comparator is provided, it
+  will match exact scores. The kind parameter is optional and defaults
+  to 'overall'. Valid kinds are: 'overall', 'license', 'maintenance',
+  'quality', 'supplyChain', and 'vulnerability'. Examples:
+  - `:score(80)` - Matches packages with exactly 0.8 overall score
+  - `:score(">0.8")` - Matches packages with overall score greater
+    than 0.8
+  - `:score("<=0.5", "maintenance")` - Matches packages with
+    maintenance score less than or equal to 0.5
 - `:scripts` Matches packages that have scripts that are run when the
   package is installed. The majority of malware in npm is hidden in
   install scripts.
