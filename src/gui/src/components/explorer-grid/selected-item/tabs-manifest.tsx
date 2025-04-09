@@ -1,12 +1,9 @@
 import { TabsContent, TabsTrigger } from '@/components/ui/tabs.jsx'
 import { CodeBlock } from '@/components/ui/shiki.jsx'
 import { useSelectedItem } from '@/components/explorer-grid/selected-item/context.jsx'
+import { FileJson } from 'lucide-react'
 
 export const TabsManifestButton = () => {
-  const { selectedItem } = useSelectedItem()
-
-  if (!selectedItem.to?.manifest) return null
-
   return (
     <TabsTrigger
       variant="ghost"
@@ -20,16 +17,29 @@ export const TabsManifestButton = () => {
 export const TabsManifestContent = () => {
   const { selectedItem } = useSelectedItem()
 
-  if (!selectedItem.to?.manifest) return null
-
   return (
     <TabsContent
       value="package.json"
       className="h-full rounded-b-lg bg-white dark:bg-black">
-      <CodeBlock
-        code={JSON.stringify(selectedItem.to.manifest, null, 2)}
-        lang="json"
-      />
+      {selectedItem.to && selectedItem.to.manifest ?
+        <CodeBlock
+          code={JSON.stringify(selectedItem.to.manifest, null, 2)}
+          lang="json"
+        />
+      : <div className="flex h-64 items-center justify-center px-6 py-4">
+          <div className="flex flex-col items-center justify-center gap-3 text-center">
+            <div className="relative flex size-32 items-center justify-center rounded-full bg-secondary/60">
+              <FileJson
+                className="absolute z-[3] size-14 text-neutral-500"
+                strokeWidth={1}
+              />
+            </div>
+            <p className="w-2/3 text-pretty text-sm text-muted-foreground">
+              We couldn't find a manifest for this project
+            </p>
+          </div>
+        </div>
+      }
     </TabsContent>
   )
 }

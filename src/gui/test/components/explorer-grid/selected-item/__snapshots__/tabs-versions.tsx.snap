@@ -12,13 +12,31 @@ exports[`VersionsTabButton renders default 1`] = `
 
 `;
 
-exports[`VersionsTabContent renders default 1`] = `
+exports[`VersionsTabContent renders an empty state 1`] = `
 
-<gui-tabs-content
-  value="versions"
-  classname="px-6 py-4"
->
-  <section class="flex flex-col gap-4">
+<gui-tabs-content value="versions">
+  <div class="flex h-64 w-full items-center justify-center px-6 py-4">
+    <div class="flex flex-col items-center justify-center gap-3 text-center">
+      <div class="relative flex size-32 items-center justify-center rounded-full bg-secondary/60">
+        <gui-history-icon
+          classname="absolute z-[4] size-14 text-neutral-500"
+          strokewidth="1"
+        >
+        </gui-history-icon>
+      </div>
+      <p class="w-2/3 text-pretty text-sm text-muted-foreground">
+        There is no versioning information about this package yet
+      </p>
+    </div>
+  </div>
+</gui-tabs-content>
+
+`;
+
+exports[`VersionsTabContent renders with versions 1`] = `
+
+<gui-tabs-content value="versions">
+  <section class="flex flex-col gap-4 px-6 py-4">
     <div class="flex flex-col gap-2">
       <p class="text-sm font-medium text-muted-foreground">
         Greater Versions

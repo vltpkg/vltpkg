@@ -14,6 +14,10 @@ import {
 import type { GridItemData } from '@/components/explorer-grid/types.js'
 import type { Manifest } from '@vltpkg/types'
 
+vi.mock('lucide-react', () => ({
+  FileJson: 'gui-file-json-icon',
+}))
+
 vi.mock(
   '@/components/explorer-grid/selected-item/context.jsx',
   () => ({
@@ -44,23 +48,6 @@ afterEach(() => {
   const CleanUp = () => (useStore(state => state.reset)(), '')
   render(<CleanUp />)
   cleanup()
-})
-
-test('TabsManifestButton does not render when manifest is not available', () => {
-  vi.mocked(useSelectedItem).mockReturnValue({
-    selectedItem: SELECTED_ITEM,
-    selectedItemDetails: SELECTED_ITEM_DETAILS,
-    insights: undefined,
-    activeTab: 'manifest',
-    setActiveTab: vi.fn(),
-  })
-
-  const Container = () => {
-    return <TabsManifestButton />
-  }
-
-  const { container } = render(<Container />)
-  expect(container.innerHTML).toBe('')
 })
 
 test('TabsManifestButton renders default', () => {
@@ -100,7 +87,7 @@ test('TabsManifestButton renders default', () => {
   expect(container.innerHTML).toMatchSnapshot()
 })
 
-test('TabsManifestContent does not render when manifest is not available', () => {
+test('TabsManifestContent renders an empty state', () => {
   vi.mocked(useSelectedItem).mockReturnValue({
     selectedItem: SELECTED_ITEM,
     selectedItemDetails: SELECTED_ITEM_DETAILS,
@@ -114,10 +101,10 @@ test('TabsManifestContent does not render when manifest is not available', () =>
   }
 
   const { container } = render(<Container />)
-  expect(container.innerHTML).toBe('')
+  expect(container.innerHTML).toMatchSnapshot()
 })
 
-test('TabsManifestContent renders default', () => {
+test('TabsManifestContent renders with a manifest', () => {
   const ITEM_WITH_MANIFEST = {
     ...SELECTED_ITEM,
     to: {

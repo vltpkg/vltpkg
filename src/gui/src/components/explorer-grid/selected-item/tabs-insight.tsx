@@ -8,13 +8,9 @@ import {
 } from '@/components/explorer-grid/selected-item/insight-badge.jsx'
 import type { SocketSecurityDetails } from '@/lib/constants/index.js'
 import type { PackageAlert } from '@vltpkg/security-archive'
-import { ArrowUpDown } from 'lucide-react'
+import { ArrowUpDown, BadgeInfo } from 'lucide-react'
 
 export const InsightTabButton = () => {
-  const { insights } = useSelectedItem()
-
-  if (!insights || insights.length === 0) return null
-
   return (
     <TabsTrigger
       variant="ghost"
@@ -125,28 +121,39 @@ export const InsightTabContent = () => {
 
   return (
     <TabsContent value="insights">
-      <section className="mt-2 flex flex-col px-6 py-4">
-        {filteredInsights && filteredInsights.length > 0 && (
-          <>
-            <InsightHeader
-              items={filteredInsights}
-              setItems={setFilteredInsights}
-            />
+      {filteredInsights && filteredInsights.length > 0 ?
+        <section className="mt-2 flex flex-col px-6 py-4">
+          <InsightHeader
+            items={filteredInsights}
+            setItems={setFilteredInsights}
+          />
 
-            <div className="flex flex-col divide-y-[1px] divide-muted">
-              {filteredInsights.map((insight, idx) => (
-                <InsightItem
-                  key={idx}
-                  selector={insight.selector}
-                  severity={insight.severity}
-                  description={insight.description}
-                  category={insight.category}
-                />
-              ))}
+          <div className="flex flex-col divide-y-[1px] divide-muted">
+            {filteredInsights.map((insight, idx) => (
+              <InsightItem
+                key={idx}
+                selector={insight.selector}
+                severity={insight.severity}
+                description={insight.description}
+                category={insight.category}
+              />
+            ))}
+          </div>
+        </section>
+      : <div className="flex h-64 w-full items-center justify-center px-6 py-4">
+          <div className="flex flex-col items-center justify-center gap-3 text-center">
+            <div className="relative flex size-32 items-center justify-center rounded-full bg-secondary/60">
+              <BadgeInfo
+                className="absolute z-[3] size-14 text-neutral-500"
+                strokeWidth={1}
+              />
             </div>
-          </>
-        )}
-      </section>
+            <p className="w-2/3 text-pretty text-sm text-muted-foreground">
+              There are no insights for this package
+            </p>
+          </div>
+        </div>
+      }
 
       <div className="w-full px-6 py-4">
         <Link
