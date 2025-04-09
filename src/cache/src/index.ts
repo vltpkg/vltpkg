@@ -10,10 +10,12 @@ import {
   opendir,
   readFile,
   rename,
+  stat,
+  unlink,
   writeFile,
 } from 'node:fs/promises'
 import { LRUCache } from 'lru-cache'
-import { resolve, basename, dirname } from 'node:path'
+import { resolve, basename, dirname, join } from 'node:path'
 import { rimraf } from 'rimraf'
 
 export type CacheFetchContext =
@@ -53,6 +55,12 @@ export type BooleanOrVoid = boolean | void
 
 const hash = (s: string) =>
   createHash('sha512').update(s).digest('hex')
+
+const success = async <T>(p: Promise<T>): Promise<T | null> =>
+  await p.then(
+    result => result,
+    () => null,
+  )
 
 export class Cache extends LRUCache<
   string,
@@ -347,36 +355,99 @@ export class Cache extends LRUCache<
       return this.integrityPath(i)
     } catch {}
   }
+
   async #diskWrite(
-    path: string,
+    valFile: string,
     key: string,
     val: Buffer,
     integrity?: Integrity,
-  ) {
-    const dir = dirname(path)
+  ): Promise<void> {
+    const dir = dirname(valFile)
     await mkdir(dir, { recursive: true })
     const intFile = this.#maybeIntegrityPath(integrity)
-    const base = basename(path)
-    const keyFile = base + '.key'
-    const tmp = dir + '/.' + base + '.' + this.random
-    const keyTmp = dir + '/.' + keyFile + '.' + this.random
-    const writeData =
-      intFile ?
-        // try to just link into the temp location, rather than write
-        // may fail with ENOENT or EEXIST, in which case, write normally
-        link(intFile, tmp).catch(() => writeFile(tmp, val))
-        // don't have it by integrity, write the new entry
-      : writeFile(tmp, val)
-    return Promise.all([
-      writeData.then(() => rename(tmp, path)),
-      writeFile(keyTmp, key).then(() =>
-        rename(keyTmp, path + '.key'),
-      ),
-    ]).then(() => {
-      if (intFile) {
-        return link(path, intFile)
+    const base = basename(valFile)
+    const keyFile = `${base}.key`
+    const tmp = join(dir, `.${base}.${this.random}`)
+    const keyTmp = join(dir, `.${keyFile}.${this.random}`)
+
+    // Always write the key file in parallel with other operations
+    const writeKeyP = writeFile(keyTmp, key).then(() =>
+      rename(keyTmp, valFile + '.key'),
+    )
+
+    // We might not write the val file at all so we dont want to
+    // kick off this promise until we know we need to.
+    const writeVal = () =>
+      writeFile(tmp, val).then(() => rename(tmp, valFile))
+
+    if (!intFile) {
+      // No integrity provided, just write the value and key files
+      await Promise.all([writeKeyP, writeVal()])
+      return
+    }
+
+    // Handle different integrity scenarios
+
+    const intStats = await success(stat(intFile))
+    if (!intStats) {
+      // Integrity file doesn't exist yet
+      // Write the value file and then link to a new integrity file
+      await Promise.all([
+        writeKeyP,
+        writeVal().then(() => link(valFile, intFile)),
+      ])
+      return
+    }
+
+    // Check if the integrity file and value file are the same size
+    // This is a fast shortcut to check if the content is likely the same
+    const sameSize = intStats.size === val.length
+
+    const valStats = await success(stat(valFile))
+    if (!valStats && sameSize) {
+      // Path doesn't exist but integrity is already what we want
+      // Try to link integrity file to val file
+      // If linking fails, continue on
+      if ((await success(link(intFile, valFile))) !== null) {
+        await writeKeyP
+        return
       }
-    })
+    }
+
+    const linked =
+      intStats.ino === valStats?.ino && intStats.dev === valStats.dev
+
+    if (linked && sameSize) {
+      // Integrity and val file are already linked and the same
+      // So nothing to do except write the key file
+      await writeKeyP
+      return
+    }
+
+    if (!linked && sameSize) {
+      // Integrity and val file are not linked but same size
+      // so its likely the same content so force link them
+      // because thats faster than writing the value file.
+      if (
+        (await success(
+          unlink(valFile).then(() => link(intFile, valFile)),
+        )) !== null
+      ) {
+        await writeKeyP
+        return
+      }
+    }
+
+    // If files are not same size or something went wrong with the previous link
+    // operations then fallback to doing everything:
+    // - write the write the key/value files
+    // - unlink integrity and then re-link it to the value file
+    await Promise.all([
+      writeKeyP,
+      Promise.all([writeVal(), unlink(intFile)]).then(() =>
+        link(valFile, intFile),
+      ),
+    ])
   }
 
   async #diskRead(
