@@ -4,7 +4,7 @@ import t from 'tap'
 import { gzipSync } from 'node:zlib'
 import { __CODE_SPLIT_SCRIPT_NAME } from '../src/unzip.ts'
 import { createHash } from 'node:crypto'
-import { readFile } from 'node:fs/promises'
+import { readFile, stat } from 'node:fs/promises'
 import type { Integrity } from '@vltpkg/types'
 
 const ENV = {
@@ -275,9 +275,29 @@ t.test('unzip an entry with integrity', async t => {
   })
   const c = new Cache({ path: t.testdirName })
   t.same(await c.fetch('gz1'), result)
+  const cacheFile = c.path('gz1')
+  const integrityFile = c.integrityPath(integrity)!
   t.strictSame(
-    await readFile(c.path('gz1'), 'utf-8'),
-    await readFile(c.integrityPath(integrity)!, 'utf-8'),
+    await readFile(cacheFile, 'utf-8'),
+    await readFile(integrityFile, 'utf-8'),
     'cache file and integrity are the same',
   )
+  const cacheStat = await stat(cacheFile)
+  const integrityStat = await stat(integrityFile)
+  t.equal(
+    cacheStat.dev,
+    integrityStat.dev,
+    'cache and integrity have same dev',
+  )
+  t.equal(
+    cacheStat.ino,
+    integrityStat.ino,
+    'cache and integrity have same ino',
+  )
+  t.equal(
+    cacheStat.nlink,
+    integrityStat.nlink,
+    'cache and integrity have same nlink',
+  )
+  t.equal(cacheStat.nlink, 2, 'nlink is 2')
 })
