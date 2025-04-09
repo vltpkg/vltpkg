@@ -21,6 +21,7 @@ import { cwe } from './pseudo/cwe.ts'
 import { debug } from './pseudo/debug.ts'
 import { deprecated } from './pseudo/deprecated.ts'
 import { dynamic } from './pseudo/dynamic.ts'
+import { empty } from './pseudo/empty.ts'
 import { entropic } from './pseudo/entropic.ts'
 import { env } from './pseudo/env.ts'
 import { evalParser } from './pseudo/eval.ts'
@@ -49,18 +50,6 @@ import { unknown } from './pseudo/unknown.ts'
 import { unmaintained } from './pseudo/unmaintained.ts'
 import { unpopular } from './pseudo/unpopular.ts'
 import { unstable } from './pseudo/unstable.ts'
-
-/**
- * :empty Pseudo-Selector, matches only nodes that have no children.
- */
-const empty = async (state: ParserState) => {
-  for (const node of state.partial.nodes) {
-    if (node.edgesOut.size > 0) {
-      removeNode(state, node)
-    }
-  }
-  return state
-}
 
 /**
  * :has Pseudo-Selector, matches only nodes that have valid results
