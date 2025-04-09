@@ -27,9 +27,6 @@ export class CacheView extends ViewClass {
   stdout(...args: unknown[]) {
     stdout(...args)
   }
-  error(e: unknown) {
-    throw e
-  }
 }
 
 export const views: Views<void | CacheMap> = {
