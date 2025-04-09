@@ -9,6 +9,7 @@ import type { VltServerListening } from './index.ts'
 import * as json from './json.ts'
 import { parseInstallOptions } from './parse-install-options.ts'
 import { parseUninstallOptions } from './parse-uninstall-options.ts'
+import { asError } from '@vltpkg/error-cause'
 
 export type GUIInstallOptions = Record<
   string,
@@ -99,12 +100,7 @@ export const handleRequest = async (
         await server.update()
         return json.ok(res, 'ok')
       } catch (err) {
-        return json.error(
-          res,
-          'CLI Error',
-          (err as Error).message,
-          500,
-        )
+        return json.error(res, 'CLI Error', asError(err).message, 500)
       }
     }
 

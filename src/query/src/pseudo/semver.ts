@@ -10,7 +10,7 @@ import {
   parseRange,
 } from '@vltpkg/semver'
 import type { Version } from '@vltpkg/semver'
-import { error } from '@vltpkg/error-cause'
+import { asError, error } from '@vltpkg/error-cause'
 import { parseInternals as parseAttrInternals } from './attr.ts'
 import type { AttrInternals } from './attr.ts'
 import { getManifestPropertyValues } from '../attribute.ts'
@@ -106,9 +106,8 @@ export const parseInternals = (
       asStringNode(asPostcssNodeWithChildren(nodes[0]).nodes[0])
         .value,
     )
-  } catch (e) {
-    const err = e as Error
-    if (err.message === 'Mismatching query node') {
+  } catch (err) {
+    if (asError(err).message === 'Mismatching query node') {
       semverValue = ''
       for (const node of asPostcssNodeWithChildren(nodes[0]).nodes) {
         if (isClassNode(node)) {
@@ -143,9 +142,8 @@ export const parseInternals = (
               .value,
           ),
         )
-      } catch (e) {
-        const err = e as Error
-        if (err.message === 'Mismatching query node') {
+      } catch (err) {
+        if (asError(err).message === 'Mismatching query node') {
           fnName = asSemverFunctionName(
             asTagNode(asPostcssNodeWithChildren(nodes[1]).nodes[0])
               .value,

@@ -4,6 +4,7 @@ import {
   typeError,
   asErrorCause,
   isErrorRoot,
+  asError,
 } from '../src/index.ts'
 import t from 'tap'
 
@@ -71,5 +72,12 @@ t.test('isErrorRoot', t => {
   t.equal(isErrorRoot(new Error('', { cause: {} })), true)
   t.equal(isErrorRoot(new Error('')), false)
   t.equal(isErrorRoot(new Error('', { cause: null })), false)
+  t.end()
+})
+
+t.test('asError', t => {
+  t.ok(asError(new Error('')) instanceof Error)
+  t.ok(asError(null) instanceof Error)
+  t.ok(asError('').message === 'Unknown error')
   t.end()
 })
