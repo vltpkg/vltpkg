@@ -1,9 +1,10 @@
 import type { ReactNode } from 'react'
 import type { SocketSecurityDetails } from '@/lib/constants/socket.js'
+import type { PackageScore } from '@vltpkg/security-archive'
 import { createContext, useContext } from 'react'
 import { SOCKET_SECURITY_DETAILS } from '@/lib/constants/socket.js'
 
-export type Tab = 'overview' | 'insight' | 'versions' | 'manifest'
+export type Tab = 'overview' | 'insights' | 'versions' | 'manifest'
 
 import type { GridItemData } from '@/components/explorer-grid/types.js'
 import type { DetailsInfo } from '@/lib/external-info.js'
@@ -52,6 +53,7 @@ export interface SelectedItemContextValue {
   activeTab: Tab
   setActiveTab: (tab: Tab) => void
   insights: SocketSecurityDetails[] | undefined
+  packageScore?: PackageScore
 }
 
 const SelectedItemContext = createContext<
@@ -72,6 +74,7 @@ export const SelectedItemProvider = ({
   setActiveTab: (tab: Tab) => void
 }) => {
   const insights = getSocketInsights(selectedItem.to?.insights)
+  const packageScore = selectedItem.to?.insights.score
 
   return (
     <SelectedItemContext.Provider
@@ -81,6 +84,7 @@ export const SelectedItemProvider = ({
         activeTab,
         setActiveTab,
         insights,
+        packageScore,
       }}>
       {children}
     </SelectedItemContext.Provider>
