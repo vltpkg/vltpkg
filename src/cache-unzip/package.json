@@ -20,7 +20,8 @@
   },
   "dependencies": {
     "@vltpkg/cache": "workspace:*",
-    "@vltpkg/error-cause": "workspace:*"
+    "@vltpkg/error-cause": "workspace:*",
+    "@vltpkg/types": "workspace:*"
   },
   "devDependencies": {
     "@eslint/js": "catalog:",
