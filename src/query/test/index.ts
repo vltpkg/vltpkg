@@ -248,8 +248,8 @@ t.test('cancellable search', async t => {
   const q = ':root > * > *'
   await t.rejects(
     new Promise((_, reject) => {
-      void query.search(q, ac.signal).catch(err => {
-        reject(err as Error)
+      void query.search(q, ac.signal).catch((err: unknown) => {
+        reject(err)
       })
       ac.abort(new Error('query aborted'))
       // the set timeout bellow should never be called since
