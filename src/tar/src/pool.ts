@@ -1,4 +1,4 @@
-import { error } from '@vltpkg/error-cause'
+import { asError, error } from '@vltpkg/error-cause'
 import os from 'node:os'
 import { UnpackRequest } from './unpack-request.ts'
 import { isResponseOK, Worker } from './worker.ts'
@@ -47,13 +47,14 @@ export class Pool {
       ur.resolve()
       /* c8 ignore start - nearly impossible in normal circumstances */
     } else {
-      const message =
-        m.error instanceof Error ? m.error.message : String(m.error)
       ur.reject(
-        error(message || 'failed without error message', {
-          found: m,
-          cause: m.error,
-        }),
+        error(
+          asError(m.error, 'failed without error message').message,
+          {
+            found: m,
+            cause: m.error,
+          },
+        ),
       )
     }
     /* c8 ignore stop */

@@ -1,6 +1,6 @@
 import { Cache } from '@vltpkg/cache'
 import { register as cacheUnzipRegister } from '@vltpkg/cache-unzip'
-import { error } from '@vltpkg/error-cause'
+import { asError, error } from '@vltpkg/error-cause'
 import { logRequest } from '@vltpkg/output'
 import type { Integrity } from '@vltpkg/types'
 import { urlOpen } from '@vltpkg/url-open'
@@ -357,7 +357,7 @@ export class RegistryClient {
         return result
       }),
       urlOpen(loginUrl, { signal }).catch((er: unknown) => {
-        if ((er as Error).name === 'AbortError') return
+        if (asError(er).name === 'AbortError') return
         ac.abort()
         throw er
       }),

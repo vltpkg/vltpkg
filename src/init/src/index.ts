@@ -4,6 +4,7 @@ import type { JSONObj } from '@vltpkg/registry-client'
 import type { Manifest } from '@vltpkg/types'
 import { basename, resolve } from 'node:path'
 import { getAuthorFromGitUser } from './get-author-from-git-user.ts'
+import { asError } from '@vltpkg/error-cause'
 export { getAuthorFromGitUser }
 
 // eslint-disable-next-line no-console
@@ -56,9 +57,8 @@ export const init = async ({
     // will only return here in case the package.json file does not exist
     logger('package.json already exists')
     return {}
-  } catch (e) {
-    const err = e as Error
-    if (!!e && err.message !== 'Could not read package.json file') {
+  } catch (err) {
+    if (asError(err).message !== 'Could not read package.json file') {
       throw err
     }
 

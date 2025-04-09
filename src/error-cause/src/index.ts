@@ -218,6 +218,16 @@ export const asErrorCause = (er: unknown): ErrorCause =>
     )
 
 /**
+ * Helper util to convert unknown to a plain error. Not specifically
+ * related to error causes, but useful for error handling in general.
+ */
+export const asError = (
+  er: unknown,
+  fallbackMessage = 'Unknown error',
+): Error =>
+  er instanceof Error ? er : new Error(String(er) || fallbackMessage)
+
+/**
  * Valid properties for the 'code' field in an Error cause.
  * Add new options to this list as needed.
  */
