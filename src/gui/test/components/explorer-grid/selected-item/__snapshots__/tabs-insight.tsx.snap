@@ -2,14 +2,33 @@
 
 exports[`InsightTabButton renders default 1`] = `
 
+<gui-tabs-trigger
+  variant="ghost"
+  value="insights"
+  classname="w-fit px-2"
+>
+  Insights
+</gui-tabs-trigger>
 
 `;
 
-exports[`InsightTabContent renders default 1`] = `
+exports[`InsightTabContent renders an empty state 1`] = `
 
 <gui-tabs-content value="insights">
-  <section class="mt-2 flex flex-col px-6 py-4">
-  </section>
+  <div class="flex h-64 w-full items-center justify-center px-6 py-4">
+    <div class="flex flex-col items-center justify-center gap-3 text-center">
+      <div class="relative flex size-32 items-center justify-center rounded-full bg-secondary/60">
+        <gui-badge-info-icon
+          classname="absolute z-[3] size-14 text-neutral-500"
+          strokewidth="1"
+        >
+        </gui-badge-info-icon>
+      </div>
+      <p class="w-2/3 text-pretty text-sm text-muted-foreground">
+        There are no insights for this package
+      </p>
+    </div>
+  </div>
   <div class="w-full px-6 py-4">
     <gui-link
       to="/help/selectors"
