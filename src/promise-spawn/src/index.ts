@@ -1,4 +1,5 @@
 import { error } from '@vltpkg/error-cause'
+import type { ErrorCause } from '@vltpkg/error-cause'
 import { spawn } from 'node:child_process'
 import type {
   ChildProcess,
@@ -256,42 +257,63 @@ export class SpawnPromise<
       proc = spawn(command, args, opts) as ChildProcessByOptions<O>
       const stdout: Buffer[] = []
       const stderr: Buffer[] = []
-      const reject = (er: Error) =>
-        rej(
-          error('command failed', {
-            command,
-            args,
-            cwd: opts.cwd ?? process.cwd(),
-            ...stdioResult(stdout, stderr, opts),
-            ...extra,
-            cause: er,
-          }),
-        )
-      proc.on('error', reject)
-      if (proc.stdout) {
-        proc.stdout
-          .on('data', c => stdout.push(c as Buffer))
-          .on('error', er => reject(er))
-      }
-      if (proc.stderr) {
-        proc.stderr
-          .on('data', c => stderr.push(c as Buffer))
-          .on('error', er => reject(er))
-      }
-      proc.on('close', (status, signal) => {
-        const result = {
+      // Don't use the spread operator on successResult or errorResult
+      // as that kills any typechecking for the known keys.
+      const reject = (
+        er?: Error,
+        status?: number | null,
+        signal?: NodeJS.Signals | null,
+      ) => {
+        const stdio = stdioResult(stdout, stderr, opts)
+        const errorResult: ErrorCause = {
           command,
           args,
-          cwd: opts.cwd ?? process.cwd(),
-          /* c8 ignore next 2 - because windows */
-          status: status ?? null,
-          signal: signal ?? null,
-          ...stdioResult(stdout, stderr, opts),
-          ...extra,
-        } as SpawnResultByOptions<O> & T
-        if ((status || signal) && !opts.acceptFail)
-          rej(error('command failed', result))
-        else res(result)
+          stdout: stdio.stdout,
+          stderr: stdio.stderr,
+          cwd: opts.cwd?.toString() ?? process.cwd(),
+        }
+        if (er !== undefined) {
+          errorResult.cause = er
+        }
+        if (status !== undefined) {
+          errorResult.status = status
+        }
+        if (signal !== undefined) {
+          errorResult.signal = signal
+        }
+        Object.assign(errorResult, extra)
+        rej(error('command failed', errorResult))
+      }
+      const resolve = (
+        status: number | null,
+        signal: NodeJS.Signals | null,
+      ) => {
+        const stdio = stdioResult(stdout, stderr, opts)
+        const successResult: SpawnResultByOptions<O> = {
+          command,
+          args,
+          status,
+          signal,
+          stdout: stdio.stdout,
+          stderr: stdio.stderr,
+          cwd: opts.cwd?.toString() ?? process.cwd(),
+        }
+        Object.assign(successResult, extra)
+        res(successResult as SpawnResultByOptions<O> & T)
+      }
+      proc.on('error', reject)
+      proc.stdout
+        ?.on('data', c => stdout.push(c as Buffer))
+        .on('error', er => reject(er))
+      proc.stderr
+        ?.on('data', c => stderr.push(c as Buffer))
+        .on('error', er => reject(er))
+      proc.on('close', (status = null, signal = null) => {
+        if ((status || signal) && !opts.acceptFail) {
+          reject(undefined, status, signal)
+        } else {
+          resolve(status, signal)
+        }
       })
     })
     this.process = proc
