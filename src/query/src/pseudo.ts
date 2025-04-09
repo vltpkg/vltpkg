@@ -32,6 +32,7 @@ import { nativeParser } from './pseudo/native.ts'
 import { network } from './pseudo/network.ts'
 import { obfuscated } from './pseudo/obfuscated.ts'
 import { outdated } from './pseudo/outdated.ts'
+import { published } from './pseudo/published.ts'
 import { scanned } from './pseudo/scanned.ts'
 import { scripts } from './pseudo/scripts.ts'
 import { shell } from './pseudo/shell.ts'
@@ -376,6 +377,7 @@ const pseudoSelectors = new Map<string, ParserFn>(
     not,
     obfuscated,
     outdated,
+    published,
     // TODO: overridden
     private: privateFn,
     project,

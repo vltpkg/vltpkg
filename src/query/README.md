@@ -139,6 +139,17 @@ e.g: `#foo` is the same as `[name=foo]`
     current one
 - `:private` Matches packages that have the property `private` set on
   their `package.json` file.
+- `:published(<date>)` Matches packages based on their publication
+  date. The date parameter can be prefixed with a comparator (`>`,
+  `<`, `>=`, `<=`). If no comparator is provided, it will match exact
+  dates. Please note that the value parameter needs to be quoted if
+  using a comparator. Examples:
+  - `:published(2024-01-01)` - Matches packages published exactly on
+    January 1st, 2024
+  - `:published(">2024-01-01")` - Matches packages published after
+    January 1st, 2024
+  - `:published("<=2023-12-31")` - Matches packages published on or
+    before December 31st, 2023
 - `:semver(<value>, <function>, <custom-attribute-selector>)` Matches
   packages based on a semver value, e.g, to retrieve all packages that
   have a `version` satisfied by the semver value `^1.0.0`:
