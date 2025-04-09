@@ -1,5 +1,6 @@
 import chalk from 'chalk'
 import { formatWithOptions } from 'node:util'
+import type { InspectOptions } from 'node:util'
 import { defaultView } from './config/definition.ts'
 import type { LoadedConfig } from './config/index.ts'
 import type { Command } from './index.ts'
@@ -14,6 +15,7 @@ export const stdout = (...args: unknown[]) => console.log(...args)
 export const stderr = (...args: unknown[]) => console.error(...args)
 
 const identity = <T>(x: T): T => x
+
 export const getView = <T>(
   conf: LoadedConfig,
   views?: Views<T>,
@@ -38,6 +40,10 @@ export const getView = <T>(
   return viewFn ?? identity
 }
 
+export type OnDone<T> =
+  | ((result: T) => Promise<unknown>)
+  | ((result: T) => unknown)
+
 /**
  * If the view is a View class, then instantiate and start it.
  * If it's a view function, then just define the onDone method.
@@ -47,13 +53,15 @@ export const startView = <T>(
   views?: Views<T>,
   { start }: { start: number } = { start: Date.now() },
 ): {
-  onDone: (
-    result: T,
-  ) => Promise<string | undefined> | string | undefined
+  onDone: OnDone<T>
   onError?: (err: unknown) => void
 } => {
   const View = getView<T>(conf, views)
-  const opts = { colors: conf.values.color ? chalk : undefined }
+
+  const opts = {
+    colors: conf.values.color ? chalk : undefined,
+  }
+
   if (isViewClass(View)) {
     const view = new View(opts, conf)
     view.start()
@@ -65,22 +73,13 @@ export const startView = <T>(
         view.error(err)
       },
     }
-  } else {
-    return {
-      async onDone(r): Promise<string | undefined> {
-        if (r === undefined) return
-        const res = await View(r, opts, conf)
-        if (res === undefined) return
-        return conf.values.view === 'json' ?
-            JSON.stringify(res, null, 2)
-          : formatWithOptions(
-              {
-                colors: conf.values.color,
-              },
-              res,
-            )
-      },
-    }
+  }
+
+  return {
+    async onDone(r) {
+      if (r === undefined) return
+      return View(r, opts, conf)
+    },
   }
 }
 
@@ -98,18 +97,30 @@ export const outputCommand = async <T>(
   if (conf.get('help')) {
     return stdout(usage().usage())
   }
+
+  const formatOptions = {
+    colors: conf.values.color,
+    depth: Infinity,
+    maxArrayLength: Infinity,
+    maxStringLength: Infinity,
+  } as const satisfies InspectOptions
+
   const { onDone, onError } = startView(conf, views, { start })
 
   try {
     const output = await onDone(await command(conf))
     if (output !== undefined) {
-      stdout(output)
+      stdout(
+        conf.values.view === 'json' ?
+          JSON.stringify(output, null, 2)
+        : formatWithOptions(formatOptions, output),
+      )
     }
   } catch (err) {
     onError?.(err)
     process.exitCode ||= 1
 
-    printErr(err, usage, stderr)
+    printErr(err, usage, stderr, formatOptions)
 
     process.exit(process.exitCode)
   }
