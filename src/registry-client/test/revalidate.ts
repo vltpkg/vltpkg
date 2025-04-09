@@ -54,23 +54,25 @@ t.test('revalidate a url', async t => {
   const reg = `http://localhost:${PORT}`
   await new Promise<void>(res => server.listen(PORT, () => res()))
 
-  const cp = spawn(
-    process.execPath,
-    [__CODE_SPLIT_SCRIPT_NAME, t.testdir({})],
-    {
-      stdio: ['pipe', 'inherit', 'inherit'],
-      env: ENV,
-    },
-  )
-  cp.stdin.end(`GET ${reg}/GET\0HEAD ${reg}/HEAD\0`)
   const res = await new Promise<{
     status: number | null
     signal: NodeJS.Signals | null
-  }>(res =>
+  }>(res => {
+    const cp = spawn(
+      process.execPath,
+      [__CODE_SPLIT_SCRIPT_NAME, t.testdir({})],
+      {
+        stdio: ['pipe', 'inherit', 'inherit'],
+        env: ENV,
+      },
+    )
+    cp.stdin.write(`GET ${reg}/GET\0HEAD ${reg}/HEAD\0`, () => {
+      cp.stdin.end()
+    })
     cp.on('close', (status, signal) => {
       res({ status, signal })
-    }),
-  )
+    })
+  })
 
   t.matchOnlyStrict(res, {
     status: 0,
