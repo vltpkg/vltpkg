@@ -11,6 +11,7 @@ import {
 } from 'react'
 import { stdout } from '../../output.ts'
 import { ViewClass } from '../../view.ts'
+import { asError } from '@vltpkg/error-cause'
 
 type Step = {
   state: 'waiting' | 'in_progress' | 'completed'
@@ -104,6 +105,6 @@ export class InstallReporter extends ViewClass {
   }
 
   error(err: unknown) {
-    this.#instance?.unmount(err as Error)
+    this.#instance?.unmount(asError(err))
   }
 }
