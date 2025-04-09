@@ -12,6 +12,8 @@ import {
   SELECTED_ITEM_DEFAULT_GIT_HOST,
   SELECTED_ITEM_DETAILS,
 } from './__fixtures__/item.ts'
+import type { SocketSecurityDetails } from '@/lib/constants/socket.js'
+import type { PackageScore } from '@vltpkg/security-archive'
 
 vi.mock(
   '@/components/explorer-grid/selected-item/context.jsx',
@@ -50,6 +52,23 @@ vi.mock('@/components/ui/badge.jsx', () => ({
 vi.mock('@/components/ui/spark-chart.jsx', () => ({
   SparkAreaChart: 'gui-spark-area-chart',
 }))
+
+vi.mock('@/components/ui/progress-bar.jsx', () => ({
+  ProgressBar: 'gui-progress-bar',
+}))
+
+vi.mock(
+  '@/components/explorer-grid/selected-item/insight-badge.jsx',
+  async () => {
+    const actual = await import(
+      '@/components/explorer-grid/selected-item/insight-badge.jsx'
+    )
+    return {
+      ...actual,
+      InsightBadge: 'gui-insight-badge',
+    }
+  },
+)
 
 expect.addSnapshotSerializer({
   serialize: v => html(v),
@@ -150,6 +169,59 @@ test('ItemHeader renders with default git host item', () => {
 
     updateSpecOptions(specOptions)
 
+    return <ItemHeader />
+  }
+
+  const { container } = render(<Container />)
+  expect(container.innerHTML).toMatchSnapshot()
+})
+
+test('ItemHeader renders with a package score', () => {
+  const mockPackageScore: PackageScore = {
+    overall: 0.8,
+    license: 0.9,
+    maintenance: 0.7,
+    quality: 0.6,
+    supplyChain: 0.5,
+    vulnerability: 0.4,
+  }
+
+  vi.mocked(useSelectedItem).mockReturnValue({
+    selectedItem: SELECTED_ITEM,
+    selectedItemDetails: SELECTED_ITEM_DETAILS,
+    insights: undefined,
+    activeTab: 'overview',
+    setActiveTab: vi.fn(),
+    packageScore: mockPackageScore,
+  })
+
+  const Container = () => {
+    return <ItemHeader />
+  }
+
+  const { container } = render(<Container />)
+  expect(container.innerHTML).toMatchSnapshot()
+})
+
+test('ItemHeader renders with insights', () => {
+  const mockedInsights: SocketSecurityDetails[] = [
+    {
+      selector: ':abandoned',
+      description: 'Abandoned packages',
+      category: 'Supply Chain',
+      severity: 'medium',
+    },
+  ]
+
+  vi.mocked(useSelectedItem).mockReturnValue({
+    selectedItem: SELECTED_ITEM,
+    selectedItemDetails: SELECTED_ITEM_DETAILS,
+    insights: mockedInsights,
+    activeTab: 'overview',
+    setActiveTab: vi.fn(),
+  })
+
+  const Container = () => {
     return <ItemHeader />
   }
 
