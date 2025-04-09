@@ -2,6 +2,8 @@ import { Cache } from '@vltpkg/cache'
 import { error } from '@vltpkg/error-cause'
 import { pathToFileURL } from 'node:url'
 import { gunzipSync } from 'node:zlib'
+import type { Integrity } from '@vltpkg/types'
+import { link, stat, unlink } from 'node:fs/promises'
 
 export const __CODE_SPLIT_SCRIPT_NAME = import.meta.filename
 
@@ -60,12 +62,13 @@ const main = async (
     return (a << 24) | (b << 16) | (c << 8) | d
   }
 
-  const didSomething = await Promise.all(
+  const results = await Promise.all(
     keys.map(async key => {
       const buffer = await cache.fetch(key)
-      if (!buffer || buffer.length < 4) return false
+      if (!buffer || buffer.length < 4) return null
       const headSizeOriginal = readSize(buffer, 0)
       const body = buffer.subarray(headSizeOriginal)
+      let integrity: undefined | Integrity = undefined
       if (body[0] === 0x1f && body[1] === 0x8b) {
         const unz = gunzipSync(body)
         const headersBuffer = buffer.subarray(7, headSizeOriginal)
@@ -74,6 +77,7 @@ const main = async (
         let sawEncoding = false
         let isEncoding = false
         let isContentLength = false
+        let isIntegrity = false
         while (i < headersBuffer.length - 4) {
           const size = readSize(headersBuffer, i)
           const h = headersBuffer.subarray(i + 4, i + size)
@@ -84,6 +88,10 @@ const main = async (
             isContentLength = false
             i += size
             continue
+          } else if (isIntegrity) {
+            isIntegrity = false
+            integrity = h.toString() as Integrity
+            headers.push(h)
           } else {
             if (headers.length % 2 === 0) {
               // it's a key
@@ -98,6 +106,11 @@ const main = async (
               ) {
                 sawEncoding = true
                 isEncoding = true
+              } else if (
+                !integrity &&
+                h.toString().toLowerCase() === 'integrity'
+              ) {
+                isIntegrity = true
               }
             }
             headers.push(h)
@@ -146,11 +159,29 @@ const main = async (
         chunks.push(unz)
         cache.set(key, Buffer.concat(chunks, headLength + unz.length))
       }
-      return true
+      return { key, integrity }
     }),
   )
   await cache.promise()
-  if (!didSomething.some(Boolean)) process.exit(1)
+  if (!results.some(Boolean)) process.exit(1)
+  // Once all entries have been unzipped and saved to disk, go through the
+  // results and link any existing integrity files to the new unzipped files.
+  // XXX: this could be the responsibility of the cache but would need a new
+  // method/option since the current behavior of `cache.set` when passed an
+  // `integrity` value is to link from the integrity file if it exists.
+  await Promise.all(
+    results.map(async res => {
+      if (!res) return
+      try {
+        const intFile = cache.integrityPath(res.integrity)
+        if (intFile && (await stat(intFile).catch(() => false))) {
+          await unlink(intFile)
+          await link(cache.path(res.key), intFile)
+        }
+        /* c8 ignore next */
+      } catch {}
+    }),
+  )
 }
 
 const g = globalThis as typeof globalThis & {

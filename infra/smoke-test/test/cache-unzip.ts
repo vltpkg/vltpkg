@@ -1,5 +1,6 @@
 import { CacheEntry } from '@vltpkg/registry-client/cache-entry'
 import { readdirSync, readFileSync } from 'node:fs'
+import type { Dirent } from 'node:fs'
 import { join } from 'node:path'
 import { setTimeout } from 'node:timers/promises'
 import t from 'tap'
@@ -16,22 +17,38 @@ t.test(
         // time but should be enough for a small install.
         await setTimeout(1000)
 
-        const cacheEntries = readdirSync(
+        const { keys, entries, tmp } = readdirSync(
           join(dirs.cache, 'vlt/registry-client'),
           {
             withFileTypes: true,
           },
+        ).reduce<{
+          keys: Dirent[]
+          entries: Dirent[]
+          tmp: Dirent[]
+        }>(
+          (acc, d) => {
+            if (d.name.endsWith('.key')) {
+              acc.keys.push(d)
+            } else if (d.name.startsWith('.')) {
+              acc.tmp.push(d)
+            } else {
+              acc.entries.push(d)
+            }
+            return acc
+          },
+          { keys: [], entries: [], tmp: [] },
         )
-          .filter(f => !f.name.endsWith('.key'))
-          .map(f =>
-            CacheEntry.isGzipEntry(
-              readFileSync(join(f.parentPath, f.name)),
-            ),
-          )
-
-        t.ok(cacheEntries.length, 'cache entries exist')
+        t.strictSame(tmp, [], 'no tmp files remain')
+        t.ok(keys.length, 'cache keys exist')
+        t.ok(entries.length, 'cache entries exist')
         t.ok(
-          cacheEntries.every(v => !v),
+          entries.every(
+            f =>
+              !CacheEntry.isGzipEntry(
+                readFileSync(join(f.parentPath, f.name)),
+              ),
+          ),
           'all cache entries are ungzipped',
         )
       },

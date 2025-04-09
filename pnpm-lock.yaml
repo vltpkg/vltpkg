@@ -402,6 +402,9 @@ importers:
       '@vltpkg/error-cause':
         specifier: workspace:*
         version: link:../error-cause
+      '@vltpkg/types':
+        specifier: workspace:*
+        version: link:../types
     devDependencies:
       '@eslint/js':
         specifier: 'catalog:'
