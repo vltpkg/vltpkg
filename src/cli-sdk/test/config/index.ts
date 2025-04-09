@@ -368,7 +368,7 @@ t.test('invalid config', async t => {
     await t.rejects(Config.load(dir, undefined, true), {
       cause: {
         path: resolve(dir, 'vlt.json'),
-        cause: {
+        error: {
           name: 'JSONParseError',
           code: 'EJSONPARSE',
         },
@@ -384,7 +384,7 @@ t.test('invalid config', async t => {
     await t.rejects(Config.load(dir, undefined, true), {
       cause: {
         path: resolve(dir, 'vlt.json'),
-        cause: {
+        error: {
           message: 'Invalid value string for color, expected boolean',
           cause: {
             name: 'color',

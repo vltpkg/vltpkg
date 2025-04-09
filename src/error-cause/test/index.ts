@@ -2,8 +2,7 @@ import {
   error,
   syntaxError,
   typeError,
-  asErrorCause,
-  isErrorRoot,
+  isErrorWithCause,
   asError,
 } from '../src/index.ts'
 import t from 'tap'
@@ -11,14 +10,14 @@ import t from 'tap'
 t.test('setting cause', t => {
   const cause = { status: 1 }
   const te = typeError('status is one', cause)
-  t.equal(te.cause, cause)
+  t.matchStrict(te.cause, cause)
   t.end()
 })
 
 t.test('setting cause about syntax', t => {
   const cause = { found: 'x', wanted: /[a-b]/ }
   const te = syntaxError('x is not a or b', cause)
-  t.equal(te.cause, cause)
+  t.matchStrict(te.cause, cause)
   t.end()
 })
 
@@ -52,26 +51,19 @@ t.test('stack pruning', t => {
   t.end()
 })
 
-t.test('asErrorCause', t => {
-  const err = new Error('an error')
-  t.strictSame(asErrorCause(err), err)
-  const errCause = { code: 'ok' }
-  t.strictSame(asErrorCause(errCause), errCause)
-  t.match(asErrorCause(0), new Error('0'))
-  t.match(asErrorCause(false), new Error('false'))
-  t.match(asErrorCause(true), new Error('true'))
-  const unknownErr = new Error('Unknown error')
-  t.match(asErrorCause(''), unknownErr)
-  t.match(asErrorCause(null), unknownErr)
-  t.match(asErrorCause(undefined), unknownErr)
-  t.match(asErrorCause([]), unknownErr)
+t.test('isErrorBranded', t => {
+  t.equal(isErrorWithCause(new Error('', { cause: {} })), false)
+  t.equal(isErrorWithCause(new Error('')), false)
+  t.equal(isErrorWithCause(new Error('', { cause: null })), false)
+  t.equal(isErrorWithCause(error('x')), true)
+  t.equal(isErrorWithCause(error('x', {})), true)
   t.end()
 })
 
-t.test('isErrorRoot', t => {
-  t.equal(isErrorRoot(new Error('', { cause: {} })), true)
-  t.equal(isErrorRoot(new Error('')), false)
-  t.equal(isErrorRoot(new Error('', { cause: null })), false)
+t.test('asError', t => {
+  t.ok(asError(new Error('')) instanceof Error)
+  t.ok(asError(null) instanceof Error)
+  t.ok(asError('').message === 'Unknown error')
   t.end()
 })
 

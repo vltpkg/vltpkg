@@ -1,5 +1,5 @@
 import { error } from '@vltpkg/error-cause'
-import type { ErrorCauseObject } from '@vltpkg/error-cause'
+import type { ErrorCause } from '@vltpkg/error-cause'
 import { asManifest, longDependencyTypes } from '@vltpkg/types'
 import type { Manifest } from '@vltpkg/types'
 import { readFileSync, writeFileSync } from 'node:fs'
@@ -20,7 +20,7 @@ export class PackageJson {
   /**
    * cache of load errors
    */
-  #errCache = new Map<string, ErrorCauseObject>()
+  #errCache = new Map<string, ErrorCause>()
 
   /**
    * Reads and parses contents of a `package.json` file at a directory `dir`.
@@ -34,7 +34,7 @@ export class PackageJson {
 
     const filename = resolve(dir, 'package.json')
 
-    const fail = (err: ErrorCauseObject) =>
+    const fail = (err: ErrorCause) =>
       error('Could not read package.json file', err, this.read)
 
     const cachedError = !reload && this.#errCache.get(dir)
@@ -50,9 +50,9 @@ export class PackageJson {
       this.#pathCache.set(res, dir)
       return res
     } catch (err) {
-      const ec: ErrorCauseObject = {
+      const ec: ErrorCause = {
         path: filename,
-        cause: err,
+        error: err,
       }
       this.#errCache.set(dir, ec)
       throw fail(ec)
@@ -78,7 +78,7 @@ export class PackageJson {
         'Could not write package.json file',
         {
           path: filename,
-          cause: err,
+          error: err,
         },
         this.write,
       )

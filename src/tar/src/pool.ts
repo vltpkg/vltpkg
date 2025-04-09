@@ -52,7 +52,7 @@ export class Pool {
           asError(m.error, 'failed without error message').message,
           {
             found: m,
-            cause: m.error,
+            error: m.error,
           },
         ),
       )

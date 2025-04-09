@@ -38,7 +38,7 @@ const loadCommand = async <T>(
   } catch (e) {
     throw error('Could not load command', {
       found: command,
-      cause: e,
+      error: e,
     })
   }
   /* c8 ignore stop */

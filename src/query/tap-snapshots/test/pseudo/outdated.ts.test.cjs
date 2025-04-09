@@ -10,11 +10,12 @@ Array [
   Array [
     Error: Could not retrieve registry versions {
       "cause": Object {
-        "cause": Error: Missing API {
+        "error": Error: Missing API {
           "attemptNumber": 1,
           "retriesLeft": 0,
         },
         "name": "c",
+        [Symbol.for(vltpkg.error-cause)]: undefined,
       },
     },
   ],
