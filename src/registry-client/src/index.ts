@@ -533,20 +533,11 @@ export class RegistryClient {
 
     if (isRedirect(result)) {
       response.body.resume()
-      // remove the try/catch once rebasing onto main with Luke's error-cause stuff
-      try {
-        const [nextURL, nextOptions] = redirect(options, result, url)
-        if (nextOptions && nextURL) {
-          return await this.request(nextURL, nextOptions)
-        }
-        return result
-      } catch (er) {
-        /* c8 ignore start */
-        throw er instanceof Error ? er : (
-            new Error(typeof er === 'string' ? er : 'Unknown error')
-          )
-        /* c8 ignore stop */
+      const [nextURL, nextOptions] = redirect(options, result, url)
+      if (nextOptions && nextURL) {
+        return await this.request(nextURL, nextOptions)
       }
+      return result
     }
 
     response.body.on('data', (chunk: Buffer) => result.addBody(chunk))

@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-extraneous-class */
 import { PackageInfoClient } from '@vltpkg/package-info'
 import type { RegistryClientRequestOptions } from '@vltpkg/registry-client'
 import { CacheEntry } from '@vltpkg/registry-client'
