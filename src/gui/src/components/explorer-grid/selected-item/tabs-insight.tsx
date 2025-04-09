@@ -180,27 +180,27 @@ export const InsightTabContent = () => {
     <TabsContent value="insights">
       {filteredInsights && filteredInsights.length > 0 ?
         <>
-        <InsightScore />
+          <InsightScore />
 
-        <section className="mt-2 flex flex-col px-6 py-4">
-          <InsightHeader
-            items={filteredInsights}
-            setItems={setFilteredInsights}
-          />
+          <section className="mt-2 flex flex-col px-6 py-4">
+            <InsightHeader
+              items={filteredInsights}
+              setItems={setFilteredInsights}
+            />
 
-          <div className="flex flex-col divide-y-[1px] divide-muted">
-            {filteredInsights.map((insight, idx) => (
-              <InsightItem
-                key={idx}
-                selector={insight.selector}
-                severity={insight.severity}
-                description={insight.description}
-                category={insight.category}
-              />
-            ))}
-          </div>
-        </section>
-</>
+            <div className="flex flex-col divide-y-[1px] divide-muted">
+              {filteredInsights.map((insight, idx) => (
+                <InsightItem
+                  key={idx}
+                  selector={insight.selector}
+                  severity={insight.severity}
+                  description={insight.description}
+                  category={insight.category}
+                />
+              ))}
+            </div>
+          </section>
+        </>
       : <div className="flex h-64 w-full items-center justify-center px-6 py-4">
           <div className="flex flex-col items-center justify-center gap-3 text-center">
             <div className="relative flex size-32 items-center justify-center rounded-full bg-secondary/60">
