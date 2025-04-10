@@ -106,6 +106,36 @@ const getState = (query: string, graph = getSemverRichGraph()) => {
 t.test('select from published definition', async t => {
   t.capture(console, 'warn')
 
+  await t.test('published exact time', async t => {
+    const res = await published(
+      getState(':published(2024-01-01T11:11:11.111Z)'),
+    )
+    t.strictSame(
+      [...res.partial.nodes].map(n => n.name),
+      ['a'],
+      'should have expected result using exact date match',
+    )
+    t.matchSnapshot({
+      nodes: [...res.partial.nodes].map(n => n.name),
+      edges: [...res.partial.edges].map(e => e.name),
+    })
+  })
+
+  await t.test('published exact time (quoted)', async t => {
+    const res = await published(
+      getState(':published("2024-01-01T11:11:11.111Z")'),
+    )
+    t.strictSame(
+      [...res.partial.nodes].map(n => n.name),
+      ['a'],
+      'should have expected result using greater than date',
+    )
+    t.matchSnapshot({
+      nodes: [...res.partial.nodes].map(n => n.name),
+      edges: [...res.partial.edges].map(e => e.name),
+    })
+  })
+
   await t.test('published exact date', async t => {
     const res = await published(getState(':published(2024-01-01)'))
     t.strictSame(
@@ -119,7 +149,7 @@ t.test('select from published definition', async t => {
     })
   })
 
-  await t.test('published greater than date', async t => {
+  await t.test('published greater than date (quoted)', async t => {
     const res = await published(getState(':published(">2024-02-01")'))
     t.strictSame(
       [...res.partial.nodes].map(n => n.name),
@@ -132,14 +162,12 @@ t.test('select from published definition', async t => {
     })
   })
 
-  await t.test('published greater than or equal date', async t => {
-    const res = await published(
-      getState(':published(">=2024-02-01")'),
-    )
+  await t.test('published greater than date (unquoted)', async t => {
+    const res = await published(getState(':published(>2024-02-01)'))
     t.strictSame(
       [...res.partial.nodes].map(n => n.name),
-      ['b', 'c', 'd', 'e'],
-      'should have expected result using greater than date',
+      ['c', 'd', 'e'],
+      'should have expected result using unquoted greater than date',
     )
     t.matchSnapshot({
       nodes: [...res.partial.nodes].map(n => n.name),
@@ -147,7 +175,43 @@ t.test('select from published definition', async t => {
     })
   })
 
-  await t.test('published less than date', async t => {
+  await t.test(
+    'published greater than or equal date (quoted)',
+    async t => {
+      const res = await published(
+        getState(':published(">=2024-02-01")'),
+      )
+      t.strictSame(
+        [...res.partial.nodes].map(n => n.name),
+        ['b', 'c', 'd', 'e'],
+        'should have expected result using greater than date',
+      )
+      t.matchSnapshot({
+        nodes: [...res.partial.nodes].map(n => n.name),
+        edges: [...res.partial.edges].map(e => e.name),
+      })
+    },
+  )
+
+  await t.test(
+    'published greater than or equal date (unquoted)',
+    async t => {
+      const res = await published(
+        getState(':published(>=2024-02-01)'),
+      )
+      t.strictSame(
+        [...res.partial.nodes].map(n => n.name),
+        ['b', 'c', 'd', 'e'],
+        'should have expected result using unquoted greater than or equal date',
+      )
+      t.matchSnapshot({
+        nodes: [...res.partial.nodes].map(n => n.name),
+        edges: [...res.partial.edges].map(e => e.name),
+      })
+    },
+  )
+
+  await t.test('published less than date (quoted)', async t => {
     const res = await published(getState(':published("<2024-02-01")'))
     t.strictSame(
       [...res.partial.nodes].map(n => n.name),
@@ -160,20 +224,54 @@ t.test('select from published definition', async t => {
     })
   })
 
-  await t.test('published less than or equal date', async t => {
-    const res = await published(
-      getState(':published("<=2024-02-01")'),
-    )
+  await t.test('published less than date (unquoted)', async t => {
+    const res = await published(getState(':published(<2024-02-01)'))
     t.strictSame(
       [...res.partial.nodes].map(n => n.name),
-      ['a', 'b'],
-      'should have expected result using less than or equal date',
+      ['a'],
+      'should have expected result using unquoted less than date',
     )
     t.matchSnapshot({
       nodes: [...res.partial.nodes].map(n => n.name),
       edges: [...res.partial.edges].map(e => e.name),
     })
   })
+
+  await t.test(
+    'published less than or equal date (quoted)',
+    async t => {
+      const res = await published(
+        getState(':published("<=2024-02-01")'),
+      )
+      t.strictSame(
+        [...res.partial.nodes].map(n => n.name),
+        ['a', 'b'],
+        'should have expected result using less than or equal date',
+      )
+      t.matchSnapshot({
+        nodes: [...res.partial.nodes].map(n => n.name),
+        edges: [...res.partial.edges].map(e => e.name),
+      })
+    },
+  )
+
+  await t.test(
+    'published less than or equal date (unquoted)',
+    async t => {
+      const res = await published(
+        getState(':published(<=2024-02-01)'),
+      )
+      t.strictSame(
+        [...res.partial.nodes].map(n => n.name),
+        ['a', 'b'],
+        'should have expected result using unquoted less than or equal date',
+      )
+      t.matchSnapshot({
+        nodes: [...res.partial.nodes].map(n => n.name),
+        edges: [...res.partial.edges].map(e => e.name),
+      })
+    },
+  )
 
   await t.test('invalid pseudo selector usage', async t => {
     await t.rejects(
@@ -185,13 +283,40 @@ t.test('select from published definition', async t => {
 })
 
 t.test('parseInternals', async t => {
-  const ast = parse(':published(">2024-01-01")')
-  const nodes = asPostcssNodeWithChildren(ast.first.first).nodes
-  const internals = parseInternals(nodes)
-  t.strictSame(
-    internals,
-    { relativeDate: '2024-01-01', comparator: '>' },
-    'should correctly parse internals from published selector',
+  await t.test('with quoted parameter', async t => {
+    const ast = parse(':published(">2024-01-01")')
+    const nodes = asPostcssNodeWithChildren(ast.first.first).nodes
+    const internals = parseInternals(nodes)
+    t.strictSame(
+      internals,
+      { relativeDate: '2024-01-01', comparator: '>' },
+      'should correctly parse internals from published selector with quoted parameter',
+    )
+  })
+
+  await t.test('with unquoted parameter', async t => {
+    const ast = parse(':published(>2024-01-01)')
+    const nodes = asPostcssNodeWithChildren(ast.first.first).nodes
+    const internals = parseInternals(nodes)
+    t.strictSame(
+      internals,
+      { relativeDate: '2024-01-01', comparator: '>' },
+      'should correctly parse internals from published selector with unquoted parameter',
+    )
+  })
+
+  await t.test(
+    'with unquoted greater than or equal parameter',
+    async t => {
+      const ast = parse(':published(>=2024-01-01)')
+      const nodes = asPostcssNodeWithChildren(ast.first.first).nodes
+      const internals = parseInternals(nodes)
+      t.strictSame(
+        internals,
+        { relativeDate: '2024-01-01', comparator: '>=' },
+        'should correctly parse internals from published selector with unquoted >= parameter',
+      )
+    },
   )
 })
 
