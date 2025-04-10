@@ -8,10 +8,11 @@ import {
 } from '@/components/explorer-grid/selected-item/insight-badge.jsx'
 import type { SocketSecurityDetails } from '@/lib/constants/index.js'
 import type { PackageAlert } from '@vltpkg/security-archive'
-import { ArrowUpDown, BadgeInfo } from 'lucide-react'
+import { ArrowUpDown, BadgeCheck, BadgeInfo } from 'lucide-react'
 import { ProgressCircle } from '@/components/ui/progress-circle.jsx'
 import { getScoreColor } from '@/components/explorer-grid/selected-item/insight-score-helper.js'
 import { Link as AnchorLink } from '@/components/ui/link.jsx'
+import { cn } from '@/lib/utils.js'
 
 export const InsightTabButton = () => {
   return (
@@ -117,7 +118,7 @@ const InsightItem = ({
 }
 
 const InsightScore = () => {
-  const { packageScore } = useSelectedItem()
+  const { selectedItem, packageScore } = useSelectedItem()
 
   if (!packageScore) return null
 
@@ -160,7 +161,9 @@ const InsightScore = () => {
       <div className="px-6 pt-6">
         <p className="w-2/3 text-sm text-muted-foreground">
           Package Insight Scores are powered by{' '}
-          <AnchorLink href="https://socket.dev/" target="_blank">
+          <AnchorLink
+            href={`https://socket.dev/npm/package/${selectedItem.name}`}
+            target="_blank">
             Socket
           </AnchorLink>
           , providing reliable and up-to-date security intelligence.
@@ -171,17 +174,20 @@ const InsightScore = () => {
 }
 
 export const InsightTabContent = () => {
-  const { insights } = useSelectedItem()
+  const { insights, packageScore } = useSelectedItem()
   const [filteredInsights, setFilteredInsights] = useState<
     SocketSecurityDetails[] | undefined
   >(insights)
 
+  // for packages that have no insights, but do have a score, we need to display the score and let the user no there are no insights with a checkmark thing
+  // socket link should link to the package page
+
   return (
     <TabsContent value="insights">
-      {filteredInsights && filteredInsights.length > 0 ?
-        <>
-          <InsightScore />
+      <>
+        {packageScore && <InsightScore />}
 
+        {filteredInsights && filteredInsights.length > 0 && (
           <section className="mt-2 flex flex-col px-6 py-4">
             <InsightHeader
               items={filteredInsights}
@@ -200,21 +206,38 @@ export const InsightTabContent = () => {
               ))}
             </div>
           </section>
-        </>
-      : <div className="flex h-64 w-full items-center justify-center px-6 py-4">
+        )}
+      </>
+
+      {(!filteredInsights || filteredInsights.length === 0) && (
+        <div className="flex h-64 w-full items-center justify-center px-6 py-4">
           <div className="flex flex-col items-center justify-center gap-3 text-center">
-            <div className="relative flex size-32 items-center justify-center rounded-full bg-secondary/60">
-              <BadgeInfo
-                className="absolute z-[3] size-14 text-neutral-500"
-                strokeWidth={1}
-              />
+            <div
+              className={cn(
+                'relative flex size-32 items-center justify-center rounded-full',
+                !packageScore && !filteredInsights ?
+                  'bg-secondary/60'
+                : 'bg-emerald-500/20',
+              )}>
+              {!packageScore && !filteredInsights ?
+                <BadgeInfo
+                  className="absolute z-[3] size-14 text-neutral-500"
+                  strokeWidth={1}
+                />
+              : <BadgeCheck
+                  className="absolute z-[3] size-14 text-emerald-500"
+                  strokeWidth={1.25}
+                />
+              }
             </div>
             <p className="w-2/3 text-pretty text-sm text-muted-foreground">
-              There are no insights for this package
+              {!packageScore && !filteredInsights ?
+                'This package has not been scanned for insights.'
+              : 'This package has no insights available.'}
             </p>
           </div>
         </div>
-      }
+      )}
 
       <div className="w-full px-6 py-4">
         <Link
