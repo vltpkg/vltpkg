@@ -1,0 +1,32 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`AppSidebar header render default 1`] = `
+
+<gui-sidebar-header-primitive>
+  <gui-sidebar-menu>
+    <gui-sidebar-menu-item classname="peer flex h-[56px] w-full items-center overflow-hidden pl-[5px] [&amp;>svg]:shrink-0">
+      <gui-vltv-icon classname="cursor-pointer text-foreground">
+      </gui-vltv-icon>
+    </gui-sidebar-menu-item>
+  </gui-sidebar-menu>
+</gui-sidebar-header-primitive>
+
+`;
+
+exports[`AppSidebar header render help view 1`] = `
+
+<gui-sidebar-header-primitive>
+  <gui-sidebar-menu>
+    <gui-sidebar-menu-item>
+      <gui-sidebar-menu-button classname="duration-250 text-sm text-neutral-500 transition-all">
+        <gui-arrow-left-icon>
+        </gui-arrow-left-icon>
+        <span>
+          Return to app
+        </span>
+      </gui-sidebar-menu-button>
+    </gui-sidebar-menu-item>
+  </gui-sidebar-menu>
+</gui-sidebar-header-primitive>
+
+`;

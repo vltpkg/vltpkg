@@ -1,0 +1,12 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`SidebarMainNav render default 1`] = `
+
+<gui-sidebar-group>
+  <gui-sidebar-menu>
+    <gui-sidebar-menu-link items="[object Object],[object Object]">
+    </gui-sidebar-menu-link>
+  </gui-sidebar-menu>
+</gui-sidebar-group>
+
+`;
