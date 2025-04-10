@@ -2,13 +2,16 @@ import { error } from '@vltpkg/error-cause'
 import {
   asAttributeNode,
   asPostcssNodeWithChildren,
+  asStringNode,
   asTagNode,
+  isStringNode,
 } from '../types.ts'
 import type { ParserState, PostcssNode } from '../types.ts'
 import {
   attributeSelectorsMap,
   filterAttributes,
 } from '../attribute.ts'
+import { removeQuotes } from './helpers.ts'
 
 export type AttrInternals = {
   attribute: string
@@ -31,9 +34,13 @@ export const parseInternals = (
   // all preppending selectors are naming nested properties
   const properties: string[] = []
   for (const selector of nodes) {
-    properties.push(
-      asTagNode(asPostcssNodeWithChildren(selector).nodes[0]).value,
-    )
+    const selectorNode = asPostcssNodeWithChildren(selector).nodes[0]
+    // Handle both quoted string and tag nodes
+    if (isStringNode(selectorNode)) {
+      properties.push(removeQuotes(asStringNode(selectorNode).value))
+    } else {
+      properties.push(asTagNode(selectorNode).value)
+    }
   }
   // include the attribute selector as the last part of the property lookup
   properties.push(attributeSelector.attribute)
