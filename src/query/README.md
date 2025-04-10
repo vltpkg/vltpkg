@@ -121,6 +121,7 @@ e.g: `#foo` is the same as `[name=foo]`
   of the same name, this selector has a forgiving behavior regarding
   its nested selector list ignoring any usage of non-existing ids,
   classes, combinators, operators and pseudo-selectors.
+- `:link` Matches linked packages only.
 - `:not(<selector-list>)` Negation pseudo-class, select packages that
   do not match a list of selectors.
 - `:outdated(<type>)` Matches packages that are outdated, the type
