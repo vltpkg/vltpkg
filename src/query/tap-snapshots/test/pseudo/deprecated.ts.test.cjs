@@ -5,7 +5,7 @@
  * Make sure to inspect the output below.  Do not ignore changes!
  */
 'use strict'
-exports[`test/pseudo/deprecated.ts > TAP > selects packages with a deprecated alert > filter out any node that does not have the alert > must match snapshot 1`] = `
+exports[`test/pseudo/deprecated.ts > TAP > selects packages with deprecated alert > filter out any node that does not have the alert > must match snapshot 1`] = `
 Object {
   "edges": Array [
     "e",

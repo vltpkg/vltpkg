@@ -1,5 +1,4 @@
 import t from 'tap'
-import postcssSelectorParser from 'postcss-selector-parser'
 import { joinDepIDTuple } from '@vltpkg/dep-id'
 import {
   asPackageReportData,
@@ -7,11 +6,12 @@ import {
 } from '@vltpkg/security-archive'
 import { getSimpleGraph } from '../fixtures/graph.ts'
 import type { ParserState } from '../../src/types.ts'
+import { parse } from '../../src/parser.ts'
 import { cve } from '../../src/pseudo/cve.ts'
 
 t.test('selects packages with a CVE alert', async t => {
   const getState = (query: string, graph = getSimpleGraph()) => {
-    const ast = postcssSelectorParser().astSync(query)
+    const ast = parse(query)
     const current = ast.first.first
     const state: ParserState = {
       current,
@@ -119,7 +119,7 @@ t.test('selects packages with a CVE alert', async t => {
 
 t.test('missing security archive', async t => {
   const getState = (query: string) => {
-    const ast = postcssSelectorParser().astSync(query)
+    const ast = parse(query)
     const current = ast.first.first
     const state: ParserState = {
       current,
@@ -153,7 +153,7 @@ t.test('missing security archive', async t => {
 
 t.test('missing CVE ID', async t => {
   const getState = (query: string) => {
-    const ast = postcssSelectorParser().astSync(query)
+    const ast = parse(query)
     const current = ast.first.first
     const state: ParserState = {
       current,
