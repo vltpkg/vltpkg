@@ -99,6 +99,61 @@ t.test('selects packages based on attribute properties', async t => {
   )
 
   await t.test(
+    'supports quoted strings for property names',
+    async t => {
+      // Package 'b' has a nested scripts.test="test" property using quoted strings
+      const res = await attr(
+        getState(':attr("scripts", [test=test])'),
+      )
+      t.strictSame(
+        [...res.partial.nodes].map(n => n.name),
+        ['b'],
+        'should select packages with quoted property name',
+      )
+      t.matchSnapshot({
+        nodes: [...res.partial.nodes].map(n => n.name).sort(),
+        edges: [...res.partial.edges].map(e => e.name).sort(),
+      })
+    },
+  )
+
+  await t.test(
+    'supports multiple quoted strings for nested properties',
+    async t => {
+      // Package 'd' has a deeply nested structure with a.b[].c.d="foo" using quoted strings
+      const res = await attr(
+        getState(':attr("a", "b", "c", [d=foo])'),
+      )
+      t.strictSame(
+        [...res.partial.nodes].map(n => n.name),
+        ['d'],
+        'should select packages with deeply nested attributes using quoted strings',
+      )
+      t.matchSnapshot({
+        nodes: [...res.partial.nodes].map(n => n.name).sort(),
+        edges: [...res.partial.edges].map(e => e.name).sort(),
+      })
+    },
+  )
+
+  await t.test(
+    'supports mixed quoted and unquoted property names',
+    async t => {
+      // Package 'd' has a deeply nested structure mixing quoted and unquoted property names
+      const res = await attr(getState(':attr("a", b, "c", [d=foo])'))
+      t.strictSame(
+        [...res.partial.nodes].map(n => n.name),
+        ['d'],
+        'should select packages with mixed quoted and unquoted property names',
+      )
+      t.matchSnapshot({
+        nodes: [...res.partial.nodes].map(n => n.name).sort(),
+        edges: [...res.partial.edges].map(e => e.name).sort(),
+      })
+    },
+  )
+
+  await t.test(
     'selects nodes with complex nested attributes',
     async t => {
       // Package 'd' has a deeply nested structure with a.b[].c.d="foo"

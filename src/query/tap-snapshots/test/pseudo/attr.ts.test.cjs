@@ -126,3 +126,36 @@ Object {
   ],
 }
 `
+
+exports[`test/pseudo/attr.ts > TAP > selects packages based on attribute properties > supports mixed quoted and unquoted property names > must match snapshot 1`] = `
+Object {
+  "edges": Array [
+    "d",
+  ],
+  "nodes": Array [
+    "d",
+  ],
+}
+`
+
+exports[`test/pseudo/attr.ts > TAP > selects packages based on attribute properties > supports multiple quoted strings for nested properties > must match snapshot 1`] = `
+Object {
+  "edges": Array [
+    "d",
+  ],
+  "nodes": Array [
+    "d",
+  ],
+}
+`
+
+exports[`test/pseudo/attr.ts > TAP > selects packages based on attribute properties > supports quoted strings for property names > must match snapshot 1`] = `
+Object {
+  "edges": Array [
+    "b",
+  ],
+  "nodes": Array [
+    "b",
+  ],
+}
+`
