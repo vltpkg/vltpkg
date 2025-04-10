@@ -53,7 +53,13 @@ export const addEdge = async (
     dirname(path),
     edge.to.resolvedLocation(scurry),
   )
-  await clobberSymlink(target, path, remover, 'dir')
+
+  // can only parallelize this on posix, because the win32 shims
+  // need to know that they will exist before being created.
+  const p = clobberSymlink(target, path, remover, 'dir')
+  if (process.platform === 'win32') await p
+  else promises.push(p)
+
   const bp = binPaths(manifest)
   for (const [key, val] of Object.entries(bp)) {
     const link = scurry.resolve(binRoot, key)
