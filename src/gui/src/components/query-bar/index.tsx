@@ -2,7 +2,8 @@ import { useEffect, useRef, useState } from 'react'
 import type { ChangeEvent } from 'react'
 import { Input } from '@/components/ui/input.jsx'
 import { useGraphStore } from '@/state/index.js'
-import { Query, type ParsedSelectorToken } from '@vltpkg/query'
+import { Query } from '@vltpkg/query'
+import type { ParsedSelectorToken } from '@vltpkg/query'
 import { QueryHighlighter } from '@/components/query-bar/query-highlighter.jsx'
 
 interface QueryBar {

@@ -10,8 +10,11 @@ exports[`query-highlighter render default 1`] = `
     <gui-query-token variant="combinator">
       &gt;
     </gui-query-token>
-    <gui-query-token>
-      [name='my-package']
+    <gui-query-token variant="pseudo">
+      :not(
+    </gui-query-token>
+    <gui-query-token variant="id">
+      #react
     </gui-query-token>
   </div>
 </div>

@@ -3,7 +3,7 @@ import { cleanup, render } from '@testing-library/react'
 import html from 'diffable-html'
 import { useGraphStore as useStore } from '@/state/index.js'
 import { QueryHighlighter } from '@/components/query-bar/query-highlighter.jsx'
-import type { ParsedSelectorToken } from '@vltpkg/query'
+import { Query } from '@vltpkg/query'
 
 vi.mock('@/components/query-bar/query-token.jsx', () => ({
   QueryToken: 'gui-query-token',
@@ -21,27 +21,13 @@ afterEach(() => {
 })
 
 test('query-highlighter render default', () => {
-  const mockParsedTokens: ParsedSelectorToken[] = [
-    {
-      type: 'pseudo',
-      token: ':root',
-    },
-    {
-      type: 'combinator',
-      token: ' > ',
-    },
-    {
-      type: 'attribute',
-      token: '[name="my-package"]',
-      key: 'name',
-      value: 'my-package',
-    },
-  ]
+  const mockQuery = ':root > :not(#react, [name="react-sass"])'
+  const mockParsedTokens = Query.parse(mockQuery)
 
   const Container = () => {
     return (
       <QueryHighlighter
-        query=":root > [name='my-package'] "
+        query={mockQuery}
         parsedTokens={mockParsedTokens}
       />
     )
