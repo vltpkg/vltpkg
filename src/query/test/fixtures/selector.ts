@@ -1,4 +1,4 @@
-import postcssSelectorParser from 'postcss-selector-parser'
+import { parse } from '../../src/parser.ts'
 import type { EdgeLike, GraphLike, NodeLike } from '@vltpkg/graph'
 import { joinDepIDTuple } from '@vltpkg/dep-id'
 import type {
@@ -66,7 +66,7 @@ export const selectorFixture =
     }
     let current: PostcssNode
     if (typeof query === 'string') {
-      const ast = postcssSelectorParser().astSync(query)
+      const ast = parse(query)
       // if the testing function handles a fully parsed
       // css ast then just use that instead
       current =

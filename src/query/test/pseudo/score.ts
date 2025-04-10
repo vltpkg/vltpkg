@@ -1,5 +1,4 @@
 import t from 'tap'
-import postcssSelectorParser from 'postcss-selector-parser'
 import { joinDepIDTuple } from '@vltpkg/dep-id'
 import { asSecurityArchiveLike } from '@vltpkg/security-archive'
 import { getSimpleGraph } from '../fixtures/graph.ts'
@@ -10,6 +9,7 @@ import {
   asScoreKind,
 } from '../../src/pseudo/score.ts'
 import type { PackageScore } from '@vltpkg/security-archive'
+import { parse } from '../../src/parser.ts'
 
 // Create a function to generate a security archive with varied scores for testing
 const createTestSecurityArchive = () => {
@@ -89,7 +89,7 @@ const createTestSecurityArchive = () => {
 
 t.test('selects packages based on their security score', async t => {
   const getState = (query: string, graph = getSimpleGraph()) => {
-    const ast = postcssSelectorParser().astSync(query)
+    const ast = parse(query)
     const current = ast.first.first
     const state: ParserState = {
       current,
@@ -288,7 +288,7 @@ t.test('error cases', async t => {
   // Test with missing security archive
   await t.test('missing security archive', async t => {
     const getState = (query: string) => {
-      const ast = postcssSelectorParser().astSync(query)
+      const ast = parse(query)
       const current = ast.first.first
       const state: ParserState = {
         current,
@@ -323,7 +323,7 @@ t.test('error cases', async t => {
   // Test with invalid rate value
   await t.test('invalid rate value - too high', async t => {
     const getState = (query: string) => {
-      const ast = postcssSelectorParser().astSync(query)
+      const ast = parse(query)
       const current = ast.first.first
       const state: ParserState = {
         current,
@@ -358,7 +358,7 @@ t.test('error cases', async t => {
   // Test with invalid rate value - negative
   await t.test('invalid rate value - negative', async t => {
     const getState = (query: string) => {
-      const ast = postcssSelectorParser().astSync(query)
+      const ast = parse(query)
       const current = ast.first.first
       const state: ParserState = {
         current,
@@ -393,7 +393,7 @@ t.test('error cases', async t => {
   // Test with invalid kind
   await t.test('invalid kind parameter', async t => {
     const getState = (query: string) => {
-      const ast = postcssSelectorParser().astSync(query)
+      const ast = parse(query)
       const current = ast.first.first
       const state: ParserState = {
         current,
