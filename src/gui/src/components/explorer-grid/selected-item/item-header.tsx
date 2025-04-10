@@ -190,7 +190,7 @@ const PackageOverallScore = () => {
 
   if (!packageScore) return null
 
-  const overallScore = packageScore.overall * 100
+  const overallScore = Math.round(packageScore.overall * 100)
 
   const onClick = () => {
     setActiveTab('insights')

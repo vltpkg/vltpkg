@@ -134,7 +134,7 @@ const InsightScore = () => {
     .map(([key, value]) => ({
       id: key,
       name: key === 'supplyChain' ? 'supply chain' : key,
-      value: value * 100,
+      value: Math.round(value * 100),
     }))
     .sort(
       (a, b) => scoreOrder.indexOf(a.id) - scoreOrder.indexOf(b.id),
