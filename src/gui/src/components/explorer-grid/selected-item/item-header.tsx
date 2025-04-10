@@ -21,6 +21,13 @@ import { splitDepID } from '@vltpkg/dep-id/browser'
 import { Spec } from '@vltpkg/spec/browser'
 import type { SpecOptionsFilled } from '@vltpkg/spec/browser'
 import type { GridItemData } from '@/components/explorer-grid/types.js'
+import { ProgressBar } from '@/components/ui/progress-bar.jsx'
+import { getScoreColor } from '@/components/explorer-grid/selected-item/insight-score-helper.js'
+import { cn } from '@/lib/utils.js'
+import {
+  InsightBadge,
+  getAlertColor,
+} from '@/components/explorer-grid/selected-item/insight-badge.jsx'
 
 const SpecOrigin = ({
   item,
@@ -114,7 +121,7 @@ const Downloads = () => {
           colors={['emerald']}
           className="w-full"
         />
-        <p className="text-baseline mt-1 w-full self-end whitespace-nowrap text-sm font-medium text-foreground">
+        <p className="text-baseline w-full self-end whitespace-nowrap text-sm font-medium text-foreground">
           {selectedItemDetails.downloads.weekly.toLocaleString()}{' '}
           <span className="text-muted-foreground">
             Weekly Downloads
@@ -126,122 +133,199 @@ const Downloads = () => {
 }
 
 export const ItemHeader = () => {
-  const { selectedItemDetails, selectedItem } = useSelectedItem()
-  const specOptions = useGraphStore(state => state.specOptions)
+  const { selectedItemDetails, insights, packageScore } =
+    useSelectedItem()
 
   return (
     <motion.div
       animate={{ opacity: 1 }}
       initial={{ opacity: 0 }}
-      className="flex w-full justify-between gap-4 p-6">
-      <div className="flex gap-4">
-        <Avatar className="size-24">
-          {selectedItemDetails.favicon && (
-            <AvatarImage
-              className="rounded-md border-[1px] bg-secondary object-cover"
-              src={selectedItemDetails.favicon.src}
-              alt={selectedItemDetails.favicon.alt}
+      className="flex flex-col pb-5 pt-6">
+      <div className="flex w-full justify-between px-6">
+        <PackageImageSpec />
+        <Downloads />
+      </div>
+      <div
+        className={cn(
+          'flex w-full justify-between px-6',
+          (selectedItemDetails.publisher ?? packageScore) ?
+            'mt-3 border-t-[1px] border-muted py-3'
+          : 'hidden',
+        )}>
+        <Publisher />
+        <PackageOverallScore />
+      </div>
+      <div
+        className={cn(
+          'px-6 pt-3',
+          insights ? 'border-t-[1px] border-muted' : 'hidden',
+        )}>
+        <PackageInsights />
+      </div>
+    </motion.div>
+  )
+}
+
+const PackageInsights = () => {
+  const { insights } = useSelectedItem()
+
+  if (!insights || insights.length === 0) return null
+
+  return (
+    <div className="flex w-full flex-wrap gap-3">
+      {insights.map((insight, idx) => (
+        <InsightBadge
+          key={idx}
+          color={getAlertColor(insight.severity)}
+          tooltipContent={`${insight.severity} severity`}>
+          {insight.selector}
+        </InsightBadge>
+      ))}
+    </div>
+  )
+}
+
+const PackageOverallScore = () => {
+  const { packageScore, setActiveTab } = useSelectedItem()
+
+  if (!packageScore) return null
+
+  const overallScore = Math.round(packageScore.overall * 100)
+
+  const onClick = () => {
+    setActiveTab('insights')
+  }
+
+  return (
+    <div
+      onClick={onClick}
+      role="button"
+      className="flex w-[11.375rem] cursor-pointer flex-col justify-end gap-1">
+      <p className="text-sm">
+        <span className="font-medium">{`${overallScore}%`}</span>{' '}
+        Package Score
+      </p>
+      <ProgressBar
+        variant={getScoreColor(overallScore)}
+        value={overallScore}
+      />
+    </div>
+  )
+}
+
+const PackageImageSpec = () => {
+  const { selectedItemDetails, selectedItem } = useSelectedItem()
+  const specOptions = useGraphStore(state => state.specOptions)
+
+  return (
+    <div className="flex gap-4">
+      <Avatar className="size-[3.75rem]">
+        {selectedItemDetails.favicon && (
+          <AvatarImage
+            className="rounded-md border-[1px] bg-secondary object-cover"
+            src={selectedItemDetails.favicon.src}
+            alt={selectedItemDetails.favicon.alt}
+          />
+        )}
+        <AvatarFallback className="flex h-full w-full items-center justify-center rounded-md border-[1px]">
+          {selectedItem.to?.mainImporter ?
+            <div className="flex h-full w-full items-center justify-center rounded-md bg-muted p-4">
+              <Home
+                size={32}
+                strokeWidth={1.25}
+                className="text-muted-foreground"
+              />
+            </div>
+          : <div className="to:to-neutral-400 h-full w-full rounded-md bg-gradient-to-t from-neutral-100 dark:from-neutral-500 dark:to-neutral-800" />
+          }
+        </AvatarFallback>
+      </Avatar>
+
+      <div className="flex h-full max-w-[250px] flex-col justify-between">
+        <div className="flex flex-col gap-0.5">
+          <div className="flex items-center gap-2">
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger className="cursor-default truncate align-baseline text-lg font-medium">
+                  {selectedItem.title}
+                  <InlineCode variant="monoGhost" className="text-sm">
+                    {selectedItem.version}
+                  </InlineCode>
+                </TooltipTrigger>
+                <TooltipContent className="text-baseline text-sm font-medium">
+                  {selectedItem.title}{' '}
+                  <span className="font-normal text-muted-foreground">
+                    {selectedItem.version}
+                  </span>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+
+            {selectedItemDetails.greaterVersions &&
+              selectedItemDetails.greaterVersions.length > 0 && (
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger className="flex items-center justify-center">
+                      <Badge
+                        variant="outline"
+                        className="cursor-default bg-secondary p-0.5 outline-[1px] outline-border">
+                        <Info
+                          className="text-muted-foreground"
+                          size={16}
+                        />
+                      </Badge>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      Newer versions available
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              )}
+          </div>
+
+          {specOptions && (
+            <SpecOrigin
+              item={selectedItem}
+              specOptions={specOptions}
             />
           )}
-          <AvatarFallback className="flex h-full w-full items-center justify-center rounded-md border-[1px]">
-            {selectedItem.to?.mainImporter ?
-              <div className="flex h-full w-full items-center justify-center rounded-md bg-muted p-4">
-                <Home
-                  size={32}
-                  strokeWidth={1.25}
-                  className="text-muted-foreground"
-                />
-              </div>
-            : <div className="to:to-neutral-400 h-full w-full rounded-md bg-gradient-to-t from-neutral-100 dark:from-neutral-500 dark:to-neutral-800" />
-            }
-          </AvatarFallback>
-        </Avatar>
-
-        <div className="flex h-full max-w-[250px] flex-col justify-between">
-          <div className="flex flex-col gap-0.5">
-            <div className="flex items-center gap-2">
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger className="cursor-default truncate align-baseline text-lg font-medium">
-                    {selectedItem.title}
-                    <InlineCode
-                      variant="monoGhost"
-                      className="text-sm">
-                      {selectedItem.version}
-                    </InlineCode>
-                  </TooltipTrigger>
-                  <TooltipContent className="text-baseline text-sm font-medium">
-                    {selectedItem.title}{' '}
-                    <span className="font-normal text-muted-foreground">
-                      {selectedItem.version}
-                    </span>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-
-              {selectedItemDetails.greaterVersions &&
-                selectedItemDetails.greaterVersions.length > 0 && (
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger className="flex items-center justify-center">
-                        <Badge
-                          variant="outline"
-                          className="cursor-default bg-secondary p-0.5 outline-[1px] outline-border">
-                          <Info
-                            className="text-muted-foreground"
-                            size={16}
-                          />
-                        </Badge>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        Newer versions available
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                )}
-            </div>
-
-            {specOptions && (
-              <SpecOrigin
-                item={selectedItem}
-                specOptions={specOptions}
-              />
-            )}
-          </div>
-
-          <div className="flex items-center gap-2">
-            {selectedItemDetails.publisherAvatar?.src && (
-              <img
-                className="size-5 rounded-full outline outline-[1px] outline-border"
-                src={selectedItemDetails.publisherAvatar.src}
-                alt={selectedItemDetails.publisherAvatar.alt}
-              />
-            )}
-            {selectedItemDetails.publisher &&
-              !selectedItemDetails.publisherAvatar?.src && (
-                <div className="flex size-5 items-center justify-center rounded-full bg-secondary bg-gradient-to-t from-neutral-100 to-neutral-400 p-0.5 outline outline-[1px] outline-border dark:from-neutral-500 dark:to-neutral-800" />
-              )}
-            {selectedItemDetails.publisher?.name && (
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger className="text-baseline cursor-default text-xs font-medium text-muted-foreground">
-                    Published by:{' '}
-                    <span className="text-foreground">
-                      {selectedItemDetails.publisher.name}
-                    </span>
-                  </TooltipTrigger>
-                  <TooltipContent align="start">
-                    {selectedItemDetails.publisher.name}{' '}
-                    {selectedItemDetails.publisher.email}
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            )}
-          </div>
         </div>
       </div>
+    </div>
+  )
+}
 
-      <Downloads />
-    </motion.div>
+const Publisher = () => {
+  const { selectedItemDetails } = useSelectedItem()
+
+  return (
+    <div className="flex h-[31.508px] items-center gap-2">
+      {selectedItemDetails.publisherAvatar?.src && (
+        <Avatar>
+          <AvatarImage
+            className="size-5 rounded-sm outline outline-[1px] outline-border"
+            src={selectedItemDetails.publisherAvatar.src}
+            alt={selectedItemDetails.publisherAvatar.alt}
+          />
+          <AvatarFallback className="flex size-5 items-center justify-center rounded-sm bg-secondary bg-gradient-to-t from-neutral-100 to-neutral-400 p-0.5 outline outline-[1px] outline-border dark:from-neutral-500 dark:to-neutral-800" />
+        </Avatar>
+      )}
+      {selectedItemDetails.publisher?.name && (
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger className="text-baseline cursor-default text-xs font-medium text-muted-foreground">
+              Published by:{' '}
+              <span className="text-foreground">
+                {selectedItemDetails.publisher.name}
+              </span>
+            </TooltipTrigger>
+            <TooltipContent align="start">
+              {selectedItemDetails.publisher.name}{' '}
+              {selectedItemDetails.publisher.email}
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      )}
+    </div>
   )
 }
