@@ -26,6 +26,7 @@ import { env } from './pseudo/env.ts'
 import { evalParser } from './pseudo/eval.ts'
 import { fs } from './pseudo/fs.ts'
 import { license } from './pseudo/license.ts'
+import { link } from './pseudo/link.ts'
 import { malware } from './pseudo/malware.ts'
 import { minified } from './pseudo/minified.ts'
 import { missing } from './pseudo/missing.ts'
@@ -328,8 +329,8 @@ const pseudoSelectors = new Map<string, ParserFn>(
     fs,
     has,
     is,
-    // TODO: link
     license,
+    link,
     malware,
     minified,
     missing,
