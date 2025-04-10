@@ -222,7 +222,7 @@ export const InsightTabContent = () => {
               {!packageScore && !filteredInsights ?
                 <BadgeInfo
                   className="absolute z-[3] size-14 text-neutral-500"
-                  strokeWidth={1}
+                  strokeWidth={1.25}
                 />
               : <BadgeCheck
                   className="absolute z-[3] size-14 text-emerald-500"

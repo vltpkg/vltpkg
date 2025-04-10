@@ -20,7 +20,7 @@ exports[`VersionsTabContent renders an empty state 1`] = `
       <div class="relative flex size-32 items-center justify-center rounded-full bg-secondary/60">
         <gui-history-icon
           classname="absolute z-[4] size-14 text-neutral-500"
-          strokewidth="1"
+          strokewidth="1.25"
         >
         </gui-history-icon>
       </div>

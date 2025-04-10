@@ -31,7 +31,7 @@ export const TabsManifestContent = () => {
             <div className="relative flex size-32 items-center justify-center rounded-full bg-secondary/60">
               <FileJson
                 className="absolute z-[3] size-14 text-neutral-500"
-                strokeWidth={1}
+                strokeWidth={1.25}
               />
             </div>
             <p className="w-2/3 text-pretty text-sm text-muted-foreground">
