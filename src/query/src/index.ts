@@ -432,13 +432,12 @@ export class Query {
     const ast = (q: string) => {
       try {
         return postcssSelectorParser().astSync(q)
-      } catch (e) {
+      } catch (_e) {
         return ast(q.slice(0, -1))
       }
     }
 
-    const processNode = (node?: PostcssNode) => {
-      if (!node) return
+    const processNode = (node: PostcssNode) => {
       for (const key of selectorsMap.keys()) {
         if (
           node.type === key &&
@@ -456,7 +455,7 @@ export class Query {
             isPseudoNode(node) &&
             node.nodes.length
           ) {
-            token = token.split('(')[0] || token
+            token = String(token.split('(')[0])
             token += '('
           }
 

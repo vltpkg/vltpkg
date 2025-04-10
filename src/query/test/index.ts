@@ -333,28 +333,22 @@ t.test('parse', t => {
 
   t.test('should parse attribute selector', t => {
     t.test('with value', t => {
-      t.strictSame(
-        normalizeParseOutput(Query.parse('[name="react"]')),
-        [
-          {
-            type: 'attribute',
-            token: '[name="react"]',
-          },
-        ],
-      )
+      t.strictSame(normalizeParseOutput(Query.parse('[name="react"]')), [
+        {
+          type: 'attribute',
+          token: '[name="react"]',
+        },
+      ])
       t.end()
     })
 
     t.test('with operator', t => {
-      t.strictSame(
-        normalizeParseOutput(Query.parse('[name^="react"]')),
-        [
-          {
-            type: 'attribute',
-            token: '[name^="react"]',
-          },
-        ],
-      )
+      t.strictSame(normalizeParseOutput(Query.parse('[name^="react"]')), [
+        {
+          type: 'attribute',
+          token: '[name^="react"]',
+        },
+      ])
       t.end()
     })
 
@@ -410,52 +404,78 @@ t.test('parse', t => {
 
   t.test('should parse complex selector', t => {
     t.test('with nested selectors', t => {
-      t.strictSame(
-        normalizeParseOutput(
-          Query.parse(':root > [name="react"] .container'),
-        ),
-        [
+      t.strictSame(normalizeParseOutput(Query.parse(':root > [name="react"] .container')), [
+        {
+          type: 'pseudo',
+          token: ':root',
+        },
+        {
+          type: 'combinator',
+          token: ' > ',
+        },
+        {
+          type: 'attribute',
+          token: '[name="react"]',
+        },
+        {
+          type: 'combinator',
+          token: ' ',
+        },
+        {
+          type: 'class',
+          token: '.container',
+        },
+      ])
+      t.end()
+    })
+
+    t.test('with nested pseudo selectors', t => {
+      t.strictSame(normalizeParseOutput(Query.parse(':not(#react)')), [
+        {
+          type: 'pseudo',
+          token: ':not(',
+        },
+        {
+          type: 'id',
+          token: '#react',
+        },
+        {
+          type: 'pseudo',
+          token: ')',
+        },
+      ])
+      t.end()
+    })
+
+    t.test('with malformed queries', t => {
+      t.test('should handle unclosed brackets', t => {
+        t.strictSame(normalizeParseOutput(Query.parse('[name="react"')), [])
+        t.end()
+      })
+
+      t.test('should handle unclosed pseudo selectors', t => {
+        t.strictSame(normalizeParseOutput(Query.parse(':not(#react')), [
           {
             type: 'pseudo',
-            token: ':root',
+            token: ':not',
           },
-          {
-            type: 'combinator',
-            token: ' > ',
-          },
-          {
-            type: 'attribute',
-            token: '[name="react"]',
-          },
-          {
-            type: 'combinator',
-            token: ' ',
-          },
-          {
-            type: 'class',
-            token: '.container',
-          },
-        ],
-      )
+        ])
+        t.end()
+      })
       t.end()
     })
 
     t.test('with multiple attributes', t => {
-      t.strictSame(
-        normalizeParseOutput(
-          Query.parse('[name="react"][version="18"]'),
-        ),
-        [
-          {
-            type: 'attribute',
-            token: '[name="react"]',
-          },
-          {
-            type: 'attribute',
-            token: '[version="18"]',
-          },
-        ],
-      )
+      t.strictSame(normalizeParseOutput(Query.parse('[name="react"][version="18"]')), [
+        {
+          type: 'attribute',
+          token: '[name="react"]',
+        },
+        {
+          type: 'attribute',
+          token: '[version="18"]',
+        },
+      ])
       t.end()
     })
     t.end()
