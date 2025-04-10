@@ -1,7 +1,6 @@
 import { splitDepID } from '@vltpkg/dep-id/browser'
 import { error } from '@vltpkg/error-cause'
 import type { EdgeLike, NodeLike } from '@vltpkg/graph'
-import { asManifest } from '@vltpkg/types'
 
 import { removeDanglingEdges, removeNode } from './pseudo/helpers.ts'
 import {
@@ -34,6 +33,7 @@ import { network } from './pseudo/network.ts'
 import { obfuscated } from './pseudo/obfuscated.ts'
 import { outdated } from './pseudo/outdated.ts'
 import { published } from './pseudo/published.ts'
+import { privateParser } from './pseudo/private.ts'
 import { scanned } from './pseudo/scanned.ts'
 import { score } from './pseudo/score.ts'
 import { scripts } from './pseudo/scripts.ts'
@@ -240,22 +240,6 @@ const not = async (state: ParserState) => {
 }
 
 /**
- * :private Pseudo-Selector will only match packages that have
- * a `private: true` key set in their `package.json` metadata.
- */
-const privateFn = async (state: ParserState) => {
-  for (const node of state.partial.nodes) {
-    if (!node.manifest || !asManifest(node.manifest).private) {
-      removeNode(state, node)
-    }
-  }
-
-  removeDanglingEdges(state)
-
-  return state
-}
-
-/**
  * :root Pseudo-Element will return the project root node for the graph.
  */
 const root = async (state: ParserState) => {
@@ -369,7 +353,7 @@ const pseudoSelectors = new Map<string, ParserFn>(
     outdated,
     published,
     // TODO: overridden
-    private: privateFn,
+    private: privateParser,
     project,
     root,
     scanned,
