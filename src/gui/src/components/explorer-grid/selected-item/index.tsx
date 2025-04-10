@@ -12,7 +12,6 @@ import {
   InsightTabButton,
   InsightTabContent,
 } from '@/components/explorer-grid/selected-item/tabs-insight.jsx'
-import { Insights } from '@/components/explorer-grid/selected-item/insights.jsx'
 import {
   OverviewTabButton,
   OverviewTabContent,
@@ -83,7 +82,6 @@ export const SelectedItem = ({ item }: GridItemOptions) => {
       <div className="relative">
         <Card className="relative my-4 border-muted">
           <ItemHeader />
-          <Insights />
           <div className="w-full">
             <Tabs
               onValueChange={setActiveTab as (tab: string) => void}

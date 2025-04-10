@@ -55,6 +55,14 @@ vi.mock('lucide-react', () => ({
   BadgeInfo: 'gui-badge-info-icon',
 }))
 
+vi.mock('@/components/ui/progress-circle.jsx', () => ({
+  ProgressCircle: 'gui-progress-circle',
+}))
+
+vi.mock('@/components/ui/link.jsx', () => ({
+  Link: 'gui-link',
+}))
+
 expect.addSnapshotSerializer({
   serialize: v => html(v),
   test: () => true,
@@ -67,7 +75,7 @@ beforeEach(() => {
     selectedItem: SELECTED_ITEM,
     selectedItemDetails: SELECTED_ITEM_DETAILS,
     insights: undefined,
-    activeTab: 'insight',
+    activeTab: 'insights',
     setActiveTab: vi.fn(),
   })
 })
@@ -101,7 +109,7 @@ test('InsightTabContent renders with insights', () => {
     selectedItem: SELECTED_ITEM,
     selectedItemDetails: SELECTED_ITEM_DETAILS,
     insights: mockedInsights,
-    activeTab: 'insight',
+    activeTab: 'insights',
     setActiveTab: vi.fn(),
   })
 

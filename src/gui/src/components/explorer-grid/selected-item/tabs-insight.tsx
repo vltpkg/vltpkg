@@ -9,6 +9,9 @@ import {
 import type { SocketSecurityDetails } from '@/lib/constants/index.js'
 import type { PackageAlert } from '@vltpkg/security-archive'
 import { ArrowUpDown, BadgeInfo } from 'lucide-react'
+import { ProgressCircle } from '@/components/ui/progress-circle.jsx'
+import { getScoreColor } from '@/components/explorer-grid/selected-item/insight-score-helper.js'
+import { Link as AnchorLink } from '@/components/ui/link.jsx'
 
 export const InsightTabButton = () => {
   return (
@@ -113,6 +116,60 @@ const InsightItem = ({
   )
 }
 
+const InsightScore = () => {
+  const { packageScore } = useSelectedItem()
+
+  if (!packageScore) return null
+
+  const scoreOrder = [
+    'overall',
+    'quality',
+    'supplyChain',
+    'maintenance',
+    'vulnerability',
+    'license',
+  ]
+
+  const scores = Object.entries(packageScore)
+    .map(([key, value]) => ({
+      id: key,
+      name: key === 'supplyChain' ? 'supply chain' : key,
+      value: Math.round(value * 100),
+    }))
+    .sort(
+      (a, b) => scoreOrder.indexOf(a.id) - scoreOrder.indexOf(b.id),
+    )
+
+  return (
+    <section className="mt-6 border-b-[1px] border-muted pb-6">
+      <div className="grid grid-cols-6 gap-2 px-6">
+        {scores.map(score => (
+          <div
+            key={score.id}
+            className="flex flex-col items-center justify-center gap-2 text-center">
+            <ProgressCircle
+              variant={getScoreColor(score.value)}
+              strokeWidth={4}
+              value={score.value}>
+              {score.value}
+            </ProgressCircle>
+            <p className="text-sm capitalize">{score.name}</p>
+          </div>
+        ))}
+      </div>
+      <div className="px-6 pt-6">
+        <p className="w-2/3 text-sm text-muted-foreground">
+          Package Insight Scores are powered by{' '}
+          <AnchorLink href="https://socket.dev/" target="_blank">
+            Socket
+          </AnchorLink>
+          , providing reliable and up-to-date security intelligence.
+        </p>
+      </div>
+    </section>
+  )
+}
+
 export const InsightTabContent = () => {
   const { insights } = useSelectedItem()
   const [filteredInsights, setFilteredInsights] = useState<
@@ -122,24 +179,28 @@ export const InsightTabContent = () => {
   return (
     <TabsContent value="insights">
       {filteredInsights && filteredInsights.length > 0 ?
-        <section className="mt-2 flex flex-col px-6 py-4">
-          <InsightHeader
-            items={filteredInsights}
-            setItems={setFilteredInsights}
-          />
+        <>
+          <InsightScore />
 
-          <div className="flex flex-col divide-y-[1px] divide-muted">
-            {filteredInsights.map((insight, idx) => (
-              <InsightItem
-                key={idx}
-                selector={insight.selector}
-                severity={insight.severity}
-                description={insight.description}
-                category={insight.category}
-              />
-            ))}
-          </div>
-        </section>
+          <section className="mt-2 flex flex-col px-6 py-4">
+            <InsightHeader
+              items={filteredInsights}
+              setItems={setFilteredInsights}
+            />
+
+            <div className="flex flex-col divide-y-[1px] divide-muted">
+              {filteredInsights.map((insight, idx) => (
+                <InsightItem
+                  key={idx}
+                  selector={insight.selector}
+                  severity={insight.severity}
+                  description={insight.description}
+                  category={insight.category}
+                />
+              ))}
+            </div>
+          </section>
+        </>
       : <div className="flex h-64 w-full items-center justify-center px-6 py-4">
           <div className="flex flex-col items-center justify-center gap-3 text-center">
             <div className="relative flex size-32 items-center justify-center rounded-full bg-secondary/60">

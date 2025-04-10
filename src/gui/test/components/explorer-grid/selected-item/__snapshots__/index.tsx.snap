@@ -11,8 +11,6 @@ exports[`SelectedItem renders connection lines 1`] = `
     <gui-card classname="relative my-4 border-muted">
       <gui-item-header>
       </gui-item-header>
-      <gui-insights>
-      </gui-insights>
       <div class="w-full">
         <gui-tabs value="overview">
           <gui-tabs-list
@@ -57,8 +55,6 @@ exports[`SelectedItem renders with the default structure 1`] = `
     <gui-card classname="relative my-4 border-muted">
       <gui-item-header>
       </gui-item-header>
-      <gui-insights>
-      </gui-insights>
       <div class="w-full">
         <gui-tabs value="overview">
           <gui-tabs-list
