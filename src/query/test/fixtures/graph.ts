@@ -134,7 +134,7 @@ export const getSimpleGraph = (): GraphLike => {
   )
   newEdge(
     graph.mainImporter,
-    Spec.parse('@x/y', '^1.0.0', specOptions),
+    Spec.parse('@x/y', 'file:y', specOptions),
     'dev',
     y,
   )
@@ -441,5 +441,65 @@ export const getSemverRichGraph = (): GraphLike => {
     ...g.manifest,
     version: '1.2.3-rc.1+rev.2',
   }
+  return graph
+}
+
+// Returns a graph that looks like:
+//
+// link-project (#a.file, #b.registry, #c.tar.gz)
+// +-- a (file link)
+// +-- b (registry package)
+// +-- c (tar.gz archive)
+//
+export const getLinkedGraph = (): GraphLike => {
+  const graph = newGraph('link-project')
+  const addNode = newNode(graph)
+
+  // Create file link node 'a'
+  const a = addNode('a')
+  a.id = joinDepIDTuple(['file', 'a'])
+
+  // Create registry node 'b'
+  const b = addNode('b')
+
+  // Create tar.gz node 'c'
+  const c = addNode('c')
+  c.id = joinDepIDTuple(['file', 'package.tar.gz'])
+
+  // Add nodes to graph
+  ;[a, b, c].forEach(i => {
+    graph.nodes.set(i.id, i)
+  })
+
+  // Add edges from main importer to nodes
+  newEdge(
+    graph.mainImporter,
+    Spec.parse('a', 'file:a', specOptions),
+    'prod',
+    a,
+  )
+  newEdge(
+    graph.mainImporter,
+    Spec.parse('b', '^1.0.0', specOptions),
+    'prod',
+    b,
+  )
+  newEdge(
+    graph.mainImporter,
+    Spec.parse('c', 'file:package.tar.gz', specOptions),
+    'prod',
+    c,
+  )
+  newEdge(
+    graph.mainImporter,
+    Spec.parse('d', 'file:d', specOptions),
+    'prod',
+  )
+  newEdge(
+    graph.mainImporter,
+    Spec.parse('e', 'file:e.tar.gz', specOptions),
+    'prod',
+  )
+
   return graph
 }
