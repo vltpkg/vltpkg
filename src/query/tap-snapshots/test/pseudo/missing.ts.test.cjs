@@ -5,16 +5,6 @@
  * Make sure to inspect the output below.  Do not ignore changes!
  */
 'use strict'
-exports[`test/pseudo/missing.ts > TAP > selects edges with no linked node > handles a mixed state with some linked and some unlinked edges > must match snapshot 1`] = `
-Object {
-  "edges": Array [
-    "a",
-    "b",
-  ],
-  "nodes": Array [],
-}
-`
-
 exports[`test/pseudo/missing.ts > TAP > selects edges with no linked node > handles an empty partial state > must match snapshot 1`] = `
 Object {
   "edges": Array [],

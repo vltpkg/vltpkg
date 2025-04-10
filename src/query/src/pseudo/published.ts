@@ -12,7 +12,11 @@ import {
   isTagNode,
 } from '../types.ts'
 import type { ParserState, PostcssNode } from '../types.ts'
-import { removeNode, removeQuotes } from './helpers.ts'
+import {
+  removeDanglingEdges,
+  removeNode,
+  removeQuotes,
+} from './helpers.ts'
 
 /**
  * The possible comparator values accepted by the :published() pseudo selector.
@@ -44,9 +48,6 @@ export const retrieveRemoteDate = async (
   url.pathname = `/${node.name}`
 
   const response = await fetch(String(url), {
-    headers: {
-      Accept: 'application/vnd.npm.install-v1+json',
-    },
     signal,
   })
   // on missing valid auth or API, it should abort the retry logic
@@ -218,6 +219,8 @@ export const published = async (state: ParserState) => {
       removeNode(state, node)
     }
   }
+
+  removeDanglingEdges(state)
 
   return state
 }
