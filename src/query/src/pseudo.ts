@@ -29,6 +29,7 @@ import { fs } from './pseudo/fs.ts'
 import { license } from './pseudo/license.ts'
 import { malware } from './pseudo/malware.ts'
 import { minified } from './pseudo/minified.ts'
+import { missing } from './pseudo/missing.ts'
 import { nativeParser } from './pseudo/native.ts'
 import { network } from './pseudo/network.ts'
 import { obfuscated } from './pseudo/obfuscated.ts'
@@ -175,20 +176,6 @@ const is = async (state: ParserState) => {
       removeNode(state, node)
     }
   }
-  return state
-}
-
-/**
- * :missing Pseudo-Selector, matches only
- * edges that are not linked to any node.
- */
-const missing = async (state: ParserState) => {
-  for (const edge of state.partial.edges) {
-    if (edge.to) {
-      state.partial.edges.delete(edge)
-    }
-  }
-  state.partial.nodes.clear()
   return state
 }
 
