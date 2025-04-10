@@ -50,7 +50,33 @@ Object {
 }
 `
 
+exports[`test/pseudo/score.ts > TAP > selects packages based on their security score > greater than comparator (unquoted) > must match snapshot 1`] = `
+Object {
+  "edges": Array [
+    "a",
+    "d",
+  ],
+  "nodes": Array [
+    "a",
+    "d",
+  ],
+}
+`
+
 exports[`test/pseudo/score.ts > TAP > selects packages based on their security score > greater than comparator > must match snapshot 1`] = `
+Object {
+  "edges": Array [
+    "a",
+    "d",
+  ],
+  "nodes": Array [
+    "a",
+    "d",
+  ],
+}
+`
+
+exports[`test/pseudo/score.ts > TAP > selects packages based on their security score > greater than or equal comparator (unquoted) > must match snapshot 1`] = `
 Object {
   "edges": Array [
     "a",
@@ -76,7 +102,35 @@ Object {
 }
 `
 
+exports[`test/pseudo/score.ts > TAP > selects packages based on their security score > less than comparator (unquoted) > must match snapshot 1`] = `
+Object {
+  "edges": Array [
+    "e",
+    "c",
+    "e",
+  ],
+  "nodes": Array [
+    "c",
+    "e",
+  ],
+}
+`
+
 exports[`test/pseudo/score.ts > TAP > selects packages based on their security score > less than comparator > must match snapshot 1`] = `
+Object {
+  "edges": Array [
+    "e",
+    "c",
+    "e",
+  ],
+  "nodes": Array [
+    "c",
+    "e",
+  ],
+}
+`
+
+exports[`test/pseudo/score.ts > TAP > selects packages based on their security score > less than or equal comparator (unquoted) > must match snapshot 1`] = `
 Object {
   "edges": Array [
     "e",

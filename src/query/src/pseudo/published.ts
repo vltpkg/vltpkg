@@ -10,6 +10,12 @@ import {
   asTagNode,
   isStringNode,
   isTagNode,
+  isCombinatorNode,
+  asCombinatorNode,
+  isClassNode,
+  asClassNode,
+  isPseudoNode,
+  asPseudoNode,
 } from '../types.ts'
 import type { ParserState, PostcssNode } from '../types.ts'
 import {
@@ -83,9 +89,43 @@ export const parseInternals = (
   } else if (
     isTagNode(asPostcssNodeWithChildren(nodes[0]).nodes[0])
   ) {
-    value = asTagNode(
+    const tagNode = asTagNode(
       asPostcssNodeWithChildren(nodes[0]).nodes[0],
-    ).value
+    )
+    value = tagNode.value
+    for (const node of asPostcssNodeWithChildren(nodes[0]).nodes) {
+      // Skip the combinator node
+      if (node === tagNode) continue
+      if (isPseudoNode(node)) {
+        value += asPseudoNode(node).value
+      }
+      if (isClassNode(node)) {
+        value += '.'
+        value += asClassNode(node).value
+      }
+    }
+  } else if (
+    isCombinatorNode(asPostcssNodeWithChildren(nodes[0]).nodes[0])
+  ) {
+    // Handle combinator nodes (e.g., `>`)
+    const combinatorNode = asCombinatorNode(
+      asPostcssNodeWithChildren(nodes[0]).nodes[0],
+    )
+    const combinatorValue = combinatorNode.value
+
+    // If there's a subsequent node, get its value
+    let dateValue = ''
+    if (
+      asPostcssNodeWithChildren(nodes[0]).nodes[1] &&
+      isTagNode(asPostcssNodeWithChildren(nodes[0]).nodes[1])
+    ) {
+      dateValue = asTagNode(
+        asPostcssNodeWithChildren(nodes[0]).nodes[1],
+      ).value
+    }
+
+    // Combine the combinator and date value
+    value = combinatorValue + dateValue
   }
 
   // Check if the value starts with a comparator

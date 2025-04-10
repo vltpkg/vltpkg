@@ -5,6 +5,10 @@ import {
   asTagNode,
   isStringNode,
   isTagNode,
+  isCombinatorNode,
+  asCombinatorNode,
+  isClassNode,
+  asClassNode,
 } from '../types.ts'
 import type { ParserState, PostcssNode } from '../types.ts'
 import {
@@ -68,9 +72,43 @@ export const parseInternals = (
   } else if (
     isTagNode(asPostcssNodeWithChildren(nodes[0]).nodes[0])
   ) {
-    rateStr = asTagNode(
+    const tagNode = asTagNode(
       asPostcssNodeWithChildren(nodes[0]).nodes[0],
-    ).value
+    )
+    rateStr = tagNode.value
+    for (const node of asPostcssNodeWithChildren(nodes[0]).nodes) {
+      // Skip the combinator node
+      if (node === tagNode) continue
+      if (isClassNode(node)) {
+        rateStr += '.'
+        rateStr += asClassNode(node).value
+      }
+    }
+  } else if (
+    isCombinatorNode(asPostcssNodeWithChildren(nodes[0]).nodes[0])
+  ) {
+    // Handle combinator nodes (e.g., `>`)
+    const combinatorNode = asCombinatorNode(
+      asPostcssNodeWithChildren(nodes[0]).nodes[0],
+    )
+    const combinatorValue = combinatorNode.value
+
+    // If there's a subsequent node, get its value
+    let scoreValue = ''
+    for (const node of asPostcssNodeWithChildren(nodes[0]).nodes) {
+      // Skip the combinator node
+      if (node === combinatorNode) continue
+      if (isTagNode(node)) {
+        scoreValue += asTagNode(node).value
+      }
+      if (isClassNode(node)) {
+        scoreValue += '.'
+        scoreValue += asClassNode(node).value
+      }
+    }
+
+    // Combine the combinator and score value
+    rateStr = combinatorValue + scoreValue
   }
 
   // Extract comparator if present
