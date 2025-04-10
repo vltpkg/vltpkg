@@ -83,9 +83,10 @@ export const parseInternals = (
   } else if (
     isTagNode(asPostcssNodeWithChildren(nodes[0]).nodes[0])
   ) {
-    value = asTagNode(
+    const tagNode = asTagNode(
       asPostcssNodeWithChildren(nodes[0]).nodes[0],
-    ).value
+    )
+    value = tagNode.value
   }
 
   // Check if the value starts with a comparator

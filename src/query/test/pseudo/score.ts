@@ -166,12 +166,38 @@ t.test('selects packages based on their security score', async t => {
     })
   })
 
+  await t.test('greater than comparator (unquoted)', async t => {
+    const res = await score(getState(':score(>0.8)'))
+    t.strictSame(
+      [...res.partial.nodes].map(n => n.name),
+      ['a', 'd'],
+      'should select packages with overall score greater than 0.8 using unquoted parameter',
+    )
+    t.matchSnapshot({
+      nodes: [...res.partial.nodes].map(n => n.name),
+      edges: [...res.partial.edges].map(e => e.name),
+    })
+  })
+
   await t.test('less than comparator', async t => {
     const res = await score(getState(':score("<0.5")'))
     t.strictSame(
       [...res.partial.nodes].map(n => n.name),
       ['c', 'e'],
       'should select packages with overall score less than 0.5',
+    )
+    t.matchSnapshot({
+      nodes: [...res.partial.nodes].map(n => n.name),
+      edges: [...res.partial.edges].map(e => e.name),
+    })
+  })
+
+  await t.test('less than comparator (unquoted)', async t => {
+    const res = await score(getState(':score(<0.5)'))
+    t.strictSame(
+      [...res.partial.nodes].map(n => n.name),
+      ['c', 'e'],
+      'should select packages with overall score less than 0.5 using unquoted parameter',
     )
     t.matchSnapshot({
       nodes: [...res.partial.nodes].map(n => n.name),
@@ -192,6 +218,22 @@ t.test('selects packages based on their security score', async t => {
     })
   })
 
+  await t.test(
+    'greater than or equal comparator (unquoted)',
+    async t => {
+      const res = await score(getState(':score(>=0.75)'))
+      t.strictSame(
+        [...res.partial.nodes].map(n => n.name),
+        ['a', 'd'],
+        'should select packages with overall score greater than or equal to 0.75 using unquoted parameter',
+      )
+      t.matchSnapshot({
+        nodes: [...res.partial.nodes].map(n => n.name),
+        edges: [...res.partial.edges].map(e => e.name),
+      })
+    },
+  )
+
   await t.test('less than or equal comparator', async t => {
     const res = await score(getState(':score(<=40)'))
     t.strictSame(
@@ -204,6 +246,22 @@ t.test('selects packages based on their security score', async t => {
       edges: [...res.partial.edges].map(e => e.name),
     })
   })
+
+  await t.test(
+    'less than or equal comparator (unquoted)',
+    async t => {
+      const res = await score(getState(':score(<=40)'))
+      t.strictSame(
+        [...res.partial.nodes].map(n => n.name),
+        ['c', 'e'],
+        'should select packages with overall score less than or equal to 0.4 (40%) using unquoted parameter',
+      )
+      t.matchSnapshot({
+        nodes: [...res.partial.nodes].map(n => n.name),
+        edges: [...res.partial.edges].map(e => e.name),
+      })
+    },
+  )
 
   await t.test('with specific kind parameter', async t => {
     const res = await score(getState(':score("0.95", license)'))
