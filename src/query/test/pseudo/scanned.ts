@@ -1,16 +1,16 @@
 import t from 'tap'
-import postcssSelectorParser from 'postcss-selector-parser'
 import { joinDepIDTuple } from '@vltpkg/dep-id'
 import { asSecurityArchiveLike } from '@vltpkg/security-archive'
 import type { PackageReportData } from '@vltpkg/security-archive'
 import { scanned } from '../../src/pseudo/scanned.ts'
 import { getSimpleGraph } from '../fixtures/graph.ts'
 import type { ParserState } from '../../src/types.ts'
+import { parse } from '../../src/parser.ts'
 
 t.test('scanned selector', async t => {
   const getState = () => {
     const graph = getSimpleGraph()
-    const ast = postcssSelectorParser().astSync(':scanned')
+    const ast = parse(':scanned')
     const current = ast.first.first
     const testId = joinDepIDTuple(['registry', '', 'e@1.0.0'])
     const securityArchive = asSecurityArchiveLike(

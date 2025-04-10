@@ -2,7 +2,6 @@ import t from 'tap'
 import type { SpecOptions } from '@vltpkg/spec/browser'
 import { joinDepIDTuple } from '@vltpkg/dep-id'
 import type { NodeLike } from '@vltpkg/graph'
-import postcssSelectorParser from 'postcss-selector-parser'
 import {
   outdated,
   parseInternals,
@@ -15,6 +14,7 @@ import {
   getSemverRichGraph,
   getSimpleGraph,
 } from '../fixtures/graph.ts'
+import { parse } from '../../src/parser.ts'
 
 const specOptions = {
   registry: 'https://registry.npmjs.org',
@@ -113,7 +113,7 @@ global.fetch = (async (url: string) => {
 }) as unknown as typeof global.fetch
 
 const getState = (query: string, graph = getSemverRichGraph()) => {
-  const ast = postcssSelectorParser().astSync(query)
+  const ast = parse(query)
   const current = asPostcssNodeWithChildren(ast.first.first)
   const state: ParserState = {
     current,
@@ -245,7 +245,7 @@ t.test('select from outdated definition', async t => {
 })
 
 t.test('parseInternals', async t => {
-  const ast = postcssSelectorParser().astSync(':outdated(any)')
+  const ast = parse(':outdated(any)')
   const nodes = asPostcssNodeWithChildren(ast.first.first).nodes
   const internals = parseInternals(nodes)
   t.strictSame(
@@ -256,9 +256,7 @@ t.test('parseInternals', async t => {
 })
 
 t.test('invalid outdated kind', async t => {
-  const ast = postcssSelectorParser().astSync(
-    ':outdated(unsupported)',
-  )
+  const ast = parse(':outdated(unsupported)')
   const nodes = asPostcssNodeWithChildren(ast.first.first).nodes
   t.throws(
     () => parseInternals(nodes),

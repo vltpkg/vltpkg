@@ -1,5 +1,4 @@
 import t from 'tap'
-import postcssSelectorParser from 'postcss-selector-parser'
 import { asSecurityArchiveLike } from '@vltpkg/security-archive'
 import {
   createSecuritySelectorFilter,
@@ -14,6 +13,7 @@ import {
 } from '../fixtures/graph.ts'
 import type { ParserState } from '../../src/types.ts'
 import { joinDepIDTuple } from '@vltpkg/dep-id/browser'
+import { parse } from '../../src/parser.ts'
 
 t.test('removeDanglingEdges', async t => {
   await t.test('graph with missing nodes', async t => {
@@ -116,7 +116,7 @@ t.test('removeQuotes', async t => {
 
 t.test('selects packages with an unmaintained alert', async t => {
   const getState = (query: string, graph = getSimpleGraph()) => {
-    const ast = postcssSelectorParser().astSync(query)
+    const ast = parse(query)
     const current = ast.first.first
     const state: ParserState = {
       current,
@@ -171,7 +171,7 @@ t.test('selects packages with an unmaintained alert', async t => {
 
 t.test('missing security archive', async t => {
   const getState = (query: string) => {
-    const ast = postcssSelectorParser().astSync(query)
+    const ast = parse(query)
     const current = ast.first.first
     const state: ParserState = {
       current,

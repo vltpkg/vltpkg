@@ -1,5 +1,4 @@
 import t from 'tap'
-import postcssSelectorParser from 'postcss-selector-parser'
 import {
   asSemverFunctionName,
   isSemverFunctionName,
@@ -12,10 +11,11 @@ import {
   getSemverRichGraph,
   getSimpleGraph,
 } from '../fixtures/graph.ts'
+import { parse } from '../../src/parser.ts'
 
 t.test('select from semver definition', async t => {
   const getState = (query: string, graph = getSimpleGraph()) => {
-    const ast = postcssSelectorParser().astSync(query)
+    const ast = parse(query)
     const current = asPostcssNodeWithChildren(ast.first.first)
     const state: ParserState = {
       current,
@@ -508,7 +508,7 @@ t.test('asSemverFunctionName', async t => {
 })
 
 t.test('parse an element other than semver', async t => {
-  const ast = postcssSelectorParser().astSync(':root')
+  const ast = parse(':root')
   const notSemver = asPostcssNodeWithChildren(ast.first.first).nodes
   t.throws(
     () => parseInternals(notSemver, false),
@@ -518,9 +518,7 @@ t.test('parse an element other than semver', async t => {
 })
 
 t.test('parse an invalid semver function name', async t => {
-  const ast = postcssSelectorParser().astSync(
-    ':semver(^1.0.0, ":unsupported")',
-  )
+  const ast = parse(':semver(^1.0.0, ":unsupported")')
   const notSemver = asPostcssNodeWithChildren(ast.first.first).nodes
   t.throws(
     () => parseInternals(notSemver, false),

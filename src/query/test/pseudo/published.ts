@@ -2,7 +2,7 @@ import t from 'tap'
 import type { SpecOptions } from '@vltpkg/spec/browser'
 import { joinDepIDTuple } from '@vltpkg/dep-id'
 import type { NodeLike } from '@vltpkg/graph'
-import postcssSelectorParser from 'postcss-selector-parser'
+import { parse } from '../../src/parser.ts'
 import {
   published,
   parseInternals,
@@ -78,8 +78,8 @@ global.fetch = (async (url: string) => {
 }) as unknown as typeof global.fetch
 
 const getState = (query: string, graph = getSemverRichGraph()) => {
-  const ast = postcssSelectorParser().astSync(query)
-  const current = asPostcssNodeWithChildren(ast.first.first)
+  const ast = parse(query)
+  const current = ast.first.first
   const state: ParserState = {
     current,
     initial: {
@@ -185,9 +185,7 @@ t.test('select from published definition', async t => {
 })
 
 t.test('parseInternals', async t => {
-  const ast = postcssSelectorParser().astSync(
-    ':published(">2024-01-01")',
-  )
+  const ast = parse(':published(">2024-01-01")')
   const nodes = asPostcssNodeWithChildren(ast.first.first).nodes
   const internals = parseInternals(nodes)
   t.strictSame(

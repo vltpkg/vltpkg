@@ -2,7 +2,7 @@ import { error } from '@vltpkg/error-cause'
 import type { EdgeLike, GraphLike, NodeLike } from '@vltpkg/graph'
 import type { SpecOptions } from '@vltpkg/spec/browser'
 import type { SecurityArchiveLike } from '@vltpkg/security-archive'
-import postcssSelectorParser from 'postcss-selector-parser'
+import { parse } from './parser.ts'
 import { attribute } from './attribute.ts'
 import { classFn } from './class.ts'
 import { combinator } from './combinator.ts'
@@ -398,7 +398,7 @@ export class Query {
         })
         signal?.throwIfAborted()
       },
-      current: postcssSelectorParser().astSync(query),
+      current: parse(query),
       initial: {
         nodes: new Set(nodes),
         edges: new Set(edges),

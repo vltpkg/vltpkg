@@ -1,9 +1,9 @@
 import t from 'tap'
-import postcssSelectorParser from 'postcss-selector-parser'
 import { joinDepIDTuple } from '@vltpkg/dep-id'
 import { asSecurityArchiveLike } from '@vltpkg/security-archive'
 import { getSimpleGraph } from '../fixtures/graph.ts'
 import type { ParserState } from '../../src/types.ts'
+import { parse } from '../../src/parser.ts'
 import {
   license,
   isLicenseKind,
@@ -12,7 +12,7 @@ import {
 
 t.test('selects packages with a specific license kind', async t => {
   const getState = (query: string, graph = getSimpleGraph()) => {
-    const ast = postcssSelectorParser().astSync(query)
+    const ast = parse(query)
     const current = ast.first.first
     const state: ParserState = {
       current,
@@ -94,7 +94,7 @@ t.test('selects packages with a specific license kind', async t => {
 
 t.test('missing security archive', async t => {
   const getState = (query: string) => {
-    const ast = postcssSelectorParser().astSync(query)
+    const ast = parse(query)
     const current = ast.first.first
     const state: ParserState = {
       current,

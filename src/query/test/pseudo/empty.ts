@@ -1,6 +1,6 @@
 import t from 'tap'
-import postcssSelectorParser from 'postcss-selector-parser'
 import type { ParserState } from '../../src/types.ts'
+import { parse } from '../../src/parser.ts'
 import { empty } from '../../src/pseudo/empty.ts'
 import {
   getSimpleGraph,
@@ -10,7 +10,7 @@ import {
 
 t.test('selects packages with no dependencies', async t => {
   const getState = (query: string, graph = getSimpleGraph()) => {
-    const ast = postcssSelectorParser().astSync(query)
+    const ast = parse(query)
     const current = ast.first.first
     const state: ParserState = {
       current,
