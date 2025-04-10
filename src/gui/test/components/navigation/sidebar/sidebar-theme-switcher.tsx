@@ -15,15 +15,40 @@ vi.mock('@/components/theme-provider', () => ({
   useTheme: vi.fn(),
 }))
 
+vi.mock('react-router', () => ({
+  useLocation: vi.fn().mockReturnValue({
+    pathname: '/',
+  }),
+  NavLink: 'gui-nav-link',
+}))
+
 vi.mock('@/components/ui/sidebar.jsx', () => ({
   SidebarMenuItem: 'gui-sidebar-menu-item',
   SidebarMenuButton: 'gui-sidebar-menu-button',
+  SidebarMenuBadge: 'gui-sidebar-menu-badge',
+  SidebarMenuSub: 'gui-sidebar-menu-sub',
+  SidebarMenuSubItem: 'gui-sidebar-menu-sub-item',
+  SidebarMenuSubButton: 'gui-sidebar-menu-sub-button',
+  useSidebar: vi.fn().mockReturnValue({
+    state: 'expanded',
+    toggleSidebar: vi.fn(),
+    hoveredItem: null,
+    setHoveredItem: vi.fn(),
+  }),
+}))
+
+vi.mock('@/components/ui/collapsible.jsx', () => ({
+  Collapsible: 'gui-collapsible',
+  CollapsibleTrigger: 'gui-collapsible-trigger',
+  CollapsibleContent: 'gui-collapsible-content',
 }))
 
 vi.mock('lucide-react', () => ({
   LaptopMinimal: 'gui-laptop-minimal-icon',
   SunMedium: 'gui-sun-medium-icon',
   Moon: 'gui-moon-icon',
+  ArrowUpRight: 'gui-arrow-up-right-icon',
+  ChevronRight: 'gui-chevron-right-icon',
 }))
 
 vi.mock('@/components/ui/theme-provider.jsx', () => ({

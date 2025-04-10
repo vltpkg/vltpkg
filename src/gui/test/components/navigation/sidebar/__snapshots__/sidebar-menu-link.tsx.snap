@@ -12,13 +12,18 @@ exports[`SidebarMenuLink handles active state 1`] = `
         aschild="true"
         tooltip="Settings"
         isactive="false"
-        classname="whitespace-nowrap data-[active=true]:bg-neutral-200/75 data-[active=true]:text-foreground data-[active=true]:dark:bg-muted/60 data-[active=true]:dark:text-foreground"
+        data-active="false"
+        classname="whitespace-nowrap data-[active=true]:bg-neutral-200/75 data-[active=true]:text-foreground data-[active=true]:dark:bg-muted/60 data-[active=true]:dark:text-foreground [&amp;>*]:data-[active=true]:text-foreground [&amp;>svg]:data-[active=false]:text-muted-foreground"
       >
         <button
           to
+          role="button"
           class="duration-250 group/sidebar-button w-full cursor-default text-muted-foreground transition-all hover:bg-transparent data-[state=open]:hover:bg-transparent"
         >
-          <span style="z-index: 1;">
+          <span
+            class="text-muted-foreground"
+            style="z-index: 1;"
+          >
             Settings
           </span>
           <gui-chevron-right-icon
@@ -31,7 +36,10 @@ exports[`SidebarMenuLink handles active state 1`] = `
     </gui-collapsible-trigger>
     <gui-collapsible-content>
       <gui-sidebar-menu-sub>
-        <div style="opacity: 0;">
+        <div
+          class="flex flex-col gap-1"
+          style="opacity: 0;"
+        >
           <div style="opacity: 0; transform: translateY(-1px);">
             <gui-collapsible
               aschild="true"
@@ -42,13 +50,18 @@ exports[`SidebarMenuLink handles active state 1`] = `
                   <gui-sidebar-menu-sub-button
                     aschild="true"
                     isactive="true"
-                    classname="whitespace-nowrap data-[active=true]:bg-neutral-200/75 data-[active=true]:text-foreground data-[active=true]:dark:bg-muted/60 data-[active=true]:dark:text-foreground"
+                    data-active="true"
+                    classname="whitespace-nowrap data-[active=true]:bg-neutral-200/75 data-[active=true]:text-foreground data-[active=true]:dark:bg-muted/60 data-[active=true]:dark:text-foreground [&amp;>*]:data-[active=true]:text-foreground [&amp;>svg]:data-[active=false]:text-muted-foreground"
                   >
                     <gui-nav-link
                       to="/settings/profile"
+                      role="button"
                       classname="duration-250 group/sidebar-button w-full cursor-default text-muted-foreground transition-all hover:bg-transparent data-[state=open]:hover:bg-transparent"
                     >
-                      <span style="z-index: 2;">
+                      <span
+                        class="text-muted-foreground"
+                        style="z-index: 2;"
+                      >
                         Profile
                       </span>
                     </gui-nav-link>
@@ -67,13 +80,18 @@ exports[`SidebarMenuLink handles active state 1`] = `
                   <gui-sidebar-menu-sub-button
                     aschild="true"
                     isactive="false"
-                    classname="whitespace-nowrap data-[active=true]:bg-neutral-200/75 data-[active=true]:text-foreground data-[active=true]:dark:bg-muted/60 data-[active=true]:dark:text-foreground"
+                    data-active="false"
+                    classname="whitespace-nowrap data-[active=true]:bg-neutral-200/75 data-[active=true]:text-foreground data-[active=true]:dark:bg-muted/60 data-[active=true]:dark:text-foreground [&amp;>*]:data-[active=true]:text-foreground [&amp;>svg]:data-[active=false]:text-muted-foreground"
                   >
                     <gui-nav-link
                       to="/settings/security"
+                      role="button"
                       classname="duration-250 group/sidebar-button w-full cursor-default text-muted-foreground transition-all hover:bg-transparent data-[state=open]:hover:bg-transparent"
                     >
-                      <span style="z-index: 2;">
+                      <span
+                        class="text-muted-foreground"
+                        style="z-index: 2;"
+                      >
                         Security
                       </span>
                     </gui-nav-link>
@@ -102,13 +120,18 @@ exports[`SidebarMenuLink handles collapsible menu items 1`] = `
         aschild="true"
         tooltip="Settings"
         isactive="false"
-        classname="whitespace-nowrap data-[active=true]:bg-neutral-200/75 data-[active=true]:text-foreground data-[active=true]:dark:bg-muted/60 data-[active=true]:dark:text-foreground"
+        data-active="false"
+        classname="whitespace-nowrap data-[active=true]:bg-neutral-200/75 data-[active=true]:text-foreground data-[active=true]:dark:bg-muted/60 data-[active=true]:dark:text-foreground [&amp;>*]:data-[active=true]:text-foreground [&amp;>svg]:data-[active=false]:text-muted-foreground"
       >
         <button
           to
+          role="button"
           class="duration-250 group/sidebar-button w-full cursor-default text-muted-foreground transition-all hover:bg-transparent data-[state=open]:hover:bg-transparent"
         >
-          <span style="z-index: 1;">
+          <span
+            class="text-muted-foreground"
+            style="z-index: 1;"
+          >
             Settings
           </span>
           <gui-chevron-right-icon
@@ -121,7 +144,10 @@ exports[`SidebarMenuLink handles collapsible menu items 1`] = `
     </gui-collapsible-trigger>
     <gui-collapsible-content>
       <gui-sidebar-menu-sub>
-        <div style="opacity: 0;">
+        <div
+          class="flex flex-col gap-1"
+          style="opacity: 0;"
+        >
           <div style="opacity: 0; transform: translateY(-1px);">
             <gui-collapsible
               aschild="true"
@@ -132,13 +158,18 @@ exports[`SidebarMenuLink handles collapsible menu items 1`] = `
                   <gui-sidebar-menu-sub-button
                     aschild="true"
                     isactive="false"
-                    classname="whitespace-nowrap data-[active=true]:bg-neutral-200/75 data-[active=true]:text-foreground data-[active=true]:dark:bg-muted/60 data-[active=true]:dark:text-foreground"
+                    data-active="false"
+                    classname="whitespace-nowrap data-[active=true]:bg-neutral-200/75 data-[active=true]:text-foreground data-[active=true]:dark:bg-muted/60 data-[active=true]:dark:text-foreground [&amp;>*]:data-[active=true]:text-foreground [&amp;>svg]:data-[active=false]:text-muted-foreground"
                   >
                     <gui-nav-link
                       to="/settings/profile"
+                      role="button"
                       classname="duration-250 group/sidebar-button w-full cursor-default text-muted-foreground transition-all hover:bg-transparent data-[state=open]:hover:bg-transparent"
                     >
-                      <span style="z-index: 2;">
+                      <span
+                        class="text-muted-foreground"
+                        style="z-index: 2;"
+                      >
                         Profile
                       </span>
                     </gui-nav-link>
@@ -157,13 +188,18 @@ exports[`SidebarMenuLink handles collapsible menu items 1`] = `
                   <gui-sidebar-menu-sub-button
                     aschild="true"
                     isactive="false"
-                    classname="whitespace-nowrap data-[active=true]:bg-neutral-200/75 data-[active=true]:text-foreground data-[active=true]:dark:bg-muted/60 data-[active=true]:dark:text-foreground"
+                    data-active="false"
+                    classname="whitespace-nowrap data-[active=true]:bg-neutral-200/75 data-[active=true]:text-foreground data-[active=true]:dark:bg-muted/60 data-[active=true]:dark:text-foreground [&amp;>*]:data-[active=true]:text-foreground [&amp;>svg]:data-[active=false]:text-muted-foreground"
                   >
                     <gui-nav-link
                       to="/settings/security"
+                      role="button"
                       classname="duration-250 group/sidebar-button w-full cursor-default text-muted-foreground transition-all hover:bg-transparent data-[state=open]:hover:bg-transparent"
                     >
-                      <span style="z-index: 2;">
+                      <span
+                        class="text-muted-foreground"
+                        style="z-index: 2;"
+                      >
                         Security
                       </span>
                     </gui-nav-link>
@@ -192,13 +228,18 @@ exports[`SidebarMenuLink handles nested menu items 1`] = `
         aschild="true"
         tooltip="Products"
         isactive="false"
-        classname="whitespace-nowrap data-[active=true]:bg-neutral-200/75 data-[active=true]:text-foreground data-[active=true]:dark:bg-muted/60 data-[active=true]:dark:text-foreground"
+        data-active="false"
+        classname="whitespace-nowrap data-[active=true]:bg-neutral-200/75 data-[active=true]:text-foreground data-[active=true]:dark:bg-muted/60 data-[active=true]:dark:text-foreground [&amp;>*]:data-[active=true]:text-foreground [&amp;>svg]:data-[active=false]:text-muted-foreground"
       >
         <button
           to
+          role="button"
           class="duration-250 group/sidebar-button w-full cursor-default text-muted-foreground transition-all hover:bg-transparent data-[state=open]:hover:bg-transparent"
         >
-          <span style="z-index: 1;">
+          <span
+            class="text-muted-foreground"
+            style="z-index: 1;"
+          >
             Products
           </span>
           <gui-chevron-right-icon
@@ -211,7 +252,10 @@ exports[`SidebarMenuLink handles nested menu items 1`] = `
     </gui-collapsible-trigger>
     <gui-collapsible-content>
       <gui-sidebar-menu-sub>
-        <div style="opacity: 0;">
+        <div
+          class="flex flex-col gap-1"
+          style="opacity: 0;"
+        >
           <div style="opacity: 0; transform: translateY(-1px);">
             <gui-collapsible
               aschild="true"
@@ -222,13 +266,18 @@ exports[`SidebarMenuLink handles nested menu items 1`] = `
                   <gui-sidebar-menu-sub-button
                     aschild="true"
                     isactive="false"
-                    classname="whitespace-nowrap data-[active=true]:bg-neutral-200/75 data-[active=true]:text-foreground data-[active=true]:dark:bg-muted/60 data-[active=true]:dark:text-foreground"
+                    data-active="false"
+                    classname="whitespace-nowrap data-[active=true]:bg-neutral-200/75 data-[active=true]:text-foreground data-[active=true]:dark:bg-muted/60 data-[active=true]:dark:text-foreground [&amp;>*]:data-[active=true]:text-foreground [&amp;>svg]:data-[active=false]:text-muted-foreground"
                   >
                     <gui-nav-link
                       to="/products"
+                      role="button"
                       classname="duration-250 group/sidebar-button w-full cursor-default text-muted-foreground transition-all hover:bg-transparent data-[state=open]:hover:bg-transparent"
                     >
-                      <span style="z-index: 2;">
+                      <span
+                        class="text-muted-foreground"
+                        style="z-index: 2;"
+                      >
                         Overview
                       </span>
                     </gui-nav-link>
@@ -247,13 +296,18 @@ exports[`SidebarMenuLink handles nested menu items 1`] = `
                   <gui-sidebar-menu-sub-button
                     aschild="true"
                     isactive="false"
-                    classname="whitespace-nowrap data-[active=true]:bg-neutral-200/75 data-[active=true]:text-foreground data-[active=true]:dark:bg-muted/60 data-[active=true]:dark:text-foreground"
+                    data-active="false"
+                    classname="whitespace-nowrap data-[active=true]:bg-neutral-200/75 data-[active=true]:text-foreground data-[active=true]:dark:bg-muted/60 data-[active=true]:dark:text-foreground [&amp;>*]:data-[active=true]:text-foreground [&amp;>svg]:data-[active=false]:text-muted-foreground"
                   >
                     <button
                       to
+                      role="button"
                       class="duration-250 group/sidebar-button w-full cursor-default text-muted-foreground transition-all hover:bg-transparent data-[state=open]:hover:bg-transparent"
                     >
-                      <span style="z-index: 2;">
+                      <span
+                        class="text-muted-foreground"
+                        style="z-index: 2;"
+                      >
                         Categories
                       </span>
                       <gui-chevron-right-icon
@@ -266,7 +320,10 @@ exports[`SidebarMenuLink handles nested menu items 1`] = `
                 </gui-collapsible-trigger>
                 <gui-collapsible-content>
                   <gui-sidebar-menu-sub>
-                    <div style="opacity: 0;">
+                    <div
+                      class="flex flex-col gap-1"
+                      style="opacity: 0;"
+                    >
                       <div style="opacity: 0; transform: translateY(-1px);">
                         <gui-collapsible
                           aschild="true"
@@ -277,13 +334,18 @@ exports[`SidebarMenuLink handles nested menu items 1`] = `
                               <gui-sidebar-menu-sub-button
                                 aschild="true"
                                 isactive="false"
-                                classname="whitespace-nowrap data-[active=true]:bg-neutral-200/75 data-[active=true]:text-foreground data-[active=true]:dark:bg-muted/60 data-[active=true]:dark:text-foreground"
+                                data-active="false"
+                                classname="whitespace-nowrap data-[active=true]:bg-neutral-200/75 data-[active=true]:text-foreground data-[active=true]:dark:bg-muted/60 data-[active=true]:dark:text-foreground [&amp;>*]:data-[active=true]:text-foreground [&amp;>svg]:data-[active=false]:text-muted-foreground"
                               >
                                 <gui-nav-link
                                   to="/products/electronics"
+                                  role="button"
                                   classname="duration-250 group/sidebar-button w-full cursor-default text-muted-foreground transition-all hover:bg-transparent data-[state=open]:hover:bg-transparent"
                                 >
-                                  <span style="z-index: 3;">
+                                  <span
+                                    class="text-muted-foreground"
+                                    style="z-index: 3;"
+                                  >
                                     Electronics
                                   </span>
                                 </gui-nav-link>
@@ -302,13 +364,18 @@ exports[`SidebarMenuLink handles nested menu items 1`] = `
                               <gui-sidebar-menu-sub-button
                                 aschild="true"
                                 isactive="false"
-                                classname="whitespace-nowrap data-[active=true]:bg-neutral-200/75 data-[active=true]:text-foreground data-[active=true]:dark:bg-muted/60 data-[active=true]:dark:text-foreground"
+                                data-active="false"
+                                classname="whitespace-nowrap data-[active=true]:bg-neutral-200/75 data-[active=true]:text-foreground data-[active=true]:dark:bg-muted/60 data-[active=true]:dark:text-foreground [&amp;>*]:data-[active=true]:text-foreground [&amp;>svg]:data-[active=false]:text-muted-foreground"
                               >
                                 <gui-nav-link
                                   to="/products/clothing"
+                                  role="button"
                                   classname="duration-250 group/sidebar-button w-full cursor-default text-muted-foreground transition-all hover:bg-transparent data-[state=open]:hover:bg-transparent"
                                 >
-                                  <span style="z-index: 3;">
+                                  <span
+                                    class="text-muted-foreground"
+                                    style="z-index: 3;"
+                                  >
                                     Clothing
                                   </span>
                                 </gui-nav-link>
@@ -343,13 +410,18 @@ exports[`SidebarMenuLink renders basic menu item 1`] = `
         aschild="true"
         tooltip="Home"
         isactive="true"
-        classname="whitespace-nowrap data-[active=true]:bg-neutral-200/75 data-[active=true]:text-foreground data-[active=true]:dark:bg-muted/60 data-[active=true]:dark:text-foreground"
+        data-active="true"
+        classname="whitespace-nowrap data-[active=true]:bg-neutral-200/75 data-[active=true]:text-foreground data-[active=true]:dark:bg-muted/60 data-[active=true]:dark:text-foreground [&amp;>*]:data-[active=true]:text-foreground [&amp;>svg]:data-[active=false]:text-muted-foreground"
       >
         <gui-nav-link
           to="/"
+          role="button"
           classname="duration-250 group/sidebar-button w-full cursor-default text-muted-foreground transition-all hover:bg-transparent data-[state=open]:hover:bg-transparent"
         >
-          <span style="z-index: 1;">
+          <span
+            class="text-muted-foreground"
+            style="z-index: 1;"
+          >
             Home
           </span>
         </gui-nav-link>
@@ -372,17 +444,20 @@ exports[`SidebarMenuLink renders external link 1`] = `
         aschild="true"
         tooltip="Documentation"
         isactive="false"
-        classname="whitespace-nowrap data-[active=true]:bg-neutral-200/75 data-[active=true]:text-foreground data-[active=true]:dark:bg-muted/60 data-[active=true]:dark:text-foreground"
+        data-active="false"
+        classname="whitespace-nowrap data-[active=true]:bg-neutral-200/75 data-[active=true]:text-foreground data-[active=true]:dark:bg-muted/60 data-[active=true]:dark:text-foreground [&amp;>*]:data-[active=true]:text-foreground [&amp;>svg]:data-[active=false]:text-muted-foreground"
       >
         <gui-nav-link
           to="https://docs.example.com"
+          role="button"
           classname="duration-250 group/sidebar-button w-full cursor-default text-muted-foreground transition-all hover:bg-transparent data-[state=open]:hover:bg-transparent"
         >
-          <span style="z-index: 1;">
+          <span
+            class="text-muted-foreground"
+            style="z-index: 1;"
+          >
             Documentation
           </span>
-          <gui-arrow-up-right-icon classname="duration-250 z-[3] ml-auto transition-all group-hover/sidebar-button:-translate-y-0.5 group-hover/sidebar-button:translate-x-0.5">
-          </gui-arrow-up-right-icon>
         </gui-nav-link>
       </gui-sidebar-menu-button>
     </gui-collapsible-trigger>
@@ -403,13 +478,18 @@ exports[`SidebarMenuLink renders menu item with badge 1`] = `
         aschild="true"
         tooltip="Notifications"
         isactive="false"
-        classname="whitespace-nowrap data-[active=true]:bg-neutral-200/75 data-[active=true]:text-foreground data-[active=true]:dark:bg-muted/60 data-[active=true]:dark:text-foreground"
+        data-active="false"
+        classname="whitespace-nowrap data-[active=true]:bg-neutral-200/75 data-[active=true]:text-foreground data-[active=true]:dark:bg-muted/60 data-[active=true]:dark:text-foreground [&amp;>*]:data-[active=true]:text-foreground [&amp;>svg]:data-[active=false]:text-muted-foreground"
       >
         <gui-nav-link
           to="/notifications"
+          role="button"
           classname="duration-250 group/sidebar-button w-full cursor-default text-muted-foreground transition-all hover:bg-transparent data-[state=open]:hover:bg-transparent"
         >
-          <span style="z-index: 1;">
+          <span
+            class="text-muted-foreground"
+            style="z-index: 1;"
+          >
             Notifications
           </span>
           <gui-sidebar-menu-badge>

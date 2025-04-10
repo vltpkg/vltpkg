@@ -11,11 +11,11 @@ import {
 import { SidebarHeader } from '@/components/navigation/sidebar/sidebar-header.jsx'
 import { SidebarThemeSwitcher } from '@/components/navigation/sidebar/sidebar-theme-switcher.jsx'
 import { SidebarMenuLink } from '@/components/navigation/sidebar/sidebar-menu-link.jsx'
+import { SidebarToggle } from '@/components/navigation/sidebar/sidebar-toggle.jsx'
 
 /* sidebar nav menus */
 import { SidebarMainNav } from '@/components/navigation/sidebar/sidebar-main-nav.jsx'
 import { SidebarQueryNav } from '@/components/navigation/sidebar/sidebar-query-nav.jsx'
-import { SidebarHelpNav } from '@/components/navigation/sidebar/sidebar-help-nav.jsx'
 
 import { footerMenuItems } from '@/components/navigation/sidebar/menu.js'
 
@@ -44,12 +44,12 @@ export const AppSidebar = () => {
       <SidebarContent>
         <SidebarMainNav />
         <SidebarQueryNav />
-        <SidebarHelpNav />
       </SidebarContent>
       <SidebarFooter className="mb-[0.875px]">
         <SidebarMenu>
           <SidebarMenuLink items={footerMenuItems} />
           <SidebarThemeSwitcher />
+          <SidebarToggle />
         </SidebarMenu>
       </SidebarFooter>
       <SidebarRail className="hover:after:bg-transparent group-data-[state=collapsed]:-translate-x-[0.65rem]" />

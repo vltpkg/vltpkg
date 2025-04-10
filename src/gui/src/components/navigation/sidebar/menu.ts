@@ -1,5 +1,5 @@
 import { Query } from '@/components/icons/query.jsx'
-import { LayoutDashboard, Library } from 'lucide-react'
+import { CircleHelp, LayoutDashboard, Library } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 
 export interface MenuItem {
@@ -12,6 +12,7 @@ export interface MenuItem {
   isActive?: boolean
   items?: MenuItem[]
   external?: boolean
+  externalIcon?: boolean
   badge?: string
   onClick?: () => void
 }
@@ -41,9 +42,21 @@ export const helpMenuItems: MenuItem[] = [
 
 export const footerMenuItems: MenuItem[] = [
   {
-    title: 'Documentation',
-    url: 'https://docs.vlt.sh',
-    icon: Library,
-    external: true,
+    title: 'Help',
+    icon: CircleHelp,
+    items: [
+      {
+        title: 'Selectors',
+        url: '/help/selectors',
+        vltIcon: true,
+        icon: Query,
+      },
+      {
+        title: 'Documentation',
+        url: 'https://docs.vlt.sh',
+        icon: Library,
+        external: true,
+      },
+    ],
   },
 ]
