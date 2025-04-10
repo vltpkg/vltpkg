@@ -53,6 +53,7 @@ vi.mock(
 vi.mock('lucide-react', () => ({
   ArrowUpDown: 'gui-arrow-up-down-icon',
   BadgeInfo: 'gui-badge-info-icon',
+  BadgeCheck: 'gui-badge-check-icon',
 }))
 
 vi.mock('@/components/ui/progress-circle.jsx', () => ({
@@ -110,6 +111,31 @@ test('InsightTabContent renders with insights', () => {
     selectedItemDetails: SELECTED_ITEM_DETAILS,
     insights: mockedInsights,
     activeTab: 'insights',
+    setActiveTab: vi.fn(),
+  })
+
+  const Container = () => {
+    return <InsightTabContent />
+  }
+  const { container } = render(<Container />)
+
+  expect(container.innerHTML).toMatchSnapshot()
+})
+
+test('InsightTabContent renders with no insights but a package score', () => {
+  vi.mocked(useSelectedItem).mockReturnValue({
+    selectedItem: SELECTED_ITEM,
+    selectedItemDetails: SELECTED_ITEM_DETAILS,
+    insights: undefined,
+    activeTab: 'insights',
+    packageScore: {
+      overall: 90,
+      maintenance: 85,
+      vulnerability: 2,
+      license: 100,
+      quality: 90,
+      supplyChain: 4,
+    },
     setActiveTab: vi.fn(),
   })
 
