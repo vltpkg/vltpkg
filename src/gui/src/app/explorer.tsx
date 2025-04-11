@@ -6,10 +6,6 @@ import { ExplorerGrid } from '@/components/explorer-grid/index.jsx'
 import { useGraphStore } from '@/state/index.js'
 import type { TransferData, Action, State } from '@/state/types.js'
 import { load } from '@/state/load-graph.js'
-import { Search, Command } from 'lucide-react'
-import { Kbd } from '@/components/ui/kbd.jsx'
-import Save from '@/components/explorer-grid/save-query.jsx'
-import { QueryMatches } from '@/components/explorer-grid/query-matches.jsx'
 import { RootButton } from '@/components/explorer-grid/root-button.jsx'
 import { SetupProject } from '@/components/explorer-grid/setup-project.jsx'
 
@@ -158,23 +154,7 @@ const ExplorerContent = () => {
       <section className="flex w-full items-center px-8 py-4">
         <div className="flex w-full max-w-8xl flex-row items-center gap-2">
           <RootButton />
-          <QueryBar
-            tabIndex={0}
-            className="relative w-full bg-white dark:bg-muted-foreground/5"
-            startContent={
-              <Search size={20} className="ml-3 text-neutral-500" />
-            }
-            endContent={
-              <div className="mr-3 hidden items-center gap-1 backdrop-blur-sm md:flex">
-                <QueryMatches />
-                <Save />
-                <Kbd className='before:content-[" "] relative ml-3 before:absolute before:-ml-10 before:h-[0.75rem] before:w-[1.25px] before:rounded-sm before:bg-neutral-600'>
-                  <Command size={12} />
-                </Kbd>
-                <Kbd className="text-sm">k</Kbd>
-              </div>
-            }
-          />
+          <QueryBar />
         </div>
       </section>
       <ExplorerGrid />

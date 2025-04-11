@@ -1,13 +1,10 @@
 import type { ParsedSelectorToken } from '@vltpkg/query'
 import { QueryToken } from '@/components/query-bar/query-token.jsx'
+import { useQueryBar } from '@/components/query-bar/context.jsx'
 
-export const QueryHighlighter = ({
-  query,
-  parsedTokens,
-}: {
-  query: string
-  parsedTokens: ParsedSelectorToken[]
-}) => {
+export const QueryHighlighter = () => {
+  const { query, parsedTokens } = useQueryBar()
+
   if (!query) return null
 
   let q = query

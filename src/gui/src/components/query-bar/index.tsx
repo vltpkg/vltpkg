@@ -1,44 +1,19 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef } from 'react'
 import type { ChangeEvent } from 'react'
 import { Input } from '@/components/ui/input.jsx'
-import { useGraphStore } from '@/state/index.js'
-import { Query } from '@vltpkg/query'
-import type { ParsedSelectorToken } from '@vltpkg/query'
 import { QueryHighlighter } from '@/components/query-bar/query-highlighter.jsx'
+import {
+  QueryBarProvider,
+  useQueryBar,
+} from '@/components/query-bar/context.jsx'
+import { Search, Command } from 'lucide-react'
+import { Kbd } from '@/components/ui/kbd.jsx'
+import { QueryMatches } from '@/components/explorer-grid/query-matches.jsx'
+import SaveQuery from '@/components/explorer-grid/save-query.jsx'
 
-interface QueryBar {
-  className?: string
-  tabIndex?: number
-  startContent?: React.ReactNode
-  endContent?: React.ReactNode
-}
-
-export const QueryBar = ({
-  className,
-  tabIndex,
-  startContent,
-  endContent,
-}: QueryBar) => {
-  const updateQuery = useGraphStore(state => state.updateQuery)
-  const query = useGraphStore(state => state.query)
-  const q = useGraphStore(state => state.q)
+const QueryInput = () => {
   const inputRef = useRef<HTMLInputElement>(null)
-  const [parsedTokens, setParsedTokens] = useState<
-    ParsedSelectorToken[]
-  >([])
-
-  useEffect(() => {
-    if (!q || !query) {
-      setParsedTokens([])
-      return
-    }
-    try {
-      const tokens = Query.parse(query)
-      setParsedTokens(tokens)
-    } catch (error) {
-      console.error(`Error parsing query: ${error}`)
-    }
-  }, [query, q])
+  const { query, updateQuery } = useQueryBar()
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -57,34 +32,47 @@ export const QueryBar = ({
       window.removeEventListener('keydown', handleKeyDown)
     }
   }, [])
-
   return (
-    <div className="relative flex grow items-center">
-      {startContent && (
-        <div className="absolute pr-8">{startContent}</div>
-      )}
-      <div className="relative w-full">
-        <Input
-          type="text"
-          role="search"
-          tabIndex={tabIndex}
-          autoCorrect="off"
-          autoComplete="off"
-          autoCapitalize="off"
-          ref={inputRef}
-          className={`${className} ${startContent ? 'pl-10' : ''} bg-transparent text-sm text-transparent caret-black dark:caret-white`}
-          placeholder="Query Lookup, e.g: :root > *"
-          value={query}
-          onChange={(e: ChangeEvent) => {
-            const value = (e.currentTarget as HTMLInputElement).value
-            updateQuery(value)
-          }}
-        />
-        <QueryHighlighter query={query} parsedTokens={parsedTokens} />
+    <Input
+      type="text"
+      role="search"
+      autoCorrect="off"
+      autoComplete="off"
+      autoCapitalize="off"
+      ref={inputRef}
+      className="relative w-full bg-transparent bg-white pl-10 text-sm text-transparent caret-black dark:bg-muted-foreground/5 dark:caret-white"
+      placeholder="Query Lookup, e.g: :root > *"
+      value={query}
+      onChange={(e: ChangeEvent) => {
+        const value = (e.currentTarget as HTMLInputElement).value
+        updateQuery(value)
+      }}
+    />
+  )
+}
+
+export const QueryBar = () => {
+  return (
+    <QueryBarProvider>
+      <div className="relative flex grow items-center">
+        <div className="absolute pr-8">
+          <Search size={20} className="ml-3 text-neutral-500" />
+        </div>
+        <div className="relative w-full">
+          <QueryInput />
+          <QueryHighlighter />
+        </div>
+        <div className="absolute right-0">
+          <div className="mr-3 hidden items-center gap-1 backdrop-blur-sm md:flex">
+            <QueryMatches />
+            <SaveQuery />
+            <Kbd className='before:content-[" "] relative ml-3 before:absolute before:-ml-10 before:h-[0.75rem] before:w-[1.25px] before:rounded-sm before:bg-neutral-600'>
+              <Command size={12} />
+            </Kbd>
+            <Kbd className="text-sm">k</Kbd>
+          </div>
+        </div>
       </div>
-      {endContent && (
-        <div className="absolute right-0">{endContent}</div>
-      )}
-    </div>
+    </QueryBarProvider>
   )
 }
