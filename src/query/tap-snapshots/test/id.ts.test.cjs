@@ -5,6 +5,62 @@
  * Make sure to inspect the output below.  Do not ignore changes!
  */
 'use strict'
+exports[`test/id.ts > TAP > id > aliased graph > query > "#a" 1`] = `
+Object {
+  "edges": Array [
+    "a",
+  ],
+  "nodes": Array [
+    "a",
+  ],
+}
+`
+
+exports[`test/id.ts > TAP > id > aliased graph > query > "#a" 2`] = `
+Object {
+  "edges": Array [],
+  "nodes": Array [],
+}
+`
+
+exports[`test/id.ts > TAP > id > aliased graph > query > "#aliased-project" 1`] = `
+Object {
+  "edges": Array [],
+  "nodes": Array [
+    "aliased-project",
+  ],
+}
+`
+
+exports[`test/id.ts > TAP > id > aliased graph > query > "#b" 1`] = `
+Object {
+  "edges": Array [
+    "b",
+  ],
+  "nodes": Array [
+    "foo",
+  ],
+}
+`
+
+exports[`test/id.ts > TAP > id > aliased graph > query > "#bar" 1`] = `
+Object {
+  "edges": Array [
+    "bar",
+  ],
+  "nodes": Array [
+    "d",
+  ],
+}
+`
+
+exports[`test/id.ts > TAP > id > aliased graph > query > "#foo" 1`] = `
+Object {
+  "edges": Array [],
+  "nodes": Array [],
+}
+`
+
 exports[`test/id.ts > TAP > id > query > "#a" 1`] = `
 Object {
   "edges": Array [
