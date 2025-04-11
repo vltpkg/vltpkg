@@ -1,6 +1,6 @@
 import t from 'tap'
 import { id } from '../src/id.ts'
-import { getSimpleGraph } from './fixtures/graph.ts'
+import { getAliasedGraph, getSimpleGraph } from './fixtures/graph.ts'
 import {
   copyGraphSelectionState,
   getGraphSelectionState,
@@ -51,6 +51,46 @@ t.test('id', async t => {
       `query > "${query}"`,
     )
   }
+
+  await t.test('aliased graph', async t => {
+    const aliasedGraph = getAliasedGraph()
+    const all: GraphSelectionState = {
+      edges: new Set<EdgeLike>(aliasedGraph.edges),
+      nodes: new Set<NodeLike>(aliasedGraph.nodes.values()),
+    }
+    const empty: GraphSelectionState = {
+      edges: new Set(),
+      nodes: new Set(),
+    }
+    const queryToExpected = new Set<TestCase>([
+      ['#aliased-project', all, ['aliased-project']], // select root node
+      ['#a', all, ['a']], // regular direct dep
+      ['#b', all, ['foo']], // select aliased dep by its dep name alias
+      ['#foo', all, []], // do not select aliased dep by its pkg name
+      ['#bar', all, ['d']], // select transitive aliased dep by its alias
+      ['#a', empty, []], // no partial
+    ])
+    const initial = copyGraphSelectionState(all)
+    for (const [query, partial, expected] of queryToExpected) {
+      const res = await testId(
+        query,
+        initial,
+        copyGraphSelectionState(partial),
+      )
+      t.strictSame(
+        res.nodes.map(i => i.name),
+        expected,
+        `query > "${query}"`,
+      )
+      t.matchSnapshot(
+        {
+          edges: res.edges.map(i => i.name).sort(),
+          nodes: res.nodes.map(i => i.name).sort(),
+        },
+        `query > "${query}"`,
+      )
+    }
+  })
 })
 
 t.test('bad selector type', async t => {
