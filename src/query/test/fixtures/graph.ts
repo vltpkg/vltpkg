@@ -503,3 +503,98 @@ export const getLinkedGraph = (): GraphLike => {
 
   return graph
 }
+
+// Returns a graph that looks like:
+//
+// aliased-project (#a.prod, #b[alias for foo].prod, #c[alias for custom:c].prod)
+// +-- a (regular dependency)
+// +-- b (aliased dependency for foo, npm:foo@^1.0.0)
+//     +-- bar (aliased dependency for d, npm:d@^1.0.0)
+// +-- c (custom registry aliased dependency, custom:c@^1.0.0)
+//
+export const getAliasedGraph = (): GraphLike => {
+  const graph = newGraph('aliased-project')
+  const addNode = newNode(graph)
+
+  // Update main importer manifest to include
+  // dependencies definitions
+  graph.mainImporter.manifest = {
+    ...graph.mainImporter.manifest,
+    dependencies: {
+      a: '^1.0.0',
+      b: 'npm:foo@^1.0.0',
+      c: 'custom:c@^1.0.0',
+    },
+  }
+
+  // Create regular node 'a'
+  const a = addNode('a')
+  a.manifest = {
+    ...a.manifest,
+    version: '1.0.0',
+  }
+
+  // Create 'foo' node that will be aliased as 'b'
+  const foo = addNode('foo')
+  foo.manifest = {
+    ...foo.manifest,
+    dependencies: {
+      bar: 'npm:d@^1.0.0',
+    },
+    version: '1.0.0',
+  }
+
+  // Create 'd' node that will be aliased as 'bar' (dependency of 'b')
+  const d = addNode('d')
+  d.manifest = {
+    ...d.manifest,
+    version: '1.0.0',
+  }
+
+  // Create 'c' node from custom registry
+  const c = addNode('c')
+  c.id = joinDepIDTuple(['registry', 'custom', 'c@1.0.0'])
+  c.manifest = {
+    ...c.manifest,
+    version: '1.0.0',
+  }
+
+  // Add nodes to graph
+  ;[a, foo, d, c].forEach(i => {
+    graph.nodes.set(i.id, i)
+  })
+
+  // Add edges from main importer to nodes
+  newEdge(
+    graph.mainImporter,
+    Spec.parse('a', '^1.0.0', specOptions),
+    'prod',
+    a,
+  )
+
+  // Add edge for aliased dependency 'b' -> 'foo'
+  newEdge(
+    graph.mainImporter,
+    Spec.parse('b', 'npm:foo@^1.0.0', specOptions),
+    'prod',
+    foo,
+  )
+
+  // Add edge for custom registry aliased dependency 'c'
+  newEdge(
+    graph.mainImporter,
+    Spec.parse('c', 'custom:c@^1.0.0', specOptions),
+    'prod',
+    c,
+  )
+
+  // Add edge for nested aliased dependency 'bar' -> 'd'
+  newEdge(
+    foo,
+    Spec.parse('bar', 'npm:d@^1.0.0', specOptions),
+    'prod',
+    d,
+  )
+
+  return graph
+}
