@@ -179,9 +179,6 @@ export const InsightTabContent = () => {
     SocketSecurityDetails[] | undefined
   >(insights)
 
-  // for packages that have no insights, but do have a score, we need to display the score and let the user no there are no insights with a checkmark thing
-  // socket link should link to the package page
-
   return (
     <TabsContent value="insights">
       <>
