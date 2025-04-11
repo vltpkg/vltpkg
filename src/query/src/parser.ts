@@ -12,7 +12,7 @@ export const escapeScopedNamesSlashes = (query: string): string =>
   query.replace(/(#@\w+)\//gm, (_, scope: string) => `${scope}\\/`)
 
 export const escapeDots = (query: string): string =>
-  query.replace(/\./gm, '\\.')
+  query.replaceAll('.', '\\.')
 
 export const unescapeDots = (query: string): string =>
   query.replace(/\\\./gm, '.')
