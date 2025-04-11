@@ -15,7 +15,9 @@ export const deleteNodes = (
     if (!node.inVltStore()) continue
     rmActions.push(remover.rm(scurry.resolve(store, node.id)))
     for (const edge of node.edgesIn) {
-      rmActions.push(deleteEdge(edge, scurry, remover).catch(() => {}))
+      rmActions.push(
+        deleteEdge(edge, scurry, remover).catch(() => {}),
+      )
     }
   }
   return rmActions

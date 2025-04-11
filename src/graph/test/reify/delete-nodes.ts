@@ -10,7 +10,8 @@ const mockRemover = {
 } as unknown as RollbackRemove
 
 const edgesDeleted: unknown[] = []
-const mockEdgeDeleter = async (edge: unknown) => edgesDeleted.push(edge)
+const mockEdgeDeleter = async (edge: unknown) =>
+  edgesDeleted.push(edge)
 
 const { deleteNodes } = await t.mockImport<
   typeof import('../../src/reify/delete-nodes.ts')
