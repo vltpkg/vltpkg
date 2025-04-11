@@ -47,6 +47,7 @@ const initialState: State = {
     new URL(
       window.location.href || 'http://localhost',
     ).searchParams.get('query') ?? DEFAULT_QUERY,
+  queryError: undefined,
   q: undefined,
   selectedNode: undefined,
   specOptions: undefined,
@@ -85,6 +86,8 @@ export const useGraphStore = create<Action & State>((set, get) => {
     updateGraph: (graph: State['graph']) => set(() => ({ graph })),
     updateQ: (q: State['q']) => set(() => ({ q })),
     updateQuery: (query: State['query']) => set(() => ({ query })),
+    updateQueryError: (queryError: State['queryError']) =>
+      set(() => ({ queryError })),
     updateEdges: (edges: State['edges']) => set(() => ({ edges })),
     updateErrorCause: (errorCause: State['errorCause']) =>
       set(() => ({ errorCause })),

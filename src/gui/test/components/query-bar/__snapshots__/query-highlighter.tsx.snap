@@ -1,0 +1,31 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`query-highlighter render default 1`] = `
+
+<div class="pointer-events-none absolute inset-0 left-[2.556rem] top-[0.01rem] flex items-center">
+  <div class="flex w-full">
+    <gui-query-token variant="pseudo">
+      :root
+    </gui-query-token>
+    <gui-query-token variant="combinator">
+      &gt;
+    </gui-query-token>
+    <gui-query-token variant="pseudo">
+      :not(
+    </gui-query-token>
+    <gui-query-token variant="id">
+      #react
+    </gui-query-token>
+    <gui-query-token variant="string">
+      ,
+    </gui-query-token>
+    <gui-query-token variant="attribute">
+      [name="react-sass"]
+    </gui-query-token>
+    <gui-query-token variant="pseudo">
+      )
+    </gui-query-token>
+  </div>
+</div>
+
+`;

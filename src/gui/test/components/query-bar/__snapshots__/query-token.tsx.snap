@@ -1,0 +1,49 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`query-token render default 1`] = `
+
+<span class="relative z-[2] whitespace-pre text-black dark:text-white text-sm after:absolute after:inset-0 after:z-[-1] after:rounded-sm after:content-[&quot;&quot;]">
+  query string
+</span>
+
+`;
+
+exports[`query-token renders attribute selector 1`] = `
+
+<span class="relative z-[2] whitespace-pre text-sm after:absolute after:inset-0 after:z-[-1] after:rounded-sm after:content-[&quot;&quot;] text-blue-800 after:bg-blue-600/20 dark:text-blue-400 after:dark:bg-blue-600/15">
+  [name="my-package"]
+</span>
+
+`;
+
+exports[`query-token renders class selector 1`] = `
+
+<span class="relative z-[2] whitespace-pre text-sm after:absolute after:inset-0 after:z-[-1] after:rounded-sm after:content-[&quot;&quot;] text-green-800 after:bg-green-600/20 dark:text-green-400 after:dark:bg-green-600/15">
+  .my-class
+</span>
+
+`;
+
+exports[`query-token renders combinator selector 1`] = `
+
+<span class="relative z-[2] whitespace-pre text-sm after:absolute after:inset-0 after:z-[-1] after:rounded-sm after:content-[&quot;&quot;] text-gray-800 after:bg-gray-500/20 dark:text-gray-300 after:dark:bg-gray-500/20">
+  &gt;
+</span>
+
+`;
+
+exports[`query-token renders id selector 1`] = `
+
+<span class="relative z-[2] whitespace-pre text-sm after:absolute after:inset-0 after:z-[-1] after:rounded-sm after:content-[&quot;&quot;] text-pink-800 after:bg-pink-600/20 dark:text-pink-400 after:dark:bg-pink-600/15">
+  #my-id
+</span>
+
+`;
+
+exports[`query-token renders pseudo selector 1`] = `
+
+<span class="relative z-[2] whitespace-pre text-sm after:absolute after:inset-0 after:z-[-1] after:rounded-sm after:content-[&quot;&quot;] text-purple-800 after:bg-purple-600/20 dark:text-purple-400 after:dark:bg-purple-600/20">
+  :root
+</span>
+
+`;

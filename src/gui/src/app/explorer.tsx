@@ -1,15 +1,11 @@
 import { useNavigate } from 'react-router'
 import { useEffect, useRef } from 'react'
 import { Query } from '@vltpkg/query'
-import { SearchBar } from '@/components/search-bar.jsx'
+import { QueryBar } from '@/components/query-bar/index.jsx'
 import { ExplorerGrid } from '@/components/explorer-grid/index.jsx'
 import { useGraphStore } from '@/state/index.js'
 import type { TransferData, Action, State } from '@/state/types.js'
 import { load } from '@/state/load-graph.js'
-import { Search, Command } from 'lucide-react'
-import { Kbd } from '@/components/ui/kbd.jsx'
-import Save from '@/components/explorer-grid/save-query.jsx'
-import { QueryMatches } from '@/components/explorer-grid/query-matches.jsx'
 import { RootButton } from '@/components/explorer-grid/root-button.jsx'
 import { SetupProject } from '@/components/explorer-grid/setup-project.jsx'
 
@@ -90,6 +86,9 @@ const ExplorerContent = () => {
   const dashboard = useGraphStore(state => state.dashboard)
   const updateEdges = useGraphStore(state => state.updateEdges)
   const updateNodes = useGraphStore(state => state.updateNodes)
+  const updateQueryError = useGraphStore(
+    state => state.updateQueryError,
+  )
   const graph = useGraphStore(state => state.graph)
   const projectInfo = useGraphStore(state => state.projectInfo)
   const query = useGraphStore(state => state.query)
@@ -104,29 +103,34 @@ const ExplorerContent = () => {
       if (!q) return
       ac.current.abort(new Error('Query changed'))
       ac.current = new AbortController()
-      const queryResponse = await q.search(query, ac.current.signal)
+      try {
+        const queryResponse = await q.search(query, ac.current.signal)
+        updateEdges(queryResponse.edges)
+        updateNodes(queryResponse.nodes)
 
-      updateEdges(queryResponse.edges)
-      updateNodes(queryResponse.nodes)
-
-      // make sure we update the URL with the query string
-      const state = history.state as
-        | undefined
-        | { query: string; route: string }
-      if (
-        !state ||
-        query !== state.query ||
-        state.route !== '/explore'
-      ) {
-        history.pushState(
-          { query, route: '/explore' },
-          '',
-          '/explore?query=' + encodeURIComponent(query),
-        )
-        window.scrollTo(0, 0)
+        // make sure we update the URL with the query string
+        const state = history.state as
+          | undefined
+          | { query: string; route: string }
+        if (
+          !state ||
+          query !== state.query ||
+          state.route !== '/explore'
+        ) {
+          history.pushState(
+            { query, route: '/explore' },
+            '',
+            '/explore?query=' + encodeURIComponent(query),
+          )
+          window.scrollTo(0, 0)
+        }
+        updateQueryError(undefined)
+      } catch (e) {
+        updateQueryError(`${e}`)
       }
     }
-    void updateQueryData().catch(() => {})
+
+    void updateQueryData()
   }, [query, q])
 
   // avoids flash of content
@@ -158,23 +162,7 @@ const ExplorerContent = () => {
       <section className="flex w-full items-center px-8 py-4">
         <div className="flex w-full max-w-8xl flex-row items-center gap-2">
           <RootButton />
-          <SearchBar
-            tabIndex={0}
-            className="relative w-full bg-white dark:bg-muted-foreground/5"
-            startContent={
-              <Search size={20} className="ml-3 text-neutral-500" />
-            }
-            endContent={
-              <div className="mr-3 hidden items-center gap-1 backdrop-blur-sm md:flex">
-                <QueryMatches />
-                <Save />
-                <Kbd className='before:content-[" "] relative ml-3 before:absolute before:-ml-10 before:h-[0.75rem] before:w-[1.25px] before:rounded-sm before:bg-neutral-600'>
-                  <Command size={12} />
-                </Kbd>
-                <Kbd className="text-sm">k</Kbd>
-              </div>
-            }
-          />
+          <QueryBar />
         </div>
       </section>
       <ExplorerGrid />
