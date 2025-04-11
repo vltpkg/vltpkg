@@ -36,14 +36,27 @@ export type ImageInfo = {
   alt: string
 }
 
+export type Version = {
+  version: string
+  publishedDate?: string
+  publishedAuthor?: {
+    name?: string
+    email?: string
+    avatar?: string
+  }
+  unpackedSize?: number
+  integrity?: string
+  tarball?: string
+}
+
 export type DetailsInfo = {
   author?: AuthorInfo
   downloads?: DownloadsInfo
   favicon?: ImageInfo
   publisher?: AuthorInfo
   publisherAvatar?: ImageInfo
-  versions?: string[]
-  greaterVersions?: string[]
+  versions?: Version[]
+  greaterVersions?: Version[]
   downloadsRange?: DownloadsRange
 }
 
@@ -320,21 +333,43 @@ export async function* fetchDetails(
     packumentURL.pathname = spec.name
     trackPromise(
       fetch(String(packumentURL), {
-        headers: {
-          Accept: 'application/vnd.npm.install-v1+json',
-        },
+        headers: {},
         signal,
       })
         .then(res => res.json())
-        .then((packu: Packument) => {
-          const versions = Object.keys(packu.versions).sort(compare)
+        .then(async (packu: Packument) => {
+          const versions = Object.entries(packu.versions)
+            .sort((a, b) => compare(b[0], a[0]))
+            .map(async ([version, mani]) => {
+              const email = (mani as any)._npmUser?.email
+              const avatar =
+                email ? await retrieveAvatar(email) : undefined
+
+              return {
+                version,
+                publishedDate: packu.time?.[version],
+                unpackedSize:
+                  packu.versions?.[version]?.dist?.unpackedSize,
+                integrity: packu.versions?.[version]?.dist?.integrity,
+                tarball: packu.versions?.[version]?.dist?.tarball,
+                publishedAuthor: {
+                  name: (mani as any)._npmUser?.name,
+                  email: (mani as any)._npmUser?.email,
+                  avatar,
+                },
+              }
+            })
+
+          const resolvedVersions = await Promise.all(versions)
+
           return {
-            ...(manifest?.version && versions.length ?
+            ...(manifest?.version && resolvedVersions.length ?
               {
-                versions,
-                greaterVersions: versions.filter(
-                  (version: string) =>
-                    manifest.version && gt(version, manifest.version),
+                versions: resolvedVersions,
+                greaterVersions: resolvedVersions.filter(
+                  v =>
+                    manifest.version &&
+                    gt(v.version, manifest.version),
                 ),
               }
             : {}),

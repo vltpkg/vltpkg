@@ -114,6 +114,8 @@ export type Manifest = {
   cpu?: string[] | string
   /** URLs that can be visited to fund this project */
   funding?: Funding
+  /** The homepage of the repository */
+  homepage?: string
   /**
    * Only present in Manifests served by a registry. Contains information
    * about the artifact served for this package release.

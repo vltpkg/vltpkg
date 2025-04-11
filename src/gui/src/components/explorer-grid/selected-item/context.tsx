@@ -56,6 +56,7 @@ export interface SelectedItemContextValue {
   insights: SocketSecurityDetails[] | undefined
   packageScore?: PackageScore
   manifest?: Manifest | null
+  unpackedSize?: number
 }
 
 const SelectedItemContext = createContext<
@@ -78,6 +79,7 @@ export const SelectedItemProvider = ({
   const insights = getSocketInsights(selectedItem.to?.insights)
   const packageScore = selectedItem.to?.insights.score
   const manifest = selectedItem.to?.manifest
+  const unpackedSize = details.versions?.[0]?.unpackedSize
 
   return (
     <SelectedItemContext.Provider
@@ -89,6 +91,7 @@ export const SelectedItemProvider = ({
         insights,
         packageScore,
         manifest,
+        unpackedSize,
       }}>
       {children}
     </SelectedItemContext.Provider>

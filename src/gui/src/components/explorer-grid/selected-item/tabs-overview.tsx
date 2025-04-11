@@ -1,7 +1,16 @@
 import { TabsTrigger, TabsContent } from '@/components/ui/tabs.jsx'
 import { useSelectedItem } from '@/components/explorer-grid/selected-item/context.jsx'
 import Markdown from 'react-markdown'
-import { FileText, RectangleHorizontal } from 'lucide-react'
+import {
+  FileText,
+  Globe,
+  HeartHandshake,
+  Bug,
+  RectangleHorizontal,
+} from 'lucide-react'
+import { InlineCode } from '@/components/ui/inline-code.jsx'
+import { Link } from '@/components/ui/link.jsx'
+import { cn } from '@/lib/utils.js'
 
 export const OverviewTabButton = () => {
   return (
@@ -15,14 +24,80 @@ export const OverviewTabButton = () => {
 }
 
 export const OverviewTabContent = () => {
-  const { selectedItemDetails, selectedItem } = useSelectedItem()
+  const { manifest } = useSelectedItem()
 
   return (
-    <TabsContent value="overview">
-      {selectedItem.to?.manifest?.description ?
-        <div className="px-6 py-4">
+    <TabsContent value="overview" className="flex flex-col gap-4">
+      <div
+        className={cn(
+          'flex flex-wrap gap-4 px-6 pt-4',
+          !manifest?.homepage && !manifest?.funding && 'hidden',
+        )}>
+        {manifest?.homepage && (
+          <div className="flex flex-col gap-1">
+            <p className="inline-flex items-center gap-1.5 text-sm text-muted-foreground">
+              <Globe size={16} className="text-blue-500" />
+              <span>Homepage</span>
+            </p>
+            <Link href={manifest.homepage} className="text-sm">
+              {manifest.homepage}
+            </Link>
+          </div>
+        )}
+        {manifest?.funding && (
+          <div className="flex flex-col gap-1">
+            <p className="inline-flex items-center gap-1.5 text-sm text-muted-foreground">
+              <HeartHandshake size={16} className="text-rose-400" />
+              <span>Funding</span>
+            </p>
+            {Array.isArray(manifest.funding) ?
+              manifest.funding.map((entry, index) => (
+                <span key={index}>
+                  {typeof entry === 'string' ? entry : entry.url}
+                </span>
+              ))
+            : typeof manifest.funding === 'string' ?
+              <Link href={manifest.funding} className="text-sm">
+                {manifest.funding}
+              </Link>
+            : <Link href={manifest.funding.url} className="text-sm">
+                {manifest.funding.url}
+              </Link>
+            }
+          </div>
+        )}
+        {manifest?.bugs && (
+          <div className="flex flex-col gap-1">
+            <p className="inline-flex items-center gap-1.5 text-sm text-muted-foreground">
+              <Bug size={16} className="text-red-500" />
+              <span>Bug Reports</span>
+            </p>
+            {typeof manifest.bugs === 'string' ?
+              <Link href={manifest.bugs} className="text-sm">
+                {manifest.bugs}
+              </Link>
+            : 'url' in manifest.bugs && manifest.bugs.url ?
+              <Link href={manifest.bugs.url} className="text-sm">
+                {manifest.bugs.url}
+              </Link>
+            : 'email' in manifest.bugs && manifest.bugs.email ?
+              <Link
+                href={`mailto:${manifest.bugs.email}`}
+                className="text-sm">
+                {manifest.bugs.email}
+              </Link>
+            : null}
+          </div>
+        )}
+      </div>
+
+      {manifest?.description ?
+        <div className="flex flex-col gap-2 px-6 py-4">
+          <h4 className="text-sm font-medium capitalize">
+            description
+          </h4>
           <Markdown className="prose-sm prose-neutral max-w-none text-sm">
-            {selectedItem.to.manifest.description}
+            {manifest.description}
           </Markdown>
         </div>
       : <div className="flex h-64 w-full items-center justify-center px-6 py-4">
@@ -47,14 +122,37 @@ export const OverviewTabContent = () => {
           </div>
         </div>
       }
-      {selectedItemDetails.author?.name && (
-        <div className="border-t-[1px] border-secondary px-6 py-4">
-          <p className="text-sm text-muted-foreground">
-            Authored by:{' '}
-            <span className="font-medium text-foreground">
-              {selectedItemDetails.author.name}
-            </span>
-          </p>
+
+      {manifest?.keywords && (
+        <div className="flex flex-col gap-2 px-6 pb-4">
+          <h4 className="text-sm font-medium capitalize">keywords</h4>
+          <div className="flex flex-wrap gap-2">
+            {Array.isArray(manifest.keywords) ?
+              manifest.keywords.map((keyword, idx) => (
+                <InlineCode
+                  variant="mono"
+                  key={`${keyword}-${idx}`}
+                  className={cn(
+                    'mx-0 inline-flex cursor-default items-center pt-1.5',
+                  )}>
+                  {keyword}
+                </InlineCode>
+              ))
+            : typeof manifest.keywords === 'string' ?
+              (manifest.keywords as string)
+                .split(', ')
+                .map((keyword: string, idx: number) => (
+                  <InlineCode
+                    variant="mono"
+                    key={`${keyword}-${idx}`}
+                    className={cn(
+                      'mx-0 inline-flex cursor-default items-center pt-1.5',
+                    )}>
+                    {keyword}
+                  </InlineCode>
+                ))
+            : null}
+          </div>
         </div>
       )}
     </TabsContent>
