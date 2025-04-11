@@ -33,7 +33,7 @@ export const HelpSelectors = () => {
     <section className="flex h-full max-h-[calc(100svh-65px-2px-16px)] w-full flex-col overflow-y-scroll rounded-b-lg border-x-[1px] border-b-[1px]">
       <div className="flex max-w-8xl flex-col">
         <Markdown
-          className="prose-sm prose-neutral mt-8 w-full max-w-none px-8 md:w-2/3"
+          className="prose-sm prose-neutral w-full max-w-none px-8 md:w-2/3"
           components={markdownComponents}>
           {selectorsContent}
         </Markdown>
