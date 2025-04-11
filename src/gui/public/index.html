@@ -1,34 +1,39 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <!-- The first thing in any HTML file should be the charset -->
-    <meta charset="utf-8" />
 
-    <!-- Make the page mobile compatible -->
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1" />
+<head>
+  <!-- The first thing in any HTML file should be the charset -->
+  <meta charset="utf-8" />
 
-    <!-- Allow installing the app to the homescreen -->
-    <meta name="mobile-web-app-capable" content="yes" />
+  <!-- Make the page mobile compatible -->
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <link rel="icon" href="/favicon.ico" />
-    <link rel="stylesheet" href="/main.css" />
-    <title>vlt | Explorer</title>
-  </head>
+  <!-- Allow installing the app to the homescreen -->
+  <meta name="mobile-web-app-capable" content="yes" />
 
-  <body>
-    <!-- Display a message if JS has been disabled on the browser. -->
-    <noscript
-      >If you're seeing this message, that means
-      <strong>JavaScript has been disabled on your browser</strong>,
-      please <strong>enable JS</strong> to make this app
-      work.</noscript
-    >
+  <link rel="icon" href="/favicon.ico" />
+  <link rel="stylesheet" href="/main.css" />
+  <link ref="preload" href="/public/fonts/zed-mono.ttf" as="font" type="font/ttf" crossorigin="anonymous" />
+  <link ref="preload" href="/public/fonts/inter.ttf" as="font" type="font/ttf" crossorigin="anonymous" />
+  <link ref="preload" href="/public/fonts/geist-mono.ttf" as="font" type="font/ttf" crossorigin="anonymous" />
+  <link ref="preload" href="/public/fonts/courier-regular.ttf" as="font" type="font/ttf" crossorigin="anonymous" />
+  <link ref="preload" href="/public/fonts/courier-bold.ttf" as="font" type="font/ttf" crossorigin="anonymous" />
+  <link ref="preload" href="/public/fonts/courier-italic.ttf" as="font" type="font/ttf" crossorigin="anonymous" />
+  <link ref="preload" href="/public/fonts/courier-bold-italic.ttf" as="font" type="font/ttf" crossorigin="anonymous" />
+  <title>vlt | Explorer</title>
+</head>
 
-    <!-- The app hooks into this div -->
-    <div id="app"></div>
+<body>
+  <!-- Display a message if JS has been disabled on the browser. -->
+  <noscript>If you're seeing this message, that means
+    <strong>JavaScript has been disabled on your browser</strong>,
+    please <strong>enable JS</strong> to make this app
+    work.</noscript>
 
-    <script src="/index.js"></script>
-  </body>
+  <!-- The app hooks into this div -->
+  <div id="app"></div>
+
+  <script src="/index.js"></script>
+</body>
+
 </html>
