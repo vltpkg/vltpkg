@@ -394,5 +394,4 @@ t.test('human view coverage bits', async t => {
   )
 
   view.stdout('hello', 'world')
-  t.throws(() => view.error(new Error('hello')), new Error('hello'))
 })

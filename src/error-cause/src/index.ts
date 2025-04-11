@@ -82,7 +82,7 @@ export type ErrorCauseObject = {
    * Array of valid options when something is not a valid option.
    * (For use in `did you mean X?` output.)
    */
-  validOptions?: any[]
+  validOptions?: unknown[]
 
   /**
    * message indicating what bit of work this might be a part of, what feature
@@ -94,10 +94,10 @@ export type ErrorCauseObject = {
    * A desired value that was not found, or a regular expression or other
    * pattern describing it.
    */
-  wanted?: any
+  wanted?: unknown
 
   /** actual value, which was not wanted */
-  found?: any
+  found?: unknown
 
   /** HTTP message, fetch.Response, or `@vltpkg/registry-client.CacheEntry` */
   response?:
@@ -152,10 +152,10 @@ export type ErrorCauseObject = {
   }
 
   /** maximum value, which was exceeded */
-  max?: any
+  max?: unknown
 
   /** minimum value, which was not met */
-  min?: any
+  min?: unknown
 }
 
 export type DuckTypeManifest = Record<string, any> & {
@@ -244,6 +244,16 @@ export type Codes =
   | 'EUNKNOWN'
   | 'EUSAGE'
 
+// Use `Function` because that is the same type as `Error.captureStackTrace`
+// eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
+export type From = Function
+
+// `captureStackTrace` is non-standard so explicitly type it as possibly
+// undefined since it might be in browsers.
+const { captureStackTrace } = Error as {
+  captureStackTrace?: ErrorConstructor['captureStackTrace']
+}
+
 type ErrorCtor<T extends Error> = new (
   message: string,
   options?: { cause: ErrorCause },
@@ -251,46 +261,43 @@ type ErrorCtor<T extends Error> = new (
 
 function create<T extends Error>(
   cls: ErrorCtor<T>,
-  defaultFrom: ((...a: any[]) => any) | (new (...a: any[]) => any),
+  defaultFrom: From,
   message: string,
   cause?: undefined,
   from?: From,
 ): T
 function create<T extends Error>(
   cls: ErrorCtor<T>,
-  defaultFrom: ((...a: any[]) => any) | (new (...a: any[]) => any),
+  defaultFrom: From,
   message: string,
   cause?: ErrorCauseObject,
   from?: From,
 ): T & { cause: ErrorCauseObject }
 function create<T extends Error>(
   cls: ErrorCtor<T>,
-  defaultFrom: ((...a: any[]) => any) | (new (...a: any[]) => any),
+  defaultFrom: From,
   message: string,
   cause?: Error,
   from?: From,
 ): T & { cause: Error }
 function create<T extends Error>(
   cls: ErrorCtor<T>,
-  defaultFrom: ((...a: any[]) => any) | (new (...a: any[]) => any),
+  defaultFrom: From,
   message: string,
   cause?: ErrorCause,
   from?: From,
 ): T & { cause: ErrorCause }
 function create<T extends Error>(
   cls: ErrorCtor<T>,
-  defaultFrom: ((...a: any[]) => any) | (new (...a: any[]) => any),
+  defaultFrom: From,
   message: string,
   cause?: ErrorCause,
   from: From = defaultFrom,
 ) {
   const er = new cls(message, cause ? { cause } : undefined)
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-  Error.captureStackTrace?.(er, from)
+  captureStackTrace?.(er, from)
   return er
 }
-
-export type From = ((...a: any[]) => any) | (new (...a: any[]) => any)
 
 export function error(
   message: string,
