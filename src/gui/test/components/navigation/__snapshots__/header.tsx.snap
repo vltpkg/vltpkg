@@ -51,7 +51,7 @@ exports[`renders Header for route /help/selectors with expected name Help 1`] = 
 <div class="flex h-[65px] w-full items-center rounded-t-lg border-x-[1px] border-t-[1px] px-8 py-3">
   <div class="flex w-full max-w-8xl items-center">
     <h3 class="mt-1 text-lg font-medium">
-      Help
+      Help / Selectors
     </h3>
   </div>
 </div>

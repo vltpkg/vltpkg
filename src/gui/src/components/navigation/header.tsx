@@ -9,7 +9,7 @@ const routeNames = new Map<string, string>([
   ['/queries', 'Queries'],
   ['/labels', 'Labels'],
   ['/help', 'Help'],
-  ['/help/selectors', 'Help'],
+  ['/help/selectors', 'Help / Selectors'],
 ])
 
 const Header = () => {

@@ -1,17 +1,18 @@
 import type { PackageAlert } from '@vltpkg/security-archive'
 
 type SocketSeverity = PackageAlert['severity']
+type SocketCategory =
+  | 'Unknown'
+  | 'Supply Chain'
+  | 'Quality'
+  | 'Maintenance'
+  | 'License'
+  | 'Vulnerability'
 
 export interface SocketSecurityDetails {
   selector: string
   description: string
-  category:
-    | 'Unknown'
-    | 'Supply Chain'
-    | 'Quality'
-    | 'Maintenance'
-    | 'License'
-    | 'Vulnerability'
+  category: SocketCategory
   severity: SocketSeverity
 }
 

@@ -1,18 +1,19 @@
 import type { Column, ColumnDef } from '@tanstack/react-table'
-import type { SocketSecurityDetails } from '@/lib/constants/socket.js'
+import type { SelectorInTable } from '@/app/help/help-selectors.jsx'
 import { ArrowUpDown } from 'lucide-react'
 import { Button } from '@/components/ui/button.jsx'
 import {
   getAlertColor,
   InsightBadge,
 } from '@/components/explorer-grid/selected-item/insight-badge.jsx'
+import { InlineCode } from '@/components/ui/inline-code.jsx'
 
 const SortingHeader = ({
   column,
   header,
   className = '',
 }: {
-  column: Column<SocketSecurityDetails>
+  column: Column<SelectorInTable>
   header: string
   className?: string
 }) => {
@@ -28,7 +29,7 @@ const SortingHeader = ({
   )
 }
 
-export const selectorColumns: ColumnDef<SocketSecurityDetails>[] = [
+export const selectorColumns: ColumnDef<SelectorInTable>[] = [
   {
     accessorKey: 'selector',
     header: ({ column }) => (
@@ -37,18 +38,21 @@ export const selectorColumns: ColumnDef<SocketSecurityDetails>[] = [
     cell: ({ row }) => {
       const { selector, severity } = row.original
 
+      if (!severity)
+        return <InlineCode color="pink">{selector}</InlineCode>
+
       return (
         <InsightBadge
           className="self-start"
-          tooltipContent={severity}
+          tooltipContent={`${severity} severity`}
           color={getAlertColor(severity)}>
           {selector}
         </InsightBadge>
       )
     },
-    size: 100,
-    maxSize: 100,
-    minSize: 100,
+    size: 350,
+    maxSize: 350,
+    minSize: 350,
     enableHiding: false,
   },
   {
@@ -67,29 +71,6 @@ export const selectorColumns: ColumnDef<SocketSecurityDetails>[] = [
     enableHiding: true,
   },
   {
-    accessorKey: 'severity',
-    header: ({ column }) => (
-      <SortingHeader header="Severity" column={column} />
-    ),
-    cell: ({ row }) => {
-      const { severity } = row.original
-
-      return (
-        <p className="inline-flex items-center gap-2 text-sm">
-          <InsightBadge
-            variant="marker"
-            color={getAlertColor(severity)}
-          />
-          {severity}
-        </p>
-      )
-    },
-    size: 50,
-    maxSize: 50,
-    minSize: 50,
-    enableHiding: true,
-  },
-  {
     accessorKey: 'description',
     header: 'Description',
     cell: ({ row }) => {
@@ -97,9 +78,9 @@ export const selectorColumns: ColumnDef<SocketSecurityDetails>[] = [
 
       return <p className="text-sm">{description}</p>
     },
-    size: 200,
-    minSize: 200,
-    maxSize: 200,
+    size: 500,
+    minSize: 500,
+    maxSize: 500,
     enableHiding: true,
   },
 ]
