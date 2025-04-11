@@ -8,11 +8,11 @@
 // Write a binroot/pkg.bin + ".cmd" file that has this line in it:
 // @<prog> <args...> %dp0%<target> %*
 
-import { chmod, mkdir, readFile, stat, writeFile } from 'fs/promises'
+import { chmod, mkdir, readFile, stat, writeFile } from 'node:fs/promises'
 
 import { error } from '@vltpkg/error-cause'
 import type { RollbackRemove } from '@vltpkg/rollback-remove'
-import { dirname, relative } from 'path'
+import { dirname, relative } from 'node:path'
 import { convertToSetCommands } from './to-batch-syntax.ts'
 export {
   findCmdShim,
