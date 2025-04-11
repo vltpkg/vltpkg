@@ -8,7 +8,7 @@ type Color = 'pink' | 'blue' | 'green' | 'yellow' | 'red' | 'purple'
 interface InlineCodeProps
   extends React.ComponentProps<'span'>,
     VariantProps<typeof variants> {
-  children: string
+  children?: React.ReactNode
   color?: Color
 }
 
@@ -25,6 +25,7 @@ const variants = cva(
         purple: 'text-purple-500',
       },
       variant: {
+        unstyled: '',
         mono: 'font-courier text-muted-foreground dark:bg-neutral-700/50 bg-neutral-700/5 border-none',
         monoGhost:
           'font-courier text-muted-foreground bg-transparent',
