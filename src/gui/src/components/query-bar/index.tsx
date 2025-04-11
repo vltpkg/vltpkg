@@ -10,10 +10,12 @@ import { Search, Command } from 'lucide-react'
 import { Kbd } from '@/components/ui/kbd.jsx'
 import { QueryMatches } from '@/components/explorer-grid/query-matches.jsx'
 import SaveQuery from '@/components/explorer-grid/save-query.jsx'
+import { QueryError } from '@/components/query-bar/query-error.jsx'
+import { cn } from '@/lib/utils.js'
 
 const QueryInput = () => {
   const inputRef = useRef<HTMLInputElement>(null)
-  const { query, updateQuery } = useQueryBar()
+  const { query, updateQuery, queryError } = useQueryBar()
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -40,7 +42,11 @@ const QueryInput = () => {
       autoComplete="off"
       autoCapitalize="off"
       ref={inputRef}
-      className="relative w-full bg-transparent bg-white pl-10 text-sm text-transparent caret-black dark:bg-muted-foreground/5 dark:caret-white"
+      className={cn(
+        'duration-250 relative w-full bg-transparent bg-white pl-10 text-sm text-transparent caret-black outline transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 dark:bg-muted-foreground/5 dark:caret-white',
+        queryError &&
+          'outline-2 outline-offset-2 outline-red-500 focus-visible:ring-red-500',
+      )}
       placeholder="Query Lookup, e.g: :root > *"
       value={query}
       onChange={(e: ChangeEvent) => {
@@ -62,6 +68,7 @@ export const QueryBar = () => {
           <QueryInput />
           <QueryHighlighter />
         </div>
+        <QueryError />
         <div className="absolute right-0">
           <div className="mr-3 hidden items-center gap-1 backdrop-blur-sm md:flex">
             <QueryMatches />
