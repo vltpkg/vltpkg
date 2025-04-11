@@ -86,6 +86,9 @@ const ExplorerContent = () => {
   const dashboard = useGraphStore(state => state.dashboard)
   const updateEdges = useGraphStore(state => state.updateEdges)
   const updateNodes = useGraphStore(state => state.updateNodes)
+  const updateQueryError = useGraphStore(
+    state => state.updateQueryError,
+  )
   const graph = useGraphStore(state => state.graph)
   const projectInfo = useGraphStore(state => state.projectInfo)
   const query = useGraphStore(state => state.query)
@@ -100,29 +103,34 @@ const ExplorerContent = () => {
       if (!q) return
       ac.current.abort(new Error('Query changed'))
       ac.current = new AbortController()
-      const queryResponse = await q.search(query, ac.current.signal)
+      try {
+        const queryResponse = await q.search(query, ac.current.signal)
+        updateEdges(queryResponse.edges)
+        updateNodes(queryResponse.nodes)
 
-      updateEdges(queryResponse.edges)
-      updateNodes(queryResponse.nodes)
-
-      // make sure we update the URL with the query string
-      const state = history.state as
-        | undefined
-        | { query: string; route: string }
-      if (
-        !state ||
-        query !== state.query ||
-        state.route !== '/explore'
-      ) {
-        history.pushState(
-          { query, route: '/explore' },
-          '',
-          '/explore?query=' + encodeURIComponent(query),
-        )
-        window.scrollTo(0, 0)
+        // make sure we update the URL with the query string
+        const state = history.state as
+          | undefined
+          | { query: string; route: string }
+        if (
+          !state ||
+          query !== state.query ||
+          state.route !== '/explore'
+        ) {
+          history.pushState(
+            { query, route: '/explore' },
+            '',
+            '/explore?query=' + encodeURIComponent(query),
+          )
+          window.scrollTo(0, 0)
+        }
+        updateQueryError(undefined)
+      } catch (e) {
+        updateQueryError(`${e}`)
       }
     }
-    void updateQueryData().catch(() => {})
+
+    void updateQueryData()
   }, [query, q])
 
   // avoids flash of content

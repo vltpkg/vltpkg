@@ -12,6 +12,7 @@ export type Action = {
   updateGraph: (graph: State['graph']) => void
   updateQ: (q: State['q']) => void
   updateQuery: (query: State['query']) => void
+  updateQueryError: (queryError: State['queryError']) => void
   updateEdges: (edges: State['edges']) => void
   updateErrorCause: (errorCause: State['errorCause']) => void
   updateHasDashboard: (hasDashboard: State['hasDashboard']) => void
@@ -119,6 +120,10 @@ export type State = {
    * The query string typed by the user in the interface.
    */
   query: string
+  /**
+   * An error thrown by `q` if the query has errors.
+   */
+  queryError?: string
   // TODO: remove selectedNode as it's unused
   /**
    * Reference to a currently selected node.

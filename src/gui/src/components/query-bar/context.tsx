@@ -17,10 +17,8 @@ interface QueryBarContextValue {
   setParsedTokens: React.Dispatch<
     React.SetStateAction<ParsedSelectorToken[]>
   >
-  queryError: string | undefined
-  setQueryError: React.Dispatch<
-    React.SetStateAction<string | undefined>
-  >
+  queryError: State['queryError']
+  setQueryError: Action['updateQueryError']
 }
 
 const QueryBarContext = createContext<
@@ -34,14 +32,13 @@ export const QueryBarProvider = ({
 }) => {
   const updateQuery = useGraphStore(state => state.updateQuery)
   const query = useGraphStore(state => state.query)
+  const queryError = useGraphStore(state => state.queryError)
+  const setQueryError = useGraphStore(state => state.updateQueryError)
   const q = useGraphStore(state => state.q)
 
   const [parsedTokens, setParsedTokens] = useState<
     ParsedSelectorToken[]
   >([])
-  const [queryError, setQueryError] = useState<string | undefined>(
-    undefined,
-  )
 
   useEffect(() => {
     if (!q || !query) {
@@ -52,7 +49,7 @@ export const QueryBarProvider = ({
       const tokens = Query.parse(query)
       setParsedTokens(tokens)
     } catch (error) {
-      setQueryError(`${error}`)
+      console.error(`Error parsing query: ${error}`)
     }
   }, [query, q])
 
