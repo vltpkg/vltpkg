@@ -1,14 +1,15 @@
-import type { ReactNode } from 'react'
-import type { SocketSecurityDetails } from '@/lib/constants/socket.js'
-import type { PackageScore } from '@vltpkg/security-archive'
 import { createContext, useContext } from 'react'
 import { SOCKET_SECURITY_DETAILS } from '@/lib/constants/socket.js'
-
-export type Tab = 'overview' | 'insights' | 'versions' | 'manifest'
 
 import type { GridItemData } from '@/components/explorer-grid/types.js'
 import type { DetailsInfo } from '@/lib/external-info.js'
 import type { Insights } from '@vltpkg/query'
+import type { ReactNode } from 'react'
+import type { SocketSecurityDetails } from '@/lib/constants/socket.js'
+import type { PackageScore } from '@vltpkg/security-archive'
+import type { Manifest } from '@vltpkg/types'
+
+export type Tab = 'overview' | 'insights' | 'versions' | 'manifest'
 
 const getSocketInsights = (
   insights?: Insights,
@@ -54,6 +55,7 @@ export interface SelectedItemContextValue {
   setActiveTab: (tab: Tab) => void
   insights: SocketSecurityDetails[] | undefined
   packageScore?: PackageScore
+  manifest?: Manifest | null
 }
 
 const SelectedItemContext = createContext<
@@ -75,6 +77,7 @@ export const SelectedItemProvider = ({
 }) => {
   const insights = getSocketInsights(selectedItem.to?.insights)
   const packageScore = selectedItem.to?.insights.score
+  const manifest = selectedItem.to?.manifest
 
   return (
     <SelectedItemContext.Provider
@@ -85,6 +88,7 @@ export const SelectedItemProvider = ({
         setActiveTab,
         insights,
         packageScore,
+        manifest,
       }}>
       {children}
     </SelectedItemContext.Provider>
