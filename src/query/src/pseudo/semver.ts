@@ -21,7 +21,6 @@ import {
   asStringNode,
   asTagNode,
   isAttributeNode,
-  isClassNode,
   isCombinatorNode,
   isPseudoNode,
   isStringNode,
@@ -110,9 +109,7 @@ export const parseInternals = (
     if (asError(err).message === 'Mismatching query node') {
       semverValue = ''
       for (const node of asPostcssNodeWithChildren(nodes[0]).nodes) {
-        if (isClassNode(node)) {
-          semverValue += '.'
-        } else if (
+        if (
           isCombinatorNode(node) &&
           !unspacedCombinators.has(node.value)
         ) {

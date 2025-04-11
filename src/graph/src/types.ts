@@ -8,6 +8,8 @@ export type EdgeLike = {
   spec: SpecLikeBase
   to?: NodeLike
   type: DependencyTypeShort
+  optional?: boolean
+  peer?: boolean
 }
 
 export type GraphLike = {

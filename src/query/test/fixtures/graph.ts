@@ -54,7 +54,19 @@ const newEdge = (
   type: DependencyTypeShort,
   to?: NodeLike,
 ) => {
-  const edge = { name: spec.name, from, to, spec, type }
+  const edge = {
+    name: spec.name,
+    from,
+    to,
+    spec,
+    type,
+    get optional() {
+      return this.type === 'peerOptional' || this.type === 'optional'
+    },
+    get peer() {
+      return this.type === 'peer' || this.type === 'peerOptional'
+    },
+  }
   from.edgesOut.set(spec.name, edge)
   if (to) {
     to.edgesIn.add(edge)
@@ -77,11 +89,11 @@ const updateNodeVersion = (
 
 // Returns a graph that looks like:
 //
-// my-project (#a.prod, #b.dev, #e.prod, #@x/y.dev)
+// my-project (#a:prod, #b:dev, #e:prod, #@x/y:dev)
 // +-- a
-// +-- b (#c.prod, #d.prod)
+// +-- b (#c:prod, #d:prod)
 //     +-- c
-//     +-- d (#e.prod #f.optional)
+//     +-- d (#e:prod #f:optional)
 //         +-- e
 //         +-- f
 // +-- e
@@ -242,9 +254,9 @@ export const getMultiWorkspaceGraph = (): GraphLike => {
 
 // Returns a graph that looks like:
 //
-// cycle-project (#a.prod)
+// cycle-project (#a:prod)
 // +-> a  <--------------+
-//     +-> b (#a.prod) --+
+//     +-> b (#a:prod) --+
 //
 export const getCycleGraph = (): GraphLike => {
   const graph = newGraph('cycle-project')
@@ -506,7 +518,7 @@ export const getLinkedGraph = (): GraphLike => {
 
 // Returns a graph that looks like:
 //
-// aliased-project (#a.prod, #b[alias for foo].prod, #c[alias for custom:c].prod)
+// aliased-project (#a:prod, #b[alias for foo]:prod, #c[alias for custom:c]:prod)
 // +-- a (regular dependency)
 // +-- b (aliased dependency for foo, npm:foo@^1.0.0)
 //     +-- bar (aliased dependency for d, npm:d@^1.0.0)

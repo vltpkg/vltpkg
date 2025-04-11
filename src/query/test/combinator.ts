@@ -141,7 +141,7 @@ t.test('combinator', async t => {
 
 t.test('bad selector type', async t => {
   await t.rejects(
-    testCombinator('.dev'),
+    testCombinator(':dev'),
     /Mismatching query node/,
     'should throw an error',
   )

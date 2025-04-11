@@ -68,4 +68,10 @@ t.test('parse', async t => {
     parse(complexSelector),
     'should parse complex selectors with scoped packages',
   )
+
+  t.ok(parse(':root > :v(2.0.0)'), 'should parse dots in parameters')
+  t.ok(
+    parse(':root > :v("2.0.0")'),
+    'should parse dots in string parameters',
+  )
 })

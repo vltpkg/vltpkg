@@ -4,7 +4,6 @@ import type { SpecOptions } from '@vltpkg/spec/browser'
 import type { SecurityArchiveLike } from '@vltpkg/security-archive'
 import { parse } from './parser.ts'
 import { attribute } from './attribute.ts'
-import { classFn } from './class.ts'
 import { combinator } from './combinator.ts'
 import { id } from './id.ts'
 import { pseudo } from './pseudo.ts'
@@ -33,7 +32,11 @@ const noopFn = async (state: ParserState) => state
 
 const selectors = {
   attribute,
-  class: classFn,
+  /* c8 ignore start */
+  class: async (state: ParserState) => {
+    throw error('Unsupported selector', { found: state.current })
+  },
+  /* c8 ignore end */
   combinator,
   comment: noopFn,
   id,
