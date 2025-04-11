@@ -13,6 +13,8 @@ import {
   asPostcssNodeWithChildren,
   isSelectorNode,
   isPseudoNode,
+  isTagNode,
+  isStringNode,
 } from './types.ts'
 import type {
   PostcssNode,
@@ -449,6 +451,14 @@ export class Query {
               node.source.end?.column &&
               `${node.spaces.before}${query.slice(node.source.start.column - 1, node.source.end.column)}${node.spaces.after}`,
           )
+
+          if (isTagNode(node)) {
+            token = node.value
+          }
+
+          if (isStringNode(node)) {
+            token = node.value
+          }
 
           if (
             isPostcssNodeWithChildren(node) &&
