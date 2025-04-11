@@ -177,6 +177,18 @@ export const PSEUDO_CLASS_SELECTORS: Record<string, Selector> = {
     description:
       'Matches packages based on their type, e.g., :type(git) to retrieve all git dependencies.',
   },
+  ':published("<date>")': {
+    selector: ':published("<operator>, <date>")',
+    category: 'Pseudo Class',
+    description:
+      'Matches packages based on their published date. The operator can be one of: >, >=, <, <=, =, !=. The date must be in ISO format (YYYY-MM-DD).',
+  },
+  ':score': {
+    selector: ':score("<rate>, [kind]")',
+    category: 'Pseudo Class',
+    description:
+      'Matches packages based on the scores rated found in the insights data, e.g., :score("<=0.5", "maintenance") to match a maintenance score of 0.5 or less.',
+  },
 }
 
 export const PSEUDO_ELEMENT_SELECTORS: Record<string, Selector> = {
