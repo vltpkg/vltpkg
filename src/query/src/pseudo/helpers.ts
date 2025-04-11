@@ -1,4 +1,4 @@
-import type { NodeLike } from '@vltpkg/graph'
+import type { EdgeLike, NodeLike } from '@vltpkg/graph'
 import type { ParserState } from '../types.js'
 import { error } from '@vltpkg/error-cause'
 
@@ -13,12 +13,33 @@ export const removeNode = (state: ParserState, node: NodeLike) => {
 }
 
 /**
+ * Removes an edge and its outgoing node from the results.
+ */
+export const removeEdge = (state: ParserState, edge: EdgeLike) => {
+  state.partial.edges.delete(edge)
+  if (edge.to) {
+    state.partial.nodes.delete(edge.to)
+  }
+}
+
+/**
  * Removes any edges that have no destination node from the results.
  */
 export const removeDanglingEdges = (state: ParserState) => {
   for (const edge of state.partial.edges) {
     if (!edge.to) {
       state.partial.edges.delete(edge)
+    }
+  }
+}
+
+/**
+ * Removes any nodes that have no incoming edges from the results.
+ */
+export const removeUnlinkedNodes = (state: ParserState) => {
+  for (const node of state.partial.nodes) {
+    if (node.edgesIn.size === 0) {
+      state.partial.nodes.delete(node)
     }
   }
 }

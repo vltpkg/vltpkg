@@ -59,21 +59,21 @@ t.test('simple graph', async t => {
     [':root', ['my-project']], // select :root
     [':root > *', ['a', 'b', 'e', '@x/y']], // direct deps of :root
     [':root > :root', ['my-project']], // :root always places a ref to root
-    ['.dev', ['b', 'c', 'd', 'e', 'f', '@x/y']], // retrieve deps of dev type
-    [':root > .dev', ['b', '@x/y']], // mixed with a combinator
-    [':root > .dev[name=b]', ['b']], // specific node
-    [':root > [name=b].dev', ['b']], // specific node backwards
-    [':root > *[name=b].dev', ['b']], // specific node backwards with universal
-    [':root > .dev[name=b] ~ *', ['a', 'e', '@x/y']], // retrieves its siblings
-    [':root > .optional', []], // no direct optional dep
-    [':root .optional', ['f']], // optional descendent found
+    [':dev', ['b', '@x/y']], // retrieve deps of dev type
+    [':root > :dev', ['b', '@x/y']], // mixed with a combinator
+    [':root > :dev[name=b]', ['b']], // specific node
+    [':root > [name=b]:dev', ['b']], // specific node backwards
+    [':root > *[name=b]:dev', ['b']], // specific node backwards with universal
+    [':root > :dev[name=b] ~ *', ['a', 'e', '@x/y']], // retrieves its siblings
+    [':root > :optional', []], // no direct optional dep
+    [':root :optional', ['f']], // optional descendent found
     [':root *', ['a', 'b', 'e', '@x/y', 'c', 'd', 'f']], // all descendents from root
     ['[name=a]', ['a']], // select by name
     [':root :has([name])', ['b', 'd']], // combined has example, filtering any descendent that has direct deps with a name
     [':root > [name=a]', ['a']], // select children by name
     [':root > [name=d] [name=b]', []], // no direct descendent with that name
     [':root > [name=d] [name=e]', []], // descendent found by name
-    [':root .dev[name=d] ~ .dev[name=c]', ['c']], // fully qualified
+    [':root [name=d] ~ [name=c]', ['c']], // fully qualified
     [':root [name^=@x]', ['@x/y']], // attribute starts with value
     ['/* do something */ :root [name^=@x]', ['@x/y']], // support comments
     [':root > *{&[name=a]}', ['a']], // support nesting
@@ -82,8 +82,8 @@ t.test('simple graph', async t => {
     ['[name=b], [name=c], [name=f]', ['b', 'c', 'f']], // select by name
     ['[name=d], [name=d] > *', ['d', 'e', 'f']], // select a package and its dependencies
     [
-      ':root > *, .prod, [name=a], :has(.dev, .optional)',
-      ['a', 'b', 'e', '@x/y', 'my-project', 'd'],
+      ':root > *, :prod, [name=a], :has(:dev, :optional)',
+      ['a', 'b', 'e', '@x/y', 'c', 'd', 'my-project'],
     ],
     ['#a', ['a']], // identifier
     ['#a:v(1)', ['a']], // matches identifier + semver
@@ -137,7 +137,7 @@ t.test('cycle', async t => {
     [':root > *', ['a']], // direct deps of :root
     [':root > :root', ['cycle-project']], // :root always places a ref to root
     ['/* do something */ [name^=a]', ['a']], // support comments
-    [':root > :root > .prod > *', ['b']], // mixed selectors
+    [':root > :root > :prod > *', ['b']], // mixed selectors
   ])
   const query = new Query({
     graph,
@@ -373,7 +373,7 @@ t.test('parse', t => {
   t.test('should parse class selector', t => {
     t.strictSame(normalizeParseOutput(Query.parse('.container')), [
       {
-        type: 'class',
+        type: 'tag',
         token: '.container',
       },
     ])
@@ -456,7 +456,7 @@ t.test('parse', t => {
             token: ' ',
           },
           {
-            type: 'class',
+            type: 'tag',
             token: '.container',
           },
         ],

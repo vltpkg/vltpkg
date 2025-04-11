@@ -121,7 +121,7 @@ t.test('pseudo', async t => {
     [':is([name=a], [name=b], [name=f])', all, ['a', 'b', 'f']], // can match multiple nodes
     [':is(:root)', empty, []], // can't match from empty partial
     [
-      ':is(#foo, .asdf, [name===z], :root +, :nonexistingselector)',
+      ':is(#foo, [name===z], :root +, :nonexistingselector)',
       all,
       ['my-project', 'a', 'b', 'c', 'd', 'e', 'f', '@x/y'],
     ], // ignore any invalid selectors on loose mode
@@ -151,6 +151,9 @@ t.test('pseudo', async t => {
     [':type(git)', all, []], // type selector, no matches
     [':type(registry)', all, ['a', 'b', 'c', 'd', 'e', 'f']], // type selector, no matches
     [':type(registry)', empty, []], // type selector, nothing to match
+    [':dev', all, ['b', '@x/y']], // select dev deps
+    [':dev', b, ['b']], // single item dev dep
+    [':dev', empty, []], // empty starting partial
   ])
   const initial = copyGraphSelectionState(all)
   for (const [query, partial, expected] of queryToExpected) {
@@ -190,18 +193,20 @@ t.test('pseudo', async t => {
       [':project', empty, ['ws', 'w']], // from empty nodes
       [':project', w, ['ws', 'w']], // from single node
       [':empty', all, ['ws', 'w']], // deps with no deps
-      [':is(.workspace, :root)', all, ['ws', 'w']],
-      [':is(.workspace, :root)', empty, []],
-      [':is(.workspace)', all, ['w']],
-      [':is(.workspace)', empty, []],
-      [':not(.workspace, :root)', all, []], // excludes all items
-      [':not(.workspace)', all, ['ws']], // excludes workspaces
+      [':is(:workspace, :root)', all, ['ws', 'w']],
+      [':is(:workspace, :root)', empty, []],
+      [':is(:workspace)', all, ['w']],
+      [':is(:workspace)', empty, []],
+      [':not(:workspace, :root)', all, []], // excludes all items
+      [':not(:workspace)', all, ['ws']], // excludes workspaces
       [':not(:root)', all, ['w']], // excludes root
       [':not(:root)', empty, []], // empty starting partial
       [':private', all, []], // private dep
       [':type(registry)', all, []], // type selector
       [':type(workspace)', all, ['w']], // type selector workspace
       [':type(file)', all, ['ws']], // type selector root
+      [':dev', all, []], // no dev deps in this graph
+      [':dev', empty, []], // empty starting partial
     ])
     const initial = copyGraphSelectionState(all)
     for (const [query, partial, expected] of queryToExpected) {
@@ -273,6 +278,7 @@ t.test('pseudo', async t => {
       [':is([name=a])', all, ['a']],
       [':private', all, []], // private dep
       [':type(registry)', all, ['a', 'b']], // type selector
+      [':dev', all, []], // no dev deps in this graph
     ])
     const initial = copyGraphSelectionState(all)
     for (const [query, partial, expected] of queryToExpected) {
@@ -339,8 +345,9 @@ t.test('pseudo', async t => {
     // giving that we want to assert missing / present edges
     const queryToExpected = new Set<TestCase>([
       [':missing', all, []],
-      [':has(.dev)', all, []],
+      [':has(:dev)', all, []],
       [':private', all, []],
+      [':dev', all, []], // test that :dev works with missing nodes as well
     ])
     const initial = copyGraphSelectionState(all)
     for (const [query, partial] of queryToExpected) {
@@ -376,7 +383,7 @@ t.test('pseudo', async t => {
 
 t.test('bad selector type', async t => {
   await t.rejects(
-    testPseudo('.dev'),
+    testPseudo('[name=a]'),
     /Mismatching query node/,
     'should throw an error',
   )

@@ -184,23 +184,6 @@ export const asAttributeNode = (node?: PostcssNode): Attribute => {
   return node
 }
 
-export const isClassNode = (node: unknown): node is ClassName =>
-  isObj(node) && !!node.value && node.type === 'class'
-
-export const asClassNode = (node?: PostcssNode): ClassName => {
-  if (!node) {
-    throw error('Expected a query node')
-  }
-
-  if (!isClassNode(node)) {
-    throw error('Mismatching query node', {
-      wanted: 'class',
-      found: node.type,
-    })
-  }
-  return node
-}
-
 export const isCombinatorNode = (node: unknown): node is Combinator =>
   isObj(node) && !!node.value && node.type === 'combinator'
 
