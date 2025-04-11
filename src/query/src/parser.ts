@@ -15,7 +15,7 @@ export const escapeDots = (query: string): string =>
   query.replaceAll('.', '\\.')
 
 export const unescapeDots = (query: string): string =>
-  query.replace(/\\\./gm, '.')
+  query.replaceAll('\\.', '.')
 
 /**
  * Parses a CSS selector string into an AST
