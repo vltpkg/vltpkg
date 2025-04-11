@@ -148,6 +148,8 @@ export type Manifest = {
   author?: Person
   /** contributors to the package */
   contributors?: Person[]
+  /** the license of the package */
+  license?: string
 }
 
 export type ManifestRegistry = Manifest &
