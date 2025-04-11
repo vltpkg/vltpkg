@@ -12,8 +12,13 @@ import {
   isPostcssNodeWithChildren,
   asPostcssNodeWithChildren,
   isSelectorNode,
+  isPseudoNode,
+  isTagNode,
+  isStringNode,
 } from './types.ts'
 import type {
+  PostcssNode,
+  ParsedSelectorToken,
   PostcssNodeWithChildren,
   ParserState,
   ParserFn,
@@ -416,5 +421,75 @@ export class Query {
     }
     this.#cache.set(query, res)
     return res
+  }
+
+  /**
+   * Parses a query into an array of tokens
+   */
+  static parse(query: string): ParsedSelectorToken[] {
+    if (!query) return []
+
+    const tokens: ParsedSelectorToken[] = []
+
+    const ast = (q: string) => {
+      try {
+        return postcssSelectorParser().astSync(q)
+      } catch (_e) {
+        return ast(q.slice(0, -1))
+      }
+    }
+
+    const processNode = (node: PostcssNode) => {
+      for (const key of selectorsMap.keys()) {
+        if (
+          node.type === key &&
+          node.type !== 'root' &&
+          node.type !== 'selector'
+        ) {
+          let token = String(
+            node.source?.start?.column &&
+              node.source.end?.column &&
+              `${node.spaces.before}${query.slice(node.source.start.column - 1, node.source.end.column)}${node.spaces.after}`,
+          )
+
+          if (isTagNode(node)) {
+            token = node.value
+          }
+
+          if (isStringNode(node)) {
+            token = node.value
+          }
+
+          if (
+            isPostcssNodeWithChildren(node) &&
+            isPseudoNode(node) &&
+            node.nodes.length
+          ) {
+            token = String(token.split('(')[0])
+            token += '('
+          }
+
+          tokens.push({
+            ...node,
+            token,
+          } as ParsedSelectorToken)
+        }
+      }
+      if (isPostcssNodeWithChildren(node)) {
+        for (const child of node.nodes) {
+          processNode(child)
+        }
+        if (isPseudoNode(node) && node.nodes.length) {
+          tokens.push({
+            ...node,
+            token: ')',
+            type: 'pseudo',
+          } as ParsedSelectorToken)
+        }
+      }
+    }
+
+    processNode(ast(query))
+    return tokens
   }
 }

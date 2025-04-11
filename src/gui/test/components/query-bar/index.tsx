@@ -1,4 +1,4 @@
-import { test, assert, expect, afterEach } from 'vitest'
+import { vi, test, assert, expect, afterEach } from 'vitest'
 import {
   cleanup,
   render,
@@ -7,7 +7,11 @@ import {
 } from '@testing-library/react'
 import html from 'diffable-html'
 import { useGraphStore as useStore } from '@/state/index.js'
-import { SearchBar } from '@/components/search-bar.jsx'
+import { QueryBar } from '@/components/query-bar/index.jsx'
+
+vi.mock('@/components/query-bar/query-highlighter.jsx', () => ({
+  QueryHighlighter: 'gui-query-highlighter',
+}))
 
 expect.addSnapshotSerializer({
   serialize: v => html(v),
@@ -20,23 +24,23 @@ afterEach(() => {
   cleanup()
 })
 
-test('search-bar render default', async () => {
-  render(<SearchBar />)
+test('query-bar render default', async () => {
+  render(<QueryBar />)
   expect(window.document.body.innerHTML).toMatchSnapshot()
 })
 
-test('search-bar render with custom query', async () => {
+test('query-bar render with custom query', async () => {
   const Container = () => {
     const updateQuery = useStore(state => state.updateQuery)
     updateQuery('[name="my-package"][version="1.0.0"]')
-    return <SearchBar />
+    return <QueryBar />
   }
   render(<Container />)
   expect(window.document.body.innerHTML).toMatchSnapshot()
 })
 
-test('search-bar updates query store value', async () => {
-  render(<SearchBar />)
+test('query-bar updates query store value', async () => {
+  render(<QueryBar />)
 
   const value = '[name="my-package"][version="2.0.0"]'
   fireEvent.change(screen.getByRole('search'), {

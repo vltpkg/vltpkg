@@ -21,8 +21,8 @@ vi.mock('react-router', () => ({
   useNavigate: vi.fn(),
 }))
 
-vi.mock('@/components/search-bar.jsx', () => ({
-  SearchBar: 'gui-search-bar',
+vi.mock('@/components/query-bar/index.jsx', () => ({
+  QueryBar: 'gui-query-bar',
 }))
 
 vi.mock('@/components/ui/logo.jsx', () => ({
