@@ -231,6 +231,9 @@ t.test('type checks', t => {
   m
   //@ts-expect-error
   m = { name: true, dependencies: /x/ }
+  m = { name: 'x', version: '1.0.0', license: 'MIT' }
+  //@ts-expect-error
+  m = { name: 'x', version: '1.0.0', license: 123 }
 
   //@ts-expect-error
   let rm: ManifestRegistry = {}
