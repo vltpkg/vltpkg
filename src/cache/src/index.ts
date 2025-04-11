@@ -56,6 +56,12 @@ export type BooleanOrVoid = boolean | void
 const hash = (s: string) =>
   createHash('sha512').update(s).digest('hex')
 
+const success = async <T>(p: Promise<T>): Promise<T | null> =>
+  await p.then(
+    result => result,
+    () => null,
+  )
+
 export class Cache extends LRUCache<
   string,
   Buffer,
@@ -364,13 +370,15 @@ export class Cache extends LRUCache<
     const tmp = join(dir, `.${base}.${this.random}`)
     const keyTmp = join(dir, `.${keyFile}.${this.random}`)
 
-    const writeVal = () =>
-      writeFile(tmp, val).then(() => rename(tmp, valFile))
-
     // Always write the key file in parallel with other operations
     const writeKeyP = writeFile(keyTmp, key).then(() =>
       rename(keyTmp, valFile + '.key'),
     )
+
+    // We might not write the val file at all so we dont want to
+    // kick off this promise until we know we need to.
+    const writeVal = () =>
+      writeFile(tmp, val).then(() => rename(tmp, valFile))
 
     if (!intFile) {
       // No integrity provided, just write the value and key files
@@ -380,7 +388,7 @@ export class Cache extends LRUCache<
 
     // Handle different integrity scenarios
 
-    const intStats = await stat(intFile).catch(() => null)
+    const intStats = await success(stat(intFile))
     if (!intStats) {
       // Integrity file doesn't exist yet
       // Write the value file and then link to a new integrity file
@@ -395,12 +403,12 @@ export class Cache extends LRUCache<
     // This is a fast shortcut to check if the content is likely the same
     const sameSize = intStats.size === val.length
 
-    const pathStats = await stat(valFile).catch(() => null)
+    const pathStats = await success(stat(valFile))
     if (!pathStats && sameSize) {
       // Path doesn't exist but integrity is already what we want
       // Try to link integrity file to val file
       // If linking fails, continue on
-      if (!(await link(intFile, valFile).catch(() => true))) {
+      if ((await success(link(intFile, valFile))) !== null) {
         await writeKeyP
         return
       }
@@ -420,7 +428,7 @@ export class Cache extends LRUCache<
     if (!linked && sameSize) {
       // Integrity and val file are not linked but same size
       // so its likely the same content so try to link them
-      if (!(await link(intFile, valFile).catch(() => true))) {
+      if ((await success(link(intFile, valFile))) !== null) {
         await writeKeyP
         return
       }
@@ -430,9 +438,9 @@ export class Cache extends LRUCache<
     // then re-link it to the value file.
     await Promise.all([
       writeKeyP,
-      writeVal()
-        .then(() => unlink(intFile))
-        .then(() => link(valFile, intFile)),
+      Promise.all([writeVal(), unlink(intFile)]).then(() =>
+        link(valFile, intFile),
+      ),
     ])
   }
 
