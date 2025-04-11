@@ -19,7 +19,9 @@ export class RollbackRemove {
       if (
         e instanceof Error &&
         'code' in e &&
+        /* c8 ignore start - very spurious weirdness on Windows */
         (e.code === 'ENOENT' || e.code === 'EPERM')
+        /* c8 ignore stop */
       ) {
         this.#paths.delete(path)
         return

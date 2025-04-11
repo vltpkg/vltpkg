@@ -417,20 +417,13 @@ t.test('failure of optional node just deletes it', async t => {
     'ultimately no changes to actual graph',
   )
 
-  if (process.platform === 'win32') {
-    console.error(
-      'node_modules/.bin:',
-      readdirSync(resolve(projectRoot, 'node_modules/.bin')),
-    )
-    console.error(
-      'node_modules:',
-      readdirSync(resolve(projectRoot, 'node_modules')),
-    )
+  const expectGone = [
+    'node_modules/.bin/glob',
+    'node_modules/.bin/glob.cmd',
+    'node_modules/.bin/glob.ps1',
+    'node_modules/glob',
+  ]
+  for (const path of expectGone) {
+    t.throws(() => lstatSync(resolve(projectRoot, path)))
   }
-
-  t.throws(
-    // note: not lstat, since this is going to be a shim on windows,
-    // but a symlink on posix
-    () => statSync(resolve(projectRoot, 'node_modules/.bin/glob')),
-  )
 })
