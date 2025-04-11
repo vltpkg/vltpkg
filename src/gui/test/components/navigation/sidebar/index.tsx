@@ -27,6 +27,9 @@ vi.mock(
     SidebarMenuLink: 'gui-sidebar-menu-link',
   }),
 )
+vi.mock('@/components/navigation/sidebar/sidebar-toggle.jsx', () => ({
+  SidebarToggle: 'gui-sidebar-toggle',
+}))
 
 vi.mock(
   '@/components/navigation/sidebar/sidebar-main-nav.jsx',
@@ -38,12 +41,6 @@ vi.mock(
   '@/components/navigation/sidebar/sidebar-query-nav.jsx',
   () => ({
     SidebarQueryNav: 'gui-sidebar-query-nav',
-  }),
-)
-vi.mock(
-  '@/components/navigation/sidebar/sidebar-help-nav.jsx',
-  () => ({
-    SidebarHelpNav: 'gui-sidebar-help-nav',
   }),
 )
 

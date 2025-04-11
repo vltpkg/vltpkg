@@ -1,7 +1,5 @@
-import {
-  SidebarMenuItem,
-  SidebarMenuButton,
-} from '@/components/ui/sidebar.jsx'
+import { SidebarMenuLink } from '@/components/navigation/sidebar/sidebar-menu-link.jsx'
+import type { MenuItem } from '@/components/navigation/sidebar/menu.js'
 import { LaptopMinimal, SunMedium, Moon } from 'lucide-react'
 import { useTheme } from '@/components/ui/theme-provider.jsx'
 import type { Theme } from '@/components/ui/theme-provider.jsx'
@@ -11,9 +9,9 @@ const SidebarThemeSwitcher = () => {
 
   const themes = ['system', 'light', 'dark']
   const themeIcons = {
-    system: <LaptopMinimal />,
-    light: <SunMedium />,
-    dark: <Moon />,
+    system: LaptopMinimal,
+    light: SunMedium,
+    dark: Moon,
   }
   const themeLabels = {
     system: 'System',
@@ -27,14 +25,13 @@ const SidebarThemeSwitcher = () => {
     setTheme(nextTheme as Theme)
   }
 
-  return (
-    <SidebarMenuItem>
-      <SidebarMenuButton role="button" onClick={toggleTheme}>
-        {themeIcons[theme]}
-        <span>{themeLabels[theme]}</span>
-      </SidebarMenuButton>
-    </SidebarMenuItem>
-  )
+  const themeItem: MenuItem = {
+    title: themeLabels[theme],
+    icon: themeIcons[theme],
+    onClick: toggleTheme,
+  }
+
+  return <SidebarMenuLink items={[themeItem]} />
 }
 
 export { SidebarThemeSwitcher }

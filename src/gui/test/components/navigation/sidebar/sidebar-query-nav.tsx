@@ -116,17 +116,3 @@ test('SidebarQueryNav render with saved queries', () => {
   const { container } = render(<Container />)
   expect(container.innerHTML).toMatchSnapshot()
 })
-
-test('SidebarQueryNav render help view', () => {
-  vi.mocked(useViewSidebar).mockReturnValue({
-    isOnHelpView: vi.fn().mockReturnValue(true),
-    isOnExploreView: vi.fn().mockReturnValue(false),
-  })
-
-  const Container = () => {
-    return <SidebarQueryNav />
-  }
-
-  const { container } = render(<Container />)
-  expect(container.innerHTML).toBe('')
-})

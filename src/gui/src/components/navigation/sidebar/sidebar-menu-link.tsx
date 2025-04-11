@@ -1,4 +1,4 @@
-import { useState, Fragment } from 'react'
+import { useEffect, useState, Fragment } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import type { Variants } from 'framer-motion'
 import type { MenuItem } from '@/components/navigation/sidebar/menu.js'
@@ -60,6 +60,8 @@ const renderItems = ({
   openItems,
   setOpenItems,
   onParentClick,
+  state,
+  toggleSidebar,
 }: {
   items: MenuItem[]
   depth?: number
@@ -71,6 +73,8 @@ const renderItems = ({
   setOpenItems: React.Dispatch<
     React.SetStateAction<Record<string, boolean>>
   >
+  state: 'expanded' | 'collapsed'
+  toggleSidebar: () => void
 }) => {
   return items.map(item => {
     const Comp = item.url ? NavLink : 'button'
@@ -96,28 +100,36 @@ const renderItems = ({
           onClick={onParentClick}
           className="group/collapsible hover:bg-transparent">
           <MenuItemComp>
-            <CollapsibleTrigger asChild>
+            <CollapsibleTrigger
+              onClick={
+                state === 'collapsed' ? toggleSidebar : undefined
+              }
+              asChild>
               <MenuItemButton
                 asChild
                 onMouseLeave={() => setHoveredItem(null)}
                 onMouseEnter={() => setHoveredItem(item.title)}
                 {...(depth === 0 ? { tooltip: item.title } : {})}
                 isActive={pathname === item.url}
+                data-active={pathname === item.url}
                 className={cn(
-                  'whitespace-nowrap data-[active=true]:bg-neutral-200/75 data-[active=true]:text-foreground data-[active=true]:dark:bg-muted/60 data-[active=true]:dark:text-foreground',
+                  'whitespace-nowrap data-[active=true]:bg-neutral-200/75 data-[active=true]:text-foreground data-[active=true]:dark:bg-muted/60 data-[active=true]:dark:text-foreground [&>*]:data-[active=true]:text-foreground [&>svg]:data-[active=false]:text-muted-foreground',
                   item.vltIcon && '[&>svg]:scale-[2]',
                 )}>
                 <Comp
                   to={item.url ? item.url : ''}
                   onClick={item.onClick}
+                  role="button"
                   className="duration-250 group/sidebar-button w-full cursor-default text-muted-foreground transition-all hover:bg-transparent data-[state=open]:hover:bg-transparent">
                   {item.icon && (
                     <item.icon style={{ zIndex: depth + 1 }} />
                   )}
-                  <span style={{ zIndex: depth + 1 }}>
+                  <span
+                    className="text-muted-foreground"
+                    style={{ zIndex: depth + 1 }}>
                     {item.title}
                   </span>
-                  {item.external && (
+                  {item.externalIcon && item.external && (
                     <ArrowUpRight className="duration-250 z-[3] ml-auto transition-all group-hover/sidebar-button:-translate-y-0.5 group-hover/sidebar-button:translate-x-0.5" />
                   )}
                   {item.items?.length && (
@@ -162,7 +174,8 @@ const renderItems = ({
                     initial="hidden"
                     animate="visible"
                     exit="hidden"
-                    variants={sublistVariants}>
+                    variants={sublistVariants}
+                    className="flex flex-col gap-1">
                     {renderItems({
                       items: item.items,
                       depth: depth + 1,
@@ -171,6 +184,8 @@ const renderItems = ({
                       setHoveredItem,
                       openItems,
                       setOpenItems,
+                      state,
+                      toggleSidebar,
                     })}
                   </motion.div>
                 </SidebarMenuSub>
@@ -188,10 +203,27 @@ export const SidebarMenuLink = ({
   items,
 }: SidebarMenuLinkProps) => {
   const { pathname } = useLocation()
-  const { hoveredItem, setHoveredItem } = useSidebar()
+  const { state, toggleSidebar, hoveredItem, setHoveredItem } =
+    useSidebar()
   const [openItems, setOpenItems] = useState<Record<string, boolean>>(
     {},
   )
+
+  /**
+   * When the sidebar state becomes 'collapsed', we want
+   * to close all the open 'Collapsible's'
+   */
+  useEffect(() => {
+    if (state === 'collapsed') {
+      setOpenItems(prev => {
+        const newState = { ...prev }
+        Object.keys(newState).forEach(key => {
+          newState[key] = false
+        })
+        return newState
+      })
+    }
+  }, [state])
 
   return renderItems({
     items,
@@ -202,5 +234,7 @@ export const SidebarMenuLink = ({
     openItems,
     setOpenItems,
     onParentClick,
+    state,
+    toggleSidebar,
   })
 }

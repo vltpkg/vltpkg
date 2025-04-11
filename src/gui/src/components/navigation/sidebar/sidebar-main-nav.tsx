@@ -1,4 +1,3 @@
-import { useViewSidebar } from '@/components/navigation/sidebar/use-view-sidebar.jsx'
 import {
   SidebarGroup,
   SidebarMenu,
@@ -7,9 +6,6 @@ import { SidebarMenuLink } from '@/components/navigation/sidebar/sidebar-menu-li
 import { mainMenuItems } from '@/components/navigation/sidebar/menu.js'
 
 export const SidebarMainNav = () => {
-  const { isOnHelpView } = useViewSidebar()
-
-  if (isOnHelpView()) return null
   return (
     <SidebarGroup>
       <SidebarMenu>
