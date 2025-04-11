@@ -5,7 +5,11 @@ import {
   getSimpleGraph,
   getSingleWorkspaceGraph,
 } from './fixtures/graph.ts'
-import type { ParserState, PostcssNode } from '../src/types.ts'
+import type {
+  ParsedSelectorToken,
+  ParserState,
+  PostcssNode,
+} from '../src/types.ts'
 import { copyGraphSelectionState } from './fixtures/selector.ts'
 import { joinDepIDTuple } from '@vltpkg/dep-id'
 import {
@@ -300,4 +304,231 @@ t.test('Query.hasSecuritySelectors', async t => {
   )
   t.notOk(Query.hasSecuritySelectors(':foo'), 'should return false')
   t.notOk(Query.hasSecuritySelectors(':has'), 'should return false')
+})
+
+t.test('parse', t => {
+  const normalizeParseOutput = (nodes: ParsedSelectorToken[]) => {
+    return nodes.map(node => {
+      return {
+        type: node.type,
+        token: node.token,
+      }
+    })
+  }
+
+  t.test('should parse empty query', t => {
+    t.strictSame(normalizeParseOutput(Query.parse('')), [])
+    t.end()
+  })
+
+  t.test('should parse pseudo selector', t => {
+    t.strictSame(normalizeParseOutput(Query.parse(':root')), [
+      {
+        type: 'pseudo',
+        token: ':root',
+      },
+    ])
+    t.end()
+  })
+
+  t.test('should parse attribute selector', t => {
+    t.test('with value', t => {
+      t.strictSame(
+        normalizeParseOutput(Query.parse('[name="react"]')),
+        [
+          {
+            type: 'attribute',
+            token: '[name="react"]',
+          },
+        ],
+      )
+      t.end()
+    })
+
+    t.test('with operator', t => {
+      t.strictSame(
+        normalizeParseOutput(Query.parse('[name^="react"]')),
+        [
+          {
+            type: 'attribute',
+            token: '[name^="react"]',
+          },
+        ],
+      )
+      t.end()
+    })
+
+    t.test('without value', t => {
+      t.strictSame(normalizeParseOutput(Query.parse('[name]')), [
+        {
+          type: 'attribute',
+          token: '[name]',
+        },
+      ])
+      t.end()
+    })
+    t.end()
+  })
+
+  t.test('should parse class selector', t => {
+    t.strictSame(normalizeParseOutput(Query.parse('.container')), [
+      {
+        type: 'class',
+        token: '.container',
+      },
+    ])
+    t.end()
+  })
+
+  t.test('should parse id selector', t => {
+    t.strictSame(normalizeParseOutput(Query.parse('#main')), [
+      {
+        type: 'id',
+        token: '#main',
+      },
+    ])
+    t.end()
+  })
+
+  t.test('should parse tags', t => {
+    t.strictSame(normalizeParseOutput(Query.parse('name=test')), [
+      {
+        type: 'tag',
+        token: 'name=test',
+      },
+    ])
+    t.end()
+  })
+
+  t.test('should parse strings', t => {
+    t.strictSame(normalizeParseOutput(Query.parse('name="test"')), [
+      {
+        type: 'tag',
+        token: 'name=',
+      },
+      {
+        type: 'string',
+        token: '"test"',
+      },
+    ])
+    t.end()
+  })
+
+  t.test('should parse combinator', t => {
+    t.test('non-whitespace', t => {
+      t.strictSame(normalizeParseOutput(Query.parse('>')), [
+        {
+          type: 'combinator',
+          token: '>',
+        },
+      ])
+      t.end()
+    })
+
+    t.test('whitespace', t => {
+      t.strictSame(Query.parse(' '), [])
+      t.end()
+    })
+    t.end()
+  })
+
+  t.test('should parse complex selector', t => {
+    t.test('with nested selectors', t => {
+      t.strictSame(
+        normalizeParseOutput(
+          Query.parse(':root > [name="react"] .container'),
+        ),
+        [
+          {
+            type: 'pseudo',
+            token: ':root',
+          },
+          {
+            type: 'combinator',
+            token: ' > ',
+          },
+          {
+            type: 'attribute',
+            token: '[name="react"]',
+          },
+          {
+            type: 'combinator',
+            token: ' ',
+          },
+          {
+            type: 'class',
+            token: '.container',
+          },
+        ],
+      )
+      t.end()
+    })
+
+    t.test('with nested pseudo selectors', t => {
+      t.strictSame(
+        normalizeParseOutput(Query.parse(':not(#react)')),
+        [
+          {
+            type: 'pseudo',
+            token: ':not(',
+          },
+          {
+            type: 'id',
+            token: '#react',
+          },
+          {
+            type: 'pseudo',
+            token: ')',
+          },
+        ],
+      )
+      t.end()
+    })
+
+    t.test('with malformed queries', t => {
+      t.test('should handle unclosed brackets', t => {
+        t.strictSame(
+          normalizeParseOutput(Query.parse('[name="react"')),
+          [],
+        )
+        t.end()
+      })
+
+      t.test('should handle unclosed pseudo selectors', t => {
+        t.strictSame(
+          normalizeParseOutput(Query.parse(':not(#react')),
+          [
+            {
+              type: 'pseudo',
+              token: ':not',
+            },
+          ],
+        )
+        t.end()
+      })
+      t.end()
+    })
+
+    t.test('with multiple attributes', t => {
+      t.strictSame(
+        normalizeParseOutput(
+          Query.parse('[name="react"][version="18"]'),
+        ),
+        [
+          {
+            type: 'attribute',
+            token: '[name="react"]',
+          },
+          {
+            type: 'attribute',
+            token: '[version="18"]',
+          },
+        ],
+      )
+      t.end()
+    })
+    t.end()
+  })
+
+  t.end()
 })
