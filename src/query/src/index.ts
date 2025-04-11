@@ -433,7 +433,7 @@ export class Query {
 
     const ast = (q: string) => {
       try {
-        return postcssSelectorParser().astSync(q)
+        return parse(q)
       } catch (_e) {
         return ast(q.slice(0, -1))
       }
