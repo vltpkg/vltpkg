@@ -9,6 +9,19 @@ vi.mock('@/components/query-bar/query-token.jsx', () => ({
   QueryToken: 'gui-query-token',
 }))
 
+vi.mock('@/components/query-bar/context.jsx', () => ({
+  QueryBarProvider: 'gui-query-bar-provider',
+  useQueryBar: () => ({
+    query: ':root > :not(#react, [name="react-sass"])',
+    parsedTokens: Query.parse(
+      ':root > :not(#react, [name="react-sass"])',
+    ),
+    setParsedTokens: vi.fn(),
+    queryError: undefined,
+    setQueryError: vi.fn(),
+  }),
+}))
+
 expect.addSnapshotSerializer({
   serialize: v => html(v),
   test: () => true,
@@ -21,16 +34,8 @@ afterEach(() => {
 })
 
 test('query-highlighter render default', () => {
-  const mockQuery = ':root > :not(#react, [name="react-sass"])'
-  const mockParsedTokens = Query.parse(mockQuery)
-
   const Container = () => {
-    return (
-      <QueryHighlighter
-        query={mockQuery}
-        parsedTokens={mockParsedTokens}
-      />
-    )
+    return <QueryHighlighter />
   }
 
   const { container } = render(<Container />)

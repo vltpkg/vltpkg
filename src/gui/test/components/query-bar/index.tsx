@@ -13,6 +13,23 @@ vi.mock('@/components/query-bar/query-highlighter.jsx', () => ({
   QueryHighlighter: 'gui-query-highlighter',
 }))
 
+vi.mock('lucide-react', () => ({
+  Search: 'gui-search',
+  Command: 'gui-command',
+}))
+
+vi.mock('@/components/ui/kbd.jsx', () => ({
+  Kbd: 'gui-kbd',
+}))
+
+vi.mock('@/components/explorer-grid/query-matches.jsx', () => ({
+  QueryMatches: 'gui-query-matches',
+}))
+
+vi.mock('@/components/explorer-grid/save-query.jsx', () => ({
+  default: 'gui-save-query',
+}))
+
 expect.addSnapshotSerializer({
   serialize: v => html(v),
   test: () => true,

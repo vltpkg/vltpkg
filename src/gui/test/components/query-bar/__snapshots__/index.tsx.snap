@@ -4,10 +4,17 @@ exports[`query-bar render default 1`] = `
 
 <div>
   <div class="relative flex grow items-center">
+    <div class="absolute pr-8">
+      <gui-search
+        size="20"
+        classname="ml-3 text-neutral-500"
+      >
+      </gui-search>
+    </div>
     <div class="relative w-full">
       <input
         type="text"
-        class="clear-none flex h-10 w-full rounded-md border border-input px-3 py-2 ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-muted-foreground/5 undefined bg-transparent text-sm text-transparent caret-black dark:caret-white"
+        class="clear-none flex h-10 rounded-md border border-input px-3 py-2 ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 relative w-full bg-white pl-10 text-sm text-transparent caret-black dark:bg-muted-foreground/5 dark:caret-white"
         role="search"
         autocorrect="off"
         autocomplete="off"
@@ -15,11 +22,23 @@ exports[`query-bar render default 1`] = `
         placeholder="Query Lookup, e.g: :root > *"
         value=":root"
       >
-      <gui-query-highlighter
-        query=":root"
-        parsedtokens
-      >
+      <gui-query-highlighter>
       </gui-query-highlighter>
+    </div>
+    <div class="absolute right-0">
+      <div class="mr-3 hidden items-center gap-1 backdrop-blur-sm md:flex">
+        <gui-query-matches>
+        </gui-query-matches>
+        <gui-save-query>
+        </gui-save-query>
+        <gui-kbd classname="before:content-[&quot; &quot;] relative ml-3 before:absolute before:-ml-10 before:h-[0.75rem] before:w-[1.25px] before:rounded-sm before:bg-neutral-600">
+          <gui-command size="12">
+          </gui-command>
+        </gui-kbd>
+        <gui-kbd classname="text-sm">
+          k
+        </gui-kbd>
+      </div>
     </div>
   </div>
 </div>
@@ -30,10 +49,17 @@ exports[`query-bar render with custom query 1`] = `
 
 <div>
   <div class="relative flex grow items-center">
+    <div class="absolute pr-8">
+      <gui-search
+        size="20"
+        classname="ml-3 text-neutral-500"
+      >
+      </gui-search>
+    </div>
     <div class="relative w-full">
       <input
         type="text"
-        class="clear-none flex h-10 w-full rounded-md border border-input px-3 py-2 ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-muted-foreground/5 undefined bg-transparent text-sm text-transparent caret-black dark:caret-white"
+        class="clear-none flex h-10 rounded-md border border-input px-3 py-2 ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 relative w-full bg-white pl-10 text-sm text-transparent caret-black dark:bg-muted-foreground/5 dark:caret-white"
         role="search"
         autocorrect="off"
         autocomplete="off"
@@ -41,11 +67,23 @@ exports[`query-bar render with custom query 1`] = `
         placeholder="Query Lookup, e.g: :root > *"
         value="[name=&quot;my-package&quot;][version=&quot;1.0.0&quot;]"
       >
-      <gui-query-highlighter
-        query="[name=&quot;my-package&quot;][version=&quot;1.0.0&quot;]"
-        parsedtokens
-      >
+      <gui-query-highlighter>
       </gui-query-highlighter>
+    </div>
+    <div class="absolute right-0">
+      <div class="mr-3 hidden items-center gap-1 backdrop-blur-sm md:flex">
+        <gui-query-matches>
+        </gui-query-matches>
+        <gui-save-query>
+        </gui-save-query>
+        <gui-kbd classname="before:content-[&quot; &quot;] relative ml-3 before:absolute before:-ml-10 before:h-[0.75rem] before:w-[1.25px] before:rounded-sm before:bg-neutral-600">
+          <gui-command size="12">
+          </gui-command>
+        </gui-kbd>
+        <gui-kbd classname="text-sm">
+          k
+        </gui-kbd>
+      </div>
     </div>
   </div>
 </div>

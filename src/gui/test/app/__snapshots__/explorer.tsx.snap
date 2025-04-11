@@ -15,12 +15,7 @@ exports[`explorer has project root info 1`] = `
       <div class="flex w-full max-w-8xl flex-row items-center gap-2">
         <gui-root-button>
         </gui-root-button>
-        <gui-query-bar
-          tabindex="0"
-          classname="relative w-full bg-white dark:bg-muted-foreground/5"
-          startcontent="[object Object]"
-          endcontent="[object Object]"
-        >
+        <gui-query-bar>
         </gui-query-bar>
       </div>
     </section>
