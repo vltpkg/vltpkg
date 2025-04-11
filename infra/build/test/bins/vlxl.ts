@@ -8,5 +8,5 @@ t.test('basic', async t => {
       '../../src/bins.ts': { run },
     },
   )
-  t.strictSame(run.args(), [['exec']])
+  t.strictSame(run.args(), [['exec-local']])
 })
