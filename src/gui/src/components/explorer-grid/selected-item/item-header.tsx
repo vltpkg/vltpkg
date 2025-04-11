@@ -24,10 +24,6 @@ import type { GridItemData } from '@/components/explorer-grid/types.js'
 import { ProgressBar } from '@/components/ui/progress-bar.jsx'
 import { getScoreColor } from '@/components/explorer-grid/selected-item/insight-score-helper.js'
 import { cn } from '@/lib/utils.js'
-import {
-  InsightBadge,
-  getAlertColor,
-} from '@/components/explorer-grid/selected-item/insight-badge.jsx'
 
 const SpecOrigin = ({
   item,
@@ -133,7 +129,7 @@ const Downloads = () => {
 }
 
 export const ItemHeader = () => {
-  const { selectedItemDetails, insights, packageScore } =
+  const { selectedItemDetails, packageScore, manifest } =
     useSelectedItem()
 
   return (
@@ -153,34 +149,42 @@ export const ItemHeader = () => {
           : 'hidden',
         )}>
         <Publisher />
-        <PackageOverallScore />
       </div>
       <div
         className={cn(
-          'px-6 pt-3',
-          insights ? 'border-t-[1px] border-muted' : 'hidden',
+          'flex w-full justify-between px-6',
+          manifest && (manifest.engines || manifest.type) ?
+            'border-b-[1px] border-t-[1px] border-muted py-3'
+          : 'hidden',
         )}>
-        <PackageInsights />
+        <PackageMetadata />
+        <PackageOverallScore />
       </div>
     </motion.div>
   )
 }
 
-const PackageInsights = () => {
-  const { insights } = useSelectedItem()
+const PackageMetadata = () => {
+  const { selectedItemDetails, manifest } = useSelectedItem()
 
-  if (!insights || insights.length === 0) return null
+  if (!manifest) return null
+
+  console.log(selectedItemDetails)
 
   return (
-    <div className="flex w-full flex-wrap gap-3">
-      {insights.map((insight, idx) => (
-        <InsightBadge
-          key={idx}
-          color={getAlertColor(insight.severity)}
-          tooltipContent={`${insight.severity} severity`}>
-          {insight.selector}
-        </InsightBadge>
-      ))}
+    <div className="flex w-full">
+      {manifest.type && <InlineCode>{manifest.type}</InlineCode>}
+      {manifest.engines &&
+        Object.entries(manifest.engines).map(
+          ([engine, version], idx) => (
+            <InlineCode
+              variant="mono"
+              className="mx-0 inline-flex items-center"
+              key={`${engine}-${version}-${idx}`}>
+              {`${engine}: ${version}`}
+            </InlineCode>
+          ),
+        )}
     </div>
   )
 }
