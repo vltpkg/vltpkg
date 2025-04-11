@@ -15,7 +15,10 @@ const remover = {
 } as unknown as RollbackRemove
 
 t.afterEach(test =>
-  t.matchSnapshot(removed, `removed by ${test.name}`),
+  t.matchSnapshot(
+    removed.map(r => r.replace(/\\/g, '/')),
+    `removed by ${test.name}`,
+  ),
 )
 
 const fixtures = t.testdir({
