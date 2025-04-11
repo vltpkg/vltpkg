@@ -1,11 +1,11 @@
 {
-  "name": "@vltpkg/graph",
-  "description": "A library that helps understanding & expressing what happens on an install",
+  "name": "@vltpkg/cmd-shim",
+  "description": "Executable script shims for Windows",
   "version": "0.0.0-8",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/vltpkg/vltpkg.git",
-    "directory": "src/graph"
+    "directory": "src/cmd-shim"
   },
   "tshy": {
     "selfLink": false,
@@ -15,38 +15,20 @@
     ],
     "exports": {
       "./package.json": "./package.json",
-      ".": "./src/index.ts",
-      "./browser": "./src/browser.ts"
+      ".": "./src/index.ts"
     }
   },
   "dependencies": {
-    "@vltpkg/cmd-shim": "workspace:*",
-    "@vltpkg/dep-id": "workspace:*",
     "@vltpkg/error-cause": "workspace:*",
-    "@vltpkg/fast-split": "workspace:*",
-    "@vltpkg/output": "workspace:*",
-    "@vltpkg/package-info": "workspace:*",
-    "@vltpkg/package-json": "workspace:*",
-    "@vltpkg/pick-manifest": "workspace:*",
-    "@vltpkg/rollback-remove": "workspace:*",
-    "@vltpkg/run": "workspace:*",
-    "@vltpkg/satisfies": "workspace:*",
-    "@vltpkg/spec": "workspace:*",
-    "@vltpkg/types": "workspace:*",
-    "@vltpkg/workspaces": "workspace:*",
-    "graph-run": "catalog:",
-    "path-scurry": "catalog:",
-    "promise-call-limit": "catalog:"
+    "@vltpkg/rollback-remove": "workspace:*"
   },
   "devDependencies": {
     "@eslint/js": "catalog:",
     "@types/eslint__js": "catalog:",
     "@types/node": "catalog:",
-    "chalk": "catalog:",
     "eslint": "catalog:",
     "prettier": "catalog:",
     "tap": "catalog:",
-    "tar": "catalog:",
     "tshy": "catalog:",
     "typedoc": "catalog:",
     "typescript": "catalog:",
@@ -78,11 +60,6 @@
     ".": {
       "import": {
         "default": "./src/index.ts"
-      }
-    },
-    "./browser": {
-      "import": {
-        "default": "./src/browser.ts"
       }
     }
   },

@@ -5,14 +5,17 @@
  * Make sure to inspect the output below.  Do not ignore changes!
  */
 'use strict'
-exports[`test/commands/install-exec.ts > TAP > basic > usage 1`] = `
-Usage:
-  vlt install-exec [--package=<pkg>] [command...]
+exports[`test/paths.ts > TAP > unix paths > must match snapshot 1`] = `
+Array [
+  "some-path",
+]
+`
 
-Run a command defined by a package, installing it if necessary
-
-  Aliases
-
-    ​ix
-
+exports[`test/paths.ts > TAP > windows paths > must match snapshot 1`] = `
+Array [
+  "some-path.cmd",
+  "some-path.ps1",
+  "some-path",
+  "some-path.pwsh",
+]
 `
