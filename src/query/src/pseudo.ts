@@ -19,6 +19,7 @@ import { cve } from './pseudo/cve.ts'
 import { cwe } from './pseudo/cwe.ts'
 import { debug } from './pseudo/debug.ts'
 import { deprecated } from './pseudo/deprecated.ts'
+import { dev } from './pseudo/dev.ts'
 import { dynamic } from './pseudo/dynamic.ts'
 import { empty } from './pseudo/empty.ts'
 import { entropic } from './pseudo/entropic.ts'
@@ -33,9 +34,12 @@ import { missing } from './pseudo/missing.ts'
 import { nativeParser } from './pseudo/native.ts'
 import { network } from './pseudo/network.ts'
 import { obfuscated } from './pseudo/obfuscated.ts'
+import { optional } from './pseudo/optional.ts'
 import { outdated } from './pseudo/outdated.ts'
+import { peer } from './pseudo/peer.ts'
 import { published } from './pseudo/published.ts'
 import { privateParser } from './pseudo/private.ts'
+import { prod } from './pseudo/prod.ts'
 import { scanned } from './pseudo/scanned.ts'
 import { score } from './pseudo/score.ts'
 import { scripts } from './pseudo/scripts.ts'
@@ -52,6 +56,7 @@ import { unknown } from './pseudo/unknown.ts'
 import { unmaintained } from './pseudo/unmaintained.ts'
 import { unpopular } from './pseudo/unpopular.ts'
 import { unstable } from './pseudo/unstable.ts'
+import { workspace } from './pseudo/workspace.ts'
 
 /**
  * :has Pseudo-Selector, matches only nodes that have valid results
@@ -321,6 +326,7 @@ const pseudoSelectors = new Map<string, ParserFn>(
     cwe,
     debug,
     deprecated,
+    dev,
     dynamic,
     eval: evalParser,
     empty,
@@ -338,10 +344,13 @@ const pseudoSelectors = new Map<string, ParserFn>(
     network,
     not,
     obfuscated,
+    optional,
     outdated,
+    peer,
     published,
     // TODO: overridden
     private: privateParser,
+    prod,
     project,
     root,
     scanned,
@@ -364,6 +373,7 @@ const pseudoSelectors = new Map<string, ParserFn>(
     unpopular,
     unstable,
     v: semver,
+    workspace,
   }),
 )
 

@@ -5,6 +5,8 @@ import {
   removeDanglingEdges,
   removeNode,
   removeQuotes,
+  removeEdge,
+  removeUnlinkedNodes,
 } from '../../src/pseudo/helpers.ts'
 import {
   getMissingNodeGraph,
@@ -112,6 +114,100 @@ t.test('removeQuotes', async t => {
   t.equal(removeQuotes('"a"'), 'a', 'should remove quotes')
   t.equal(removeQuotes('a'), 'a', 'should not remove quotes')
   t.equal(removeQuotes('1234'), '1234', 'should not remove quotes')
+})
+
+t.test('removeEdge', async t => {
+  await t.test('remove an edge and its outgoing node', async t => {
+    const graph = getSimpleGraph()
+    const edge = [...graph.edges].find(e => e.name === 'a')!
+    const partial = {
+      edges: new Set(graph.edges),
+      nodes: new Set(graph.nodes.values()),
+    }
+    const state = { partial } as ParserState
+
+    removeEdge(state, edge)
+
+    t.notOk(
+      [...state.partial.edges].includes(edge),
+      'should remove the edge',
+    )
+    t.notOk(
+      [...state.partial.nodes].includes(edge.to!),
+      'should remove the outgoing node',
+    )
+  })
+
+  await t.test('remove an edge with no outgoing node', async t => {
+    const graph = getMissingNodeGraph()
+    const edge = [...graph.edges].find(e => e.name === 'a')!
+    const partial = {
+      edges: new Set(graph.edges),
+      nodes: new Set(graph.nodes.values()),
+    }
+    const state = { partial } as ParserState
+
+    removeEdge(state, edge)
+
+    t.notOk(
+      [...state.partial.edges].includes(edge),
+      'should remove the edge',
+    )
+    t.strictSame(
+      [...state.partial.nodes],
+      [...graph.nodes.values()],
+      'should not modify nodes when edge has no outgoing node',
+    )
+  })
+})
+
+t.test('removeUnlinkedNodes', async t => {
+  await t.test('graph with unlinked nodes', async t => {
+    const graph = getMultiWorkspaceGraph()
+    // Get node b, which has no incoming edges in the multi-workspace graph
+    const nodeB = graph.nodes.get(joinDepIDTuple(['workspace', 'b']))!
+    const partial = {
+      edges: new Set(graph.edges),
+      nodes: new Set(graph.nodes.values()),
+    }
+    const state = { partial } as ParserState
+
+    removeUnlinkedNodes(state)
+
+    const expectedNodes = [...graph.nodes.values()].filter(
+      n => n !== nodeB && n.edgesIn.size > 0,
+    )
+    t.strictSame(
+      [...state.partial.nodes],
+      expectedNodes,
+      'should remove nodes with no incoming edges',
+    )
+  })
+
+  await t.test(
+    'graph with all nodes having incoming edges',
+    async t => {
+      const graph = getSimpleGraph()
+      // All nodes except main importer in simple graph have incoming edges
+      const partial = {
+        edges: new Set(graph.edges),
+        nodes: new Set(
+          [...graph.nodes.values()].filter(
+            n => n !== graph.mainImporter,
+          ),
+        ),
+      }
+      const state = { partial } as ParserState
+
+      removeUnlinkedNodes(state)
+
+      t.strictSame(
+        [...state.partial.nodes],
+        [...partial.nodes],
+        'should not remove any nodes when all have incoming edges',
+      )
+    },
+  )
 })
 
 t.test('selects packages with an unmaintained alert', async t => {

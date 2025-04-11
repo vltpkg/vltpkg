@@ -133,7 +133,7 @@ t.test('attribute', async t => {
 
 t.test('bad selector type', async t => {
   await t.rejects(
-    testAttr('.dev'),
+    testAttr(':dev'),
     /Mismatching query node/,
     'should throw an error',
   )

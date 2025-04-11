@@ -54,6 +54,13 @@ Object {
 }
 `
 
+exports[`test/pseudo.ts > TAP > pseudo > cycle > query > ":dev" 1`] = `
+Object {
+  "edges": Array [],
+  "nodes": Array [],
+}
+`
+
 exports[`test/pseudo.ts > TAP > pseudo > cycle > query > ":empty" 1`] = `
 Object {
   "edges": Array [],
@@ -133,7 +140,16 @@ Object {
 }
 `
 
-exports[`test/pseudo.ts > TAP > pseudo > missing node > query > ":has(.dev)" 1`] = `
+exports[`test/pseudo.ts > TAP > pseudo > missing node > query > ":dev" 1`] = `
+Object {
+  "edges": Array [
+    "b",
+  ],
+  "nodes": Array [],
+}
+`
+
+exports[`test/pseudo.ts > TAP > pseudo > missing node > query > ":has(:dev)" 1`] = `
 Object {
   "edges": Array [],
   "nodes": Array [],
@@ -495,6 +511,37 @@ Object {
 }
 `
 
+exports[`test/pseudo.ts > TAP > pseudo > query > ":dev" 1`] = `
+Object {
+  "edges": Array [
+    "@x/y",
+    "b",
+  ],
+  "nodes": Array [
+    "@x/y",
+    "b",
+  ],
+}
+`
+
+exports[`test/pseudo.ts > TAP > pseudo > query > ":dev" 2`] = `
+Object {
+  "edges": Array [
+    "b",
+  ],
+  "nodes": Array [
+    "b",
+  ],
+}
+`
+
+exports[`test/pseudo.ts > TAP > pseudo > query > ":dev" 3`] = `
+Object {
+  "edges": Array [],
+  "nodes": Array [],
+}
+`
+
 exports[`test/pseudo.ts > TAP > pseudo > query > ":empty" 1`] = `
 Object {
   "edges": Array [
@@ -740,7 +787,7 @@ Object {
 }
 `
 
-exports[`test/pseudo.ts > TAP > pseudo > query > ":is(#foo, .asdf, [name===z], :root +, :nonexistingselector)" 1`] = `
+exports[`test/pseudo.ts > TAP > pseudo > query > ":is(#foo, [name===z], :root +, :nonexistingselector)" 1`] = `
 Object {
   "edges": Array [
     "@x/y",
@@ -1087,6 +1134,20 @@ Object {
 }
 `
 
+exports[`test/pseudo.ts > TAP > pseudo > workspace > query > ":dev" 1`] = `
+Object {
+  "edges": Array [],
+  "nodes": Array [],
+}
+`
+
+exports[`test/pseudo.ts > TAP > pseudo > workspace > query > ":dev" 2`] = `
+Object {
+  "edges": Array [],
+  "nodes": Array [],
+}
+`
+
 exports[`test/pseudo.ts > TAP > pseudo > workspace > query > ":empty" 1`] = `
 Object {
   "edges": Array [],
@@ -1097,7 +1158,7 @@ Object {
 }
 `
 
-exports[`test/pseudo.ts > TAP > pseudo > workspace > query > ":is(.workspace, :root)" 1`] = `
+exports[`test/pseudo.ts > TAP > pseudo > workspace > query > ":is(:workspace, :root)" 1`] = `
 Object {
   "edges": Array [],
   "nodes": Array [
@@ -1107,14 +1168,14 @@ Object {
 }
 `
 
-exports[`test/pseudo.ts > TAP > pseudo > workspace > query > ":is(.workspace, :root)" 2`] = `
+exports[`test/pseudo.ts > TAP > pseudo > workspace > query > ":is(:workspace, :root)" 2`] = `
 Object {
   "edges": Array [],
   "nodes": Array [],
 }
 `
 
-exports[`test/pseudo.ts > TAP > pseudo > workspace > query > ":is(.workspace)" 1`] = `
+exports[`test/pseudo.ts > TAP > pseudo > workspace > query > ":is(:workspace)" 1`] = `
 Object {
   "edges": Array [],
   "nodes": Array [
@@ -1123,7 +1184,7 @@ Object {
 }
 `
 
-exports[`test/pseudo.ts > TAP > pseudo > workspace > query > ":is(.workspace)" 2`] = `
+exports[`test/pseudo.ts > TAP > pseudo > workspace > query > ":is(:workspace)" 2`] = `
 Object {
   "edges": Array [],
   "nodes": Array [],
@@ -1146,14 +1207,14 @@ Object {
 }
 `
 
-exports[`test/pseudo.ts > TAP > pseudo > workspace > query > ":not(.workspace, :root)" 1`] = `
+exports[`test/pseudo.ts > TAP > pseudo > workspace > query > ":not(:workspace, :root)" 1`] = `
 Object {
   "edges": Array [],
   "nodes": Array [],
 }
 `
 
-exports[`test/pseudo.ts > TAP > pseudo > workspace > query > ":not(.workspace)" 1`] = `
+exports[`test/pseudo.ts > TAP > pseudo > workspace > query > ":not(:workspace)" 1`] = `
 Object {
   "edges": Array [],
   "nodes": Array [
