@@ -38,7 +38,15 @@ export const QueryHighlighter = ({
       q = q.slice(token.length)
       curr++
     } else {
-      break
+      const [unrecognizedToken] = q.split(token)
+      if (!unrecognizedToken) break
+      const segment = {
+        type: 'string' as ParsedSelectorToken['type'],
+        token: unrecognizedToken,
+      }
+      result.push(segment)
+      q = q.slice(unrecognizedToken.length)
+      continue
     }
   }
 

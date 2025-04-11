@@ -19,6 +19,10 @@ export const tokenVariantClasses = {
     light: 'text-green-800 after:bg-green-600/20',
     dark: 'dark:text-green-400 after:dark:bg-green-600/15',
   },
+  tag: {
+    light: 'text-emerald-800 after:bg-emerald-600/20',
+    dark: 'dark:text-emerald-400 after:dark:bg-emerald-600/15',
+  },
   id: {
     light: 'text-pink-800 after:bg-pink-600/20',
     dark: 'dark:text-pink-400 after:dark:bg-pink-600/15',
@@ -26,6 +30,10 @@ export const tokenVariantClasses = {
   combinator: {
     light: 'text-gray-800 after:bg-gray-500/20',
     dark: 'dark:text-gray-300 after:dark:bg-gray-500/20',
+  },
+  string: {
+    light: 'text-violet-800 after:bg-violet-500/20',
+    dark: 'dark:text-violet-300 after:dark:bg-violet-500/20',
   },
   universal: {
     light: 'text-fuchsia-800 after:bg-fuchsia-600/20',

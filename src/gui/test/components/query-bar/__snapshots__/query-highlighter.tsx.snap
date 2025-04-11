@@ -16,6 +16,15 @@ exports[`query-highlighter render default 1`] = `
     <gui-query-token variant="id">
       #react
     </gui-query-token>
+    <gui-query-token variant="string">
+      ,
+    </gui-query-token>
+    <gui-query-token variant="attribute">
+      [name="react-sass"]
+    </gui-query-token>
+    <gui-query-token variant="pseudo">
+      )
+    </gui-query-token>
   </div>
 </div>
 
