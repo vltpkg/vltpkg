@@ -1,5 +1,5 @@
-import { isErrorRoot } from '@vltpkg/error-cause'
-import type { ErrorWithCauseObject } from '@vltpkg/error-cause'
+import { isErrorWithCode } from '@vltpkg/error-cause'
+import type { ErrorWithCode } from '@vltpkg/error-cause'
 import type { CommandUsage } from './index.ts'
 import type { InspectOptions } from 'node:util'
 import { formatWithOptions } from 'node:util'
@@ -49,7 +49,7 @@ export const printErr = (
   // This is an error with a cause, check if it we know about its
   // code and try to print it. If it did not print then fallback
   // to the next option.
-  if (isErrorRoot(err) && print(err, usage, stderr, format)) {
+  if (isErrorWithCode(err) && print(err, usage, stderr, format)) {
     return
   }
 
@@ -86,7 +86,7 @@ export const printErr = (
 }
 
 const print = (
-  err: ErrorWithCauseObject,
+  err: ErrorWithCode,
   usage: CommandUsage,
   stderr: (...a: string[]) => void,
   format: Formatter,
@@ -125,6 +125,4 @@ const print = (
       return true
     }
   }
-
-  return false
 }
