@@ -1,58 +1,126 @@
 import { isErrorRoot } from '@vltpkg/error-cause'
 import type { ErrorWithCauseObject } from '@vltpkg/error-cause'
 import type { CommandUsage } from './index.ts'
-import type { Spec } from '@vltpkg/spec'
+import type { InspectOptions } from 'node:util'
+import { formatWithOptions } from 'node:util'
 
-// returns true if error was printed nicely already
+export type ErrorFormatOptions = InspectOptions & {
+  maxLines?: number
+}
+
+type Formatter = (
+  arg: unknown,
+  options?: ErrorFormatOptions,
+) => string
+
+const trimStack = (err: Error) => {
+  if (err.stack) {
+    const lines = err.stack.trim().split('\n')
+    if (lines[0] === `${err.name}: ${err.message}`) {
+      lines.shift()
+    }
+    return lines.map(l => l.trim()).join('\n')
+  }
+}
+
+const indent = (lines: string, num = 2) =>
+  lines
+    .split('\n')
+    .map(l => ' '.repeat(num) + l)
+    .join('\n')
+
 export const printErr = (
   err: unknown,
   usage: CommandUsage,
-  stderr: (...a: unknown[]) => void,
+  stderr: (...a: string[]) => void,
+  baseOpts?: ErrorFormatOptions,
 ) => {
-  if (!isErrorRoot(err)) {
-    // TODO: print _something_ here, but we're in weird broken territory
-    // don't just dump it and flood the terminal, though, maybe sniff for code
-    // message, stack, etc?
+  const format: Formatter = (arg: unknown, opts) => {
+    const { maxLines = 200, ...rest } = { ...baseOpts, ...opts }
+    const lines = formatWithOptions(rest, arg).split('\n')
+    const totalLines = lines.length
+    if (totalLines > maxLines) {
+      lines.length = maxLines
+      lines.push(`... ${totalLines - maxLines} lines hidden ...`)
+    }
+    return lines.join('\n')
+  }
+
+  // This is an error with a cause, check if it we know about its
+  // code and try to print it. If it did not print then fallback
+  // to the next option.
+  if (isErrorRoot(err) && print(err, usage, stderr, format)) {
     return
   }
-  if (isErrorRoot(err) && print(err, usage, stderr)) return
-  stderr(err)
+
+  // We have a real but we dont know anything special about its
+  // properties. Just print the standard error properties as best we can.
+  if (err instanceof Error) {
+    stderr(`${err.name}: ${err.message}`)
+    if ('cause' in err) {
+      stderr(`Cause:`)
+      if (err.cause instanceof Error) {
+        stderr(indent(format(err.cause)))
+      } else if (err.cause && typeof err.cause === 'object') {
+        for (const key in err.cause) {
+          stderr(
+            indent(
+              `${key}: ${format((err.cause as Record<string, unknown>)[key])}`,
+            ),
+          )
+        }
+      } else {
+        stderr(indent(format(err.cause)))
+      }
+    }
+    const stack = trimStack(err)
+    if (stack) {
+      stderr(`Stack:`)
+      stderr(indent(format(stack)))
+    }
+    return
+  }
+
+  // We don't know what this is, just print it.
+  stderr(`Unknown Error:`, format(err))
 }
 
 const print = (
   err: ErrorWithCauseObject,
   usage: CommandUsage,
-  stderr: (...a: unknown[]) => void,
-): boolean => {
+  stderr: (...a: string[]) => void,
+  format: Formatter,
+) => {
   switch (err.cause.code) {
     case 'EUSAGE': {
+      const { found, validOptions } = err.cause
       stderr(usage().usage())
-      stderr(`Error: ${err.message}`)
-      if (err.cause.found) {
-        stderr(`  Found: ${err.cause.found}`)
+      stderr(`Usage Error: ${err.message}`)
+      if (found) {
+        stderr(indent(`Found: ${format(found)}`))
       }
-      if (err.cause.validOptions) {
+      if (validOptions) {
         stderr(
-          `  Valid options: ${err.cause.validOptions.join(', ')}`,
+          indent(`Valid options: ${format(validOptions.join(', '))}`),
         )
       }
       return true
     }
 
     case 'ERESOLVE': {
-      stderr(`Resolve Error: ${err.message}`)
       const { url, from, response, spec } = err.cause
+      stderr(`Resolve Error: ${err.message}`)
       if (url) {
-        stderr(`  While fetching: ${url}`)
+        stderr(indent(`While fetching: ${url}`))
       }
       if (spec) {
-        stderr(`  To satisfy: ${spec as string | Spec}`)
+        stderr(indent(`To satisfy: ${format(spec)}`))
       }
       if (from) {
-        stderr(`  From: ${from}`)
+        stderr(indent(`From: ${format(from)}`))
       }
       if (response) {
-        stderr('Response:', response)
+        stderr(indent(`Response: ${format(response)}`))
       }
       return true
     }

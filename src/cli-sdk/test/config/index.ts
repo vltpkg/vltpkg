@@ -9,8 +9,7 @@ import * as OS from 'node:os'
 import { resolve } from 'node:path'
 import t from 'tap'
 import type { ConfigData } from '../../src/config/index.ts'
-
-process.env.XDG_CONFIG_HOME = t.testdir()
+import { format } from 'node:util'
 
 const { Config } = await t.mockImport<
   typeof import('../../src/config/index.ts')
@@ -27,7 +26,12 @@ const clearEnv = () => {
     }
   }
 }
+
+process.env.XDG_CONFIG_HOME = t.testdir()
+
 t.beforeEach(() => clearEnv())
+
+t.cleanSnapshot = (str: string) => str.replaceAll(/\\+/g, '/')
 
 t.test('read and write a project config', async t => {
   const dir = t.testdir({
@@ -217,13 +221,17 @@ t.test(
     } as ConfigData
     const opts = conf.options
     const { packageInfo, scurry, packageJson, monorepo, ...o } = opts
-    t.strictSame(o, {
+    t.matchStrict(o, {
       projectRoot: t.testdirName,
       'git-hosts': {
         asdfasdf: 'https://example.com',
         github: 'https://github',
       },
     })
+    t.matchSnapshot(
+      format(opts),
+      'formatted options uses custom inspect',
+    )
     // can't check the type, because it came in via a mockImport,
     // so tap sees a different class.
     t.ok(scurry, 'always includes a scurry')

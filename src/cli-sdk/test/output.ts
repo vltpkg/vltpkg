@@ -120,7 +120,7 @@ t.test('startView', async t => {
   t.test('using a view function for JSON', async t => {
     const { onDone, onError } = startView(confJson, views)
     t.equal(onError, undefined)
-    t.equal(await onDone(true), 'true')
+    t.equal(await onDone(true), true)
     t.equal(await onDone(undefined as unknown as true), undefined)
     t.end()
   })
@@ -128,7 +128,7 @@ t.test('startView', async t => {
   t.test('using a view function not json', async t => {
     const { onDone, onError } = startView(confMermaid, views)
     t.equal(onError, undefined)
-    t.equal(await onDone(true), '{ underthesea: true }')
+    t.strictSame(await onDone(true), { underthesea: true })
     t.equal(await onDone(undefined as unknown as true), undefined)
     t.end()
   })
