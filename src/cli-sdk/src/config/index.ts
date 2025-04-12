@@ -26,9 +26,9 @@ import { PackageInfoClient } from '@vltpkg/package-info'
 import { PackageJson } from '@vltpkg/package-json'
 import { Monorepo } from '@vltpkg/workspaces'
 import { XDG } from '@vltpkg/xdg'
+import type { Jack, OptionsResults, Unwrap } from 'jackspeak'
 import { readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { lstat, mkdir, readFile, writeFile } from 'node:fs/promises'
-import type { Jack, OptionsResults, Unwrap } from 'jackspeak'
 import { homedir } from 'node:os'
 import { dirname, resolve } from 'node:path'
 import { PathScurry } from 'path-scurry'
@@ -56,6 +56,8 @@ export {
   recordFields,
   type Commands,
 }
+
+export const kCustomInspect = Symbol.for('nodejs.util.inspect.custom')
 
 export type RecordPairs = Record<string, unknown>
 export type RecordString = Record<string, string>
@@ -251,6 +253,17 @@ export class Config {
     )
     this.#options = Object.assign(options, {
       packageInfo: new PackageInfoClient(options),
+      [kCustomInspect]() {
+        return Object.fromEntries(
+          Object.entries(options).filter(
+            ([k]) =>
+              k !== 'monorepo' &&
+              k !== 'scurry' &&
+              k !== 'packageJson' &&
+              k !== 'packageInfo',
+          ),
+        )
+      },
     })
     return this.#options
   }
