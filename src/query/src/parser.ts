@@ -1,6 +1,6 @@
 import postcssSelectorParser from 'postcss-selector-parser'
 import type { Root } from 'postcss-selector-parser'
-import { isStringNode } from './types.ts'
+import { isIdentifierNode, isStringNode } from './types.ts'
 import type { PostcssNode } from './types.ts'
 
 /**
@@ -28,7 +28,7 @@ export const parse = (query: string): Root => {
   const escapedQuery = escapeDots(escapeScopedNamesSlashes(query))
   const transformAst = (root: Root) => {
     root.walk((node: PostcssNode) => {
-      if (isStringNode(node)) {
+      if (isIdentifierNode(node) || isStringNode(node)) {
         node.value = unescapeDots(node.value)
       }
     })
