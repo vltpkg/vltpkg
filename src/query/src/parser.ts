@@ -9,7 +9,10 @@ import type { PostcssNode } from './types.ts'
  * package names in the id selector.
  */
 export const escapeScopedNamesSlashes = (query: string): string =>
-  query.replace(/(#@\w+)\//gm, (_, scope: string) => `${scope}\\/`)
+  query.replace(
+    /(#@(\w|-|\.)+)\//gm,
+    (_, scope: string) => `${scope}\\/`,
+  )
 
 export const escapeDots = (query: string): string =>
   query.replaceAll('.', '\\.')
