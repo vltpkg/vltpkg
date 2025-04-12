@@ -10,6 +10,18 @@ t.test('escapeScopedNamesSlashes', async t => {
   )
 
   t.equal(
+    escapeScopedNamesSlashes('#@scope-dash-sep/package'),
+    '#@scope-dash-sep\\/package',
+    'should escape forward slash with dashes',
+  )
+
+  t.equal(
+    escapeScopedNamesSlashes('#@scope.dot.sep/package'),
+    '#@scope.dot.sep\\/package',
+    'should escape forward slash with dots',
+  )
+
+  t.equal(
     escapeScopedNamesSlashes('#@multiple/package #@another/pkg'),
     '#@multiple\\/package #@another\\/pkg',
     'should escape multiple instances of the pattern',
