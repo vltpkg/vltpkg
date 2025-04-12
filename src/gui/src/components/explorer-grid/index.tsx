@@ -277,10 +277,8 @@ const getUninstalledDependencyItems = (
 
 const getItemQuery = (item: GridItemData) => {
   if (!item.to) return ''
-  const name = item.to.name ? `[name="${item.to.name}"]` : ''
-  const version =
-    item.to.version ? `[version="${item.to.version}"]` : ''
-  return `${name}${version}`.trim()
+  const name = item.spec?.name ? `#${item.spec.name}` : ''
+  return name.trim()
 }
 
 export const ExplorerGrid = () => {
@@ -317,13 +315,17 @@ export const ExplorerGrid = () => {
   }
   const dependentsClick =
     (item: GridItemData, isParent?: boolean) => () => {
+      if (item.from?.mainImporter) {
+        updateQuery(`:root`)
+        return
+      }
       const selectedName =
         selectedItem?.to?.name ?
           `[name="${selectedItem.to.name}"]`
         : ''
       const selectedVersion =
         selectedItem?.to?.version ?
-          `[version="${selectedItem.to.version}"]`
+          `:v(${selectedItem.to.version})`
         : ''
       const newQuery =
         isParent &&
@@ -335,7 +337,7 @@ export const ExplorerGrid = () => {
         const name =
           item.from?.name ? `[name="${item.from.name}"]` : ''
         const version =
-          item.from?.version ? `[version="${item.from.version}"]` : ''
+          item.from?.version ? `:v(${item.from.version})` : ''
         updateQuery(`${name}${version}`.trim())
       }
       return undefined
