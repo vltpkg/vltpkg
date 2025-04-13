@@ -25,6 +25,7 @@ import {
   relative,
 } from 'node:path'
 import { create as tarC } from 'tar'
+import { normalizeBin } from './normalize-bin.ts'
 import { rename } from './rename.ts'
 
 const xdg = new XDG('vlt')
@@ -410,6 +411,13 @@ export class PackageInfoClient {
   async manifest(
     spec: Spec | string,
     options: PackageInfoClientRequestOptions = {},
+  ) {
+    return normalizeBin(await this.#manifest(spec, options))
+  }
+
+  async #manifest(
+    spec: Spec | string,
+    options: PackageInfoClientRequestOptions,
   ) {
     const { from = this.#projectRoot } = options
     if (typeof spec === 'string')
