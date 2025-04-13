@@ -1,9 +1,9 @@
 import { spawn } from 'node:child_process'
 import { rename } from 'node:fs/promises'
 import { basename, dirname } from 'node:path'
+import { pathToFileURL } from 'node:url'
 import { rimraf } from 'rimraf'
 import { __CODE_SPLIT_SCRIPT_NAME } from './remove.ts'
-import { pathToFileURL } from 'node:url'
 
 const isDeno =
   (globalThis as typeof globalThis & { Deno?: any }).Deno != undefined
@@ -16,7 +16,13 @@ export class RollbackRemove {
     const target = `${dirname(path)}/.VLT.DELETE.${this.#key}.${basename(path)}`
     this.#paths.set(path, target)
     await rename(path, target).catch((e: unknown) => {
-      if (e instanceof Error && 'code' in e && e.code === 'ENOENT') {
+      if (
+        e instanceof Error &&
+        'code' in e &&
+        /* c8 ignore start - very spurious weirdness on Windows */
+        (e.code === 'ENOENT' || e.code === 'EPERM')
+        /* c8 ignore stop */
+      ) {
         this.#paths.delete(path)
         return
       }
