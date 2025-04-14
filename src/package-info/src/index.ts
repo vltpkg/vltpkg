@@ -1,4 +1,4 @@
-import type { ErrorCauseObject } from '@vltpkg/error-cause'
+import type { ErrorCauseOptions } from '@vltpkg/error-cause'
 import { error } from '@vltpkg/error-cause'
 import { clone, resolve as gitResolve, revs } from '@vltpkg/git'
 import { PackageJson } from '@vltpkg/package-json'
@@ -728,7 +728,7 @@ export class PackageInfoClient {
     spec?: Spec,
     options: PackageInfoClientRequestOptions = {},
     message = 'Could not resolve',
-    extra: ErrorCauseObject = {},
+    extra: ErrorCauseOptions = {},
   ) {
     const { from = this.#projectRoot } = options
     const er = error(
