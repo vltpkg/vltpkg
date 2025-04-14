@@ -22,5 +22,6 @@ export const usage: CommandUsage = () =>
   })
 
 export const command: CommandFn<ExecResult> = async conf => {
+  delete conf.options['script-shell']
   return await new ExecCommand(conf, exec, execFG).run()
 }
