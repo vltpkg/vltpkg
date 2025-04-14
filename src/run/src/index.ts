@@ -1,11 +1,11 @@
 import { error } from '@vltpkg/error-cause'
 import { PackageJson } from '@vltpkg/package-json'
-import { promiseSpawn } from '@vltpkg/promise-spawn'
 import type {
   PromiseSpawnOptions,
   SpawnResultNoStdio,
   SpawnResultStdioStrings,
 } from '@vltpkg/promise-spawn'
+import { promiseSpawn } from '@vltpkg/promise-spawn'
 import type { Manifest } from '@vltpkg/types'
 import { foregroundChild } from 'foreground-child'
 import { proxySignals } from 'foreground-child/proxy-signals'
@@ -196,6 +196,7 @@ const runImpl = async <
     packageJson = new PackageJson(),
     ignoreMissing = false,
     manifest,
+    'script-shell': shell = true,
     ...execArgs
   } = options
   const pjPath = resolve(options.cwd, 'package.json')
@@ -243,6 +244,7 @@ const runImpl = async <
       await execImpl({
         arg0: precommand,
         ...execArgs,
+        'script-shell': shell,
         args: [],
         env: {
           ...execArgs.env,
@@ -258,6 +260,7 @@ const runImpl = async <
   const result: RunImplResult<R> = await execImpl({
     arg0: command,
     ...execArgs,
+    'script-shell': shell,
     env: {
       ...execArgs.env,
       npm_package_json: pjPath,
@@ -276,6 +279,7 @@ const runImpl = async <
   const post = await execImpl({
     arg0: postcommand,
     ...execArgs,
+    'script-shell': shell,
     args: [],
     env: {
       ...execArgs.env,
@@ -305,7 +309,7 @@ export const exec = async (
     cwd,
     env = {},
     projectRoot,
-    'script-shell': shell = true,
+    'script-shell': shell = false,
     ...spawnOptions
   } = options
 
@@ -337,7 +341,7 @@ export const execFG = async (
     cwd,
     projectRoot,
     env = {},
-    'script-shell': shell = true,
+    'script-shell': shell = false,
     ...spawnOptions
   } = options
 

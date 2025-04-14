@@ -10,10 +10,6 @@ import t from 'tap'
 import type { ConfigData } from '../../src/config/index.ts'
 import { format } from 'node:util'
 
-const { Config } = await t.mockImport<
-  typeof import('../../src/config/index.ts')
->('../../src/config/index.ts')
-
 const clearEnv = () => {
   for (const k of Object.keys(process.env)) {
     if (
@@ -27,6 +23,10 @@ const clearEnv = () => {
 }
 
 process.env.XDG_CONFIG_HOME = t.testdir()
+
+const { Config } = await t.mockImport<
+  typeof import('../../src/config/index.ts')
+>('../../src/config/index.ts')
 
 t.beforeEach(() => clearEnv())
 

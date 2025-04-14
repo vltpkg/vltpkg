@@ -433,15 +433,19 @@ export const definition = j
 
     'script-shell': {
       hint: 'program',
-      description: `The shell to use when executing \`package.json#scripts\`
-                    (either as lifecycle scripts or explicitly with
-                    \`vlt run\`) and \`vlt exec\`.
+      description: `The shell to use when executing \`package.json#scripts\`.
 
-                    If not set, defaults to \`/bin/sh\` on POSIX systems,
-                    and \`cmd.exe\` on Windows.
+                    For \`vlt exec\` and \`vlt exec-local\`, this is never set,
+                    meaning that command arguments are run exactly as provided.
 
-                    When no argument is provided to \`vlt exec\`, the \`SHELL\`
-                    environment variable takes precedence if set.`,
+                    For \`vlt run\` (and other things that run lifecycle
+                    scripts in \`package.json#scripts\`), the entire command
+                    with all arguments is provided as a single string, meaning
+                    that some value must be provided for shell interpretation,
+                    and so for these contexts, the \`script-shell\` value will
+                    default to \`/bin/sh\` on POSIX systems or \`cmd.exe\` on
+                    Windows.
+      `,
     },
 
     'fallback-command': {
