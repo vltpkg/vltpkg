@@ -2,7 +2,7 @@ import { promiseSpawn } from '@vltpkg/promise-spawn'
 import type { Manifest } from '@vltpkg/types'
 import { resolve } from 'node:path'
 import t from 'tap'
-import { isRunResult, run } from '../src/index.ts'
+import { exec, isRunResult, run } from '../src/index.ts'
 
 const fixture = resolve(import.meta.dirname, 'fixtures/script.ts')
 
@@ -841,5 +841,52 @@ t.test('do not trust manifests npm mucks with', async t => {
     stdout: 'ok',
     stderr: '',
     pre: undefined,
+  })
+})
+
+t.test('quote things properly only as needed', async t => {
+  const manifest: Manifest = {
+    name: 'x',
+    version: '1.2.3',
+    scripts: {
+      // designed to upset shells if not quoted properly
+      n: `${node} -p "'!(ok)' + process.argv.slice(1)"`,
+    },
+  }
+  const cwd = t.testdir({
+    'package.json': JSON.stringify(manifest),
+  })
+
+  const [runRes, execRes] = await Promise.all([
+    run({
+      cwd,
+      manifest,
+      arg0: 'n',
+      args: ['yes', 'ok'],
+      projectRoot: cwd,
+    }),
+    exec({
+      arg0: process.execPath,
+      args: ['-p', "'!(ok)' + process.argv.slice(1)", 'yes', 'ok'],
+      cwd,
+      projectRoot: cwd,
+    }),
+  ])
+
+  t.matchStrict(runRes, {
+    command: `${node} -p "'!(ok)' + process.argv.slice(1)"`,
+    args: ['yes', 'ok'],
+    status: 0,
+    signal: null,
+    stdout: '!(ok)yes,ok',
+    stderr: '',
+  })
+
+  t.match(execRes, {
+    args: ['-p', "'!(ok)' + process.argv.slice(1)", 'yes', 'ok'],
+    status: 0,
+    signal: null,
+    stdout: '!(ok)yes,ok',
+    stderr: '',
   })
 })
