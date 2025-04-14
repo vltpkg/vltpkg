@@ -1,4 +1,4 @@
-import type { ErrorCauseObject } from '@vltpkg/error-cause'
+import type { ErrorCauseOptions } from '@vltpkg/error-cause'
 import { error, typeError } from '@vltpkg/error-cause'
 import type { Range } from '@vltpkg/semver'
 import { parseRange } from '@vltpkg/semver'
@@ -600,7 +600,7 @@ export class Spec implements SpecLike<Spec> {
     return this.subspec
   }
 
-  #error(message: string, extra: ErrorCauseObject = {}) {
+  #error(message: string, extra: ErrorCauseOptions = {}) {
     return error(message, { spec: this.spec, ...extra }, this.#error)
   }
 

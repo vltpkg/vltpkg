@@ -19,7 +19,7 @@
 // From there, the body can be of any indeterminate length, and is the rest
 // of the file.
 
-import type { ErrorCauseObject } from '@vltpkg/error-cause'
+import type { ErrorCauseOptions } from '@vltpkg/error-cause'
 import { error } from '@vltpkg/error-cause'
 import type { Integrity, JSONField } from '@vltpkg/types'
 import ccp from 'cache-control-parser'
@@ -276,7 +276,7 @@ export class CacheEntry {
    * Returns true if anything was actually verified.
    */
   checkIntegrity(
-    context: ErrorCauseObject = {},
+    context: ErrorCauseOptions = {},
   ): this is CacheEntry & { integrity: Integrity } {
     if (!this.#integrity) return false
     if (this.integrityActual !== this.#integrity) {

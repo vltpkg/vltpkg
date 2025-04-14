@@ -1,5 +1,5 @@
 import { error } from '@vltpkg/error-cause'
-import type { ErrorCause } from '@vltpkg/error-cause'
+import type { ErrorCauseOptions } from '@vltpkg/error-cause'
 import { spawn } from 'node:child_process'
 import type {
   ChildProcess,
@@ -265,7 +265,7 @@ export class SpawnPromise<
         signal?: NodeJS.Signals | null,
       ) => {
         const stdio = stdioResult(stdout, stderr, opts)
-        const errorResult: ErrorCause = {
+        const errorResult: ErrorCauseOptions = {
           command,
           args,
           stdout: stdio.stdout,

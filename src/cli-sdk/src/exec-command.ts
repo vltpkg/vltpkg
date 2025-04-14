@@ -2,7 +2,7 @@
  * Implementation shared between `vlt run`, `vlt run-exec`, and `vlt exec`
  */
 
-import { error, isErrorRoot } from '@vltpkg/error-cause'
+import { error, isErrorWithCause } from '@vltpkg/error-cause'
 import { isRunResult } from '@vltpkg/run'
 import type {
   exec,
@@ -94,7 +94,7 @@ export class ExecCommand<B extends RunnerBG, F extends RunnerFG> {
       if (!failed) stderr(`${ws.path} ${arg0}`)
       const result = await this.bg(this.bgArg(ws)).catch(
         (er: unknown) => {
-          if (isErrorRoot(er) && isRunResult(er.cause)) {
+          if (isErrorWithCause(er) && isRunResult(er.cause)) {
             this.printResult(ws, er.cause)
           }
           failed = true
