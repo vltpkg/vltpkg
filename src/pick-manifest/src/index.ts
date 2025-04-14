@@ -14,8 +14,8 @@ export type PickManifestOptions = {
   tag?: string
   before?: Date | number | string
   'node-version'?: string
-  os?: NodeJS.Platform
-  arch?: NodeJS.Architecture
+  os?: string
+  arch?: string
 }
 
 export type Manifestish = Manifest | RevDocEntry
@@ -75,8 +75,8 @@ const checkList = (value: string, list?: string[] | string) => {
 export const platformCheck = (
   mani: Manifestish,
   nodeVersion: Version | string,
-  wantOs?: NodeJS.Process['platform'],
-  wantArch?: NodeJS.Process['arch'],
+  wantOs?: string,
+  wantArch?: string,
 ): boolean => {
   const { engines, os, cpu } = mani
   if (engines) {
@@ -94,8 +94,8 @@ const versionOk = (
   packument: Packumentish,
   version: string,
   nodeVersion: Version,
-  os: NodeJS.Process['platform'],
-  arch: NodeJS.Process['arch'],
+  os: string,
+  arch: string,
   before?: number,
 ) => {
   const mani = packument.versions[version]
