@@ -15,7 +15,7 @@ import {
   writeFile,
 } from 'node:fs/promises'
 import { LRUCache } from 'lru-cache'
-import { resolve, basename, dirname, join } from 'node:path'
+import { resolve, dirname } from 'node:path'
 import { rimraf } from 'rimraf'
 
 export type CacheFetchContext =
@@ -56,8 +56,8 @@ export type BooleanOrVoid = boolean | void
 const hash = (s: string) =>
   createHash('sha512').update(s).digest('hex')
 
-const success = async <T>(p: Promise<T>): Promise<T | null> =>
-  await p.then(
+const success = <T>(p: Promise<T>): Promise<T | null> =>
+  p.then(
     result => result,
     () => null,
   )
@@ -69,20 +69,11 @@ export class Cache extends LRUCache<
 > {
   #path: string;
   [Symbol.toStringTag] = '@vltpkg/cache.Cache'
-  #random: string = randomBytes(6).toString('hex')
+  #random = randomBytes(6).toString('hex')
   #i = 0
   #pending = new Set<Promise<BooleanOrVoid>>()
   onDiskWrite?: CacheOptions['onDiskWrite']
   onDiskDelete?: CacheOptions['onDiskDelete']
-
-  /**
-   * ensure we get a different random key for every write,
-   * just in case the same file tries to write multiple times,
-   * it'll still be atomic.
-   */
-  get random(): string {
-    return this.#random + '.' + String(this.#i++)
-  }
 
   /**
    * A list of the actions currently happening in the background
@@ -188,6 +179,7 @@ export class Cache extends LRUCache<
     }
     dir.closeSync()
   }
+
   [Symbol.iterator](): Generator<[string, Buffer], void> {
     return this.walkSync()
   }
@@ -356,6 +348,15 @@ export class Cache extends LRUCache<
     } catch {}
   }
 
+  async #writeFileAtomic(file: string, data: Buffer | string) {
+    // ensure we get a different random key for every write,
+    // just in case the same file tries to write multiple times,
+    // it'll still be atomic.
+    const tmp = `${file}.${this.#random}${this.#i++}`
+    await writeFile(tmp, data)
+    await rename(tmp, file)
+  }
+
   async #diskWrite(
     valFile: string,
     key: string,
@@ -363,22 +364,21 @@ export class Cache extends LRUCache<
     integrity?: Integrity,
   ): Promise<void> {
     const dir = dirname(valFile)
-    await mkdir(dir, { recursive: true })
     const intFile = this.#maybeIntegrityPath(integrity)
-    const base = basename(valFile)
-    const keyFile = `${base}.key`
-    const tmp = join(dir, `.${base}.${this.random}`)
-    const keyTmp = join(dir, `.${keyFile}.${this.random}`)
+
+    // Create the directory if it doesn't exist and save the promise
+    // to ensure any write file operations happen after the dir is created.
+    const mkdirP = mkdir(dir, { recursive: true })
 
     // Always write the key file in parallel with other operations
-    const writeKeyP = writeFile(keyTmp, key).then(() =>
-      rename(keyTmp, valFile + '.key'),
+    const writeKeyP = mkdirP.then(() =>
+      this.#writeFileAtomic(`${valFile}.key`, key),
     )
 
     // We might not write the val file at all so we dont want to
     // kick off this promise until we know we need to.
     const writeVal = () =>
-      writeFile(tmp, val).then(() => rename(tmp, valFile))
+      mkdirP.then(() => this.#writeFileAtomic(valFile, val))
 
     if (!intFile) {
       // No integrity provided, just write the value and key files
