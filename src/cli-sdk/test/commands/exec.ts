@@ -7,5 +7,5 @@ t.test('basic', async t => {
   >('../../src/commands/exec.ts')
   const USAGE = usage().usage()
   t.matchSnapshot(USAGE, 'usage')
-  await command({ positionals: [] } as unknown as LoadedConfig)
+  await command({ positionals: [], options: {} } as unknown as LoadedConfig)
 })
