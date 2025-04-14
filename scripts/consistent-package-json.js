@@ -355,6 +355,8 @@ const fixLicense = ws => {
     case '@vltpkg/which':
       license = 'ISC'
       break
+    case '@vltpkg/cmd-shim':
+      return
     default:
       license = defaultLicense
   }
