@@ -107,6 +107,7 @@ t.test('select from semver definition', async t => {
     })
   })
 
+  // TODO: FAILING
   await t.test('unquoted with multiple spaces', async t => {
     const res = await semverParser(
       getState(':semver(1 || 2 || 3 >= 4 < 5)'),
@@ -175,6 +176,66 @@ t.test('select from semver definition', async t => {
       [...res.partial.nodes].map(n => `${n.name}@${n.version}`),
       ['e@120.0.0'],
       'should have expected result using unquoted hyphen-separated semver',
+    )
+    t.matchSnapshot({
+      nodes: [...res.partial.nodes].map(n => n.name),
+      edges: [...res.partial.edges].map(e => e.name),
+    })
+  })
+
+  await t.test('unquoted greater than semver', async t => {
+    const res = await semverParser(
+      getState(':semver(>2.0.0)', getSemverRichGraph()),
+    )
+    t.strictSame(
+      [...res.partial.nodes].map(n => `${n.name}@${n.version}`),
+      ['b@2.2.1', 'c@3.4.0', 'd@2.3.4', 'e@120.0.0', 'f@4.5.6'],
+      'should have expected result using unquoted greater than semver',
+    )
+    t.matchSnapshot({
+      nodes: [...res.partial.nodes].map(n => n.name),
+      edges: [...res.partial.edges].map(e => e.name),
+    })
+  })
+
+  await t.test('unquoted greater than or equal semver', async t => {
+    const res = await semverParser(
+      getState(':semver(>=2.0.0)', getSemverRichGraph()),
+    )
+    t.strictSame(
+      [...res.partial.nodes].map(n => `${n.name}@${n.version}`),
+      ['b@2.2.1', 'c@3.4.0', 'd@2.3.4', 'e@120.0.0', 'f@4.5.6'],
+      'should have expected result using unquoted greater than or equal semver',
+    )
+    t.matchSnapshot({
+      nodes: [...res.partial.nodes].map(n => n.name),
+      edges: [...res.partial.edges].map(e => e.name),
+    })
+  })
+
+  await t.test('unquoted less than semver', async t => {
+    const res = await semverParser(
+      getState(':semver(<2.0.0)', getSemverRichGraph()),
+    )
+    t.strictSame(
+      [...res.partial.nodes].map(n => `${n.name}@${n.version}`),
+      ['semver-rich-project@1.0.0', 'a@1.0.1'],
+      'should have expected result using unquoted less than semver',
+    )
+    t.matchSnapshot({
+      nodes: [...res.partial.nodes].map(n => n.name),
+      edges: [...res.partial.edges].map(e => e.name),
+    })
+  })
+
+  await t.test('unquoted less than or equal semver', async t => {
+    const res = await semverParser(
+      getState(':semver(<=2.0.0)', getSemverRichGraph()),
+    )
+    t.strictSame(
+      [...res.partial.nodes].map(n => `${n.name}@${n.version}`),
+      ['semver-rich-project@1.0.0', 'a@1.0.1'],
+      'should have expected result using unquoted less than or equal semver',
     )
     t.matchSnapshot({
       nodes: [...res.partial.nodes].map(n => n.name),
@@ -467,6 +528,57 @@ t.test('select from semver definition', async t => {
     },
   )
 
+  await t.test('unquoted complex semver with spaces', async t => {
+    const res = await semverParser(
+      getState(':semver(>=1.0.0 <3.0.0)', getSemverRichGraph()),
+    )
+    t.strictSame(
+      [...res.partial.nodes].map(n => `${n.name}@${n.version}`),
+      ['semver-rich-project@1.0.0', 'a@1.0.1', 'b@2.2.1', 'd@2.3.4'],
+      'should match nodes with versions that satisfy the range',
+    )
+    t.matchSnapshot({
+      nodes: [...res.partial.nodes].map(n => n.name),
+      edges: [...res.partial.edges].map(e => e.name),
+    })
+  })
+
+  await t.test('unquoted semver with || (OR) operator', async t => {
+    const res = await semverParser(
+      getState(':semver(1.0.0 || >=4.0.0)', getSemverRichGraph()),
+    )
+    t.strictSame(
+      [...res.partial.nodes].map(n => `${n.name}@${n.version}`),
+      ['semver-rich-project@1.0.0', 'e@120.0.0', 'f@4.5.6'],
+      'should match nodes with versions that satisfy either condition',
+    )
+    t.matchSnapshot({
+      nodes: [...res.partial.nodes].map(n => n.name),
+      edges: [...res.partial.edges].map(e => e.name),
+    })
+  })
+
+  await t.test(
+    'unquoted semver with multiple comparators',
+    async t => {
+      const res = await semverParser(
+        getState(
+          ':semver(>1.0.0 <=2.2.1 || >=4.0.0)',
+          getSemverRichGraph(),
+        ),
+      )
+      t.strictSame(
+        [...res.partial.nodes].map(n => `${n.name}@${n.version}`),
+        ['a@1.0.1', 'b@2.2.1', 'e@120.0.0', 'f@4.5.6'],
+        'should match nodes with versions that satisfy the complex conditions',
+      )
+      t.matchSnapshot({
+        nodes: [...res.partial.nodes].map(n => n.name),
+        edges: [...res.partial.edges].map(e => e.name),
+      })
+    },
+  )
+
   await t.test(
     'attribute matching arbitrary manifest property',
     async t => {
@@ -482,6 +594,55 @@ t.test('select from semver definition', async t => {
       )
     },
   )
+
+  await t.test('unquoted custom attribute property', async t => {
+    const res = await semverParser(
+      getState(
+        ':semver(^2, satisfies, arbitrarySemverValue)',
+        getSemverRichGraph(),
+      ),
+    )
+    t.strictSame(
+      [...res.partial.nodes].map(n => `${n.name}@${n.version}`),
+      ['b@2.2.1', 'd@2.3.4'],
+      'should match arbitrary values using unquoted property name',
+    )
+    t.matchSnapshot({
+      nodes: [...res.partial.nodes].map(n => n.name),
+      edges: [...res.partial.edges].map(e => e.name),
+    })
+  })
+
+  await t.test(
+    'unquoted semver function with unquoted attribute property',
+    async t => {
+      await t.rejects(
+        semverParser(
+          getState(
+            ':semver(^2, eq, arbitrarySemverValue)',
+            getSemverRichGraph(),
+          ),
+        ),
+        /invalid version/,
+        'should throw an invalid version error',
+      )
+    },
+  )
+
+  await t.test('unquoted semver with +-. characters', async t => {
+    const res = await semverParser(
+      getState(':semver(1.2.3-rc.1+rev.2)', getSemverRichGraph()),
+    )
+    t.strictSame(
+      [...res.partial.nodes].map(n => `${n.name}@${n.version}`),
+      ['g@1.2.3-rc.1+rev.2'],
+      'should match from version with reserved characters',
+    )
+    t.matchSnapshot({
+      nodes: [...res.partial.nodes].map(n => n.name),
+      edges: [...res.partial.edges].map(e => e.name),
+    })
+  })
 })
 
 t.test('isSemverFunctionName', async t => {

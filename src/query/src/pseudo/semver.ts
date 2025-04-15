@@ -21,9 +21,9 @@ import {
   asStringNode,
   asTagNode,
   isAttributeNode,
-  isCombinatorNode,
   isPseudoNode,
   isStringNode,
+  isTagNode,
 } from '../types.ts'
 import type { ParserState, PostcssNode } from '../types.ts'
 import { removeNode, removeQuotes } from './helpers.ts'
@@ -88,10 +88,6 @@ const semverFunctions = new Map<
   ['neq', neq],
 ])
 
-// list a few css combinators that should never have
-// spaces around when parsing as a semver range
-const unspacedCombinators = new Set<string>([' ', '+'])
-
 export const parseInternals = (
   nodes: PostcssNode[],
   loose: boolean,
@@ -99,27 +95,22 @@ export const parseInternals = (
   // tries to parse the first param as a string node, otherwise defaults
   // to reading all postcss nodes as just strings, since it just means
   // the value was defined as an unquoted string
-  let semverValue
+  let semverValue = ''
   try {
     semverValue = removeQuotes(
       asStringNode(asPostcssNodeWithChildren(nodes[0]).nodes[0])
         .value,
     )
   } catch (err) {
-    if (asError(err).message === 'Mismatching query node') {
-      semverValue = ''
-      for (const node of asPostcssNodeWithChildren(nodes[0]).nodes) {
-        if (
-          isCombinatorNode(node) &&
-          !unspacedCombinators.has(node.value)
-        ) {
-          semverValue += ' '
-        }
-
-        if (node.value) {
-          semverValue += node.value
-        }
-      }
+    if (
+      asError(err).message === 'Mismatching query node' &&
+      isTagNode(asPostcssNodeWithChildren(nodes[0]).nodes[0])
+    ) {
+      // Handle tag node (unquoted values like >=2.0.0)
+      const tagNode = asTagNode(
+        asPostcssNodeWithChildren(nodes[0]).nodes[0],
+      )
+      semverValue = tagNode.value
     } else {
       throw err
     }
