@@ -111,18 +111,18 @@ test('TabsManifestContent renders with a manifest', () => {
     insights: undefined,
     activeTab: 'manifest',
     manifest: {
-        name: 'acme-package',
-        version: '1.0.0',
-        author: 'John Doe',
-        private: true,
-        dependencies: {
-          '@acme/1': '1.0.0',
-          '@acme/2': '2.0.0',
-        },
-        devDependencies: {
-          '@acme/3': '3.0.0',
-          '@acme/4': '4.0.0',
-        },
+      name: 'acme-package',
+      version: '1.0.0',
+      author: 'John Doe',
+      private: true,
+      dependencies: {
+        '@acme/1': '1.0.0',
+        '@acme/2': '2.0.0',
+      },
+      devDependencies: {
+        '@acme/3': '3.0.0',
+        '@acme/4': '4.0.0',
+      },
     },
     setActiveTab: vi.fn(),
   })

@@ -31,8 +31,8 @@ import type { GridItemData } from '@/components/explorer-grid/types.js'
 import { ProgressBar } from '@/components/ui/progress-bar.jsx'
 import { getScoreColor } from '@/components/explorer-grid/selected-item/insight-score-helper.js'
 import { cn } from '@/lib/utils.js'
-import { GlyphIcon  } from '@/components/icons/glyph-icon.jsx'
-import type {ICONS} from '@/components/icons/glyph-icon.jsx';
+import { GlyphIcon } from '@/components/icons/glyph-icon.jsx'
+import type { ICONS } from '@/components/icons/glyph-icon.jsx'
 import { isRecord } from '@/utils/typeguards.js'
 import { formatDistanceStrict } from 'date-fns'
 import { labelClassNamesMap } from '../label-helper.ts'
@@ -397,12 +397,12 @@ const PackageImageSpec = ({ className }: { className?: string }) => {
 
             <div className="flex gap-1.5 overflow-y-scroll">
               {selectedItem.labels?.map((label, idx) => (
-                  <Badge
-                    className={labelClassNamesMap.get(label) || ''}
-                    key={`${selectedItem.title}-${label}-${idx}`}>
-                    {label}
-                  </Badge>
-                ))}
+                <Badge
+                  className={labelClassNamesMap.get(label) || ''}
+                  key={`${selectedItem.title}-${label}-${idx}`}>
+                  {label}
+                </Badge>
+              ))}
             </div>
           </div>
 
