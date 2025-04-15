@@ -18,7 +18,7 @@ import {
   ArrowBigUpDash,
   EyeOff,
   Download,
-  Target,
+  Package,
 } from 'lucide-react'
 import { InlineCode } from '@/components/ui/inline-code.jsx'
 import { Badge } from '@/components/ui/badge.jsx'
@@ -294,7 +294,7 @@ const PackageMetadata = ({ className }: { className?: string }) => {
           className="font-inter"
           toolTipText="Copy tarball URL"
           copyValue={tarballUrl}>
-          <Target size={16} />
+          <Package size={16} />
           Tarball
         </CopyToClipboard>
       )}

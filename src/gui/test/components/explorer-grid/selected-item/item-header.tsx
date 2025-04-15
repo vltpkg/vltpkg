@@ -42,7 +42,7 @@ vi.mock('lucide-react', () => ({
   ArrowBigUpDash: 'gui-arrow-big-up-dash-icon',
   EyeOff: 'gui-eye-off-icon',
   Download: 'gui-download-icon',
-  Target: 'gui-target-icon',
+  Package: 'gui-package-icon',
 }))
 
 vi.mock('@/components/ui/inline-code.jsx', () => ({
