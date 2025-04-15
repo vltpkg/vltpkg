@@ -196,6 +196,35 @@ Object {
 }
 `
 
+exports[`test/pseudo/semver.ts > TAP > select from semver definition > unquoted complex semver with spaces > must match snapshot 1`] = `
+Object {
+  "edges": Array [
+    "a",
+    "b",
+    "d",
+  ],
+  "nodes": Array [
+    "semver-rich-project",
+    "a",
+    "b",
+    "d",
+  ],
+}
+`
+
+exports[`test/pseudo/semver.ts > TAP > select from semver definition > unquoted custom attribute property > must match snapshot 1`] = `
+Object {
+  "edges": Array [
+    "b",
+    "d",
+  ],
+  "nodes": Array [
+    "b",
+    "d",
+  ],
+}
+`
+
 exports[`test/pseudo/semver.ts > TAP > select from semver definition > unquoted custom semver function > must match snapshot 1`] = `
 Object {
   "edges": Array [
@@ -231,6 +260,44 @@ Object {
 }
 `
 
+exports[`test/pseudo/semver.ts > TAP > select from semver definition > unquoted greater than or equal semver > must match snapshot 1`] = `
+Object {
+  "edges": Array [
+    "b",
+    "c",
+    "d",
+    "e",
+    "f",
+  ],
+  "nodes": Array [
+    "b",
+    "c",
+    "d",
+    "e",
+    "f",
+  ],
+}
+`
+
+exports[`test/pseudo/semver.ts > TAP > select from semver definition > unquoted greater than semver > must match snapshot 1`] = `
+Object {
+  "edges": Array [
+    "b",
+    "c",
+    "d",
+    "e",
+    "f",
+  ],
+  "nodes": Array [
+    "b",
+    "c",
+    "d",
+    "e",
+    "f",
+  ],
+}
+`
+
 exports[`test/pseudo/semver.ts > TAP > select from semver definition > unquoted hyphen-separated semver > must match snapshot 1`] = `
 Object {
   "edges": Array [
@@ -238,6 +305,30 @@ Object {
   ],
   "nodes": Array [
     "e",
+  ],
+}
+`
+
+exports[`test/pseudo/semver.ts > TAP > select from semver definition > unquoted less than or equal semver > must match snapshot 1`] = `
+Object {
+  "edges": Array [
+    "a",
+  ],
+  "nodes": Array [
+    "semver-rich-project",
+    "a",
+  ],
+}
+`
+
+exports[`test/pseudo/semver.ts > TAP > select from semver definition > unquoted less than semver > must match snapshot 1`] = `
+Object {
+  "edges": Array [
+    "a",
+  ],
+  "nodes": Array [
+    "semver-rich-project",
+    "a",
   ],
 }
 `
@@ -285,6 +376,48 @@ Object {
   ],
   "nodes": Array [
     "e",
+  ],
+}
+`
+
+exports[`test/pseudo/semver.ts > TAP > select from semver definition > unquoted semver with +-. characters > must match snapshot 1`] = `
+Object {
+  "edges": Array [
+    "g",
+  ],
+  "nodes": Array [
+    "g",
+  ],
+}
+`
+
+exports[`test/pseudo/semver.ts > TAP > select from semver definition > unquoted semver with || (OR) operator > must match snapshot 1`] = `
+Object {
+  "edges": Array [
+    "e",
+    "f",
+  ],
+  "nodes": Array [
+    "semver-rich-project",
+    "e",
+    "f",
+  ],
+}
+`
+
+exports[`test/pseudo/semver.ts > TAP > select from semver definition > unquoted semver with multiple comparators > must match snapshot 1`] = `
+Object {
+  "edges": Array [
+    "a",
+    "b",
+    "e",
+    "f",
+  ],
+  "nodes": Array [
+    "a",
+    "b",
+    "e",
+    "f",
   ],
 }
 `
