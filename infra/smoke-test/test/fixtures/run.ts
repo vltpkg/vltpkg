@@ -10,7 +10,6 @@ import {
   Variants,
 } from './variants.ts'
 import type { Variant, VariantType } from './variants.ts'
-import { spawn as spawnPty } from 'node-pty'
 import { ansiToAnsi } from 'ansi-to-pre'
 import { stripVTControlCharacters } from 'node:util'
 
@@ -137,6 +136,10 @@ const spawnCommand = async (
   }
   debugLog('__START__')
 
+  const spawnPty = await import('node-pty')
+    .then(r => r.spawn)
+    .catch(() => null)
+
   const { stdout, stderr, output, ...res } =
     await new Promise<SpawnCommandResult>(res => {
       const outputs = {
@@ -163,7 +166,7 @@ const spawnCommand = async (
         PATH: variant.PATH ?? '',
       }
 
-      if (tty) {
+      if (spawnPty && tty) {
         const ttyProc = spawnPty(command, [...commandArgs, ...args], {
           cwd: dirs.project,
           env: spawnEnv,

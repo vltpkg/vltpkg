@@ -11,8 +11,10 @@
   "dependencies": {
     "@vltpkg/cli-sdk": "workspace:*",
     "@vltpkg/infra-build": "workspace:*",
-    "ansi-to-pre": "catalog:",
-    "node-pty": "1.0.0"
+    "ansi-to-pre": "catalog:"
+  },
+  "optionalDependencies": {
+    "node-pty": "^1.0.0"
   },
   "devDependencies": {
     "@eslint/js": "catalog:",
