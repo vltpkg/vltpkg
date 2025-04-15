@@ -341,39 +341,43 @@ export async function* fetchDetails(
           const versions = Object.entries(packu.versions)
             .sort((a, b) => compare(b[0], a[0]))
             .map(async ([version, mani]) => {
-              const email = (mani as any)._npmUser?.email
-              const avatar =
-                email ? await retrieveAvatar(email) : undefined
+              const email = (mani as Manifest & {
+                _npmUser?: {
+                  name?: string;
+                  email?: string;
+                }
+              })._npmUser?.email;
+              const avatar = email ? await retrieveAvatar(email) : undefined;
+
+              const npmUser = (mani as Manifest & {
+                _npmUser?: {
+                  name?: string;
+                  email?: string;
+                }
+              })._npmUser;
 
               return {
                 version,
                 publishedDate: packu.time?.[version],
-                unpackedSize:
-                  packu.versions?.[version]?.dist?.unpackedSize,
-                integrity: packu.versions?.[version]?.dist?.integrity,
-                tarball: packu.versions?.[version]?.dist?.tarball,
+                unpackedSize: packu.versions[version]?.dist?.unpackedSize,
+                integrity: packu.versions[version]?.dist?.integrity,
+                tarball: packu.versions[version]?.dist?.tarball,
                 publishedAuthor: {
-                  name: (mani as any)._npmUser?.name,
-                  email: (mani as any)._npmUser?.email,
+                  name: npmUser?.name,
+                  email: npmUser?.email,
                   avatar,
                 },
-              }
-            })
+              } as Version;
+            });
 
-          const resolvedVersions = await Promise.all(versions)
+          const resolvedVersions = await Promise.all(versions);
 
           return {
-            ...(manifest?.version && resolvedVersions.length ?
-              {
-                versions: resolvedVersions,
-                greaterVersions: resolvedVersions.filter(
-                  v =>
-                    manifest.version &&
-                    gt(v.version, manifest.version),
-                ),
-              }
-            : {}),
-          }
+            versions: resolvedVersions,
+            greaterVersions: manifest?.version ? 
+              resolvedVersions.filter(v => manifest.version && gt(v.version, manifest.version)) 
+              : undefined
+          } as DetailsInfo;
         })
         .catch(() => ({})),
     )

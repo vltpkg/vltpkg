@@ -15,6 +15,8 @@ import type { DetailsInfo } from '@/lib/external-info.js'
 
 vi.mock('lucide-react', () => ({
   History: 'gui-history-icon',
+  ArrowUpDown: 'gui-arrow-up-down-icon',
+  ChevronDown: 'gui-chevron-down-icon',
 }))
 
 vi.mock(
@@ -28,6 +30,30 @@ vi.mock(
 vi.mock('@/components/ui/tabs.jsx', () => ({
   TabsTrigger: 'gui-tabs-trigger',
   TabsContent: 'gui-tabs-content',
+}))
+
+vi.mock('@/components/ui/inline-code.jsx', () => ({
+  InlineCode: 'gui-inline-code',
+}))
+
+vi.mock('@/components/ui/collapsible.jsx', () => ({
+  Collapsible: 'gui-collapsible',
+  CollapsibleTrigger: 'gui-collapsible-trigger',
+  CollapsibleContent: 'gui-collapsible-content',
+}))
+
+vi.mock('@radix-ui/react-avatar', () => ({
+  Avatar: 'gui-avatar',
+  AvatarImage: 'gui-avatar-image',
+  AvatarFallback: 'gui-avatar-fallback',
+}))
+
+vi.mock('@/components/ui/button.jsx', () => ({
+  Button: 'gui-button',
+}))
+
+vi.mock('@/components/ui/copy-to-clipboard.jsx', () => ({
+  CopyToClipboard: 'gui-copy-to-clipboard',
 }))
 
 expect.addSnapshotSerializer({
@@ -50,7 +76,32 @@ test('VersionsTabButton renders default', () => {
     selectedItem: SELECTED_ITEM,
     selectedItemDetails: {
       ...SELECTED_ITEM_DETAILS,
-      versions: ['1.0.0', '1.0.1', '1.0.2'],
+      versions: [
+        {
+          version: '1.0.0',
+          publishedDate: '2025-04-15',
+          unpackedSize: 123456,
+          integrity: 'sha512-abc123',
+          tarball: 'https://example.com/tarball.tgz',
+          publishedAuthor: {
+            name: 'John Doe',
+            email: 'johndoe@acme.com',
+            avatar: 'https://example.com/avatar.jpg',
+          },
+        },
+        {
+          version: '1.0.2',
+          publishedDate: '2025-04-15',
+          unpackedSize: 123456,
+          integrity: 'sha512-abc123',
+          tarball: 'https://example.com/tarball.tgz',
+          publishedAuthor: {
+            name: 'John Doe',
+            email: 'johndoe@acme.com',
+            avatar: 'https://example.com/avatar.jpg',
+          },
+        },
+      ],
     } as DetailsInfo,
     insights: undefined,
     activeTab: 'versions',
@@ -66,7 +117,32 @@ test('VersionsTabContent renders with versions', () => {
     selectedItem: SELECTED_ITEM,
     selectedItemDetails: {
       ...SELECTED_ITEM_DETAILS,
-      versions: ['1.0.0', '1.0.1', '1.0.2'],
+      versions: [
+        {
+          version: '1.0.0',
+          publishedDate: '2025-04-15',
+          unpackedSize: 123456,
+          integrity: 'sha512-abc123',
+          tarball: 'https://example.com/tarball.tgz',
+          publishedAuthor: {
+            name: 'John Doe',
+            email: 'johndoe@acme.com',
+            avatar: 'https://example.com/avatar.jpg',
+          },
+        },
+        {
+          version: '1.0.2',
+          publishedDate: '2025-04-15',
+          unpackedSize: 123456,
+          integrity: 'sha512-abc123',
+          tarball: 'https://example.com/tarball.tgz',
+          publishedAuthor: {
+            name: 'John Doe',
+            email: 'johndoe@acme.com',
+            avatar: 'https://example.com/avatar.jpg',
+          },
+        },
+      ],
     } as DetailsInfo,
     insights: undefined,
     activeTab: 'versions',

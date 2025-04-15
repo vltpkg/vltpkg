@@ -38,7 +38,11 @@ vi.mock('@/components/ui/tooltip.jsx', () => ({
 
 vi.mock('lucide-react', () => ({
   Home: 'gui-home-icon',
-  Info: 'gui-info-icon',
+  Scale: 'gui-scale-icon',
+  ArrowBigUpDash: 'gui-arrow-big-up-dash-icon',
+  EyeOff: 'gui-eye-off-icon',
+  Download: 'gui-download-icon',
+  Target: 'gui-target-icon',
 }))
 
 vi.mock('@/components/ui/inline-code.jsx', () => ({
@@ -50,11 +54,19 @@ vi.mock('@/components/ui/badge.jsx', () => ({
 }))
 
 vi.mock('@/components/ui/spark-chart.jsx', () => ({
-  SparkAreaChart: 'gui-spark-area-chart',
+  SparkBarChart: 'gui-spark-bar-chart',
 }))
 
 vi.mock('@/components/ui/progress-bar.jsx', () => ({
   ProgressBar: 'gui-progress-bar',
+}))
+
+vi.mock('@/components/icons/glyph-icon.jsx', () => ({
+  GlyphIcon: 'gui-glyph-icon',
+}))
+
+vi.mock('@/components/ui/copy-to-clipboard.jsx', () => ({
+  CopyToClipboard: 'gui-copy-to-clipboard',
 }))
 
 vi.mock(

@@ -59,7 +59,7 @@ exports[`ResultItem render stacked many 1`] = `
         </button>
         <div class="flex gap-2">
           <div>
-            <div class="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent bg-lime-100 text-neutral-900 hover:bg-lime-100/80">
+            <div class="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent cursor-default border-none bg-lime-500/30 text-lime-600 hover:bg-lime-400/40 dark:bg-lime-500/30 dark:text-lime-400 dark:hover:bg-lime-500/40">
               peer
             </div>
           </div>
@@ -100,7 +100,7 @@ exports[`ResultItem render stacked two 1`] = `
         </button>
         <div class="flex gap-2">
           <div>
-            <div class="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent bg-fuchsia-100 text-neutral-900 hover:bg-fuchsia-100/80">
+            <div class="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent cursor-default border-none bg-fuchsia-500/20 text-fuchsia-500 hover:bg-fuchsia-400/30 dark:bg-fuchsia-500/30 dark:text-fuchsia-400 dark:hover:bg-fuchsia-500/40">
               dev
             </div>
           </div>
@@ -139,7 +139,7 @@ exports[`ResultItem render with item 1`] = `
         </button>
         <div class="flex gap-2">
           <div>
-            <div class="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent bg-cyan-100 text-neutral-900 hover:bg-cyan-100/80">
+            <div class="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent cursor-default border-none bg-cyan-500/30 text-cyan-600 hover:bg-cyan-500/40 dark:bg-cyan-500/30 dark:text-cyan-500 dark:hover:bg-cyan-500/40">
               prod
             </div>
           </div>
@@ -191,7 +191,7 @@ exports[`ResultItem render with type 1`] = `
         </button>
         <div class="flex gap-2">
           <div>
-            <div class="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent bg-cyan-100 text-neutral-900 hover:bg-cyan-100/80">
+            <div class="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent cursor-default border-none bg-cyan-500/30 text-cyan-600 hover:bg-cyan-500/40 dark:bg-cyan-500/30 dark:text-cyan-500 dark:hover:bg-cyan-500/40">
               prod
             </div>
           </div>

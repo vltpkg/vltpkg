@@ -277,9 +277,9 @@ export const VersionsTabContent = () => {
     useState<boolean>(true)
 
   useEffect(() => {
-    setFilteredVersions(selectedItemDetails?.versions ?? [])
+    setFilteredVersions(selectedItemDetails.versions ?? [])
     setFilteredGreaterVersions(
-      selectedItemDetails?.greaterVersions ?? [],
+      selectedItemDetails.greaterVersions ?? [],
     )
   }, [selectedItemDetails])
 

@@ -3,11 +3,11 @@
 exports[`ItemHeader renders with a package score 1`] = `
 
 <div
-  class="flex flex-col pb-5 pt-6"
+  class="flex flex-col pb-3"
   style="opacity: 0;"
 >
-  <div class="flex w-full justify-between px-6">
-    <div class="flex gap-4">
+  <div class="grid w-full grid-cols-12">
+    <div class="flex gap-4 col-span-9 pb-3 pl-6 pt-6 border-r-[1px] border-muted">
       <gui-avatar classname="size-[3.75rem]">
         <gui-avatar-image
           classname="rounded-md border-[1px] bg-secondary object-cover"
@@ -20,7 +20,7 @@ exports[`ItemHeader renders with a package score 1`] = `
           </div>
         </gui-avatar-fallback>
       </gui-avatar>
-      <div class="flex h-full max-w-[250px] flex-col justify-between">
+      <div class="flex h-full w-full flex-col justify-between">
         <div class="flex flex-col gap-0.5">
           <div class="flex items-center gap-2">
             <gui-tooltip-provider>
@@ -43,52 +43,43 @@ exports[`ItemHeader renders with a package score 1`] = `
               </gui-tooltip>
             </gui-tooltip-provider>
             <gui-tooltip-provider>
-              <gui-tooltip>
+              <gui-tooltip delayduration="150">
                 <gui-tooltip-trigger classname="flex items-center justify-center">
-                  <gui-badge
-                    variant="outline"
-                    classname="cursor-default bg-secondary p-0.5 outline-[1px] outline-border"
-                  >
-                    <gui-info-icon
-                      classname="text-muted-foreground"
+                  <div class="cursor-default rounded-sm bg-green-400/30 p-0.5 transition-colors duration-150 hover:bg-green-400/40 dark:bg-green-500/30 dark:hover:bg-green-500/40">
+                    <gui-arrow-big-up-dash-icon
+                      classname="text-green-600 dark:text-green-500"
                       size="16"
                     >
-                    </gui-info-icon>
-                  </gui-badge>
+                    </gui-arrow-big-up-dash-icon>
+                  </div>
                 </gui-tooltip-trigger>
                 <gui-tooltip-content>
                   Newer versions available
                 </gui-tooltip-content>
               </gui-tooltip>
             </gui-tooltip-provider>
+            <div class="flex gap-1.5 overflow-y-scroll">
+            </div>
           </div>
         </div>
       </div>
     </div>
     <div
-      class="flex w-fit flex-col"
+      class="flex w-full flex-col items-center justify-end col-span-3"
       style="opacity: 0;"
     >
-      <div class="flex w-fit flex-col items-end self-end text-right">
-        <gui-spark-area-chart
-          data
-          categories="downloads"
-          index="day"
-          colors="emerald"
-          classname="w-full"
-        >
-        </gui-spark-area-chart>
-        <p class="text-baseline w-full self-end whitespace-nowrap text-sm font-medium text-foreground">
-          123,456
-          <span class="text-muted-foreground">
-            Weekly Downloads
-          </span>
-        </p>
-      </div>
+      <gui-spark-bar-chart
+        data
+        categories="downloads"
+        index="day"
+        colors="emerald"
+        classname="w-full"
+      >
+      </gui-spark-bar-chart>
     </div>
   </div>
-  <div class="flex w-full justify-between px-6 mt-3 border-t-[1px] border-muted py-3">
-    <div class="flex h-[31.508px] items-center gap-2">
+  <div class="grid w-full grid-cols-12 border-t-[1px] border-muted">
+    <div class="flex h-[31.508px] items-center gap-2 col-span-9 border-r-[1px] border-muted py-5 pl-6">
       <gui-avatar>
         <gui-avatar-image
           classname="size-5 rounded-sm outline outline-[1px] outline-border"
@@ -113,9 +104,19 @@ exports[`ItemHeader renders with a package score 1`] = `
         </gui-tooltip>
       </gui-tooltip-provider>
     </div>
+    <div class="col-span-3 flex h-full cursor-default items-center justify-center text-center">
+      <p class="w-full text-sm font-medium text-foreground">
+        123,456
+        <span class="text-muted-foreground">
+          Downloads
+        </span>
+      </p>
+    </div>
+  </div>
+  <div class="w-full grid-cols-12 hidden">
     <div
       role="button"
-      class="flex w-[11.375rem] cursor-pointer flex-col justify-end gap-1"
+      class="relative flex w-full cursor-default flex-col items-center justify-center gap-1 col-span-3"
     >
       <p class="text-sm">
         <span class="font-medium">
@@ -126,11 +127,10 @@ exports[`ItemHeader renders with a package score 1`] = `
       <gui-progress-bar
         variant="success"
         value="80"
+        classname="absolute bottom-0"
       >
       </gui-progress-bar>
     </div>
-  </div>
-  <div class="px-6 pt-3 hidden">
   </div>
 </div>
 
@@ -139,11 +139,11 @@ exports[`ItemHeader renders with a package score 1`] = `
 exports[`ItemHeader renders with custom registry item 1`] = `
 
 <div
-  class="flex flex-col pb-5 pt-6"
+  class="flex flex-col pb-3"
   style="opacity: 0;"
 >
-  <div class="flex w-full justify-between px-6">
-    <div class="flex gap-4">
+  <div class="grid w-full grid-cols-12">
+    <div class="flex gap-4 col-span-9 pb-3 pl-6 pt-6 border-r-[1px] border-muted">
       <gui-avatar classname="size-[3.75rem]">
         <gui-avatar-image
           classname="rounded-md border-[1px] bg-secondary object-cover"
@@ -156,7 +156,7 @@ exports[`ItemHeader renders with custom registry item 1`] = `
           </div>
         </gui-avatar-fallback>
       </gui-avatar>
-      <div class="flex h-full max-w-[250px] flex-col justify-between">
+      <div class="flex h-full w-full flex-col justify-between">
         <div class="flex flex-col gap-0.5">
           <div class="flex items-center gap-2">
             <gui-tooltip-provider>
@@ -179,24 +179,23 @@ exports[`ItemHeader renders with custom registry item 1`] = `
               </gui-tooltip>
             </gui-tooltip-provider>
             <gui-tooltip-provider>
-              <gui-tooltip>
+              <gui-tooltip delayduration="150">
                 <gui-tooltip-trigger classname="flex items-center justify-center">
-                  <gui-badge
-                    variant="outline"
-                    classname="cursor-default bg-secondary p-0.5 outline-[1px] outline-border"
-                  >
-                    <gui-info-icon
-                      classname="text-muted-foreground"
+                  <div class="cursor-default rounded-sm bg-green-400/30 p-0.5 transition-colors duration-150 hover:bg-green-400/40 dark:bg-green-500/30 dark:hover:bg-green-500/40">
+                    <gui-arrow-big-up-dash-icon
+                      classname="text-green-600 dark:text-green-500"
                       size="16"
                     >
-                    </gui-info-icon>
-                  </gui-badge>
+                    </gui-arrow-big-up-dash-icon>
+                  </div>
                 </gui-tooltip-trigger>
                 <gui-tooltip-content>
                   Newer versions available
                 </gui-tooltip-content>
               </gui-tooltip>
             </gui-tooltip-provider>
+            <div class="flex gap-1.5 overflow-y-scroll">
+            </div>
           </div>
           <gui-tooltip-provider>
             <gui-tooltip>
@@ -217,29 +216,21 @@ exports[`ItemHeader renders with custom registry item 1`] = `
       </div>
     </div>
     <div
-      class="flex w-fit flex-col"
+      class="flex w-full flex-col items-center justify-end col-span-3"
       style="opacity: 0;"
     >
-      <div class="flex w-fit flex-col items-end self-end text-right">
-        <gui-spark-area-chart
-          data
-          categories="downloads"
-          index="day"
-          colors="emerald"
-          classname="w-full"
-        >
-        </gui-spark-area-chart>
-        <p class="text-baseline w-full self-end whitespace-nowrap text-sm font-medium text-foreground">
-          123,456
-          <span class="text-muted-foreground">
-            Weekly Downloads
-          </span>
-        </p>
-      </div>
+      <gui-spark-bar-chart
+        data
+        categories="downloads"
+        index="day"
+        colors="emerald"
+        classname="w-full"
+      >
+      </gui-spark-bar-chart>
     </div>
   </div>
-  <div class="flex w-full justify-between px-6 mt-3 border-t-[1px] border-muted py-3">
-    <div class="flex h-[31.508px] items-center gap-2">
+  <div class="grid w-full grid-cols-12 border-t-[1px] border-muted">
+    <div class="flex h-[31.508px] items-center gap-2 col-span-9 border-r-[1px] border-muted py-5 pl-6">
       <gui-avatar>
         <gui-avatar-image
           classname="size-5 rounded-sm outline outline-[1px] outline-border"
@@ -264,8 +255,16 @@ exports[`ItemHeader renders with custom registry item 1`] = `
         </gui-tooltip>
       </gui-tooltip-provider>
     </div>
+    <div class="col-span-3 flex h-full cursor-default items-center justify-center text-center">
+      <p class="w-full text-sm font-medium text-foreground">
+        123,456
+        <span class="text-muted-foreground">
+          Downloads
+        </span>
+      </p>
+    </div>
   </div>
-  <div class="px-6 pt-3 hidden">
+  <div class="w-full grid-cols-12 hidden">
   </div>
 </div>
 
@@ -274,11 +273,11 @@ exports[`ItemHeader renders with custom registry item 1`] = `
 exports[`ItemHeader renders with default git host item 1`] = `
 
 <div
-  class="flex flex-col pb-5 pt-6"
+  class="flex flex-col pb-3"
   style="opacity: 0;"
 >
-  <div class="flex w-full justify-between px-6">
-    <div class="flex gap-4">
+  <div class="grid w-full grid-cols-12">
+    <div class="flex gap-4 col-span-9 pb-3 pl-6 pt-6 border-r-[1px] border-muted">
       <gui-avatar classname="size-[3.75rem]">
         <gui-avatar-image
           classname="rounded-md border-[1px] bg-secondary object-cover"
@@ -291,7 +290,7 @@ exports[`ItemHeader renders with default git host item 1`] = `
           </div>
         </gui-avatar-fallback>
       </gui-avatar>
-      <div class="flex h-full max-w-[250px] flex-col justify-between">
+      <div class="flex h-full w-full flex-col justify-between">
         <div class="flex flex-col gap-0.5">
           <div class="flex items-center gap-2">
             <gui-tooltip-provider>
@@ -314,24 +313,23 @@ exports[`ItemHeader renders with default git host item 1`] = `
               </gui-tooltip>
             </gui-tooltip-provider>
             <gui-tooltip-provider>
-              <gui-tooltip>
+              <gui-tooltip delayduration="150">
                 <gui-tooltip-trigger classname="flex items-center justify-center">
-                  <gui-badge
-                    variant="outline"
-                    classname="cursor-default bg-secondary p-0.5 outline-[1px] outline-border"
-                  >
-                    <gui-info-icon
-                      classname="text-muted-foreground"
+                  <div class="cursor-default rounded-sm bg-green-400/30 p-0.5 transition-colors duration-150 hover:bg-green-400/40 dark:bg-green-500/30 dark:hover:bg-green-500/40">
+                    <gui-arrow-big-up-dash-icon
+                      classname="text-green-600 dark:text-green-500"
                       size="16"
                     >
-                    </gui-info-icon>
-                  </gui-badge>
+                    </gui-arrow-big-up-dash-icon>
+                  </div>
                 </gui-tooltip-trigger>
                 <gui-tooltip-content>
                   Newer versions available
                 </gui-tooltip-content>
               </gui-tooltip>
             </gui-tooltip-provider>
+            <div class="flex gap-1.5 overflow-y-scroll">
+            </div>
           </div>
           <gui-inline-code classname="mx-0">
             git:{ref}
@@ -340,29 +338,21 @@ exports[`ItemHeader renders with default git host item 1`] = `
       </div>
     </div>
     <div
-      class="flex w-fit flex-col"
+      class="flex w-full flex-col items-center justify-end col-span-3"
       style="opacity: 0;"
     >
-      <div class="flex w-fit flex-col items-end self-end text-right">
-        <gui-spark-area-chart
-          data
-          categories="downloads"
-          index="day"
-          colors="emerald"
-          classname="w-full"
-        >
-        </gui-spark-area-chart>
-        <p class="text-baseline w-full self-end whitespace-nowrap text-sm font-medium text-foreground">
-          123,456
-          <span class="text-muted-foreground">
-            Weekly Downloads
-          </span>
-        </p>
-      </div>
+      <gui-spark-bar-chart
+        data
+        categories="downloads"
+        index="day"
+        colors="emerald"
+        classname="w-full"
+      >
+      </gui-spark-bar-chart>
     </div>
   </div>
-  <div class="flex w-full justify-between px-6 mt-3 border-t-[1px] border-muted py-3">
-    <div class="flex h-[31.508px] items-center gap-2">
+  <div class="grid w-full grid-cols-12 border-t-[1px] border-muted">
+    <div class="flex h-[31.508px] items-center gap-2 col-span-9 border-r-[1px] border-muted py-5 pl-6">
       <gui-avatar>
         <gui-avatar-image
           classname="size-5 rounded-sm outline outline-[1px] outline-border"
@@ -387,8 +377,16 @@ exports[`ItemHeader renders with default git host item 1`] = `
         </gui-tooltip>
       </gui-tooltip-provider>
     </div>
+    <div class="col-span-3 flex h-full cursor-default items-center justify-center text-center">
+      <p class="w-full text-sm font-medium text-foreground">
+        123,456
+        <span class="text-muted-foreground">
+          Downloads
+        </span>
+      </p>
+    </div>
   </div>
-  <div class="px-6 pt-3 hidden">
+  <div class="w-full grid-cols-12 hidden">
   </div>
 </div>
 
@@ -397,11 +395,11 @@ exports[`ItemHeader renders with default git host item 1`] = `
 exports[`ItemHeader renders with default item 1`] = `
 
 <div
-  class="flex flex-col pb-5 pt-6"
+  class="flex flex-col pb-3"
   style="opacity: 0;"
 >
-  <div class="flex w-full justify-between px-6">
-    <div class="flex gap-4">
+  <div class="grid w-full grid-cols-12">
+    <div class="flex gap-4 col-span-9 pb-3 pl-6 pt-6 border-r-[1px] border-muted">
       <gui-avatar classname="size-[3.75rem]">
         <gui-avatar-image
           classname="rounded-md border-[1px] bg-secondary object-cover"
@@ -414,7 +412,7 @@ exports[`ItemHeader renders with default item 1`] = `
           </div>
         </gui-avatar-fallback>
       </gui-avatar>
-      <div class="flex h-full max-w-[250px] flex-col justify-between">
+      <div class="flex h-full w-full flex-col justify-between">
         <div class="flex flex-col gap-0.5">
           <div class="flex items-center gap-2">
             <gui-tooltip-provider>
@@ -437,52 +435,43 @@ exports[`ItemHeader renders with default item 1`] = `
               </gui-tooltip>
             </gui-tooltip-provider>
             <gui-tooltip-provider>
-              <gui-tooltip>
+              <gui-tooltip delayduration="150">
                 <gui-tooltip-trigger classname="flex items-center justify-center">
-                  <gui-badge
-                    variant="outline"
-                    classname="cursor-default bg-secondary p-0.5 outline-[1px] outline-border"
-                  >
-                    <gui-info-icon
-                      classname="text-muted-foreground"
+                  <div class="cursor-default rounded-sm bg-green-400/30 p-0.5 transition-colors duration-150 hover:bg-green-400/40 dark:bg-green-500/30 dark:hover:bg-green-500/40">
+                    <gui-arrow-big-up-dash-icon
+                      classname="text-green-600 dark:text-green-500"
                       size="16"
                     >
-                    </gui-info-icon>
-                  </gui-badge>
+                    </gui-arrow-big-up-dash-icon>
+                  </div>
                 </gui-tooltip-trigger>
                 <gui-tooltip-content>
                   Newer versions available
                 </gui-tooltip-content>
               </gui-tooltip>
             </gui-tooltip-provider>
+            <div class="flex gap-1.5 overflow-y-scroll">
+            </div>
           </div>
         </div>
       </div>
     </div>
     <div
-      class="flex w-fit flex-col"
+      class="flex w-full flex-col items-center justify-end col-span-3"
       style="opacity: 0;"
     >
-      <div class="flex w-fit flex-col items-end self-end text-right">
-        <gui-spark-area-chart
-          data
-          categories="downloads"
-          index="day"
-          colors="emerald"
-          classname="w-full"
-        >
-        </gui-spark-area-chart>
-        <p class="text-baseline w-full self-end whitespace-nowrap text-sm font-medium text-foreground">
-          123,456
-          <span class="text-muted-foreground">
-            Weekly Downloads
-          </span>
-        </p>
-      </div>
+      <gui-spark-bar-chart
+        data
+        categories="downloads"
+        index="day"
+        colors="emerald"
+        classname="w-full"
+      >
+      </gui-spark-bar-chart>
     </div>
   </div>
-  <div class="flex w-full justify-between px-6 mt-3 border-t-[1px] border-muted py-3">
-    <div class="flex h-[31.508px] items-center gap-2">
+  <div class="grid w-full grid-cols-12 border-t-[1px] border-muted">
+    <div class="flex h-[31.508px] items-center gap-2 col-span-9 border-r-[1px] border-muted py-5 pl-6">
       <gui-avatar>
         <gui-avatar-image
           classname="size-5 rounded-sm outline outline-[1px] outline-border"
@@ -507,8 +496,16 @@ exports[`ItemHeader renders with default item 1`] = `
         </gui-tooltip>
       </gui-tooltip-provider>
     </div>
+    <div class="col-span-3 flex h-full cursor-default items-center justify-center text-center">
+      <p class="w-full text-sm font-medium text-foreground">
+        123,456
+        <span class="text-muted-foreground">
+          Downloads
+        </span>
+      </p>
+    </div>
   </div>
-  <div class="px-6 pt-3 hidden">
+  <div class="w-full grid-cols-12 hidden">
   </div>
 </div>
 
@@ -517,11 +514,11 @@ exports[`ItemHeader renders with default item 1`] = `
 exports[`ItemHeader renders with insights 1`] = `
 
 <div
-  class="flex flex-col pb-5 pt-6"
+  class="flex flex-col pb-3"
   style="opacity: 0;"
 >
-  <div class="flex w-full justify-between px-6">
-    <div class="flex gap-4">
+  <div class="grid w-full grid-cols-12">
+    <div class="flex gap-4 col-span-9 pb-3 pl-6 pt-6 border-r-[1px] border-muted">
       <gui-avatar classname="size-[3.75rem]">
         <gui-avatar-image
           classname="rounded-md border-[1px] bg-secondary object-cover"
@@ -534,7 +531,7 @@ exports[`ItemHeader renders with insights 1`] = `
           </div>
         </gui-avatar-fallback>
       </gui-avatar>
-      <div class="flex h-full max-w-[250px] flex-col justify-between">
+      <div class="flex h-full w-full flex-col justify-between">
         <div class="flex flex-col gap-0.5">
           <div class="flex items-center gap-2">
             <gui-tooltip-provider>
@@ -557,52 +554,43 @@ exports[`ItemHeader renders with insights 1`] = `
               </gui-tooltip>
             </gui-tooltip-provider>
             <gui-tooltip-provider>
-              <gui-tooltip>
+              <gui-tooltip delayduration="150">
                 <gui-tooltip-trigger classname="flex items-center justify-center">
-                  <gui-badge
-                    variant="outline"
-                    classname="cursor-default bg-secondary p-0.5 outline-[1px] outline-border"
-                  >
-                    <gui-info-icon
-                      classname="text-muted-foreground"
+                  <div class="cursor-default rounded-sm bg-green-400/30 p-0.5 transition-colors duration-150 hover:bg-green-400/40 dark:bg-green-500/30 dark:hover:bg-green-500/40">
+                    <gui-arrow-big-up-dash-icon
+                      classname="text-green-600 dark:text-green-500"
                       size="16"
                     >
-                    </gui-info-icon>
-                  </gui-badge>
+                    </gui-arrow-big-up-dash-icon>
+                  </div>
                 </gui-tooltip-trigger>
                 <gui-tooltip-content>
                   Newer versions available
                 </gui-tooltip-content>
               </gui-tooltip>
             </gui-tooltip-provider>
+            <div class="flex gap-1.5 overflow-y-scroll">
+            </div>
           </div>
         </div>
       </div>
     </div>
     <div
-      class="flex w-fit flex-col"
+      class="flex w-full flex-col items-center justify-end col-span-3"
       style="opacity: 0;"
     >
-      <div class="flex w-fit flex-col items-end self-end text-right">
-        <gui-spark-area-chart
-          data
-          categories="downloads"
-          index="day"
-          colors="emerald"
-          classname="w-full"
-        >
-        </gui-spark-area-chart>
-        <p class="text-baseline w-full self-end whitespace-nowrap text-sm font-medium text-foreground">
-          123,456
-          <span class="text-muted-foreground">
-            Weekly Downloads
-          </span>
-        </p>
-      </div>
+      <gui-spark-bar-chart
+        data
+        categories="downloads"
+        index="day"
+        colors="emerald"
+        classname="w-full"
+      >
+      </gui-spark-bar-chart>
     </div>
   </div>
-  <div class="flex w-full justify-between px-6 mt-3 border-t-[1px] border-muted py-3">
-    <div class="flex h-[31.508px] items-center gap-2">
+  <div class="grid w-full grid-cols-12 border-t-[1px] border-muted">
+    <div class="flex h-[31.508px] items-center gap-2 col-span-9 border-r-[1px] border-muted py-5 pl-6">
       <gui-avatar>
         <gui-avatar-image
           classname="size-5 rounded-sm outline outline-[1px] outline-border"
@@ -627,16 +615,16 @@ exports[`ItemHeader renders with insights 1`] = `
         </gui-tooltip>
       </gui-tooltip-provider>
     </div>
-  </div>
-  <div class="px-6 pt-3 border-t-[1px] border-muted">
-    <div class="flex w-full flex-wrap gap-3">
-      <gui-insight-badge
-        color="yellow"
-        tooltipcontent="medium severity"
-      >
-        :abandoned
-      </gui-insight-badge>
+    <div class="col-span-3 flex h-full cursor-default items-center justify-center text-center">
+      <p class="w-full text-sm font-medium text-foreground">
+        123,456
+        <span class="text-muted-foreground">
+          Downloads
+        </span>
+      </p>
     </div>
+  </div>
+  <div class="w-full grid-cols-12 hidden">
   </div>
 </div>
 
@@ -645,11 +633,11 @@ exports[`ItemHeader renders with insights 1`] = `
 exports[`ItemHeader renders with scoped registry item 1`] = `
 
 <div
-  class="flex flex-col pb-5 pt-6"
+  class="flex flex-col pb-3"
   style="opacity: 0;"
 >
-  <div class="flex w-full justify-between px-6">
-    <div class="flex gap-4">
+  <div class="grid w-full grid-cols-12">
+    <div class="flex gap-4 col-span-9 pb-3 pl-6 pt-6 border-r-[1px] border-muted">
       <gui-avatar classname="size-[3.75rem]">
         <gui-avatar-image
           classname="rounded-md border-[1px] bg-secondary object-cover"
@@ -662,7 +650,7 @@ exports[`ItemHeader renders with scoped registry item 1`] = `
           </div>
         </gui-avatar-fallback>
       </gui-avatar>
-      <div class="flex h-full max-w-[250px] flex-col justify-between">
+      <div class="flex h-full w-full flex-col justify-between">
         <div class="flex flex-col gap-0.5">
           <div class="flex items-center gap-2">
             <gui-tooltip-provider>
@@ -685,24 +673,23 @@ exports[`ItemHeader renders with scoped registry item 1`] = `
               </gui-tooltip>
             </gui-tooltip-provider>
             <gui-tooltip-provider>
-              <gui-tooltip>
+              <gui-tooltip delayduration="150">
                 <gui-tooltip-trigger classname="flex items-center justify-center">
-                  <gui-badge
-                    variant="outline"
-                    classname="cursor-default bg-secondary p-0.5 outline-[1px] outline-border"
-                  >
-                    <gui-info-icon
-                      classname="text-muted-foreground"
+                  <div class="cursor-default rounded-sm bg-green-400/30 p-0.5 transition-colors duration-150 hover:bg-green-400/40 dark:bg-green-500/30 dark:hover:bg-green-500/40">
+                    <gui-arrow-big-up-dash-icon
+                      classname="text-green-600 dark:text-green-500"
                       size="16"
                     >
-                    </gui-info-icon>
-                  </gui-badge>
+                    </gui-arrow-big-up-dash-icon>
+                  </div>
                 </gui-tooltip-trigger>
                 <gui-tooltip-content>
                   Newer versions available
                 </gui-tooltip-content>
               </gui-tooltip>
             </gui-tooltip-provider>
+            <div class="flex gap-1.5 overflow-y-scroll">
+            </div>
           </div>
           <gui-tooltip-provider>
             <gui-tooltip>
@@ -723,29 +710,21 @@ exports[`ItemHeader renders with scoped registry item 1`] = `
       </div>
     </div>
     <div
-      class="flex w-fit flex-col"
+      class="flex w-full flex-col items-center justify-end col-span-3"
       style="opacity: 0;"
     >
-      <div class="flex w-fit flex-col items-end self-end text-right">
-        <gui-spark-area-chart
-          data
-          categories="downloads"
-          index="day"
-          colors="emerald"
-          classname="w-full"
-        >
-        </gui-spark-area-chart>
-        <p class="text-baseline w-full self-end whitespace-nowrap text-sm font-medium text-foreground">
-          123,456
-          <span class="text-muted-foreground">
-            Weekly Downloads
-          </span>
-        </p>
-      </div>
+      <gui-spark-bar-chart
+        data
+        categories="downloads"
+        index="day"
+        colors="emerald"
+        classname="w-full"
+      >
+      </gui-spark-bar-chart>
     </div>
   </div>
-  <div class="flex w-full justify-between px-6 mt-3 border-t-[1px] border-muted py-3">
-    <div class="flex h-[31.508px] items-center gap-2">
+  <div class="grid w-full grid-cols-12 border-t-[1px] border-muted">
+    <div class="flex h-[31.508px] items-center gap-2 col-span-9 border-r-[1px] border-muted py-5 pl-6">
       <gui-avatar>
         <gui-avatar-image
           classname="size-5 rounded-sm outline outline-[1px] outline-border"
@@ -770,8 +749,16 @@ exports[`ItemHeader renders with scoped registry item 1`] = `
         </gui-tooltip>
       </gui-tooltip-provider>
     </div>
+    <div class="col-span-3 flex h-full cursor-default items-center justify-center text-center">
+      <p class="w-full text-sm font-medium text-foreground">
+        123,456
+        <span class="text-muted-foreground">
+          Downloads
+        </span>
+      </p>
+    </div>
   </div>
-  <div class="px-6 pt-3 hidden">
+  <div class="w-full grid-cols-12 hidden">
   </div>
 </div>
 

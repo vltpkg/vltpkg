@@ -8,6 +8,12 @@ exports[`VersionsTabButton renders default 1`] = `
   classname="w-fit px-2"
 >
   Versions
+  <gui-inline-code
+    variant="mono"
+    classname="ml-1 inline-flex h-[1.25rem] min-w-[1.25rem] items-center justify-center text-center"
+  >
+    4
+  </gui-inline-code>
 </gui-tabs-trigger>
 
 `;
@@ -37,35 +43,430 @@ exports[`VersionsTabContent renders with versions 1`] = `
 
 <gui-tabs-content value="versions">
   <section class="flex flex-col gap-4 px-6 py-4">
-    <div class="flex flex-col gap-2">
-      <p class="text-sm font-medium text-muted-foreground">
-        Greater Versions
-      </p>
-      <ul class="flex flex-col divide-y-[1px] divide-border">
-        <li class="py-1.5 font-mono text-sm">
-          1.2.5
-        </li>
-        <li class="py-1.5 font-mono text-sm">
-          1.2.4
-        </li>
-      </ul>
-    </div>
-    <div class="flex flex-col gap-2">
-      <p class="text-sm font-medium text-muted-foreground">
-        All Versions
-      </p>
-      <ul class="flex flex-col divide-y-[1px] divide-border">
-        <li class="py-1.5 font-mono text-sm">
-          1.0.2
-        </li>
-        <li class="py-1.5 font-mono text-sm">
-          1.0.1
-        </li>
-        <li class="py-1.5 font-mono text-sm">
-          1.0.0
-        </li>
-      </ul>
-    </div>
+    <gui-collapsible
+      open="true"
+      classname="flex flex-col gap-2"
+    >
+      <gui-collapsible-trigger aschild="true">
+        <gui-button
+          variant="ghost"
+          size="xs"
+          classname="inline-flex h-fit w-fit cursor-default items-center gap-1 px-3 py-1.5 text-sm font-medium text-muted-foreground [&amp;>svg]:data-[state=closed]:-rotate-90"
+        >
+          <span>
+            Greater Versions
+          </span>
+          <gui-chevron-down-icon
+            classname="duration-250 transition-transform"
+            size="16"
+          >
+          </gui-chevron-down-icon>
+        </gui-button>
+      </gui-collapsible-trigger>
+      <gui-collapsible-content classname="relative flex flex-col gap-2">
+        <div class="mt-4 hidden cursor-default grid-cols-12 pb-2 2xl:grid">
+          <div class="col-span-2 w-full pl-2">
+            <button class="relative z-[1] inline-flex w-fit cursor-default items-center justify-center gap-2 text-nowrap text-sm text-muted-foreground transition-all duration-300 after:absolute after:left-[-0.75rem] after:z-[-1] after:h-[calc(100%+0.5rem)] after:w-[calc(100%+1.5rem)] after:rounded-sm after:bg-transparent after:content-[''] hover:text-foreground hover:after:bg-muted">
+              <span>
+                Version
+              </span>
+              <gui-arrow-up-down-icon size="16">
+              </gui-arrow-up-down-icon>
+            </button>
+          </div>
+          <div class="col-span-2 w-full text-center">
+            <button class="relative z-[1] inline-flex w-fit cursor-default items-center justify-center gap-2 text-nowrap text-sm text-muted-foreground transition-all duration-300 after:absolute after:left-[-0.75rem] after:z-[-1] after:h-[calc(100%+0.5rem)] after:w-[calc(100%+1.5rem)] after:rounded-sm after:bg-transparent after:content-[''] hover:text-foreground hover:after:bg-muted">
+              <span>
+                Integrity
+              </span>
+            </button>
+          </div>
+          <div class="col-span-2 w-full text-center">
+            <button class="relative z-[1] inline-flex w-fit cursor-default items-center justify-center gap-2 text-nowrap text-sm text-muted-foreground transition-all duration-300 after:absolute after:left-[-0.75rem] after:z-[-1] after:h-[calc(100%+0.5rem)] after:w-[calc(100%+1.5rem)] after:rounded-sm after:bg-transparent after:content-[''] hover:text-foreground hover:after:bg-muted">
+              <span>
+                Size
+              </span>
+              <gui-arrow-up-down-icon size="16">
+              </gui-arrow-up-down-icon>
+            </button>
+          </div>
+          <div class="col-span-3 w-full text-center">
+            <button class="relative z-[1] inline-flex w-fit cursor-default items-center justify-center gap-2 text-nowrap text-sm text-muted-foreground transition-all duration-300 after:absolute after:left-[-0.75rem] after:z-[-1] after:h-[calc(100%+0.5rem)] after:w-[calc(100%+1.5rem)] after:rounded-sm after:bg-transparent after:content-[''] hover:text-foreground hover:after:bg-muted">
+              <span>
+                Published Date
+              </span>
+              <gui-arrow-up-down-icon size="16">
+              </gui-arrow-up-down-icon>
+            </button>
+          </div>
+          <div class="col-span-3 mr-1 flex w-full justify-center">
+            <button class="relative z-[1] inline-flex w-fit cursor-default items-center justify-center gap-2 text-nowrap text-sm text-muted-foreground transition-all duration-300 after:absolute after:left-[-0.75rem] after:z-[-1] after:h-[calc(100%+0.5rem)] after:w-[calc(100%+1.5rem)] after:rounded-sm after:bg-transparent after:content-[''] hover:text-foreground hover:after:bg-muted">
+              <span>
+                Publisher
+              </span>
+              <gui-arrow-up-down-icon size="16">
+              </gui-arrow-up-down-icon>
+            </button>
+          </div>
+        </div>
+        <div class="flex flex-col divide-y-[1px] divide-border">
+          <div class="group/item flex cursor-default grid-cols-12 flex-col gap-4 rounded-sm border-t-[1px] border-muted py-4 text-foreground transition-all first:border-t-[0px] hover:bg-muted group-hover/list:text-muted-foreground 2xl:grid 2xl:gap-0 2xl:px-2 2xl:py-1.5">
+            <div class="col-span-2 flex w-full flex-col gap-1 group-hover/item:text-foreground 2xl:ml-1 2xl:gap-0">
+              <p class="text-sm font-medium text-muted-foreground 2xl:hidden">
+                Version
+              </p>
+              <p class="font-mono text-sm">
+                1.0.0
+              </p>
+            </div>
+            <div class="col-span-2 flex w-full flex-col justify-start gap-2 2xl:items-center 2xl:justify-center 2xl:gap-0 2xl:text-center">
+              <p class="text-sm font-medium text-muted-foreground 2xl:hidden">
+                Integrity
+              </p>
+              <gui-copy-to-clipboard
+                tooltiptext="Copy full SHA for abc123"
+                copyvalue="sha512-abc123"
+                classname="w-fit group-hover/item:bg-neutral-300 dark:group-hover/item:bg-neutral-700"
+              >
+                abc123
+              </gui-copy-to-clipboard>
+            </div>
+            <div class="col-span-2 flex w-full flex-col gap-2 group-hover/item:text-foreground 2xl:items-center 2xl:justify-center 2xl:gap-0 2xl:text-center">
+              <p class="text-sm font-medium text-muted-foreground 2xl:hidden">
+                Size
+              </p>
+              <p class="font-mono text-sm">
+                123 KB
+              </p>
+            </div>
+            <div class="col-span-3 flex w-full flex-col gap-2 group-hover/item:text-foreground 2xl:items-center 2xl:justify-center 2xl:gap-0 2xl:text-center">
+              <p class="text-sm font-medium text-muted-foreground 2xl:hidden">
+                Published Date
+              </p>
+              <div class="flex gap-2 2xl:hidden">
+                <gui-avatar classname="size-5">
+                  <gui-avatar-image
+                    classname="rounded-sm outline outline-[1px] outline-border"
+                    src="https://example.com/avatar.jpg"
+                  >
+                  </gui-avatar-image>
+                  <gui-avatar-fallback classname="h-5 h-full w-5 w-full rounded-sm bg-secondary bg-gradient-to-t from-neutral-100 to-neutral-400 px-[10px] outline outline-[1px] outline-border dark:from-neutral-500 dark:to-neutral-800">
+                  </gui-avatar-fallback>
+                </gui-avatar>
+                <p class="col-span-4 font-mono text-sm">
+                  John Doe
+                </p>
+                <p class="ml-2 inline-flex font-mono text-sm text-muted-foreground 2xl:hidden">
+                  16 hours ago
+                </p>
+              </div>
+              <p class="hidden font-mono text-sm 2xl:inline-flex">
+                16 hours ago
+              </p>
+            </div>
+            <div class="col-span-3 flex hidden w-full items-center justify-center group-hover/item:text-foreground 2xl:mr-1 2xl:flex 2xl:justify-end">
+              <div class="flex grid-cols-5 gap-2 2xl:grid">
+                <gui-avatar classname="col-span-1 size-5 group-hover/item:opacity-100 group-hover/list:opacity-50">
+                  <gui-avatar-image
+                    classname="rounded-sm outline outline-[1px] outline-border"
+                    src="https://example.com/avatar.jpg"
+                  >
+                  </gui-avatar-image>
+                  <gui-avatar-fallback classname="h-5 h-full w-5 w-full rounded-sm bg-secondary bg-gradient-to-t from-neutral-100 to-neutral-400 px-[10px] outline outline-[1px] outline-border dark:from-neutral-500 dark:to-neutral-800">
+                  </gui-avatar-fallback>
+                </gui-avatar>
+                <p class="col-span-4 truncate font-mono text-sm">
+                  John Doe
+                </p>
+              </div>
+            </div>
+          </div>
+          <div class="group/item flex cursor-default grid-cols-12 flex-col gap-4 rounded-sm border-t-[1px] border-muted py-4 text-foreground transition-all first:border-t-[0px] hover:bg-muted group-hover/list:text-muted-foreground 2xl:grid 2xl:gap-0 2xl:px-2 2xl:py-1.5">
+            <div class="col-span-2 flex w-full flex-col gap-1 group-hover/item:text-foreground 2xl:ml-1 2xl:gap-0">
+              <p class="text-sm font-medium text-muted-foreground 2xl:hidden">
+                Version
+              </p>
+              <p class="font-mono text-sm">
+                1.0.2
+              </p>
+            </div>
+            <div class="col-span-2 flex w-full flex-col justify-start gap-2 2xl:items-center 2xl:justify-center 2xl:gap-0 2xl:text-center">
+              <p class="text-sm font-medium text-muted-foreground 2xl:hidden">
+                Integrity
+              </p>
+              <gui-copy-to-clipboard
+                tooltiptext="Copy full SHA for abc123"
+                copyvalue="sha512-abc123"
+                classname="w-fit group-hover/item:bg-neutral-300 dark:group-hover/item:bg-neutral-700"
+              >
+                abc123
+              </gui-copy-to-clipboard>
+            </div>
+            <div class="col-span-2 flex w-full flex-col gap-2 group-hover/item:text-foreground 2xl:items-center 2xl:justify-center 2xl:gap-0 2xl:text-center">
+              <p class="text-sm font-medium text-muted-foreground 2xl:hidden">
+                Size
+              </p>
+              <p class="font-mono text-sm">
+                123 KB
+              </p>
+            </div>
+            <div class="col-span-3 flex w-full flex-col gap-2 group-hover/item:text-foreground 2xl:items-center 2xl:justify-center 2xl:gap-0 2xl:text-center">
+              <p class="text-sm font-medium text-muted-foreground 2xl:hidden">
+                Published Date
+              </p>
+              <div class="flex gap-2 2xl:hidden">
+                <gui-avatar classname="size-5">
+                  <gui-avatar-image
+                    classname="rounded-sm outline outline-[1px] outline-border"
+                    src="https://example.com/avatar.jpg"
+                  >
+                  </gui-avatar-image>
+                  <gui-avatar-fallback classname="h-5 h-full w-5 w-full rounded-sm bg-secondary bg-gradient-to-t from-neutral-100 to-neutral-400 px-[10px] outline outline-[1px] outline-border dark:from-neutral-500 dark:to-neutral-800">
+                  </gui-avatar-fallback>
+                </gui-avatar>
+                <p class="col-span-4 font-mono text-sm">
+                  John Doe
+                </p>
+                <p class="ml-2 inline-flex font-mono text-sm text-muted-foreground 2xl:hidden">
+                  16 hours ago
+                </p>
+              </div>
+              <p class="hidden font-mono text-sm 2xl:inline-flex">
+                16 hours ago
+              </p>
+            </div>
+            <div class="col-span-3 flex hidden w-full items-center justify-center group-hover/item:text-foreground 2xl:mr-1 2xl:flex 2xl:justify-end">
+              <div class="flex grid-cols-5 gap-2 2xl:grid">
+                <gui-avatar classname="col-span-1 size-5 group-hover/item:opacity-100 group-hover/list:opacity-50">
+                  <gui-avatar-image
+                    classname="rounded-sm outline outline-[1px] outline-border"
+                    src="https://example.com/avatar.jpg"
+                  >
+                  </gui-avatar-image>
+                  <gui-avatar-fallback classname="h-5 h-full w-5 w-full rounded-sm bg-secondary bg-gradient-to-t from-neutral-100 to-neutral-400 px-[10px] outline outline-[1px] outline-border dark:from-neutral-500 dark:to-neutral-800">
+                  </gui-avatar-fallback>
+                </gui-avatar>
+                <p class="col-span-4 truncate font-mono text-sm">
+                  John Doe
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </gui-collapsible-content>
+    </gui-collapsible>
+    <gui-collapsible
+      open="true"
+      classname="flex flex-col gap-2"
+    >
+      <gui-collapsible-trigger aschild="true">
+        <gui-button
+          variant="ghost"
+          size="xs"
+          classname="inline-flex h-fit w-fit cursor-default items-center gap-1 px-3 py-1.5 text-sm font-medium text-muted-foreground [&amp;>svg]:data-[state=closed]:-rotate-90"
+        >
+          <span>
+            All Versions
+          </span>
+          <gui-chevron-down-icon
+            classname="duration-250 transition-transform"
+            size="16"
+          >
+          </gui-chevron-down-icon>
+        </gui-button>
+      </gui-collapsible-trigger>
+      <gui-collapsible-content classname="relative flex flex-col gap-2">
+        <div class="mt-4 hidden cursor-default grid-cols-12 pb-2 2xl:grid">
+          <div class="col-span-2 w-full pl-2">
+            <button class="relative z-[1] inline-flex w-fit cursor-default items-center justify-center gap-2 text-nowrap text-sm text-muted-foreground transition-all duration-300 after:absolute after:left-[-0.75rem] after:z-[-1] after:h-[calc(100%+0.5rem)] after:w-[calc(100%+1.5rem)] after:rounded-sm after:bg-transparent after:content-[''] hover:text-foreground hover:after:bg-muted">
+              <span>
+                Version
+              </span>
+              <gui-arrow-up-down-icon size="16">
+              </gui-arrow-up-down-icon>
+            </button>
+          </div>
+          <div class="col-span-2 w-full text-center">
+            <button class="relative z-[1] inline-flex w-fit cursor-default items-center justify-center gap-2 text-nowrap text-sm text-muted-foreground transition-all duration-300 after:absolute after:left-[-0.75rem] after:z-[-1] after:h-[calc(100%+0.5rem)] after:w-[calc(100%+1.5rem)] after:rounded-sm after:bg-transparent after:content-[''] hover:text-foreground hover:after:bg-muted">
+              <span>
+                Integrity
+              </span>
+            </button>
+          </div>
+          <div class="col-span-2 w-full text-center">
+            <button class="relative z-[1] inline-flex w-fit cursor-default items-center justify-center gap-2 text-nowrap text-sm text-muted-foreground transition-all duration-300 after:absolute after:left-[-0.75rem] after:z-[-1] after:h-[calc(100%+0.5rem)] after:w-[calc(100%+1.5rem)] after:rounded-sm after:bg-transparent after:content-[''] hover:text-foreground hover:after:bg-muted">
+              <span>
+                Size
+              </span>
+              <gui-arrow-up-down-icon size="16">
+              </gui-arrow-up-down-icon>
+            </button>
+          </div>
+          <div class="col-span-3 w-full text-center">
+            <button class="relative z-[1] inline-flex w-fit cursor-default items-center justify-center gap-2 text-nowrap text-sm text-muted-foreground transition-all duration-300 after:absolute after:left-[-0.75rem] after:z-[-1] after:h-[calc(100%+0.5rem)] after:w-[calc(100%+1.5rem)] after:rounded-sm after:bg-transparent after:content-[''] hover:text-foreground hover:after:bg-muted">
+              <span>
+                Published Date
+              </span>
+              <gui-arrow-up-down-icon size="16">
+              </gui-arrow-up-down-icon>
+            </button>
+          </div>
+          <div class="col-span-3 mr-1 flex w-full justify-center">
+            <button class="relative z-[1] inline-flex w-fit cursor-default items-center justify-center gap-2 text-nowrap text-sm text-muted-foreground transition-all duration-300 after:absolute after:left-[-0.75rem] after:z-[-1] after:h-[calc(100%+0.5rem)] after:w-[calc(100%+1.5rem)] after:rounded-sm after:bg-transparent after:content-[''] hover:text-foreground hover:after:bg-muted">
+              <span>
+                Publisher
+              </span>
+              <gui-arrow-up-down-icon size="16">
+              </gui-arrow-up-down-icon>
+            </button>
+          </div>
+        </div>
+        <div class="group/list flex flex-col">
+          <div class="group/item flex cursor-default grid-cols-12 flex-col gap-4 rounded-sm border-t-[1px] border-muted py-4 text-foreground transition-all first:border-t-[0px] hover:bg-muted group-hover/list:text-muted-foreground 2xl:grid 2xl:gap-0 2xl:px-2 2xl:py-1.5">
+            <div class="col-span-2 flex w-full flex-col gap-1 group-hover/item:text-foreground 2xl:ml-1 2xl:gap-0">
+              <p class="text-sm font-medium text-muted-foreground 2xl:hidden">
+                Version
+              </p>
+              <p class="font-mono text-sm">
+                1.0.0
+              </p>
+            </div>
+            <div class="col-span-2 flex w-full flex-col justify-start gap-2 2xl:items-center 2xl:justify-center 2xl:gap-0 2xl:text-center">
+              <p class="text-sm font-medium text-muted-foreground 2xl:hidden">
+                Integrity
+              </p>
+              <gui-copy-to-clipboard
+                tooltiptext="Copy full SHA for abc123"
+                copyvalue="sha512-abc123"
+                classname="w-fit group-hover/item:bg-neutral-300 dark:group-hover/item:bg-neutral-700"
+              >
+                abc123
+              </gui-copy-to-clipboard>
+            </div>
+            <div class="col-span-2 flex w-full flex-col gap-2 group-hover/item:text-foreground 2xl:items-center 2xl:justify-center 2xl:gap-0 2xl:text-center">
+              <p class="text-sm font-medium text-muted-foreground 2xl:hidden">
+                Size
+              </p>
+              <p class="font-mono text-sm">
+                123 KB
+              </p>
+            </div>
+            <div class="col-span-3 flex w-full flex-col gap-2 group-hover/item:text-foreground 2xl:items-center 2xl:justify-center 2xl:gap-0 2xl:text-center">
+              <p class="text-sm font-medium text-muted-foreground 2xl:hidden">
+                Published Date
+              </p>
+              <div class="flex gap-2 2xl:hidden">
+                <gui-avatar classname="size-5">
+                  <gui-avatar-image
+                    classname="rounded-sm outline outline-[1px] outline-border"
+                    src="https://example.com/avatar.jpg"
+                  >
+                  </gui-avatar-image>
+                  <gui-avatar-fallback classname="h-5 h-full w-5 w-full rounded-sm bg-secondary bg-gradient-to-t from-neutral-100 to-neutral-400 px-[10px] outline outline-[1px] outline-border dark:from-neutral-500 dark:to-neutral-800">
+                  </gui-avatar-fallback>
+                </gui-avatar>
+                <p class="col-span-4 font-mono text-sm">
+                  John Doe
+                </p>
+                <p class="ml-2 inline-flex font-mono text-sm text-muted-foreground 2xl:hidden">
+                  16 hours ago
+                </p>
+              </div>
+              <p class="hidden font-mono text-sm 2xl:inline-flex">
+                16 hours ago
+              </p>
+            </div>
+            <div class="col-span-3 flex hidden w-full items-center justify-center group-hover/item:text-foreground 2xl:mr-1 2xl:flex 2xl:justify-end">
+              <div class="flex grid-cols-5 gap-2 2xl:grid">
+                <gui-avatar classname="col-span-1 size-5 group-hover/item:opacity-100 group-hover/list:opacity-50">
+                  <gui-avatar-image
+                    classname="rounded-sm outline outline-[1px] outline-border"
+                    src="https://example.com/avatar.jpg"
+                  >
+                  </gui-avatar-image>
+                  <gui-avatar-fallback classname="h-5 h-full w-5 w-full rounded-sm bg-secondary bg-gradient-to-t from-neutral-100 to-neutral-400 px-[10px] outline outline-[1px] outline-border dark:from-neutral-500 dark:to-neutral-800">
+                  </gui-avatar-fallback>
+                </gui-avatar>
+                <p class="col-span-4 truncate font-mono text-sm">
+                  John Doe
+                </p>
+              </div>
+            </div>
+          </div>
+          <div class="group/item flex cursor-default grid-cols-12 flex-col gap-4 rounded-sm border-t-[1px] border-muted py-4 text-foreground transition-all first:border-t-[0px] hover:bg-muted group-hover/list:text-muted-foreground 2xl:grid 2xl:gap-0 2xl:px-2 2xl:py-1.5">
+            <div class="col-span-2 flex w-full flex-col gap-1 group-hover/item:text-foreground 2xl:ml-1 2xl:gap-0">
+              <p class="text-sm font-medium text-muted-foreground 2xl:hidden">
+                Version
+              </p>
+              <p class="font-mono text-sm">
+                1.0.2
+              </p>
+            </div>
+            <div class="col-span-2 flex w-full flex-col justify-start gap-2 2xl:items-center 2xl:justify-center 2xl:gap-0 2xl:text-center">
+              <p class="text-sm font-medium text-muted-foreground 2xl:hidden">
+                Integrity
+              </p>
+              <gui-copy-to-clipboard
+                tooltiptext="Copy full SHA for abc123"
+                copyvalue="sha512-abc123"
+                classname="w-fit group-hover/item:bg-neutral-300 dark:group-hover/item:bg-neutral-700"
+              >
+                abc123
+              </gui-copy-to-clipboard>
+            </div>
+            <div class="col-span-2 flex w-full flex-col gap-2 group-hover/item:text-foreground 2xl:items-center 2xl:justify-center 2xl:gap-0 2xl:text-center">
+              <p class="text-sm font-medium text-muted-foreground 2xl:hidden">
+                Size
+              </p>
+              <p class="font-mono text-sm">
+                123 KB
+              </p>
+            </div>
+            <div class="col-span-3 flex w-full flex-col gap-2 group-hover/item:text-foreground 2xl:items-center 2xl:justify-center 2xl:gap-0 2xl:text-center">
+              <p class="text-sm font-medium text-muted-foreground 2xl:hidden">
+                Published Date
+              </p>
+              <div class="flex gap-2 2xl:hidden">
+                <gui-avatar classname="size-5">
+                  <gui-avatar-image
+                    classname="rounded-sm outline outline-[1px] outline-border"
+                    src="https://example.com/avatar.jpg"
+                  >
+                  </gui-avatar-image>
+                  <gui-avatar-fallback classname="h-5 h-full w-5 w-full rounded-sm bg-secondary bg-gradient-to-t from-neutral-100 to-neutral-400 px-[10px] outline outline-[1px] outline-border dark:from-neutral-500 dark:to-neutral-800">
+                  </gui-avatar-fallback>
+                </gui-avatar>
+                <p class="col-span-4 font-mono text-sm">
+                  John Doe
+                </p>
+                <p class="ml-2 inline-flex font-mono text-sm text-muted-foreground 2xl:hidden">
+                  16 hours ago
+                </p>
+              </div>
+              <p class="hidden font-mono text-sm 2xl:inline-flex">
+                16 hours ago
+              </p>
+            </div>
+            <div class="col-span-3 flex hidden w-full items-center justify-center group-hover/item:text-foreground 2xl:mr-1 2xl:flex 2xl:justify-end">
+              <div class="flex grid-cols-5 gap-2 2xl:grid">
+                <gui-avatar classname="col-span-1 size-5 group-hover/item:opacity-100 group-hover/list:opacity-50">
+                  <gui-avatar-image
+                    classname="rounded-sm outline outline-[1px] outline-border"
+                    src="https://example.com/avatar.jpg"
+                  >
+                  </gui-avatar-image>
+                  <gui-avatar-fallback classname="h-5 h-full w-5 w-full rounded-sm bg-secondary bg-gradient-to-t from-neutral-100 to-neutral-400 px-[10px] outline outline-[1px] outline-border dark:from-neutral-500 dark:to-neutral-800">
+                  </gui-avatar-fallback>
+                </gui-avatar>
+                <p class="col-span-4 truncate font-mono text-sm">
+                  John Doe
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </gui-collapsible-content>
+    </gui-collapsible>
   </section>
 </gui-tabs-content>
 

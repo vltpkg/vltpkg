@@ -105,10 +105,12 @@ test('TabsManifestContent renders an empty state', () => {
 })
 
 test('TabsManifestContent renders with a manifest', () => {
-  const ITEM_WITH_MANIFEST = {
-    ...SELECTED_ITEM,
-    to: {
-      manifest: {
+  vi.mocked(useSelectedItem).mockReturnValue({
+    selectedItem: SELECTED_ITEM,
+    selectedItemDetails: SELECTED_ITEM_DETAILS,
+    insights: undefined,
+    activeTab: 'manifest',
+    manifest: {
         name: 'acme-package',
         version: '1.0.0',
         author: 'John Doe',
@@ -121,15 +123,7 @@ test('TabsManifestContent renders with a manifest', () => {
           '@acme/3': '3.0.0',
           '@acme/4': '4.0.0',
         },
-      } as Manifest,
     },
-  } as unknown as GridItemData
-
-  vi.mocked(useSelectedItem).mockReturnValue({
-    selectedItem: ITEM_WITH_MANIFEST,
-    selectedItemDetails: SELECTED_ITEM_DETAILS,
-    insights: undefined,
-    activeTab: 'manifest',
     setActiveTab: vi.fn(),
   })
 
