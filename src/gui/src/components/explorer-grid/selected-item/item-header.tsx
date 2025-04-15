@@ -338,7 +338,8 @@ const PackageOverallScore = ({
 }
 
 const PackageImageSpec = ({ className }: { className?: string }) => {
-  const { selectedItemDetails, selectedItem } = useSelectedItem()
+  const { setActiveTab, selectedItemDetails, selectedItem } =
+    useSelectedItem()
   const specOptions = useGraphStore(state => state.specOptions)
 
   return (
@@ -389,7 +390,9 @@ const PackageImageSpec = ({ className }: { className?: string }) => {
               selectedItemDetails.greaterVersions.length > 0 && (
                 <TooltipProvider>
                   <Tooltip delayDuration={150}>
-                    <TooltipTrigger className="flex items-center justify-center">
+                    <TooltipTrigger
+                      onClick={() => setActiveTab('versions')}
+                      className="flex items-center justify-center">
                       <div className="cursor-default rounded-sm bg-green-400/30 p-0.5 transition-colors duration-150 hover:bg-green-400/40 dark:bg-green-500/30 dark:hover:bg-green-500/40">
                         <ArrowBigUpDash
                           className="text-green-600 dark:text-green-500"
