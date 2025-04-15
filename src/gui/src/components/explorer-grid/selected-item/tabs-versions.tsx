@@ -3,7 +3,7 @@ import { TabsTrigger, TabsContent } from '@/components/ui/tabs.jsx'
 import { History, ArrowUpDown, ChevronDown } from 'lucide-react'
 import { useSelectedItem } from '@/components/explorer-grid/selected-item/context.jsx'
 import { InlineCode } from '@/components/ui/inline-code.jsx'
-import { formatDistanceStrict } from 'date-fns'
+import { format, formatDistanceStrict } from 'date-fns'
 import type { Version } from '@/lib/external-info.js'
 import { cn } from '@/lib/utils.js'
 import {
@@ -16,6 +16,12 @@ import {
   AvatarImage,
   AvatarFallback,
 } from '@radix-ui/react-avatar'
+import {
+  TooltipProvider,
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+} from '@/components/ui/tooltip.jsx'
 import { Button } from '@/components/ui/button.jsx'
 import { CopyToClipboard } from '@/components/ui/copy-to-clipboard.jsx'
 
@@ -179,8 +185,8 @@ const VersionItem = ({ versionInfo }: VersionItemProps) => {
   const integrityShort = integrity?.split('-')[1]?.slice(0, 6)
 
   return (
-    <div className="group/item flex cursor-default grid-cols-12 flex-col gap-4 rounded-sm border-t-[1px] border-muted py-4 text-foreground transition-all first:border-t-[0px] hover:bg-muted group-hover/list:text-muted-foreground 2xl:grid 2xl:gap-0 2xl:px-2 2xl:py-1.5">
-      <div className="col-span-2 flex w-full flex-col gap-1 group-hover/item:text-foreground 2xl:ml-1 2xl:gap-0">
+    <div className="group/item flex cursor-default grid-cols-12 flex-col gap-4 rounded-sm border-t-[1px] border-muted py-4 text-foreground transition-all first:border-t-[0px] hover:bg-muted 2xl:grid 2xl:gap-0 2xl:px-2 2xl:py-1.5">
+      <div className="col-span-2 flex w-full flex-col justify-start gap-1 2xl:ml-1 2xl:justify-center 2xl:gap-0">
         <p className="text-sm font-medium text-muted-foreground 2xl:hidden">
           Version
         </p>
@@ -199,7 +205,7 @@ const VersionItem = ({ versionInfo }: VersionItemProps) => {
           </CopyToClipboard>
         )}
       </div>
-      <div className="col-span-2 flex w-full flex-col gap-2 group-hover/item:text-foreground 2xl:items-center 2xl:justify-center 2xl:gap-0 2xl:text-center">
+      <div className="col-span-2 flex w-full flex-col gap-2 2xl:items-center 2xl:justify-center 2xl:gap-0 2xl:text-center">
         {unpackedSize && (
           <>
             <p className="text-sm font-medium text-muted-foreground 2xl:hidden">
@@ -211,7 +217,7 @@ const VersionItem = ({ versionInfo }: VersionItemProps) => {
           </>
         )}
       </div>
-      <div className="col-span-3 flex w-full flex-col gap-2 group-hover/item:text-foreground 2xl:items-center 2xl:justify-center 2xl:gap-0 2xl:text-center">
+      <div className="col-span-3 flex w-full flex-col gap-2 2xl:items-center 2xl:justify-center 2xl:gap-0 2xl:text-center">
         {publishedDate && (
           <>
             <p className="text-sm font-medium text-muted-foreground 2xl:hidden">
@@ -236,17 +242,24 @@ const VersionItem = ({ versionInfo }: VersionItemProps) => {
                 })}
               </p>
             </div>
-            <p className="hidden font-mono text-sm 2xl:inline-flex">
-              {formatDistanceStrict(publishedDate, new Date(), {
-                addSuffix: true,
-              })}
-            </p>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger className="hidden cursor-default font-mono text-sm 2xl:inline-flex">
+                  {formatDistanceStrict(publishedDate, new Date(), {
+                    addSuffix: true,
+                  })}
+                </TooltipTrigger>
+                <TooltipContent>
+                  {format(publishedDate, 'MMMM do, yyyy | HH:mm:ss')}
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </>
         )}
       </div>
-      <div className="col-span-3 flex hidden w-full items-center justify-center group-hover/item:text-foreground 2xl:mr-1 2xl:flex 2xl:justify-end">
+      <div className="col-span-3 flex hidden w-full items-center justify-center 2xl:mr-1 2xl:flex 2xl:justify-end">
         <div className="flex grid-cols-5 gap-2 2xl:grid">
-          <Avatar className="col-span-1 size-5 group-hover/item:opacity-100 group-hover/list:opacity-50">
+          <Avatar className="col-span-1 size-5">
             <AvatarImage
               className="rounded-sm outline outline-[1px] outline-border"
               src={publishedAuthor?.avatar}
@@ -271,8 +284,6 @@ export const VersionsTabContent = () => {
   )
   const [filteredGreaterVersions, setFilteredGreaterVersions] =
     useState<Version[]>([])
-  const [allVersionsOpen, setAllVersionsOpen] =
-    useState<boolean>(true)
   const [greaterVersionsOpen, setGreaterVersionsOpen] =
     useState<boolean>(true)
 
@@ -309,6 +320,7 @@ export const VersionsTabContent = () => {
       : <section className="flex flex-col gap-4 px-6 py-4">
           {filteredGreaterVersions.length > 0 && (
             <Collapsible
+              defaultOpen
               open={greaterVersionsOpen}
               className="flex flex-col gap-2">
               <CollapsibleTrigger asChild>
@@ -331,7 +343,7 @@ export const VersionsTabContent = () => {
                   items={filteredGreaterVersions}
                   setItems={setFilteredGreaterVersions}
                 />
-                <div className="flex flex-col divide-y-[1px] divide-border">
+                <div className="flex flex-col">
                   {filteredGreaterVersions.map((version, idx) => (
                     <VersionItem
                       key={`${version.version}-greater-${idx}`}
@@ -344,30 +356,16 @@ export const VersionsTabContent = () => {
           )}
 
           {filteredVersions.length > 0 && (
-            <Collapsible
-              open={allVersionsOpen}
-              className="flex flex-col gap-2">
-              <CollapsibleTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="xs"
-                  className="inline-flex h-fit w-fit cursor-default items-center gap-1 px-3 py-1.5 text-sm font-medium text-muted-foreground [&>svg]:data-[state=closed]:-rotate-90"
-                  onClick={() =>
-                    setAllVersionsOpen(!allVersionsOpen)
-                  }>
-                  <span>All Versions</span>
-                  <ChevronDown
-                    className="duration-250 transition-transform"
-                    size={16}
-                  />
-                </Button>
-              </CollapsibleTrigger>
-              <CollapsibleContent className="relative flex flex-col gap-2">
+            <div className="flex flex-col gap-2">
+              <p className="cursor-default text-sm font-medium text-muted-foreground 2xl:ml-2">
+                All Versions
+              </p>
+              <div className="relative flex flex-col gap-2">
                 <VersionHeader
                   items={filteredVersions}
                   setItems={setFilteredVersions}
                 />
-                <div className="group/list flex flex-col">
+                <div className="flex flex-col">
                   {filteredVersions.map((version, idx) => (
                     <VersionItem
                       key={`${version.version}-all-${idx}`}
@@ -375,8 +373,8 @@ export const VersionsTabContent = () => {
                     />
                   ))}
                 </div>
-              </CollapsibleContent>
-            </Collapsible>
+              </div>
+            </div>
           )}
         </section>
       }

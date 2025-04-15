@@ -56,6 +56,13 @@ vi.mock('@/components/ui/copy-to-clipboard.jsx', () => ({
   CopyToClipboard: 'gui-copy-to-clipboard',
 }))
 
+vi.mock('@/components/ui/tooltip.jsx', () => ({
+  Tooltip: 'gui-tooltip',
+  TooltipTrigger: 'gui-tooltip-trigger',
+  TooltipContent: 'gui-tooltip-content',
+  TooltipProvider: 'gui-tooltip-provider',
+}))
+
 expect.addSnapshotSerializer({
   serialize: v => html(v),
   test: () => true,

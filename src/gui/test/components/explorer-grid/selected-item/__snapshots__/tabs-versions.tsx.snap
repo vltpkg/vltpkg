@@ -44,6 +44,7 @@ exports[`VersionsTabContent renders with versions 1`] = `
 <gui-tabs-content value="versions">
   <section class="flex flex-col gap-4 px-6 py-4">
     <gui-collapsible
+      defaultopen="true"
       open="true"
       classname="flex flex-col gap-2"
     >
@@ -109,9 +110,9 @@ exports[`VersionsTabContent renders with versions 1`] = `
             </button>
           </div>
         </div>
-        <div class="flex flex-col divide-y-[1px] divide-border">
-          <div class="group/item flex cursor-default grid-cols-12 flex-col gap-4 rounded-sm border-t-[1px] border-muted py-4 text-foreground transition-all first:border-t-[0px] hover:bg-muted group-hover/list:text-muted-foreground 2xl:grid 2xl:gap-0 2xl:px-2 2xl:py-1.5">
-            <div class="col-span-2 flex w-full flex-col gap-1 group-hover/item:text-foreground 2xl:ml-1 2xl:gap-0">
+        <div class="flex flex-col">
+          <div class="group/item flex cursor-default grid-cols-12 flex-col gap-4 rounded-sm border-t-[1px] border-muted py-4 text-foreground transition-all first:border-t-[0px] hover:bg-muted 2xl:grid 2xl:gap-0 2xl:px-2 2xl:py-1.5">
+            <div class="col-span-2 flex w-full flex-col justify-start gap-1 2xl:ml-1 2xl:justify-center 2xl:gap-0">
               <p class="text-sm font-medium text-muted-foreground 2xl:hidden">
                 Version
               </p>
@@ -131,7 +132,7 @@ exports[`VersionsTabContent renders with versions 1`] = `
                 abc123
               </gui-copy-to-clipboard>
             </div>
-            <div class="col-span-2 flex w-full flex-col gap-2 group-hover/item:text-foreground 2xl:items-center 2xl:justify-center 2xl:gap-0 2xl:text-center">
+            <div class="col-span-2 flex w-full flex-col gap-2 2xl:items-center 2xl:justify-center 2xl:gap-0 2xl:text-center">
               <p class="text-sm font-medium text-muted-foreground 2xl:hidden">
                 Size
               </p>
@@ -139,7 +140,7 @@ exports[`VersionsTabContent renders with versions 1`] = `
                 123 KB
               </p>
             </div>
-            <div class="col-span-3 flex w-full flex-col gap-2 group-hover/item:text-foreground 2xl:items-center 2xl:justify-center 2xl:gap-0 2xl:text-center">
+            <div class="col-span-3 flex w-full flex-col gap-2 2xl:items-center 2xl:justify-center 2xl:gap-0 2xl:text-center">
               <p class="text-sm font-medium text-muted-foreground 2xl:hidden">
                 Published Date
               </p>
@@ -157,16 +158,23 @@ exports[`VersionsTabContent renders with versions 1`] = `
                   John Doe
                 </p>
                 <p class="ml-2 inline-flex font-mono text-sm text-muted-foreground 2xl:hidden">
-                  16 hours ago
+                  19 hours ago
                 </p>
               </div>
-              <p class="hidden font-mono text-sm 2xl:inline-flex">
-                16 hours ago
-              </p>
+              <gui-tooltip-provider>
+                <gui-tooltip>
+                  <gui-tooltip-trigger classname="hidden cursor-default font-mono text-sm 2xl:inline-flex">
+                    19 hours ago
+                  </gui-tooltip-trigger>
+                  <gui-tooltip-content>
+                    April 14th, 2025 | 20:00:00
+                  </gui-tooltip-content>
+                </gui-tooltip>
+              </gui-tooltip-provider>
             </div>
-            <div class="col-span-3 flex hidden w-full items-center justify-center group-hover/item:text-foreground 2xl:mr-1 2xl:flex 2xl:justify-end">
+            <div class="col-span-3 flex hidden w-full items-center justify-center 2xl:mr-1 2xl:flex 2xl:justify-end">
               <div class="flex grid-cols-5 gap-2 2xl:grid">
-                <gui-avatar classname="col-span-1 size-5 group-hover/item:opacity-100 group-hover/list:opacity-50">
+                <gui-avatar classname="col-span-1 size-5">
                   <gui-avatar-image
                     classname="rounded-sm outline outline-[1px] outline-border"
                     src="https://example.com/avatar.jpg"
@@ -181,8 +189,8 @@ exports[`VersionsTabContent renders with versions 1`] = `
               </div>
             </div>
           </div>
-          <div class="group/item flex cursor-default grid-cols-12 flex-col gap-4 rounded-sm border-t-[1px] border-muted py-4 text-foreground transition-all first:border-t-[0px] hover:bg-muted group-hover/list:text-muted-foreground 2xl:grid 2xl:gap-0 2xl:px-2 2xl:py-1.5">
-            <div class="col-span-2 flex w-full flex-col gap-1 group-hover/item:text-foreground 2xl:ml-1 2xl:gap-0">
+          <div class="group/item flex cursor-default grid-cols-12 flex-col gap-4 rounded-sm border-t-[1px] border-muted py-4 text-foreground transition-all first:border-t-[0px] hover:bg-muted 2xl:grid 2xl:gap-0 2xl:px-2 2xl:py-1.5">
+            <div class="col-span-2 flex w-full flex-col justify-start gap-1 2xl:ml-1 2xl:justify-center 2xl:gap-0">
               <p class="text-sm font-medium text-muted-foreground 2xl:hidden">
                 Version
               </p>
@@ -202,7 +210,7 @@ exports[`VersionsTabContent renders with versions 1`] = `
                 abc123
               </gui-copy-to-clipboard>
             </div>
-            <div class="col-span-2 flex w-full flex-col gap-2 group-hover/item:text-foreground 2xl:items-center 2xl:justify-center 2xl:gap-0 2xl:text-center">
+            <div class="col-span-2 flex w-full flex-col gap-2 2xl:items-center 2xl:justify-center 2xl:gap-0 2xl:text-center">
               <p class="text-sm font-medium text-muted-foreground 2xl:hidden">
                 Size
               </p>
@@ -210,7 +218,7 @@ exports[`VersionsTabContent renders with versions 1`] = `
                 123 KB
               </p>
             </div>
-            <div class="col-span-3 flex w-full flex-col gap-2 group-hover/item:text-foreground 2xl:items-center 2xl:justify-center 2xl:gap-0 2xl:text-center">
+            <div class="col-span-3 flex w-full flex-col gap-2 2xl:items-center 2xl:justify-center 2xl:gap-0 2xl:text-center">
               <p class="text-sm font-medium text-muted-foreground 2xl:hidden">
                 Published Date
               </p>
@@ -228,16 +236,23 @@ exports[`VersionsTabContent renders with versions 1`] = `
                   John Doe
                 </p>
                 <p class="ml-2 inline-flex font-mono text-sm text-muted-foreground 2xl:hidden">
-                  16 hours ago
+                  19 hours ago
                 </p>
               </div>
-              <p class="hidden font-mono text-sm 2xl:inline-flex">
-                16 hours ago
-              </p>
+              <gui-tooltip-provider>
+                <gui-tooltip>
+                  <gui-tooltip-trigger classname="hidden cursor-default font-mono text-sm 2xl:inline-flex">
+                    19 hours ago
+                  </gui-tooltip-trigger>
+                  <gui-tooltip-content>
+                    April 14th, 2025 | 20:00:00
+                  </gui-tooltip-content>
+                </gui-tooltip>
+              </gui-tooltip-provider>
             </div>
-            <div class="col-span-3 flex hidden w-full items-center justify-center group-hover/item:text-foreground 2xl:mr-1 2xl:flex 2xl:justify-end">
+            <div class="col-span-3 flex hidden w-full items-center justify-center 2xl:mr-1 2xl:flex 2xl:justify-end">
               <div class="flex grid-cols-5 gap-2 2xl:grid">
-                <gui-avatar classname="col-span-1 size-5 group-hover/item:opacity-100 group-hover/list:opacity-50">
+                <gui-avatar classname="col-span-1 size-5">
                   <gui-avatar-image
                     classname="rounded-sm outline outline-[1px] outline-border"
                     src="https://example.com/avatar.jpg"
@@ -255,27 +270,11 @@ exports[`VersionsTabContent renders with versions 1`] = `
         </div>
       </gui-collapsible-content>
     </gui-collapsible>
-    <gui-collapsible
-      open="true"
-      classname="flex flex-col gap-2"
-    >
-      <gui-collapsible-trigger aschild="true">
-        <gui-button
-          variant="ghost"
-          size="xs"
-          classname="inline-flex h-fit w-fit cursor-default items-center gap-1 px-3 py-1.5 text-sm font-medium text-muted-foreground [&amp;>svg]:data-[state=closed]:-rotate-90"
-        >
-          <span>
-            All Versions
-          </span>
-          <gui-chevron-down-icon
-            classname="duration-250 transition-transform"
-            size="16"
-          >
-          </gui-chevron-down-icon>
-        </gui-button>
-      </gui-collapsible-trigger>
-      <gui-collapsible-content classname="relative flex flex-col gap-2">
+    <div class="flex flex-col gap-2">
+      <p class="cursor-default text-sm font-medium text-muted-foreground 2xl:ml-2">
+        All Versions
+      </p>
+      <div class="relative flex flex-col gap-2">
         <div class="mt-4 hidden cursor-default grid-cols-12 pb-2 2xl:grid">
           <div class="col-span-2 w-full pl-2">
             <button class="relative z-[1] inline-flex w-fit cursor-default items-center justify-center gap-2 text-nowrap text-sm text-muted-foreground transition-all duration-300 after:absolute after:left-[-0.75rem] after:z-[-1] after:h-[calc(100%+0.5rem)] after:w-[calc(100%+1.5rem)] after:rounded-sm after:bg-transparent after:content-[''] hover:text-foreground hover:after:bg-muted">
@@ -321,9 +320,9 @@ exports[`VersionsTabContent renders with versions 1`] = `
             </button>
           </div>
         </div>
-        <div class="group/list flex flex-col">
-          <div class="group/item flex cursor-default grid-cols-12 flex-col gap-4 rounded-sm border-t-[1px] border-muted py-4 text-foreground transition-all first:border-t-[0px] hover:bg-muted group-hover/list:text-muted-foreground 2xl:grid 2xl:gap-0 2xl:px-2 2xl:py-1.5">
-            <div class="col-span-2 flex w-full flex-col gap-1 group-hover/item:text-foreground 2xl:ml-1 2xl:gap-0">
+        <div class="flex flex-col">
+          <div class="group/item flex cursor-default grid-cols-12 flex-col gap-4 rounded-sm border-t-[1px] border-muted py-4 text-foreground transition-all first:border-t-[0px] hover:bg-muted 2xl:grid 2xl:gap-0 2xl:px-2 2xl:py-1.5">
+            <div class="col-span-2 flex w-full flex-col justify-start gap-1 2xl:ml-1 2xl:justify-center 2xl:gap-0">
               <p class="text-sm font-medium text-muted-foreground 2xl:hidden">
                 Version
               </p>
@@ -343,7 +342,7 @@ exports[`VersionsTabContent renders with versions 1`] = `
                 abc123
               </gui-copy-to-clipboard>
             </div>
-            <div class="col-span-2 flex w-full flex-col gap-2 group-hover/item:text-foreground 2xl:items-center 2xl:justify-center 2xl:gap-0 2xl:text-center">
+            <div class="col-span-2 flex w-full flex-col gap-2 2xl:items-center 2xl:justify-center 2xl:gap-0 2xl:text-center">
               <p class="text-sm font-medium text-muted-foreground 2xl:hidden">
                 Size
               </p>
@@ -351,7 +350,7 @@ exports[`VersionsTabContent renders with versions 1`] = `
                 123 KB
               </p>
             </div>
-            <div class="col-span-3 flex w-full flex-col gap-2 group-hover/item:text-foreground 2xl:items-center 2xl:justify-center 2xl:gap-0 2xl:text-center">
+            <div class="col-span-3 flex w-full flex-col gap-2 2xl:items-center 2xl:justify-center 2xl:gap-0 2xl:text-center">
               <p class="text-sm font-medium text-muted-foreground 2xl:hidden">
                 Published Date
               </p>
@@ -369,16 +368,23 @@ exports[`VersionsTabContent renders with versions 1`] = `
                   John Doe
                 </p>
                 <p class="ml-2 inline-flex font-mono text-sm text-muted-foreground 2xl:hidden">
-                  16 hours ago
+                  19 hours ago
                 </p>
               </div>
-              <p class="hidden font-mono text-sm 2xl:inline-flex">
-                16 hours ago
-              </p>
+              <gui-tooltip-provider>
+                <gui-tooltip>
+                  <gui-tooltip-trigger classname="hidden cursor-default font-mono text-sm 2xl:inline-flex">
+                    19 hours ago
+                  </gui-tooltip-trigger>
+                  <gui-tooltip-content>
+                    April 14th, 2025 | 20:00:00
+                  </gui-tooltip-content>
+                </gui-tooltip>
+              </gui-tooltip-provider>
             </div>
-            <div class="col-span-3 flex hidden w-full items-center justify-center group-hover/item:text-foreground 2xl:mr-1 2xl:flex 2xl:justify-end">
+            <div class="col-span-3 flex hidden w-full items-center justify-center 2xl:mr-1 2xl:flex 2xl:justify-end">
               <div class="flex grid-cols-5 gap-2 2xl:grid">
-                <gui-avatar classname="col-span-1 size-5 group-hover/item:opacity-100 group-hover/list:opacity-50">
+                <gui-avatar classname="col-span-1 size-5">
                   <gui-avatar-image
                     classname="rounded-sm outline outline-[1px] outline-border"
                     src="https://example.com/avatar.jpg"
@@ -393,8 +399,8 @@ exports[`VersionsTabContent renders with versions 1`] = `
               </div>
             </div>
           </div>
-          <div class="group/item flex cursor-default grid-cols-12 flex-col gap-4 rounded-sm border-t-[1px] border-muted py-4 text-foreground transition-all first:border-t-[0px] hover:bg-muted group-hover/list:text-muted-foreground 2xl:grid 2xl:gap-0 2xl:px-2 2xl:py-1.5">
-            <div class="col-span-2 flex w-full flex-col gap-1 group-hover/item:text-foreground 2xl:ml-1 2xl:gap-0">
+          <div class="group/item flex cursor-default grid-cols-12 flex-col gap-4 rounded-sm border-t-[1px] border-muted py-4 text-foreground transition-all first:border-t-[0px] hover:bg-muted 2xl:grid 2xl:gap-0 2xl:px-2 2xl:py-1.5">
+            <div class="col-span-2 flex w-full flex-col justify-start gap-1 2xl:ml-1 2xl:justify-center 2xl:gap-0">
               <p class="text-sm font-medium text-muted-foreground 2xl:hidden">
                 Version
               </p>
@@ -414,7 +420,7 @@ exports[`VersionsTabContent renders with versions 1`] = `
                 abc123
               </gui-copy-to-clipboard>
             </div>
-            <div class="col-span-2 flex w-full flex-col gap-2 group-hover/item:text-foreground 2xl:items-center 2xl:justify-center 2xl:gap-0 2xl:text-center">
+            <div class="col-span-2 flex w-full flex-col gap-2 2xl:items-center 2xl:justify-center 2xl:gap-0 2xl:text-center">
               <p class="text-sm font-medium text-muted-foreground 2xl:hidden">
                 Size
               </p>
@@ -422,7 +428,7 @@ exports[`VersionsTabContent renders with versions 1`] = `
                 123 KB
               </p>
             </div>
-            <div class="col-span-3 flex w-full flex-col gap-2 group-hover/item:text-foreground 2xl:items-center 2xl:justify-center 2xl:gap-0 2xl:text-center">
+            <div class="col-span-3 flex w-full flex-col gap-2 2xl:items-center 2xl:justify-center 2xl:gap-0 2xl:text-center">
               <p class="text-sm font-medium text-muted-foreground 2xl:hidden">
                 Published Date
               </p>
@@ -440,16 +446,23 @@ exports[`VersionsTabContent renders with versions 1`] = `
                   John Doe
                 </p>
                 <p class="ml-2 inline-flex font-mono text-sm text-muted-foreground 2xl:hidden">
-                  16 hours ago
+                  19 hours ago
                 </p>
               </div>
-              <p class="hidden font-mono text-sm 2xl:inline-flex">
-                16 hours ago
-              </p>
+              <gui-tooltip-provider>
+                <gui-tooltip>
+                  <gui-tooltip-trigger classname="hidden cursor-default font-mono text-sm 2xl:inline-flex">
+                    19 hours ago
+                  </gui-tooltip-trigger>
+                  <gui-tooltip-content>
+                    April 14th, 2025 | 20:00:00
+                  </gui-tooltip-content>
+                </gui-tooltip>
+              </gui-tooltip-provider>
             </div>
-            <div class="col-span-3 flex hidden w-full items-center justify-center group-hover/item:text-foreground 2xl:mr-1 2xl:flex 2xl:justify-end">
+            <div class="col-span-3 flex hidden w-full items-center justify-center 2xl:mr-1 2xl:flex 2xl:justify-end">
               <div class="flex grid-cols-5 gap-2 2xl:grid">
-                <gui-avatar classname="col-span-1 size-5 group-hover/item:opacity-100 group-hover/list:opacity-50">
+                <gui-avatar classname="col-span-1 size-5">
                   <gui-avatar-image
                     classname="rounded-sm outline outline-[1px] outline-border"
                     src="https://example.com/avatar.jpg"
@@ -465,8 +478,8 @@ exports[`VersionsTabContent renders with versions 1`] = `
             </div>
           </div>
         </div>
-      </gui-collapsible-content>
-    </gui-collapsible>
+      </div>
+    </div>
   </section>
 </gui-tabs-content>
 
