@@ -137,7 +137,7 @@ exports[`VersionsTabContent renders with versions 1`] = `
                 Size
               </p>
               <p class="font-mono text-sm">
-                123 KB
+                121 KB
               </p>
             </div>
             <div class="col-span-3 flex w-full flex-col gap-2 2xl:items-center 2xl:justify-center 2xl:gap-0 2xl:text-center">
@@ -215,7 +215,7 @@ exports[`VersionsTabContent renders with versions 1`] = `
                 Size
               </p>
               <p class="font-mono text-sm">
-                123 KB
+                121 KB
               </p>
             </div>
             <div class="col-span-3 flex w-full flex-col gap-2 2xl:items-center 2xl:justify-center 2xl:gap-0 2xl:text-center">
@@ -347,7 +347,7 @@ exports[`VersionsTabContent renders with versions 1`] = `
                 Size
               </p>
               <p class="font-mono text-sm">
-                123 KB
+                121 KB
               </p>
             </div>
             <div class="col-span-3 flex w-full flex-col gap-2 2xl:items-center 2xl:justify-center 2xl:gap-0 2xl:text-center">
@@ -425,7 +425,7 @@ exports[`VersionsTabContent renders with versions 1`] = `
                 Size
               </p>
               <p class="font-mono text-sm">
-                123 KB
+                121 KB
               </p>
             </div>
             <div class="col-span-3 flex w-full flex-col gap-2 2xl:items-center 2xl:justify-center 2xl:gap-0 2xl:text-center">

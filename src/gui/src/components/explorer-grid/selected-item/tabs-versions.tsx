@@ -24,6 +24,7 @@ import {
 } from '@/components/ui/tooltip.jsx'
 import { Button } from '@/components/ui/button.jsx'
 import { CopyToClipboard } from '@/components/ui/copy-to-clipboard.jsx'
+import { formatDownloadSize } from '@/utils/format-download-size.js'
 
 export const VersionsTabButton = () => {
   const { selectedItemDetails } = useSelectedItem()
@@ -212,7 +213,7 @@ const VersionItem = ({ versionInfo }: VersionItemProps) => {
               Size
             </p>
             <p className="font-mono text-sm">
-              {(unpackedSize / 1000).toFixed(0)} KB
+              {formatDownloadSize(unpackedSize)}
             </p>
           </>
         )}

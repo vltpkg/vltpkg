@@ -37,6 +37,7 @@ import { isRecord } from '@/utils/typeguards.js'
 import { formatDistanceStrict } from 'date-fns'
 import { labelClassNamesMap } from '../label-helper.ts'
 import { CopyToClipboard } from '@/components/ui/copy-to-clipboard.jsx'
+import { formatDownloadSize } from '@/utils/format-download-size.js'
 
 const SpecOrigin = ({
   item,
@@ -285,7 +286,7 @@ const PackageMetadata = ({ className }: { className?: string }) => {
           variant="mono"
           className={cn(INLINE_CODE_STYLES, 'gap-1 px-2')}>
           <Download size={16} className="mb-0.5" />
-          {(unpackedSize / 1000).toFixed(0)} KB
+          {formatDownloadSize(unpackedSize)}
         </InlineCode>
       )}
       {tarballUrl && (
