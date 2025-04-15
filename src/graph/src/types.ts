@@ -49,6 +49,20 @@ export type NodeLike = {
   projectRoot: string
   dev: boolean
   optional: boolean
+  toJSON: () => Pick<
+    NodeLike,
+    | 'id'
+    | 'name'
+    | 'version'
+    | 'location'
+    | 'importer'
+    | 'manifest'
+    | 'projectRoot'
+    | 'integrity'
+    | 'resolved'
+    | 'dev'
+    | 'optional'
+  >
   toString(): string
   setResolved(): void
 }

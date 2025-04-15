@@ -52,6 +52,21 @@ export const newNode =
     dev: false,
     optional: false,
     setResolved() {},
+    toJSON() {
+      return {
+        id: this.id,
+        name: this.name,
+        version: this.version,
+        location: this.location,
+        importer: this.importer,
+        manifest: this.manifest,
+        projectRoot: this.projectRoot,
+        integrity: this.integrity,
+        resolved: this.resolved,
+        dev: this.dev,
+        optional: this.optional,
+      }
+    },
   })
 const newEdge = (
   from: NodeLike,

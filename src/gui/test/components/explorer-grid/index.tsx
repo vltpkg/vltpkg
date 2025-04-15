@@ -70,18 +70,21 @@ test('explorer-grid with results', async () => {
       name: 'root',
       version: '1.0.0',
       insights: {},
+      toJSON() {},
     } as QueryResponseNode
     const aNode = {
       id: joinDepIDTuple(['registry', '', 'a@1.0.0']),
       name: 'a',
       version: '1.0.0',
       insights: {},
+      toJSON() {},
     } as QueryResponseNode
     const bNode = {
       id: joinDepIDTuple(['registry', '', 'b@1.0.0']),
       name: 'b',
       version: '1.0.0',
       insights: {},
+      toJSON() {},
     } as QueryResponseNode
     const nodes = [rootNode, aNode, bNode]
     const edges: QueryResponseEdge[] = [
@@ -117,18 +120,21 @@ test('explorer-grid with stack', async () => {
       name: 'root',
       version: '1.0.0',
       insights: {},
+      toJSON() {},
     } as QueryResponseNode
     const aNode = {
       id: joinDepIDTuple(['registry', '', 'a@1.0.0']),
       name: 'a',
       version: '1.0.0',
       insights: {},
+      toJSON() {},
     } as QueryResponseNode
     const bNode = {
       id: joinDepIDTuple(['registry', '', 'b@1.0.0']),
       name: 'b',
       version: '1.0.0',
       insights: {},
+      toJSON() {},
     } as QueryResponseNode
     const nodes = [rootNode, aNode, bNode]
     const edges: QueryResponseEdge[] = [
