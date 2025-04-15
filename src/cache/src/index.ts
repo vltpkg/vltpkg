@@ -440,7 +440,7 @@ export class Cache extends LRUCache<
 
     // If files are not same size or something went wrong with the previous link
     // operations then fallback to doing everything:
-    // - write the write the key/value files
+    // - write the key/value files
     // - unlink integrity and then re-link it to the value file
     await Promise.all([
       writeKeyP,
