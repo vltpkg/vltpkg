@@ -352,7 +352,7 @@ export class Cache extends LRUCache<
     // ensure we get a different random key for every write,
     // just in case the same file tries to write multiple times,
     // it'll still be atomic.
-    const tmp = `${file}.${this.#random}${this.#i++}`
+    const tmp = `${file}.${this.#random}.${this.#i++}`
     await writeFile(tmp, data)
     await rename(tmp, file)
   }
