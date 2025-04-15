@@ -16,7 +16,7 @@ exports[`query-highlighter render default 1`] = `
     <gui-query-token variant="id">
       #react
     </gui-query-token>
-    <gui-query-token variant="string">
+    <gui-query-token variant="selector">
       ,
     </gui-query-token>
     <gui-query-token variant="attribute">

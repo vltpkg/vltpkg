@@ -6,6 +6,11 @@ import type { ParsedSelectorToken } from '@vltpkg/query'
 
 type TokenType = ParsedSelectorToken['type']
 
+const defaultVariant = {
+  light: 'text-gray-800 after:bg-gray-500/20',
+  dark: 'dark:text-gray-300 after:dark:bg-gray-500/20',
+}
+
 export const tokenVariantClasses = {
   pseudo: {
     light: 'text-purple-800 after:bg-purple-600/20',
@@ -27,10 +32,6 @@ export const tokenVariantClasses = {
     light: 'text-pink-800 after:bg-pink-600/20',
     dark: 'dark:text-pink-400 after:dark:bg-pink-600/15',
   },
-  combinator: {
-    light: 'text-gray-800 after:bg-gray-500/20',
-    dark: 'dark:text-gray-300 after:dark:bg-gray-500/20',
-  },
   string: {
     light: 'text-violet-800 after:bg-violet-500/20',
     dark: 'dark:text-violet-300 after:dark:bg-violet-500/20',
@@ -39,6 +40,9 @@ export const tokenVariantClasses = {
     light: 'text-fuchsia-800 after:bg-fuchsia-600/20',
     dark: 'dark:text-fuchsia-400 after:dark:bg-fuchsia-600/20',
   },
+  combinator: defaultVariant,
+  comment: defaultVariant,
+  selector: defaultVariant,
 }
 
 const variantMap: Record<TokenType, string> = Object.fromEntries(

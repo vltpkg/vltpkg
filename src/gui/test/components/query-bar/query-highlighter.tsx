@@ -22,7 +22,7 @@ afterEach(() => {
 
 test('query-highlighter render default', () => {
   const mockQuery = ':root > :not(#react, [name="react-sass"])'
-  const mockParsedTokens = Query.parse(mockQuery)
+  const mockParsedTokens = Query.getQueryTokens(mockQuery)
 
   const Container = () => {
     return (
