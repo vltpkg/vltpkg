@@ -88,6 +88,7 @@ t.test('delete some stuff', async t => {
   t.strictSame(hasSpawned(), false)
 
   await remover.rm('a/b')
+  await remover.rm('a/b')
   await remover.rm('d')
   await remover.rm('noent')
   t.matchOnly(
