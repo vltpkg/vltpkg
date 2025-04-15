@@ -139,6 +139,15 @@ const Downloads = ({ className }: { className?: string }) => {
 export const ItemHeader = () => {
   const { selectedItemDetails, manifest, unpackedSize } =
     useSelectedItem()
+  const tarballUrl = selectedItemDetails.versions?.[0]?.tarball
+  const hasMetadata =
+    manifest &&
+    (manifest.engines ??
+      manifest.type ??
+      unpackedSize ??
+      tarballUrl ??
+      manifest.private ??
+      manifest.license)
 
   return (
     <motion.div
@@ -162,7 +171,12 @@ export const ItemHeader = () => {
             'border-t-[1px] border-muted'
           : 'hidden',
         )}>
-        <Publisher className="col-span-9 border-r-[1px] border-muted py-5 pl-6" />
+        <Publisher
+          className={cn(
+            'col-span-9 border-muted py-5 pl-6',
+            selectedItemDetails.downloads && 'border-r-[1px]',
+          )}
+        />
         {selectedItemDetails.downloads && (
           <div className="col-span-3 flex h-full cursor-default items-center justify-center text-center">
             <p className="w-full text-sm font-medium text-foreground">
@@ -175,19 +189,14 @@ export const ItemHeader = () => {
       <div
         className={cn(
           'grid w-full grid-cols-12',
-          (
-            manifest &&
-              (manifest.engines || manifest.type || unpackedSize)
-          ) ?
+          hasMetadata ?
             'border-b-[1px] border-t-[1px] border-muted'
           : 'hidden',
         )}>
         <PackageMetadata
           className={cn(
             'col-span-9 border-r-[1px] border-muted pl-6',
-            manifest &&
-              (manifest.engines ?? manifest.type ?? unpackedSize) &&
-              'py-3',
+            hasMetadata && 'py-3',
           )}
         />
         <PackageOverallScore className="col-span-3" />

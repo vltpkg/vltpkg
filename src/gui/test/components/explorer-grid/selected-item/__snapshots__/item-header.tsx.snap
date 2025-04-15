@@ -79,7 +79,7 @@ exports[`ItemHeader renders with a package score 1`] = `
     </div>
   </div>
   <div class="grid w-full grid-cols-12 border-t-[1px] border-muted">
-    <div class="flex h-[31.508px] items-center gap-2 col-span-9 border-r-[1px] border-muted py-5 pl-6">
+    <div class="flex h-[31.508px] items-center gap-2 col-span-9 border-muted py-5 pl-6 border-r-[1px]">
       <gui-avatar>
         <gui-avatar-image
           classname="size-5 rounded-sm outline outline-[1px] outline-border"
@@ -230,7 +230,7 @@ exports[`ItemHeader renders with custom registry item 1`] = `
     </div>
   </div>
   <div class="grid w-full grid-cols-12 border-t-[1px] border-muted">
-    <div class="flex h-[31.508px] items-center gap-2 col-span-9 border-r-[1px] border-muted py-5 pl-6">
+    <div class="flex h-[31.508px] items-center gap-2 col-span-9 border-muted py-5 pl-6 border-r-[1px]">
       <gui-avatar>
         <gui-avatar-image
           classname="size-5 rounded-sm outline outline-[1px] outline-border"
@@ -352,7 +352,7 @@ exports[`ItemHeader renders with default git host item 1`] = `
     </div>
   </div>
   <div class="grid w-full grid-cols-12 border-t-[1px] border-muted">
-    <div class="flex h-[31.508px] items-center gap-2 col-span-9 border-r-[1px] border-muted py-5 pl-6">
+    <div class="flex h-[31.508px] items-center gap-2 col-span-9 border-muted py-5 pl-6 border-r-[1px]">
       <gui-avatar>
         <gui-avatar-image
           classname="size-5 rounded-sm outline outline-[1px] outline-border"
@@ -471,7 +471,7 @@ exports[`ItemHeader renders with default item 1`] = `
     </div>
   </div>
   <div class="grid w-full grid-cols-12 border-t-[1px] border-muted">
-    <div class="flex h-[31.508px] items-center gap-2 col-span-9 border-r-[1px] border-muted py-5 pl-6">
+    <div class="flex h-[31.508px] items-center gap-2 col-span-9 border-muted py-5 pl-6 border-r-[1px]">
       <gui-avatar>
         <gui-avatar-image
           classname="size-5 rounded-sm outline outline-[1px] outline-border"
@@ -590,7 +590,7 @@ exports[`ItemHeader renders with insights 1`] = `
     </div>
   </div>
   <div class="grid w-full grid-cols-12 border-t-[1px] border-muted">
-    <div class="flex h-[31.508px] items-center gap-2 col-span-9 border-r-[1px] border-muted py-5 pl-6">
+    <div class="flex h-[31.508px] items-center gap-2 col-span-9 border-muted py-5 pl-6 border-r-[1px]">
       <gui-avatar>
         <gui-avatar-image
           classname="size-5 rounded-sm outline outline-[1px] outline-border"
@@ -724,7 +724,7 @@ exports[`ItemHeader renders with scoped registry item 1`] = `
     </div>
   </div>
   <div class="grid w-full grid-cols-12 border-t-[1px] border-muted">
-    <div class="flex h-[31.508px] items-center gap-2 col-span-9 border-r-[1px] border-muted py-5 pl-6">
+    <div class="flex h-[31.508px] items-center gap-2 col-span-9 border-muted py-5 pl-6 border-r-[1px]">
       <gui-avatar>
         <gui-avatar-image
           classname="size-5 rounded-sm outline outline-[1px] outline-border"
