@@ -9,23 +9,31 @@ import t from 'tap'
 // this makes the tests run faster
 export const Bins = ['vlt'] as const
 
-export const allVariants = [
-  'source',
-  'denoSource',
-  'bundle',
-  'denoBundle',
-  'compile',
-] as const
+const ALL_VARIANTS = {
+  source: 'source',
+  denoSource: 'denoSource',
+  bundle: 'bundle',
+  denoBundle: 'denoBundle',
+  compile: 'compile',
+} as const
 
-export type VariantType = (typeof allVariants)[number]
+export type VariantType = keyof typeof ALL_VARIANTS
 
-export const publishedVariant: VariantType = 'compile'
+export const publishedVariant: VariantType = ALL_VARIANTS.compile
+
+const filterVariants =
+  process.env.SMOKE_TEST_VARIANTS?.split(',') ??
+  Object.values(ALL_VARIANTS)
+
+export const allVariants = Object.values(ALL_VARIANTS).filter(k =>
+  filterVariants.includes(k),
+)
 
 export const defaultVariants: VariantType[] = [
-  'source',
-  'bundle',
-  'compile',
-] as const
+  ALL_VARIANTS.source,
+  ALL_VARIANTS.bundle,
+  ALL_VARIANTS.compile,
+].filter(k => filterVariants.includes(k))
 
 export type Variant = {
   args: (bin: Bin) => string[]
