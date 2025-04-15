@@ -139,14 +139,9 @@ const TabsTrigger = React.forwardRef<
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{
-                      layout: {
-                        duration: 0.5,
-                        ease: [0.16, 1, 0.3, 1],
-                      },
-                      opacity: {
-                        duration: 0.5,
-                        ease: [0.16, 1, 0.3, 1],
-                      },
+                      type: 'spring',
+                      duration: 0.3,
+                      bounce: 0.1,
                     }}
                     exit={{ opacity: 0 }}
                     className="absolute inset-0 z-[1] h-full w-full rounded-sm bg-neutral-200/75 dark:bg-muted/80"
@@ -159,10 +154,9 @@ const TabsTrigger = React.forwardRef<
                   layoutId="tabs-underline"
                   className="absolute -bottom-[6px] h-[2px] w-full bg-primary"
                   transition={{
-                    layout: {
-                      duration: 0.5,
-                      ease: [0.16, 1, 0.3, 1],
-                    },
+                    type: 'spring',
+                    duration: 0.3,
+                    bounce: 0.1,
                   }}
                 />
               )}
