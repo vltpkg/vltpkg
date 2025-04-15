@@ -149,14 +149,9 @@ const renderItems = ({
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         transition={{
-                          layout: {
-                            duration: 0.5,
-                            ease: [0.16, 1, 0.3, 1],
-                          },
-                          opacity: {
-                            duration: 0.5,
-                            ease: [0.16, 1, 0.3, 1],
-                          },
+                          type: 'spring',
+                          duration: 0.15,
+                          bounce: 0.1,
                         }}
                         exit={{ opacity: 0 }}
                         style={{ zIndex: depth }}
