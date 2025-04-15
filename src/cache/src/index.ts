@@ -55,10 +55,11 @@ export type BooleanOrVoid = boolean | void
 const hash = (s: string) =>
   createHash('sha512').update(s).digest('hex')
 
-const success = <T>(p: Promise<T>): Promise<T | null> =>
+const FAILURE = null
+const success = <T>(p: Promise<T>): Promise<T | typeof FAILURE> =>
   p.then(
     result => result,
-    () => null,
+    () => FAILURE,
   )
 
 export class Cache extends LRUCache<
@@ -413,7 +414,7 @@ export class Cache extends LRUCache<
       // Path doesn't exist but integrity is already what we want
       // Try to link integrity file to val file
       // If linking fails, continue on
-      if ((await success(link(intFile, valFile))) !== null) {
+      if ((await success(link(intFile, valFile))) !== FAILURE) {
         await writeKeyP
         return
       }
@@ -434,7 +435,8 @@ export class Cache extends LRUCache<
       // so its likely the same content so force link them
       // because thats faster than writing the value file.
       if (
-        (await success(this.#linkAtomic(intFile, valFile))) !== null
+        (await success(this.#linkAtomic(intFile, valFile))) !==
+        FAILURE
       ) {
         await writeKeyP
         return
