@@ -27,6 +27,11 @@ vi.mock(
   }),
 )
 
+vi.mock('date-fns', () => ({
+  format: vi.fn().mockReturnValue('2025-04-15'),
+  formatDistanceStrict: vi.fn().mockReturnValue('1 day ago'),
+}))
+
 vi.mock('@/components/ui/tabs.jsx', () => ({
   TabsTrigger: 'gui-tabs-trigger',
   TabsContent: 'gui-tabs-content',

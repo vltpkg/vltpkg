@@ -158,16 +158,16 @@ exports[`VersionsTabContent renders with versions 1`] = `
                   John Doe
                 </p>
                 <p class="ml-2 inline-flex font-mono text-sm text-muted-foreground 2xl:hidden">
-                  19 hours ago
+                  1 day ago
                 </p>
               </div>
               <gui-tooltip-provider>
                 <gui-tooltip>
                   <gui-tooltip-trigger classname="hidden cursor-default font-mono text-sm 2xl:inline-flex">
-                    19 hours ago
+                    1 day ago
                   </gui-tooltip-trigger>
                   <gui-tooltip-content>
-                    April 14th, 2025 | 20:00:00
+                    2025-04-15
                   </gui-tooltip-content>
                 </gui-tooltip>
               </gui-tooltip-provider>
@@ -236,16 +236,16 @@ exports[`VersionsTabContent renders with versions 1`] = `
                   John Doe
                 </p>
                 <p class="ml-2 inline-flex font-mono text-sm text-muted-foreground 2xl:hidden">
-                  19 hours ago
+                  1 day ago
                 </p>
               </div>
               <gui-tooltip-provider>
                 <gui-tooltip>
                   <gui-tooltip-trigger classname="hidden cursor-default font-mono text-sm 2xl:inline-flex">
-                    19 hours ago
+                    1 day ago
                   </gui-tooltip-trigger>
                   <gui-tooltip-content>
-                    April 14th, 2025 | 20:00:00
+                    2025-04-15
                   </gui-tooltip-content>
                 </gui-tooltip>
               </gui-tooltip-provider>
@@ -368,16 +368,16 @@ exports[`VersionsTabContent renders with versions 1`] = `
                   John Doe
                 </p>
                 <p class="ml-2 inline-flex font-mono text-sm text-muted-foreground 2xl:hidden">
-                  19 hours ago
+                  1 day ago
                 </p>
               </div>
               <gui-tooltip-provider>
                 <gui-tooltip>
                   <gui-tooltip-trigger classname="hidden cursor-default font-mono text-sm 2xl:inline-flex">
-                    19 hours ago
+                    1 day ago
                   </gui-tooltip-trigger>
                   <gui-tooltip-content>
-                    April 14th, 2025 | 20:00:00
+                    2025-04-15
                   </gui-tooltip-content>
                 </gui-tooltip>
               </gui-tooltip-provider>
@@ -446,16 +446,16 @@ exports[`VersionsTabContent renders with versions 1`] = `
                   John Doe
                 </p>
                 <p class="ml-2 inline-flex font-mono text-sm text-muted-foreground 2xl:hidden">
-                  19 hours ago
+                  1 day ago
                 </p>
               </div>
               <gui-tooltip-provider>
                 <gui-tooltip>
                   <gui-tooltip-trigger classname="hidden cursor-default font-mono text-sm 2xl:inline-flex">
-                    19 hours ago
+                    1 day ago
                   </gui-tooltip-trigger>
                   <gui-tooltip-content>
-                    April 14th, 2025 | 20:00:00
+                    2025-04-15
                   </gui-tooltip-content>
                 </gui-tooltip>
               </gui-tooltip-provider>
