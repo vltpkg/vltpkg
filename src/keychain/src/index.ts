@@ -5,16 +5,6 @@ import { XDG } from '@vltpkg/xdg'
 import { mkdir, readFile, rename, writeFile } from 'node:fs/promises'
 import { dirname } from 'node:path'
 
-const writeFileAtomic = async (path: string, data: string) => {
-  const p = path + String(Math.random())
-  await writeFile(p, data, { mode: 0o600 })
-  await rename(p, path)
-}
-
-const { hasOwnProperty } = Object.prototype
-const hasOwn = (obj: unknown, key: string) =>
-  !!obj && typeof obj === 'object' && hasOwnProperty.call(obj, key)
-
 export class Keychain<V extends string = string> {
   #data?: Record<string, V>
   #didExitSave = false
@@ -50,15 +40,15 @@ export class Keychain<V extends string = string> {
     if (this.#data) return this
     let ok = false
     try {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      this.#data = JSON.parse(await readFile(this.#file, 'utf8'))
+      this.#data = JSON.parse(
+        await readFile(this.#file, 'utf8'),
+      ) as Record<string, V>
       ok = !!this.#data
     } finally {
       if (!ok) {
         // just write the file if it failed in any way.
-        await this.#mkdir()
-        await writeFileAtomic(this.#file, '{}\n')
         this.#data = {}
+        await this.#writeFile().catch(() => {})
       }
       // eslint-disable-next-line no-unsafe-finally
       return this
@@ -70,7 +60,7 @@ export class Keychain<V extends string = string> {
   }
 
   hasSync(key: string): boolean {
-    return !!hasOwn(this.#data, key)
+    return !!this.#data && Object.hasOwn(this.#data, key)
   }
 
   async #mkdir() {
@@ -78,6 +68,15 @@ export class Keychain<V extends string = string> {
       recursive: true,
       mode: 0o700,
     })
+  }
+
+  async #writeFile() {
+    await this.#mkdir()
+    const tmp = this.#file + String(Math.random())
+    await writeFile(tmp, JSON.stringify(this.#data) + '\n', {
+      mode: 0o600,
+    })
+    await rename(tmp, this.#file)
   }
 
   set(key: string, value: V) {
@@ -104,10 +103,6 @@ export class Keychain<V extends string = string> {
   async save() {
     if (!this.#dirty || !this.#data) return
     this.#dirty = false
-    await this.#mkdir()
-    await writeFileAtomic(
-      this.#file,
-      JSON.stringify(this.#data) + '\n',
-    )
+    await this.#writeFile()
   }
 }
