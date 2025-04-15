@@ -11,7 +11,6 @@ import {
   readFile,
   rename,
   stat,
-  unlink,
   writeFile,
 } from 'node:fs/promises'
 import { LRUCache } from 'lru-cache'
@@ -357,6 +356,12 @@ export class Cache extends LRUCache<
     await rename(tmp, file)
   }
 
+  async #linkAtomic(src: string, dest: string) {
+    const tmp = `${dest}.${this.#random}.${this.#i++}`
+    await link(src, tmp)
+    await rename(tmp, dest)
+  }
+
   async #diskWrite(
     valFile: string,
     key: string,
@@ -429,9 +434,7 @@ export class Cache extends LRUCache<
       // so its likely the same content so force link them
       // because thats faster than writing the value file.
       if (
-        (await success(
-          unlink(valFile).then(() => link(intFile, valFile)),
-        )) !== null
+        (await success(this.#linkAtomic(intFile, valFile))) !== null
       ) {
         await writeKeyP
         return
@@ -444,9 +447,7 @@ export class Cache extends LRUCache<
     // - unlink integrity and then re-link it to the value file
     await Promise.all([
       writeKeyP,
-      Promise.all([writeVal(), unlink(intFile)]).then(() =>
-        link(valFile, intFile),
-      ),
+      writeVal().then(() => this.#linkAtomic(valFile, intFile)),
     ])
   }
 
