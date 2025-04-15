@@ -1,11 +1,6 @@
 #!/usr/bin/env -S node --experimental-strip-types --no-warnings
 
-import {
-  readFileSync,
-  writeFileSync,
-  copyFileSync,
-  existsSync,
-} from 'node:fs'
+import { readFileSync, writeFileSync, copyFileSync } from 'node:fs'
 import { relative, resolve, basename, dirname, join } from 'node:path'
 import { gt, satisfies, validRange } from '@vltpkg/semver'
 import { Spec } from '@vltpkg/spec'
@@ -19,6 +14,7 @@ import {
   format,
   writeJson,
 } from './utils.ts'
+import { readFile } from 'node:fs/promises'
 
 const parseRangeFromSpec = spec => {
   let range = validRange(spec) ? spec : null
@@ -343,36 +339,53 @@ const fixTools = async ws => {
   }
 }
 
-const fixLicense = ws => {
-  const defaultLicense = 'BSD-2-Clause-Patent'
-  let license = null
+const fixLicense = async ws => {
+  const licenseFile = join(ws.dir, 'LICENSE')
+  const license = await readFile(licenseFile, 'utf8').catch(() => '')
+
+  const containsVlt = () => {
+    if (!license.includes('Copyright (c) vlt technology, Inc.')) {
+      throw new Error(
+        `${ws.pj.name} license should contain vlt company name`,
+      )
+    }
+  }
+  const containsText = text => {
+    if (!license.includes(text)) {
+      throw new Error(
+        `${ws.pj.name} license should contain '${text}'`,
+      )
+    }
+  }
+
   switch (ws.pj.name) {
-    case '@vltpkg/dot-prop':
-      license = 'MIT'
+    // Make sure MIT/ISC forks have the correct licenses
+    case '@vltpkg/dot-prop': {
+      ws.pj.license = 'MIT'
+      containsText(`${ws.pj.license} License`)
+      containsVlt()
       break
+    }
     case '@vltpkg/git':
     case '@vltpkg/promise-spawn':
-    case '@vltpkg/which':
-      license = 'ISC'
+    case '@vltpkg/which': {
+      ws.pj.license = 'ISC'
+      containsText(`${ws.pj.license} License`)
+      containsVlt()
       break
-    case '@vltpkg/cmd-shim':
-      return
-    default:
-      license = defaultLicense
-  }
-  ws.pj.license = license
-  if (license === defaultLicense) {
-    copyFileSync(join(ROOT, 'LICENSE'), join(ws.dir, 'LICENSE'))
-  } else {
-    if (!existsSync(join(ws.dir, 'LICENSE'))) {
-      throw new Error(`${ws.pj.name} must have a license`)
     }
-    const contents = readFileSync(join(ws.dir, 'LICENSE'), 'utf8')
-    if (!contents.includes('Copyright (c) vlt technology, Inc.')) {
-      throw new Error(`${ws.pj.name} should contain vlt company name`)
+    case '@vltpkg/cmd-shim': {
+      // cmd-shim has a custom license so dont copy from root
+      // but make sure it has the company name and attributions.
+      ws.pj.license = 'BSD-2-Clause-Patent'
+      containsText(`ISC License`)
+      containsText(`patent license`)
+      containsVlt()
+      break
     }
-    if (!contents.includes(`${license} License`)) {
-      throw new Error(`${ws.pj.name} should contain ${license}`)
+    default: {
+      ws.pj.license = 'BSD-2-Clause-Patent'
+      copyFileSync(join(ROOT, 'LICENSE'), licenseFile)
     }
   }
 }
