@@ -75,6 +75,21 @@ export type QueryResponseNode = Omit<
   edgesIn: Set<QueryResponseEdge>
   edgesOut: Map<string, QueryResponseEdge>
   insights: Insights
+  toJSON: () => Pick<
+    QueryResponseNode,
+    | 'id'
+    | 'name'
+    | 'version'
+    | 'location'
+    | 'importer'
+    | 'manifest'
+    | 'projectRoot'
+    | 'integrity'
+    | 'resolved'
+    | 'dev'
+    | 'optional'
+    | 'insights'
+  >
 }
 
 export type Insights = {

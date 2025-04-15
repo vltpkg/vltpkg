@@ -166,6 +166,15 @@ const securitySelectors = new Set([
   ':unstable',
 ])
 
+const setMethodToJSON = (node: QueryResponseNode) => {
+  const { toJSON } = node
+  const insights = node.insights
+  node.toJSON = () => ({
+    ...toJSON.call(node),
+    insights,
+  })
+}
+
 export class Query {
   #cache: Map<string, QueryResponse>
   #graph: GraphLike
@@ -215,6 +224,8 @@ export class Query {
         node.insights = {
           scanned: false,
         }
+
+        setMethodToJSON(node)
         continue
       }
 
@@ -369,6 +380,8 @@ export class Query {
           i => i.type === 'unstableOwnership',
         ),
       }
+
+      setMethodToJSON(node)
     }
     return nodes
   }

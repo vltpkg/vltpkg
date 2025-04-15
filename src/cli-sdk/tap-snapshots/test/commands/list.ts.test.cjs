@@ -94,7 +94,10 @@ exports[`test/commands/list.ts > TAP > list > should list all pkgs in json forma
       },
       "projectRoot": "{ROOT}",
       "dev": false,
-      "optional": false
+      "optional": false,
+      "insights": {
+        "scanned": false
+      }
     }
   },
   {
@@ -114,7 +117,10 @@ exports[`test/commands/list.ts > TAP > list > should list all pkgs in json forma
       },
       "projectRoot": "{ROOT}",
       "dev": false,
-      "optional": false
+      "optional": false,
+      "insights": {
+        "scanned": false
+      }
     }
   },
   {
@@ -137,7 +143,10 @@ exports[`test/commands/list.ts > TAP > list > should list all pkgs in json forma
       },
       "projectRoot": "{ROOT}",
       "dev": false,
-      "optional": false
+      "optional": false,
+      "insights": {
+        "scanned": false
+      }
     }
   },
   {
@@ -160,7 +169,10 @@ exports[`test/commands/list.ts > TAP > list > should list all pkgs in json forma
       },
       "projectRoot": "{ROOT}",
       "dev": false,
-      "optional": false
+      "optional": false,
+      "insights": {
+        "scanned": false
+      }
     }
   },
   {
@@ -186,7 +198,10 @@ exports[`test/commands/list.ts > TAP > list > should list all pkgs in json forma
       },
       "projectRoot": "{ROOT}",
       "dev": false,
-      "optional": false
+      "optional": false,
+      "insights": {
+        "scanned": false
+      }
     }
   }
 ]
@@ -248,7 +263,10 @@ exports[`test/commands/list.ts > TAP > list > should list pkgs in json format 1`
       },
       "projectRoot": "{ROOT}",
       "dev": false,
-      "optional": false
+      "optional": false,
+      "insights": {
+        "scanned": false
+      }
     }
   },
   {
@@ -268,7 +286,10 @@ exports[`test/commands/list.ts > TAP > list > should list pkgs in json format 1`
       },
       "projectRoot": "{ROOT}",
       "dev": false,
-      "optional": false
+      "optional": false,
+      "insights": {
+        "scanned": false
+      }
     }
   },
   {
@@ -291,7 +312,10 @@ exports[`test/commands/list.ts > TAP > list > should list pkgs in json format 1`
       },
       "projectRoot": "{ROOT}",
       "dev": false,
-      "optional": false
+      "optional": false,
+      "insights": {
+        "scanned": false
+      }
     }
   }
 ]
@@ -325,7 +349,10 @@ exports[`test/commands/list.ts > TAP > list > workspaces > should list workspace
       },
       "projectRoot": "{ROOT}",
       "dev": false,
-      "optional": false
+      "optional": false,
+      "insights": {
+        "scanned": false
+      }
     }
   },
   {
@@ -342,7 +369,10 @@ exports[`test/commands/list.ts > TAP > list > workspaces > should list workspace
       },
       "projectRoot": "{ROOT}",
       "dev": false,
-      "optional": false
+      "optional": false,
+      "insights": {
+        "scanned": false
+      }
     }
   },
   {
@@ -359,7 +389,10 @@ exports[`test/commands/list.ts > TAP > list > workspaces > should list workspace
       },
       "projectRoot": "{ROOT}",
       "dev": false,
-      "optional": false
+      "optional": false,
+      "insights": {
+        "scanned": false
+      }
     }
   }
 ]
