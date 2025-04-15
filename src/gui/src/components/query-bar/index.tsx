@@ -33,7 +33,7 @@ export const QueryBar = ({
       return
     }
     try {
-      const tokens = Query.parse(query)
+      const tokens = Query.getQueryTokens(query)
       setParsedTokens(tokens)
     } catch (error) {
       console.error(`Error parsing query: ${error}`)

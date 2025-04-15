@@ -306,7 +306,7 @@ t.test('Query.hasSecuritySelectors', async t => {
   t.notOk(Query.hasSecuritySelectors(':has'), 'should return false')
 })
 
-t.test('parse', t => {
+t.test('getQueryTokens', t => {
   const normalizeParseOutput = (nodes: ParsedSelectorToken[]) => {
     return nodes.map(node => {
       return {
@@ -316,25 +316,28 @@ t.test('parse', t => {
     })
   }
 
-  t.test('should parse empty query', t => {
-    t.strictSame(normalizeParseOutput(Query.parse('')), [])
+  t.test('should getQueryTokens empty query', t => {
+    t.strictSame(normalizeParseOutput(Query.getQueryTokens('')), [])
     t.end()
   })
 
-  t.test('should parse pseudo selector', t => {
-    t.strictSame(normalizeParseOutput(Query.parse(':root')), [
-      {
-        type: 'pseudo',
-        token: ':root',
-      },
-    ])
+  t.test('should getQueryTokens pseudo selector', t => {
+    t.strictSame(
+      normalizeParseOutput(Query.getQueryTokens(':root')),
+      [
+        {
+          type: 'pseudo',
+          token: ':root',
+        },
+      ],
+    )
     t.end()
   })
 
-  t.test('should parse attribute selector', t => {
+  t.test('should getQueryTokens attribute selector', t => {
     t.test('with value', t => {
       t.strictSame(
-        normalizeParseOutput(Query.parse('[name="react"]')),
+        normalizeParseOutput(Query.getQueryTokens('[name="react"]')),
         [
           {
             type: 'attribute',
@@ -347,7 +350,7 @@ t.test('parse', t => {
 
     t.test('with operator', t => {
       t.strictSame(
-        normalizeParseOutput(Query.parse('[name^="react"]')),
+        normalizeParseOutput(Query.getQueryTokens('[name^="react"]')),
         [
           {
             type: 'attribute',
@@ -359,64 +362,152 @@ t.test('parse', t => {
     })
 
     t.test('without value', t => {
-      t.strictSame(normalizeParseOutput(Query.parse('[name]')), [
-        {
-          type: 'attribute',
-          token: '[name]',
-        },
-      ])
+      t.strictSame(
+        normalizeParseOutput(Query.getQueryTokens('[name]')),
+        [
+          {
+            type: 'attribute',
+            token: '[name]',
+          },
+        ],
+      )
       t.end()
     })
     t.end()
   })
 
-  t.test('should parse class selector', t => {
-    t.strictSame(normalizeParseOutput(Query.parse('.container')), [
-      {
-        type: 'tag',
-        token: '.container',
-      },
-    ])
+  t.test('should getQueryTokens class selector', t => {
+    t.strictSame(
+      normalizeParseOutput(Query.getQueryTokens('.container')),
+      [
+        {
+          type: 'tag',
+          token: '.container',
+        },
+      ],
+    )
     t.end()
   })
 
-  t.test('should parse id selector', t => {
-    t.strictSame(normalizeParseOutput(Query.parse('#main')), [
-      {
-        type: 'id',
-        token: '#main',
+  t.test('should getQueryTokens id selector', t => {
+    t.strictSame(
+      normalizeParseOutput(Query.getQueryTokens('#main')),
+      [
+        {
+          type: 'id',
+          token: '#main',
+        },
+      ],
+    )
+
+    t.test('should getQueryTokens scoped-name id selector', t => {
+      t.strictSame(
+        normalizeParseOutput(Query.getQueryTokens('#@scoped/name')),
+        [
+          {
+            type: 'id',
+            token: '#@scoped/name',
+          },
+        ],
+      )
+      t.end()
+    })
+
+    t.test(
+      'should getQueryTokens dash-separated-scoped-name id selector',
+      t => {
+        t.strictSame(
+          normalizeParseOutput(
+            Query.getQueryTokens('#@scoped-org/name'),
+          ),
+          [
+            {
+              type: 'id',
+              token: '#@scoped-org/name',
+            },
+          ],
+        )
+        t.end()
       },
-    ])
+    )
+
+    t.test(
+      'should getQueryTokens dot-separated-scoped-name id selector',
+      t => {
+        t.strictSame(
+          normalizeParseOutput(
+            Query.getQueryTokens('#@scoped.org/name'),
+          ),
+          [
+            {
+              type: 'id',
+              token: '#@scoped.org/name',
+            },
+          ],
+        )
+        t.end()
+      },
+    )
     t.end()
   })
 
-  t.test('should parse tags', t => {
-    t.strictSame(normalizeParseOutput(Query.parse('name=test')), [
-      {
-        type: 'tag',
-        token: 'name=test',
-      },
-    ])
+  t.test(
+    'should getQueryTokens simple comma separated selector',
+    t => {
+      t.strictSame(
+        normalizeParseOutput(Query.getQueryTokens('#a, #b')),
+        [
+          {
+            type: 'id',
+            token: '#a',
+          },
+          {
+            type: 'selector',
+            token: ',',
+          },
+          {
+            type: 'id',
+            token: ' #b',
+          },
+        ],
+      )
+      t.end()
+    },
+  )
+
+  t.test('should getQueryTokens tags', t => {
+    t.strictSame(
+      normalizeParseOutput(Query.getQueryTokens('name=test')),
+      [
+        {
+          type: 'tag',
+          token: 'name=test',
+        },
+      ],
+    )
     t.end()
   })
 
-  t.test('should parse strings', t => {
-    t.strictSame(normalizeParseOutput(Query.parse('name="test"')), [
-      {
-        type: 'tag',
-        token: 'name=',
-      },
-      {
-        type: 'string',
-        token: '"test"',
-      },
-    ])
+  t.test('should getQueryTokens strings', t => {
+    t.strictSame(
+      normalizeParseOutput(Query.getQueryTokens('name="test"')),
+      [
+        {
+          type: 'tag',
+          token: 'name=',
+        },
+        {
+          type: 'string',
+          token: '"test"',
+        },
+      ],
+    )
     t.end()
   })
 
-  t.test('should parse combinator', t => {
+  t.test('should getQueryTokens combinator', t => {
     t.test('non-whitespace', t => {
-      t.strictSame(normalizeParseOutput(Query.parse('>')), [
+      t.strictSame(normalizeParseOutput(Query.getQueryTokens('>')), [
         {
           type: 'combinator',
           token: '>',
@@ -426,17 +517,17 @@ t.test('parse', t => {
     })
 
     t.test('whitespace', t => {
-      t.strictSame(Query.parse(' '), [])
+      t.strictSame(Query.getQueryTokens(' '), [])
       t.end()
     })
     t.end()
   })
 
-  t.test('should parse complex selector', t => {
+  t.test('should getQueryTokens complex selector', t => {
     t.test('with nested selectors', t => {
       t.strictSame(
         normalizeParseOutput(
-          Query.parse(':root > [name="react"] .container'),
+          Query.getQueryTokens(':root > [name="react"] .container'),
         ),
         [
           {
@@ -466,7 +557,7 @@ t.test('parse', t => {
 
     t.test('with nested pseudo selectors', t => {
       t.strictSame(
-        normalizeParseOutput(Query.parse(':not(#react)')),
+        normalizeParseOutput(Query.getQueryTokens(':not(#react)')),
         [
           {
             type: 'pseudo',
@@ -482,13 +573,59 @@ t.test('parse', t => {
           },
         ],
       )
+      t.test('with nested comma separated selectors', t => {
+        t.strictSame(
+          normalizeParseOutput(
+            Query.getQueryTokens(':not(#a, #b), :is(#c)'),
+          ),
+          [
+            {
+              type: 'pseudo',
+              token: ':not(',
+            },
+            {
+              type: 'id',
+              token: '#a',
+            },
+            {
+              type: 'selector',
+              token: ',',
+            },
+            {
+              type: 'id',
+              token: ' #b',
+            },
+            {
+              type: 'pseudo',
+              token: ')',
+            },
+            {
+              type: 'selector',
+              token: ',',
+            },
+            {
+              type: 'pseudo',
+              token: ' :is(',
+            },
+            {
+              type: 'id',
+              token: '#c',
+            },
+            {
+              type: 'pseudo',
+              token: ')',
+            },
+          ],
+        )
+        t.end()
+      })
       t.end()
     })
 
     t.test('with malformed queries', t => {
       t.test('should handle unclosed brackets', t => {
         t.strictSame(
-          normalizeParseOutput(Query.parse('[name="react"')),
+          normalizeParseOutput(Query.getQueryTokens('[name="react"')),
           [],
         )
         t.end()
@@ -496,7 +633,7 @@ t.test('parse', t => {
 
       t.test('should handle unclosed pseudo selectors', t => {
         t.strictSame(
-          normalizeParseOutput(Query.parse(':not(#react')),
+          normalizeParseOutput(Query.getQueryTokens(':not(#react')),
           [
             {
               type: 'pseudo',
@@ -512,7 +649,7 @@ t.test('parse', t => {
     t.test('with multiple attributes', t => {
       t.strictSame(
         normalizeParseOutput(
-          Query.parse('[name="react"][version="18"]'),
+          Query.getQueryTokens('[name="react"][version="18"]'),
         ),
         [
           {
