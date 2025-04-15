@@ -1,4 +1,4 @@
-import { lockfile } from '@vltpkg/graph/browser'
+import { lockfile, stringifyNode } from '@vltpkg/graph/browser'
 import { SecurityArchive } from '@vltpkg/security-archive/browser'
 import {
   defaultRegistry,
@@ -120,6 +120,24 @@ export const load = (transfered: TransferData): LoadResponse => {
         dev: false,
         optional: false,
         setResolved() {},
+        toJSON() {
+          return {
+            id: this.id,
+            name: this.name,
+            version: this.version,
+            location: this.location,
+            importer: this.importer,
+            manifest: this.manifest,
+            projectRoot: this.projectRoot,
+            integrity: this.integrity,
+            resolved: this.resolved,
+            dev: this.dev,
+            optional: this.optional,
+          }
+        },
+        toString() {
+          return stringifyNode(this)
+        },
       }
       this.nodes.set(node.id, node)
       return node
@@ -138,6 +156,20 @@ export const load = (transfered: TransferData): LoadResponse => {
     node.resolved = importer.resolved
     node.dev = importer.dev
     node.optional = importer.optional
+    node.toJSON = () => ({
+      id: node.id,
+      name: node.name,
+      version: node.version,
+      location: node.location,
+      importer: node.importer,
+      manifest: node.manifest,
+      projectRoot: node.projectRoot,
+      integrity: node.integrity,
+      resolved: node.resolved,
+      dev: node.dev,
+      optional: node.optional,
+    })
+    node.toString = () => stringifyNode(node)
     // should set the main importer in the first iteration
     if (!graph.mainImporter) {
       graph.mainImporter = node
