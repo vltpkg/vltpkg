@@ -38,7 +38,7 @@ exports[`SideItem render as aliased dependency 1`] = `
             </gui-inline-code>
           </p>
           <div>
-            <gui-badge classname="grow-0 cursor-default border-none bg-cyan-500/30 text-cyan-600 hover:bg-cyan-500/40 dark:bg-cyan-500/30 dark:text-cyan-500 dark:hover:bg-cyan-500/40">
+            <gui-badge classname="grow-0 cursor-default bg-cyan-500/25 text-cyan-600 border-[1px] border-cyan-600 dark:border-cyan-500 hover:bg-cyan-500/40 dark:bg-cyan-500/30 dark:text-cyan-500 dark:hover:bg-cyan-500/40">
               prod
             </gui-badge>
           </div>
@@ -82,7 +82,7 @@ exports[`SideItem render as dependency 1`] = `
             </gui-inline-code>
           </p>
           <div>
-            <gui-badge classname="grow-0 cursor-default border-none bg-lime-500/30 text-lime-600 hover:bg-lime-400/40 dark:bg-lime-500/30 dark:text-lime-400 dark:hover:bg-lime-500/40">
+            <gui-badge classname="grow-0 cursor-default bg-lime-500/25 border-[1px] border-lime-600 dark:border-lime-400 text-lime-600 hover:bg-lime-400/40 dark:bg-lime-500/30 dark:text-lime-400 dark:hover:bg-lime-500/40">
               peer
             </gui-badge>
           </div>
@@ -126,7 +126,7 @@ exports[`SideItem render as dependency with long name 1`] = `
             </gui-inline-code>
           </p>
           <div>
-            <gui-badge classname="grow-0 cursor-default border-none bg-lime-500/30 text-lime-600 hover:bg-lime-400/40 dark:bg-lime-500/30 dark:text-lime-400 dark:hover:bg-lime-500/40">
+            <gui-badge classname="grow-0 cursor-default bg-lime-500/25 border-[1px] border-lime-600 dark:border-lime-400 text-lime-600 hover:bg-lime-400/40 dark:bg-lime-500/30 dark:text-lime-400 dark:hover:bg-lime-500/40">
               peer
             </gui-badge>
           </div>
@@ -170,7 +170,7 @@ exports[`SideItem render as dependent 1`] = `
             </gui-inline-code>
           </p>
           <div>
-            <gui-badge classname="grow-0 cursor-default border-none bg-cyan-500/30 text-cyan-600 hover:bg-cyan-500/40 dark:bg-cyan-500/30 dark:text-cyan-500 dark:hover:bg-cyan-500/40">
+            <gui-badge classname="grow-0 cursor-default bg-cyan-500/25 text-cyan-600 border-[1px] border-cyan-600 dark:border-cyan-500 hover:bg-cyan-500/40 dark:bg-cyan-500/30 dark:text-cyan-500 dark:hover:bg-cyan-500/40">
               prod
             </gui-badge>
           </div>
@@ -209,7 +209,7 @@ exports[`SideItem render as git dependency 1`] = `
             </gui-inline-code>
           </p>
           <div>
-            <gui-badge classname="grow-0 cursor-default border-none bg-cyan-500/30 text-cyan-600 hover:bg-cyan-500/40 dark:bg-cyan-500/30 dark:text-cyan-500 dark:hover:bg-cyan-500/40">
+            <gui-badge classname="grow-0 cursor-default bg-cyan-500/25 text-cyan-600 border-[1px] border-cyan-600 dark:border-cyan-500 hover:bg-cyan-500/40 dark:bg-cyan-500/30 dark:text-cyan-500 dark:hover:bg-cyan-500/40">
               prod
             </gui-badge>
           </div>
@@ -260,7 +260,7 @@ exports[`SideItem render as multi-stacked dependent 1`] = `
             </span>
           </p>
           <div>
-            <gui-badge classname="grow-0 cursor-default border-none bg-cyan-500/30 text-cyan-600 hover:bg-cyan-500/40 dark:bg-cyan-500/30 dark:text-cyan-500 dark:hover:bg-cyan-500/40">
+            <gui-badge classname="grow-0 cursor-default bg-cyan-500/25 text-cyan-600 border-[1px] border-cyan-600 dark:border-cyan-500 hover:bg-cyan-500/40 dark:bg-cyan-500/30 dark:text-cyan-500 dark:hover:bg-cyan-500/40">
               prod
             </gui-badge>
           </div>
@@ -299,7 +299,7 @@ exports[`SideItem render as parent 1`] = `
             </gui-inline-code>
           </p>
           <div>
-            <gui-badge classname="grow-0 cursor-default border-none bg-cyan-500/30 text-cyan-600 hover:bg-cyan-500/40 dark:bg-cyan-500/30 dark:text-cyan-500 dark:hover:bg-cyan-500/40">
+            <gui-badge classname="grow-0 cursor-default bg-cyan-500/25 text-cyan-600 border-[1px] border-cyan-600 dark:border-cyan-500 hover:bg-cyan-500/40 dark:bg-cyan-500/30 dark:text-cyan-500 dark:hover:bg-cyan-500/40">
               prod
             </gui-badge>
           </div>
@@ -345,7 +345,7 @@ exports[`SideItem render as two-stacked dependent 1`] = `
             </span>
           </p>
           <div>
-            <gui-badge classname="grow-0 cursor-default border-none bg-cyan-500/30 text-cyan-600 hover:bg-cyan-500/40 dark:bg-cyan-500/30 dark:text-cyan-500 dark:hover:bg-cyan-500/40">
+            <gui-badge classname="grow-0 cursor-default bg-cyan-500/25 text-cyan-600 border-[1px] border-cyan-600 dark:border-cyan-500 hover:bg-cyan-500/40 dark:bg-cyan-500/30 dark:text-cyan-500 dark:hover:bg-cyan-500/40">
               prod
             </gui-badge>
           </div>
