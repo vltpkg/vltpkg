@@ -3,21 +3,15 @@ import { TabsTrigger, TabsContent } from '@/components/ui/tabs.jsx'
 import {
   History,
   ArrowUpDown,
-  ChevronDown,
+  ChevronRight,
   Search,
-  Eye,
-  EyeOff,
+  ListFilter,
 } from 'lucide-react'
 import { useSelectedItem } from '@/components/explorer-grid/selected-item/context.jsx'
 import { InlineCode } from '@/components/ui/inline-code.jsx'
 import { format, formatDistanceStrict } from 'date-fns'
 import type { Version } from '@/lib/external-info.js'
 import { cn } from '@/lib/utils.js'
-import {
-  Collapsible,
-  CollapsibleTrigger,
-  CollapsibleContent,
-} from '@/components/ui/collapsible.jsx'
 import {
   Avatar,
   AvatarImage,
@@ -33,7 +27,13 @@ import { Button } from '@/components/ui/button.jsx'
 import { CopyToClipboard } from '@/components/ui/copy-to-clipboard.jsx'
 import { formatDownloadSize } from '@/utils/format-download-size.js'
 import { Input } from '@/components/ui/input.jsx'
-import { prerelease } from '@vltpkg/semver'
+import { prerelease, lt } from '@vltpkg/semver'
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuCheckboxItem,
+} from '@/components/ui/dropdown-menu.jsx'
 
 export const VersionsTabButton = () => {
   const { selectedItemDetails } = useSelectedItem()
@@ -138,7 +138,7 @@ const VersionHeader = ({
   }
 
   return (
-    <div className="mt-4 hidden cursor-default grid-cols-12 pb-2 2xl:grid">
+    <div className="hidden cursor-default grid-cols-12 pb-2 2xl:grid">
       <div className="col-span-2 w-full pl-2">
         <button
           onClick={onVersionClick}
@@ -195,7 +195,7 @@ const VersionItem = ({ versionInfo }: VersionItemProps) => {
   const integrityShort = integrity?.split('-')[1]?.slice(0, 6)
 
   return (
-    <div className="group/item flex cursor-default grid-cols-12 flex-col gap-4 rounded-sm py-4 text-foreground transition-all first:border-t-[0px] hover:bg-muted 2xl:grid 2xl:gap-0 2xl:px-2 2xl:py-1.5">
+    <div className="group/item flex cursor-default grid-cols-12 flex-col gap-4 rounded-sm py-4 text-foreground transition-colors first:border-t-[0px] hover:bg-muted 2xl:grid 2xl:gap-0 2xl:px-2 2xl:py-1.5">
       <div className="col-span-2 flex w-full flex-col justify-start gap-1 2xl:ml-1 2xl:justify-center 2xl:gap-0">
         <p className="text-sm font-medium text-muted-foreground 2xl:hidden">
           Version
@@ -352,130 +352,125 @@ const EmptyState = ({ message }: { message: string }) => (
 )
 
 export const VersionsTabContent = () => {
-  const { selectedItemDetails } = useSelectedItem()
+  const { selectedItemDetails, manifest } = useSelectedItem()
   const [filteredVersions, setFilteredVersions] = useState<Version[]>(
     [],
   )
-  const [filteredGreaterVersions, setFilteredGreaterVersions] =
-    useState<Version[]>([])
-  const [greaterVersionsOpen, setGreaterVersionsOpen] = useState(true)
   const [page, setPage] = useState(1)
   const [greaterPage, setGreaterPage] = useState(1)
   const [hasMore, setHasMore] = useState(true)
-  const [hasMoreGreater, setHasMoreGreater] = useState(true)
-  const [showPreReleases, setShowPreReleases] = useState(false)
+  const [showPreReleases, setShowPreReleases] = useState(true)
+  const [showNewerVersions, setShowNewerVersions] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
+
+  const activeFilters = [
+    {
+      id: 'pre-releases',
+      label: 'Hide pre-releases',
+      isActive: !showPreReleases,
+      onToggle: (checked: boolean) => setShowPreReleases(!checked),
+    },
+    {
+      id: 'newer-versions',
+      label: 'Hide older versions',
+      isActive: !showNewerVersions,
+      onToggle: (checked: boolean) => setShowNewerVersions(!checked),
+    },
+  ]
 
   const lastVersionElementRef = createIntersectionObserver(
     () => setPage(prev => prev + 1),
     hasMore,
   )
 
-  const lastGreaterVersionElementRef = createIntersectionObserver(
-    () => setGreaterPage(prev => prev + 1),
-    hasMoreGreater,
-  )
-
   useEffect(() => {
     setPage(1)
     setGreaterPage(1)
-  }, [showPreReleases, searchTerm])
+  }, [showPreReleases, showNewerVersions, searchTerm])
 
   useEffect(() => {
     const allVersions = selectedItemDetails.versions ?? []
-    const allGreaterVersions =
-      selectedItemDetails.greaterVersions ?? []
 
-    const filterPreReleases = (versions: Version[]) => {
-      if (showPreReleases) return versions
-      return versions.filter(version => {
-        const preReleaseInfo = prerelease(version.version)
-        return (
-          preReleaseInfo === undefined || preReleaseInfo.length === 0
+    const filters = [
+      // Filter pre-releases
+      (versions: Version[]) =>
+        showPreReleases ? versions : (
+          versions.filter(version => {
+            const preReleaseInfo = prerelease(version.version)
+            return (
+              preReleaseInfo === undefined ||
+              preReleaseInfo.length === 0
+            )
+          })
+        ),
+
+      // Filter newer versions
+      (versions: Version[]) => {
+        if (showNewerVersions) return versions
+        const currentVersion = manifest?.version
+        if (typeof currentVersion !== 'string') return versions
+        return versions.filter(
+          version => !lt(version.version, currentVersion),
         )
-      })
-    }
+      },
 
-    const filterBySearch = (versions: Version[]) => {
-      if (!searchTerm.trim()) return versions
-      const term = searchTerm.toLowerCase()
+      // Search filter
+      (versions: Version[]) => {
+        if (!searchTerm.trim()) return versions
+        const term = searchTerm.toLowerCase()
 
-      return versions.filter(version => {
-        // Check version number
-        if (version.version.toLowerCase().includes(term)) return true
+        return versions.filter(version => {
+          const searchableFields = [
+            version.version,
+            version.unpackedSize ?
+              formatDownloadSize(version.unpackedSize)
+            : '',
+            version.publishedDate ?
+              formatDistanceStrict(
+                version.publishedDate,
+                new Date(),
+                { addSuffix: true },
+              )
+            : '',
+            version.integrity,
+            version.publishedAuthor?.name,
+          ]
 
-        // Check size
-        if (version.unpackedSize) {
-          const sizeStr = formatDownloadSize(
-            version.unpackedSize,
-          ).toLowerCase()
-          if (sizeStr.includes(term)) return true
-        }
+          return searchableFields.some(field =>
+            field?.toLowerCase().includes(term),
+          )
+        })
+      },
+    ]
 
-        // Check published date
-        if (version.publishedDate) {
-          const dateStr = formatDistanceStrict(
-            version.publishedDate,
-            new Date(),
-            { addSuffix: true },
-          ).toLowerCase()
-          if (dateStr.includes(term)) return true
-        }
-
-        // Check integrity
-        if (version.integrity?.toLowerCase().includes(term))
-          return true
-
-        // Check publisher name
-        if (
-          version.publishedAuthor?.name?.toLowerCase().includes(term)
-        )
-          return true
-
-        return false
-      })
-    }
-
-    const filteredAllVersions = filterBySearch(
-      filterPreReleases(allVersions),
-    )
-    const filteredAllGreaterVersions = filterBySearch(
-      filterPreReleases(allGreaterVersions),
+    // Apply all filters in sequence
+    const filteredAllVersions = filters.reduce(
+      (versions, filter) => filter(versions),
+      allVersions,
     )
 
     setFilteredVersions(
       filteredAllVersions.slice(0, page * ITEMS_PER_PAGE),
     )
-    setFilteredGreaterVersions(
-      filteredAllGreaterVersions.slice(
-        0,
-        greaterPage * ITEMS_PER_PAGE,
-      ),
-    )
     setHasMore(filteredAllVersions.length > page * ITEMS_PER_PAGE)
-    setHasMoreGreater(
-      filteredAllGreaterVersions.length >
-        greaterPage * ITEMS_PER_PAGE,
-    )
   }, [
     selectedItemDetails,
     page,
     greaterPage,
     showPreReleases,
+    showNewerVersions,
     searchTerm,
   ])
 
-  const isEmpty =
-    !selectedItemDetails.versions?.length &&
-    !selectedItemDetails.greaterVersions?.length
-  const hasSearchResults =
-    filteredVersions.length > 0 || filteredGreaterVersions.length > 0
+  const isEmpty = !selectedItemDetails.versions?.length
+
+  const hasSearchResults = filteredVersions.length > 0
 
   return (
     <TabsContent value="versions">
       {isEmpty ?
         <EmptyState message="There is no versioning information about this package yet" />
-      : <section className="flex flex-col gap-4 px-6 py-4">
+      : <section className="flex flex-col gap-2 px-6 py-4">
           <div className="mb-3 flex items-center gap-2">
             <div className="relative flex w-full items-center justify-start">
               <Search
@@ -489,19 +484,32 @@ export const VersionsTabContent = () => {
                 onChange={e => setSearchTerm(e.target.value)}
               />
             </div>
-            <Button
-              variant="outline"
-              className="h-9 w-60 justify-between gap-2 text-sm"
-              onClick={() => setShowPreReleases(!showPreReleases)}>
-              {showPreReleases ?
-                <EyeOff size={16} />
-              : <Eye size={16} />}
-              <span className="text-sm font-normal">
-                {showPreReleases ?
-                  'Hide pre-releases'
-                : 'Show pre-releases'}
-              </span>
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="outline"
+                  className="h-9 w-fit justify-between gap-2 text-sm [&>[data-chevron]]:aria-expanded:rotate-90">
+                  <ListFilter size={16} />
+                  <span className="text-sm font-normal">Filter</span>
+                  <ChevronRight
+                    data-chevron
+                    className="transition-transform duration-150"
+                    size={16}
+                  />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                {activeFilters.map(filter => (
+                  <DropdownMenuCheckboxItem
+                    key={filter.id}
+                    checked={filter.isActive}
+                    onSelect={e => e.preventDefault()}
+                    onCheckedChange={filter.onToggle}>
+                    {filter.label}
+                  </DropdownMenuCheckboxItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
 
           {!hasSearchResults && searchTerm.trim() ?
@@ -509,77 +517,24 @@ export const VersionsTabContent = () => {
               message={`No versions found matching "${searchTerm}"`}
             />
           : <>
-              {filteredGreaterVersions.length > 0 && (
-                <Collapsible
-                  defaultOpen
-                  open={greaterVersionsOpen}
-                  className="mb-3 flex flex-col gap-2">
-                  <CollapsibleTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="xs"
-                      className="inline-flex h-fit w-full cursor-default items-center justify-between gap-1 px-3 py-1.5 text-sm font-medium text-muted-foreground [&>svg]:data-[state=closed]:-rotate-90"
-                      onClick={() =>
-                        setGreaterVersionsOpen(!greaterVersionsOpen)
-                      }>
-                      <span>
-                        {greaterVersionsOpen ? 'Hide' : 'Show'}{' '}
-                        Greater Versions
-                      </span>
-                      <ChevronDown
-                        className="duration-250 transition-transform"
-                        size={16}
-                      />
-                    </Button>
-                  </CollapsibleTrigger>
-                  <CollapsibleContent className="relative flex flex-col gap-2 overflow-hidden">
-                    <VersionHeader
-                      items={filteredGreaterVersions}
-                      setItems={setFilteredGreaterVersions}
-                    />
-                    <div className="flex flex-col divide-y-[1px] divide-muted">
-                      {filteredGreaterVersions.map((version, idx) => (
-                        <div
-                          key={`${version.version}-greater-${idx}`}
-                          ref={
-                            (
-                              idx ===
-                              filteredGreaterVersions.length - 1
-                            ) ?
-                              lastGreaterVersionElementRef
-                            : undefined
-                          }>
-                          <VersionItem versionInfo={version} />
-                        </div>
-                      ))}
-                    </div>
-                  </CollapsibleContent>
-                </Collapsible>
-              )}
-
               {filteredVersions.length > 0 && (
-                <div className="flex flex-col gap-2">
-                  <p className="cursor-default text-sm font-medium text-muted-foreground 2xl:ml-2">
-                    All Versions
-                  </p>
-                  <div className="relative flex flex-col gap-2">
-                    <VersionHeader
-                      items={filteredVersions}
-                      setItems={setFilteredVersions}
-                    />
-                    <div className="flex flex-col divide-y-[1px] divide-muted">
-                      {filteredVersions.map((version, idx) => (
-                        <div
-                          key={`${version.version}-all-${idx}`}
-                          ref={
-                            idx === filteredVersions.length - 1 ?
-                              lastVersionElementRef
-                            : undefined
-                          }>
-                          <VersionItem versionInfo={version} />
-                        </div>
-                      ))}
-                    </div>
+                <div className="relative mt-2 flex flex-col gap-2">
+                  <VersionHeader
+                    items={filteredVersions}
+                    setItems={setFilteredVersions}
+                  />
+                  <div className="flex flex-col divide-y-[1px] divide-muted">
+                    {filteredVersions.map((version, idx) => (
+                      <div
+                        key={`${version.version}-all-${idx}`}
+                        ref={
+                          idx === filteredVersions.length - 1 ?
+                            lastVersionElementRef
+                          : undefined
+                        }>
+                        <VersionItem versionInfo={version} />
+                      </div>
+                    ))}
                   </div>
                 </div>
               )}

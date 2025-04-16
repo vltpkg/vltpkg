@@ -8,14 +8,14 @@ exports[`ItemHeader renders with a package score 1`] = `
 >
   <div class="grid w-full grid-cols-12">
     <div class="flex gap-4 col-span-9 pb-3 pl-6 pt-6 border-r-[1px] border-muted">
-      <gui-avatar classname="size-[3.75rem]">
+      <gui-avatar classname="aspect-square size-[3.75rem]">
         <gui-avatar-image
-          classname="rounded-md border-[1px] bg-secondary object-cover"
+          classname="aspect-square size-[3.75rem] rounded-md border-[1px] bg-secondary object-cover"
           src="https://example.com/favicon.png"
           alt="Example Favicon"
         >
         </gui-avatar-image>
-        <gui-avatar-fallback classname="flex h-full w-full items-center justify-center rounded-md border-[1px]">
+        <gui-avatar-fallback classname="flex aspect-square size-[3.75rem] h-full w-full items-center justify-center rounded-md border-[1px]">
           <div class="to:to-neutral-400 h-full w-full rounded-md bg-gradient-to-t from-neutral-100 dark:from-neutral-500 dark:to-neutral-800">
           </div>
         </gui-avatar-fallback>
@@ -134,14 +134,14 @@ exports[`ItemHeader renders with custom registry item 1`] = `
 >
   <div class="grid w-full grid-cols-12">
     <div class="flex gap-4 col-span-9 pb-3 pl-6 pt-6 border-r-[1px] border-muted">
-      <gui-avatar classname="size-[3.75rem]">
+      <gui-avatar classname="aspect-square size-[3.75rem]">
         <gui-avatar-image
-          classname="rounded-md border-[1px] bg-secondary object-cover"
+          classname="aspect-square size-[3.75rem] rounded-md border-[1px] bg-secondary object-cover"
           src="https://example.com/favicon.png"
           alt="Example Favicon"
         >
         </gui-avatar-image>
-        <gui-avatar-fallback classname="flex h-full w-full items-center justify-center rounded-md border-[1px]">
+        <gui-avatar-fallback classname="flex aspect-square size-[3.75rem] h-full w-full items-center justify-center rounded-md border-[1px]">
           <div class="to:to-neutral-400 h-full w-full rounded-md bg-gradient-to-t from-neutral-100 dark:from-neutral-500 dark:to-neutral-800">
           </div>
         </gui-avatar-fallback>
@@ -252,14 +252,14 @@ exports[`ItemHeader renders with default git host item 1`] = `
 >
   <div class="grid w-full grid-cols-12">
     <div class="flex gap-4 col-span-9 pb-3 pl-6 pt-6 border-r-[1px] border-muted">
-      <gui-avatar classname="size-[3.75rem]">
+      <gui-avatar classname="aspect-square size-[3.75rem]">
         <gui-avatar-image
-          classname="rounded-md border-[1px] bg-secondary object-cover"
+          classname="aspect-square size-[3.75rem] rounded-md border-[1px] bg-secondary object-cover"
           src="https://example.com/favicon.png"
           alt="Example Favicon"
         >
         </gui-avatar-image>
-        <gui-avatar-fallback classname="flex h-full w-full items-center justify-center rounded-md border-[1px]">
+        <gui-avatar-fallback classname="flex aspect-square size-[3.75rem] h-full w-full items-center justify-center rounded-md border-[1px]">
           <div class="to:to-neutral-400 h-full w-full rounded-md bg-gradient-to-t from-neutral-100 dark:from-neutral-500 dark:to-neutral-800">
           </div>
         </gui-avatar-fallback>
@@ -364,14 +364,14 @@ exports[`ItemHeader renders with default item 1`] = `
 >
   <div class="grid w-full grid-cols-12">
     <div class="flex gap-4 col-span-9 pb-3 pl-6 pt-6 border-r-[1px] border-muted">
-      <gui-avatar classname="size-[3.75rem]">
+      <gui-avatar classname="aspect-square size-[3.75rem]">
         <gui-avatar-image
-          classname="rounded-md border-[1px] bg-secondary object-cover"
+          classname="aspect-square size-[3.75rem] rounded-md border-[1px] bg-secondary object-cover"
           src="https://example.com/favicon.png"
           alt="Example Favicon"
         >
         </gui-avatar-image>
-        <gui-avatar-fallback classname="flex h-full w-full items-center justify-center rounded-md border-[1px]">
+        <gui-avatar-fallback classname="flex aspect-square size-[3.75rem] h-full w-full items-center justify-center rounded-md border-[1px]">
           <div class="to:to-neutral-400 h-full w-full rounded-md bg-gradient-to-t from-neutral-100 dark:from-neutral-500 dark:to-neutral-800">
           </div>
         </gui-avatar-fallback>
@@ -473,14 +473,14 @@ exports[`ItemHeader renders with insights 1`] = `
 >
   <div class="grid w-full grid-cols-12">
     <div class="flex gap-4 col-span-9 pb-3 pl-6 pt-6 border-r-[1px] border-muted">
-      <gui-avatar classname="size-[3.75rem]">
+      <gui-avatar classname="aspect-square size-[3.75rem]">
         <gui-avatar-image
-          classname="rounded-md border-[1px] bg-secondary object-cover"
+          classname="aspect-square size-[3.75rem] rounded-md border-[1px] bg-secondary object-cover"
           src="https://example.com/favicon.png"
           alt="Example Favicon"
         >
         </gui-avatar-image>
-        <gui-avatar-fallback classname="flex h-full w-full items-center justify-center rounded-md border-[1px]">
+        <gui-avatar-fallback classname="flex aspect-square size-[3.75rem] h-full w-full items-center justify-center rounded-md border-[1px]">
           <div class="to:to-neutral-400 h-full w-full rounded-md bg-gradient-to-t from-neutral-100 dark:from-neutral-500 dark:to-neutral-800">
           </div>
         </gui-avatar-fallback>
@@ -582,14 +582,14 @@ exports[`ItemHeader renders with scoped registry item 1`] = `
 >
   <div class="grid w-full grid-cols-12">
     <div class="flex gap-4 col-span-9 pb-3 pl-6 pt-6 border-r-[1px] border-muted">
-      <gui-avatar classname="size-[3.75rem]">
+      <gui-avatar classname="aspect-square size-[3.75rem]">
         <gui-avatar-image
-          classname="rounded-md border-[1px] bg-secondary object-cover"
+          classname="aspect-square size-[3.75rem] rounded-md border-[1px] bg-secondary object-cover"
           src="https://example.com/favicon.png"
           alt="Example Favicon"
         >
         </gui-avatar-image>
-        <gui-avatar-fallback classname="flex h-full w-full items-center justify-center rounded-md border-[1px]">
+        <gui-avatar-fallback classname="flex aspect-square size-[3.75rem] h-full w-full items-center justify-center rounded-md border-[1px]">
           <div class="to:to-neutral-400 h-full w-full rounded-md bg-gradient-to-t from-neutral-100 dark:from-neutral-500 dark:to-neutral-800">
           </div>
         </gui-avatar-fallback>

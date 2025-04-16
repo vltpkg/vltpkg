@@ -359,15 +359,15 @@ const PackageImageSpec = ({ className }: { className?: string }) => {
 
   return (
     <div className={cn('flex gap-4', className)}>
-      <Avatar className="size-[3.75rem]">
+      <Avatar className="aspect-square size-[3.75rem]">
         {selectedItemDetails.favicon && (
           <AvatarImage
-            className="rounded-md border-[1px] bg-secondary object-cover"
+            className="aspect-square size-[3.75rem] rounded-md border-[1px] bg-secondary object-cover"
             src={selectedItemDetails.favicon.src}
             alt={selectedItemDetails.favicon.alt}
           />
         )}
-        <AvatarFallback className="flex h-full w-full items-center justify-center rounded-md border-[1px]">
+        <AvatarFallback className="flex aspect-square size-[3.75rem] h-full w-full items-center justify-center rounded-md border-[1px]">
           {selectedItem.to?.mainImporter ?
             <div className="flex h-full w-full items-center justify-center rounded-md bg-muted p-4">
               <Home
