@@ -25,7 +25,7 @@ import { Badge } from '@/components/ui/badge.jsx'
 import { SparkBarChart } from '@/components/ui/spark-chart.jsx'
 import { transformToWeeklyDownloads } from '@/utils/transform-weekly-downloads.js'
 import { splitDepID } from '@vltpkg/dep-id/browser'
-import { Spec } from '@vltpkg/spec/browser'
+import { defaultRegistry } from '@vltpkg/spec/browser'
 import type { SpecOptionsFilled } from '@vltpkg/spec/browser'
 import type { GridItemData } from '@/components/explorer-grid/types.js'
 import { ProgressBar } from '@/components/ui/progress-bar.jsx'
@@ -57,41 +57,30 @@ const SpecOrigin = ({
         )) {
           if (item.to.name?.startsWith(scopeKey)) {
             return (
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger className="flex h-full w-full cursor-default items-center justify-start overflow-hidden">
-                    <InlineCode
-                      variant="mono"
-                      className="mx-0 truncate">
-                      {`${item.title}@${item.version}`}
-                    </InlineCode>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    {String(scopeValue)}
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
+              <InlineCode
+                displayTooltip
+                tooltip={String(scopeValue)}
+                tooltipDuration={150}
+                variant="mono"
+                className="mx-0 w-fit max-w-40 cursor-default truncate">
+                {`${item.title}@${item.version}`}
+              </InlineCode>
             )
           }
         }
         return (
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger className="flex h-full w-full cursor-default items-center justify-start overflow-hidden">
-                <InlineCode variant="mono" className="mx-0 truncate">
-                  {`${ref || 'npm'}:${item.title}@${item.version}`}
-                </InlineCode>
-              </TooltipTrigger>
-              <TooltipContent>
-                {
-                  ref && specOptions.registries[ref] ?
-                    specOptions.registries[ref]
-                    // @ts-expect-error - tsserver is unable to find this exported property
-                  : specOptions.registry || Spec.defaultRegistry
-                }
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+          <InlineCode
+            displayTooltip
+            tooltipDuration={150}
+            tooltip={
+              ref && specOptions.registries[ref] ?
+                String(specOptions.registries[ref])
+              : String(specOptions.registry || defaultRegistry)
+            }
+            variant="mono"
+            className="mx-0 w-fit max-w-40 cursor-default truncate">
+            {`${ref || 'npm'}:${item.title}@${item.version}`}
+          </InlineCode>
         )
       }
       case 'git':
@@ -99,7 +88,7 @@ const SpecOrigin = ({
       case 'file':
       case 'remote': {
         return (
-          <InlineCode className="mx-0">{`${depType}:{ref}`}</InlineCode>
+          <InlineCode className="mx-0 w-fit max-w-40 cursor-default truncate">{`${depType}:{ref}`}</InlineCode>
         )
       }
     }
@@ -395,22 +384,14 @@ const PackageImageSpec = ({ className }: { className?: string }) => {
       <div className="flex h-full w-full flex-col justify-between">
         <div className="flex flex-col gap-0.5">
           <div className="flex items-center gap-2">
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger className="cursor-default truncate align-baseline text-lg font-medium">
-                  {selectedItem.title}
-                  <InlineCode variant="monoGhost" className="text-sm">
-                    {selectedItem.version}
-                  </InlineCode>
-                </TooltipTrigger>
-                <TooltipContent className="text-baseline text-sm font-medium">
-                  {selectedItem.title}{' '}
-                  <span className="font-normal text-muted-foreground">
-                    {selectedItem.version}
-                  </span>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
+            <h1 className="cursor-default truncate align-baseline text-lg font-medium">
+              {selectedItem.title}
+              <InlineCode
+                variant="monoGhost"
+                className="cursor-default text-sm">
+                {selectedItem.version}
+              </InlineCode>
+            </h1>
 
             {selectedItemDetails.greaterVersions &&
               selectedItemDetails.greaterVersions.length > 0 && (
@@ -419,7 +400,7 @@ const PackageImageSpec = ({ className }: { className?: string }) => {
                     <TooltipTrigger
                       onClick={() => setActiveTab('versions')}
                       className="flex items-center justify-center">
-                      <div className="cursor-default rounded-sm bg-green-400/30 p-0.5 transition-colors duration-150 hover:bg-green-400/40 dark:bg-green-500/30 dark:hover:bg-green-500/40">
+                      <div className="cursor-default rounded-sm border-[1px] border-green-600 bg-green-400/30 p-0.5 transition-colors duration-150 hover:bg-green-400/40 dark:border-green-500 dark:bg-green-500/30 dark:hover:bg-green-500/40">
                         <ArrowBigUpDash
                           className="text-green-600 dark:text-green-500"
                           size={16}
