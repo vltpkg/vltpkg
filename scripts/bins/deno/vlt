@@ -1,4 +1,4 @@
 #!/bin/sh
-
-SCRIPT_DIR="$(cd "$(dirname "$0")/../../../" && pwd)"
-deno -A --unstable-bare-node-builtins --unstable-node-globals $SCRIPT_DIR/infra/build/src/bins/vlt.ts "$@"
+set -eo pipefail
+ROOT_DIR="$(cd "$(dirname "$0")/../../../" && pwd)"
+deno -A --unstable-node-globals --unstable-bare-node-builtins "$ROOT_DIR/infra/build/src/bins/vlt.ts" "$@"
