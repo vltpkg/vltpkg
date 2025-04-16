@@ -1,0 +1,29 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`copy-to-clipboard default 1`] = `
+
+<gui-tooltip-provider>
+  <gui-tooltip delayduration="150">
+    <gui-tooltip-trigger aschild="true">
+      <button class="inline-flex cursor-default transition-colors duration-150 gap-2 h-7 rounded-sm px-3 py-1.5 text-sm font-courier truncate bg-secondary text-muted-foreground items-center justify-center">
+        copy
+        <span class="ml-auto flex items-center justify-center">
+          <span
+            class="inline-block"
+            style="opacity: 1; transform: none;"
+          >
+            <gui-copy-icon
+              classname="my-auto"
+              size="14"
+            >
+            </gui-copy-icon>
+          </span>
+        </span>
+      </button>
+    </gui-tooltip-trigger>
+    <gui-tooltip-content>
+    </gui-tooltip-content>
+  </gui-tooltip>
+</gui-tooltip-provider>
+
+`;
