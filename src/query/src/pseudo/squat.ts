@@ -21,6 +21,8 @@ export type SquatAlertTypes =
   | 'gptDidYouMean'
   | undefined
 
+export type SquatComparator = '>' | '<' | '>=' | '<=' | undefined
+
 const kindsMap = new Map<SquatKinds, SquatAlertTypes>([
   ['critical', 'didYouMean'],
   ['medium', 'gptDidYouMean'],
@@ -28,6 +30,15 @@ const kindsMap = new Map<SquatKinds, SquatAlertTypes>([
   ['2', 'gptDidYouMean'],
   [undefined, undefined],
 ])
+
+// Map numerical values to their respective kinds for comparison operations
+const kindLevelMap = new Map<SquatKinds, number>([
+  ['critical', 0],
+  ['medium', 2],
+  ['0', 0],
+  ['2', 2],
+])
+
 const kinds = new Set(kindsMap.keys())
 
 export const isSquatKind = (value?: string): value is SquatKinds =>
@@ -45,25 +56,55 @@ export const asSquatKind = (value?: string): SquatKinds => {
 
 export const parseInternals = (
   nodes: PostcssNode[],
-): { kind: SquatKinds } => {
+): {
+  kind: SquatKinds
+  comparator: SquatComparator
+} => {
   let kind: SquatKinds
+  let comparator: SquatComparator
 
+  let kindValue = ''
   if (isStringNode(asPostcssNodeWithChildren(nodes[0]).nodes[0])) {
-    kind = asSquatKind(
-      removeQuotes(
-        asStringNode(asPostcssNodeWithChildren(nodes[0]).nodes[0])
-          .value,
-      ),
+    kindValue = removeQuotes(
+      asStringNode(asPostcssNodeWithChildren(nodes[0]).nodes[0])
+        .value,
     )
   } else if (
     isTagNode(asPostcssNodeWithChildren(nodes[0]).nodes[0])
   ) {
-    kind = asSquatKind(
-      asTagNode(asPostcssNodeWithChildren(nodes[0]).nodes[0]).value,
-    )
+    kindValue = asTagNode(
+      asPostcssNodeWithChildren(nodes[0]).nodes[0],
+    ).value
   }
 
-  return { kind }
+  // Extract comparator if present
+  if (kindValue.startsWith('>=')) {
+    comparator = '>='
+    kindValue = kindValue.substring(2)
+  } else if (kindValue.startsWith('<=')) {
+    comparator = '<='
+    kindValue = kindValue.substring(2)
+  } else if (kindValue.startsWith('>')) {
+    comparator = '>'
+    kindValue = kindValue.substring(1)
+  } else if (kindValue.startsWith('<')) {
+    comparator = '<'
+    kindValue = kindValue.substring(1)
+  }
+
+  // Parse kind value
+  if (kindValue) {
+    if (isSquatKind(kindValue)) {
+      kind = kindValue
+    } else {
+      throw error('Expected a valid squat kind for comparison', {
+        found: kindValue,
+        validOptions: Array.from(kinds),
+      })
+    }
+  }
+
+  return { kind, comparator }
 }
 
 export const squat = async (state: ParserState) => {
@@ -78,13 +119,89 @@ export const squat = async (state: ParserState) => {
     throw error('Failed to parse :squat selector', { cause: err })
   }
 
-  const { kind } = internals
-  const alertName = kindsMap.get(kind)
+  const { kind, comparator } = internals
+
+  // First pass: Remove nodes without security data
   for (const node of state.partial.nodes) {
     const report = state.securityArchive.get(node.id)
-    const exclude = !report?.alerts.some(
-      alert => alert.type === alertName,
-    )
+    // Always exclude nodes that don't have security data or alerts
+    if (!report?.alerts || report.alerts.length === 0) {
+      removeNode(state, node)
+    }
+  }
+
+  // Second pass: Apply comparison filtering
+  for (const node of state.partial.nodes) {
+    const report = state.securityArchive.get(node.id)
+
+    // Skip if report is undefined
+    // (should never happen since we filtered above)
+    /* c8 ignore next - impossible */
+    if (!report) continue
+
+    // At this point we know report exists and has alerts
+    let exclude = true
+
+    if (comparator) {
+      // Get the value to compare against
+      const kindLevel = kindLevelMap.get(kind)
+      /* c8 ignore next - impossible */
+      if (kindLevel === undefined) break
+
+      // For each alert, check if it matches the comparison criteria
+      let matchesComparison = false
+      for (const alert of report.alerts) {
+        // Get the alert type
+        const alertType = alert.type
+
+        // Find the corresponding kind for this alert type
+        const alertLevelKey = [...kindsMap.entries()].find(
+          ([_, value]) => value === alertType,
+        )?.[0]
+
+        if (alertLevelKey) {
+          // Get the numeric level for this alert
+          const alertLevel = kindLevelMap.get(alertLevelKey)
+          /* c8 ignore next - impossible */
+          if (alertLevel === undefined) continue
+
+          // Apply the comparison based on the comparator
+          switch (comparator) {
+            case '>':
+              if (alertLevel > kindLevel) {
+                matchesComparison = true
+              }
+              break
+            case '<':
+              if (alertLevel < kindLevel) {
+                matchesComparison = true
+              }
+              break
+            case '>=':
+              if (alertLevel >= kindLevel) {
+                matchesComparison = true
+              }
+              break
+            case '<=':
+              if (alertLevel <= kindLevel) {
+                matchesComparison = true
+              }
+              break
+          }
+
+          // If we found a match, we can stop checking other alerts
+          if (matchesComparison) break
+        }
+      }
+
+      // Exclude the node if it doesn't match the comparison
+      exclude = !matchesComparison
+    } else {
+      // Original exact match behavior
+      const alertName = kindsMap.get(kind)
+      exclude = !report.alerts.some(alert => alert.type === alertName)
+    }
+
     if (exclude) {
       removeNode(state, node)
     }
