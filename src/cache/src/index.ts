@@ -56,6 +56,7 @@ const hash = (s: string) =>
   createHash('sha512').update(s).digest('hex')
 
 const FAILURE = null
+
 const success = <T>(p: Promise<T>): Promise<T | typeof FAILURE> =>
   p.then(
     result => result,
@@ -376,81 +377,74 @@ export class Cache extends LRUCache<
     // to ensure any write file operations happen after the dir is created.
     const mkdirP = mkdir(dir, { recursive: true })
 
-    // Always write the key file in parallel with other operations
-    const writeKeyP = mkdirP.then(() =>
-      this.#writeFileAtomic(`${valFile}.key`, key),
-    )
+    // Helper to atomically write a file to the cache directory, waiting for the dir
+    // to be created first.
+    const writeCacheFile = (file: string, data: Buffer | string) =>
+      mkdirP.then(() => this.#writeFileAtomic(file, data))
 
-    // We might not write the val file at all so we dont want to
-    // kick off this promise until we know we need to.
-    const writeVal = () =>
-      mkdirP.then(() => this.#writeFileAtomic(valFile, val))
+    // Always write the key file as early as possible
+    const writeKeyP = writeCacheFile(`${valFile}.key`, key)
+
+    // Helper to wait for the operations we always want to run (write the key file)
+    // combined with any other operations passed in.
+    const finish = async (ops: Promise<void>[]) => {
+      await Promise.all([writeKeyP, ...ops])
+    }
 
     if (!intFile) {
       // No integrity provided, just write the value and key files
-      await Promise.all([writeKeyP, writeVal()])
-      return
+      return finish([writeCacheFile(valFile, val)])
     }
 
-    // Handle different integrity scenarios
+    // Now we know that we have been passed an integrity value
+    // that we should attempt to use...somehow.
 
     const intStats = await success(stat(intFile))
     if (!intStats) {
       // Integrity file doesn't exist yet
-      // Write the value file and then link to a new integrity file
-      await Promise.all([
-        writeKeyP,
-        writeVal().then(() => link(valFile, intFile)),
+      // Write the value file and then link that to a new integrity file
+      return finish([
+        writeCacheFile(valFile, val).then(() =>
+          link(valFile, intFile),
+        ),
       ])
-      return
     }
-
-    // Check if the integrity file and value file are the same size
-    // This is a fast shortcut to check if the content is likely the same
-    const sameSize = intStats.size === val.length
 
     const valStats = await success(stat(valFile))
-    if (!valStats && sameSize) {
-      // Path doesn't exist but integrity is already what we want
-      // Try to link integrity file to val file
-      // If linking fails, continue on
-      if ((await success(link(intFile, valFile))) !== FAILURE) {
-        await writeKeyP
-        return
-      }
+    if (!valStats) {
+      // Value file doesn't exist but integrity does, we know they are the same
+      // because we trust the integrity file, so attempt to link and be done.
+      return finish([link(intFile, valFile)])
     }
 
-    const linked =
-      intStats.ino === valStats?.ino && intStats.dev === valStats.dev
+    // We now know that both the value and integrity files exist.
 
-    if (linked && sameSize) {
-      // Integrity and val file are already linked and the same
-      // So nothing to do except write the key file
-      await writeKeyP
-      return
+    // TODO: we are handling different registries here which will likely
+    // return different headers so the file sizes will be different even
+    // if the content is the same. This should be updated to check based
+    // on the size of the response body, not the size of the file on disk.
+
+    if (
+      intStats.ino === valStats.ino &&
+      intStats.dev === valStats.dev
+    ) {
+      // Integrity and val file are already linked. If the are the same value
+      // then we can be done, otherwise we are probably unzipping and we should
+      // write the new integrity value and then link the value file to it.
+      return finish(
+        val.length === valStats.size ?
+          []
+        : [
+            writeCacheFile(intFile, val).then(() =>
+              this.#linkAtomic(intFile, valFile),
+            ),
+          ],
+      )
     }
 
-    if (!linked && sameSize) {
-      // Integrity and val file are not linked but same size
-      // so its likely the same content so force link them
-      // because thats faster than writing the value file.
-      if (
-        (await success(this.#linkAtomic(intFile, valFile))) !==
-        FAILURE
-      ) {
-        await writeKeyP
-        return
-      }
-    }
-
-    // If files are not same size or something went wrong with the previous link
-    // operations then fallback to doing everything:
-    // - write the key/value files
-    // - unlink integrity and then re-link it to the value file
-    await Promise.all([
-      writeKeyP,
-      writeVal().then(() => this.#linkAtomic(valFile, intFile)),
-    ])
+    // By this point we know that the files are not linked, so
+    // we atomic link them because they should be the same entry.
+    return finish([this.#linkAtomic(intFile, valFile)])
   }
 
   async #diskRead(
