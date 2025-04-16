@@ -171,7 +171,7 @@ export const severity = async (state: ParserState) => {
         // Check each alert to find any that match our comparison criteria
         for (const alert of report.alerts) {
           // Get the numerical value of the alert type
-          const alertType = alert.type as SeverityAlertTypes
+          const alertType = alert.type
 
           // retrieve a key to the current alert level to be compared against
           const currentAlertLevelKey = [...kindsMap.entries()].find(
