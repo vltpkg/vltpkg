@@ -31,8 +31,10 @@ import type { GridItemData } from '@/components/explorer-grid/types.js'
 import { ProgressBar } from '@/components/ui/progress-bar.jsx'
 import { getScoreColor } from '@/components/explorer-grid/selected-item/insight-score-helper.js'
 import { cn } from '@/lib/utils.js'
-import { GlyphIcon } from '@/components/icons/glyph-icon.jsx'
-import type { ICONS } from '@/components/icons/glyph-icon.jsx'
+import {
+  GlyphIcon,
+  isGlyphIcon,
+} from '@/components/icons/glyph-icon.jsx'
 import { isRecord } from '@/utils/typeguards.js'
 import { formatDistanceStrict } from 'date-fns'
 import { labelClassNamesMap } from '../label-helper.ts'
@@ -196,7 +198,7 @@ export const ItemHeader = () => {
         )}>
         <PackageMetadata
           className={cn(
-            'col-span-9 border-r-[1px] border-muted pl-6',
+            'col-span-9 w-full border-r-[1px] border-muted pl-6',
             hasMetadata && 'py-3',
           )}
         />
@@ -211,7 +213,7 @@ const PackageMetadata = ({ className }: { className?: string }) => {
     useSelectedItem()
   const tarballUrl = selectedItemDetails.versions?.[0]?.tarball
   const INLINE_CODE_STYLES =
-    'text-muted-foreground cursor-default relative mx-0 inline-flex items-center font-inter font-medium tracking-wide'
+    'text-muted-foreground max-w-28 overflow-hidden text-nowrap truncate cursor-default relative mx-0 inline-flex items-center font-inter font-medium tracking-wide'
 
   if (!manifest) return null
 
@@ -234,6 +236,9 @@ const PackageMetadata = ({ className }: { className?: string }) => {
       {manifest.private && (
         <InlineCode
           variant="unstyled"
+          tooltip="Private package"
+          tooltipDuration={150}
+          displayTooltip
           className={cn(
             INLINE_CODE_STYLES,
             'gap-1 bg-rose-500/20 px-2 text-rose-600 dark:bg-rose-500/20 dark:text-rose-400',
@@ -243,17 +248,29 @@ const PackageMetadata = ({ className }: { className?: string }) => {
         </InlineCode>
       )}
       {manifest.license &&
-        LICENSE_TYPES.includes(manifest.license) && (
+        LICENSE_TYPES.some(
+          i =>
+            i.toLowerCase() ===
+            manifest.license?.trim().toLowerCase(),
+        ) && (
           <InlineCode
             variant="mono"
+            tooltipDuration={150}
+            displayTooltip
+            tooltip={`${manifest.license} license`}
             className={cn(INLINE_CODE_STYLES, 'gap-1 px-2')}>
             <Scale size={16} className="mb-0.5" />
             {manifest.license}
           </InlineCode>
         )}
       {manifest.type && (
-        <InlineCode variant="mono" className={cn(INLINE_CODE_STYLES)}>
-          {manifest.type}
+        <InlineCode
+          tooltipDuration={150}
+          displayTooltip
+          tooltip={manifest.type === 'module' ? 'ESM' : 'CJS'}
+          variant="mono"
+          className={cn(INLINE_CODE_STYLES)}>
+          {manifest.type === 'module' ? 'ESM' : 'CJS'}
         </InlineCode>
       )}
       {manifest.engines &&
@@ -262,28 +279,36 @@ const PackageMetadata = ({ className }: { className?: string }) => {
           ([engine, version], idx) => (
             <InlineCode
               variant="mono"
+              tooltip={`${engine} ${version}`}
+              tooltipDuration={150}
+              displayTooltip
               className={cn(
-                'px-2 pl-7',
                 INLINE_CODE_STYLES,
+                'w-fit px-2 pl-7',
                 engine === 'npm' && 'pl-8',
               )}
               key={`${engine}-${version}-${idx}`}>
-              <GlyphIcon
-                color="green"
-                icon={engine as keyof typeof ICONS}
-                size="lg"
-                className={cn(
-                  'absolute left-2',
-                  engine === 'npm' && 'top-[0.2rem]',
-                )}
-              />
-              {version}
+              {isGlyphIcon(engine) && (
+                <GlyphIcon
+                  color="green"
+                  icon={engine}
+                  size="lg"
+                  className={cn(
+                    'absolute left-2',
+                    engine === 'npm' && 'top-[0.1rem] text-red-500',
+                  )}
+                />
+              )}
+              <span className="truncate">{version}</span>
             </InlineCode>
           ),
         )}
       {unpackedSize && (
         <InlineCode
           variant="mono"
+          tooltipDuration={150}
+          tooltip={`${formatDownloadSize(unpackedSize)} unpacked size`}
+          displayTooltip
           className={cn(INLINE_CODE_STYLES, 'gap-1 px-2')}>
           <Download size={16} className="mb-0.5" />
           {formatDownloadSize(unpackedSize)}

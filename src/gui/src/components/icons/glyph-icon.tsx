@@ -3,6 +3,12 @@ import { cva } from 'class-variance-authority'
 import type { VariantProps } from 'class-variance-authority'
 import { cn } from '@/lib/utils.js'
 
+export const isGlyphIcon = (
+  icon: string,
+): icon is keyof typeof ICONS => {
+  return icon in ICONS
+}
+
 const glyphIconVariants = cva('font-zed antialised', {
   variants: {
     size: {

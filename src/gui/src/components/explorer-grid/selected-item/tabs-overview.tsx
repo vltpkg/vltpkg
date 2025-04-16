@@ -51,11 +51,21 @@ export const OverviewTabContent = () => {
               <span>Funding</span>
             </p>
             {Array.isArray(manifest.funding) ?
-              manifest.funding.map((entry, index) => (
-                <span key={index}>
-                  {typeof entry === 'string' ? entry : entry.url}
-                </span>
-              ))
+              manifest.funding.map((entry, idx) =>
+                typeof entry === 'string' ?
+                  <Link
+                    className="text-sm"
+                    key={`${entry}-${idx}`}
+                    href={entry}>
+                    {entry}
+                  </Link>
+                : <Link
+                    className="text-sm"
+                    key={idx}
+                    href={entry.url}>
+                    {entry.url}
+                  </Link>,
+              )
             : typeof manifest.funding === 'string' ?
               <Link href={manifest.funding} className="text-sm">
                 {manifest.funding}

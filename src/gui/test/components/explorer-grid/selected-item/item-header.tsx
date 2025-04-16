@@ -61,9 +61,13 @@ vi.mock('@/components/ui/progress-bar.jsx', () => ({
   ProgressBar: 'gui-progress-bar',
 }))
 
-vi.mock('@/components/icons/glyph-icon.jsx', () => ({
-  GlyphIcon: 'gui-glyph-icon',
-}))
+vi.mock('@/components/icons/glyph-icon.jsx', async () => {
+  const actual = await import('@/components/icons/glyph-icon.jsx')
+  return {
+    ...actual,
+    GlyphIcon: 'gui-glyph-icon',
+  }
+})
 
 vi.mock('@/components/ui/copy-to-clipboard.jsx', () => ({
   CopyToClipboard: 'gui-copy-to-clipboard',
