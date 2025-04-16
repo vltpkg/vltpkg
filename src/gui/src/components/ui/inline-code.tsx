@@ -2,6 +2,12 @@ import { cva } from 'class-variance-authority'
 import type { VariantProps } from 'class-variance-authority'
 import { cn } from '@/lib/utils.js'
 import { forwardRef } from 'react'
+import {
+  TooltipProvider,
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+} from '@/components/ui/tooltip.jsx'
 
 type Color = 'pink' | 'blue' | 'green' | 'yellow' | 'red' | 'purple'
 
@@ -10,6 +16,9 @@ interface InlineCodeProps
     VariantProps<typeof variants> {
   children?: React.ReactNode
   color?: Color
+  displayTooltip?: boolean
+  tooltip?: string
+  tooltipDuration?: number
 }
 
 const variants = cva(
@@ -43,15 +52,44 @@ const variants = cva(
 export const InlineCode = forwardRef<
   HTMLSpanElement,
   InlineCodeProps
->(({ children, className, variant, color, ...rest }, ref) => {
-  return (
-    <span
-      ref={ref}
-      className={cn(variants({ color, variant, className }))}
-      {...rest}>
-      {children}
-    </span>
-  )
-})
+>(
+  (
+    {
+      children,
+      className,
+      variant,
+      color,
+      tooltip,
+      tooltipDuration,
+      displayTooltip = false,
+      ...rest
+    },
+    ref,
+  ) => {
+    const content = (
+      <span
+        ref={ref}
+        className={cn(variants({ color, variant, className }))}
+        {...rest}>
+        {children}
+      </span>
+    )
+
+    if (displayTooltip) {
+      return (
+        <TooltipProvider>
+          <Tooltip delayDuration={tooltipDuration}>
+            <TooltipTrigger asChild>{content}</TooltipTrigger>
+            <TooltipContent>
+              {tooltip ? tooltip : children}
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      )
+    }
+
+    return content
+  },
+)
 
 InlineCode.displayName = 'InlineCode'
