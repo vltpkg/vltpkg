@@ -342,7 +342,7 @@ const EmptyState = ({ message }: { message: string }) => (
           strokeWidth={1.25}
         />
       </div>
-      <div className="flex flex-col items-center justify-center gap-1 break-all text-center">
+      <div className="flex w-2/3 flex-col items-center justify-center gap-1 break-all text-center">
         <p className="w-full text-pretty text-sm text-muted-foreground">
           {message}
         </p>
@@ -376,7 +376,6 @@ export const VersionsTabContent = () => {
     hasMoreGreater,
   )
 
-  // Reset pagination when filters change
   useEffect(() => {
     setPage(1)
     setGreaterPage(1)
