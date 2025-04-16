@@ -39,3 +39,57 @@ Object {
   ],
 }
 `
+
+exports[`test/pseudo/severity.ts > TAP > selects packages with a specific severity kind > greater than comparator with number (unquoted) > must match snapshot 1`] = `
+Object {
+  "edges": Array [
+    "a",
+    "b",
+  ],
+  "nodes": Array [
+    "a",
+    "b",
+  ],
+}
+`
+
+exports[`test/pseudo/severity.ts > TAP > selects packages with a specific severity kind > greater than or equal to comparator with number (quoted) > must match snapshot 1`] = `
+Object {
+  "edges": Array [
+    "a",
+    "b",
+  ],
+  "nodes": Array [
+    "a",
+    "b",
+  ],
+}
+`
+
+exports[`test/pseudo/severity.ts > TAP > selects packages with a specific severity kind > less than comparator with number (quoted) > must match snapshot 1`] = `
+Object {
+  "edges": Array [
+    "e",
+    "e",
+    "f",
+  ],
+  "nodes": Array [
+    "e",
+    "f",
+  ],
+}
+`
+
+exports[`test/pseudo/severity.ts > TAP > selects packages with a specific severity kind > less than or equal to comparator with number (unquoted) > must match snapshot 1`] = `
+Object {
+  "edges": Array [
+    "e",
+    "e",
+    "f",
+  ],
+  "nodes": Array [
+    "e",
+    "f",
+  ],
+}
+`
