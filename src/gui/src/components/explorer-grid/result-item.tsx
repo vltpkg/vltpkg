@@ -26,15 +26,14 @@ const onResultItemClick =
     let newQuery = ''
     if (item.stacked) {
       const name = item.to.name ? `[name="${item.to.name}"]` : ''
-      const version =
-        item.to.version ? `[version="${item.to.version}"]` : ''
+      const version = item.to.version ? `:v(${item.to.version})` : ''
       newQuery = `${query.trim()}${name}${version}`
     } else {
       let suffix = ''
       if (!item.sameItems) {
         const name = item.to.name ? `[name="${item.to.name}"]` : ''
         const version =
-          item.to.version ? `[version="${item.to.version}"]` : ''
+          item.to.version ? `:v(${item.to.version})` : ''
         suffix = `${name}${version}`
       }
       if (item.to.importer && !item.from) {
@@ -42,7 +41,7 @@ const onResultItemClick =
       } else if (item.from) {
         const fromName = `[name="${item.from.name}"]`
         const fromVersion =
-          item.from.version ? `[version="${item.from.version}"]` : ''
+          item.from.version ? `:v(${item.from.version})` : ''
         newQuery = `${fromName}${fromVersion} > :is(${query.trim()}${suffix})`
       } else {
         newQuery = `${query.trim()}${suffix}`

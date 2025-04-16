@@ -135,7 +135,7 @@ describe('ResultItem updates query store value', () => {
 
     assert.deepEqual(
       query,
-      ':root[name="item"][version="1.0.0"]',
+      ':root[name="item"]:v(1.0.0)',
       'should append item and version in order to narrow & show stacked items',
     )
   })
@@ -205,7 +205,7 @@ describe('ResultItem updates query store value', () => {
 
     assert.deepEqual(
       query,
-      '[name="parent"][version="1.0.0"] > :is(:root)',
+      '[name="parent"]:v(1.0.0) > :is(:root)',
       'should prefix the parent name and version',
     )
   })
@@ -238,7 +238,7 @@ describe('ResultItem updates query store value', () => {
 
     assert.deepEqual(
       query,
-      ':root[name="item"][version="1.0.0"]',
+      ':root[name="item"]:v(1.0.0)',
       'should add name and version suffix',
     )
   })
