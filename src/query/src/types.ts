@@ -221,6 +221,20 @@ export const asIdentifierNode = (node?: PostcssNode): Identifier => {
 export const isSelectorNode = (node: any): node is Selector =>
   isPostcssNodeWithChildren(node) && node.type === 'selector'
 
+export const asSelectorNode = (node?: PostcssNode): Selector => {
+  if (!node) {
+    throw error('Expected a query node')
+  }
+
+  if (!isSelectorNode(node)) {
+    throw error('Mismatching query node', {
+      wanted: 'selector',
+      found: node.type,
+    })
+  }
+  return node
+}
+
 export const isPseudoNode = (node: unknown): node is Pseudo =>
   isObj(node) && !!node.value && node.type === 'pseudo'
 

@@ -86,4 +86,32 @@ t.test('parse', async t => {
     parse(':root > :v("2.0.0")'),
     'should parse dots in string parameters',
   )
+
+  const res: any[] = []
+  parse(':v(>2)').walk(node => {
+    res.push({
+      type: node.type,
+      source: node.source,
+      ...(node.value ? { value: node.value } : undefined),
+    })
+  })
+  t.matchSnapshot(
+    res,
+    'should clean up usage of combinators params in pseudo selectors that accept only string values',
+  )
+
+  res.length = 0
+  parse(
+    ':root > :v(>1 >2 >3):not(:v(2.0.0-pre+build0.13adsfa1)) > published(<=2024-01-01T11:11:11.111Z) :severity(>=0):score( > 0.9)',
+  ).walk(node => {
+    res.push({
+      type: node.type,
+      source: node.source,
+      ...(node.value ? { value: node.value } : undefined),
+    })
+  })
+  t.matchSnapshot(
+    res,
+    'should clean up usage of multiple pseudo selectors requiring cleaning up',
+  )
 })
