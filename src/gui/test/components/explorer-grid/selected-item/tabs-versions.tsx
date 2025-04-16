@@ -1,5 +1,5 @@
 import { test, expect, vi, beforeEach, afterEach } from 'vitest'
-import { cleanup, render } from '@testing-library/react'
+import { cleanup, render, fireEvent } from '@testing-library/react'
 import html from 'diffable-html'
 import { useGraphStore as useStore } from '@/state/index.js'
 import { useSelectedItem } from '@/components/explorer-grid/selected-item/context.jsx'
@@ -13,8 +13,21 @@ import {
 } from './__fixtures__/item.ts'
 import type { DetailsInfo } from '@/lib/external-info.js'
 
+// Mock IntersectionObserver
+const mockIntersectionObserver = vi.fn()
+mockIntersectionObserver.mockReturnValue({
+  observe: () => null,
+  unobserve: () => null,
+  disconnect: () => null,
+})
+window.IntersectionObserver = mockIntersectionObserver
+
 vi.mock('lucide-react', () => ({
   History: 'gui-history-icon',
+  ArrowUpDown: 'gui-arrow-up-down-icon',
+  ChevronRight: 'gui-chevron-right-icon',
+  Search: 'gui-search-icon',
+  ListFilter: 'gui-list-filter-icon',
 }))
 
 vi.mock(
@@ -25,9 +38,50 @@ vi.mock(
   }),
 )
 
+vi.mock('date-fns', () => ({
+  format: vi.fn().mockReturnValue('2025-04-15'),
+  formatDistanceStrict: vi.fn().mockReturnValue('1 day ago'),
+}))
+
 vi.mock('@/components/ui/tabs.jsx', () => ({
   TabsTrigger: 'gui-tabs-trigger',
   TabsContent: 'gui-tabs-content',
+}))
+
+vi.mock('@/components/ui/inline-code.jsx', () => ({
+  InlineCode: 'gui-inline-code',
+}))
+
+vi.mock('@radix-ui/react-avatar', () => ({
+  Avatar: 'gui-avatar',
+  AvatarImage: 'gui-avatar-image',
+  AvatarFallback: 'gui-avatar-fallback',
+}))
+
+vi.mock('@/components/ui/button.jsx', () => ({
+  Button: 'gui-button',
+}))
+
+vi.mock('@/components/ui/copy-to-clipboard.jsx', () => ({
+  CopyToClipboard: 'gui-copy-to-clipboard',
+}))
+
+vi.mock('@/components/ui/tooltip.jsx', () => ({
+  Tooltip: 'gui-tooltip',
+  TooltipTrigger: 'gui-tooltip-trigger',
+  TooltipContent: 'gui-tooltip-content',
+  TooltipProvider: 'gui-tooltip-provider',
+}))
+
+vi.mock('@/components/ui/dropdown-menu.jsx', () => ({
+  DropdownMenu: 'gui-dropdown-menu',
+  DropdownMenuTrigger: 'gui-dropdown-menu-trigger',
+  DropdownMenuContent: 'gui-dropdown-menu-content',
+  DropdownMenuCheckboxItem: 'gui-dropdown-menu-checkbox-item',
+}))
+
+vi.mock('@/components/ui/input.jsx', () => ({
+  Input: 'gui-input',
 }))
 
 expect.addSnapshotSerializer({
@@ -50,7 +104,32 @@ test('VersionsTabButton renders default', () => {
     selectedItem: SELECTED_ITEM,
     selectedItemDetails: {
       ...SELECTED_ITEM_DETAILS,
-      versions: ['1.0.0', '1.0.1', '1.0.2'],
+      versions: [
+        {
+          version: '1.0.0',
+          publishedDate: '2025-04-15',
+          unpackedSize: 123456,
+          integrity: 'sha512-abc123',
+          tarball: 'https://example.com/tarball.tgz',
+          publishedAuthor: {
+            name: 'John Doe',
+            email: 'johndoe@acme.com',
+            avatar: 'https://example.com/avatar.jpg',
+          },
+        },
+        {
+          version: '1.0.2',
+          publishedDate: '2025-04-15',
+          unpackedSize: 123456,
+          integrity: 'sha512-abc123',
+          tarball: 'https://example.com/tarball.tgz',
+          publishedAuthor: {
+            name: 'John Doe',
+            email: 'johndoe@acme.com',
+            avatar: 'https://example.com/avatar.jpg',
+          },
+        },
+      ],
     } as DetailsInfo,
     insights: undefined,
     activeTab: 'versions',
@@ -66,7 +145,32 @@ test('VersionsTabContent renders with versions', () => {
     selectedItem: SELECTED_ITEM,
     selectedItemDetails: {
       ...SELECTED_ITEM_DETAILS,
-      versions: ['1.0.0', '1.0.1', '1.0.2'],
+      versions: [
+        {
+          version: '1.0.0',
+          publishedDate: '2025-04-15',
+          unpackedSize: 123456,
+          integrity: 'sha512-abc123',
+          tarball: 'https://example.com/tarball.tgz',
+          publishedAuthor: {
+            name: 'John Doe',
+            email: 'johndoe@acme.com',
+            avatar: 'https://example.com/avatar.jpg',
+          },
+        },
+        {
+          version: '2.0.0-beta.1',
+          publishedDate: '2025-04-15',
+          unpackedSize: 123456,
+          integrity: 'sha512-def456',
+          tarball: 'https://example.com/tarball.tgz',
+          publishedAuthor: {
+            name: 'John Doe',
+            email: 'johndoe@acme.com',
+            avatar: 'https://example.com/avatar.jpg',
+          },
+        },
+      ],
     } as DetailsInfo,
     insights: undefined,
     activeTab: 'versions',
@@ -82,8 +186,8 @@ test('VersionsTabContent renders an empty state', () => {
     selectedItem: SELECTED_ITEM,
     selectedItemDetails: {
       ...SELECTED_ITEM_DETAILS,
-      greaterVersions: undefined,
-      versions: undefined,
+      versions: [],
+      greaterVersions: [],
     } as DetailsInfo,
     insights: undefined,
     activeTab: 'versions',
@@ -91,5 +195,255 @@ test('VersionsTabContent renders an empty state', () => {
   })
 
   const { container } = render(<VersionsTabContent />)
+  expect(container.innerHTML).toMatchSnapshot()
+})
+
+test('VersionsTabContent filters versions', () => {
+  vi.mocked(useSelectedItem).mockReturnValue({
+    selectedItem: SELECTED_ITEM,
+    selectedItemDetails: {
+      ...SELECTED_ITEM_DETAILS,
+      versions: [
+        {
+          version: '1.0.0',
+          publishedDate: '2025-04-15',
+          unpackedSize: 123456,
+          integrity: 'sha512-abc123',
+          tarball: 'https://example.com/tarball.tgz',
+          publishedAuthor: {
+            name: 'John Doe',
+            email: 'johndoe@acme.com',
+            avatar: 'https://example.com/avatar.jpg',
+          },
+        },
+        {
+          version: '2.0.0-beta.1',
+          publishedDate: '2025-04-15',
+          unpackedSize: 123456,
+          integrity: 'sha512-def456',
+          tarball: 'https://example.com/tarball.tgz',
+          publishedAuthor: {
+            name: 'John Doe',
+            email: 'johndoe@acme.com',
+            avatar: 'https://example.com/avatar.jpg',
+          },
+        },
+      ],
+    } as DetailsInfo,
+    insights: undefined,
+    activeTab: 'versions',
+    setActiveTab: vi.fn(),
+  })
+
+  const { container } = render(<VersionsTabContent />)
+  const searchInput = container.querySelector(
+    'input[placeholder="Filter versions"]',
+  )
+  if (searchInput) {
+    fireEvent.change(searchInput, { target: { value: '1.0.0' } })
+  }
+  expect(container.innerHTML).toMatchSnapshot()
+})
+
+test('VersionsTabContent toggles pre-releases', () => {
+  vi.mocked(useSelectedItem).mockReturnValue({
+    selectedItem: SELECTED_ITEM,
+    selectedItemDetails: {
+      ...SELECTED_ITEM_DETAILS,
+      versions: [
+        {
+          version: '1.0.0',
+          publishedDate: '2025-04-15',
+          unpackedSize: 123456,
+          integrity: 'sha512-abc123',
+          tarball: 'https://example.com/tarball.tgz',
+          publishedAuthor: {
+            name: 'John Doe',
+            email: 'johndoe@acme.com',
+            avatar: 'https://example.com/avatar.jpg',
+          },
+        },
+        {
+          version: '2.0.0-beta.1',
+          publishedDate: '2025-04-15',
+          unpackedSize: 123456,
+          integrity: 'sha512-def456',
+          tarball: 'https://example.com/tarball.tgz',
+          publishedAuthor: {
+            name: 'John Doe',
+            email: 'johndoe@acme.com',
+            avatar: 'https://example.com/avatar.jpg',
+          },
+        },
+      ],
+    } as DetailsInfo,
+    insights: undefined,
+    activeTab: 'versions',
+    setActiveTab: vi.fn(),
+  })
+
+  const { container } = render(<VersionsTabContent />)
+  const toggleButton = container.querySelector('button')
+  if (toggleButton) {
+    fireEvent.click(toggleButton)
+  }
+  expect(container.innerHTML).toMatchSnapshot()
+})
+
+test('VersionsTabContent filters pre-releases', () => {
+  vi.mocked(useSelectedItem).mockReturnValue({
+    selectedItem: SELECTED_ITEM,
+    selectedItemDetails: {
+      ...SELECTED_ITEM_DETAILS,
+      versions: [
+        {
+          version: '1.0.0',
+          publishedDate: '2025-04-15',
+          unpackedSize: 123456,
+          integrity: 'sha512-abc123',
+          tarball: 'https://example.com/tarball.tgz',
+          publishedAuthor: {
+            name: 'John Doe',
+            email: 'johndoe@acme.com',
+            avatar: 'https://example.com/avatar.jpg',
+          },
+        },
+        {
+          version: '2.0.0-beta.1',
+          publishedDate: '2025-04-15',
+          unpackedSize: 123456,
+          integrity: 'sha512-def456',
+          tarball: 'https://example.com/tarball.tgz',
+          publishedAuthor: {
+            name: 'John Doe',
+            email: 'johndoe@acme.com',
+            avatar: 'https://example.com/avatar.jpg',
+          },
+        },
+      ],
+    } as DetailsInfo,
+    manifest: {
+      version: '1.0.0',
+    },
+    insights: undefined,
+    activeTab: 'versions',
+    setActiveTab: vi.fn(),
+  })
+
+  const { container } = render(<VersionsTabContent />)
+  const filterButton = container.querySelector('button')
+  if (filterButton) {
+    fireEvent.click(filterButton)
+  }
+  const checkbox = container.querySelector('input[type="checkbox"]')
+  if (checkbox) {
+    fireEvent.click(checkbox)
+  }
+  expect(container.innerHTML).toMatchSnapshot()
+})
+
+test('VersionsTabContent filters newer versions', () => {
+  vi.mocked(useSelectedItem).mockReturnValue({
+    selectedItem: SELECTED_ITEM,
+    selectedItemDetails: {
+      ...SELECTED_ITEM_DETAILS,
+      versions: [
+        {
+          version: '1.0.0',
+          publishedDate: '2025-04-15',
+          unpackedSize: 123456,
+          integrity: 'sha512-abc123',
+          tarball: 'https://example.com/tarball.tgz',
+          publishedAuthor: {
+            name: 'John Doe',
+            email: 'johndoe@acme.com',
+            avatar: 'https://example.com/avatar.jpg',
+          },
+        },
+        {
+          version: '2.0.0',
+          publishedDate: '2025-04-15',
+          unpackedSize: 123456,
+          integrity: 'sha512-def456',
+          tarball: 'https://example.com/tarball.tgz',
+          publishedAuthor: {
+            name: 'John Doe',
+            email: 'johndoe@acme.com',
+            avatar: 'https://example.com/avatar.jpg',
+          },
+        },
+      ],
+    } as DetailsInfo,
+    manifest: {
+      version: '1.0.0',
+    },
+    insights: undefined,
+    activeTab: 'versions',
+    setActiveTab: vi.fn(),
+  })
+
+  const { container } = render(<VersionsTabContent />)
+  const filterButton = container.querySelector('button')
+  if (filterButton) {
+    fireEvent.click(filterButton)
+  }
+  const checkboxes = container.querySelectorAll(
+    'input[type="checkbox"]',
+  )
+  if (checkboxes[1]) {
+    fireEvent.click(checkboxes[1])
+  }
+  expect(container.innerHTML).toMatchSnapshot()
+})
+
+test('VersionsTabContent handles missing manifest version', () => {
+  vi.mocked(useSelectedItem).mockReturnValue({
+    selectedItem: SELECTED_ITEM,
+    selectedItemDetails: {
+      ...SELECTED_ITEM_DETAILS,
+      versions: [
+        {
+          version: '1.0.0',
+          publishedDate: '2025-04-15',
+          unpackedSize: 123456,
+          integrity: 'sha512-abc123',
+          tarball: 'https://example.com/tarball.tgz',
+          publishedAuthor: {
+            name: 'John Doe',
+            email: 'johndoe@acme.com',
+            avatar: 'https://example.com/avatar.jpg',
+          },
+        },
+        {
+          version: '2.0.0',
+          publishedDate: '2025-04-15',
+          unpackedSize: 123456,
+          integrity: 'sha512-def456',
+          tarball: 'https://example.com/tarball.tgz',
+          publishedAuthor: {
+            name: 'John Doe',
+            email: 'johndoe@acme.com',
+            avatar: 'https://example.com/avatar.jpg',
+          },
+        },
+      ],
+    } as DetailsInfo,
+    manifest: {},
+    insights: undefined,
+    activeTab: 'versions',
+    setActiveTab: vi.fn(),
+  })
+
+  const { container } = render(<VersionsTabContent />)
+  const filterButton = container.querySelector('button')
+  if (filterButton) {
+    fireEvent.click(filterButton)
+  }
+  const checkboxes = container.querySelectorAll(
+    'input[type="checkbox"]',
+  )
+  if (checkboxes[1]) {
+    fireEvent.click(checkboxes[1])
+  }
   expect(container.innerHTML).toMatchSnapshot()
 })

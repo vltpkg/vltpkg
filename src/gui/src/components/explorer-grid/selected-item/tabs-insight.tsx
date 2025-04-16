@@ -12,15 +12,27 @@ import { ArrowUpDown, BadgeCheck, BadgeInfo } from 'lucide-react'
 import { ProgressCircle } from '@/components/ui/progress-circle.jsx'
 import { getScoreColor } from '@/components/explorer-grid/selected-item/insight-score-helper.js'
 import { Link as AnchorLink } from '@/components/ui/link.jsx'
+import { InlineCode } from '@/components/ui/inline-code.jsx'
 import { cn } from '@/lib/utils.js'
 
 export const InsightTabButton = () => {
+  const { insights } = useSelectedItem()
+
   return (
     <TabsTrigger
       variant="ghost"
       value="insights"
       className="w-fit px-2">
       Insights
+      {insights && insights.length !== 0 && (
+        <InlineCode
+          variant="mono"
+          className={cn(
+            'ml-1 inline-flex h-[1.25rem] min-w-[1.25rem] items-center justify-center text-center',
+          )}>
+          {insights.length}
+        </InlineCode>
+      )}
     </TabsTrigger>
   )
 }
@@ -178,9 +190,6 @@ export const InsightTabContent = () => {
   const [filteredInsights, setFilteredInsights] = useState<
     SocketSecurityDetails[] | undefined
   >(insights)
-
-  // for packages that have no insights, but do have a score, we need to display the score and let the user no there are no insights with a checkmark thing
-  // socket link should link to the package page
 
   return (
     <TabsContent value="insights">

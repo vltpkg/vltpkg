@@ -106,7 +106,32 @@ export const SELECTED_ITEM_DETAILS: DetailsInfo = {
       { downloads: 300, day: '2024-01-03' },
     ],
   },
-  greaterVersions: ['1.2.4', '1.2.5'],
+  greaterVersions: [
+    {
+      version: '1.0.0',
+      publishedDate: '2025-04-15',
+      unpackedSize: 123456,
+      integrity: 'sha512-abc123',
+      tarball: 'https://example.com/tarball.tgz',
+      publishedAuthor: {
+        name: 'John Doe',
+        email: 'johndoe@acme.com',
+        avatar: 'https://example.com/avatar.jpg',
+      },
+    },
+    {
+      version: '1.0.2',
+      publishedDate: '2025-04-15',
+      unpackedSize: 123456,
+      integrity: 'sha512-abc123',
+      tarball: 'https://example.com/tarball.tgz',
+      publishedAuthor: {
+        name: 'John Doe',
+        email: 'johndoe@acme.com',
+        avatar: 'https://example.com/avatar.jpg',
+      },
+    },
+  ],
   publisher: {
     name: 'John Doe',
     email: 'john@example.com',

@@ -64,6 +64,10 @@ vi.mock('@/components/ui/link.jsx', () => ({
   Link: 'gui-link',
 }))
 
+vi.mock('@/components/ui/inline-code.jsx', () => ({
+  InlineCode: 'gui-inline-code',
+}))
+
 expect.addSnapshotSerializer({
   serialize: v => html(v),
   test: () => true,
