@@ -1,7 +1,7 @@
 {
   "name": "@vltpkg/cli-linux-x64",
   "description": "The vlt CLI (linux-x64)",
-  "version": "0.0.0-8",
+  "version": "0.0.0-9",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/vltpkg/vltpkg.git",
