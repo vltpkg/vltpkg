@@ -10,10 +10,11 @@ import {
   opendir,
   readFile,
   rename,
+  stat,
   writeFile,
 } from 'node:fs/promises'
 import { LRUCache } from 'lru-cache'
-import { resolve, basename, dirname } from 'node:path'
+import { resolve, dirname } from 'node:path'
 import { rimraf } from 'rimraf'
 
 export type CacheFetchContext =
@@ -54,6 +55,14 @@ export type BooleanOrVoid = boolean | void
 const hash = (s: string) =>
   createHash('sha512').update(s).digest('hex')
 
+const FAILURE = null
+
+const success = <T>(p: Promise<T>): Promise<T | typeof FAILURE> =>
+  p.then(
+    result => result,
+    () => FAILURE,
+  )
+
 export class Cache extends LRUCache<
   string,
   Buffer,
@@ -61,20 +70,11 @@ export class Cache extends LRUCache<
 > {
   #path: string;
   [Symbol.toStringTag] = '@vltpkg/cache.Cache'
-  #random: string = randomBytes(6).toString('hex')
+  #random = randomBytes(6).toString('hex')
   #i = 0
   #pending = new Set<Promise<BooleanOrVoid>>()
   onDiskWrite?: CacheOptions['onDiskWrite']
   onDiskDelete?: CacheOptions['onDiskDelete']
-
-  /**
-   * ensure we get a different random key for every write,
-   * just in case the same file tries to write multiple times,
-   * it'll still be atomic.
-   */
-  get random(): string {
-    return this.#random + '.' + String(this.#i++)
-  }
 
   /**
    * A list of the actions currently happening in the background
@@ -180,6 +180,7 @@ export class Cache extends LRUCache<
     }
     dir.closeSync()
   }
+
   [Symbol.iterator](): Generator<[string, Buffer], void> {
     return this.walkSync()
   }
@@ -347,36 +348,98 @@ export class Cache extends LRUCache<
       return this.integrityPath(i)
     } catch {}
   }
+
+  async #writeFileAtomic(file: string, data: Buffer | string) {
+    // ensure we get a different random key for every write,
+    // just in case the same file tries to write multiple times,
+    // it'll still be atomic.
+    const tmp = `${file}.${this.#random}.${this.#i++}`
+    await writeFile(tmp, data)
+    await rename(tmp, file)
+  }
+
+  async #linkAtomic(src: string, dest: string) {
+    const tmp = `${dest}.${this.#random}.${this.#i++}`
+    await link(src, tmp)
+    await rename(tmp, dest)
+  }
+
   async #diskWrite(
-    path: string,
+    valFile: string,
     key: string,
     val: Buffer,
     integrity?: Integrity,
-  ) {
-    const dir = dirname(path)
-    await mkdir(dir, { recursive: true })
+  ): Promise<void> {
+    const dir = dirname(valFile)
     const intFile = this.#maybeIntegrityPath(integrity)
-    const base = basename(path)
-    const keyFile = base + '.key'
-    const tmp = dir + '/.' + base + '.' + this.random
-    const keyTmp = dir + '/.' + keyFile + '.' + this.random
-    const writeData =
-      intFile ?
-        // try to just link into the temp location, rather than write
-        // may fail with ENOENT or EEXIST, in which case, write normally
-        link(intFile, tmp).catch(() => writeFile(tmp, val))
-        // don't have it by integrity, write the new entry
-      : writeFile(tmp, val)
-    return Promise.all([
-      writeData.then(() => rename(tmp, path)),
-      writeFile(keyTmp, key).then(() =>
-        rename(keyTmp, path + '.key'),
-      ),
-    ]).then(() => {
-      if (intFile) {
-        return link(path, intFile)
-      }
-    })
+
+    // Create the directory if it doesn't exist and save the promise
+    // to ensure any write file operations happen after the dir is created.
+    const mkdirP = mkdir(dir, { recursive: true })
+
+    // Helper to atomically write a file to the cache directory, waiting for the dir
+    // to be created first.
+    const writeCacheFile = (file: string, data: Buffer | string) =>
+      mkdirP.then(() => this.#writeFileAtomic(file, data))
+
+    // Always write the key file as early as possible
+    const writeKeyP = writeCacheFile(`${valFile}.key`, key)
+
+    // Helper to wait for the operations we always want to run (write the key file)
+    // combined with any other operations passed in.
+    const finish = async (ops: Promise<void>[]) => {
+      await Promise.all([writeKeyP, ...ops])
+    }
+
+    if (!intFile) {
+      // No integrity provided, just write the value and key files
+      return finish([writeCacheFile(valFile, val)])
+    }
+
+    // Now we know that we have been passed an integrity value
+    // that we should attempt to use...somehow.
+
+    const intStats = await success(stat(intFile))
+    if (!intStats) {
+      // Integrity file doesn't exist yet
+      // Write the value file and then link that to a new integrity file
+      return finish([
+        writeCacheFile(valFile, val).then(() =>
+          link(valFile, intFile),
+        ),
+      ])
+    }
+
+    const valStats = await success(stat(valFile))
+    if (!valStats) {
+      // Value file doesn't exist but integrity does, we know they are the same
+      // because we trust the integrity file, so attempt to link and be done.
+      return finish([link(intFile, valFile)])
+    }
+
+    // We now know that both the value and integrity files exist.
+
+    if (
+      intStats.ino === valStats.ino &&
+      intStats.dev === valStats.dev
+    ) {
+      // Integrity and val file are already linked. If the are the same value
+      // then we can be done, otherwise we are probably unzipping and we should
+      // write the new integrity value and then link the value file to it.
+      return finish(
+        val.length === valStats.size ?
+          []
+        : [
+            writeCacheFile(intFile, val).then(() =>
+              this.#linkAtomic(intFile, valFile),
+            ),
+          ],
+      )
+    }
+
+    // By this point we know that the files are not linked, so
+    // we atomic link them because they should be the same entry.
+    return finish([this.#linkAtomic(intFile, valFile)])
   }
 
   async #diskRead(
