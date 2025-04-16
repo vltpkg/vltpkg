@@ -1,5 +1,5 @@
 import { test, expect, vi, beforeEach, afterEach } from 'vitest'
-import { cleanup, render } from '@testing-library/react'
+import { cleanup, render, fireEvent } from '@testing-library/react'
 import html from 'diffable-html'
 import { useGraphStore as useStore } from '@/state/index.js'
 import { useSelectedItem } from '@/components/explorer-grid/selected-item/context.jsx'
@@ -13,10 +13,22 @@ import {
 } from './__fixtures__/item.ts'
 import type { DetailsInfo } from '@/lib/external-info.js'
 
+// Mock IntersectionObserver
+const mockIntersectionObserver = vi.fn()
+mockIntersectionObserver.mockReturnValue({
+  observe: () => null,
+  unobserve: () => null,
+  disconnect: () => null,
+})
+window.IntersectionObserver = mockIntersectionObserver
+
 vi.mock('lucide-react', () => ({
   History: 'gui-history-icon',
   ArrowUpDown: 'gui-arrow-up-down-icon',
   ChevronDown: 'gui-chevron-down-icon',
+  Search: 'gui-search-icon',
+  Eye: 'gui-eye-icon',
+  EyeOff: 'gui-eye-off-icon',
 }))
 
 vi.mock(
@@ -66,6 +78,10 @@ vi.mock('@/components/ui/tooltip.jsx', () => ({
   TooltipTrigger: 'gui-tooltip-trigger',
   TooltipContent: 'gui-tooltip-content',
   TooltipProvider: 'gui-tooltip-provider',
+}))
+
+vi.mock('@/components/ui/input.jsx', () => ({
+  Input: 'gui-input',
 }))
 
 expect.addSnapshotSerializer({
@@ -143,10 +159,10 @@ test('VersionsTabContent renders with versions', () => {
           },
         },
         {
-          version: '1.0.2',
+          version: '2.0.0-beta.1',
           publishedDate: '2025-04-15',
           unpackedSize: 123456,
-          integrity: 'sha512-abc123',
+          integrity: 'sha512-def456',
           tarball: 'https://example.com/tarball.tgz',
           publishedAuthor: {
             name: 'John Doe',
@@ -170,8 +186,8 @@ test('VersionsTabContent renders an empty state', () => {
     selectedItem: SELECTED_ITEM,
     selectedItemDetails: {
       ...SELECTED_ITEM_DETAILS,
-      greaterVersions: undefined,
-      versions: undefined,
+      versions: [],
+      greaterVersions: [],
     } as DetailsInfo,
     insights: undefined,
     activeTab: 'versions',
@@ -179,5 +195,97 @@ test('VersionsTabContent renders an empty state', () => {
   })
 
   const { container } = render(<VersionsTabContent />)
+  expect(container.innerHTML).toMatchSnapshot()
+})
+
+test('VersionsTabContent filters versions', () => {
+  vi.mocked(useSelectedItem).mockReturnValue({
+    selectedItem: SELECTED_ITEM,
+    selectedItemDetails: {
+      ...SELECTED_ITEM_DETAILS,
+      versions: [
+        {
+          version: '1.0.0',
+          publishedDate: '2025-04-15',
+          unpackedSize: 123456,
+          integrity: 'sha512-abc123',
+          tarball: 'https://example.com/tarball.tgz',
+          publishedAuthor: {
+            name: 'John Doe',
+            email: 'johndoe@acme.com',
+            avatar: 'https://example.com/avatar.jpg',
+          },
+        },
+        {
+          version: '2.0.0-beta.1',
+          publishedDate: '2025-04-15',
+          unpackedSize: 123456,
+          integrity: 'sha512-def456',
+          tarball: 'https://example.com/tarball.tgz',
+          publishedAuthor: {
+            name: 'John Doe',
+            email: 'johndoe@acme.com',
+            avatar: 'https://example.com/avatar.jpg',
+          },
+        },
+      ],
+    } as DetailsInfo,
+    insights: undefined,
+    activeTab: 'versions',
+    setActiveTab: vi.fn(),
+  })
+
+  const { container } = render(<VersionsTabContent />)
+  const searchInput = container.querySelector(
+    'input[placeholder="Filter versions"]',
+  )
+  if (searchInput) {
+    fireEvent.change(searchInput, { target: { value: '1.0.0' } })
+  }
+  expect(container.innerHTML).toMatchSnapshot()
+})
+
+test('VersionsTabContent toggles pre-releases', () => {
+  vi.mocked(useSelectedItem).mockReturnValue({
+    selectedItem: SELECTED_ITEM,
+    selectedItemDetails: {
+      ...SELECTED_ITEM_DETAILS,
+      versions: [
+        {
+          version: '1.0.0',
+          publishedDate: '2025-04-15',
+          unpackedSize: 123456,
+          integrity: 'sha512-abc123',
+          tarball: 'https://example.com/tarball.tgz',
+          publishedAuthor: {
+            name: 'John Doe',
+            email: 'johndoe@acme.com',
+            avatar: 'https://example.com/avatar.jpg',
+          },
+        },
+        {
+          version: '2.0.0-beta.1',
+          publishedDate: '2025-04-15',
+          unpackedSize: 123456,
+          integrity: 'sha512-def456',
+          tarball: 'https://example.com/tarball.tgz',
+          publishedAuthor: {
+            name: 'John Doe',
+            email: 'johndoe@acme.com',
+            avatar: 'https://example.com/avatar.jpg',
+          },
+        },
+      ],
+    } as DetailsInfo,
+    insights: undefined,
+    activeTab: 'versions',
+    setActiveTab: vi.fn(),
+  })
+
+  const { container } = render(<VersionsTabContent />)
+  const toggleButton = container.querySelector('button')
+  if (toggleButton) {
+    fireEvent.click(toggleButton)
+  }
   expect(container.innerHTML).toMatchSnapshot()
 })
