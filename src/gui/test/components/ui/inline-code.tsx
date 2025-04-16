@@ -32,7 +32,10 @@ test('inline-code default', () => {
 test('inline-code renders with tooltip', () => {
   const Container = () => {
     return (
-      <InlineCode tooltip="Tooltip text" tooltipDuration={1000}>
+      <InlineCode
+        displayTooltip
+        tooltip="Tooltip text"
+        tooltipDuration={1000}>
         node_modules
       </InlineCode>
     )
