@@ -89,6 +89,7 @@ export default {
       fontFamily: {
         sans: ['inter', 'sans-serif'],
         mono: ['geistMono', 'serif'],
+        zed: ['zed', 'monospace'],
         courier: ['courier', 'monospace'],
       },
       keyframes: {

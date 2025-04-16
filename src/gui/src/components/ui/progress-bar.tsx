@@ -82,12 +82,12 @@ const ProgressBar = React.forwardRef<
         {...props}>
         <div
           className={cn(
-            'relative flex h-[0.4rem] w-full items-center rounded-[0.1rem]',
+            'relative flex h-[0.4rem] w-full items-center',
             background(),
           )}>
           <div
             className={cn(
-              'h-full flex-col rounded-[0.1rem]',
+              'h-full flex-col',
               bar(),
               showAnimation &&
                 'transform-gpu transition-all duration-300 ease-in-out',

@@ -15,15 +15,15 @@ export const TabsManifestButton = () => {
 }
 
 export const TabsManifestContent = () => {
-  const { selectedItem } = useSelectedItem()
+  const { manifest } = useSelectedItem()
 
   return (
     <TabsContent
       value="package.json"
       className="h-full rounded-b-lg bg-white dark:bg-black">
-      {selectedItem.to && selectedItem.to.manifest ?
+      {manifest ?
         <CodeBlock
-          code={JSON.stringify(selectedItem.to.manifest, null, 2)}
+          code={JSON.stringify(manifest, null, 2)}
           lang="json"
         />
       : <div className="flex h-64 items-center justify-center px-6 py-4">

@@ -160,7 +160,7 @@ const ExplorerContent = () => {
           <RootButton />
           <QueryBar
             tabIndex={0}
-            className="relative w-full bg-white dark:bg-muted-foreground/5"
+            className="relative w-full"
             startContent={
               <Search size={20} className="ml-3 text-neutral-500" />
             }

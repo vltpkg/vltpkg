@@ -33,7 +33,18 @@ vi.mock('react-markdown', () => ({
 
 vi.mock('lucide-react', () => ({
   FileText: 'gui-file-text-icon',
+  Globe: 'gui-globe-icon',
+  HeartHandshake: 'gui-heart-handshake-icon',
+  Bug: 'gui-bug-icon',
   RectangleHorizontal: 'gui-rectangle-horizontal-icon',
+}))
+
+vi.mock('@/components/ui/inline-code.jsx', () => ({
+  InlineCode: 'gui-inline-code',
+}))
+
+vi.mock('@/components/ui/link.jsx', () => ({
+  Link: 'gui-link',
 }))
 
 expect.addSnapshotSerializer({

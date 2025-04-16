@@ -17,7 +17,7 @@ exports[`explorer has project root info 1`] = `
         </gui-root-button>
         <gui-query-bar
           tabindex="0"
-          classname="relative w-full bg-white dark:bg-muted-foreground/5"
+          classname="relative w-full"
           startcontent="[object Object]"
           endcontent="[object Object]"
         >

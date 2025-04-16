@@ -1,7 +1,12 @@
 import { vi, test, expect, afterEach } from 'vitest'
 import { cleanup, render } from '@testing-library/react'
 import html from 'diffable-html'
-import { InlineCode } from '@/components/ui/inline-code.jsx'
+import { CopyToClipboard } from '@/components/ui/copy-to-clipboard.jsx'
+
+vi.mock('lucide-react', () => ({
+  Copy: 'gui-copy-icon',
+  Check: 'gui-check-icon',
+}))
 
 vi.mock('@/components/ui/tooltip.jsx', () => ({
   TooltipProvider: 'gui-tooltip-provider',
@@ -19,27 +24,11 @@ afterEach(() => {
   cleanup()
 })
 
-test('inline-code default', () => {
+test('copy-to-clipboard default', () => {
   const Container = () => {
-    return <InlineCode>node_modules</InlineCode>
+    return <CopyToClipboard value={'copy'}>copy</CopyToClipboard>
   }
 
-  const { container } = render(<Container />)
-
-  expect(container.innerHTML).toMatchSnapshot()
-})
-
-test('inline-code renders with tooltip', () => {
-  const Container = () => {
-    return (
-      <InlineCode
-        displayTooltip
-        tooltip="Tooltip text"
-        tooltipDuration={1000}>
-        node_modules
-      </InlineCode>
-    )
-  }
   const { container } = render(<Container />)
 
   expect(container.innerHTML).toMatchSnapshot()

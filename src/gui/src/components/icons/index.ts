@@ -1,3 +1,6 @@
+// generic glyph icons
+export * from './glyph-icon.jsx'
+
 // vlt icons
 export * from './vlt-v.jsx'
 export * from './query.jsx'

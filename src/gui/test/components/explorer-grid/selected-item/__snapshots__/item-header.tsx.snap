@@ -3,92 +3,73 @@
 exports[`ItemHeader renders with a package score 1`] = `
 
 <div
-  class="flex flex-col pb-5 pt-6"
+  class="flex flex-col pb-3"
   style="opacity: 0;"
 >
-  <div class="flex w-full justify-between px-6">
-    <div class="flex gap-4">
-      <gui-avatar classname="size-[3.75rem]">
+  <div class="grid w-full grid-cols-12">
+    <div class="flex gap-4 col-span-9 pb-3 pl-6 pt-6 border-r-[1px] border-muted">
+      <gui-avatar classname="aspect-square size-[3.75rem]">
         <gui-avatar-image
-          classname="rounded-md border-[1px] bg-secondary object-cover"
+          classname="aspect-square size-[3.75rem] rounded-md border-[1px] bg-secondary object-cover"
           src="https://example.com/favicon.png"
           alt="Example Favicon"
         >
         </gui-avatar-image>
-        <gui-avatar-fallback classname="flex h-full w-full items-center justify-center rounded-md border-[1px]">
+        <gui-avatar-fallback classname="flex aspect-square size-[3.75rem] h-full w-full items-center justify-center rounded-md border-[1px]">
           <div class="to:to-neutral-400 h-full w-full rounded-md bg-gradient-to-t from-neutral-100 dark:from-neutral-500 dark:to-neutral-800">
           </div>
         </gui-avatar-fallback>
       </gui-avatar>
-      <div class="flex h-full max-w-[250px] flex-col justify-between">
+      <div class="flex h-full w-full flex-col justify-between">
         <div class="flex flex-col gap-0.5">
           <div class="flex items-center gap-2">
+            <h1 class="cursor-default truncate align-baseline text-lg font-medium">
+              item
+              <gui-inline-code
+                variant="monoGhost"
+                classname="cursor-default text-sm"
+              >
+                1.0.0
+              </gui-inline-code>
+            </h1>
             <gui-tooltip-provider>
-              <gui-tooltip>
-                <gui-tooltip-trigger classname="cursor-default truncate align-baseline text-lg font-medium">
-                  item
-                  <gui-inline-code
-                    variant="monoGhost"
-                    classname="text-sm"
-                  >
-                    1.0.0
-                  </gui-inline-code>
-                </gui-tooltip-trigger>
-                <gui-tooltip-content classname="text-baseline text-sm font-medium">
-                  item
-                  <span class="font-normal text-muted-foreground">
-                    1.0.0
-                  </span>
-                </gui-tooltip-content>
-              </gui-tooltip>
-            </gui-tooltip-provider>
-            <gui-tooltip-provider>
-              <gui-tooltip>
+              <gui-tooltip delayduration="150">
                 <gui-tooltip-trigger classname="flex items-center justify-center">
-                  <gui-badge
-                    variant="outline"
-                    classname="cursor-default bg-secondary p-0.5 outline-[1px] outline-border"
-                  >
-                    <gui-info-icon
-                      classname="text-muted-foreground"
+                  <div class="cursor-default rounded-sm border-[1px] border-green-600 bg-green-400/30 p-0.5 transition-colors duration-150 hover:bg-green-400/40 dark:border-green-500 dark:bg-green-500/30 dark:hover:bg-green-500/40">
+                    <gui-arrow-big-up-dash-icon
+                      classname="text-green-600 dark:text-green-500"
                       size="16"
                     >
-                    </gui-info-icon>
-                  </gui-badge>
+                    </gui-arrow-big-up-dash-icon>
+                  </div>
                 </gui-tooltip-trigger>
                 <gui-tooltip-content>
                   Newer versions available
                 </gui-tooltip-content>
               </gui-tooltip>
             </gui-tooltip-provider>
+            <div class="flex gap-1.5 overflow-y-scroll">
+            </div>
           </div>
         </div>
       </div>
     </div>
     <div
-      class="flex w-fit flex-col"
+      class="flex w-full flex-col items-center justify-end col-span-3"
       style="opacity: 0;"
     >
-      <div class="flex w-fit flex-col items-end self-end text-right">
-        <gui-spark-area-chart
-          data
-          categories="downloads"
-          index="day"
-          colors="emerald"
-          classname="w-full"
-        >
-        </gui-spark-area-chart>
-        <p class="text-baseline w-full self-end whitespace-nowrap text-sm font-medium text-foreground">
-          123,456
-          <span class="text-muted-foreground">
-            Weekly Downloads
-          </span>
-        </p>
-      </div>
+      <gui-spark-bar-chart
+        data
+        categories="downloads"
+        index="day"
+        colors="emerald"
+        classname="w-full"
+      >
+      </gui-spark-bar-chart>
     </div>
   </div>
-  <div class="flex w-full justify-between px-6 mt-3 border-t-[1px] border-muted py-3">
-    <div class="flex h-[31.508px] items-center gap-2">
+  <div class="grid w-full grid-cols-12 border-t-[1px] border-muted">
+    <div class="flex h-[31.508px] items-center gap-2 col-span-9 border-muted py-5 pl-6 border-r-[1px]">
       <gui-avatar>
         <gui-avatar-image
           classname="size-5 rounded-sm outline outline-[1px] outline-border"
@@ -113,9 +94,19 @@ exports[`ItemHeader renders with a package score 1`] = `
         </gui-tooltip>
       </gui-tooltip-provider>
     </div>
+    <div class="col-span-3 flex h-full cursor-default items-center justify-center text-center">
+      <p class="w-full text-sm font-medium text-foreground">
+        123,456
+        <span class="text-muted-foreground">
+          Downloads
+        </span>
+      </p>
+    </div>
+  </div>
+  <div class="w-full grid-cols-12 hidden">
     <div
       role="button"
-      class="flex w-[11.375rem] cursor-pointer flex-col justify-end gap-1"
+      class="relative flex w-full cursor-default flex-col items-center justify-center gap-1 col-span-3"
     >
       <p class="text-sm">
         <span class="font-medium">
@@ -126,11 +117,10 @@ exports[`ItemHeader renders with a package score 1`] = `
       <gui-progress-bar
         variant="success"
         value="80"
+        classname="absolute bottom-0"
       >
       </gui-progress-bar>
     </div>
-  </div>
-  <div class="px-6 pt-3 hidden">
   </div>
 </div>
 
@@ -139,107 +129,82 @@ exports[`ItemHeader renders with a package score 1`] = `
 exports[`ItemHeader renders with custom registry item 1`] = `
 
 <div
-  class="flex flex-col pb-5 pt-6"
+  class="flex flex-col pb-3"
   style="opacity: 0;"
 >
-  <div class="flex w-full justify-between px-6">
-    <div class="flex gap-4">
-      <gui-avatar classname="size-[3.75rem]">
+  <div class="grid w-full grid-cols-12">
+    <div class="flex gap-4 col-span-9 pb-3 pl-6 pt-6 border-r-[1px] border-muted">
+      <gui-avatar classname="aspect-square size-[3.75rem]">
         <gui-avatar-image
-          classname="rounded-md border-[1px] bg-secondary object-cover"
+          classname="aspect-square size-[3.75rem] rounded-md border-[1px] bg-secondary object-cover"
           src="https://example.com/favicon.png"
           alt="Example Favicon"
         >
         </gui-avatar-image>
-        <gui-avatar-fallback classname="flex h-full w-full items-center justify-center rounded-md border-[1px]">
+        <gui-avatar-fallback classname="flex aspect-square size-[3.75rem] h-full w-full items-center justify-center rounded-md border-[1px]">
           <div class="to:to-neutral-400 h-full w-full rounded-md bg-gradient-to-t from-neutral-100 dark:from-neutral-500 dark:to-neutral-800">
           </div>
         </gui-avatar-fallback>
       </gui-avatar>
-      <div class="flex h-full max-w-[250px] flex-col justify-between">
+      <div class="flex h-full w-full flex-col justify-between">
         <div class="flex flex-col gap-0.5">
           <div class="flex items-center gap-2">
+            <h1 class="cursor-default truncate align-baseline text-lg font-medium">
+              item
+              <gui-inline-code
+                variant="monoGhost"
+                classname="cursor-default text-sm"
+              >
+                1.0.0
+              </gui-inline-code>
+            </h1>
             <gui-tooltip-provider>
-              <gui-tooltip>
-                <gui-tooltip-trigger classname="cursor-default truncate align-baseline text-lg font-medium">
-                  item
-                  <gui-inline-code
-                    variant="monoGhost"
-                    classname="text-sm"
-                  >
-                    1.0.0
-                  </gui-inline-code>
-                </gui-tooltip-trigger>
-                <gui-tooltip-content classname="text-baseline text-sm font-medium">
-                  item
-                  <span class="font-normal text-muted-foreground">
-                    1.0.0
-                  </span>
-                </gui-tooltip-content>
-              </gui-tooltip>
-            </gui-tooltip-provider>
-            <gui-tooltip-provider>
-              <gui-tooltip>
+              <gui-tooltip delayduration="150">
                 <gui-tooltip-trigger classname="flex items-center justify-center">
-                  <gui-badge
-                    variant="outline"
-                    classname="cursor-default bg-secondary p-0.5 outline-[1px] outline-border"
-                  >
-                    <gui-info-icon
-                      classname="text-muted-foreground"
+                  <div class="cursor-default rounded-sm border-[1px] border-green-600 bg-green-400/30 p-0.5 transition-colors duration-150 hover:bg-green-400/40 dark:border-green-500 dark:bg-green-500/30 dark:hover:bg-green-500/40">
+                    <gui-arrow-big-up-dash-icon
+                      classname="text-green-600 dark:text-green-500"
                       size="16"
                     >
-                    </gui-info-icon>
-                  </gui-badge>
+                    </gui-arrow-big-up-dash-icon>
+                  </div>
                 </gui-tooltip-trigger>
                 <gui-tooltip-content>
                   Newer versions available
                 </gui-tooltip-content>
               </gui-tooltip>
             </gui-tooltip-provider>
+            <div class="flex gap-1.5 overflow-y-scroll">
+            </div>
           </div>
-          <gui-tooltip-provider>
-            <gui-tooltip>
-              <gui-tooltip-trigger classname="flex h-full w-full cursor-default items-center justify-start overflow-hidden">
-                <gui-inline-code
-                  variant="mono"
-                  classname="mx-0 truncate"
-                >
-                  custom:item@1.0.0
-                </gui-inline-code>
-              </gui-tooltip-trigger>
-              <gui-tooltip-content>
-                https://example.com
-              </gui-tooltip-content>
-            </gui-tooltip>
-          </gui-tooltip-provider>
+          <gui-inline-code
+            displaytooltip="true"
+            tooltipduration="150"
+            tooltip="https://example.com"
+            variant="mono"
+            classname="mx-0 w-fit max-w-40 cursor-default truncate"
+          >
+            custom:item@1.0.0
+          </gui-inline-code>
         </div>
       </div>
     </div>
     <div
-      class="flex w-fit flex-col"
+      class="flex w-full flex-col items-center justify-end col-span-3"
       style="opacity: 0;"
     >
-      <div class="flex w-fit flex-col items-end self-end text-right">
-        <gui-spark-area-chart
-          data
-          categories="downloads"
-          index="day"
-          colors="emerald"
-          classname="w-full"
-        >
-        </gui-spark-area-chart>
-        <p class="text-baseline w-full self-end whitespace-nowrap text-sm font-medium text-foreground">
-          123,456
-          <span class="text-muted-foreground">
-            Weekly Downloads
-          </span>
-        </p>
-      </div>
+      <gui-spark-bar-chart
+        data
+        categories="downloads"
+        index="day"
+        colors="emerald"
+        classname="w-full"
+      >
+      </gui-spark-bar-chart>
     </div>
   </div>
-  <div class="flex w-full justify-between px-6 mt-3 border-t-[1px] border-muted py-3">
-    <div class="flex h-[31.508px] items-center gap-2">
+  <div class="grid w-full grid-cols-12 border-t-[1px] border-muted">
+    <div class="flex h-[31.508px] items-center gap-2 col-span-9 border-muted py-5 pl-6 border-r-[1px]">
       <gui-avatar>
         <gui-avatar-image
           classname="size-5 rounded-sm outline outline-[1px] outline-border"
@@ -264,8 +229,16 @@ exports[`ItemHeader renders with custom registry item 1`] = `
         </gui-tooltip>
       </gui-tooltip-provider>
     </div>
+    <div class="col-span-3 flex h-full cursor-default items-center justify-center text-center">
+      <p class="w-full text-sm font-medium text-foreground">
+        123,456
+        <span class="text-muted-foreground">
+          Downloads
+        </span>
+      </p>
+    </div>
   </div>
-  <div class="px-6 pt-3 hidden">
+  <div class="w-full grid-cols-12 hidden">
   </div>
 </div>
 
@@ -274,95 +247,76 @@ exports[`ItemHeader renders with custom registry item 1`] = `
 exports[`ItemHeader renders with default git host item 1`] = `
 
 <div
-  class="flex flex-col pb-5 pt-6"
+  class="flex flex-col pb-3"
   style="opacity: 0;"
 >
-  <div class="flex w-full justify-between px-6">
-    <div class="flex gap-4">
-      <gui-avatar classname="size-[3.75rem]">
+  <div class="grid w-full grid-cols-12">
+    <div class="flex gap-4 col-span-9 pb-3 pl-6 pt-6 border-r-[1px] border-muted">
+      <gui-avatar classname="aspect-square size-[3.75rem]">
         <gui-avatar-image
-          classname="rounded-md border-[1px] bg-secondary object-cover"
+          classname="aspect-square size-[3.75rem] rounded-md border-[1px] bg-secondary object-cover"
           src="https://example.com/favicon.png"
           alt="Example Favicon"
         >
         </gui-avatar-image>
-        <gui-avatar-fallback classname="flex h-full w-full items-center justify-center rounded-md border-[1px]">
+        <gui-avatar-fallback classname="flex aspect-square size-[3.75rem] h-full w-full items-center justify-center rounded-md border-[1px]">
           <div class="to:to-neutral-400 h-full w-full rounded-md bg-gradient-to-t from-neutral-100 dark:from-neutral-500 dark:to-neutral-800">
           </div>
         </gui-avatar-fallback>
       </gui-avatar>
-      <div class="flex h-full max-w-[250px] flex-col justify-between">
+      <div class="flex h-full w-full flex-col justify-between">
         <div class="flex flex-col gap-0.5">
           <div class="flex items-center gap-2">
+            <h1 class="cursor-default truncate align-baseline text-lg font-medium">
+              item
+              <gui-inline-code
+                variant="monoGhost"
+                classname="cursor-default text-sm"
+              >
+                1.0.0
+              </gui-inline-code>
+            </h1>
             <gui-tooltip-provider>
-              <gui-tooltip>
-                <gui-tooltip-trigger classname="cursor-default truncate align-baseline text-lg font-medium">
-                  item
-                  <gui-inline-code
-                    variant="monoGhost"
-                    classname="text-sm"
-                  >
-                    1.0.0
-                  </gui-inline-code>
-                </gui-tooltip-trigger>
-                <gui-tooltip-content classname="text-baseline text-sm font-medium">
-                  item
-                  <span class="font-normal text-muted-foreground">
-                    1.0.0
-                  </span>
-                </gui-tooltip-content>
-              </gui-tooltip>
-            </gui-tooltip-provider>
-            <gui-tooltip-provider>
-              <gui-tooltip>
+              <gui-tooltip delayduration="150">
                 <gui-tooltip-trigger classname="flex items-center justify-center">
-                  <gui-badge
-                    variant="outline"
-                    classname="cursor-default bg-secondary p-0.5 outline-[1px] outline-border"
-                  >
-                    <gui-info-icon
-                      classname="text-muted-foreground"
+                  <div class="cursor-default rounded-sm border-[1px] border-green-600 bg-green-400/30 p-0.5 transition-colors duration-150 hover:bg-green-400/40 dark:border-green-500 dark:bg-green-500/30 dark:hover:bg-green-500/40">
+                    <gui-arrow-big-up-dash-icon
+                      classname="text-green-600 dark:text-green-500"
                       size="16"
                     >
-                    </gui-info-icon>
-                  </gui-badge>
+                    </gui-arrow-big-up-dash-icon>
+                  </div>
                 </gui-tooltip-trigger>
                 <gui-tooltip-content>
                   Newer versions available
                 </gui-tooltip-content>
               </gui-tooltip>
             </gui-tooltip-provider>
+            <div class="flex gap-1.5 overflow-y-scroll">
+            </div>
           </div>
-          <gui-inline-code classname="mx-0">
+          <gui-inline-code classname="mx-0 w-fit max-w-40 cursor-default truncate">
             git:{ref}
           </gui-inline-code>
         </div>
       </div>
     </div>
     <div
-      class="flex w-fit flex-col"
+      class="flex w-full flex-col items-center justify-end col-span-3"
       style="opacity: 0;"
     >
-      <div class="flex w-fit flex-col items-end self-end text-right">
-        <gui-spark-area-chart
-          data
-          categories="downloads"
-          index="day"
-          colors="emerald"
-          classname="w-full"
-        >
-        </gui-spark-area-chart>
-        <p class="text-baseline w-full self-end whitespace-nowrap text-sm font-medium text-foreground">
-          123,456
-          <span class="text-muted-foreground">
-            Weekly Downloads
-          </span>
-        </p>
-      </div>
+      <gui-spark-bar-chart
+        data
+        categories="downloads"
+        index="day"
+        colors="emerald"
+        classname="w-full"
+      >
+      </gui-spark-bar-chart>
     </div>
   </div>
-  <div class="flex w-full justify-between px-6 mt-3 border-t-[1px] border-muted py-3">
-    <div class="flex h-[31.508px] items-center gap-2">
+  <div class="grid w-full grid-cols-12 border-t-[1px] border-muted">
+    <div class="flex h-[31.508px] items-center gap-2 col-span-9 border-muted py-5 pl-6 border-r-[1px]">
       <gui-avatar>
         <gui-avatar-image
           classname="size-5 rounded-sm outline outline-[1px] outline-border"
@@ -387,8 +341,16 @@ exports[`ItemHeader renders with default git host item 1`] = `
         </gui-tooltip>
       </gui-tooltip-provider>
     </div>
+    <div class="col-span-3 flex h-full cursor-default items-center justify-center text-center">
+      <p class="w-full text-sm font-medium text-foreground">
+        123,456
+        <span class="text-muted-foreground">
+          Downloads
+        </span>
+      </p>
+    </div>
   </div>
-  <div class="px-6 pt-3 hidden">
+  <div class="w-full grid-cols-12 hidden">
   </div>
 </div>
 
@@ -397,92 +359,73 @@ exports[`ItemHeader renders with default git host item 1`] = `
 exports[`ItemHeader renders with default item 1`] = `
 
 <div
-  class="flex flex-col pb-5 pt-6"
+  class="flex flex-col pb-3"
   style="opacity: 0;"
 >
-  <div class="flex w-full justify-between px-6">
-    <div class="flex gap-4">
-      <gui-avatar classname="size-[3.75rem]">
+  <div class="grid w-full grid-cols-12">
+    <div class="flex gap-4 col-span-9 pb-3 pl-6 pt-6 border-r-[1px] border-muted">
+      <gui-avatar classname="aspect-square size-[3.75rem]">
         <gui-avatar-image
-          classname="rounded-md border-[1px] bg-secondary object-cover"
+          classname="aspect-square size-[3.75rem] rounded-md border-[1px] bg-secondary object-cover"
           src="https://example.com/favicon.png"
           alt="Example Favicon"
         >
         </gui-avatar-image>
-        <gui-avatar-fallback classname="flex h-full w-full items-center justify-center rounded-md border-[1px]">
+        <gui-avatar-fallback classname="flex aspect-square size-[3.75rem] h-full w-full items-center justify-center rounded-md border-[1px]">
           <div class="to:to-neutral-400 h-full w-full rounded-md bg-gradient-to-t from-neutral-100 dark:from-neutral-500 dark:to-neutral-800">
           </div>
         </gui-avatar-fallback>
       </gui-avatar>
-      <div class="flex h-full max-w-[250px] flex-col justify-between">
+      <div class="flex h-full w-full flex-col justify-between">
         <div class="flex flex-col gap-0.5">
           <div class="flex items-center gap-2">
+            <h1 class="cursor-default truncate align-baseline text-lg font-medium">
+              item
+              <gui-inline-code
+                variant="monoGhost"
+                classname="cursor-default text-sm"
+              >
+                1.0.0
+              </gui-inline-code>
+            </h1>
             <gui-tooltip-provider>
-              <gui-tooltip>
-                <gui-tooltip-trigger classname="cursor-default truncate align-baseline text-lg font-medium">
-                  item
-                  <gui-inline-code
-                    variant="monoGhost"
-                    classname="text-sm"
-                  >
-                    1.0.0
-                  </gui-inline-code>
-                </gui-tooltip-trigger>
-                <gui-tooltip-content classname="text-baseline text-sm font-medium">
-                  item
-                  <span class="font-normal text-muted-foreground">
-                    1.0.0
-                  </span>
-                </gui-tooltip-content>
-              </gui-tooltip>
-            </gui-tooltip-provider>
-            <gui-tooltip-provider>
-              <gui-tooltip>
+              <gui-tooltip delayduration="150">
                 <gui-tooltip-trigger classname="flex items-center justify-center">
-                  <gui-badge
-                    variant="outline"
-                    classname="cursor-default bg-secondary p-0.5 outline-[1px] outline-border"
-                  >
-                    <gui-info-icon
-                      classname="text-muted-foreground"
+                  <div class="cursor-default rounded-sm border-[1px] border-green-600 bg-green-400/30 p-0.5 transition-colors duration-150 hover:bg-green-400/40 dark:border-green-500 dark:bg-green-500/30 dark:hover:bg-green-500/40">
+                    <gui-arrow-big-up-dash-icon
+                      classname="text-green-600 dark:text-green-500"
                       size="16"
                     >
-                    </gui-info-icon>
-                  </gui-badge>
+                    </gui-arrow-big-up-dash-icon>
+                  </div>
                 </gui-tooltip-trigger>
                 <gui-tooltip-content>
                   Newer versions available
                 </gui-tooltip-content>
               </gui-tooltip>
             </gui-tooltip-provider>
+            <div class="flex gap-1.5 overflow-y-scroll">
+            </div>
           </div>
         </div>
       </div>
     </div>
     <div
-      class="flex w-fit flex-col"
+      class="flex w-full flex-col items-center justify-end col-span-3"
       style="opacity: 0;"
     >
-      <div class="flex w-fit flex-col items-end self-end text-right">
-        <gui-spark-area-chart
-          data
-          categories="downloads"
-          index="day"
-          colors="emerald"
-          classname="w-full"
-        >
-        </gui-spark-area-chart>
-        <p class="text-baseline w-full self-end whitespace-nowrap text-sm font-medium text-foreground">
-          123,456
-          <span class="text-muted-foreground">
-            Weekly Downloads
-          </span>
-        </p>
-      </div>
+      <gui-spark-bar-chart
+        data
+        categories="downloads"
+        index="day"
+        colors="emerald"
+        classname="w-full"
+      >
+      </gui-spark-bar-chart>
     </div>
   </div>
-  <div class="flex w-full justify-between px-6 mt-3 border-t-[1px] border-muted py-3">
-    <div class="flex h-[31.508px] items-center gap-2">
+  <div class="grid w-full grid-cols-12 border-t-[1px] border-muted">
+    <div class="flex h-[31.508px] items-center gap-2 col-span-9 border-muted py-5 pl-6 border-r-[1px]">
       <gui-avatar>
         <gui-avatar-image
           classname="size-5 rounded-sm outline outline-[1px] outline-border"
@@ -507,8 +450,16 @@ exports[`ItemHeader renders with default item 1`] = `
         </gui-tooltip>
       </gui-tooltip-provider>
     </div>
+    <div class="col-span-3 flex h-full cursor-default items-center justify-center text-center">
+      <p class="w-full text-sm font-medium text-foreground">
+        123,456
+        <span class="text-muted-foreground">
+          Downloads
+        </span>
+      </p>
+    </div>
   </div>
-  <div class="px-6 pt-3 hidden">
+  <div class="w-full grid-cols-12 hidden">
   </div>
 </div>
 
@@ -517,92 +468,73 @@ exports[`ItemHeader renders with default item 1`] = `
 exports[`ItemHeader renders with insights 1`] = `
 
 <div
-  class="flex flex-col pb-5 pt-6"
+  class="flex flex-col pb-3"
   style="opacity: 0;"
 >
-  <div class="flex w-full justify-between px-6">
-    <div class="flex gap-4">
-      <gui-avatar classname="size-[3.75rem]">
+  <div class="grid w-full grid-cols-12">
+    <div class="flex gap-4 col-span-9 pb-3 pl-6 pt-6 border-r-[1px] border-muted">
+      <gui-avatar classname="aspect-square size-[3.75rem]">
         <gui-avatar-image
-          classname="rounded-md border-[1px] bg-secondary object-cover"
+          classname="aspect-square size-[3.75rem] rounded-md border-[1px] bg-secondary object-cover"
           src="https://example.com/favicon.png"
           alt="Example Favicon"
         >
         </gui-avatar-image>
-        <gui-avatar-fallback classname="flex h-full w-full items-center justify-center rounded-md border-[1px]">
+        <gui-avatar-fallback classname="flex aspect-square size-[3.75rem] h-full w-full items-center justify-center rounded-md border-[1px]">
           <div class="to:to-neutral-400 h-full w-full rounded-md bg-gradient-to-t from-neutral-100 dark:from-neutral-500 dark:to-neutral-800">
           </div>
         </gui-avatar-fallback>
       </gui-avatar>
-      <div class="flex h-full max-w-[250px] flex-col justify-between">
+      <div class="flex h-full w-full flex-col justify-between">
         <div class="flex flex-col gap-0.5">
           <div class="flex items-center gap-2">
+            <h1 class="cursor-default truncate align-baseline text-lg font-medium">
+              item
+              <gui-inline-code
+                variant="monoGhost"
+                classname="cursor-default text-sm"
+              >
+                1.0.0
+              </gui-inline-code>
+            </h1>
             <gui-tooltip-provider>
-              <gui-tooltip>
-                <gui-tooltip-trigger classname="cursor-default truncate align-baseline text-lg font-medium">
-                  item
-                  <gui-inline-code
-                    variant="monoGhost"
-                    classname="text-sm"
-                  >
-                    1.0.0
-                  </gui-inline-code>
-                </gui-tooltip-trigger>
-                <gui-tooltip-content classname="text-baseline text-sm font-medium">
-                  item
-                  <span class="font-normal text-muted-foreground">
-                    1.0.0
-                  </span>
-                </gui-tooltip-content>
-              </gui-tooltip>
-            </gui-tooltip-provider>
-            <gui-tooltip-provider>
-              <gui-tooltip>
+              <gui-tooltip delayduration="150">
                 <gui-tooltip-trigger classname="flex items-center justify-center">
-                  <gui-badge
-                    variant="outline"
-                    classname="cursor-default bg-secondary p-0.5 outline-[1px] outline-border"
-                  >
-                    <gui-info-icon
-                      classname="text-muted-foreground"
+                  <div class="cursor-default rounded-sm border-[1px] border-green-600 bg-green-400/30 p-0.5 transition-colors duration-150 hover:bg-green-400/40 dark:border-green-500 dark:bg-green-500/30 dark:hover:bg-green-500/40">
+                    <gui-arrow-big-up-dash-icon
+                      classname="text-green-600 dark:text-green-500"
                       size="16"
                     >
-                    </gui-info-icon>
-                  </gui-badge>
+                    </gui-arrow-big-up-dash-icon>
+                  </div>
                 </gui-tooltip-trigger>
                 <gui-tooltip-content>
                   Newer versions available
                 </gui-tooltip-content>
               </gui-tooltip>
             </gui-tooltip-provider>
+            <div class="flex gap-1.5 overflow-y-scroll">
+            </div>
           </div>
         </div>
       </div>
     </div>
     <div
-      class="flex w-fit flex-col"
+      class="flex w-full flex-col items-center justify-end col-span-3"
       style="opacity: 0;"
     >
-      <div class="flex w-fit flex-col items-end self-end text-right">
-        <gui-spark-area-chart
-          data
-          categories="downloads"
-          index="day"
-          colors="emerald"
-          classname="w-full"
-        >
-        </gui-spark-area-chart>
-        <p class="text-baseline w-full self-end whitespace-nowrap text-sm font-medium text-foreground">
-          123,456
-          <span class="text-muted-foreground">
-            Weekly Downloads
-          </span>
-        </p>
-      </div>
+      <gui-spark-bar-chart
+        data
+        categories="downloads"
+        index="day"
+        colors="emerald"
+        classname="w-full"
+      >
+      </gui-spark-bar-chart>
     </div>
   </div>
-  <div class="flex w-full justify-between px-6 mt-3 border-t-[1px] border-muted py-3">
-    <div class="flex h-[31.508px] items-center gap-2">
+  <div class="grid w-full grid-cols-12 border-t-[1px] border-muted">
+    <div class="flex h-[31.508px] items-center gap-2 col-span-9 border-muted py-5 pl-6 border-r-[1px]">
       <gui-avatar>
         <gui-avatar-image
           classname="size-5 rounded-sm outline outline-[1px] outline-border"
@@ -627,16 +559,16 @@ exports[`ItemHeader renders with insights 1`] = `
         </gui-tooltip>
       </gui-tooltip-provider>
     </div>
-  </div>
-  <div class="px-6 pt-3 border-t-[1px] border-muted">
-    <div class="flex w-full flex-wrap gap-3">
-      <gui-insight-badge
-        color="yellow"
-        tooltipcontent="medium severity"
-      >
-        :abandoned
-      </gui-insight-badge>
+    <div class="col-span-3 flex h-full cursor-default items-center justify-center text-center">
+      <p class="w-full text-sm font-medium text-foreground">
+        123,456
+        <span class="text-muted-foreground">
+          Downloads
+        </span>
+      </p>
     </div>
+  </div>
+  <div class="w-full grid-cols-12 hidden">
   </div>
 </div>
 
@@ -645,107 +577,82 @@ exports[`ItemHeader renders with insights 1`] = `
 exports[`ItemHeader renders with scoped registry item 1`] = `
 
 <div
-  class="flex flex-col pb-5 pt-6"
+  class="flex flex-col pb-3"
   style="opacity: 0;"
 >
-  <div class="flex w-full justify-between px-6">
-    <div class="flex gap-4">
-      <gui-avatar classname="size-[3.75rem]">
+  <div class="grid w-full grid-cols-12">
+    <div class="flex gap-4 col-span-9 pb-3 pl-6 pt-6 border-r-[1px] border-muted">
+      <gui-avatar classname="aspect-square size-[3.75rem]">
         <gui-avatar-image
-          classname="rounded-md border-[1px] bg-secondary object-cover"
+          classname="aspect-square size-[3.75rem] rounded-md border-[1px] bg-secondary object-cover"
           src="https://example.com/favicon.png"
           alt="Example Favicon"
         >
         </gui-avatar-image>
-        <gui-avatar-fallback classname="flex h-full w-full items-center justify-center rounded-md border-[1px]">
+        <gui-avatar-fallback classname="flex aspect-square size-[3.75rem] h-full w-full items-center justify-center rounded-md border-[1px]">
           <div class="to:to-neutral-400 h-full w-full rounded-md bg-gradient-to-t from-neutral-100 dark:from-neutral-500 dark:to-neutral-800">
           </div>
         </gui-avatar-fallback>
       </gui-avatar>
-      <div class="flex h-full max-w-[250px] flex-col justify-between">
+      <div class="flex h-full w-full flex-col justify-between">
         <div class="flex flex-col gap-0.5">
           <div class="flex items-center gap-2">
+            <h1 class="cursor-default truncate align-baseline text-lg font-medium">
+              item
+              <gui-inline-code
+                variant="monoGhost"
+                classname="cursor-default text-sm"
+              >
+                1.0.0
+              </gui-inline-code>
+            </h1>
             <gui-tooltip-provider>
-              <gui-tooltip>
-                <gui-tooltip-trigger classname="cursor-default truncate align-baseline text-lg font-medium">
-                  item
-                  <gui-inline-code
-                    variant="monoGhost"
-                    classname="text-sm"
-                  >
-                    1.0.0
-                  </gui-inline-code>
-                </gui-tooltip-trigger>
-                <gui-tooltip-content classname="text-baseline text-sm font-medium">
-                  item
-                  <span class="font-normal text-muted-foreground">
-                    1.0.0
-                  </span>
-                </gui-tooltip-content>
-              </gui-tooltip>
-            </gui-tooltip-provider>
-            <gui-tooltip-provider>
-              <gui-tooltip>
+              <gui-tooltip delayduration="150">
                 <gui-tooltip-trigger classname="flex items-center justify-center">
-                  <gui-badge
-                    variant="outline"
-                    classname="cursor-default bg-secondary p-0.5 outline-[1px] outline-border"
-                  >
-                    <gui-info-icon
-                      classname="text-muted-foreground"
+                  <div class="cursor-default rounded-sm border-[1px] border-green-600 bg-green-400/30 p-0.5 transition-colors duration-150 hover:bg-green-400/40 dark:border-green-500 dark:bg-green-500/30 dark:hover:bg-green-500/40">
+                    <gui-arrow-big-up-dash-icon
+                      classname="text-green-600 dark:text-green-500"
                       size="16"
                     >
-                    </gui-info-icon>
-                  </gui-badge>
+                    </gui-arrow-big-up-dash-icon>
+                  </div>
                 </gui-tooltip-trigger>
                 <gui-tooltip-content>
                   Newer versions available
                 </gui-tooltip-content>
               </gui-tooltip>
             </gui-tooltip-provider>
+            <div class="flex gap-1.5 overflow-y-scroll">
+            </div>
           </div>
-          <gui-tooltip-provider>
-            <gui-tooltip>
-              <gui-tooltip-trigger classname="flex h-full w-full cursor-default items-center justify-start overflow-hidden">
-                <gui-inline-code
-                  variant="mono"
-                  classname="mx-0 truncate"
-                >
-                  item@1.0.0
-                </gui-inline-code>
-              </gui-tooltip-trigger>
-              <gui-tooltip-content>
-                http://custom-scope
-              </gui-tooltip-content>
-            </gui-tooltip>
-          </gui-tooltip-provider>
+          <gui-inline-code
+            displaytooltip="true"
+            tooltip="http://custom-scope"
+            tooltipduration="150"
+            variant="mono"
+            classname="mx-0 w-fit max-w-40 cursor-default truncate"
+          >
+            item@1.0.0
+          </gui-inline-code>
         </div>
       </div>
     </div>
     <div
-      class="flex w-fit flex-col"
+      class="flex w-full flex-col items-center justify-end col-span-3"
       style="opacity: 0;"
     >
-      <div class="flex w-fit flex-col items-end self-end text-right">
-        <gui-spark-area-chart
-          data
-          categories="downloads"
-          index="day"
-          colors="emerald"
-          classname="w-full"
-        >
-        </gui-spark-area-chart>
-        <p class="text-baseline w-full self-end whitespace-nowrap text-sm font-medium text-foreground">
-          123,456
-          <span class="text-muted-foreground">
-            Weekly Downloads
-          </span>
-        </p>
-      </div>
+      <gui-spark-bar-chart
+        data
+        categories="downloads"
+        index="day"
+        colors="emerald"
+        classname="w-full"
+      >
+      </gui-spark-bar-chart>
     </div>
   </div>
-  <div class="flex w-full justify-between px-6 mt-3 border-t-[1px] border-muted py-3">
-    <div class="flex h-[31.508px] items-center gap-2">
+  <div class="grid w-full grid-cols-12 border-t-[1px] border-muted">
+    <div class="flex h-[31.508px] items-center gap-2 col-span-9 border-muted py-5 pl-6 border-r-[1px]">
       <gui-avatar>
         <gui-avatar-image
           classname="size-5 rounded-sm outline outline-[1px] outline-border"
@@ -770,8 +677,16 @@ exports[`ItemHeader renders with scoped registry item 1`] = `
         </gui-tooltip>
       </gui-tooltip-provider>
     </div>
+    <div class="col-span-3 flex h-full cursor-default items-center justify-center text-center">
+      <p class="w-full text-sm font-medium text-foreground">
+        123,456
+        <span class="text-muted-foreground">
+          Downloads
+        </span>
+      </p>
+    </div>
   </div>
-  <div class="px-6 pt-3 hidden">
+  <div class="w-full grid-cols-12 hidden">
   </div>
 </div>
 

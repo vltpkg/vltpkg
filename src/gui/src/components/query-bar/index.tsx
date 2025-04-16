@@ -61,7 +61,7 @@ export const QueryBar = ({
   return (
     <div className="relative flex grow items-center">
       {startContent && (
-        <div className="absolute pr-8">{startContent}</div>
+        <div className="absolute z-[2] pr-8">{startContent}</div>
       )}
       <div className="relative w-full">
         <Input
@@ -72,7 +72,7 @@ export const QueryBar = ({
           autoComplete="off"
           autoCapitalize="off"
           ref={inputRef}
-          className={`${className} ${startContent ? 'pl-10' : ''} bg-transparent text-sm text-transparent caret-black dark:caret-white`}
+          className={`${className} ${startContent ? 'pl-10' : ''} text-sm text-transparent caret-black dark:caret-white`}
           placeholder="Query Lookup, e.g: :root > *"
           value={query}
           onChange={(e: ChangeEvent) => {
