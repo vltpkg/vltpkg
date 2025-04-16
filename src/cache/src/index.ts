@@ -419,11 +419,6 @@ export class Cache extends LRUCache<
 
     // We now know that both the value and integrity files exist.
 
-    // TODO: we are handling different registries here which will likely
-    // return different headers so the file sizes will be different even
-    // if the content is the same. This should be updated to check based
-    // on the size of the response body, not the size of the file on disk.
-
     if (
       intStats.ino === valStats.ino &&
       intStats.dev === valStats.dev
