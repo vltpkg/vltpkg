@@ -4,7 +4,7 @@
 
 The **vlt** query syntax engine.
 
-**[Usage](#usage)** · **[Examples](#examples)** ·
+**[Usage](#usage)** · **[Examples](#examples)**
 
 ## Usage
 
