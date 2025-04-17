@@ -1,4 +1,6 @@
 import { DatabaseSync } from 'node:sqlite'
+import { mkdirSync } from 'node:fs'
+import { dirname } from 'node:path'
 import { LRUCache } from 'lru-cache'
 import pRetry, { AbortError } from 'p-retry'
 import { loadPackageJson } from 'package-json-from-dist'
@@ -150,6 +152,7 @@ export class SecurityArchive
    * Opens a connection to the database at the given path.
    */
   #openDatabase(): DatabaseSync {
+    mkdirSync(dirname(this.#path), { recursive: true })
     const db = new DatabaseSync(this.#path)
     db.exec(
       'CREATE TABLE IF NOT EXISTS cache ' +

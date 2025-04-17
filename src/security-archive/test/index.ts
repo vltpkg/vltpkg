@@ -242,6 +242,15 @@ ${JSON.stringify({
     )
   })
 
+  await t.test('missing cache folder', async t => {
+    const dir = t.testdir()
+    const path = resolve(dir, 'missing-folder/new.db')
+
+    const archive = new SecurityArchive({ path })
+    await archive.refresh({ graph, specOptions })
+    t.ok('cache folder created')
+  })
+
   await t.test('bad api response', async t => {
     const dir = t.testdir()
     const path = resolve(dir, 'missing.db')
