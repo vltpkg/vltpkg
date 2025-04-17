@@ -4,9 +4,9 @@ This is a module for writing `.cmd` and `.ps1` shims for executables
 on Windows, since shebangs are not supported on Windows, and thus
 symlinks are not sufficient for running executables.
 
-**[Usage](#usage)** · **[Note](#note)**
+**[Note](#note)** · **[Usage](#usage)**
 
-## Overview
+## Note
 
 This module doesn't do anything on non-Windows platforms.
 
