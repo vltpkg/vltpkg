@@ -28,7 +28,8 @@ export type AuthorInfo = {
 }
 
 export type DownloadsInfo = {
-  weekly: number
+  weekly?: number
+  downloadsPerVersion?: Record<Semver, number>
 }
 
 export type ImageInfo = {
@@ -37,7 +38,7 @@ export type ImageInfo = {
 }
 
 export type Version = {
-  version: string
+  version: Semver
   publishedDate?: string
   publishedAuthor?: {
     name?: string
@@ -197,7 +198,9 @@ export async function* fetchDetails(
         const version = asSemver(spec.bareSpec)
         const weekly = res.downloads[version]
         if (weekly != null) {
-          return { downloads: { weekly } }
+          return {
+            downloads: { weekly, downloadsPerVersion: res.downloads },
+          }
         } else {
           return {}
         }

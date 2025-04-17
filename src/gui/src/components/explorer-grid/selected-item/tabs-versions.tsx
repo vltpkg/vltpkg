@@ -25,7 +25,6 @@ import {
   TooltipContent,
 } from '@/components/ui/tooltip.jsx'
 import { Button } from '@/components/ui/button.jsx'
-import { CopyToClipboard } from '@/components/ui/copy-to-clipboard.jsx'
 import { formatDownloadSize } from '@/utils/format-download-size.js'
 import { Input } from '@/components/ui/input.jsx'
 import { prerelease, lt } from '@vltpkg/semver'
@@ -67,45 +66,61 @@ const VersionHeader = ({
   items,
   setItems,
 }: {
-  items: Version[]
-  setItems: (items: Version[]) => void
+  items: VersionItem[]
+  setItems: (items: VersionItem[]) => void
 }) => {
   const [order, setOrder] = useState<{
     version: 'asc' | 'desc'
     unpackedSize: 'asc' | 'desc'
     publishedDate: 'asc' | 'desc'
     publisher: 'asc' | 'desc'
+    downloadsPerVersion: 'asc' | 'desc'
   }>({
     version: 'asc',
     unpackedSize: 'asc',
     publishedDate: 'asc',
     publisher: 'asc',
+    downloadsPerVersion: 'asc',
   })
 
-  const sortItems = (key: keyof Version, order: 'asc' | 'desc') => {
+  const sortItems = (
+    key: keyof VersionItem,
+    order: 'asc' | 'desc',
+  ) => {
     setItems(
       [...items].sort((a, b) => {
+        // Handle undefined values first
+        if (a[key] === undefined && b[key] === undefined) return 0
+        if (a[key] === undefined) return 1 // undefined values go to the end
+        if (b[key] === undefined) return -1 // undefined values go to the end
+
         if (key === 'unpackedSize') {
           const aSize = a[key] ?? 0
           const bSize = b[key] ?? 0
           return order === 'asc' ? aSize - bSize : bSize - aSize
         }
         if (key === 'publishedDate') {
-          const aDate = a[key] ? new Date(a[key]).getTime() : 0
-          const bDate = b[key] ? new Date(b[key]).getTime() : 0
+          const aDate = new Date(a[key]).getTime()
+          const bDate = new Date(b[key]).getTime()
           return order === 'asc' ? aDate - bDate : bDate - aDate
         }
         if (key === 'publishedAuthor') {
           const aName = a.publishedAuthor?.name
           const bName = b.publishedAuthor?.name
 
-          // We only want to compare the names if both are defined
           if (!aName || !bName) return 0
 
           const comparison = aName
             .toLowerCase()
             .localeCompare(bName.toLowerCase())
           return order === 'asc' ? comparison : -comparison
+        }
+        if (key === 'downloadsPerVersion') {
+          const aDownloads = a.downloadsPerVersion ?? 0
+          const bDownloads = b.downloadsPerVersion ?? 0
+          return order === 'asc' ?
+              aDownloads - bDownloads
+            : bDownloads - aDownloads
         }
         return order === 'asc' ?
             a.version.localeCompare(b.version)
@@ -132,6 +147,13 @@ const VersionHeader = ({
     sortItems('publishedDate', newOrder)
   }
 
+  const onDownloadsClick = () => {
+    const newOrder =
+      order.downloadsPerVersion === 'asc' ? 'desc' : 'asc'
+    setOrder(prev => ({ ...prev, downloadsPerVersion: newOrder }))
+    sortItems('downloadsPerVersion', newOrder)
+  }
+
   const onPublisherClick = () => {
     const newOrder = order.publisher === 'asc' ? 'desc' : 'asc'
     setOrder(prev => ({ ...prev, publisher: newOrder }))
@@ -139,8 +161,8 @@ const VersionHeader = ({
   }
 
   return (
-    <div className="hidden cursor-default grid-cols-12 pb-2 2xl:grid">
-      <div className="col-span-2 w-full pl-2">
+    <div className="hidden cursor-default grid-cols-12 pb-2 xl:grid">
+      <div className="col-span-2 flex w-full items-center justify-center">
         <button
           onClick={onVersionClick}
           className="relative z-[1] inline-flex w-fit cursor-default items-center justify-center gap-2 text-nowrap text-sm text-muted-foreground transition-all duration-300 after:absolute after:left-[-0.75rem] after:z-[-1] after:h-[calc(100%+0.5rem)] after:w-[calc(100%+1.5rem)] after:rounded-sm after:bg-transparent after:content-[''] hover:text-foreground hover:after:bg-muted">
@@ -148,12 +170,7 @@ const VersionHeader = ({
           <ArrowUpDown size={16} />
         </button>
       </div>
-      <div className="col-span-2 w-full text-center">
-        <button className="relative z-[1] inline-flex w-fit cursor-default items-center justify-center gap-2 text-nowrap text-sm text-muted-foreground transition-all duration-300 after:absolute after:left-[-0.75rem] after:z-[-1] after:h-[calc(100%+0.5rem)] after:w-[calc(100%+1.5rem)] after:rounded-sm after:bg-transparent after:content-[''] hover:text-foreground hover:after:bg-muted">
-          <span>Integrity</span>
-        </button>
-      </div>
-      <div className="col-span-2 w-full text-center">
+      <div className="col-span-2 ml-1 w-full text-center">
         <button
           onClick={onUnpackedSizeClick}
           className="relative z-[1] inline-flex w-fit cursor-default items-center justify-center gap-2 text-nowrap text-sm text-muted-foreground transition-all duration-300 after:absolute after:left-[-0.75rem] after:z-[-1] after:h-[calc(100%+0.5rem)] after:w-[calc(100%+1.5rem)] after:rounded-sm after:bg-transparent after:content-[''] hover:text-foreground hover:after:bg-muted">
@@ -169,7 +186,15 @@ const VersionHeader = ({
           <ArrowUpDown size={16} />
         </button>
       </div>
-      <div className="col-span-3 mr-1 flex w-full justify-center">
+      <div className="col-span-2 w-full text-center">
+        <button
+          onClick={onDownloadsClick}
+          className="relative z-[1] inline-flex w-fit cursor-default items-center justify-center gap-2 text-nowrap text-sm text-muted-foreground transition-all duration-300 after:absolute after:left-[-0.75rem] after:z-[-1] after:h-[calc(100%+0.5rem)] after:w-[calc(100%+1.5rem)] after:rounded-sm after:bg-transparent after:content-[''] hover:text-foreground hover:after:bg-muted">
+          <span>Downloads</span>
+          <ArrowUpDown size={16} />
+        </button>
+      </div>
+      <div className="col-span-3 flex w-full items-center justify-center">
         <button
           onClick={onPublisherClick}
           className="relative z-[1] inline-flex w-fit cursor-default items-center justify-center gap-2 text-nowrap text-sm text-muted-foreground transition-all duration-300 after:absolute after:left-[-0.75rem] after:z-[-1] after:h-[calc(100%+0.5rem)] after:w-[calc(100%+1.5rem)] after:rounded-sm after:bg-transparent after:content-[''] hover:text-foreground hover:after:bg-muted">
@@ -181,52 +206,42 @@ const VersionHeader = ({
   )
 }
 
-interface VersionItemProps {
-  versionInfo: Version
+interface VersionItem extends Version {
+  downloadsPerVersion?: number
 }
 
-const VersionItem = ({ versionInfo }: VersionItemProps) => {
+const VersionItem = ({
+  versionInfo,
+}: {
+  versionInfo: VersionItem
+}) => {
   const {
-    integrity,
     version,
     unpackedSize,
     publishedAuthor,
     publishedDate,
+    downloadsPerVersion,
   } = versionInfo
-  const integrityShort = integrity?.split('-')[1]?.slice(0, 6)
 
   return (
-    <div className="group/item flex cursor-default grid-cols-12 flex-col gap-4 rounded-sm py-4 text-foreground transition-colors first:border-t-[0px] hover:bg-muted 2xl:grid 2xl:gap-0 2xl:px-2 2xl:py-1.5">
-      <div className="col-span-2 flex w-full flex-col justify-start gap-1 2xl:ml-1 2xl:justify-center 2xl:gap-0">
-        <p className="text-sm font-medium text-muted-foreground 2xl:hidden">
+    <div className="group/item flex cursor-default grid-cols-12 flex-col gap-4 rounded-sm py-4 text-foreground transition-colors first:border-t-[0px] hover:bg-muted xl:grid xl:gap-0 xl:px-2 xl:py-1.5">
+      <div className="order-1 col-span-2 flex w-full flex-col justify-start gap-1 xl:ml-1 xl:justify-center xl:gap-0">
+        <p className="text-sm font-medium text-muted-foreground xl:hidden">
           Version
         </p>
         <InlineCode
           tooltipDuration={150}
           displayTooltip
           tooltip={version}
-          className="mx-0 w-fit max-w-none truncate break-all text-sm 2xl:w-fit 2xl:max-w-24"
+          className="mx-0 w-fit max-w-none truncate break-all text-sm xl:w-fit xl:max-w-[5.5rem]"
           variant="mono">
           {version}
         </InlineCode>
       </div>
-      <div className="col-span-2 flex w-full flex-col justify-start gap-2 2xl:items-center 2xl:justify-center 2xl:gap-0 2xl:text-center">
-        <p className="text-sm font-medium text-muted-foreground 2xl:hidden">
-          Integrity
-        </p>
-        {integrity && (
-          <CopyToClipboard
-            toolTipText={`Copy full SHA for ${integrityShort}`}
-            copyValue={integrity}
-            className="w-fit group-hover/item:bg-neutral-300 dark:group-hover/item:bg-neutral-700">
-            {integrityShort}
-          </CopyToClipboard>
-        )}
-      </div>
-      <div className="col-span-2 flex w-full flex-col gap-2 2xl:items-center 2xl:justify-center 2xl:gap-0 2xl:text-center">
+      <div className="order-2 col-span-2 flex w-full flex-col gap-2 xl:items-center xl:justify-center xl:gap-0 xl:text-center">
         {unpackedSize && (
           <>
-            <p className="text-sm font-medium text-muted-foreground 2xl:hidden">
+            <p className="text-sm font-medium text-muted-foreground xl:hidden">
               Size
             </p>
             <p className="font-mono text-sm">
@@ -235,13 +250,13 @@ const VersionItem = ({ versionInfo }: VersionItemProps) => {
           </>
         )}
       </div>
-      <div className="col-span-3 flex w-full flex-col gap-2 2xl:items-center 2xl:justify-center 2xl:gap-0 2xl:text-center">
+      <div className="order-4 col-span-3 flex w-full flex-col gap-2 xl:order-3 xl:items-center xl:justify-center xl:gap-0 xl:text-center">
         {publishedDate && (
           <>
-            <p className="text-sm font-medium text-muted-foreground 2xl:hidden">
+            <p className="text-sm font-medium text-muted-foreground xl:hidden">
               Published Date
             </p>
-            <div className="flex gap-2 2xl:hidden">
+            <div className="flex gap-2 xl:hidden">
               <Avatar className="size-5">
                 <AvatarImage
                   className="rounded-sm outline outline-[1px] outline-border"
@@ -254,7 +269,7 @@ const VersionItem = ({ versionInfo }: VersionItemProps) => {
               <p className="col-span-4 font-mono text-sm">
                 {publishedAuthor?.name}
               </p>
-              <p className="ml-2 inline-flex font-mono text-sm text-muted-foreground 2xl:hidden">
+              <p className="ml-2 inline-flex font-mono text-sm text-muted-foreground xl:hidden">
                 {formatDistanceStrict(publishedDate, new Date(), {
                   addSuffix: true,
                 })}
@@ -262,7 +277,7 @@ const VersionItem = ({ versionInfo }: VersionItemProps) => {
             </div>
             <TooltipProvider>
               <Tooltip>
-                <TooltipTrigger className="hidden cursor-default font-mono text-sm 2xl:inline-flex">
+                <TooltipTrigger className="hidden cursor-default font-mono text-sm xl:inline-flex">
                   {formatDistanceStrict(publishedDate, new Date(), {
                     addSuffix: true,
                   })}
@@ -275,8 +290,24 @@ const VersionItem = ({ versionInfo }: VersionItemProps) => {
           </>
         )}
       </div>
-      <div className="col-span-3 flex hidden w-full items-center justify-center 2xl:mr-1 2xl:flex 2xl:justify-end">
-        <div className="flex grid-cols-5 gap-2 2xl:grid">
+      <div
+        className={cn(
+          'order-3 col-span-2 w-full flex-col justify-start gap-2 xl:items-center xl:justify-center xl:gap-0 xl:text-center',
+          !downloadsPerVersion ? 'hidden xl:flex' : 'flex',
+        )}>
+        {downloadsPerVersion && (
+          <>
+            <p className="text-sm font-medium text-muted-foreground xl:hidden">
+              Downloads
+            </p>
+            <p className="font-mono text-sm">
+              {downloadsPerVersion.toLocaleString()}
+            </p>
+          </>
+        )}
+      </div>
+      <div className="order-3 col-span-3 flex hidden w-full items-center justify-center xl:order-4 xl:mr-1 xl:flex xl:justify-end">
+        <div className="flex grid-cols-5 gap-2 xl:grid">
           <Avatar className="col-span-1 size-5">
             <AvatarImage
               className="rounded-sm outline outline-[1px] outline-border"
@@ -352,9 +383,7 @@ const EmptyState = ({ message }: { message: string }) => (
 
 export const VersionsTabContent = () => {
   const { selectedItemDetails, manifest } = useSelectedItem()
-  const [filteredVersions, setFilteredVersions] = useState<Version[]>(
-    [],
-  )
+  const [versions, setVersions] = useState<VersionItem[]>([])
   const [page, setPage] = useState(1)
   const [greaterPage, setGreaterPage] = useState(1)
   const [hasMore, setHasMore] = useState(true)
@@ -449,10 +478,19 @@ export const VersionsTabContent = () => {
       allVersions,
     )
 
-    setFilteredVersions(
-      filteredAllVersions.slice(0, page * ITEMS_PER_PAGE),
+    // Add downloads data to each version
+    const versionsWithDownloads = filteredAllVersions.map(
+      version => ({
+        ...version,
+        downloadsPerVersion:
+          selectedItemDetails.downloads?.downloadsPerVersion?.[
+            version.version
+          ],
+      }),
     )
-    setHasMore(filteredAllVersions.length > page * ITEMS_PER_PAGE)
+
+    setVersions(versionsWithDownloads)
+    setHasMore(versionsWithDownloads.length > page * ITEMS_PER_PAGE)
   }, [
     selectedItemDetails,
     page,
@@ -463,8 +501,8 @@ export const VersionsTabContent = () => {
   ])
 
   const isEmpty = !selectedItemDetails.versions?.length
-
-  const hasSearchResults = filteredVersions.length > 0
+  const hasSearchResults = versions.length > 0
+  const paginatedVersions = versions.slice(0, page * ITEMS_PER_PAGE)
 
   return (
     <TabsContent value="versions">
@@ -555,26 +593,36 @@ export const VersionsTabContent = () => {
               message={`No versions found matching "${searchTerm}"`}
             />
           : <>
-              {filteredVersions.length > 0 && (
+              {paginatedVersions.length > 0 && (
                 <motion.div
                   layout="preserve-aspect"
                   className="relative mt-2 flex flex-col gap-2">
                   <VersionHeader
-                    items={filteredVersions}
-                    setItems={setFilteredVersions}
+                    items={versions}
+                    setItems={setVersions}
                   />
                   <div className="flex flex-col divide-y-[1px] divide-muted">
-                    {filteredVersions.map((version, idx) => (
-                      <div
-                        key={`${version.version}-all-${idx}`}
-                        ref={
-                          idx === filteredVersions.length - 1 ?
-                            lastVersionElementRef
-                          : undefined
-                        }>
-                        <VersionItem versionInfo={version} />
-                      </div>
-                    ))}
+                    {paginatedVersions.map((version, idx) => {
+                      const downloadsPerVersion =
+                        selectedItemDetails.downloads
+                          ?.downloadsPerVersion?.[version.version]
+                      return (
+                        <div
+                          key={`${version.version}-all-${idx}`}
+                          ref={
+                            idx === paginatedVersions.length - 1 ?
+                              lastVersionElementRef
+                            : undefined
+                          }>
+                          <VersionItem
+                            versionInfo={{
+                              ...version,
+                              downloadsPerVersion,
+                            }}
+                          />
+                        </div>
+                      )
+                    })}
                   </div>
                 </motion.div>
               )}

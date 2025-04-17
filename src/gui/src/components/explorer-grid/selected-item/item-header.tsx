@@ -172,7 +172,7 @@ export const ItemHeader = () => {
         {selectedItemDetails.downloads && (
           <div className="col-span-3 flex h-full cursor-default items-center justify-center text-center">
             <p className="w-full text-sm font-medium text-foreground">
-              {selectedItemDetails.downloads.weekly.toLocaleString()}{' '}
+              {selectedItemDetails.downloads.weekly?.toLocaleString()}{' '}
               <span className="text-muted-foreground">Downloads</span>
             </p>
           </div>
