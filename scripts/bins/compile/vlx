@@ -1,8 +1,7 @@
 #!/bin/sh
-
-SCRIPT_DIR="$(cd "$(dirname "$0")/../../../" && pwd)"
-if [ ! -d "$SCRIPT_DIR/.build-compile" ]; then
-  echo "Run 'pnpm run build:compile' first."
-  exit 1
+set -eo pipefail
+ROOT_DIR="$(cd "$(dirname "$0")/../../../" && pwd)"
+if [ ! -f "$ROOT_DIR/.build-compile/vlx" ]; then
+  (cd $ROOT_DIR && pnpm vlt-build --bins=vlx --outdir=".build-compile" compile > /dev/null 2>&1)
 fi
-$SCRIPT_DIR/.build-compile/vlx "$@"
+"$ROOT_DIR/.build-compile/vlx" "$@"

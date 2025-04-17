@@ -106,16 +106,28 @@ $ pnpm -s vlt --version
 
 ## Running the CLI from Other Directories
 
-A directory of `sh` executables is located at `./scripts/bins`. These
-call the TypeScript source bin files with the correct `NODE_OPTIONS`.
-This directory is designed to be put at the beginning of your path
-temporarily to make running of `vlt` and its related CLIs run directly
-from source.
+A directory of `sh` and `ps1` executables is located at
+`./scripts/bins`. These call the TypeScript source bin files with the
+correct `NODE_OPTIONS`. This directory is designed to be put at the
+beginning of your path temporarily to make running of `vlt` and its
+related CLIs run directly from source.
 
 ```bash
 export PATH=~/projects/vltpkg/vltpkg/scripts/bins:$PATH
 vlt --version
 ```
+
+There are also directories in `./scripts/bins` for each variant of the
+CLI. These directories can be used the same way to manually run the
+following:
+
+- `./scripts/bins/bundle`: The `esbuild` bundled JavaScript with
+  `node`
+- `./scripts/bins/deno`: The TypeScript source using `deno`
+- `./scripts/bins/deno-bundle`: The `esbuild` bundled JavaScript using
+  `deno`
+- `./scripts/bins/compile`: The compiled variant for the current
+  platform
 
 ## Publishing
 

@@ -11,6 +11,8 @@
   "dependencies": {
     "@vltpkg/cli-sdk": "workspace:*",
     "@vltpkg/infra-build": "workspace:*",
+    "@vltpkg/registry-client": "workspace:*",
+    "@vltpkg/which": "workspace:*",
     "ansi-to-pre": "catalog:"
   },
   "optionalDependencies": {
@@ -20,8 +22,6 @@
     "@eslint/js": "catalog:",
     "@types/eslint__js": "catalog:",
     "@types/node": "catalog:",
-    "@vltpkg/registry-client": "workspace:*",
-    "@vltpkg/which": "workspace:*",
     "eslint": "catalog:",
     "prettier": "catalog:",
     "tap": "catalog:",

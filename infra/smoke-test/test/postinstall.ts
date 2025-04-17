@@ -1,14 +1,13 @@
 import t from 'tap'
 import type { Test } from 'tap'
-import { Bins } from './fixtures/variants.ts'
-import type { Variant } from './fixtures/variants.ts'
-import { runVariant } from './fixtures/run.ts'
-import { join, resolve, basename, sep } from 'node:path'
+import assert from 'node:assert'
 import { cpSync, realpathSync } from 'node:fs'
 import { spawnSync } from 'node:child_process'
-import assert from 'node:assert'
+import { join, resolve, basename, sep } from 'node:path'
 import Cli from '@vltpkg/cli-sdk/package.json' with { type: 'json' }
+import type { VariantOptions } from '@vltpkg/infra-build'
 import { whichSync } from '@vltpkg/which'
+import { Bins, runVariant } from './fixtures/run.ts'
 
 type Tarball = { path: string; name: string }
 type Packed = { root: Tarball; tarballs: Tarball[] }
@@ -66,7 +65,7 @@ t.before(() => {
 const installPacked = (
   t: Test,
   npmInstallArgs: string[] = [],
-): Variant => {
+): VariantOptions => {
   const npm = realpathSync(whichSync('npm'))
 
   const { root, tarballs } = t.context.packed as Packed

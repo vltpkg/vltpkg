@@ -58,10 +58,13 @@ appears in the lockfile:
 
 ```ts
 import t from 'tap'
-import { runMultiple } from './fixtures/run.ts'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { allVariants, defaultVariants } from './fixtures/variants.ts'
+import {
+  runMultiple,
+  allVariants,
+  defaultVariants,
+} from './fixtures/run.ts'
 
 t.test('install a package', async t => {
   const { status, stdout } = await runMultiple(t, ['i', 'eslint'], {

@@ -1,8 +1,7 @@
 #!/bin/sh
-
-SCRIPT_DIR="$(cd "$(dirname "$0")/../../../" && pwd)"
-if [ ! -d "$SCRIPT_DIR/.build-bundle" ]; then
-  echo "Run 'pnpm run build:bundle' first."
-  exit 1
+set -eo pipefail
+ROOT_DIR="$(cd "$(dirname "$0")/../../../" && pwd)"
+if [ ! -f "$ROOT_DIR/.build-bundle/vlrx.js" ]; then
+  (cd $ROOT_DIR && pnpm vlt-build --bins=vlrx --outdir=".build-bundle" bundle > /dev/null 2>&1)
 fi
-deno -A --unstable-bare-node-builtins --unstable-node-globals $SCRIPT_DIR/.build-bundle/vlrx.js "$@"
+deno -A "$ROOT_DIR/.build-bundle/vlrx.js" "$@"
