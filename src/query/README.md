@@ -30,4 +30,3 @@ const graph = await actual.load({ projectRoot: process.cwd() })
 const query = new Query({ graph, specOptions })
 const res = await query.search(':root > *')
 ```
-
