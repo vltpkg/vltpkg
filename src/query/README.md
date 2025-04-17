@@ -5,7 +5,6 @@
 The **vlt** query syntax engine.
 
 **[Usage](#usage)** · **[Examples](#examples)** ·
-**[Supported Syntax Reference](#supported-syntax-reference)**
 
 ## Usage
 

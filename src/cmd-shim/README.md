@@ -6,7 +6,7 @@ symlinks are not sufficient for running executables.
 
 **[Usage](#usage)** · **[Note](#note)**
 
-## Overview
+## Note
 
 This module doesn't do anything on non-Windows platforms.
 
