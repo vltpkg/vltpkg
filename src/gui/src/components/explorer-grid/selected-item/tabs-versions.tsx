@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback, useRef } from 'react'
+import { AnimatePresence, motion } from 'framer-motion'
 import { TabsTrigger, TabsContent } from '@/components/ui/tabs.jsx'
 import {
   History,
@@ -294,8 +295,6 @@ const VersionItem = ({ versionInfo }: VersionItemProps) => {
   )
 }
 
-const ITEMS_PER_PAGE = 20
-
 const createIntersectionObserver = (
   callback: () => void,
   hasMore: boolean,
@@ -362,6 +361,7 @@ export const VersionsTabContent = () => {
   const [showPreReleases, setShowPreReleases] = useState(true)
   const [showNewerVersions, setShowNewerVersions] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
+  const ITEMS_PER_PAGE = 20
 
   const activeFilters = [
     {
@@ -512,13 +512,53 @@ export const VersionsTabContent = () => {
             </DropdownMenu>
           </div>
 
+          <AnimatePresence initial={false} mode="popLayout">
+            {(!showNewerVersions || !showPreReleases) && (
+              <motion.div
+                layout
+                initial={{ opacity: 0, top: -40 }}
+                animate={{ opacity: 1, top: 0 }}
+                exit={{ opacity: 0, top: -40 }}
+                className="flex gap-2 overflow-hidden"
+                transition={{
+                  type: 'spring',
+                  duration: 0.28,
+                  bounce: 0.02,
+                }}>
+                <AnimatePresence initial={false} mode="sync">
+                  {activeFilters.map(
+                    (filter, idx) =>
+                      filter.isActive && (
+                        <motion.div
+                          layout
+                          initial={{ opacity: 0, scale: 0.8 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          exit={{ opacity: 0, scale: 0.8 }}
+                          transition={{
+                            type: 'spring',
+                            duration: 0.28,
+                            bounce: 0.02,
+                          }}
+                          className="relative inline-flex cursor-default items-center rounded-full border-[1px] border-muted-foreground/20 bg-white py-1 text-xs font-medium text-foreground dark:bg-muted-foreground/5"
+                          key={`filter-${filter.id}-${idx}`}>
+                          <span className="px-3">{filter.label}</span>
+                        </motion.div>
+                      ),
+                  )}
+                </AnimatePresence>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
           {!hasSearchResults && searchTerm.trim() ?
             <EmptyState
               message={`No versions found matching "${searchTerm}"`}
             />
           : <>
               {filteredVersions.length > 0 && (
-                <div className="relative mt-2 flex flex-col gap-2">
+                <motion.div
+                  layout="preserve-aspect"
+                  className="relative mt-2 flex flex-col gap-2">
                   <VersionHeader
                     items={filteredVersions}
                     setItems={setFilteredVersions}
@@ -536,7 +576,7 @@ export const VersionsTabContent = () => {
                       </div>
                     ))}
                   </div>
-                </div>
+                </motion.div>
               )}
             </>
           }
