@@ -1,17 +1,60 @@
-import type t from 'tap'
+import t from 'tap'
 import type { Test } from 'tap'
 import { spawn } from 'node:child_process'
 import { join } from 'node:path'
 import assert from 'node:assert'
-import type { Bin } from '@vltpkg/infra-build'
-import {
-  publishedVariant,
-  defaultVariants,
-  Variants,
-} from './variants.ts'
-import type { Variant, VariantType } from './variants.ts'
-import { ansiToAnsi } from 'ansi-to-pre'
 import { stripVTControlCharacters } from 'node:util'
+import { realpathSync } from 'node:fs'
+import { ansiToAnsi } from 'ansi-to-pre'
+import { whichSync } from '@vltpkg/which'
+import {
+  BINS_DIR,
+  createArtifacts,
+  createVariants,
+  isVariant,
+  VARIANT_VALUES,
+  VARIANTS,
+} from '@vltpkg/infra-build'
+import type {
+  Bin,
+  Variant,
+  VariantOptions,
+} from '@vltpkg/infra-build'
+
+// only bundle/compile the vlt binary since that is all we test
+// this makes the tests run faster
+export const Bins = ['vlt'] as const
+
+const filterVariants = (variants: readonly Variant[]) => {
+  const filter =
+    process.env.SMOKE_TEST_VARIANTS?.split(',').filter(isVariant)
+  return filter ? variants.filter(v => filter.includes(v)) : variants
+}
+
+export const publishedVariant = VARIANT_VALUES.Compile
+export const allVariants = filterVariants(VARIANTS)
+export const defaultVariants = filterVariants([
+  VARIANT_VALUES.Node,
+  VARIANT_VALUES.Bundle,
+  VARIANT_VALUES.Compile,
+])
+
+export const Artifacts = createArtifacts({
+  bins: Bins,
+  cleanup: !t.saveFixture,
+  windows: process.platform === 'win32',
+  dirs: {
+    Node: BINS_DIR,
+    Bundle: join(process.cwd(), '.build-bundle'),
+    Compile: join(process.cwd(), '.build-compile'),
+  },
+})
+
+export const Variants = createVariants({
+  artifacts: Artifacts,
+  node: realpathSync(whichSync('node')),
+  deno: realpathSync(whichSync('deno')),
+})
 
 export type FixtureDir = Parameters<typeof t.fixture<'dir'>>[1]
 
@@ -72,12 +115,12 @@ export type Command = (
 ) => Promise<CommandResult>
 
 export type MultipleCommandOptions = CommandOptions & {
-  variants?: readonly VariantType[]
+  variants?: readonly Variant[]
   match?: false | Exclude<keyof CommandResult, 'dirs'>[]
   test?: (
     t: Test,
     result: CommandResult & {
-      variant: VariantType
+      variant: Variant
       run: (
         args?: string[],
         options?: Omit<SpawnCommandOptions, 'dirs'>,
@@ -88,7 +131,7 @@ export type MultipleCommandOptions = CommandOptions & {
 
 const spawnCommand = async (
   t: Test,
-  variant: Variant,
+  variant: VariantOptions,
   args: string[] = [],
   {
     dirs,
@@ -231,7 +274,7 @@ const spawnCommand = async (
 }
 
 export const runVariant = async (
-  variant: Variant,
+  variant: VariantOptions,
   t: Test,
   args?: string[],
   { packageJson = true, ...options }: CommandOptions = {},
@@ -278,19 +321,19 @@ export const runVariant = async (
 
 // Export all variants as individual commands
 export const source: Command = (...args) =>
-  runVariant(Variants.source, ...args)
+  runVariant(Variants.Node, ...args)
 
 export const denoSource: Command = (...args) =>
-  runVariant(Variants.denoSource, ...args)
+  runVariant(Variants.Deno, ...args)
 
 export const bundle: Command = (...args) =>
-  runVariant(Variants.bundle, ...args)
+  runVariant(Variants.Bundle, ...args)
 
 export const denoBundle: Command = (...args) =>
-  runVariant(Variants.denoBundle, ...args)
+  runVariant(Variants.DenoBundle, ...args)
 
 export const compile: Command = (...args) =>
-  runVariant(Variants.compile, ...args)
+  runVariant(Variants.Compile, ...args)
 
 // And export whatever is the currently published variant
 export const runPublished: Command = (...args) =>
@@ -306,7 +349,7 @@ export const runMultiple = async (
     ...options
   }: MultipleCommandOptions = {},
 ) => {
-  const variantResults: [VariantType, CommandResult][] =
+  const variantResults: [Variant, CommandResult][] =
     await Promise.all(
       variants.map(async variant => {
         let result = {} as CommandResult

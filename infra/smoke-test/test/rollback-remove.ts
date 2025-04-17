@@ -1,6 +1,5 @@
 import t from 'tap'
-import { runMultiple } from './fixtures/run.ts'
-import { allVariants } from './fixtures/variants.ts'
+import { runMultiple, allVariants } from './fixtures/run.ts'
 import { setTimeout } from 'node:timers/promises'
 import { readdirSync } from 'node:fs'
 import { join } from 'node:path'

@@ -1,5 +1,5 @@
-import { Artifacts } from './variants.ts'
+import { Artifacts } from './run.ts'
 
 for (const artifact of Object.values(Artifacts)) {
-  artifact.cleanup()
+  await artifact.cleanup?.()
 }
