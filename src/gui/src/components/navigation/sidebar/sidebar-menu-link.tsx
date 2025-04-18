@@ -102,7 +102,9 @@ const renderItems = ({
           <MenuItemComp>
             <CollapsibleTrigger
               onClick={
-                state === 'collapsed' ? toggleSidebar : undefined
+                state === 'collapsed' && item.items?.length ?
+                  toggleSidebar
+                : undefined
               }
               asChild>
               <MenuItemButton

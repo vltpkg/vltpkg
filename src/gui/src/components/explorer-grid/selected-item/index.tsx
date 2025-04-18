@@ -84,6 +84,7 @@ export const SelectedItem = ({ item }: GridItemOptions) => {
           <ItemHeader />
           <div className="w-full">
             <Tabs
+              uniqueId={item.id}
               onValueChange={setActiveTab as (tab: string) => void}
               value={activeTab}>
               <TabsList variant="ghost" className="w-full gap-2 px-6">

@@ -9,6 +9,7 @@ interface TabsContextValue {
   activeValue: string | undefined
   focused: string | undefined | null
   setFocused: (focused: string | undefined | null) => void
+  uniqueId?: string
 }
 
 const TabsContext = React.createContext<TabsContextValue | undefined>(
@@ -26,16 +27,22 @@ const useTabsContext = () => {
 }
 
 interface TabsProps
-  extends React.ComponentPropsWithoutRef<typeof TabsPrimitive.Tabs> {}
+  extends React.ComponentPropsWithoutRef<typeof TabsPrimitive.Tabs> {
+  uniqueId?: string
+}
 
-const Tabs = ({ value: activeValue, ...rest }: TabsProps) => {
+const Tabs = ({
+  value: activeValue,
+  uniqueId,
+  ...rest
+}: TabsProps) => {
   const [focused, setFocused] = React.useState<
     string | undefined | null
   >(null)
 
   return (
     <TabsContext.Provider
-      value={{ activeValue, focused, setFocused }}>
+      value={{ activeValue, focused, setFocused, uniqueId }}>
       <TabsPrimitive.Root
         className="relative"
         value={activeValue}
@@ -86,12 +93,14 @@ const TabsList = React.forwardRef<
   const { setFocused } = useTabsContext()
 
   return (
-    <TabsPrimitive.List
-      onMouseLeave={() => setFocused(null)}
-      ref={ref}
-      className={cn(tabsListVariants({ variant, className }))}
-      {...props}
-    />
+    <LayoutGroup>
+      <TabsPrimitive.List
+        onMouseLeave={() => setFocused(null)}
+        ref={ref}
+        className={cn(tabsListVariants({ variant, className }))}
+        {...props}
+      />
+    </LayoutGroup>
   )
 })
 TabsList.displayName = TabsPrimitive.List.displayName
@@ -110,60 +119,65 @@ const TabsTrigger = React.forwardRef<
     { value, className, children, disabled, variant, ...props },
     ref,
   ) => {
-    const { activeValue, focused, setFocused } = useTabsContext()
+    const { activeValue, focused, setFocused, uniqueId } =
+      useTabsContext()
 
     return (
-      <LayoutGroup>
-        <TabsPrimitive.Trigger
-          ref={ref}
-          onFocus={() => setFocused(value)}
-          onMouseOver={() => setFocused(value)}
-          value={value}
-          disabled={disabled}
-          className={cn(
-            'relative',
-            tabsTriggerVariants({ variant, className }),
-            disabled ?
-              'disabled:pointer-events-none disabled:opacity-50'
-            : '',
-          )}
-          {...props}>
-          <span className="z-[2]">{children}</span>
+      <TabsPrimitive.Trigger
+        ref={ref}
+        onFocus={() => setFocused(value)}
+        onMouseOver={() => setFocused(value)}
+        value={value}
+        disabled={disabled}
+        className={cn(
+          'relative',
+          tabsTriggerVariants({ variant, className }),
+          disabled ?
+            'disabled:pointer-events-none disabled:opacity-50'
+          : '',
+        )}
+        {...props}>
+        <span className="z-[2]">{children}</span>
 
-          {variant === 'ghost' && (
-            <>
-              <AnimatePresence>
-                {focused === value && (
-                  <motion.div
-                    layoutId="tabs-highlight"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{
-                      type: 'spring',
-                      duration: 0.3,
-                      bounce: 0.1,
-                    }}
-                    exit={{ opacity: 0 }}
-                    className="absolute inset-0 z-[1] h-full w-full rounded-sm bg-neutral-200/75 dark:bg-muted/80"
-                  />
-                )}
-              </AnimatePresence>
-
-              {activeValue === value && (
+        {variant === 'ghost' && (
+          <>
+            <AnimatePresence>
+              {focused === value && (
                 <motion.div
-                  layoutId="tabs-underline"
-                  className="absolute -bottom-[6px] h-[2px] w-full bg-primary"
+                  layoutId={`tabs-highlight-${uniqueId ?? 'default'}-bg`}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
                   transition={{
                     type: 'spring',
                     duration: 0.3,
                     bounce: 0.1,
                   }}
+                  exit={{ opacity: 0 }}
+                  className="absolute inset-0 z-[1] h-full w-full rounded-sm bg-neutral-200/75 dark:bg-muted/80"
                 />
               )}
-            </>
-          )}
-        </TabsPrimitive.Trigger>
-      </LayoutGroup>
+            </AnimatePresence>
+
+            {activeValue === value && (
+              <motion.div
+                layoutId={`tabs-highlight-${uniqueId ?? 'default'}`}
+                layout
+                className="absolute w-full bg-primary"
+                style={{
+                  bottom: -6,
+                  height: 2,
+                  originY: '0px',
+                }}
+                transition={{
+                  type: 'spring',
+                  duration: 0.3,
+                  bounce: 0.1,
+                }}
+              />
+            )}
+          </>
+        )}
+      </TabsPrimitive.Trigger>
     )
   },
 )
