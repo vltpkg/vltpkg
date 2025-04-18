@@ -144,7 +144,6 @@ export const ItemHeader = () => {
       currentVersion?.unpackedSize ??
       currentVersion?.tarball ??
       currentVersion?.integrity ??
-      currentVersion?.unpackedSize ??
       manifest.private ??
       manifest.license)
 

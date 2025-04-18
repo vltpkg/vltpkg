@@ -144,7 +144,7 @@ const TabsTrigger = React.forwardRef<
             <AnimatePresence>
               {focused === value && (
                 <motion.div
-                  layoutId={`tabs-highlight-${uniqueId}-bg`}
+                  layoutId={`tabs-highlight-${uniqueId ?? 'default'}-bg`}
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{
@@ -160,7 +160,7 @@ const TabsTrigger = React.forwardRef<
 
             {activeValue === value && (
               <motion.div
-                layoutId={`tabs-highlight-${uniqueId}`}
+                layoutId={`tabs-highlight-${uniqueId ?? 'default'}`}
                 layout
                 className="absolute w-full bg-primary"
                 style={{
