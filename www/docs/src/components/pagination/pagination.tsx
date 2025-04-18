@@ -1,7 +1,7 @@
-import type { Props } from '@astrojs/starlight/props'
 import { Button } from '@/components/ui/button.tsx'
+import type { StarlightRouteData } from '@astrojs/starlight/route-data'
 
-export const Pagination = ({ pagination }: Props) => {
+export const Pagination = ({ pagination }: StarlightRouteData) => {
   const { next, prev } = pagination
 
   if (!next || !prev) return null

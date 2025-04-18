@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react'
 import { AlignLeft } from 'lucide-react'
-import type { Props } from '@astrojs/starlight/props'
+import type { StarlightRouteData } from '@astrojs/starlight/route-data'
 import { ScrollArea } from '@/components/ui/scroll-area'
 
-export const PageSidebar = ({ toc }: Props) => {
+export const PageSidebar = ({ toc }: StarlightRouteData) => {
   const [activeAnchor, setActiveAnchor] = useState<string | null>(
     null,
   )

@@ -1,10 +1,10 @@
-import type { Props } from '@astrojs/starlight/props'
+import type { StarlightRouteData } from '@astrojs/starlight/route-data'
 
 import AppSidebarSublist from '@/components/sidebar/sidebar-sublist.tsx'
 import { ScrollArea } from '@/components/ui/scroll-area.tsx'
 import { Button } from '@/components/ui/button.tsx'
 
-export type SidebarEntries = Props['sidebar']
+export type SidebarEntries = StarlightRouteData['sidebar']
 export type SidebarEntry = SidebarEntries[0]
 
 export type Link = Extract<SidebarEntry, { type: 'link' }>

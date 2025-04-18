@@ -1,6 +1,5 @@
 ---
 import config from 'virtual:starlight/user-config'
-import type { Props } from '@astrojs/starlight/props'
 
 import Footer from '@/components/footer/footer.tsx'
 import AppSidebar from '@/components/sidebar/sidebar.tsx'
@@ -10,7 +9,7 @@ import Logo from '@/components/header/logo.tsx'
 import MobileSidebar from '@/components/sidebar/mobile-sidebar.tsx'
 import LinearMenu from '@/components/header/linear-menu.tsx'
 
-const { sidebar, hasSidebar } = Astro.props
+const { sidebar, hasSidebar } = Astro.locals.starlightRoute
 
 const shouldRenderSearch =
   config.pagefind ||
@@ -31,7 +30,11 @@ const shouldRenderSearch =
 
       <div
         class="flex w-full items-center justify-end justify-items-end gap-4">
-        {shouldRenderSearch && <Search {...Astro.props} />}
+        {
+          shouldRenderSearch && (
+            <Search {...Astro.locals.starlightRoute} />
+          )
+        }
         <MobileSidebar client:load sidebar={sidebar} />
         <LinearMenu client:load />
       </div>

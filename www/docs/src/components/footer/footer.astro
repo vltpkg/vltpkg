@@ -1,6 +1,5 @@
 ---
-import type { Props } from '@astrojs/starlight/props'
 import Pagination from '@/components/pagination/pagination.astro'
 ---
 
-<Pagination {...Astro.props} />
+<Pagination {...Astro.locals.starlightRoute} />

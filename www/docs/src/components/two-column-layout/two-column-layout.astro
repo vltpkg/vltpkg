@@ -1,12 +1,13 @@
 ---
-import type { Props } from '@astrojs/starlight/props'
 import MobileSidebar from '@/components/page-sidebar/mobile-sidebar.tsx'
+
+const { toc } = Astro.locals.starlightRoute
 ---
 
 <div
   class="mx-auto flex h-fit max-h-full w-full max-w-screen-xl flex-col md:justify-between lg:flex-row">
   {
-    Astro.props.toc && (
+    toc && (
       <>
         {/* desktop */}
         <div class="relative sticky top-[101px] order-2 hidden h-fit lg:flex">
@@ -16,8 +17,8 @@ import MobileSidebar from '@/components/page-sidebar/mobile-sidebar.tsx'
         {/* mobile */}
         <div class="sticky top-0 z-[10] flex md:hidden">
           <MobileSidebar
+            {...Astro.locals.starlightRoute}
             client:load
-            {...({ ...Astro.props, labels: undefined } as any)}
           />
         </div>
       </>

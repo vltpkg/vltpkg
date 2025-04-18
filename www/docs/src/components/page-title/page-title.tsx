@@ -1,11 +1,11 @@
 import React from 'react'
 import { ChevronRight } from 'lucide-react'
-import type { Props } from '@astrojs/starlight/props'
+import type { StarlightRouteData } from '@astrojs/starlight/route-data'
 
 export const PageTitle = ({
   entry,
   crumbs,
-}: Props & { crumbs: string[] }) => {
+}: StarlightRouteData & { crumbs: string[] }) => {
   const { title } = entry.data as { title: string }
 
   const accumulatedPath = crumbs.reduce<string[]>(

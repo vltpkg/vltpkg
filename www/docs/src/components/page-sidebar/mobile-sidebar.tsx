@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import type { Props } from '@astrojs/starlight/props'
+import type { StarlightRouteData } from '@astrojs/starlight/route-data'
 import type { TocItem } from 'node_modules/@astrojs/starlight/utils/generateToC'
 import {
   Drawer,
@@ -13,7 +13,7 @@ import { Button } from '@/components/ui/button'
 import { X, ChevronDown, ChevronRight } from 'lucide-react'
 import { ScrollArea } from '@/components/ui/scroll-area'
 
-const MobileSidebar = ({ toc }: Props) => {
+const MobileSidebar = ({ toc }: StarlightRouteData) => {
   const [drawerOpen, setDrawerOpen] = useState<boolean>(false)
 
   return (
