@@ -4,13 +4,12 @@ exports[`help selectors view > help selectors render default 1`] = `
 
 <section class="flex h-full max-h-[calc(100svh-65px-2px-16px)] w-full flex-col overflow-y-scroll rounded-b-lg border-x-[1px] border-b-[1px]">
   <div class="flex max-w-8xl flex-col">
-    <gui-react-markdown
-      classname="prose-sm prose-neutral w-full max-w-none px-8 md:w-2/3"
-      components="[object Object]"
-    >
-      Selectors provide a powerful way to analyze your project’s dependencies using our custom query language.  
+    <div class="prose-sm prose-neutral w-full max-w-none px-8 md:w-2/3">
+      <gui-react-markdown components="[object Object]">
+        Selectors provide a powerful way to analyze your project’s dependencies using our custom query language.  
 For more information, see the [Selectors documentation](https://docs.vlt.sh/cli/selectors)
-    </gui-react-markdown>
+      </gui-react-markdown>
+    </div>
     <div class="flex flex-col gap-8 px-8 py-8">
       <div class="flex gap-2">
         <gui-input

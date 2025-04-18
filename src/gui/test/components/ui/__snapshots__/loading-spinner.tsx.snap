@@ -14,6 +14,7 @@ exports[`loading-spinner render default 1`] = `
     stroke-linecap="round"
     stroke-linejoin="round"
     class="lucide lucide-loader w-6 h-6 rounded-full animate-spin"
+    aria-hidden="true"
   >
     <path d="M12 2v4">
     </path>

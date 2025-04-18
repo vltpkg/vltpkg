@@ -106,9 +106,9 @@ export const OverviewTabContent = () => {
           <h4 className="text-sm font-medium capitalize">
             description
           </h4>
-          <Markdown className="prose-sm prose-neutral max-w-none text-sm">
-            {manifest.description}
-          </Markdown>
+          <div className="prose-sm prose-neutral max-w-none text-sm">
+            <Markdown>{manifest.description}</Markdown>
+          </div>
         </div>
       : <div className="flex h-64 w-full items-center justify-center px-6 py-4">
           <div className="flex flex-col items-center justify-center gap-3 text-center">
