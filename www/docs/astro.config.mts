@@ -27,6 +27,11 @@ const customTheme = ExpressiveCodeTheme.fromJSONString(jsoncString)
 export default defineConfig({
   site: 'https://docs.vlt.sh',
   trailingSlash: 'never',
+  markdown: {
+    shikiConfig: {
+      theme: 'css-variables',
+    },
+  },
   integrations: [
     starlight({
       head: [
@@ -55,12 +60,28 @@ export default defineConfig({
         },
       },
       title: 'vlt /vōlt/',
-      social: {
-        linkedin: 'https://www.linkedin.com/company/vltpkg',
-        twitter: 'https://twitter.com/vltpkg',
-        github: 'https://github.com/vltpkg/vltpkg',
-        discord: 'https://discord.gg/vltpkg',
-      },
+      social: [
+        {
+          icon: 'linkedin',
+          label: 'LinkedIn',
+          href: 'https://www.linkedin.com/company/vltpkg',
+        },
+        {
+          icon: 'twitter',
+          label: 'Twitter',
+          href: 'https://twitter.com/vltpkg',
+        },
+        {
+          icon: 'github',
+          label: 'GitHub',
+          href: 'https://github.com/vltpkg/vltpkg',
+        },
+        {
+          icon: 'discord',
+          label: 'Discord',
+          href: 'https://discord.gg/vltpkg',
+        },
+      ],
       components: {
         PageFrame: './src/components/page-frame/page-frame.astro',
         ContentPanel:

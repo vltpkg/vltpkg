@@ -1,13 +1,11 @@
 ---
-import type { Props } from '@astrojs/starlight/props'
 import { PageSidebar as ReactPageSidebar } from './page-sidebar.tsx'
+
+const { toc } = Astro.locals.starlightRoute
 ---
 
 {
-  Astro.props.toc && (
-    <ReactPageSidebar
-      client:load
-      {...({ ...Astro.props, labels: undefined } as any)}
-    />
+  toc && (
+    <ReactPageSidebar {...Astro.locals.starlightRoute} client:load />
   )
 }
