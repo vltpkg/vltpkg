@@ -252,6 +252,7 @@ test('fetchDetails returns the correct details including downloadsRange', async 
     },
     downloads: {
       weekly: 100,
+      downloadsPerVersion: { '1.0.0': 100 },
     },
     downloadsRange: {
       start: '2023-01-01',
@@ -290,6 +291,7 @@ test('fetchDetails from various async requests', async () => {
     },
     downloads: {
       weekly: 100,
+      downloadsPerVersion: { '1.0.0': 100 },
     },
     publisher: {
       name: 'Ruy Adorno',
