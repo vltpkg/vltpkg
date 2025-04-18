@@ -601,7 +601,7 @@ export const VersionsTabContent = () => {
                     items={versions}
                     setItems={setVersions}
                   />
-                  <div className="flex flex-col divide-y-[1px] divide-muted">
+                  <div className="flex flex-col divide-y-[1px] divide-muted overflow-hidden">
                     {paginatedVersions.map((version, idx) => {
                       const downloadsPerVersion =
                         selectedItemDetails.downloads

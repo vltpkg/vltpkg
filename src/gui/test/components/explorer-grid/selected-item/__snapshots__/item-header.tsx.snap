@@ -7,7 +7,7 @@ exports[`ItemHeader renders with a package score 1`] = `
   style="opacity: 0;"
 >
   <div class="grid w-full grid-cols-12">
-    <div class="flex gap-4 overflow-hidden overflow-x-scroll col-span-9 pb-3 pl-6 pt-6 border-r-[1px] border-muted">
+    <div class="flex gap-4 overflow-hidden col-span-9 pb-3 pl-6 pt-6 border-r-[1px] border-muted">
       <gui-avatar classname="aspect-square size-[3.75rem]">
         <gui-avatar-image
           classname="aspect-square size-[3.75rem] rounded-md border-[1px] bg-secondary object-cover"
@@ -20,39 +20,43 @@ exports[`ItemHeader renders with a package score 1`] = `
           </div>
         </gui-avatar-fallback>
       </gui-avatar>
-      <div class="flex h-full w-full flex-col justify-between">
-        <div class="flex flex-col gap-0.5">
-          <div class="flex w-full items-center gap-2">
-            <h1 class="cursor-default align-baseline text-lg font-medium">
-              item
-              <gui-inline-code
-                variant="monoGhost"
-                classname="cursor-default text-sm"
-              >
-                1.0.0
-              </gui-inline-code>
-            </h1>
-            <gui-tooltip-provider>
-              <gui-tooltip delayduration="150">
-                <gui-tooltip-trigger classname="flex items-center justify-center">
-                  <div class="cursor-default rounded-sm border-[1px] border-green-600 bg-green-400/30 p-0.5 transition-colors duration-150 hover:bg-green-400/40 dark:border-green-500 dark:bg-green-500/30 dark:hover:bg-green-500/40">
-                    <gui-arrow-big-up-dash-icon
-                      classname="text-green-600 dark:text-green-500"
-                      size="16"
-                    >
-                    </gui-arrow-big-up-dash-icon>
-                  </div>
-                </gui-tooltip-trigger>
-                <gui-tooltip-content>
-                  Newer versions available
-                </gui-tooltip-content>
-              </gui-tooltip>
-            </gui-tooltip-provider>
-            <div class="flex gap-1.5">
+      <gui-scroll-area classname="w-full overflow-x-scroll">
+        <div class="flex h-full w-full flex-col justify-between">
+          <div class="flex w-full flex-col gap-0.5">
+            <div class="flex items-center gap-2">
+              <h1 class="w-fit max-w-full cursor-default align-baseline text-lg font-medium">
+                item
+                <gui-inline-code
+                  variant="monoGhost"
+                  classname="cursor-default text-sm"
+                >
+                  1.0.0
+                </gui-inline-code>
+              </h1>
+              <gui-tooltip-provider>
+                <gui-tooltip delayduration="150">
+                  <gui-tooltip-trigger classname="flex items-center justify-center">
+                    <div class="cursor-default rounded-sm border-[1px] border-green-600 bg-green-400/30 p-0.5 transition-colors duration-150 hover:bg-green-400/40 dark:border-green-500 dark:bg-green-500/30 dark:hover:bg-green-500/40">
+                      <gui-arrow-big-up-dash-icon
+                        classname="text-green-600 dark:text-green-500"
+                        size="16"
+                      >
+                      </gui-arrow-big-up-dash-icon>
+                    </div>
+                  </gui-tooltip-trigger>
+                  <gui-tooltip-content>
+                    Newer versions available
+                  </gui-tooltip-content>
+                </gui-tooltip>
+              </gui-tooltip-provider>
+              <div class="flex gap-1.5">
+              </div>
             </div>
           </div>
         </div>
-      </div>
+        <gui-scroll-bar orientation="horizontal">
+        </gui-scroll-bar>
+      </gui-scroll-area>
     </div>
     <div
       class="flex w-full flex-col items-center justify-end col-span-3"
@@ -133,7 +137,7 @@ exports[`ItemHeader renders with custom registry item 1`] = `
   style="opacity: 0;"
 >
   <div class="grid w-full grid-cols-12">
-    <div class="flex gap-4 overflow-hidden overflow-x-scroll col-span-9 pb-3 pl-6 pt-6 border-r-[1px] border-muted">
+    <div class="flex gap-4 overflow-hidden col-span-9 pb-3 pl-6 pt-6 border-r-[1px] border-muted">
       <gui-avatar classname="aspect-square size-[3.75rem]">
         <gui-avatar-image
           classname="aspect-square size-[3.75rem] rounded-md border-[1px] bg-secondary object-cover"
@@ -146,48 +150,52 @@ exports[`ItemHeader renders with custom registry item 1`] = `
           </div>
         </gui-avatar-fallback>
       </gui-avatar>
-      <div class="flex h-full w-full flex-col justify-between">
-        <div class="flex flex-col gap-0.5">
-          <div class="flex w-full items-center gap-2">
-            <h1 class="cursor-default align-baseline text-lg font-medium">
-              item
-              <gui-inline-code
-                variant="monoGhost"
-                classname="cursor-default text-sm"
-              >
-                1.0.0
-              </gui-inline-code>
-            </h1>
-            <gui-tooltip-provider>
-              <gui-tooltip delayduration="150">
-                <gui-tooltip-trigger classname="flex items-center justify-center">
-                  <div class="cursor-default rounded-sm border-[1px] border-green-600 bg-green-400/30 p-0.5 transition-colors duration-150 hover:bg-green-400/40 dark:border-green-500 dark:bg-green-500/30 dark:hover:bg-green-500/40">
-                    <gui-arrow-big-up-dash-icon
-                      classname="text-green-600 dark:text-green-500"
-                      size="16"
-                    >
-                    </gui-arrow-big-up-dash-icon>
-                  </div>
-                </gui-tooltip-trigger>
-                <gui-tooltip-content>
-                  Newer versions available
-                </gui-tooltip-content>
-              </gui-tooltip>
-            </gui-tooltip-provider>
-            <div class="flex gap-1.5">
+      <gui-scroll-area classname="w-full overflow-x-scroll">
+        <div class="flex h-full w-full flex-col justify-between">
+          <div class="flex w-full flex-col gap-0.5">
+            <div class="flex items-center gap-2">
+              <h1 class="w-fit max-w-full cursor-default align-baseline text-lg font-medium">
+                item
+                <gui-inline-code
+                  variant="monoGhost"
+                  classname="cursor-default text-sm"
+                >
+                  1.0.0
+                </gui-inline-code>
+              </h1>
+              <gui-tooltip-provider>
+                <gui-tooltip delayduration="150">
+                  <gui-tooltip-trigger classname="flex items-center justify-center">
+                    <div class="cursor-default rounded-sm border-[1px] border-green-600 bg-green-400/30 p-0.5 transition-colors duration-150 hover:bg-green-400/40 dark:border-green-500 dark:bg-green-500/30 dark:hover:bg-green-500/40">
+                      <gui-arrow-big-up-dash-icon
+                        classname="text-green-600 dark:text-green-500"
+                        size="16"
+                      >
+                      </gui-arrow-big-up-dash-icon>
+                    </div>
+                  </gui-tooltip-trigger>
+                  <gui-tooltip-content>
+                    Newer versions available
+                  </gui-tooltip-content>
+                </gui-tooltip>
+              </gui-tooltip-provider>
+              <div class="flex gap-1.5">
+              </div>
             </div>
+            <gui-inline-code
+              displaytooltip="true"
+              tooltipduration="150"
+              tooltip="https://example.com"
+              variant="mono"
+              classname="mx-0 w-fit max-w-40 cursor-default truncate"
+            >
+              custom:item@1.0.0
+            </gui-inline-code>
           </div>
-          <gui-inline-code
-            displaytooltip="true"
-            tooltipduration="150"
-            tooltip="https://example.com"
-            variant="mono"
-            classname="mx-0 w-fit max-w-40 cursor-default truncate"
-          >
-            custom:item@1.0.0
-          </gui-inline-code>
         </div>
-      </div>
+        <gui-scroll-bar orientation="horizontal">
+        </gui-scroll-bar>
+      </gui-scroll-area>
     </div>
     <div
       class="flex w-full flex-col items-center justify-end col-span-3"
@@ -251,7 +259,7 @@ exports[`ItemHeader renders with default git host item 1`] = `
   style="opacity: 0;"
 >
   <div class="grid w-full grid-cols-12">
-    <div class="flex gap-4 overflow-hidden overflow-x-scroll col-span-9 pb-3 pl-6 pt-6 border-r-[1px] border-muted">
+    <div class="flex gap-4 overflow-hidden col-span-9 pb-3 pl-6 pt-6 border-r-[1px] border-muted">
       <gui-avatar classname="aspect-square size-[3.75rem]">
         <gui-avatar-image
           classname="aspect-square size-[3.75rem] rounded-md border-[1px] bg-secondary object-cover"
@@ -264,42 +272,46 @@ exports[`ItemHeader renders with default git host item 1`] = `
           </div>
         </gui-avatar-fallback>
       </gui-avatar>
-      <div class="flex h-full w-full flex-col justify-between">
-        <div class="flex flex-col gap-0.5">
-          <div class="flex w-full items-center gap-2">
-            <h1 class="cursor-default align-baseline text-lg font-medium">
-              item
-              <gui-inline-code
-                variant="monoGhost"
-                classname="cursor-default text-sm"
-              >
-                1.0.0
-              </gui-inline-code>
-            </h1>
-            <gui-tooltip-provider>
-              <gui-tooltip delayduration="150">
-                <gui-tooltip-trigger classname="flex items-center justify-center">
-                  <div class="cursor-default rounded-sm border-[1px] border-green-600 bg-green-400/30 p-0.5 transition-colors duration-150 hover:bg-green-400/40 dark:border-green-500 dark:bg-green-500/30 dark:hover:bg-green-500/40">
-                    <gui-arrow-big-up-dash-icon
-                      classname="text-green-600 dark:text-green-500"
-                      size="16"
-                    >
-                    </gui-arrow-big-up-dash-icon>
-                  </div>
-                </gui-tooltip-trigger>
-                <gui-tooltip-content>
-                  Newer versions available
-                </gui-tooltip-content>
-              </gui-tooltip>
-            </gui-tooltip-provider>
-            <div class="flex gap-1.5">
+      <gui-scroll-area classname="w-full overflow-x-scroll">
+        <div class="flex h-full w-full flex-col justify-between">
+          <div class="flex w-full flex-col gap-0.5">
+            <div class="flex items-center gap-2">
+              <h1 class="w-fit max-w-full cursor-default align-baseline text-lg font-medium">
+                item
+                <gui-inline-code
+                  variant="monoGhost"
+                  classname="cursor-default text-sm"
+                >
+                  1.0.0
+                </gui-inline-code>
+              </h1>
+              <gui-tooltip-provider>
+                <gui-tooltip delayduration="150">
+                  <gui-tooltip-trigger classname="flex items-center justify-center">
+                    <div class="cursor-default rounded-sm border-[1px] border-green-600 bg-green-400/30 p-0.5 transition-colors duration-150 hover:bg-green-400/40 dark:border-green-500 dark:bg-green-500/30 dark:hover:bg-green-500/40">
+                      <gui-arrow-big-up-dash-icon
+                        classname="text-green-600 dark:text-green-500"
+                        size="16"
+                      >
+                      </gui-arrow-big-up-dash-icon>
+                    </div>
+                  </gui-tooltip-trigger>
+                  <gui-tooltip-content>
+                    Newer versions available
+                  </gui-tooltip-content>
+                </gui-tooltip>
+              </gui-tooltip-provider>
+              <div class="flex gap-1.5">
+              </div>
             </div>
+            <gui-inline-code classname="mx-0 w-fit max-w-40 cursor-default truncate">
+              git:{ref}
+            </gui-inline-code>
           </div>
-          <gui-inline-code classname="mx-0 w-fit max-w-40 cursor-default truncate">
-            git:{ref}
-          </gui-inline-code>
         </div>
-      </div>
+        <gui-scroll-bar orientation="horizontal">
+        </gui-scroll-bar>
+      </gui-scroll-area>
     </div>
     <div
       class="flex w-full flex-col items-center justify-end col-span-3"
@@ -363,7 +375,7 @@ exports[`ItemHeader renders with default item 1`] = `
   style="opacity: 0;"
 >
   <div class="grid w-full grid-cols-12">
-    <div class="flex gap-4 overflow-hidden overflow-x-scroll col-span-9 pb-3 pl-6 pt-6 border-r-[1px] border-muted">
+    <div class="flex gap-4 overflow-hidden col-span-9 pb-3 pl-6 pt-6 border-r-[1px] border-muted">
       <gui-avatar classname="aspect-square size-[3.75rem]">
         <gui-avatar-image
           classname="aspect-square size-[3.75rem] rounded-md border-[1px] bg-secondary object-cover"
@@ -376,39 +388,43 @@ exports[`ItemHeader renders with default item 1`] = `
           </div>
         </gui-avatar-fallback>
       </gui-avatar>
-      <div class="flex h-full w-full flex-col justify-between">
-        <div class="flex flex-col gap-0.5">
-          <div class="flex w-full items-center gap-2">
-            <h1 class="cursor-default align-baseline text-lg font-medium">
-              item
-              <gui-inline-code
-                variant="monoGhost"
-                classname="cursor-default text-sm"
-              >
-                1.0.0
-              </gui-inline-code>
-            </h1>
-            <gui-tooltip-provider>
-              <gui-tooltip delayduration="150">
-                <gui-tooltip-trigger classname="flex items-center justify-center">
-                  <div class="cursor-default rounded-sm border-[1px] border-green-600 bg-green-400/30 p-0.5 transition-colors duration-150 hover:bg-green-400/40 dark:border-green-500 dark:bg-green-500/30 dark:hover:bg-green-500/40">
-                    <gui-arrow-big-up-dash-icon
-                      classname="text-green-600 dark:text-green-500"
-                      size="16"
-                    >
-                    </gui-arrow-big-up-dash-icon>
-                  </div>
-                </gui-tooltip-trigger>
-                <gui-tooltip-content>
-                  Newer versions available
-                </gui-tooltip-content>
-              </gui-tooltip>
-            </gui-tooltip-provider>
-            <div class="flex gap-1.5">
+      <gui-scroll-area classname="w-full overflow-x-scroll">
+        <div class="flex h-full w-full flex-col justify-between">
+          <div class="flex w-full flex-col gap-0.5">
+            <div class="flex items-center gap-2">
+              <h1 class="w-fit max-w-full cursor-default align-baseline text-lg font-medium">
+                item
+                <gui-inline-code
+                  variant="monoGhost"
+                  classname="cursor-default text-sm"
+                >
+                  1.0.0
+                </gui-inline-code>
+              </h1>
+              <gui-tooltip-provider>
+                <gui-tooltip delayduration="150">
+                  <gui-tooltip-trigger classname="flex items-center justify-center">
+                    <div class="cursor-default rounded-sm border-[1px] border-green-600 bg-green-400/30 p-0.5 transition-colors duration-150 hover:bg-green-400/40 dark:border-green-500 dark:bg-green-500/30 dark:hover:bg-green-500/40">
+                      <gui-arrow-big-up-dash-icon
+                        classname="text-green-600 dark:text-green-500"
+                        size="16"
+                      >
+                      </gui-arrow-big-up-dash-icon>
+                    </div>
+                  </gui-tooltip-trigger>
+                  <gui-tooltip-content>
+                    Newer versions available
+                  </gui-tooltip-content>
+                </gui-tooltip>
+              </gui-tooltip-provider>
+              <div class="flex gap-1.5">
+              </div>
             </div>
           </div>
         </div>
-      </div>
+        <gui-scroll-bar orientation="horizontal">
+        </gui-scroll-bar>
+      </gui-scroll-area>
     </div>
     <div
       class="flex w-full flex-col items-center justify-end col-span-3"
@@ -472,7 +488,7 @@ exports[`ItemHeader renders with insights 1`] = `
   style="opacity: 0;"
 >
   <div class="grid w-full grid-cols-12">
-    <div class="flex gap-4 overflow-hidden overflow-x-scroll col-span-9 pb-3 pl-6 pt-6 border-r-[1px] border-muted">
+    <div class="flex gap-4 overflow-hidden col-span-9 pb-3 pl-6 pt-6 border-r-[1px] border-muted">
       <gui-avatar classname="aspect-square size-[3.75rem]">
         <gui-avatar-image
           classname="aspect-square size-[3.75rem] rounded-md border-[1px] bg-secondary object-cover"
@@ -485,39 +501,43 @@ exports[`ItemHeader renders with insights 1`] = `
           </div>
         </gui-avatar-fallback>
       </gui-avatar>
-      <div class="flex h-full w-full flex-col justify-between">
-        <div class="flex flex-col gap-0.5">
-          <div class="flex w-full items-center gap-2">
-            <h1 class="cursor-default align-baseline text-lg font-medium">
-              item
-              <gui-inline-code
-                variant="monoGhost"
-                classname="cursor-default text-sm"
-              >
-                1.0.0
-              </gui-inline-code>
-            </h1>
-            <gui-tooltip-provider>
-              <gui-tooltip delayduration="150">
-                <gui-tooltip-trigger classname="flex items-center justify-center">
-                  <div class="cursor-default rounded-sm border-[1px] border-green-600 bg-green-400/30 p-0.5 transition-colors duration-150 hover:bg-green-400/40 dark:border-green-500 dark:bg-green-500/30 dark:hover:bg-green-500/40">
-                    <gui-arrow-big-up-dash-icon
-                      classname="text-green-600 dark:text-green-500"
-                      size="16"
-                    >
-                    </gui-arrow-big-up-dash-icon>
-                  </div>
-                </gui-tooltip-trigger>
-                <gui-tooltip-content>
-                  Newer versions available
-                </gui-tooltip-content>
-              </gui-tooltip>
-            </gui-tooltip-provider>
-            <div class="flex gap-1.5">
+      <gui-scroll-area classname="w-full overflow-x-scroll">
+        <div class="flex h-full w-full flex-col justify-between">
+          <div class="flex w-full flex-col gap-0.5">
+            <div class="flex items-center gap-2">
+              <h1 class="w-fit max-w-full cursor-default align-baseline text-lg font-medium">
+                item
+                <gui-inline-code
+                  variant="monoGhost"
+                  classname="cursor-default text-sm"
+                >
+                  1.0.0
+                </gui-inline-code>
+              </h1>
+              <gui-tooltip-provider>
+                <gui-tooltip delayduration="150">
+                  <gui-tooltip-trigger classname="flex items-center justify-center">
+                    <div class="cursor-default rounded-sm border-[1px] border-green-600 bg-green-400/30 p-0.5 transition-colors duration-150 hover:bg-green-400/40 dark:border-green-500 dark:bg-green-500/30 dark:hover:bg-green-500/40">
+                      <gui-arrow-big-up-dash-icon
+                        classname="text-green-600 dark:text-green-500"
+                        size="16"
+                      >
+                      </gui-arrow-big-up-dash-icon>
+                    </div>
+                  </gui-tooltip-trigger>
+                  <gui-tooltip-content>
+                    Newer versions available
+                  </gui-tooltip-content>
+                </gui-tooltip>
+              </gui-tooltip-provider>
+              <div class="flex gap-1.5">
+              </div>
             </div>
           </div>
         </div>
-      </div>
+        <gui-scroll-bar orientation="horizontal">
+        </gui-scroll-bar>
+      </gui-scroll-area>
     </div>
     <div
       class="flex w-full flex-col items-center justify-end col-span-3"
@@ -581,7 +601,7 @@ exports[`ItemHeader renders with scoped registry item 1`] = `
   style="opacity: 0;"
 >
   <div class="grid w-full grid-cols-12">
-    <div class="flex gap-4 overflow-hidden overflow-x-scroll col-span-9 pb-3 pl-6 pt-6 border-r-[1px] border-muted">
+    <div class="flex gap-4 overflow-hidden col-span-9 pb-3 pl-6 pt-6 border-r-[1px] border-muted">
       <gui-avatar classname="aspect-square size-[3.75rem]">
         <gui-avatar-image
           classname="aspect-square size-[3.75rem] rounded-md border-[1px] bg-secondary object-cover"
@@ -594,48 +614,52 @@ exports[`ItemHeader renders with scoped registry item 1`] = `
           </div>
         </gui-avatar-fallback>
       </gui-avatar>
-      <div class="flex h-full w-full flex-col justify-between">
-        <div class="flex flex-col gap-0.5">
-          <div class="flex w-full items-center gap-2">
-            <h1 class="cursor-default align-baseline text-lg font-medium">
-              item
-              <gui-inline-code
-                variant="monoGhost"
-                classname="cursor-default text-sm"
-              >
-                1.0.0
-              </gui-inline-code>
-            </h1>
-            <gui-tooltip-provider>
-              <gui-tooltip delayduration="150">
-                <gui-tooltip-trigger classname="flex items-center justify-center">
-                  <div class="cursor-default rounded-sm border-[1px] border-green-600 bg-green-400/30 p-0.5 transition-colors duration-150 hover:bg-green-400/40 dark:border-green-500 dark:bg-green-500/30 dark:hover:bg-green-500/40">
-                    <gui-arrow-big-up-dash-icon
-                      classname="text-green-600 dark:text-green-500"
-                      size="16"
-                    >
-                    </gui-arrow-big-up-dash-icon>
-                  </div>
-                </gui-tooltip-trigger>
-                <gui-tooltip-content>
-                  Newer versions available
-                </gui-tooltip-content>
-              </gui-tooltip>
-            </gui-tooltip-provider>
-            <div class="flex gap-1.5">
+      <gui-scroll-area classname="w-full overflow-x-scroll">
+        <div class="flex h-full w-full flex-col justify-between">
+          <div class="flex w-full flex-col gap-0.5">
+            <div class="flex items-center gap-2">
+              <h1 class="w-fit max-w-full cursor-default align-baseline text-lg font-medium">
+                item
+                <gui-inline-code
+                  variant="monoGhost"
+                  classname="cursor-default text-sm"
+                >
+                  1.0.0
+                </gui-inline-code>
+              </h1>
+              <gui-tooltip-provider>
+                <gui-tooltip delayduration="150">
+                  <gui-tooltip-trigger classname="flex items-center justify-center">
+                    <div class="cursor-default rounded-sm border-[1px] border-green-600 bg-green-400/30 p-0.5 transition-colors duration-150 hover:bg-green-400/40 dark:border-green-500 dark:bg-green-500/30 dark:hover:bg-green-500/40">
+                      <gui-arrow-big-up-dash-icon
+                        classname="text-green-600 dark:text-green-500"
+                        size="16"
+                      >
+                      </gui-arrow-big-up-dash-icon>
+                    </div>
+                  </gui-tooltip-trigger>
+                  <gui-tooltip-content>
+                    Newer versions available
+                  </gui-tooltip-content>
+                </gui-tooltip>
+              </gui-tooltip-provider>
+              <div class="flex gap-1.5">
+              </div>
             </div>
+            <gui-inline-code
+              displaytooltip="true"
+              tooltip="http://custom-scope"
+              tooltipduration="150"
+              variant="mono"
+              classname="mx-0 w-fit max-w-40 cursor-default truncate"
+            >
+              item@1.0.0
+            </gui-inline-code>
           </div>
-          <gui-inline-code
-            displaytooltip="true"
-            tooltip="http://custom-scope"
-            tooltipduration="150"
-            variant="mono"
-            classname="mx-0 w-fit max-w-40 cursor-default truncate"
-          >
-            item@1.0.0
-          </gui-inline-code>
         </div>
-      </div>
+        <gui-scroll-bar orientation="horizontal">
+        </gui-scroll-bar>
+      </gui-scroll-area>
     </div>
     <div
       class="flex w-full flex-col items-center justify-end col-span-3"

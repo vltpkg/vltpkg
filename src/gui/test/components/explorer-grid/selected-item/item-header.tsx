@@ -86,6 +86,11 @@ vi.mock(
   },
 )
 
+vi.mock('@/components/ui/scroll-area.jsx', () => ({
+  ScrollArea: 'gui-scroll-area',
+  ScrollBar: 'gui-scroll-bar',
+}))
+
 expect.addSnapshotSerializer({
   serialize: v => html(v),
   test: () => true,

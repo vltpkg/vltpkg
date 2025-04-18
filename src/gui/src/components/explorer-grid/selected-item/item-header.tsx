@@ -40,6 +40,10 @@ import { formatDistanceStrict } from 'date-fns'
 import { labelClassNamesMap } from '../label-helper.ts'
 import { CopyToClipboard } from '@/components/ui/copy-to-clipboard.jsx'
 import { formatDownloadSize } from '@/utils/format-download-size.js'
+import {
+  ScrollArea,
+  ScrollBar,
+} from '@/components/ui/scroll-area.jsx'
 
 const SpecOrigin = ({
   item,
@@ -129,15 +133,18 @@ const Downloads = ({ className }: { className?: string }) => {
 }
 
 export const ItemHeader = () => {
-  const { selectedItemDetails, manifest, unpackedSize } =
-    useSelectedItem()
-  const tarballUrl = selectedItemDetails.versions?.[0]?.tarball
+  const { selectedItemDetails, manifest } = useSelectedItem()
+  const currentVersion = selectedItemDetails.versions?.find(
+    version => version.version === manifest?.version,
+  )
   const hasMetadata =
     manifest &&
     (manifest.engines ??
       manifest.type ??
-      unpackedSize ??
-      tarballUrl ??
+      currentVersion?.unpackedSize ??
+      currentVersion?.tarball ??
+      currentVersion?.integrity ??
+      currentVersion?.unpackedSize ??
       manifest.private ??
       manifest.license)
 
@@ -198,11 +205,15 @@ export const ItemHeader = () => {
 }
 
 const PackageMetadata = ({ className }: { className?: string }) => {
-  const { manifest, unpackedSize, selectedItemDetails } =
-    useSelectedItem()
-  const tarballUrl = selectedItemDetails.versions?.[0]?.tarball
+  const { manifest, selectedItemDetails } = useSelectedItem()
   const INLINE_CODE_STYLES =
     'text-muted-foreground max-w-28 overflow-hidden text-nowrap truncate cursor-default relative mx-0 inline-flex items-center font-inter font-medium tracking-wide'
+  const currentVersion = selectedItemDetails.versions?.find(
+    version => version.version === manifest?.version,
+  )
+  const tarballUrl = currentVersion?.tarball
+  const integrity = currentVersion?.integrity
+  const integrityShort = integrity?.split('-')[1]?.slice(0, 6)
 
   if (!manifest) return null
 
@@ -221,98 +232,113 @@ const PackageMetadata = ({ className }: { className?: string }) => {
   ]
 
   return (
-    <div className={cn('flex w-full gap-2', className)}>
-      {manifest.private && (
-        <InlineCode
-          variant="unstyled"
-          tooltip="Private package"
-          tooltipDuration={150}
-          displayTooltip
-          className={cn(
-            INLINE_CODE_STYLES,
-            'gap-1 bg-rose-500/20 px-2 text-rose-600 dark:bg-rose-500/20 dark:text-rose-400',
-          )}>
-          <EyeOff size={16} className="mb-0.5" />
-          Private
-        </InlineCode>
-      )}
-      {manifest.license &&
-        LICENSE_TYPES.some(
-          i =>
-            i.toLowerCase() ===
-            manifest.license?.trim().toLowerCase(),
-        ) && (
+    <ScrollArea
+      className={cn(
+        'w-full overflow-hidden overflow-x-scroll',
+        className,
+      )}>
+      <div className="flex w-max gap-2">
+        {manifest.private && (
+          <InlineCode
+            variant="unstyled"
+            tooltip="Private package"
+            tooltipDuration={150}
+            displayTooltip
+            className={cn(
+              INLINE_CODE_STYLES,
+              'gap-1 bg-rose-500/20 px-2 text-rose-600 dark:bg-rose-500/20 dark:text-rose-400',
+            )}>
+            <EyeOff size={16} className="mb-0.5" />
+            Private
+          </InlineCode>
+        )}
+        {manifest.license &&
+          LICENSE_TYPES.some(
+            i =>
+              i.toLowerCase() ===
+              manifest.license?.trim().toLowerCase(),
+          ) && (
+            <InlineCode
+              variant="mono"
+              tooltipDuration={150}
+              displayTooltip
+              tooltip={`${manifest.license} license`}
+              className={cn(INLINE_CODE_STYLES, 'gap-1 px-2')}>
+              <Scale size={16} className="mb-0.5" />
+              <span className="truncate">{manifest.license}</span>
+            </InlineCode>
+          )}
+        {manifest.type && (
+          <InlineCode
+            tooltipDuration={150}
+            displayTooltip
+            tooltip={manifest.type === 'module' ? 'ESM' : 'CJS'}
+            variant="mono"
+            className={cn(INLINE_CODE_STYLES)}>
+            {manifest.type === 'module' ? 'ESM' : 'CJS'}
+          </InlineCode>
+        )}
+        {manifest.engines &&
+          isRecord(manifest.engines) &&
+          Object.entries(manifest.engines).map(
+            ([engine, version], idx) => (
+              <InlineCode
+                variant="mono"
+                tooltip={`${engine} ${version}`}
+                tooltipDuration={150}
+                displayTooltip
+                className={cn(
+                  INLINE_CODE_STYLES,
+                  'w-fit px-2 pl-7',
+                  engine === 'npm' && 'pl-8',
+                )}
+                key={`${engine}-${version}-${idx}`}>
+                {isGlyphIcon(engine) && (
+                  <GlyphIcon
+                    color="green"
+                    icon={engine}
+                    size="lg"
+                    className={cn(
+                      'absolute left-2',
+                      engine === 'npm' && 'top-[0.1rem] text-red-500',
+                    )}
+                  />
+                )}
+                <span className="truncate">{version}</span>
+              </InlineCode>
+            ),
+          )}
+        {currentVersion?.unpackedSize && (
           <InlineCode
             variant="mono"
             tooltipDuration={150}
+            tooltip={`${formatDownloadSize(currentVersion.unpackedSize)} unpacked size`}
             displayTooltip
-            tooltip={`${manifest.license} license`}
             className={cn(INLINE_CODE_STYLES, 'gap-1 px-2')}>
-            <Scale size={16} className="mb-0.5" />
-            {manifest.license}
+            <Download size={16} className="mb-0.5" />
+            {formatDownloadSize(currentVersion.unpackedSize)}
           </InlineCode>
         )}
-      {manifest.type && (
-        <InlineCode
-          tooltipDuration={150}
-          displayTooltip
-          tooltip={manifest.type === 'module' ? 'ESM' : 'CJS'}
-          variant="mono"
-          className={cn(INLINE_CODE_STYLES)}>
-          {manifest.type === 'module' ? 'ESM' : 'CJS'}
-        </InlineCode>
-      )}
-      {manifest.engines &&
-        isRecord(manifest.engines) &&
-        Object.entries(manifest.engines).map(
-          ([engine, version], idx) => (
-            <InlineCode
-              variant="mono"
-              tooltip={`${engine} ${version}`}
-              tooltipDuration={150}
-              displayTooltip
-              className={cn(
-                INLINE_CODE_STYLES,
-                'w-fit px-2 pl-7',
-                engine === 'npm' && 'pl-8',
-              )}
-              key={`${engine}-${version}-${idx}`}>
-              {isGlyphIcon(engine) && (
-                <GlyphIcon
-                  color="green"
-                  icon={engine}
-                  size="lg"
-                  className={cn(
-                    'absolute left-2',
-                    engine === 'npm' && 'top-[0.1rem] text-red-500',
-                  )}
-                />
-              )}
-              <span className="truncate">{version}</span>
-            </InlineCode>
-          ),
+        {tarballUrl && (
+          <CopyToClipboard
+            className="font-inter"
+            toolTipText="Copy tarball URL"
+            copyValue={tarballUrl}>
+            <Package size={16} />
+            Tarball
+          </CopyToClipboard>
         )}
-      {unpackedSize && (
-        <InlineCode
-          variant="mono"
-          tooltipDuration={150}
-          tooltip={`${formatDownloadSize(unpackedSize)} unpacked size`}
-          displayTooltip
-          className={cn(INLINE_CODE_STYLES, 'gap-1 px-2')}>
-          <Download size={16} className="mb-0.5" />
-          {formatDownloadSize(unpackedSize)}
-        </InlineCode>
-      )}
-      {tarballUrl && (
-        <CopyToClipboard
-          className="font-inter"
-          toolTipText="Copy tarball URL"
-          copyValue={tarballUrl}>
-          <Package size={16} />
-          Tarball
-        </CopyToClipboard>
-      )}
-    </div>
+        {integrity && (
+          <CopyToClipboard
+            className="font-inter"
+            toolTipText={`Copy Integrity value: ${integrityShort}`}
+            copyValue={integrity}>
+            Integrity
+          </CopyToClipboard>
+        )}
+      </div>
+      <ScrollBar orientation="horizontal" />
+    </ScrollArea>
   )
 }
 
@@ -358,11 +384,7 @@ const PackageImageSpec = ({ className }: { className?: string }) => {
   const specOptions = useGraphStore(state => state.specOptions)
 
   return (
-    <div
-      className={cn(
-        'flex gap-4 overflow-hidden overflow-x-scroll',
-        className,
-      )}>
+    <div className={cn('flex gap-4 overflow-hidden', className)}>
       <Avatar className="aspect-square size-[3.75rem]">
         {selectedItemDetails.favicon && (
           <AvatarImage
@@ -385,58 +407,62 @@ const PackageImageSpec = ({ className }: { className?: string }) => {
         </AvatarFallback>
       </Avatar>
 
-      <div className="flex h-full w-full flex-col justify-between">
-        <div className="flex flex-col gap-0.5">
-          <div className="flex w-full items-center gap-2">
-            <h1 className="cursor-default align-baseline text-lg font-medium">
-              {selectedItem.title}
-              <InlineCode
-                variant="monoGhost"
-                className="cursor-default text-sm">
-                {selectedItem.version}
-              </InlineCode>
-            </h1>
+      <ScrollArea className="w-full overflow-x-scroll">
+        <div className="flex h-full w-full flex-col justify-between">
+          <div className="flex w-full flex-col gap-0.5">
+            <div className="flex items-center gap-2">
+              <h1 className="w-fit max-w-full cursor-default align-baseline text-lg font-medium">
+                {selectedItem.title}
+                <InlineCode
+                  variant="monoGhost"
+                  className="cursor-default text-sm">
+                  {selectedItem.version}
+                </InlineCode>
+              </h1>
 
-            {selectedItemDetails.greaterVersions &&
-              selectedItemDetails.greaterVersions.length > 0 && (
-                <TooltipProvider>
-                  <Tooltip delayDuration={150}>
-                    <TooltipTrigger
-                      onClick={() => setActiveTab('versions')}
-                      className="flex items-center justify-center">
-                      <div className="cursor-default rounded-sm border-[1px] border-green-600 bg-green-400/30 p-0.5 transition-colors duration-150 hover:bg-green-400/40 dark:border-green-500 dark:bg-green-500/30 dark:hover:bg-green-500/40">
-                        <ArrowBigUpDash
-                          className="text-green-600 dark:text-green-500"
-                          size={16}
-                        />
-                      </div>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      Newer versions available
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              )}
+              {selectedItemDetails.greaterVersions &&
+                selectedItemDetails.greaterVersions.length > 0 && (
+                  <TooltipProvider>
+                    <Tooltip delayDuration={150}>
+                      <TooltipTrigger
+                        onClick={() => setActiveTab('versions')}
+                        className="flex items-center justify-center">
+                        <div className="cursor-default rounded-sm border-[1px] border-green-600 bg-green-400/30 p-0.5 transition-colors duration-150 hover:bg-green-400/40 dark:border-green-500 dark:bg-green-500/30 dark:hover:bg-green-500/40">
+                          <ArrowBigUpDash
+                            className="text-green-600 dark:text-green-500"
+                            size={16}
+                          />
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        Newer versions available
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                )}
 
-            <div className="flex gap-1.5">
-              {selectedItem.labels?.map((label, idx) => (
-                <Badge
-                  className={labelClassNamesMap.get(label) || ''}
-                  key={`${selectedItem.title}-${label}-${idx}`}>
-                  {label}
-                </Badge>
-              ))}
+              <div className="flex gap-1.5">
+                {selectedItem.labels?.map((label, idx) => (
+                  <Badge
+                    className={labelClassNamesMap.get(label) || ''}
+                    key={`${selectedItem.title}-${label}-${idx}`}>
+                    {label}
+                  </Badge>
+                ))}
+              </div>
             </div>
-          </div>
 
-          {specOptions && (
-            <SpecOrigin
-              item={selectedItem}
-              specOptions={specOptions}
-            />
-          )}
+            {specOptions && (
+              <SpecOrigin
+                item={selectedItem}
+                specOptions={specOptions}
+              />
+            )}
+          </div>
         </div>
-      </div>
+
+        <ScrollBar orientation="horizontal" />
+      </ScrollArea>
     </div>
   )
 }

@@ -113,7 +113,7 @@ exports[`VersionsTabContent filters newer versions 1`] = `
           </button>
         </div>
       </div>
-      <div class="flex flex-col divide-y-[1px] divide-muted">
+      <div class="flex flex-col divide-y-[1px] divide-muted overflow-hidden">
         <div>
           <div class="group/item flex cursor-default grid-cols-12 flex-col gap-4 rounded-sm py-4 text-foreground transition-colors first:border-t-[0px] hover:bg-muted xl:grid xl:gap-0 xl:px-2 xl:py-1.5">
             <div class="order-1 col-span-2 flex w-full flex-col justify-start gap-1 xl:ml-1 xl:justify-center xl:gap-0">
@@ -368,7 +368,7 @@ exports[`VersionsTabContent filters pre-releases 1`] = `
           </button>
         </div>
       </div>
-      <div class="flex flex-col divide-y-[1px] divide-muted">
+      <div class="flex flex-col divide-y-[1px] divide-muted overflow-hidden">
         <div>
           <div class="group/item flex cursor-default grid-cols-12 flex-col gap-4 rounded-sm py-4 text-foreground transition-colors first:border-t-[0px] hover:bg-muted xl:grid xl:gap-0 xl:px-2 xl:py-1.5">
             <div class="order-1 col-span-2 flex w-full flex-col justify-start gap-1 xl:ml-1 xl:justify-center xl:gap-0">
@@ -623,7 +623,7 @@ exports[`VersionsTabContent filters versions 1`] = `
           </button>
         </div>
       </div>
-      <div class="flex flex-col divide-y-[1px] divide-muted">
+      <div class="flex flex-col divide-y-[1px] divide-muted overflow-hidden">
         <div>
           <div class="group/item flex cursor-default grid-cols-12 flex-col gap-4 rounded-sm py-4 text-foreground transition-colors first:border-t-[0px] hover:bg-muted xl:grid xl:gap-0 xl:px-2 xl:py-1.5">
             <div class="order-1 col-span-2 flex w-full flex-col justify-start gap-1 xl:ml-1 xl:justify-center xl:gap-0">
@@ -878,7 +878,7 @@ exports[`VersionsTabContent handles missing manifest version 1`] = `
           </button>
         </div>
       </div>
-      <div class="flex flex-col divide-y-[1px] divide-muted">
+      <div class="flex flex-col divide-y-[1px] divide-muted overflow-hidden">
         <div>
           <div class="group/item flex cursor-default grid-cols-12 flex-col gap-4 rounded-sm py-4 text-foreground transition-colors first:border-t-[0px] hover:bg-muted xl:grid xl:gap-0 xl:px-2 xl:py-1.5">
             <div class="order-1 col-span-2 flex w-full flex-col justify-start gap-1 xl:ml-1 xl:justify-center xl:gap-0">
@@ -1156,7 +1156,7 @@ exports[`VersionsTabContent renders with versions 1`] = `
           </button>
         </div>
       </div>
-      <div class="flex flex-col divide-y-[1px] divide-muted">
+      <div class="flex flex-col divide-y-[1px] divide-muted overflow-hidden">
         <div>
           <div class="group/item flex cursor-default grid-cols-12 flex-col gap-4 rounded-sm py-4 text-foreground transition-colors first:border-t-[0px] hover:bg-muted xl:grid xl:gap-0 xl:px-2 xl:py-1.5">
             <div class="order-1 col-span-2 flex w-full flex-col justify-start gap-1 xl:ml-1 xl:justify-center xl:gap-0">
@@ -1411,7 +1411,7 @@ exports[`VersionsTabContent toggles pre-releases 1`] = `
           </button>
         </div>
       </div>
-      <div class="flex flex-col divide-y-[1px] divide-muted">
+      <div class="flex flex-col divide-y-[1px] divide-muted overflow-hidden">
         <div>
           <div class="group/item flex cursor-default grid-cols-12 flex-col gap-4 rounded-sm py-4 text-foreground transition-colors first:border-t-[0px] hover:bg-muted xl:grid xl:gap-0 xl:px-2 xl:py-1.5">
             <div class="order-1 col-span-2 flex w-full flex-col justify-start gap-1 xl:ml-1 xl:justify-center xl:gap-0">
