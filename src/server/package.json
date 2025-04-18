@@ -39,7 +39,6 @@
   },
   "devDependencies": {
     "@eslint/js": "catalog:",
-    "@types/eslint__js": "catalog:",
     "@types/node": "catalog:",
     "@types/serve-handler": "catalog:",
     "@vltpkg/package-info": "workspace:*",

@@ -26,11 +26,10 @@
   },
   "devDependencies": {
     "@eslint/js": "catalog:",
-    "@types/eslint__js": "catalog:",
     "@types/node": "catalog:",
     "@vltpkg/benchmark": "workspace:*",
     "eslint": "catalog:",
-    "npm-pick-manifest": "^9.1.0",
+    "npm-pick-manifest": "^10.0.0",
     "prettier": "catalog:",
     "tap": "catalog:",
     "tshy": "catalog:",
