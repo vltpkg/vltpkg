@@ -358,7 +358,11 @@ const PackageImageSpec = ({ className }: { className?: string }) => {
   const specOptions = useGraphStore(state => state.specOptions)
 
   return (
-    <div className={cn('flex gap-4', className)}>
+    <div
+      className={cn(
+        'flex gap-4 overflow-hidden overflow-x-scroll',
+        className,
+      )}>
       <Avatar className="aspect-square size-[3.75rem]">
         {selectedItemDetails.favicon && (
           <AvatarImage
@@ -383,8 +387,8 @@ const PackageImageSpec = ({ className }: { className?: string }) => {
 
       <div className="flex h-full w-full flex-col justify-between">
         <div className="flex flex-col gap-0.5">
-          <div className="flex items-center gap-2">
-            <h1 className="cursor-default truncate align-baseline text-lg font-medium">
+          <div className="flex w-full items-center gap-2">
+            <h1 className="cursor-default align-baseline text-lg font-medium">
               {selectedItem.title}
               <InlineCode
                 variant="monoGhost"
@@ -414,7 +418,7 @@ const PackageImageSpec = ({ className }: { className?: string }) => {
                 </TooltipProvider>
               )}
 
-            <div className="flex gap-1.5 overflow-y-scroll">
+            <div className="flex gap-1.5">
               {selectedItem.labels?.map((label, idx) => (
                 <Badge
                   className={labelClassNamesMap.get(label) || ''}
