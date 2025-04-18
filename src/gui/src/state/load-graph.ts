@@ -171,9 +171,7 @@ export const load = (transfered: TransferData): LoadResponse => {
     })
     node.toString = () => stringifyNode(node)
     // should set the main importer in the first iteration
-    if (!graph.mainImporter) {
-      graph.mainImporter = node
-    }
+    graph.mainImporter ??= node
     graph.importers.add(node)
   }
 

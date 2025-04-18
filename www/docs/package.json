@@ -33,7 +33,7 @@
     "tailwind-merge": "^2.5.2",
     "tailwindcss": "^3.4.14",
     "tailwindcss-animate": "^1.0.7",
-    "typedoc": "^0.27.6",
+    "typedoc": "0.27.6",
     "typedoc-plugin-frontmatter": "^1.1.2",
     "typedoc-plugin-markdown": "^4.4.0",
     "typedoc-plugin-remark": "^1.2.2",
@@ -42,7 +42,6 @@
   },
   "devDependencies": {
     "@eslint/js": "catalog:",
-    "@types/eslint__js": "catalog:",
     "@types/mdast": "^4.0.4",
     "@types/node": "catalog:",
     "eslint": "catalog:",
