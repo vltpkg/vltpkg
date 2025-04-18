@@ -254,7 +254,7 @@ const fixScripts = async ws => {
       }
     : ws.pj.devDependencies?.vitest ?
       {
-        test: 'vitest',
+        test: 'vitest --no-watch',
         snap: 'vitest --no-watch -u',
       }
     : {},

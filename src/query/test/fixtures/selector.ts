@@ -52,17 +52,13 @@ export const selectorFixture =
     partial?: GraphSelectionState,
     loose?: boolean,
   ): Promise<FixtureResult> => {
-    if (!initial) {
-      initial = {
-        edges: new Set(),
-        nodes: new Set(),
-      }
+    initial ??= {
+      edges: new Set(),
+      nodes: new Set(),
     }
-    if (!partial) {
-      partial = {
-        edges: new Set(),
-        nodes: new Set(),
-      }
+    partial ??= {
+      edges: new Set(),
+      nodes: new Set(),
     }
     let current: PostcssNode
     if (typeof query === 'string') {
