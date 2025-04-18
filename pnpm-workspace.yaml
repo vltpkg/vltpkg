@@ -5,8 +5,8 @@ packages:
 catalog:
   '@eslint/js': ^9.25.0
   '@types/node': ^22.14.1
-  '@types/react': ^18.3.18
-  '@types/react-dom': ^18.3.1
+  '@types/react': ^18.3.20
+  '@types/react-dom': ^18.3.6
   '@types/serve-handler': ^6.1.4
   ansi-to-pre: ^1.0.6
   chalk: ^5.4.1
