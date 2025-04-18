@@ -70,7 +70,7 @@ catalogs:
       specifier: ^7.7.1
       version: 7.7.1
     serve-handler:
-      specifier: ^6.1.5
+      specifier: ^6.1.6
       version: 6.1.6
     tap:
       specifier: ^21.1.0
