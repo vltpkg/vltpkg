@@ -75,7 +75,7 @@ const MotionContent = motion.create(CollapsiblePrimitive.Content)
  */
 
 const CollapsibleContent = React.forwardRef<
-  React.ElementRef<typeof MotionContent>,
+  HTMLDivElement,
   CollapsibleContentProps & MotionProps
 >(({ children, ...props }, ref) => {
   const { open } = useCollapsibleContext()
