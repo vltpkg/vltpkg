@@ -28,9 +28,9 @@
     "@vltpkg/types": "workspace:*",
     "@vltpkg/url-open": "workspace:*",
     "@vltpkg/xdg": "workspace:*",
-    "cache-control-parser": "^2.0.5",
+    "cache-control-parser": "^2.0.6",
     "package-json-from-dist": "catalog:",
-    "undici": "^7.5.0"
+    "undici": "^7.8.0"
   },
   "devDependencies": {
     "@eslint/js": "catalog:",
