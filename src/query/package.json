@@ -26,7 +26,7 @@
     "@vltpkg/semver": "workspace:*",
     "@vltpkg/types": "workspace:*",
     "p-retry": "catalog:",
-    "postcss-selector-parser": "^6.1.2"
+    "postcss-selector-parser": "^7.1.0"
   },
   "devDependencies": {
     "@eslint/js": "catalog:",
