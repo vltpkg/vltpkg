@@ -1,7 +1,7 @@
 import { Link } from 'react-router'
 import { useState } from 'react'
 import { TabsTrigger, TabsContent } from '@/components/ui/tabs.jsx'
-import { useSelectedItem } from '@/components/explorer-grid/selected-item/context.jsx'
+import { useSelectedItemStore } from '@/components/explorer-grid/selected-item/context.jsx'
 import {
   InsightBadge,
   getAlertColor,
@@ -16,7 +16,7 @@ import { InlineCode } from '@/components/ui/inline-code.jsx'
 import { cn } from '@/lib/utils.js'
 
 export const InsightTabButton = () => {
-  const { insights } = useSelectedItem()
+  const insights = useSelectedItemStore(state => state.insights)
 
   return (
     <TabsTrigger
@@ -130,7 +130,12 @@ const InsightItem = ({
 }
 
 const InsightScore = () => {
-  const { selectedItem, packageScore } = useSelectedItem()
+  const selectedItem = useSelectedItemStore(
+    state => state.selectedItem,
+  )
+  const packageScore = useSelectedItemStore(
+    state => state.packageScore,
+  )
 
   if (!packageScore) return null
 
@@ -186,7 +191,10 @@ const InsightScore = () => {
 }
 
 export const InsightTabContent = () => {
-  const { insights, packageScore } = useSelectedItem()
+  const insights = useSelectedItemStore(state => state.insights)
+  const packageScore = useSelectedItemStore(
+    state => state.packageScore,
+  )
   const [filteredInsights, setFilteredInsights] = useState<
     SocketSecurityDetails[] | undefined
   >(insights)

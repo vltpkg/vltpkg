@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion'
 import { useGraphStore } from '@/state/index.js'
-import { useSelectedItem } from '@/components/explorer-grid/selected-item/context.jsx'
+import { useSelectedItemStore } from '@/components/explorer-grid/selected-item/context.jsx'
 import {
   Avatar,
   AvatarImage,
@@ -101,7 +101,9 @@ const SpecOrigin = ({
 }
 
 const Downloads = ({ className }: { className?: string }) => {
-  const { selectedItemDetails } = useSelectedItem()
+  const selectedItemDetails = useSelectedItemStore(
+    state => state.selectedItemDetails,
+  )
 
   if (
     !selectedItemDetails.downloads ||
@@ -133,7 +135,10 @@ const Downloads = ({ className }: { className?: string }) => {
 }
 
 export const ItemHeader = () => {
-  const { selectedItemDetails, manifest } = useSelectedItem()
+  const selectedItemDetails = useSelectedItemStore(
+    state => state.selectedItemDetails,
+  )
+  const manifest = useSelectedItemStore(state => state.manifest)
   const currentVersion = selectedItemDetails.versions?.find(
     version => version.version === manifest?.version,
   )
@@ -204,7 +209,10 @@ export const ItemHeader = () => {
 }
 
 const PackageMetadata = ({ className }: { className?: string }) => {
-  const { manifest, selectedItemDetails } = useSelectedItem()
+  const selectedItemDetails = useSelectedItemStore(
+    state => state.selectedItemDetails,
+  )
+  const manifest = useSelectedItemStore(state => state.manifest)
   const INLINE_CODE_STYLES =
     'text-muted-foreground max-w-28 overflow-hidden text-nowrap truncate cursor-default relative mx-0 inline-flex items-center font-inter font-medium tracking-wide'
   const currentVersion = selectedItemDetails.versions?.find(
@@ -346,7 +354,12 @@ const PackageOverallScore = ({
 }: {
   className?: string
 }) => {
-  const { packageScore, setActiveTab } = useSelectedItem()
+  const setActiveTab = useSelectedItemStore(
+    state => state.setActiveTab,
+  )
+  const packageScore = useSelectedItemStore(
+    state => state.packageScore,
+  )
 
   if (!packageScore) return null
 
@@ -378,8 +391,15 @@ const PackageOverallScore = ({
 }
 
 const PackageImageSpec = ({ className }: { className?: string }) => {
-  const { setActiveTab, selectedItemDetails, selectedItem } =
-    useSelectedItem()
+  const setActiveTab = useSelectedItemStore(
+    state => state.setActiveTab,
+  )
+  const selectedItem = useSelectedItemStore(
+    state => state.selectedItem,
+  )
+  const selectedItemDetails = useSelectedItemStore(
+    state => state.selectedItemDetails,
+  )
   const specOptions = useGraphStore(state => state.specOptions)
 
   return (
@@ -467,7 +487,9 @@ const PackageImageSpec = ({ className }: { className?: string }) => {
 }
 
 const Publisher = ({ className }: { className?: string }) => {
-  const { selectedItemDetails } = useSelectedItem()
+  const selectedItemDetails = useSelectedItemStore(
+    state => state.selectedItemDetails,
+  )
   const publishedDate =
     selectedItemDetails.versions?.[0]?.publishedDate
 

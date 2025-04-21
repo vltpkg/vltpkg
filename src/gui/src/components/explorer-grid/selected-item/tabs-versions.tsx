@@ -8,7 +8,7 @@ import {
   Search,
   ListFilter,
 } from 'lucide-react'
-import { useSelectedItem } from '@/components/explorer-grid/selected-item/context.jsx'
+import { useSelectedItemStore } from '@/components/explorer-grid/selected-item/context.jsx'
 import { InlineCode } from '@/components/ui/inline-code.jsx'
 import { format, formatDistanceStrict } from 'date-fns'
 import type { Version } from '@/lib/external-info.js'
@@ -36,7 +36,9 @@ import {
 } from '@/components/ui/dropdown-menu.jsx'
 
 export const VersionsTabButton = () => {
-  const { selectedItemDetails } = useSelectedItem()
+  const selectedItemDetails = useSelectedItemStore(
+    state => state.selectedItemDetails,
+  )
   const { versions, greaterVersions } = selectedItemDetails
 
   const versionCount =
@@ -161,7 +163,7 @@ const VersionHeader = ({
   }
 
   return (
-    <div className="hidden cursor-default grid-cols-12 gap-3 pb-2 xl:grid">
+    <div className="hidden cursor-default grid-cols-12 pb-2 xl:grid">
       <div className="col-span-2 flex w-full items-center justify-center">
         <button
           onClick={onVersionClick}
@@ -194,7 +196,7 @@ const VersionHeader = ({
           <ArrowUpDown size={16} />
         </button>
       </div>
-      <div className="col-span-3 flex w-full items-center justify-center text-center">
+      <div className="col-span-3 flex w-full items-center justify-center">
         <button
           onClick={onPublisherClick}
           className="relative z-[1] inline-flex w-fit cursor-default items-center justify-center gap-2 text-nowrap text-sm text-muted-foreground transition-all duration-300 after:absolute after:left-[-0.75rem] after:z-[-1] after:h-[calc(100%+0.5rem)] after:w-[calc(100%+1.5rem)] after:rounded-sm after:bg-transparent after:content-[''] hover:text-foreground hover:after:bg-muted">
@@ -224,8 +226,8 @@ const VersionItem = ({
   } = versionInfo
 
   return (
-    <div className="group/item flex cursor-default grid-cols-12 flex-col gap-3 rounded-sm py-4 text-foreground transition-colors first:border-t-[0px] xl:grid xl:gap-3 xl:px-2 xl:py-1.5 xl:hover:bg-muted">
-      <div className="order-1 col-span-2 flex w-full flex-col justify-center gap-1 xl:justify-center xl:gap-0">
+    <div className="group/item flex cursor-default grid-cols-12 flex-col gap-4 rounded-sm py-4 text-foreground transition-colors first:border-t-[0px] hover:bg-muted xl:grid xl:gap-0 xl:px-2 xl:py-1.5">
+      <div className="order-1 col-span-2 flex w-full flex-col justify-start gap-1 xl:ml-1 xl:justify-center xl:gap-0">
         <p className="text-sm font-medium text-muted-foreground xl:hidden">
           Version
         </p>
@@ -306,27 +308,20 @@ const VersionItem = ({
           </>
         )}
       </div>
-      <div className="order-3 col-span-3 flex hidden w-full items-center justify-center xl:order-4 xl:flex">
-        <div className="flex w-full items-center justify-center gap-2">
-          <Avatar className="flex size-5 items-center justify-center">
+      <div className="order-3 col-span-3 flex hidden w-full items-center justify-center xl:order-4 xl:mr-1 xl:flex xl:justify-end">
+        <div className="flex grid-cols-5 gap-2 xl:grid">
+          <Avatar className="col-span-1 size-5">
             <AvatarImage
               className="rounded-sm outline outline-[1px] outline-border"
               src={publishedAuthor?.avatar}
             />
             {publishedAuthor?.avatar && (
-              <AvatarFallback className="h-full w-full rounded-sm bg-secondary bg-gradient-to-t from-neutral-100 to-neutral-400 px-[10px] outline outline-[1px] outline-border dark:from-neutral-500 dark:to-neutral-800" />
+              <AvatarFallback className="h-5 h-full w-5 w-full rounded-sm bg-secondary bg-gradient-to-t from-neutral-100 to-neutral-400 px-[10px] outline outline-[1px] outline-border dark:from-neutral-500 dark:to-neutral-800" />
             )}
           </Avatar>
-          <TooltipProvider>
-            <Tooltip delayDuration={150}>
-              <TooltipTrigger className="cursor-default">
-                <p className="truncate font-mono text-sm">
-                  {publishedAuthor?.name}
-                </p>
-              </TooltipTrigger>
-              <TooltipContent>{publishedAuthor?.name}</TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+          <p className="col-span-4 truncate font-mono text-sm">
+            {publishedAuthor?.name}
+          </p>
         </div>
       </div>
     </div>
@@ -389,7 +384,10 @@ const EmptyState = ({ message }: { message: string }) => (
 )
 
 export const VersionsTabContent = () => {
-  const { selectedItemDetails, manifest } = useSelectedItem()
+  const selectedItemDetails = useSelectedItemStore(
+    state => state.selectedItemDetails,
+  )
+  const manifest = useSelectedItemStore(state => state.manifest)
   const [versions, setVersions] = useState<VersionItem[]>([])
   const [page, setPage] = useState(1)
   const [greaterPage, setGreaterPage] = useState(1)
@@ -564,7 +562,7 @@ export const VersionsTabContent = () => {
                 initial={{ opacity: 0, top: -40 }}
                 animate={{ opacity: 1, top: 0 }}
                 exit={{ opacity: 0, top: -40 }}
-                className="flex gap-2 overflow-hidden"
+                className="flex flex-nowrap gap-2 overflow-hidden"
                 transition={{
                   type: 'spring',
                   duration: 0.28,
@@ -608,7 +606,7 @@ export const VersionsTabContent = () => {
                     items={versions}
                     setItems={setVersions}
                   />
-                  <div className="flex flex-col divide-y-[1px] divide-muted overflow-hidden">
+                  <div className="flex flex-col divide-y-[1px] divide-muted">
                     {paginatedVersions.map((version, idx) => {
                       const downloadsPerVersion =
                         selectedItemDetails.downloads
