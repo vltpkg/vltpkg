@@ -1,10 +1,16 @@
-import { createContext, useContext } from 'react'
+import { createContext, useEffect, useState, useContext } from 'react'
+import { useStore, createStore } from 'zustand'
+import { hydrate } from '@vltpkg/dep-id/browser'
+import { useGraphStore } from '@/state/index.js'
+import { fetchDetails } from '@/lib/external-info.js'
+
 import { SOCKET_SECURITY_DETAILS } from '@/lib/constants/socket.js'
 
+import type { StoreApi } from 'zustand'
 import type { GridItemData } from '@/components/explorer-grid/types.js'
 import type { DetailsInfo } from '@/lib/external-info.js'
 import type { Insights } from '@vltpkg/query'
-import type { ReactNode } from 'react'
+import type { PropsWithChildren } from 'react'
 import type { SocketSecurityDetails } from '@/lib/constants/socket.js'
 import type { PackageScore } from '@vltpkg/security-archive'
 import type { Manifest } from '@vltpkg/types'
@@ -48,59 +54,103 @@ const getSocketInsights = (
     .filter(Boolean) as SocketSecurityDetails[]
 }
 
-export interface SelectedItemContextValue {
+type SelectedItemStoreState = {
   selectedItem: GridItemData
-  selectedItemDetails: DetailsInfo
   activeTab: Tab
-  setActiveTab: (tab: Tab) => void
-  insights: SocketSecurityDetails[] | undefined
+  selectedItemDetails: DetailsInfo
+  manifest: Manifest | null
   packageScore?: PackageScore
-  manifest?: Manifest | null
+  insights: SocketSecurityDetails[] | undefined
+}
+
+type SelectedItemStoreAction = {
+  setActiveTab: (tab: SelectedItemStoreState['activeTab']) => void
+  setSelectedItemDetails: (
+    selectedItemDetails: SelectedItemStoreState['selectedItemDetails'],
+  ) => void
 }
 
 const SelectedItemContext = createContext<
-  SelectedItemContextValue | undefined
+  | StoreApi<SelectedItemStoreAction & SelectedItemStoreState>
+  | undefined
 >(undefined)
+
+type SelectedItemProviderProps = PropsWithChildren & {
+  selectedItem: GridItemData
+}
 
 export const SelectedItemProvider = ({
   children,
   selectedItem,
-  details,
-  activeTab,
-  setActiveTab,
-}: {
-  children: ReactNode
-  selectedItem: GridItemData
-  details: DetailsInfo
-  activeTab: Tab
-  setActiveTab: (tab: Tab) => void
-}) => {
-  const insights = getSocketInsights(selectedItem.to?.insights)
-  const packageScore = selectedItem.to?.insights.score
-  const manifest = selectedItem.to?.manifest
+}: SelectedItemProviderProps) => {
+  const specOptions = useGraphStore(state => state.specOptions)
+
+  const [selectedItemStore] = useState(() =>
+    createStore<SelectedItemStoreAction & SelectedItemStoreState>(
+      set => ({
+        selectedItem,
+        manifest: selectedItem.to?.manifest ?? null,
+        packageScore: selectedItem.to?.insights.score,
+        insights: getSocketInsights(selectedItem.to?.insights),
+        selectedItemDetails: {},
+        setSelectedItemDetails: (
+          selectedItemDetails: SelectedItemStoreState['selectedItemDetails'],
+        ) => set(() => ({ selectedItemDetails })),
+        activeTab: 'overview',
+        setActiveTab: (
+          activeTab: SelectedItemStoreState['activeTab'],
+        ) => set(() => ({ activeTab })),
+      }),
+    ),
+  )
+
+  const fetchDetailsAsync = async (
+    store: StoreApi<SelectedItemStoreAction & SelectedItemStoreState>,
+  ) => {
+    const state = store.getState()
+    const item = state.selectedItem
+
+    if (!item.to?.name) return
+
+    const depIdSpec = hydrate(item.to.id, item.to.name, specOptions)
+    const manifest = item.to.manifest ?? {}
+    const abortController = new AbortController()
+
+    for await (const d of fetchDetails(
+      depIdSpec,
+      abortController.signal,
+      manifest,
+    )) {
+      store.setState(state => ({
+        selectedItemDetails: {
+          ...state.selectedItemDetails,
+          ...d,
+        },
+      }))
+    }
+  }
+
+  useEffect(() => {
+    void fetchDetailsAsync(selectedItemStore)
+  }, [selectedItemStore, specOptions])
 
   return (
-    <SelectedItemContext.Provider
-      value={{
-        selectedItem,
-        selectedItemDetails: details,
-        activeTab,
-        setActiveTab,
-        insights,
-        packageScore,
-        manifest,
-      }}>
+    <SelectedItemContext.Provider value={selectedItemStore}>
       {children}
     </SelectedItemContext.Provider>
   )
 }
 
-export const useSelectedItem = () => {
-  const context = useContext(SelectedItemContext)
-  if (!context) {
+export const useSelectedItemStore = <T,>(
+  selector: (
+    state: SelectedItemStoreAction & SelectedItemStoreState,
+  ) => T,
+) => {
+  const store = useContext(SelectedItemContext)
+  if (!store) {
     throw new Error(
-      'useSelectedItem must be used within a SelectedItemProvider',
+      'useSelectedItemStore must be used within a SelectedItemProvider',
     )
   }
-  return context
+  return useStore(store, selector)
 }
