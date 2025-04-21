@@ -12,7 +12,7 @@ exports[`VersionsTabButton renders default 1`] = `
     variant="mono"
     classname="ml-1 inline-flex h-[1.25rem] min-w-[1.25rem] items-center justify-center text-center"
   >
-    4
+    3
   </gui-inline-code>
 </gui-tabs-trigger>
 
@@ -66,7 +66,7 @@ exports[`VersionsTabContent filters newer versions 1`] = `
       </gui-dropdown-menu>
     </div>
     <div class="relative mt-2 flex flex-col gap-2">
-      <div class="hidden cursor-default grid-cols-12 gap-3 pb-2 xl:grid">
+      <div class="hidden cursor-default grid-cols-12 pb-2 xl:grid">
         <div class="col-span-2 flex w-full items-center justify-center">
           <button class="relative z-[1] inline-flex w-fit cursor-default items-center justify-center gap-2 text-nowrap text-sm text-muted-foreground transition-all duration-300 after:absolute after:left-[-0.75rem] after:z-[-1] after:h-[calc(100%+0.5rem)] after:w-[calc(100%+1.5rem)] after:rounded-sm after:bg-transparent after:content-[''] hover:text-foreground hover:after:bg-muted">
             <span>
@@ -103,7 +103,7 @@ exports[`VersionsTabContent filters newer versions 1`] = `
             </gui-arrow-up-down-icon>
           </button>
         </div>
-        <div class="col-span-3 flex w-full items-center justify-center text-center">
+        <div class="col-span-3 flex w-full items-center justify-center">
           <button class="relative z-[1] inline-flex w-fit cursor-default items-center justify-center gap-2 text-nowrap text-sm text-muted-foreground transition-all duration-300 after:absolute after:left-[-0.75rem] after:z-[-1] after:h-[calc(100%+0.5rem)] after:w-[calc(100%+1.5rem)] after:rounded-sm after:bg-transparent after:content-[''] hover:text-foreground hover:after:bg-muted">
             <span>
               Publisher
@@ -113,10 +113,10 @@ exports[`VersionsTabContent filters newer versions 1`] = `
           </button>
         </div>
       </div>
-      <div class="flex flex-col divide-y-[1px] divide-muted overflow-hidden">
+      <div class="flex flex-col divide-y-[1px] divide-muted">
         <div>
-          <div class="group/item flex cursor-default grid-cols-12 flex-col gap-3 rounded-sm py-4 text-foreground transition-colors first:border-t-[0px] xl:grid xl:gap-3 xl:px-2 xl:py-1.5 xl:hover:bg-muted">
-            <div class="order-1 col-span-2 flex w-full flex-col justify-center gap-1 xl:justify-center xl:gap-0">
+          <div class="group/item flex cursor-default grid-cols-12 flex-col gap-4 rounded-sm py-4 text-foreground transition-colors first:border-t-[0px] hover:bg-muted xl:grid xl:gap-0 xl:px-2 xl:py-1.5">
+            <div class="order-1 col-span-2 flex w-full flex-col justify-start gap-1 xl:ml-1 xl:justify-center xl:gap-0">
               <p class="text-sm font-medium text-muted-foreground xl:hidden">
                 Version
               </p>
@@ -172,36 +172,27 @@ exports[`VersionsTabContent filters newer versions 1`] = `
             </div>
             <div class="order-3 col-span-2 w-full flex-col justify-start gap-2 xl:items-center xl:justify-center xl:gap-0 xl:text-center hidden xl:flex">
             </div>
-            <div class="order-3 col-span-3 flex hidden w-full items-center justify-center xl:order-4 xl:flex">
-              <div class="flex w-full items-center justify-center gap-2">
-                <gui-avatar classname="flex size-5 items-center justify-center">
+            <div class="order-3 col-span-3 flex hidden w-full items-center justify-center xl:order-4 xl:mr-1 xl:flex xl:justify-end">
+              <div class="flex grid-cols-5 gap-2 xl:grid">
+                <gui-avatar classname="col-span-1 size-5">
                   <gui-avatar-image
                     classname="rounded-sm outline outline-[1px] outline-border"
                     src="https://example.com/avatar.jpg"
                   >
                   </gui-avatar-image>
-                  <gui-avatar-fallback classname="h-full w-full rounded-sm bg-secondary bg-gradient-to-t from-neutral-100 to-neutral-400 px-[10px] outline outline-[1px] outline-border dark:from-neutral-500 dark:to-neutral-800">
+                  <gui-avatar-fallback classname="h-5 h-full w-5 w-full rounded-sm bg-secondary bg-gradient-to-t from-neutral-100 to-neutral-400 px-[10px] outline outline-[1px] outline-border dark:from-neutral-500 dark:to-neutral-800">
                   </gui-avatar-fallback>
                 </gui-avatar>
-                <gui-tooltip-provider>
-                  <gui-tooltip delayduration="150">
-                    <gui-tooltip-trigger classname="cursor-default">
-                      <p class="truncate font-mono text-sm">
-                        John Doe
-                      </p>
-                    </gui-tooltip-trigger>
-                    <gui-tooltip-content>
-                      John Doe
-                    </gui-tooltip-content>
-                  </gui-tooltip>
-                </gui-tooltip-provider>
+                <p class="col-span-4 truncate font-mono text-sm">
+                  John Doe
+                </p>
               </div>
             </div>
           </div>
         </div>
         <div>
-          <div class="group/item flex cursor-default grid-cols-12 flex-col gap-3 rounded-sm py-4 text-foreground transition-colors first:border-t-[0px] xl:grid xl:gap-3 xl:px-2 xl:py-1.5 xl:hover:bg-muted">
-            <div class="order-1 col-span-2 flex w-full flex-col justify-center gap-1 xl:justify-center xl:gap-0">
+          <div class="group/item flex cursor-default grid-cols-12 flex-col gap-4 rounded-sm py-4 text-foreground transition-colors first:border-t-[0px] hover:bg-muted xl:grid xl:gap-0 xl:px-2 xl:py-1.5">
+            <div class="order-1 col-span-2 flex w-full flex-col justify-start gap-1 xl:ml-1 xl:justify-center xl:gap-0">
               <p class="text-sm font-medium text-muted-foreground xl:hidden">
                 Version
               </p>
@@ -257,29 +248,20 @@ exports[`VersionsTabContent filters newer versions 1`] = `
             </div>
             <div class="order-3 col-span-2 w-full flex-col justify-start gap-2 xl:items-center xl:justify-center xl:gap-0 xl:text-center hidden xl:flex">
             </div>
-            <div class="order-3 col-span-3 flex hidden w-full items-center justify-center xl:order-4 xl:flex">
-              <div class="flex w-full items-center justify-center gap-2">
-                <gui-avatar classname="flex size-5 items-center justify-center">
+            <div class="order-3 col-span-3 flex hidden w-full items-center justify-center xl:order-4 xl:mr-1 xl:flex xl:justify-end">
+              <div class="flex grid-cols-5 gap-2 xl:grid">
+                <gui-avatar classname="col-span-1 size-5">
                   <gui-avatar-image
                     classname="rounded-sm outline outline-[1px] outline-border"
                     src="https://example.com/avatar.jpg"
                   >
                   </gui-avatar-image>
-                  <gui-avatar-fallback classname="h-full w-full rounded-sm bg-secondary bg-gradient-to-t from-neutral-100 to-neutral-400 px-[10px] outline outline-[1px] outline-border dark:from-neutral-500 dark:to-neutral-800">
+                  <gui-avatar-fallback classname="h-5 h-full w-5 w-full rounded-sm bg-secondary bg-gradient-to-t from-neutral-100 to-neutral-400 px-[10px] outline outline-[1px] outline-border dark:from-neutral-500 dark:to-neutral-800">
                   </gui-avatar-fallback>
                 </gui-avatar>
-                <gui-tooltip-provider>
-                  <gui-tooltip delayduration="150">
-                    <gui-tooltip-trigger classname="cursor-default">
-                      <p class="truncate font-mono text-sm">
-                        John Doe
-                      </p>
-                    </gui-tooltip-trigger>
-                    <gui-tooltip-content>
-                      John Doe
-                    </gui-tooltip-content>
-                  </gui-tooltip>
-                </gui-tooltip-provider>
+                <p class="col-span-4 truncate font-mono text-sm">
+                  John Doe
+                </p>
               </div>
             </div>
           </div>
@@ -339,7 +321,7 @@ exports[`VersionsTabContent filters pre-releases 1`] = `
       </gui-dropdown-menu>
     </div>
     <div class="relative mt-2 flex flex-col gap-2">
-      <div class="hidden cursor-default grid-cols-12 gap-3 pb-2 xl:grid">
+      <div class="hidden cursor-default grid-cols-12 pb-2 xl:grid">
         <div class="col-span-2 flex w-full items-center justify-center">
           <button class="relative z-[1] inline-flex w-fit cursor-default items-center justify-center gap-2 text-nowrap text-sm text-muted-foreground transition-all duration-300 after:absolute after:left-[-0.75rem] after:z-[-1] after:h-[calc(100%+0.5rem)] after:w-[calc(100%+1.5rem)] after:rounded-sm after:bg-transparent after:content-[''] hover:text-foreground hover:after:bg-muted">
             <span>
@@ -376,7 +358,7 @@ exports[`VersionsTabContent filters pre-releases 1`] = `
             </gui-arrow-up-down-icon>
           </button>
         </div>
-        <div class="col-span-3 flex w-full items-center justify-center text-center">
+        <div class="col-span-3 flex w-full items-center justify-center">
           <button class="relative z-[1] inline-flex w-fit cursor-default items-center justify-center gap-2 text-nowrap text-sm text-muted-foreground transition-all duration-300 after:absolute after:left-[-0.75rem] after:z-[-1] after:h-[calc(100%+0.5rem)] after:w-[calc(100%+1.5rem)] after:rounded-sm after:bg-transparent after:content-[''] hover:text-foreground hover:after:bg-muted">
             <span>
               Publisher
@@ -386,10 +368,10 @@ exports[`VersionsTabContent filters pre-releases 1`] = `
           </button>
         </div>
       </div>
-      <div class="flex flex-col divide-y-[1px] divide-muted overflow-hidden">
+      <div class="flex flex-col divide-y-[1px] divide-muted">
         <div>
-          <div class="group/item flex cursor-default grid-cols-12 flex-col gap-3 rounded-sm py-4 text-foreground transition-colors first:border-t-[0px] xl:grid xl:gap-3 xl:px-2 xl:py-1.5 xl:hover:bg-muted">
-            <div class="order-1 col-span-2 flex w-full flex-col justify-center gap-1 xl:justify-center xl:gap-0">
+          <div class="group/item flex cursor-default grid-cols-12 flex-col gap-4 rounded-sm py-4 text-foreground transition-colors first:border-t-[0px] hover:bg-muted xl:grid xl:gap-0 xl:px-2 xl:py-1.5">
+            <div class="order-1 col-span-2 flex w-full flex-col justify-start gap-1 xl:ml-1 xl:justify-center xl:gap-0">
               <p class="text-sm font-medium text-muted-foreground xl:hidden">
                 Version
               </p>
@@ -445,36 +427,27 @@ exports[`VersionsTabContent filters pre-releases 1`] = `
             </div>
             <div class="order-3 col-span-2 w-full flex-col justify-start gap-2 xl:items-center xl:justify-center xl:gap-0 xl:text-center hidden xl:flex">
             </div>
-            <div class="order-3 col-span-3 flex hidden w-full items-center justify-center xl:order-4 xl:flex">
-              <div class="flex w-full items-center justify-center gap-2">
-                <gui-avatar classname="flex size-5 items-center justify-center">
+            <div class="order-3 col-span-3 flex hidden w-full items-center justify-center xl:order-4 xl:mr-1 xl:flex xl:justify-end">
+              <div class="flex grid-cols-5 gap-2 xl:grid">
+                <gui-avatar classname="col-span-1 size-5">
                   <gui-avatar-image
                     classname="rounded-sm outline outline-[1px] outline-border"
                     src="https://example.com/avatar.jpg"
                   >
                   </gui-avatar-image>
-                  <gui-avatar-fallback classname="h-full w-full rounded-sm bg-secondary bg-gradient-to-t from-neutral-100 to-neutral-400 px-[10px] outline outline-[1px] outline-border dark:from-neutral-500 dark:to-neutral-800">
+                  <gui-avatar-fallback classname="h-5 h-full w-5 w-full rounded-sm bg-secondary bg-gradient-to-t from-neutral-100 to-neutral-400 px-[10px] outline outline-[1px] outline-border dark:from-neutral-500 dark:to-neutral-800">
                   </gui-avatar-fallback>
                 </gui-avatar>
-                <gui-tooltip-provider>
-                  <gui-tooltip delayduration="150">
-                    <gui-tooltip-trigger classname="cursor-default">
-                      <p class="truncate font-mono text-sm">
-                        John Doe
-                      </p>
-                    </gui-tooltip-trigger>
-                    <gui-tooltip-content>
-                      John Doe
-                    </gui-tooltip-content>
-                  </gui-tooltip>
-                </gui-tooltip-provider>
+                <p class="col-span-4 truncate font-mono text-sm">
+                  John Doe
+                </p>
               </div>
             </div>
           </div>
         </div>
         <div>
-          <div class="group/item flex cursor-default grid-cols-12 flex-col gap-3 rounded-sm py-4 text-foreground transition-colors first:border-t-[0px] xl:grid xl:gap-3 xl:px-2 xl:py-1.5 xl:hover:bg-muted">
-            <div class="order-1 col-span-2 flex w-full flex-col justify-center gap-1 xl:justify-center xl:gap-0">
+          <div class="group/item flex cursor-default grid-cols-12 flex-col gap-4 rounded-sm py-4 text-foreground transition-colors first:border-t-[0px] hover:bg-muted xl:grid xl:gap-0 xl:px-2 xl:py-1.5">
+            <div class="order-1 col-span-2 flex w-full flex-col justify-start gap-1 xl:ml-1 xl:justify-center xl:gap-0">
               <p class="text-sm font-medium text-muted-foreground xl:hidden">
                 Version
               </p>
@@ -530,29 +503,20 @@ exports[`VersionsTabContent filters pre-releases 1`] = `
             </div>
             <div class="order-3 col-span-2 w-full flex-col justify-start gap-2 xl:items-center xl:justify-center xl:gap-0 xl:text-center hidden xl:flex">
             </div>
-            <div class="order-3 col-span-3 flex hidden w-full items-center justify-center xl:order-4 xl:flex">
-              <div class="flex w-full items-center justify-center gap-2">
-                <gui-avatar classname="flex size-5 items-center justify-center">
+            <div class="order-3 col-span-3 flex hidden w-full items-center justify-center xl:order-4 xl:mr-1 xl:flex xl:justify-end">
+              <div class="flex grid-cols-5 gap-2 xl:grid">
+                <gui-avatar classname="col-span-1 size-5">
                   <gui-avatar-image
                     classname="rounded-sm outline outline-[1px] outline-border"
                     src="https://example.com/avatar.jpg"
                   >
                   </gui-avatar-image>
-                  <gui-avatar-fallback classname="h-full w-full rounded-sm bg-secondary bg-gradient-to-t from-neutral-100 to-neutral-400 px-[10px] outline outline-[1px] outline-border dark:from-neutral-500 dark:to-neutral-800">
+                  <gui-avatar-fallback classname="h-5 h-full w-5 w-full rounded-sm bg-secondary bg-gradient-to-t from-neutral-100 to-neutral-400 px-[10px] outline outline-[1px] outline-border dark:from-neutral-500 dark:to-neutral-800">
                   </gui-avatar-fallback>
                 </gui-avatar>
-                <gui-tooltip-provider>
-                  <gui-tooltip delayduration="150">
-                    <gui-tooltip-trigger classname="cursor-default">
-                      <p class="truncate font-mono text-sm">
-                        John Doe
-                      </p>
-                    </gui-tooltip-trigger>
-                    <gui-tooltip-content>
-                      John Doe
-                    </gui-tooltip-content>
-                  </gui-tooltip>
-                </gui-tooltip-provider>
+                <p class="col-span-4 truncate font-mono text-sm">
+                  John Doe
+                </p>
               </div>
             </div>
           </div>
@@ -612,7 +576,7 @@ exports[`VersionsTabContent filters versions 1`] = `
       </gui-dropdown-menu>
     </div>
     <div class="relative mt-2 flex flex-col gap-2">
-      <div class="hidden cursor-default grid-cols-12 gap-3 pb-2 xl:grid">
+      <div class="hidden cursor-default grid-cols-12 pb-2 xl:grid">
         <div class="col-span-2 flex w-full items-center justify-center">
           <button class="relative z-[1] inline-flex w-fit cursor-default items-center justify-center gap-2 text-nowrap text-sm text-muted-foreground transition-all duration-300 after:absolute after:left-[-0.75rem] after:z-[-1] after:h-[calc(100%+0.5rem)] after:w-[calc(100%+1.5rem)] after:rounded-sm after:bg-transparent after:content-[''] hover:text-foreground hover:after:bg-muted">
             <span>
@@ -649,7 +613,7 @@ exports[`VersionsTabContent filters versions 1`] = `
             </gui-arrow-up-down-icon>
           </button>
         </div>
-        <div class="col-span-3 flex w-full items-center justify-center text-center">
+        <div class="col-span-3 flex w-full items-center justify-center">
           <button class="relative z-[1] inline-flex w-fit cursor-default items-center justify-center gap-2 text-nowrap text-sm text-muted-foreground transition-all duration-300 after:absolute after:left-[-0.75rem] after:z-[-1] after:h-[calc(100%+0.5rem)] after:w-[calc(100%+1.5rem)] after:rounded-sm after:bg-transparent after:content-[''] hover:text-foreground hover:after:bg-muted">
             <span>
               Publisher
@@ -659,10 +623,10 @@ exports[`VersionsTabContent filters versions 1`] = `
           </button>
         </div>
       </div>
-      <div class="flex flex-col divide-y-[1px] divide-muted overflow-hidden">
+      <div class="flex flex-col divide-y-[1px] divide-muted">
         <div>
-          <div class="group/item flex cursor-default grid-cols-12 flex-col gap-3 rounded-sm py-4 text-foreground transition-colors first:border-t-[0px] xl:grid xl:gap-3 xl:px-2 xl:py-1.5 xl:hover:bg-muted">
-            <div class="order-1 col-span-2 flex w-full flex-col justify-center gap-1 xl:justify-center xl:gap-0">
+          <div class="group/item flex cursor-default grid-cols-12 flex-col gap-4 rounded-sm py-4 text-foreground transition-colors first:border-t-[0px] hover:bg-muted xl:grid xl:gap-0 xl:px-2 xl:py-1.5">
+            <div class="order-1 col-span-2 flex w-full flex-col justify-start gap-1 xl:ml-1 xl:justify-center xl:gap-0">
               <p class="text-sm font-medium text-muted-foreground xl:hidden">
                 Version
               </p>
@@ -718,36 +682,27 @@ exports[`VersionsTabContent filters versions 1`] = `
             </div>
             <div class="order-3 col-span-2 w-full flex-col justify-start gap-2 xl:items-center xl:justify-center xl:gap-0 xl:text-center hidden xl:flex">
             </div>
-            <div class="order-3 col-span-3 flex hidden w-full items-center justify-center xl:order-4 xl:flex">
-              <div class="flex w-full items-center justify-center gap-2">
-                <gui-avatar classname="flex size-5 items-center justify-center">
+            <div class="order-3 col-span-3 flex hidden w-full items-center justify-center xl:order-4 xl:mr-1 xl:flex xl:justify-end">
+              <div class="flex grid-cols-5 gap-2 xl:grid">
+                <gui-avatar classname="col-span-1 size-5">
                   <gui-avatar-image
                     classname="rounded-sm outline outline-[1px] outline-border"
                     src="https://example.com/avatar.jpg"
                   >
                   </gui-avatar-image>
-                  <gui-avatar-fallback classname="h-full w-full rounded-sm bg-secondary bg-gradient-to-t from-neutral-100 to-neutral-400 px-[10px] outline outline-[1px] outline-border dark:from-neutral-500 dark:to-neutral-800">
+                  <gui-avatar-fallback classname="h-5 h-full w-5 w-full rounded-sm bg-secondary bg-gradient-to-t from-neutral-100 to-neutral-400 px-[10px] outline outline-[1px] outline-border dark:from-neutral-500 dark:to-neutral-800">
                   </gui-avatar-fallback>
                 </gui-avatar>
-                <gui-tooltip-provider>
-                  <gui-tooltip delayduration="150">
-                    <gui-tooltip-trigger classname="cursor-default">
-                      <p class="truncate font-mono text-sm">
-                        John Doe
-                      </p>
-                    </gui-tooltip-trigger>
-                    <gui-tooltip-content>
-                      John Doe
-                    </gui-tooltip-content>
-                  </gui-tooltip>
-                </gui-tooltip-provider>
+                <p class="col-span-4 truncate font-mono text-sm">
+                  John Doe
+                </p>
               </div>
             </div>
           </div>
         </div>
         <div>
-          <div class="group/item flex cursor-default grid-cols-12 flex-col gap-3 rounded-sm py-4 text-foreground transition-colors first:border-t-[0px] xl:grid xl:gap-3 xl:px-2 xl:py-1.5 xl:hover:bg-muted">
-            <div class="order-1 col-span-2 flex w-full flex-col justify-center gap-1 xl:justify-center xl:gap-0">
+          <div class="group/item flex cursor-default grid-cols-12 flex-col gap-4 rounded-sm py-4 text-foreground transition-colors first:border-t-[0px] hover:bg-muted xl:grid xl:gap-0 xl:px-2 xl:py-1.5">
+            <div class="order-1 col-span-2 flex w-full flex-col justify-start gap-1 xl:ml-1 xl:justify-center xl:gap-0">
               <p class="text-sm font-medium text-muted-foreground xl:hidden">
                 Version
               </p>
@@ -803,29 +758,20 @@ exports[`VersionsTabContent filters versions 1`] = `
             </div>
             <div class="order-3 col-span-2 w-full flex-col justify-start gap-2 xl:items-center xl:justify-center xl:gap-0 xl:text-center hidden xl:flex">
             </div>
-            <div class="order-3 col-span-3 flex hidden w-full items-center justify-center xl:order-4 xl:flex">
-              <div class="flex w-full items-center justify-center gap-2">
-                <gui-avatar classname="flex size-5 items-center justify-center">
+            <div class="order-3 col-span-3 flex hidden w-full items-center justify-center xl:order-4 xl:mr-1 xl:flex xl:justify-end">
+              <div class="flex grid-cols-5 gap-2 xl:grid">
+                <gui-avatar classname="col-span-1 size-5">
                   <gui-avatar-image
                     classname="rounded-sm outline outline-[1px] outline-border"
                     src="https://example.com/avatar.jpg"
                   >
                   </gui-avatar-image>
-                  <gui-avatar-fallback classname="h-full w-full rounded-sm bg-secondary bg-gradient-to-t from-neutral-100 to-neutral-400 px-[10px] outline outline-[1px] outline-border dark:from-neutral-500 dark:to-neutral-800">
+                  <gui-avatar-fallback classname="h-5 h-full w-5 w-full rounded-sm bg-secondary bg-gradient-to-t from-neutral-100 to-neutral-400 px-[10px] outline outline-[1px] outline-border dark:from-neutral-500 dark:to-neutral-800">
                   </gui-avatar-fallback>
                 </gui-avatar>
-                <gui-tooltip-provider>
-                  <gui-tooltip delayduration="150">
-                    <gui-tooltip-trigger classname="cursor-default">
-                      <p class="truncate font-mono text-sm">
-                        John Doe
-                      </p>
-                    </gui-tooltip-trigger>
-                    <gui-tooltip-content>
-                      John Doe
-                    </gui-tooltip-content>
-                  </gui-tooltip>
-                </gui-tooltip-provider>
+                <p class="col-span-4 truncate font-mono text-sm">
+                  John Doe
+                </p>
               </div>
             </div>
           </div>
@@ -885,7 +831,7 @@ exports[`VersionsTabContent handles missing manifest version 1`] = `
       </gui-dropdown-menu>
     </div>
     <div class="relative mt-2 flex flex-col gap-2">
-      <div class="hidden cursor-default grid-cols-12 gap-3 pb-2 xl:grid">
+      <div class="hidden cursor-default grid-cols-12 pb-2 xl:grid">
         <div class="col-span-2 flex w-full items-center justify-center">
           <button class="relative z-[1] inline-flex w-fit cursor-default items-center justify-center gap-2 text-nowrap text-sm text-muted-foreground transition-all duration-300 after:absolute after:left-[-0.75rem] after:z-[-1] after:h-[calc(100%+0.5rem)] after:w-[calc(100%+1.5rem)] after:rounded-sm after:bg-transparent after:content-[''] hover:text-foreground hover:after:bg-muted">
             <span>
@@ -922,7 +868,7 @@ exports[`VersionsTabContent handles missing manifest version 1`] = `
             </gui-arrow-up-down-icon>
           </button>
         </div>
-        <div class="col-span-3 flex w-full items-center justify-center text-center">
+        <div class="col-span-3 flex w-full items-center justify-center">
           <button class="relative z-[1] inline-flex w-fit cursor-default items-center justify-center gap-2 text-nowrap text-sm text-muted-foreground transition-all duration-300 after:absolute after:left-[-0.75rem] after:z-[-1] after:h-[calc(100%+0.5rem)] after:w-[calc(100%+1.5rem)] after:rounded-sm after:bg-transparent after:content-[''] hover:text-foreground hover:after:bg-muted">
             <span>
               Publisher
@@ -932,10 +878,10 @@ exports[`VersionsTabContent handles missing manifest version 1`] = `
           </button>
         </div>
       </div>
-      <div class="flex flex-col divide-y-[1px] divide-muted overflow-hidden">
+      <div class="flex flex-col divide-y-[1px] divide-muted">
         <div>
-          <div class="group/item flex cursor-default grid-cols-12 flex-col gap-3 rounded-sm py-4 text-foreground transition-colors first:border-t-[0px] xl:grid xl:gap-3 xl:px-2 xl:py-1.5 xl:hover:bg-muted">
-            <div class="order-1 col-span-2 flex w-full flex-col justify-center gap-1 xl:justify-center xl:gap-0">
+          <div class="group/item flex cursor-default grid-cols-12 flex-col gap-4 rounded-sm py-4 text-foreground transition-colors first:border-t-[0px] hover:bg-muted xl:grid xl:gap-0 xl:px-2 xl:py-1.5">
+            <div class="order-1 col-span-2 flex w-full flex-col justify-start gap-1 xl:ml-1 xl:justify-center xl:gap-0">
               <p class="text-sm font-medium text-muted-foreground xl:hidden">
                 Version
               </p>
@@ -991,36 +937,27 @@ exports[`VersionsTabContent handles missing manifest version 1`] = `
             </div>
             <div class="order-3 col-span-2 w-full flex-col justify-start gap-2 xl:items-center xl:justify-center xl:gap-0 xl:text-center hidden xl:flex">
             </div>
-            <div class="order-3 col-span-3 flex hidden w-full items-center justify-center xl:order-4 xl:flex">
-              <div class="flex w-full items-center justify-center gap-2">
-                <gui-avatar classname="flex size-5 items-center justify-center">
+            <div class="order-3 col-span-3 flex hidden w-full items-center justify-center xl:order-4 xl:mr-1 xl:flex xl:justify-end">
+              <div class="flex grid-cols-5 gap-2 xl:grid">
+                <gui-avatar classname="col-span-1 size-5">
                   <gui-avatar-image
                     classname="rounded-sm outline outline-[1px] outline-border"
                     src="https://example.com/avatar.jpg"
                   >
                   </gui-avatar-image>
-                  <gui-avatar-fallback classname="h-full w-full rounded-sm bg-secondary bg-gradient-to-t from-neutral-100 to-neutral-400 px-[10px] outline outline-[1px] outline-border dark:from-neutral-500 dark:to-neutral-800">
+                  <gui-avatar-fallback classname="h-5 h-full w-5 w-full rounded-sm bg-secondary bg-gradient-to-t from-neutral-100 to-neutral-400 px-[10px] outline outline-[1px] outline-border dark:from-neutral-500 dark:to-neutral-800">
                   </gui-avatar-fallback>
                 </gui-avatar>
-                <gui-tooltip-provider>
-                  <gui-tooltip delayduration="150">
-                    <gui-tooltip-trigger classname="cursor-default">
-                      <p class="truncate font-mono text-sm">
-                        John Doe
-                      </p>
-                    </gui-tooltip-trigger>
-                    <gui-tooltip-content>
-                      John Doe
-                    </gui-tooltip-content>
-                  </gui-tooltip>
-                </gui-tooltip-provider>
+                <p class="col-span-4 truncate font-mono text-sm">
+                  John Doe
+                </p>
               </div>
             </div>
           </div>
         </div>
         <div>
-          <div class="group/item flex cursor-default grid-cols-12 flex-col gap-3 rounded-sm py-4 text-foreground transition-colors first:border-t-[0px] xl:grid xl:gap-3 xl:px-2 xl:py-1.5 xl:hover:bg-muted">
-            <div class="order-1 col-span-2 flex w-full flex-col justify-center gap-1 xl:justify-center xl:gap-0">
+          <div class="group/item flex cursor-default grid-cols-12 flex-col gap-4 rounded-sm py-4 text-foreground transition-colors first:border-t-[0px] hover:bg-muted xl:grid xl:gap-0 xl:px-2 xl:py-1.5">
+            <div class="order-1 col-span-2 flex w-full flex-col justify-start gap-1 xl:ml-1 xl:justify-center xl:gap-0">
               <p class="text-sm font-medium text-muted-foreground xl:hidden">
                 Version
               </p>
@@ -1076,29 +1013,20 @@ exports[`VersionsTabContent handles missing manifest version 1`] = `
             </div>
             <div class="order-3 col-span-2 w-full flex-col justify-start gap-2 xl:items-center xl:justify-center xl:gap-0 xl:text-center hidden xl:flex">
             </div>
-            <div class="order-3 col-span-3 flex hidden w-full items-center justify-center xl:order-4 xl:flex">
-              <div class="flex w-full items-center justify-center gap-2">
-                <gui-avatar classname="flex size-5 items-center justify-center">
+            <div class="order-3 col-span-3 flex hidden w-full items-center justify-center xl:order-4 xl:mr-1 xl:flex xl:justify-end">
+              <div class="flex grid-cols-5 gap-2 xl:grid">
+                <gui-avatar classname="col-span-1 size-5">
                   <gui-avatar-image
                     classname="rounded-sm outline outline-[1px] outline-border"
                     src="https://example.com/avatar.jpg"
                   >
                   </gui-avatar-image>
-                  <gui-avatar-fallback classname="h-full w-full rounded-sm bg-secondary bg-gradient-to-t from-neutral-100 to-neutral-400 px-[10px] outline outline-[1px] outline-border dark:from-neutral-500 dark:to-neutral-800">
+                  <gui-avatar-fallback classname="h-5 h-full w-5 w-full rounded-sm bg-secondary bg-gradient-to-t from-neutral-100 to-neutral-400 px-[10px] outline outline-[1px] outline-border dark:from-neutral-500 dark:to-neutral-800">
                   </gui-avatar-fallback>
                 </gui-avatar>
-                <gui-tooltip-provider>
-                  <gui-tooltip delayduration="150">
-                    <gui-tooltip-trigger classname="cursor-default">
-                      <p class="truncate font-mono text-sm">
-                        John Doe
-                      </p>
-                    </gui-tooltip-trigger>
-                    <gui-tooltip-content>
-                      John Doe
-                    </gui-tooltip-content>
-                  </gui-tooltip>
-                </gui-tooltip-provider>
+                <p class="col-span-4 truncate font-mono text-sm">
+                  John Doe
+                </p>
               </div>
             </div>
           </div>
@@ -1181,7 +1109,7 @@ exports[`VersionsTabContent renders with versions 1`] = `
       </gui-dropdown-menu>
     </div>
     <div class="relative mt-2 flex flex-col gap-2">
-      <div class="hidden cursor-default grid-cols-12 gap-3 pb-2 xl:grid">
+      <div class="hidden cursor-default grid-cols-12 pb-2 xl:grid">
         <div class="col-span-2 flex w-full items-center justify-center">
           <button class="relative z-[1] inline-flex w-fit cursor-default items-center justify-center gap-2 text-nowrap text-sm text-muted-foreground transition-all duration-300 after:absolute after:left-[-0.75rem] after:z-[-1] after:h-[calc(100%+0.5rem)] after:w-[calc(100%+1.5rem)] after:rounded-sm after:bg-transparent after:content-[''] hover:text-foreground hover:after:bg-muted">
             <span>
@@ -1218,7 +1146,7 @@ exports[`VersionsTabContent renders with versions 1`] = `
             </gui-arrow-up-down-icon>
           </button>
         </div>
-        <div class="col-span-3 flex w-full items-center justify-center text-center">
+        <div class="col-span-3 flex w-full items-center justify-center">
           <button class="relative z-[1] inline-flex w-fit cursor-default items-center justify-center gap-2 text-nowrap text-sm text-muted-foreground transition-all duration-300 after:absolute after:left-[-0.75rem] after:z-[-1] after:h-[calc(100%+0.5rem)] after:w-[calc(100%+1.5rem)] after:rounded-sm after:bg-transparent after:content-[''] hover:text-foreground hover:after:bg-muted">
             <span>
               Publisher
@@ -1228,10 +1156,10 @@ exports[`VersionsTabContent renders with versions 1`] = `
           </button>
         </div>
       </div>
-      <div class="flex flex-col divide-y-[1px] divide-muted overflow-hidden">
+      <div class="flex flex-col divide-y-[1px] divide-muted">
         <div>
-          <div class="group/item flex cursor-default grid-cols-12 flex-col gap-3 rounded-sm py-4 text-foreground transition-colors first:border-t-[0px] xl:grid xl:gap-3 xl:px-2 xl:py-1.5 xl:hover:bg-muted">
-            <div class="order-1 col-span-2 flex w-full flex-col justify-center gap-1 xl:justify-center xl:gap-0">
+          <div class="group/item flex cursor-default grid-cols-12 flex-col gap-4 rounded-sm py-4 text-foreground transition-colors first:border-t-[0px] hover:bg-muted xl:grid xl:gap-0 xl:px-2 xl:py-1.5">
+            <div class="order-1 col-span-2 flex w-full flex-col justify-start gap-1 xl:ml-1 xl:justify-center xl:gap-0">
               <p class="text-sm font-medium text-muted-foreground xl:hidden">
                 Version
               </p>
@@ -1287,36 +1215,27 @@ exports[`VersionsTabContent renders with versions 1`] = `
             </div>
             <div class="order-3 col-span-2 w-full flex-col justify-start gap-2 xl:items-center xl:justify-center xl:gap-0 xl:text-center hidden xl:flex">
             </div>
-            <div class="order-3 col-span-3 flex hidden w-full items-center justify-center xl:order-4 xl:flex">
-              <div class="flex w-full items-center justify-center gap-2">
-                <gui-avatar classname="flex size-5 items-center justify-center">
+            <div class="order-3 col-span-3 flex hidden w-full items-center justify-center xl:order-4 xl:mr-1 xl:flex xl:justify-end">
+              <div class="flex grid-cols-5 gap-2 xl:grid">
+                <gui-avatar classname="col-span-1 size-5">
                   <gui-avatar-image
                     classname="rounded-sm outline outline-[1px] outline-border"
                     src="https://example.com/avatar.jpg"
                   >
                   </gui-avatar-image>
-                  <gui-avatar-fallback classname="h-full w-full rounded-sm bg-secondary bg-gradient-to-t from-neutral-100 to-neutral-400 px-[10px] outline outline-[1px] outline-border dark:from-neutral-500 dark:to-neutral-800">
+                  <gui-avatar-fallback classname="h-5 h-full w-5 w-full rounded-sm bg-secondary bg-gradient-to-t from-neutral-100 to-neutral-400 px-[10px] outline outline-[1px] outline-border dark:from-neutral-500 dark:to-neutral-800">
                   </gui-avatar-fallback>
                 </gui-avatar>
-                <gui-tooltip-provider>
-                  <gui-tooltip delayduration="150">
-                    <gui-tooltip-trigger classname="cursor-default">
-                      <p class="truncate font-mono text-sm">
-                        John Doe
-                      </p>
-                    </gui-tooltip-trigger>
-                    <gui-tooltip-content>
-                      John Doe
-                    </gui-tooltip-content>
-                  </gui-tooltip>
-                </gui-tooltip-provider>
+                <p class="col-span-4 truncate font-mono text-sm">
+                  John Doe
+                </p>
               </div>
             </div>
           </div>
         </div>
         <div>
-          <div class="group/item flex cursor-default grid-cols-12 flex-col gap-3 rounded-sm py-4 text-foreground transition-colors first:border-t-[0px] xl:grid xl:gap-3 xl:px-2 xl:py-1.5 xl:hover:bg-muted">
-            <div class="order-1 col-span-2 flex w-full flex-col justify-center gap-1 xl:justify-center xl:gap-0">
+          <div class="group/item flex cursor-default grid-cols-12 flex-col gap-4 rounded-sm py-4 text-foreground transition-colors first:border-t-[0px] hover:bg-muted xl:grid xl:gap-0 xl:px-2 xl:py-1.5">
+            <div class="order-1 col-span-2 flex w-full flex-col justify-start gap-1 xl:ml-1 xl:justify-center xl:gap-0">
               <p class="text-sm font-medium text-muted-foreground xl:hidden">
                 Version
               </p>
@@ -1372,29 +1291,20 @@ exports[`VersionsTabContent renders with versions 1`] = `
             </div>
             <div class="order-3 col-span-2 w-full flex-col justify-start gap-2 xl:items-center xl:justify-center xl:gap-0 xl:text-center hidden xl:flex">
             </div>
-            <div class="order-3 col-span-3 flex hidden w-full items-center justify-center xl:order-4 xl:flex">
-              <div class="flex w-full items-center justify-center gap-2">
-                <gui-avatar classname="flex size-5 items-center justify-center">
+            <div class="order-3 col-span-3 flex hidden w-full items-center justify-center xl:order-4 xl:mr-1 xl:flex xl:justify-end">
+              <div class="flex grid-cols-5 gap-2 xl:grid">
+                <gui-avatar classname="col-span-1 size-5">
                   <gui-avatar-image
                     classname="rounded-sm outline outline-[1px] outline-border"
                     src="https://example.com/avatar.jpg"
                   >
                   </gui-avatar-image>
-                  <gui-avatar-fallback classname="h-full w-full rounded-sm bg-secondary bg-gradient-to-t from-neutral-100 to-neutral-400 px-[10px] outline outline-[1px] outline-border dark:from-neutral-500 dark:to-neutral-800">
+                  <gui-avatar-fallback classname="h-5 h-full w-5 w-full rounded-sm bg-secondary bg-gradient-to-t from-neutral-100 to-neutral-400 px-[10px] outline outline-[1px] outline-border dark:from-neutral-500 dark:to-neutral-800">
                   </gui-avatar-fallback>
                 </gui-avatar>
-                <gui-tooltip-provider>
-                  <gui-tooltip delayduration="150">
-                    <gui-tooltip-trigger classname="cursor-default">
-                      <p class="truncate font-mono text-sm">
-                        John Doe
-                      </p>
-                    </gui-tooltip-trigger>
-                    <gui-tooltip-content>
-                      John Doe
-                    </gui-tooltip-content>
-                  </gui-tooltip>
-                </gui-tooltip-provider>
+                <p class="col-span-4 truncate font-mono text-sm">
+                  John Doe
+                </p>
               </div>
             </div>
           </div>
@@ -1454,7 +1364,7 @@ exports[`VersionsTabContent toggles pre-releases 1`] = `
       </gui-dropdown-menu>
     </div>
     <div class="relative mt-2 flex flex-col gap-2">
-      <div class="hidden cursor-default grid-cols-12 gap-3 pb-2 xl:grid">
+      <div class="hidden cursor-default grid-cols-12 pb-2 xl:grid">
         <div class="col-span-2 flex w-full items-center justify-center">
           <button class="relative z-[1] inline-flex w-fit cursor-default items-center justify-center gap-2 text-nowrap text-sm text-muted-foreground transition-all duration-300 after:absolute after:left-[-0.75rem] after:z-[-1] after:h-[calc(100%+0.5rem)] after:w-[calc(100%+1.5rem)] after:rounded-sm after:bg-transparent after:content-[''] hover:text-foreground hover:after:bg-muted">
             <span>
@@ -1491,7 +1401,7 @@ exports[`VersionsTabContent toggles pre-releases 1`] = `
             </gui-arrow-up-down-icon>
           </button>
         </div>
-        <div class="col-span-3 flex w-full items-center justify-center text-center">
+        <div class="col-span-3 flex w-full items-center justify-center">
           <button class="relative z-[1] inline-flex w-fit cursor-default items-center justify-center gap-2 text-nowrap text-sm text-muted-foreground transition-all duration-300 after:absolute after:left-[-0.75rem] after:z-[-1] after:h-[calc(100%+0.5rem)] after:w-[calc(100%+1.5rem)] after:rounded-sm after:bg-transparent after:content-[''] hover:text-foreground hover:after:bg-muted">
             <span>
               Publisher
@@ -1501,10 +1411,10 @@ exports[`VersionsTabContent toggles pre-releases 1`] = `
           </button>
         </div>
       </div>
-      <div class="flex flex-col divide-y-[1px] divide-muted overflow-hidden">
+      <div class="flex flex-col divide-y-[1px] divide-muted">
         <div>
-          <div class="group/item flex cursor-default grid-cols-12 flex-col gap-3 rounded-sm py-4 text-foreground transition-colors first:border-t-[0px] xl:grid xl:gap-3 xl:px-2 xl:py-1.5 xl:hover:bg-muted">
-            <div class="order-1 col-span-2 flex w-full flex-col justify-center gap-1 xl:justify-center xl:gap-0">
+          <div class="group/item flex cursor-default grid-cols-12 flex-col gap-4 rounded-sm py-4 text-foreground transition-colors first:border-t-[0px] hover:bg-muted xl:grid xl:gap-0 xl:px-2 xl:py-1.5">
+            <div class="order-1 col-span-2 flex w-full flex-col justify-start gap-1 xl:ml-1 xl:justify-center xl:gap-0">
               <p class="text-sm font-medium text-muted-foreground xl:hidden">
                 Version
               </p>
@@ -1560,36 +1470,27 @@ exports[`VersionsTabContent toggles pre-releases 1`] = `
             </div>
             <div class="order-3 col-span-2 w-full flex-col justify-start gap-2 xl:items-center xl:justify-center xl:gap-0 xl:text-center hidden xl:flex">
             </div>
-            <div class="order-3 col-span-3 flex hidden w-full items-center justify-center xl:order-4 xl:flex">
-              <div class="flex w-full items-center justify-center gap-2">
-                <gui-avatar classname="flex size-5 items-center justify-center">
+            <div class="order-3 col-span-3 flex hidden w-full items-center justify-center xl:order-4 xl:mr-1 xl:flex xl:justify-end">
+              <div class="flex grid-cols-5 gap-2 xl:grid">
+                <gui-avatar classname="col-span-1 size-5">
                   <gui-avatar-image
                     classname="rounded-sm outline outline-[1px] outline-border"
                     src="https://example.com/avatar.jpg"
                   >
                   </gui-avatar-image>
-                  <gui-avatar-fallback classname="h-full w-full rounded-sm bg-secondary bg-gradient-to-t from-neutral-100 to-neutral-400 px-[10px] outline outline-[1px] outline-border dark:from-neutral-500 dark:to-neutral-800">
+                  <gui-avatar-fallback classname="h-5 h-full w-5 w-full rounded-sm bg-secondary bg-gradient-to-t from-neutral-100 to-neutral-400 px-[10px] outline outline-[1px] outline-border dark:from-neutral-500 dark:to-neutral-800">
                   </gui-avatar-fallback>
                 </gui-avatar>
-                <gui-tooltip-provider>
-                  <gui-tooltip delayduration="150">
-                    <gui-tooltip-trigger classname="cursor-default">
-                      <p class="truncate font-mono text-sm">
-                        John Doe
-                      </p>
-                    </gui-tooltip-trigger>
-                    <gui-tooltip-content>
-                      John Doe
-                    </gui-tooltip-content>
-                  </gui-tooltip>
-                </gui-tooltip-provider>
+                <p class="col-span-4 truncate font-mono text-sm">
+                  John Doe
+                </p>
               </div>
             </div>
           </div>
         </div>
         <div>
-          <div class="group/item flex cursor-default grid-cols-12 flex-col gap-3 rounded-sm py-4 text-foreground transition-colors first:border-t-[0px] xl:grid xl:gap-3 xl:px-2 xl:py-1.5 xl:hover:bg-muted">
-            <div class="order-1 col-span-2 flex w-full flex-col justify-center gap-1 xl:justify-center xl:gap-0">
+          <div class="group/item flex cursor-default grid-cols-12 flex-col gap-4 rounded-sm py-4 text-foreground transition-colors first:border-t-[0px] hover:bg-muted xl:grid xl:gap-0 xl:px-2 xl:py-1.5">
+            <div class="order-1 col-span-2 flex w-full flex-col justify-start gap-1 xl:ml-1 xl:justify-center xl:gap-0">
               <p class="text-sm font-medium text-muted-foreground xl:hidden">
                 Version
               </p>
@@ -1645,29 +1546,20 @@ exports[`VersionsTabContent toggles pre-releases 1`] = `
             </div>
             <div class="order-3 col-span-2 w-full flex-col justify-start gap-2 xl:items-center xl:justify-center xl:gap-0 xl:text-center hidden xl:flex">
             </div>
-            <div class="order-3 col-span-3 flex hidden w-full items-center justify-center xl:order-4 xl:flex">
-              <div class="flex w-full items-center justify-center gap-2">
-                <gui-avatar classname="flex size-5 items-center justify-center">
+            <div class="order-3 col-span-3 flex hidden w-full items-center justify-center xl:order-4 xl:mr-1 xl:flex xl:justify-end">
+              <div class="flex grid-cols-5 gap-2 xl:grid">
+                <gui-avatar classname="col-span-1 size-5">
                   <gui-avatar-image
                     classname="rounded-sm outline outline-[1px] outline-border"
                     src="https://example.com/avatar.jpg"
                   >
                   </gui-avatar-image>
-                  <gui-avatar-fallback classname="h-full w-full rounded-sm bg-secondary bg-gradient-to-t from-neutral-100 to-neutral-400 px-[10px] outline outline-[1px] outline-border dark:from-neutral-500 dark:to-neutral-800">
+                  <gui-avatar-fallback classname="h-5 h-full w-5 w-full rounded-sm bg-secondary bg-gradient-to-t from-neutral-100 to-neutral-400 px-[10px] outline outline-[1px] outline-border dark:from-neutral-500 dark:to-neutral-800">
                   </gui-avatar-fallback>
                 </gui-avatar>
-                <gui-tooltip-provider>
-                  <gui-tooltip delayduration="150">
-                    <gui-tooltip-trigger classname="cursor-default">
-                      <p class="truncate font-mono text-sm">
-                        John Doe
-                      </p>
-                    </gui-tooltip-trigger>
-                    <gui-tooltip-content>
-                      John Doe
-                    </gui-tooltip-content>
-                  </gui-tooltip>
-                </gui-tooltip-provider>
+                <p class="col-span-4 truncate font-mono text-sm">
+                  John Doe
+                </p>
               </div>
             </div>
           </div>

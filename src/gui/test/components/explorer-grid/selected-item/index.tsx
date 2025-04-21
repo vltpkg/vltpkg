@@ -3,6 +3,7 @@ import { cleanup, render } from '@testing-library/react'
 import html from 'diffable-html'
 import { useGraphStore as useStore } from '@/state/index.js'
 import { SelectedItem } from '@/components/explorer-grid/selected-item/index.jsx'
+import { useSelectedItemStore } from '@/components/explorer-grid/selected-item/context.jsx'
 import {
   SELECTED_ITEM,
   SELECTED_ITEM_WITH_EDGES,
@@ -20,6 +21,7 @@ vi.mock('@/components/ui/tabs.jsx', () => ({
 vi.mock(
   '@/components/explorer-grid/selected-item/context.jsx',
   () => ({
+    useSelectedItemStore: vi.fn(),
     SelectedItemProvider: 'gui-selected-item-provider',
   }),
 )
@@ -75,6 +77,14 @@ afterEach(() => {
 })
 
 test('SelectedItem renders with the default structure', () => {
+  vi.mocked(useSelectedItemStore).mockReturnValue({
+    selectedItem: undefined,
+    selectedItemDetails: undefined,
+    insights: undefined,
+    activeTab: 'insights',
+    setActiveTab: vi.fn(),
+  })
+
   const Container = () => {
     return <SelectedItem item={SELECTED_ITEM} />
   }
@@ -83,6 +93,14 @@ test('SelectedItem renders with the default structure', () => {
 })
 
 test('SelectedItem renders connection lines', () => {
+  vi.mocked(useSelectedItemStore).mockReturnValue({
+    selectedItem: undefined,
+    selectedItemDetails: undefined,
+    insights: undefined,
+    activeTab: 'insights',
+    setActiveTab: vi.fn(),
+  })
+
   const Container = () => {
     return <SelectedItem item={SELECTED_ITEM_WITH_EDGES} />
   }

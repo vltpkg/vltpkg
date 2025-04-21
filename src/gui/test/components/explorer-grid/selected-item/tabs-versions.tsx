@@ -2,7 +2,7 @@ import { test, expect, vi, beforeEach, afterEach } from 'vitest'
 import { cleanup, render, fireEvent } from '@testing-library/react'
 import html from 'diffable-html'
 import { useGraphStore as useStore } from '@/state/index.js'
-import { useSelectedItem } from '@/components/explorer-grid/selected-item/context.jsx'
+import { useSelectedItemStore } from '@/components/explorer-grid/selected-item/context.jsx'
 import {
   VersionsTabButton,
   VersionsTabContent,
@@ -10,7 +10,7 @@ import {
 import {
   SELECTED_ITEM,
   SELECTED_ITEM_DETAILS,
-} from './__fixtures__/item.ts'
+} from './__fixtures__/item.js'
 import type { DetailsInfo } from '@/lib/external-info.js'
 
 // Mock IntersectionObserver
@@ -21,6 +21,25 @@ mockIntersectionObserver.mockReturnValue({
   disconnect: () => null,
 })
 window.IntersectionObserver = mockIntersectionObserver
+
+const MOCK_VERSION = {
+  version: '1.0.0',
+  publishedDate: '2025-04-15',
+  unpackedSize: 123456,
+  integrity: 'sha512-abc123',
+  tarball: 'https://example.com/tarball.tgz',
+  publishedAuthor: {
+    name: 'John Doe',
+    email: 'johndoe@acme.com',
+    avatar: 'https://example.com/avatar.jpg',
+  },
+}
+
+const MOCK_BETA_VERSION = {
+  ...MOCK_VERSION,
+  version: '2.0.0-beta.1',
+  integrity: 'sha512-def456',
+}
 
 vi.mock('lucide-react', () => ({
   History: 'gui-history-icon',
@@ -33,7 +52,7 @@ vi.mock('lucide-react', () => ({
 vi.mock(
   '@/components/explorer-grid/selected-item/context.jsx',
   () => ({
-    useSelectedItem: vi.fn(),
+    useSelectedItemStore: vi.fn(),
     SelectedItemProvider: 'gui-selected-item-provider',
   }),
 )
@@ -100,140 +119,92 @@ afterEach(() => {
 })
 
 test('VersionsTabButton renders default', () => {
-  vi.mocked(useSelectedItem).mockReturnValue({
+  const mockState = {
     selectedItem: SELECTED_ITEM,
     selectedItemDetails: {
       ...SELECTED_ITEM_DETAILS,
-      versions: [
-        {
-          version: '1.0.0',
-          publishedDate: '2025-04-15',
-          unpackedSize: 123456,
-          integrity: 'sha512-abc123',
-          tarball: 'https://example.com/tarball.tgz',
-          publishedAuthor: {
-            name: 'John Doe',
-            email: 'johndoe@acme.com',
-            avatar: 'https://example.com/avatar.jpg',
-          },
-        },
-        {
-          version: '1.0.2',
-          publishedDate: '2025-04-15',
-          unpackedSize: 123456,
-          integrity: 'sha512-abc123',
-          tarball: 'https://example.com/tarball.tgz',
-          publishedAuthor: {
-            name: 'John Doe',
-            email: 'johndoe@acme.com',
-            avatar: 'https://example.com/avatar.jpg',
-          },
-        },
-      ],
+      versions: [MOCK_VERSION, { ...MOCK_VERSION, version: '1.0.2' }],
+      greaterVersions: [{ ...MOCK_VERSION, version: '1.0.2' }],
     } as DetailsInfo,
+    setSelectedItemDetails: vi.fn(),
+    manifest: null,
     insights: undefined,
-    activeTab: 'versions',
+    activeTab: 'versions' as const,
     setActiveTab: vi.fn(),
-  })
+  }
+
+  vi.mocked(useSelectedItemStore).mockImplementation(selector =>
+    selector(mockState),
+  )
 
   const { container } = render(<VersionsTabButton />)
   expect(container.innerHTML).toMatchSnapshot()
 })
 
 test('VersionsTabContent renders with versions', () => {
-  vi.mocked(useSelectedItem).mockReturnValue({
+  const mockState = {
     selectedItem: SELECTED_ITEM,
     selectedItemDetails: {
       ...SELECTED_ITEM_DETAILS,
-      versions: [
-        {
-          version: '1.0.0',
-          publishedDate: '2025-04-15',
-          unpackedSize: 123456,
-          integrity: 'sha512-abc123',
-          tarball: 'https://example.com/tarball.tgz',
-          publishedAuthor: {
-            name: 'John Doe',
-            email: 'johndoe@acme.com',
-            avatar: 'https://example.com/avatar.jpg',
-          },
-        },
-        {
-          version: '2.0.0-beta.1',
-          publishedDate: '2025-04-15',
-          unpackedSize: 123456,
-          integrity: 'sha512-def456',
-          tarball: 'https://example.com/tarball.tgz',
-          publishedAuthor: {
-            name: 'John Doe',
-            email: 'johndoe@acme.com',
-            avatar: 'https://example.com/avatar.jpg',
-          },
-        },
-      ],
+      versions: [MOCK_VERSION, MOCK_BETA_VERSION],
+      greaterVersions: [],
     } as DetailsInfo,
+    setSelectedItemDetails: vi.fn(),
+    manifest: {},
     insights: undefined,
-    activeTab: 'versions',
+    activeTab: 'versions' as const,
     setActiveTab: vi.fn(),
-  })
+  }
+
+  vi.mocked(useSelectedItemStore).mockImplementation(selector =>
+    selector(mockState),
+  )
 
   const { container } = render(<VersionsTabContent />)
   expect(container.innerHTML).toMatchSnapshot()
 })
 
 test('VersionsTabContent renders an empty state', () => {
-  vi.mocked(useSelectedItem).mockReturnValue({
+  const mockState = {
     selectedItem: SELECTED_ITEM,
     selectedItemDetails: {
       ...SELECTED_ITEM_DETAILS,
       versions: [],
       greaterVersions: [],
     } as DetailsInfo,
+    setSelectedItemDetails: vi.fn(),
+    manifest: {},
     insights: undefined,
-    activeTab: 'versions',
+    activeTab: 'versions' as const,
     setActiveTab: vi.fn(),
-  })
+  }
+
+  vi.mocked(useSelectedItemStore).mockImplementation(selector =>
+    selector(mockState),
+  )
 
   const { container } = render(<VersionsTabContent />)
   expect(container.innerHTML).toMatchSnapshot()
 })
 
 test('VersionsTabContent filters versions', () => {
-  vi.mocked(useSelectedItem).mockReturnValue({
+  const mockState = {
     selectedItem: SELECTED_ITEM,
     selectedItemDetails: {
       ...SELECTED_ITEM_DETAILS,
-      versions: [
-        {
-          version: '1.0.0',
-          publishedDate: '2025-04-15',
-          unpackedSize: 123456,
-          integrity: 'sha512-abc123',
-          tarball: 'https://example.com/tarball.tgz',
-          publishedAuthor: {
-            name: 'John Doe',
-            email: 'johndoe@acme.com',
-            avatar: 'https://example.com/avatar.jpg',
-          },
-        },
-        {
-          version: '2.0.0-beta.1',
-          publishedDate: '2025-04-15',
-          unpackedSize: 123456,
-          integrity: 'sha512-def456',
-          tarball: 'https://example.com/tarball.tgz',
-          publishedAuthor: {
-            name: 'John Doe',
-            email: 'johndoe@acme.com',
-            avatar: 'https://example.com/avatar.jpg',
-          },
-        },
-      ],
+      versions: [MOCK_VERSION, MOCK_BETA_VERSION],
+      greaterVersions: [],
     } as DetailsInfo,
+    setSelectedItemDetails: vi.fn(),
+    manifest: {},
     insights: undefined,
-    activeTab: 'versions',
+    activeTab: 'versions' as const,
     setActiveTab: vi.fn(),
-  })
+  }
+
+  vi.mocked(useSelectedItemStore).mockImplementation(selector =>
+    selector(mockState),
+  )
 
   const { container } = render(<VersionsTabContent />)
   const searchInput = container.querySelector(
@@ -246,41 +217,23 @@ test('VersionsTabContent filters versions', () => {
 })
 
 test('VersionsTabContent toggles pre-releases', () => {
-  vi.mocked(useSelectedItem).mockReturnValue({
+  const mockState = {
     selectedItem: SELECTED_ITEM,
     selectedItemDetails: {
       ...SELECTED_ITEM_DETAILS,
-      versions: [
-        {
-          version: '1.0.0',
-          publishedDate: '2025-04-15',
-          unpackedSize: 123456,
-          integrity: 'sha512-abc123',
-          tarball: 'https://example.com/tarball.tgz',
-          publishedAuthor: {
-            name: 'John Doe',
-            email: 'johndoe@acme.com',
-            avatar: 'https://example.com/avatar.jpg',
-          },
-        },
-        {
-          version: '2.0.0-beta.1',
-          publishedDate: '2025-04-15',
-          unpackedSize: 123456,
-          integrity: 'sha512-def456',
-          tarball: 'https://example.com/tarball.tgz',
-          publishedAuthor: {
-            name: 'John Doe',
-            email: 'johndoe@acme.com',
-            avatar: 'https://example.com/avatar.jpg',
-          },
-        },
-      ],
+      versions: [MOCK_VERSION, MOCK_BETA_VERSION],
+      greaterVersions: [],
     } as DetailsInfo,
+    setSelectedItemDetails: vi.fn(),
+    manifest: {},
     insights: undefined,
-    activeTab: 'versions',
+    activeTab: 'versions' as const,
     setActiveTab: vi.fn(),
-  })
+  }
+
+  vi.mocked(useSelectedItemStore).mockImplementation(selector =>
+    selector(mockState),
+  )
 
   const { container } = render(<VersionsTabContent />)
   const toggleButton = container.querySelector('button')
@@ -291,44 +244,25 @@ test('VersionsTabContent toggles pre-releases', () => {
 })
 
 test('VersionsTabContent filters pre-releases', () => {
-  vi.mocked(useSelectedItem).mockReturnValue({
+  const mockState = {
     selectedItem: SELECTED_ITEM,
     selectedItemDetails: {
       ...SELECTED_ITEM_DETAILS,
-      versions: [
-        {
-          version: '1.0.0',
-          publishedDate: '2025-04-15',
-          unpackedSize: 123456,
-          integrity: 'sha512-abc123',
-          tarball: 'https://example.com/tarball.tgz',
-          publishedAuthor: {
-            name: 'John Doe',
-            email: 'johndoe@acme.com',
-            avatar: 'https://example.com/avatar.jpg',
-          },
-        },
-        {
-          version: '2.0.0-beta.1',
-          publishedDate: '2025-04-15',
-          unpackedSize: 123456,
-          integrity: 'sha512-def456',
-          tarball: 'https://example.com/tarball.tgz',
-          publishedAuthor: {
-            name: 'John Doe',
-            email: 'johndoe@acme.com',
-            avatar: 'https://example.com/avatar.jpg',
-          },
-        },
-      ],
+      versions: [MOCK_VERSION, MOCK_BETA_VERSION],
+      greaterVersions: [],
     } as DetailsInfo,
+    setSelectedItemDetails: vi.fn(),
     manifest: {
       version: '1.0.0',
     },
     insights: undefined,
-    activeTab: 'versions',
+    activeTab: 'versions' as const,
     setActiveTab: vi.fn(),
-  })
+  }
+
+  vi.mocked(useSelectedItemStore).mockImplementation(selector =>
+    selector(mockState),
+  )
 
   const { container } = render(<VersionsTabContent />)
   const filterButton = container.querySelector('button')
@@ -343,44 +277,25 @@ test('VersionsTabContent filters pre-releases', () => {
 })
 
 test('VersionsTabContent filters newer versions', () => {
-  vi.mocked(useSelectedItem).mockReturnValue({
+  const mockState = {
     selectedItem: SELECTED_ITEM,
     selectedItemDetails: {
       ...SELECTED_ITEM_DETAILS,
-      versions: [
-        {
-          version: '1.0.0',
-          publishedDate: '2025-04-15',
-          unpackedSize: 123456,
-          integrity: 'sha512-abc123',
-          tarball: 'https://example.com/tarball.tgz',
-          publishedAuthor: {
-            name: 'John Doe',
-            email: 'johndoe@acme.com',
-            avatar: 'https://example.com/avatar.jpg',
-          },
-        },
-        {
-          version: '2.0.0',
-          publishedDate: '2025-04-15',
-          unpackedSize: 123456,
-          integrity: 'sha512-def456',
-          tarball: 'https://example.com/tarball.tgz',
-          publishedAuthor: {
-            name: 'John Doe',
-            email: 'johndoe@acme.com',
-            avatar: 'https://example.com/avatar.jpg',
-          },
-        },
-      ],
+      versions: [MOCK_VERSION, { ...MOCK_VERSION, version: '2.0.0' }],
+      greaterVersions: [],
     } as DetailsInfo,
+    setSelectedItemDetails: vi.fn(),
     manifest: {
       version: '1.0.0',
     },
     insights: undefined,
-    activeTab: 'versions',
+    activeTab: 'versions' as const,
     setActiveTab: vi.fn(),
-  })
+  }
+
+  vi.mocked(useSelectedItemStore).mockImplementation(selector =>
+    selector(mockState),
+  )
 
   const { container } = render(<VersionsTabContent />)
   const filterButton = container.querySelector('button')
@@ -397,42 +312,23 @@ test('VersionsTabContent filters newer versions', () => {
 })
 
 test('VersionsTabContent handles missing manifest version', () => {
-  vi.mocked(useSelectedItem).mockReturnValue({
+  const mockState = {
     selectedItem: SELECTED_ITEM,
     selectedItemDetails: {
       ...SELECTED_ITEM_DETAILS,
-      versions: [
-        {
-          version: '1.0.0',
-          publishedDate: '2025-04-15',
-          unpackedSize: 123456,
-          integrity: 'sha512-abc123',
-          tarball: 'https://example.com/tarball.tgz',
-          publishedAuthor: {
-            name: 'John Doe',
-            email: 'johndoe@acme.com',
-            avatar: 'https://example.com/avatar.jpg',
-          },
-        },
-        {
-          version: '2.0.0',
-          publishedDate: '2025-04-15',
-          unpackedSize: 123456,
-          integrity: 'sha512-def456',
-          tarball: 'https://example.com/tarball.tgz',
-          publishedAuthor: {
-            name: 'John Doe',
-            email: 'johndoe@acme.com',
-            avatar: 'https://example.com/avatar.jpg',
-          },
-        },
-      ],
+      versions: [MOCK_VERSION, { ...MOCK_VERSION, version: '2.0.0' }],
+      greaterVersions: [],
     } as DetailsInfo,
+    setSelectedItemDetails: vi.fn(),
     manifest: {},
     insights: undefined,
-    activeTab: 'versions',
+    activeTab: 'versions' as const,
     setActiveTab: vi.fn(),
-  })
+  }
+
+  vi.mocked(useSelectedItemStore).mockImplementation(selector =>
+    selector(mockState),
+  )
 
   const { container } = render(<VersionsTabContent />)
   const filterButton = container.querySelector('button')
