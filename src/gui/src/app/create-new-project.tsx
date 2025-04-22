@@ -14,6 +14,9 @@ export const CreateNewProject = () => {
   const updateErrorCause = useGraphStore(
     state => state.updateErrorCause,
   )
+  const updateBuildVersion = useGraphStore(
+    state => state.updateBuildVersion,
+  )
   const stamp = useGraphStore(state => state.stamp)
 
   const [inProgress, setInProgress] = useState<boolean>(false)
@@ -23,6 +26,7 @@ export const CreateNewProject = () => {
       navigate,
       updateDashboard,
       updateErrorCause,
+      updateBuildVersion,
       stamp,
     })
   }, [stamp])

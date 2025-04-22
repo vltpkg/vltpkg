@@ -32,6 +32,9 @@ const Queries = () => {
   const savedLabels = useGraphStore(state => state.savedQueryLabels)
   const [isCreating, setIsCreating] = useState<boolean>(false)
   const dashboard = useGraphStore(state => state.dashboard)
+  const updateBuildVersion = useGraphStore(
+    state => state.updateBuildVersion,
+  )
   const updateDashboard = useGraphStore(
     state => state.updateDashboard,
   )
@@ -64,6 +67,7 @@ const Queries = () => {
       navigate,
       updateDashboard,
       updateErrorCause,
+      updateBuildVersion,
       stamp,
     })
   }, [stamp])

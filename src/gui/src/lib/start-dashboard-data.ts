@@ -8,6 +8,7 @@ export type StartDashboardDataOptions = {
   navigate: (route: string) => void
   updateDashboard: Action['updateDashboard']
   updateErrorCause: Action['updateErrorCause']
+  updateBuildVersion: Action['updateBuildVersion']
   stamp: State['stamp']
 }
 
@@ -22,6 +23,7 @@ export const requestDashboardData = async ({
 export const startDashboardData = ({
   navigate,
   updateDashboard,
+  updateBuildVersion,
   updateErrorCause,
   stamp,
 }: StartDashboardDataOptions) => {
@@ -30,6 +32,7 @@ export const startDashboardData = ({
       stamp,
     })
     updateDashboard(dashboardData)
+    updateBuildVersion(dashboardData?.buildVersion)
   }
 
   void _startDashboard().catch((err: unknown) => {

@@ -87,7 +87,7 @@ export const Explorer = () => {
 }
 
 const ExplorerContent = () => {
-  const dashboard = useGraphStore(state => state.dashboard)
+  const buildVersion = useGraphStore(state => state.buildVersion)
   const updateEdges = useGraphStore(state => state.updateEdges)
   const updateNodes = useGraphStore(state => state.updateNodes)
   const graph = useGraphStore(state => state.graph)
@@ -148,11 +148,11 @@ const ExplorerContent = () => {
               :host-context(file:{graph.projectRoot})
             </p>
           : ''}
-          {dashboard?.buildVersion ?
+          {buildVersion && (
             <p className="text-right font-mono text-xs font-light text-muted-foreground">
-              build: v{dashboard.buildVersion}
+              build: v{buildVersion}
             </p>
-          : ''}
+          )}
         </div>
       </div>
       <section className="flex w-full items-center px-8 py-4">

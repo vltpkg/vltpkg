@@ -6,12 +6,16 @@ import { startDashboardData } from '@/lib/start-dashboard-data.js'
 
 export const Dashboard = () => {
   const dashboard = useGraphStore(state => state.dashboard)
+  const buildVersion = useGraphStore(state => state.buildVersion)
   const navigate = useNavigate()
   const updateDashboard = useGraphStore(
     state => state.updateDashboard,
   )
   const updateErrorCause = useGraphStore(
     state => state.updateErrorCause,
+  )
+  const updateBuildVersion = useGraphStore(
+    state => state.updateBuildVersion,
   )
   const stamp = useGraphStore(state => state.stamp)
 
@@ -20,6 +24,7 @@ export const Dashboard = () => {
       navigate,
       updateErrorCause,
       updateDashboard,
+      updateBuildVersion,
       stamp,
     })
   }, [stamp])
@@ -33,11 +38,11 @@ export const Dashboard = () => {
               Directory: {dashboard.cwd}
             </p>
           : ''}
-          {dashboard?.buildVersion ?
+          {buildVersion && (
             <p className="hidden text-right font-mono text-xs font-light text-muted-foreground md:inline-flex">
-              build: v{dashboard.buildVersion}
+              build: v{buildVersion}
             </p>
-          : ''}
+          )}
         </div>
       </div>
       <DashboardContent />
