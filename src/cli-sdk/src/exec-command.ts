@@ -19,9 +19,8 @@ import type {
 import { Monorepo } from '@vltpkg/workspaces'
 import type { Workspace } from '@vltpkg/workspaces'
 import { ansiToAnsi } from 'ansi-to-pre'
-import chalk from 'chalk'
 import type { LoadedConfig } from './config/index.ts'
-import { stdout, stderr } from './output.ts'
+import { stdout, stderr, styleTextStdout } from './output.ts'
 import type { SpawnResultNoStdio } from '@vltpkg/promise-spawn'
 
 export type RunnerBG = typeof exec | typeof run | typeof runExec
@@ -120,10 +119,16 @@ export class ExecCommand<B extends RunnerBG, F extends RunnerFG> {
     if (result.status === 0 && result.signal === null) {
       stdout(ws.path, 'ok')
     } else {
-      stdout(chalk.bgWhiteBright.black.bold(ws.path + ' failure'), {
-        status: result.status,
-        signal: result.signal,
-      })
+      stdout(
+        styleTextStdout(
+          ['bgWhiteBright', 'black', 'bold'],
+          ws.path + ' failure',
+        ),
+        {
+          status: result.status,
+          signal: result.signal,
+        },
+      )
       /* c8 ignore start */
       if (result.stderr) stderr(ansiToAnsi(result.stderr))
       if (result.stdout) stdout(ansiToAnsi(result.stdout))

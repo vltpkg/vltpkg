@@ -142,9 +142,7 @@ const runCommand = async (
   const res = await cmd.command(config)
   const output = cmd.views[values.view](
     res,
-    values.color ?
-      { colors: await import('chalk').then(r => r.default) }
-    : {},
+    { colors: values.color },
     config,
   )
   return values.view === 'json' ?
@@ -344,16 +342,12 @@ t.test('list', async t => {
   })
 
   await t.test('colors', async t => {
-    t.intercept(process, 'env', {
-      value: { ...process.env, FORCE_COLOR: '1' },
-    })
     const C = await mockList(t)
 
     t.matchSnapshot(
       await runCommand(
         {
           positionals: ['*'],
-
           values: {
             color: true,
             view: 'human',

@@ -6,13 +6,13 @@
  */
 'use strict'
 exports[`test/commands/query.ts > TAP > query > colors > should use colors when set in human readable format 1`] = `
-[0mmy-project[0m
-[0m├── foo@1.0.0[0m
-[0m├─┬ bar@1.0.0[0m
-[0m│ └─┬ baz (custom:baz@1.0.0)[0m
-[0m│   └── foo@1.0.0 [2m(deduped)[22m[0m
-[0m└── missing@^1.0.0 [31m(missing)[39m[0m
-[0m[0m
+[0mmy-project
+├── foo@1.0.0
+├─┬ bar@1.0.0
+│ └─┬ baz (custom:baz@1.0.0)
+│   └── foo@1.0.0 [2m(deduped)[22m
+└── missing@^1.0.0 [31m(missing)[39m
+[0m
 `
 
 exports[`test/commands/query.ts > TAP > query > expect-results option > should return items when expect-results check passes 1`] = `
