@@ -56,6 +56,7 @@ test('standard dashboard response', async () => {
           res()
         },
         updateErrorCause: rej,
+        updateBuildVersion: vi.fn(),
         stamp: 'standard',
       })
     } catch (err) {
@@ -77,6 +78,7 @@ test('missing dashboard response', async () => {
           throw new Error('Should not have dashboard data')
         },
         updateErrorCause: vi.fn(),
+        updateBuildVersion: vi.fn(),
         stamp: 'missing',
       })
     } catch (err) {
