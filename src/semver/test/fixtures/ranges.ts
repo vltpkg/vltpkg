@@ -104,6 +104,7 @@ const includes: [string, string][] = [
   ['1.0.0 - x', '1.9.7'],
   ['1.x - x', '1.9.7'],
   ['<=7.x', '7.9.9'],
+  ['<=7.x || notvalidcomparator', '7.9.9'],
 ]
 
 const excludes: [string, string][] = [

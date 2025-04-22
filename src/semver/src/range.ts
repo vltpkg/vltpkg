@@ -1,6 +1,7 @@
 import { fastSplit } from '@vltpkg/fast-split'
 import { Comparator } from './comparator.ts'
 import type { Version } from './version.ts'
+import { asError } from '@vltpkg/error-cause'
 
 /**
  * A representation of a semver range, used to test versions.
@@ -39,9 +40,14 @@ export class Range {
     this.isAny = false
     let isFirst = true
     this.isSingle = false
+    const comparatorErrors: Error[] = []
     fastSplit(range, '||', -1, part => {
       if (this.isAny) return
-      const cmp = new Comparator(part, this.includePrerelease)
+      const cmp = this.#maybeComparator(part, this.includePrerelease)
+      if (cmp instanceof Error) {
+        comparatorErrors.push(cmp)
+        return
+      }
       if (cmp.isAny) {
         this.set = [cmp]
         this.isAny = true
@@ -59,6 +65,20 @@ export class Range {
       }
       isFirst = false
     })
+    if (!this.set.length && comparatorErrors.length) {
+      if (comparatorErrors.length === 1 && comparatorErrors[0]) {
+        throw comparatorErrors[0]
+      }
+      throw new AggregateError(comparatorErrors)
+    }
+  }
+
+  #maybeComparator(part: string, includePrerelease: boolean) {
+    try {
+      return new Comparator(part, includePrerelease)
+    } catch (er) {
+      return asError(er)
+    }
   }
 
   /**
