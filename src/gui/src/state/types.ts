@@ -29,6 +29,7 @@ export type Action = {
   saveQueryLabel: (queryLabel: QueryLabel) => void
   updateSavedQueryLabel: (queryLabel: QueryLabel) => void
   deleteSavedQueryLabels: (queryLabels: QueryLabel[]) => void
+  updateBuildVersion: (buildVersion: State['buildVersion']) => void
 }
 
 /**
@@ -144,6 +145,10 @@ export type State = {
    * Saved labels used for query tags in localStorage.
    */
   savedQueryLabels?: QueryLabel[]
+  /**
+   * The app version.
+   */
+  buildVersion?: string
 }
 
 export type DashboardTools =

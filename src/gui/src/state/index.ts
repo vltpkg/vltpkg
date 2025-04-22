@@ -70,6 +70,9 @@ const initialState: State = {
     )
     return defaultLabels
   })(),
+  buildVersion: localStorage.getItem(
+    'build-version',
+  ) as State['buildVersion'],
 }
 
 /**
@@ -245,6 +248,15 @@ export const useGraphStore = create<Action & State>((set, get) => {
         'saved-queries',
         JSON.stringify(updatedQueries),
       )
+    },
+    updateBuildVersion: (newVersion: State['buildVersion']) => {
+      if (!newVersion) return
+
+      const currentVersion = get().buildVersion
+      if (currentVersion === newVersion) return
+
+      localStorage.setItem('build-version', newVersion)
+      set(() => ({ buildVersion: newVersion }))
     },
   }
 
