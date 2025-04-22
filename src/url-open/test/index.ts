@@ -15,6 +15,14 @@ const mocks = {
       SPAWNS.push([cmd, args, opts])
     },
   },
+  '@vltpkg/which': {
+    which: async (cmd: string) => {
+      if (cmd === 'xdg-open') return 'xdg-open'
+      if (cmd === 'open') return 'open'
+      if (cmd === 'start') return 'start'
+      return null
+    },
+  },
   'node:os': {
     release: () => RELEASE,
   },
@@ -52,11 +60,19 @@ const runTests = (t: Test) => {
 }
 
 t.test('isTTY', async t => {
+  t.intercept(process.stdin, 'isTTY', { value: true })
   t.intercept(process.stderr, 'isTTY', { value: true })
   runTests(t)
 })
 
 t.test('not isTTY', async t => {
+  t.intercept(process.stdin, 'isTTY', { value: true })
+  t.intercept(process.stderr, 'isTTY', { value: false })
+  runTests(t)
+})
+
+t.test('stdin and stderr both not isTTY', async t => {
+  t.intercept(process.stdin, 'isTTY', { value: false })
   t.intercept(process.stderr, 'isTTY', { value: false })
   runTests(t)
 })
