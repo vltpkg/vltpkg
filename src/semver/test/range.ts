@@ -29,6 +29,15 @@ for (const [range, ts, pts] of rangeToString) {
   })
 }
 
+t.test(
+  'if every comparator is invalid, throw the first error',
+  async t => {
+    t.throws(() => new Range('asfd || foo || bar'))
+    t.throws(() => new Range('asfd'))
+    t.doesNotThrow(() => new Range('asdf || 1.0.0 || foo'))
+  },
+)
+
 t.test('isSingle tests', t => {
   t.equal(new Range('1.2.3').isSingle, true)
   t.equal(new Range('>=1.2.3').isSingle, false)
