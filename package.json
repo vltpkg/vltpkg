@@ -50,7 +50,7 @@
     "lint": "eslint . --fix",
     "lint:check": "eslint .",
     "snap": "pnpm --silent --no-bail --report-summary run -r snap &>/dev/null || node scripts/report-test-failures.js",
-    "test": "pnpm --silent --no-bail --report-summary -r test -- -Rsilent || node scripts/report-test-failures.js",
+    "test": "pnpm --silent --no-bail --report-summary -r test &>/dev/null || node scripts/report-test-failures.js",
     "vlr": "./scripts/bins/vlr",
     "vlrx": "./scripts/bins/vlrx",
     "vlt": "./scripts/bins/vlt",
