@@ -200,3 +200,51 @@ Array [
   ],
 ]
 `
+
+exports[`test/index.ts > TAP > stdin and stderr both not isTTY > darwin > logs printed 1`] = `
+Array [
+  Array [
+    "Could not open a browser. Please open https://example.com/ manually.",
+  ],
+]
+`
+
+exports[`test/index.ts > TAP > stdin and stderr both not isTTY > darwin > spawns executed 1`] = `
+Array []
+`
+
+exports[`test/index.ts > TAP > stdin and stderr both not isTTY > linux > logs printed 1`] = `
+Array [
+  Array [
+    "Could not open a browser. Please open https://example.com/ manually.",
+  ],
+]
+`
+
+exports[`test/index.ts > TAP > stdin and stderr both not isTTY > linux > spawns executed 1`] = `
+Array []
+`
+
+exports[`test/index.ts > TAP > stdin and stderr both not isTTY > win32 > logs printed 1`] = `
+Array [
+  Array [
+    "Could not open a browser. Please open https://example.com/ manually.",
+  ],
+]
+`
+
+exports[`test/index.ts > TAP > stdin and stderr both not isTTY > win32 > spawns executed 1`] = `
+Array []
+`
+
+exports[`test/index.ts > TAP > stdin and stderr both not isTTY > WSL > logs printed 1`] = `
+Array [
+  Array [
+    "Could not open a browser. Please open https://example.com/ manually.",
+  ],
+]
+`
+
+exports[`test/index.ts > TAP > stdin and stderr both not isTTY > WSL > spawns executed 1`] = `
+Array []
+`

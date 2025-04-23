@@ -1960,6 +1960,9 @@ importers:
       '@vltpkg/promise-spawn':
         specifier: workspace:*
         version: link:../promise-spawn
+      '@vltpkg/which':
+        specifier: workspace:*
+        version: link:../which
     devDependencies:
       '@eslint/js':
         specifier: 'catalog:'
