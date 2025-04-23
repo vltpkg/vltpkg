@@ -467,7 +467,7 @@ const DownloadGraph = () => {
             content={
               <ChartTooltipContent
                 indicator="line"
-                className="w-[200px]"
+                className="w-[225px]"
                 labelFormatter={value => {
                   return format(value as string, 'MMMM, yyyy')
                 }}
@@ -620,11 +620,9 @@ export const VersionsTabContent = () => {
   ])
 
   const isEmpty = !versions?.length
-  const hasSearchResults = filteredVersions.length > 0
-  const paginatedVersions = filteredVersions.slice(
-    0,
-    page * ITEMS_PER_PAGE,
-  )
+  const hasSearchResults = versions && versions.length > 0
+  const paginatedVersions =
+    versions?.slice(0, page * ITEMS_PER_PAGE) ?? []
 
   return (
     <TabsContent value="versions">

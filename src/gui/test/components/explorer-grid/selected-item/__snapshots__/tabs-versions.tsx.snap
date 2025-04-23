@@ -182,91 +182,6 @@ exports[`VersionsTabContent filters newer versions 1`] = `
               <gui-inline-code
                 tooltipduration="150"
                 displaytooltip="true"
-                tooltip="2.0.0"
-                classname="mx-0 w-fit max-w-none truncate break-all text-sm xl:w-fit xl:max-w-[5.5rem]"
-                variant="mono"
-              >
-                2.0.0
-              </gui-inline-code>
-            </div>
-            <div class="order-2 col-span-2 flex w-full flex-col gap-2 xl:items-center xl:justify-center xl:gap-0 xl:text-center">
-              <p class="text-sm font-medium text-muted-foreground xl:hidden">
-                Size
-              </p>
-              <p class="font-mono text-sm">
-                121 KB
-              </p>
-            </div>
-            <div class="order-4 col-span-3 flex w-full flex-col gap-2 xl:order-3 xl:items-center xl:justify-center xl:gap-0 xl:text-center">
-              <p class="text-sm font-medium text-muted-foreground xl:hidden">
-                Published Date
-              </p>
-              <div class="flex gap-2 xl:hidden">
-                <gui-avatar classname="size-5">
-                  <gui-avatar-image
-                    classname="rounded-sm outline outline-[1px] outline-border"
-                    src="https://example.com/avatar.jpg"
-                  >
-                  </gui-avatar-image>
-                  <gui-avatar-fallback classname="h-5 h-full w-5 w-full rounded-sm bg-secondary bg-gradient-to-t from-neutral-100 to-neutral-400 px-[10px] outline outline-[1px] outline-border dark:from-neutral-500 dark:to-neutral-800">
-                  </gui-avatar-fallback>
-                </gui-avatar>
-                <p class="col-span-4 font-mono text-sm">
-                  John Doe
-                </p>
-                <p class="ml-2 inline-flex font-mono text-sm text-muted-foreground xl:hidden">
-                  1 day ago
-                </p>
-              </div>
-              <gui-tooltip-provider>
-                <gui-tooltip>
-                  <gui-tooltip-trigger classname="hidden cursor-default font-mono text-sm xl:inline-flex">
-                    1 day ago
-                  </gui-tooltip-trigger>
-                  <gui-tooltip-content>
-                    2025-04-15
-                  </gui-tooltip-content>
-                </gui-tooltip>
-              </gui-tooltip-provider>
-            </div>
-            <div class="order-3 col-span-2 w-full flex-col justify-start gap-2 xl:items-center xl:justify-center xl:gap-0 xl:text-center hidden xl:flex">
-            </div>
-            <div class="order-3 col-span-3 flex hidden w-full items-center justify-center xl:order-4 xl:flex">
-              <div class="flex w-full items-center justify-center gap-2">
-                <gui-avatar classname="flex size-5 items-center justify-center">
-                  <gui-avatar-image
-                    classname="rounded-sm outline outline-[1px] outline-border"
-                    src="https://example.com/avatar.jpg"
-                  >
-                  </gui-avatar-image>
-                  <gui-avatar-fallback classname="h-full w-full rounded-sm bg-secondary bg-gradient-to-t from-neutral-100 to-neutral-400 px-[10px] outline outline-[1px] outline-border dark:from-neutral-500 dark:to-neutral-800">
-                  </gui-avatar-fallback>
-                </gui-avatar>
-                <gui-tooltip-provider>
-                  <gui-tooltip delayduration="150">
-                    <gui-tooltip-trigger classname="cursor-default">
-                      <p class="truncate font-mono text-sm">
-                        John Doe
-                      </p>
-                    </gui-tooltip-trigger>
-                    <gui-tooltip-content>
-                      John Doe
-                    </gui-tooltip-content>
-                  </gui-tooltip>
-                </gui-tooltip-provider>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div>
-          <div class="group/item flex cursor-default grid-cols-12 flex-col gap-3 rounded-sm py-4 text-foreground transition-colors first:border-t-[0px] xl:grid xl:gap-3 xl:px-2 xl:py-1.5 xl:hover:bg-muted">
-            <div class="order-1 col-span-2 flex w-full flex-col justify-center gap-1 xl:justify-center xl:gap-0">
-              <p class="text-sm font-medium text-muted-foreground xl:hidden">
-                Version
-              </p>
-              <gui-inline-code
-                tooltipduration="150"
-                displaytooltip="true"
                 tooltip="1.0.0"
                 classname="mx-0 w-fit max-w-none truncate break-all text-sm xl:w-fit xl:max-w-[5.5rem]"
                 variant="mono"
@@ -321,6 +236,91 @@ exports[`VersionsTabContent filters newer versions 1`] = `
               <p class="font-mono text-sm">
                 123,456
               </p>
+            </div>
+            <div class="order-3 col-span-3 flex hidden w-full items-center justify-center xl:order-4 xl:flex">
+              <div class="flex w-full items-center justify-center gap-2">
+                <gui-avatar classname="flex size-5 items-center justify-center">
+                  <gui-avatar-image
+                    classname="rounded-sm outline outline-[1px] outline-border"
+                    src="https://example.com/avatar.jpg"
+                  >
+                  </gui-avatar-image>
+                  <gui-avatar-fallback classname="h-full w-full rounded-sm bg-secondary bg-gradient-to-t from-neutral-100 to-neutral-400 px-[10px] outline outline-[1px] outline-border dark:from-neutral-500 dark:to-neutral-800">
+                  </gui-avatar-fallback>
+                </gui-avatar>
+                <gui-tooltip-provider>
+                  <gui-tooltip delayduration="150">
+                    <gui-tooltip-trigger classname="cursor-default">
+                      <p class="truncate font-mono text-sm">
+                        John Doe
+                      </p>
+                    </gui-tooltip-trigger>
+                    <gui-tooltip-content>
+                      John Doe
+                    </gui-tooltip-content>
+                  </gui-tooltip>
+                </gui-tooltip-provider>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="group/item flex cursor-default grid-cols-12 flex-col gap-3 rounded-sm py-4 text-foreground transition-colors first:border-t-[0px] xl:grid xl:gap-3 xl:px-2 xl:py-1.5 xl:hover:bg-muted">
+            <div class="order-1 col-span-2 flex w-full flex-col justify-center gap-1 xl:justify-center xl:gap-0">
+              <p class="text-sm font-medium text-muted-foreground xl:hidden">
+                Version
+              </p>
+              <gui-inline-code
+                tooltipduration="150"
+                displaytooltip="true"
+                tooltip="2.0.0"
+                classname="mx-0 w-fit max-w-none truncate break-all text-sm xl:w-fit xl:max-w-[5.5rem]"
+                variant="mono"
+              >
+                2.0.0
+              </gui-inline-code>
+            </div>
+            <div class="order-2 col-span-2 flex w-full flex-col gap-2 xl:items-center xl:justify-center xl:gap-0 xl:text-center">
+              <p class="text-sm font-medium text-muted-foreground xl:hidden">
+                Size
+              </p>
+              <p class="font-mono text-sm">
+                121 KB
+              </p>
+            </div>
+            <div class="order-4 col-span-3 flex w-full flex-col gap-2 xl:order-3 xl:items-center xl:justify-center xl:gap-0 xl:text-center">
+              <p class="text-sm font-medium text-muted-foreground xl:hidden">
+                Published Date
+              </p>
+              <div class="flex gap-2 xl:hidden">
+                <gui-avatar classname="size-5">
+                  <gui-avatar-image
+                    classname="rounded-sm outline outline-[1px] outline-border"
+                    src="https://example.com/avatar.jpg"
+                  >
+                  </gui-avatar-image>
+                  <gui-avatar-fallback classname="h-5 h-full w-5 w-full rounded-sm bg-secondary bg-gradient-to-t from-neutral-100 to-neutral-400 px-[10px] outline outline-[1px] outline-border dark:from-neutral-500 dark:to-neutral-800">
+                  </gui-avatar-fallback>
+                </gui-avatar>
+                <p class="col-span-4 font-mono text-sm">
+                  John Doe
+                </p>
+                <p class="ml-2 inline-flex font-mono text-sm text-muted-foreground xl:hidden">
+                  1 day ago
+                </p>
+              </div>
+              <gui-tooltip-provider>
+                <gui-tooltip>
+                  <gui-tooltip-trigger classname="hidden cursor-default font-mono text-sm xl:inline-flex">
+                    1 day ago
+                  </gui-tooltip-trigger>
+                  <gui-tooltip-content>
+                    2025-04-15
+                  </gui-tooltip-content>
+                </gui-tooltip>
+              </gui-tooltip-provider>
+            </div>
+            <div class="order-3 col-span-2 w-full flex-col justify-start gap-2 xl:items-center xl:justify-center xl:gap-0 xl:text-center hidden xl:flex">
             </div>
             <div class="order-3 col-span-3 flex hidden w-full items-center justify-center xl:order-4 xl:flex">
               <div class="flex w-full items-center justify-center gap-2">
@@ -520,91 +520,6 @@ exports[`VersionsTabContent filters pre-releases 1`] = `
               <gui-inline-code
                 tooltipduration="150"
                 displaytooltip="true"
-                tooltip="2.0.0-beta.1"
-                classname="mx-0 w-fit max-w-none truncate break-all text-sm xl:w-fit xl:max-w-[5.5rem]"
-                variant="mono"
-              >
-                2.0.0-beta.1
-              </gui-inline-code>
-            </div>
-            <div class="order-2 col-span-2 flex w-full flex-col gap-2 xl:items-center xl:justify-center xl:gap-0 xl:text-center">
-              <p class="text-sm font-medium text-muted-foreground xl:hidden">
-                Size
-              </p>
-              <p class="font-mono text-sm">
-                121 KB
-              </p>
-            </div>
-            <div class="order-4 col-span-3 flex w-full flex-col gap-2 xl:order-3 xl:items-center xl:justify-center xl:gap-0 xl:text-center">
-              <p class="text-sm font-medium text-muted-foreground xl:hidden">
-                Published Date
-              </p>
-              <div class="flex gap-2 xl:hidden">
-                <gui-avatar classname="size-5">
-                  <gui-avatar-image
-                    classname="rounded-sm outline outline-[1px] outline-border"
-                    src="https://example.com/avatar.jpg"
-                  >
-                  </gui-avatar-image>
-                  <gui-avatar-fallback classname="h-5 h-full w-5 w-full rounded-sm bg-secondary bg-gradient-to-t from-neutral-100 to-neutral-400 px-[10px] outline outline-[1px] outline-border dark:from-neutral-500 dark:to-neutral-800">
-                  </gui-avatar-fallback>
-                </gui-avatar>
-                <p class="col-span-4 font-mono text-sm">
-                  John Doe
-                </p>
-                <p class="ml-2 inline-flex font-mono text-sm text-muted-foreground xl:hidden">
-                  1 day ago
-                </p>
-              </div>
-              <gui-tooltip-provider>
-                <gui-tooltip>
-                  <gui-tooltip-trigger classname="hidden cursor-default font-mono text-sm xl:inline-flex">
-                    1 day ago
-                  </gui-tooltip-trigger>
-                  <gui-tooltip-content>
-                    2025-04-15
-                  </gui-tooltip-content>
-                </gui-tooltip>
-              </gui-tooltip-provider>
-            </div>
-            <div class="order-3 col-span-2 w-full flex-col justify-start gap-2 xl:items-center xl:justify-center xl:gap-0 xl:text-center hidden xl:flex">
-            </div>
-            <div class="order-3 col-span-3 flex hidden w-full items-center justify-center xl:order-4 xl:flex">
-              <div class="flex w-full items-center justify-center gap-2">
-                <gui-avatar classname="flex size-5 items-center justify-center">
-                  <gui-avatar-image
-                    classname="rounded-sm outline outline-[1px] outline-border"
-                    src="https://example.com/avatar.jpg"
-                  >
-                  </gui-avatar-image>
-                  <gui-avatar-fallback classname="h-full w-full rounded-sm bg-secondary bg-gradient-to-t from-neutral-100 to-neutral-400 px-[10px] outline outline-[1px] outline-border dark:from-neutral-500 dark:to-neutral-800">
-                  </gui-avatar-fallback>
-                </gui-avatar>
-                <gui-tooltip-provider>
-                  <gui-tooltip delayduration="150">
-                    <gui-tooltip-trigger classname="cursor-default">
-                      <p class="truncate font-mono text-sm">
-                        John Doe
-                      </p>
-                    </gui-tooltip-trigger>
-                    <gui-tooltip-content>
-                      John Doe
-                    </gui-tooltip-content>
-                  </gui-tooltip>
-                </gui-tooltip-provider>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div>
-          <div class="group/item flex cursor-default grid-cols-12 flex-col gap-3 rounded-sm py-4 text-foreground transition-colors first:border-t-[0px] xl:grid xl:gap-3 xl:px-2 xl:py-1.5 xl:hover:bg-muted">
-            <div class="order-1 col-span-2 flex w-full flex-col justify-center gap-1 xl:justify-center xl:gap-0">
-              <p class="text-sm font-medium text-muted-foreground xl:hidden">
-                Version
-              </p>
-              <gui-inline-code
-                tooltipduration="150"
-                displaytooltip="true"
                 tooltip="1.0.0"
                 classname="mx-0 w-fit max-w-none truncate break-all text-sm xl:w-fit xl:max-w-[5.5rem]"
                 variant="mono"
@@ -659,6 +574,91 @@ exports[`VersionsTabContent filters pre-releases 1`] = `
               <p class="font-mono text-sm">
                 123,456
               </p>
+            </div>
+            <div class="order-3 col-span-3 flex hidden w-full items-center justify-center xl:order-4 xl:flex">
+              <div class="flex w-full items-center justify-center gap-2">
+                <gui-avatar classname="flex size-5 items-center justify-center">
+                  <gui-avatar-image
+                    classname="rounded-sm outline outline-[1px] outline-border"
+                    src="https://example.com/avatar.jpg"
+                  >
+                  </gui-avatar-image>
+                  <gui-avatar-fallback classname="h-full w-full rounded-sm bg-secondary bg-gradient-to-t from-neutral-100 to-neutral-400 px-[10px] outline outline-[1px] outline-border dark:from-neutral-500 dark:to-neutral-800">
+                  </gui-avatar-fallback>
+                </gui-avatar>
+                <gui-tooltip-provider>
+                  <gui-tooltip delayduration="150">
+                    <gui-tooltip-trigger classname="cursor-default">
+                      <p class="truncate font-mono text-sm">
+                        John Doe
+                      </p>
+                    </gui-tooltip-trigger>
+                    <gui-tooltip-content>
+                      John Doe
+                    </gui-tooltip-content>
+                  </gui-tooltip>
+                </gui-tooltip-provider>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="group/item flex cursor-default grid-cols-12 flex-col gap-3 rounded-sm py-4 text-foreground transition-colors first:border-t-[0px] xl:grid xl:gap-3 xl:px-2 xl:py-1.5 xl:hover:bg-muted">
+            <div class="order-1 col-span-2 flex w-full flex-col justify-center gap-1 xl:justify-center xl:gap-0">
+              <p class="text-sm font-medium text-muted-foreground xl:hidden">
+                Version
+              </p>
+              <gui-inline-code
+                tooltipduration="150"
+                displaytooltip="true"
+                tooltip="2.0.0-beta.1"
+                classname="mx-0 w-fit max-w-none truncate break-all text-sm xl:w-fit xl:max-w-[5.5rem]"
+                variant="mono"
+              >
+                2.0.0-beta.1
+              </gui-inline-code>
+            </div>
+            <div class="order-2 col-span-2 flex w-full flex-col gap-2 xl:items-center xl:justify-center xl:gap-0 xl:text-center">
+              <p class="text-sm font-medium text-muted-foreground xl:hidden">
+                Size
+              </p>
+              <p class="font-mono text-sm">
+                121 KB
+              </p>
+            </div>
+            <div class="order-4 col-span-3 flex w-full flex-col gap-2 xl:order-3 xl:items-center xl:justify-center xl:gap-0 xl:text-center">
+              <p class="text-sm font-medium text-muted-foreground xl:hidden">
+                Published Date
+              </p>
+              <div class="flex gap-2 xl:hidden">
+                <gui-avatar classname="size-5">
+                  <gui-avatar-image
+                    classname="rounded-sm outline outline-[1px] outline-border"
+                    src="https://example.com/avatar.jpg"
+                  >
+                  </gui-avatar-image>
+                  <gui-avatar-fallback classname="h-5 h-full w-5 w-full rounded-sm bg-secondary bg-gradient-to-t from-neutral-100 to-neutral-400 px-[10px] outline outline-[1px] outline-border dark:from-neutral-500 dark:to-neutral-800">
+                  </gui-avatar-fallback>
+                </gui-avatar>
+                <p class="col-span-4 font-mono text-sm">
+                  John Doe
+                </p>
+                <p class="ml-2 inline-flex font-mono text-sm text-muted-foreground xl:hidden">
+                  1 day ago
+                </p>
+              </div>
+              <gui-tooltip-provider>
+                <gui-tooltip>
+                  <gui-tooltip-trigger classname="hidden cursor-default font-mono text-sm xl:inline-flex">
+                    1 day ago
+                  </gui-tooltip-trigger>
+                  <gui-tooltip-content>
+                    2025-04-15
+                  </gui-tooltip-content>
+                </gui-tooltip>
+              </gui-tooltip-provider>
+            </div>
+            <div class="order-3 col-span-2 w-full flex-col justify-start gap-2 xl:items-center xl:justify-center xl:gap-0 xl:text-center hidden xl:flex">
             </div>
             <div class="order-3 col-span-3 flex hidden w-full items-center justify-center xl:order-4 xl:flex">
               <div class="flex w-full items-center justify-center gap-2">
@@ -1078,91 +1078,6 @@ exports[`VersionsTabContent handles missing manifest version 1`] = `
               <gui-inline-code
                 tooltipduration="150"
                 displaytooltip="true"
-                tooltip="2.0.0"
-                classname="mx-0 w-fit max-w-none truncate break-all text-sm xl:w-fit xl:max-w-[5.5rem]"
-                variant="mono"
-              >
-                2.0.0
-              </gui-inline-code>
-            </div>
-            <div class="order-2 col-span-2 flex w-full flex-col gap-2 xl:items-center xl:justify-center xl:gap-0 xl:text-center">
-              <p class="text-sm font-medium text-muted-foreground xl:hidden">
-                Size
-              </p>
-              <p class="font-mono text-sm">
-                121 KB
-              </p>
-            </div>
-            <div class="order-4 col-span-3 flex w-full flex-col gap-2 xl:order-3 xl:items-center xl:justify-center xl:gap-0 xl:text-center">
-              <p class="text-sm font-medium text-muted-foreground xl:hidden">
-                Published Date
-              </p>
-              <div class="flex gap-2 xl:hidden">
-                <gui-avatar classname="size-5">
-                  <gui-avatar-image
-                    classname="rounded-sm outline outline-[1px] outline-border"
-                    src="https://example.com/avatar.jpg"
-                  >
-                  </gui-avatar-image>
-                  <gui-avatar-fallback classname="h-5 h-full w-5 w-full rounded-sm bg-secondary bg-gradient-to-t from-neutral-100 to-neutral-400 px-[10px] outline outline-[1px] outline-border dark:from-neutral-500 dark:to-neutral-800">
-                  </gui-avatar-fallback>
-                </gui-avatar>
-                <p class="col-span-4 font-mono text-sm">
-                  John Doe
-                </p>
-                <p class="ml-2 inline-flex font-mono text-sm text-muted-foreground xl:hidden">
-                  1 day ago
-                </p>
-              </div>
-              <gui-tooltip-provider>
-                <gui-tooltip>
-                  <gui-tooltip-trigger classname="hidden cursor-default font-mono text-sm xl:inline-flex">
-                    1 day ago
-                  </gui-tooltip-trigger>
-                  <gui-tooltip-content>
-                    2025-04-15
-                  </gui-tooltip-content>
-                </gui-tooltip>
-              </gui-tooltip-provider>
-            </div>
-            <div class="order-3 col-span-2 w-full flex-col justify-start gap-2 xl:items-center xl:justify-center xl:gap-0 xl:text-center hidden xl:flex">
-            </div>
-            <div class="order-3 col-span-3 flex hidden w-full items-center justify-center xl:order-4 xl:flex">
-              <div class="flex w-full items-center justify-center gap-2">
-                <gui-avatar classname="flex size-5 items-center justify-center">
-                  <gui-avatar-image
-                    classname="rounded-sm outline outline-[1px] outline-border"
-                    src="https://example.com/avatar.jpg"
-                  >
-                  </gui-avatar-image>
-                  <gui-avatar-fallback classname="h-full w-full rounded-sm bg-secondary bg-gradient-to-t from-neutral-100 to-neutral-400 px-[10px] outline outline-[1px] outline-border dark:from-neutral-500 dark:to-neutral-800">
-                  </gui-avatar-fallback>
-                </gui-avatar>
-                <gui-tooltip-provider>
-                  <gui-tooltip delayduration="150">
-                    <gui-tooltip-trigger classname="cursor-default">
-                      <p class="truncate font-mono text-sm">
-                        John Doe
-                      </p>
-                    </gui-tooltip-trigger>
-                    <gui-tooltip-content>
-                      John Doe
-                    </gui-tooltip-content>
-                  </gui-tooltip>
-                </gui-tooltip-provider>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div>
-          <div class="group/item flex cursor-default grid-cols-12 flex-col gap-3 rounded-sm py-4 text-foreground transition-colors first:border-t-[0px] xl:grid xl:gap-3 xl:px-2 xl:py-1.5 xl:hover:bg-muted">
-            <div class="order-1 col-span-2 flex w-full flex-col justify-center gap-1 xl:justify-center xl:gap-0">
-              <p class="text-sm font-medium text-muted-foreground xl:hidden">
-                Version
-              </p>
-              <gui-inline-code
-                tooltipduration="150"
-                displaytooltip="true"
                 tooltip="1.0.0"
                 classname="mx-0 w-fit max-w-none truncate break-all text-sm xl:w-fit xl:max-w-[5.5rem]"
                 variant="mono"
@@ -1217,6 +1132,91 @@ exports[`VersionsTabContent handles missing manifest version 1`] = `
               <p class="font-mono text-sm">
                 123,456
               </p>
+            </div>
+            <div class="order-3 col-span-3 flex hidden w-full items-center justify-center xl:order-4 xl:flex">
+              <div class="flex w-full items-center justify-center gap-2">
+                <gui-avatar classname="flex size-5 items-center justify-center">
+                  <gui-avatar-image
+                    classname="rounded-sm outline outline-[1px] outline-border"
+                    src="https://example.com/avatar.jpg"
+                  >
+                  </gui-avatar-image>
+                  <gui-avatar-fallback classname="h-full w-full rounded-sm bg-secondary bg-gradient-to-t from-neutral-100 to-neutral-400 px-[10px] outline outline-[1px] outline-border dark:from-neutral-500 dark:to-neutral-800">
+                  </gui-avatar-fallback>
+                </gui-avatar>
+                <gui-tooltip-provider>
+                  <gui-tooltip delayduration="150">
+                    <gui-tooltip-trigger classname="cursor-default">
+                      <p class="truncate font-mono text-sm">
+                        John Doe
+                      </p>
+                    </gui-tooltip-trigger>
+                    <gui-tooltip-content>
+                      John Doe
+                    </gui-tooltip-content>
+                  </gui-tooltip>
+                </gui-tooltip-provider>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="group/item flex cursor-default grid-cols-12 flex-col gap-3 rounded-sm py-4 text-foreground transition-colors first:border-t-[0px] xl:grid xl:gap-3 xl:px-2 xl:py-1.5 xl:hover:bg-muted">
+            <div class="order-1 col-span-2 flex w-full flex-col justify-center gap-1 xl:justify-center xl:gap-0">
+              <p class="text-sm font-medium text-muted-foreground xl:hidden">
+                Version
+              </p>
+              <gui-inline-code
+                tooltipduration="150"
+                displaytooltip="true"
+                tooltip="2.0.0"
+                classname="mx-0 w-fit max-w-none truncate break-all text-sm xl:w-fit xl:max-w-[5.5rem]"
+                variant="mono"
+              >
+                2.0.0
+              </gui-inline-code>
+            </div>
+            <div class="order-2 col-span-2 flex w-full flex-col gap-2 xl:items-center xl:justify-center xl:gap-0 xl:text-center">
+              <p class="text-sm font-medium text-muted-foreground xl:hidden">
+                Size
+              </p>
+              <p class="font-mono text-sm">
+                121 KB
+              </p>
+            </div>
+            <div class="order-4 col-span-3 flex w-full flex-col gap-2 xl:order-3 xl:items-center xl:justify-center xl:gap-0 xl:text-center">
+              <p class="text-sm font-medium text-muted-foreground xl:hidden">
+                Published Date
+              </p>
+              <div class="flex gap-2 xl:hidden">
+                <gui-avatar classname="size-5">
+                  <gui-avatar-image
+                    classname="rounded-sm outline outline-[1px] outline-border"
+                    src="https://example.com/avatar.jpg"
+                  >
+                  </gui-avatar-image>
+                  <gui-avatar-fallback classname="h-5 h-full w-5 w-full rounded-sm bg-secondary bg-gradient-to-t from-neutral-100 to-neutral-400 px-[10px] outline outline-[1px] outline-border dark:from-neutral-500 dark:to-neutral-800">
+                  </gui-avatar-fallback>
+                </gui-avatar>
+                <p class="col-span-4 font-mono text-sm">
+                  John Doe
+                </p>
+                <p class="ml-2 inline-flex font-mono text-sm text-muted-foreground xl:hidden">
+                  1 day ago
+                </p>
+              </div>
+              <gui-tooltip-provider>
+                <gui-tooltip>
+                  <gui-tooltip-trigger classname="hidden cursor-default font-mono text-sm xl:inline-flex">
+                    1 day ago
+                  </gui-tooltip-trigger>
+                  <gui-tooltip-content>
+                    2025-04-15
+                  </gui-tooltip-content>
+                </gui-tooltip>
+              </gui-tooltip-provider>
+            </div>
+            <div class="order-3 col-span-2 w-full flex-col justify-start gap-2 xl:items-center xl:justify-center xl:gap-0 xl:text-center hidden xl:flex">
             </div>
             <div class="order-3 col-span-3 flex hidden w-full items-center justify-center xl:order-4 xl:flex">
               <div class="flex w-full items-center justify-center gap-2">
@@ -1659,91 +1659,6 @@ exports[`VersionsTabContent toggles pre-releases 1`] = `
               <gui-inline-code
                 tooltipduration="150"
                 displaytooltip="true"
-                tooltip="2.0.0-beta.1"
-                classname="mx-0 w-fit max-w-none truncate break-all text-sm xl:w-fit xl:max-w-[5.5rem]"
-                variant="mono"
-              >
-                2.0.0-beta.1
-              </gui-inline-code>
-            </div>
-            <div class="order-2 col-span-2 flex w-full flex-col gap-2 xl:items-center xl:justify-center xl:gap-0 xl:text-center">
-              <p class="text-sm font-medium text-muted-foreground xl:hidden">
-                Size
-              </p>
-              <p class="font-mono text-sm">
-                121 KB
-              </p>
-            </div>
-            <div class="order-4 col-span-3 flex w-full flex-col gap-2 xl:order-3 xl:items-center xl:justify-center xl:gap-0 xl:text-center">
-              <p class="text-sm font-medium text-muted-foreground xl:hidden">
-                Published Date
-              </p>
-              <div class="flex gap-2 xl:hidden">
-                <gui-avatar classname="size-5">
-                  <gui-avatar-image
-                    classname="rounded-sm outline outline-[1px] outline-border"
-                    src="https://example.com/avatar.jpg"
-                  >
-                  </gui-avatar-image>
-                  <gui-avatar-fallback classname="h-5 h-full w-5 w-full rounded-sm bg-secondary bg-gradient-to-t from-neutral-100 to-neutral-400 px-[10px] outline outline-[1px] outline-border dark:from-neutral-500 dark:to-neutral-800">
-                  </gui-avatar-fallback>
-                </gui-avatar>
-                <p class="col-span-4 font-mono text-sm">
-                  John Doe
-                </p>
-                <p class="ml-2 inline-flex font-mono text-sm text-muted-foreground xl:hidden">
-                  1 day ago
-                </p>
-              </div>
-              <gui-tooltip-provider>
-                <gui-tooltip>
-                  <gui-tooltip-trigger classname="hidden cursor-default font-mono text-sm xl:inline-flex">
-                    1 day ago
-                  </gui-tooltip-trigger>
-                  <gui-tooltip-content>
-                    2025-04-15
-                  </gui-tooltip-content>
-                </gui-tooltip>
-              </gui-tooltip-provider>
-            </div>
-            <div class="order-3 col-span-2 w-full flex-col justify-start gap-2 xl:items-center xl:justify-center xl:gap-0 xl:text-center hidden xl:flex">
-            </div>
-            <div class="order-3 col-span-3 flex hidden w-full items-center justify-center xl:order-4 xl:flex">
-              <div class="flex w-full items-center justify-center gap-2">
-                <gui-avatar classname="flex size-5 items-center justify-center">
-                  <gui-avatar-image
-                    classname="rounded-sm outline outline-[1px] outline-border"
-                    src="https://example.com/avatar.jpg"
-                  >
-                  </gui-avatar-image>
-                  <gui-avatar-fallback classname="h-full w-full rounded-sm bg-secondary bg-gradient-to-t from-neutral-100 to-neutral-400 px-[10px] outline outline-[1px] outline-border dark:from-neutral-500 dark:to-neutral-800">
-                  </gui-avatar-fallback>
-                </gui-avatar>
-                <gui-tooltip-provider>
-                  <gui-tooltip delayduration="150">
-                    <gui-tooltip-trigger classname="cursor-default">
-                      <p class="truncate font-mono text-sm">
-                        John Doe
-                      </p>
-                    </gui-tooltip-trigger>
-                    <gui-tooltip-content>
-                      John Doe
-                    </gui-tooltip-content>
-                  </gui-tooltip>
-                </gui-tooltip-provider>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div>
-          <div class="group/item flex cursor-default grid-cols-12 flex-col gap-3 rounded-sm py-4 text-foreground transition-colors first:border-t-[0px] xl:grid xl:gap-3 xl:px-2 xl:py-1.5 xl:hover:bg-muted">
-            <div class="order-1 col-span-2 flex w-full flex-col justify-center gap-1 xl:justify-center xl:gap-0">
-              <p class="text-sm font-medium text-muted-foreground xl:hidden">
-                Version
-              </p>
-              <gui-inline-code
-                tooltipduration="150"
-                displaytooltip="true"
                 tooltip="1.0.0"
                 classname="mx-0 w-fit max-w-none truncate break-all text-sm xl:w-fit xl:max-w-[5.5rem]"
                 variant="mono"
@@ -1798,6 +1713,91 @@ exports[`VersionsTabContent toggles pre-releases 1`] = `
               <p class="font-mono text-sm">
                 123,456
               </p>
+            </div>
+            <div class="order-3 col-span-3 flex hidden w-full items-center justify-center xl:order-4 xl:flex">
+              <div class="flex w-full items-center justify-center gap-2">
+                <gui-avatar classname="flex size-5 items-center justify-center">
+                  <gui-avatar-image
+                    classname="rounded-sm outline outline-[1px] outline-border"
+                    src="https://example.com/avatar.jpg"
+                  >
+                  </gui-avatar-image>
+                  <gui-avatar-fallback classname="h-full w-full rounded-sm bg-secondary bg-gradient-to-t from-neutral-100 to-neutral-400 px-[10px] outline outline-[1px] outline-border dark:from-neutral-500 dark:to-neutral-800">
+                  </gui-avatar-fallback>
+                </gui-avatar>
+                <gui-tooltip-provider>
+                  <gui-tooltip delayduration="150">
+                    <gui-tooltip-trigger classname="cursor-default">
+                      <p class="truncate font-mono text-sm">
+                        John Doe
+                      </p>
+                    </gui-tooltip-trigger>
+                    <gui-tooltip-content>
+                      John Doe
+                    </gui-tooltip-content>
+                  </gui-tooltip>
+                </gui-tooltip-provider>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="group/item flex cursor-default grid-cols-12 flex-col gap-3 rounded-sm py-4 text-foreground transition-colors first:border-t-[0px] xl:grid xl:gap-3 xl:px-2 xl:py-1.5 xl:hover:bg-muted">
+            <div class="order-1 col-span-2 flex w-full flex-col justify-center gap-1 xl:justify-center xl:gap-0">
+              <p class="text-sm font-medium text-muted-foreground xl:hidden">
+                Version
+              </p>
+              <gui-inline-code
+                tooltipduration="150"
+                displaytooltip="true"
+                tooltip="2.0.0-beta.1"
+                classname="mx-0 w-fit max-w-none truncate break-all text-sm xl:w-fit xl:max-w-[5.5rem]"
+                variant="mono"
+              >
+                2.0.0-beta.1
+              </gui-inline-code>
+            </div>
+            <div class="order-2 col-span-2 flex w-full flex-col gap-2 xl:items-center xl:justify-center xl:gap-0 xl:text-center">
+              <p class="text-sm font-medium text-muted-foreground xl:hidden">
+                Size
+              </p>
+              <p class="font-mono text-sm">
+                121 KB
+              </p>
+            </div>
+            <div class="order-4 col-span-3 flex w-full flex-col gap-2 xl:order-3 xl:items-center xl:justify-center xl:gap-0 xl:text-center">
+              <p class="text-sm font-medium text-muted-foreground xl:hidden">
+                Published Date
+              </p>
+              <div class="flex gap-2 xl:hidden">
+                <gui-avatar classname="size-5">
+                  <gui-avatar-image
+                    classname="rounded-sm outline outline-[1px] outline-border"
+                    src="https://example.com/avatar.jpg"
+                  >
+                  </gui-avatar-image>
+                  <gui-avatar-fallback classname="h-5 h-full w-5 w-full rounded-sm bg-secondary bg-gradient-to-t from-neutral-100 to-neutral-400 px-[10px] outline outline-[1px] outline-border dark:from-neutral-500 dark:to-neutral-800">
+                  </gui-avatar-fallback>
+                </gui-avatar>
+                <p class="col-span-4 font-mono text-sm">
+                  John Doe
+                </p>
+                <p class="ml-2 inline-flex font-mono text-sm text-muted-foreground xl:hidden">
+                  1 day ago
+                </p>
+              </div>
+              <gui-tooltip-provider>
+                <gui-tooltip>
+                  <gui-tooltip-trigger classname="hidden cursor-default font-mono text-sm xl:inline-flex">
+                    1 day ago
+                  </gui-tooltip-trigger>
+                  <gui-tooltip-content>
+                    2025-04-15
+                  </gui-tooltip-content>
+                </gui-tooltip>
+              </gui-tooltip-provider>
+            </div>
+            <div class="order-3 col-span-2 w-full flex-col justify-start gap-2 xl:items-center xl:justify-center xl:gap-0 xl:text-center hidden xl:flex">
             </div>
             <div class="order-3 col-span-3 flex hidden w-full items-center justify-center xl:order-4 xl:flex">
               <div class="flex w-full items-center justify-center gap-2">
