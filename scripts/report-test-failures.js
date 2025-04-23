@@ -19,13 +19,15 @@ const execStatus = () => {
   }
 }
 
-for (const [path, { status }] of Object.entries(execStatus())) {
-  if (status !== 'failure') continue
+for (const [path, result] of Object.entries(execStatus())) {
+  if (result.status !== 'failure') continue
 
   // we had failures, so exit in failure
   process.exitCode = 1
 
-  const title = ` ${JSON.parse(readFileSync(join(path, 'package.json'))).name} - ./${relative('.', path)}`
+  const pkg = JSON.parse(readFileSync(join(path, 'package.json')))
+
+  const title = ` ${pkg.name} - ./${relative('.', path)}`
   const length = Math.max(40, title.length)
   console.log(
     [
@@ -36,8 +38,12 @@ for (const [path, { status }] of Object.entries(execStatus())) {
     ].join('\n'),
   )
 
-  spawnSync('pnpm', ['tap', '-c', '-Rterse', 'replay'], {
-    cwd: path,
-    stdio: 'inherit',
-  })
+  if (pkg.devDependencies?.tap) {
+    spawnSync('pnpm', ['tap', '-c', '-Rterse', 'replay'], {
+      cwd: path,
+      stdio: 'inherit',
+    })
+  } else {
+    console.log(result)
+  }
 }
