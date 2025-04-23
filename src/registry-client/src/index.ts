@@ -5,7 +5,7 @@ import { logRequest } from '@vltpkg/output'
 import type { Integrity } from '@vltpkg/types'
 import { urlOpen } from '@vltpkg/url-open'
 import { XDG } from '@vltpkg/xdg'
-import { resolve } from 'node:path'
+import { dirname, resolve } from 'node:path'
 import { setTimeout } from 'node:timers/promises'
 import { loadPackageJson } from 'package-json-from-dist'
 import type { Dispatcher } from 'undici'
@@ -429,7 +429,7 @@ export class RegistryClient {
 
     if (staleWhileRevalidate && entry?.staleWhileRevalidate && m) {
       // revalidate while returning the stale entry
-      register(this.cache.path(), m, url)
+      register(dirname(this.cache.path()), m, url)
       return entry
     }
 
