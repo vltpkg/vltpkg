@@ -7,6 +7,7 @@ import {
   ChevronRight,
   Search,
   ListFilter,
+  CircleHelp,
 } from 'lucide-react'
 import { useSelectedItemStore } from '@/components/explorer-grid/selected-item/context.jsx'
 import { InlineCode } from '@/components/ui/inline-code.jsx'
@@ -34,6 +35,13 @@ import {
   DropdownMenuContent,
   DropdownMenuCheckboxItem,
 } from '@/components/ui/dropdown-menu.jsx'
+import type { ChartConfig } from '@/components/ui/chart.jsx'
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from '@/components/ui/chart.jsx'
+import { Bar, BarChart, XAxis, CartesianGrid } from 'recharts'
 
 export const VersionsTabButton = () => {
   const versions = useSelectedItemStore(state => state.versions)
@@ -163,7 +171,7 @@ const VersionHeader = ({
   }
 
   return (
-    <div className="hidden cursor-default grid-cols-12 pb-2 xl:grid">
+    <div className="hidden cursor-default grid-cols-12 gap-3 pb-2 xl:grid">
       <div className="col-span-2 flex w-full items-center justify-center">
         <button
           onClick={onVersionClick}
@@ -196,7 +204,7 @@ const VersionHeader = ({
           <ArrowUpDown size={16} />
         </button>
       </div>
-      <div className="col-span-3 flex w-full items-center justify-center">
+      <div className="col-span-3 flex w-full items-center justify-center text-center">
         <button
           onClick={onPublisherClick}
           className="relative z-[1] inline-flex w-fit cursor-default items-center justify-center gap-2 text-nowrap text-sm text-muted-foreground transition-all duration-300 after:absolute after:left-[-0.75rem] after:z-[-1] after:h-[calc(100%+0.5rem)] after:w-[calc(100%+1.5rem)] after:rounded-sm after:bg-transparent after:content-[''] hover:text-foreground hover:after:bg-muted">
@@ -226,8 +234,8 @@ const VersionItem = ({
   } = versionInfo
 
   return (
-    <div className="group/item flex cursor-default grid-cols-12 flex-col gap-4 rounded-sm py-4 text-foreground transition-colors first:border-t-[0px] hover:bg-muted xl:grid xl:gap-0 xl:px-2 xl:py-1.5">
-      <div className="order-1 col-span-2 flex w-full flex-col justify-start gap-1 xl:ml-1 xl:justify-center xl:gap-0">
+    <div className="group/item flex cursor-default grid-cols-12 flex-col gap-3 rounded-sm py-4 text-foreground transition-colors first:border-t-[0px] xl:grid xl:gap-3 xl:px-2 xl:py-1.5 xl:hover:bg-muted">
+      <div className="order-1 col-span-2 flex w-full flex-col justify-center gap-1 xl:justify-center xl:gap-0">
         <p className="text-sm font-medium text-muted-foreground xl:hidden">
           Version
         </p>
@@ -308,20 +316,27 @@ const VersionItem = ({
           </>
         )}
       </div>
-      <div className="order-3 col-span-3 flex hidden w-full items-center justify-center xl:order-4 xl:mr-1 xl:flex xl:justify-end">
-        <div className="flex grid-cols-5 gap-2 xl:grid">
-          <Avatar className="col-span-1 size-5">
+      <div className="order-3 col-span-3 flex hidden w-full items-center justify-center xl:order-4 xl:flex">
+        <div className="flex w-full items-center justify-center gap-2">
+          <Avatar className="flex size-5 items-center justify-center">
             <AvatarImage
               className="rounded-sm outline outline-[1px] outline-border"
               src={publishedAuthor?.avatar}
             />
             {publishedAuthor?.avatar && (
-              <AvatarFallback className="size-5 h-full w-full rounded-sm bg-secondary bg-gradient-to-t from-neutral-100 to-neutral-400 px-[10px] outline outline-[1px] outline-border dark:from-neutral-500 dark:to-neutral-800" />
+              <AvatarFallback className="h-full w-full rounded-sm bg-secondary bg-gradient-to-t from-neutral-100 to-neutral-400 px-[10px] outline outline-[1px] outline-border dark:from-neutral-500 dark:to-neutral-800" />
             )}
           </Avatar>
-          <p className="col-span-4 truncate font-mono text-sm">
-            {publishedAuthor?.name}
-          </p>
+          <TooltipProvider>
+            <Tooltip delayDuration={150}>
+              <TooltipTrigger className="cursor-default">
+                <p className="truncate font-mono text-sm">
+                  {publishedAuthor?.name}
+                </p>
+              </TooltipTrigger>
+              <TooltipContent>{publishedAuthor?.name}</TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </div>
       </div>
     </div>
@@ -383,10 +398,110 @@ const EmptyState = ({ message }: { message: string }) => (
   </div>
 )
 
+const DownloadGraph = () => {
+  const manifest = useSelectedItemStore(state => state.manifest)
+  const downloadsLastYear = useSelectedItemStore(
+    state => state.downloadsLastYear,
+  )
+
+  if (!downloadsLastYear || !manifest?.version) return null
+
+  const chartConfig = {
+    downloads: {
+      label: 'Downloads',
+      color: 'oklch(var(--chart-1))',
+    },
+  } satisfies ChartConfig
+
+  const downloadsPerMonth = Object.entries(
+    downloadsLastYear.downloads.reduce<Record<string, number>>(
+      (acc, { downloads, day }) => {
+        const month = day.slice(0, 7)
+        acc[month] = (acc[month] || 0) + downloads
+        return acc
+      },
+      {},
+    ),
+  ).map(([month, downloads]) => ({ month, downloads }))
+
+  const totalDownloads = downloadsPerMonth.reduce(
+    (acc, { downloads }) => acc + downloads,
+    0,
+  )
+
+  return (
+    <div className="mb-3 border-b-[1px] border-muted pb-1">
+      <div className="flex cursor-default justify-between">
+        <div className="flex flex-col gap-0.5">
+          <TooltipProvider>
+            <h3 className="inline-flex items-center gap-1 align-baseline text-base font-medium text-foreground">
+              Package Downloads
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span className="cursor-default text-muted-foreground">
+                    <CircleHelp strokeWidth={2} size={16} />
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent className="font-normal">
+                  Downloads across all package versions
+                </TooltipContent>
+              </Tooltip>
+            </h3>
+          </TooltipProvider>
+          <p className="font-mono text-xs text-muted-foreground">
+            {totalDownloads.toLocaleString()}
+          </p>
+        </div>
+        <p className="align-baseline text-sm text-muted-foreground">
+          {format(downloadsLastYear.start, 'MMMM yyyy')}
+          {' - '}
+          {format(downloadsLastYear.end, 'MMMM yyyy')}
+        </p>
+      </div>
+      <ChartContainer
+        config={chartConfig}
+        className="h-[200px] w-full">
+        <BarChart accessibilityLayer data={downloadsPerMonth}>
+          <CartesianGrid vertical={false} />
+          <ChartTooltip
+            content={
+              <ChartTooltipContent
+                indicator="line"
+                className="w-[200px]"
+                labelFormatter={value => {
+                  return format(value as string, 'MMMM, yyyy')
+                }}
+              />
+            }
+          />
+          <Bar
+            dataKey="downloads"
+            fill="var(--color-downloads)"
+            radius={4}
+          />
+          <XAxis
+            dataKey="month"
+            tickLine={false}
+            axisLine={false}
+            tickMargin={8}
+            minTickGap={32}
+            tickFormatter={value => {
+              return format(value as string, 'MMM')
+            }}
+          />
+        </BarChart>
+      </ChartContainer>
+    </div>
+  )
+}
+
 export const VersionsTabContent = () => {
   const manifest = useSelectedItemStore(state => state.manifest)
-  const downloads = useSelectedItemStore(state => state.downloads)
   const versions = useSelectedItemStore(state => state.versions)
+  const downloadsPerVersion = useSelectedItemStore(
+    state => state.downloadsPerVersion,
+  )
+
   const [filteredVersions, setFilteredVersions] = useState<
     VersionItem[]
   >([])
@@ -480,7 +595,7 @@ export const VersionsTabContent = () => {
 
     // Apply all filters in sequence
     const filteredAllVersions = filters.reduce(
-      (filteredVersions, filter) => filter(filteredVersions),
+      (versions, filter) => filter(versions),
       allVersions,
     )
 
@@ -488,14 +603,14 @@ export const VersionsTabContent = () => {
     const versionsWithDownloads = filteredAllVersions.map(
       version => ({
         ...version,
-        downloadsPerVersion:
-          downloads?.downloadsPerVersion?.[version.version],
+        downloadsPerVersion: downloadsPerVersion?.[version.version],
       }),
     )
 
     setFilteredVersions(versionsWithDownloads)
     setHasMore(versionsWithDownloads.length > page * ITEMS_PER_PAGE)
   }, [
+    downloadsPerVersion,
     versions,
     page,
     greaterPage,
@@ -504,7 +619,7 @@ export const VersionsTabContent = () => {
     searchTerm,
   ])
 
-  const isEmpty = !filteredVersions.length
+  const isEmpty = !versions?.length
   const hasSearchResults = filteredVersions.length > 0
   const paginatedVersions = filteredVersions.slice(
     0,
@@ -516,6 +631,8 @@ export const VersionsTabContent = () => {
       {isEmpty ?
         <EmptyState message="There is no versioning information about this package yet" />
       : <section className="flex flex-col gap-2 px-6 py-4">
+          <DownloadGraph />
+
           <div className="mb-3 flex items-center gap-2">
             <div className="relative flex w-full items-center justify-start">
               <Search
@@ -564,7 +681,7 @@ export const VersionsTabContent = () => {
                 initial={{ opacity: 0, top: -40 }}
                 animate={{ opacity: 1, top: 0 }}
                 exit={{ opacity: 0, top: -40 }}
-                className="flex flex-nowrap gap-2 overflow-hidden"
+                className="flex gap-2 overflow-hidden"
                 transition={{
                   type: 'spring',
                   duration: 0.28,
@@ -608,12 +725,10 @@ export const VersionsTabContent = () => {
                     items={filteredVersions}
                     setItems={setFilteredVersions}
                   />
-                  <div className="flex flex-col divide-y-[1px] divide-muted">
+                  <div className="flex flex-col divide-y-[1px] divide-muted overflow-hidden">
                     {paginatedVersions.map((version, idx) => {
-                      const downloadsPerVersion =
-                        downloads?.downloadsPerVersion?.[
-                          version.version
-                        ]
+                      const downloads =
+                        downloadsPerVersion?.[version.version]
                       return (
                         <div
                           key={`${version.version}-all-${idx}`}
@@ -625,7 +740,7 @@ export const VersionsTabContent = () => {
                           <VersionItem
                             versionInfo={{
                               ...version,
-                              downloadsPerVersion,
+                              downloadsPerVersion: downloads,
                             }}
                           />
                         </div>

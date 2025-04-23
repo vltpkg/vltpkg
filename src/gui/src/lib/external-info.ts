@@ -6,9 +6,10 @@ export type Semver = `${number}.${number}.${number}`
 
 export const publicRegistry = 'https://registry.npmjs.org/'
 
-const isSemver = (s: string): s is Semver => /^\d+\.\d+\.\d+$/.test(s)
+export const isSemver = (s: string): s is Semver =>
+  /^\d+\.\d+\.\d+$/.test(s)
 
-const asSemver = (s: string): Semver => {
+export const asSemver = (s: string): Semver => {
   if (isSemver(s)) {
     return s
   }
@@ -27,11 +28,6 @@ export type AuthorInfo = {
   email?: string
   url?: string
   web?: string
-}
-
-export type DownloadsInfo = {
-  weekly?: number
-  downloadsPerVersion?: Record<Semver, number>
 }
 
 export type ImageInfo = {
@@ -54,13 +50,13 @@ export type Version = {
 
 export type DetailsInfo = {
   author?: AuthorInfo
-  downloads?: DownloadsInfo
+  downloadsPerVersion?: Record<Semver, number>
+  downloadsLastYear?: DownloadsRange
   favicon?: ImageInfo
   publisher?: AuthorInfo
   publisherAvatar?: ImageInfo
   versions?: Version[]
   greaterVersions?: Version[]
-  downloadsRange?: DownloadsRange
 }
 
 export const readAuthor = (
@@ -162,7 +158,7 @@ export async function* fetchDetails(
     promisesQueue.push(p)
   }
 
-  const fetchDownloadsRange = (): Promise<DetailsInfo> =>
+  const fetchDownloadsLastYear = (): Promise<DetailsInfo> =>
     fetch(
       `https://api.npmjs.org/downloads/range/last-year/${encodeURIComponent(spec.name)}`,
       {
@@ -176,7 +172,7 @@ export async function* fetchDetails(
           end: string
           downloads: { downloads: number; day: string }[]
         }) => ({
-          downloadsRange: {
+          downloadsLastYear: {
             start: data.start,
             end: data.end,
             downloads: data.downloads.map(
@@ -190,21 +186,15 @@ export async function* fetchDetails(
       )
       .catch(() => ({}))
 
-  const fetchDownloads = (): Promise<DetailsInfo> =>
+  const fetchDownloadsPerVersion = (): Promise<DetailsInfo> =>
     fetch(
       `https://api.npmjs.org/versions/${encodeURIComponent(spec.name)}/last-week`,
       { signal },
     )
       .then(res => res.json())
       .then((res: { downloads: Record<Semver, number> }) => {
-        const version = asSemver(spec.bareSpec)
-        const weekly = res.downloads[version]
-        if (weekly != null) {
-          return {
-            downloads: { weekly, downloadsPerVersion: res.downloads },
-          }
-        } else {
-          return {}
+        return {
+          downloadsPerVersion: res.downloads,
         }
       })
       .catch(() => ({}))
@@ -393,16 +383,16 @@ export async function* fetchDetails(
                     gt(v.version, manifest.version),
                 )
               : undefined,
-          } as DetailsInfo
+          }
         })
         .catch(() => ({})),
     )
 
-    // retrieve download info from the registry
-    trackPromise(fetchDownloads())
+    // retrieve download info from the registry per version
+    trackPromise(fetchDownloadsPerVersion())
 
-    // retrieve download range info from the registry
-    trackPromise(fetchDownloadsRange())
+    // retrieve download range for the last year from the registry
+    trackPromise(fetchDownloadsLastYear())
   }
 
   // asynchronously yield results from promisesQueue as soon as they're ready
