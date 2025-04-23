@@ -88,6 +88,7 @@ t.test('simple graph', async t => {
     ['#a', ['a']], // identifier
     ['#a:v(1)', ['a']], // matches identifier + semver
     ['#a:v(2)', []], // fails to match identifier + semver
+    [':root, #a, :foo', ['my-project', 'a']], // should be loose on multiple selectors
   ])
 
   const query = new Query({
