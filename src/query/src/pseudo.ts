@@ -389,6 +389,8 @@ export const pseudo = async (state: ParserState) => {
 
   if (!parserFn) {
     if (state.loose) {
+      state.partial.edges.clear()
+      state.partial.nodes.clear()
       return state
     }
 

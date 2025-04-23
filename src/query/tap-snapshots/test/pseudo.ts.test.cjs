@@ -749,6 +749,13 @@ Object {
 }
 `
 
+exports[`test/pseudo.ts > TAP > pseudo > query > ":is(:foo)" 1`] = `
+Object {
+  "edges": Array [],
+  "nodes": Array [],
+}
+`
+
 exports[`test/pseudo.ts > TAP > pseudo > query > ":is(:root)" 1`] = `
 Object {
   "edges": Array [],
