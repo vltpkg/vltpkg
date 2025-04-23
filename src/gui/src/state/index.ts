@@ -48,7 +48,6 @@ const initialState: State = {
       window.location.href || 'http://localhost',
     ).searchParams.get('query') ?? DEFAULT_QUERY,
   q: undefined,
-  selectedNode: undefined,
   specOptions: undefined,
   stamp: newStamp(),
   theme: localStorage.getItem('vite-ui-theme') as State['theme'],
@@ -95,8 +94,6 @@ export const useGraphStore = create<Action & State>((set, get) => {
     updateNodes: (nodes: State['nodes']) => set(() => ({ nodes })),
     updateProjectInfo: (projectInfo: State['projectInfo']) =>
       set(() => ({ projectInfo })),
-    updateSelectedNode: (selectedNode: State['selectedNode']) =>
-      set(() => ({ selectedNode })),
     updateSpecOptions: (specOptions: State['specOptions']) =>
       set(() => ({ specOptions })),
     updateStamp: () => set(() => ({ stamp: newStamp() })),
