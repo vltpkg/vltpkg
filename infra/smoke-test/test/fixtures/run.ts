@@ -79,6 +79,11 @@ export type SharedCommandOptions = {
   debug?: boolean
   tty?: boolean
   cleanOutput?: (output: string) => string
+  onOutput?: (
+    options: Omit<SpawnCommandResult, 'status' | 'signal'> & {
+      kill: (signal: string) => void
+    },
+  ) => void
 }
 
 export type SpawnCommandOptions = SharedCommandOptions & {
@@ -87,6 +92,7 @@ export type SpawnCommandOptions = SharedCommandOptions & {
 
 export type SpawnCommandResult = {
   status: number | null
+  signal: string | null
   stdout: string
   stderr: string
   output: string
@@ -97,6 +103,7 @@ export type CommandOptions = SharedCommandOptions &
 
 export type CommandResult = {
   status: number | null
+  signal: string | null
   stdout: string
   stderr: string
   output: string
@@ -140,6 +147,7 @@ const spawnCommand = async (
     bin = 'vlt',
     tty = false,
     cleanOutput = v => v,
+    onOutput,
   }: SpawnCommandOptions,
 ) => {
   const [command, ...commandArgs] = variant.args(bin)
@@ -179,10 +187,6 @@ const spawnCommand = async (
   }
   debugLog('__START__')
 
-  const spawnPty = await import('node-pty')
-    .then(r => r.spawn)
-    .catch(() => null)
-
   const { stdout, stderr, output, ...res } =
     await new Promise<SpawnCommandResult>(res => {
       const outputs = {
@@ -209,54 +213,66 @@ const spawnCommand = async (
         PATH: variant.PATH ?? '',
       }
 
-      if (spawnPty && tty) {
-        const ttyProc = spawnPty(command, [...commandArgs, ...args], {
-          cwd: dirs.project,
-          env: spawnEnv,
+      if (tty) {
+        return import('node-pty').then(({ spawn: spawnPty }) => {
+          const proc = spawnPty(command, [...commandArgs, ...args], {
+            cwd: dirs.project,
+            env: spawnEnv,
+          })
+          const kill = (s?: string) => proc.kill(s)
+          proc.onData(data => {
+            // node-pty does not allow for separating stdout and stderr so we have
+            // to treat all data as both stdout and stderr. This means we can't
+            // use tty:true in smoke tests to test what is on stdout vs stderr.
+            outputs.stdout += data
+            outputs.stderr += data
+            outputs.output += data
+            // This is only used for debugging so we resolve all ansi control
+            // sequences and then strip colors to make it easier to read the logs.
+            debugLog(
+              stripVTControlCharacters(ansiToAnsi(data)),
+              'tty',
+            )
+            onOutput?.({ ...outputs, kill })
+          })
+          proc.onExit(({ exitCode, signal }) =>
+            res({
+              ...outputs,
+              status: exitCode,
+              signal: signal?.toString() ?? null,
+            }),
+          )
         })
-        ttyProc.onData(data => {
-          // node-pty does not allow for separating stdout and stderr so we have
-          // to treat all data as both stdout and stderr. This means we can't
-          // use tty:true in smoke tests to test what is on stdout vs stderr.
-          outputs.stdout += data
-          outputs.stderr += data
-          outputs.output += data
-          // This is only used for debugging so we resolve all ansi control
-          // sequences and then strip colors to make it easier to read the logs.
-          debugLog(stripVTControlCharacters(ansiToAnsi(data)), 'tty')
-        })
-        ttyProc.onExit(({ exitCode }) =>
-          res({
-            ...outputs,
-            status: exitCode,
-          }),
-        )
-      } else {
-        const proc = spawn(command, [...commandArgs, ...args], {
-          cwd: dirs.project,
-          shell: true,
-          windowsHide: true,
-          env: spawnEnv,
-        })
-        proc.stdout.on('data', d => {
-          const chunk = `${d.toString()}`
-          outputs.stdout += chunk
-          outputs.output += chunk
-          debugLog(chunk, 'stdout')
-        })
-        proc.stderr.on('data', d => {
-          const chunk = `${d.toString()}`
-          outputs.stderr += chunk
-          outputs.output += chunk
-          debugLog(chunk, 'stderr')
-        })
-        proc.on('exit', code =>
-          res({
-            ...outputs,
-            status: code,
-          }),
-        )
       }
+
+      const proc = spawn(command, [...commandArgs, ...args], {
+        cwd: dirs.project,
+        shell: true,
+        windowsHide: true,
+        env: spawnEnv,
+      })
+      const kill = (s?: string) => void proc.kill(s as NodeJS.Signals)
+      proc.stdout.on('data', d => {
+        const chunk = `${d.toString()}`
+        outputs.stdout += chunk
+        outputs.output += chunk
+        debugLog(chunk, 'stdout')
+        onOutput?.({ ...outputs, kill })
+      })
+      proc.stderr.on('data', d => {
+        const chunk = `${d.toString()}`
+        outputs.stderr += chunk
+        outputs.output += chunk
+        debugLog(chunk, 'stderr')
+        onOutput?.({ ...outputs, kill })
+      })
+      proc.on('exit', (code, signal) =>
+        res({
+          ...outputs,
+          status: code,
+          signal,
+        }),
+      )
     })
 
   debugLog('__CLOSE__')
