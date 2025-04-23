@@ -9,7 +9,11 @@ import {
 } from 'vitest'
 import { setupServer } from 'msw/node'
 import { http, HttpResponse } from 'msw'
-import type { Query } from '@vltpkg/query'
+import type {
+  Query,
+  QueryResponseEdge,
+  QueryResponseNode,
+} from '@vltpkg/query'
 import type { EdgeLike, GraphLike, NodeLike } from '@vltpkg/graph'
 import { cleanup, render } from '@testing-library/react'
 import html from 'diffable-html'
@@ -55,6 +59,10 @@ vi.mock('@/components/explorer-grid/root-button.jsx', () => ({
 export const restHandlers = [
   http.get('/graph.json', () => {
     return HttpResponse.json({
+      specOptions: {
+        registry: 'https://registry.npmjs.org',
+      },
+      hasDashboard: false,
       importers: [
         {
           id: joinDepIDTuple(['file', '.']),
@@ -69,6 +77,10 @@ export const restHandlers = [
         },
       ],
       lockfile: { options: {}, nodes: [], edges: [] },
+      projectInfo: {
+        tools: ['vlt'],
+        vltInstalled: true,
+      },
     })
   }),
 ]
@@ -159,6 +171,69 @@ test('update nodes and edges info on query change', async () => {
     nodesResult,
     nodes,
     'should update nodes with result from query',
+  )
+})
+
+test('render no results if search throws', async () => {
+  const q = {
+    search() {
+      throw new Error('ERR')
+    },
+  }
+
+  const Container = () => {
+    const updateNodes = useStore(state => state.updateNodes)
+    const updateEdges = useStore(state => state.updateEdges)
+    const updateGraph = useStore(state => state.updateGraph)
+    const updateProjectInfo = useStore(
+      state => state.updateProjectInfo,
+    )
+    const updateQ = useStore(state => state.updateQ)
+    const updateQuery = useStore(state => state.updateQuery)
+
+    // sets a node and edge just to test it got reset later on
+    const node = {
+      name: 'foo',
+      version: '1.0.0',
+    } as unknown as QueryResponseNode
+    updateNodes([node])
+    updateEdges([
+      {
+        name: 'foo',
+        to: node,
+      } as unknown as QueryResponseEdge,
+    ])
+
+    updateGraph({ projectRoot: '/path/to/project' } as GraphLike)
+    updateProjectInfo({ tools: ['vlt'], vltInstalled: true })
+    updateQ(q as unknown as Query)
+    updateQuery('#bar')
+    return <Explorer />
+  }
+  render(<Container />)
+  expect(window.document.body.innerHTML).toMatchSnapshot()
+
+  await new Promise(resolve => setTimeout(resolve, 0))
+
+  let edgesResult
+  let nodesResult
+  const Retrieve = () => {
+    edgesResult = useStore(state => state.edges)
+    nodesResult = useStore(state => state.nodes)
+    return ''
+  }
+  render(<Retrieve />)
+
+  // results should now have been reset to empty
+  assert.deepEqual(
+    edgesResult,
+    [],
+    'should update edges with empty result',
+  )
+  assert.deepEqual(
+    nodesResult,
+    [],
+    'should update nodes with empty result',
   )
 })
 
