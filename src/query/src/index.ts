@@ -405,6 +405,14 @@ export class Query {
     )
     const edges = new Set<EdgeLike>(Array.from(this.#graph.edges))
 
+    // parse the query string into AST
+    const current = parse(query)
+    // set loose mode for the entire parse in case there are multiple selectors
+    // so that using invalid pseudo selectors or other query language parser
+    // errors won't throw an error,
+    // e.g: `:root > *, #a, :foo` still returns results for `:root > ` and `#a`
+    // while :foo is ignored
+    const loose = asPostcssNodeWithChildren(current).nodes.length > 1
     // builds initial state and walks over it,
     // retrieving the collected result
     const { collect } = await walk({
@@ -414,7 +422,7 @@ export class Query {
         })
         signal?.throwIfAborted()
       },
-      current: parse(query),
+      current,
       initial: {
         nodes: new Set(nodes),
         edges: new Set(edges),
@@ -423,6 +431,7 @@ export class Query {
         nodes: new Set<NodeLike>(),
         edges: new Set<EdgeLike>(),
       },
+      loose,
       partial: { nodes, edges },
       retries: this.#retries,
       signal,
