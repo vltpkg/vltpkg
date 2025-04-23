@@ -19,7 +19,8 @@
     }
   },
   "dependencies": {
-    "@vltpkg/promise-spawn": "workspace:*"
+    "@vltpkg/promise-spawn": "workspace:*",
+    "@vltpkg/which": "workspace:*"
   },
   "devDependencies": {
     "@eslint/js": "catalog:",
