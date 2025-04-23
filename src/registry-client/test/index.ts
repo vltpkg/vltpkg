@@ -2,7 +2,7 @@ import type { Cache } from '@vltpkg/cache'
 import { createServer } from 'http'
 import EventEmitter from 'node:events'
 import { readFileSync } from 'node:fs'
-import { resolve } from 'node:path'
+import { dirname, resolve } from 'node:path'
 import { gzipSync } from 'node:zlib'
 import type { Test } from 'tap'
 import t from 'tap'
@@ -684,7 +684,7 @@ t.test('staleWhileRevalidate', async t => {
   t.equal(stale.staleWhileRevalidate, true)
   t.equal(stale.valid, false)
   t.strictSame(revalRegistered, [
-    [cache.path(), 'GET', new URL('/abbrev', registryURL)],
+    [dirname(cache.path()), 'GET', new URL('/abbrev', registryURL)],
   ])
 
   rc.cache = staleCache
