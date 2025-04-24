@@ -79,10 +79,11 @@ export type SharedCommandOptions = {
   debug?: boolean
   tty?: boolean
   timeout?: number
+  shell?: boolean
   cleanOutput?: (output: string) => string
   onOutput?: (
     options: Omit<SpawnCommandResult, 'status' | 'signal'> & {
-      kill: (signal: NodeJS.Signals) => void
+      kill: (signal?: NodeJS.Signals) => void
     },
   ) => void
 }
@@ -148,6 +149,7 @@ const spawnCommand = async (
     bin = 'vlt',
     tty = false,
     timeout,
+    shell,
     cleanOutput = v => v,
     onOutput,
   }: SpawnCommandOptions,
@@ -174,7 +176,7 @@ const spawnCommand = async (
   debugLog?.('START')
 
   const { stdout, stderr, output, ...res } =
-    await new Promise<SpawnCommandResult>(res => {
+    await new Promise<SpawnCommandResult>((res, rej) => {
       const outputs = {
         stdout: '',
         stderr: '',
@@ -205,7 +207,7 @@ const spawnCommand = async (
             cwd: dirs.project,
             env: spawnEnv,
           })
-          const kill = (s: NodeJS.Signals) => {
+          const kill = (s: NodeJS.Signals = 'SIGTERM') => {
             debugLog?.('KILL', s)
             proc.kill(s)
           }
@@ -236,12 +238,12 @@ const spawnCommand = async (
 
       const proc = spawn(command, [...commandArgs, ...args], {
         cwd: dirs.project,
-        shell: true,
         windowsHide: true,
         env: spawnEnv,
         timeout,
+        shell,
       })
-      const kill = (s: NodeJS.Signals) => {
+      const kill = (s: NodeJS.Signals = 'SIGTERM') => {
         const result = proc.kill(s)
         debugLog?.('KILL', `${s}=${result}`)
       }
@@ -259,13 +261,14 @@ const spawnCommand = async (
         debugLog?.('STDERR', chunk)
         onOutput?.({ ...outputs, kill })
       })
-      proc.on('exit', (code, signal) =>
+      proc.on('close', (code, signal) =>
         res({
           ...outputs,
           status: code,
           signal,
         }),
       )
+      proc.on('error', err => rej(err))
     })
 
   debugLog?.('CLOSE')
