@@ -919,7 +919,7 @@ Object {
 }
 `
 
-exports[`test/pseudo.ts > TAP > pseudo > query > ":project" 1`] = `
+exports[`test/pseudo.ts > TAP > pseudo > query > ":project /*all*/" 1`] = `
 Object {
   "edges": Array [],
   "nodes": Array [
@@ -928,21 +928,17 @@ Object {
 }
 `
 
-exports[`test/pseudo.ts > TAP > pseudo > query > ":project" 2`] = `
+exports[`test/pseudo.ts > TAP > pseudo > query > ":project /*b*/" 1`] = `
 Object {
   "edges": Array [],
-  "nodes": Array [
-    "my-project",
-  ],
+  "nodes": Array [],
 }
 `
 
-exports[`test/pseudo.ts > TAP > pseudo > query > ":project" 3`] = `
+exports[`test/pseudo.ts > TAP > pseudo > query > ":project /*empty*/" 1`] = `
 Object {
   "edges": Array [],
-  "nodes": Array [
-    "my-project",
-  ],
+  "nodes": Array [],
 }
 `
 
@@ -1237,7 +1233,7 @@ Object {
 }
 `
 
-exports[`test/pseudo.ts > TAP > pseudo > workspace > query > ":project" 1`] = `
+exports[`test/pseudo.ts > TAP > pseudo > workspace > query > ":project /*all*/" 1`] = `
 Object {
   "edges": Array [],
   "nodes": Array [
@@ -1247,22 +1243,18 @@ Object {
 }
 `
 
-exports[`test/pseudo.ts > TAP > pseudo > workspace > query > ":project" 2`] = `
+exports[`test/pseudo.ts > TAP > pseudo > workspace > query > ":project /*empty*/" 1`] = `
 Object {
   "edges": Array [],
-  "nodes": Array [
-    "w",
-    "ws",
-  ],
+  "nodes": Array [],
 }
 `
 
-exports[`test/pseudo.ts > TAP > pseudo > workspace > query > ":project" 3`] = `
+exports[`test/pseudo.ts > TAP > pseudo > workspace > query > ":project /*w*/" 1`] = `
 Object {
   "edges": Array [],
   "nodes": Array [
     "w",
-    "ws",
   ],
 }
 `

@@ -252,34 +252,19 @@ const root = async (state: ParserState) => {
 }
 
 /**
- * :project Pseudo-Element, returns all graph importers (e.g: the
+ * :project Pseudo-Class, matches only graph importers (e.g: the
  * root node along with any configured workspace)
  */
 const project = async (state: ParserState) => {
-  const [anyNode] = state.initial.nodes.values()
-  const importers = anyNode?.graph.importers
-  if (!importers?.size) {
-    throw error(':project pseudo-element works on local graphs only')
-  }
-
-  // make a list of all edges that are coming from importers
-  // so that we can filter out any edges that are not direct
-  // dependencies of the importers
-  const importersEdgesIn = new Set<EdgeLike>()
-  for (const importer of importers) {
-    for (const edge of importer.edgesIn) {
-      importersEdgesIn.add(edge)
+  for (const node of state.partial.nodes) {
+    if (!node.importer) {
+      removeNode(state, node)
     }
   }
-
   for (const edge of state.partial.edges) {
-    if (!edge.to || !importersEdgesIn.has(edge)) {
+    if (!edge.to?.importer) {
       state.partial.edges.delete(edge)
     }
-  }
-  state.partial.nodes.clear()
-  for (const importer of importers) {
-    state.partial.nodes.add(importer)
   }
   return state
 }

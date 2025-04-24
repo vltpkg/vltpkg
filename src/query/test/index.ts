@@ -113,6 +113,8 @@ t.test('workspace', async t => {
     [':root', ['ws']], // select :root
     [':root > *', []], // direct deps of :root
     [':root > :root', ['ws']], // :root always places a ref to root
+    [':project#w', ['w']], // select by project + workspace name
+    ['#w:project', ['w']], // should be interchangeable
     ['/* do something */ [name^=w]', ['ws', 'w']], // support comments
   ])
   const query = new Query({
