@@ -449,6 +449,9 @@ importers:
       '@vltpkg/registry-client':
         specifier: workspace:*
         version: link:../registry-client
+      '@vltpkg/rollback-remove':
+        specifier: workspace:*
+        version: link:../rollback-remove
       '@vltpkg/run':
         specifier: workspace:*
         version: link:../run
@@ -467,6 +470,9 @@ importers:
       '@vltpkg/url-open':
         specifier: workspace:*
         version: link:../url-open
+      '@vltpkg/vlx':
+        specifier: workspace:*
+        version: link:../vlx
       '@vltpkg/workspaces':
         specifier: workspace:*
         version: link:../workspaces
