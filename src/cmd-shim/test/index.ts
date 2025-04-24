@@ -1,6 +1,6 @@
 import type { RollbackRemove } from '@vltpkg/rollback-remove'
-import { readFileSync, rmSync, statSync } from 'fs'
-import { rm } from 'fs/promises'
+import { readFileSync, rmSync, statSync } from 'node:fs'
+import { rm } from 'node:fs/promises'
 import { resolve } from 'node:path'
 import t from 'tap'
 import { cmdShim, cmdShimIfExists } from '../src/index.ts'
