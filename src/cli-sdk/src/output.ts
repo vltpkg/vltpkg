@@ -28,10 +28,12 @@ export const getView = <T>(
     : views && typeof views === 'object' ? views[viewName]
     : identity
 
-  // if the user specified a view that doesn't exist,
-  // then set it back to the default, and try again.
-  // This will fall back to identity if it's also missing.
-  if (!viewFn && conf.values.view !== defaultView) {
+  // if the user specified a view that doesn't exist, then set it back to the
+  // default, and try again. This will fall back to identity if it's also
+  // missing. We also always treat 'json' as a valid view that falls back to
+  // identity. This allows the explicit use of `--view=json` to work even
+  // when the default view is `human`.
+  if (!viewFn && viewName !== 'json' && viewName !== defaultView) {
     conf.values.view = defaultView
     process.env.VLT_VIEW = defaultView
     return getView(conf, views)

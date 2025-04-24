@@ -282,31 +282,42 @@ t.test('delete', async t => {
   )
 })
 
-t.test('human output for init subcommand', t => {
-  t.matchSnapshot(
-    Command.views.human(
-      {
-        manifest: {
-          path: '/some/path',
-          data: { name: 'myproject' },
-        },
-      },
-      {} as ViewOptions,
-      {
-        positionals: ['init'],
-      } as LoadedConfig,
-    ),
-  )
-  const res = {}
-  t.equal(
+t.test('human output', async t => {
+  const human = (
+    res: unknown,
+    { positionals }: { positionals: string[] },
+  ) =>
     Command.views.human(
       res,
       {} as ViewOptions,
       {
-        positionals: ['not', 'init'],
+        positionals,
       } as LoadedConfig,
-    ),
-    res,
-  )
-  t.end()
+    )
+
+  t.test('init', async t => {
+    t.matchSnapshot(
+      human(
+        {
+          manifest: {
+            path: '/some/path',
+            data: { name: 'myproject' },
+          },
+        },
+        { positionals: ['init'] },
+      ),
+    )
+    t.strictSame(human({}, { positionals: ['not', 'init'] }), {})
+  })
+
+  t.test('get', async t => {
+    t.strictSame(
+      human(
+        { [Symbol.for('some symbol')]: 1, a: 2 },
+        { positionals: ['get'] },
+      ),
+      { a: 2 },
+    )
+    t.strictSame(human(1, { positionals: ['get'] }), 1)
+  })
 })
