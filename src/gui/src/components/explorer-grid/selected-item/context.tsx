@@ -1,4 +1,4 @@
-import { createContext, useEffect, useState, useContext } from 'react'
+import { createContext, useContext, useRef } from 'react'
 import { useStore, createStore } from 'zustand'
 import { hydrate } from '@vltpkg/dep-id/browser'
 import { useGraphStore } from '@/state/index.js'
@@ -90,19 +90,19 @@ export const SelectedItemProvider = ({
    * initialize the store with the selected item while also limiting the access
    * to the store within the context's component tree.
    */
-  const [selectedItemStore] = useState(() =>
+  const selectedItemStore = useRef(
     createStore<SelectedItemStore>(set => ({
       selectedItem,
       manifest: selectedItem.to?.manifest ?? null,
       packageScore: selectedItem.to?.insights.score,
       insights: getSocketInsights(selectedItem.to?.insights),
-      selectedItemDetails: {},
       activeTab: 'overview',
+      test: true,
       setActiveTab: (
         activeTab: SelectedItemStoreState['activeTab'],
       ) => set(() => ({ activeTab })),
     })),
-  )
+  ).current
 
   const fetchDetailsAsync = async (
     store: StoreApi<SelectedItemStore>,
@@ -128,9 +128,7 @@ export const SelectedItemProvider = ({
     }
   }
 
-  useEffect(() => {
-    void fetchDetailsAsync(selectedItemStore)
-  }, [selectedItemStore, specOptions])
+  void fetchDetailsAsync(selectedItemStore)
 
   return (
     <SelectedItemContext.Provider value={selectedItemStore}>
