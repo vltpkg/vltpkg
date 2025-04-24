@@ -18,7 +18,6 @@ export type Action = {
   updateLinePositionReference: (position: number) => void
   updateNodes: (nodes: State['nodes']) => void
   updateProjectInfo: (projectInfo: State['projectInfo']) => void
-  updateSelectedNode: (node: State['selectedNode']) => void
   updateSpecOptions: (specOptions: State['specOptions']) => void
   updateStamp: () => void
   updateTheme: (theme: State['theme']) => void
@@ -119,11 +118,6 @@ export type State = {
    * The query string typed by the user in the interface.
    */
   query: string
-  // TODO: remove selectedNode as it's unused
-  /**
-   * Reference to a currently selected node.
-   */
-  selectedNode?: QueryResponseNode
   /**
    * Spec options used for the current graph.
    */
