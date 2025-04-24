@@ -2,18 +2,17 @@
 /docs
 /example
 /node_modules
-/package.json
 /pnpm-lock.yaml
 /scripts/fixtures
 /tap-snapshots
 /test/fixtures/**/*.json
+/.*/
 
 /src/*/.*/
 /src/*/dist
 /src/*/docs
 /src/*/example
 /src/*/node_modules
-/src/*/package.json
 /src/*/scripts/fixtures
 /src/*/tap-snapshots
 /src/*/test/fixtures/**/*.json
@@ -23,7 +22,6 @@
 /infra/*/docs
 /infra/*/example
 /infra/*/node_modules
-/infra/*/package.json
 /infra/*/scripts/fixtures
 /infra/*/tap-snapshots
 /infra/*/test/fixtures/**/*.json
@@ -33,7 +31,6 @@
 /www/*/docs
 /www/*/example
 /www/*/node_modules
-/www/*/package.json
 /www/*/scripts/fixtures
 /www/*/tap-snapshots
 /www/*/test/fixtures/**/*.json

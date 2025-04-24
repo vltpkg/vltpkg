@@ -34,13 +34,13 @@
     "package-json-from-dist": "catalog:",
     "path-scurry": "catalog:",
     "promise-call-limit": "catalog:",
-    "resolve-import": "catalog:",
-    "serve-handler": "catalog:"
+    "resolve-import": "^2.0.0",
+    "serve-handler": "^6.1.6"
   },
   "devDependencies": {
     "@eslint/js": "catalog:",
     "@types/node": "catalog:",
-    "@types/serve-handler": "catalog:",
+    "@types/serve-handler": "^6.1.4",
     "@vltpkg/package-info": "workspace:*",
     "eslint": "catalog:",
     "prettier": "catalog:",
