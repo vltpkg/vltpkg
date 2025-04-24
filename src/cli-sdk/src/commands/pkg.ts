@@ -22,7 +22,13 @@ export const views = {
         config,
       )
     }
-    return results
+    return results && typeof results === 'object' ?
+        Object.fromEntries(
+          Object.entries(results).filter(
+            ([k]) => typeof k !== 'symbol',
+          ),
+        )
+      : results
   },
 } as const satisfies Views
 

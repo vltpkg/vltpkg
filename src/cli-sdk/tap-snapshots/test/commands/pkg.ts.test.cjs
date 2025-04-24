@@ -5,7 +5,7 @@
  * Make sure to inspect the output below.  Do not ignore changes!
  */
 'use strict'
-exports[`test/commands/pkg.ts > TAP > human output for init subcommand > must match snapshot 1`] = `
+exports[`test/commands/pkg.ts > TAP > human output > init > must match snapshot 1`] = `
 Wrote manifest to /some/path:
 
 {
