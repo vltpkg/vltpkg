@@ -1,6 +1,6 @@
 import pRetry, { AbortError } from 'p-retry'
 import { hydrate, splitDepID } from '@vltpkg/dep-id/browser'
-import { error } from '@vltpkg/error-cause'
+import { asError, error } from '@vltpkg/error-cause'
 import type { NodeLike } from '@vltpkg/graph'
 import type { SpecOptions } from '@vltpkg/spec/browser'
 import {
@@ -273,9 +273,13 @@ export const outdated = async (state: ParserState) => {
       asPostcssNodeWithChildren(state.current).nodes,
     )
   } catch (err) {
-    throw error('Failed to parse :outdated selector', {
-      cause: err,
-    })
+    if (asError(err).message === 'Expected a query node') {
+      internals = { kind: 'any' } satisfies OutdatedInternals
+    } else {
+      throw error('Failed to parse :outdated selector', {
+        cause: err,
+      })
+    }
   }
 
   const { kind } = internals
