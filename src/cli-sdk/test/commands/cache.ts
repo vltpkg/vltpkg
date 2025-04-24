@@ -5,7 +5,7 @@ import { Spec } from '@vltpkg/spec'
 import type { Integrity } from '@vltpkg/types'
 import { createHash } from 'crypto'
 import { statSync } from 'fs'
-import { resolve } from 'path'
+import { resolve } from 'node:path'
 import type { Test } from 'tap'
 import t from 'tap'
 import type { LoadedConfig } from '../../src/config/index.ts'
@@ -13,6 +13,8 @@ import type { ViewOptions } from '../../src/view.ts'
 
 const logged: unknown[][] = []
 const stdout = (...a: unknown[]) => logged.push(a)
+const erred: unknown[][] = []
+const stderr = (...a: unknown[]) => erred.push(a)
 t.beforeEach(() => {
   logged.length = 0
 })
@@ -27,7 +29,7 @@ const mockCommand = (t: Test, mocks: Record<string, any> = {}) =>
   t.mockImport<typeof import('../../src/commands/cache.ts')>(
     '../../src/commands/cache.ts',
     {
-      '../../src/output.ts': { stdout },
+      '../../src/output.ts': { stdout, stderr },
       ...mocks,
     },
   )
@@ -145,6 +147,22 @@ const hash64 = hashBuf.toString('base64')
 const hashHex = hashBuf.toString('hex')
 const integrity: Integrity = `sha512-${hash64}`
 
+const pakument = {
+  name: 'xyz',
+  'dist-tags': {
+    latest: '1.2.3',
+  },
+  versions: {
+    '1.2.3': {
+      name: 'xyz',
+      version: '1.2.3',
+      dist: {
+        tarball: 'https://registry.npmjs.org/xyz/-/xyz-1.2.3.tgz',
+        integrity,
+      },
+    },
+  },
+}
 const pakukey = 'https://registry.npmjs.org/xyz'
 const pakukeyHash = createHash('sha512').update(pakukey).digest('hex')
 const headPakukey = 'HEAD https://registry.npmjs.org/xyz'
@@ -153,6 +171,8 @@ const headPakukeyHash = createHash('sha512')
   .digest('hex')
 const tgzkey = 'https://registry.npmjs.org/xyz/-/xyz-1.2.3.tgz'
 const tgzkeyHash = createHash('sha512').update(tgzkey).digest('hex')
+let tgzEntry: CacheEntry | undefined = undefined
+let pakuEntry: CacheEntry | undefined = undefined
 const createCache = (t: Test) => {
   const headPakuEntry = new CacheEntry(200, [
     Buffer.from('content-type'),
@@ -162,7 +182,7 @@ const createCache = (t: Test) => {
     Buffer.from('date'),
     Buffer.from(new Date(Date.now() - 1000 * 1000).toUTCString()),
   ])
-  const pakuEntry = new CacheEntry(200, [
+  pakuEntry = new CacheEntry(200, [
     Buffer.from('content-type'),
     Buffer.from('application/json'),
     Buffer.from('cache-control'),
@@ -170,29 +190,9 @@ const createCache = (t: Test) => {
     Buffer.from('date'),
     Buffer.from(new Date(Date.now() - 1000 * 1000).toUTCString()),
   ])
-  pakuEntry.addBody(
-    Buffer.from(
-      JSON.stringify({
-        name: 'xyz',
-        'dist-tags': {
-          latest: '1.2.3',
-        },
-        versions: {
-          '1.2.3': {
-            name: 'xyz',
-            version: '1.2.3',
-            dist: {
-              tarball:
-                'https://registry.npmjs.org/xyz/-/xyz-1.2.3.tgz',
-              integrity,
-            },
-          },
-        },
-      }),
-    ),
-  )
+  pakuEntry.addBody(Buffer.from(JSON.stringify(pakument)))
 
-  const tgzEntry = new CacheEntry(
+  tgzEntry = new CacheEntry(
     200,
     [
       Buffer.from('content-type'),
@@ -202,6 +202,7 @@ const createCache = (t: Test) => {
     ],
     { integrity, trustIntegrity: true },
   )
+  tgzEntry.addBody(Buffer.from('xyz'))
 
   return t.testdir({
     'registry-client': {
@@ -394,4 +395,42 @@ t.test('human view coverage bits', async t => {
   )
 
   view.stdout('hello', 'world')
+})
+
+t.test('info', async t => {
+  const { command } = await mockCommand(t)
+  const dir = createCache(t)
+  const options = {
+    cache: dir,
+  }
+  Object.assign(options, {
+    packageInfo: new PackageInfoClient(options),
+  })
+
+  await t.rejects(
+    command({
+      positionals: ['info', 'a', 'b'],
+    } as unknown as LoadedConfig),
+    {
+      message: 'Must provide exactly one cache key',
+      cause: { code: 'EUSAGE' },
+    },
+  )
+  await t.rejects(
+    command({
+      positionals: ['info'],
+    } as unknown as LoadedConfig),
+    {
+      message: 'Must provide exactly one cache key',
+      cause: { code: 'EUSAGE' },
+    },
+  )
+
+  const result = await command({
+    positionals: ['info', pakukey],
+    options,
+  } as unknown as LoadedConfig)
+  t.equal(result, undefined)
+  t.strictSame(logged, [[JSON.stringify(pakument, null, 2)]])
+  t.matchStrict(erred, [[pakukey, pakuEntry]])
 })

@@ -1,8 +1,8 @@
-import t from 'tap'
-import type { Test } from 'tap'
-import { setupEnv } from './fixtures/util.ts'
 import { join } from 'node:path'
+import type { Test } from 'tap'
+import t from 'tap'
 import type { LoadedConfig } from '../src/config/index.ts'
+import { setupEnv } from './fixtures/util.ts'
 
 setupEnv(t)
 
@@ -14,6 +14,8 @@ export const run = async (
     argv?: string[]
   } = {},
 ) => {
+  // Do not pick up user configs in the home directory
+  process.env.XDG_CONFIG_HOME = t.testdirName
   t.intercept(process, 'argv', {
     value: [process.execPath, 'index.ts', ...argv],
   })
