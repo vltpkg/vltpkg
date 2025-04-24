@@ -2,6 +2,7 @@ import { test, expect, vi, beforeEach, afterEach } from 'vitest'
 import { cleanup, render, fireEvent } from '@testing-library/react'
 import html from 'diffable-html'
 import { useGraphStore as useStore } from '@/state/index.js'
+import type { SelectedItemStore } from '@/components/explorer-grid/selected-item/context.jsx'
 import { useSelectedItemStore } from '@/components/explorer-grid/selected-item/context.jsx'
 import {
   VersionsTabButton,
@@ -11,7 +12,7 @@ import {
   SELECTED_ITEM,
   SELECTED_ITEM_DETAILS,
 } from './__fixtures__/item.js'
-import type { DetailsInfo } from '@/lib/external-info.js'
+import type { Version } from '@/lib/external-info.js'
 
 // Mock IntersectionObserver
 const mockIntersectionObserver = vi.fn()
@@ -33,13 +34,13 @@ const MOCK_VERSION = {
     email: 'johndoe@acme.com',
     avatar: 'https://example.com/avatar.jpg',
   },
-}
+} as Version
 
 const MOCK_BETA_VERSION = {
   ...MOCK_VERSION,
   version: '2.0.0-beta.1',
   integrity: 'sha512-def456',
-}
+} as unknown as Version
 
 vi.mock('lucide-react', () => ({
   History: 'gui-history-icon',
@@ -121,17 +122,14 @@ afterEach(() => {
 test('VersionsTabButton renders default', () => {
   const mockState = {
     selectedItem: SELECTED_ITEM,
-    selectedItemDetails: {
-      ...SELECTED_ITEM_DETAILS,
-      versions: [MOCK_VERSION, { ...MOCK_VERSION, version: '1.0.2' }],
-      greaterVersions: [{ ...MOCK_VERSION, version: '1.0.2' }],
-    } as DetailsInfo,
-    setSelectedItemDetails: vi.fn(),
+    ...SELECTED_ITEM_DETAILS,
+    versions: [MOCK_VERSION, { ...MOCK_VERSION, version: '1.0.2' }],
+    greaterVersions: [{ ...MOCK_VERSION, version: '1.0.2' }],
     manifest: null,
     insights: undefined,
     activeTab: 'versions' as const,
     setActiveTab: vi.fn(),
-  }
+  } satisfies SelectedItemStore
 
   vi.mocked(useSelectedItemStore).mockImplementation(selector =>
     selector(mockState),
@@ -144,17 +142,14 @@ test('VersionsTabButton renders default', () => {
 test('VersionsTabContent renders with versions', () => {
   const mockState = {
     selectedItem: SELECTED_ITEM,
-    selectedItemDetails: {
-      ...SELECTED_ITEM_DETAILS,
-      versions: [MOCK_VERSION, MOCK_BETA_VERSION],
-      greaterVersions: [],
-    } as DetailsInfo,
-    setSelectedItemDetails: vi.fn(),
+    ...SELECTED_ITEM_DETAILS,
+    versions: [MOCK_VERSION, MOCK_BETA_VERSION],
+    greaterVersions: [],
     manifest: {},
     insights: undefined,
     activeTab: 'versions' as const,
     setActiveTab: vi.fn(),
-  }
+  } satisfies SelectedItemStore
 
   vi.mocked(useSelectedItemStore).mockImplementation(selector =>
     selector(mockState),
@@ -167,17 +162,14 @@ test('VersionsTabContent renders with versions', () => {
 test('VersionsTabContent renders an empty state', () => {
   const mockState = {
     selectedItem: SELECTED_ITEM,
-    selectedItemDetails: {
-      ...SELECTED_ITEM_DETAILS,
-      versions: [],
-      greaterVersions: [],
-    } as DetailsInfo,
-    setSelectedItemDetails: vi.fn(),
+    ...SELECTED_ITEM_DETAILS,
+    versions: [],
+    greaterVersions: [],
     manifest: {},
     insights: undefined,
     activeTab: 'versions' as const,
     setActiveTab: vi.fn(),
-  }
+  } satisfies SelectedItemStore
 
   vi.mocked(useSelectedItemStore).mockImplementation(selector =>
     selector(mockState),
@@ -190,17 +182,14 @@ test('VersionsTabContent renders an empty state', () => {
 test('VersionsTabContent filters versions', () => {
   const mockState = {
     selectedItem: SELECTED_ITEM,
-    selectedItemDetails: {
-      ...SELECTED_ITEM_DETAILS,
-      versions: [MOCK_VERSION, MOCK_BETA_VERSION],
-      greaterVersions: [],
-    } as DetailsInfo,
-    setSelectedItemDetails: vi.fn(),
+    ...SELECTED_ITEM_DETAILS,
+    versions: [MOCK_VERSION, MOCK_BETA_VERSION],
+    greaterVersions: [],
     manifest: {},
     insights: undefined,
     activeTab: 'versions' as const,
     setActiveTab: vi.fn(),
-  }
+  } satisfies SelectedItemStore
 
   vi.mocked(useSelectedItemStore).mockImplementation(selector =>
     selector(mockState),
@@ -219,17 +208,14 @@ test('VersionsTabContent filters versions', () => {
 test('VersionsTabContent toggles pre-releases', () => {
   const mockState = {
     selectedItem: SELECTED_ITEM,
-    selectedItemDetails: {
-      ...SELECTED_ITEM_DETAILS,
-      versions: [MOCK_VERSION, MOCK_BETA_VERSION],
-      greaterVersions: [],
-    } as DetailsInfo,
-    setSelectedItemDetails: vi.fn(),
+    ...SELECTED_ITEM_DETAILS,
+    versions: [MOCK_VERSION, MOCK_BETA_VERSION],
+    greaterVersions: [],
     manifest: {},
     insights: undefined,
     activeTab: 'versions' as const,
     setActiveTab: vi.fn(),
-  }
+  } satisfies SelectedItemStore
 
   vi.mocked(useSelectedItemStore).mockImplementation(selector =>
     selector(mockState),
@@ -246,19 +232,16 @@ test('VersionsTabContent toggles pre-releases', () => {
 test('VersionsTabContent filters pre-releases', () => {
   const mockState = {
     selectedItem: SELECTED_ITEM,
-    selectedItemDetails: {
-      ...SELECTED_ITEM_DETAILS,
-      versions: [MOCK_VERSION, MOCK_BETA_VERSION],
-      greaterVersions: [],
-    } as DetailsInfo,
-    setSelectedItemDetails: vi.fn(),
+    ...SELECTED_ITEM_DETAILS,
+    versions: [MOCK_VERSION, MOCK_BETA_VERSION],
+    greaterVersions: [],
     manifest: {
       version: '1.0.0',
     },
     insights: undefined,
     activeTab: 'versions' as const,
     setActiveTab: vi.fn(),
-  }
+  } satisfies SelectedItemStore
 
   vi.mocked(useSelectedItemStore).mockImplementation(selector =>
     selector(mockState),
@@ -279,19 +262,16 @@ test('VersionsTabContent filters pre-releases', () => {
 test('VersionsTabContent filters newer versions', () => {
   const mockState = {
     selectedItem: SELECTED_ITEM,
-    selectedItemDetails: {
-      ...SELECTED_ITEM_DETAILS,
-      versions: [MOCK_VERSION, { ...MOCK_VERSION, version: '2.0.0' }],
-      greaterVersions: [],
-    } as DetailsInfo,
-    setSelectedItemDetails: vi.fn(),
+    ...SELECTED_ITEM_DETAILS,
+    versions: [MOCK_VERSION, { ...MOCK_VERSION, version: '2.0.0' }],
+    greaterVersions: [],
     manifest: {
       version: '1.0.0',
     },
     insights: undefined,
     activeTab: 'versions' as const,
     setActiveTab: vi.fn(),
-  }
+  } satisfies SelectedItemStore
 
   vi.mocked(useSelectedItemStore).mockImplementation(selector =>
     selector(mockState),
@@ -314,17 +294,14 @@ test('VersionsTabContent filters newer versions', () => {
 test('VersionsTabContent handles missing manifest version', () => {
   const mockState = {
     selectedItem: SELECTED_ITEM,
-    selectedItemDetails: {
-      ...SELECTED_ITEM_DETAILS,
-      versions: [MOCK_VERSION, { ...MOCK_VERSION, version: '2.0.0' }],
-      greaterVersions: [],
-    } as DetailsInfo,
-    setSelectedItemDetails: vi.fn(),
+    ...SELECTED_ITEM_DETAILS,
+    versions: [MOCK_VERSION, { ...MOCK_VERSION, version: '2.0.0' }],
+    greaterVersions: [],
     manifest: {},
     insights: undefined,
     activeTab: 'versions' as const,
     setActiveTab: vi.fn(),
-  }
+  } satisfies SelectedItemStore
 
   vi.mocked(useSelectedItemStore).mockImplementation(selector =>
     selector(mockState),

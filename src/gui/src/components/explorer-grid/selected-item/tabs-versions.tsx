@@ -36,10 +36,10 @@ import {
 } from '@/components/ui/dropdown-menu.jsx'
 
 export const VersionsTabButton = () => {
-  const selectedItemDetails = useSelectedItemStore(
-    state => state.selectedItemDetails,
+  const versions = useSelectedItemStore(state => state.versions)
+  const greaterVersions = useSelectedItemStore(
+    state => state.greaterVersions,
   )
-  const { versions, greaterVersions } = selectedItemDetails
 
   const versionCount =
     (versions?.length ?? 0) + (greaterVersions?.length ?? 0)
@@ -384,11 +384,12 @@ const EmptyState = ({ message }: { message: string }) => (
 )
 
 export const VersionsTabContent = () => {
-  const selectedItemDetails = useSelectedItemStore(
-    state => state.selectedItemDetails,
-  )
   const manifest = useSelectedItemStore(state => state.manifest)
-  const [versions, setVersions] = useState<VersionItem[]>([])
+  const downloads = useSelectedItemStore(state => state.downloads)
+  const versions = useSelectedItemStore(state => state.versions)
+  const [filteredVersions, setFilteredVersions] = useState<
+    VersionItem[]
+  >([])
   const [page, setPage] = useState(1)
   const [greaterPage, setGreaterPage] = useState(1)
   const [hasMore, setHasMore] = useState(true)
@@ -423,7 +424,7 @@ export const VersionsTabContent = () => {
   }, [showPreReleases, showNewerVersions, searchTerm])
 
   useEffect(() => {
-    const allVersions = selectedItemDetails.versions ?? []
+    const allVersions = versions ?? []
 
     const filters = [
       // Filter pre-releases
@@ -479,7 +480,7 @@ export const VersionsTabContent = () => {
 
     // Apply all filters in sequence
     const filteredAllVersions = filters.reduce(
-      (versions, filter) => filter(versions),
+      (filteredVersions, filter) => filter(filteredVersions),
       allVersions,
     )
 
@@ -488,16 +489,14 @@ export const VersionsTabContent = () => {
       version => ({
         ...version,
         downloadsPerVersion:
-          selectedItemDetails.downloads?.downloadsPerVersion?.[
-            version.version
-          ],
+          downloads?.downloadsPerVersion?.[version.version],
       }),
     )
 
-    setVersions(versionsWithDownloads)
+    setFilteredVersions(versionsWithDownloads)
     setHasMore(versionsWithDownloads.length > page * ITEMS_PER_PAGE)
   }, [
-    selectedItemDetails,
+    versions,
     page,
     greaterPage,
     showPreReleases,
@@ -505,9 +504,12 @@ export const VersionsTabContent = () => {
     searchTerm,
   ])
 
-  const isEmpty = !selectedItemDetails.versions?.length
-  const hasSearchResults = versions.length > 0
-  const paginatedVersions = versions.slice(0, page * ITEMS_PER_PAGE)
+  const isEmpty = !filteredVersions.length
+  const hasSearchResults = filteredVersions.length > 0
+  const paginatedVersions = filteredVersions.slice(
+    0,
+    page * ITEMS_PER_PAGE,
+  )
 
   return (
     <TabsContent value="versions">
@@ -603,14 +605,15 @@ export const VersionsTabContent = () => {
                   layout="preserve-aspect"
                   className="relative mt-2 flex flex-col gap-2">
                   <VersionHeader
-                    items={versions}
-                    setItems={setVersions}
+                    items={filteredVersions}
+                    setItems={setFilteredVersions}
                   />
                   <div className="flex flex-col divide-y-[1px] divide-muted">
                     {paginatedVersions.map((version, idx) => {
                       const downloadsPerVersion =
-                        selectedItemDetails.downloads
-                          ?.downloadsPerVersion?.[version.version]
+                        downloads?.downloadsPerVersion?.[
+                          version.version
+                        ]
                       return (
                         <div
                           key={`${version.version}-all-${idx}`}

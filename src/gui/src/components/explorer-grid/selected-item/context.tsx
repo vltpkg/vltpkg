@@ -54,10 +54,9 @@ const getSocketInsights = (
     .filter(Boolean) as SocketSecurityDetails[]
 }
 
-type SelectedItemStoreState = {
+type SelectedItemStoreState = DetailsInfo & {
   selectedItem: GridItemData
   activeTab: Tab
-  selectedItemDetails: DetailsInfo
   manifest: Manifest | null
   packageScore?: PackageScore
   insights: SocketSecurityDetails[] | undefined
@@ -65,14 +64,13 @@ type SelectedItemStoreState = {
 
 type SelectedItemStoreAction = {
   setActiveTab: (tab: SelectedItemStoreState['activeTab']) => void
-  setSelectedItemDetails: (
-    selectedItemDetails: SelectedItemStoreState['selectedItemDetails'],
-  ) => void
 }
 
+export type SelectedItemStore = SelectedItemStoreState &
+  SelectedItemStoreAction
+
 const SelectedItemContext = createContext<
-  | StoreApi<SelectedItemStoreAction & SelectedItemStoreState>
-  | undefined
+  StoreApi<SelectedItemStore> | undefined
 >(undefined)
 
 type SelectedItemProviderProps = PropsWithChildren & {
@@ -85,27 +83,29 @@ export const SelectedItemProvider = ({
 }: SelectedItemProviderProps) => {
   const specOptions = useGraphStore(state => state.specOptions)
 
+  /**
+   * We initialize the zustand store as a scoped state within the context:
+   *
+   * This brings Zustand into the react lifecycle and allows us top
+   * initialize the store with the selected item while also limiting the access
+   * to the store within the context's component tree.
+   */
   const [selectedItemStore] = useState(() =>
-    createStore<SelectedItemStoreAction & SelectedItemStoreState>(
-      set => ({
-        selectedItem,
-        manifest: selectedItem.to?.manifest ?? null,
-        packageScore: selectedItem.to?.insights.score,
-        insights: getSocketInsights(selectedItem.to?.insights),
-        selectedItemDetails: {},
-        setSelectedItemDetails: (
-          selectedItemDetails: SelectedItemStoreState['selectedItemDetails'],
-        ) => set(() => ({ selectedItemDetails })),
-        activeTab: 'overview',
-        setActiveTab: (
-          activeTab: SelectedItemStoreState['activeTab'],
-        ) => set(() => ({ activeTab })),
-      }),
-    ),
+    createStore<SelectedItemStore>(set => ({
+      selectedItem,
+      manifest: selectedItem.to?.manifest ?? null,
+      packageScore: selectedItem.to?.insights.score,
+      insights: getSocketInsights(selectedItem.to?.insights),
+      selectedItemDetails: {},
+      activeTab: 'overview',
+      setActiveTab: (
+        activeTab: SelectedItemStoreState['activeTab'],
+      ) => set(() => ({ activeTab })),
+    })),
   )
 
   const fetchDetailsAsync = async (
-    store: StoreApi<SelectedItemStoreAction & SelectedItemStoreState>,
+    store: StoreApi<SelectedItemStore>,
   ) => {
     const state = store.getState()
     const item = state.selectedItem
@@ -122,10 +122,8 @@ export const SelectedItemProvider = ({
       manifest,
     )) {
       store.setState(state => ({
-        selectedItemDetails: {
-          ...state.selectedItemDetails,
-          ...d,
-        },
+        ...state,
+        ...d,
       }))
     }
   }
@@ -142,9 +140,7 @@ export const SelectedItemProvider = ({
 }
 
 export const useSelectedItemStore = <T,>(
-  selector: (
-    state: SelectedItemStoreAction & SelectedItemStoreState,
-  ) => T,
+  selector: (state: SelectedItemStore) => T,
 ) => {
   const store = useContext(SelectedItemContext)
   if (!store) {

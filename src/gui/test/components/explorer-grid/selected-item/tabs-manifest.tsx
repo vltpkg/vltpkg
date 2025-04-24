@@ -2,6 +2,7 @@ import { test, expect, vi, beforeEach, afterEach } from 'vitest'
 import { cleanup, render } from '@testing-library/react'
 import html from 'diffable-html'
 import { useGraphStore as useStore } from '@/state/index.js'
+import type { SelectedItemStore } from '@/components/explorer-grid/selected-item/context.jsx'
 import { useSelectedItemStore } from '@/components/explorer-grid/selected-item/context.jsx'
 import {
   TabsManifestButton,
@@ -75,13 +76,12 @@ afterEach(() => {
 test('TabsManifestButton renders default', () => {
   const mockState = {
     selectedItem: ITEM_WITH_MANIFEST,
-    selectedItemDetails: SELECTED_ITEM_DETAILS,
-    setSelectedItemDetails: vi.fn(),
+    ...SELECTED_ITEM_DETAILS,
     manifest: {},
     insights: undefined,
     activeTab: 'manifest' as const,
     setActiveTab: vi.fn(),
-  }
+  } satisfies SelectedItemStore
 
   vi.mocked(useSelectedItemStore).mockImplementation(selector =>
     selector(mockState),
@@ -99,12 +99,11 @@ test('TabsManifestContent renders an empty state', () => {
   const mockState = {
     manifest: null,
     selectedItem: SELECTED_ITEM,
-    selectedItemDetails: SELECTED_ITEM_DETAILS,
-    setSelectedItemDetails: vi.fn(),
+    ...SELECTED_ITEM_DETAILS,
     insights: undefined,
     activeTab: 'manifest' as const,
     setActiveTab: vi.fn(),
-  }
+  } satisfies SelectedItemStore
 
   vi.mocked(useSelectedItemStore).mockImplementation(selector =>
     selector(mockState),
@@ -121,13 +120,12 @@ test('TabsManifestContent renders an empty state', () => {
 test('TabsManifestContent renders with a manifest', () => {
   const mockState = {
     selectedItem: SELECTED_ITEM,
-    selectedItemDetails: SELECTED_ITEM_DETAILS,
-    setSelectedItemDetails: vi.fn(),
+    ...SELECTED_ITEM_DETAILS,
     insights: undefined,
     activeTab: 'manifest' as const,
     manifest: MOCK_MANIFEST,
     setActiveTab: vi.fn(),
-  }
+  } satisfies SelectedItemStore
 
   vi.mocked(useSelectedItemStore).mockImplementation(selector =>
     selector(mockState),

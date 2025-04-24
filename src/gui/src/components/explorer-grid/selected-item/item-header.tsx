@@ -101,15 +101,12 @@ const SpecOrigin = ({
 }
 
 const Downloads = ({ className }: { className?: string }) => {
-  const selectedItemDetails = useSelectedItemStore(
-    state => state.selectedItemDetails,
+  const downloadsRange = useSelectedItemStore(
+    state => state.downloadsRange,
   )
+  const downloads = useSelectedItemStore(state => state.downloads)
 
-  if (
-    !selectedItemDetails.downloads ||
-    !selectedItemDetails.downloadsRange
-  )
-    return null
+  if (!downloads || !downloadsRange) return null
 
   return (
     <motion.div
@@ -120,11 +117,7 @@ const Downloads = ({ className }: { className?: string }) => {
         className,
       )}>
       <SparkBarChart
-        data={
-          transformToWeeklyDownloads(
-            selectedItemDetails.downloadsRange,
-          ).downloads
-        }
+        data={transformToWeeklyDownloads(downloadsRange).downloads}
         categories={['downloads']}
         index={'day'}
         colors={['emerald']}
@@ -135,11 +128,11 @@ const Downloads = ({ className }: { className?: string }) => {
 }
 
 export const ItemHeader = () => {
-  const selectedItemDetails = useSelectedItemStore(
-    state => state.selectedItemDetails,
-  )
+  const versions = useSelectedItemStore(state => state.versions)
+  const downloads = useSelectedItemStore(state => state.downloads)
+  const publisher = useSelectedItemStore(state => state.publisher)
   const manifest = useSelectedItemStore(state => state.manifest)
-  const currentVersion = selectedItemDetails.versions?.find(
+  const currentVersion = versions?.find(
     version => version.version === manifest?.version,
   )
   const hasMetadata =
@@ -161,8 +154,7 @@ export const ItemHeader = () => {
         <PackageImageSpec
           className={cn(
             'col-span-9 pb-3 pl-6 pt-6',
-            selectedItemDetails.downloads &&
-              'border-r-[1px] border-muted',
+            downloads && 'border-r-[1px] border-muted',
           )}
         />
         <Downloads className="col-span-3" />
@@ -170,20 +162,18 @@ export const ItemHeader = () => {
       <div
         className={cn(
           'grid w-full grid-cols-12',
-          selectedItemDetails.publisher ?
-            'border-t-[1px] border-muted'
-          : 'hidden',
+          publisher ? 'border-t-[1px] border-muted' : 'hidden',
         )}>
         <Publisher
           className={cn(
             'col-span-9 border-muted py-5 pl-6',
-            selectedItemDetails.downloads && 'border-r-[1px]',
+            downloads && 'border-r-[1px]',
           )}
         />
-        {selectedItemDetails.downloads && (
+        {downloads && (
           <div className="col-span-3 flex h-full cursor-default items-center justify-center text-center">
             <p className="w-full text-sm font-medium text-foreground">
-              {selectedItemDetails.downloads.weekly?.toLocaleString()}{' '}
+              {downloads.weekly?.toLocaleString()}{' '}
               <span className="text-muted-foreground">Downloads</span>
             </p>
           </div>
@@ -209,13 +199,11 @@ export const ItemHeader = () => {
 }
 
 const PackageMetadata = ({ className }: { className?: string }) => {
-  const selectedItemDetails = useSelectedItemStore(
-    state => state.selectedItemDetails,
-  )
+  const versions = useSelectedItemStore(state => state.versions)
   const manifest = useSelectedItemStore(state => state.manifest)
   const INLINE_CODE_STYLES =
     'text-muted-foreground max-w-28 overflow-hidden text-nowrap truncate cursor-default relative mx-0 inline-flex items-center font-inter font-medium tracking-wide'
-  const currentVersion = selectedItemDetails.versions?.find(
+  const currentVersion = versions?.find(
     version => version.version === manifest?.version,
   )
   const tarballUrl = currentVersion?.tarball
@@ -394,22 +382,23 @@ const PackageImageSpec = ({ className }: { className?: string }) => {
   const setActiveTab = useSelectedItemStore(
     state => state.setActiveTab,
   )
+  const greaterVersions = useSelectedItemStore(
+    state => state.greaterVersions,
+  )
   const selectedItem = useSelectedItemStore(
     state => state.selectedItem,
   )
-  const selectedItemDetails = useSelectedItemStore(
-    state => state.selectedItemDetails,
-  )
+  const favicon = useSelectedItemStore(state => state.favicon)
   const specOptions = useGraphStore(state => state.specOptions)
 
   return (
     <div className={cn('flex gap-4 overflow-hidden', className)}>
       <Avatar className="aspect-square size-[3.75rem]">
-        {selectedItemDetails.favicon && (
+        {favicon && (
           <AvatarImage
             className="aspect-square size-[3.75rem] rounded-md border-[1px] bg-secondary object-cover"
-            src={selectedItemDetails.favicon.src}
-            alt={selectedItemDetails.favicon.alt}
+            src={favicon.src}
+            alt={favicon.alt}
           />
         )}
         <AvatarFallback className="flex aspect-square size-[3.75rem] h-full w-full items-center justify-center rounded-md border-[1px]">
@@ -439,26 +428,25 @@ const PackageImageSpec = ({ className }: { className?: string }) => {
                 </InlineCode>
               </h1>
 
-              {selectedItemDetails.greaterVersions &&
-                selectedItemDetails.greaterVersions.length > 0 && (
-                  <TooltipProvider>
-                    <Tooltip delayDuration={150}>
-                      <TooltipTrigger
-                        onClick={() => setActiveTab('versions')}
-                        className="flex items-center justify-center">
-                        <div className="cursor-default rounded-sm border-[1px] border-green-600 bg-green-400/30 p-0.5 transition-colors duration-150 hover:bg-green-400/40 dark:border-green-500 dark:bg-green-500/30 dark:hover:bg-green-500/40">
-                          <ArrowBigUpDash
-                            className="text-green-600 dark:text-green-500"
-                            size={16}
-                          />
-                        </div>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        Newer versions available
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                )}
+              {greaterVersions && greaterVersions.length > 0 && (
+                <TooltipProvider>
+                  <Tooltip delayDuration={150}>
+                    <TooltipTrigger
+                      onClick={() => setActiveTab('versions')}
+                      className="flex items-center justify-center">
+                      <div className="cursor-default rounded-sm border-[1px] border-green-600 bg-green-400/30 p-0.5 transition-colors duration-150 hover:bg-green-400/40 dark:border-green-500 dark:bg-green-500/30 dark:hover:bg-green-500/40">
+                        <ArrowBigUpDash
+                          className="text-green-600 dark:text-green-500"
+                          size={16}
+                        />
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      Newer versions available
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              )}
 
               <div className="flex gap-1.5">
                 {selectedItem.labels?.map((label, idx) => (
@@ -487,11 +475,15 @@ const PackageImageSpec = ({ className }: { className?: string }) => {
 }
 
 const Publisher = ({ className }: { className?: string }) => {
-  const selectedItemDetails = useSelectedItemStore(
-    state => state.selectedItemDetails,
+  const versions = useSelectedItemStore(state => state.versions)
+  const manifest = useSelectedItemStore(state => state.manifest)
+  const publisher = useSelectedItemStore(state => state.publisher)
+  const publisherAvatar = useSelectedItemStore(
+    state => state.publisherAvatar,
   )
-  const publishedDate =
-    selectedItemDetails.versions?.[0]?.publishedDate
+  const publishedDate = versions?.find(
+    version => version.version === manifest?.version,
+  )?.publishedDate
 
   return (
     <div
@@ -499,23 +491,23 @@ const Publisher = ({ className }: { className?: string }) => {
         'flex h-[31.508px] items-center gap-2',
         className,
       )}>
-      {selectedItemDetails.publisherAvatar?.src && (
+      {publisherAvatar?.src && (
         <Avatar>
           <AvatarImage
             className="size-5 rounded-sm outline outline-[1px] outline-border"
-            src={selectedItemDetails.publisherAvatar.src}
-            alt={selectedItemDetails.publisherAvatar.alt}
+            src={publisherAvatar.src}
+            alt={publisherAvatar.alt}
           />
           <AvatarFallback className="flex size-5 items-center justify-center rounded-sm bg-secondary bg-gradient-to-t from-neutral-100 to-neutral-400 p-0.5 outline outline-[1px] outline-border dark:from-neutral-500 dark:to-neutral-800" />
         </Avatar>
       )}
-      {selectedItemDetails.publisher?.name && (
+      {publisher?.name && (
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger className="text-baseline cursor-default text-xs font-medium text-muted-foreground">
               Published by:{' '}
               <span className="text-foreground">
-                {selectedItemDetails.publisher.name}
+                {publisher.name}
               </span>
               {publishedDate && (
                 <span className="ml-2">
@@ -527,8 +519,7 @@ const Publisher = ({ className }: { className?: string }) => {
               )}
             </TooltipTrigger>
             <TooltipContent align="start">
-              {selectedItemDetails.publisher.name}{' '}
-              {selectedItemDetails.publisher.email}
+              {publisher.name} {publisher.email}
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>

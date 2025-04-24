@@ -2,6 +2,7 @@ import { test, expect, vi, beforeEach, afterEach } from 'vitest'
 import { cleanup, render } from '@testing-library/react'
 import html from 'diffable-html'
 import { useGraphStore as useStore } from '@/state/index.js'
+import type { SelectedItemStore } from '@/components/explorer-grid/selected-item/context.jsx'
 import { useSelectedItemStore } from '@/components/explorer-grid/selected-item/context.jsx'
 import {
   OverviewTabButton,
@@ -88,13 +89,12 @@ afterEach(() => {
 test('OverviewTabButton renders default', () => {
   const mockState = {
     selectedItem: SELECTED_ITEM,
-    selectedItemDetails: SELECTED_ITEM_DETAILS,
-    setSelectedItemDetails: vi.fn(),
+    ...SELECTED_ITEM_DETAILS,
     manifest: {},
     insights: undefined,
     activeTab: 'overview' as const,
     setActiveTab: vi.fn(),
-  }
+  } satisfies SelectedItemStore
 
   vi.mocked(useSelectedItemStore).mockImplementation(selector =>
     selector(mockState),
@@ -112,13 +112,12 @@ test('OverviewTabButton renders default', () => {
 test('OverviewTabContent renders default', () => {
   const mockState = {
     selectedItem: SELECTED_ITEM,
-    selectedItemDetails: SELECTED_ITEM_DETAILS,
-    setSelectedItemDetails: vi.fn(),
+    ...SELECTED_ITEM_DETAILS,
     manifest: {},
     insights: undefined,
     activeTab: 'overview' as const,
     setActiveTab: vi.fn(),
-  }
+  } satisfies SelectedItemStore
 
   vi.mocked(useSelectedItemStore).mockImplementation(selector =>
     selector(mockState),
@@ -135,13 +134,12 @@ test('OverviewTabContent renders default', () => {
 test('OverviewTabContent renders with content', () => {
   const mockState = {
     selectedItem: ITEM_WITH_DESCRIPTION,
-    selectedItemDetails: ITEM_DETAILS_WITH_AUTHOR,
-    setSelectedItemDetails: vi.fn(),
+    ...ITEM_DETAILS_WITH_AUTHOR,
     insights: undefined,
     activeTab: 'overview' as const,
     setActiveTab: vi.fn(),
     manifest: {},
-  }
+  } satisfies SelectedItemStore
 
   vi.mocked(useSelectedItemStore).mockImplementation(selector =>
     selector(mockState),

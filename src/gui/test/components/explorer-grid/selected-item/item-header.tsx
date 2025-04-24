@@ -3,6 +3,7 @@ import { cleanup, render } from '@testing-library/react'
 import html from 'diffable-html'
 import { useGraphStore as useStore } from '@/state/index.js'
 import { ItemHeader } from '@/components/explorer-grid/selected-item/item-header.jsx'
+import type { SelectedItemStore } from '@/components/explorer-grid/selected-item/context.jsx'
 import { useSelectedItemStore } from '@/components/explorer-grid/selected-item/context.jsx'
 import {
   specOptions,
@@ -127,14 +128,15 @@ afterEach(() => {
 test('ItemHeader renders with default item', () => {
   const mockState = {
     selectedItem: SELECTED_ITEM,
-    activeTab: 'overview' as const,
+    activeTab: 'overview',
     setActiveTab: vi.fn(),
-    selectedItemDetails: SELECTED_ITEM_DETAILS,
-    setSelectedItemDetails: vi.fn(),
     manifest: null,
-    insights: undefined,
     packageScore: undefined,
-  }
+    insights: undefined,
+    author: undefined,
+    versions: undefined,
+    ...SELECTED_ITEM_DETAILS,
+  } satisfies SelectedItemStore
 
   vi.mocked(useSelectedItemStore).mockImplementation(selector =>
     selector(mockState),
@@ -151,14 +153,15 @@ test('ItemHeader renders with default item', () => {
 test('ItemHeader renders with custom registry item', () => {
   const mockState = {
     selectedItem: SELECTED_ITEM_CUSTOM_REGISTRY,
-    selectedItemDetails: SELECTED_ITEM_DETAILS,
-    setSelectedItemDetails: vi.fn(),
-    insights: undefined,
+    activeTab: 'overview',
+    setActiveTab: vi.fn(),
     manifest: null,
     packageScore: undefined,
-    activeTab: 'overview' as const,
-    setActiveTab: vi.fn(),
-  }
+    insights: undefined,
+    author: undefined,
+    versions: undefined,
+    ...SELECTED_ITEM_DETAILS,
+  } satisfies SelectedItemStore
 
   vi.mocked(useSelectedItemStore).mockImplementation(selector =>
     selector(mockState),
@@ -181,13 +184,15 @@ test('ItemHeader renders with custom registry item', () => {
 test('ItemHeader renders with scoped registry item', () => {
   const mockState = {
     selectedItem: SELECTED_ITEM_SCOPED_REGISTRY,
-    selectedItemDetails: SELECTED_ITEM_DETAILS,
-    setSelectedItemDetails: vi.fn(),
-    insights: undefined,
-    activeTab: 'overview' as const,
-    manifest: null,
+    activeTab: 'overview',
     setActiveTab: vi.fn(),
-  }
+    manifest: null,
+    packageScore: undefined,
+    insights: undefined,
+    author: undefined,
+    versions: undefined,
+    ...SELECTED_ITEM_DETAILS,
+  } satisfies SelectedItemStore
 
   vi.mocked(useSelectedItemStore).mockImplementation(selector =>
     selector(mockState),
@@ -215,13 +220,15 @@ test('ItemHeader renders with scoped registry item', () => {
 test('ItemHeader renders with default git host item', () => {
   const mockState = {
     selectedItem: SELECTED_ITEM_DEFAULT_GIT_HOST,
-    selectedItemDetails: SELECTED_ITEM_DETAILS,
-    setSelectedItemDetails: vi.fn(),
-    insights: undefined,
-    manifest: null,
-    activeTab: 'overview' as const,
+    activeTab: 'overview',
     setActiveTab: vi.fn(),
-  }
+    manifest: null,
+    packageScore: undefined,
+    insights: undefined,
+    author: undefined,
+    versions: undefined,
+    ...SELECTED_ITEM_DETAILS,
+  } satisfies SelectedItemStore
 
   vi.mocked(useSelectedItemStore).mockImplementation(selector =>
     selector(mockState),
@@ -244,14 +251,15 @@ test('ItemHeader renders with default git host item', () => {
 test('ItemHeader renders with a package score', () => {
   const mockState = {
     selectedItem: SELECTED_ITEM,
-    selectedItemDetails: SELECTED_ITEM_DETAILS,
-    setSelectedItemDetails: vi.fn(),
-    insights: undefined,
-    activeTab: 'overview' as const,
-    manifest: null,
+    activeTab: 'overview',
     setActiveTab: vi.fn(),
+    manifest: null,
     packageScore: MOCK_PACKAGE_SCORE,
-  }
+    insights: undefined,
+    author: undefined,
+    versions: undefined,
+    ...SELECTED_ITEM_DETAILS,
+  } satisfies SelectedItemStore
 
   vi.mocked(useSelectedItemStore).mockImplementation(selector =>
     selector(mockState),
@@ -268,13 +276,15 @@ test('ItemHeader renders with a package score', () => {
 test('ItemHeader renders with insights', () => {
   const mockState = {
     selectedItem: SELECTED_ITEM,
-    selectedItemDetails: SELECTED_ITEM_DETAILS,
-    setSelectedItemDetails: vi.fn(),
-    manifest: null,
-    insights: MOCK_INSIGHTS,
-    activeTab: 'overview' as const,
+    activeTab: 'overview',
     setActiveTab: vi.fn(),
-  }
+    manifest: null,
+    packageScore: undefined,
+    insights: MOCK_INSIGHTS,
+    author: undefined,
+    versions: undefined,
+    ...SELECTED_ITEM_DETAILS,
+  } satisfies SelectedItemStore
 
   vi.mocked(useSelectedItemStore).mockImplementation(selector =>
     selector(mockState),

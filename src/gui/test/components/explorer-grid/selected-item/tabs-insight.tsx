@@ -2,6 +2,7 @@ import { test, expect, vi, beforeEach, afterEach } from 'vitest'
 import { cleanup, render } from '@testing-library/react'
 import html from 'diffable-html'
 import { useGraphStore as useStore } from '@/state/index.js'
+import type { SelectedItemStore } from '@/components/explorer-grid/selected-item/context.jsx'
 import { useSelectedItemStore } from '@/components/explorer-grid/selected-item/context.jsx'
 import {
   InsightTabButton,
@@ -105,13 +106,12 @@ afterEach(() => {
 test('InsightTabContent renders an empty state', () => {
   const mockState = {
     selectedItem: SELECTED_ITEM,
-    selectedItemDetails: SELECTED_ITEM_DETAILS,
-    setSelectedItemDetails: vi.fn(),
+    ...SELECTED_ITEM_DETAILS,
     insights: undefined,
     manifest: null,
     activeTab: 'insights' as const,
     setActiveTab: vi.fn(),
-  }
+  } satisfies SelectedItemStore
 
   vi.mocked(useSelectedItemStore).mockImplementation(selector =>
     selector(mockState),
@@ -128,13 +128,12 @@ test('InsightTabContent renders an empty state', () => {
 test('InsightTabContent renders with insights', () => {
   const mockState = {
     selectedItem: SELECTED_ITEM,
-    selectedItemDetails: SELECTED_ITEM_DETAILS,
-    setSelectedItemDetails: vi.fn(),
+    ...SELECTED_ITEM_DETAILS,
     insights: MOCK_INSIGHTS,
     manifest: null,
     activeTab: 'insights' as const,
     setActiveTab: vi.fn(),
-  }
+  } satisfies SelectedItemStore
 
   vi.mocked(useSelectedItemStore).mockImplementation(selector =>
     selector(mockState),
@@ -151,14 +150,13 @@ test('InsightTabContent renders with insights', () => {
 test('InsightTabContent renders with no insights but a package score', () => {
   const mockState = {
     selectedItem: SELECTED_ITEM,
-    selectedItemDetails: SELECTED_ITEM_DETAILS,
-    setSelectedItemDetails: vi.fn(),
+    ...SELECTED_ITEM_DETAILS,
     manifest: null,
     insights: undefined,
     activeTab: 'insights' as const,
     packageScore: MOCK_PACKAGE_SCORE,
     setActiveTab: vi.fn(),
-  }
+  } satisfies SelectedItemStore
 
   vi.mocked(useSelectedItemStore).mockImplementation(selector =>
     selector(mockState),
@@ -175,13 +173,12 @@ test('InsightTabContent renders with no insights but a package score', () => {
 test('InsightTabButton renders default', () => {
   const mockState = {
     selectedItem: SELECTED_ITEM,
-    selectedItemDetails: SELECTED_ITEM_DETAILS,
-    setSelectedItemDetails: vi.fn(),
+    ...SELECTED_ITEM_DETAILS,
     insights: undefined,
     manifest: null,
     activeTab: 'insights' as const,
     setActiveTab: vi.fn(),
-  }
+  } satisfies SelectedItemStore
 
   vi.mocked(useSelectedItemStore).mockImplementation(selector =>
     selector(mockState),
