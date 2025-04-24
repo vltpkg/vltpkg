@@ -10,7 +10,7 @@ import type { Manifest } from '@vltpkg/types'
 import { foregroundChild } from 'foreground-child'
 import { proxySignals } from 'foreground-child/proxy-signals'
 import { statSync } from 'node:fs'
-import { delimiter, resolve } from 'node:path'
+import { delimiter, resolve, sep } from 'node:path'
 import { walkUp } from 'walk-up-path'
 
 /** map of which node_modules/.bin folders exist */
@@ -30,6 +30,8 @@ const dirExists = (p: string) => {
   }
 }
 
+const nmBin = `${sep}node_modules${sep}.bin`
+
 /**
  * Add all exsting `node_modules/.bin` folders to the PATH that
  * exist between the cwd and the projectRoot, so dependency bins
@@ -41,7 +43,15 @@ const addPaths = (
   env: NodeJS.ProcessEnv,
 ): NodeJS.ProcessEnv => {
   const { PATH = '' } = env
+  const PATHsplit = PATH.split(delimiter)
   const paths = new Set<string>()
+  // anything in the PATH that already has node_modules/.bin is a thing
+  // we put there, perhaps for the vlx exec cache usage
+  for (const p of PATHsplit) {
+    if (p.endsWith(nmBin)) {
+      paths.add(p)
+    }
+  }
   for (const p of walkUp(cwd)) {
     const dotBin = resolve(p, 'node_modules/.bin')
     if (dirExists(dotBin)) paths.add(dotBin)
