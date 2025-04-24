@@ -1,7 +1,6 @@
-import type { ChalkInstance } from 'chalk'
 import type { LoadedConfig } from './config/index.ts'
 
-export type ViewOptions = { colors?: ChalkInstance }
+export type ViewOptions = { colors?: boolean }
 
 /**
  * The base class for all View classes

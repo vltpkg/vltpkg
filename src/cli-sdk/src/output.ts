@@ -1,18 +1,45 @@
-import chalk from 'chalk'
-import { formatWithOptions } from 'node:util'
+import {
+  formatWithOptions,
+  styleText as utilStyleText,
+} from 'node:util'
 import type { InspectOptions } from 'node:util'
 import { defaultView } from './config/definition.ts'
 import type { LoadedConfig } from './config/index.ts'
 import type { Command } from './index.ts'
 import { printErr } from './print-err.ts'
-import type { View, Views } from './view.ts'
+import type { View, ViewOptions, Views } from './view.ts'
 import { isViewClass } from './view.ts'
+import { createSupportsColor } from 'supports-color'
+import type { WriteStream } from 'node:tty'
 
-// TODO: make these have log levels etc
+const supportsColor = (stream: WriteStream) => {
+  const res = createSupportsColor(stream, { sniffFlags: false })
+  if (res === false) return false
+  /* c8 ignore next */
+  return res.level > 0
+}
+
 // eslint-disable-next-line no-console
 export const stdout = (...args: unknown[]) => console.log(...args)
 // eslint-disable-next-line no-console
 export const stderr = (...args: unknown[]) => console.error(...args)
+
+type StyleTextFn = (
+  format: Parameters<typeof utilStyleText>[0],
+  s: string,
+) => string
+
+/* c8 ignore start */
+const styleText: StyleTextFn = (f, s) =>
+  // @ts-expect-error -- styleText 3rd argument is not in types/node
+  utilStyleText(f, s, { validateStream: false })
+/* c8 ignore stop */
+
+// TODO: stop exporting mutable variables once exec output is refactored
+/* c8 ignore start */
+export let styleTextStdout: StyleTextFn = (_, s) => s
+export let styleTextStderr: StyleTextFn = (_, s) => s
+/* c8 ignore stop */
 
 const identity = <T>(x: T): T => x
 
@@ -48,8 +75,9 @@ export type OnDone<T> =
  * If the view is a View class, then instantiate and start it.
  * If it's a view function, then just define the onDone method.
  */
-export const startView = <T>(
+const startView = <T>(
   conf: LoadedConfig,
+  opts: ViewOptions,
   views?: Views<T>,
   { start }: { start: number } = { start: Date.now() },
 ): {
@@ -57,10 +85,6 @@ export const startView = <T>(
   onError?: (err: unknown) => void
 } => {
   const View = getView<T>(conf, views)
-
-  const opts = {
-    colors: conf.values.color ? chalk : undefined,
-  }
 
   if (isViewClass(View)) {
     const view = new View(opts, conf)
@@ -94,18 +118,34 @@ export const outputCommand = async <T>(
   { start }: { start: number } = { start: Date.now() },
 ) => {
   const { usage, views, command } = cliCommand
-  if (conf.get('help')) {
+
+  if (conf.values.help) {
     return stdout(usage().usage())
   }
 
+  const stdoutColor =
+    conf.values.color ?? supportsColor(process.stdout)
+  const stderrColor =
+    conf.values.color ?? supportsColor(process.stderr)
+
+  /* c8 ignore start */
+  if (stdoutColor) styleTextStdout = styleText
+  if (stderrColor) styleTextStderr = styleText
+  /* c8 ignore stop */
+
   const formatOptions = {
-    colors: conf.values.color,
     depth: Infinity,
     maxArrayLength: Infinity,
     maxStringLength: Infinity,
   } as const satisfies InspectOptions
 
-  const { onDone, onError } = startView(conf, views, { start })
+  const { onDone, onError } = startView(
+    conf,
+    // assume views will always output to stdout so use color support from there
+    { colors: stdoutColor },
+    views,
+    { start },
+  )
 
   try {
     const output = await onDone(await command(conf))
@@ -113,14 +153,23 @@ export const outputCommand = async <T>(
       stdout(
         conf.values.view === 'json' ?
           JSON.stringify(output, null, 2)
-        : formatWithOptions(formatOptions, output),
+        : formatWithOptions(
+            {
+              ...formatOptions,
+              colors: stdoutColor,
+            },
+            output,
+          ),
       )
     }
   } catch (err) {
     onError?.(err)
     process.exitCode ||= 1
 
-    printErr(err, usage, stderr, formatOptions)
+    printErr(err, usage, stderr, {
+      ...formatOptions,
+      colors: stderrColor,
+    })
 
     process.exit(process.exitCode)
   }

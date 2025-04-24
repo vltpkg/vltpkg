@@ -1,29 +1,35 @@
 import t from 'tap'
 
 t.intercept(process.stdout, 'isTTY', { value: false })
+t.intercept(process.stderr, 'isTTY', { value: false })
+t.intercept(process, 'env', {
+  value: Object.fromEntries(
+    Object.entries(process.env).filter(
+      ([k]) => !['FORCE_COLOR', 'NO_COLOR'].includes(k),
+    ),
+  ),
+})
 
 import type { Jack } from 'jackspeak'
 import type { LoadedConfig } from '../src/config/index.ts'
 import type { Command } from '../src/index.ts'
-import type { ViewFn, ViewOptions, Views } from '../src/view.ts'
+import type { ViewFn, ViewOptions } from '../src/view.ts'
 import { ViewClass, isViewClass } from '../src/view.ts'
 
 // make sure these are loaded after the isTTY intercept
-const { outputCommand, startView, getView, stderr, stdout } =
-  await t.mockImport<typeof import('../src/output.ts')>(
-    '../src/output.ts',
-    {
-      '../src/print-err.ts': {
-        printErr(err: unknown) {
-          errsPrinted.push(err)
-        },
-      },
-      '../src/view.ts': {
-        ViewClass,
-        isViewClass,
-      },
+const { outputCommand, getView, stderr, stdout } = await t.mockImport<
+  typeof import('../src/output.ts')
+>('../src/output.ts', {
+  '../src/print-err.ts': {
+    printErr(err: unknown) {
+      errsPrinted.push(err)
     },
-  )
+  },
+  '../src/view.ts': {
+    ViewClass,
+    isViewClass,
+  },
+})
 
 const errsPrinted: unknown[] = []
 
@@ -65,99 +71,19 @@ t.test('getView', async t => {
   t.end()
 })
 
-t.test('startView', async t => {
-  const confJson = {
-    values: { view: 'json', color: false },
-  } as LoadedConfig
-  const confHuman = {
-    values: { view: 'human', color: true },
-  } as LoadedConfig
-  const confMermaid = {
-    values: { view: 'mermaid' },
-  } as LoadedConfig
-  const confGui = {
-    values: { view: 'gui' },
-  } as LoadedConfig
-
-  let startCalled = false
-  let doneCalled = false
-  let errCalled: unknown = false
-  class MyView extends ViewClass<true> {
-    start() {
-      startCalled = true
-    }
-    done(result: true, opts: { time: number }): undefined {
-      doneCalled = result
-      t.matchOnlyStrict(opts, { time: Number })
-    }
-    error(err: unknown) {
-      errCalled = err
-    }
-  }
-
-  const views: Views<true> = {
-    human: MyView,
-    mermaid: (x: true) => ({ underthesea: x }),
-    gui: () => {},
-  }
-
-  t.test('using view class', async t => {
-    const { onDone, onError } = startView(confHuman, views, {
-      start: 100,
-    })
-    t.equal(startCalled, true)
-    t.equal(doneCalled, false)
-    t.equal(errCalled, false)
-    await onDone(true)
-    t.equal(doneCalled, true)
-    t.equal(errCalled, false)
-    const p = new Error('poop')
-    onError?.(p)
-    t.equal(errCalled, p)
-    t.end()
-  })
-
-  t.test('using a view function for JSON', async t => {
-    const { onDone, onError } = startView(confJson, views)
-    t.equal(onError, undefined)
-    t.equal(await onDone(true), true)
-    t.equal(await onDone(undefined as unknown as true), undefined)
-    t.end()
-  })
-
-  t.test('using a view function not json', async t => {
-    const { onDone, onError } = startView(confMermaid, views)
-    t.equal(onError, undefined)
-    t.strictSame(await onDone(true), { underthesea: true })
-    t.equal(await onDone(undefined as unknown as true), undefined)
-    t.end()
-  })
-
-  t.test('using a view that returns undefined', async t => {
-    const { onDone, onError } = startView(confGui, views)
-    t.equal(onError, undefined)
-    t.equal(typeof (await onDone(true)), 'undefined')
-    t.end()
-  })
-})
-
 t.test('outputCommand', async t => {
   const confJson = {
     values: { view: 'json' },
-    get: () => false,
-  } as unknown as LoadedConfig
+  } as LoadedConfig
   const confHuman = {
     values: { view: 'human' },
-    get: () => false,
-  } as unknown as LoadedConfig
+  } as LoadedConfig
   const confInspect = {
     values: { view: 'inspect' },
-    get: () => false,
-  } as unknown as LoadedConfig
+  } as LoadedConfig
   const confHelp = {
     values: { help: true },
-    get: () => true,
-  } as unknown as LoadedConfig
+  } as LoadedConfig
 
   const cliCommand: Command<true> = {
     async command() {
@@ -186,6 +112,38 @@ t.test('outputCommand', async t => {
     const logs = t.capture(console, 'log').args
     await outputCommand(cliCommand, confHuman)
     t.strictSame(logs(), [['{ ohthehumanity: true }']])
+  })
+
+  t.test('undefined output', async t => {
+    const logs = t.capture(console, 'log').args
+    await outputCommand(
+      {
+        async command() {
+          return undefined
+        },
+        usage: () => ({ usage: () => 'usage' }) as Jack,
+        views: {
+          human: x => ({ ohthehumanity: x }),
+        },
+      },
+      confHuman,
+    )
+    t.strictSame(logs(), [])
+  })
+
+  t.test('missing view', async t => {
+    const logs = t.capture(console, 'log').args
+    await outputCommand(
+      {
+        async command() {
+          return true
+        },
+        usage: () => ({ usage: () => 'usage' }) as Jack,
+        views: {},
+      },
+      { values: {} } as LoadedConfig,
+    )
+    t.strictSame(logs(), [['true']])
   })
 
   t.test('fail output', async t => {
@@ -225,5 +183,40 @@ t.test('outputCommand', async t => {
     t.equal(process.exitCode, 1)
     t.match(sawError, new Error('asdf'))
     t.equal(errsPrinted[0], sawError, 'printed the error we saw')
+  })
+
+  t.test('view class success', async t => {
+    let startCalled = false
+    let doneCalled = false
+    let errCalled: unknown = false
+
+    class MyView extends ViewClass<true> {
+      start() {
+        startCalled = true
+      }
+      done(result: true, opts: { time: number }): undefined {
+        doneCalled = result
+        t.matchOnlyStrict(opts, { time: Number })
+      }
+      error(err: unknown) {
+        errCalled = err
+      }
+    }
+
+    const cliCommand: Command<true> = {
+      async command() {
+        return true
+      },
+      usage: () => ({ usage: () => 'usage' }) as Jack,
+      views: {
+        human: MyView,
+      },
+    }
+
+    await outputCommand(cliCommand, confHuman)
+
+    t.ok(startCalled, 'start method was called')
+    t.ok(doneCalled, 'done method was called')
+    t.notOk(errCalled, 'error method was not called')
   })
 })

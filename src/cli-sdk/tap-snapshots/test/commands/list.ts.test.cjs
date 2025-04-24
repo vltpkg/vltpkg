@@ -6,13 +6,13 @@
  */
 'use strict'
 exports[`test/commands/list.ts > TAP > list > colors > should use colors when set in human readable format 1`] = `
-[0m[33mmy-project[39m[0m
-[0m├── [33m@foo/bazz@1.0.0[39m[0m
-[0m├─┬ [33mbar@1.0.0[39m[0m
-[0m│ └─┬ [33mbaz (custom:baz@1.0.0)[39m[0m
-[0m│   └── [33m@foo/bazz@1.0.0[39m [2m(deduped)[22m[0m
-[0m└── [33mmissing@^1.0.0[39m [31m(missing)[39m[0m
-[0m[0m
+[0m[33mmy-project[39m
+├── [33m@foo/bazz@1.0.0[39m
+├─┬ [33mbar@1.0.0[39m
+│ └─┬ [33mbaz (custom:baz@1.0.0)[39m
+│   └── [33m@foo/bazz@1.0.0[39m [2m(deduped)[22m
+└── [33mmissing@^1.0.0[39m [31m(missing)[39m
+[0m
 `
 
 exports[`test/commands/list.ts > TAP > list > should have usage 1`] = `

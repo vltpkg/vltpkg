@@ -6,24 +6,24 @@
  */
 'use strict'
 exports[`test/visualization/human-readable-output.ts > TAP > actual graph > colors > should use colors 1`] = `
-[0mmy-project[0m
-[0m├── link (linked@1.0.0)[0m
-[0m├── foo@1.0.0[0m
-[0m├── extraneous@1.0.0[0m
-[0m├─┬ bar@1.0.0[0m
-[0m│ ├── blooo@1.0.0[0m
-[0m│ └── baz (custom:baz@1.0.0)[0m
-[0m├── aliased (custom:foo@1.0.0)[0m
-[0m├─┬ @scoped/b@1.0.0[0m
-[0m│ └── @scoped/c@1.0.0[0m
-[0m├── @scoped/a@1.0.0[0m
-[0m└── missing@^1.0.0 [31m(missing)[39m[0m
-[0mworkspace-b[0m
-[0mworkspace-a[0m
-[0m├── workspace-b@1.0.0 [2m(deduped)[22m[0m
-[0m├── ipsum@1.0.0[0m
-[0m└── foo@1.0.0 [2m(deduped)[22m[0m
-[0m[0m
+[0mmy-project
+├── link (linked@1.0.0)
+├── foo@1.0.0
+├── extraneous@1.0.0
+├─┬ bar@1.0.0
+│ ├── blooo@1.0.0
+│ └── baz (custom:baz@1.0.0)
+├── aliased (custom:foo@1.0.0)
+├─┬ @scoped/b@1.0.0
+│ └── @scoped/c@1.0.0
+├── @scoped/a@1.0.0
+└── missing@^1.0.0 [31m(missing)[39m
+workspace-b
+workspace-a
+├── workspace-b@1.0.0 [2m(deduped)[22m
+├── ipsum@1.0.0
+└── foo@1.0.0 [2m(deduped)[22m
+[0m
 `
 
 exports[`test/visualization/human-readable-output.ts > TAP > actual graph > selected packages > should print selected packages 1`] = `
@@ -80,9 +80,9 @@ my-project
 `
 
 exports[`test/visualization/human-readable-output.ts > TAP > missing optional > colors > should use colors 1`] = `
-[0mmy-project[0m
-[0m└── a@^1.0.0 [2m(missing optional)[22m[0m
-[0m[0m
+[0mmy-project
+└── a@^1.0.0 [2m(missing optional)[22m
+[0m
 `
 
 exports[`test/visualization/human-readable-output.ts > TAP > missing optional > should print missing optional package 1`] = `

@@ -643,35 +643,6 @@ export class Config {
   }
 
   /**
-   * Determine whether we should use colors in the output. Update
-   * chalk appropriately.
-   *
-   * Implicitly calls this.parse() if it not parsed already.
-   */
-  async loadColor(): Promise<this & LoadedConfig> {
-    const c = this.get('color')
-    const chalk = (await import('chalk')).default
-    let color: boolean
-    if (
-      process.env.NO_COLOR !== '1' &&
-      (c === true || (c === undefined && chalk.level > 0))
-    ) {
-      color = true
-      chalk.level = Math.max(chalk.level, 1) as 0 | 1 | 2 | 3
-      process.env.FORCE_COLOR = String(chalk.level)
-      delete process.env.NO_COLOR
-    } else {
-      color = false
-      chalk.level = 0
-      process.env.FORCE_COLOR = '0'
-      process.env.NO_COLOR = '1'
-    }
-    const { values = this.parse().values } = this
-    ;(values as ConfigData & { color: boolean }).color = color
-    return this as this & LoadedConfig
-  }
-
-  /**
    * cache of the loaded config
    */
   static #loaded: LoadedConfig | undefined
@@ -692,8 +663,7 @@ export class Config {
     if (this.#loaded && !reload) return this.#loaded
     const a = new Config(definition, projectRoot)
     const b = await a.loadConfigFile()
-    const c = await b.parse(argv).loadColor()
-    this.#loaded = c as LoadedConfig
+    this.#loaded = b.parse(argv) as LoadedConfig
     return this.#loaded
   }
 }
@@ -710,6 +680,4 @@ export type ParsedConfig = Config & {
 /**
  * A fully loaded {@link Config} object
  */
-export type LoadedConfig = ParsedConfig & {
-  get(k: 'color'): boolean
-}
+export type LoadedConfig = ParsedConfig

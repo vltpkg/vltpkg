@@ -5,17 +5,7 @@ import { Monorepo } from '@vltpkg/workspaces'
 import { Graph } from '../../src/graph.ts'
 import { humanReadableOutput } from '../../src/visualization/human-readable-output.ts'
 import { loadActualGraph } from '../fixtures/actual.ts'
-import chalk from 'chalk'
-import type { ChalkInstance } from 'chalk'
 import { joinDepIDTuple } from '@vltpkg/dep-id'
-chalk.level = 1
-
-const colors = {
-  dim: (s: string) => s,
-  red: (s: string) => s,
-  reset: (s: string) => s,
-  yellow: (s: string) => s,
-} as ChalkInstance
 
 const configData = {
   registry: 'https://registry.npmjs.org/',
@@ -113,7 +103,7 @@ t.test('human-readable-output', async t => {
         importers: graph.importers,
         nodes: [...graph.nodes.values()],
       },
-      { colors: undefined },
+      {},
     ),
     'should print human readable output',
   )
@@ -129,7 +119,7 @@ t.test('actual graph', async t => {
         importers: graph.importers,
         nodes: [...graph.nodes.values()],
       },
-      { colors },
+      {},
     ),
     'should print from an actual loaded graph',
   )
@@ -149,7 +139,7 @@ t.test('actual graph', async t => {
           importers: graph.importers,
           nodes,
         },
-        { colors },
+        {},
       ),
       'should print selected packages',
     )
@@ -164,7 +154,7 @@ t.test('actual graph', async t => {
           importers: graph.importers,
           nodes: [...graph.nodes.values()],
         },
-        { colors: chalk },
+        { colors: true },
       ),
       'should use colors',
     )
@@ -211,7 +201,7 @@ t.test('workspaces', async t => {
         importers: graph.importers,
         nodes: [...graph.nodes.values()],
       },
-      { colors },
+      {},
     ),
     'should print human readable workspaces output',
   )
@@ -263,7 +253,7 @@ t.test('cycle', async t => {
         importers: graph.importers,
         nodes: [...graph.nodes.values()],
       },
-      { colors },
+      {},
     ),
     'should print cycle human readable output',
   )
@@ -283,7 +273,7 @@ t.test('nameless package', async t => {
         importers: graph.importers,
         nodes: [...graph.nodes.values()],
       },
-      { colors },
+      {},
     ),
     'should fallback to printing package id if name is missing',
   )
@@ -315,7 +305,7 @@ t.test('versionless package', async t => {
         importers: graph.importers,
         nodes: [...graph.nodes.values()],
       },
-      { colors },
+      {},
     ),
     'should skip printing version number',
   )
@@ -347,7 +337,7 @@ t.test('aliased package', async t => {
         importers: graph.importers,
         nodes: [...graph.nodes.values()],
       },
-      { colors },
+      {},
     ),
     'should print both edge and node names',
   )
@@ -378,7 +368,7 @@ t.test('missing optional', async t => {
         importers: graph.importers,
         nodes: [...graph.nodes.values()],
       },
-      { colors },
+      {},
     ),
     'should print missing optional package',
   )
@@ -392,7 +382,7 @@ t.test('missing optional', async t => {
           importers: graph.importers,
           nodes: [...graph.nodes.values()],
         },
-        { colors: chalk },
+        { colors: true },
       ),
       'should use colors',
     )

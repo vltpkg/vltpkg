@@ -1,7 +1,7 @@
 import { spawnSync } from 'node:child_process'
 import { readFileSync } from 'node:fs'
 import { join, relative, resolve } from 'node:path'
-import chalk from 'chalk'
+import { styleText } from 'node:util'
 
 const summary = resolve(
   import.meta.dirname,
@@ -32,9 +32,18 @@ for (const [path, result] of Object.entries(execStatus())) {
   console.log(
     [
       '',
-      chalk.black.bold.bgWhiteBright('='.repeat(length)),
-      chalk.black.bold.bgWhiteBright(title.padEnd(length, ' ')),
-      chalk.black.bold.bgWhiteBright('='.repeat(length)),
+      styleText(
+        ['black', 'bold', 'bgWhiteBright'],
+        '='.repeat(length),
+      ),
+      styleText(
+        ['black', 'bold', 'bgWhiteBright'],
+        title.padEnd(length, ' '),
+      ),
+      styleText(
+        ['black', 'bold', 'bgWhiteBright'],
+        '='.repeat(length),
+      ),
     ].join('\n'),
   )
 
