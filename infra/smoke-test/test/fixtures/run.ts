@@ -149,7 +149,7 @@ const spawnCommand = async (
     bin = 'vlt',
     tty = false,
     timeout,
-    shell,
+    // shell,
     cleanOutput = v => v,
     onOutput,
   }: SpawnCommandOptions,
@@ -241,7 +241,7 @@ const spawnCommand = async (
         windowsHide: true,
         env: spawnEnv,
         timeout,
-        shell,
+        shell: true,
       })
       const kill = (s: NodeJS.Signals = 'SIGTERM') => {
         const result = proc.kill(s)

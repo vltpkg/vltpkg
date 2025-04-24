@@ -110,7 +110,7 @@ const installPacked = (
 t.test('works by default', async t => {
   const v = installPacked(t)
   t.test('node_modules/.bin', async t => {
-    const res = await runVariant(v, t, ['--version'])
+    const res = await runVariant(v, t, ['--version'], { shell: true })
     t.equal(res.status, 0)
     t.equal(res.stdout, Cli.version)
   })
