@@ -119,7 +119,7 @@ t.test('works by default', async t => {
 t.test('fails with --ignore-scripts', async t => {
   const v = installPacked(t, ['--ignore-scripts'])
   t.test('node_modules/.bin', async t => {
-    const res = await runVariant(v, t, ['--version'])
+    const res = await runVariant(v, t, ['--version'], { shell: true })
     t.ok(typeof res.status === 'number' && res.status > 0)
   })
 })
