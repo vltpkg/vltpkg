@@ -126,7 +126,10 @@ const ExplorerContent = () => {
         window.scrollTo(0, 0)
       }
     }
-    void updateQueryData().catch(() => {})
+    void updateQueryData().catch(() => {
+      updateEdges([])
+      updateNodes([])
+    })
   }, [query, q])
 
   // avoids flash of content
