@@ -1,9 +1,9 @@
 import t from 'tap'
 
 import type { RollbackRemove } from '@vltpkg/rollback-remove'
-import { renameSync, rmSync, symlinkSync } from 'fs'
+import { renameSync, rmSync, symlinkSync } from 'node:fs'
 import { join } from 'node:path'
-import { fileURLToPath } from 'url'
+import { fileURLToPath } from 'node:url'
 import { cmdShim } from '../src/index.ts'
 const {
   findCmdShim,
