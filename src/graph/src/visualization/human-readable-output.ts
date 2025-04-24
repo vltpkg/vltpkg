@@ -1,6 +1,14 @@
 import { splitDepID } from '@vltpkg/dep-id'
 import type { EdgeLike, NodeLike } from '../types.ts'
-import type { ChalkInstance } from 'chalk'
+import { styleText as utilStyleText } from 'node:util'
+
+const styleText = (
+  format: Parameters<typeof utilStyleText>[0],
+  s: string,
+) => {
+  // @ts-expect-error -- styleText 3rd argument is not in types/node
+  return utilStyleText(format, s, { validateStream: false })
+}
 
 const chars = new Map(
   Object.entries({
@@ -97,16 +105,16 @@ const getTreeItems = (
  */
 export function humanReadableOutput(
   options: HumanReadableOutputGraph,
-  { colors }: { colors?: ChalkInstance },
+  { colors }: { colors?: boolean },
 ) {
   const { importers } = options
-  const noop = (s?: string | null) => s
-  const {
-    dim = noop,
-    red = noop,
-    reset = noop,
-    yellow = noop,
-  } = colors ?? {}
+  const createStyleText =
+    (style: Parameters<typeof styleText>[0]) => (s: string) =>
+      colors ? styleText(style, s) : s
+  const dim = createStyleText('dim')
+  const red = createStyleText('red')
+  const reset = createStyleText('reset')
+  const yellow = createStyleText('yellow')
   const initialItems = new Set<TreeItem>()
   for (const importer of importers) {
     initialItems.add({
@@ -132,7 +140,8 @@ export function humanReadableOutput(
     const decoratedName =
       (
         options.highlightSelection &&
-        isSelected(options, item.edge, item.node)
+        isSelected(options, item.edge, item.node) &&
+        name
       ) ?
         yellow(name)
       : name
