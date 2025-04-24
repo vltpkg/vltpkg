@@ -1,16 +1,16 @@
+import type { WriteStream } from 'node:tty'
+import type { InspectOptions } from 'node:util'
 import {
   formatWithOptions,
   styleText as utilStyleText,
 } from 'node:util'
-import type { InspectOptions } from 'node:util'
+import { createSupportsColor } from 'supports-color'
 import { defaultView } from './config/definition.ts'
 import type { LoadedConfig } from './config/index.ts'
 import type { Command } from './index.ts'
 import { printErr } from './print-err.ts'
 import type { View, ViewOptions, Views } from './view.ts'
 import { isViewClass } from './view.ts'
-import { createSupportsColor } from 'supports-color'
-import type { WriteStream } from 'node:tty'
 
 const supportsColor = (stream: WriteStream) => {
   const res = createSupportsColor(stream, { sniffFlags: false })
@@ -60,7 +60,11 @@ export const getView = <T>(
   // missing. We also always treat 'json' as a valid view that falls back to
   // identity. This allows the explicit use of `--view=json` to work even
   // when the default view is `human`.
-  if (!viewFn && viewName !== 'json' && viewName !== defaultView) {
+  if (
+    !viewFn &&
+    conf.values.view !== defaultView &&
+    conf.values.view !== 'json'
+  ) {
     conf.values.view = defaultView
     process.env.VLT_VIEW = defaultView
     return getView(conf, views)

@@ -40,7 +40,7 @@ t.test('run script in a project', async t => {
     signal: null,
     pre: undefined,
   })
-  t.strictSame(logs(), [[result]])
+  t.strictSame(logs(), [])
   t.strictSame(errs(), [])
 })
 
@@ -79,7 +79,7 @@ t.test('run script in a single workspace', async t => {
     signal: null,
     pre: undefined,
   })
-  t.strictSame(logs(), [[result]])
+  t.strictSame(logs(), [])
   t.strictSame(errs(), [])
 })
 
@@ -107,6 +107,7 @@ t.test('run script across several workspaces', async t => {
   >('../../src/config/index.ts')
   const conf = await Config.load(t.testdirName, ['echo', 'ok'])
   conf.values.workspace = ['src/a', 'src/b']
+  conf.values.view = 'human'
   conf.projectRoot = dir
   const logs = t.capture(console, 'log').args
   const errs = t.capture(console, 'error').args
@@ -139,8 +140,5 @@ t.test('run script across several workspaces', async t => {
       ['src/b', 'ok'],
     ]),
   )
-  t.strictSame(
-    new Set(errs()),
-    new Set([['src/b echo'], ['src/a echo']]),
-  )
+  t.strictSame(new Set(errs()), new Set())
 })

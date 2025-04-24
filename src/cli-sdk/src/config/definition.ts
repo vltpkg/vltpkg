@@ -22,6 +22,7 @@ const canonicalCommands = {
   run: 'run',
   token: 'token',
   uninstall: 'uninstall',
+  'exec-cache': 'exec-cache',
   whoami: 'whoami',
 } as const
 
@@ -39,6 +40,7 @@ const aliases = {
   '?': 'help',
   conf: 'config',
   ls: 'list',
+  xc: 'exec-cache',
 } as const
 
 /**
@@ -537,20 +539,6 @@ export const definition = j
     },
   })
 
-  .flag({
-    version: {
-      short: 'v',
-      description: 'Print the version',
-    },
-  })
-
-  .flag({
-    help: {
-      short: 'h',
-      description: 'Print helpful information',
-    },
-  })
-
   .opt({
     'expect-results': {
       hint: 'value',
@@ -564,5 +552,20 @@ export const definition = j
                     Strings starting with \`>\`, \`<\`, \`>=\` or \`<=\`
                     followed by a number can be used to check if the result
                     is greater than or less than a specific number.`,
+    },
+  })
+
+  .flag({
+    yes: {
+      short: 'y',
+      description: `Automatically accept any confirmation prompts`,
+    },
+    version: {
+      short: 'v',
+      description: 'Print the version',
+    },
+    help: {
+      short: 'h',
+      description: 'Print helpful information',
     },
   })
