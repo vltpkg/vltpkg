@@ -15,6 +15,7 @@ import {
 } from './fixtures/selector.ts'
 import type { TestCase } from './fixtures/types.ts'
 import type { GraphSelectionState } from '../src/types.ts'
+import { joinDepIDTuple } from '@vltpkg/dep-id'
 
 const testPseudo = selectorFixture(pseudo)
 
@@ -35,9 +36,9 @@ t.test('pseudo', async t => {
     [':root', all, ['my-project']], // from initial nodes
     [':root', empty, ['my-project']], // from empty nodes
     [':root', b, ['my-project']], // from diff node
-    [':project', all, ['my-project']], // no workspaces in graph
-    [':project', empty, ['my-project']], // from empty nodes
-    [':project', b, ['my-project']], // from diff node
+    [':project /*all*/', all, ['my-project']], // no workspaces in graph
+    [':project /*empty*/', empty, []], // from empty nodes
+    [':project /*b*/', b, []], // from diff node
     [
       ':scope',
       all,
@@ -182,16 +183,21 @@ t.test('pseudo', async t => {
       edges: new Set(wsGraph.edges),
       nodes: new Set(wsGraph.nodes.values()),
     }
-    const w = getGraphSelectionState(wsGraph, 'w')
+    const w: GraphSelectionState = {
+      edges: new Set(),
+      nodes: new Set([
+        wsGraph.nodes.get(joinDepIDTuple(['workspace', 'w']))!,
+      ]),
+    }
     const empty: GraphSelectionState = {
       edges: new Set(),
       nodes: new Set(),
     }
     const queryToExpected = new Set<TestCase>([
       [':root', all, ['ws']], // root
-      [':project', all, ['ws', 'w']], // project = root & workspaces
-      [':project', empty, ['ws', 'w']], // from empty nodes
-      [':project', w, ['ws', 'w']], // from single node
+      [':project /*all*/', all, ['ws', 'w']], // project = root & workspaces
+      [':project /*empty*/', empty, []], // from empty nodes
+      [':project /*w*/', w, ['w']], // from single node
       [':empty', all, ['ws', 'w']], // deps with no deps
       [':is(:workspace, :root)', all, ['ws', 'w']],
       [':is(:workspace, :root)', empty, []],
@@ -367,12 +373,6 @@ t.test('pseudo', async t => {
   })
 
   await t.test('missing importers info on nodes', async t => {
-    await t.rejects(
-      testPseudo(':project'),
-      /:project pseudo-element works on local graphs only/,
-      'should throw an local-graph-only error',
-    )
-
     await t.rejects(
       testPseudo(':root'),
       /:root pseudo-element works on local graphs only/,
