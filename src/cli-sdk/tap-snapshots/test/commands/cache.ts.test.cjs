@@ -32,6 +32,14 @@ Show cache entries. If no keys are provided, then a list of available keys will 
 vlt cache ls [<key>...]
 \`\`\`
 
+### info
+
+Print metadata details for the specified cache key to stderr, and the response body to stdout.
+
+\`\`\`
+vlt cache info <key>
+\`\`\`
+
 ### clean
 
 Purge expired cache entries. If one or more keys are provided, then only those cache entries will be considered.
@@ -62,6 +70,32 @@ Delete the entire cache folder to make vlt slower.
 
 \`\`\`
 vlt cache delete-all
+\`\`\`
+
+## Examples
+
+Show cache metadata for a given registry URL
+
+\`\`\`
+vlt cache vlt cache ls https://registry.npmjs.org/typescript
+\`\`\`
+
+Add a given package specifier to the cache by fetching its resolved value.
+
+\`\`\`
+vlt cache vlt cache add eslint@latest
+\`\`\`
+
+Print the cache metadata to stderr, and write the tarball on stdout, redirecting to a file.
+
+\`\`\`
+vlt cache vlt cache info https://registry.npmjs.org/eslint/-/eslint-9.25.1.tgz > eslint.tgz
+\`\`\`
+
+Delete all entries created before Jan 1, 2025
+
+\`\`\`
+vlt cache vlt cache delete-before 2025-01-01
 \`\`\`
 
 `
@@ -118,6 +152,31 @@ Array [
   Array [
     "hello",
     "world",
+  ],
+]
+`
+
+exports[`test/commands/cache.ts > TAP > logged by info 1`] = `
+Array [
+  Array [
+    String(
+      {
+        "name": "xyz",
+        "dist-tags": {
+          "latest": "1.2.3"
+        },
+        "versions": {
+          "1.2.3": {
+            "name": "xyz",
+            "version": "1.2.3",
+            "dist": {
+              "tarball": "https://registry.npmjs.org/xyz/-/xyz-1.2.3.tgz",
+              "integrity": "sha512-Sj7YFH43h2rcj3Yyjlq8wbRw5qz8GO/qATX5g2BJU6WOGDwaYIbpG6PoIdkm9f3rN3YcfKAyipY/XpKHBnW3KA=="
+            }
+          }
+        }
+      }
+    ),
   ],
 ]
 `

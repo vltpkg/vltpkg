@@ -7,7 +7,7 @@ import type { LoadedConfig } from '../config/index.ts'
 import type { CommandUsageDefinition } from '../config/usage.ts'
 import { commandUsage } from '../config/usage.ts'
 import type { CommandFn, CommandUsage } from '../index.ts'
-import { stdout } from '../output.ts'
+import { stderr, stdout } from '../output.ts'
 import type { ViewOptions, Views } from '../view.ts'
 import { ViewClass } from '../view.ts'
 
@@ -53,6 +53,12 @@ const usageDef = {
                     items.`,
     },
 
+    info: {
+      usage: '<key>',
+      description: `Print metadata details for the specified cache key to
+                    stderr, and the response body to stdout.`,
+    },
+
     clean: {
       usage: '[<key>...]',
       description: `Purge expired cache entries. If one or more keys are
@@ -78,6 +84,23 @@ const usageDef = {
       description: `Delete the entire cache folder to make vlt slower.`,
     },
   },
+  examples: {
+    'vlt cache ls https://registry.npmjs.org/typescript': {
+      description: `Show cache metadata for a given registry URL`,
+    },
+    'vlt cache add eslint@latest': {
+      description: `Add a given package specifier to the cache by fetching
+                    its resolved value.`,
+    },
+    'vlt cache info https://registry.npmjs.org/eslint/-/eslint-9.25.1.tgz > eslint.tgz':
+      {
+        description: `Print the cache metadata to stderr, and write the tarball
+                    on stdout, redirecting to a file.`,
+      },
+    'vlt cache delete-before 2025-01-01': {
+      description: 'Delete all entries created before Jan 1, 2025',
+    },
+  },
 } as const satisfies CommandUsageDefinition
 
 export const usage: CommandUsage = () => commandUsage(usageDef)
@@ -87,6 +110,9 @@ export const command: CommandFn<void | CacheMap> = async conf => {
   switch (sub) {
     case 'ls':
       return ls(conf, args, view)
+
+    case 'info':
+      return info(conf, args, view)
 
     case 'add':
       return add(conf, args, view)
@@ -107,7 +133,7 @@ export const command: CommandFn<void | CacheMap> = async conf => {
       throw error('Unrecognized cache command', {
         code: 'EUSAGE',
         found: sub,
-        validOptions: ['ls', 'add', 'clean'],
+        validOptions: Object.keys(usageDef.subcommands),
       })
     }
   }
@@ -135,6 +161,39 @@ const ls = async (
       view?.stdout(key.includes(' ') ? JSON.stringify(key) : key)
       return true
     })
+
+const info = async (
+  conf: LoadedConfig,
+  keys: string[],
+  view?: CacheView,
+): Promise<void> => {
+  const [key] = keys
+  if (keys.length !== 1 || !key) {
+    throw error('Must provide exactly one cache key', {
+      code: 'EUSAGE',
+    })
+  }
+  await fetchKeys(
+    conf,
+    [key],
+    (entry: CacheEntry, key: string) => {
+      stderr(
+        /* c8 ignore next */
+        key.includes(' ') ? JSON.stringify(key) : key,
+        entry,
+      )
+      if (entry.isJSON) {
+        stdout(JSON.stringify(entry.body, null, 2))
+        /* c8 ignore start - annoying to test, corrupts TAP output */
+      } else {
+        process.stdout.write(entry.body as Buffer)
+      }
+      /* c8 ignore stop */
+      return true
+    },
+    view,
+  )
+}
 
 const fetchAll = async (
   conf: LoadedConfig,
