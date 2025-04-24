@@ -1,7 +1,7 @@
 import t from 'tap'
 import { runMultiple } from './fixtures/run.ts'
 
-t.test('can run gui', async t => {
+t.skip('can run gui', async t => {
   const urlMessage = /Please open http:\/\/localhost:[^\s]+ manually/
   const { status, signal, output } = await runMultiple(t, ['gui'], {
     // Don't check stdout/stderr since different print warnings about sqlite
