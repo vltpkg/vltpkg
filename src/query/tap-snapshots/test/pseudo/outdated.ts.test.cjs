@@ -21,6 +21,27 @@ Array [
 ]
 `
 
+exports[`test/pseudo/outdated.ts > TAP > select from outdated definition > outdated as an element > must match snapshot 1`] = `
+Object {
+  "edges": Array [
+    "a",
+    "c",
+    "d",
+    "e",
+    "g",
+    "e",
+  ],
+  "nodes": Array [
+    "a",
+    "c",
+    "d",
+    "e",
+    "g",
+    "e",
+  ],
+}
+`
+
 exports[`test/pseudo/outdated.ts > TAP > select from outdated definition > outdated kind any > must match snapshot 1`] = `
 Object {
   "edges": Array [
