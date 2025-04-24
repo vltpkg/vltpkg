@@ -1,9 +1,9 @@
 /**
- * Implementation shared between `vlt run`, `vlt run-exec`, and `vlt exec`
+ * impl for `vlt run`, `vlt run-exec`, `vlt exec-local`, `vlt exec`
+ * @module
  */
 
 import { error, isErrorWithCause } from '@vltpkg/error-cause'
-import { isRunResult } from '@vltpkg/run'
 import type {
   exec,
   execFG,
@@ -13,23 +13,73 @@ import type {
   runExecFG,
   RunExecOptions,
   runFG,
+  RunFGResult,
   RunOptions,
   RunResult,
 } from '@vltpkg/run'
-import { Monorepo } from '@vltpkg/workspaces'
+import { isRunResult } from '@vltpkg/run'
 import type { Workspace } from '@vltpkg/workspaces'
+import { Monorepo } from '@vltpkg/workspaces'
 import { ansiToAnsi } from 'ansi-to-pre'
 import type { LoadedConfig } from './config/index.ts'
-import { stdout, stderr, styleTextStdout } from './output.ts'
-import type { SpawnResultNoStdio } from '@vltpkg/promise-spawn'
+import { stderr, stdout, styleTextStdout } from './output.ts'
+import type { Views } from './view.ts'
 
 export type RunnerBG = typeof exec | typeof run | typeof runExec
 export type RunnerFG = typeof execFG | typeof runExecFG | typeof runFG
 export type RunnerOptions = ExecOptions & RunExecOptions & RunOptions
+export type MultiRunResult = Record<string, RunResult>
+export type ScriptSet = Record<string, string>
+export type MultiScriptSet = Record<string, ScriptSet>
 export type ExecResult =
-  | undefined
-  | SpawnResultNoStdio
-  | Record<string, RunResult>
+  | RunFGResult
+  | MultiRunResult
+  | ScriptSet
+  | MultiScriptSet
+
+const isScriptSet = (o: unknown): o is ScriptSet => {
+  if (!o || typeof o !== 'object') return false
+  for (const v of Object.values(o)) {
+    if (typeof v !== 'string') return false
+  }
+  return true
+}
+
+const isMultiScriptSet = (
+  o: ExecResult,
+): o is Record<string, ScriptSet> => {
+  for (const v of Object.values(o)) {
+    if (!isScriptSet(v)) return false
+  }
+  return true
+}
+
+const isSingleSuccess = (
+  o: RunResult,
+): o is RunResult & { status: 0; signal: null } =>
+  o.signal === null && o.status === 0
+
+const setExitCode = (result: RunResult) => {
+  /* c8 ignore next */
+  process.exitCode = process.exitCode || (result.status ?? 1)
+}
+
+export const views = {
+  // run results for single or multiple will be printed along the way.
+  human: result => {
+    if (isScriptSet(result)) stdout('Scripts available:', result)
+    else if (isMultiScriptSet(result)) {
+      stdout('Scripts available:')
+      for (const [wsPath, scripts] of Object.entries(result)) {
+        stdout(wsPath, scripts)
+      }
+    }
+  },
+  json: result =>
+    isRunResult(result) && isSingleSuccess(result) ?
+      undefined
+    : result,
+} as const satisfies Views<ExecResult>
 
 export class ExecCommand<B extends RunnerBG, F extends RunnerFG> {
   bg: B
@@ -41,11 +91,16 @@ export class ExecCommand<B extends RunnerBG, F extends RunnerFG> {
   spaces: number
   conf: LoadedConfig
   projectRoot: string
+  view: 'human' | 'json' | 'inspect'
 
   constructor(conf: LoadedConfig, bg: B, fg: F) {
     this.conf = conf
     this.bg = bg
     this.fg = fg
+    this.view =
+      conf.values.view === 'json' ? 'json'
+      : conf.values.view === 'inspect' ? 'inspect'
+      : 'human'
     const {
       projectRoot,
       positionals: [arg0, ...args],
@@ -64,33 +119,38 @@ export class ExecCommand<B extends RunnerBG, F extends RunnerFG> {
     this.projectRoot = projectRoot
   }
 
+  hasMonorepo(): this is this & { monorepo: Monorepo } {
+    return !!this.monorepo
+  }
+
+  hasArg0(): this is this & { arg0: string } {
+    return !!this.arg0
+  }
+
   async run(): Promise<ExecResult> {
     if (this.spaces === 1) {
       const arg = this.fgArg()
-      if (!arg) return
+      if (!arg) return this.noArgsSingle()
       const result = await this.fg(arg)
-      stdout(result)
       if (isRunResult(result)) {
-        this.setExitCode(result)
+        setExitCode(result)
       }
       return result
     }
-    const m = this.monorepo
-    if (!m || this.spaces === 0) {
+    if (!this.hasMonorepo() || this.spaces === 0) {
       throw error('no matching workspaces found', {
         /* c8 ignore next - already guarded */
         validOptions: [...(this.monorepo?.load().paths() ?? [])],
       })
     }
-    const arg0 = this.arg0
-    if (!arg0) {
-      this.noArgsMulti()
-      return
+
+    if (!this.hasArg0()) {
+      return this.noArgsMulti()
     }
+
     // run across workspaces
     let failed = false
-    const resultMap = await m.run(async ws => {
-      if (!failed) stderr(`${ws.path} ${arg0}`)
+    const resultMap = await this.monorepo.run(async ws => {
       const result = await this.bg(this.bgArg(ws)).catch(
         (er: unknown) => {
           if (isErrorWithCause(er) && isRunResult(er.cause)) {
@@ -116,6 +176,9 @@ export class ExecCommand<B extends RunnerBG, F extends RunnerFG> {
   }
 
   printResult(ws: Workspace, result: RunResult) {
+    // non-human results just get printed at the end
+    if (this.view !== 'human') return
+
     if (result.status === 0 && result.signal === null) {
       stdout(ws.path, 'ok')
     } else {
@@ -133,13 +196,8 @@ export class ExecCommand<B extends RunnerBG, F extends RunnerFG> {
       if (result.stderr) stderr(ansiToAnsi(result.stderr))
       if (result.stdout) stdout(ansiToAnsi(result.stdout))
       /* c8 ignore stop */
-      this.setExitCode(result)
+      setExitCode(result)
     }
-  }
-
-  setExitCode(result: RunResult) {
-    /* c8 ignore next */
-    process.exitCode = process.exitCode || (result.status ?? 1)
   }
 
   /* c8 ignore start - env specific */
@@ -152,7 +210,7 @@ export class ExecCommand<B extends RunnerBG, F extends RunnerFG> {
   }
   /* c8 ignore stop */
 
-  // overridden by 'vlt run' to print options and return undefined
+  // overridden by 'vlt run' which returns undefined
   defaultArg0(): string | undefined {
     return this.interactiveShell()
   }
@@ -161,9 +219,9 @@ export class ExecCommand<B extends RunnerBG, F extends RunnerFG> {
     const ws = this.monorepo?.values().next().value
     const cwd = ws?.fullpath ?? this.projectRoot
     const arg0 = this.arg0 ?? this.defaultArg0()
-    if (!arg0) {
-      return undefined
-    }
+
+    // return undefined so noArgsSingle will be called instead
+    if (typeof arg0 !== 'string') return
 
     return {
       cwd,
@@ -177,15 +235,7 @@ export class ExecCommand<B extends RunnerBG, F extends RunnerFG> {
     }
   }
 
-  /** If this returns undefined, then nothing to do */
-  bgArg(ws: Workspace): RunnerOptions {
-    /* c8 ignore start - already guarded */
-    if (!this.arg0)
-      throw error(
-        'Cannot spawn interactive shells in multiple workspaces',
-      )
-    /* c8 ignore stop */
-
+  bgArg(this: this & { arg0: string }, ws: Workspace): RunnerOptions {
     return {
       cwd: ws.fullpath,
       acceptFail: !this.conf.get('bail'),
@@ -198,8 +248,13 @@ export class ExecCommand<B extends RunnerBG, F extends RunnerFG> {
     }
   }
 
-  // overridden in `vlt run` to print available scripts
-  noArgsMulti() {
+  /* c8 ignore start - not used, only here to override */
+  noArgsSingle(): ScriptSet {
+    throw error('Failed to determine interactive shell to spawn')
+  }
+  /* c8 ignore stop - not used, only here to override */
+
+  noArgsMulti(this: this & { monorepo: Monorepo }): MultiScriptSet {
     throw error(
       'Cannot spawn interactive shells in multiple workspaces',
     )
