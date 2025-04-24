@@ -13,6 +13,7 @@ Object {
   "conf": "config",
   "config": "config",
   "exec": "exec",
+  "exec-cache": "exec-cache",
   "exec-local": "exec-local",
   "gui": "gui",
   "h": "help",
@@ -37,6 +38,7 @@ Object {
   "uninstall": "uninstall",
   "whoami": "whoami",
   "x": "exec",
+  "xc": "exec-cache",
   "xl": "exec-local",
 }
 `
@@ -136,6 +138,7 @@ Object {
       "run",
       "token",
       "uninstall",
+      "exec-cache",
       "whoami",
     ],
   },
@@ -383,6 +386,11 @@ Object {
     "multiple": true,
     "short": "g",
     "type": "string",
+  },
+  "yes": Object {
+    "description": "Automatically accept any confirmation prompts",
+    "short": "y",
+    "type": "boolean",
   },
 }
 `

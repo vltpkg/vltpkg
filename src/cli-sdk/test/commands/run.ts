@@ -1,7 +1,7 @@
 import { joinDepIDTuple } from '@vltpkg/dep-id'
 import { resolve } from 'node:path'
 import t from 'tap'
-import { command, usage } from '../../src/commands/run.ts'
+import { command, usage, views } from '../../src/commands/run.ts'
 import { setupEnv } from '../fixtures/util.ts'
 
 setupEnv(t)
@@ -42,7 +42,7 @@ t.test('run script in a project', async t => {
     signal: null,
     pre: undefined,
   })
-  t.strictSame(logs(), [[result]])
+  t.strictSame(logs(), [])
   t.strictSame(errs(), [])
 })
 
@@ -81,7 +81,7 @@ t.test('run script in a single workspace', async t => {
     signal: null,
     pre: undefined,
   })
-  t.strictSame(logs(), [[result]])
+  t.strictSame(logs(), [])
   t.strictSame(errs(), [])
 })
 
@@ -113,6 +113,7 @@ t.test('run script across several workspaces', async t => {
   >('../../src/config/index.ts')
   const conf = await Config.load(t.testdirName, ['hello'])
   conf.values.workspace = ['src/a', 'src/b']
+  conf.values.view = 'human'
   conf.projectRoot = dir
   const logs = t.capture(console, 'log').args
   const errs = t.capture(console, 'error').args
@@ -146,10 +147,7 @@ t.test('run script across several workspaces', async t => {
       ['src/b', 'ok'],
     ]),
   )
-  t.strictSame(
-    new Set(errs()),
-    new Set([['src/b hello'], ['src/a hello']]),
-  )
+  t.strictSame(new Set(errs()), new Set())
 })
 
 t.test('run script across no workspaces', async t => {
@@ -225,6 +223,7 @@ t.test('one ws fails, with bail', async t => {
   >('../../src/config/index.ts')
   const conf = await Config.load(t.testdirName, ['hello'])
   conf.values['workspace-group'] = ['packages']
+  conf.values.view = 'human'
   conf.projectRoot = dir
   const logs = t.capture(console, 'log').args
   const errs = t.capture(console, 'error').args
@@ -270,10 +269,7 @@ t.test('one ws fails, with bail', async t => {
       ],
     ]),
   )
-  t.strictSame(
-    new Set(errs()),
-    new Set([['src/b hello'], ['src/a hello']]),
-  )
+  t.strictSame(new Set(errs()), new Set())
   t.equal(process.exitCode, exitCode || 1)
   process.exitCode = exitCode
 })
@@ -306,6 +302,7 @@ t.test('one ws fails, without bail', async t => {
   >('../../src/config/index.ts')
   const conf = await Config.load(t.testdirName, ['hello'])
   conf.values.bail = false
+  conf.values.view = 'human'
   conf.values.recursive = true
   conf.projectRoot = dir
   const logs = t.capture(console, 'log').args
@@ -344,10 +341,7 @@ t.test('one ws fails, without bail', async t => {
       ],
     ]),
   )
-  t.strictSame(
-    new Set(errs()),
-    new Set([['src/b hello'], ['src/a hello']]),
-  )
+  t.strictSame(new Set(errs()), new Set())
   t.equal(process.exitCode, exitCode || 1)
   process.exitCode = exitCode
 })
@@ -370,14 +364,15 @@ t.test('show scripts if no event specified', async t => {
   conf.projectRoot = dir
   conf.values.recursive = false
   conf.values.workspace = undefined
+  conf.values.view = 'human'
   conf.values['workspace-group'] = undefined
   const logs = t.capture(console, 'log').args
   const errs = t.capture(console, 'error').args
   const result = await command(conf)
-  t.equal(result, undefined)
-  t.strictSame(logs(), [
-    ['Scripts available:', { hello: 'node -e "process.exit(0)"' }],
-  ])
+  t.strictSame(result, {
+    hello: 'node -e "process.exit(0)"',
+  })
+  t.strictSame(logs(), [])
   t.strictSame(errs(), [])
 })
 
@@ -407,7 +402,11 @@ t.test('show scripts if no event specified, single ws', async t => {
   const logs = t.capture(console, 'log').args
   const errs = t.capture(console, 'error').args
   const result = await command(conf)
-  t.equal(result, undefined)
+  t.strictSame(result, {
+    hello: 'node -e "process.exit(0)"',
+  })
+  t.strictSame(logs(), [])
+  views.human(result)
   t.strictSame(logs(), [
     ['Scripts available:', { hello: 'node -e "process.exit(0)"' }],
   ])
@@ -442,11 +441,17 @@ t.test('show scripts across several workspaces', async t => {
   >('../../src/config/index.ts')
   const conf = await Config.load(t.testdirName, [])
   conf.values.workspace = ['src/a', 'src/b']
+  conf.values.view = 'human'
   conf.projectRoot = dir
   const logs = t.capture(console, 'log').args
   const errs = t.capture(console, 'error').args
   const result = await command(conf)
-  t.strictSame(result, undefined)
+  t.strictSame(result, {
+    'src/b': { hello: 'node -e "process.exit(0)"' },
+    'src/a': { hello: 'node -e "process.exit(0)"' },
+  })
+  t.strictSame(logs(), [])
+  views.human(result)
   t.strictSame(
     new Set(logs()),
     new Set([
