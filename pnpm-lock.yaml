@@ -1983,6 +1983,73 @@ importers:
         specifier: 'catalog:'
         version: 8.30.1(eslint@9.25.0(jiti@2.4.2))(typescript@5.7.3)
 
+  src/vlx:
+    dependencies:
+      '@vltpkg/cmd-shim':
+        specifier: workspace:*
+        version: link:../cmd-shim
+      '@vltpkg/error-cause':
+        specifier: workspace:*
+        version: link:../error-cause
+      '@vltpkg/graph':
+        specifier: workspace:*
+        version: link:../graph
+      '@vltpkg/package-info':
+        specifier: workspace:*
+        version: link:../package-info
+      '@vltpkg/package-json':
+        specifier: workspace:*
+        version: link:../package-json
+      '@vltpkg/rollback-remove':
+        specifier: workspace:*
+        version: link:../rollback-remove
+      '@vltpkg/run':
+        specifier: workspace:*
+        version: link:../run
+      '@vltpkg/spec':
+        specifier: workspace:*
+        version: link:../spec
+      '@vltpkg/types':
+        specifier: workspace:*
+        version: link:../types
+      '@vltpkg/xdg':
+        specifier: workspace:*
+        version: link:../xdg
+      path-scurry:
+        specifier: 'catalog:'
+        version: 2.0.0
+      walk-up-path:
+        specifier: 'catalog:'
+        version: 4.0.0
+    devDependencies:
+      '@eslint/js':
+        specifier: 'catalog:'
+        version: 9.25.0
+      '@types/node':
+        specifier: 'catalog:'
+        version: 22.14.1
+      eslint:
+        specifier: 'catalog:'
+        version: 9.25.0(jiti@2.4.2)
+      prettier:
+        specifier: 'catalog:'
+        version: 3.5.3
+      tap:
+        specifier: 'catalog:'
+        version: 21.1.0(@types/node@22.14.1)(@types/react@18.3.20)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@10.0.0)(typescript@5.7.3)
+      tshy:
+        specifier: 'catalog:'
+        version: 3.0.2(patch_hash=nn5gj4wshdx7c2chh4frit2bve)
+      typedoc:
+        specifier: 'catalog:'
+        version: 0.27.9(typescript@5.7.3)
+      typescript:
+        specifier: 'catalog:'
+        version: 5.7.3
+      typescript-eslint:
+        specifier: 'catalog:'
+        version: 8.30.1(eslint@9.25.0(jiti@2.4.2))(typescript@5.7.3)
+
   src/which:
     dependencies:
       isexe:
@@ -12968,7 +13035,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  eslint-module-utils@2.12.0(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.10.0)(eslint@9.25.0(jiti@2.4.2)):
+  eslint-module-utils@2.12.0(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.10.0(eslint-plugin-import@2.31.0)(eslint@9.25.0(jiti@2.4.2)))(eslint@9.25.0(jiti@2.4.2)):
     dependencies:
       debug: 3.2.7
     optionalDependencies:
@@ -12989,7 +13056,7 @@ snapshots:
       doctrine: 2.1.0
       eslint: 9.25.0(jiti@2.4.2)
       eslint-import-resolver-node: 0.3.9
-      eslint-module-utils: 2.12.0(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.10.0)(eslint@9.25.0(jiti@2.4.2))
+      eslint-module-utils: 2.12.0(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.10.0(eslint-plugin-import@2.31.0)(eslint@9.25.0(jiti@2.4.2)))(eslint@9.25.0(jiti@2.4.2))
       hasown: 2.0.2
       is-core-module: 2.16.1
       is-glob: 4.0.3
