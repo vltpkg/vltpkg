@@ -13,7 +13,7 @@ t.test('removes rollbacks after a successful install', async t => {
   const { status } = await runMultiple(t, ['i', 'abbrev@2.0.0'], {
     packageJson: true,
     variants: allVariants,
-    test: async (t, { dirs, run }) => {
+    test: async ({ t, dirs, run }) => {
       await setTimeout(1000)
       await run(['install', 'abbrev@3.0.0'])
       await setTimeout(1000)
