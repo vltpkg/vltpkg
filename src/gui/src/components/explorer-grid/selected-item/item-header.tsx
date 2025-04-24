@@ -21,7 +21,6 @@ import {
   Package,
 } from 'lucide-react'
 import { InlineCode } from '@/components/ui/inline-code.jsx'
-import { Badge } from '@/components/ui/badge.jsx'
 import { SparkBarChart } from '@/components/ui/spark-chart.jsx'
 import { transformToWeeklyDownloads } from '@/utils/transform-weekly-downloads.js'
 import { splitDepID } from '@vltpkg/dep-id/browser'
@@ -37,7 +36,6 @@ import {
 } from '@/components/icons/glyph-icon.jsx'
 import { isRecord } from '@/utils/typeguards.js'
 import { formatDistanceStrict } from 'date-fns'
-import { labelClassNamesMap } from '../label-helper.ts'
 import { CopyToClipboard } from '@/components/ui/copy-to-clipboard.jsx'
 import { formatDownloadSize } from '@/utils/format-download-size.js'
 import {
@@ -128,73 +126,46 @@ const Downloads = ({ className }: { className?: string }) => {
 }
 
 export const ItemHeader = () => {
-  const versions = useSelectedItemStore(state => state.versions)
-  const downloads = useSelectedItemStore(state => state.downloads)
-  const publisher = useSelectedItemStore(state => state.publisher)
-  const manifest = useSelectedItemStore(state => state.manifest)
-  const currentVersion = versions?.find(
-    version => version.version === manifest?.version,
-  )
-  const hasMetadata =
-    manifest &&
-    (manifest.engines ??
-      manifest.type ??
-      currentVersion?.unpackedSize ??
-      currentVersion?.tarball ??
-      currentVersion?.integrity ??
-      manifest.private ??
-      manifest.license)
-
   return (
     <motion.div
       animate={{ opacity: 1 }}
       initial={{ opacity: 0 }}
-      className="flex flex-col pb-3">
-      <div className="grid w-full grid-cols-12">
-        <PackageImageSpec
-          className={cn(
-            'col-span-9 pb-3 pl-6 pt-6',
-            downloads && 'border-r-[1px] border-muted',
-          )}
-        />
+      className="flex flex-col divide-y-[1px] divide-muted pb-3">
+      <div className="grid w-full grid-cols-12 divide-x-[1px] divide-muted">
+        <PackageImageSpec className="col-span-9 pb-3 pl-6 pt-6" />
         <Downloads className="col-span-3" />
       </div>
-      <div
-        className={cn(
-          'grid w-full grid-cols-12',
-          publisher ? 'border-t-[1px] border-muted' : 'hidden',
-        )}>
-        <Publisher
-          className={cn(
-            'col-span-9 border-muted py-5 pl-6',
-            downloads && 'border-r-[1px]',
-          )}
-        />
-        {downloads && (
-          <div className="col-span-3 flex h-full cursor-default items-center justify-center text-center">
-            <p className="w-full text-sm font-medium text-foreground">
-              {downloads.weekly?.toLocaleString()}{' '}
-              <span className="text-muted-foreground">Downloads</span>
-            </p>
-          </div>
-        )}
+      <div className="grid w-full grid-cols-12 divide-x-[1px] divide-muted empty:hidden">
+        <Publisher className="col-span-9 border-muted py-5 pl-6" />
+        <PackageDownloadCount className="col-span-3 col-start-10 py-2" />
       </div>
-      <div
-        className={cn(
-          'grid w-full grid-cols-12',
-          hasMetadata ?
-            'border-b-[1px] border-t-[1px] border-muted'
-          : 'hidden',
-        )}>
-        <PackageMetadata
-          className={cn(
-            'col-span-9 w-full border-r-[1px] border-muted pl-6',
-            hasMetadata && 'py-3',
-          )}
-        />
+      <div className="grid w-full grid-cols-12 divide-x-[1px] divide-muted empty:hidden">
+        <PackageMetadata className="col-span-9 w-full pl-6" />
         <PackageOverallScore className="col-span-3" />
       </div>
     </motion.div>
+  )
+}
+
+const PackageDownloadCount = ({
+  className,
+}: {
+  className?: string
+}) => {
+  const downloads = useSelectedItemStore(state => state.downloads)
+
+  if (!downloads) return null
+  return (
+    <div
+      className={cn(
+        'flex h-full cursor-default items-center justify-center text-center',
+        className,
+      )}>
+      <p className="w-full text-sm font-medium text-foreground">
+        {downloads.weekly?.toLocaleString()}{' '}
+        <span className="text-muted-foreground">Downloads</span>
+      </p>
+    </div>
   )
 }
 
@@ -210,7 +181,17 @@ const PackageMetadata = ({ className }: { className?: string }) => {
   const integrity = currentVersion?.integrity
   const integrityShort = integrity?.split('-')[1]?.slice(0, 6)
 
-  if (!manifest) return null
+  const hasMetadata =
+    manifest &&
+    (manifest.engines ??
+      manifest.type ??
+      currentVersion?.unpackedSize ??
+      currentVersion?.tarball ??
+      currentVersion?.integrity ??
+      manifest.private ??
+      manifest.license)
+
+  if (!hasMetadata) return null
 
   const LICENSE_TYPES = [
     'MIT',
@@ -229,7 +210,7 @@ const PackageMetadata = ({ className }: { className?: string }) => {
   return (
     <ScrollArea
       className={cn(
-        'w-full overflow-hidden overflow-x-scroll',
+        'w-full overflow-hidden overflow-x-scroll border-b-[1px] border-muted py-3',
         className,
       )}>
       <div className="flex w-max gap-2">
@@ -378,42 +359,73 @@ const PackageOverallScore = ({
   )
 }
 
-const PackageImageSpec = ({ className }: { className?: string }) => {
+const PackageImage = () => {
+  const favicon = useSelectedItemStore(state => state.favicon)
+  const selectedItem = useSelectedItemStore(
+    state => state.selectedItem,
+  )
+
+  return (
+    <Avatar className="aspect-square size-[3.75rem]">
+      <AvatarImage
+        className="aspect-square size-[3.75rem] rounded-md border-[1px] bg-secondary object-cover"
+        src={favicon?.src}
+        alt={favicon?.alt ?? 'Package Icon'}
+      />
+      <AvatarFallback className="flex aspect-square size-[3.75rem] h-full w-full items-center justify-center rounded-md border-[1px]">
+        {selectedItem.to?.mainImporter ?
+          <div className="flex h-full w-full items-center justify-center rounded-md bg-muted p-4">
+            <Home
+              size={32}
+              strokeWidth={1.25}
+              className="text-muted-foreground"
+            />
+          </div>
+        : <div className="to:to-neutral-400 h-full w-full rounded-md bg-gradient-to-t from-neutral-100 dark:from-neutral-500 dark:to-neutral-800" />
+        }
+      </AvatarFallback>
+    </Avatar>
+  )
+}
+
+const PackageNewerVersionsAvailable = () => {
   const setActiveTab = useSelectedItemStore(
     state => state.setActiveTab,
   )
   const greaterVersions = useSelectedItemStore(
     state => state.greaterVersions,
   )
+
+  if (!greaterVersions || greaterVersions.length === 0) return null
+
+  return (
+    <TooltipProvider>
+      <Tooltip delayDuration={150}>
+        <TooltipTrigger
+          onClick={() => setActiveTab('versions')}
+          className="flex items-center justify-center">
+          <div className="cursor-default rounded-sm border-[1px] border-green-600 bg-green-400/30 p-0.5 transition-colors duration-150 hover:bg-green-400/40 dark:border-green-500 dark:bg-green-500/30 dark:hover:bg-green-500/40">
+            <ArrowBigUpDash
+              className="text-green-600 dark:text-green-500"
+              size={16}
+            />
+          </div>
+        </TooltipTrigger>
+        <TooltipContent>Newer versions available</TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  )
+}
+
+const PackageImageSpec = ({ className }: { className?: string }) => {
   const selectedItem = useSelectedItemStore(
     state => state.selectedItem,
   )
-  const favicon = useSelectedItemStore(state => state.favicon)
   const specOptions = useGraphStore(state => state.specOptions)
 
   return (
     <div className={cn('flex gap-4 overflow-hidden', className)}>
-      <Avatar className="aspect-square size-[3.75rem]">
-        {favicon && (
-          <AvatarImage
-            className="aspect-square size-[3.75rem] rounded-md border-[1px] bg-secondary object-cover"
-            src={favicon.src}
-            alt={favicon.alt}
-          />
-        )}
-        <AvatarFallback className="flex aspect-square size-[3.75rem] h-full w-full items-center justify-center rounded-md border-[1px]">
-          {selectedItem.to?.mainImporter ?
-            <div className="flex h-full w-full items-center justify-center rounded-md bg-muted p-4">
-              <Home
-                size={32}
-                strokeWidth={1.25}
-                className="text-muted-foreground"
-              />
-            </div>
-          : <div className="to:to-neutral-400 h-full w-full rounded-md bg-gradient-to-t from-neutral-100 dark:from-neutral-500 dark:to-neutral-800" />
-          }
-        </AvatarFallback>
-      </Avatar>
+      <PackageImage />
 
       <ScrollArea className="w-full overflow-x-scroll">
         <div className="flex h-full w-full flex-col justify-between">
@@ -427,36 +439,7 @@ const PackageImageSpec = ({ className }: { className?: string }) => {
                   {selectedItem.version}
                 </InlineCode>
               </h1>
-
-              {greaterVersions && greaterVersions.length > 0 && (
-                <TooltipProvider>
-                  <Tooltip delayDuration={150}>
-                    <TooltipTrigger
-                      onClick={() => setActiveTab('versions')}
-                      className="flex items-center justify-center">
-                      <div className="cursor-default rounded-sm border-[1px] border-green-600 bg-green-400/30 p-0.5 transition-colors duration-150 hover:bg-green-400/40 dark:border-green-500 dark:bg-green-500/30 dark:hover:bg-green-500/40">
-                        <ArrowBigUpDash
-                          className="text-green-600 dark:text-green-500"
-                          size={16}
-                        />
-                      </div>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      Newer versions available
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              )}
-
-              <div className="flex gap-1.5">
-                {selectedItem.labels?.map((label, idx) => (
-                  <Badge
-                    className={labelClassNamesMap.get(label) || ''}
-                    key={`${selectedItem.title}-${label}-${idx}`}>
-                    {label}
-                  </Badge>
-                ))}
-              </div>
+              <PackageNewerVersionsAvailable />
             </div>
 
             {specOptions && (
@@ -475,15 +458,17 @@ const PackageImageSpec = ({ className }: { className?: string }) => {
 }
 
 const Publisher = ({ className }: { className?: string }) => {
+  const publisher = useSelectedItemStore(state => state.publisher)
   const versions = useSelectedItemStore(state => state.versions)
   const manifest = useSelectedItemStore(state => state.manifest)
-  const publisher = useSelectedItemStore(state => state.publisher)
-  const publisherAvatar = useSelectedItemStore(
-    state => state.publisherAvatar,
-  )
   const publishedDate = versions?.find(
     version => version.version === manifest?.version,
   )?.publishedDate
+  const publisherAvatar = useSelectedItemStore(
+    state => state.publisherAvatar,
+  )
+
+  if (!publisher) return null
 
   return (
     <div
@@ -491,39 +476,33 @@ const Publisher = ({ className }: { className?: string }) => {
         'flex h-[31.508px] items-center gap-2',
         className,
       )}>
-      {publisherAvatar?.src && (
-        <Avatar>
-          <AvatarImage
-            className="size-5 rounded-sm outline outline-[1px] outline-border"
-            src={publisherAvatar.src}
-            alt={publisherAvatar.alt}
-          />
-          <AvatarFallback className="flex size-5 items-center justify-center rounded-sm bg-secondary bg-gradient-to-t from-neutral-100 to-neutral-400 p-0.5 outline outline-[1px] outline-border dark:from-neutral-500 dark:to-neutral-800" />
-        </Avatar>
-      )}
-      {publisher?.name && (
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger className="text-baseline cursor-default text-xs font-medium text-muted-foreground">
-              Published by:{' '}
-              <span className="text-foreground">
-                {publisher.name}
+      <Avatar>
+        <AvatarImage
+          className="size-5 rounded-sm outline outline-[1px] outline-border"
+          src={publisherAvatar?.src}
+          alt={publisherAvatar?.alt ?? 'Publisher Avatar'}
+        />
+        <AvatarFallback className="flex size-5 items-center justify-center rounded-sm bg-secondary bg-gradient-to-t from-neutral-100 to-neutral-400 p-0.5 outline outline-[1px] outline-border dark:from-neutral-500 dark:to-neutral-800" />
+      </Avatar>
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger className="text-baseline cursor-default text-xs font-medium text-muted-foreground">
+            Published by:{' '}
+            <span className="text-foreground">{publisher.name}</span>
+            {publishedDate && (
+              <span className="ml-2">
+                &bull;{' '}
+                {formatDistanceStrict(publishedDate, new Date(), {
+                  addSuffix: true,
+                })}
               </span>
-              {publishedDate && (
-                <span className="ml-2">
-                  &bull;{' '}
-                  {formatDistanceStrict(publishedDate, new Date(), {
-                    addSuffix: true,
-                  })}
-                </span>
-              )}
-            </TooltipTrigger>
-            <TooltipContent align="start">
-              {publisher.name} {publisher.email}
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-      )}
+            )}
+          </TooltipTrigger>
+          <TooltipContent align="start">
+            {publisher.name} {publisher.email}
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
     </div>
   )
 }

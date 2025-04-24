@@ -68,10 +68,6 @@ vi.mock('@/components/ui/inline-code.jsx', () => ({
   InlineCode: 'gui-inline-code',
 }))
 
-vi.mock('@/components/ui/badge.jsx', () => ({
-  Badge: 'gui-badge',
-}))
-
 vi.mock('@/components/ui/spark-chart.jsx', () => ({
   SparkBarChart: 'gui-spark-bar-chart',
 }))
@@ -91,19 +87,6 @@ vi.mock('@/components/icons/glyph-icon.jsx', async () => {
 vi.mock('@/components/ui/copy-to-clipboard.jsx', () => ({
   CopyToClipboard: 'gui-copy-to-clipboard',
 }))
-
-vi.mock(
-  '@/components/explorer-grid/selected-item/insight-badge.jsx',
-  async () => {
-    const actual = await import(
-      '@/components/explorer-grid/selected-item/insight-badge.jsx'
-    )
-    return {
-      ...actual,
-      InsightBadge: 'gui-insight-badge',
-    }
-  },
-)
 
 vi.mock('@/components/ui/scroll-area.jsx', () => ({
   ScrollArea: 'gui-scroll-area',

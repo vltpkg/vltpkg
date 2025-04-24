@@ -3,11 +3,11 @@
 exports[`ItemHeader renders with a package score 1`] = `
 
 <div
-  class="flex flex-col pb-3"
+  class="flex flex-col divide-y-[1px] divide-muted pb-3"
   style="opacity: 0;"
 >
-  <div class="grid w-full grid-cols-12">
-    <div class="flex gap-4 overflow-hidden col-span-9 pb-3 pl-6 pt-6 border-r-[1px] border-muted">
+  <div class="grid w-full grid-cols-12 divide-x-[1px] divide-muted">
+    <div class="flex gap-4 overflow-hidden col-span-9 pb-3 pl-6 pt-6">
       <gui-avatar classname="aspect-square size-[3.75rem]">
         <gui-avatar-image
           classname="aspect-square size-[3.75rem] rounded-md border-[1px] bg-secondary object-cover"
@@ -49,8 +49,6 @@ exports[`ItemHeader renders with a package score 1`] = `
                   </gui-tooltip-content>
                 </gui-tooltip>
               </gui-tooltip-provider>
-              <div class="flex gap-1.5">
-              </div>
             </div>
           </div>
         </div>
@@ -72,8 +70,8 @@ exports[`ItemHeader renders with a package score 1`] = `
       </gui-spark-bar-chart>
     </div>
   </div>
-  <div class="grid w-full grid-cols-12 border-t-[1px] border-muted">
-    <div class="flex h-[31.508px] items-center gap-2 col-span-9 border-muted py-5 pl-6 border-r-[1px]">
+  <div class="grid w-full grid-cols-12 divide-x-[1px] divide-muted empty:hidden">
+    <div class="flex h-[31.508px] items-center gap-2 col-span-9 border-muted py-5 pl-6">
       <gui-avatar>
         <gui-avatar-image
           classname="size-5 rounded-sm outline outline-[1px] outline-border"
@@ -98,7 +96,7 @@ exports[`ItemHeader renders with a package score 1`] = `
         </gui-tooltip>
       </gui-tooltip-provider>
     </div>
-    <div class="col-span-3 flex h-full cursor-default items-center justify-center text-center">
+    <div class="flex h-full cursor-default items-center justify-center text-center col-span-3 col-start-10 py-2">
       <p class="w-full text-sm font-medium text-foreground">
         123,456
         <span class="text-muted-foreground">
@@ -107,7 +105,7 @@ exports[`ItemHeader renders with a package score 1`] = `
       </p>
     </div>
   </div>
-  <div class="w-full grid-cols-12 hidden">
+  <div class="grid w-full grid-cols-12 divide-x-[1px] divide-muted empty:hidden">
     <div
       role="button"
       class="relative flex w-full cursor-default flex-col items-center justify-center gap-1 col-span-3"
@@ -133,11 +131,11 @@ exports[`ItemHeader renders with a package score 1`] = `
 exports[`ItemHeader renders with custom registry item 1`] = `
 
 <div
-  class="flex flex-col pb-3"
+  class="flex flex-col divide-y-[1px] divide-muted pb-3"
   style="opacity: 0;"
 >
-  <div class="grid w-full grid-cols-12">
-    <div class="flex gap-4 overflow-hidden col-span-9 pb-3 pl-6 pt-6 border-r-[1px] border-muted">
+  <div class="grid w-full grid-cols-12 divide-x-[1px] divide-muted">
+    <div class="flex gap-4 overflow-hidden col-span-9 pb-3 pl-6 pt-6">
       <gui-avatar classname="aspect-square size-[3.75rem]">
         <gui-avatar-image
           classname="aspect-square size-[3.75rem] rounded-md border-[1px] bg-secondary object-cover"
@@ -179,8 +177,6 @@ exports[`ItemHeader renders with custom registry item 1`] = `
                   </gui-tooltip-content>
                 </gui-tooltip>
               </gui-tooltip-provider>
-              <div class="flex gap-1.5">
-              </div>
             </div>
             <gui-inline-code
               displaytooltip="true"
@@ -211,8 +207,8 @@ exports[`ItemHeader renders with custom registry item 1`] = `
       </gui-spark-bar-chart>
     </div>
   </div>
-  <div class="grid w-full grid-cols-12 border-t-[1px] border-muted">
-    <div class="flex h-[31.508px] items-center gap-2 col-span-9 border-muted py-5 pl-6 border-r-[1px]">
+  <div class="grid w-full grid-cols-12 divide-x-[1px] divide-muted empty:hidden">
+    <div class="flex h-[31.508px] items-center gap-2 col-span-9 border-muted py-5 pl-6">
       <gui-avatar>
         <gui-avatar-image
           classname="size-5 rounded-sm outline outline-[1px] outline-border"
@@ -237,7 +233,7 @@ exports[`ItemHeader renders with custom registry item 1`] = `
         </gui-tooltip>
       </gui-tooltip-provider>
     </div>
-    <div class="col-span-3 flex h-full cursor-default items-center justify-center text-center">
+    <div class="flex h-full cursor-default items-center justify-center text-center col-span-3 col-start-10 py-2">
       <p class="w-full text-sm font-medium text-foreground">
         123,456
         <span class="text-muted-foreground">
@@ -246,7 +242,7 @@ exports[`ItemHeader renders with custom registry item 1`] = `
       </p>
     </div>
   </div>
-  <div class="w-full grid-cols-12 hidden">
+  <div class="grid w-full grid-cols-12 divide-x-[1px] divide-muted empty:hidden">
   </div>
 </div>
 
@@ -255,11 +251,11 @@ exports[`ItemHeader renders with custom registry item 1`] = `
 exports[`ItemHeader renders with default git host item 1`] = `
 
 <div
-  class="flex flex-col pb-3"
+  class="flex flex-col divide-y-[1px] divide-muted pb-3"
   style="opacity: 0;"
 >
-  <div class="grid w-full grid-cols-12">
-    <div class="flex gap-4 overflow-hidden col-span-9 pb-3 pl-6 pt-6 border-r-[1px] border-muted">
+  <div class="grid w-full grid-cols-12 divide-x-[1px] divide-muted">
+    <div class="flex gap-4 overflow-hidden col-span-9 pb-3 pl-6 pt-6">
       <gui-avatar classname="aspect-square size-[3.75rem]">
         <gui-avatar-image
           classname="aspect-square size-[3.75rem] rounded-md border-[1px] bg-secondary object-cover"
@@ -301,8 +297,6 @@ exports[`ItemHeader renders with default git host item 1`] = `
                   </gui-tooltip-content>
                 </gui-tooltip>
               </gui-tooltip-provider>
-              <div class="flex gap-1.5">
-              </div>
             </div>
             <gui-inline-code classname="mx-0 w-fit max-w-40 cursor-default truncate">
               git:{ref}
@@ -327,8 +321,8 @@ exports[`ItemHeader renders with default git host item 1`] = `
       </gui-spark-bar-chart>
     </div>
   </div>
-  <div class="grid w-full grid-cols-12 border-t-[1px] border-muted">
-    <div class="flex h-[31.508px] items-center gap-2 col-span-9 border-muted py-5 pl-6 border-r-[1px]">
+  <div class="grid w-full grid-cols-12 divide-x-[1px] divide-muted empty:hidden">
+    <div class="flex h-[31.508px] items-center gap-2 col-span-9 border-muted py-5 pl-6">
       <gui-avatar>
         <gui-avatar-image
           classname="size-5 rounded-sm outline outline-[1px] outline-border"
@@ -353,7 +347,7 @@ exports[`ItemHeader renders with default git host item 1`] = `
         </gui-tooltip>
       </gui-tooltip-provider>
     </div>
-    <div class="col-span-3 flex h-full cursor-default items-center justify-center text-center">
+    <div class="flex h-full cursor-default items-center justify-center text-center col-span-3 col-start-10 py-2">
       <p class="w-full text-sm font-medium text-foreground">
         123,456
         <span class="text-muted-foreground">
@@ -362,7 +356,7 @@ exports[`ItemHeader renders with default git host item 1`] = `
       </p>
     </div>
   </div>
-  <div class="w-full grid-cols-12 hidden">
+  <div class="grid w-full grid-cols-12 divide-x-[1px] divide-muted empty:hidden">
   </div>
 </div>
 
@@ -371,11 +365,11 @@ exports[`ItemHeader renders with default git host item 1`] = `
 exports[`ItemHeader renders with default item 1`] = `
 
 <div
-  class="flex flex-col pb-3"
+  class="flex flex-col divide-y-[1px] divide-muted pb-3"
   style="opacity: 0;"
 >
-  <div class="grid w-full grid-cols-12">
-    <div class="flex gap-4 overflow-hidden col-span-9 pb-3 pl-6 pt-6 border-r-[1px] border-muted">
+  <div class="grid w-full grid-cols-12 divide-x-[1px] divide-muted">
+    <div class="flex gap-4 overflow-hidden col-span-9 pb-3 pl-6 pt-6">
       <gui-avatar classname="aspect-square size-[3.75rem]">
         <gui-avatar-image
           classname="aspect-square size-[3.75rem] rounded-md border-[1px] bg-secondary object-cover"
@@ -417,8 +411,6 @@ exports[`ItemHeader renders with default item 1`] = `
                   </gui-tooltip-content>
                 </gui-tooltip>
               </gui-tooltip-provider>
-              <div class="flex gap-1.5">
-              </div>
             </div>
           </div>
         </div>
@@ -440,8 +432,8 @@ exports[`ItemHeader renders with default item 1`] = `
       </gui-spark-bar-chart>
     </div>
   </div>
-  <div class="grid w-full grid-cols-12 border-t-[1px] border-muted">
-    <div class="flex h-[31.508px] items-center gap-2 col-span-9 border-muted py-5 pl-6 border-r-[1px]">
+  <div class="grid w-full grid-cols-12 divide-x-[1px] divide-muted empty:hidden">
+    <div class="flex h-[31.508px] items-center gap-2 col-span-9 border-muted py-5 pl-6">
       <gui-avatar>
         <gui-avatar-image
           classname="size-5 rounded-sm outline outline-[1px] outline-border"
@@ -466,7 +458,7 @@ exports[`ItemHeader renders with default item 1`] = `
         </gui-tooltip>
       </gui-tooltip-provider>
     </div>
-    <div class="col-span-3 flex h-full cursor-default items-center justify-center text-center">
+    <div class="flex h-full cursor-default items-center justify-center text-center col-span-3 col-start-10 py-2">
       <p class="w-full text-sm font-medium text-foreground">
         123,456
         <span class="text-muted-foreground">
@@ -475,7 +467,7 @@ exports[`ItemHeader renders with default item 1`] = `
       </p>
     </div>
   </div>
-  <div class="w-full grid-cols-12 hidden">
+  <div class="grid w-full grid-cols-12 divide-x-[1px] divide-muted empty:hidden">
   </div>
 </div>
 
@@ -484,11 +476,11 @@ exports[`ItemHeader renders with default item 1`] = `
 exports[`ItemHeader renders with insights 1`] = `
 
 <div
-  class="flex flex-col pb-3"
+  class="flex flex-col divide-y-[1px] divide-muted pb-3"
   style="opacity: 0;"
 >
-  <div class="grid w-full grid-cols-12">
-    <div class="flex gap-4 overflow-hidden col-span-9 pb-3 pl-6 pt-6 border-r-[1px] border-muted">
+  <div class="grid w-full grid-cols-12 divide-x-[1px] divide-muted">
+    <div class="flex gap-4 overflow-hidden col-span-9 pb-3 pl-6 pt-6">
       <gui-avatar classname="aspect-square size-[3.75rem]">
         <gui-avatar-image
           classname="aspect-square size-[3.75rem] rounded-md border-[1px] bg-secondary object-cover"
@@ -530,8 +522,6 @@ exports[`ItemHeader renders with insights 1`] = `
                   </gui-tooltip-content>
                 </gui-tooltip>
               </gui-tooltip-provider>
-              <div class="flex gap-1.5">
-              </div>
             </div>
           </div>
         </div>
@@ -553,8 +543,8 @@ exports[`ItemHeader renders with insights 1`] = `
       </gui-spark-bar-chart>
     </div>
   </div>
-  <div class="grid w-full grid-cols-12 border-t-[1px] border-muted">
-    <div class="flex h-[31.508px] items-center gap-2 col-span-9 border-muted py-5 pl-6 border-r-[1px]">
+  <div class="grid w-full grid-cols-12 divide-x-[1px] divide-muted empty:hidden">
+    <div class="flex h-[31.508px] items-center gap-2 col-span-9 border-muted py-5 pl-6">
       <gui-avatar>
         <gui-avatar-image
           classname="size-5 rounded-sm outline outline-[1px] outline-border"
@@ -579,7 +569,7 @@ exports[`ItemHeader renders with insights 1`] = `
         </gui-tooltip>
       </gui-tooltip-provider>
     </div>
-    <div class="col-span-3 flex h-full cursor-default items-center justify-center text-center">
+    <div class="flex h-full cursor-default items-center justify-center text-center col-span-3 col-start-10 py-2">
       <p class="w-full text-sm font-medium text-foreground">
         123,456
         <span class="text-muted-foreground">
@@ -588,7 +578,7 @@ exports[`ItemHeader renders with insights 1`] = `
       </p>
     </div>
   </div>
-  <div class="w-full grid-cols-12 hidden">
+  <div class="grid w-full grid-cols-12 divide-x-[1px] divide-muted empty:hidden">
   </div>
 </div>
 
@@ -597,11 +587,11 @@ exports[`ItemHeader renders with insights 1`] = `
 exports[`ItemHeader renders with scoped registry item 1`] = `
 
 <div
-  class="flex flex-col pb-3"
+  class="flex flex-col divide-y-[1px] divide-muted pb-3"
   style="opacity: 0;"
 >
-  <div class="grid w-full grid-cols-12">
-    <div class="flex gap-4 overflow-hidden col-span-9 pb-3 pl-6 pt-6 border-r-[1px] border-muted">
+  <div class="grid w-full grid-cols-12 divide-x-[1px] divide-muted">
+    <div class="flex gap-4 overflow-hidden col-span-9 pb-3 pl-6 pt-6">
       <gui-avatar classname="aspect-square size-[3.75rem]">
         <gui-avatar-image
           classname="aspect-square size-[3.75rem] rounded-md border-[1px] bg-secondary object-cover"
@@ -643,8 +633,6 @@ exports[`ItemHeader renders with scoped registry item 1`] = `
                   </gui-tooltip-content>
                 </gui-tooltip>
               </gui-tooltip-provider>
-              <div class="flex gap-1.5">
-              </div>
             </div>
             <gui-inline-code
               displaytooltip="true"
@@ -675,8 +663,8 @@ exports[`ItemHeader renders with scoped registry item 1`] = `
       </gui-spark-bar-chart>
     </div>
   </div>
-  <div class="grid w-full grid-cols-12 border-t-[1px] border-muted">
-    <div class="flex h-[31.508px] items-center gap-2 col-span-9 border-muted py-5 pl-6 border-r-[1px]">
+  <div class="grid w-full grid-cols-12 divide-x-[1px] divide-muted empty:hidden">
+    <div class="flex h-[31.508px] items-center gap-2 col-span-9 border-muted py-5 pl-6">
       <gui-avatar>
         <gui-avatar-image
           classname="size-5 rounded-sm outline outline-[1px] outline-border"
@@ -701,7 +689,7 @@ exports[`ItemHeader renders with scoped registry item 1`] = `
         </gui-tooltip>
       </gui-tooltip-provider>
     </div>
-    <div class="col-span-3 flex h-full cursor-default items-center justify-center text-center">
+    <div class="flex h-full cursor-default items-center justify-center text-center col-span-3 col-start-10 py-2">
       <p class="w-full text-sm font-medium text-foreground">
         123,456
         <span class="text-muted-foreground">
@@ -710,7 +698,7 @@ exports[`ItemHeader renders with scoped registry item 1`] = `
       </p>
     </div>
   </div>
-  <div class="w-full grid-cols-12 hidden">
+  <div class="grid w-full grid-cols-12 divide-x-[1px] divide-muted empty:hidden">
   </div>
 </div>
 
