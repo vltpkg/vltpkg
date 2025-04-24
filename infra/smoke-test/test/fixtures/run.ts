@@ -78,10 +78,11 @@ export type SharedCommandOptions = {
   env?: NodeJS.ProcessEnv
   debug?: boolean
   tty?: boolean
+  timeout?: number
   cleanOutput?: (output: string) => string
   onOutput?: (
     options: Omit<SpawnCommandResult, 'status' | 'signal'> & {
-      kill: (signal: string) => void
+      kill: (signal: NodeJS.Signals) => void
     },
   ) => void
 }
@@ -125,8 +126,8 @@ export type MultipleCommandOptions = CommandOptions & {
   variants?: readonly Variant[]
   match?: false | Exclude<keyof CommandResult, 'dirs'>[]
   test?: (
-    t: Test,
-    result: CommandResult & {
+    options: CommandResult & {
+      t: Test
       variant: Variant
       run: (
         args?: string[],
@@ -146,6 +147,7 @@ const spawnCommand = async (
     debug = !!process.env.CI,
     bin = 'vlt',
     tty = false,
+    timeout,
     cleanOutput = v => v,
     onOutput,
   }: SpawnCommandOptions,
@@ -153,39 +155,23 @@ const spawnCommand = async (
   const [command, ...commandArgs] = variant.args(bin)
   assert(command, 'no command')
 
-  // When debugging the spawned command will write to stderr to help triage
-  // timeouts or other command errors. Each log line will be prefixed with some
-  // distinct info about the test since tests can be run in parallel. The logs
-  // will also be truncated after a certain number of lines because we don't
-  // need to see all the output, just whether it happened or not.
-  let debugLog = (..._: string[]) => {}
-  if (debug) {
-    const tapPrefix = t.fullname
-      .split(' > ')
-      .filter(r => r !== 'TAP')
-      .map(v => v.replace(/^test[\\/](.*?)\.ts$/, '$1'))
-    const type = tapPrefix.pop()
-    const testPrefix = [
-      tapPrefix.join('_'),
-      // The last part is the variant name so make it more prominent
-      type,
-      [bin, ...args].join('_'),
-    ]
-    debugLog = (msg: string, logPrefix?: string) => {
-      const lines = msg.trim().split('\n')
-      const length = lines.length
-      if (length > 20) {
-        lines.length = 20
-        lines.push(`__${length - 20} more lines__`)
+  // The logs will also be truncated after a certain number of lines because we
+  // don't need to see all the output, just whether it happened or not.
+  const debugLog =
+    debug ?
+      (title: string, msg?: string) => {
+        const lines = msg?.trim().split('\n') ?? []
+        const length = lines.length
+        if (length > 20) {
+          lines.length = 20
+          lines.push(`__${length - 20} more lines__`)
+        }
+        const prefix = `[${title}] `
+        t.comment(prefix + lines.join(`\n${prefix}`))
       }
-      const prefixParts = [...testPrefix, logPrefix]
-        .filter(v => v != null)
-        .map(v => v.replace(/\s+/g, '-'))
-      const prefix = `[${prefixParts.join('][')}] `
-      console.error(prefix + lines.join(`\n${prefix}`))
-    }
-  }
-  debugLog('__START__')
+    : null
+
+  debugLog?.('START')
 
   const { stdout, stderr, output, ...res } =
     await new Promise<SpawnCommandResult>(res => {
@@ -219,7 +205,10 @@ const spawnCommand = async (
             cwd: dirs.project,
             env: spawnEnv,
           })
-          const kill = (s?: string) => proc.kill(s)
+          const kill = (s: NodeJS.Signals) => {
+            debugLog?.('KILL', s)
+            proc.kill(s)
+          }
           proc.onData(data => {
             // node-pty does not allow for separating stdout and stderr so we have
             // to treat all data as both stdout and stderr. This means we can't
@@ -229,9 +218,9 @@ const spawnCommand = async (
             outputs.output += data
             // This is only used for debugging so we resolve all ansi control
             // sequences and then strip colors to make it easier to read the logs.
-            debugLog(
+            debugLog?.(
+              'TTY',
               stripVTControlCharacters(ansiToAnsi(data)),
-              'tty',
             )
             onOutput?.({ ...outputs, kill })
           })
@@ -250,20 +239,24 @@ const spawnCommand = async (
         shell: true,
         windowsHide: true,
         env: spawnEnv,
+        timeout,
       })
-      const kill = (s?: string) => void proc.kill(s as NodeJS.Signals)
+      const kill = (s: NodeJS.Signals) => {
+        const result = proc.kill(s)
+        debugLog?.('KILL', `${s}=${result}`)
+      }
       proc.stdout.on('data', d => {
         const chunk = `${d.toString()}`
         outputs.stdout += chunk
         outputs.output += chunk
-        debugLog(chunk, 'stdout')
+        debugLog?.('STDOUT', chunk)
         onOutput?.({ ...outputs, kill })
       })
       proc.stderr.on('data', d => {
         const chunk = `${d.toString()}`
         outputs.stderr += chunk
         outputs.output += chunk
-        debugLog(chunk, 'stderr')
+        debugLog?.('STDERR', chunk)
         onOutput?.({ ...outputs, kill })
       })
       proc.on('exit', (code, signal) =>
@@ -275,7 +268,7 @@ const spawnCommand = async (
       )
     })
 
-  debugLog('__CLOSE__')
+  debugLog?.('CLOSE')
 
   const defaultClean = (output: string) =>
     output.trim().replaceAll(dirs.root, '{{CWD}}')
@@ -376,8 +369,9 @@ export const runMultiple = async (
             args,
             options,
           )
-          await test?.(t, {
+          await test?.({
             ...result,
+            t,
             variant,
             // allow tests to run followup commands for each variant
             run: (args, runOptions) =>

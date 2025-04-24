@@ -11,7 +11,7 @@ t.test(
   async t => {
     const { status } = await runMultiple(t, ['i', 'abbrev'], {
       variants: allVariants,
-      test: async (t, { dirs }) => {
+      test: async ({ t, dirs }) => {
         // wait for unref'd process to finish. this is an arbitrary amount of
         // time but should be enough for a small install.
         await setTimeout(1000)

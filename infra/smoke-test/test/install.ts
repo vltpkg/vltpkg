@@ -12,7 +12,7 @@ t.test('help', async t => {
 
 t.test('install a package', async t => {
   const { status } = await runMultiple(t, ['i', 'eslint'], {
-    test: async (t, { dirs }) => {
+    test: async ({ t, dirs }) => {
       const lock = JSON.parse(
         readFileSync(join(dirs.project, 'vlt-lock.json'), 'utf-8'),
       )
