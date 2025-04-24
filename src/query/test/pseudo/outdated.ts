@@ -139,6 +139,19 @@ const getState = (query: string, graph = getSemverRichGraph()) => {
 }
 
 t.test('select from outdated definition', async t => {
+  await t.test('outdated as an element', async t => {
+    const res = await outdated(getState(':outdated'))
+    t.strictSame(
+      [...res.partial.nodes].map(n => n.name),
+      ['a', 'c', 'd', 'e', 'g', 'e'],
+      'should have expected result using outdated defaulting to "any"',
+    )
+    t.matchSnapshot({
+      nodes: [...res.partial.nodes].map(n => n.name),
+      edges: [...res.partial.edges].map(e => e.name),
+    })
+  })
+
   await t.test('outdated kind any', async t => {
     const res = await outdated(getState(':outdated(any)'))
     t.strictSame(
@@ -219,7 +232,7 @@ t.test('select from outdated definition', async t => {
 
   await t.test('invalid pseudo selector usage', async t => {
     await t.rejects(
-      outdated(getState(':semver')),
+      outdated(getState(':outdated(foo)')),
       /Failed to parse :outdated selector/,
       'should throw an error for invalid pseudo selector usage',
     )
