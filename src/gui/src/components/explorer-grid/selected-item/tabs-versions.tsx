@@ -316,7 +316,7 @@ const VersionItem = ({
               src={publishedAuthor?.avatar}
             />
             {publishedAuthor?.avatar && (
-              <AvatarFallback className="h-5 h-full w-5 w-full rounded-sm bg-secondary bg-gradient-to-t from-neutral-100 to-neutral-400 px-[10px] outline outline-[1px] outline-border dark:from-neutral-500 dark:to-neutral-800" />
+              <AvatarFallback className="size-5 h-full w-full rounded-sm bg-secondary bg-gradient-to-t from-neutral-100 to-neutral-400 px-[10px] outline outline-[1px] outline-border dark:from-neutral-500 dark:to-neutral-800" />
             )}
           </Avatar>
           <p className="col-span-4 truncate font-mono text-sm">

@@ -97,7 +97,6 @@ export const SelectedItemProvider = ({
       packageScore: selectedItem.to?.insights.score,
       insights: getSocketInsights(selectedItem.to?.insights),
       activeTab: 'overview',
-      test: true,
       setActiveTab: (
         activeTab: SelectedItemStoreState['activeTab'],
       ) => set(() => ({ activeTab })),
@@ -116,15 +115,19 @@ export const SelectedItemProvider = ({
     const manifest = item.to.manifest ?? {}
     const abortController = new AbortController()
 
-    for await (const d of fetchDetails(
-      depIdSpec,
-      abortController.signal,
-      manifest,
-    )) {
-      store.setState(state => ({
-        ...state,
-        ...d,
-      }))
+    try {
+      for await (const d of fetchDetails(
+        depIdSpec,
+        abortController.signal,
+        manifest,
+      )) {
+        store.setState(state => ({
+          ...state,
+          ...d,
+        }))
+      }
+    } finally {
+      abortController.abort()
     }
   }
 

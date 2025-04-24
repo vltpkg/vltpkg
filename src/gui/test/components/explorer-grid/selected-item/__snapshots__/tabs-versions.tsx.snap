@@ -180,7 +180,7 @@ exports[`VersionsTabContent filters newer versions 1`] = `
                     src="https://example.com/avatar.jpg"
                   >
                   </gui-avatar-image>
-                  <gui-avatar-fallback classname="h-5 h-full w-5 w-full rounded-sm bg-secondary bg-gradient-to-t from-neutral-100 to-neutral-400 px-[10px] outline outline-[1px] outline-border dark:from-neutral-500 dark:to-neutral-800">
+                  <gui-avatar-fallback classname="size-5 h-full w-full rounded-sm bg-secondary bg-gradient-to-t from-neutral-100 to-neutral-400 px-[10px] outline outline-[1px] outline-border dark:from-neutral-500 dark:to-neutral-800">
                   </gui-avatar-fallback>
                 </gui-avatar>
                 <p class="col-span-4 truncate font-mono text-sm">
@@ -256,7 +256,7 @@ exports[`VersionsTabContent filters newer versions 1`] = `
                     src="https://example.com/avatar.jpg"
                   >
                   </gui-avatar-image>
-                  <gui-avatar-fallback classname="h-5 h-full w-5 w-full rounded-sm bg-secondary bg-gradient-to-t from-neutral-100 to-neutral-400 px-[10px] outline outline-[1px] outline-border dark:from-neutral-500 dark:to-neutral-800">
+                  <gui-avatar-fallback classname="size-5 h-full w-full rounded-sm bg-secondary bg-gradient-to-t from-neutral-100 to-neutral-400 px-[10px] outline outline-[1px] outline-border dark:from-neutral-500 dark:to-neutral-800">
                   </gui-avatar-fallback>
                 </gui-avatar>
                 <p class="col-span-4 truncate font-mono text-sm">
@@ -435,7 +435,7 @@ exports[`VersionsTabContent filters pre-releases 1`] = `
                     src="https://example.com/avatar.jpg"
                   >
                   </gui-avatar-image>
-                  <gui-avatar-fallback classname="h-5 h-full w-5 w-full rounded-sm bg-secondary bg-gradient-to-t from-neutral-100 to-neutral-400 px-[10px] outline outline-[1px] outline-border dark:from-neutral-500 dark:to-neutral-800">
+                  <gui-avatar-fallback classname="size-5 h-full w-full rounded-sm bg-secondary bg-gradient-to-t from-neutral-100 to-neutral-400 px-[10px] outline outline-[1px] outline-border dark:from-neutral-500 dark:to-neutral-800">
                   </gui-avatar-fallback>
                 </gui-avatar>
                 <p class="col-span-4 truncate font-mono text-sm">
@@ -511,7 +511,7 @@ exports[`VersionsTabContent filters pre-releases 1`] = `
                     src="https://example.com/avatar.jpg"
                   >
                   </gui-avatar-image>
-                  <gui-avatar-fallback classname="h-5 h-full w-5 w-full rounded-sm bg-secondary bg-gradient-to-t from-neutral-100 to-neutral-400 px-[10px] outline outline-[1px] outline-border dark:from-neutral-500 dark:to-neutral-800">
+                  <gui-avatar-fallback classname="size-5 h-full w-full rounded-sm bg-secondary bg-gradient-to-t from-neutral-100 to-neutral-400 px-[10px] outline outline-[1px] outline-border dark:from-neutral-500 dark:to-neutral-800">
                   </gui-avatar-fallback>
                 </gui-avatar>
                 <p class="col-span-4 truncate font-mono text-sm">
@@ -690,7 +690,7 @@ exports[`VersionsTabContent filters versions 1`] = `
                     src="https://example.com/avatar.jpg"
                   >
                   </gui-avatar-image>
-                  <gui-avatar-fallback classname="h-5 h-full w-5 w-full rounded-sm bg-secondary bg-gradient-to-t from-neutral-100 to-neutral-400 px-[10px] outline outline-[1px] outline-border dark:from-neutral-500 dark:to-neutral-800">
+                  <gui-avatar-fallback classname="size-5 h-full w-full rounded-sm bg-secondary bg-gradient-to-t from-neutral-100 to-neutral-400 px-[10px] outline outline-[1px] outline-border dark:from-neutral-500 dark:to-neutral-800">
                   </gui-avatar-fallback>
                 </gui-avatar>
                 <p class="col-span-4 truncate font-mono text-sm">
@@ -766,7 +766,7 @@ exports[`VersionsTabContent filters versions 1`] = `
                     src="https://example.com/avatar.jpg"
                   >
                   </gui-avatar-image>
-                  <gui-avatar-fallback classname="h-5 h-full w-5 w-full rounded-sm bg-secondary bg-gradient-to-t from-neutral-100 to-neutral-400 px-[10px] outline outline-[1px] outline-border dark:from-neutral-500 dark:to-neutral-800">
+                  <gui-avatar-fallback classname="size-5 h-full w-full rounded-sm bg-secondary bg-gradient-to-t from-neutral-100 to-neutral-400 px-[10px] outline outline-[1px] outline-border dark:from-neutral-500 dark:to-neutral-800">
                   </gui-avatar-fallback>
                 </gui-avatar>
                 <p class="col-span-4 truncate font-mono text-sm">
@@ -945,7 +945,7 @@ exports[`VersionsTabContent handles missing manifest version 1`] = `
                     src="https://example.com/avatar.jpg"
                   >
                   </gui-avatar-image>
-                  <gui-avatar-fallback classname="h-5 h-full w-5 w-full rounded-sm bg-secondary bg-gradient-to-t from-neutral-100 to-neutral-400 px-[10px] outline outline-[1px] outline-border dark:from-neutral-500 dark:to-neutral-800">
+                  <gui-avatar-fallback classname="size-5 h-full w-full rounded-sm bg-secondary bg-gradient-to-t from-neutral-100 to-neutral-400 px-[10px] outline outline-[1px] outline-border dark:from-neutral-500 dark:to-neutral-800">
                   </gui-avatar-fallback>
                 </gui-avatar>
                 <p class="col-span-4 truncate font-mono text-sm">
@@ -1021,7 +1021,7 @@ exports[`VersionsTabContent handles missing manifest version 1`] = `
                     src="https://example.com/avatar.jpg"
                   >
                   </gui-avatar-image>
-                  <gui-avatar-fallback classname="h-5 h-full w-5 w-full rounded-sm bg-secondary bg-gradient-to-t from-neutral-100 to-neutral-400 px-[10px] outline outline-[1px] outline-border dark:from-neutral-500 dark:to-neutral-800">
+                  <gui-avatar-fallback classname="size-5 h-full w-full rounded-sm bg-secondary bg-gradient-to-t from-neutral-100 to-neutral-400 px-[10px] outline outline-[1px] outline-border dark:from-neutral-500 dark:to-neutral-800">
                   </gui-avatar-fallback>
                 </gui-avatar>
                 <p class="col-span-4 truncate font-mono text-sm">
@@ -1223,7 +1223,7 @@ exports[`VersionsTabContent renders with versions 1`] = `
                     src="https://example.com/avatar.jpg"
                   >
                   </gui-avatar-image>
-                  <gui-avatar-fallback classname="h-5 h-full w-5 w-full rounded-sm bg-secondary bg-gradient-to-t from-neutral-100 to-neutral-400 px-[10px] outline outline-[1px] outline-border dark:from-neutral-500 dark:to-neutral-800">
+                  <gui-avatar-fallback classname="size-5 h-full w-full rounded-sm bg-secondary bg-gradient-to-t from-neutral-100 to-neutral-400 px-[10px] outline outline-[1px] outline-border dark:from-neutral-500 dark:to-neutral-800">
                   </gui-avatar-fallback>
                 </gui-avatar>
                 <p class="col-span-4 truncate font-mono text-sm">
@@ -1299,7 +1299,7 @@ exports[`VersionsTabContent renders with versions 1`] = `
                     src="https://example.com/avatar.jpg"
                   >
                   </gui-avatar-image>
-                  <gui-avatar-fallback classname="h-5 h-full w-5 w-full rounded-sm bg-secondary bg-gradient-to-t from-neutral-100 to-neutral-400 px-[10px] outline outline-[1px] outline-border dark:from-neutral-500 dark:to-neutral-800">
+                  <gui-avatar-fallback classname="size-5 h-full w-full rounded-sm bg-secondary bg-gradient-to-t from-neutral-100 to-neutral-400 px-[10px] outline outline-[1px] outline-border dark:from-neutral-500 dark:to-neutral-800">
                   </gui-avatar-fallback>
                 </gui-avatar>
                 <p class="col-span-4 truncate font-mono text-sm">
@@ -1478,7 +1478,7 @@ exports[`VersionsTabContent toggles pre-releases 1`] = `
                     src="https://example.com/avatar.jpg"
                   >
                   </gui-avatar-image>
-                  <gui-avatar-fallback classname="h-5 h-full w-5 w-full rounded-sm bg-secondary bg-gradient-to-t from-neutral-100 to-neutral-400 px-[10px] outline outline-[1px] outline-border dark:from-neutral-500 dark:to-neutral-800">
+                  <gui-avatar-fallback classname="size-5 h-full w-full rounded-sm bg-secondary bg-gradient-to-t from-neutral-100 to-neutral-400 px-[10px] outline outline-[1px] outline-border dark:from-neutral-500 dark:to-neutral-800">
                   </gui-avatar-fallback>
                 </gui-avatar>
                 <p class="col-span-4 truncate font-mono text-sm">
@@ -1554,7 +1554,7 @@ exports[`VersionsTabContent toggles pre-releases 1`] = `
                     src="https://example.com/avatar.jpg"
                   >
                   </gui-avatar-image>
-                  <gui-avatar-fallback classname="h-5 h-full w-5 w-full rounded-sm bg-secondary bg-gradient-to-t from-neutral-100 to-neutral-400 px-[10px] outline outline-[1px] outline-border dark:from-neutral-500 dark:to-neutral-800">
+                  <gui-avatar-fallback classname="size-5 h-full w-full rounded-sm bg-secondary bg-gradient-to-t from-neutral-100 to-neutral-400 px-[10px] outline outline-[1px] outline-border dark:from-neutral-500 dark:to-neutral-800">
                   </gui-avatar-fallback>
                 </gui-avatar>
                 <p class="col-span-4 truncate font-mono text-sm">
