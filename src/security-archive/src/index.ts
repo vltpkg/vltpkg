@@ -198,7 +198,7 @@ export class SecurityArchive
           start,
         })
         // stale values are queued up as expired for revalidation
-        if (start + ttl > now) {
+        if (start + ttl < now) {
           this.#expired.add(id)
         }
       } catch {
@@ -227,7 +227,10 @@ export class SecurityArchive
       expiredQueue.add({ purl })
     }
     if (expiredQueue.size > 0) {
-      const res = await this.#retrieveRemoteData(expiredQueue)
+      const res = await pRetry(
+        () => this.#retrieveRemoteData(expiredQueue),
+        { retries: this.#retries },
+      )
       const ids = this.#loadFromNDJSON(res, graph)
       this.#storeNewItemsToDatabase(db, ids)
     }
@@ -407,9 +410,10 @@ export class SecurityArchive
       // validates the refresh process was successful
       this.#validateReportData(graph, specOptions)
     } finally {
-      // closing the db connection is not awaited since we may
-      // be running a background task to revalidate stale entries
-      // and we should not block the rest of application for that
+      // TODO: we need to move this to a detached process in order for the
+      // cli commands that make usage of the security-archive, e.g: vlt ls,
+      // vlt query to not hang while waiting for stale-while-revalidate
+      // request to finish and close the db connection
       void this.#close(db)
     }
   }

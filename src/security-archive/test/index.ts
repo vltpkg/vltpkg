@@ -121,14 +121,16 @@ t.test('SecurityArchive.refresh', async t => {
   t.capture(console, 'warn').args
   const dir = t.testdir()
   const graph = getSimpleReportGraph()
-  global.fetch = async () =>
-    ({
-      ok: true,
-      status: 200,
-      text: async () => `${JSON.stringify(fooReport)}
+  t.intercept(global, 'fetch', {
+    value: async () =>
+      ({
+        ok: true,
+        status: 200,
+        text: async () => `${JSON.stringify(fooReport)}
 ${JSON.stringify(englishDaysReport)}
 `,
-    }) as unknown as Response
+      }) as unknown as Response,
+  })
   const path = resolve(dir, 'test.db')
   const archive = await SecurityArchive.start({
     graph,
@@ -162,14 +164,16 @@ ${JSON.stringify(englishDaysReport)}
   )
 
   // Updates the fetch mock to return a new version of foo
-  global.fetch = async () =>
-    ({
-      ok: true,
-      status: 200,
-      text: async () => `${JSON.stringify(fooNewReport)}
+  t.intercept(global, 'fetch', {
+    value: async () =>
+      ({
+        ok: true,
+        status: 200,
+        text: async () => `${JSON.stringify(fooNewReport)}
 ${JSON.stringify(englishDaysReport)}
 `,
-    }) as unknown as Response
+      }) as unknown as Response,
+  })
 
   await archive.refresh({ graph, specOptions })
 
@@ -184,12 +188,14 @@ ${JSON.stringify(englishDaysReport)}
   )
 
   // check pruning bad entries from the db
-  global.fetch = async () =>
-    ({
-      ok: true,
-      status: 200,
-      text: async () => '',
-    }) as unknown as Response
+  t.intercept(global, 'fetch', {
+    value: async () =>
+      ({
+        ok: true,
+        status: 200,
+        text: async () => '',
+      }) as unknown as Response,
+  })
 
   const dbWrite = db.prepare(
     'INSERT OR REPLACE INTO cache (depID, report, start, ttl) ' +
@@ -223,17 +229,14 @@ ${JSON.stringify(englishDaysReport)}
   await t.test('extraneous package in API response', async t => {
     const dir = t.testdir()
     const path = resolve(dir, 'missing.db')
-    const _fetch = global.fetch
-    t.teardown(() => {
-      global.fetch = _fetch
-    })
 
     // fetch mock returns a response with an extraneous pkg report
-    global.fetch = async () =>
-      ({
-        ok: true,
-        status: 200,
-        text: async () => `${JSON.stringify(fooReport)}
+    t.intercept(global, 'fetch', {
+      value: async () =>
+        ({
+          ok: true,
+          status: 200,
+          text: async () => `${JSON.stringify(fooReport)}
 ${JSON.stringify(englishDaysReport)}
 ${JSON.stringify({
   id: '99923218964',
@@ -242,7 +245,8 @@ ${JSON.stringify({
   version: '1.0.0',
 })}
 `,
-      }) as unknown as Response
+        }) as unknown as Response,
+    })
 
     const warn = t.capture(console, 'warn').args
     const archive = new SecurityArchive({ path })
@@ -271,18 +275,16 @@ ${JSON.stringify({
   await t.test('bad api response', async t => {
     const dir = t.testdir()
     const path = resolve(dir, 'missing.db')
-    const _fetch = global.fetch
-    t.teardown(() => {
-      global.fetch = _fetch
-    })
 
     // Updates the fetch mock to return a new version of foo
-    global.fetch = async () =>
-      ({
-        ok: false,
-        status: 500,
-        text: async () => '',
-      }) as unknown as Response
+    t.intercept(global, 'fetch', {
+      value: async () =>
+        ({
+          ok: false,
+          status: 500,
+          text: async () => '',
+        }) as unknown as Response,
+    })
 
     const archive = new SecurityArchive({ path, retries: 0 })
     await t.rejects(
@@ -295,18 +297,16 @@ ${JSON.stringify({
   await t.test('missing api response', async t => {
     const dir = t.testdir()
     const path = resolve(dir, 'missing.db')
-    const _fetch = global.fetch
-    t.teardown(() => {
-      global.fetch = _fetch
-    })
 
     // Updates the fetch mock to return a new version of foo
-    global.fetch = async () =>
-      ({
-        ok: false,
-        status: 404,
-        text: async () => 'Missing API',
-      }) as unknown as Response
+    t.intercept(global, 'fetch', {
+      value: async () =>
+        ({
+          ok: false,
+          status: 404,
+          text: async () => 'Missing API',
+        }) as unknown as Response,
+    })
 
     const archive = new SecurityArchive({ path })
     await t.rejects(
@@ -320,20 +320,18 @@ ${JSON.stringify({
     const dir = t.testdir()
     const path = resolve(dir, 'stale-revalidate.db')
     const graph = getSimpleReportGraph()
-    const _fetch = global.fetch
-    t.teardown(() => {
-      global.fetch = _fetch
-    })
 
     // Initial fetch response
-    global.fetch = async () =>
-      ({
-        ok: true,
-        status: 200,
-        text: async () => `${JSON.stringify(fooReport)}
+    t.intercept(global, 'fetch', {
+      value: async () =>
+        ({
+          ok: true,
+          status: 200,
+          text: async () => `${JSON.stringify(fooReport)}
 ${JSON.stringify(englishDaysReport)}
 `,
-      }) as unknown as Response
+        }) as unknown as Response,
+    })
 
     // Create an initial archive and populate it
     await SecurityArchive.start({
@@ -362,15 +360,17 @@ ${JSON.stringify(englishDaysReport)}
 
     // Setup the fetch mock to return updated data for the background refresh
     let fetchCallCount = 0
-    global.fetch = async () => {
-      fetchCallCount++
-      return {
-        ok: true,
-        status: 200,
-        text: async () => `${JSON.stringify(englishDaysUpdatedReport)}
+    t.intercept(global, 'fetch', {
+      value: async () => {
+        fetchCallCount++
+        return {
+          ok: true,
+          status: 200,
+          text: async () => `${JSON.stringify(englishDaysUpdatedReport)}
 `,
-      } as unknown as Response
-    }
+        } as unknown as Response
+      },
+    })
 
     // Create a new archive that should load the expired entry and trigger revalidation
     const refreshedArchive = new SecurityArchive({ path })
