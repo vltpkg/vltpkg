@@ -620,9 +620,11 @@ export const VersionsTabContent = () => {
   ])
 
   const isEmpty = !versions?.length
-  const hasSearchResults = versions && versions.length > 0
-  const paginatedVersions =
-    versions?.slice(0, page * ITEMS_PER_PAGE) ?? []
+  const hasSearchResults = filteredVersions.length > 0
+  const paginatedVersions = filteredVersions.slice(
+    0,
+    page * ITEMS_PER_PAGE,
+  )
 
   return (
     <TabsContent value="versions">
