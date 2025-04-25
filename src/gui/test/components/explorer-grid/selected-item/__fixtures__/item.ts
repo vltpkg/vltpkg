@@ -96,8 +96,8 @@ export const SELECTED_ITEM_DETAILS: DetailsInfo = {
     src: 'https://example.com/favicon.png',
     alt: 'Example Favicon',
   },
-  downloads: { weekly: 123456 },
-  downloadsRange: {
+  downloadsPerVersion: { '1.0.0': 123456 },
+  downloadsLastYear: {
     start: '2024-01-01',
     end: '2024-01-31',
     downloads: [

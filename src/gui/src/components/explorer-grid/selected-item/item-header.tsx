@@ -21,8 +21,6 @@ import {
   Package,
 } from 'lucide-react'
 import { InlineCode } from '@/components/ui/inline-code.jsx'
-import { SparkBarChart } from '@/components/ui/spark-chart.jsx'
-import { transformToWeeklyDownloads } from '@/utils/transform-weekly-downloads.js'
 import { splitDepID } from '@vltpkg/dep-id/browser'
 import { defaultRegistry } from '@vltpkg/spec/browser'
 import type { SpecOptionsFilled } from '@vltpkg/spec/browser'
@@ -42,6 +40,7 @@ import {
   ScrollArea,
   ScrollBar,
 } from '@/components/ui/scroll-area.jsx'
+import { isSemver } from '@/lib/external-info.js'
 
 const SpecOrigin = ({
   item,
@@ -98,33 +97,6 @@ const SpecOrigin = ({
   return ''
 }
 
-const Downloads = ({ className }: { className?: string }) => {
-  const downloadsRange = useSelectedItemStore(
-    state => state.downloadsRange,
-  )
-  const downloads = useSelectedItemStore(state => state.downloads)
-
-  if (!downloads || !downloadsRange) return null
-
-  return (
-    <motion.div
-      animate={{ opacity: 1 }}
-      initial={{ opacity: 0 }}
-      className={cn(
-        'flex w-full flex-col items-center justify-end',
-        className,
-      )}>
-      <SparkBarChart
-        data={transformToWeeklyDownloads(downloadsRange).downloads}
-        categories={['downloads']}
-        index={'day'}
-        colors={['emerald']}
-        className="w-full"
-      />
-    </motion.div>
-  )
-}
-
 export const ItemHeader = () => {
   return (
     <motion.div
@@ -133,11 +105,10 @@ export const ItemHeader = () => {
       className="flex flex-col divide-y-[1px] divide-muted pb-3">
       <div className="grid w-full grid-cols-12 divide-x-[1px] divide-muted">
         <PackageImageSpec className="col-span-9 pb-3 pl-6 pt-6" />
-        <Downloads className="col-span-3" />
       </div>
-      <div className="grid w-full grid-cols-12 divide-x-[1px] divide-muted empty:hidden">
-        <Publisher className="col-span-9 border-muted py-5 pl-6" />
-        <PackageDownloadCount className="col-span-3 col-start-10 py-2" />
+      <div className="flex w-full items-center justify-between px-6 py-2 empty:hidden">
+        <Publisher />
+        <PackageDownloadCount className="ml-auto" />
       </div>
       <div className="grid w-full grid-cols-12 divide-x-[1px] divide-muted empty:hidden">
         <PackageMetadata className="col-span-9 w-full pl-6" />
@@ -152,9 +123,20 @@ const PackageDownloadCount = ({
 }: {
   className?: string
 }) => {
-  const downloads = useSelectedItemStore(state => state.downloads)
+  const manifest = useSelectedItemStore(state => state.manifest)
+  const downloadsPerVersion = useSelectedItemStore(
+    state => state.downloadsPerVersion,
+  )
 
-  if (!downloads) return null
+  const version = manifest?.version
+
+  if (
+    !version ||
+    !isSemver(version) ||
+    !downloadsPerVersion?.[version]
+  )
+    return null
+
   return (
     <div
       className={cn(
@@ -162,8 +144,10 @@ const PackageDownloadCount = ({
         className,
       )}>
       <p className="w-full text-sm font-medium text-foreground">
-        {downloads.weekly?.toLocaleString()}{' '}
-        <span className="text-muted-foreground">Downloads</span>
+        {downloadsPerVersion[version].toLocaleString()}{' '}
+        <span className="text-muted-foreground">
+          Downloads last week
+        </span>
       </p>
     </div>
   )

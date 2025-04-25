@@ -48,6 +48,7 @@ vi.mock('lucide-react', () => ({
   ChevronRight: 'gui-chevron-right-icon',
   Search: 'gui-search-icon',
   ListFilter: 'gui-list-filter-icon',
+  CircleHelp: 'gui-circle-help-icon',
 }))
 
 vi.mock(
@@ -102,6 +103,19 @@ vi.mock('@/components/ui/dropdown-menu.jsx', () => ({
 
 vi.mock('@/components/ui/input.jsx', () => ({
   Input: 'gui-input',
+}))
+
+vi.mock('@/components/ui/chart.jsx', () => ({
+  ChartContainer: 'gui-chart-container',
+  ChartTooltip: 'gui-chart-tooltip',
+  ChartTooltipContent: 'gui-chart-tooltip-content',
+}))
+
+vi.mock('recharts', () => ({
+  Bar: 'gui-recharts-bar',
+  BarChart: 'gui-recharts-bar-chart',
+  XAxis: 'gui-recharts-x-axis',
+  CartesianGrid: 'gui-recharts-cartesian-grid',
 }))
 
 expect.addSnapshotSerializer({
