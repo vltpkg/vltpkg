@@ -29,6 +29,11 @@ const indent = (lines: string, num = 2) =>
     .map(l => ' '.repeat(num) + l)
     .join('\n')
 
+const isErrorWithProps = (
+  value: unknown,
+): value is Error & Record<string, unknown> =>
+  value instanceof Error && Object.keys(value).length > 0
+
 export const printErr = (
   err: unknown,
   usage: CommandUsage,
@@ -122,6 +127,29 @@ const print = (
       if (response) {
         stderr(indent(`Response: ${format(response)}`))
       }
+      return true
+    }
+
+    case 'EREQUEST': {
+      const { url, method } = err.cause
+      const { code, syscall } =
+        isErrorWithProps(err.cause.cause) ?
+          err.cause.cause
+        : ({} as Record<string, unknown>)
+      stderr(`Request Error: ${err.message}`)
+      if (code) {
+        stderr(indent(`Code: ${format(code)}`))
+      }
+      if (syscall) {
+        stderr(indent(`Syscall: ${format(syscall)}`))
+      }
+      if (url) {
+        stderr(indent(`URL: ${url}`))
+      }
+      if (method) {
+        stderr(indent(`Method: ${format(method)}`))
+      }
+
       return true
     }
   }

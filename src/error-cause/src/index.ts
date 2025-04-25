@@ -116,6 +116,9 @@ export type ErrorCauseOptions = {
   /** string or URL object */
   url?: URL | string
 
+  /** HTTP method */
+  method?: string
+
   /** git repository remote or path */
   repository?: string
 
@@ -242,6 +245,7 @@ export const errorCodes = [
   'ERESOLVE',
   'EUNKNOWN',
   'EUSAGE',
+  'EREQUEST',
 ] as const
 
 const errorCodesSet = new Set(errorCodes)
