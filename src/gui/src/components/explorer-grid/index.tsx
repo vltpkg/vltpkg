@@ -66,7 +66,7 @@ const getItemsData = (
       items.push({
         ...edge,
         id: `${edge.from?.id}${title}`,
-        labels: edge.type ? [edge.type] : [],
+        labels: edge.type && edge.type !== 'prod' ? [edge.type] : [],
         title,
         version: 'Missing package',
         sameItems,
@@ -110,7 +110,7 @@ const getItemsData = (
             Boolean,
           ) as string[],
         ),
-      )
+      ).filter(i => i !== 'prod')
       const data: GridItemData = {
         ...edge,
         id: `${edge.from?.id}${edge.to?.id}` || title,
@@ -229,7 +229,7 @@ const getDependencyItems = (
       version: edge.to.version || '',
       stacked: false,
       size: 1,
-      labels: [edge.type],
+      labels: edge.type !== 'prod' ? [edge.type] : [],
     })
   }
   return items
@@ -259,6 +259,7 @@ const getUninstalledDependencyItems = (
     const edge = node.edgesOut.get(name)
     if (edge?.to) continue
     const title = `${name}@${version}`
+    const edgeType = shorten(type, name, manifest)
     items.push({
       spec: Spec.parse(name, version),
       depName: edge?.name,
@@ -269,7 +270,7 @@ const getUninstalledDependencyItems = (
       version,
       stacked: false,
       size: 1,
-      labels: [shorten(type, name, manifest)],
+      labels: edgeType !== 'prod' ? [edgeType] : [],
     })
   }
   return items.sort((a, b) => a.name.localeCompare(b.name, 'en'))
