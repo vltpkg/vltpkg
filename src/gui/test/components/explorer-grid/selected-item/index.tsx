@@ -86,13 +86,11 @@ test('SelectedItem renders with the default structure', () => {
     packageScore: undefined,
     insights: undefined,
     author: undefined,
-    downloads: undefined,
     favicon: undefined,
     publisher: undefined,
     publisherAvatar: undefined,
     versions: undefined,
     greaterVersions: undefined,
-    downloadsRange: undefined,
   } satisfies SelectedItemStore)
 
   const Container = () => {
@@ -111,13 +109,11 @@ test('SelectedItem renders connection lines', () => {
     packageScore: undefined,
     insights: undefined,
     author: undefined,
-    downloads: undefined,
     favicon: undefined,
     publisher: undefined,
     publisherAvatar: undefined,
     versions: undefined,
     greaterVersions: undefined,
-    downloadsRange: undefined,
   } satisfies SelectedItemStore)
 
   const Container = () => {

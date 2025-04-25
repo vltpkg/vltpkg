@@ -250,11 +250,8 @@ test('fetchDetails returns the correct details including downloadsRange', async 
     author: {
       name: 'Ruy Adorno',
     },
-    downloads: {
-      weekly: 100,
-      downloadsPerVersion: { '1.0.0': 100 },
-    },
-    downloadsRange: {
+    downloadsPerVersion: { '1.0.0': 100 },
+    downloadsLastYear: {
       start: '2023-01-01',
       end: '2023-01-31',
       downloads: [
@@ -289,10 +286,7 @@ test('fetchDetails from various async requests', async () => {
       name: 'Ruy Adorno',
       email: 'ruyadorno@example.com',
     },
-    downloads: {
-      weekly: 100,
-      downloadsPerVersion: { '1.0.0': 100 },
-    },
+    downloadsPerVersion: { '1.0.0': 100 },
     publisher: {
       name: 'Ruy Adorno',
       email: 'ruyadorno@example.com',
