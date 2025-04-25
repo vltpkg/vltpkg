@@ -472,10 +472,27 @@ export class RegistryClient {
       await getToken(origin, this.identity),
     )
 
+    let response: Dispatcher.ResponseData | null = null
+    try {
+      response = await this.agent.request(
+        options as Dispatcher.RequestOptions,
+      )
+      /* c8 ignore start */
+    } catch (er) {
+      // Rethrow so we get a better stack trace
+      throw error('Request failed', {
+        code: 'EREQUEST',
+        cause: er,
+        url,
+        method,
+      })
+    }
+    /* c8 ignore stop */
+
     const result = await this.#handleResponse(
       u,
       options,
-      await this.agent.request(options as Dispatcher.RequestOptions),
+      response,
       entry,
     )
 
