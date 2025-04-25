@@ -2,7 +2,8 @@ import { test, expect, vi, beforeEach, afterEach } from 'vitest'
 import { cleanup, render } from '@testing-library/react'
 import html from 'diffable-html'
 import { useGraphStore as useStore } from '@/state/index.js'
-import { useSelectedItem } from '@/components/explorer-grid/selected-item/context.jsx'
+import type { SelectedItemStore } from '@/components/explorer-grid/selected-item/context.jsx'
+import { useSelectedItemStore } from '@/components/explorer-grid/selected-item/context.jsx'
 import {
   TabsManifestButton,
   TabsManifestContent,
@@ -10,9 +11,31 @@ import {
 import {
   SELECTED_ITEM,
   SELECTED_ITEM_DETAILS,
-} from './__fixtures__/item.ts'
+} from './__fixtures__/item.js'
 import type { GridItemData } from '@/components/explorer-grid/types.js'
 import type { Manifest } from '@vltpkg/types'
+
+const MOCK_MANIFEST: Manifest = {
+  name: 'acme-package',
+  version: '1.0.0',
+  author: 'John Doe',
+  private: true,
+  dependencies: {
+    '@acme/1': '1.0.0',
+    '@acme/2': '2.0.0',
+  },
+  devDependencies: {
+    '@acme/3': '3.0.0',
+    '@acme/4': '4.0.0',
+  },
+}
+
+const ITEM_WITH_MANIFEST = {
+  ...SELECTED_ITEM,
+  to: {
+    manifest: MOCK_MANIFEST,
+  },
+} as unknown as GridItemData
 
 vi.mock('lucide-react', () => ({
   FileJson: 'gui-file-json-icon',
@@ -21,7 +44,7 @@ vi.mock('lucide-react', () => ({
 vi.mock(
   '@/components/explorer-grid/selected-item/context.jsx',
   () => ({
-    useSelectedItem: vi.fn(),
+    useSelectedItemStore: vi.fn(),
     SelectedItemProvider: 'gui-selected-item-provider',
   }),
 )
@@ -51,33 +74,18 @@ afterEach(() => {
 })
 
 test('TabsManifestButton renders default', () => {
-  const ITEM_WITH_MANIFEST = {
-    ...SELECTED_ITEM,
-    to: {
-      manifest: {
-        name: 'acme-package',
-        version: '1.0.0',
-        author: 'John Doe',
-        private: true,
-        dependencies: {
-          '@acme/1': '1.0.0',
-          '@acme/2': '2.0.0',
-        },
-        devDependencies: {
-          '@acme/3': '3.0.0',
-          '@acme/4': '4.0.0',
-        },
-      } as Manifest,
-    },
-  } as unknown as GridItemData
-
-  vi.mocked(useSelectedItem).mockReturnValue({
+  const mockState = {
     selectedItem: ITEM_WITH_MANIFEST,
-    selectedItemDetails: SELECTED_ITEM_DETAILS,
+    ...SELECTED_ITEM_DETAILS,
+    manifest: {},
     insights: undefined,
-    activeTab: 'manifest',
+    activeTab: 'manifest' as const,
     setActiveTab: vi.fn(),
-  })
+  } satisfies SelectedItemStore
+
+  vi.mocked(useSelectedItemStore).mockImplementation(selector =>
+    selector(mockState),
+  )
 
   const Container = () => {
     return <TabsManifestButton />
@@ -88,13 +96,18 @@ test('TabsManifestButton renders default', () => {
 })
 
 test('TabsManifestContent renders an empty state', () => {
-  vi.mocked(useSelectedItem).mockReturnValue({
+  const mockState = {
+    manifest: null,
     selectedItem: SELECTED_ITEM,
-    selectedItemDetails: SELECTED_ITEM_DETAILS,
+    ...SELECTED_ITEM_DETAILS,
     insights: undefined,
-    activeTab: 'manifest',
+    activeTab: 'manifest' as const,
     setActiveTab: vi.fn(),
-  })
+  } satisfies SelectedItemStore
+
+  vi.mocked(useSelectedItemStore).mockImplementation(selector =>
+    selector(mockState),
+  )
 
   const Container = () => {
     return <TabsManifestContent />
@@ -105,27 +118,18 @@ test('TabsManifestContent renders an empty state', () => {
 })
 
 test('TabsManifestContent renders with a manifest', () => {
-  vi.mocked(useSelectedItem).mockReturnValue({
+  const mockState = {
     selectedItem: SELECTED_ITEM,
-    selectedItemDetails: SELECTED_ITEM_DETAILS,
+    ...SELECTED_ITEM_DETAILS,
     insights: undefined,
-    activeTab: 'manifest',
-    manifest: {
-      name: 'acme-package',
-      version: '1.0.0',
-      author: 'John Doe',
-      private: true,
-      dependencies: {
-        '@acme/1': '1.0.0',
-        '@acme/2': '2.0.0',
-      },
-      devDependencies: {
-        '@acme/3': '3.0.0',
-        '@acme/4': '4.0.0',
-      },
-    },
+    activeTab: 'manifest' as const,
+    manifest: MOCK_MANIFEST,
     setActiveTab: vi.fn(),
-  })
+  } satisfies SelectedItemStore
+
+  vi.mocked(useSelectedItemStore).mockImplementation(selector =>
+    selector(mockState),
+  )
 
   const Container = () => {
     return <TabsManifestContent />

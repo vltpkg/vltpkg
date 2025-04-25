@@ -2,7 +2,8 @@ import { test, expect, vi, beforeEach, afterEach } from 'vitest'
 import { cleanup, render } from '@testing-library/react'
 import html from 'diffable-html'
 import { useGraphStore as useStore } from '@/state/index.js'
-import { useSelectedItem } from '@/components/explorer-grid/selected-item/context.jsx'
+import type { SelectedItemStore } from '@/components/explorer-grid/selected-item/context.jsx'
+import { useSelectedItemStore } from '@/components/explorer-grid/selected-item/context.jsx'
 import {
   InsightTabButton,
   InsightTabContent,
@@ -10,13 +11,32 @@ import {
 import {
   SELECTED_ITEM,
   SELECTED_ITEM_DETAILS,
-} from './__fixtures__/item.ts'
+} from './__fixtures__/item.js'
 import type { SocketSecurityDetails } from '@/lib/constants/socket.js'
+import type { PackageScore } from '@vltpkg/security-archive'
+
+const MOCK_INSIGHTS: SocketSecurityDetails[] = [
+  {
+    selector: ':mock-selector',
+    description: 'Packages that are missing an author field',
+    category: 'Supply Chain',
+    severity: 'medium',
+  },
+]
+
+const MOCK_PACKAGE_SCORE: PackageScore = {
+  overall: 90,
+  maintenance: 85,
+  vulnerability: 2,
+  license: 100,
+  quality: 90,
+  supplyChain: 4,
+}
 
 vi.mock(
   '@/components/explorer-grid/selected-item/context.jsx',
   () => ({
-    useSelectedItem: vi.fn(),
+    useSelectedItemStore: vi.fn(),
     SelectedItemProvider: 'gui-selected-item-provider',
   }),
 )
@@ -75,14 +95,6 @@ expect.addSnapshotSerializer({
 
 beforeEach(() => {
   vi.clearAllMocks()
-
-  vi.mocked(useSelectedItem).mockReturnValue({
-    selectedItem: SELECTED_ITEM,
-    selectedItemDetails: SELECTED_ITEM_DETAILS,
-    insights: undefined,
-    activeTab: 'insights',
-    setActiveTab: vi.fn(),
-  })
 })
 
 afterEach(() => {
@@ -92,6 +104,19 @@ afterEach(() => {
 })
 
 test('InsightTabContent renders an empty state', () => {
+  const mockState = {
+    selectedItem: SELECTED_ITEM,
+    ...SELECTED_ITEM_DETAILS,
+    insights: undefined,
+    manifest: null,
+    activeTab: 'insights' as const,
+    setActiveTab: vi.fn(),
+  } satisfies SelectedItemStore
+
+  vi.mocked(useSelectedItemStore).mockImplementation(selector =>
+    selector(mockState),
+  )
+
   const Container = () => {
     return <InsightTabContent />
   }
@@ -101,22 +126,18 @@ test('InsightTabContent renders an empty state', () => {
 })
 
 test('InsightTabContent renders with insights', () => {
-  const mockedInsights: SocketSecurityDetails[] = [
-    {
-      selector: ':mock-selector',
-      description: 'Packages that are missing an author field',
-      category: 'Supply Chain',
-      severity: 'medium',
-    },
-  ]
-
-  vi.mocked(useSelectedItem).mockReturnValue({
+  const mockState = {
     selectedItem: SELECTED_ITEM,
-    selectedItemDetails: SELECTED_ITEM_DETAILS,
-    insights: mockedInsights,
-    activeTab: 'insights',
+    ...SELECTED_ITEM_DETAILS,
+    insights: MOCK_INSIGHTS,
+    manifest: null,
+    activeTab: 'insights' as const,
     setActiveTab: vi.fn(),
-  })
+  } satisfies SelectedItemStore
+
+  vi.mocked(useSelectedItemStore).mockImplementation(selector =>
+    selector(mockState),
+  )
 
   const Container = () => {
     return <InsightTabContent />
@@ -127,21 +148,19 @@ test('InsightTabContent renders with insights', () => {
 })
 
 test('InsightTabContent renders with no insights but a package score', () => {
-  vi.mocked(useSelectedItem).mockReturnValue({
+  const mockState = {
     selectedItem: SELECTED_ITEM,
-    selectedItemDetails: SELECTED_ITEM_DETAILS,
+    ...SELECTED_ITEM_DETAILS,
+    manifest: null,
     insights: undefined,
-    activeTab: 'insights',
-    packageScore: {
-      overall: 90,
-      maintenance: 85,
-      vulnerability: 2,
-      license: 100,
-      quality: 90,
-      supplyChain: 4,
-    },
+    activeTab: 'insights' as const,
+    packageScore: MOCK_PACKAGE_SCORE,
     setActiveTab: vi.fn(),
-  })
+  } satisfies SelectedItemStore
+
+  vi.mocked(useSelectedItemStore).mockImplementation(selector =>
+    selector(mockState),
+  )
 
   const Container = () => {
     return <InsightTabContent />
@@ -152,6 +171,19 @@ test('InsightTabContent renders with no insights but a package score', () => {
 })
 
 test('InsightTabButton renders default', () => {
+  const mockState = {
+    selectedItem: SELECTED_ITEM,
+    ...SELECTED_ITEM_DETAILS,
+    insights: undefined,
+    manifest: null,
+    activeTab: 'insights' as const,
+    setActiveTab: vi.fn(),
+  } satisfies SelectedItemStore
+
+  vi.mocked(useSelectedItemStore).mockImplementation(selector =>
+    selector(mockState),
+  )
+
   const Container = () => {
     return <InsightTabButton />
   }

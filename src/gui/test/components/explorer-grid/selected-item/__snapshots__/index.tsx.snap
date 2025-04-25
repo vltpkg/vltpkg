@@ -2,17 +2,16 @@
 
 exports[`SelectedItem renders connection lines 1`] = `
 
-<gui-selected-item-provider
-  selecteditem="[object Object]"
-  details="[object Object]"
-  activetab="overview"
->
+<gui-selected-item-provider selecteditem="[object Object]">
   <div class="relative">
     <gui-card classname="relative my-4 border-muted">
       <gui-item-header>
       </gui-item-header>
       <div class="w-full">
-        <gui-tabs value="overview">
+        <gui-tabs
+          onvaluechange="[object Object]"
+          value="[object Object]"
+        >
           <gui-tabs-list
             variant="ghost"
             classname="w-full gap-2 px-6"
@@ -46,17 +45,16 @@ exports[`SelectedItem renders connection lines 1`] = `
 
 exports[`SelectedItem renders with the default structure 1`] = `
 
-<gui-selected-item-provider
-  selecteditem="[object Object]"
-  details="[object Object]"
-  activetab="overview"
->
+<gui-selected-item-provider selecteditem="[object Object]">
   <div class="relative">
     <gui-card classname="relative my-4 border-muted">
       <gui-item-header>
       </gui-item-header>
       <div class="w-full">
-        <gui-tabs value="overview">
+        <gui-tabs
+          onvaluechange="[object Object]"
+          value="[object Object]"
+        >
           <gui-tabs-list
             variant="ghost"
             classname="w-full gap-2 px-6"

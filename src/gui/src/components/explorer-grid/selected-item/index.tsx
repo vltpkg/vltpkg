@@ -1,13 +1,12 @@
-import { hydrate } from '@vltpkg/dep-id/browser'
 import { Card } from '@/components/ui/card.jsx'
 import { useGraphStore } from '@/state/index.js'
 import type { GridItemOptions } from '@/components/explorer-grid/types.js'
 import { Tabs, TabsList } from '@/components/ui/tabs.jsx'
-import { useEffect, useRef, useState } from 'react'
-import { fetchDetails } from '@/lib/external-info.js'
-import type { DetailsInfo } from '@/lib/external-info.js'
-import type { Tab } from '@/components/explorer-grid/selected-item/context.jsx'
-import { SelectedItemProvider } from '@/components/explorer-grid/selected-item/context.jsx'
+import { useEffect, useRef } from 'react'
+import {
+  SelectedItemProvider,
+  useSelectedItemStore,
+} from '@/components/explorer-grid/selected-item/context.jsx'
 import {
   InsightTabButton,
   InsightTabContent,
@@ -27,14 +26,10 @@ import {
 import { ItemHeader } from '@/components/explorer-grid/selected-item/item-header.jsx'
 
 export const SelectedItem = ({ item }: GridItemOptions) => {
-  const [activeTab, setActiveTab] = useState<Tab>('overview')
-
-  const specOptions = useGraphStore(state => state.specOptions)
   const updateLinePositionReference = useGraphStore(
     state => state.updateLinePositionReference,
   )
   const linePositionRef = useRef<HTMLDivElement>(null)
-  const [details, setDetails] = useState<DetailsInfo>({})
 
   useEffect(() => {
     const handleResize = () => {
@@ -48,57 +43,12 @@ export const SelectedItem = ({ item }: GridItemOptions) => {
     return () => window.removeEventListener('resize', handleResize)
   })
 
-  useEffect(() => {
-    const abortController = new AbortController()
-    async function retrieveDetails() {
-      if (!item.to?.name) return
-      const depIdSpec = hydrate(item.to.id, item.to.name, specOptions)
-      const manifest = item.to.manifest ?? {}
-
-      for await (const d of fetchDetails(
-        depIdSpec,
-        abortController.signal,
-        manifest,
-      )) {
-        setDetails({
-          ...details,
-          ...d,
-        })
-      }
-    }
-    void retrieveDetails()
-
-    return () => {
-      abortController.abort()
-    }
-  }, [])
-
   return (
-    <SelectedItemProvider
-      selectedItem={item}
-      details={details}
-      activeTab={activeTab}
-      setActiveTab={setActiveTab}>
+    <SelectedItemProvider selectedItem={item}>
       <div className="relative">
         <Card className="relative my-4 border-muted">
           <ItemHeader />
-          <div className="w-full">
-            <Tabs
-              uniqueId={item.id}
-              onValueChange={setActiveTab as (tab: string) => void}
-              value={activeTab}>
-              <TabsList variant="ghost" className="w-full gap-2 px-6">
-                <OverviewTabButton />
-                <TabsManifestButton />
-                <InsightTabButton />
-                <VersionsTabButton />
-              </TabsList>
-              <OverviewTabContent />
-              <TabsManifestContent />
-              <InsightTabContent />
-              <VersionsTabContent />
-            </Tabs>
-          </div>
+          <SelectedItemTabs />
         </Card>
         {
           // Draw the connection line between dependencies and the selected item
@@ -112,5 +62,35 @@ export const SelectedItem = ({ item }: GridItemOptions) => {
         }
       </div>
     </SelectedItemProvider>
+  )
+}
+
+const SelectedItemTabs = () => {
+  const selectedItem = useSelectedItemStore(
+    state => state.selectedItem,
+  )
+  const activeTab = useSelectedItemStore(state => state.activeTab)
+  const setActiveTab = useSelectedItemStore(
+    state => state.setActiveTab,
+  )
+
+  return (
+    <div className="w-full">
+      <Tabs
+        uniqueId={selectedItem.id}
+        onValueChange={setActiveTab as (tab: string) => void}
+        value={activeTab}>
+        <TabsList variant="ghost" className="w-full gap-2 px-6">
+          <OverviewTabButton />
+          <TabsManifestButton />
+          <InsightTabButton />
+          <VersionsTabButton />
+        </TabsList>
+        <OverviewTabContent />
+        <TabsManifestContent />
+        <InsightTabContent />
+        <VersionsTabContent />
+      </Tabs>
+    </div>
   )
 }
