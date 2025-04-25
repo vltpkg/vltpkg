@@ -4,6 +4,8 @@ import { Spec } from '@vltpkg/spec/browser'
 
 export type Semver = `${number}.${number}.${number}`
 
+export const publicRegistry = 'https://registry.npmjs.org/'
+
 const isSemver = (s: string): s is Semver => /^\d+\.\d+\.\d+$/.test(s)
 
 const asSemver = (s: string): Semver => {
@@ -282,7 +284,7 @@ export async function* fetchDetails(
 
   // if the local manifest doesn't have author info,
   // tries to retrieve it from the registry manifest
-  if (spec.registry) {
+  if (spec.registry === publicRegistry) {
     const url = new URL(spec.registry)
     url.pathname = `${spec.name}/${spec.bareSpec}`
     trackPromise(
@@ -395,13 +397,13 @@ export async function* fetchDetails(
         })
         .catch(() => ({})),
     )
+
+    // retrieve download info from the registry
+    trackPromise(fetchDownloads())
+
+    // retrieve download range info from the registry
+    trackPromise(fetchDownloadsRange())
   }
-
-  // retrieve download info from the registry
-  trackPromise(fetchDownloads())
-
-  // retrieve download range info from the registry
-  trackPromise(fetchDownloadsRange())
 
   // asynchronously yield results from promisesQueue as soon as they're ready
   while (true) {
