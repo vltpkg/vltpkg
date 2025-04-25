@@ -121,6 +121,40 @@ t.test('ERESOLVE', t => {
   t.end()
 })
 
+t.test('EREQUEST', async t => {
+  t.test('with cause', async t => {
+    printErr(
+      error('oh no! my request!', {
+        code: 'EREQUEST',
+        url: new URL('https://x.y/'),
+        method: 'GET',
+        cause: Object.assign(new Error('some internal thing'), {
+          code: 'ECONNRESET',
+          syscall: 'read',
+        }),
+      }),
+      usage,
+      stderr,
+      formatter,
+    )
+    t.matchSnapshot(printed)
+  })
+
+  t.test('no cause', async t => {
+    printErr(
+      error('oh no! my request!', {
+        code: 'EREQUEST',
+        url: new URL('https://x.y/'),
+        method: 'GET',
+      }),
+      usage,
+      stderr,
+      formatter,
+    )
+    t.matchSnapshot(printed)
+  })
+})
+
 t.test('error with an unknown code', t => {
   const er = error('this is an error', {
     code: 'ENOTACODEWEKNOWABOUT' as Codes,
