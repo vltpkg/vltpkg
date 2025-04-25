@@ -20,10 +20,20 @@ import type { Views } from '../view.ts'
 export const usage: CommandUsage = () =>
   commandUsage({
     command: 'ls',
-    usage: ['', '<query> --view=[human | json | mermaid | gui]'],
-    description: `List installed dependencies matching the provided query.
-                  Defaults to listing direct dependencies of a project and
-                  any configured workspace.`,
+    usage: [
+      '',
+      '[query | specs] [--view=human | json | mermaid | gui]',
+    ],
+    description: `List installed dependencies matching given package names or resulting
+      packages from matching a given Dependency Selector Syntax query if one
+      is provided.
+
+      The vlt Dependency Selector Syntax is a CSS-like query language that
+      allows you to filter installed dependencies using a variety of metadata
+      in the form of CSS-like attributes, pseudo selectors & combinators.
+
+      Defaults to listing direct dependencies of a project and any configured
+      workspace.`,
     examples: {
       '': {
         description:
@@ -40,7 +50,7 @@ export const usage: CommandUsage = () =>
         description:
           'Lists direct dependencies of a specific package',
       },
-      [`'*.workspace > *.peer'`]: {
+      [`'*:workspace > *:peer'`]: {
         description: 'List all peer dependencies of all workspaces',
       },
     },

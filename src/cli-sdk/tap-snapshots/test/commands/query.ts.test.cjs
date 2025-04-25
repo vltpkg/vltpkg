@@ -33,15 +33,19 @@ Usage:
 
 List installed dependencies matching the provided query.
 
+The vlt Dependency Selector Syntax is a CSS-like query language that allows you
+to filter installed dependencies using a variety of metadata in the form of
+CSS-like attributes, pseudo selectors & combinators.
+
   Examples
 
-    Query packages with the name "foo"
+    Query dependencies declared as "foo"
 
     ​vlt query '#foo'
 
     Query all peer dependencies of workspaces
 
-    ​vlt query '*.workspace > *.peer'
+    ​vlt query '*:workspace > *:peer'
 
     Query all direct project dependencies with a "build" script
 

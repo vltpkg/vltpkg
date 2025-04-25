@@ -28,13 +28,16 @@ export const usage: CommandUsage = () =>
       '<query> --view=<human | json | mermaid | gui>',
       '<query> --expect-results=<comparison string>',
     ],
-    description:
-      'List installed dependencies matching the provided query.',
+    description: `List installed dependencies matching the provided query.
+
+       The vlt Dependency Selector Syntax is a CSS-like query language that
+       allows you to filter installed dependencies using a variety of metadata
+       in the form of CSS-like attributes, pseudo selectors & combinators.`,
     examples: {
       [`'#foo'`]: {
-        description: 'Query packages with the name "foo"',
+        description: 'Query dependencies declared as "foo"',
       },
-      [`'*.workspace > *.peer'`]: {
+      [`'*:workspace > *:peer'`]: {
         description: 'Query all peer dependencies of workspaces',
       },
       [`':project > *:attr(scripts, [build])'`]: {
