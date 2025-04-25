@@ -20,9 +20,9 @@ exports[`test/visualization/human-readable-output.ts > TAP > actual graph > colo
 └── missing@^1.0.0 [31m(missing)[39m
 workspace-b
 workspace-a
-├── workspace-b@1.0.0 [2m(deduped)[22m
+├── workspace-b@1.0.0
 ├── ipsum@1.0.0
-└── foo@1.0.0 [2m(deduped)[22m
+└── foo@1.0.0
 [0m
 `
 
@@ -48,9 +48,9 @@ my-project
 └── missing@^1.0.0 (missing)
 workspace-b
 workspace-a
-├── workspace-b@1.0.0 (deduped)
+├── workspace-b@1.0.0
 ├── ipsum@1.0.0
-└── foo@1.0.0 (deduped)
+└── foo@1.0.0
 
 `
 
@@ -64,7 +64,7 @@ exports[`test/visualization/human-readable-output.ts > TAP > cycle > should prin
 my-project
 └─┬ a@1.0.0
   └─┬ b@1.0.0
-    └── a@1.0.0 (deduped)
+    └── a@1.0.0
 
 `
 
@@ -73,7 +73,7 @@ my-project
 ├── foo@1.0.0
 ├─┬ bar@1.0.0
 │ ├─┬ baz (custom:baz@1.0.0)
-│ │ └── foo@1.0.0 (deduped)
+│ │ └── foo@1.0.0
 │ └── extraneous@1.0.0
 └── missing@^1.0.0 (missing)
 

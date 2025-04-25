@@ -27,7 +27,7 @@ export type TreeItem = {
   prefix: string
   padding: string
   hasSibling: boolean
-  deduped: boolean
+  seen: boolean
   include: boolean
   parent: TreeItem | undefined
 }
@@ -66,7 +66,7 @@ const getTreeItems = (
   for (const item of traverse) {
     if (item.node) {
       if (seenNodes.has(item.node)) {
-        item.deduped = true
+        item.seen = true
         continue
       }
       seenNodes.add(item.node)
@@ -82,7 +82,7 @@ const getTreeItems = (
           hasSibling: false,
           padding: '',
           prefix: '',
-          deduped: false,
+          seen: false,
           include: isSelected(options, edge, edge.to),
           parent: item,
         }
@@ -124,7 +124,7 @@ export function humanReadableOutput(
       prefix: '',
       padding: '',
       hasSibling: false,
-      deduped: false,
+      seen: false,
       include: isSelected(options, undefined, importer),
       parent: undefined,
     })
@@ -153,11 +153,10 @@ export function humanReadableOutput(
       return `${item.padding}${item.prefix}${decoratedName} ${missing}\n`
     }
 
-    const deduped = item.deduped ? ` ${dim('(deduped)')}` : ''
-    header += `${item.padding}${item.prefix}${decoratedName}${deduped}\n`
+    header += `${item.padding}${item.prefix}${decoratedName}\n`
 
-    // deduped items need not to be printed or traversed
-    if (!item.deduped) {
+    // seen items need not to be printed or traversed
+    if (!item.seen) {
       const edges = item.node ? [...item.node.edgesOut.values()] : []
       const nextItems = edges.map(i => treeItems.get(i)?.get(i.to))
       const includedItems = nextItems.filter(i => i?.include)

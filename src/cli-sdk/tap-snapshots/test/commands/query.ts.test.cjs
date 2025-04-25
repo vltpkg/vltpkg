@@ -10,7 +10,7 @@ exports[`test/commands/query.ts > TAP > query > colors > should use colors when 
 ├── foo@1.0.0
 ├─┬ bar@1.0.0
 │ └─┬ baz (custom:baz@1.0.0)
-│   └── foo@1.0.0 [2m(deduped)[22m
+│   └── foo@1.0.0
 └── missing@^1.0.0 [31m(missing)[39m
 [0m
 `
@@ -20,7 +20,7 @@ my-project
 ├── foo@1.0.0
 ├─┬ bar@1.0.0
 │ └─┬ baz (custom:baz@1.0.0)
-│   └── foo@1.0.0 (deduped)
+│   └── foo@1.0.0
 └── missing@^1.0.0 (missing)
 
 `
@@ -92,7 +92,7 @@ my-project
 ├── foo@1.0.0
 ├─┬ bar@1.0.0
 │ └─┬ baz (custom:baz@1.0.0)
-│   └── foo@1.0.0 (deduped)
+│   └── foo@1.0.0
 └── missing@^1.0.0 (missing)
 
 `
