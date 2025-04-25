@@ -1,5 +1,5 @@
 import { TabsTrigger, TabsContent } from '@/components/ui/tabs.jsx'
-import { useSelectedItem } from '@/components/explorer-grid/selected-item/context.jsx'
+import { useSelectedItemStore } from '@/components/explorer-grid/selected-item/context.jsx'
 import Markdown from 'react-markdown'
 import {
   FileText,
@@ -24,7 +24,7 @@ export const OverviewTabButton = () => {
 }
 
 export const OverviewTabContent = () => {
-  const { manifest } = useSelectedItem()
+  const manifest = useSelectedItemStore(state => state.manifest)
 
   return (
     <TabsContent value="overview" className="flex flex-col gap-4">

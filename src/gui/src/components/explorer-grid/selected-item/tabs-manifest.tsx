@@ -1,6 +1,6 @@
 import { TabsContent, TabsTrigger } from '@/components/ui/tabs.jsx'
 import { CodeBlock } from '@/components/ui/shiki.jsx'
-import { useSelectedItem } from '@/components/explorer-grid/selected-item/context.jsx'
+import { useSelectedItemStore } from '@/components/explorer-grid/selected-item/context.jsx'
 import { FileJson } from 'lucide-react'
 
 export const TabsManifestButton = () => {
@@ -15,7 +15,7 @@ export const TabsManifestButton = () => {
 }
 
 export const TabsManifestContent = () => {
-  const { manifest } = useSelectedItem()
+  const manifest = useSelectedItemStore(state => state.manifest)
 
   return (
     <TabsContent
