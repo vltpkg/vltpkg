@@ -66,7 +66,7 @@ export class RollbackRemove {
       env,
     })
     for (const path of this.#paths.values()) {
-      child.stdin.write(path + '\u0000')
+      child.stdin.write(`${path}\0`)
     }
     child.stdin.end()
     if (detached) {
