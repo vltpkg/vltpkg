@@ -18,10 +18,17 @@ exports[`test/commands/list.ts > TAP > list > colors > should use colors when se
 exports[`test/commands/list.ts > TAP > list > should have usage 1`] = `
 Usage:
   vlt ls
-  vlt ls <query> --view=[human | json | mermaid | gui]
+  vlt ls [query | specs] [--view=human | json | mermaid | gui]
 
-List installed dependencies matching the provided query. Defaults to listing
-direct dependencies of a project and any configured workspace.
+List installed dependencies matching given package names or resulting packages
+from matching a given Dependency Selector Syntax query if one is provided.
+
+The vlt Dependency Selector Syntax is a CSS-like query language that allows you
+to filter installed dependencies using a variety of metadata in the form of
+CSS-like attributes, pseudo selectors & combinators.
+
+Defaults to listing direct dependencies of a project and any configured
+workspace.
 
   Examples
 
@@ -43,7 +50,7 @@ direct dependencies of a project and any configured workspace.
 
     List all peer dependencies of all workspaces
 
-    ​vlt ls '*.workspace > *.peer'
+    ​vlt ls '*:workspace > *:peer'
 
   Options
 
