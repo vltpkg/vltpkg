@@ -206,8 +206,10 @@ export class SecurityArchive
         db.prepare('DELETE FROM cache WHERE depID = ?').run(depID)
       }
     }
-    // starts the async process to revalidate expired entries
-    // this promise is only awaited when closing the db connection
+    // TODO: we need to move this to a detached process in order for the
+    // cli commands that make usage of the security-archive, e.g: vlt ls,
+    // vlt query to not hang while waiting for stale-while-revalidate
+    // request to finish and close the db connection
     this.#pUpdateExpired = this.#updateExpired(db, graph)
   }
 
@@ -348,9 +350,6 @@ export class SecurityArchive
         ])
       }
     }
-    // TODO: this can be done async if we swap the driver
-    // to one that supports async methods, we would also need
-    // to handle when to close the db connection
     const dbWrite = db.prepare(
       'INSERT OR REPLACE INTO cache (depID, report, start, ttl) ' +
         'VALUES (?, ?, ?, ?)',
@@ -410,10 +409,8 @@ export class SecurityArchive
       // validates the refresh process was successful
       this.#validateReportData(graph, specOptions)
     } finally {
-      // TODO: we need to move this to a detached process in order for the
-      // cli commands that make usage of the security-archive, e.g: vlt ls,
-      // vlt query to not hang while waiting for stale-while-revalidate
-      // request to finish and close the db connection
+      // TODO: once we move the stale-while-revalidate to a detached process
+      // the this.#close method no longer needs to be async
       void this.#close(db)
     }
   }
