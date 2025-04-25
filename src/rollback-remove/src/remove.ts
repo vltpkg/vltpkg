@@ -10,16 +10,25 @@ const isMain = (path?: string) =>
 // This is run as a background process, and all the paths to
 // be removed written into stdin. We can't pass on argv, because
 // it'll be a very long list in many cases.
-const main = () => {
-  const input: Buffer[] = []
-  process.stdin.on('data', c => input.push(c))
-  process.stdin.on('end', () => {
-    const paths = Buffer.concat(input)
-      .toString()
-      .replace(/^\u0000+|\u0000+$/, '')
-      .split('\u0000')
-    if (paths.length) void rimraf(paths)
+const main = async () => {
+  const paths = await new Promise<string[]>(res => {
+    const chunks: Buffer[] = []
+    let chunkLen = 0
+    process.stdin.on('data', chunk => {
+      chunks.push(chunk)
+      chunkLen += chunk.length
+    })
+    process.stdin.on('end', () => {
+      res(
+        Buffer.concat(chunks, chunkLen)
+          .toString()
+          .split('\0')
+          .filter(i => !!i),
+      )
+    })
   })
+
+  if (paths.length) await rimraf(paths)
 }
 
 const g = globalThis as typeof globalThis & {
@@ -27,5 +36,5 @@ const g = globalThis as typeof globalThis & {
 }
 
 if (isMain(g.__VLT_INTERNAL_MAIN ?? process.argv[1])) {
-  main()
+  void main()
 }
