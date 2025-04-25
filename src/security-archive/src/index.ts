@@ -33,6 +33,7 @@ export type JSONItemResponse = {
 
 export type DBReadEntry = {
   depID: string
+  now: number
   report: string
   start: number
   ttl: number
@@ -101,7 +102,8 @@ export class SecurityArchive
   extends LRUCache<DepID, PackageReportData>
   implements SecurityArchiveLike
 {
-  #fetchedDepIDs = new Set<DepID>()
+  #expired = new Set<DepID>()
+  #pUpdateExpired: Promise<void> | undefined
   #path: string
   #retries: number
 
@@ -141,6 +143,7 @@ export class SecurityArchive
       max: SecurityArchive.defaultMax,
       ttl: SecurityArchive.defaultTtl,
       ...options,
+      allowStale: true,
     })
 
     this.#path =
@@ -163,7 +166,7 @@ export class SecurityArchive
         // https://www.sqlite.org/withoutrowid.html
         'WITHOUT ROWID',
     )
-    db.exec('PRAGMA journal_mode = TRUNCATE')
+    db.exec('PRAGMA journal_mode = WAL')
     db.exec('PRAGMA synchronous = NORMAL')
     return db
   }
@@ -182,24 +185,56 @@ export class SecurityArchive
       'SELECT depID, report, start, ttl, ' +
         `(SELECT UNIXEPOCH('subsecond') * 1000) as now ` +
         'FROM cache ' +
-        `WHERE depID IN (${depIDs.join(',')}) ` +
-        'AND (start + ttl) > now',
+        `WHERE depID IN (${depIDs.join(',')})`,
     )
+    // reset the list of expired entries
+    this.#expired.clear()
     for (const entry of dbRead.all() as DBReadEntry[]) {
-      const { depID, report, start, ttl } = entry
+      const { depID, now, report, start, ttl } = entry
+      const id = asDepID(depID)
       try {
-        this.set(
-          asDepID(depID),
-          asPackageReportData(JSON.parse(report)),
-          {
-            ttl,
-            start,
-          },
-        )
+        this.set(id, asPackageReportData(JSON.parse(report)), {
+          ttl,
+          start,
+        })
+        // stale values are queued up as expired for revalidation
+        if (start + ttl < now) {
+          this.#expired.add(id)
+        }
       } catch {
         // prune any invalid entries from the database
         db.prepare('DELETE FROM cache WHERE depID = ?').run(depID)
       }
+    }
+    // TODO: we need to move this to a detached process in order for the
+    // cli commands that make usage of the security-archive, e.g: vlt ls,
+    // vlt query to not hang while waiting for stale-while-revalidate
+    // request to finish and close the db connection
+    this.#pUpdateExpired = this.#updateExpired(db, graph)
+  }
+
+  /**
+   * Updates the database with renewed entries for expired packages.
+   */
+  async #updateExpired(
+    db: DatabaseSync,
+    graph: GraphLike,
+  ): Promise<void> {
+    const expiredQueue = new Set<Record<'purl', string>>()
+    for (const depID of this.#expired) {
+      const node = graph.nodes.get(depID)
+      /* c8 ignore next */
+      if (!node) continue
+      const purl = `pkg:npm/${node.name}@${node.version}`
+      expiredQueue.add({ purl })
+    }
+    if (expiredQueue.size > 0) {
+      const res = await pRetry(
+        () => this.#retrieveRemoteData(expiredQueue),
+        { retries: this.#retries },
+      )
+      const ids = this.#loadFromNDJSON(res, graph)
+      this.#storeNewItemsToDatabase(db, ids)
     }
   }
 
@@ -215,9 +250,11 @@ export class SecurityArchive
     for (const node of nodes) {
       // only queue up valid public registry
       // references that are missing from the archive
+      // also skips any pkg marked as expired
       if (
         usesTargetRegistry(node.id, specOptions) &&
-        !this.has(node.id)
+        !this.has(node.id) &&
+        !this.#expired.has(node.id)
       ) {
         const purl = `pkg:npm/${node.name}@${node.version}`
         queue.add({ purl })
@@ -259,8 +296,11 @@ export class SecurityArchive
 
   /**
    * Parses and load NDJSON data into the in-memory cache.
+   * Returns a set of dep ids that were successfully loaded.
    */
-  #loadFromNDJSON(str: string, graph: GraphLike): void {
+  #loadFromNDJSON(str: string, graph: GraphLike): Set<DepID> {
+    // builds a set of dep ids that were successfully fetched and loaded
+    const fetchedDepIDs = new Set<DepID>()
     const json = str.split('}\n')
     for (const line of json) {
       if (!line.trim()) continue
@@ -279,7 +319,7 @@ export class SecurityArchive
       const node =
         graph.nodes.get(depID) ?? graph.nodes.get(aliasedDepID)
       if (node) {
-        this.#fetchedDepIDs.add(node.id)
+        fetchedDepIDs.add(node.id)
         this.set(node.id, asPackageReportData(data))
       } else {
         // eslint-disable-next-line no-console
@@ -288,14 +328,18 @@ export class SecurityArchive
         )
       }
     }
+    return fetchedDepIDs
   }
 
   /**
    * Store new in-memory items to the database.
    */
-  #storeNewItemsToDatabase(db: DatabaseSync): void {
+  #storeNewItemsToDatabase(
+    db: DatabaseSync,
+    depIDs: Set<DepID>,
+  ): void {
     const insertData: DBWriteEntry[] = []
-    for (const depID of this.#fetchedDepIDs) {
+    for (const depID of depIDs) {
       const entry = this.info(depID)
       if (entry?.start && entry.ttl) {
         insertData.push([
@@ -358,18 +402,34 @@ export class SecurityArchive
           () => this.#retrieveRemoteData(queue),
           { retries: this.#retries },
         )
-        this.#loadFromNDJSON(res, graph)
-        this.#storeNewItemsToDatabase(db)
+        const ids = this.#loadFromNDJSON(res, graph)
+        this.#storeNewItemsToDatabase(db, ids)
       }
 
       // validates the refresh process was successful
       this.#validateReportData(graph, specOptions)
     } finally {
-      db.exec('PRAGMA optimize')
-      db.close()
-      // TODO: at this point we could spawn a deref process to
-      // remove entries with expired ttl values and vaccum the db
+      // TODO: once we move the stale-while-revalidate to a detached process
+      // the this.#close method no longer needs to be async
+      void this.#close(db)
     }
+  }
+
+  /**
+   * Closes the database connection and cleans up the internal state.
+   */
+  async #close(db: DatabaseSync) {
+    // the revalidation of stale entries might not yet be completed
+    // so in case we have a pending promise for that, we need to wait
+    await this.#pUpdateExpired
+    // close db connection
+    db.exec('PRAGMA optimize')
+    db.close()
+    // clean up internal state
+    this.#expired.clear()
+    this.#pUpdateExpired = undefined
+    // TODO: at this point we could spawn a deref process to
+    // remove entries with expired ttl values and vaccum the db
   }
 
   /**

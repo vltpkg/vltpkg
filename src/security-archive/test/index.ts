@@ -95,6 +95,18 @@ const englishDaysReport = {
   batchIndex: 0,
 }
 
+// New updated version of englishDaysReport for testing stale-while-revalidate
+const englishDaysUpdatedReport = {
+  ...englishDaysReport,
+  id: '15713076834',
+  score: {
+    ...englishDaysReport.score,
+    maintenance: 0.85,
+    overall: 0.65,
+  },
+  alerts: [...englishDaysReport.alerts.slice(1)],
+}
+
 t.test('map-like', async t => {
   const archive = new SecurityArchive()
   const id = joinDepIDTuple(['registry', '', 'bar'])
@@ -106,16 +118,19 @@ t.test('map-like', async t => {
 })
 
 t.test('SecurityArchive.refresh', async t => {
+  t.capture(console, 'warn').args
   const dir = t.testdir()
   const graph = getSimpleReportGraph()
-  global.fetch = async () =>
-    ({
-      ok: true,
-      status: 200,
-      text: async () => `${JSON.stringify(fooReport)}
+  t.intercept(global, 'fetch', {
+    value: async () =>
+      ({
+        ok: true,
+        status: 200,
+        text: async () => `${JSON.stringify(fooReport)}
 ${JSON.stringify(englishDaysReport)}
 `,
-    }) as unknown as Response
+      }) as unknown as Response,
+  })
   const path = resolve(dir, 'test.db')
   const archive = await SecurityArchive.start({
     graph,
@@ -149,14 +164,16 @@ ${JSON.stringify(englishDaysReport)}
   )
 
   // Updates the fetch mock to return a new version of foo
-  global.fetch = async () =>
-    ({
-      ok: true,
-      status: 200,
-      text: async () => `${JSON.stringify(fooNewReport)}
+  t.intercept(global, 'fetch', {
+    value: async () =>
+      ({
+        ok: true,
+        status: 200,
+        text: async () => `${JSON.stringify(fooNewReport)}
 ${JSON.stringify(englishDaysReport)}
 `,
-    }) as unknown as Response
+      }) as unknown as Response,
+  })
 
   await archive.refresh({ graph, specOptions })
 
@@ -171,12 +188,14 @@ ${JSON.stringify(englishDaysReport)}
   )
 
   // check pruning bad entries from the db
-  global.fetch = async () =>
-    ({
-      ok: true,
-      status: 200,
-      text: async () => '',
-    }) as unknown as Response
+  t.intercept(global, 'fetch', {
+    value: async () =>
+      ({
+        ok: true,
+        status: 200,
+        text: async () => '',
+      }) as unknown as Response,
+  })
 
   const dbWrite = db.prepare(
     'INSERT OR REPLACE INTO cache (depID, report, start, ttl) ' +
@@ -212,11 +231,12 @@ ${JSON.stringify(englishDaysReport)}
     const path = resolve(dir, 'missing.db')
 
     // fetch mock returns a response with an extraneous pkg report
-    global.fetch = async () =>
-      ({
-        ok: true,
-        status: 200,
-        text: async () => `${JSON.stringify(fooReport)}
+    t.intercept(global, 'fetch', {
+      value: async () =>
+        ({
+          ok: true,
+          status: 200,
+          text: async () => `${JSON.stringify(fooReport)}
 ${JSON.stringify(englishDaysReport)}
 ${JSON.stringify({
   id: '99923218964',
@@ -225,7 +245,8 @@ ${JSON.stringify({
   version: '1.0.0',
 })}
 `,
-      }) as unknown as Response
+        }) as unknown as Response,
+    })
 
     const warn = t.capture(console, 'warn').args
     const archive = new SecurityArchive({ path })
@@ -256,12 +277,14 @@ ${JSON.stringify({
     const path = resolve(dir, 'missing.db')
 
     // Updates the fetch mock to return a new version of foo
-    global.fetch = async () =>
-      ({
-        ok: false,
-        status: 500,
-        text: async () => '',
-      }) as unknown as Response
+    t.intercept(global, 'fetch', {
+      value: async () =>
+        ({
+          ok: false,
+          status: 500,
+          text: async () => '',
+        }) as unknown as Response,
+    })
 
     const archive = new SecurityArchive({ path, retries: 0 })
     await t.rejects(
@@ -276,12 +299,14 @@ ${JSON.stringify({
     const path = resolve(dir, 'missing.db')
 
     // Updates the fetch mock to return a new version of foo
-    global.fetch = async () =>
-      ({
-        ok: false,
-        status: 404,
-        text: async () => 'Missing API',
-      }) as unknown as Response
+    t.intercept(global, 'fetch', {
+      value: async () =>
+        ({
+          ok: false,
+          status: 404,
+          text: async () => 'Missing API',
+        }) as unknown as Response,
+    })
 
     const archive = new SecurityArchive({ path })
     await t.rejects(
@@ -289,5 +314,117 @@ ${JSON.stringify({
       /Missing API/,
       'should abort retries',
     )
+  })
+
+  await t.test('stale-while-revalidate cache', async t => {
+    const dir = t.testdir()
+    const path = resolve(dir, 'stale-revalidate.db')
+    const graph = getSimpleReportGraph()
+
+    // Initial fetch response
+    t.intercept(global, 'fetch', {
+      value: async () =>
+        ({
+          ok: true,
+          status: 200,
+          text: async () => `${JSON.stringify(fooReport)}
+${JSON.stringify(englishDaysReport)}
+`,
+        }) as unknown as Response,
+    })
+
+    // Create an initial archive and populate it
+    await SecurityArchive.start({
+      graph,
+      path,
+      specOptions,
+    })
+
+    // Open the database directly to manipulate entries for testing
+    const db = new DatabaseSync(path)
+
+    // Manually mark the englishDays entry as expired by setting its TTL to be in the past
+    const englishDaysId = joinDepIDTuple([
+      'registry',
+      '',
+      'english-days@1.0.0',
+    ])
+    const currentTime = Date.now()
+    const expiredStart =
+      currentTime - SecurityArchive.defaultTtl - 1000 // 1 second past expiration
+
+    const dbWrite = db.prepare(
+      'UPDATE cache SET start = ? WHERE depID = ?',
+    )
+    dbWrite.run(expiredStart, englishDaysId)
+
+    // Setup the fetch mock to return updated data for the background refresh
+    let fetchCallCount = 0
+    t.intercept(global, 'fetch', {
+      value: async () => {
+        fetchCallCount++
+        return {
+          ok: true,
+          status: 200,
+          text: async () => `${JSON.stringify(englishDaysUpdatedReport)}
+`,
+        } as unknown as Response
+      },
+    })
+
+    // Create a new archive that should load the expired entry and trigger revalidation
+    const refreshedArchive = new SecurityArchive({ path })
+    await refreshedArchive.refresh({ graph, specOptions })
+
+    // Initially, we should get the stale data while revalidation happens in background
+    const initialData = refreshedArchive.get(englishDaysId)
+    t.strictSame(
+      initialData,
+      englishDaysReport,
+      'should initially return the stale data while revalidating',
+    )
+
+    // Wait for the background revalidation to complete
+    // This is a bit hacky but allows us to wait for the background promise to complete
+    await new Promise(resolve => setTimeout(resolve, 200))
+
+    // Verify fetch was called to revalidate the expired entry
+    t.equal(
+      fetchCallCount,
+      1,
+      'should have made a fetch request to revalidate expired entry',
+    )
+
+    // Query the database directly to verify the update happened
+    const dbRead = db.prepare(
+      'SELECT report FROM cache WHERE depID = ?',
+    )
+    const { report } = dbRead.get(englishDaysId) as { report: string }
+    const updatedEntry = JSON.parse(report)
+
+    t.strictSame(
+      updatedEntry.score.maintenance,
+      englishDaysUpdatedReport.score.maintenance,
+      'should have updated the entry in the database with new data',
+    )
+
+    t.equal(
+      updatedEntry.alerts.length,
+      englishDaysUpdatedReport.alerts.length,
+      'should have updated the alerts in the database with new data',
+    )
+
+    // Create another new archive to verify it loads the updated entry
+    const finalArchive = new SecurityArchive({ path })
+    await finalArchive.refresh({ graph, specOptions })
+
+    const finalData = finalArchive.get(englishDaysId)
+    t.strictSame(
+      finalData?.score.maintenance,
+      englishDaysUpdatedReport.score.maintenance,
+      'should load the updated data from database after revalidation',
+    )
+
+    db.close()
   })
 })
