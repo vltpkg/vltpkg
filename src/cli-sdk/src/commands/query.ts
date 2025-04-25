@@ -28,8 +28,7 @@ export const usage: CommandUsage = () =>
       '<query> --view=<human | json | mermaid | gui>',
       '<query> --expect-results=<comparison string>',
     ],
-    description:
-      `List installed dependencies matching the provided query.
+    description: `List installed dependencies matching the provided query.
 
        The vlt Dependency Selector Syntax is a CSS-like query language that
        allows you to filter installed dependencies using a variety of metadata

@@ -20,9 +20,11 @@ import type { Views } from '../view.ts'
 export const usage: CommandUsage = () =>
   commandUsage({
     command: 'ls',
-    usage: ['', '[query | specs] [--view=human | json | mermaid | gui]'],
-    description:
-      `List installed dependencies matching given package names or resulting
+    usage: [
+      '',
+      '[query | specs] [--view=human | json | mermaid | gui]',
+    ],
+    description: `List installed dependencies matching given package names or resulting
       packages from matching a given Dependency Selector Syntax query if one
       is provided.
 
