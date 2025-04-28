@@ -123,6 +123,11 @@ exports[`OverviewTabContent renders with contributors 1`] = `
     <div class="flex flex-wrap gap-x-8 gap-y-5">
       <div class="flex cursor-default gap-2">
         <gui-avatar classname="size-9">
+          <gui-avatar-image
+            classname="size-9 rounded-full outline outline-[1px] outline-neutral-200 dark:outline-neutral-700"
+            src="https://acme.com/johndoe"
+          >
+          </gui-avatar-image>
           <gui-avatar-fallback classname="flex aspect-square size-9 items-center justify-center">
             <div class="h-full w-full rounded-full bg-gradient-to-t from-neutral-200 to-neutral-400 dark:from-neutral-500 dark:to-neutral-800">
             </div>
@@ -139,6 +144,11 @@ exports[`OverviewTabContent renders with contributors 1`] = `
       </div>
       <div class="flex cursor-default gap-2">
         <gui-avatar classname="size-9">
+          <gui-avatar-image
+            classname="size-9 rounded-full outline outline-[1px] outline-neutral-200 dark:outline-neutral-700"
+            src="https://acme.com/janedoo"
+          >
+          </gui-avatar-image>
           <gui-avatar-fallback classname="flex aspect-square size-9 items-center justify-center">
             <div class="h-full w-full rounded-full bg-gradient-to-t from-neutral-200 to-neutral-400 dark:from-neutral-500 dark:to-neutral-800">
             </div>
@@ -150,35 +160,6 @@ exports[`OverviewTabContent renders with contributors 1`] = `
           </p>
           <p class="text-xs text-muted-foreground">
             janedoo@acme.com
-          </p>
-        </div>
-      </div>
-      <div class="flex cursor-default gap-2">
-        <gui-avatar classname="size-9">
-          <gui-avatar-fallback classname="flex aspect-square size-9 items-center justify-center">
-            <div class="h-full w-full rounded-full bg-gradient-to-t from-neutral-200 to-neutral-400 dark:from-neutral-500 dark:to-neutral-800">
-            </div>
-          </gui-avatar-fallback>
-        </gui-avatar>
-        <div class="flex flex-col justify-center text-sm text-foreground">
-          <p class="font-medium text-neutral-900 dark:text-neutral-200">
-            Joe Shmoe
-          </p>
-        </div>
-      </div>
-      <div class="flex cursor-default gap-2">
-        <gui-avatar classname="size-9">
-          <gui-avatar-fallback classname="flex aspect-square size-9 items-center justify-center">
-            <div class="h-full w-full rounded-full bg-gradient-to-t from-neutral-200 to-neutral-400 dark:from-neutral-500 dark:to-neutral-800">
-            </div>
-          </gui-avatar-fallback>
-        </gui-avatar>
-        <div class="flex flex-col justify-center text-sm text-foreground">
-          <p class="font-medium text-neutral-900 dark:text-neutral-200">
-            Jane Shmoe
-          </p>
-          <p class="text-xs text-muted-foreground">
-            https://acme.com/janeshoeme
           </p>
         </div>
       </div>

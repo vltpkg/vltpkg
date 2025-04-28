@@ -77,14 +77,6 @@ vi.mock('@radix-ui/react-avatar', () => ({
   AvatarFallback: 'gui-avatar-fallback',
 }))
 
-vi.mock('@/lib/external-info.js', async () => {
-  const actual = await import('@/lib/external-info.js')
-  return {
-    ...actual,
-    retrieveAvatar: vi.fn(),
-  }
-})
-
 expect.addSnapshotSerializer({
   serialize: v => html(v),
   test: () => true,
@@ -174,24 +166,19 @@ test('OverviewTabContent renders with contributors', () => {
     insights: undefined,
     activeTab: 'overview' as const,
     setActiveTab: vi.fn(),
-    manifest: {
-      contributors: [
-        {
-          name: 'John Doe',
-          email: 'johndoe@acme.com',
-          url: 'https://acme.com/johndoe',
-        },
-        {
-          name: 'Jane Doo',
-          email: 'janedoo@acme.com',
-          url: 'https://acme.com/janedoo',
-        },
-        {
-          name: 'Joe Shmoe',
-        },
-        'Jane Shmoe <https://acme.com/janeshoeme>',
-      ],
-    },
+    manifest: null,
+    contributors: [
+      {
+        name: 'John Doe',
+        email: 'johndoe@acme.com',
+        avatar: 'https://acme.com/johndoe',
+      },
+      {
+        name: 'Jane Doo',
+        email: 'janedoo@acme.com',
+        avatar: 'https://acme.com/janedoo',
+      },
+    ],
   } satisfies SelectedItemStore
 
   vi.mocked(useSelectedItemStore).mockImplementation(selector =>

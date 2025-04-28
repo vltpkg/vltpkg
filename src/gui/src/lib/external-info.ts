@@ -1,6 +1,7 @@
 import type { Repository, Manifest, Packument } from '@vltpkg/types'
 import { compare, gt } from '@vltpkg/semver'
 import { Spec } from '@vltpkg/spec/browser'
+import { isRecord } from '@/utils/typeguards.js'
 
 export type Semver = `${number}.${number}.${number}`
 
@@ -48,6 +49,12 @@ export type Version = {
   tarball?: string
 }
 
+export type Contributor = {
+  name?: string
+  email?: string
+  avatar?: string
+}
+
 export type DetailsInfo = {
   author?: AuthorInfo
   downloadsPerVersion?: Record<Semver, number>
@@ -57,6 +64,7 @@ export type DetailsInfo = {
   publisherAvatar?: ImageInfo
   versions?: Version[]
   greaterVersions?: Version[]
+  contributors?: Contributor[]
 }
 
 export const NAME_PATTERN = /^([^(<]+)/
@@ -202,6 +210,34 @@ export async function* fetchDetails(
         }
       })
       .catch(() => ({}))
+
+  const fetchContributors = async (): Promise<DetailsInfo> => {
+    if (!manifest?.contributors) return {}
+
+    const contributors = await Promise.all(
+      manifest.contributors.map(async contributor => {
+        if (isRecord(contributor)) {
+          const avatar = await retrieveAvatar(contributor.email || '')
+          return {
+            name: contributor.name,
+            email: contributor.email,
+            avatar,
+          }
+        } else {
+          const emailMatch = EMAIL_PATTERN.exec(contributor)
+          const nameMatch = NAME_PATTERN.exec(contributor)
+          const avatar = await retrieveAvatar(emailMatch?.[1] || '')
+          return {
+            name: nameMatch?.[0] || '',
+            email: emailMatch?.[1] || '',
+            avatar,
+          }
+        }
+      }),
+    )
+
+    return { contributors }
+  }
 
   // favicon requests have a guard against duplicate requests
   // since we retry once we fetch the manifest from the registry
@@ -397,6 +433,9 @@ export async function* fetchDetails(
 
     // retrieve download range for the last year from the registry
     trackPromise(fetchDownloadsLastYear())
+
+    // retrieve contributors from the manifest
+    trackPromise(fetchContributors())
   }
 
   // asynchronously yield results from promisesQueue as soon as they're ready

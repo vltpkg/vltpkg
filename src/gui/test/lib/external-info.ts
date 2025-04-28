@@ -100,6 +100,17 @@ global.fetch = vi.fn(async url => ({
           ],
         }
       }
+      case 'https://registry.npmjs.org/with-contributors/1.0.0': {
+        return {
+          contributors: [
+            {
+              name: 'Contributor One',
+              email: 'contrib1@example.com',
+            },
+            'Contributor Two <contrib2@example.com>',
+          ],
+        }
+      }
       default: {
         throw new Error('unexpected url')
       }
@@ -435,4 +446,60 @@ test('fetchDetails favicon defaults to img shortcut', async () => {
       alt: 'avatar',
     },
   })
+})
+
+test('fetchDetails with contributors in manifest', async () => {
+  const mani = {
+    name: 'with-contributors',
+    version: '1.0.0',
+    contributors: [
+      {
+        name: 'Contributor One',
+        email: 'contrib1@example.com',
+      },
+      'Contributor Two <contrib2@example.com>',
+    ],
+  }
+  const spec = Spec.parse('with-contributors', '1.0.0')
+  const abortController = new AbortController()
+  const signal = abortController.signal
+  const res: any = {}
+  for await (const details of fetchDetails(spec, signal, mani)) {
+    for (const key of Object.keys(details)) {
+      res[key] = details[key as keyof DetailsInfo]
+    }
+  }
+  expect(res).toEqual({
+    contributors: [
+      {
+        name: 'Contributor One',
+        email: 'contrib1@example.com',
+        avatar:
+          'https://gravatar.com/avatar/685a2d1e5dcef38b6871bf250e6cf260de7db9676cdfafcf96c8c3a4a3200b30?d=retro',
+      },
+      {
+        name: 'Contributor Two ',
+        email: 'contrib2@example.com',
+        avatar:
+          'https://gravatar.com/avatar/296b6a91e056b396b44a3035b407e2433bfa8e78a94ecb30635af80576f58810?d=retro',
+      },
+    ],
+  })
+})
+
+test('fetchDetails with no contributors in manifest', async () => {
+  const mani = {
+    name: 'no-contributors',
+    version: '1.0.0',
+  }
+  const spec = Spec.parse('no-contributors', '1.0.0')
+  const abortController = new AbortController()
+  const signal = abortController.signal
+  const res: any = {}
+  for await (const details of fetchDetails(spec, signal, mani)) {
+    for (const key of Object.keys(details)) {
+      res[key] = details[key as keyof DetailsInfo]
+    }
+  }
+  expect(res).toEqual({})
 })
