@@ -90,6 +90,72 @@ global.fetch = vi.fn(async url => ({
           },
         }
       }
+      case 'https://registry.npmjs.org/package-with-githead/1.0.0': {
+        return {
+          _gitHead: 'abc123def456',
+          version: '1.0.0',
+        }
+      }
+      case 'https://registry.npmjs.org/package-with-githead': {
+        return {
+          versions: {
+            '1.0.0': {
+              version: '1.0.0',
+              gitHead: 'abc123def456',
+              dist: {
+                unpackedSize: 1000,
+                integrity: 'sha512-abc123',
+                tarball:
+                  'https://registry.npmjs.org/package-with-githead/-/package-with-githead-1.0.0.tgz',
+              },
+            },
+          },
+          time: {
+            '1.0.0': '2023-01-01T00:00:00.000Z',
+          },
+        }
+      }
+      case 'https://registry.npmjs.org/package-with-versions': {
+        return {
+          versions: {
+            '1.0.0': {
+              version: '1.0.0',
+              gitHead: 'abc123def456',
+              dist: {
+                unpackedSize: 1000,
+                integrity: 'sha512-abc123',
+                tarball:
+                  'https://registry.npmjs.org/package-with-versions/-/package-with-versions-1.0.0.tgz',
+              },
+            },
+            '1.0.1': {
+              version: '1.0.1',
+              gitHead: 'def456abc123',
+              dist: {
+                unpackedSize: 1000,
+                integrity: 'sha512-def456',
+                tarball:
+                  'https://registry.npmjs.org/package-with-versions/-/package-with-versions-1.0.1.tgz',
+              },
+            },
+            '1.0.2': {
+              version: '1.0.2',
+              gitHead: 'ghi789def456',
+              dist: {
+                unpackedSize: 1000,
+                integrity: 'sha512-ghi789',
+                tarball:
+                  'https://registry.npmjs.org/package-with-versions/-/package-with-versions-1.0.2.tgz',
+              },
+            },
+          },
+          time: {
+            '1.0.0': '2023-01-01T00:00:00.000Z',
+            '1.0.1': '2023-01-02T00:00:00.000Z',
+            '1.0.2': '2023-01-03T00:00:00.000Z',
+          },
+        }
+      }
       case 'https://api.npmjs.org/downloads/range/last-year/my-package': {
         return {
           start: '2023-01-01',
@@ -407,6 +473,95 @@ test('fetchDetails with repository info in remote manifest', async () => {
     favicon: {
       src: 'https//example.com/favicon-repo-in-remote-manifest.jpg',
       alt: "ruyadorno's avatar",
+    },
+  })
+})
+
+test('fetchDetails with gitHead information', async () => {
+  const mani = {
+    name: 'package-with-githead',
+    version: '1.0.0',
+  }
+  const spec = Spec.parse('package-with-githead', '1.0.0')
+  const abortController = new AbortController()
+  const signal = abortController.signal
+  const res: any = {}
+  for await (const details of fetchDetails(spec, signal, mani)) {
+    for (const key of Object.keys(details)) {
+      res[key] = details[key as keyof DetailsInfo]
+    }
+  }
+  expect(res.versions?.[0]).toEqual({
+    version: '1.0.0',
+    gitHead: 'abc123def456',
+    publishedDate: '2023-01-01T00:00:00.000Z',
+    unpackedSize: 1000,
+    integrity: 'sha512-abc123',
+    tarball:
+      'https://registry.npmjs.org/package-with-githead/-/package-with-githead-1.0.0.tgz',
+    publishedAuthor: {
+      name: undefined,
+      email: undefined,
+      avatar: undefined,
+    },
+  })
+})
+
+test('fetchDetails with multiple versions', async () => {
+  const mani = {
+    name: 'package-with-versions',
+    version: '1.0.0',
+  }
+  const spec = Spec.parse('package-with-versions', '1.0.0')
+  const abortController = new AbortController()
+  const signal = abortController.signal
+  const res: any = {}
+  for await (const details of fetchDetails(spec, signal, mani)) {
+    for (const key of Object.keys(details)) {
+      res[key] = details[key as keyof DetailsInfo]
+    }
+  }
+  expect(res.versions).toHaveLength(3)
+  expect(res.versions?.[0]).toEqual({
+    version: '1.0.2',
+    gitHead: 'ghi789def456',
+    publishedDate: '2023-01-03T00:00:00.000Z',
+    unpackedSize: 1000,
+    integrity: 'sha512-ghi789',
+    tarball:
+      'https://registry.npmjs.org/package-with-versions/-/package-with-versions-1.0.2.tgz',
+    publishedAuthor: {
+      name: undefined,
+      email: undefined,
+      avatar: undefined,
+    },
+  })
+  expect(res.versions?.[1]).toEqual({
+    version: '1.0.1',
+    gitHead: 'def456abc123',
+    publishedDate: '2023-01-02T00:00:00.000Z',
+    unpackedSize: 1000,
+    integrity: 'sha512-def456',
+    tarball:
+      'https://registry.npmjs.org/package-with-versions/-/package-with-versions-1.0.1.tgz',
+    publishedAuthor: {
+      name: undefined,
+      email: undefined,
+      avatar: undefined,
+    },
+  })
+  expect(res.versions?.[2]).toEqual({
+    version: '1.0.0',
+    gitHead: 'abc123def456',
+    publishedDate: '2023-01-01T00:00:00.000Z',
+    unpackedSize: 1000,
+    integrity: 'sha512-abc123',
+    tarball:
+      'https://registry.npmjs.org/package-with-versions/-/package-with-versions-1.0.0.tgz',
+    publishedAuthor: {
+      name: undefined,
+      email: undefined,
+      avatar: undefined,
     },
   })
 })
