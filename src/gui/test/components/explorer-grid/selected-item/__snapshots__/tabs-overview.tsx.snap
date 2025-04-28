@@ -83,3 +83,107 @@ exports[`OverviewTabContent renders with content 1`] = `
 </gui-tabs-content>
 
 `;
+
+exports[`OverviewTabContent renders with contributors 1`] = `
+
+<gui-tabs-content
+  value="overview"
+  classname="flex flex-col gap-4"
+>
+  <div class="flex-wrap gap-4 px-6 pt-4 hidden">
+  </div>
+  <div class="flex h-64 w-full items-center justify-center px-6 py-4">
+    <div class="flex flex-col items-center justify-center gap-3 text-center">
+      <div class="relative flex size-32 items-center justify-center rounded-full bg-secondary/60">
+        <gui-rectangle-horizontal-icon
+          classname="absolute z-[2] mt-3 size-9 -translate-x-4 -rotate-[calc(90deg+30deg)] fill-secondary text-muted-foreground/50"
+          strokewidth="1.25"
+        >
+        </gui-rectangle-horizontal-icon>
+        <gui-file-text-icon
+          classname="absolute z-[3] size-14 fill-secondary text-neutral-500"
+          strokewidth="1"
+        >
+        </gui-file-text-icon>
+        <gui-rectangle-horizontal-icon
+          classname="absolute z-[2] mt-3 size-9 translate-x-4 rotate-[calc(90deg+30deg)] fill-secondary text-muted-foreground/50"
+          strokewidth="1.25"
+        >
+        </gui-rectangle-horizontal-icon>
+      </div>
+      <p class="w-2/3 text-pretty text-sm text-muted-foreground">
+        We couldn't find a description for this project
+      </p>
+    </div>
+  </div>
+  <div class="flex cursor-default flex-col gap-2 px-6 pb-4">
+    <h4 class="text-sm font-medium capitalize">
+      Contributors
+    </h4>
+    <div class="flex flex-wrap gap-x-8 gap-y-5">
+      <div class="flex cursor-default gap-2">
+        <gui-avatar classname="size-9">
+          <gui-avatar-fallback classname="flex aspect-square size-9 items-center justify-center">
+            <div class="h-full w-full rounded-full bg-gradient-to-t from-neutral-200 to-neutral-400 dark:from-neutral-500 dark:to-neutral-800">
+            </div>
+          </gui-avatar-fallback>
+        </gui-avatar>
+        <div class="flex flex-col justify-center text-sm text-foreground">
+          <p class="font-medium text-neutral-900 dark:text-neutral-200">
+            John Doe
+          </p>
+          <p class="text-xs text-muted-foreground">
+            johndoe@acme.com
+          </p>
+        </div>
+      </div>
+      <div class="flex cursor-default gap-2">
+        <gui-avatar classname="size-9">
+          <gui-avatar-fallback classname="flex aspect-square size-9 items-center justify-center">
+            <div class="h-full w-full rounded-full bg-gradient-to-t from-neutral-200 to-neutral-400 dark:from-neutral-500 dark:to-neutral-800">
+            </div>
+          </gui-avatar-fallback>
+        </gui-avatar>
+        <div class="flex flex-col justify-center text-sm text-foreground">
+          <p class="font-medium text-neutral-900 dark:text-neutral-200">
+            Jane Doo
+          </p>
+          <p class="text-xs text-muted-foreground">
+            janedoo@acme.com
+          </p>
+        </div>
+      </div>
+      <div class="flex cursor-default gap-2">
+        <gui-avatar classname="size-9">
+          <gui-avatar-fallback classname="flex aspect-square size-9 items-center justify-center">
+            <div class="h-full w-full rounded-full bg-gradient-to-t from-neutral-200 to-neutral-400 dark:from-neutral-500 dark:to-neutral-800">
+            </div>
+          </gui-avatar-fallback>
+        </gui-avatar>
+        <div class="flex flex-col justify-center text-sm text-foreground">
+          <p class="font-medium text-neutral-900 dark:text-neutral-200">
+            Joe Shmoe
+          </p>
+        </div>
+      </div>
+      <div class="flex cursor-default gap-2">
+        <gui-avatar classname="size-9">
+          <gui-avatar-fallback classname="flex aspect-square size-9 items-center justify-center">
+            <div class="h-full w-full rounded-full bg-gradient-to-t from-neutral-200 to-neutral-400 dark:from-neutral-500 dark:to-neutral-800">
+            </div>
+          </gui-avatar-fallback>
+        </gui-avatar>
+        <div class="flex flex-col justify-center text-sm text-foreground">
+          <p class="font-medium text-neutral-900 dark:text-neutral-200">
+            Jane Shmoe
+          </p>
+          <p class="text-xs text-muted-foreground">
+            https://acme.com/janeshoeme
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</gui-tabs-content>
+
+`;

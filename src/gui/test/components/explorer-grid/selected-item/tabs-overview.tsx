@@ -71,6 +71,20 @@ vi.mock('@/components/ui/link.jsx', () => ({
   Link: 'gui-link',
 }))
 
+vi.mock('@radix-ui/react-avatar', () => ({
+  Avatar: 'gui-avatar',
+  AvatarImage: 'gui-avatar-image',
+  AvatarFallback: 'gui-avatar-fallback',
+}))
+
+vi.mock('@/lib/external-info.js', async () => {
+  const actual = await import('@/lib/external-info.js')
+  return {
+    ...actual,
+    retrieveAvatar: vi.fn(),
+  }
+})
+
 expect.addSnapshotSerializer({
   serialize: v => html(v),
   test: () => true,
@@ -139,6 +153,45 @@ test('OverviewTabContent renders with content', () => {
     activeTab: 'overview' as const,
     setActiveTab: vi.fn(),
     manifest: {},
+  } satisfies SelectedItemStore
+
+  vi.mocked(useSelectedItemStore).mockImplementation(selector =>
+    selector(mockState),
+  )
+
+  const Container = () => {
+    return <OverviewTabContent />
+  }
+
+  const { container } = render(<Container />)
+  expect(container.innerHTML).toMatchSnapshot()
+})
+
+test('OverviewTabContent renders with contributors', () => {
+  const mockState = {
+    selectedItem: ITEM_WITH_DESCRIPTION,
+    ...ITEM_DETAILS_WITH_AUTHOR,
+    insights: undefined,
+    activeTab: 'overview' as const,
+    setActiveTab: vi.fn(),
+    manifest: {
+      contributors: [
+        {
+          name: 'John Doe',
+          email: 'johndoe@acme.com',
+          url: 'https://acme.com/johndoe',
+        },
+        {
+          name: 'Jane Doo',
+          email: 'janedoo@acme.com',
+          url: 'https://acme.com/janedoo',
+        },
+        {
+          name: 'Joe Shmoe',
+        },
+        'Jane Shmoe <https://acme.com/janeshoeme>',
+      ],
+    },
   } satisfies SelectedItemStore
 
   vi.mocked(useSelectedItemStore).mockImplementation(selector =>

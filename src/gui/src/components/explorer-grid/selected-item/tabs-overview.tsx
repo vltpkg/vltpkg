@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react'
 import { TabsTrigger, TabsContent } from '@/components/ui/tabs.jsx'
 import { useSelectedItemStore } from '@/components/explorer-grid/selected-item/context.jsx'
 import Markdown from 'react-markdown'
@@ -11,6 +12,18 @@ import {
 import { InlineCode } from '@/components/ui/inline-code.jsx'
 import { Link } from '@/components/ui/link.jsx'
 import { cn } from '@/lib/utils.js'
+import {
+  Avatar,
+  AvatarImage,
+  AvatarFallback,
+} from '@radix-ui/react-avatar'
+import { isRecord } from '@/utils/typeguards.js'
+import {
+  retrieveAvatar,
+  EMAIL_PATTERN,
+  NAME_PATTERN,
+} from '@/lib/external-info.js'
+import type { Person } from '@vltpkg/types'
 
 export const OverviewTabButton = () => {
   return (
@@ -20,6 +33,65 @@ export const OverviewTabButton = () => {
       className="w-fit px-2">
       Overview
     </TabsTrigger>
+  )
+}
+
+const useContributorAvatar = (contributor: Person) => {
+  const [avatarImg, setAvatarImg] = useState<string | null>(null)
+
+  useEffect(() => {
+    const fetchAvatar = async () => {
+      if (isRecord(contributor)) {
+        const avatar = await retrieveAvatar(contributor.email || '')
+        setAvatarImg(avatar)
+      } else {
+        const emailMatch = EMAIL_PATTERN.exec(contributor)
+        if (emailMatch) {
+          const avatar = await retrieveAvatar(emailMatch[1] || '')
+          setAvatarImg(avatar)
+        }
+      }
+    }
+
+    void fetchAvatar()
+  }, [contributor])
+
+  return avatarImg
+}
+
+const Contributor = ({ contributor }: { contributor: Person }) => {
+  const avatarImg = useContributorAvatar(contributor)
+  const name =
+    isRecord(contributor) ?
+      contributor.name
+    : NAME_PATTERN.exec(contributor)?.[0] || ''
+  const email =
+    isRecord(contributor) ?
+      contributor.email
+    : EMAIL_PATTERN.exec(contributor)?.[1] || ''
+
+  return (
+    <div className="flex cursor-default gap-2">
+      <Avatar className="size-9">
+        {avatarImg && (
+          <AvatarImage
+            className="size-9 rounded-full outline outline-[1px] outline-neutral-200 dark:outline-neutral-700"
+            src={avatarImg}
+          />
+        )}
+        <AvatarFallback className="flex aspect-square size-9 items-center justify-center">
+          <div className="h-full w-full rounded-full bg-gradient-to-t from-neutral-200 to-neutral-400 dark:from-neutral-500 dark:to-neutral-800" />
+        </AvatarFallback>
+      </Avatar>
+      <div className="flex flex-col justify-center text-sm text-foreground">
+        <p className="font-medium text-neutral-900 dark:text-neutral-200">
+          {name}
+        </p>
+        {email && (
+          <p className="text-xs text-muted-foreground">{email}</p>
+        )}
+      </div>
+    </div>
   )
 }
 
@@ -133,8 +205,24 @@ export const OverviewTabContent = () => {
         </div>
       }
 
+      {manifest?.contributors && manifest.contributors.length > 0 && (
+        <div className="flex cursor-default flex-col gap-2 px-6 pb-4">
+          <h4 className="text-sm font-medium capitalize">
+            Contributors
+          </h4>
+          <div className="flex flex-wrap gap-x-8 gap-y-5">
+            {manifest.contributors.map((contributor, idx) => (
+              <Contributor
+                key={`contributor-${idx}`}
+                contributor={contributor}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+
       {manifest?.keywords && (
-        <div className="flex flex-col gap-2 px-6 pb-4">
+        <div className="flex cursor-default flex-col gap-2 px-6 pb-4">
           <h4 className="text-sm font-medium capitalize">keywords</h4>
           <div className="flex flex-wrap gap-2">
             {Array.isArray(manifest.keywords) ?

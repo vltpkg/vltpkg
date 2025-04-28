@@ -59,13 +59,17 @@ export type DetailsInfo = {
   greaterVersions?: Version[]
 }
 
+export const NAME_PATTERN = /^([^(<]+)/
+export const URL_PATTERN = /\(([^()]+)\)/
+export const EMAIL_PATTERN = /<([^<>]+)>/
+
 export const readAuthor = (
   author: string | AuthorInfo,
 ): AuthorInfo | undefined => {
   if (typeof author === 'string') {
-    const name = /^([^(<]+)/.exec(author)?.[0].trim() || ''
-    const url = /\(([^()]+)\)/.exec(author)?.[1] || ''
-    const email = /<([^<>]+)>/.exec(author)?.[1] || ''
+    const name = NAME_PATTERN.exec(author)?.[0].trim() || ''
+    const url = URL_PATTERN.exec(author)?.[1] || ''
+    const email = EMAIL_PATTERN.exec(author)?.[1] || ''
     const res = {
       name,
       ...(email ? { email } : undefined),
