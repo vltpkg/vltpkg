@@ -107,6 +107,143 @@ exports[`ItemHeader renders with a package score 1`] = `
 
 `;
 
+exports[`ItemHeader renders with a version information 1`] = `
+
+<div
+  class="flex flex-col divide-y-[1px] divide-muted pb-3"
+  style="opacity: 0;"
+>
+  <div class="grid w-full grid-cols-12 divide-x-[1px] divide-muted">
+    <div class="flex gap-4 overflow-hidden col-span-9 pb-3 pl-6 pt-6">
+      <gui-avatar classname="aspect-square size-[3.75rem]">
+        <gui-avatar-image
+          classname="aspect-square size-[3.75rem] rounded-md border-[1px] bg-secondary object-cover"
+          src="https://example.com/favicon.png"
+          alt="Example Favicon"
+        >
+        </gui-avatar-image>
+        <gui-avatar-fallback classname="flex aspect-square size-[3.75rem] h-full w-full items-center justify-center rounded-md border-[1px]">
+          <div class="to:to-neutral-400 h-full w-full rounded-md bg-gradient-to-t from-neutral-100 dark:from-neutral-500 dark:to-neutral-800">
+          </div>
+        </gui-avatar-fallback>
+      </gui-avatar>
+      <gui-scroll-area classname="w-full overflow-x-scroll">
+        <div class="flex h-full w-full flex-col justify-between">
+          <div class="flex w-full flex-col gap-0.5">
+            <div class="flex items-center gap-2">
+              <h1 class="w-fit max-w-full cursor-default align-baseline text-lg font-medium">
+                item
+                <gui-inline-code
+                  variant="monoGhost"
+                  classname="cursor-default text-sm"
+                >
+                  1.0.0
+                </gui-inline-code>
+              </h1>
+              <gui-tooltip-provider>
+                <gui-tooltip delayduration="150">
+                  <gui-tooltip-trigger classname="flex items-center justify-center">
+                    <div class="cursor-default rounded-sm border-[1px] border-green-600 bg-green-400/30 p-0.5 transition-colors duration-150 hover:bg-green-400/40 dark:border-green-500 dark:bg-green-500/30 dark:hover:bg-green-500/40">
+                      <gui-arrow-big-up-dash-icon
+                        classname="text-green-600 dark:text-green-500"
+                        size="16"
+                      >
+                      </gui-arrow-big-up-dash-icon>
+                    </div>
+                  </gui-tooltip-trigger>
+                  <gui-tooltip-content>
+                    Newer versions available
+                  </gui-tooltip-content>
+                </gui-tooltip>
+              </gui-tooltip-provider>
+            </div>
+          </div>
+        </div>
+        <gui-scroll-bar orientation="horizontal">
+        </gui-scroll-bar>
+      </gui-scroll-area>
+    </div>
+  </div>
+  <div class="flex w-full items-center justify-between px-6 py-2 empty:hidden">
+    <div class="flex h-[31.508px] items-center gap-2">
+      <gui-avatar>
+        <gui-avatar-image
+          classname="size-5 rounded-sm outline outline-[1px] outline-border"
+          src="https://example.com/avatar.png"
+          alt="John Doe"
+        >
+        </gui-avatar-image>
+        <gui-avatar-fallback classname="flex size-5 items-center justify-center rounded-sm bg-secondary bg-gradient-to-t from-neutral-100 to-neutral-400 p-0.5 outline outline-[1px] outline-border dark:from-neutral-500 dark:to-neutral-800">
+        </gui-avatar-fallback>
+      </gui-avatar>
+      <gui-tooltip-provider>
+        <gui-tooltip>
+          <gui-tooltip-trigger classname="text-baseline cursor-default text-xs font-medium text-muted-foreground">
+            Published by:
+            <span class="text-foreground">
+              John Doe
+            </span>
+            <span class="ml-2">
+              abc123 • 2 years ago
+            </span>
+          </gui-tooltip-trigger>
+          <gui-tooltip-content align="start">
+            John Doe john@example.com
+          </gui-tooltip-content>
+        </gui-tooltip>
+      </gui-tooltip-provider>
+    </div>
+    <div class="flex h-full cursor-default items-center justify-center text-center ml-auto">
+      <p class="w-full text-sm font-medium text-foreground">
+        123,456
+        <span class="text-muted-foreground">
+          Downloads last week
+        </span>
+      </p>
+    </div>
+  </div>
+  <div class="grid w-full grid-cols-12 divide-x-[1px] divide-muted empty:hidden">
+    <gui-scroll-area classname="overflow-hidden overflow-x-scroll border-b-[1px] border-muted py-3 col-span-9 w-full pl-6">
+      <div class="flex w-max gap-2">
+        <gui-inline-code
+          variant="mono"
+          tooltipduration="150"
+          tooltip="121 KB unpacked size"
+          displaytooltip="true"
+          classname="text-muted-foreground max-w-28 overflow-hidden text-nowrap truncate cursor-default relative mx-0 inline-flex items-center font-inter font-medium tracking-wide gap-1 px-2"
+        >
+          <gui-download-icon
+            size="16"
+            classname="mb-0.5"
+          >
+          </gui-download-icon>
+          121 KB
+        </gui-inline-code>
+        <gui-copy-to-clipboard
+          classname="font-inter"
+          tooltiptext="Copy tarball URL"
+          copyvalue="https://example.com/tarball.tgz"
+        >
+          <gui-package-icon size="16">
+          </gui-package-icon>
+          Tarball
+        </gui-copy-to-clipboard>
+        <gui-copy-to-clipboard
+          classname="font-inter"
+          tooltiptext="Copy Integrity value: abc123"
+          copyvalue="sha512-abc123"
+        >
+          Integrity
+        </gui-copy-to-clipboard>
+      </div>
+      <gui-scroll-bar orientation="horizontal">
+      </gui-scroll-bar>
+    </gui-scroll-area>
+  </div>
+</div>
+
+`;
+
 exports[`ItemHeader renders with custom registry item 1`] = `
 
 <div
