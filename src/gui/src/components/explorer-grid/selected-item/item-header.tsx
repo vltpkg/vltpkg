@@ -365,7 +365,7 @@ const PackageImage = () => {
               className="text-muted-foreground"
             />
           </div>
-        : <div className="to:to-neutral-400 h-full w-full rounded-md bg-gradient-to-t from-neutral-100 dark:from-neutral-500 dark:to-neutral-800" />
+        : <div className="h-full w-full rounded-md bg-gradient-to-t from-neutral-200 to-neutral-400 dark:from-neutral-500 dark:to-neutral-800" />
         }
       </AvatarFallback>
     </Avatar>

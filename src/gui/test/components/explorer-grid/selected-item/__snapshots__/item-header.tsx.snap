@@ -16,7 +16,7 @@ exports[`ItemHeader renders with a package score 1`] = `
         >
         </gui-avatar-image>
         <gui-avatar-fallback classname="flex aspect-square size-[3.75rem] h-full w-full items-center justify-center rounded-md border-[1px]">
-          <div class="to:to-neutral-400 h-full w-full rounded-md bg-gradient-to-t from-neutral-100 dark:from-neutral-500 dark:to-neutral-800">
+          <div class="h-full w-full rounded-md bg-gradient-to-t from-neutral-200 to-neutral-400 dark:from-neutral-500 dark:to-neutral-800">
           </div>
         </gui-avatar-fallback>
       </gui-avatar>
@@ -123,7 +123,7 @@ exports[`ItemHeader renders with custom registry item 1`] = `
         >
         </gui-avatar-image>
         <gui-avatar-fallback classname="flex aspect-square size-[3.75rem] h-full w-full items-center justify-center rounded-md border-[1px]">
-          <div class="to:to-neutral-400 h-full w-full rounded-md bg-gradient-to-t from-neutral-100 dark:from-neutral-500 dark:to-neutral-800">
+          <div class="h-full w-full rounded-md bg-gradient-to-t from-neutral-200 to-neutral-400 dark:from-neutral-500 dark:to-neutral-800">
           </div>
         </gui-avatar-fallback>
       </gui-avatar>
@@ -222,7 +222,7 @@ exports[`ItemHeader renders with default git host item 1`] = `
         >
         </gui-avatar-image>
         <gui-avatar-fallback classname="flex aspect-square size-[3.75rem] h-full w-full items-center justify-center rounded-md border-[1px]">
-          <div class="to:to-neutral-400 h-full w-full rounded-md bg-gradient-to-t from-neutral-100 dark:from-neutral-500 dark:to-neutral-800">
+          <div class="h-full w-full rounded-md bg-gradient-to-t from-neutral-200 to-neutral-400 dark:from-neutral-500 dark:to-neutral-800">
           </div>
         </gui-avatar-fallback>
       </gui-avatar>
@@ -315,7 +315,7 @@ exports[`ItemHeader renders with default item 1`] = `
         >
         </gui-avatar-image>
         <gui-avatar-fallback classname="flex aspect-square size-[3.75rem] h-full w-full items-center justify-center rounded-md border-[1px]">
-          <div class="to:to-neutral-400 h-full w-full rounded-md bg-gradient-to-t from-neutral-100 dark:from-neutral-500 dark:to-neutral-800">
+          <div class="h-full w-full rounded-md bg-gradient-to-t from-neutral-200 to-neutral-400 dark:from-neutral-500 dark:to-neutral-800">
           </div>
         </gui-avatar-fallback>
       </gui-avatar>
@@ -405,7 +405,7 @@ exports[`ItemHeader renders with insights 1`] = `
         >
         </gui-avatar-image>
         <gui-avatar-fallback classname="flex aspect-square size-[3.75rem] h-full w-full items-center justify-center rounded-md border-[1px]">
-          <div class="to:to-neutral-400 h-full w-full rounded-md bg-gradient-to-t from-neutral-100 dark:from-neutral-500 dark:to-neutral-800">
+          <div class="h-full w-full rounded-md bg-gradient-to-t from-neutral-200 to-neutral-400 dark:from-neutral-500 dark:to-neutral-800">
           </div>
         </gui-avatar-fallback>
       </gui-avatar>
@@ -495,7 +495,7 @@ exports[`ItemHeader renders with scoped registry item 1`] = `
         >
         </gui-avatar-image>
         <gui-avatar-fallback classname="flex aspect-square size-[3.75rem] h-full w-full items-center justify-center rounded-md border-[1px]">
-          <div class="to:to-neutral-400 h-full w-full rounded-md bg-gradient-to-t from-neutral-100 dark:from-neutral-500 dark:to-neutral-800">
+          <div class="h-full w-full rounded-md bg-gradient-to-t from-neutral-200 to-neutral-400 dark:from-neutral-500 dark:to-neutral-800">
           </div>
         </gui-avatar-fallback>
       </gui-avatar>
