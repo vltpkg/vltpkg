@@ -264,7 +264,7 @@ test('fetchDetails returns the correct details including downloadsRange', async 
       email: 'ruyadorno@example.com',
     },
     publisherAvatar: {
-      src: 'https://gravatar.com/avatar/1f87aae035b22253b6f4051f68ade60229308d26c514816de0046566cdebe8fa?d=404',
+      src: 'https://gravatar.com/avatar/1f87aae035b22253b6f4051f68ade60229308d26c514816de0046566cdebe8fa?d=retro',
       alt: "Ruy Adorno's avatar",
     },
   })
@@ -292,7 +292,7 @@ test('fetchDetails from various async requests', async () => {
       email: 'ruyadorno@example.com',
     },
     publisherAvatar: {
-      src: 'https://gravatar.com/avatar/1f87aae035b22253b6f4051f68ade60229308d26c514816de0046566cdebe8fa?d=404',
+      src: 'https://gravatar.com/avatar/1f87aae035b22253b6f4051f68ade60229308d26c514816de0046566cdebe8fa?d=retro',
       alt: "Ruy Adorno's avatar",
     },
   })
@@ -349,7 +349,7 @@ test('fetchDetails with missing downloads', async () => {
       email: 'foo@bar.ca',
     },
     publisherAvatar: {
-      src: 'https://gravatar.com/avatar/9d3c411537fa65b330e063d79b17e5568a0df4cd8a4174985aa94f4c35ceba20?d=404',
+      src: 'https://gravatar.com/avatar/9d3c411537fa65b330e063d79b17e5568a0df4cd8a4174985aa94f4c35ceba20?d=retro',
       alt: "Foo's avatar",
     },
   })
@@ -383,7 +383,7 @@ test('fetchDetails with repository info in local manifest', async () => {
       email: 'ruyadorno@example.com',
     },
     publisherAvatar: {
-      src: 'https://gravatar.com/avatar/1f87aae035b22253b6f4051f68ade60229308d26c514816de0046566cdebe8fa?d=404',
+      src: 'https://gravatar.com/avatar/1f87aae035b22253b6f4051f68ade60229308d26c514816de0046566cdebe8fa?d=retro',
       alt: "Ruy Adorno's avatar",
     },
   })

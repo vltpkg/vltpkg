@@ -138,7 +138,7 @@ export const retrieveAvatar = async (
     .map(b => b.toString(16).padStart(2, '0'))
     .join('')
 
-  return `https://gravatar.com/avatar/${hash}?d=404`
+  return `https://gravatar.com/avatar/${hash}?d=retro`
 }
 
 export async function* fetchDetails(
