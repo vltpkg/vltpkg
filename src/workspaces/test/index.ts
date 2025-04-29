@@ -462,3 +462,36 @@ t.test('force a full load, but still not found', t => {
   t.strictSame(m.getDeps(m.get('src/ws')!, true), [])
   t.end()
 })
+
+t.test('duplicate workspace names are not allowed', t => {
+  const dir = t.testdir({
+    'vlt-workspaces.json': JSON.stringify({
+      packages: ['./src/*'],
+    }),
+    src: {
+      foo: {
+        'package.json': JSON.stringify({
+          name: 'foo',
+          version: '1.2.3',
+        }),
+      },
+      foo1: {
+        'package.json': JSON.stringify({
+          name: 'foo', // Same name as foo
+          version: '1.2.3',
+        }),
+      },
+    },
+  })
+
+  t.throws(() => Monorepo.load(dir), {
+    message: 'Duplicate workspace name found',
+    cause: {
+      name: 'foo',
+      wanted: resolve(dir, 'src/foo'),
+      found: resolve(dir, 'src/foo1'),
+    },
+  })
+
+  t.end()
+})
