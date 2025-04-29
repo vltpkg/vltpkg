@@ -73,7 +73,7 @@ export default {
   eslint: ['eslint.config.mjs'],
   workspaces: Object.fromEntries(
     getWorkspaces().map(ws => {
-      const key = relative(process.cwd(), ws) || '.'
+      const key = relative(process.cwd(), ws.dir) || '.'
       return [key, workspaces[key] ?? { entry }]
     }),
   ),

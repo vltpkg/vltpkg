@@ -33,7 +33,6 @@ export const startDashboardData = ({
   }
 
   void _startDashboard().catch((err: unknown) => {
-    // eslint-disable-next-line no-console
     console.error(err)
     navigate('/error')
     updateErrorCause('Failed to initialize dashboard.')

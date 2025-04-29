@@ -14,7 +14,7 @@
   },
   "dependencies": {
     "@vltpkg/cli-sdk": "workspace:*",
-    "esbuild": "catalog:"
+    "esbuild": "^0.25.2"
   },
   "devDependencies": {
     "@eslint/js": "catalog:",

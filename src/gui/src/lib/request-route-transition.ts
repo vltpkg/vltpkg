@@ -32,7 +32,6 @@ export const requestRouteTransition = async <T>({
       body: JSON.stringify(body),
     })
   } catch (err) {
-    // eslint-disable-next-line no-console
     console.error(err)
     navigate('/error')
     updateErrorCause('Failed to submit request.')
@@ -43,7 +42,6 @@ export const requestRouteTransition = async <T>({
   try {
     projectSelected = (await req.json()) === 'ok'
   } catch (err) {
-    // eslint-disable-next-line no-console
     console.error(err)
   }
 
