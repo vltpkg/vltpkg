@@ -433,10 +433,10 @@ export async function* fetchDetails(
 
     // retrieve download range for the last year from the registry
     trackPromise(fetchDownloadsLastYear())
-
-    // retrieve contributors from the manifest
-    trackPromise(fetchContributors())
   }
+
+  // retrieve contributors from the manifest
+  trackPromise(fetchContributors())
 
   // asynchronously yield results from promisesQueue as soon as they're ready
   while (true) {
