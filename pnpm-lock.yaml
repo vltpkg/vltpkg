@@ -109,9 +109,6 @@ importers:
       '@vltpkg/semver':
         specifier: workspace:*
         version: link:src/semver
-      '@vltpkg/spec':
-        specifier: workspace:*
-        version: link:src/spec
       eslint:
         specifier: 'catalog:'
         version: 9.25.1(jiti@2.4.2)
@@ -404,9 +401,6 @@ importers:
 
   src/cli-sdk:
     dependencies:
-      '@vltpkg/cache':
-        specifier: workspace:*
-        version: link:../cache
       '@vltpkg/dep-id':
         specifier: workspace:*
         version: link:../dep-id
@@ -431,9 +425,6 @@ importers:
       '@vltpkg/package-json':
         specifier: workspace:*
         version: link:../package-json
-      '@vltpkg/promise-spawn':
-        specifier: workspace:*
-        version: link:../promise-spawn
       '@vltpkg/query':
         specifier: workspace:*
         version: link:../query
@@ -1504,9 +1495,6 @@ importers:
 
   src/rollback-remove:
     dependencies:
-      '@vltpkg/error-cause':
-        specifier: workspace:*
-        version: link:../error-cause
       rimraf:
         specifier: 'catalog:'
         version: 6.0.1
@@ -2000,9 +1988,6 @@ importers:
       '@vltpkg/rollback-remove':
         specifier: workspace:*
         version: link:../rollback-remove
-      '@vltpkg/run':
-        specifier: workspace:*
-        version: link:../run
       '@vltpkg/spec':
         specifier: workspace:*
         version: link:../spec

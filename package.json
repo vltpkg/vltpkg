@@ -16,7 +16,6 @@
     "@vltpkg/benchmark": "workspace:*",
     "@vltpkg/infra-build": "workspace:*",
     "@vltpkg/semver": "workspace:*",
-    "@vltpkg/spec": "workspace:*",
     "eslint": "catalog:",
     "eslint-import-resolver-typescript": "^3.10.0",
     "eslint-plugin-import": "^2.31.0",
