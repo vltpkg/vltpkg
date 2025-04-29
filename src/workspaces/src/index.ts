@@ -299,6 +299,18 @@ export class Monorepo {
       fromCache?.manifest ?? this.packageJson.read(fullpath)
     const ws = fromCache ?? new Workspace(path, manifest, fullpath)
     if (group) ws.groups.push(group)
+
+    // Check for duplicate workspace names
+    const existingWS = this.#workspaces.get(ws.name)
+    if (existingWS && existingWS.fullpath !== ws.fullpath) {
+      throw error('Duplicate workspace name found', {
+        name: ws.name,
+        path: this.projectRoot,
+        wanted: ws.fullpath,
+        found: existingWS.fullpath,
+      })
+    }
+
     this.#workspaces.set(ws.fullpath, ws)
     this.#workspaces.set(ws.path, ws)
     this.#workspaces.set(ws.name, ws)
