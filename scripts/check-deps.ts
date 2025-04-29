@@ -2,18 +2,43 @@
 
 import { spawn } from 'node:child_process'
 import { relative } from 'node:path'
-import subset from 'semver/ranges/subset.js'
-import { ROOT, readPkgJson as getPkg } from './utils.ts'
+import assert from 'node:assert'
+import { subset } from 'semver'
+import { ROOT, readPkgJson } from './utils.ts'
+import type { PackageJson } from './utils.ts'
 
-const walk = (dep, ancestors = []) => [
+interface PnpmListItem {
+  path: string
+  name?: string
+  from?: string
+  dependencies?: Record<string, PnpmListItem>
+}
+
+interface PnpmList {
+  name: string
+  version: string
+  path: string
+  dependencies?: Record<string, PnpmListItem>
+}
+
+interface Dependency {
+  path: string
+  pkg: PackageJson
+  ancestors: string[][]
+}
+
+const walk = (
+  dep: PnpmListItem,
+  ancestors: string[] = [],
+): { path: string; ancestors: string[] }[] => [
   { path: dep.path, ancestors },
   ...Object.values(dep.dependencies ?? {}).flatMap(d =>
-    walk(d, [...ancestors, dep.from ?? dep.name]),
+    walk(d, [...ancestors, dep.from ?? dep.name ?? '']),
   ),
 ]
 
 const getAllProdDeps = async () => {
-  const workspaces = await new Promise((res, rej) => {
+  const pnpmList = await new Promise<PnpmList[]>((res, rej) => {
     const proc = spawn(
       'pnpm',
       [
@@ -23,10 +48,6 @@ const getAllProdDeps = async () => {
         '--depth=Infinity',
         '--json',
         '--prod',
-        // Optional deps might not be present on the current
-        // platform so we ignore them because we cant read their
-        // package.json. This could mean we miss a license or engine
-        // check but the risk is low.
         '--no-optional',
       ],
       {
@@ -35,29 +56,39 @@ const getAllProdDeps = async () => {
       },
     )
     let output = ''
-    proc.stdout.on('data', data => (output += data.toString()))
-    proc.on('close', () => res(JSON.parse(output))).on('error', rej)
+    proc.stdout.on(
+      'data',
+      (data: Buffer) => (output += data.toString()),
+    )
+    proc
+      .on('close', () => res(JSON.parse(output) as PnpmList[]))
+      .on('error', rej)
   })
   return Array.from(
-    workspaces
+    pnpmList
       .flatMap(workspace => walk(workspace))
       .reduce((acc, d) => {
-        const c = acc.get(d.path) ?? {}
+        const c = acc.get(d.path)
         acc.set(d.path, {
           ...c,
           path: d.path,
-          pkg: getPkg(d.path),
+          pkg: readPkgJson(d.path),
           ancestors: [
-            ...new Set([...(c.ancestors ?? []), d.ancestors]),
+            ...new Set([...(c?.ancestors ?? []), d.ancestors]),
           ],
         })
         return acc
-      }, new Map())
+      }, new Map<string, Dependency>())
       .values(),
   )
 }
 
-const check = (key, packages, value, ok) => {
+const check = (
+  key: string,
+  packages: Dependency[],
+  value: (d: Dependency) => string | undefined,
+  ok: (v: string | undefined, pkg: PackageJson) => boolean,
+) => {
   const problems = packages.filter(d => !ok(value(d), d.pkg))
   if (problems.length) {
     const indent = (n = 0) => `\n${' '.repeat(n)}`
@@ -74,11 +105,14 @@ const check = (key, packages, value, ok) => {
         .join(indent())
     )
   }
+  return undefined
 }
 
 const main = async () => {
   const deps = await getAllProdDeps()
-  const allowedEngines = getPkg(ROOT).engines.node
+  const allowedEngines = readPkgJson(ROOT).engines?.node
+  assert(allowedEngines, 'No engines defined in package.json')
+
   const checkEngines = check(
     'engines',
     deps,
@@ -101,7 +135,7 @@ const main = async () => {
     'license',
     deps,
     d => d.pkg.license,
-    v => allowedLicenes.has(v),
+    v => v === undefined || allowedLicenes.has(v),
   )
   if (checkEngines || checkLicenses) {
     throw new Error(
@@ -117,9 +151,4 @@ const main = async () => {
   )
 }
 
-main()
-  .then(console.log)
-  .catch(e => {
-    process.exitCode = 1
-    console.error(e.message)
-  })
+console.log(await main())

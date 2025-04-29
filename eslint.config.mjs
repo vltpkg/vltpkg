@@ -5,11 +5,17 @@ import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import jsdoc from 'eslint-plugin-jsdoc'
 import importPlugin from 'eslint-plugin-import'
+import { configs as pnpmConfigs } from 'eslint-plugin-pnpm'
 import enforceMockImportTypes from './scripts/eslint-enforce-mock-import-types.js'
+
+const NAME = 'eslint-config-vltpkg'
 
 const MONO_ROOT = import.meta.dirname
 const CWD = process.cwd()
 
+// This turns on rules that were turned on originally for their autofixing capabilities and to start
+// from a consistent baseline. But keeping them on creates too much friction day-to-day. They can be
+// enabled temporarily to fix or warn on any questionable usage and then disabled.
 // 'error' to fix, or 'warn' to see
 const BE_EXTRA = process.env.LINT_SUPER_CONSISTENT ?? 'off'
 
@@ -22,8 +28,18 @@ const unsafeRules = value => ({
   '@typescript-eslint/no-unsafe-return': value,
 })
 
-export default tseslint.config(
+const extsToGlob = exts => `.{${exts.map(e => e.slice(1)).join(',')}}`
+const jsExts = ['.js', '.jsx', '.mjs', '.cjs']
+const tsExts = jsExts.map(e => e.replace('j', 't'))
+const extGlobs = {
+  ts: extsToGlob(tsExts),
+  js: extsToGlob(jsExts),
+  all: extsToGlob([...tsExts, ...jsExts]),
+}
+
+export default [
   {
+    name: `${NAME}/ignores`,
     ignores: [
       ...readFileSync(resolve(MONO_ROOT, '.prettierignore'))
         .toString()
@@ -33,13 +49,16 @@ export default tseslint.config(
         .map(v => v.replace(/^(!?)\//, '$1')),
     ],
   },
-  eslint.configs.recommended,
-  ...tseslint.configs.strictTypeChecked,
-  ...tseslint.configs.stylisticTypeChecked,
-  jsdoc.configs['flat/recommended-error'],
-  importPlugin.flatConfigs.recommended,
-  importPlugin.flatConfigs.typescript,
-  {
+  ...tseslint.config({
+    files: [`**/*${extGlobs.all}`],
+    extends: [
+      eslint.configs.recommended,
+      ...tseslint.configs.strictTypeChecked,
+      ...tseslint.configs.stylisticTypeChecked,
+      jsdoc.configs['flat/recommended-error'],
+      importPlugin.flatConfigs.recommended,
+      importPlugin.flatConfigs.typescript,
+    ],
     plugins: {
       jsdoc,
       vltpkg: {
@@ -78,11 +97,9 @@ export default tseslint.config(
         node: true,
       },
     },
+    // All the following rules are changed from the defaults set by the eslint and tseslint
+    // installed configs. The comments above each one are the reason the default has been changed.
     rules: {
-      /**
-       * All the following rules are changed from the defaults set by the eslint and tseslint
-       * installed configs. The comments above each one are the reason the default has been changed.
-       */
       // allow empty catch blocks
       'no-empty': ['error', { allowEmptyCatch: true }],
       // dont force it when destructuring some mutable vars
@@ -172,9 +189,6 @@ export default tseslint.config(
           message: "Don't declare enums",
         },
       ],
-      /**
-       * These rules should be turned on at some point in the future but are too much work currently.
-       */
       // TODO: doesn't play well with how we pass instance methods to error() to capture stack traces
       '@typescript-eslint/unbound-method': 'off',
       // TODO: there are good reasons to use any but this is helpful to turn on
@@ -182,18 +196,12 @@ export default tseslint.config(
       '@typescript-eslint/no-explicit-any': 'off',
       // TODO: turn this on
       '@typescript-eslint/class-literal-property-style': 'off',
-      /**
-       * These rules were turned on originally for their autofixing capabilities and to start
-       * from a consistent baseline, but keeping them on creates too much friction day-to-day.
-       * They can be enabled temporarily to fix or warn on any questionable usage and then disabled.
-       */
+      // This is not worth the consistency so it is now always off. We use
+      // recursive types which break when autofixed to Record, and mapped
+      // types provide a name for the key which is nice in many cases.
       // prefer Record<string,string> over { [k: string]: string }
       '@typescript-eslint/consistent-indexed-object-style': [
-        /**
-         * This is not worth the consistency so it is now always off. We use
-         * recursive types which break when autofixed to Record, and mapped
-         * types provide a name for the key which is nice in many cases.
-         */ 0,
+        'off',
         'record',
       ],
       // prefer type over interface but force consistent use of one
@@ -211,7 +219,7 @@ export default tseslint.config(
       ],
       // use inline type imports
       '@typescript-eslint/consistent-type-imports': [
-        2,
+        'error',
         {
           disallowTypeAnnotations: false,
           fixStyle: 'inline-type-imports',
@@ -219,30 +227,28 @@ export default tseslint.config(
       ],
       'import/no-duplicates': ['error', { 'prefer-inline': false }],
       'import/consistent-type-specifier-style': [
-        2,
+        'error',
         'prefer-top-level',
       ],
       // eslint-plugin-import
-      'import/no-named-as-default': 0,
-      'import/no-named-as-default-member': 0,
-      'import/extensions': [2, 'ignorePackages'],
+      'import/no-named-as-default': 'off',
+      'import/no-named-as-default-member': 'off',
+      'import/extensions': ['error', 'ignorePackages'],
       // eslint-plugin-jsdoc
-      'jsdoc/no-undefined-types': 2,
-      'jsdoc/require-param': 0,
-      'jsdoc/require-returns': 0,
-      'jsdoc/require-yields': 0,
-      'jsdoc/require-param-description': 0,
-      'jsdoc/require-returns-description': 0,
-      'jsdoc/require-jsdoc': 0,
+      'jsdoc/no-undefined-types': 'error',
+      'jsdoc/require-param': 'off',
+      'jsdoc/require-returns': 'off',
+      'jsdoc/require-yields': 'off',
+      'jsdoc/require-param-description': 'off',
+      'jsdoc/require-returns-description': 'off',
+      'jsdoc/require-jsdoc': 'off',
       // custom
       'vltpkg/enforce-mock-import-types': 'error',
     },
-  },
+  }),
   {
-    /**
-     * Tests
-     */
-    files: ['**/test/**/*.{ts,tsx}'],
+    name: `${NAME}/tests`,
+    files: [`**/test/**/*${extGlobs.all}`],
     rules: {
       // tap handles these floating promises
       '@typescript-eslint/no-floating-promises': [
@@ -266,19 +272,16 @@ export default tseslint.config(
     },
   },
   {
-    /**
-     * shadcn-ui specific patterns
-     */
-    files: ['{src/gui,www/docs}/src/components/ui/*.{tsx,ts}'],
+    name: `${NAME}/shadcn-ui`,
+    files: [`{src/gui,www/docs}/src/components/ui/*${extGlobs.ts}`],
     rules: {
       '@typescript-eslint/no-empty-object-type': 'off',
     },
   },
   {
-    /**
-     * TypeScript files must import TypeScript extensions
-     */
-    files: ['**/*.{ts,mts,tsx}'],
+    // TypeScript files must import TypeScript extensions
+    name: `${NAME}/ts-extensions`,
+    files: [`**/*${extGlobs.ts}`],
     rules: {
       'import/extensions': [
         'error',
@@ -295,25 +298,20 @@ export default tseslint.config(
     },
   },
   {
-    /**
-     * These workspaces use path aliases which are difficult to
-     * configure with import/extensions and these workspaces are run
-     * in the browser primarily so they don't need have the strict need
-     * to enforce .ts extensions for use with rewriteRelativeImportExtensions.
-     */
-    files: ['{src/gui,www/docs}/**/*.{ts,tsx,mts}'],
+    name: `${NAME}/src`,
+    files: [`src/*/src/**/*${extGlobs.ts}`],
     rules: {
-      'import/extensions': 'off',
+      'no-console': 'error',
     },
   },
   {
-    /**
-     * Astro
-     */
-    files: ['www/docs/**/*.{ts,tsx}'],
+    name: `${NAME}/docs`,
+    files: [`www/docs/**/*${extGlobs.ts}`],
     rules: {
+      // TODO: figure out how to get this to work with tsconfig path aliases
+      'import/extensions': 'off',
       'import/no-unresolved': [
-        2,
+        'error',
         {
           // https://github.com/import-js/eslint-import-resolver-typescript/issues/261
           ignore: ['astro:content', 'virtual:starlight/user-config'],
@@ -322,42 +320,31 @@ export default tseslint.config(
     },
   },
   {
-    files: ['src/*/src/**/*.ts'],
+    name: `${NAME}/gui`,
+    files: [`src/gui/**/*${extGlobs.ts}`],
     rules: {
-      'no-console': 2,
+      // TODO: figure out how to get this to work with tsconfig path aliases
+      'import/extensions': 'off',
+      'no-console': 'off',
     },
   },
   {
-    files: ['src/cli-sdk/test/**/*/*.ts'],
-    rules: {
-      'no-restricted-syntax': [
-        'warn',
-        ...['log', 'error'].map(method => ({
-          selector: `CallExpression[callee.object.name='console'][callee.property.name='${method}']`,
-          message: `\`console.${method}\` is often captured in these tests so calling it might not show anything. Use another method like \`console.info\` or \`t.comment\` instead.`,
-        })),
-      ],
-    },
-  },
-  {
-    /**
-     * Benchmarks must be run against dist code and the import/no-unresolved
-     * looks at the state of the filesystem so these files could fail intermittently
-     * based on what has been built which is no good. So we turn it off.
-     */
+    // Benchmarks must be run against dist code and the import/no-unresolved
+    // looks at the state of the filesystem so these files could fail intermittently
+    // based on what has been built which is no good. So we turn it off.
+    name: `${NAME}/benchmarks`,
     files: ['src/semver/benchmarks/this.js'],
     rules: {
       'import/no-unresolved': 'off',
     },
   },
   {
-    /**
-     * Plain JS code.
-     * TODO: there is a way to get typechecking with tseslint for
-     * JS code but I couldn't get it configured right. Might be worth
-     * looking in to for our JS scripts.
-     */
-    files: ['**/*.{js,mjs,cjs}'],
+    // Plain JS code.
+    // TODO: there is a way to get typechecking with tseslint for JS code but I
+    // couldn't get it configured right. Might be worth looking in to for our JS
+    // scripts.
+    name: `${NAME}/js`,
+    files: [`**/*${extGlobs.js}`],
     ...eslint.configs.recommended,
     ...tseslint.configs.disableTypeChecked,
     rules: {
@@ -365,4 +352,5 @@ export default tseslint.config(
       ...eslint.configs.recommended.rules,
     },
   },
-)
+  ...pnpmConfigs.yaml,
+]

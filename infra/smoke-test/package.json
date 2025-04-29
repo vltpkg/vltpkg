@@ -13,7 +13,7 @@
     "@vltpkg/infra-build": "workspace:*",
     "@vltpkg/registry-client": "workspace:*",
     "@vltpkg/which": "workspace:*",
-    "ansi-to-pre": "catalog:"
+    "ansi-to-pre": "^1.0.6"
   },
   "optionalDependencies": {
     "node-pty": "^1.0.0"

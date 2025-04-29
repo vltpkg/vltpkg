@@ -3,16 +3,19 @@ import { readFileSync } from 'node:fs'
 import { join, relative, resolve } from 'node:path'
 import { styleText } from 'node:util'
 
-const summary = resolve(
-  import.meta.dirname,
-  '..',
-  'pnpm-exec-summary.json',
-)
-
 const execStatus = () => {
   try {
     return (
-      JSON.parse(readFileSync(summary, 'utf8')).executionStatus ?? {}
+      JSON.parse(
+        readFileSync(
+          resolve(
+            import.meta.dirname,
+            '..',
+            'pnpm-exec-summary.json',
+          ),
+          'utf8',
+        ),
+      ).executionStatus ?? {}
     )
   } catch {
     return {}
