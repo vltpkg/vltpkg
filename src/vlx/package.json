@@ -25,7 +25,6 @@
     "@vltpkg/package-info": "workspace:*",
     "@vltpkg/package-json": "workspace:*",
     "@vltpkg/rollback-remove": "workspace:*",
-    "@vltpkg/run": "workspace:*",
     "@vltpkg/spec": "workspace:*",
     "@vltpkg/types": "workspace:*",
     "@vltpkg/xdg": "workspace:*",
