@@ -22,7 +22,6 @@
     }
   },
   "dependencies": {
-    "@vltpkg/cache": "workspace:*",
     "@vltpkg/dep-id": "workspace:*",
     "@vltpkg/dot-prop": "workspace:*",
     "@vltpkg/error-cause": "workspace:*",
@@ -31,7 +30,6 @@
     "@vltpkg/output": "workspace:*",
     "@vltpkg/package-info": "workspace:*",
     "@vltpkg/package-json": "workspace:*",
-    "@vltpkg/promise-spawn": "workspace:*",
     "@vltpkg/query": "workspace:*",
     "@vltpkg/registry-client": "workspace:*",
     "@vltpkg/rollback-remove": "workspace:*",

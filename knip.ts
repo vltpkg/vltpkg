@@ -58,17 +58,13 @@ export default {
   // These dependencies make it possible to run linting and typedoc
   // from each individual workspaces but that capability to not
   // exercised anywhere yet.
-  ignoreDependencies: [
-    '@eslint/js',
-    '@types/eslint__js',
-    'typescript-eslint',
-    'typedoc',
-  ],
+  ignoreDependencies: ['@eslint/js', 'typescript-eslint', 'typedoc'],
   ignore: ['**/tap-snapshots/**/*.cjs'],
   ignoreBinaries: [
     'hyperfine',
     `cat package.json | jq -r '"(.name)@(.version)"'`,
     'typedoc:check',
+    'prepare',
   ],
   eslint: ['eslint.config.mjs'],
   workspaces: Object.fromEntries(
