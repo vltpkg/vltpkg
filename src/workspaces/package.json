@@ -23,7 +23,7 @@
     "@vltpkg/error-cause": "workspace:*",
     "@vltpkg/package-json": "workspace:*",
     "@vltpkg/types": "workspace:*",
-    "glob": "^11.0.1",
+    "glob": "^11.0.2",
     "graph-run": "catalog:",
     "minimatch": "^10.0.1",
     "path-scurry": "catalog:",
