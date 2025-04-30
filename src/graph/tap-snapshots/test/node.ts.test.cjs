@@ -7,6 +7,7 @@
 'use strict'
 exports[`test/node.ts > TAP > Node > should print with special tag name 1`] = `
 Node [@vltpkg/graph.Node] {
+  confused: false,
   edgesIn: Set(0) {},
   edgesOut: Map(0) {},
   id: 'file·.',
@@ -35,7 +36,8 @@ exports[`test/node.ts > TAP > Node > should serialize node to JSON 1`] = `
   },
   "projectRoot": "{ROOT}",
   "dev": false,
-  "optional": false
+  "optional": false,
+  "confused": false
 }
 `
 
@@ -81,4 +83,28 @@ root:root
 
 exports[`test/node.ts > TAP > Node > should stringify workspace node 1`] = `
 workspace:a
+`
+
+exports[`test/node.ts > TAP > rawManifest getter and setter > should serialize node to JSON 1`] = `
+Object {
+  "confused": true,
+  "dev": false,
+  "id": "··foo@1.0.0",
+  "importer": false,
+  "integrity": undefined,
+  "location": "./node_modules/.vlt/··foo@1.0.0/node_modules/foo",
+  "manifest": Object {
+    "name": "foo",
+    "version": "1.0.0",
+  },
+  "name": "foo",
+  "optional": false,
+  "projectRoot": "{ROOT}",
+  "rawManifest": Object {
+    "name": "test",
+    "version": "1.0.0",
+  },
+  "resolved": undefined,
+  "version": "1.0.0",
+}
 `

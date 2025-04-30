@@ -187,7 +187,9 @@ export function humanReadableOutput(
         const nextChar = isLast ? 'last-child' : 'middle-child'
 
         nextItem.name =
-          nextItem.node?.name && nextItem.edge?.name !== nodeName ?
+          nextItem.node?.confused ?
+            `${nextItem.edge?.name} ${red('(confused)')}`
+          : nextItem.node?.name && nextItem.edge?.name !== nodeName ?
             `${nextItem.edge?.name} (${toName})`
           : `${nextItem.edge?.name}@${nextItem.node?.version || nextItem.edge?.spec.bareSpec}`
         nextItem.padding =

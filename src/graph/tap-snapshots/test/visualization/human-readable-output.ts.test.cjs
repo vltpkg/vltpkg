@@ -60,6 +60,12 @@ my-project
 
 `
 
+exports[`test/visualization/human-readable-output.ts > TAP > confused package > should print both spec and manifest names when they differ 1`] = `
+my-project
+└── different-name (confused)
+
+`
+
 exports[`test/visualization/human-readable-output.ts > TAP > cycle > should print cycle human readable output 1`] = `
 my-project
 └─┬ a@1.0.0
