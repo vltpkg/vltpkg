@@ -54,6 +54,7 @@ export type LockfileNode = [
   resolved?: string | null,
   location?: string | null,
   manifest?: Manifest | null,
+  rawManifest?: Manifest | null,
 ]
 
 /**

@@ -81,6 +81,10 @@ const formatNodes = (
 
     if (saveManifests) {
       lockfileNode[5] = node.manifest
+
+      if (node.confused) {
+        lockfileNode[6] = node.rawManifest
+      }
     }
 
     res[node.id] = lockfileNode
@@ -193,20 +197,24 @@ export const saveData = (
   data: LockfileData,
   fileName: string,
   saveManifests = false,
-) => {
+): void => {
   const json = JSON.stringify(data, null, 2)
   const content = saveManifests ? json : extraFormat(json)
   writeFileSync(fileName, content)
 }
 
-export const save = (options: SaveOptions) => {
+export const save = (
+  options: Omit<SaveOptions, 'saveManifests'>,
+): void => {
   const { graph } = options
   const data = lockfileData({ ...options, saveManifests: false })
   const fileName = resolve(graph.projectRoot, 'vlt-lock.json')
-  return saveData(data, fileName, false)
+  saveData(data, fileName, false)
 }
 
-export const saveHidden = (options: SaveOptions) => {
+export const saveHidden = (
+  options: Omit<SaveOptions, 'saveManifests'>,
+): void => {
   const { graph } = options
   const data = lockfileData({ ...options, saveManifests: true })
   const fileName = resolve(
@@ -214,5 +222,5 @@ export const saveHidden = (options: SaveOptions) => {
     'node_modules/.vlt-lock.json',
   )
   mkdirSync(dirname(fileName), { recursive: true })
-  return saveData(data, fileName, true)
+  saveData(data, fileName, true)
 }

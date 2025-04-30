@@ -40,6 +40,7 @@ export type NodeLike = {
   edgesOut: Map<string, EdgeLike>
   location?: string
   manifest?: Manifest | null
+  rawManifest?: Manifest | null
   name?: string | null
   version?: string | null
   integrity?: string | null
@@ -69,4 +70,5 @@ export type NodeLike = {
   }
   toString(): string
   setResolved(): void
+  setConfusedManifest(fixed: Manifest, confused?: Manifest): void
 }
