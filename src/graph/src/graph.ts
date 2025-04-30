@@ -359,7 +359,7 @@ export class Graph implements GraphLike {
     }
 
     // creates a new node and edges to its parent
-    const toNode = this.addNode(depId, manifest)
+    const toNode = this.addNode(depId, manifest, spec)
     toNode.registry = spec.registry
     toNode.dev = flags.dev
     toNode.optional = flags.optional

@@ -86,6 +86,11 @@ t.test('Node', async t => {
   t.matchSnapshot(String(foo), 'should stringify registry node')
 
   t.strictSame(
+    foo.rawManifest,
+    fooMani,
+    'should have the raw manifest',
+  )
+  t.strictSame(
     foo.location,
     './arbitrary',
     'should be able to set arbitrary locations',
@@ -468,6 +473,34 @@ t.test('dev flag is contagious', t => {
   // now if d becomes non-optional, oo does as well
   d.dev = false
   t.equal(dd.isDev(), false)
+
+  t.end()
+})
+
+t.test('rawManifest getter and setter', t => {
+  const opts = {
+    ...options,
+    projectRoot: t.testdirName,
+    graph: {} as GraphLike,
+  }
+  const mani = {
+    name: 'test',
+    version: '1.0.0',
+  }
+  const spec = Spec.parse('foo', '^1.0.0')
+  const node = new Node(opts, undefined, mani, spec)
+
+  // rawManifest should be set to the originally set manifest
+  t.strictSame(node.rawManifest?.name, 'test')
+  t.equal(node.confused, true)
+
+  // the manifest should have a fixed up name when the package name is confused
+  t.strictSame(node.manifest?.name, 'foo')
+
+  t.matchSnapshot(node.toJSON(), 'should serialize node to JSON')
+
+  // string representation
+  t.strictSame(node.toString(), 'npm:foo@1.0.0')
 
   t.end()
 })
