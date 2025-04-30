@@ -22,7 +22,7 @@
     "eslint-plugin-jsdoc": "^50.6.9",
     "eslint-plugin-pnpm": "^0.3.1",
     "globals": "^16.0.0",
-    "knip": "^5.51.0",
+    "knip": "^5.51.1",
     "pnpm-workspace-yaml": "^0.3.1",
     "prettier": "catalog:",
     "prettier-plugin-astro": "^0.14.1",
