@@ -53,6 +53,7 @@
     "snap": "tap",
     "test": "tap",
     "posttest": "tsc --noEmit",
+    "tshy": "tshy",
     "typecheck": "tsc --noEmit"
   },
   "tap": {
