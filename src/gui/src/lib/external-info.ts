@@ -46,6 +46,7 @@ export type Version = {
   unpackedSize?: number
   integrity?: string
   tarball?: string
+  gitHead?: string
 }
 
 export type DetailsInfo = {
@@ -363,6 +364,7 @@ export async function* fetchDetails(
                   packu.versions[version]?.dist?.unpackedSize,
                 integrity: packu.versions[version]?.dist?.integrity,
                 tarball: packu.versions[version]?.dist?.tarball,
+                gitHead: packu.versions[version]?.gitHead,
                 publishedAuthor: {
                   name: npmUser?.name,
                   email: npmUser?.email,

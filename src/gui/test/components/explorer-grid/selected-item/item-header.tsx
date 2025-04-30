@@ -280,3 +280,48 @@ test('ItemHeader renders with insights', () => {
   const { container } = render(<Container />)
   expect(container.innerHTML).toMatchSnapshot()
 })
+
+test('ItemHeader renders with a version information', () => {
+  const mockVersions = [
+    {
+      version: '1.0.0',
+      publishedDate: '2023-01-01T00:00:00Z',
+      gitHead: 'abc123',
+      publishedAuthor: {
+        name: 'John Doe',
+        email: 'johndoe@acme.com',
+        avatar: 'https://example.com/avatar.jpg',
+      },
+      unpackedSize: 123456,
+      integrity: 'sha512-abc123',
+      tarball: 'https://example.com/tarball.tgz',
+    },
+  ] satisfies SelectedItemStore['versions']
+
+  const mockManifest = {
+    version: '1.0.0',
+  } satisfies SelectedItemStore['manifest']
+
+  const mockState = {
+    selectedItem: SELECTED_ITEM,
+    activeTab: 'overview',
+    setActiveTab: vi.fn(),
+    manifest: mockManifest,
+    packageScore: undefined,
+    insights: MOCK_INSIGHTS,
+    author: undefined,
+    versions: mockVersions,
+    ...SELECTED_ITEM_DETAILS,
+  } satisfies SelectedItemStore
+
+  vi.mocked(useSelectedItemStore).mockImplementation(selector =>
+    selector(mockState),
+  )
+
+  const Container = () => {
+    return <ItemHeader />
+  }
+
+  const { container } = render(<Container />)
+  expect(container.innerHTML).toMatchSnapshot()
+})
