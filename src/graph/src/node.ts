@@ -348,6 +348,7 @@ export class Node implements NodeLike {
     this.manifest = fixed
     this.#rawManifest = confused
     this.confused = true
+    this.#name = this.manifest.name
   }
 
   toJSON() {

@@ -5,6 +5,36 @@
  * Make sure to inspect the output below.  Do not ignore changes!
  */
 'use strict'
+exports[`test/lockfile/save.ts > TAP > confused manifest > should save lockfile with confused manifest 1`] = `
+{
+  "options": {
+    "registries": {
+      "custom": "http://example.com"
+    }
+  },
+  "nodes": {
+    "··foo@1.0.0": [
+      0,
+      "foo",
+      null,
+      null,
+      "node_modules/.pnpm/foo@1.0.0/node_modules/foo",
+      {
+        "name": "foo",
+        "version": "1.0.0"
+      },
+      {
+        "name": "test",
+        "version": "1.0.0"
+      }
+    ]
+  },
+  "edges": {
+    "file·. foo": "prod ^1.0.0 ··foo@1.0.0"
+  }
+}
+`
+
 exports[`test/lockfile/save.ts > TAP > custom git hosts > must match snapshot 1`] = `
 {
   "options": {
