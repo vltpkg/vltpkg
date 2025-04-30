@@ -445,12 +445,13 @@ const Publisher = ({ className }: { className?: string }) => {
   const publisher = useSelectedItemStore(state => state.publisher)
   const versions = useSelectedItemStore(state => state.versions)
   const manifest = useSelectedItemStore(state => state.manifest)
-  const publishedDate = versions?.find(
+  const currentVersion = versions?.find(
     version => version.version === manifest?.version,
-  )?.publishedDate
+  )
   const publisherAvatar = useSelectedItemStore(
     state => state.publisherAvatar,
   )
+  const gitHeadShort = currentVersion?.gitHead?.slice(0, 6)
 
   if (!publisher) return null
 
@@ -473,12 +474,17 @@ const Publisher = ({ className }: { className?: string }) => {
           <TooltipTrigger className="text-baseline cursor-default text-xs font-medium text-muted-foreground">
             Published by:{' '}
             <span className="text-foreground">{publisher.name}</span>
-            {publishedDate && (
+            {currentVersion?.publishedDate && (
               <span className="ml-2">
-                &bull;{' '}
-                {formatDistanceStrict(publishedDate, new Date(), {
-                  addSuffix: true,
-                })}
+                {gitHeadShort}
+                {' • '}
+                {formatDistanceStrict(
+                  currentVersion.publishedDate,
+                  new Date(),
+                  {
+                    addSuffix: true,
+                  },
+                )}
               </span>
             )}
           </TooltipTrigger>
