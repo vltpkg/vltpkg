@@ -9,6 +9,7 @@ import {
   hydrate,
   hydrateTuple,
   isDepID,
+  isPackageNameConfused,
   joinDepIDTuple,
   splitDepID,
 } from '../src/index.ts'
@@ -247,5 +248,73 @@ t.test('isDepID', t => {
   for (const id of invalidDepIDs) {
     t.notOk(isDepID(id), id)
   }
+  t.end()
+})
+
+t.test('isPackageNameConfused', t => {
+  t.equal(
+    isPackageNameConfused(),
+    false,
+    'should return false when missing args',
+  )
+
+  // Test registry type with matching names
+  const matchingSpec = Spec.parse('foo', '^1.0.0')
+  t.equal(
+    isPackageNameConfused(matchingSpec, 'foo'),
+    false,
+    'should return false when names match',
+  )
+
+  // Test registry type with different names
+  const differentSpec = Spec.parse('foo', '^1.0.0')
+  t.equal(
+    isPackageNameConfused(differentSpec, 'bar'),
+    true,
+    'should return true when names differ',
+  )
+
+  // Test with undefined name
+  t.equal(
+    isPackageNameConfused(differentSpec),
+    true,
+    'should return true when name is undefined',
+  )
+
+  // Test with nameless spec
+  const namelessSpec = Spec.parse('', 'file:./local-package')
+  t.equal(
+    isPackageNameConfused(namelessSpec, 'local-package'),
+    false,
+    'should return false for non-registry types',
+  )
+
+  // Test with non-registry type
+  const fileSpec = Spec.parse('local-package', 'file:./local-package')
+  t.equal(
+    isPackageNameConfused(fileSpec, 'confused-package'),
+    false,
+    'should return false for non-registry types',
+  )
+
+  // Test with subspec (aliased package)
+  const aliasedSpec = Spec.parse('bar', 'npm:foo@1.0.0')
+  t.equal(
+    isPackageNameConfused(aliasedSpec, 'bar'),
+    false,
+    'should return false for aliased packages',
+  )
+
+  t.test('getTuple', t => {
+    t.strictSame(
+      getTuple(Spec.parse('bar', 'npm:foo@^1.0.0'), {
+        version: '1.0.0',
+      }),
+      ['registry', 'npm', 'foo@1.0.0'],
+      'should default to final spec name if mani name is missing',
+    )
+    t.end()
+  })
+
   t.end()
 })
