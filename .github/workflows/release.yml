@@ -209,6 +209,8 @@ jobs:
     runs-on: ubuntu-latest
     needs: pre-check
     if: needs.pre-check.outputs.action == 'publish'
+    outputs:
+      version: ${{ steps.versions.outputs.version }}
     permissions:
       contents: write
     steps:
@@ -239,6 +241,14 @@ jobs:
       - name: List Packages to Publish
         run: pnpm --shell-mode --filter="[$(git rev-parse HEAD~1)]" exec "cat package.json | jq -r '\"\(.name)@\(.version)\"'" | sort
 
+      - name: Versions
+        id: versions
+        run: |
+          # Add leading v to version
+          echo "version=v$(jq -r .version ./infra/cli-compiled/package.json)" >> $GITHUB_OUTPUT
+          # Previous version is the name of the latest release
+          echo "previous-version=$(gh release list --json name --limit 1 | jq -r ".[0].name")" >> $GITHUB_OUTPUT
+
       - name: Publish
         run: |
           echo "//registry.npmjs.org/:_authToken=\${NPM_AUTH_TOKEN}" > .npmrc
@@ -254,11 +264,18 @@ jobs:
       - name: Create Git Tag
         if: needs.pre-check.outputs.dry-run != 'true'
         run: |
-          VERSION=$(jq -r .version ./infra/cli-compiled/package.json)
           git config --global user.email "vltops@users.noreply.github.com"
           git config --global user.name "vltops"
-          git tag -a "v$VERSION" -m "Release v$VERSION"
-          git push origin "v$VERSION"
+          git tag -a "${{ steps.versions.outputs.version }}" -m "Release ${{ steps.versions.outputs.version }}"
+          git push origin "${{ steps.versions.outputs.version }}"
+
+      - name: Create GitHub Release
+        if: needs.pre-check.outputs.dry-run != 'true'
+        run: |
+          gh release create "${{ steps.versions.outputs.version }}" \
+            --verify-tag \
+            --generate-notes \
+            --notes-start-tag="${{ steps.versions.outputs.previous-version }}"
 
   on-pr:
     name: Notify PR
@@ -293,14 +310,14 @@ jobs:
         run: |
           MESSAGE=""
           if [[ "${{ needs.publish.result }}" == "success" ]]; then
-            MESSAGE=":white_check_mark: ${{ github.event.head_commit.message }} was published successfully! :tada:"
+            MESSAGE=":white_check_mark: ${{ needs.publish.outputs.version }} was published successfully! :tada:"
           else
             delimiter="$(openssl rand -hex 8)"
             {
               echo "value<<${delimiter}"
-              echo ":rotating_light: The merged release PR failed to be published."
-              echo "This requires manual intervention to publish the missing packages."
-              echo "Manually rerun the workflow if the errors were transient:"
+              echo ":rotating_light: The merged PR for ${{ needs.publish.outputs.version }} failed to publish."
+              echo "This requires manual intervention to fix."
+              echo "It is safe to manually rerun the workflow if the errors were transient. Only the packages that failed to publish will be retried."
               echo "gh workflow run release.yml --ref=main -f action=publish"
               echo "${delimiter}"
             } >> "${GITHUB_OUTPUT}"
@@ -318,5 +335,5 @@ jobs:
           SLACK_COLOR: ${{ needs.publish.result == 'success' && 'success' || 'failure' }}
           SLACK_FOOTER: ''
           SLACKIFY_MARKDOWN: true
-          SLACK_TITLE: ${{ github.event.head_commit.message }} Publish ${{ needs.publish.result == 'success' && 'Success' || 'Failed' }}
+          SLACK_TITLE: Release ${{ needs.publish.outputs.version }} Publish ${{ needs.publish.result == 'success' && 'Succeeded' || 'Failed' }}
           SLACK_MESSAGE: ${{ steps.message.outputs.value }}
