@@ -35,6 +35,7 @@ export type GraphLike = {
 
 export type NodeLike = {
   id: DepID
+  confused: boolean
   edgesIn: Set<EdgeLike>
   edgesOut: Map<string, EdgeLike>
   location?: string
@@ -62,7 +63,10 @@ export type NodeLike = {
     | 'resolved'
     | 'dev'
     | 'optional'
-  >
+    | 'confused'
+  > & {
+    rawManifest?: NodeLike['manifest']
+  }
   toString(): string
   setResolved(): void
 }

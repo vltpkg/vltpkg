@@ -7,6 +7,7 @@
 'use strict'
 exports[`test/lockfile/load-nodes.ts > TAP > load nodes > should load node missing name and version 1`] = `
 Object {
+  "confused": false,
   "dev": false,
   "id": "··lorem",
   "importer": false,
@@ -24,6 +25,7 @@ Object {
 exports[`test/lockfile/load-nodes.ts > TAP > load nodes > should load nodes into graph 1`] = `
 Array [
   Object {
+    "confused": false,
     "dev": false,
     "id": "file·.",
     "importer": true,
@@ -40,6 +42,7 @@ Array [
     "version": "1.0.0",
   },
   Object {
+    "confused": false,
     "dev": false,
     "id": "file·linked",
     "importer": false,
@@ -53,6 +56,7 @@ Array [
     "version": undefined,
   },
   Object {
+    "confused": false,
     "dev": false,
     "id": "··foo@1.0.0",
     "importer": false,
@@ -66,6 +70,7 @@ Array [
     "version": "1.0.0",
   },
   Object {
+    "confused": false,
     "dev": false,
     "id": "··bar@1.0.0",
     "importer": false,
@@ -79,6 +84,7 @@ Array [
     "version": "1.0.0",
   },
   Object {
+    "confused": false,
     "dev": false,
     "id": "··baz@1.0.0",
     "importer": false,
@@ -97,6 +103,7 @@ Array [
 exports[`test/lockfile/load-nodes.ts > TAP > load nodes with manifest > should load nodes into graph with manifest data 1`] = `
 Array [
   Object {
+    "confused": false,
     "dev": false,
     "id": "file·.",
     "importer": true,
@@ -113,6 +120,7 @@ Array [
     "version": "1.0.0",
   },
   Object {
+    "confused": false,
     "dev": true,
     "id": "··bar@1.0.0",
     "importer": false,
@@ -129,6 +137,7 @@ Array [
     "version": "1.0.0",
   },
   Object {
+    "confused": false,
     "dev": true,
     "id": "··foo@1.0.0",
     "importer": false,
@@ -148,6 +157,7 @@ Array [
     "version": "1.0.0",
   },
   Object {
+    "confused": false,
     "dev": false,
     "id": "·custom·baz@1.0.0",
     "importer": false,

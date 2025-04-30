@@ -24,7 +24,8 @@ exports[`test/visualization/json-output.ts > TAP > actual graph > selected packa
       },
       "projectRoot": "{ROOT}",
       "dev": false,
-      "optional": true
+      "optional": true,
+      "confused": false
     }
   }
 ]
@@ -63,7 +64,8 @@ exports[`test/visualization/json-output.ts > TAP > actual graph > should print f
       },
       "projectRoot": "{ROOT}",
       "dev": false,
-      "optional": false
+      "optional": false,
+      "confused": false
     }
   },
   {
@@ -80,7 +82,8 @@ exports[`test/visualization/json-output.ts > TAP > actual graph > should print f
       },
       "projectRoot": "{ROOT}",
       "dev": false,
-      "optional": false
+      "optional": false,
+      "confused": false
     }
   },
   {
@@ -102,7 +105,8 @@ exports[`test/visualization/json-output.ts > TAP > actual graph > should print f
       },
       "projectRoot": "{ROOT}",
       "dev": false,
-      "optional": false
+      "optional": false,
+      "confused": false
     }
   },
   {
@@ -122,7 +126,8 @@ exports[`test/visualization/json-output.ts > TAP > actual graph > should print f
       },
       "projectRoot": "{ROOT}",
       "dev": false,
-      "optional": false
+      "optional": false,
+      "confused": false
     }
   },
   {
@@ -142,7 +147,8 @@ exports[`test/visualization/json-output.ts > TAP > actual graph > should print f
       },
       "projectRoot": "{ROOT}",
       "dev": false,
-      "optional": false
+      "optional": false,
+      "confused": false
     }
   },
   {
@@ -162,7 +168,8 @@ exports[`test/visualization/json-output.ts > TAP > actual graph > should print f
       },
       "projectRoot": "{ROOT}",
       "dev": false,
-      "optional": false
+      "optional": false,
+      "confused": false
     }
   },
   {
@@ -186,7 +193,8 @@ exports[`test/visualization/json-output.ts > TAP > actual graph > should print f
       },
       "projectRoot": "{ROOT}",
       "dev": false,
-      "optional": true
+      "optional": true,
+      "confused": false
     }
   },
   {
@@ -206,7 +214,8 @@ exports[`test/visualization/json-output.ts > TAP > actual graph > should print f
       },
       "projectRoot": "{ROOT}",
       "dev": true,
-      "optional": false
+      "optional": false,
+      "confused": false
     }
   },
   {
@@ -236,7 +245,8 @@ exports[`test/visualization/json-output.ts > TAP > actual graph > should print f
       },
       "projectRoot": "{ROOT}",
       "dev": false,
-      "optional": false
+      "optional": false,
+      "confused": false
     }
   },
   {
@@ -262,7 +272,8 @@ exports[`test/visualization/json-output.ts > TAP > actual graph > should print f
       },
       "projectRoot": "{ROOT}",
       "dev": false,
-      "optional": false
+      "optional": false,
+      "confused": false
     }
   },
   {
@@ -288,7 +299,8 @@ exports[`test/visualization/json-output.ts > TAP > actual graph > should print f
       },
       "projectRoot": "{ROOT}",
       "dev": false,
-      "optional": false
+      "optional": false,
+      "confused": false
     }
   },
   {
@@ -308,7 +320,8 @@ exports[`test/visualization/json-output.ts > TAP > actual graph > should print f
       },
       "projectRoot": "{ROOT}",
       "dev": true,
-      "optional": false
+      "optional": false,
+      "confused": false
     }
   },
   {
@@ -328,7 +341,8 @@ exports[`test/visualization/json-output.ts > TAP > actual graph > should print f
       },
       "projectRoot": "{ROOT}",
       "dev": false,
-      "optional": false
+      "optional": false,
+      "confused": false
     }
   },
   {
@@ -348,7 +362,8 @@ exports[`test/visualization/json-output.ts > TAP > actual graph > should print f
       },
       "projectRoot": "{ROOT}",
       "dev": false,
-      "optional": true
+      "optional": true,
+      "confused": false
     }
   },
   {
@@ -368,7 +383,8 @@ exports[`test/visualization/json-output.ts > TAP > actual graph > should print f
       },
       "projectRoot": "{ROOT}",
       "dev": false,
-      "optional": true
+      "optional": true,
+      "confused": false
     }
   },
   {
@@ -388,7 +404,8 @@ exports[`test/visualization/json-output.ts > TAP > actual graph > should print f
       },
       "projectRoot": "{ROOT}",
       "dev": false,
-      "optional": false
+      "optional": false,
+      "confused": false
     }
   }
 ]
@@ -408,24 +425,25 @@ exports[`test/visualization/json-output.ts > TAP > aliased package > should prin
         "name": "my-project",
         "version": "1.0.0",
         "dependencies": {
-          "a": "^1.0.0"
+          "a": "npm:@myscope/foo@^1.0.0"
         }
       },
       "projectRoot": "{ROOT}",
       "dev": false,
-      "optional": false
+      "optional": false,
+      "confused": false
     }
   },
   {
     "name": "a",
     "fromID": "file·.",
-    "spec": "a@^1.0.0",
+    "spec": "a@npm:@myscope/foo@^1.0.0",
     "type": "optional",
     "to": {
-      "id": "··@myscope§foo@1.0.0",
+      "id": "·npm·@myscope§foo@1.0.0",
       "name": "@myscope/foo",
       "version": "1.0.0",
-      "location": "./node_modules/.vlt/··@myscope§foo@1.0.0/node_modules/@myscope/foo",
+      "location": "./node_modules/.vlt/·npm·@myscope§foo@1.0.0/node_modules/@myscope/foo",
       "importer": false,
       "manifest": {
         "name": "@myscope/foo",
@@ -433,7 +451,8 @@ exports[`test/visualization/json-output.ts > TAP > aliased package > should prin
       },
       "projectRoot": "{ROOT}",
       "dev": false,
-      "optional": true
+      "optional": true,
+      "confused": false
     }
   }
 ]
@@ -458,7 +477,8 @@ exports[`test/visualization/json-output.ts > TAP > cycle > should print cycle js
       },
       "projectRoot": "{ROOT}",
       "dev": false,
-      "optional": false
+      "optional": false,
+      "confused": false
     }
   },
   {
@@ -478,7 +498,8 @@ exports[`test/visualization/json-output.ts > TAP > cycle > should print cycle js
       },
       "projectRoot": "{ROOT}",
       "dev": false,
-      "optional": false
+      "optional": false,
+      "confused": false
     }
   },
   {
@@ -501,7 +522,8 @@ exports[`test/visualization/json-output.ts > TAP > cycle > should print cycle js
       },
       "projectRoot": "{ROOT}",
       "dev": false,
-      "optional": false
+      "optional": false,
+      "confused": false
     }
   },
   {
@@ -521,7 +543,8 @@ exports[`test/visualization/json-output.ts > TAP > cycle > should print cycle js
       },
       "projectRoot": "{ROOT}",
       "dev": false,
-      "optional": false
+      "optional": false,
+      "confused": false
     }
   }
 ]
@@ -548,7 +571,8 @@ exports[`test/visualization/json-output.ts > TAP > json-output > should print js
       },
       "projectRoot": "{ROOT}",
       "dev": false,
-      "optional": false
+      "optional": false,
+      "confused": false
     }
   },
   {
@@ -568,7 +592,8 @@ exports[`test/visualization/json-output.ts > TAP > json-output > should print js
       },
       "projectRoot": "{ROOT}",
       "dev": true,
-      "optional": false
+      "optional": false,
+      "confused": false
     }
   },
   {
@@ -591,7 +616,8 @@ exports[`test/visualization/json-output.ts > TAP > json-output > should print js
       },
       "projectRoot": "{ROOT}",
       "dev": false,
-      "optional": true
+      "optional": true,
+      "confused": false
     }
   },
   {
@@ -617,7 +643,8 @@ exports[`test/visualization/json-output.ts > TAP > json-output > should print js
       "integrity": "sha512-deadbeef",
       "resolved": "http://example.com/baz",
       "dev": true,
-      "optional": true
+      "optional": true,
+      "confused": false
     }
   },
   {
@@ -643,7 +670,8 @@ exports[`test/visualization/json-output.ts > TAP > json-output > should print js
       },
       "projectRoot": "{ROOT}",
       "dev": true,
-      "optional": false
+      "optional": false,
+      "confused": false
     }
   },
   {
@@ -663,7 +691,8 @@ exports[`test/visualization/json-output.ts > TAP > json-output > should print js
       },
       "projectRoot": "{ROOT}",
       "dev": false,
-      "optional": true
+      "optional": true,
+      "confused": false
     }
   }
 ]
@@ -688,7 +717,8 @@ exports[`test/visualization/json-output.ts > TAP > missing optional > should pri
       },
       "projectRoot": "{ROOT}",
       "dev": false,
-      "optional": false
+      "optional": false,
+      "confused": false
     }
   },
   {
@@ -712,7 +742,8 @@ exports[`test/visualization/json-output.ts > TAP > nameless package > should fal
       "manifest": {},
       "projectRoot": "{ROOT}",
       "dev": false,
-      "optional": false
+      "optional": false,
+      "confused": false
     }
   }
 ]
@@ -737,7 +768,8 @@ exports[`test/visualization/json-output.ts > TAP > versionless package > should 
       },
       "projectRoot": "{ROOT}",
       "dev": false,
-      "optional": false
+      "optional": false,
+      "confused": false
     }
   },
   {
@@ -755,7 +787,8 @@ exports[`test/visualization/json-output.ts > TAP > versionless package > should 
       },
       "projectRoot": "{ROOT}",
       "dev": false,
-      "optional": true
+      "optional": true,
+      "confused": false
     }
   }
 ]
@@ -777,7 +810,8 @@ exports[`test/visualization/json-output.ts > TAP > workspaces > should print jso
       },
       "projectRoot": "{ROOT}",
       "dev": false,
-      "optional": false
+      "optional": false,
+      "confused": false
     }
   },
   {
@@ -794,7 +828,8 @@ exports[`test/visualization/json-output.ts > TAP > workspaces > should print jso
       },
       "projectRoot": "{ROOT}",
       "dev": false,
-      "optional": false
+      "optional": false,
+      "confused": false
     }
   },
   {
@@ -811,7 +846,8 @@ exports[`test/visualization/json-output.ts > TAP > workspaces > should print jso
       },
       "projectRoot": "{ROOT}",
       "dev": false,
-      "optional": false
+      "optional": false,
+      "confused": false
     }
   }
 ]

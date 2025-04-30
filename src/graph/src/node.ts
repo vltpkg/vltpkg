@@ -1,5 +1,10 @@
 import type { PathScurry } from 'path-scurry'
-import { getId, hydrateTuple, splitDepID } from '@vltpkg/dep-id'
+import {
+  isPackageNameConfused,
+  getId,
+  hydrateTuple,
+  splitDepID,
+} from '@vltpkg/dep-id'
 import type { DepID, DepIDTuple } from '@vltpkg/dep-id'
 import { typeError } from '@vltpkg/error-cause'
 import type { Spec, SpecOptions } from '@vltpkg/spec'
@@ -25,6 +30,7 @@ export class Node implements NodeLike {
 
   #options: SpecOptions
   #location?: string
+  #rawManifest?: Manifest
 
   #optional = false
   /**
@@ -76,6 +82,11 @@ export class Node implements NodeLike {
   isDev(): this is Node & { dev: true } {
     return this.#dev
   }
+
+  /**
+   * True if there's a manifest-confused package name.
+   */
+  confused = false
 
   /**
    * List of edges coming into this node.
@@ -224,8 +235,18 @@ export class Node implements NodeLike {
     }
     this.graph = options.graph
     this.manifest = manifest
-    this.#name = name || this.manifest?.name
 
+    if (isPackageNameConfused(spec, this.manifest?.name)) {
+      this.setConfusedManifest(
+        {
+          ...manifest,
+          name: spec?.name,
+        },
+        manifest,
+      )
+    }
+
+    this.#name = name || this.manifest?.name
     this.version = version || this.manifest?.version
     if (this.version?.startsWith('v')) {
       this.version = this.version.slice(1)
@@ -312,6 +333,23 @@ export class Node implements NodeLike {
     return edge
   }
 
+  /**
+   * The raw manifest before any modifications.
+   * If not set, falls back to the current manifest.
+   */
+  get rawManifest(): Manifest | undefined {
+    return this.#rawManifest ?? this.manifest
+  }
+
+  /**
+   * Sets this node as having a manifest-confused manifest.
+   */
+  setConfusedManifest(fixed: Manifest, confused?: Manifest) {
+    this.manifest = fixed
+    this.#rawManifest = confused
+    this.confused = true
+  }
+
   toJSON() {
     return {
       id: this.id,
@@ -325,6 +363,10 @@ export class Node implements NodeLike {
       resolved: this.resolved,
       dev: this.dev,
       optional: this.optional,
+      confused: this.confused,
+      ...(this.confused ?
+        { rawManifest: this.#rawManifest }
+      : undefined),
     }
   }
 

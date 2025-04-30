@@ -102,9 +102,8 @@ exports[`test/ideal/build-ideal-from-starting-graph.ts > TAP > build from an act
         resolved: 'https://registry.npmjs.org/missing/-/missing-1.0.0.tgz'
       },
       Edge spec(baz@^1.0.0) -prod-> to: Node {
-        id: '··baz@1.0.0',
-        location: './node_modules/.vlt/··baz@1.0.0/node_modules/baz',
-        resolved: 'https://registry.npmjs.org/baz/-/baz-1.0.0.tgz'
+        id: '·custom·baz@1.0.0',
+        location: './node_modules/.vlt/·custom·baz@1.0.0/node_modules/baz'
       }
     ]
   },
@@ -112,7 +111,9 @@ exports[`test/ideal/build-ideal-from-starting-graph.ts > TAP > build from an act
     id: 'workspace·packages§workspace-b',
     location: './packages/workspace-b',
     importer: true,
-    edgesOut: [ Edge spec(baz@^1.0.0) -prod-> to: Node { ref: '··baz@1.0.0' } ]
+    edgesOut: [
+      Edge spec(baz@^1.0.0) -prod-> to: Node { ref: '·custom·baz@1.0.0' }
+    ]
   },
   Node {
     id: 'workspace·packages§workspace-a',

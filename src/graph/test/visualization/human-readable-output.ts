@@ -343,6 +343,38 @@ t.test('aliased package', async t => {
   )
 })
 
+t.test('confused package', async t => {
+  const graph = new Graph({
+    projectRoot: t.testdirName,
+    ...configData,
+    mainManifest: {
+      name: 'my-project',
+      version: '1.0.0',
+      dependencies: {
+        'different-name': '^1.0.0',
+      },
+    },
+  })
+  graph.placePackage(
+    graph.mainImporter,
+    'optional',
+    Spec.parse('different-name', '^1.0.0'),
+    { name: 'actual-name', version: '1.0.0' },
+  )
+  t.matchSnapshot(
+    humanReadableOutput(
+      {
+        edges: [...graph.edges],
+        highlightSelection: false,
+        importers: graph.importers,
+        nodes: [...graph.nodes.values()],
+      },
+      {},
+    ),
+    'should print both spec and manifest names when they differ',
+  )
+})
+
 t.test('missing optional', async t => {
   const graph = new Graph({
     projectRoot: t.testdirName,

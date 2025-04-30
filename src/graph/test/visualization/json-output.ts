@@ -277,14 +277,14 @@ t.test('aliased package', async t => {
       name: 'my-project',
       version: '1.0.0',
       dependencies: {
-        a: '^1.0.0',
+        a: 'npm:@myscope/foo@^1.0.0',
       },
     },
   })
   graph.placePackage(
     graph.mainImporter,
     'optional',
-    Spec.parse('a', '^1.0.0'),
+    Spec.parse('a', 'npm:@myscope/foo@^1.0.0'),
     { name: '@myscope/foo', version: '1.0.0' },
   )
   t.matchSnapshot(
