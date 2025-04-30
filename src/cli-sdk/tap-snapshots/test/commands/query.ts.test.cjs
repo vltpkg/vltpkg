@@ -123,6 +123,7 @@ exports[`test/commands/query.ts > TAP > query > should list pkgs in json format 
       "projectRoot": "{ROOT}",
       "dev": false,
       "optional": false,
+      "confused": false,
       "insights": {
         "scanned": false
       }
@@ -146,6 +147,7 @@ exports[`test/commands/query.ts > TAP > query > should list pkgs in json format 
       "projectRoot": "{ROOT}",
       "dev": false,
       "optional": false,
+      "confused": false,
       "insights": {
         "scanned": false
       }
@@ -172,6 +174,7 @@ exports[`test/commands/query.ts > TAP > query > should list pkgs in json format 
       "projectRoot": "{ROOT}",
       "dev": false,
       "optional": false,
+      "confused": false,
       "insights": {
         "scanned": false
       }
@@ -198,6 +201,7 @@ exports[`test/commands/query.ts > TAP > query > should list pkgs in json format 
       "projectRoot": "{ROOT}",
       "dev": false,
       "optional": false,
+      "confused": false,
       "insights": {
         "scanned": false
       }
@@ -227,6 +231,7 @@ exports[`test/commands/query.ts > TAP > query > should list pkgs in json format 
       "projectRoot": "{ROOT}",
       "dev": false,
       "optional": false,
+      "confused": false,
       "insights": {
         "scanned": false
       }
@@ -264,6 +269,7 @@ exports[`test/commands/query.ts > TAP > query > workspaces > should list workspa
       "projectRoot": "{ROOT}",
       "dev": false,
       "optional": false,
+      "confused": false,
       "insights": {
         "scanned": false
       }
@@ -284,6 +290,7 @@ exports[`test/commands/query.ts > TAP > query > workspaces > should list workspa
       "projectRoot": "{ROOT}",
       "dev": false,
       "optional": false,
+      "confused": false,
       "insights": {
         "scanned": false
       }
@@ -304,6 +311,7 @@ exports[`test/commands/query.ts > TAP > query > workspaces > should list workspa
       "projectRoot": "{ROOT}",
       "dev": false,
       "optional": false,
+      "confused": false,
       "insights": {
         "scanned": false
       }
