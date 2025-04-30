@@ -281,7 +281,7 @@ export const getTuple = (spec: Spec, mani: Manifest): DepIDTuple => {
       return [
         f.type,
         f.namedRegistry ?? reg,
-        `${mani.name ?? f.name}@${version}`,
+        `${isPackageNameConfused(spec, mani.name) ? spec.name : (mani.name ?? f.name)}@${version}`,
       ]
     }
     case 'git': {
@@ -319,6 +319,16 @@ export const getTuple = (spec: Spec, mani: Manifest): DepIDTuple => {
       throw error('Path-based dep ids are not supported', { spec })
   }
 }
+
+/**
+ * Checks for a potentially manifest-confused package name.
+ * Returns `true` if the package name is confused, `false` otherwise.
+ */
+export const isPackageNameConfused = (spec?: Spec, name?: string) =>
+  !!spec?.name && // a nameless spec can't be checked
+  !spec.subspec && // it's not an aliased package or using a custom protocol
+  spec.type === 'registry' && // the defined spec is of type registry
+  spec.name !== name // its name is not the same as the defined spec name
 
 /**
  * Get the {@link DepID} for a given {@link Spec} and {@link Manifest}. The

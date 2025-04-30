@@ -102,28 +102,28 @@ exports[`test/index.ts > TAP > hydrate only > workspace·a > hydrated with scope
 `
 
 exports[`test/index.ts > TAP > valid specs > @scoped/x@1.2.3 > hydrated with name asdf 1`] = `
-asdf@npm:@scoped/manifest-name@1.2.3
+asdf@npm:@scoped/x@1.2.3
 `
 
 exports[`test/index.ts > TAP > valid specs > @scoped/x@1.2.3 > hydrated with name unknown 1`] = `
-@scoped/manifest-name@1.2.3
+@scoped/x@1.2.3
 `
 
 exports[`test/index.ts > TAP > valid specs > @scoped/x@1.2.3 > hydrated with name y 1`] = `
-y@npm:@scoped/manifest-name@1.2.3
+y@npm:@scoped/x@1.2.3
 `
 
 exports[`test/index.ts > TAP > valid specs > @scoped/x@1.2.3 > hydrated with scoped name 1`] = `
-@scoped/x@npm:@scoped/manifest-name@1.2.3
+@scoped/x@1.2.3
 `
 
 exports[`test/index.ts > TAP > valid specs > @scoped/x@1.2.3 > must match snapshot 1`] = `
 Array [
-  "··@scoped§manifest-name@1.2.3",
+  "··@scoped§x@1.2.3",
   Array [
     "registry",
     "",
-    "@scoped/manifest-name@1.2.3",
+    "@scoped/x@1.2.3",
   ],
 ]
 `
@@ -221,55 +221,55 @@ Array [
 `
 
 exports[`test/index.ts > TAP > valid specs > x@1 > hydrated 1`] = `
-x@npm:manifest-name@1.2.3
+x@1.2.3
 `
 
 exports[`test/index.ts > TAP > valid specs > x@1 > hydrated with name asdf 1`] = `
-asdf@npm:manifest-name@1.2.3
+asdf@npm:x@1.2.3
 `
 
 exports[`test/index.ts > TAP > valid specs > x@1 > hydrated with name unknown 1`] = `
-manifest-name@1.2.3
+x@1.2.3
 `
 
 exports[`test/index.ts > TAP > valid specs > x@1 > hydrated with name y 1`] = `
-y@npm:manifest-name@1.2.3
+y@npm:x@1.2.3
 `
 
 exports[`test/index.ts > TAP > valid specs > x@1 > must match snapshot 1`] = `
 Array [
-  "··manifest-name@1.2.3",
+  "··x@1.2.3",
   Array [
     "registry",
     "",
-    "manifest-name@1.2.3",
+    "x@1.2.3",
   ],
 ]
 `
 
 exports[`test/index.ts > TAP > valid specs > x@1.2.3 > hydrated 1`] = `
-x@npm:manifest-name@1.2.3
+x@1.2.3
 `
 
 exports[`test/index.ts > TAP > valid specs > x@1.2.3 > hydrated with name asdf 1`] = `
-asdf@npm:manifest-name@1.2.3
+asdf@npm:x@1.2.3
 `
 
 exports[`test/index.ts > TAP > valid specs > x@1.2.3 > hydrated with name unknown 1`] = `
-manifest-name@1.2.3
+x@1.2.3
 `
 
 exports[`test/index.ts > TAP > valid specs > x@1.2.3 > hydrated with name y 1`] = `
-y@npm:manifest-name@1.2.3
+y@npm:x@1.2.3
 `
 
 exports[`test/index.ts > TAP > valid specs > x@1.2.3 > must match snapshot 1`] = `
 Array [
-  "··manifest-name@1.2.3",
+  "··x@1.2.3",
   Array [
     "registry",
     "",
-    "manifest-name@1.2.3",
+    "x@1.2.3",
   ],
 ]
 `
@@ -598,28 +598,28 @@ Array [
 `
 
 exports[`test/index.ts > TAP > valid specs > y@1.2.3 > hydrated 1`] = `
-x@npm:manifest-name@1.2.3
+x@npm:y@1.2.3
 `
 
 exports[`test/index.ts > TAP > valid specs > y@1.2.3 > hydrated with name asdf 1`] = `
-asdf@npm:manifest-name@1.2.3
+asdf@npm:y@1.2.3
 `
 
 exports[`test/index.ts > TAP > valid specs > y@1.2.3 > hydrated with name unknown 1`] = `
-manifest-name@1.2.3
+y@1.2.3
 `
 
 exports[`test/index.ts > TAP > valid specs > y@1.2.3 > hydrated with name y 1`] = `
-y@npm:manifest-name@1.2.3
+y@1.2.3
 `
 
 exports[`test/index.ts > TAP > valid specs > y@1.2.3 > must match snapshot 1`] = `
 Array [
-  "··manifest-name@1.2.3",
+  "··y@1.2.3",
   Array [
     "registry",
     "",
-    "manifest-name@1.2.3",
+    "y@1.2.3",
   ],
 ]
 `
