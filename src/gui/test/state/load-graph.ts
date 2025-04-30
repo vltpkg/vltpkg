@@ -1,5 +1,5 @@
 import { test, expect } from 'vitest'
-import { inspect } from 'node:util'
+import { humanReadableOutput } from '@vltpkg/graph'
 import { joinDepIDTuple } from '@vltpkg/dep-id'
 import { load } from '@/state/load-graph.js'
 import type { TransferData } from '@/state/types.js'
@@ -90,5 +90,62 @@ const transferData: TransferData = {
 }
 
 test('load graph', () => {
-  expect(inspect(load(transferData), { depth: 4 })).toMatchSnapshot()
+  const result = load(transferData)
+  expect(
+    humanReadableOutput(
+      {
+        edges: [...result.graph.edges],
+        nodes: [...result.graph.nodes.values()],
+        importers: result.graph.importers,
+      },
+      { colors: false },
+    ),
+  ).toMatchSnapshot()
+})
+
+test('load graph with confused manifest', () => {
+  const transferDataWithConfused: TransferData = {
+    ...transferData,
+    lockfile: {
+      ...transferData.lockfile,
+      nodes: {
+        ...transferData.lockfile.nodes,
+        '··confused@1.0.0': [
+          0,
+          'confused',
+          'sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ==',
+          null,
+          'node_modules/.pnpm/confused@1.0.0/node_modules/confused',
+          {
+            name: 'confused',
+            version: '1.0.0',
+          },
+          {
+            name: 'test',
+            version: '1.0.0',
+          },
+        ],
+      },
+      edges: {
+        ...transferData.lockfile.edges,
+        'file·. confused': 'prod ^1.0.0 ··confused@1.0.0',
+      },
+    },
+  }
+  const result = load(transferDataWithConfused)
+  const confusedNode = result.graph.nodes.get('··confused@1.0.0')
+  expect(confusedNode).toBeDefined()
+  expect(confusedNode?.confused).toBe(true)
+  expect(confusedNode?.manifest?.name).toBe('confused')
+  expect(confusedNode?.rawManifest?.name).toBe('test')
+  expect(
+    humanReadableOutput(
+      {
+        edges: [...result.graph.edges],
+        nodes: [...result.graph.nodes.values()],
+        importers: result.graph.importers,
+      },
+      { colors: false },
+    ),
+  ).toMatchSnapshot()
 })

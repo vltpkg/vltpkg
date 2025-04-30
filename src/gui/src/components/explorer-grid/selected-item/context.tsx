@@ -58,6 +58,7 @@ type SelectedItemStoreState = DetailsInfo & {
   selectedItem: GridItemData
   activeTab: Tab
   manifest: Manifest | null
+  rawManifest: Manifest | null
   packageScore?: PackageScore
   insights: SocketSecurityDetails[] | undefined
 }
@@ -94,6 +95,7 @@ export const SelectedItemProvider = ({
     createStore<SelectedItemStore>(set => ({
       selectedItem,
       manifest: selectedItem.to?.manifest ?? null,
+      rawManifest: selectedItem.to?.rawManifest ?? null,
       packageScore: selectedItem.to?.insights.score,
       insights: getSocketInsights(selectedItem.to?.insights),
       activeTab: 'overview',

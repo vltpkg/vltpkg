@@ -78,6 +78,7 @@ test('TabsManifestButton renders default', () => {
     selectedItem: ITEM_WITH_MANIFEST,
     ...SELECTED_ITEM_DETAILS,
     manifest: {},
+    rawManifest: null,
     insights: undefined,
     activeTab: 'manifest' as const,
     setActiveTab: vi.fn(),
@@ -98,6 +99,7 @@ test('TabsManifestButton renders default', () => {
 test('TabsManifestContent renders an empty state', () => {
   const mockState = {
     manifest: null,
+    rawManifest: null,
     selectedItem: SELECTED_ITEM,
     ...SELECTED_ITEM_DETAILS,
     insights: undefined,
@@ -124,6 +126,7 @@ test('TabsManifestContent renders with a manifest', () => {
     insights: undefined,
     activeTab: 'manifest' as const,
     manifest: MOCK_MANIFEST,
+    rawManifest: null,
     setActiveTab: vi.fn(),
   } satisfies SelectedItemStore
 
