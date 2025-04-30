@@ -22,6 +22,7 @@ jobs:
     name: Pre-Check
     runs-on: ubuntu-latest
     outputs:
+      release-pr: ${{ steps.release-pr.outputs.value }}
       changed: ${{ steps.filters.outputs.changed }}
       dependent: ${{ steps.filters.outputs.dependent }}
       related: ${{ steps.filters.outputs.related }}
@@ -221,3 +222,29 @@ jobs:
 
       - name: Run Tests
         run: pnpm ${{ needs.pre-check.outputs.dependent }} --filter="!smoke-test" --no-bail --aggregate-output test
+
+  on-failure:
+    name: Notify on Failure
+    runs-on: ubuntu-latest
+    if: ${{ always() && needs.pre-check.outputs.release-pr == 'true' && (needs.lint.result == 'failure' || needs.test.result == 'failure') }}
+    needs:
+      - pre-check
+      - lint
+      - test
+    steps:
+      - name: Slack Notify
+        uses: rtCamp/action-slack-notify@v2.3.3
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_GITHUB_ALERTS_WEBHOOK_URL }}
+          SLACK_USERNAME: vltops
+          SLACK_CHANNEL: github-alerts
+          SLACK_ICON: https://github.com/vltpkg.png
+          SLACK_COLOR: failure
+          SLACK_FOOTER: ''
+          SLACKIFY_MARKDOWN: true
+          MSG_MINIMAL: 'actions url,commit'
+          SLACK_TITLE: ${{ github.event.pull_request.title }} Lint/Test Failed
+          SLACK_MESSAGE: |
+            [PR ${{ github.event.number }}](https://github.com/${{ github.repository }}/pull/${{ github.event.number }})
+            Lint: ${{ needs.lint.result == 'failure' && ':x:' || ':white_check_mark:' }}
+            Test: ${{ needs.test.result == 'failure' && ':x:' || ':white_check_mark:' }}
