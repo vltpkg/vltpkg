@@ -110,34 +110,35 @@ jobs:
         run: pnpm install
 
       - name: Formatting
-        run: pnpm run format:check
         id: format
         continue-on-error: true
+        run: pnpm run format:check
 
       - name: Linting
-        run: pnpm run lint:check
         id: lint
         continue-on-error: true
+        run: pnpm run lint:check
 
       - name: Dependencies
-        run: pnpm run deps:check
         id: deps
         continue-on-error: true
+        run: pnpm run deps:check
 
       - name: Docs
-        run: pnpm --filter docs typedoc:check
         id: docs
         continue-on-error: true
+        run: pnpm --filter docs typedoc:check
 
       - name: Consistent Workspaces
+        id: workspaces
+        continue-on-error: true
         run: |
           pnpm run fix:pkg
+          pnpm -r tshy
           if [ -n "$(git status --porcelain)" ]; then
             git diff
             exit 1
           fi
-        id: workspaces
-        continue-on-error: true
 
       - name: Check Results
         run: |
