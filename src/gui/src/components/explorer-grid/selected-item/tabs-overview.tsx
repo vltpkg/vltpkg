@@ -11,6 +11,12 @@ import {
 import { InlineCode } from '@/components/ui/inline-code.jsx'
 import { Link } from '@/components/ui/link.jsx'
 import { cn } from '@/lib/utils.js'
+import {
+  Avatar,
+  AvatarImage,
+  AvatarFallback,
+} from '@radix-ui/react-avatar'
+import type { Contributor } from '@/lib/external-info.js'
 
 export const OverviewTabButton = () => {
   return (
@@ -133,8 +139,10 @@ export const OverviewTabContent = () => {
         </div>
       }
 
+      <ContributorList />
+
       {manifest?.keywords && (
-        <div className="flex flex-col gap-2 px-6 pb-4">
+        <div className="flex cursor-default flex-col gap-2 px-6 pb-4">
           <h4 className="text-sm font-medium capitalize">keywords</h4>
           <div className="flex flex-wrap gap-2">
             {Array.isArray(manifest.keywords) ?
@@ -166,5 +174,57 @@ export const OverviewTabContent = () => {
         </div>
       )}
     </TabsContent>
+  )
+}
+
+const Contributor = ({
+  contributor: { name, email, avatar },
+}: {
+  contributor: Contributor
+}) => {
+  return (
+    <div className="flex cursor-default gap-2">
+      <Avatar className="size-9">
+        {avatar && (
+          <AvatarImage
+            className="size-9 rounded-full outline outline-[1px] outline-neutral-200 dark:outline-neutral-700"
+            src={avatar}
+          />
+        )}
+        <AvatarFallback className="flex aspect-square size-9 items-center justify-center">
+          <div className="h-full w-full rounded-full bg-gradient-to-t from-neutral-200 to-neutral-400 dark:from-neutral-500 dark:to-neutral-800" />
+        </AvatarFallback>
+      </Avatar>
+      <div className="flex flex-col justify-center text-sm text-foreground">
+        <p className="font-medium text-neutral-900 dark:text-neutral-200">
+          {name}
+        </p>
+        {email && (
+          <p className="text-xs text-muted-foreground">{email}</p>
+        )}
+      </div>
+    </div>
+  )
+}
+
+const ContributorList = () => {
+  const contributors = useSelectedItemStore(
+    state => state.contributors,
+  )
+
+  if (!contributors?.length) return null
+
+  return (
+    <div className="flex cursor-default flex-col gap-2 px-6 pb-4">
+      <h4 className="text-sm font-medium capitalize">Contributors</h4>
+      <div className="flex flex-wrap gap-x-8 gap-y-5">
+        {contributors.map((contributor, idx) => (
+          <Contributor
+            key={`contributor-${idx}`}
+            contributor={contributor}
+          />
+        ))}
+      </div>
+    </div>
   )
 }
