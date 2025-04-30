@@ -47,11 +47,14 @@ export const newNode =
     location:
       'node_modules/.vlt/·${registry}·${name}@${version}/node_modules/${name}',
     manifest: { name, version },
+    rawManifest: undefined,
     integrity: 'sha512-deadbeef',
     resolved: undefined,
     dev: false,
     optional: false,
+    confused: false,
     setResolved() {},
+    setConfusedManifest() {},
     toJSON() {
       return {
         id: this.id,
@@ -60,11 +63,13 @@ export const newNode =
         location: this.location,
         importer: this.importer,
         manifest: this.manifest,
+        rawManifest: this.rawManifest,
         projectRoot: this.projectRoot,
         integrity: this.integrity,
         resolved: this.resolved,
         dev: this.dev,
         optional: this.optional,
+        confused: false,
       }
     },
   })
