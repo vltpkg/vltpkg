@@ -87,6 +87,9 @@ jobs:
       - name: Version Workspaces
         run: pnpm --filter "./src/*" exec npm version ${{ steps.version.outputs.value }} --no-git-tag-version
 
+      - name: Version Root
+        run: pnpm exec npm version ${{ steps.version.outputs.value }} --no-git-tag-version
+
       - name: Commit Version Bumps
         run: |
           git config --global user.email "vltops@users.noreply.github.com"
