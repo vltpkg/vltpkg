@@ -49,6 +49,8 @@ jobs:
     runs-on: ubuntu-latest
     needs: pre-check
     if: needs.pre-check.outputs.action == 'pr'
+    outputs:
+      version: ${{ steps.version.outputs.value }}
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -257,3 +259,64 @@ jobs:
           git config --global user.name "vltops"
           git tag -a "v$VERSION" -m "Release v$VERSION"
           git push origin "v$VERSION"
+
+  on-pr:
+    name: Notify PR
+    runs-on: ubuntu-latest
+    if: ${{ always() && needs.pr.result == 'failure' }}
+    needs: pr
+    steps:
+      - name: Slack Notify
+        uses: rtCamp/action-slack-notify@v2.3.3
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_GITHUB_ALERTS_WEBHOOK_URL }}
+          SLACK_USERNAME: vltops
+          SLACK_CHANNEL: github-alerts
+          SLACK_ICON: https://github.com/vltpkg.png
+          SLACK_COLOR: 'failure'
+          SLACK_FOOTER: ''
+          SLACKIFY_MARKDOWN: true
+          SLACK_TITLE: Release ${{ needs.pr.outputs.version }} PR Failed
+          SLACK_MESSAGE: |
+            :x: The release PR failed to be created or updated. This most likely requires manual intervention.
+
+  on-publish:
+    name: Notify Publish
+    runs-on: ubuntu-latest
+    if: ${{ always() && needs.publish.result != 'skipped' && needs.pre-check.outputs.dry-run != 'true' }}
+    needs:
+      - pre-check
+      - publish
+    steps:
+      - name: Message
+        id: message
+        run: |
+          MESSAGE=""
+          if [[ "${{ needs.publish.result }}" == "success" ]]; then
+            MESSAGE=":white_check_mark: ${{ github.event.head_commit.message }} was published successfully! :tada:"
+          else
+            delimiter="$(openssl rand -hex 8)"
+            {
+              echo "value<<${delimiter}"
+              echo ":rotating_light: The merged release PR failed to be published."
+              echo "This requires manual intervention to publish the missing packages."
+              echo "Manually rerun the workflow if the errors were transient:"
+              echo "gh workflow run release.yml --ref=main -f action=publish"
+              echo "${delimiter}"
+            } >> "${GITHUB_OUTPUT}"
+            exit 0
+          fi
+          echo "value=$MESSAGE" >> $GITHUB_OUTPUT
+
+      - name: Slack Notify
+        uses: rtCamp/action-slack-notify@v2.3.3
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_GITHUB_ALERTS_WEBHOOK_URL }}
+          SLACK_USERNAME: vltops
+          SLACK_CHANNEL: github-alerts
+          SLACK_ICON: https://github.com/vltpkg.png
+          SLACK_COLOR: ${{ needs.publish.result == 'success' && 'success' || 'failure' }}
+          SLACK_FOOTER: ''
+          SLACKIFY_MARKDOWN: true
+          SLACK_TITLE: ${{ github.event.head_commit.message }} Publish ${{ needs.publish.result == 'success' && 'Success' || 'Failed' }}
+          SLACK_MESSAGE: ${{ steps.message.outputs.value }}
