@@ -119,7 +119,13 @@ export const load = (transfered: TransferData): LoadResponse => {
         projectRoot: graph.projectRoot,
         dev: false,
         optional: false,
+        confused: false,
         setResolved() {},
+        setConfusedManifest(fixed: Manifest, confused?: Manifest) {
+          this.manifest = fixed
+          this.rawManifest = confused
+          this.confused = true
+        },
         toJSON() {
           return {
             id: this.id,
@@ -133,6 +139,10 @@ export const load = (transfered: TransferData): LoadResponse => {
             resolved: this.resolved,
             dev: this.dev,
             optional: this.optional,
+            confused: this.confused,
+            ...(this.confused ?
+              { rawManifest: this.rawManifest }
+            : undefined),
           }
         },
         toString() {
@@ -156,6 +166,7 @@ export const load = (transfered: TransferData): LoadResponse => {
     node.resolved = importer.resolved
     node.dev = importer.dev
     node.optional = importer.optional
+    node.confused = false
     node.toJSON = () => ({
       id: node.id,
       name: node.name,
@@ -168,6 +179,7 @@ export const load = (transfered: TransferData): LoadResponse => {
       resolved: node.resolved,
       dev: node.dev,
       optional: node.optional,
+      confused: node.confused,
     })
     node.toString = () => stringifyNode(node)
     // should set the main importer in the first iteration

@@ -109,6 +109,7 @@ test('InsightTabContent renders an empty state', () => {
     ...SELECTED_ITEM_DETAILS,
     insights: undefined,
     manifest: null,
+    rawManifest: null,
     activeTab: 'insights' as const,
     setActiveTab: vi.fn(),
   } satisfies SelectedItemStore
@@ -131,6 +132,7 @@ test('InsightTabContent renders with insights', () => {
     ...SELECTED_ITEM_DETAILS,
     insights: MOCK_INSIGHTS,
     manifest: null,
+    rawManifest: null,
     activeTab: 'insights' as const,
     setActiveTab: vi.fn(),
   } satisfies SelectedItemStore
@@ -152,6 +154,7 @@ test('InsightTabContent renders with no insights but a package score', () => {
     selectedItem: SELECTED_ITEM,
     ...SELECTED_ITEM_DETAILS,
     manifest: null,
+    rawManifest: null,
     insights: undefined,
     activeTab: 'insights' as const,
     packageScore: MOCK_PACKAGE_SCORE,
@@ -176,6 +179,7 @@ test('InsightTabButton renders default', () => {
     ...SELECTED_ITEM_DETAILS,
     insights: undefined,
     manifest: null,
+    rawManifest: null,
     activeTab: 'insights' as const,
     setActiveTab: vi.fn(),
   } satisfies SelectedItemStore

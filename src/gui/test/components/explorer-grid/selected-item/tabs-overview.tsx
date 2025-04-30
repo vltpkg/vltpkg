@@ -24,6 +24,7 @@ const ITEM_WITH_DESCRIPTION = {
     manifest: {
       description: '## Description\n\nThis is a custom description',
     },
+    rawManifest: null,
   },
 } as unknown as GridItemData
 
@@ -97,6 +98,7 @@ test('OverviewTabButton renders default', () => {
     selectedItem: SELECTED_ITEM,
     ...SELECTED_ITEM_DETAILS,
     manifest: {},
+    rawManifest: null,
     insights: undefined,
     activeTab: 'overview' as const,
     setActiveTab: vi.fn(),
@@ -120,6 +122,7 @@ test('OverviewTabContent renders default', () => {
     selectedItem: SELECTED_ITEM,
     ...SELECTED_ITEM_DETAILS,
     manifest: {},
+    rawManifest: null,
     insights: undefined,
     activeTab: 'overview' as const,
     setActiveTab: vi.fn(),
@@ -145,6 +148,7 @@ test('OverviewTabContent renders with content', () => {
     activeTab: 'overview' as const,
     setActiveTab: vi.fn(),
     manifest: {},
+    rawManifest: null,
   } satisfies SelectedItemStore
 
   vi.mocked(useSelectedItemStore).mockImplementation(selector =>
@@ -167,6 +171,7 @@ test('OverviewTabContent renders with contributors', () => {
     activeTab: 'overview' as const,
     setActiveTab: vi.fn(),
     manifest: null,
+    rawManifest: null,
     contributors: [
       {
         name: 'John Doe',
