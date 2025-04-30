@@ -143,6 +143,7 @@ const fixScripts = async (ws: Workspace) => {
     ...(ws.pj.devDependencies?.tshy ?
       {
         prepack: 'tshy',
+        tshy: 'tshy',
       }
     : {}),
     ...(ws.pj.dependencies?.astro ?
