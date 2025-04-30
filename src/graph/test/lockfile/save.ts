@@ -298,11 +298,53 @@ t.test('workspaces', async t => {
   )
 
   await t.test('save manifests', async t => {
-    save({ ...configData, graph, saveManifests: true })
+    save({ ...configData, graph })
     t.matchSnapshot(
       readFileSync(resolve(projectRoot, 'vlt-lock.json'), {
         encoding: 'utf8',
       }),
     )
   })
+})
+
+t.test('confused manifest', async t => {
+  const mainManifest = {
+    name: 'my-project',
+    version: '1.0.0',
+    dependencies: {
+      foo: '^1.0.0',
+    },
+  }
+  const projectRoot = t.testdir()
+  const graph = new Graph({
+    ...configData,
+    projectRoot,
+    mainManifest,
+  })
+  const foo = graph.placePackage(
+    graph.mainImporter,
+    'prod',
+    Spec.parse('foo', '^1.0.0'),
+    {
+      name: 'test', // Different name to trigger confusion
+      version: '1.0.0',
+    },
+  )
+  if (!foo) {
+    throw new Error('Missing expected package')
+  }
+  foo.setResolved()
+  foo.location = 'node_modules/.pnpm/foo@1.0.0/node_modules/foo'
+
+  // Save with manifests to include rawManifest
+  saveHidden({ ...configData, graph })
+  t.matchSnapshot(
+    readFileSync(
+      resolve(projectRoot, 'node_modules/.vlt-lock.json'),
+      {
+        encoding: 'utf8',
+      },
+    ),
+    'should save lockfile with confused manifest',
+  )
 })

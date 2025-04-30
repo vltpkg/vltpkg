@@ -47,6 +47,7 @@ export const newNode =
     resolved: undefined,
     dev: false,
     optional: false,
+    setConfusedManifest() {},
     setResolved() {},
     toJSON() {
       return {

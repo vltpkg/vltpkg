@@ -100,6 +100,30 @@ Array [
 ]
 `
 
+exports[`test/lockfile/load-nodes.ts > TAP > load nodes with confused manifest > should load node with confused manifest 1`] = `
+Object {
+  "confused": true,
+  "dev": false,
+  "id": "··foo@1.0.0",
+  "importer": false,
+  "integrity": "sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ==",
+  "location": "node_modules/.pnpm/foo@1.0.0/node_modules/foo",
+  "manifest": Object {
+    "name": "foo",
+    "version": "1.0.0",
+  },
+  "name": "foo",
+  "optional": false,
+  "projectRoot": "{ROOT}",
+  "rawManifest": Object {
+    "name": "test",
+    "version": "1.0.0",
+  },
+  "resolved": "https://registry.npmjs.org/foo/-/foo-1.0.0.tgz",
+  "version": "1.0.0",
+}
+`
+
 exports[`test/lockfile/load-nodes.ts > TAP > load nodes with manifest > should load nodes into graph with manifest data 1`] = `
 Array [
   Object {
