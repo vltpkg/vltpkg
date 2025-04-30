@@ -89,6 +89,7 @@ export type QueryResponseNode = Omit<
     | 'dev'
     | 'optional'
     | 'insights'
+    | 'confused'
   >
 }
 

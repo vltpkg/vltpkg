@@ -31,6 +31,7 @@ export const newNode =
   (graph: GraphLike) =>
   (name: string, version = '1.0.0'): NodeLike => ({
     projectRoot,
+    confused: false,
     edgesIn: new Set(),
     edgesOut: new Map(),
     importer: false,
@@ -60,6 +61,7 @@ export const newNode =
         resolved: this.resolved,
         dev: this.dev,
         optional: this.optional,
+        confused: false,
       }
     },
   })
