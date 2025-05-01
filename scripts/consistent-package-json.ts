@@ -15,6 +15,7 @@ import type {
   PnpmWorkspaceConfig,
   Workspace as WorkspaceBase,
 } from './utils.ts'
+import { PUBLISHED_VARIANT } from '@vltpkg/infra-build'
 
 type Workspace = WorkspaceBase & {
   isRoot: boolean
@@ -272,15 +273,23 @@ const fixLicense = async (ws: Workspace) => {
 }
 
 const fixCliVariants = async (ws: Workspace) => {
-  const workspaceType = basename(dirname(ws.dir))
-  const workspaceBasename = basename(ws.dir)
-
-  if (workspaceType !== 'infra') {
+  if (basename(dirname(ws.dir)) !== 'infra') {
     return
   }
+
+  const workspaceBasename = basename(ws.dir)
   if (!workspaceBasename.startsWith('cli')) {
     return
   }
+
+  const isDefaultCli = workspaceBasename === 'cli'
+
+  const cliVariant =
+    isDefaultCli ?
+      PUBLISHED_VARIANT === 'Bundle' ?
+        'cli-js'
+      : 'cli-compiled'
+    : workspaceBasename
 
   ws.pj.devDependencies = {
     '@vltpkg/infra-build': 'workspace:*',
@@ -294,12 +303,12 @@ const fixCliVariants = async (ws: Workspace) => {
 
   let descriptionExtra = ''
 
-  switch (workspaceBasename) {
+  switch (cliVariant) {
     case 'cli-js':
       ws.pj.name = '@vltpkg/cli-js'
       break
     case 'cli-compiled':
-      ws.pj.name = `vlt`
+      ws.pj.name = '@vltpkg/cli-compiled'
       ws.pj.engines = undefined
       break
     default: {
@@ -309,6 +318,10 @@ const fixCliVariants = async (ws: Workspace) => {
       ws.pj.engines = undefined
       break
     }
+  }
+
+  if (isDefaultCli) {
+    ws.pj.name = 'vlt'
   }
 
   ws.pj.description = `The vlt CLI${descriptionExtra}`

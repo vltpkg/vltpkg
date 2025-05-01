@@ -4,6 +4,7 @@ import { readdirSync, readFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import * as Bundle from '../src/bundle.ts'
 import * as Compile from '../src/compile.ts'
+import { PUBLISHED_VARIANT } from '../src/variants.ts'
 
 const mockCli = async (
   t: Test,
@@ -92,35 +93,100 @@ t.test('invalid name', async t => {
   )
 })
 
-t.test('bundled CLI', async t => {
-  const dir = 'outdir'
-  const { readPkg, readOutdir } = await mockCli(t, {
-    workspaceName: 'cli-js',
-    pkg: {
-      publishConfig: {
-        directory: dir,
+t.test('bundled and compiled', async t => {
+  const testBundled = async (t: Test, workspaceName = 'cli-js') => {
+    const dir = 'outdir'
+    const { readPkg, readOutdir } = await mockCli(t, {
+      workspaceName,
+      pkg: {
+        publishConfig: {
+          directory: dir,
+        },
       },
-    },
-  })
-  t.strictSame(readPkg(dir), {
-    name: 'my-published-package',
-    version: '1.2.3',
-    description: 'hi',
-    repository: 'my-repo',
-    keywords: ['hi'],
-    type: 'module',
-    license: 'MIT',
-    bin: {
-      vlxl: './vlxl.js',
-      vlr: './vlr.js',
-      vlrx: './vlrx.js',
-      vlt: './vlt.js',
-      vlx: './vlx.js',
-    },
-  })
-  t.strictSame(
-    readOutdir(dir),
-    ['LICENSE', 'README.md', 'package.json'].sort(),
+    })
+    t.strictSame(readPkg(dir), {
+      name: 'my-published-package',
+      version: '1.2.3',
+      description: 'hi',
+      repository: 'my-repo',
+      keywords: ['hi'],
+      type: 'module',
+      license: 'MIT',
+      bin: {
+        vlxl: './vlxl.js',
+        vlr: './vlr.js',
+        vlrx: './vlrx.js',
+        vlt: './vlt.js',
+        vlx: './vlx.js',
+      },
+    })
+    t.strictSame(
+      readOutdir(dir),
+      ['LICENSE', 'README.md', 'package.json'].sort(),
+    )
+  }
+
+  const testCompiled = async (
+    t: Test,
+    workspaceName = 'cli-compiled',
+  ) => {
+    const dir = 'outdir'
+    const { readPkg, readOutdir } = await mockCli(t, {
+      workspaceName,
+      pkg: {
+        publishConfig: {
+          directory: dir,
+        },
+      },
+    })
+    t.strictSame(readPkg(dir), {
+      name: 'my-published-package',
+      version: '1.2.3',
+      description: 'hi',
+      repository: 'my-repo',
+      keywords: ['hi'],
+      type: 'module',
+      license: 'MIT',
+      bin: {
+        vlxl: './vlxl',
+        vlr: './vlr',
+        vlrx: './vlrx',
+        vlt: './vlt',
+        vlx: './vlx',
+      },
+      optionalDependencies: {
+        '@vltpkg/cli-linux-x64': '1.2.3',
+        '@vltpkg/cli-linux-arm64': '1.2.3',
+        '@vltpkg/cli-darwin-x64': '1.2.3',
+        '@vltpkg/cli-darwin-arm64': '1.2.3',
+        '@vltpkg/cli-win32-x64': '1.2.3',
+      },
+      scripts: {
+        postinstall: 'node postinstall.cjs',
+      },
+    })
+    t.strictSame(
+      readOutdir(dir),
+      [
+        'LICENSE',
+        'README.md',
+        'package.json',
+        'vlxl',
+        'vlr',
+        'vlrx',
+        'vlt',
+        'vlx',
+        'postinstall.cjs',
+      ].sort(),
+    )
+  }
+
+  t.test('bundled', t => testBundled(t))
+  t.test('compiled', t => testCompiled(t))
+  t.test('published', t =>
+    PUBLISHED_VARIANT === 'Bundle' ?
+      testBundled(t, 'cli')
+    : testCompiled(t, 'cli'),
   )
 })
 
@@ -230,50 +296,6 @@ t.test('root compiled bin', async t => {
         'package.json',
         'vlr',
         'vlt',
-        'postinstall.cjs',
-      ].sort(),
-    )
-  })
-
-  t.test('publish', async t => {
-    const { readOutdir, readPkg } = await mockRootBin(t)
-    t.strictSame(readPkg(dir), {
-      name: 'my-published-package',
-      version: '1.2.3',
-      description: 'hi',
-      repository: 'my-repo',
-      keywords: ['hi'],
-      type: 'module',
-      license: 'MIT',
-      bin: {
-        vlxl: './vlxl',
-        vlr: './vlr',
-        vlrx: './vlrx',
-        vlt: './vlt',
-        vlx: './vlx',
-      },
-      optionalDependencies: {
-        '@vltpkg/cli-linux-x64': '1.2.3',
-        '@vltpkg/cli-linux-arm64': '1.2.3',
-        '@vltpkg/cli-darwin-x64': '1.2.3',
-        '@vltpkg/cli-darwin-arm64': '1.2.3',
-        '@vltpkg/cli-win32-x64': '1.2.3',
-      },
-      scripts: {
-        postinstall: 'node postinstall.cjs',
-      },
-    })
-    t.strictSame(
-      readOutdir(dir),
-      [
-        'LICENSE',
-        'README.md',
-        'package.json',
-        'vlxl',
-        'vlr',
-        'vlrx',
-        'vlt',
-        'vlx',
         'postinstall.cjs',
       ].sort(),
     )

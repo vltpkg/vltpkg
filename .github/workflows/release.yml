@@ -76,14 +76,14 @@ jobs:
 
       - name: Get Previous CLI Version Number
         id: previous-version
-        run: echo "value=$(jq -r .version ./infra/cli-compiled/package.json)" >> $GITHUB_OUTPUT
+        run: echo "value=$(jq -r .version ./infra/cli/package.json)" >> $GITHUB_OUTPUT
 
       - name: Version CLI Packages
-        run: pnpm --filter="./infra/cli-*" exec npm version prerelease --no-git-tag-version
+        run: pnpm --filter="./infra/cli*" exec npm version prerelease --no-git-tag-version
 
       - name: Get CLI Version Number
         id: version
-        run: echo "value=$(jq -r .version ./infra/cli-compiled/package.json)" >> $GITHUB_OUTPUT
+        run: echo "value=$(jq -r .version ./infra/cli/package.json)" >> $GITHUB_OUTPUT
 
       # TODO: use git history to determine other packages to bump
       - name: Version Workspaces
@@ -245,7 +245,7 @@ jobs:
         id: versions
         run: |
           # Add leading v to version
-          echo "version=v$(jq -r .version ./infra/cli-compiled/package.json)" >> $GITHUB_OUTPUT
+          echo "version=v$(jq -r .version ./infra/cli/package.json)" >> $GITHUB_OUTPUT
           # Previous version is the name of the latest release
           echo "previous-version=$(gh release list --json name --limit 1 | jq -r ".[0].name")" >> $GITHUB_OUTPUT
 
