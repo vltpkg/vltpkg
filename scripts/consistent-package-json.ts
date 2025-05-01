@@ -291,6 +291,7 @@ const fixCliVariants = async (ws: Workspace) => {
       : 'cli-compiled'
     : workspaceBasename
 
+  ws.pj.type = undefined
   ws.pj.devDependencies = {
     '@vltpkg/infra-build': 'workspace:*',
   }

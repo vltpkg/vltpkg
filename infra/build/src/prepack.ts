@@ -41,11 +41,22 @@ const writeFiles = ({
   pkg: object
   pkgExtra?: object
 }) => {
+  const outdirPkgPath = resolve(outdir, 'package.json')
+  // If the outdir already has a package.json, merge its properties
+  // into the new package.json. This is necessary because the bundle
+  // could be esm or cjs so the package.json in the ourdir will have
+  // its `type` property already set to the correct value.
+  let outdirPkg: object = {}
+  try {
+    outdirPkg = JSON.parse(
+      readFileSync(outdirPkgPath, 'utf8'),
+    ) as object
+  } catch {}
   cpSync('./README.md', resolve(outdir, 'README.md'))
   cpSync('./LICENSE', resolve(outdir, 'LICENSE'))
   writeFileSync(
-    resolve(outdir, 'package.json'),
-    JSON.stringify({ ...pkg, ...pkgExtra }, null, 2),
+    outdirPkgPath,
+    JSON.stringify({ ...pkg, ...pkgExtra, ...outdirPkg }, null, 2),
     'utf8',
   )
 }
@@ -105,7 +116,6 @@ const main = async () => {
         }, {}),
       },
     })
-
     return
   }
 
@@ -121,7 +131,6 @@ const main = async () => {
       join(import.meta.dirname, 'postinstall.cjs'),
       resolve(outdir, 'postinstall.cjs'),
     )
-
     writeFiles({
       outdir,
       pkg,

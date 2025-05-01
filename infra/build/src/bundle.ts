@@ -1,4 +1,10 @@
-import { mkdirSync, cpSync, existsSync, readdirSync } from 'node:fs'
+import {
+  mkdirSync,
+  cpSync,
+  existsSync,
+  readdirSync,
+  writeFileSync,
+} from 'node:fs'
 import {
   join,
   relative,
@@ -15,6 +21,7 @@ import assert from 'node:assert'
 import { BINS_DIR, BINS } from './bins.ts'
 import type { Bin } from './bins.ts'
 import { EOL } from 'node:os'
+import { Variants } from './variants.ts'
 
 export const CLI = dirname(
   createRequire(import.meta.url).resolve(
@@ -75,7 +82,10 @@ const addBinHashbangs: esbuild.Plugin = {
       async args => {
         const contents = await readFile(args.path, 'utf8')
         return {
-          contents: ['#!/usr/bin/env node', contents].join(EOL),
+          contents: [
+            `#!/usr/bin/env -S node ${Variants.Bundle?.env?.NODE_OPTIONS}`.trim(),
+            contents,
+          ].join(EOL),
           loader: 'ts' as esbuild.Loader,
         }
       },
@@ -196,7 +206,6 @@ const bundleEntryPoints = async (
         .map(l => `${l};`)
         .join(EOL),
     },
-    outExtension: { '.js': o.format === 'cjs' ? '.cjs' : '.js' },
     define: {
       'process.env.NODE_ENV': '"production"',
       'process.env.TAP': 'false',
@@ -310,6 +319,15 @@ export const bundle = async ({
     join(WORKSPACE_DIR, 'gui/dist'),
     join(outdir, define.GUI_ASSETS_DIR),
     { recursive: true },
+  )
+
+  // write package.json with the correct type so both esm and cjs
+  // are directly runnable locally
+  writeFileSync(
+    join(outdir, 'package.json'),
+    JSON.stringify({
+      type: format === 'cjs' ? 'commonjs' : 'module',
+    }),
   )
 
   return { outdir }

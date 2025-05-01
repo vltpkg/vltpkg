@@ -14,7 +14,6 @@
   "scripts": {
     "prepack": "vlt-build-prepack"
   },
-  "type": "module",
   "keywords": [
     "vltpkg"
   ],
