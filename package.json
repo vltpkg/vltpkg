@@ -63,8 +63,7 @@
   "type": "module",
   "pnpm": {
     "patchedDependencies": {
-      "tshy": "patches/tshy.patch",
-      "ink": "patches/ink.patch"
+      "tshy": "patches/tshy.patch"
     }
   }
 }
