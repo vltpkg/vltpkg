@@ -197,9 +197,12 @@ gh workflow run release.yml --ref=main -f action=publish
 
 The following packages are published as part of the CLI:
 
-- `vlt` The is the compiled variant of the CLI. This package only has
-  placeholder bins that are swapped out in a postinstall for one of
-  the platform variants below.
+- `vlt` The variant of the CLI as set by `PUBLISHED_VARIANT` in
+  [`@vltpkg/infra-build`](./infra/build/src/variants.ts)
+- `@vltpkg/cli-js` The JS variant of the CLI.
+- `@vltpkg/cli-compiled` The is the compiled variant of the CLI. This
+  package only has placeholder bins that are swapped out in a
+  postinstall for one of the platform variants below.
 - `@vltpkg/cli-darmin-arm64`
 - `@vltpkg/cli-darmin-x64`
 - `@vltpkg/cli-linux-arm64`
@@ -212,11 +215,16 @@ postinstall strategy of the parent package. If you need to install one
 of those directly, you will need to move/run/link the included `vlt`
 executable manually.
 
-The bundled JS variant of the CLI still exists in the `infra/cli-js`
-directory. It exists because it is still published for manual testing
-and comparisons and it is an intermediary of the compiled CLI, so it
-gets tested in `smoke-tests` to help debug the build pipeline of
+The bundled JS variant of the CLI exists in the `infra/cli-js`
+directory, because it is still published for manual testing and
+comparisons and it is an intermediary of the compiled CLI, so it gets
+tested in `smoke-tests` to help debug the build pipeline of
 `TS source` -> `esbuild bundled JS` -> `compiled Deno`.
+
+The compiled variant of the CLI exists in the `infra/cli-compiled`
+directory, because the end goal is to publish this as the default
+`vlt` package. For now it is published under a scoped name for manual
+testing.
 
 ## GUI Live Reload
 

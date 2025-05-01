@@ -34,8 +34,8 @@ const workspaces: KnipConfig['workspaces'] = {
     // TODO: audit if these really need to be hoisted
     ignoreDependencies: ['@astrojs/mdx', 'sharp', 'vite'],
   },
-  'infra/cli-compiled': {
-    entry: ['postinstall.cjs'],
+  'infra/build': {
+    entry: [...entry, 'src/postinstall.cjs'],
   },
 }
 

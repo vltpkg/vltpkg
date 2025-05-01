@@ -8,6 +8,7 @@ export {
   VARIANTS,
   VARIANT_VALUES,
   isVariant,
+  PUBLISHED_VARIANT,
 } from './variants.ts'
 export type {
   Variant,

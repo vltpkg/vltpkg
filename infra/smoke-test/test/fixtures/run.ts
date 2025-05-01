@@ -14,6 +14,7 @@ import {
   isVariant,
   VARIANT_VALUES,
   VARIANTS,
+  PUBLISHED_VARIANT,
 } from '@vltpkg/infra-build'
 import type {
   Bin,
@@ -31,7 +32,6 @@ const filterVariants = (variants: readonly Variant[]) => {
   return filter ? variants.filter(v => filter.includes(v)) : variants
 }
 
-export const publishedVariant = VARIANT_VALUES.Compile
 export const allVariants = filterVariants(VARIANTS)
 export const defaultVariants = filterVariants([
   VARIANT_VALUES.Node,
@@ -349,7 +349,7 @@ export const compile: Command = (...args) =>
 
 // And export whatever is the currently published variant
 export const runPublished: Command = (...args) =>
-  runVariant(Variants[publishedVariant], ...args)
+  runVariant(Variants[PUBLISHED_VARIANT], ...args)
 
 export const runMultiple = async (
   t: Test,
@@ -394,7 +394,7 @@ export const runMultiple = async (
   // treat published variant as the default result for other tests
   // if it exists, otherwise just the first one
   const defaultVariant =
-    variantResults.find(([v]) => v === publishedVariant) ??
+    variantResults.find(([v]) => v === PUBLISHED_VARIANT) ??
     variantResults[0]
 
   assert(defaultVariant, 'no default result')
