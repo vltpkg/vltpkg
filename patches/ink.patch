@@ -1,12 +1,42 @@
+diff --git a/build/dom.js b/build/dom.js
+index 171c195d279489c7fce65ae8b8d6f86d22d2c244..cbfa35f6d82b06dfe984cf9105467ec0aefd9f1f 100644
+--- a/build/dom.js
++++ b/build/dom.js
+@@ -1,4 +1,3 @@
+-import Yoga from 'yoga-layout';
+ import measureText from './measure-text.js';
+ import wrapText from './wrap-text.js';
+ import squashTextNodes from './squash-text-nodes.js';
+diff --git a/build/get-max-width.js b/build/get-max-width.js
+index 7872a3e9d76fe5a2424482d77cbbadae834528c3..bd4a6d7d4aa8c39b6957508f2a5f40a1f3520af1 100644
+--- a/build/get-max-width.js
++++ b/build/get-max-width.js
+@@ -1,4 +1,3 @@
+-import Yoga from 'yoga-layout';
+ const getMaxWidth = (yogaNode) => {
+     return (yogaNode.getComputedWidth() -
+         yogaNode.getComputedPadding(Yoga.EDGE_LEFT) -
+diff --git a/build/ink.js b/build/ink.js
+index a9c444ff161ed4b6ea13909591844909015fe97c..71dfc61672d4b914c7c32a699d2fa13f4b99ac4e 100644
+--- a/build/ink.js
++++ b/build/ink.js
+@@ -6,7 +6,6 @@ import isInCi from 'is-in-ci';
+ import autoBind from 'auto-bind';
+ import signalExit from 'signal-exit';
+ import patchConsole from 'patch-console';
+-import Yoga from 'yoga-layout';
+ import reconciler from './reconciler.js';
+ import render from './renderer.js';
+ import * as dom from './dom.js';
 diff --git a/build/reconciler.js b/build/reconciler.js
-index 55acec78d35c8c1f0901720655e5ff1c58fd83c2..30743db8968ee4cab062372377b1295bf8ab3dce 100644
+index 55acec78d35c8c1f0901720655e5ff1c58fd83c2..f8b8107962906456ae96f0251f08e32dbffd71ff 100644
 --- a/build/reconciler.js
 +++ b/build/reconciler.js
-@@ -1,33 +1,9 @@
+@@ -1,33 +1,8 @@
 -import process from 'node:process';
  import createReconciler from 'react-reconciler';
  import { DefaultEventPriority } from 'react-reconciler/constants.js';
- import Yoga from 'yoga-layout';
+-import Yoga from 'yoga-layout';
  import { createTextNode, appendChildNode, insertBeforeNode, removeChildNode, setStyle, setTextNodeValue, createNode, setAttribute, } from './dom.js';
  import applyStyles from './styles.js';
 -// We need to conditionally perform devtools connection to avoid
@@ -36,3 +66,23 @@ index 55acec78d35c8c1f0901720655e5ff1c58fd83c2..30743db8968ee4cab062372377b1295b
  const diff = (before, after) => {
      if (before === after) {
          return;
+diff --git a/build/render-node-to-output.js b/build/render-node-to-output.js
+index 2788c26291a04f733e3170b6de6abe3ba93cb8db..4d7113d4362ea5a6d4f8b407cb174062ecaff53f 100644
+--- a/build/render-node-to-output.js
++++ b/build/render-node-to-output.js
+@@ -1,6 +1,5 @@
+ import widestLine from 'widest-line';
+ import indentString from 'indent-string';
+-import Yoga from 'yoga-layout';
+ import wrapText from './wrap-text.js';
+ import getMaxWidth from './get-max-width.js';
+ import squashTextNodes from './squash-text-nodes.js';
+diff --git a/build/styles.js b/build/styles.js
+index 12cdd64f8c88e583a77f9e902d226103e5d70203..47dc1a1326815be64438984aec1aca37f8a033e9 100644
+--- a/build/styles.js
++++ b/build/styles.js
+@@ -1,4 +1,3 @@
+-import Yoga from 'yoga-layout';
+ const applyPositionStyles = (node, style) => {
+     if ('position' in style) {
+         node.setPositionType(style.position === 'absolute'

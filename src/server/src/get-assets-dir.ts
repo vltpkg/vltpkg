@@ -8,7 +8,7 @@ export const getAssetsDir = async () =>
       fileURLToPath(
         await resolveImport(
           '@vltpkg/gui/package.json',
-          import.meta.url,
+          import.meta.filename,
         ),
       ),
     ),

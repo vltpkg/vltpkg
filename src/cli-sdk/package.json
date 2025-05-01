@@ -52,7 +52,8 @@
     "pretty-bytes": "^6.1.1",
     "react": "^18.3.1",
     "supports-color": "^10.0.0",
-    "walk-up-path": "catalog:"
+    "walk-up-path": "catalog:",
+    "yoga-layout": "^3.2.1"
   },
   "devDependencies": {
     "@eslint/js": "catalog:",

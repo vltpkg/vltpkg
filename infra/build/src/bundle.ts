@@ -148,6 +148,7 @@ type CreateBundleOptions = {
   splitting: Exclude<esbuild.BuildOptions['splitting'], undefined>
   outdir: string
   define: Record<string, string>
+  format: 'cjs' | 'esm'
 }
 
 type BundleOptions = {
@@ -164,8 +165,8 @@ const bundleEntryPoints = async (
     sourcemap: o.sourcemap,
     minify: o.minify,
     outdir: o.outdir,
-    splitting: o.splitting,
-    format: 'esm',
+    splitting: o.format === 'cjs' ? false : o.splitting,
+    format: o.format,
     bundle: true,
     platform: 'node',
     target: 'es2022',
@@ -175,21 +176,36 @@ const bundleEntryPoints = async (
         // alias globalThis to global for Deno compat and make Buffer a global
         // https://docs.deno.com/runtime/reference/cli/unstable_flags/#--unstable-node-globals
         'var global = globalThis',
-        `import {Buffer} from "node:buffer"`,
+        o.format === 'esm' ?
+          'import {Buffer} from "node:buffer"'
+        : 'var {Buffer} = require("node:buffer")',
         // Explicitly set all global timers to the Node.js timers
         // otherwise Deno might use its web timers which have a different signature.
         // https://docs.deno.com/api/web/~/setTimeout
-        `import {setTimeout,clearTimeout,setImmediate,clearImmediate,setInterval,clearInterval} from "node:timers"`,
-        // Create a require function since we are bundling to ESM
-        'import {createRequire as _vlt_createRequire} from "node:module"',
-        'var require = _vlt_createRequire(import.meta.filename)',
+        o.format === 'esm' ?
+          'import {setTimeout,clearTimeout,setImmediate,clearImmediate,setInterval,clearInterval} from "node:timers"'
+        : 'var {setTimeout,clearTimeout,setImmediate,clearImmediate,setInterval,clearInterval} = require("node:timers")',
+        // Create a require function if we are bundling to ESM
+        ...(o.format === 'esm' ?
+          [
+            'import {createRequire as _vlt_createRequire} from "node:module"',
+            'var require = _vlt_createRequire(import.meta.filename)',
+          ]
+        : []),
       ]
         .map(l => `${l};`)
         .join(EOL),
     },
+    outExtension: { '.js': o.format === 'cjs' ? '.cjs' : '.js' },
     define: {
       'process.env.NODE_ENV': '"production"',
       'process.env.TAP': 'false',
+      ...(o.format === 'cjs' ?
+        {
+          'import.meta.dirname': '__dirname',
+          'import.meta.filename': '__filename',
+        }
+      : {}),
       ...o.define,
     },
   })
@@ -211,6 +227,7 @@ export type Options = {
   splitting?: boolean
   sourcemap?: boolean
   hashbang?: boolean
+  format?: 'cjs' | 'esm'
   internalDefine?: { [key: string]: string }
 }
 
@@ -221,6 +238,7 @@ export const bundle = async ({
   splitting = true,
   sourcemap = true,
   hashbang = false,
+  format = 'esm',
   internalDefine,
 }: Options) => {
   mkdirSync(outdir, { recursive: true })
@@ -238,6 +256,7 @@ export const bundle = async ({
     sourcemap,
     splitting,
     outdir,
+    format,
     define: Object.fromEntries(
       Object.entries(define).map(([k, v]) => [
         `process.env.__VLT_INTERNAL_${k}`,

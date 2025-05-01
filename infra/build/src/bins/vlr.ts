@@ -1,2 +1,2 @@
 import { run } from '../bins.ts'
-await run('run')
+void run('run')

@@ -81,20 +81,20 @@ export type OnDone<T> =
  * If the view is a View class, then instantiate and start it.
  * If it's a view function, then just define the onDone method.
  */
-const startView = <T>(
+const startView = async <T>(
   conf: LoadedConfig,
   opts: ViewOptions,
   views?: Views<T>,
   { start }: { start: number } = { start: Date.now() },
-): {
+): Promise<{
   onDone: OnDone<T>
   onError?: (err: unknown) => void
-} => {
+}> => {
   const View = getView<T>(conf, views)
 
   if (isViewClass(View)) {
     const view = new View(opts, conf)
-    view.start()
+    await view.start()
     return {
       onDone(r) {
         return view.done(r, { time: Date.now() - start })
@@ -145,7 +145,7 @@ export const outputCommand = async <T>(
     maxStringLength: Infinity,
   } as const satisfies InspectOptions
 
-  const { onDone, onError } = startView(
+  const { onDone, onError } = await startView(
     conf,
     // assume views will always output to stdout so use color support from there
     { colors: stdoutColor },
