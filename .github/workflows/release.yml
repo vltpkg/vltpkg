@@ -321,22 +321,20 @@ jobs:
       - name: Message
         id: message
         run: |
-          MESSAGE=""
-          if [[ "${{ needs.publish.result }}" == "success" ]]; then
-            MESSAGE=":white_check_mark: ${{ needs.publish.outputs.version }} was published successfully! :tada:"
-          else
-            delimiter="$(openssl rand -hex 8)"
-            {
-              echo "value<<${delimiter}"
-              echo ":rotating_light: The merged PR for ${{ needs.publish.outputs.version }} failed to publish."
+          delimiter="$(openssl rand -hex 8)"
+          {
+            echo "value<<${delimiter}"
+            if [[ "${{ needs.publish.result }}" == "success" ]]; then
+              echo ":white_check_mark: ${{ needs.publish.outputs.version }} was published successfully! :tada:"
+              echo "[Release Notes](https://github.com/${{ github.repository }}/releases/tag/${{ needs.publish.outputs.version }})"
+            else
+              echo ":rotating_light: The release workflow for ${{ needs.publish.outputs.version }} failed. :rotating_light:"
               echo "This requires manual intervention to fix."
               echo "It is safe to manually rerun the workflow if the errors were transient. Only the packages that failed to publish will be retried."
               echo "gh workflow run release.yml --ref=main -f action=publish"
-              echo "${delimiter}"
-            } >> "${GITHUB_OUTPUT}"
-            exit 0
-          fi
-          echo "value=$MESSAGE" >> $GITHUB_OUTPUT
+            fi
+            echo "${delimiter}"
+          } >> "${GITHUB_OUTPUT}"
 
       - name: Slack Notify
         uses: rtCamp/action-slack-notify@v2.3.3
