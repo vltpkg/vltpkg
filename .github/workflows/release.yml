@@ -202,7 +202,7 @@ jobs:
 
             ```bash
             gh pr merge -R vltpkg/vltpkg --rebase release
-            ````
+            ```
 
   publish:
     name: Publish
@@ -244,10 +244,16 @@ jobs:
       - name: Versions
         id: versions
         run: |
-          # Add leading v to version
-          echo "version=v$(jq -r .version ./infra/cli/package.json)" >> $GITHUB_OUTPUT
           # Previous version is the name of the latest release
-          echo "previous-version=$(gh release list --json name --limit 1 | jq -r ".[0].name")" >> $GITHUB_OUTPUT
+          PREVIOUS_VERSION=$(gh release list --json name --limit 1 | jq -r ".[0].name")
+          if [[ -z "$PREVIOUS_VERSION" || "$PREVIOUS_VERSION" == "null" ]]; then
+            exit 1
+          fi
+          echo "previous-version=$PREVIOUS_VERSION" >> $GITHUB_OUTPUT
+          # Make sure version has leading v
+          echo "version=v$(jq -r .version ./infra/cli/package.json)" >> $GITHUB_OUTPUT
+        env:
+          GH_TOKEN: ${{ github.token }}
 
       - name: Publish
         run: |
@@ -276,6 +282,8 @@ jobs:
             --verify-tag \
             --generate-notes \
             --notes-start-tag="${{ steps.versions.outputs.previous-version }}"
+        env:
+          GH_TOKEN: ${{ github.token }}
 
   on-pr:
     name: Notify PR
