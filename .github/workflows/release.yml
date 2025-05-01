@@ -272,6 +272,11 @@ jobs:
         run: |
           git config --global user.email "vltops@users.noreply.github.com"
           git config --global user.name "vltops"
+          git fetch origin tag "${{ steps.versions.outputs.version }}" || true
+          if git rev-parse "${{ steps.versions.outputs.version }}" >/dev/null 2>&1; then
+            echo "Tag ${{ steps.versions.outputs.version }} already exists"
+            exit 0
+          fi
           git tag -a "${{ steps.versions.outputs.version }}" -m "Release ${{ steps.versions.outputs.version }}"
           git push origin "${{ steps.versions.outputs.version }}"
 
