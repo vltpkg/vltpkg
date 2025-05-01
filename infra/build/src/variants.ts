@@ -13,6 +13,9 @@ export const VARIANTS = [
   'Compile',
 ] as const
 
+// Changing this will change which variant is published as `vlt` on npm.
+export const PUBLISHED_VARIANT: 'Bundle' | 'Compile' = 'Bundle'
+
 export const VARIANT_VALUES = {
   Node: 'Node',
   Deno: 'Deno',

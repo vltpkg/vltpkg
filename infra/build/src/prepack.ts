@@ -8,11 +8,12 @@ import {
   writeFileSync,
 } from 'node:fs'
 import assert from 'node:assert'
-import { basename, resolve } from 'node:path'
+import { basename, join, resolve } from 'node:path'
 import { bundle } from './bundle.ts'
 import { compile } from './compile.ts'
 import { BINS } from './bins.ts'
 import type { Bin } from './bins.ts'
+import { PUBLISHED_VARIANT } from './variants.ts'
 
 const {
   __VLT_INTERNAL_LOCAL_OPTIONAL_DEPS,
@@ -85,8 +86,14 @@ const main = async () => {
   rmSync(outdir, { recursive: true, force: true })
   mkdirSync(outdir, { recursive: true })
 
+  const publishedWorkspceName =
+    /* c8 ignore next - dont test since this is a constant */
+    PUBLISHED_VARIANT === 'Bundle' ? 'cli-js' : 'cli-compiled'
+  const cliVariant =
+    workspaceName === 'cli' ? publishedWorkspceName : workspaceName
+
   // The bundled CLI
-  if (workspaceName === 'cli-js') {
+  if (cliVariant === 'cli-js') {
     await bundle({ outdir, hashbang: true })
     writeFiles({
       outdir,
@@ -103,14 +110,17 @@ const main = async () => {
   }
 
   // The compiled root CLI with optional deps
-  if (workspaceName === 'cli-compiled') {
+  if (cliVariant === 'cli-compiled') {
     for (const bin of COMPILED_BINS) {
       writeFileSync(
         resolve(outdir, bin),
         '"If this file exists, the postinstall script failed to run."',
       )
     }
-    cpSync('./postinstall.cjs', resolve(outdir, 'postinstall.cjs'))
+    cpSync(
+      join(import.meta.dirname, 'postinstall.cjs'),
+      resolve(outdir, 'postinstall.cjs'),
+    )
 
     writeFiles({
       outdir,
@@ -143,7 +153,7 @@ const main = async () => {
   }
 
   // The platform specific CLIs
-  if (/^cli-.+-.+/.exec(workspaceName)) {
+  if (/^cli-.+-.+/.exec(cliVariant)) {
     const [, platform, arch] = pkg.name.split('-')
     assert(platform, 'invalid platform in package name')
     assert(arch, 'invalid arch in package name')

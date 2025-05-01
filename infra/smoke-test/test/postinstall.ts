@@ -17,7 +17,15 @@ t.before(() => {
 
   const proc = spawnSync(
     pnpm,
-    ['--filter', '"./infra/cli-*"', 'exec', pnpm, 'pack'],
+    [
+      '--filter',
+      '"./infra/cli-*"',
+      '--filter',
+      '"!./infra/cli-js"',
+      'exec',
+      pnpm,
+      'pack',
+    ],
     {
       cwd: resolve(import.meta.dirname, '../../..'),
       stdio: 'pipe',
@@ -52,6 +60,8 @@ t.before(() => {
       },
       { root: null, tarballs: [] },
     )
+
+  console.error([root, ...tarballs])
 
   assert(root, new Error('root tarball not found', { cause: proc }))
   assert(
