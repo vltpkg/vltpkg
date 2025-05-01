@@ -1,0 +1,38 @@
+diff --git a/build/reconciler.js b/build/reconciler.js
+index 55acec78d35c8c1f0901720655e5ff1c58fd83c2..30743db8968ee4cab062372377b1295bf8ab3dce 100644
+--- a/build/reconciler.js
++++ b/build/reconciler.js
+@@ -1,33 +1,9 @@
+-import process from 'node:process';
+ import createReconciler from 'react-reconciler';
+ import { DefaultEventPriority } from 'react-reconciler/constants.js';
+ import Yoga from 'yoga-layout';
+ import { createTextNode, appendChildNode, insertBeforeNode, removeChildNode, setStyle, setTextNodeValue, createNode, setAttribute, } from './dom.js';
+ import applyStyles from './styles.js';
+-// We need to conditionally perform devtools connection to avoid
+-// accidentally breaking other third-party code.
+-// See https://github.com/vadimdemedes/ink/issues/384
+-if (process.env['DEV'] === 'true') {
+-    try {
+-        await import('./devtools.js');
+-    }
+-    catch (error) {
+-        if (error.code === 'ERR_MODULE_NOT_FOUND') {
+-            console.warn(`
+-The environment variable DEV is set to true, so Ink tried to import \`react-devtools-core\`,
+-but this failed as it was not installed. Debugging with React Devtools requires it.
+-
+-To install use this command:
+ 
+-$ npm install --save-dev react-devtools-core
+-				`.trim() + '\n');
+-        }
+-        else {
+-            // eslint-disable-next-line @typescript-eslint/only-throw-error
+-            throw error;
+-        }
+-    }
+-}
+ const diff = (before, after) => {
+     if (before === after) {
+         return;
