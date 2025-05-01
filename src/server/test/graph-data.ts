@@ -94,6 +94,7 @@ t.test('graph data for vlt project', async t => {
         projectRoot,
         dev: false,
         optional: false,
+        confused: false,
       },
     ],
     lockfile: {
@@ -175,6 +176,7 @@ t.test('graph data for depless vlt project', async t => {
         projectRoot,
         dev: false,
         optional: false,
+        confused: false,
       },
     ],
     lockfile: {
