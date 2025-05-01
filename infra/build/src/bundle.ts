@@ -247,7 +247,7 @@ export const bundle = async ({
   splitting = true,
   sourcemap = true,
   hashbang = false,
-  format = 'esm',
+  format = 'cjs',
   internalDefine,
 }: Options) => {
   mkdirSync(outdir, { recursive: true })

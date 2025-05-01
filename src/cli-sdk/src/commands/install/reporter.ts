@@ -11,18 +11,12 @@ import {
 import { stdout } from '../../output.ts'
 import { ViewClass } from '../../view.ts'
 import { asError } from '@vltpkg/error-cause'
-import { loadYoga } from 'yoga-layout/load'
 
 type Step = {
   state: 'waiting' | 'in_progress' | 'completed'
 }
 
 const renderApp = async () => {
-  ;(
-    globalThis as typeof globalThis & {
-      Yoga: Awaited<ReturnType<typeof loadYoga>>
-    }
-  ).Yoga = await loadYoga()
   const { Box, render, Text } = await import('ink')
 
   const GraphStep = ({
