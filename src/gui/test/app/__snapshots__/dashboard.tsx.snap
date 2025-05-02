@@ -3,11 +3,7 @@
 exports[`render default 1`] = `
 
 <div>
-  <section class="flex h-full w-full flex-col rounded-b-lg border-x-[1px] border-b-[1px]">
-    <div class="flex h-[50px] w-full border-y-[1px] px-8 py-4">
-      <div class="flex w-full max-w-8xl items-center justify-between">
-      </div>
-    </div>
+  <section class="flex h-full max-h-[calc(100svh-65px-16px)] w-full grow flex-col rounded-b-lg border-x-[1px] border-b-[1px]">
     <gui-dashboard-grid>
     </gui-dashboard-grid>
   </section>
