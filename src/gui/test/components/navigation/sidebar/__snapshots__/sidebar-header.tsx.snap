@@ -5,8 +5,8 @@ exports[`AppSidebar header render default 1`] = `
 <gui-sidebar-header-primitive>
   <gui-sidebar-menu>
     <gui-sidebar-menu-item classname="peer flex h-[56px] w-full items-center overflow-hidden pl-[4.75px] [&amp;>svg]:shrink-0">
-      <gui-vltv-icon classname="text-foreground">
-      </gui-vltv-icon>
+      <gui-vlt-icon classname="text-foreground">
+      </gui-vlt-icon>
     </gui-sidebar-menu-item>
   </gui-sidebar-menu>
 </gui-sidebar-header-primitive>

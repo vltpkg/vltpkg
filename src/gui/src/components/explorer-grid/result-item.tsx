@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/tooltip.jsx'
 import { labelClassNamesMap } from './label-helper.js'
 import type { GridItemData, GridItemOptions } from './types.js'
+import { DataBadge } from '@/components/ui/data-badge.jsx'
 
 export type ResultItemClickOptions = {
   item: GridItemData
@@ -68,12 +69,12 @@ export const ResultItem = ({ item }: GridItemOptions) => {
       {/* Card Top */}
       <Card
         renderAsLink={true}
-        className={`relative group-hover:border-neutral-400 dark:group-hover:border-neutral-600 ${item.to ? 'cursor-pointer' : 'cursor-default'}`}
+        className={`duration-250 relative cursor-default transition-all group-hover:border-neutral-400 dark:group-hover:border-neutral-600`}
         onClick={onResultItemClick({ item, query, updateQuery })}>
         <CardHeader className="m-0 flex flex-row items-center justify-between rounded-t-lg border-b-[1px] px-4 py-3">
           <TooltipProvider>
             <Tooltip>
-              <TooltipTrigger className="truncate">
+              <TooltipTrigger className="cursor-default truncate">
                 <CardTitle className="text-md truncate">
                   {item.title}
                 </CardTitle>
@@ -83,35 +84,29 @@ export const ResultItem = ({ item }: GridItemOptions) => {
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
-          {item.type ?
-            <div className="flex items-center justify-center text-pretty rounded-md border-[1px] px-2.5 py-0.5 text-xs text-muted-foreground">
-              <p className="font-semibold">
-                {item.stacked ? '' : <span>{item.type}</span>}
-                <span className="px-1 font-medium text-muted-foreground">
-                  dep of:
-                </span>
-                {item.stacked ?
-                  <span>{item.size} packages</span>
-                : <span>{stringifyNode(item.from)}</span>}
-              </p>
-            </div>
-          : ''}
+          {item.type && (
+            <DataBadge
+              classNames={{
+                valueClassName: 'lowercase',
+              }}
+              value={item.stacked ? '' : item.type}
+              content={`dep of: ${item.stacked ? item.size : stringifyNode(item.from)}`}
+            />
+          )}
         </CardHeader>
 
         {/* Card Bottom */}
         <div className="flex h-12 w-full items-center justify-between gap-4 border-t-[1px] px-4 py-3">
-          {item.version ?
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger className="m-0 truncate rounded-sm border-[1px] px-2 py-1 align-baseline font-mono text-[0.65rem] text-muted-foreground">
-                  {item.version}
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>{item.version}</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          : ''}
+          {item.version && (
+            <DataBadge
+              variant="mono"
+              classNames={{
+                contentClassName: 'pt-0.5',
+              }}
+              tooltip={{ content: item.version }}
+              content={item.version}
+            />
+          )}
           <div className="flex gap-2">
             {item.labels?.length ?
               item.labels.map(i => (

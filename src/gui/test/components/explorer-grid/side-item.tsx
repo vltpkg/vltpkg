@@ -21,8 +21,8 @@ vi.mock('@/components/ui/dropdown-menu.jsx', () => ({
   DropdownMenuContent: 'gui-dropdown-menu-content',
   DropdownMenuItem: 'gui-dropdown-menu-item',
 }))
-vi.mock('@/components/ui/inline-code.jsx', () => ({
-  InlineCode: 'gui-inline-code',
+vi.mock('@/components/ui/data-badge.jsx', () => ({
+  DataBadge: 'gui-data-badge',
 }))
 vi.mock('lucide-react', async () => ({
   Ellipsis: 'gui-ellipsis',

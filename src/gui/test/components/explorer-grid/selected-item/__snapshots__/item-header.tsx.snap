@@ -26,12 +26,9 @@ exports[`ItemHeader renders with a package score 1`] = `
             <div class="flex items-center gap-2">
               <h1 class="w-fit max-w-full cursor-default align-baseline text-lg font-medium">
                 item
-                <gui-inline-code
-                  variant="monoGhost"
-                  classname="cursor-default text-sm"
-                >
+                <span class="ml-2 font-courier text-sm text-muted-foreground">
                   1.0.0
-                </gui-inline-code>
+                </span>
               </h1>
               <gui-tooltip-provider>
                 <gui-tooltip delayduration="150">
@@ -133,12 +130,9 @@ exports[`ItemHeader renders with a version information 1`] = `
             <div class="flex items-center gap-2">
               <h1 class="w-fit max-w-full cursor-default align-baseline text-lg font-medium">
                 item
-                <gui-inline-code
-                  variant="monoGhost"
-                  classname="cursor-default text-sm"
-                >
+                <span class="ml-2 font-courier text-sm text-muted-foreground">
                   1.0.0
-                </gui-inline-code>
+                </span>
               </h1>
               <gui-tooltip-provider>
                 <gui-tooltip delayduration="150">
@@ -193,48 +187,35 @@ exports[`ItemHeader renders with a version information 1`] = `
         </gui-tooltip>
       </gui-tooltip-provider>
     </div>
-    <div class="flex h-full cursor-default items-center justify-center text-center ml-auto">
-      <p class="w-full text-sm font-medium text-foreground">
-        123,456
-        <span class="text-muted-foreground">
-          Downloads last week
-        </span>
-      </p>
-    </div>
+    <gui-data-badge
+      value="123,456"
+      content="Downloads last week"
+    >
+    </gui-data-badge>
   </div>
   <div class="grid w-full grid-cols-12 divide-x-[1px] divide-muted empty:hidden">
     <gui-scroll-area classname="overflow-hidden overflow-x-scroll border-b-[1px] border-muted py-3 col-span-9 w-full pl-6">
       <div class="flex w-max gap-2">
-        <gui-inline-code
-          variant="mono"
-          tooltipduration="150"
-          tooltip="121 KB unpacked size"
-          displaytooltip="true"
-          classname="text-muted-foreground max-w-28 overflow-hidden text-nowrap truncate cursor-default relative mx-0 inline-flex items-center font-inter font-medium tracking-wide gap-1 px-2"
+        <gui-data-badge
+          icon="gui-download-icon"
+          value="121 KB"
+          content="Install size"
         >
-          <gui-download-icon
-            size="16"
-            classname="mb-0.5"
-          >
-          </gui-download-icon>
-          121 KB
-        </gui-inline-code>
-        <gui-copy-to-clipboard
-          classname="font-inter"
-          tooltiptext="Copy tarball URL"
-          copyvalue="https://example.com/tarball.tgz"
+        </gui-data-badge>
+        <gui-data-badge
+          icon="gui-package-icon"
+          content="Tarball"
+          tooltip="[object Object]"
+          copytoclipboard="[object Object]"
         >
-          <gui-package-icon size="16">
-          </gui-package-icon>
-          Tarball
-        </gui-copy-to-clipboard>
-        <gui-copy-to-clipboard
-          classname="font-inter"
-          tooltiptext="Copy Integrity value: abc123"
-          copyvalue="sha512-abc123"
+        </gui-data-badge>
+        <gui-data-badge
+          value="abc123"
+          content="Integrity"
+          tooltip="[object Object]"
+          copytoclipboard="[object Object]"
         >
-          Integrity
-        </gui-copy-to-clipboard>
+        </gui-data-badge>
       </div>
       <gui-scroll-bar orientation="horizontal">
       </gui-scroll-bar>
@@ -270,12 +251,9 @@ exports[`ItemHeader renders with custom registry item 1`] = `
             <div class="flex items-center gap-2">
               <h1 class="w-fit max-w-full cursor-default align-baseline text-lg font-medium">
                 item
-                <gui-inline-code
-                  variant="monoGhost"
-                  classname="cursor-default text-sm"
-                >
+                <span class="ml-2 font-courier text-sm text-muted-foreground">
                   1.0.0
-                </gui-inline-code>
+                </span>
               </h1>
               <gui-tooltip-provider>
                 <gui-tooltip delayduration="150">
@@ -294,15 +272,12 @@ exports[`ItemHeader renders with custom registry item 1`] = `
                 </gui-tooltip>
               </gui-tooltip-provider>
             </div>
-            <gui-inline-code
-              displaytooltip="true"
-              tooltipduration="150"
-              tooltip="https://example.com"
+            <gui-data-badge
               variant="mono"
-              classname="mx-0 w-fit max-w-40 cursor-default truncate"
+              content="custom:item@1.0.0"
+              tooltip="[object Object]"
             >
-              custom:item@1.0.0
-            </gui-inline-code>
+            </gui-data-badge>
           </div>
         </div>
         <gui-scroll-bar orientation="horizontal">
@@ -369,12 +344,9 @@ exports[`ItemHeader renders with default git host item 1`] = `
             <div class="flex items-center gap-2">
               <h1 class="w-fit max-w-full cursor-default align-baseline text-lg font-medium">
                 item
-                <gui-inline-code
-                  variant="monoGhost"
-                  classname="cursor-default text-sm"
-                >
+                <span class="ml-2 font-courier text-sm text-muted-foreground">
                   1.0.0
-                </gui-inline-code>
+                </span>
               </h1>
               <gui-tooltip-provider>
                 <gui-tooltip delayduration="150">
@@ -393,9 +365,11 @@ exports[`ItemHeader renders with default git host item 1`] = `
                 </gui-tooltip>
               </gui-tooltip-provider>
             </div>
-            <gui-inline-code classname="mx-0 w-fit max-w-40 cursor-default truncate">
-              git:{ref}
-            </gui-inline-code>
+            <gui-data-badge
+              variant="mono"
+              content="git:{ref}"
+            >
+            </gui-data-badge>
           </div>
         </div>
         <gui-scroll-bar orientation="horizontal">
@@ -462,12 +436,9 @@ exports[`ItemHeader renders with default item 1`] = `
             <div class="flex items-center gap-2">
               <h1 class="w-fit max-w-full cursor-default align-baseline text-lg font-medium">
                 item
-                <gui-inline-code
-                  variant="monoGhost"
-                  classname="cursor-default text-sm"
-                >
+                <span class="ml-2 font-courier text-sm text-muted-foreground">
                   1.0.0
-                </gui-inline-code>
+                </span>
               </h1>
               <gui-tooltip-provider>
                 <gui-tooltip delayduration="150">
@@ -552,12 +523,9 @@ exports[`ItemHeader renders with insights 1`] = `
             <div class="flex items-center gap-2">
               <h1 class="w-fit max-w-full cursor-default align-baseline text-lg font-medium">
                 item
-                <gui-inline-code
-                  variant="monoGhost"
-                  classname="cursor-default text-sm"
-                >
+                <span class="ml-2 font-courier text-sm text-muted-foreground">
                   1.0.0
-                </gui-inline-code>
+                </span>
               </h1>
               <gui-tooltip-provider>
                 <gui-tooltip delayduration="150">
@@ -642,12 +610,9 @@ exports[`ItemHeader renders with scoped registry item 1`] = `
             <div class="flex items-center gap-2">
               <h1 class="w-fit max-w-full cursor-default align-baseline text-lg font-medium">
                 item
-                <gui-inline-code
-                  variant="monoGhost"
-                  classname="cursor-default text-sm"
-                >
+                <span class="ml-2 font-courier text-sm text-muted-foreground">
                   1.0.0
-                </gui-inline-code>
+                </span>
               </h1>
               <gui-tooltip-provider>
                 <gui-tooltip delayduration="150">
@@ -666,15 +631,12 @@ exports[`ItemHeader renders with scoped registry item 1`] = `
                 </gui-tooltip>
               </gui-tooltip-provider>
             </div>
-            <gui-inline-code
-              displaytooltip="true"
-              tooltip="http://custom-scope"
-              tooltipduration="150"
+            <gui-data-badge
               variant="mono"
-              classname="mx-0 w-fit max-w-40 cursor-default truncate"
+              content="item@1.0.0"
+              tooltip="[object Object]"
             >
-              item@1.0.0
-            </gui-inline-code>
+            </gui-data-badge>
           </div>
         </div>
         <gui-scroll-bar orientation="horizontal">

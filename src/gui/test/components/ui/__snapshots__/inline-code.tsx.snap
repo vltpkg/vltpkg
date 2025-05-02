@@ -7,20 +7,3 @@ exports[`inline-code default 1`] = `
 </span>
 
 `;
-
-exports[`inline-code renders with tooltip 1`] = `
-
-<gui-tooltip-provider>
-  <gui-tooltip delayduration="1000">
-    <gui-tooltip-trigger aschild="true">
-      <span class="mx-1 rounded-sm px-1.5 py-1 pt-1.5 text-xs font-normal text-pink-500 border-[1px] font-mono border-muted bg-white dark:bg-black">
-        node_modules
-      </span>
-    </gui-tooltip-trigger>
-    <gui-tooltip-content>
-      Tooltip text
-    </gui-tooltip-content>
-  </gui-tooltip>
-</gui-tooltip-provider>
-
-`;
