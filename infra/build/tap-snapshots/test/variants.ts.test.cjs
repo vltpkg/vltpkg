@@ -10,7 +10,7 @@ Object {
   "args": "node __DIR__/__BIN__.js",
   "bin": "__DIR__/__BIN__.js",
   "dir": "__DIR__",
-  "NODE_OPTIONS": "--enable-source-maps",
+  "NODE_OPTIONS": "--no-warnings --enable-source-maps",
 }
 `
 
@@ -19,7 +19,7 @@ Object {
   "args": "node __DIR__\\\\__BIN__.js",
   "bin": "__DIR__\\\\__BIN__.js",
   "dir": "__DIR__",
-  "NODE_OPTIONS": "--enable-source-maps",
+  "NODE_OPTIONS": "--no-warnings --enable-source-maps",
 }
 `
 
@@ -78,7 +78,7 @@ Object {
   "args": "node __DIR__/__BIN__.ts",
   "bin": "__DIR__/__BIN__.ts",
   "dir": "__DIR__",
-  "NODE_OPTIONS": "--no-warnings --experimental-strip-types --enable-source-maps",
+  "NODE_OPTIONS": "--no-warnings --enable-source-maps --experimental-strip-types",
 }
 `
 
@@ -87,6 +87,6 @@ Object {
   "args": "node __DIR__\\\\__BIN__.ts",
   "bin": "__DIR__\\\\__BIN__.ts",
   "dir": "__DIR__",
-  "NODE_OPTIONS": "--no-warnings --experimental-strip-types --enable-source-maps",
+  "NODE_OPTIONS": "--no-warnings --enable-source-maps --experimental-strip-types",
 }
 `
