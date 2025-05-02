@@ -242,6 +242,7 @@ t.test('filterAttributes', async t => {
     retries: 0,
     securityArchive: undefined,
     specOptions: {},
+    signal: new AbortController().signal,
   }
   filterAttributes(
     state,

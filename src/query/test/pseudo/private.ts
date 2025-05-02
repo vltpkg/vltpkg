@@ -31,6 +31,7 @@ t.test('selects packages with private flag', async t => {
       retries: 0,
       securityArchive: undefined,
       specOptions: {},
+      signal: new AbortController().signal,
     }
     return state
   }

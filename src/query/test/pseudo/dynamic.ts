@@ -26,7 +26,6 @@ t.test('selects packages with a dynamicRequire alert', async t => {
       },
       cancellable: async () => {},
       walk: async i => i,
-      retries: 0,
       securityArchive: asSecurityArchiveLike(
         new Map([
           [
@@ -36,6 +35,8 @@ t.test('selects packages with a dynamicRequire alert', async t => {
         ]),
       ),
       specOptions: {},
+      retries: 0,
+      signal: new AbortController().signal,
     }
     return state
   }
@@ -77,9 +78,10 @@ t.test('missing security archive', async t => {
       },
       cancellable: async () => {},
       walk: async i => i,
-      retries: 0,
       securityArchive: undefined,
       specOptions: {},
+      retries: 0,
+      signal: new AbortController().signal,
     }
     return state
   }

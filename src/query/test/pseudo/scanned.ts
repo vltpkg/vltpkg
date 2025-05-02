@@ -57,6 +57,7 @@ t.test('scanned selector', async t => {
       securityArchive,
       specOptions: {},
       retries: 0,
+      signal: new AbortController().signal,
     }
     return state
   }

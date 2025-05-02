@@ -1,6 +1,7 @@
 import { parse } from '../../src/parser.ts'
 import type { EdgeLike, GraphLike, NodeLike } from '@vltpkg/graph'
 import { joinDepIDTuple } from '@vltpkg/dep-id'
+import type { DepID } from '@vltpkg/dep-id'
 import type {
   GraphSelectionState,
   ParserState,
@@ -51,6 +52,7 @@ export const selectorFixture =
     initial?: GraphSelectionState,
     partial?: GraphSelectionState,
     loose?: boolean,
+    scopeIDs?: DepID[],
   ): Promise<FixtureResult> => {
     initial ??= {
       edges: new Set(),
@@ -60,6 +62,7 @@ export const selectorFixture =
       edges: new Set(),
       nodes: new Set(),
     }
+    scopeIDs ??= [joinDepIDTuple(['file', '.'])]
     let current: PostcssNode
     if (typeof query === 'string') {
       const ast = parse(query)
@@ -84,7 +87,9 @@ export const selectorFixture =
       partial,
       walk,
       retries: 0,
+      scopeIDs,
       securityArchive: undefined,
+      signal: new AbortController().signal,
       specOptions: {},
     }
     const res = await testFn(state)

@@ -14,6 +14,7 @@ import {
 import { error } from '@vltpkg/error-cause'
 import { Query } from '@vltpkg/query'
 import { SecurityArchive } from '@vltpkg/security-archive'
+import type { DepID } from '@vltpkg/dep-id'
 import { commandUsage } from '../config/usage.ts'
 import type { CommandFn, CommandUsage } from '../index.ts'
 import { startGUI } from '../start-gui.ts'
@@ -128,15 +129,16 @@ export const command: CommandFn<QueryResult> = async conf => {
     securityArchive,
   })
 
-  const { edges, nodes } = await query.search(
-    queryString || defaultQueryString,
-  )
-
   const importers = new Set<Node>()
+  const scopeIDs: DepID[] = []
+
   if (monorepo) {
     for (const workspace of monorepo.filter(conf.values)) {
       const w: Node | undefined = graph.nodes.get(workspace.id)
-      if (w) importers.add(w)
+      if (w) {
+        importers.add(w)
+        scopeIDs.push(workspace.id)
+      }
     }
   }
   if (importers.size === 0) {
@@ -144,6 +146,14 @@ export const command: CommandFn<QueryResult> = async conf => {
       importers.add(importer)
     }
   }
+
+  const { edges, nodes } = await query.search(
+    queryString || defaultQueryString,
+    {
+      signal: new AbortController().signal,
+      scopeIDs: scopeIDs.length > 0 ? scopeIDs : undefined,
+    },
+  )
 
   if (!validateExpectedResult(conf, edges)) {
     throw error('Unexpected number of items', {

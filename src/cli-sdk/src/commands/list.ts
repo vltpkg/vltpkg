@@ -12,6 +12,7 @@ import {
 } from '@vltpkg/graph'
 import { Query } from '@vltpkg/query'
 import { SecurityArchive } from '@vltpkg/security-archive'
+import type { DepID } from '@vltpkg/dep-id'
 import { commandUsage } from '../config/usage.ts'
 import type { CommandFn, CommandUsage } from '../index.ts'
 import { startGUI } from '../start-gui.ts'
@@ -110,6 +111,8 @@ export const command: CommandFn<ListResult> = async conf => {
   const selectImporters: string[] = []
 
   const importers = new Set<Node>()
+  const scopeIDs: DepID[] = []
+
   if (monorepo) {
     for (const workspace of monorepo.filter(conf.values)) {
       const w: Node | undefined = graph.nodes.get(workspace.id)
@@ -117,6 +120,7 @@ export const command: CommandFn<ListResult> = async conf => {
         importers.add(w)
         selectImporters.push(`[name="${w.name}"]`)
         selectImporters.push(`[name="${w.name}"] > *`)
+        scopeIDs.push(workspace.id)
       }
     }
   }
@@ -137,6 +141,10 @@ export const command: CommandFn<ListResult> = async conf => {
 
   const { edges, nodes } = await query.search(
     queryString || defaultQueryString,
+    {
+      signal: new AbortController().signal,
+      scopeIDs: scopeIDs.length > 0 ? scopeIDs : undefined,
+    },
   )
 
   return {
