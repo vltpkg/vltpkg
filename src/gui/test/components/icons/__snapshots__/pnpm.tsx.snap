@@ -4,51 +4,64 @@ exports[`pnpm icon render custom class 1`] = `
 
 <div>
   <svg
-    class="custom-class"
-    id="a"
     xmlns="http://www.w3.org/2000/svg"
-    width="256"
-    height="255.98"
-    viewbox="0 0 256 255.98"
+    width="24"
+    height="24"
+    viewbox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    class="lucide lucide-pnpm lucide-Pnpm custom-class"
+    aria-hidden="true"
   >
     <path
-      id="b"
-      d="M256,79.99h-79.99V0h79.99V79.99h0Z"
+      d="M22 8.24922H15.7507V2H22V8.24922Z"
+      fill="currentColor"
+      stroke-width="0"
     >
     </path>
     <path
-      id="c"
-      d="M167.99,79.99H88V0h79.99V79.99Z"
+      d="M15.1242 8.24922H8.875V2H15.1242V8.24922Z"
+      fill="currentColor"
+      stroke-width="0"
     >
     </path>
     <path
-      id="d"
-      d="M80,79.99H0V0H80V79.99Z"
+      d="M8.25 8.24898H2V1.99976H8.25V8.24898Z"
+      fill="currentColor"
+      stroke-width="0"
     >
     </path>
     <path
-      id="e"
-      d="M256,167.99h-79.99V87.99h79.99v80h0Z"
+      d="M22 15.1243H15.7507V8.87427H22V15.1243Z"
+      fill="currentColor"
+      stroke-width="0"
     >
     </path>
     <path
-      id="f"
-      d="M167.99,167.99H88V87.99h79.99v80Z"
+      d="M15.1242 15.1243H8.875V8.87427H15.1242V15.1243Z"
+      fill="currentColor"
+      stroke-width="0"
     >
     </path>
     <path
-      id="g"
-      d="M167.99,255.98H88v-79.99h79.99v79.99Z"
+      d="M15.1242 21.9985H8.875V15.7493H15.1242V21.9985Z"
+      fill="currentColor"
+      stroke-width="0"
     >
     </path>
     <path
-      id="h"
-      d="M256,255.98h-79.99v-79.99h79.99v79.99h0Z"
+      d="M22 21.9985H15.7507V15.7493H22V21.9985Z"
+      fill="currentColor"
+      stroke-width="0"
     >
     </path>
     <path
-      id="i"
-      d="M80,255.98H0v-79.99H80v79.99Z"
+      d="M8.25 21.9985H2V15.7493H8.25V21.9985Z"
+      fill="currentColor"
+      stroke-width="0"
     >
     </path>
   </svg>
@@ -60,50 +73,64 @@ exports[`pnpm icon render default 1`] = `
 
 <div>
   <svg
-    id="a"
     xmlns="http://www.w3.org/2000/svg"
-    width="256"
-    height="255.98"
-    viewbox="0 0 256 255.98"
+    width="24"
+    height="24"
+    viewbox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    class="lucide lucide-pnpm lucide-Pnpm"
+    aria-hidden="true"
   >
     <path
-      id="b"
-      d="M256,79.99h-79.99V0h79.99V79.99h0Z"
+      d="M22 8.24922H15.7507V2H22V8.24922Z"
+      fill="currentColor"
+      stroke-width="0"
     >
     </path>
     <path
-      id="c"
-      d="M167.99,79.99H88V0h79.99V79.99Z"
+      d="M15.1242 8.24922H8.875V2H15.1242V8.24922Z"
+      fill="currentColor"
+      stroke-width="0"
     >
     </path>
     <path
-      id="d"
-      d="M80,79.99H0V0H80V79.99Z"
+      d="M8.25 8.24898H2V1.99976H8.25V8.24898Z"
+      fill="currentColor"
+      stroke-width="0"
     >
     </path>
     <path
-      id="e"
-      d="M256,167.99h-79.99V87.99h79.99v80h0Z"
+      d="M22 15.1243H15.7507V8.87427H22V15.1243Z"
+      fill="currentColor"
+      stroke-width="0"
     >
     </path>
     <path
-      id="f"
-      d="M167.99,167.99H88V87.99h79.99v80Z"
+      d="M15.1242 15.1243H8.875V8.87427H15.1242V15.1243Z"
+      fill="currentColor"
+      stroke-width="0"
     >
     </path>
     <path
-      id="g"
-      d="M167.99,255.98H88v-79.99h79.99v79.99Z"
+      d="M15.1242 21.9985H8.875V15.7493H15.1242V21.9985Z"
+      fill="currentColor"
+      stroke-width="0"
     >
     </path>
     <path
-      id="h"
-      d="M256,255.98h-79.99v-79.99h79.99v79.99h0Z"
+      d="M22 21.9985H15.7507V15.7493H22V21.9985Z"
+      fill="currentColor"
+      stroke-width="0"
     >
     </path>
     <path
-      id="i"
-      d="M80,255.98H0v-79.99H80v79.99Z"
+      d="M8.25 21.9985H2V15.7493H8.25V21.9985Z"
+      fill="currentColor"
+      stroke-width="0"
     >
     </path>
   </svg>
