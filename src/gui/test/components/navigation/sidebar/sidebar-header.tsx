@@ -4,8 +4,8 @@ import html from 'diffable-html'
 import { useGraphStore as useStore } from '@/state/index.js'
 import { SidebarHeader } from '@/components/navigation/sidebar/sidebar-header.jsx'
 
-vi.mock('@/components/icons/vlt-v.jsx', () => ({
-  VLTV: 'gui-vltv-icon',
+vi.mock('@/components/icons/index.js', () => ({
+  Vlt: 'gui-vlt-icon',
 }))
 
 vi.mock('@/components/ui/sidebar.jsx', () => ({
