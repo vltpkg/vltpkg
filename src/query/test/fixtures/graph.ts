@@ -11,7 +11,6 @@ const specOptions = {
 } satisfies SpecOptions
 
 const projectRoot = '.'
-// NOTE: name is the only property that is being tracked in these fixture
 export const newGraph = (rootName: string): GraphLike => {
   const graph = {} as GraphLike
   const addNode = newNode(graph)
