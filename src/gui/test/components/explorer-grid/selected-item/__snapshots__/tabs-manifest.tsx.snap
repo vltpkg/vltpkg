@@ -16,7 +16,7 @@ exports[`TabsManifestContent renders an empty state 1`] = `
 
 <gui-tabs-content
   value="package.json"
-  classname="h-full rounded-b-lg bg-white dark:bg-black"
+  classname="h-full rounded-b-lg bg-neutral-100 dark:bg-black"
 >
   <div class="flex h-64 items-center justify-center px-6 py-4">
     <div class="flex flex-col items-center justify-center gap-3 text-center">
@@ -40,9 +40,10 @@ exports[`TabsManifestContent renders with a manifest 1`] = `
 
 <gui-tabs-content
   value="package.json"
-  classname="h-full rounded-b-lg bg-white dark:bg-black"
+  classname="h-full rounded-b-lg bg-neutral-100 dark:bg-black"
 >
   <gui-code-block
+    classname="px-6 py-4"
     code="{
   &quot;name&quot;: &quot;acme-package&quot;,
   &quot;version&quot;: &quot;1.0.0&quot;,
