@@ -69,8 +69,8 @@ vi.mock('@/components/ui/tabs.jsx', () => ({
   TabsContent: 'gui-tabs-content',
 }))
 
-vi.mock('@/components/ui/inline-code.jsx', () => ({
-  InlineCode: 'gui-inline-code',
+vi.mock('@/components/ui/data-badge.jsx', () => ({
+  DataBadge: 'gui-data-badge',
 }))
 
 vi.mock('@radix-ui/react-avatar', () => ({
