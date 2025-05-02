@@ -2,9 +2,9 @@
 
 exports[`labels view > labels render default 1`] = `
 
-<section class="flex h-full max-h-[calc(100svh-65px-16px)] w-full flex-col overflow-y-scroll rounded-b-lg border-[1px] px-8">
+<section class="flex h-full max-h-[calc(100svh-65px-16px)] w-full flex-col overflow-y-scroll rounded-b-lg border-x-[1px] border-b-[1px] px-8">
   <div class="flex w-full max-w-8xl flex-col">
-    <div class="my-4 flex justify-between">
+    <div class="mb-4 flex justify-between pt-1">
       <div class="flex gap-2">
         <gui-filter-search
           placeholder="Filter Labels"
