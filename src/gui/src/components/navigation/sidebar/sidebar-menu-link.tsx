@@ -157,7 +157,7 @@ const renderItems = ({
                         }}
                         exit={{ opacity: 0 }}
                         style={{ zIndex: depth }}
-                        className="absolute inset-x-0 top-0 h-[32px] w-full rounded-md bg-neutral-200/75 dark:bg-muted/60"
+                        className="absolute inset-x-0 top-0 h-[32px] w-full rounded-md bg-neutral-200 dark:bg-neutral-800"
                       />
                     )}
                   </AnimatePresence>
