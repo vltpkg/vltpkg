@@ -87,6 +87,22 @@ export const createArtifacts = ({
   } as const
 }
 
+export const Variants: Partial<
+  Record<Variant, Pick<VariantOptions, 'env'>>
+> = {
+  Node: {
+    env: {
+      NODE_OPTIONS:
+        '--no-warnings --enable-source-maps --experimental-strip-types',
+    },
+  },
+  Bundle: {
+    env: {
+      NODE_OPTIONS: '--no-warnings --enable-source-maps',
+    },
+  },
+}
+
 export const createVariants = ({
   artifacts,
   node = 'node',
@@ -100,10 +116,7 @@ export const createVariants = ({
     Node: {
       artifact: artifacts.Node,
       args: bin => [node, artifacts.Node.bin(bin)],
-      env: {
-        NODE_OPTIONS:
-          '--no-warnings --experimental-strip-types --enable-source-maps',
-      },
+      ...Variants.Node,
     },
     Deno: {
       artifact: artifacts.Node,
@@ -114,21 +127,22 @@ export const createVariants = ({
         '--unstable-bare-node-builtins',
         artifacts.Node.bin(bin),
       ],
+      ...Variants.Deno,
     },
     Bundle: {
       artifact: artifacts.Bundle,
       args: bin => [node, artifacts.Bundle.bin(bin)],
-      env: {
-        NODE_OPTIONS: '--enable-source-maps',
-      },
+      ...Variants.Bundle,
     },
     DenoBundle: {
       artifact: artifacts.Bundle,
       args: bin => [deno, '-A', artifacts.Bundle.bin(bin)],
+      ...Variants.DenoBundle,
     },
     Compile: {
       artifact: artifacts.Compile,
       args: bin => [artifacts.Compile.bin(bin)],
       PATH: artifacts.Compile.dir,
+      ...Variants.Compile,
     },
   }) as const

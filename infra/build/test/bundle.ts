@@ -58,5 +58,5 @@ t.test('hashbangs', async t => {
     hashbang: true,
   })
   const contents = readFileSync(join(res.outdir, 'vlt.js'), 'utf8')
-  t.ok(contents.startsWith('#!/usr/bin/env node'))
+  t.ok(contents.startsWith('#!/usr/bin/env -S node'))
 })
