@@ -14,12 +14,12 @@ export const Link = React.forwardRef<HTMLAnchorElement, LinkProps>(
         ref={ref}
         target="_blank"
         className={cn(
-          'group relative inline-flex cursor-default text-blue-500',
+          'group/link relative inline-flex cursor-default whitespace-nowrap text-blue-500 [&>svg]:ml-1',
           className,
         )}>
         <span className="inline-flex gap-2">{children}</span>
         <ArrowUpRight
-          className="duration-250 transition-all group-hover:-translate-y-[2px] group-hover:translate-x-[2px]"
+          className="duration-250 transition-all group-hover/link:-translate-y-[2px] group-hover/link:translate-x-[2px]"
           size={14}
         />
       </a>
