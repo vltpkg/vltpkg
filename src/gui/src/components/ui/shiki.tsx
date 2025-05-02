@@ -1,24 +1,26 @@
-import { useGraphStore } from '@/state/index.js'
 import { useLayoutEffect, useState } from 'react'
 import { codeToHtml } from 'shiki/bundle/web'
 import { cn } from '@/lib/utils.js'
+import { useTheme } from '@/components/ui/theme-provider.jsx'
 
 export function CodeBlock({
   code,
   lang,
+  className,
 }: {
   code: string
   lang: string
+  className?: string
 }) {
   const [out, setOut] = useState<string | null>(null)
-  const theme = useGraphStore(state => state.theme)
+  const { resolvedTheme } = useTheme()
 
   useLayoutEffect(() => {
     async function startCodeBlock() {
       const out = await codeToHtml(code, {
         lang,
         theme:
-          theme === 'light' ? 'github-light' : (
+          resolvedTheme === 'light' ? 'min-light' : (
             (JSON.parse(customDarkTheme) as string)
           ),
       })
@@ -27,23 +29,21 @@ export function CodeBlock({
       }
     }
     startCodeBlock().catch((err: unknown) => console.error(err))
-  }, [code, lang, theme])
+  }, [code, lang, resolvedTheme])
+
+  if (!out) return null
 
   return (
-    <>
-      {out ?
-        <div
-          className={cn(
-            'snap-x overflow-x-scroll rounded-b-lg px-6 py-4 text-xs',
-            {
-              'bg-white': theme === 'light',
-              'bg-black': theme === 'dark',
-            },
-          )}>
-          <div dangerouslySetInnerHTML={{ __html: out }} />
-        </div>
-      : ''}
-    </>
+    <div
+      className={cn(
+        'snap-x overflow-x-scroll rounded-b-lg text-xs',
+        className,
+      )}>
+      <div
+        className="[&>.min-light]:!bg-neutral-100"
+        dangerouslySetInnerHTML={{ __html: out }}
+      />
+    </div>
   )
 }
 
