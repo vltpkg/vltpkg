@@ -153,7 +153,7 @@ const TabsTrigger = React.forwardRef<
                     bounce: 0.1,
                   }}
                   exit={{ opacity: 0 }}
-                  className="absolute inset-0 z-[1] h-full w-full rounded-sm bg-neutral-200/75 dark:bg-muted/80"
+                  className="absolute inset-0 z-[1] h-full w-full rounded-sm bg-neutral-100 dark:bg-neutral-800"
                 />
               )}
             </AnimatePresence>
