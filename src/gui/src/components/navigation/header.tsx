@@ -1,6 +1,8 @@
 import { useLocation } from 'react-router'
 import { useMemo } from 'react'
 import { useGraphStore } from '@/state/index.js'
+import { InlineCode } from '@/components/ui/inline-code.jsx'
+import { ChevronRight } from 'lucide-react'
 
 const routeNames = new Map<string, string>([
   ['/', 'Dashboard'],
@@ -15,6 +17,13 @@ const routeNames = new Map<string, string>([
 const Header = () => {
   const { pathname } = useLocation()
   const projectInfo = useGraphStore(state => state.projectInfo)
+  const dashboard = useGraphStore(state => state.dashboard)
+  const graph = useGraphStore(state => state.graph)
+
+  const contextValue = useMemo(() => {
+    if (pathname.includes('/explore'))
+      return graph?.projectRoot ? graph.projectRoot : null
+  }, [pathname, dashboard, graph])
 
   const routeName = useMemo(() => {
     if (pathname.includes('error')) return null
@@ -28,9 +37,25 @@ const Header = () => {
   if (!routeName) return null
 
   return (
-    <div className="flex h-[65px] w-full items-center rounded-t-lg border-x-[1px] border-t-[1px] px-8 py-3">
-      <div className="flex w-full max-w-8xl items-center">
-        <h3 className="mt-1 text-lg font-medium">{routeName}</h3>
+    <div className="flex h-[65px] w-full cursor-default items-center rounded-t-lg border-x-[1px] border-t-[1px] px-8 py-3">
+      <div className="flex w-full max-w-8xl items-end">
+        <h3 className="text-md font-medium">{routeName}</h3>
+        {contextValue && (
+          <div className="mx-2 flex items-center gap-2">
+            <ChevronRight
+              className="text-muted-foreground"
+              size={16}
+            />
+            <InlineCode className="mx-0" variant="mono">
+              {contextValue}
+            </InlineCode>
+          </div>
+        )}
+        {dashboard?.buildVersion && (
+          <p className="ml-auto font-courier text-xs font-medium text-muted-foreground">
+            build: v{dashboard.buildVersion}
+          </p>
+        )}
       </div>
     </div>
   )
