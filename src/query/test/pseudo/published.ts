@@ -99,6 +99,7 @@ const getState = (query: string, graph = getSemverRichGraph()) => {
     retries: 0,
     securityArchive: undefined,
     specOptions,
+    signal: new AbortController().signal,
   }
   return state
 }

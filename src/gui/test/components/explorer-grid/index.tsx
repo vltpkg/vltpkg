@@ -223,7 +223,9 @@ test('explorer-grid renders workspace with edges in', async () => {
     specOptions: {},
     securityArchive: undefined,
   })
-  const result = await q.search(':project[name=b]')
+  const result = await q.search(':project[name=b]', {
+    signal: new AbortController().signal,
+  })
 
   const Container = () => {
     const updateEdges = useStore(state => state.updateEdges)

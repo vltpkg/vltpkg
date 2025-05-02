@@ -24,9 +24,10 @@ t.test('selects packages based on attribute properties', async t => {
       },
       cancellable: async () => {},
       walk: async i => i,
-      retries: 0,
       securityArchive: undefined,
       specOptions: {},
+      retries: 0,
+      signal: new AbortController().signal,
     }
     return state
   }

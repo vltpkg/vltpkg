@@ -303,6 +303,18 @@ t.test('list', async t => {
       ),
       'should list single workspace',
     )
+
+    t.matchSnapshot(
+      await runCommand(
+        {
+          positionals: [':scope'],
+          values: { view: 'human', workspace: ['a'] },
+          options,
+        },
+        C,
+      ),
+      'should use specified workspace as scope selector',
+    )
   })
 
   t.test('view=gui', async t => {

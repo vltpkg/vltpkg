@@ -26,6 +26,12 @@ const specOptions = {
   },
 }
 
+// Create a mock search options for tests
+const mockSearchOptions = {
+  signal: { throwIfAborted: () => {} } as AbortSignal,
+  scopeIDs: [joinDepIDTuple(['file', '.'])],
+}
+
 const testBrokenState = (): ParserState => {
   const graph = getSimpleGraph()
   const initial = {
@@ -43,7 +49,9 @@ const testBrokenState = (): ParserState => {
     partial: copyGraphSelectionState(initial),
     walk,
     retries: 0,
+    scopeIDs: mockSearchOptions.scopeIDs,
     securityArchive: undefined,
+    signal: mockSearchOptions.signal,
     specOptions,
   }
   return state
@@ -98,7 +106,9 @@ t.test('simple graph', async t => {
   })
   for (const [q, expected] of queryToExpected) {
     t.strictSame(
-      (await query.search(q)).nodes.map(i => i.name),
+      (await query.search(q, mockSearchOptions)).nodes.map(
+        i => i.name,
+      ),
       expected,
       `query > "${q}"`,
     )
@@ -124,7 +134,9 @@ t.test('workspace', async t => {
   })
   for (const [q, expected] of queryToExpected) {
     t.strictSame(
-      (await query.search(q)).nodes.map(i => i.name),
+      (await query.search(q, mockSearchOptions)).nodes.map(
+        i => i.name,
+      ),
       expected,
       `query > "${q}"`,
     )
@@ -149,7 +161,9 @@ t.test('cycle', async t => {
   })
   for (const [q, expected] of queryToExpected) {
     t.strictSame(
-      (await query.search(q)).nodes.map(i => i.name),
+      (await query.search(q, mockSearchOptions)).nodes.map(
+        i => i.name,
+      ),
       expected,
       `query > "${q}"`,
     )
@@ -203,7 +217,7 @@ t.test('insights', async t => {
     specOptions,
   })
   for (const [q, expected] of queryToExpected) {
-    const result = await query.search(q)
+    const result = await query.search(q, mockSearchOptions)
     t.strictSame(
       result.nodes.map(i => i.name),
       expected,
@@ -248,7 +262,7 @@ t.test('trying to use tag selectors', async t => {
       graph: getSimpleGraph(),
       securityArchive: undefined,
       specOptions,
-    }).search('foo'),
+    }).search('foo', mockSearchOptions),
     /Unsupported selector/,
     'should throw an unsupported selector error',
   )
@@ -260,7 +274,7 @@ t.test('trying to use string selectors', async t => {
       graph: getSimpleGraph(),
       securityArchive: undefined,
       specOptions,
-    }).search('"foo"'),
+    }).search('"foo"', mockSearchOptions),
     /Unsupported selector/,
     'should throw an unsupported selector error',
   )
@@ -277,9 +291,11 @@ t.test('cancellable search', async t => {
   const q = ':root > * > *'
   await t.rejects(
     new Promise((_, reject) => {
-      void query.search(q, ac.signal).catch((err: unknown) => {
-        reject(err)
-      })
+      void query
+        .search(q, { signal: ac.signal })
+        .catch((err: unknown) => {
+          reject(err)
+        })
       ac.abort(new Error('query aborted'))
       // the set timeout bellow should never be called since
       // the search should throw the abort error before
@@ -671,4 +687,23 @@ t.test('getQueryTokens', t => {
   })
 
   t.end()
+})
+
+t.test(':scope with custom scopeIDs', async t => {
+  const query = new Query({
+    graph: getSimpleGraph(),
+    securityArchive: undefined,
+    specOptions,
+  })
+  const customScopeID = joinDepIDTuple(['registry', '', 'a@1.0.0'])
+  t.strictSame(
+    (
+      await query.search(':scope', {
+        ...mockSearchOptions,
+        scopeIDs: [customScopeID],
+      })
+    ).nodes.map(n => n.name),
+    ['a'],
+    'should select only the node specified by scopeIDs',
+  )
 })

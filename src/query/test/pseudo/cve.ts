@@ -49,6 +49,7 @@ t.test('selects packages with a CVE alert', async t => {
                 quality: 0,
                 supplyChain: 0,
                 vulnerability: 0,
+                signal: new AbortController().signal,
               },
               alerts: [
                 {
@@ -67,6 +68,7 @@ t.test('selects packages with a CVE alert', async t => {
         ]),
       ),
       specOptions: {},
+      signal: new AbortController().signal,
     }
     return state
   }
@@ -140,6 +142,7 @@ t.test('missing security archive', async t => {
       retries: 0,
       securityArchive: undefined,
       specOptions: {},
+      signal: new AbortController().signal,
     }
     return state
   }
@@ -174,6 +177,7 @@ t.test('missing CVE ID', async t => {
       retries: 0,
       securityArchive: asSecurityArchiveLike(new Map()),
       specOptions: {},
+      signal: new AbortController().signal,
     }
     return state
   }

@@ -319,3 +319,8 @@ exports[`test/commands/query.ts > TAP > query > workspaces > should list workspa
   }
 ]
 `
+
+exports[`test/commands/query.ts > TAP > query > workspaces > should use specified workspace as scope selector 1`] = `
+a
+
+`

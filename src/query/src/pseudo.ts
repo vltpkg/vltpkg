@@ -88,6 +88,8 @@ const has = async (state: ParserState) => {
         retries: state.retries,
         securityArchive: state.securityArchive,
         specOptions: state.specOptions,
+        signal: state.signal,
+        scopeIDs: state.scopeIDs,
       })
       for (const n of nestedState.collect.nodes) {
         collectNodes.add(n)
@@ -171,6 +173,8 @@ const is = async (state: ParserState) => {
         retries: state.retries,
         securityArchive: state.securityArchive,
         specOptions: state.specOptions,
+        signal: state.signal,
+        scopeIDs: state.scopeIDs,
       })
       for (const n of nestedState.collect.nodes) {
         collect.add(n)
@@ -211,6 +215,8 @@ const not = async (state: ParserState) => {
         retries: state.retries,
         securityArchive: state.securityArchive,
         specOptions: state.specOptions,
+        signal: state.signal,
+        scopeIDs: state.scopeIDs,
       })
       for (const n of nestedState.collect.nodes) {
         collect.add(n)
@@ -270,18 +276,20 @@ const project = async (state: ParserState) => {
 }
 
 /**
- * :scope Pseudo-Element, returns the original scope of items
- * at the start of a given selector.
+ * :scope Pseudo-Element, returns only the nodes that match the provided scopeIDs
+ * from the Query.search method.
  */
 const scope = async (state: ParserState) => {
-  state.partial.edges.clear()
-  state.partial.nodes.clear()
-  for (const edge of state.initial.edges) {
-    state.partial.edges.add(edge)
+  const scopeIDSet = new Set(state.scopeIDs)
+
+  for (const node of state.partial.nodes) {
+    if (!scopeIDSet.has(node.id)) {
+      removeNode(state, node)
+    }
   }
-  for (const node of state.initial.nodes) {
-    state.partial.nodes.add(node)
-  }
+
+  removeDanglingEdges(state)
+
   return state
 }
 

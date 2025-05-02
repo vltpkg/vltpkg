@@ -110,6 +110,7 @@ t.test('selects packages based on their security score', async t => {
       securityArchive: createTestSecurityArchive(),
       specOptions: {},
       retries: 0,
+      signal: new AbortController().signal,
     }
     return state
   }
@@ -367,6 +368,7 @@ t.test('error cases', async t => {
         securityArchive: undefined,
         specOptions: {},
         retries: 0,
+        signal: new AbortController().signal,
       }
       return state
     }
@@ -402,6 +404,7 @@ t.test('error cases', async t => {
         securityArchive: createTestSecurityArchive(),
         specOptions: {},
         retries: 0,
+        signal: new AbortController().signal,
       }
       return state
     }
@@ -437,6 +440,7 @@ t.test('error cases', async t => {
         securityArchive: createTestSecurityArchive(),
         specOptions: {},
         retries: 0,
+        signal: new AbortController().signal,
       }
       return state
     }
@@ -472,6 +476,7 @@ t.test('error cases', async t => {
         securityArchive: createTestSecurityArchive(),
         specOptions: {},
         retries: 0,
+        signal: new AbortController().signal,
       }
       return state
     }
