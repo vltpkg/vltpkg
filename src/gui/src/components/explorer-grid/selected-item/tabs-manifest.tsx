@@ -22,9 +22,10 @@ export const TabsManifestContent = () => {
   return (
     <TabsContent
       value="package.json"
-      className="h-full rounded-b-lg bg-white dark:bg-black">
+      className="h-full rounded-b-lg bg-neutral-100 dark:bg-black">
       {manifest ?
         <CodeBlock
+          className="px-6 py-4"
           code={JSON.stringify(manifest, null, 2)}
           lang="json"
         />
