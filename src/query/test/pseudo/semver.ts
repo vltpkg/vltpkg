@@ -107,7 +107,6 @@ t.test('select from semver definition', async t => {
     })
   })
 
-  // TODO: FAILING
   await t.test('unquoted with multiple spaces', async t => {
     const res = await semverParser(
       getState(':semver(1 || 2 || 3 >= 4 < 5)'),
