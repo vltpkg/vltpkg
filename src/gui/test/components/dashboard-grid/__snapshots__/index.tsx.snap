@@ -3,7 +3,7 @@
 exports[`dashboard-grid render default 1`] = `
 
 <div>
-  <div class="flex h-full max-h-[calc(100svh-65px-50px-2px-16px)] flex-col overflow-y-scroll px-8 py-8">
+  <div class="flex h-full flex-col overflow-y-scroll px-8 pb-8 pt-1">
     <div class="grid w-full max-w-8xl grid-cols-3 gap-2 pb-8 md:flex">
       <gui-filter-search
         placeholder="Filter Projects"
@@ -54,7 +54,7 @@ exports[`dashboard-grid render default 1`] = `
 exports[`dashboard-grid with results 1`] = `
 
 <div>
-  <div class="flex h-full max-h-[calc(100svh-65px-50px-2px-16px)] flex-col overflow-y-scroll px-8 py-8">
+  <div class="flex h-full flex-col overflow-y-scroll px-8 pb-8 pt-1">
     <div class="grid w-full max-w-8xl grid-cols-3 gap-2 pb-8 md:flex">
       <gui-filter-search
         placeholder="Filter Projects"
