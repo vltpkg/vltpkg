@@ -12,7 +12,7 @@ import { ArrowUpDown, BadgeCheck, BadgeInfo } from 'lucide-react'
 import { ProgressCircle } from '@/components/ui/progress-circle.jsx'
 import { getScoreColor } from '@/components/explorer-grid/selected-item/insight-score-helper.js'
 import { Link as AnchorLink } from '@/components/ui/link.jsx'
-import { InlineCode } from '@/components/ui/inline-code.jsx'
+import { DataBadge } from '@/components/ui/data-badge.jsx'
 import { cn } from '@/lib/utils.js'
 
 export const InsightTabButton = () => {
@@ -25,13 +25,11 @@ export const InsightTabButton = () => {
       className="w-fit px-2">
       Insights
       {insights && insights.length !== 0 && (
-        <InlineCode
-          variant="mono"
-          className={cn(
-            'ml-1 inline-flex h-[1.25rem] min-w-[1.25rem] items-center justify-center text-center',
-          )}>
-          {insights.length}
-        </InlineCode>
+        <DataBadge
+          variant="count"
+          classNames={{ wrapperClassName: 'ml-1' }}
+          content={String(insights.length)}
+        />
       )}
     </TabsTrigger>
   )

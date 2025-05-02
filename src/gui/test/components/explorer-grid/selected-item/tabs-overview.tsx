@@ -68,11 +68,11 @@ vi.mock('lucide-react', () => ({
 }))
 
 vi.mock('@/components/icons/index.js', () => ({
-  GitHubOutline: 'gui-github-outline-icon',
+  Github: 'gui-github-icon',
 }))
 
-vi.mock('@/components/ui/inline-code.jsx', () => ({
-  InlineCode: 'gui-inline-code',
+vi.mock('@/components/ui/data-badge.jsx', () => ({
+  DataBadge: 'gui-data-badge',
 }))
 
 vi.mock('@/components/ui/link.jsx', () => ({

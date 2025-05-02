@@ -3,14 +3,6 @@
 @tailwind utilities;
 
 @font-face {
-  font-family: 'zed';
-  src: url('/fonts/zed-mono.ttf') format('truetype');
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
   font-family: 'courier';
   src: url('/fonts/courier-regular.ttf') format('truetype');
   font-weight: 400;

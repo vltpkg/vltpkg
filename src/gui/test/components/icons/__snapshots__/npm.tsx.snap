@@ -4,14 +4,23 @@ exports[`npm icon render custom class 1`] = `
 
 <div>
   <svg
-    class="custom-class"
-    id="a"
     xmlns="http://www.w3.org/2000/svg"
-    width="256"
-    height="256"
-    viewbox="0 0 256 256"
+    width="24"
+    height="24"
+    viewbox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    class="lucide lucide-npm lucide-Npm custom-class"
+    aria-hidden="true"
   >
-    <path d="M0,0V256H256V0H0ZM213.08,213.1h-42.92V85.82h-42.92v127.28H42.9V42.92H213.08V213.1h0Z">
+    <path
+      d="M2 2V22H22V2H2ZM18.6469 18.6484H15.2938V8.70469H11.9406V18.6484H5.35156V5.35312H18.6469V18.6484Z"
+      fill="currentColor"
+      stroke-width="0"
+    >
     </path>
   </svg>
 </div>
@@ -22,13 +31,23 @@ exports[`npm icon render default 1`] = `
 
 <div>
   <svg
-    id="a"
     xmlns="http://www.w3.org/2000/svg"
-    width="256"
-    height="256"
-    viewbox="0 0 256 256"
+    width="24"
+    height="24"
+    viewbox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    class="lucide lucide-npm lucide-Npm"
+    aria-hidden="true"
   >
-    <path d="M0,0V256H256V0H0ZM213.08,213.1h-42.92V85.82h-42.92v127.28H42.9V42.92H213.08V213.1h0Z">
+    <path
+      d="M2 2V22H22V2H2ZM18.6469 18.6484H15.2938V8.70469H11.9406V18.6484H5.35156V5.35312H18.6469V18.6484Z"
+      fill="currentColor"
+      stroke-width="0"
+    >
     </path>
   </svg>
 </div>

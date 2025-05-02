@@ -2,14 +2,14 @@ import { useRef, useEffect } from 'react'
 import type { MouseEvent } from 'react'
 import { Ellipsis, PackageMinus } from 'lucide-react'
 import { Badge } from '@/components/ui/badge.jsx'
-import { Card, CardHeader, CardTitle } from '@/components/ui/card.jsx'
+import { Card, CardHeader } from '@/components/ui/card.jsx'
 import {
   DropdownMenu,
   DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
 } from '@/components/ui/dropdown-menu.jsx'
-import { InlineCode } from '@/components/ui/inline-code.jsx'
+import { DataBadge } from '@/components/ui/data-badge.jsx'
 import { labelClassNamesMap } from './label-helper.js'
 import type { GridItemData, GridItemOptions } from './types.js'
 import { useGraphStore } from '@/state/index.js'
@@ -74,26 +74,33 @@ export const SideItem = ({
       : ''}
       <Card
         role="article"
-        className={`relative my-4 transition-all ${highlight ? 'border-muted' : ''} ${onSelect ? 'group-hover:bg-card-accent' : ''}`}
+        className={`relative my-4 cursor-default transition-all ${highlight ? 'border-muted' : ''} ${onSelect ? 'group-hover:bg-card-accent' : ''}`}
         onClick={onSelect}>
         <CardHeader className="relative flex w-full flex-col rounded-t-lg p-0">
           <div className="flex items-center px-3 py-2">
-            <CardTitle className="align-baseline text-sm">
+            <div className="align-baseline">
               {item.depName && item.depName !== item.name && (
-                <span className="font-light">
-                  <InlineCode variant="mono" className="-mx-1">
-                    {item.depName}
-                  </InlineCode>
-                  <InlineCode variant="monoGhost">as</InlineCode>
+                <>
+                  <DataBadge
+                    variant="mono"
+                    classNames={{
+                      wrapperClassName: '',
+                      contentClassName: 'pt-0.5',
+                    }}
+                    content={item.depName}
+                  />
+                  <span className="mr-2 font-courier text-sm text-muted-foreground">
+                    as
+                  </span>
+                </>
+              )}
+              <span className="text-sm font-medium">{item.name}</span>
+              {!item.id.startsWith('uninstalled-dep:') && (
+                <span className="ml-2 font-courier text-sm font-normal text-muted-foreground">
+                  {`v${item.version}`}
                 </span>
               )}
-              <span className="font-medium">{item.name}</span>
-              {!item.id.startsWith('uninstalled-dep:') && (
-                <InlineCode variant="monoGhost">
-                  {`v${item.version}`}
-                </InlineCode>
-              )}
-            </CardTitle>
+            </div>
             {uninstallAvailable && (
               <DropdownMenu>
                 <DropdownMenuTrigger className="ml-auto cursor-default">
@@ -116,22 +123,43 @@ export const SideItem = ({
           </div>
 
           {!isWorkspace && (
-            <div className="flex flex-row flex-wrap items-center justify-between gap-2 border-t-[1px] border-muted px-3 py-2">
+            <div className="flex w-full flex-row flex-wrap items-center justify-between gap-2 border-t-[1px] border-muted px-3 py-2">
               {item.spec?.bareSpec && (
-                <p className="flex items-center gap-2 text-sm text-muted-foreground">
-                  Spec:{' '}
-                  <InlineCode variant="mono">
-                    {(
-                      item.spec.type === 'registry' &&
-                      item.spec.semver
-                    ) ?
-                      item.spec.semver
-                    : item.spec.bareSpec}
-                  </InlineCode>
+                <div className="flex items-center gap-2">
+                  <p className="text-sm text-muted-foreground">
+                    Spec:
+                  </p>
+                  <DataBadge
+                    variant="mono"
+                    classNames={{
+                      wrapperClassName:
+                        'inline-flex max-w-[20ch] break-all h-[1.375rem]',
+                      contentClassName: 'truncate pt-0.5',
+                    }}
+                    tooltip={{
+                      content:
+                        (
+                          item.spec.type === 'registry' &&
+                          item.spec.semver
+                        ) ?
+                          item.spec.semver
+                        : item.spec.bareSpec,
+                    }}
+                    content={
+                      (
+                        item.spec.type === 'registry' &&
+                        item.spec.semver
+                      ) ?
+                        item.spec.semver
+                      : item.spec.bareSpec
+                    }
+                  />
                   {item.size > 1 && (
-                    <span>and {item.size - 1} more.</span>
+                    <span className="text-xs font-medium text-muted-foreground">
+                      and {item.size - 1} more.
+                    </span>
                   )}
-                </p>
+                </div>
               )}
               {item.labels?.map(i => (
                 <div key={i}>

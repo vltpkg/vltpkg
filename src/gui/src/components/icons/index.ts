@@ -1,13 +1,9 @@
-// generic glyph icons
-export * from './glyph-icon.jsx'
-
 // vlt icons
-export * from './vlt-v.jsx'
+export * from './vlt.jsx'
 export * from './query.jsx'
 
 // general
 export * from './github.jsx'
-export * from './github-outline.jsx'
 export * from './discord.jsx'
 export * from './linkedin.jsx'
 export * from './twitterx.jsx'
@@ -22,7 +18,6 @@ export * from './javascript.jsx'
 export * from './npm.jsx'
 export * from './pnpm.jsx'
 export * from './yarn.jsx'
-export * from './vlt.jsx'
 
 // frameworks
 export * from './next.jsx'

@@ -1,4 +1,4 @@
-import { VLTV } from '@/components/icons/vlt-v.jsx'
+import { Vlt } from '@/components/icons/index.js'
 import {
   SidebarMenu,
   SidebarMenuItem,
@@ -10,7 +10,7 @@ export const SidebarHeader = () => {
     <SidebarHeaderPrimitive>
       <SidebarMenu>
         <SidebarMenuItem className="peer flex h-[56px] w-full items-center overflow-hidden pl-[4.75px] [&>svg]:shrink-0">
-          <VLTV className="text-foreground" />
+          <Vlt className="text-foreground" />
         </SidebarMenuItem>
       </SidebarMenu>
     </SidebarHeaderPrimitive>

@@ -11,16 +11,15 @@ import {
   GitPullRequest,
   Link as LucideLink,
 } from 'lucide-react'
-import { InlineCode } from '@/components/ui/inline-code.jsx'
+import { DataBadge } from '@/components/ui/data-badge.jsx'
 import { Link } from '@/components/ui/link.jsx'
-import { cn } from '@/lib/utils.js'
 import {
   Avatar,
   AvatarImage,
   AvatarFallback,
 } from '@radix-ui/react-avatar'
 import { toHumanNumber } from '@/utils/human-number.js'
-import { GitHubOutline } from '@/components/icons/index.js'
+import { Github } from '@/components/icons/index.js'
 import { getRepositoryUrl } from '@/utils/get-repo-url.js'
 import type { Contributor } from '@/lib/external-info.js'
 
@@ -86,10 +85,7 @@ const TabContentAside = () => {
               }
               className="text-sm text-foreground">
               <span className="flex w-4 items-center justify-center">
-                <GitHubOutline
-                  size={16}
-                  className="text-muted-foreground"
-                />
+                <Github size={16} className="text-muted-foreground" />
               </span>
               <span>Repository</span>
             </Link>
@@ -133,11 +129,7 @@ const TabContentAside = () => {
                 className="text-muted-foreground"
               />
               <div className="flex gap-1">
-                <InlineCode
-                  variant="mono"
-                  className="mx-0 h-5 pt-[3px] uppercase text-foreground">
-                  {openPR}
-                </InlineCode>
+                <DataBadge variant="count" content={openPR} />
                 <p className="text-sm">Pull requests</p>
               </div>
             </div>
@@ -149,11 +141,7 @@ const TabContentAside = () => {
                 className="text-muted-foreground"
               />
               <div className="flex gap-1">
-                <InlineCode
-                  variant="mono"
-                  className="mx-0 h-5 pt-[3px] uppercase text-foreground">
-                  {openIssue}
-                </InlineCode>
+                <DataBadge variant="count" content={openIssue} />
                 <p className="text-sm">Issues</p>
               </div>
             </div>
@@ -162,11 +150,10 @@ const TabContentAside = () => {
             <div className="flex items-center gap-2">
               <Star size={16} className="text-muted-foreground" />
               <div className="flex gap-1">
-                <InlineCode
-                  variant="mono"
-                  className="mx-0 h-5 pt-[3px] text-foreground">
-                  {toHumanNumber(stargazers ?? 0)}
-                </InlineCode>
+                <DataBadge
+                  variant="count"
+                  content={toHumanNumber(stargazers ?? 0)}
+                />
                 <p className="text-sm">Stars</p>
               </div>
             </div>
@@ -246,14 +233,13 @@ export const OverviewTabContent = () => {
             </h4>
             <div className="flex flex-wrap gap-2">
               {keywords.map((keyword, idx) => (
-                <InlineCode
-                  variant="mono"
+                <DataBadge
+                  classNames={{
+                    wrapperClassName: 'inline-flex h-fit',
+                  }}
                   key={`${keyword}-${idx}`}
-                  className={cn(
-                    'mx-0 inline-flex cursor-default items-center pt-1.5 text-foreground',
-                  )}>
-                  {keyword}
-                </InlineCode>
+                  content={keyword}
+                />
               ))}
             </div>
           </div>

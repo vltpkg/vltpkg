@@ -155,11 +155,11 @@ exports[`OverviewTabContent renders with an aside and content 1`] = `
           classname="text-sm text-foreground"
         >
           <span class="flex w-4 items-center justify-center">
-            <gui-github-outline-icon
+            <gui-github-icon
               size="16"
               classname="text-muted-foreground"
             >
-            </gui-github-outline-icon>
+            </gui-github-icon>
           </span>
           <span>
             Repository
@@ -187,12 +187,11 @@ exports[`OverviewTabContent renders with an aside and content 1`] = `
           >
           </gui-git-pull-request-icon>
           <div class="flex gap-1">
-            <gui-inline-code
-              variant="mono"
-              classname="mx-0 h-5 pt-[3px] uppercase text-foreground"
+            <gui-data-badge
+              variant="count"
+              content="5"
             >
-              5
-            </gui-inline-code>
+            </gui-data-badge>
             <p class="text-sm">
               Pull requests
             </p>
@@ -205,12 +204,11 @@ exports[`OverviewTabContent renders with an aside and content 1`] = `
           >
           </gui-circle-dot-icon>
           <div class="flex gap-1">
-            <gui-inline-code
-              variant="mono"
-              classname="mx-0 h-5 pt-[3px] uppercase text-foreground"
+            <gui-data-badge
+              variant="count"
+              content="10"
             >
-              10
-            </gui-inline-code>
+            </gui-data-badge>
             <p class="text-sm">
               Issues
             </p>
@@ -223,12 +221,11 @@ exports[`OverviewTabContent renders with an aside and content 1`] = `
           >
           </gui-star-icon>
           <div class="flex gap-1">
-            <gui-inline-code
-              variant="mono"
-              classname="mx-0 h-5 pt-[3px] text-foreground"
+            <gui-data-badge
+              variant="count"
+              content="100"
             >
-              100
-            </gui-inline-code>
+            </gui-data-badge>
             <p class="text-sm">
               Stars
             </p>
@@ -284,18 +281,16 @@ This is a custom description
         keywords
       </h4>
       <div class="flex flex-wrap gap-2">
-        <gui-inline-code
-          variant="mono"
-          classname="mx-0 inline-flex cursor-default items-center pt-1.5 text-foreground"
+        <gui-data-badge
+          classnames="[object Object]"
+          content="testing"
         >
-          testing
-        </gui-inline-code>
-        <gui-inline-code
-          variant="mono"
-          classname="mx-0 inline-flex cursor-default items-center pt-1.5 text-foreground"
+        </gui-data-badge>
+        <gui-data-badge
+          classnames="[object Object]"
+          content="vitest"
         >
-          vitest
-        </gui-inline-code>
+        </gui-data-badge>
       </div>
     </div>
   </div>

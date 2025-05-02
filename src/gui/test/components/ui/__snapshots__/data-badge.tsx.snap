@@ -1,0 +1,211 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`data-badge render default 1`] = `
+
+<div class="group font-sans relative z-[1] w-fit flex h-full cursor-default items-center justify-center gap-1.5 rounded border-[1px] border-neutral-200 bg-neutral-100 px-2 py-1 text-[0.75rem] font-medium text-muted-foreground dark:border-[#313131] dark:bg-neutral-800">
+  <span class="flex items-center justify-center">
+    content
+  </span>
+</div>
+
+`;
+
+exports[`data-badge renders with a copyToClipboard 1`] = `
+
+<div
+  role="button"
+  class="group font-sans relative z-[1] w-fit flex h-full cursor-default items-center justify-center gap-1.5 rounded border-[1px] border-neutral-200 bg-neutral-100 px-2 py-1 text-[0.75rem] font-medium text-muted-foreground dark:border-[#313131] dark:bg-neutral-800"
+>
+  <span
+    data-id="info-badge-value"
+    class="after:border-neutral-150 pt-0.5 font-courier relative ml-[0.125rem] mr-[calc(var(--width-offset)/2)] uppercase tracking-wide text-neutral-700 after:absolute after:-left-[calc(var(--width-offset)/2)] after:-top-[calc(var(--height-offset)/2)] after:z-[-1] after:h-[calc(100%+var(--height-offset))] after:w-[calc(100%+var(--width-offset))] after:rounded-[calc(0.25rem-1px)] after:border-[1px] after:bg-white after:content-[&quot;&quot;] group-has-[span[data-id=info-badge-icon]]:ml-[calc(var(--width-offset)/2)] dark:text-foreground dark:after:border-[#2A2A2A] dark:after:bg-[#0F0F0F]"
+    style="--width-offset: 1rem; --height-offset: 0.25rem;"
+  >
+    123
+  </span>
+  <span class="flex items-center justify-center">
+    content
+  </span>
+  <span
+    data-id="info-badge-copy-icon"
+    class="flex w-4 items-center justify-center"
+  >
+    <span style="opacity: 1; transform: none;">
+      <gui-copy-icon
+        size="14"
+        classname="my-auto"
+      >
+      </gui-copy-icon>
+    </span>
+  </span>
+</div>
+
+`;
+
+exports[`data-badge renders with a tooltip 1`] = `
+
+<gui-tooltip-provider>
+  <gui-tooltip delayduration="150">
+    <gui-tooltip-trigger aschild="true">
+      <div class="group font-sans relative z-[1] w-fit flex h-full cursor-default items-center justify-center gap-1.5 rounded border-[1px] border-neutral-200 bg-neutral-100 px-2 py-1 text-[0.75rem] font-medium text-muted-foreground dark:border-[#313131] dark:bg-neutral-800">
+        <span class="flex items-center justify-center">
+          content
+        </span>
+      </div>
+    </gui-tooltip-trigger>
+    <gui-tooltip-content>
+      tooltip-content
+    </gui-tooltip-content>
+  </gui-tooltip>
+</gui-tooltip-provider>
+
+`;
+
+exports[`data-badge renders with a value 1`] = `
+
+<div class="group font-sans relative z-[1] w-fit flex h-full cursor-default items-center justify-center gap-1.5 rounded border-[1px] border-neutral-200 bg-neutral-100 px-2 py-1 text-[0.75rem] font-medium text-muted-foreground dark:border-[#313131] dark:bg-neutral-800">
+  <span
+    data-id="info-badge-value"
+    class="after:border-neutral-150 pt-0.5 font-courier relative ml-[0.125rem] mr-[calc(var(--width-offset)/2)] uppercase tracking-wide text-neutral-700 after:absolute after:-left-[calc(var(--width-offset)/2)] after:-top-[calc(var(--height-offset)/2)] after:z-[-1] after:h-[calc(100%+var(--height-offset))] after:w-[calc(100%+var(--width-offset))] after:rounded-[calc(0.25rem-1px)] after:border-[1px] after:bg-white after:content-[&quot;&quot;] group-has-[span[data-id=info-badge-icon]]:ml-[calc(var(--width-offset)/2)] dark:text-foreground dark:after:border-[#2A2A2A] dark:after:bg-[#0F0F0F]"
+    style="--width-offset: 1rem; --height-offset: 0.25rem;"
+  >
+    123
+  </span>
+  <span class="flex items-center justify-center">
+    content
+  </span>
+</div>
+
+`;
+
+exports[`data-badge renders with all options 1`] = `
+
+<gui-tooltip-provider>
+  <gui-tooltip delayduration="125">
+    <gui-tooltip-trigger aschild="true">
+      <div
+        role="button"
+        class="group font-sans relative z-[1] w-fit flex h-full cursor-default items-center justify-center gap-1.5 rounded border-[1px] border-neutral-200 bg-neutral-100 px-2 py-1 text-[0.75rem] font-medium text-muted-foreground dark:border-[#313131] dark:bg-neutral-800"
+      >
+        <span
+          data-id="info-badge-icon"
+          class="flex w-4 items-center justify-center"
+        >
+          <gui-smile-icon
+            size="16"
+            classname="dark:text-muted-foreground"
+          >
+          </gui-smile-icon>
+        </span>
+        <span
+          data-id="info-badge-value"
+          class="after:border-neutral-150 pt-0.5 font-courier relative ml-[0.125rem] mr-[calc(var(--width-offset)/2)] uppercase tracking-wide text-neutral-700 after:absolute after:-left-[calc(var(--width-offset)/2)] after:-top-[calc(var(--height-offset)/2)] after:z-[-1] after:h-[calc(100%+var(--height-offset))] after:w-[calc(100%+var(--width-offset))] after:rounded-[calc(0.25rem-1px)] after:border-[1px] after:bg-white after:content-[&quot;&quot;] group-has-[span[data-id=info-badge-icon]]:ml-[calc(var(--width-offset)/2)] dark:text-foreground dark:after:border-[#2A2A2A] dark:after:bg-[#0F0F0F]"
+          style="--width-offset: 1rem; --height-offset: 0.25rem;"
+        >
+          123
+        </span>
+        <span class="flex items-center justify-center">
+          content
+        </span>
+        <span
+          data-id="info-badge-copy-icon"
+          class="flex w-4 items-center justify-center"
+        >
+          <span style="opacity: 1; transform: none;">
+            <gui-copy-icon
+              size="14"
+              classname="my-auto"
+            >
+            </gui-copy-icon>
+          </span>
+        </span>
+      </div>
+    </gui-tooltip-trigger>
+    <gui-tooltip-content>
+      tooltip-content
+    </gui-tooltip-content>
+  </gui-tooltip>
+</gui-tooltip-provider>
+
+`;
+
+exports[`data-badge renders with an icon 1`] = `
+
+<div class="group font-sans relative z-[1] w-fit flex h-full cursor-default items-center justify-center gap-1.5 rounded border-[1px] border-neutral-200 bg-neutral-100 px-2 py-1 text-[0.75rem] font-medium text-muted-foreground dark:border-[#313131] dark:bg-neutral-800">
+  <span
+    data-id="info-badge-icon"
+    class="flex w-4 items-center justify-center"
+  >
+    <gui-smile-icon
+      size="16"
+      classname="dark:text-muted-foreground"
+    >
+    </gui-smile-icon>
+  </span>
+  <span class="flex items-center justify-center">
+    content
+  </span>
+</div>
+
+`;
+
+exports[`data-badge renders with custom classnames 1`] = `
+
+<gui-tooltip-provider>
+  <gui-tooltip delayduration="125">
+    <gui-tooltip-trigger aschild="true">
+      <div
+        role="button"
+        class="group font-sans relative z-[1] w-fit flex h-full cursor-default items-center justify-center gap-1.5 rounded border-[1px] border-neutral-200 bg-neutral-100 px-2 py-1 text-[0.75rem] font-medium text-muted-foreground dark:border-[#313131] dark:bg-neutral-800 custom-wrapper"
+      >
+        <span
+          data-id="info-badge-icon"
+          class="flex w-4 items-center justify-center"
+        >
+          <gui-smile-icon
+            size="16"
+            classname="dark:text-muted-foreground custom-icon"
+          >
+          </gui-smile-icon>
+        </span>
+        <span
+          data-id="info-badge-value"
+          class="after:border-neutral-150 pt-0.5 font-courier relative ml-[0.125rem] mr-[calc(var(--width-offset)/2)] uppercase tracking-wide text-neutral-700 after:absolute after:-left-[calc(var(--width-offset)/2)] after:-top-[calc(var(--height-offset)/2)] after:z-[-1] after:h-[calc(100%+var(--height-offset))] after:w-[calc(100%+var(--width-offset))] after:rounded-[calc(0.25rem-1px)] after:border-[1px] after:bg-white after:content-[&quot;&quot;] group-has-[span[data-id=info-badge-icon]]:ml-[calc(var(--width-offset)/2)] dark:text-foreground dark:after:border-[#2A2A2A] dark:after:bg-[#0F0F0F] custom-value"
+          style="--width-offset: 1rem; --height-offset: 0.25rem;"
+        >
+          123
+        </span>
+        <span class="flex items-center justify-center custom-content">
+          content
+        </span>
+        <span
+          data-id="info-badge-copy-icon"
+          class="flex w-4 items-center justify-center"
+        >
+          <span style="opacity: 1; transform: none;">
+            <gui-copy-icon
+              size="14"
+              classname="my-auto"
+            >
+            </gui-copy-icon>
+          </span>
+        </span>
+      </div>
+    </gui-tooltip-trigger>
+    <gui-tooltip-content>
+      tooltip-content
+    </gui-tooltip-content>
+  </gui-tooltip>
+</gui-tooltip-provider>
+
+`;
+
+exports[`data-badge renders with variants 1`] = `
+
+<div class="group font-courier relative z-[1] w-fit flex h-full cursor-default items-center justify-center gap-1.5 rounded border-[1px] border-neutral-200 bg-neutral-100 px-2 py-1 text-[0.75rem] font-medium text-muted-foreground dark:border-[#313131] dark:bg-neutral-800">
+  <span class>
+    content
+  </span>
+</div>
+
+`;

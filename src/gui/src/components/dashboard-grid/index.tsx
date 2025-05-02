@@ -66,10 +66,16 @@ export const DashboardItem = ({
         {/* icons */}
         <div className="absolute -inset-4 -right-2 flex flex-row items-center justify-end gap-2 bg-clip-content">
           {PackageManger && (
-            <PackageManger className="size-24 fill-neutral-200/80 dark:fill-neutral-800/40" />
+            <PackageManger
+              size={120}
+              className="stroke-0 text-neutral-200/80 dark:text-neutral-800/40"
+            />
           )}
           {RunTime && (
-            <RunTime className="size-24 fill-neutral-200/80 dark:fill-neutral-800/40" />
+            <RunTime
+              size={120}
+              className="stroke-0 text-neutral-200/80 dark:text-neutral-800/40"
+            />
           )}
         </div>
       </div>

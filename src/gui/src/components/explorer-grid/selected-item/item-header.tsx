@@ -20,7 +20,6 @@ import {
   Download,
   Package,
 } from 'lucide-react'
-import { InlineCode } from '@/components/ui/inline-code.jsx'
 import { splitDepID } from '@vltpkg/dep-id/browser'
 import { defaultRegistry } from '@vltpkg/spec/browser'
 import type { SpecOptionsFilled } from '@vltpkg/spec/browser'
@@ -28,19 +27,43 @@ import type { GridItemData } from '@/components/explorer-grid/types.js'
 import { ProgressBar } from '@/components/ui/progress-bar.jsx'
 import { getScoreColor } from '@/components/explorer-grid/selected-item/insight-score-helper.js'
 import { cn } from '@/lib/utils.js'
-import {
-  GlyphIcon,
-  isGlyphIcon,
-} from '@/components/icons/glyph-icon.jsx'
 import { isRecord } from '@/utils/typeguards.js'
 import { formatDistanceStrict } from 'date-fns'
-import { CopyToClipboard } from '@/components/ui/copy-to-clipboard.jsx'
 import { formatDownloadSize } from '@/utils/format-download-size.js'
 import {
   ScrollArea,
   ScrollBar,
 } from '@/components/ui/scroll-area.jsx'
 import { isSemver } from '@/lib/external-info.js'
+import { DataBadge } from '@/components/ui/data-badge.jsx'
+import {
+  Npm,
+  Node,
+  Yarn,
+  Pnpm,
+  Deno,
+  Bun,
+} from '@/components/icons/index.js'
+import type { LucideIcon } from 'lucide-react'
+
+const getEngine = (engine: string): LucideIcon => {
+  switch (engine) {
+    case 'node':
+      return Node
+    case 'npm':
+      return Npm
+    case 'yarn':
+      return Yarn
+    case 'pnpm':
+      return Pnpm
+    case 'deno':
+      return Deno
+    case 'bun':
+      return Bun
+    default:
+      return Node
+  }
+}
 
 const SpecOrigin = ({
   item,
@@ -58,30 +81,27 @@ const SpecOrigin = ({
         )) {
           if (item.to.name?.startsWith(scopeKey)) {
             return (
-              <InlineCode
-                displayTooltip
-                tooltip={String(scopeValue)}
-                tooltipDuration={150}
+              <DataBadge
                 variant="mono"
-                className="mx-0 w-fit max-w-40 cursor-default truncate">
-                {`${item.title}@${item.version}`}
-              </InlineCode>
+                content={`${item.title}@${item.version}`}
+                tooltip={{
+                  content: String(scopeValue),
+                }}
+              />
             )
           }
         }
         return (
-          <InlineCode
-            displayTooltip
-            tooltipDuration={150}
-            tooltip={
-              ref && specOptions.registries[ref] ?
-                String(specOptions.registries[ref])
-              : String(specOptions.registry || defaultRegistry)
-            }
+          <DataBadge
             variant="mono"
-            className="mx-0 w-fit max-w-40 cursor-default truncate">
-            {`${ref || 'npm'}:${item.title}@${item.version}`}
-          </InlineCode>
+            content={`${ref || 'npm'}:${item.title}@${item.version}`}
+            tooltip={{
+              content:
+                ref && specOptions.registries[ref] ?
+                  String(specOptions.registries[ref])
+                : String(specOptions.registry || defaultRegistry),
+            }}
+          />
         )
       }
       case 'git':
@@ -89,7 +109,7 @@ const SpecOrigin = ({
       case 'file':
       case 'remote': {
         return (
-          <InlineCode className="mx-0 w-fit max-w-40 cursor-default truncate">{`${depType}:{ref}`}</InlineCode>
+          <DataBadge variant="mono" content={`${depType}:{ref}`} />
         )
       }
     }
@@ -108,7 +128,7 @@ export const ItemHeader = () => {
       </div>
       <div className="flex w-full items-center justify-between px-6 py-2 empty:hidden">
         <Publisher />
-        <PackageDownloadCount className="ml-auto" />
+        <PackageDownloadCount />
       </div>
       <div className="grid w-full grid-cols-12 divide-x-[1px] divide-muted empty:hidden">
         <PackageMetadata className="col-span-9 w-full pl-6" />
@@ -118,11 +138,7 @@ export const ItemHeader = () => {
   )
 }
 
-const PackageDownloadCount = ({
-  className,
-}: {
-  className?: string
-}) => {
+const PackageDownloadCount = () => {
   const manifest = useSelectedItemStore(state => state.manifest)
   const downloadsPerVersion = useSelectedItemStore(
     state => state.downloadsPerVersion,
@@ -138,26 +154,16 @@ const PackageDownloadCount = ({
     return null
 
   return (
-    <div
-      className={cn(
-        'flex h-full cursor-default items-center justify-center text-center',
-        className,
-      )}>
-      <p className="w-full text-sm font-medium text-foreground">
-        {downloadsPerVersion[version].toLocaleString()}{' '}
-        <span className="text-muted-foreground">
-          Downloads last week
-        </span>
-      </p>
-    </div>
+    <DataBadge
+      value={downloadsPerVersion[version].toLocaleString()}
+      content="Downloads last week"
+    />
   )
 }
 
 const PackageMetadata = ({ className }: { className?: string }) => {
   const versions = useSelectedItemStore(state => state.versions)
   const manifest = useSelectedItemStore(state => state.manifest)
-  const INLINE_CODE_STYLES =
-    'text-muted-foreground max-w-28 overflow-hidden text-nowrap truncate cursor-default relative mx-0 inline-flex items-center font-inter font-medium tracking-wide'
   const currentVersion = versions?.find(
     version => version.version === manifest?.version,
   )
@@ -199,18 +205,7 @@ const PackageMetadata = ({ className }: { className?: string }) => {
       )}>
       <div className="flex w-max gap-2">
         {manifest.private && (
-          <InlineCode
-            variant="unstyled"
-            tooltip="Private package"
-            tooltipDuration={150}
-            displayTooltip
-            className={cn(
-              INLINE_CODE_STYLES,
-              'gap-1 bg-rose-500/20 px-2 text-rose-600 dark:bg-rose-500/20 dark:text-rose-400',
-            )}>
-            <EyeOff size={16} className="mb-0.5" />
-            Private
-          </InlineCode>
+          <DataBadge icon={EyeOff} content="Private Package" />
         )}
         {manifest.license &&
           LICENSE_TYPES.some(
@@ -218,83 +213,59 @@ const PackageMetadata = ({ className }: { className?: string }) => {
               i.toLowerCase() ===
               manifest.license?.trim().toLowerCase(),
           ) && (
-            <InlineCode
-              variant="mono"
-              tooltipDuration={150}
-              displayTooltip
-              tooltip={`${manifest.license} license`}
-              className={cn(INLINE_CODE_STYLES, 'gap-1 px-2')}>
-              <Scale size={16} className="mb-0.5" />
-              <span className="truncate">{manifest.license}</span>
-            </InlineCode>
+            <DataBadge
+              icon={Scale}
+              value={manifest.license}
+              content="License"
+            />
           )}
         {manifest.type && (
-          <InlineCode
-            tooltipDuration={150}
-            displayTooltip
-            tooltip={manifest.type === 'module' ? 'ESM' : 'CJS'}
-            variant="mono"
-            className={cn(INLINE_CODE_STYLES)}>
-            {manifest.type === 'module' ? 'ESM' : 'CJS'}
-          </InlineCode>
+          <DataBadge
+            content={manifest.type === 'module' ? 'ESM' : 'CJS'}
+          />
         )}
         {manifest.engines &&
           isRecord(manifest.engines) &&
           Object.entries(manifest.engines).map(
             ([engine, version], idx) => (
-              <InlineCode
-                variant="mono"
-                tooltip={`${engine} ${version}`}
-                tooltipDuration={150}
-                displayTooltip
-                className={cn(
-                  INLINE_CODE_STYLES,
-                  'w-fit px-2 pl-7',
-                  engine === 'npm' && 'pl-8',
-                )}
-                key={`${engine}-${version}-${idx}`}>
-                {isGlyphIcon(engine) && (
-                  <GlyphIcon
-                    color="green"
-                    icon={engine}
-                    size="lg"
-                    className={cn(
-                      'absolute left-2',
-                      engine === 'npm' && 'top-[0.1rem] text-red-500',
-                    )}
-                  />
-                )}
-                <span className="truncate">{version}</span>
-              </InlineCode>
+              <DataBadge
+                key={`${engine}-${version}-${idx}`}
+                icon={getEngine(engine)}
+                value={version}
+                content="Engines"
+              />
             ),
           )}
         {currentVersion?.unpackedSize && (
-          <InlineCode
-            variant="mono"
-            tooltipDuration={150}
-            tooltip={`${formatDownloadSize(currentVersion.unpackedSize)} unpacked size`}
-            displayTooltip
-            className={cn(INLINE_CODE_STYLES, 'gap-1 px-2')}>
-            <Download size={16} className="mb-0.5" />
-            {formatDownloadSize(currentVersion.unpackedSize)}
-          </InlineCode>
+          <DataBadge
+            icon={Download}
+            value={formatDownloadSize(currentVersion.unpackedSize)}
+            content="Install size"
+          />
         )}
         {tarballUrl && (
-          <CopyToClipboard
-            className="font-inter"
-            toolTipText="Copy tarball URL"
-            copyValue={tarballUrl}>
-            <Package size={16} />
-            Tarball
-          </CopyToClipboard>
+          <DataBadge
+            icon={Package}
+            content="Tarball"
+            tooltip={{
+              content: 'Copy tarball URL',
+            }}
+            copyToClipboard={{
+              copyValue: tarballUrl,
+            }}
+          />
         )}
         {integrity && (
-          <CopyToClipboard
-            className="font-inter"
-            toolTipText={`Copy Integrity value: ${integrityShort}`}
-            copyValue={integrity}>
-            Integrity
-          </CopyToClipboard>
+          <DataBadge
+            value={integrityShort}
+            content="Integrity"
+            tooltip={{
+              content: `Copy Integrity value: ${integrityShort}`,
+            }}
+            copyToClipboard={{
+              copyValue: integrity,
+            }}
+          />
         )}
       </div>
       <ScrollBar orientation="horizontal" />
@@ -417,11 +388,9 @@ const PackageImageSpec = ({ className }: { className?: string }) => {
             <div className="flex items-center gap-2">
               <h1 className="w-fit max-w-full cursor-default align-baseline text-lg font-medium">
                 {selectedItem.title}
-                <InlineCode
-                  variant="monoGhost"
-                  className="cursor-default text-sm">
+                <span className="ml-2 font-courier text-sm text-muted-foreground">
                   {selectedItem.version}
-                </InlineCode>
+                </span>
               </h1>
               <PackageNewerVersionsAvailable />
             </div>

@@ -6,37 +6,41 @@ exports[`SideItem render as aliased dependency 1`] = `
   <div class="group relative z-10">
     <gui-card
       role="article"
-      classname="relative my-4 transition-all  group-hover:bg-card-accent"
+      classname="relative my-4 cursor-default transition-all  group-hover:bg-card-accent"
     >
       <gui-card-header classname="relative flex w-full flex-col rounded-t-lg p-0">
         <div class="flex items-center px-3 py-2">
-          <gui-card-title classname="align-baseline text-sm">
-            <span class="font-light">
-              <gui-inline-code
-                variant="mono"
-                classname="-mx-1"
-              >
-                aliased-item
-              </gui-inline-code>
-              <gui-inline-code variant="monoGhost">
-                as
-              </gui-inline-code>
+          <div class="align-baseline">
+            <gui-data-badge
+              variant="mono"
+              classnames="[object Object]"
+              content="aliased-item"
+            >
+            </gui-data-badge>
+            <span class="mr-2 font-courier text-sm text-muted-foreground">
+              as
             </span>
-            <span class="font-medium">
+            <span class="text-sm font-medium">
               item
             </span>
-            <gui-inline-code variant="monoGhost">
+            <span class="ml-2 font-courier text-sm font-normal text-muted-foreground">
               v1.0.0
-            </gui-inline-code>
-          </gui-card-title>
+            </span>
+          </div>
         </div>
-        <div class="flex flex-row flex-wrap items-center justify-between gap-2 border-t-[1px] border-muted px-3 py-2">
-          <p class="flex items-center gap-2 text-sm text-muted-foreground">
-            Spec:
-            <gui-inline-code variant="mono">
-              npm:item@^1.0.0
-            </gui-inline-code>
-          </p>
+        <div class="flex w-full flex-row flex-wrap items-center justify-between gap-2 border-t-[1px] border-muted px-3 py-2">
+          <div class="flex items-center gap-2">
+            <p class="text-sm text-muted-foreground">
+              Spec:
+            </p>
+            <gui-data-badge
+              variant="mono"
+              classnames="[object Object]"
+              tooltip="[object Object]"
+              content="npm:item@^1.0.0"
+            >
+            </gui-data-badge>
+          </div>
           <div>
             <gui-badge classname="grow-0 cursor-default bg-cyan-500/25 text-cyan-600 border-[1px] border-cyan-600 dark:border-cyan-500 hover:bg-cyan-500/40 dark:bg-cyan-500/30 dark:text-cyan-500 dark:hover:bg-cyan-500/40">
               prod
@@ -61,26 +65,32 @@ exports[`SideItem render as dependency 1`] = `
   <div class="group relative z-10">
     <gui-card
       role="article"
-      classname="relative my-4 transition-all  group-hover:bg-card-accent"
+      classname="relative my-4 cursor-default transition-all  group-hover:bg-card-accent"
     >
       <gui-card-header classname="relative flex w-full flex-col rounded-t-lg p-0">
         <div class="flex items-center px-3 py-2">
-          <gui-card-title classname="align-baseline text-sm">
-            <span class="font-medium">
+          <div class="align-baseline">
+            <span class="text-sm font-medium">
               item
             </span>
-            <gui-inline-code variant="monoGhost">
+            <span class="ml-2 font-courier text-sm font-normal text-muted-foreground">
               v1.0.0
-            </gui-inline-code>
-          </gui-card-title>
+            </span>
+          </div>
         </div>
-        <div class="flex flex-row flex-wrap items-center justify-between gap-2 border-t-[1px] border-muted px-3 py-2">
-          <p class="flex items-center gap-2 text-sm text-muted-foreground">
-            Spec:
-            <gui-inline-code variant="mono">
-              ^1.0.0
-            </gui-inline-code>
-          </p>
+        <div class="flex w-full flex-row flex-wrap items-center justify-between gap-2 border-t-[1px] border-muted px-3 py-2">
+          <div class="flex items-center gap-2">
+            <p class="text-sm text-muted-foreground">
+              Spec:
+            </p>
+            <gui-data-badge
+              variant="mono"
+              classnames="[object Object]"
+              tooltip="[object Object]"
+              content="^1.0.0"
+            >
+            </gui-data-badge>
+          </div>
           <div>
             <gui-badge classname="grow-0 cursor-default bg-lime-500/25 border-[1px] border-lime-600 dark:border-lime-400 text-lime-600 hover:bg-lime-400/40 dark:bg-lime-500/30 dark:text-lime-400 dark:hover:bg-lime-500/40">
               peer
@@ -105,26 +115,32 @@ exports[`SideItem render as dependency with long name 1`] = `
   <div class="group relative z-10">
     <gui-card
       role="article"
-      classname="relative my-4 transition-all  group-hover:bg-card-accent"
+      classname="relative my-4 cursor-default transition-all  group-hover:bg-card-accent"
     >
       <gui-card-header classname="relative flex w-full flex-col rounded-t-lg p-0">
         <div class="flex items-center px-3 py-2">
-          <gui-card-title classname="align-baseline text-sm">
-            <span class="font-medium">
+          <div class="align-baseline">
+            <span class="text-sm font-medium">
               lorem-ipsum-dolor-sit-amet-consectetur-adipiscing-elit-sed-do-eiusmod-tempor-incididunt-ut-labore-et-dolore-magna-aliqua-ut-enim-ad-minim-veniam-quis-nostrud-exercitation
             </span>
-            <gui-inline-code variant="monoGhost">
+            <span class="ml-2 font-courier text-sm font-normal text-muted-foreground">
               v1.0.0
-            </gui-inline-code>
-          </gui-card-title>
+            </span>
+          </div>
         </div>
-        <div class="flex flex-row flex-wrap items-center justify-between gap-2 border-t-[1px] border-muted px-3 py-2">
-          <p class="flex items-center gap-2 text-sm text-muted-foreground">
-            Spec:
-            <gui-inline-code variant="mono">
-              ^1.0.0
-            </gui-inline-code>
-          </p>
+        <div class="flex w-full flex-row flex-wrap items-center justify-between gap-2 border-t-[1px] border-muted px-3 py-2">
+          <div class="flex items-center gap-2">
+            <p class="text-sm text-muted-foreground">
+              Spec:
+            </p>
+            <gui-data-badge
+              variant="mono"
+              classnames="[object Object]"
+              tooltip="[object Object]"
+              content="^1.0.0"
+            >
+            </gui-data-badge>
+          </div>
           <div>
             <gui-badge classname="grow-0 cursor-default bg-lime-500/25 border-[1px] border-lime-600 dark:border-lime-400 text-lime-600 hover:bg-lime-400/40 dark:bg-lime-500/30 dark:text-lime-400 dark:hover:bg-lime-500/40">
               peer
@@ -149,26 +165,32 @@ exports[`SideItem render as dependent 1`] = `
   <div class="group relative z-10">
     <gui-card
       role="article"
-      classname="relative my-4 transition-all  group-hover:bg-card-accent"
+      classname="relative my-4 cursor-default transition-all  group-hover:bg-card-accent"
     >
       <gui-card-header classname="relative flex w-full flex-col rounded-t-lg p-0">
         <div class="flex items-center px-3 py-2">
-          <gui-card-title classname="align-baseline text-sm">
-            <span class="font-medium">
+          <div class="align-baseline">
+            <span class="text-sm font-medium">
               item
             </span>
-            <gui-inline-code variant="monoGhost">
+            <span class="ml-2 font-courier text-sm font-normal text-muted-foreground">
               v1.0.0
-            </gui-inline-code>
-          </gui-card-title>
+            </span>
+          </div>
         </div>
-        <div class="flex flex-row flex-wrap items-center justify-between gap-2 border-t-[1px] border-muted px-3 py-2">
-          <p class="flex items-center gap-2 text-sm text-muted-foreground">
-            Spec:
-            <gui-inline-code variant="mono">
-              ^1.0.0
-            </gui-inline-code>
-          </p>
+        <div class="flex w-full flex-row flex-wrap items-center justify-between gap-2 border-t-[1px] border-muted px-3 py-2">
+          <div class="flex items-center gap-2">
+            <p class="text-sm text-muted-foreground">
+              Spec:
+            </p>
+            <gui-data-badge
+              variant="mono"
+              classnames="[object Object]"
+              tooltip="[object Object]"
+              content="^1.0.0"
+            >
+            </gui-data-badge>
+          </div>
           <div>
             <gui-badge classname="grow-0 cursor-default bg-cyan-500/25 text-cyan-600 border-[1px] border-cyan-600 dark:border-cyan-500 hover:bg-cyan-500/40 dark:bg-cyan-500/30 dark:text-cyan-500 dark:hover:bg-cyan-500/40">
               prod
@@ -188,26 +210,32 @@ exports[`SideItem render as git dependency 1`] = `
   <div class="group relative z-10">
     <gui-card
       role="article"
-      classname="relative my-4 transition-all  group-hover:bg-card-accent"
+      classname="relative my-4 cursor-default transition-all  group-hover:bg-card-accent"
     >
       <gui-card-header classname="relative flex w-full flex-col rounded-t-lg p-0">
         <div class="flex items-center px-3 py-2">
-          <gui-card-title classname="align-baseline text-sm">
-            <span class="font-medium">
+          <div class="align-baseline">
+            <span class="text-sm font-medium">
               item
             </span>
-            <gui-inline-code variant="monoGhost">
+            <span class="ml-2 font-courier text-sm font-normal text-muted-foreground">
               v1.0.0
-            </gui-inline-code>
-          </gui-card-title>
+            </span>
+          </div>
         </div>
-        <div class="flex flex-row flex-wrap items-center justify-between gap-2 border-t-[1px] border-muted px-3 py-2">
-          <p class="flex items-center gap-2 text-sm text-muted-foreground">
-            Spec:
-            <gui-inline-code variant="mono">
-              github:vltpkg/item
-            </gui-inline-code>
-          </p>
+        <div class="flex w-full flex-row flex-wrap items-center justify-between gap-2 border-t-[1px] border-muted px-3 py-2">
+          <div class="flex items-center gap-2">
+            <p class="text-sm text-muted-foreground">
+              Spec:
+            </p>
+            <gui-data-badge
+              variant="mono"
+              classnames="[object Object]"
+              tooltip="[object Object]"
+              content="github:vltpkg/item"
+            >
+            </gui-data-badge>
+          </div>
           <div>
             <gui-badge classname="grow-0 cursor-default bg-cyan-500/25 text-cyan-600 border-[1px] border-cyan-600 dark:border-cyan-500 hover:bg-cyan-500/40 dark:bg-cyan-500/30 dark:text-cyan-500 dark:hover:bg-cyan-500/40">
               prod
@@ -236,29 +264,35 @@ exports[`SideItem render as multi-stacked dependent 1`] = `
     </div>
     <gui-card
       role="article"
-      classname="relative my-4 transition-all  group-hover:bg-card-accent"
+      classname="relative my-4 cursor-default transition-all  group-hover:bg-card-accent"
     >
       <gui-card-header classname="relative flex w-full flex-col rounded-t-lg p-0">
         <div class="flex items-center px-3 py-2">
-          <gui-card-title classname="align-baseline text-sm">
-            <span class="font-medium">
+          <div class="align-baseline">
+            <span class="text-sm font-medium">
               item
             </span>
-            <gui-inline-code variant="monoGhost">
+            <span class="ml-2 font-courier text-sm font-normal text-muted-foreground">
               v1.0.0
-            </gui-inline-code>
-          </gui-card-title>
+            </span>
+          </div>
         </div>
-        <div class="flex flex-row flex-wrap items-center justify-between gap-2 border-t-[1px] border-muted px-3 py-2">
-          <p class="flex items-center gap-2 text-sm text-muted-foreground">
-            Spec:
-            <gui-inline-code variant="mono">
-              ^1.0.0
-            </gui-inline-code>
-            <span>
+        <div class="flex w-full flex-row flex-wrap items-center justify-between gap-2 border-t-[1px] border-muted px-3 py-2">
+          <div class="flex items-center gap-2">
+            <p class="text-sm text-muted-foreground">
+              Spec:
+            </p>
+            <gui-data-badge
+              variant="mono"
+              classnames="[object Object]"
+              tooltip="[object Object]"
+              content="^1.0.0"
+            >
+            </gui-data-badge>
+            <span class="text-xs font-medium text-muted-foreground">
               and 4 more.
             </span>
-          </p>
+          </div>
           <div>
             <gui-badge classname="grow-0 cursor-default bg-cyan-500/25 text-cyan-600 border-[1px] border-cyan-600 dark:border-cyan-500 hover:bg-cyan-500/40 dark:bg-cyan-500/30 dark:text-cyan-500 dark:hover:bg-cyan-500/40">
               prod
@@ -278,26 +312,32 @@ exports[`SideItem render as parent 1`] = `
   <div class="group relative z-10">
     <gui-card
       role="article"
-      classname="relative my-4 transition-all border-muted group-hover:bg-card-accent"
+      classname="relative my-4 cursor-default transition-all border-muted group-hover:bg-card-accent"
     >
       <gui-card-header classname="relative flex w-full flex-col rounded-t-lg p-0">
         <div class="flex items-center px-3 py-2">
-          <gui-card-title classname="align-baseline text-sm">
-            <span class="font-medium">
+          <div class="align-baseline">
+            <span class="text-sm font-medium">
               item
             </span>
-            <gui-inline-code variant="monoGhost">
+            <span class="ml-2 font-courier text-sm font-normal text-muted-foreground">
               v1.0.0
-            </gui-inline-code>
-          </gui-card-title>
+            </span>
+          </div>
         </div>
-        <div class="flex flex-row flex-wrap items-center justify-between gap-2 border-t-[1px] border-muted px-3 py-2">
-          <p class="flex items-center gap-2 text-sm text-muted-foreground">
-            Spec:
-            <gui-inline-code variant="mono">
-              ^1.0.0
-            </gui-inline-code>
-          </p>
+        <div class="flex w-full flex-row flex-wrap items-center justify-between gap-2 border-t-[1px] border-muted px-3 py-2">
+          <div class="flex items-center gap-2">
+            <p class="text-sm text-muted-foreground">
+              Spec:
+            </p>
+            <gui-data-badge
+              variant="mono"
+              classnames="[object Object]"
+              tooltip="[object Object]"
+              content="^1.0.0"
+            >
+            </gui-data-badge>
+          </div>
           <div>
             <gui-badge classname="grow-0 cursor-default bg-cyan-500/25 text-cyan-600 border-[1px] border-cyan-600 dark:border-cyan-500 hover:bg-cyan-500/40 dark:bg-cyan-500/30 dark:text-cyan-500 dark:hover:bg-cyan-500/40">
               prod
@@ -321,29 +361,35 @@ exports[`SideItem render as two-stacked dependent 1`] = `
     </div>
     <gui-card
       role="article"
-      classname="relative my-4 transition-all  group-hover:bg-card-accent"
+      classname="relative my-4 cursor-default transition-all  group-hover:bg-card-accent"
     >
       <gui-card-header classname="relative flex w-full flex-col rounded-t-lg p-0">
         <div class="flex items-center px-3 py-2">
-          <gui-card-title classname="align-baseline text-sm">
-            <span class="font-medium">
+          <div class="align-baseline">
+            <span class="text-sm font-medium">
               item
             </span>
-            <gui-inline-code variant="monoGhost">
+            <span class="ml-2 font-courier text-sm font-normal text-muted-foreground">
               v1.0.0
-            </gui-inline-code>
-          </gui-card-title>
+            </span>
+          </div>
         </div>
-        <div class="flex flex-row flex-wrap items-center justify-between gap-2 border-t-[1px] border-muted px-3 py-2">
-          <p class="flex items-center gap-2 text-sm text-muted-foreground">
-            Spec:
-            <gui-inline-code variant="mono">
-              ^1.0.0
-            </gui-inline-code>
-            <span>
+        <div class="flex w-full flex-row flex-wrap items-center justify-between gap-2 border-t-[1px] border-muted px-3 py-2">
+          <div class="flex items-center gap-2">
+            <p class="text-sm text-muted-foreground">
+              Spec:
+            </p>
+            <gui-data-badge
+              variant="mono"
+              classnames="[object Object]"
+              tooltip="[object Object]"
+              content="^1.0.0"
+            >
+            </gui-data-badge>
+            <span class="text-xs font-medium text-muted-foreground">
               and 1 more.
             </span>
-          </p>
+          </div>
           <div>
             <gui-badge classname="grow-0 cursor-default bg-cyan-500/25 text-cyan-600 border-[1px] border-cyan-600 dark:border-cyan-500 hover:bg-cyan-500/40 dark:bg-cyan-500/30 dark:text-cyan-500 dark:hover:bg-cyan-500/40">
               prod

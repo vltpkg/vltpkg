@@ -8,12 +8,12 @@ exports[`VersionsTabButton renders default 1`] = `
   classname="w-fit px-2"
 >
   Versions
-  <gui-inline-code
-    variant="mono"
-    classname="ml-1 inline-flex h-[1.25rem] min-w-[1.25rem] items-center justify-center text-center"
+  <gui-data-badge
+    variant="count"
+    classnames="[object Object]"
+    content="3"
   >
-    3
-  </gui-inline-code>
+  </gui-data-badge>
 </gui-tabs-trigger>
 
 `;
@@ -179,15 +179,13 @@ exports[`VersionsTabContent filters newer versions 1`] = `
               <p class="text-sm font-medium text-muted-foreground xl:hidden">
                 Version
               </p>
-              <gui-inline-code
-                tooltipduration="150"
-                displaytooltip="true"
-                tooltip="2.0.0"
-                classname="mx-0 w-fit max-w-none truncate break-all text-sm xl:w-fit xl:max-w-[5.5rem]"
+              <gui-data-badge
                 variant="mono"
+                tooltip="[object Object]"
+                classnames="[object Object]"
+                content="2.0.0"
               >
-                2.0.0
-              </gui-inline-code>
+              </gui-data-badge>
             </div>
             <div class="order-2 col-span-2 flex w-full flex-col gap-2 xl:items-center xl:justify-center xl:gap-0 xl:text-center">
               <p class="text-sm font-medium text-muted-foreground xl:hidden">
@@ -264,15 +262,13 @@ exports[`VersionsTabContent filters newer versions 1`] = `
               <p class="text-sm font-medium text-muted-foreground xl:hidden">
                 Version
               </p>
-              <gui-inline-code
-                tooltipduration="150"
-                displaytooltip="true"
-                tooltip="1.0.0"
-                classname="mx-0 w-fit max-w-none truncate break-all text-sm xl:w-fit xl:max-w-[5.5rem]"
+              <gui-data-badge
                 variant="mono"
+                tooltip="[object Object]"
+                classnames="[object Object]"
+                content="1.0.0"
               >
-                1.0.0
-              </gui-inline-code>
+              </gui-data-badge>
             </div>
             <div class="order-2 col-span-2 flex w-full flex-col gap-2 xl:items-center xl:justify-center xl:gap-0 xl:text-center">
               <p class="text-sm font-medium text-muted-foreground xl:hidden">
@@ -517,15 +513,13 @@ exports[`VersionsTabContent filters pre-releases 1`] = `
               <p class="text-sm font-medium text-muted-foreground xl:hidden">
                 Version
               </p>
-              <gui-inline-code
-                tooltipduration="150"
-                displaytooltip="true"
-                tooltip="2.0.0-beta.1"
-                classname="mx-0 w-fit max-w-none truncate break-all text-sm xl:w-fit xl:max-w-[5.5rem]"
+              <gui-data-badge
                 variant="mono"
+                tooltip="[object Object]"
+                classnames="[object Object]"
+                content="2.0.0-beta.1"
               >
-                2.0.0-beta.1
-              </gui-inline-code>
+              </gui-data-badge>
             </div>
             <div class="order-2 col-span-2 flex w-full flex-col gap-2 xl:items-center xl:justify-center xl:gap-0 xl:text-center">
               <p class="text-sm font-medium text-muted-foreground xl:hidden">
@@ -602,15 +596,13 @@ exports[`VersionsTabContent filters pre-releases 1`] = `
               <p class="text-sm font-medium text-muted-foreground xl:hidden">
                 Version
               </p>
-              <gui-inline-code
-                tooltipduration="150"
-                displaytooltip="true"
-                tooltip="1.0.0"
-                classname="mx-0 w-fit max-w-none truncate break-all text-sm xl:w-fit xl:max-w-[5.5rem]"
+              <gui-data-badge
                 variant="mono"
+                tooltip="[object Object]"
+                classnames="[object Object]"
+                content="1.0.0"
               >
-                1.0.0
-              </gui-inline-code>
+              </gui-data-badge>
             </div>
             <div class="order-2 col-span-2 flex w-full flex-col gap-2 xl:items-center xl:justify-center xl:gap-0 xl:text-center">
               <p class="text-sm font-medium text-muted-foreground xl:hidden">
@@ -796,15 +788,13 @@ exports[`VersionsTabContent filters versions 1`] = `
               <p class="text-sm font-medium text-muted-foreground xl:hidden">
                 Version
               </p>
-              <gui-inline-code
-                tooltipduration="150"
-                displaytooltip="true"
-                tooltip="1.0.0"
-                classname="mx-0 w-fit max-w-none truncate break-all text-sm xl:w-fit xl:max-w-[5.5rem]"
+              <gui-data-badge
                 variant="mono"
+                tooltip="[object Object]"
+                classnames="[object Object]"
+                content="1.0.0"
               >
-                1.0.0
-              </gui-inline-code>
+              </gui-data-badge>
             </div>
             <div class="order-2 col-span-2 flex w-full flex-col gap-2 xl:items-center xl:justify-center xl:gap-0 xl:text-center">
               <p class="text-sm font-medium text-muted-foreground xl:hidden">
@@ -887,15 +877,13 @@ exports[`VersionsTabContent filters versions 1`] = `
               <p class="text-sm font-medium text-muted-foreground xl:hidden">
                 Version
               </p>
-              <gui-inline-code
-                tooltipduration="150"
-                displaytooltip="true"
-                tooltip="2.0.0-beta.1"
-                classname="mx-0 w-fit max-w-none truncate break-all text-sm xl:w-fit xl:max-w-[5.5rem]"
+              <gui-data-badge
                 variant="mono"
+                tooltip="[object Object]"
+                classnames="[object Object]"
+                content="2.0.0-beta.1"
               >
-                2.0.0-beta.1
-              </gui-inline-code>
+              </gui-data-badge>
             </div>
             <div class="order-2 col-span-2 flex w-full flex-col gap-2 xl:items-center xl:justify-center xl:gap-0 xl:text-center">
               <p class="text-sm font-medium text-muted-foreground xl:hidden">
@@ -1075,15 +1063,13 @@ exports[`VersionsTabContent handles missing manifest version 1`] = `
               <p class="text-sm font-medium text-muted-foreground xl:hidden">
                 Version
               </p>
-              <gui-inline-code
-                tooltipduration="150"
-                displaytooltip="true"
-                tooltip="2.0.0"
-                classname="mx-0 w-fit max-w-none truncate break-all text-sm xl:w-fit xl:max-w-[5.5rem]"
+              <gui-data-badge
                 variant="mono"
+                tooltip="[object Object]"
+                classnames="[object Object]"
+                content="2.0.0"
               >
-                2.0.0
-              </gui-inline-code>
+              </gui-data-badge>
             </div>
             <div class="order-2 col-span-2 flex w-full flex-col gap-2 xl:items-center xl:justify-center xl:gap-0 xl:text-center">
               <p class="text-sm font-medium text-muted-foreground xl:hidden">
@@ -1160,15 +1146,13 @@ exports[`VersionsTabContent handles missing manifest version 1`] = `
               <p class="text-sm font-medium text-muted-foreground xl:hidden">
                 Version
               </p>
-              <gui-inline-code
-                tooltipduration="150"
-                displaytooltip="true"
-                tooltip="1.0.0"
-                classname="mx-0 w-fit max-w-none truncate break-all text-sm xl:w-fit xl:max-w-[5.5rem]"
+              <gui-data-badge
                 variant="mono"
+                tooltip="[object Object]"
+                classnames="[object Object]"
+                content="1.0.0"
               >
-                1.0.0
-              </gui-inline-code>
+              </gui-data-badge>
             </div>
             <div class="order-2 col-span-2 flex w-full flex-col gap-2 xl:items-center xl:justify-center xl:gap-0 xl:text-center">
               <p class="text-sm font-medium text-muted-foreground xl:hidden">
@@ -1377,15 +1361,13 @@ exports[`VersionsTabContent renders with versions 1`] = `
               <p class="text-sm font-medium text-muted-foreground xl:hidden">
                 Version
               </p>
-              <gui-inline-code
-                tooltipduration="150"
-                displaytooltip="true"
-                tooltip="1.0.0"
-                classname="mx-0 w-fit max-w-none truncate break-all text-sm xl:w-fit xl:max-w-[5.5rem]"
+              <gui-data-badge
                 variant="mono"
+                tooltip="[object Object]"
+                classnames="[object Object]"
+                content="1.0.0"
               >
-                1.0.0
-              </gui-inline-code>
+              </gui-data-badge>
             </div>
             <div class="order-2 col-span-2 flex w-full flex-col gap-2 xl:items-center xl:justify-center xl:gap-0 xl:text-center">
               <p class="text-sm font-medium text-muted-foreground xl:hidden">
@@ -1468,15 +1450,13 @@ exports[`VersionsTabContent renders with versions 1`] = `
               <p class="text-sm font-medium text-muted-foreground xl:hidden">
                 Version
               </p>
-              <gui-inline-code
-                tooltipduration="150"
-                displaytooltip="true"
-                tooltip="2.0.0-beta.1"
-                classname="mx-0 w-fit max-w-none truncate break-all text-sm xl:w-fit xl:max-w-[5.5rem]"
+              <gui-data-badge
                 variant="mono"
+                tooltip="[object Object]"
+                classnames="[object Object]"
+                content="2.0.0-beta.1"
               >
-                2.0.0-beta.1
-              </gui-inline-code>
+              </gui-data-badge>
             </div>
             <div class="order-2 col-span-2 flex w-full flex-col gap-2 xl:items-center xl:justify-center xl:gap-0 xl:text-center">
               <p class="text-sm font-medium text-muted-foreground xl:hidden">
@@ -1656,15 +1636,13 @@ exports[`VersionsTabContent toggles pre-releases 1`] = `
               <p class="text-sm font-medium text-muted-foreground xl:hidden">
                 Version
               </p>
-              <gui-inline-code
-                tooltipduration="150"
-                displaytooltip="true"
-                tooltip="2.0.0-beta.1"
-                classname="mx-0 w-fit max-w-none truncate break-all text-sm xl:w-fit xl:max-w-[5.5rem]"
+              <gui-data-badge
                 variant="mono"
+                tooltip="[object Object]"
+                classnames="[object Object]"
+                content="2.0.0-beta.1"
               >
-                2.0.0-beta.1
-              </gui-inline-code>
+              </gui-data-badge>
             </div>
             <div class="order-2 col-span-2 flex w-full flex-col gap-2 xl:items-center xl:justify-center xl:gap-0 xl:text-center">
               <p class="text-sm font-medium text-muted-foreground xl:hidden">
@@ -1741,15 +1719,13 @@ exports[`VersionsTabContent toggles pre-releases 1`] = `
               <p class="text-sm font-medium text-muted-foreground xl:hidden">
                 Version
               </p>
-              <gui-inline-code
-                tooltipduration="150"
-                displaytooltip="true"
-                tooltip="1.0.0"
-                classname="mx-0 w-fit max-w-none truncate break-all text-sm xl:w-fit xl:max-w-[5.5rem]"
+              <gui-data-badge
                 variant="mono"
+                tooltip="[object Object]"
+                classnames="[object Object]"
+                content="1.0.0"
               >
-                1.0.0
-              </gui-inline-code>
+              </gui-data-badge>
             </div>
             <div class="order-2 col-span-2 flex w-full flex-col gap-2 xl:items-center xl:justify-center xl:gap-0 xl:text-center">
               <p class="text-sm font-medium text-muted-foreground xl:hidden">

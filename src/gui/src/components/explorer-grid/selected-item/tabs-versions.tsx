@@ -10,7 +10,7 @@ import {
   CircleHelp,
 } from 'lucide-react'
 import { useSelectedItemStore } from '@/components/explorer-grid/selected-item/context.jsx'
-import { InlineCode } from '@/components/ui/inline-code.jsx'
+import { DataBadge } from '@/components/ui/data-badge.jsx'
 import { format, formatDistanceStrict } from 'date-fns'
 import type { Version } from '@/lib/external-info.js'
 import { cn } from '@/lib/utils.js'
@@ -60,13 +60,11 @@ export const VersionsTabButton = () => {
       className="w-fit px-2">
       Versions
       {hasVersions && (
-        <InlineCode
-          variant="mono"
-          className={cn(
-            'ml-1 inline-flex h-[1.25rem] min-w-[1.25rem] items-center justify-center text-center',
-          )}>
-          {versionCount}
-        </InlineCode>
+        <DataBadge
+          variant="count"
+          classNames={{ wrapperClassName: 'ml-1' }}
+          content={String(versionCount)}
+        />
       )}
     </TabsTrigger>
   )
@@ -239,14 +237,16 @@ const VersionItem = ({
         <p className="text-sm font-medium text-muted-foreground xl:hidden">
           Version
         </p>
-        <InlineCode
-          tooltipDuration={150}
-          displayTooltip
-          tooltip={version}
-          className="mx-0 w-fit max-w-none truncate break-all text-sm xl:w-fit xl:max-w-[5.5rem]"
-          variant="mono">
-          {version}
-        </InlineCode>
+        <DataBadge
+          variant="mono"
+          tooltip={{ content: version }}
+          classNames={{
+            wrapperClassName:
+              'w-fit max-w-none break-all xl:w-fit xl:max-w-[5.5rem]',
+            contentClassName: 'truncate pt-0.5',
+          }}
+          content={version}
+        />
       </div>
       <div className="order-2 col-span-2 flex w-full flex-col gap-2 xl:items-center xl:justify-center xl:gap-0 xl:text-center">
         {unpackedSize && (

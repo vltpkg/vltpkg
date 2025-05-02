@@ -64,33 +64,26 @@ vi.mock('lucide-react', () => ({
   Package: 'gui-package-icon',
 }))
 
-vi.mock('@/components/ui/inline-code.jsx', () => ({
-  InlineCode: 'gui-inline-code',
-}))
-
-vi.mock('@/components/ui/spark-chart.jsx', () => ({
-  SparkBarChart: 'gui-spark-bar-chart',
-}))
-
 vi.mock('@/components/ui/progress-bar.jsx', () => ({
   ProgressBar: 'gui-progress-bar',
 }))
 
-vi.mock('@/components/icons/glyph-icon.jsx', async () => {
-  const actual = await import('@/components/icons/glyph-icon.jsx')
-  return {
-    ...actual,
-    GlyphIcon: 'gui-glyph-icon',
-  }
-})
-
-vi.mock('@/components/ui/copy-to-clipboard.jsx', () => ({
-  CopyToClipboard: 'gui-copy-to-clipboard',
+vi.mock('@/components/icons/index.js', () => ({
+  Npm: 'gui-npm-icon',
+  Node: 'gui-node-icon',
+  Yarn: 'gui-yarn-icon',
+  Pnpm: 'gui-pnpm-icon',
+  Deno: 'gui-deno-icon',
+  Bun: 'gui-bun-icon',
 }))
 
 vi.mock('@/components/ui/scroll-area.jsx', () => ({
   ScrollArea: 'gui-scroll-area',
   ScrollBar: 'gui-scroll-bar',
+}))
+
+vi.mock('@/components/ui/data-badge.jsx', () => ({
+  DataBadge: 'gui-data-badge',
 }))
 
 expect.addSnapshotSerializer({

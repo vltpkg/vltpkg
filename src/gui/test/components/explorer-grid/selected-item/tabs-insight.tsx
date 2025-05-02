@@ -84,8 +84,8 @@ vi.mock('@/components/ui/link.jsx', () => ({
   Link: 'gui-link',
 }))
 
-vi.mock('@/components/ui/inline-code.jsx', () => ({
-  InlineCode: 'gui-inline-code',
+vi.mock('@/components/ui/data-badge.jsx', () => ({
+  DataBadge: 'gui-data-badge',
 }))
 
 expect.addSnapshotSerializer({
