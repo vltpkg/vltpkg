@@ -415,3 +415,8 @@ exports[`test/commands/list.ts > TAP > list > workspaces > should list workspace
   }
 ]
 `
+
+exports[`test/commands/list.ts > TAP > list > workspaces > should use specified workspace as scope selector 1`] = `
+a
+
+`

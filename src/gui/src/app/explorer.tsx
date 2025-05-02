@@ -104,7 +104,10 @@ const ExplorerContent = () => {
       if (!q) return
       ac.current.abort(new Error('Query changed'))
       ac.current = new AbortController()
-      const queryResponse = await q.search(query, ac.current.signal)
+      const queryResponse = await q.search(query, {
+        signal: ac.current.signal,
+        scopeIDs: graph ? [graph.mainImporter.id] : undefined,
+      })
 
       updateEdges(queryResponse.edges)
       updateNodes(queryResponse.nodes)

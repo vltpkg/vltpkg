@@ -39,21 +39,9 @@ t.test('pseudo', async t => {
     [':project /*all*/', all, ['my-project']], // no workspaces in graph
     [':project /*empty*/', empty, []], // from empty nodes
     [':project /*b*/', b, []], // from diff node
-    [
-      ':scope',
-      all,
-      ['my-project', 'a', 'b', 'c', 'd', 'e', 'f', '@x/y'],
-    ], // :scope refers to the initial values from initial
-    [
-      ':scope',
-      b,
-      ['my-project', 'a', 'b', 'c', 'd', 'e', 'f', '@x/y'],
-    ], // :scope resets the initial values from a partial
-    [
-      ':scope',
-      empty,
-      ['my-project', 'a', 'b', 'c', 'd', 'e', 'f', '@x/y'],
-    ], // :scope resets the initial values from empty partial
+    [':scope', all, ['my-project']], // :scope refers to the initial values from initial
+    [':scope', b, []], // :scope resets the initial values from a partial
+    [':scope', empty, []], // :scope resets the initial values from empty partial
     // :attr selector
     [':attr([scripts])', all, ['b']], // prop lookup only
     [':attr([scripts])', b, ['b']], // start with a single node
@@ -234,6 +222,27 @@ t.test('pseudo', async t => {
         `query > "${query}"`,
       )
     }
+
+    // test custom scopedID
+    const result = await testPseudo(
+      ':scope',
+      initial,
+      copyGraphSelectionState(all),
+      false,
+      [joinDepIDTuple(['workspace', 'w'])],
+    )
+    t.strictSame(
+      result.nodes.map(i => i.name),
+      ['w'],
+      'query > customScopedID',
+    )
+    t.matchSnapshot(
+      {
+        edges: result.edges.map(i => i.name).sort(),
+        nodes: result.nodes.map(i => i.name).sort(),
+      },
+      'query > customScopedID',
+    )
   })
 
   await t.test('complex workspace', async t => {

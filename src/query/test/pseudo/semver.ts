@@ -36,6 +36,7 @@ t.test('select from semver definition', async t => {
       walk: async i => i,
       securityArchive: undefined,
       specOptions: {},
+      signal: new AbortController().signal,
     }
     return state
   }

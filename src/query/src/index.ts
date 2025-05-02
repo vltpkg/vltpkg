@@ -25,8 +25,15 @@ import type {
   QueryResponseNode,
   QueryResponseEdge,
 } from './types.ts'
+import { joinDepIDTuple } from '@vltpkg/dep-id/browser'
+import type { DepID } from '@vltpkg/dep-id'
 
 export * from './types.ts'
+
+export type SearchOptions = {
+  signal: AbortSignal
+  scopeIDs?: DepID[]
+}
 
 const noopFn = async (state: ParserState) => state
 
@@ -175,6 +182,10 @@ const setMethodToJSON = (node: QueryResponseNode) => {
   })
 }
 
+/**
+ * The Query class is used to search the graph for nodes and edges
+ * using the Dependency Selector Syntax (DSS).
+ */
 export class Query {
   #cache: Map<string, QueryResponse>
   #graph: GraphLike
@@ -391,7 +402,10 @@ export class Query {
    */
   async search(
     query: string,
-    signal?: AbortSignal,
+    {
+      signal,
+      scopeIDs = [joinDepIDTuple(['file', '.'])],
+    }: SearchOptions,
   ): Promise<QueryResponse> {
     if (!query) return { edges: [], nodes: [] }
 
@@ -420,7 +434,7 @@ export class Query {
         await new Promise(resolve => {
           setTimeout(resolve, 0)
         })
-        signal?.throwIfAborted()
+        signal.throwIfAborted()
       },
       current,
       initial: {
@@ -437,6 +451,7 @@ export class Query {
       signal,
       securityArchive: this.#securityArchive,
       specOptions: this.#specOptions,
+      scopeIDs,
       walk,
     })
 

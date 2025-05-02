@@ -30,6 +30,7 @@ t.test('selects edges with no linked node', async t => {
       retries: 0,
       securityArchive: undefined,
       specOptions: {},
+      signal: new AbortController().signal,
     }
     return state
   }

@@ -971,24 +971,8 @@ Object {
 
 exports[`test/pseudo.ts > TAP > pseudo > query > ":scope" 1`] = `
 Object {
-  "edges": Array [
-    "@x/y",
-    "a",
-    "b",
-    "c",
-    "d",
-    "e",
-    "e",
-    "f",
-  ],
+  "edges": Array [],
   "nodes": Array [
-    "@x/y",
-    "a",
-    "b",
-    "c",
-    "d",
-    "e",
-    "f",
     "my-project",
   ],
 }
@@ -996,51 +980,15 @@ Object {
 
 exports[`test/pseudo.ts > TAP > pseudo > query > ":scope" 2`] = `
 Object {
-  "edges": Array [
-    "@x/y",
-    "a",
-    "b",
-    "c",
-    "d",
-    "e",
-    "e",
-    "f",
-  ],
-  "nodes": Array [
-    "@x/y",
-    "a",
-    "b",
-    "c",
-    "d",
-    "e",
-    "f",
-    "my-project",
-  ],
+  "edges": Array [],
+  "nodes": Array [],
 }
 `
 
 exports[`test/pseudo.ts > TAP > pseudo > query > ":scope" 3`] = `
 Object {
-  "edges": Array [
-    "@x/y",
-    "a",
-    "b",
-    "c",
-    "d",
-    "e",
-    "e",
-    "f",
-  ],
-  "nodes": Array [
-    "@x/y",
-    "a",
-    "b",
-    "c",
-    "d",
-    "e",
-    "f",
-    "my-project",
-  ],
+  "edges": Array [],
+  "nodes": Array [],
 }
 `
 
@@ -1285,6 +1233,15 @@ Object {
 `
 
 exports[`test/pseudo.ts > TAP > pseudo > workspace > query > ":type(workspace)" 1`] = `
+Object {
+  "edges": Array [],
+  "nodes": Array [
+    "w",
+  ],
+}
+`
+
+exports[`test/pseudo.ts > TAP > pseudo > workspace > query > customScopedID 1`] = `
 Object {
   "edges": Array [],
   "nodes": Array [

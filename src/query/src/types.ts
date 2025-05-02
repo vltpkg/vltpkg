@@ -5,6 +5,7 @@ import type {
   SecurityArchiveLike,
   PackageScore,
 } from '@vltpkg/security-archive'
+import type { DepID } from '@vltpkg/dep-id'
 import type {
   Tag,
   String,
@@ -50,12 +51,13 @@ export type ParserState = {
   next?: PostcssNode
   prev?: PostcssNode
   result?: NodeLike[]
-  signal?: AbortSignal
+  signal: AbortSignal
   walk: ParserFn
   partial: GraphSelectionState
   retries: number
   securityArchive: SecurityArchiveLike | undefined
   specOptions: SpecOptions
+  scopeIDs?: DepID[]
 }
 
 export type QueryResponse = {

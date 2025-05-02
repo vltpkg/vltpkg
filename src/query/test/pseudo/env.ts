@@ -36,6 +36,7 @@ t.test('selects packages with a envVars alert', async t => {
         ]),
       ),
       specOptions: {},
+      signal: new AbortController().signal,
     }
     return state
   }
@@ -80,6 +81,7 @@ t.test('missing security archive', async t => {
       retries: 0,
       securityArchive: undefined,
       specOptions: {},
+      signal: new AbortController().signal,
     }
     return state
   }

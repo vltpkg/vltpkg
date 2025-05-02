@@ -66,6 +66,7 @@ t.test('selects packages with a specific severity kind', async t => {
       ),
       specOptions: {},
       retries: 0,
+      signal: new AbortController().signal,
     }
     return state
   }
@@ -208,6 +209,7 @@ t.test('missing security archive', async t => {
       securityArchive: undefined,
       specOptions: {},
       retries: 0,
+      signal: new AbortController().signal,
     }
     return state
   }
