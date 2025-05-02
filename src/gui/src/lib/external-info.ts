@@ -1,7 +1,11 @@
 import type { Repository, Manifest, Packument } from '@vltpkg/types'
 import { compare, gt } from '@vltpkg/semver'
-import { Spec } from '@vltpkg/spec/browser'
 import { isRecord } from '@/utils/typeguards.js'
+import type { Spec } from '@vltpkg/spec/browser'
+import {
+  getRepoOrigin,
+  getRepositoryApiUrl,
+} from '@/utils/get-repo-url.js'
 
 export type Semver = `${number}.${number}.${number}`
 
@@ -15,6 +19,22 @@ export const asSemver = (s: string): Semver => {
     return s
   }
   throw new Error(`Invalid Semver: ${s}`)
+}
+
+export type GitHubRepo = {
+  owner?: {
+    avatar_url?: string
+    login?: string
+  }
+  updated_at?: string
+  stargazers_count?: number
+  organization?: {
+    login?: string
+  }
+  name?: string
+  default_branch?: string
+  commits_url?: string
+  contributors_url?: string
 }
 
 export type DownloadsRange = {
@@ -66,6 +86,9 @@ export type DetailsInfo = {
   versions?: Version[]
   greaterVersions?: Version[]
   contributors?: Contributor[]
+  stargazersCount?: GitHubRepo['stargazers_count']
+  openIssueCount?: string
+  openPullRequestCount?: string
 }
 
 export const NAME_PATTERN = /^([^(<]+)/
@@ -108,33 +131,6 @@ export const readRepository = (
   }
 }
 
-export const retrieveGitHubAPIUrl = (
-  maybeGitHubURL: string,
-): string | undefined => {
-  let url: URL
-  try {
-    // try to retrieve the url host from a potentially valid url
-    url = new URL(maybeGitHubURL)
-  } catch {
-    const parsed = Spec.parse('name', maybeGitHubURL)
-    if (
-      parsed.type === 'git' &&
-      parsed.namedGitHost === 'github' &&
-      parsed.namedGitHostPath
-    ) {
-      url = new URL(`https://github.com/${parsed.namedGitHostPath}`)
-    } else {
-      return
-    }
-  }
-  if (url.hostname === 'github.com') {
-    const api = new URL('https://api.github.com')
-    const pathname = url.pathname.replace(/\.git$/, '')
-    api.pathname = `/repos${pathname}`
-    return String(api)
-  }
-}
-
 export const retrieveAvatar = async (
   email: string,
 ): Promise<string> => {
@@ -148,6 +144,19 @@ export const retrieveAvatar = async (
     .join('')
 
   return `https://gravatar.com/avatar/${hash}?d=retro`
+}
+
+export const parseAriaLabelFromSVG = (
+  svg: string,
+): string | undefined => {
+  const parser = new DOMParser()
+  const svgDoc = parser.parseFromString(svg, 'image/svg+xml')
+  const ariaLabel = svgDoc
+    .querySelector('svg')
+    ?.getAttribute('aria-label')
+  if (!ariaLabel) return undefined
+  const match = /[\d.]+\s*[kmb]?/i.exec(ariaLabel)
+  return match?.[0].trim()
 }
 
 export async function* fetchDetails(
@@ -170,6 +179,56 @@ export async function* fetchDetails(
     })
     promisesQueue.push(p)
   }
+
+  const fetchGithubRepo = async (
+    githubAPI: string,
+  ): Promise<GitHubRepo> =>
+    fetch(githubAPI, { signal })
+      .then(res => res.json())
+      .then((repo: GitHubRepo) => {
+        return repo
+      })
+      .catch(() => ({}))
+
+  const fetchStargazerCount = (
+    repo: GitHubRepo,
+  ): Promise<DetailsInfo> => {
+    return Promise.resolve({
+      stargazersCount: repo.stargazers_count,
+    })
+  }
+
+  const fetchOpenIssuesCount = async (
+    org: string,
+    repo: string,
+  ): Promise<DetailsInfo> => {
+    return fetch(
+      `https://img.shields.io/github/issues/${org}/${repo}`,
+      { signal },
+    )
+      .then(res => res.text())
+      .then((res: string) => {
+        const count = parseAriaLabelFromSVG(res)
+        if (count === undefined) return {}
+        return { openIssueCount: count }
+      })
+      .catch(() => ({}))
+  }
+
+  const fetchOpenPullRequestCount = (
+    org: string,
+    repo: string,
+  ): Promise<DetailsInfo> =>
+    fetch(`https://img.shields.io/github/issues-pr/${org}/${repo}`, {
+      signal,
+    })
+      .then(res => res.text())
+      .then((res: string) => {
+        const count = parseAriaLabelFromSVG(res)
+        if (count === undefined) return {}
+        return { openPullRequestCount: count }
+      })
+      .catch(() => ({}))
 
   const fetchDownloadsLastYear = (): Promise<DetailsInfo> =>
     fetch(
@@ -243,45 +302,23 @@ export async function* fetchDetails(
   // favicon requests have a guard against duplicate requests
   // since we retry once we fetch the manifest from the registry
   const seenFavIconRequests = new Set<string>()
-  const fetchFavIcon = (
+  const fetchFavIcon = async (
     githubAPI: string,
-  ): Promise<DetailsInfo> | undefined => {
-    if (seenFavIconRequests.has(githubAPI)) return
+  ): Promise<DetailsInfo> => {
+    if (!manifest?.repository || seenFavIconRequests.has(githubAPI))
+      return Promise.resolve({})
 
-    return fetch(githubAPI, { signal })
-      .then(res => res.json())
-      .then(
-        (repo: {
-          owner?: { avatar_url?: string; login?: string }
-        }) => {
-          if (repo.owner?.avatar_url) {
-            return {
-              favicon: {
-                src: repo.owner.avatar_url,
-                alt:
-                  repo.owner.login ?
-                    `${repo.owner.login}'s avatar`
-                  : 'avatar',
-              },
-            }
-          } else {
-            return {}
-          }
+    const repo = getRepoOrigin(manifest.repository)
+    if (repo) {
+      return {
+        favicon: {
+          src: `https://www.github.com/${repo.org}.png`,
+          alt: `${repo.org} avatar`,
         },
-      )
-      .catch(() => {
-        // fallback to a generic org avatar if the api request fails
-        const orgName = githubAPI.split('/').slice(-2)[0]
-        const avatarFallbackURL = new URL('https://github.com')
-        avatarFallbackURL.pathname = `/${orgName}.png`
-        avatarFallbackURL.search = 'size=128'
-        return {
-          favicon: {
-            src: String(avatarFallbackURL),
-            alt: 'avatar',
-          },
-        }
-      })
+      }
+    }
+
+    return Promise.resolve({})
   }
 
   // tries to retrieve author info from the in-memory manifest
@@ -294,22 +331,25 @@ export async function* fetchDetails(
 
   // if the spec is a git spec, use its remote as the repository url reference
   if (spec.gitRemote) {
-    githubAPI = retrieveGitHubAPIUrl(spec.gitRemote)
+    githubAPI = getRepositoryApiUrl(spec.gitRemote)
   }
 
   // lookup manifest for a repository field
   if (!githubAPI && manifest?.repository) {
     const repo = readRepository(manifest.repository)
     if (repo) {
-      githubAPI = retrieveGitHubAPIUrl(repo)
+      githubAPI = getRepositoryApiUrl(repo)
     }
   }
 
   // if a value was found, fetch the repository info from the GitHub API
   if (githubAPI) {
-    const faviconPromise = fetchFavIcon(githubAPI)
-    if (faviconPromise) {
-      trackPromise(faviconPromise)
+    const api = githubAPI
+    if (api) {
+      trackPromise(fetchFavIcon(api))
+      void fetchGithubRepo(api).then(repo => {
+        trackPromise(fetchStargazerCount(repo))
+      })
     }
   }
 
@@ -326,12 +366,13 @@ export async function* fetchDetails(
           if (!githubAPI && mani.repository) {
             const repo = readRepository(mani.repository)
             if (repo) {
-              githubAPI = retrieveGitHubAPIUrl(repo)
+              githubAPI = getRepositoryApiUrl(repo)
             }
             if (githubAPI) {
-              const faviconPromise = fetchFavIcon(githubAPI)
-              if (faviconPromise) {
-                trackPromise(faviconPromise)
+              const api = githubAPI
+              // Only make this call if it wasn't already made earlier
+              if (!seenFavIconRequests.has(api)) {
+                trackPromise(fetchFavIcon(api))
               }
             }
           }
@@ -439,6 +480,15 @@ export async function* fetchDetails(
 
   // retrieve contributors from the manifest
   trackPromise(fetchContributors())
+  const repo =
+    manifest?.repository && readRepository(manifest.repository)
+  const repoDetails = repo && getRepoOrigin(repo)
+
+  if (repoDetails) {
+    const { org, repo: repoName } = repoDetails
+    trackPromise(fetchOpenIssuesCount(org, repoName))
+    trackPromise(fetchOpenPullRequestCount(org, repoName))
+  }
 
   // asynchronously yield results from promisesQueue as soon as they're ready
   while (true) {

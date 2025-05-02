@@ -4,9 +4,12 @@ import Markdown from 'react-markdown'
 import {
   FileText,
   Globe,
-  HeartHandshake,
   Bug,
   RectangleHorizontal,
+  Star,
+  CircleDot,
+  GitPullRequest,
+  Link as LucideLink,
 } from 'lucide-react'
 import { InlineCode } from '@/components/ui/inline-code.jsx'
 import { Link } from '@/components/ui/link.jsx'
@@ -16,6 +19,9 @@ import {
   AvatarImage,
   AvatarFallback,
 } from '@radix-ui/react-avatar'
+import { toHumanNumber } from '@/utils/human-number.js'
+import { GitHubOutline } from '@/components/icons/index.js'
+import { getRepositoryUrl } from '@/utils/get-repo-url.js'
 import type { Contributor } from '@/lib/external-info.js'
 
 export const OverviewTabButton = () => {
@@ -29,150 +35,231 @@ export const OverviewTabButton = () => {
   )
 }
 
+const getSiteName = (url: string): string | undefined => {
+  return new URL(url).hostname.replace(/^www\./, '').split('.')[0]
+}
+
+const TabContentAside = () => {
+  const manifest = useSelectedItemStore(state => state.manifest)
+  const stargazers = useSelectedItemStore(
+    state => state.stargazersCount,
+  )
+  const openIssue = useSelectedItemStore(
+    state => state.openIssueCount,
+  )
+  const openPR = useSelectedItemStore(
+    state => state.openPullRequestCount,
+  )
+
+  const asideEmpty =
+    !stargazers &&
+    !openIssue &&
+    !openPR &&
+    !manifest?.homepage &&
+    !manifest?.repository &&
+    !manifest?.bugs &&
+    !manifest?.funding
+
+  if (asideEmpty) return null
+
+  return (
+    <aside className="order-1 flex cursor-default flex-col gap-4 px-6 py-4 xl:order-2 xl:col-span-4">
+      <div className="flex flex-col gap-2">
+        <h4 className="text-sm font-medium capitalize text-muted-foreground">
+          about
+        </h4>
+        <div className="flex flex-col gap-2">
+          {manifest?.homepage && (
+            <Link
+              href={manifest.homepage}
+              className="text-sm text-foreground">
+              <span className="flex items-center justify-center">
+                <Globe size={16} className="text-muted-foreground" />
+              </span>
+              <span>{getSiteName(manifest.homepage)}</span>
+            </Link>
+          )}
+          {manifest?.repository && (
+            <Link
+              href={
+                getRepositoryUrl(manifest.repository) ?? undefined
+              }
+              className="text-sm text-foreground">
+              <span className="flex w-4 items-center justify-center">
+                <GitHubOutline
+                  size={16}
+                  className="text-muted-foreground"
+                />
+              </span>
+              <span>Repository</span>
+            </Link>
+          )}
+          {manifest?.bugs &&
+            (() => {
+              let href: string | null = null
+
+              if (typeof manifest.bugs === 'string') {
+                href = manifest.bugs
+              } else if (
+                'url' in manifest.bugs &&
+                manifest.bugs.url
+              ) {
+                href = manifest.bugs.url
+              } else if (
+                'email' in manifest.bugs &&
+                manifest.bugs.email
+              ) {
+                href = `mailto:${manifest.bugs.email}`
+              }
+
+              return href ?
+                  <Link
+                    href={href}
+                    className="text-sm text-foreground">
+                    <span className="flex items-center justify-center">
+                      <Bug
+                        size={16}
+                        className="text-muted-foreground"
+                      />
+                    </span>
+                    <span>Bug reports</span>
+                  </Link>
+                : null
+            })()}
+          {openPR && (
+            <div className="flex items-center gap-2">
+              <GitPullRequest
+                size={16}
+                className="text-muted-foreground"
+              />
+              <div className="flex gap-1">
+                <InlineCode
+                  variant="mono"
+                  className="mx-0 h-5 pt-[3px] uppercase text-foreground">
+                  {openPR}
+                </InlineCode>
+                <p className="text-sm">Pull requests</p>
+              </div>
+            </div>
+          )}
+          {openIssue && (
+            <div className="flex items-center gap-2">
+              <CircleDot
+                size={16}
+                className="text-muted-foreground"
+              />
+              <div className="flex gap-1">
+                <InlineCode
+                  variant="mono"
+                  className="mx-0 h-5 pt-[3px] uppercase text-foreground">
+                  {openIssue}
+                </InlineCode>
+                <p className="text-sm">Issues</p>
+              </div>
+            </div>
+          )}
+          {(stargazers ?? 0) > 0 && (
+            <div className="flex items-center gap-2">
+              <Star size={16} className="text-muted-foreground" />
+              <div className="flex gap-1">
+                <InlineCode
+                  variant="mono"
+                  className="mx-0 h-5 pt-[3px] text-foreground">
+                  {toHumanNumber(stargazers ?? 0)}
+                </InlineCode>
+                <p className="text-sm">Stars</p>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+      {manifest?.funding && (
+        <div className="flex flex-col gap-2">
+          <h4 className="text-sm font-medium capitalize text-muted-foreground">
+            funding
+          </h4>
+          <div className="flex flex-col gap-2">
+            {(() => {
+              const entries =
+                Array.isArray(manifest.funding) ?
+                  manifest.funding
+                : [manifest.funding]
+
+              return entries.map((entry, idx) => {
+                const url =
+                  typeof entry === 'string' ? entry : entry.url
+                if (!url) return null
+
+                return (
+                  <Link
+                    key={`${url}-${idx}`}
+                    href={url}
+                    className="text-sm text-foreground">
+                    <span className="flex items-center justify-center text-muted-foreground">
+                      <LucideLink size={16} />
+                    </span>
+                    <span>{getSiteName(url)}</span>
+                  </Link>
+                )
+              })
+            })()}
+          </div>
+        </div>
+      )}
+    </aside>
+  )
+}
+
 export const OverviewTabContent = () => {
   const manifest = useSelectedItemStore(state => state.manifest)
 
+  const keywords =
+    manifest?.keywords ?
+      Array.isArray(manifest.keywords) ? manifest.keywords
+      : typeof manifest.keywords === 'string' ?
+        (manifest.keywords as string).split(', ')
+      : []
+    : []
+
   return (
-    <TabsContent value="overview" className="flex flex-col gap-4">
-      <div
-        className={cn(
-          'flex flex-wrap gap-4 px-6 pt-4',
-          !manifest?.homepage && !manifest?.funding && 'hidden',
-        )}>
-        {manifest?.homepage && (
-          <div className="flex flex-col gap-1">
-            <p className="inline-flex items-center gap-1.5 text-sm text-muted-foreground">
-              <Globe size={16} className="text-blue-500" />
-              <span>Homepage</span>
-            </p>
-            <Link href={manifest.homepage} className="text-sm">
-              {manifest.homepage}
-            </Link>
-          </div>
-        )}
-        {manifest?.funding && (
-          <div className="flex flex-col gap-1">
-            <p className="inline-flex items-center gap-1.5 text-sm text-muted-foreground">
-              <HeartHandshake size={16} className="text-rose-400" />
-              <span>Funding</span>
-            </p>
-            {Array.isArray(manifest.funding) ?
-              manifest.funding.map((entry, idx) =>
-                typeof entry === 'string' ?
-                  <Link
-                    className="text-sm"
-                    key={`${entry}-${idx}`}
-                    href={entry}>
-                    {entry}
-                  </Link>
-                : <Link
-                    className="text-sm"
-                    key={idx}
-                    href={entry.url}>
-                    {entry.url}
-                  </Link>,
-              )
-            : typeof manifest.funding === 'string' ?
-              <Link href={manifest.funding} className="text-sm">
-                {manifest.funding}
-              </Link>
-            : <Link href={manifest.funding.url} className="text-sm">
-                {manifest.funding.url}
-              </Link>
-            }
-          </div>
-        )}
-        {manifest?.bugs && (
-          <div className="flex flex-col gap-1">
-            <p className="inline-flex items-center gap-1.5 text-sm text-muted-foreground">
-              <Bug size={16} className="text-red-500" />
-              <span>Bug Reports</span>
-            </p>
-            {typeof manifest.bugs === 'string' ?
-              <Link href={manifest.bugs} className="text-sm">
-                {manifest.bugs}
-              </Link>
-            : 'url' in manifest.bugs && manifest.bugs.url ?
-              <Link href={manifest.bugs.url} className="text-sm">
-                {manifest.bugs.url}
-              </Link>
-            : 'email' in manifest.bugs && manifest.bugs.email ?
-              <Link
-                href={`mailto:${manifest.bugs.email}`}
-                className="text-sm">
-                {manifest.bugs.email}
-              </Link>
-            : null}
-          </div>
-        )}
-      </div>
-
-      {manifest?.description ?
-        <div className="flex flex-col gap-2 px-6 py-4">
-          <h4 className="text-sm font-medium capitalize">
-            description
-          </h4>
-          <div className="prose-sm prose-neutral max-w-none text-sm">
-            <Markdown>{manifest.description}</Markdown>
-          </div>
-        </div>
-      : <div className="flex h-64 w-full items-center justify-center px-6 py-4">
-          <div className="flex flex-col items-center justify-center gap-3 text-center">
-            <div className="relative flex size-32 items-center justify-center rounded-full bg-secondary/60">
-              <RectangleHorizontal
-                className="absolute z-[2] mt-3 size-9 -translate-x-4 -rotate-[calc(90deg+30deg)] fill-secondary text-muted-foreground/50"
-                strokeWidth={1.25}
-              />
-              <FileText
-                className="absolute z-[3] size-14 fill-secondary text-neutral-500"
-                strokeWidth={1}
-              />
-              <RectangleHorizontal
-                className="absolute z-[2] mt-3 size-9 translate-x-4 rotate-[calc(90deg+30deg)] fill-secondary text-muted-foreground/50"
-                strokeWidth={1.25}
-              />
+    <TabsContent
+      value="overview"
+      className="divide-x-none group flex grid-cols-12 flex-col divide-muted xl:grid xl:divide-x-[1px] [&>aside]:border-b-[1px] [&>aside]:border-red-500 xl:[&>aside]:border-b-[0px]">
+      <div className="order-2 flex flex-col gap-4 xl:order-1 xl:col-span-12 xl:group-[&:has(aside)]:col-span-8">
+        {manifest?.description ?
+          <div className="flex flex-col gap-2 px-6 py-4">
+            <h4 className="text-sm font-medium capitalize text-muted-foreground">
+              description
+            </h4>
+            <div className="prose-sm prose-neutral max-w-none text-sm">
+              <Markdown>{manifest.description}</Markdown>
             </div>
-            <p className="w-2/3 text-pretty text-sm text-muted-foreground">
-              We couldn't find a description for this project
-            </p>
           </div>
-        </div>
-      }
+        : <EmptyState />}
 
-      <ContributorList />
+        <ContributorList />
 
-      {manifest?.keywords && (
-        <div className="flex cursor-default flex-col gap-2 px-6 pb-4">
-          <h4 className="text-sm font-medium capitalize">keywords</h4>
-          <div className="flex flex-wrap gap-2">
-            {Array.isArray(manifest.keywords) ?
-              manifest.keywords.map((keyword, idx) => (
+        {manifest?.keywords && (
+          <div className="flex grow flex-col justify-end gap-2 px-6 pb-4">
+            <h4 className="text-sm font-medium capitalize text-muted-foreground">
+              keywords
+            </h4>
+            <div className="flex flex-wrap gap-2">
+              {keywords.map((keyword, idx) => (
                 <InlineCode
                   variant="mono"
                   key={`${keyword}-${idx}`}
                   className={cn(
-                    'mx-0 inline-flex cursor-default items-center pt-1.5',
+                    'mx-0 inline-flex cursor-default items-center pt-1.5 text-foreground',
                   )}>
                   {keyword}
                 </InlineCode>
-              ))
-            : typeof manifest.keywords === 'string' ?
-              (manifest.keywords as string)
-                .split(', ')
-                .map((keyword: string, idx: number) => (
-                  <InlineCode
-                    variant="mono"
-                    key={`${keyword}-${idx}`}
-                    className={cn(
-                      'mx-0 inline-flex cursor-default items-center pt-1.5',
-                    )}>
-                    {keyword}
-                  </InlineCode>
-                ))
-            : null}
+              ))}
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
+      <TabContentAside />
     </TabsContent>
   )
 }
@@ -216,7 +303,9 @@ const ContributorList = () => {
 
   return (
     <div className="flex cursor-default flex-col gap-2 px-6 pb-4">
-      <h4 className="text-sm font-medium capitalize">Contributors</h4>
+      <h4 className="text-sm font-medium capitalize text-muted-foreground">
+        Contributors
+      </h4>
       <div className="flex flex-wrap gap-x-8 gap-y-5">
         {contributors.map((contributor, idx) => (
           <Contributor
@@ -224,6 +313,32 @@ const ContributorList = () => {
             contributor={contributor}
           />
         ))}
+      </div>
+    </div>
+  )
+}
+
+const EmptyState = () => {
+  return (
+    <div className="flex h-64 w-full items-center justify-center px-6 py-4">
+      <div className="flex flex-col items-center justify-center gap-3 text-center">
+        <div className="relative flex size-32 items-center justify-center rounded-full bg-secondary/60">
+          <RectangleHorizontal
+            className="absolute z-[2] mt-3 size-9 -translate-x-4 -rotate-[calc(90deg+30deg)] fill-secondary text-muted-foreground/50"
+            strokeWidth={1.25}
+          />
+          <FileText
+            className="absolute z-[3] size-14 fill-secondary text-neutral-500"
+            strokeWidth={1}
+          />
+          <RectangleHorizontal
+            className="absolute z-[2] mt-3 size-9 translate-x-4 rotate-[calc(90deg+30deg)] fill-secondary text-muted-foreground/50"
+            strokeWidth={1.25}
+          />
+        </div>
+        <p className="w-2/3 text-pretty text-sm text-muted-foreground">
+          We couldn't find a description for this project
+        </p>
       </div>
     </div>
   )

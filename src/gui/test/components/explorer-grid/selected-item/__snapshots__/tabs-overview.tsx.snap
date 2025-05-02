@@ -16,34 +16,246 @@ exports[`OverviewTabContent renders default 1`] = `
 
 <gui-tabs-content
   value="overview"
-  classname="flex flex-col gap-4"
+  classname="divide-x-none group flex grid-cols-12 flex-col divide-muted xl:grid xl:divide-x-[1px] [&amp;>aside]:border-b-[1px] [&amp;>aside]:border-red-500 xl:[&amp;>aside]:border-b-[0px]"
 >
-  <div class="flex-wrap gap-4 px-6 pt-4 hidden">
-  </div>
-  <div class="flex h-64 w-full items-center justify-center px-6 py-4">
-    <div class="flex flex-col items-center justify-center gap-3 text-center">
-      <div class="relative flex size-32 items-center justify-center rounded-full bg-secondary/60">
-        <gui-rectangle-horizontal-icon
-          classname="absolute z-[2] mt-3 size-9 -translate-x-4 -rotate-[calc(90deg+30deg)] fill-secondary text-muted-foreground/50"
-          strokewidth="1.25"
-        >
-        </gui-rectangle-horizontal-icon>
-        <gui-file-text-icon
-          classname="absolute z-[3] size-14 fill-secondary text-neutral-500"
-          strokewidth="1"
-        >
-        </gui-file-text-icon>
-        <gui-rectangle-horizontal-icon
-          classname="absolute z-[2] mt-3 size-9 translate-x-4 rotate-[calc(90deg+30deg)] fill-secondary text-muted-foreground/50"
-          strokewidth="1.25"
-        >
-        </gui-rectangle-horizontal-icon>
+  <div class="order-2 flex flex-col gap-4 xl:order-1 xl:col-span-12 xl:group-[&amp;:has(aside)]:col-span-8">
+    <div class="flex h-64 w-full items-center justify-center px-6 py-4">
+      <div class="flex flex-col items-center justify-center gap-3 text-center">
+        <div class="relative flex size-32 items-center justify-center rounded-full bg-secondary/60">
+          <gui-rectangle-horizontal-icon
+            classname="absolute z-[2] mt-3 size-9 -translate-x-4 -rotate-[calc(90deg+30deg)] fill-secondary text-muted-foreground/50"
+            strokewidth="1.25"
+          >
+          </gui-rectangle-horizontal-icon>
+          <gui-file-text-icon
+            classname="absolute z-[3] size-14 fill-secondary text-neutral-500"
+            strokewidth="1"
+          >
+          </gui-file-text-icon>
+          <gui-rectangle-horizontal-icon
+            classname="absolute z-[2] mt-3 size-9 translate-x-4 rotate-[calc(90deg+30deg)] fill-secondary text-muted-foreground/50"
+            strokewidth="1.25"
+          >
+          </gui-rectangle-horizontal-icon>
+        </div>
+        <p class="w-2/3 text-pretty text-sm text-muted-foreground">
+          We couldn't find a description for this project
+        </p>
       </div>
-      <p class="w-2/3 text-pretty text-sm text-muted-foreground">
-        We couldn't find a description for this project
-      </p>
     </div>
   </div>
+</gui-tabs-content>
+
+`;
+
+exports[`OverviewTabContent renders with an aside and content 1`] = `
+
+<gui-tabs-content
+  value="overview"
+  classname="divide-x-none group flex grid-cols-12 flex-col divide-muted xl:grid xl:divide-x-[1px] [&amp;>aside]:border-b-[1px] [&amp;>aside]:border-red-500 xl:[&amp;>aside]:border-b-[0px]"
+>
+  <div class="order-2 flex flex-col gap-4 xl:order-1 xl:col-span-12 xl:group-[&amp;:has(aside)]:col-span-8">
+    <div class="flex h-64 w-full items-center justify-center px-6 py-4">
+      <div class="flex flex-col items-center justify-center gap-3 text-center">
+        <div class="relative flex size-32 items-center justify-center rounded-full bg-secondary/60">
+          <gui-rectangle-horizontal-icon
+            classname="absolute z-[2] mt-3 size-9 -translate-x-4 -rotate-[calc(90deg+30deg)] fill-secondary text-muted-foreground/50"
+            strokewidth="1.25"
+          >
+          </gui-rectangle-horizontal-icon>
+          <gui-file-text-icon
+            classname="absolute z-[3] size-14 fill-secondary text-neutral-500"
+            strokewidth="1"
+          >
+          </gui-file-text-icon>
+          <gui-rectangle-horizontal-icon
+            classname="absolute z-[2] mt-3 size-9 translate-x-4 rotate-[calc(90deg+30deg)] fill-secondary text-muted-foreground/50"
+            strokewidth="1.25"
+          >
+          </gui-rectangle-horizontal-icon>
+        </div>
+        <p class="w-2/3 text-pretty text-sm text-muted-foreground">
+          We couldn't find a description for this project
+        </p>
+      </div>
+    </div>
+    <div class="flex cursor-default flex-col gap-2 px-6 pb-4">
+      <h4 class="text-sm font-medium capitalize text-muted-foreground">
+        Contributors
+      </h4>
+      <div class="flex flex-wrap gap-x-8 gap-y-5">
+        <div class="flex cursor-default gap-2">
+          <gui-avatar classname="size-9">
+            <gui-avatar-image
+              classname="size-9 rounded-full outline outline-[1px] outline-neutral-200 dark:outline-neutral-700"
+              src="https://acme.com/johndoe"
+            >
+            </gui-avatar-image>
+            <gui-avatar-fallback classname="flex aspect-square size-9 items-center justify-center">
+              <div class="h-full w-full rounded-full bg-gradient-to-t from-neutral-200 to-neutral-400 dark:from-neutral-500 dark:to-neutral-800">
+              </div>
+            </gui-avatar-fallback>
+          </gui-avatar>
+          <div class="flex flex-col justify-center text-sm text-foreground">
+            <p class="font-medium text-neutral-900 dark:text-neutral-200">
+              John Doe
+            </p>
+            <p class="text-xs text-muted-foreground">
+              johndoe@acme.com
+            </p>
+          </div>
+        </div>
+        <div class="flex cursor-default gap-2">
+          <gui-avatar classname="size-9">
+            <gui-avatar-image
+              classname="size-9 rounded-full outline outline-[1px] outline-neutral-200 dark:outline-neutral-700"
+              src="https://acme.com/janedoo"
+            >
+            </gui-avatar-image>
+            <gui-avatar-fallback classname="flex aspect-square size-9 items-center justify-center">
+              <div class="h-full w-full rounded-full bg-gradient-to-t from-neutral-200 to-neutral-400 dark:from-neutral-500 dark:to-neutral-800">
+              </div>
+            </gui-avatar-fallback>
+          </gui-avatar>
+          <div class="flex flex-col justify-center text-sm text-foreground">
+            <p class="font-medium text-neutral-900 dark:text-neutral-200">
+              Jane Doo
+            </p>
+            <p class="text-xs text-muted-foreground">
+              janedoo@acme.com
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <aside class="order-1 flex cursor-default flex-col gap-4 px-6 py-4 xl:order-2 xl:col-span-4">
+    <div class="flex flex-col gap-2">
+      <h4 class="text-sm font-medium capitalize text-muted-foreground">
+        about
+      </h4>
+      <div class="flex flex-col gap-2">
+        <gui-link
+          href="https://acme.com"
+          classname="text-sm text-foreground"
+        >
+          <span class="flex items-center justify-center">
+            <gui-globe-icon
+              size="16"
+              classname="text-muted-foreground"
+            >
+            </gui-globe-icon>
+          </span>
+          <span>
+            acme
+          </span>
+        </gui-link>
+        <gui-link
+          href="https://github.com/acme/repo"
+          classname="text-sm text-foreground"
+        >
+          <span class="flex w-4 items-center justify-center">
+            <gui-github-outline-icon
+              size="16"
+              classname="text-muted-foreground"
+            >
+            </gui-github-outline-icon>
+          </span>
+          <span>
+            Repository
+          </span>
+        </gui-link>
+        <gui-link
+          href="https://acme.com/bugs"
+          classname="text-sm text-foreground"
+        >
+          <span class="flex items-center justify-center">
+            <gui-bug-icon
+              size="16"
+              classname="text-muted-foreground"
+            >
+            </gui-bug-icon>
+          </span>
+          <span>
+            Bug reports
+          </span>
+        </gui-link>
+        <div class="flex items-center gap-2">
+          <gui-git-pull-request-icon
+            size="16"
+            classname="text-muted-foreground"
+          >
+          </gui-git-pull-request-icon>
+          <div class="flex gap-1">
+            <gui-inline-code
+              variant="mono"
+              classname="mx-0 h-5 pt-[3px] uppercase text-foreground"
+            >
+              5
+            </gui-inline-code>
+            <p class="text-sm">
+              Pull requests
+            </p>
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <gui-circle-dot-icon
+            size="16"
+            classname="text-muted-foreground"
+          >
+          </gui-circle-dot-icon>
+          <div class="flex gap-1">
+            <gui-inline-code
+              variant="mono"
+              classname="mx-0 h-5 pt-[3px] uppercase text-foreground"
+            >
+              10
+            </gui-inline-code>
+            <p class="text-sm">
+              Issues
+            </p>
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <gui-star-icon
+            size="16"
+            classname="text-muted-foreground"
+          >
+          </gui-star-icon>
+          <div class="flex gap-1">
+            <gui-inline-code
+              variant="mono"
+              classname="mx-0 h-5 pt-[3px] text-foreground"
+            >
+              100
+            </gui-inline-code>
+            <p class="text-sm">
+              Stars
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="flex flex-col gap-2">
+      <h4 class="text-sm font-medium capitalize text-muted-foreground">
+        funding
+      </h4>
+      <div class="flex flex-col gap-2">
+        <gui-link
+          href="https://acme.com/funding"
+          classname="text-sm text-foreground"
+        >
+          <span class="flex items-center justify-center text-muted-foreground">
+            <gui-link-icon size="16">
+            </gui-link-icon>
+          </span>
+          <span>
+            acme
+          </span>
+        </gui-link>
+      </div>
+    </div>
+  </aside>
 </gui-tabs-content>
 
 `;
@@ -52,116 +264,38 @@ exports[`OverviewTabContent renders with content 1`] = `
 
 <gui-tabs-content
   value="overview"
-  classname="flex flex-col gap-4"
+  classname="divide-x-none group flex grid-cols-12 flex-col divide-muted xl:grid xl:divide-x-[1px] [&amp;>aside]:border-b-[1px] [&amp;>aside]:border-red-500 xl:[&amp;>aside]:border-b-[0px]"
 >
-  <div class="flex-wrap gap-4 px-6 pt-4 hidden">
-  </div>
-  <div class="flex h-64 w-full items-center justify-center px-6 py-4">
-    <div class="flex flex-col items-center justify-center gap-3 text-center">
-      <div class="relative flex size-32 items-center justify-center rounded-full bg-secondary/60">
-        <gui-rectangle-horizontal-icon
-          classname="absolute z-[2] mt-3 size-9 -translate-x-4 -rotate-[calc(90deg+30deg)] fill-secondary text-muted-foreground/50"
-          strokewidth="1.25"
-        >
-        </gui-rectangle-horizontal-icon>
-        <gui-file-text-icon
-          classname="absolute z-[3] size-14 fill-secondary text-neutral-500"
-          strokewidth="1"
-        >
-        </gui-file-text-icon>
-        <gui-rectangle-horizontal-icon
-          classname="absolute z-[2] mt-3 size-9 translate-x-4 rotate-[calc(90deg+30deg)] fill-secondary text-muted-foreground/50"
-          strokewidth="1.25"
-        >
-        </gui-rectangle-horizontal-icon>
+  <div class="order-2 flex flex-col gap-4 xl:order-1 xl:col-span-12 xl:group-[&amp;:has(aside)]:col-span-8">
+    <div class="flex flex-col gap-2 px-6 py-4">
+      <h4 class="text-sm font-medium capitalize text-muted-foreground">
+        description
+      </h4>
+      <div class="prose-sm prose-neutral max-w-none text-sm">
+        <gui-markdown>
+          ## Description
+
+This is a custom description
+        </gui-markdown>
       </div>
-      <p class="w-2/3 text-pretty text-sm text-muted-foreground">
-        We couldn't find a description for this project
-      </p>
     </div>
-  </div>
-</gui-tabs-content>
-
-`;
-
-exports[`OverviewTabContent renders with contributors 1`] = `
-
-<gui-tabs-content
-  value="overview"
-  classname="flex flex-col gap-4"
->
-  <div class="flex-wrap gap-4 px-6 pt-4 hidden">
-  </div>
-  <div class="flex h-64 w-full items-center justify-center px-6 py-4">
-    <div class="flex flex-col items-center justify-center gap-3 text-center">
-      <div class="relative flex size-32 items-center justify-center rounded-full bg-secondary/60">
-        <gui-rectangle-horizontal-icon
-          classname="absolute z-[2] mt-3 size-9 -translate-x-4 -rotate-[calc(90deg+30deg)] fill-secondary text-muted-foreground/50"
-          strokewidth="1.25"
+    <div class="flex grow flex-col justify-end gap-2 px-6 pb-4">
+      <h4 class="text-sm font-medium capitalize text-muted-foreground">
+        keywords
+      </h4>
+      <div class="flex flex-wrap gap-2">
+        <gui-inline-code
+          variant="mono"
+          classname="mx-0 inline-flex cursor-default items-center pt-1.5 text-foreground"
         >
-        </gui-rectangle-horizontal-icon>
-        <gui-file-text-icon
-          classname="absolute z-[3] size-14 fill-secondary text-neutral-500"
-          strokewidth="1"
+          testing
+        </gui-inline-code>
+        <gui-inline-code
+          variant="mono"
+          classname="mx-0 inline-flex cursor-default items-center pt-1.5 text-foreground"
         >
-        </gui-file-text-icon>
-        <gui-rectangle-horizontal-icon
-          classname="absolute z-[2] mt-3 size-9 translate-x-4 rotate-[calc(90deg+30deg)] fill-secondary text-muted-foreground/50"
-          strokewidth="1.25"
-        >
-        </gui-rectangle-horizontal-icon>
-      </div>
-      <p class="w-2/3 text-pretty text-sm text-muted-foreground">
-        We couldn't find a description for this project
-      </p>
-    </div>
-  </div>
-  <div class="flex cursor-default flex-col gap-2 px-6 pb-4">
-    <h4 class="text-sm font-medium capitalize">
-      Contributors
-    </h4>
-    <div class="flex flex-wrap gap-x-8 gap-y-5">
-      <div class="flex cursor-default gap-2">
-        <gui-avatar classname="size-9">
-          <gui-avatar-image
-            classname="size-9 rounded-full outline outline-[1px] outline-neutral-200 dark:outline-neutral-700"
-            src="https://acme.com/johndoe"
-          >
-          </gui-avatar-image>
-          <gui-avatar-fallback classname="flex aspect-square size-9 items-center justify-center">
-            <div class="h-full w-full rounded-full bg-gradient-to-t from-neutral-200 to-neutral-400 dark:from-neutral-500 dark:to-neutral-800">
-            </div>
-          </gui-avatar-fallback>
-        </gui-avatar>
-        <div class="flex flex-col justify-center text-sm text-foreground">
-          <p class="font-medium text-neutral-900 dark:text-neutral-200">
-            John Doe
-          </p>
-          <p class="text-xs text-muted-foreground">
-            johndoe@acme.com
-          </p>
-        </div>
-      </div>
-      <div class="flex cursor-default gap-2">
-        <gui-avatar classname="size-9">
-          <gui-avatar-image
-            classname="size-9 rounded-full outline outline-[1px] outline-neutral-200 dark:outline-neutral-700"
-            src="https://acme.com/janedoo"
-          >
-          </gui-avatar-image>
-          <gui-avatar-fallback classname="flex aspect-square size-9 items-center justify-center">
-            <div class="h-full w-full rounded-full bg-gradient-to-t from-neutral-200 to-neutral-400 dark:from-neutral-500 dark:to-neutral-800">
-            </div>
-          </gui-avatar-fallback>
-        </gui-avatar>
-        <div class="flex flex-col justify-center text-sm text-foreground">
-          <p class="font-medium text-neutral-900 dark:text-neutral-200">
-            Jane Doo
-          </p>
-          <p class="text-xs text-muted-foreground">
-            janedoo@acme.com
-          </p>
-        </div>
+          vitest
+        </gui-inline-code>
       </div>
     </div>
   </div>

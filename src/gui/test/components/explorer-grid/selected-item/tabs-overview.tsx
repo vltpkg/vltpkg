@@ -59,9 +59,16 @@ vi.mock('react-markdown', () => ({
 vi.mock('lucide-react', () => ({
   FileText: 'gui-file-text-icon',
   Globe: 'gui-globe-icon',
-  HeartHandshake: 'gui-heart-handshake-icon',
   Bug: 'gui-bug-icon',
   RectangleHorizontal: 'gui-rectangle-horizontal-icon',
+  Star: 'gui-star-icon',
+  CircleDot: 'gui-circle-dot-icon',
+  GitPullRequest: 'gui-git-pull-request-icon',
+  Link: 'gui-link-icon',
+}))
+
+vi.mock('@/components/icons/index.js', () => ({
+  GitHubOutline: 'gui-github-outline-icon',
 }))
 
 vi.mock('@/components/ui/inline-code.jsx', () => ({
@@ -147,8 +154,11 @@ test('OverviewTabContent renders with content', () => {
     insights: undefined,
     activeTab: 'overview' as const,
     setActiveTab: vi.fn(),
-    manifest: {},
     rawManifest: null,
+    manifest: {
+      description: '## Description\n\nThis is a custom description',
+      keywords: ['testing', 'vitest'],
+    },
   } satisfies SelectedItemStore
 
   vi.mocked(useSelectedItemStore).mockImplementation(selector =>
@@ -163,14 +173,13 @@ test('OverviewTabContent renders with content', () => {
   expect(container.innerHTML).toMatchSnapshot()
 })
 
-test('OverviewTabContent renders with contributors', () => {
+test('OverviewTabContent renders with an aside and content', () => {
   const mockState = {
     selectedItem: ITEM_WITH_DESCRIPTION,
     ...ITEM_DETAILS_WITH_AUTHOR,
     insights: undefined,
     activeTab: 'overview' as const,
     setActiveTab: vi.fn(),
-    manifest: null,
     rawManifest: null,
     contributors: [
       {
@@ -184,6 +193,22 @@ test('OverviewTabContent renders with contributors', () => {
         avatar: 'https://acme.com/janedoo',
       },
     ],
+    stargazersCount: 100,
+    openIssueCount: '10',
+    openPullRequestCount: '5',
+    manifest: {
+      homepage: 'https://acme.com',
+      repository: {
+        type: 'git',
+        url: 'github.com/acme/repo.git',
+      },
+      bugs: {
+        url: 'https://acme.com/bugs',
+      },
+      funding: {
+        url: 'https://acme.com/funding',
+      },
+    },
   } satisfies SelectedItemStore
 
   vi.mocked(useSelectedItemStore).mockImplementation(selector =>

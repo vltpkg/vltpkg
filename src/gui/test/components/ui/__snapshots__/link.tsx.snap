@@ -1,0 +1,119 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`link render default 1`] = `
+
+<a
+  target="_blank"
+  class="group/link relative inline-flex cursor-default whitespace-nowrap text-blue-500 [&amp;>svg]:ml-1"
+>
+  <span class="inline-flex gap-2">
+    gui-link
+  </span>
+  <gui-arrow-up-right-icon
+    classname="duration-250 transition-all group-hover/link:-translate-y-[2px] group-hover/link:translate-x-[2px]"
+    size="14"
+  >
+  </gui-arrow-up-right-icon>
+</a>
+
+`;
+
+exports[`link renders with additional props 1`] = `
+
+<a
+  href="https://example.com"
+  title="Example Link"
+  data-testid="test-link"
+  rel="noopener noreferrer"
+  target="_blank"
+  class="group/link relative inline-flex cursor-default whitespace-nowrap text-blue-500 [&amp;>svg]:ml-1"
+>
+  <span class="inline-flex gap-2">
+    gui-link
+  </span>
+  <gui-arrow-up-right-icon
+    classname="duration-250 transition-all group-hover/link:-translate-y-[2px] group-hover/link:translate-x-[2px]"
+    size="14"
+  >
+  </gui-arrow-up-right-icon>
+</a>
+
+`;
+
+exports[`link renders with complex children 1`] = `
+
+<a
+  target="_blank"
+  class="group/link relative inline-flex cursor-default whitespace-nowrap text-blue-500 [&amp;>svg]:ml-1"
+>
+  <span class="inline-flex gap-2">
+    <span>
+      Nested
+    </span>
+    <strong>
+      Content
+    </strong>
+  </span>
+  <gui-arrow-up-right-icon
+    classname="duration-250 transition-all group-hover/link:-translate-y-[2px] group-hover/link:translate-x-[2px]"
+    size="14"
+  >
+  </gui-arrow-up-right-icon>
+</a>
+
+`;
+
+exports[`link renders with custom className 1`] = `
+
+<a
+  target="_blank"
+  class="group/link relative inline-flex cursor-default whitespace-nowrap text-blue-500 [&amp;>svg]:ml-1 custom-class"
+>
+  <span class="inline-flex gap-2">
+    gui-link
+  </span>
+  <gui-arrow-up-right-icon
+    classname="duration-250 transition-all group-hover/link:-translate-y-[2px] group-hover/link:translate-x-[2px]"
+    size="14"
+  >
+  </gui-arrow-up-right-icon>
+</a>
+
+`;
+
+exports[`link renders with href 1`] = `
+
+<a
+  href="https://www.acme.com"
+  target="_blank"
+  class="group/link relative inline-flex cursor-default whitespace-nowrap text-blue-500 [&amp;>svg]:ml-1"
+>
+  <span class="inline-flex gap-2">
+    gui-link-acme
+  </span>
+  <gui-arrow-up-right-icon
+    classname="duration-250 transition-all group-hover/link:-translate-y-[2px] group-hover/link:translate-x-[2px]"
+    size="14"
+  >
+  </gui-arrow-up-right-icon>
+</a>
+
+`;
+
+exports[`link renders with ref 1`] = `
+
+<a
+  target="_blank"
+  class="group/link relative inline-flex cursor-default whitespace-nowrap text-blue-500 [&amp;>svg]:ml-1"
+>
+  <span class="inline-flex gap-2">
+    gui-link
+  </span>
+  <gui-arrow-up-right-icon
+    classname="duration-250 transition-all group-hover/link:-translate-y-[2px] group-hover/link:translate-x-[2px]"
+    size="14"
+  >
+  </gui-arrow-up-right-icon>
+</a>
+
+`;

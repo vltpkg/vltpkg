@@ -1,0 +1,216 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`renders different icon types 1`] = `
+
+<div>
+  <span class="font-zed antialised text-sm text-current">
+    
+  </span>
+</div>
+
+`;
+
+exports[`renders different icon types 2`] = `
+
+<div>
+  <span class="font-zed antialised text-sm text-current">
+    
+  </span>
+</div>
+<div>
+  <span class="font-zed antialised text-sm text-current">
+    
+  </span>
+</div>
+
+`;
+
+exports[`renders different icon types 3`] = `
+
+<div>
+  <span class="font-zed antialised text-sm text-current">
+    
+  </span>
+</div>
+<div>
+  <span class="font-zed antialised text-sm text-current">
+    
+  </span>
+</div>
+<div>
+  <span class="font-zed antialised text-sm text-current">
+    
+  </span>
+</div>
+
+`;
+
+exports[`renders different icon types 4`] = `
+
+<div>
+  <span class="font-zed antialised text-sm text-current">
+    
+  </span>
+</div>
+<div>
+  <span class="font-zed antialised text-sm text-current">
+    
+  </span>
+</div>
+<div>
+  <span class="font-zed antialised text-sm text-current">
+    
+  </span>
+</div>
+<div>
+  <span class="font-zed antialised text-sm text-current">
+    
+  </span>
+</div>
+
+`;
+
+exports[`renders different icon types 5`] = `
+
+<div>
+  <span class="font-zed antialised text-sm text-current">
+    
+  </span>
+</div>
+<div>
+  <span class="font-zed antialised text-sm text-current">
+    
+  </span>
+</div>
+<div>
+  <span class="font-zed antialised text-sm text-current">
+    
+  </span>
+</div>
+<div>
+  <span class="font-zed antialised text-sm text-current">
+    
+  </span>
+</div>
+<div>
+  <span class="font-zed antialised text-sm text-current">
+    
+  </span>
+</div>
+
+`;
+
+exports[`renders different icon types 6`] = `
+
+<div>
+  <span class="font-zed antialised text-sm text-current">
+    
+  </span>
+</div>
+<div>
+  <span class="font-zed antialised text-sm text-current">
+    
+  </span>
+</div>
+<div>
+  <span class="font-zed antialised text-sm text-current">
+    
+  </span>
+</div>
+<div>
+  <span class="font-zed antialised text-sm text-current">
+    
+  </span>
+</div>
+<div>
+  <span class="font-zed antialised text-sm text-current">
+    
+  </span>
+</div>
+<div>
+  <span class="font-zed antialised text-sm text-current">
+    
+  </span>
+</div>
+
+`;
+
+exports[`renders different icon types 7`] = `
+
+<div>
+  <span class="font-zed antialised text-sm text-current">
+    
+  </span>
+</div>
+<div>
+  <span class="font-zed antialised text-sm text-current">
+    
+  </span>
+</div>
+<div>
+  <span class="font-zed antialised text-sm text-current">
+    
+  </span>
+</div>
+<div>
+  <span class="font-zed antialised text-sm text-current">
+    
+  </span>
+</div>
+<div>
+  <span class="font-zed antialised text-sm text-current">
+    
+  </span>
+</div>
+<div>
+  <span class="font-zed antialised text-sm text-current">
+    
+  </span>
+</div>
+<div>
+  <span class="font-zed antialised text-sm text-current">
+    
+  </span>
+</div>
+
+`;
+
+exports[`renders glyph icon with custom className 1`] = `
+
+<div>
+  <span class="font-zed antialised text-sm text-current custom-class">
+    
+  </span>
+</div>
+
+`;
+
+exports[`renders glyph icon with custom color 1`] = `
+
+<div>
+  <span class="font-zed antialised text-sm text-blue-600 dark:text-blue-500">
+    
+  </span>
+</div>
+
+`;
+
+exports[`renders glyph icon with custom size 1`] = `
+
+<div>
+  <span class="font-zed antialised text-lg text-current">
+    
+  </span>
+</div>
+
+`;
+
+exports[`renders glyph icon with default props 1`] = `
+
+<div>
+  <span class="font-zed antialised text-sm text-current">
+    
+  </span>
+</div>
+
+`;
