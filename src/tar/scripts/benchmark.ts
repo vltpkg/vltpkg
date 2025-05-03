@@ -20,15 +20,16 @@ const DIRS = {
 
 const artifacts = copyTarballs(DIRS.source)
 
-const test = async (name, fn, setup) => {
+const test = async (
+  name: string,
+  fn: (arg1: string, arg2: string) => Promise<unknown>,
+) => {
   resetDir(DIRS.target)
   process.stdout.write(`${name}: `)
-  const state = setup ? setup() : undefined
   const { time } = await timePromises(artifacts, a =>
     fn(
       resolve(a.parentPath, a.name),
       resolve(DIRS.target, a.name.replace(/\.tgz$/, '')),
-      state,
     ),
   )
   const [elapsed, unit] = convertNs(time)
@@ -39,11 +40,9 @@ const test = async (name, fn, setup) => {
 
 console.log(`extracting ${artifacts.length} artifacts`)
 
-await test(
-  '@vltpkg/tar',
-  async (tgz, target, p) => await p.unpack(readFileSync(tgz), target),
-  () => new Pool(),
-)
+const p = new Pool()
+await test('@vltpkg/tar', async (tgz, target) =>
+  await p.unpack(readFileSync(tgz), target))
 
 await test('direct unpack', async (tgz, target) =>
   unpack(readFileSync(tgz), target))
