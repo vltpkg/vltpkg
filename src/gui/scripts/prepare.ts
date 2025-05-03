@@ -23,7 +23,7 @@ const html = async () => {
     force: true,
     recursive: true,
   })
-  await mkdir(join(cwd, outdir), { force: true })
+  await mkdir(join(cwd, outdir), { recursive: true })
   await cp(join(cwd, 'public'), join(cwd, outdir), {
     recursive: true,
   })
@@ -43,7 +43,7 @@ const js = async () => {
     define: {
       'process.env.NODE_ENV': `"${argv.production ? 'production' : 'development'}"`,
     },
-  }
+  } satisfies esbuild.BuildOptions
   if (argv.watch) {
     const ctx = await esbuild.context(options)
     await ctx.watch()
@@ -57,7 +57,7 @@ const css = async () => {
   const tailwind = await which('tailwind', {
     path: join(cwd, 'node_modules/.bin'),
   })
-  await new Promise((res, rej) => {
+  await new Promise<void>((res, rej) => {
     const proc = spawn(
       tailwind,
       [
@@ -70,7 +70,7 @@ const css = async () => {
       ],
       { cwd, shell: true },
     )
-    const log = data => {
+    const log = (data: Buffer) => {
       const str = data.toString().trim()
       if (str) {
         console.log('[tailwind]', str)
@@ -91,4 +91,4 @@ const main = async () => {
   await Promise.all([js(), css()])
 }
 
-main()
+await main()
