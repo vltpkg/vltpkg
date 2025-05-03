@@ -1833,6 +1833,9 @@ importers:
       '@types/node':
         specifier: 'catalog:'
         version: 22.15.3
+      '@types/npm-package-arg':
+        specifier: ^6.1.4
+        version: 6.1.4
       '@vltpkg/benchmark':
         specifier: workspace:*
         version: link:../../infra/benchmark

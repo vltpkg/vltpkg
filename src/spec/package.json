@@ -26,6 +26,7 @@
   "devDependencies": {
     "@eslint/js": "catalog:",
     "@types/node": "catalog:",
+    "@types/npm-package-arg": "^6.1.4",
     "@vltpkg/benchmark": "workspace:*",
     "eslint": "catalog:",
     "npm-package-arg": "^12.0.2",
@@ -41,7 +42,7 @@
     "node": ">=22"
   },
   "scripts": {
-    "benchmark": "./scripts/benchmark.js",
+    "benchmark": "./scripts/benchmark.ts",
     "format": "prettier --write . --log-level warn --ignore-path ../../.prettierignore --cache",
     "format:check": "prettier --check . --ignore-path ../../.prettierignore --cache",
     "lint": "eslint . --fix",
