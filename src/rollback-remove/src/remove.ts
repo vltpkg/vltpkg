@@ -28,7 +28,9 @@ const main = async () => {
     })
   })
 
-  if (paths.length) await rimraf(paths)
+  if (paths.length) {
+    await rimraf(paths)
+  }
 }
 
 const g = globalThis as typeof globalThis & {
@@ -36,5 +38,5 @@ const g = globalThis as typeof globalThis & {
 }
 
 if (isMain(g.__VLT_INTERNAL_MAIN ?? process.argv[1])) {
-  void main()
+  await main()
 }

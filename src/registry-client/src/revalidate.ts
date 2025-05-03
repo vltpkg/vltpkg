@@ -11,7 +11,9 @@ const isMain = (path?: string) =>
   path === pathToFileURL(__CODE_SPLIT_SCRIPT_NAME).toString()
 
 export const main = async (cache?: string, input = process.stdin) => {
-  if (!cache) process.exit(1)
+  if (!cache) {
+    return false
+  }
   const reqs = await new Promise<['GET' | 'HEAD', URL][]>(res => {
     const chunks: Buffer[] = []
     let chunkLen = 0
@@ -39,7 +41,10 @@ export const main = async (cache?: string, input = process.stdin) => {
     })
   })
 
-  if (!reqs.length) process.exit(1)
+  if (!reqs.length) {
+    return false
+  }
+
   const rc = new RegistryClient({ cache })
   await Promise.all(
     reqs.map(async ([method, url]) => {
@@ -49,6 +54,8 @@ export const main = async (cache?: string, input = process.stdin) => {
       })
     }),
   )
+
+  return true
 }
 
 const g = globalThis as typeof globalThis & {
@@ -62,6 +69,8 @@ if (isMain(g.__VLT_INTERNAL_MAIN ?? process.argv[1])) {
   // no path was supplied.
   const cacheFolder =
     process.argv.length === 2 ? undefined : process.argv.at(-1)
-
-  void main(cacheFolder, process.stdin)
+  const res = await main(cacheFolder, process.stdin)
+  if (!res) {
+    process.exit(1)
+  }
 }
