@@ -6,9 +6,25 @@ import { Range } from '../../src/range.ts'
 import { Version } from '../../src/version.ts'
 import { excludes, includes } from './ranges.ts'
 
-const all = [...includes, ...excludes]
+const raw = [...includes, ...excludes]
+const all = raw.filter(([range, version]) => {
+  try {
+    new Range(range)
+    new semver.Range(range)
+    Version.parse(version)
+    new semver.SemVer(version)
+    return true
+  } catch {
+    return false
+  }
+})
 const allRanges = [...new Set(all.map(([r]) => r))]
 const allVersions = [...new Set(all.map(([_, v]) => v))]
+
+t.comment('raw', raw.length)
+t.comment('all', all.length)
+t.comment('allRanges', allRanges.length)
+t.comment('allVersions', allVersions.length)
 
 const test = (fn: () => void, howLong = 1000) => {
   const start = performance.now()
@@ -21,16 +37,16 @@ const test = (fn: () => void, howLong = 1000) => {
 }
 
 t.test('version parses per ms', t => {
-  const vltSemVer = () => {
-    for (const [_, v] of all) Version.parse(v)
-  }
-
   const nodeSemVer = () => {
-    for (const [_, v] of all) new semver.SemVer(v)
+    for (const v of allVersions) new semver.SemVer(v)
   }
 
-  const ns = test(nodeSemVer) * all.length
-  const vs = test(vltSemVer) * all.length
+  const vltSemVer = () => {
+    for (const v of allVersions) Version.parse(v)
+  }
+
+  const ns = test(nodeSemVer) * allVersions.length
+  const vs = test(vltSemVer) * allVersions.length
   t.comment('node-semver', ns)
   t.comment('@vltpkg/semver', vs)
   t.comment(vs / ns)
