@@ -20,7 +20,7 @@ export const SOURCE = resolve(import.meta.dirname, '..', '.artifacts')
 
 export const timePromises = async <T>(
   items: T[],
-  fn: (arg: T) => Promise<void>,
+  fn: (arg: T) => Promise<unknown>,
 ) => {
   const start = hrtime.bigint()
   const promises = []
@@ -38,10 +38,10 @@ export const timePromises = async <T>(
 
 export const convertNs = (ns: number, unit?: UNIT) => {
   const c = {
-    s: () => [ns * 1e-9, 's'],
-    ms: () => [ns * 1e-6, 'ms'],
-    us: () => [ns * 1e-3, 'us'],
-    ns: () => [ns, 'ns'],
+    s: () => [ns * 1e-9, 's'] as const,
+    ms: () => [ns * 1e-6, 'ms'] as const,
+    us: () => [ns * 1e-3, 'us'] as const,
+    ns: () => [ns, 'ns'] as const,
   }
   return (
     unit ? c[unit]()

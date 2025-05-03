@@ -15,7 +15,8 @@
     ],
     "exports": {
       "./package.json": "./package.json",
-      ".": "./src/index.ts"
+      ".": "./src/index.ts",
+      "./unzip": "./src/unzip.ts"
     }
   },
   "dependencies": {
@@ -61,6 +62,11 @@
     ".": {
       "import": {
         "default": "./src/index.ts"
+      }
+    },
+    "./unzip": {
+      "import": {
+        "default": "./src/unzip.ts"
       }
     }
   },
