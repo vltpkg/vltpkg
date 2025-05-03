@@ -187,9 +187,10 @@ if (isMain(g.__VLT_INTERNAL_MAIN ?? process.argv[1])) {
   // no path was supplied.
   const path =
     process.argv.length === 2 ? undefined : process.argv.at(-1)
-  void main(path, process.stdin).then(res =>
-    process.exit(res ? 0 : 1),
-  )
+  const res = await main(path, process.stdin)
+  if (!res) {
+    process.exit(1)
+  }
 }
 
 export default main
