@@ -121,6 +121,26 @@ t.test('ERESOLVE', t => {
   t.end()
 })
 
+t.test('ECONFIG', async t => {
+  t.test('with cause', async t => {
+    const er = error('Invalid config keys', {
+      code: 'ECONFIG',
+      found: ['garbage'],
+      wanted: ['wanted'],
+    })
+    printErr(er, usage, stderr, formatter)
+    t.matchSnapshot(printed)
+  })
+
+  t.test('no cause', async t => {
+    const er = error('Invalid config keys', {
+      code: 'ECONFIG',
+    })
+    printErr(er, usage, stderr, formatter)
+    t.matchSnapshot(printed)
+  })
+})
+
 t.test('EREQUEST', async t => {
   t.test('with cause', async t => {
     printErr(

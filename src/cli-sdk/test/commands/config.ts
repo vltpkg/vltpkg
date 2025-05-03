@@ -202,6 +202,17 @@ t.test('set', async t => {
       ])
     })
   }
+  t.test('invalid key', async t => {
+    await t.rejects(run(t, ['set', 'garbage=value'], {}), {
+      message: 'Invalid config keys',
+      cause: {
+        found: ['garbage'],
+        wanted: Object.keys(definition.toJSON()).sort((a, b) =>
+          a.localeCompare(b, 'en'),
+        ),
+      },
+    })
+  })
 })
 
 t.test('garbage', async t => {

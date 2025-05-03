@@ -246,6 +246,7 @@ export const errorCodes = [
   'EUNKNOWN',
   'EUSAGE',
   'EREQUEST',
+  'ECONFIG',
 ] as const
 
 const errorCodesSet = new Set(errorCodes)
