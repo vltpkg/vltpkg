@@ -15,7 +15,9 @@ const main = async (
   path: undefined | string,
   input: EventEmitter = process.stdin,
 ) => {
-  if (!path) process.exit(1)
+  if (!path) {
+    return false
+  }
 
   const keys = await new Promise<string[]>(res => {
     const chunks: Buffer[] = []
@@ -34,7 +36,9 @@ const main = async (
     })
   })
 
-  if (!keys.length) process.exit(1)
+  if (!keys.length) {
+    return false
+  }
 
   const cache = new Cache({ path })
 
@@ -169,7 +173,7 @@ const main = async (
     }),
   )
   await cache.promise()
-  if (!results.some(Boolean)) process.exit(1)
+  return results.some(Boolean)
 }
 
 const g = globalThis as typeof globalThis & {
@@ -183,7 +187,9 @@ if (isMain(g.__VLT_INTERNAL_MAIN ?? process.argv[1])) {
   // no path was supplied.
   const path =
     process.argv.length === 2 ? undefined : process.argv.at(-1)
-  void main(path, process.stdin)
+  void main(path, process.stdin).then(res =>
+    process.exit(res ? 0 : 1),
+  )
 }
 
 export default main
