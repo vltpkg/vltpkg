@@ -23,7 +23,7 @@ const trimStack = (err: Error) => {
   }
 }
 
-const indent = (lines: string, num = 2) =>
+export const indent = (lines: string, num = 2) =>
   lines
     .split('\n')
     .map(l => ' '.repeat(num) + l)
