@@ -3,6 +3,7 @@ import { error } from '@vltpkg/error-cause'
 import { pathToFileURL } from 'node:url'
 import { gunzipSync } from 'node:zlib'
 import type { Integrity } from '@vltpkg/types'
+import type EventEmitter from 'node:events'
 
 export const __CODE_SPLIT_SCRIPT_NAME = import.meta.filename
 
@@ -12,14 +13,14 @@ const isMain = (path?: string) =>
 
 const main = async (
   path: undefined | string,
-  input = process.stdin,
+  input: EventEmitter = process.stdin,
 ) => {
   if (!path) process.exit(1)
 
   const keys = await new Promise<string[]>(res => {
     const chunks: Buffer[] = []
     let chunkLen = 0
-    input.on('data', chunk => {
+    input.on('data', (chunk: Buffer) => {
       chunks.push(chunk)
       chunkLen += chunk.length
     })
@@ -184,3 +185,5 @@ if (isMain(g.__VLT_INTERNAL_MAIN ?? process.argv[1])) {
     process.argv.length === 2 ? undefined : process.argv.at(-1)
   void main(path, process.stdin)
 }
+
+export default main

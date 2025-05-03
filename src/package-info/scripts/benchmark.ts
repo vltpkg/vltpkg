@@ -11,10 +11,19 @@ import {
   resetDir,
   timePromises,
 } from '@vltpkg/benchmark'
+import type { UNIT } from '@vltpkg/benchmark'
 import { readdirSync, readFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
-import { unzip } from '@vltpkg/cache-unzip'
+import unzip from '@vltpkg/cache-unzip/unzip'
 import EventEmitter from 'node:events'
+
+process.on('uncaughtException', err => {
+  if (err instanceof Error && 'code' in err && err.code === 'EPIPE') {
+    // EPIPE is expected when the process is terminated sometimes
+  } else {
+    throw err
+  }
+})
 
 const { values } = parseArgs({
   allowNegative: true,
@@ -45,12 +54,23 @@ const DIRS = {
 
 const p = new PackageInfoClient({ cache: DIRS.vlt })
 
+type BenchFn = (
+  n: string,
+  o?: Record<string, unknown>,
+) => Promise<unknown>
+
+interface PackageInfoOptions {
+  packages: string[]
+  vlt: BenchFn
+  npm: BenchFn
+}
+
 const CACHE = {
   resetFs: () => {
     resetDir(DIRS.npm)
     resetDir(DIRS.vlt)
   },
-  seedFs: async ({ packages, vlt, npm }) => {
+  seedFs: async ({ packages, vlt, npm }: PackageInfoOptions) => {
     if (!readdirSync(DIRS.npm).length) {
       await Promise.all(packages.map(n => npm(n)))
     }
@@ -68,15 +88,18 @@ const CACHE = {
         }
       }
       input.emit('end')
-      await mp
+      const res = await mp
+      if (!res) {
+        throw new Error('failed to unzip vlt cache')
+      }
     }
   },
   resetMemory: () => {
     p.registryClient.cache.clear()
     // npm has no in-memory cache by default
   },
-  seedMemory: async ({ packages, vlt, npm }) => {
-    const packumentCache = new Map()
+  seedMemory: async ({ packages, vlt, npm }: PackageInfoOptions) => {
+    const packumentCache = new Map<string, unknown>()
     await Promise.all(packages.map(n => npm(n, { packumentCache })))
     await Promise.all(packages.map(n => vlt(n)))
     return {
@@ -86,19 +109,22 @@ const CACHE = {
   },
 }
 
-const run = async (id, fn, packages, unit) => {
+const run = async (
+  id: string,
+  fn: (n: string) => Promise<unknown>,
+  packages: string[],
+  unit?: UNIT,
+) => {
   process.stdout.write(`${id}:`)
-  const { time, errors, fullErrors } = await timePromises(
-    packages,
-    fn,
-  )
+  const result = await timePromises(packages, fn)
+  const { time, errors, fullErrors } = result
   const elapsed = convertNs(time, unit)
   process.stdout.write(
     numToFixed(elapsed[0], { padStart: 5 }) + elapsed[1],
   )
   if (errors) {
     process.stdout.write(
-      ` - errors ${errors}\n${fullErrors?.join('\n')}\n`,
+      ` - errors ${errors}\n${fullErrors.join('\n')}\n`,
     )
   } else {
     process.stdout.write('\n')
@@ -107,13 +133,13 @@ const run = async (id, fn, packages, unit) => {
 }
 
 const test = async (
-  id,
-  { packages, options, vlt: vlt_, npm: npm_ },
+  id: 'network' | 'fs' | 'memory',
+  { packages, vlt: vlt_, npm: npm_ }: PackageInfoOptions,
 ) => {
   const vltOptions = { cache: DIRS.vlt }
   const npmOptions = { cache: DIRS.npm, fullMetadata: true }
-  const vlt = (n, o) => vlt_(n, { ...options, ...vltOptions, ...o })
-  const npm = (n, o) => npm_(n, { ...options, ...npmOptions, ...o })
+  const vlt: BenchFn = (n, o) => vlt_(n, { ...vltOptions, ...o })
+  const npm: BenchFn = (n, o) => npm_(n, { ...npmOptions, ...o })
 
   switch (id) {
     case 'network':
@@ -131,21 +157,32 @@ const test = async (
       CACHE.resetFs()
       break
     }
-    default:
-      throw new Error(`unknown benchmark ${id}`)
   }
 
   const unit = await run(`vlt (${id})`, vlt, packages)
   await run(`npm (${id})`, npm, packages, unit)
 }
 
-const compare = async (id, { max, memory = false, ...fns }) => {
+const compare = async (
+  id: 'resolve' | 'manifest' | 'extract',
+  {
+    max,
+    memory = false,
+    vlt,
+    npm,
+  }: {
+    max?: number
+    memory?: boolean
+    vlt: BenchFn
+    npm: BenchFn
+  },
+) => {
   if (!BENCHMARKS.includes(id)) {
     return
   }
   const packages = PACKAGES.slice(0, max ?? PACKAGES.length)
   console.log(`${id} - ${packages.length} packages`)
-  const o = { ...fns, packages }
+  const o = { vlt, npm, packages }
   await test('network', o)
   await test('fs', o)
   if (memory) {
@@ -174,5 +211,3 @@ await compare(`extract`, {
   vlt: (n, o) => p.extract(n, join(DIRS.vltExtract, n), o),
   npm: (n, o) => pacote.extract(n, join(DIRS.npmExtract, n), o),
 })
-
-// resetDir(...Object.values(DIRS))

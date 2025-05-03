@@ -1221,6 +1221,9 @@ importers:
       '@types/node':
         specifier: 'catalog:'
         version: 22.15.3
+      '@types/pacote':
+        specifier: 'catalog:'
+        version: 11.1.8
       '@vltpkg/benchmark':
         specifier: workspace:*
         version: link:../../infra/benchmark
