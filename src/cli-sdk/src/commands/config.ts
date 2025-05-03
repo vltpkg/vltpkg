@@ -12,6 +12,7 @@ import type {
   LoadedConfig,
   RecordPairs,
 } from '../config/index.ts'
+import { getSortedKeys } from '../config/definition.ts'
 import { commandUsage } from '../config/usage.ts'
 import type { CommandFn, CommandUsage } from '../index.ts'
 
@@ -191,11 +192,10 @@ const set = async (conf: LoadedConfig) => {
   try {
     parsed = conf.jack.parseRaw(pairs.map(kv => `--${kv}`)).values
   } catch {
-    const j = definition.toJSON()
     throw error('Invalid config keys', {
       code: 'ECONFIG',
       found: pairs.map(kv => kv.split('=')[0]),
-      wanted: Object.keys(j).sort((a, b) => a.localeCompare(b, 'en')),
+      wanted: getSortedKeys(),
     })
   }
   await conf.addConfigToFile(

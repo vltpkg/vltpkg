@@ -22,6 +22,7 @@ export const run = async (
   const state = {
     logs: [] as string[],
     config: {} as LoadedConfig,
+    error: null as unknown,
   }
   const index = await t.mockImport<typeof import('../src/index.ts')>(
     '../src/index.ts',
@@ -34,7 +35,11 @@ export const run = async (
       },
     },
   )
-  await index.default()
+  try {
+    await index.default()
+  } catch (e) {
+    state.error = e
+  }
   return state
 }
 
@@ -55,4 +60,22 @@ t.test('infer workspace', async t => {
 t.test('print version', async t => {
   const { logs } = await run(t, { argv: ['-v'] })
   t.matchOnly(logs[0], /^\d\.\d\.\d/)
+})
+
+t.test('unknown config', async t => {
+  let exitCode = 0
+  // intercept process.exit to throw so that the test will finish
+  // but the run will not continue
+  t.intercept(process, 'exit', {
+    value: (code: number) => {
+      exitCode = code
+      if (code !== 0) {
+        throw new Error()
+      }
+    },
+  })
+  const { error, logs } = await run(t, { argv: ['--unknown'] })
+  t.ok(error instanceof Error)
+  t.equal(exitCode, 1)
+  t.matchSnapshot(logs.join('\n'))
 })

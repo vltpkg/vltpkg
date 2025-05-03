@@ -569,3 +569,6 @@ export const definition = j
       description: 'Print helpful information',
     },
   })
+
+export const getSortedKeys = () =>
+  Object.keys(definition.toJSON()).sort((a, b) => a.localeCompare(b))

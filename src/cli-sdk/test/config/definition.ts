@@ -3,6 +3,7 @@ const {
   commands,
   definition,
   getCommand,
+  getSortedKeys,
   isRecordField,
   recordFields,
 } = await t.mockImport<
@@ -128,4 +129,8 @@ t.test('getCommand', async t => {
   t.equal(getCommand('__wut__'), undefined)
   t.equal(getCommand(), undefined)
   t.equal(getCommand('?'), 'help')
+})
+
+t.test('getSortedKeys', async t => {
+  t.matchSnapshot(getSortedKeys(), 'sorted keys')
 })
