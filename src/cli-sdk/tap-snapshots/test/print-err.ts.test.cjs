@@ -5,6 +5,20 @@
  * Make sure to inspect the output below.  Do not ignore changes!
  */
 'use strict'
+exports[`test/print-err.ts > TAP > ECONFIG > no cause > must match snapshot 1`] = `
+Array [
+  "Config Error: Invalid config keys",
+]
+`
+
+exports[`test/print-err.ts > TAP > ECONFIG > with cause > must match snapshot 1`] = `
+Array [
+  "Config Error: Invalid config keys",
+  "  Found: [ 'garbage' ]",
+  "  Wanted: [ 'wanted' ]",
+]
+`
+
 exports[`test/print-err.ts > TAP > EREQUEST > no cause > must match snapshot 1`] = `
 Array [
   "Request Error: oh no! my request!",

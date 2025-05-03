@@ -8,6 +8,7 @@ import {
 } from '../config/index.ts'
 import type {
   ConfigDefinitions,
+  ConfigFileData,
   LoadedConfig,
   RecordPairs,
 } from '../config/index.ts'
@@ -186,10 +187,19 @@ const set = async (conf: LoadedConfig) => {
       code: 'EUSAGE',
     })
   }
+  let parsed: ConfigFileData | null = null
+  try {
+    parsed = conf.jack.parseRaw(pairs.map(kv => `--${kv}`)).values
+  } catch {
+    const j = definition.toJSON()
+    throw error('Invalid config keys', {
+      code: 'ECONFIG',
+      found: pairs.map(kv => kv.split('=')[0]),
+      wanted: Object.keys(j).sort((a, b) => a.localeCompare(b, 'en')),
+    })
+  }
   await conf.addConfigToFile(
     conf.get('config'),
-    pairsToRecords(
-      conf.jack.parseRaw(pairs.map(kv => `--${kv}`)).values,
-    ),
+    pairsToRecords(parsed),
   )
 }

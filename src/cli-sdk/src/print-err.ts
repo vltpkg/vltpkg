@@ -152,5 +152,17 @@ const print = (
 
       return true
     }
+
+    case 'ECONFIG': {
+      const { found, wanted } = err.cause
+      stderr(`Config Error: ${err.message}`)
+      if (found) {
+        stderr(indent(`Found: ${format(found)}`))
+      }
+      if (wanted) {
+        stderr(indent(`Wanted: ${format(wanted)}`))
+      }
+      return true
+    }
   }
 }
