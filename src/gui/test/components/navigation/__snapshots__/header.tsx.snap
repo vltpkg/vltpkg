@@ -1,10 +1,38 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
+exports[`header renders with context value on \`/explore\` 1`] = `
+
+<div class="flex h-[65px] w-full cursor-default items-center rounded-t-lg border-x-[1px] border-t-[1px] px-8 py-3">
+  <div class="flex w-full max-w-8xl items-end">
+    <h3 class="text-md font-medium">
+      Explore
+    </h3>
+    <div class="mx-2 flex items-center gap-2">
+      <gui-chevron-right-icon
+        classname="text-muted-foreground"
+        size="16"
+      >
+      </gui-chevron-right-icon>
+      <gui-inline-code
+        classname="mx-0"
+        variant="mono"
+      >
+        /foo/bar/baz
+      </gui-inline-code>
+    </div>
+    <p class="ml-auto font-courier text-xs font-medium text-muted-foreground">
+      build: v1.0.0
+    </p>
+  </div>
+</div>
+
+`;
+
 exports[`renders Header for route / with expected name Dashboard 1`] = `
 
-<div class="flex h-[65px] w-full items-center rounded-t-lg border-x-[1px] border-t-[1px] px-8 py-3">
-  <div class="flex w-full max-w-8xl items-center">
-    <h3 class="mt-1 text-lg font-medium">
+<div class="flex h-[65px] w-full cursor-default items-center rounded-t-lg border-x-[1px] border-t-[1px] px-8 py-3">
+  <div class="flex w-full max-w-8xl items-end">
+    <h3 class="text-md font-medium">
       Dashboard
     </h3>
   </div>
@@ -24,9 +52,9 @@ exports[`renders Header for route /error with expected name null 1`] = `
 
 exports[`renders Header for route /explore with expected name Explore 1`] = `
 
-<div class="flex h-[65px] w-full items-center rounded-t-lg border-x-[1px] border-t-[1px] px-8 py-3">
-  <div class="flex w-full max-w-8xl items-center">
-    <h3 class="mt-1 text-lg font-medium">
+<div class="flex h-[65px] w-full cursor-default items-center rounded-t-lg border-x-[1px] border-t-[1px] px-8 py-3">
+  <div class="flex w-full max-w-8xl items-end">
+    <h3 class="text-md font-medium">
       Explore
     </h3>
   </div>
@@ -36,9 +64,9 @@ exports[`renders Header for route /explore with expected name Explore 1`] = `
 
 exports[`renders Header for route /help with expected name Help 1`] = `
 
-<div class="flex h-[65px] w-full items-center rounded-t-lg border-x-[1px] border-t-[1px] px-8 py-3">
-  <div class="flex w-full max-w-8xl items-center">
-    <h3 class="mt-1 text-lg font-medium">
+<div class="flex h-[65px] w-full cursor-default items-center rounded-t-lg border-x-[1px] border-t-[1px] px-8 py-3">
+  <div class="flex w-full max-w-8xl items-end">
+    <h3 class="text-md font-medium">
       Help
     </h3>
   </div>
@@ -48,9 +76,9 @@ exports[`renders Header for route /help with expected name Help 1`] = `
 
 exports[`renders Header for route /help/selectors with expected name Help 1`] = `
 
-<div class="flex h-[65px] w-full items-center rounded-t-lg border-x-[1px] border-t-[1px] px-8 py-3">
-  <div class="flex w-full max-w-8xl items-center">
-    <h3 class="mt-1 text-lg font-medium">
+<div class="flex h-[65px] w-full cursor-default items-center rounded-t-lg border-x-[1px] border-t-[1px] px-8 py-3">
+  <div class="flex w-full max-w-8xl items-end">
+    <h3 class="text-md font-medium">
       Help / Selectors
     </h3>
   </div>
@@ -60,9 +88,9 @@ exports[`renders Header for route /help/selectors with expected name Help 1`] = 
 
 exports[`renders Header for route /labels with expected name Labels 1`] = `
 
-<div class="flex h-[65px] w-full items-center rounded-t-lg border-x-[1px] border-t-[1px] px-8 py-3">
-  <div class="flex w-full max-w-8xl items-center">
-    <h3 class="mt-1 text-lg font-medium">
+<div class="flex h-[65px] w-full cursor-default items-center rounded-t-lg border-x-[1px] border-t-[1px] px-8 py-3">
+  <div class="flex w-full max-w-8xl items-end">
+    <h3 class="text-md font-medium">
       Labels
     </h3>
   </div>
@@ -72,9 +100,9 @@ exports[`renders Header for route /labels with expected name Labels 1`] = `
 
 exports[`renders Header for route /queries with expected name Queries 1`] = `
 
-<div class="flex h-[65px] w-full items-center rounded-t-lg border-x-[1px] border-t-[1px] px-8 py-3">
-  <div class="flex w-full max-w-8xl items-center">
-    <h3 class="mt-1 text-lg font-medium">
+<div class="flex h-[65px] w-full cursor-default items-center rounded-t-lg border-x-[1px] border-t-[1px] px-8 py-3">
+  <div class="flex w-full max-w-8xl items-end">
+    <h3 class="text-md font-medium">
       Queries
     </h3>
   </div>

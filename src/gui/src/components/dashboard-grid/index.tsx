@@ -156,7 +156,7 @@ export const DashboardGrid = () => {
   }
 
   return (
-    <div className="flex h-full max-h-[calc(100svh-65px-50px-2px-16px)] flex-col overflow-y-scroll px-8 py-8">
+    <div className="flex h-full flex-col overflow-y-scroll px-8 pb-8 pt-1">
       <div className="grid w-full max-w-8xl grid-cols-3 gap-2 pb-8 md:flex">
         {currentView === 'table' ?
           <TableFilterSearch

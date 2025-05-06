@@ -87,7 +87,6 @@ export const Explorer = () => {
 }
 
 const ExplorerContent = () => {
-  const dashboard = useGraphStore(state => state.dashboard)
   const updateEdges = useGraphStore(state => state.updateEdges)
   const updateNodes = useGraphStore(state => state.updateNodes)
   const graph = useGraphStore(state => state.graph)
@@ -146,22 +145,8 @@ const ExplorerContent = () => {
   }
 
   return (
-    <section className="flex h-full max-h-[calc(100svh-65px-16px)] w-full grow flex-col justify-between overflow-y-auto rounded-b-lg border-[1px]">
-      <div className="flex h-[50px] w-full border-b-[1px] px-8 py-4">
-        <div className="flex w-full max-w-8xl items-center justify-between">
-          {graph.projectRoot ?
-            <p className="font-mono text-xs font-light text-muted-foreground">
-              :host-context(file:{graph.projectRoot})
-            </p>
-          : ''}
-          {dashboard?.buildVersion ?
-            <p className="text-right font-mono text-xs font-light text-muted-foreground">
-              build: v{dashboard.buildVersion}
-            </p>
-          : ''}
-        </div>
-      </div>
-      <section className="flex w-full items-center px-8 py-4">
+    <section className="flex h-full max-h-[calc(100svh-65px-16px)] w-full grow flex-col justify-between overflow-y-auto rounded-b-lg border-x-[1px] border-b-[1px]">
+      <section className="flex w-full items-center px-8 pb-8 pt-1">
         <div className="flex w-full max-w-8xl flex-row items-center gap-2">
           <RootButton />
           <QueryBar
