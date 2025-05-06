@@ -38,21 +38,17 @@ export class Keychain<V extends string = string> {
 
   async #load(): Promise<this> {
     if (this.#data) return this
-    let ok = false
     try {
       this.#data = JSON.parse(
         await readFile(this.#file, 'utf8'),
       ) as Record<string, V>
-      ok = !!this.#data
-    } finally {
-      if (!ok) {
-        // just write the file if it failed in any way.
-        this.#data = {}
-        await this.#writeFile().catch(() => {})
-      }
-      // eslint-disable-next-line no-unsafe-finally
-      return this
+    } catch {}
+    if (!this.#data) {
+      // just write the file if it failed in any way.
+      this.#data = {}
+      await this.#writeFile().catch(() => {})
     }
+    return this
   }
 
   async has(key: string): Promise<boolean> {
