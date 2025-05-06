@@ -1,15 +1,15 @@
 import { vi, test, expect, afterEach } from 'vitest'
 import { cleanup, render } from '@testing-library/react'
 import html from 'diffable-html'
-import { useGraphStore as useStore } from '@/state/index.js'
-import { ErrorFound } from '@/app/error-found.jsx'
+import { useGraphStore as useStore } from '@/state/index.ts'
+import { ErrorFound } from '@/app/error-found.tsx'
 
 vi.mock('react-router', () => ({
   useNavigate: vi.fn(),
   useLocation: vi.fn(() => ({ pathname: '/error' })),
   NavLink: 'gui-nav-link',
 }))
-vi.mock('@/components/ui/button.jsx', () => ({
+vi.mock('@/components/ui/button.tsx', () => ({
   Button: 'gui-button',
 }))
 vi.mock('lucide-react', () => ({

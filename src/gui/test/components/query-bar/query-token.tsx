@@ -1,8 +1,8 @@
 import { test, expect, afterEach } from 'vitest'
 import { cleanup, render } from '@testing-library/react'
 import html from 'diffable-html'
-import { QueryToken } from '@/components/query-bar/query-token.jsx'
-import { useGraphStore as useStore } from '@/state/index.js'
+import { QueryToken } from '@/components/query-bar/query-token.tsx'
+import { useGraphStore as useStore } from '@/state/index.ts'
 
 expect.addSnapshotSerializer({
   serialize: v => html(v),

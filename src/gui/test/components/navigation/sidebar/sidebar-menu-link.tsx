@@ -1,13 +1,13 @@
 import { vi, expect, afterEach, test } from 'vitest'
 import { render, cleanup, fireEvent } from '@testing-library/react'
 import html from 'diffable-html'
-import { useGraphStore as useStore } from '@/state/index.js'
-import { SidebarMenuLink } from '@/components/navigation/sidebar/sidebar-menu-link.jsx'
-import type { MenuItem } from '@/components/navigation/sidebar/menu.js'
+import { useGraphStore as useStore } from '@/state/index.ts'
+import { SidebarMenuLink } from '@/components/navigation/sidebar/sidebar-menu-link.tsx'
+import type { MenuItem } from '@/components/navigation/sidebar/menu.ts'
 import { useLocation } from 'react-router'
-import { useSidebar } from '@/components/ui/sidebar.jsx'
+import { useSidebar } from '@/components/ui/sidebar.tsx'
 
-vi.mock('@/components/ui/sidebar.jsx', () => ({
+vi.mock('@/components/ui/sidebar.tsx', () => ({
   SidebarMenuItem: 'gui-sidebar-menu-item',
   SidebarMenuButton: 'gui-sidebar-menu-button',
   SidebarMenuBadge: 'gui-sidebar-menu-badge',
@@ -27,7 +27,7 @@ vi.mock('@/components/ui/sidebar.jsx', () => ({
   }),
 }))
 
-vi.mock('@/components/ui/collapsible.jsx', () => ({
+vi.mock('@/components/ui/collapsible.tsx', () => ({
   Collapsible: 'gui-collapsible',
   CollapsibleContent: 'gui-collapsible-content',
   CollapsibleTrigger: 'gui-collapsible-trigger',

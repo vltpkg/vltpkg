@@ -1,11 +1,11 @@
 import { useNavigate } from 'react-router'
 import { useState } from 'react'
 import type { SyntheticEvent } from 'react'
-import { useGraphStore } from '@/state/index.js'
-import { Button } from '@/components/ui/button.jsx'
-import { requestRouteTransition } from '@/lib/request-route-transition.js'
-import { LoadingSpinner } from '@/components/ui/loading-spinner.jsx'
-import { InlineCode } from '@/components/ui/inline-code.jsx'
+import { useGraphStore } from '@/state/index.ts'
+import { Button } from '@/components/ui/button.tsx'
+import { requestRouteTransition } from '@/lib/request-route-transition.ts'
+import { LoadingSpinner } from '@/components/ui/loading-spinner.tsx'
+import { InlineCode } from '@/components/ui/inline-code.tsx'
 
 export const SetupProject = () => {
   const navigate = useNavigate()

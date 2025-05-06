@@ -6,10 +6,10 @@ import {
   act,
 } from '@testing-library/react'
 import html from 'diffable-html'
-import { useGraphStore as useStore } from '@/state/index.js'
-import { SidebarThemeSwitcher } from '@/components/navigation/sidebar/sidebar-theme-switcher.jsx'
-import { useTheme } from '@/components/ui/theme-provider.jsx'
-import type { Theme } from '@/components/ui/theme-provider.jsx'
+import { useGraphStore as useStore } from '@/state/index.ts'
+import { SidebarThemeSwitcher } from '@/components/navigation/sidebar/sidebar-theme-switcher.tsx'
+import { useTheme } from '@/components/ui/theme-provider.tsx'
+import type { Theme } from '@/components/ui/theme-provider.tsx'
 
 vi.mock('@/components/theme-provider', () => ({
   useTheme: vi.fn(),
@@ -22,7 +22,7 @@ vi.mock('react-router', () => ({
   NavLink: 'gui-nav-link',
 }))
 
-vi.mock('@/components/ui/sidebar.jsx', () => ({
+vi.mock('@/components/ui/sidebar.tsx', () => ({
   SidebarMenuItem: 'gui-sidebar-menu-item',
   SidebarMenuButton: 'gui-sidebar-menu-button',
   SidebarMenuBadge: 'gui-sidebar-menu-badge',
@@ -37,7 +37,7 @@ vi.mock('@/components/ui/sidebar.jsx', () => ({
   }),
 }))
 
-vi.mock('@/components/ui/collapsible.jsx', () => ({
+vi.mock('@/components/ui/collapsible.tsx', () => ({
   Collapsible: 'gui-collapsible',
   CollapsibleTrigger: 'gui-collapsible-trigger',
   CollapsibleContent: 'gui-collapsible-content',
@@ -51,7 +51,7 @@ vi.mock('lucide-react', () => ({
   ChevronRight: 'gui-chevron-right-icon',
 }))
 
-vi.mock('@/components/ui/theme-provider.jsx', () => ({
+vi.mock('@/components/ui/theme-provider.tsx', () => ({
   useTheme: vi.fn(),
 }))
 

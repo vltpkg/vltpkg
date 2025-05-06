@@ -7,9 +7,9 @@ import {
   TooltipContent,
   TooltipTrigger,
   TooltipProvider,
-} from '@/components/ui/tooltip.jsx'
+} from '@/components/ui/tooltip.tsx'
 
-import { cn } from '@/lib/utils.js'
+import { cn } from '@/lib/utils.ts'
 import { tv } from 'tailwind-variants'
 
 import type { LucideIcon } from 'lucide-react'

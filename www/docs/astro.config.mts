@@ -4,9 +4,8 @@ import react from '@astrojs/react'
 import tailwind from '@astrojs/tailwind'
 import vercel from '@astrojs/vercel'
 import { ExpressiveCodeTheme } from '@astrojs/starlight/expressive-code'
-import * as TypedocPlugin from './src/plugins/typedoc'
+import * as TypedocPlugin from './src/plugins/typedoc.ts'
 import { readFileSync } from 'node:fs'
-
 import starlightLinksValidator from 'starlight-links-validator'
 
 if (process.env.CI && process.env.RUNNER_OS === 'Windows') {
@@ -17,12 +16,6 @@ if (process.env.CI && process.env.RUNNER_OS === 'Windows') {
 }
 
 const MIXPANEL_TOKEN = '7853b372fb0f20e238be6d11e53f60fe'
-
-const jsoncString = readFileSync(
-  new URL(`./src/styles/custom-syntax-theme.json`, import.meta.url),
-  'utf-8',
-)
-const customTheme = ExpressiveCodeTheme.fromJSONString(jsoncString)
 
 export default defineConfig({
   site: 'https://docs.vlt.sh',
@@ -42,7 +35,14 @@ export default defineConfig({
         },
       ],
       expressiveCode: {
-        themes: [customTheme],
+        themes: [
+          ExpressiveCodeTheme.fromJSONString(
+            readFileSync(
+              `./src/styles/custom-syntax-theme.json`,
+              'utf-8',
+            ),
+          ),
+        ],
         styleOverrides: {
           frames: {
             terminalTitlebarDotsForeground: '#FFFFFF',

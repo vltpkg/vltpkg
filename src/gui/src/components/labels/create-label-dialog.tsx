@@ -10,22 +10,22 @@ import {
   DialogHeader,
   DialogTitle,
   DialogClose,
-} from '@/components/ui/dialog.jsx'
+} from '@/components/ui/dialog.tsx'
 import {
   Popover,
   PopoverTrigger,
   PopoverContent,
-} from '@/components/ui/popover.jsx'
-import { LabelBadge } from '@/components/labels/label-badge.jsx'
-import { Button } from '@/components/ui/button.jsx'
-import { Label } from '@/components/ui/label.jsx'
-import { Input } from '@/components/ui/input.jsx'
-import { ColorPicker } from '@/components/ui/color-picker.jsx'
+} from '@/components/ui/popover.tsx'
+import { LabelBadge } from '@/components/labels/label-badge.tsx'
+import { Button } from '@/components/ui/button.tsx'
+import { Label } from '@/components/ui/label.tsx'
+import { Input } from '@/components/ui/input.tsx'
+import { ColorPicker } from '@/components/ui/color-picker.tsx'
 import { Palette } from 'lucide-react'
-import type { Color, QueryLabel } from '@/state/types.js'
-import { useGraphStore } from '@/state/index.js'
+import type { Color, QueryLabel } from '@/state/types.ts'
+import { useGraphStore } from '@/state/index.ts'
 import { v4 as uuidv4 } from 'uuid'
-import { useToast } from '@/components/hooks/use-toast.js'
+import { useToast } from '@/components/hooks/use-toast.ts'
 
 interface CreateLabelModalProps {
   onClose?: (isOpen: boolean) => void

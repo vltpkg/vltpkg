@@ -1,7 +1,7 @@
 import { afterEach, expect, test } from 'vitest'
 import { cleanup, render } from '@testing-library/react'
 import html from 'diffable-html'
-import { Query } from '@/components/icons/query.jsx'
+import { Query } from '@/components/icons/query.tsx'
 
 expect.addSnapshotSerializer({
   serialize: v => html(v),

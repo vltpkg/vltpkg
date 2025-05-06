@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
-import { Badge } from '@/components/ui/badge.jsx'
-import { useTheme } from '@/components/ui/theme-provider.jsx'
+import { Badge } from '@/components/ui/badge.tsx'
+import { useTheme } from '@/components/ui/theme-provider.tsx'
 
 interface LabelBadgeProps {
   name: string

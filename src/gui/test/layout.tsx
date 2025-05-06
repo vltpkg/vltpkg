@@ -1,25 +1,25 @@
 import { afterEach, test, vi, expect } from 'vitest'
 import { render, cleanup } from '@testing-library/react'
 import html from 'diffable-html'
-import { useGraphStore as useStore } from '@/state/index.js'
-import Layout from '@/layout.jsx'
+import { useGraphStore as useStore } from '@/state/index.ts'
+import Layout from '@/layout.tsx'
 
 vi.mock('react-router', () => ({
   Outlet: 'gui-router-outlet',
 }))
 
-vi.mock('@/components/navigation/header.jsx', () => ({
+vi.mock('@/components/navigation/header.tsx', () => ({
   Header: 'gui-nav-header',
 }))
-vi.mock('@/components/navigation/sidebar/index.jsx', () => ({
+vi.mock('@/components/navigation/sidebar/index.tsx', () => ({
   AppSidebar: 'gui-app-sidebar',
   defaultOpen: true,
 }))
-vi.mock('@/components/ui/sidebar.jsx', () => ({
+vi.mock('@/components/ui/sidebar.tsx', () => ({
   SidebarProvider: 'gui-sidebar-provider',
   SidebarInset: 'gui-sidebar-inset',
 }))
-vi.mock('@/components/ui/toaster.jsx', () => ({
+vi.mock('@/components/ui/toaster.tsx', () => ({
   Toaster: 'gui-toaster',
 }))
 

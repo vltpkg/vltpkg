@@ -5,28 +5,28 @@ import type {
   Action,
   QueryLabel,
   DashboardData,
-} from '@/state/types.js'
-import { useGraphStore } from '@/state/index.js'
-import { Input } from '@/components/ui/input.jsx'
-import { Button } from '@/components/ui/button.jsx'
-import { useToast } from '@/components/hooks/use-toast.js'
-import { Checkbox } from '@/components/ui/checkbox.jsx'
-import { Label } from '@/components/ui/label.jsx'
-import { LabelBadge } from '@/components/labels/label-badge.jsx'
+} from '@/state/types.ts'
+import { useGraphStore } from '@/state/index.ts'
+import { Input } from '@/components/ui/input.tsx'
+import { Button } from '@/components/ui/button.tsx'
+import { useToast } from '@/components/hooks/use-toast.ts'
+import { Checkbox } from '@/components/ui/checkbox.tsx'
+import { Label } from '@/components/ui/label.tsx'
+import { LabelBadge } from '@/components/labels/label-badge.tsx'
 import { CircleHelp, ArrowRight, ChevronsUpDown } from 'lucide-react'
-import { LabelSelect } from '@/components/labels/label-select.jsx'
+import { LabelSelect } from '@/components/labels/label-select.tsx'
 import {
   Popover,
   PopoverTrigger,
   PopoverContent,
-} from '@/components/ui/popover.jsx'
+} from '@/components/ui/popover.tsx'
 import {
   Tooltip,
   TooltipProvider,
   TooltipTrigger,
   TooltipContent,
-} from '@/components/ui/tooltip.jsx'
-import { DirectorySelect } from '@/components/directory-select.jsx'
+} from '@/components/ui/tooltip.tsx'
+import { DirectorySelect } from '@/components/directory-select.tsx'
 
 type SelectQueryOptions = {
   navigate: (route: string) => void

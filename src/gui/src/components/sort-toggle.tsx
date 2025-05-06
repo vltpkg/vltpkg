@@ -1,5 +1,5 @@
-import { Toggle } from '@/components/ui/toggle.jsx'
-import type { Option } from '@/components/ui/toggle.jsx'
+import { Toggle } from '@/components/ui/toggle.tsx'
+import type { Option } from '@/components/ui/toggle.tsx'
 import { ArrowDownAz, ArrowDownZa } from 'lucide-react'
 
 export type SortingOption = 'ascending' | 'descending'

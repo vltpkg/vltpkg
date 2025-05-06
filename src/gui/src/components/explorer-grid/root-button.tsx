@@ -1,13 +1,13 @@
 import { useNavigate } from 'react-router'
-import { Button } from '@/components/ui/button.jsx'
+import { Button } from '@/components/ui/button.tsx'
 import { House } from 'lucide-react'
 import {
   Tooltip,
   TooltipTrigger,
   TooltipContent,
   TooltipProvider,
-} from '@/components/ui/tooltip.jsx'
-import { DEFAULT_QUERY, useGraphStore } from '@/state/index.js'
+} from '@/components/ui/tooltip.tsx'
+import { DEFAULT_QUERY, useGraphStore } from '@/state/index.ts'
 
 const RootButton = () => {
   const navigate = useNavigate()
