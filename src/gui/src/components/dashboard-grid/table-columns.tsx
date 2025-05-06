@@ -1,15 +1,15 @@
 import type { Column, ColumnDef } from '@tanstack/react-table'
-import type { DashboardDataProject } from '@/state/types.js'
+import type { DashboardDataProject } from '@/state/types.ts'
 import { ArrowUpDown } from 'lucide-react'
-import { Button } from '@/components/ui/button.jsx'
+import { Button } from '@/components/ui/button.tsx'
 import { format } from 'date-fns'
 import {
   Tooltip,
   TooltipProvider,
   TooltipContent,
   TooltipTrigger,
-} from '@/components/ui/tooltip.jsx'
-import { Badge } from '../ui/badge.jsx'
+} from '@/components/ui/tooltip.tsx'
+import { Badge } from '../ui/badge.tsx'
 
 const SortingHeader = ({
   column,

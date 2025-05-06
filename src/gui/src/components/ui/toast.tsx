@@ -6,7 +6,7 @@ import { cva } from 'class-variance-authority'
 import type { VariantProps } from 'class-variance-authority'
 import { X } from 'lucide-react'
 
-import { cn } from '@/lib/utils.js'
+import { cn } from '@/lib/utils.ts'
 
 const ToastProvider = ToastPrimitives.Provider
 

@@ -1,11 +1,11 @@
 import { vi, expect, afterEach, describe, it } from 'vitest'
 import { cleanup, render } from '@testing-library/react'
 import html from 'diffable-html'
-import { useGraphStore as useStore } from '@/state/index.js'
-import type { SavedQuery } from '@/state/types.js'
-import { DeleteQuery } from '@/components/queries/delete-query.jsx'
+import { useGraphStore as useStore } from '@/state/index.ts'
+import type { SavedQuery } from '@/state/types.ts'
+import { DeleteQuery } from '@/components/queries/delete-query.tsx'
 
-vi.mock('@/components/ui/dialog.jsx', () => ({
+vi.mock('@/components/ui/dialog.tsx', () => ({
   Dialog: 'gui-dialog',
   DialogTitle: 'gui-dialog-title',
   DialogTrigger: 'gui-dialog-trigger',
@@ -15,13 +15,13 @@ vi.mock('@/components/ui/dialog.jsx', () => ({
   DialogContent: 'gui-dialog-content',
 }))
 
-vi.mock('@/components/ui/tooltip.jsx', () => ({
+vi.mock('@/components/ui/tooltip.tsx', () => ({
   Tooltip: 'gui-tooltip',
   TooltipContent: 'gui-tooltip-content',
   TooltipProvider: 'gui-tooltip-provider',
 }))
 
-vi.mock('@/components/ui/button.jsx', () => ({
+vi.mock('@/components/ui/button.tsx', () => ({
   Button: 'gui-button',
 }))
 

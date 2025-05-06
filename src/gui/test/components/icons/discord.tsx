@@ -1,7 +1,7 @@
 import { afterEach, expect, test } from 'vitest'
 import { cleanup, render } from '@testing-library/react'
 import html from 'diffable-html'
-import { Discord } from '@/components/icons/discord.jsx'
+import { Discord } from '@/components/icons/discord.tsx'
 
 expect.addSnapshotSerializer({
   serialize: v => html(v),

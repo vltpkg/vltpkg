@@ -2,25 +2,25 @@ import { useNavigate } from 'react-router'
 import { useEffect, useState } from 'react'
 import { Plus } from 'lucide-react'
 import type { DepID } from '@vltpkg/dep-id/browser'
-import { GridHeader } from '@/components/explorer-grid/header.jsx'
-import { SideItem } from '@/components/explorer-grid/side-item.jsx'
-import type { GridItemData } from '@/components/explorer-grid/types.js'
+import { GridHeader } from '@/components/explorer-grid/header.tsx'
+import { SideItem } from '@/components/explorer-grid/side-item.tsx'
+import type { GridItemData } from '@/components/explorer-grid/types.ts'
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from '@/components/ui/tooltip.jsx'
+} from '@/components/ui/tooltip.tsx'
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from '@/components/ui/popover.jsx'
-import { AddDependenciesPopover } from '@/components/explorer-grid/add-dependencies-popover.jsx'
-import type { InstallOptions } from '@/components/explorer-grid/add-dependencies-popover.jsx'
-import { useToast } from '@/components/hooks/use-toast.js'
-import type { Action } from '@/state/types.js'
-import { useGraphStore } from '@/state/index.js'
+} from '@/components/ui/popover.tsx'
+import { AddDependenciesPopover } from '@/components/explorer-grid/add-dependencies-popover.tsx'
+import type { InstallOptions } from '@/components/explorer-grid/add-dependencies-popover.tsx'
+import { useToast } from '@/components/hooks/use-toast.ts'
+import type { Action } from '@/state/types.ts'
+import { useGraphStore } from '@/state/index.ts'
 import { useAnimate } from 'framer-motion'
 
 type ChangePackageOptions = {

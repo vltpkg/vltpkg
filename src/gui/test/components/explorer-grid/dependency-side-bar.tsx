@@ -1,9 +1,9 @@
 import { vi, test, expect, afterEach } from 'vitest'
 import { cleanup, render } from '@testing-library/react'
 import html from 'diffable-html'
-import { useGraphStore as useStore } from '@/state/index.js'
-import { DependencySideBar } from '@/components/explorer-grid/dependency-side-bar.jsx'
-import type { GridItemData } from '@/components/explorer-grid/types.js'
+import { useGraphStore as useStore } from '@/state/index.ts'
+import { DependencySideBar } from '@/components/explorer-grid/dependency-side-bar.tsx'
+import type { GridItemData } from '@/components/explorer-grid/types.ts'
 
 vi.mock('react-router', () => ({
   useNavigate: vi.fn(),
@@ -13,36 +13,36 @@ vi.mock('lucide-react', () => ({
   Plus: 'gui-plus-icon',
 }))
 
-vi.mock('@/components/ui/button.jsx', () => ({
+vi.mock('@/components/ui/button.tsx', () => ({
   Button: 'gui-button',
 }))
 
-vi.mock('@/components/explore-grid/header.jsx', () => ({
+vi.mock('@/components/explore-grid/header.tsx', () => ({
   Header: 'gui-header',
 }))
 
-vi.mock('@/components/explorer-grid/side-item.jsx', () => ({
+vi.mock('@/components/explorer-grid/side-item.tsx', () => ({
   SideItem: 'gui-side-item',
 }))
 
-vi.mock('@/components/explorer-grid/types.js', () => ({
+vi.mock('@/components/explorer-grid/types.ts', () => ({
   GridItemData: 'gui-grid-item-data',
 }))
 
-vi.mock('@/components/ui/tooltip.jsx', () => ({
+vi.mock('@/components/ui/tooltip.tsx', () => ({
   Tooltip: 'gui-tooltip',
   TooltipContent: 'gui-tooltip-content',
   TooltipProvider: 'gui-tooltip-provider',
   TooltipTrigger: 'gui-tooltip-trigger',
 }))
 
-vi.mock('@/components/ui/popover.jsx', () => ({
+vi.mock('@/components/ui/popover.tsx', () => ({
   Popover: 'gui-popover',
   PopoverContent: 'gui-popover-content',
   PopoverTrigger: 'gui-popover-trigger',
 }))
 
-vi.mock('@/components/explorer-grid/manage-dependencies.jsx', () => ({
+vi.mock('@/components/explorer-grid/manage-dependencies.tsx', () => ({
   ManageDependencies: 'gui-manage-dependencies',
 }))
 

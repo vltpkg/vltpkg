@@ -21,10 +21,10 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table.jsx'
-import { Button } from '@/components/ui/button.jsx'
+} from '@/components/ui/table.tsx'
+import { Button } from '@/components/ui/button.tsx'
 import { useEffect, useState } from 'react'
-import { TablePageSelect } from '@/components/data-table/table-page-select.jsx'
+import { TablePageSelect } from '@/components/data-table/table-page-select.tsx'
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]

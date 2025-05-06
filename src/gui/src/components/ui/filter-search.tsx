@@ -1,8 +1,8 @@
-import type { SavedQuery } from '@/state/types.js'
+import type { SavedQuery } from '@/state/types.ts'
 import { useSearchParams } from 'react-router'
 import { useEffect, useRef, useState } from 'react'
-import { Input } from '@/components/ui/input.jsx'
-import { Kbd } from '@/components/ui/kbd.jsx'
+import { Input } from '@/components/ui/input.tsx'
+import { Kbd } from '@/components/ui/kbd.tsx'
 import { Command, Search } from 'lucide-react'
 
 interface FilterSearchProps<T> {

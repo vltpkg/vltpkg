@@ -1,17 +1,17 @@
 import { vi, expect, afterEach, test } from 'vitest'
 import { render, cleanup } from '@testing-library/react'
 import html from 'diffable-html'
-import { useGraphStore as useStore } from '@/state/index.js'
-import { SidebarMainNav } from '@/components/navigation/sidebar/sidebar-main-nav.jsx'
+import { useGraphStore as useStore } from '@/state/index.ts'
+import { SidebarMainNav } from '@/components/navigation/sidebar/sidebar-main-nav.tsx'
 
 vi.mock(
-  '@/components/navigation/sidebar/sidebar-menu-link.jsx',
+  '@/components/navigation/sidebar/sidebar-menu-link.tsx',
   () => ({
     SidebarMenuLink: 'gui-sidebar-menu-link',
   }),
 )
 
-vi.mock('@/components/ui/sidebar.jsx', () => ({
+vi.mock('@/components/ui/sidebar.tsx', () => ({
   SidebarGroup: 'gui-sidebar-group',
   SidebarMenu: 'gui-sidebar-menu',
 }))

@@ -2,16 +2,16 @@ import React from 'react'
 import { vi, describe, it, expect, afterEach } from 'vitest'
 import { cleanup, render } from '@testing-library/react'
 import html from 'diffable-html'
-import { SortDropdown } from '@/components/sort-dropdown.jsx'
+import { SortDropdown } from '@/components/sort-dropdown.tsx'
 
-vi.mock('@/components/ui/dropdown-menu.jsx', () => ({
+vi.mock('@/components/ui/dropdown-menu.tsx', () => ({
   DropdownMenu: 'gui-dropdown-menu',
   DropdownMenuTrigger: 'gui-dropdown-menu-trigger',
   DropdownMenuContent: 'gui-dropdown-menu-content',
   DropdownMenuCheckboxItem: 'gui-dropdown-menu-checkbox-item',
 }))
 
-vi.mock('@/components/ui/button.jsx', () => ({
+vi.mock('@/components/ui/button.tsx', () => ({
   Button: 'gui-button',
 }))
 

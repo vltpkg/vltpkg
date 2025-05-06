@@ -1,10 +1,10 @@
 import { NavLink } from 'react-router'
 import { useState, useEffect } from 'react'
-import { Button } from '@/components/ui/button.jsx'
+import { Button } from '@/components/ui/button.tsx'
 import { Command, Plus, Star } from 'lucide-react'
 import { AnimatePresence, motion, useAnimate } from 'framer-motion'
-import { CreateQuery } from '@/components/queries/create-query.jsx'
-import type { DashboardData } from '@/state/types.js'
+import { CreateQuery } from '@/components/queries/create-query.tsx'
+import type { DashboardData } from '@/state/types.ts'
 
 interface QueriesEmptyStateProps {
   dashboard?: DashboardData

@@ -2,10 +2,10 @@ import React from 'react'
 import { vi, describe, it, expect, afterEach } from 'vitest'
 import { cleanup, render } from '@testing-library/react'
 import html from 'diffable-html'
-import { DashboardViewToggle } from '@/components/dashboard-grid/dashboard-view-toggle.jsx'
-import type { View } from '@/components/dashboard-grid/dashboard-view-toggle.jsx'
+import { DashboardViewToggle } from '@/components/dashboard-grid/dashboard-view-toggle.tsx'
+import type { View } from '@/components/dashboard-grid/dashboard-view-toggle.tsx'
 
-vi.mock('@/components/ui/toggle.jsx', () => ({
+vi.mock('@/components/ui/toggle.tsx', () => ({
   Toggle: 'gui-toggle',
 }))
 

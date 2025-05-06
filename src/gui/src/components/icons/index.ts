@@ -1,27 +1,27 @@
 // vlt icons
-export * from './vlt.jsx'
-export * from './query.jsx'
+export * from './vlt.tsx'
+export * from './query.tsx'
 
 // general
-export * from './github.jsx'
-export * from './discord.jsx'
-export * from './linkedin.jsx'
-export * from './twitterx.jsx'
+export * from './github.tsx'
+export * from './discord.tsx'
+export * from './linkedin.tsx'
+export * from './twitterx.tsx'
 
 // runtimes
-export * from './bun.jsx'
-export * from './deno.jsx'
-export * from './node.jsx'
-export * from './javascript.jsx'
+export * from './bun.tsx'
+export * from './deno.tsx'
+export * from './node.tsx'
+export * from './javascript.tsx'
 
 // package managers
-export * from './npm.jsx'
-export * from './pnpm.jsx'
-export * from './yarn.jsx'
+export * from './npm.tsx'
+export * from './pnpm.tsx'
+export * from './yarn.tsx'
 
 // frameworks
-export * from './next.jsx'
-export * from './nuxt.jsx'
-export * from './react.jsx'
-export * from './vercel.jsx'
-export * from './vue.jsx'
+export * from './next.tsx'
+export * from './nuxt.tsx'
+export * from './react.tsx'
+export * from './vercel.tsx'
+export * from './vue.tsx'

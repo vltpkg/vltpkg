@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
-import { startDashboardData } from '@/lib/start-dashboard-data.js'
+import { startDashboardData } from '@/lib/start-dashboard-data.ts'
 
 const stderr = console.error
 

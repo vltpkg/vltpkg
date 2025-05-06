@@ -1,20 +1,27 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
-/* eslint-disable @typescript-eslint/no-unsafe-return */
+type MergeableObject = Record<string, unknown>
+type MergeableArray = unknown[]
 
-// deep merge 2 objects
-// scalars are overwritten, objects are folded in together
-// if nothing to be added, then return the base object.
-export const merge = <T extends Record<string, any>>(
+/*
+ * deep merge 2 objects
+ * scalars are overwritten, objects are folded in together
+ * if nothing to be added, then return the base object.
+ */
+export const merge = <T extends MergeableObject>(
   base: T,
   add: T,
 ): T =>
   Object.fromEntries(
     Object.entries(base)
-      .map(([k, v]) => [
+      .map(([k, v]): [string, unknown] => [
         k,
         add[k] === undefined ? v
         : Array.isArray(v) && Array.isArray(add[k]) ?
-          [...new Set([...v, ...add[k]])]
+          [
+            ...new Set([
+              ...(v as MergeableArray),
+              ...(add[k] as MergeableArray),
+            ]),
+          ]
         : Array.isArray(v) || Array.isArray(add[k]) ? add[k]
         : (
           !!v &&
@@ -22,7 +29,7 @@ export const merge = <T extends Record<string, any>>(
           !!add[k] &&
           typeof add[k] === 'object'
         ) ?
-          merge(v, add[k])
+          merge(v as MergeableObject, add[k] as MergeableObject)
         : add[k],
       ])
       .concat(

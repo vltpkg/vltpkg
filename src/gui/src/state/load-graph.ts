@@ -17,6 +17,7 @@ import type {
 } from '@vltpkg/graph'
 import type { SpecOptionsFilled, Spec } from '@vltpkg/spec/browser'
 import type { TransferData } from './types.ts'
+import { assert } from '@/lib/utils.ts'
 
 const loadSpecOptions = (
   lockfile: LockfileData,
@@ -103,13 +104,12 @@ export const load = (transfered: TransferData): LoadResponse => {
     },
     addNode(id?: DepID, manifest?: Manifest) {
       const graph = this as GraphLike
+      assert(id, 'id is required')
+      assert(manifest, 'manifest is required')
       const node: NodeLike = {
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        id: id!,
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        name: manifest!.name,
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        version: manifest!.version,
+        id: id,
+        name: manifest.name,
+        version: manifest.version,
         manifest,
         edgesIn: new Set(),
         edgesOut: new Map(),

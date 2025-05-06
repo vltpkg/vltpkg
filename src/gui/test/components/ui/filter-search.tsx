@@ -2,17 +2,17 @@ import React from 'react'
 import { vi, describe, it, expect, afterEach } from 'vitest'
 import { cleanup, render } from '@testing-library/react'
 import html from 'diffable-html'
-import { FilterSearch } from '@/components/ui/filter-search.jsx'
+import { FilterSearch } from '@/components/ui/filter-search.tsx'
 
 vi.mock('react-router', () => ({
   useSearchParams: vi.fn().mockReturnValue(['', vi.fn()]),
 }))
 
-vi.mock('@/components/ui/input.jsx', () => ({
+vi.mock('@/components/ui/input.tsx', () => ({
   Input: 'gui-input',
 }))
 
-vi.mock('@/components/ui/kbd.jsx', () => ({
+vi.mock('@/components/ui/kbd.tsx', () => ({
   Kbd: 'gui-kbd',
 }))
 

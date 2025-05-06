@@ -1,4 +1,4 @@
-import { ShinyButton } from '@/components/ui/shiny-button'
+import { ShinyButton } from '@/components/ui/shiny-button.tsx'
 
 const Waitlist = () => {
   return (
