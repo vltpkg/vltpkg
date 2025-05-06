@@ -6,7 +6,7 @@ import {
   TooltipContent,
   TooltipTrigger,
   TooltipProvider,
-} from '@/components/ui/tooltip.jsx'
+} from '@/components/ui/tooltip.tsx'
 
 export interface Option {
   icon: (props: LucideProps) => React.ReactElement<LucideIcon>

@@ -1,6 +1,6 @@
-import { assert } from '@/lib/utils.js'
-import { useGraphStore } from '@/state/index.js'
-import type { State } from '@/state/types.js'
+import { assert } from '@/lib/utils.ts'
+import { useGraphStore } from '@/state/index.ts'
+import type { State } from '@/state/types.ts'
 import { createContext, useContext, useEffect, useState } from 'react'
 
 /** The possible states of theme */

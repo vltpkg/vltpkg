@@ -17,42 +17,42 @@ import type {
 import type { EdgeLike, GraphLike, NodeLike } from '@vltpkg/graph'
 import { cleanup, render } from '@testing-library/react'
 import html from 'diffable-html'
-import { useGraphStore as useStore } from '@/state/index.js'
-import { Explorer } from '@/app/explorer.jsx'
+import { useGraphStore as useStore } from '@/state/index.ts'
+import { Explorer } from '@/app/explorer.tsx'
 import { joinDepIDTuple } from '@vltpkg/dep-id/browser'
 
 vi.mock('react-router', () => ({
   useNavigate: vi.fn(),
 }))
 
-vi.mock('@/components/query-bar/index.jsx', () => ({
+vi.mock('@/components/query-bar/index.tsx', () => ({
   QueryBar: 'gui-query-bar',
 }))
 
-vi.mock('@/components/ui/logo.jsx', () => ({
+vi.mock('@/components/ui/logo.tsx', () => ({
   Logo: 'gui-logo',
 }))
 
-vi.mock('@/components/ui/title.jsx', () => ({
+vi.mock('@/components/ui/title.tsx', () => ({
   Title: 'gui-title',
 }))
 
-vi.mock('@/components/ui/card.jsx', () => ({
+vi.mock('@/components/ui/card.tsx', () => ({
   Card: 'gui-card',
   CardDescription: 'gui-card-description',
   CardHeader: 'gui-card-header',
   CardTitle: 'gui-card-title',
 }))
 
-vi.mock('@/components/explorer-grid/index.jsx', () => ({
+vi.mock('@/components/explorer-grid/index.tsx', () => ({
   ExplorerGrid: 'gui-explorer-grid',
 }))
 
-vi.mock('@/components/explorer-grid/setup-project.jsx', () => ({
+vi.mock('@/components/explorer-grid/setup-project.tsx', () => ({
   SetupProject: 'gui-setup-project',
 }))
 
-vi.mock('@/components/explorer-grid/root-button.jsx', () => ({
+vi.mock('@/components/explorer-grid/root-button.tsx', () => ({
   RootButton: 'gui-root-button',
 }))
 

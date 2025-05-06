@@ -7,7 +7,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select.jsx'
+} from '@/components/ui/select.tsx'
 
 vi.mock('lucide-react', () => ({
   ChevronUp: 'gui-chevron-up-icon',

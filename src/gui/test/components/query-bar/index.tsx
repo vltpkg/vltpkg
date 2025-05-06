@@ -6,10 +6,10 @@ import {
   screen,
 } from '@testing-library/react'
 import html from 'diffable-html'
-import { useGraphStore as useStore } from '@/state/index.js'
-import { QueryBar } from '@/components/query-bar/index.jsx'
+import { useGraphStore as useStore } from '@/state/index.ts'
+import { QueryBar } from '@/components/query-bar/index.tsx'
 
-vi.mock('@/components/query-bar/query-highlighter.jsx', () => ({
+vi.mock('@/components/query-bar/query-highlighter.tsx', () => ({
   QueryHighlighter: 'gui-query-highlighter',
 }))
 

@@ -1,14 +1,14 @@
 import { vi, expect, afterEach, test } from 'vitest'
 import { render, cleanup } from '@testing-library/react'
 import html from 'diffable-html'
-import { useGraphStore as useStore } from '@/state/index.js'
-import { SidebarHeader } from '@/components/navigation/sidebar/sidebar-header.jsx'
+import { useGraphStore as useStore } from '@/state/index.ts'
+import { SidebarHeader } from '@/components/navigation/sidebar/sidebar-header.tsx'
 
-vi.mock('@/components/icons/index.js', () => ({
+vi.mock('@/components/icons/index.ts', () => ({
   Vlt: 'gui-vlt-icon',
 }))
 
-vi.mock('@/components/ui/sidebar.jsx', () => ({
+vi.mock('@/components/ui/sidebar.tsx', () => ({
   SidebarMenu: 'gui-sidebar-menu',
   SidebarMenuItem: 'gui-sidebar-menu-item',
   SidebarMenuButton: 'gui-sidebar-menu-button',

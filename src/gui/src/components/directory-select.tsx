@@ -3,7 +3,7 @@ import {
   Popover,
   PopoverTrigger,
   PopoverContent,
-} from '@/components/ui/popover.jsx'
+} from '@/components/ui/popover.tsx'
 import {
   Command,
   CommandEmpty,
@@ -11,11 +11,11 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from '@/components/ui/command.jsx'
-import { Button } from '@/components/ui/button.jsx'
+} from '@/components/ui/command.tsx'
+import { Button } from '@/components/ui/button.tsx'
 import { ChevronDown, Check } from 'lucide-react'
-import { cn } from '@/lib/utils.js'
-import type { DashboardData } from '@/state/types.js'
+import { cn } from '@/lib/utils.ts'
+import type { DashboardData } from '@/state/types.ts'
 
 interface DirectorySelectProps {
   directory: string

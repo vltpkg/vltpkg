@@ -2,12 +2,12 @@ import React from 'react'
 import { vi, describe, it, expect, afterEach } from 'vitest'
 import { cleanup, render } from '@testing-library/react'
 import html from 'diffable-html'
-import { useGraphStore as useStore } from '@/state/index.js'
-import { DashboardTable } from '@/components/dashboard-grid/dashboard-table.jsx'
-import type { DashboardDataProject } from '@/state/types.js'
+import { useGraphStore as useStore } from '@/state/index.ts'
+import { DashboardTable } from '@/components/dashboard-grid/dashboard-table.tsx'
+import type { DashboardDataProject } from '@/state/types.ts'
 import type { VisibilityState } from '@tanstack/react-table'
 
-vi.mock('@/components/data-table/data-table.jsx', () => ({
+vi.mock('@/components/data-table/data-table.tsx', () => ({
   DataTable: 'gui-data-table',
 }))
 

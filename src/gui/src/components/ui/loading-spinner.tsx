@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { LoaderIcon } from 'lucide-react'
-import { cn } from '@/lib/utils.js'
+import { cn } from '@/lib/utils.ts'
 
 const spinnerVariants = 'w-6 h-6 rounded-full animate-spin'
 

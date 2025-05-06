@@ -2,7 +2,7 @@ import { vi, test, expect, afterEach } from 'vitest'
 import { cleanup, render, screen } from '@testing-library/react'
 import html from 'diffable-html'
 import React from 'react'
-import { Link } from '@/components/ui/link.jsx'
+import { Link } from '@/components/ui/link.tsx'
 
 vi.mock('lucide-react', () => ({
   ArrowUpRight: 'gui-arrow-up-right-icon',

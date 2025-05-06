@@ -1,20 +1,20 @@
 import { useEffect, useState } from 'react'
-import { Button } from '@/components/ui/button.jsx'
-import { LabelBadge } from '@/components/labels/label-badge.jsx'
-import { Label } from '@/components/ui/label.jsx'
-import { Input } from '@/components/ui/input.jsx'
+import { Button } from '@/components/ui/button.tsx'
+import { LabelBadge } from '@/components/labels/label-badge.tsx'
+import { Label } from '@/components/ui/label.tsx'
+import { Input } from '@/components/ui/input.tsx'
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from '@/components/ui/popover.jsx'
-import { ColorPicker } from '@/components/ui/color-picker.jsx'
+} from '@/components/ui/popover.tsx'
+import { ColorPicker } from '@/components/ui/color-picker.tsx'
 import { Palette } from 'lucide-react'
-import { useGraphStore } from '@/state/index.js'
-import type { Color } from '@/state/types.js'
-import { useToast } from '@/components/hooks/use-toast.js'
+import { useGraphStore } from '@/state/index.ts'
+import type { Color } from '@/state/types.ts'
+import { useToast } from '@/components/hooks/use-toast.ts'
 import { v4 as uuidv4 } from 'uuid'
-import { cn } from '@/lib/utils.js'
+import { cn } from '@/lib/utils.ts'
 
 interface CreateLabelProps {
   closeCreate: () => void

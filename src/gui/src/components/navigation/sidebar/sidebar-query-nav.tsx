@@ -5,13 +5,13 @@ import {
   SidebarSeparator,
   SidebarGroupLabel,
   useSidebar,
-} from '@/components/ui/sidebar.jsx'
-import { useViewSidebar } from '@/components/navigation/sidebar/use-view-sidebar.jsx'
-import { useGraphStore } from '@/state/index.js'
-import type { SavedQuery } from '@/state/types.js'
-import { selectQuery } from '@/components/queries/saved-item.jsx'
-import { SidebarMenuLink } from '@/components/navigation/sidebar/sidebar-menu-link.jsx'
-import type { MenuItem } from '@/components/navigation/sidebar/menu.js'
+} from '@/components/ui/sidebar.tsx'
+import { useViewSidebar } from '@/components/navigation/sidebar/use-view-sidebar.tsx'
+import { useGraphStore } from '@/state/index.ts'
+import type { SavedQuery } from '@/state/types.ts'
+import { selectQuery } from '@/components/queries/saved-item.tsx'
+import { SidebarMenuLink } from '@/components/navigation/sidebar/sidebar-menu-link.tsx'
+import type { MenuItem } from '@/components/navigation/sidebar/menu.ts'
 import { Folder } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 

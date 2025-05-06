@@ -2,7 +2,7 @@ import React from 'react'
 import { test, expect, afterEach } from 'vitest'
 import { cleanup, render } from '@testing-library/react'
 import html from 'diffable-html'
-import { NumberFlow } from '@/components/number-flow.jsx'
+import { NumberFlow } from '@/components/number-flow.tsx'
 
 expect.addSnapshotSerializer({
   serialize: v => html(v),

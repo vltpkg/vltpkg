@@ -1,4 +1,4 @@
-import type { ProgressCircleVariant } from '@/components/ui/progress-circle.jsx'
+import type { ProgressCircleVariant } from '@/components/ui/progress-circle.tsx'
 
 type ScoreVariant = Exclude<ProgressCircleVariant, undefined>
 

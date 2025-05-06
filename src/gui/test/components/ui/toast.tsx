@@ -7,7 +7,7 @@ import {
   ToastViewport,
   ToastTitle,
   ToastDescription,
-} from '@/components/ui/toast.jsx'
+} from '@/components/ui/toast.tsx'
 
 expect.addSnapshotSerializer({
   serialize: v => html(v),

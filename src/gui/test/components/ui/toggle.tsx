@@ -2,8 +2,8 @@ import React from 'react'
 import { vi, describe, it, expect, afterEach } from 'vitest'
 import { cleanup, render } from '@testing-library/react'
 import html from 'diffable-html'
-import { Toggle } from '@/components/ui/toggle.jsx'
-import type { Option } from '@/components/ui/toggle.jsx'
+import { Toggle } from '@/components/ui/toggle.tsx'
+import type { Option } from '@/components/ui/toggle.tsx'
 import { Smile, Frown } from 'lucide-react'
 
 vi.mock('lucide-react', () => ({

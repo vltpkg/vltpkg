@@ -1,9 +1,9 @@
-import { Vlt } from '@/components/icons/index.js'
+import { Vlt } from '@/components/icons/index.ts'
 import {
   SidebarMenu,
   SidebarMenuItem,
   SidebarHeader as SidebarHeaderPrimitive,
-} from '@/components/ui/sidebar.jsx'
+} from '@/components/ui/sidebar.tsx'
 
 export const SidebarHeader = () => {
   return (

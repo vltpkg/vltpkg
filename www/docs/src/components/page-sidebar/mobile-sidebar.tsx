@@ -8,10 +8,10 @@ import {
   DrawerHeader,
   DrawerClose,
   DrawerDescription,
-} from '@/components/ui/drawer'
-import { Button } from '@/components/ui/button'
+} from '@/components/ui/drawer.tsx'
+import { Button } from '@/components/ui/button.tsx'
 import { X, ChevronDown, ChevronRight } from 'lucide-react'
-import { ScrollArea } from '@/components/ui/scroll-area'
+import { ScrollArea } from '@/components/ui/scroll-area.tsx'
 
 const MobileSidebar = ({ toc }: Props) => {
   const [drawerOpen, setDrawerOpen] = useState<boolean>(false)

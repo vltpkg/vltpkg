@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { Button } from '@/components/ui/button.jsx'
+import { Button } from '@/components/ui/button.tsx'
 import { Plus } from 'lucide-react'
-import { CreateLabel } from '@/components/labels/create-label.jsx'
+import { CreateLabel } from '@/components/labels/create-label.tsx'
 
 const LabelsEmptyState = () => {
   const [isCreating, setIsCreating] = useState<boolean>(false)

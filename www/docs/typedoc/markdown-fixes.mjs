@@ -15,7 +15,7 @@ import {
   typedocContentPath,
   entryFileName,
   modulesFileName,
-} from './constants.mjs'
+} from './constants.mts'
 import { slug } from 'github-slugger'
 
 /** @param {string} page */

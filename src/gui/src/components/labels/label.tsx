@@ -1,23 +1,23 @@
 import { useNavigate } from 'react-router'
 import { useEffect, useState } from 'react'
-import { Checkbox } from '@/components/ui/checkbox.jsx'
-import { Button } from '@/components/ui/button.jsx'
-import { LabelBadge } from '@/components/labels/label-badge.jsx'
+import { Checkbox } from '@/components/ui/checkbox.tsx'
+import { Button } from '@/components/ui/button.tsx'
+import { LabelBadge } from '@/components/labels/label-badge.tsx'
 import { ArrowUpRight, Palette } from 'lucide-react'
-import { Label as FormLabel } from '@/components/ui/label.jsx'
-import { Input } from '@/components/ui/input.jsx'
+import { Label as FormLabel } from '@/components/ui/label.tsx'
+import { Input } from '@/components/ui/input.tsx'
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from '@/components/ui/popover.jsx'
+} from '@/components/ui/popover.tsx'
 import {
   ColorPicker,
   DEFAULT_COLOR,
-} from '@/components/ui/color-picker.jsx'
-import type { Color, QueryLabel } from '@/state/types.js'
-import { useGraphStore } from '@/state/index.js'
-import { useToast } from '@/components/hooks/use-toast.js'
+} from '@/components/ui/color-picker.tsx'
+import type { Color, QueryLabel } from '@/state/types.ts'
+import { useGraphStore } from '@/state/index.ts'
+import { useToast } from '@/components/hooks/use-toast.ts'
 
 interface LabelProps {
   queryLabel: QueryLabel

@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { useNavigate } from 'react-router'
-import { useGraphStore } from '@/state/index.js'
-import { startAppData } from '@/lib/start-data.js'
+import { useGraphStore } from '@/state/index.ts'
+import { startAppData } from '@/lib/start-data.ts'
 
 export const usePreflight = () => {
   const navigate = useNavigate()

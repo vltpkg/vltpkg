@@ -8,7 +8,7 @@ import {
   entryFileName,
   modulesFileName,
   typedocContentPath,
-} from './typedoc/constants.mjs'
+} from './typedoc/constants.mts'
 import { fileURLToPath } from 'node:url'
 
 // typedoc requires an origin remote to render source links.

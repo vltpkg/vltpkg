@@ -1,7 +1,7 @@
 import {
   getScoreColor,
   scoreColors,
-} from '@/components/explorer-grid/selected-item/insight-score-helper.js'
+} from '@/components/explorer-grid/selected-item/insight-score-helper.ts'
 import { describe, it, expect } from 'vitest'
 
 describe('insight-score-helper', () => {

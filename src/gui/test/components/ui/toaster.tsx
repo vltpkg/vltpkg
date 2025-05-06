@@ -1,7 +1,7 @@
 import { test, expect, afterEach } from 'vitest'
 import { cleanup, render } from '@testing-library/react'
 import html from 'diffable-html'
-import { Toaster } from '@/components/ui/toaster.jsx'
+import { Toaster } from '@/components/ui/toaster.tsx'
 
 expect.addSnapshotSerializer({
   serialize: v => html(v),

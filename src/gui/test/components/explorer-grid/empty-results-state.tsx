@@ -1,14 +1,14 @@
 import { vi, test, expect, afterEach } from 'vitest'
 import { cleanup, render } from '@testing-library/react'
 import html from 'diffable-html'
-import { useGraphStore as useStore } from '@/state/index.js'
-import { EmptyResultsState } from '@/components/explorer-grid/empty-results-state.jsx'
+import { useGraphStore as useStore } from '@/state/index.ts'
+import { EmptyResultsState } from '@/components/explorer-grid/empty-results-state.tsx'
 
 vi.mock('react-router', () => ({
   useNavigate: vi.fn(),
 }))
 
-vi.mock('@/components/ui/button.jsx', () => ({
+vi.mock('@/components/ui/button.tsx', () => ({
   Button: 'gui-button',
 }))
 

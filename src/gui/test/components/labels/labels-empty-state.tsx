@@ -1,9 +1,9 @@
 import { vi, describe, it, expect, afterEach } from 'vitest'
 import { cleanup, render } from '@testing-library/react'
 import html from 'diffable-html'
-import { LabelsEmptyState } from '@/components/labels/labels-empty-state.jsx'
+import { LabelsEmptyState } from '@/components/labels/labels-empty-state.tsx'
 
-vi.mock('@/components/ui/button.jsx', () => ({
+vi.mock('@/components/ui/button.tsx', () => ({
   Button: 'gui-button',
 }))
 
@@ -11,7 +11,7 @@ vi.mock('lucide-react', () => ({
   Plus: 'gui-plus-icon',
 }))
 
-vi.mock('@/components/labels/create-label.jsx', () => ({
+vi.mock('@/components/labels/create-label.tsx', () => ({
   CreateLabel: 'gui-create-label',
 }))
 

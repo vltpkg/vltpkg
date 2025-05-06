@@ -10,13 +10,13 @@ import { setupServer } from 'msw/node'
 import { http, HttpResponse } from 'msw'
 import { cleanup, render } from '@testing-library/react'
 import html from 'diffable-html'
-import { useGraphStore as useStore } from '@/state/index.js'
-import { Dashboard } from '@/app/dashboard.jsx'
+import { useGraphStore as useStore } from '@/state/index.ts'
+import { Dashboard } from '@/app/dashboard.tsx'
 
 vi.mock('react-router', () => ({
   useNavigate: vi.fn(),
 }))
-vi.mock('@/components/dashboard-grid/index.jsx', () => ({
+vi.mock('@/components/dashboard-grid/index.tsx', () => ({
   DashboardGrid: 'gui-dashboard-grid',
 }))
 

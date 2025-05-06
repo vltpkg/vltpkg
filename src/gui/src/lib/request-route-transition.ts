@@ -1,5 +1,5 @@
-import type { Action } from '@/state/types.js'
-import { DEFAULT_QUERY } from '@/state/index.js'
+import type { Action } from '@/state/types.ts'
+import { DEFAULT_QUERY } from '@/state/index.ts'
 
 export type RequestRouteTransitionOptions<T> = {
   navigate: (route: string) => void

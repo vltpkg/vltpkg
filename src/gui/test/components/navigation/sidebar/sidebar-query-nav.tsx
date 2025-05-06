@@ -1,16 +1,16 @@
 import { vi, expect, afterEach, test } from 'vitest'
 import { render, cleanup } from '@testing-library/react'
 import html from 'diffable-html'
-import { useGraphStore as useStore } from '@/state/index.js'
-import { useViewSidebar } from '@/components/navigation/sidebar/use-view-sidebar.jsx'
-import { SidebarQueryNav } from '@/components/navigation/sidebar/sidebar-query-nav.jsx'
-import type { SavedQuery, State } from '@/state/types.js'
+import { useGraphStore as useStore } from '@/state/index.ts'
+import { useViewSidebar } from '@/components/navigation/sidebar/use-view-sidebar.tsx'
+import { SidebarQueryNav } from '@/components/navigation/sidebar/sidebar-query-nav.tsx'
+import type { SavedQuery, State } from '@/state/types.ts'
 
 vi.mock('react-router', () => ({
   useNavigate: vi.fn(),
 }))
 
-vi.mock('@/components/ui/sidebar.jsx', () => ({
+vi.mock('@/components/ui/sidebar.tsx', () => ({
   SidebarMenu: 'gui-sidebar-menu',
   SidebarGroup: 'gui-sidebar-group',
   SidebarSeparator: 'gui-sidebar-separator',
@@ -22,7 +22,7 @@ vi.mock('@/components/ui/sidebar.jsx', () => ({
 }))
 
 vi.mock(
-  '@/components/navigation/sidebar/use-view-sidebar.jsx',
+  '@/components/navigation/sidebar/use-view-sidebar.tsx',
   () => ({
     useViewSidebar: vi.fn(),
   }),
@@ -33,7 +33,7 @@ vi.mock('@/components/queries/saved-item.tsx', () => ({
 }))
 
 vi.mock(
-  '@/components/navigation/sidebar/sidebar-menu-link.jsx',
+  '@/components/navigation/sidebar/sidebar-menu-link.tsx',
   () => ({
     SidebarMenuLink: 'gui-sidebar-menu-link',
   }),

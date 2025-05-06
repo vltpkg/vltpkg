@@ -1,11 +1,11 @@
 import { vi, describe, it, expect, afterEach } from 'vitest'
 import { cleanup, render } from '@testing-library/react'
 import html from 'diffable-html'
-import type { QueryLabel } from '@/state/types.js'
-import { LabelSelect } from '@/components/labels/label-select.jsx'
-import { useGraphStore as useStore } from '@/state/index.js'
+import type { QueryLabel } from '@/state/types.ts'
+import { LabelSelect } from '@/components/labels/label-select.tsx'
+import { useGraphStore as useStore } from '@/state/index.ts'
 
-vi.mock('@/components/ui/command.jsx', () => ({
+vi.mock('@/components/ui/command.tsx', () => ({
   Command: 'gui-command',
   CommandEmpty: 'gui-command-empty',
   CommandGroup: 'gui-command-group',
@@ -19,15 +19,15 @@ vi.mock('lucide-react', () => ({
   Pencil: 'gui-pencil-icon',
 }))
 
-vi.mock('@/components/ui/button.jsx', () => ({
+vi.mock('@/components/ui/button.tsx', () => ({
   Button: 'gui-button',
 }))
 
-vi.mock('@/components/labels/create-label-dialog.jsx', () => ({
+vi.mock('@/components/labels/create-label-dialog.tsx', () => ({
   CreateLabelModal: 'gui-create-label-modal',
 }))
 
-vi.mock('@/components/ui/dialog.jsx', () => ({
+vi.mock('@/components/ui/dialog.tsx', () => ({
   Dialog: 'gui-dialog',
   DialogTrigger: 'gui-dialog-trigger',
 }))

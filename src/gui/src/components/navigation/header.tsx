@@ -1,7 +1,7 @@
 import { useLocation } from 'react-router'
 import { useMemo } from 'react'
-import { useGraphStore } from '@/state/index.js'
-import { InlineCode } from '@/components/ui/inline-code.jsx'
+import { useGraphStore } from '@/state/index.ts'
+import { InlineCode } from '@/components/ui/inline-code.tsx'
 import { ChevronRight } from 'lucide-react'
 
 const routeNames = new Map<string, string>([

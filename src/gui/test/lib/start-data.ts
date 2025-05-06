@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
-import { startDashboardData, startAppData } from '@/lib/start-data.js'
-import type { State } from '@/state/types.js'
+import { startDashboardData, startAppData } from '@/lib/start-data.ts'
+import type { State } from '@/state/types.ts'
 
 const stderr = console.error
 

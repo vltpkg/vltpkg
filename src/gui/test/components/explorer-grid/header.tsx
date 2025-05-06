@@ -1,7 +1,7 @@
 import { test, expect, afterEach } from 'vitest'
 import { cleanup, render } from '@testing-library/react'
 import html from 'diffable-html'
-import { GridHeader } from '@/components/explorer-grid/header.jsx'
+import { GridHeader } from '@/components/explorer-grid/header.tsx'
 
 expect.addSnapshotSerializer({
   serialize: v => html(v),

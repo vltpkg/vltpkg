@@ -3,7 +3,7 @@ import * as TabsPrimitive from '@radix-ui/react-tabs'
 import { cva } from 'class-variance-authority'
 import type { VariantProps } from 'class-variance-authority'
 import { AnimatePresence, LayoutGroup, motion } from 'framer-motion'
-import { cn } from '@/lib/utils.js'
+import { cn } from '@/lib/utils.ts'
 
 interface TabsContextValue {
   activeValue: string | undefined

@@ -1,10 +1,10 @@
 import { test, expect, vi, beforeEach, afterEach } from 'vitest'
 import { cleanup, render } from '@testing-library/react'
 import html from 'diffable-html'
-import { useGraphStore as useStore } from '@/state/index.js'
-import { InsightBadge } from '@/components/explorer-grid/selected-item/insight-badge.jsx'
+import { useGraphStore as useStore } from '@/state/index.ts'
+import { InsightBadge } from '@/components/explorer-grid/selected-item/insight-badge.tsx'
 
-vi.mock('@/components/ui/tooltip.jsx', () => ({
+vi.mock('@/components/ui/tooltip.tsx', () => ({
   Tooltip: 'gui-tooltip',
   TooltipProvider: 'gui-tooltip-provider',
   TooltipTrigger: 'gui-tooltip-trigger',

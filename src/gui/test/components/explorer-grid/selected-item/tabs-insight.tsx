@@ -1,18 +1,18 @@
 import { test, expect, vi, beforeEach, afterEach } from 'vitest'
 import { cleanup, render } from '@testing-library/react'
 import html from 'diffable-html'
-import { useGraphStore as useStore } from '@/state/index.js'
-import type { SelectedItemStore } from '@/components/explorer-grid/selected-item/context.jsx'
-import { useSelectedItemStore } from '@/components/explorer-grid/selected-item/context.jsx'
+import { useGraphStore as useStore } from '@/state/index.ts'
+import type { SelectedItemStore } from '@/components/explorer-grid/selected-item/context.tsx'
+import { useSelectedItemStore } from '@/components/explorer-grid/selected-item/context.tsx'
 import {
   InsightTabButton,
   InsightTabContent,
-} from '@/components/explorer-grid/selected-item/tabs-insight.jsx'
+} from '@/components/explorer-grid/selected-item/tabs-insight.tsx'
 import {
   SELECTED_ITEM,
   SELECTED_ITEM_DETAILS,
-} from './__fixtures__/item.js'
-import type { SocketSecurityDetails } from '@/lib/constants/socket.js'
+} from './__fixtures__/item.ts'
+import type { SocketSecurityDetails } from '@/lib/constants/socket.ts'
 import type { PackageScore } from '@vltpkg/security-archive'
 
 const MOCK_INSIGHTS: SocketSecurityDetails[] = [
@@ -34,7 +34,7 @@ const MOCK_PACKAGE_SCORE: PackageScore = {
 }
 
 vi.mock(
-  '@/components/explorer-grid/selected-item/context.jsx',
+  '@/components/explorer-grid/selected-item/context.tsx',
   () => ({
     useSelectedItemStore: vi.fn(),
     SelectedItemProvider: 'gui-selected-item-provider',
@@ -42,7 +42,7 @@ vi.mock(
 )
 
 vi.mock(
-  '@/components/explorer-grid/selected-item/insights.jsx',
+  '@/components/explorer-grid/selected-item/insights.tsx',
   () => ({
     getSecurityAlerts: vi.fn(),
   }),
@@ -52,16 +52,16 @@ vi.mock('react-router', () => ({
   Link: 'gui-link',
 }))
 
-vi.mock('@/components/ui/tabs.jsx', () => ({
+vi.mock('@/components/ui/tabs.tsx', () => ({
   TabsTrigger: 'gui-tabs-trigger',
   TabsContent: 'gui-tabs-content',
 }))
 
 vi.mock(
-  '@/components/explorer-grid/selected-item/insight-badge.jsx',
+  '@/components/explorer-grid/selected-item/insight-badge.tsx',
   async () => {
     const actual = await import(
-      '@/components/explorer-grid/selected-item/insight-badge.jsx'
+      '@/components/explorer-grid/selected-item/insight-badge.tsx'
     )
     return {
       ...actual,
@@ -76,15 +76,15 @@ vi.mock('lucide-react', () => ({
   BadgeCheck: 'gui-badge-check-icon',
 }))
 
-vi.mock('@/components/ui/progress-circle.jsx', () => ({
+vi.mock('@/components/ui/progress-circle.tsx', () => ({
   ProgressCircle: 'gui-progress-circle',
 }))
 
-vi.mock('@/components/ui/link.jsx', () => ({
+vi.mock('@/components/ui/link.tsx', () => ({
   Link: 'gui-link',
 }))
 
-vi.mock('@/components/ui/data-badge.jsx', () => ({
+vi.mock('@/components/ui/data-badge.tsx', () => ({
   DataBadge: 'gui-data-badge',
 }))
 
@@ -96,7 +96,7 @@ vi.mock('recharts', () => ({
   RadialBarChart: 'gui-recharts-radial-bar-chart',
 }))
 
-vi.mock('@/components/ui/chart.jsx', () => ({
+vi.mock('@/components/ui/chart.tsx', () => ({
   ChartContainer: 'gui-chart-container',
 }))
 

@@ -6,18 +6,18 @@ import {
 } from 'react-router'
 import type { RouteObject } from 'react-router'
 
-import Layout from '@/layout.jsx'
+import Layout from '@/layout.tsx'
 
 /** Root pages */
-import { CreateNewProject } from '@/app/create-new-project.jsx'
-import { Dashboard } from '@/app/dashboard.jsx'
-import { ErrorFound } from '@/app/error-found.jsx'
-import { Explorer } from '@/app/explorer.jsx'
-import { Labels } from '@/app/labels.jsx'
-import { Queries } from '@/app/queries.jsx'
+import { CreateNewProject } from '@/app/create-new-project.tsx'
+import { Dashboard } from '@/app/dashboard.tsx'
+import { ErrorFound } from '@/app/error-found.tsx'
+import { Explorer } from '@/app/explorer.tsx'
+import { Labels } from '@/app/labels.tsx'
+import { Queries } from '@/app/queries.tsx'
 
 /** Help pages */
-import { HelpSelectors } from '@/app/help/help-selectors.jsx'
+import { HelpSelectors } from '@/app/help/help-selectors.tsx'
 
 export const routes: RouteObject[] = [
   {

@@ -1,18 +1,18 @@
 import { useRef, useEffect } from 'react'
 import type { MouseEvent } from 'react'
 import { Ellipsis, PackageMinus } from 'lucide-react'
-import { Badge } from '@/components/ui/badge.jsx'
-import { Card, CardHeader } from '@/components/ui/card.jsx'
+import { Badge } from '@/components/ui/badge.tsx'
+import { Card, CardHeader } from '@/components/ui/card.tsx'
 import {
   DropdownMenu,
   DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
-} from '@/components/ui/dropdown-menu.jsx'
-import { DataBadge } from '@/components/ui/data-badge.jsx'
-import { labelClassNamesMap } from './label-helper.js'
-import type { GridItemData, GridItemOptions } from './types.js'
-import { useGraphStore } from '@/state/index.js'
+} from '@/components/ui/dropdown-menu.tsx'
+import { DataBadge } from '@/components/ui/data-badge.tsx'
+import { labelClassNamesMap } from './label-helper.ts'
+import type { GridItemData, GridItemOptions } from './types.ts'
+import { useGraphStore } from '@/state/index.ts'
 
 export type SideItemOptions = GridItemOptions & {
   parent?: boolean

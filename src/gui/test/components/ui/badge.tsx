@@ -1,7 +1,7 @@
 import { test, expect, afterEach } from 'vitest'
 import { cleanup, render } from '@testing-library/react'
 import html from 'diffable-html'
-import { Badge } from '@/components/ui/badge.jsx'
+import { Badge } from '@/components/ui/badge.tsx'
 
 expect.addSnapshotSerializer({
   serialize: v => html(v),
