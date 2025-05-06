@@ -9,7 +9,6 @@ interface GridProps {
   children: React.ReactNode
 }
 
-/* eslint-disable-next-line */
 export const Grid = forwardRef<HTMLDivElement, GridProps>(
   ({ rows, columns, children }, ref) => (
     <div
@@ -42,7 +41,7 @@ export const Grid = forwardRef<HTMLDivElement, GridProps>(
       {children}
     </div>
   ),
-) as any
+)
 
 interface GridSystemProps extends React.HTMLProps<HTMLDivElement> {
   className?: string

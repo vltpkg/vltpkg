@@ -58,7 +58,8 @@ export const loadHidden = (options: LoadOptions): Graph => {
 
 export const loadObject = (
   options: LoadOptions,
-  lockfileData: LockfileData,
+  lockfileData: Omit<LockfileData, 'options'> &
+    Partial<Pick<LockfileData, 'options'>>,
 ) => {
   const { mainManifest, scurry } = options
   const packageJson = options.packageJson ?? new PackageJson()
@@ -71,8 +72,7 @@ export const loadObject = (
     registries,
     'git-hosts': gitHosts,
     'git-host-archives': gitHostArchives,
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-  } = lockfileData.options || {}
+  } = lockfileData.options ?? {}
   const mergedOptions = {
     ...options,
     'scope-registries': {

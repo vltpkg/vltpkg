@@ -6,6 +6,18 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
+export function assert(
+  value: unknown,
+  message?: string | Error,
+): asserts value {
+  if (!value) {
+    if (message instanceof Error) {
+      throw message
+    }
+    throw new Error(message ?? 'Assertion failed')
+  }
+}
+
 // Tremor Raw focusInput [v0.0.1]
 
 export const focusInput = [

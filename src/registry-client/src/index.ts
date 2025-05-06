@@ -165,14 +165,14 @@ const { version } = loadPackageJson(
 ) as {
   version: string
 }
-/* c8 ignore start - we do test this, but coverage fails */
+
 const nua =
   (globalThis.navigator as Navigator | undefined)?.userAgent ??
   (bun ? `Bun/${bun}`
   : deno ? `Deno/${deno}`
   : node ? `Node.js/${node}`
   : '(unknown platform)')
-/* c8 ignore stop */
+
 export const userAgent = `@vltpkg/registry-client/${version} ${nua}`
 
 const agentOptions: Agent.Options = {

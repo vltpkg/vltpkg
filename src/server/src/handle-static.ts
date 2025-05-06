@@ -1,3 +1,4 @@
+import assert from 'node:assert'
 import { readdirSync } from 'node:fs'
 import type { IncomingMessage, ServerResponse } from 'node:http'
 import { request } from 'node:http'
@@ -73,8 +74,8 @@ export const handleStatic = async (
         headers: req.headers,
       },
       proxy => {
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        res.writeHead(proxy.statusCode!, proxy.headers)
+        assert(proxy.statusCode, 'proxy status code is required')
+        res.writeHead(proxy.statusCode, proxy.headers)
         proxy.pipe(res, { end: true })
       },
     ).on('error', (err: unknown) => {

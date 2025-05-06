@@ -18,15 +18,12 @@ class PackageJson {
   }
 }
 
-// eslint-disable-next-line @typescript-eslint/no-extraneous-class
-class PathScurry {}
-
 t.test('install', async t => {
   const options = {
     projectRoot: t.testdirName,
-    scurry: new PathScurry(),
+    scurry: {},
     packageJson: new PackageJson(),
-  }
+  } as unknown as InstallOptions
   let log = ''
 
   const rootDepID = joinDepIDTuple(['file', '.'])
@@ -53,25 +50,22 @@ t.test('install', async t => {
       PackageJson,
     },
     'path-scurry': {
-      PathScurry,
-      PathScurryDarwin: PathScurry,
-      PathScurryLinux: PathScurry,
-      PathScurryPosix: PathScurry,
-      PathScurryWin32: PathScurry,
+      PathScurry: {},
+      PathScurryDarwin: {},
+      PathScurryLinux: {},
+      PathScurryPosix: {},
+      PathScurryWin32: {},
     },
   })
 
-  await install(
-    options as unknown as InstallOptions,
-    new Map() as AddImportersDependenciesMap,
-  )
+  await install(options, new Map() as AddImportersDependenciesMap)
 
   t.matchSnapshot(log, 'should call build -> actual.load -> reify')
 
   // adding a new dependency
   log = ''
   await install(
-    options as unknown as InstallOptions,
+    options,
     new Map([
       [
         rootDepID,

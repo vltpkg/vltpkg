@@ -116,7 +116,7 @@ export const mockPackageInfo = {
       extract({ sync: true, file: artifact, strip: 1, cwd: target })
     }
   },
-} as unknown as PackageInfoClient
+}
 
 const addFixture = async (spec: Spec) => {
   const fixture = await fixtureName(spec)

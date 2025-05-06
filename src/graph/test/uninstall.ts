@@ -19,15 +19,12 @@ class PackageJson {
   }
 }
 
-// eslint-disable-next-line @typescript-eslint/no-extraneous-class
-class PathScurry {}
-
 t.test('uninstall', async t => {
   const options = {
     projectRoot: t.testdirName,
     packageJson: new PackageJson(),
-    scurry: new PathScurry(),
-  }
+    scurry: {},
+  } as unknown as UninstallOptions
   let log = ''
   const rootDepID = joinDepIDTuple(['file', '.'])
 
@@ -52,16 +49,16 @@ t.test('uninstall', async t => {
       PackageJson,
     },
     'path-scurry': {
-      PathScurry,
-      PathScurryDarwin: PathScurry,
-      PathScurryLinux: PathScurry,
-      PathScurryPosix: PathScurry,
-      PathScurryWin32: PathScurry,
+      PathScurry: {},
+      PathScurryDarwin: {},
+      PathScurryLinux: {},
+      PathScurryPosix: {},
+      PathScurryWin32: {},
     },
   })
 
   await uninstall(
-    options as unknown as UninstallOptions,
+    options,
     new Map([
       [rootDepID, new Set(['abbrev'])],
     ]) as RemoveImportersDependenciesMap,

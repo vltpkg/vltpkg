@@ -161,7 +161,7 @@ export class Comparator {
     this.includePrerelease = includePrerelease
     comp = comp.trim()
     this.raw = comp
-    let hyphen = false
+    let hyphen = false as boolean
     const rawComps = fastSplit(comp, ' ', -1, (part, parts, i) => {
       if (part === '-') {
         if (hyphen) {
@@ -202,7 +202,6 @@ export class Comparator {
     }
 
     // TS mistakenly thinks hyphen is always false here
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (hyphen) {
       const [min, _, max] = comps
       /* c8 ignore start - defense in depth for TS, already guaranteed */
