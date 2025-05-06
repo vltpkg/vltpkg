@@ -1,6 +1,6 @@
-import { DataTable } from '@/components/data-table/data-table.jsx'
-import { dashboardColumns } from '@/components/dashboard-grid/table-columns.jsx'
-import type { DashboardDataProject } from '@/state/types.js'
+import { DataTable } from '@/components/data-table/data-table.tsx'
+import { dashboardColumns } from '@/components/dashboard-grid/table-columns.tsx'
+import type { DashboardDataProject } from '@/state/types.ts'
 import type { VisibilityState, Table } from '@tanstack/react-table'
 
 interface DashboardTableProps {

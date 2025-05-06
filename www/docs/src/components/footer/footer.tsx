@@ -1,8 +1,8 @@
-import { footerContent } from './content'
-import { Vlt } from '@/components/icons/icons'
-import { ThemeSwitcher } from './theme-switcher'
-import { FooterLink } from './footer-link'
-import { Waitlist } from './waitlist'
+import { footerContent } from './content.tsx'
+import { Vlt } from '@/components/icons/icons.tsx'
+import { ThemeSwitcher } from './theme-switcher.tsx'
+import { FooterLink } from './footer-link.tsx'
+import { Waitlist } from './waitlist.tsx'
 
 const Footer = () => {
   return (

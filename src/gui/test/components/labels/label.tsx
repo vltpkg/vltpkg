@@ -1,22 +1,22 @@
 import { vi, describe, it, expect, afterEach } from 'vitest'
 import { cleanup, render } from '@testing-library/react'
 import html from 'diffable-html'
-import type { QueryLabel } from '@/state/types.js'
-import { Label } from '@/components/labels/label.jsx'
+import type { QueryLabel } from '@/state/types.ts'
+import { Label } from '@/components/labels/label.tsx'
 
 vi.mock('react-router', () => ({
   useNavigate: vi.fn(),
 }))
 
-vi.mock('@/components/ui/checkbox.jsx', () => ({
+vi.mock('@/components/ui/checkbox.tsx', () => ({
   Checkbox: 'gui-checkbox',
 }))
 
-vi.mock('@/components/ui/button.jsx', () => ({
+vi.mock('@/components/ui/button.tsx', () => ({
   Button: 'gui-button',
 }))
 
-vi.mock('@/components/labels/label-badge.jsx', () => ({
+vi.mock('@/components/labels/label-badge.tsx', () => ({
   LabelBadge: 'gui-label-badge',
 }))
 
@@ -25,22 +25,22 @@ vi.mock('lucide-react', () => ({
   Palette: 'gui-palette-icon',
 }))
 
-vi.mock('@/components/ui/label.jsx', () => ({
+vi.mock('@/components/ui/label.tsx', () => ({
   Label: 'gui-label',
   FormLabel: 'gui-form-label',
 }))
 
-vi.mock('@/components/ui/input.jsx', () => ({
+vi.mock('@/components/ui/input.tsx', () => ({
   Input: 'gui-input',
 }))
 
-vi.mock('@/components/ui/popover.jsx', () => ({
+vi.mock('@/components/ui/popover.tsx', () => ({
   Popover: 'gui-popover',
   PopoverContent: 'gui-popover-content',
   PopoverTrigger: 'gui-popover-trigger',
 }))
 
-vi.mock('@/components/ui/color-picker.jsx', () => ({
+vi.mock('@/components/ui/color-picker.tsx', () => ({
   ColorPicker: 'gui-color-picker',
   DEFAULT_COLOR: '#00FF5F',
 }))

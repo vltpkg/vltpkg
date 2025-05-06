@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback, useRef } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { TabsTrigger, TabsContent } from '@/components/ui/tabs.jsx'
+import { TabsTrigger, TabsContent } from '@/components/ui/tabs.tsx'
 import {
   History,
   ArrowUpDown,
@@ -9,11 +9,11 @@ import {
   ListFilter,
   CircleHelp,
 } from 'lucide-react'
-import { useSelectedItemStore } from '@/components/explorer-grid/selected-item/context.jsx'
-import { DataBadge } from '@/components/ui/data-badge.jsx'
+import { useSelectedItemStore } from '@/components/explorer-grid/selected-item/context.tsx'
+import { DataBadge } from '@/components/ui/data-badge.tsx'
 import { format, formatDistanceStrict } from 'date-fns'
-import type { Version } from '@/lib/external-info.js'
-import { cn } from '@/lib/utils.js'
+import type { Version } from '@/lib/external-info.ts'
+import { cn } from '@/lib/utils.ts'
 import {
   Avatar,
   AvatarImage,
@@ -24,23 +24,23 @@ import {
   Tooltip,
   TooltipTrigger,
   TooltipContent,
-} from '@/components/ui/tooltip.jsx'
-import { Button } from '@/components/ui/button.jsx'
-import { formatDownloadSize } from '@/utils/format-download-size.js'
-import { Input } from '@/components/ui/input.jsx'
+} from '@/components/ui/tooltip.tsx'
+import { Button } from '@/components/ui/button.tsx'
+import { formatDownloadSize } from '@/utils/format-download-size.ts'
+import { Input } from '@/components/ui/input.tsx'
 import { prerelease, lt } from '@vltpkg/semver'
 import {
   DropdownMenu,
   DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuCheckboxItem,
-} from '@/components/ui/dropdown-menu.jsx'
-import type { ChartConfig } from '@/components/ui/chart.jsx'
+} from '@/components/ui/dropdown-menu.tsx'
+import type { ChartConfig } from '@/components/ui/chart.tsx'
 import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
-} from '@/components/ui/chart.jsx'
+} from '@/components/ui/chart.tsx'
 import { Bar, BarChart, XAxis, CartesianGrid } from 'recharts'
 
 export const VersionsTabButton = () => {

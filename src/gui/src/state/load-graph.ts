@@ -17,7 +17,7 @@ import type {
 } from '@vltpkg/graph'
 import type { SpecOptionsFilled, Spec } from '@vltpkg/spec/browser'
 import type { TransferData } from './types.ts'
-import { assert } from '@/lib/utils.js'
+import { assert } from '@/lib/utils.ts'
 
 const loadSpecOptions = (
   lockfile: LockfileData,

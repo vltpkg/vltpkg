@@ -3,7 +3,7 @@ import type {
   SidebarEntries,
   Link,
   Group as GroupType,
-} from '@/components/sidebar/sidebar.tsx'
+} from '@/components/sidebar/sidebar.jsx'
 import { Button } from '@/components/ui/button.tsx'
 
 const AppSidebarSublist = ({

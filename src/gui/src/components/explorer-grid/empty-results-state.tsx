@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router'
-import { Button } from '@/components/ui/button.jsx'
+import { Button } from '@/components/ui/button.tsx'
 import { ArrowRight } from 'lucide-react'
-import { useGraphStore } from '@/state/index.js'
+import { useGraphStore } from '@/state/index.ts'
 
 const EmptyResultsState = () => {
   const navigate = useNavigate()

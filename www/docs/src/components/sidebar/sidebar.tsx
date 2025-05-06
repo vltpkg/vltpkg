@@ -1,5 +1,4 @@
 import type { Props } from '@astrojs/starlight/props'
-
 import AppSidebarSublist from '@/components/sidebar/sidebar-sublist.tsx'
 import { ScrollArea } from '@/components/ui/scroll-area.tsx'
 import { Button } from '@/components/ui/button.tsx'

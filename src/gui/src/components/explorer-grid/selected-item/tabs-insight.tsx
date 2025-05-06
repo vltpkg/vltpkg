@@ -1,19 +1,19 @@
 import { Link } from 'react-router'
 import { useState } from 'react'
-import { TabsTrigger, TabsContent } from '@/components/ui/tabs.jsx'
-import { useSelectedItemStore } from '@/components/explorer-grid/selected-item/context.jsx'
+import { TabsTrigger, TabsContent } from '@/components/ui/tabs.tsx'
+import { useSelectedItemStore } from '@/components/explorer-grid/selected-item/context.tsx'
 import {
   InsightBadge,
   getAlertColor,
-} from '@/components/explorer-grid/selected-item/insight-badge.jsx'
-import type { SocketSecurityDetails } from '@/lib/constants/index.js'
+} from '@/components/explorer-grid/selected-item/insight-badge.tsx'
+import type { SocketSecurityDetails } from '@/lib/constants/index.ts'
 import type { PackageAlert } from '@vltpkg/security-archive'
 import { ArrowUpDown, BadgeCheck, BadgeInfo } from 'lucide-react'
-import { ProgressCircle } from '@/components/ui/progress-circle.jsx'
-import { getScoreColor } from '@/components/explorer-grid/selected-item/insight-score-helper.js'
-import { Link as AnchorLink } from '@/components/ui/link.jsx'
-import { DataBadge } from '@/components/ui/data-badge.jsx'
-import { cn } from '@/lib/utils.js'
+import { ProgressCircle } from '@/components/ui/progress-circle.tsx'
+import { getScoreColor } from '@/components/explorer-grid/selected-item/insight-score-helper.ts'
+import { Link as AnchorLink } from '@/components/ui/link.tsx'
+import { DataBadge } from '@/components/ui/data-badge.tsx'
+import { cn } from '@/lib/utils.ts'
 
 export const InsightTabButton = () => {
   const insights = useSelectedItemStore(state => state.insights)

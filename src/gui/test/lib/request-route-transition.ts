@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
-import { requestRouteTransition } from '@/lib/request-route-transition.js'
+import { requestRouteTransition } from '@/lib/request-route-transition.ts'
 
 const stderr = console.error
 

@@ -6,18 +6,18 @@ import type {
   MouseEvent,
 } from 'react'
 import { BatteryLow, PackageCheck, PackagePlus } from 'lucide-react'
-import { Button } from '@/components/ui/button.jsx'
-import { CardHeader, CardTitle } from '@/components/ui/card.jsx'
-import { Input } from '@/components/ui/input.jsx'
-import { Label } from '@/components/ui/form-label.jsx'
+import { Button } from '@/components/ui/button.tsx'
+import { CardHeader, CardTitle } from '@/components/ui/card.tsx'
+import { Input } from '@/components/ui/input.tsx'
+import { Label } from '@/components/ui/form-label.tsx'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select.jsx'
-import { LoadingSpinner } from '@/components/ui/loading-spinner.jsx'
+} from '@/components/ui/select.tsx'
+import { LoadingSpinner } from '@/components/ui/loading-spinner.tsx'
 
 export type InstallOptions = {
   name: string

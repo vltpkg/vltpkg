@@ -3,9 +3,9 @@ import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from '@/components/ui/popover'
+} from '@/components/ui/popover.tsx'
 import { ChevronDown } from 'lucide-react'
-import { Icon } from '@/components/icon'
+import { Icon } from '@/components/icon.tsx'
 
 interface MenuItem {
   icon?: string

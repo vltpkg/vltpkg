@@ -1,6 +1,6 @@
-import { useSidebar } from '@/components/ui/sidebar.jsx'
-import type { MenuItem } from '@/components/navigation/sidebar/menu.js'
-import { SidebarMenuLink } from '@/components/navigation/sidebar/sidebar-menu-link.jsx'
+import { useSidebar } from '@/components/ui/sidebar.tsx'
+import type { MenuItem } from '@/components/navigation/sidebar/menu.ts'
+import { SidebarMenuLink } from '@/components/navigation/sidebar/sidebar-menu-link.tsx'
 import { PanelLeftClose, PanelLeftOpen } from 'lucide-react'
 
 export const SidebarToggle = () => {
