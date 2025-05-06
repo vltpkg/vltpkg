@@ -95,9 +95,10 @@ const versions = [
 ]
 
 // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-const ours = (i: number) => Spec.parse(versions[i % versions.length]!)
-// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-const npms = (i: number) => npa(versions[i % versions.length]!)
+const getVersion = (i: number) => versions[i % versions.length]!
+
+const ours = (i: number) => Spec.parse(getVersion(i))
+const npms = (i: number) => npa(getVersion(i))
 
 console.log('parses per ms (bigger number is better)')
 console.log(

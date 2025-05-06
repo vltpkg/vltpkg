@@ -33,8 +33,7 @@ vi.mock('@/components/ui/toaster.jsx', () => ({
 }))
 
 vi.mock('@/layout.jsx', async importOriginal => {
-  const actual =
-    (await importOriginal()) as typeof import('@/layout.jsx') // eslint-disable-line @typescript-eslint/no-unnecessary-type-assertion
+  const actual = await importOriginal<typeof import('@/layout.jsx')>()
 
   return {
     default: ({
