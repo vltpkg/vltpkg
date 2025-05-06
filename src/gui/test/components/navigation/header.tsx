@@ -5,9 +5,18 @@ import { useGraphStore as useStore } from '@/state/index.js'
 import { Header } from '@/components/navigation/header.jsx'
 import { useLocation } from 'react-router'
 import type { Location } from 'react-router'
+import type { State } from '@/state/types.js'
 
 vi.mock('react-router', () => ({
   useLocation: vi.fn(),
+}))
+
+vi.mock('@/components/ui/inline-code.jsx', () => ({
+  InlineCode: 'gui-inline-code',
+}))
+
+vi.mock('lucide-react', () => ({
+  ChevronRight: 'gui-chevron-right-icon',
 }))
 
 expect.addSnapshotSerializer({
@@ -50,3 +59,27 @@ test.each(testCases)(
     expect(container.innerHTML).toMatchSnapshot()
   },
 )
+
+test('header renders with context value on `/explore`', () => {
+  vi.mocked(useLocation).mockReturnValue({
+    pathname: '/explore',
+  } as Location)
+  const Container = () => {
+    const updateDashboard = useStore(state => state.updateDashboard)
+    const updateGraph = useStore(state => state.updateGraph)
+
+    updateDashboard({
+      buildVersion: '1.0.0',
+    } as unknown as State['dashboard'])
+    updateGraph({
+      projectRoot: '/foo/bar/baz',
+    } as unknown as State['graph'])
+
+    return <Header />
+  }
+
+  const { container } = render(<Container />)
+  expect(container.innerHTML).toContain('/foo/bar/baz')
+  expect(container.innerHTML).toContain('1.0.0')
+  expect(container.innerHTML).toMatchSnapshot()
+})
