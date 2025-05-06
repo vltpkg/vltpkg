@@ -1,4 +1,4 @@
-import { isRecord } from '@/utils/typeguards.js'
+import { isRecord } from '@/utils/typeguards.ts'
 
 export const deepEqual = (a: any, b: any): boolean => {
   if (a === b) return true

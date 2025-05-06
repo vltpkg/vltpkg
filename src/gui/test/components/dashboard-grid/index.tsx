@@ -1,16 +1,16 @@
 import { vi, test, expect, afterEach } from 'vitest'
 import { cleanup, render } from '@testing-library/react'
 import html from 'diffable-html'
-import { useGraphStore as useStore } from '@/state/index.js'
-import { DashboardGrid } from '@/components/dashboard-grid/index.jsx'
-import type { DashboardTools } from '@/state/types.js'
+import { useGraphStore as useStore } from '@/state/index.ts'
+import { DashboardGrid } from '@/components/dashboard-grid/index.tsx'
+import type { DashboardTools } from '@/state/types.ts'
 
 vi.mock('react-router', () => ({
   useNavigate: vi.fn(),
   NavLink: 'gui-nav-link',
 }))
 
-vi.mock('@/utils/dashboard-tools.jsx', () => ({
+vi.mock('@/utils/dashboard-tools.tsx', () => ({
   getIconSet: vi.fn((tools: DashboardTools[]) => {
     const mockRuntimes: Partial<Record<DashboardTools, string>> = {
       node: 'gui-runtime-node-icon',
@@ -43,43 +43,43 @@ vi.mock('@/utils/dashboard-tools.jsx', () => ({
   }),
 }))
 
-vi.mock('@/components/ui/card.jsx', () => ({
+vi.mock('@/components/ui/card.tsx', () => ({
   CardTitle: 'gui-card-title',
 }))
 
-vi.mock('@/components/ui/button.jsx', () => ({
+vi.mock('@/components/ui/button.tsx', () => ({
   Button: 'gui-button',
 }))
 
-vi.mock('@/components/ui/tooltip.jsx', () => ({
+vi.mock('@/components/ui/tooltip.tsx', () => ({
   Tooltip: 'gui-tooltip',
   TooltipContent: 'gui-tooltip-content',
   TooltipProvider: 'gui-tooltip-provider',
   TooltipTrigger: 'gui-tooltip-trigger',
 }))
 
-vi.mock('@/components/ui/filter-search.jsx', () => ({
+vi.mock('@/components/ui/filter-search.tsx', () => ({
   FilterSearch: 'gui-filter-search',
 }))
 
-vi.mock('@/components/data-table/table-filter-search.jsx', () => ({
+vi.mock('@/components/data-table/table-filter-search.tsx', () => ({
   TableFilterSearch: 'gui-dashboard-table-filter-search',
 }))
 
-vi.mock('@/components/data-table/table-view-dropdown.jsx', () => ({
+vi.mock('@/components/data-table/table-view-dropdown.tsx', () => ({
   TableViewDropdown: 'gui-dashboard-table-view-dropdown',
 }))
 
-vi.mock('@/components/dashboard-grid/dasboard-table.jsx', () => ({
+vi.mock('@/components/dashboard-grid/dasboard-table.tsx', () => ({
   DashboardTable: 'gui-dashboard-table',
 }))
 
-vi.mock('@/components/sort-dropdown.jsx', () => ({
+vi.mock('@/components/sort-dropdown.tsx', () => ({
   SortDropdown: 'gui-sort-dropdown',
 }))
 
 vi.mock(
-  '@/components/dashboard-grid/dashboard-view-toggle.jsx',
+  '@/components/dashboard-grid/dashboard-view-toggle.tsx',
   () => ({
     DashboardViewToggle: 'gui-dashboard-view-toggle',
   }),

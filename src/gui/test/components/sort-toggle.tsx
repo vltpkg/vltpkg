@@ -2,9 +2,9 @@ import React from 'react'
 import { vi, describe, it, expect, afterEach } from 'vitest'
 import { cleanup, render } from '@testing-library/react'
 import html from 'diffable-html'
-import { SortToggle } from '@/components/sort-toggle.jsx'
+import { SortToggle } from '@/components/sort-toggle.tsx'
 
-vi.mock('@/components/ui/toggle.jsx', () => ({
+vi.mock('@/components/ui/toggle.tsx', () => ({
   Toggle: 'gui-toggle',
 }))
 

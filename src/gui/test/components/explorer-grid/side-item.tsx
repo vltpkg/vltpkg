@@ -2,26 +2,26 @@ import { test, expect, vi, afterEach } from 'vitest'
 import { cleanup, render } from '@testing-library/react'
 import html from 'diffable-html'
 import { Spec } from '@vltpkg/spec/browser'
-import { useGraphStore as useStore } from '@/state/index.js'
-import type { GridItemData } from '@/components/explorer-grid/types.js'
-import { SideItem } from '@/components/explorer-grid/side-item.jsx'
+import { useGraphStore as useStore } from '@/state/index.ts'
+import type { GridItemData } from '@/components/explorer-grid/types.ts'
+import { SideItem } from '@/components/explorer-grid/side-item.tsx'
 
-vi.mock('@/components/ui/badge.jsx', () => ({
+vi.mock('@/components/ui/badge.tsx', () => ({
   Badge: 'gui-badge',
 }))
-vi.mock('@/components/ui/card.jsx', () => ({
+vi.mock('@/components/ui/card.tsx', () => ({
   Card: 'gui-card',
   CardDescription: 'gui-card-description',
   CardHeader: 'gui-card-header',
   CardTitle: 'gui-card-title',
 }))
-vi.mock('@/components/ui/dropdown-menu.jsx', () => ({
+vi.mock('@/components/ui/dropdown-menu.tsx', () => ({
   DropdownMenu: 'gui-dropdown-menu',
   DropdownMenuTrigger: 'gui-dropdown-menu-trigger',
   DropdownMenuContent: 'gui-dropdown-menu-content',
   DropdownMenuItem: 'gui-dropdown-menu-item',
 }))
-vi.mock('@/components/ui/data-badge.jsx', () => ({
+vi.mock('@/components/ui/data-badge.tsx', () => ({
   DataBadge: 'gui-data-badge',
 }))
 vi.mock('lucide-react', async () => ({

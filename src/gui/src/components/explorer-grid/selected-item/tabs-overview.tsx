@@ -1,5 +1,5 @@
-import { TabsTrigger, TabsContent } from '@/components/ui/tabs.jsx'
-import { useSelectedItemStore } from '@/components/explorer-grid/selected-item/context.jsx'
+import { TabsTrigger, TabsContent } from '@/components/ui/tabs.tsx'
+import { useSelectedItemStore } from '@/components/explorer-grid/selected-item/context.tsx'
 import Markdown from 'react-markdown'
 import {
   FileText,
@@ -11,17 +11,17 @@ import {
   GitPullRequest,
   Link as LucideLink,
 } from 'lucide-react'
-import { DataBadge } from '@/components/ui/data-badge.jsx'
-import { Link } from '@/components/ui/link.jsx'
+import { DataBadge } from '@/components/ui/data-badge.tsx'
+import { Link } from '@/components/ui/link.tsx'
 import {
   Avatar,
   AvatarImage,
   AvatarFallback,
 } from '@radix-ui/react-avatar'
-import { toHumanNumber } from '@/utils/human-number.js'
-import { Github } from '@/components/icons/index.js'
-import { getRepositoryUrl } from '@/utils/get-repo-url.js'
-import type { Contributor } from '@/lib/external-info.js'
+import { toHumanNumber } from '@/utils/human-number.ts'
+import { Github } from '@/components/icons/index.ts'
+import { getRepositoryUrl } from '@/utils/get-repo-url.ts'
+import type { Contributor } from '@/lib/external-info.ts'
 
 export const OverviewTabButton = () => {
   return (

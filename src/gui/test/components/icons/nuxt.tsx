@@ -1,7 +1,7 @@
 import { afterEach, expect, test } from 'vitest'
 import { cleanup, render } from '@testing-library/react'
 import html from 'diffable-html'
-import { Nuxt } from '@/components/icons/nuxt.jsx'
+import { Nuxt } from '@/components/icons/nuxt.tsx'
 
 expect.addSnapshotSerializer({
   serialize: v => html(v),

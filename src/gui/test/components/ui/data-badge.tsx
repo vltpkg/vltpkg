@@ -1,7 +1,7 @@
 import { vi, test, describe, it, expect, afterEach } from 'vitest'
 import { cleanup, render } from '@testing-library/react'
 import html from 'diffable-html'
-import { DataBadge } from '@/components/ui/data-badge.jsx'
+import { DataBadge } from '@/components/ui/data-badge.tsx'
 import { Smile } from 'lucide-react'
 
 vi.mock('lucide-react', () => ({
@@ -10,7 +10,7 @@ vi.mock('lucide-react', () => ({
   Smile: 'gui-smile-icon',
 }))
 
-vi.mock('@/components/ui/tooltip.jsx', () => ({
+vi.mock('@/components/ui/tooltip.tsx', () => ({
   Tooltip: 'gui-tooltip',
   TooltipContent: 'gui-tooltip-content',
   TooltipTrigger: 'gui-tooltip-trigger',

@@ -2,7 +2,7 @@ import React from 'react'
 import { vi, describe, it, expect, afterEach } from 'vitest'
 import { cleanup, render } from '@testing-library/react'
 import html from 'diffable-html'
-import { ColorPicker } from '@/components/ui/color-picker.jsx'
+import { ColorPicker } from '@/components/ui/color-picker.tsx'
 
 expect.addSnapshotSerializer({
   serialize: v => html(v),

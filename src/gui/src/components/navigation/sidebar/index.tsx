@@ -5,19 +5,19 @@ import {
   SidebarMenu,
   SidebarRail,
   SidebarFooter,
-} from '@/components/ui/sidebar.jsx'
+} from '@/components/ui/sidebar.tsx'
 
 /* sidebar components */
-import { SidebarHeader } from '@/components/navigation/sidebar/sidebar-header.jsx'
-import { SidebarThemeSwitcher } from '@/components/navigation/sidebar/sidebar-theme-switcher.jsx'
-import { SidebarMenuLink } from '@/components/navigation/sidebar/sidebar-menu-link.jsx'
-import { SidebarToggle } from '@/components/navigation/sidebar/sidebar-toggle.jsx'
+import { SidebarHeader } from '@/components/navigation/sidebar/sidebar-header.tsx'
+import { SidebarThemeSwitcher } from '@/components/navigation/sidebar/sidebar-theme-switcher.tsx'
+import { SidebarMenuLink } from '@/components/navigation/sidebar/sidebar-menu-link.tsx'
+import { SidebarToggle } from '@/components/navigation/sidebar/sidebar-toggle.tsx'
 
 /* sidebar nav menus */
-import { SidebarMainNav } from '@/components/navigation/sidebar/sidebar-main-nav.jsx'
-import { SidebarQueryNav } from '@/components/navigation/sidebar/sidebar-query-nav.jsx'
+import { SidebarMainNav } from '@/components/navigation/sidebar/sidebar-main-nav.tsx'
+import { SidebarQueryNav } from '@/components/navigation/sidebar/sidebar-query-nav.tsx'
 
-import { footerMenuItems } from '@/components/navigation/sidebar/menu.js'
+import { footerMenuItems } from '@/components/navigation/sidebar/menu.ts'
 
 /**
  * Sidebar creates a cookie 'sidebar:state' automatically

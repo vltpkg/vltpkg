@@ -4,7 +4,7 @@ import React from 'react'
 import { tv } from 'tailwind-variants'
 import type { VariantProps } from 'tailwind-variants'
 
-import { cn } from '@/lib/utils.js'
+import { cn } from '@/lib/utils.ts'
 
 export type ProgressCircleVariant = VariantProps<
   typeof progressCircleVariants

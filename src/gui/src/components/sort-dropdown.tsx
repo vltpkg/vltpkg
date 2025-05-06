@@ -3,14 +3,14 @@ import {
   DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuCheckboxItem,
-} from '@/components/ui/dropdown-menu.jsx'
-import { Button } from '@/components/ui/button.jsx'
+} from '@/components/ui/dropdown-menu.tsx'
+import { Button } from '@/components/ui/button.tsx'
 import { ChevronDown } from 'lucide-react'
 import {
   sortAlphabeticallyAscending,
   sortAlphabeticallyDescending,
-} from '@/components/sort-toggle.jsx'
-import type { SortingOption } from '@/components/sort-toggle.jsx'
+} from '@/components/sort-toggle.tsx'
+import type { SortingOption } from '@/components/sort-toggle.tsx'
 import { useState } from 'react'
 
 interface SortDropdownProps<T> {

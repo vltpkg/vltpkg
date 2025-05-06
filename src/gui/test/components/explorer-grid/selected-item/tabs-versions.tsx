@@ -1,18 +1,18 @@
 import { test, expect, vi, beforeEach, afterEach } from 'vitest'
 import { cleanup, render, fireEvent } from '@testing-library/react'
 import html from 'diffable-html'
-import { useGraphStore as useStore } from '@/state/index.js'
-import type { SelectedItemStore } from '@/components/explorer-grid/selected-item/context.jsx'
-import { useSelectedItemStore } from '@/components/explorer-grid/selected-item/context.jsx'
+import { useGraphStore as useStore } from '@/state/index.ts'
+import type { SelectedItemStore } from '@/components/explorer-grid/selected-item/context.tsx'
+import { useSelectedItemStore } from '@/components/explorer-grid/selected-item/context.tsx'
 import {
   VersionsTabButton,
   VersionsTabContent,
-} from '@/components/explorer-grid/selected-item/tabs-versions.jsx'
+} from '@/components/explorer-grid/selected-item/tabs-versions.tsx'
 import {
   SELECTED_ITEM,
   SELECTED_ITEM_DETAILS,
-} from './__fixtures__/item.js'
-import type { Version } from '@/lib/external-info.js'
+} from './__fixtures__/item.ts'
+import type { Version } from '@/lib/external-info.ts'
 
 // Mock IntersectionObserver
 const mockIntersectionObserver = vi.fn()
@@ -52,7 +52,7 @@ vi.mock('lucide-react', () => ({
 }))
 
 vi.mock(
-  '@/components/explorer-grid/selected-item/context.jsx',
+  '@/components/explorer-grid/selected-item/context.tsx',
   () => ({
     useSelectedItemStore: vi.fn(),
     SelectedItemProvider: 'gui-selected-item-provider',
@@ -64,12 +64,12 @@ vi.mock('date-fns', () => ({
   formatDistanceStrict: vi.fn().mockReturnValue('1 day ago'),
 }))
 
-vi.mock('@/components/ui/tabs.jsx', () => ({
+vi.mock('@/components/ui/tabs.tsx', () => ({
   TabsTrigger: 'gui-tabs-trigger',
   TabsContent: 'gui-tabs-content',
 }))
 
-vi.mock('@/components/ui/data-badge.jsx', () => ({
+vi.mock('@/components/ui/data-badge.tsx', () => ({
   DataBadge: 'gui-data-badge',
 }))
 
@@ -79,33 +79,33 @@ vi.mock('@radix-ui/react-avatar', () => ({
   AvatarFallback: 'gui-avatar-fallback',
 }))
 
-vi.mock('@/components/ui/button.jsx', () => ({
+vi.mock('@/components/ui/button.tsx', () => ({
   Button: 'gui-button',
 }))
 
-vi.mock('@/components/ui/copy-to-clipboard.jsx', () => ({
+vi.mock('@/components/ui/copy-to-clipboard.tsx', () => ({
   CopyToClipboard: 'gui-copy-to-clipboard',
 }))
 
-vi.mock('@/components/ui/tooltip.jsx', () => ({
+vi.mock('@/components/ui/tooltip.tsx', () => ({
   Tooltip: 'gui-tooltip',
   TooltipTrigger: 'gui-tooltip-trigger',
   TooltipContent: 'gui-tooltip-content',
   TooltipProvider: 'gui-tooltip-provider',
 }))
 
-vi.mock('@/components/ui/dropdown-menu.jsx', () => ({
+vi.mock('@/components/ui/dropdown-menu.tsx', () => ({
   DropdownMenu: 'gui-dropdown-menu',
   DropdownMenuTrigger: 'gui-dropdown-menu-trigger',
   DropdownMenuContent: 'gui-dropdown-menu-content',
   DropdownMenuCheckboxItem: 'gui-dropdown-menu-checkbox-item',
 }))
 
-vi.mock('@/components/ui/input.jsx', () => ({
+vi.mock('@/components/ui/input.tsx', () => ({
   Input: 'gui-input',
 }))
 
-vi.mock('@/components/ui/chart.jsx', () => ({
+vi.mock('@/components/ui/chart.tsx', () => ({
   ChartContainer: 'gui-chart-container',
   ChartTooltip: 'gui-chart-tooltip',
   ChartTooltipContent: 'gui-chart-tooltip-content',
@@ -118,7 +118,7 @@ vi.mock('recharts', () => ({
   CartesianGrid: 'gui-recharts-cartesian-grid',
 }))
 
-vi.mock('@/components/number-flow.jsx', () => ({
+vi.mock('@/components/number-flow.tsx', () => ({
   NumberFlow: 'gui-number-flow',
 }))
 

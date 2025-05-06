@@ -1,11 +1,11 @@
 import type { Repository, Manifest, Packument } from '@vltpkg/types'
 import { compare, gt } from '@vltpkg/semver'
-import { isRecord } from '@/utils/typeguards.js'
+import { isRecord } from '@/utils/typeguards.ts'
 import type { Spec } from '@vltpkg/spec/browser'
 import {
   getRepoOrigin,
   getRepositoryApiUrl,
-} from '@/utils/get-repo-url.js'
+} from '@/utils/get-repo-url.ts'
 
 export type Semver = `${number}.${number}.${number}`
 

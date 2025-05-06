@@ -17,7 +17,7 @@ import {
 } from '@vltpkg/spec/browser'
 import type { DependencyTypeShort, Manifest } from '@vltpkg/types'
 import type { TransferData } from './types.ts'
-import { assert } from '@/lib/utils.js'
+import { assert } from '@/lib/utils.ts'
 
 const loadSpecOptions = (
   lockfile: LockfileData,

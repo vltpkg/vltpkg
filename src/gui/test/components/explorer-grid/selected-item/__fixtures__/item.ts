@@ -1,5 +1,5 @@
-import type { GridItemData } from '@/components/explorer-grid/types.js'
-import type { DetailsInfo } from '@/lib/external-info.js'
+import type { GridItemData } from '@/components/explorer-grid/types.ts'
+import type { DetailsInfo } from '@/lib/external-info.ts'
 import type { NodeLike } from '@vltpkg/graph'
 import { joinDepIDTuple } from '@vltpkg/dep-id'
 import { Spec, getOptions } from '@vltpkg/spec/browser'

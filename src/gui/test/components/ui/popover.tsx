@@ -5,7 +5,7 @@ import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from '@/components/ui/popover.jsx'
+} from '@/components/ui/popover.tsx'
 
 expect.addSnapshotSerializer({
   serialize: v => html(v),

@@ -1,8 +1,8 @@
-import { SidebarMenuLink } from '@/components/navigation/sidebar/sidebar-menu-link.jsx'
-import type { MenuItem } from '@/components/navigation/sidebar/menu.js'
+import { SidebarMenuLink } from '@/components/navigation/sidebar/sidebar-menu-link.tsx'
+import type { MenuItem } from '@/components/navigation/sidebar/menu.ts'
 import { LaptopMinimal, SunMedium, Moon } from 'lucide-react'
-import { useTheme } from '@/components/ui/theme-provider.jsx'
-import type { Theme } from '@/components/ui/theme-provider.jsx'
+import { useTheme } from '@/components/ui/theme-provider.tsx'
+import type { Theme } from '@/components/ui/theme-provider.tsx'
 
 const SidebarThemeSwitcher = () => {
   const { theme, setTheme } = useTheme()

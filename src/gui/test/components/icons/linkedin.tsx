@@ -1,7 +1,7 @@
 import { afterEach, expect, test } from 'vitest'
 import { cleanup, render } from '@testing-library/react'
 import html from 'diffable-html'
-import { Linkedin } from '@/components/icons/linkedin.jsx'
+import { Linkedin } from '@/components/icons/linkedin.tsx'
 
 expect.addSnapshotSerializer({
   serialize: v => html(v),

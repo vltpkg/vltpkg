@@ -1,7 +1,7 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import { ThemeProvider } from '@/components/ui/theme-provider.jsx'
-import { Router } from '@/routes.jsx'
+import { ThemeProvider } from '@/components/ui/theme-provider.tsx'
+import { Router } from '@/routes.tsx'
 
 const App = () => <Router />
 
