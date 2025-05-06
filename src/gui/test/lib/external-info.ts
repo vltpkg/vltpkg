@@ -5,8 +5,8 @@ import {
   readAuthor,
   readRepository,
   parseAriaLabelFromSVG,
-} from '@/lib/external-info.js'
-import type { DetailsInfo } from '@/lib/external-info.js'
+} from '@/lib/external-info.ts'
+import type { DetailsInfo } from '@/lib/external-info.ts'
 
 const sleep = (time: number) =>
   new Promise<void>(resolve => {
@@ -238,7 +238,7 @@ global.fetch = vi.fn(async url => ({
 })) as unknown as typeof global.fetch
 
 // Mock getRepoOrigin to ensure correct behavior
-vi.mock('@/utils/get-repo-url.js', () => ({
+vi.mock('@/utils/get-repo-url.ts', () => ({
   getRepositoryApiUrl: (repo: string) => {
     if (repo.includes('org/repo')) {
       return 'https://api.github.com/repos/org/repo'

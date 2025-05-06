@@ -7,17 +7,17 @@ import {
   DialogHeader,
   DialogFooter,
   DialogContent,
-} from '@/components/ui/dialog.jsx'
+} from '@/components/ui/dialog.tsx'
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
-} from '@/components/ui/tooltip.jsx'
-import { Button } from '@/components/ui/button.jsx'
-import type { QueryLabel } from '@/state/types.js'
+} from '@/components/ui/tooltip.tsx'
+import { Button } from '@/components/ui/button.tsx'
+import type { QueryLabel } from '@/state/types.ts'
 import { Trash } from 'lucide-react'
-import { useToast } from '@/components/hooks/use-toast.js'
-import { useGraphStore } from '@/state/index.js'
+import { useToast } from '@/components/hooks/use-toast.ts'
+import { useGraphStore } from '@/state/index.ts'
 
 interface DeleteLabelProps {
   deleteDialogOpen: boolean

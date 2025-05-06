@@ -1,4 +1,4 @@
-import { Query } from '@/components/icons/query.jsx'
+import { Query } from '@/components/icons/query.tsx'
 import { CircleHelp, LayoutDashboard, Library } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 

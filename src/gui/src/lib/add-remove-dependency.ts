@@ -1,6 +1,6 @@
-import type { useToast } from '@/components/hooks/use-toast.js'
+import type { useToast } from '@/components/hooks/use-toast.ts'
 
-import type { Action } from '@/state/types.js'
+import type { Action } from '@/state/types.ts'
 import type { DepID } from '@vltpkg/dep-id'
 
 export type Operation = 'install' | 'uninstall'

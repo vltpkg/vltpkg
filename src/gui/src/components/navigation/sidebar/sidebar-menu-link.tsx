@@ -1,7 +1,7 @@
 import { useEffect, useState, Fragment } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import type { Variants } from 'framer-motion'
-import type { MenuItem } from '@/components/navigation/sidebar/menu.js'
+import type { MenuItem } from '@/components/navigation/sidebar/menu.ts'
 import {
   SidebarMenuItem,
   SidebarMenuButton,
@@ -10,15 +10,15 @@ import {
   SidebarMenuSubItem,
   SidebarMenuSubButton,
   useSidebar,
-} from '@/components/ui/sidebar.jsx'
+} from '@/components/ui/sidebar.tsx'
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
-} from '@/components/ui/collapsible.jsx'
+} from '@/components/ui/collapsible.tsx'
 import { useLocation, NavLink } from 'react-router'
 import { ArrowUpRight, ChevronRight } from 'lucide-react'
-import { cn } from '@/lib/utils.js'
+import { cn } from '@/lib/utils.ts'
 
 interface SidebarMenuLinkProps {
   items: MenuItem[]

@@ -4,7 +4,7 @@ import {
   normalizeUrl,
   getRepoOrigin,
   getRepositoryApiUrl,
-} from '@/utils/get-repo-url.js'
+} from '@/utils/get-repo-url.ts'
 import type { Repository } from '@vltpkg/types'
 
 describe('normalizeUrl', () => {

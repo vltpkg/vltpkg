@@ -6,6 +6,11 @@
     "target": "ES2022",
     "lib": ["ES2022", "dom"],
     "jsx": "preserve",
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "rewriteRelativeImportExtensions": false,
+    "allowImportingTsExtensions": true,
+    "noEmit": true,
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"]

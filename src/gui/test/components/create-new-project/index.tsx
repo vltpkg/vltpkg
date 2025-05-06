@@ -1,43 +1,43 @@
 import { vi, test, expect, afterEach } from 'vitest'
 import { cleanup, render } from '@testing-library/react'
 import html from 'diffable-html'
-import { useGraphStore as useStore } from '@/state/index.js'
-import { CreateNewProjectContent } from '@/components/create-new-project/index.jsx'
+import { useGraphStore as useStore } from '@/state/index.ts'
+import { CreateNewProjectContent } from '@/components/create-new-project/index.tsx'
 
 vi.mock('react-router', () => ({
   useNavigate: vi.fn(),
 }))
 
-vi.mock('@/components/ui/input.jsx', () => ({
+vi.mock('@/components/ui/input.tsx', () => ({
   Input: 'gui-input',
 }))
 
-vi.mock('@/components/ui/button.jsx', () => ({
+vi.mock('@/components/ui/button.tsx', () => ({
   Button: 'gui-button',
 }))
 
-vi.mock('@/components/ui/form-label.jsx', () => ({
+vi.mock('@/components/ui/form-label.tsx', () => ({
   Label: 'gui-label',
 }))
 
-vi.mock('@/components/grid/grid.jsx', () => ({
+vi.mock('@/components/grid/grid.tsx', () => ({
   Grid: 'gui-grid',
   System: 'gui-grid-system',
   Cell: 'gui-grid-cell',
 }))
 
-vi.mock('@/components/icons/index.js', () => ({
+vi.mock('@/components/icons/index.ts', () => ({
   Next: 'gui-next-icon',
   Vercel: 'gui-vercel-icon',
   Nuxt: 'gui-nuxt-icon',
   Node: 'gui-node-icon',
 }))
 
-vi.mock('@/components/animated-beam.jsx', () => ({
+vi.mock('@/components/animated-beam.tsx', () => ({
   AnimatedBeam: 'gui-animated-beam',
 }))
 
-vi.mock('@/components/directory-select.jsx', () => ({
+vi.mock('@/components/directory-select.tsx', () => ({
   DirectorySelect: 'gui-directory-select',
 }))
 

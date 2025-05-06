@@ -1,15 +1,15 @@
 import { vi, test, expect, afterEach } from 'vitest'
 import { cleanup, render } from '@testing-library/react'
 import html from 'diffable-html'
-import { useGraphStore as useStore } from '@/state/index.js'
-import { DependencySideBar } from '@/components/explorer-grid/dependency-sidebar/index.jsx'
-import { useDependencySidebarStore } from '@/components/explorer-grid/dependency-sidebar/context.jsx'
+import { useGraphStore as useStore } from '@/state/index.ts'
+import { DependencySideBar } from '@/components/explorer-grid/dependency-sidebar/index.tsx'
+import { useDependencySidebarStore } from '@/components/explorer-grid/dependency-sidebar/context.tsx'
 
-import type { DependencySidebarStore } from '@/components/explorer-grid/dependency-sidebar/context.jsx'
-import type { GridItemData } from '@/components/explorer-grid/types.js'
+import type { DependencySidebarStore } from '@/components/explorer-grid/dependency-sidebar/context.tsx'
+import type { GridItemData } from '@/components/explorer-grid/types.ts'
 
 vi.mock(
-  '@/components/explorer-grid/dependency-sidebar/context.jsx',
+  '@/components/explorer-grid/dependency-sidebar/context.tsx',
   () => ({
     useDependencySidebarStore: vi.fn(),
     DependencySidebarProvider: 'gui-dependency-sidebar-provider',
@@ -24,16 +24,16 @@ vi.mock(
   }),
 )
 
-vi.mock('@/components/explorer-grid/header.jsx', () => ({
+vi.mock('@/components/explorer-grid/header.tsx', () => ({
   GridHeader: 'gui-grid-header',
 }))
 
-vi.mock('@/components/explorer-grid/side-item.jsx', () => ({
+vi.mock('@/components/explorer-grid/side-item.tsx', () => ({
   SideItem: 'gui-side-item',
 }))
 
 vi.mock(
-  '@/components/explorer-grid/dependency-sidebar/add-dependency.jsx',
+  '@/components/explorer-grid/dependency-sidebar/add-dependency.tsx',
   () => ({
     AddDependenciesPopoverTrigger:
       'gui-add-dependencies-popover-trigger',

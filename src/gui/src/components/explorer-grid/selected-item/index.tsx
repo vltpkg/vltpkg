@@ -1,29 +1,29 @@
-import { Card } from '@/components/ui/card.jsx'
-import { useGraphStore } from '@/state/index.js'
-import type { GridItemOptions } from '@/components/explorer-grid/types.js'
-import { Tabs, TabsList } from '@/components/ui/tabs.jsx'
+import { Card } from '@/components/ui/card.tsx'
+import { useGraphStore } from '@/state/index.ts'
+import type { GridItemOptions } from '@/components/explorer-grid/types.ts'
+import { Tabs, TabsList } from '@/components/ui/tabs.tsx'
 import { useEffect, useRef } from 'react'
 import {
   SelectedItemProvider,
   useSelectedItemStore,
-} from '@/components/explorer-grid/selected-item/context.jsx'
+} from '@/components/explorer-grid/selected-item/context.tsx'
 import {
   InsightTabButton,
   InsightTabContent,
-} from '@/components/explorer-grid/selected-item/tabs-insight.jsx'
+} from '@/components/explorer-grid/selected-item/tabs-insight.tsx'
 import {
   OverviewTabButton,
   OverviewTabContent,
-} from '@/components/explorer-grid/selected-item/tabs-overview.jsx'
+} from '@/components/explorer-grid/selected-item/tabs-overview.tsx'
 import {
   VersionsTabButton,
   VersionsTabContent,
-} from '@/components/explorer-grid/selected-item/tabs-versions.jsx'
+} from '@/components/explorer-grid/selected-item/tabs-versions.tsx'
 import {
   TabsManifestButton,
   TabsManifestContent,
-} from '@/components/explorer-grid/selected-item/tabs-manifest.jsx'
-import { ItemHeader } from '@/components/explorer-grid/selected-item/item-header.jsx'
+} from '@/components/explorer-grid/selected-item/tabs-manifest.tsx'
+import { ItemHeader } from '@/components/explorer-grid/selected-item/item-header.tsx'
 
 export const SelectedItem = ({ item }: GridItemOptions) => {
   const updateLinePositionReference = useGraphStore(

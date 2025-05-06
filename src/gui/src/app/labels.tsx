@@ -1,18 +1,18 @@
 import { useEffect, useState } from 'react'
-import { Label } from '@/components/labels/label.jsx'
-import { Button } from '@/components/ui/button.jsx'
+import { Label } from '@/components/labels/label.tsx'
+import { Button } from '@/components/ui/button.tsx'
 import { Plus } from 'lucide-react'
-import { FilterSearch } from '@/components/ui/filter-search.jsx'
+import { FilterSearch } from '@/components/ui/filter-search.tsx'
 import {
   sortAlphabeticallyAscending,
   SortToggle,
-} from '@/components/sort-toggle.jsx'
-import { Checkbox } from '@/components/ui/checkbox.jsx'
-import { DeleteLabel } from '@/components/labels/delete-label.jsx'
-import { CreateLabel } from '@/components/labels/create-label.jsx'
-import type { QueryLabel } from '@/state/types.js'
-import { useGraphStore } from '@/state/index.js'
-import { LabelsEmptyState } from '@/components/labels/labels-empty-state.jsx'
+} from '@/components/sort-toggle.tsx'
+import { Checkbox } from '@/components/ui/checkbox.tsx'
+import { DeleteLabel } from '@/components/labels/delete-label.tsx'
+import { CreateLabel } from '@/components/labels/create-label.tsx'
+import type { QueryLabel } from '@/state/types.ts'
+import { useGraphStore } from '@/state/index.ts'
+import { LabelsEmptyState } from '@/components/labels/labels-empty-state.tsx'
 import { AnimatePresence, LayoutGroup, motion } from 'framer-motion'
 
 const Labels = () => {

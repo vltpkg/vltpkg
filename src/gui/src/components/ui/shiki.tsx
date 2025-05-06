@@ -1,7 +1,7 @@
 import { useLayoutEffect, useState } from 'react'
 import { codeToHtml } from 'shiki/bundle/web'
-import { cn } from '@/lib/utils.js'
-import { useTheme } from '@/components/ui/theme-provider.jsx'
+import { cn } from '@/lib/utils.ts'
+import { useTheme } from '@/components/ui/theme-provider.tsx'
 
 export function CodeBlock({
   code,

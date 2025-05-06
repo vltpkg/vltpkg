@@ -1,17 +1,17 @@
 import { createContext, useContext, useRef } from 'react'
 import { useStore, createStore } from 'zustand'
 import { hydrate } from '@vltpkg/dep-id/browser'
-import { useGraphStore } from '@/state/index.js'
-import { fetchDetails } from '@/lib/external-info.js'
+import { useGraphStore } from '@/state/index.ts'
+import { fetchDetails } from '@/lib/external-info.ts'
 
-import { SOCKET_SECURITY_DETAILS } from '@/lib/constants/socket.js'
+import { SOCKET_SECURITY_DETAILS } from '@/lib/constants/socket.ts'
 
 import type { StoreApi } from 'zustand'
-import type { GridItemData } from '@/components/explorer-grid/types.js'
-import type { DetailsInfo } from '@/lib/external-info.js'
+import type { GridItemData } from '@/components/explorer-grid/types.ts'
+import type { DetailsInfo } from '@/lib/external-info.ts'
 import type { Insights } from '@vltpkg/query'
 import type { PropsWithChildren } from 'react'
-import type { SocketSecurityDetails } from '@/lib/constants/socket.js'
+import type { SocketSecurityDetails } from '@/lib/constants/socket.ts'
 import type { PackageScore } from '@vltpkg/security-archive'
 import type { Manifest } from '@vltpkg/types'
 

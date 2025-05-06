@@ -1,12 +1,12 @@
 import type { Column, ColumnDef } from '@tanstack/react-table'
-import type { SelectorInTable } from '@/app/help/help-selectors.jsx'
+import type { SelectorInTable } from '@/app/help/help-selectors.tsx'
 import { ArrowUpDown } from 'lucide-react'
-import { Button } from '@/components/ui/button.jsx'
+import { Button } from '@/components/ui/button.tsx'
 import {
   getAlertColor,
   InsightBadge,
-} from '@/components/explorer-grid/selected-item/insight-badge.jsx'
-import { InlineCode } from '@/components/ui/inline-code.jsx'
+} from '@/components/explorer-grid/selected-item/insight-badge.tsx'
+import { InlineCode } from '@/components/ui/inline-code.tsx'
 
 const SortingHeader = ({
   column,

@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { Search, Command } from 'lucide-react'
-import { Kbd } from '@/components/ui/kbd.jsx'
-import { Input } from '@/components/ui/input.jsx'
+import { Kbd } from '@/components/ui/kbd.tsx'
+import { Input } from '@/components/ui/input.tsx'
 
 interface TableFilterSearchProps {
   filterValue: string

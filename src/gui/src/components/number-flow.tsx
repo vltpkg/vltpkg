@@ -5,7 +5,7 @@ import {
   AnimatePresence,
 } from 'framer-motion'
 import { useEffect, useState, forwardRef } from 'react'
-import { cn } from '@/lib/utils.js'
+import { cn } from '@/lib/utils.ts'
 import { tv } from 'tailwind-variants'
 
 import type { Variants, Transition } from 'framer-motion'

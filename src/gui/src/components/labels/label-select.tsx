@@ -5,15 +5,15 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from '@/components/ui/command.jsx'
+} from '@/components/ui/command.tsx'
 import { Check, Pencil } from 'lucide-react'
-import type { QueryLabel } from '@/state/types.js'
-import { useGraphStore } from '@/state/index.js'
+import type { QueryLabel } from '@/state/types.ts'
+import { useGraphStore } from '@/state/index.ts'
 import { useEffect, useRef, useState } from 'react'
-import { cn } from '@/lib/utils.js'
-import { Button } from '@/components/ui/button.jsx'
-import { CreateLabelModal } from '@/components/labels/create-label-dialog.jsx'
-import { Dialog, DialogTrigger } from '@/components/ui/dialog.jsx'
+import { cn } from '@/lib/utils.ts'
+import { Button } from '@/components/ui/button.tsx'
+import { CreateLabelModal } from '@/components/labels/create-label-dialog.tsx'
+import { Dialog, DialogTrigger } from '@/components/ui/dialog.tsx'
 
 interface LabelSelect {
   setIsOpen: (isOpen: boolean) => void

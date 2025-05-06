@@ -1,7 +1,7 @@
 // @ts-check
 
 import { MarkdownPageEvent } from 'typedoc-plugin-markdown'
-import { entryFileName, modulesFileName } from './constants.mjs'
+import { entryFileName, modulesFileName } from './constants.mts'
 
 /** @param {import('typedoc-plugin-markdown').MarkdownApplication} app */
 export function load(app) {

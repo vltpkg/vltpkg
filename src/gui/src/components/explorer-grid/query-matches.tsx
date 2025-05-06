@@ -1,19 +1,19 @@
 import { NavLink, useNavigate } from 'react-router'
-import type { SavedQuery } from '@/state/types.js'
+import type { SavedQuery } from '@/state/types.ts'
 import { useEffect, useState } from 'react'
-import { useGraphStore } from '@/state/index.js'
+import { useGraphStore } from '@/state/index.ts'
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from '@/components/ui/popover.jsx'
+} from '@/components/ui/popover.tsx'
 import {
   Tooltip,
   TooltipProvider,
   TooltipContent,
   TooltipTrigger,
-} from '@/components/ui/tooltip.jsx'
-import { LabelBadge } from '@/components/labels/label-badge.jsx'
+} from '@/components/ui/tooltip.tsx'
+import { LabelBadge } from '@/components/labels/label-badge.tsx'
 
 const QueryMatches = () => {
   const savedQueries = useGraphStore(state => state.savedQueries)

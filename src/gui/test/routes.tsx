@@ -3,8 +3,8 @@ import { beforeAll, afterEach, test, vi, expect } from 'vitest'
 import { render, cleanup } from '@testing-library/react'
 import { createMemoryRouter, RouterProvider } from 'react-router'
 import html from 'diffable-html'
-import { useGraphStore as useStore } from '@/state/index.js'
-import { routes } from '@/routes.jsx'
+import { useGraphStore as useStore } from '@/state/index.ts'
+import { routes } from '@/routes.tsx'
 
 vi.mock('react-router', async () => {
   const actual = await import('react-router')
@@ -14,29 +14,29 @@ vi.mock('react-router', async () => {
   }
 })
 
-vi.mock('@/components/navigation/header.jsx', () => ({
+vi.mock('@/components/navigation/header.tsx', () => ({
   Header: 'gui-header',
 }))
-vi.mock('@/components/navigation/footer.jsx', () => ({
+vi.mock('@/components/navigation/footer.tsx', () => ({
   Footer: 'gui-footer',
 }))
-vi.mock('@/components/navigation/sidebar/index.jsx', () => ({
+vi.mock('@/components/navigation/sidebar/index.tsx', () => ({
   defaultOpen: true,
   AppSidebar: 'gui-app-sidebar',
 }))
-vi.mock('@/components/ui/sidebar.jsx', () => ({
+vi.mock('@/components/ui/sidebar.tsx', () => ({
   SidebarProvider: 'gui-sidebar-provider',
   SidebarInset: 'gui-sidebar-inset',
 }))
-vi.mock('@/components/ui/toaster.jsx', () => ({
+vi.mock('@/components/ui/toaster.tsx', () => ({
   Toaster: 'gui-toaster',
 }))
-vi.mock('@/components/hooks/use-preflight.jsx', () => ({
+vi.mock('@/components/hooks/use-preflight.tsx', () => ({
   usePreflight: vi.fn(),
 }))
 
-vi.mock('@/layout.jsx', async importOriginal => {
-  const actual = await importOriginal<typeof import('@/layout.jsx')>()
+vi.mock('@/layout.tsx', async importOriginal => {
+  const actual = await importOriginal<typeof import('@/layout.tsx')>()
 
   return {
     default: ({
@@ -53,25 +53,25 @@ vi.mock('@/layout.jsx', async importOriginal => {
   }
 })
 
-vi.mock('@/app/create-new-project.jsx', () => ({
+vi.mock('@/app/create-new-project.tsx', () => ({
   CreateNewProject: 'gui-create-new-project',
 }))
-vi.mock('@/app/dashboard.jsx', () => ({
+vi.mock('@/app/dashboard.tsx', () => ({
   Dashboard: 'gui-dashboard',
 }))
-vi.mock('@/app/error-found.jsx', () => ({
+vi.mock('@/app/error-found.tsx', () => ({
   ErrorFound: 'gui-error-found',
 }))
-vi.mock('@/app/explorer.jsx', () => ({
+vi.mock('@/app/explorer.tsx', () => ({
   Explorer: 'gui-explorer',
 }))
-vi.mock('@/app/labels.jsx', () => ({
+vi.mock('@/app/labels.tsx', () => ({
   Labels: 'gui-labels',
 }))
-vi.mock('@/app/queries.jsx', () => ({
+vi.mock('@/app/queries.tsx', () => ({
   Queries: 'gui-queries',
 }))
-vi.mock('@/app/help/help-selectors.jsx', () => ({
+vi.mock('@/app/help/help-selectors.tsx', () => ({
   HelpSelectors: 'gui-help-selectors',
 }))
 

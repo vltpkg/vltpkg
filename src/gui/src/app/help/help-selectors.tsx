@@ -4,7 +4,7 @@ import type {
   SocketSecurityDetails,
   SocketSecurityRecord,
   Selector,
-} from '@/lib/constants/index.js'
+} from '@/lib/constants/index.ts'
 import {
   SOCKET_SECURITY_DETAILS,
   ATTRIBUTE_SELECTORS,
@@ -13,15 +13,15 @@ import {
   PSEUDO_CLASS_SELECTORS,
   PSEUDO_ELEMENT_SELECTORS,
   ID_SELECTORS,
-} from '@/lib/constants/index.js'
-import { DataTable } from '@/components/data-table/data-table.jsx'
-import { TableViewDropdown } from '@/components/data-table/table-view-dropdown.jsx'
-import { selectorColumns } from '@/components/help-selectors/selector-table-columns.jsx'
-import { Input } from '@/components/ui/input.jsx'
+} from '@/lib/constants/index.ts'
+import { DataTable } from '@/components/data-table/data-table.tsx'
+import { TableViewDropdown } from '@/components/data-table/table-view-dropdown.tsx'
+import { selectorColumns } from '@/components/help-selectors/selector-table-columns.tsx'
+import { Input } from '@/components/ui/input.tsx'
 import Markdown from 'react-markdown'
-import { markdownComponents } from '@/components/markdown-components.jsx'
-import { selectorsContent } from '@/components/help-selectors/content.js'
-import { cn } from '@/lib/utils.js'
+import { markdownComponents } from '@/components/markdown-components.tsx'
+import { selectorsContent } from '@/components/help-selectors/content.ts'
+import { cn } from '@/lib/utils.ts'
 
 export type SelectorInTable = Omit<Selector, 'category'> & {
   category: Selector['category'] | SocketSecurityDetails['category']

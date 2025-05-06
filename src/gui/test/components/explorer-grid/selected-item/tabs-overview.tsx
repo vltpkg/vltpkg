@@ -1,19 +1,19 @@
 import { test, expect, vi, beforeEach, afterEach } from 'vitest'
 import { cleanup, render } from '@testing-library/react'
 import html from 'diffable-html'
-import { useGraphStore as useStore } from '@/state/index.js'
-import type { SelectedItemStore } from '@/components/explorer-grid/selected-item/context.jsx'
-import { useSelectedItemStore } from '@/components/explorer-grid/selected-item/context.jsx'
+import { useGraphStore as useStore } from '@/state/index.ts'
+import type { SelectedItemStore } from '@/components/explorer-grid/selected-item/context.tsx'
+import { useSelectedItemStore } from '@/components/explorer-grid/selected-item/context.tsx'
 import {
   OverviewTabButton,
   OverviewTabContent,
-} from '@/components/explorer-grid/selected-item/tabs-overview.jsx'
+} from '@/components/explorer-grid/selected-item/tabs-overview.tsx'
 import {
   SELECTED_ITEM,
   SELECTED_ITEM_DETAILS,
-} from './__fixtures__/item.js'
-import type { GridItemData } from '@/components/explorer-grid/types.js'
-import type { DetailsInfo } from '@/lib/external-info.js'
+} from './__fixtures__/item.ts'
+import type { GridItemData } from '@/components/explorer-grid/types.ts'
+import type { DetailsInfo } from '@/lib/external-info.ts'
 
 const ITEM_WITH_DESCRIPTION = {
   ...SELECTED_ITEM,
@@ -40,14 +40,14 @@ const ITEM_DETAILS_WITH_AUTHOR = {
 } as unknown as DetailsInfo
 
 vi.mock(
-  '@/components/explorer-grid/selected-item/context.jsx',
+  '@/components/explorer-grid/selected-item/context.tsx',
   () => ({
     useSelectedItemStore: vi.fn(),
     SelectedItemProvider: 'gui-selected-item-provider',
   }),
 )
 
-vi.mock('@/components/ui/tabs.jsx', () => ({
+vi.mock('@/components/ui/tabs.tsx', () => ({
   TabsTrigger: 'gui-tabs-trigger',
   TabsContent: 'gui-tabs-content',
 }))
@@ -67,15 +67,15 @@ vi.mock('lucide-react', () => ({
   Link: 'gui-link-icon',
 }))
 
-vi.mock('@/components/icons/index.js', () => ({
+vi.mock('@/components/icons/index.ts', () => ({
   Github: 'gui-github-icon',
 }))
 
-vi.mock('@/components/ui/data-badge.jsx', () => ({
+vi.mock('@/components/ui/data-badge.tsx', () => ({
   DataBadge: 'gui-data-badge',
 }))
 
-vi.mock('@/components/ui/link.jsx', () => ({
+vi.mock('@/components/ui/link.tsx', () => ({
   Link: 'gui-link',
 }))
 

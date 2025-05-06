@@ -1,9 +1,9 @@
 import { useLocation, NavLink, useNavigate } from 'react-router'
 import type { MouseEvent } from 'react'
-import { useGraphStore } from '@/state/index.js'
-import { Button } from '@/components/ui/button.jsx'
+import { useGraphStore } from '@/state/index.ts'
+import { Button } from '@/components/ui/button.tsx'
 import { ArrowRight, TriangleAlert } from 'lucide-react'
-import { cn } from '@/lib/utils.js'
+import { cn } from '@/lib/utils.ts'
 
 export const ErrorFound = () => {
   const navigate = useNavigate()

@@ -1,29 +1,29 @@
 import { useEffect, useState, useRef } from 'react'
 import type { ChangeEvent } from 'react'
 import { Star, ChevronsUpDown } from 'lucide-react'
-import { CardHeader, CardTitle } from '@/components/ui/card.jsx'
-import { useTheme } from '@/components/ui/theme-provider.jsx'
+import { CardHeader, CardTitle } from '@/components/ui/card.tsx'
+import { useTheme } from '@/components/ui/theme-provider.tsx'
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from '@/components/ui/popover.jsx'
+} from '@/components/ui/popover.tsx'
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from '@/components/ui/tooltip.jsx'
-import { Button } from '@/components/ui/button.jsx'
-import { Label } from '@/components/ui/label.jsx'
-import { Input } from '@/components/ui/input.jsx'
+} from '@/components/ui/tooltip.tsx'
+import { Button } from '@/components/ui/button.tsx'
+import { Label } from '@/components/ui/label.tsx'
+import { Input } from '@/components/ui/input.tsx'
 import { useAnimate } from 'framer-motion'
-import { useGraphStore } from '@/state/index.js'
-import type { Color, QueryLabel, SavedQuery } from '@/state/types.js'
-import { LabelSelect } from '@/components/labels/label-select.jsx'
-import { LabelBadge } from '@/components/labels/label-badge.jsx'
+import { useGraphStore } from '@/state/index.ts'
+import type { Color, QueryLabel, SavedQuery } from '@/state/types.ts'
+import { LabelSelect } from '@/components/labels/label-select.tsx'
+import { LabelBadge } from '@/components/labels/label-badge.tsx'
 import { v4 as uuidv4 } from 'uuid'
-import { DeleteQuery } from '@/components/queries/delete-query.jsx'
+import { DeleteQuery } from '@/components/queries/delete-query.tsx'
 
 interface SaveQueryPopoverProps {
   isOpen: boolean

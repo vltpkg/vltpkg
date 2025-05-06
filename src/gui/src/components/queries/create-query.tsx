@@ -1,27 +1,27 @@
 import { useEffect, useState } from 'react'
-import { Button } from '@/components/ui/button.jsx'
-import { Input } from '@/components/ui/input.jsx'
-import { useGraphStore } from '@/state/index.js'
+import { Button } from '@/components/ui/button.tsx'
+import { Input } from '@/components/ui/input.tsx'
+import { useGraphStore } from '@/state/index.ts'
 import { v4 as uuidv4 } from 'uuid'
-import type { QueryLabel, DashboardData } from '@/state/types.js'
-import { LabelSelect } from '@/components/labels/label-select.jsx'
-import { LabelBadge } from '@/components/labels/label-badge.jsx'
-import { useToast } from '@/components/hooks/use-toast.js'
-import { Label } from '@/components/ui/label.jsx'
+import type { QueryLabel, DashboardData } from '@/state/types.ts'
+import { LabelSelect } from '@/components/labels/label-select.tsx'
+import { LabelBadge } from '@/components/labels/label-badge.tsx'
+import { useToast } from '@/components/hooks/use-toast.ts'
+import { Label } from '@/components/ui/label.tsx'
 import {
   Popover,
   PopoverTrigger,
   PopoverContent,
-} from '@/components/ui/popover.jsx'
+} from '@/components/ui/popover.tsx'
 import {
   Tooltip,
   TooltipProvider,
   TooltipTrigger,
   TooltipContent,
-} from '@/components/ui/tooltip.jsx'
+} from '@/components/ui/tooltip.tsx'
 import { ChevronsUpDown, CircleHelp } from 'lucide-react'
-import { cn } from '@/lib/utils.js'
-import { DirectorySelect } from '@/components/directory-select.jsx'
+import { cn } from '@/lib/utils.ts'
+import { DirectorySelect } from '@/components/directory-select.tsx'
 
 interface CreateQueryProps {
   onClose: () => void

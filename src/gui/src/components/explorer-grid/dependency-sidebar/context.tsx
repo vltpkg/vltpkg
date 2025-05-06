@@ -1,16 +1,16 @@
 import { createContext, useEffect, useContext, useRef } from 'react'
 import { createStore, useStore } from 'zustand'
-import { useToast } from '@/components/hooks/use-toast.js'
+import { useToast } from '@/components/hooks/use-toast.ts'
 import { useNavigate } from 'react-router'
-import { useGraphStore } from '@/state/index.js'
-import { addRemoveDependency } from '@/lib/add-remove-dependency.js'
-import { deepEqual } from '@/utils/deep-equal.js'
+import { useGraphStore } from '@/state/index.ts'
+import { addRemoveDependency } from '@/lib/add-remove-dependency.ts'
+import { deepEqual } from '@/utils/deep-equal.ts'
 
 import type { StoreApi } from 'zustand'
 import type { PropsWithChildren } from 'react'
-import type { GridItemData } from '@/components/explorer-grid/types.js'
-import type { DependencySideBarProps } from '@/components/explorer-grid/dependency-sidebar/index.jsx'
-import type { Operation } from '@/lib/add-remove-dependency.js'
+import type { GridItemData } from '@/components/explorer-grid/types.ts'
+import type { DependencySideBarProps } from '@/components/explorer-grid/dependency-sidebar/index.tsx'
+import type { Operation } from '@/lib/add-remove-dependency.ts'
 
 type DependencySidebarState = {
   importerId?: DependencySideBarProps['importerId']

@@ -1,10 +1,10 @@
 import { test, expect, vi, beforeEach, afterEach } from 'vitest'
 import { cleanup, render } from '@testing-library/react'
 import html from 'diffable-html'
-import { useGraphStore as useStore } from '@/state/index.js'
-import { ItemHeader } from '@/components/explorer-grid/selected-item/item-header.jsx'
-import type { SelectedItemStore } from '@/components/explorer-grid/selected-item/context.jsx'
-import { useSelectedItemStore } from '@/components/explorer-grid/selected-item/context.jsx'
+import { useGraphStore as useStore } from '@/state/index.ts'
+import { ItemHeader } from '@/components/explorer-grid/selected-item/item-header.tsx'
+import type { SelectedItemStore } from '@/components/explorer-grid/selected-item/context.tsx'
+import { useSelectedItemStore } from '@/components/explorer-grid/selected-item/context.tsx'
 import {
   specOptions,
   SELECTED_ITEM,
@@ -12,8 +12,8 @@ import {
   SELECTED_ITEM_SCOPED_REGISTRY,
   SELECTED_ITEM_DEFAULT_GIT_HOST,
   SELECTED_ITEM_DETAILS,
-} from './__fixtures__/item.js'
-import type { SocketSecurityDetails } from '@/lib/constants/socket.js'
+} from './__fixtures__/item.ts'
+import type { SocketSecurityDetails } from '@/lib/constants/socket.ts'
 import type { PackageScore } from '@vltpkg/security-archive'
 
 const MOCK_PACKAGE_SCORE: PackageScore = {
@@ -35,7 +35,7 @@ const MOCK_INSIGHTS: SocketSecurityDetails[] = [
 ]
 
 vi.mock(
-  '@/components/explorer-grid/selected-item/context.jsx',
+  '@/components/explorer-grid/selected-item/context.tsx',
   () => ({
     useSelectedItemStore: vi.fn(),
     SelectedItemProvider: 'gui-selected-item-provider',
@@ -48,7 +48,7 @@ vi.mock('@radix-ui/react-avatar', () => ({
   AvatarFallback: 'gui-avatar-fallback',
 }))
 
-vi.mock('@/components/ui/tooltip.jsx', () => ({
+vi.mock('@/components/ui/tooltip.tsx', () => ({
   Tooltip: 'gui-tooltip',
   TooltipContent: 'gui-tooltip-content',
   TooltipTrigger: 'gui-tooltip-trigger',
@@ -64,11 +64,11 @@ vi.mock('lucide-react', () => ({
   Package: 'gui-package-icon',
 }))
 
-vi.mock('@/components/ui/progress-bar.jsx', () => ({
+vi.mock('@/components/ui/progress-bar.tsx', () => ({
   ProgressBar: 'gui-progress-bar',
 }))
 
-vi.mock('@/components/icons/index.js', () => ({
+vi.mock('@/components/icons/index.ts', () => ({
   Npm: 'gui-npm-icon',
   Node: 'gui-node-icon',
   Yarn: 'gui-yarn-icon',
@@ -77,16 +77,16 @@ vi.mock('@/components/icons/index.js', () => ({
   Bun: 'gui-bun-icon',
 }))
 
-vi.mock('@/components/ui/scroll-area.jsx', () => ({
+vi.mock('@/components/ui/scroll-area.tsx', () => ({
   ScrollArea: 'gui-scroll-area',
   ScrollBar: 'gui-scroll-bar',
 }))
 
-vi.mock('@/components/ui/data-badge.jsx', () => ({
+vi.mock('@/components/ui/data-badge.tsx', () => ({
   DataBadge: 'gui-data-badge',
 }))
 
-vi.mock('@/components/ui/progress-circle.jsx', () => ({
+vi.mock('@/components/ui/progress-circle.tsx', () => ({
   ProgressCircle: 'gui-progress-circle',
 }))
 

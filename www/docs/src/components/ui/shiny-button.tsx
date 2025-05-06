@@ -1,4 +1,4 @@
-import { cn } from '@/lib/utils'
+import { cn } from '@/lib/utils.ts'
 import type { MotionProps, AnimationProps } from 'framer-motion'
 import { motion } from 'framer-motion'
 import React from 'react'

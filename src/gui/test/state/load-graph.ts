@@ -1,8 +1,8 @@
 import { test, expect } from 'vitest'
 import { humanReadableOutput } from '@vltpkg/graph'
 import { joinDepIDTuple } from '@vltpkg/dep-id'
-import { load } from '@/state/load-graph.js'
-import type { TransferData } from '@/state/types.js'
+import { load } from '@/state/load-graph.ts'
+import type { TransferData } from '@/state/types.ts'
 import { Spec, kCustomInspect } from '@vltpkg/spec/browser'
 
 Object.assign(Spec.prototype, {

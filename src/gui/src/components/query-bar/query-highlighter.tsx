@@ -1,5 +1,5 @@
 import type { ParsedSelectorToken } from '@vltpkg/query'
-import { QueryToken } from '@/components/query-bar/query-token.jsx'
+import { QueryToken } from '@/components/query-bar/query-token.tsx'
 
 export const QueryHighlighter = ({
   query,

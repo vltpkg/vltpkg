@@ -1,8 +1,8 @@
 import { useNavigate } from 'react-router'
 import { useEffect } from 'react'
-import { DashboardGrid } from '@/components/dashboard-grid/index.jsx'
-import { useGraphStore } from '@/state/index.js'
-import { startDashboardData } from '@/lib/start-data.js'
+import { DashboardGrid } from '@/components/dashboard-grid/index.tsx'
+import { useGraphStore } from '@/state/index.ts'
+import { startDashboardData } from '@/lib/start-data.ts'
 
 export const Dashboard = () => {
   const navigate = useNavigate()

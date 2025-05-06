@@ -1,17 +1,17 @@
 import type { MouseEvent } from 'react'
 import { stringifyNode } from '@vltpkg/graph/browser'
-import { useGraphStore } from '@/state/index.js'
-import { Badge } from '@/components/ui/badge.jsx'
-import { Card, CardHeader, CardTitle } from '@/components/ui/card.jsx'
+import { useGraphStore } from '@/state/index.ts'
+import { Badge } from '@/components/ui/badge.tsx'
+import { Card, CardHeader, CardTitle } from '@/components/ui/card.tsx'
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from '@/components/ui/tooltip.jsx'
-import { labelClassNamesMap } from './label-helper.js'
-import type { GridItemData, GridItemOptions } from './types.js'
-import { DataBadge } from '@/components/ui/data-badge.jsx'
+} from '@/components/ui/tooltip.tsx'
+import { labelClassNamesMap } from './label-helper.ts'
+import type { GridItemData, GridItemOptions } from './types.ts'
+import { DataBadge } from '@/components/ui/data-badge.tsx'
 
 export type ResultItemClickOptions = {
   item: GridItemData

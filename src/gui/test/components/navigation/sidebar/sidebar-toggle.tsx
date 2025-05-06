@@ -6,9 +6,9 @@ import {
   act,
 } from '@testing-library/react'
 import html from 'diffable-html'
-import { useGraphStore as useStore } from '@/state/index.js'
-import { useSidebar } from '@/components/ui/sidebar.jsx'
-import { SidebarToggle } from '@/components/navigation/sidebar/sidebar-toggle.jsx'
+import { useGraphStore as useStore } from '@/state/index.ts'
+import { useSidebar } from '@/components/ui/sidebar.tsx'
+import { SidebarToggle } from '@/components/navigation/sidebar/sidebar-toggle.tsx'
 
 vi.mock('react-router', () => ({
   useLocation: vi.fn().mockReturnValue({
@@ -17,7 +17,7 @@ vi.mock('react-router', () => ({
   NavLink: 'gui-nav-link',
 }))
 
-vi.mock('@/components/ui/sidebar.jsx', () => ({
+vi.mock('@/components/ui/sidebar.tsx', () => ({
   SidebarMenuItem: 'gui-sidebar-menu-item',
   SidebarMenuButton: 'gui-sidebar-menu-button',
   SidebarMenuBadge: 'gui-sidebar-menu-badge',
@@ -27,7 +27,7 @@ vi.mock('@/components/ui/sidebar.jsx', () => ({
   useSidebar: vi.fn(),
 }))
 
-vi.mock('@/components/ui/collapsible.jsx', () => ({
+vi.mock('@/components/ui/collapsible.tsx', () => ({
   Collapsible: 'gui-collapsible',
   CollapsibleTrigger: 'gui-collapsible-trigger',
   CollapsibleContent: 'gui-collapsible-content',

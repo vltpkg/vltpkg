@@ -1,50 +1,50 @@
 import { vi, test, expect, afterEach } from 'vitest'
 import { cleanup, render } from '@testing-library/react'
 import html from 'diffable-html'
-import { useGraphStore as useStore } from '@/state/index.js'
+import { useGraphStore as useStore } from '@/state/index.ts'
 import { joinDepIDTuple } from '@vltpkg/dep-id'
 import { Spec } from '@vltpkg/spec/browser'
 import type {
   QueryResponseEdge,
   QueryResponseNode,
 } from '@vltpkg/query'
-import { ExplorerGrid } from '@/components/explorer-grid/index.jsx'
-import { load } from '@/state/load-graph.js'
-import type { RawNode } from '@/state/types.js'
+import { ExplorerGrid } from '@/components/explorer-grid/index.tsx'
+import { load } from '@/state/load-graph.ts'
+import type { RawNode } from '@/state/types.ts'
 import { Query } from '@vltpkg/query'
 
 vi.mock('lucide-react', () => ({
   Package: 'gui-package-icon',
 }))
 
-vi.mock('@/components/explorer-grid/result-item.jsx', () => ({
+vi.mock('@/components/explorer-grid/result-item.tsx', () => ({
   ResultItem: 'gui-result-item',
 }))
 
-vi.mock('@/components/explorer-grid/side-item.jsx', () => ({
+vi.mock('@/components/explorer-grid/side-item.tsx', () => ({
   SideItem: 'gui-side-item',
 }))
 
-vi.mock('@/components/explorer-grid/selected-item/index.jsx', () => ({
+vi.mock('@/components/explorer-grid/selected-item/index.tsx', () => ({
   SelectedItem: 'gui-selected-item',
 }))
 
-vi.mock('@/components/explorer-grid/header.jsx', () => ({
+vi.mock('@/components/explorer-grid/header.tsx', () => ({
   GridHeader: 'gui-grid-header',
 }))
 
 vi.mock(
-  '@/components/explorer-grid/dependency-sidebar/index.jsx',
+  '@/components/explorer-grid/dependency-sidebar/index.tsx',
   () => ({
     DependencySideBar: 'gui-dependency-side-bar',
   }),
 )
 
-vi.mock('@/components/explorer-grid/empty-results-state.jsx', () => ({
+vi.mock('@/components/explorer-grid/empty-results-state.tsx', () => ({
   EmptyResultsState: 'gui-empty-results-state',
 }))
 
-vi.mock('@/components/ui/badge.jsx', () => ({
+vi.mock('@/components/ui/badge.tsx', () => ({
   Badge: 'gui-badge',
 }))
 

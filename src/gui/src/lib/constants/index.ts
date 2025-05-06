@@ -1,2 +1,2 @@
-export * from './socket.js'
-export * from './selectors.js'
+export * from './socket.ts'
+export * from './selectors.ts'

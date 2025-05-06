@@ -1,17 +1,17 @@
 import { vi, test, expect, afterEach } from 'vitest'
 import { render, cleanup } from '@testing-library/react'
 import html from 'diffable-html'
-import { useGraphStore as useStore } from '@/state/index.js'
-import { Header } from '@/components/navigation/header.jsx'
+import { useGraphStore as useStore } from '@/state/index.ts'
+import { Header } from '@/components/navigation/header.tsx'
 import { useLocation } from 'react-router'
 import type { Location } from 'react-router'
-import type { State } from '@/state/types.js'
+import type { State } from '@/state/types.ts'
 
 vi.mock('react-router', () => ({
   useLocation: vi.fn(),
 }))
 
-vi.mock('@/components/ui/inline-code.jsx', () => ({
+vi.mock('@/components/ui/inline-code.tsx', () => ({
   InlineCode: 'gui-inline-code',
 }))
 

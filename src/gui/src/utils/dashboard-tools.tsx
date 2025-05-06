@@ -1,4 +1,4 @@
-import type { DashboardTools } from '@/state/types.js'
+import type { DashboardTools } from '@/state/types.ts'
 import type { LucideProps } from 'lucide-react'
 import {
   Bun,
@@ -9,7 +9,7 @@ import {
   Pnpm,
   Yarn,
   Vlt,
-} from '@/components/icons/index.js'
+} from '@/components/icons/index.ts'
 
 const runtimes: Partial<
   Record<DashboardTools, React.FC<LucideProps>>

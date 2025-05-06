@@ -1,10 +1,10 @@
 import { vi, expect, afterEach, test } from 'vitest'
 import { render, cleanup } from '@testing-library/react'
 import html from 'diffable-html'
-import { useGraphStore as useStore } from '@/state/index.js'
-import { AppSidebar } from '@/components/navigation/sidebar/index.jsx'
+import { useGraphStore as useStore } from '@/state/index.ts'
+import { AppSidebar } from '@/components/navigation/sidebar/index.tsx'
 
-vi.mock('@/components/ui/sidebar.jsx', () => ({
+vi.mock('@/components/ui/sidebar.tsx', () => ({
   Sidebar: 'gui-sidebar',
   SidebarContent: 'gui-sidebar-content',
   SidebarMenu: 'gui-sidebar-menu',
@@ -12,33 +12,33 @@ vi.mock('@/components/ui/sidebar.jsx', () => ({
   SidebarFooter: 'gui-sidebar-footer',
 }))
 
-vi.mock('@/components/navigation/sidebar/sidebar-header.jsx', () => ({
+vi.mock('@/components/navigation/sidebar/sidebar-header.tsx', () => ({
   SidebarHeader: 'gui-sidebar-header',
 }))
 vi.mock(
-  '@/components/navigation/sidebar/sidebar-theme-switcher.jsx',
+  '@/components/navigation/sidebar/sidebar-theme-switcher.tsx',
   () => ({
     SidebarThemeSwitcher: 'gui-sidebar-theme-switcher',
   }),
 )
 vi.mock(
-  '@/components/navigation/sidebar/sidebar-menu-link.jsx',
+  '@/components/navigation/sidebar/sidebar-menu-link.tsx',
   () => ({
     SidebarMenuLink: 'gui-sidebar-menu-link',
   }),
 )
-vi.mock('@/components/navigation/sidebar/sidebar-toggle.jsx', () => ({
+vi.mock('@/components/navigation/sidebar/sidebar-toggle.tsx', () => ({
   SidebarToggle: 'gui-sidebar-toggle',
 }))
 
 vi.mock(
-  '@/components/navigation/sidebar/sidebar-main-nav.jsx',
+  '@/components/navigation/sidebar/sidebar-main-nav.tsx',
   () => ({
     SidebarMainNav: 'gui-sidebar-main-nav',
   }),
 )
 vi.mock(
-  '@/components/navigation/sidebar/sidebar-query-nav.jsx',
+  '@/components/navigation/sidebar/sidebar-query-nav.tsx',
   () => ({
     SidebarQueryNav: 'gui-sidebar-query-nav',
   }),

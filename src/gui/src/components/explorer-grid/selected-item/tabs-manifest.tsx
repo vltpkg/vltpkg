@@ -1,6 +1,6 @@
-import { TabsContent, TabsTrigger } from '@/components/ui/tabs.jsx'
-import { CodeBlock } from '@/components/ui/shiki.jsx'
-import { useSelectedItemStore } from '@/components/explorer-grid/selected-item/context.jsx'
+import { TabsContent, TabsTrigger } from '@/components/ui/tabs.tsx'
+import { CodeBlock } from '@/components/ui/shiki.tsx'
+import { useSelectedItemStore } from '@/components/explorer-grid/selected-item/context.tsx'
 import { FileJson } from 'lucide-react'
 
 export const TabsManifestButton = () => {

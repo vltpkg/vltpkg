@@ -1,14 +1,14 @@
 import { vi, test, expect, afterEach } from 'vitest'
 import { cleanup, render } from '@testing-library/react'
 import html from 'diffable-html'
-import { useGraphStore as useStore } from '@/state/index.js'
-import { AddDependenciesPopover } from '@/components/explorer-grid/dependency-sidebar/add-dependency.jsx'
-import { useDependencySidebarStore } from '@/components/explorer-grid/dependency-sidebar/context.jsx'
+import { useGraphStore as useStore } from '@/state/index.ts'
+import { AddDependenciesPopover } from '@/components/explorer-grid/dependency-sidebar/add-dependency.tsx'
+import { useDependencySidebarStore } from '@/components/explorer-grid/dependency-sidebar/context.tsx'
 
-import type { DependencySidebarStore } from '@/components/explorer-grid/dependency-sidebar/context.jsx'
+import type { DependencySidebarStore } from '@/components/explorer-grid/dependency-sidebar/context.tsx'
 
 vi.mock(
-  '@/components/explorer-grid/dependency-sidebar/context.jsx',
+  '@/components/explorer-grid/dependency-sidebar/context.tsx',
   () => ({
     useDependencySidebarStore: vi.fn(),
     usePopover: vi.fn().mockReturnValue({
@@ -29,37 +29,37 @@ vi.mock('lucide-react', () => ({
   PackagePlus: 'gui-package-plus-icon',
 }))
 
-vi.mock('@/components/ui/button.jsx', () => ({
+vi.mock('@/components/ui/button.tsx', () => ({
   Button: 'gui-button',
 }))
 
-vi.mock('@/components/ui/card.jsx', () => ({
+vi.mock('@/components/ui/card.tsx', () => ({
   CardHeader: 'gui-card-header',
   CardTitle: 'gui-card-title',
 }))
 
-vi.mock('@/components/ui/input.jsx', () => ({
+vi.mock('@/components/ui/input.tsx', () => ({
   Input: 'gui-input',
 }))
 
-vi.mock('@/components/ui/form-label.jsx', () => ({
+vi.mock('@/components/ui/form-label.tsx', () => ({
   Label: 'gui-label',
 }))
 
-vi.mock('@/components/ui/tooltip.jsx', () => ({
+vi.mock('@/components/ui/tooltip.tsx', () => ({
   Tooltip: 'gui-tooltip',
   TooltipContent: 'gui-tooltip-content',
   TooltipProvider: 'gui-tooltip-provider',
   TooltipTrigger: 'gui-tooltip-trigger',
 }))
 
-vi.mock('@/components/ui/popover.jsx', () => ({
+vi.mock('@/components/ui/popover.tsx', () => ({
   Popover: 'gui-popover',
   PopoverContent: 'gui-popover-content',
   PopoverTrigger: 'gui-popover-trigger',
 }))
 
-vi.mock('@/components/ui/select.jsx', () => ({
+vi.mock('@/components/ui/select.tsx', () => ({
   Select: 'gui-select',
   SelectContent: 'gui-select-content',
   SelectItem: 'gui-select-item',
@@ -67,7 +67,7 @@ vi.mock('@/components/ui/select.jsx', () => ({
   SelectValue: 'gui-select-value',
 }))
 
-vi.mock('@/components/ui/loading-spinner.jsx', () => ({
+vi.mock('@/components/ui/loading-spinner.tsx', () => ({
   LoadingSpinner: 'gui-loading-spinner',
 }))
 

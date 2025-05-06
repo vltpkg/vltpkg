@@ -4,10 +4,10 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
   DropdownMenuItem,
-} from '@/components/ui/dropdown-menu'
+} from '@/components/ui/dropdown-menu.tsx'
 import type { LucideProps } from 'lucide-react'
 import { LaptopMinimal, Moon, Sun } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import { cn } from '@/lib/utils.ts'
 
 export type Theme = 'system' | 'light' | 'dark'
 

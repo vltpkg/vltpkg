@@ -1,17 +1,17 @@
 import { vi, expect, afterEach, describe, it } from 'vitest'
 import { cleanup, render } from '@testing-library/react'
 import html from 'diffable-html'
-import { useGraphStore as useStore } from '@/state/index.js'
-import { DirectorySelect } from '@/components/directory-select.jsx'
-import type { DashboardData } from '@/state/types.js'
+import { useGraphStore as useStore } from '@/state/index.ts'
+import { DirectorySelect } from '@/components/directory-select.tsx'
+import type { DashboardData } from '@/state/types.ts'
 
-vi.mock('@/components/ui/popover.jsx', () => ({
+vi.mock('@/components/ui/popover.tsx', () => ({
   Popover: 'gui-popover',
   PopoverTrigger: 'gui-popover-trigger',
   PopoverContent: 'gui-popover-content',
 }))
 
-vi.mock('@/components/ui/command.jsx', () => ({
+vi.mock('@/components/ui/command.tsx', () => ({
   Command: 'gui-command',
   CommandEmpty: 'gui-command-empty',
   CommandGroup: 'gui-command-group',
@@ -20,7 +20,7 @@ vi.mock('@/components/ui/command.jsx', () => ({
   CommandList: 'gui-command-list',
 }))
 
-vi.mock('@/components/ui/button.jsx', () => ({
+vi.mock('@/components/ui/button.tsx', () => ({
   Button: 'gui-button',
 }))
 

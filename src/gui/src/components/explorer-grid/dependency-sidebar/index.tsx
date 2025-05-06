@@ -2,13 +2,13 @@ import {
   DependencySidebarProvider,
   useDependencySidebarStore,
   useOperation,
-} from '@/components/explorer-grid/dependency-sidebar/context.jsx'
-import { GridHeader } from '@/components/explorer-grid/header.jsx'
-import { SideItem } from '@/components/explorer-grid/side-item.jsx'
-import { AddDependenciesPopoverTrigger } from '@/components/explorer-grid/dependency-sidebar/add-dependency.jsx'
+} from '@/components/explorer-grid/dependency-sidebar/context.tsx'
+import { GridHeader } from '@/components/explorer-grid/header.tsx'
+import { SideItem } from '@/components/explorer-grid/side-item.tsx'
+import { AddDependenciesPopoverTrigger } from '@/components/explorer-grid/dependency-sidebar/add-dependency.tsx'
 
 import type { DepID } from '@vltpkg/dep-id/browser'
-import type { GridItemData } from '@/components/explorer-grid/types.js'
+import type { GridItemData } from '@/components/explorer-grid/types.ts'
 
 export type DependencySideBarProps = {
   dependencies: GridItemData[]

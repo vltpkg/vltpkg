@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
 import type { ChangeEvent } from 'react'
-import { Input } from '@/components/ui/input.jsx'
-import { useGraphStore } from '@/state/index.js'
+import { Input } from '@/components/ui/input.tsx'
+import { useGraphStore } from '@/state/index.ts'
 import { Query } from '@vltpkg/query'
 import type { ParsedSelectorToken } from '@vltpkg/query'
-import { QueryHighlighter } from '@/components/query-bar/query-highlighter.jsx'
+import { QueryHighlighter } from '@/components/query-bar/query-highlighter.tsx'
 
 interface QueryBar {
   className?: string

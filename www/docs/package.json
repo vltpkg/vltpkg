@@ -73,7 +73,7 @@
     "test": "exit 0",
     "posttest": "astro check",
     "typecheck": "astro check",
-    "typedoc:check": "typedoc --validation.notExported --validation.invalidLink --treatValidationWarningsAsErrors",
+    "typedoc:check": "NODE_OPTIONS='--experimental-strip-types --no-warnings' typedoc --validation.notExported --validation.invalidLink --treatValidationWarningsAsErrors",
     "preview": "astro preview"
   },
   "prettier": "../../.prettierrc.js",

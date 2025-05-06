@@ -1,26 +1,26 @@
 import { test, expect, vi, afterEach } from 'vitest'
 import { cleanup, render } from '@testing-library/react'
 import html from 'diffable-html'
-import { useGraphStore as useStore } from '@/state/index.js'
-import { SelectedItem } from '@/components/explorer-grid/selected-item/index.jsx'
-import type { SelectedItemStore } from '@/components/explorer-grid/selected-item/context.jsx'
-import { useSelectedItemStore } from '@/components/explorer-grid/selected-item/context.jsx'
+import { useGraphStore as useStore } from '@/state/index.ts'
+import { SelectedItem } from '@/components/explorer-grid/selected-item/index.tsx'
+import type { SelectedItemStore } from '@/components/explorer-grid/selected-item/context.tsx'
+import { useSelectedItemStore } from '@/components/explorer-grid/selected-item/context.tsx'
 import {
   SELECTED_ITEM,
   SELECTED_ITEM_WITH_EDGES,
 } from './__fixtures__/item.ts'
 
-vi.mock('@/components/ui/card.jsx', () => ({
+vi.mock('@/components/ui/card.tsx', () => ({
   Card: 'gui-card',
 }))
 
-vi.mock('@/components/ui/tabs.jsx', () => ({
+vi.mock('@/components/ui/tabs.tsx', () => ({
   Tabs: 'gui-tabs',
   TabsList: 'gui-tabs-list',
 }))
 
 vi.mock(
-  '@/components/explorer-grid/selected-item/context.jsx',
+  '@/components/explorer-grid/selected-item/context.tsx',
   () => ({
     useSelectedItemStore: vi.fn(),
     SelectedItemProvider: 'gui-selected-item-provider',
@@ -28,7 +28,7 @@ vi.mock(
 )
 
 vi.mock(
-  '@/components/explorer-grid/selected-item/tabs-insight.jsx',
+  '@/components/explorer-grid/selected-item/tabs-insight.tsx',
   () => ({
     InsightTabButton: 'gui-insight-tab-button',
     InsightTabContent: 'gui-insight-tab-content',
@@ -36,7 +36,7 @@ vi.mock(
 )
 
 vi.mock(
-  '@/components/explorer-grid/selected-item/tabs-overview.jsx',
+  '@/components/explorer-grid/selected-item/tabs-overview.tsx',
   () => ({
     OverviewTabButton: 'gui-overview-tab-button',
     OverviewTabContent: 'gui-overview-tab-content',
@@ -44,7 +44,7 @@ vi.mock(
 )
 
 vi.mock(
-  '@/components/explorer-grid/selected-item/tabs-versions.jsx',
+  '@/components/explorer-grid/selected-item/tabs-versions.tsx',
   () => ({
     VersionsTabButton: 'gui-versions-tab-button',
     VersionsTabContent: 'gui-versions-tab-content',
@@ -52,7 +52,7 @@ vi.mock(
 )
 
 vi.mock(
-  '@/components/explorer-grid/selected-item/tabs-manifest.jsx',
+  '@/components/explorer-grid/selected-item/tabs-manifest.tsx',
   () => ({
     TabsManifestButton: 'gui-manifest-tab-button',
     TabsManifestContent: 'gui-manifest-tab-content',
@@ -60,7 +60,7 @@ vi.mock(
 )
 
 vi.mock(
-  '@/components/explorer-grid/selected-item/item-header.jsx',
+  '@/components/explorer-grid/selected-item/item-header.tsx',
   () => ({
     ItemHeader: 'gui-item-header',
   }),

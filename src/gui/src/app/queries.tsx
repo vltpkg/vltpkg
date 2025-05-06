@@ -1,22 +1,22 @@
 import { useNavigate, NavLink } from 'react-router'
 import { useEffect, useState } from 'react'
-import { useGraphStore } from '@/state/index.js'
-import type { SavedQuery } from '@/state/types.js'
-import { SavedQueryItem } from '@/components/queries/saved-item.jsx'
-import { FilterSearch } from '@/components/ui/filter-search.jsx'
-import { DeleteQuery } from '@/components/queries/delete-query.jsx'
+import { useGraphStore } from '@/state/index.ts'
+import type { SavedQuery } from '@/state/types.ts'
+import { SavedQueryItem } from '@/components/queries/saved-item.tsx'
+import { FilterSearch } from '@/components/ui/filter-search.tsx'
+import { DeleteQuery } from '@/components/queries/delete-query.tsx'
 import {
   sortAlphabeticallyAscending,
   SortToggle,
-} from '@/components/sort-toggle.jsx'
-import { Button } from '@/components/ui/button.jsx'
+} from '@/components/sort-toggle.tsx'
+import { Button } from '@/components/ui/button.tsx'
 import { Plus, Tag } from 'lucide-react'
-import { Badge } from '@/components/ui/badge.jsx'
-import { Checkbox } from '@/components/ui/checkbox.jsx'
-import { QueriesEmptyState } from '@/components/queries/queries-empty-state.jsx'
-import { CreateQuery } from '@/components/queries/create-query.jsx'
+import { Badge } from '@/components/ui/badge.tsx'
+import { Checkbox } from '@/components/ui/checkbox.tsx'
+import { QueriesEmptyState } from '@/components/queries/queries-empty-state.tsx'
+import { CreateQuery } from '@/components/queries/create-query.tsx'
 import { AnimatePresence, LayoutGroup, motion } from 'framer-motion'
-import { startDashboardData } from '@/lib/start-data.js'
+import { startDashboardData } from '@/lib/start-data.ts'
 
 const Queries = () => {
   const navigate = useNavigate()

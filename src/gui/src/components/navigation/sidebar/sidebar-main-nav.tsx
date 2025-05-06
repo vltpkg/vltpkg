@@ -1,9 +1,9 @@
 import {
   SidebarGroup,
   SidebarMenu,
-} from '@/components/ui/sidebar.jsx'
-import { SidebarMenuLink } from '@/components/navigation/sidebar/sidebar-menu-link.jsx'
-import { mainMenuItems } from '@/components/navigation/sidebar/menu.js'
+} from '@/components/ui/sidebar.tsx'
+import { SidebarMenuLink } from '@/components/navigation/sidebar/sidebar-menu-link.tsx'
+import { mainMenuItems } from '@/components/navigation/sidebar/menu.ts'
 
 export const SidebarMainNav = () => {
   return (

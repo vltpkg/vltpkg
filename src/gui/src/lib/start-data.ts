@@ -1,4 +1,4 @@
-import type { Action, State } from '@/state/types.js'
+import type { Action, State } from '@/state/types.ts'
 
 export type RequestDataOptions = {
   stamp: State['stamp']

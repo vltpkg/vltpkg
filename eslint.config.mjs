@@ -288,11 +288,9 @@ export default [
         'always',
         {
           ignorePackages: true,
-          pattern: {
-            js: 'never',
-            mjs: 'never',
-            jsx: 'never',
-          },
+          pattern: Object.fromEntries(
+            jsExts.map(e => [e.replace('.', ''), 'never']),
+          ),
         },
       ],
     },
@@ -308,8 +306,6 @@ export default [
     name: `${NAME}/docs`,
     files: [`www/docs/**/*${extGlobs.ts}`],
     rules: {
-      // TODO: figure out how to get this to work with tsconfig path aliases
-      'import/extensions': 'off',
       'import/no-unresolved': [
         'error',
         {
@@ -323,8 +319,6 @@ export default [
     name: `${NAME}/gui`,
     files: [`src/gui/**/*${extGlobs.ts}`],
     rules: {
-      // TODO: figure out how to get this to work with tsconfig path aliases
-      'import/extensions': 'off',
       'no-console': 'off',
     },
   },

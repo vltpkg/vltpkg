@@ -5,18 +5,18 @@ import {
 } from '@vltpkg/graph/browser'
 import type { DepID } from '@vltpkg/dep-id'
 import { Spec } from '@vltpkg/spec/browser'
-import { useGraphStore } from '@/state/index.js'
-import { ResultItem } from '@/components/explorer-grid/result-item.jsx'
-import { SideItem } from '@/components/explorer-grid/side-item.jsx'
-import { SelectedItem } from '@/components/explorer-grid/selected-item/index.jsx'
+import { useGraphStore } from '@/state/index.ts'
+import { ResultItem } from '@/components/explorer-grid/result-item.tsx'
+import { SideItem } from '@/components/explorer-grid/side-item.tsx'
+import { SelectedItem } from '@/components/explorer-grid/selected-item/index.tsx'
 import type {
   EdgeLoose,
   GridItemData,
-} from '@/components/explorer-grid/types.js'
-import { GridHeader } from '@/components/explorer-grid/header.jsx'
-import { DependencySideBar } from '@/components/explorer-grid/dependency-sidebar/index.jsx'
-import { EmptyResultsState } from '@/components/explorer-grid/empty-results-state.jsx'
-import { Badge } from '@/components/ui/badge.jsx'
+} from '@/components/explorer-grid/types.ts'
+import { GridHeader } from '@/components/explorer-grid/header.tsx'
+import { DependencySideBar } from '@/components/explorer-grid/dependency-sidebar/index.tsx'
+import { EmptyResultsState } from '@/components/explorer-grid/empty-results-state.tsx'
+import { Badge } from '@/components/ui/badge.tsx'
 import type {
   QueryResponseEdge,
   QueryResponseNode,

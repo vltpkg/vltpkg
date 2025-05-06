@@ -1,22 +1,22 @@
 import { vi, expect, afterEach, describe, it } from 'vitest'
 import { cleanup, render } from '@testing-library/react'
 import html from 'diffable-html'
-import { useGraphStore as useStore } from '@/state/index.js'
-import { HelpSelectors } from '@/app/help/help-selectors.jsx'
+import { useGraphStore as useStore } from '@/state/index.ts'
+import { HelpSelectors } from '@/app/help/help-selectors.tsx'
 
 vi.mock('@tanstack/react-table', () => ({
   Table: 'gui-table',
 }))
 
-vi.mock('@/components/data-table/data-table.jsx', () => ({
+vi.mock('@/components/data-table/data-table.tsx', () => ({
   DataTable: 'gui-data-table',
 }))
 
-vi.mock('@/components/data-table/table-view-dropdown.jsx', () => ({
+vi.mock('@/components/data-table/table-view-dropdown.tsx', () => ({
   TableViewDropdown: 'gui-table-view-dropdown',
 }))
 
-vi.mock('@/components/ui/input.jsx', () => ({
+vi.mock('@/components/ui/input.tsx', () => ({
   Input: 'gui-input',
 }))
 

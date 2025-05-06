@@ -1,7 +1,7 @@
 import { test, expect, afterEach } from 'vitest'
 import { cleanup, render } from '@testing-library/react'
 import html from 'diffable-html'
-import { InlineCode } from '@/components/ui/inline-code.jsx'
+import { InlineCode } from '@/components/ui/inline-code.tsx'
 
 expect.addSnapshotSerializer({
   serialize: v => html(v),

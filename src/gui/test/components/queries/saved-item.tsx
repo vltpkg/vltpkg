@@ -1,31 +1,31 @@
 import { vi, expect, afterEach, describe, it } from 'vitest'
 import { cleanup, render } from '@testing-library/react'
 import html from 'diffable-html'
-import { useGraphStore as useStore } from '@/state/index.js'
-import type { SavedQuery } from '@/state/types.js'
-import { SavedQueryItem } from '@/components/queries/saved-item.jsx'
+import { useGraphStore as useStore } from '@/state/index.ts'
+import type { SavedQuery } from '@/state/types.ts'
+import { SavedQueryItem } from '@/components/queries/saved-item.tsx'
 
 vi.mock('react-router', () => ({
   useNavigate: vi.fn(),
 }))
 
-vi.mock('@/components/ui/input.jsx', () => ({
+vi.mock('@/components/ui/input.tsx', () => ({
   Input: 'gui-label',
 }))
 
-vi.mock('@/components/ui/button.jsx', () => ({
+vi.mock('@/components/ui/button.tsx', () => ({
   Button: 'gui-button',
 }))
 
-vi.mock('@/components/ui/checkbox.jsx', () => ({
+vi.mock('@/components/ui/checkbox.tsx', () => ({
   Checkbox: 'gui-checkbox',
 }))
 
-vi.mock('@/components/ui/label.jsx', () => ({
+vi.mock('@/components/ui/label.tsx', () => ({
   Label: 'gui-label',
 }))
 
-vi.mock('@/components/labels/label-badge.jsx', () => ({
+vi.mock('@/components/labels/label-badge.tsx', () => ({
   LabelBadge: 'gui-label-badge',
 }))
 
@@ -35,24 +35,24 @@ vi.mock('lucide-react', () => ({
   ChevronsUpDown: 'gui-chevrons-up-down-icon',
 }))
 
-vi.mock('@/components/labels/label-select.jsx', () => ({
+vi.mock('@/components/labels/label-select.tsx', () => ({
   LabelSelect: 'gui-label-select',
 }))
 
-vi.mock('@/components/ui/popover.jsx', () => ({
+vi.mock('@/components/ui/popover.tsx', () => ({
   Popover: 'gui-popover',
   PopoverTrigger: 'gui-popover-trigger',
   PopoverContent: 'gui-popover-content',
 }))
 
-vi.mock('@/components/ui/tooltip.jsx', () => ({
+vi.mock('@/components/ui/tooltip.tsx', () => ({
   Tooltip: 'gui-tooltip',
   TooltipProvider: 'gui-tooltip-provider',
   TooltipTrigger: 'gui-tooltip-trigger',
   TooltipContent: 'gui-tooltip-content',
 }))
 
-vi.mock('@/components/directory-select.jsx', () => ({
+vi.mock('@/components/directory-select.tsx', () => ({
   DirectorySelect: 'gui-directory-select',
 }))
 

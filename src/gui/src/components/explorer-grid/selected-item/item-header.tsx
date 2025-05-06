@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion'
-import { useGraphStore } from '@/state/index.js'
-import { useSelectedItemStore } from '@/components/explorer-grid/selected-item/context.jsx'
+import { useGraphStore } from '@/state/index.ts'
+import { useSelectedItemStore } from '@/components/explorer-grid/selected-item/context.tsx'
 import {
   Avatar,
   AvatarImage,
@@ -11,7 +11,7 @@ import {
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from '@/components/ui/tooltip.jsx'
+} from '@/components/ui/tooltip.tsx'
 import {
   Home,
   Scale,
@@ -23,21 +23,21 @@ import {
 import { splitDepID } from '@vltpkg/dep-id/browser'
 import { defaultRegistry } from '@vltpkg/spec/browser'
 import type { SpecOptionsFilled } from '@vltpkg/spec/browser'
-import type { GridItemData } from '@/components/explorer-grid/types.js'
+import type { GridItemData } from '@/components/explorer-grid/types.ts'
 import {
   getScoreColor,
   scoreColors,
-} from '@/components/explorer-grid/selected-item/insight-score-helper.js'
-import { cn } from '@/lib/utils.js'
-import { isRecord } from '@/utils/typeguards.js'
+} from '@/components/explorer-grid/selected-item/insight-score-helper.ts'
+import { cn } from '@/lib/utils.ts'
+import { isRecord } from '@/utils/typeguards.ts'
 import { formatDistanceStrict } from 'date-fns'
-import { formatDownloadSize } from '@/utils/format-download-size.js'
+import { formatDownloadSize } from '@/utils/format-download-size.ts'
 import {
   ScrollArea,
   ScrollBar,
-} from '@/components/ui/scroll-area.jsx'
-import { isSemver } from '@/lib/external-info.js'
-import { DataBadge } from '@/components/ui/data-badge.jsx'
+} from '@/components/ui/scroll-area.tsx'
+import { isSemver } from '@/lib/external-info.ts'
+import { DataBadge } from '@/components/ui/data-badge.tsx'
 import {
   Npm,
   Node,
@@ -45,9 +45,9 @@ import {
   Pnpm,
   Deno,
   Bun,
-} from '@/components/icons/index.js'
-import { ProgressCircle } from '@/components/ui/progress-circle.jsx'
-import type { ProgressCircleVariant } from '@/components/ui/progress-circle.jsx'
+} from '@/components/icons/index.ts'
+import { ProgressCircle } from '@/components/ui/progress-circle.tsx'
+import type { ProgressCircleVariant } from '@/components/ui/progress-circle.tsx'
 import type { LucideIcon } from 'lucide-react'
 
 const getEngine = (engine: string): LucideIcon => {

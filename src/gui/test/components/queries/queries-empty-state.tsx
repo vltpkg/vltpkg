@@ -1,14 +1,14 @@
 import { vi, expect, afterEach, describe, it } from 'vitest'
 import { cleanup, render } from '@testing-library/react'
 import html from 'diffable-html'
-import { useGraphStore as useStore } from '@/state/index.js'
-import { QueriesEmptyState } from '@/components/queries/queries-empty-state.jsx'
+import { useGraphStore as useStore } from '@/state/index.ts'
+import { QueriesEmptyState } from '@/components/queries/queries-empty-state.tsx'
 
 vi.mock('react-router', () => ({
   NavLink: 'gui-nav-link',
 }))
 
-vi.mock('@/components/ui/button.jsx', () => ({
+vi.mock('@/components/ui/button.tsx', () => ({
   Button: 'gui-button',
 }))
 
@@ -18,7 +18,7 @@ vi.mock('lucide-react', () => ({
   Star: 'gui-star-icon',
 }))
 
-vi.mock('@/components/queries/create-query.jsx', () => ({
+vi.mock('@/components/queries/create-query.tsx', () => ({
   CreateQuery: 'gui-create-query',
 }))
 
