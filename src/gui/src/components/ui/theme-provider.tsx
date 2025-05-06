@@ -1,3 +1,4 @@
+import { assert } from '@/lib/utils.js'
 import { useGraphStore } from '@/state/index.js'
 import type { State } from '@/state/types.js'
 import { createContext, useContext, useEffect, useState } from 'react'
@@ -36,8 +37,7 @@ export function ThemeProvider({
   ...props
 }: ThemeProviderProps) {
   const [theme, setTheme] = useState<Theme>(
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    () => (localStorage.getItem(storageKey) as Theme) || defaultTheme,
+    () => (localStorage.getItem(storageKey) ?? defaultTheme) as Theme,
   )
   const [resolvedTheme, setResolvedTheme] =
     useState<ResolvedTheme>('dark')
@@ -95,10 +95,6 @@ export function ThemeProvider({
 
 export const useTheme = () => {
   const context = useContext(ThemeProviderContext)
-
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-  if (context === undefined)
-    throw new Error('useTheme must be used within a ThemeProvider')
-
+  assert(context, 'useTheme must be used within a ThemeProvider')
   return context
 }

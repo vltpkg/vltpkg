@@ -109,8 +109,7 @@ export const retrieveRemoteVersions = async (
       response,
     })
   }
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-  const packument: Packument = await response.json()
+  const packument = (await response.json()) as Packument
   return Object.keys(packument.versions).sort(compare)
 }
 

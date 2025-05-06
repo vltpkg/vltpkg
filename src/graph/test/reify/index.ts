@@ -33,8 +33,18 @@ import type {
 import { actual, ideal, reify } from '../../src/index.ts'
 import {
   fixtureManifest,
-  mockPackageInfo,
+  mockPackageInfo as mockPackageInfoBase,
 } from '../fixtures/reify.ts'
+
+const createMockPackageInfo = (
+  overrides: Partial<typeof mockPackageInfoBase> = {},
+) =>
+  ({
+    ...mockPackageInfoBase,
+    ...overrides,
+  }) as unknown as PackageInfoClient
+
+const mockPackageInfo = createMockPackageInfo()
 
 t.test('super basic reification', async t => {
   const dir = t.testdir({
@@ -386,9 +396,7 @@ t.test('failure of optional node just deletes it', async t => {
     monorepo: Monorepo.maybeLoad(projectRoot),
     scurry: new PathScurry(projectRoot),
     packageJson: new PackageJson(),
-    packageInfo: {
-      // eslint-disable-next-line @typescript-eslint/no-misused-spread
-      ...mockPackageInfo,
+    packageInfo: createMockPackageInfo({
       async extract(
         spec: Spec | string,
         target: string,
@@ -400,7 +408,7 @@ t.test('failure of optional node just deletes it', async t => {
         }
         return mockPackageInfo.extract(spec, target, options)
       },
-    } as unknown as PackageInfoClient,
+    }),
     graph,
   })
 
