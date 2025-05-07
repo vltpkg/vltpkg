@@ -436,27 +436,20 @@ export class Config {
     const result = await this.#readConfigFile(file)
 
     if (result) {
-      try {
-        const { command, ...values } = recordsToPairs(result)
-        if (command) {
-          for (const [c, opts] of Object.entries(command)) {
-            const cmd = getCommand(c)
-            if (cmd) {
-              this.commandValues[cmd] = merge<ConfigData>(
-                this.commandValues[cmd] ?? ({} as ConfigData),
-                opts as ConfigData,
-              )
-            }
+      const { command, ...values } = recordsToPairs(result)
+      if (command) {
+        for (const [c, opts] of Object.entries(command)) {
+          const cmd = getCommand(c)
+          if (cmd) {
+            this.commandValues[cmd] = merge<ConfigData>(
+              this.commandValues[cmd] ?? ({} as ConfigData),
+              opts as ConfigData,
+            )
           }
         }
-        this.jack.setConfigValues(values, file)
-        return result
-      } catch (er) {
-        throw error('failed to load config values from file', {
-          path: file,
-          cause: er,
-        })
       }
+      this.jack.setConfigValues(values, file)
+      return result
     }
   }
 

@@ -1,13 +1,16 @@
+import type { ErrorWithCauseObject } from '@vltpkg/error-cause'
 import { error } from '@vltpkg/error-cause'
 import type { Jack } from 'jackspeak'
 import { loadPackageJson } from 'package-json-from-dist'
+import {
+  getSortedCliOptions,
+  getSortedKeys,
+} from './config/definition.ts'
 import type { Commands, LoadedConfig } from './config/index.ts'
-import { getSortedKeys } from './config/definition.ts'
 import { Config } from './config/index.ts'
 import { outputCommand, stderr, stdout } from './output.ts'
-import type { Views } from './view.ts'
-import { format } from 'node:util'
 import { indent } from './print-err.ts'
+import type { Views } from './view.ts'
 
 export type CommandUsage = () => Jack
 
@@ -47,25 +50,51 @@ const loadCommand = async <T>(
   /* c8 ignore stop */
 }
 
+const isErrorWithCauseObject = (
+  err: unknown,
+): err is ErrorWithCauseObject =>
+  !!err &&
+  typeof err === 'object' &&
+  err instanceof Error &&
+  !!err.cause &&
+  typeof err.cause === 'object' &&
+  'code' in err.cause &&
+  err.cause.code === 'JACKSPEAK' &&
+  'found' in err.cause
+
 const loadVlt = async (cwd: string, argv: string[]) => {
   try {
     return await Config.load(cwd, argv)
   } catch (err) {
-    if (
-      err instanceof Error &&
-      err.cause &&
-      typeof err.cause === 'object' &&
-      'code' in err.cause &&
-      err.cause.code === 'JACKSPEAK' &&
-      'found' in err.cause
-    ) {
-      const { found } = err.cause
+    if (isErrorWithCauseObject(err)) {
+      const { found, path, wanted, name } = err.cause
+      const isConfigFile = typeof path === 'string'
+      const msg =
+        isConfigFile ?
+          `Problem in Config File ${path}`
+        : 'Invalid Option Flag'
+      const validOptions =
+        wanted ? undefined
+        : isConfigFile ? getSortedKeys()
+        : getSortedCliOptions()
+
+      stderr(msg)
+      stderr(err.message)
+      if (name) stderr(indent('Field: ' + name))
+      if (found) stderr(indent('Found: ' + JSON.stringify(found)))
+      if (typeof wanted === 'string') {
+        stderr(indent('Wanted: ' + wanted))
+      }
+      if (validOptions) {
+        stderr(indent('Valid Options:'))
+        stderr(indent(validOptions.join('\n'), 4))
+      }
+
       stderr(
-        `Error: Unknown CLI flags. Run 'vlt help' for more information about available flags.`,
+        indent(
+          `Run 'vlt help' for more information about available options.`,
+        ),
       )
-      stderr(indent(`Found: ${format(found)}`))
-      stderr(indent('Wanted:'))
-      stderr(indent(getSortedKeys().join('\n'), 4))
       return process.exit(process.exitCode || 1)
     }
     /* c8 ignore next 2 - still throw in config fails for some reason */

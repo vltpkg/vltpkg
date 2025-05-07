@@ -154,13 +154,16 @@ const print = (
     }
 
     case 'ECONFIG': {
-      const { found, wanted } = err.cause
+      const { found, wanted, validOptions } = err.cause
       stderr(`Config Error: ${err.message}`)
       if (found) {
         stderr(indent(`Found: ${format(found)}`))
       }
       if (wanted) {
         stderr(indent(`Wanted: ${format(wanted)}`))
+      }
+      if (validOptions) {
+        stderr(indent(`Valid Options: ${format(validOptions)}`))
       }
       return true
     }

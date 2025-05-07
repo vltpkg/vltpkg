@@ -15,7 +15,8 @@ exports[`test/print-err.ts > TAP > ECONFIG > with cause > must match snapshot 1`
 Array [
   "Config Error: Invalid config keys",
   "  Found: [ 'garbage' ]",
-  "  Wanted: [ 'wanted' ]",
+  "  Wanted: string[]",
+  "  Valid Options: [ 'wanted' ]",
 ]
 `
 

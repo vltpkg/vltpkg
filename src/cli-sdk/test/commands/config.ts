@@ -1,11 +1,11 @@
 import { PackageJson } from '@vltpkg/package-json'
-import * as CP from 'node:child_process'
 import type { SpawnOptions } from 'node:child_process'
+import * as CP from 'node:child_process'
 import { PathScurry } from 'path-scurry'
-import t from 'tap'
 import type { Test } from 'tap'
-import { definition, recordsToPairs } from '../../src/config/index.ts'
+import t from 'tap'
 import type { LoadedConfig } from '../../src/config/index.ts'
+import { definition, recordsToPairs } from '../../src/config/index.ts'
 
 const mockCommand = (t: Test, mocks?: Record<string, any>) =>
   t.mockImport<typeof import('../../src/commands/config.ts')>(
@@ -202,14 +202,48 @@ t.test('set', async t => {
       ])
     })
   }
+
   t.test('invalid key', async t => {
     await t.rejects(run(t, ['set', 'garbage=value'], {}), {
       message: 'Invalid config keys',
       cause: {
         found: ['garbage'],
-        wanted: Object.keys(definition.toJSON()).sort((a, b) =>
+        validOptions: Object.keys(definition.toJSON()).sort((a, b) =>
           a.localeCompare(b, 'en'),
         ),
+      },
+    })
+  })
+
+  t.test('value provided to boolean', async t => {
+    await t.rejects(run(t, ['set', 'bail=value'], {}), {
+      message:
+        'Boolean flag must be "bail" or "no-bail", not a value',
+      cause: {
+        code: 'ECONFIG',
+        name: 'bail',
+        found: 'bail=value',
+      },
+    })
+  })
+
+  t.test('no value for option that takes one', async t => {
+    await t.rejects(run(t, ['set', 'workspace'], {}), {
+      message: 'No value provided for "workspace"',
+      cause: {
+        code: 'ECONFIG',
+        wanted: 'string[]',
+      },
+    })
+  })
+
+  t.test('invalid value', async t => {
+    await t.rejects(run(t, ['set', 'config=asdf'], {}), {
+      message: 'Invalid value provided for config',
+      cause: {
+        code: 'ECONFIG',
+        found: 'asdf',
+        validOptions: ['user', 'project'],
       },
     })
   })

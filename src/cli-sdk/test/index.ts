@@ -6,12 +6,17 @@ import { setupEnv } from './fixtures/util.ts'
 
 setupEnv(t)
 
+// normalize paths on windows
+t.cleanSnapshot = s => s.replace(/\\/g, '/')
+
 export const run = async (
   t: Test,
   {
     argv = [],
+    cwd = process.cwd(),
   }: {
     argv?: string[]
+    cwd?: string
   } = {},
 ) => {
   // Do not pick up user configs in the home directory
@@ -24,6 +29,7 @@ export const run = async (
     config: {} as LoadedConfig,
     error: null as unknown,
   }
+  t.chdir(cwd)
   const index = await t.mockImport<typeof import('../src/index.ts')>(
     '../src/index.ts',
     {
@@ -75,6 +81,54 @@ t.test('unknown config', async t => {
     },
   })
   const { error, logs } = await run(t, { argv: ['--unknown'] })
+  t.ok(error instanceof Error)
+  t.equal(exitCode, 1)
+  t.matchSnapshot(logs.join('\n'))
+})
+
+t.test('unknown config in file', async t => {
+  let exitCode = 0
+  const cwd = t.testdir({
+    'vlt.json': JSON.stringify({
+      asdf: 'foo',
+    }),
+  })
+
+  // intercept process.exit to throw so that the test will finish
+  // but the run will not continue
+  t.intercept(process, 'exit', {
+    value: (code: number) => {
+      exitCode = code
+      if (code !== 0) {
+        throw new Error()
+      }
+    },
+  })
+  const { error, logs } = await run(t, { argv: [], cwd })
+  t.ok(error instanceof Error)
+  t.equal(exitCode, 1)
+  t.matchSnapshot(logs.join('\n'))
+})
+
+t.test('invalid config in file', async t => {
+  let exitCode = 0
+  const cwd = t.testdir({
+    'vlt.json': JSON.stringify({
+      color: 'foo',
+    }),
+  })
+
+  // intercept process.exit to throw so that the test will finish
+  // but the run will not continue
+  t.intercept(process, 'exit', {
+    value: (code: number) => {
+      exitCode = code
+      if (code !== 0) {
+        throw new Error()
+      }
+    },
+  })
+  const { error, logs } = await run(t, { argv: [], cwd })
   t.ok(error instanceof Error)
   t.equal(exitCode, 1)
   t.matchSnapshot(logs.join('\n'))
