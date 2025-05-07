@@ -1,18 +1,19 @@
-import { error } from '@vltpkg/error-cause'
+import type { ErrorWithCauseObject } from '@vltpkg/error-cause'
+import { error, isErrorWithCause } from '@vltpkg/error-cause'
 import { spawnSync } from 'node:child_process'
-import {
-  definition,
-  isRecordField,
-  pairsToRecords,
-  recordsToPairs,
-} from '../config/index.ts'
+import { getSortedKeys } from '../config/definition.ts'
 import type {
   ConfigDefinitions,
   ConfigFileData,
   LoadedConfig,
   RecordPairs,
 } from '../config/index.ts'
-import { getSortedKeys } from '../config/definition.ts'
+import {
+  definition,
+  isRecordField,
+  pairsToRecords,
+  recordsToPairs,
+} from '../config/index.ts'
 import { commandUsage } from '../config/usage.ts'
 import type { CommandFn, CommandUsage } from '../index.ts'
 
@@ -191,12 +192,49 @@ const set = async (conf: LoadedConfig) => {
   let parsed: ConfigFileData | null = null
   try {
     parsed = conf.jack.parseRaw(pairs.map(kv => `--${kv}`)).values
-  } catch {
-    throw error('Invalid config keys', {
-      code: 'ECONFIG',
-      found: pairs.map(kv => kv.split('=')[0]),
-      wanted: getSortedKeys(),
-    })
+  } catch (er) {
+    /* c8 ignore next - always true */
+    if (!isErrorWithCause(er)) throw er
+    const { cause } = er as ErrorWithCauseObject
+    // when a boolean gets a value, it throw a parse error
+    if (
+      cause.found &&
+      typeof cause.found === 'object' &&
+      'name' in cause.found &&
+      'value' in cause.found &&
+      typeof cause.found.name === 'string' &&
+      cause.found.value &&
+      typeof cause.found.value === 'string'
+    ) {
+      const { name, value } = cause.found
+      throw error(
+        `Boolean flag must be "${name}" or "no-${name}", not a value`,
+        {
+          code: 'ECONFIG',
+          name,
+          found: `${name}=${value}`,
+        },
+      )
+    } else if (cause.wanted && !('value' in cause)) {
+      const name = JSON.stringify(cause.name?.replace(/^-+/, ''))
+      throw error(`No value provided for ${name}`, {
+        code: 'ECONFIG',
+        wanted: cause.wanted,
+      })
+    } else if (cause.validOptions) {
+      throw error(`Invalid value provided for ${cause.name}`, {
+        code: 'ECONFIG',
+        found: cause.found,
+        validOptions: cause.validOptions,
+      })
+    } else {
+      // an unknown property
+      throw error('Invalid config keys', {
+        code: 'ECONFIG',
+        found: pairs.map(kv => kv.split('=')[0]),
+        validOptions: getSortedKeys(),
+      })
+    }
   }
   await conf.addConfigToFile(
     conf.get('config'),

@@ -126,7 +126,8 @@ t.test('ECONFIG', async t => {
     const er = error('Invalid config keys', {
       code: 'ECONFIG',
       found: ['garbage'],
-      wanted: ['wanted'],
+      wanted: 'string[]',
+      validOptions: ['wanted'],
     })
     printErr(er, usage, stderr, formatter)
     t.matchSnapshot(printed)

@@ -1,4 +1,5 @@
 import t from 'tap'
+import { setupEnv } from '../fixtures/util.ts'
 const {
   commands,
   definition,
@@ -9,7 +10,6 @@ const {
 } = await t.mockImport<
   typeof import('../../src/config/definition.ts')
 >('../../src/config/definition.ts')
-import { setupEnv } from '../fixtures/util.ts'
 
 t.matchSnapshot(commands, 'commands')
 const defObj = definition.toJSON()
@@ -63,6 +63,7 @@ t.test('default view depends on stdout TTY status', t => {
   t.test('tty true', async t => {
     delete process.env.VLT_VIEW
     t.intercept(process.stdout, 'isTTY', { value: true })
+    t.equal(process.stdout.isTTY, true)
     const { definition } = await t.mockImport<
       typeof import('../../src/config/definition.ts')
     >('../../src/config/definition.ts')
@@ -73,6 +74,7 @@ t.test('default view depends on stdout TTY status', t => {
   t.test('tty false', async t => {
     delete process.env.VLT_VIEW
     t.intercept(process.stdout, 'isTTY', { value: false })
+    t.equal(process.stdout.isTTY, false)
     const { definition } = await t.mockImport<
       typeof import('../../src/config/definition.ts')
     >('../../src/config/definition.ts')
@@ -117,10 +119,11 @@ t.test('infer editor from env/platform', async t => {
         value: { ...cleanEnv, EDITOR, VISUAL },
       })
       t.intercept(process, 'platform', { value: platform })
-      const { definition } = await t.mockImport<
+      const { definition, defaultEditor } = await t.mockImport<
         typeof import('../../src/config/definition.ts')
       >('../../src/config/definition.ts')
       t.match(definition.parse().values.editor, expect)
+      t.match(defaultEditor(), expect)
     })
   }
 })
@@ -133,4 +136,11 @@ t.test('getCommand', async t => {
 
 t.test('getSortedKeys', async t => {
   t.matchSnapshot(getSortedKeys(), 'sorted keys')
+})
+
+t.test('getSortedCliDefinitions', async t => {
+  const { getSortedCliOptions } = await t.mockImport<
+    typeof import('../../src/config/definition.ts')
+  >('../../src/config/definition.ts')
+  t.matchSnapshot(getSortedCliOptions(), 'sorted CLI definitions')
 })
