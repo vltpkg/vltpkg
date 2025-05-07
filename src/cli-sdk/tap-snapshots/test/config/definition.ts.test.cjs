@@ -395,6 +395,51 @@ Object {
 }
 `
 
+exports[`test/config/definition.ts > TAP > getSortedCliDefinitions > sorted CLI definitions 1`] = `
+Array [
+  "--arch=<arch>",
+  "--bail",
+  "--before=<date>",
+  "--cache=<path>",
+  "--color",
+  "--config=<user | project>",
+  "--dashboard-root=<path>",
+  "--editor=<program>",
+  "--expect-results=<value>",
+  "--fallback-command=<command>",
+  "--fetch-retries=<n>",
+  "--fetch-retry-factor=<n>",
+  "--fetch-retry-maxtimeout=<n>",
+  "--fetch-retry-mintimeout=<n>",
+  "--git-host-archives=<name=template>",
+  "--git-hosts=<name=template>",
+  "--git-shallow",
+  "--help",
+  "--identity=<name>",
+  "--no-bail",
+  "--no-color",
+  "--node-version=<version>",
+  "--os=<os>",
+  "--package=<p>",
+  "--recursive",
+  "--registries=<name=url>",
+  "--registry=<url>",
+  "--save-dev",
+  "--save-optional",
+  "--save-peer",
+  "--save-prod",
+  "--scope-registries=<@scope=url>",
+  "--script-shell=<program>",
+  "--stale-while-revalidate-factor=<n>",
+  "--tag=<tag>",
+  "--version",
+  "--view=<output>",
+  "--workspace=<ws>",
+  "--workspace-group=<workspace-group>",
+  "--yes",
+]
+`
+
 exports[`test/config/definition.ts > TAP > getSortedKeys > sorted keys 1`] = `
 Array [
   "arch",

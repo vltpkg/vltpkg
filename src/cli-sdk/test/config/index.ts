@@ -6,9 +6,9 @@ import {
 } from 'node:fs'
 import * as OS from 'node:os'
 import { resolve } from 'node:path'
+import { format } from 'node:util'
 import t from 'tap'
 import type { ConfigData } from '../../src/config/index.ts'
-import { format } from 'node:util'
 
 const clearEnv = () => {
   for (const k of Object.keys(process.env)) {
@@ -280,16 +280,12 @@ t.test('invalid config', async t => {
       '.git': '',
     })
     await t.rejects(Config.load(dir, undefined, true), {
+      message: 'Invalid value string for color, expected boolean',
       cause: {
         path: resolve(dir, 'vlt.json'),
-        cause: {
-          message: 'Invalid value string for color, expected boolean',
-          cause: {
-            name: 'color',
-            found: 'not a boolean',
-            wanted: 'boolean',
-          },
-        },
+        name: 'color',
+        found: 'not a boolean',
+        wanted: 'boolean',
       },
     })
   })

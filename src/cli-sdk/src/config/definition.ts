@@ -1,7 +1,15 @@
+import { error } from '@vltpkg/error-cause'
 import { XDG } from '@vltpkg/xdg'
 import { jack } from 'jackspeak'
 
 export const defaultView = process.stdout.isTTY ? 'human' : 'json'
+
+export const defaultEditor = () =>
+  process.env.EDITOR ||
+  process.env.VISUAL ||
+  (process.platform === 'win32' ?
+    `${process.env.SYSTEMROOT}\\notepad.exe`
+  : 'vi')
 
 const canonicalCommands = {
   cache: 'cache',
@@ -425,12 +433,7 @@ export const definition = j
 
                     Defaults to the \`EDITOR\` or \`VISUAL\` env if set, or
                     \`notepad.exe\` on Windows, or \`vi\` elsewhere.`,
-      default:
-        process.env.EDITOR ||
-        process.env.VISUAL ||
-        (process.platform === 'win32' ?
-          `${process.env.SYSTEMROOT}\\notepad.exe`
-        : 'vi'),
+      default: defaultEditor(),
     },
 
     'script-shell': {
@@ -569,6 +572,17 @@ export const definition = j
       description: 'Print helpful information',
     },
   })
+
+export const getSortedCliOptions = () => {
+  const defs = definition.toJSON()
+  return getSortedKeys().map((k: keyof typeof defs) => {
+    const def = defs[k]
+    /* c8 ignore next */
+    if (!def) throw error('invalid key found', { found: k })
+    if (def.type === 'boolean') return `--${k}`
+    return `--${k}=<${def.hint ?? k}>`
+  })
+}
 
 export const getSortedKeys = () =>
   Object.keys(definition.toJSON()).sort((a, b) => a.localeCompare(b))
