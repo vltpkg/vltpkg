@@ -1,0 +1,242 @@
+---
+title: Working with Named Registries
+sidebar:
+  label: Registries
+  order: 3
+---
+
+import { Code } from '@astrojs/starlight/components'
+
+The vlt client supports working with multiple registries in a variety
+of ways.
+
+## What is a Registry? (skip if you know this already)
+
+A registry is a server that provides the metadata and artifacts for a
+package manager to install.
+
+The most popular package registry is
+[the public npm registry](https://registry.npmjs.org), which
+JavaScript package managers use for the bulk of their content. It is
+common for organizations to set up private internal registries for use
+with their non-OSS code, or to mirror public registries for
+redundancy, security, and auditing capability.
+
+[VSR](https://www.vlt.sh/serverless-registry) is a hosted serverless
+registry that vlt provides for this purpose.
+
+Packages that are referenced by a name and version or version range
+(or a `dist-tag` like `latest`) are resolved using a registry.
+Packages specified as a git remote URL or `https://` remote URL, are
+resolved without using a registry. And obviously, packages referenced
+as a `file://` URL or `workspace:` specifier do not need to be fetched
+from anywhere at all, because they are local on the current machine.
+
+## Setting the Default Registry
+
+By default, vlt fetches packages from
+[the public npm registry](https://registry.npmjs.org/) at
+`https://registry.npmjs.org/`.
+
+You can change this by
+[setting the `registry` configuration option](/cli/configuring#--registryurl).
+
+For example, if you wanted instead to fetch pacakges from yarn's DNS
+alias of the public npm registry for some reason, you could do this:
+
+```bash
+vlt config set registry=https://registry.yarnpkg.com
+```
+
+There can be only one default registry, and this is used as the
+fallback for all package registry resolutions. Normally, if an
+internal registry is used as the default registry for all fetches, it
+effectively must serve _all_ packages, meaning it has to be a caching
+proxy, as well as the repository for any of your organization's
+internal code.
+
+## Named Scope Registries (npm Compatibility)
+
+Like the npm client, the vlt client allows you to map a given scope to
+a specific registry.
+
+For example, you could make it so that all packages whose names start
+with `@mycompany/...` are served from your internal registry.
+
+This can be a convenient way to make only _certain_ packages come from
+internal private registries, while all the _other_ packages come from
+a default public registry, meaning that you do not need to proxy
+everything.
+
+To do this in vlt, use the `scope-registries` configuration.
+
+```bash
+vlt config set scope-registries=@mycompany=https://registry.local/
+```
+
+When you do this in your project, you will see that it adds the option
+to a `vlt.json` file in your project root.
+
+```bash
+$ cat vlt.json
+{
+  "scope-registries": {
+    "@mycompany": "https://registry.local/",
+  }
+}
+```
+
+If you run this command multiple times, you can set different
+registries for various different scopes.
+
+## Registry Aliases
+
+Another way to provide very explicit registry behavior is to use a
+registry alias.
+
+Similar to how a named package can be aliased to another name and
+version, the vlt client allows you to indicate that you want a given
+package to come from a specific named registry.
+
+First, create a registry alias by adding an entry to the `registries`
+config:
+
+```bash
+$ vlt config set registries=bar=https://registry.example.com/
+```
+
+This will add the appropriate entry to the `vlt.json` file:
+
+```bash
+$ cat vlt.json
+{
+  "registries": {
+    "bar": "https://registry.example.com/"
+  }
+}
+```
+
+Now, if you have this in your `package.json` file:
+
+```json
+{
+  "dependencies": {
+    "bloo": "bar:bloo@1.2"
+  }
+}
+```
+
+then the `bloo` package will always come from my defined `bar:`
+registry alias.
+
+You can also of course use this to install packages from a known
+registry by alias on the command line:
+
+```bash
+$ vlt install bar:bloo@1.2
+```
+
+### Special Alias: `npm:`
+
+For backwards compatibility with npm (and existing packages on the
+public npm registry), the `npm:` alias is set by default to the public
+npm registry.
+
+If the `registry` config is set to another value, for example a
+caching proxy in your organization's network, then the `npm:` alias
+will default to that value as well, in order to maintain compatibility
+with existing packages that might be getting proxied through the
+internal registry.
+
+### Registry Consistency
+
+There is a common question that is brought up when discussing the use
+of multiple registries, which vlt handles properly.
+
+The concern is this:
+
+Consider a package `foo` that you wish to fetch from the registry
+`https://registry.foo.com/`. This package `foo` depends on a package
+`bar`, also in that same registry, with the expectation that you're
+fetching _all_ of your packages from that registry, and so, it does
+not use any kind of prefix or specifier to indicate where it can be
+found.
+
+That is, inside of the `foo` package's `package.json` file, it
+contains this:
+
+```json
+{
+  "name": "foo",
+  "version": "1.2.3",
+  "dependencies": {
+    "bar": "1.x"
+  }
+}
+```
+
+On the public default npm registry a _different_ package by the name
+of `bar` exist, which is _not_ compatible with `foo`'s usage.
+
+So the concern is, if I do `vlt install foo:foo@1.2.3`, then it'll
+fetch the `foo` package from the `foo` registry just fine. So far so
+good. However, then it will attempt to resolve the dependencies of the
+foo package, `bar@1.x`. Because `bar@1.x` does not _also_ have a
+registry specifier, you might think that it will attempt to fetch from
+the public npm registry, which would be wrong!
+
+The vlt client handles this by defaulting every dependency to the same
+registry where its dependent came from, when resolving the dependency
+graph, so they are safe to use in your applications, without fear that
+the dependencies will be fetched from the incorrect registry later
+down the resolution process.
+
+### Caution: Registry Aliases Are Not For Published Packages
+
+Except for the default `npm:` alias, it is generally _not_ advised to
+use registry alias specifiers in published package dependencies.
+
+At the time of this writing, only the vlt client supports arbitrary
+registry alias specifiers, and there is no broad consensus on which
+aliases point to which registries, or even any clear understanding
+about how such consensus might be found.
+
+While they are perfectly safe to use within your own application, they
+should _not_ be used in library code that you publish for wider
+consumption by the open source community.
+
+## Registry URL Specifiers
+
+The vlt client supports
+[`registry:` Dependency Specifiers](https://github.com/npm/rfcs/blob/main/accepted/0035-registry-spec.md).
+This means that, even without a configured alias, the registry can
+always be specified explicitly by URL within any context where a
+dependency is defined.
+
+In fact, this is what registry aliases desugar to, and they have the
+exact same behavior.
+
+For example, like in the `foo:foo@1` example above, we could have also
+done:
+
+```bash
+$ vlt install "foo@registry:https://foo.com#foo@1"
+```
+
+While `registry:` specifiers are quite verbose and ugly, they are also
+very explicit and can only be interpreted a single way, without
+requiring any special configuration.
+
+While broad consensus on configuration would not be required in this
+case, it is still not recommended to use them in published library
+code, because currently only the vlt client has support for this type
+of specifier.
+
+We hope that other package managers add support for `registry:`
+specifiers in the future. If they do, then it will be safe to use them
+in published open source library code as well.
+
+## See Also
+
+If you are using custom registries, you are very likely going to be
+interested in setting up [Authentication](/cli/auth) at some point.
