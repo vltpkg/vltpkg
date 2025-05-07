@@ -1,9 +1,9 @@
 import { Range } from '@vltpkg/semver'
-import { inspect } from 'node:util'
 import type { InspectOptions } from 'node:util'
+import { inspect } from 'node:util'
 import t from 'tap'
-import { kCustomInspect, Spec } from '../src/browser.ts'
 import type { Scope, SpecOptions } from '../src/browser.ts'
+import { kCustomInspect, Spec } from '../src/browser.ts'
 
 Object.assign(Spec.prototype, {
   [kCustomInspect](
@@ -386,6 +386,29 @@ t.test('parse args', t => {
     const s = Spec.parseArgs('foo@^1.0.0')
     t.matchSnapshot(inspect(s), 'no options')
     t.end()
+  })
+})
+
+t.test('setting default registry sets npm: alias', async t => {
+  const s = Spec.parse('a@npm:a@1', { registry: 'https://a.com/' })
+  t.matchStrict(s, {
+    type: 'registry',
+    spec: 'a@npm:a@1',
+    name: 'a',
+    bareSpec: 'npm:a@1',
+    namedRegistry: 'npm',
+    registry: 'https://a.com/',
+    subspec: {
+      type: 'registry',
+      spec: 'a@1',
+      name: 'a',
+      bareSpec: '1',
+      namedRegistry: 'npm',
+      registry: 'https://a.com/',
+      registrySpec: '1',
+      semver: '1',
+      range: { raw: '1' },
+    },
   })
 })
 
