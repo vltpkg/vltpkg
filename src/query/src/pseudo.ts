@@ -1,4 +1,3 @@
-import { splitDepID } from '@vltpkg/dep-id/browser'
 import { error } from '@vltpkg/error-cause'
 import type { EdgeLike, NodeLike } from '@vltpkg/graph'
 
@@ -6,7 +5,6 @@ import { removeDanglingEdges, removeNode } from './pseudo/helpers.ts'
 import {
   asPostcssNodeWithChildren,
   asPseudoNode,
-  asTagNode,
   isSelectorNode,
 } from './types.ts'
 import type { ParserFn, ParserState } from './types.ts'
@@ -51,6 +49,7 @@ import { squat } from './pseudo/squat.ts'
 import { suspicious } from './pseudo/suspicious.ts'
 import { tracker } from './pseudo/tracker.ts'
 import { trivial } from './pseudo/trivial.ts'
+import { type } from './pseudo/type.ts'
 import { undesirable } from './pseudo/undesirable.ts'
 import { unknown } from './pseudo/unknown.ts'
 import { unmaintained } from './pseudo/unmaintained.ts'
@@ -293,23 +292,6 @@ const scope = async (state: ParserState) => {
   return state
 }
 
-/**
- * :type(str) Pseudo-Element will match only nodes that are of
- * the same type as the value used
- */
-const typeFn = async (state: ParserState) => {
-  const type = asPostcssNodeWithChildren(state.current)
-  const selector = asPostcssNodeWithChildren(type.nodes[0])
-  const name = asTagNode(selector.nodes[0]).value
-  for (const node of state.partial.nodes) {
-    const nodeType = splitDepID(node.id)[0]
-    if (nodeType !== name) {
-      removeNode(state, node)
-    }
-  }
-  return state
-}
-
 const pseudoSelectors = new Map<string, ParserFn>(
   Object.entries({
     abandoned,
@@ -359,7 +341,7 @@ const pseudoSelectors = new Map<string, ParserFn>(
     suspicious,
     tracker,
     trivial,
-    type: typeFn,
+    type,
     undesirable,
     unknown,
     unmaintained,
