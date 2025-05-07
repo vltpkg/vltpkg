@@ -40,6 +40,7 @@ import { peer } from './pseudo/peer.ts'
 import { published } from './pseudo/published.ts'
 import { privateParser } from './pseudo/private.ts'
 import { prod } from './pseudo/prod.ts'
+import { root } from './pseudo/root.ts'
 import { scanned } from './pseudo/scanned.ts'
 import { score } from './pseudo/score.ts'
 import { scripts } from './pseudo/scripts.ts'
@@ -235,25 +236,6 @@ const not = async (state: ParserState) => {
       removeNode(state, node)
     }
   }
-  return state
-}
-
-/**
- * :root Pseudo-Element will return the project root node for the graph.
- */
-const root = async (state: ParserState) => {
-  const [anyNode] = state.initial.nodes.values()
-  const mainImporter = anyNode?.graph.mainImporter
-  if (!mainImporter) {
-    throw error(':root pseudo-element works on local graphs only')
-  }
-  for (const edge of state.partial.edges) {
-    if (edge.to !== mainImporter) {
-      state.partial.edges.delete(edge)
-    }
-  }
-  state.partial.nodes.clear()
-  state.partial.nodes.add(mainImporter)
   return state
 }
 
