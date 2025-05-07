@@ -2,10 +2,13 @@
 
 exports[`dependency-side-bar 1`] = `
 
-<div>
-  <div class="text-md flex flex-row items-center pt-6 font-medium h-[48px]">
+<gui-dependency-sidebar-provider
+  dependencies="GridItemData { simple-output },GridItemData { abbrev },GridItemData { @vltpkg/semver }"
+  uninstalleddependencies
+>
+  <gui-grid-header classname="h-[48px]">
     Dependencies
-  </div>
+  </gui-grid-header>
   <gui-side-item
     item="GridItemData { @vltpkg/semver }"
     dependencies="true"
@@ -21,16 +24,19 @@ exports[`dependency-side-bar 1`] = `
     dependencies="true"
   >
   </gui-side-item>
-</div>
+</gui-dependency-sidebar-provider>
 
 `;
 
 exports[`dependency-side-bar has both installed and uninstalled deps 1`] = `
 
-<div>
-  <div class="text-md flex flex-row items-center pt-6 font-medium h-[48px]">
+<gui-dependency-sidebar-provider
+  dependencies="GridItemData { simple-output },GridItemData { abbrev },GridItemData { @vltpkg/semver }"
+  uninstalleddependencies="GridItemData { @ruyadorno/redact },GridItemData { ntl }"
+>
+  <gui-grid-header classname="h-[48px]">
     Dependencies
-  </div>
+  </gui-grid-header>
   <gui-side-item
     item="GridItemData { @vltpkg/semver }"
     dependencies="true"
@@ -46,9 +52,9 @@ exports[`dependency-side-bar has both installed and uninstalled deps 1`] = `
     dependencies="true"
   >
   </gui-side-item>
-  <div class="text-md flex flex-row items-center pt-6 font-medium">
+  <gui-grid-header>
     Uninstalled Dependencies
-  </div>
+  </gui-grid-header>
   <gui-side-item
     item="GridItemData { @ruyadorno/redact }"
     dependencies="true"
@@ -59,19 +65,22 @@ exports[`dependency-side-bar has both installed and uninstalled deps 1`] = `
     dependencies="true"
   >
   </gui-side-item>
-</div>
+</gui-dependency-sidebar-provider>
 
 `;
 
 exports[`dependency-side-bar has uninstalled deps only 1`] = `
 
-<div>
-  <div class="text-md flex flex-row items-center pt-6 font-medium h-[48px]">
+<gui-dependency-sidebar-provider
+  dependencies
+  uninstalleddependencies="GridItemData { @vltpkg/semver },GridItemData { abbrev },GridItemData { simple-output }"
+>
+  <gui-grid-header classname="h-[48px]">
     Dependencies
-  </div>
-  <div class="text-md flex flex-row items-center pt-6 font-medium">
+  </gui-grid-header>
+  <gui-grid-header>
     Uninstalled Dependencies
-  </div>
+  </gui-grid-header>
   <gui-side-item
     item="GridItemData { @vltpkg/semver }"
     dependencies="true"
@@ -87,16 +96,19 @@ exports[`dependency-side-bar has uninstalled deps only 1`] = `
     dependencies="true"
   >
   </gui-side-item>
-</div>
+</gui-dependency-sidebar-provider>
 
 `;
 
 exports[`dependency-side-bar no items 1`] = `
 
-<div>
-  <div class="text-md flex flex-row items-center pt-6 font-medium h-[48px]">
+<gui-dependency-sidebar-provider
+  dependencies
+  uninstalleddependencies
+>
+  <gui-grid-header classname="h-[48px]">
     Dependencies
-  </div>
-</div>
+  </gui-grid-header>
+</gui-dependency-sidebar-provider>
 
 `;

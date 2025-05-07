@@ -1,0 +1,147 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`add-dependencies-popover error 1`] = `
+
+<gui-card-header classname="relative flex w-full flex-col rounded-t-lg p-0">
+  <div class="flex items-center justify-between px-6 py-4">
+    <gui-card-title classname="flex items-center text-lg font-medium">
+      <gui-battery-low-icon
+        size="18"
+        classname="mr-2"
+      >
+      </gui-battery-low-icon>
+      Error
+    </gui-card-title>
+  </div>
+</gui-card-header>
+<div class="flex flex-row flex-wrap items-center justify-between gap-2 border-t-[1px] border-muted-foreground/20 p-6">
+  <p class="text-sm">
+    a mock error occured
+  </p>
+</div>
+<div class="flex w-full justify-end">
+  <gui-button
+    classname="m-2"
+    role="cancel"
+    variant="secondary"
+    tabindex="4"
+  >
+    Close
+  </gui-button>
+</div>
+
+`;
+
+exports[`add-dependencies-popover in progress 1`] = `
+
+<gui-card-header classname="relative flex w-full flex-col rounded-t-lg p-0">
+  <div class="flex items-center justify-between px-6 py-4">
+    <gui-card-title classname="flex items-center text-lg font-medium">
+      <gui-package-plus-icon
+        size="18"
+        classname="mr-2"
+      >
+      </gui-package-plus-icon>
+      Add new dependency
+    </gui-card-title>
+  </div>
+</gui-card-header>
+<div class="flex h-48 items-center justify-center">
+  <gui-loading-spinner>
+  </gui-loading-spinner>
+</div>
+
+`;
+
+exports[`add-dependencies-popover render default 1`] = `
+
+<gui-card-header classname="relative flex w-full flex-col rounded-t-lg p-0">
+  <div class="flex items-center justify-between px-6 py-4">
+    <gui-card-title classname="flex items-center text-lg font-medium">
+      <gui-package-plus-icon
+        size="18"
+        classname="mr-2"
+      >
+      </gui-package-plus-icon>
+      Add new dependency
+    </gui-card-title>
+  </div>
+</gui-card-header>
+<form class="flex flex-row flex-wrap items-center justify-between gap-2 border-t-[1px] border-muted-foreground/20 p-6">
+  <gui-label
+    htmlfor="package-name"
+    classname="ml-1"
+  >
+    Package Name
+  </gui-label>
+  <gui-input
+    id="package-name"
+    tabindex="1"
+    type="text"
+    role="input"
+    placeholder="Package name"
+    value
+  >
+  </gui-input>
+  <gui-label
+    htmlfor="package-version"
+    classname="ml-1 mt-2"
+  >
+    Version | Spec
+  </gui-label>
+  <gui-input
+    id="package-version"
+    tabindex="2"
+    type="text"
+    role="input"
+    value="latest"
+  >
+  </gui-input>
+  <gui-label
+    htmlfor="package-type"
+    classname="ml-1 mt-2"
+  >
+    Type
+  </gui-label>
+  <gui-select>
+    <gui-select-trigger classname="cursor-default">
+      <gui-select-value tabindex="3">
+      </gui-select-value>
+    </gui-select-trigger>
+    <gui-select-content classname="z-[10001]">
+      <gui-select-item value="prod">
+        dependencies
+      </gui-select-item>
+      <gui-select-item value="dev">
+        devDependencies
+      </gui-select-item>
+      <gui-select-item value="optional">
+        optionalDependencies
+      </gui-select-item>
+      <gui-select-item value="peer">
+        peerDependencies
+      </gui-select-item>
+    </gui-select-content>
+  </gui-select>
+  <div class="flex w-full justify-end">
+    <gui-button
+      classname="mr-2 mt-2"
+      role="cancel"
+      variant="secondary"
+      tabindex="4"
+    >
+      Cancel
+    </gui-button>
+    <gui-button
+      classname="mt-2"
+      role="submit"
+      tabindex="5"
+    >
+      <gui-package-check-icon size="16">
+      </gui-package-check-icon>
+      Install package
+    </gui-button>
+  </div>
+</form>
+
+`;

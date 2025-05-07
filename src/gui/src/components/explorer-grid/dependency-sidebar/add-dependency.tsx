@@ -1,15 +1,26 @@
-import { useState } from 'react'
-import type {
-  ChangeEvent,
-  SyntheticEvent,
-  KeyboardEvent,
-  MouseEvent,
-} from 'react'
-import { BatteryLow, PackageCheck, PackagePlus } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import {
+  Plus,
+  BatteryLow,
+  PackageCheck,
+  PackagePlus,
+} from 'lucide-react'
+import { useAnimate } from 'framer-motion'
 import { Button } from '@/components/ui/button.jsx'
 import { CardHeader, CardTitle } from '@/components/ui/card.jsx'
 import { Input } from '@/components/ui/input.jsx'
 import { Label } from '@/components/ui/form-label.jsx'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip.jsx'
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover.jsx'
 import {
   Select,
   SelectContent,
@@ -18,39 +29,32 @@ import {
   SelectValue,
 } from '@/components/ui/select.jsx'
 import { LoadingSpinner } from '@/components/ui/loading-spinner.jsx'
+import {
+  useDependencySidebarStore,
+  usePopover,
+  useOperation,
+} from '@/components/explorer-grid/dependency-sidebar/context.jsx'
 
-export type InstallOptions = {
-  name: string
-  version: string
-  type: string
-}
+import type {
+  ChangeEvent,
+  SyntheticEvent,
+  KeyboardEvent,
+  MouseEvent,
+} from 'react'
 
-export type AddDependenciesPopoverProps = {
-  error: string
-  inProgress: boolean
-  onInstall: (o: InstallOptions) => void
-  onClose: () => void
-}
-
-export const AddDependenciesPopover = ({
-  error,
-  inProgress,
-  onInstall,
-  onClose,
-}: AddDependenciesPopoverProps) => {
+export const AddDependenciesPopover = () => {
   const [packageName, setPackageName] = useState<string>('')
   const [packageVersion, setPackageVersion] =
     useState<string>('latest')
   const [packageType, setPackageType] = useState<string>('prod')
-  const formSubmit = (e: SyntheticEvent) => {
-    e.stopPropagation()
-    e.preventDefault()
-    onInstall({
-      name: packageName,
-      version: packageVersion,
-      type: packageType,
-    })
-  }
+
+  const inProgress = useDependencySidebarStore(
+    state => state.inProgress,
+  )
+  const error = useDependencySidebarStore(state => state.error)
+  const { operation } = useOperation()
+  const { setDependencyPopoverOpen } = usePopover()
+
   // we need to add this extra event handler in order to avoid
   // radix-ui/popover from closing the popup on pressing enter
   const keyDown = (e: KeyboardEvent) => {
@@ -59,10 +63,23 @@ export const AddDependenciesPopover = ({
     }
   }
 
+  const formSubmit = (e: SyntheticEvent) => {
+    e.stopPropagation()
+    e.preventDefault()
+    void operation({
+      item: {
+        name: packageName,
+        version: packageVersion,
+        type: packageType,
+      },
+      operationType: 'install',
+    })
+  }
+
   const closePopover = (e: MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
-    onClose()
+    setDependencyPopoverOpen(false)
   }
 
   if (inProgress) {
@@ -188,5 +205,54 @@ export const AddDependenciesPopover = ({
         </div>
       </form>
     </>
+  )
+}
+
+export const AddDependenciesPopoverTrigger = () => {
+  const {
+    toggleAddDepPopover,
+    dependencyPopoverOpen,
+    setDependencyPopoverOpen,
+  } = usePopover()
+  const [scope, animate] = useAnimate()
+
+  useEffect(() => {
+    if (scope.current) {
+      if (dependencyPopoverOpen) {
+        animate(scope.current, {
+          rotate: -45,
+        })
+      } else {
+        animate(scope.current, {
+          rotate: 0,
+        })
+      }
+    }
+  }, [dependencyPopoverOpen, scope])
+
+  return (
+    <TooltipProvider>
+      <Popover
+        onOpenChange={setDependencyPopoverOpen}
+        open={dependencyPopoverOpen}>
+        <PopoverTrigger>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div
+                onClick={toggleAddDepPopover}
+                className="inline-flex size-6 cursor-default items-center justify-center gap-2 whitespace-nowrap rounded-md border border-input bg-background text-sm font-medium ring-offset-background transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0">
+                <Plus ref={scope} />
+              </div>
+            </TooltipTrigger>
+            <TooltipContent>Add a new dependency</TooltipContent>
+          </Tooltip>
+        </PopoverTrigger>
+        <PopoverContent
+          align="end"
+          className="right-0 top-0 w-96 p-0">
+          <AddDependenciesPopover />
+        </PopoverContent>
+      </Popover>
+    </TooltipProvider>
   )
 }
