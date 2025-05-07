@@ -33,9 +33,12 @@ vi.mock('@/components/explorer-grid/header.jsx', () => ({
   GridHeader: 'gui-grid-header',
 }))
 
-vi.mock('@/components/explorer-grid/dependency-side-bar.jsx', () => ({
-  DependencySideBar: 'gui-dependency-side-bar',
-}))
+vi.mock(
+  '@/components/explorer-grid/dependency-sidebar/index.jsx',
+  () => ({
+    DependencySideBar: 'gui-dependency-side-bar',
+  }),
+)
 
 vi.mock('@/components/explorer-grid/empty-results-state.jsx', () => ({
   EmptyResultsState: 'gui-empty-results-state',

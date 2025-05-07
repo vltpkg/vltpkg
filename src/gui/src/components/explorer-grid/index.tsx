@@ -14,7 +14,7 @@ import type {
   GridItemData,
 } from '@/components/explorer-grid/types.js'
 import { GridHeader } from '@/components/explorer-grid/header.jsx'
-import { DependencySideBar } from '@/components/explorer-grid/dependency-side-bar.jsx'
+import { DependencySideBar } from '@/components/explorer-grid/dependency-sidebar/index.jsx'
 import { EmptyResultsState } from '@/components/explorer-grid/empty-results-state.jsx'
 import { Badge } from '@/components/ui/badge.jsx'
 import type {
