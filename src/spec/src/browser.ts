@@ -15,9 +15,7 @@ export const kCustomInspect = Symbol.for('nodejs.util.inspect.custom')
 
 export const defaultRegistry = 'https://registry.npmjs.org/'
 
-export const defaultRegistries = {
-  npm: 'https://registry.npmjs.org/',
-}
+export const defaultRegistries = { npm: defaultRegistry }
 
 export const defaultGitHosts = {
   github: 'git+ssh://git@github.com:$1/$2.git',
@@ -64,13 +62,7 @@ export const getOptions = (
         ...options['git-hosts'],
       }
     : defaultGitHosts,
-  registries:
-    options?.registries ?
-      {
-        ...defaultRegistries,
-        ...options.registries,
-      }
-    : defaultRegistries,
+  registries: options?.registries ?? {},
   'git-host-archives':
     options?.['git-host-archives'] ?
       {
@@ -408,6 +400,10 @@ export class Spec implements SpecLike<Spec> {
       }
     }
 
+    const regs = Object.entries(this.options.registries)
+    if (!this.options.registries.npm) {
+      regs.push(['npm', this.options.registry])
+    }
     if (this.bareSpec.startsWith('registry:')) {
       const reg = this.bareSpec.substring('registry:'.length)
       const h = reg.indexOf('#')
@@ -418,7 +414,7 @@ export class Spec implements SpecLike<Spec> {
       let url = reg.substring(0, h)
       if (!url.endsWith('/')) url += '/'
       const regSpec = reg.substring(h + 1)
-      for (let [name, u] of Object.entries(this.options.registries)) {
+      for (let [name, u] of regs) {
         if (!u.endsWith('/')) {
           u += '/'
           this.options.registries[name] = u
@@ -430,7 +426,6 @@ export class Spec implements SpecLike<Spec> {
       return
     }
 
-    const regs = Object.entries(this.options.registries)
     for (const [host, url] of regs) {
       const h = `${host}:`
       if (this.bareSpec.startsWith(h)) {

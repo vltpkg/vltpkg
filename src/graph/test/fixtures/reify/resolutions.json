@@ -791,5 +791,25 @@
         "keyid": "SHA256:jl3bwswu80PjjokCgh0o2w5c2U4LhQAE57gj9cz1kzA"
       }
     ]
+  },
+  "strip-ansi@^6.0.0": {
+    "resolved": "https://registry.npmjs.org/strip-ansi/-/strip-ansi-6.0.1.tgz",
+    "integrity": "sha512-Y38VPSHcqkFrCpFnQ9vuSXmquuv5oXOKpGeT6aGrr3o3Gc9AlVa6JBfUSOCnbxGGZF+/0ooI7KrPuUSztUdU5A==",
+    "signatures": [
+      {
+        "keyid": "SHA256:jl3bwswu80PjjokCgh0o2w5c2U4LhQAE57gj9cz1kzA",
+        "sig": "MEQCIEIaIvQJAMRlSerQ8cuHIzWxWLJPS6LkkF/9tMpiAXTvAiBY3tMFoj8tB0mc3dm7Th97E9p88NfZfjOdr/HKu8apLw=="
+      }
+    ]
+  },
+  "string-width@^4.1.0": {
+    "resolved": "https://registry.npmjs.org/string-width/-/string-width-4.2.3.tgz",
+    "integrity": "sha512-wKyQRQpjJ0sIp62ErSZdGsjMJWsap5oRNihHhu6G7JVO/9jIB6UyevL+tXuOqrng8j/cxKTWyWUwvSTriiZz/g==",
+    "signatures": [
+      {
+        "sig": "MEUCIQCdE8iSHW3j8YsH6u/KbZmvj9DtpGTXHmhmmp6oeUG6/AIge8jaI1Qk/Z/GED/SrwJ+yNQAEzkZ28FrbwLFqeAqdSg=",
+        "keyid": "SHA256:jl3bwswu80PjjokCgh0o2w5c2U4LhQAE57gj9cz1kzA"
+      }
+    ]
   }
 }
