@@ -195,7 +195,7 @@ jobs:
             os: windows-latest
             shell: powershell
         exclude:
-          - node-version: ${{ needs.pre-check.outputs.full-matrix == 'false' && '24.x' }}
+          - node-version: '24.x'
           - platform: ${{ fromJSON(needs.pre-check.outputs.full-matrix == 'false' && '{"name":"macOS","os":"macos-latest","shell":"bash"}') }}
           - platform: ${{ fromJSON(needs.pre-check.outputs.full-matrix == 'false' && '{"name":"macOS Intel","os":"macos-13","shell":"bash"}') }}
           - platform: ${{ fromJSON(needs.pre-check.outputs.full-matrix == 'false' && '{"name":"Windows Powershell","os":"windows-latest","shell":"powershell"}') }}
