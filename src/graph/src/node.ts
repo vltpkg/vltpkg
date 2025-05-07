@@ -31,6 +31,7 @@ export class Node implements NodeLike {
   #options: SpecOptions
   #location?: string
   #rawManifest?: Manifest
+  #firstEdgeIn?: Edge
 
   #optional = false
   /**
@@ -91,7 +92,47 @@ export class Node implements NodeLike {
   /**
    * List of edges coming into this node.
    */
-  edgesIn = new Set<Edge>()
+  edgesIn: Set<Edge>
+
+  /**
+   * Returns the first edge in the edgesIn set based on a deterministic
+   * sorting order. Prioritizes edges from mainImporter nodes, then importer
+   * nodes, otherwise uses the first node found, sorted by name. The result
+   * is memoized to ensure consistent traversal and performance.
+   */
+  get firstEdgeIn(): Edge | undefined {
+    if (this.#firstEdgeIn !== undefined) {
+      return this.#firstEdgeIn
+    }
+
+    if (this.edgesIn.size === 0) {
+      this.#firstEdgeIn = undefined
+      return undefined
+    }
+
+    // Sort edges based on priority:
+    // mainImporter > importer > alphabetical order by name
+    const sortedEdges = [...this.edgesIn]
+      .sort((a, b) =>
+        // sorts in alphabetical order of the node.from names
+        a.from.name.localeCompare(b.from.name, 'en'),
+      )
+      .sort((a, b) => {
+        // mainImporter has highest priority
+        if (a.from.mainImporter && !b.from.mainImporter) return -1
+        if (!a.from.mainImporter && b.from.mainImporter) return 1
+
+        // importer has second highest priority
+        if (a.from.importer && !b.from.importer) return -1
+        if (!a.from.importer && b.from.importer) return 1
+
+        // otherwise just keep the alphabetically-sorted order
+        return 0
+      })
+
+    this.#firstEdgeIn = sortedEdges[0]
+    return this.#firstEdgeIn
+  }
 
   /**
    * List of edges from this node into other nodes. This usually represents
@@ -250,6 +291,34 @@ export class Node implements NodeLike {
     this.version = version || this.manifest?.version
     if (this.version?.startsWith('v')) {
       this.version = this.version.slice(1)
+    }
+
+    // add an abstraction layer to the edgesIn add/delete methods of the
+    // Set, so we can track when to recalculate the firstEdgeIn property
+    const self = this
+    this.edgesIn = new Set<Edge>()
+    this.edgesIn.add = function edgesInAdd(edge: Edge): Set<Edge> {
+      // need to recalculate the first-edge-in when edgesIn are changed
+      self.#firstEdgeIn = undefined
+      return Set.prototype.add.call<Set<Edge>, [Edge], Set<Edge>>(
+        this,
+        edge,
+      )
+    }
+    this.edgesIn.clear = function edgesInClear(): void {
+      // need to recalculate the first-edge-in when edgesIn are changed
+      self.#firstEdgeIn = undefined
+      return Set.prototype.clear.call<Set<Edge>, [], void>(this)
+    }
+    this.edgesIn.delete = function edgesInDelete(
+      edge: Edge,
+    ): boolean {
+      // need to recalculate the first-edge-in when edgesIn are changed
+      self.#firstEdgeIn = undefined
+      return Set.prototype.delete.call<Set<Edge>, [Edge], boolean>(
+        this,
+        edge,
+      )
     }
   }
 

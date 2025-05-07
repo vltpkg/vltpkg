@@ -504,3 +504,275 @@ t.test('rawManifest getter and setter', t => {
 
   t.end()
 })
+
+t.test('firstEdgeIn getter', t => {
+  const opts = {
+    ...options,
+    projectRoot: t.testdirName,
+    graph: {} as GraphLike,
+  }
+
+  // Create target node that will have multiple edges coming in
+  const targetMani = {
+    name: 'target',
+    version: '1.0.0',
+  }
+  const target = new Node(
+    opts,
+    joinDepIDTuple(['registry', '', 'target@1.0.0']),
+    targetMani,
+  )
+
+  // Create a main importer node (highest priority)
+  const rootMani = {
+    name: 'root',
+    version: '1.0.0',
+  }
+  const root = new Node(opts, joinDepIDTuple(['file', '.']), rootMani)
+  root.mainImporter = true
+  root.importer = true
+
+  // Create a secondary importer node (second priority)
+  const importerMani = {
+    name: 'importer',
+    version: '1.0.0',
+  }
+  const importer = new Node(
+    opts,
+    joinDepIDTuple(['workspace', './packages/importer']),
+    importerMani,
+  )
+  importer.importer = true
+
+  // Create regular nodes with different names (for alphabetical sorting)
+  const aMani = {
+    name: 'a-pkg',
+    version: '1.0.0',
+  }
+  const a = new Node(
+    opts,
+    joinDepIDTuple(['registry', '', 'a-pkg@1.0.0']),
+    aMani,
+  )
+
+  const bMani = {
+    name: 'b-pkg',
+    version: '1.0.0',
+  }
+  const b = new Node(
+    opts,
+    joinDepIDTuple(['registry', '', 'b-pkg@1.0.0']),
+    bMani,
+  )
+
+  const zMani = {
+    name: 'z-pkg',
+    version: '1.0.0',
+  }
+  const z = new Node(
+    opts,
+    joinDepIDTuple(['registry', '', 'z-pkg@1.0.0']),
+    zMani,
+  )
+
+  // Add edges from all nodes to target
+  const rootEdge = new Edge(
+    'prod',
+    Spec.parse('target@^1.0.0'),
+    root,
+    target,
+  )
+  const importerEdge = new Edge(
+    'prod',
+    Spec.parse('target@^1.0.0'),
+    importer,
+    target,
+  )
+  const aEdge = new Edge(
+    'prod',
+    Spec.parse('target@^1.0.0'),
+    a,
+    target,
+  )
+  const bEdge = new Edge(
+    'prod',
+    Spec.parse('target@^1.0.0'),
+    b,
+    target,
+  )
+  const zEdge = new Edge(
+    'prod',
+    Spec.parse('target@^1.0.0'),
+    z,
+    target,
+  )
+
+  // Test with no edges
+  t.equal(
+    target.firstEdgeIn,
+    undefined,
+    'should return undefined when no edges exist',
+  )
+
+  // Add edges in reverse priority order to ensure sorting works
+  target.edgesIn.add(zEdge)
+  target.edgesIn.add(bEdge)
+  target.edgesIn.add(aEdge)
+  target.edgesIn.add(importerEdge)
+
+  // Check that the importer is selected as highest priority
+  t.equal(
+    target.firstEdgeIn,
+    importerEdge,
+    'should select importer edge when no mainImporter exists',
+  )
+
+  // Now add the main importer edge
+  target.edgesIn.add(rootEdge)
+
+  // Check that the main importer is now selected
+  t.equal(
+    target.firstEdgeIn,
+    rootEdge,
+    'should select mainImporter edge as highest priority',
+  )
+
+  t.equal(
+    target.firstEdgeIn,
+    rootEdge,
+    'should select mainImporter from memoized value',
+  )
+
+  // Test memoization by removing the main importer edge
+  // and checking if the result changes
+  target.edgesIn.delete(rootEdge)
+  t.equal(
+    target.firstEdgeIn,
+    importerEdge,
+    'should return memoized value even after edge removal',
+  )
+
+  // Create a main importer node (highest priority)
+  const aRootMani = {
+    name: 'a',
+    version: '1.0.0',
+  }
+  const aRoot = new Node(
+    opts,
+    joinDepIDTuple(['file', '.']),
+    aRootMani,
+  )
+  aRoot.mainImporter = true
+  aRoot.importer = true
+
+  // Create a secondary importer node (second priority)
+  const ws1ImporterMani = {
+    name: 'as-1',
+    version: '1.0.0',
+  }
+  const ws1Importer = new Node(
+    opts,
+    joinDepIDTuple(['workspace', './packages/importer']),
+    ws1ImporterMani,
+  )
+  ws1Importer.importer = true
+
+  // Create regular nodes with different names (for alphabetical sorting)
+  const bbMani = {
+    name: 'bb-pkg',
+    version: '1.0.0',
+  }
+  const bb = new Node(
+    opts,
+    joinDepIDTuple(['registry', '', 'bb-pkg@1.0.0']),
+    bbMani,
+  )
+  const ccMani = {
+    name: 'cc-pkg',
+    version: '1.0.0',
+  }
+  const cc = new Node(
+    opts,
+    joinDepIDTuple(['registry', '', 'cc-pkg@1.0.0']),
+    ccMani,
+  )
+
+  // Create a new target node to test alphabetical sorting
+  // Create target node that will have multiple edges coming in
+  const target2Mani = {
+    name: 'target2',
+    version: '1.0.0',
+  }
+  const target2 = new Node(
+    opts,
+    joinDepIDTuple(['registry', '', 'target2@1.0.0']),
+    target2Mani,
+  )
+  const aRootEdge = new Edge(
+    'prod',
+    Spec.parse('target2@^1.0.0'),
+    aRoot,
+    target2,
+  )
+  const bbEdge = new Edge(
+    'prod',
+    Spec.parse('target2@^1.0.0'),
+    bb,
+    target2,
+  )
+  const ccEdge = new Edge(
+    'prod',
+    Spec.parse('target2@^1.0.0'),
+    cc,
+    target2,
+  )
+  const ws1ImporterEdge = new Edge(
+    'prod',
+    Spec.parse('target2@^1.0.0'),
+    ws1Importer,
+    target2,
+  )
+
+  // Add regular nodes in reverse alphabetical order
+  target2.edgesIn.add(ccEdge)
+  target2.edgesIn.add(bbEdge)
+
+  // Check that alphabetical sorting works
+  t.equal(
+    target2.firstEdgeIn?.from.name,
+    'bb-pkg',
+    'should sort regular nodes alphabetically',
+  )
+
+  // validate that root importer can be selected
+  target2.edgesIn.clear()
+  target2.edgesIn.add(aRootEdge)
+  target2.edgesIn.add(ws1ImporterEdge)
+  t.equal(
+    target2.firstEdgeIn,
+    aRootEdge,
+    'should sort main importer first',
+  )
+
+  // start over
+  target2.edgesIn.clear()
+  target2.edgesIn.add(ccEdge)
+  target2.edgesIn.add(ws1ImporterEdge)
+  t.equal(
+    target2.firstEdgeIn,
+    ws1ImporterEdge,
+    'should sort main importer first',
+  )
+
+  // add edgesIn in which the first item in the set is the main importer
+  target2.edgesIn.add(rootEdge)
+
+  // Check that main importer has the priority
+  t.equal(
+    target2.firstEdgeIn,
+    rootEdge,
+    'should sort main importer first',
+  )
+
+  t.end()
+})
