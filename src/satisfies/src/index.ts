@@ -47,7 +47,10 @@ export const satisfiesTuple = (
           return false
         }
       } else {
-        const namedRegistry = options.registries[first]
+        let namedRegistry = options.registries[first]
+        if (!namedRegistry && first === 'npm') {
+          namedRegistry = options.registry
+        }
         if (namedRegistry && namedRegistry !== spec.registry) {
           // we know the name, and it's not the registry being used
           return false
