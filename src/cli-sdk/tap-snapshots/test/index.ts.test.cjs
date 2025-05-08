@@ -9,7 +9,7 @@ exports[`test/index.ts > TAP > invalid config in file > must match snapshot 1`] 
 Problem in Config File {CWD}/.tap/fixtures/test-index.ts-invalid-config-in-file/vlt.json
 Invalid value string for color, expected boolean
   Field: color
-  Found: foo
+  Found: "foo"
   Wanted: boolean
   Run 'vlt help' for more information about available options.
 `
@@ -65,7 +65,7 @@ Unknown option '--unknown'. To specify a positional argument starting with a '-'
 exports[`test/index.ts > TAP > unknown config in file > must match snapshot 1`] = `
 Problem in Config File {CWD}/.tap/fixtures/test-index.ts-unknown-config-in-file/vlt.json
 Unknown config option: asdf
-  Found: asdf
+  Found: "asdf"
   Valid Options:
     arch
     bail

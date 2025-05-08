@@ -69,7 +69,9 @@ const loadVlt = async (cwd: string, argv: string[]) => {
     stderr(msg)
     stderr(err.message)
     if (name) stderr(indent(`Field: ${format(name)}`))
-    if (found) stderr(indent(`Found: ${format(found)}`))
+    if (found) {
+      stderr(indent(`Found: ${isConfigFile ? JSON.stringify(found) : format(found)}`))
+    }
     if (wanted) stderr(indent(`Wanted: ${format(wanted)}`))
     if (validOptions) {
       stderr(indent('Valid Options:'))
