@@ -1,4 +1,6 @@
-import { error, asRootError, isObject } from '@vltpkg/error-cause'
+import { error } from '@vltpkg/error-cause'
+import { asRootError } from '@vltpkg/output/error'
+import { isObject } from '@vltpkg/types'
 import { spawnSync } from 'node:child_process'
 import { getSortedKeys } from '../config/definition.ts'
 import type {

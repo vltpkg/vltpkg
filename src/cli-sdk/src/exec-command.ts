@@ -3,7 +3,8 @@
  * @module
  */
 
-import { error, isErrorWithCause } from '@vltpkg/error-cause'
+import { error } from '@vltpkg/error-cause'
+import { isErrorWithCause } from '@vltpkg/types'
 import type {
   exec,
   execFG,

@@ -1,5 +1,5 @@
-import { parseErrorChain } from '@vltpkg/error-cause'
-import type { RootError } from '@vltpkg/error-cause'
+import { parseErrorChain } from '@vltpkg/output/error'
+import type { RootError } from '@vltpkg/output/error'
 import type { CommandUsage } from './index.ts'
 import type { InspectOptions } from 'node:util'
 import { formatWithOptions } from 'node:util'

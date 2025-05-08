@@ -1,4 +1,6 @@
-import { asRootError, error } from '@vltpkg/error-cause'
+import { format } from 'node:util'
+import { error } from '@vltpkg/error-cause'
+import { asRootError } from '@vltpkg/output/error'
 import type { Jack } from 'jackspeak'
 import { loadPackageJson } from 'package-json-from-dist'
 import {
@@ -10,7 +12,6 @@ import { Config } from './config/index.ts'
 import { outputCommand, stderr, stdout } from './output.ts'
 import { indent } from './print-err.ts'
 import type { Views } from './view.ts'
-import { format } from 'node:util'
 
 export type CommandUsage = () => Jack
 

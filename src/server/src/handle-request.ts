@@ -9,7 +9,7 @@ import type { VltServerListening } from './index.ts'
 import * as json from './json.ts'
 import { parseInstallOptions } from './parse-install-options.ts'
 import { parseUninstallOptions } from './parse-uninstall-options.ts'
-import { asError } from '@vltpkg/error-cause'
+import { asError } from '@vltpkg/types'
 
 export type GUIInstallOptions = Record<
   string,
