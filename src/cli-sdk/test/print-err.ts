@@ -30,13 +30,7 @@ t.test('regular error with weird cause', t => {
     stderr,
     formatter,
   )
-  t.match(printed, [
-    'Error: foo bar',
-    'Cause:',
-    '  false',
-    'Stack:',
-    /^\s{2}/,
-  ])
+  t.match(printed, ['Error: foo bar', 'Stack:', /^\s{2}/])
   t.end()
 })
 
@@ -189,8 +183,8 @@ t.test('error with an unknown code', t => {
   })
   t.matchStrict(printed, [
     'Error: this is an error',
+    'Code: ENOTACODEWEKNOWABOUT',
     'Cause:',
-    `  code: ENOTACODEWEKNOWABOUT`,
     `  wanted: {
     __0__: 0,
     __1__: 1,

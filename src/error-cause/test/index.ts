@@ -4,9 +4,12 @@ import {
   typeError,
   asError,
   isErrorWithCause,
-  isErrorWithCode,
+  isObject,
+  findRootError,
+  parseErrorChain,
+  asRootError,
 } from '../src/index.ts'
-import type { Codes } from '../src/index.ts'
+import type { ErrorCauseOptions } from '../src/index.ts'
 import t from 'tap'
 
 t.test('error types', async t => {
@@ -17,18 +20,30 @@ t.test('error types', async t => {
 
 t.test('setting causes', async t => {
   t.test('object', async t => {
+    const typeCause = (_: ErrorCauseOptions) => {}
     const cause = { status: 1 }
     const er = error('status is one', cause)
+    typeCause(er.cause)
     t.strictSame(er.cause, cause)
   })
 
   t.test('error', async t => {
+    const typeCause = (_: Error) => {}
     const cause = new Error('foo')
     const er = error('msg', cause)
+    typeCause(er.cause)
     t.strictSame(er.cause, cause)
   })
 
+  t.test('missing cause', async t => {
+    const typeCause = (_: unknown) => {}
+    const er = error('msg')
+    typeCause(er.cause)
+    t.equal(er.cause, undefined)
+  })
+
   t.test('error try/catch', async t => {
+    const typeCause = (_: ErrorCauseOptions) => {}
     let cause: unknown = null
     try {
       throw new Error('foo')
@@ -36,6 +51,7 @@ t.test('setting causes', async t => {
       cause = er
     }
     const er = error('msg', { cause })
+    typeCause(er.cause)
     t.strictSame(er.cause, { cause })
   })
 })
@@ -95,41 +111,117 @@ t.test('isErrorWithCause type guard', async t => {
   t.equal(isErrorWithCause(123), false)
 })
 
-t.test('isErrorWithCode type guard', async t => {
+t.test('isObject', async t => {
+  t.equal(isObject({}), true)
+  t.equal(isObject(null), false)
+  t.equal(isObject(undefined), false)
+  t.equal(isObject('a string'), false)
+  t.equal(isObject(123), false)
+})
+
+t.test('findRootError', async t => {
+  t.equal(findRootError('what'), null)
+  t.match(findRootError(new Error('plain')), {
+    message: 'plain',
+  })
   t.equal(
-    isErrorWithCode(error('with code', { code: 'EINTEGRITY' })),
-    true,
+    findRootError(new Error('plain'), { code: 'ECONFIG' }),
+    null,
   )
-  t.equal(isErrorWithCode(new Error('plain')), false)
-  t.equal(
-    isErrorWithCode(error('with cause', new Error('inner cause'))),
-    false,
+  t.match(
+    findRootError(error('message', { code: 'ECONFIG', wanted: 'a' })),
+    {
+      message: 'message',
+      code: 'ECONFIG',
+      cause: {
+        wanted: 'a',
+      },
+    },
   )
   t.equal(
-    isErrorWithCode(error('with cause obj', { path: '/tmp' })),
-    false,
+    findRootError(error('message', { code: 'ECONFIG' }), {
+      code: 'ESOMETHINGELSE',
+    }),
+    null,
   )
-  t.equal(
-    isErrorWithCode(
-      error('with invalid code', {
-        code: 'THIS_IS_NOT_A_VALID_CODE' as Codes,
+  t.match(
+    findRootError(
+      error('message', {
+        code: 'ECONFIG',
+        cause: Object.assign(new Error('cause'), {
+          code: 'ECONNREFUSED',
+          syscall: 'connect',
+        }),
       }),
     ),
-    false,
+    {
+      message: 'message',
+      code: 'ECONFIG',
+      cause: {
+        code: 'ECONNREFUSED',
+        syscall: 'connect',
+      },
+    },
   )
-  t.equal(
-    isErrorWithCode(
-      error('with non-string code', { code: 123 as any }),
+  t.match(
+    findRootError(
+      error('message', {
+        wanted: 'a',
+        cause: error('cause', {
+          wanted: 'b',
+          name: 'c',
+        }),
+      }),
     ),
-    false,
+    {
+      message: 'message',
+      cause: {
+        wanted: 'a',
+        name: 'c',
+      },
+    },
   )
-  t.equal(
-    isErrorWithCode(error('with null code', { code: null as any })),
-    false,
+  t.match(
+    findRootError(
+      error('message', {
+        code: 'ECONFIG',
+        cause: new Error('cause', {
+          cause: new Error('next', {
+            cause: { code: 'ECONNREFUSED' },
+          }),
+        }),
+      }),
+    ),
+    {
+      message: 'message',
+      code: 'ECONFIG',
+      cause: {
+        code: 'ECONNREFUSED',
+      },
+    },
   )
-  t.equal(isErrorWithCode({ cause: { code: 'ENOENT' } }), false)
-  t.equal(isErrorWithCode(null), false)
-  t.equal(isErrorWithCode(undefined), false)
-  t.equal(isErrorWithCode('a string'), false)
-  t.equal(isErrorWithCode(123), false)
+})
+
+t.test('asRootError', async t => {
+  t.throws(() => asRootError('what'))
+  t.doesNotThrow(() => asRootError(error('message')))
+})
+
+t.test('parseErrorChain', async t => {
+  const [root, chain] = parseErrorChain(
+    error('message', {
+      code: 'ECONFIG',
+      cause: new Error('a', {
+        cause: new Error('b', {
+          cause: new Error('c'),
+        }),
+      }),
+    }),
+  )
+  t.ok(root)
+  t.equal(root?.message, 'message')
+  t.equal(chain?.length, 3)
+  t.equal(chain?.[0]?.message, 'a')
+  t.equal(chain?.[1]?.message, 'b')
+  t.equal(chain?.[2]?.message, 'c')
 })

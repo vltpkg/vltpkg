@@ -1,5 +1,5 @@
-import { isErrorWithCode } from '@vltpkg/error-cause'
-import type { ErrorWithCode } from '@vltpkg/error-cause'
+import { parseErrorChain } from '@vltpkg/error-cause'
+import type { RootError } from '@vltpkg/error-cause'
 import type { CommandUsage } from './index.ts'
 import type { InspectOptions } from 'node:util'
 import { formatWithOptions } from 'node:util'
@@ -13,15 +13,11 @@ type Formatter = (
   options?: ErrorFormatOptions,
 ) => string
 
-const trimStack = (err: Error) => {
-  if (err.stack) {
-    const lines = err.stack.trim().split('\n')
-    if (lines[0] === `${err.name}: ${err.message}`) {
-      lines.shift()
-    }
-    return lines.map(l => l.trim()).join('\n')
-  }
-}
+const formatURL = (v: unknown, format: Formatter) =>
+  v instanceof URL ? v.toString() : /* c8 ignore next */ format(v)
+
+const formatArray = (v: unknown, format: Formatter, joiner = ', ') =>
+  Array.isArray(v) ? v.join(joiner) : /* c8 ignore next */ format(v)
 
 export const indent = (lines: string, num = 2) =>
   lines
@@ -29,13 +25,8 @@ export const indent = (lines: string, num = 2) =>
     .map(l => ' '.repeat(num) + l)
     .join('\n')
 
-const isErrorWithProps = (
-  value: unknown,
-): value is Error & Record<string, unknown> =>
-  value instanceof Error && Object.keys(value).length > 0
-
 export const printErr = (
-  err: unknown,
+  e: unknown,
   usage: CommandUsage,
   stderr: (...a: string[]) => void,
   baseOpts?: ErrorFormatOptions,
@@ -51,52 +42,50 @@ export const printErr = (
     return lines.join('\n')
   }
 
+  const [err, chain] = parseErrorChain(e)
+
+  if (!err) {
+    // We don't know what this is, just print it.
+    stderr(`Unknown Error:`, format(e))
+    return
+  }
+
   // This is an error with a cause, check if it we know about its
   // code and try to print it. If it did not print then fallback
   // to the next option.
-  if (isErrorWithCode(err) && print(err, usage, stderr, format)) {
+  if (printCode(err, usage, stderr, format)) {
     return
   }
 
   // We have a real but we dont know anything special about its
   // properties. Just print the standard error properties as best we can.
-  if (err instanceof Error) {
-    stderr(`${err.name}: ${err.message}`)
-    if ('cause' in err) {
-      stderr(`Cause:`)
-      if (err.cause instanceof Error) {
-        stderr(indent(format(err.cause)))
-      } else if (err.cause && typeof err.cause === 'object') {
-        for (const key in err.cause) {
-          stderr(
-            indent(
-              `${key}: ${format((err.cause as Record<string, unknown>)[key])}`,
-            ),
-          )
-        }
-      } else {
-        stderr(indent(format(err.cause)))
-      }
+  stderr(`${err.name}: ${err.message}`)
+  if (err.code) {
+    stderr(`Code: ${format(err.code)}`)
+  }
+  if (Object.keys(err.cause).length || chain.length) {
+    stderr(`Cause:`)
+    for (const key in err.cause) {
+      stderr(indent(`${key}: ${format(err.cause[key])}`))
     }
-    const stack = trimStack(err)
-    if (stack) {
-      stderr(`Stack:`)
-      stderr(indent(format(stack)))
+    for (const err of chain) {
+      stderr(`${err.name}: ${err.message}`)
     }
-    return
   }
 
-  // We don't know what this is, just print it.
-  stderr(`Unknown Error:`, format(err))
+  if (err.stack) {
+    stderr(`Stack:`)
+    stderr(indent(format(err.stack)))
+  }
 }
 
-const print = (
-  err: ErrorWithCode,
+const printCode = (
+  err: RootError,
   usage: CommandUsage,
   stderr: (...a: string[]) => void,
   format: Formatter,
 ) => {
-  switch (err.cause.code) {
+  switch (err.code) {
     case 'EUSAGE': {
       const { found, validOptions } = err.cause
       stderr(usage().usage())
@@ -106,7 +95,9 @@ const print = (
       }
       if (validOptions) {
         stderr(
-          indent(`Valid options: ${format(validOptions.join(', '))}`),
+          indent(
+            `Valid options: ${formatArray(validOptions, format)}`,
+          ),
         )
       }
       return true
@@ -116,7 +107,7 @@ const print = (
       const { url, from, response, spec } = err.cause
       stderr(`Resolve Error: ${err.message}`)
       if (url) {
-        stderr(indent(`While fetching: ${url}`))
+        stderr(indent(`While fetching: ${formatURL(url, format)}`))
       }
       if (spec) {
         stderr(indent(`To satisfy: ${format(spec)}`))
@@ -131,11 +122,7 @@ const print = (
     }
 
     case 'EREQUEST': {
-      const { url, method } = err.cause
-      const { code, syscall } =
-        isErrorWithProps(err.cause.cause) ?
-          err.cause.cause
-        : ({} as Record<string, unknown>)
+      const { url, method, syscall, code } = err.cause
       stderr(`Request Error: ${err.message}`)
       if (code) {
         stderr(indent(`Code: ${format(code)}`))
@@ -144,12 +131,11 @@ const print = (
         stderr(indent(`Syscall: ${format(syscall)}`))
       }
       if (url) {
-        stderr(indent(`URL: ${url}`))
+        stderr(indent(`URL: ${formatURL(url, format)}`))
       }
       if (method) {
         stderr(indent(`Method: ${format(method)}`))
       }
-
       return true
     }
 
