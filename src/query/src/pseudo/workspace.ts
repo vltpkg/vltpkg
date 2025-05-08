@@ -1,5 +1,5 @@
 import type { ParserState } from '../types.ts'
-import { removeDanglingEdges, removeNode } from './helpers.ts'
+import { removeNode } from './helpers.ts'
 
 /**
  * :workspace Pseudo-Selector will only match workspace dependencies.
@@ -12,7 +12,10 @@ export const workspace = async (state: ParserState) => {
     }
   }
 
-  removeDanglingEdges(state)
+  // Clears up all edges so that the :workspace pseudo-selector never matches
+  // edges that are possibly coming from other packages, this way we can only
+  // have a single workspace result per workspace name.
+  state.partial.edges.clear()
 
   return state
 }
