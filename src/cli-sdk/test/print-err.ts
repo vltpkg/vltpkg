@@ -1,211 +1,207 @@
 import t from 'tap'
-
 import { error } from '@vltpkg/error-cause'
 import type { Codes } from '@vltpkg/error-cause'
 import type { CommandUsage } from '../src/index.ts'
-import { printErr } from '../src/print-err.ts'
+import { printErr as printErrBase } from '../src/print-err.ts'
+import type { ErrorFormatOptions } from '../src/print-err.ts'
 
-const printed: string[] = []
-const stderr = (...a: string[]) => {
-  printed.push(a.join(' '))
+t.formatSnapshot = (v: unknown) => {
+  if (Array.isArray(v)) {
+    return v.join('\n')
+  }
+  return v
 }
-const formatter = { colors: false }
 
-t.beforeEach(() => (printed.length = 0))
+t.cleanSnapshot = (s: string) => {
+  const cleaned: string[] = []
+  let inStack = false
+  let hasStackLine = false
+  for (const line of s.split('\n')) {
+    if (line.startsWith('Stack:')) {
+      inStack = true
+    } else if (inStack) {
+      if (line.startsWith('  ')) {
+        // stack traces are different on different platforms so
+        // just verify that there is at least one line of the trace
+        if (!hasStackLine) {
+          cleaned.push('  STACK_LINE')
+        }
+        hasStackLine = true
+        continue
+      } else {
+        inStack = false
+      }
+    }
+    cleaned.push(line)
+  }
+  return cleaned.join('\n')
+}
 
-const usage = (() => ({
-  usage: () => 'usage',
-})) as CommandUsage
-
-t.test('not an error', t => {
-  printErr(false, usage, stderr, formatter)
-  t.strictSame(printed, ['Unknown Error: false'])
-  t.end()
-})
-
-t.test('regular error with weird cause', t => {
-  printErr(
-    new Error('foo bar', { cause: false }),
-    usage,
-    stderr,
-    formatter,
+const printErr = (
+  e: unknown,
+  opts?: { formatter?: ErrorFormatOptions },
+) => {
+  const lines: string[] = []
+  printErrBase(
+    e,
+    (() => ({ usage: () => 'usage' })) as CommandUsage,
+    (...a: string[]) => void lines.push(...a.join(' ').split('\n')),
+    { colors: false, ...opts?.formatter },
   )
-  t.match(printed, ['Error: foo bar', 'Stack:', /^\s{2}/])
-  t.end()
+  return lines
+}
+
+t.test('not an error', async t => {
+  t.matchSnapshot(printErr(false))
 })
 
-t.test('regular error with no cause', t => {
-  printErr(new Error('foo bar'), usage, stderr, formatter)
-  t.match(printed, ['Error: foo bar', 'Stack:', /^\s{2}/])
-  t.end()
+t.test('regular error with weird cause', async t => {
+  t.matchSnapshot(printErr(new Error('foo bar', { cause: false })))
 })
 
-t.test('regular error with cause', t => {
-  printErr(
-    new Error('foo bar', { cause: { this_is_why_i_errored: true } }),
-    usage,
-    stderr,
-    formatter,
+t.test('regular error with no cause', async t => {
+  t.matchSnapshot(printErr(new Error('foo bar')))
+})
+
+t.test('regular error with cause', async t => {
+  t.matchSnapshot(
+    printErr(
+      new Error('foo bar', {
+        cause: { this_is_why_i_errored: true },
+      }),
+    ),
   )
-  t.match(printed, [
-    'Error: foo bar',
-    'Cause:',
-    '  this_is_why_i_errored: true',
-    'Stack:',
-    /^\s{2}/,
-  ])
-  t.end()
 })
 
-t.test('regular error with regular error cause', t => {
-  printErr(
-    new Error('foo bar', {
-      cause: new Error('this_is_why_i_errored'),
-    }),
-    usage,
-    stderr,
-    formatter,
+t.test('regular error with regular error cause', async t => {
+  t.matchSnapshot(
+    printErr(
+      new Error('foo bar', {
+        cause: new Error('this_is_why_i_errored'),
+      }),
+    ),
   )
-  t.match(printed, [
-    'Error: foo bar',
-    'Cause:',
-    'Error: this_is_why_i_errored',
-    'Stack:',
-    /^\s{2}/,
-  ])
-  t.end()
 })
 
-t.test('EUSAGE', t => {
-  const er = error('bloopy doop', { code: 'EUSAGE' })
-  printErr(er, usage, stderr, formatter)
-  t.strictSame(printed, ['usage', 'Usage Error: bloopy doop'])
-  printed.length = 0
-  er.cause.validOptions = ['a', 'b']
-  er.cause.found = 'x'
-  printErr(er, usage, stderr, formatter)
-  t.strictSame(printed, [
-    'usage',
-    'Usage Error: bloopy doop',
-    '  Found: x',
-    '  Valid options: a, b',
-  ])
-  t.end()
+t.test('EUSAGE', async t => {
+  t.matchSnapshot(printErr(error('bloopy doop', { code: 'EUSAGE' })))
+  t.matchSnapshot(
+    printErr(
+      error('bloopy doop', {
+        code: 'EUSAGE',
+        validOptions: ['a', 'b'],
+        found: 'x',
+      }),
+    ),
+  )
 })
 
-t.test('ERESOLVE', t => {
-  const er = error('bloopy doop', { code: 'ERESOLVE' })
-  printErr(er, usage, stderr, formatter)
-  t.strictSame(printed, ['Resolve Error: bloopy doop'])
-  printed.length = 0
-  er.cause.url = new URL('https://x.y/')
-  er.cause.spec = 'x@1.x'
-  er.cause.from = '/home/base'
-  er.cause.response = {
-    statusCode: 200,
-  } as unknown as Response
-  printErr(er, usage, stderr, formatter)
-  t.strictSame(printed, [
-    'Resolve Error: bloopy doop',
-    '  While fetching: https://x.y/',
-    '  To satisfy: x@1.x',
-    '  From: /home/base',
-    '  Response: { statusCode: 200 }',
-  ])
-  t.end()
+t.test('ERESOLVE', async t => {
+  t.matchSnapshot(
+    printErr(error('bloopy doop', { code: 'ERESOLVE' })),
+  )
+  t.matchSnapshot(
+    printErr(
+      error('bloopy doop', {
+        code: 'ERESOLVE',
+        url: new URL('https://x.y/'),
+        spec: 'x@1.x',
+        from: '/home/base',
+        response: { statusCode: 200 },
+      }),
+    ),
+  )
 })
 
 t.test('ECONFIG', async t => {
-  t.test('with cause', async t => {
-    const er = error('Invalid config keys', {
-      code: 'ECONFIG',
-      found: ['garbage'],
-      wanted: 'string[]',
-      validOptions: ['wanted'],
-    })
-    printErr(er, usage, stderr, formatter)
-    t.matchSnapshot(printed)
-  })
-
-  t.test('no cause', async t => {
-    const er = error('Invalid config keys', {
-      code: 'ECONFIG',
-    })
-    printErr(er, usage, stderr, formatter)
-    t.matchSnapshot(printed)
-  })
+  t.matchSnapshot(
+    printErr(
+      error('Invalid config keys', {
+        code: 'ECONFIG',
+        found: ['garbage'],
+        wanted: 'string[]',
+        validOptions: ['wanted'],
+      }),
+    ),
+  )
+  t.matchSnapshot(
+    printErr(
+      error('Invalid config keys', {
+        code: 'ECONFIG',
+      }),
+    ),
+  )
 })
 
 t.test('EREQUEST', async t => {
   t.test('with cause', async t => {
+    t.matchSnapshot(
+      printErr(
+        error('oh no! my request!', {
+          code: 'EREQUEST',
+          url: new URL('https://x.y/'),
+          method: 'GET',
+          cause: Object.assign(new Error('some internal thing'), {
+            code: 'ECONNRESET',
+            syscall: 'read',
+          }),
+        }),
+      ),
+    )
+  })
+})
+
+t.test('no cause', async t => {
+  t.matchSnapshot(
     printErr(
       error('oh no! my request!', {
         code: 'EREQUEST',
         url: new URL('https://x.y/'),
         method: 'GET',
-        cause: Object.assign(new Error('some internal thing'), {
-          code: 'ECONNRESET',
-          syscall: 'read',
+      }),
+    ),
+  )
+})
+
+t.test('unknown code and max lines', async t => {
+  t.matchSnapshot(
+    printErr(
+      error('this is an error', {
+        code: 'ENOTACODEWEKNOWABOUT' as Codes,
+        wanted: Object.fromEntries(
+          Array.from({ length: 100 }, (_, i) => [`__${i}__`, i]),
+        ),
+      }),
+      { formatter: { maxLines: 5 } },
+    ),
+  )
+})
+
+t.test('error with a missing code', async t => {
+  t.matchSnapshot(
+    printErr(error('this is an error', { found: 'wat' })),
+  )
+})
+
+t.test('chain', async t => {
+  t.matchSnapshot(
+    printErr(
+      error('root error', {
+        code: 'EUNKNOWN',
+        name: 'root error name',
+        cause: error('cause 1', {
+          name: 'cause 1 name',
+          min: 100,
+          cause: error('cause 2', {
+            name: 'cause 2 name',
+            max: 200,
+            cause: error('cause 3', {
+              name: 'cause 3 name',
+              wanted: 'what',
+            }),
+          }),
         }),
       }),
-      usage,
-      stderr,
-      formatter,
-    )
-    t.matchSnapshot(printed)
-  })
-
-  t.test('no cause', async t => {
-    printErr(
-      error('oh no! my request!', {
-        code: 'EREQUEST',
-        url: new URL('https://x.y/'),
-        method: 'GET',
-      }),
-      usage,
-      stderr,
-      formatter,
-    )
-    t.matchSnapshot(printed)
-  })
-})
-
-t.test('error with an unknown code', t => {
-  const er = error('this is an error', {
-    code: 'ENOTACODEWEKNOWABOUT' as Codes,
-    wanted: Object.fromEntries(
-      Array.from({ length: 100 }, (_, i) => [`__${i}__`, i]),
     ),
-  })
-  printErr(er, usage, stderr, {
-    ...formatter,
-    maxLines: 5,
-  })
-  t.matchStrict(printed, [
-    'Error: this is an error',
-    'Code: ENOTACODEWEKNOWABOUT',
-    'Cause:',
-    `  wanted: {
-    __0__: 0,
-    __1__: 1,
-    __2__: 2,
-    __3__: 3,
-  ... 97 lines hidden ...`,
-    'Stack:',
-    /^\s{2}/,
-  ])
-  t.end()
-})
-
-t.test('error with a missing code', t => {
-  const er = error('this is an error', { found: 'wat' })
-  printErr(er, usage, stderr, formatter)
-  t.matchStrict(printed, [
-    'Error: this is an error',
-    'Cause:',
-    '  found: wat',
-    'Stack:',
-    /^\s{2}/,
-  ])
-  t.end()
+  )
 })

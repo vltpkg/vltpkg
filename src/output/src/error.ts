@@ -31,7 +31,10 @@ export const parseErrorAndCause = (
   let next: Error | null = null
 
   if (isObject(ogCause)) {
-    if (isError(ogCause.cause)) next = ogCause.cause
+    if (isError(ogCause.cause)) {
+      next = ogCause.cause
+      delete ogCause.cause
+    }
     cause = ogCause
   } else if (isError(ogCause)) {
     next = ogCause

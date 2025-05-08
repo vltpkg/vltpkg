@@ -8,7 +8,7 @@ export type ErrorFormatOptions = InspectOptions & {
   maxLines?: number
 }
 
-type Formatter = (
+export type Formatter = (
   arg: unknown,
   options?: ErrorFormatOptions,
 ) => string
@@ -42,7 +42,7 @@ export const printErr = (
     return lines.join('\n')
   }
 
-  const [err, chain] = parseErrorChain(e)
+  const [err, causes] = parseErrorChain(e)
 
   if (!err) {
     // We don't know what this is, just print it.
@@ -61,18 +61,17 @@ export const printErr = (
   // properties. Just print the standard error properties as best we can.
   stderr(`${err.name}: ${err.message}`)
   if (err.code) {
-    stderr(`Code: ${format(err.code)}`)
+    stderr(indent(`Code: ${format(err.code)}`))
   }
-  if (Object.keys(err.cause).length || chain.length) {
+  for (const key in err.cause) {
+    stderr(indent(`${key}: ${format(err.cause[key])}`))
+  }
+  if (causes.length) {
     stderr(`Cause:`)
-    for (const key in err.cause) {
-      stderr(indent(`${key}: ${format(err.cause[key])}`))
-    }
-    for (const err of chain) {
-      stderr(`${err.name}: ${err.message}`)
+    for (const err of causes) {
+      stderr(indent(`${err.name}: ${err.message}`))
     }
   }
-
   if (err.stack) {
     stderr(`Stack:`)
     stderr(indent(format(err.stack)))

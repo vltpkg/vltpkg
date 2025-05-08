@@ -107,7 +107,7 @@ export type ErrorCauseOptions = {
     | Response
     | {
         statusCode: number
-        headers:
+        headers?:
           | Buffer[]
           | Record<string, string[] | string>
           | IncomingHttpHeaders
