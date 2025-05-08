@@ -1,6 +1,7 @@
 import pRetry, { AbortError } from 'p-retry'
 import { hydrate, splitDepID } from '@vltpkg/dep-id/browser'
-import { asError, error } from '@vltpkg/error-cause'
+import { error } from '@vltpkg/error-cause'
+import { asError } from '@vltpkg/types'
 import type { NodeLike } from '@vltpkg/graph'
 import type { SpecOptions } from '@vltpkg/spec/browser'
 import {

@@ -1,27 +1,32 @@
-import { isErrorWithCode } from '@vltpkg/error-cause'
-import type { ErrorWithCode } from '@vltpkg/error-cause'
+import { parseError } from '@vltpkg/output/error'
+import type { ParsedError } from '@vltpkg/output/error'
 import type { CommandUsage } from './index.ts'
 import type { InspectOptions } from 'node:util'
 import { formatWithOptions } from 'node:util'
+import { XDG } from '@vltpkg/xdg'
+import { join } from 'node:path'
+import { writeFileSync, mkdirSync } from 'node:fs'
+
+export const formatOptions = {
+  depth: Infinity,
+  maxArrayLength: Infinity,
+  maxStringLength: Infinity,
+} as const satisfies InspectOptions
 
 export type ErrorFormatOptions = InspectOptions & {
   maxLines?: number
 }
 
-type Formatter = (
+export type Formatter = (
   arg: unknown,
   options?: ErrorFormatOptions,
 ) => string
 
-const trimStack = (err: Error) => {
-  if (err.stack) {
-    const lines = err.stack.trim().split('\n')
-    if (lines[0] === `${err.name}: ${err.message}`) {
-      lines.shift()
-    }
-    return lines.map(l => l.trim()).join('\n')
-  }
-}
+const formatURL = (v: unknown, format: Formatter) =>
+  v instanceof URL ? v.toString() : /* c8 ignore next */ format(v)
+
+const formatArray = (v: unknown, format: Formatter, joiner = ', ') =>
+  Array.isArray(v) ? v.join(joiner) : /* c8 ignore next */ format(v)
 
 export const indent = (lines: string, num = 2) =>
   lines
@@ -29,19 +34,36 @@ export const indent = (lines: string, num = 2) =>
     .map(l => ' '.repeat(num) + l)
     .join('\n')
 
-const isErrorWithProps = (
-  value: unknown,
-): value is Error & Record<string, unknown> =>
-  value instanceof Error && Object.keys(value).length > 0
+const writeErrorLog = (e: unknown, format: Formatter) => {
+  try {
+    const dir = new XDG('vlt/error-logs').data()
+    const file = join(dir, `error-${process.pid}.log`)
+    mkdirSync(dir, { recursive: true })
+    writeFileSync(
+      file,
+      format(e, {
+        colors: false,
+        maxLines: Infinity,
+      }),
+    )
+    return file
+  } catch {
+    return null
+  }
+}
 
 export const printErr = (
-  err: unknown,
+  e: unknown,
   usage: CommandUsage,
   stderr: (...a: string[]) => void,
   baseOpts?: ErrorFormatOptions,
 ) => {
   const format: Formatter = (arg: unknown, opts) => {
-    const { maxLines = 200, ...rest } = { ...baseOpts, ...opts }
+    const { maxLines = 200, ...rest } = {
+      ...formatOptions,
+      ...baseOpts,
+      ...opts,
+    }
     const lines = formatWithOptions(rest, arg).split('\n')
     const totalLines = lines.length
     if (totalLines > maxLines) {
@@ -51,52 +73,40 @@ export const printErr = (
     return lines.join('\n')
   }
 
-  // This is an error with a cause, check if it we know about its
-  // code and try to print it. If it did not print then fallback
-  // to the next option.
-  if (isErrorWithCode(err) && print(err, usage, stderr, format)) {
-    return
+  const err = parseError(e)
+  const knownError = printCode(err, usage, stderr, format)
+  const fileWritten =
+    !knownError || knownError.file ? writeErrorLog(e, format) : null
+
+  // We could not write an error log and its not a know error,
+  // so we print the entire formatted value.
+  if (!fileWritten && !knownError) {
+    return stderr(format(e))
   }
 
-  // We have a real but we dont know anything special about its
-  // properties. Just print the standard error properties as best we can.
-  if (err instanceof Error) {
+  if (err && !knownError) {
     stderr(`${err.name}: ${err.message}`)
-    if ('cause' in err) {
-      stderr(`Cause:`)
-      if (err.cause instanceof Error) {
-        stderr(indent(format(err.cause)))
-      } else if (err.cause && typeof err.cause === 'object') {
-        for (const key in err.cause) {
-          stderr(
-            indent(
-              `${key}: ${format((err.cause as Record<string, unknown>)[key])}`,
-            ),
-          )
-        }
-      } else {
-        stderr(indent(format(err.cause)))
-      }
-    }
-    const stack = trimStack(err)
-    if (stack) {
-      stderr(`Stack:`)
-      stderr(indent(format(stack)))
-    }
-    return
   }
-
-  // We don't know what this is, just print it.
-  stderr(`Unknown Error:`, format(err))
+  if (fileWritten) {
+    stderr('')
+    stderr(`Full details written to: ${fileWritten}`)
+  }
+  if (!knownError || knownError.bug) {
+    stderr('')
+    stderr('Open an issue with the full error details at:')
+    stderr(indent('https://github.com/vltpkg/vltpkg/issues/new'))
+  }
 }
 
-const print = (
-  err: ErrorWithCode,
+const printCode = (
+  err: ParsedError | null,
   usage: CommandUsage,
   stderr: (...a: string[]) => void,
   format: Formatter,
-) => {
-  switch (err.cause.code) {
+): void | { bug?: boolean; file?: boolean } => {
+  if (!err) return
+
+  switch (err.cause?.code) {
     case 'EUSAGE': {
       const { found, validOptions } = err.cause
       stderr(usage().usage())
@@ -106,17 +116,19 @@ const print = (
       }
       if (validOptions) {
         stderr(
-          indent(`Valid options: ${format(validOptions.join(', '))}`),
+          indent(
+            `Valid options: ${formatArray(validOptions, format)}`,
+          ),
         )
       }
-      return true
+      return {}
     }
 
     case 'ERESOLVE': {
       const { url, from, response, spec } = err.cause
       stderr(`Resolve Error: ${err.message}`)
       if (url) {
-        stderr(indent(`While fetching: ${url}`))
+        stderr(indent(`While fetching: ${formatURL(url, format)}`))
       }
       if (spec) {
         stderr(indent(`To satisfy: ${format(spec)}`))
@@ -127,15 +139,12 @@ const print = (
       if (response) {
         stderr(indent(`Response: ${format(response)}`))
       }
-      return true
+      return { file: true }
     }
 
     case 'EREQUEST': {
       const { url, method } = err.cause
-      const { code, syscall } =
-        isErrorWithProps(err.cause.cause) ?
-          err.cause.cause
-        : ({} as Record<string, unknown>)
+      const { code, syscall } = err.cause.cause ?? {}
       stderr(`Request Error: ${err.message}`)
       if (code) {
         stderr(indent(`Code: ${format(code)}`))
@@ -144,13 +153,12 @@ const print = (
         stderr(indent(`Syscall: ${format(syscall)}`))
       }
       if (url) {
-        stderr(indent(`URL: ${url}`))
+        stderr(indent(`URL: ${formatURL(url, format)}`))
       }
       if (method) {
         stderr(indent(`Method: ${format(method)}`))
       }
-
-      return true
+      return { file: true }
     }
 
     case 'ECONFIG': {
@@ -165,7 +173,7 @@ const print = (
       if (validOptions) {
         stderr(indent(`Valid Options: ${format(validOptions)}`))
       }
-      return true
+      return {}
     }
   }
 }

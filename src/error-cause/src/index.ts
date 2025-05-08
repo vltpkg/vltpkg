@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unsafe-function-type */
+
 import type { IncomingHttpHeaders, IncomingMessage } from 'http'
 
 /**
@@ -105,7 +107,7 @@ export type ErrorCauseOptions = {
     | Response
     | {
         statusCode: number
-        headers:
+        headers?:
           | Buffer[]
           | Record<string, string[] | string>
           | IncomingHttpHeaders
@@ -182,109 +184,23 @@ export type DuckTypeManifest = Record<string, any> & {
 }
 
 /**
- * The input cause for the {@link error} functions. Can either be a plain error
- * or an error cause options object.
- */
-export type ErrorCause = Error | ErrorCauseOptions
-
-/**
- * The same as {@link ErrorCauseOptions} except where `cause` has been
- * converted to an Error.
- */
-export type ErrorCauseResult = Omit<ErrorCauseOptions, 'cause'> & {
-  cause?: Error
-}
-
-/**
- * An error with a cause property. Cause defaults to `unknown`.
- */
-export type ErrorWithCause<
-  T extends Error = Error,
-  U = unknown,
-> = T & { cause: U }
-
-/**
- * An error with a cause property that is an Error.
- */
-export type ErrorWithCauseError<T extends Error = Error> =
-  ErrorWithCause<T, Error>
-
-/**
- * An error with a cause property that is an {@link ErrorCauseResult}.
- */
-export type ErrorWithCauseObject<T extends Error = Error> =
-  ErrorWithCause<T, ErrorCauseResult>
-
-/**
- * Helper util to convert unknown to a plain error. Not specifically
- * related to error causes, but useful for error handling in general.
- */
-export const asError = (
-  er: unknown,
-  fallbackMessage = 'Unknown error',
-): Error =>
-  er instanceof Error ? er : new Error(String(er) || fallbackMessage)
-
-/**
- * Helper util to check if an error has any type of cause property.
- * Note that this does not mean it is a cause from this library,
- * just that it has a cause property.
- */
-export const isErrorWithCause = (er: unknown): er is ErrorWithCause =>
-  er instanceof Error && 'cause' in er
-
-export const errorCodes = [
-  'EEXIST',
-  'EINTEGRITY',
-  'EINVAL',
-  'ELIFECYCLE',
-  'EMAXREDIRECT',
-  'ENEEDAUTH',
-  'ENOENT',
-  'ENOGIT',
-  'ERESOLVE',
-  'EUNKNOWN',
-  'EUSAGE',
-  'EREQUEST',
-  'ECONFIG',
-] as const
-
-const errorCodesSet = new Set(errorCodes)
-
-/**
  * Valid properties for the 'code' field in an Error cause.
  * Add new options to this list as needed.
  */
-export type Codes = (typeof errorCodes)[number]
-
-/**
- *  An error with a cause property that is an {@link ErrorCauseResult}
- * and has a code property that is a {@link Codes}.
- */
-export type ErrorWithCode<T extends Error = Error> = ErrorWithCause<
-  T,
-  Omit<ErrorCauseResult, 'code'> & {
-    code: Exclude<ErrorCauseResult['code'], undefined>
-  }
->
-
-/**
- * Type guard to check if an error has one of our error code properties.
- * Note that the type check only checks for the code property and value,
- * but since every property on {@link ErrorCauseOptions} is optional, this should
- * be sufficient to know the shape of the cause and use it in printing.
- */
-export const isErrorWithCode = (er: unknown): er is ErrorWithCode =>
-  isErrorWithCause(er) &&
-  !!er.cause &&
-  typeof er.cause === 'object' &&
-  'code' in er.cause &&
-  typeof er.cause.code === 'string' &&
-  errorCodesSet.has(er.cause.code as Codes)
-
-// Use `Function` because that is the same type as `Error.captureStackTrace`
-// eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
-export type From = Function
+export type Codes =
+  | 'EEXIST'
+  | 'EINTEGRITY'
+  | 'EINVAL'
+  | 'ELIFECYCLE'
+  | 'EMAXREDIRECT'
+  | 'ENEEDAUTH'
+  | 'ENOENT'
+  | 'ENOGIT'
+  | 'ERESOLVE'
+  | 'EUNKNOWN'
+  | 'EUSAGE'
+  | 'EREQUEST'
+  | 'ECONFIG'
 
 // `captureStackTrace` is non-standard so explicitly type it as possibly
 // undefined since it might be in browsers.
@@ -294,55 +210,38 @@ const { captureStackTrace } = Error as {
 
 export type ErrorCtor<T extends Error> = new (
   message: string,
-  options?: { cause: Error | ErrorCauseResult },
+  options?: { cause: Error | ErrorCauseOptions },
 ) => T
-
-export type ErrorResult<T extends Error = Error> =
-  | T
-  | ErrorWithCauseError<TypeError>
-  | ErrorWithCauseObject<TypeError>
 
 function create<T extends Error>(
   cls: ErrorCtor<T>,
-  defaultFrom: From,
+  defaultFrom: Function,
   message: string,
   cause?: undefined,
-  from?: From,
+  from?: Function,
 ): T
 function create<T extends Error>(
   cls: ErrorCtor<T>,
-  defaultFrom: From,
+  defaultFrom: Function,
   message: string,
   cause?: Error,
-  from?: From,
-): ErrorWithCauseError<T>
+  from?: Function,
+): T & { cause: Error }
 function create<T extends Error>(
   cls: ErrorCtor<T>,
-  defaultFrom: From,
+  defaultFrom: Function,
   message: string,
   cause?: ErrorCauseOptions,
-  from?: From,
-): ErrorWithCauseObject<T>
+  from?: Function,
+): T & { cause: ErrorCauseOptions }
 function create<T extends Error>(
   cls: ErrorCtor<T>,
-  defaultFrom: From,
+  defaultFrom: Function,
   message: string,
-  cause?: ErrorCause,
-  from: From = defaultFrom,
+  cause?: Error | ErrorCauseOptions,
+  from: Function = defaultFrom,
 ) {
-  let er: T | null = null
-  if (cause instanceof Error) {
-    er = new cls(message, { cause })
-  } else if (cause && typeof cause === 'object') {
-    if ('cause' in cause) {
-      cause.cause = asError(cause.cause)
-    }
-    er = new cls(message, {
-      cause: cause as ErrorCauseResult,
-    })
-  } else {
-    er = new cls(message)
-  }
+  const er = new cls(message, cause ? { cause } : undefined)
   captureStackTrace?.(er, from)
   return er
 }
@@ -350,69 +249,69 @@ function create<T extends Error>(
 export function error(
   message: string,
   cause?: undefined,
-  from?: From,
+  from?: Function,
 ): Error
 export function error(
   message: string,
   cause: Error,
-  from?: From,
-): ErrorWithCauseError
+  from?: Function,
+): Error & { cause: Error }
 export function error(
   message: string,
   cause: ErrorCauseOptions,
-  from?: From,
-): ErrorWithCauseObject
+  from?: Function,
+): Error & { cause: ErrorCauseOptions }
 export function error(
   message: string,
-  cause?: ErrorCause,
-  from?: From,
-): ErrorResult {
+  cause?: Error | ErrorCauseOptions,
+  from?: Function,
+) {
   return create(Error, error, message, cause, from)
 }
 
 export function typeError(
   message: string,
   cause?: undefined,
-  from?: From,
+  from?: Function,
 ): TypeError
 export function typeError(
   message: string,
   cause: Error,
-  from?: From,
-): ErrorWithCauseError<TypeError>
+  from?: Function,
+): TypeError & { cause: Error }
 export function typeError(
   message: string,
   cause: ErrorCauseOptions,
-  from?: From,
-): ErrorWithCauseObject<TypeError>
+  from?: Function,
+): TypeError & { cause: ErrorCauseOptions }
 export function typeError(
   message: string,
-  cause?: ErrorCause,
-  from?: From,
-): ErrorResult<TypeError> {
+  cause?: Error | ErrorCauseOptions,
+  from?: Function,
+) {
   return create<TypeError>(TypeError, typeError, message, cause, from)
 }
 
 export function syntaxError(
   message: string,
   cause?: undefined,
-  from?: From,
+  from?: Function,
 ): SyntaxError
 export function syntaxError(
   message: string,
   cause: Error,
-  from?: From,
-): ErrorWithCauseError<SyntaxError>
+  from?: Function,
+): SyntaxError & { cause: Error }
 export function syntaxError(
   message: string,
   cause: ErrorCauseOptions,
-  from?: From,
-): ErrorWithCauseObject<SyntaxError>
+  from?: Function,
+): SyntaxError & { cause: ErrorCauseOptions }
 export function syntaxError(
   message: string,
-  cause?: ErrorCause,
-  from?: From,
-): ErrorResult<SyntaxError> {
+  cause?: Error | ErrorCauseOptions,
+  from?: Function,
+) {
   return create<SyntaxError>(
     SyntaxError,
     syntaxError,
