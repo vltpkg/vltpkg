@@ -1,0 +1,86 @@
+---
+title: vlt exec-cache
+sidebar:
+  label: exec-cache
+---
+
+import { Code } from '@astrojs/starlight/components'
+
+Usage:
+
+<Code
+  code="$ vlt exec-cache <command> [flags]"
+  title="Terminal"
+  lang="bash"
+/>
+
+Work with vlt exec-cache folders
+
+## Aliases
+
+```
+xc
+```
+
+## Subcommands
+
+### ls
+
+Show previously installed packages used for `vlt exec`. Key provided
+can be either the package name, or the full key.
+
+<Code code="$ vlt exec-cache ls" title="Terminal" lang="bash" />
+
+### delete
+
+Delete previously installed packages used for `vlt exec`. If no keys
+are provided, then all entries will be deleted.
+
+<Code
+  code="$ vlt exec-cache delete [<key>...]"
+  title="Terminal"
+  lang="bash"
+/>
+
+### info
+
+Show extended information about a given `vlt exec` installation.
+
+<Code
+  code="$ vlt exec-cache info <key>"
+  title="Terminal"
+  lang="bash"
+/>
+
+### install
+
+Install the specified package(s) in the `vlt exec` central cache
+location. Metadata info about each installation will be printed.
+
+<Code
+  code="$ vlt exec-cache install <spec>..."
+  title="Terminal"
+  lang="bash"
+/>
+
+## Examples
+
+Show all the keys for the installations in the `vlt exec` cache:
+
+<Code code="$ vlt exec-cache ls" title="Terminal" lang="bash" />
+
+Delete all versions of typescript installed for vlt exec:
+
+<Code
+  code="$ vlt exec-cache delete typescript"
+  title="Terminal"
+  lang="bash"
+/>
+
+Show extended info about a specific version of typescript:
+
+<Code
+  code="$ vlt exec-cache info typescript-695bf962"
+  title="Terminal"
+  lang="bash"
+/>
