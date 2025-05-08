@@ -91,6 +91,14 @@ t.test(':workspace pseudo-selector', async t => {
       'should return all workspace nodes in multi-workspace graph',
     )
 
+    t.matchSnapshot(
+      {
+        nodes: [...result.nodes].map(n => n.name).sort(),
+        edges: [...result.edges].map(e => e.name).sort(),
+      },
+      'should match snapshot for multi-workspace graph',
+    )
+
     // Verify all nodes are workspace nodes
     for (const node of result.nodes) {
       t.equal(
