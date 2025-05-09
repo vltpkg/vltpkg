@@ -196,7 +196,6 @@ const set = async (conf: LoadedConfig) => {
   } catch (er) {
     const { name, found, value, wanted, validOptions } =
       asRootError(er).cause
-
     // when a boolean gets a value, it throw a parse error
     if (
       isObject(found) &&
@@ -213,7 +212,6 @@ const set = async (conf: LoadedConfig) => {
         },
       )
     }
-
     if (wanted && !value && typeof name === 'string') {
       throw error(
         `No value provided for ${JSON.stringify(name.replace(/^-+/, ''))}`,
@@ -223,7 +221,6 @@ const set = async (conf: LoadedConfig) => {
         },
       )
     }
-
     if (Array.isArray(validOptions)) {
       throw error(`Invalid value provided for ${name}`, {
         code: 'ECONFIG',
@@ -231,7 +228,6 @@ const set = async (conf: LoadedConfig) => {
         validOptions,
       })
     }
-
     // an unknown property
     throw error('Invalid config keys', {
       code: 'ECONFIG',

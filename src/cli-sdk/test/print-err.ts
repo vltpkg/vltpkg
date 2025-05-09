@@ -24,7 +24,11 @@ t.cleanSnapshot = (s: string) => {
         // stack traces are different on different platforms so
         // just verify that there is at least one line of the trace
         if (!hasStackLine) {
-          cleaned.push('  STACK_LINE')
+          cleaned.push(
+            '  __STACK_TRACE__',
+            '  __STACK_TRACE__',
+            '  __STACK_TRACE__',
+          )
         }
         hasStackLine = true
         continue
@@ -198,6 +202,22 @@ t.test('chain', async t => {
             cause: error('cause 3', {
               name: 'cause 3 name',
               wanted: 'what',
+            }),
+          }),
+        }),
+      }),
+    ),
+  )
+
+  t.matchSnapshot(
+    printErr(
+      new Error('root error', {
+        cause: new Error('cause 1', {
+          cause: new Error('cause 2', {
+            cause: new Error('cause 3', {
+              cause: {
+                arbitrary: 'thing',
+              },
             }),
           }),
         }),

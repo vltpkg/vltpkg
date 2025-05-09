@@ -7,17 +7,28 @@
 'use strict'
 exports[`test/print-err.ts > TAP > chain > must match snapshot 1`] = `
 Error: root error
-  Code: EUNKNOWN
+Cause:
+  code: EUNKNOWN
   name: root error name
-  min: 100
-  max: 200
-  wanted: what
+  Error: cause 1
+  Error: cause 2
+  Error: cause 3
+Stack:
+  __STACK_TRACE__
+  __STACK_TRACE__
+  __STACK_TRACE__
+`
+
+exports[`test/print-err.ts > TAP > chain > must match snapshot 2`] = `
+Error: root error
 Cause:
   Error: cause 1
   Error: cause 2
   Error: cause 3
 Stack:
-  STACK_LINE
+  __STACK_TRACE__
+  __STACK_TRACE__
+  __STACK_TRACE__
 `
 
 exports[`test/print-err.ts > TAP > ECONFIG > must match snapshot 1`] = `
@@ -53,9 +64,12 @@ Resolve Error: bloopy doop
 
 exports[`test/print-err.ts > TAP > error with a missing code > must match snapshot 1`] = `
 Error: this is an error
+Cause:
   found: wat
 Stack:
-  STACK_LINE
+  __STACK_TRACE__
+  __STACK_TRACE__
+  __STACK_TRACE__
 `
 
 exports[`test/print-err.ts > TAP > EUSAGE > must match snapshot 1`] = `
@@ -82,15 +96,20 @@ Unknown Error: false
 
 exports[`test/print-err.ts > TAP > regular error with cause > must match snapshot 1`] = `
 Error: foo bar
+Cause:
   this_is_why_i_errored: true
 Stack:
-  STACK_LINE
+  __STACK_TRACE__
+  __STACK_TRACE__
+  __STACK_TRACE__
 `
 
 exports[`test/print-err.ts > TAP > regular error with no cause > must match snapshot 1`] = `
 Error: foo bar
 Stack:
-  STACK_LINE
+  __STACK_TRACE__
+  __STACK_TRACE__
+  __STACK_TRACE__
 `
 
 exports[`test/print-err.ts > TAP > regular error with regular error cause > must match snapshot 1`] = `
@@ -98,18 +117,23 @@ Error: foo bar
 Cause:
   Error: this_is_why_i_errored
 Stack:
-  STACK_LINE
+  __STACK_TRACE__
+  __STACK_TRACE__
+  __STACK_TRACE__
 `
 
 exports[`test/print-err.ts > TAP > regular error with weird cause > must match snapshot 1`] = `
 Error: foo bar
 Stack:
-  STACK_LINE
+  __STACK_TRACE__
+  __STACK_TRACE__
+  __STACK_TRACE__
 `
 
 exports[`test/print-err.ts > TAP > unknown code and max lines > must match snapshot 1`] = `
 Error: this is an error
-  Code: ENOTACODEWEKNOWABOUT
+Cause:
+  code: ENOTACODEWEKNOWABOUT
   wanted: {
     __0__: 0,
     __1__: 1,
@@ -117,5 +141,7 @@ Error: this is an error
     __3__: 3,
   ... 97 lines hidden ...
 Stack:
-  STACK_LINE
+  __STACK_TRACE__
+  __STACK_TRACE__
+  __STACK_TRACE__
 `

@@ -1,5 +1,5 @@
 import { parseErrorChain } from '@vltpkg/output/error'
-import type { RootError } from '@vltpkg/output/error'
+import type { ParsedResult } from '@vltpkg/output/error'
 import type { CommandUsage } from './index.ts'
 import type { InspectOptions } from 'node:util'
 import { formatWithOptions } from 'node:util'
@@ -42,9 +42,9 @@ export const printErr = (
     return lines.join('\n')
   }
 
-  const [err, causes] = parseErrorChain(e)
+  const parsed = parseErrorChain(e)
 
-  if (!err) {
+  if (!parsed) {
     // We don't know what this is, just print it.
     stderr(`Unknown Error:`, format(e))
     return
@@ -53,23 +53,23 @@ export const printErr = (
   // This is an error with a cause, check if it we know about its
   // code and try to print it. If it did not print then fallback
   // to the next option.
-  if (printCode(err, usage, stderr, format)) {
+  if (printCode(parsed, usage, stderr, format)) {
     return
   }
 
   // We have a real but we dont know anything special about its
   // properties. Just print the standard error properties as best we can.
+  const [err, cause, causes] = parsed
   stderr(`${err.name}: ${err.message}`)
-  if (err.code) {
-    stderr(indent(`Code: ${format(err.code)}`))
-  }
-  for (const key in err.cause) {
-    stderr(indent(`${key}: ${format(err.cause[key])}`))
-  }
-  if (causes.length) {
+  if (err.code || Object.keys(cause).length || causes.length) {
     stderr(`Cause:`)
-    for (const err of causes) {
-      stderr(indent(`${err.name}: ${err.message}`))
+    for (const key in err.cause) {
+      stderr(indent(`${key}: ${format(err.cause[key])}`))
+    }
+    if (causes.length) {
+      for (const err of causes) {
+        stderr(indent(`${err.name}: ${err.message}`))
+      }
     }
   }
   if (err.stack) {
@@ -79,14 +79,14 @@ export const printErr = (
 }
 
 const printCode = (
-  err: RootError,
+  [err, cause]: ParsedResult,
   usage: CommandUsage,
   stderr: (...a: string[]) => void,
   format: Formatter,
 ) => {
   switch (err.code) {
     case 'EUSAGE': {
-      const { found, validOptions } = err.cause
+      const { found, validOptions } = cause
       stderr(usage().usage())
       stderr(`Usage Error: ${err.message}`)
       if (found) {
@@ -103,7 +103,7 @@ const printCode = (
     }
 
     case 'ERESOLVE': {
-      const { url, from, response, spec } = err.cause
+      const { url, from, response, spec } = cause
       stderr(`Resolve Error: ${err.message}`)
       if (url) {
         stderr(indent(`While fetching: ${formatURL(url, format)}`))
@@ -121,7 +121,7 @@ const printCode = (
     }
 
     case 'EREQUEST': {
-      const { url, method, syscall, code } = err.cause
+      const { url, method, syscall, code } = cause
       stderr(`Request Error: ${err.message}`)
       if (code) {
         stderr(indent(`Code: ${format(code)}`))
@@ -139,7 +139,7 @@ const printCode = (
     }
 
     case 'ECONFIG': {
-      const { found, wanted, validOptions } = err.cause
+      const { found, wanted, validOptions } = cause
       stderr(`Config Error: ${err.message}`)
       if (found) {
         stderr(indent(`Found: ${format(found)}`))
