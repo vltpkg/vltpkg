@@ -11,6 +11,7 @@ t.test('selects packages with an eval alert', async t => {
     const ast = parse(query)
     const current = ast.first.first
     const state: ParserState = {
+      comment: '',
       current,
       initial: {
         edges: new Set(graph.edges.values()),
@@ -63,6 +64,7 @@ t.test('missing security archive', async t => {
     const ast = parse(query)
     const current = ast.first.first
     const state: ParserState = {
+      comment: '',
       current,
       initial: {
         edges: new Set(),

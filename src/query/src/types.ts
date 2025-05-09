@@ -45,6 +45,7 @@ export type GraphSelectionState = {
 export type ParserState = {
   cancellable: () => Promise<void>
   collect: GraphSelectionState
+  comment: string
   current: PostcssNode
   initial: GraphSelectionState
   loose?: boolean
@@ -63,6 +64,7 @@ export type ParserState = {
 export type QueryResponse = {
   edges: QueryResponseEdge[]
   nodes: QueryResponseNode[]
+  comment: string
 }
 
 export type QueryResponseEdge = Omit<EdgeLike, 'from' | 'to'> & {
