@@ -92,6 +92,7 @@ t.test('selects packages based on their security score', async t => {
     const ast = parse(query)
     const current = ast.first.first
     const state: ParserState = {
+      comment: '',
       current,
       initial: {
         edges: new Set(graph.edges.values()),
@@ -350,6 +351,7 @@ t.test('error cases', async t => {
       const ast = parse(query)
       const current = ast.first.first
       const state: ParserState = {
+        comment: '',
         current,
         initial: {
           edges: new Set(),
@@ -386,6 +388,7 @@ t.test('error cases', async t => {
       const ast = parse(query)
       const current = ast.first.first
       const state: ParserState = {
+        comment: '',
         current,
         initial: {
           edges: new Set(),
@@ -422,6 +425,7 @@ t.test('error cases', async t => {
       const ast = parse(query)
       const current = ast.first.first
       const state: ParserState = {
+        comment: '',
         current,
         initial: {
           edges: new Set(),
@@ -458,6 +462,7 @@ t.test('error cases', async t => {
       const ast = parse(query)
       const current = ast.first.first
       const state: ParserState = {
+        comment: '',
         current,
         initial: {
           edges: new Set(),

@@ -12,6 +12,7 @@ t.test('selects nodes by type', async t => {
     const ast = postcssSelectorParser().astSync(query)
     const current = ast.first.first
     const state: ParserState = {
+      comment: '',
       current,
       initial: {
         edges: new Set(graph.edges.values()),

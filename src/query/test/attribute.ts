@@ -234,6 +234,7 @@ t.test('filterAttributes', async t => {
       edges: new Set<EdgeLike>(),
       nodes: new Set<NodeLike>(),
     },
+    comment: '',
     current: { type: 'attribute', value: 'postinstall' } as Attribute,
     initial: copyGraphSelectionState(all),
     partial: all,

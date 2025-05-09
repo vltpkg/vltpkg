@@ -44,6 +44,7 @@ const testBrokenState = (): ParserState => {
       nodes: new Set(),
       edges: new Set(),
     },
+    comment: '',
     current: { type: 'bork' } as unknown as PostcssNode,
     initial: copyGraphSelectionState(initial),
     partial: copyGraphSelectionState(initial),
@@ -113,6 +114,38 @@ t.test('simple graph', async t => {
       `query > "${q}"`,
     )
   }
+
+  await t.test('comments extraction', async t => {
+    const result = await query.search(
+      '/* comment one */ :root /* comment two */ > * /* comment three */',
+      mockSearchOptions,
+    )
+    t.strictSame(
+      result.comment,
+      'comment one',
+      'should extract the first comment from query',
+    )
+  })
+
+  await t.test('comments extraction with no comments', async t => {
+    const result = await query.search(':root > *', mockSearchOptions)
+    t.strictSame(
+      result.comment,
+      '',
+      'should return empty string for query without comments',
+    )
+  })
+
+  await t.test('comments cache hit', async t => {
+    const q = '/* cached comment */ :root'
+    await query.search(q, mockSearchOptions) // First call to populate cache
+    const result = await query.search(q, mockSearchOptions) // Second call should hit cache
+    t.strictSame(
+      result.comment,
+      'cached comment',
+      'should return comment for cached query results',
+    )
+  })
 })
 
 t.test('workspace', async t => {
@@ -141,6 +174,18 @@ t.test('workspace', async t => {
       `query > "${q}"`,
     )
   }
+
+  await t.test('comments handling', async t => {
+    const result = await query.search(
+      '/* workspace comment */ :root',
+      mockSearchOptions,
+    )
+    t.strictSame(
+      result.comment,
+      'workspace comment',
+      'should extract comment from workspace query',
+    )
+  })
 })
 
 t.test('cycle', async t => {
