@@ -79,14 +79,14 @@ export const printErr = (
 }
 
 const printCode = (
-  [err, cause]: ParsedResult,
+  [err, chain]: ParsedResult,
   usage: CommandUsage,
   stderr: (...a: string[]) => void,
   format: Formatter,
 ) => {
   switch (err.code) {
     case 'EUSAGE': {
-      const { found, validOptions } = cause
+      const { found, validOptions } = err.cause
       stderr(usage().usage())
       stderr(`Usage Error: ${err.message}`)
       if (found) {
@@ -103,7 +103,7 @@ const printCode = (
     }
 
     case 'ERESOLVE': {
-      const { url, from, response, spec } = cause
+      const { url, from, response, spec } = err.cause
       stderr(`Resolve Error: ${err.message}`)
       if (url) {
         stderr(indent(`While fetching: ${formatURL(url, format)}`))
@@ -121,7 +121,9 @@ const printCode = (
     }
 
     case 'EREQUEST': {
-      const { url, method, syscall, code } = cause
+      const { url, method } = err.cause
+      const { code, syscall } =
+        chain.find(e => e.cause.code && e.cause.syscall)?.cause ?? {}
       stderr(`Request Error: ${err.message}`)
       if (code) {
         stderr(indent(`Code: ${format(code)}`))
@@ -139,7 +141,7 @@ const printCode = (
     }
 
     case 'ECONFIG': {
-      const { found, wanted, validOptions } = cause
+      const { found, wanted, validOptions } = err.cause
       stderr(`Config Error: ${err.message}`)
       if (found) {
         stderr(indent(`Found: ${format(found)}`))

@@ -14,11 +14,7 @@ export type ParsedError = {
 /**
  * The root error from an unknown value.
  */
-export type ParsedResult = [
-  ParsedError,
-  ParsedError['cause'],
-  ParsedError[],
-]
+export type ParsedResult = [ParsedError, ParsedError[]]
 
 /**
  * Get the error, cause, and next error in the chain from an unknown value.
@@ -85,9 +81,6 @@ export const trimStack = (
  * errors.
  */
 export const parseErrorChain = (v: unknown): null | ParsedResult => {
-  let root: ParsedError | null = null
-  let code: string | undefined = undefined
-  const cause: ParsedError['cause'] = {}
   const causes: ParsedError[] = []
 
   let current: unknown = v
@@ -99,29 +92,12 @@ export const parseErrorChain = (v: unknown): null | ParsedResult => {
       continue
     }
 
-    if (!root) {
-      root = error
-    } else {
-      causes.push(error)
-    }
-
-    if (!code && typeof error.code === 'string') {
-      code = error.code
-    }
-
-    for (const [key, value] of Object.entries(error.cause)) {
-      // Skip if the code is already set and the value is the same
-      if (key === 'code' && value === code) {
-        continue
-      }
-      // Only add properties that don't already exist
-      if (!(key in cause)) {
-        cause[key] = value
-      }
-    }
+    causes.push(error)
   }
 
-  return !root ? null : [root, cause, causes]
+  const root = causes.shift()
+
+  return !root ? null : [root, causes]
 }
 
 /**
@@ -134,9 +110,7 @@ export const findRootError = (
   const res = parseErrorChain(v)
   return !res || (match?.code && res[0].code !== match.code) ?
       null
-      // When just getting the root error, assign the merged cause to the returned
-      // error. Use parseErrorChain directly to get the cause on each error.
-    : Object.assign(res[0], { cause: res[1] })
+    : res[0]
 }
 
 /**
