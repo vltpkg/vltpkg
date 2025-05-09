@@ -12,6 +12,14 @@ t.strictSame(
 t.strictSame(
   inferDefaultExecutable({
     name: 'xyz',
+    bin: { single: 'blah.js' },
+  }),
+  ['single', 'blah.js'],
+)
+
+t.strictSame(
+  inferDefaultExecutable({
+    name: 'xyz',
     bin: {
       asf: 'foo.bad',
       xyz: 'ok.js',
