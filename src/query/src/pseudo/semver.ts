@@ -10,7 +10,8 @@ import {
   parseRange,
 } from '@vltpkg/semver'
 import type { Version } from '@vltpkg/semver'
-import { asError, error } from '@vltpkg/error-cause'
+import { error } from '@vltpkg/error-cause'
+import { asError } from '@vltpkg/types'
 import { parseInternals as parseAttrInternals } from './attr.ts'
 import type { AttrInternals } from './attr.ts'
 import { getManifestPropertyValues } from '../attribute.ts'

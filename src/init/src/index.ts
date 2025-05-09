@@ -4,7 +4,7 @@ import type { JSONObj } from '@vltpkg/registry-client'
 import type { Manifest } from '@vltpkg/types'
 import { basename, resolve } from 'node:path'
 import { getAuthorFromGitUser } from './get-author-from-git-user.ts'
-import { asError } from '@vltpkg/error-cause'
+import { asError } from '@vltpkg/types'
 export { getAuthorFromGitUser }
 
 // eslint-disable-next-line no-console

@@ -17,7 +17,7 @@ Invalid value string for color, expected boolean
 exports[`test/index.ts > TAP > unknown config > must match snapshot 1`] = `
 Invalid Option Flag
 Unknown option '--unknown'. To specify a positional argument starting with a '-', place it at the end of the command after '--', as in '-- --unknown'
-  Found: "--unknown"
+  Found: --unknown
   Valid Options:
     --arch=<arch>
     --bail
