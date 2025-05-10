@@ -3,6 +3,7 @@ import type { NodeLike } from '@vltpkg/graph'
 import type { JSONField, Manifest } from '@vltpkg/types'
 import { asAttributeNode } from './types.ts'
 import type { ParserState } from './types.ts'
+import { removeDanglingEdges } from './pseudo/helpers.ts'
 
 export type ComparatorFn = (attr: string, value?: string) => boolean
 
@@ -129,17 +130,7 @@ export const filterAttributes = (
     }
   }
 
-  for (const edge of state.partial.edges) {
-    // edge.name is a special case in order
-    // to be able to match missing nodes by name
-    if (propertyName === 'name' && check(edge.name)) {
-      continue
-    }
-    // remove any remaining dangling edge
-    if (!edge.to) {
-      state.partial.edges.delete(edge)
-    }
-  }
+  removeDanglingEdges(state)
   return state
 }
 
