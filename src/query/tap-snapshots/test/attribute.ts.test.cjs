@@ -7,10 +7,7 @@
 'use strict'
 exports[`test/attribute.ts > TAP > attribute > missing node > query > "[name]" 1`] = `
 Object {
-  "edges": Array [
-    "a",
-    "b",
-  ],
+  "edges": Array [],
   "nodes": Array [
     "node-missing-project",
   ],
@@ -19,9 +16,7 @@ Object {
 
 exports[`test/attribute.ts > TAP > attribute > missing node > query > "[name=a]" 1`] = `
 Object {
-  "edges": Array [
-    "a",
-  ],
+  "edges": Array [],
   "nodes": Array [],
 }
 `
