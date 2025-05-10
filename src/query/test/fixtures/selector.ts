@@ -81,6 +81,7 @@ export const selectorFixture =
         edges: new Set(),
         nodes: new Set(),
       },
+      comment: '',
       current,
       loose,
       initial,
@@ -91,6 +92,7 @@ export const selectorFixture =
       securityArchive: undefined,
       signal: new AbortController().signal,
       specOptions: {},
+      specificity: { idCounter: 0, commonCounter: 0 },
     }
     const res = await testFn(state)
     return {

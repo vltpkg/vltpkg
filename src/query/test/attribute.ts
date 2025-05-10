@@ -234,6 +234,7 @@ t.test('filterAttributes', async t => {
       edges: new Set<EdgeLike>(),
       nodes: new Set<NodeLike>(),
     },
+    comment: '',
     current: { type: 'attribute', value: 'postinstall' } as Attribute,
     initial: copyGraphSelectionState(all),
     partial: all,
@@ -243,6 +244,7 @@ t.test('filterAttributes', async t => {
     securityArchive: undefined,
     specOptions: {},
     signal: new AbortController().signal,
+    specificity: { idCounter: 0, commonCounter: 0 },
   }
   filterAttributes(
     state,

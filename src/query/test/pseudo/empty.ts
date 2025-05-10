@@ -13,6 +13,7 @@ t.test('selects packages with no dependencies', async t => {
     const ast = parse(query)
     const current = ast.first.first
     const state: ParserState = {
+      comment: '',
       current,
       initial: {
         edges: new Set(graph.edges.values()),
@@ -32,6 +33,7 @@ t.test('selects packages with no dependencies', async t => {
       securityArchive: undefined,
       specOptions: {},
       signal: new AbortController().signal,
+      specificity: { idCounter: 0, commonCounter: 0 },
     }
     return state
   }

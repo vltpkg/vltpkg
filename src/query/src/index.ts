@@ -45,7 +45,17 @@ const selectors = {
   },
   /* c8 ignore end */
   combinator,
-  comment: noopFn,
+  comment: async (state: ParserState) => {
+    if (state.current.value && !state.comment) {
+      const commentValue = state.current.value
+      const cleanComment = commentValue.replace(
+        /^\/\*\s*|\s*\*\/$/g,
+        '',
+      )
+      state.comment = cleanComment
+    }
+    return state
+  },
   id,
   nesting: noopFn,
   pseudo,
@@ -205,6 +215,35 @@ export class Query {
       }
     }
     return false
+  }
+
+  /**
+   * Sorts an array of QueryResponse objects by specificity. Objects with
+   * higher idCounter values come first, if idCounter values are equal,
+   * then objects with higher commonCounter values come first. Otherwise,
+   * the original order is preserved.
+   */
+  static specificitySort(
+    responses: QueryResponse[],
+  ): QueryResponse[] {
+    return [...responses].sort((a, b) => {
+      // First compare by idCounter (higher comes first)
+      if (a.specificity.idCounter !== b.specificity.idCounter) {
+        return b.specificity.idCounter - a.specificity.idCounter
+      }
+
+      // If idCounter values are equal, compare by commonCounter
+      if (
+        a.specificity.commonCounter !== b.specificity.commonCounter
+      ) {
+        return (
+          b.specificity.commonCounter - a.specificity.commonCounter
+        )
+      }
+
+      // If both counters are equal, preserve original order
+      return 0
+    })
   }
 
   constructor({
@@ -407,7 +446,13 @@ export class Query {
       scopeIDs = [joinDepIDTuple(['file', '.'])],
     }: SearchOptions,
   ): Promise<QueryResponse> {
-    if (!query) return { edges: [], nodes: [] }
+    if (!query)
+      return {
+        edges: [],
+        nodes: [],
+        comment: '',
+        specificity: { idCounter: 0, commonCounter: 0 },
+      }
 
     const cachedResult = this.#cache.get(query)
     if (cachedResult) {
@@ -429,7 +474,7 @@ export class Query {
     const loose = asPostcssNodeWithChildren(current).nodes.length > 1
     // builds initial state and walks over it,
     // retrieving the collected result
-    const { collect } = await walk({
+    const { collect, comment, specificity } = await walk({
       cancellable: async () => {
         await new Promise(resolve => {
           setTimeout(resolve, 0)
@@ -445,6 +490,7 @@ export class Query {
         nodes: new Set<NodeLike>(),
         edges: new Set<EdgeLike>(),
       },
+      comment: '',
       loose,
       partial: { nodes, edges },
       retries: this.#retries,
@@ -453,11 +499,14 @@ export class Query {
       specOptions: this.#specOptions,
       scopeIDs,
       walk,
+      specificity: { idCounter: 0, commonCounter: 0 },
     })
 
     const res: QueryResponse = {
       edges: this.#getQueryResponseEdges(collect.edges),
       nodes: this.#getQueryResponseNodes(collect.nodes),
+      comment,
+      specificity,
     }
     this.#cache.set(query, res)
     return res

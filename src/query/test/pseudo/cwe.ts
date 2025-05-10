@@ -12,6 +12,7 @@ t.test('selects packages with a CWE alert', async t => {
     const ast = parse(query)
     const current = ast.first.first
     const state: ParserState = {
+      comment: '',
       current,
       initial: {
         edges: new Set(graph.edges.values()),
@@ -48,6 +49,7 @@ t.test('selects packages with a CWE alert', async t => {
                 supplyChain: 0,
                 vulnerability: 0,
                 signal: new AbortController().signal,
+                specificity: { idCounter: 0, commonCounter: 0 },
               },
               alerts: [
                 {
@@ -71,6 +73,7 @@ t.test('selects packages with a CWE alert', async t => {
       ),
       specOptions: {},
       signal: new AbortController().signal,
+      specificity: { idCounter: 0, commonCounter: 0 },
     }
     return state
   }
@@ -126,6 +129,7 @@ t.test('missing security archive', async t => {
     const ast = parse(query)
     const current = ast.first.first
     const state: ParserState = {
+      comment: '',
       current,
       initial: {
         edges: new Set(),
@@ -145,6 +149,7 @@ t.test('missing security archive', async t => {
       securityArchive: undefined,
       specOptions: {},
       signal: new AbortController().signal,
+      specificity: { idCounter: 0, commonCounter: 0 },
     }
     return state
   }
@@ -161,6 +166,7 @@ t.test('missing CWE ID', async t => {
     const ast = parse(query)
     const current = ast.first.first
     const state: ParserState = {
+      comment: '',
       current,
       initial: {
         edges: new Set(),
@@ -180,6 +186,7 @@ t.test('missing CWE ID', async t => {
       securityArchive: asSecurityArchiveLike(new Map()),
       specOptions: {},
       signal: new AbortController().signal,
+      specificity: { idCounter: 0, commonCounter: 0 },
     }
     return state
   }

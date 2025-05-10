@@ -18,6 +18,7 @@ t.test('select from semver definition', async t => {
     const ast = parse(query)
     const current = asPostcssNodeWithChildren(ast.first.first)
     const state: ParserState = {
+      comment: '',
       current,
       initial: {
         edges: new Set(graph.edges.values()),
@@ -37,6 +38,7 @@ t.test('select from semver definition', async t => {
       securityArchive: undefined,
       specOptions: {},
       signal: new AbortController().signal,
+      specificity: { idCounter: 0, commonCounter: 0 },
     }
     return state
   }

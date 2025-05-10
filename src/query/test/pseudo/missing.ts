@@ -12,6 +12,7 @@ t.test('selects edges with no linked node', async t => {
     const ast = postcssSelectorParser().astSync(query)
     const current = ast.first.first
     const state: ParserState = {
+      comment: '',
       current,
       initial: {
         edges: new Set(graph.edges.values()),
@@ -31,6 +32,7 @@ t.test('selects edges with no linked node', async t => {
       securityArchive: undefined,
       specOptions: {},
       signal: new AbortController().signal,
+      specificity: { idCounter: 0, commonCounter: 0 },
     }
     return state
   }

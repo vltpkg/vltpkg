@@ -39,5 +39,8 @@ export const id = async (
     }
   }
 
+  // Increment the idCounter for specificity
+  state.specificity.idCounter += 1
+
   return state
 }

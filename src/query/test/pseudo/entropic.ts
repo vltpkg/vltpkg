@@ -13,6 +13,7 @@ t.test(
       const ast = parse(query)
       const current = ast.first.first
       const state: ParserState = {
+        comment: '',
         current,
         initial: {
           edges: new Set(graph.edges.values()),
@@ -39,6 +40,7 @@ t.test(
         specOptions: {},
         retries: 0,
         signal: new AbortController().signal,
+        specificity: { idCounter: 0, commonCounter: 0 },
       }
       return state
     }
@@ -66,6 +68,7 @@ t.test('missing security archive', async t => {
     const ast = parse(query)
     const current = ast.first.first
     const state: ParserState = {
+      comment: '',
       current,
       initial: {
         edges: new Set(),
@@ -85,6 +88,7 @@ t.test('missing security archive', async t => {
       specOptions: {},
       retries: 0,
       signal: new AbortController().signal,
+      specificity: { idCounter: 0, commonCounter: 0 },
     }
     return state
   }

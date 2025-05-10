@@ -90,6 +90,8 @@ const has = async (state: ParserState) => {
         specOptions: state.specOptions,
         signal: state.signal,
         scopeIDs: state.scopeIDs,
+        comment: state.comment,
+        specificity: { ...state.specificity },
       })
       for (const n of nestedState.collect.nodes) {
         collectNodes.add(n)
@@ -175,6 +177,8 @@ const is = async (state: ParserState) => {
         specOptions: state.specOptions,
         signal: state.signal,
         scopeIDs: state.scopeIDs,
+        comment: state.comment,
+        specificity: { ...state.specificity },
       })
       for (const n of nestedState.collect.nodes) {
         collect.add(n)
@@ -217,6 +221,8 @@ const not = async (state: ParserState) => {
         specOptions: state.specOptions,
         signal: state.signal,
         scopeIDs: state.scopeIDs,
+        comment: state.comment,
+        specificity: { ...state.specificity },
       })
       for (const n of nestedState.collect.nodes) {
         collect.add(n)
@@ -355,5 +361,20 @@ export const pseudo = async (state: ParserState) => {
       found: state.current,
     })
   }
-  return parserFn(state)
+
+  const result = await parserFn(state)
+
+  // Increment the commonCounter for specificity, except for
+  // nesting selectors which don't contribute to specificity
+  const pseudoValue = curr.value.slice(1)
+  if (
+    pseudoValue &&
+    pseudoValue !== 'not' &&
+    pseudoValue !== 'is' &&
+    pseudoValue !== 'has'
+  ) {
+    result.specificity.commonCounter += 1
+  }
+
+  return result
 }

@@ -14,7 +14,11 @@ import {
   selectorFixture,
 } from './fixtures/selector.ts'
 import type { TestCase } from './fixtures/types.ts'
-import type { GraphSelectionState } from '../src/types.ts'
+import type {
+  GraphSelectionState,
+  ParserState,
+  PostcssNodeWithChildren,
+} from '../src/types.ts'
 import { joinDepIDTuple } from '@vltpkg/dep-id'
 
 const testPseudo = selectorFixture(pseudo)
@@ -403,6 +407,112 @@ t.test('unsupported pseudo', async t => {
     testPseudo(':unsupportedpseudoclass'),
     /Unsupported pseudo-class: :unsupportedpseudoclass/,
     'should throw an unsupported selector error',
+  )
+})
+
+t.test('specificity calculation for pseudo selectors', async t => {
+  const simpleGraph = getSimpleGraph()
+  const all = {
+    edges: new Set(simpleGraph.edges),
+    nodes: new Set(simpleGraph.nodes.values()),
+  }
+  const initial = copyGraphSelectionState(all)
+
+  // Create mock specOptions
+  const mockSpecOptions = {
+    registry: 'https://registry.npmjs.org',
+    registries: {
+      custom: 'http://example.com',
+    },
+  }
+
+  // Test normal pseudo selectors (should increment commonCounter)
+  const normalState: ParserState = {
+    cancellable: async () => {},
+    collect: {
+      nodes: new Set(simpleGraph.nodes.values()),
+      edges: new Set(simpleGraph.edges),
+    },
+    current: {
+      type: 'pseudo',
+      value: ':dev',
+      spaces: { before: '', after: '' },
+    } as any,
+    initial: copyGraphSelectionState(initial),
+    loose: false,
+    partial: copyGraphSelectionState(initial),
+    retries: 0,
+    securityArchive: undefined,
+    signal: { throwIfAborted: () => {} } as AbortSignal,
+    walk: async (state: ParserState) => state,
+    specificity: { idCounter: 0, commonCounter: 0 },
+    comment: '',
+    specOptions: mockSpecOptions,
+  }
+
+  const result = await pseudo(normalState)
+  t.equal(
+    result.specificity.commonCounter,
+    1,
+    ':dev should increment commonCounter',
+  )
+
+  // Test :not, :is, :has pseudo selectors (should not increment commonCounter)
+  const notCounter = { idCounter: 0, commonCounter: 0 }
+  const isCounter = { idCounter: 0, commonCounter: 0 }
+  const hasCounter = { idCounter: 0, commonCounter: 0 }
+
+  const notState: ParserState = {
+    ...normalState,
+    current: {
+      type: 'pseudo',
+      value: ':not',
+      spaces: { before: '', after: '' },
+      nodes: [],
+    } as unknown as PostcssNodeWithChildren,
+    specificity: { ...notCounter },
+  }
+
+  const isState: ParserState = {
+    ...normalState,
+    current: {
+      type: 'pseudo',
+      value: ':is',
+      spaces: { before: '', after: '' },
+      nodes: [],
+    } as unknown as PostcssNodeWithChildren,
+    specificity: { ...isCounter },
+  }
+
+  const hasState: ParserState = {
+    ...normalState,
+    current: {
+      type: 'pseudo',
+      value: ':has',
+      spaces: { before: '', after: '' },
+      nodes: [],
+    } as unknown as PostcssNodeWithChildren,
+    specificity: { ...hasCounter },
+  }
+
+  const notResult = await pseudo(notState)
+  const isResult = await pseudo(isState)
+  const hasResult = await pseudo(hasState)
+
+  t.equal(
+    notResult.specificity.commonCounter,
+    0,
+    ':not should not increment commonCounter',
+  )
+  t.equal(
+    isResult.specificity.commonCounter,
+    0,
+    ':is should not increment commonCounter',
+  )
+  t.equal(
+    hasResult.specificity.commonCounter,
+    0,
+    ':has should not increment commonCounter',
   )
 })
 

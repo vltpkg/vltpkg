@@ -182,6 +182,10 @@ export const attribute = async (
   const value = curr.value || ''
   const propertyName = curr.attribute
   const insensitive = !!curr.insensitive
+
+  // Increment the commonCounter for specificity
+  state.specificity.commonCounter += 1
+
   return filterAttributes(
     state,
     operatorFn,

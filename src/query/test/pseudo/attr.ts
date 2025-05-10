@@ -9,6 +9,7 @@ t.test('selects packages based on attribute properties', async t => {
     const ast = postcssSelectorParser().astSync(query)
     const current = ast.first.first
     const state: ParserState = {
+      comment: '',
       current,
       initial: {
         edges: new Set(graph.edges.values()),
@@ -28,6 +29,7 @@ t.test('selects packages based on attribute properties', async t => {
       specOptions: {},
       retries: 0,
       signal: new AbortController().signal,
+      specificity: { idCounter: 0, commonCounter: 0 },
     }
     return state
   }

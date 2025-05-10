@@ -92,6 +92,7 @@ t.test('selects packages based on their security score', async t => {
     const ast = parse(query)
     const current = ast.first.first
     const state: ParserState = {
+      comment: '',
       current,
       initial: {
         edges: new Set(graph.edges.values()),
@@ -111,6 +112,7 @@ t.test('selects packages based on their security score', async t => {
       specOptions: {},
       retries: 0,
       signal: new AbortController().signal,
+      specificity: { idCounter: 0, commonCounter: 0 },
     }
     return state
   }
@@ -350,6 +352,7 @@ t.test('error cases', async t => {
       const ast = parse(query)
       const current = ast.first.first
       const state: ParserState = {
+        comment: '',
         current,
         initial: {
           edges: new Set(),
@@ -369,6 +372,7 @@ t.test('error cases', async t => {
         specOptions: {},
         retries: 0,
         signal: new AbortController().signal,
+        specificity: { idCounter: 0, commonCounter: 0 },
       }
       return state
     }
@@ -386,6 +390,7 @@ t.test('error cases', async t => {
       const ast = parse(query)
       const current = ast.first.first
       const state: ParserState = {
+        comment: '',
         current,
         initial: {
           edges: new Set(),
@@ -405,6 +410,7 @@ t.test('error cases', async t => {
         specOptions: {},
         retries: 0,
         signal: new AbortController().signal,
+        specificity: { idCounter: 0, commonCounter: 0 },
       }
       return state
     }
@@ -422,6 +428,7 @@ t.test('error cases', async t => {
       const ast = parse(query)
       const current = ast.first.first
       const state: ParserState = {
+        comment: '',
         current,
         initial: {
           edges: new Set(),
@@ -441,6 +448,7 @@ t.test('error cases', async t => {
         specOptions: {},
         retries: 0,
         signal: new AbortController().signal,
+        specificity: { idCounter: 0, commonCounter: 0 },
       }
       return state
     }
@@ -458,6 +466,7 @@ t.test('error cases', async t => {
       const ast = parse(query)
       const current = ast.first.first
       const state: ParserState = {
+        comment: '',
         current,
         initial: {
           edges: new Set(),
@@ -477,6 +486,7 @@ t.test('error cases', async t => {
         specOptions: {},
         retries: 0,
         signal: new AbortController().signal,
+        specificity: { idCounter: 0, commonCounter: 0 },
       }
       return state
     }
