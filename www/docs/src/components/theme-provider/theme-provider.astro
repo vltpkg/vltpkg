@@ -24,10 +24,9 @@
   }
 
   const getThemePreference = () => {
-    const cookie =
-      document.cookie ?
-        getCookie('theme', document.cookie) || 'system+dark'
-      : 'system+dark'
+    const themeCookie =
+      document.cookie ? getCookie('theme', document.cookie) : null
+    const cookie = themeCookie || 'system+dark'
     const [userTheme, _] = cookie.split('+')
     return userTheme
   }
