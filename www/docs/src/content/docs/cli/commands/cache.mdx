@@ -1,0 +1,119 @@
+---
+title: vlt cache
+sidebar:
+  label: cache
+---
+
+import { Code } from '@astrojs/starlight/components'
+
+Usage:
+
+<Code
+  code="$ vlt cache <command> [flags]"
+  title="Terminal"
+  lang="bash"
+/>
+
+Work with vlt cache folders
+
+## Subcommands
+
+### add
+
+Resolve the referenced package identifiers and ensure they are cached.
+
+<Code
+  code="$ vlt cache add <package-spec> [<package-spec>...]"
+  title="Terminal"
+  lang="bash"
+/>
+
+### ls
+
+Show cache entries. If no keys are provided, then a list of available
+keys will be printed. If one or more keys are provided, then details
+will be shown for the specified items.
+
+<Code code="$ vlt cache ls [<key>...]" title="Terminal" lang="bash" />
+
+### info
+
+Print metadata details for the specified cache key to stderr, and the
+response body to stdout.
+
+<Code code="$ vlt cache info <key>" title="Terminal" lang="bash" />
+
+### clean
+
+Purge expired cache entries. If one or more keys are provided, then
+only those cache entries will be considered.
+
+<Code
+  code="$ vlt cache clean [<key>...]"
+  title="Terminal"
+  lang="bash"
+/>
+
+### delete
+
+Purge items explicitly, whether expired or not. If one or more keys
+are provided, then only those cache entries will be considered.
+
+<Code
+  code="$ vlt cache delete <key> [<key>...]"
+  title="Terminal"
+  lang="bash"
+/>
+
+### delete-before
+
+Purge all cache items from before a given date. Date can be provided
+in any format that JavaScript can parse.
+
+<Code
+  code="$ vlt cache delete-before <date>"
+  title="Terminal"
+  lang="bash"
+/>
+
+### delete-all
+
+Delete the entire cache folder to make vlt slower.
+
+<Code code="$ vlt cache delete-all" title="Terminal" lang="bash" />
+
+## Examples
+
+Show cache metadata for a given registry URL:
+
+<Code
+  code="$ vlt cache ls https://registry.npmjs.org/typescript"
+  title="Terminal"
+  lang="bash"
+/>
+
+Add a given package specifier to the cache by fetching its resolved
+value:
+
+<Code
+  code="$ vlt cache add eslint@latest"
+  title="Terminal"
+  lang="bash"
+/>
+
+Print the cache metadata to stderr, and write the tarball on stdout,
+redirecting to a file:
+
+<Code
+  code="$ vlt cache info https://registry.npmjs.org/eslint/-/eslint-9.25.1.tgz > eslint.tgz"
+  title="Terminal"
+  lang="bash"
+/>
+
+Delete all entries created before Jan 1, 2025:
+
+<Code
+  code="$ vlt cache delete-before 2025-01-01"
+  title="Terminal"
+  lang="bash"
+/>
