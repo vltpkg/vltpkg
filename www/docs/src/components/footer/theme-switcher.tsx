@@ -53,13 +53,12 @@ const storeTheme = (
 
 const ThemeSwitcher = () => {
   const [theme, setTheme] = useState<Theme>(() => {
-    const theme = document.cookie
+    const themeCookie = document.cookie
       .split('; ')
       .find(row => row.startsWith('theme='))
       ?.split('=')[1]
-      ?.split('+')[0] as Theme
-
-    return theme
+      ?.split('+')[0]
+    return (themeCookie || 'system') as Theme
   })
 
   useEffect(() => {
