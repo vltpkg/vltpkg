@@ -45,7 +45,17 @@ const selectors = {
   },
   /* c8 ignore end */
   combinator,
-  comment: noopFn,
+  comment: async (state: ParserState) => {
+    if (state.current.value && !state.comment) {
+      const commentValue = state.current.value
+      const cleanComment = commentValue
+        .replace(/^\/\*/, '')
+        .replace(/\*\/$/, '')
+        .trim()
+      state.comment = cleanComment
+    }
+    return state
+  },
   id,
   nesting: noopFn,
   pseudo,
@@ -407,7 +417,7 @@ export class Query {
       scopeIDs = [joinDepIDTuple(['file', '.'])],
     }: SearchOptions,
   ): Promise<QueryResponse> {
-    if (!query) return { edges: [], nodes: [] }
+    if (!query) return { edges: [], nodes: [], comment: '' }
 
     const cachedResult = this.#cache.get(query)
     if (cachedResult) {
@@ -429,7 +439,7 @@ export class Query {
     const loose = asPostcssNodeWithChildren(current).nodes.length > 1
     // builds initial state and walks over it,
     // retrieving the collected result
-    const { collect } = await walk({
+    const { collect, comment } = await walk({
       cancellable: async () => {
         await new Promise(resolve => {
           setTimeout(resolve, 0)
@@ -445,6 +455,7 @@ export class Query {
         nodes: new Set<NodeLike>(),
         edges: new Set<EdgeLike>(),
       },
+      comment: '',
       loose,
       partial: { nodes, edges },
       retries: this.#retries,
@@ -458,6 +469,7 @@ export class Query {
     const res: QueryResponse = {
       edges: this.#getQueryResponseEdges(collect.edges),
       nodes: this.#getQueryResponseNodes(collect.nodes),
+      comment,
     }
     this.#cache.set(query, res)
     return res

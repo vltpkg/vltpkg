@@ -39,6 +39,7 @@ t.test('scanned selector', async t => {
       ]),
     )
     const state: ParserState = {
+      comment: '',
       current,
       initial: {
         edges: new Set(graph.edges.values()),

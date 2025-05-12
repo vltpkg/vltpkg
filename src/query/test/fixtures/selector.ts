@@ -81,6 +81,7 @@ export const selectorFixture =
         edges: new Set(),
         nodes: new Set(),
       },
+      comment: '',
       current,
       loose,
       initial,
