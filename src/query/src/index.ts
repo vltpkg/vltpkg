@@ -48,10 +48,10 @@ const selectors = {
   comment: async (state: ParserState) => {
     if (state.current.value && !state.comment) {
       const commentValue = state.current.value
-      const cleanComment = commentValue.replace(
-        /^\/\*\s*|\s*\*\/$/g,
-        '',
-      )
+      const cleanComment = commentValue
+        .replace(/^\/\*/, '')
+        .replace(/\*\/$/, '')
+        .trim()
       state.comment = cleanComment
     }
     return state
