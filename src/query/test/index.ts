@@ -9,6 +9,7 @@ import type {
   ParsedSelectorToken,
   ParserState,
   PostcssNode,
+  QueryResponse,
 } from '../src/types.ts'
 import { copyGraphSelectionState } from './fixtures/selector.ts'
 import { joinDepIDTuple } from '@vltpkg/dep-id'
@@ -54,6 +55,7 @@ const testBrokenState = (): ParserState => {
     securityArchive: undefined,
     signal: mockSearchOptions.signal,
     specOptions,
+    specificity: { idCounter: 0, commonCounter: 0 },
   }
   return state
 }
@@ -750,5 +752,224 @@ t.test(':scope with custom scopeIDs', async t => {
     ).nodes.map(n => n.name),
     ['a'],
     'should select only the node specified by scopeIDs',
+  )
+})
+
+t.test('specificity calculation', async t => {
+  const graph = getSimpleGraph()
+  const query = new Query({
+    graph,
+    securityArchive: undefined,
+    specOptions,
+  })
+
+  const specificityTestCases = [
+    {
+      query: ':root',
+      idCounter: 0,
+      commonCounter: 1,
+      description: 'single pseudo-element',
+    },
+    {
+      query: ':root > #b',
+      idCounter: 1,
+      commonCounter: 1,
+      description: 'child combinator with id',
+    },
+    {
+      query: ':root #b',
+      idCounter: 1,
+      commonCounter: 1,
+      description: 'descendant combinator with id',
+    },
+    {
+      query: ':root ~ #b',
+      idCounter: 1,
+      commonCounter: 1,
+      description: 'sibling combinator with id',
+    },
+    {
+      query: ':root > #b > #c',
+      idCounter: 2,
+      commonCounter: 1,
+      description: 'multiple combinators with ids',
+    },
+    {
+      query: ':root > :prod',
+      idCounter: 0,
+      commonCounter: 2,
+      description: 'only pseudo classes',
+    },
+    {
+      query: ':root > :prod:dev',
+      idCounter: 0,
+      commonCounter: 3,
+      description: 'multiple pseudo classes',
+    },
+    {
+      query: ':root > :prod:dev:optional',
+      idCounter: 0,
+      commonCounter: 4,
+      description: 'multiple pseudo classes',
+    },
+    {
+      query: ':root > #missing',
+      idCounter: 1,
+      commonCounter: 1,
+      description: 'missing id still counts',
+    },
+    {
+      query: ':root > [name=b]',
+      idCounter: 0,
+      commonCounter: 2,
+      description: 'attribute selector',
+    },
+    {
+      query: ':root > [name=b][version=2.0.0]',
+      idCounter: 0,
+      commonCounter: 3,
+      description: 'multiple attribute selectors',
+    },
+    {
+      query: ':root > :not(:prod)',
+      idCounter: 0,
+      commonCounter: 1,
+      description: ':not does not affect specificity',
+    },
+    {
+      query: ':root > :is(:prod, :dev)',
+      idCounter: 0,
+      commonCounter: 1,
+      description: ':is does not affect specificity',
+    },
+    {
+      query: ':root > :has(:prod)',
+      idCounter: 0,
+      commonCounter: 1,
+      description: ':has does not affect specificity',
+    },
+    {
+      query: '#b:prod',
+      idCounter: 1,
+      commonCounter: 1,
+      description: 'id with pseudo class',
+    },
+    {
+      query: '#b:prod[name=b]',
+      idCounter: 1,
+      commonCounter: 2,
+      description: 'id with pseudo class and attribute',
+    },
+  ]
+
+  for (const {
+    query: queryStr,
+    idCounter,
+    commonCounter,
+    description,
+  } of specificityTestCases) {
+    const result = await query.search(queryStr, mockSearchOptions)
+    t.strictSame(
+      {
+        idCounter: result.specificity.idCounter,
+        commonCounter: result.specificity.commonCounter,
+      },
+      { idCounter, commonCounter },
+      `specificity for "${queryStr}" - ${description}`,
+    )
+  }
+})
+
+t.test('specificitySort', async t => {
+  // Create test QueryResponse objects with different specificity values
+  const responses: QueryResponse[] = [
+    {
+      edges: [],
+      nodes: [],
+      comment: 'First response (id:0, common:1)',
+      specificity: { idCounter: 0, commonCounter: 1 },
+    },
+    {
+      edges: [],
+      nodes: [],
+      comment: 'Second response (id:2, common:0)',
+      specificity: { idCounter: 2, commonCounter: 0 },
+    },
+    {
+      edges: [],
+      nodes: [],
+      comment: 'Third response (id:1, common:3)',
+      specificity: { idCounter: 1, commonCounter: 3 },
+    },
+    {
+      edges: [],
+      nodes: [],
+      comment: 'Fourth response (id:1, common:2)',
+      specificity: { idCounter: 1, commonCounter: 2 },
+    },
+    {
+      edges: [],
+      nodes: [],
+      comment: 'Fifth response (id:0, common:0)',
+      specificity: { idCounter: 0, commonCounter: 0 },
+    },
+  ]
+
+  const sortedResponses = Query.specificitySort(responses)
+
+  // Check that the order is correct based on specificity rules
+  t.strictSame(
+    sortedResponses.map(r => r.comment),
+    [
+      'Second response (id:2, common:0)', // Highest idCounter (2)
+      'Third response (id:1, common:3)', // Next idCounter (1) with higher commonCounter (3)
+      'Fourth response (id:1, common:2)', // Same idCounter (1) with lower commonCounter (2)
+      'First response (id:0, common:1)', // Lowest idCounter (0) with higher commonCounter (1)
+      'Fifth response (id:0, common:0)', // Lowest idCounter (0) with lowest commonCounter (0)
+    ],
+    'should sort responses by specificity with higher values first',
+  )
+
+  // Test that the original array is not modified
+  t.notSame(
+    responses.map(r => r.comment),
+    sortedResponses.map(r => r.comment),
+    'should not modify the original array',
+  )
+
+  // Test that the sort is stable (preserves original order for equal specificity)
+  const equalSpecificityResponses: QueryResponse[] = [
+    {
+      edges: [],
+      nodes: [],
+      comment: 'First equal response',
+      specificity: { idCounter: 1, commonCounter: 1 },
+    },
+    {
+      edges: [],
+      nodes: [],
+      comment: 'Second equal response',
+      specificity: { idCounter: 1, commonCounter: 1 },
+    },
+    {
+      edges: [],
+      nodes: [],
+      comment: 'Third equal response',
+      specificity: { idCounter: 1, commonCounter: 1 },
+    },
+  ]
+
+  const sortedEqualResponses = Query.specificitySort(
+    equalSpecificityResponses,
+  )
+
+  t.strictSame(
+    sortedEqualResponses.map(r => r.comment),
+    [
+      'First equal response',
+      'Second equal response',
+      'Third equal response',
+    ],
+    'should preserve original order for equal specificity values',
   )
 })

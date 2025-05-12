@@ -32,6 +32,7 @@ t.test('selects the root node of the graph', async t => {
       securityArchive: undefined,
       specOptions: {},
       signal: new AbortController().signal,
+      specificity: { idCounter: 0, commonCounter: 0 },
     }
     return state
   }

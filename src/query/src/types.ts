@@ -21,6 +21,11 @@ import type {
   Universal,
 } from 'postcss-selector-parser'
 
+export type Specificity = {
+  idCounter: number
+  commonCounter: number
+}
+
 export type PostcssNode =
   | Tag
   | String
@@ -59,12 +64,14 @@ export type ParserState = {
   securityArchive: SecurityArchiveLike | undefined
   specOptions: SpecOptions
   scopeIDs?: DepID[]
+  specificity: Specificity
 }
 
 export type QueryResponse = {
   edges: QueryResponseEdge[]
   nodes: QueryResponseNode[]
   comment: string
+  specificity: Specificity
 }
 
 export type QueryResponseEdge = Omit<EdgeLike, 'from' | 'to'> & {

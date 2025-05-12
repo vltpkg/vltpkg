@@ -29,6 +29,7 @@ t.test('selects packages based on attribute properties', async t => {
       specOptions: {},
       retries: 0,
       signal: new AbortController().signal,
+      specificity: { idCounter: 0, commonCounter: 0 },
     }
     return state
   }

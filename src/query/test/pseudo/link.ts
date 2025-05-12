@@ -29,6 +29,7 @@ t.test('selects file links and tar.gz packages', async t => {
       securityArchive: undefined,
       specOptions: {},
       signal: new AbortController().signal,
+      specificity: { idCounter: 0, commonCounter: 0 },
     }
     return state
   }

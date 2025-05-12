@@ -242,6 +242,7 @@ t.test('selects packages with an unmaintained alert', async t => {
       specOptions: {},
       retries: 0,
       signal: new AbortController().signal,
+      specificity: { idCounter: 0, commonCounter: 0 },
     }
     return state
   }
@@ -292,6 +293,7 @@ t.test('missing security archive', async t => {
       specOptions: {},
       retries: 0,
       signal: new AbortController().signal,
+      specificity: { idCounter: 0, commonCounter: 0 },
     }
     return state
   }
