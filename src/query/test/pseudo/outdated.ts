@@ -116,6 +116,7 @@ const getState = (query: string, graph = getSemverRichGraph()) => {
   const ast = parse(query)
   const current = asPostcssNodeWithChildren(ast.first.first)
   const state: ParserState = {
+    comment: '',
     current,
     initial: {
       edges: new Set(graph.edges.values()),

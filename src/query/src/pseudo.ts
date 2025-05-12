@@ -90,6 +90,7 @@ const has = async (state: ParserState) => {
         specOptions: state.specOptions,
         signal: state.signal,
         scopeIDs: state.scopeIDs,
+        comment: state.comment,
       })
       for (const n of nestedState.collect.nodes) {
         collectNodes.add(n)
@@ -175,6 +176,7 @@ const is = async (state: ParserState) => {
         specOptions: state.specOptions,
         signal: state.signal,
         scopeIDs: state.scopeIDs,
+        comment: state.comment,
       })
       for (const n of nestedState.collect.nodes) {
         collect.add(n)
@@ -217,6 +219,7 @@ const not = async (state: ParserState) => {
         specOptions: state.specOptions,
         signal: state.signal,
         scopeIDs: state.scopeIDs,
+        comment: state.comment,
       })
       for (const n of nestedState.collect.nodes) {
         collect.add(n)
