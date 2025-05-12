@@ -244,6 +244,7 @@ t.test('filterAttributes', async t => {
     securityArchive: undefined,
     specOptions: {},
     signal: new AbortController().signal,
+    specificity: { idCounter: 0, commonCounter: 0 },
   }
   filterAttributes(
     state,

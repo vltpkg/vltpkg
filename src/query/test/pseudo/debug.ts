@@ -38,6 +38,7 @@ t.test('selects packages with a debugAccess alert', async t => {
       ),
       specOptions: {},
       signal: new AbortController().signal,
+      specificity: { idCounter: 0, commonCounter: 0 },
     }
     return state
   }
@@ -84,6 +85,7 @@ t.test('missing security archive', async t => {
       securityArchive: undefined,
       specOptions: {},
       signal: new AbortController().signal,
+      specificity: { idCounter: 0, commonCounter: 0 },
     }
     return state
   }
