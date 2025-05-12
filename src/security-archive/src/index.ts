@@ -29,6 +29,14 @@ export type JSONItemResponse = {
   namespace?: `@{string}`
   name: string
   version: string
+  score: {
+    overall: number
+    license: number
+    maintenance: number
+    quality: number
+    supplyChain: number
+    vulnerability: number
+  }
 }
 
 export type DBReadEntry = {
@@ -320,7 +328,32 @@ export class SecurityArchive
         graph.nodes.get(depID) ?? graph.nodes.get(aliasedDepID)
       if (node) {
         fetchedDepIDs.add(node.id)
-        this.set(node.id, asPackageReportData(data))
+        // Calculate average score from all score components
+        const scoreComponents = [
+          data.score.license,
+          data.score.maintenance,
+          data.score.quality,
+          data.score.supplyChain,
+          data.score.vulnerability,
+        ]
+        const newAverageScore = Number(
+          (
+            scoreComponents.reduce((sum, score) => sum + score, 0) /
+            scoreComponents.length
+          ).toFixed(2),
+        )
+        // Add average score to the score object
+        const scoreWithNewAverage = {
+          ...data.score,
+          overall: newAverageScore,
+        }
+        this.set(
+          node.id,
+          asPackageReportData({
+            ...data,
+            score: scoreWithNewAverage,
+          }),
+        )
       } else {
         // eslint-disable-next-line no-console
         console.warn(
