@@ -65,12 +65,8 @@ test('header renders with context value on `/explore`', () => {
     pathname: '/explore',
   } as Location)
   const Container = () => {
-    const updateDashboard = useStore(state => state.updateDashboard)
     const updateGraph = useStore(state => state.updateGraph)
 
-    updateDashboard({
-      buildVersion: '1.0.0',
-    } as unknown as State['dashboard'])
     updateGraph({
       projectRoot: '/foo/bar/baz',
     } as unknown as State['graph'])
@@ -80,6 +76,24 @@ test('header renders with context value on `/explore`', () => {
 
   const { container } = render(<Container />)
   expect(container.innerHTML).toContain('/foo/bar/baz')
-  expect(container.innerHTML).toContain('1.0.0')
+  expect(container.innerHTML).toMatchSnapshot()
+})
+
+test('header renders with build version', () => {
+  vi.mocked(useLocation).mockReturnValue({
+    pathname: '/',
+  } as Location)
+
+  const Container = () => {
+    const updateAppData = useStore(state => state.updateAppData)
+    updateAppData({
+      buildVersion: '1.0.0',
+    })
+
+    return <Header />
+  }
+
+  const { container } = render(<Container />)
+  expect(container.innerHTML).toContain('build: v1.0.0')
   expect(container.innerHTML).toMatchSnapshot()
 })

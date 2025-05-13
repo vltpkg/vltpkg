@@ -18,6 +18,7 @@ const Header = () => {
   const { pathname } = useLocation()
   const projectInfo = useGraphStore(state => state.projectInfo)
   const dashboard = useGraphStore(state => state.dashboard)
+  const appData = useGraphStore(state => state.appData)
   const graph = useGraphStore(state => state.graph)
 
   const contextValue = useMemo(() => {
@@ -51,9 +52,9 @@ const Header = () => {
             </InlineCode>
           </div>
         )}
-        {dashboard?.buildVersion && (
+        {appData?.buildVersion && (
           <p className="ml-auto font-courier text-xs font-medium text-muted-foreground">
-            build: v{dashboard.buildVersion}
+            build: v{appData.buildVersion}
           </p>
         )}
       </div>
