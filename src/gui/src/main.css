@@ -172,6 +172,7 @@ html {
   -moz-osx-font-smoothing: grayscale;
   font-smooth: auto;
   background-color: hsl(var(--sidebar-background));
+  scroll-behavior: smooth;
 }
 
 @supports (-webkit-font-smoothing: subpixel-antialiased) {
