@@ -46,7 +46,6 @@ describe('directory select', () => {
     const mockDirectory = ''
 
     const mockDashboard = {
-      buildVersion: '1.0.0',
       cwd: '/home/user',
       defaultAuthor: 'Ruy Adorno',
       dashboardProjectLocations: [
