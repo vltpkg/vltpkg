@@ -23,6 +23,7 @@ Array [
           "name": "abbrev",
           "namedGitHost": undefined,
           "namedGitHostPath": undefined,
+          "namedJsrRegistry": undefined,
           "namedRegistry": undefined,
           "options": Object {
             "git-host-archives": Object {
@@ -36,6 +37,9 @@ Array [
               "gist": "git+ssh://git@gist.github.com/$1.git",
               "github": "git+ssh://git@github.com:$1/$2.git",
               "gitlab": "git+ssh://git@gitlab.com:$1/$2.git",
+            },
+            "jsr-registries": Object {
+              "jsr": "https://npm.jsr.io/",
             },
             "registries": Object {},
             "registry": "https://registry.npmjs.org/",
@@ -71,6 +75,7 @@ Array [
           "name": "english-days",
           "namedGitHost": undefined,
           "namedGitHostPath": undefined,
+          "namedJsrRegistry": undefined,
           "namedRegistry": undefined,
           "options": Object {
             "git-host-archives": Object {
@@ -84,6 +89,9 @@ Array [
               "gist": "git+ssh://git@gist.github.com/$1.git",
               "github": "git+ssh://git@github.com:$1/$2.git",
               "gitlab": "git+ssh://git@gitlab.com:$1/$2.git",
+            },
+            "jsr-registries": Object {
+              "jsr": "https://npm.jsr.io/",
             },
             "registries": Object {},
             "registry": "https://registry.npmjs.org/",
@@ -117,6 +125,7 @@ Array [
           "name": "simple-output",
           "namedGitHost": undefined,
           "namedGitHostPath": undefined,
+          "namedJsrRegistry": undefined,
           "namedRegistry": undefined,
           "options": Object {
             "git-host-archives": Object {
@@ -130,6 +139,9 @@ Array [
               "gist": "git+ssh://git@gist.github.com/$1.git",
               "github": "git+ssh://git@github.com:$1/$2.git",
               "gitlab": "git+ssh://git@gitlab.com:$1/$2.git",
+            },
+            "jsr-registries": Object {
+              "jsr": "https://npm.jsr.io/",
             },
             "registries": Object {},
             "registry": "https://registry.npmjs.org/",
@@ -182,6 +194,7 @@ Array [
           "name": "abbrev",
           "namedGitHost": undefined,
           "namedGitHostPath": undefined,
+          "namedJsrRegistry": undefined,
           "namedRegistry": undefined,
           "options": Object {
             "git-host-archives": Object {
@@ -195,6 +208,9 @@ Array [
               "gist": "git+ssh://git@gist.github.com/$1.git",
               "github": "git+ssh://git@github.com:$1/$2.git",
               "gitlab": "git+ssh://git@gitlab.com:$1/$2.git",
+            },
+            "jsr-registries": Object {
+              "jsr": "https://npm.jsr.io/",
             },
             "registries": Object {},
             "registry": "https://registry.npmjs.org/",
@@ -238,6 +254,7 @@ Array [
           "name": "abbrev",
           "namedGitHost": undefined,
           "namedGitHostPath": undefined,
+          "namedJsrRegistry": undefined,
           "namedRegistry": undefined,
           "options": Object {
             "git-host-archives": Object {
@@ -251,6 +268,9 @@ Array [
               "gist": "git+ssh://git@gist.github.com/$1.git",
               "github": "git+ssh://git@github.com:$1/$2.git",
               "gitlab": "git+ssh://git@gitlab.com:$1/$2.git",
+            },
+            "jsr-registries": Object {
+              "jsr": "https://npm.jsr.io/",
             },
             "registries": Object {},
             "registry": "https://registry.npmjs.org/",

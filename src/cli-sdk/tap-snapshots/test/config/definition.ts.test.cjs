@@ -214,6 +214,18 @@ Object {
     "type": "string",
     "validate": Function validate(v),
   },
+  "jsr-registries": Object {
+    "description": String(
+      Map alias names to JSR.io registry urls.
+      
+      For example, \`--jsr-registries acme=https://jsr.acme.io/\` would tell vlt to fetch any packages with the \`acme:\` registry prefix from the \`https://jsr.acme.io/\` registry, using the "npm Compatibility" translation. So for example, the package \`acme:@foo/bar\` would fetch the \`@jsr/foo__bar\` package from the \`jsr.acme.io\` registry.
+      
+      By default the \`jsr\` alias is always mapped to \`https://npm.jsr.io/\`, so existing \`jsr:\` packages will be fetched from the public \`jsr\` registry appropriately.
+    ),
+    "hint": "name=url",
+    "multiple": true,
+    "type": "string",
+  },
   "no-bail": Object {
     "description": "When running scripts across multiple workspaces, continue on failure, running the script for all workspaces.",
     "short": "B",
@@ -416,6 +428,7 @@ Array [
   "--git-shallow",
   "--help",
   "--identity=<name>",
+  "--jsr-registries=<name=url>",
   "--no-bail",
   "--no-color",
   "--node-version=<version>",
@@ -461,6 +474,7 @@ Array [
   "git-shallow",
   "help",
   "identity",
+  "jsr-registries",
   "no-bail",
   "no-color",
   "node-version",

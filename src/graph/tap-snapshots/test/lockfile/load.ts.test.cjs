@@ -55,6 +55,7 @@ Spec {
   "name": "foo",
   "namedGitHost": "example",
   "namedGitHostPath": "foo/bar",
+  "namedJsrRegistry": undefined,
   "namedRegistry": undefined,
   "options": Object {
     "git-host-archives": Object {
@@ -70,6 +71,9 @@ Spec {
       "gist": "git+ssh://git@gist.github.com/$1.git",
       "github": "git+ssh://git@github.com:$1/$2.git",
       "gitlab": "git+ssh://git@gitlab.com:$1/$2.git",
+    },
+    "jsr-registries": Object {
+      "jsr": "https://npm.jsr.io/",
     },
     "mainManifest": Object {
       "name": "my-project",
@@ -128,6 +132,7 @@ Spec {
   "name": "@myscope/foo",
   "namedGitHost": undefined,
   "namedGitHostPath": undefined,
+  "namedJsrRegistry": undefined,
   "namedRegistry": undefined,
   "options": Object {
     "git-host-archives": Object {
@@ -141,6 +146,9 @@ Spec {
       "gist": "git+ssh://git@gist.github.com/$1.git",
       "github": "git+ssh://git@github.com:$1/$2.git",
       "gitlab": "git+ssh://git@gitlab.com:$1/$2.git",
+    },
+    "jsr-registries": Object {
+      "jsr": "https://npm.jsr.io/",
     },
     "mainManifest": Object {
       "name": "my-project",

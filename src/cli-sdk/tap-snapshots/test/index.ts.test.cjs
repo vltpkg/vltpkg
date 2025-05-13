@@ -38,6 +38,7 @@ Unknown option '--unknown'. To specify a positional argument starting with a '-'
     --git-shallow
     --help
     --identity=<name>
+    --jsr-registries=<name=url>
     --no-bail
     --no-color
     --node-version=<version>
@@ -86,6 +87,7 @@ Unknown config option: asdf
     git-shallow
     help
     identity
+    jsr-registries
     no-bail
     no-color
     node-version

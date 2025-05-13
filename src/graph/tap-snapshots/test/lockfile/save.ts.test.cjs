@@ -57,6 +57,44 @@ exports[`test/lockfile/save.ts > TAP > custom git hosts > must match snapshot 1`
 }
 `
 
+exports[`test/lockfile/save.ts > TAP > jsr-registries > must match snapshot 1`] = `
+{
+  "options": {
+    "scope-registries": {
+      "@myscope": "https://example.com/"
+    }
+  },
+  "nodes": {
+    "··foo@1.0.0": [
+      0,
+      "foo"
+    ]
+  },
+  "edges": {
+    "file·. foo": "prod ^1.0.0 ··foo@1.0.0"
+  }
+}
+`
+
+exports[`test/lockfile/save.ts > TAP > jsr-registries > must match snapshot 2`] = `
+{
+  "options": {
+    "jsr-registries": {
+      "intl": "https://jsr.example.com/"
+    }
+  },
+  "nodes": {
+    "·https%3A§§jsr.example.com§·@foo§bar@1.0.0": [
+      0,
+      "@foo/bar"
+    ]
+  },
+  "edges": {
+    "file·. @foo/bar": "prod intl:@foo/bar@1 ·https%3A§§jsr.example.com§·@foo§bar@1.0.0"
+  }
+}
+`
+
 exports[`test/lockfile/save.ts > TAP > missing registries > must match snapshot 1`] = `
 {
   "options": {
@@ -176,25 +214,6 @@ exports[`test/lockfile/save.ts > TAP > save > save normal (no manifests) > must 
   }
 }
 
-`
-
-exports[`test/lockfile/save.ts > TAP > scope-registries > must match snapshot 1`] = `
-{
-  "options": {
-    "scope-registries": {
-      "@myscope": "https://example.com/"
-    }
-  },
-  "nodes": {
-    "··foo@1.0.0": [
-      0,
-      "foo"
-    ]
-  },
-  "edges": {
-    "file·. foo": "prod ^1.0.0 ··foo@1.0.0"
-  }
-}
 `
 
 exports[`test/lockfile/save.ts > TAP > workspaces > save manifests > must match snapshot 1`] = `

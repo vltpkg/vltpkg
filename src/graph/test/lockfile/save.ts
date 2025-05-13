@@ -175,7 +175,7 @@ t.test('custom git hosts', async t => {
   t.matchSnapshot(JSON.stringify(lockfile, null, 2))
 })
 
-t.test('scope-registries', async t => {
+t.test('jsr-registries', async t => {
   const mainManifest = {
     name: 'my-project',
     version: '1.0.0',
@@ -204,6 +204,42 @@ t.test('scope-registries', async t => {
     ),
     {
       name: 'foo',
+      version: '1.0.0',
+    },
+  )
+  const lockfile = lockfileData({ ...specOptions, graph })
+  t.matchSnapshot(JSON.stringify(lockfile, null, 2))
+})
+
+t.test('jsr-registries', async t => {
+  const mainManifest = {
+    name: 'my-project',
+    version: '1.0.0',
+    dependencies: {
+      '@foo/bar': 'intl:@foo/bar@1',
+    },
+  }
+  const specOptions = {
+    'jsr-registries': {
+      intl: 'https://jsr.example.com/',
+    },
+  }
+  const projectRoot = t.testdir()
+  const graph = new Graph({
+    projectRoot,
+    ...specOptions,
+    mainManifest,
+  })
+  graph.placePackage(
+    graph.mainImporter,
+    'prod',
+    Spec.parse(
+      '@foo/bar',
+      mainManifest.dependencies['@foo/bar'],
+      specOptions,
+    ),
+    {
+      name: '@foo/bar',
       version: '1.0.0',
     },
   )

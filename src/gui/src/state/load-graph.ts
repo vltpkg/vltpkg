@@ -1,21 +1,21 @@
-import { lockfile, stringifyNode } from '@vltpkg/graph/browser'
-import { SecurityArchive } from '@vltpkg/security-archive/browser'
-import {
-  defaultRegistry,
-  defaultRegistries,
-  defaultGitHosts,
-  defaultGitHostArchives,
-  defaultScopeRegistries,
-} from '@vltpkg/spec/browser'
-import type { Manifest, DependencyTypeShort } from '@vltpkg/types'
 import type { DepID } from '@vltpkg/dep-id/browser'
 import type {
   EdgeLike,
-  LockfileData,
   GraphLike,
+  LockfileData,
   NodeLike,
 } from '@vltpkg/graph'
-import type { SpecOptionsFilled, Spec } from '@vltpkg/spec/browser'
+import { lockfile, stringifyNode } from '@vltpkg/graph/browser'
+import { SecurityArchive } from '@vltpkg/security-archive/browser'
+import type { Spec, SpecOptionsFilled } from '@vltpkg/spec/browser'
+import {
+  defaultGitHostArchives,
+  defaultGitHosts,
+  defaultRegistries,
+  defaultRegistry,
+  defaultScopeRegistries,
+} from '@vltpkg/spec/browser'
+import type { DependencyTypeShort, Manifest } from '@vltpkg/types'
 import type { TransferData } from './types.ts'
 
 const loadSpecOptions = (
@@ -27,10 +27,12 @@ const loadSpecOptions = (
     'git-hosts': gitHosts,
     'git-host-archives': gitHostArchives,
     'scope-registries': scopeRegistries,
+    'jsr-registries': jsrRegistries,
   } = lockfile.options
   return {
     registries: { ...defaultRegistries, ...registries },
     registry: registry || defaultRegistry,
+    'jsr-registries': { ...jsrRegistries },
     'git-hosts': { ...defaultGitHosts, ...gitHosts },
     'git-host-archives': {
       ...defaultGitHostArchives,
