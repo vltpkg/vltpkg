@@ -5,6 +5,7 @@ import {
   defaultGitHosts,
   defaultGitHostArchives,
   defaultScopeRegistries,
+  defaultJsrRegistries,
 } from '@vltpkg/spec'
 import type { SpecOptions } from '@vltpkg/spec'
 import { mkdirSync, writeFileSync } from 'node:fs'
@@ -138,6 +139,7 @@ export const lockfileData = ({
   registries,
   saveManifests,
   'scope-registries': scopeRegistries,
+  'jsr-registries': jsrRegistries,
 }: SaveOptions): LockfileData => {
   const cleanGitHosts =
     isRecordStringString(gitHosts) ?
@@ -155,12 +157,19 @@ export const lockfileData = ({
     isRecordStringString(scopeRegistries) ?
       removeDefaultItems(defaultScopeRegistries, scopeRegistries)
     : undefined
+  const cleanJsrRegistries =
+    isRecordStringString(jsrRegistries) ?
+      removeDefaultItems(defaultJsrRegistries, jsrRegistries)
+    : undefined
   const hasItems = (clean: Record<string, string> | undefined) =>
     clean && Object.keys(clean).length
   return {
     options: {
       ...(hasItems(cleanScopeRegistries) ?
         { 'scope-registries': cleanScopeRegistries }
+      : undefined),
+      ...(hasItems(cleanJsrRegistries) ?
+        { 'jsr-registries': cleanJsrRegistries }
       : undefined),
       ...(registry !== undefined && registry !== defaultRegistry ?
         { registry }

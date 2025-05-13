@@ -17,6 +17,8 @@ export type SpecOptionsFilled = {
   'git-host-archives': Record<string, string>
   /** registries mapped to a `@scope` */
   'scope-registries': Record<Scope, string>
+  /** registries that work like https://npm.jsr.io */
+  'jsr-registries': Record<string, string>
 }
 
 export type GitSelectorParsed = {

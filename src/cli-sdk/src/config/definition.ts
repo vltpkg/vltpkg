@@ -93,6 +93,7 @@ export const recordFields = [
   'registries',
   'git-host-archives',
   'scope-registries',
+  'jsr-registries',
 ] as const
 
 export type RecordField = (typeof recordFields)[number]
@@ -231,6 +232,25 @@ export const definition = j
 
                     However, custom registry aliases are not supported by other
                     package managers.`,
+    },
+
+    'jsr-registries': {
+      hint: 'name=url',
+      description: `Map alias names to JSR.io registry urls.
+
+                    For example,
+                    \`--jsr-registries acme=https://jsr.acme.io/\` would
+                    tell vlt to fetch any packages with the \`acme:\` registry
+                    prefix from the \`https://jsr.acme.io/\` registry, using
+                    the "npm Compatibility" translation. So for example,
+                    the package \`acme:@foo/bar\` would fetch the
+                    \`@jsr/foo__bar\` package from the \`jsr.acme.io\`
+                    registry.
+
+                    By default the \`jsr\` alias is always mapped to
+                    \`https://npm.jsr.io/\`, so existing \`jsr:\` packages will
+                    be fetched from the public \`jsr\` registry appropriately.
+                   `,
     },
 
     'git-hosts': {
