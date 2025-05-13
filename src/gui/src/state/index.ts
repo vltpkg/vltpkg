@@ -32,6 +32,7 @@ const DEFAULT_QUERY_LABELS: QueryLabel[] = [
 const newStamp = () => String(Math.random()).slice(2)
 
 const initialState: State = {
+  appData: undefined,
   dashboard: undefined,
   graph: undefined,
   edges: [],
@@ -79,6 +80,8 @@ const initialState: State = {
 export const useGraphStore = create<Action & State>((set, get) => {
   const store = {
     ...initialState,
+    updateAppData: (appData: State['appData']) =>
+      set(() => ({ appData })),
     updateDashboard: (dashboard: State['dashboard']) =>
       set(() => ({ dashboard })),
     updateGraph: (graph: State['graph']) => set(() => ({ graph })),
