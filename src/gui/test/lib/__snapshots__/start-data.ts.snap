@@ -1,5 +1,11 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
+exports[`standard app data response > should return standard app data 1`] = `
+{
+  "buildVersion": "1.0.0",
+}
+`;
+
 exports[`standard dashboard response > should return standard dashboard data 1`] = `
 {
   "buildVersion": "1.0.0",
