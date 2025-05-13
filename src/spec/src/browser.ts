@@ -17,6 +17,8 @@ export const defaultRegistry = 'https://registry.npmjs.org/'
 
 export const defaultRegistries = { npm: defaultRegistry }
 
+export const defaultJsrRegistries = { jsr: 'https://npm.jsr.io/' }
+
 export const defaultGitHosts = {
   github: 'git+ssh://git@github.com:$1/$2.git',
   bitbucket: 'git+ssh://git@bitbucket.org:$1/$2.git',
@@ -53,6 +55,10 @@ export const getOptions = (
   options?: SpecOptions,
 ): SpecOptionsFilled => ({
   ...options,
+  'jsr-registries': {
+    ...(options?.['jsr-registries'] ?? {}),
+    jsr: 'https://npm.jsr.io/',
+  },
   registry: options?.registry ?? defaultRegistry,
   'scope-registries': options?.['scope-registries'] ?? {},
   'git-hosts':
@@ -102,6 +108,7 @@ const startsWithSpecIdentifier = (
   [
     ...Object.keys(options['git-hosts']),
     ...Object.keys(options.registries),
+    ...Object.keys(options['jsr-registries']),
   ].some(key => spec.startsWith(`${key}:`))
 
 /**
@@ -169,7 +176,16 @@ export class Spec implements SpecLike<Spec> {
       const parsed = this.parse('(unknown)', specOrBareSpec, options)
       // try to look into a potential parsed subspec for a name
       if (parsed.subspec) {
-        parsed.name = parsed.subspec.name
+        const { namedJsrRegistry: jsrHost } = parsed
+        if (jsrHost) {
+          parsed.name = parsed.bareSpec.substring(jsrHost.length + 1)
+          const nextAt = parsed.name.indexOf('@', 1)
+          if (nextAt !== -1) {
+            parsed.name = parsed.name.substring(0, nextAt)
+          }
+        } else {
+          parsed.name = parsed.subspec.name
+        }
         parsed.spec = `${parsed.name}@${parsed.bareSpec}`
       }
       return parsed
@@ -212,6 +228,7 @@ export class Spec implements SpecLike<Spec> {
   workspaceSpec?: string
   workspace?: string
   namedRegistry?: string
+  namedJsrRegistry?: string
   registry?: string
   registrySpec?: string
   conventionalRegistryTarball?: string
@@ -440,6 +457,21 @@ export class Spec implements SpecLike<Spec> {
       }
     }
 
+    const jsrs = Object.entries(this.options['jsr-registries'])
+    for (const [host, url] of jsrs) {
+      const h = `${host}:`
+      if (this.bareSpec.startsWith(h)) {
+        this.type = 'registry'
+        this.namedJsrRegistry = host
+        this.#parseJsrRegistrySpec(
+          this.bareSpec.substring(h.length),
+          url,
+        ).namedJsrRegistry ??= host
+        this.#guessRegistryTarball()
+        return
+      }
+    }
+
     if (
       this.bareSpec.startsWith('https://') ||
       this.bareSpec.startsWith('http://')
@@ -591,6 +623,19 @@ export class Spec implements SpecLike<Spec> {
     this.subspec = this.constructor.parse(s, {
       ...this.options,
       registry: url,
+    })
+    return this.subspec
+  }
+
+  #parseJsrRegistrySpec(s: string, url: string) {
+    this.registry = url
+    const name = `@jsr/${s.replace(/^@/, '').replace(/\//, '__')}`
+    this.subspec = this.constructor.parse(name, {
+      ...this.options,
+      'scope-registries': {
+        ...this.options['scope-registries'],
+        '@jsr': url,
+      },
     })
     return this.subspec
   }
