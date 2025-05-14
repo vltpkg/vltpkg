@@ -241,8 +241,36 @@ export const assertKeyID: (k: unknown) => asserts k is KeyID = k => {
   asKeyID(k)
 }
 
-const isObj = (o: unknown): o is Record<string, unknown> =>
-  !!o && typeof o === 'object'
+/**
+ * Convert an unknown value to an error.
+ */
+export const asError = (
+  er: unknown,
+  fallbackMessage = 'Unknown error',
+): Error =>
+  er instanceof Error ? er : new Error(String(er) || fallbackMessage)
+
+/**
+ * Check if a value is an error.
+ */
+export const isError = (er: unknown): er is Error =>
+  er instanceof Error
+
+/**
+ * Check if an error has a cause property.
+ */
+export const isErrorWithCause = (
+  er: unknown,
+): er is Error & { cause: unknown } => isError(er) && 'cause' in er
+
+/**
+ * Check if an unknown value is a plain object.
+ */
+export const isObject = (v: unknown): v is Record<string, unknown> =>
+  !!v &&
+  typeof v === 'object' &&
+  (v.constructor === Object ||
+    (v.constructor as unknown) === undefined)
 
 const maybeRecordStringString = (
   o: unknown,
@@ -258,7 +286,7 @@ const isRecordStringT = <T>(
   o: unknown,
   check: (o: unknown) => boolean,
 ): o is Record<string, T> =>
-  isObj(o) &&
+  isObject(o) &&
   Object.entries(o).every(
     ([k, v]) => typeof k === 'string' && check(v),
   )
@@ -282,16 +310,16 @@ const maybeBoolean = (o: unknown): o is boolean =>
 const isPeerDependenciesMetaValue = (
   o: unknown,
 ): o is PeerDependenciesMetaValue =>
-  isObj(o) && maybeBoolean(o.optional)
+  isObject(o) && maybeBoolean(o.optional)
 
 const maybeString = (a: unknown): a is string | undefined =>
   a === undefined || typeof a === 'string'
 
 const maybeDist = (a: unknown): a is Manifest['dist'] =>
-  a === undefined || (isObj(a) && maybeString(a.tarball))
+  a === undefined || (isObject(a) && maybeString(a.tarball))
 
 export const isManifest = (m: unknown): m is Manifest =>
-  isObj(m) &&
+  isObject(m) &&
   !Array.isArray(m) &&
   maybeString(m.name) &&
   maybeString(m.version) &&
@@ -344,7 +372,7 @@ export const assertManifestRegistry: (
 }
 
 export const isPackument = (p: unknown): p is Packument => {
-  if (!isObj(p) || typeof p.name !== 'string') return false
+  if (!isObject(p) || typeof p.name !== 'string') return false
   const { versions, 'dist-tags': distTags, time } = p
   return (
     isRecordStringString(distTags) &&

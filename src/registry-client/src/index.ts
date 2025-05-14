@@ -1,6 +1,7 @@
 import { Cache } from '@vltpkg/cache'
 import { register as cacheUnzipRegister } from '@vltpkg/cache-unzip'
-import { asError, error } from '@vltpkg/error-cause'
+import { error } from '@vltpkg/error-cause'
+import { asError } from '@vltpkg/types'
 import { logRequest } from '@vltpkg/output'
 import type { Integrity } from '@vltpkg/types'
 import { urlOpen } from '@vltpkg/url-open'

@@ -19,7 +19,6 @@
     }
   },
   "dependencies": {
-    "@vltpkg/error-cause": "workspace:*",
     "@vltpkg/git": "workspace:*",
     "@vltpkg/package-json": "workspace:*",
     "@vltpkg/registry-client": "workspace:*",

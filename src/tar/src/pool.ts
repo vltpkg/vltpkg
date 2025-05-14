@@ -1,4 +1,5 @@
-import { asError, error } from '@vltpkg/error-cause'
+import { error } from '@vltpkg/error-cause'
+import { asError } from '@vltpkg/types'
 import os from 'node:os'
 import { UnpackRequest } from './unpack-request.ts'
 import { isResponseOK, Worker } from './worker.ts'

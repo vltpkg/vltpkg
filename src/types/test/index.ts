@@ -16,6 +16,9 @@ import {
   isPackument,
   dependencyTypes,
   longDependencyTypes,
+  asError,
+  isErrorWithCause,
+  isObject,
 } from '../src/index.ts'
 import type {
   Bugs,
@@ -299,4 +302,42 @@ t.test('dependency types', t => {
   })
 
   t.end()
+})
+
+t.test('asError', t => {
+  t.ok(asError(new Error('')) instanceof Error)
+  t.ok(asError(null) instanceof Error)
+  t.ok(asError('').message === 'Unknown error')
+  t.end()
+})
+
+t.test('isErrorWithCause type guard', async t => {
+  t.equal(isErrorWithCause(new Error('plain')), false)
+  t.equal(
+    isErrorWithCause(
+      new Error('with cause', { cause: new Error('inner cause') }),
+    ),
+    true,
+  )
+  t.equal(
+    isErrorWithCause(
+      new Error('with cause obj', { cause: { code: 'ENOENT' } }),
+    ),
+    true,
+  )
+  t.equal(isErrorWithCause({ cause: 'something' }), false)
+  t.equal(isErrorWithCause({ message: 'no cause' }), false)
+  t.equal(isErrorWithCause(null), false)
+  t.equal(isErrorWithCause(undefined), false)
+  t.equal(isErrorWithCause('a string'), false)
+  t.equal(isErrorWithCause(123), false)
+})
+
+t.test('isObject', async t => {
+  t.equal(isObject({}), true)
+  t.equal(isObject(null), false)
+  t.equal(isObject(undefined), false)
+  t.equal(isObject(Object.create(null)), true)
+  t.equal(isObject('a string'), false)
+  t.equal(isObject(123), false)
 })

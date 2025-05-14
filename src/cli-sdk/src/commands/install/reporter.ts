@@ -11,7 +11,7 @@ import {
 } from 'react'
 import { stdout } from '../../output.ts'
 import { ViewClass } from '../../view.ts'
-import { asError } from '@vltpkg/error-cause'
+import { asError } from '@vltpkg/types'
 
 type Step = {
   state: 'waiting' | 'in_progress' | 'completed'

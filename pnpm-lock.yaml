@@ -1071,9 +1071,6 @@ importers:
 
   src/init:
     dependencies:
-      '@vltpkg/error-cause':
-        specifier: workspace:*
-        version: link:../error-cause
       '@vltpkg/git':
         specifier: workspace:*
         version: link:../git
@@ -1150,6 +1147,10 @@ importers:
         version: 8.31.1(eslint@9.25.1(jiti@2.4.2))(typescript@5.7.3)
 
   src/output:
+    dependencies:
+      '@vltpkg/types':
+        specifier: workspace:*
+        version: link:../types
     devDependencies:
       '@eslint/js':
         specifier: 'catalog:'
@@ -1698,6 +1699,9 @@ importers:
       '@vltpkg/fast-split':
         specifier: workspace:*
         version: link:../fast-split
+      '@vltpkg/types':
+        specifier: workspace:*
+        version: link:../types
     devDependencies:
       '@eslint/js':
         specifier: 'catalog:'
@@ -1869,6 +1873,9 @@ importers:
       '@vltpkg/error-cause':
         specifier: workspace:*
         version: link:../error-cause
+      '@vltpkg/types':
+        specifier: workspace:*
+        version: link:../types
       rimraf:
         specifier: 'catalog:'
         version: 6.0.1

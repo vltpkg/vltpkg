@@ -15,8 +15,12 @@
     ],
     "exports": {
       "./package.json": "./package.json",
-      ".": "./src/index.ts"
+      ".": "./src/index.ts",
+      "./error": "./src/error.ts"
     }
+  },
+  "dependencies": {
+    "@vltpkg/types": "workspace:*"
   },
   "devDependencies": {
     "@eslint/js": "catalog:",
@@ -56,6 +60,11 @@
     ".": {
       "import": {
         "default": "./src/index.ts"
+      }
+    },
+    "./error": {
+      "import": {
+        "default": "./src/error.ts"
       }
     }
   },

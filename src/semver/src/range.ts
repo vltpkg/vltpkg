@@ -1,7 +1,7 @@
 import { fastSplit } from '@vltpkg/fast-split'
 import { Comparator } from './comparator.ts'
 import type { Version } from './version.ts'
-import { asError } from '@vltpkg/error-cause'
+import { asError } from '@vltpkg/types'
 
 /**
  * A representation of a semver range, used to test versions.

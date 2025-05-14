@@ -1,5 +1,4 @@
 import type { WriteStream } from 'node:tty'
-import type { InspectOptions } from 'node:util'
 import {
   formatWithOptions,
   styleText as utilStyleText,
@@ -8,7 +7,7 @@ import { createSupportsColor } from 'supports-color'
 import { defaultView } from './config/definition.ts'
 import type { LoadedConfig } from './config/index.ts'
 import type { Command } from './index.ts'
-import { printErr } from './print-err.ts'
+import { printErr, formatOptions } from './print-err.ts'
 import type { View, ViewOptions, Views } from './view.ts'
 import { isViewClass } from './view.ts'
 
@@ -138,12 +137,6 @@ export const outputCommand = async <T>(
   if (stdoutColor) styleTextStdout = styleText
   if (stderrColor) styleTextStderr = styleText
   /* c8 ignore stop */
-
-  const formatOptions = {
-    depth: Infinity,
-    maxArrayLength: Infinity,
-    maxStringLength: Infinity,
-  } as const satisfies InspectOptions
 
   const { onDone, onError } = startView(
     conf,

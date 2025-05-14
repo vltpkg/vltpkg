@@ -1,12 +1,5 @@
-import {
-  error,
-  syntaxError,
-  typeError,
-  asError,
-  isErrorWithCause,
-  isErrorWithCode,
-} from '../src/index.ts'
-import type { Codes } from '../src/index.ts'
+import { error, syntaxError, typeError } from '../src/index.ts'
+import type { ErrorCauseOptions } from '../src/index.ts'
 import t from 'tap'
 
 t.test('error types', async t => {
@@ -17,18 +10,30 @@ t.test('error types', async t => {
 
 t.test('setting causes', async t => {
   t.test('object', async t => {
+    const typeCause = (_: ErrorCauseOptions) => {}
     const cause = { status: 1 }
     const er = error('status is one', cause)
+    typeCause(er.cause)
     t.strictSame(er.cause, cause)
   })
 
   t.test('error', async t => {
+    const typeCause = (_: Error) => {}
     const cause = new Error('foo')
     const er = error('msg', cause)
+    typeCause(er.cause)
     t.strictSame(er.cause, cause)
   })
 
+  t.test('missing cause', async t => {
+    const typeCause = (_: unknown) => {}
+    const er = error('msg')
+    typeCause(er.cause)
+    t.equal(er.cause, undefined)
+  })
+
   t.test('error try/catch', async t => {
+    const typeCause = (_: ErrorCauseOptions) => {}
     let cause: unknown = null
     try {
       throw new Error('foo')
@@ -36,6 +41,7 @@ t.test('setting causes', async t => {
       cause = er
     }
     const er = error('msg', { cause })
+    typeCause(er.cause)
     t.strictSame(er.cause, { cause })
   })
 })
@@ -68,68 +74,4 @@ t.test('stack pruning', t => {
   }
   t.match(foo().stack, /Error: x\n {4}at foo/)
   t.end()
-})
-
-t.test('asError', t => {
-  t.ok(asError(new Error('')) instanceof Error)
-  t.ok(asError(null) instanceof Error)
-  t.ok(asError('').message === 'Unknown error')
-  t.end()
-})
-
-t.test('isErrorWithCause type guard', async t => {
-  t.equal(isErrorWithCause(new Error('plain')), false)
-  t.equal(
-    isErrorWithCause(error('with cause', new Error('inner cause'))),
-    true,
-  )
-  t.equal(
-    isErrorWithCause(error('with cause obj', { code: 'ENOENT' })),
-    true,
-  )
-  t.equal(isErrorWithCause({ cause: 'something' }), false) // Not an Error instance
-  t.equal(isErrorWithCause({ message: 'no cause' }), false)
-  t.equal(isErrorWithCause(null), false)
-  t.equal(isErrorWithCause(undefined), false)
-  t.equal(isErrorWithCause('a string'), false)
-  t.equal(isErrorWithCause(123), false)
-})
-
-t.test('isErrorWithCode type guard', async t => {
-  t.equal(
-    isErrorWithCode(error('with code', { code: 'EINTEGRITY' })),
-    true,
-  )
-  t.equal(isErrorWithCode(new Error('plain')), false)
-  t.equal(
-    isErrorWithCode(error('with cause', new Error('inner cause'))),
-    false,
-  )
-  t.equal(
-    isErrorWithCode(error('with cause obj', { path: '/tmp' })),
-    false,
-  )
-  t.equal(
-    isErrorWithCode(
-      error('with invalid code', {
-        code: 'THIS_IS_NOT_A_VALID_CODE' as Codes,
-      }),
-    ),
-    false,
-  )
-  t.equal(
-    isErrorWithCode(
-      error('with non-string code', { code: 123 as any }),
-    ),
-    false,
-  )
-  t.equal(
-    isErrorWithCode(error('with null code', { code: null as any })),
-    false,
-  )
-  t.equal(isErrorWithCode({ cause: { code: 'ENOENT' } }), false)
-  t.equal(isErrorWithCode(null), false)
-  t.equal(isErrorWithCode(undefined), false)
-  t.equal(isErrorWithCode('a string'), false)
-  t.equal(isErrorWithCode(123), false)
 })
