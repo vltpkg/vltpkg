@@ -1,5 +1,6 @@
-import type { ErrorWithCauseObject } from '@vltpkg/error-cause'
+import { format } from 'node:util'
 import { error } from '@vltpkg/error-cause'
+import { asRootError } from '@vltpkg/output/error'
 import type { Jack } from 'jackspeak'
 import { loadPackageJson } from 'package-json-from-dist'
 import {
@@ -50,55 +51,42 @@ const loadCommand = async <T>(
   /* c8 ignore stop */
 }
 
-const isErrorWithCauseObject = (
-  err: unknown,
-): err is ErrorWithCauseObject =>
-  !!err &&
-  typeof err === 'object' &&
-  err instanceof Error &&
-  !!err.cause &&
-  typeof err.cause === 'object' &&
-  'code' in err.cause &&
-  err.cause.code === 'JACKSPEAK' &&
-  'found' in err.cause
-
 const loadVlt = async (cwd: string, argv: string[]) => {
   try {
     return await Config.load(cwd, argv)
-  } catch (err) {
-    if (isErrorWithCauseObject(err)) {
-      const { found, path, wanted, name } = err.cause
-      const isConfigFile = typeof path === 'string'
-      const msg =
-        isConfigFile ?
-          `Problem in Config File ${path}`
-        : 'Invalid Option Flag'
-      const validOptions =
-        wanted ? undefined
-        : isConfigFile ? getSortedKeys()
-        : getSortedCliOptions()
-
-      stderr(msg)
-      stderr(err.message)
-      if (name) stderr(indent('Field: ' + name))
-      if (found) stderr(indent('Found: ' + JSON.stringify(found)))
-      if (typeof wanted === 'string') {
-        stderr(indent('Wanted: ' + wanted))
-      }
-      if (validOptions) {
-        stderr(indent('Valid Options:'))
-        stderr(indent(validOptions.join('\n'), 4))
-      }
-
+  } catch (e) {
+    const err = asRootError(e, { code: 'JACKSPEAK' })
+    const { found, path, wanted, name } = err.cause
+    const isConfigFile = typeof path === 'string'
+    const msg =
+      isConfigFile ?
+        `Problem in Config File ${path}`
+      : 'Invalid Option Flag'
+    const validOptions =
+      wanted ? undefined
+      : isConfigFile ? getSortedKeys()
+      : getSortedCliOptions()
+    stderr(msg)
+    stderr(err.message)
+    if (name) stderr(indent(`Field: ${format(name)}`))
+    if (found) {
       stderr(
         indent(
-          `Run 'vlt help' for more information about available options.`,
+          `Found: ${isConfigFile ? JSON.stringify(found) : format(found)}`,
         ),
       )
-      return process.exit(process.exitCode || 1)
     }
-    /* c8 ignore next 2 - still throw in config fails for some reason */
-    throw err
+    if (wanted) stderr(indent(`Wanted: ${format(wanted)}`))
+    if (validOptions) {
+      stderr(indent('Valid Options:'))
+      stderr(indent(validOptions.join('\n'), 4))
+    }
+    stderr(
+      indent(
+        `Run 'vlt help' for more information about available options.`,
+      ),
+    )
+    return process.exit(process.exitCode || 1)
   }
 }
 

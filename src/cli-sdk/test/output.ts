@@ -14,21 +14,19 @@ import type { Jack } from 'jackspeak'
 import type { LoadedConfig } from '../src/config/index.ts'
 import type { Command } from '../src/index.ts'
 import type { ViewFn, ViewOptions } from '../src/view.ts'
-import { ViewClass, isViewClass } from '../src/view.ts'
+import * as view from '../src/view.ts'
+import * as printErr from '../src/print-err.ts'
 
 // make sure these are loaded after the isTTY intercept
 const { outputCommand, getView, stderr, stdout } = await t.mockImport<
   typeof import('../src/output.ts')
 >('../src/output.ts', {
-  '../src/print-err.ts': {
+  '../src/print-err.ts': t.createMock(printErr, {
     printErr(err: unknown) {
       errsPrinted.push(err)
     },
-  },
-  '../src/view.ts': {
-    ViewClass,
-    isViewClass,
-  },
+  }),
+  '../src/view.ts': view,
 })
 
 const errsPrinted: unknown[] = []
@@ -170,7 +168,7 @@ t.test('outputCommand', async t => {
     })
     const exits = t.capture(process, 'exit').args
     let sawError: unknown = undefined
-    cliCommand.views = class extends ViewClass<true> {
+    cliCommand.views = class extends view.ViewClass<true> {
       error(err: unknown) {
         sawError = err
       }
@@ -190,7 +188,7 @@ t.test('outputCommand', async t => {
     let doneCalled = false
     let errCalled: unknown = false
 
-    class MyView extends ViewClass<true> {
+    class MyView extends view.ViewClass<true> {
       start() {
         startCalled = true
       }
