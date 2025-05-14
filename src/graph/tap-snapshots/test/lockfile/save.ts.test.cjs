@@ -90,7 +90,7 @@ exports[`test/lockfile/save.ts > TAP > jsr-registries > must match snapshot 2`] 
     ]
   },
   "edges": {
-    "file·. @foo/bar": "prod intl:@foo/bar@1 ·https%3A§§jsr.example.com§·@foo§bar@1.0.0"
+    "file·. @foo/bar": "prod intl:1 ·https%3A§§jsr.example.com§·@foo§bar@1.0.0"
   }
 }
 `

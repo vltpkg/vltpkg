@@ -57,7 +57,7 @@ export const getOptions = (
   ...options,
   'jsr-registries': {
     ...(options?.['jsr-registries'] ?? {}),
-    jsr: 'https://npm.jsr.io/',
+    ...defaultJsrRegistries,
   },
   registry: options?.registry ?? defaultRegistry,
   'scope-registries': options?.['scope-registries'] ?? {},
@@ -177,13 +177,7 @@ export class Spec implements SpecLike<Spec> {
       // try to look into a potential parsed subspec for a name
       if (parsed.subspec) {
         const { namedJsrRegistry: jsrHost } = parsed
-        if (jsrHost) {
-          parsed.name = parsed.bareSpec.substring(jsrHost.length + 1)
-          const nextAt = parsed.name.indexOf('@', 1)
-          if (nextAt !== -1) {
-            parsed.name = parsed.name.substring(0, nextAt)
-          }
-        } else {
+        if (!jsrHost) {
           parsed.name = parsed.subspec.name
         }
         parsed.spec = `${parsed.name}@${parsed.bareSpec}`
@@ -467,7 +461,6 @@ export class Spec implements SpecLike<Spec> {
           this.bareSpec.substring(h.length),
           url,
         ).namedJsrRegistry ??= host
-        this.#guessRegistryTarball()
         return
       }
     }
@@ -546,6 +539,10 @@ export class Spec implements SpecLike<Spec> {
     const { 'scope-registries': scopeRegs, registry } = this.options
     const scopeReg = this.scope && scopeRegs[this.scope]
     this.registry = scopeReg ?? registry
+    // no guessing the tarball for JSR registries
+    for (const r of Object.values(this.options['jsr-registries'])) {
+      if (this.registry === r) return
+    }
     this.#guessRegistryTarball()
   }
 
@@ -629,6 +626,8 @@ export class Spec implements SpecLike<Spec> {
 
   #parseJsrRegistrySpec(s: string, url: string) {
     this.registry = url
+    // @luca/cases@jsr:1.x
+    if (!s.startsWith('@')) s = `${this.name}@${s}`
     const name = `@jsr/${s.replace(/^@/, '').replace(/\//, '__')}`
     this.subspec = this.constructor.parse(name, {
       ...this.options,
@@ -637,6 +636,22 @@ export class Spec implements SpecLike<Spec> {
         '@jsr': url,
       },
     })
+    if (this.name === '(unknown)') {
+      const nextAt = s.indexOf('@', 1)
+      if (nextAt === -1) {
+        this.name = s
+      } else {
+        this.name = s.substring(0, s.indexOf('@', 1))
+      }
+    }
+    const reg = `${this.namedJsrRegistry}:`
+    const n = `${reg}${this.name}`
+    if (this.bareSpec.startsWith(n + '@')) {
+      this.bareSpec = reg + this.bareSpec.substring(n.length + 1)
+    } else if (this.bareSpec === n) {
+      this.bareSpec = reg
+    }
+    this.spec = this.name + '@' + this.bareSpec
     return this.subspec
   }
 
