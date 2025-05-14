@@ -86,6 +86,10 @@ vi.mock('@/components/ui/data-badge.jsx', () => ({
   DataBadge: 'gui-data-badge',
 }))
 
+vi.mock('@/components/ui/progress-circle.jsx', () => ({
+  ProgressCircle: 'gui-progress-circle',
+}))
+
 expect.addSnapshotSerializer({
   serialize: v => html(v),
   test: () => true,

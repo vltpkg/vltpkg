@@ -1,4 +1,4 @@
-import { vi, test, expect, afterEach } from 'vitest'
+import { vi, test, describe, it, expect, afterEach } from 'vitest'
 import { cleanup, render } from '@testing-library/react'
 import html from 'diffable-html'
 import { DataBadge } from '@/components/ui/data-badge.jsx'
@@ -115,4 +115,31 @@ test('data-badge renders with variants', () => {
 
   const { container } = render(<Container />)
   expect(container.innerHTML).toMatchSnapshot()
+})
+
+describe('data-badge accepts css properties through style props', () => {
+  it('data-badge value accepts custom styles', () => {
+    const Container = () => (
+      <DataBadge
+        styles={{
+          valueStyles: {
+            '--dark-background': 'vitest-style-test',
+          } as React.CSSProperties,
+        }}
+        variant="mono"
+        content="content"
+        value="vitest-mock-value"
+      />
+    )
+
+    const { container } = render(<Container />)
+    const badgeValue: HTMLElement = container.querySelector(
+      '[data-id="info-badge-value"]',
+    )!
+
+    expect(container.innerHTML).toMatchSnapshot()
+    expect(
+      badgeValue.style.getPropertyValue('--dark-background'),
+    ).toBe('vitest-style-test')
+  })
 })
