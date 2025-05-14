@@ -3,8 +3,10 @@
 exports[`explorer-grid render default 1`] = `
 
 <div>
-  <gui-empty-results-state>
-  </gui-empty-results-state>
+  <div class="h-full w-full grow px-8 pb-8">
+    <gui-empty-results-state>
+    </gui-empty-results-state>
+  </div>
 </div>
 
 `;

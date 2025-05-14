@@ -1,6 +1,6 @@
 import { Card } from '@/components/ui/card.tsx'
 import { useGraphStore } from '@/state/index.ts'
-import type { GridItemOptions } from '@/components/explorer-grid/types.ts'
+import type { GridItemData } from '@/components/explorer-grid/types.ts'
 import { Tabs, TabsList } from '@/components/ui/tabs.tsx'
 import { useEffect, useRef } from 'react'
 import {
@@ -25,7 +25,7 @@ import {
 } from '@/components/explorer-grid/selected-item/tabs-manifest.tsx'
 import { ItemHeader } from '@/components/explorer-grid/selected-item/item-header.tsx'
 
-export const SelectedItem = ({ item }: GridItemOptions) => {
+export const SelectedItem = ({ item }: { item: GridItemData }) => {
   const updateLinePositionReference = useGraphStore(
     state => state.updateLinePositionReference,
   )

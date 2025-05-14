@@ -10,18 +10,22 @@ export const GridResults = ({ items }: { items: GridItemData[] }) => {
   }
 
   return (
-    <div className="w-full max-w-8xl">
-      <div className="flex items-center gap-3">
-        <GridHeader className="mb-4">Results</GridHeader>
-        <Badge className="mt-2" variant="default">
-          {items.length}
-        </Badge>
+    <div className="grid w-full max-w-8xl grid-cols-8 gap-4">
+      <div className="col-span-2"></div>
+      <div className="col-span-4">
+        <div className="flex items-center gap-3">
+          <GridHeader className="mb-4">Results</GridHeader>
+          <Badge className="mt-2" variant="default">
+            {items.length}
+          </Badge>
+        </div>
+        <div className="flex flex-col gap-6">
+          {items.map(item => (
+            <ResultItem item={item} key={item.id} />
+          ))}
+        </div>
       </div>
-      <div className="flex flex-col gap-6">
-        {items.map(item => (
-          <ResultItem item={item} key={item.id} />
-        ))}
-      </div>
+      <div className="col-span-2"></div>
     </div>
   )
 }
