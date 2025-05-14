@@ -387,6 +387,8 @@ t.test('parse args', t => {
     '@luca/cases@jsr:1',
     '@luca/cases@jsr:@a/b@jsr:1',
     '@luca/cases@jsr:@luca/cases@jsr:@x/y@1',
+    'npm:abbrev',
+    'npm:abbrev@1',
   ]
 
   const specOptions: SpecOptions = {
