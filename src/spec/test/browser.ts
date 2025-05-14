@@ -158,7 +158,15 @@ t.test('basic parsing tests', t => {
     'foo@https://bitbucket.org/user/project/a/s/d/f/#semver:1.x::path:src/foo',
     '@a/b@npm:@y/z@1.2.3',
     '@luca/cases@jsr:@luca/cases@1',
+    '@luca/cases@jsr:1',
     '@luca/cases@jsr:@luca/cases',
+    '@luca/cases@jsr:',
+    'cases@jsr:@luca/cases',
+    'cases@jsr:@luca/cases@1',
+    '@other/xyz@jsr:@luca/cases',
+    '@other/xyz@jsr:@luca/cases@1',
+    // little bit confusing, but worth testing
+    'foo@npm:@luca/cases@jsr:1',
   ]
 
   t.plan(specs.length)
@@ -367,6 +375,18 @@ t.test('parse args', t => {
     '@a/b@npm:@y/z@1.2.3',
     'jsr:@luca/cases@1',
     'jsr:@luca/cases',
+    '@luca/cases@jsr:1',
+    '@luca/cases@jsr:',
+    'cases@jsr:@luca/cases@1',
+    'cases@jsr:@luca/cases',
+    'foo@npm:@luca/cases@jsr:1',
+    // little bit confusing, but worth testing
+    'npm:@luca/cases@jsr:1',
+    'jsr:@luca/cases@1',
+    '@luca/cases@jsr:@luca/cases@1',
+    '@luca/cases@jsr:1',
+    '@luca/cases@jsr:@a/b@jsr:1',
+    '@luca/cases@jsr:@luca/cases@jsr:@x/y@1',
   ]
 
   const specOptions: SpecOptions = {
