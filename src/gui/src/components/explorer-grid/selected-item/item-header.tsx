@@ -24,8 +24,10 @@ import { splitDepID } from '@vltpkg/dep-id/browser'
 import { defaultRegistry } from '@vltpkg/spec/browser'
 import type { SpecOptionsFilled } from '@vltpkg/spec/browser'
 import type { GridItemData } from '@/components/explorer-grid/types.js'
-import { ProgressBar } from '@/components/ui/progress-bar.jsx'
-import { getScoreColor } from '@/components/explorer-grid/selected-item/insight-score-helper.js'
+import {
+  getScoreColor,
+  scoreColors,
+} from '@/components/explorer-grid/selected-item/insight-score-helper.js'
 import { cn } from '@/lib/utils.js'
 import { isRecord } from '@/utils/typeguards.js'
 import { formatDistanceStrict } from 'date-fns'
@@ -44,6 +46,8 @@ import {
   Deno,
   Bun,
 } from '@/components/icons/index.js'
+import { ProgressCircle } from '@/components/ui/progress-circle.jsx'
+import type { ProgressCircleVariant } from '@/components/ui/progress-circle.jsx'
 import type { LucideIcon } from 'lucide-react'
 
 const getEngine = (engine: string): LucideIcon => {
@@ -123,16 +127,16 @@ export const ItemHeader = () => {
       animate={{ opacity: 1 }}
       initial={{ opacity: 0 }}
       className="flex flex-col divide-y-[1px] divide-muted pb-3">
-      <div className="grid w-full grid-cols-12 divide-x-[1px] divide-muted">
-        <PackageImageSpec className="col-span-9 pb-3 pl-6 pt-6" />
+      <div className="flex w-full justify-between">
+        <PackageImageSpec className="pb-3 pl-6 pt-6" />
+        <PackageOverallScore className="pb-3 pr-6 pt-6" />
       </div>
       <div className="flex w-full items-center justify-between px-6 py-2 empty:hidden">
         <Publisher />
         <PackageDownloadCount />
       </div>
-      <div className="grid w-full grid-cols-12 divide-x-[1px] divide-muted empty:hidden">
-        <PackageMetadata className="col-span-9 w-full pl-6" />
-        <PackageOverallScore className="col-span-3" />
+      <div className="flex w-full divide-x-[1px] divide-muted empty:hidden">
+        <PackageMetadata className="w-full" />
       </div>
     </motion.div>
   )
@@ -200,10 +204,16 @@ const PackageMetadata = ({ className }: { className?: string }) => {
   return (
     <ScrollArea
       className={cn(
-        'w-full overflow-hidden overflow-x-scroll border-b-[1px] border-muted py-3',
+        'relative w-full overflow-hidden border-b-[1px] border-muted py-3',
         className,
       )}>
-      <div className="flex w-max gap-2">
+      {/* the blurred edges of the scroll area */}
+      <div className="absolute right-0 top-0 z-[100] h-full w-[24px] bg-background blur-sm" />
+      <div className="absolute -right-2 top-0 z-[101] h-full w-[24px] bg-background" />
+      <div className="absolute left-0 top-0 z-[100] h-full w-[24px] bg-background blur-sm" />
+      <div className="absolute -left-2 top-0 z-[101] h-full w-[24px] bg-background" />
+
+      <div className="flex w-max gap-2 overflow-x-hidden px-6">
         {manifest.private && (
           <DataBadge icon={EyeOff} content="Private Package" />
         )}
@@ -268,7 +278,7 @@ const PackageMetadata = ({ className }: { className?: string }) => {
           />
         )}
       </div>
-      <ScrollBar orientation="horizontal" />
+      <ScrollBar className="z-[102]" orientation="horizontal" />
     </ScrollArea>
   )
 }
@@ -286,30 +296,39 @@ const PackageOverallScore = ({
   )
 
   if (!packageScore) return null
-
-  const overallScore = Math.round(packageScore.overall * 100)
+  const averageScore = packageScore.overall * 100
+  const chartColor = getScoreColor(averageScore)
+  const textColor = scoreColors[chartColor]
 
   const onClick = () => {
     setActiveTab('insights')
   }
 
   return (
-    <div
-      onClick={onClick}
-      role="button"
-      className={cn(
-        'relative flex w-full cursor-default flex-col items-center justify-center gap-1',
-        className,
-      )}>
-      <p className="text-sm">
-        <span className="font-medium">{`${overallScore}%`}</span>{' '}
-        Package Score
-      </p>
-      <ProgressBar
-        variant={getScoreColor(overallScore)}
-        value={overallScore}
-        className="absolute bottom-0"
-      />
+    <div className={className}>
+      <div
+        onClick={onClick}
+        className="duration-250 after:duration-250 relative z-[1] flex h-full cursor-default flex-row items-center gap-3 self-start transition-colors after:absolute after:inset-0 after:-left-[0.5rem] after:top-[0.5rem] after:z-[-1] after:h-[calc(100%-1rem)] after:w-[calc(100%+1rem)] after:rounded-sm after:transition-all after:content-[''] hover:after:bg-neutral-100 dark:hover:after:bg-neutral-800">
+        <ProgressCircle
+          value={92}
+          variant={chartColor as ProgressCircleVariant}
+          strokeWidth={5}
+          className="size-9">
+          <p
+            className="font-mono text-xs font-medium tabular-nums"
+            style={{ color: textColor }}>
+            {averageScore}
+          </p>
+        </ProgressCircle>
+        <div className="flex flex-col">
+          <p className="text-sm font-semibold text-neutral-600 dark:text-neutral-300">
+            Package Score
+          </p>
+          <p className="font-mono text-xs font-medium tabular-nums text-neutral-400">
+            {averageScore}/100
+          </p>
+        </div>
+      </div>
     </div>
   )
 }

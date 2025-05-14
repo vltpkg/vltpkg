@@ -88,6 +88,18 @@ vi.mock('@/components/ui/data-badge.jsx', () => ({
   DataBadge: 'gui-data-badge',
 }))
 
+vi.mock('recharts', () => ({
+  Label: 'gui-recharts-label',
+  PolarGrid: 'gui-recharts-polar-grid',
+  PolarRadiusAxis: 'gui-recharts-polar-radius-axis',
+  RadialBar: 'gui-recharts-radial-bar',
+  RadialBarChart: 'gui-recharts-radial-bar-chart',
+}))
+
+vi.mock('@/components/ui/chart.jsx', () => ({
+  ChartContainer: 'gui-chart-container',
+}))
+
 expect.addSnapshotSerializer({
   serialize: v => html(v),
   test: () => true,

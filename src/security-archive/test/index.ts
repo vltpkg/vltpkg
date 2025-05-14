@@ -22,7 +22,7 @@ const fooReport = {
   score: {
     license: 1,
     maintenance: 0.84,
-    overall: 0.83,
+    overall: 0.93,
     quality: 0.83,
     supplyChain: 0.99,
     vulnerability: 1,
@@ -43,9 +43,9 @@ const fooNewReport = {
   licenseDetails: [],
   score: {
     license: 1,
-    maintenance: 0.94,
+    maintenance: 0.84,
     overall: 0.93,
-    quality: 0.93,
+    quality: 0.83,
     supplyChain: 0.99,
     vulnerability: 1,
   },
@@ -65,7 +65,7 @@ const englishDaysReport = {
   score: {
     license: 1,
     maintenance: 0.75,
-    overall: 0.55,
+    overall: 0.78,
     quality: 0.55,
     supplyChain: 0.6,
     vulnerability: 1,
@@ -426,5 +426,50 @@ ${JSON.stringify(englishDaysReport)}
     )
 
     db.close()
+  })
+
+  await t.test('average score calculation', async t => {
+    const dir = t.testdir()
+    const path = resolve(dir, 'average-score.db')
+    const graph = getSimpleReportGraph()
+
+    // Mock response with scores that will result in a specific average
+    const testReport = {
+      ...fooReport,
+      score: {
+        license: 0.75,
+        maintenance: 0.85,
+        quality: 0.9,
+        supplyChain: 0.95,
+        vulnerability: 0.7,
+      },
+    }
+
+    t.intercept(global, 'fetch', {
+      value: async () =>
+        ({
+          ok: true,
+          status: 200,
+          text: async () => JSON.stringify(testReport) + '\n',
+        }) as unknown as Response,
+    })
+
+    const archive = await SecurityArchive.start({
+      graph,
+      path,
+      specOptions,
+    })
+
+    const storedData = archive.get(
+      joinDepIDTuple(['registry', '', '@ruyadorno/foo@1.0.0']),
+    )
+
+    // Verify the average score is calculated correctly (0.75 + 0.85 + 0.90 + 0.95 + 0.70) / 5 = 0.83
+    t.ok(storedData, 'should have stored data')
+    t.equal(
+      storedData!.score.overall,
+      0.83,
+      'should calculate average score correctly with 2 decimal places',
+    )
   })
 })

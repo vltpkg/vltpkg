@@ -6,6 +6,10 @@ import type { VariantProps } from 'tailwind-variants'
 
 import { cn } from '@/lib/utils.js'
 
+export type ProgressCircleVariant = VariantProps<
+  typeof progressCircleVariants
+>['variant']
+
 const progressCircleVariants = tv({
   slots: {
     background: '',
@@ -84,7 +88,7 @@ const ProgressCircle = React.forwardRef<
         aria-valuemin={0}
         aria-valuemax={max}
         data-max={max}
-        data-value={safeValue || null}
+        data-value={safeValue}
         tremor-id="tremor-raw">
         <svg
           ref={forwardedRef}

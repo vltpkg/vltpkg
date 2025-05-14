@@ -21,7 +21,7 @@ Object {
     "score": Object {
       "license": 1,
       "maintenance": 0.84,
-      "overall": 0.83,
+      "overall": 0.93,
       "quality": 0.83,
       "supplyChain": 0.99,
       "vulnerability": 1,
@@ -68,7 +68,7 @@ Object {
     "score": Object {
       "license": 1,
       "maintenance": 0.75,
-      "overall": 0.55,
+      "overall": 0.78,
       "quality": 0.55,
       "supplyChain": 0.6,
       "vulnerability": 1,
@@ -120,7 +120,7 @@ Object {
     "score": Object {
       "license": 1,
       "maintenance": 0.75,
-      "overall": 0.55,
+      "overall": 0.78,
       "quality": 0.55,
       "supplyChain": 0.6,
       "vulnerability": 1,
@@ -148,7 +148,7 @@ Object {
     "score": Object {
       "license": 1,
       "maintenance": 0.84,
-      "overall": 0.83,
+      "overall": 0.93,
       "quality": 0.83,
       "supplyChain": 0.99,
       "vulnerability": 1,
@@ -195,7 +195,7 @@ Object {
     "score": Object {
       "license": 1,
       "maintenance": 0.75,
-      "overall": 0.55,
+      "overall": 0.78,
       "quality": 0.55,
       "supplyChain": 0.6,
       "vulnerability": 1,

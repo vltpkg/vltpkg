@@ -1,5 +1,25 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
+exports[`data-badge accepts css properties through style props > data-badge value accepts custom styles 1`] = `
+
+<div
+  class="group font-courier relative z-[1] w-fit flex h-full cursor-default items-center justify-center gap-1.5 rounded border-[1px] border-neutral-200 bg-neutral-100 px-2 py-1 text-[0.75rem] font-medium text-muted-foreground dark:border-[#313131] dark:bg-neutral-800"
+  styles="[object Object]"
+>
+  <span
+    data-id="info-badge-value"
+    class
+    style="--width-offset: 1rem; --height-offset: 0.25rem; --dark-background: vitest-style-test; --dark-border: #2A2A2A; --light-background: #FFFFFF; --light-border: #E4E4E7;"
+  >
+    vitest-mock-value
+  </span>
+  <span class>
+    content
+  </span>
+</div>
+
+`;
+
 exports[`data-badge render default 1`] = `
 
 <div class="group font-sans relative z-[1] w-fit flex h-full cursor-default items-center justify-center gap-1.5 rounded border-[1px] border-neutral-200 bg-neutral-100 px-2 py-1 text-[0.75rem] font-medium text-muted-foreground dark:border-[#313131] dark:bg-neutral-800">
@@ -18,8 +38,8 @@ exports[`data-badge renders with a copyToClipboard 1`] = `
 >
   <span
     data-id="info-badge-value"
-    class="after:border-neutral-150 pt-0.5 font-courier relative ml-[0.125rem] mr-[calc(var(--width-offset)/2)] uppercase tracking-wide text-neutral-700 after:absolute after:-left-[calc(var(--width-offset)/2)] after:-top-[calc(var(--height-offset)/2)] after:z-[-1] after:h-[calc(100%+var(--height-offset))] after:w-[calc(100%+var(--width-offset))] after:rounded-[calc(0.25rem-1px)] after:border-[1px] after:bg-white after:content-[&quot;&quot;] group-has-[span[data-id=info-badge-icon]]:ml-[calc(var(--width-offset)/2)] dark:text-foreground dark:after:border-[#2A2A2A] dark:after:bg-[#0F0F0F]"
-    style="--width-offset: 1rem; --height-offset: 0.25rem;"
+    class="tabular-nums after:border-[var(--light-border)] pt-0.5 font-courier relative ml-[0.125rem] mr-[calc(var(--width-offset)/2)] uppercase tracking-wide text-neutral-700 after:absolute after:-left-[calc(var(--width-offset)/2)] after:-top-[calc(var(--height-offset)/2)] after:z-[-1] after:h-[calc(100%+var(--height-offset))] after:w-[calc(100%+var(--width-offset))] after:rounded-[calc(0.25rem-1px)] after:border-[1px] after:bg-[var(--light-background)] after:content-[&quot;&quot;] group-has-[span[data-id=info-badge-icon]]:ml-[calc(var(--width-offset)/2)] dark:text-foreground dark:after:border-[var(--dark-border)] dark:after:bg-[var(--dark-background)]"
+    style="--width-offset: 1rem; --height-offset: 0.25rem; --dark-background: #0F0F0F; --dark-border: #2A2A2A; --light-background: #FFFFFF; --light-border: #E4E4E7;"
   >
     123
   </span>
@@ -66,8 +86,8 @@ exports[`data-badge renders with a value 1`] = `
 <div class="group font-sans relative z-[1] w-fit flex h-full cursor-default items-center justify-center gap-1.5 rounded border-[1px] border-neutral-200 bg-neutral-100 px-2 py-1 text-[0.75rem] font-medium text-muted-foreground dark:border-[#313131] dark:bg-neutral-800">
   <span
     data-id="info-badge-value"
-    class="after:border-neutral-150 pt-0.5 font-courier relative ml-[0.125rem] mr-[calc(var(--width-offset)/2)] uppercase tracking-wide text-neutral-700 after:absolute after:-left-[calc(var(--width-offset)/2)] after:-top-[calc(var(--height-offset)/2)] after:z-[-1] after:h-[calc(100%+var(--height-offset))] after:w-[calc(100%+var(--width-offset))] after:rounded-[calc(0.25rem-1px)] after:border-[1px] after:bg-white after:content-[&quot;&quot;] group-has-[span[data-id=info-badge-icon]]:ml-[calc(var(--width-offset)/2)] dark:text-foreground dark:after:border-[#2A2A2A] dark:after:bg-[#0F0F0F]"
-    style="--width-offset: 1rem; --height-offset: 0.25rem;"
+    class="tabular-nums after:border-[var(--light-border)] pt-0.5 font-courier relative ml-[0.125rem] mr-[calc(var(--width-offset)/2)] uppercase tracking-wide text-neutral-700 after:absolute after:-left-[calc(var(--width-offset)/2)] after:-top-[calc(var(--height-offset)/2)] after:z-[-1] after:h-[calc(100%+var(--height-offset))] after:w-[calc(100%+var(--width-offset))] after:rounded-[calc(0.25rem-1px)] after:border-[1px] after:bg-[var(--light-background)] after:content-[&quot;&quot;] group-has-[span[data-id=info-badge-icon]]:ml-[calc(var(--width-offset)/2)] dark:text-foreground dark:after:border-[var(--dark-border)] dark:after:bg-[var(--dark-background)]"
+    style="--width-offset: 1rem; --height-offset: 0.25rem; --dark-background: #0F0F0F; --dark-border: #2A2A2A; --light-background: #FFFFFF; --light-border: #E4E4E7;"
   >
     123
   </span>
@@ -99,8 +119,8 @@ exports[`data-badge renders with all options 1`] = `
         </span>
         <span
           data-id="info-badge-value"
-          class="after:border-neutral-150 pt-0.5 font-courier relative ml-[0.125rem] mr-[calc(var(--width-offset)/2)] uppercase tracking-wide text-neutral-700 after:absolute after:-left-[calc(var(--width-offset)/2)] after:-top-[calc(var(--height-offset)/2)] after:z-[-1] after:h-[calc(100%+var(--height-offset))] after:w-[calc(100%+var(--width-offset))] after:rounded-[calc(0.25rem-1px)] after:border-[1px] after:bg-white after:content-[&quot;&quot;] group-has-[span[data-id=info-badge-icon]]:ml-[calc(var(--width-offset)/2)] dark:text-foreground dark:after:border-[#2A2A2A] dark:after:bg-[#0F0F0F]"
-          style="--width-offset: 1rem; --height-offset: 0.25rem;"
+          class="tabular-nums after:border-[var(--light-border)] pt-0.5 font-courier relative ml-[0.125rem] mr-[calc(var(--width-offset)/2)] uppercase tracking-wide text-neutral-700 after:absolute after:-left-[calc(var(--width-offset)/2)] after:-top-[calc(var(--height-offset)/2)] after:z-[-1] after:h-[calc(100%+var(--height-offset))] after:w-[calc(100%+var(--width-offset))] after:rounded-[calc(0.25rem-1px)] after:border-[1px] after:bg-[var(--light-background)] after:content-[&quot;&quot;] group-has-[span[data-id=info-badge-icon]]:ml-[calc(var(--width-offset)/2)] dark:text-foreground dark:after:border-[var(--dark-border)] dark:after:bg-[var(--dark-background)]"
+          style="--width-offset: 1rem; --height-offset: 0.25rem; --dark-background: #0F0F0F; --dark-border: #2A2A2A; --light-background: #FFFFFF; --light-border: #E4E4E7;"
         >
           123
         </span>
@@ -170,8 +190,8 @@ exports[`data-badge renders with custom classnames 1`] = `
         </span>
         <span
           data-id="info-badge-value"
-          class="after:border-neutral-150 pt-0.5 font-courier relative ml-[0.125rem] mr-[calc(var(--width-offset)/2)] uppercase tracking-wide text-neutral-700 after:absolute after:-left-[calc(var(--width-offset)/2)] after:-top-[calc(var(--height-offset)/2)] after:z-[-1] after:h-[calc(100%+var(--height-offset))] after:w-[calc(100%+var(--width-offset))] after:rounded-[calc(0.25rem-1px)] after:border-[1px] after:bg-white after:content-[&quot;&quot;] group-has-[span[data-id=info-badge-icon]]:ml-[calc(var(--width-offset)/2)] dark:text-foreground dark:after:border-[#2A2A2A] dark:after:bg-[#0F0F0F] custom-value"
-          style="--width-offset: 1rem; --height-offset: 0.25rem;"
+          class="tabular-nums after:border-[var(--light-border)] pt-0.5 font-courier relative ml-[0.125rem] mr-[calc(var(--width-offset)/2)] uppercase tracking-wide text-neutral-700 after:absolute after:-left-[calc(var(--width-offset)/2)] after:-top-[calc(var(--height-offset)/2)] after:z-[-1] after:h-[calc(100%+var(--height-offset))] after:w-[calc(100%+var(--width-offset))] after:rounded-[calc(0.25rem-1px)] after:border-[1px] after:bg-[var(--light-background)] after:content-[&quot;&quot;] group-has-[span[data-id=info-badge-icon]]:ml-[calc(var(--width-offset)/2)] dark:text-foreground dark:after:border-[var(--dark-border)] dark:after:bg-[var(--dark-background)] custom-value"
+          style="--width-offset: 1rem; --height-offset: 0.25rem; --dark-background: #0F0F0F; --dark-border: #2A2A2A; --light-background: #FFFFFF; --light-border: #E4E4E7;"
         >
           123
         </span>

@@ -19,6 +19,7 @@ const json = {
       quality: 0.55,
       supplyChain: 0.6,
       vulnerability: 1,
+      average: 0.77,
     },
     alerts: [
       {
@@ -65,6 +66,7 @@ const json = {
       quality: 0.83,
       supplyChain: 0.99,
       vulnerability: 1,
+      average: 0.93,
     },
     alerts: [],
     batchIndex: 1,

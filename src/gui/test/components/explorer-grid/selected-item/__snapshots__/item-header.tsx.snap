@@ -6,8 +6,8 @@ exports[`ItemHeader renders with a package score 1`] = `
   class="flex flex-col divide-y-[1px] divide-muted pb-3"
   style="opacity: 0;"
 >
-  <div class="grid w-full grid-cols-12 divide-x-[1px] divide-muted">
-    <div class="flex gap-4 overflow-hidden col-span-9 pb-3 pl-6 pt-6">
+  <div class="flex w-full justify-between">
+    <div class="flex gap-4 overflow-hidden pb-3 pl-6 pt-6">
       <gui-avatar classname="aspect-square size-[3.75rem]">
         <gui-avatar-image
           classname="aspect-square size-[3.75rem] rounded-md border-[1px] bg-secondary object-cover"
@@ -53,6 +53,31 @@ exports[`ItemHeader renders with a package score 1`] = `
         </gui-scroll-bar>
       </gui-scroll-area>
     </div>
+    <div class="pb-3 pr-6 pt-6">
+      <div class="duration-250 after:duration-250 relative z-[1] flex h-full cursor-default flex-row items-center gap-3 self-start transition-colors after:absolute after:inset-0 after:-left-[0.5rem] after:top-[0.5rem] after:z-[-1] after:h-[calc(100%-1rem)] after:w-[calc(100%+1rem)] after:rounded-sm after:transition-all after:content-[''] hover:after:bg-neutral-100 dark:hover:after:bg-neutral-800">
+        <gui-progress-circle
+          value="92"
+          variant="success"
+          strokewidth="5"
+          classname="size-9"
+        >
+          <p
+            class="font-mono text-xs font-medium tabular-nums"
+            style="color: oklch(0.696 0.17 162.48);"
+          >
+            80
+          </p>
+        </gui-progress-circle>
+        <div class="flex flex-col">
+          <p class="text-sm font-semibold text-neutral-600 dark:text-neutral-300">
+            Package Score
+          </p>
+          <p class="font-mono text-xs font-medium tabular-nums text-neutral-400">
+            80/100
+          </p>
+        </div>
+      </div>
+    </div>
   </div>
   <div class="flex w-full items-center justify-between px-6 py-2 empty:hidden">
     <div class="flex h-[31.508px] items-center gap-2">
@@ -81,24 +106,7 @@ exports[`ItemHeader renders with a package score 1`] = `
       </gui-tooltip-provider>
     </div>
   </div>
-  <div class="grid w-full grid-cols-12 divide-x-[1px] divide-muted empty:hidden">
-    <div
-      role="button"
-      class="relative flex w-full cursor-default flex-col items-center justify-center gap-1 col-span-3"
-    >
-      <p class="text-sm">
-        <span class="font-medium">
-          80%
-        </span>
-        Package Score
-      </p>
-      <gui-progress-bar
-        variant="success"
-        value="80"
-        classname="absolute bottom-0"
-      >
-      </gui-progress-bar>
-    </div>
+  <div class="flex w-full divide-x-[1px] divide-muted empty:hidden">
   </div>
 </div>
 
@@ -110,8 +118,8 @@ exports[`ItemHeader renders with a version information 1`] = `
   class="flex flex-col divide-y-[1px] divide-muted pb-3"
   style="opacity: 0;"
 >
-  <div class="grid w-full grid-cols-12 divide-x-[1px] divide-muted">
-    <div class="flex gap-4 overflow-hidden col-span-9 pb-3 pl-6 pt-6">
+  <div class="flex w-full justify-between">
+    <div class="flex gap-4 overflow-hidden pb-3 pl-6 pt-6">
       <gui-avatar classname="aspect-square size-[3.75rem]">
         <gui-avatar-image
           classname="aspect-square size-[3.75rem] rounded-md border-[1px] bg-secondary object-cover"
@@ -193,9 +201,17 @@ exports[`ItemHeader renders with a version information 1`] = `
     >
     </gui-data-badge>
   </div>
-  <div class="grid w-full grid-cols-12 divide-x-[1px] divide-muted empty:hidden">
-    <gui-scroll-area classname="overflow-hidden overflow-x-scroll border-b-[1px] border-muted py-3 col-span-9 w-full pl-6">
-      <div class="flex w-max gap-2">
+  <div class="flex w-full divide-x-[1px] divide-muted empty:hidden">
+    <gui-scroll-area classname="relative overflow-hidden border-b-[1px] border-muted py-3 w-full">
+      <div class="absolute right-0 top-0 z-[100] h-full w-[24px] bg-background blur-sm">
+      </div>
+      <div class="absolute -right-2 top-0 z-[101] h-full w-[24px] bg-background">
+      </div>
+      <div class="absolute left-0 top-0 z-[100] h-full w-[24px] bg-background blur-sm">
+      </div>
+      <div class="absolute -left-2 top-0 z-[101] h-full w-[24px] bg-background">
+      </div>
+      <div class="flex w-max gap-2 overflow-x-hidden px-6">
         <gui-data-badge
           icon="gui-download-icon"
           value="121 KB"
@@ -217,7 +233,10 @@ exports[`ItemHeader renders with a version information 1`] = `
         >
         </gui-data-badge>
       </div>
-      <gui-scroll-bar orientation="horizontal">
+      <gui-scroll-bar
+        classname="z-[102]"
+        orientation="horizontal"
+      >
       </gui-scroll-bar>
     </gui-scroll-area>
   </div>
@@ -231,8 +250,8 @@ exports[`ItemHeader renders with custom registry item 1`] = `
   class="flex flex-col divide-y-[1px] divide-muted pb-3"
   style="opacity: 0;"
 >
-  <div class="grid w-full grid-cols-12 divide-x-[1px] divide-muted">
-    <div class="flex gap-4 overflow-hidden col-span-9 pb-3 pl-6 pt-6">
+  <div class="flex w-full justify-between">
+    <div class="flex gap-4 overflow-hidden pb-3 pl-6 pt-6">
       <gui-avatar classname="aspect-square size-[3.75rem]">
         <gui-avatar-image
           classname="aspect-square size-[3.75rem] rounded-md border-[1px] bg-secondary object-cover"
@@ -312,7 +331,7 @@ exports[`ItemHeader renders with custom registry item 1`] = `
       </gui-tooltip-provider>
     </div>
   </div>
-  <div class="grid w-full grid-cols-12 divide-x-[1px] divide-muted empty:hidden">
+  <div class="flex w-full divide-x-[1px] divide-muted empty:hidden">
   </div>
 </div>
 
@@ -324,8 +343,8 @@ exports[`ItemHeader renders with default git host item 1`] = `
   class="flex flex-col divide-y-[1px] divide-muted pb-3"
   style="opacity: 0;"
 >
-  <div class="grid w-full grid-cols-12 divide-x-[1px] divide-muted">
-    <div class="flex gap-4 overflow-hidden col-span-9 pb-3 pl-6 pt-6">
+  <div class="flex w-full justify-between">
+    <div class="flex gap-4 overflow-hidden pb-3 pl-6 pt-6">
       <gui-avatar classname="aspect-square size-[3.75rem]">
         <gui-avatar-image
           classname="aspect-square size-[3.75rem] rounded-md border-[1px] bg-secondary object-cover"
@@ -404,7 +423,7 @@ exports[`ItemHeader renders with default git host item 1`] = `
       </gui-tooltip-provider>
     </div>
   </div>
-  <div class="grid w-full grid-cols-12 divide-x-[1px] divide-muted empty:hidden">
+  <div class="flex w-full divide-x-[1px] divide-muted empty:hidden">
   </div>
 </div>
 
@@ -416,8 +435,8 @@ exports[`ItemHeader renders with default item 1`] = `
   class="flex flex-col divide-y-[1px] divide-muted pb-3"
   style="opacity: 0;"
 >
-  <div class="grid w-full grid-cols-12 divide-x-[1px] divide-muted">
-    <div class="flex gap-4 overflow-hidden col-span-9 pb-3 pl-6 pt-6">
+  <div class="flex w-full justify-between">
+    <div class="flex gap-4 overflow-hidden pb-3 pl-6 pt-6">
       <gui-avatar classname="aspect-square size-[3.75rem]">
         <gui-avatar-image
           classname="aspect-square size-[3.75rem] rounded-md border-[1px] bg-secondary object-cover"
@@ -491,7 +510,7 @@ exports[`ItemHeader renders with default item 1`] = `
       </gui-tooltip-provider>
     </div>
   </div>
-  <div class="grid w-full grid-cols-12 divide-x-[1px] divide-muted empty:hidden">
+  <div class="flex w-full divide-x-[1px] divide-muted empty:hidden">
   </div>
 </div>
 
@@ -503,8 +522,8 @@ exports[`ItemHeader renders with insights 1`] = `
   class="flex flex-col divide-y-[1px] divide-muted pb-3"
   style="opacity: 0;"
 >
-  <div class="grid w-full grid-cols-12 divide-x-[1px] divide-muted">
-    <div class="flex gap-4 overflow-hidden col-span-9 pb-3 pl-6 pt-6">
+  <div class="flex w-full justify-between">
+    <div class="flex gap-4 overflow-hidden pb-3 pl-6 pt-6">
       <gui-avatar classname="aspect-square size-[3.75rem]">
         <gui-avatar-image
           classname="aspect-square size-[3.75rem] rounded-md border-[1px] bg-secondary object-cover"
@@ -578,7 +597,7 @@ exports[`ItemHeader renders with insights 1`] = `
       </gui-tooltip-provider>
     </div>
   </div>
-  <div class="grid w-full grid-cols-12 divide-x-[1px] divide-muted empty:hidden">
+  <div class="flex w-full divide-x-[1px] divide-muted empty:hidden">
   </div>
 </div>
 
@@ -590,8 +609,8 @@ exports[`ItemHeader renders with scoped registry item 1`] = `
   class="flex flex-col divide-y-[1px] divide-muted pb-3"
   style="opacity: 0;"
 >
-  <div class="grid w-full grid-cols-12 divide-x-[1px] divide-muted">
-    <div class="flex gap-4 overflow-hidden col-span-9 pb-3 pl-6 pt-6">
+  <div class="flex w-full justify-between">
+    <div class="flex gap-4 overflow-hidden pb-3 pl-6 pt-6">
       <gui-avatar classname="aspect-square size-[3.75rem]">
         <gui-avatar-image
           classname="aspect-square size-[3.75rem] rounded-md border-[1px] bg-secondary object-cover"
@@ -671,7 +690,7 @@ exports[`ItemHeader renders with scoped registry item 1`] = `
       </gui-tooltip-provider>
     </div>
   </div>
-  <div class="grid w-full grid-cols-12 divide-x-[1px] divide-muted empty:hidden">
+  <div class="flex w-full divide-x-[1px] divide-muted empty:hidden">
   </div>
 </div>
 

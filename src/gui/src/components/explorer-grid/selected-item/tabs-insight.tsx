@@ -9,10 +9,21 @@ import {
 import type { SocketSecurityDetails } from '@/lib/constants/index.js'
 import type { PackageAlert } from '@vltpkg/security-archive'
 import { ArrowUpDown, BadgeCheck, BadgeInfo } from 'lucide-react'
-import { ProgressCircle } from '@/components/ui/progress-circle.jsx'
-import { getScoreColor } from '@/components/explorer-grid/selected-item/insight-score-helper.js'
+import {
+  getScoreColor,
+  scoreColors,
+} from '@/components/explorer-grid/selected-item/insight-score-helper.js'
 import { Link as AnchorLink } from '@/components/ui/link.jsx'
 import { DataBadge } from '@/components/ui/data-badge.jsx'
+import {
+  Label,
+  PolarGrid,
+  PolarRadiusAxis,
+  RadialBar,
+  RadialBarChart,
+} from 'recharts'
+import { ChartContainer } from '@/components/ui/chart.jsx'
+import type { ChartConfig } from '@/components/ui/chart.jsx'
 import { cn } from '@/lib/utils.js'
 
 export const InsightTabButton = () => {
@@ -32,6 +43,88 @@ export const InsightTabButton = () => {
         />
       )}
     </TabsTrigger>
+  )
+}
+
+const InsightScoreChart = ({
+  score,
+  label = true,
+}: {
+  score: { name: string; value: number }
+  label?: boolean
+}) => {
+  const chartColor = scoreColors[getScoreColor(score.value)]
+
+  const chartData = [
+    {
+      name: 'Score',
+      score: score.value,
+      fill: chartColor,
+    },
+  ]
+
+  const chartConfig = {
+    score: {
+      label: 'Score',
+    },
+  } satisfies ChartConfig
+
+  return (
+    <div className="flex flex-col items-center justify-center">
+      <ChartContainer
+        config={chartConfig}
+        className="mx-auto aspect-square h-[100px]">
+        <RadialBarChart
+          data={chartData}
+          startAngle={0}
+          endAngle={-360 * (score.value / 100)}
+          innerRadius={30}
+          outerRadius={40}>
+          <PolarGrid
+            gridType="circle"
+            radialLines={false}
+            stroke="none"
+            polarRadius={[32, 28]}
+            className="first:fill-muted last:fill-background"
+          />
+          <RadialBar
+            dataKey="score"
+            background={{ fill: 'hsl(var(--muted))' }}
+            cornerRadius={10}
+          />
+          <PolarRadiusAxis
+            tick={false}
+            tickLine={false}
+            axisLine={false}>
+            <Label
+              content={({ viewBox }) => {
+                if (viewBox && 'cx' in viewBox && 'cy' in viewBox) {
+                  return (
+                    <text
+                      x={viewBox.cx}
+                      y={viewBox.cy}
+                      textAnchor="middle"
+                      dominantBaseline="middle">
+                      <tspan
+                        x={viewBox.cx}
+                        y={viewBox.cy}
+                        className="cursor-default fill-foreground text-sm font-medium">
+                        {score.value}%
+                      </tspan>
+                    </text>
+                  )
+                }
+              }}
+            />
+          </PolarRadiusAxis>
+        </RadialBarChart>
+      </ChartContainer>
+      {label && (
+        <p className="cursor-default whitespace-nowrap text-sm font-medium capitalize">
+          {score.name}
+        </p>
+      )}
+    </div>
   )
 }
 
@@ -146,7 +239,10 @@ const InsightScore = () => {
     'license',
   ]
 
+  const SCORES_TO_EXCLUDE = ['overall', 'average']
+
   const scores = Object.entries(packageScore)
+    .filter(([key]) => !SCORES_TO_EXCLUDE.includes(key))
     .map(([key, value]) => ({
       id: key,
       name: key === 'supplyChain' ? 'supply chain' : key,
@@ -157,24 +253,14 @@ const InsightScore = () => {
     )
 
   return (
-    <section className="mt-6 border-b-[1px] border-muted pb-6">
-      <div className="grid grid-cols-6 gap-2 px-6">
+    <section className="mt-3 border-b-[1px] border-muted pb-6">
+      <div className="grid grid-cols-5 gap-2 px-6">
         {scores.map(score => (
-          <div
-            key={score.id}
-            className="flex flex-col items-center justify-center gap-2 text-center">
-            <ProgressCircle
-              variant={getScoreColor(score.value)}
-              strokeWidth={4}
-              value={score.value}>
-              {score.value}
-            </ProgressCircle>
-            <p className="text-sm capitalize">{score.name}</p>
-          </div>
+          <InsightScoreChart key={score.id} score={score} />
         ))}
       </div>
       <div className="px-6 pt-6">
-        <p className="w-2/3 text-sm text-muted-foreground">
+        <p className="w-2/3 cursor-default text-sm text-muted-foreground">
           Package Insight Scores are powered by{' '}
           <AnchorLink
             href={`https://socket.dev/npm/package/${selectedItem.name}`}
@@ -225,7 +311,7 @@ export const InsightTabContent = () => {
       </>
 
       {(!filteredInsights || filteredInsights.length === 0) && (
-        <div className="flex h-64 w-full items-center justify-center px-6 py-4">
+        <div className="flex h-64 w-full cursor-default items-center justify-center px-6 py-4">
           <div className="flex flex-col items-center justify-center gap-3 text-center">
             <div
               className={cn(

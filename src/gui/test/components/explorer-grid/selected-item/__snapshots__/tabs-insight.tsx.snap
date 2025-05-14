@@ -15,7 +15,7 @@ exports[`InsightTabButton renders default 1`] = `
 exports[`InsightTabContent renders an empty state 1`] = `
 
 <gui-tabs-content value="insights">
-  <div class="flex h-64 w-full items-center justify-center px-6 py-4">
+  <div class="flex h-64 w-full cursor-default items-center justify-center px-6 py-4">
     <div class="flex flex-col items-center justify-center gap-3 text-center">
       <div class="relative flex size-32 items-center justify-center rounded-full bg-secondary/60">
         <gui-badge-info-icon
@@ -108,83 +108,211 @@ exports[`InsightTabContent renders with insights 1`] = `
 exports[`InsightTabContent renders with no insights but a package score 1`] = `
 
 <gui-tabs-content value="insights">
-  <section class="mt-6 border-b-[1px] border-muted pb-6">
-    <div class="grid grid-cols-6 gap-2 px-6">
-      <div class="flex flex-col items-center justify-center gap-2 text-center">
-        <gui-progress-circle
-          variant="success"
-          strokewidth="4"
-          value="9000"
+  <section class="mt-3 border-b-[1px] border-muted pb-6">
+    <div class="grid grid-cols-5 gap-2 px-6">
+      <div class="flex flex-col items-center justify-center">
+        <gui-chart-container
+          config="[object Object]"
+          classname="mx-auto aspect-square h-[100px]"
         >
-          9000
-        </gui-progress-circle>
-        <p class="text-sm capitalize">
-          overall
-        </p>
-      </div>
-      <div class="flex flex-col items-center justify-center gap-2 text-center">
-        <gui-progress-circle
-          variant="success"
-          strokewidth="4"
-          value="9000"
-        >
-          9000
-        </gui-progress-circle>
-        <p class="text-sm capitalize">
+          <gui-recharts-radial-bar-chart
+            data="[object Object]"
+            startangle="0"
+            endangle="-32400"
+            innerradius="30"
+            outerradius="40"
+          >
+            <gui-recharts-polar-grid
+              gridtype="circle"
+              radiallines="false"
+              stroke="none"
+              polarradius="32,28"
+              classname="first:fill-muted last:fill-background"
+            >
+            </gui-recharts-polar-grid>
+            <gui-recharts-radial-bar
+              datakey="score"
+              background="[object Object]"
+              cornerradius="10"
+            >
+            </gui-recharts-radial-bar>
+            <gui-recharts-polar-radius-axis
+              tick="false"
+              tickline="false"
+              axisline="false"
+            >
+              <gui-recharts-label>
+              </gui-recharts-label>
+            </gui-recharts-polar-radius-axis>
+          </gui-recharts-radial-bar-chart>
+        </gui-chart-container>
+        <p class="cursor-default whitespace-nowrap text-sm font-medium capitalize">
           quality
         </p>
       </div>
-      <div class="flex flex-col items-center justify-center gap-2 text-center">
-        <gui-progress-circle
-          variant="success"
-          strokewidth="4"
-          value="400"
+      <div class="flex flex-col items-center justify-center">
+        <gui-chart-container
+          config="[object Object]"
+          classname="mx-auto aspect-square h-[100px]"
         >
-          400
-        </gui-progress-circle>
-        <p class="text-sm capitalize">
+          <gui-recharts-radial-bar-chart
+            data="[object Object]"
+            startangle="0"
+            endangle="-1440"
+            innerradius="30"
+            outerradius="40"
+          >
+            <gui-recharts-polar-grid
+              gridtype="circle"
+              radiallines="false"
+              stroke="none"
+              polarradius="32,28"
+              classname="first:fill-muted last:fill-background"
+            >
+            </gui-recharts-polar-grid>
+            <gui-recharts-radial-bar
+              datakey="score"
+              background="[object Object]"
+              cornerradius="10"
+            >
+            </gui-recharts-radial-bar>
+            <gui-recharts-polar-radius-axis
+              tick="false"
+              tickline="false"
+              axisline="false"
+            >
+              <gui-recharts-label>
+              </gui-recharts-label>
+            </gui-recharts-polar-radius-axis>
+          </gui-recharts-radial-bar-chart>
+        </gui-chart-container>
+        <p class="cursor-default whitespace-nowrap text-sm font-medium capitalize">
           supply chain
         </p>
       </div>
-      <div class="flex flex-col items-center justify-center gap-2 text-center">
-        <gui-progress-circle
-          variant="success"
-          strokewidth="4"
-          value="8500"
+      <div class="flex flex-col items-center justify-center">
+        <gui-chart-container
+          config="[object Object]"
+          classname="mx-auto aspect-square h-[100px]"
         >
-          8500
-        </gui-progress-circle>
-        <p class="text-sm capitalize">
+          <gui-recharts-radial-bar-chart
+            data="[object Object]"
+            startangle="0"
+            endangle="-30600"
+            innerradius="30"
+            outerradius="40"
+          >
+            <gui-recharts-polar-grid
+              gridtype="circle"
+              radiallines="false"
+              stroke="none"
+              polarradius="32,28"
+              classname="first:fill-muted last:fill-background"
+            >
+            </gui-recharts-polar-grid>
+            <gui-recharts-radial-bar
+              datakey="score"
+              background="[object Object]"
+              cornerradius="10"
+            >
+            </gui-recharts-radial-bar>
+            <gui-recharts-polar-radius-axis
+              tick="false"
+              tickline="false"
+              axisline="false"
+            >
+              <gui-recharts-label>
+              </gui-recharts-label>
+            </gui-recharts-polar-radius-axis>
+          </gui-recharts-radial-bar-chart>
+        </gui-chart-container>
+        <p class="cursor-default whitespace-nowrap text-sm font-medium capitalize">
           maintenance
         </p>
       </div>
-      <div class="flex flex-col items-center justify-center gap-2 text-center">
-        <gui-progress-circle
-          variant="success"
-          strokewidth="4"
-          value="200"
+      <div class="flex flex-col items-center justify-center">
+        <gui-chart-container
+          config="[object Object]"
+          classname="mx-auto aspect-square h-[100px]"
         >
-          200
-        </gui-progress-circle>
-        <p class="text-sm capitalize">
+          <gui-recharts-radial-bar-chart
+            data="[object Object]"
+            startangle="0"
+            endangle="-720"
+            innerradius="30"
+            outerradius="40"
+          >
+            <gui-recharts-polar-grid
+              gridtype="circle"
+              radiallines="false"
+              stroke="none"
+              polarradius="32,28"
+              classname="first:fill-muted last:fill-background"
+            >
+            </gui-recharts-polar-grid>
+            <gui-recharts-radial-bar
+              datakey="score"
+              background="[object Object]"
+              cornerradius="10"
+            >
+            </gui-recharts-radial-bar>
+            <gui-recharts-polar-radius-axis
+              tick="false"
+              tickline="false"
+              axisline="false"
+            >
+              <gui-recharts-label>
+              </gui-recharts-label>
+            </gui-recharts-polar-radius-axis>
+          </gui-recharts-radial-bar-chart>
+        </gui-chart-container>
+        <p class="cursor-default whitespace-nowrap text-sm font-medium capitalize">
           vulnerability
         </p>
       </div>
-      <div class="flex flex-col items-center justify-center gap-2 text-center">
-        <gui-progress-circle
-          variant="success"
-          strokewidth="4"
-          value="10000"
+      <div class="flex flex-col items-center justify-center">
+        <gui-chart-container
+          config="[object Object]"
+          classname="mx-auto aspect-square h-[100px]"
         >
-          10000
-        </gui-progress-circle>
-        <p class="text-sm capitalize">
+          <gui-recharts-radial-bar-chart
+            data="[object Object]"
+            startangle="0"
+            endangle="-36000"
+            innerradius="30"
+            outerradius="40"
+          >
+            <gui-recharts-polar-grid
+              gridtype="circle"
+              radiallines="false"
+              stroke="none"
+              polarradius="32,28"
+              classname="first:fill-muted last:fill-background"
+            >
+            </gui-recharts-polar-grid>
+            <gui-recharts-radial-bar
+              datakey="score"
+              background="[object Object]"
+              cornerradius="10"
+            >
+            </gui-recharts-radial-bar>
+            <gui-recharts-polar-radius-axis
+              tick="false"
+              tickline="false"
+              axisline="false"
+            >
+              <gui-recharts-label>
+              </gui-recharts-label>
+            </gui-recharts-polar-radius-axis>
+          </gui-recharts-radial-bar-chart>
+        </gui-chart-container>
+        <p class="cursor-default whitespace-nowrap text-sm font-medium capitalize">
           license
         </p>
       </div>
     </div>
     <div class="px-6 pt-6">
-      <p class="w-2/3 text-sm text-muted-foreground">
+      <p class="w-2/3 cursor-default text-sm text-muted-foreground">
         Package Insight Scores are powered by
         <gui-link
           href="https://socket.dev/npm/package/item"
@@ -196,7 +324,7 @@ exports[`InsightTabContent renders with no insights but a package score 1`] = `
       </p>
     </div>
   </section>
-  <div class="flex h-64 w-full items-center justify-center px-6 py-4">
+  <div class="flex h-64 w-full cursor-default items-center justify-center px-6 py-4">
     <div class="flex flex-col items-center justify-center gap-3 text-center">
       <div class="relative flex size-32 items-center justify-center rounded-full bg-emerald-500/20">
         <gui-badge-check-icon
