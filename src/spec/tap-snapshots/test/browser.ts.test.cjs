@@ -8719,6 +8719,62 @@ exports[`test/browser.ts > TAP > parse args > npm:@luca/cases@jsr:1 > inspect de
 }
 `
 
+exports[`test/browser.ts > TAP > parse args > npm:abbrev > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'registry',
+  spec: 'abbrev@npm:abbrev',
+  name: 'abbrev',
+  bareSpec: 'npm:abbrev',
+  namedRegistry: 'npm',
+  registry: 'https://registry.npmjs.org/',
+  subspec: @vltpkg/spec.Spec {
+    type: 'registry',
+    spec: 'abbrev',
+    name: 'abbrev',
+    bareSpec: '',
+    namedRegistry: 'npm',
+    registry: 'https://registry.npmjs.org/',
+    registrySpec: '',
+    semver: '',
+    range: Range {
+      raw: '',
+      isAny: true,
+      isSingle: false,
+      set: [ [Comparator] ],
+      includePrerelease: false
+    }
+  }
+}
+`
+
+exports[`test/browser.ts > TAP > parse args > npm:abbrev@1 > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'registry',
+  spec: 'abbrev@npm:abbrev@1',
+  name: 'abbrev',
+  bareSpec: 'npm:abbrev@1',
+  namedRegistry: 'npm',
+  registry: 'https://registry.npmjs.org/',
+  subspec: @vltpkg/spec.Spec {
+    type: 'registry',
+    spec: 'abbrev@1',
+    name: 'abbrev',
+    bareSpec: '1',
+    namedRegistry: 'npm',
+    registry: 'https://registry.npmjs.org/',
+    registrySpec: '1',
+    semver: '1',
+    range: Range {
+      raw: '1',
+      isAny: false,
+      isSingle: false,
+      set: [ [Comparator] ],
+      includePrerelease: false
+    }
+  }
+}
+`
+
 exports[`test/browser.ts > TAP > parse args > npm:foo > inspect default 1`] = `
 @vltpkg/spec.Spec {
   type: 'registry',

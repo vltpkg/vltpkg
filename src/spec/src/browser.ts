@@ -103,6 +103,7 @@ const startsWithSpecIdentifier = (
   spec.startsWith('git+file://') ||
   spec.startsWith('git@github.com') ||
   spec.startsWith('registry:') ||
+  spec.startsWith('npm:') ||
   // anything that starts with a known git host key, or a
   // custom registered registry protocol e.g: `github:`, `custom:`
   [
