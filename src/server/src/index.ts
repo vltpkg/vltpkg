@@ -20,6 +20,7 @@ import { createServer as createHttpServer } from 'node:http'
 import { tmpdir } from 'node:os'
 import { dirname, relative, resolve } from 'node:path'
 import { Dashboard } from './dashboard.ts'
+import { AppDataManager } from './app-data.ts'
 import { getAssetsDir } from './get-assets-dir.ts'
 import { updateGraphData } from './graph-data.ts'
 import { handleRequest } from './handle-request.ts'
@@ -66,6 +67,7 @@ export class VltServer extends EventEmitter<{
   #rootAddress?: string
 
   dashboard?: Dashboard
+  appData?: AppDataManager
   hasDashboard = false
   options: VltServerOptions
   port?: number
@@ -152,6 +154,12 @@ export class VltServer extends EventEmitter<{
   }
 
   async update(this: VltServerListening) {
+    // Initialize app data manager
+    this.appData = new AppDataManager({
+      publicDir: this.publicDir,
+    })
+    await this.appData.update()
+
     // dashboard data is optional since the GUI might be started from a
     // project in order to just explore its graph data
     this.dashboard = new Dashboard({

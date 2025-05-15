@@ -4,7 +4,7 @@ import html from 'diffable-html'
 import { useGraphStore as useStore } from '@/state/index.js'
 import { Queries } from '@/app/queries.jsx'
 
-vi.mock('@/lib/start-dashboard-data.js', () => ({
+vi.mock('@/lib/start-data.js', () => ({
   startDashboardData: vi.fn(),
 }))
 
