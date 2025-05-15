@@ -1,0 +1,81 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`number-flow renders default 1`] = `
+
+<div
+  class="inline-flex"
+  data-id="number-flow-wrapper"
+>
+  <p
+    data-id="number-flow-p"
+    class="overflow-hidden"
+  >
+    <span
+      data-key="number-flow-span-0-0"
+      class="inline-block text-sm text-current tabular-nums font-mono"
+      style="filter: blur(0px); opacity: 1; transform: none; transform-origin: 50% 0px 0;"
+    >
+      0
+    </span>
+    <span
+      data-key="number-flow-span-1-1"
+      class="inline-block text-sm text-current tabular-nums font-mono"
+      style="filter: blur(0px); opacity: 1; transform: none; transform-origin: 50% 0px 0;"
+    >
+      1
+    </span>
+  </p>
+</div>
+
+`;
+
+exports[`number-flow renders with custom classes 1`] = `
+
+<div
+  class="inline-flex custom-wrapper"
+  data-id="number-flow-wrapper"
+>
+  <p
+    data-id="number-flow-p"
+    class="overflow-hidden custom-p"
+  >
+    <span
+      data-key="number-flow-span-0-0"
+      class="inline-block text-sm text-current tabular-nums font-mono custom-span"
+      style="filter: blur(0px); opacity: 1; transform: none; transform-origin: 50% 0px 0;"
+    >
+      0
+    </span>
+    <span
+      data-key="number-flow-span-1-1"
+      class="inline-block text-sm text-current tabular-nums font-mono custom-span"
+      style="filter: blur(0px); opacity: 1; transform: none; transform-origin: 50% 0px 0;"
+    >
+      1
+    </span>
+  </p>
+</div>
+
+`;
+
+exports[`number-flow renders with custom padding 1`] = `
+
+<div
+  class="inline-flex"
+  data-id="number-flow-wrapper"
+>
+  <p
+    data-id="number-flow-p"
+    class="overflow-hidden"
+  >
+    <span
+      data-key="number-flow-span-1-0"
+      class="inline-block text-sm text-current tabular-nums font-mono"
+      style="filter: blur(0px); opacity: 1; transform: none; transform-origin: 50% 0px 0;"
+    >
+      1
+    </span>
+  </p>
+</div>
+
+`;
