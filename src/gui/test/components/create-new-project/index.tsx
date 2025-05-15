@@ -72,7 +72,6 @@ test('create-new-project-content with results', async () => {
   const Container = () => {
     const updateDashboard = useStore(state => state.updateDashboard)
     updateDashboard({
-      buildVersion: '1.0.0',
       cwd: '/path/to/cwd',
       defaultAuthor: 'Ruy Adorno',
       dashboardProjectLocations: [

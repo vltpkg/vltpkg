@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router'
 import { useEffect } from 'react'
 import { DashboardGrid } from '@/components/dashboard-grid/index.jsx'
 import { useGraphStore } from '@/state/index.js'
-import { startDashboardData } from '@/lib/start-dashboard-data.js'
+import { startDashboardData } from '@/lib/start-data.js'
 
 export const Dashboard = () => {
   const navigate = useNavigate()

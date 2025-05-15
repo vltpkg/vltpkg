@@ -20,7 +20,7 @@ vi.mock('@/components/ui/loading-spinner.jsx', () => ({
   LoadingSpinner: 'gui-loading-spinner',
 }))
 
-vi.mock('@/lib/start-dashboard-data.js', () => ({
+vi.mock('@/lib/start-data.js', () => ({
   startDashboardData: vi.fn(),
 }))
 

@@ -113,7 +113,6 @@ test('dashboard-grid with results', async () => {
   const Container = () => {
     const updateDashboard = useStore(state => state.updateDashboard)
     updateDashboard({
-      buildVersion: '1.0.0',
       cwd: '/path/to/cwd',
       defaultAuthor: 'John Doe',
       dashboardProjectLocations: [

@@ -5,12 +5,9 @@ import { PathScurry } from 'path-scurry'
 import t from 'tap'
 
 const homedir = t.testdirName
-const { Dashboard, version } = await t.mockImport<
+const { Dashboard } = await t.mockImport<
   typeof import('../src/dashboard.ts')
 >('../src/dashboard.ts', {
-  'package-json-from-dist': {
-    loadPackageJson: () => ({ version: '1.2.3' }),
-  },
   'node:os': t.createMock(await import('node:os'), {
     homedir: () => homedir,
   }),
@@ -21,7 +18,6 @@ const { Dashboard, version } = await t.mockImport<
     }),
   },
 })
-t.equal(version, '1.2.3')
 
 t.test('dashboard construction', async t => {
   const publicDir = t.testdirName
@@ -72,7 +68,6 @@ t.test('update projects, with dashboard', async t => {
   const dj = resolve(dir, 'public/dashboard.json')
   t.matchOnly(JSON.parse(readFileSync(dj, 'utf8')), {
     cwd: process.cwd(),
-    buildVersion: '1.2.3',
     dashboardProjectLocations: [
       {
         path: resolve(dir, 'projects'),
@@ -153,7 +148,6 @@ t.test(
     const dj = resolve(dir, 'public/dashboard.json')
     t.matchOnly(JSON.parse(readFileSync(dj, 'utf8')), {
       cwd: process.cwd(),
-      buildVersion: '1.2.3',
       dashboardProjectLocations: [
         {
           path: resolve(dir, 'projects'),

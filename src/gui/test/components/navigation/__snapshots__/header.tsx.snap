@@ -1,5 +1,20 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
+exports[`header renders with build version 1`] = `
+
+<div class="flex h-[65px] w-full cursor-default items-center rounded-t-lg border-x-[1px] border-t-[1px] px-8 py-3">
+  <div class="flex w-full max-w-8xl items-end">
+    <h3 class="text-md font-medium">
+      Dashboard
+    </h3>
+    <p class="ml-auto font-courier text-xs font-medium text-muted-foreground">
+      build: v1.0.0
+    </p>
+  </div>
+</div>
+
+`;
+
 exports[`header renders with context value on \`/explore\` 1`] = `
 
 <div class="flex h-[65px] w-full cursor-default items-center rounded-t-lg border-x-[1px] border-t-[1px] px-8 py-3">
@@ -20,9 +35,6 @@ exports[`header renders with context value on \`/explore\` 1`] = `
         /foo/bar/baz
       </gui-inline-code>
     </div>
-    <p class="ml-auto font-courier text-xs font-medium text-muted-foreground">
-      build: v1.0.0
-    </p>
   </div>
 </div>
 

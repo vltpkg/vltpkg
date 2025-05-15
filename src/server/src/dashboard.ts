@@ -5,7 +5,6 @@ import type { Manifest } from '@vltpkg/types'
 import { writeFileSync } from 'node:fs'
 import { rm } from 'node:fs/promises'
 import { homedir } from 'node:os'
-import { loadPackageJson } from 'package-json-from-dist'
 import { resolve } from 'node:path'
 import type { PathBase, PathScurry } from 'path-scurry'
 import { getReadablePath } from './get-readable-path.ts'
@@ -17,13 +16,6 @@ import { readProjectFolders } from './read-project-folders.ts'
 // info in memory, and make a handle to the Dashboard object persist in
 // the VltServer class. Then, if we get a request for /dashboard.json,
 // just server it from the dashboard object without reading static file.
-
-export const { version } = loadPackageJson(
-  import.meta.filename,
-  process.env.__VLT_INTERNAL_CLI_PACKAGE_JSON,
-) as {
-  version: string
-}
 
 export type DashboardProjectData = {
   name: string
@@ -48,7 +40,6 @@ export type DashboardLocation = {
 
 export type DashboardData = {
   cwd: string
-  buildVersion: string
   dashboardProjectLocations: DashboardLocation[]
   defaultAuthor: string
   projects: DashboardProjectData[]
@@ -62,7 +53,6 @@ export class Dashboard {
   dashboardRoot: string[]
   scurry: PathScurry
   publicDir: string
-  version = version
 
   constructor(options: DashboardOptions) {
     const {
@@ -117,7 +107,6 @@ export class Dashboard {
 
     const result: DashboardData = {
       cwd: process.cwd(),
-      buildVersion: version,
       dashboardProjectLocations: projectFolders
         .map((dir: PathBase) => {
           const path = dir.resolve('../').fullpath()

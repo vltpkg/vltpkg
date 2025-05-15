@@ -16,7 +16,7 @@ import { Checkbox } from '@/components/ui/checkbox.jsx'
 import { QueriesEmptyState } from '@/components/queries/queries-empty-state.jsx'
 import { CreateQuery } from '@/components/queries/create-query.jsx'
 import { AnimatePresence, LayoutGroup, motion } from 'framer-motion'
-import { startDashboardData } from '@/lib/start-dashboard-data.js'
+import { startDashboardData } from '@/lib/start-data.js'
 
 const Queries = () => {
   const navigate = useNavigate()

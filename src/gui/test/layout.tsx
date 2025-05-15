@@ -22,6 +22,9 @@ vi.mock('@/components/ui/sidebar.jsx', () => ({
 vi.mock('@/components/ui/toaster.jsx', () => ({
   Toaster: 'gui-toaster',
 }))
+vi.mock('@/components/hooks/use-preflight.jsx', () => ({
+  usePreflight: vi.fn(),
+}))
 
 expect.addSnapshotSerializer({
   serialize: v => html(v),

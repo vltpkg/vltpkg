@@ -9,8 +9,11 @@ import {
   SidebarInset,
 } from '@/components/ui/sidebar.jsx'
 import { Toaster } from '@/components/ui/toaster.jsx'
+import { usePreflight } from '@/components/hooks/use-preflight.jsx'
 
 const Layout = () => {
+  usePreflight()
+
   return (
     <SidebarProvider defaultOpen={defaultOpen}>
       <AppSidebar />

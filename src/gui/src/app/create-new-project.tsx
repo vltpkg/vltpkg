@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router'
 import { useState, useEffect } from 'react'
 import { useGraphStore } from '@/state/index.js'
 import { CreateNewProjectContent } from '@/components/create-new-project/index.jsx'
-import { startDashboardData } from '@/lib/start-dashboard-data.js'
+import { startDashboardData } from '@/lib/start-data.js'
 import { InlineCode } from '@/components/ui/inline-code.jsx'
 import { LoadingSpinner } from '@/components/ui/loading-spinner.jsx'
 

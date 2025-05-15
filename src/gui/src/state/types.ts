@@ -8,6 +8,7 @@ import type { SpecOptionsFilled } from '@vltpkg/spec/browser'
 import type { Integrity, Manifest } from '@vltpkg/types'
 
 export type Action = {
+  updateAppData: (appData: State['appData']) => void
   updateDashboard: (dashboard: State['dashboard']) => void
   updateGraph: (graph: State['graph']) => void
   updateQ: (q: State['q']) => void
@@ -78,6 +79,10 @@ export type RawNode = {
  * The main state object for the graph explorer.
  */
 export type State = {
+  /**
+   * Data for the app.
+   */
+  appData?: AppData
   /**
    * List of projects to be displayed in the dashboard.
    */
@@ -161,15 +166,18 @@ export type DashboardLocation = {
   readablePath: string
 }
 
+export type AppData = {
+  /**
+   * The build version of the app.
+   */
+  buildVersion: string
+}
+
 export type DashboardData = {
   /**
    * The reference current working directory.
    */
   cwd: string
-  /**
-   * The app version.
-   */
-  buildVersion: string
   /**
    * The default author name to be used when creating new projects.
    */
