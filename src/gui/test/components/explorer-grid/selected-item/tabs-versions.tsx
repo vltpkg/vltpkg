@@ -118,6 +118,10 @@ vi.mock('recharts', () => ({
   CartesianGrid: 'gui-recharts-cartesian-grid',
 }))
 
+vi.mock('@/components/number-flow.jsx', () => ({
+  NumberFlow: 'gui-number-flow',
+}))
+
 expect.addSnapshotSerializer({
   serialize: v => html(v),
   test: () => true,
