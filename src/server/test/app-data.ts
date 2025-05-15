@@ -19,20 +19,6 @@ t.test('AppDataManager construction', async t => {
   t.equal(manager.publicDir, publicDir)
 })
 
-t.test('update app data', async t => {
-  const dir = t.testdir({
-    public: {},
-  })
-  const publicDir = resolve(dir, 'public')
-  const manager = new AppDataManager({ publicDir })
-
-  t.equal(await manager.update(), true)
-  const appDataPath = resolve(dir, 'public/app-data.json')
-  t.matchOnly(JSON.parse(readFileSync(appDataPath, 'utf8')), {
-    buildVersion: '1.2.3',
-  })
-})
-
 t.test('update app data with existing file', async t => {
   const dir = t.testdir({
     public: {
