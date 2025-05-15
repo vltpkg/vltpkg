@@ -15,8 +15,7 @@ import type {
 } from '../dependencies.ts'
 import type { Graph } from '../graph.ts'
 import { resolveSaveType } from '../resolve-save-type.ts'
-
-const SAVE_PREFIX = '^'
+import { calculateSaveValue } from './calculate-save-value.ts'
 
 const depTypesMap = new Map<DependencyTypeShort, DependencyTypeLong>([
   ['prod', 'dependencies'],
@@ -125,16 +124,25 @@ const addOrRemoveDeps = (
 
       const dependencies =
         manifest[depType] ?? (manifest[depType] = {})
-      dependencies[name] =
-        (
-          nodeType === 'registry' &&
-          (!dep.spec.final.semver || !dep.spec.final.range)
-        ) ?
-          dep.spec.subspec && dep.spec.namedRegistry ?
-            `${dep.spec.final.namedRegistry}:${dep.spec.final.name}@${SAVE_PREFIX}${node.version}`
-          : `${SAVE_PREFIX}${node.version}`
-        : dep.spec.bareSpec
-      manifestChanged = true
+      // check to see if we need to save a different version
+      // - If you install a single specific version, that is deliberate,
+      //   we save that exact version, no matter what.
+      // - If the requested spec matches the manifest, make no change
+      // If the requested spec had no bareSpec, and the manifest has
+      // a dependency entry, make no change.
+      // If the requested spec has a bareSpec that did NOT match the manifest,
+      // then update it.
+      // If the manifest does not contain anything, then update it.
+      // Only for registry dependencies
+      const existing = dependencies[name]
+      const saveValue = calculateSaveValue(
+        nodeType,
+        dep.spec,
+        existing,
+        node.version,
+      )
+      dependencies[name] = saveValue
+      manifestChanged = saveValue !== existing
     }
   }
   return manifestChanged ? manifest : undefined
