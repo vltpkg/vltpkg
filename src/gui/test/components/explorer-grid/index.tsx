@@ -17,7 +17,7 @@ vi.mock('lucide-react', () => ({
   Package: 'gui-package-icon',
 }))
 
-vi.mock('@/components/explorer-grid/result-item.tsx', () => ({
+vi.mock('@/components/explorer-grid/results/result-item.tsx', () => ({
   ResultItem: 'gui-result-item',
 }))
 
@@ -40,9 +40,12 @@ vi.mock(
   }),
 )
 
-vi.mock('@/components/explorer-grid/empty-results-state.tsx', () => ({
-  EmptyResultsState: 'gui-empty-results-state',
-}))
+vi.mock(
+  '@/components/explorer-grid/results/empty-results-state.tsx',
+  () => ({
+    EmptyResultsState: 'gui-empty-results-state',
+  }),
+)
 
 vi.mock('@/components/ui/badge.tsx', () => ({
   Badge: 'gui-badge',
@@ -59,12 +62,12 @@ afterEach(() => {
   cleanup()
 })
 
-test('explorer-grid render default', async () => {
+test('ExplorerGrid render default', async () => {
   render(<ExplorerGrid />)
   expect(window.document.body.innerHTML).toMatchSnapshot()
 })
 
-test('explorer-grid with results', async () => {
+test('ExplorerGrid with results', async () => {
   const Container = () => {
     const updateEdges = useStore(state => state.updateEdges)
     const updateNodes = useStore(state => state.updateNodes)
@@ -114,7 +117,7 @@ test('explorer-grid with results', async () => {
   expect(window.document.body.innerHTML).toMatchSnapshot()
 })
 
-test('explorer-grid with stack', async () => {
+test('ExplorerGrid with stack', async () => {
   const Container = () => {
     const updateEdges = useStore(state => state.updateEdges)
     const updateNodes = useStore(state => state.updateNodes)
@@ -171,7 +174,7 @@ test('explorer-grid with stack', async () => {
   expect(window.document.body.innerHTML).toMatchSnapshot()
 })
 
-test('explorer-grid renders workspace with edges in', async () => {
+test('ExplorerGrid renders workspace with edges in', async () => {
   const { graph } = load({
     lockfile: {
       options: {},

@@ -99,8 +99,7 @@ const SavedQueryItem = ({
   const [isExpanded, setIsExpanded] = useState<boolean>(false)
   const [editName, setEditName] = useState<string>('')
   const [editContext, setEditContext] = useState<string>('')
-  const [_labelSelectOpen, setLabelSelectOpen] =
-    useState<boolean>(false)
+  const [, setLabelSelectOpen] = useState<boolean>(false)
   const [popoverOpen, setPopoverOpen] = useState<boolean>(false)
   const [selectedLabels, setSelectedLabels] = useState<QueryLabel[]>(
     [],
