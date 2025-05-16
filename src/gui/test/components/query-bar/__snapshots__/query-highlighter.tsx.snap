@@ -2,8 +2,8 @@
 
 exports[`query-highlighter render default 1`] = `
 
-<div class="pointer-events-none absolute inset-0 left-[2.556rem] top-[0.01rem] flex items-center">
-  <div class="flex w-full">
+<div class="scrollbar-hidden pointer-events-none absolute inset-0 left-[2.556rem] top-[0.01rem] flex items-center overflow-x-auto pr-32">
+  <div class="flex whitespace-nowrap">
     <gui-query-token variant="pseudo">
       :root
     </gui-query-token>
