@@ -1,5 +1,5 @@
-import { GridResults } from '@/components/explorer-grid/results.tsx'
-import { GridSelectedItem } from '@/components/explorer-grid/selected-item.tsx'
+import { Results } from '@/components/explorer-grid/results/index.tsx'
+import { SelectedItem } from '@/components/explorer-grid/selected-item/index.tsx'
 import { useGraphStore } from '@/state/index.ts'
 import { Spec } from '@vltpkg/spec/browser'
 import type {
@@ -139,8 +139,8 @@ export const ExplorerGrid = () => {
   return (
     <div className="h-full w-full grow px-8 pb-8">
       {items.length === 1 && items[0] ?
-        <GridSelectedItem item={items[0]} />
-      : <GridResults items={items} />}
+        <SelectedItem item={items[0]} />
+      : <Results items={items} />}
     </div>
   )
 }
