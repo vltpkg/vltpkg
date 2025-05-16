@@ -9,7 +9,7 @@ import type {
 import type {
   EdgeLoose,
   GridItemData,
-} from '@/components/explorer-grid/types.js'
+} from '@/components/explorer-grid/types.ts'
 import type { DepID } from '@vltpkg/dep-id'
 import { stringifyNode } from '@vltpkg/graph/browser'
 

@@ -9,7 +9,7 @@ import html from 'diffable-html'
 import { joinDepIDTuple } from '@vltpkg/dep-id'
 import type { QueryResponseNode } from '@vltpkg/query'
 import { useGraphStore as useStore } from '@/state/index.ts'
-import { ResultItem } from '@/components/explorer-grid/result-item.tsx'
+import { ResultItem } from '@/components/explorer-grid/results/result-item.tsx'
 import type { GridItemData } from '@/components/explorer-grid/types.ts'
 
 expect.addSnapshotSerializer({

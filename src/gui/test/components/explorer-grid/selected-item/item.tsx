@@ -2,7 +2,7 @@ import { test, expect, vi, afterEach } from 'vitest'
 import { cleanup, render } from '@testing-library/react'
 import html from 'diffable-html'
 import { useGraphStore as useStore } from '@/state/index.ts'
-import { SelectedItem } from '@/components/explorer-grid/selected-item/index.tsx'
+import { Item } from '@/components/explorer-grid/selected-item/item.tsx'
 import type { SelectedItemStore } from '@/components/explorer-grid/selected-item/context.tsx'
 import { useSelectedItemStore } from '@/components/explorer-grid/selected-item/context.tsx'
 import {
@@ -77,7 +77,7 @@ afterEach(() => {
   cleanup()
 })
 
-test('SelectedItem renders with the default structure', () => {
+test('Item renders with the default structure', () => {
   vi.mocked(useSelectedItemStore).mockReturnValue({
     selectedItem: SELECTED_ITEM,
     activeTab: 'insights',
@@ -95,13 +95,13 @@ test('SelectedItem renders with the default structure', () => {
   } satisfies SelectedItemStore)
 
   const Container = () => {
-    return <SelectedItem item={SELECTED_ITEM} />
+    return <Item item={SELECTED_ITEM} />
   }
   const { container } = render(<Container />)
   expect(container.innerHTML).toMatchSnapshot()
 })
 
-test('SelectedItem renders connection lines', () => {
+test('Item renders connection lines', () => {
   vi.mocked(useSelectedItemStore).mockReturnValue({
     selectedItem: SELECTED_ITEM,
     activeTab: 'insights',
@@ -119,7 +119,7 @@ test('SelectedItem renders connection lines', () => {
   } satisfies SelectedItemStore)
 
   const Container = () => {
-    return <SelectedItem item={SELECTED_ITEM_WITH_EDGES} />
+    return <Item item={SELECTED_ITEM_WITH_EDGES} />
   }
   const { container } = render(<Container />)
   expect(container.innerHTML).toMatchSnapshot()

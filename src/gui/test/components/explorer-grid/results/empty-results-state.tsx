@@ -2,7 +2,7 @@ import { vi, test, expect, afterEach } from 'vitest'
 import { cleanup, render } from '@testing-library/react'
 import html from 'diffable-html'
 import { useGraphStore as useStore } from '@/state/index.ts'
-import { EmptyResultsState } from '@/components/explorer-grid/empty-results-state.tsx'
+import { EmptyResultsState } from '@/components/explorer-grid/results/empty-results-state.tsx'
 
 vi.mock('react-router', () => ({
   useNavigate: vi.fn(),
