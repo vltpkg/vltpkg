@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
-import type { ChangeEvent } from 'react'
-import { Input } from '@/components/ui/input.tsx'
 import { useGraphStore } from '@/state/index.ts'
+import { Input } from '@/components/ui/input.tsx'
 import { Query } from '@vltpkg/query'
-import type { ParsedSelectorToken } from '@vltpkg/query'
 import { QueryHighlighter } from '@/components/query-bar/query-highlighter.tsx'
+import { cn } from '@/lib/utils.ts'
+import type { ParsedSelectorToken } from '@vltpkg/query'
+import type { ChangeEvent } from 'react'
 
 interface QueryBar {
   className?: string
@@ -23,6 +24,7 @@ export const QueryBar = ({
   const query = useGraphStore(state => state.query)
   const q = useGraphStore(state => state.q)
   const inputRef = useRef<HTMLInputElement>(null)
+  const queryHighlighterRef = useRef<HTMLDivElement>(null)
   const [parsedTokens, setParsedTokens] = useState<
     ParsedSelectorToken[]
   >([])
@@ -58,6 +60,54 @@ export const QueryBar = ({
     }
   }, [])
 
+  /**
+   * Sync the highlighter scroll position with the input field's caret position
+   */
+  useEffect(() => {
+    const input = inputRef.current
+    const highlighter = queryHighlighterRef.current
+
+    if (!input || !highlighter) return
+
+    const syncScroll = () => {
+      const inputRect = input.getBoundingClientRect()
+      const caretPosition = input.selectionStart || 0
+
+      // Create a temporary span to measure text width
+      const span = document.createElement('span')
+      span.style.visibility = 'hidden'
+      span.style.position = 'absolute'
+      span.style.whiteSpace = 'pre'
+      span.style.font = window.getComputedStyle(input).font
+      span.textContent = input.value.substring(0, caretPosition)
+      document.body.appendChild(span)
+
+      const caretOffset = span.offsetWidth
+      document.body.removeChild(span)
+
+      // Calculate the scroll position needed to show the caret
+      const scrollLeft = caretOffset - inputRect.width / 2
+
+      // Apply the scroll with a small delay to ensure the DOM has updated
+      requestAnimationFrame(() => {
+        highlighter.scrollLeft = Math.max(0, scrollLeft)
+      })
+    }
+
+    // Sync on input changes and selection changes
+    const events = ['input', 'select', 'click', 'keyup']
+    events.forEach(event => input.addEventListener(event, syncScroll))
+
+    // Initial sync
+    syncScroll()
+
+    return () => {
+      events.forEach(event =>
+        input.removeEventListener(event, syncScroll),
+      )
+    }
+  }, [])
+
   return (
     <div className="relative flex grow items-center">
       {startContent && (
@@ -72,7 +122,12 @@ export const QueryBar = ({
           autoComplete="off"
           autoCapitalize="off"
           ref={inputRef}
-          className={`${className} ${startContent ? 'pl-10' : ''} text-sm text-transparent caret-black dark:caret-white`}
+          className={cn(
+            'text-sm text-transparent caret-black dark:caret-white',
+            startContent && 'pl-10',
+            endContent && 'pr-32',
+            className,
+          )}
           placeholder="Query Lookup, e.g: :root > *"
           value={query}
           onChange={(e: ChangeEvent) => {
@@ -80,10 +135,14 @@ export const QueryBar = ({
             updateQuery(value)
           }}
         />
-        <QueryHighlighter query={query} parsedTokens={parsedTokens} />
+        <QueryHighlighter
+          ref={queryHighlighterRef}
+          query={query}
+          parsedTokens={parsedTokens}
+        />
       </div>
       {endContent && (
-        <div className="absolute right-0">{endContent}</div>
+        <div className="absolute right-0 z-[2]">{endContent}</div>
       )}
     </div>
   )

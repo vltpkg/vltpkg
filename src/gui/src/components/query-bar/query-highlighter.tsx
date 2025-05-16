@@ -1,13 +1,18 @@
-import type { ParsedSelectorToken } from '@vltpkg/query'
+import { forwardRef } from 'react'
+import { cn } from '@/lib/utils.ts'
 import { QueryToken } from '@/components/query-bar/query-token.tsx'
+import type { ParsedSelectorToken } from '@vltpkg/query'
 
-export const QueryHighlighter = ({
-  query,
-  parsedTokens,
-}: {
+interface QueryHighlighterProps {
   query: string
   parsedTokens: ParsedSelectorToken[]
-}) => {
+  className?: string
+}
+
+export const QueryHighlighter = forwardRef<
+  HTMLDivElement,
+  QueryHighlighterProps
+>(({ query, parsedTokens, className }, ref) => {
   if (!query) return null
 
   let q = query
@@ -51,8 +56,13 @@ export const QueryHighlighter = ({
   }
 
   return (
-    <div className="pointer-events-none absolute inset-0 left-[2.556rem] top-[0.01rem] flex items-center">
-      <div className="flex w-full">
+    <div
+      ref={ref}
+      className={cn(
+        'scrollbar-hidden pointer-events-none absolute inset-0 left-[2.556rem] top-[0.01rem] flex items-center overflow-x-auto pr-32',
+        className,
+      )}>
+      <div className="flex whitespace-nowrap">
         {result.map((segment, idx) => (
           <QueryToken variant={segment.type} key={idx}>
             {segment.token}
@@ -61,4 +71,4 @@ export const QueryHighlighter = ({
       </div>
     </div>
   )
-}
+})
