@@ -9,8 +9,11 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip.tsx'
-import { labelClassNamesMap } from './label-helper.ts'
-import type { GridItemData, GridItemOptions } from './types.ts'
+import { labelClassNamesMap } from '@/components/explorer-grid/label-helper.ts'
+import type {
+  GridItemData,
+  GridItemOptions,
+} from '@/components/explorer-grid/types.ts'
 import { DataBadge } from '@/components/ui/data-badge.tsx'
 
 export type ResultItemClickOptions = {

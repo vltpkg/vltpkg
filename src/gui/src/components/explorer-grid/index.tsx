@@ -1,26 +1,21 @@
-import {
-  longDependencyTypes,
-  shorten,
-  stringifyNode,
-} from '@vltpkg/graph/browser'
-import type { DepID } from '@vltpkg/dep-id'
-import { Spec } from '@vltpkg/spec/browser'
-import { useGraphStore } from '@/state/index.ts'
-import { ResultItem } from '@/components/explorer-grid/result-item.tsx'
-import { SideItem } from '@/components/explorer-grid/side-item.tsx'
+import { Results } from '@/components/explorer-grid/results/index.tsx'
 import { SelectedItem } from '@/components/explorer-grid/selected-item/index.tsx'
-import type {
-  EdgeLoose,
-  GridItemData,
-} from '@/components/explorer-grid/types.ts'
-import { GridHeader } from '@/components/explorer-grid/header.tsx'
-import { DependencySideBar } from '@/components/explorer-grid/dependency-sidebar/index.tsx'
-import { EmptyResultsState } from '@/components/explorer-grid/empty-results-state.tsx'
-import { Badge } from '@/components/ui/badge.tsx'
+import { useGraphStore } from '@/state/index.ts'
+import { Spec } from '@vltpkg/spec/browser'
 import type {
   QueryResponseEdge,
   QueryResponseNode,
 } from '@vltpkg/query'
+import type {
+  EdgeLoose,
+  GridItemData,
+} from '@/components/explorer-grid/types.ts'
+import type { DepID } from '@vltpkg/dep-id'
+import { stringifyNode } from '@vltpkg/graph/browser'
+
+export type ExplorerOptions = {
+  projectRoot?: string
+}
 
 const getItemsData = (
   edges: QueryResponseEdge[],
@@ -137,307 +132,15 @@ const getItemsData = (
   return items.sort((a, b) => a.name.localeCompare(b.name, 'en'))
 }
 
-const getParent = (
-  edge?: GridItemData,
-  node?: QueryResponseNode,
-): GridItemData | undefined => {
-  if (!node) return undefined
-  const edgeVersion =
-    edge?.spec?.bareSpec ? `@${edge.spec.bareSpec}` : ''
-  const title = edge?.name ? `${edge.name}${edgeVersion}` : ''
-  return {
-    ...edge,
-    id: node.id,
-    name: node.name || '',
-    title,
-    version: node.version || '',
-    stacked: false,
-    size: 1,
-    labels: undefined,
-  }
-}
-
-const getWorkspaceItems = (
-  item?: GridItemData,
-): GridItemData[] | undefined => {
-  const items: GridItemData[] = []
-  const node = item?.to
-  if (!node?.mainImporter) return undefined
-
-  for (const importer of node.graph.importers) {
-    if (importer === node) continue
-
-    const version = importer.version ? `@${importer.version}` : ''
-    const title = `${importer.name}${version}`
-
-    items.push({
-      id: importer.id,
-      title,
-      version: importer.version || '',
-      name: importer.name || '',
-      stacked: false,
-      size: 1,
-      labels: undefined,
-    })
-  }
-  return items
-}
-
-const getDependentItems = (
-  node?: QueryResponseNode,
-  parent?: QueryResponseNode,
-) => {
-  const items: GridItemData[] = []
-  if (!node) return items
-  for (const edge of Array.from(node.edgesIn)) {
-    if (edge.from === parent) continue
-    const title = `${edge.name}@${edge.spec.bareSpec}`
-
-    items.push({
-      ...edge,
-      id: edge.from.id,
-      title,
-      version: edge.from.version || '',
-      name: edge.from.name || '',
-      stacked: edge.from.edgesIn.size > 1,
-      size: edge.from.edgesIn.size,
-      labels: undefined,
-    })
-  }
-  return items
-}
-
-const getDependencyItems = (
-  count: { currIndex: number },
-  node?: QueryResponseNode,
-) => {
-  const items: GridItemData[] = []
-  if (!node) return items
-  for (const edge of Array.from(node.edgesOut.values()).sort((a, b) =>
-    a.name.localeCompare(b.name, 'en'),
-  )) {
-    // skip missing dependencies, they'll be captured by the uninstalled deps
-    if (!edge.to) continue
-    const title = `${edge.name}@${edge.spec.bareSpec}`
-    items.push({
-      ...edge,
-      depName: edge.name,
-      depIndex: count.currIndex++,
-      id: edge.to.id,
-      title,
-      name: edge.to.name || '',
-      version: edge.to.version || '',
-      stacked: false,
-      size: 1,
-      labels: edge.type !== 'prod' ? [edge.type] : [],
-    })
-  }
-  return items
-}
-
-const getUninstalledDependencyItems = (
-  count: { currIndex: number },
-  node?: QueryResponseNode,
-) => {
-  const items: GridItemData[] = []
-  const manifest = node?.manifest
-  if (!manifest) return items
-  // collect all dependencies from the manifest into a single map
-  const allManifestDeps = []
-  for (const type of longDependencyTypes) {
-    const deps = manifest[type]
-    if (deps) {
-      for (const [name, version] of Object.entries(deps)) {
-        allManifestDeps.push({ name, version, type })
-      }
-    }
-  }
-  for (const { name, version, type } of allManifestDeps.sort((a, b) =>
-    a.name.localeCompare(b.name, 'en'),
-  )) {
-    // skip installed dependencies
-    const edge = node.edgesOut.get(name)
-    if (edge?.to) continue
-    const title = `${name}@${version}`
-    const edgeType = shorten(type, name, manifest)
-    items.push({
-      spec: Spec.parse(name, version),
-      depName: edge?.name,
-      depIndex: count.currIndex++,
-      id: `uninstalled-dep:${title}`,
-      title,
-      name: name,
-      version,
-      stacked: false,
-      size: 1,
-      labels: edgeType !== 'prod' ? [edgeType] : [],
-    })
-  }
-  return items.sort((a, b) => a.name.localeCompare(b.name, 'en'))
-}
-
-const getItemQuery = (item: GridItemData) => {
-  if (!item.to) return ''
-  const name = item.spec?.name ? `#${item.spec.name}` : ''
-  return name.trim()
-}
-
 export const ExplorerGrid = () => {
-  const updateQuery = useGraphStore(state => state.updateQuery)
-  const query = useGraphStore(state => state.query)
   const edges = useGraphStore(state => state.edges)
   const nodes = useGraphStore(state => state.nodes)
-  const stamp = useGraphStore(state => state.stamp)
   const items = getItemsData(edges, nodes)
-  const selected = items.length === 1
-  const [selectedItem] = items
-  const uniqueSelectedItemKey =
-    String(selectedItem?.id) + String(selectedItem?.name) + stamp
-  const importerId =
-    selected && selectedItem?.to?.importer ?
-      selectedItem.to.id
-    : undefined
-  const parent = selected ? selectedItem?.from : undefined
-  const parentItem = getParent(selectedItem, parent)
-  const workspaces = selected && getWorkspaceItems(selectedItem)
-  const dependents =
-    selected && getDependentItems(selectedItem?.to, parent)
-  const count = { currIndex: 0 }
-  const dependencies =
-    selected && getDependencyItems(count, selectedItem?.to)
-  const uninstalledDependencies =
-    selected && getUninstalledDependencyItems(count, selectedItem?.to)
-  const workspaceClick = (item: GridItemData) => () => {
-    const itemQuery = getItemQuery(item)
-    if (itemQuery) {
-      updateQuery(`:project${itemQuery}`)
-    }
-    return undefined
-  }
-  const dependentsClick =
-    (item: GridItemData, isParent?: boolean) => () => {
-      if (item.from?.mainImporter) {
-        updateQuery(`:root`)
-        return
-      }
-      const selectedName =
-        selectedItem?.to?.name ?
-          `[name="${selectedItem.to.name}"]`
-        : ''
-      const selectedVersion =
-        selectedItem?.to?.version ?
-          `:v(${selectedItem.to.version})`
-        : ''
-      const newQuery =
-        isParent &&
-        query.endsWith(`> ${selectedName}${selectedVersion}`) &&
-        query.slice(0, query.lastIndexOf('>'))
-      if (newQuery) {
-        updateQuery(newQuery.trim())
-      } else {
-        const name =
-          item.from?.name ? `[name="${item.from.name}"]` : ''
-        const version =
-          item.from?.version ? `:v(${item.from.version})` : ''
-        updateQuery(`${name}${version}`.trim())
-      }
-      return undefined
-    }
-  const dependencyClick = (item: GridItemData) => () => {
-    const itemQuery = getItemQuery(item)
-    if (itemQuery) {
-      if (query.includes(itemQuery)) {
-        const newQuery = query
-          .split(itemQuery)
-          .slice(0, -1)
-          .concat([''])
-          .join(itemQuery)
-        updateQuery(newQuery)
-      } else {
-        const newQuery = `${query} > ${itemQuery}`
-        updateQuery(newQuery)
-      }
-    }
-    return undefined
-  }
-
-  if (!items.length) return <EmptyResultsState />
-
   return (
     <div className="h-full w-full grow px-8 pb-8">
-      <div className="grid w-full max-w-8xl grid-cols-8 gap-4">
-        <div className="col-span-2">
-          {parentItem ?
-            <>
-              <GridHeader>Parent</GridHeader>
-              <SideItem
-                parent={true}
-                item={parentItem}
-                highlight={true}
-                onSelect={dependentsClick(parentItem, true)}
-              />
-            </>
-          : ''}
-          {workspaces && workspaces.length > 0 ?
-            <>
-              <GridHeader>Workspaces</GridHeader>
-              {workspaces.map(item => (
-                <SideItem
-                  item={item}
-                  isWorkspace
-                  key={item.id}
-                  onSelect={workspaceClick(item)}
-                />
-              ))}
-            </>
-          : ''}
-          {dependents && dependents.length > 0 ?
-            <>
-              <GridHeader>Dependents</GridHeader>
-              {dependents.map(item => (
-                <SideItem
-                  item={item}
-                  key={item.id}
-                  onSelect={dependentsClick(item)}
-                />
-              ))}
-            </>
-          : ''}
-        </div>
-        <div className="col-span-4">
-          {items.length > 1 ?
-            <div className="flex items-center gap-3">
-              <GridHeader className="mb-4">Results</GridHeader>
-              <Badge className="mt-2" variant="default">
-                {items.length}
-              </Badge>
-            </div>
-          : <GridHeader>Selected Item</GridHeader>}
-          <div className="flex flex-col gap-6">
-            {items.map(item =>
-              selected ?
-                <SelectedItem
-                  item={item}
-                  key={uniqueSelectedItemKey}
-                />
-              : <ResultItem item={item} key={item.id} />,
-            )}
-          </div>
-        </div>
-        <div className="col-span-2">
-          {(
-            (dependencies && dependencies.length > 0) ||
-            selectedItem?.to?.importer
-          ) ?
-            <DependencySideBar
-              dependencies={dependencies || []}
-              importerId={importerId}
-              onDependencyClick={dependencyClick}
-              uninstalledDependencies={uninstalledDependencies || []}
-            />
-          : ''}
-        </div>
-      </div>
+      {items.length === 1 && items[0] ?
+        <SelectedItem item={items[0]} />
+      : <Results items={items} />}
     </div>
   )
 }
