@@ -86,7 +86,7 @@ t.test('read and write a user config', async t => {
           '\t',
         ) + '\n',
     },
-    'vlt-workspaces.json': JSON.stringify({}),
+    'vlt-project.json': JSON.stringify({}),
     '.git': {},
     a: { b: {} },
   })
@@ -160,7 +160,7 @@ t.test(
             '\t',
           ) + '\n',
       },
-      'vlt-workspaces.json': JSON.stringify({}),
+      'vlt-project.json': JSON.stringify({}),
       '.git': {},
       a: { b: {} },
     })

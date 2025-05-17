@@ -69,14 +69,16 @@ for (const path of m.paths()) {
 }
 ```
 
-Configuration is stored in the project root at `vlt-workspaces.json`.
-The type of the object in the file must be:
+Configuration is stored in the project root at `vlt-project.json`. The
+type of the object in the file must be:
 
 ```ts
-type WorkspaceConfiguration =
-  | string
-  | string[]
-  | { [group: string]: string | string[] }
+type VltProject = {
+  workspaces:
+    | string
+    | string[]
+    | { [group: string]: string | string[] }
+}
 ```
 
 If it's an object, each key is a group name, and each value is a path,

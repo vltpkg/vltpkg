@@ -17,7 +17,7 @@ const knownTools = new Map<ProjectTools, string[]>([
     'vlt',
     [
       'vlt-lock.json',
-      'vlt-workspaces.json',
+      'vlt-project.json',
       'vlt.json',
       'node_modules/.vlt',
       'node_modules/.vlt-lock.json',

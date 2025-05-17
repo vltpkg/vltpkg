@@ -1,12 +1,12 @@
-import { inspect } from 'node:util'
-import t from 'tap'
 import { Spec, kCustomInspect } from '@vltpkg/spec'
 import { Monorepo } from '@vltpkg/workspaces'
+import { inspect } from 'node:util'
+import t from 'tap'
+import type { ConfigData, LoadedConfig } from '../src/config/index.ts'
 import {
   parseAddArgs,
   parseRemoveArgs,
 } from '../src/parse-add-remove-args.ts'
-import type { LoadedConfig, ConfigData } from '../src/config/index.ts'
 
 class MockConfig {
   values: Record<string, any> = {}
@@ -119,10 +119,12 @@ t.test('parseAddArgs', async t => {
 
   await t.test('workspaces', async t => {
     const dir = t.testdir({
-      'vlt-workspaces.json': JSON.stringify({
-        app: ['./app/*'],
-        utils: ['./utils/*'],
-        other: ['foo', 'bar'],
+      'vlt-project.json': JSON.stringify({
+        workspaces: {
+          app: ['./app/*'],
+          utils: ['./utils/*'],
+          other: ['foo', 'bar'],
+        },
       }),
       app: {
         a: {
@@ -311,10 +313,12 @@ t.test('parseRemoveArgs', async t => {
 
   await t.test('workspaces', async t => {
     const dir = t.testdir({
-      'vlt-workspaces.json': JSON.stringify({
-        app: ['./app/*'],
-        utils: ['./utils/*'],
-        other: ['foo', 'bar'],
+      'vlt-project.json': JSON.stringify({
+        workspaces: {
+          app: ['./app/*'],
+          utils: ['./utils/*'],
+          other: ['foo', 'bar'],
+        },
       }),
       app: {
         a: {

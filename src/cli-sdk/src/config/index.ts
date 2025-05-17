@@ -286,7 +286,7 @@ export class Config {
   positionals?: string[]
 
   /**
-   * The root of the project where a vlt.json, vlt-workspaces.json,
+   * The root of the project where a vlt.json, vlt-project.json,
    * package.json, or .git was found. Not necessarily the `process.cwd()`,
    * though that is the default location.
    *
@@ -589,7 +589,7 @@ export class Config {
    * the XDG config home.
    *
    * Note: if working in a workspaces monorepo, then the vlt.json file MUST
-   * be in the same folder as the vlt-workspaces.json file, because we stop
+   * be in the same folder as the vlt-project.json file, because we stop
    * looking when we find either one.
    */
   async loadConfigFile(): Promise<this> {
@@ -613,21 +613,21 @@ export class Config {
       }
 
       // stat existence of these files
-      const [hasPackage, hasModules, hasWorkspaces, hasGit] =
+      const [hasPackage, hasModules, hasProject, hasGit] =
         await Promise.all([
           exists(resolve(dir, 'package.json')),
           exists(resolve(dir, 'node_modules')),
-          exists(resolve(dir, 'vlt-workspaces.json')),
+          exists(resolve(dir, 'vlt-project.json')),
           exists(resolve(dir, '.git')),
         ])
 
       // treat these as potential roots
-      if (hasPackage || hasModules || hasWorkspaces) {
+      if (hasPackage || hasModules || hasProject) {
         lastKnownRoot = dir
       }
 
       // define backstops
-      if (hasWorkspaces || hasGit) {
+      if (hasProject || hasGit) {
         break
       }
     }

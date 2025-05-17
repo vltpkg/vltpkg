@@ -1,5 +1,5 @@
-import { joinDepIDTuple } from '@vltpkg/dep-id'
 import type { DepID, DepIDTuple } from '@vltpkg/dep-id'
+import { joinDepIDTuple } from '@vltpkg/dep-id'
 import type { SpecOptions } from '@vltpkg/spec'
 import t from 'tap'
 import type { LockfileNode } from '../../src/index.ts'
@@ -194,8 +194,10 @@ t.test('workspaces', async t => {
   }
   const projectRoot = t.testdir({
     'vlt-lock.json': JSON.stringify(lockfileData),
-    'vlt-workspaces.json': JSON.stringify({
-      packages: ['./packages/*'],
+    'vlt-project.json': JSON.stringify({
+      workspaces: {
+        packages: ['./packages/*'],
+      },
     }),
     packages: {
       a: {
