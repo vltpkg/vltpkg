@@ -1,13 +1,17 @@
-import { joinDepIDTuple } from '@vltpkg/dep-id'
 import type { DepID, DepIDTuple } from '@vltpkg/dep-id'
+import { joinDepIDTuple } from '@vltpkg/dep-id'
 import { PackageInfoClient } from '@vltpkg/package-info'
 import { PackageJson } from '@vltpkg/package-json'
-import { Spec } from '@vltpkg/spec'
 import type { SpecOptions } from '@vltpkg/spec'
+import { Spec } from '@vltpkg/spec'
 import { Monorepo } from '@vltpkg/workspaces'
 import { PathScurry } from 'path-scurry'
 import t from 'tap'
 import { load as loadActual } from '../../src/actual/load.ts'
+import type {
+  AddImportersDependenciesMap,
+  RemoveImportersDependenciesMap,
+} from '../../src/dependencies.ts'
 import { buildIdealFromStartingGraph } from '../../src/ideal/build-ideal-from-starting-graph.ts'
 import type {
   LockfileData,
@@ -17,10 +21,6 @@ import type {
 } from '../../src/index.ts'
 import { load as loadVirtual } from '../../src/lockfile/load.ts'
 import { objectLikeOutput } from '../../src/visualization/object-like-output.ts'
-import type {
-  AddImportersDependenciesMap,
-  RemoveImportersDependenciesMap,
-} from '../../src/dependencies.ts'
 
 const edgeKey = (from: DepIDTuple, to: string): LockfileEdgeKey =>
   `${joinDepIDTuple(from)} ${to}`
@@ -503,8 +503,10 @@ t.test('build from an actual graph', async t => {
         }),
       },
     },
-    'vlt-workspaces.json': JSON.stringify({
-      packages: ['./packages/*'],
+    'vlt-project.json': JSON.stringify({
+      workspaces: {
+        packages: ['./packages/*'],
+      },
     }),
   })
 

@@ -48,7 +48,7 @@ t.test('run script in a project', async t => {
 
 t.test('run script in a single workspace', async t => {
   const dir = t.testdir({
-    'vlt-workspaces.json': JSON.stringify('src/ws'),
+    'vlt-project.json': JSON.stringify({ workspaces: 'src/ws' }),
     src: {
       ws: {
         'package.json': JSON.stringify({
@@ -87,7 +87,7 @@ t.test('run script in a single workspace', async t => {
 
 t.test('run script across several workspaces', async t => {
   const dir = t.testdir({
-    'vlt-workspaces.json': JSON.stringify('src/*'),
+    'vlt-project.json': JSON.stringify({ workspaces: 'src/*' }),
     src: {
       a: {
         'package.json': JSON.stringify({
@@ -152,7 +152,7 @@ t.test('run script across several workspaces', async t => {
 
 t.test('run script across no workspaces', async t => {
   const dir = t.testdir({
-    'vlt-workspaces.json': JSON.stringify('src/*'),
+    'vlt-project.json': JSON.stringify({ workspaces: 'src/*' }),
     src: {
       a: {
         'package.json': JSON.stringify({
@@ -194,7 +194,7 @@ t.test('run script across no workspaces', async t => {
 t.test('one ws fails, with bail', async t => {
   const { exitCode } = process
   const dir = t.testdir({
-    'vlt-workspaces.json': JSON.stringify('src/*'),
+    'vlt-project.json': JSON.stringify({ workspaces: 'src/*' }),
     src: {
       a: {
         'package.json': JSON.stringify({
@@ -277,7 +277,7 @@ t.test('one ws fails, with bail', async t => {
 t.test('one ws fails, without bail', async t => {
   const { exitCode } = process
   const dir = t.testdir({
-    'vlt-workspaces.json': JSON.stringify('src/*'),
+    'vlt-project.json': JSON.stringify({ workspaces: 'src/*' }),
     src: {
       a: {
         'package.json': JSON.stringify({
@@ -378,7 +378,7 @@ t.test('show scripts if no event specified', async t => {
 
 t.test('show scripts if no event specified, single ws', async t => {
   const dir = t.testdir({
-    'vlt-workspaces.json': JSON.stringify('src/ws'),
+    'vlt-project.json': JSON.stringify({ workspaces: 'src/ws' }),
     src: {
       ws: {
         'package.json': JSON.stringify({
@@ -415,7 +415,7 @@ t.test('show scripts if no event specified, single ws', async t => {
 
 t.test('show scripts across several workspaces', async t => {
   const dir = t.testdir({
-    'vlt-workspaces.json': JSON.stringify('src/*'),
+    'vlt-project.json': JSON.stringify({ workspaces: 'src/*' }),
     src: {
       a: {
         'package.json': JSON.stringify({

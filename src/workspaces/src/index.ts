@@ -1,18 +1,18 @@
-import { joinDepIDTuple } from '@vltpkg/dep-id'
 import type { DepID } from '@vltpkg/dep-id'
+import { joinDepIDTuple } from '@vltpkg/dep-id'
 import { error } from '@vltpkg/error-cause'
 import { PackageJson } from '@vltpkg/package-json'
 import type { Manifest } from '@vltpkg/types'
-import { readFileSync, statSync } from 'node:fs'
-import { globSync } from 'glob'
 import type { GlobOptionsWithFileTypesFalse } from 'glob'
-import { graphRun, graphRunSync } from 'graph-run'
+import { globSync } from 'glob'
 import type { DepResults } from 'graph-run'
-import { basename, resolve, posix } from 'node:path'
-import { PathScurry } from 'path-scurry'
-import type { Path } from 'path-scurry'
-import { parse } from 'polite-json'
+import { graphRun, graphRunSync } from 'graph-run'
 import { minimatch } from 'minimatch'
+import { readFileSync, statSync } from 'node:fs'
+import { basename, posix, resolve } from 'node:path'
+import type { Path } from 'path-scurry'
+import { PathScurry } from 'path-scurry'
+import { parse } from 'polite-json'
 
 export type WorkspacesLoadedConfig = {
   workspace?: string[]
@@ -43,7 +43,7 @@ export type LoadQuery = {
 export type WorkspaceConfigObject = Record<string, string[]>
 
 /**
- * Allowed datatype in the `vlt-workspaces.json` file.
+ * Allowed datatype in the `workspaces` field of the `vlt-project.json` file.
  */
 export type WorkspaceConfig =
   | string[]
@@ -134,7 +134,10 @@ export type MonorepoOptions = {
    * A {@link PathScurry} object, for use in globs
    */
   scurry?: PathScurry
-  /** Parsed normalized contents of a `vlt-workspaces.json` file */
+  /**
+   * Parsed normalized contents of the workspaces from a `vlt-project.json`
+   * file
+   */
   config?: WorkspaceConfigObject
   /**
    * If set, then {@link Monorepo#load} will be called immediately with
@@ -148,10 +151,10 @@ export type MonorepoOptions = {
  *
  * Does not automatically look up the root, but that can be provided by
  * running `Config.load()`, since it stops seeking the route when a
- * `vlt-workspaces.json` file is encountered.
+ * `vlt-project.json` file is encountered.
  */
 export class Monorepo {
-  /** The project root where vlt-workspaces.json is found */
+  /** The project root where vlt-project.json is found */
   projectRoot: string
   /** Scurry object to cache all filesystem calls (mostly globs) */
   scurry: PathScurry
@@ -178,7 +181,7 @@ export class Monorepo {
   }
 
   /**
-   * Load the workspace definitions from vlt-workspaces.json,
+   * Load the workspace definitions from vlt-project.json,
    * canonicalizing the result into the effective `{[group:string]:string[]}`
    * form.
    *
@@ -188,12 +191,12 @@ export class Monorepo {
    */
   get config(): WorkspaceConfigObject {
     if (this.#config) return this.#config
-    const file = resolve(this.projectRoot, 'vlt-workspaces.json')
+    const file = resolve(this.projectRoot, 'vlt-project.json')
     let confData: string
     try {
       confData = readFileSync(file, 'utf8')
     } catch (er) {
-      throw error('Not in a monorepo, no vlt-workspaces.json found', {
+      throw error('Not in a monorepo, no vlt-project.json found', {
         path: this.projectRoot,
         cause: er,
       })
@@ -202,12 +205,26 @@ export class Monorepo {
     try {
       parsed = parse(confData)
     } catch (er) {
-      throw error('Invalid vlt-workspaces.json file', {
+      throw error('Invalid vlt-project.json file', {
         path: this.projectRoot,
         cause: er,
       })
     }
-    this.#config = asWSConfig(parsed, file)
+    if (
+      !parsed ||
+      typeof parsed !== 'object' ||
+      Array.isArray(parsed)
+    ) {
+      throw error('Invalid vlt-project.json file, not an object', {
+        path: this.projectRoot,
+        found: parsed,
+        wanted: '{ workspaces: WorkspaceDefinition }',
+      })
+    }
+    this.#config = asWSConfig(
+      (parsed as { workspaces?: WorkspaceConfig }).workspaces ?? {},
+      file,
+    )
     return this.#config
   }
 
@@ -614,9 +631,7 @@ export class Monorepo {
   ) {
     try {
       if (
-        !statSync(
-          resolve(projectRoot, 'vlt-workspaces.json'),
-        ).isFile()
+        !statSync(resolve(projectRoot, 'vlt-project.json')).isFile()
       ) {
         return
       }

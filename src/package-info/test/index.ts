@@ -858,7 +858,7 @@ t.test('fails on non-200 response', async t => {
 
 t.test('workspace specs', async t => {
   const dir = t.testdir({
-    'vlt-workspaces.json': JSON.stringify('p/*'),
+    'vlt-project.json': JSON.stringify({ workspaces: 'p/*' }),
     p: {
       a: { 'package.json': '{"name":"a"}' },
       b: { 'package.json': '{"name":"b"}' },
@@ -901,12 +901,14 @@ t.test('workspace specs', async t => {
 
 t.test('workspace group option', async t => {
   const dir = t.testdir({
-    'vlt-workspaces.json': JSON.stringify({
-      a: 'p/a*',
-      b: ['p/b', 'p/bb'],
-      ab: 'p/?',
-      aabb: ['p/??'],
-      all: 'p/*',
+    'vlt-project.json': JSON.stringify({
+      workspaces: {
+        a: 'p/a*',
+        b: ['p/b', 'p/bb'],
+        ab: 'p/?',
+        aabb: ['p/??'],
+        all: 'p/*',
+      },
     }),
     p: {
       a: { 'package.json': '{"name":"a"}' },

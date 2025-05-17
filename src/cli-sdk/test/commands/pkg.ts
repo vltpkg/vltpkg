@@ -17,7 +17,7 @@ t.matchSnapshot(Command.usage().usage(), 'usage')
 
 t.test('basic', async t => {
   const dir = t.testdir({
-    'vlt-workspaces.json': '[]',
+    'vlt-project.json': JSON.stringify({ workspaces: [] }),
     'package.json': JSON.stringify({}),
   })
   const config = {
@@ -77,7 +77,7 @@ t.test('get', async t => {
     },
   }
   const dir = t.testdir({
-    'vlt-workspaces.json': '[]',
+    'vlt-project.json': JSON.stringify({ workspaces: [] }),
     'package.json': JSON.stringify(pkg),
   })
 
@@ -130,7 +130,7 @@ t.test('pick', async t => {
   }
 
   const dir = t.testdir({
-    'vlt-workspaces.json': '[]',
+    'vlt-project.json': JSON.stringify({ workspaces: [] }),
     'package.json': JSON.stringify(pkg),
   })
 
@@ -199,7 +199,7 @@ t.test('set', async t => {
   }
 
   const dir = t.testdir({
-    'vlt-workspaces.json': '[]',
+    'vlt-project.json': JSON.stringify({ workspaces: [] }),
     'package.json': JSON.stringify(pkg),
   })
 
@@ -246,7 +246,7 @@ t.test('delete', async t => {
   }
 
   const dir = t.testdir({
-    'vlt-workspaces.json': '[]',
+    'vlt-project.json': JSON.stringify({ workspaces: [] }),
     'package.json': JSON.stringify(pkg),
   })
 

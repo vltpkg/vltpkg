@@ -1,11 +1,11 @@
-import type { Test } from 'tap'
 import { joinDepIDTuple } from '@vltpkg/dep-id'
+import { PackageJson } from '@vltpkg/package-json'
 import type { SpecOptions } from '@vltpkg/spec'
+import { Monorepo } from '@vltpkg/workspaces'
+import { PathScurry } from 'path-scurry'
+import type { Test } from 'tap'
 import { load } from '../../src/actual/load.ts'
 import type { Graph } from '../../src/graph.ts'
-import { PathScurry } from 'path-scurry'
-import { PackageJson } from '@vltpkg/package-json'
-import { Monorepo } from '@vltpkg/workspaces'
 
 const configData = {
   registry: 'https://registry.npmjs.org/',
@@ -265,8 +265,10 @@ export const actualGraph = (t: Test): string =>
         }),
       },
     },
-    'vlt-workspaces.json': JSON.stringify({
-      packages: ['./packages/*'],
+    'vlt-project.json': JSON.stringify({
+      workspaces: {
+        packages: ['./packages/*'],
+      },
     }),
   })
 

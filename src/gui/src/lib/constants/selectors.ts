@@ -96,7 +96,7 @@ export const CLASS_SELECTORS: Record<string, Selector> = {
     selector: '.workspace',
     category: 'Class',
     description:
-      'Matches the current project workspaces (listed in your vlt-workspaces.json file).',
+      'Matches the current project workspaces (listed in your vlt-project.json file).',
   },
 }
 

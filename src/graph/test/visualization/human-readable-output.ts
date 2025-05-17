@@ -1,11 +1,11 @@
-import t from 'tap'
-import { Spec } from '@vltpkg/spec'
+import { joinDepIDTuple } from '@vltpkg/dep-id'
 import type { SpecOptions } from '@vltpkg/spec'
+import { Spec } from '@vltpkg/spec'
 import { Monorepo } from '@vltpkg/workspaces'
+import t from 'tap'
 import { Graph } from '../../src/graph.ts'
 import { humanReadableOutput } from '../../src/visualization/human-readable-output.ts'
 import { loadActualGraph } from '../fixtures/actual.ts'
-import { joinDepIDTuple } from '@vltpkg/dep-id'
 
 const configData = {
   registry: 'https://registry.npmjs.org/',
@@ -168,8 +168,8 @@ t.test('workspaces', async t => {
   }
   const dir = t.testdir({
     'package.json': JSON.stringify(mainManifest),
-    'vlt-workspaces.json': JSON.stringify({
-      packages: ['./packages/*'],
+    'vlt-project.json': JSON.stringify({
+      workspaces: { packages: ['./packages/*'] },
     }),
     packages: {
       a: {
