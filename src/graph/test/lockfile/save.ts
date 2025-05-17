@@ -1,6 +1,6 @@
 import { joinDepIDTuple } from '@vltpkg/dep-id'
-import { Spec } from '@vltpkg/spec'
 import type { SpecOptions } from '@vltpkg/spec'
+import { Spec } from '@vltpkg/spec'
 import { Monorepo } from '@vltpkg/workspaces'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
@@ -278,8 +278,10 @@ t.test('workspaces', async t => {
   }
   const projectRoot = t.testdir({
     'package.json': JSON.stringify(mainManifest),
-    'vlt-workspaces.json': JSON.stringify({
-      packages: ['./packages/*'],
+    'vlt-project.json': JSON.stringify({
+      workspaces: {
+        packages: ['./packages/*'],
+      },
     }),
     packages: {
       a: {

@@ -73,7 +73,7 @@ t.test(
           a: '',
         },
       }),
-      'vlt-workspaces.json': '"src/*"',
+      'vlt-project.json': JSON.stringify({ workspaces: 'src/*' }),
       node_modules: {
         '.bin': {
           x: t.fixture(
