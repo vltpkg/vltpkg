@@ -46,7 +46,7 @@ t.test('run script in a project', async t => {
 
 t.test('run script in a single workspace', async t => {
   const dir = t.testdir({
-    'vlt-workspaces.json': JSON.stringify('src/ws'),
+    'vlt-project.json': JSON.stringify({ workspaces: 'src/ws' }),
     src: {
       ws: {
         'package.json': JSON.stringify({
@@ -85,7 +85,7 @@ t.test('run script in a single workspace', async t => {
 
 t.test('run script across several workspaces', async t => {
   const dir = t.testdir({
-    'vlt-workspaces.json': JSON.stringify('src/*'),
+    'vlt-project.json': JSON.stringify({ workspaces: 'src/*' }),
     src: {
       a: {
         'package.json': JSON.stringify({}),

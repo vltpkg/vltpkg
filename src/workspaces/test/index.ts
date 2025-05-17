@@ -7,8 +7,8 @@ import { resolve } from 'node:path'
 
 t.test('load some workspaces', async t => {
   const dir = t.testdir({
-    'vlt-workspaces.json': JSON.stringify({
-      packages: ['./src/*'],
+    'vlt-project.json': JSON.stringify({
+      workspaces: { packages: ['./src/*'] },
     }),
     src: {
       foo: {
@@ -188,10 +188,12 @@ t.test('cyclic intra-project ws deps are handled', async t => {
   // goes into Monorepo.onCycle, but for now just load a cyclic
   // monorepo and verify with coverage.
   const dir = t.testdir({
-    'vlt-workspaces.json': JSON.stringify({
-      utils: 'utils/*',
-      // use ** so that we exercise the 'remove child ws' path
-      apps: ['app/bar/*', 'app/*'],
+    'vlt-project.json': JSON.stringify({
+      workspaces: {
+        utils: 'utils/*',
+        // use ** so that we exercise the 'remove child ws' path
+        apps: ['app/bar/*', 'app/*'],
+      },
     }),
     utils: {
       // this if course still an actual problem for the app 😅
@@ -355,7 +357,32 @@ export const isOdd = (n) => !isEven(n)
   t.end()
 })
 
-t.test('missing/invalid vlt-workspaces.json file', t => {
+t.test('missing/invalid vlt-project.json file', t => {
+  t.test('no null allowed', async t => {
+    const dir = t.testdir({
+      'vlt-project.json': 'null',
+    })
+    const m = new Monorepo(dir)
+    t.throws(() => m.load(), {
+      message: 'Invalid vlt-project.json file, not an object',
+    })
+  })
+  t.test('no array allowed', async t => {
+    const dir = t.testdir({
+      'vlt-project.json': JSON.stringify([]),
+    })
+    const m = new Monorepo(dir)
+    t.throws(() => m.load(), {
+      message: 'Invalid vlt-project.json file, not an object',
+    })
+  })
+  t.test('no workspaces is fine though', async t => {
+    const dir = t.testdir({
+      'vlt-project.json': JSON.stringify({}),
+    })
+    const m = new Monorepo(dir)
+    m.load()
+  })
   const dir = t.testdir({
     'package.json': JSON.stringify({
       name: 'just a package',
@@ -365,28 +392,28 @@ t.test('missing/invalid vlt-workspaces.json file', t => {
   const m = new Monorepo(dir)
   t.equal(Monorepo.maybeLoad(m.projectRoot), undefined)
   t.throws(() => m.load(), {
-    message: 'Not in a monorepo, no vlt-workspaces.json found',
+    message: 'Not in a monorepo, no vlt-project.json found',
   })
 
-  mkdirSync(dir + '/vlt-workspaces.json')
+  mkdirSync(dir + '/vlt-project.json')
   t.equal(Monorepo.maybeLoad(m.projectRoot), undefined)
   t.throws(() => m.load(), {
-    message: 'Not in a monorepo, no vlt-workspaces.json found',
+    message: 'Not in a monorepo, no vlt-project.json found',
   })
 
-  rmdirSync(dir + '/vlt-workspaces.json')
+  rmdirSync(dir + '/vlt-project.json')
 
-  writeFileSync(dir + '/vlt-workspaces.json', 'hello, world')
+  writeFileSync(dir + '/vlt-project.json', 'hello, world')
   t.throws(() => Monorepo.maybeLoad(m.projectRoot), {
-    message: 'Invalid vlt-workspaces.json file',
+    message: 'Invalid vlt-project.json file',
   })
   t.throws(() => m.load(), {
-    message: 'Invalid vlt-workspaces.json file',
+    message: 'Invalid vlt-project.json file',
   })
   writeFileSync(
-    dir + '/vlt-workspaces.json',
+    dir + '/vlt-project.json',
     JSON.stringify({
-      hello: { world: true },
+      workspaces: { hello: { world: true } },
     }),
   )
   t.throws(() => Monorepo.maybeLoad(m.projectRoot), {
@@ -425,7 +452,7 @@ t.test('missing/invalid vlt-workspaces.json file', t => {
 
 t.test('iterating empty monorepo is no-op', async t => {
   const dir = t.testdir({
-    'vlt-workspaces.json': JSON.stringify('utils'),
+    'vlt-project.json': JSON.stringify({ workspaces: 'utils' }),
   })
 
   const m = new Monorepo(dir)
@@ -444,7 +471,7 @@ t.test('iterating empty monorepo is no-op', async t => {
 
 t.test('force a full load, but still not found', t => {
   const dir = t.testdir({
-    'vlt-workspaces.json': JSON.stringify('src/*'),
+    'vlt-project.json': JSON.stringify({ workspaces: 'src/*' }),
     src: {
       ws: {
         'package.json': JSON.stringify({
@@ -465,8 +492,8 @@ t.test('force a full load, but still not found', t => {
 
 t.test('duplicate workspace names are not allowed', t => {
   const dir = t.testdir({
-    'vlt-workspaces.json': JSON.stringify({
-      packages: ['./src/*'],
+    'vlt-project.json': JSON.stringify({
+      workspaces: { packages: ['./src/*'] },
     }),
     src: {
       foo: {

@@ -6,14 +6,14 @@ import { inspect } from 'node:util'
 import { PathScurry } from 'path-scurry'
 import t from 'tap'
 import { load } from '../../src/actual/load.ts'
-import { asDependency } from '../../src/dependencies.ts'
 import type {
   AddImportersDependenciesMap,
   RemoveImportersDependenciesMap,
 } from '../../src/dependencies.ts'
+import { asDependency } from '../../src/dependencies.ts'
+import { Edge } from '../../src/edge.ts'
 import { Graph } from '../../src/graph.ts'
 import { getImporterSpecs } from '../../src/ideal/get-importer-specs.ts'
-import { Edge } from '../../src/edge.ts'
 
 Object.assign(Spec.prototype, {
   [kCustomInspect](this: Spec) {
@@ -51,8 +51,10 @@ t.test('empty graph with workspaces and nothing to add', async t => {
         }),
       },
     },
-    'vlt-workspaces.json': JSON.stringify({
-      packages: ['./packages/*'],
+    'vlt-project.json': JSON.stringify({
+      workspaces: {
+        packages: ['./packages/*'],
+      },
     }),
   })
   const graph = load({
@@ -274,8 +276,10 @@ t.test(
           }),
         },
       },
-      'vlt-workspaces.json': JSON.stringify({
-        packages: ['./packages/*'],
+      'vlt-project.json': JSON.stringify({
+        workspaces: {
+          packages: ['./packages/*'],
+        },
       }),
     })
     const graph = load({
@@ -487,8 +491,10 @@ t.test(
           },
         },
       },
-      'vlt-workspaces.json': JSON.stringify({
-        packages: ['./packages/*'],
+      'vlt-project.json': JSON.stringify({
+        workspaces: {
+          packages: ['./packages/*'],
+        },
       }),
     })
     const graph = load({
