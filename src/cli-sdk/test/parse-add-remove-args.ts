@@ -119,7 +119,7 @@ t.test('parseAddArgs', async t => {
 
   await t.test('workspaces', async t => {
     const dir = t.testdir({
-      'vlt-project.json': JSON.stringify({
+      'vlt.json': JSON.stringify({
         workspaces: {
           app: ['./app/*'],
           utils: ['./utils/*'],
@@ -313,7 +313,7 @@ t.test('parseRemoveArgs', async t => {
 
   await t.test('workspaces', async t => {
     const dir = t.testdir({
-      'vlt-project.json': JSON.stringify({
+      'vlt.json': JSON.stringify({
         workspaces: {
           app: ['./app/*'],
           utils: ['./utils/*'],

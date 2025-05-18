@@ -1,0 +1,4 @@
+{
+  "workspaces": ["src/*", "infra/*", "www/*"],
+  "config": {}
+}

@@ -503,7 +503,7 @@ t.test('build from an actual graph', async t => {
         }),
       },
     },
-    'vlt-project.json': JSON.stringify({
+    'vlt.json': JSON.stringify({
       workspaces: {
         packages: ['./packages/*'],
       },

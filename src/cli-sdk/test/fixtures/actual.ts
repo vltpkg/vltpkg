@@ -260,7 +260,7 @@ export const actualObject = (t: Test): any => ({
       }),
     },
   },
-  'vlt-project.json': JSON.stringify({
+  'vlt.json': JSON.stringify({
     workspaces: { packages: ['./packages/*'] },
   }),
 })

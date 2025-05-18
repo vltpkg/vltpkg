@@ -97,7 +97,7 @@ export type PairsAsRecords = Omit<
 }
 
 export const pairsToRecords = (
-  obj: ConfigFileData['config'],
+  obj: NonNullable<ConfigFileData['config']>,
 ): PairsAsRecords => {
   return Object.fromEntries(
     Object.entries(obj).map(([k, v]) => [
@@ -106,7 +106,9 @@ export const pairsToRecords = (
         Object.fromEntries(
           Object.entries(v).map(([k, v]) => [
             k,
-            pairsToRecords(v as ConfigFileData['config']),
+            pairsToRecords(
+              v as NonNullable<ConfigFileData['config']>,
+            ),
           ]),
         )
       : isRecordFieldValue(k, v) ? reducePairs(v)
@@ -168,7 +170,7 @@ export type ConfigData = OptionsResults<ConfigDefinitions> & {
  * stored as `Record<string, string>`.
  */
 export type ConfigFileData = {
-  config: {
+  config?: {
     [k in keyof ConfigData]?: k extends OptListKeys<ConfigData> ?
       RecordString | string[]
     : k extends 'command' ? ConfigFiles
@@ -288,7 +290,7 @@ export class Config {
   positionals?: string[]
 
   /**
-   * The root of the project where a vlt.json, vlt-project.json,
+   * The root of the project where a vlt.json, vlt.json,
    * package.json, or .git was found. Not necessarily the `process.cwd()`,
    * though that is the default location.
    *
@@ -400,7 +402,7 @@ export class Config {
    */
   async writeConfigFile(
     which: 'project' | 'user',
-    values: ConfigFileData['config'],
+    values: NonNullable<ConfigFiles['config']>,
   ) {
     const f = this.getFilename(which)
     await mkdir(dirname(f), { recursive: true })
@@ -423,7 +425,7 @@ export class Config {
    */
   async addConfigToFile(
     which: 'project' | 'user',
-    values: ConfigFileData['config'],
+    values: NonNullable<ConfigFileData['config']>,
   ) {
     const f = this.getFilename(which)
     return this.writeConfigFile(
@@ -438,7 +440,7 @@ export class Config {
    */
   async #maybeLoadConfigFile(
     file: string,
-  ): Promise<ConfigFileData['config'] | undefined> {
+  ): Promise<ConfigFileData['config']> {
     const result = await this.#readConfigFile(file)
 
     if (result) {
@@ -461,7 +463,7 @@ export class Config {
 
   async #readConfigFile(
     file: string,
-  ): Promise<ConfigFileData['config'] | undefined> {
+  ): Promise<ConfigFileData['config']> {
     if (this.configFiles[file]) return this.configFiles[file]
     const data = await readFile(file, 'utf8').catch(() => {})
     if (!data) return undefined
@@ -484,16 +486,16 @@ export class Config {
       !result ||
       typeof result !== 'object' ||
       Array.isArray(result) ||
-      !('config' in result) ||
-      !result.config ||
-      typeof result.config !== 'object'
+      // if it has a config field, must be an object
+      ('config' in result &&
+        (!result.config || typeof result.config !== 'object'))
     ) {
       throw error(
         'invalid config, expected object with "config" member',
         {
           path: file,
           found: result,
-          wanted: '{ "config": ConfigFileData }',
+          wanted: '{ "config"?: ConfigFileData }',
         },
       )
     }
@@ -582,9 +584,8 @@ export class Config {
         !res ||
         typeof res !== 'object' ||
         Array.isArray(res) ||
-        !('config' in res) ||
-        !res.config ||
-        typeof res.config !== 'object'
+        ('config' in res &&
+          (!res.config || typeof res.config !== 'object'))
       ) {
         throw error(
           'Invalid configuration, expected object with config member',
@@ -595,12 +596,8 @@ export class Config {
           },
         )
       }
-      const config = (res as unknown as ConfigFileData).config
-      if (Object.keys(config).length === 0) {
-        // nothing there, remove file
-        delete this.configFiles[file]
-        rmSync(file, { force: true })
-      } else {
+      const { config } = res as unknown as ConfigFileData
+      if (config) {
         this.jack.setConfigValues(recordsToPairs(config))
         this.configFiles[file] = config
       }
@@ -621,7 +618,7 @@ export class Config {
    * the XDG config home.
    *
    * Note: if working in a workspaces monorepo, then the vlt.json file MUST
-   * be in the same folder as the vlt-project.json file, because we stop
+   * be in the same folder as the vlt.json file, because we stop
    * looking when we find either one.
    */
   async loadConfigFile(): Promise<this> {
@@ -649,7 +646,7 @@ export class Config {
         await Promise.all([
           exists(resolve(dir, 'package.json')),
           exists(resolve(dir, 'node_modules')),
-          exists(resolve(dir, 'vlt-project.json')),
+          exists(resolve(dir, 'vlt.json')),
           exists(resolve(dir, '.git')),
         ])
 

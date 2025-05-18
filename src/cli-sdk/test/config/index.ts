@@ -101,7 +101,7 @@ t.test('read and write a user config', async t => {
           '\t',
         ) + '\n',
     },
-    'vlt-project.json': JSON.stringify({}),
+    'vlt.json': JSON.stringify({}),
     '.git': {},
     a: { b: {} },
   })
@@ -181,7 +181,6 @@ t.test(
             '\t',
           ) + '\n',
       },
-      'vlt-project.json': JSON.stringify({}),
       '.git': {},
       a: { b: {} },
     })
@@ -299,16 +298,30 @@ t.test('invalid config', async t => {
     })
   })
 
-  t.test('invalid object', async t => {
+  t.test('invalid object, config is string', async t => {
     const dir = t.testdir({
-      'vlt.json': '{"blarg": "no config here"}',
+      'vlt.json': '{"config": "not a config object"}',
       '.git': '',
     })
     await t.rejects(Config.load(dir, undefined, true), {
       cause: {
         path: resolve(dir, 'vlt.json'),
-        found: { blarg: 'no config here' },
-        wanted: '{ "config": ConfigFileData }',
+        found: { config: 'not a config object' },
+        wanted: '{ "config"?: ConfigFileData }',
+      },
+    })
+  })
+
+  t.test('invalid object, config is falsey', async t => {
+    const dir = t.testdir({
+      'vlt.json': '{"config": false}',
+      '.git': '',
+    })
+    await t.rejects(Config.load(dir, undefined, true), {
+      cause: {
+        path: resolve(dir, 'vlt.json'),
+        found: { config: false },
+        wanted: '{ "config"?: ConfigFileData }',
       },
     })
   })
@@ -515,12 +528,20 @@ t.test('do not walk past xdg config dir', async t => {
 })
 
 t.test('delete config values from file', async t => {
-  const emptyConf = await Config.load(t.testdirName, [], true)
-  t.equal(
-    await emptyConf.deleteConfigKeys('project', ['color']),
-    false,
-    'nothing to do, no config found',
-  )
+  t.test('empty config file, nothing to do', async t => {
+    const { Config } = await t.mockImport<
+      typeof import('../../src/config/index.ts')
+    >('../../src/config/index.ts')
+    const dir = t.testdir({ 'vlt.json': '{}' })
+    const emptyConf = await Config.load(dir, [], true)
+    t.equal(
+      await emptyConf.deleteConfigKeys('project', ['color']),
+      false,
+      'nothing to do, no config found',
+    )
+    clearEnv()
+  })
+
   const dir = t.testdir({
     'vlt.json': JSON.stringify({
       config: {
@@ -637,27 +658,32 @@ t.test('edit config file', async t => {
   })
   t.equal(editCalled, true)
 
-  await conf.editConfigFile('project', filename => {
-    t.equal(filename, f)
-    t.equal(
-      readFileSync(f, 'utf8'),
-      JSON.stringify({
-        config: {
-          registry: 'my happy regas try',
-        },
-      }),
-    )
-    writeFileSync(f, JSON.stringify({ config: {} }))
-  })
-  t.throws(() => statSync(f), 'no configs, deleted file')
-
+  editCalled = false
   await t.rejects(
     conf.editConfigFile('project', () => {
-      t.equal(readFileSync(f, 'utf8'), '{\n  "config": {}\n}\n')
+      editCalled = true
+      t.equal(
+        readFileSync(f, 'utf8'),
+        JSON.stringify({
+          config: {
+            registry: 'my happy regas try',
+          },
+        }),
+      )
+      writeFileSync(f, '{"config":{"color":true}}')
       throw new Error()
     }),
   )
-  t.throws(() => statSync(f), 'edit throws, deleted file')
+  t.equal(editCalled, true)
+  t.equal(
+    readFileSync(f, 'utf8'),
+    JSON.stringify({
+      config: {
+        registry: 'my happy regas try',
+      },
+    }),
+    'edit threw, file reverted',
+  )
 
   await t.rejects(
     conf.editConfigFile('project', filename => {
@@ -683,4 +709,23 @@ t.test('edit config file', async t => {
     { config: { color: true } },
     'preserved original config when edit failed',
   )
+})
+
+t.test('write invalid config with no backup', async t => {
+  const dir = t.testdir({
+    '.git': {},
+  })
+  const f = resolve(dir, 'vlt.json')
+  let editCalled = false
+  const conf = await Config.load(dir, [], true)
+  await t.rejects(
+    conf.editConfigFile('project', filename => {
+      editCalled = true
+      t.equal(filename, f)
+      writeFileSync(filename, '"just a string"')
+    }),
+    'Invalid configuration, expected object',
+  )
+  t.equal(editCalled, true)
+  t.throws(() => statSync(f), 'file was removed')
 })

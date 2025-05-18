@@ -51,7 +51,7 @@ t.test('empty graph with workspaces and nothing to add', async t => {
         }),
       },
     },
-    'vlt-project.json': JSON.stringify({
+    'vlt.json': JSON.stringify({
       workspaces: {
         packages: ['./packages/*'],
       },
@@ -276,7 +276,7 @@ t.test(
           }),
         },
       },
-      'vlt-project.json': JSON.stringify({
+      'vlt.json': JSON.stringify({
         workspaces: {
           packages: ['./packages/*'],
         },
@@ -491,7 +491,7 @@ t.test(
           },
         },
       },
-      'vlt-project.json': JSON.stringify({
+      'vlt.json': JSON.stringify({
         workspaces: {
           packages: ['./packages/*'],
         },

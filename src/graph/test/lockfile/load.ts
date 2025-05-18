@@ -194,7 +194,7 @@ t.test('workspaces', async t => {
   }
   const projectRoot = t.testdir({
     'vlt-lock.json': JSON.stringify(lockfileData),
-    'vlt-project.json': JSON.stringify({
+    'vlt.json': JSON.stringify({
       workspaces: {
         packages: ['./packages/*'],
       },

@@ -69,8 +69,8 @@ for (const path of m.paths()) {
 }
 ```
 
-Configuration is stored in the project root at `vlt-project.json`. The
-type of the object in the file must be:
+Configuration is stored in the project root at `vlt.json`. The type of
+the object in the file must be:
 
 ```ts
 type VltProject = {

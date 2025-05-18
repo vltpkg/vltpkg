@@ -43,7 +43,7 @@ export type LoadQuery = {
 export type WorkspaceConfigObject = Record<string, string[]>
 
 /**
- * Allowed datatype in the `workspaces` field of the `vlt-project.json` file.
+ * Allowed datatype in the `workspaces` field of the `vlt.json` file.
  */
 export type WorkspaceConfig =
   | string[]
@@ -135,7 +135,7 @@ export type MonorepoOptions = {
    */
   scurry?: PathScurry
   /**
-   * Parsed normalized contents of the workspaces from a `vlt-project.json`
+   * Parsed normalized contents of the workspaces from a `vlt.json`
    * file
    */
   config?: WorkspaceConfigObject
@@ -151,10 +151,10 @@ export type MonorepoOptions = {
  *
  * Does not automatically look up the root, but that can be provided by
  * running `Config.load()`, since it stops seeking the route when a
- * `vlt-project.json` file is encountered.
+ * `vlt.json` file is encountered.
  */
 export class Monorepo {
-  /** The project root where vlt-project.json is found */
+  /** The project root where vlt.json is found */
   projectRoot: string
   /** Scurry object to cache all filesystem calls (mostly globs) */
   scurry: PathScurry
@@ -181,7 +181,7 @@ export class Monorepo {
   }
 
   /**
-   * Load the workspace definitions from vlt-project.json,
+   * Load the workspace definitions from vlt.json,
    * canonicalizing the result into the effective `{[group:string]:string[]}`
    * form.
    *
@@ -191,12 +191,12 @@ export class Monorepo {
    */
   get config(): WorkspaceConfigObject {
     if (this.#config) return this.#config
-    const file = resolve(this.projectRoot, 'vlt-project.json')
+    const file = resolve(this.projectRoot, 'vlt.json')
     let confData: string
     try {
       confData = readFileSync(file, 'utf8')
     } catch (er) {
-      throw error('Not in a monorepo, no vlt-project.json found', {
+      throw error('Not in a monorepo, no vlt.json found', {
         path: this.projectRoot,
         cause: er,
       })
@@ -205,7 +205,7 @@ export class Monorepo {
     try {
       parsed = parse(confData)
     } catch (er) {
-      throw error('Invalid vlt-project.json file', {
+      throw error('Invalid vlt.json file', {
         path: this.projectRoot,
         cause: er,
       })
@@ -215,7 +215,7 @@ export class Monorepo {
       typeof parsed !== 'object' ||
       Array.isArray(parsed)
     ) {
-      throw error('Invalid vlt-project.json file, not an object', {
+      throw error('Invalid vlt.json file, not an object', {
         path: this.projectRoot,
         found: parsed,
         wanted: '{ workspaces: WorkspaceDefinition }',
@@ -630,9 +630,7 @@ export class Monorepo {
     options: MonorepoOptions = { load: {} },
   ) {
     try {
-      if (
-        !statSync(resolve(projectRoot, 'vlt-project.json')).isFile()
-      ) {
+      if (!statSync(resolve(projectRoot, 'vlt.json')).isFile()) {
         return
       }
     } catch {
