@@ -61,7 +61,7 @@ export const kCustomInspect = Symbol.for('nodejs.util.inspect.custom')
 
 export type RecordPairs = Record<string, unknown>
 export type RecordString = Record<string, string>
-export type ConfigFiles = Record<string, ConfigFileData>
+export type ConfigFiles = Record<string, ConfigFileData['config']>
 
 // turn a set of pairs into a Record object.
 // if a kv pair doesn't have a = character, set to `''`
@@ -97,7 +97,7 @@ export type PairsAsRecords = Omit<
 }
 
 export const pairsToRecords = (
-  obj: ConfigFileData,
+  obj: ConfigFileData['config'],
 ): PairsAsRecords => {
   return Object.fromEntries(
     Object.entries(obj).map(([k, v]) => [
@@ -106,7 +106,7 @@ export const pairsToRecords = (
         Object.fromEntries(
           Object.entries(v).map(([k, v]) => [
             k,
-            pairsToRecords(v as ConfigFileData),
+            pairsToRecords(v as ConfigFileData['config']),
           ]),
         )
       : isRecordFieldValue(k, v) ? reducePairs(v)
@@ -168,10 +168,12 @@ export type ConfigData = OptionsResults<ConfigDefinitions> & {
  * stored as `Record<string, string>`.
  */
 export type ConfigFileData = {
-  [k in keyof ConfigData]?: k extends OptListKeys<ConfigData> ?
-    RecordString | string[]
-  : k extends 'command' ? ConfigFiles
-  : ConfigData[k]
+  config: {
+    [k in keyof ConfigData]?: k extends OptListKeys<ConfigData> ?
+      RecordString | string[]
+    : k extends 'command' ? ConfigFiles
+    : ConfigData[k]
+  }
 }
 
 export type ConfigOptions = {
@@ -398,7 +400,7 @@ export class Config {
    */
   async writeConfigFile(
     which: 'project' | 'user',
-    values: ConfigFileData,
+    values: ConfigFileData['config'],
   ) {
     const f = this.getFilename(which)
     await mkdir(dirname(f), { recursive: true })
@@ -406,7 +408,11 @@ export class Config {
       pairsToRecords(values),
       this.stringifyOptions,
     )
-    await writeFile(f, jsonStringify(vals))
+    const data = await readFile(f, 'utf8')
+      .then(data => jsonParse(data) as unknown as ConfigFileData)
+      .catch(() => ({ config: {} }))
+    data.config = vals
+    await writeFile(f, jsonStringify(data))
     this.configFiles[f] = vals
     return values
   }
@@ -417,7 +423,7 @@ export class Config {
    */
   async addConfigToFile(
     which: 'project' | 'user',
-    values: ConfigFileData,
+    values: ConfigFileData['config'],
   ) {
     const f = this.getFilename(which)
     return this.writeConfigFile(
@@ -432,7 +438,7 @@ export class Config {
    */
   async #maybeLoadConfigFile(
     file: string,
-  ): Promise<ConfigFileData | undefined> {
+  ): Promise<ConfigFileData['config'] | undefined> {
     const result = await this.#readConfigFile(file)
 
     if (result) {
@@ -455,7 +461,7 @@ export class Config {
 
   async #readConfigFile(
     file: string,
-  ): Promise<ConfigFileData | undefined> {
+  ): Promise<ConfigFileData['config'] | undefined> {
     if (this.configFiles[file]) return this.configFiles[file]
     const data = await readFile(file, 'utf8').catch(() => {})
     if (!data) return undefined
@@ -474,8 +480,25 @@ export class Config {
         cause: er,
       })
     }
-    this.configFiles[file] = result as ConfigFileData
-    return result as ConfigFileData
+    if (
+      !result ||
+      typeof result !== 'object' ||
+      Array.isArray(result) ||
+      !('config' in result) ||
+      !result.config ||
+      typeof result.config !== 'object'
+    ) {
+      throw error(
+        'invalid config, expected object with "config" member',
+        {
+          path: file,
+          found: result,
+          wanted: '{ "config": ConfigFileData }',
+        },
+      )
+    }
+    this.configFiles[file] = result.config as ConfigFileData['config']
+    return this.configFiles[file]
   }
 
   getFilename(which: 'project' | 'user' = 'project'): string {
@@ -490,10 +513,7 @@ export class Config {
   ) {
     const file = this.getFilename(which)
     const data = await this.#maybeLoadConfigFile(file)
-    if (!data) {
-      rmSync(file, { force: true })
-      return false
-    }
+    if (!data) return false
     let didSomething = false
     for (const f of fields) {
       const [key, ...sk] = f.split('.') as [
@@ -510,8 +530,8 @@ export class Config {
             subvalue.startsWith(`${subs}=`),
           )
           if (i !== -1) {
-            v.splice(i, 1)
-            if (v.length === 0) delete data[k]
+            if (v.length === 1) delete data[k]
+            else v.splice(i, 1)
             didSomething = true
           }
         } else {
@@ -526,12 +546,7 @@ export class Config {
         delete data[k]
       }
     }
-    const d = jsonStringify(data)
-    if (d.trim() === '{}') {
-      rmSync(file, { force: true })
-    } else {
-      writeFileSync(file, jsonStringify(data))
-    }
+    await this.writeConfigFile(which, data)
     return didSomething
   }
 
@@ -550,27 +565,44 @@ export class Config {
     edit: (file: string) => Promise<void> | void,
   ) {
     const file = this.getFilename(which)
-    const backup = this.configFiles[file]
+    const backup = await readFile(file, 'utf8')
+      .then(data => jsonParse(data))
+      .catch(() => null)
     if (!backup) {
-      writeFileSync(file, '{\n\n}\n')
+      writeFileSync(
+        file,
+        JSON.stringify({ config: {} }, null, 2) + '\n',
+      )
     }
     let valid = false
     try {
       await edit(file)
       const res = jsonParse(readFileSync(file, 'utf8'))
-      if (!res || typeof res !== 'object' || Array.isArray(res)) {
-        throw error('Invalid configuration, expected object', {
-          path: file,
-          found: res,
-        })
+      if (
+        !res ||
+        typeof res !== 'object' ||
+        Array.isArray(res) ||
+        !('config' in res) ||
+        !res.config ||
+        typeof res.config !== 'object'
+      ) {
+        throw error(
+          'Invalid configuration, expected object with config member',
+          {
+            path: file,
+            found: res,
+            wanted: '{ config: ConfigData }',
+          },
+        )
       }
-      if (Object.keys(res).length === 0) {
+      const config = (res as unknown as ConfigFileData).config
+      if (Object.keys(config).length === 0) {
         // nothing there, remove file
         delete this.configFiles[file]
         rmSync(file, { force: true })
       } else {
-        this.jack.setConfigValues(recordsToPairs(res))
-        this.configFiles[file] = res as ConfigFileData
+        this.jack.setConfigValues(recordsToPairs(config))
+        this.configFiles[file] = config
       }
       valid = true
     } finally {

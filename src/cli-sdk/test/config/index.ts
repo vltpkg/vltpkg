@@ -36,7 +36,7 @@ t.test('read and write a project config', async t => {
   const dir = t.testdir({
     'vlt.json':
       JSON.stringify(
-        { registry: 'https://registry.vlt.sh/' },
+        { config: { registry: 'https://registry.vlt.sh/' } },
         null,
         '\t',
       ) + '\n',
@@ -61,8 +61,10 @@ t.test('read and write a project config', async t => {
   t.strictSame(
     JSON.parse(readFileSync(dir + '/vlt.json', 'utf8')),
     {
-      cache: 'hello',
-      registry: 'https://registry.vlt.sh/',
+      config: {
+        cache: 'hello',
+        registry: 'https://registry.vlt.sh/',
+      },
     },
     'wrote without merging if not already data present',
   )
@@ -76,12 +78,25 @@ t.test('read and write a project config', async t => {
   )
 })
 
+t.test('add to empty config adds a config file', async t => {
+  const { Config } = await t.mockImport<
+    typeof import('../../src/config/index.ts')
+  >('../../src/config/index.ts')
+  const dir = t.testdir({ '.git': {}, node_modules: {} })
+  const conf = await Config.load(dir)
+  t.equal(conf.projectRoot, dir)
+  await conf.addConfigToFile('project', { cache: 'cache' })
+  t.strictSame(JSON.parse(readFileSync(dir + '/vlt.json', 'utf8')), {
+    config: { cache: 'cache' },
+  })
+})
+
 t.test('read and write a user config', async t => {
   const dir = t.testdir({
     xdg: {
       'vlt.json':
         JSON.stringify(
-          { registry: 'https://registry.vlt.sh/' },
+          { config: { registry: 'https://registry.vlt.sh/' } },
           null,
           '\t',
         ) + '\n',
@@ -121,8 +136,10 @@ t.test('read and write a user config', async t => {
   t.strictSame(
     JSON.parse(readFileSync(dir + '/xdg/vlt.json', 'utf8')),
     {
-      registry: 'https://registry.vlt.sh/',
-      cache: 'hello',
+      config: {
+        registry: 'https://registry.vlt.sh/',
+        cache: 'hello',
+      },
     },
     'wrote without merging if not already data present',
   )
@@ -135,11 +152,13 @@ t.test(
       'vlt.json':
         JSON.stringify(
           {
-            tag: 'beta',
-            'node-version': '1.2.3',
-            registries: {
-              example: 'https://example.com',
-              foo: 'https://registry.foo',
+            config: {
+              tag: 'beta',
+              'node-version': '1.2.3',
+              registries: {
+                example: 'https://example.com',
+                foo: 'https://registry.foo',
+              },
             },
           },
           null,
@@ -149,11 +168,13 @@ t.test(
         'vlt.json':
           JSON.stringify(
             {
-              registry: 'https://registry.vlt.sh/',
-              tag: 'latest',
-              registries: {
-                example: 'https://nope.com',
-                bar: 'https://registry.bar',
+              config: {
+                registry: 'https://registry.vlt.sh/',
+                tag: 'latest',
+                registries: {
+                  example: 'https://nope.com',
+                  bar: 'https://registry.bar',
+                },
               },
             },
             null,
@@ -207,7 +228,9 @@ t.test(
     t.strictSame(
       JSON.parse(readFileSync(dir + '/vlt.json', 'utf8')),
       {
-        'git-hosts': { asdfasdf: '', github: 'https://github' },
+        config: {
+          'git-hosts': { asdfasdf: '', github: 'https://github' },
+        },
       },
       'invalid k=v are set to ""',
     )
@@ -247,9 +270,11 @@ t.test(
     t.strictSame(
       JSON.parse(readFileSync(dir + '/vlt.json', 'utf8')),
       {
-        'git-hosts': {
-          asdfasdf: 'https://example.com',
-          github: 'https://github',
+        config: {
+          'git-hosts': {
+            asdfasdf: 'https://example.com',
+            github: 'https://github',
+          },
         },
       },
       'converted to record if all k=v values',
@@ -274,9 +299,25 @@ t.test('invalid config', async t => {
     })
   })
 
+  t.test('invalid object', async t => {
+    const dir = t.testdir({
+      'vlt.json': '{"blarg": "no config here"}',
+      '.git': '',
+    })
+    await t.rejects(Config.load(dir, undefined, true), {
+      cause: {
+        path: resolve(dir, 'vlt.json'),
+        found: { blarg: 'no config here' },
+        wanted: '{ "config": ConfigFileData }',
+      },
+    })
+  })
+
   t.test('valid json, invalid data', async t => {
     const dir = t.testdir({
-      'vlt.json': JSON.stringify({ color: 'not a boolean' }),
+      'vlt.json': JSON.stringify({
+        config: { color: 'not a boolean' },
+      }),
       '.git': '',
     })
     await t.rejects(Config.load(dir, undefined, true), {
@@ -294,12 +335,14 @@ t.test('invalid config', async t => {
 t.test('command-specific configs', async t => {
   const dir = t.testdir({
     'vlt.json': JSON.stringify({
-      command: {
-        install: {
-          color: true,
+      config: {
+        command: {
+          install: {
+            color: true,
+          },
         },
+        color: false,
       },
-      color: false,
     }),
     '.git': '',
   })
@@ -315,9 +358,11 @@ t.test('command-specific configs', async t => {
 t.test('kv string[] stored as Record<string, string>', async t => {
   const dir = t.testdir({
     'vlt.json': JSON.stringify({
-      registries: {
-        npm: 'https://registry.npmjs.org/',
-        vlt: 'https://vlt.sh',
+      config: {
+        registries: {
+          npm: 'https://registry.npmjs.org/',
+          vlt: 'https://vlt.sh',
+        },
       },
     }),
     '.git': '',
@@ -339,7 +384,9 @@ t.test('kv string[] stored as Record<string, string>', async t => {
   t.equal(
     readFileSync(dir + '/vlt.json', 'utf8'),
     JSON.stringify({
-      registries: { example: 'https://example.com' },
+      config: {
+        registries: { example: 'https://example.com' },
+      },
     }),
   )
   await c.writeConfigFile('project', {
@@ -348,7 +395,9 @@ t.test('kv string[] stored as Record<string, string>', async t => {
   t.equal(
     readFileSync(dir + '/vlt.json', 'utf8'),
     JSON.stringify({
-      registries: { example: 'https://another.example.com' },
+      config: {
+        registries: { example: 'https://another.example.com' },
+      },
     }),
   )
 
@@ -373,18 +422,20 @@ t.test('kv string[] stored as Record<string, string>', async t => {
   t.equal(
     readFileSync(dir + '/vlt.json', 'utf8'),
     JSON.stringify({
-      registries: {
-        example: 'https://another.example.com',
-        bar: 'https://registry.bar',
-      },
-      command: {
-        install: {
-          registries: {
-            example: 'https://install.example.com',
-            foo: 'https://registry.foo',
-          },
-          'git-hosts': {
-            github: 'git+https://github.com/$1/$2',
+      config: {
+        registries: {
+          example: 'https://another.example.com',
+          bar: 'https://registry.bar',
+        },
+        command: {
+          install: {
+            registries: {
+              example: 'https://install.example.com',
+              foo: 'https://registry.foo',
+            },
+            'git-hosts': {
+              github: 'git+https://github.com/$1/$2',
+            },
           },
         },
       },
@@ -464,10 +515,18 @@ t.test('do not walk past xdg config dir', async t => {
 })
 
 t.test('delete config values from file', async t => {
+  const emptyConf = await Config.load(t.testdirName, [], true)
+  t.equal(
+    await emptyConf.deleteConfigKeys('project', ['color']),
+    false,
+    'nothing to do, no config found',
+  )
   const dir = t.testdir({
     'vlt.json': JSON.stringify({
-      cache: './deleteme',
-      color: true,
+      config: {
+        cache: './deleteme',
+        color: true,
+      },
     }),
   })
   const f = resolve(dir, 'vlt.json')
@@ -476,14 +535,16 @@ t.test('delete config values from file', async t => {
   t.equal(
     readFileSync(f, 'utf8'),
     JSON.stringify({
-      color: true,
+      config: {
+        color: true,
+      },
     }),
   )
   await conf.deleteConfigKeys('project', ['color'])
-  t.throws(() => statSync(f))
+  t.equal(readFileSync(f, 'utf8'), JSON.stringify({ config: {} }))
   delete conf.configFiles[f]
   await conf.deleteConfigKeys('project', [])
-  t.throws(() => statSync(f))
+  t.equal(readFileSync(f, 'utf8'), JSON.stringify({ config: {} }))
   await conf.addConfigToFile('project', {
     registries: {
       npm: 'https://registry.npmjs.org/',
@@ -493,16 +554,18 @@ t.test('delete config values from file', async t => {
   })
   await conf.deleteConfigKeys('project', ['registries.foo'])
   t.strictSame(JSON.parse(readFileSync(f, 'utf8')), {
-    registries: {
-      npm: 'https://registry.npmjs.org/',
-      acme: 'https://registry.acme.internal/',
+    config: {
+      registries: {
+        npm: 'https://registry.npmjs.org/',
+        acme: 'https://registry.acme.internal/',
+      },
     },
   })
   await conf.deleteConfigKeys('project', [
     'registries.npm',
     'registries.acme',
   ])
-  t.throws(() => statSync(f))
+  t.equal(readFileSync(f, 'utf8'), JSON.stringify({ config: {} }))
   await conf.writeConfigFile('project', {
     registries: [
       'foo=https://example.com',
@@ -519,16 +582,37 @@ t.test('delete config values from file', async t => {
   }
   await conf.deleteConfigKeys('project', ['registries.foo'])
   t.strictSame(JSON.parse(readFileSync(f, 'utf8')), {
-    registries: [
-      'npm=https://registry.npmjs.org/',
-      'acme=https://registry.acme.internal/',
-    ],
+    config: {
+      registries: {
+        npm: 'https://registry.npmjs.org/',
+        acme: 'https://registry.acme.internal/',
+      },
+    },
   })
   await conf.deleteConfigKeys('project', [
     'registries.npm',
     'registries.acme',
   ])
-  t.throws(() => statSync(f))
+  t.equal(readFileSync(f, 'utf8'), JSON.stringify({ config: {} }))
+  await conf.writeConfigFile('project', {
+    registries: [
+      'foo=https://example.com',
+      'npm=https://registry.npmjs.org/',
+      'acme=https://registry.acme.internal/',
+    ],
+  })
+  conf.configFiles[f] = {
+    registries: [
+      'foo=https://example.com',
+      'npm=https://registry.npmjs.org/',
+      'acme=https://registry.acme.internal/',
+    ],
+  }
+  await conf.deleteConfigKeys('project', [
+    'registries.foo',
+    'registries.npm',
+    'registries.acme',
+  ])
 })
 
 t.test('edit config file', async t => {
@@ -541,11 +625,13 @@ t.test('edit config file', async t => {
   await conf.editConfigFile('project', filename => {
     editCalled = true
     t.equal(filename, f)
-    t.equal(readFileSync(f, 'utf8'), '{\n\n}\n')
+    t.equal(readFileSync(f, 'utf8'), '{\n  "config": {}\n}\n')
     writeFileSync(
       f,
       JSON.stringify({
-        registry: 'my happy regas try',
+        config: {
+          registry: 'my happy regas try',
+        },
       }),
     )
   })
@@ -556,16 +642,18 @@ t.test('edit config file', async t => {
     t.equal(
       readFileSync(f, 'utf8'),
       JSON.stringify({
-        registry: 'my happy regas try',
+        config: {
+          registry: 'my happy regas try',
+        },
       }),
     )
-    writeFileSync(f, JSON.stringify({}))
+    writeFileSync(f, JSON.stringify({ config: {} }))
   })
   t.throws(() => statSync(f), 'no configs, deleted file')
 
   await t.rejects(
     conf.editConfigFile('project', () => {
-      t.equal(readFileSync(f, 'utf8'), '{\n\n}\n')
+      t.equal(readFileSync(f, 'utf8'), '{\n  "config": {}\n}\n')
       throw new Error()
     }),
   )
@@ -579,6 +667,11 @@ t.test('edit config file', async t => {
   )
 
   await conf.writeConfigFile('project', { color: true })
+  t.strictSame(
+    JSON.parse(readFileSync(f, 'utf8')),
+    { config: { color: true } },
+    'gut check, wrote what we expected',
+  )
   await t.rejects(
     conf.editConfigFile('project', filename => {
       writeFileSync(filename, '"just a string"')
@@ -587,7 +680,7 @@ t.test('edit config file', async t => {
   )
   t.strictSame(
     JSON.parse(readFileSync(f, 'utf8')),
-    { color: true },
+    { config: { color: true } },
     'preserved original config when edit failed',
   )
 })

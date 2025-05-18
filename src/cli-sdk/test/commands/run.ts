@@ -20,7 +20,7 @@ t.test('run script in a project', async t => {
         hello: pass,
       },
     }),
-    'vlt.json': JSON.stringify({}),
+    'vlt.json': JSON.stringify({ config: {} }),
     '.git': {},
   })
   t.chdir(dir)
@@ -58,7 +58,7 @@ t.test('run script in a single workspace', async t => {
         }),
       },
     },
-    'vlt.json': JSON.stringify({}),
+    'vlt.json': JSON.stringify({ config: {} }),
     '.git': {},
   })
   t.chdir(dir + '/src/ws')
@@ -104,7 +104,7 @@ t.test('run script across several workspaces', async t => {
         }),
       },
     },
-    'vlt.json': JSON.stringify({}),
+    'vlt.json': JSON.stringify({ config: {} }),
     '.git': {},
   })
   t.chdir(dir)
@@ -169,7 +169,7 @@ t.test('run script across no workspaces', async t => {
         }),
       },
     },
-    'vlt.json': JSON.stringify({}),
+    'vlt.json': JSON.stringify({ config: {} }),
     '.git': {},
   })
   t.chdir(dir)
@@ -212,8 +212,10 @@ t.test('one ws fails, with bail', async t => {
       },
     },
     'vlt.json': JSON.stringify({
-      recursive: true,
-      bail: true,
+      config: {
+        recursive: true,
+        bail: true,
+      },
     }),
     '.git': {},
   })
@@ -353,7 +355,7 @@ t.test('show scripts if no event specified', async t => {
         hello: pass,
       },
     }),
-    'vlt.json': JSON.stringify({}),
+    'vlt.json': JSON.stringify({ config: {} }),
     '.git': {},
   })
   t.chdir(dir)
@@ -388,7 +390,7 @@ t.test('show scripts if no event specified, single ws', async t => {
         }),
       },
     },
-    'vlt.json': JSON.stringify({}),
+    'vlt.json': JSON.stringify({ config: {} }),
     '.git': {},
   })
   t.chdir(dir + '/src/ws')
@@ -432,7 +434,7 @@ t.test('show scripts across several workspaces', async t => {
         }),
       },
     },
-    'vlt.json': JSON.stringify({}),
+    'vlt.json': JSON.stringify({ config: {} }),
     '.git': {},
   })
   t.chdir(dir)
