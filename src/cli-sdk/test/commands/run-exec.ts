@@ -18,7 +18,7 @@ t.test('run script in a project', async t => {
         echo: pass,
       },
     }),
-    'vlt.json': JSON.stringify({}),
+    'vlt.json': JSON.stringify({ config: {} }),
     '.git': {},
   })
   t.chdir(dir)
@@ -56,7 +56,7 @@ t.test('run script in a single workspace', async t => {
         }),
       },
     },
-    'vlt.json': JSON.stringify({}),
+    'vlt.json': JSON.stringify({ config: {} }),
     '.git': {},
   })
   t.chdir(dir + '/src/ws')
@@ -98,7 +98,7 @@ t.test('run script across several workspaces', async t => {
         }),
       },
     },
-    'vlt.json': JSON.stringify({}),
+    'vlt.json': JSON.stringify({ config: {} }),
     '.git': {},
   })
   t.chdir(dir)
