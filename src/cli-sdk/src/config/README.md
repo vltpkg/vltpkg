@@ -32,8 +32,8 @@ project root. This is indicated by the following algorithm:
   path as the "likely root", but keep searching.
 - If the current directory is `$HOME` or the XDG config home, stop
   searching.
-- If a `.git` or `vlt-project.json` file is found, use this directory
-  as the project root and stop searching.
+- If a `.git` or `vlt.json` file is found, use this directory as the
+  project root and stop searching.
 - If a `vlt.json` file is found and successfully loaded, use this
   directory as the project root and stop searching.
 - If continuing to search, restart in the parent directory.

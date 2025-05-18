@@ -25,7 +25,7 @@ t.test('graphs must have same projectRoot', t => {
 
 t.test('diff two graphs', async t => {
   const projectRoot = t.testdir({
-    'vlt-project.json': JSON.stringify({
+    'vlt.json': JSON.stringify({
       workspaces: {
         packages: ['./packages/*'],
       },

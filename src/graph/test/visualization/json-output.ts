@@ -146,7 +146,7 @@ t.test('workspaces', async t => {
   }
   const dir = t.testdir({
     'package.json': JSON.stringify(mainManifest),
-    'vlt-project.json': JSON.stringify({
+    'vlt.json': JSON.stringify({
       workspaces: { packages: ['./packages/*'] },
     }),
     packages: {
