@@ -265,7 +265,7 @@ export const actualGraph = (t: Test): string =>
         }),
       },
     },
-    'vlt-project.json': JSON.stringify({
+    'vlt.json': JSON.stringify({
       workspaces: {
         packages: ['./packages/*'],
       },

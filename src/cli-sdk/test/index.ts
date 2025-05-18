@@ -51,7 +51,7 @@ export const run = async (
 
 t.test('infer workspace', async t => {
   const dir = t.testdir({
-    'vlt-project.json': JSON.stringify({ workspaces: 'src/foo' }),
+    'vlt.json': JSON.stringify({ workspaces: 'src/foo' }),
     src: {
       foo: {
         'package.json': JSON.stringify({ name: '@acme/foo' }),

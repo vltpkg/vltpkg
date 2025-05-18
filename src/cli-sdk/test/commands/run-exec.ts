@@ -46,7 +46,7 @@ t.test('run script in a project', async t => {
 
 t.test('run script in a single workspace', async t => {
   const dir = t.testdir({
-    'vlt-project.json': JSON.stringify({ workspaces: 'src/ws' }),
+    'vlt.json': JSON.stringify({ workspaces: 'src/ws' }),
     src: {
       ws: {
         'package.json': JSON.stringify({
@@ -56,7 +56,6 @@ t.test('run script in a single workspace', async t => {
         }),
       },
     },
-    'vlt.json': JSON.stringify({ config: {} }),
     '.git': {},
   })
   t.chdir(dir + '/src/ws')
@@ -85,7 +84,7 @@ t.test('run script in a single workspace', async t => {
 
 t.test('run script across several workspaces', async t => {
   const dir = t.testdir({
-    'vlt-project.json': JSON.stringify({ workspaces: 'src/*' }),
+    'vlt.json': JSON.stringify({ workspaces: 'src/*' }),
     src: {
       a: {
         'package.json': JSON.stringify({}),
@@ -98,7 +97,6 @@ t.test('run script across several workspaces', async t => {
         }),
       },
     },
-    'vlt.json': JSON.stringify({ config: {} }),
     '.git': {},
   })
   t.chdir(dir)
