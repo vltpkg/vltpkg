@@ -1,0 +1,134 @@
+---
+title: Using Workspaces in a Monorepo Project with vlt
+sidebar:
+  label: Workspaces
+  order: 4
+---
+
+import { Code } from '@astrojs/starlight/components'
+
+## Using Workspaces in a Monorepo Project with vlt
+
+When using the `vlt` client, you can define multiple different
+workspaces in a single monorepo project.
+
+The `vlt` client supports workspaces defined by glob patterns, and you
+can also define named groups to perform vlt operations on a specific
+subset of your workspaces.
+
+## Defining Workspaces
+
+To use monorepo features, create a `vlt.json` file in the root of your
+project with a `workspaces` field.
+
+At its most explicit, the `workspaces` field can be an object with
+`group` names as the keys, and either a single string or an array of
+strings to identify the workspace paths in each group. The strings are
+interpreted as glob patterns, so if a path has glob special characters
+that should be interpreted literally, use the `\` character to escape
+them.
+
+For example:
+
+```json
+{
+  "workspaces": {
+    "www": "www/*"
+    "utils": [
+      "utils/*",
+      "www/utils"
+    ],
+  }
+}
+```
+
+It's perfectly fine for a workspace to be found in multiple groups,
+like the `www/utils` workspace in the example above.
+
+If that level of group detail isn't needed, then you can also just
+point the `workspaces` field at a string or array of string glob
+patterns. For example:
+
+```json
+{
+  "workspaces": ["www/*", "utils/*"]
+}
+```
+
+Or even:
+
+```json
+{
+  "workspaces": "packages/*"
+}
+```
+
+## Working with Workspaces
+
+The simplest way to peform an option on a single workspace is to just
+`cd` into that folder, and then use whatever vlt operation as you
+would normally. Any installations will be added as dependencies to
+that single workspace, scripts will be run in that workspace only,
+etc.
+
+If you want to work with _multiple_ workspaces at one time, there are
+a few options.
+
+### Running Commands on All Workspaces
+
+You can use the `-r --recursive` flag to run a script across all
+workspaces in the monorepo project.
+
+For example:
+
+```bash
+$ vlt run --recursive test
+```
+
+will run the `test` script in all workspaces.
+
+### Running Commands on Specific Workspaces By Path
+
+To run a command on certain workspaces by their path, you can use the
+`-w<path> --workspace=<path>` configuration option.
+
+For example, to run the tests on certain workspaces by path name, you
+can run this:
+
+```bash
+$ vlt --workspace=src/* --workspace=www/components run test
+```
+
+would run the `test` command on all the workspaces under `src/*`, as
+well as the `www/components` workspace.
+
+Note that glob patterns may have to be quoted so that the shell does
+not expand them incorrectly.
+
+### Running Commands on Specific Workspaces By Group
+
+If you had configured your workspaces into named groups, then you can
+reference those groups using the `-g<name> --workspace-group=<name>`
+configuration option.
+
+For example, with the `vlt.json` defined above:
+
+```json
+{
+  "workspaces": {
+    "www": "www/*"
+    "utils": [
+      "utils/*",
+      "www/utils"
+    ],
+  }
+}
+```
+
+we could do:
+
+```bash
+$ vlt -g utils run test
+```
+
+to run tests on all our `utils` workspaces.

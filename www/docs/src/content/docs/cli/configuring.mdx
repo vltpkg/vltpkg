@@ -29,7 +29,9 @@ Run `vlt <cmd> --help` for more information about a specific command
 ## Configuration
 
 If a `vlt.json` file is present in the root of the current project,
-then that will be used as a source of configuration information.
+then the `config` field in that file that will be used as a source of
+configuration information. (This file is also used to define
+workspaces and other `vlt` behaviors.)
 
 Next, the `vlt.json` file in the XDG specified config directory will
 be checked, and loaded for any fields not set in the local project.
