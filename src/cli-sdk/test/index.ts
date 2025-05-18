@@ -90,7 +90,9 @@ t.test('unknown config in file', async t => {
   let exitCode = 0
   const cwd = t.testdir({
     'vlt.json': JSON.stringify({
-      asdf: 'foo',
+      config: {
+        asdf: 'foo',
+      },
     }),
   })
 
@@ -114,7 +116,9 @@ t.test('invalid config in file', async t => {
   let exitCode = 0
   const cwd = t.testdir({
     'vlt.json': JSON.stringify({
-      color: 'foo',
+      config: {
+        color: 'foo',
+      },
     }),
   })
 

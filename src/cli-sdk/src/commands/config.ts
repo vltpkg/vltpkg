@@ -190,7 +190,7 @@ const set = async (conf: LoadedConfig) => {
       code: 'EUSAGE',
     })
   }
-  let parsed: ConfigFileData | null = null
+  let parsed: ConfigFileData['config'] | null = null
   try {
     parsed = conf.jack.parseRaw(pairs.map(kv => `--${kv}`)).values
   } catch (er) {
