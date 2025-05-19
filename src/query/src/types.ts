@@ -314,3 +314,21 @@ export const asStringNode = (node?: PostcssNode): String => {
 
   return node
 }
+
+export const isCommentNode = (node: unknown): node is Comment =>
+  isObj(node) && !!node.value && node.type === 'comment'
+
+export const asCommentNode = (node?: PostcssNode): Comment => {
+  if (!node) {
+    throw error('Expected a query node')
+  }
+
+  if (!isCommentNode(node)) {
+    throw error('Mismatching query node', {
+      wanted: 'comment',
+      found: node.type,
+    })
+  }
+
+  return node
+}
