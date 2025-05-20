@@ -151,18 +151,18 @@ const ExplorerContent = () => {
           <RootButton />
           <QueryBar
             tabIndex={0}
-            className="relative w-full"
             startContent={
               <Search size={20} className="ml-3 text-neutral-500" />
             }
             endContent={
-              <div className="mr-3 hidden items-center gap-1 backdrop-blur-sm md:flex">
+              <div className="relative mr-3 hidden items-center gap-1 md:flex">
                 <QueryMatches />
                 <Save />
                 <Kbd className='before:content-[" "] relative ml-3 before:absolute before:-ml-10 before:h-[0.75rem] before:w-[1.25px] before:rounded-sm before:bg-neutral-600'>
                   <Command size={12} />
                 </Kbd>
                 <Kbd className="text-sm">k</Kbd>
+                <div className="absolute inset-0 -bottom-2 -right-3 -top-2 z-[-2] rounded-br-md rounded-tr-md border-y border-r border-input bg-gradient-to-r from-white/20 via-white/50 to-white backdrop-blur-sm dark:from-neutral-900/20 dark:via-neutral-900/50 dark:to-neutral-900" />
               </div>
             }
           />
