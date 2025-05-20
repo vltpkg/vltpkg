@@ -208,10 +208,10 @@ const PackageMetadata = ({ className }: { className?: string }) => {
         className,
       )}>
       {/* the blurred edges of the scroll area */}
-      <div className="absolute right-0 top-0 z-[100] h-full w-[24px] bg-background blur-sm" />
-      <div className="absolute -right-2 top-0 z-[101] h-full w-[24px] bg-background" />
-      <div className="absolute left-0 top-0 z-[100] h-full w-[24px] bg-background blur-sm" />
-      <div className="absolute -left-2 top-0 z-[101] h-full w-[24px] bg-background" />
+      <div className="absolute right-0 top-0 z-[100] h-full w-[24px] bg-card blur-sm" />
+      <div className="absolute -right-2 top-0 z-[101] h-full w-[24px] bg-card" />
+      <div className="absolute left-0 top-0 z-[100] h-full w-[24px] bg-card blur-sm" />
+      <div className="absolute -left-2 top-0 z-[101] h-full w-[24px] bg-card" />
 
       <div className="flex w-max gap-2 overflow-x-hidden px-6">
         {manifest.private && (
@@ -308,9 +308,9 @@ const PackageOverallScore = ({
     <div className={className}>
       <div
         onClick={onClick}
-        className="duration-250 after:duration-250 relative z-[1] flex h-full cursor-default flex-row items-center gap-3 self-start transition-colors after:absolute after:inset-0 after:-left-[0.5rem] after:top-[0.5rem] after:z-[-1] after:h-[calc(100%-1rem)] after:w-[calc(100%+1rem)] after:rounded-sm after:transition-all after:content-[''] hover:after:bg-neutral-100 dark:hover:after:bg-neutral-800">
+        className="duration-250 after:duration-250 relative z-[1] flex cursor-default flex-row gap-3 self-start transition-colors after:absolute after:inset-0 after:-left-[0.5rem] after:-top-[0.5rem] after:z-[-1] after:h-[calc(100%+1rem)] after:w-[calc(100%+1rem)] after:rounded-sm after:transition-all after:content-[''] hover:after:bg-neutral-100 dark:hover:after:bg-neutral-800">
         <ProgressCircle
-          value={92}
+          value={averageScore}
           variant={chartColor as ProgressCircleVariant}
           strokeWidth={5}
           className="size-9">
