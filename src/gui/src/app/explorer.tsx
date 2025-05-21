@@ -1,12 +1,12 @@
 import { useNavigate } from 'react-router'
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Query } from '@vltpkg/query'
 import { QueryBar } from '@/components/query-bar/index.tsx'
 import { ExplorerGrid } from '@/components/explorer-grid/index.tsx'
 import { useGraphStore } from '@/state/index.ts'
 import type { TransferData, Action, State } from '@/state/types.ts'
 import { load } from '@/state/load-graph.ts'
-import { Search, Command } from 'lucide-react'
+import { Search, Command, Loader2 } from 'lucide-react'
 import { Kbd } from '@/components/ui/kbd.tsx'
 import Save from '@/components/explorer-grid/save-query.tsx'
 import { QueryMatches } from '@/components/explorer-grid/query-matches.tsx'
@@ -94,6 +94,7 @@ const ExplorerContent = () => {
   const query = useGraphStore(state => state.query)
   const q = useGraphStore(state => state.q)
   const ac = useRef<AbortController>(new AbortController())
+  const [isLoading, setIsLoading] = useState(true)
 
   // updates the query response state anytime the query changes
   // by defining query and q as dependencies of `useEffect` we
@@ -101,6 +102,9 @@ const ExplorerContent = () => {
   useEffect(() => {
     async function updateQueryData() {
       if (!q) return
+
+      setIsLoading(true)
+
       ac.current.abort(new Error('Query changed'))
       ac.current = new AbortController()
       const queryResponse = await q.search(query, {
@@ -108,6 +112,7 @@ const ExplorerContent = () => {
         scopeIDs: graph ? [graph.mainImporter.id] : undefined,
       })
 
+      setIsLoading(false)
       updateEdges(queryResponse.edges)
       updateNodes(queryResponse.nodes)
 
@@ -128,11 +133,14 @@ const ExplorerContent = () => {
         window.scrollTo(0, 0)
       }
     }
+
+    setIsLoading(true)
     void updateQueryData().catch(() => {
+      setIsLoading(false)
       updateEdges([])
       updateNodes([])
     })
-  }, [query, q])
+  }, [query, q, graph])
 
   // avoids flash of content
   if (!graph) {
@@ -168,7 +176,11 @@ const ExplorerContent = () => {
           />
         </div>
       </section>
-      <ExplorerGrid />
+      {isLoading ?
+        <div className="flex h-full w-full items-center justify-center">
+          <Loader2 className="animate-spin" />
+        </div>
+      : <ExplorerGrid />}
     </section>
   )
 }
