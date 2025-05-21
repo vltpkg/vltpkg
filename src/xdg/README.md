@@ -9,7 +9,7 @@ namespaced to a specific app-name subfolder.
 ## Usage
 
 ```js
-import XDG from '@vltpkg/xdg'
+import { XDG } from '@vltpkg/xdg'
 
 // instantiate with the name of your thing.
 const xdg = new XDG('vlt')
