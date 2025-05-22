@@ -97,6 +97,12 @@ test('add-dependencies-popover render default', async () => {
     setInProgress: vi.fn(),
     setError: vi.fn(),
     setAddedDependencies: vi.fn(),
+    filteredDependencies: [],
+    filters: [],
+    searchTerm: '',
+    setSearchTerm: vi.fn(),
+    setFilters: vi.fn(),
+    setFilteredDependencies: vi.fn(),
   } satisfies DependencySidebarStore
 
   vi.mocked(useDependencySidebarStore).mockImplementation(selector =>
@@ -126,6 +132,12 @@ test('add-dependencies-popover error', async () => {
     setInProgress: vi.fn(),
     setError: vi.fn(),
     setAddedDependencies: vi.fn(),
+    filteredDependencies: [],
+    filters: [],
+    searchTerm: '',
+    setSearchTerm: vi.fn(),
+    setFilters: vi.fn(),
+    setFilteredDependencies: vi.fn(),
   } satisfies DependencySidebarStore
 
   vi.mocked(useDependencySidebarStore).mockImplementation(selector =>
@@ -154,6 +166,12 @@ test('add-dependencies-popover in progress', async () => {
     setInProgress: vi.fn(),
     setError: vi.fn(),
     setAddedDependencies: vi.fn(),
+    filteredDependencies: [],
+    filters: [],
+    searchTerm: '',
+    setSearchTerm: vi.fn(),
+    setFilters: vi.fn(),
+    setFilteredDependencies: vi.fn(),
   } satisfies DependencySidebarStore
 
   vi.mocked(useDependencySidebarStore).mockImplementation(selector =>
