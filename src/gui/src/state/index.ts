@@ -38,7 +38,6 @@ const initialState: State = {
   edges: [],
   errorCause: '',
   hasDashboard: false,
-  linePositionReference: 258,
   nodes: [],
   projectInfo: {
     tools: [],
@@ -92,8 +91,6 @@ export const useGraphStore = create<Action & State>((set, get) => {
       set(() => ({ errorCause })),
     updateHasDashboard: (hasDashboard: State['hasDashboard']) =>
       set(() => ({ hasDashboard })),
-    updateLinePositionReference: (position: number) =>
-      set(() => ({ linePositionReference: position })),
     updateNodes: (nodes: State['nodes']) => set(() => ({ nodes })),
     updateProjectInfo: (projectInfo: State['projectInfo']) =>
       set(() => ({ projectInfo })),

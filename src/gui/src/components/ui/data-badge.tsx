@@ -24,8 +24,8 @@ import type { CSSProperties } from 'react'
  */
 const dataBadgeVariants = tv({
   slots: {
-    wrapperSlot: '',
-    valueSlot: '',
+    wrapperSlot: 'group font-sans',
+    valueSlot: 'tabular-nums',
     iconSlot: '',
     contentSlot: '',
   },
@@ -33,15 +33,15 @@ const dataBadgeVariants = tv({
     variant: {
       default: {
         wrapperSlot:
-          'group font-sans relative z-[1] w-fit flex h-full cursor-default items-center justify-center gap-1.5 rounded border-[1px] border-neutral-200 bg-neutral-100 px-2 py-1 text-[0.75rem] font-medium text-muted-foreground dark:border-[#313131] dark:bg-neutral-800',
+          'relative z-[1] w-fit flex h-full cursor-default items-center justify-center gap-1.5 rounded border-[1px] border-neutral-200 bg-neutral-100 px-2 py-1 text-[0.75rem] font-medium text-muted-foreground dark:border-[#313131] dark:bg-neutral-800',
         valueSlot:
-          'tabular-nums after:border-[var(--light-border)] pt-0.5 font-courier relative ml-[0.125rem] mr-[calc(var(--width-offset)/2)] uppercase tracking-wide text-neutral-700 after:absolute after:-left-[calc(var(--width-offset)/2)] after:-top-[calc(var(--height-offset)/2)] after:z-[-1] after:h-[calc(100%+var(--height-offset))] after:w-[calc(100%+var(--width-offset))] after:rounded-[calc(0.25rem-1px)] after:border-[1px] after:bg-[var(--light-background)] after:content-[""] group-has-[span[data-id=info-badge-icon]]:ml-[calc(var(--width-offset)/2)] dark:text-foreground dark:after:border-[var(--dark-border)] dark:after:bg-[var(--dark-background)]',
+          'after:border-[var(--light-border)] pt-0.5 font-courier relative ml-[0.125rem] mr-[calc(var(--width-offset)/2)] uppercase tracking-wide text-neutral-700 after:absolute after:-left-[calc(var(--width-offset)/2)] after:-top-[calc(var(--height-offset)/2)] after:z-[-1] after:h-[calc(100%+var(--height-offset))] after:w-[calc(100%+var(--width-offset))] after:rounded-[calc(0.25rem-1px)] after:border-[1px] after:bg-[var(--light-background)] after:content-[""] group-has-[span[data-id=info-badge-icon]]:ml-[calc(var(--width-offset)/2)] dark:text-foreground dark:after:border-[var(--dark-border)] dark:after:bg-[var(--dark-background)]',
         iconSlot: 'flex w-4 items-center justify-center',
         contentSlot: 'flex items-center justify-center',
       },
       mono: {
         wrapperSlot:
-          'group font-courier relative z-[1] w-fit flex h-full cursor-default items-center justify-center gap-1.5 rounded border-[1px] border-neutral-200 bg-neutral-100 px-2 py-1 text-[0.75rem] font-medium text-muted-foreground dark:border-[#313131] dark:bg-neutral-800',
+          'font-courier relative z-[1] w-fit flex h-full cursor-default items-center justify-center gap-1.5 rounded border-[1px] border-neutral-200 bg-neutral-100 px-2 py-1 text-[0.75rem] font-medium text-muted-foreground dark:border-[#313131] dark:bg-neutral-800',
       },
       count: {
         wrapperSlot:

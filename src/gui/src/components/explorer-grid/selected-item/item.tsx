@@ -1,8 +1,5 @@
 import { Card } from '@/components/ui/card.tsx'
-import { useGraphStore } from '@/state/index.ts'
-import type { GridItemData } from '@/components/explorer-grid/types.ts'
 import { Tabs, TabsList } from '@/components/ui/tabs.tsx'
-import { useEffect, useRef } from 'react'
 import {
   SelectedItemProvider,
   useSelectedItemStore,
@@ -24,42 +21,16 @@ import {
   TabsManifestContent,
 } from '@/components/explorer-grid/selected-item/tabs-manifest.tsx'
 import { ItemHeader } from '@/components/explorer-grid/selected-item/item-header.tsx'
+import type { GridItemData } from '@/components/explorer-grid/types.ts'
 
 export const Item = ({ item }: { item: GridItemData }) => {
-  const updateLinePositionReference = useGraphStore(
-    state => state.updateLinePositionReference,
-  )
-  const linePositionRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    const handleResize = () => {
-      const rect = linePositionRef.current?.getBoundingClientRect()
-      if (rect?.top) {
-        updateLinePositionReference(rect.top)
-      }
-    }
-    handleResize()
-    window.addEventListener('resize', handleResize)
-    return () => window.removeEventListener('resize', handleResize)
-  })
-
   return (
     <SelectedItemProvider selectedItem={item}>
       <div className="relative">
-        <Card className="relative my-4 border-muted">
+        <Card className="relative border-muted">
           <ItemHeader />
           <SelectedItemTabs />
         </Card>
-        {
-          // Draw the connection line between dependencies and the selected item
-          item.to?.edgesOut && item.to.edgesOut.size > 0 ?
-            <div
-              ref={linePositionRef}
-              className={
-                'absolute -right-4 top-[44px] w-4 rounded-tr-sm border-t border-muted'
-              }></div>
-          : ''
-        }
       </div>
     </SelectedItemProvider>
   )
