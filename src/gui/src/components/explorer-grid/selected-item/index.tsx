@@ -217,7 +217,7 @@ export const SelectedItem = ({ item }: { item: GridItemData }) => {
   }
 
   return (
-    <div className="grid w-full max-w-8xl grid-cols-8 gap-4">
+    <div className="grid w-full max-w-8xl grid-cols-8 gap-4 pb-8">
       <div className="col-span-2">
         {parentItem ?
           <>
@@ -238,6 +238,7 @@ export const SelectedItem = ({ item }: { item: GridItemData }) => {
                 item={item}
                 isWorkspace
                 key={item.id}
+                dependencies={false}
                 onSelect={workspaceClick(item)}
               />
             ))}
@@ -246,18 +247,21 @@ export const SelectedItem = ({ item }: { item: GridItemData }) => {
         {dependents.length > 0 ?
           <>
             <GridHeader>Dependents</GridHeader>
-            {dependents.map(item => (
-              <SideItem
-                item={item}
-                key={item.id}
-                onSelect={dependentsClick(item)}
-              />
-            ))}
+            <div className="flex flex-col gap-4">
+              {dependents.map(item => (
+                <SideItem
+                  item={item}
+                  key={item.id}
+                  dependencies={false}
+                  onSelect={dependentsClick(item)}
+                />
+              ))}
+            </div>
           </>
         : ''}
       </div>
       <div className="col-span-4">
-        <GridHeader>Selected Item</GridHeader>
+        <GridHeader>Selected</GridHeader>
         <div className="flex flex-col gap-6">
           <Item
             item={item}
