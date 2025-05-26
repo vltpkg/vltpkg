@@ -52,7 +52,7 @@ export const AppSidebar = () => {
           <SidebarToggle />
         </SidebarMenu>
       </SidebarFooter>
-      <SidebarRail className="hover:after:bg-transparent group-data-[state=collapsed]:-translate-x-[0.65rem]" />
+      <SidebarRail className="group-data-[state=collapsed]:-translate-x-[0.65rem] hover:after:bg-transparent" />
     </Sidebar>
   )
 }
