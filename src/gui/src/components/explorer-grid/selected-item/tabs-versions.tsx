@@ -48,6 +48,7 @@ import {
 } from '@/components/ui/chart.tsx'
 import { Bar, BarChart, XAxis, CartesianGrid } from 'recharts'
 import { NumberFlow } from '@/components/number-flow.tsx'
+import { toHumanNumber } from '@/utils/human-number.ts'
 
 import type { ChartConfig } from '@/components/ui/chart.tsx'
 import type { Version } from '@/lib/external-info.ts'
@@ -72,7 +73,7 @@ export const VersionsTabButton = () => {
         <DataBadge
           variant="count"
           classNames={{ wrapperClassName: 'ml-1' }}
-          content={String(versionCount)}
+          content={toHumanNumber(versionCount)}
         />
       )}
     </TabsTrigger>
