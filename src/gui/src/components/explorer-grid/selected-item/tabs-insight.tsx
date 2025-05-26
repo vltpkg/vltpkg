@@ -25,6 +25,7 @@ import {
 import { ChartContainer } from '@/components/ui/chart.tsx'
 import type { ChartConfig } from '@/components/ui/chart.tsx'
 import { cn } from '@/lib/utils.ts'
+import { toHumanNumber } from '@/utils/human-number.ts'
 
 export const InsightTabButton = () => {
   const insights = useSelectedItemStore(state => state.insights)
@@ -39,7 +40,7 @@ export const InsightTabButton = () => {
         <DataBadge
           variant="count"
           classNames={{ wrapperClassName: 'ml-1' }}
-          content={String(insights.length)}
+          content={toHumanNumber(insights.length)}
         />
       )}
     </TabsTrigger>
