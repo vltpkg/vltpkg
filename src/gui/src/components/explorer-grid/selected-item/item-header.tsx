@@ -47,6 +47,7 @@ import {
   Bun,
 } from '@/components/icons/index.ts'
 import { ProgressCircle } from '@/components/ui/progress-circle.tsx'
+import { toHumanNumber } from '@/utils/human-number.ts'
 import type { ProgressCircleVariant } from '@/components/ui/progress-circle.tsx'
 import type { LucideIcon } from 'lucide-react'
 
@@ -157,11 +158,10 @@ const PackageDownloadCount = () => {
   )
     return null
 
+  const downloadCount = toHumanNumber(downloadsPerVersion[version])
+
   return (
-    <DataBadge
-      value={downloadsPerVersion[version].toLocaleString()}
-      content="Downloads last week"
-    />
+    <DataBadge value={downloadCount} content="Downloads last week" />
   )
 }
 

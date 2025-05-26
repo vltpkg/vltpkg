@@ -196,7 +196,7 @@ exports[`ItemHeader renders with a version information 1`] = `
       </gui-tooltip-provider>
     </div>
     <gui-data-badge
-      value="123,456"
+      value="123.5K"
       content="Downloads last week"
     >
     </gui-data-badge>
