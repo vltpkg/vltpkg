@@ -122,6 +122,14 @@ vi.mock('@/components/number-flow.tsx', () => ({
   NumberFlow: 'gui-number-flow',
 }))
 
+vi.mock('@/components/ui/separator.tsx', () => ({
+  Separator: 'gui-separator',
+}))
+
+vi.mock('react-virtuoso', () => ({
+  Virtuoso: 'gui-virtuoso',
+}))
+
 expect.addSnapshotSerializer({
   serialize: v => html(v),
   test: () => true,
