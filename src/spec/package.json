@@ -24,18 +24,18 @@
     "@vltpkg/semver": "workspace:*"
   },
   "devDependencies": {
-    "@eslint/js": "catalog:",
-    "@types/node": "catalog:",
+    "@eslint/js": "^9.25.1",
+    "@types/node": "^22.15.3",
     "@types/npm-package-arg": "^6.1.4",
     "@vltpkg/benchmark": "workspace:*",
-    "eslint": "catalog:",
+    "eslint": "^9.25.1",
     "npm-package-arg": "^12.0.2",
-    "prettier": "catalog:",
-    "tap": "catalog:",
-    "tshy": "catalog:",
-    "typedoc": "catalog:",
-    "typescript": "catalog:",
-    "typescript-eslint": "catalog:"
+    "prettier": "^3.5.3",
+    "tap": "^21.1.0",
+    "tshy": "^3.0.2",
+    "typedoc": "~0.27.9",
+    "typescript": "5.7.3",
+    "typescript-eslint": "^8.31.1"
   },
   "license": "BSD-2-Clause-Patent",
   "engines": {

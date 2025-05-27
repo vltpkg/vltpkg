@@ -12,17 +12,17 @@
     "vlt-benchmark-download-fixtures": "./src/download.ts"
   },
   "dependencies": {
-    "pacote": "catalog:"
+    "pacote": "^21.0.0"
   },
   "devDependencies": {
-    "@eslint/js": "catalog:",
-    "@types/node": "catalog:",
-    "@types/pacote": "catalog:",
-    "eslint": "catalog:",
-    "prettier": "catalog:",
-    "tap": "catalog:",
-    "typescript": "catalog:",
-    "typescript-eslint": "catalog:"
+    "@eslint/js": "^9.25.1",
+    "@types/node": "^22.15.3",
+    "@types/pacote": "^11.1.8",
+    "eslint": "^9.25.1",
+    "prettier": "^3.5.3",
+    "tap": "^21.1.0",
+    "typescript": "5.7.3",
+    "typescript-eslint": "^8.31.1"
   },
   "license": "BSD-2-Clause-Patent",
   "engines": {

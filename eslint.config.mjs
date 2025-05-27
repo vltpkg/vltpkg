@@ -346,5 +346,9 @@ export default [
       ...eslint.configs.recommended.rules,
     },
   },
-  ...pnpmConfigs.yaml,
+  ...tseslint.config(pnpmConfigs.yaml, {
+    rules: {
+      'pnpm/yaml-no-unused-catalog-item': 'off',
+    },
+  }),
 ]

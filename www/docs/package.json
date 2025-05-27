@@ -39,17 +39,17 @@
     "vite": "^6.3.3"
   },
   "devDependencies": {
-    "@eslint/js": "catalog:",
+    "@eslint/js": "^9.25.1",
     "@types/mdast": "^4.0.4",
-    "@types/node": "catalog:",
+    "@types/node": "^22.15.3",
     "@types/react": "^18.3.20",
     "@types/react-dom": "^18.3.6",
-    "eslint": "catalog:",
+    "eslint": "^9.25.1",
     "github-slugger": "^2.0.0",
     "mdast-util-to-string": "^4.0.0",
-    "prettier": "catalog:",
-    "typescript": "catalog:",
-    "typescript-eslint": "catalog:",
+    "prettier": "^3.5.3",
+    "typescript": "5.7.3",
+    "typescript-eslint": "^8.31.1",
     "unified": "^11.0.5",
     "unified-prettier": "^2.0.1",
     "unist-util-visit": "^5.0.0"

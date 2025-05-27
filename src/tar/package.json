@@ -24,22 +24,22 @@
   "dependencies": {
     "@vltpkg/error-cause": "workspace:*",
     "@vltpkg/types": "workspace:*",
-    "rimraf": "catalog:",
-    "tar": "catalog:"
+    "rimraf": "^6.0.1",
+    "tar": "^7.4.3"
   },
   "devDependencies": {
-    "@eslint/js": "catalog:",
-    "@types/node": "catalog:",
-    "@types/pacote": "catalog:",
+    "@eslint/js": "^9.25.1",
+    "@types/node": "^22.15.3",
+    "@types/pacote": "^11.1.8",
     "@vltpkg/benchmark": "workspace:*",
-    "eslint": "catalog:",
-    "pacote": "catalog:",
-    "prettier": "catalog:",
-    "tap": "catalog:",
-    "tshy": "catalog:",
-    "typedoc": "catalog:",
-    "typescript": "catalog:",
-    "typescript-eslint": "catalog:"
+    "eslint": "^9.25.1",
+    "pacote": "^21.0.0",
+    "prettier": "^3.5.3",
+    "tap": "^21.1.0",
+    "tshy": "^3.0.2",
+    "typedoc": "~0.27.9",
+    "typescript": "5.7.3",
+    "typescript-eslint": "^8.31.1"
   },
   "license": "BSD-2-Clause-Patent",
   "engines": {

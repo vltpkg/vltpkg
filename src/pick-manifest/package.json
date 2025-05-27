@@ -25,17 +25,17 @@
     "@vltpkg/types": "workspace:*"
   },
   "devDependencies": {
-    "@eslint/js": "catalog:",
-    "@types/node": "catalog:",
+    "@eslint/js": "^9.25.1",
+    "@types/node": "^22.15.3",
     "@vltpkg/benchmark": "workspace:*",
-    "eslint": "catalog:",
+    "eslint": "^9.25.1",
     "npm-pick-manifest": "^10.0.0",
-    "prettier": "catalog:",
-    "tap": "catalog:",
-    "tshy": "catalog:",
-    "typedoc": "catalog:",
-    "typescript": "catalog:",
-    "typescript-eslint": "catalog:"
+    "prettier": "^3.5.3",
+    "tap": "^21.1.0",
+    "tshy": "^3.0.2",
+    "typedoc": "~0.27.9",
+    "typescript": "5.7.3",
+    "typescript-eslint": "^8.31.1"
   },
   "license": "BSD-2-Clause-Patent",
   "engines": {

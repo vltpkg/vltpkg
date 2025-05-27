@@ -24,18 +24,18 @@
     "@vltpkg/promise-spawn": "workspace:*",
     "@vltpkg/types": "workspace:*",
     "foreground-child": "^3.3.1",
-    "walk-up-path": "catalog:"
+    "walk-up-path": "^4.0.0"
   },
   "devDependencies": {
-    "@eslint/js": "catalog:",
-    "@types/node": "catalog:",
-    "eslint": "catalog:",
-    "prettier": "catalog:",
-    "tap": "catalog:",
-    "tshy": "catalog:",
-    "typedoc": "catalog:",
-    "typescript": "catalog:",
-    "typescript-eslint": "catalog:"
+    "@eslint/js": "^9.25.1",
+    "@types/node": "^22.15.3",
+    "eslint": "^9.25.1",
+    "prettier": "^3.5.3",
+    "tap": "^21.1.0",
+    "tshy": "^3.0.2",
+    "typedoc": "~0.27.9",
+    "typescript": "5.7.3",
+    "typescript-eslint": "^8.31.1"
   },
   "license": "BSD-2-Clause-Patent",
   "engines": {

@@ -20,6 +20,11 @@ import { PUBLISHED_VARIANT } from '@vltpkg/infra-build'
 const NODE_ENGINES = '>=22'
 const PNPM_VERSION = '10.11.0'
 
+// We are skipping cataloging for now as we switch to vlt install. We will add
+// it back in once we have catalog support and vlt install is stable in this
+// repo.
+const USE_CATALOGS = false as boolean
+
 type Workspace = WorkspaceBase & {
   isRoot: boolean
   relDir: string
@@ -107,7 +112,8 @@ const fixCatalogs = async (
 
       if (config.catalog[name]) {
         ws.pj[type] ??= {}
-        ws.pj[type][name] = 'catalog:'
+        ws.pj[type][name] =
+          USE_CATALOGS ? 'catalog:' : config.catalog[name]
       }
     }
   }
