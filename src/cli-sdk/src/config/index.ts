@@ -24,6 +24,7 @@
 import { error } from '@vltpkg/error-cause'
 import { PackageInfoClient } from '@vltpkg/package-info'
 import { PackageJson } from '@vltpkg/package-json'
+import type { SpecOptions } from '@vltpkg/spec'
 import type { Validator, WhichConfig } from '@vltpkg/vlt-json'
 import { find, load, reload, save } from '@vltpkg/vlt-json'
 import { Monorepo } from '@vltpkg/workspaces'
@@ -39,6 +40,8 @@ import {
   isRecordField,
   recordFields,
 } from './definition.ts'
+import { isRecordRecord } from './is-record-record.ts'
+import { isRecordString } from './is-record-string-string.ts'
 import { merge } from './merge.ts'
 export {
   commands,
@@ -175,13 +178,14 @@ export type ConfigOptionsNoExtras = {
   : OptionsResults<ConfigDefinitions>[k]
 }
 
-export type ConfigOptions = ConfigOptionsNoExtras & {
-  packageJson: PackageJson
-  scurry: PathScurry
-  projectRoot: string
-  monorepo?: Monorepo
-  packageInfo: PackageInfoClient
-}
+export type ConfigOptions = ConfigOptionsNoExtras &
+  Pick<SpecOptions, 'catalog' | 'catalogs'> & {
+    packageJson: PackageJson
+    scurry: PathScurry
+    projectRoot: string
+    monorepo?: Monorepo
+    packageInfo: PackageInfoClient
+  }
 
 /**
  * The base config definition set as a type
@@ -236,11 +240,21 @@ export class Config {
         scurry,
         packageJson,
       }),
+      catalog: load<Record<string, string>>(
+        'catalog',
+        isRecordString,
+      ),
+      catalogs: load<Record<string, Record<string, string>>>(
+        'catalogs',
+        isRecordRecord,
+      ),
     }
+
     const options: Omit<ConfigOptions, 'packageInfo'> = Object.assign(
       asRecords,
       extras,
     )
+
     this.#options = Object.assign(options, {
       packageInfo: new PackageInfoClient(options),
       [kCustomInspect]() {

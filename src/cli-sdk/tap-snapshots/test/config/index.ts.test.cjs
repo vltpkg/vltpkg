@@ -8,6 +8,8 @@
 exports[`test/config/index.ts > TAP > load both configs, project writes over userconfig > formatted options uses custom inspect 1`] = `
 {
   'git-hosts': { asdfasdf: 'https://example.com', github: 'https://github' },
-  projectRoot: '{CWD}/.tap/fixtures/test-config-index.ts-load-both-configs-project-writes-over-userconfig'
+  projectRoot: '{CWD}/.tap/fixtures/test-config-index.ts-load-both-configs-project-writes-over-userconfig',
+  catalog: undefined,
+  catalogs: undefined
 }
 `
