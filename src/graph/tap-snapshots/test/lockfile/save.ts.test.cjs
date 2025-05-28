@@ -35,9 +35,17 @@ exports[`test/lockfile/save.ts > TAP > confused manifest > should save lockfile 
 }
 `
 
-exports[`test/lockfile/save.ts > TAP > custom git hosts > must match snapshot 1`] = `
+exports[`test/lockfile/save.ts > TAP > custom git hosts and catalogs > must match snapshot 1`] = `
 {
   "options": {
+    "catalog": {
+      "x": "1.2.3"
+    },
+    "catalogs": {
+      "a": {
+        "x": "2.3.4"
+      }
+    },
     "git-hosts": {
       "example": "git+ssh://example.com/$1/$2.git"
     },

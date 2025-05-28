@@ -67,6 +67,8 @@ export const loadObject = (
     options.monorepo ??
     Monorepo.maybeLoad(options.projectRoot, { packageJson, scurry })
   const {
+    catalog = {},
+    catalogs = {},
     'scope-registries': scopeRegistries,
     registry,
     registries,
@@ -75,6 +77,8 @@ export const loadObject = (
   } = lockfileData.options ?? {}
   const mergedOptions = {
     ...options,
+    catalog,
+    catalogs,
     'scope-registries': {
       ...options['scope-registries'],
       ...scopeRegistries,

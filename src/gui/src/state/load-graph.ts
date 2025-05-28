@@ -23,6 +23,8 @@ const loadSpecOptions = (
   lockfile: LockfileData,
 ): SpecOptionsFilled => {
   const {
+    catalog = {},
+    catalogs = {},
     registries,
     registry,
     'git-hosts': gitHosts,
@@ -31,6 +33,8 @@ const loadSpecOptions = (
     'jsr-registries': jsrRegistries,
   } = lockfile.options
   return {
+    catalog,
+    catalogs,
     registries: { ...defaultRegistries, ...registries },
     registry: registry || defaultRegistry,
     'jsr-registries': { ...jsrRegistries },

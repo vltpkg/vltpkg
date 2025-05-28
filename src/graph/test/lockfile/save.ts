@@ -145,7 +145,7 @@ t.test('missing registries', async t => {
   t.matchSnapshot(JSON.stringify(lockfile, null, 2))
 })
 
-t.test('custom git hosts', async t => {
+t.test('custom git hosts and catalogs', async t => {
   const mainManifest = {
     name: 'my-project',
     version: '1.0.0',
@@ -154,6 +154,8 @@ t.test('custom git hosts', async t => {
     },
   }
   const specOptions = {
+    catalog: { x: '1.2.3' },
+    catalogs: { a: { x: '2.3.4' } },
     'git-hosts': {
       example: 'git+ssh://example.com/$1/$2.git',
     },
