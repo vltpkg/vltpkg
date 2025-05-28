@@ -1,6 +1,7 @@
 import type { DepID, DepIDTuple } from '@vltpkg/dep-id'
 import { joinDepIDTuple } from '@vltpkg/dep-id'
 import type { SpecOptions } from '@vltpkg/spec'
+import { unload } from '@vltpkg/vlt-json'
 import t from 'tap'
 import type { LockfileNode } from '../../src/index.ts'
 import {
@@ -93,7 +94,10 @@ t.test('load', async t => {
   }
   const projectRoot = t.testdir({
     'vlt-lock.json': JSON.stringify(lockfileData),
+    'vlt.json': '{}',
   })
+  t.chdir(projectRoot)
+  unload('project')
 
   const graph = load({
     ...configData,
@@ -157,10 +161,13 @@ t.test('loadHidden', async t => {
     edges,
   }
   const projectRoot = t.testdir({
+    'vlt.json': '{}',
     node_modules: {
       '.vlt-lock.json': JSON.stringify(lockfileData),
     },
   })
+  t.chdir(projectRoot)
+  unload('project')
 
   const graph = loadHidden({
     ...configData,
@@ -217,6 +224,8 @@ t.test('workspaces', async t => {
       },
     },
   })
+  t.chdir(projectRoot)
+  unload('project')
 
   const graph = load({
     ...configData,
@@ -245,7 +254,10 @@ t.test('unknown dep type', async t => {
   }
   const projectRoot = t.testdir({
     'vlt-lock.json': JSON.stringify(lockfileData),
+    'vlt.json': '{}',
   })
+  t.chdir(projectRoot)
+  unload('project')
 
   t.throws(
     () =>
@@ -279,7 +291,10 @@ t.test('invalid dep id in edge', async t => {
   }
   const projectRoot = t.testdir({
     'vlt-lock.json': JSON.stringify(lockfileData),
+    'vlt.json': '{}',
   })
+  t.chdir(projectRoot)
+  unload('project')
 
   t.throws(
     () =>
@@ -312,7 +327,10 @@ t.test('missing edge `from`', async t => {
   }
   const projectRoot = t.testdir({
     'vlt-lock.json': JSON.stringify(lockfileData),
+    'vlt.json': '{}',
   })
+  t.chdir(projectRoot)
+  unload('project')
 
   t.throws(
     () =>
@@ -347,7 +365,10 @@ t.test('load with custom git hosts', async t => {
   }
   const projectRoot = t.testdir({
     'vlt-lock.json': JSON.stringify(lockfileData),
+    'vlt.json': '{}',
   })
+  t.chdir(projectRoot)
+  unload('project')
 
   const graph = load({
     ...configData,
@@ -386,7 +407,10 @@ t.test('load with custom scope registry', async t => {
   }
   const projectRoot = t.testdir({
     'vlt-lock.json': JSON.stringify(lockfileData),
+    'vlt.json': '{}',
   })
+  t.chdir(projectRoot)
+  unload('project')
 
   const graph = load({
     ...configData,
@@ -407,7 +431,9 @@ t.test('load with custom scope registry', async t => {
 t.test(
   'option-defined values should overwrite lockfile values',
   async t => {
-    const projectRoot = t.testdir()
+    const projectRoot = t.testdir({ 'vlt.json': '{}' })
+    t.chdir(projectRoot)
+    unload('project')
     const mainManifest = { name: 'my-project', version: '1.0.0' }
     const loadOptions = {
       registries: {
@@ -435,7 +461,9 @@ t.test(
 )
 
 t.test('missing options object', async t => {
-  const projectRoot = t.testdir()
+  const projectRoot = t.testdir({ 'vlt.json': '{}' })
+  t.chdir(projectRoot)
+  unload('project')
   const mainManifest = { name: 'my-project', version: '1.0.0' }
   const loadOptions = {
     registries: {

@@ -1,6 +1,7 @@
 import { joinDepIDTuple } from '@vltpkg/dep-id'
 import { PackageJson } from '@vltpkg/package-json'
 import type { SpecOptions } from '@vltpkg/spec'
+import { unload } from '@vltpkg/vlt-json'
 import { Monorepo } from '@vltpkg/workspaces'
 import { PathScurry } from 'path-scurry'
 import t from 'tap'
@@ -18,6 +19,8 @@ const configData = {
 
 t.test('load actual', async t => {
   const projectRoot = actualGraph(t)
+  t.chdir(projectRoot)
+  unload('project')
 
   const fullGraph = load({
     projectRoot,
@@ -68,6 +71,7 @@ t.test('cycle', async t => {
         a: '^1.0.0',
       },
     }),
+    'vlt.json': '{}',
     node_modules: {
       '.vlt': {
         [joinDepIDTuple(['registry', '', 'a@1.0.0'])]: {
@@ -117,6 +121,8 @@ t.test('cycle', async t => {
       ),
     },
   })
+  t.chdir(projectRoot)
+  unload('project')
   t.matchSnapshot(
     objectLikeOutput(
       load({
@@ -147,6 +153,7 @@ t.test('cycle', async t => {
 
 t.test('uninstalled dependencies', async t => {
   const projectRoot = t.testdir({
+    'vlt.json': '{}',
     'package.json': JSON.stringify({
       name: 'my-project',
       version: '1.0.0',
@@ -155,6 +162,8 @@ t.test('uninstalled dependencies', async t => {
       },
     }),
   })
+  t.chdir(projectRoot)
+  unload('project')
   t.matchSnapshot(
     objectLikeOutput(
       load({

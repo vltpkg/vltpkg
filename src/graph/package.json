@@ -41,14 +41,15 @@
   "devDependencies": {
     "@eslint/js": "catalog:",
     "@types/node": "catalog:",
+    "@vltpkg/vlt-json": "workspace:*",
     "eslint": "catalog:",
     "prettier": "catalog:",
     "tap": "catalog:",
     "tar": "catalog:",
     "tshy": "catalog:",
     "typedoc": "catalog:",
-    "typescript": "catalog:",
-    "typescript-eslint": "catalog:"
+    "typescript-eslint": "catalog:",
+    "typescript": "catalog:"
   },
   "license": "BSD-2-Clause-Patent",
   "engines": {

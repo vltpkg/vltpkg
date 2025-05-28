@@ -1,6 +1,7 @@
 import { hydrate, joinDepIDTuple } from '@vltpkg/dep-id'
 import type { SpecOptions } from '@vltpkg/spec'
 import { kCustomInspect, Spec } from '@vltpkg/spec'
+import { unload } from '@vltpkg/vlt-json'
 import { Monorepo } from '@vltpkg/workspaces'
 import { inspect } from 'node:util'
 import t from 'tap'
@@ -29,10 +30,13 @@ t.test('Graph', async t => {
     name: 'my-project',
     version: '1.0.0',
   }
+  const projectRoot = t.testdir({ 'vlt.json': '{}' })
+  t.chdir(projectRoot)
+  unload('project')
   const graph = new Graph({
     ...configData,
     mainManifest,
-    projectRoot: t.testdirName,
+    projectRoot,
   })
   t.strictSame(
     graph.mainImporter.manifest?.name,
@@ -186,8 +190,11 @@ t.test('using placePackage', async t => {
       missing: '^1.0.0',
     },
   }
+  const projectRoot = t.testdir({ 'vlt.json': '{}' })
+  t.chdir(projectRoot)
+  unload('project')
   const graph = new Graph({
-    projectRoot: t.testdirName,
+    projectRoot,
     ...configData,
     mainManifest,
   })
@@ -280,8 +287,11 @@ t.test('main manifest missing name', async t => {
   const mainManifest = {
     version: '1.0.0',
   }
+  const projectRoot = t.testdir({ 'vlt.json': '{}' })
+  t.chdir(projectRoot)
+  unload('project')
   const graph = new Graph({
-    projectRoot: t.testdirName,
+    projectRoot,
     ...configData,
     mainManifest,
   })
@@ -303,7 +313,7 @@ t.test('workspaces', async t => {
     name: 'my-project',
     version: '1.0.0',
   }
-  const dir = t.testdir({
+  const projectRoot = t.testdir({
     'package.json': JSON.stringify(mainManifest),
     'vlt.json': JSON.stringify({
       workspaces: {
@@ -325,9 +335,11 @@ t.test('workspaces', async t => {
       },
     },
   })
-  const monorepo = Monorepo.maybeLoad(dir)
+  t.chdir(projectRoot)
+  unload('project')
+  const monorepo = Monorepo.maybeLoad(projectRoot)
   const graph = new Graph({
-    projectRoot: t.testdirName,
+    projectRoot,
     ...configData,
     mainManifest,
     monorepo,
@@ -369,10 +381,13 @@ t.test('prevent duplicate edges', async t => {
     name: 'bar',
     version: '3.0.0',
   }
+  const projectRoot = t.testdir({ 'vlt.json': '{}' })
+  t.chdir(projectRoot)
+  unload('project')
   const graph = new Graph({
     ...configData,
     mainManifest,
-    projectRoot: t.testdirName,
+    projectRoot,
   })
   graph.placePackage(
     graph.mainImporter,

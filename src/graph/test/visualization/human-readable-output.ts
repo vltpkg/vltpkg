@@ -1,6 +1,7 @@
 import { joinDepIDTuple } from '@vltpkg/dep-id'
 import type { SpecOptions } from '@vltpkg/spec'
 import { Spec } from '@vltpkg/spec'
+import { unload } from '@vltpkg/vlt-json'
 import { Monorepo } from '@vltpkg/workspaces'
 import t from 'tap'
 import { Graph } from '../../src/graph.ts'
@@ -16,8 +17,11 @@ const configData = {
 } satisfies SpecOptions
 
 t.test('human-readable-output', async t => {
+  const projectRoot = t.testdir({ 'vlt.json': '{}' })
+  t.chdir(projectRoot)
+  unload('project')
   const graph = new Graph({
-    projectRoot: t.testdirName,
+    projectRoot,
     ...configData,
     mainManifest: {
       name: 'my-project',
@@ -166,7 +170,7 @@ t.test('workspaces', async t => {
     name: 'my-project',
     version: '1.0.0',
   }
-  const dir = t.testdir({
+  const projectRoot = t.testdir({
     'package.json': JSON.stringify(mainManifest),
     'vlt.json': JSON.stringify({
       workspaces: { packages: ['./packages/*'] },
@@ -186,9 +190,11 @@ t.test('workspaces', async t => {
       },
     },
   })
-  const monorepo = Monorepo.load(dir)
+  t.chdir(projectRoot)
+  unload('project')
+  const monorepo = Monorepo.load(projectRoot)
   const graph = new Graph({
-    projectRoot: t.testdirName,
+    projectRoot,
     ...configData,
     mainManifest,
     monorepo,
@@ -208,8 +214,11 @@ t.test('workspaces', async t => {
 })
 
 t.test('cycle', async t => {
+  const projectRoot = t.testdir({ 'vlt.json': '{}' })
+  t.chdir(projectRoot)
+  unload('project')
   const graph = new Graph({
-    projectRoot: t.testdirName,
+    projectRoot,
     ...configData,
     mainManifest: {
       name: 'my-project',
@@ -260,8 +269,11 @@ t.test('cycle', async t => {
 })
 
 t.test('nameless package', async t => {
+  const projectRoot = t.testdir({ 'vlt.json': '{}' })
+  t.chdir(projectRoot)
+  unload('project')
   const graph = new Graph({
-    projectRoot: t.testdirName,
+    projectRoot,
     ...configData,
     mainManifest: {},
   })
@@ -280,8 +292,11 @@ t.test('nameless package', async t => {
 })
 
 t.test('versionless package', async t => {
+  const projectRoot = t.testdir({ 'vlt.json': '{}' })
+  t.chdir(projectRoot)
+  unload('project')
   const graph = new Graph({
-    projectRoot: t.testdirName,
+    projectRoot,
     ...configData,
     mainManifest: {
       name: 'my-project',
@@ -312,8 +327,11 @@ t.test('versionless package', async t => {
 })
 
 t.test('aliased package', async t => {
+  const projectRoot = t.testdir({ 'vlt.json': '{}' })
+  t.chdir(projectRoot)
+  unload('project')
   const graph = new Graph({
-    projectRoot: t.testdirName,
+    projectRoot,
     ...configData,
     mainManifest: {
       name: 'my-project',
@@ -344,8 +362,11 @@ t.test('aliased package', async t => {
 })
 
 t.test('confused package', async t => {
+  const projectRoot = t.testdir({ 'vlt.json': '{}' })
+  t.chdir(projectRoot)
+  unload('project')
   const graph = new Graph({
-    projectRoot: t.testdirName,
+    projectRoot,
     ...configData,
     mainManifest: {
       name: 'my-project',
@@ -376,8 +397,11 @@ t.test('confused package', async t => {
 })
 
 t.test('missing optional', async t => {
+  const projectRoot = t.testdir({ 'vlt.json': '{}' })
+  t.chdir(projectRoot)
+  unload('project')
   const graph = new Graph({
-    projectRoot: t.testdirName,
+    projectRoot,
     ...configData,
     mainManifest: {
       name: 'my-project',

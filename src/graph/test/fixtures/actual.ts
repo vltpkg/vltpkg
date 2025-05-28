@@ -1,6 +1,7 @@
 import { joinDepIDTuple } from '@vltpkg/dep-id'
 import { PackageJson } from '@vltpkg/package-json'
 import type { SpecOptions } from '@vltpkg/spec'
+import { unload } from '@vltpkg/vlt-json'
 import { Monorepo } from '@vltpkg/workspaces'
 import { PathScurry } from 'path-scurry'
 import type { Test } from 'tap'
@@ -274,6 +275,8 @@ export const actualGraph = (t: Test): string =>
 
 export const loadActualGraph = (t: Test): Graph => {
   const projectRoot = actualGraph(t)
+  t.chdir(projectRoot)
+  unload('project')
   return load({
     projectRoot,
     scurry: new PathScurry(projectRoot),

@@ -4,6 +4,7 @@ import { PackageInfoClient } from '@vltpkg/package-info'
 import { PackageJson } from '@vltpkg/package-json'
 import type { SpecOptions } from '@vltpkg/spec'
 import { Spec } from '@vltpkg/spec'
+import { unload } from '@vltpkg/vlt-json'
 import { Monorepo } from '@vltpkg/workspaces'
 import { PathScurry } from 'path-scurry'
 import t from 'tap'
@@ -134,6 +135,8 @@ t.test('build from a virtual graph', async t => {
       }),
     },
   })
+  t.chdir(projectRoot)
+  unload('project')
 
   const virtual = loadVirtual({
     ...configData,
@@ -197,6 +200,8 @@ t.test('add from manifest file only', async t => {
     'vlt-lock.json': JSON.stringify(lockfileData),
     'package.json': JSON.stringify(mainManifest),
   })
+  t.chdir(projectRoot)
+  unload('project')
 
   const virtual = loadVirtual({
     ...configData,
@@ -263,6 +268,8 @@ t.test('remove from manifest file only', async t => {
       }),
     },
   })
+  t.chdir(projectRoot)
+  unload('project')
 
   const virtual = loadVirtual({
     ...configData,
@@ -509,6 +516,8 @@ t.test('build from an actual graph', async t => {
       },
     }),
   })
+  t.chdir(projectRoot)
+  unload('project')
 
   const actual = loadActual({
     scurry: new PathScurry(projectRoot),
