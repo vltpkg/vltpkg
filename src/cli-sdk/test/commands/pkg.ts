@@ -1,12 +1,14 @@
+import { PackageJson } from '@vltpkg/package-json'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { PackageJson } from '@vltpkg/package-json'
 import t from 'tap'
 import * as Command from '../../src/commands/pkg.ts'
 import type { LoadedConfig } from '../../src/config/index.ts'
 import type { ViewOptions } from '../../src/view.ts'
 import { setupEnv } from '../fixtures/util.ts'
-import { kNewline, kIndent } from 'polite-json'
+
+const kNewline = Symbol.for('newline')
+const kIndent = Symbol.for('indent')
 
 const readPackageJson = (dir: string) =>
   readFileSync(join(dir, 'package.json'), 'utf8')

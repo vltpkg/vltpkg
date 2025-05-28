@@ -31,7 +31,6 @@ import type { Jack, OptionsResults, Unwrap } from 'jackspeak'
 import { readFile, rm, writeFile } from 'node:fs/promises'
 import { dirname } from 'node:path'
 import { PathScurry } from 'path-scurry'
-import { kIndent, kNewline } from 'polite-json'
 import type { Commands, RecordField } from './definition.ts'
 import {
   commands,
@@ -208,11 +207,6 @@ export class Config {
    * representing vlt's configuration
    */
   jack: Jack<ConfigDefinitions>
-
-  stringifyOptions: {
-    [kIndent]: string
-    [kNewline]: string
-  } = { [kIndent]: '  ', [kNewline]: '\n' }
 
   /**
    * Parsed values in effect

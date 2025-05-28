@@ -492,9 +492,6 @@ importers:
       path-scurry:
         specifier: 'catalog:'
         version: 2.0.0
-      polite-json:
-        specifier: 'catalog:'
-        version: 5.0.0
       pretty-bytes:
         specifier: ^6.1.1
         version: 6.1.1
@@ -507,9 +504,6 @@ importers:
       supports-color:
         specifier: ^10.0.0
         version: 10.0.0
-      walk-up-path:
-        specifier: 'catalog:'
-        version: 4.0.0
     devDependencies:
       '@eslint/js':
         specifier: 'catalog:'
@@ -2173,9 +2167,6 @@ importers:
       path-scurry:
         specifier: 'catalog:'
         version: 2.0.0
-      polite-json:
-        specifier: 'catalog:'
-        version: 5.0.0
     devDependencies:
       '@eslint/js':
         specifier: 'catalog:'
