@@ -37,14 +37,15 @@
     "@types/pacote": "catalog:",
     "@vltpkg/benchmark": "workspace:*",
     "@vltpkg/cache-unzip": "workspace:*",
+    "@vltpkg/vlt-json": "workspace:*",
     "eslint": "catalog:",
     "pacote": "catalog:",
     "prettier": "catalog:",
     "tap": "catalog:",
     "tshy": "catalog:",
     "typedoc": "catalog:",
-    "typescript": "catalog:",
-    "typescript-eslint": "catalog:"
+    "typescript-eslint": "catalog:",
+    "typescript": "catalog:"
   },
   "license": "BSD-2-Clause-Patent",
   "engines": {
