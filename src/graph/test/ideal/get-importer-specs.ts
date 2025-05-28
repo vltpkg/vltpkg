@@ -1,6 +1,7 @@
 import { joinDepIDTuple } from '@vltpkg/dep-id'
 import { PackageJson } from '@vltpkg/package-json'
 import { kCustomInspect, Spec } from '@vltpkg/spec'
+import { unload } from '@vltpkg/vlt-json'
 import { Monorepo } from '@vltpkg/workspaces'
 import { inspect } from 'node:util'
 import { PathScurry } from 'path-scurry'
@@ -22,10 +23,13 @@ Object.assign(Spec.prototype, {
 })
 
 t.test('empty graph and nothing to add', async t => {
+  const projectRoot = t.testdir({ 'vlt.json': '{}' })
+  t.chdir(projectRoot)
+  unload('project')
   const graph = new Graph({
-    projectRoot: t.testdirName,
+    projectRoot,
     mainManifest: {},
-    monorepo: Monorepo.maybeLoad(t.testdirName),
+    monorepo: Monorepo.maybeLoad(projectRoot),
   })
   const add = new Map() as AddImportersDependenciesMap
   const remove = new Map() as RemoveImportersDependenciesMap
@@ -57,6 +61,8 @@ t.test('empty graph with workspaces and nothing to add', async t => {
       },
     }),
   })
+  t.chdir(projectRoot)
+  unload('project')
   const graph = load({
     projectRoot,
     scurry: new PathScurry(projectRoot),
@@ -69,10 +75,13 @@ t.test('empty graph with workspaces and nothing to add', async t => {
 })
 
 t.test('empty graph and something to add', async t => {
+  const projectRoot = t.testdir({ 'vlt.json': '{}' })
+  t.chdir(projectRoot)
+  unload('project')
   const graph = new Graph({
-    projectRoot: t.testdirName,
+    projectRoot,
     mainManifest: {},
-    monorepo: Monorepo.maybeLoad(t.testdirName),
+    monorepo: Monorepo.maybeLoad(projectRoot),
   })
   const add = new Map([
     [
@@ -112,7 +121,10 @@ t.test('graph specs and nothing to add', async t => {
   }
   const projectRoot = t.testdir({
     'package.json': JSON.stringify(mainManifest),
+    'vlt.json': '{}',
   })
+  t.chdir(projectRoot)
+  unload('project')
   const graph = load({
     projectRoot,
     scurry: new PathScurry(projectRoot),
@@ -137,7 +149,10 @@ t.test('graph specs and new things to add', async t => {
   }
   const projectRoot = t.testdir({
     'package.json': JSON.stringify(mainManifest),
+    'vlt.json': '{}',
   })
+  t.chdir(projectRoot)
+  unload('project')
   const graph = load({
     projectRoot,
     scurry: new PathScurry(projectRoot),
@@ -178,7 +193,10 @@ t.test('graph specs and something to update', async t => {
   }
   const projectRoot = t.testdir({
     'package.json': JSON.stringify(mainManifest),
+    'vlt.json': '{}',
   })
+  t.chdir(projectRoot)
+  unload('project')
   const graph = load({
     projectRoot,
     scurry: new PathScurry(projectRoot),
@@ -212,7 +230,10 @@ t.test('installing over a dangling edge', async t => {
   }
   const projectRoot = t.testdir({
     'package.json': JSON.stringify(mainManifest),
+    'vlt.json': '{}',
   })
+  t.chdir(projectRoot)
+  unload('project')
   const graph = load({
     projectRoot,
     scurry: new PathScurry(projectRoot),
@@ -282,6 +303,8 @@ t.test(
         },
       }),
     })
+    t.chdir(projectRoot)
+    unload('project')
     const graph = load({
       projectRoot,
       scurry: new PathScurry(projectRoot),
@@ -333,10 +356,13 @@ t.test(
 )
 
 t.test('adding to a non existing importer', async t => {
+  const projectRoot = t.testdir({ 'vlt.json': '{}' })
+  t.chdir(projectRoot)
+  unload('project')
   const graph = new Graph({
-    projectRoot: t.testdirName,
+    projectRoot: projectRoot,
     mainManifest: {},
-    monorepo: Monorepo.maybeLoad(t.testdirName),
+    monorepo: Monorepo.maybeLoad(projectRoot),
   })
   const add = new Map([
     // this workspace id does not exist in the given graph
@@ -497,6 +523,8 @@ t.test(
         },
       }),
     })
+    t.chdir(projectRoot)
+    unload('project')
     const graph = load({
       projectRoot,
       scurry: new PathScurry(projectRoot),
