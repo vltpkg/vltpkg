@@ -17,6 +17,9 @@ import type {
 } from './utils.ts'
 import { PUBLISHED_VARIANT } from '@vltpkg/infra-build'
 
+const NODE_ENGINES = '>=22'
+const PNPM_VERSION = '10.11.0'
+
 type Workspace = WorkspaceBase & {
   isRoot: boolean
   relDir: string
@@ -337,8 +340,12 @@ const fixPackage = async (
   ws: Workspace,
   config: PnpmWorkspaceConfig,
 ) => {
-  ws.pj.engines =
-    ws.isRoot ? { node: '>=22', pnpm: '9' } : { node: '>=22' }
+  ws.pj.engines ??= {}
+  ws.pj.engines.node = NODE_ENGINES
+  if (ws.isRoot) {
+    ws.pj.engines.pnpm = PNPM_VERSION.split('.')[0] ?? ''
+    ws.pj.packageManager = `pnpm@${PNPM_VERSION}`
+  }
 
   const relDirToWorkspace = relative(ROOT, ws.dir)
   ws.pj.repository = {
@@ -367,6 +374,7 @@ const fixPackage = async (
     'devDependencies',
     'license',
     'engines',
+    'packageManager',
     'scripts',
     'tap',
     'prettier',

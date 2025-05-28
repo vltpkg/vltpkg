@@ -25,9 +25,9 @@
   },
   "devDependencies": {
     "@eslint/js": "catalog:",
-    "@std/semver": "npm:@jsr/std__semver@^1.0.5",
+    "@std/semver": "jsr:^1.0.5",
     "@types/node": "catalog:",
-    "@types/semver": "^7.7.0",
+    "@types/semver": "catalog:",
     "eslint": "catalog:",
     "prettier": "catalog:",
     "semver": "catalog:",
