@@ -51,7 +51,13 @@ export type ErrorCauseOptions = {
   spec?:
     | string
     | {
-        type: 'file' | 'git' | 'registry' | 'remote' | 'workspace'
+        type:
+          | 'file'
+          | 'git'
+          | 'registry'
+          | 'remote'
+          | 'workspace'
+          | 'catalog'
         spec: string
         [k: number | string | symbol]: any
       }

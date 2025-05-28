@@ -685,3 +685,50 @@ t.test(
     t.equal(s.registry, 'https://registry.npmjs.org/')
   },
 )
+
+t.test('catalogs', async t => {
+  const catalog = { a: '1.2.3' }
+  const catalogs = { x: { a: '1.2.3' }, y: { a: '2.3.4' } }
+  const opts = { catalog, catalogs }
+
+  t.match(Spec.parse('a@catalog:', opts), {
+    name: 'a',
+    type: 'catalog',
+    catalog: '',
+    subspec: {
+      name: 'a',
+      bareSpec: '1.2.3',
+    },
+  })
+
+  t.match(Spec.parse('a@catalog:x', opts), {
+    name: 'a',
+    type: 'catalog',
+    catalog: 'x',
+    subspec: {
+      name: 'a',
+      bareSpec: '1.2.3',
+    },
+  })
+
+  t.match(Spec.parse('b@npm:a@catalog:x', opts), {
+    name: 'b',
+    namedRegistry: 'npm',
+    subspec: {
+      name: 'a',
+      type: 'catalog',
+      catalog: 'x',
+      subspec: {
+        name: 'a',
+        bareSpec: '1.2.3',
+      },
+    },
+  })
+
+  t.throws(() => Spec.parse('b@catalog:', opts), {
+    message: 'Name not found in catalog',
+  })
+  t.throws(() => Spec.parse('b@catalog:z', opts), {
+    message: 'Named catalog not found',
+  })
+})

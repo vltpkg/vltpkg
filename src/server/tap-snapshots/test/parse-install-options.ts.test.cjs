@@ -13,6 +13,7 @@ Array [
       "abbrev" => Object {
         "spec": Spec {
           "bareSpec": "latest",
+          "catalog": undefined,
           "conventionalRegistryTarball": undefined,
           "distTag": "latest",
           "file": undefined,
@@ -26,6 +27,8 @@ Array [
           "namedJsrRegistry": undefined,
           "namedRegistry": undefined,
           "options": Object {
+            "catalog": Object {},
+            "catalogs": Object {},
             "git-host-archives": Object {
               "bitbucket": "https://bitbucket.org/$1/$2/get/$committish.tar.gz",
               "gist": "https://codeload.github.com/gist/$1/tar.gz/$committish",
@@ -65,6 +68,7 @@ Array [
       "english-days" => Object {
         "spec": Spec {
           "bareSpec": "latest",
+          "catalog": undefined,
           "conventionalRegistryTarball": undefined,
           "distTag": "latest",
           "file": undefined,
@@ -78,6 +82,8 @@ Array [
           "namedJsrRegistry": undefined,
           "namedRegistry": undefined,
           "options": Object {
+            "catalog": Object {},
+            "catalogs": Object {},
             "git-host-archives": Object {
               "bitbucket": "https://bitbucket.org/$1/$2/get/$committish.tar.gz",
               "gist": "https://codeload.github.com/gist/$1/tar.gz/$committish",
@@ -115,6 +121,7 @@ Array [
       "simple-output" => Object {
         "spec": Spec {
           "bareSpec": "latest",
+          "catalog": undefined,
           "conventionalRegistryTarball": undefined,
           "distTag": "latest",
           "file": undefined,
@@ -128,6 +135,8 @@ Array [
           "namedJsrRegistry": undefined,
           "namedRegistry": undefined,
           "options": Object {
+            "catalog": Object {},
+            "catalogs": Object {},
             "git-host-archives": Object {
               "bitbucket": "https://bitbucket.org/$1/$2/get/$committish.tar.gz",
               "gist": "https://codeload.github.com/gist/$1/tar.gz/$committish",
@@ -184,6 +193,7 @@ Array [
       "abbrev" => Object {
         "spec": Spec {
           "bareSpec": "latest",
+          "catalog": undefined,
           "conventionalRegistryTarball": undefined,
           "distTag": "latest",
           "file": undefined,
@@ -197,6 +207,8 @@ Array [
           "namedJsrRegistry": undefined,
           "namedRegistry": undefined,
           "options": Object {
+            "catalog": Object {},
+            "catalogs": Object {},
             "git-host-archives": Object {
               "bitbucket": "https://bitbucket.org/$1/$2/get/$committish.tar.gz",
               "gist": "https://codeload.github.com/gist/$1/tar.gz/$committish",
@@ -244,6 +256,7 @@ Array [
       "abbrev" => Object {
         "spec": Spec {
           "bareSpec": "latest",
+          "catalog": undefined,
           "conventionalRegistryTarball": undefined,
           "distTag": "latest",
           "file": undefined,
@@ -257,6 +270,8 @@ Array [
           "namedJsrRegistry": undefined,
           "namedRegistry": undefined,
           "options": Object {
+            "catalog": Object {},
+            "catalogs": Object {},
             "git-host-archives": Object {
               "bitbucket": "https://bitbucket.org/$1/$2/get/$committish.tar.gz",
               "gist": "https://codeload.github.com/gist/$1/tar.gz/$committish",
