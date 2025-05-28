@@ -1,6 +1,7 @@
 import { joinDepIDTuple } from '@vltpkg/dep-id'
 import type { SpecOptions } from '@vltpkg/spec'
 import { Spec } from '@vltpkg/spec'
+import { unload } from '@vltpkg/vlt-json'
 import { Monorepo } from '@vltpkg/workspaces'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
@@ -30,7 +31,9 @@ t.test('save', async t => {
       foo: '^1.0.0',
     },
   }
-  const projectRoot = t.testdir()
+  const projectRoot = t.testdir({ 'vlt.json': '{}' })
+  t.chdir(projectRoot)
+  unload('project')
   const graph = new Graph({
     ...configData,
     projectRoot,
@@ -130,7 +133,9 @@ t.test('missing registries', async t => {
     registry: 'http://example.com',
     registries: undefined,
   }
-  const projectRoot = t.testdir()
+  const projectRoot = t.testdir({ 'vlt.json': '{}' })
+  t.chdir(projectRoot)
+  unload('project')
   const graph = new Graph({
     projectRoot,
     ...borkedConfigData,
@@ -156,7 +161,9 @@ t.test('custom git hosts', async t => {
       example: 'https://example.com/$1/$2/archive/$3.tar.gz',
     },
   }
-  const projectRoot = t.testdir()
+  const projectRoot = t.testdir({ 'vlt.json': '{}' })
+  t.chdir(projectRoot)
+  unload('project')
   const graph = new Graph({
     projectRoot,
     ...specOptions,
@@ -188,7 +195,9 @@ t.test('jsr-registries', async t => {
       '@myscope': 'https://example.com/',
     },
   }
-  const projectRoot = t.testdir()
+  const projectRoot = t.testdir({ 'vlt.json': '{}' })
+  t.chdir(projectRoot)
+  unload('project')
   const graph = new Graph({
     projectRoot,
     ...specOptions,
@@ -224,7 +233,9 @@ t.test('jsr-registries', async t => {
       intl: 'https://jsr.example.com/',
     },
   }
-  const projectRoot = t.testdir()
+  const projectRoot = t.testdir({ 'vlt.json': '{}' })
+  t.chdir(projectRoot)
+  unload('project')
   const graph = new Graph({
     projectRoot,
     ...specOptions,
@@ -261,7 +272,9 @@ t.test('overrides default registries', async t => {
       npm: 'http://example.com',
     },
   }
-  const projectRoot = t.testdir()
+  const projectRoot = t.testdir({ 'vlt.json': '{}' })
+  t.chdir(projectRoot)
+  unload('project')
   const graph = new Graph({
     projectRoot,
     ...specOptions,
@@ -301,6 +314,8 @@ t.test('workspaces', async t => {
       },
     },
   })
+  t.chdir(projectRoot)
+  unload('project')
   const monorepo = Monorepo.load(projectRoot)
   const graph = new Graph({
     projectRoot,
@@ -353,7 +368,9 @@ t.test('confused manifest', async t => {
       foo: '^1.0.0',
     },
   }
-  const projectRoot = t.testdir()
+  const projectRoot = t.testdir({ 'vlt.json': '{}' })
+  t.chdir(projectRoot)
+  unload('project')
   const graph = new Graph({
     ...configData,
     projectRoot,

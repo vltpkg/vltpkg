@@ -866,6 +866,9 @@ importers:
       '@types/node':
         specifier: 'catalog:'
         version: 22.15.3
+      '@vltpkg/vlt-json':
+        specifier: workspace:*
+        version: link:../vlt-json
       eslint:
         specifier: 'catalog:'
         version: 9.25.1(jiti@2.4.2)
@@ -1209,9 +1212,6 @@ importers:
       '@vltpkg/types':
         specifier: workspace:*
         version: link:../types
-      '@vltpkg/vlt-json':
-        specifier: workspace:*
-        version: link:../vlt-json
       '@vltpkg/workspaces':
         specifier: workspace:*
         version: link:../workspaces
@@ -1237,6 +1237,9 @@ importers:
       '@vltpkg/cache-unzip':
         specifier: workspace:*
         version: link:../cache-unzip
+      '@vltpkg/vlt-json':
+        specifier: workspace:*
+        version: link:../vlt-json
       eslint:
         specifier: 'catalog:'
         version: 9.25.1(jiti@2.4.2)
