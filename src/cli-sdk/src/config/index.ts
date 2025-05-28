@@ -24,22 +24,14 @@
 import { error } from '@vltpkg/error-cause'
 import { PackageInfoClient } from '@vltpkg/package-info'
 import { PackageJson } from '@vltpkg/package-json'
+import type { Validator, WhichConfig } from '@vltpkg/vlt-json'
+import { find, load, reload, save } from '@vltpkg/vlt-json'
 import { Monorepo } from '@vltpkg/workspaces'
-import { XDG } from '@vltpkg/xdg'
 import type { Jack, OptionsResults, Unwrap } from 'jackspeak'
-import { readFileSync, rmSync, writeFileSync } from 'node:fs'
-import { lstat, mkdir, readFile, writeFile } from 'node:fs/promises'
-import { homedir } from 'node:os'
-import { dirname, resolve } from 'node:path'
+import { readFile, rm, writeFile } from 'node:fs/promises'
+import { dirname } from 'node:path'
 import { PathScurry } from 'path-scurry'
-import type { JSONResult } from 'polite-json'
-import {
-  parse as jsonParse,
-  stringify as jsonStringify,
-  kIndent,
-  kNewline,
-} from 'polite-json'
-import { walkUp } from 'walk-up-path'
+import { kIndent, kNewline } from 'polite-json'
 import type { Commands, RecordField } from './definition.ts'
 import {
   commands,
@@ -61,7 +53,6 @@ export const kCustomInspect = Symbol.for('nodejs.util.inspect.custom')
 
 export type RecordPairs = Record<string, unknown>
 export type RecordString = Record<string, string>
-export type ConfigFiles = Record<string, ConfigFileData['config']>
 
 // turn a set of pairs into a Record object.
 // if a kv pair doesn't have a = character, set to `''`
@@ -85,19 +76,16 @@ const isRecordFieldValue = (k: string, v: unknown): v is string[] =>
   Array.isArray(v) &&
   recordFields.includes(k as (typeof recordFields)[number])
 
-export type PairsAsRecords = Omit<
-  ConfigOptions,
-  | 'projectRoot'
-  | 'scurry'
-  | 'packageJson'
-  | 'monorepo'
-  | 'packageInfo'
-> & {
-  command?: Record<string, ConfigOptions>
+export type PairsAsRecords = ConfigOptionsNoExtras & {
+  command?: {
+    [k in keyof Commands]?: ConfigOptionsNoExtras
+  }
 }
 
 export const pairsToRecords = (
-  obj: NonNullable<ConfigFileData['config']>,
+  obj:
+    | NonNullable<ConfigFileData>
+    | OptionsResults<ConfigDefinitions>,
 ): PairsAsRecords => {
   return Object.fromEntries(
     Object.entries(obj).map(([k, v]) => [
@@ -106,9 +94,7 @@ export const pairsToRecords = (
         Object.fromEntries(
           Object.entries(v).map(([k, v]) => [
             k,
-            pairsToRecords(
-              v as NonNullable<ConfigFileData['config']>,
-            ),
+            pairsToRecords(v as NonNullable<ConfigFileData>),
           ]),
         )
       : isRecordFieldValue(k, v) ? reducePairs(v)
@@ -148,41 +134,49 @@ export const recordsToPairs = (obj: RecordPairs): RecordPairs => {
 }
 
 const kRecord = Symbol('parsed key=value record')
-const exists = (f: string) =>
-  lstat(f).then(
-    () => true,
-    () => false,
-  )
 
-const home = homedir()
-const xdg = new XDG('vlt')
+export type ConfigDataNoCommand = {
+  [k in keyof OptionsResults<ConfigDefinitions>]?: OptionsResults<ConfigDefinitions>[k]
+}
 
 /**
  * Config data can be any options, and also a 'command' field which
  * contains command names and override options for that command.
  */
-export type ConfigData = OptionsResults<ConfigDefinitions> & {
-  command?: Record<string, OptionsResults<ConfigDefinitions>>
-}
-
-/**
- * Config data as it appears in config files, with kv pair lists
- * stored as `Record<string, string>`.
- */
-export type ConfigFileData = {
-  config?: {
-    [k in keyof ConfigData]?: k extends OptListKeys<ConfigData> ?
-      RecordString | string[]
-    : k extends 'command' ? ConfigFiles
-    : ConfigData[k]
+export type ConfigData = ConfigDataNoCommand & {
+  command?: {
+    [k in keyof Commands]?: ConfigDataNoCommand
   }
 }
 
-export type ConfigOptions = {
-  [k in keyof ConfigData]: k extends RecordField ? RecordString
+export type ConfigFileDataNoCommand = {
+  [k in keyof ConfigDataNoCommand]: k extends (
+    OptListKeys<ConfigDataNoCommand>
+  ) ?
+    RecordString | string[]
+  : ConfigDataNoCommand[k]
+}
+
+/**
+ * Config data as it appears in the config field of the vlt.json, with kv pair
+ * lists stored as `Record<string, string>` and
+ */
+export type ConfigFileData = ConfigFileDataNoCommand & {
+  command?: {
+    [k in keyof Commands]?: ConfigFileDataNoCommand
+  }
+}
+
+export type ConfigOptionsNoExtras = {
+  [k in keyof OptionsResults<ConfigDefinitions>]: k extends (
+    RecordField
+  ) ?
+    RecordString
   : k extends 'command' ? never
-  : ConfigData[k]
-} & {
+  : OptionsResults<ConfigDefinitions>[k]
+}
+
+export type ConfigOptions = ConfigOptionsNoExtras & {
   packageJson: PackageJson
   scurry: PathScurry
   projectRoot: string
@@ -219,8 +213,6 @@ export class Config {
     [kIndent]: string
     [kNewline]: string
   } = { [kIndent]: '  ', [kNewline]: '\n' }
-
-  configFiles: ConfigFiles = {}
 
   /**
    * Parsed values in effect
@@ -401,22 +393,11 @@ export class Config {
    * Write the config values to the user or project config file.
    */
   async writeConfigFile(
-    which: 'project' | 'user',
-    values: NonNullable<ConfigFiles['config']>,
+    this: LoadedConfig,
+    which: WhichConfig,
+    values: NonNullable<ConfigFileData>,
   ) {
-    const f = this.getFilename(which)
-    await mkdir(dirname(f), { recursive: true })
-    const vals = Object.assign(
-      pairsToRecords(values),
-      this.stringifyOptions,
-    )
-    const data = await readFile(f, 'utf8')
-      .then(data => jsonParse(data) as unknown as ConfigFileData)
-      .catch(() => ({ config: {} }))
-    data.config = vals
-    await writeFile(f, jsonStringify(data))
-    this.configFiles[f] = vals
-    return values
+    return save('config', pairsToRecords(values), which)
   }
 
   /**
@@ -424,97 +405,71 @@ export class Config {
    * in the config file.
    */
   async addConfigToFile(
-    which: 'project' | 'user',
-    values: NonNullable<ConfigFileData['config']>,
+    this: LoadedConfig,
+    which: WhichConfig,
+    values: NonNullable<ConfigFileData>,
   ) {
-    const f = this.getFilename(which)
     return this.writeConfigFile(
       which,
-      merge((await this.#maybeLoadConfigFile(f)) ?? {}, values),
+      merge((await this.#maybeLoadConfigFile(which)) ?? {}, values),
     )
+  }
+
+  // called in this weird bound way so that it can be used by the
+  // vlt-json config loading module.
+  #validator: Validator<ConfigFileData> = function (
+    this: Config,
+    c: unknown,
+    file: string,
+  ) {
+    this.#validateConfig(c, file)
+  }.bind(this)
+
+  #validateConfig(
+    c: unknown,
+    file: string,
+  ): asserts c is ConfigFileData {
+    if (!c || typeof c !== 'object' || Array.isArray(c)) {
+      throw error('invalid config, expected object', {
+        path: file,
+        found: c,
+        wanted: 'ConfigFileData',
+      })
+    }
+
+    const { command, ...values } = recordsToPairs(c as RecordPairs)
+    if (command) {
+      for (const [c, opts] of Object.entries(command)) {
+        const cmd = getCommand(c)
+        if (cmd) {
+          this.commandValues[cmd] = merge<ConfigData>(
+            this.commandValues[cmd] ?? ({} as ConfigData),
+            opts as ConfigData,
+          )
+        }
+      }
+    }
+    this.jack.setConfigValues(values, file)
   }
 
   /**
    * if the file exists, parse and load it. returns object if data was
    * loaded, or undefined if not.
    */
-  async #maybeLoadConfigFile(
-    file: string,
-  ): Promise<ConfigFileData['config']> {
-    const result = await this.#readConfigFile(file)
-
-    if (result) {
-      const { command, ...values } = recordsToPairs(result)
-      if (command) {
-        for (const [c, opts] of Object.entries(command)) {
-          const cmd = getCommand(c)
-          if (cmd) {
-            this.commandValues[cmd] = merge<ConfigData>(
-              this.commandValues[cmd] ?? ({} as ConfigData),
-              opts as ConfigData,
-            )
-          }
-        }
-      }
-      this.jack.setConfigValues(values, file)
-      return result
-    }
+  async #maybeLoadConfigFile(whichConfig: WhichConfig) {
+    return load('config', this.#validator, whichConfig)
   }
 
-  async #readConfigFile(
-    file: string,
-  ): Promise<ConfigFileData['config']> {
-    if (this.configFiles[file]) return this.configFiles[file]
-    const data = await readFile(file, 'utf8').catch(() => {})
-    if (!data) return undefined
-    let result: JSONResult
-    try {
-      result = jsonParse(data)
-      if (result && typeof result === 'object') {
-        if (result[kIndent] !== undefined)
-          this.stringifyOptions[kIndent] = result[kIndent]
-        if (result[kNewline] !== undefined)
-          this.stringifyOptions[kNewline] = result[kNewline]
-      }
-    } catch (er) {
-      throw error('failed to parse vlt config file', {
-        path: file,
-        cause: er,
-      })
-    }
-    if (
-      !result ||
-      typeof result !== 'object' ||
-      Array.isArray(result) ||
-      // if it has a config field, must be an object
-      ('config' in result &&
-        (!result.config || typeof result.config !== 'object'))
-    ) {
-      throw error(
-        'invalid config, expected object with "config" member',
-        {
-          path: file,
-          found: result,
-          wanted: '{ "config"?: ConfigFileData }',
-        },
-      )
-    }
-    this.configFiles[file] = result.config as ConfigFileData['config']
-    return this.configFiles[file]
-  }
-
-  getFilename(which: 'project' | 'user' = 'project'): string {
-    return which === 'user' ?
-        xdg.config('vlt.json')
-      : resolve(this.projectRoot, 'vlt.json')
-  }
-
+  /**
+   * Deletes the specified config fields from the named file
+   * Returns `true` if anything was changed.
+   */
   async deleteConfigKeys(
-    which: 'project' | 'user',
+    this: LoadedConfig,
+    which: WhichConfig,
     fields: string[],
   ) {
-    const file = this.getFilename(which)
-    const data = await this.#maybeLoadConfigFile(file)
+    const data = await this.#maybeLoadConfigFile(which)
     if (!data) return false
     let didSomething = false
     for (const f of fields) {
@@ -548,7 +503,7 @@ export class Config {
         delete data[k]
       }
     }
-    await this.writeConfigFile(which, data)
+    if (didSomething) await this.writeConfigFile(which, data)
     return didSomething
   }
 
@@ -563,15 +518,17 @@ export class Config {
    * mean deleting the file.
    */
   async editConfigFile(
-    which: 'project' | 'user',
+    this: LoadedConfig,
+    which: WhichConfig,
     edit: (file: string) => Promise<void> | void,
   ) {
-    const file = this.getFilename(which)
-    const backup = await readFile(file, 'utf8')
-      .then(data => jsonParse(data))
-      .catch(() => null)
+    // load the file as a backup
+    // call the edit function
+    // reload it
+    const file = find(which)
+    const backup = await readFile(file, 'utf8').catch(() => undefined)
     if (!backup) {
-      writeFileSync(
+      await writeFile(
         file,
         JSON.stringify({ config: {} }, null, 2) + '\n',
       )
@@ -579,35 +536,20 @@ export class Config {
     let valid = false
     try {
       await edit(file)
-      const res = jsonParse(readFileSync(file, 'utf8'))
-      if (
-        !res ||
-        typeof res !== 'object' ||
-        Array.isArray(res) ||
-        ('config' in res &&
-          (!res.config || typeof res.config !== 'object'))
-      ) {
-        throw error(
-          'Invalid configuration, expected object with config member',
-          {
-            path: file,
-            found: res,
-            wanted: '{ config: ConfigData }',
-          },
-        )
-      }
-      const { config } = res as unknown as ConfigFileData
-      if (config) {
-        this.jack.setConfigValues(recordsToPairs(config))
-        this.configFiles[file] = config
-      }
+      // force it to reload the file and validate it again
+      // if this fails, we roll back.
+      const result = reload('config', which)
+      save('config', result ?? {}, which)
       valid = true
     } finally {
       if (!valid) {
+        // TODO: maybe write the file to a re-edit backup location?
+        // then you could do `vlt config edit retry` or something.
         if (backup) {
-          writeFileSync(file, jsonStringify(backup))
+          await writeFile(file, backup)
+          reload(which)
         } else {
-          rmSync(file, { force: true })
+          await rm(file, { force: true })
         }
       }
     }
@@ -616,51 +558,11 @@ export class Config {
   /**
    * Find the local config file and load both it and the user-level config in
    * the XDG config home.
-   *
-   * Note: if working in a workspaces monorepo, then the vlt.json file MUST
-   * be in the same folder as the vlt.json file, because we stop
-   * looking when we find either one.
    */
   async loadConfigFile(): Promise<this> {
-    const userConfig = xdg.config('vlt.json')
-    await this.#maybeLoadConfigFile(userConfig)
-
-    let lastKnownRoot = resolve(this.projectRoot)
-    for (const dir of walkUp(this.projectRoot)) {
-      // don't look in ~
-      if (dir === home) break
-
-      // finding a project config file stops the search
-      const projectConfig = resolve(dir, 'vlt.json')
-      if (projectConfig === userConfig) break
-      if (
-        (await exists(projectConfig)) &&
-        (await this.#maybeLoadConfigFile(projectConfig))
-      ) {
-        lastKnownRoot = dir
-        break
-      }
-
-      // stat existence of these files
-      const [hasPackage, hasModules, hasProject, hasGit] =
-        await Promise.all([
-          exists(resolve(dir, 'package.json')),
-          exists(resolve(dir, 'node_modules')),
-          exists(resolve(dir, 'vlt.json')),
-          exists(resolve(dir, '.git')),
-        ])
-
-      // treat these as potential roots
-      if (hasPackage || hasModules || hasProject) {
-        lastKnownRoot = dir
-      }
-
-      // define backstops
-      if (hasProject || hasGit) {
-        break
-      }
-    }
-    this.projectRoot = lastKnownRoot
+    await this.#maybeLoadConfigFile('user')
+    this.projectRoot = dirname(find('project', this.projectRoot))
+    await this.#maybeLoadConfigFile('project')
     return this
   }
 

@@ -3,16 +3,15 @@ import { joinDepIDTuple } from '@vltpkg/dep-id'
 import { error } from '@vltpkg/error-cause'
 import { PackageJson } from '@vltpkg/package-json'
 import type { Manifest } from '@vltpkg/types'
+import { load } from '@vltpkg/vlt-json'
 import type { GlobOptionsWithFileTypesFalse } from 'glob'
 import { globSync } from 'glob'
 import type { DepResults } from 'graph-run'
 import { graphRun, graphRunSync } from 'graph-run'
 import { minimatch } from 'minimatch'
-import { readFileSync, statSync } from 'node:fs'
 import { basename, posix, resolve } from 'node:path'
 import type { Path } from 'path-scurry'
 import { PathScurry } from 'path-scurry'
-import { parse } from 'polite-json'
 
 export type WorkspacesLoadedConfig = {
   workspace?: string[]
@@ -62,7 +61,12 @@ export const asWSConfig = (
   return (
     typeof conf === 'string' ? { packages: [conf] }
     : Array.isArray(conf) ? { packages: conf }
-    : conf
+    : Object.fromEntries(
+        Object.entries(conf).map(([k, v]) => [
+          k,
+          typeof v === 'string' ? [v] : v,
+        ]),
+      )
   )
 }
 
@@ -76,7 +80,7 @@ export const assertWSConfig: (
   conf: unknown,
   path?: string,
 ) => {
-  if (typeof conf === 'string') return conf
+  if (typeof conf === 'string') return
 
   if (Array.isArray(conf)) {
     for (const c of conf) {
@@ -191,39 +195,8 @@ export class Monorepo {
    */
   get config(): WorkspaceConfigObject {
     if (this.#config) return this.#config
-    const file = resolve(this.projectRoot, 'vlt.json')
-    let confData: string
-    try {
-      confData = readFileSync(file, 'utf8')
-    } catch (er) {
-      throw error('Not in a monorepo, no vlt.json found', {
-        path: this.projectRoot,
-        cause: er,
-      })
-    }
-    let parsed: unknown
-    try {
-      parsed = parse(confData)
-    } catch (er) {
-      throw error('Invalid vlt.json file', {
-        path: this.projectRoot,
-        cause: er,
-      })
-    }
-    if (
-      !parsed ||
-      typeof parsed !== 'object' ||
-      Array.isArray(parsed)
-    ) {
-      throw error('Invalid vlt.json file, not an object', {
-        path: this.projectRoot,
-        found: parsed,
-        wanted: '{ workspaces: WorkspaceDefinition }',
-      })
-    }
     this.#config = asWSConfig(
-      (parsed as { workspaces?: WorkspaceConfig }).workspaces ?? {},
-      file,
+      load('workspaces', assertWSConfig) ?? {},
     )
     return this.#config
   }
@@ -629,15 +602,9 @@ export class Monorepo {
     projectRoot: string,
     options: MonorepoOptions = { load: {} },
   ) {
-    try {
-      if (!statSync(resolve(projectRoot, 'vlt.json')).isFile()) {
-        return
-      }
-    } catch {
-      return
-    }
-    const { load = {} } = options
-    return new Monorepo(projectRoot, { ...options, load })
+    const config = load('workspaces', assertWSConfig)
+    if (!config) return
+    return new Monorepo(projectRoot, { load: {}, ...options })
   }
 
   /**
