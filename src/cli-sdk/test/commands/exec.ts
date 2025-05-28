@@ -1,4 +1,5 @@
 import { Spec } from '@vltpkg/spec'
+import { unload } from '@vltpkg/vlt-json'
 import type { PromptFn, VlxOptions } from '@vltpkg/vlx'
 import t from 'tap'
 import type { LoadedConfig } from '../../src/config/index.ts'
@@ -12,6 +13,7 @@ t.test('prettpath', async t => {
       homedir: () => '/a/b/c',
     }),
   })
+  unload()
   t.equal(prettyPath('/a/b/c/d/e/f'), '~/d/e/f')
   t.equal(prettyPath('/b/c/d/e/f'), '/b/c/d/e/f')
 })
@@ -38,6 +40,7 @@ t.test('promptFn', async t => {
       },
     },
   })
+  unload()
 
   const pauses = t.capture(process.stdin, 'pause').args
   t.equal(
@@ -56,6 +59,7 @@ t.test('usage', async t => {
   const { usage } = await t.mockImport<
     typeof import('../../src/commands/exec.ts')
   >('../../src/commands/exec.ts')
+  unload()
   const USAGE = usage().usage()
   t.matchSnapshot(USAGE, 'usage')
 })
@@ -88,6 +92,7 @@ t.test('command', async t => {
       },
     },
   })
+  unload()
   const conf = {
     positionals: ['a', 'b', 'c'],
     options: mockOptions,

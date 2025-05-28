@@ -1,3 +1,4 @@
+import { unload } from '@vltpkg/vlt-json'
 import { resolve } from 'node:path'
 import t from 'tap'
 import {
@@ -50,6 +51,7 @@ t.test('run script in a project', async t => {
   const { Config } = await t.mockImport<
     typeof import('../../src/config/index.ts')
   >('../../src/config/index.ts')
+  unload()
   const conf = await Config.load(t.testdirName, ['echo'])
   conf.projectRoot = dir
   const logs = t.capture(console, 'log').args
@@ -86,6 +88,7 @@ t.test('run script in a single workspace', async t => {
   const { Config } = await t.mockImport<
     typeof import('../../src/config/index.ts')
   >('../../src/config/index.ts')
+  unload()
   const conf = await Config.load(t.testdirName, ['echo'])
   conf.values.workspace = ['src/ws']
   conf.projectRoot = dir
@@ -126,6 +129,7 @@ t.test('run script across several workspaces', async t => {
   const { Config } = await t.mockImport<
     typeof import('../../src/config/index.ts')
   >('../../src/config/index.ts')
+  unload()
   const conf = await Config.load(t.testdirName, ['echo', 'ok'])
   conf.values.workspace = ['src/a', 'src/b']
   conf.values.view = 'human'
