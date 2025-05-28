@@ -1209,6 +1209,9 @@ importers:
       '@vltpkg/types':
         specifier: workspace:*
         version: link:../types
+      '@vltpkg/vlt-json':
+        specifier: workspace:*
+        version: link:../vlt-json
       '@vltpkg/workspaces':
         specifier: workspace:*
         version: link:../workspaces
