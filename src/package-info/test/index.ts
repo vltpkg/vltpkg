@@ -2,6 +2,7 @@ import { spawn as spawnGit } from '@vltpkg/git'
 import { Spec } from '@vltpkg/spec'
 import { Pool } from '@vltpkg/tar'
 import type { Manifest } from '@vltpkg/types'
+import { unload } from '@vltpkg/vlt-json'
 import { Workspace } from '@vltpkg/workspaces'
 import { lstatSync, readFileSync, readlinkSync } from 'node:fs'
 import { writeFile } from 'node:fs/promises'
@@ -585,7 +586,9 @@ t.test('tarball', async t => {
 
 const opts = { saveFixture: process.platform === 'win32' }
 t.test('extract', opts, async t => {
-  const dir = t.testdir()
+  const dir = t.testdir({ 'vlt.json': '{}' })
+  t.chdir(dir)
+  unload()
   t.match(await extract('abbrev@2', dir + '/registry', options), {
     resolved: `${defaultRegistry}abbrev/-/abbrev-2.0.0.tgz`,
   })
@@ -865,6 +868,8 @@ t.test('workspace specs', async t => {
     },
     tarx: {},
   })
+  t.chdir(dir)
+  unload()
   const opts = {
     ...options,
     projectRoot: dir,
@@ -917,6 +922,8 @@ t.test('workspace group option', async t => {
       bb: { 'package.json': '{"name":"bb"}' },
     },
   })
+  t.chdir(dir)
+  unload()
   const opts = {
     ...options,
     projectRoot: dir,
