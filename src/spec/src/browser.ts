@@ -8,6 +8,7 @@ import type {
   SpecLike,
   SpecOptions,
   SpecOptionsFilled,
+  SpecType,
 } from './types.ts'
 export * from './types.ts'
 
@@ -49,11 +50,15 @@ export const gitHostWebsites = {
   gitlab: 'https://gitlab.com/',
 }
 
-export const defaultScopeRegistries = {}
+export const defaultScopeRegistries = {
+  '@jsr': 'https://npm.jsr.io/',
+}
 
 export const getOptions = (
   options?: SpecOptions,
 ): SpecOptionsFilled => ({
+  catalog: {},
+  catalogs: {},
   ...options,
   'jsr-registries': {
     ...(options?.['jsr-registries'] ?? {}),
@@ -95,6 +100,7 @@ const startsWithSpecIdentifier = (
   spec.startsWith('http:') ||
   spec.startsWith('https:') ||
   spec.startsWith('workspace:') ||
+  spec.startsWith('catalog:') ||
   spec.startsWith('git@') ||
   spec.startsWith('git://') ||
   spec.startsWith('git+ssh://') ||
@@ -207,7 +213,7 @@ export class Spec implements SpecLike<Spec> {
 
   static nodejsDependencies?: NodeJSDependenciesOptions
 
-  type: 'file' | 'git' | 'registry' | 'remote' | 'workspace'
+  type: SpecType
   spec: string
   options: SpecOptionsFilled
   name: string
@@ -232,8 +238,9 @@ export class Spec implements SpecLike<Spec> {
   distTag?: string
   remoteURL?: string
   file?: string
+  catalog?: string
   subspec?: Spec
-  #final?: Spec
+  #final?: Spec & { type: Exclude<SpecType, 'catalog'> }
   #toString?: string
 
   /**
@@ -241,9 +248,17 @@ export class Spec implements SpecLike<Spec> {
    * When deciding which thing to actually fetch, spec.final is the thing
    * to look at.
    */
-  get final(): Spec {
+  get final(): Spec & { type: Exclude<SpecType, 'catalog'> } {
     if (this.#final) return this.#final
-    return (this.#final = this.subspec ? this.subspec.final : this)
+    const final = this.subspec ? this.subspec.final : this
+    /* c8 ignore start - impossible */
+    if (final.type === 'catalog') {
+      throw error('invalid Spec.final value, type is "catalog"')
+    }
+    /* c8 ignore stop */
+    return (this.#final = final as this & {
+      type: Exclude<SpecType, 'catalog'>
+    })
   }
 
   /**
@@ -300,6 +315,26 @@ export class Spec implements SpecLike<Spec> {
       this.name = spec.substring(0, at)
       if (hasScope) this.#parseScope(this.name)
       this.bareSpec = spec.substring(at + 1)
+    }
+
+    if (this.bareSpec.startsWith('catalog:')) {
+      this.catalog = this.bareSpec.substring('catalog:'.length)
+      const catalog =
+        this.catalog ?
+          this.options.catalogs[this.catalog]
+        : this.options.catalog
+      if (!catalog) {
+        throw this.#error('Named catalog not found', {
+          found: this.catalog,
+        })
+      }
+      const sub = catalog[this.name]
+      if (!sub) {
+        throw this.#error('Name not found in catalog', { found: sub })
+      }
+      this.subspec = Spec.parse(this.name, sub)
+      this.type = 'catalog'
+      return
     }
 
     // legacy affordance: allow project urls like
@@ -566,9 +601,7 @@ export class Spec implements SpecLike<Spec> {
       const hash = h === -1 ? '' : this.bareSpec.substring(h)
       const hostPath = bare.substring(name.length + 1)
       if (!hostPath) {
-        throw error('invalid named git host specifier', {
-          spec: this,
-        })
+        throw this.#error('invalid named git host specifier')
       }
       const split = hostPath.split('/')
       let t = template

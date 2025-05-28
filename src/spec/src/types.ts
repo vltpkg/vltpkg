@@ -19,6 +19,8 @@ export type SpecOptionsFilled = {
   'scope-registries': Record<Scope, string>
   /** registries that work like https://npm.jsr.io */
   'jsr-registries': Record<string, string>
+  catalog: Record<string, string>
+  catalogs: Record<string, Record<string, string>>
 }
 
 export type GitSelectorParsed = {
@@ -26,9 +28,17 @@ export type GitSelectorParsed = {
   semver?: string
 }
 
+export type SpecType =
+  | 'file'
+  | 'git'
+  | 'registry'
+  | 'remote'
+  | 'workspace'
+  | 'catalog'
+
 export type SpecLikeBase = {
   /** the type of spec that this is, ultimately */
-  type: 'file' | 'git' | 'registry' | 'remote' | 'workspace'
+  type: SpecType
 
   /** the full named specifier passed to the constructor */
   spec: string
