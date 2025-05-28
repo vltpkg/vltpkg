@@ -1,3 +1,4 @@
+import { unload } from '@vltpkg/vlt-json'
 import type { OptionsResults } from 'jackspeak'
 import {
   readFileSync,
@@ -801,3 +802,32 @@ t.test(
     )
   },
 )
+
+t.test('read catalogs from config file', async t => {
+  const projectRoot = t.testdir({
+    'vlt.json': JSON.stringify({
+      catalogs: {
+        x: { a: '1.2.3' },
+        y: { a: '2.3.4' },
+      },
+      catalog: { a: '6.7.8' },
+    }),
+  })
+  t.chdir(projectRoot)
+  unload()
+  const { Config } = await t.mockImport<
+    typeof import('../../src/config/index.ts')
+  >('../../src/config/index.ts')
+  const { options } = await Config.load(projectRoot)
+  const { catalog, catalogs } = options
+  t.strictSame(
+    { catalog, catalogs },
+    {
+      catalogs: {
+        x: { a: '1.2.3' },
+        y: { a: '2.3.4' },
+      },
+      catalog: { a: '6.7.8' },
+    },
+  )
+})
