@@ -27,8 +27,7 @@
     "glob": "^11.0.2",
     "graph-run": "catalog:",
     "minimatch": "^10.0.1",
-    "path-scurry": "catalog:",
-    "polite-json": "catalog:"
+    "path-scurry": "catalog:"
   },
   "devDependencies": {
     "@eslint/js": "catalog:",
