@@ -1,3 +1,4 @@
+import type { OptionsResults } from 'jackspeak'
 import {
   readFileSync,
   statSync,
@@ -8,7 +9,7 @@ import * as OS from 'node:os'
 import { resolve } from 'node:path'
 import { format } from 'node:util'
 import t from 'tap'
-import type { ConfigData } from '../../src/config/index.ts'
+import type { ConfigDefinitions } from '../../src/config/index.ts'
 
 const clearEnv = () => {
   for (const k of Object.keys(process.env)) {
@@ -24,15 +25,14 @@ const clearEnv = () => {
 
 process.env.XDG_CONFIG_HOME = t.testdir()
 
-const { Config } = await t.mockImport<
-  typeof import('../../src/config/index.ts')
->('../../src/config/index.ts')
-
 t.beforeEach(() => clearEnv())
 
 t.cleanSnapshot = (str: string) => str.replaceAll(/\\+/g, '/')
 
 t.test('read and write a project config', async t => {
+  const { Config } = await t.mockImport<
+    typeof import('../../src/config/index.ts')
+  >('../../src/config/index.ts')
   const dir = t.testdir({
     'vlt.json':
       JSON.stringify(
@@ -42,7 +42,10 @@ t.test('read and write a project config', async t => {
       ) + '\n',
     a: { b: {} },
   })
+  t.chdir(dir + '/a/b')
+
   const conf = await Config.load(dir + '/a/b')
+
   t.equal(conf, await Config.load(dir + '/a/b'), 'load is memoized')
   t.equal(conf.parse(), conf, 'parsing a second time is no-op')
   t.equal(conf.get('registry'), 'https://registry.vlt.sh/')
@@ -239,7 +242,8 @@ t.test(
         'asdfasdf=https://example.com',
         'github=https://github',
       ],
-    } as ConfigData
+    } as OptionsResults<ConfigDefinitions>
+
     const opts = conf.options
     const { packageInfo, scurry, packageJson, monorepo, ...o } = opts
     t.matchStrict(o, {
@@ -283,6 +287,9 @@ t.test(
 
 t.test('invalid config', async t => {
   t.test('invalid json', async t => {
+    const { Config } = await t.mockImport<
+      typeof import('../../src/config/index.ts')
+    >('../../src/config/index.ts')
     const dir = t.testdir({
       'vlt.json': 'this is not valid json',
       '.git': '',
@@ -297,49 +304,31 @@ t.test('invalid config', async t => {
       },
     })
   })
-
-  t.test('invalid object, config is string', async t => {
+  t.test('invalid object', async t => {
+    const { Config } = await t.mockImport<
+      typeof import('../../src/config/index.ts')
+    >('../../src/config/index.ts')
     const dir = t.testdir({
-      'vlt.json': '{"config": "not a config object"}',
+      'vlt.json': JSON.stringify('this is not valid json'),
       '.git': '',
     })
-    await t.rejects(Config.load(dir, undefined, true), {
-      cause: {
-        path: resolve(dir, 'vlt.json'),
-        found: { config: 'not a config object' },
-        wanted: '{ "config"?: ConfigFileData }',
-      },
-    })
+    // does not throw, just doesn't get any data
+    await Config.load(dir, undefined, true)
   })
-
-  t.test('invalid object, config is falsey', async t => {
-    const dir = t.testdir({
-      'vlt.json': '{"config": false}',
-      '.git': '',
-    })
-    await t.rejects(Config.load(dir, undefined, true), {
-      cause: {
-        path: resolve(dir, 'vlt.json'),
-        found: { config: false },
-        wanted: '{ "config"?: ConfigFileData }',
-      },
-    })
-  })
-
-  t.test('valid json, invalid data', async t => {
+  t.test('invalid config field', async t => {
+    const { Config } = await t.mockImport<
+      typeof import('../../src/config/index.ts')
+    >('../../src/config/index.ts')
     const dir = t.testdir({
       'vlt.json': JSON.stringify({
-        config: { color: 'not a boolean' },
+        config: 'this is not valid json',
       }),
       '.git': '',
     })
     await t.rejects(Config.load(dir, undefined, true), {
-      message: 'Invalid value string for color, expected boolean',
       cause: {
-        path: resolve(dir, 'vlt.json'),
-        name: 'color',
-        found: 'not a boolean',
-        wanted: 'boolean',
+        found: 'this is not valid json',
+        wanted: 'ConfigFileData',
       },
     })
   })
@@ -359,6 +348,9 @@ t.test('command-specific configs', async t => {
     }),
     '.git': '',
   })
+  const { Config } = await t.mockImport<
+    typeof import('../../src/config/index.ts')
+  >('../../src/config/index.ts')
   const c = await Config.load(dir, [], true)
   t.equal(c.command, 'help')
   t.equal(c.get('color'), false)
@@ -380,6 +372,9 @@ t.test('kv string[] stored as Record<string, string>', async t => {
     }),
     '.git': '',
   })
+  const { Config } = await t.mockImport<
+    typeof import('../../src/config/index.ts')
+  >('../../src/config/index.ts')
   const c = await Config.load(dir, undefined, true)
   t.strictSame(c.get('registries'), [
     'npm=https://registry.npmjs.org/',
@@ -468,6 +463,9 @@ t.test('.git is treated as a backstop', async t => {
     '.git': {},
     a: {},
   })
+  const { Config } = await t.mockImport<
+    typeof import('../../src/config/index.ts')
+  >('../../src/config/index.ts')
   const c = await Config.load(dir + '/a', undefined, true)
   t.equal(c.projectRoot, resolve(dir, 'a'))
 })
@@ -480,6 +478,9 @@ t.test('root resolution finds last known good location', async t => {
       'package.json': {},
     },
   })
+  const { Config } = await t.mockImport<
+    typeof import('../../src/config/index.ts')
+  >('../../src/config/index.ts')
   const c = await Config.load(dir + '/a/b', undefined, true)
   t.equal(c.projectRoot, resolve(dir, 'a'))
 })
@@ -542,98 +543,122 @@ t.test('delete config values from file', async t => {
     clearEnv()
   })
 
-  const dir = t.testdir({
-    'vlt.json': JSON.stringify({
+  t.test('delete non-record field', async t => {
+    const dir = t.testdir({
+      'vlt.json': JSON.stringify({
+        config: {
+          cache: './deleteme',
+          color: true,
+        },
+      }),
+    })
+    const f = resolve(dir, 'vlt.json')
+    const { Config } = await t.mockImport<
+      typeof import('../../src/config/index.ts')
+    >('../../src/config/index.ts')
+    const conf = await Config.load(dir, [], true)
+    await conf.deleteConfigKeys('project', ['cache', 'registry'])
+    t.equal(
+      readFileSync(f, 'utf8'),
+      JSON.stringify({
+        config: {
+          color: true,
+        },
+      }),
+    )
+    await conf.deleteConfigKeys('project', ['color'])
+    t.equal(readFileSync(f, 'utf8'), JSON.stringify({ config: {} }))
+  })
+
+  t.test('delete record field', async t => {
+    const dir = t.testdir({
+      'vlt.json': JSON.stringify({
+        config: {
+          registries: {
+            npm: 'https://registry.npmjs.org/',
+            acme: 'https://registry.acme.internal/',
+            foo: 'https://example.com',
+          },
+        },
+      }),
+    })
+    const f = resolve(dir, 'vlt.json')
+    const { Config } = await t.mockImport<
+      typeof import('../../src/config/index.ts')
+    >('../../src/config/index.ts')
+    const conf = await Config.load(dir, [], true)
+    await conf.deleteConfigKeys('project', ['registries.foo'])
+    t.strictSame(JSON.parse(readFileSync(f, 'utf8')), {
       config: {
-        cache: './deleteme',
-        color: true,
+        registries: {
+          npm: 'https://registry.npmjs.org/',
+          acme: 'https://registry.acme.internal/',
+        },
       },
-    }),
+    })
+    await conf.deleteConfigKeys('project', [
+      'registries.npm',
+      'registries.acme',
+    ])
+    t.equal(readFileSync(f, 'utf8'), JSON.stringify({ config: {} }))
   })
-  const f = resolve(dir, 'vlt.json')
-  const conf = await Config.load(dir, [], true)
-  await conf.deleteConfigKeys('project', ['cache', 'registry'])
-  t.equal(
-    readFileSync(f, 'utf8'),
-    JSON.stringify({
-      config: {
-        color: true,
+
+  t.test('delete record field as array', async t => {
+    const dir = t.testdir({
+      'vlt.json': JSON.stringify({
+        config: {
+          registries: [
+            'foo=https://example.com',
+            'npm=https://registry.npmjs.org/',
+            'acme=https://registry.acme.internal/',
+          ],
+        },
+      }),
+    })
+    const f = resolve(dir, 'vlt.json')
+    const { Config } = await t.mockImport<
+      typeof import('../../src/config/index.ts')
+    >('../../src/config/index.ts')
+    const conf = await Config.load(dir, [], true)
+    await conf.deleteConfigKeys('project', ['registries.foo'])
+    t.strictSame(
+      JSON.parse(readFileSync(f, 'utf8')),
+      {
+        config: {
+          registries: {
+            npm: 'https://registry.npmjs.org/',
+            acme: 'https://registry.acme.internal/',
+          },
+        },
       },
-    }),
-  )
-  await conf.deleteConfigKeys('project', ['color'])
-  t.equal(readFileSync(f, 'utf8'), JSON.stringify({ config: {} }))
-  delete conf.configFiles[f]
-  await conf.deleteConfigKeys('project', [])
-  t.equal(readFileSync(f, 'utf8'), JSON.stringify({ config: {} }))
-  await conf.addConfigToFile('project', {
-    registries: {
-      npm: 'https://registry.npmjs.org/',
-      acme: 'https://registry.acme.internal/',
-      foo: 'https://example.com',
-    },
+      'converted to Record<string,string> in the file',
+    )
   })
-  await conf.deleteConfigKeys('project', ['registries.foo'])
-  t.strictSame(JSON.parse(readFileSync(f, 'utf8')), {
-    config: {
-      registries: {
-        npm: 'https://registry.npmjs.org/',
-        acme: 'https://registry.acme.internal/',
-      },
-    },
+
+  t.test('delete all record field as array', async t => {
+    const dir = t.testdir({
+      'vlt.json': JSON.stringify({
+        config: {
+          registries: [
+            'foo=https://example.com',
+            'npm=https://registry.npmjs.org/',
+            'acme=https://registry.acme.internal/',
+          ],
+        },
+      }),
+    })
+    const f = resolve(dir, 'vlt.json')
+    const { Config } = await t.mockImport<
+      typeof import('../../src/config/index.ts')
+    >('../../src/config/index.ts')
+    const conf = await Config.load(dir, [], true)
+    await conf.deleteConfigKeys('project', [
+      'registries.foo',
+      'registries.npm',
+      'registries.acme',
+    ])
+    t.equal(readFileSync(f, 'utf8'), JSON.stringify({ config: {} }))
   })
-  await conf.deleteConfigKeys('project', [
-    'registries.npm',
-    'registries.acme',
-  ])
-  t.equal(readFileSync(f, 'utf8'), JSON.stringify({ config: {} }))
-  await conf.writeConfigFile('project', {
-    registries: [
-      'foo=https://example.com',
-      'npm=https://registry.npmjs.org/',
-      'acme=https://registry.acme.internal/',
-    ],
-  })
-  conf.configFiles[f] = {
-    registries: [
-      'foo=https://example.com',
-      'npm=https://registry.npmjs.org/',
-      'acme=https://registry.acme.internal/',
-    ],
-  }
-  await conf.deleteConfigKeys('project', ['registries.foo'])
-  t.strictSame(JSON.parse(readFileSync(f, 'utf8')), {
-    config: {
-      registries: {
-        npm: 'https://registry.npmjs.org/',
-        acme: 'https://registry.acme.internal/',
-      },
-    },
-  })
-  await conf.deleteConfigKeys('project', [
-    'registries.npm',
-    'registries.acme',
-  ])
-  t.equal(readFileSync(f, 'utf8'), JSON.stringify({ config: {} }))
-  await conf.writeConfigFile('project', {
-    registries: [
-      'foo=https://example.com',
-      'npm=https://registry.npmjs.org/',
-      'acme=https://registry.acme.internal/',
-    ],
-  })
-  conf.configFiles[f] = {
-    registries: [
-      'foo=https://example.com',
-      'npm=https://registry.npmjs.org/',
-      'acme=https://registry.acme.internal/',
-    ],
-  }
-  await conf.deleteConfigKeys('project', [
-    'registries.foo',
-    'registries.npm',
-    'registries.acme',
-  ])
 })
 
 t.test('edit config file', async t => {
@@ -642,6 +667,12 @@ t.test('edit config file', async t => {
   })
   const f = resolve(dir, 'vlt.json')
   let editCalled = false
+
+  const { Config } = await t.mockImport<
+    typeof import('../../src/config/index.ts')
+  >('../../src/config/index.ts')
+
+  t.chdir(dir)
   const conf = await Config.load(dir, [], true)
   await conf.editConfigFile('project', filename => {
     editCalled = true
@@ -716,7 +747,11 @@ t.test('write invalid config with no backup', async t => {
     '.git': {},
   })
   const f = resolve(dir, 'vlt.json')
+  t.chdir(dir)
   let editCalled = false
+  const { Config } = await t.mockImport<
+    typeof import('../../src/config/index.ts')
+  >('../../src/config/index.ts')
   const conf = await Config.load(dir, [], true)
   await t.rejects(
     conf.editConfigFile('project', filename => {
@@ -729,3 +764,40 @@ t.test('write invalid config with no backup', async t => {
   t.equal(editCalled, true)
   t.throws(() => statSync(f), 'file was removed')
 })
+
+t.test(
+  'deleting fields works if the config file has array records somehow',
+  async t => {
+    const { Config } = await t.mockImport<
+      typeof import('../../src/config/index.ts')
+    >('../../src/config/index.ts')
+    const dir = t.testdir({
+      'vlt.json': JSON.stringify({
+        config: {
+          registries: [
+            'vlt=https://registry.vlt.sh/',
+            'npm=https://registry.npmjs.org/',
+            'acme=https://registry.acme.local/',
+          ],
+        },
+      }),
+    })
+    t.chdir(dir)
+    const c = await Config.load(dir)
+    t.equal(
+      await c.deleteConfigKeys('project', ['registries.npm']),
+      true,
+    )
+    t.strictSame(
+      JSON.parse(readFileSync(dir + '/vlt.json', 'utf8')),
+      {
+        config: {
+          registries: {
+            vlt: 'https://registry.vlt.sh/',
+            acme: 'https://registry.acme.local/',
+          },
+        },
+      },
+    )
+  },
+)

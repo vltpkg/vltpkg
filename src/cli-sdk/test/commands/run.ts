@@ -3,6 +3,7 @@ import { resolve } from 'node:path'
 import t from 'tap'
 import { command, usage, views } from '../../src/commands/run.ts'
 import { setupEnv } from '../fixtures/util.ts'
+import { unload } from '@vltpkg/vlt-json'
 
 setupEnv(t)
 
@@ -27,6 +28,7 @@ t.test('run script in a project', async t => {
   const { Config } = await t.mockImport<
     typeof import('../../src/config/index.ts')
   >('../../src/config/index.ts')
+  unload()
   const conf = await Config.load(t.testdirName, ['hello'])
   conf.projectRoot = dir
   const logs = t.capture(console, 'log').args
@@ -64,6 +66,7 @@ t.test('run script in a single workspace', async t => {
   const { Config } = await t.mockImport<
     typeof import('../../src/config/index.ts')
   >('../../src/config/index.ts')
+  unload()
   const conf = await Config.load(t.testdirName, ['hello'])
   conf.values.workspace = ['src/ws']
   conf.projectRoot = dir
@@ -106,15 +109,23 @@ t.test('run script across several workspaces', async t => {
     '.git': {},
   })
   t.chdir(dir)
+
   const { Config } = await t.mockImport<
     typeof import('../../src/config/index.ts')
   >('../../src/config/index.ts')
-  const conf = await Config.load(t.testdirName, ['hello'])
-  conf.values.workspace = ['src/a', 'src/b']
-  conf.values.view = 'human'
-  conf.projectRoot = dir
+  unload()
+  const conf = await Config.load(t.testdirName, [
+    'hello',
+    '-w',
+    'src/a',
+    '-w',
+    'src/b',
+    '--view=human',
+  ])
+  t.equal(conf.projectRoot, dir)
   const logs = t.capture(console, 'log').args
   const errs = t.capture(console, 'error').args
+
   const result = await command(conf)
   t.strictSame(result, {
     'src/a': {
@@ -173,6 +184,7 @@ t.test('run script across no workspaces', async t => {
   const { Config } = await t.mockImport<
     typeof import('../../src/config/index.ts')
   >('../../src/config/index.ts')
+  unload()
   const conf = await Config.load(t.testdirName, ['hello'])
   conf.values.workspace = ['src/c']
   conf.projectRoot = dir
@@ -220,6 +232,7 @@ t.test('one ws fails, with bail', async t => {
   const { Config } = await t.mockImport<
     typeof import('../../src/config/index.ts')
   >('../../src/config/index.ts')
+  unload()
   const conf = await Config.load(t.testdirName, ['hello'])
   conf.values['workspace-group'] = ['packages']
   conf.values.view = 'human'
@@ -299,6 +312,7 @@ t.test('one ws fails, without bail', async t => {
   const { Config } = await t.mockImport<
     typeof import('../../src/config/index.ts')
   >('../../src/config/index.ts')
+  unload()
   const conf = await Config.load(t.testdirName, ['hello'])
   conf.values.bail = false
   conf.values.view = 'human'
@@ -359,6 +373,7 @@ t.test('show scripts if no event specified', async t => {
   const { Config } = await t.mockImport<
     typeof import('../../src/config/index.ts')
   >('../../src/config/index.ts')
+  unload()
   const conf = await Config.load(t.testdirName, [])
   conf.projectRoot = dir
   conf.values.recursive = false
@@ -393,6 +408,7 @@ t.test('show scripts if no event specified, single ws', async t => {
   const { Config } = await t.mockImport<
     typeof import('../../src/config/index.ts')
   >('../../src/config/index.ts')
+  unload()
   const conf = await Config.load(t.testdirName, [])
   conf.projectRoot = dir
   conf.values.workspace = ['src/ws']
@@ -436,6 +452,7 @@ t.test('show scripts across several workspaces', async t => {
   const { Config } = await t.mockImport<
     typeof import('../../src/config/index.ts')
   >('../../src/config/index.ts')
+  unload()
   const conf = await Config.load(t.testdirName, [])
   conf.values.workspace = ['src/a', 'src/b']
   conf.values.view = 'human'

@@ -1,3 +1,4 @@
+import { unload } from '@vltpkg/vlt-json'
 import { join } from 'node:path'
 import type { Test } from 'tap'
 import t from 'tap'
@@ -41,6 +42,7 @@ export const run = async (
       },
     },
   )
+  unload()
   try {
     await index.default()
   } catch (e) {
@@ -81,8 +83,8 @@ t.test('unknown config', async t => {
     },
   })
   const { error, logs } = await run(t, { argv: ['--unknown'] })
-  t.ok(error instanceof Error)
-  t.equal(exitCode, 1)
+  t.type(error, Error, 'error should be Error')
+  t.equal(exitCode, 1, 'exit code')
   t.matchSnapshot(logs.join('\n'))
 })
 

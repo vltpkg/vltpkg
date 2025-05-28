@@ -459,6 +459,9 @@ importers:
       '@vltpkg/url-open':
         specifier: workspace:*
         version: link:../url-open
+      '@vltpkg/vlt-json':
+        specifier: workspace:*
+        version: link:../vlt-json
       '@vltpkg/vlx':
         specifier: workspace:*
         version: link:../vlx
@@ -2146,6 +2149,9 @@ importers:
       '@vltpkg/types':
         specifier: workspace:*
         version: link:../types
+      '@vltpkg/vlt-json':
+        specifier: workspace:*
+        version: link:../vlt-json
       glob:
         specifier: ^11.0.2
         version: 11.0.2

@@ -2,6 +2,7 @@ import * as Graph from '@vltpkg/graph'
 import { PackageJson } from '@vltpkg/package-json'
 import type { SpecOptions } from '@vltpkg/spec'
 import { Spec } from '@vltpkg/spec'
+import { unload } from '@vltpkg/vlt-json'
 import { Monorepo } from '@vltpkg/workspaces'
 import { PathScurry } from 'path-scurry'
 import type { Test } from 'tap'
@@ -253,6 +254,8 @@ t.test('list', async t => {
         },
       },
     })
+    t.chdir(dir)
+    unload()
 
     const monorepo = Monorepo.load(dir)
     const graph = new Graph.Graph({
