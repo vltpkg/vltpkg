@@ -157,7 +157,7 @@ export class Graph implements GraphLike {
   }
 
   /**
-   * Delete all nodes that are unreachable from the importers.
+   * Delete all nodes and edges that are unreachable from the importers.
    * The collection of deleted nodes is returned.
    *
    * NOTE: This can be extremely slow for large graphs, and is almost always
@@ -167,13 +167,16 @@ export class Graph implements GraphLike {
    */
   gc() {
     const { nodes } = this
+    this.edges.clear()
     this.nodes = new Map()
     const marked = new Set(this.importers)
     for (const imp of marked) {
       // don't delete the importer!
       nodes.delete(imp.id)
       this.nodes.set(imp.id, imp)
-      for (const { to } of imp.edgesOut.values()) {
+      for (const edge of imp.edgesOut.values()) {
+        this.edges.add(edge)
+        const { to } = edge
         if (!to || marked.has(to)) continue
         marked.add(to)
         nodes.delete(to.id)

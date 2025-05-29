@@ -564,3 +564,133 @@ t.test('in-place edge replacement', async t => {
   )
   t.equal(graph.edges.size, 1, 'graph still has only one edge')
 })
+
+t.test('garbage collection', async t => {
+  const mainManifest = {
+    name: 'my-project',
+    version: '1.0.0',
+    dependencies: { foo: '*' },
+  }
+  const projectRoot = t.testdir({ 'vlt.json': '{}' })
+  t.chdir(projectRoot)
+  unload('project')
+  const graph = new Graph({
+    ...configData,
+    mainManifest,
+    projectRoot,
+  })
+
+  // Add connected nodes that should be kept
+  const foo = graph.placePackage(
+    graph.mainImporter,
+    'prod',
+    Spec.parse('foo@*'),
+    {
+      name: 'foo',
+      version: '1.0.0',
+      dependencies: { bar: '*' },
+    },
+  )
+
+  graph.placePackage(foo!, 'prod', Spec.parse('bar@*'), {
+    name: 'bar',
+    version: '1.0.0',
+  })
+
+  // Add disconnected nodes that should be collected
+  const baz = graph.addNode(
+    joinDepIDTuple(['registry', '', 'baz@1.0.0']),
+    {
+      name: 'baz',
+      version: '1.0.0',
+    },
+  )
+
+  const qux = graph.addNode(
+    joinDepIDTuple(['registry', '', 'qux@1.0.0']),
+    {
+      name: 'qux',
+      version: '1.0.0',
+    },
+  )
+
+  // Create an edge between the disconnected nodes
+  graph.addEdge('prod', Spec.parse('qux@*'), baz, qux)
+
+  // Check initial state
+  t.equal(graph.nodes.size, 5, 'graph initially has 5 nodes')
+  t.equal(graph.edges.size, 3, 'graph initially has 3 edges')
+  t.ok(
+    graph.nodes.has(joinDepIDTuple(['registry', '', 'baz@1.0.0'])),
+    'baz node exists',
+  )
+  t.ok(
+    graph.nodes.has(joinDepIDTuple(['registry', '', 'qux@1.0.0'])),
+    'qux node exists',
+  )
+
+  // Run garbage collection
+  const collected = graph.gc()
+
+  // Verify nodes connected to importers are preserved
+  t.equal(graph.nodes.size, 3, 'graph has 3 nodes after gc')
+  t.ok(
+    graph.nodes.has(joinDepIDTuple(['file', '.'])),
+    'main importer node is preserved',
+  )
+  t.ok(
+    graph.nodes.has(joinDepIDTuple(['registry', '', 'foo@1.0.0'])),
+    'foo node is preserved',
+  )
+  t.ok(
+    graph.nodes.has(joinDepIDTuple(['registry', '', 'bar@1.0.0'])),
+    'bar node is preserved',
+  )
+
+  // Verify disconnected nodes are collected
+  t.equal(collected.size, 2, 'gc collected 2 nodes')
+  t.ok(
+    collected.has(joinDepIDTuple(['registry', '', 'baz@1.0.0'])),
+    'baz node was collected',
+  )
+  t.ok(
+    collected.has(joinDepIDTuple(['registry', '', 'qux@1.0.0'])),
+    'qux node was collected',
+  )
+
+  // Verify edge between baz and qux is removed
+  t.equal(graph.edges.size, 2, 'graph has 2 edges after gc')
+
+  // Verify the nodesByName entries are updated
+  t.notOk(
+    graph.nodesByName.has('baz'),
+    'baz removed from nodesByName',
+  )
+  t.notOk(
+    graph.nodesByName.has('qux'),
+    'qux removed from nodesByName',
+  )
+
+  // Add more nodes and run gc again to test the path where nodes are marked during traversal
+  graph.addNode(joinDepIDTuple(['registry', '', 'newnode@1.0.0']), {
+    name: 'newnode',
+    version: '1.0.0',
+  })
+
+  t.equal(
+    graph.nodes.size,
+    4,
+    'graph has 4 nodes after adding newnode',
+  )
+
+  const secondCollected = graph.gc()
+
+  t.equal(secondCollected.size, 1, 'second gc collected 1 node')
+  t.equal(graph.nodes.size, 3, 'graph has 3 nodes after second gc')
+  t.ok(
+    secondCollected.has(
+      joinDepIDTuple(['registry', '', 'newnode@1.0.0']),
+    ),
+    'newnode was collected',
+  )
+})
