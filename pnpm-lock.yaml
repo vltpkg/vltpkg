@@ -22,8 +22,8 @@ catalogs:
       specifier: ^9.25.1
       version: 9.25.1
     graph-run:
-      specifier: ^1.0.4
-      version: 1.0.4
+      specifier: ^1.1.0
+      version: 1.1.0
     lru-cache:
       specifier: ^11.1.0
       version: 11.1.0
@@ -849,7 +849,7 @@ importers:
         version: link:../workspaces
       graph-run:
         specifier: 'catalog:'
-        version: 1.0.4
+        version: 1.1.0
       path-scurry:
         specifier: 'catalog:'
         version: 2.0.0
@@ -2160,7 +2160,7 @@ importers:
         version: 11.0.2
       graph-run:
         specifier: 'catalog:'
-        version: 1.0.4
+        version: 1.1.0
       minimatch:
         specifier: ^10.0.1
         version: 10.0.1
@@ -5918,8 +5918,8 @@ packages:
   graceful-fs@4.2.11:
     resolution: {integrity: sha512-RbJ5/jmFcNNCcDV5o9eTnBLJ/HszWV0P73bc+Ff4nS/rJj+YaS6IGyiOL0VoBYX+l1Wrl3k63h/KrH+nhJ0XvQ==}
 
-  graph-run@1.0.4:
-    resolution: {integrity: sha512-QCT8ovkn5v+rJh88hvxnPEhA+L/jKnZCMm+TVVOVRKotQS2KJPM2UfChh1Pj+/EhcAG3SkIzqFPzFnn6o1yLNg==}
+  graph-run@1.1.0:
+    resolution: {integrity: sha512-L7Lis9kQWoh3A7QFZOzWlim61h4Suvu28txLaiuRBvQQia6zTx4Q32R9E2VTfpcI6VFfJlMcxXdxt7SItaeb1A==}
 
   graphemer@1.4.0:
     resolution: {integrity: sha512-EtKwoO6kxCL9WO5xipiHTZlSzBm7WLT627TqC/uVRd0HKmq8NXyebnNYxDoBi7wt8eTWrUrKXCOVaFq9x1kgag==}
@@ -5999,9 +5999,6 @@ packages:
 
   hast-util-to-estree@3.1.0:
     resolution: {integrity: sha512-lfX5g6hqVh9kjS/B9E2gSkvHH4SZNiQFiqWS0x9fENzEl+8W12RqdRxX6d/Cwxi30tPQs3bIO+aolQJNp1bIyw==}
-
-  hast-util-to-html@9.0.3:
-    resolution: {integrity: sha512-M17uBDzMJ9RPCqLMO92gNNUDuBSq10a25SDBI08iCCxmorf4Yy6sYHK57n9WAbRAAaU+DuR4W6GN9K4DFZesYg==}
 
   hast-util-to-html@9.0.5:
     resolution: {integrity: sha512-OguPdidb+fbHQSU4Q4ZiLKnzWo8Wwsf5bZfbvu7//a9oTYoqD/fWpe96NuHkoS9h0ccGOTe0C4NGXdtS0iObOw==}
@@ -8981,7 +8978,7 @@ snapshots:
 
   '@astrojs/language-server@2.15.3(prettier-plugin-astro@0.14.1)(prettier@3.5.3)(typescript@5.7.3)':
     dependencies:
-      '@astrojs/compiler': 2.10.3
+      '@astrojs/compiler': 2.11.0
       '@astrojs/yaml2ts': 0.2.1
       '@jridgewell/sourcemap-codec': 1.5.0
       '@volar/kit': 2.4.6(typescript@5.7.3)
@@ -9591,11 +9588,11 @@ snapshots:
     dependencies:
       '@ctrl/tinycolor': 4.1.0
       hast-util-select: 6.0.3
-      hast-util-to-html: 9.0.3
+      hast-util-to-html: 9.0.5
       hast-util-to-text: 4.0.2
       hastscript: 9.0.0
-      postcss: 8.4.49
-      postcss-nested: 6.2.0(postcss@8.4.49)
+      postcss: 8.5.3
+      postcss-nested: 6.2.0(postcss@8.5.3)
       unist-util-visit: 5.0.0
       unist-util-visit-parents: 6.0.1
 
@@ -11202,7 +11199,7 @@ snapshots:
 
   '@types/estree-jsx@1.0.5':
     dependencies:
-      '@types/estree': 1.0.6
+      '@types/estree': 1.0.7
 
   '@types/estree@1.0.6': {}
 
@@ -13090,7 +13087,7 @@ snapshots:
 
   graceful-fs@4.2.11: {}
 
-  graph-run@1.0.4: {}
+  graph-run@1.1.0: {}
 
   graphemer@1.4.0: {}
 
@@ -13251,20 +13248,6 @@ snapshots:
       zwitch: 2.0.4
     transitivePeerDependencies:
       - supports-color
-
-  hast-util-to-html@9.0.3:
-    dependencies:
-      '@types/hast': 3.0.4
-      '@types/unist': 3.0.3
-      ccount: 2.0.1
-      comma-separated-tokens: 2.0.3
-      hast-util-whitespace: 3.0.0
-      html-void-elements: 3.0.0
-      mdast-util-to-hast: 13.2.0
-      property-information: 6.5.0
-      space-separated-tokens: 2.0.2
-      stringify-entities: 4.0.4
-      zwitch: 2.0.4
 
   hast-util-to-html@9.0.5:
     dependencies:
@@ -14925,6 +14908,11 @@ snapshots:
   postcss-nested@6.2.0(postcss@8.4.49):
     dependencies:
       postcss: 8.4.49
+      postcss-selector-parser: 6.1.2
+
+  postcss-nested@6.2.0(postcss@8.5.3):
+    dependencies:
+      postcss: 8.5.3
       postcss-selector-parser: 6.1.2
 
   postcss-selector-parser@6.0.10:
