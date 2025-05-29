@@ -263,6 +263,163 @@ Usage Error: bloopy doop
   Valid options: a, b
 `
 
+exports[`test/print-err.ts > TAP > snapshots > graph-run error no stdio output > file 1`] = `
+Error: failed graph traversal
+    at {STACK_LINE} {
+  [cause]: {
+    code: 'GRAPHRUN_TRAVERSAL',
+    node: { id: 'workspace·www§docs' },
+    path: [],
+    cause: Error: command failed
+        at {STACK_LINE} {
+      [cause]: {
+        command: 'astro sync',
+        args: [],
+        stdout: '',
+        stderr: '',
+        cwd: '/some/path/to/www/docs',
+        status: null,
+        signal: 'SIGINT'
+      }
+    }
+  }
+}
+`
+
+exports[`test/print-err.ts > TAP > snapshots > graph-run error no stdio output > output 1`] = `
+Graph traversal failure at: workspace www/docs
+Command: astro sync
+Cwd: /some/path/to/www/docs
+Signal: SIGINT
+
+Full details written to: {CWD}/.tap/fixtures/test-print-err.ts-snapshots-graph-run-error-no-stdio-output/vlt/error-logs/error-123.log
+`
+
+exports[`test/print-err.ts > TAP > snapshots > graph-run error no stdio output > output no file 1`] = `
+Graph traversal failure at: workspace www/docs
+Command: astro sync
+Cwd: /some/path/to/www/docs
+Signal: SIGINT
+`
+
+exports[`test/print-err.ts > TAP > snapshots > graph-run error with stderr > file 1`] = `
+Error: failed graph traversal
+    at {STACK_LINE} {
+  [cause]: {
+    code: 'GRAPHRUN_TRAVERSAL',
+    node: { id: 'workspace·www§docs' },
+    path: [ { id: '··a@1.2.3' } ],
+    cause: Error: command failed
+        at {STACK_LINE} {
+      [cause]: {
+        command: 'astro sync',
+        args: [ 'x' ],
+        stdout: '',
+        stderr: 'error message',
+        cwd: '/some/path/to/www/docs',
+        status: 1,
+        signal: null
+      }
+    }
+  }
+}
+`
+
+exports[`test/print-err.ts > TAP > snapshots > graph-run error with stderr > output 1`] = `
+Graph traversal failure at: workspace www/docs
+  Path: ··a@1.2.3
+Command: astro sync
+Args: "x"
+Cwd: /some/path/to/www/docs
+
+error message
+
+Status: 1
+
+Full details written to: {CWD}/.tap/fixtures/test-print-err.ts-snapshots-graph-run-error-with-stderr/vlt/error-logs/error-123.log
+`
+
+exports[`test/print-err.ts > TAP > snapshots > graph-run error with stderr > output no file 1`] = `
+Graph traversal failure at: workspace www/docs
+  Path: ··a@1.2.3
+Command: astro sync
+Args: "x"
+Cwd: /some/path/to/www/docs
+
+error message
+
+Status: 1
+`
+
+exports[`test/print-err.ts > TAP > snapshots > graph-run error with stdout > file 1`] = `
+Error: failed graph traversal
+    at {STACK_LINE} {
+  [cause]: {
+    code: 'GRAPHRUN_TRAVERSAL',
+    node: { id: 'workspace·www§docs' },
+    path: [ { id: '··a@1.2.3' } ],
+    cause: Error: command failed
+        at {STACK_LINE} {
+      [cause]: {
+        command: 'astro sync',
+        args: [ 'x' ],
+        stdout: 'output message',
+        stderr: '',
+        cwd: '/some/path/to/www/docs',
+        status: 1,
+        signal: null
+      }
+    }
+  }
+}
+`
+
+exports[`test/print-err.ts > TAP > snapshots > graph-run error with stdout > output 1`] = `
+Graph traversal failure at: workspace www/docs
+  Path: ··a@1.2.3
+Command: astro sync
+Args: "x"
+Cwd: /some/path/to/www/docs
+
+output message
+
+Status: 1
+
+Full details written to: {CWD}/.tap/fixtures/test-print-err.ts-snapshots-graph-run-error-with-stdout/vlt/error-logs/error-123.log
+`
+
+exports[`test/print-err.ts > TAP > snapshots > graph-run error with stdout > output no file 1`] = `
+Graph traversal failure at: workspace www/docs
+  Path: ··a@1.2.3
+Command: astro sync
+Args: "x"
+Cwd: /some/path/to/www/docs
+
+output message
+
+Status: 1
+`
+
+exports[`test/print-err.ts > TAP > snapshots > graph-run error without spawn error > file 1`] = `
+Error: failed graph traversal
+    at {STACK_LINE} {
+  [cause]: {
+    code: 'GRAPHRUN_TRAVERSAL',
+    node: { id: 'workspace·www§docs' },
+    path: []
+  }
+}
+`
+
+exports[`test/print-err.ts > TAP > snapshots > graph-run error without spawn error > output 1`] = `
+Error: failed graph traversal
+
+Full details written to: {CWD}/.tap/fixtures/test-print-err.ts-snapshots-graph-run-error-without-spawn-error/vlt/error-logs/error-123.log
+
+Open an issue with the full error details at:
+  https://github.com/vltpkg/vltpkg/issues/new
+`
+
 exports[`test/print-err.ts > TAP > snapshots > native error causes > file 1`] = `
 Error: root error
     at {STACK_LINE} {

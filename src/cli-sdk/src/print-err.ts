@@ -1,11 +1,15 @@
-import { parseError } from '@vltpkg/output/error'
+import { splitDepID } from '@vltpkg/dep-id'
+import type { Node } from '@vltpkg/graph'
 import type { ParsedError } from '@vltpkg/output/error'
-import type { CommandUsage } from './index.ts'
+import { parseError } from '@vltpkg/output/error'
+import { isErrorWithCause, isObject } from '@vltpkg/types'
+import { XDG } from '@vltpkg/xdg'
+import { isGraphRunError } from 'graph-run'
+import { mkdirSync, writeFileSync } from 'node:fs'
+import { join } from 'node:path'
 import type { InspectOptions } from 'node:util'
 import { formatWithOptions } from 'node:util'
-import { XDG } from '@vltpkg/xdg'
-import { join } from 'node:path'
-import { writeFileSync, mkdirSync } from 'node:fs'
+import type { CommandUsage } from './index.ts'
 
 export const formatOptions = {
   depth: Infinity,
@@ -21,6 +25,9 @@ export type Formatter = (
   arg: unknown,
   options?: ErrorFormatOptions,
 ) => string
+
+const isNonEmptyString = (v: unknown): v is string =>
+  !!v && typeof v === 'string'
 
 const formatURL = (v: unknown, format: Formatter) =>
   v instanceof URL ? v.toString() : /* c8 ignore next */ format(v)
@@ -107,6 +114,59 @@ const printCode = (
   if (!err) return
 
   switch (err.cause?.code) {
+    case 'GRAPHRUN_TRAVERSAL': {
+      if (!isGraphRunError<Node>(err)) break
+      const { node, path, cause } = err.cause
+      stderr(
+        `Graph traversal failure at: ${splitDepID(node.id).join(' ')}`,
+      )
+      if (Array.isArray(path) && path.length) {
+        stderr(indent(`Path: ${path.map(n => n.id).join(',')}`))
+      }
+      if (
+        isErrorWithCause(cause) &&
+        isObject(cause.cause) &&
+        'command' in cause.cause &&
+        'stdout' in cause.cause &&
+        'stderr' in cause.cause &&
+        'status' in cause.cause &&
+        'signal' in cause.cause &&
+        'cwd' in cause.cause
+      ) {
+        const {
+          command,
+          args,
+          cwd,
+          stdout: cmdStdout,
+          stderr: cmdStderr,
+          status,
+          signal,
+        } = cause.cause
+        stderr(`Command: ${command}`)
+        if (args && Array.isArray(args) && args.length) {
+          stderr(
+            `Args: ${args.map(a => JSON.stringify(a)).join(', ')}`,
+          )
+        }
+        stderr(`Cwd: ${cwd}`)
+
+        if (cmdStderr || cmdStdout) {
+          stderr('')
+          if (isNonEmptyString(cmdStderr)) {
+            stderr(cmdStderr)
+          }
+          if (isNonEmptyString(cmdStdout)) {
+            stderr(cmdStdout)
+          }
+          stderr('')
+        }
+
+        if (signal !== null) stderr(`Signal: ${format(signal)}`)
+        if (status !== null) stderr(`Status: ${format(status)}`)
+      }
+      return { file: true }
+    }
+
     case 'EUSAGE': {
       const { found, validOptions } = err.cause
       stderr(usage().usage())
