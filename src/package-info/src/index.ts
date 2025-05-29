@@ -426,7 +426,7 @@ export class PackageInfoClient {
         if (!mani) throw this.#resolveError(spec, options)
         const { integrity, tarball } = mani.dist ?? {}
         if (isIntegrity(integrity) && tarball) {
-          const registryOrigin = new URL(String(spec.registry)).origin
+          const registryOrigin = new URL(String(f.registry)).origin
           const tgzOrigin = new URL(tarball).origin
           // if it comes from the same origin, trust the integrity
           if (tgzOrigin === registryOrigin) {
@@ -605,7 +605,7 @@ export class PackageInfoClient {
     switch (f.type) {
       case 'file': {
         const { file } = f
-        if (!file || !spec.file) {
+        if (!file || !f.file) {
           throw this.#resolveError(
             spec,
             options,
@@ -613,7 +613,7 @@ export class PackageInfoClient {
           )
         }
         const { from = this.#projectRoot } = options
-        const resolved = pathResolve(from, spec.file)
+        const resolved = pathResolve(from, f.file)
         const r = { resolved, spec }
         this.#resolutions.set(memoKey, r)
         return r
@@ -673,7 +673,7 @@ export class PackageInfoClient {
             'no remote on git specifier',
           )
         }
-        const rev = await gitResolve(gitRemote, spec.gitCommittish, {
+        const rev = await gitResolve(gitRemote, f.gitCommittish, {
           spec,
         })
         if (rev) {
