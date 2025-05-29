@@ -30,7 +30,6 @@ type StyleTextFn = (
 
 /* c8 ignore start */
 const styleText: StyleTextFn = (f, s) =>
-  // @ts-expect-error -- styleText 3rd argument is not in types/node
   utilStyleText(f, s, { validateStream: false })
 /* c8 ignore stop */
 
