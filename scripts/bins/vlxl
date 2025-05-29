@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 set -eo pipefail
 ROOT_DIR="$(cd "$(dirname "$0")/../../" && pwd)"
 NODE_OPTIONS="--no-warnings --enable-source-maps --experimental-strip-types" node "$ROOT_DIR/infra/build/src/bins/vlxl.ts" "$@"
