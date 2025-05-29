@@ -217,6 +217,9 @@ export class Graph implements GraphLike {
         edge.spec.bareSpec === spec.bareSpec
       ) {
         if (to && to !== edge.to) {
+          // removes this edge from its destination edgesIn ref
+          edge.to?.edgesIn.delete(edge)
+          // now swap the destination to the new one
           edge.to = to as Node
           edge.to.edgesIn.add(edge)
         }
