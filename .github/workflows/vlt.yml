@@ -1,0 +1,146 @@
+name: CI (with vlt)
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Nodejs
+        uses: actions/setup-node@v4
+        with:
+          node-version: '^22.14.0'
+          check-latest: true
+
+      - name: Boostrap
+        run: npx vlt install
+
+      - name: Build vlt
+        run: node --run build:bundle
+      
+      - name: Add bundle to PATH
+        run: echo "$GITHUB_WORKSPACE/scripts/bins/bundle" >> $GITHUB_PATH
+      
+      - name: Install Dependencies
+        run: vlt install
+
+      - name: Formatting
+        id: format
+        continue-on-error: true
+        # TODO: https://github.com/vltpkg/vltpkg/issues/806
+        run: vlr format:check
+
+      - name: Linting
+        id: lint
+        continue-on-error: true
+        # TODO: https://github.com/vltpkg/vltpkg/issues/807
+        run: vlr lint:check
+
+      - name: Dependencies
+        id: deps
+        continue-on-error: true
+        # TODO: write dep check using vlt query in scripts/check-deps.js
+        run: vlr deps:check
+
+      - name: Docs
+        id: docs
+        continue-on-error: true
+        # TODO: https://github.com/vltpkg/vltpkg/issues/808
+        run: vlr --workspace ./www/docs typedoc:check
+
+      - name: Consistent Workspaces
+        id: workspaces
+        continue-on-error: true
+        # TODO: https://github.com/vltpkg/vltpkg/issues/806
+        # TODO: https://github.com/vltpkg/vltpkg/issues/804
+        run: |
+          vlr fix:pkg
+          vlr --recursive tshy
+          if [ -n "$(git status --porcelain)" ]; then
+            git diff
+            exit 1
+          fi
+
+      - name: Check Results
+        continue-on-error: true
+        run: |
+          declare -A OUTCOMES=(
+            [format]="${{ steps.format.outcome }}"
+            [lint]="${{ steps.lint.outcome }}"
+            [deps]="${{ steps.deps.outcome }}"
+            [docs]="${{ steps.docs.outcome }}"
+            [workspaces]="${{ steps.workspaces.outcome }}"
+          )
+          STATUS=0
+          for STEP in "${!OUTCOMES[@]}"; do
+            OUTCOME="${OUTCOMES[$STEP]}"
+            echo "$STEP: $OUTCOME"
+            if [ "$OUTCOME" != "success" ]; then
+              STATUS=1
+            fi
+          done
+          exit $STATUS
+
+  test:
+    name: Test - ${{ matrix.platform.name }} - ${{ matrix.node-version }}
+    runs-on: ${{ matrix.platform.os }}
+    defaults:
+      run:
+        shell: ${{ matrix.platform.shell }}
+    strategy:
+      matrix:
+        node-version: [22.x]
+        platform:
+          - name: Ubuntu
+            os: ubuntu-latest
+            shell: bash
+      fail-fast: false
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+
+      - name: Use Nodejs ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          check-latest: true
+
+      - name: Boostrap
+        run: npx vlt install
+
+      - name: Build vlt
+        run: node --run build:bundle
+      
+      - name: Add built to PATH
+        run: echo "$GITHUB_WORKSPACE/scripts/bins/bundle" >> $GITHUB_PATH
+      
+      - name: Install Dependencies
+        run: vlt install
+
+      - name: Run Typecheck
+        continue-on-error: true
+        # TODO: https://github.com/vltpkg/vltpkg/issues/810
+        run: vlr --recursive typecheck
+          
+      - name: Run Tests
+        continue-on-error: true
+        # https://github.com/vltpkg/vltpkg/issues/801
+        run: vlr --recursive test
