@@ -325,12 +325,16 @@ export class Spec implements SpecLike<Spec> {
         : this.options.catalog
       if (!catalog) {
         throw this.#error('Named catalog not found', {
-          found: this.catalog,
+          name: this.catalog,
+          validOptions: Object.keys(this.options.catalogs),
         })
       }
       const sub = catalog[this.name]
       if (!sub) {
-        throw this.#error('Name not found in catalog', { found: sub })
+        throw this.#error('Name not found in catalog', {
+          name: this.name,
+          validOptions: Object.keys(catalog),
+        })
       }
       this.subspec = Spec.parse(this.name, sub)
       this.type = 'catalog'

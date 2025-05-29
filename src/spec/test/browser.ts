@@ -727,8 +727,18 @@ t.test('catalogs', async t => {
 
   t.throws(() => Spec.parse('b@catalog:', opts), {
     message: 'Name not found in catalog',
+    cause: {
+      name: 'b',
+      validOptions: ['a'],
+      spec: 'b@catalog:',
+    },
   })
   t.throws(() => Spec.parse('b@catalog:z', opts), {
     message: 'Named catalog not found',
+    cause: {
+      name: 'z',
+      validOptions: ['x', 'y'],
+      spec: 'b@catalog:z',
+    },
   })
 })
