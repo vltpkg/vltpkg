@@ -133,6 +133,7 @@ const execFGParent = async (args: string[]) => {
   console.log('[')
   const result = await execFG({
     arg0: node,
+    color: false,
     args: [
       import.meta.filename,
       'child',
