@@ -1,12 +1,12 @@
-import t from 'tap'
-import type { Test } from 'tap'
-import { error } from '@vltpkg/error-cause'
 import type { Codes } from '@vltpkg/error-cause'
+import { error } from '@vltpkg/error-cause'
+import assert from 'node:assert'
+import { readdirSync, readFileSync } from 'node:fs'
+import { join, sep } from 'node:path'
+import type { Test } from 'tap'
+import t from 'tap'
 import type { CommandUsage } from '../src/index.ts'
 import type { ErrorFormatOptions } from '../src/print-err.ts'
-import { join, sep } from 'node:path'
-import { readdirSync, readFileSync } from 'node:fs'
-import assert from 'node:assert'
 
 t.cleanSnapshot = (s: string) =>
   s
@@ -251,6 +251,95 @@ t.test('snapshots', async t => {
           }),
         }),
       }),
+    }),
+  )
+
+  await testErr(
+    t,
+    'graph-run error with stderr',
+    new Error('failed graph traversal', {
+      cause: {
+        code: 'GRAPHRUN_TRAVERSAL',
+        node: {
+          id: 'workspace·www§docs',
+        },
+        path: [{ id: '··a@1.2.3' }],
+        cause: new Error('command failed', {
+          cause: {
+            command: 'astro sync',
+            args: ['x'],
+            stdout: '',
+            stderr: 'error message',
+            cwd: '/some/path/to/www/docs',
+            status: 1,
+            signal: null,
+          },
+        }),
+      },
+    }),
+  )
+
+  await testErr(
+    t,
+    'graph-run error with stdout',
+    new Error('failed graph traversal', {
+      cause: {
+        code: 'GRAPHRUN_TRAVERSAL',
+        node: {
+          id: 'workspace·www§docs',
+        },
+        path: [{ id: '··a@1.2.3' }],
+        cause: new Error('command failed', {
+          cause: {
+            command: 'astro sync',
+            args: ['x'],
+            stdout: 'output message',
+            stderr: '',
+            cwd: '/some/path/to/www/docs',
+            status: 1,
+            signal: null,
+          },
+        }),
+      },
+    }),
+  )
+
+  await testErr(
+    t,
+    'graph-run error no stdio output',
+    new Error('failed graph traversal', {
+      cause: {
+        code: 'GRAPHRUN_TRAVERSAL',
+        node: {
+          id: 'workspace·www§docs',
+        },
+        path: [],
+        cause: new Error('command failed', {
+          cause: {
+            command: 'astro sync',
+            args: [],
+            stdout: '',
+            stderr: '',
+            cwd: '/some/path/to/www/docs',
+            status: null,
+            signal: 'SIGINT',
+          },
+        }),
+      },
+    }),
+  )
+
+  await testErr(
+    t,
+    'graph-run error without spawn error',
+    new Error('failed graph traversal', {
+      cause: {
+        code: 'GRAPHRUN_TRAVERSAL',
+        node: {
+          id: 'workspace·www§docs',
+        },
+        path: [],
+      },
     }),
   )
 })
