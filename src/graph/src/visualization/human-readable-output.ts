@@ -5,10 +5,7 @@ import { styleText as utilStyleText } from 'node:util'
 const styleText = (
   format: Parameters<typeof utilStyleText>[0],
   s: string,
-) => {
-  // @ts-expect-error -- styleText 3rd argument is not in types/node
-  return utilStyleText(format, s, { validateStream: false })
-}
+) => utilStyleText(format, s, { validateStream: false })
 
 const chars = new Map(
   Object.entries({
