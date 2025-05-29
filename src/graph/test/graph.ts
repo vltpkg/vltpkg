@@ -487,3 +487,80 @@ t.test('prevent duplicate edges', async t => {
     'garbage-collected nodes are returned',
   )
 })
+t.test('in-place edge replacement', async t => {
+  const mainManifest = {
+    name: 'my-project',
+    version: '1.0.0',
+    dependencies: { foo: '*' },
+  }
+  const projectRoot = t.testdir({ 'vlt.json': '{}' })
+  t.chdir(projectRoot)
+  unload('project')
+  const graph = new Graph({
+    ...configData,
+    mainManifest,
+    projectRoot,
+  })
+
+  // Create multiple versions of the same package
+  const bar1 = graph.addNode(
+    joinDepIDTuple(['registry', '', 'bar@1.0.0']),
+    {
+      name: 'bar',
+      version: '1.0.0',
+    },
+    Spec.parse('bar@1.0.0'),
+  )
+
+  const bar2 = graph.addNode(
+    joinDepIDTuple(['registry', 'custom', 'bar@2.0.0']),
+    {
+      name: 'bar',
+      version: '2.0.0',
+    },
+    Spec.parse('bar@2.0.0'),
+  )
+
+  // Create an edge from main importer to bar1
+  const spec = Spec.parse('bar@*')
+  const edge = graph.addEdge('prod', spec, graph.mainImporter, bar1)
+
+  // Verify initial edge setup is correct
+  t.equal(edge.to, bar1, 'edge initially points to bar1')
+  t.ok(bar1.edgesIn.has(edge), 'bar1 has the edge in its edgesIn set')
+  t.notOk(
+    bar2.edgesIn.has(edge),
+    'bar2 does not have the edge in its edgesIn set',
+  )
+  t.equal(
+    graph.mainImporter.edgesOut.get('bar'),
+    edge,
+    'edge is in mainImporter edgesOut',
+  )
+
+  // Now replace the edge destination with bar2
+  const replacedEdge = graph.addEdge(
+    'prod',
+    spec,
+    graph.mainImporter,
+    bar2,
+  )
+
+  // Verify the edge was properly updated
+  t.equal(replacedEdge, edge, 'the same edge object was returned')
+  t.equal(edge.to, bar2, 'edge now points to bar2')
+  t.notOk(
+    bar1.edgesIn.has(edge),
+    'bar1 no longer has the edge in its edgesIn set',
+  )
+  t.ok(
+    bar2.edgesIn.has(edge),
+    'bar2 now has the edge in its edgesIn set',
+  )
+  t.equal(
+    graph.mainImporter.edgesOut.get('bar'),
+    edge,
+    'edge is still in mainImporter edgesOut',
+  )
+  t.equal(graph.edges.size, 1, 'graph still has only one edge')
+})
