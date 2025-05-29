@@ -832,6 +832,7 @@ t.test('do not trust manifests npm mucks with', async t => {
     manifest,
     arg0: 'install',
     projectRoot: cwd,
+    color: true,
   })
   t.match(res, {
     command: 'echo ok',
@@ -870,6 +871,7 @@ t.test('quote things properly only as needed', async t => {
       args: ['-p', "'!(ok)' + process.argv.slice(1)", 'yes', 'ok'],
       cwd,
       projectRoot: cwd,
+      color: true,
     }),
   ])
 

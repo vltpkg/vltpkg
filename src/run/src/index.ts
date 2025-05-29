@@ -90,6 +90,13 @@ export type SharedOptions = PromiseSpawnOptions & {
    * platform-specific shell will be used.
    */
   'script-shell'?: boolean | string
+
+  /**
+   * If true, then `FORCE_COLOR=1` will be set in the environment so that
+   * scripts will typically have colored output enablled, even if the output
+   * is not a tty.
+   */
+  color?: boolean
 }
 
 /**
@@ -320,6 +327,7 @@ export const exec = async (
     env = {},
     projectRoot,
     'script-shell': shell = false,
+    color = false,
     ...spawnOptions
   } = options
 
@@ -332,6 +340,7 @@ export const exec = async (
     env: addPaths(projectRoot, cwd, {
       ...process.env,
       ...env,
+      FORCE_COLOR: color ? '1' : '0',
     }),
     windowsHide: true,
   })
@@ -352,6 +361,7 @@ export const execFG = async (
     projectRoot,
     env = {},
     'script-shell': shell = false,
+    color = true,
     ...spawnOptions
   } = options
 
@@ -366,6 +376,7 @@ export const execFG = async (
         env: addPaths(projectRoot, cwd, {
           ...process.env,
           ...env,
+          FORCE_COLOR: color ? '1' : '0',
         }),
       },
       (status, signal) => {
