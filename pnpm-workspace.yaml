@@ -5,7 +5,7 @@ packages:
   - www/*
 catalog:
   '@eslint/js': ^9.25.1
-  '@types/node': ^22.15.3
+  '@types/node': ^22.15.24
   '@types/pacote': '^11.1.8'
   '@types/semver': '^7.7.0'
   eslint: ^9.25.1
