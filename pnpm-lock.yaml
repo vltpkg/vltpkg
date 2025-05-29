@@ -477,6 +477,9 @@ importers:
       ansi-to-pre:
         specifier: ^1.0.6
         version: 1.0.6
+      graph-run:
+        specifier: 'catalog:'
+        version: 1.1.0
       ink:
         specifier: ^5.2.0
         version: 5.2.0(@types/react@18.3.20)(react-devtools-core@4.28.5)(react@18.3.1)
