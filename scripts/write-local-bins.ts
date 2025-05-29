@@ -74,7 +74,7 @@ const sh: SyntaxFn = opts => {
     : []
 
   return [
-    '#!/bin/sh',
+    '#!/bin/bash',
     'set -eo pipefail',
     `${rootName}=${getRoot}`,
     ...prepare,
