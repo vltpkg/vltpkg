@@ -17,10 +17,12 @@ import type { Node } from '../node.ts'
 import type { Graph } from '../graph.ts'
 import type { DepID } from '@vltpkg/dep-id'
 import { Spec } from '@vltpkg/spec'
+import type { SpecOptions } from '@vltpkg/spec'
 
 export type GetImporterSpecsOptions = BuildIdealAddOptions &
   BuildIdealFromGraphOptions &
-  BuildIdealRemoveOptions
+  BuildIdealRemoveOptions &
+  SpecOptions
 
 const hasDepName = (importer: Node, edge: Edge): boolean => {
   for (const depType of longDependencyTypes) {
@@ -50,11 +52,10 @@ class RemoveImportersDependenciesMapImpl
  * dependencies info found in the graph importers and returns the add & remove
  * results as a Map in which keys are {@link DepID} of each importer node.
  */
-export const getImporterSpecs = ({
-  add,
-  graph,
-  remove,
-}: GetImporterSpecsOptions) => {
+export const getImporterSpecs = (
+  options: GetImporterSpecsOptions,
+) => {
+  const { add, graph, remove } = options
   const addResult: AddImportersDependenciesMap =
     new AddImportersDependenciesMapImpl()
   const removeResult: RemoveImportersDependenciesMap =
@@ -87,7 +88,7 @@ export const getImporterSpecs = ({
           addDeps.set(
             depName,
             asDependency({
-              spec: Spec.parse(depName, depSpec),
+              spec: Spec.parse(depName, depSpec, options),
               type: shorten(depType, depName, importer.manifest),
             }),
           )
