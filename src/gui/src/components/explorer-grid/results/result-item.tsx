@@ -57,7 +57,7 @@ const PackageOverallScore = ({
 
   return (
     <div className={className}>
-      <div className="duration-250 after:duration-250 relative z-[1] flex cursor-default flex-row gap-3 self-start transition-colors after:absolute after:inset-0 after:-left-[0.5rem] after:-top-[0.5rem] after:z-[-1] after:h-[calc(100%+1rem)] after:w-[calc(100%+1rem)] after:rounded-sm after:transition-all after:content-[''] hover:after:bg-neutral-100 dark:hover:after:bg-neutral-800">
+      <div className="duration-250 after:duration-250 relative z-[1] flex cursor-default flex-row gap-3 self-start transition-colors after:absolute after:inset-0 after:-left-[0.5rem] after:-top-[0.5rem] after:z-[-1] after:h-[calc(100%+1rem)] after:w-[calc(100%+1rem)] after:rounded-sm after:transition-all after:content-['']">
         <ProgressCircle
           value={averageScore}
           variant={chartColor as ProgressCircleVariant}
