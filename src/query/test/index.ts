@@ -5,18 +5,18 @@ import {
   getSimpleGraph,
   getSingleWorkspaceGraph,
 } from './fixtures/graph.ts'
-import type {
-  ParsedSelectorToken,
-  ParserState,
-  PostcssNode,
-  QueryResponse,
-} from '../src/types.ts'
 import { copyGraphSelectionState } from './fixtures/selector.ts'
 import { joinDepIDTuple } from '@vltpkg/dep-id'
 import {
   asPackageReportData,
   asSecurityArchiveLike,
 } from '@vltpkg/security-archive'
+import type {
+  ParsedSelectorToken,
+  ParserState,
+  QueryResponse,
+} from '../src/types.ts'
+import type { PostcssNode } from '@vltpkg/dss-parser'
 
 type TestCase = [string, string[]]
 

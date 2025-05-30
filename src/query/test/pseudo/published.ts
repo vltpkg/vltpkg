@@ -1,17 +1,16 @@
 import t from 'tap'
-import type { SpecOptions } from '@vltpkg/spec/browser'
 import { joinDepIDTuple } from '@vltpkg/dep-id'
-import type { NodeLike } from '@vltpkg/graph'
-import { parse } from '../../src/parser.ts'
+import { asPostcssNodeWithChildren, parse } from '@vltpkg/dss-parser'
 import {
   published,
   parseInternals,
   queueNode,
   retrieveRemoteDate,
 } from '../../src/pseudo/published.ts'
-import { asPostcssNodeWithChildren } from '../../src/types.ts'
-import type { ParserState } from '../../src/types.ts'
 import { getSemverRichGraph } from '../fixtures/graph.ts'
+import type { NodeLike } from '@vltpkg/graph'
+import type { SpecOptions } from '@vltpkg/spec/browser'
+import type { ParserState } from '../../src/types.ts'
 
 const specOptions = {
   registry: 'https://registry.npmjs.org',

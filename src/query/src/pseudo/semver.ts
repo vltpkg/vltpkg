@@ -25,9 +25,10 @@ import {
   isPseudoNode,
   isStringNode,
   isTagNode,
-} from '../types.ts'
-import type { ParserState, PostcssNode } from '../types.ts'
+} from '@vltpkg/dss-parser'
 import { removeNode, removeQuotes } from './helpers.ts'
+import type { ParserState } from '../types.ts'
+import type { PostcssNode } from '@vltpkg/dss-parser'
 
 export type SemverInternals = {
   semverValue: string

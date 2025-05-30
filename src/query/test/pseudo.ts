@@ -1,4 +1,5 @@
 import t from 'tap'
+import { joinDepIDTuple } from '@vltpkg/dep-id'
 import { pseudo } from '../src/pseudo.ts'
 import {
   getCycleGraph,
@@ -13,13 +14,12 @@ import {
   getGraphSelectionState,
   selectorFixture,
 } from './fixtures/selector.ts'
+import type { PostcssNodeWithChildren } from '@vltpkg/dss-parser'
 import type { TestCase } from './fixtures/types.ts'
 import type {
   GraphSelectionState,
   ParserState,
-  PostcssNodeWithChildren,
 } from '../src/types.ts'
-import { joinDepIDTuple } from '@vltpkg/dep-id'
 
 const testPseudo = selectorFixture(pseudo)
 

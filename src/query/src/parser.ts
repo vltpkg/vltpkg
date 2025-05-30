@@ -1,12 +1,12 @@
 import postcssSelectorParser from 'postcss-selector-parser'
-import type { Pseudo, Root } from 'postcss-selector-parser'
 import {
   asSelectorNode,
   isCombinatorNode,
   isPseudoNode,
   isTagNode,
-} from './types.ts'
-import type { PostcssNode } from './types.ts'
+} from '@vltpkg/dss-parser'
+import type { Pseudo, Root } from 'postcss-selector-parser'
+import type { PostcssNode } from '@vltpkg/dss-parser'
 
 /**
  * Escapes forward slashes in specific patterns matching @scoped/name paths

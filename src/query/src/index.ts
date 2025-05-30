@@ -1,13 +1,7 @@
 import { error } from '@vltpkg/error-cause'
-import type { EdgeLike, GraphLike, NodeLike } from '@vltpkg/graph'
-import type { SpecOptions } from '@vltpkg/spec/browser'
-import type { SecurityArchiveLike } from '@vltpkg/security-archive'
-import { parse } from './parser.ts'
-import { attribute } from './attribute.ts'
-import { combinator } from './combinator.ts'
-import { id } from './id.ts'
-import { pseudo } from './pseudo.ts'
+import { joinDepIDTuple } from '@vltpkg/dep-id/browser'
 import {
+  parse,
   isPostcssNodeWithChildren,
   asPostcssNodeWithChildren,
   isSelectorNode,
@@ -16,18 +10,26 @@ import {
   isAttributeNode,
   isCombinatorNode,
   isCommentNode,
-} from './types.ts'
+} from '@vltpkg/dss-parser'
+import { attribute } from './attribute.ts'
+import { combinator } from './combinator.ts'
+import { id } from './id.ts'
+import { pseudo } from './pseudo.ts'
+import type { EdgeLike, GraphLike, NodeLike } from '@vltpkg/graph'
+import type { SpecOptions } from '@vltpkg/spec/browser'
+import type { SecurityArchiveLike } from '@vltpkg/security-archive'
 import type {
   PostcssNode,
-  ParsedSelectorToken,
   PostcssNodeWithChildren,
+} from '@vltpkg/dss-parser'
+import type {
+  ParsedSelectorToken,
   ParserState,
   ParserFn,
   QueryResponse,
   QueryResponseNode,
   QueryResponseEdge,
 } from './types.ts'
-import { joinDepIDTuple } from '@vltpkg/dep-id/browser'
 import type { DepID } from '@vltpkg/dep-id'
 
 export * from './types.ts'

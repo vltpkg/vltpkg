@@ -1,6 +1,6 @@
+import { error } from '@vltpkg/error-cause'
 import type { EdgeLike, NodeLike } from '@vltpkg/graph'
 import type { ParserState } from '../types.js'
-import { error } from '@vltpkg/error-cause'
 
 /**
  * Removes a node and its incoming edges from the results.
