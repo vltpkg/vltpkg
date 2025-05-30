@@ -15,11 +15,71 @@ import type {
   GridItemOptions,
 } from '@/components/explorer-grid/types.ts'
 import { DataBadge } from '@/components/ui/data-badge.tsx'
+import { Scale, EyeOff } from 'lucide-react'
+import type { PackageScore } from '@vltpkg/security-archive'
+import { ProgressCircle } from '@/components/ui/progress-circle.tsx'
+import type { ProgressCircleVariant } from '@/components/ui/progress-circle.tsx'
+import {
+  getScoreColor,
+  scoreColors,
+} from '@/components/explorer-grid/selected-item/insight-score-helper.ts'
 
 export type ResultItemClickOptions = {
   item: GridItemData
   query: string
   updateQuery: (query: string) => void
+}
+
+const LICENSE_TYPES = [
+  'MIT',
+  'ISC',
+  'Apache-2.0',
+  'GPL-3.0',
+  'GPL-2.0',
+  'LGPL-3.0',
+  'BSD-2-Clause',
+  'BSD-3-Clause',
+  'MPL-2.0',
+  'Unlicense',
+  'CC0-1.0',
+]
+
+const PackageOverallScore = ({
+  className,
+  packageScore,
+}: {
+  className?: string
+  packageScore: PackageScore
+}) => {
+  const averageScore = packageScore.overall * 100
+  const chartColor = getScoreColor(averageScore)
+  const textColor = scoreColors[chartColor]
+
+  return (
+    <div className={className}>
+      <div className="duration-250 after:duration-250 relative z-[1] flex cursor-default flex-row gap-3 self-start transition-colors after:absolute after:inset-0 after:-left-[0.5rem] after:-top-[0.5rem] after:z-[-1] after:h-[calc(100%+1rem)] after:w-[calc(100%+1rem)] after:rounded-sm after:transition-all after:content-[''] hover:after:bg-neutral-100 dark:hover:after:bg-neutral-800">
+        <ProgressCircle
+          value={averageScore}
+          variant={chartColor as ProgressCircleVariant}
+          strokeWidth={5}
+          className="size-9">
+          <p
+            className="font-mono text-xs font-medium tabular-nums"
+            style={{ color: textColor }}>
+            {averageScore}
+          </p>
+        </ProgressCircle>
+        <div className="flex flex-col">
+          <p className="text-sm font-semibold text-neutral-600 dark:text-neutral-300">
+            Package Score
+          </p>
+          <p className="font-mono text-xs font-medium tabular-nums text-neutral-400">
+            {averageScore}/100
+          </p>
+        </div>
+      </div>
+    </div>
+  )
 }
 
 const onResultItemClick =
@@ -58,6 +118,8 @@ const onResultItemClick =
 export const ResultItem = ({ item }: GridItemOptions) => {
   const updateQuery = useGraphStore(state => state.updateQuery)
   const query = useGraphStore(state => state.query)
+  const manifest = item.to?.manifest
+  const insights = item.to?.insights
   return (
     <div className="group relative z-10">
       {item.stacked ?
@@ -87,15 +149,40 @@ export const ResultItem = ({ item }: GridItemOptions) => {
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
-          {item.type && (
-            <DataBadge
-              classNames={{
-                valueClassName: 'lowercase',
-              }}
-              value={item.stacked ? '' : item.type}
-              content={`dep of: ${item.stacked ? item.size : stringifyNode(item.from)}`}
-            />
-          )}
+          <div className="flex flex-row items-center gap-2">
+            {item.type && (
+              <DataBadge
+                classNames={{
+                  valueClassName: 'lowercase',
+                }}
+                value={item.stacked ? '' : item.type}
+                content={`dep of: ${item.stacked ? item.size : stringifyNode(item.from)}`}
+              />
+            )}
+            {manifest?.private && (
+              <DataBadge icon={EyeOff} content="Private Package" />
+            )}
+            {manifest?.license &&
+              LICENSE_TYPES.some(
+                i =>
+                  i.toLowerCase() ===
+                  manifest.license?.trim().toLowerCase(),
+              ) && (
+                <DataBadge
+                  icon={Scale}
+                  value={manifest.license}
+                  content="License"
+                />
+              )}
+            {manifest?.type && (
+              <DataBadge
+                content={manifest.type === 'module' ? 'ESM' : 'CJS'}
+              />
+            )}
+            {insights?.scanned && insights.score && (
+              <PackageOverallScore packageScore={insights.score} />
+            )}
+          </div>
         </CardHeader>
 
         {/* Card Bottom */}

@@ -17,7 +17,7 @@ export const Results = ({ items }: { items: GridItemData[] }) => {
           {items.length}
         </Badge>
       </div>
-      <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-4">
         {items.map(item => (
           <ResultItem item={item} key={item.id} />
         ))}

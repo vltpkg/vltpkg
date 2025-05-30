@@ -1,12 +1,12 @@
 import { useNavigate } from 'react-router'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef } from 'react'
 import { Query } from '@vltpkg/query'
 import { QueryBar } from '@/components/query-bar/index.tsx'
 import { ExplorerGrid } from '@/components/explorer-grid/index.tsx'
 import { useGraphStore } from '@/state/index.ts'
 import type { TransferData, Action, State } from '@/state/types.ts'
 import { load } from '@/state/load-graph.ts'
-import { Search, Command, Loader2 } from 'lucide-react'
+import { Search, Command } from 'lucide-react'
 import { Kbd } from '@/components/ui/kbd.tsx'
 import Save from '@/components/explorer-grid/save-query.tsx'
 import { QueryMatches } from '@/components/explorer-grid/query-matches.tsx'
@@ -94,7 +94,6 @@ const ExplorerContent = () => {
   const query = useGraphStore(state => state.query)
   const q = useGraphStore(state => state.q)
   const ac = useRef<AbortController>(new AbortController())
-  const [isLoading, setIsLoading] = useState(true)
 
   // updates the query response state anytime the query changes
   // by defining query and q as dependencies of `useEffect` we
@@ -103,8 +102,6 @@ const ExplorerContent = () => {
     async function updateQueryData() {
       if (!q) return
 
-      setIsLoading(true)
-
       ac.current.abort(new Error('Query changed'))
       ac.current = new AbortController()
       const queryResponse = await q.search(query, {
@@ -112,7 +109,6 @@ const ExplorerContent = () => {
         scopeIDs: graph ? [graph.mainImporter.id] : undefined,
       })
 
-      setIsLoading(false)
       updateEdges(queryResponse.edges)
       updateNodes(queryResponse.nodes)
 
@@ -134,9 +130,7 @@ const ExplorerContent = () => {
       }
     }
 
-    setIsLoading(true)
     void updateQueryData().catch(() => {
-      setIsLoading(false)
       updateEdges([])
       updateNodes([])
     })
@@ -154,7 +148,7 @@ const ExplorerContent = () => {
 
   return (
     <section className="flex h-full max-h-[calc(100svh-65px-16px)] w-full grow flex-col justify-between overflow-y-auto rounded-b-lg border-x-[1px] border-b-[1px]">
-      <section className="flex w-full items-center px-8 pb-8 pt-1">
+      <section className="absolute z-[20] flex w-[calc(100%-2px)] items-center bg-background px-8 pb-4 pt-1">
         <div className="flex w-full max-w-8xl flex-row items-center gap-2">
           <RootButton />
           <QueryBar
@@ -176,11 +170,9 @@ const ExplorerContent = () => {
           />
         </div>
       </section>
-      {isLoading ?
-        <div className="flex h-full w-full items-center justify-center">
-          <Loader2 className="animate-spin" />
-        </div>
-      : <ExplorerGrid />}
+      <div className="z-[10] pt-12">
+        <ExplorerGrid />
+      </div>
     </section>
   )
 }
