@@ -1,22 +1,23 @@
 import pRetry, { AbortError } from 'p-retry'
 import { hydrate, splitDepID } from '@vltpkg/dep-id/browser'
 import { error } from '@vltpkg/error-cause'
-import type { NodeLike } from '@vltpkg/graph'
-import type { SpecOptions } from '@vltpkg/spec/browser'
-import type { Packument } from '@vltpkg/types'
 import {
   asPostcssNodeWithChildren,
   asStringNode,
   asTagNode,
   isStringNode,
   isTagNode,
-} from '../types.ts'
-import type { ParserState, PostcssNode } from '../types.ts'
+} from '@vltpkg/dss-parser'
 import {
   removeDanglingEdges,
   removeNode,
   removeQuotes,
 } from './helpers.ts'
+import type { NodeLike } from '@vltpkg/graph'
+import type { SpecOptions } from '@vltpkg/spec/browser'
+import type { Packument } from '@vltpkg/types'
+import type { ParserState } from '../types.ts'
+import type { PostcssNode } from '@vltpkg/dss-parser'
 
 /**
  * The possible comparator values accepted by the :published() pseudo selector.

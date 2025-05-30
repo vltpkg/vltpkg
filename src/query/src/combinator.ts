@@ -1,7 +1,7 @@
-import type { EdgeLike, NodeLike } from '@vltpkg/graph'
-import { asCombinatorNode } from './types.ts'
-import type { ParserState, ParserFn } from './types.ts'
+import { asCombinatorNode } from '@vltpkg/dss-parser'
 import { error } from '@vltpkg/error-cause'
+import type { EdgeLike, NodeLike } from '@vltpkg/graph'
+import type { ParserState, ParserFn } from './types.ts'
 
 /**
  * Returns a new set of nodes, containing all direct dependencies

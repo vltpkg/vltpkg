@@ -2,8 +2,6 @@ import pRetry, { AbortError } from 'p-retry'
 import { hydrate, splitDepID } from '@vltpkg/dep-id/browser'
 import { error } from '@vltpkg/error-cause'
 import { asError } from '@vltpkg/types'
-import type { NodeLike } from '@vltpkg/graph'
-import type { SpecOptions } from '@vltpkg/spec/browser'
 import {
   compare,
   gt,
@@ -12,16 +10,19 @@ import {
   patch,
   satisfies,
 } from '@vltpkg/semver'
-import type { Packument } from '@vltpkg/types'
 import {
   asPostcssNodeWithChildren,
   asStringNode,
   asTagNode,
   isStringNode,
   isTagNode,
-} from '../types.ts'
-import type { ParserState, PostcssNode } from '../types.ts'
+} from '@vltpkg/dss-parser'
 import { removeNode, removeQuotes } from './helpers.ts'
+import type { NodeLike } from '@vltpkg/graph'
+import type { SpecOptions } from '@vltpkg/spec/browser'
+import type { Packument } from '@vltpkg/types'
+import type { ParserState } from '../types.ts'
+import type { PostcssNode } from '@vltpkg/dss-parser'
 
 /**
  * The possible values accepted by the :outdated() pseudo selector.

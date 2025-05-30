@@ -1,7 +1,10 @@
 import { splitDepID } from '@vltpkg/dep-id/browser'
-import type { ParserState } from '../types.ts'
-import { asPostcssNodeWithChildren, asTagNode } from '../types.ts'
+import {
+  asPostcssNodeWithChildren,
+  asTagNode,
+} from '@vltpkg/dss-parser'
 import { removeDanglingEdges, removeNode } from './helpers.ts'
+import type { ParserState } from '../types.ts'
 
 /**
  * :type(str) Pseudo-Element will match only nodes that are of
