@@ -4,7 +4,7 @@ exports[`explorer has project root info 1`] = `
 
 <div>
   <section class="flex h-full max-h-[calc(100svh-65px-16px)] w-full grow flex-col justify-between overflow-y-auto rounded-b-lg border-x-[1px] border-b-[1px]">
-    <section class="flex w-full items-center px-8 pb-8 pt-1">
+    <section class="absolute z-[20] flex w-[calc(100%-2px)] items-center bg-background px-8 pb-4 pt-1">
       <div class="flex w-full max-w-8xl flex-row items-center gap-2">
         <gui-root-button>
         </gui-root-button>
@@ -16,8 +16,10 @@ exports[`explorer has project root info 1`] = `
         </gui-query-bar>
       </div>
     </section>
-    <gui-explorer-grid>
-    </gui-explorer-grid>
+    <div class="z-[10] pt-12">
+      <gui-explorer-grid>
+      </gui-explorer-grid>
+    </div>
   </section>
 </div>
 
@@ -43,7 +45,7 @@ exports[`render no results if search throws 1`] = `
 
 <div>
   <section class="flex h-full max-h-[calc(100svh-65px-16px)] w-full grow flex-col justify-between overflow-y-auto rounded-b-lg border-x-[1px] border-b-[1px]">
-    <section class="flex w-full items-center px-8 pb-8 pt-1">
+    <section class="absolute z-[20] flex w-[calc(100%-2px)] items-center bg-background px-8 pb-4 pt-1">
       <div class="flex w-full max-w-8xl flex-row items-center gap-2">
         <gui-root-button>
         </gui-root-button>
@@ -55,8 +57,10 @@ exports[`render no results if search throws 1`] = `
         </gui-query-bar>
       </div>
     </section>
-    <gui-explorer-grid>
-    </gui-explorer-grid>
+    <div class="z-[10] pt-12">
+      <gui-explorer-grid>
+      </gui-explorer-grid>
+    </div>
   </section>
 </div>
 

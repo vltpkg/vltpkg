@@ -17,6 +17,8 @@ exports[`ResultItem render missing version and labels 1`] = `
             item
           </h3>
         </button>
+        <div class="flex flex-row items-center gap-2">
+        </div>
       </div>
       <div class="flex h-12 w-full items-center justify-between gap-4 border-t-[1px] px-4 py-3">
         <div class="flex gap-2">
@@ -49,6 +51,8 @@ exports[`ResultItem render stacked many 1`] = `
             many-edges-stacked
           </h3>
         </button>
+        <div class="flex flex-row items-center gap-2">
+        </div>
       </div>
       <div class="flex h-12 w-full items-center justify-between gap-4 border-t-[1px] px-4 py-3">
         <div
@@ -92,6 +96,8 @@ exports[`ResultItem render stacked two 1`] = `
             two-edges-stacked
           </h3>
         </button>
+        <div class="flex flex-row items-center gap-2">
+        </div>
       </div>
       <div class="flex h-12 w-full items-center justify-between gap-4 border-t-[1px] px-4 py-3">
         <div
@@ -133,6 +139,8 @@ exports[`ResultItem render with item 1`] = `
             item
           </h3>
         </button>
+        <div class="flex flex-row items-center gap-2">
+        </div>
       </div>
       <div class="flex h-12 w-full items-center justify-between gap-4 border-t-[1px] px-4 py-3">
         <div
@@ -174,17 +182,19 @@ exports[`ResultItem render with type 1`] = `
             item
           </h3>
         </button>
-        <div class="group font-sans relative z-[1] w-fit flex h-full cursor-default items-center justify-center gap-1.5 rounded border-[1px] border-neutral-200 bg-neutral-100 px-2 py-1 text-[0.75rem] font-medium text-muted-foreground dark:border-[#313131] dark:bg-neutral-800">
-          <span
-            data-id="info-badge-value"
-            class="tabular-nums after:border-[var(--light-border)] pt-0.5 font-courier relative ml-[0.125rem] mr-[calc(var(--width-offset)/2)] tracking-wide text-neutral-700 after:absolute after:-left-[calc(var(--width-offset)/2)] after:-top-[calc(var(--height-offset)/2)] after:z-[-1] after:h-[calc(100%+var(--height-offset))] after:w-[calc(100%+var(--width-offset))] after:rounded-[calc(0.25rem-1px)] after:border-[1px] after:bg-[var(--light-background)] after:content-[&quot;&quot;] group-has-[span[data-id=info-badge-icon]]:ml-[calc(var(--width-offset)/2)] dark:text-foreground dark:after:border-[var(--dark-border)] dark:after:bg-[var(--dark-background)] lowercase"
-            style="--width-offset: 1rem; --height-offset: 0.25rem; --dark-background: #0F0F0F; --dark-border: #2A2A2A; --light-background: #FFFFFF; --light-border: #E4E4E7;"
-          >
-            prod
-          </span>
-          <span class="flex items-center justify-center">
-            dep of: npm:from@1.0.0
-          </span>
+        <div class="flex flex-row items-center gap-2">
+          <div class="group font-sans relative z-[1] w-fit flex h-full cursor-default items-center justify-center gap-1.5 rounded border-[1px] border-neutral-200 bg-neutral-100 px-2 py-1 text-[0.75rem] font-medium text-muted-foreground dark:border-[#313131] dark:bg-neutral-800">
+            <span
+              data-id="info-badge-value"
+              class="tabular-nums after:border-[var(--light-border)] pt-0.5 font-courier relative ml-[0.125rem] mr-[calc(var(--width-offset)/2)] tracking-wide text-neutral-700 after:absolute after:-left-[calc(var(--width-offset)/2)] after:-top-[calc(var(--height-offset)/2)] after:z-[-1] after:h-[calc(100%+var(--height-offset))] after:w-[calc(100%+var(--width-offset))] after:rounded-[calc(0.25rem-1px)] after:border-[1px] after:bg-[var(--light-background)] after:content-[&quot;&quot;] group-has-[span[data-id=info-badge-icon]]:ml-[calc(var(--width-offset)/2)] dark:text-foreground dark:after:border-[var(--dark-border)] dark:after:bg-[var(--dark-background)] lowercase"
+              style="--width-offset: 1rem; --height-offset: 0.25rem; --dark-background: #0F0F0F; --dark-border: #2A2A2A; --light-background: #FFFFFF; --light-border: #E4E4E7;"
+            >
+              prod
+            </span>
+            <span class="flex items-center justify-center">
+              dep of: npm:from@1.0.0
+            </span>
+          </div>
         </div>
       </div>
       <div class="flex h-12 w-full items-center justify-between gap-4 border-t-[1px] px-4 py-3">
