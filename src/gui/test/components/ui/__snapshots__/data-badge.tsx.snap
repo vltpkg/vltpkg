@@ -8,7 +8,7 @@ exports[`data-badge accepts css properties through style props > data-badge valu
 >
   <span
     data-id="info-badge-value"
-    class
+    class="tabular-nums"
     style="--width-offset: 1rem; --height-offset: 0.25rem; --dark-background: vitest-style-test; --dark-border: #2A2A2A; --light-background: #FFFFFF; --light-border: #E4E4E7;"
   >
     vitest-mock-value

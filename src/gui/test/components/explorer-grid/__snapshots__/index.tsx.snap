@@ -27,17 +27,12 @@ exports[`ExplorerGrid with results 1`] = `
 <div>
   <div class="h-full w-full grow px-8 pb-8">
     <div class="grid w-full max-w-8xl grid-cols-8 gap-4">
-      <div class="col-span-2">
-      </div>
-      <div class="col-span-4">
-        <div class="flex items-center gap-3">
-          <gui-grid-header classname="mb-4">
+      <div class="col-span-4 col-start-3">
+        <div class="mb-4 flex items-center gap-3">
+          <gui-grid-header classname="h-fit">
             Results
           </gui-grid-header>
-          <gui-badge
-            classname="mt-2"
-            variant="default"
-          >
+          <gui-badge variant="default">
             2
           </gui-badge>
         </div>
@@ -47,8 +42,6 @@ exports[`ExplorerGrid with results 1`] = `
           <gui-result-item item="[object Object]">
           </gui-result-item>
         </div>
-      </div>
-      <div class="col-span-2">
       </div>
     </div>
   </div>
@@ -61,17 +54,12 @@ exports[`ExplorerGrid with stack 1`] = `
 <div>
   <div class="h-full w-full grow px-8 pb-8">
     <div class="grid w-full max-w-8xl grid-cols-8 gap-4">
-      <div class="col-span-2">
-      </div>
-      <div class="col-span-4">
-        <div class="flex items-center gap-3">
-          <gui-grid-header classname="mb-4">
+      <div class="col-span-4 col-start-3">
+        <div class="mb-4 flex items-center gap-3">
+          <gui-grid-header classname="h-fit">
             Results
           </gui-grid-header>
-          <gui-badge
-            classname="mt-2"
-            variant="default"
-          >
+          <gui-badge variant="default">
             2
           </gui-badge>
         </div>
@@ -81,8 +69,6 @@ exports[`ExplorerGrid with stack 1`] = `
           <gui-result-item item="[object Object]">
           </gui-result-item>
         </div>
-      </div>
-      <div class="col-span-2">
       </div>
     </div>
   </div>
