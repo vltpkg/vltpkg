@@ -101,6 +101,7 @@ const ExplorerContent = () => {
   useEffect(() => {
     async function updateQueryData() {
       if (!q) return
+
       ac.current.abort(new Error('Query changed'))
       ac.current = new AbortController()
       const queryResponse = await q.search(query, {
@@ -128,11 +129,12 @@ const ExplorerContent = () => {
         window.scrollTo(0, 0)
       }
     }
+
     void updateQueryData().catch(() => {
       updateEdges([])
       updateNodes([])
     })
-  }, [query, q])
+  }, [query, q, graph])
 
   // avoids flash of content
   if (!graph) {
@@ -146,7 +148,7 @@ const ExplorerContent = () => {
 
   return (
     <section className="flex h-full max-h-[calc(100svh-65px-16px)] w-full grow flex-col justify-between overflow-y-auto rounded-b-lg border-x-[1px] border-b-[1px]">
-      <section className="flex w-full items-center px-8 pb-8 pt-1">
+      <section className="absolute z-[20] flex w-[calc(100%-2px)] items-center bg-background px-8 pb-4 pt-1">
         <div className="flex w-full max-w-8xl flex-row items-center gap-2">
           <RootButton />
           <QueryBar
@@ -168,7 +170,9 @@ const ExplorerContent = () => {
           />
         </div>
       </section>
-      <ExplorerGrid />
+      <div className="z-[10] pt-12">
+        <ExplorerGrid />
+      </div>
     </section>
   )
 }
