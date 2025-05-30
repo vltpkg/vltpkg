@@ -1,17 +1,16 @@
 import t from 'tap'
+import { asPostcssNodeWithChildren, parse } from '@vltpkg/dss-parser'
 import {
   asSemverFunctionName,
   isSemverFunctionName,
   parseInternals,
   semverParser,
 } from '../../src/pseudo/semver.ts'
-import { asPostcssNodeWithChildren } from '../../src/types.ts'
-import type { ParserState } from '../../src/types.ts'
 import {
   getSemverRichGraph,
   getSimpleGraph,
 } from '../fixtures/graph.ts'
-import { parse } from '../../src/parser.ts'
+import type { ParserState } from '../../src/types.ts'
 
 t.test('select from semver definition', async t => {
   const getState = (query: string, graph = getSimpleGraph()) => {

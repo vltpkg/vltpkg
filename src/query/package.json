@@ -20,6 +20,7 @@
   },
   "dependencies": {
     "@vltpkg/dep-id": "workspace:*",
+    "@vltpkg/dss-parser": "workspace:*",
     "@vltpkg/error-cause": "workspace:*",
     "@vltpkg/graph": "workspace:*",
     "@vltpkg/security-archive": "workspace:*",

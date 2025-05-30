@@ -1,5 +1,5 @@
+import { asIdentifierNode } from '@vltpkg/dss-parser'
 import { error } from '@vltpkg/error-cause'
-import { asIdentifierNode } from './types.ts'
 import type { ParserState } from './types.ts'
 
 /**

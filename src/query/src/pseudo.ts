@@ -1,13 +1,10 @@
 import { error } from '@vltpkg/error-cause'
-import type { EdgeLike, NodeLike } from '@vltpkg/graph'
-
 import { removeDanglingEdges, removeNode } from './pseudo/helpers.ts'
 import {
   asPostcssNodeWithChildren,
   asPseudoNode,
   isSelectorNode,
-} from './types.ts'
-import type { ParserFn, ParserState } from './types.ts'
+} from '@vltpkg/dss-parser'
 
 // imported pseudo selectors
 import { abandoned } from './pseudo/abandoned.ts'
@@ -57,6 +54,9 @@ import { unmaintained } from './pseudo/unmaintained.ts'
 import { unpopular } from './pseudo/unpopular.ts'
 import { unstable } from './pseudo/unstable.ts'
 import { workspace } from './pseudo/workspace.ts'
+
+import type { EdgeLike, NodeLike } from '@vltpkg/graph'
+import type { ParserFn, ParserState } from './types.ts'
 
 /**
  * :has Pseudo-Selector, matches only nodes that have valid results

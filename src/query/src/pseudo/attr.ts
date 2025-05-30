@@ -5,13 +5,14 @@ import {
   asStringNode,
   asTagNode,
   isStringNode,
-} from '../types.ts'
-import type { ParserState, PostcssNode } from '../types.ts'
+} from '@vltpkg/dss-parser'
 import {
   attributeSelectorsMap,
   filterAttributes,
 } from '../attribute.ts'
 import { removeQuotes } from './helpers.ts'
+import type { ParserState } from '../types.ts'
+import type { PostcssNode } from '@vltpkg/dss-parser'
 
 export type AttrInternals = {
   attribute: string

@@ -646,6 +646,46 @@ importers:
         specifier: 'catalog:'
         version: 8.31.1(eslint@9.25.1(jiti@2.4.2))(typescript@5.7.3)
 
+  src/dss-parser:
+    dependencies:
+      '@vltpkg/dss-parser':
+        specifier: workspace:*
+        version: 'link:'
+      '@vltpkg/error-cause':
+        specifier: workspace:*
+        version: link:../error-cause
+      postcss-selector-parser:
+        specifier: ^7.1.0
+        version: 7.1.0
+    devDependencies:
+      '@eslint/js':
+        specifier: 'catalog:'
+        version: 9.25.1
+      '@types/node':
+        specifier: 'catalog:'
+        version: 22.15.24
+      eslint:
+        specifier: 'catalog:'
+        version: 9.25.1(jiti@2.4.2)
+      prettier:
+        specifier: 'catalog:'
+        version: 3.5.3
+      tap:
+        specifier: 'catalog:'
+        version: 21.1.0(@types/node@22.15.24)(@types/react@18.3.20)(react-devtools-core@4.28.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(supports-color@10.0.0)(typescript@5.7.3)
+      tshy:
+        specifier: 'catalog:'
+        version: 3.0.2(patch_hash=bc476f29bbb76e36ec2746ee69d4ebe413b8ec54eaedfb0dd212d85e8719cc3e)
+      typedoc:
+        specifier: 'catalog:'
+        version: 0.27.9(typescript@5.7.3)
+      typescript:
+        specifier: 'catalog:'
+        version: 5.7.3
+      typescript-eslint:
+        specifier: 'catalog:'
+        version: 8.31.1(eslint@9.25.1(jiti@2.4.2))(typescript@5.7.3)
+
   src/error-cause:
     devDependencies:
       '@eslint/js':
@@ -1396,6 +1436,9 @@ importers:
       '@vltpkg/dep-id':
         specifier: workspace:*
         version: link:../dep-id
+      '@vltpkg/dss-parser':
+        specifier: workspace:*
+        version: link:../dss-parser
       '@vltpkg/error-cause':
         specifier: workspace:*
         version: link:../error-cause
@@ -5298,15 +5341,6 @@ packages:
 
   debug@3.2.7:
     resolution: {integrity: sha512-CFjzYYAi4ThfiQvizrFQevTTXHtnCqWfe7x1AhgEscTz6ZbLbfoLRLPugTQyBth6f8ZERVUSyWHFD/7Wu4t1XQ==}
-    peerDependencies:
-      supports-color: '*'
-    peerDependenciesMeta:
-      supports-color:
-        optional: true
-
-  debug@4.3.7:
-    resolution: {integrity: sha512-Er2nc/H7RrMXZBFCEim6TCmMk02Z8vLC2Rbi1KEBggpo0fS6l0S1nnapwmIi3yW/+GOJap1Krg4w0Hg80oCqgQ==}
-    engines: {node: '>=6.0'}
     peerDependencies:
       supports-color: '*'
     peerDependenciesMeta:
@@ -11645,7 +11679,7 @@ snapshots:
 
   agent-base@7.1.1(supports-color@10.0.0):
     dependencies:
-      debug: 4.3.7(supports-color@10.0.0)
+      debug: 4.4.0(supports-color@10.0.0)
     transitivePeerDependencies:
       - supports-color
 
@@ -12297,12 +12331,6 @@ snapshots:
   debug@3.2.7:
     dependencies:
       ms: 2.1.3
-
-  debug@4.3.7(supports-color@10.0.0):
-    dependencies:
-      ms: 2.1.3
-    optionalDependencies:
-      supports-color: 10.0.0
 
   debug@4.4.0(supports-color@10.0.0):
     dependencies:
@@ -13268,7 +13296,7 @@ snapshots:
 
   hast-util-to-jsx-runtime@2.3.2:
     dependencies:
-      '@types/estree': 1.0.6
+      '@types/estree': 1.0.7
       '@types/hast': 3.0.4
       '@types/unist': 3.0.3
       comma-separated-tokens: 2.0.3
@@ -13363,14 +13391,14 @@ snapshots:
   http-proxy-agent@7.0.2(supports-color@10.0.0):
     dependencies:
       agent-base: 7.1.1(supports-color@10.0.0)
-      debug: 4.3.7(supports-color@10.0.0)
+      debug: 4.4.0(supports-color@10.0.0)
     transitivePeerDependencies:
       - supports-color
 
   https-proxy-agent@7.0.6(supports-color@10.0.0):
     dependencies:
       agent-base: 7.1.3
-      debug: 4.3.7(supports-color@10.0.0)
+      debug: 4.4.0(supports-color@10.0.0)
     transitivePeerDependencies:
       - supports-color
 

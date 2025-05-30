@@ -5,8 +5,7 @@ import {
   asTagNode,
   isStringNode,
   isTagNode,
-} from '../types.ts'
-import type { ParserState, PostcssNode } from '../types.ts'
+} from '@vltpkg/dss-parser'
 import {
   assertSecurityArchive,
   removeDanglingEdges,
@@ -14,6 +13,8 @@ import {
   removeQuotes,
 } from './helpers.ts'
 import type { PackageScore } from '@vltpkg/security-archive'
+import type { ParserState } from '../types.ts'
+import type { PostcssNode } from '@vltpkg/dss-parser'
 
 export type ScoreKinds = keyof PackageScore
 

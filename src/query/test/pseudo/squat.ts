@@ -1,16 +1,15 @@
 import t from 'tap'
 import { joinDepIDTuple } from '@vltpkg/dep-id'
+import { asPostcssNodeWithChildren, parse } from '@vltpkg/dss-parser'
 import { asSecurityArchiveLike } from '@vltpkg/security-archive'
 import { getSimpleGraph } from '../fixtures/graph.ts'
-import type { ParserState } from '../../src/types.ts'
 import {
   squat,
   isSquatKind,
   asSquatKind,
   parseInternals,
 } from '../../src/pseudo/squat.ts'
-import { parse } from '../../src/parser.ts'
-import { asPostcssNodeWithChildren } from '../../src/types.ts'
+import type { ParserState } from '../../src/types.ts'
 
 t.test('selects packages with a specific squat kind', async t => {
   const getState = (query: string, graph = getSimpleGraph()) => {

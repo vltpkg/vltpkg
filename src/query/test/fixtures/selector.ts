@@ -1,14 +1,14 @@
-import { parse } from '../../src/parser.ts'
-import type { EdgeLike, GraphLike, NodeLike } from '@vltpkg/graph'
 import { joinDepIDTuple } from '@vltpkg/dep-id'
+import { parse } from '@vltpkg/dss-parser'
+import { walk } from '../../src/index.ts'
+import type { EdgeLike, GraphLike, NodeLike } from '@vltpkg/graph'
 import type { DepID } from '@vltpkg/dep-id'
+import type { PostcssNode } from '@vltpkg/dss-parser'
 import type {
   GraphSelectionState,
   ParserState,
-  PostcssNode,
   ParserFn,
 } from '../../src/types.ts'
-import { walk } from '../../src/index.ts'
 
 export type FixtureResult = {
   edges: EdgeLike[]
