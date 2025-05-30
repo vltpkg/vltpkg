@@ -67,7 +67,7 @@
     "format:check": "prettier --check . --ignore-path ../../.prettierignore --cache",
     "lint": "eslint . --fix",
     "lint:check": "eslint .",
-    "prepare": "astro sync",
+    "prepare": "../../scripts/if-vlt.js && exit 0 || astro sync",
     "snap": "exit 0",
     "start": "astro dev",
     "test": "exit 0",
