@@ -1,9 +1,10 @@
+import { graphStep } from '@vltpkg/output'
 import type { PackageInfoClient } from '@vltpkg/package-info'
 import { RollbackRemove } from '@vltpkg/rollback-remove'
 import { availableParallelism } from 'node:os'
 import { callLimit } from 'promise-call-limit'
-import { load as loadActual } from '../actual/load.ts'
 import type { LoadOptions } from '../actual/load.ts'
+import { load as loadActual } from '../actual/load.ts'
 import type {
   AddImportersDependenciesMap,
   RemoveImportersDependenciesMap,
@@ -21,9 +22,9 @@ import { addNodes } from './add-nodes.ts'
 import { build } from './build.ts'
 import { deleteEdges } from './delete-edges.ts'
 import { deleteNodes } from './delete-nodes.ts'
+import { internalHoist } from './internal-hoist.ts'
 import { rollback } from './rollback.ts'
 import { updatePackageJson } from './update-importers-package-json.ts'
-import { graphStep } from '@vltpkg/output'
 
 const limit = Math.max(availableParallelism() - 1, 1) * 8
 
@@ -113,6 +114,8 @@ const reify_ = async (
     remover,
   )
   if (edgeActions.length) await Promise.all(edgeActions)
+
+  await internalHoist(diff.to, options, remover)
 
   // run lifecycles and chmod bins
   await build(diff, packageJson, scurry)
