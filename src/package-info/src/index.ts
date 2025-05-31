@@ -209,7 +209,7 @@ export class PackageInfoClient {
         if (file === undefined)
           throw this.#resolveError(spec, options, 'no file path')
         /* c8 ignore stop */
-        const path = pathResolve(from, file)
+        const path = pathResolve(process.cwd(), file)
         const st = await stat(path)
         if (st.isFile()) {
           try {
@@ -498,7 +498,7 @@ export class PackageInfoClient {
         const { file } = f
         if (file === undefined)
           throw this.#resolveError(spec, options, 'no file path')
-        const path = pathResolve(from, file)
+        const path = pathResolve(process.cwd(), file)
         const st = await stat(path)
         if (st.isDirectory()) {
           return this.packageJson.read(path)
