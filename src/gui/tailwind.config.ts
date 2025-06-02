@@ -21,6 +21,7 @@ export default {
     },
     extend: {
       fontSize: {
+        xxs: '0.625rem',
         sm: '0.813rem',
       },
       maxWidth: {

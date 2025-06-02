@@ -6,24 +6,53 @@ exports[`dependency-side-bar 1`] = `
   dependencies="GridItemData { simple-output },GridItemData { abbrev },GridItemData { @vltpkg/semver }"
   uninstalleddependencies
 >
-  <gui-grid-header classname="h-[48px]">
-    Dependencies
+  <gui-grid-header classname="flex w-full">
+    <span class="mr-2">
+      Dependencies
+    </span>
+    <gui-number-flow
+      start="3"
+      end="3"
+      format="[object Object]"
+      motionconfig="[object Object]"
+      classnames="[object Object]"
+    >
+    </gui-number-flow>
+    <span class="font-mono text-sm tabular-nums text-muted-foreground">
+      /
+    </span>
+    <gui-number-flow
+      start="3"
+      end="3"
+      format="[object Object]"
+      motionconfig="[object Object]"
+      classnames="[object Object]"
+    >
+    </gui-number-flow>
+    <div class="flex grow justify-end gap-2">
+      <gui-filter-button>
+      </gui-filter-button>
+    </div>
   </gui-grid-header>
-  <gui-side-item
-    item="GridItemData { @vltpkg/semver }"
-    dependencies="true"
-  >
-  </gui-side-item>
-  <gui-side-item
-    item="GridItemData { abbrev }"
-    dependencies="true"
-  >
-  </gui-side-item>
-  <gui-side-item
-    item="GridItemData { simple-output }"
-    dependencies="true"
-  >
-  </gui-side-item>
+  <gui-filter-list>
+  </gui-filter-list>
+  <div class="flex flex-col gap-4">
+    <gui-side-item
+      item="GridItemData { @vltpkg/semver }"
+      dependencies="true"
+    >
+    </gui-side-item>
+    <gui-side-item
+      item="GridItemData { abbrev }"
+      dependencies="true"
+    >
+    </gui-side-item>
+    <gui-side-item
+      item="GridItemData { simple-output }"
+      dependencies="true"
+    >
+    </gui-side-item>
+  </div>
 </gui-dependency-sidebar-provider>
 
 `;
@@ -34,37 +63,68 @@ exports[`dependency-side-bar has both installed and uninstalled deps 1`] = `
   dependencies="GridItemData { simple-output },GridItemData { abbrev },GridItemData { @vltpkg/semver }"
   uninstalleddependencies="GridItemData { @ruyadorno/redact },GridItemData { ntl }"
 >
-  <gui-grid-header classname="h-[48px]">
-    Dependencies
+  <gui-grid-header classname="flex w-full">
+    <span class="mr-2">
+      Dependencies
+    </span>
+    <gui-number-flow
+      start="3"
+      end="3"
+      format="[object Object]"
+      motionconfig="[object Object]"
+      classnames="[object Object]"
+    >
+    </gui-number-flow>
+    <span class="font-mono text-sm tabular-nums text-muted-foreground">
+      /
+    </span>
+    <gui-number-flow
+      start="3"
+      end="3"
+      format="[object Object]"
+      motionconfig="[object Object]"
+      classnames="[object Object]"
+    >
+    </gui-number-flow>
+    <div class="flex grow justify-end gap-2">
+      <gui-filter-button>
+      </gui-filter-button>
+    </div>
   </gui-grid-header>
-  <gui-side-item
-    item="GridItemData { @vltpkg/semver }"
-    dependencies="true"
-  >
-  </gui-side-item>
-  <gui-side-item
-    item="GridItemData { abbrev }"
-    dependencies="true"
-  >
-  </gui-side-item>
-  <gui-side-item
-    item="GridItemData { simple-output }"
-    dependencies="true"
-  >
-  </gui-side-item>
-  <gui-grid-header>
-    Uninstalled Dependencies
-  </gui-grid-header>
-  <gui-side-item
-    item="GridItemData { @ruyadorno/redact }"
-    dependencies="true"
-  >
-  </gui-side-item>
-  <gui-side-item
-    item="GridItemData { ntl }"
-    dependencies="true"
-  >
-  </gui-side-item>
+  <gui-filter-list>
+  </gui-filter-list>
+  <div class="flex flex-col gap-4">
+    <gui-side-item
+      item="GridItemData { @vltpkg/semver }"
+      dependencies="true"
+    >
+    </gui-side-item>
+    <gui-side-item
+      item="GridItemData { abbrev }"
+      dependencies="true"
+    >
+    </gui-side-item>
+    <gui-side-item
+      item="GridItemData { simple-output }"
+      dependencies="true"
+    >
+    </gui-side-item>
+  </div>
+  <div class="mt-8 flex flex-col gap-4">
+    <gui-grid-header classname="h-fit">
+      Uninstalled Dependencies
+    </gui-grid-header>
+    <gui-side-item
+      item="GridItemData { @ruyadorno/redact }"
+      dependencies="false"
+    >
+    </gui-side-item>
+    <gui-side-item
+      item="GridItemData { ntl }"
+      dependencies="false"
+    >
+    </gui-side-item>
+  </div>
 </gui-dependency-sidebar-provider>
 
 `;
@@ -75,27 +135,73 @@ exports[`dependency-side-bar has uninstalled deps only 1`] = `
   dependencies
   uninstalleddependencies="GridItemData { @vltpkg/semver },GridItemData { abbrev },GridItemData { simple-output }"
 >
-  <gui-grid-header classname="h-[48px]">
-    Dependencies
+  <gui-grid-header classname="flex w-full">
+    <span class="mr-2">
+      Dependencies
+    </span>
+    <gui-number-flow
+      start="0"
+      end="3"
+      format="[object Object]"
+      motionconfig="[object Object]"
+      classnames="[object Object]"
+    >
+    </gui-number-flow>
+    <span class="font-mono text-sm tabular-nums text-muted-foreground">
+      /
+    </span>
+    <gui-number-flow
+      start="3"
+      end="0"
+      format="[object Object]"
+      motionconfig="[object Object]"
+      classnames="[object Object]"
+    >
+    </gui-number-flow>
+    <div class="flex grow justify-end gap-2">
+      <gui-filter-button>
+      </gui-filter-button>
+    </div>
   </gui-grid-header>
-  <gui-grid-header>
-    Uninstalled Dependencies
-  </gui-grid-header>
-  <gui-side-item
-    item="GridItemData { @vltpkg/semver }"
-    dependencies="true"
-  >
-  </gui-side-item>
-  <gui-side-item
-    item="GridItemData { abbrev }"
-    dependencies="true"
-  >
-  </gui-side-item>
-  <gui-side-item
-    item="GridItemData { simple-output }"
-    dependencies="true"
-  >
-  </gui-side-item>
+  <gui-filter-list>
+  </gui-filter-list>
+  <div class="flex flex-col gap-4">
+    <gui-side-item
+      item="GridItemData { @vltpkg/semver }"
+      dependencies="true"
+    >
+    </gui-side-item>
+    <gui-side-item
+      item="GridItemData { abbrev }"
+      dependencies="true"
+    >
+    </gui-side-item>
+    <gui-side-item
+      item="GridItemData { simple-output }"
+      dependencies="true"
+    >
+    </gui-side-item>
+  </div>
+  <div class="mt-8 flex flex-col gap-4">
+    <gui-grid-header classname="h-fit">
+      Uninstalled Dependencies
+    </gui-grid-header>
+    <gui-side-item
+      item="GridItemData { @vltpkg/semver }"
+      dependencies="false"
+    >
+    </gui-side-item>
+    <gui-side-item
+      item="GridItemData { abbrev }"
+      dependencies="false"
+    >
+    </gui-side-item>
+    <gui-side-item
+      item="GridItemData { simple-output }"
+      dependencies="false"
+    >
+    </gui-side-item>
+  </div>
 </gui-dependency-sidebar-provider>
 
 `;
@@ -106,9 +212,38 @@ exports[`dependency-side-bar no items 1`] = `
   dependencies
   uninstalleddependencies
 >
-  <gui-grid-header classname="h-[48px]">
-    Dependencies
+  <gui-grid-header classname="flex w-full">
+    <span class="mr-2">
+      Dependencies
+    </span>
+    <gui-number-flow
+      start="0"
+      end="0"
+      format="[object Object]"
+      motionconfig="[object Object]"
+      classnames="[object Object]"
+    >
+    </gui-number-flow>
+    <span class="font-mono text-sm tabular-nums text-muted-foreground">
+      /
+    </span>
+    <gui-number-flow
+      start="0"
+      end="0"
+      format="[object Object]"
+      motionconfig="[object Object]"
+      classnames="[object Object]"
+    >
+    </gui-number-flow>
+    <div class="flex grow justify-end gap-2">
+      <gui-filter-button>
+      </gui-filter-button>
+    </div>
   </gui-grid-header>
+  <gui-filter-list>
+  </gui-filter-list>
+  <div class="flex flex-col gap-4">
+  </div>
 </gui-dependency-sidebar-provider>
 
 `;

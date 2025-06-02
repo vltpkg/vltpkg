@@ -4,7 +4,7 @@ exports[`Item renders connection lines 1`] = `
 
 <gui-selected-item-provider selecteditem="[object Object]">
   <div class="relative">
-    <gui-card classname="relative my-4 border-muted">
+    <gui-card classname="relative border-muted">
       <gui-item-header>
       </gui-item-header>
       <div class="w-full">
@@ -36,8 +36,6 @@ exports[`Item renders connection lines 1`] = `
         </gui-tabs>
       </div>
     </gui-card>
-    <div class="absolute -right-4 top-[44px] w-4 rounded-tr-sm border-t border-muted">
-    </div>
   </div>
 </gui-selected-item-provider>
 
@@ -47,7 +45,7 @@ exports[`Item renders with the default structure 1`] = `
 
 <gui-selected-item-provider selecteditem="[object Object]">
   <div class="relative">
-    <gui-card classname="relative my-4 border-muted">
+    <gui-card classname="relative border-muted">
       <gui-item-header>
       </gui-item-header>
       <div class="w-full">

@@ -11,10 +11,14 @@ import type { PropsWithChildren } from 'react'
 import type { GridItemData } from '@/components/explorer-grid/types.ts'
 import type { DependencySideBarProps } from '@/components/explorer-grid/dependency-sidebar/index.tsx'
 import type { Operation } from '@/lib/add-remove-dependency.ts'
+import type { Filter } from './filter-config.ts'
 
 type DependencySidebarState = {
   importerId?: DependencySideBarProps['importerId']
   dependencies: DependencySideBarProps['dependencies']
+  filteredDependencies: DependencySideBarProps['dependencies']
+  filters: Filter[]
+  searchTerm: string
   addedDependencies: string[]
   uninstalledDependencies: DependencySideBarProps['uninstalledDependencies']
   inProgress: boolean
@@ -24,6 +28,13 @@ type DependencySidebarState = {
 type DependencySidebarAction = {
   setAddedDependencies: (
     deps: DependencySidebarState['addedDependencies'],
+  ) => void
+  setFilteredDependencies: (
+    deps: DependencySidebarState['filteredDependencies'],
+  ) => void
+  setFilters: (filters: DependencySidebarState['filters']) => void
+  setSearchTerm: (
+    search: DependencySidebarState['searchTerm'],
   ) => void
   setInProgress: (bool: DependencySidebarState['inProgress']) => void
   onDependencyClick: (item: GridItemData) => () => undefined
@@ -83,11 +94,15 @@ export const DependencySidebarProvider = ({
   onDependencyClick,
   children,
 }: DependencySidebarProviderProps) => {
+  const query = useGraphStore(state => state.query)
   const dependencySidebarStore = useRef(
     createStore<DependencySidebarStore>(set => ({
       dependencies,
+      filteredDependencies: [],
       uninstalledDependencies,
       importerId,
+      filters: [],
+      searchTerm: '',
       onDependencyClick,
       addedDependencies: [],
       inProgress: false,
@@ -96,6 +111,13 @@ export const DependencySidebarProvider = ({
       setAddedDependencies: (
         deps: DependencySidebarState['addedDependencies'],
       ) => set(() => ({ addedDependencies: deps })),
+      setFilters: (filters: DependencySidebarState['filters']) =>
+        set(() => ({ filters })),
+      setSearchTerm: (search: string) =>
+        set(() => ({ searchTerm: search })),
+      setFilteredDependencies: (
+        filteredDependencies: DependencySidebarState['filteredDependencies'],
+      ) => set(() => ({ filteredDependencies })),
       setInProgress: (bool: DependencySidebarState['inProgress']) =>
         set(() => ({ inProgress: bool })),
       setError: (str: DependencySidebarState['error']) =>
@@ -105,6 +127,20 @@ export const DependencySidebarProvider = ({
       ) => set(() => ({ dependencyPopoverOpen: o })),
     })),
   ).current
+
+  /** The `filteredDependencies` by default will the dependencies themselves */
+  useEffect(() => {
+    dependencySidebarStore.setState(() => ({
+      filteredDependencies: dependencies,
+    }))
+  }, [dependencies])
+
+  /** Reset the filters when navigating */
+  useEffect(() => {
+    dependencySidebarStore.setState(() => ({
+      filters: [],
+    }))
+  }, [query])
 
   useSyncStoreProps(dependencySidebarStore, {
     dependencies,
