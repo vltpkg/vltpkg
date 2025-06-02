@@ -1,5 +1,8 @@
+/** plugins */
 import animate from 'tailwindcss-animate'
 import typograhy from '@tailwindcss/typography'
+import scrollbar from 'tailwind-scrollbar'
+
 import type { Config } from 'tailwindcss'
 
 export default {
@@ -109,5 +112,5 @@ export default {
       },
     },
   },
-  plugins: [animate, typograhy],
+  plugins: [animate, typograhy, scrollbar],
 } satisfies Config

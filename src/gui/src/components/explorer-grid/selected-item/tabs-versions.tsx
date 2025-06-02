@@ -1,7 +1,6 @@
-import {
+import React, {
   useEffect,
   useState,
-  useCallback,
   useRef,
   useMemo,
   memo,
@@ -49,9 +48,12 @@ import {
 import { Bar, BarChart, XAxis, CartesianGrid } from 'recharts'
 import { NumberFlow } from '@/components/number-flow.tsx'
 import { toHumanNumber } from '@/utils/human-number.ts'
+import { Separator } from '@/components/ui/separator.tsx'
+import { Virtuoso } from 'react-virtuoso'
 
 import type { ChartConfig } from '@/components/ui/chart.tsx'
 import type { Version } from '@/lib/external-info.ts'
+import type { VirtuosoHandle } from 'react-virtuoso'
 
 export const VersionsTabButton = () => {
   const versions = useSelectedItemStore(state => state.versions)
@@ -377,43 +379,6 @@ const VersionItem = memo(
 
 VersionItem.displayName = 'VersionItem'
 
-const createIntersectionObserver = (
-  callback: () => void,
-  hasMore: boolean,
-  rootMargin = '100px',
-) => {
-  const observerRef = useRef<IntersectionObserver | null>(null)
-
-  useEffect(() => {
-    return () => {
-      if (observerRef.current) {
-        observerRef.current.disconnect()
-      }
-    }
-  }, [])
-
-  return useCallback(
-    (node: HTMLDivElement | null) => {
-      if (observerRef.current) {
-        observerRef.current.disconnect()
-      }
-
-      if (node) {
-        observerRef.current = new IntersectionObserver(
-          entries => {
-            if (entries[0]?.isIntersecting && hasMore) {
-              callback()
-            }
-          },
-          { rootMargin },
-        )
-        observerRef.current.observe(node)
-      }
-    },
-    [hasMore, callback, rootMargin],
-  )
-}
-
 const EmptyState = ({ message }: { message: string }) => (
   <div className="flex h-full min-h-64 w-full items-center justify-center overflow-hidden">
     <div className="flex flex-col items-center justify-center gap-3 text-center">
@@ -536,15 +501,26 @@ export const VersionsTabContent = () => {
     state => state.downloadsPerVersion,
   )
 
-  const [page, setPage] = useState(1)
-  const [hasMore, setHasMore] = useState(true)
   const [showPreReleases, setShowPreReleases] = useState(true)
   const [showNewerVersions, setShowNewerVersions] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [filteredVersions, setFilteredVersions] = useState<
     VersionItem[]
   >([])
-  const ITEMS_PER_PAGE = 20
+
+  const virtuosoRef = useRef<VirtuosoHandle>(null)
+  const [isScrolling, setIsScrolling] = useState<boolean>(false)
+  const [isScrolledBottom, setIsScrolledBottom] =
+    useState<boolean>(false)
+
+  const handleRangeChange = (range: {
+    startIndex: number
+    endIndex: number
+  }) => {
+    const totalItems = filteredVersions.length
+    setIsScrolling(range.startIndex > 0)
+    setIsScrolledBottom(range.endIndex >= totalItems - 1)
+  }
 
   const filterFunctions = useMemo(
     () => [
@@ -625,21 +601,10 @@ export const VersionsTabContent = () => {
   // Update filtered versions when processed versions change
   useEffect(() => {
     setFilteredVersions(processedVersions)
-    setHasMore(processedVersions.length > page * ITEMS_PER_PAGE)
-  }, [processedVersions, page])
-
-  // Reset page when filters change
-  useEffect(() => {
-    setPage(1)
-  }, [showPreReleases, showNewerVersions, searchTerm])
+  }, [processedVersions])
 
   const isEmpty = !versions?.length
   const hasSearchResults = filteredVersions.length > 0
-
-  const paginatedVersions = useMemo(
-    () => filteredVersions.slice(0, page * ITEMS_PER_PAGE),
-    [filteredVersions, page, ITEMS_PER_PAGE],
-  )
 
   const activeFilters = [
     {
@@ -655,11 +620,6 @@ export const VersionsTabContent = () => {
       onToggle: (checked: boolean) => setShowNewerVersions(!checked),
     },
   ]
-
-  const lastVersionElementRef = createIntersectionObserver(
-    () => setPage(prev => prev + 1),
-    hasMore,
-  )
 
   return (
     <TabsContent value="versions">
@@ -772,34 +732,53 @@ export const VersionsTabContent = () => {
               message={`No versions found matching "${searchTerm}"`}
             />
           : <div>
-              {paginatedVersions.length > 0 && (
-                <div className="mt-2 flex flex-col gap-2 overflow-hidden">
+              {filteredVersions.length > 0 && (
+                <div className="mt-2 flex flex-col gap-2">
                   <VersionHeader
                     items={filteredVersions}
                     setItems={setFilteredVersions}
                     totalItems={versions.length}
                   />
-                  <div className="flex flex-col divide-y-[1px] divide-muted overflow-hidden">
-                    {paginatedVersions.map((version, idx) => {
-                      const downloads =
-                        downloadsPerVersion?.[version.version]
-                      return (
-                        <div
-                          key={`${version.version}-all-${idx}`}
-                          ref={
-                            idx === paginatedVersions.length - 1 ?
-                              lastVersionElementRef
-                            : undefined
-                          }>
-                          <VersionItem
-                            versionInfo={{
-                              ...version,
-                              downloadsPerVersion: downloads,
-                            }}
-                          />
-                        </div>
-                      )
-                    })}
+
+                  <div className="relative">
+                    {isScrolling && (
+                      <>
+                        <div className="absolute -inset-x-6 top-0 z-[10] h-[20px] w-[calc(100%+3rem)] bg-card blur-sm" />
+                        <div className="absolute -inset-x-6 -top-2 z-[10] h-[20px] w-[calc(100%+3rem)] bg-card" />
+                      </>
+                    )}
+                    {!isScrolledBottom && (
+                      <>
+                        <div className="absolute -inset-x-6 bottom-0 z-[10] h-[20px] w-[calc(100%+3rem)] bg-card blur-sm" />
+                        <div className="absolute -inset-x-6 -bottom-2 z-[10] h-[20px] w-[calc(100%+3rem)] bg-card" />
+                      </>
+                    )}
+
+                    <Virtuoso
+                      style={{
+                        height: 800,
+                      }}
+                      ref={virtuosoRef}
+                      rangeChanged={handleRangeChange}
+                      className="scrollbar-thumb-rounded-full flex flex-col scrollbar scrollbar-thin scrollbar-track-muted-foreground/20 scrollbar-thumb-neutral-500"
+                      data={filteredVersions}
+                      itemContent={(i, version) => {
+                        const downloads =
+                          downloadsPerVersion?.[version.version]
+                        return (
+                          <React.Fragment
+                            key={`${version.version}-${i}`}>
+                            <VersionItem
+                              versionInfo={{
+                                ...version,
+                                downloadsPerVersion: downloads,
+                              }}
+                            />
+                            <Separator />
+                          </React.Fragment>
+                        )
+                      }}
+                    />
                   </div>
                 </div>
               )}
