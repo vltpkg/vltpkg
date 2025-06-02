@@ -1,25 +1,3 @@
-import {
-  asIntegrity,
-  asKeyID,
-  asManifest,
-  asManifestRegistry,
-  asPackument,
-  assertIntegrity,
-  assertKeyID,
-  assertManifest,
-  assertManifestRegistry,
-  assertPackument,
-  isIntegrity,
-  isKeyID,
-  isManifest,
-  isManifestRegistry,
-  isPackument,
-  dependencyTypes,
-  longDependencyTypes,
-  asError,
-  isErrorWithCause,
-  isObject,
-} from '../src/index.ts'
 import type {
   Bugs,
   ConditionalValueObject,
@@ -35,6 +13,32 @@ import type {
   PeerDependenciesMetaValue,
   Person,
   Repository,
+} from '../src/index.ts'
+import {
+  asError,
+  asIntegrity,
+  asKeyID,
+  asManifest,
+  asManifestRegistry,
+  asPackument,
+  assertIntegrity,
+  assertKeyID,
+  assertManifest,
+  assertManifestRegistry,
+  assertPackument,
+  assertRecordStringString,
+  assertRecordStringT,
+  dependencyTypes,
+  isErrorWithCause,
+  isIntegrity,
+  isKeyID,
+  isManifest,
+  isManifestRegistry,
+  isObject,
+  isPackument,
+  isRecordStringString,
+  isRecordStringT,
+  longDependencyTypes,
 } from '../src/index.ts'
 
 import t from 'tap'
@@ -340,4 +344,51 @@ t.test('isObject', async t => {
   t.equal(isObject(Object.create(null)), true)
   t.equal(isObject('a string'), false)
   t.equal(isObject(123), false)
+})
+
+t.test('isRecordStringString', async t => {
+  t.equal(isRecordStringString({}), true)
+  t.equal(isRecordStringString({ a: '1' }), true)
+  t.equal(isRecordStringString({ a: 1 }), false)
+  t.equal(isRecordStringString(['1']), false)
+})
+
+t.test('isRecordStringT', async t => {
+  const isRegExp = (x: unknown): x is RegExp =>
+    !!x && typeof x === 'object' && x instanceof RegExp
+  t.equal(isRecordStringT({}, isRegExp), true)
+  t.equal(isRecordStringT({ a: /1/ }, isRegExp), true)
+  t.equal(isRecordStringT({ a: 1 }, isRegExp), false)
+  t.equal(isRecordStringT([/1/], isRegExp), false)
+})
+
+t.test('assertRecordStringString', async t => {
+  assertRecordStringString({})
+  assertRecordStringString({ a: '1' })
+  t.throws(() => assertRecordStringString({ a: 1 }))
+  t.throws(() => assertRecordStringString(['1']))
+})
+
+t.test('isRecordStringT', async t => {
+  const isRegExp = (x: unknown): x is RegExp =>
+    !!x && typeof x === 'object' && x instanceof RegExp
+  t.equal(isRecordStringT({}, isRegExp), true)
+  t.equal(isRecordStringT({ a: /1/ }, isRegExp), true)
+  t.equal(isRecordStringT({ a: 1 }, isRegExp), false)
+  t.equal(isRecordStringT([/1/], isRegExp), false)
+})
+
+t.test('assertRecordStringT', async t => {
+  const isRegExp = (x: unknown): x is RegExp =>
+    !!x && typeof x === 'object' && x instanceof RegExp
+
+  const wanted = 'Record<string, RegExp>'
+  assertRecordStringT({}, isRegExp, wanted)
+  assertRecordStringT({ a: /1/ }, isRegExp, wanted)
+  t.throws(() => assertRecordStringT({ a: 1 }, isRegExp, wanted), {
+    cause: { wanted },
+  })
+  t.throws(() => assertRecordStringT(['1'], isRegExp, wanted), {
+    cause: { wanted },
+  })
 })

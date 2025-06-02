@@ -1,5 +1,6 @@
 import type { DepID } from '@vltpkg/dep-id'
 import type { SpecOptions } from '@vltpkg/spec'
+import { isRecordStringString } from '@vltpkg/types'
 import {
   defaultGitHostArchives,
   defaultGitHosts,
@@ -112,11 +113,6 @@ const formatEdges = (edges: Set<Edge>): LockfileEdges =>
         `${edge.type} ${edge.spec.bareSpec || '*'} ${edge.to?.id ?? 'MISSING'}`,
       ]),
   )
-
-const isRecordStringString = (
-  registries: unknown,
-): registries is Record<string, string> =>
-  !(!registries || typeof registries === 'string')
 
 const removeDefaultItems = (
   defaultItems: Record<string, string>,
