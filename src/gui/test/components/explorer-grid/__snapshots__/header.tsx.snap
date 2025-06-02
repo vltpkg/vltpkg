@@ -3,7 +3,7 @@
 exports[`grid header render custom class 1`] = `
 
 <div>
-  <div class="text-md flex flex-row items-center pt-6 font-medium custom-class">
+  <div class="flex h-[3rem] cursor-default flex-row items-center text-sm font-medium custom-class">
     With a custom class
   </div>
 </div>
@@ -13,7 +13,7 @@ exports[`grid header render custom class 1`] = `
 exports[`grid header render default 1`] = `
 
 <div>
-  <div class="text-md flex flex-row items-center pt-6 font-medium">
+  <div class="flex h-[3rem] cursor-default flex-row items-center text-sm font-medium">
     Some text content
   </div>
 </div>

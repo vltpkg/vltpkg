@@ -40,6 +40,18 @@ vi.mock(
   }),
 )
 
+vi.mock('@/components/number-flow.tsx', () => ({
+  NumberFlow: 'gui-number-flow',
+}))
+
+vi.mock(
+  '@/components/explorer-grid/dependency-sidebar/filter.tsx',
+  () => ({
+    FilterButton: 'gui-filter-button',
+    FilterList: 'gui-filter-list',
+  }),
+)
+
 expect.addSnapshotSerializer({
   serialize: v => html(v),
   test: () => true,
@@ -84,6 +96,12 @@ test('dependency-side-bar', async () => {
     setInProgress: vi.fn(),
     setError: vi.fn(),
     setAddedDependencies: vi.fn(),
+    filteredDependencies: dependencies,
+    filters: [],
+    searchTerm: '',
+    setSearchTerm: vi.fn(),
+    setFilters: vi.fn(),
+    setFilteredDependencies: vi.fn(),
   } satisfies DependencySidebarStore
 
   vi.mocked(useDependencySidebarStore).mockImplementation(selector =>
@@ -119,6 +137,12 @@ test('dependency-side-bar no items', async () => {
     setInProgress: vi.fn(),
     setError: vi.fn(),
     setAddedDependencies: vi.fn(),
+    filteredDependencies: [],
+    filters: [],
+    searchTerm: '',
+    setSearchTerm: vi.fn(),
+    setFilters: vi.fn(),
+    setFilteredDependencies: vi.fn(),
   } satisfies DependencySidebarStore
 
   vi.mocked(useDependencySidebarStore).mockImplementation(selector =>
@@ -160,6 +184,12 @@ test('dependency-side-bar has uninstalled deps only', async () => {
     setInProgress: vi.fn(),
     setError: vi.fn(),
     setAddedDependencies: vi.fn(),
+    filteredDependencies: dependencies,
+    filters: [],
+    searchTerm: '',
+    setSearchTerm: vi.fn(),
+    setFilters: vi.fn(),
+    setFilteredDependencies: vi.fn(),
   } satisfies DependencySidebarStore
 
   vi.mocked(useDependencySidebarStore).mockImplementation(selector =>
@@ -206,6 +236,12 @@ test('dependency-side-bar has both installed and uninstalled deps', async () => 
     setInProgress: vi.fn(),
     setError: vi.fn(),
     setAddedDependencies: vi.fn(),
+    filteredDependencies: dependencies,
+    filters: [],
+    searchTerm: '',
+    setSearchTerm: vi.fn(),
+    setFilters: vi.fn(),
+    setFilteredDependencies: vi.fn(),
   } satisfies DependencySidebarStore
 
   vi.mocked(useDependencySidebarStore).mockImplementation(selector =>
