@@ -11,6 +11,7 @@ export * from './types.ts'
 export * from './install.ts'
 export * from './uninstall.ts'
 export * from './diff.ts'
+export * from './modifiers.ts'
 
 import { load as actualLoad } from './actual/load.ts'
 import type { LoadOptions as ActualLoadOptions } from './actual/load.ts'

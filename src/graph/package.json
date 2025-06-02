@@ -22,6 +22,7 @@
   "dependencies": {
     "@vltpkg/cmd-shim": "workspace:*",
     "@vltpkg/dep-id": "workspace:*",
+    "@vltpkg/dss-breadcrumb": "workspace:*",
     "@vltpkg/error-cause": "workspace:*",
     "@vltpkg/fast-split": "workspace:*",
     "@vltpkg/output": "workspace:*",
@@ -33,6 +34,7 @@
     "@vltpkg/satisfies": "workspace:*",
     "@vltpkg/spec": "workspace:*",
     "@vltpkg/types": "workspace:*",
+    "@vltpkg/vlt-json": "workspace:*",
     "@vltpkg/workspaces": "workspace:*",
     "graph-run": "catalog:",
     "path-scurry": "catalog:",
