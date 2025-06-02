@@ -25,6 +25,11 @@ import { error } from '@vltpkg/error-cause'
 import { PackageInfoClient } from '@vltpkg/package-info'
 import { PackageJson } from '@vltpkg/package-json'
 import type { SpecOptions } from '@vltpkg/spec'
+import {
+  assertRecordStringString,
+  assertRecordStringT,
+  isRecordStringString,
+} from '@vltpkg/types'
 import type { Validator, WhichConfig } from '@vltpkg/vlt-json'
 import { find, load, reload, save } from '@vltpkg/vlt-json'
 import { Monorepo } from '@vltpkg/workspaces'
@@ -40,8 +45,6 @@ import {
   isRecordField,
   recordFields,
 } from './definition.ts'
-import { isRecordRecord } from './is-record-record.ts'
-import { isRecordString } from './is-record-string-string.ts'
 import { merge } from './merge.ts'
 export {
   commands,
@@ -242,11 +245,16 @@ export class Config {
       }),
       catalog: load<Record<string, string>>(
         'catalog',
-        isRecordString,
+        assertRecordStringString,
       ),
       catalogs: load<Record<string, Record<string, string>>>(
         'catalogs',
-        isRecordRecord,
+        o =>
+          assertRecordStringT(
+            o,
+            isRecordStringString,
+            'Record<string, Record<string, string>>',
+          ),
       ),
     }
 
