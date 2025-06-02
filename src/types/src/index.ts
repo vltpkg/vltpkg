@@ -195,7 +195,7 @@ export type RevDoc = Omit<Packument, 'versions'> & {
   shas: Record<string, string[]>
 }
 
-const integrityRE = /^sha512-[a-zA-Z0-9/+]{86}==$/
+export const integrityRE = /^sha512-[a-zA-Z0-9/+]{86}==$/
 export const isIntegrity = (i: unknown): i is Integrity =>
   typeof i === 'string' && integrityRE.test(i)
 
@@ -219,7 +219,7 @@ export const assertIntegrity: (
   asIntegrity(i)
 }
 
-const keyIDRE = /^SHA256:[a-zA-Z0-9/+]{43}$/
+export const keyIDRE = /^SHA256:[a-zA-Z0-9/+]{43}$/
 export const isKeyID = (k: unknown): k is KeyID =>
   typeof k === 'string' && keyIDRE.test(k)
 
@@ -272,31 +272,58 @@ export const isObject = (v: unknown): v is Record<string, unknown> =>
   (v.constructor === Object ||
     (v.constructor as unknown) === undefined)
 
-const maybeRecordStringString = (
+export const maybeRecordStringString = (
   o: unknown,
 ): o is Record<string, string> | undefined =>
   o === undefined || isRecordStringString(o)
 
-const isRecordStringString = (
+export const isRecordStringString = (
   o: unknown,
 ): o is Record<string, string> =>
   isRecordStringT<string>(o, s => typeof s === 'string')
 
-const isRecordStringT = <T>(
+export const assertRecordStringString: (o: unknown) => void = (
   o: unknown,
-  check: (o: unknown) => boolean,
+): asserts o is Record<string, string> =>
+  assertRecordStringT<string>(
+    o,
+    s => typeof s === 'string',
+    'Record<string, string>',
+  )
+
+export const isRecordStringT = <T>(
+  o: unknown,
+  check: (o: unknown) => o is T,
 ): o is Record<string, T> =>
   isObject(o) &&
   Object.entries(o).every(
     ([k, v]) => typeof k === 'string' && check(v),
   )
 
-const isRecordStringManifest = (
+export const assertRecordStringT: <T>(
+  o: unknown,
+  check: (o: unknown) => o is T,
+  wanted: string,
+) => asserts o is Record<string, T> = <T>(
+  o: unknown,
+  check: (o: unknown) => o is T,
+  /** a type description, like 'Record<string, Record<string, string>>' */
+  wanted: string,
+): asserts o is Record<string, T> => {
+  if (!isRecordStringT(o, check)) {
+    throw error('Invalid record', {
+      found: o,
+      wanted,
+    })
+  }
+}
+
+export const isRecordStringManifest = (
   o: unknown,
 ): o is Record<string, Manifest> =>
   isRecordStringT<Manifest>(o, v => isManifest(v))
 
-const maybePeerDependenciesMetaSet = (
+export const maybePeerDependenciesMetaSet = (
   o: unknown,
 ): o is Record<string, PeerDependenciesMetaValue> | undefined =>
   o === undefined ||
@@ -304,18 +331,18 @@ const maybePeerDependenciesMetaSet = (
     isPeerDependenciesMetaValue(v),
   )
 
-const maybeBoolean = (o: unknown): o is boolean =>
+export const maybeBoolean = (o: unknown): o is boolean =>
   o === undefined || typeof o === 'boolean'
 
-const isPeerDependenciesMetaValue = (
+export const isPeerDependenciesMetaValue = (
   o: unknown,
 ): o is PeerDependenciesMetaValue =>
   isObject(o) && maybeBoolean(o.optional)
 
-const maybeString = (a: unknown): a is string | undefined =>
+export const maybeString = (a: unknown): a is string | undefined =>
   a === undefined || typeof a === 'string'
 
-const maybeDist = (a: unknown): a is Manifest['dist'] =>
+export const maybeDist = (a: unknown): a is Manifest['dist'] =>
   a === undefined || (isObject(a) && maybeString(a.tarball))
 
 export const isManifest = (m: unknown): m is Manifest =>
