@@ -11,10 +11,10 @@ given graph.
 ## Usage
 
 ```js
-import { getBreadcrumb } from '@vltpkg/dss-breadcrumb'
+import { parseBreadcrumb } from '@vltpkg/dss-breadcrumb'
 
 // Parse a selector string into a breadcrumb
-const breadcrumb = getBreadcrumb(':root > #a')
+const breadcrumb = parseBreadcrumb(':root > #a')
 
 // Use the breadcrumb to navigate through the query
 console.log(breadcrumb.current.value) // :root

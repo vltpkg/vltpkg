@@ -1,34 +1,40 @@
-import { error } from '@vltpkg/error-cause'
 import {
-  parse,
   isPostcssNodeWithChildren,
   isPseudoNode,
   isIdentifierNode,
   isCombinatorNode,
   isCommentNode,
+  parse,
 } from '@vltpkg/dss-parser'
+import { error } from '@vltpkg/error-cause'
 import type { PostcssNode } from '@vltpkg/dss-parser'
-import type { InteractiveBreadcrumbItem } from './types.ts'
+import type {
+  ModifierBreadcrumb,
+  ModifierBreadcrumbItem,
+  ModifierInteractiveBreadcrumb,
+} from './types.ts'
 
 export * from './types.ts'
 
 /**
- * The InteractiveBreadcrumb class is used to represent a valid breadcrumb.
+ * The Breadcrumb class is used to represent a valid breadcrumb
+ * path that helps you traverse a graph and find a specific node or edge.
  *
- * "Breadcrumb" is a term used to describe the subset of the query language
- * that uses only root/workspace selectors, id selectors & combinators.
+ * Alongside the traditional analogy, "Breadcrumb" is also being used here
+ * as a term used to describe the subset of the query language that uses
+ * only root/workspace selectors, id selectors & combinators.
  *
- * It implements an iterable, doubly-linked list of items that can be used
- * to navigate through the breadcrumb.
+ * The Breadcrumb implements a doubly-linked list of items
+ * that can be used to navigate through the breadcrumb.
+ * The InteractiveBreadcrumb can also be used to keep track of state
+ * of the current breadcrumb item that should be used for checks.
  *
  * It also validates that each element of the provided query string is
- * valid according to the previous definition of a "breadcrumb".
+ * valid according to the previous definition of a "Breadcrumb" query
+ * language subset.
  */
-export class InteractiveBreadcrumb
-  implements Iterable<InteractiveBreadcrumbItem>
-{
-  #current: InteractiveBreadcrumbItem
-  #items: InteractiveBreadcrumbItem[]
+export class Breadcrumb implements ModifierBreadcrumb {
+  #items: ModifierBreadcrumbItem[]
   comment: string | undefined
 
   /**
@@ -68,7 +74,7 @@ export class InteractiveBreadcrumb
       // validation, only the root/workspace selectors, id selectors
       // and combinators are valid ast node items
       if (isNestedSelector || !allowedTypes) {
-        throw error('Invalid query', { found: item })
+        throw error('Invalid query', { found: query })
       }
 
       // combinators and comments are skipped
@@ -92,20 +98,29 @@ export class InteractiveBreadcrumb
 
         const isPrevId = prevNode && isIdentifierNode(prevNode)
         const isCurrentId = isIdentifierNode(item)
+
+        // we define the last item as we iterate through the list of
+        // breadcrumb items so that this value can also be used to
+        // update previous items when needed
         const lastItem =
           this.#items.length > 0 ?
             this.#items[this.#items.length - 1]
-          : null
+          : undefined
 
         // current node is ID, previous was workspace/project
+        // we fold the current node value into the same object
+        // and move on to the next ast item
         if (isCurrentId && isPrevWorkspaceOrProject && lastItem) {
           // Modify the last item to include the ID
+          lastItem.name = item.value
           lastItem.value = `${lastItem.value}#${item.value}`
           prevNode = undefined
           continue
         }
 
         // current node is workspace/project, previous was ID
+        // we fold the current node value into the same object
+        // and move on to the next ast item
         if (isWorkspaceOrProject && isPrevId && lastItem) {
           // Modify the last item to include the pseudo
           lastItem.value = `${lastItem.value}${item.value}`
@@ -114,17 +129,16 @@ export class InteractiveBreadcrumb
           continue
         }
 
-        // Default case: create a new item normally
-        const prev = this.#items[this.#items.length - 1]
         const newItem = {
-          value: item.value,
+          value: item.type === 'id' ? `#${item.value}` : item.value,
+          name: item.type === 'id' ? item.value : undefined,
           type: item.type,
-          prev,
+          prev: lastItem,
           next: undefined,
           importer: allowedPseudoNodes,
         }
-        if (prev) {
-          prev.next = newItem
+        if (lastItem) {
+          lastItem.next = newItem
         }
         this.#items.push(newItem)
         prevNode = item
@@ -137,36 +151,34 @@ export class InteractiveBreadcrumb
         found: query,
       })
     }
-    this.#current = this.#items[0]
   }
 
   /**
-   * The current breadcrumb item.
+   * Retrieves the first breadcrumb item.
    */
-  get current(): InteractiveBreadcrumbItem {
-    return this.#current
-  }
-
-  /**
-   * The next breadcrumb item.
-   */
-  next(): InteractiveBreadcrumbItem | undefined {
-    if (!this.#current.next) {
-      return
+  get first(): ModifierBreadcrumbItem {
+    if (!this.#items[0]) {
+      throw error('Failed to find first breadcrumb item')
     }
-    this.#current = this.#current.next
-    return this.#current
+    return this.#items[0]
   }
 
   /**
-   * The previous breadcrumb item.
+   * Retrieves the last breadcrumb item.
    */
-  prev(): InteractiveBreadcrumbItem | undefined {
-    if (!this.#current.prev) {
-      return
+  get last(): ModifierBreadcrumbItem {
+    const lastItem = this.#items[this.#items.length - 1]
+    if (!lastItem) {
+      throw error('Failed to find first breadcrumb item')
     }
-    this.#current = this.#current.prev
-    return this.#current
+    return lastItem
+  }
+
+  /**
+   * Returns `true` if the breadcrumb is composed of a single item.
+   */
+  get single(): boolean {
+    return this.#items.length === 1
   }
 
   [Symbol.iterator]() {
@@ -183,12 +195,54 @@ export class InteractiveBreadcrumb
     }
     this.#items.length = 0
   }
+
+  /**
+   * Gets an {@link InteractiveBreadcrumb} instance that can be
+   * used to track state of the current breadcrumb item.
+   */
+  interactive() {
+    return new InteractiveBreadcrumb(this)
+  }
 }
 
 /**
- * Returns an {@link InteractiveBreadcrumb} list of items
+ * The InteractiveBreadcrumb is used to keep track of state
+ * of the current breadcrumb item that should be used for checks.
+ */
+export class InteractiveBreadcrumb
+  implements ModifierInteractiveBreadcrumb
+{
+  #current: ModifierBreadcrumbItem | undefined
+  constructor(breadcrumb: Breadcrumb) {
+    this.#current = breadcrumb.first
+  }
+
+  /**
+   * The current breadcrumb item.
+   */
+  get current(): ModifierBreadcrumbItem | undefined {
+    return this.#current
+  }
+
+  /**
+   * Returns `true` if the current breadcrumb has no more items left.
+   */
+  get done(): boolean {
+    return !this.#current
+  }
+
+  /**
+   * The next breadcrumb item.
+   */
+  next(): this {
+    this.#current = this.#current?.next
+    return this
+  }
+}
+
+/**
+ * Returns an {@link Breadcrumb} list of items
  * for a given query string.
  */
-export function getBreadcrumb(query: string): InteractiveBreadcrumb {
-  return new InteractiveBreadcrumb(query)
-}
+export const parseBreadcrumb = (query: string): ModifierBreadcrumb =>
+  new Breadcrumb(query)
