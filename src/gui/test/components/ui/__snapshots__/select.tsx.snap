@@ -97,7 +97,7 @@ exports[`select render open 1`] = `
         aria-selected="false"
         data-state="checked"
         tabindex="-1"
-        class="relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-2 pr-8 text-sm outline-none focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
+        class="relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-2 pr-8 text-sm outline-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50 focus:bg-accent focus:text-accent-foreground"
         data-radix-collection-item
       >
         <span class="absolute right-2 flex h-3.5 w-3.5 items-center justify-center">
@@ -116,7 +116,7 @@ exports[`select render open 1`] = `
         aria-selected="false"
         data-state="unchecked"
         tabindex="-1"
-        class="relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-2 pr-8 text-sm outline-none focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
+        class="relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-2 pr-8 text-sm outline-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50 focus:bg-accent focus:text-accent-foreground"
         data-radix-collection-item
       >
         <span class="absolute right-2 flex h-3.5 w-3.5 items-center justify-center">
@@ -131,7 +131,7 @@ exports[`select render open 1`] = `
         aria-selected="false"
         data-state="unchecked"
         tabindex="-1"
-        class="relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-2 pr-8 text-sm outline-none focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
+        class="relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-2 pr-8 text-sm outline-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50 focus:bg-accent focus:text-accent-foreground"
         data-radix-collection-item
       >
         <span class="absolute right-2 flex h-3.5 w-3.5 items-center justify-center">
@@ -146,7 +146,7 @@ exports[`select render open 1`] = `
         aria-selected="false"
         data-state="unchecked"
         tabindex="-1"
-        class="relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-2 pr-8 text-sm outline-none focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
+        class="relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-2 pr-8 text-sm outline-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50 focus:bg-accent focus:text-accent-foreground"
         data-radix-collection-item
       >
         <span class="absolute right-2 flex h-3.5 w-3.5 items-center justify-center">
