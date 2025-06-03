@@ -48,6 +48,7 @@ import {
 } from '@/components/icons/index.ts'
 import { ProgressCircle } from '@/components/ui/progress-circle.tsx'
 import { toHumanNumber } from '@/utils/human-number.ts'
+import { LICENSE_TYPES } from '@/lib/constants/index.ts'
 import type { ProgressCircleVariant } from '@/components/ui/progress-circle.tsx'
 import type { LucideIcon } from 'lucide-react'
 
@@ -186,20 +187,6 @@ const PackageMetadata = ({ className }: { className?: string }) => {
       manifest.license)
 
   if (!hasMetadata) return null
-
-  const LICENSE_TYPES = [
-    'MIT',
-    'ISC',
-    'Apache-2.0',
-    'GPL-3.0',
-    'GPL-2.0',
-    'LGPL-3.0',
-    'BSD-2-Clause',
-    'BSD-3-Clause',
-    'MPL-2.0',
-    'Unlicense',
-    'CC0-1.0',
-  ]
 
   return (
     <ScrollArea

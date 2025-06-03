@@ -11,11 +11,11 @@ export const Results = ({ items }: { items: GridItemData[] }) => {
 
   return (
     <div className="mt-8 grid w-full max-w-8xl gap-4">
-      <div className="mb-4 flex items-center gap-3">
+      <div className="flex items-center gap-3">
         <GridHeader className="h-fit">Results</GridHeader>
         <Badge variant="default">{items.length}</Badge>
       </div>
-      <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-5">
         {items.map(item => (
           <ResultItem item={item} key={item.id} />
         ))}
