@@ -53,7 +53,7 @@ const Header = () => {
           </div>
         )}
         {appData?.buildVersion && (
-          <p className="ml-auto font-courier text-xs font-medium text-muted-foreground">
+          <p className="ml-auto hidden font-courier text-xs font-medium text-muted-foreground md:block">
             build: v{appData.buildVersion}
           </p>
         )}
