@@ -39,8 +39,6 @@ jobs:
 
       - name: Formatting
         id: format
-        continue-on-error: true
-        # TODO: https://github.com/vltpkg/vltpkg/issues/806
         run: vlr format:check
 
       - name: Linting
@@ -52,7 +50,7 @@ jobs:
       - name: Dependencies
         id: deps
         continue-on-error: true
-        # TODO: write dep check using vlt query in scripts/check-deps.js
+        # TODO: https://github.com/vltpkg/vltpkg/issues/823
         run: vlr deps:check
 
       - name: Docs
@@ -64,7 +62,6 @@ jobs:
       - name: Consistent Workspaces
         id: workspaces
         continue-on-error: true
-        # TODO: https://github.com/vltpkg/vltpkg/issues/806
         # TODO: https://github.com/vltpkg/vltpkg/issues/804
         run: |
           vlr fix:pkg
