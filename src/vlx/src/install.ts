@@ -1,7 +1,7 @@
 import { error } from '@vltpkg/error-cause'
 import { install } from '@vltpkg/graph'
 import { PackageInfoClient } from '@vltpkg/package-info'
-import { Spec } from '@vltpkg/spec'
+import type { Spec } from '@vltpkg/spec'
 import { XDG } from '@vltpkg/xdg'
 import { createHash } from 'node:crypto'
 import { mkdir, writeFile } from 'node:fs/promises'
@@ -10,6 +10,7 @@ import { PathScurry } from 'path-scurry'
 import { dirExists } from './dir-exists.ts'
 import { doPrompt } from './do-prompt.ts'
 import type { PromptFn, VlxInfo, VlxOptions } from './index.ts'
+import { inferName } from './infer-name.ts'
 import { vlxInfo } from './info.ts'
 
 /**
@@ -21,9 +22,8 @@ export const vlxInstall = async (
   options: VlxOptions,
   promptFn?: PromptFn,
 ): Promise<VlxInfo> => {
-  const pkgSpec =
-    typeof spec === 'string' ? Spec.parseArgs(spec) : spec
-  const { name } = pkgSpec.final
+  const pkgSpec = inferName(spec, options)
+
   // We always use the cache as much as possible, to prevent unnecessarily
   // waiting to run a command while installing something. The one we used
   // last time is almost certainly fine.
@@ -34,6 +34,7 @@ export const vlxInstall = async (
   const packageInfo = (options.packageInfo = new PackageInfoClient(
     options,
   ))
+
   const resolution = await packageInfo.resolve(pkgSpec, options)
   const hash = createHash('sha512')
     .update(resolution.resolved)
@@ -55,7 +56,7 @@ export const vlxInstall = async (
   const manifest = {
     name: 'vlx',
     dependencies: {
-      [name]: resolution.resolved,
+      [pkgSpec.name]: resolution.resolved,
     },
     vlx: {
       integrity: resolution.integrity,
