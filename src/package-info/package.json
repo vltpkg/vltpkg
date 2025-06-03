@@ -44,8 +44,8 @@
     "tap": "catalog:",
     "tshy": "catalog:",
     "typedoc": "catalog:",
-    "typescript-eslint": "catalog:",
-    "typescript": "catalog:"
+    "typescript": "catalog:",
+    "typescript-eslint": "catalog:"
   },
   "license": "BSD-2-Clause-Patent",
   "engines": {
