@@ -103,9 +103,9 @@ export class Version {
       )
     }
 
-    const parsed = version.match(re.full)
+    const parsed = re.full.exec(version)
     if (!parsed) {
-      const main = version.match(re.main)
+      const main = re.main.exec(version)
       if (!main) {
         throw invalidVersion(
           version,
@@ -118,17 +118,13 @@ export class Version {
         )
       }
     }
-    const [_, major_, minor_, patch_, prerelease, build] = parsed as [
-      string,
-      string,
-      string,
-      string,
-      string | undefined,
-      string | undefined,
-    ]
-    const major = safeNumber(major_, version, 'major')
-    const minor = safeNumber(minor_, version, 'minor')
-    const patch = safeNumber(patch_, version, 'patch')
+    const [_, major_, minor_, patch_, prerelease, build] = parsed
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const major = safeNumber(major_!, version, 'major')
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const minor = safeNumber(minor_!, version, 'minor')
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const patch = safeNumber(patch_!, version, 'patch')
 
     return new Version(
       version,
