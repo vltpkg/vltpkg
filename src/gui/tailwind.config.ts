@@ -27,6 +27,9 @@ export default {
         xxs: '0.625rem',
         sm: '0.813rem',
       },
+      size: {
+        '7.5': '1.875rem',
+      },
       maxWidth: {
         '8xl': '92rem',
       },

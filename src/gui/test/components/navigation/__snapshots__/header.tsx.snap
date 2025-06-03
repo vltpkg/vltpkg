@@ -7,7 +7,7 @@ exports[`header renders with build version 1`] = `
     <h3 class="text-md font-medium">
       Dashboard
     </h3>
-    <p class="ml-auto font-courier text-xs font-medium text-muted-foreground">
+    <p class="ml-auto hidden font-courier text-xs font-medium text-muted-foreground md:block">
       build: v1.0.0
     </p>
   </div>
