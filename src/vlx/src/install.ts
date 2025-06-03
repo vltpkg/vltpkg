@@ -1,7 +1,7 @@
 import { error } from '@vltpkg/error-cause'
 import { install } from '@vltpkg/graph'
 import { PackageInfoClient } from '@vltpkg/package-info'
-import type {Spec} from '@vltpkg/spec';
+import type { Spec } from '@vltpkg/spec'
 import { XDG } from '@vltpkg/xdg'
 import { createHash } from 'node:crypto'
 import { mkdir, writeFile } from 'node:fs/promises'
