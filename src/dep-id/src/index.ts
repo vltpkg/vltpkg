@@ -256,7 +256,11 @@ const omitDefReg = (s?: string): string =>
  * in the manifest, registry ID types will use the name or bareSpec from the
  * specifier, so at least there's something to use later.
  */
-export const getTuple = (spec: Spec, mani: Manifest): DepIDTuple => {
+export const getTuple = (
+  spec: Spec,
+  mani: Manifest,
+  extra?: string,
+): DepIDTuple => {
   const f = spec.final
   switch (f.type) {
     case 'registry': {
@@ -278,11 +282,16 @@ export const getTuple = (spec: Spec, mani: Manifest): DepIDTuple => {
             mani.version.slice(1)
           : mani.version
         : f.bareSpec
-      return [
-        f.type,
-        f.namedRegistry ?? reg,
-        `${isPackageNameConfused(spec, mani.name) ? spec.name : (mani.name ?? f.name)}@${version}`,
-      ]
+
+      // the returning value logic here is a little bit verbose
+      // so that typescript can infer the types correctly
+      const type = 'registry'
+      const registry = f.namedRegistry ?? reg
+      const nameAndVersion = `${isPackageNameConfused(spec, mani.name) ? spec.name : (mani.name ?? f.name)}@${version}`
+      if (extra) {
+        return [type, registry, nameAndVersion, extra]
+      }
+      return [type, registry, nameAndVersion]
     }
     case 'git': {
       const {
@@ -291,6 +300,7 @@ export const getTuple = (spec: Spec, mani: Manifest): DepIDTuple => {
         gitRemote,
         gitSelector = '',
       } = f
+      const type = 'git'
       if (!gitRemote)
         throw error('no host on git specifier', { spec })
       if (namedGitHost) {
@@ -299,20 +309,29 @@ export const getTuple = (spec: Spec, mani: Manifest): DepIDTuple => {
             spec,
           })
         }
-        return [
-          f.type,
-          `${namedGitHost}:${namedGitHostPath}`,
-          gitSelector,
-        ]
+        // the returning value logic here is a little bit verbose
+        // so that typescript can infer the types correctly
+        const gitHostAndPath = `${namedGitHost}:${namedGitHostPath}`
+        if (extra) {
+          return [type, gitHostAndPath, gitSelector, extra]
+        }
+        return [type, gitHostAndPath, gitSelector]
       } else {
+        if (extra) {
+          return [type, gitRemote, gitSelector, extra]
+        }
         return [f.type, gitRemote, gitSelector]
       }
     }
     case 'remote': {
       const { remoteURL } = f
+      const type = 'remote'
       if (!remoteURL)
         throw error('no URL on remote specifier', { spec })
-      return [f.type, remoteURL]
+      if (extra) {
+        return [type, remoteURL, extra]
+      }
+      return [type, remoteURL]
     }
     case 'file':
     case 'workspace':
@@ -336,5 +355,8 @@ export const isPackageNameConfused = (spec?: Spec, name?: string) =>
  * the manifest, registry ID types will use the name or bareSpec from the
  * specifier, so at least there's something to use later.
  */
-export const getId = (spec: Spec, mani: Manifest): DepID =>
-  joinDepIDTuple(getTuple(spec, mani))
+export const getId = (
+  spec: Spec,
+  mani: Manifest,
+  extra?: string,
+): DepID => joinDepIDTuple(getTuple(spec, mani, extra))

@@ -244,6 +244,7 @@ Array [
     "",
     "x@1.2.3",
   ],
+  "··x@1.2.3·deadbeef",
 ]
 `
 
@@ -271,6 +272,7 @@ Array [
     "",
     "x@1.2.3",
   ],
+  "··x@1.2.3·deadbeef",
 ]
 `
 
@@ -298,6 +300,7 @@ Array [
     "a",
     "manifest-name@1.2.3",
   ],
+  "·a·manifest-name@1.2.3·deadbeef",
 ]
 `
 
@@ -325,6 +328,7 @@ Array [
     "b",
     "manifest-name@1.2.3",
   ],
+  "·b·manifest-name@1.2.3·deadbeef",
 ]
 `
 
@@ -352,6 +356,7 @@ Array [
     "git+ssh://host.com/x.git",
     "",
   ],
+  "git·git%2Bssh%3A§§host.com§x.git··deadbeef",
 ]
 `
 
@@ -379,6 +384,7 @@ Array [
     "git+ssh://host.com/x.git",
     "branch",
   ],
+  "git·git%2Bssh%3A§§host.com§x.git·branch·deadbeef",
 ]
 `
 
@@ -406,6 +412,7 @@ Array [
     "git+ssh://host.com/x.git",
     "semver:1",
   ],
+  "git·git%2Bssh%3A§§host.com§x.git·semver%3A1·deadbeef",
 ]
 `
 
@@ -433,6 +440,7 @@ Array [
     "github:a/b",
     "",
   ],
+  "git·github%3Aa§b··deadbeef",
 ]
 `
 
@@ -460,6 +468,7 @@ Array [
     "github:a/b",
     "branch",
   ],
+  "git·github%3Aa§b·branch·deadbeef",
 ]
 `
 
@@ -487,6 +496,7 @@ Array [
     "github:a/b",
     "semver:1",
   ],
+  "git·github%3Aa§b·semver%3A1·deadbeef",
 ]
 `
 
@@ -513,6 +523,7 @@ Array [
     "remote",
     "https://x.com/x.tgz",
   ],
+  "remote·https%3A§§x.com§x.tgz·deadbeef",
 ]
 `
 
@@ -540,6 +551,7 @@ Array [
     "a",
     "manifest-name@1.2.3",
   ],
+  "·a·manifest-name@1.2.3·deadbeef",
 ]
 `
 
@@ -567,6 +579,7 @@ Array [
     "b",
     "manifest-name@1.2.3",
   ],
+  "·b·manifest-name@1.2.3·deadbeef",
 ]
 `
 
@@ -594,6 +607,7 @@ Array [
     "https://c.example.com/",
     "manifest-name@1.2.3",
   ],
+  "·https%3A§§c.example.com§·manifest-name@1.2.3·deadbeef",
 ]
 `
 
@@ -621,6 +635,7 @@ Array [
     "",
     "y@1.2.3",
   ],
+  "··y@1.2.3·deadbeef",
 ]
 `
 
@@ -675,6 +690,7 @@ Array [
     "npm",
     "manifest-name@1.2.3",
   ],
+  "·npm·manifest-name@1.2.3·deadbeef",
 ]
 `
 
@@ -702,6 +718,7 @@ Array [
     "npm",
     "manifest-name@1.2.3",
   ],
+  "·npm·manifest-name@1.2.3·deadbeef",
 ]
 `
 
@@ -729,6 +746,7 @@ Array [
     "github:a/b",
     "branch",
   ],
+  "git·github%3Aa§b·branch·deadbeef",
 ]
 `
 
@@ -756,6 +774,7 @@ Array [
     "",
     "manifest-name@1.2.3",
   ],
+  "··manifest-name@1.2.3·deadbeef",
 ]
 `
 
@@ -783,6 +802,7 @@ Array [
     "",
     "manifest-name@1.2.3",
   ],
+  "··manifest-name@1.2.3·deadbeef",
 ]
 `
 
@@ -810,5 +830,6 @@ Array [
     "https://x.com/",
     "manifest-name@1.2.3",
   ],
+  "·https%3A§§x.com§·manifest-name@1.2.3·deadbeef",
 ]
 `
