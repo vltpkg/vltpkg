@@ -51,6 +51,21 @@ exports[`test/actual/load.ts > TAP > cycle > should load an actual graph with cy
 ]
 `
 
+exports[`test/actual/load.ts > TAP > getPathBasedId > should get path based id for various dep ids 1`] = `
+Array [
+  "··foo@1.0.0",
+  "··foo@1.0.0·deadbeef",
+  "git·github%3Aa§b·",
+  "git·github%3Aa§b··deadbeef",
+  "file·foo",
+  "file·foo",
+  "workspace·packages§a",
+  "workspace·packages§a",
+  "remote·https%3A§§example.com§x.tgz",
+  "remote·https%3A§§example.com§x.tgz·deadbeef",
+]
+`
+
 exports[`test/actual/load.ts > TAP > load actual > should load an actual graph containing missing deps info 1`] = `
 [
   Node {

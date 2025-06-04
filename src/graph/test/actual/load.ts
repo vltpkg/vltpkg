@@ -1,13 +1,15 @@
 import { joinDepIDTuple } from '@vltpkg/dep-id'
 import { PackageJson } from '@vltpkg/package-json'
-import type { SpecOptions } from '@vltpkg/spec'
+import { Spec } from '@vltpkg/spec'
 import { unload } from '@vltpkg/vlt-json'
 import { Monorepo } from '@vltpkg/workspaces'
 import { PathScurry } from 'path-scurry'
 import t from 'tap'
-import { load } from '../../src/actual/load.ts'
+import { load, getPathBasedId } from '../../src/actual/load.ts'
 import { objectLikeOutput } from '../../src/visualization/object-like-output.ts'
 import { actualGraph } from '../fixtures/actual.ts'
+import type { Path } from 'path-scurry'
+import type { SpecOptions } from '@vltpkg/spec'
 
 const configData = {
   registry: 'https://registry.npmjs.org/',
@@ -189,5 +191,85 @@ t.test('uninstalled dependencies', async t => {
       }),
     ),
     'should load an actual graph with missing deps with no manifest info',
+  )
+})
+
+t.test('getPathBasedId', async t => {
+  t.matchSnapshot(
+    [
+      [
+        Spec.parse('foo', '^1.0.0'),
+        new PathScurry(
+          `node_modules/.vlt/${joinDepIDTuple(['registry', '', 'foo@1.0.0'])}`,
+        ).cwd,
+      ],
+      [
+        Spec.parse('foo', '^1.0.0'),
+        new PathScurry(
+          `node_modules/.vlt/${joinDepIDTuple(['registry', '', 'foo@1.0.0', 'deadbeef'])}`,
+        ).cwd,
+      ],
+      [
+        Spec.parse('b', 'github:a/b'),
+        new PathScurry(
+          `node_modules/.vlt/${joinDepIDTuple(['git', 'github:a/b', ''])}`,
+        ).cwd,
+      ],
+      [
+        Spec.parse('b', 'github:a/b'),
+        new PathScurry(
+          `node_modules/.vlt/${joinDepIDTuple(['git', 'github:a/b', '', 'deadbeef'])}`,
+        ).cwd,
+      ],
+      // file deps are not located in the node_modules/.vlt store folder
+      [
+        Spec.parse('foo', 'file:./foo'),
+        {
+          relativePosix() {
+            return 'foo'
+          },
+        },
+      ],
+      [
+        Spec.parse('foo', 'file:./foo'),
+        {
+          relativePosix() {
+            return 'foo'
+          },
+        },
+      ],
+      // workspaces are not located in the node_modules/.vlt store folder
+      [
+        Spec.parse('a', 'workspace:*'),
+        {
+          relativePosix() {
+            return 'packages/a'
+          },
+        },
+      ],
+      [
+        Spec.parse('a', 'workspace:*'),
+        {
+          relativePosix() {
+            return 'packages/a'
+          },
+        },
+      ],
+      [
+        Spec.parse('x', 'https://example.com/x.tgz'),
+        new PathScurry(
+          `node_modules/.vlt/${joinDepIDTuple(['remote', 'https://example.com/x.tgz'])}`,
+        ).cwd,
+      ],
+      [
+        Spec.parse('x', 'https://example.com/x.tgz'),
+        new PathScurry(
+          `node_modules/.vlt/${joinDepIDTuple(['remote', 'https://example.com/x.tgz', 'deadbeef'])}`,
+        ).cwd,
+      ],
+    ].map(([spec, path]) =>
+      getPathBasedId(spec as Spec, path as Path),
+    ),
+    'should get path based id for various dep ids',
   )
 })
