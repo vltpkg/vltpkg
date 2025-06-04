@@ -10,7 +10,10 @@ import { NumberFlow } from '@/components/number-flow.tsx'
 import {
   FilterButton,
   FilterList,
+  FilterListEmptyState,
 } from '@/components/explorer-grid/dependency-sidebar/filter.tsx'
+import { DependencyEmptyState } from '@/components/explorer-grid/dependency-sidebar/empty-state.tsx'
+import { AnimatePresence, motion } from 'framer-motion'
 
 import type { DepID } from '@vltpkg/dep-id/browser'
 import type { GridItemData } from '@/components/explorer-grid/types.ts'
@@ -38,21 +41,17 @@ const SidebarHeader = () => {
   const dependencies = useDependencySidebarStore(
     state => state.dependencies,
   )
-  const addedDependencies = useDependencySidebarStore(
-    state => state.addedDependencies,
-  )
   const filteredDependencies = useDependencySidebarStore(
     state => state.filteredDependencies,
   )
-  const totalLength = dependencies.length + addedDependencies.length
 
   return (
     <>
       <GridHeader className="flex w-full">
         <span className="mr-2">Dependencies</span>
         <NumberFlow
-          start={totalLength}
-          end={filteredDependencies.length + addedDependencies.length}
+          start={dependencies.length}
+          end={filteredDependencies.length}
           format={{
             pad: 0,
           }}
@@ -68,7 +67,7 @@ const SidebarHeader = () => {
         </span>
         <NumberFlow
           start={filteredDependencies.length}
-          end={totalLength}
+          end={dependencies.length}
           format={{
             pad: 0,
           }}
@@ -79,10 +78,22 @@ const SidebarHeader = () => {
             span: 'text-muted-foreground',
           }}
         />
-        <div className="flex grow justify-end gap-2">
-          <FilterButton />
-          {importerId && <AddDependenciesPopoverTrigger />}
-        </div>
+        <AnimatePresence mode="popLayout" initial={false}>
+          {dependencies.length !== 0 && (
+            <motion.div
+              initial={{ opacity: 0, filter: 'blur(2px)' }}
+              animate={{ opacity: 1, filter: 'blur(0px)' }}
+              exit={{ opacity: 0, filter: 'blur(4px)' }}
+              transition={{
+                ease: 'easeInOut',
+                duration: 0.25,
+              }}
+              className="flex grow justify-end gap-2">
+              {importerId && <AddDependenciesPopoverTrigger />}
+              <FilterButton />
+            </motion.div>
+          )}
+        </AnimatePresence>
       </GridHeader>
       <FilterList />
     </>
@@ -152,6 +163,8 @@ const DependencyList = () => {
           ))}
         </div>
       )}
+      <DependencyEmptyState />
+      <FilterListEmptyState />
     </>
   )
 }

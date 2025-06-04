@@ -1,0 +1,58 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`dependency-empty-state renders default 1`] = `
+
+<div
+  class="flex min-h-96 w-full cursor-default flex-col items-center justify-center rounded-sm border-[1px] border-dashed border-muted py-12"
+  style="opacity: 1; filter: blur(0px);"
+>
+  <div class="mb-6 flex justify-center">
+    <div class="relative">
+      <div class="relative space-y-2">
+        <div class="h-12 w-64 rotate-1 transform rounded-lg border-[1px] border-dashed border-muted-foreground/20 bg-muted/30">
+        </div>
+        <div class="-mt-10 h-12 w-64 -rotate-1 transform rounded-lg border-[1px] border-dashed border-muted-foreground/30 bg-muted/50">
+        </div>
+        <div class="relative z-10 -mt-10 flex h-12 w-64 items-center justify-between rounded-lg border-[1px] border-dashed border-muted-foreground/40 bg-background px-4">
+          <div class="flex items-center gap-3">
+            <div class="h-6 w-12 rounded border-[1px] border-dashed border-muted-foreground/30 bg-muted/60">
+            </div>
+            <div class="h-4 w-24 rounded border-[1px] border-dashed border-muted-foreground/30 bg-muted/60">
+            </div>
+          </div>
+          <div class="h-4 w-12 rounded border-[1px] border-dashed border-muted-foreground/30 bg-muted/60">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="flex flex-col items-center justify-center gap-1 text-center">
+    <h3 class="text-base font-medium tracking-tight text-foreground">
+      No dependencies
+    </h3>
+    <p class="w-4/5 text-sm font-normal tracking-normal text-muted-foreground">
+      Your project's dependencies will appear here, install one to see it appear
+    </p>
+    <gui-popover open="true">
+      <gui-popover-trigger aschild="true">
+        <gui-button classname="mt-2 h-8 w-fit border-[1px] border-muted">
+          Install a dependency
+          <span style="transform: rotate(45deg);">
+            <gui-plus-icon>
+            </gui-plus-icon>
+          </span>
+        </gui-button>
+      </gui-popover-trigger>
+      <gui-popover-content
+        align="center"
+        side="top"
+        classname="right-0 top-0 w-96 p-0"
+      >
+        <gui-add-dependencies-popover>
+        </gui-add-dependencies-popover>
+      </gui-popover-content>
+    </gui-popover>
+  </div>
+</div>
+
+`;

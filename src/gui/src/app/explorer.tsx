@@ -153,7 +153,6 @@ const ExplorerContent = () => {
           {/* query bar blur */}
           <div className="absolute inset-x-0 -bottom-1 h-1 w-full bg-background blur-sm" />
           <div className="absolute inset-x-0 -bottom-4 h-4 w-full bg-gradient-to-b from-background/100 from-10% via-50% to-background/0 to-100%" />
-
           <RootButton />
           <QueryBar
             tabIndex={0}

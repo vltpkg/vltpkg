@@ -29,7 +29,10 @@ exports[`dependency-side-bar 1`] = `
       classnames="[object Object]"
     >
     </gui-number-flow>
-    <div class="flex grow justify-end gap-2">
+    <div
+      class="flex grow justify-end gap-2"
+      style="opacity: 1; filter: blur(0px);"
+    >
       <gui-filter-button>
       </gui-filter-button>
     </div>
@@ -53,6 +56,10 @@ exports[`dependency-side-bar 1`] = `
     >
     </gui-side-item>
   </div>
+  <gui-dependency-empty-state>
+  </gui-dependency-empty-state>
+  <gui-filter-list-empty-state>
+  </gui-filter-list-empty-state>
 </gui-dependency-sidebar-provider>
 
 `;
@@ -86,7 +93,10 @@ exports[`dependency-side-bar has both installed and uninstalled deps 1`] = `
       classnames="[object Object]"
     >
     </gui-number-flow>
-    <div class="flex grow justify-end gap-2">
+    <div
+      class="flex grow justify-end gap-2"
+      style="opacity: 1; filter: blur(0px);"
+    >
       <gui-filter-button>
       </gui-filter-button>
     </div>
@@ -125,6 +135,10 @@ exports[`dependency-side-bar has both installed and uninstalled deps 1`] = `
     >
     </gui-side-item>
   </div>
+  <gui-dependency-empty-state>
+  </gui-dependency-empty-state>
+  <gui-filter-list-empty-state>
+  </gui-filter-list-empty-state>
 </gui-dependency-sidebar-provider>
 
 `;
@@ -158,10 +172,6 @@ exports[`dependency-side-bar has uninstalled deps only 1`] = `
       classnames="[object Object]"
     >
     </gui-number-flow>
-    <div class="flex grow justify-end gap-2">
-      <gui-filter-button>
-      </gui-filter-button>
-    </div>
   </gui-grid-header>
   <gui-filter-list>
   </gui-filter-list>
@@ -202,6 +212,10 @@ exports[`dependency-side-bar has uninstalled deps only 1`] = `
     >
     </gui-side-item>
   </div>
+  <gui-dependency-empty-state>
+  </gui-dependency-empty-state>
+  <gui-filter-list-empty-state>
+  </gui-filter-list-empty-state>
 </gui-dependency-sidebar-provider>
 
 `;
@@ -235,15 +249,15 @@ exports[`dependency-side-bar no items 1`] = `
       classnames="[object Object]"
     >
     </gui-number-flow>
-    <div class="flex grow justify-end gap-2">
-      <gui-filter-button>
-      </gui-filter-button>
-    </div>
   </gui-grid-header>
   <gui-filter-list>
   </gui-filter-list>
   <div class="flex flex-col gap-4">
   </div>
+  <gui-dependency-empty-state>
+  </gui-dependency-empty-state>
+  <gui-filter-list-empty-state>
+  </gui-filter-list-empty-state>
 </gui-dependency-sidebar-provider>
 
 `;
