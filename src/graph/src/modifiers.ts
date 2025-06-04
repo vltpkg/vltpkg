@@ -1,6 +1,5 @@
 import { parseBreadcrumb } from '@vltpkg/dss-breadcrumb'
 import { error } from '@vltpkg/error-cause'
-import { PackageJson } from '@vltpkg/package-json'
 import { Spec } from '@vltpkg/spec'
 import { asManifest, assertManifest, isObject } from '@vltpkg/types'
 import { load } from '@vltpkg/vlt-json'
@@ -175,10 +174,6 @@ export type ModifierActiveEntry = {
  */
 export type GraphModifierOptions = {
   /**
-   * A {@link PackageJson} object, for sharing manifest caches
-   */
-  packageJson?: PackageJson
-  /**
    * Options for the {@link Spec} parser
    */
   specOptions?: SpecOptions
@@ -216,8 +211,6 @@ export type GraphModifierOptions = {
  * ```
  */
 export class GraphModifier {
-  /** The package.json object, for sharing manifest caches */
-  packageJson: PackageJson
   /** The loaded modifiers configuration */
   #config?: GraphModifierConfigObject
   /** A set of all modifiers loaded from vlt.json */
@@ -244,14 +237,12 @@ export class GraphModifier {
     ModifierEntry,
     Map<string, Map<Node, ModifierActiveEntry>>
   >()
-
   /**
    * A set of currently active modifiers, which are being parsed.
    */
   activeModifiers = new Set<ModifierActiveEntry>()
 
   constructor(options: GraphModifierOptions) {
-    this.packageJson = options.packageJson ?? new PackageJson()
     this.load(options)
   }
 

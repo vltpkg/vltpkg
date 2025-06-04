@@ -4,7 +4,6 @@ import {
   assertGraphModifiersConfig,
   GraphModifier,
 } from '../src/modifiers.ts'
-import { PackageJson } from '@vltpkg/package-json'
 import { Spec } from '@vltpkg/spec'
 import type { SpecOptions } from '@vltpkg/spec'
 import { reload } from '@vltpkg/vlt-json'
@@ -457,25 +456,23 @@ t.test('assertGraphModifiersConfig', async t => {
 
 t.test('GraphModifier', async t => {
   await t.test('constructor', async t => {
-    const testdir = t.testdir({
-      'vlt.json': JSON.stringify({ modifiers: validStringConfig }),
+    // Test with empty config
+    const emptyconfigDir = t.testdir({
+      'vlt.json': JSON.stringify({}), // No modifiers key
     })
-
     const options = {
-      packageJson: new PackageJson(),
       specOptions: mockSpecOptions,
     }
     // Reload vlt.json to ensure we have the latest config
-    t.chdir(testdir)
+    t.chdir(emptyconfigDir)
     reload('modifiers', 'project')
 
-    t.doesNotThrow(
-      () => new GraphModifier(options),
-      'should instantiate without errors',
+    const emptyModifier = new GraphModifier(options)
+    t.same(
+      emptyModifier.config,
+      {},
+      'should return empty object when no config is found',
     )
-
-    const modifier = new GraphModifier(options)
-    t.ok(modifier.packageJson, 'should initialize packageJson')
   })
 
   await t.test('config getter', async t => {
@@ -484,7 +481,6 @@ t.test('GraphModifier', async t => {
     })
 
     const options = {
-      packageJson: new PackageJson(),
       specOptions: mockSpecOptions,
     }
     // Reload vlt.json to ensure we have the latest config
@@ -509,27 +505,6 @@ t.test('GraphModifier', async t => {
     )
   })
 
-  await t.test('empty config', async t => {
-    // Test with empty config
-    const emptyconfigDir = t.testdir({
-      'vlt.json': JSON.stringify({}), // No modifiers key
-    })
-    const options = {
-      packageJson: new PackageJson(),
-      specOptions: mockSpecOptions,
-    }
-    // Reload vlt.json to ensure we have the latest config
-    t.chdir(emptyconfigDir)
-    reload('modifiers', 'project')
-
-    const emptyModifier = new GraphModifier(options)
-    t.same(
-      emptyModifier.config,
-      {},
-      'should return empty object when no config is found',
-    )
-  })
-
   await t.test('maybeHasModifier with simple graph', async t => {
     // Test with importer modifier
     const importerConfigDir = t.testdir({
@@ -542,7 +517,6 @@ t.test('GraphModifier', async t => {
     reload('modifiers', 'project')
 
     const importerOptions = {
-      packageJson: new PackageJson(),
       specOptions: mockSpecOptions,
     }
 
@@ -569,7 +543,6 @@ t.test('GraphModifier', async t => {
     })
 
     const nonImporterOptions = {
-      packageJson: new PackageJson(),
       specOptions: mockSpecOptions,
     }
     // Reload vlt.json to ensure we have the latest config
@@ -597,7 +570,6 @@ t.test('GraphModifier', async t => {
       })
 
       const options = {
-        packageJson: new PackageJson(),
         specOptions: mockSpecOptions,
       }
       // Reload vlt.json to ensure we have the latest config
@@ -665,7 +637,6 @@ t.test('GraphModifier', async t => {
       })
 
       const options = {
-        packageJson: new PackageJson(),
         specOptions: mockSpecOptions,
       }
       // Reload vlt.json to ensure we have the latest config
@@ -765,7 +736,6 @@ t.test('GraphModifier', async t => {
     })
 
     const options = {
-      packageJson: new PackageJson(),
       specOptions: mockSpecOptions,
     }
     // Reload vlt.json to ensure we have the latest config
@@ -831,7 +801,6 @@ t.test('GraphModifier', async t => {
     })
 
     const options = {
-      packageJson: new PackageJson(),
       specOptions: mockSpecOptions,
     }
     // Reload vlt.json to ensure we have the latest config
@@ -906,7 +875,6 @@ t.test('GraphModifier', async t => {
     })
 
     const options = {
-      packageJson: new PackageJson(),
       specOptions: mockSpecOptions,
     }
     // Reload vlt.json to ensure we have the latest config
@@ -973,7 +941,6 @@ t.test('GraphModifier', async t => {
     })
 
     const options = {
-      packageJson: new PackageJson(),
       specOptions: mockSpecOptions,
     }
 
@@ -1019,7 +986,6 @@ t.test('GraphModifier', async t => {
     })
 
     const options = {
-      packageJson: new PackageJson(),
       specOptions: mockSpecOptions,
     }
     // Reload vlt.json to ensure we have the latest config
