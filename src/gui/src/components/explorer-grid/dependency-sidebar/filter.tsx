@@ -21,6 +21,13 @@ import {
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
 } from '@/components/ui/dropdown-menu.tsx'
+import {
+  TooltipProvider,
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+  TooltipPortal,
+} from '@/components/ui/tooltip.tsx'
 import { labelClassNamesMap } from '@/components/explorer-grid/label-helper.ts'
 import { useDependencySidebarStore } from '@/components/explorer-grid/dependency-sidebar/context.tsx'
 import { cn } from '@/lib/utils.ts'
@@ -132,40 +139,50 @@ export const FilterButton = () => {
   }, [])
 
   return (
-    <DropdownMenu
-      open={dropdownOpen}
-      onOpenChange={handleDropdownOpenClose}>
-      <DropdownMenuTrigger asChild>
-        <Button
-          variant="outline"
-          className="aspect-square size-6 bg-white p-0 transition-colors dark:bg-black [&>svg]:size-4 [&>svg]:shrink-0"
-          onClick={() => setDropdownOpen(true)}>
-          <ListFilter />
-        </Button>
-      </DropdownMenuTrigger>
+    <TooltipProvider>
+      <Tooltip delayDuration={150}>
+        <DropdownMenu
+          open={dropdownOpen}
+          onOpenChange={handleDropdownOpenClose}>
+          <TooltipTrigger asChild>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="outline"
+                className="aspect-square size-6 bg-white p-0 transition-colors dark:bg-black [&>svg]:size-4 [&>svg]:shrink-0"
+                onClick={() => setDropdownOpen(true)}>
+                <ListFilter />
+              </Button>
+            </DropdownMenuTrigger>
+          </TooltipTrigger>
 
-      <DropdownMenuContent
-        align="end"
-        className="w-[240px]"
-        onCloseAutoFocus={e => e.preventDefault()}>
-        <SearchInput setDropdownOpen={setDropdownOpen} />
-        <AnimatePresence>
-          {searchTerm ?
-            <SearchFilterList />
-          : <motion.div
-              initial={{ opacity: 0, filter: 'blur(2px)' }}
-              animate={{ opacity: 1, filter: 'blur(0px)' }}
-              exit={{ opacity: 0, filter: 'blur(2px)' }}
-              transition={{
-                ease: 'easeInOut',
-                duration: 0.2,
-              }}>
-              <DependencyFilters />
-            </motion.div>
-          }
-        </AnimatePresence>
-      </DropdownMenuContent>
-    </DropdownMenu>
+          <TooltipPortal>
+            <TooltipContent>Filter dependencies</TooltipContent>
+          </TooltipPortal>
+
+          <DropdownMenuContent
+            align="end"
+            className="w-[240px]"
+            onCloseAutoFocus={e => e.preventDefault()}>
+            <SearchInput setDropdownOpen={setDropdownOpen} />
+            <AnimatePresence>
+              {searchTerm ?
+                <SearchFilterList />
+              : <motion.div
+                  initial={{ opacity: 0, filter: 'blur(2px)' }}
+                  animate={{ opacity: 1, filter: 'blur(0px)' }}
+                  exit={{ opacity: 0, filter: 'blur(2px)' }}
+                  transition={{
+                    ease: 'easeInOut',
+                    duration: 0.2,
+                  }}>
+                  <DependencyFilters />
+                </motion.div>
+              }
+            </AnimatePresence>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </Tooltip>
+    </TooltipProvider>
   )
 }
 

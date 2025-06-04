@@ -59,6 +59,14 @@ vi.mock('@/components/ui/dropdown-menu.tsx', () => ({
   DropdownMenuSeparator: 'gui-dropdown-menu-separator',
 }))
 
+vi.mock('@/components/ui/tooltip.tsx', () => ({
+  TooltipProvider: 'gui-tooltip-provider',
+  Tooltip: 'gui-tooltip',
+  TooltipTrigger: 'gui-tooltip-trigger',
+  TooltipContent: 'gui-tooltip-content',
+  TooltipPortal: 'gui-tooltip-portal',
+}))
+
 vi.mock('@/components/ui/kbd.tsx', () => ({
   Kbd: 'gui-kbd',
 }))
