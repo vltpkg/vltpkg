@@ -15,6 +15,7 @@ import {
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
+  TooltipPortal,
 } from '@/components/ui/tooltip.tsx'
 import {
   Popover,
@@ -236,7 +237,7 @@ export const AddDependenciesPopoverTrigger = () => {
         onOpenChange={setDependencyPopoverOpen}
         open={dependencyPopoverOpen}>
         <PopoverTrigger>
-          <Tooltip>
+          <Tooltip delayDuration={150}>
             <TooltipTrigger asChild>
               <div
                 onClick={toggleAddDepPopover}
@@ -244,7 +245,9 @@ export const AddDependenciesPopoverTrigger = () => {
                 <Plus ref={scope} />
               </div>
             </TooltipTrigger>
-            <TooltipContent>Add a new dependency</TooltipContent>
+            <TooltipPortal>
+              <TooltipContent>Add a new dependency</TooltipContent>
+            </TooltipPortal>
           </Tooltip>
         </PopoverTrigger>
         <PopoverContent

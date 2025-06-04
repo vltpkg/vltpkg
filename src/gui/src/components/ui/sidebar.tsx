@@ -15,6 +15,7 @@ import {
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
+  TooltipPortal,
 } from '@/components/ui/tooltip.tsx'
 
 const SIDEBAR_COOKIE_NAME = 'sidebar:state'
@@ -581,12 +582,14 @@ const SidebarMenuButton = React.forwardRef<
     return (
       <Tooltip>
         <TooltipTrigger asChild>{button}</TooltipTrigger>
-        <TooltipContent
-          side="right"
-          align="center"
-          hidden={state !== 'collapsed' || isMobile}
-          {...tooltip}
-        />
+        <TooltipPortal>
+          <TooltipContent
+            side="right"
+            align="center"
+            hidden={state !== 'collapsed' || isMobile}
+            {...tooltip}
+          />
+        </TooltipPortal>
       </Tooltip>
     )
   },
