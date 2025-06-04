@@ -16,16 +16,8 @@ import type { Node } from './node.ts'
  * Loaded modifiers configuration as described in the `vlt.json` file.
  */
 export type GraphModifierLoadedConfig = {
-  modifiers: GraphModiferConfig
+  modifiers: GraphModifierConfigObject
 }
-
-/**
- * Allowed datatype in the `modifiers` field of the `vlt.json` file.
- */
-export type GraphModiferConfig = Record<
-  string,
-  string | Record<string, any>
->
 
 /**
  * Type definition for the modifiers configuration object
@@ -36,36 +28,12 @@ export type GraphModifierConfigObject = Record<
 >
 
 /**
- * Turn a {@link GraphModiferConfig} into a
- * {@link GraphModifierConfigObject}, or throw if it's not valid.
+ * Throw if the provided value is not a valid {@link GraphModifierConfigObject}
  */
-export const asGraphModifiersConfig = (
+export const assertGraphModifiersConfigObject: (
   conf: unknown,
   path?: string,
-): GraphModifierConfigObject => {
-  assertGraphModifiersConfig(conf, path)
-
-  // Convert to standardized format
-  const result: GraphModifierConfigObject = {}
-
-  for (const [key, value] of Object.entries(conf)) {
-    if (typeof value === 'string') {
-      result[key] = value
-    } else {
-      result[key] = asManifest(value)
-    }
-  }
-
-  return result
-}
-
-/**
- * Throw if the provided value is not a valid {@link GraphModiferConfig}
- */
-export const assertGraphModifiersConfig: (
-  conf: unknown,
-  path?: string,
-) => asserts conf is GraphModiferConfig = (
+) => asserts conf is GraphModifierConfigObject = (
   conf: unknown,
   path?: string,
 ) => {
@@ -252,9 +220,8 @@ export class GraphModifier {
    */
   get config(): GraphModifierConfigObject {
     if (this.#config) return this.#config
-    this.#config = asGraphModifiersConfig(
-      load('modifiers', assertGraphModifiersConfig) ?? {},
-    )
+    this.#config =
+      load('modifiers', assertGraphModifiersConfigObject) ?? {}
     return this.#config
   }
 
@@ -503,7 +470,7 @@ export class GraphModifier {
    * otherwise returns the loaded Modifiers instance.
    */
   static maybeLoad(options: GraphModifierOptions) {
-    const config = load('modifiers', assertGraphModifiersConfig)
+    const config = load('modifiers', assertGraphModifiersConfigObject)
     if (!config) return
     return new GraphModifier(options)
   }
