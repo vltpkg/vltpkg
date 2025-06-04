@@ -51,8 +51,7 @@ const newNode =
     id: joinDepIDTuple(['registry', '', `${name}@${version}`]),
     name,
     version,
-    location:
-      'node_modules/.vlt/;;${name}@${version}/node_modules/${name}',
+    location: `node_modules/.vlt/joinDepIDTuple('registry', '', name + '@' + version)/node_modules/${name}`,
     manifest: { name, version },
     integrity: 'sha512-deadbeef',
     resolved: undefined,
