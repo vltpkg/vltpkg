@@ -1,7 +1,6 @@
 import t from 'tap'
 import {
-  asGraphModifiersConfig,
-  assertGraphModifiersConfig,
+  assertGraphModifiersConfigObject,
   GraphModifier,
 } from '../src/modifiers.ts'
 import { Spec } from '@vltpkg/spec'
@@ -366,88 +365,39 @@ const createMockEdge = (from: Node, to: Node, name: string): Edge => {
   return new Edge('prod' as DependencyTypeShort, spec, from, to)
 }
 
-t.test('asGraphModifiersConfig', async t => {
-  await t.test('should convert valid string config', async t => {
-    const result = asGraphModifiersConfig(validStringConfig)
-    t.same(
-      result,
-      validStringConfig,
-      'should return the same config for string values',
-    )
-  })
-
-  await t.test('should convert valid object config', async t => {
-    const result = asGraphModifiersConfig(validObjectConfig)
-    t.ok(result['#a > #c'], 'should have the expected key')
-    if (typeof result['#a > #c'] === 'object') {
-      t.equal(
-        result['#a > #c'].name,
-        'test-package',
-        'should convert object to manifest',
-      )
-      t.equal(
-        result['#a > #c'].version,
-        '1.0.0',
-        'should preserve version',
-      )
-    }
-  })
-
-  await t.test('should throw for invalid configs', async t => {
-    t.throws(
-      () => asGraphModifiersConfig(null),
-      /Invalid modifiers configuration/,
-      'should throw for null config',
-    )
-
-    t.throws(
-      () => asGraphModifiersConfig([]),
-      /Invalid modifiers configuration/,
-      'should throw for array config',
-    )
-
-    t.throws(
-      () => asGraphModifiersConfig(invalidConfig),
-      /Invalid modifier value/,
-      'should throw for invalid value types',
-    )
-  })
-})
-
-t.test('assertGraphModifiersConfig', async t => {
+t.test('assertGraphModifiersConfigObject', async t => {
   await t.test('should validate valid configs', async t => {
     t.doesNotThrow(
-      () => assertGraphModifiersConfig(validStringConfig),
+      () => assertGraphModifiersConfigObject(validStringConfig),
       'should not throw for valid string config',
     )
 
     t.doesNotThrow(
-      () => assertGraphModifiersConfig(validObjectConfig),
+      () => assertGraphModifiersConfigObject(validObjectConfig),
       'should not throw for valid object config',
     )
   })
 
   await t.test('should throw for invalid configs', async t => {
     t.throws(
-      () => assertGraphModifiersConfig(null),
-      /Invalid modifiers configuration/,
+      () => assertGraphModifiersConfigObject(null),
       'should throw for null config',
     )
 
     t.throws(
-      () => assertGraphModifiersConfig(123 as any),
+      () => assertGraphModifiersConfigObject(123 as any),
       /Invalid modifiers configuration/,
       'should throw for non-object config',
     )
 
     t.throws(
-      () => assertGraphModifiersConfig(invalidConfig),
+      () => assertGraphModifiersConfigObject(invalidConfig),
       /Invalid modifier value/,
       'should throw for invalid value type',
     )
 
     t.throws(
-      () => assertGraphModifiersConfig(invalidManifestConfig),
+      () => assertGraphModifiersConfigObject(invalidManifestConfig),
       /Invalid modifier manifest/,
       'should throw for invalid manifest',
     )
