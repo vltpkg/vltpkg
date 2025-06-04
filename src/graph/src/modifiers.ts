@@ -2,7 +2,7 @@ import { parseBreadcrumb } from '@vltpkg/dss-breadcrumb'
 import { error } from '@vltpkg/error-cause'
 import { PackageJson } from '@vltpkg/package-json'
 import { Spec } from '@vltpkg/spec'
-import { asManifest, assertManifest } from '@vltpkg/types'
+import { asManifest, assertManifest, isObject } from '@vltpkg/types'
 import { load } from '@vltpkg/vlt-json'
 import type {
   ModifierBreadcrumb,
@@ -70,7 +70,7 @@ export const assertGraphModifiersConfig: (
   conf: unknown,
   path?: string,
 ) => {
-  if (!conf || typeof conf !== 'object' || Array.isArray(conf)) {
+  if (!isObject(conf) || Array.isArray(conf)) {
     throw error('Invalid modifiers configuration', {
       path,
       found: conf,

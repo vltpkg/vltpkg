@@ -23,7 +23,7 @@ const specOptions: SpecOptions = {
 
 const projectRoot = '.'
 
-export const newGraph = (rootName: string): GraphLike => {
+const newGraph = (rootName: string): GraphLike => {
   const graph = {} as GraphLike
   const addNode = newNode(graph)
   const mainImporter = addNode(rootName)
@@ -39,7 +39,7 @@ export const newGraph = (rootName: string): GraphLike => {
   return graph
 }
 
-export const newNode =
+const newNode =
   (graph: GraphLike) =>
   (name: string, version = '1.0.0'): NodeLike => ({
     projectRoot,
@@ -127,8 +127,7 @@ flowchart TD
   classDef optional fill:cornsilk
 ```
 */
-
-export const getSimpleGraph = (): GraphLike => {
+const getSimpleGraph = (): GraphLike => {
   const graph = newGraph('my-project')
   const addNode = newNode(graph)
   const [a, b, c, d, e, f, y] = [
@@ -240,7 +239,7 @@ flowchart TD
   b --> a
 ```
 */
-export const getCycleGraph = (): GraphLike => {
+const getCycleGraph = (): GraphLike => {
   const graph = newGraph('cycle-project')
   graph.mainImporter.manifest = {
     ...graph.mainImporter.manifest,
@@ -298,7 +297,7 @@ flowchart TD
   a --> f
 ```
 */
-export const getMultiWorkspaceGraph = (): GraphLike => {
+const getMultiWorkspaceGraph = (): GraphLike => {
   const graph = newGraph('ws')
   const addNode = newNode(graph)
   const a = addNode('a')
