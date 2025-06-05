@@ -115,7 +115,7 @@ const SpecOrigin = ({
       case 'file':
       case 'remote': {
         return (
-          <DataBadge variant="mono" content={`${depType}:{ref}`} />
+          <DataBadge variant="mono" content={`${depType}:${ref}`} />
         )
       }
     }
