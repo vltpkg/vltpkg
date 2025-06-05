@@ -24,5 +24,9 @@ export const labelClassNamesMap = new Map<string | undefined, string>(
       'peerOptional',
       'bg-yellow-500/25 border-[1px] border-yellow-600 dark:border-yellow-400 text-yellow-600 hover:bg-yellow-400/40 dark:bg-yellow-500/30 dark:text-yellow-400 dark:hover:bg-yellow-500/40',
     ],
+    [
+      'workspace',
+      'bg-gray-500/25 border-[1px] border-gray-600 dark:border-gray-400 text-gray-600 hover:bg-gray-400/40 dark:bg-gray-500/30 dark:text-gray-400 dark:hover:bg-gray-500/40',
+    ],
   ],
 )
