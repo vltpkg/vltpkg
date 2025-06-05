@@ -96,11 +96,20 @@ export const joinDepIDTuple = (list: DepIDTuple): DepID => {
 }
 
 // allow @, but otherwise, escape everything urls do
-const encode = (s: string): string =>
-  encodeURIComponent(s)
-    .replaceAll('%40', '@')
-    .replaceAll('%2f', '§')
-    .replaceAll('%2F', '§')
+const encode = (s?: string) =>
+  s ?
+    encodeURIComponent(s)
+      .replaceAll('%40', '@')
+      .replaceAll('%2f', '§')
+      .replaceAll('%2F', '§')
+  : s
+
+const decode = (s?: string) =>
+  s ?
+    decodeURIComponent(
+      s.replaceAll('@', '%40').replaceAll('§', '%2F'),
+    )
+  : s
 
 /**
  * turn a {@link DepID} into a {@link DepIDTuple}
@@ -120,15 +129,14 @@ export const splitDepID = (id: string): DepIDTuple => {
         type || 'registry',
         f,
         decodeURIComponent(second),
+        decode(extra),
       ]
-      if (extra) t.push(decodeURIComponent(extra))
       return t
     }
     case 'file':
     case 'remote':
     case 'workspace': {
-      const t: DepIDTuple = [type, f]
-      if (second) t.push(decodeURIComponent(second))
+      const t: DepIDTuple = [type, f, decode(second)]
       return t
     }
     default: {
@@ -256,7 +264,11 @@ const omitDefReg = (s?: string): string =>
  * in the manifest, registry ID types will use the name or bareSpec from the
  * specifier, so at least there's something to use later.
  */
-export const getTuple = (spec: Spec, mani: Manifest): DepIDTuple => {
+export const getTuple = (
+  spec: Spec,
+  mani: Manifest,
+  extra?: string,
+): DepIDTuple => {
   const f = spec.final
   switch (f.type) {
     case 'registry': {
@@ -282,6 +294,7 @@ export const getTuple = (spec: Spec, mani: Manifest): DepIDTuple => {
         f.type,
         f.namedRegistry ?? reg,
         `${isPackageNameConfused(spec, mani.name) ? spec.name : (mani.name ?? f.name)}@${version}`,
+        encode(extra),
       ]
     }
     case 'git': {
@@ -303,16 +316,17 @@ export const getTuple = (spec: Spec, mani: Manifest): DepIDTuple => {
           f.type,
           `${namedGitHost}:${namedGitHostPath}`,
           gitSelector,
+          encode(extra),
         ]
       } else {
-        return [f.type, gitRemote, gitSelector]
+        return [f.type, gitRemote, gitSelector, encode(extra)]
       }
     }
     case 'remote': {
       const { remoteURL } = f
       if (!remoteURL)
         throw error('no URL on remote specifier', { spec })
-      return [f.type, remoteURL]
+      return [f.type, remoteURL, encode(extra)]
     }
     case 'file':
     case 'workspace':
@@ -336,5 +350,8 @@ export const isPackageNameConfused = (spec?: Spec, name?: string) =>
  * the manifest, registry ID types will use the name or bareSpec from the
  * specifier, so at least there's something to use later.
  */
-export const getId = (spec: Spec, mani: Manifest): DepID =>
-  joinDepIDTuple(getTuple(spec, mani))
+export const getId = (
+  spec: Spec,
+  mani: Manifest,
+  extra?: string,
+): DepID => joinDepIDTuple(getTuple(spec, mani, extra))

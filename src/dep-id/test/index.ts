@@ -50,7 +50,8 @@ t.test('valid specs', t => {
       const spec = Spec.parse(s, { registries })
       const tuple = getTuple(spec, mani)
       const id = getId(spec, mani)
-      t.matchSnapshot([id, tuple])
+      const idWithExtra = getId(spec, mani, 'deadbeef')
+      t.matchSnapshot([id, tuple, idWithExtra])
       t.equal(joinDepIDTuple(tuple), id)
       t.strictSame(splitDepID(id), tuple)
       const h = hydrate(id, 'x', { registries })
@@ -152,6 +153,7 @@ t.test('getId when manifest empty, fields just blank', t => {
     'registry',
     '',
     'x@1.2.3',
+    undefined,
   ])
   t.end()
 })
@@ -310,7 +312,7 @@ t.test('isPackageNameConfused', t => {
       getTuple(Spec.parse('bar', 'npm:foo@^1.0.0'), {
         version: '1.0.0',
       }),
-      ['registry', 'npm', 'foo@1.0.0'],
+      ['registry', 'npm', 'foo@1.0.0', undefined],
       'should default to final spec name if mani name is missing',
     )
     t.end()

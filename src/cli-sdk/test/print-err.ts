@@ -7,6 +7,7 @@ import type { Test } from 'tap'
 import t from 'tap'
 import type { CommandUsage } from '../src/index.ts'
 import type { ErrorFormatOptions } from '../src/print-err.ts'
+import { joinDepIDTuple } from '@vltpkg/dep-id'
 
 t.cleanSnapshot = (s: string) =>
   s
@@ -261,9 +262,9 @@ t.test('snapshots', async t => {
       cause: {
         code: 'GRAPHRUN_TRAVERSAL',
         node: {
-          id: 'workspace·www§docs',
+          id: joinDepIDTuple(['workspace', 'www/docs']),
         },
-        path: [{ id: '··a@1.2.3' }],
+        path: [{ id: joinDepIDTuple(['registry', '', 'a@1.2.3']) }],
         cause: new Error('command failed', {
           cause: {
             command: 'astro sync',
@@ -286,9 +287,9 @@ t.test('snapshots', async t => {
       cause: {
         code: 'GRAPHRUN_TRAVERSAL',
         node: {
-          id: 'workspace·www§docs',
+          id: joinDepIDTuple(['workspace', 'www/docs']),
         },
-        path: [{ id: '··a@1.2.3' }],
+        path: [{ id: joinDepIDTuple(['registry', '', 'a@1.2.3']) }],
         cause: new Error('command failed', {
           cause: {
             command: 'astro sync',
@@ -311,7 +312,7 @@ t.test('snapshots', async t => {
       cause: {
         code: 'GRAPHRUN_TRAVERSAL',
         node: {
-          id: 'workspace·www§docs',
+          id: joinDepIDTuple(['workspace', 'www/docs']),
         },
         path: [],
         cause: new Error('command failed', {
@@ -336,7 +337,7 @@ t.test('snapshots', async t => {
       cause: {
         code: 'GRAPHRUN_TRAVERSAL',
         node: {
-          id: 'workspace·www§docs',
+          id: joinDepIDTuple(['workspace', 'www/docs']),
         },
         path: [],
       },
