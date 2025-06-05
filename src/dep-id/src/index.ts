@@ -109,7 +109,6 @@ const decode = (s?: string) =>
     decodeURIComponent(
       s
         .replaceAll('@', '%40')
-        .replaceAll('§', '%2f')
         .replaceAll('§', '%2F'),
     )
   : s
