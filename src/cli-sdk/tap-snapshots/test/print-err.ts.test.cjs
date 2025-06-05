@@ -287,7 +287,7 @@ Error: failed graph traversal
 `
 
 exports[`test/print-err.ts > TAP > snapshots > graph-run error no stdio output > output 1`] = `
-Graph traversal failure at: workspace www/docs
+Graph traversal failure at: workspace www/docs 
 Command: astro sync
 Cwd: /some/path/to/www/docs
 Signal: SIGINT
@@ -296,7 +296,7 @@ Full details written to: {CWD}/.tap/fixtures/test-print-err.ts-snapshots-graph-r
 `
 
 exports[`test/print-err.ts > TAP > snapshots > graph-run error no stdio output > output no file 1`] = `
-Graph traversal failure at: workspace www/docs
+Graph traversal failure at: workspace www/docs 
 Command: astro sync
 Cwd: /some/path/to/www/docs
 Signal: SIGINT
@@ -326,7 +326,7 @@ Error: failed graph traversal
 `
 
 exports[`test/print-err.ts > TAP > snapshots > graph-run error with stderr > output 1`] = `
-Graph traversal failure at: workspace www/docs
+Graph traversal failure at: workspace www/docs 
   Path: ··a@1.2.3
 Command: astro sync
 Args: "x"
@@ -340,7 +340,7 @@ Full details written to: {CWD}/.tap/fixtures/test-print-err.ts-snapshots-graph-r
 `
 
 exports[`test/print-err.ts > TAP > snapshots > graph-run error with stderr > output no file 1`] = `
-Graph traversal failure at: workspace www/docs
+Graph traversal failure at: workspace www/docs 
   Path: ··a@1.2.3
 Command: astro sync
 Args: "x"
@@ -375,7 +375,7 @@ Error: failed graph traversal
 `
 
 exports[`test/print-err.ts > TAP > snapshots > graph-run error with stdout > output 1`] = `
-Graph traversal failure at: workspace www/docs
+Graph traversal failure at: workspace www/docs 
   Path: ··a@1.2.3
 Command: astro sync
 Args: "x"
@@ -389,7 +389,7 @@ Full details written to: {CWD}/.tap/fixtures/test-print-err.ts-snapshots-graph-r
 `
 
 exports[`test/print-err.ts > TAP > snapshots > graph-run error with stdout > output no file 1`] = `
-Graph traversal failure at: workspace www/docs
+Graph traversal failure at: workspace www/docs 
   Path: ··a@1.2.3
 Command: astro sync
 Args: "x"

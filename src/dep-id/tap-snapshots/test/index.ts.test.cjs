@@ -124,6 +124,7 @@ Array [
     "registry",
     "",
     "@scoped/x@1.2.3",
+    undefined,
   ],
 ]
 `
@@ -151,6 +152,7 @@ Array [
     "git",
     "github:a/b",
     "",
+    undefined,
   ],
 ]
 `
@@ -178,6 +180,7 @@ Array [
     "registry",
     "npm",
     "@scoped/manifest-name@1.2.3",
+    undefined,
   ],
 ]
 `
@@ -205,6 +208,7 @@ Array [
     "registry",
     "npm",
     "@scoped/manifest-name@1.2.3",
+    undefined,
   ],
 ]
 `
@@ -216,6 +220,7 @@ Array [
     "registry",
     "",
     "manifest-name@1.2.3",
+    undefined,
   ],
 ]
 `
@@ -243,7 +248,9 @@ Array [
     "registry",
     "",
     "x@1.2.3",
+    undefined,
   ],
+  "··x@1.2.3·deadbeef",
 ]
 `
 
@@ -270,7 +277,9 @@ Array [
     "registry",
     "",
     "x@1.2.3",
+    undefined,
   ],
+  "··x@1.2.3·deadbeef",
 ]
 `
 
@@ -297,7 +306,9 @@ Array [
     "registry",
     "a",
     "manifest-name@1.2.3",
+    undefined,
   ],
+  "·a·manifest-name@1.2.3·deadbeef",
 ]
 `
 
@@ -324,7 +335,9 @@ Array [
     "registry",
     "b",
     "manifest-name@1.2.3",
+    undefined,
   ],
+  "·b·manifest-name@1.2.3·deadbeef",
 ]
 `
 
@@ -351,7 +364,9 @@ Array [
     "git",
     "git+ssh://host.com/x.git",
     "",
+    undefined,
   ],
+  "git·git%2Bssh%3A§§host.com§x.git··deadbeef",
 ]
 `
 
@@ -378,7 +393,9 @@ Array [
     "git",
     "git+ssh://host.com/x.git",
     "branch",
+    undefined,
   ],
+  "git·git%2Bssh%3A§§host.com§x.git·branch·deadbeef",
 ]
 `
 
@@ -405,7 +422,9 @@ Array [
     "git",
     "git+ssh://host.com/x.git",
     "semver:1",
+    undefined,
   ],
+  "git·git%2Bssh%3A§§host.com§x.git·semver%3A1·deadbeef",
 ]
 `
 
@@ -432,7 +451,9 @@ Array [
     "git",
     "github:a/b",
     "",
+    undefined,
   ],
+  "git·github%3Aa§b··deadbeef",
 ]
 `
 
@@ -459,7 +480,9 @@ Array [
     "git",
     "github:a/b",
     "branch",
+    undefined,
   ],
+  "git·github%3Aa§b·branch·deadbeef",
 ]
 `
 
@@ -486,7 +509,9 @@ Array [
     "git",
     "github:a/b",
     "semver:1",
+    undefined,
   ],
+  "git·github%3Aa§b·semver%3A1·deadbeef",
 ]
 `
 
@@ -512,7 +537,9 @@ Array [
   Array [
     "remote",
     "https://x.com/x.tgz",
+    undefined,
   ],
+  "remote·https%3A§§x.com§x.tgz·deadbeef",
 ]
 `
 
@@ -539,7 +566,9 @@ Array [
     "registry",
     "a",
     "manifest-name@1.2.3",
+    undefined,
   ],
+  "·a·manifest-name@1.2.3·deadbeef",
 ]
 `
 
@@ -566,7 +595,9 @@ Array [
     "registry",
     "b",
     "manifest-name@1.2.3",
+    undefined,
   ],
+  "·b·manifest-name@1.2.3·deadbeef",
 ]
 `
 
@@ -593,7 +624,9 @@ Array [
     "registry",
     "https://c.example.com/",
     "manifest-name@1.2.3",
+    undefined,
   ],
+  "·https%3A§§c.example.com§·manifest-name@1.2.3·deadbeef",
 ]
 `
 
@@ -620,7 +653,9 @@ Array [
     "registry",
     "",
     "y@1.2.3",
+    undefined,
   ],
+  "··y@1.2.3·deadbeef",
 ]
 `
 
@@ -647,6 +682,7 @@ Array [
     "registry",
     "npm",
     "@scoped/manifest-name@1.2.3",
+    undefined,
   ],
 ]
 `
@@ -674,7 +710,9 @@ Array [
     "registry",
     "npm",
     "manifest-name@1.2.3",
+    undefined,
   ],
+  "·npm·manifest-name@1.2.3·deadbeef",
 ]
 `
 
@@ -701,7 +739,9 @@ Array [
     "registry",
     "npm",
     "manifest-name@1.2.3",
+    undefined,
   ],
+  "·npm·manifest-name@1.2.3·deadbeef",
 ]
 `
 
@@ -728,7 +768,9 @@ Array [
     "git",
     "github:a/b",
     "branch",
+    undefined,
   ],
+  "git·github%3Aa§b·branch·deadbeef",
 ]
 `
 
@@ -755,7 +797,9 @@ Array [
     "registry",
     "",
     "manifest-name@1.2.3",
+    undefined,
   ],
+  "··manifest-name@1.2.3·deadbeef",
 ]
 `
 
@@ -782,7 +826,9 @@ Array [
     "registry",
     "",
     "manifest-name@1.2.3",
+    undefined,
   ],
+  "··manifest-name@1.2.3·deadbeef",
 ]
 `
 
@@ -809,6 +855,8 @@ Array [
     "registry",
     "https://x.com/",
     "manifest-name@1.2.3",
+    undefined,
   ],
+  "·https%3A§§x.com§·manifest-name@1.2.3·deadbeef",
 ]
 `
