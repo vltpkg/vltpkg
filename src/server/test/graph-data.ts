@@ -24,13 +24,13 @@ t.test('graph data for vlt project', async t => {
     '@vltpkg/security-archive': {
       SecurityArchive: {
         start: async () => ({
-          [joinDepIDTuple(['registry', '', 'abbrev'])]: {
+          [joinDepIDTuple(['registry', '', 'abbrev@1.2.3'])]: {
             id: '99923218962',
             author: ['npm'],
             size: 13003,
             type: 'npm',
             name: 'abbrev',
-            version: '1.0.0',
+            version: '1.2.3',
             alerts: [],
           },
           ok: true,
@@ -39,7 +39,8 @@ t.test('graph data for vlt project', async t => {
     },
   })
 
-  const abbrevDepID = joinDepIDTuple(['registry', '', 'abbrev'])
+  const rootDepID = joinDepIDTuple(['file', '.'])
+  const abbrevDepID = joinDepIDTuple(['registry', '', 'abbrev@1.2.3'])
   const dir = t.testdir({
     tmp: {
       'graph.json': JSON.stringify({
@@ -84,8 +85,8 @@ t.test('graph data for vlt project', async t => {
     hasDashboard: true,
     importers: [
       {
-        id: 'file·.',
-        name: 'file·.',
+        id: joinDepIDTuple(['file', '.']),
+        name: rootDepID,
         location: '.',
         importer: true,
         manifest: {
@@ -100,12 +101,12 @@ t.test('graph data for vlt project', async t => {
     lockfile: {
       options: {},
       nodes: {
-        '··abbrev@1.2.3': [
+        [abbrevDepID]: [
           0,
           'abbrev',
           null,
           null,
-          './node_modules/.vlt/··abbrev',
+          `./node_modules/.vlt/${abbrevDepID}`,
           {
             name: 'abbrev',
             version: '1.2.3',
@@ -113,19 +114,19 @@ t.test('graph data for vlt project', async t => {
         ],
       },
       edges: {
-        'file·. abbrev': 'prod * ··abbrev@1.2.3',
-        '··abbrev@1.2.3 abbrev': 'prod * ··abbrev@1.2.3',
+        [`${rootDepID} abbrev`]: `prod * ${abbrevDepID}`,
+        [`${abbrevDepID} abbrev`]: `prod * ${abbrevDepID}`,
       },
     },
     projectInfo: { tools: ['vlt'], vltInstalled: true },
     securityArchive: {
-      [joinDepIDTuple(['registry', '', 'abbrev'])]: {
+      [abbrevDepID]: {
         id: '99923218962',
         author: ['npm'],
         size: 13003,
         type: 'npm',
         name: 'abbrev',
-        version: '1.0.0',
+        version: '1.2.3',
         alerts: [],
       },
       ok: true,
