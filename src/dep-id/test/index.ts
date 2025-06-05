@@ -153,6 +153,7 @@ t.test('getId when manifest empty, fields just blank', t => {
     'registry',
     '',
     'x@1.2.3',
+    undefined,
   ])
   t.end()
 })
@@ -311,7 +312,7 @@ t.test('isPackageNameConfused', t => {
       getTuple(Spec.parse('bar', 'npm:foo@^1.0.0'), {
         version: '1.0.0',
       }),
-      ['registry', 'npm', 'foo@1.0.0'],
+      ['registry', 'npm', 'foo@1.0.0', undefined],
       'should default to final spec name if mani name is missing',
     )
     t.end()

@@ -96,11 +96,23 @@ export const joinDepIDTuple = (list: DepIDTuple): DepID => {
 }
 
 // allow @, but otherwise, escape everything urls do
-const encode = (s: string): string =>
-  encodeURIComponent(s)
-    .replaceAll('%40', '@')
-    .replaceAll('%2f', '§')
-    .replaceAll('%2F', '§')
+const encode = (s?: string) =>
+  s ?
+    encodeURIComponent(s)
+      .replaceAll('%40', '@')
+      .replaceAll('%2f', '§')
+      .replaceAll('%2F', '§')
+  : s
+
+const decode = (s?: string) =>
+  s ?
+    decodeURIComponent(
+      s
+        .replaceAll('@', '%40')
+        .replaceAll('§', '%2f')
+        .replaceAll('§', '%2F'),
+    )
+  : s
 
 /**
  * turn a {@link DepID} into a {@link DepIDTuple}
@@ -120,15 +132,14 @@ export const splitDepID = (id: string): DepIDTuple => {
         type || 'registry',
         f,
         decodeURIComponent(second),
+        decode(extra),
       ]
-      if (extra) t.push(decodeURIComponent(extra))
       return t
     }
     case 'file':
     case 'remote':
     case 'workspace': {
-      const t: DepIDTuple = [type, f]
-      if (second) t.push(decodeURIComponent(second))
+      const t: DepIDTuple = [type, f, decode(second)]
       return t
     }
     default: {
@@ -282,16 +293,12 @@ export const getTuple = (
             mani.version.slice(1)
           : mani.version
         : f.bareSpec
-
-      // the returning value logic here is a little bit verbose
-      // so that typescript can infer the types correctly
-      const type = 'registry'
-      const registry = f.namedRegistry ?? reg
-      const nameAndVersion = `${isPackageNameConfused(spec, mani.name) ? spec.name : (mani.name ?? f.name)}@${version}`
-      if (extra) {
-        return [type, registry, nameAndVersion, extra]
-      }
-      return [type, registry, nameAndVersion]
+      return [
+        f.type,
+        f.namedRegistry ?? reg,
+        `${isPackageNameConfused(spec, mani.name) ? spec.name : (mani.name ?? f.name)}@${version}`,
+        encode(extra),
+      ]
     }
     case 'git': {
       const {
@@ -300,7 +307,6 @@ export const getTuple = (
         gitRemote,
         gitSelector = '',
       } = f
-      const type = 'git'
       if (!gitRemote)
         throw error('no host on git specifier', { spec })
       if (namedGitHost) {
@@ -309,29 +315,21 @@ export const getTuple = (
             spec,
           })
         }
-        // the returning value logic here is a little bit verbose
-        // so that typescript can infer the types correctly
-        const gitHostAndPath = `${namedGitHost}:${namedGitHostPath}`
-        if (extra) {
-          return [type, gitHostAndPath, gitSelector, extra]
-        }
-        return [type, gitHostAndPath, gitSelector]
+        return [
+          f.type,
+          `${namedGitHost}:${namedGitHostPath}`,
+          gitSelector,
+          encode(extra),
+        ]
       } else {
-        if (extra) {
-          return [type, gitRemote, gitSelector, extra]
-        }
-        return [f.type, gitRemote, gitSelector]
+        return [f.type, gitRemote, gitSelector, encode(extra)]
       }
     }
     case 'remote': {
       const { remoteURL } = f
-      const type = 'remote'
       if (!remoteURL)
         throw error('no URL on remote specifier', { spec })
-      if (extra) {
-        return [type, remoteURL, extra]
-      }
-      return [type, remoteURL]
+      return [f.type, remoteURL, encode(extra)]
     }
     case 'file':
     case 'workspace':
