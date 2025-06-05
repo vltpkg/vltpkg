@@ -365,3 +365,40 @@ exports[`SideItem render as two-stacked dependent 1`] = `
 </div>
 
 `;
+
+exports[`SideItem render as workspace item 1`] = `
+
+<div>
+  <div class="group relative">
+    <div
+      style="--column-gap-y: 1rem; --column-gap-x: 1rem;"
+      class="pointer-events-none absolute w-[var(--column-gap-x)] h-[calc(100%+var(--column-gap-y))] -top-[calc(100%-1.25px-var(--column-gap-y)/5)] -left-[calc(var(--column-gap-x)/2)] border-l-[1px] border-b-[1px] rounded-bl-md border-muted group-[&amp;:first-of-type]:rounded-none group-[&amp;:first-of-type]:h-[1px] group-[&amp;:first-of-type]:w-[var(--column-gap-x)] group-[&amp;:first-of-type]:-left-4 group-[&amp;:first-of-type]:border-l-[0px] group-[&amp;:first-of-type]:inset-y-0 group-[&amp;:first-of-type]:my-auto group-[&amp;:nth-child(n+3)]:h-[calc(100%+(var(--column-gap-y)*2))] group-[&amp;:nth-child(n+3)]:-top-[calc(100%+var(--column-gap-y)/1.5)] group-has-[.parent]:left-[calc(100%)] group-has-[.parent]:border-l-[0px] group-has-[.parent]:w-[var(--column-gap-x)] group-has-[.parent]:h-[1px] group-has-[.parent]:top-[50%] group-has-[.parent]:rounded-none hidden"
+    >
+    </div>
+    <span data-state="closed">
+      <gui-card
+        role="article"
+        classname="group relative z-[10] cursor-default transition-all hover:border-muted hover:bg-card-accent"
+      >
+        <gui-card-header classname="relative flex w-full max-w-full flex-row items-baseline gap-3 px-3 py-2">
+          <button
+            data-state="closed"
+            class="w-full max-w-full cursor-default items-baseline justify-between overflow-hidden truncate text-left text-sm font-medium"
+          >
+            workspace-item
+          </button>
+          <span class="ml-auto font-courier text-sm font-normal text-muted-foreground">
+            v1.0.0
+          </span>
+          <div class="absolute -bottom-3 right-2.5">
+            <gui-badge classname="bg-cyan-500/25 border-[1px] border-cyan-600 dark:border-cyan-500 hover:bg-cyan-500/40 dark:bg-cyan-500/30 dark:text-cyan-500 dark:hover:bg-cyan-500/40 h-[18px] rounded-full text-xxs font-normal backdrop-blur-md">
+              prod
+            </gui-badge>
+          </div>
+        </gui-card-header>
+      </gui-card>
+    </span>
+  </div>
+</div>
+
+`;
