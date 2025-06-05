@@ -57,17 +57,25 @@ export type ReadEntry = {
   realpath: Path
 }
 
+// path-based refer to the types of dependencies that are directly linked to
+// their real location in the file system and thus will not have an entry
+// in the `node_modules/.vlt` store
 const pathBasedType = new Set(['file', 'workspace'])
 const isPathBasedType = (
   type: string,
 ): type is 'file' | 'workspace' => pathBasedType.has(type)
-const getPathBasedId = (
+
+/**
+ * Returns a {@link DepID} for a given spec and path, if the spec is
+ * path-based or a registry spec, otherwise returns `undefined`.
+ */
+export const getPathBasedId = (
   spec: Spec,
-  path: string,
+  path: Path,
 ): DepID | undefined =>
   isPathBasedType(spec.type) ?
-    joinDepIDTuple([spec.type, path])
-  : undefined
+    joinDepIDTuple([spec.type, path.relativePosix()])
+  : findDepID(path)
 
 /**
  * Retrieve the {@link DepID} for a given package from its location.
@@ -273,7 +281,7 @@ const parseDir = (
         ...options,
         registry: fromNode.registry,
       })
-      const maybeId = getPathBasedId(spec, realpath.relativePosix())
+      const maybeId = getPathBasedId(spec, realpath)
       node = graph.placePackage(
         fromNode,
         depType,
