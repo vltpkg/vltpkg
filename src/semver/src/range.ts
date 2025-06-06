@@ -3,6 +3,19 @@ import { Comparator } from './comparator.ts'
 import type { Version } from './version.ts'
 import { asError } from '@vltpkg/types'
 
+export const isRange = (range: unknown): range is Range => {
+  return (
+    range instanceof Range ||
+    (typeof range === 'object' &&
+      range !== null &&
+      'raw' in range &&
+      typeof range.raw === 'string' &&
+      'set' in range &&
+      Array.isArray(range.set) &&
+      range.set.every(c => c instanceof Comparator))
+  )
+}
+
 /**
  * A representation of a semver range, used to test versions.
  *
