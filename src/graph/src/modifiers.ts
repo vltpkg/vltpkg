@@ -1,4 +1,7 @@
-import { parseBreadcrumb } from '@vltpkg/dss-breadcrumb'
+import {
+  parseBreadcrumb,
+  specificitySort,
+} from '@vltpkg/dss-breadcrumb'
 import { error } from '@vltpkg/error-cause'
 import { Spec } from '@vltpkg/spec'
 import { asManifest, assertRecordStringString } from '@vltpkg/types'
@@ -11,6 +14,7 @@ import type { SpecOptions } from '@vltpkg/spec'
 import type { Manifest } from '@vltpkg/types'
 import type { Edge } from './edge.ts'
 import type { Node } from './node.ts'
+import type { Dependency } from './dependencies.ts'
 
 /**
  * Loaded modifiers configuration as described in the `vlt.json` file.
@@ -271,7 +275,11 @@ export class GraphModifier {
    * active parsing modifier entries along with possible starting-level
    * modifiers.
    *
-   * Any entries found are returned as a set of {@link ModifierActiveEntry}.
+   * Any entries in which the breachcrumb have already reached its last
+   * element will be prioritized, along with checking for specificity,
+   * the complete entry with the highest specificity will be returned or just
+   * the entry with the highest specificity if no complete entry is found.
+   * Returns `undefined` if no matching entry is found.
    *
    * This method works with the assumption that it's going to be called
    * during a graph traversal, such that any ascendent has been checked
@@ -281,8 +289,14 @@ export class GraphModifier {
   tryNewDependency(
     from: Node,
     name: string,
-  ): Set<ModifierActiveEntry> {
-    const res = new Set<ModifierActiveEntry>()
+  ): ModifierActiveEntry | undefined {
+    // here we use a map instead of a set so that we can associate each
+    // modifier active entry with its breadcrumb so that it's easier to
+    // pick the correct entry when we sort breadcrbumbs by specificity
+    const all = new Map<
+      ModifierBreadcrumb | undefined,
+      ModifierActiveEntry
+    >()
     for (const modifier of this.#modifiers) {
       // if an active entry is found then returns that
       const entry = this.#activeEntries
@@ -290,7 +304,7 @@ export class GraphModifier {
         ?.get(name)
         ?.get(from)
       if (entry) {
-        res.add(entry)
+        all.set(entry.modifier.breadcrumb, entry)
       }
     }
     // matches the name against the initial entries, this will make it so
@@ -303,9 +317,56 @@ export class GraphModifier {
         /* c8 ignore next - difficult to test branch */
         this.#activeEntries.get(initial)?.get(name)?.get(from) ??
         this.newModifier(from, initial)
-      res.add(initialEntry)
+      all.set(initialEntry.modifier.breadcrumb, initialEntry)
     }
-    return res
+    // selects the active entry that should apply to this dependency,
+    // any active entry that is done parsing has the priority, if we
+    // find multiple entries then we use css specificity to pick a winner
+    // if we have multiple matches but no active entry is complete, then
+    // we pick the one with the highest specificity breadcrumb
+    const arr = [...all.values()]
+    const completeEntries = arr.filter(
+      active =>
+        active.interactiveBreadcrumb.current ===
+        active.modifier.breadcrumb.last,
+    )
+    // deregister completed entries
+    for (const entry of completeEntries) {
+      this.deregisterModifier(entry.modifier)
+    }
+    // returns the highest specificity entry from either the complete entries
+    // if any were found or from any of the entries if available, otherwise
+    // it will return undefined as no entry is found in the `all` map
+    return !completeEntries.length ?
+        all.get(
+          specificitySort(arr.map(i => i.modifier.breadcrumb))[0],
+        )
+      : all.get(
+          specificitySort(
+            completeEntries.map(i => i.modifier.breadcrumb),
+          )[0],
+        )
+  }
+
+  /**
+   * Returns the set of {@link ModifierActiveEntry} instances that matches
+   * the provided {@link Dependency} specs for a given node.
+   *
+   * This method is mostly a helper to {@link GraphModifier.tryNewDependency}
+   * that handles the registered modifiers traversal lookup.
+   */
+  tryDependencies(
+    from: Node,
+    dependencies: Dependency[],
+  ): Map<string, ModifierActiveEntry> {
+    const modifierRefs = new Map<string, ModifierActiveEntry>()
+    for (const { spec } of dependencies) {
+      const active = this.tryNewDependency(from, spec.name)
+      if (active) {
+        modifierRefs.set(spec.name, active)
+      }
+    }
+    return modifierRefs
   }
 
   /**
