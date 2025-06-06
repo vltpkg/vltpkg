@@ -113,7 +113,7 @@ exports[`filter-button renders default 1`] = `
 exports[`filter-list renders with filters 1`] = `
 
 <section
-  class="flex gap-2 overflow-hidden"
+  class="flex flex-wrap gap-2 overflow-hidden"
   style="opacity: 1; height: auto; filter: blur(0px); margin-bottom: 16px;"
 >
   <div
@@ -160,7 +160,7 @@ exports[`filter-list-empty-state renders when no matching filters are found 1`] 
 
 <div
   class="flex min-h-96 w-full cursor-default flex-col items-center justify-center gap-4 rounded-sm border-[1px] border-dashed border-muted py-12"
-  style="opacity: 0; filter: blur(2px);"
+  style="opacity: 1; filter: blur(0px);"
 >
   <div class="mb-6 flex justify-center">
     <div class="relative">
@@ -168,7 +168,7 @@ exports[`filter-list-empty-state renders when no matching filters are found 1`] 
         <div class="h-12 w-64 rounded-lg border border-muted bg-muted/60 rotate-1 transform opacity-40">
           <div class="flex h-full items-center justify-between px-4">
             <div class="flex items-center gap-3">
-              <div class="flex h-6 items-center justify-center rounded border-[1px] border-muted-foreground/20 bg-muted-foreground/20 px-2 font-mono text-xxs tabular-nums text-muted-foreground/60">
+              <div class="flex h-6 max-w-12 items-center justify-center truncate rounded border-[1px] border-muted-foreground/20 bg-muted-foreground/20 px-2 font-mono text-xxs tabular-nums text-muted-foreground/60">
                 ^21.0.0
               </div>
               <div class="text-xs font-medium text-muted-foreground/60">
@@ -183,7 +183,7 @@ exports[`filter-list-empty-state renders when no matching filters are found 1`] 
         <div class="h-12 w-64 rounded-lg border border-muted bg-muted/60 -mt-10 -rotate-1 transform opacity-40">
           <div class="flex h-full items-center justify-between px-4">
             <div class="flex items-center gap-3">
-              <div class="flex h-6 items-center justify-center rounded border-[1px] border-muted-foreground/20 bg-muted-foreground/20 px-2 font-mono text-xxs tabular-nums text-muted-foreground/60">
+              <div class="flex h-6 max-w-12 items-center justify-center truncate rounded border-[1px] border-muted-foreground/20 bg-muted-foreground/20 px-2 font-mono text-xxs tabular-nums text-muted-foreground/60">
                 ^1.0.0
               </div>
               <div class="text-xs font-medium text-muted-foreground/60">

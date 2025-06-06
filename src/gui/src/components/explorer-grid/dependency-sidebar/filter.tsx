@@ -357,9 +357,10 @@ export const FilterList = () => {
   }
 
   return (
-    <AnimatePresence initial={false} mode="sync">
+    <AnimatePresence initial={false} mode="popLayout">
       {hasFilters && (
         <motion.section
+          layout
           initial={{
             opacity: 0,
             height: 0,
@@ -383,7 +384,7 @@ export const FilterList = () => {
             duration: 0.28,
             bounce: 0.02,
           }}
-          className="flex gap-2 overflow-hidden">
+          className="flex flex-wrap gap-2 overflow-hidden">
           <AnimatePresence initial={false} mode="popLayout">
             {filters.map((filter, idx) => (
               <motion.div
@@ -454,7 +455,7 @@ const EmptyStateDependency = ({
       )}>
       <div className="flex h-full items-center justify-between px-4">
         <div className="flex items-center gap-3">
-          <div className="flex h-6 items-center justify-center rounded border-[1px] border-muted-foreground/20 bg-muted-foreground/20 px-2 font-mono text-xxs tabular-nums text-muted-foreground/60">
+          <div className="flex h-6 max-w-12 items-center justify-center truncate rounded border-[1px] border-muted-foreground/20 bg-muted-foreground/20 px-2 font-mono text-xxs tabular-nums text-muted-foreground/60">
             {spec}
           </div>
           <div className="text-xs font-medium text-muted-foreground/60">
@@ -499,14 +500,15 @@ export const FilterListEmptyState = () => {
       spec: String(dep.spec?.semver ?? '^1.0.0'),
       version: String(dep.version),
     })),
-  ]
+  ].splice(0, 3)
 
   const handleClear = () => clearFilters()
 
   return (
-    <AnimatePresence>
+    <AnimatePresence initial={false} mode="popLayout">
       {filters.length > 0 && filteredDependencies.length === 0 && (
         <motion.div
+          layout
           initial={{ opacity: 0, filter: 'blur(2px)' }}
           animate={{ opacity: 1, filter: 'blur(0px)' }}
           exit={{ opacity: 0, filter: 'blur(2px)' }}

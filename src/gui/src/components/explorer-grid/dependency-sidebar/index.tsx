@@ -13,7 +13,7 @@ import {
   FilterListEmptyState,
 } from '@/components/explorer-grid/dependency-sidebar/filter.tsx'
 import { DependencyEmptyState } from '@/components/explorer-grid/dependency-sidebar/empty-state.tsx'
-import { AnimatePresence, motion } from 'framer-motion'
+import { AnimatePresence, LayoutGroup, motion } from 'framer-motion'
 
 import type { DepID } from '@vltpkg/dep-id/browser'
 import type { GridItemData } from '@/components/explorer-grid/types.ts'
@@ -116,37 +116,43 @@ const DependencyList = () => {
   const { operation } = useOperation()
 
   return (
-    <>
-      <div className="flex flex-col gap-4">
-        {[
-          // added dependencies should come first
-          ...filteredDependencies
-            .filter(item => addedDependencies.includes(item.name))
-            .sort((a, b) => a.name.localeCompare(b.name, 'en')),
-          // then we display the rest of dependencies, sorted by name
-          ...filteredDependencies
-            .filter(item => !addedDependencies.includes(item.name))
-            .sort((a, b) => a.name.localeCompare(b.name, 'en')),
-        ].map(item => (
-          <SideItem
-            item={item}
-            key={item.id}
-            dependencies={true}
-            onSelect={onDependencyClick(item)}
-            onUninstall={() =>
-              operation({
-                item: {
-                  name: item.name,
-                  version: item.version,
-                },
-                operationType: 'uninstall',
-              })
-            }
-          />
-        ))}
-      </div>
+    <LayoutGroup>
+      <FilterListEmptyState />
+      <motion.div layout="position" className="flex flex-col gap-4">
+        <AnimatePresence initial={false} mode="popLayout">
+          {[
+            // added dependencies should come first
+            ...filteredDependencies
+              .filter(item => addedDependencies.includes(item.name))
+              .sort((a, b) => a.name.localeCompare(b.name, 'en')),
+            // then we display the rest of dependencies, sorted by name
+            ...filteredDependencies
+              .filter(item => !addedDependencies.includes(item.name))
+              .sort((a, b) => a.name.localeCompare(b.name, 'en')),
+          ].map(item => (
+            <SideItem
+              item={item}
+              key={item.id}
+              dependencies={true}
+              onSelect={onDependencyClick(item)}
+              onUninstall={() =>
+                operation({
+                  item: {
+                    name: item.name,
+                    version: item.version,
+                  },
+                  operationType: 'uninstall',
+                })
+              }
+            />
+          ))}
+        </AnimatePresence>
+      </motion.div>
+      <DependencyEmptyState />
       {uninstalledDependencies.length > 0 && (
-        <div className="mt-8 flex flex-col gap-4">
+        <motion.div
+          layout="position"
+          className="mt-8 flex flex-col gap-4">
           <GridHeader className="h-fit">
             Uninstalled Dependencies
           </GridHeader>
@@ -161,10 +167,8 @@ const DependencyList = () => {
               dependencies={false}
             />
           ))}
-        </div>
+        </motion.div>
       )}
-      <DependencyEmptyState />
-      <FilterListEmptyState />
-    </>
+    </LayoutGroup>
   )
 }
