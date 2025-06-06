@@ -337,15 +337,10 @@ export class GraphModifier {
     // returns the highest specificity entry from either the complete entries
     // if any were found or from any of the entries if available, otherwise
     // it will return undefined as no entry is found in the `all` map
-    return !completeEntries.length ?
-        all.get(
-          specificitySort(arr.map(i => i.modifier.breadcrumb))[0],
-        )
-      : all.get(
-          specificitySort(
-            completeEntries.map(i => i.modifier.breadcrumb),
-          )[0],
-        )
+    const entries = completeEntries.length ? completeEntries : arr
+    return all.get(
+      specificitySort(entries.map(i => i.modifier.breadcrumb))[0],
+    )
   }
 
   /**
