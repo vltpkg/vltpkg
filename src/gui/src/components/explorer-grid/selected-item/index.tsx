@@ -40,13 +40,15 @@ const getWorkspaceItems = (item?: GridItemData): GridItemData[] => {
     const title = `${importer.name}${version}`
 
     items.push({
+      ...importer,
+      to: importer as QueryResponseNode,
       id: importer.id,
       title,
       version: importer.version || '',
       name: importer.name || '',
       stacked: false,
-      size: 1,
       labels: undefined,
+      size: 1,
     })
   }
   return items
@@ -147,7 +149,7 @@ const getUninstalledDependencyItems = (
 
 const getItemQuery = (item: GridItemData) => {
   if (!item.to) return ''
-  const name = item.spec?.name ? `#${item.spec.name}` : ''
+  const name = item.to.name ? `#${item.to.name}` : ''
   return name.trim()
 }
 

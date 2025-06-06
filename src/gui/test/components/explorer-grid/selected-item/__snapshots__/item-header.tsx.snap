@@ -386,7 +386,7 @@ exports[`ItemHeader renders with default git host item 1`] = `
             </div>
             <gui-data-badge
               variant="mono"
-              content="git:{ref}"
+              content="git:github:a/b"
             >
             </gui-data-badge>
           </div>
