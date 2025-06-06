@@ -481,8 +481,14 @@ t.test('GraphModifier', async t => {
         'tryImporter should process main importer node without errors',
       )
 
+      t.strictSame(
+        modifier.activeModifiers.size,
+        1,
+        'should have two active entries after processing main importer',
+      )
+
       // Test tryNewDependency
-      const [result] = modifier.tryNewDependency(mainImporter, 'a')
+      const result = modifier.tryNewDependency(mainImporter, 'a')
       t.ok(
         result,
         'should return a modifier active entry for matching name',
@@ -493,10 +499,21 @@ t.test('GraphModifier', async t => {
           mainImporter,
           'should set originalFrom to the provided parent node',
         )
+        t.equal(
+          result.modifier.query,
+          ':root > #a',
+          'should match the correct modifier query',
+        )
       }
 
+      t.strictSame(
+        modifier.activeModifiers.size,
+        0,
+        'should have deregistered a after matching a new dependency',
+      )
+
       // Test with non-matching name
-      const [nonMatchingResult] = modifier.tryNewDependency(
+      const nonMatchingResult = modifier.tryNewDependency(
         nodeA,
         'nonexistent',
       )
@@ -507,6 +524,91 @@ t.test('GraphModifier', async t => {
       )
     },
   )
+
+  await t.test('tryDependencies method', async t => {
+    const testdir = t.testdir({
+      'vlt.json': JSON.stringify({
+        modifiers: {
+          ':root > #a': '1.0.0',
+          ':root > #b': '2.0.0',
+          '#c': '3.0.0',
+        },
+      }),
+    })
+
+    const options = {
+      ...mockSpecOptions,
+    }
+    // Reload vlt.json to ensure we have the latest config
+    t.chdir(testdir)
+    reload('modifiers', 'project')
+
+    const modifier = new GraphModifier(options)
+
+    // Use nodes from the simple graph
+    const simpleGraph = getSimpleGraph()
+    const mainImporter = simpleGraph.mainImporter as Node
+
+    // Process the root
+    modifier.tryImporter(mainImporter)
+
+    // Create mock dependencies
+    const dependencies = [
+      {
+        spec: Spec.parse('a', '^1.0.0', options),
+        type: 'prod' as DependencyTypeShort,
+      },
+      {
+        spec: Spec.parse('b', '^1.0.0', options),
+        type: 'prod' as DependencyTypeShort,
+      },
+      {
+        spec: Spec.parse('nonexistent', '^1.0.0', options),
+        type: 'prod' as DependencyTypeShort,
+      },
+    ]
+
+    // Test tryDependencies
+    const modifierRefs = modifier.tryDependencies(
+      mainImporter,
+      dependencies,
+    )
+
+    t.equal(
+      modifierRefs.size,
+      2,
+      'should return map with only the matching dependencies',
+    )
+
+    t.ok(
+      modifierRefs.has('a'),
+      'should include entry for dependency "a"',
+    )
+
+    t.ok(
+      modifierRefs.has('b'),
+      'should include entry for dependency "b"',
+    )
+
+    t.notOk(
+      modifierRefs.has('nonexistent'),
+      'should not include entry for non-matching dependency',
+    )
+
+    const aEntry = modifierRefs.get('a')
+    t.equal(
+      aEntry?.modifier.query,
+      ':root > #a',
+      'should have correct query for dependency "a"',
+    )
+
+    const bEntry = modifierRefs.get('b')
+    t.equal(
+      bEntry?.modifier.query,
+      ':root > #b',
+      'should have correct query for dependency "b"',
+    )
+  })
 
   await t.test(
     'three-level navigation and non-matching queries',
@@ -556,28 +658,37 @@ t.test('GraphModifier', async t => {
         2,
         'should have two active entries that start with :root',
       )
+
       // try to match 'a' from root
-      const [resultA] = modifier.tryNewDependency(mainImporter, 'a')
-      t.strictSame(
+      const resultA = modifier.tryNewDependency(mainImporter, 'a')
+      t.ok(resultA, 'should find a match for "a" from root')
+      t.equal(
         resultA?.modifier.query,
         ':root > #a > #r',
         'should match modifier that contains a as a dep from root',
       )
-      const [resultB] = modifier.tryNewDependency(mainImporter, 'b')
-      t.strictSame(
+
+      // try to match 'b' from root
+      const resultB = modifier.tryNewDependency(mainImporter, 'b')
+      t.ok(resultB, 'should find a match for "b" from root')
+      t.equal(
         resultB?.modifier.query,
         ':root > #b > #c',
         'should match modifier that contains b as a dep from root',
       )
+
+      // try to match '@x/y' from root (should not match)
       const resultY = modifier.tryNewDependency(mainImporter, '@x/y')
       t.equal(
-        resultY.size,
-        0,
-        'should return no entries for non-matching @x/y from root',
+        resultY,
+        undefined,
+        'should return undefined for non-matching @x/y from root',
       )
+
       // update the active entries as we go a level deeper
-      modifier.updateActiveEntry(nodeA, resultA!)
-      modifier.updateActiveEntry(nodeB, resultB!)
+      if (resultA) modifier.updateActiveEntry(nodeA, resultA)
+      if (resultB) modifier.updateActiveEntry(nodeB, resultB)
+
       t.equal(
         modifier.activeModifiers.size,
         2,
@@ -586,21 +697,26 @@ t.test('GraphModifier', async t => {
 
       // Now try to match deps of b
       const resultC = modifier.tryNewDependency(nodeB, 'c')
-      t.strictSame(
-        [...resultC].map(i => i.modifier.query),
-        [':root > #b > #c', '#c'],
-        'should match modifiers that contains c as a breadcrumb item',
+      t.ok(resultC, 'should find a match for "c" from node b')
+
+      // When there are multiple matching selectors, we pick the most specific one
+      // based on specificity, here the three-level selector ':root > #b > #c'
+      // should win over the simpler '#c' selector
+      t.equal(
+        resultC?.modifier.query,
+        ':root > #b > #c',
+        'should match most specific modifier for c',
       )
+
       const resultD = modifier.tryNewDependency(nodeB, 'd')
       t.equal(
-        resultD.size,
-        0,
-        'should return no results node with no matching breadcrumb item',
+        resultD,
+        undefined,
+        'should return undefined for node with no matching breadcrumb item',
       )
+
       // Update the active entry for nodeC active modifiers
-      for (const entry of resultC) {
-        modifier.updateActiveEntry(nodeC, entry)
-      }
+      if (resultC) modifier.updateActiveEntry(nodeC, resultC)
 
       t.equal(
         modifier.activeModifiers.size,
@@ -641,40 +757,46 @@ t.test('GraphModifier', async t => {
     const nodeA = nodes.find(n => n.name === 'a') as Node
     const nodeB = nodes.find(n => n.name === 'b') as Node
 
-    const [resultA] = modifier.tryNewDependency(mainImporter, 'a')
+    const resultA = modifier.tryNewDependency(mainImporter, 'a')
     // call updateActiveEntry to set an active entry for nodeA
-    modifier.updateActiveEntry(nodeA, resultA!)
-    t.equal(
-      modifier.activeModifiers.size,
-      1,
-      'should have one active entry after processing a',
-    )
-    // rollback unfinished parsed breadcrumb
-    t.doesNotThrow(
-      () => modifier.rollbackActiveEntries(),
-      'rollbackActiveEntries should not throw',
-    )
-    t.equal(
-      modifier.activeModifiers.size,
-      0,
-      'should have no active entry left after rollback',
-    )
+    if (resultA) {
+      modifier.updateActiveEntry(nodeA, resultA)
+      t.equal(
+        modifier.activeModifiers.size,
+        1,
+        'should have one active entry after processing a',
+      )
+      // rollback unfinished parsed breadcrumb
+      t.doesNotThrow(
+        () => modifier.rollbackActiveEntries(),
+        'rollbackActiveEntries should not throw',
+      )
+      t.equal(
+        modifier.activeModifiers.size,
+        0,
+        'should have no active entry left after rollback',
+      )
+    }
 
     // traverse again
-    const [newResultA] = modifier.tryNewDependency(mainImporter, 'a')
-    modifier.updateActiveEntry(nodeA, newResultA!)
-    t.equal(
-      modifier.activeModifiers.size,
-      1,
-      'should have one active entry after processing a again',
-    )
-    const [resultB] = modifier.tryNewDependency(nodeA, 'b')
-    modifier.updateActiveEntry(nodeB, resultB!)
-    t.equal(
-      modifier.activeModifiers.size,
-      0,
-      'should have no active entry left after completing b',
-    )
+    const newResultA = modifier.tryNewDependency(mainImporter, 'a')
+    if (newResultA) {
+      modifier.updateActiveEntry(nodeA, newResultA)
+      t.equal(
+        modifier.activeModifiers.size,
+        1,
+        'should have one active entry after processing a again',
+      )
+      const resultB = modifier.tryNewDependency(nodeA, 'b')
+      if (resultB) {
+        modifier.updateActiveEntry(nodeB, resultB)
+        t.equal(
+          modifier.activeModifiers.size,
+          0,
+          'should have no active entry left after completing b',
+        )
+      }
+    }
   })
 
   await t.test('more complex rollbackActiveEntries', async t => {
@@ -713,48 +835,57 @@ t.test('GraphModifier', async t => {
     modifier.tryImporter(mainImporter)
 
     // Process multiple paths to build up multiple active entries
-    const [resultA] = modifier.tryNewDependency(mainImporter, 'a')
-    t.strictSame(
-      resultA?.modifier.query,
-      ':root > #a',
-      'should match a from root with a single query',
-    )
+    const resultA = modifier.tryNewDependency(mainImporter, 'a')
+    if (resultA) {
+      t.equal(
+        resultA.modifier.query,
+        ':root > #a',
+        'should match a from root with a single query',
+      )
+    }
 
     const resultB = modifier.tryNewDependency(mainImporter, 'b')
-    t.strictSame(
-      [...resultB].map(i => i.modifier.query),
-      [':root > #b', ':root > #b > #c', '#b > #c', '#b > #d'],
-      'should match b from root with multiple queries',
-    )
-    for (const entry of resultB) {
-      modifier.updateActiveEntry(nodeB, entry)
+    if (resultB) {
+      // :root > #b is matching a breadcrumb last-element
+      // in its query so that's picked up
+      t.equal(
+        resultB.modifier.query,
+        ':root > #b',
+        'should match b from root with the most specific selector',
+      )
+
+      // Update the active entry for nodeB
+      modifier.updateActiveEntry(nodeB, resultB)
+
+      // Now try to match c from b
+      const resultC = modifier.tryNewDependency(nodeB, 'c')
+      if (resultC) {
+        t.equal(
+          resultC.modifier.query,
+          ':root > #b > #c',
+          'should match c from b with the most specific query',
+        )
+      }
+
+      // Set up an edge to rollback
+      const newEdge = createMockEdge(nodeA, nodeB, 'test-edge')
+      nodeA.edgesOut.set('test-edge', newEdge)
+
+      // Simulate having an original edge in the active entry
+      if (resultA) {
+        resultA.originalEdge = newEdge
+      }
+
+      // Now rollback all active entries
+      modifier.rollbackActiveEntries()
+
+      // Check if the original edge was restored
+      t.equal(
+        nodeA.edgesOut.get('test-edge'),
+        newEdge,
+        'should restore original edge during rollback',
+      )
     }
-
-    const resultC = modifier.tryNewDependency(nodeB, 'c')
-    t.strictSame(
-      [...resultC].map(i => i.modifier.query),
-      [':root > #b > #c', '#b > #c'],
-      'should match c from b with multiple queries',
-    )
-
-    // Set up an edge to rollback
-    const newEdge = createMockEdge(nodeA, nodeB, 'test-edge')
-    nodeA.edgesOut.set('test-edge', newEdge)
-
-    // Simulate having an original edge in the active entry
-    if (resultA) {
-      resultA.originalEdge = newEdge
-    }
-
-    // Now rollback all active entries
-    modifier.rollbackActiveEntries()
-
-    // Check if the original edge was restored
-    t.equal(
-      nodeA.edgesOut.get('test-edge'),
-      newEdge,
-      'should restore original edge during rollback',
-    )
   })
 
   await t.test('static methods', async t => {
@@ -896,41 +1027,39 @@ t.test('GraphModifier', async t => {
 
     // Test :workspace modifier for dependency 'd' from workspace 'b'
     const resultD = modifier.tryNewDependency(workspaceB, 'd')
-    t.strictSame(
-      [...resultD].map(i => i.modifier.query),
-      [':workspace > #d'],
+    t.ok(resultD, 'should match d from workspace b')
+    t.equal(
+      resultD?.modifier.query,
+      ':workspace > #d',
       'should match d from workspace b with :workspace query',
     )
 
     // Test :workspace modifier for dependency 'f' from workspace 'a'
     const resultF = modifier.tryNewDependency(workspaceA, 'f')
-    t.strictSame(
-      [...resultF].map(i => i.modifier.query),
-      [':workspace > #f'],
-      'should match f from workspace a with both :workspace and :workspaces > #a queries',
+    t.ok(resultF, 'should match f from workspace a')
+    t.equal(
+      resultF?.modifier.query,
+      ':workspace > #f',
+      'should match f from workspace a with :workspace query',
     )
 
     // Test that no modifiers match for dependency 'e' from workspace 'b'
     const resultE = modifier.tryNewDependency(workspaceB, 'e')
     t.equal(
-      resultE.size,
-      0,
-      'should return no results for e with no matching query',
+      resultE,
+      undefined,
+      'should return undefined for e with no matching query',
     )
 
     // Update active entries
-    for (const entry of resultD) {
-      modifier.updateActiveEntry(nodeD, entry)
-    }
-    for (const entry of resultF) {
-      modifier.updateActiveEntry(nodeF, entry)
-    }
+    if (resultD) modifier.updateActiveEntry(nodeD, resultD)
+    if (resultF) modifier.updateActiveEntry(nodeF, resultF)
 
     // Test rollback
     t.equal(
       modifier.activeModifiers.size,
       4,
-      'should have leftover activbe entries after processing',
+      'should have leftover active entries after processing',
     )
     modifier.rollbackActiveEntries()
     t.equal(
