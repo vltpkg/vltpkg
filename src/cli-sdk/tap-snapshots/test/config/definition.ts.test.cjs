@@ -250,6 +250,11 @@ Object {
     "hint": "p",
     "type": "string",
   },
+  "query": Object {
+    "description": "Set to filter the results of an operation by a query.",
+    "short": "q",
+    "type": "string",
+  },
   "recursive": Object {
     "description": String(
       Run an operation across multiple workspaces.
@@ -434,6 +439,7 @@ Array [
   "--node-version=<version>",
   "--os=<os>",
   "--package=<p>",
+  "--query=<query>",
   "--recursive",
   "--registries=<name=url>",
   "--registry=<url>",
@@ -480,6 +486,7 @@ Array [
   "node-version",
   "os",
   "package",
+  "query",
   "recursive",
   "registries",
   "registry",

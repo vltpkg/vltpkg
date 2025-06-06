@@ -18,6 +18,8 @@ import type {
   RunOptions,
   RunResult,
 } from '@vltpkg/run'
+import { Query } from '@vltpkg/query'
+import { actual } from '@vltpkg/graph'
 import { isRunResult } from '@vltpkg/run'
 import type { Workspace } from '@vltpkg/workspaces'
 import { Monorepo } from '@vltpkg/workspaces'
@@ -89,7 +91,7 @@ export class ExecCommand<B extends RunnerBG, F extends RunnerFG> {
   args: string[]
   monorepo?: Monorepo
   /** how many places are we doing things in? */
-  spaces: number
+  spaces?: number
   conf: LoadedConfig
   projectRoot: string
   view: 'human' | 'json' | 'inspect'
@@ -108,15 +110,6 @@ export class ExecCommand<B extends RunnerBG, F extends RunnerFG> {
     } = conf
     this.arg0 = arg0
     this.args = args
-
-    const paths = conf.get('workspace')
-    const groups = conf.get('workspace-group')
-    const recursive = conf.get('recursive')
-    this.monorepo =
-      paths?.length || groups?.length || recursive ?
-        Monorepo.load(projectRoot, { load: { paths, groups } })
-      : undefined
-    this.spaces = this.monorepo?.size ?? 1
     this.projectRoot = projectRoot
   }
 
@@ -129,6 +122,52 @@ export class ExecCommand<B extends RunnerBG, F extends RunnerFG> {
   }
 
   async run(): Promise<ExecResult> {
+    const { conf } = this
+
+    const queryString = conf.get('query')
+    // query takes precedence over workspaces or groups
+    if (queryString) {
+      const graph = actual.load({
+        ...conf.options,
+        mainManifest: conf.options.packageJson.read(this.projectRoot),
+        monorepo: Monorepo.load(this.projectRoot),
+        loadManifests: false,
+      })
+      const query = new Query({
+        graph,
+        specOptions: conf.options,
+        securityArchive: undefined,
+      })
+      const { nodes } = await query.search(queryString, {
+        signal: new AbortController().signal,
+      })
+      const importerPaths = nodes
+        .map(n => n.toJSON())
+        .filter(n => n.importer)
+        .map(n => n.location)
+        .filter(v => v !== undefined)
+      this.monorepo =
+        importerPaths.length ?
+          Monorepo.load(this.projectRoot, {
+            load: {
+              paths: importerPaths,
+            },
+          })
+        : undefined
+      this.spaces = this.monorepo?.size ?? 0
+    } else {
+      const paths = conf.get('workspace')
+      const groups = conf.get('workspace-group')
+      const recursive = conf.get('recursive')
+      this.monorepo =
+        paths?.length || groups?.length || recursive ?
+          Monorepo.load(this.projectRoot, {
+            load: { paths, groups },
+          })
+        : undefined
+      this.spaces = this.monorepo?.size ?? 1
+    }
+
     if (this.spaces === 1) {
       const arg = this.fgArg()
       if (!arg) return this.noArgsSingle()
@@ -138,6 +177,7 @@ export class ExecCommand<B extends RunnerBG, F extends RunnerFG> {
       }
       return result
     }
+
     if (!this.hasMonorepo() || this.spaces === 0) {
       throw error('no matching workspaces found', {
         /* c8 ignore next - already guarded */
