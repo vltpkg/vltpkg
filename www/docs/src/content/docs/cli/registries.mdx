@@ -148,6 +148,21 @@ will default to that value as well, in order to maintain compatibility
 with existing packages that might be getting proxied through the
 internal registry.
 
+## Special Alias: `jsr:`
+
+The `jsr:` alias is a special alias that allow you to install packages from
+[JavaScript Registry (jsr)](https://jsr.io).
+
+For example, you can install a package from the JSR registry like this:
+
+```bash
+$ vlt install jsr:@am/neuralNetwork@1.0.0
+```
+
+Like the `npm:` alias, the `jsr:` alias can be supressed by setting
+the `registry` config option to a different value, such as a caching
+proxy in your organization's network.
+
 ### Registry Consistency
 
 There is a common question that is brought up when discussing the use
