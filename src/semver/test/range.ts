@@ -1,8 +1,9 @@
 import t from 'tap'
-import { Range } from '../src/range.ts'
+import { Range, isRange } from '../src/range.ts'
 import { Version } from '../src/version.ts'
 import rangeToString from './fixtures/range-tostring.ts'
 import { excludes, includes } from './fixtures/ranges.ts'
+import { Comparator } from '../src/comparator.ts'
 
 for (const [range, version] of includes) {
   t.equal(
@@ -49,5 +50,60 @@ t.test('isSingle tests', t => {
   t.equal(new Range('>=1.2.3 <1.2.4').isSingle, false)
   t.equal(new Range('>=1.2.3 <1.2.4 >1.2.0').isSingle, false)
   t.equal(new Range('=1.2.3 <1.2.4 >1.2.0').isSingle, false)
+  t.end()
+})
+
+t.test('isRange type guard', t => {
+  // Valid Range instance
+  const validRange = new Range('1.2.3')
+  t.equal(
+    isRange(validRange),
+    true,
+    'identifies a valid Range instance',
+  )
+
+  // Invalid values
+  t.equal(isRange(null), false, 'null is not a Range')
+  t.equal(isRange(undefined), false, 'undefined is not a Range')
+  t.equal(isRange('1.2.3'), false, 'string is not a Range')
+  t.equal(isRange(123), false, 'number is not a Range')
+  t.equal(isRange([]), false, 'array is not a Range')
+  t.equal(isRange({}), false, 'empty object is not a Range')
+
+  // Object with missing properties
+  t.equal(isRange({ raw: '1.2.3' }), false, 'missing set property')
+
+  t.equal(isRange({ set: [] }), false, 'missing raw property')
+
+  // Object with incorrect property types
+  t.equal(
+    isRange({ raw: 123, set: [] }),
+    false,
+    'raw property is not a string',
+  )
+
+  t.equal(
+    isRange({ raw: '1.2.3', set: 'not an array' }),
+    false,
+    'set property is not an array',
+  )
+
+  t.equal(
+    isRange({ raw: '1.2.3', set: [{}] }),
+    false,
+    'set contains non-Comparator elements',
+  )
+
+  // An object that looks like a Range but isn't a direct instance
+  const comparator = new Comparator('1.2.3')
+  t.equal(
+    isRange({
+      raw: '1.2.3',
+      set: [comparator],
+    }),
+    true,
+    'object with all required properties passes the type guard',
+  )
+
   t.end()
 })
