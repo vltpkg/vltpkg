@@ -1,7 +1,7 @@
 import { parseBreadcrumb } from '@vltpkg/dss-breadcrumb'
 import { error } from '@vltpkg/error-cause'
 import { Spec } from '@vltpkg/spec'
-import { asManifest, assertManifest, isObject } from '@vltpkg/types'
+import { asManifest, assertRecordStringString } from '@vltpkg/types'
 import { load } from '@vltpkg/vlt-json'
 import type {
   ModifierBreadcrumb,
@@ -22,55 +22,8 @@ export type GraphModifierLoadedConfig = {
 /**
  * Type definition for the modifiers configuration object
  */
-export type GraphModifierConfigObject = Record<
-  string,
-  string | Manifest
->
-
-/**
- * Throw if the provided value is not a valid {@link GraphModifierConfigObject}
- */
-export const assertGraphModifiersConfigObject: (
-  conf: unknown,
-  path?: string,
-) => asserts conf is GraphModifierConfigObject = (
-  conf: unknown,
-  path?: string,
-) => {
-  if (!isObject(conf) || Array.isArray(conf)) {
-    throw error('Invalid modifiers configuration', {
-      path,
-      found: conf,
-    })
-  }
-
-  for (const [key, value] of Object.entries(conf)) {
-    if (typeof value === 'string') {
-      // String values are valid as they represent edge modifiers
-      continue
-    } else if (typeof value === 'object' && !Array.isArray(value)) {
-      // Object values need to be valid manifests
-      try {
-        assertManifest(value)
-      } catch (err) {
-        throw error('Invalid modifier manifest', {
-          path,
-          name: key,
-          found: value,
-          wanted: 'Valid package manifest',
-          cause: err,
-        })
-      }
-    } else {
-      throw error('Invalid modifier value', {
-        path,
-        name: key,
-        found: value,
-        wanted: 'string | Manifest',
-      })
-    }
-  }
-}
+// TODO: subtype string into a more specific type for Queries
+export type GraphModifierConfigObject = Record<string, string>
 
 /**
  * Info needed to define a graph modifier.
@@ -138,20 +91,6 @@ export type ModifierActiveEntry = {
 }
 
 /**
- * Options for the GraphModifier class constructor
- */
-export type GraphModifierOptions = {
-  /**
-   * Options for the {@link Spec} parser
-   */
-  specOptions?: SpecOptions
-  /**
-   * Parsed normalized contents of the modifiers from a `vlt.json` file
-   */
-  config?: GraphModifierConfigObject
-}
-
-/**
  * Class representing loaded modifiers configuration for a project.
  *
  * Instances of this class can be used as a helper to modify the graph
@@ -210,7 +149,7 @@ export class GraphModifier {
    */
   activeModifiers = new Set<ModifierActiveEntry>()
 
-  constructor(options: GraphModifierOptions) {
+  constructor(options: SpecOptions) {
     this.load(options)
   }
 
@@ -220,15 +159,14 @@ export class GraphModifier {
    */
   get config(): GraphModifierConfigObject {
     if (this.#config) return this.#config
-    this.#config =
-      load('modifiers', assertGraphModifiersConfigObject) ?? {}
-    return this.#config
+    return (this.#config =
+      load('modifiers', assertRecordStringString) ?? {})
   }
 
   /**
    * Loads the modifiers defined in `vlt.json` into memory.
    */
-  load(options: GraphModifierOptions) {
+  load(options: SpecOptions) {
     for (const [key, value] of Object.entries(this.config)) {
       const breadcrumb = parseBreadcrumb(key)
       /* c8 ignore start - should not be possible */
@@ -244,15 +182,12 @@ export class GraphModifier {
           breadcrumb,
           query: key,
           refs: new Set(),
-          spec: Spec.parse(
-            breadcrumb.last.name,
-            value,
-            options.specOptions,
-          ),
+          spec: Spec.parse(breadcrumb.last.name, value, options),
           type: 'edge',
           value,
         } satisfies EdgeModifierEntry
         this.#edgeModifiers.add(mod)
+        /* c8 ignore start - TODO */
       } else {
         const manifest = asManifest(value)
         mod = {
@@ -265,6 +200,7 @@ export class GraphModifier {
         } satisfies NodeModifierEntry
         this.#nodeModifiers.add(mod)
       }
+      /* c8 ignore end */
       this.#modifiers.add(mod)
       // if the breadcrumb starts with an id, then add it to the
       // map of initial entries, so that we can use it to match
@@ -469,8 +405,8 @@ export class GraphModifier {
    * Returns undefined if the project does not have a vlt.json file,
    * otherwise returns the loaded Modifiers instance.
    */
-  static maybeLoad(options: GraphModifierOptions) {
-    const config = load('modifiers', assertGraphModifiersConfigObject)
+  static maybeLoad(options: SpecOptions) {
+    const config = load('modifiers', assertRecordStringString)
     if (!config) return
     return new GraphModifier(options)
   }
@@ -479,7 +415,7 @@ export class GraphModifier {
    * Convenience method to instantiate and load in one call.
    * Throws if called on a directory that does not have a vlt.json file.
    */
-  static load(options: GraphModifierOptions) {
+  static load(options: SpecOptions) {
     return new GraphModifier(options)
   }
 }
