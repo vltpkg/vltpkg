@@ -29,13 +29,18 @@ exports[`dependency-side-bar 1`] = `
       classnames="[object Object]"
     >
     </gui-number-flow>
-    <div class="flex grow justify-end gap-2">
+    <div
+      class="flex grow justify-end gap-2"
+      style="opacity: 1; filter: blur(0px);"
+    >
       <gui-filter-button>
       </gui-filter-button>
     </div>
   </gui-grid-header>
   <gui-filter-list>
   </gui-filter-list>
+  <gui-filter-list-empty-state>
+  </gui-filter-list-empty-state>
   <div class="flex flex-col gap-4">
     <gui-side-item
       item="GridItemData { @vltpkg/semver }"
@@ -53,6 +58,8 @@ exports[`dependency-side-bar 1`] = `
     >
     </gui-side-item>
   </div>
+  <gui-dependency-empty-state>
+  </gui-dependency-empty-state>
 </gui-dependency-sidebar-provider>
 
 `;
@@ -86,13 +93,18 @@ exports[`dependency-side-bar has both installed and uninstalled deps 1`] = `
       classnames="[object Object]"
     >
     </gui-number-flow>
-    <div class="flex grow justify-end gap-2">
+    <div
+      class="flex grow justify-end gap-2"
+      style="opacity: 1; filter: blur(0px);"
+    >
       <gui-filter-button>
       </gui-filter-button>
     </div>
   </gui-grid-header>
   <gui-filter-list>
   </gui-filter-list>
+  <gui-filter-list-empty-state>
+  </gui-filter-list-empty-state>
   <div class="flex flex-col gap-4">
     <gui-side-item
       item="GridItemData { @vltpkg/semver }"
@@ -110,6 +122,8 @@ exports[`dependency-side-bar has both installed and uninstalled deps 1`] = `
     >
     </gui-side-item>
   </div>
+  <gui-dependency-empty-state>
+  </gui-dependency-empty-state>
   <div class="mt-8 flex flex-col gap-4">
     <gui-grid-header classname="h-fit">
       Uninstalled Dependencies
@@ -158,13 +172,11 @@ exports[`dependency-side-bar has uninstalled deps only 1`] = `
       classnames="[object Object]"
     >
     </gui-number-flow>
-    <div class="flex grow justify-end gap-2">
-      <gui-filter-button>
-      </gui-filter-button>
-    </div>
   </gui-grid-header>
   <gui-filter-list>
   </gui-filter-list>
+  <gui-filter-list-empty-state>
+  </gui-filter-list-empty-state>
   <div class="flex flex-col gap-4">
     <gui-side-item
       item="GridItemData { @vltpkg/semver }"
@@ -182,6 +194,8 @@ exports[`dependency-side-bar has uninstalled deps only 1`] = `
     >
     </gui-side-item>
   </div>
+  <gui-dependency-empty-state>
+  </gui-dependency-empty-state>
   <div class="mt-8 flex flex-col gap-4">
     <gui-grid-header classname="h-fit">
       Uninstalled Dependencies
@@ -235,15 +249,15 @@ exports[`dependency-side-bar no items 1`] = `
       classnames="[object Object]"
     >
     </gui-number-flow>
-    <div class="flex grow justify-end gap-2">
-      <gui-filter-button>
-      </gui-filter-button>
-    </div>
   </gui-grid-header>
   <gui-filter-list>
   </gui-filter-list>
+  <gui-filter-list-empty-state>
+  </gui-filter-list-empty-state>
   <div class="flex flex-col gap-4">
   </div>
+  <gui-dependency-empty-state>
+  </gui-dependency-empty-state>
 </gui-dependency-sidebar-provider>
 
 `;

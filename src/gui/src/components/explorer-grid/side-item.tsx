@@ -1,3 +1,4 @@
+import { forwardRef } from 'react'
 import { PackageMinus } from 'lucide-react'
 import { Card, CardHeader } from '@/components/ui/card.tsx'
 import { DataBadge } from '@/components/ui/data-badge.tsx'
@@ -27,26 +28,30 @@ export type SideItemOptions = GridItemOptions & {
   isWorkspace?: boolean
 }
 
-export const SideItem = ({
-  dependencies,
-  item,
-  highlight,
-  onSelect,
-  parent,
-  isWorkspace,
-  onUninstall,
-}: SideItemOptions) => {
-  const uninstallItem = (e: MouseEvent) => {
-    e.stopPropagation()
-    e.preventDefault()
-    if (onUninstall) {
-      onUninstall(item)
+export const SideItem = forwardRef<HTMLDivElement, SideItemOptions>(
+  (
+    {
+      dependencies,
+      item,
+      highlight,
+      onSelect,
+      parent,
+      isWorkspace,
+      onUninstall,
+    },
+    ref,
+  ) => {
+    const uninstallItem = (e: MouseEvent) => {
+      e.stopPropagation()
+      e.preventDefault()
+      if (onUninstall) {
+        onUninstall(item)
+      }
     }
-  }
 
-  const uninstallAvailable = !!onUninstall && item.from?.importer
+    const uninstallAvailable = !!onUninstall && item.from?.importer
 
-  const connectorStyles = `
+    const connectorStyles = `
     pointer-events-none
     absolute
 
@@ -80,70 +85,74 @@ export const SideItem = ({
     group-has-[.parent]:rounded-none
   `
 
-  const itemName =
-    item.depName && item.depName !== item.name ?
-      item.depName
-    : item.name
+    const itemName =
+      item.depName && item.depName !== item.name ?
+        item.depName
+      : item.name
 
-  return (
-    <div className="group relative">
-      <div
-        style={
-          {
-            '--column-gap-y': '1rem',
-            '--column-gap-x': '1rem',
-          } as React.CSSProperties
-        }
-        className={cn(
-          connectorStyles,
-          parent && 'parent',
-          !dependencies && !parent && 'hidden',
-        )}
-      />
-      <ContextMenu>
-        <ContextMenuTrigger>
-          <Card
-            role="article"
-            className={cn(
-              'group relative z-[10] cursor-default transition-all',
-              highlight && 'border-muted',
-              onSelect && 'hover:border-muted hover:bg-card-accent',
-            )}
-            onClick={onSelect}>
-            <CardHeader className="relative flex w-full max-w-full flex-row items-baseline gap-3 px-3 py-2">
-              {!isWorkspace && (
-                <SideItemSpec spec={item.spec} itemSize={item.size} />
+    return (
+      <div ref={ref} className="group relative">
+        <div
+          style={
+            {
+              '--column-gap-y': '1rem',
+              '--column-gap-x': '1rem',
+            } as React.CSSProperties
+          }
+          className={cn(
+            connectorStyles,
+            parent && 'parent',
+            !dependencies && !parent && 'hidden',
+          )}
+        />
+        <ContextMenu>
+          <ContextMenuTrigger>
+            <Card
+              role="article"
+              className={cn(
+                'group relative z-[10] cursor-default transition-all',
+                highlight && 'border-muted',
+                onSelect && 'hover:border-muted hover:bg-card-accent',
               )}
-              <TooltipProvider>
-                <Tooltip delayDuration={150}>
-                  <TooltipTrigger className="w-full max-w-full cursor-default items-baseline justify-between overflow-hidden truncate text-left text-sm font-medium">
-                    {itemName}
-                  </TooltipTrigger>
-                  <TooltipContent>{itemName}</TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-              {!item.id.startsWith('uninstalled-dep:') && (
-                <span className="ml-auto font-courier text-sm font-normal text-muted-foreground">
-                  {`v${item.version}`}
-                </span>
-              )}
+              onClick={onSelect}>
+              <CardHeader className="relative flex w-full max-w-full flex-row items-baseline gap-3 px-3 py-2">
+                {!isWorkspace && (
+                  <SideItemSpec
+                    spec={item.spec}
+                    itemSize={item.size}
+                  />
+                )}
+                <TooltipProvider>
+                  <Tooltip delayDuration={150}>
+                    <TooltipTrigger className="w-full max-w-full cursor-default items-baseline justify-between overflow-hidden truncate text-left text-sm font-medium">
+                      {itemName}
+                    </TooltipTrigger>
+                    <TooltipContent>{itemName}</TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+                {!item.id.startsWith('uninstalled-dep:') && (
+                  <span className="ml-auto font-courier text-sm font-normal text-muted-foreground">
+                    {`v${item.version}`}
+                  </span>
+                )}
 
-              <SideItemBadges labels={item.labels} />
-            </CardHeader>
-          </Card>
-        </ContextMenuTrigger>
-        <ContextMenuContent>
-          <ContextMenuItem
-            onClick={uninstallItem}
-            disabled={!uninstallAvailable}>
-            <PackageMinus />
-            Remove dependency
-          </ContextMenuItem>
-        </ContextMenuContent>
-      </ContextMenu>
-    </div>
-  )
-}
+                <SideItemBadges labels={item.labels} />
+              </CardHeader>
+            </Card>
+          </ContextMenuTrigger>
+          <ContextMenuContent>
+            <ContextMenuItem
+              onClick={uninstallItem}
+              disabled={!uninstallAvailable}>
+              <PackageMinus />
+              Remove dependency
+            </ContextMenuItem>
+          </ContextMenuContent>
+        </ContextMenu>
+      </div>
+    )
+  },
+)
 
 const SideItemBadges = ({
   labels,

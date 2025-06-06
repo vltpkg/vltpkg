@@ -147,13 +147,12 @@ const ExplorerContent = () => {
   }
 
   return (
-    <section className="relative flex h-full max-h-[calc(100svh-65px-16px)] w-full grow flex-col justify-between overflow-y-auto rounded-b-lg border-x-[1px] border-b-[1px]">
+    <section className="relative flex h-full max-h-[calc(100svh-65px-16px)] w-full grow flex-col overflow-y-auto rounded-b-lg border-x-[1px] border-b-[1px]">
       <section className="sticky top-0 z-[20] flex w-full items-center bg-background px-8 pt-1">
         <div className="relative flex w-full max-w-8xl flex-row items-center gap-2">
           {/* query bar blur */}
           <div className="absolute inset-x-0 -bottom-1 h-1 w-full bg-background blur-sm" />
           <div className="absolute inset-x-0 -bottom-4 h-4 w-full bg-gradient-to-b from-background/100 from-10% via-50% to-background/0 to-100%" />
-
           <RootButton />
           <QueryBar
             tabIndex={0}
