@@ -1,8 +1,5 @@
 import t from 'tap'
-import {
-  assertGraphModifiersConfigObject,
-  GraphModifier,
-} from '../src/modifiers.ts'
+import { GraphModifier } from '../src/modifiers.ts'
 import { Spec } from '@vltpkg/spec'
 import type { SpecOptions } from '@vltpkg/spec'
 import { reload } from '@vltpkg/vlt-json'
@@ -336,23 +333,6 @@ const validStringConfig = {
   '#a > #c': '1.0.0',
 }
 
-const validObjectConfig = {
-  '#a > #c': {
-    name: 'test-package',
-    version: '1.0.0',
-  },
-}
-
-const invalidConfig = {
-  '#a > #c': 123, // Invalid value type
-}
-
-const invalidManifestConfig = {
-  '#a > #c': {
-    name: null,
-  },
-}
-
 // Mock options for tests
 const mockSpecOptions: SpecOptions = {
   registry: 'https://registry.npmjs.org',
@@ -364,45 +344,6 @@ const createMockEdge = (from: Node, to: Node, name: string): Edge => {
   return new Edge('prod' as DependencyTypeShort, spec, from, to)
 }
 
-t.test('assertGraphModifiersConfigObject', async t => {
-  await t.test('should validate valid configs', async t => {
-    t.doesNotThrow(
-      () => assertGraphModifiersConfigObject(validStringConfig),
-      'should not throw for valid string config',
-    )
-
-    t.doesNotThrow(
-      () => assertGraphModifiersConfigObject(validObjectConfig),
-      'should not throw for valid object config',
-    )
-  })
-
-  await t.test('should throw for invalid configs', async t => {
-    t.throws(
-      () => assertGraphModifiersConfigObject(null),
-      'should throw for null config',
-    )
-
-    t.throws(
-      () => assertGraphModifiersConfigObject(123 as any),
-      /Invalid modifiers configuration/,
-      'should throw for non-object config',
-    )
-
-    t.throws(
-      () => assertGraphModifiersConfigObject(invalidConfig),
-      /Invalid modifier value/,
-      'should throw for invalid value type',
-    )
-
-    t.throws(
-      () => assertGraphModifiersConfigObject(invalidManifestConfig),
-      /Invalid modifier manifest/,
-      'should throw for invalid manifest',
-    )
-  })
-})
-
 t.test('GraphModifier', async t => {
   await t.test('constructor', async t => {
     // Test with empty config
@@ -410,7 +351,7 @@ t.test('GraphModifier', async t => {
       'vlt.json': JSON.stringify({}), // No modifiers key
     })
     const options = {
-      specOptions: mockSpecOptions,
+      ...mockSpecOptions,
     }
     // Reload vlt.json to ensure we have the latest config
     t.chdir(emptyconfigDir)
@@ -430,7 +371,7 @@ t.test('GraphModifier', async t => {
     })
 
     const options = {
-      specOptions: mockSpecOptions,
+      ...mockSpecOptions,
     }
     // Reload vlt.json to ensure we have the latest config
     t.chdir(testdir)
@@ -466,7 +407,7 @@ t.test('GraphModifier', async t => {
     reload('modifiers', 'project')
 
     const importerOptions = {
-      specOptions: mockSpecOptions,
+      ...mockSpecOptions,
     }
 
     const importerModifier = new GraphModifier(importerOptions)
@@ -492,7 +433,7 @@ t.test('GraphModifier', async t => {
     })
 
     const nonImporterOptions = {
-      specOptions: mockSpecOptions,
+      ...mockSpecOptions,
     }
     // Reload vlt.json to ensure we have the latest config
     t.chdir(nonImporterConfigDir)
@@ -519,7 +460,7 @@ t.test('GraphModifier', async t => {
       })
 
       const options = {
-        specOptions: mockSpecOptions,
+        ...mockSpecOptions,
       }
       // Reload vlt.json to ensure we have the latest config
       t.chdir(testdir)
@@ -586,7 +527,7 @@ t.test('GraphModifier', async t => {
       })
 
       const options = {
-        specOptions: mockSpecOptions,
+        ...mockSpecOptions,
       }
       // Reload vlt.json to ensure we have the latest config
       t.chdir(testdir)
@@ -685,7 +626,7 @@ t.test('GraphModifier', async t => {
     })
 
     const options = {
-      specOptions: mockSpecOptions,
+      ...mockSpecOptions,
     }
     // Reload vlt.json to ensure we have the latest config
     t.chdir(testdir)
@@ -750,7 +691,7 @@ t.test('GraphModifier', async t => {
     })
 
     const options = {
-      specOptions: mockSpecOptions,
+      ...mockSpecOptions,
     }
     // Reload vlt.json to ensure we have the latest config
     t.chdir(testdir)
@@ -824,7 +765,7 @@ t.test('GraphModifier', async t => {
     })
 
     const options = {
-      specOptions: mockSpecOptions,
+      ...mockSpecOptions,
     }
     // Reload vlt.json to ensure we have the latest config
     t.chdir(testdir)
@@ -850,7 +791,7 @@ t.test('GraphModifier', async t => {
       'vlt.json': JSON.stringify({}),
     })
     const options = {
-      specOptions: mockSpecOptions,
+      ...mockSpecOptions,
     }
     // Reload vlt.json to ensure we have the latest config
     t.chdir(emptyDir)
@@ -878,11 +819,6 @@ t.test('GraphModifier', async t => {
         modifiers: {
           // Edge modifier
           ':root > #a': '2.0.0',
-          // Node modifier
-          ':root > #b': {
-            name: 'custom-b',
-            version: '3.0.0',
-          },
           // Single non-importer selector
           '#c': '1.0.0',
         },
@@ -890,7 +826,7 @@ t.test('GraphModifier', async t => {
     })
 
     const options = {
-      specOptions: mockSpecOptions,
+      ...mockSpecOptions,
     }
 
     // Reload vlt.json to ensure we have the latest config
@@ -903,18 +839,13 @@ t.test('GraphModifier', async t => {
     // Check if the config was properly loaded
     t.equal(
       Object.keys(modifier.config).length,
-      3,
+      2,
       'should load all three modifiers',
     )
     t.equal(
       typeof modifier.config[':root > #a'],
       'string',
       'should load edge modifier as string',
-    )
-    t.equal(
-      typeof modifier.config[':root > #b'],
-      'object',
-      'should load node modifier as object',
     )
     t.equal(
       typeof modifier.config['#c'],
@@ -935,7 +866,7 @@ t.test('GraphModifier', async t => {
     })
 
     const options = {
-      specOptions: mockSpecOptions,
+      ...mockSpecOptions,
     }
     // Reload vlt.json to ensure we have the latest config
     t.chdir(testdir)
