@@ -149,6 +149,18 @@ export type NodeJSDependenciesOptions = {
   winPath: typeof import('node:path').win32
 }
 
+export const isSpec = (spec: unknown): spec is Spec =>
+  typeof spec === 'object' &&
+  spec !== null &&
+  'spec' in spec &&
+  'bareSpec' in spec &&
+  'name' in spec &&
+  'type' in spec &&
+  'options' in spec &&
+  typeof (spec as Spec).spec === 'string' &&
+  typeof (spec as Spec).bareSpec === 'string' &&
+  typeof (spec as Spec).name === 'string'
+
 /**
  * The base, isomorphic Spec implementation.
  */

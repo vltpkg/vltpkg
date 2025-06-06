@@ -3,7 +3,7 @@ import type { InspectOptions } from 'node:util'
 import { inspect } from 'node:util'
 import t from 'tap'
 import type { Scope, SpecOptions } from '../src/browser.ts'
-import { kCustomInspect, Spec } from '../src/browser.ts'
+import { kCustomInspect, Spec, isSpec } from '../src/browser.ts'
 
 Object.assign(Spec.prototype, {
   [kCustomInspect](
@@ -741,4 +741,79 @@ t.test('catalogs', async t => {
       spec: 'b@catalog:z',
     },
   })
+})
+
+t.test('isSpec', async t => {
+  // Valid Spec instance
+  const validSpec = Spec.parse('foo@1.2.3')
+  t.equal(
+    isSpec(validSpec),
+    true,
+    'should identify a valid Spec instance',
+  )
+
+  // Invalid values
+  t.equal(isSpec(null), false, 'null is not a Spec')
+  t.equal(isSpec(undefined), false, 'undefined is not a Spec')
+  t.equal(isSpec('foo@1.2.3'), false, 'string is not a Spec')
+  t.equal(isSpec(123), false, 'number is not a Spec')
+  t.equal(isSpec([]), false, 'array is not a Spec')
+  t.equal(isSpec({}), false, 'empty object is not a Spec')
+
+  // Object with missing properties
+  t.equal(
+    isSpec({ spec: 'foo@1.2.3', bareSpec: '1.2.3', name: 'foo' }),
+    false,
+    'missing type and options',
+  )
+
+  // Object with incorrect property types
+  t.equal(
+    isSpec({
+      spec: 123,
+      bareSpec: '1.2.3',
+      name: 'foo',
+      type: 'registry',
+      options: {},
+    }),
+    false,
+    'spec property is not a string',
+  )
+
+  t.equal(
+    isSpec({
+      spec: 'foo@1.2.3',
+      bareSpec: 123,
+      name: 'foo',
+      type: 'registry',
+      options: {},
+    }),
+    false,
+    'bareSpec property is not a string',
+  )
+
+  t.equal(
+    isSpec({
+      spec: 'foo@1.2.3',
+      bareSpec: '1.2.3',
+      name: 123,
+      type: 'registry',
+      options: {},
+    }),
+    false,
+    'name property is not a string',
+  )
+
+  // An object that looks and behaves like a Spec
+  t.equal(
+    isSpec({
+      spec: 'foo@1.2.3',
+      bareSpec: '1.2.3',
+      name: 'foo',
+      type: 'registry',
+      options: {},
+    }),
+    true,
+    'object with all required properties should pass the type guard',
+  )
 })
