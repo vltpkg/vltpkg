@@ -1,4 +1,12 @@
 /**
+ * The specificity of a breadcrumb, used for sorting.
+ */
+export type BreadcrumbSpecificity = {
+  idCounter: number
+  commonCounter: number
+}
+
+/**
  * A valid item of a given breadcrumb.
  */
 export type ModifierBreadcrumbItem = {
@@ -21,6 +29,7 @@ export interface ModifierBreadcrumb
   first: ModifierBreadcrumbItem
   last: ModifierBreadcrumbItem
   single: boolean
+  specificity: BreadcrumbSpecificity
   interactive: () => ModifierInteractiveBreadcrumb
 }
 
