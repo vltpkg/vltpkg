@@ -87,7 +87,7 @@ t.test('command', async t => {
       ) => {
         calledResolve = true
         t.strictSame(args, ['a', 'b', 'c'])
-        t.equal(options, mockOptions)
+        t.strictSame(options, { ...mockOptions, query: undefined })
         return 'arg0'
       },
     },

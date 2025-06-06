@@ -118,7 +118,10 @@ const install = async (
   }
   return Promise.all(
     keys.map(async key => {
-      const info = await vlx.install(key, conf.options)
+      const info = await vlx.install(key, {
+        ...conf.options,
+        query: undefined,
+      })
       view?.stdout(info)
       return info.path
     }),
@@ -147,7 +150,10 @@ const info = async (
 ): Promise<VlxInfo[]> => {
   const results: VlxInfo[] = []
   for await (const key of keys.length ? keys : vlx.list()) {
-    const info = vlx.info(key, conf.options)
+    const info = vlx.info(key, {
+      ...conf.options,
+      query: undefined,
+    })
     results.push(info)
     view?.stdout(info)
   }
@@ -160,12 +166,15 @@ const deleteEntries = async (
   view?: ExecCacheView,
 ): Promise<string[]> => {
   const remover = new RollbackRemove()
-  const removed = (await vlx.delete(keys, remover, conf.options)).map(
-    path => {
-      view?.stdout(`- ${basename(path)}`)
-      return path
-    },
-  )
+  const removed = (
+    await vlx.delete(keys, remover, {
+      ...conf.options,
+      query: undefined,
+    })
+  ).map(path => {
+    view?.stdout(`- ${basename(path)}`)
+    return path
+  })
   remover.confirm()
   return removed
 }
