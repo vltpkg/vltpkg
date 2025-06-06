@@ -142,7 +142,6 @@ export class ExecCommand<B extends RunnerBG, F extends RunnerFG> {
         signal: new AbortController().signal,
       })
       const importerPaths = nodes
-        .map(n => n.toJSON())
         .filter(n => n.importer)
         .map(n => n.location)
         .filter(v => v !== undefined)
