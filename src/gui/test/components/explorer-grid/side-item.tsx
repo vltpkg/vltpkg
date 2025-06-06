@@ -185,3 +185,25 @@ test('SideItem render as dependency with long name', async () => {
   )
   expect(window.document.body.innerHTML).toMatchSnapshot()
 })
+
+test('SideItem render as workspace item', async () => {
+  const item = {
+    id: '1',
+    labels: ['prod'],
+    name: 'workspace-item',
+    title: 'workspace-item',
+    version: '1.0.0',
+    stacked: false,
+    size: 1,
+    spec: Spec.parse('workspace-item', '^1.0.0'),
+  } satisfies GridItemData
+  render(
+    <SideItem
+      item={item}
+      dependencies={false}
+      isWorkspace={true}
+      onSelect={() => {}}
+    />,
+  )
+  expect(window.document.body.innerHTML).toMatchSnapshot()
+})
