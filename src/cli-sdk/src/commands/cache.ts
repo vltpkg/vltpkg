@@ -357,6 +357,7 @@ const add = async (
           ...conf.options,
           integrity,
           staleWhileRevalidate: false,
+          query: undefined,
         })
         view?.stdout('+', spec, r.resolved)
       })

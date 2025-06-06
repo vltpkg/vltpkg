@@ -44,6 +44,7 @@ Unknown option '--unknown'. To specify a positional argument starting with a '-'
     --node-version=<version>
     --os=<os>
     --package=<p>
+    --query=<query>
     --recursive
     --registries=<name=url>
     --registry=<url>
@@ -93,6 +94,7 @@ Unknown config option: asdf
     node-version
     os
     package
+    query
     recursive
     registries
     registry
