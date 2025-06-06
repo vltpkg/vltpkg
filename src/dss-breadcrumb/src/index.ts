@@ -12,6 +12,7 @@ import type {
   ModifierBreadcrumb,
   ModifierBreadcrumbItem,
   ModifierInteractiveBreadcrumb,
+  BreadcrumbSpecificity,
 } from './types.ts'
 
 export * from './types.ts'
@@ -24,7 +25,7 @@ export * from './types.ts'
  * as a term used to describe the subset of the query language that uses
  * only root/workspace selectors, id selectors & combinators.
  *
- * The Breadcrumb implements a doubly-linked list of items
+ * The Breadcrumb class implements a doubly-linked list of items
  * that can be used to navigate through the breadcrumb.
  * The InteractiveBreadcrumb can also be used to keep track of state
  * of the current breadcrumb item that should be used for checks.
@@ -36,12 +37,14 @@ export * from './types.ts'
 export class Breadcrumb implements ModifierBreadcrumb {
   #items: ModifierBreadcrumbItem[]
   comment: string | undefined
+  specificity: BreadcrumbSpecificity
 
   /**
    * Initializes the interactive breadcrumb with a query string.
    */
   constructor(query: string) {
     this.#items = []
+    this.specificity = { idCounter: 0, commonCounter: 0 }
     const ast = parse(query)
 
     // Keep track of the previous AST node for consolidation
@@ -114,6 +117,8 @@ export class Breadcrumb implements ModifierBreadcrumb {
           // Modify the last item to include the ID
           lastItem.name = item.value
           lastItem.value = `${lastItem.value}#${item.value}`
+          // Update specificity for the ID part
+          this.specificity.idCounter++
           prevNode = undefined
           continue
         }
@@ -125,6 +130,8 @@ export class Breadcrumb implements ModifierBreadcrumb {
           // Modify the last item to include the pseudo
           lastItem.value = `${lastItem.value}${item.value}`
           lastItem.importer = true
+          // Update specificity for the pseudo part
+          this.specificity.commonCounter++
           prevNode = undefined
           continue
         }
@@ -141,6 +148,14 @@ export class Breadcrumb implements ModifierBreadcrumb {
           lastItem.next = newItem
         }
         this.#items.push(newItem)
+
+        // Update specificity counters
+        if (isIdentifierNode(item)) {
+          this.specificity.idCounter++
+        } else if (isPseudoNode(item)) {
+          this.specificity.commonCounter++
+        }
+
         prevNode = item
       }
     }
@@ -246,3 +261,28 @@ export class InteractiveBreadcrumb
  */
 export const parseBreadcrumb = (query: string): ModifierBreadcrumb =>
   new Breadcrumb(query)
+
+/**
+ * Sorts an array of Breadcrumb objects by specificity. Objects with
+ * higher idCounter values come first, if idCounter values are equal,
+ * then objects with higher commonCounter values come first. Otherwise,
+ * the original order is preserved.
+ */
+export const specificitySort = (
+  breadcrumbs: ModifierBreadcrumb[],
+): ModifierBreadcrumb[] => {
+  return [...breadcrumbs].sort((a, b) => {
+    // First compare by idCounter (higher comes first)
+    if (a.specificity.idCounter !== b.specificity.idCounter) {
+      return b.specificity.idCounter - a.specificity.idCounter
+    }
+
+    // If idCounter values are equal, compare by commonCounter
+    if (a.specificity.commonCounter !== b.specificity.commonCounter) {
+      return b.specificity.commonCounter - a.specificity.commonCounter
+    }
+
+    // If both counters are equal, preserve original order
+    return 0
+  })
+}

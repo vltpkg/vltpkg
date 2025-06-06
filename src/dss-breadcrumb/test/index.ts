@@ -2,6 +2,7 @@ import t from 'tap'
 import {
   parseBreadcrumb,
   InteractiveBreadcrumb,
+  specificitySort,
 } from '../src/index.ts'
 
 t.test('Breadcrumb', async t => {
@@ -273,6 +274,255 @@ t.test('Breadcrumb', async t => {
     t.equal(items[1]!.value, '#b', 'second item should be #b')
     t.equal(items[2]!.value, '#c', 'third item should be #c')
   })
+
+  await t.test('specificity tracking', async t => {
+    // Test simple ID selector
+    const idBreadcrumb = parseBreadcrumb('#a')
+    t.equal(
+      idBreadcrumb.specificity.idCounter,
+      1,
+      'should count one ID selector',
+    )
+    t.equal(
+      idBreadcrumb.specificity.commonCounter,
+      0,
+      'should count zero pseudo selectors',
+    )
+
+    // Test root selector
+    const rootBreadcrumb = parseBreadcrumb(':root')
+    t.equal(
+      rootBreadcrumb.specificity.idCounter,
+      0,
+      'should count zero ID selectors',
+    )
+    t.equal(
+      rootBreadcrumb.specificity.commonCounter,
+      1,
+      'should count one pseudo selector',
+    )
+
+    // Test complex selector with IDs and pseudos
+    const complexBreadcrumb = parseBreadcrumb(
+      ':root > #a > #b:workspace',
+    )
+    t.equal(
+      complexBreadcrumb.specificity.idCounter,
+      2,
+      'should count two ID selectors',
+    )
+    t.equal(
+      complexBreadcrumb.specificity.commonCounter,
+      2,
+      'should count two pseudo selectors (:root and :workspace)',
+    )
+
+    // Test consolidated selector (ID + workspace)
+    const idWorkspaceBreadcrumb = parseBreadcrumb('#a:workspace')
+    t.equal(
+      idWorkspaceBreadcrumb.specificity.idCounter,
+      1,
+      'should count one ID selector in consolidated selector',
+    )
+    t.equal(
+      idWorkspaceBreadcrumb.specificity.commonCounter,
+      1,
+      'should count one pseudo selector in consolidated selector',
+    )
+
+    // Test consolidated selector (workspace + ID)
+    const workspaceIdBreadcrumb = parseBreadcrumb(':workspace#a')
+    t.equal(
+      workspaceIdBreadcrumb.specificity.idCounter,
+      1,
+      'should count one ID selector in consolidated selector',
+    )
+    t.equal(
+      workspaceIdBreadcrumb.specificity.commonCounter,
+      1,
+      'should count one pseudo selector in consolidated selector',
+    )
+  })
+})
+
+t.test('specificitySort', async t => {
+  await t.test('sorts breadcrumbs by specificity', async t => {
+    // Create test breadcrumbs with varying specificities
+    const breadcrumb1 = parseBreadcrumb(':root > #a')
+    const breadcrumb2 = parseBreadcrumb(':root > #b:workspace')
+    const breadcrumb3 = parseBreadcrumb(':root > #a > #b > #c > #d')
+    const breadcrumb4 = parseBreadcrumb('#a')
+    const breadcrumb5 = parseBreadcrumb('#a > #b > #c')
+    const breadcrumb6 = parseBreadcrumb('#a > #b:workspace > #c')
+
+    // Mix them in a non-sorted order
+    const unsorted = [
+      breadcrumb1,
+      breadcrumb2,
+      breadcrumb3,
+      breadcrumb4,
+      breadcrumb5,
+      breadcrumb6,
+    ]
+
+    // Sort them by specificity
+    const sorted = specificitySort(unsorted)
+
+    // Verify the sort order by checking specificities
+    t.equal(
+      sorted[0]!.specificity.idCounter,
+      4,
+      'First item should have highest idCounter',
+    )
+    t.equal(
+      sorted[0],
+      breadcrumb3,
+      'First item should be breadcrumb3',
+    )
+
+    // The next items should have idCounter=3
+    t.equal(
+      sorted[1]!.specificity.idCounter,
+      3,
+      'Second item should have idCounter=3',
+    )
+    t.equal(
+      sorted[2]!.specificity.idCounter,
+      3,
+      'Third item should have idCounter=3',
+    )
+
+    // Between the two with idCounter=3, the one with higher commonCounter should come first
+    t.equal(
+      sorted[1]!.specificity.commonCounter,
+      1,
+      'Second item should have commonCounter=1',
+    )
+    t.equal(
+      sorted[2]!.specificity.commonCounter,
+      0,
+      'Third item should have commonCounter=0',
+    )
+
+    t.equal(
+      sorted[1],
+      breadcrumb6,
+      'Second item should be breadcrumb6',
+    )
+    t.equal(
+      sorted[2],
+      breadcrumb5,
+      'Third item should be breadcrumb5',
+    )
+
+    // The next item should be breadcrumb2 due to high commonCounter
+    t.equal(
+      sorted[3],
+      breadcrumb2,
+      'Fourth item should be breadcrumb2',
+    )
+    t.equal(
+      sorted[3]!.specificity.idCounter,
+      1,
+      'Fourth item should have idCounter=1',
+    )
+    t.equal(
+      sorted[3]!.specificity.commonCounter,
+      2,
+      'Fourth item should have commonCounter=2',
+    )
+
+    // Next should be breadcrumb1
+    t.equal(
+      sorted[4],
+      breadcrumb1,
+      'Fifth item should be breadcrumb1',
+    )
+    t.equal(
+      sorted[4]!.specificity.idCounter,
+      1,
+      'Fifth item should have idCounter=1',
+    )
+    t.equal(
+      sorted[4]!.specificity.commonCounter,
+      1,
+      'Fifth item should have commonCounter=1',
+    )
+
+    // Last should be breadcrumb4
+    t.equal(
+      sorted[5],
+      breadcrumb4,
+      'Sixth item should be breadcrumb4',
+    )
+    t.equal(
+      sorted[5]!.specificity.idCounter,
+      1,
+      'Sixth item should have idCounter=1',
+    )
+    t.equal(
+      sorted[5]!.specificity.commonCounter,
+      0,
+      'Sixth item should have commonCounter=0',
+    )
+  })
+
+  await t.test(
+    'preserves original order when specificities are equal',
+    async t => {
+      // Create breadcrumbs with identical specificities
+      const breadcrumb1 = parseBreadcrumb('#a > #b')
+      const breadcrumb2 = parseBreadcrumb('#c > #d')
+
+      // Both have idCounter=2, commonCounter=0
+      t.equal(
+        breadcrumb1.specificity.idCounter,
+        2,
+        'first breadcrumb should have idCounter=2',
+      )
+      t.equal(
+        breadcrumb2.specificity.idCounter,
+        2,
+        'second breadcrumb should have idCounter=2',
+      )
+      t.equal(
+        breadcrumb1.specificity.commonCounter,
+        0,
+        'first breadcrumb should have commonCounter=0',
+      )
+      t.equal(
+        breadcrumb2.specificity.commonCounter,
+        0,
+        'second breadcrumb should have commonCounter=0',
+      )
+
+      // Sort them
+      const sorted1 = specificitySort([breadcrumb1, breadcrumb2])
+      const sorted2 = specificitySort([breadcrumb2, breadcrumb1])
+
+      // Original order should be preserved when specificities are equal
+      t.equal(
+        sorted1[0],
+        breadcrumb1,
+        'first element should be preserved',
+      )
+      t.equal(
+        sorted1[1],
+        breadcrumb2,
+        'second element should be preserved',
+      )
+      t.equal(
+        sorted2[0],
+        breadcrumb2,
+        'first element should be preserved in reverse order',
+      )
+      t.equal(
+        sorted2[1],
+        breadcrumb1,
+        'second element should be preserved in reverse order',
+      )
+    },
+  )
 })
 
 t.test('InteractiveBreadcrumb', async t => {
