@@ -11,6 +11,7 @@ import { load as loadVirtual } from '../lockfile/load.ts'
 import { buildIdealFromStartingGraph } from './build-ideal-from-starting-graph.ts'
 import type { DepID } from '@vltpkg/dep-id'
 import { graphStep } from '@vltpkg/output'
+import type { GraphModifier } from '../modifiers.ts'
 
 const getMap = <T extends Map<any, any>>(m?: T) =>
   m ?? (new Map() as T)
@@ -23,6 +24,10 @@ export type BuildIdealOptions = LoadActualOptions & {
    * represented by {@link DepID}.
    */
   add?: AddImportersDependenciesMap
+  /**
+   * The graph modifiers helper object.
+   */
+  modifiers?: GraphModifier
   /**
    * A `Map` object representing nodes to be removed from the ideal graph.
    * Each {@link DepID} key represents an importer node and the `Set` of

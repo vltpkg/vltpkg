@@ -142,6 +142,13 @@ export class Node implements NodeLike {
   registry?: string
 
   /**
+   * If this node has been modified as part of applying a {@link GraphModifier}
+   * then this field will contain the modifier query that was applied.
+   * Otherwise, it will be `undefined`.
+   */
+  modifier: string | undefined
+
+  /**
    * The name of the package represented by this node, this is usually
    * equivalent to `manifest.name` but in a few ways it may differ such as
    * nodes loaded from a lockfile that lacks a loaded manifest.
@@ -365,6 +372,7 @@ export class Node implements NodeLike {
       dev: this.dev,
       optional: this.optional,
       confused: this.confused,
+      modifier: this.modifier,
       ...(this.confused ?
         { rawManifest: this.#rawManifest }
       : undefined),

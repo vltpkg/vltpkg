@@ -1,4 +1,4 @@
-import { asDepID, hydrate, joinDepIDTuple } from '@vltpkg/dep-id'
+import { asDepID, hydrate, joinDepIDTuple, splitDepID } from '@vltpkg/dep-id'
 import type { DepID } from '@vltpkg/dep-id'
 import type { PackageJson } from '@vltpkg/package-json'
 import { Spec } from '@vltpkg/spec'
@@ -282,12 +282,19 @@ const parseDir = (
         registry: fromNode.registry,
       })
       const maybeId = getPathBasedId(spec, realpath)
+      // retrieves the extra information from the depID if one is available
+      let extra
+      if (maybeId) {
+        const [type,,maybeExtra,lastExtra] = splitDepID(maybeId)
+        extra = type === 'registry' || type === 'git' ? lastExtra : maybeExtra
+      }
       node = graph.placePackage(
         fromNode,
         depType,
         spec,
         mani,
         maybeId,
+        extra,
       )
     }
 
