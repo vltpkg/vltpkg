@@ -6,6 +6,7 @@ import {
   ListFilter,
   CircleDot,
   Search,
+  RotateCcw,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button.tsx'
 import { Input } from '@/components/ui/input.tsx'
@@ -37,7 +38,7 @@ import { dependencyFilters } from './filter-config.ts'
 import type { DependencyTypeShort } from '@vltpkg/types'
 import type { Filter } from './filter-config.ts'
 
-const useDependencyFilters = () => {
+export const useDependencyFilters = () => {
   const filters = useDependencySidebarStore(state => state.filters)
   const setFilters = useDependencySidebarStore(
     state => state.setFilters,
@@ -99,11 +100,17 @@ const useDependencyFilters = () => {
     }
   }
 
+  const clearFilters = () => {
+    setFilters([])
+    setFilteredDependencies(dependencies)
+  }
+
   return {
     filters,
     toggleFilter,
     removeFilter,
     addSearchFilter,
+    clearFilters,
   }
 }
 
@@ -350,9 +357,10 @@ export const FilterList = () => {
   }
 
   return (
-    <AnimatePresence initial={false} mode="sync">
+    <AnimatePresence initial={false} mode="popLayout">
       {hasFilters && (
         <motion.section
+          layout
           initial={{
             opacity: 0,
             height: 0,
@@ -376,7 +384,7 @@ export const FilterList = () => {
             duration: 0.28,
             bounce: 0.02,
           }}
-          className="flex gap-2 overflow-hidden">
+          className="flex flex-wrap gap-2 overflow-hidden">
           <AnimatePresence initial={false} mode="popLayout">
             {filters.map((filter, idx) => (
               <motion.div
@@ -422,6 +430,130 @@ export const FilterList = () => {
             ))}
           </AnimatePresence>
         </motion.section>
+      )}
+    </AnimatePresence>
+  )
+}
+
+interface SimpleDependency {
+  name: string
+  spec: string
+  version: string
+}
+
+const EmptyStateDependency = ({
+  name,
+  spec,
+  version,
+  className,
+}: SimpleDependency & { className?: string }) => {
+  return (
+    <div
+      className={cn(
+        'h-12 w-64 rounded-lg border border-muted bg-muted/60',
+        className,
+      )}>
+      <div className="flex h-full items-center justify-between px-4">
+        <div className="flex items-center gap-3">
+          <div className="flex h-6 max-w-12 items-center justify-center truncate rounded border-[1px] border-muted-foreground/20 bg-muted-foreground/20 px-2 font-mono text-xxs tabular-nums text-muted-foreground/60">
+            {spec}
+          </div>
+          <div className="text-xs font-medium text-muted-foreground/60">
+            {name}
+          </div>
+        </div>
+        <div className="font-mono text-xxs tabular-nums text-muted-foreground/60">
+          v{version}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+export const FilterListEmptyState = () => {
+  const filteredDependencies = useDependencySidebarStore(
+    state => state.filteredDependencies,
+  )
+  const dependencies = useDependencySidebarStore(
+    state => state.dependencies,
+  )
+  const filters = useDependencySidebarStore(state => state.filters)
+  const { clearFilters } = useDependencyFilters()
+
+  const fillerDependencies: SimpleDependency[] = [
+    {
+      spec: '^21.0.0',
+      name: 'tap',
+      version: '21.1.0',
+    },
+    {
+      spec: '^1.0.0',
+      name: 'reproduce',
+      version: '1.1.4',
+    },
+  ]
+
+  const dependenciesUi: SimpleDependency[] = [
+    ...fillerDependencies.slice(0, 3 - dependencies.length),
+    ...dependencies.map(dep => ({
+      name: dep.name,
+      spec: String(dep.spec?.semver ?? '^1.0.0'),
+      version: String(dep.version),
+    })),
+  ].splice(0, 3)
+
+  const handleClear = () => clearFilters()
+
+  return (
+    <AnimatePresence initial={false} mode="popLayout">
+      {filters.length > 0 && filteredDependencies.length === 0 && (
+        <motion.div
+          layout
+          initial={{ opacity: 0, filter: 'blur(2px)' }}
+          animate={{ opacity: 1, filter: 'blur(0px)' }}
+          exit={{ opacity: 0, filter: 'blur(2px)' }}
+          transition={{
+            ease: 'easeInOut',
+            duration: 0.25,
+          }}
+          className="flex min-h-96 w-full cursor-default flex-col items-center justify-center gap-4 rounded-sm border-[1px] border-dashed border-muted py-12">
+          <div className="mb-6 flex justify-center">
+            <div className="relative">
+              <div className="relative space-y-2">
+                {dependenciesUi.map((dep, idx) => (
+                  <EmptyStateDependency
+                    key={`${dep.name}-${idx}`}
+                    {...dep}
+                    className={cn(
+                      idx === 0 && 'rotate-1 transform opacity-40',
+                      idx === 1 &&
+                        '-mt-10 -rotate-1 transform opacity-40',
+                      idx === 2 && 'relative z-10 -mt-10 opacity-50',
+                    )}
+                  />
+                ))}
+              </div>
+
+              <div className="pointer-events-none absolute inset-0 rounded-lg bg-background/30" />
+            </div>
+          </div>
+
+          <div className="flex flex-col items-center justify-center gap-1 text-center">
+            <h3 className="text-base font-medium tracking-tight text-foreground">
+              No matching dependencies
+            </h3>
+            <p className="w-4/5 text-sm font-normal tracking-normal text-muted-foreground">
+              There were no dependencies matching your current
+              filters.
+            </p>
+            <Button
+              onClick={handleClear}
+              className="mt-2 h-8 w-fit border-[1px] border-muted">
+              <RotateCcw />
+              Clear Filters
+            </Button>
+          </div>
+        </motion.div>
       )}
     </AnimatePresence>
   )

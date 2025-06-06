@@ -98,7 +98,7 @@ export const DependencySidebarProvider = ({
   const dependencySidebarStore = useRef(
     createStore<DependencySidebarStore>(set => ({
       dependencies,
-      filteredDependencies: [],
+      filteredDependencies: dependencies,
       uninstalledDependencies,
       importerId,
       filters: [],

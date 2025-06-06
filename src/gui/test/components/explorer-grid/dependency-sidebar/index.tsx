@@ -49,6 +49,14 @@ vi.mock(
   () => ({
     FilterButton: 'gui-filter-button',
     FilterList: 'gui-filter-list',
+    FilterListEmptyState: 'gui-filter-list-empty-state',
+  }),
+)
+
+vi.mock(
+  '@/components/explorer-grid/dependency-sidebar/empty-state.tsx',
+  () => ({
+    DependencyEmptyState: 'gui-dependency-empty-state',
   }),
 )
 

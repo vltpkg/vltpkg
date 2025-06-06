@@ -1,11 +1,11 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import {
   Plus,
   BatteryLow,
   PackageCheck,
   PackagePlus,
 } from 'lucide-react'
-import { useAnimate } from 'framer-motion'
+import { motion } from 'framer-motion'
 import { Button } from '@/components/ui/button.tsx'
 import { CardHeader, CardTitle } from '@/components/ui/card.tsx'
 import { Input } from '@/components/ui/input.tsx'
@@ -215,21 +215,6 @@ export const AddDependenciesPopoverTrigger = () => {
     dependencyPopoverOpen,
     setDependencyPopoverOpen,
   } = usePopover()
-  const [scope, animate] = useAnimate()
-
-  useEffect(() => {
-    if (scope.current) {
-      if (dependencyPopoverOpen) {
-        animate(scope.current, {
-          rotate: -45,
-        })
-      } else {
-        animate(scope.current, {
-          rotate: 0,
-        })
-      }
-    }
-  }, [dependencyPopoverOpen, scope])
 
   return (
     <TooltipProvider>
@@ -242,7 +227,12 @@ export const AddDependenciesPopoverTrigger = () => {
               <div
                 onClick={toggleAddDepPopover}
                 className="inline-flex size-6 cursor-default items-center justify-center gap-2 whitespace-nowrap rounded-md border border-input bg-white text-sm font-medium ring-offset-background transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 dark:bg-black [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0">
-                <Plus ref={scope} />
+                <motion.span
+                  animate={{
+                    rotate: dependencyPopoverOpen ? 45 : 0,
+                  }}>
+                  <Plus />
+                </motion.span>
               </div>
             </TooltipTrigger>
             <TooltipPortal>
@@ -252,7 +242,8 @@ export const AddDependenciesPopoverTrigger = () => {
         </PopoverTrigger>
         <PopoverContent
           align="end"
-          className="right-0 top-0 w-96 p-0">
+          className="right-0 top-0 w-96 p-0"
+          onCloseAutoFocus={e => e.preventDefault()}>
           <AddDependenciesPopover />
         </PopoverContent>
       </Popover>

@@ -6,6 +6,7 @@ import { useDependencySidebarStore } from '@/components/explorer-grid/dependency
 import {
   FilterButton,
   FilterList,
+  FilterListEmptyState,
 } from '@/components/explorer-grid/dependency-sidebar/filter.tsx'
 import type { DependencySidebarStore } from '@/components/explorer-grid/dependency-sidebar/context.tsx'
 import type { Filter } from '@/components/explorer-grid/dependency-sidebar/filter-config.tsx'
@@ -32,6 +33,7 @@ vi.mock('lucide-react', () => ({
   ListFilter: 'gui-list-filter',
   CircleDot: 'gui-circle-dot',
   Search: 'gui-search',
+  RotateCcw: 'gui-rotate-ccw',
 }))
 
 vi.mock('@/components/ui/button.tsx', () => ({
@@ -147,6 +149,42 @@ test('filter-list renders with filters', () => {
 
   const Container = () => {
     return <FilterList />
+  }
+
+  const { container } = render(<Container />)
+  expect(container.innerHTML).toMatchSnapshot()
+})
+
+test('filter-list-empty-state renders when no matching filters are found', () => {
+  const filters = ['prod'] as Filter[]
+
+  const mockState = {
+    dependencies: [],
+    importerId: undefined,
+    addedDependencies: [],
+    uninstalledDependencies: [],
+    inProgress: false,
+    error: undefined,
+    dependencyPopoverOpen: false,
+    onDependencyClick: () => () => {},
+    setDependencyPopoverOpen: vi.fn(),
+    setInProgress: vi.fn(),
+    setError: vi.fn(),
+    setAddedDependencies: vi.fn(),
+    filteredDependencies: [],
+    filters,
+    searchTerm: '',
+    setSearchTerm: vi.fn(),
+    setFilters: vi.fn(),
+    setFilteredDependencies: vi.fn(),
+  } satisfies DependencySidebarStore
+
+  vi.mocked(useDependencySidebarStore).mockImplementation(selector =>
+    selector(mockState),
+  )
+
+  const Container = () => {
+    return <FilterListEmptyState />
   }
 
   const { container } = render(<Container />)
