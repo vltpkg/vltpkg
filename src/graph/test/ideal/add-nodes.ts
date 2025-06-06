@@ -10,6 +10,7 @@ import type {
   Dependency,
 } from '../../src/dependencies.ts'
 import { Graph } from '../../src/graph.ts'
+import type { GraphModifier } from '../../src/modifiers.ts'
 import { addNodes } from '../../src/ideal/add-nodes.ts'
 import { objectLikeOutput } from '../../src/visualization/object-like-output.ts'
 
@@ -132,4 +133,39 @@ t.test('addNodes', async t => {
     objectLikeOutput(graph),
     'graph after adding a previously missing dependency bar',
   )
+
+  t.test('with modifiers', async t => {
+    const modifierCalls = {
+      tryImporter: 0,
+      tryDependencies: 0,
+    }
+
+    const mockModifier = {
+      tryImporter: () => {
+        modifierCalls.tryImporter++
+        return undefined
+      },
+      tryDependencies: () => {
+        modifierCalls.tryDependencies++
+        return new Map()
+      },
+    } as unknown as GraphModifier
+
+    await addNodes({
+      add: new Map([
+        [joinDepIDTuple(['file', '.']), addEntry('foo')],
+      ]) as AddImportersDependenciesMap,
+      graph,
+      packageInfo,
+      scurry: new PathScurry(t.testdirName),
+      modifiers: mockModifier,
+    })
+
+    t.equal(modifierCalls.tryImporter, 1, 'tryImporter was called')
+    t.equal(
+      modifierCalls.tryDependencies,
+      2,
+      'tryDependencies was called',
+    )
+  })
 })

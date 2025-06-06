@@ -324,6 +324,7 @@ export class Graph implements GraphLike {
     spec: Spec,
     manifest?: Manifest,
     id?: DepID,
+    extra?: string,
   ) {
     // if no manifest is available, then create an edge that has no
     // reference to any other node, representing a missing dependency
@@ -341,7 +342,7 @@ export class Graph implements GraphLike {
         depType === 'peerOptional',
     }
 
-    const depId = id || (manifest && getId(spec, manifest))
+    const depId = id || (manifest && getId(spec, manifest, extra))
 
     /* c8 ignore start - should not be possible */
     if (!depId) {
@@ -369,6 +370,7 @@ export class Graph implements GraphLike {
     toNode.registry = spec.registry
     toNode.dev = flags.dev
     toNode.optional = flags.optional
+    toNode.modifier = extra
     this.addEdge(depType, spec, fromNode, toNode)
     return toNode
   }

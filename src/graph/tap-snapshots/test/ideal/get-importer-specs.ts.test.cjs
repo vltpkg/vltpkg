@@ -45,6 +45,10 @@ exports[`test/ideal/get-importer-specs.ts > TAP > graph specs and something to r
   add: AddImportersDependenciesMapImpl(0) [Map] {
     modifiedDependencies: false
   },
+  check: AddImportersDependenciesMapImpl(1) [Map] {
+    'file·.' => Map(0) {},
+    modifiedDependencies: false
+  },
   remove: RemoveImportersDependenciesMapImpl(1) [Map] {
     'file·.' => Set(1) { 'foo' },
     modifiedDependencies: true
@@ -82,6 +86,12 @@ exports[`test/ideal/get-importer-specs.ts > TAP > graph specs with workspaces an
   add: AddImportersDependenciesMapImpl(0) [Map] {
     modifiedDependencies: false
   },
+  check: AddImportersDependenciesMapImpl(3) [Map] {
+    'file·.' => Map(0) {},
+    'workspace·packages§a' => Map(0) {},
+    'workspace·packages§b' => Map(0) {},
+    modifiedDependencies: false
+  },
   remove: RemoveImportersDependenciesMapImpl(2) [Map] {
     'workspace·packages§a' => Set(1) { 'bar' },
     'workspace·packages§b' => Set(1) { 'a' },
@@ -95,6 +105,10 @@ exports[`test/ideal/get-importer-specs.ts > TAP > installing over a dangling edg
   add: AddImportersDependenciesMapImpl(1) [Map] {
     'file·.' => Map(1) { 'foo' => { spec: Spec {foo@^1.0.0}, type: 'prod' } },
     modifiedDependencies: true
+  },
+  check: AddImportersDependenciesMapImpl(1) [Map] {
+    'file·.' => Map(0) {},
+    modifiedDependencies: false
   },
   remove: RemoveImportersDependenciesMapImpl(0) [Map] {
     modifiedDependencies: false

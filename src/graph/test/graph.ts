@@ -694,3 +694,127 @@ t.test('garbage collection', async t => {
     'newnode was collected',
   )
 })
+
+t.test('extra parameter for modifiers', async t => {
+  const mainManifest = {
+    name: 'root-project',
+    version: '1.0.0',
+    dependencies: {
+      a: '^1.0.0',
+      b: '^1.0.0',
+    },
+  }
+  const projectRoot = t.testdir({
+    'vlt.json': JSON.stringify({
+      modifiers: {
+        ':root > #a': '1.0.0',
+        ':root > #a > #c': '1.0.0',
+      },
+    }),
+  })
+  t.chdir(projectRoot)
+  unload('project')
+
+  const graph = new Graph({
+    ...configData,
+    mainManifest,
+    projectRoot,
+  })
+
+  // Place package a with a selector path modifier ":root > #a"
+  const nodeA = graph.placePackage(
+    graph.mainImporter,
+    'prod',
+    Spec.parse('a@^1.0.0'),
+    {
+      name: 'a',
+      version: '1.0.0',
+      dependencies: {
+        c: '^1.0.0',
+      },
+    },
+    undefined,
+    ':root > #a',
+  )
+
+  t.ok(nodeA, 'node a was created successfully')
+  t.equal(
+    nodeA?.modifier,
+    ':root > #a',
+    'node a has the correct modifier',
+  )
+
+  // Place package b with no extra parameter
+  const nodeB = graph.placePackage(
+    graph.mainImporter,
+    'prod',
+    Spec.parse('b@^1.0.0'),
+    {
+      name: 'b',
+      version: '1.0.0',
+    },
+  )
+
+  t.ok(nodeB, 'node b was created successfully')
+  t.equal(nodeB?.modifier, undefined, 'node b has no modifier')
+
+  // Place package c with a nested selector path ":root > #a > #c"
+  const nodeC = graph.placePackage(
+    nodeA!,
+    'prod',
+    Spec.parse('c@^1.0.0'),
+    {
+      name: 'c',
+      version: '1.0.0',
+    },
+    undefined,
+    ':root > #a > #c',
+  )
+
+  t.ok(nodeC, 'node c was created successfully')
+  t.equal(
+    nodeC?.modifier,
+    ':root > #a > #c',
+    'node c has the correct modifier',
+  )
+
+  // Verify that we can find the nodes in the graph by their modifiers
+  const foundNodeA = [...graph.nodes.values()].find(
+    node => node.modifier === ':root > #a',
+  )
+
+  t.equal(foundNodeA, nodeA, 'can find node a by its modifier')
+
+  const foundNodeC = [...graph.nodes.values()].find(
+    node => node.modifier === ':root > #a > #c',
+  )
+
+  t.equal(foundNodeC, nodeC, 'can find node c by its modifier')
+
+  // Verify that the nodes have the correct structure
+  t.equal(nodeA?.name, 'a', 'node a has the correct name')
+
+  t.equal(nodeC?.name, 'c', 'node c has the correct name')
+
+  t.ok(
+    graph.mainImporter.edgesOut.has('a'),
+    'main importer has an edge to node a',
+  )
+
+  t.ok(nodeA?.edgesOut.has('c'), 'node a has an edge to node c')
+
+  // Verify the edge structure matches the selector paths
+  const edgeToA = graph.mainImporter.edgesOut.get('a')
+  t.equal(
+    edgeToA?.to,
+    nodeA,
+    'edge from root to a points to the correct node',
+  )
+
+  const edgeToC = nodeA?.edgesOut.get('c')
+  t.equal(
+    edgeToC?.to,
+    nodeC,
+    'edge from a to c points to the correct node',
+  )
+})
