@@ -294,7 +294,7 @@ export const getTuple = (
         f.type,
         f.namedRegistry ?? reg,
         `${isPackageNameConfused(spec, mani.name) ? spec.name : (mani.name ?? f.name)}@${version}`,
-        encode(extra),
+        extra,
       ]
     }
     case 'git': {
@@ -316,17 +316,17 @@ export const getTuple = (
           f.type,
           `${namedGitHost}:${namedGitHostPath}`,
           gitSelector,
-          encode(extra),
+          extra,
         ]
       } else {
-        return [f.type, gitRemote, gitSelector, encode(extra)]
+        return [f.type, gitRemote, gitSelector, extra]
       }
     }
     case 'remote': {
       const { remoteURL } = f
       if (!remoteURL)
         throw error('no URL on remote specifier', { spec })
-      return [f.type, remoteURL, encode(extra)]
+      return [f.type, remoteURL, extra]
     }
     case 'file':
     case 'workspace':

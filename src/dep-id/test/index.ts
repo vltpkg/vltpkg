@@ -50,7 +50,7 @@ t.test('valid specs', t => {
       const spec = Spec.parse(s, { registries })
       const tuple = getTuple(spec, mani)
       const id = getId(spec, mani)
-      const idWithExtra = getId(spec, mani, 'deadbeef')
+      const idWithExtra = getId(spec, mani, ':root > #extra')
       t.matchSnapshot([id, tuple, idWithExtra])
       t.equal(joinDepIDTuple(tuple), id)
       t.strictSame(splitDepID(id), tuple)
