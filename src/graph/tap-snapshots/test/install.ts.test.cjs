@@ -6,6 +6,7 @@
  */
 'use strict'
 exports[`test/install.ts > TAP > install > should call build -> actual.load -> reify 1`] = `
+GraphModifier.maybeLoad
 buildideal result adds 0 new package(s)
 actual.load
 reify
@@ -13,6 +14,7 @@ reify
 `
 
 exports[`test/install.ts > TAP > install > should call build adding new dependency 1`] = `
+GraphModifier.maybeLoad
 buildideal result adds 1 new package(s)
 actual.load
 reify

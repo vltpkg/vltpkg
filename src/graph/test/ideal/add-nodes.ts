@@ -10,6 +10,7 @@ import type {
   Dependency,
 } from '../../src/dependencies.ts'
 import { Graph } from '../../src/graph.ts'
+import { GraphModifier } from '../../src/modifiers.ts'
 import { addNodes } from '../../src/ideal/add-nodes.ts'
 import { objectLikeOutput } from '../../src/visualization/object-like-output.ts'
 

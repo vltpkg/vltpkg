@@ -1,13 +1,16 @@
 import type { Graph } from '../graph.ts'
 import { getImporterSpecs } from './get-importer-specs.ts'
 import { addNodes } from './add-nodes.ts'
+import { checkNodes } from './check-nodes.ts'
 import type { AddNodesOptions } from './add-nodes.ts'
 import { removeNodes } from './remove-nodes.ts'
 import type { RemoveNodesOptions } from './remove-nodes.ts'
+import type { GraphModifier } from '../modifiers.ts'
 
 export type BuildIdealFromStartingGraphOptions = AddNodesOptions &
   RemoveNodesOptions & {
     projectRoot: string
+    modifiers?: GraphModifier
   }
 
 /**
@@ -54,6 +57,9 @@ export const buildIdealFromStartingGraph = async (
 
   // add nodes, fetching remote manifests for each dependency to be added
   await addNodes(options)
+
+  // check nodes for modifiers
+  await checkNodes({ check: importerSpecs.check, ...options })
 
   // move things into their default locations, if possible
   for (const node of options.graph.nodes.values()) {
