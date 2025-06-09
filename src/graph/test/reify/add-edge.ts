@@ -168,15 +168,29 @@ t.test('EEXIST scenario with directory symlinks', async t => {
     joinDepIDTuple(['registry', '', 'pkg@1.0.0']) +
     '/node_modules/pkg'
 
-  const rootNode = new Node(opts, joinDepIDTuple(['file', '.']), {})
+  const rootNode = new Node(
+    opts,
+    joinDepIDTuple(['file', '.']),
+    {},
+  )
   rootNode.location = projectRoot
 
-  const edge = new Edge('prod', Spec.parse('pkg@'), rootNode, pkgNode)
+  const edge = new Edge(
+    'prod',
+    Spec.parse('pkg@'),
+    rootNode,
+    pkgNode,
+  )
   const scurry = new PathScurry(projectRoot)
 
   // First call creates the directory symlink
-  await addEdge(edge, { name: 'pkg', version: '1.0.0' }, scurry, mockRemover)
-  
+  await addEdge(
+    edge,
+    { name: 'pkg', version: '1.0.0' },
+    scurry,
+    mockRemover,
+  )
+
   // Verify symlink was created
   const symlinkPath = projectRoot + '/node_modules/pkg'
   const stats = statSync(symlinkPath, { throwIfNoEntry: false })
@@ -185,9 +199,17 @@ t.test('EEXIST scenario with directory symlinks', async t => {
 
   // Second call should trigger EEXIST and clobbering logic
   // This tests the fix where symlink type is preserved in retry
-  await addEdge(edge, { name: 'pkg', version: '1.0.0' }, scurry, mockRemover)
-  
+  await addEdge(
+    edge,
+    { name: 'pkg', version: '1.0.0' },
+    scurry,
+    mockRemover,
+  )
+
   // Verify symlink still exists and works correctly
   const statsAfterClobber = statSync(symlinkPath)
-  t.ok(statsAfterClobber.isSymbolicLink(), 'Symlink still exists after clobbering')
+  t.ok(
+    statsAfterClobber.isSymbolicLink(),
+    'Symlink still exists after clobbering',
+  )
 })
