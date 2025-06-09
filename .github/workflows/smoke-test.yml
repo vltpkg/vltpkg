@@ -34,6 +34,8 @@ jobs:
 
       - name: Matrix
         id: full-matrix
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
         run: |
           if [[
             "${{ github.event_name }}" == "push" ||
@@ -46,7 +48,7 @@ jobs:
 
           if [[
             "${{ github.event_name }}" == "pull_request" &&
-            "${{ github.event.pull_request.title }}" == *"[ci full-matrix]"*
+            "$PR_TITLE" == *"[ci full-matrix]"*
           ]]; then
             echo "value=true" >> "$GITHUB_OUTPUT"
             exit 0
