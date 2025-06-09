@@ -129,6 +129,34 @@ t.test('need no install, prompt not relevant', async t => {
 })
 
 t.test('broken install directory should be retried', async t => {
+  // Create a directory with broken installation using t.testdir
+  const brokenInstallDir = t.testdir({
+    vlt: {
+      vlx: {
+        'abbrev-c37c2618': {
+          'package.json': JSON.stringify({
+            name: 'vlx',
+            dependencies: {
+              abbrev: 'https://registry.npmjs.org/abbrev/-/abbrev-3.0.1.tgz',
+            },
+          }),
+          // Missing or broken node_modules directory
+        },
+      },
+    },
+  })
+
+  // Mock XDG to use our broken install directory
+  class MockXDGBroken {
+    path: string
+    constructor(path: string) {
+      this.path = resolve(brokenInstallDir, path)
+    }
+    data(path = '') {
+      return resolve(this.path, path)
+    }
+  }
+
   // For this test, use real vlxInfo to test the fix
   const { vlxInstall } = await t.mockImport<typeof import('../src/install.ts')>(
     '../src/install.ts',
@@ -136,25 +164,13 @@ t.test('broken install directory should be retried', async t => {
       '@vltpkg/package-info': {
         PackageInfoClient: MockPackageInfoClient,
       },
-      '@vltpkg/xdg': { XDG: MockXDG },
+      '@vltpkg/xdg': { XDG: MockXDGBroken },
       '@vltpkg/graph': { install: mockInstall },
       // Use real vlxInfo to test the fix
     },
   )
 
-  // Create a broken installation directory that exists but has missing/broken node_modules
-  const brokenDir = resolve(dir, 'vlt/vlx/abbrev-c37c2618')
-  await t.mkdir(brokenDir, { recursive: true })
-  await t.writeFile(
-    resolve(brokenDir, 'package.json'),
-    JSON.stringify({
-      name: 'vlx',
-      dependencies: {
-        abbrev: 'https://registry.npmjs.org/abbrev/-/abbrev-3.0.1.tgz',
-      },
-    }),
-  )
-  // Missing or broken node_modules directory
+  const expectedBrokenDir = resolve(brokenInstallDir, 'vlt/vlx/abbrev-c37c2618')
 
   // With the fix, this should succeed by cleaning up and retrying installation
   const result = await vlxInstall(
@@ -167,7 +183,7 @@ t.test('broken install directory should be retried', async t => {
   )
 
   t.match(result, {
-    path: expectedInstallDir,
+    path: expectedBrokenDir,
     options: {
       packageRoot: t.testdirName,
       yes: true,
