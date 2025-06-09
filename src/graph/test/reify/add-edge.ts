@@ -1,7 +1,7 @@
 import { joinDepIDTuple } from '@vltpkg/dep-id'
 import type { RollbackRemove } from '@vltpkg/rollback-remove'
 import { Spec } from '@vltpkg/spec'
-import { statSync } from 'node:fs'
+import { lstatSync } from 'node:fs'
 import { rm } from 'node:fs/promises'
 import { PathScurry } from 'path-scurry'
 import t from 'tap'
@@ -168,19 +168,10 @@ t.test('EEXIST scenario with directory symlinks', async t => {
     joinDepIDTuple(['registry', '', 'pkg@1.0.0']) +
     '/node_modules/pkg'
 
-  const rootNode = new Node(
-    opts,
-    joinDepIDTuple(['file', '.']),
-    {},
-  )
+  const rootNode = new Node(opts, joinDepIDTuple(['file', '.']), {})
   rootNode.location = projectRoot
 
-  const edge = new Edge(
-    'prod',
-    Spec.parse('pkg@'),
-    rootNode,
-    pkgNode,
-  )
+  const edge = new Edge('prod', Spec.parse('pkg@'), rootNode, pkgNode)
   const scurry = new PathScurry(projectRoot)
 
   // First call creates the directory symlink
@@ -193,7 +184,7 @@ t.test('EEXIST scenario with directory symlinks', async t => {
 
   // Verify symlink was created
   const symlinkPath = projectRoot + '/node_modules/pkg'
-  const stats = statSync(symlinkPath, { throwIfNoEntry: false })
+  const stats = lstatSync(symlinkPath, { throwIfNoEntry: false })
   t.ok(stats, 'Symlink was created')
   t.ok(stats?.isSymbolicLink(), 'Created link is a symlink')
 
@@ -207,7 +198,7 @@ t.test('EEXIST scenario with directory symlinks', async t => {
   )
 
   // Verify symlink still exists and works correctly
-  const statsAfterClobber = statSync(symlinkPath)
+  const statsAfterClobber = lstatSync(symlinkPath)
   t.ok(
     statsAfterClobber.isSymbolicLink(),
     'Symlink still exists after clobbering',
