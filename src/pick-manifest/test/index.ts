@@ -1,5 +1,6 @@
-import { Range } from '@vltpkg/semver'
+import { Range, isRange } from '@vltpkg/semver'
 import { Spec } from '@vltpkg/spec'
+import { isSpec } from '@vltpkg/spec/browser'
 import t from 'tap'
 import type { Manifest, Packument } from '@vltpkg/types'
 import { pickManifest, platformCheck } from '../src/index.ts'
@@ -37,6 +38,94 @@ t.test('basic carat range selection', t => {
     '1.0.2',
     'picked the right manifest using ^',
   )
+  t.end()
+})
+
+t.test('correctly handles Range vs Spec objects', t => {
+  const metadata = {
+    versions: {
+      '1.0.0': { version: '1.0.0' },
+      '1.0.1': { version: '1.0.1' },
+      '1.0.2': { version: '1.0.2' },
+      '2.0.0': { version: '2.0.0' },
+    },
+  } as unknown as Packument
+
+  // Create objects that look similar but are different types
+  const rangeObj = new Range('^1.0.0')
+  const specObj = Spec.parse('foo@^1.0.0')
+
+  // Verify type guards work correctly
+  t.equal(
+    isRange(rangeObj),
+    true,
+    'correctly identifies Range object',
+  )
+  t.equal(isSpec(specObj), true, 'correctly identifies Spec object')
+  t.equal(isRange(specObj), false, 'correctly rejects Spec as Range')
+  t.equal(isSpec(rangeObj), false, 'correctly rejects Range as Spec')
+
+  // Verify pickManifest handles both correctly
+  const manifestFromRange = pickManifest(metadata, rangeObj)
+  const manifestFromSpec = pickManifest(metadata, specObj)
+
+  t.equal(
+    manifestFromRange?.version,
+    '1.0.2',
+    'picked correct version from Range object',
+  )
+
+  t.equal(
+    manifestFromSpec?.version,
+    '1.0.2',
+    'picked correct version from Spec object',
+  )
+
+  t.end()
+})
+
+t.test('handles edge cases with similar objects', t => {
+  const metadata = {
+    name: 'test-package',
+    versions: {
+      '1.0.0': { version: '1.0.0' },
+      '1.0.1': { version: '1.0.1' },
+      '1.0.2': { version: '1.0.2' },
+      '2.0.0': { version: '2.0.0' },
+    },
+  } as unknown as Packument
+
+  // Create a mock object with some properties but not enough to be recognized as Range or Spec
+  const mockObj = {
+    spec: 'test@^1.0.0',
+    name: 'test',
+    // Intentionally missing required Range properties (e.g., set with Comparator instances)
+  }
+
+  // Verify type guards correctly reject this
+  t.equal(
+    isRange(mockObj),
+    false,
+    'rejects object with incomplete Range properties',
+  )
+  t.equal(
+    isSpec(mockObj),
+    false,
+    'rejects object with incomplete Spec properties',
+  )
+
+  // Test with an invalid object type
+  try {
+    pickManifest(metadata, mockObj as any)
+    t.fail('should have thrown an error')
+  } catch (err: any) {
+    t.match(
+      err.message,
+      /is not a function|Only dist-tag or semver range specs are supported/,
+      'rejects invalid object with appropriate error',
+    )
+  }
+
   t.end()
 })
 
@@ -688,5 +777,58 @@ t.test('prefers versions that satisfy the os/arch requirement', t => {
     '1.5.0',
     'if no engine-match exists, just use whatever',
   )
+  t.end()
+})
+
+t.test('handles complex Spec objects with subspecs correctly', t => {
+  const metadata = {
+    name: 'baz',
+    versions: {
+      '1.0.0': { version: '1.0.0' },
+      '1.0.1': { version: '1.0.1' },
+      '1.0.2': { version: '1.0.2' },
+      '2.0.0': { version: '2.0.0' },
+    },
+  } as unknown as Packument
+
+  // Create a nested spec: foo@npm:bar@npm:baz@^1.0.0
+  const nestedSpec = Spec.parse('foo@npm:bar@npm:baz@^1.0.0')
+
+  // Verify it's recognized correctly
+  t.equal(
+    isSpec(nestedSpec),
+    true,
+    'correctly identifies nested Spec object',
+  )
+  t.equal(
+    isRange(nestedSpec),
+    false,
+    'correctly rejects nested Spec as Range',
+  )
+
+  // Verify pickManifest extracts the correct range from nested specs
+  const manifestFromNestedSpec = pickManifest(metadata, nestedSpec)
+
+  t.equal(
+    manifestFromNestedSpec?.version,
+    '1.0.2',
+    'picked correct version from nested Spec object',
+  )
+
+  // Create a more deeply nested spec
+  const deeplyNestedSpec = Spec.parse(
+    'pkg1@npm:pkg2@npm:pkg3@npm:baz@^1.0.0',
+  )
+  const manifestFromDeeplyNestedSpec = pickManifest(
+    metadata,
+    deeplyNestedSpec,
+  )
+
+  t.equal(
+    manifestFromDeeplyNestedSpec?.version,
+    '1.0.2',
+    'picked correct version from deeply nested Spec object',
+  )
+
   t.end()
 })
