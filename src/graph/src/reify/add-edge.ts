@@ -19,7 +19,7 @@ const clobberSymlink = async (
   } catch (e) {
     const er = e as NodeJS.ErrnoException
     if (er.code === 'EEXIST') {
-      return remover.rm(link).then(() => symlink(target, link))
+      return remover.rm(link).then(() => symlink(target, link, type))
       /* c8 ignore start */
     } else {
       throw er
