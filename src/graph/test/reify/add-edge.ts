@@ -132,3 +132,62 @@ t.test('reify an edge', async t => {
   statSync(projectRoot + '/node_modules/bar')
   statSync(projectRoot + '/node_modules/.bin/bar')
 })
+
+t.test('EEXIST scenario with directory symlinks', async t => {
+  const projectRoot = t.testdir({
+    node_modules: {
+      '.vlt': {
+        [joinDepIDTuple(['registry', '', 'pkg@1.0.0'])]: {
+          node_modules: {
+            pkg: {
+              'package.json': JSON.stringify({
+                name: 'pkg',
+                version: '1.0.0',
+              }),
+            },
+          },
+        },
+      },
+    },
+  })
+
+  const opts = {
+    projectRoot,
+    graph: {} as GraphLike,
+  }
+
+  const pkgNode = new Node(
+    opts,
+    joinDepIDTuple(['registry', '', 'pkg@1.0.0']),
+    { name: 'pkg', version: '1.0.0' },
+  )
+
+  pkgNode.location =
+    projectRoot +
+    '/node_modules/.vlt/' +
+    joinDepIDTuple(['registry', '', 'pkg@1.0.0']) +
+    '/node_modules/pkg'
+
+  const rootNode = new Node(opts, joinDepIDTuple(['file', '.']), {})
+  rootNode.location = projectRoot
+
+  const edge = new Edge('prod', Spec.parse('pkg@'), rootNode, pkgNode)
+  const scurry = new PathScurry(projectRoot)
+
+  // First call creates the directory symlink
+  await addEdge(edge, { name: 'pkg', version: '1.0.0' }, scurry, mockRemover)
+  
+  // Verify symlink was created
+  const symlinkPath = projectRoot + '/node_modules/pkg'
+  const stats = statSync(symlinkPath, { throwIfNoEntry: false })
+  t.ok(stats, 'Symlink was created')
+  t.ok(stats?.isSymbolicLink(), 'Created link is a symlink')
+
+  // Second call should trigger EEXIST and clobbering logic
+  // This tests the fix where symlink type is preserved in retry
+  await addEdge(edge, { name: 'pkg', version: '1.0.0' }, scurry, mockRemover)
+  
+  // Verify symlink still exists and works correctly
+  const statsAfterClobber = statSync(symlinkPath)
+  t.ok(statsAfterClobber.isSymbolicLink(), 'Symlink still exists after clobbering')
+})
