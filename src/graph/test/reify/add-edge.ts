@@ -1,7 +1,7 @@
 import { joinDepIDTuple } from '@vltpkg/dep-id'
 import type { RollbackRemove } from '@vltpkg/rollback-remove'
 import { Spec } from '@vltpkg/spec'
-import { lstatSync } from 'node:fs'
+import { lstatSync, statSync } from 'node:fs'
 import { rm } from 'node:fs/promises'
 import { PathScurry } from 'path-scurry'
 import t from 'tap'
