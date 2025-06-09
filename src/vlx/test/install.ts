@@ -127,3 +127,52 @@ t.test('need no install, prompt not relevant', async t => {
   })
   t.strictSame(installs, [], 'no installs needed')
 })
+
+t.test('broken install directory should be retried', async t => {
+  // For this test, use real vlxInfo to test the fix
+  const { vlxInstall } = await t.mockImport<typeof import('../src/install.ts')>(
+    '../src/install.ts',
+    {
+      '@vltpkg/package-info': {
+        PackageInfoClient: MockPackageInfoClient,
+      },
+      '@vltpkg/xdg': { XDG: MockXDG },
+      '@vltpkg/graph': { install: mockInstall },
+      // Use real vlxInfo to test the fix
+    },
+  )
+
+  // Create a broken installation directory that exists but has missing/broken node_modules
+  const brokenDir = resolve(dir, 'vlt/vlx/abbrev-c37c2618')
+  await t.mkdir(brokenDir, { recursive: true })
+  await t.writeFile(
+    resolve(brokenDir, 'package.json'),
+    JSON.stringify({
+      name: 'vlx',
+      dependencies: {
+        abbrev: 'https://registry.npmjs.org/abbrev/-/abbrev-3.0.1.tgz',
+      },
+    }),
+  )
+  // Missing or broken node_modules directory
+
+  // With the fix, this should succeed by cleaning up and retrying installation
+  const result = await vlxInstall(
+    'abbrev',
+    {
+      packageRoot: t.testdirName,
+      yes: true,
+      packageJson,
+    } as unknown as VlxOptions,
+  )
+
+  t.match(result, {
+    path: expectedInstallDir,
+    options: {
+      packageRoot: t.testdirName,
+      yes: true,
+      'stale-while-revalidate-factor': Infinity,
+    },
+  })
+  t.equal(installs.length, 1, 'should retry installation for broken directory')
+})

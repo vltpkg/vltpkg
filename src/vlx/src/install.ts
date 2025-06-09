@@ -4,7 +4,7 @@ import { PackageInfoClient } from '@vltpkg/package-info'
 import type { Spec } from '@vltpkg/spec'
 import { XDG } from '@vltpkg/xdg'
 import { createHash } from 'node:crypto'
-import { mkdir, writeFile } from 'node:fs/promises'
+import { mkdir, writeFile, rm } from 'node:fs/promises'
 import { resolve } from 'node:path'
 import { PathScurry } from 'path-scurry'
 import { dirExists } from './dir-exists.ts'
@@ -43,7 +43,13 @@ export const vlxInstall = async (
   const xdg = new XDG('vlt/vlx')
   const dir = xdg.data(pkgSpec.name.replace('/', '§') + '-' + hash)
   if (await dirExists(dir)) {
-    return vlxInfo(dir, options)
+    try {
+      return vlxInfo(dir, options)
+    } catch (err) {
+      // If vlxInfo fails, the directory likely contains a broken installation
+      // Clean it up and retry the full installation process
+      await rm(dir, { recursive: true, force: true })
+    }
   }
 
   const ok =
