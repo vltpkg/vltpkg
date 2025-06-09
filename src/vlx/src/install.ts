@@ -44,7 +44,7 @@ export const vlxInstall = async (
   const dir = xdg.data(pkgSpec.name.replace('/', '§') + '-' + hash)
   if (await dirExists(dir)) {
     try {
-      return vlxInfo(dir, options)
+      return await vlxInfo(dir, options)
     } catch (err) {
       // If vlxInfo fails, the directory likely contains a broken installation
       // Clean it up and retry the full installation process
