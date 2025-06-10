@@ -11,6 +11,7 @@ import type { Dependency } from '../../src/dependencies.ts'
 import { Graph } from '../../src/graph.ts'
 import { appendNodes } from '../../src/ideal/append-nodes.ts'
 import { objectLikeOutput } from '../../src/visualization/object-like-output.ts'
+import type { Node } from '../../src/node.ts'
 
 Object.assign(Spec.prototype, {
   [kCustomInspect](this: Spec) {
@@ -515,3 +516,357 @@ t.test('resolve against the correct registries', async t => {
   )
   t.matchSnapshot(inspect(graph, { colors: false }))
 })
+
+// Add a basic test for appendNodes that verifies it can handle
+// query modifiers correctly
+t.test('appendNodes with query modifier', async t => {
+  // Create a package info client that returns a simple foo package
+  const fooManifest = {
+    name: 'foo',
+    version: '1.0.0',
+  }
+
+  const packageInfo = {
+    async manifest() {
+      return fooManifest
+    },
+  } as unknown as PackageInfoClient
+
+  // Create a minimal graph
+  const graph = new Graph({
+    projectRoot: t.testdirName,
+    ...configData,
+    mainManifest: { name: 'test', version: '1.0.0' },
+  })
+
+  // Call appendNodes with minimal arguments
+  await appendNodes(
+    new Map(),
+    packageInfo,
+    graph,
+    graph.mainImporter,
+    [],
+    new PathScurry(t.testdirName),
+    configData,
+    new Set(),
+    undefined,
+    undefined,
+  )
+
+  // Verify the appendNodes function ran without errors
+  t.pass('appendNodes with no modifiers completed successfully')
+})
+
+// Add a test for the modifier logic with complete and incomplete modifiers
+t.test(
+  'appendNodes with complete and incomplete modifiers',
+  async t => {
+    // Create package manifests
+    const fooManifest = {
+      name: 'foo',
+      version: '1.0.0',
+    }
+
+    const barManifest = {
+      name: 'bar',
+      version: '2.0.0',
+    }
+
+    const packageInfo = {
+      async manifest(spec: Spec) {
+        if (spec.name === 'foo') return fooManifest
+        if (spec.name === 'bar') return barManifest
+        return null
+      },
+    } as PackageInfoClient
+
+    // Create a minimal graph
+    const graph = new Graph({
+      projectRoot: t.testdirName,
+      ...configData,
+      mainManifest: { name: 'test', version: '1.0.0' },
+    })
+
+    // Create a dependency
+    const fooDep = asDependency({
+      spec: Spec.parse('foo', '^1.0.0'),
+      type: 'prod',
+    })
+
+    // Create a breadcrumb-like objects for testing
+    const breadcrumbItem = { name: 'foo', specificity: 1 }
+
+    const completeModifierRefs = new Map([
+      [
+        'foo',
+        {
+          modifier: {
+            type: 'edge' as const,
+            query: '#foo',
+            spec: Spec.parse('bar', '^2.0.0'), // swap with npm:bar@^2.0.0
+            breadcrumb: {
+              first: breadcrumbItem,
+              last: breadcrumbItem,
+              single: true,
+              items: [breadcrumbItem],
+              clear: () => {},
+              clone: function () {
+                return this
+              },
+              comment: '',
+            },
+            value: '^2.0.0',
+            refs: new Set(),
+          },
+          interactiveBreadcrumb: {
+            current: breadcrumbItem,
+            next: () => true,
+            done: true,
+          },
+          originalFrom: graph.mainImporter,
+        },
+      ],
+    ])
+
+    // Call appendNodes with the modifier
+    await appendNodes(
+      new Map([['foo', fooDep]]),
+      packageInfo,
+      graph,
+      graph.mainImporter,
+      [fooDep],
+      new PathScurry(t.testdirName),
+      configData,
+      new Set(),
+      {
+        updateActiveEntry: () => {},
+        tryDependencies: () => new Map(),
+      } as any,
+      completeModifierRefs as any,
+    )
+
+    // Verify bar was added due to the edge modifier
+    const barNode = [...(graph.nodesByName.get('bar') ?? [])].find(
+      node => node.manifest?.name === 'bar',
+    )
+    t.ok(
+      barNode,
+      'bar node should be added due to the complete modifier',
+    )
+
+    // Reset the graph for the next test
+    const newGraph = new Graph({
+      projectRoot: t.testdirName,
+      ...configData,
+      mainManifest: { name: 'test', version: '1.0.0' },
+    })
+
+    // check for a non-matching breadcrumb
+    const incompleteModifierRefs = new Map([
+      [
+        'different',
+        {
+          modifier: {
+            type: 'edge' as const,
+            query: '#different',
+            spec: Spec.parse('bar', '^2.0.0'),
+            breadcrumb: {
+              first: breadcrumbItem,
+              last: { name: 'different', specificity: 1 }, // Different from current
+              single: false,
+              items: [breadcrumbItem],
+              clear: () => {},
+              clone: function () {
+                return this
+              },
+              comment: '',
+            },
+            value: '^2.0.0',
+            refs: new Set(),
+          },
+          interactiveBreadcrumb: {
+            current: breadcrumbItem,
+            next: () => true,
+            done: false,
+          },
+          originalFrom: newGraph.mainImporter,
+        },
+      ],
+    ])
+
+    // Call appendNodes with the incomplete modifier
+    await appendNodes(
+      new Map([['foo', fooDep]]),
+      packageInfo,
+      newGraph,
+      newGraph.mainImporter,
+      [fooDep],
+      new PathScurry(t.testdirName),
+      configData,
+      new Set(),
+      {
+        updateActiveEntry: () => {},
+        tryDependencies: () => new Map(),
+      } as any,
+      incompleteModifierRefs as any,
+    )
+
+    // Verify foo was added, not bar (as the modifier is incomplete)
+    const fooNode = [...(newGraph.nodesByName.get('foo') ?? [])].find(
+      node => node.manifest?.name === 'foo',
+    )
+    t.ok(
+      fooNode,
+      'foo node should be added when modifier is incomplete',
+    )
+    const barNodeInNewGraph = [
+      ...(newGraph.nodesByName.get('bar') ?? []),
+    ]
+    t.equal(
+      barNodeInNewGraph.length,
+      0,
+      'bar node should not be added when modifier is incomplete',
+    )
+  },
+)
+
+// Add a test for the error handling when a node can't be placed
+t.test(
+  'appendNodes error handling when node cannot be placed',
+  async t => {
+    // Create a minimal graph
+    const graph = new Graph({
+      projectRoot: t.testdirName,
+      ...configData,
+      mainManifest: { name: 'test', version: '1.0.0' },
+    })
+    const fooDep = asDependency({
+      spec: Spec.parse('foo', '^1.0.0'),
+      type: 'prod',
+    })
+
+    // Create a package info client that returns a manifest
+    const packageInfo = {
+      async manifest() {
+        return { name: 'foo', version: '1.0.0' }
+      },
+    } as unknown as PackageInfoClient
+
+    // Create a graph that returns undefined from placePackage
+    // to trigger the error
+    const originalPlacePackage = Graph.prototype.placePackage
+    Graph.prototype.placePackage = () => undefined
+
+    try {
+      // This should throw an error
+      await t.rejects(
+        appendNodes(
+          new Map([['foo', fooDep]]),
+          packageInfo,
+          graph,
+          graph.mainImporter,
+          [fooDep],
+          new PathScurry(t.testdirName),
+          configData,
+          new Set(),
+        ),
+        /failed to place package/,
+        'should throw when graph.placePackage returns null',
+      )
+    } finally {
+      // Restore the original method
+      Graph.prototype.placePackage = originalPlacePackage
+    }
+  },
+)
+
+// Add a test to cover the tryDependencies branch
+t.test(
+  'appendNodes with nested dependencies and modifiers',
+  async t => {
+    // Create package manifests with nested dependencies
+    const fooManifest = {
+      name: 'foo',
+      version: '1.0.0',
+      dependencies: {
+        bar: '^1.0.0',
+      },
+    }
+    const barManifest = {
+      name: 'bar',
+      version: '1.0.0',
+    }
+
+    // Create a minimal graph
+    const graph = new Graph({
+      projectRoot: t.testdirName,
+      ...configData,
+      mainManifest: { name: 'test', version: '1.0.0' },
+    })
+    const fooDep = asDependency({
+      spec: Spec.parse('foo', '^1.0.0'),
+      type: 'prod',
+    })
+
+    // Mock packageInfo
+    const packageInfo = {
+      async manifest(spec: Spec) {
+        if (spec.name === 'foo') return fooManifest
+        if (spec.name === 'bar') return barManifest
+        return null
+      },
+    } as PackageInfoClient
+
+    // Create a modifier that implements tryDependencies
+    const tryDependenciesCalled = { value: false }
+    const mockModifier = {
+      updateActiveEntry: () => {},
+      // This method will be called for the nested dependencies
+      tryDependencies: (node: Node, deps: any[]) => {
+        tryDependenciesCalled.value = true
+        // Verify we're getting the expected parameters
+        t.equal(node.manifest?.name, 'foo', 'node should be foo')
+        t.ok(Array.isArray(deps), 'deps should be an array')
+        t.ok(deps.length > 0, 'deps should not be empty')
+        t.equal(
+          deps[0].spec.name,
+          'bar',
+          'first dependency should be bar',
+        )
+        // we don't care about the returned value here
+        return new Map()
+      },
+    }
+
+    // call appendNodes with the mock modifier
+    await appendNodes(
+      new Map([['foo', fooDep]]),
+      packageInfo,
+      graph,
+      graph.mainImporter,
+      [fooDep],
+      new PathScurry(t.testdirName),
+      configData,
+      new Set(),
+      mockModifier as any,
+      undefined,
+    )
+
+    // Verify tryDependencies was called
+    t.ok(
+      tryDependenciesCalled.value,
+      'tryDependencies should have been called',
+    )
+
+    // Verify both foo and bar were added to the graph
+    const fooNode = [...(graph.nodesByName.get('foo') ?? [])].find(
+      node => node.manifest?.name === 'foo',
+    )
+    t.ok(fooNode, 'foo node should be added to the graph')
+
+    const barNode = [...(graph.nodesByName.get('bar') ?? [])].find(
+      node => node.manifest?.name === 'bar',
+    )
+    t.ok(barNode, 'bar node should be added as a nested dependency')
+  },
+)

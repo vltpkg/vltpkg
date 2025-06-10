@@ -17,6 +17,7 @@ import { Edge } from './edge.ts'
 import type { GraphLike, NodeLike } from './types.ts'
 import { stringifyNode } from './stringify-node.ts'
 import type { PackageInfoClient } from '@vltpkg/package-info'
+import type { GraphModifier } from './modifiers.ts'
 
 export type NodeOptions = SpecOptions & {
   projectRoot: string
@@ -140,6 +141,13 @@ export class Node implements NodeLike {
    * the same registry, if it's not the default.
    */
   registry?: string
+
+  /**
+   * If this node has been modified as part of applying a {@link GraphModifier}
+   * then this field will contain the modifier query that was applied.
+   * Otherwise, it will be `undefined`.
+   */
+  modifier: string | undefined
 
   /**
    * The name of the package represented by this node, this is usually
@@ -365,6 +373,7 @@ export class Node implements NodeLike {
       dev: this.dev,
       optional: this.optional,
       confused: this.confused,
+      modifier: this.modifier,
       ...(this.confused ?
         { rawManifest: this.#rawManifest }
       : undefined),

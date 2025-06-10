@@ -94,6 +94,7 @@ Set {
       "name": "my-project",
       "version": "1.0.0",
     },
+    "modifier": undefined,
     "projectRoot": #
     "registry": undefined,
     "resolved": undefined,
@@ -114,6 +115,7 @@ Set {
       [Symbol.for(newline)]: "",
       "version": "1.0.0",
     },
+    "modifier": undefined,
     "projectRoot": #
     "registry": undefined,
     "resolved": undefined,
@@ -134,6 +136,7 @@ Set {
       [Symbol.for(newline)]: "",
       "version": "1.0.0",
     },
+    "modifier": undefined,
     "projectRoot": #
     "registry": undefined,
     "resolved": undefined,

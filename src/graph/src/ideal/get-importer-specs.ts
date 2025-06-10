@@ -15,6 +15,7 @@ import type {
 import type { Edge } from '../edge.ts'
 import type { Node } from '../node.ts'
 import type { Graph } from '../graph.ts'
+import type { GraphModifier } from '../modifiers.ts'
 import type { DepID } from '@vltpkg/dep-id'
 import { Spec } from '@vltpkg/spec'
 import type { SpecOptions } from '@vltpkg/spec'
@@ -22,7 +23,9 @@ import type { SpecOptions } from '@vltpkg/spec'
 export type GetImporterSpecsOptions = BuildIdealAddOptions &
   BuildIdealFromGraphOptions &
   BuildIdealRemoveOptions &
-  SpecOptions
+  SpecOptions & {
+    modifiers?: GraphModifier
+  }
 
 const hasDepName = (importer: Node, edge: Edge): boolean => {
   for (const depType of longDependencyTypes) {
@@ -51,12 +54,15 @@ class RemoveImportersDependenciesMapImpl
  * Given a {@link Graph} and a list of {@link Dependency}, merges the
  * dependencies info found in the graph importers and returns the add & remove
  * results as a Map in which keys are {@link DepID} of each importer node.
+ * A list of dependencies to be checked for modifiers is also returned.
  */
 export const getImporterSpecs = (
   options: GetImporterSpecsOptions,
 ) => {
-  const { add, graph, remove } = options
+  const { add, graph, modifiers, remove } = options
   const addResult: AddImportersDependenciesMap =
+    new AddImportersDependenciesMapImpl()
+  const checkResult: AddImportersDependenciesMap =
     new AddImportersDependenciesMapImpl()
   const removeResult: RemoveImportersDependenciesMap =
     new RemoveImportersDependenciesMapImpl()
@@ -67,6 +73,7 @@ export const getImporterSpecs = (
     // only a single dependency entry for a given dependency for each importer
     const addDeps = new Map<string, Dependency>()
     const removeDeps = new Set<string>()
+    const checkDeps = new Map<string, Dependency>()
     // if an edge from the graph is not listed in the manifest,
     // add that edge to the list of dependencies to be removed
     for (const edge of importer.edgesOut.values()) {
@@ -84,18 +91,19 @@ export const getImporterSpecs = (
       const deps = Object.entries(importer.manifest?.[depType] ?? {})
       for (const [depName, depSpec] of deps) {
         const edge = importer.edgesOut.get(depName)
+        const dependency = asDependency({
+          spec: Spec.parse(depName, depSpec, options),
+          type: shorten(depType, depName, importer.manifest),
+        })
         if (!edge?.to) {
-          addDeps.set(
-            depName,
-            asDependency({
-              spec: Spec.parse(depName, depSpec, options),
-              type: shorten(depType, depName, importer.manifest),
-            }),
-          )
+          addDeps.set(depName, dependency)
+        } else if (modifiers?.maybeHasModifier(depName)) {
+          checkDeps.set(depName, dependency)
         }
       }
     }
     addResult.set(importer.id, addDeps)
+    checkResult.set(importer.id, checkDeps)
     removeResult.set(importer.id, removeDeps)
   }
 
@@ -145,6 +153,7 @@ export const getImporterSpecs = (
 
   return {
     add: addResult,
+    check: checkResult,
     remove: removeResult,
   }
 }
