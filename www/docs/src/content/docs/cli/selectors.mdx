@@ -127,6 +127,12 @@ e.g: `#foo` is the same as `[name=foo]`
   property to use for the comparison, e.g:
   `:semver(^22, satisfies, :attr(engines, [node]))` for comparing the
   value of `engines.node`.
+- `:path(<glob>)` Matches packages based on their file path relative to
+  the project root using glob patterns. Examples:
+  - `:path(./node_modules/*)` - Matches all dependencies in node_modules
+  - `:path(**/react)` - Matches all dependencies named "react" anywhere
+  - `:path(./workspace/foo)` - Matches a specific workspace dependency
+  - `:path(packages/**)` - Matches all packages in the packages directory
 - `:type(registry|file|git|remote|workspace)` Matches packages based
   on their type, e.g, to retrieve all git dependencies: `:type(git)`.
 
