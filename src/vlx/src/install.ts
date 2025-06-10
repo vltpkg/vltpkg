@@ -45,13 +45,11 @@ export const vlxInstall = async (
   if (await dirExists(dir)) {
     try {
       return vlxInfo(dir, options)
-      /* c8 ignore start */
     } catch {
       // If vlxInfo fails, the directory likely contains a broken installation
       // Clean it up and retry the full installation process
       await rm(dir, { recursive: true, force: true })
     }
-    /* c8 ignore stop */
   }
 
   const ok =
