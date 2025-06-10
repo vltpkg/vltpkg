@@ -46,6 +46,13 @@ t.test('install', async t => {
         log += 'reify\n'
       },
     },
+    '../src/modifiers.ts': {
+      GraphModifier: {
+        maybeLoad() {
+          log += 'GraphModifier.maybeLoad\n'
+        },
+      },
+    },
     '@vltpkg/package-json': {
       PackageJson,
     },

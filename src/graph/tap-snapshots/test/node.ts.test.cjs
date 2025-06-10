@@ -18,6 +18,7 @@ Node [@vltpkg/graph.Node] {
   manifest: [Object],
   projectRoot: #
   registry: undefined,
+  modifier: undefined,
   version: '1.0.0',
   resolved: undefined
 }
@@ -97,6 +98,7 @@ Object {
     "name": "foo",
     "version": "1.0.0",
   },
+  "modifier": undefined,
   "name": "foo",
   "optional": false,
   "projectRoot": "{ROOT}",

@@ -51,6 +51,31 @@ exports[`test/actual/load.ts > TAP > cycle > should load an actual graph with cy
 ]
 `
 
+exports[`test/actual/load.ts > TAP > extra parameter in DepID > should preserve extra parameters in DepIDs when loading the graph 1`] = `
+[
+  Node {
+    id: 'file·.',
+    location: '.',
+    importer: true,
+    edgesOut: [
+      Edge spec(d@file:./packages/d) -prod-> to: Node { id: 'file·packages§d', location: './packages/d' },
+      Edge spec(c@^1.0.0) -prod-> to: Node {
+        id: '··c@1.0.0·%3Aroot%20%3E%20%23c%20%3E%20%23d',
+        location: './node_modules/.vlt/··c@1.0.0·%3Aroot%20%3E%20%23c%20%3E%20%23d/node_modules/c'
+      },
+      Edge spec(b@^1.0.0) -prod-> to: Node {
+        id: '··b@1.0.0·%3Aroot%20%3E%20%23b',
+        location: './node_modules/.vlt/··b@1.0.0·%3Aroot%20%3E%20%23b/node_modules/b'
+      },
+      Edge spec(a@^1.0.0) -prod-> to: Node {
+        id: '··a@1.0.0',
+        location: './node_modules/.vlt/··a@1.0.0/node_modules/a'
+      }
+    ]
+  }
+]
+`
+
 exports[`test/actual/load.ts > TAP > getPathBasedId > should get path based id for various dep ids 1`] = `
 Array [
   "··foo@1.0.0",

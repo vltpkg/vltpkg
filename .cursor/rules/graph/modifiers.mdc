@@ -1,0 +1,106 @@
+---
+description: Understanding Graph Modifiers
+globs:
+alwaysApply: false
+---
+# Graph Modifiers
+
+What we refer to as "Graph Modifiers" is a common API that enables features of the previous-gen package managers capabilities such as:
+- Overrides / Resolutions
+- Package Extensions
+
+## Motivation
+
+The vlt client needs to be a capable tool that can satisfy power user requirements like customization of a given graph resolution.
+By leveraging the Dependency Selector Syntax as its end-user facing API the client takes advantage of the robustness of the query language to provide fine-grain control to its graph install to advanced users.
+
+### Overrides / Resolutions:
+
+Being able to replace dependencies declarations of a given dependency helps end-users getting around problems in their current install graph. Some common examples are:
+
+- Replacing a transitive dependency that has known security issues
+- Enforcing usage of a unique package version across the install
+- Updating dependencies of a direct (or transitive) abandoned dependency
+- Forcing the downgrade of a specific package version that would otherwise be satisfied by a greater, spec-fulfilling version
+
+**Refs:**
+
+- npm Overrides: https://docs.npmjs.com/cli/v10/configuring-npm/package-json?v=true#overrides
+- pnpm Overrides: https://pnpm.io/settings#overrides
+- yarn Resolutions: https://classic.yarnpkg.com/lang/en/docs/selective-version-resolutions/
+
+### Package Extensions
+
+Adding dependency declarations to a dependency can help end-users fixing some specific categories of errors, such as:
+
+- Declaring missing peer-dependencies to a given package
+- Defining a peer-dependency as optional
+- Fixing missing dependencies in general
+
+Refs:
+
+- Yarn extensions database (serves as a good repository of real-life problems end-users are patching with this feature): https://github.com/yarnpkg/berry/blob/master/packages/yarnpkg-extensions/sources/index.ts
+- pnpm Package Extensions: https://pnpm.io/settings#packageextensions
+
+## Implementation
+
+### User-facing syntax & UX
+
+From the user point of view, all of the configuration and management of the graph modifier API features happens at the `vlt.json` file.
+
+#### The modifiers key
+
+To configure overrides and package extensions, a new object defined using the `"modifiers"` property of the `vlt.json` file, e.g:
+
+```json
+{
+  "workspaces": "packages/*",
+  "modifiers": {
+    ...
+  }
+}
+```
+
+#### Setting Edge Modifiers
+
+Edge modifiers are the equivalent of the Overrides feature, they are applied when a string value is used in the modifiers object, e.g:
+
+```json
+{
+  "modifiers": {
+    ":root > #a > #b": "^1.0.0"
+  }
+}
+```
+
+In case of conflicting results among multiple queries, selector specificity is then used to define which one applies to a given edge (result should be `1`):
+
+```json
+{
+  "dependencies": {
+    "a": "^1.0.0"
+  },
+  "modifiers": {
+    ":root > #a > #b": "1",
+    "#a > #b": "2"
+  }
+}
+```
+
+Setting a unique version value for a given dependency:
+
+```json
+{
+  "modifiers": {
+    "#react": "^19"
+  }
+}
+```
+
+#### Code Location
+
+The bulk of the logic to handle modifiers while building the graph is located at `src/graph/src/modifiers.ts` - that module is responsible for tracking seen elements and apply known modifiers to nodes and edges as the graph is traversed, other modules of interest are:
+- `src/dss-parser/` The main Dependency Selector Syntax query language parser
+- `src/dss-breadcrumb/` The library that implements an interactive object representation that is meant to represent the described query while enabling the modifiers module to traverse that query as the graph is traversed.
+- `src/graph/src/ideal/*` The build ideal graph is the place that implements that understanding of Graph modifiers and the ability to replace packages at runtime with user-provided values from the configuration.
+
