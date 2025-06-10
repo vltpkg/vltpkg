@@ -16,16 +16,29 @@ const clobberSymlink = async (
   await mkdir(dirname(link), { recursive: true })
   try {
     await symlink(target, link, type)
-  } catch (e) {
-    const er = e as NodeJS.ErrnoException
-    if (er.code === 'EEXIST') {
-      return remover.rm(link).then(() => symlink(target, link, type))
-      /* c8 ignore start */
-    } else {
+  } catch (er) {
+    /* c8 ignore start */
+    if ((er as NodeJS.ErrnoException).code !== 'EEXIST') {
       throw er
     }
+    /* c8 ignore stop */
+
+    // if the symlink exists, remove it
+    await remover.rm(link)
+
+    try {
+      // then try to create it again
+      await symlink(target, link, type)
+      /* c8 ignore start */
+    } catch (er) {
+      // if the symlink still exists, then multiple paths could be writing to it
+      // so now just ignore that error. See https://github.com/vltpkg/vltpkg/issues/797
+      if ((er as NodeJS.ErrnoException).code !== 'EEXIST') {
+        throw er
+      }
+    }
+    /* c8 ignore stop */
   }
-  /* c8 ignore stop */
 }
 
 /**
