@@ -411,6 +411,13 @@ export const definition = j
     },
   })
 
+  .opt({
+    query: {
+      short: 'q',
+      description: `Set to filter the results of an operation by a query.`,
+    },
+  })
+
   .flag({
     recursive: {
       short: 'r',

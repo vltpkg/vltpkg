@@ -98,7 +98,10 @@ Is this ok? (y) `,
 export const command: CommandFn<ExecResult> = async conf => {
   const arg0 = await vlx.resolve(
     conf.positionals,
-    conf.options,
+    {
+      ...conf.options,
+      query: undefined,
+    },
     promptFn,
   )
   if (arg0) conf.positionals[0] = arg0
