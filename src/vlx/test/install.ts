@@ -5,8 +5,24 @@ import { resolve } from 'node:path'
 import type { Test } from 'tap'
 import t from 'tap'
 import type { VlxOptions } from '../src/index.ts'
+import { mkdirSync } from 'node:fs'
 
-const getVlxInstall = async (t: Test) => {
+const getVlxInstall = async (
+  t: Test,
+  {
+    // just to verify that install returns whatever vlxInfo reports
+    mockVlxInfo = (path: string, options: VlxOptions) => ({
+      path,
+      options,
+    }),
+  }: {
+    mockVlxInfo?: (
+      path: string,
+      options: VlxOptions,
+      manifest?: Manifest,
+    ) => { path: string; options: VlxOptions }
+  } = {},
+) => {
   const installs: [string, Manifest][] = []
   const packageJson = new PackageJson()
   const dir = t.testdir({})
@@ -38,17 +54,6 @@ const getVlxInstall = async (t: Test) => {
     }
   }
 
-  const expectedInstallDir = resolve(
-    t.testdirName,
-    'vlt/vlx/abbrev-c37c2618',
-  )
-
-  // just to verify that install returns whatever vlxInfo reports
-  const mockVlxInfo = async (path: string, options: VlxOptions) => ({
-    path,
-    options,
-  })
-
   const { vlxInstall } = await t.mockImport<
     typeof import('../src/install.ts')
   >('../src/install.ts', {
@@ -62,22 +67,24 @@ const getVlxInstall = async (t: Test) => {
 
   return {
     vlxInstall,
-    packageJson,
-    expectedInstallDir,
+    options: {
+      packageRoot: t.testdirName,
+      packageJson,
+    } as unknown as VlxOptions,
+    expectedInstallDir: resolve(
+      t.testdirName,
+      'vlt/vlx/abbrev-c37c2618',
+    ),
     installs,
     clearInstalls: () => (installs.length = 0),
   }
 }
 
 t.test('need an install, but do not accept prompt', async t => {
-  const { vlxInstall } = await getVlxInstall(t)
+  const { vlxInstall, options } = await getVlxInstall(t)
 
   await t.rejects(
-    vlxInstall(
-      'abbrev',
-      { packageRoot: t.testdirName } as unknown as VlxOptions,
-      async () => 'no',
-    ),
+    vlxInstall('abbrev', options, async () => 'no'),
     {
       message: 'Operation aborted',
     },
@@ -85,16 +92,12 @@ t.test('need an install, but do not accept prompt', async t => {
 })
 
 t.test('need an install, accept prompt with --yes', async t => {
-  const { vlxInstall, packageJson, expectedInstallDir, installs } =
+  const { vlxInstall, options, expectedInstallDir, installs } =
     await getVlxInstall(t)
 
   const result = await vlxInstall(
     'abbrev',
-    {
-      packageRoot: t.testdirName,
-      yes: true,
-      packageJson,
-    } as unknown as VlxOptions,
+    { ...options, yes: true },
     async () => 'no',
   )
 
@@ -114,30 +117,19 @@ t.test('need an install, accept prompt with --yes', async t => {
 })
 
 t.test('need no install, prompt not relevant', async t => {
-  const {
-    vlxInstall,
-    packageJson,
-    expectedInstallDir,
-    clearInstalls,
-  } = await getVlxInstall(t)
+  const { vlxInstall, options, expectedInstallDir, clearInstalls } =
+    await getVlxInstall(t)
 
   await vlxInstall(
     'abbrev',
-    {
-      packageRoot: t.testdirName,
-      yes: true,
-      packageJson,
-    } as unknown as VlxOptions,
+    { ...options, yes: true },
     async () => 'no',
   )
   clearInstalls()
 
   const result = await vlxInstall(
     Spec.parseArgs('abbrev'),
-    {
-      packageRoot: t.testdirName,
-      packageJson,
-    } as unknown as VlxOptions,
+    options,
     async () => 'no',
   )
 
@@ -147,5 +139,35 @@ t.test('need no install, prompt not relevant', async t => {
       packageRoot: t.testdirName,
       'stale-while-revalidate-factor': Infinity,
     },
+  })
+})
+
+t.test('retries if vlx info fails', async t => {
+  const { vlxInstall, options, expectedInstallDir, installs } =
+    await getVlxInstall(t, {
+      mockVlxInfo: (path, options, manifest) => {
+        if (manifest) {
+          return { path, options }
+        }
+        throw new Error('Initial vlx info failed')
+      },
+    })
+
+  mkdirSync(expectedInstallDir, { recursive: true })
+
+  const result = await vlxInstall('abbrev', { ...options, yes: true })
+
+  t.match(result, {
+    path: expectedInstallDir,
+    options: {
+      packageRoot: t.testdirName,
+      yes: true,
+      'stale-while-revalidate-factor': Infinity,
+    },
+  })
+  t.equal(installs[0]?.[0], expectedInstallDir)
+  t.equal(installs.length, 1)
+  t.strictSame(installs[0]?.[1].dependencies, {
+    abbrev: 'https://registry.npmjs.org/abbrev/-/abbrev-3.0.1.tgz',
   })
 })
