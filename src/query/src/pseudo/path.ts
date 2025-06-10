@@ -3,16 +3,15 @@ import { error } from '@vltpkg/error-cause'
 import {
   asPostcssNodeWithChildren,
   asStringNode,
-  asTagNode,
   isStringNode,
-  isTagNode,
 } from '@vltpkg/dss-parser'
 import { removeNode, removeDanglingEdges, removeQuotes } from './helpers.ts'
 import type { ParserState } from '../types.ts'
 
 /**
- * :path(glob) Pseudo-Selector will match only nodes whose file path
+ * :path("glob") Pseudo-Selector will match only nodes whose file path
  * matches the provided glob pattern relative to the project root.
+ * Path patterns must be quoted strings to avoid parser conflicts with special characters.
  */
 export const path = async (state: ParserState) => {
   const pathContainer = asPostcssNodeWithChildren(state.current)
@@ -37,15 +36,13 @@ export const path = async (state: ParserState) => {
   let pathPattern = ''
   
   try {
-    // Try to parse as a string node first (quoted values)
+    // Only accept quoted string values for path patterns
     if (isStringNode(selector.nodes[0])) {
       pathPattern = removeQuotes(asStringNode(selector.nodes[0]).value)
-    } else if (isTagNode(selector.nodes[0])) {
-      // Handle tag node (unquoted values)
-      pathPattern = asTagNode(selector.nodes[0]).value
     } else {
-      throw error('Invalid path pattern node type', {
+      throw error('Path pattern must be a quoted string', {
         found: selector.nodes[0],
+        type: selector.nodes[0].type,
       })
     }
   } catch (err) {
@@ -55,7 +52,7 @@ export const path = async (state: ParserState) => {
       state.partial.edges.clear()
       return state
     }
-    throw error('Failed to parse path pattern in :path selector', {
+    throw error('Failed to parse path pattern in :path selector. Path patterns must be quoted strings.', {
       cause: err,
     })
   }

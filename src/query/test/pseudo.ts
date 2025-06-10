@@ -528,7 +528,7 @@ t.test(':path selector', async t => {
   }
   
   const queryToExpected = new Set<TestCase>([
-    // Test basic path matching - use simple patterns that should work
+    // Test basic path matching - all patterns must be quoted
     [':path("*")', all, ['my-project', 'a', 'b', 'c', 'd', 'e', 'f', '@x/y']], // Match all
     [':path("node_modules/**")', all, ['a', 'b', 'c', 'd', 'e', 'f', '@x/y']], // Match deps in node_modules
     [':path("**/.vlt/**")', all, ['a', 'b', 'c', 'd', 'e', 'f', '@x/y']], // Match vlt store paths
@@ -536,10 +536,6 @@ t.test(':path selector', async t => {
     [':path("**/a/**")', all, ['a']], // Match specific package
     [':path("**/b/**")', all, ['b']], // Match specific package 'b'
     [':path("**/doesnotexist/**")', all, []], // No matches
-    
-    // Test with unquoted patterns
-    [':path(node_modules/**)', all, ['a', 'b', 'c', 'd', 'e', 'f', '@x/y']], // Unquoted pattern
-    [':path(**/my-project**)', all, ['my-project']], // Unquoted pattern for root
     
     // Test edge cases
     [':path("")', all, []], // Empty pattern should match nothing
@@ -556,6 +552,27 @@ t.test(':path selector', async t => {
       t.fail(`Failed query "${query}": ${error}`)
     }
   }
+})
+
+t.test(':path selector with unquoted patterns should throw errors', async t => {
+  const simpleGraph = getSimpleGraph()
+  const all = {
+    edges: new Set(simpleGraph.edges),
+    nodes: new Set(simpleGraph.nodes.values()),
+  }
+
+  // Test that unquoted patterns throw errors
+  await t.rejects(
+    testPseudo(':path(node_modules/**)', all, all, false),
+    /Path pattern must be a quoted string/,
+    'should reject unquoted patterns with special characters',
+  )
+
+  await t.rejects(
+    testPseudo(':path(**/my-project**)', all, all, false),
+    /Path pattern must be a quoted string/,
+    'should reject unquoted patterns starting with special characters',
+  )
 })
 
 t.test('unexpected attr usage', async t => {
