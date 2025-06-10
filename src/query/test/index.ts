@@ -99,7 +99,10 @@ t.test('simple graph', async t => {
     ['#a', ['a']], // identifier
     ['#a:v(1)', ['a']], // matches identifier + semver
     ['#a:v(2)', []], // fails to match identifier + semver
-    [':path("*")', ['my-project', 'a', 'b', 'c', 'd', 'e', 'f', '@x/y']], // path selector for all
+    [
+      ':path("*")',
+      ['my-project', 'a', 'b', 'c', 'd', 'e', 'f', '@x/y'],
+    ], // path selector for all
     [':path("**/my-project**")', ['my-project']], // path selector for root
     [':path("**/a/**")', ['a']], // path selector for specific package
     [':root, #a, :foo', ['my-project', 'a']], // should be loose on multiple selectors

@@ -5,7 +5,11 @@ import {
   asStringNode,
   isStringNode,
 } from '@vltpkg/dss-parser'
-import { removeNode, removeDanglingEdges, removeQuotes } from './helpers.ts'
+import {
+  removeNode,
+  removeDanglingEdges,
+  removeQuotes,
+} from './helpers.ts'
 import type { ParserState } from '../types.ts'
 
 /**
@@ -15,7 +19,7 @@ import type { ParserState } from '../types.ts'
  */
 export const path = async (state: ParserState) => {
   const pathContainer = asPostcssNodeWithChildren(state.current)
-  
+
   // Handle case where no parameter is provided
   if (!pathContainer.nodes[0]) {
     // No pattern provided, remove all nodes
@@ -25,7 +29,7 @@ export const path = async (state: ParserState) => {
   }
 
   const selector = asPostcssNodeWithChildren(pathContainer.nodes[0])
-  
+
   // Handle case where the selector is empty
   if (!selector.nodes[0]) {
     state.partial.nodes.clear()
@@ -34,11 +38,13 @@ export const path = async (state: ParserState) => {
   }
 
   let pathPattern = ''
-  
+
   try {
     // Only accept quoted string values for path patterns
     if (isStringNode(selector.nodes[0])) {
-      pathPattern = removeQuotes(asStringNode(selector.nodes[0]).value)
+      pathPattern = removeQuotes(
+        asStringNode(selector.nodes[0]).value,
+      )
     } else {
       throw error('Path pattern must be a quoted string', {
         found: selector.nodes[0],
@@ -52,9 +58,12 @@ export const path = async (state: ParserState) => {
       state.partial.edges.clear()
       return state
     }
-    throw error('Failed to parse path pattern in :path selector. Path patterns must be quoted strings.', {
-      cause: err,
-    })
+    throw error(
+      'Failed to parse path pattern in :path selector. Path patterns must be quoted strings.',
+      {
+        cause: err,
+      },
+    )
   }
 
   // If no pattern or empty pattern, remove all nodes
@@ -84,7 +93,7 @@ export const path = async (state: ParserState) => {
   for (const node of state.partial.nodes) {
     // Get the node's location (file path)
     const nodePath = node.location
-    
+
     // Check if the path matches the glob pattern
     if (!matchPattern(nodePath)) {
       removeNode(state, node)
