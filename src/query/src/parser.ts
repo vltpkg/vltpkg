@@ -34,6 +34,7 @@ const pseudoCleanUpNeeded = new Set([
   ':squat',
   ':semver',
   ':v',
+  ':path',
 ])
 
 const hasParamsToEscape = (node: Pseudo) =>

@@ -516,6 +516,50 @@ t.test('specificity calculation for pseudo selectors', async t => {
   )
 })
 
+t.test(':path selector', async t => {
+  const simpleGraph = getSimpleGraph()
+  const all = {
+    edges: new Set(simpleGraph.edges),
+    nodes: new Set(simpleGraph.nodes.values()),
+  }
+  const empty: GraphSelectionState = {
+    edges: new Set(),
+    nodes: new Set(),
+  }
+  
+  const queryToExpected = new Set<TestCase>([
+    // Test basic path matching with actual location format
+    [':path("**/my-project")', all, ['my-project']], // Match root project path
+    [':path("node_modules/**")', all, ['a', 'b', 'c', 'd', 'e', 'f', '@x/y']], // Match all deps in node_modules
+    [':path("**/a")', all, ['a']], // Match specific package
+    [':path("**/b")', all, ['b']], // Match specific package 'b'
+    [':path("**/@x/y")', all, ['@x/y']], // Match scoped package
+    [':path("**/doesnotexist/**")', all, []], // No matches
+    
+    // Test with unquoted patterns
+    [':path(node_modules/**)', all, ['a', 'b', 'c', 'd', 'e', 'f', '@x/y']], // Unquoted pattern
+    [':path(**/my-project)', all, ['my-project']], // Unquoted pattern for root
+    
+    // Test specific path components
+    [':path("**/.vlt/**")', all, ['a', 'b', 'c', 'd', 'e', 'f', '@x/y']], // Match vlt store paths
+    [':path("**/*a*")', all, ['a']], // Match names containing 'a' (but not @x/y due to path structure)
+    
+    // Test from empty partial
+    [':path("node_modules/**")', empty, []], // Empty input should return empty
+    
+    // Test invalid/missing patterns
+    [':path()', all, []], // Missing pattern should match nothing
+  ])
+
+  for (const [query, partial, expectedNames] of queryToExpected) {
+    try {
+      await testPseudo(query, all, partial, false, expectedNames)
+    } catch (error) {
+      t.fail(`Failed query "${query}": ${error}`)
+    }
+  }
+})
+
 t.test('unexpected attr usage', async t => {
   await t.rejects(
     testPseudo(':attr', undefined, undefined, true),

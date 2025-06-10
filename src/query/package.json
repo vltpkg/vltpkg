@@ -26,6 +26,7 @@
     "@vltpkg/security-archive": "workspace:*",
     "@vltpkg/semver": "workspace:*",
     "@vltpkg/types": "workspace:*",
+    "minimatch": "catalog:",
     "p-retry": "catalog:",
     "postcss-selector-parser": "^7.1.0"
   },

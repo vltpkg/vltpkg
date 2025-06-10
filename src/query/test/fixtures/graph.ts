@@ -40,7 +40,7 @@ export const newNode =
     name,
     version,
     location:
-      'node_modules/.vlt/;;${name}@${version}/node_modules/${name}',
+      `node_modules/.vlt/;;${name}@${version}/node_modules/${name}`,
     manifest: { name, version },
     integrity: 'sha512-deadbeef',
     resolved: undefined,
