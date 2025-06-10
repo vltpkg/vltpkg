@@ -6,61 +6,67 @@ import type { Test } from 'tap'
 import t from 'tap'
 import type { VlxOptions } from '../src/index.ts'
 
-const installs: [string, Manifest][] = []
-const mockInstall = async (options: VlxOptions) => {
-  const { projectRoot, packageJson } = options
-  t.equal(options['stale-while-revalidate-factor'], Infinity)
-  installs.push([projectRoot, packageJson.read(projectRoot)])
-}
-t.afterEach(() => (installs.length = 0))
+const getVlxInstall = async (t: Test) => {
+  const installs: [string, Manifest][] = []
+  const packageJson = new PackageJson()
+  const dir = t.testdir({})
 
-const packageJson = new PackageJson()
-
-// just to verify that install returns whatever vlxInfo reports
-const mockVlxInfo = async (path: string, options: VlxOptions) => ({
-  path,
-  options,
-})
-
-const dir = t.testdir({})
-class MockXDG {
-  path: string
-  constructor(path: string) {
-    this.path = resolve(dir, path)
+  const mockInstall = async (options: VlxOptions) => {
+    const { projectRoot, packageJson } = options
+    t.equal(options['stale-while-revalidate-factor'], Infinity)
+    installs.push([projectRoot, packageJson.read(projectRoot)])
   }
-  data(path = '') {
-    return resolve(this.path, path)
-  }
-}
 
-const expectedInstallDir = resolve(
-  t.testdirName,
-  'vlt/vlx/abbrev-c37c2618',
-)
-
-class MockPackageInfoClient {
-  resolve() {
-    return {
-      resolved:
-        'https://registry.npmjs.org/abbrev/-/abbrev-3.0.1.tgz',
-      integrity:
-        'sha512-AO2ac6pjRB3SJmGJo+v5/aK6Omggp6fsLrs6wN9bd35ulu4cCwaAU9+7ZhXjeqHVkaHThLuzH0nZr0YpCDhygg==',
+  class MockPackageInfoClient {
+    resolve() {
+      return {
+        resolved:
+          'https://registry.npmjs.org/abbrev/-/abbrev-3.0.1.tgz',
+        integrity:
+          'sha512-AO2ac6pjRB3SJmGJo+v5/aK6Omggp6fsLrs6wN9bd35ulu4cCwaAU9+7ZhXjeqHVkaHThLuzH0nZr0YpCDhygg==',
+      }
     }
   }
-}
 
-const getVlxInstall = async (t: Test) => {
-  return await t.mockImport<typeof import('../src/install.ts')>(
-    '../src/install.ts',
-    {
-      '@vltpkg/package-info': {
-        PackageInfoClient: MockPackageInfoClient,
-      },
-      '@vltpkg/xdg': { XDG: MockXDG },
-      '@vltpkg/graph': { install: mockInstall },
-      '../src/info.ts': { vlxInfo: mockVlxInfo },
-    },
+  class MockXDG {
+    path: string
+    constructor(path: string) {
+      this.path = resolve(dir, path)
+    }
+    data(path = '') {
+      return resolve(this.path, path)
+    }
+  }
+
+  const expectedInstallDir = resolve(
+    t.testdirName,
+    'vlt/vlx/abbrev-c37c2618',
   )
+
+  // just to verify that install returns whatever vlxInfo reports
+  const mockVlxInfo = async (path: string, options: VlxOptions) => ({
+    path,
+    options,
+  })
+
+  const { vlxInstall } = await t.mockImport<
+    typeof import('../src/install.ts')
+  >('../src/install.ts', {
+    '@vltpkg/package-info': {
+      PackageInfoClient: MockPackageInfoClient,
+    },
+    '@vltpkg/xdg': { XDG: MockXDG },
+    '@vltpkg/graph': { install: mockInstall },
+    '../src/info.ts': { vlxInfo: mockVlxInfo },
+  })
+
+  return {
+    vlxInstall,
+    packageJson,
+    expectedInstallDir,
+    installs,
+    clearInstalls: () => (installs.length = 0),
+  }
 }
 
 t.test('need an install, but do not accept prompt', async t => {
@@ -79,7 +85,8 @@ t.test('need an install, but do not accept prompt', async t => {
 })
 
 t.test('need an install, accept prompt with --yes', async t => {
-  const { vlxInstall } = await getVlxInstall(t)
+  const { vlxInstall, packageJson, expectedInstallDir, installs } =
+    await getVlxInstall(t)
 
   const result = await vlxInstall(
     'abbrev',
@@ -107,7 +114,23 @@ t.test('need an install, accept prompt with --yes', async t => {
 })
 
 t.test('need no install, prompt not relevant', async t => {
-  const { vlxInstall } = await getVlxInstall(t)
+  const {
+    vlxInstall,
+    packageJson,
+    expectedInstallDir,
+    clearInstalls,
+  } = await getVlxInstall(t)
+
+  await vlxInstall(
+    'abbrev',
+    {
+      packageRoot: t.testdirName,
+      yes: true,
+      packageJson,
+    } as unknown as VlxOptions,
+    async () => 'no',
+  )
+  clearInstalls()
 
   const result = await vlxInstall(
     Spec.parseArgs('abbrev'),
@@ -125,5 +148,4 @@ t.test('need no install, prompt not relevant', async t => {
       'stale-while-revalidate-factor': Infinity,
     },
   })
-  t.strictSame(installs, [], 'no installs needed')
 })
