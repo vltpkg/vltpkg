@@ -168,16 +168,7 @@ const SaveQueryPopover = ({
         })
       }
     }
-  }, [
-    activeQuery,
-    editContext,
-    nodes,
-    queryName,
-    saveQuery,
-    savedQueries,
-    selectedLabels,
-    updateQuery,
-  ])
+  }, [activeQuery, nodes, saveQuery, savedQueries, updateQuery])
 
   /**
    * Set the default state of the text inputs
@@ -208,16 +199,7 @@ const SaveQueryPopover = ({
         updateQuery(item)
       }
     }
-  }, [
-    isOpen,
-    activeQuery,
-    editContext,
-    nodes,
-    queryName,
-    savedQueries,
-    selectedLabels,
-    updateQuery,
-  ])
+  }, [isOpen, activeQuery, nodes, savedQueries, updateQuery])
 
   /**
    * Update the UI inputs
