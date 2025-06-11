@@ -166,6 +166,21 @@ Like the `npm:` alias, the `jsr:` alias can be supressed by setting
 the `registry` config option to a different value, such as a caching
 proxy in your organization's network.
 
+#### `gh:`
+
+The `gh:` alias is a special alias that allows you to install packages
+from [GitHub Package Registry](https://github.com/features/packages).
+
+For example, you can install a package from the GitHub package registry like
+this:
+
+```bash
+$ vlt install gh:@octocat/hello-world@1.0.0
+```
+
+This will fetch the package from `https://npm.pkg.github.com/` instead of
+requiring you to configure a scoped registry mapping in `.npmrc`.
+
 ### Registry Consistency
 
 There is a common question that is brought up when discussing the use
