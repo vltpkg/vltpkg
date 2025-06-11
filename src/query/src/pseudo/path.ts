@@ -25,7 +25,6 @@ export const path = async (state: ParserState) => {
 
   // Handle case where no parameter is provided
   if (!pathContainer.nodes[0]) {
-    // No pattern provided, remove all nodes
     return clear(state)
   }
 
@@ -51,8 +50,8 @@ export const path = async (state: ParserState) => {
       })
     }
   } catch (err) {
+    // In loose mode, ignore invalid patterns and match nothing
     if (state.loose) {
-      // In loose mode, ignore invalid patterns and match nothing
       return clear(state)
     }
     throw error(
@@ -73,8 +72,8 @@ export const path = async (state: ParserState) => {
   try {
     matchPattern = minimatch.filter(pathPattern)
   } catch (err) {
+    // Invalid glob pattern in loose mode - match nothing
     if (state.loose) {
-      // Invalid glob pattern in loose mode - match nothing
       return clear(state)
     }
     throw error('Invalid glob pattern in :path selector', {
@@ -91,10 +90,7 @@ export const path = async (state: ParserState) => {
     const pathBased = type === 'workspace' || type === 'file'
 
     // check if the path matches the glob pattern
-    if (pathBased && !matchPattern(nodePath)) {
-      removeNode(state, node)
-    } else if (!pathBased) {
-      // Remove non-path-based nodes
+    if (!pathBased || !matchPattern(nodePath)) {
       removeNode(state, node)
     }
   }

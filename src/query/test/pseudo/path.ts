@@ -106,6 +106,15 @@ t.test(':path selector', async t => {
     )
   })
 
+  await t.test('matches nested paths with double glob', async t => {
+    const res = await path(getState(':path("**/a/*")'))
+    t.strictSame(
+      [...res.partial.nodes].map(n => n.name),
+      ['y'],
+      'should match nested paths using double glob pattern',
+    )
+  })
+
   await t.test('no matches for non-existent paths', async t => {
     const res = await path(getState(':path("nonexistent/**")'))
     t.strictSame(
