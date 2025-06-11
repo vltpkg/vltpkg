@@ -17,7 +17,6 @@ const routeNames = new Map<string, string>([
 const Header = () => {
   const { pathname } = useLocation()
   const projectInfo = useGraphStore(state => state.projectInfo)
-  const dashboard = useGraphStore(state => state.dashboard)
   const appData = useGraphStore(state => state.appData)
   const graph = useGraphStore(state => state.graph)
 
