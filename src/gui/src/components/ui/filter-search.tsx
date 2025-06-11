@@ -59,7 +59,7 @@ const FilterSearch = <T,>({
     }
 
     setSearchParams(params)
-  }, [filterText])
+  }, [filterText, items, searchParams, setFilteredItems, setSearchParams])
 
   /**
    * Sync URL params with filtered items on initial load.
@@ -81,7 +81,7 @@ const FilterSearch = <T,>({
     }
 
     isInitialMount.current = false
-  }, [])
+  }, [items, searchParams])
 
   /**
    * Filter items based on `filterText` or URL params.
@@ -123,7 +123,7 @@ const FilterSearch = <T,>({
     )
 
     setFilteredItems(filteredItems)
-  }, [items, searchParams, filterText])
+  }, [items, searchParams, filterText, setFilteredItems])
 
   /**
    * Handle keyboard shortcuts.

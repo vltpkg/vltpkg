@@ -24,7 +24,7 @@ const Header = () => {
   const contextValue = useMemo(() => {
     if (pathname.includes('/explore'))
       return graph?.projectRoot ? graph.projectRoot : null
-  }, [pathname, dashboard, graph])
+  }, [pathname, graph])
 
   const routeName = useMemo(() => {
     if (pathname.includes('error')) return null

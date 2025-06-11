@@ -86,7 +86,7 @@ export const DirectorySelect = ({
     if (mounted.current) return
     mounted.current = true
     setInitialDisplayPath()
-  }, [])
+  }, [setInitialDisplayPath])
 
   return (
     <Popover>

@@ -53,7 +53,7 @@ const LabelSelect = ({
     return () => {
       document.removeEventListener('mousedown', handleClick)
     }
-  }, [])
+  }, [handleClick])
 
   const handleSelect = (value: string) => {
     setItems(prevItems => {

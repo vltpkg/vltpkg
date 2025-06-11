@@ -114,7 +114,7 @@ const QueriesEmptyState = ({ dashboard }: QueriesEmptyStateProps) => {
     return () => {
       clearTimeout(timeout)
     }
-  }, [starScope, cursorScope])
+  }, [starScope, cursorScope, cursorAnimate, starAnimate])
 
   return (
     <div className="flex h-full w-full items-center justify-center">
