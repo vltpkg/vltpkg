@@ -59,7 +59,13 @@ const FilterSearch = <T,>({
     }
 
     setSearchParams(params)
-  }, [filterText, items, searchParams, setFilteredItems, setSearchParams])
+  }, [
+    filterText,
+    items,
+    searchParams,
+    setFilteredItems,
+    setSearchParams,
+  ])
 
   /**
    * Sync URL params with filtered items on initial load.
