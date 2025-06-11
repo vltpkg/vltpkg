@@ -16,7 +16,10 @@ export const kCustomInspect = Symbol.for('nodejs.util.inspect.custom')
 
 export const defaultRegistry = 'https://registry.npmjs.org/'
 
-export const defaultRegistries = { npm: defaultRegistry }
+export const defaultRegistries = { 
+  npm: defaultRegistry,
+  gh: 'https://npm.pkg.github.com/'
+}
 
 export const defaultJsrRegistries = { jsr: 'https://npm.jsr.io/' }
 
@@ -73,7 +76,10 @@ export const getOptions = (
         ...options['git-hosts'],
       }
     : defaultGitHosts,
-  registries: options?.registries ?? {},
+  registries: {
+    ...defaultRegistries,
+    ...(options?.registries ?? {}),
+  },
   'git-host-archives':
     options?.['git-host-archives'] ?
       {
