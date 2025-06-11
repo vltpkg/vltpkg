@@ -8,6 +8,7 @@ import {
   getMultiWorkspaceGraph,
   getSimpleGraph,
   getSingleWorkspaceGraph,
+  getPathBasedGraph,
 } from './fixtures/graph.ts'
 import {
   copyGraphSelectionState,
@@ -517,10 +518,10 @@ t.test('specificity calculation for pseudo selectors', async t => {
 })
 
 t.test(':path selector', async t => {
-  const simpleGraph = getSimpleGraph()
+  const pathBasedGraph = getPathBasedGraph()
   const all = {
-    edges: new Set(simpleGraph.edges),
-    nodes: new Set(simpleGraph.nodes.values()),
+    edges: new Set(pathBasedGraph.edges),
+    nodes: new Set(pathBasedGraph.nodes.values()),
   }
   const empty: GraphSelectionState = {
     edges: new Set(),
@@ -532,22 +533,19 @@ t.test(':path selector', async t => {
     [
       ':path("*")',
       all,
-      ['my-project', 'a', 'b', 'c', 'd', 'e', 'f', '@x/y'],
-    ], // Match all
+      ['path-based-project', 'a', 'b', 'c', 'x', 'y'],
+    ], // Match all workspace and file nodes
     [
-      ':path("node_modules/**")',
+      ':path("packages/*")',
       all,
-      ['a', 'b', 'c', 'd', 'e', 'f', '@x/y'],
-    ], // Match deps in node_modules
-    [
-      ':path("**/.vlt/**")',
-      all,
-      ['a', 'b', 'c', 'd', 'e', 'f', '@x/y'],
-    ], // Match vlt store paths
-    [':path("**/my-project**")', all, ['my-project']], // Match root project
-    [':path("**/a/**")', all, ['a']], // Match specific package
-    [':path("**/b/**")', all, ['b']], // Match specific package 'b'
-    [':path("**/doesnotexist/**")', all, []], // No matches
+      ['a', 'b'],
+    ], // Match workspace packages in packages directory
+    [':path("packages/a")', all, ['a']], // Match specific workspace
+    [':path(".")', all, ['path-based-project']], // Match root project
+    [':path("x")', all, ['x']], // Match file dependency
+    [':path("packages/**")', all, ['a', 'b', 'y']], // Match with glob patterns
+    [':path("packages/a/*")', all, ['y']], // Match nested file paths
+    [':path("nonexistent/**")', all, []], // No matches
 
     // Test edge cases
     [':path("")', all, []], // Empty pattern should match nothing
@@ -566,8 +564,6 @@ t.test(':path selector', async t => {
   }
 })
 
-// Note: Unquoted patterns with special characters are rejected by the parser
-// before reaching the path implementation, so we don't test them here
 
 t.test('unexpected attr usage', async t => {
   await t.rejects(

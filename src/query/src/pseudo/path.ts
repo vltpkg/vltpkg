@@ -1,5 +1,6 @@
 import { minimatch } from 'minimatch'
 import { error } from '@vltpkg/error-cause'
+import { splitDepID } from '@vltpkg/dep-id'
 import {
   asPostcssNodeWithChildren,
   asStringNode,
@@ -9,13 +10,15 @@ import {
   removeNode,
   removeDanglingEdges,
   removeQuotes,
+  clear,
 } from './helpers.ts'
 import type { ParserState } from '../types.ts'
 
 /**
- * :path("glob") Pseudo-Selector will match only nodes whose file path
- * matches the provided glob pattern relative to the project root.
- * Path patterns must be quoted strings to avoid parser conflicts with special characters.
+ * :path("glob") Pseudo-Selector will match only workspace & file 
+ * nodes whose file path matches the provided glob pattern relative
+ * to the project root. Path patterns must be quoted strings to avoid
+ * parser conflicts with special characters.
  */
 export const path = async (state: ParserState) => {
   const pathContainer = asPostcssNodeWithChildren(state.current)
@@ -23,18 +26,14 @@ export const path = async (state: ParserState) => {
   // Handle case where no parameter is provided
   if (!pathContainer.nodes[0]) {
     // No pattern provided, remove all nodes
-    state.partial.nodes.clear()
-    state.partial.edges.clear()
-    return state
+    return clear(state)
   }
 
   const selector = asPostcssNodeWithChildren(pathContainer.nodes[0])
 
   // Handle case where the selector is empty
   if (!selector.nodes[0]) {
-    state.partial.nodes.clear()
-    state.partial.edges.clear()
-    return state
+    return clear(state)
   }
 
   let pathPattern = ''
@@ -54,9 +53,7 @@ export const path = async (state: ParserState) => {
   } catch (err) {
     if (state.loose) {
       // In loose mode, ignore invalid patterns and match nothing
-      state.partial.nodes.clear()
-      state.partial.edges.clear()
-      return state
+      return clear(state)
     }
     throw error(
       'Failed to parse path pattern in :path selector. Path patterns must be quoted strings.',
@@ -68,9 +65,7 @@ export const path = async (state: ParserState) => {
 
   // If no pattern or empty pattern, remove all nodes
   if (!pathPattern) {
-    state.partial.nodes.clear()
-    state.partial.edges.clear()
-    return state
+    return clear(state)
   }
 
   // Use minimatch to create a filter function for the glob pattern
@@ -80,9 +75,7 @@ export const path = async (state: ParserState) => {
   } catch (err) {
     if (state.loose) {
       // Invalid glob pattern in loose mode - match nothing
-      state.partial.nodes.clear()
-      state.partial.edges.clear()
-      return state
+      return clear(state)
     }
     throw error('Invalid glob pattern in :path selector', {
       cause: err,
@@ -91,11 +84,17 @@ export const path = async (state: ParserState) => {
   }
 
   for (const node of state.partial.nodes) {
-    // Get the node's location (file path)
     const nodePath = node.location
+    const [type] = splitDepID(node.id)
+    // should only match packages in which their realpath
+    // is located outside the node_modules/.vlt store folder
+    const pathBased = type === 'workspace' || type === 'file'
 
-    // Check if the path matches the glob pattern
-    if (!matchPattern(nodePath)) {
+    // check if the path matches the glob pattern
+    if (pathBased && !matchPattern(nodePath)) {
+      removeNode(state, node)
+    } else if (!pathBased) {
+      // Remove non-path-based nodes
       removeNode(state, node)
     }
   }

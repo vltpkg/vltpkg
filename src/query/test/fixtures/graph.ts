@@ -39,7 +39,7 @@ export const newNode =
     id: joinDepIDTuple(['registry', '', `${name}@${version}`]),
     name,
     version,
-    location: `node_modules/.vlt/;;${name}@${version}/node_modules/${name}`,
+    location: joinDepIDTuple(['registry', '', `${name}@${version}`]) + `/node_modules/${name}`,
     manifest: { name, version },
     integrity: 'sha512-deadbeef',
     resolved: undefined,
@@ -623,6 +623,100 @@ export const getAliasedGraph = (): GraphLike => {
     'prod',
     d,
   )
+
+  return graph
+}
+
+// Returns a graph with path-based dependencies for testing :path() selector
+//
+// flowchart TD
+//   root --> a:::workspace
+//   root --> b:::workspace
+//   root --> c:::workspace
+//   c --> b
+//   b --> a
+//   c --> x:::file
+//   b --> x:::file
+//   c --> y:::file
+//   
+//   classDef workspace fill:skyblue
+//   classDef file fill:lightgray
+//   classDef dev fill:palegreen
+//   classDef optional fill:cornsilk
+//
+export const getPathBasedGraph = (): GraphLike => {
+  const graph = newGraph('path-based-project')
+  const addNode = newNode(graph)
+
+  // Create workspace nodes
+  const a = addNode('a')
+  a.id = joinDepIDTuple(['workspace', 'packages/a'])
+  a.location = 'packages/a'
+  a.importer = true
+
+  const b = addNode('b')
+  b.id = joinDepIDTuple(['workspace', 'packages/b'])
+  b.location = 'packages/b'
+  b.importer = true
+
+  const c = addNode('c')
+  c.id = joinDepIDTuple(['workspace', 'c'])
+  c.location = 'c'
+  c.importer = true
+
+  // Create file nodes
+  const x = addNode('x')
+  x.id = joinDepIDTuple(['file', 'x'])
+  x.location = 'x'
+
+  const y = addNode('y')
+  y.id = joinDepIDTuple(['file', 'packages/a/y'])
+  y.location = 'packages/a/y'
+
+  // Add nodes to graph
+  ;[a, b, c, x, y].forEach(i => {
+    graph.nodes.set(i.id, i)
+  })
+
+  // Add workspace nodes as importers
+  graph.importers.add(a)
+  graph.importers.add(b)
+  graph.importers.add(c)
+
+  // Add edges to create the dependency structure
+  newEdge(
+    graph.mainImporter,
+    Spec.parse('a', 'workspace:*', specOptions),
+    'prod',
+    a,
+  )
+  newEdge(
+    graph.mainImporter,
+    Spec.parse('b', 'workspace:*', specOptions),
+    'prod',
+    b,
+  )
+  newEdge(
+    graph.mainImporter,
+    Spec.parse('c', 'workspace:*', specOptions),
+    'prod',
+    c,
+  )
+
+  // c -> b
+  newEdge(c, Spec.parse('b', 'workspace:*', specOptions), 'prod', b)
+  
+  // b -> a
+  newEdge(b, Spec.parse('a', 'workspace:*', specOptions), 'prod', a)
+  
+  // c -> x
+  newEdge(c, Spec.parse('x', 'file:x', specOptions), 'prod', x)
+  
+  // b -> x
+  newEdge(b, Spec.parse('x', 'file:x', specOptions), 'prod', x)
+  
+  // c -> y
+  newEdge(c, Spec.parse('y', 'file:packages/a/y', specOptions), 'prod', y)
 
   return graph
 }
