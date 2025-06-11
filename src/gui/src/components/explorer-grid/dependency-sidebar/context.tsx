@@ -84,7 +84,7 @@ const useSyncStoreProps = <T,>(
       store.setState(updated)
       prevPropsRef.current = props
     }
-  }, [props])
+  }, [props, store])
 }
 
 export const DependencySidebarProvider = ({
@@ -133,14 +133,14 @@ export const DependencySidebarProvider = ({
     dependencySidebarStore.setState(() => ({
       filteredDependencies: dependencies,
     }))
-  }, [dependencies])
+  }, [dependencies, dependencySidebarStore])
 
   /** Reset the filters when navigating */
   useEffect(() => {
     dependencySidebarStore.setState(() => ({
       filters: [],
     }))
-  }, [query])
+  }, [query, dependencySidebarStore])
 
   useSyncStoreProps(dependencySidebarStore, {
     dependencies,

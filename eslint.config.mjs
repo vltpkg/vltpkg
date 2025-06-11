@@ -6,6 +6,7 @@ import { resolve } from 'node:path'
 import jsdoc from 'eslint-plugin-jsdoc'
 import importPlugin from 'eslint-plugin-import'
 import { configs as pnpmConfigs } from 'eslint-plugin-pnpm'
+import reactHooks from 'eslint-plugin-react-hooks'
 import enforceMockImportTypes from './scripts/eslint-enforce-mock-import-types.js'
 
 const NAME = 'eslint-config-vltpkg'
@@ -318,8 +319,13 @@ export default [
   {
     name: `${NAME}/gui`,
     files: [`src/gui/**/*${extGlobs.ts}`],
+    plugins: {
+      'react-hooks': reactHooks,
+    },
     rules: {
       'no-console': 'off',
+      'react-hooks/rules-of-hooks': 'error',
+      'react-hooks/exhaustive-deps': 'warn',
     },
   },
   {
