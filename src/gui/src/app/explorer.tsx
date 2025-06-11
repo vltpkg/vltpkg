@@ -81,7 +81,16 @@ export const Explorer = () => {
       void navigate('/error')
       updateErrorCause('Failed to initialize explorer.')
     })
-  }, [stamp, updateHasDashboard, updateGraph, updateProjectInfo, updateQ, updateSpecOptions, navigate, updateErrorCause])
+  }, [
+    stamp,
+    updateHasDashboard,
+    updateGraph,
+    updateProjectInfo,
+    updateQ,
+    updateSpecOptions,
+    navigate,
+    updateErrorCause,
+  ])
 
   return <ExplorerContent />
 }

@@ -56,7 +56,14 @@ const SaveQueryButton = () => {
         rotate: 0,
       })
     }
-  }, [showSaveQueryPopover, savedQueries, activeQuery, resolvedTheme, animate, scope])
+  }, [
+    showSaveQueryPopover,
+    savedQueries,
+    activeQuery,
+    resolvedTheme,
+    animate,
+    scope,
+  ])
 
   return (
     <Popover
@@ -161,7 +168,16 @@ const SaveQueryPopover = ({
         })
       }
     }
-  }, [activeQuery, editContext, nodes, queryName, saveQuery, savedQueries, selectedLabels, updateQuery])
+  }, [
+    activeQuery,
+    editContext,
+    nodes,
+    queryName,
+    saveQuery,
+    savedQueries,
+    selectedLabels,
+    updateQuery,
+  ])
 
   /**
    * Set the default state of the text inputs
@@ -192,7 +208,16 @@ const SaveQueryPopover = ({
         updateQuery(item)
       }
     }
-  }, [isOpen, activeQuery, editContext, nodes, queryName, savedQueries, selectedLabels, updateQuery])
+  }, [
+    isOpen,
+    activeQuery,
+    editContext,
+    nodes,
+    queryName,
+    savedQueries,
+    selectedLabels,
+    updateQuery,
+  ])
 
   /**
    * Update the UI inputs
