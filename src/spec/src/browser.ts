@@ -322,17 +322,23 @@ export class Spec implements SpecLike<Spec> {
       this.spec = `${this.name}@${bareOrOptions}`
     } else {
       this.spec = spec
-      const hasScope = spec.startsWith('@')
-      let at = findFirstAt(spec, hasScope)
-      if (at === -1) {
-        // assume that an unadorned spec is just a name at the default
-        // registry
-        at = spec.length
-        spec += '@'
+      // Check if this spec starts with a registry identifier
+      if (startsWithSpecIdentifier(spec, this.options)) {
+        this.name = '(unknown)'
+        this.bareSpec = spec
+      } else {
+        const hasScope = spec.startsWith('@')
+        let at = findFirstAt(spec, hasScope)
+        if (at === -1) {
+          // assume that an unadorned spec is just a name at the default
+          // registry
+          at = spec.length
+          spec += '@'
+        }
+        this.name = spec.substring(0, at)
+        if (hasScope) this.#parseScope(this.name)
+        this.bareSpec = spec.substring(at + 1)
       }
-      this.name = spec.substring(0, at)
-      if (hasScope) this.#parseScope(this.name)
-      this.bareSpec = spec.substring(at + 1)
     }
 
     if (this.bareSpec.startsWith('catalog:')) {
@@ -505,6 +511,11 @@ export class Spec implements SpecLike<Spec> {
           url,
         ).namedRegistry ??= host
         this.#guessRegistryTarball()
+        // If name is unknown and we have a subspec, infer name from subspec
+        if (this.name === '(unknown)' && this.subspec) {
+          this.name = this.subspec.name
+          this.spec = `${this.name}@${this.bareSpec}`
+        }
         return
       }
     }

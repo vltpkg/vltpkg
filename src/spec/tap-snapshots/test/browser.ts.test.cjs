@@ -2896,6 +2896,124 @@ exports[`test/browser.ts > TAP > basic parsing tests > foo@user/foo-js > toStrin
 foo@github:user/foo-js
 `
 
+exports[`test/browser.ts > TAP > basic parsing tests > gh:@octocat/hello-world@1.0.0 > inspect deep 1`] = `
+@vltpkg/spec.Spec {
+  type: 'registry',
+  spec: '@octocat/hello-world@gh:@octocat/hello-world@1.0.0',
+  name: '@octocat/hello-world',
+  bareSpec: 'gh:@octocat/hello-world@1.0.0',
+  namedRegistry: 'gh',
+  registry: 'https://npm.pkg.github.com/',
+  conventionalRegistryTarball: 'https://npm.pkg.github.com/@octocat/hello-world/-/hello-world-1.0.0.tgz',
+  subspec: @vltpkg/spec.Spec {
+    type: 'registry',
+    spec: '@octocat/hello-world@1.0.0',
+    name: '@octocat/hello-world',
+    scope: '@octocat',
+    bareSpec: '1.0.0',
+    namedRegistry: 'gh',
+    registry: 'https://npm.pkg.github.com/',
+    registrySpec: '1.0.0',
+    conventionalRegistryTarball: 'https://npm.pkg.github.com/@octocat/hello-world/-/hello-world-1.0.0.tgz',
+    semver: '1.0.0',
+    range: Range {
+      raw: '1.0.0',
+      isAny: false,
+      isSingle: true,
+      set: [
+        Comparator {
+          includePrerelease: false,
+          raw: '1.0.0',
+          tokens: [ '1.0.0' ],
+          tuples: [
+            [
+              '',
+              Version {
+                raw: '1.0.0',
+                major: 1,
+                minor: 0,
+                patch: 0,
+                prerelease: undefined,
+                build: undefined
+              }
+            ]
+          ],
+          isNone: false,
+          isAny: false
+        }
+      ],
+      includePrerelease: false
+    }
+  }
+}
+`
+
+exports[`test/browser.ts > TAP > basic parsing tests > gh:@octocat/hello-world@1.0.0 > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'registry',
+  spec: '@octocat/hello-world@gh:@octocat/hello-world@1.0.0',
+  name: '@octocat/hello-world',
+  bareSpec: 'gh:@octocat/hello-world@1.0.0',
+  namedRegistry: 'gh',
+  registry: 'https://npm.pkg.github.com/',
+  conventionalRegistryTarball: 'https://npm.pkg.github.com/@octocat/hello-world/-/hello-world-1.0.0.tgz',
+  subspec: @vltpkg/spec.Spec {
+    type: 'registry',
+    spec: '@octocat/hello-world@1.0.0',
+    name: '@octocat/hello-world',
+    scope: '@octocat',
+    bareSpec: '1.0.0',
+    namedRegistry: 'gh',
+    registry: 'https://npm.pkg.github.com/',
+    registrySpec: '1.0.0',
+    conventionalRegistryTarball: 'https://npm.pkg.github.com/@octocat/hello-world/-/hello-world-1.0.0.tgz',
+    semver: '1.0.0',
+    range: Range {
+      raw: '1.0.0',
+      isAny: false,
+      isSingle: true,
+      set: [ [Comparator] ],
+      includePrerelease: false
+    }
+  }
+}
+`
+
+exports[`test/browser.ts > TAP > basic parsing tests > gh:@octocat/hello-world@1.0.0 > inspect with color 1`] = `
+@vltpkg/spec.Spec {
+  type: [32m'registry'[39m,
+  spec: [32m'@octocat/hello-world@gh:@octocat/hello-world@1.0.0'[39m,
+  name: [32m'@octocat/hello-world'[39m,
+  bareSpec: [32m'gh:@octocat/hello-world@1.0.0'[39m,
+  namedRegistry: [32m'gh'[39m,
+  registry: [32m'https://npm.pkg.github.com/'[39m,
+  conventionalRegistryTarball: [32m'https://npm.pkg.github.com/@octocat/hello-world/-/hello-world-1.0.0.tgz'[39m,
+  subspec: @vltpkg/spec.Spec {
+    type: [32m'registry'[39m,
+    spec: [32m'@octocat/hello-world@1.0.0'[39m,
+    name: [32m'@octocat/hello-world'[39m,
+    scope: [32m'@octocat'[39m,
+    bareSpec: [32m'1.0.0'[39m,
+    namedRegistry: [32m'gh'[39m,
+    registry: [32m'https://npm.pkg.github.com/'[39m,
+    registrySpec: [32m'1.0.0'[39m,
+    conventionalRegistryTarball: [32m'https://npm.pkg.github.com/@octocat/hello-world/-/hello-world-1.0.0.tgz'[39m,
+    semver: [32m'1.0.0'[39m,
+    range: Range {
+      raw: [32m'1.0.0'[39m,
+      isAny: [33mfalse[39m,
+      isSingle: [33mtrue[39m,
+      set: [ [36m[Comparator][39m ],
+      includePrerelease: [33mfalse[39m
+    }
+  }
+}
+`
+
+exports[`test/browser.ts > TAP > basic parsing tests > gh:@octocat/hello-world@1.0.0 > toString 1`] = `
+@octocat/hello-world@gh:@octocat/hello-world@1.0.0
+`
+
 exports[`test/browser.ts > TAP > basic parsing tests > x@./foo > inspect deep 1`] = `
 @vltpkg/spec.Spec {
   type: 'file',
@@ -8310,6 +8428,37 @@ exports[`test/browser.ts > TAP > parse args > foo/bar/baz > inspect default 1`] 
   name: '(unknown)',
   bareSpec: 'file:./foo/bar/baz',
   file: './foo/bar/baz'
+}
+`
+
+exports[`test/browser.ts > TAP > parse args > gh:@octocat/hello-world@1.0.0 > inspect default 1`] = `
+@vltpkg/spec.Spec {
+  type: 'registry',
+  spec: '@octocat/hello-world@gh:@octocat/hello-world@1.0.0',
+  name: '@octocat/hello-world',
+  bareSpec: 'gh:@octocat/hello-world@1.0.0',
+  namedRegistry: 'gh',
+  registry: 'https://npm.pkg.github.com/',
+  conventionalRegistryTarball: 'https://npm.pkg.github.com/@octocat/hello-world/-/hello-world-1.0.0.tgz',
+  subspec: @vltpkg/spec.Spec {
+    type: 'registry',
+    spec: '@octocat/hello-world@1.0.0',
+    name: '@octocat/hello-world',
+    scope: '@octocat',
+    bareSpec: '1.0.0',
+    namedRegistry: 'gh',
+    registry: 'https://npm.pkg.github.com/',
+    registrySpec: '1.0.0',
+    conventionalRegistryTarball: 'https://npm.pkg.github.com/@octocat/hello-world/-/hello-world-1.0.0.tgz',
+    semver: '1.0.0',
+    range: Range {
+      raw: '1.0.0',
+      isAny: false,
+      isSingle: true,
+      set: [ [Comparator] ],
+      includePrerelease: false
+    }
+  }
 }
 `
 
