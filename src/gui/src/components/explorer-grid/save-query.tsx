@@ -40,46 +40,19 @@ const SaveQueryButton = () => {
 
   /** Once the save button is clicked, the query is saved. */
   useEffect(() => {
-    const foundQuery = savedQueries?.find(
-      query => query.query === activeQuery,
-    )
-    if (showSaveQueryPopover) {
-      animate(scope.current, {
-        rotate: -71.5,
-      })
-    } else {
-      animate(scope.current, {
-        rotate: 0,
-      })
-    }
-  }, [
-    showSaveQueryPopover,
-    savedQueries,
-    activeQuery,
-    resolvedTheme,
-    animate,
-    scope,
-  ])
+    animate(scope.current, {
+      rotate: showSaveQueryPopover ? -71.5 : 0,
+    })
+  }, [showSaveQueryPopover, animate, scope])
 
   const starColor = useMemo(() => {
     const foundQuery = savedQueries?.find(
       query => query.query === activeQuery,
     )
-    return foundQuery && resolvedTheme === 'dark' ? '#fafafa' : '#212121'
+    return foundQuery && resolvedTheme === 'dark' ?
+        '#fafafa'
+      : '#212121'
   }, [savedQueries, activeQuery, resolvedTheme])
-
-  /** Handle save query popover animation */
-  useEffect(() => {
-    if (showSaveQueryPopover) {
-      animate(scope.current, {
-        rotate: -71.5,
-      })
-    } else {
-      animate(scope.current, {
-        rotate: 0,
-      })
-    }
-  }, [showSaveQueryPopover, animate, scope])
 
   return (
     <Popover
