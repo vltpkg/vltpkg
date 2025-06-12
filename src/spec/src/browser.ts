@@ -16,9 +16,9 @@ export const kCustomInspect = Symbol.for('nodejs.util.inspect.custom')
 
 export const defaultRegistry = 'https://registry.npmjs.org/'
 
-export const defaultRegistries = { 
+export const defaultRegistries = {
   npm: defaultRegistry,
-  gh: 'https://npm.pkg.github.com/'
+  gh: 'https://npm.pkg.github.com/',
 }
 
 export const defaultJsrRegistries = { jsr: 'https://npm.jsr.io/' }
