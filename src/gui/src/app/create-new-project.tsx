@@ -25,7 +25,7 @@ export const CreateNewProject = () => {
       updateErrorCause,
       stamp,
     })
-  }, [stamp])
+  }, [stamp, navigate, updateDashboard, updateErrorCause])
 
   if (inProgress)
     return (

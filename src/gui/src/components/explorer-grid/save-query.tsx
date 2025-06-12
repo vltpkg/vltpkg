@@ -56,7 +56,14 @@ const SaveQueryButton = () => {
         rotate: 0,
       })
     }
-  }, [showSaveQueryPopover, savedQueries, activeQuery, resolvedTheme])
+  }, [
+    showSaveQueryPopover,
+    savedQueries,
+    activeQuery,
+    resolvedTheme,
+    animate,
+    scope,
+  ])
 
   return (
     <Popover
@@ -161,7 +168,16 @@ const SaveQueryPopover = ({
         })
       }
     }
-  }, [])
+  }, [
+    activeQuery,
+    nodes,
+    saveQuery,
+    savedQueries,
+    updateQuery,
+    editContext,
+    queryName,
+    selectedLabels,
+  ])
 
   /**
    * Set the default state of the text inputs
@@ -192,7 +208,18 @@ const SaveQueryPopover = ({
         updateQuery(item)
       }
     }
-  }, [isOpen])
+    // queryName and selectedLabels are updated in the useEffect below so including them causes an infinite loop
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    isOpen,
+    activeQuery,
+    nodes,
+    savedQueries,
+    updateQuery,
+    editContext,
+    // queryName,
+    // selectedLabels,
+  ])
 
   /**
    * Update the UI inputs
@@ -201,7 +228,7 @@ const SaveQueryPopover = ({
     setSelectedLabels(savedQuery?.labels ?? [])
     setQueryName(savedQuery?.name ?? nodes[0]?.manifest?.name ?? '')
     setEditContext(savedQuery?.context ?? nodes[0]?.projectRoot ?? '')
-  }, [savedQuery])
+  }, [savedQuery, nodes])
 
   // exit early to avoid UI flash
   if (!isOpen) return null

@@ -80,7 +80,7 @@ export const DataTable = <TData, TValue>({
 
   useEffect(() => {
     setTable(table)
-  }, [table])
+  }, [table, setTable])
 
   return (
     <>

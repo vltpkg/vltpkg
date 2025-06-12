@@ -42,39 +42,6 @@ export const DirectorySelect = ({
       dashboard?.dashboardProjectLocations
     : dashboard?.projects
 
-  const setInitialDisplayPath = () => {
-    // query saved item case
-    if (
-      acceptsGlobal &&
-      directory !== '' &&
-      !useDashboardProjectLocations
-    ) {
-      setDisplayPath(
-        directoryLocations?.find(
-          location => location.path === directory,
-        )?.readablePath ?? '',
-      )
-    }
-
-    // query creation case
-    else if (
-      acceptsGlobal &&
-      directory === '' &&
-      !useDashboardProjectLocations
-    ) {
-      setDisplayPath('Global')
-    }
-
-    // creating a new project case
-    else if (
-      !acceptsGlobal &&
-      useDashboardProjectLocations &&
-      directory === ''
-    ) {
-      setDisplayPath('Select a directory')
-    }
-  }
-
   /**
    * The use a ref is to ensure that the initial display path is only set once.
    * This is because react will run useEffects twice in development mode.
@@ -83,10 +50,49 @@ export const DirectorySelect = ({
    * as it will run before initial paint.
    */
   useLayoutEffect(() => {
+    const setInitialDisplayPath = () => {
+      // query saved item case
+      if (
+        acceptsGlobal &&
+        directory !== '' &&
+        !useDashboardProjectLocations
+      ) {
+        setDisplayPath(
+          directoryLocations?.find(
+            location => location.path === directory,
+          )?.readablePath ?? '',
+        )
+      }
+
+      // query creation case
+      else if (
+        acceptsGlobal &&
+        directory === '' &&
+        !useDashboardProjectLocations
+      ) {
+        setDisplayPath('Global')
+      }
+
+      // creating a new project case
+      else if (
+        !acceptsGlobal &&
+        useDashboardProjectLocations &&
+        directory === ''
+      ) {
+        setDisplayPath('Select a directory')
+      }
+    }
+
     if (mounted.current) return
     mounted.current = true
+
     setInitialDisplayPath()
-  }, [])
+  }, [
+    acceptsGlobal,
+    directory,
+    directoryLocations,
+    useDashboardProjectLocations,
+  ])
 
   return (
     <Popover>
