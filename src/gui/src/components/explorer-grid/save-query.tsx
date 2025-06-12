@@ -168,7 +168,16 @@ const SaveQueryPopover = ({
         })
       }
     }
-  }, [activeQuery, nodes, saveQuery, savedQueries, updateQuery])
+  }, [
+    activeQuery,
+    nodes,
+    saveQuery,
+    savedQueries,
+    updateQuery,
+    editContext,
+    queryName,
+    selectedLabels,
+  ])
 
   /**
    * Set the default state of the text inputs
@@ -199,7 +208,18 @@ const SaveQueryPopover = ({
         updateQuery(item)
       }
     }
-  }, [isOpen, activeQuery, nodes, savedQueries, updateQuery])
+    // queryName and selectedLabels are updated in the useEffect below so including them causes an infinite loop
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    isOpen,
+    activeQuery,
+    nodes,
+    savedQueries,
+    updateQuery,
+    editContext,
+    // queryName,
+    // selectedLabels,
+  ])
 
   /**
    * Update the UI inputs
