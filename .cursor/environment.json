@@ -1,0 +1,4 @@
+{
+  "agentCanUpdateSnapshot": true,
+  "install": "pnpm install"
+}
