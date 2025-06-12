@@ -1,6 +1,6 @@
 import { NavLink, useNavigate } from 'react-router'
 import type { SavedQuery } from '@/state/types.ts'
-import { useEffect, useState } from 'react'
+import { useMemo } from 'react'
 import { useGraphStore } from '@/state/index.ts'
 import {
   Popover,
@@ -18,18 +18,12 @@ import { LabelBadge } from '@/components/labels/label-badge.tsx'
 const QueryMatches = () => {
   const savedQueries = useGraphStore(state => state.savedQueries)
   const activeQuery = useGraphStore(state => state.query)
-  const [matchedQueries, setMatchedQueries] = useState<SavedQuery[]>(
-    [],
+  const matchedQueries = useMemo(
+    () =>
+      savedQueries?.filter(query => query.query === activeQuery) ??
+      [],
+    [savedQueries, activeQuery],
   )
-
-  useEffect(() => {
-    if (savedQueries && savedQueries.length !== 0) {
-      const filteredQueries = savedQueries.filter(
-        query => query.query === activeQuery,
-      )
-      setMatchedQueries(filteredQueries)
-    }
-  }, [savedQueries, activeQuery])
 
   return (
     <>
