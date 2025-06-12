@@ -99,14 +99,8 @@ t.test('simple graph', async t => {
     ['#a', ['a']], // identifier
     ['#a:v(1)', ['a']], // matches identifier + semver
     ['#a:v(2)', []], // fails to match identifier + semver
-    [
-      ':path("*")',
-      ['my-project', '@x/y'],
-    ], // path selector for all path-based nodes
-    [
-      ':path(".")',
-      ['my-project'],
-    ], // path selector for root
+    [':path("*")', ['my-project', '@x/y']], // path selector for all path-based nodes
+    [':path(".")', ['my-project']], // path selector for root
     [':path("**/a/**")', []], // should not match since 'a' is not workspace or file type
     [':root, #a, :foo', ['my-project', 'a']], // should be loose on multiple selectors
   ])

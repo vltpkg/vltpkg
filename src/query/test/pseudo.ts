@@ -535,11 +535,7 @@ t.test(':path selector', async t => {
       all,
       ['path-based-project', 'a', 'b', 'c', 'x', 'y'],
     ], // Match all workspace and file nodes
-    [
-      ':path("packages/*")',
-      all,
-      ['a', 'b'],
-    ], // Match workspace packages in packages directory
+    [':path("packages/*")', all, ['a', 'b']], // Match workspace packages in packages directory
     [':path("packages/a")', all, ['a']], // Match specific workspace
     [':path(".")', all, ['path-based-project']], // Match root project
     [':path("x")', all, ['x']], // Match file dependency
@@ -557,13 +553,16 @@ t.test(':path selector', async t => {
 
   for (const [query, partial, expectedNames] of queryToExpected) {
     try {
-      await testPseudo(query, all, partial, false, expectedNames)
+      // Convert string names to DepID array
+      const expectedDepIDs = expectedNames.map(name =>
+        joinDepIDTuple(['registry', '', `${name}@1.0.0`]),
+      )
+      await testPseudo(query, all, partial, false, expectedDepIDs)
     } catch (error) {
       t.fail(`Failed query "${query}": ${error}`)
     }
   }
 })
-
 
 t.test('unexpected attr usage', async t => {
   await t.rejects(

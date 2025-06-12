@@ -7,6 +7,8 @@ import {
   removeQuotes,
   removeEdge,
   removeUnlinkedNodes,
+  clear,
+  assertSecurityArchive,
 } from '../../src/pseudo/helpers.ts'
 import {
   getMissingNodeGraph,
@@ -208,6 +210,64 @@ t.test('removeUnlinkedNodes', async t => {
       )
     },
   )
+})
+
+t.test('clear', async t => {
+  await t.test('clears all nodes and edges', async t => {
+    const graph = getSimpleGraph()
+    const partial = {
+      edges: new Set(graph.edges),
+      nodes: new Set(graph.nodes.values()),
+    }
+    const state = { partial } as ParserState
+
+    // Verify the state has nodes and edges before clearing
+    t.ok(
+      state.partial.nodes.size > 0,
+      'state should have nodes before clearing',
+    )
+    t.ok(
+      state.partial.edges.size > 0,
+      'state should have edges before clearing',
+    )
+
+    // Call the clear function
+    const result = clear(state)
+
+    // Verify the nodes and edges are cleared
+    t.equal(state.partial.nodes.size, 0, 'should clear all nodes')
+    t.equal(state.partial.edges.size, 0, 'should clear all edges')
+
+    // Verify the function returns the state
+    t.equal(result, state, 'should return the state object')
+  })
+})
+
+t.test('assertSecurityArchive', async t => {
+  await t.test('with security archive present', async t => {
+    const state = {
+      securityArchive: asSecurityArchiveLike(new Map()),
+    } as ParserState
+
+    // Should not throw when security archive is present
+    t.doesNotThrow(
+      () => assertSecurityArchive(state, 'test'),
+      'should not throw when security archive is present',
+    )
+  })
+
+  await t.test('with security archive missing', async t => {
+    const state = {
+      securityArchive: undefined,
+    } as ParserState
+
+    // Should throw when security archive is missing
+    t.throws(
+      () => assertSecurityArchive(state, 'test'),
+      { message: /Missing security archive/ },
+      'should throw when security archive is missing',
+    )
+  })
 })
 
 t.test('selects packages with an unmaintained alert', async t => {

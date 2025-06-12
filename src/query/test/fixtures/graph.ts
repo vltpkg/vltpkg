@@ -39,7 +39,9 @@ export const newNode =
     id: joinDepIDTuple(['registry', '', `${name}@${version}`]),
     name,
     version,
-    location: joinDepIDTuple(['registry', '', `${name}@${version}`]) + `/node_modules/${name}`,
+    location:
+      joinDepIDTuple(['registry', '', `${name}@${version}`]) +
+      `/node_modules/${name}`,
     manifest: { name, version },
     integrity: 'sha512-deadbeef',
     resolved: undefined,
@@ -638,7 +640,7 @@ export const getAliasedGraph = (): GraphLike => {
 //   c --> x:::file
 //   b --> x:::file
 //   c --> y:::file
-//   
+//
 //   classDef workspace fill:skyblue
 //   classDef file fill:lightgray
 //   classDef dev fill:palegreen
@@ -705,18 +707,23 @@ export const getPathBasedGraph = (): GraphLike => {
 
   // c -> b
   newEdge(c, Spec.parse('b', 'workspace:*', specOptions), 'prod', b)
-  
+
   // b -> a
   newEdge(b, Spec.parse('a', 'workspace:*', specOptions), 'prod', a)
-  
+
   // c -> x
   newEdge(c, Spec.parse('x', 'file:x', specOptions), 'prod', x)
-  
+
   // b -> x
   newEdge(b, Spec.parse('x', 'file:x', specOptions), 'prod', x)
-  
+
   // c -> y
-  newEdge(c, Spec.parse('y', 'file:packages/a/y', specOptions), 'prod', y)
+  newEdge(
+    c,
+    Spec.parse('y', 'file:packages/a/y', specOptions),
+    'prod',
+    y,
+  )
 
   return graph
 }
