@@ -112,7 +112,7 @@ const NumberFlow = forwardRef<HTMLDivElement, NumberFlowProps>(
       })
 
       return controls.stop
-    }, [start, end])
+    }, [start, end, duration, motionValue])
 
     const paddedDigits = displayNumber
       .toString()

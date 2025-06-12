@@ -81,7 +81,16 @@ export const Explorer = () => {
       void navigate('/error')
       updateErrorCause('Failed to initialize explorer.')
     })
-  }, [stamp])
+  }, [
+    stamp,
+    updateHasDashboard,
+    updateGraph,
+    updateProjectInfo,
+    updateQ,
+    updateSpecOptions,
+    navigate,
+    updateErrorCause,
+  ])
 
   return <ExplorerContent />
 }
@@ -134,7 +143,7 @@ const ExplorerContent = () => {
       updateEdges([])
       updateNodes([])
     })
-  }, [query, q, graph])
+  }, [query, q, graph, updateEdges, updateNodes])
 
   // avoids flash of content
   if (!graph) {

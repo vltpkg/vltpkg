@@ -18,5 +18,5 @@ export const usePreflight = () => {
       navigate,
       stamp,
     })
-  }, [stamp])
+  }, [stamp, updateAppData, updateErrorCause, navigate])
 }
