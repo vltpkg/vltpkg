@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState, useRef, useMemo } from 'react'
 import type { ChangeEvent } from 'react'
 import { Star, ChevronsUpDown } from 'lucide-react'
 import { CardHeader, CardTitle } from '@/components/ui/card.tsx'
@@ -19,7 +19,7 @@ import { Label } from '@/components/ui/label.tsx'
 import { Input } from '@/components/ui/input.tsx'
 import { useAnimate } from 'framer-motion'
 import { useGraphStore } from '@/state/index.ts'
-import type { Color, QueryLabel, SavedQuery } from '@/state/types.ts'
+import type { QueryLabel, SavedQuery } from '@/state/types.ts'
 import { LabelSelect } from '@/components/labels/label-select.tsx'
 import { LabelBadge } from '@/components/labels/label-badge.tsx'
 import { v4 as uuidv4 } from 'uuid'
@@ -36,16 +36,12 @@ const SaveQueryButton = () => {
   const [scope, animate] = useAnimate()
   const savedQueries = useGraphStore(state => state.savedQueries)
   const activeQuery = useGraphStore(state => state.query)
-  const [starColor, setStarColor] = useState<Color>()
   const { resolvedTheme } = useTheme()
 
   /** Once the save button is clicked, the query is saved. */
   useEffect(() => {
     const foundQuery = savedQueries?.find(
       query => query.query === activeQuery,
-    )
-    setStarColor(
-      foundQuery && resolvedTheme === 'dark' ? '#fafafa' : '#212121',
     )
     if (showSaveQueryPopover) {
       animate(scope.current, {
@@ -64,6 +60,26 @@ const SaveQueryButton = () => {
     animate,
     scope,
   ])
+
+  const starColor = useMemo(() => {
+    const foundQuery = savedQueries?.find(
+      query => query.query === activeQuery,
+    )
+    return foundQuery && resolvedTheme === 'dark' ? '#fafafa' : '#212121'
+  }, [savedQueries, activeQuery, resolvedTheme])
+
+  /** Handle save query popover animation */
+  useEffect(() => {
+    if (showSaveQueryPopover) {
+      animate(scope.current, {
+        rotate: -71.5,
+      })
+    } else {
+      animate(scope.current, {
+        rotate: 0,
+      })
+    }
+  }, [showSaveQueryPopover, animate, scope])
 
   return (
     <Popover

@@ -48,7 +48,6 @@ export const DataTable = <TData, TValue>({
   onClickHandler,
 }: DataTableProps<TData, TValue>) => {
   const [sorting, setSorting] = useState<SortingState>([])
-  const [globalFilter, setGlobalFilter] = useState<string>('')
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
     pageSize: 10,
@@ -60,7 +59,6 @@ export const DataTable = <TData, TValue>({
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     onSortingChange: setSorting,
-    onGlobalFilterChange: setGlobalFilter,
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     columnResizeMode: 'onChange',
@@ -68,15 +66,11 @@ export const DataTable = <TData, TValue>({
     onPaginationChange: setPagination,
     state: {
       sorting,
-      globalFilter,
+      globalFilter: filterValue,
       columnVisibility,
       pagination,
     },
   })
-
-  useEffect(() => {
-    setGlobalFilter(filterValue)
-  }, [filterValue])
 
   useEffect(() => {
     setTable(table)
