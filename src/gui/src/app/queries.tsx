@@ -66,7 +66,7 @@ const Queries = () => {
       updateErrorCause,
       stamp,
     })
-  }, [stamp])
+  }, [stamp, navigate, updateDashboard, updateErrorCause])
 
   useEffect(() => {
     if (savedQueries) {

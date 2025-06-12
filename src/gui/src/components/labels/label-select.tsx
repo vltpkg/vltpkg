@@ -34,26 +34,26 @@ const LabelSelect = ({
   const [isCreateModalOpen, setIsCreateModalOpen] =
     useState<boolean>(false)
 
-  const handleClick = (event: MouseEvent) => {
-    if (
-      boxRef.current &&
-      !boxRef.current.contains(event.target as Node)
-    ) {
-      setIsOpen(false)
-    }
-  }
-
   /**
    * Manually check for MouseEvents to not close
    * popover until all desired labels have been selected.
    */
   useEffect(() => {
+    const handleClick = (event: MouseEvent) => {
+      if (
+        boxRef.current &&
+        !boxRef.current.contains(event.target as Node)
+      ) {
+        setIsOpen(false)
+      }
+    }
+
     document.addEventListener('mousedown', handleClick)
 
     return () => {
       document.removeEventListener('mousedown', handleClick)
     }
-  }, [])
+  }, [setIsOpen])
 
   const handleSelect = (value: string) => {
     setItems(prevItems => {
