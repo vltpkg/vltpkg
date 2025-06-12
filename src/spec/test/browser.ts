@@ -391,7 +391,7 @@ t.test('parse args', t => {
     '@luca/cases@jsr:@luca/cases@jsr:@x/y@1',
     'npm:abbrev',
     'npm:abbrev@1',
-    // GitHub registry support - adding back gradually  
+    // GitHub registry support - adding back gradually
     'gh:@octocat/hello-world@1.0.0',
   ]
 
@@ -694,7 +694,7 @@ t.test(
 // Will be re-enabled once snapshots are properly generated
 t.test('gh: registry support (basic functionality)', async t => {
   // Test that gh: registry is properly configured
-  const spec1 = Spec.parse('test@gh:@octocat/hello-world@1.0.0')
+  const spec1 = Spec.parse('test', 'gh:@octocat/hello-world@1.0.0')
   t.equal(spec1.type, 'registry', 'should be registry type')
   t.equal(spec1.namedRegistry, 'gh', 'should use gh registry')
   t.equal(
@@ -704,7 +704,42 @@ t.test('gh: registry support (basic functionality)', async t => {
   )
   t.equal(spec1.name, 'test', 'should preserve package name')
 
-  const spec2 = Spec.parse('gh:@octocat/hello-world@1.0.0')
+  const spec2 = Spec.parse(
+    'hello-world',
+    'gh:@octocat/hello-world@1.0.0',
+  )
+  t.equal(spec2.type, 'registry', 'should be registry type')
+  t.equal(spec2.namedRegistry, 'gh', 'should use gh registry')
+  t.equal(
+    spec2.registry,
+    'https://npm.pkg.github.com/',
+    'should map to GitHub registry URL',
+  )
+  t.equal(spec2.name, 'hello-world', 'should be useable as an alias')
+
+  // Test that it works with user-provided registries too
+  const spec3 = Spec.parse('test', 'gh:@octocat/hello-world@1.0.0', {
+    registries: { custom: 'https://custom.registry.com/' },
+  })
+  t.equal(
+    spec3.registry,
+    'https://npm.pkg.github.com/',
+    'should still use default gh registry',
+  )
+
+  t.end()
+})
+
+// Additional test cases requested in code review
+t.test('gh: registry support (additional test cases)', async t => {
+  // Test multiple subspecs
+  const spec1 = Spec.parse('test', 'npm:foo@gh:@octocat/bar@1.0.0')
+  t.equal(spec1.type, 'registry', 'should be registry type')
+  t.equal(spec1.namedRegistry, 'npm', 'should use npm registry')
+  t.equal(spec1.name, 'test', 'should preserve package name')
+
+  // Test parseArgs
+  const spec2 = Spec.parseArgs('gh:@octocat/hello-world@1.0.0')
   t.equal(spec2.type, 'registry', 'should be registry type')
   t.equal(spec2.namedRegistry, 'gh', 'should use gh registry')
   t.equal(
@@ -718,56 +753,8 @@ t.test('gh: registry support (basic functionality)', async t => {
     'should infer package name from subspec',
   )
 
-  // Test that it works with user-provided registries too
-  const spec3 = Spec.parse('test@gh:@octocat/hello-world@1.0.0', {
-    registries: { custom: 'https://custom.registry.com/' },
-  })
-  t.equal(
-    spec3.registry,
-    'https://npm.pkg.github.com/',
-    'should still use default gh registry',
-  )
-
   t.end()
 })
-
-// t.test('gh: registry support', async t => {
-//   const spec1 = Spec.parse('test@gh:@octocat/hello-world@1.0.0')
-//   t.equal(spec1.type, 'registry', 'should be registry type')
-//   t.equal(spec1.namedRegistry, 'gh', 'should use gh registry')
-//   t.equal(
-//     spec1.registry,
-//     'https://npm.pkg.github.com/',
-//     'should map to GitHub registry URL',
-//   )
-//   t.equal(spec1.name, 'test', 'should preserve package name')
-//
-//   const spec2 = Spec.parse('gh:@octocat/hello-world@1.0.0')
-//   t.equal(spec2.type, 'registry', 'should be registry type')
-//   t.equal(spec2.namedRegistry, 'gh', 'should use gh registry')
-//   t.equal(
-//     spec2.registry,
-//     'https://npm.pkg.github.com/',
-//     'should map to GitHub registry URL',
-//   )
-//   t.equal(
-//     spec2.name,
-//     '@octocat/hello-world',
-//     'should infer package name from subspec',
-//   )
-//
-//   // Test that it works with user-provided registries too
-//   const spec3 = Spec.parse('test@gh:@octocat/hello-world@1.0.0', {
-//     registries: { custom: 'https://custom.registry.com/' },
-//   })
-//   t.equal(
-//     spec3.registry,
-//     'https://npm.pkg.github.com/',
-//     'should still use default gh registry',
-//   )
-//
-//   t.end()
-// })
 
 t.test('catalogs', async t => {
   const catalog = { a: '1.2.3' }
