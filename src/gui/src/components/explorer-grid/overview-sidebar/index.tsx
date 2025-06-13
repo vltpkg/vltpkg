@@ -1,9 +1,11 @@
 import { GridHeader } from '@/components/explorer-grid/header.tsx'
 import { SideItem } from '@/components/explorer-grid/side-item.tsx'
+import { SuggestedQueries } from '@/components/explorer-grid/overview-sidebar/suggested-queries.tsx'
 
 import type { GridItemData } from '@/components/explorer-grid/types.ts'
 
 type OverviewSidebarProps = {
+  dependencies: GridItemData[]
   parentItem: GridItemData | undefined
   workspaces: GridItemData[]
   dependents: GridItemData[]
@@ -15,6 +17,7 @@ type OverviewSidebarProps = {
 }
 
 export const OverviewSidebar = ({
+  dependencies,
   parentItem,
   workspaces,
   dependents,
@@ -38,6 +41,7 @@ export const OverviewSidebar = ({
         items={dependents}
         onClick={onDependentClick}
       />
+      {dependencies.length > 0 && <SuggestedQueries />}
     </>
   )
 }

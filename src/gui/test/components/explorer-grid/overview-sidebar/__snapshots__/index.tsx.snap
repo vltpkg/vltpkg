@@ -40,6 +40,13 @@ exports[`OverviewSidebar clicks on workspace items change the query correctly 1`
 
 `;
 
+exports[`OverviewSidebar contains SuggestedQueries when dependencies are present 1`] = `
+
+<gui-suggested-queries>
+</gui-suggested-queries>
+
+`;
+
 exports[`OverviewSidebar renders with a parent 1`] = `
 
 <gui-grid-header>

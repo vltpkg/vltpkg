@@ -9,6 +9,13 @@ vi.mock('@/components/explorer-grid/header.tsx', () => ({
   GridHeader: 'gui-grid-header',
 }))
 
+vi.mock(
+  '@/components/explorer-grid/overview-sidebar/suggested-queries.tsx',
+  () => ({
+    SuggestedQueries: 'gui-suggested-queries',
+  }),
+)
+
 expect.addSnapshotSerializer({
   serialize: v => html(v),
   test: () => true,
@@ -45,6 +52,7 @@ test('OverviewSidebar renders with a parent', async () => {
 
   const Container = () => (
     <OverviewSidebar
+      dependencies={[]}
       parentItem={mockParentItem}
       workspaces={[]}
       dependents={[]}
@@ -83,6 +91,7 @@ test('OverviewSidebar renders with a parent and workspaces', async () => {
 
   const Container = () => (
     <OverviewSidebar
+      dependencies={[]}
       parentItem={mockParentItem}
       workspaces={[mockWorkspace, mockWorkspace]}
       dependents={[]}
@@ -128,6 +137,7 @@ test('OverviewSidebar renders with a parent, workspaces, and dependents', async 
 
   const Container = () => (
     <OverviewSidebar
+      dependencies={[]}
       parentItem={mockParentItem}
       workspaces={[mockWorkspace, mockWorkspace]}
       dependents={[mockDependent, mockDependent]}
@@ -159,6 +169,7 @@ test('OverviewSidebar clicks on workspace items change the query correctly', asy
 
   const Container = () => (
     <OverviewSidebar
+      dependencies={[]}
       onWorkspaceClick={mockOnWorkspaceClick}
       onDependentClick={mockOnDependentClick}
       parentItem={undefined}
@@ -174,4 +185,40 @@ test('OverviewSidebar clicks on workspace items change the query correctly', asy
 
   expect(container.innerHTML).toMatchSnapshot()
   expect(mockOnWorkspaceClick).toHaveBeenCalledWith(mockWorkspace)
+})
+
+test('OverviewSidebar contains SuggestedQueries when dependencies are present', async () => {
+  const { OverviewSidebar } = await import(
+    '@/components/explorer-grid/overview-sidebar/index.tsx'
+  )
+  const mockOnWorkspaceClick = vi.fn()
+  const mockOnDependentClick = vi.fn()
+
+  const mockDependency = {
+    id: '1',
+    labels: ['workspace'],
+    name: 'workspace-item',
+    title: 'workspace-item',
+    version: '1.0.0',
+    stacked: false,
+    size: 1,
+  } satisfies GridItemData
+
+  const Container = () => (
+    <OverviewSidebar
+      dependencies={[mockDependency]}
+      onWorkspaceClick={mockOnWorkspaceClick}
+      onDependentClick={mockOnDependentClick}
+      parentItem={undefined}
+      dependents={[]}
+      workspaces={[]}
+    />
+  )
+
+  const { container } = render(<Container />)
+  const suggestedQueries = container.querySelector(
+    'gui-suggested-queries',
+  )
+  expect(container.innerHTML).toMatchSnapshot()
+  expect(suggestedQueries).toBeDefined()
 })
