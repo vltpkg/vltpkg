@@ -78,6 +78,7 @@ export const getOptions = (
     : defaultGitHosts,
   registries: {
     ...defaultRegistries,
+    npm: options?.registry ?? defaultRegistry,
     ...(options?.registries ?? {}),
   },
   'git-host-archives':
@@ -322,9 +323,18 @@ export class Spec implements SpecLike<Spec> {
       this.spec = `${this.name}@${bareOrOptions}`
     } else {
       this.spec = spec
-      // Check if this spec starts with a registry identifier
-      if (startsWithSpecIdentifier(spec, this.options)) {
-        this.name = '(unknown)'
+      // Check if this spec starts with a known registry identifier
+      // but exclude git specs like 'git@github:a/b'
+      if (
+        !spec.startsWith('git@') &&
+        startsWithSpecIdentifier(spec, this.options) &&
+        (spec.includes(':') && 
+         Object.keys(this.options.registries).some(key => 
+           spec.startsWith(`${key}:`)))
+      ) {
+        // For specs like 'gh:@octocat/hello-world@1.0.0', don't split at the @
+        // Instead, set a temporary name and let the registry logic handle it
+        this.name = spec
         this.bareSpec = spec
       } else {
         const hasScope = spec.startsWith('@')
@@ -466,15 +476,7 @@ export class Spec implements SpecLike<Spec> {
       return
     }
 
-    // spooky
-    const ghosts = Object.entries(this.options['git-hosts'])
-    for (const [name, template] of ghosts) {
-      if (this.#parseHostedGit(name, template)) {
-        this.type = 'git'
-        return
-      }
-    }
-
+    // Check registries before git hosts to avoid conflicts
     const regs = Object.entries(this.options.registries)
     if (!this.options.registries.npm) {
       regs.push(['npm', this.options.registry])
@@ -510,12 +512,23 @@ export class Spec implements SpecLike<Spec> {
           this.bareSpec.substring(h.length),
           url,
         ).namedRegistry ??= host
-        this.#guessRegistryTarball()
-        // If name is unknown and we have a subspec, infer name from subspec
-        if (this.name === '(unknown)' && this.subspec) {
+
+        // If we parsed a spec identifier, update the name and spec format
+        if (this.subspec && this.name === this.bareSpec) {
           this.name = this.subspec.name
           this.spec = `${this.name}@${this.bareSpec}`
         }
+
+        this.#guessRegistryTarball()
+        return
+      }
+    }
+
+    // spooky
+    const ghosts = Object.entries(this.options['git-hosts'])
+    for (const [name, template] of ghosts) {
+      if (this.#parseHostedGit(name, template)) {
+        this.type = 'git'
         return
       }
     }
