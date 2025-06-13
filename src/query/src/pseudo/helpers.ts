@@ -68,6 +68,15 @@ export const assertSecurityArchive: (
 }
 
 /**
+ * Clears all nodes and edges from the results.
+ */
+export const clear = (state: ParserState): ParserState => {
+  state.partial.nodes.clear()
+  state.partial.edges.clear()
+  return state
+}
+
+/**
  * Reusable security selector alert filter.
  */
 export const createSecuritySelectorFilter = (
