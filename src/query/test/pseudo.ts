@@ -8,6 +8,7 @@ import {
   getMultiWorkspaceGraph,
   getSimpleGraph,
   getSingleWorkspaceGraph,
+  getPathBasedGraph,
 } from './fixtures/graph.ts'
 import {
   copyGraphSelectionState,
@@ -514,6 +515,53 @@ t.test('specificity calculation for pseudo selectors', async t => {
     0,
     ':has should not increment commonCounter',
   )
+})
+
+t.test(':path selector', async t => {
+  const pathBasedGraph = getPathBasedGraph()
+  const all = {
+    edges: new Set(pathBasedGraph.edges),
+    nodes: new Set(pathBasedGraph.nodes.values()),
+  }
+  const empty: GraphSelectionState = {
+    edges: new Set(),
+    nodes: new Set(),
+  }
+
+  const queryToExpected = new Set<TestCase>([
+    // Test basic path matching - all patterns must be quoted
+    [
+      ':path("*")',
+      all,
+      ['path-based-project', 'a', 'b', 'c', 'x', 'y'],
+    ], // Match all workspace and file nodes
+    [':path("packages/*")', all, ['a', 'b']], // Match workspace packages in packages directory
+    [':path("packages/a")', all, ['a']], // Match specific workspace
+    [':path(".")', all, ['path-based-project']], // Match root project
+    [':path("x")', all, ['x']], // Match file dependency
+    [':path("packages/**")', all, ['a', 'b', 'y']], // Match with glob patterns
+    [':path("packages/a/*")', all, ['y']], // Match nested file paths
+    [':path("nonexistent/**")', all, []], // No matches
+
+    // Test edge cases
+    [':path("")', all, []], // Empty pattern should match nothing
+    [':path()', all, []], // Missing pattern should match nothing
+
+    // Test from empty partial
+    [':path("*")', empty, []], // Empty input should return empty
+  ])
+
+  for (const [query, partial, expectedNames] of queryToExpected) {
+    try {
+      // Convert string names to DepID array
+      const expectedDepIDs = expectedNames.map(name =>
+        joinDepIDTuple(['registry', '', `${name}@1.0.0`]),
+      )
+      await testPseudo(query, all, partial, false, expectedDepIDs)
+    } catch (error) {
+      t.fail(`Failed query "${query}": ${error}`)
+    }
+  }
 })
 
 t.test('unexpected attr usage', async t => {
