@@ -328,9 +328,10 @@ export class Spec implements SpecLike<Spec> {
       if (
         !spec.startsWith('git@') &&
         startsWithSpecIdentifier(spec, this.options) &&
-        (spec.includes(':') && 
-         Object.keys(this.options.registries).some(key => 
-           spec.startsWith(`${key}:`)))
+        spec.includes(':') &&
+        Object.keys(this.options.registries).some(key =>
+          spec.startsWith(`${key}:`),
+        )
       ) {
         // For specs like 'gh:@octocat/hello-world@1.0.0', don't split at the @
         // Instead, set a temporary name and let the registry logic handle it
