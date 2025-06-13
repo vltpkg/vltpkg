@@ -182,7 +182,7 @@ export const SelectedItem = ({ item }: { item: GridItemData }) => {
         updateQuery(`:root`)
         return
       }
-      const useVersion = false as boolean
+      const useVersion = true as boolean
       const selectedName = item.to?.name ? `#${item.to.name}` : ''
       const selectedVersion =
         useVersion && item.to?.version ? `:v(${item.to.version})` : ''
