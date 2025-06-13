@@ -70,8 +70,9 @@ const onResultItemClick =
     e.preventDefault()
     if (!item.to) return
     let newQuery = ''
-    const useVersion = false as boolean
     if (item.stacked) {
+      // TODO: useVersion not needed for stacked items
+      const useVersion = false as boolean
       const name = item.to.name ? `#${item.to.name}` : ''
       const version =
         useVersion && item.to.version ? `:v(${item.to.version})` : ''
@@ -79,6 +80,8 @@ const onResultItemClick =
     } else {
       let suffix = ''
       if (!item.sameItems) {
+        // TODO: useVersion not needed for same items
+        const useVersion = false as boolean
         const name = item.to.name ? `#${item.to.name}` : ''
         const version =
           useVersion && item.to.version ?
@@ -89,6 +92,11 @@ const onResultItemClick =
       if (item.to.importer && !item.from) {
         newQuery = `:project#${item.to.name}`
       } else if (item.from) {
+        // use version on the parent node if there are multiple nodes in the graph with the same name
+        const useVersion =
+          [...item.from.graph.nodes.values()].filter(
+            n => n.name === item.from?.name,
+          ).length > 1
         const fromName = `#${item.from.name}`
         const fromVersion =
           useVersion && item.from.version ?
