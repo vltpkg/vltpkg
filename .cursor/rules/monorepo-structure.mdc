@@ -1,7 +1,7 @@
 ---
 description: Details on how to work in the monorepo structure
 globs: 
-alwaysApply: false
+alwaysApply: true
 ---
 # vltpkg/vltpkg Monorepo Structure
 
