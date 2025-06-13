@@ -76,10 +76,7 @@ export const getOptions = (
         ...options['git-hosts'],
       }
     : defaultGitHosts,
-  registries: {
-    ...defaultRegistries,
-    ...(options?.registries ?? {}),
-  },
+  registries: options?.registries ?? {},
   'git-host-archives':
     options?.['git-host-archives'] ?
       {
@@ -116,6 +113,7 @@ const startsWithSpecIdentifier = (
   spec.startsWith('git@github.com') ||
   spec.startsWith('registry:') ||
   spec.startsWith('npm:') ||
+  spec.startsWith('gh:') ||
   // anything that starts with a known git host key, or a
   // custom registered registry protocol e.g: `github:`, `custom:`
   [
@@ -328,9 +326,10 @@ export class Spec implements SpecLike<Spec> {
         !spec.startsWith('git@') &&
         startsWithSpecIdentifier(spec, this.options) &&
         spec.includes(':') &&
-        Object.keys(this.options.registries).some(key =>
-          spec.startsWith(`${key}:`),
-        )
+        [
+          ...Object.keys(this.options.registries),
+          ...Object.keys(defaultRegistries),
+        ].some(key => spec.startsWith(`${key}:`))
       ) {
         // For specs like 'gh:@octocat/hello-world@1.0.0', don't split at the @
         // Instead, set a temporary name and let the registry logic handle it

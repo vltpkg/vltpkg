@@ -85,7 +85,6 @@ Spec {
     "projectRoot": "{ROOT}",
     "registries": Object {
       "custom": "http://example.com",
-      "gh": "https://npm.pkg.github.com/",
       "npm": "https://registry.npmjs.org/",
     },
     "registry": "https://registry.npmjs.org/",
@@ -164,7 +163,6 @@ Spec {
     "projectRoot": "{ROOT}",
     "registries": Object {
       "custom": "http://example.com",
-      "gh": "https://npm.pkg.github.com/",
       "npm": "https://registry.npmjs.org/",
     },
     "registry": "https://registry.npmjs.org/",
