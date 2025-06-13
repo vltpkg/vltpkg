@@ -98,16 +98,19 @@ exports[`test/ideal/append-nodes.ts > TAP > resolve against the correct registri
   },
   nodes: {
     '·a·bar@1.2.3': [ 0, 'bar', <3 empty items>, [Object] ],
+    '·a·x@1.99.99': [ 0, 'x', <3 empty items>, [Object] ],
+    '·a·y@1.99.99': [ 0, 'y', <3 empty items>, [Object] ],
     '·b·baz@1.2.3': [ 0, 'baz', <3 empty items>, [Object] ],
-    '·npm·x@1.99.99': [ 0, 'x', <3 empty items>, [Object] ],
-    '·npm·y@1.99.99': [ 0, 'y', <3 empty items>, [Object] ]
+    '·b·x@1.99.99': [ 0, 'x', <3 empty items>, [Object] ],
+    '·b·y@1000.0.0': [ 0, 'y', <3 empty items>, [Object] ]
   },
   edges: {
     'file·. bar': 'prod a:bar@1.x ·a·bar@1.2.3',
     'file·. baz': 'prod b:bar@1.x ·b·baz@1.2.3',
-    '·a·bar@1.2.3 x': 'prod 1.x ·npm·x@1.99.99',
-    '·b·baz@1.2.3 x': 'prod 1.x ·npm·x@1.99.99',
-    '·npm·x@1.99.99 y': 'prod 1 ·npm·y@1.99.99'
+    '·a·bar@1.2.3 x': 'prod 1.x ·a·x@1.99.99',
+    '·a·x@1.99.99 y': 'prod 1 ·a·y@1.99.99',
+    '·b·baz@1.2.3 x': 'prod 1.x ·b·x@1.99.99',
+    '·b·x@1.99.99 y': 'prod 1000 ·b·y@1000.0.0'
   }
 }
 `

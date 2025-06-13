@@ -78,7 +78,6 @@ export const getOptions = (
     : defaultGitHosts,
   registries: {
     ...defaultRegistries,
-    npm: options?.registry ?? defaultRegistry,
     ...(options?.registries ?? {}),
   },
   'git-host-archives':
@@ -481,6 +480,9 @@ export class Spec implements SpecLike<Spec> {
     const regs = Object.entries(this.options.registries)
     if (!this.options.registries.npm) {
       regs.push(['npm', this.options.registry])
+    }
+    if (!this.options.registries.gh) {
+      regs.push(['gh', defaultRegistries.gh])
     }
     if (this.bareSpec.startsWith('registry:')) {
       const reg = this.bareSpec.substring('registry:'.length)

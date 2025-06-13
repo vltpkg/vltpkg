@@ -738,6 +738,28 @@ t.test('gh: registry support (additional test cases)', async t => {
   t.equal(spec1.namedRegistry, 'npm', 'should use npm registry')
   t.equal(spec1.name, 'test', 'should preserve package name')
 
+  // Add assertions on spec1.final properties
+  t.equal(
+    spec1.final.type,
+    'registry',
+    'final should be registry type',
+  )
+  t.equal(
+    spec1.final.namedRegistry,
+    'gh',
+    'final should use gh registry',
+  )
+  t.equal(
+    spec1.final.name,
+    '@octocat/bar',
+    'final should have correct package name',
+  )
+  t.equal(
+    spec1.final.bareSpec,
+    '1.0.0',
+    'final should have correct version',
+  )
+
   // Test parseArgs
   const spec2 = Spec.parseArgs('gh:@octocat/hello-world@1.0.0')
   t.equal(spec2.type, 'registry', 'should be registry type')
