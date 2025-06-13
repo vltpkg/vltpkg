@@ -3,8 +3,9 @@
 exports[`SelectedItem renders default 1`] = `
 
 <div class="grid w-full max-w-8xl grid-cols-8 gap-4 pb-8">
-  <div class="col-span-2">
+  <div class="relative col-span-2">
     <gui-overview-sidebar
+      dependencies
       workspaces
       dependents
     >

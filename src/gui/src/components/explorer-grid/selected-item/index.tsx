@@ -221,8 +221,9 @@ export const SelectedItem = ({ item }: { item: GridItemData }) => {
 
   return (
     <div className="grid w-full max-w-8xl grid-cols-8 gap-4 pb-8">
-      <div className="col-span-2">
+      <div className="relative col-span-2">
         <OverviewSidebar
+          dependencies={dependencies}
           parentItem={parentItem}
           workspaces={workspaces}
           dependents={dependents}
