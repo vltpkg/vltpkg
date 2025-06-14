@@ -208,17 +208,15 @@ const SaveQueryPopover = ({
         updateQuery(item)
       }
     }
-    // queryName and selectedLabels are updated in the useEffect below so including them causes an infinite loop
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- causes infinite loop
   }, [
     isOpen,
     activeQuery,
     nodes,
-    savedQueries,
     updateQuery,
     editContext,
-    // queryName,
-    // selectedLabels,
+    queryName,
+    selectedLabels,
   ])
 
   /**
