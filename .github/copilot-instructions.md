@@ -1,9 +1,3 @@
----
-description: Details on how to work in the monorepo structure
-globs: 
-alwaysApply: true
----
-
 # vltpkg/vltpkg Monorepo Structure
 
 The https://github.com/vltpkg/vltpkg repository is a monorepo, meaning that it's organized in such a way that subfolders located in `src/*`, `infra/*` and `www/*` are workspaces. Workspaces are individual packages, sometimes these packages are published to a public registry to be reused on their own like in the case of our monorepo the workspaces located at `src/*` are published to the npm registry so that they can be reused by different projects and the extended community of vlt users.
