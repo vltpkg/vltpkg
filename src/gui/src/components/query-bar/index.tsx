@@ -1,11 +1,11 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useMemo } from 'react'
 import { useGraphStore } from '@/state/index.ts'
 import { Input } from '@/components/ui/input.tsx'
 import { Query } from '@vltpkg/query'
 import { QueryHighlighter } from '@/components/query-bar/query-highlighter.tsx'
 import { cn } from '@/lib/utils.ts'
-import type { ParsedSelectorToken } from '@vltpkg/query'
 import type { ChangeEvent } from 'react'
+import type { ParsedSelectorToken } from '@vltpkg/query'
 
 interface QueryBar {
   className?: string
@@ -25,20 +25,16 @@ export const QueryBar = ({
   const q = useGraphStore(state => state.q)
   const inputRef = useRef<HTMLInputElement>(null)
   const queryHighlighterRef = useRef<HTMLDivElement>(null)
-  const [parsedTokens, setParsedTokens] = useState<
-    ParsedSelectorToken[]
-  >([])
 
-  useEffect(() => {
+  const parsedTokens = useMemo<ParsedSelectorToken[]>(() => {
     if (!q || !query) {
-      setParsedTokens([])
-      return
+      return []
     }
     try {
-      const tokens = Query.getQueryTokens(query)
-      setParsedTokens(tokens)
+      return Query.getQueryTokens(query)
     } catch (error) {
       console.error(`Error parsing query: ${error}`)
+      return []
     }
   }, [query, q])
 

@@ -1,6 +1,6 @@
 import type { SavedQuery } from '@/state/types.ts'
 import { useSearchParams } from 'react-router'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, useMemo } from 'react'
 import { Input } from '@/components/ui/input.tsx'
 import { Kbd } from '@/components/ui/kbd.tsx'
 import { Command, Search } from 'lucide-react'
@@ -92,10 +92,9 @@ const FilterSearch = <T,>({
   /**
    * Filter items based on `filterText` or URL params.
    */
-  useEffect(() => {
+  const filteredItems = useMemo(() => {
     if (!items) {
-      setFilteredItems([])
-      return
+      return []
     }
 
     const params = new URLSearchParams(searchParams)
@@ -105,7 +104,7 @@ const FilterSearch = <T,>({
       selectors.push({ key, value })
     }
 
-    const filteredItems = items.filter(item =>
+    return items.filter(item =>
       selectors.every(selector => {
         if (selector.key === 'filter') {
           const searchValue = selector.value.toLowerCase()
@@ -127,9 +126,12 @@ const FilterSearch = <T,>({
         }
       }),
     )
+  }, [items, searchParams])
 
+  // Update the parent component with filtered items
+  useEffect(() => {
     setFilteredItems(filteredItems)
-  }, [items, searchParams, filterText, setFilteredItems])
+  }, [filteredItems, setFilteredItems])
 
   /**
    * Handle keyboard shortcuts.
