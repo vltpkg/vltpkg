@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import type {
   SavedQuery,
   Action,
@@ -105,7 +105,6 @@ const SavedQueryItem = ({
     [],
   )
   const [editQuery, setEditQuery] = useState<string>('')
-  const [isValid, setIsValid] = useState<boolean>(false)
   const updateSavedQuery = useGraphStore(
     state => state.updateSavedQuery,
   )
@@ -122,13 +121,9 @@ const SavedQueryItem = ({
     setSelectedLabels(item.labels ?? [])
   }, [item])
 
-  useEffect(() => {
-    if (editName !== '' && editQuery !== '') {
-      setIsValid(true)
-    } else {
-      setIsValid(false)
-    }
-  }, [editName, editContext, editQuery])
+  const isValid = useMemo(() => {
+    return editName !== '' && editQuery !== ''
+  }, [editName, editQuery])
 
   const handleEdit = () => {
     setIsExpanded(!isExpanded)
