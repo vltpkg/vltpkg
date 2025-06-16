@@ -5,16 +5,6 @@
  * Make sure to inspect the output below.  Do not ignore changes!
  */
 'use strict'
-exports[`test/commands/list.ts > TAP > list > colors > should use colors when set in human readable format 1`] = `
-[0m[33mmy-project[39m
-├── [33m@foo/bazz@1.0.0[39m
-├─┬ [33mbar@1.0.0[39m
-│ └─┬ [33mbaz (custom:baz@1.0.0)[39m
-│   └── [33m@foo/bazz@1.0.0[39m
-└── [33mmissing@^1.0.0[39m [31m(missing)[39m
-[0m
-`
-
 exports[`test/commands/list.ts > TAP > list > should have usage 1`] = `
 Usage:
   vlt ls
@@ -61,192 +51,6 @@ workspace.
 
 `
 
-exports[`test/commands/list.ts > TAP > list > should list all pkgs in human format 1`] = `
-my-project
-├── @foo/bazz@1.0.0
-└─┬ bar@1.0.0
-  └─┬ baz (custom:baz@1.0.0)
-    └── @foo/bazz@1.0.0
-
-`
-
-exports[`test/commands/list.ts > TAP > list > should list all pkgs in human readable format 1`] = `
-my-project
-├── @foo/bazz@1.0.0
-├─┬ bar@1.0.0
-│ └─┬ baz (custom:baz@1.0.0)
-│   └── @foo/bazz@1.0.0
-└── missing@^1.0.0 (missing)
-
-`
-
-exports[`test/commands/list.ts > TAP > list > should list all pkgs in json format 1`] = `
-[
-  {
-    "name": "my-project",
-    "to": {
-      "id": "file·.",
-      "name": "my-project",
-      "version": "1.0.0",
-      "location": ".",
-      "importer": true,
-      "manifest": {
-        "name": "my-project",
-        "version": "1.0.0",
-        "dependencies": {
-          "@foo/bazz": "^1.0.0",
-          "bar": "^1.0.0",
-          "missing": "^1.0.0"
-        }
-      },
-      "projectRoot": "{ROOT}",
-      "dev": false,
-      "optional": false,
-      "confused": false,
-      "insights": {
-        "scanned": false
-      }
-    }
-  },
-  {
-    "name": "@foo/bazz",
-    "fromID": "file·.",
-    "spec": "@foo/bazz@^1.0.0",
-    "type": "prod",
-    "to": {
-      "id": "··@foo§bazz@1.0.0",
-      "name": "@foo/bazz",
-      "version": "1.0.0",
-      "location": "./node_modules/.vlt/··@foo§bazz@1.0.0/node_modules/@foo/bazz",
-      "importer": false,
-      "manifest": {
-        "name": "@foo/bazz",
-        "version": "1.0.0"
-      },
-      "projectRoot": "{ROOT}",
-      "dev": false,
-      "optional": false,
-      "confused": false,
-      "insights": {
-        "scanned": false
-      }
-    }
-  },
-  {
-    "name": "bar",
-    "fromID": "file·.",
-    "spec": "bar@^1.0.0",
-    "type": "prod",
-    "to": {
-      "id": "··bar@1.0.0",
-      "name": "bar",
-      "version": "1.0.0",
-      "location": "./node_modules/.vlt/··bar@1.0.0/node_modules/bar",
-      "importer": false,
-      "manifest": {
-        "name": "bar",
-        "version": "1.0.0",
-        "dependencies": {
-          "baz": "^1.0.0"
-        }
-      },
-      "projectRoot": "{ROOT}",
-      "dev": false,
-      "optional": false,
-      "confused": false,
-      "insights": {
-        "scanned": false
-      }
-    }
-  },
-  {
-    "name": "baz",
-    "fromID": "··bar@1.0.0",
-    "spec": "baz@custom:baz@^1.0.0",
-    "type": "prod",
-    "to": {
-      "id": "·custom·baz@1.0.0",
-      "name": "baz",
-      "version": "1.0.0",
-      "location": "./node_modules/.vlt/·custom·baz@1.0.0/node_modules/baz",
-      "importer": false,
-      "manifest": {
-        "name": "baz",
-        "version": "1.0.0",
-        "dist": {
-          "tarball": "https://registry.vlt.sh/baz"
-        }
-      },
-      "projectRoot": "{ROOT}",
-      "dev": false,
-      "optional": false,
-      "confused": false,
-      "insights": {
-        "scanned": false
-      }
-    }
-  },
-  {
-    "name": "missing",
-    "fromID": "file·.",
-    "spec": "missing@^1.0.0",
-    "type": "prod"
-  },
-  {
-    "name": "@foo/bazz",
-    "fromID": "·custom·baz@1.0.0",
-    "spec": "@foo/bazz@^1.0.0",
-    "type": "prod",
-    "to": {
-      "id": "··@foo§bazz@1.0.0",
-      "name": "@foo/bazz",
-      "version": "1.0.0",
-      "location": "./node_modules/.vlt/··@foo§bazz@1.0.0/node_modules/@foo/bazz",
-      "importer": false,
-      "manifest": {
-        "name": "@foo/bazz",
-        "version": "1.0.0"
-      },
-      "projectRoot": "{ROOT}",
-      "dev": false,
-      "optional": false,
-      "confused": false,
-      "insights": {
-        "scanned": false
-      }
-    }
-  }
-]
-`
-
-exports[`test/commands/list.ts > TAP > list > should list all pkgs in mermaid format 1`] = `
-flowchart TD
-file%C2%B7.("root:my-project")
-file%C2%B7.("root:my-project") -->|"#64;foo/bazz#64;^1.0.0 (prod)"| %C2%B7%C2%B7%40foo%C2%A7bazz%401.0.0("npm:#64;foo/bazz#64;1.0.0")
-%C2%B7%C2%B7%40foo%C2%A7bazz%401.0.0("npm:#64;foo/bazz#64;1.0.0")
-file%C2%B7.("root:my-project") -->|"bar#64;^1.0.0 (prod)"| %C2%B7%C2%B7bar%401.0.0("npm:bar#64;1.0.0")
-%C2%B7%C2%B7bar%401.0.0("npm:bar#64;1.0.0")
-%C2%B7%C2%B7bar%401.0.0("npm:bar#64;1.0.0") -->|"baz#64;custom:baz#64;^1.0.0 (prod)"| %C2%B7custom%C2%B7baz%401.0.0("custom:baz#64;1.0.0")
-%C2%B7custom%C2%B7baz%401.0.0("custom:baz#64;1.0.0")
-%C2%B7custom%C2%B7baz%401.0.0("custom:baz#64;1.0.0") -->|"#64;foo/bazz#64;^1.0.0 (prod)"| %C2%B7%C2%B7%40foo%C2%A7bazz%401.0.0("npm:#64;foo/bazz#64;1.0.0")
-
-file%C2%B7.("root:my-project") -->|"missing#64;^1.0.0 (prod)"| missing-0(Missing)
-
-`
-
-exports[`test/commands/list.ts > TAP > list > should list mermaid in json format 1`] = `
-flowchart TD
-file%C2%B7.("root:my-project")
-file%C2%B7.("root:my-project") -->|"#64;foo/bazz#64;^1.0.0 (prod)"| %C2%B7%C2%B7%40foo%C2%A7bazz%401.0.0("npm:#64;foo/bazz#64;1.0.0")
-%C2%B7%C2%B7%40foo%C2%A7bazz%401.0.0("npm:#64;foo/bazz#64;1.0.0")
-file%C2%B7.("root:my-project") -->|"bar#64;^1.0.0 (prod)"| %C2%B7%C2%B7bar%401.0.0("npm:bar#64;1.0.0")
-%C2%B7%C2%B7bar%401.0.0("npm:bar#64;1.0.0")
-%C2%B7%C2%B7bar%401.0.0("npm:bar#64;1.0.0") -->|"baz#64;custom:baz#64;^1.0.0 (prod)"| %C2%B7custom%C2%B7baz%401.0.0("custom:baz#64;1.0.0")
-%C2%B7custom%C2%B7baz%401.0.0("custom:baz#64;1.0.0")
-%C2%B7custom%C2%B7baz%401.0.0("custom:baz#64;1.0.0") -->|"#64;foo/bazz#64;^1.0.0 (prod)"| %C2%B7%C2%B7%40foo%C2%A7bazz%401.0.0("npm:#64;foo/bazz#64;1.0.0")
-
-`
-
 exports[`test/commands/list.ts > TAP > list > should list pkgs in human readable format 1`] = `
 my-project
 ├── @foo/bazz@1.0.0
@@ -286,7 +90,81 @@ exports[`test/commands/list.ts > TAP > list > should list pkgs in json format 1`
     "name": "@foo/bazz",
     "fromID": "file·.",
     "spec": "@foo/bazz@^1.0.0",
-    "type": "prod",
+    "type": {
+      "type": "registry",
+      "spec": "@foo/bazz@^1.0.0",
+      "options": {
+        "catalog": {},
+        "catalogs": {},
+        "registry": "https://registry.npmjs.org/",
+        "registries": {
+          "npm": "https://registry.npmjs.org/",
+          "custom": "https://example.com"
+        },
+        "jsr-registries": {
+          "jsr": "https://npm.jsr.io/"
+        },
+        "scope-registries": {},
+        "git-hosts": {
+          "github": "git+ssh://git@github.com:$1/$2.git",
+          "bitbucket": "git+ssh://git@bitbucket.org:$1/$2.git",
+          "gitlab": "git+ssh://git@gitlab.com:$1/$2.git",
+          "gist": "git+ssh://git@gist.github.com/$1.git"
+        },
+        "git-host-archives": {
+          "github": "https://codeload.github.com/$1/$2/tar.gz/$committish",
+          "bitbucket": "https://bitbucket.org/$1/$2/get/$committish.tar.gz",
+          "gist": "https://codeload.github.com/gist/$1/tar.gz/$committish",
+          "gitlab": "https://gitlab.com/$1/$2/repository/archive.tar.gz?ref=$committish"
+        }
+      },
+      "name": "@foo/bazz",
+      "scope": "@foo",
+      "bareSpec": "^1.0.0",
+      "registry": "https://registry.npmjs.org/",
+      "registrySpec": "^1.0.0",
+      "semver": "^1.0.0",
+      "range": {
+        "raw": "^1.0.0",
+        "isAny": false,
+        "isSingle": false,
+        "set": [
+          {
+            "includePrerelease": false,
+            "raw": "^1.0.0",
+            "tokens": [
+              "^1.0.0"
+            ],
+            "tuples": [
+              [
+                ">=",
+                {
+                  "raw": "1.0.0",
+                  "major": 1,
+                  "minor": 0,
+                  "patch": 0
+                }
+              ],
+              [
+                "<",
+                {
+                  "raw": "1.0.0",
+                  "major": 2,
+                  "minor": 0,
+                  "patch": 0,
+                  "prerelease": [
+                    0
+                  ]
+                }
+              ]
+            ],
+            "isNone": false,
+            "isAny": false
+          }
+        ],
+        "includePrerelease": false
+      }
+    },
     "to": {
       "id": "··@foo§bazz@1.0.0",
       "name": "@foo/bazz",
@@ -310,7 +188,80 @@ exports[`test/commands/list.ts > TAP > list > should list pkgs in json format 1`
     "name": "bar",
     "fromID": "file·.",
     "spec": "bar@^1.0.0",
-    "type": "prod",
+    "type": {
+      "type": "registry",
+      "spec": "bar@^1.0.0",
+      "options": {
+        "catalog": {},
+        "catalogs": {},
+        "registry": "https://registry.npmjs.org/",
+        "registries": {
+          "npm": "https://registry.npmjs.org/",
+          "custom": "https://example.com"
+        },
+        "jsr-registries": {
+          "jsr": "https://npm.jsr.io/"
+        },
+        "scope-registries": {},
+        "git-hosts": {
+          "github": "git+ssh://git@github.com:$1/$2.git",
+          "bitbucket": "git+ssh://git@bitbucket.org:$1/$2.git",
+          "gitlab": "git+ssh://git@gitlab.com:$1/$2.git",
+          "gist": "git+ssh://git@gist.github.com/$1.git"
+        },
+        "git-host-archives": {
+          "github": "https://codeload.github.com/$1/$2/tar.gz/$committish",
+          "bitbucket": "https://bitbucket.org/$1/$2/get/$committish.tar.gz",
+          "gist": "https://codeload.github.com/gist/$1/tar.gz/$committish",
+          "gitlab": "https://gitlab.com/$1/$2/repository/archive.tar.gz?ref=$committish"
+        }
+      },
+      "name": "bar",
+      "bareSpec": "^1.0.0",
+      "registry": "https://registry.npmjs.org/",
+      "registrySpec": "^1.0.0",
+      "semver": "^1.0.0",
+      "range": {
+        "raw": "^1.0.0",
+        "isAny": false,
+        "isSingle": false,
+        "set": [
+          {
+            "includePrerelease": false,
+            "raw": "^1.0.0",
+            "tokens": [
+              "^1.0.0"
+            ],
+            "tuples": [
+              [
+                ">=",
+                {
+                  "raw": "1.0.0",
+                  "major": 1,
+                  "minor": 0,
+                  "patch": 0
+                }
+              ],
+              [
+                "<",
+                {
+                  "raw": "1.0.0",
+                  "major": 2,
+                  "minor": 0,
+                  "patch": 0,
+                  "prerelease": [
+                    0
+                  ]
+                }
+              ]
+            ],
+            "isNone": false,
+            "isAny": false
+          }
+        ],
+        "includePrerelease": false
+      }
+    },
     "to": {
       "id": "··bar@1.0.0",
       "name": "bar",
@@ -334,89 +285,4 @@ exports[`test/commands/list.ts > TAP > list > should list pkgs in json format 1`
     }
   }
 ]
-`
-
-exports[`test/commands/list.ts > TAP > list > workspaces > should list single workspace 1`] = `
-a
-
-`
-
-exports[`test/commands/list.ts > TAP > list > workspaces > should list workspaces in human readable format 1`] = `
-my-project
-b
-a
-
-`
-
-exports[`test/commands/list.ts > TAP > list > workspaces > should list workspaces in json format 1`] = `
-[
-  {
-    "name": "my-project",
-    "to": {
-      "id": "file·.",
-      "name": "my-project",
-      "version": "1.0.0",
-      "location": ".",
-      "importer": true,
-      "manifest": {
-        "name": "my-project",
-        "version": "1.0.0"
-      },
-      "projectRoot": "{ROOT}",
-      "dev": false,
-      "optional": false,
-      "confused": false,
-      "insights": {
-        "scanned": false
-      }
-    }
-  },
-  {
-    "name": "b",
-    "to": {
-      "id": "workspace·packages§b",
-      "name": "b",
-      "version": "1.0.0",
-      "location": "./packages/b",
-      "importer": true,
-      "manifest": {
-        "name": "b",
-        "version": "1.0.0"
-      },
-      "projectRoot": "{ROOT}",
-      "dev": false,
-      "optional": false,
-      "confused": false,
-      "insights": {
-        "scanned": false
-      }
-    }
-  },
-  {
-    "name": "a",
-    "to": {
-      "id": "workspace·packages§a",
-      "name": "a",
-      "version": "1.0.0",
-      "location": "./packages/a",
-      "importer": true,
-      "manifest": {
-        "name": "a",
-        "version": "1.0.0"
-      },
-      "projectRoot": "{ROOT}",
-      "dev": false,
-      "optional": false,
-      "confused": false,
-      "insights": {
-        "scanned": false
-      }
-    }
-  }
-]
-`
-
-exports[`test/commands/list.ts > TAP > list > workspaces > should use specified workspace as scope selector 1`] = `
-a
-
 `

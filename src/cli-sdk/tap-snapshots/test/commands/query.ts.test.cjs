@@ -5,26 +5,6 @@
  * Make sure to inspect the output below.  Do not ignore changes!
  */
 'use strict'
-exports[`test/commands/query.ts > TAP > query > colors > should use colors when set in human readable format 1`] = `
-[0mmy-project
-├── foo@1.0.0
-├─┬ bar@1.0.0
-│ └─┬ baz (custom:baz@1.0.0)
-│   └── foo@1.0.0
-└── missing@^1.0.0 [31m(missing)[39m
-[0m
-`
-
-exports[`test/commands/query.ts > TAP > query > expect-results option > should return items when expect-results check passes 1`] = `
-my-project
-├── foo@1.0.0
-├─┬ bar@1.0.0
-│ └─┬ baz (custom:baz@1.0.0)
-│   └── foo@1.0.0
-└── missing@^1.0.0 (missing)
-
-`
-
 exports[`test/commands/query.ts > TAP > query > should have usage 1`] = `
 Usage:
   vlt query
@@ -76,21 +56,6 @@ CSS-like attributes, pseudo selectors & combinators.
 
 `
 
-exports[`test/commands/query.ts > TAP > query > should list mermaid in json format 1`] = `
-flowchart TD
-file%C2%B7.("root:my-project")
-file%C2%B7.("root:my-project") -->|"foo#64;^1.0.0 (prod)"| %C2%B7%C2%B7foo%401.0.0("npm:foo#64;1.0.0")
-%C2%B7%C2%B7foo%401.0.0("npm:foo#64;1.0.0")
-file%C2%B7.("root:my-project") -->|"bar#64;^1.0.0 (prod)"| %C2%B7%C2%B7bar%401.0.0("npm:bar#64;1.0.0")
-%C2%B7%C2%B7bar%401.0.0("npm:bar#64;1.0.0")
-%C2%B7%C2%B7bar%401.0.0("npm:bar#64;1.0.0") -->|"baz#64;custom:baz#64;^1.0.0 (prod)"| %C2%B7custom%C2%B7baz%401.0.0("custom:baz#64;1.0.0")
-%C2%B7custom%C2%B7baz%401.0.0("custom:baz#64;1.0.0")
-%C2%B7custom%C2%B7baz%401.0.0("custom:baz#64;1.0.0") -->|"foo#64;^1.0.0 (prod)"| %C2%B7%C2%B7foo%401.0.0("npm:foo#64;1.0.0")
-
-file%C2%B7.("root:my-project") -->|"missing#64;^1.0.0 (prod)"| missing-0(Missing)
-
-`
-
 exports[`test/commands/query.ts > TAP > query > should list pkgs in human readable format 1`] = `
 my-project
 ├── foo@1.0.0
@@ -133,7 +98,80 @@ exports[`test/commands/query.ts > TAP > query > should list pkgs in json format 
     "name": "foo",
     "fromID": "file·.",
     "spec": "foo@^1.0.0",
-    "type": "prod",
+    "type": {
+      "type": "registry",
+      "spec": "foo@^1.0.0",
+      "options": {
+        "catalog": {},
+        "catalogs": {},
+        "registry": "https://registry.npmjs.org/",
+        "registries": {
+          "npm": "https://registry.npmjs.org/",
+          "custom": "https://example.com"
+        },
+        "jsr-registries": {
+          "jsr": "https://npm.jsr.io/"
+        },
+        "scope-registries": {},
+        "git-hosts": {
+          "github": "git+ssh://git@github.com:$1/$2.git",
+          "bitbucket": "git+ssh://git@bitbucket.org:$1/$2.git",
+          "gitlab": "git+ssh://git@gitlab.com:$1/$2.git",
+          "gist": "git+ssh://git@gist.github.com/$1.git"
+        },
+        "git-host-archives": {
+          "github": "https://codeload.github.com/$1/$2/tar.gz/$committish",
+          "bitbucket": "https://bitbucket.org/$1/$2/get/$committish.tar.gz",
+          "gist": "https://codeload.github.com/gist/$1/tar.gz/$committish",
+          "gitlab": "https://gitlab.com/$1/$2/repository/archive.tar.gz?ref=$committish"
+        }
+      },
+      "name": "foo",
+      "bareSpec": "^1.0.0",
+      "registry": "https://registry.npmjs.org/",
+      "registrySpec": "^1.0.0",
+      "semver": "^1.0.0",
+      "range": {
+        "raw": "^1.0.0",
+        "isAny": false,
+        "isSingle": false,
+        "set": [
+          {
+            "includePrerelease": false,
+            "raw": "^1.0.0",
+            "tokens": [
+              "^1.0.0"
+            ],
+            "tuples": [
+              [
+                ">=",
+                {
+                  "raw": "1.0.0",
+                  "major": 1,
+                  "minor": 0,
+                  "patch": 0
+                }
+              ],
+              [
+                "<",
+                {
+                  "raw": "1.0.0",
+                  "major": 2,
+                  "minor": 0,
+                  "patch": 0,
+                  "prerelease": [
+                    0
+                  ]
+                }
+              ]
+            ],
+            "isNone": false,
+            "isAny": false
+          }
+        ],
+        "includePrerelease": false
+      }
+    },
     "to": {
       "id": "··foo@1.0.0",
       "name": "foo",
@@ -157,7 +195,80 @@ exports[`test/commands/query.ts > TAP > query > should list pkgs in json format 
     "name": "bar",
     "fromID": "file·.",
     "spec": "bar@^1.0.0",
-    "type": "prod",
+    "type": {
+      "type": "registry",
+      "spec": "bar@^1.0.0",
+      "options": {
+        "catalog": {},
+        "catalogs": {},
+        "registry": "https://registry.npmjs.org/",
+        "registries": {
+          "npm": "https://registry.npmjs.org/",
+          "custom": "https://example.com"
+        },
+        "jsr-registries": {
+          "jsr": "https://npm.jsr.io/"
+        },
+        "scope-registries": {},
+        "git-hosts": {
+          "github": "git+ssh://git@github.com:$1/$2.git",
+          "bitbucket": "git+ssh://git@bitbucket.org:$1/$2.git",
+          "gitlab": "git+ssh://git@gitlab.com:$1/$2.git",
+          "gist": "git+ssh://git@gist.github.com/$1.git"
+        },
+        "git-host-archives": {
+          "github": "https://codeload.github.com/$1/$2/tar.gz/$committish",
+          "bitbucket": "https://bitbucket.org/$1/$2/get/$committish.tar.gz",
+          "gist": "https://codeload.github.com/gist/$1/tar.gz/$committish",
+          "gitlab": "https://gitlab.com/$1/$2/repository/archive.tar.gz?ref=$committish"
+        }
+      },
+      "name": "bar",
+      "bareSpec": "^1.0.0",
+      "registry": "https://registry.npmjs.org/",
+      "registrySpec": "^1.0.0",
+      "semver": "^1.0.0",
+      "range": {
+        "raw": "^1.0.0",
+        "isAny": false,
+        "isSingle": false,
+        "set": [
+          {
+            "includePrerelease": false,
+            "raw": "^1.0.0",
+            "tokens": [
+              "^1.0.0"
+            ],
+            "tuples": [
+              [
+                ">=",
+                {
+                  "raw": "1.0.0",
+                  "major": 1,
+                  "minor": 0,
+                  "patch": 0
+                }
+              ],
+              [
+                "<",
+                {
+                  "raw": "1.0.0",
+                  "major": 2,
+                  "minor": 0,
+                  "patch": 0,
+                  "prerelease": [
+                    0
+                  ]
+                }
+              ]
+            ],
+            "isNone": false,
+            "isAny": false
+          }
+        ],
+        "includePrerelease": false
+      }
+    },
     "to": {
       "id": "··bar@1.0.0",
       "name": "bar",
@@ -183,8 +294,82 @@ exports[`test/commands/query.ts > TAP > query > should list pkgs in json format 
   {
     "name": "baz",
     "fromID": "··bar@1.0.0",
-    "spec": "baz@custom:baz@^1.0.0",
-    "type": "prod",
+    "spec": "baz@^1.0.0",
+    "type": {
+      "type": "registry",
+      "spec": "baz@^1.0.0",
+      "options": {
+        "catalog": {},
+        "catalogs": {},
+        "registry": "https://example.com",
+        "registries": {
+          "npm": "https://registry.npmjs.org/",
+          "custom": "https://example.com"
+        },
+        "jsr-registries": {
+          "jsr": "https://npm.jsr.io/"
+        },
+        "scope-registries": {},
+        "git-hosts": {
+          "github": "git+ssh://git@github.com:$1/$2.git",
+          "bitbucket": "git+ssh://git@bitbucket.org:$1/$2.git",
+          "gitlab": "git+ssh://git@gitlab.com:$1/$2.git",
+          "gist": "git+ssh://git@gist.github.com/$1.git"
+        },
+        "git-host-archives": {
+          "github": "https://codeload.github.com/$1/$2/tar.gz/$committish",
+          "bitbucket": "https://bitbucket.org/$1/$2/get/$committish.tar.gz",
+          "gist": "https://codeload.github.com/gist/$1/tar.gz/$committish",
+          "gitlab": "https://gitlab.com/$1/$2/repository/archive.tar.gz?ref=$committish"
+        }
+      },
+      "name": "baz",
+      "bareSpec": "^1.0.0",
+      "namedRegistry": "custom",
+      "registry": "https://example.com",
+      "registrySpec": "^1.0.0",
+      "semver": "^1.0.0",
+      "range": {
+        "raw": "^1.0.0",
+        "isAny": false,
+        "isSingle": false,
+        "set": [
+          {
+            "includePrerelease": false,
+            "raw": "^1.0.0",
+            "tokens": [
+              "^1.0.0"
+            ],
+            "tuples": [
+              [
+                ">=",
+                {
+                  "raw": "1.0.0",
+                  "major": 1,
+                  "minor": 0,
+                  "patch": 0
+                }
+              ],
+              [
+                "<",
+                {
+                  "raw": "1.0.0",
+                  "major": 2,
+                  "minor": 0,
+                  "patch": 0,
+                  "prerelease": [
+                    0
+                  ]
+                }
+              ]
+            ],
+            "isNone": false,
+            "isAny": false
+          }
+        ],
+        "includePrerelease": false
+      }
+    },
     "to": {
       "id": "·custom·baz@1.0.0",
       "name": "baz",
@@ -217,7 +402,80 @@ exports[`test/commands/query.ts > TAP > query > should list pkgs in json format 
     "name": "foo",
     "fromID": "·custom·baz@1.0.0",
     "spec": "foo@^1.0.0",
-    "type": "prod",
+    "type": {
+      "type": "registry",
+      "spec": "foo@^1.0.0",
+      "options": {
+        "catalog": {},
+        "catalogs": {},
+        "registry": "https://registry.npmjs.org/",
+        "registries": {
+          "npm": "https://registry.npmjs.org/",
+          "custom": "https://example.com"
+        },
+        "jsr-registries": {
+          "jsr": "https://npm.jsr.io/"
+        },
+        "scope-registries": {},
+        "git-hosts": {
+          "github": "git+ssh://git@github.com:$1/$2.git",
+          "bitbucket": "git+ssh://git@bitbucket.org:$1/$2.git",
+          "gitlab": "git+ssh://git@gitlab.com:$1/$2.git",
+          "gist": "git+ssh://git@gist.github.com/$1.git"
+        },
+        "git-host-archives": {
+          "github": "https://codeload.github.com/$1/$2/tar.gz/$committish",
+          "bitbucket": "https://bitbucket.org/$1/$2/get/$committish.tar.gz",
+          "gist": "https://codeload.github.com/gist/$1/tar.gz/$committish",
+          "gitlab": "https://gitlab.com/$1/$2/repository/archive.tar.gz?ref=$committish"
+        }
+      },
+      "name": "foo",
+      "bareSpec": "^1.0.0",
+      "registry": "https://registry.npmjs.org/",
+      "registrySpec": "^1.0.0",
+      "semver": "^1.0.0",
+      "range": {
+        "raw": "^1.0.0",
+        "isAny": false,
+        "isSingle": false,
+        "set": [
+          {
+            "includePrerelease": false,
+            "raw": "^1.0.0",
+            "tokens": [
+              "^1.0.0"
+            ],
+            "tuples": [
+              [
+                ">=",
+                {
+                  "raw": "1.0.0",
+                  "major": 1,
+                  "minor": 0,
+                  "patch": 0
+                }
+              ],
+              [
+                "<",
+                {
+                  "raw": "1.0.0",
+                  "major": 2,
+                  "minor": 0,
+                  "patch": 0,
+                  "prerelease": [
+                    0
+                  ]
+                }
+              ]
+            ],
+            "isNone": false,
+            "isAny": false
+          }
+        ],
+        "includePrerelease": false
+      }
+    },
     "to": {
       "id": "··foo@1.0.0",
       "name": "foo",
@@ -238,89 +496,4 @@ exports[`test/commands/query.ts > TAP > query > should list pkgs in json format 
     }
   }
 ]
-`
-
-exports[`test/commands/query.ts > TAP > query > workspaces > should list single workspace 1`] = `
-a
-
-`
-
-exports[`test/commands/query.ts > TAP > query > workspaces > should list workspaces in human readable format 1`] = `
-my-project
-b
-a
-
-`
-
-exports[`test/commands/query.ts > TAP > query > workspaces > should list workspaces in json format 1`] = `
-[
-  {
-    "name": "my-project",
-    "to": {
-      "id": "file·.",
-      "name": "my-project",
-      "version": "1.0.0",
-      "location": ".",
-      "importer": true,
-      "manifest": {
-        "name": "my-project",
-        "version": "1.0.0"
-      },
-      "projectRoot": "{ROOT}",
-      "dev": false,
-      "optional": false,
-      "confused": false,
-      "insights": {
-        "scanned": false
-      }
-    }
-  },
-  {
-    "name": "b",
-    "to": {
-      "id": "workspace·packages§b",
-      "name": "b",
-      "version": "1.0.0",
-      "location": "./packages/b",
-      "importer": true,
-      "manifest": {
-        "name": "b",
-        "version": "1.0.0"
-      },
-      "projectRoot": "{ROOT}",
-      "dev": false,
-      "optional": false,
-      "confused": false,
-      "insights": {
-        "scanned": false
-      }
-    }
-  },
-  {
-    "name": "a",
-    "to": {
-      "id": "workspace·packages§a",
-      "name": "a",
-      "version": "1.0.0",
-      "location": "./packages/a",
-      "importer": true,
-      "manifest": {
-        "name": "a",
-        "version": "1.0.0"
-      },
-      "projectRoot": "{ROOT}",
-      "dev": false,
-      "optional": false,
-      "confused": false,
-      "insights": {
-        "scanned": false
-      }
-    }
-  }
-]
-`
-
-exports[`test/commands/query.ts > TAP > query > workspaces > should use specified workspace as scope selector 1`] = `
-a
-
 `

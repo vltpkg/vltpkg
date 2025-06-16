@@ -1,4 +1,4 @@
-import { getId, joinDepIDTuple } from '@vltpkg/dep-id'
+import { getId, joinDepIDTuple, splitDepID } from '@vltpkg/dep-id'
 import type { DepID } from '@vltpkg/dep-id'
 import { error } from '@vltpkg/error-cause'
 import { satisfies } from '@vltpkg/satisfies'
@@ -253,7 +253,20 @@ export class Graph implements GraphLike {
     if (cached) return cached
     const nbn = this.nodesByName.get(f.name)
     if (!nbn) return undefined
+
+    // Get peer dependency information from the manifest
+    const manifest = this.manifests.get(fromNode.id)
+    const peerDeps = manifest?.peerDependencies
+    const peerDepInfo =
+      peerDeps ?
+        Object.entries(peerDeps)
+          .map(([name, range]) => `${name}@${range}`)
+          .sort()
+          .join(',')
+      : undefined
+
     for (const node of nbn) {
+      // Check if the node satisfies the spec
       if (
         satisfies(
           node.id,
@@ -263,6 +276,13 @@ export class Graph implements GraphLike {
           this.monorepo,
         )
       ) {
+        // If we have peer dependency information, check if it matches
+        if (peerDepInfo) {
+          const [, , , nodePeerDepInfo] = splitDepID(node.id)
+          if (nodePeerDepInfo !== peerDepInfo) {
+            continue
+          }
+        }
         this.resolutions.set(sf, node)
         // always set by now, because the node was added at some point
         this.resolutionsReverse.get(node)?.add(sf)
@@ -342,7 +362,23 @@ export class Graph implements GraphLike {
         depType === 'peerOptional',
     }
 
-    const depId = id || (manifest && getId(spec, manifest, extra))
+    const f = spec.final
+    const saveType = resolveSaveType(depType, fromNode, f)
+    const fromManifest = this.manifests.get(fromNode.id)
+    const peerDeps = fromManifest?.peerDependencies
+    const peerDepInfo =
+      peerDeps ?
+        Object.entries(peerDeps)
+          .map(([name, range]) => `${name}@${range}`)
+          .sort()
+          .join(',')
+      : undefined
+
+    // If we have peer dependency information, include it in the extra field
+    const finalExtra = peerDepInfo ? peerDepInfo : extra
+
+    const depId =
+      id || (manifest && getId(spec, manifest, finalExtra))
 
     /* c8 ignore start - should not be possible */
     if (!depId) {
@@ -357,7 +393,7 @@ export class Graph implements GraphLike {
     // in the graph, then just creates a new edge to that node
     const toFoundNode = this.nodes.get(depId)
     if (toFoundNode) {
-      this.addEdge(depType, spec, fromNode, toFoundNode)
+      this.addEdge(saveType, f, fromNode, toFoundNode)
       // the current only stays dev/optional if this dep lets it remain so
       // if it's not already, we don't make it dev or optional.
       toFoundNode.dev &&= flags.dev
@@ -366,12 +402,11 @@ export class Graph implements GraphLike {
     }
 
     // creates a new node and edges to its parent
-    const toNode = this.addNode(depId, manifest, spec)
+    const toNode = this.addNode(depId, manifest, f)
     toNode.registry = spec.registry
     toNode.dev = flags.dev
     toNode.optional = flags.optional
-    toNode.modifier = extra
-    this.addEdge(depType, spec, fromNode, toNode)
+    this.addEdge(saveType, f, fromNode, toNode)
     return toNode
   }
 
