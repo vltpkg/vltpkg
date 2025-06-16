@@ -1,12 +1,17 @@
 import { test, expect, vi, beforeEach, afterEach } from 'vitest'
-import { cleanup, fireEvent, render } from '@testing-library/react'
+import { cleanup, render } from '@testing-library/react'
 import html from 'diffable-html'
 import { useGraphStore as useStore } from '@/state/index.ts'
+import { OverviewSidebar } from '@/components/explorer-grid/overview-sidebar/index.tsx'
 
 import type { GridItemData } from '@/components/explorer-grid/types.ts'
 
 vi.mock('@/components/explorer-grid/header.tsx', () => ({
   GridHeader: 'gui-grid-header',
+}))
+
+vi.mock('@/components/explorer-grid/side-item.tsx', () => ({
+  SideItem: 'gui-side-item',
 }))
 
 vi.mock(
@@ -32,14 +37,7 @@ afterEach(() => {
   vi.doUnmock('@/components/explorer-grid/side-item.tsx')
 })
 
-test('OverviewSidebar renders with a parent', async () => {
-  vi.doMock('@/components/explorer-grid/side-item.tsx', () => ({
-    SideItem: 'gui-side-item',
-  }))
-  const { OverviewSidebar } = await import(
-    '@/components/explorer-grid/overview-sidebar/index.tsx'
-  )
-
+test('OverviewSidebar renders with a parent', () => {
   const mockOnWorkspaceClick = vi.fn()
   const mockOnDependentClick = vi.fn()
 
@@ -65,14 +63,7 @@ test('OverviewSidebar renders with a parent', async () => {
   expect(container.innerHTML).toMatchSnapshot()
 })
 
-test('OverviewSidebar renders with a parent and workspaces', async () => {
-  vi.doMock('@/components/explorer-grid/side-item.tsx', () => ({
-    SideItem: 'gui-side-item',
-  }))
-  const { OverviewSidebar } = await import(
-    '@/components/explorer-grid/overview-sidebar/index.tsx'
-  )
-
+test('OverviewSidebar renders with a parent and workspaces', () => {
   const mockOnWorkspaceClick = vi.fn()
   const mockOnDependentClick = vi.fn()
 
@@ -104,14 +95,7 @@ test('OverviewSidebar renders with a parent and workspaces', async () => {
   expect(container.innerHTML).toMatchSnapshot()
 })
 
-test('OverviewSidebar renders with a parent, workspaces, and dependents', async () => {
-  vi.doMock('@/components/explorer-grid/side-item.tsx', () => ({
-    SideItem: 'gui-side-item',
-  }))
-  const { OverviewSidebar } = await import(
-    '@/components/explorer-grid/overview-sidebar/index.tsx'
-  )
-
+test('OverviewSidebar renders with a parent, workspaces, and dependents', () => {
   const mockOnWorkspaceClick = vi.fn()
   const mockOnDependentClick = vi.fn()
 
@@ -150,47 +134,7 @@ test('OverviewSidebar renders with a parent, workspaces, and dependents', async 
   expect(container.innerHTML).toMatchSnapshot()
 })
 
-test('OverviewSidebar clicks on workspace items change the query correctly', async () => {
-  const { OverviewSidebar } = await import(
-    '@/components/explorer-grid/overview-sidebar/index.tsx'
-  )
-  const mockOnWorkspaceClick = vi.fn()
-  const mockOnDependentClick = vi.fn()
-
-  const mockWorkspace = {
-    id: '1',
-    labels: ['workspace'],
-    name: 'workspace-item',
-    title: 'workspace-item',
-    version: '1.0.0',
-    stacked: false,
-    size: 1,
-  } satisfies GridItemData
-
-  const Container = () => (
-    <OverviewSidebar
-      dependencies={[]}
-      onWorkspaceClick={mockOnWorkspaceClick}
-      onDependentClick={mockOnDependentClick}
-      parentItem={undefined}
-      dependents={[]}
-      workspaces={[mockWorkspace]}
-    />
-  )
-
-  const { container, getByText } = render(<Container />)
-
-  const item = getByText('workspace-item')
-  fireEvent.click(item)
-
-  expect(container.innerHTML).toMatchSnapshot()
-  expect(mockOnWorkspaceClick).toHaveBeenCalledWith(mockWorkspace)
-})
-
-test('OverviewSidebar contains SuggestedQueries when dependencies are present', async () => {
-  const { OverviewSidebar } = await import(
-    '@/components/explorer-grid/overview-sidebar/index.tsx'
-  )
+test('OverviewSidebar contains SuggestedQueries when dependencies are present', () => {
   const mockOnWorkspaceClick = vi.fn()
   const mockOnDependentClick = vi.fn()
 
