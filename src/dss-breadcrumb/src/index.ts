@@ -7,7 +7,6 @@ import {
   parse,
 } from '@vltpkg/dss-parser'
 import { error } from '@vltpkg/error-cause'
-import type { PostcssNode } from '@vltpkg/dss-parser'
 import type {
   ModifierBreadcrumb,
   ModifierBreadcrumbItem,
@@ -47,16 +46,12 @@ export class Breadcrumb implements ModifierBreadcrumb {
     this.specificity = { idCounter: 0, commonCounter: 0 }
     const ast = parse(query)
 
-    // Keep track of the previous AST node for consolidation
-    let prevNode: PostcssNode | undefined
+    // Track whether we encountered a combinator since the last item
+    let afterCombinator = true
 
     // iterates only at the first level of the AST since
     // any nested nodes are invalid syntax
     for (const item of ast.first.nodes) {
-      const isWorkspaceOrProject =
-        isPseudoNode(item) &&
-        (item.value === ':workspace' || item.value === ':project')
-
       const allowedPseudoNodes =
         isPseudoNode(item) &&
         (item.value === ':root' ||
@@ -82,7 +77,7 @@ export class Breadcrumb implements ModifierBreadcrumb {
 
       // combinators and comments are skipped
       if (isCombinatorNode(item)) {
-        prevNode = undefined
+        afterCombinator = true
         continue
       } else if (isCommentNode(item)) {
         const cleanComment = item.value
@@ -90,18 +85,8 @@ export class Breadcrumb implements ModifierBreadcrumb {
           .replace(/\*\/$/, '')
           .trim()
         this.comment = cleanComment
-        prevNode = undefined
+        afterCombinator = true
       } else {
-        // check if we need to consolidate with previous item
-        const isPrevWorkspaceOrProject =
-          prevNode &&
-          isPseudoNode(prevNode) &&
-          (prevNode.value === ':workspace' ||
-            prevNode.value === ':project')
-
-        const isPrevId = prevNode && isIdentifierNode(prevNode)
-        const isCurrentId = isIdentifierNode(item)
-
         // we define the last item as we iterate through the list of
         // breadcrumb items so that this value can also be used to
         // update previous items when needed
@@ -110,32 +95,36 @@ export class Breadcrumb implements ModifierBreadcrumb {
             this.#items[this.#items.length - 1]
           : undefined
 
-        // current node is ID, previous was workspace/project
-        // we fold the current node value into the same object
-        // and move on to the next ast item
-        if (isCurrentId && isPrevWorkspaceOrProject && lastItem) {
-          // Modify the last item to include the ID
-          lastItem.name = item.value
-          lastItem.value = `${lastItem.value}#${item.value}`
-          // Update specificity for the ID part
-          this.specificity.idCounter++
-          prevNode = undefined
+        // If we have a previous item and we haven't encountered a combinator
+        // since then, consolidate with the previous item
+        if (lastItem && !afterCombinator) {
+          // Determine how to combine the values based on selector types
+          const currentValue =
+            item.type === 'id' ? `#${item.value}` : item.value
+          lastItem.value = `${lastItem.value}${currentValue}`
+
+          // If current item is an ID, update the name property
+          if (isIdentifierNode(item)) {
+            lastItem.name = item.value
+          }
+
+          // If current item is an importer pseudo, mark the combined item as importer
+          if (allowedPseudoNodes) {
+            lastItem.importer = true
+          }
+
+          // Update specificity counters
+          if (isIdentifierNode(item)) {
+            this.specificity.idCounter++
+          } else if (isPseudoNode(item)) {
+            this.specificity.commonCounter++
+          }
+
+          afterCombinator = false
           continue
         }
 
-        // current node is workspace/project, previous was ID
-        // we fold the current node value into the same object
-        // and move on to the next ast item
-        if (isWorkspaceOrProject && isPrevId && lastItem) {
-          // Modify the last item to include the pseudo
-          lastItem.value = `${lastItem.value}${item.value}`
-          lastItem.importer = true
-          // Update specificity for the pseudo part
-          this.specificity.commonCounter++
-          prevNode = undefined
-          continue
-        }
-
+        // Create a new breadcrumb item
         const newItem = {
           value: item.type === 'id' ? `#${item.value}` : item.value,
           name: item.type === 'id' ? item.value : undefined,
@@ -156,7 +145,7 @@ export class Breadcrumb implements ModifierBreadcrumb {
           this.specificity.commonCounter++
         }
 
-        prevNode = item
+        afterCombinator = false
       }
     }
     // the parsed query should have at least one item
