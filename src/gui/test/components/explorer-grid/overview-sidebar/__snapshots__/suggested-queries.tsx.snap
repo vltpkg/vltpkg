@@ -98,7 +98,7 @@ exports[`suggested-queries renders default 1`] = `
         System access
       </p>
       <p class="text-xs text-muted-foreground">
-        Find packages that contain dependencies with access to filesystem or environment variables
+        Find packages with access to filesystem or environment variables
       </p>
       <div
         role="button"
