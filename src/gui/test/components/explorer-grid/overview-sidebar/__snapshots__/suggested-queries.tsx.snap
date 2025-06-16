@@ -98,7 +98,7 @@ exports[`suggested-queries renders default 1`] = `
         System access
       </p>
       <p class="text-xs text-muted-foreground">
-        Find packages with access to filesystem and environment variables
+        Find packages that contain dependencies with access to filesystem or environment variables
       </p>
       <div
         role="button"
@@ -111,18 +111,13 @@ exports[`suggested-queries renders default 1`] = `
         </gui-search>
         <div class="flex">
           <gui-query-token variant="pseudo">
-            :has(
+            :is(
           </gui-query-token>
           <gui-query-token variant="pseudo">
             :fs
           </gui-query-token>
-          <gui-query-token variant="pseudo">
-            )
-          </gui-query-token>
-          <gui-query-token variant="combinator">
-          </gui-query-token>
-          <gui-query-token variant="pseudo">
-            :has(
+          <gui-query-token variant="selector">
+            ,
           </gui-query-token>
           <gui-query-token variant="pseudo">
             :env

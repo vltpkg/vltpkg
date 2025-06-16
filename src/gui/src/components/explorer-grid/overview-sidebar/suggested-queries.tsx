@@ -25,9 +25,9 @@ export const queries: SuggestedQuery[] = [
   },
   {
     name: 'System access',
-    query: ':has(:fs) :has(:env)',
+    query: ':is(:fs, :env)',
     description:
-      'Find packages with access to filesystem and environment variables',
+      'Find packages that contain dependencies with access to filesystem or environment variables',
   },
 ]
 
