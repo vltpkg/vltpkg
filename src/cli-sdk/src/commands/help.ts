@@ -7,11 +7,12 @@ export const usage: CommandUsage = () =>
   commandUsage({
     command: 'help',
     usage: '[<command>]',
-    description: 'Print the full help output for the CLI, or help for a specific command',
+    description:
+      'Print the full help output for the CLI, or help for a specific command',
     examples: {
       '': { description: 'Show general CLI help' },
-      'install': { description: 'Show help for the install command' },
-      'run': { description: 'Show help for the run command' },
+      install: { description: 'Show help for the install command' },
+      run: { description: 'Show help for the run command' },
     },
   })
 
@@ -34,7 +35,9 @@ export const command: CommandFn<string> = async conf => {
 
   // Dynamically load the command module to get its usage
   try {
-    const commandModule = (await import(`../commands/${canonicalCmd}.ts`)) as {
+    const commandModule = (await import(
+      `../commands/${canonicalCmd}.ts`
+    )) as {
       usage: CommandUsage
     }
     return commandModule.usage().usage()
