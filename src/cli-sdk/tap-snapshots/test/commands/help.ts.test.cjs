@@ -17,16 +17,16 @@ Print the full help output for the CLI, or help for a specific command
 
   Examples
 
-​​Show general CLI help
+    Show general CLI help
 
-    vlt help
+    ​vlt help
 
-​​Show help for the install command
+    Show help for the install command
 
-    vlt help install
+    ​vlt help install
 
-​​Show help for the run command
+    Show help for the run command
 
-    vlt help run
+    ​vlt help run
 
 `
