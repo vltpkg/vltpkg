@@ -167,6 +167,9 @@ t.test('basic parsing tests', t => {
     '@other/xyz@jsr:@luca/cases@1',
     // little bit confusing, but worth testing
     'foo@npm:@luca/cases@jsr:1',
+    // GitHub registry support
+    'gh:@octocat/hello-world@1.0.0',
+    'foo@gh:@org/bar@1.0.0',
   ]
 
   t.plan(specs.length)
@@ -389,6 +392,9 @@ t.test('parse args', t => {
     '@luca/cases@jsr:@luca/cases@jsr:@x/y@1',
     'npm:abbrev',
     'npm:abbrev@1',
+    // GitHub registry support
+    'gh:@octocat/hello-world@1.0.0',
+    'foo@gh:@org/bar@1.0.0',
   ]
 
   const specOptions: SpecOptions = {
@@ -685,6 +691,91 @@ t.test(
     t.equal(s.registry, 'https://registry.npmjs.org/')
   },
 )
+
+t.test('gh: registry support (basic functionality)', async t => {
+  // Test that gh: registry is properly configured
+  const spec1 = Spec.parse('test', 'gh:@octocat/hello-world@1.0.0')
+  t.equal(spec1.type, 'registry', 'should be registry type')
+  t.equal(spec1.namedRegistry, 'gh', 'should use gh registry')
+  t.equal(
+    spec1.registry,
+    'https://npm.pkg.github.com/',
+    'should map to GitHub registry URL',
+  )
+  t.equal(spec1.name, 'test', 'should preserve package name')
+
+  const spec2 = Spec.parse(
+    'hello-world',
+    'gh:@octocat/hello-world@1.0.0',
+  )
+  t.equal(spec2.type, 'registry', 'should be registry type')
+  t.equal(spec2.namedRegistry, 'gh', 'should use gh registry')
+  t.equal(
+    spec2.registry,
+    'https://npm.pkg.github.com/',
+    'should map to GitHub registry URL',
+  )
+  t.equal(spec2.name, 'hello-world', 'should be useable as an alias')
+
+  // Test that it works with user-provided registries too
+  const spec3 = Spec.parse('test', 'gh:@octocat/hello-world@1.0.0', {
+    registries: { custom: 'https://custom.registry.com/' },
+  })
+  t.equal(
+    spec3.registry,
+    'https://npm.pkg.github.com/',
+    'should still use default gh registry',
+  )
+
+  t.end()
+})
+
+t.test('gh: registry support (additional test cases)', async t => {
+  // Test multiple subspecs
+  const spec1 = Spec.parse('test', 'npm:foo@gh:@octocat/bar@1.0.0')
+  t.equal(spec1.type, 'registry', 'should be registry type')
+  t.equal(spec1.namedRegistry, 'npm', 'should use npm registry')
+  t.equal(spec1.name, 'test', 'should preserve package name')
+
+  // Add assertions on spec1.final properties
+  t.equal(
+    spec1.final.type,
+    'registry',
+    'final should be registry type',
+  )
+  t.equal(
+    spec1.final.namedRegistry,
+    'gh',
+    'final should use gh registry',
+  )
+  t.equal(
+    spec1.final.name,
+    '@octocat/bar',
+    'final should have correct package name',
+  )
+  t.equal(
+    spec1.final.bareSpec,
+    '1.0.0',
+    'final should have correct version',
+  )
+
+  // Test parseArgs
+  const spec2 = Spec.parseArgs('gh:@octocat/hello-world@1.0.0')
+  t.equal(spec2.type, 'registry', 'should be registry type')
+  t.equal(spec2.namedRegistry, 'gh', 'should use gh registry')
+  t.equal(
+    spec2.registry,
+    'https://npm.pkg.github.com/',
+    'should map to GitHub registry URL',
+  )
+  t.equal(
+    spec2.name,
+    '@octocat/hello-world',
+    'should infer package name from subspec',
+  )
+
+  t.end()
+})
 
 t.test('catalogs', async t => {
   const catalog = { a: '1.2.3' }
