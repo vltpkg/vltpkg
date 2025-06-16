@@ -1,0 +1,158 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Code Validation Workflow
+
+Rule for validating code quality, formatting, and test coverage using pnpm commands.
+
+<rule>
+name: code_validation_workflow
+description: Standards and workflow for validating code quality, formatting, and tests
+filters:
+  # Match any file that might need validation
+  - type: file_extension
+    pattern: "\\.(js|jsx|ts|tsx|json|md|css|scss)$"
+  # Match file modification events
+  - type: event
+    pattern: "file_modify"
+
+actions:
+  - type: suggest
+    message: |
+      Before completing your work, run the following validation steps in sequence:
+
+      1. Format code:
+         ```bash
+         pnpm format
+         ```
+         This ensures consistent code formatting across the codebase.
+         If formatting issues are found, fix them before proceeding.
+
+      2. Lint code:
+         ```bash
+         pnpm lint
+         ```
+         This checks for style guide violations and potential issues.
+         If linting errors are found:
+         - **For common linting issues (unused variables/imports)**: Refer to `@linting-error-handler.mdc` for systematic solutions
+         - Review each error message
+         - Fix the issues in the affected files
+         - Run `pnpm lint` again to verify fixes
+         
+         💡 **Pro tip**: Most linting errors fall into common patterns. Use the linting error handler rule for quick, systematic fixes.
+
+      3. Run tests:
+         ```bash
+         pnpm test -Rtap --disable-coverage
+         ```
+         This runs all tests without coverage reporting.
+         If tests fail:
+         - Review the test output for failures
+         - Fix any failing tests
+         - Run tests again to verify fixes
+
+         3.1. Running tests for a specific file:
+             ```bash
+             pnpm test -Rtap --disable-coverage <path-to-test-file.ts>
+             ```
+             Use this command when working on a specific module to iterate faster.
+             Example:
+             ```bash
+             pnpm test -Rtap --disable-coverage test/index.ts
+             ```
+
+         3.2. Updating snapshots:
+             ```bash
+             pnpm snap -Rtap --disable-coverage <path-to-test-file.ts>
+             ```
+             ⚠️ IMPORTANT: Snapshots are asserting expected results, they should only be updated if all breaking changes to tests are intentional.
+             Before updating snapshots:
+             - Review all snapshot changes carefully
+             - Ensure the changes are expected and intentional
+             - Document any breaking changes in your work
+             - Consider discussing major snapshot updates with the team
+
+      4. Check test coverage:
+         ```bash
+         pnpm test -Rsilent --coverage-report=text-lcov
+         ```
+         This generates a coverage report in lcov format.
+         If coverage is insufficient:
+         - Review the coverage report
+         - Add tests for uncovered code paths
+         - Run coverage check again to verify improvements
+
+         4.1. Checking coverage for a specific file:
+             ```bash
+             pnpm test -Rsilent --coverage-report=text-lcov <path-to-test-file.ts>
+             ```
+             Use this to focus coverage analysis on a specific module.
+             Example:
+             ```bash
+             pnpm test -Rsilent --coverage-report=text-lcov test/index.ts
+             ```
+
+      5. Run type checking:
+         ```bash
+         pnpm posttest
+         ```
+         This runs the TypeScript type checker for the current workspace.
+         Make sure you're in the appropriate folder for the workspace you're working on.
+         For example, to check types on the `@vltpkg/semver` workspace, navigate to the `src/semver` folder first.
+         
+         If type checking errors are found:
+         - Review each type error message carefully
+         - Fix type issues in the affected files
+         - Run `pnpm posttest` again to verify fixes
+         - Ensure all type definitions are correct and complete
+
+      Important notes:
+      - Always run these commands in sequence
+      - Do not proceed to the next step if the current step fails
+      - Complete your work only after all validation steps pass
+      - If you're unsure about any errors, ask for help
+
+examples:
+  - input: |
+      # Bad: Skipping validation steps or running tests with coverage
+      # Missing format, lint, and test steps
+      pnpm test -Rtap  # Running tests with coverage in one step
+      pnpm snap -Rtap  # Updating snapshots without reviewing changes
+
+      # Good: Complete validation workflow
+      pnpm format
+      pnpm lint
+      pnpm test -Rtap --disable-coverage
+      pnpm test -Rsilent --coverage-report=text-lcov
+      pnpm posttest
+
+      # Good: Iterative development workflow
+      pnpm test -Rtap --disable-coverage test/index.ts
+      # Make changes to the code
+      pnpm format
+      pnpm lint
+      pnpm test -Rtap --disable-coverage test/index.ts
+      # Review snapshot changes carefully
+      pnpm snap -Rtap --disable-coverage test/index.ts
+      # Check coverage for the specific file
+      pnpm test -Rsilent --coverage-report=text-lcov test/index.ts
+      # Type check
+      pnpm posttest
+    output: "Properly validated code changes"
+
+metadata:
+  priority: high
+  version: 1.4
+  tags:
+    - validation
+    - workflow
+    - testing
+    - coverage
+    - snapshots
+    - formatting
+    - linting
+  related_rules:
+    - linting-error-handler  # For systematic handling of common linting errors
+</rule>
