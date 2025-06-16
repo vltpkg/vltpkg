@@ -167,8 +167,9 @@ t.test('basic parsing tests', t => {
     '@other/xyz@jsr:@luca/cases@1',
     // little bit confusing, but worth testing
     'foo@npm:@luca/cases@jsr:1',
-    // GitHub registry support - adding back gradually
+    // GitHub registry support
     'gh:@octocat/hello-world@1.0.0',
+    'foo@gh:@org/bar@1.0.0',
   ]
 
   t.plan(specs.length)
@@ -391,8 +392,9 @@ t.test('parse args', t => {
     '@luca/cases@jsr:@luca/cases@jsr:@x/y@1',
     'npm:abbrev',
     'npm:abbrev@1',
-    // GitHub registry support - adding back gradually
+    // GitHub registry support
     'gh:@octocat/hello-world@1.0.0',
+    'foo@gh:@org/bar@1.0.0',
   ]
 
   const specOptions: SpecOptions = {
@@ -690,8 +692,6 @@ t.test(
   },
 )
 
-// Temporarily commented out to fix test failures
-// Will be re-enabled once snapshots are properly generated
 t.test('gh: registry support (basic functionality)', async t => {
   // Test that gh: registry is properly configured
   const spec1 = Spec.parse('test', 'gh:@octocat/hello-world@1.0.0')
@@ -730,7 +730,6 @@ t.test('gh: registry support (basic functionality)', async t => {
   t.end()
 })
 
-// Additional test cases requested in code review
 t.test('gh: registry support (additional test cases)', async t => {
   // Test multiple subspecs
   const spec1 = Spec.parse('test', 'npm:foo@gh:@octocat/bar@1.0.0')

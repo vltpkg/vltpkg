@@ -125,7 +125,11 @@ const lodash = Spec.parse(
 const ghProject = Spec.parse('abbrev@github:npm/abbrev-js#main', opts)
 
 // pull from GitHub package registry
-const ghPackage = Spec.parse('package@gh:@octocat/hello-world@1.0.0')
+const ghPackage = Spec.parse(
+  '@octocat/hello-world',
+  'gh:@octocat/hello-world@1.0.0',
+  opts,
+)
 
 // pull from our internal hosts using the acme shorthand names
 const fooFromAcmeReg = Spec.parse('foo@acmereg:foo@1.2', opts)
