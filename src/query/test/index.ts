@@ -291,6 +291,96 @@ t.test('insights', async t => {
   }
 })
 
+t.test('populateAllNodeInsights', async t => {
+  const graph = getSimpleGraph()
+  const securityArchive = asSecurityArchiveLike(
+    new Map([
+      [
+        joinDepIDTuple(['registry', '', 'a@1.0.0']),
+        asPackageReportData({
+          id: 'a@1.0.0',
+          author: [],
+          size: 0,
+          type: 'npm',
+          name: 'a',
+          version: '1.0.0',
+          license: 'MIT',
+          score: {
+            overall: 0.8,
+            security: 0.9,
+            maintenance: 0.7,
+            popularity: 0.8,
+          },
+          alerts: [
+            {
+              key: '12345',
+              type: 'deprecated',
+              severity: 'medium',
+              category: 'maintenance',
+              props: {},
+            },
+          ],
+        }),
+      ],
+    ]),
+  )
+  
+  const query = new Query({
+    graph,
+    securityArchive,
+    specOptions,
+  })
+
+  // Before calling populateAllNodeInsights, node 'a' should not have insights
+  // when retrieved directly from the graph (not via query)
+  const nodeA = graph.nodes.get(joinDepIDTuple(['registry', '', 'a@1.0.0']))
+  t.ok(nodeA, 'node a should exist in graph')
+  t.notOk((nodeA as any).insights, 'node a should not have insights initially')
+
+  // Call populateAllNodeInsights
+  query.populateAllNodeInsights()
+
+  // After calling populateAllNodeInsights, node 'a' should have insights
+  t.ok((nodeA as any).insights, 'node a should have insights after populateAllNodeInsights')
+  t.strictSame((nodeA as any).insights.scanned, true, 'node a should be marked as scanned')
+  t.strictSame((nodeA as any).insights.deprecated, true, 'node a should be marked as deprecated')
+  t.strictSame(
+    (nodeA as any).insights.score,
+    {
+      overall: 0.8,
+      security: 0.9,
+      maintenance: 0.7,
+      popularity: 0.8,
+    },
+    'node a should have correct score values',
+  )
+
+  // Test that nodes without security archive entries get default insights
+  const nodeB = graph.nodes.get(joinDepIDTuple(['registry', '', 'b@1.0.0']))
+  t.ok(nodeB, 'node b should exist in graph')
+  t.ok((nodeB as any).insights, 'node b should have insights after populateAllNodeInsights')
+  t.strictSame((nodeB as any).insights.scanned, false, 'node b should be marked as not scanned')
+})
+
+t.test('populateAllNodeInsights with no security archive', async t => {
+  const graph = getSimpleGraph()
+  const query = new Query({
+    graph,
+    securityArchive: undefined,
+    specOptions,
+  })
+
+  // Should not throw error when no security archive is available
+  t.doesNotThrow(() => {
+    query.populateAllNodeInsights()
+  }, 'should not throw error when no security archive is available')
+
+  // Nodes should not have insights when no security archive is available
+  const nodeA = graph.nodes.get(joinDepIDTuple(['registry', '', 'a@1.0.0']))
+  t.ok(nodeA, 'node a should exist in graph')
+  t.notOk((nodeA as any).insights, 'node a should not have insights when no security archive')
+})
+
 t.test('bad selector type', async t => {
   await t.rejects(
     walk(testBrokenState()),

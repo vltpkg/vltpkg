@@ -40,6 +40,10 @@ const startGraphData = async ({
   }
   const { graph, specOptions, securityArchive } = load(data)
   const q = new Query({ graph, specOptions, securityArchive })
+  
+  // Populate security insights for all nodes when a security archive is available
+  // This ensures insights are available in the GUI even before running security queries
+  q.populateAllNodeInsights()
 
   updateHasDashboard(data.hasDashboard)
   updateGraph(graph)

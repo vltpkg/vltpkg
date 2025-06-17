@@ -250,3 +250,80 @@ test('explorer not vlt installed', async () => {
   render(<Container />)
   expect(window.document.body.innerHTML).toMatchSnapshot()
 })
+
+test('populateAllNodeInsights is called when security archive is available', async () => {
+  // Mock the Query constructor and populateAllNodeInsights method
+  const populateAllNodeInsightsSpy = vi.fn()
+  const MockQuery = vi.fn().mockImplementation(() => ({
+    populateAllNodeInsights: populateAllNodeInsightsSpy,
+    search: vi.fn().mockResolvedValue({ nodes: [], edges: [] }),
+  }))
+
+  // Mock the load function to return a security archive
+  vi.doMock('@/state/load-graph.ts', () => ({
+    load: vi.fn().mockReturnValue({
+      graph: { 
+        nodes: new Map(),
+        edges: new Set(),
+        projectRoot: '/test',
+        mainImporter: { id: 'main' },
+      },
+      specOptions: {},
+      securityArchive: { /* mock security archive */ },
+    }),
+  }))
+
+  // Mock the Query class
+  vi.doMock('@vltpkg/query', () => ({
+    Query: MockQuery,
+  }))
+
+  // Update mock server to include security archive data
+  server.use(
+    http.get('/graph.json', () => {
+      return HttpResponse.json({
+        specOptions: {
+          registry: 'https://registry.npmjs.org',
+        },
+        hasDashboard: false,
+        importers: [
+          {
+            id: joinDepIDTuple(['file', '.']),
+            name: 'root',
+            version: '1.0.0',
+            mainImporter: true,
+            importer: true,
+            location: '.',
+            dev: false,
+            optional: false,
+            manifest: { name: 'root', version: '1.0.0' },
+          },
+        ],
+        lockfile: { options: {}, nodes: [], edges: [] },
+        projectInfo: {
+          tools: ['vlt'],
+          vltInstalled: true,
+        },
+        securityArchive: {
+          // Mock security archive data
+        },
+      })
+    })
+  )
+
+  const Container = () => {
+    const updateProjectInfo = useStore(
+      state => state.updateProjectInfo,
+    )
+    updateProjectInfo({ tools: ['vlt'], vltInstalled: true })
+    return <Explorer />
+  }
+
+  render(<Container />)
+
+  // Wait for the useEffect to run and fetch data
+  await new Promise(resolve => setTimeout(resolve, 100))
+
+  // Verify that populateAllNodeInsights was called
+  expect(populateAllNodeInsightsSpy).toHaveBeenCalledOnce()
+})
