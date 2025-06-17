@@ -8,9 +8,28 @@ import { Code } from '@astrojs/starlight/components'
 
 Usage:
 
+<Code code="$ vlt help [<command>]" title="Terminal" lang="bash" />
+
+Print the full help output for the CLI, or help for a specific
+command.
+
+If no command is specified, shows general CLI help. If a command name
+is provided, shows help for that specific command (equivalent to
+running `vlt <command> --help`).
+
+## Examples
+
+Show general CLI help:
+
 <Code code="$ vlt help" title="Terminal" lang="bash" />
 
-Print the full help output for the CLI
+Show help for the install command:
+
+<Code code="$ vlt help install" title="Terminal" lang="bash" />
+
+Show help for the run command:
+
+<Code code="$ vlt help run" title="Terminal" lang="bash" />
 
 ## Aliases
 
