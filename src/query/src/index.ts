@@ -323,9 +323,10 @@ export class Query {
           i => i.type === 'filesystemAccess',
         ),
         license: {
-          unlicensed: securityArchiveEntry.alerts.some(
-            i => i.type === 'explicitlyUnlicensedItem',
-          ),
+          unlicensed:
+            securityArchiveEntry.alerts.some(
+              i => i.type === 'explicitlyUnlicensedItem',
+            ) || !node.manifest?.license,
           misc: securityArchiveEntry.alerts.some(
             i => i.type === 'miscLicenseIssues',
           ),

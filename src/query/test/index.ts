@@ -291,6 +291,151 @@ t.test('insights', async t => {
   }
 })
 
+t.test(
+  'unlicensed insights for packages without license field',
+  async t => {
+    const graph = getSimpleGraph()
+
+    // Add test nodes with and without license fields
+    const withLicense = {
+      projectRoot: '.',
+      confused: false,
+      edgesIn: new Set(),
+      edgesOut: new Map(),
+      importer: false,
+      mainImporter: false,
+      graph,
+      id: joinDepIDTuple(['registry', '', 'with-license@1.0.0']),
+      name: 'with-license',
+      version: '1.0.0',
+      location: 'node_modules/with-license',
+      manifest: {
+        name: 'with-license',
+        version: '1.0.0',
+        license: 'MIT',
+      },
+      integrity: 'sha512-deadbeef',
+      resolved: undefined,
+      dev: false,
+      optional: false,
+      setConfusedManifest() {},
+      setResolved() {},
+      toJSON() {
+        return {} as any
+      },
+    }
+
+    const noLicense = {
+      projectRoot: '.',
+      confused: false,
+      edgesIn: new Set(),
+      edgesOut: new Map(),
+      importer: false,
+      mainImporter: false,
+      graph,
+      id: joinDepIDTuple(['registry', '', 'no-license@1.0.0']),
+      name: 'no-license',
+      version: '1.0.0',
+      location: 'node_modules/no-license',
+      manifest: {
+        name: 'no-license',
+        version: '1.0.0',
+        // No license field
+      },
+      integrity: 'sha512-deadbeef',
+      resolved: undefined,
+      dev: false,
+      optional: false,
+      setConfusedManifest() {},
+      setResolved() {},
+      toJSON() {
+        return {} as any
+      },
+    }
+
+    graph.nodes.set(withLicense.id, withLicense)
+    graph.nodes.set(noLicense.id, noLicense)
+
+    const query = new Query({
+      graph,
+      securityArchive: asSecurityArchiveLike(
+        new Map([
+          [
+            joinDepIDTuple(['registry', '', 'with-license@1.0.0']),
+            asPackageReportData({
+              id: 'with-license@1.0.0',
+              author: [],
+              size: 0,
+              type: 'npm',
+              name: 'with-license',
+              version: '1.0.0',
+              license: 'MIT',
+              alerts: [], // No unlicensed alerts from Socket
+              score: {
+                overall: 0.8,
+                license: 0.9,
+                maintenance: 0.8,
+                quality: 0.8,
+                supplyChain: 0.8,
+                vulnerability: 0.8,
+              },
+            }),
+          ],
+          [
+            joinDepIDTuple(['registry', '', 'no-license@1.0.0']),
+            asPackageReportData({
+              id: 'no-license@1.0.0',
+              author: [],
+              size: 0,
+              type: 'npm',
+              name: 'no-license',
+              version: '1.0.0',
+              license: 'MIT', // Socket incorrectly reports this
+              alerts: [], // No unlicensed alerts from Socket (this is the problem)
+              score: {
+                overall: 0.8,
+                license: 1.0, // Socket gives high score despite no license
+                maintenance: 0.8,
+                quality: 0.8,
+                supplyChain: 0.8,
+                vulnerability: 0.8,
+              },
+            }),
+          ],
+        ]),
+      ),
+      retries: 0,
+      specOptions,
+    })
+
+    const result = await query.select('*', mockSearchOptions)
+
+    // Check insights for package with license
+    const withLicenseNode = result.nodes.find(
+      n => n.name === 'with-license',
+    )
+    t.ok(withLicenseNode, 'should find with-license node')
+    if (withLicenseNode) {
+      t.notOk(
+        withLicenseNode.insights.license?.unlicensed,
+        'package with license should not be marked as unlicensed',
+      )
+    }
+
+    // Check insights for package without license
+    const noLicenseNode = result.nodes.find(
+      n => n.name === 'no-license',
+    )
+    t.ok(noLicenseNode, 'should find no-license node')
+    if (noLicenseNode) {
+      t.ok(
+        noLicenseNode.insights.license?.unlicensed,
+        'package without license field should be marked as unlicensed',
+      )
+    }
+  },
+)
+
 t.test('bad selector type', async t => {
   await t.rejects(
     walk(testBrokenState()),
