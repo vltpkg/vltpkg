@@ -116,18 +116,19 @@ export const command: CommandFn<QueryResult> = async conf => {
 
   const defaultQueryString = '*'
   const queryString = conf.positionals[0]
-  const securityArchive =
-    queryString && Query.hasSecuritySelectors(queryString) ?
-      await SecurityArchive.start({
-        graph,
-        specOptions: conf.options,
-      })
-    : undefined
+  const securityArchive = await SecurityArchive.start({
+    graph,
+    specOptions: conf.options,
+  })
   const query = new Query({
     graph,
     specOptions: conf.options,
     securityArchive,
   })
+
+  // Populate security insights for all nodes when a security archive is available
+  // This ensures insights are available in query results even without security selectors
+  query.populateAllNodeInsights()
 
   const importers = new Set<Node>()
   const scopeIDs: DepID[] = []
