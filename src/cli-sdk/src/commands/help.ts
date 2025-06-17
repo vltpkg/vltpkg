@@ -1,6 +1,7 @@
 import { error } from '@vltpkg/error-cause'
 import { commandUsage } from '../config/usage.ts'
-import type { CommandFn, CommandUsage } from '../index.ts'
+import type { CommandFn, CommandUsage } from '../load-command.ts'
+import { loadCommand } from '../load-command.ts'
 import { getCommand } from '../config/definition.ts'
 
 export const usage: CommandUsage = () =>
@@ -33,21 +34,6 @@ export const command: CommandFn<string> = async conf => {
     })
   }
 
-  // Dynamically load the command module to get its usage
-  try {
-    const commandModule = (await import(
-      `../commands/${canonicalCmd}.ts`
-    )) as {
-      usage: CommandUsage
-    }
-    return commandModule.usage().usage()
-  /* c8 ignore start - hard to test without filesystem manipulation */
-  } catch (e) {
-    throw error(`Could not load help for command: ${canonicalCmd}`, {
-      found: canonicalCmd,
-      cause: e as Error,
-      code: 'EUNKNOWN',
-    })
-  }
-  /* c8 ignore stop */
+  const command = await loadCommand(canonicalCmd)
+  return command.usage().usage()
 }
