@@ -41,8 +41,8 @@ export const command: CommandFn<string> = async conf => {
       usage: CommandUsage
     }
     return commandModule.usage().usage()
+  /* c8 ignore start - hard to test without filesystem manipulation */
   } catch (e) {
-    /* c8 ignore start - hard to test without filesystem manipulation */
     throw error(`Could not load help for command: ${canonicalCmd}`, {
       found: canonicalCmd,
       cause: e as Error,
