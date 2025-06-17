@@ -141,3 +141,35 @@ test('TabsManifestContent renders with a manifest', () => {
   const { container } = render(<Container />)
   expect(container.innerHTML).toMatchSnapshot()
 })
+
+test('TabsManifestContent prioritizes manifest over rawManifest', () => {
+  const MOCK_RAW_MANIFEST: Manifest = {
+    name: 'confused-package',
+    version: '1.0.0',
+    author: 'Confused Author',
+    dependencies: {
+      '@confused/1': '1.0.0',
+    },
+  }
+
+  const mockState = {
+    selectedItem: SELECTED_ITEM,
+    ...SELECTED_ITEM_DETAILS,
+    insights: undefined,
+    activeTab: 'manifest' as const,
+    manifest: MOCK_MANIFEST,
+    rawManifest: MOCK_RAW_MANIFEST,
+    setActiveTab: vi.fn(),
+  } satisfies SelectedItemStore
+
+  vi.mocked(useSelectedItemStore).mockImplementation(selector =>
+    selector(mockState),
+  )
+
+  const Container = () => {
+    return <TabsManifestContent />
+  }
+
+  const { container } = render(<Container />)
+  expect(container.innerHTML).toMatchSnapshot()
+})

@@ -12,6 +12,35 @@ exports[`TabsManifestButton renders default 1`] = `
 
 `;
 
+exports[`TabsManifestContent prioritizes manifest over rawManifest 1`] = `
+
+<gui-tabs-content
+  value="package.json"
+  classname="h-full rounded-b-lg bg-neutral-100 dark:bg-black"
+>
+  <gui-code-block
+    classname="px-6 py-4"
+    code="{
+  &quot;name&quot;: &quot;acme-package&quot;,
+  &quot;version&quot;: &quot;1.0.0&quot;,
+  &quot;author&quot;: &quot;John Doe&quot;,
+  &quot;private&quot;: true,
+  &quot;dependencies&quot;: {
+    &quot;@acme/1&quot;: &quot;1.0.0&quot;,
+    &quot;@acme/2&quot;: &quot;2.0.0&quot;
+  },
+  &quot;devDependencies&quot;: {
+    &quot;@acme/3&quot;: &quot;3.0.0&quot;,
+    &quot;@acme/4&quot;: &quot;4.0.0&quot;
+  }
+}"
+    lang="json"
+  >
+  </gui-code-block>
+</gui-tabs-content>
+
+`;
+
 exports[`TabsManifestContent renders an empty state 1`] = `
 
 <gui-tabs-content

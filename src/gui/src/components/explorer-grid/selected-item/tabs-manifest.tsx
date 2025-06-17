@@ -17,7 +17,7 @@ export const TabsManifestButton = () => {
 export const TabsManifestContent = () => {
   const rawManifest = useSelectedItemStore(state => state.rawManifest)
   const manifest = useSelectedItemStore(state => state.manifest)
-  const finalManifest = rawManifest ?? manifest
+  const finalManifest = manifest ?? rawManifest
 
   return (
     <TabsContent
