@@ -27,11 +27,6 @@ t.test('Breadcrumb', async t => {
 
   await t.test('error cases', async t => {
     // Test selectors that should throw "Invalid query"
-    t.throws(
-      () => parseBreadcrumb(':foo'),
-      /Invalid query/,
-      'should throw on invalid pseudo selector',
-    )
 
     t.throws(
       () => parseBreadcrumb('[name=foo]'),
@@ -42,7 +37,7 @@ t.test('Breadcrumb', async t => {
     t.throws(
       () => parseBreadcrumb(':root:prod'),
       /Invalid query/,
-      'should throw on non-allowed pseudo selector',
+      'should throw on chained pseudo selectors',
     )
 
     t.throws(
@@ -92,6 +87,112 @@ t.test('Breadcrumb', async t => {
       rootBreadcrumb.first.importer,
       true,
       ':root should have importer=true',
+    )
+  })
+
+  await t.test('pseudo selector support', async t => {
+    // Test that any pseudo selector starting with : is now valid
+    const fooBreadcrumb = parseBreadcrumb(':foo')
+    t.equal(
+      fooBreadcrumb.first.value,
+      ':foo',
+      'should accept :foo pseudo selector',
+    )
+    t.equal(
+      fooBreadcrumb.first.type,
+      'pseudo',
+      ':foo should have type "pseudo"',
+    )
+    t.equal(
+      fooBreadcrumb.first.importer,
+      false,
+      ':foo should have importer=false',
+    )
+
+    // Test other custom pseudo selectors
+    const customPseudos = [
+      ':custom',
+      ':dev',
+      ':prod',
+      ':staging',
+      ':test',
+    ]
+    for (const pseudo of customPseudos) {
+      const breadcrumb = parseBreadcrumb(pseudo)
+      t.equal(
+        breadcrumb.first.value,
+        pseudo,
+        `should accept ${pseudo} pseudo selector`,
+      )
+      t.equal(
+        breadcrumb.first.type,
+        'pseudo',
+        `${pseudo} should have type "pseudo"`,
+      )
+      t.equal(
+        breadcrumb.first.importer,
+        false,
+        `${pseudo} should have importer=false`,
+      )
+    }
+
+    // Test pseudo selectors in complex queries
+    const complexPseudo = parseBreadcrumb(':custom > #a > #b')
+    t.equal(
+      complexPseudo.first.value,
+      ':custom',
+      'should handle :custom in complex query',
+    )
+    t.equal(
+      complexPseudo.last.value,
+      '#b',
+      'should handle rest of complex query with custom pseudo',
+    )
+
+    // Test pseudo selector consolidation with custom pseudo
+    const customIdBreadcrumb = parseBreadcrumb(':custom#a')
+    t.equal(
+      customIdBreadcrumb.first.value,
+      ':custom#a',
+      'should consolidate :custom and ID into a single item',
+    )
+    t.equal(
+      customIdBreadcrumb.first.type,
+      'pseudo',
+      'consolidated custom pseudo item should maintain pseudo type',
+    )
+    t.equal(
+      customIdBreadcrumb.first.importer,
+      false,
+      'consolidated :custom#id should have importer=false',
+    )
+    t.equal(
+      customIdBreadcrumb.first.name,
+      'a',
+      'consolidated :custom#id should have name="a"',
+    )
+
+    // Test ID + custom pseudo consolidation
+    const idCustomBreadcrumb = parseBreadcrumb('#a:custom')
+    t.equal(
+      idCustomBreadcrumb.first.value,
+      '#a:custom',
+      'should consolidate ID and :custom into a single item',
+    )
+    t.equal(
+      idCustomBreadcrumb.first.type,
+      'id',
+      'consolidated item should maintain ID type',
+    )
+    t.equal(
+      idCustomBreadcrumb.first.importer,
+      false,
+      'consolidated id:custom should have importer=false',
+    )
+    t.equal(
+      idCustomBreadcrumb.first.name,
+      'a',
+      'consolidated id:custom should have name="a"',
     )
   })
 
@@ -341,6 +442,34 @@ t.test('Breadcrumb', async t => {
       workspaceIdBreadcrumb.specificity.commonCounter,
       1,
       'should count one pseudo selector in consolidated selector',
+    )
+
+    // Test custom pseudo selector specificity
+    const customBreadcrumb = parseBreadcrumb(':custom')
+    t.equal(
+      customBreadcrumb.specificity.idCounter,
+      0,
+      'should count zero ID selectors for custom pseudo',
+    )
+    t.equal(
+      customBreadcrumb.specificity.commonCounter,
+      1,
+      'should count one pseudo selector for custom pseudo',
+    )
+
+    // Test complex custom pseudo selector
+    const complexCustomBreadcrumb = parseBreadcrumb(
+      ':custom > #a > #b:dev',
+    )
+    t.equal(
+      complexCustomBreadcrumb.specificity.idCounter,
+      2,
+      'should count two ID selectors in complex custom query',
+    )
+    t.equal(
+      complexCustomBreadcrumb.specificity.commonCounter,
+      2,
+      'should count two pseudo selectors (:custom and :dev) in complex query',
     )
   })
 })

@@ -16,13 +16,15 @@ import type {
 
 export * from './types.ts'
 
+const importerNames = new Set([':project', ':workspace', ':root'])
+
 /**
  * The Breadcrumb class is used to represent a valid breadcrumb
  * path that helps you traverse a graph and find a specific node or edge.
  *
  * Alongside the traditional analogy, "Breadcrumb" is also being used here
  * as a term used to describe the subset of the query language that uses
- * only root/workspace selectors, id selectors & combinators.
+ * only pseudo selectors, id selectors & combinators.
  *
  * The Breadcrumb class implements a doubly-linked list of items
  * that can be used to navigate through the breadcrumb.
@@ -52,26 +54,18 @@ export class Breadcrumb implements ModifierBreadcrumb {
     // iterates only at the first level of the AST since
     // any nested nodes are invalid syntax
     for (const item of ast.first.nodes) {
-      const allowedPseudoNodes =
-        isPseudoNode(item) &&
-        (item.value === ':root' ||
-          item.value === ':workspace' ||
-          item.value === ':project')
-
+      const pseudoNode = isPseudoNode(item)
       const allowedTypes =
         isIdentifierNode(item) ||
-        allowedPseudoNodes ||
+        pseudoNode ||
         (isCombinatorNode(item) && item.value === '>') ||
         isCommentNode(item)
+      const hasChildren =
+        isPostcssNodeWithChildren(item) && item.nodes.length > 0
 
-      // Check if this is a nested selector that's not an allowed pseudo
-      const isNestedSelector =
-        isPostcssNodeWithChildren(item) &&
-        !(allowedPseudoNodes && item.nodes.length === 0)
-
-      // validation, only the root/workspace selectors, id selectors
+      // validation, only pseudo selectors, id selectors
       // and combinators are valid ast node items
-      if (isNestedSelector || !allowedTypes) {
+      if (hasChildren || !allowedTypes) {
         throw error('Invalid query', { found: query })
       }
 
@@ -98,25 +92,30 @@ export class Breadcrumb implements ModifierBreadcrumb {
         // If we have a previous item and we haven't encountered a combinator
         // since then, consolidate with the previous item
         if (lastItem && !afterCombinator) {
-          // Determine how to combine the values based on selector types
+          // Check for invalid chained pseudo selectors
+          if (pseudoNode && isPseudoNode(lastItem)) {
+            throw error('Invalid query', { found: query })
+          }
+
+          // determine how to combine the values based on selector types
           const currentValue =
             item.type === 'id' ? `#${item.value}` : item.value
           lastItem.value = `${lastItem.value}${currentValue}`
 
-          // If current item is an ID, update the name property
+          // if current item is an ID, update the name property
           if (isIdentifierNode(item)) {
             lastItem.name = item.value
           }
 
-          // If current item is an importer pseudo, mark the combined item as importer
-          if (allowedPseudoNodes) {
-            lastItem.importer = true
+          // mark item as importer if it's an importer pseudo node
+          if (pseudoNode) {
+            lastItem.importer ||= importerNames.has(item.value)
           }
 
-          // Update specificity counters
+          // update specificity counters
           if (isIdentifierNode(item)) {
             this.specificity.idCounter++
-          } else if (isPseudoNode(item)) {
+          } else if (pseudoNode) {
             this.specificity.commonCounter++
           }
 
@@ -131,7 +130,7 @@ export class Breadcrumb implements ModifierBreadcrumb {
           type: item.type,
           prev: lastItem,
           next: undefined,
-          importer: allowedPseudoNodes,
+          importer: pseudoNode && importerNames.has(item.value),
         }
         if (lastItem) {
           lastItem.next = newItem
@@ -141,7 +140,7 @@ export class Breadcrumb implements ModifierBreadcrumb {
         // Update specificity counters
         if (isIdentifierNode(item)) {
           this.specificity.idCounter++
-        } else if (isPseudoNode(item)) {
+        } else if (pseudoNode) {
           this.specificity.commonCounter++
         }
 
