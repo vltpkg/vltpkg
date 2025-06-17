@@ -546,3 +546,173 @@ t.test('utility functions', async t => {
     )
   })
 })
+
+t.test(
+  'license score override for packages without license field',
+  async t => {
+    // Create a test graph with packages that have and don't have license fields
+    const createTestGraphWithLicenseVariations = () => {
+      const graph = getSimpleGraph()
+      const addNode = (name: string, hasLicense: boolean) => ({
+        projectRoot: '.',
+        confused: false,
+        edgesIn: new Set(),
+        edgesOut: new Map(),
+        importer: false,
+        mainImporter: false,
+        graph,
+        id: joinDepIDTuple(['registry', '', `${name}@1.0.0`]),
+        name,
+        version: '1.0.0',
+        location: `node_modules/${name}`,
+        manifest:
+          hasLicense ?
+            { name, version: '1.0.0', license: 'MIT' }
+          : { name, version: '1.0.0' }, // No license field
+        integrity: 'sha512-deadbeef',
+        resolved: undefined,
+        dev: false,
+        optional: false,
+        setConfusedManifest() {},
+        setResolved() {},
+        toJSON() {
+          return {} as any
+        },
+      })
+
+      const withLicense = addNode('with-license', true)
+      const noLicense = addNode('no-license', false)
+
+      graph.nodes.set(withLicense.id, withLicense)
+      graph.nodes.set(noLicense.id, noLicense)
+
+      return graph
+    }
+
+    // Create security archive that gives both packages high license scores (mimicking Socket's behavior)
+    const createTestArchiveWithHighLicenseScores = () => {
+      const securityMap = new Map()
+
+      // Both packages get high license scores from Socket
+      for (const name of ['with-license', 'no-license']) {
+        securityMap.set(
+          joinDepIDTuple(['registry', '', `${name}@1.0.0`]),
+          {
+            id: joinDepIDTuple(['registry', '', `${name}@1.0.0`]),
+            author: [],
+            size: 0,
+            type: 'npm',
+            name,
+            version: '1.0.0',
+            license: 'MIT', // Socket incorrectly reports license even for unlicensed packages
+            score: {
+              overall: 0.9,
+              license: 1.0, // High license score - this is the problem for unlicensed packages
+              maintenance: 0.9,
+              quality: 0.9,
+              supplyChain: 0.9,
+              vulnerability: 0.9,
+            },
+            alerts: [],
+          },
+        )
+      }
+
+      return asSecurityArchiveLike(securityMap)
+    }
+
+    const getState = (query: string) => {
+      const ast = parse(query)
+      const current = ast.first.first
+      const graph = createTestGraphWithLicenseVariations()
+
+      const state: ParserState = {
+        comment: '',
+        current,
+        initial: {
+          edges: new Set(),
+          nodes: new Set(
+            [...graph.nodes.values()].filter(
+              n =>
+                n.name === 'with-license' || n.name === 'no-license',
+            ),
+          ),
+        },
+        partial: {
+          edges: new Set(),
+          nodes: new Set(
+            [...graph.nodes.values()].filter(
+              n =>
+                n.name === 'with-license' || n.name === 'no-license',
+            ),
+          ),
+        },
+        collect: {
+          edges: new Set(),
+          nodes: new Set(),
+        },
+        cancellable: async () => {},
+        walk: async i => i,
+        retries: 0,
+        securityArchive: createTestArchiveWithHighLicenseScores(),
+        specOptions: {},
+        signal: new AbortController().signal,
+        specificity: { idCounter: 0, commonCounter: 0 },
+      }
+      return state
+    }
+
+    await t.test(
+      'perfect license score only matches packages with license field',
+      async t => {
+        const res = await score(getState(':score(1, license)'))
+        const selectedNodes = [...res.partial.nodes].map(n => n.name)
+
+        t.ok(
+          selectedNodes.includes('with-license'),
+          'should select package with license field',
+        )
+        t.notOk(
+          selectedNodes.includes('no-license'),
+          'should not select package without license field (score overridden to 0)',
+        )
+      },
+    )
+
+    await t.test(
+      'zero license score matches packages without license field',
+      async t => {
+        const res = await score(getState(':score(0, license)'))
+        const selectedNodes = [...res.partial.nodes].map(n => n.name)
+
+        t.notOk(
+          selectedNodes.includes('with-license'),
+          'should not select package with license field',
+        )
+        t.ok(
+          selectedNodes.includes('no-license'),
+          'should select package without license field (score overridden to 0)',
+        )
+      },
+    )
+
+    await t.test(
+      'license score override only affects license scores',
+      async t => {
+        // Test that other score types are not affected
+        const res = await score(getState(':score(0.9, maintenance)'))
+        const selectedNodes = [...res.partial.nodes].map(n => n.name)
+
+        // Both packages should be selected for maintenance score since both have 0.9
+        t.ok(
+          selectedNodes.includes('with-license'),
+          'maintenance score not affected for package with license',
+        )
+        t.ok(
+          selectedNodes.includes('no-license'),
+          'maintenance score not affected for package without license',
+        )
+      },
+    )
+  },
+)

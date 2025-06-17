@@ -146,7 +146,16 @@ export const score = async (state: ParserState) => {
       continue
     }
 
-    const scoreValue = report.score[kind]
+    let scoreValue = report.score[kind]
+
+    // Override license score to 0 if package.json has no license field
+    if (
+      kind === 'license' &&
+      node.manifest &&
+      !node.manifest.license
+    ) {
+      scoreValue = 0
+    }
 
     let exclude = false
     switch (comparator) {
