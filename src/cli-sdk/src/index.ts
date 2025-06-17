@@ -9,6 +9,7 @@ import { Config } from './config/index.ts'
 import { outputCommand, stderr, stdout } from './output.ts'
 import { indent } from './print-err.ts'
 import { loadCommand } from './load-command.ts'
+
 export type {
   Command,
   CommandFn,

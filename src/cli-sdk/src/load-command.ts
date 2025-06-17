@@ -24,12 +24,10 @@ export const loadCommand = async <T>(
 ): Promise<Command<T>> => {
   try {
     return (await import(`./commands/${command}.ts`)) as Command<T>
-    /* c8 ignore start - should not be possible, just a failsafe */
   } catch (e) {
     throw error('Could not load command', {
       found: command,
       cause: e,
     })
   }
-  /* c8 ignore stop */
 }
